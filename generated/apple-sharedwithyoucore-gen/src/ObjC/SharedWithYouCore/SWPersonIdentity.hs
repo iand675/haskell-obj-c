@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.SharedWithYouCore.SWPersonIdentity
   , initWithRootHash
   , rootHash
   , initSelector
-  , newSelector
   , initWithRootHashSelector
+  , newSelector
   , rootHashSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSWPersonIdentity swPersonIdentity => swPersonIdentity -> IO (Id SWPersonIdentity)
-init_ swPersonIdentity  =
-    sendMsg swPersonIdentity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swPersonIdentity =
+  sendOwnedMessage swPersonIdentity initSelector
 
 -- | @+ new@
 new :: IO (Id SWPersonIdentity)
 new  =
   do
     cls' <- getRequiredClass "SWPersonIdentity"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | An initializer
 --
@@ -57,9 +54,8 @@ new  =
 --
 -- ObjC selector: @- initWithRootHash:@
 initWithRootHash :: (IsSWPersonIdentity swPersonIdentity, IsNSData rootHash) => swPersonIdentity -> rootHash -> IO (Id SWPersonIdentity)
-initWithRootHash swPersonIdentity  rootHash =
-  withObjCPtr rootHash $ \raw_rootHash ->
-      sendMsg swPersonIdentity (mkSelector "initWithRootHash:") (retPtr retVoid) [argPtr (castPtr raw_rootHash :: Ptr ())] >>= ownedObject . castPtr
+initWithRootHash swPersonIdentity rootHash =
+  sendOwnedMessage swPersonIdentity initWithRootHashSelector (toNSData rootHash)
 
 -- | The root hash of the tree that represents this individual's identity.
 --
@@ -67,26 +63,26 @@ initWithRootHash swPersonIdentity  rootHash =
 --
 -- ObjC selector: @- rootHash@
 rootHash :: IsSWPersonIdentity swPersonIdentity => swPersonIdentity -> IO (Id NSData)
-rootHash swPersonIdentity  =
-    sendMsg swPersonIdentity (mkSelector "rootHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootHash swPersonIdentity =
+  sendMessage swPersonIdentity rootHashSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWPersonIdentity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWPersonIdentity)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithRootHash:@
-initWithRootHashSelector :: Selector
+initWithRootHashSelector :: Selector '[Id NSData] (Id SWPersonIdentity)
 initWithRootHashSelector = mkSelector "initWithRootHash:"
 
 -- | @Selector@ for @rootHash@
-rootHashSelector :: Selector
+rootHashSelector :: Selector '[] (Id NSData)
 rootHashSelector = mkSelector "rootHash"
 

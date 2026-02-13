@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,9 +15,9 @@ module ObjC.ModelIO.MDLMeshBufferData
   , initWithType_length
   , initWithType_data
   , data_
-  , initWithType_lengthSelector
-  , initWithType_dataSelector
   , dataSelector
+  , initWithType_dataSelector
+  , initWithType_lengthSelector
 
   -- * Enum types
   , MDLMeshBufferType(MDLMeshBufferType)
@@ -26,15 +27,11 @@ module ObjC.ModelIO.MDLMeshBufferData
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithType:length:@
 initWithType_length :: IsMDLMeshBufferData mdlMeshBufferData => mdlMeshBufferData -> MDLMeshBufferType -> CULong -> IO (Id MDLMeshBufferData)
-initWithType_length mdlMeshBufferData  type_ length_ =
-    sendMsg mdlMeshBufferData (mkSelector "initWithType:length:") (retPtr retVoid) [argCULong (coerce type_), argCULong length_] >>= ownedObject . castPtr
+initWithType_length mdlMeshBufferData type_ length_ =
+  sendOwnedMessage mdlMeshBufferData initWithType_lengthSelector type_ length_
 
 -- | initWithType:data
 --
@@ -65,28 +62,27 @@ initWithType_length mdlMeshBufferData  type_ length_ =
 --
 -- ObjC selector: @- initWithType:data:@
 initWithType_data :: (IsMDLMeshBufferData mdlMeshBufferData, IsNSData data_) => mdlMeshBufferData -> MDLMeshBufferType -> data_ -> IO (Id MDLMeshBufferData)
-initWithType_data mdlMeshBufferData  type_ data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg mdlMeshBufferData (mkSelector "initWithType:data:") (retPtr retVoid) [argCULong (coerce type_), argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithType_data mdlMeshBufferData type_ data_ =
+  sendOwnedMessage mdlMeshBufferData initWithType_dataSelector type_ (toNSData data_)
 
 -- | @- data@
 data_ :: IsMDLMeshBufferData mdlMeshBufferData => mdlMeshBufferData -> IO (Id NSData)
-data_ mdlMeshBufferData  =
-    sendMsg mdlMeshBufferData (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mdlMeshBufferData =
+  sendMessage mdlMeshBufferData dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithType:length:@
-initWithType_lengthSelector :: Selector
+initWithType_lengthSelector :: Selector '[MDLMeshBufferType, CULong] (Id MDLMeshBufferData)
 initWithType_lengthSelector = mkSelector "initWithType:length:"
 
 -- | @Selector@ for @initWithType:data:@
-initWithType_dataSelector :: Selector
+initWithType_dataSelector :: Selector '[MDLMeshBufferType, Id NSData] (Id MDLMeshBufferData)
 initWithType_dataSelector = mkSelector "initWithType:data:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 

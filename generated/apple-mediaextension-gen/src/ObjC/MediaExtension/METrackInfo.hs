@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,37 +31,33 @@ module ObjC.MediaExtension.METrackInfo
   , setNaturalTimescale
   , trackEdits
   , setTrackEdits
-  , newSelector
+  , enabledSelector
+  , extendedLanguageTagSelector
+  , formatDescriptionsSelector
   , initSelector
   , initWithMediaType_trackID_formatDescriptionsSelector
   , mediaTypeSelector
-  , trackIDSelector
-  , enabledSelector
-  , setEnabledSelector
-  , formatDescriptionsSelector
-  , nominalFrameRateSelector
-  , setNominalFrameRateSelector
-  , requiresFrameReorderingSelector
-  , setRequiresFrameReorderingSelector
-  , extendedLanguageTagSelector
-  , setExtendedLanguageTagSelector
   , naturalTimescaleSelector
+  , newSelector
+  , nominalFrameRateSelector
+  , requiresFrameReorderingSelector
+  , setEnabledSelector
+  , setExtendedLanguageTagSelector
   , setNaturalTimescaleSelector
-  , trackEditsSelector
+  , setNominalFrameRateSelector
+  , setRequiresFrameReorderingSelector
   , setTrackEditsSelector
+  , trackEditsSelector
+  , trackIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,12 +69,12 @@ new :: IO (Id METrackInfo)
 new  =
   do
     cls' <- getRequiredClass "METrackInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO (Id METrackInfo)
-init_ meTrackInfo  =
-    sendMsg meTrackInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meTrackInfo =
+  sendOwnedMessage meTrackInfo initSelector
 
 -- | initWithMediaType
 --
@@ -95,9 +92,8 @@ init_ meTrackInfo  =
 --
 -- ObjC selector: @- initWithMediaType:trackID:formatDescriptions:@
 initWithMediaType_trackID_formatDescriptions :: (IsMETrackInfo meTrackInfo, IsNSArray formatDescriptions) => meTrackInfo -> CUInt -> CInt -> formatDescriptions -> IO (Id METrackInfo)
-initWithMediaType_trackID_formatDescriptions meTrackInfo  mediaType trackID formatDescriptions =
-  withObjCPtr formatDescriptions $ \raw_formatDescriptions ->
-      sendMsg meTrackInfo (mkSelector "initWithMediaType:trackID:formatDescriptions:") (retPtr retVoid) [argCUInt mediaType, argCInt trackID, argPtr (castPtr raw_formatDescriptions :: Ptr ())] >>= ownedObject . castPtr
+initWithMediaType_trackID_formatDescriptions meTrackInfo mediaType trackID formatDescriptions =
+  sendOwnedMessage meTrackInfo initWithMediaType_trackID_formatDescriptionsSelector mediaType trackID (toNSArray formatDescriptions)
 
 -- | mediaType
 --
@@ -107,8 +103,8 @@ initWithMediaType_trackID_formatDescriptions meTrackInfo  mediaType trackID form
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO CUInt
-mediaType meTrackInfo  =
-    sendMsg meTrackInfo (mkSelector "mediaType") retCUInt []
+mediaType meTrackInfo =
+  sendMessage meTrackInfo mediaTypeSelector
 
 -- | trackID
 --
@@ -118,8 +114,8 @@ mediaType meTrackInfo  =
 --
 -- ObjC selector: @- trackID@
 trackID :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO CInt
-trackID meTrackInfo  =
-    sendMsg meTrackInfo (mkSelector "trackID") retCInt []
+trackID meTrackInfo =
+  sendMessage meTrackInfo trackIDSelector
 
 -- | enabled
 --
@@ -127,8 +123,8 @@ trackID meTrackInfo  =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO Bool
-enabled meTrackInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meTrackInfo (mkSelector "enabled") retCULong []
+enabled meTrackInfo =
+  sendMessage meTrackInfo enabledSelector
 
 -- | enabled
 --
@@ -136,8 +132,8 @@ enabled meTrackInfo  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsMETrackInfo meTrackInfo => meTrackInfo -> Bool -> IO ()
-setEnabled meTrackInfo  value =
-    sendMsg meTrackInfo (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled meTrackInfo value =
+  sendMessage meTrackInfo setEnabledSelector value
 
 -- | formatDescriptions
 --
@@ -147,8 +143,8 @@ setEnabled meTrackInfo  value =
 --
 -- ObjC selector: @- formatDescriptions@
 formatDescriptions :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO (Id NSArray)
-formatDescriptions meTrackInfo  =
-    sendMsg meTrackInfo (mkSelector "formatDescriptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+formatDescriptions meTrackInfo =
+  sendMessage meTrackInfo formatDescriptionsSelector
 
 -- | nominalFrameRate
 --
@@ -158,8 +154,8 @@ formatDescriptions meTrackInfo  =
 --
 -- ObjC selector: @- nominalFrameRate@
 nominalFrameRate :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO CFloat
-nominalFrameRate meTrackInfo  =
-    sendMsg meTrackInfo (mkSelector "nominalFrameRate") retCFloat []
+nominalFrameRate meTrackInfo =
+  sendMessage meTrackInfo nominalFrameRateSelector
 
 -- | nominalFrameRate
 --
@@ -169,8 +165,8 @@ nominalFrameRate meTrackInfo  =
 --
 -- ObjC selector: @- setNominalFrameRate:@
 setNominalFrameRate :: IsMETrackInfo meTrackInfo => meTrackInfo -> CFloat -> IO ()
-setNominalFrameRate meTrackInfo  value =
-    sendMsg meTrackInfo (mkSelector "setNominalFrameRate:") retVoid [argCFloat value]
+setNominalFrameRate meTrackInfo value =
+  sendMessage meTrackInfo setNominalFrameRateSelector value
 
 -- | requiresFrameReordering
 --
@@ -180,8 +176,8 @@ setNominalFrameRate meTrackInfo  value =
 --
 -- ObjC selector: @- requiresFrameReordering@
 requiresFrameReordering :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO Bool
-requiresFrameReordering meTrackInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meTrackInfo (mkSelector "requiresFrameReordering") retCULong []
+requiresFrameReordering meTrackInfo =
+  sendMessage meTrackInfo requiresFrameReorderingSelector
 
 -- | requiresFrameReordering
 --
@@ -191,8 +187,8 @@ requiresFrameReordering meTrackInfo  =
 --
 -- ObjC selector: @- setRequiresFrameReordering:@
 setRequiresFrameReordering :: IsMETrackInfo meTrackInfo => meTrackInfo -> Bool -> IO ()
-setRequiresFrameReordering meTrackInfo  value =
-    sendMsg meTrackInfo (mkSelector "setRequiresFrameReordering:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresFrameReordering meTrackInfo value =
+  sendMessage meTrackInfo setRequiresFrameReorderingSelector value
 
 -- | extendedLanguageTag
 --
@@ -202,8 +198,8 @@ setRequiresFrameReordering meTrackInfo  value =
 --
 -- ObjC selector: @- extendedLanguageTag@
 extendedLanguageTag :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO (Id NSString)
-extendedLanguageTag meTrackInfo  =
-    sendMsg meTrackInfo (mkSelector "extendedLanguageTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedLanguageTag meTrackInfo =
+  sendMessage meTrackInfo extendedLanguageTagSelector
 
 -- | extendedLanguageTag
 --
@@ -213,9 +209,8 @@ extendedLanguageTag meTrackInfo  =
 --
 -- ObjC selector: @- setExtendedLanguageTag:@
 setExtendedLanguageTag :: (IsMETrackInfo meTrackInfo, IsNSString value) => meTrackInfo -> value -> IO ()
-setExtendedLanguageTag meTrackInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg meTrackInfo (mkSelector "setExtendedLanguageTag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedLanguageTag meTrackInfo value =
+  sendMessage meTrackInfo setExtendedLanguageTagSelector (toNSString value)
 
 -- | naturalTimescale
 --
@@ -223,8 +218,8 @@ setExtendedLanguageTag meTrackInfo  value =
 --
 -- ObjC selector: @- naturalTimescale@
 naturalTimescale :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO CInt
-naturalTimescale meTrackInfo  =
-    sendMsg meTrackInfo (mkSelector "naturalTimescale") retCInt []
+naturalTimescale meTrackInfo =
+  sendMessage meTrackInfo naturalTimescaleSelector
 
 -- | naturalTimescale
 --
@@ -232,8 +227,8 @@ naturalTimescale meTrackInfo  =
 --
 -- ObjC selector: @- setNaturalTimescale:@
 setNaturalTimescale :: IsMETrackInfo meTrackInfo => meTrackInfo -> CInt -> IO ()
-setNaturalTimescale meTrackInfo  value =
-    sendMsg meTrackInfo (mkSelector "setNaturalTimescale:") retVoid [argCInt value]
+setNaturalTimescale meTrackInfo value =
+  sendMessage meTrackInfo setNaturalTimescaleSelector value
 
 -- | trackEdits
 --
@@ -243,8 +238,8 @@ setNaturalTimescale meTrackInfo  value =
 --
 -- ObjC selector: @- trackEdits@
 trackEdits :: IsMETrackInfo meTrackInfo => meTrackInfo -> IO (Id NSArray)
-trackEdits meTrackInfo  =
-    sendMsg meTrackInfo (mkSelector "trackEdits") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackEdits meTrackInfo =
+  sendMessage meTrackInfo trackEditsSelector
 
 -- | trackEdits
 --
@@ -254,83 +249,82 @@ trackEdits meTrackInfo  =
 --
 -- ObjC selector: @- setTrackEdits:@
 setTrackEdits :: (IsMETrackInfo meTrackInfo, IsNSArray value) => meTrackInfo -> value -> IO ()
-setTrackEdits meTrackInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg meTrackInfo (mkSelector "setTrackEdits:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTrackEdits meTrackInfo value =
+  sendMessage meTrackInfo setTrackEditsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id METrackInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id METrackInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithMediaType:trackID:formatDescriptions:@
-initWithMediaType_trackID_formatDescriptionsSelector :: Selector
+initWithMediaType_trackID_formatDescriptionsSelector :: Selector '[CUInt, CInt, Id NSArray] (Id METrackInfo)
 initWithMediaType_trackID_formatDescriptionsSelector = mkSelector "initWithMediaType:trackID:formatDescriptions:"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] CUInt
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @trackID@
-trackIDSelector :: Selector
+trackIDSelector :: Selector '[] CInt
 trackIDSelector = mkSelector "trackID"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @formatDescriptions@
-formatDescriptionsSelector :: Selector
+formatDescriptionsSelector :: Selector '[] (Id NSArray)
 formatDescriptionsSelector = mkSelector "formatDescriptions"
 
 -- | @Selector@ for @nominalFrameRate@
-nominalFrameRateSelector :: Selector
+nominalFrameRateSelector :: Selector '[] CFloat
 nominalFrameRateSelector = mkSelector "nominalFrameRate"
 
 -- | @Selector@ for @setNominalFrameRate:@
-setNominalFrameRateSelector :: Selector
+setNominalFrameRateSelector :: Selector '[CFloat] ()
 setNominalFrameRateSelector = mkSelector "setNominalFrameRate:"
 
 -- | @Selector@ for @requiresFrameReordering@
-requiresFrameReorderingSelector :: Selector
+requiresFrameReorderingSelector :: Selector '[] Bool
 requiresFrameReorderingSelector = mkSelector "requiresFrameReordering"
 
 -- | @Selector@ for @setRequiresFrameReordering:@
-setRequiresFrameReorderingSelector :: Selector
+setRequiresFrameReorderingSelector :: Selector '[Bool] ()
 setRequiresFrameReorderingSelector = mkSelector "setRequiresFrameReordering:"
 
 -- | @Selector@ for @extendedLanguageTag@
-extendedLanguageTagSelector :: Selector
+extendedLanguageTagSelector :: Selector '[] (Id NSString)
 extendedLanguageTagSelector = mkSelector "extendedLanguageTag"
 
 -- | @Selector@ for @setExtendedLanguageTag:@
-setExtendedLanguageTagSelector :: Selector
+setExtendedLanguageTagSelector :: Selector '[Id NSString] ()
 setExtendedLanguageTagSelector = mkSelector "setExtendedLanguageTag:"
 
 -- | @Selector@ for @naturalTimescale@
-naturalTimescaleSelector :: Selector
+naturalTimescaleSelector :: Selector '[] CInt
 naturalTimescaleSelector = mkSelector "naturalTimescale"
 
 -- | @Selector@ for @setNaturalTimescale:@
-setNaturalTimescaleSelector :: Selector
+setNaturalTimescaleSelector :: Selector '[CInt] ()
 setNaturalTimescaleSelector = mkSelector "setNaturalTimescale:"
 
 -- | @Selector@ for @trackEdits@
-trackEditsSelector :: Selector
+trackEditsSelector :: Selector '[] (Id NSArray)
 trackEditsSelector = mkSelector "trackEdits"
 
 -- | @Selector@ for @setTrackEdits:@
-setTrackEditsSelector :: Selector
+setTrackEditsSelector :: Selector '[Id NSArray] ()
 setTrackEditsSelector = mkSelector "setTrackEdits:"
 

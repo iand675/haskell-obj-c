@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.Intents.INShortcut
   , initWithUserActivity
   , intent
   , userActivity
-  , newSelector
   , initSelector
   , initWithIntentSelector
   , initWithUserActivitySelector
   , intentSelector
+  , newSelector
   , userActivitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,14 +43,14 @@ new :: IO (Id INShortcut)
 new  =
   do
     cls' <- getRequiredClass "INShortcut"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Note: Must be initilaized with either an intent or user activity, using those initializers.
 --
 -- ObjC selector: @- init@
 init_ :: IsINShortcut inShortcut => inShortcut -> IO (Id INShortcut)
-init_ inShortcut  =
-    sendMsg inShortcut (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inShortcut =
+  sendOwnedMessage inShortcut initSelector
 
 -- | Creates a shortcut with the given intent.
 --
@@ -63,17 +60,15 @@ init_ inShortcut  =
 --
 -- ObjC selector: @- initWithIntent:@
 initWithIntent :: (IsINShortcut inShortcut, IsINIntent intent) => inShortcut -> intent -> IO (Id INShortcut)
-initWithIntent inShortcut  intent =
-  withObjCPtr intent $ \raw_intent ->
-      sendMsg inShortcut (mkSelector "initWithIntent:") (retPtr retVoid) [argPtr (castPtr raw_intent :: Ptr ())] >>= ownedObject . castPtr
+initWithIntent inShortcut intent =
+  sendOwnedMessage inShortcut initWithIntentSelector (toINIntent intent)
 
 -- | Creates a shortcut with the given user activity.
 --
 -- ObjC selector: @- initWithUserActivity:@
 initWithUserActivity :: (IsINShortcut inShortcut, IsNSUserActivity userActivity) => inShortcut -> userActivity -> IO (Id INShortcut)
-initWithUserActivity inShortcut  userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inShortcut (mkSelector "initWithUserActivity:") (retPtr retVoid) [argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithUserActivity inShortcut userActivity =
+  sendOwnedMessage inShortcut initWithUserActivitySelector (toNSUserActivity userActivity)
 
 -- | The intent that will be performed when this shortcut is invoked.
 --
@@ -81,8 +76,8 @@ initWithUserActivity inShortcut  userActivity =
 --
 -- ObjC selector: @- intent@
 intent :: IsINShortcut inShortcut => inShortcut -> IO (Id INIntent)
-intent inShortcut  =
-    sendMsg inShortcut (mkSelector "intent") (retPtr retVoid) [] >>= retainedObject . castPtr
+intent inShortcut =
+  sendMessage inShortcut intentSelector
 
 -- | The user activity that will be performed when this shortcut is invoked.
 --
@@ -90,34 +85,34 @@ intent inShortcut  =
 --
 -- ObjC selector: @- userActivity@
 userActivity :: IsINShortcut inShortcut => inShortcut -> IO (Id NSUserActivity)
-userActivity inShortcut  =
-    sendMsg inShortcut (mkSelector "userActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+userActivity inShortcut =
+  sendMessage inShortcut userActivitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id INShortcut)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INShortcut)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithIntent:@
-initWithIntentSelector :: Selector
+initWithIntentSelector :: Selector '[Id INIntent] (Id INShortcut)
 initWithIntentSelector = mkSelector "initWithIntent:"
 
 -- | @Selector@ for @initWithUserActivity:@
-initWithUserActivitySelector :: Selector
+initWithUserActivitySelector :: Selector '[Id NSUserActivity] (Id INShortcut)
 initWithUserActivitySelector = mkSelector "initWithUserActivity:"
 
 -- | @Selector@ for @intent@
-intentSelector :: Selector
+intentSelector :: Selector '[] (Id INIntent)
 intentSelector = mkSelector "intent"
 
 -- | @Selector@ for @userActivity@
-userActivitySelector :: Selector
+userActivitySelector :: Selector '[] (Id NSUserActivity)
 userActivitySelector = mkSelector "userActivity"
 

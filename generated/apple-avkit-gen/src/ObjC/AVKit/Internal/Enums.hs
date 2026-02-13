@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AVKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | AVCaptureViewControlsStyleInline
 --
@@ -43,6 +46,16 @@ pattern AVCaptureViewControlsStyleInlineDeviceSelection = AVCaptureViewControlsS
 pattern AVCaptureViewControlsStyleDefault :: AVCaptureViewControlsStyle
 pattern AVCaptureViewControlsStyleDefault = AVCaptureViewControlsStyle 0
 
+instance ObjCArgument AVCaptureViewControlsStyle where
+  withObjCArg (AVCaptureViewControlsStyle x) k = k (argCLong x)
+
+instance ObjCReturn AVCaptureViewControlsStyle where
+  type RawReturn AVCaptureViewControlsStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVCaptureViewControlsStyle x)
+  fromOwned x = pure (AVCaptureViewControlsStyle x)
+
 -- | Describes how High Dynamic Range (HDR) video content renders.
 -- | @AVDisplayDynamicRange@
 newtype AVDisplayDynamicRange = AVDisplayDynamicRange CLong
@@ -60,6 +73,16 @@ pattern AVDisplayDynamicRangeConstrainedHigh = AVDisplayDynamicRange 2
 
 pattern AVDisplayDynamicRangeHigh :: AVDisplayDynamicRange
 pattern AVDisplayDynamicRangeHigh = AVDisplayDynamicRange 3
+
+instance ObjCArgument AVDisplayDynamicRange where
+  withObjCArg (AVDisplayDynamicRange x) k = k (argCLong x)
+
+instance ObjCReturn AVDisplayDynamicRange where
+  type RawReturn AVDisplayDynamicRange = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVDisplayDynamicRange x)
+  fromOwned x = pure (AVDisplayDynamicRange x)
 
 -- | AVPlayerViewControlsStyleNone
 --
@@ -100,6 +123,16 @@ pattern AVPlayerViewControlsStyleMinimal = AVPlayerViewControlsStyle 3
 pattern AVPlayerViewControlsStyleDefault :: AVPlayerViewControlsStyle
 pattern AVPlayerViewControlsStyleDefault = AVPlayerViewControlsStyle 1
 
+instance ObjCArgument AVPlayerViewControlsStyle where
+  withObjCArg (AVPlayerViewControlsStyle x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerViewControlsStyle where
+  type RawReturn AVPlayerViewControlsStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerViewControlsStyle x)
+  fromOwned x = pure (AVPlayerViewControlsStyle x)
+
 -- | AVPlayerViewTrimOKButton
 --
 -- The user selected the Trim button.
@@ -117,6 +150,16 @@ pattern AVPlayerViewTrimOKButton = AVPlayerViewTrimResult 0
 
 pattern AVPlayerViewTrimCancelButton :: AVPlayerViewTrimResult
 pattern AVPlayerViewTrimCancelButton = AVPlayerViewTrimResult 1
+
+instance ObjCArgument AVPlayerViewTrimResult where
+  withObjCArg (AVPlayerViewTrimResult x) k = k (argCLong x)
+
+instance ObjCReturn AVPlayerViewTrimResult where
+  type RawReturn AVPlayerViewTrimResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVPlayerViewTrimResult x)
+  fromOwned x = pure (AVPlayerViewTrimResult x)
 
 -- | AVRoutePickerViewButtonStateNormal
 --
@@ -150,6 +193,16 @@ pattern AVRoutePickerViewButtonStateActive = AVRoutePickerViewButtonState 2
 pattern AVRoutePickerViewButtonStateActiveHighlighted :: AVRoutePickerViewButtonState
 pattern AVRoutePickerViewButtonStateActiveHighlighted = AVRoutePickerViewButtonState 3
 
+instance ObjCArgument AVRoutePickerViewButtonState where
+  withObjCArg (AVRoutePickerViewButtonState x) k = k (argCLong x)
+
+instance ObjCReturn AVRoutePickerViewButtonState where
+  type RawReturn AVRoutePickerViewButtonState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVRoutePickerViewButtonState x)
+  fromOwned x = pure (AVRoutePickerViewButtonState x)
+
 -- | AVRoutePickerViewButtonStyleSystem
 --
 -- A system style for the route picker button.
@@ -174,6 +227,16 @@ pattern AVRoutePickerViewButtonStylePlain = AVRoutePickerViewButtonStyle 1
 
 pattern AVRoutePickerViewButtonStyleCustom :: AVRoutePickerViewButtonStyle
 pattern AVRoutePickerViewButtonStyleCustom = AVRoutePickerViewButtonStyle 2
+
+instance ObjCArgument AVRoutePickerViewButtonStyle where
+  withObjCArg (AVRoutePickerViewButtonStyle x) k = k (argCLong x)
+
+instance ObjCReturn AVRoutePickerViewButtonStyle where
+  type RawReturn AVRoutePickerViewButtonStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVRoutePickerViewButtonStyle x)
+  fromOwned x = pure (AVRoutePickerViewButtonStyle x)
 
 -- | AVVideoFrameAnalysisType
 --
@@ -230,3 +293,13 @@ pattern AVVideoFrameAnalysisTypeVisualSearch = AVVideoFrameAnalysisType 8
 
 pattern AVVideoFrameAnalysisTypeMachineReadableCode :: AVVideoFrameAnalysisType
 pattern AVVideoFrameAnalysisTypeMachineReadableCode = AVVideoFrameAnalysisType 16
+
+instance ObjCArgument AVVideoFrameAnalysisType where
+  withObjCArg (AVVideoFrameAnalysisType x) k = k (argCULong x)
+
+instance ObjCReturn AVVideoFrameAnalysisType where
+  type RawReturn AVVideoFrameAnalysisType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVVideoFrameAnalysisType x)
+  fromOwned x = pure (AVVideoFrameAnalysisType x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.SharedWithYou.SWRemoveParticipantAlert
   , showAlertWithParticipant_highlight_inWindow
   , init_
   , new
-  , showAlertWithParticipant_highlight_inWindowSelector
   , initSelector
   , newSelector
+  , showAlertWithParticipant_highlight_inWindowSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,36 +35,33 @@ showAlertWithParticipant_highlight_inWindow :: (IsSWPerson participant, IsSWColl
 showAlertWithParticipant_highlight_inWindow participant highlight window =
   do
     cls' <- getRequiredClass "SWRemoveParticipantAlert"
-    withObjCPtr participant $ \raw_participant ->
-      withObjCPtr highlight $ \raw_highlight ->
-        withObjCPtr window $ \raw_window ->
-          sendClassMsg cls' (mkSelector "showAlertWithParticipant:highlight:inWindow:") retVoid [argPtr (castPtr raw_participant :: Ptr ()), argPtr (castPtr raw_highlight :: Ptr ()), argPtr (castPtr raw_window :: Ptr ())]
+    sendClassMessage cls' showAlertWithParticipant_highlight_inWindowSelector (toSWPerson participant) (toSWCollaborationHighlight highlight) (toNSWindow window)
 
 -- | @- init@
 init_ :: IsSWRemoveParticipantAlert swRemoveParticipantAlert => swRemoveParticipantAlert -> IO (Id SWRemoveParticipantAlert)
-init_ swRemoveParticipantAlert  =
-    sendMsg swRemoveParticipantAlert (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swRemoveParticipantAlert =
+  sendOwnedMessage swRemoveParticipantAlert initSelector
 
 -- | @+ new@
 new :: IO (Id SWRemoveParticipantAlert)
 new  =
   do
     cls' <- getRequiredClass "SWRemoveParticipantAlert"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @showAlertWithParticipant:highlight:inWindow:@
-showAlertWithParticipant_highlight_inWindowSelector :: Selector
+showAlertWithParticipant_highlight_inWindowSelector :: Selector '[Id SWPerson, Id SWCollaborationHighlight, Id NSWindow] ()
 showAlertWithParticipant_highlight_inWindowSelector = mkSelector "showAlertWithParticipant:highlight:inWindow:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWRemoveParticipantAlert)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWRemoveParticipantAlert)
 newSelector = mkSelector "new"
 

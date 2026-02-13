@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.SceneKit.SCNCone
   , setRadialSegmentCount
   , heightSegmentCount
   , setHeightSegmentCount
-  , coneWithTopRadius_bottomRadius_heightSelector
-  , topRadiusSelector
-  , setTopRadiusSelector
   , bottomRadiusSelector
-  , setBottomRadiusSelector
-  , heightSelector
-  , setHeightSelector
-  , radialSegmentCountSelector
-  , setRadialSegmentCountSelector
+  , coneWithTopRadius_bottomRadius_heightSelector
   , heightSegmentCountSelector
+  , heightSelector
+  , radialSegmentCountSelector
+  , setBottomRadiusSelector
   , setHeightSegmentCountSelector
+  , setHeightSelector
+  , setRadialSegmentCountSelector
+  , setTopRadiusSelector
+  , topRadiusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,7 +63,7 @@ coneWithTopRadius_bottomRadius_height :: CDouble -> CDouble -> CDouble -> IO (Id
 coneWithTopRadius_bottomRadius_height topRadius bottomRadius height =
   do
     cls' <- getRequiredClass "SCNCone"
-    sendClassMsg cls' (mkSelector "coneWithTopRadius:bottomRadius:height:") (retPtr retVoid) [argCDouble topRadius, argCDouble bottomRadius, argCDouble height] >>= retainedObject . castPtr
+    sendClassMessage cls' coneWithTopRadius_bottomRadius_heightSelector topRadius bottomRadius height
 
 -- | topRadius
 --
@@ -76,8 +73,8 @@ coneWithTopRadius_bottomRadius_height topRadius bottomRadius height =
 --
 -- ObjC selector: @- topRadius@
 topRadius :: IsSCNCone scnCone => scnCone -> IO CDouble
-topRadius scnCone  =
-    sendMsg scnCone (mkSelector "topRadius") retCDouble []
+topRadius scnCone =
+  sendMessage scnCone topRadiusSelector
 
 -- | topRadius
 --
@@ -87,8 +84,8 @@ topRadius scnCone  =
 --
 -- ObjC selector: @- setTopRadius:@
 setTopRadius :: IsSCNCone scnCone => scnCone -> CDouble -> IO ()
-setTopRadius scnCone  value =
-    sendMsg scnCone (mkSelector "setTopRadius:") retVoid [argCDouble value]
+setTopRadius scnCone value =
+  sendMessage scnCone setTopRadiusSelector value
 
 -- | bottomRadius
 --
@@ -98,8 +95,8 @@ setTopRadius scnCone  value =
 --
 -- ObjC selector: @- bottomRadius@
 bottomRadius :: IsSCNCone scnCone => scnCone -> IO CDouble
-bottomRadius scnCone  =
-    sendMsg scnCone (mkSelector "bottomRadius") retCDouble []
+bottomRadius scnCone =
+  sendMessage scnCone bottomRadiusSelector
 
 -- | bottomRadius
 --
@@ -109,8 +106,8 @@ bottomRadius scnCone  =
 --
 -- ObjC selector: @- setBottomRadius:@
 setBottomRadius :: IsSCNCone scnCone => scnCone -> CDouble -> IO ()
-setBottomRadius scnCone  value =
-    sendMsg scnCone (mkSelector "setBottomRadius:") retVoid [argCDouble value]
+setBottomRadius scnCone value =
+  sendMessage scnCone setBottomRadiusSelector value
 
 -- | height
 --
@@ -120,8 +117,8 @@ setBottomRadius scnCone  value =
 --
 -- ObjC selector: @- height@
 height :: IsSCNCone scnCone => scnCone -> IO CDouble
-height scnCone  =
-    sendMsg scnCone (mkSelector "height") retCDouble []
+height scnCone =
+  sendMessage scnCone heightSelector
 
 -- | height
 --
@@ -131,8 +128,8 @@ height scnCone  =
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsSCNCone scnCone => scnCone -> CDouble -> IO ()
-setHeight scnCone  value =
-    sendMsg scnCone (mkSelector "setHeight:") retVoid [argCDouble value]
+setHeight scnCone value =
+  sendMessage scnCone setHeightSelector value
 
 -- | radialSegmentCount
 --
@@ -142,8 +139,8 @@ setHeight scnCone  value =
 --
 -- ObjC selector: @- radialSegmentCount@
 radialSegmentCount :: IsSCNCone scnCone => scnCone -> IO CLong
-radialSegmentCount scnCone  =
-    sendMsg scnCone (mkSelector "radialSegmentCount") retCLong []
+radialSegmentCount scnCone =
+  sendMessage scnCone radialSegmentCountSelector
 
 -- | radialSegmentCount
 --
@@ -153,8 +150,8 @@ radialSegmentCount scnCone  =
 --
 -- ObjC selector: @- setRadialSegmentCount:@
 setRadialSegmentCount :: IsSCNCone scnCone => scnCone -> CLong -> IO ()
-setRadialSegmentCount scnCone  value =
-    sendMsg scnCone (mkSelector "setRadialSegmentCount:") retVoid [argCLong value]
+setRadialSegmentCount scnCone value =
+  sendMessage scnCone setRadialSegmentCountSelector value
 
 -- | heightSegmentCount
 --
@@ -164,8 +161,8 @@ setRadialSegmentCount scnCone  value =
 --
 -- ObjC selector: @- heightSegmentCount@
 heightSegmentCount :: IsSCNCone scnCone => scnCone -> IO CLong
-heightSegmentCount scnCone  =
-    sendMsg scnCone (mkSelector "heightSegmentCount") retCLong []
+heightSegmentCount scnCone =
+  sendMessage scnCone heightSegmentCountSelector
 
 -- | heightSegmentCount
 --
@@ -175,54 +172,54 @@ heightSegmentCount scnCone  =
 --
 -- ObjC selector: @- setHeightSegmentCount:@
 setHeightSegmentCount :: IsSCNCone scnCone => scnCone -> CLong -> IO ()
-setHeightSegmentCount scnCone  value =
-    sendMsg scnCone (mkSelector "setHeightSegmentCount:") retVoid [argCLong value]
+setHeightSegmentCount scnCone value =
+  sendMessage scnCone setHeightSegmentCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @coneWithTopRadius:bottomRadius:height:@
-coneWithTopRadius_bottomRadius_heightSelector :: Selector
+coneWithTopRadius_bottomRadius_heightSelector :: Selector '[CDouble, CDouble, CDouble] (Id SCNCone)
 coneWithTopRadius_bottomRadius_heightSelector = mkSelector "coneWithTopRadius:bottomRadius:height:"
 
 -- | @Selector@ for @topRadius@
-topRadiusSelector :: Selector
+topRadiusSelector :: Selector '[] CDouble
 topRadiusSelector = mkSelector "topRadius"
 
 -- | @Selector@ for @setTopRadius:@
-setTopRadiusSelector :: Selector
+setTopRadiusSelector :: Selector '[CDouble] ()
 setTopRadiusSelector = mkSelector "setTopRadius:"
 
 -- | @Selector@ for @bottomRadius@
-bottomRadiusSelector :: Selector
+bottomRadiusSelector :: Selector '[] CDouble
 bottomRadiusSelector = mkSelector "bottomRadius"
 
 -- | @Selector@ for @setBottomRadius:@
-setBottomRadiusSelector :: Selector
+setBottomRadiusSelector :: Selector '[CDouble] ()
 setBottomRadiusSelector = mkSelector "setBottomRadius:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CDouble
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CDouble] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @radialSegmentCount@
-radialSegmentCountSelector :: Selector
+radialSegmentCountSelector :: Selector '[] CLong
 radialSegmentCountSelector = mkSelector "radialSegmentCount"
 
 -- | @Selector@ for @setRadialSegmentCount:@
-setRadialSegmentCountSelector :: Selector
+setRadialSegmentCountSelector :: Selector '[CLong] ()
 setRadialSegmentCountSelector = mkSelector "setRadialSegmentCount:"
 
 -- | @Selector@ for @heightSegmentCount@
-heightSegmentCountSelector :: Selector
+heightSegmentCountSelector :: Selector '[] CLong
 heightSegmentCountSelector = mkSelector "heightSegmentCount"
 
 -- | @Selector@ for @setHeightSegmentCount:@
-setHeightSegmentCountSelector :: Selector
+setHeightSegmentCountSelector :: Selector '[CLong] ()
 setHeightSegmentCountSelector = mkSelector "setHeightSegmentCount:"
 

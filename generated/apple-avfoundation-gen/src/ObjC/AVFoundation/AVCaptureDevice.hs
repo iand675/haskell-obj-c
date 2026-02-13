@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -189,180 +190,180 @@ module ObjC.AVFoundation.AVCaptureDevice
   , systemPreferredCamera
   , deviceType
   , position
-  , initSelector
-  , newSelector
-  , devicesSelector
-  , devicesWithMediaTypeSelector
-  , defaultDeviceWithMediaTypeSelector
-  , deviceWithUniqueIDSelector
-  , hasMediaTypeSelector
-  , lockForConfigurationSelector
-  , unlockForConfigurationSelector
-  , supportsAVCaptureSessionPresetSelector
-  , setDynamicAspectRatio_completionHandlerSelector
-  , showSystemUserInterfaceSelector
-  , performEffectForReactionSelector
-  , extrinsicMatrixFromDevice_toDeviceSelector
-  , setTransportControlsPlaybackMode_speedSelector
-  , authorizationStatusForMediaTypeSelector
-  , requestAccessForMediaType_completionHandlerSelector
-  , rampToVideoZoomFactor_withRateSelector
-  , cancelVideoZoomRampSelector
-  , isWhiteBalanceModeSupportedSelector
-  , isExposureModeSupportedSelector
-  , setExposureTargetBias_completionHandlerSelector
-  , isFocusModeSupportedSelector
-  , setFocusModeLockedWithLensPosition_completionHandlerSelector
-  , setCinematicVideoTrackingFocusWithDetectedObjectID_focusModeSelector
-  , isTorchModeSupportedSelector
-  , setTorchModeOnWithLevel_errorSelector
-  , isFlashModeSupportedSelector
-  , setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditionsSelector
-  , defaultDeviceWithDeviceType_mediaType_positionSelector
-  , uniqueIDSelector
-  , modelIDSelector
-  , localizedNameSelector
-  , manufacturerSelector
-  , transportTypeSelector
-  , connectedSelector
-  , inUseByAnotherApplicationSelector
-  , suspendedSelector
-  , linkedDevicesSelector
-  , formatsSelector
-  , activeFormatSelector
-  , setActiveFormatSelector
-  , videoFrameDurationLockedSelector
-  , followingExternalSyncDeviceSelector
-  , autoVideoFrameRateEnabledSelector
-  , setAutoVideoFrameRateEnabledSelector
-  , inputSourcesSelector
-  , activeInputSourceSelector
-  , setActiveInputSourceSelector
-  , cameraLensSmudgeDetectionEnabledSelector
-  , cameraLensSmudgeDetectionStatusSelector
-  , edgeLightEnabledSelector
-  , edgeLightActiveSelector
-  , studioLightEnabledSelector
-  , studioLightActiveSelector
-  , nominalFocalLengthIn35mmFilmSelector
-  , smartFramingMonitorSelector
-  , dynamicAspectRatioSelector
-  , cinematicVideoCaptureSceneMonitoringStatusesSelector
-  , spatialCaptureDiscomfortReasonsSelector
-  , preferredMicrophoneModeSelector
-  , activeMicrophoneModeSelector
-  , companionDeskViewCameraSelector
-  , continuityCameraSelector
-  , backgroundReplacementEnabledSelector
-  , backgroundReplacementActiveSelector
-  , reactionEffectsEnabledSelector
-  , reactionEffectGesturesEnabledSelector
-  , canPerformReactionEffectsSelector
-  , availableReactionTypesSelector
-  , reactionEffectsInProgressSelector
-  , portraitEffectEnabledSelector
-  , portraitEffectActiveSelector
-  , centerStageControlModeSelector
-  , setCenterStageControlModeSelector
-  , centerStageEnabledSelector
-  , setCenterStageEnabledSelector
-  , centerStageActiveSelector
-  , centerStageRectOfInterestSupportedSelector
-  , geometricDistortionCorrectionSupportedSelector
-  , geometricDistortionCorrectionEnabledSelector
-  , setGeometricDistortionCorrectionEnabledSelector
-  , activeDepthDataFormatSelector
-  , setActiveDepthDataFormatSelector
-  , minAvailableVideoZoomFactorSelector
-  , maxAvailableVideoZoomFactorSelector
   , activeColorSpaceSelector
-  , setActiveColorSpaceSelector
-  , automaticallyAdjustsVideoHDREnabledSelector
-  , setAutomaticallyAdjustsVideoHDREnabledSelector
-  , videoHDREnabledSelector
-  , setVideoHDREnabledSelector
-  , transportControlsSupportedSelector
-  , transportControlsPlaybackModeSelector
-  , transportControlsSpeedSelector
-  , videoZoomFactorSelector
-  , setVideoZoomFactorSelector
-  , rampingVideoZoomSelector
-  , dualCameraSwitchOverVideoZoomFactorSelector
-  , displayVideoZoomFactorMultiplierSelector
-  , lowLightBoostSupportedSelector
-  , lowLightBoostEnabledSelector
-  , automaticallyEnablesLowLightBoostWhenAvailableSelector
-  , setAutomaticallyEnablesLowLightBoostWhenAvailableSelector
-  , subjectAreaChangeMonitoringEnabledSelector
-  , setSubjectAreaChangeMonitoringEnabledSelector
-  , lockingWhiteBalanceWithCustomDeviceGainsSupportedSelector
-  , whiteBalanceModeSelector
-  , setWhiteBalanceModeSelector
-  , adjustingWhiteBalanceSelector
-  , maxWhiteBalanceGainSelector
-  , globalToneMappingEnabledSelector
-  , setGlobalToneMappingEnabledSelector
-  , exposureModeSelector
-  , setExposureModeSelector
-  , exposurePointOfInterestSupportedSelector
-  , exposureRectOfInterestSupportedSelector
-  , automaticallyAdjustsFaceDrivenAutoExposureEnabledSelector
-  , setAutomaticallyAdjustsFaceDrivenAutoExposureEnabledSelector
-  , faceDrivenAutoExposureEnabledSelector
-  , setFaceDrivenAutoExposureEnabledSelector
-  , adjustingExposureSelector
-  , lensApertureSelector
-  , isoSelector
-  , exposureTargetOffsetSelector
-  , exposureTargetBiasSelector
-  , minExposureTargetBiasSelector
-  , maxExposureTargetBiasSelector
-  , lockingFocusWithCustomLensPositionSupportedSelector
-  , focusModeSelector
-  , setFocusModeSelector
-  , focusPointOfInterestSupportedSelector
-  , focusRectOfInterestSupportedSelector
-  , adjustingFocusSelector
-  , autoFocusRangeRestrictionSupportedSelector
-  , autoFocusRangeRestrictionSelector
-  , setAutoFocusRangeRestrictionSelector
-  , smoothAutoFocusSupportedSelector
-  , smoothAutoFocusEnabledSelector
-  , setSmoothAutoFocusEnabledSelector
-  , automaticallyAdjustsFaceDrivenAutoFocusEnabledSelector
-  , setAutomaticallyAdjustsFaceDrivenAutoFocusEnabledSelector
-  , faceDrivenAutoFocusEnabledSelector
-  , setFaceDrivenAutoFocusEnabledSelector
-  , lensPositionSelector
-  , minimumFocusDistanceSelector
-  , hasTorchSelector
-  , torchAvailableSelector
-  , torchActiveSelector
-  , torchLevelSelector
-  , torchModeSelector
-  , setTorchModeSelector
-  , hasFlashSelector
-  , flashAvailableSelector
-  , flashActiveSelector
-  , flashModeSelector
-  , setFlashModeSelector
-  , virtualDeviceSelector
-  , constituentDevicesSelector
-  , virtualDeviceSwitchOverVideoZoomFactorsSelector
-  , primaryConstituentDeviceSwitchingBehaviorSelector
-  , primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector
-  , activePrimaryConstituentDeviceSwitchingBehaviorSelector
+  , activeDepthDataFormatSelector
+  , activeFormatSelector
+  , activeInputSourceSelector
+  , activeMicrophoneModeSelector
   , activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector
   , activePrimaryConstituentDeviceSelector
-  , supportedFallbackPrimaryConstituentDevicesSelector
-  , fallbackPrimaryConstituentDevicesSelector
-  , setFallbackPrimaryConstituentDevicesSelector
-  , systemPressureStateSelector
-  , userPreferredCameraSelector
-  , setUserPreferredCameraSelector
-  , systemPreferredCameraSelector
+  , activePrimaryConstituentDeviceSwitchingBehaviorSelector
+  , adjustingExposureSelector
+  , adjustingFocusSelector
+  , adjustingWhiteBalanceSelector
+  , authorizationStatusForMediaTypeSelector
+  , autoFocusRangeRestrictionSelector
+  , autoFocusRangeRestrictionSupportedSelector
+  , autoVideoFrameRateEnabledSelector
+  , automaticallyAdjustsFaceDrivenAutoExposureEnabledSelector
+  , automaticallyAdjustsFaceDrivenAutoFocusEnabledSelector
+  , automaticallyAdjustsVideoHDREnabledSelector
+  , automaticallyEnablesLowLightBoostWhenAvailableSelector
+  , availableReactionTypesSelector
+  , backgroundReplacementActiveSelector
+  , backgroundReplacementEnabledSelector
+  , cameraLensSmudgeDetectionEnabledSelector
+  , cameraLensSmudgeDetectionStatusSelector
+  , canPerformReactionEffectsSelector
+  , cancelVideoZoomRampSelector
+  , centerStageActiveSelector
+  , centerStageControlModeSelector
+  , centerStageEnabledSelector
+  , centerStageRectOfInterestSupportedSelector
+  , cinematicVideoCaptureSceneMonitoringStatusesSelector
+  , companionDeskViewCameraSelector
+  , connectedSelector
+  , constituentDevicesSelector
+  , continuityCameraSelector
+  , defaultDeviceWithDeviceType_mediaType_positionSelector
+  , defaultDeviceWithMediaTypeSelector
   , deviceTypeSelector
+  , deviceWithUniqueIDSelector
+  , devicesSelector
+  , devicesWithMediaTypeSelector
+  , displayVideoZoomFactorMultiplierSelector
+  , dualCameraSwitchOverVideoZoomFactorSelector
+  , dynamicAspectRatioSelector
+  , edgeLightActiveSelector
+  , edgeLightEnabledSelector
+  , exposureModeSelector
+  , exposurePointOfInterestSupportedSelector
+  , exposureRectOfInterestSupportedSelector
+  , exposureTargetBiasSelector
+  , exposureTargetOffsetSelector
+  , extrinsicMatrixFromDevice_toDeviceSelector
+  , faceDrivenAutoExposureEnabledSelector
+  , faceDrivenAutoFocusEnabledSelector
+  , fallbackPrimaryConstituentDevicesSelector
+  , flashActiveSelector
+  , flashAvailableSelector
+  , flashModeSelector
+  , focusModeSelector
+  , focusPointOfInterestSupportedSelector
+  , focusRectOfInterestSupportedSelector
+  , followingExternalSyncDeviceSelector
+  , formatsSelector
+  , geometricDistortionCorrectionEnabledSelector
+  , geometricDistortionCorrectionSupportedSelector
+  , globalToneMappingEnabledSelector
+  , hasFlashSelector
+  , hasMediaTypeSelector
+  , hasTorchSelector
+  , inUseByAnotherApplicationSelector
+  , initSelector
+  , inputSourcesSelector
+  , isExposureModeSupportedSelector
+  , isFlashModeSupportedSelector
+  , isFocusModeSupportedSelector
+  , isTorchModeSupportedSelector
+  , isWhiteBalanceModeSupportedSelector
+  , isoSelector
+  , lensApertureSelector
+  , lensPositionSelector
+  , linkedDevicesSelector
+  , localizedNameSelector
+  , lockForConfigurationSelector
+  , lockingFocusWithCustomLensPositionSupportedSelector
+  , lockingWhiteBalanceWithCustomDeviceGainsSupportedSelector
+  , lowLightBoostEnabledSelector
+  , lowLightBoostSupportedSelector
+  , manufacturerSelector
+  , maxAvailableVideoZoomFactorSelector
+  , maxExposureTargetBiasSelector
+  , maxWhiteBalanceGainSelector
+  , minAvailableVideoZoomFactorSelector
+  , minExposureTargetBiasSelector
+  , minimumFocusDistanceSelector
+  , modelIDSelector
+  , newSelector
+  , nominalFocalLengthIn35mmFilmSelector
+  , performEffectForReactionSelector
+  , portraitEffectActiveSelector
+  , portraitEffectEnabledSelector
   , positionSelector
+  , preferredMicrophoneModeSelector
+  , primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector
+  , primaryConstituentDeviceSwitchingBehaviorSelector
+  , rampToVideoZoomFactor_withRateSelector
+  , rampingVideoZoomSelector
+  , reactionEffectGesturesEnabledSelector
+  , reactionEffectsEnabledSelector
+  , reactionEffectsInProgressSelector
+  , requestAccessForMediaType_completionHandlerSelector
+  , setActiveColorSpaceSelector
+  , setActiveDepthDataFormatSelector
+  , setActiveFormatSelector
+  , setActiveInputSourceSelector
+  , setAutoFocusRangeRestrictionSelector
+  , setAutoVideoFrameRateEnabledSelector
+  , setAutomaticallyAdjustsFaceDrivenAutoExposureEnabledSelector
+  , setAutomaticallyAdjustsFaceDrivenAutoFocusEnabledSelector
+  , setAutomaticallyAdjustsVideoHDREnabledSelector
+  , setAutomaticallyEnablesLowLightBoostWhenAvailableSelector
+  , setCenterStageControlModeSelector
+  , setCenterStageEnabledSelector
+  , setCinematicVideoTrackingFocusWithDetectedObjectID_focusModeSelector
+  , setDynamicAspectRatio_completionHandlerSelector
+  , setExposureModeSelector
+  , setExposureTargetBias_completionHandlerSelector
+  , setFaceDrivenAutoExposureEnabledSelector
+  , setFaceDrivenAutoFocusEnabledSelector
+  , setFallbackPrimaryConstituentDevicesSelector
+  , setFlashModeSelector
+  , setFocusModeLockedWithLensPosition_completionHandlerSelector
+  , setFocusModeSelector
+  , setGeometricDistortionCorrectionEnabledSelector
+  , setGlobalToneMappingEnabledSelector
+  , setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditionsSelector
+  , setSmoothAutoFocusEnabledSelector
+  , setSubjectAreaChangeMonitoringEnabledSelector
+  , setTorchModeOnWithLevel_errorSelector
+  , setTorchModeSelector
+  , setTransportControlsPlaybackMode_speedSelector
+  , setUserPreferredCameraSelector
+  , setVideoHDREnabledSelector
+  , setVideoZoomFactorSelector
+  , setWhiteBalanceModeSelector
+  , showSystemUserInterfaceSelector
+  , smartFramingMonitorSelector
+  , smoothAutoFocusEnabledSelector
+  , smoothAutoFocusSupportedSelector
+  , spatialCaptureDiscomfortReasonsSelector
+  , studioLightActiveSelector
+  , studioLightEnabledSelector
+  , subjectAreaChangeMonitoringEnabledSelector
+  , supportedFallbackPrimaryConstituentDevicesSelector
+  , supportsAVCaptureSessionPresetSelector
+  , suspendedSelector
+  , systemPreferredCameraSelector
+  , systemPressureStateSelector
+  , torchActiveSelector
+  , torchAvailableSelector
+  , torchLevelSelector
+  , torchModeSelector
+  , transportControlsPlaybackModeSelector
+  , transportControlsSpeedSelector
+  , transportControlsSupportedSelector
+  , transportTypeSelector
+  , uniqueIDSelector
+  , unlockForConfigurationSelector
+  , userPreferredCameraSelector
+  , videoFrameDurationLockedSelector
+  , videoHDREnabledSelector
+  , videoZoomFactorSelector
+  , virtualDeviceSelector
+  , virtualDeviceSwitchOverVideoZoomFactorsSelector
+  , whiteBalanceModeSelector
 
   -- * Enum types
   , AVAuthorizationStatus(AVAuthorizationStatus)
@@ -441,15 +442,11 @@ module ObjC.AVFoundation.AVCaptureDevice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -459,15 +456,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureDevice)
-init_ avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureDevice =
+  sendOwnedMessage avCaptureDevice initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureDevice)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | devices
 --
@@ -482,7 +479,7 @@ devices :: IO (Id NSArray)
 devices  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    sendClassMsg cls' (mkSelector "devices") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' devicesSelector
 
 -- | devicesWithMediaType:
 --
@@ -499,8 +496,7 @@ devicesWithMediaType :: IsNSString mediaType => mediaType -> IO (Id NSArray)
 devicesWithMediaType mediaType =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    withObjCPtr mediaType $ \raw_mediaType ->
-      sendClassMsg cls' (mkSelector "devicesWithMediaType:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' devicesWithMediaTypeSelector (toNSString mediaType)
 
 -- | defaultDeviceWithMediaType:
 --
@@ -517,8 +513,7 @@ defaultDeviceWithMediaType :: IsNSString mediaType => mediaType -> IO (Id AVCapt
 defaultDeviceWithMediaType mediaType =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    withObjCPtr mediaType $ \raw_mediaType ->
-      sendClassMsg cls' (mkSelector "defaultDeviceWithMediaType:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultDeviceWithMediaTypeSelector (toNSString mediaType)
 
 -- | deviceWithUniqueID:
 --
@@ -535,8 +530,7 @@ deviceWithUniqueID :: IsNSString deviceUniqueID => deviceUniqueID -> IO (Id AVCa
 deviceWithUniqueID deviceUniqueID =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    withObjCPtr deviceUniqueID $ \raw_deviceUniqueID ->
-      sendClassMsg cls' (mkSelector "deviceWithUniqueID:") (retPtr retVoid) [argPtr (castPtr raw_deviceUniqueID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithUniqueIDSelector (toNSString deviceUniqueID)
 
 -- | hasMediaType:
 --
@@ -550,9 +544,8 @@ deviceWithUniqueID deviceUniqueID =
 --
 -- ObjC selector: @- hasMediaType:@
 hasMediaType :: (IsAVCaptureDevice avCaptureDevice, IsNSString mediaType) => avCaptureDevice -> mediaType -> IO Bool
-hasMediaType avCaptureDevice  mediaType =
-  withObjCPtr mediaType $ \raw_mediaType ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "hasMediaType:") retCULong [argPtr (castPtr raw_mediaType :: Ptr ())]
+hasMediaType avCaptureDevice mediaType =
+  sendMessage avCaptureDevice hasMediaTypeSelector (toNSString mediaType)
 
 -- | lockForConfiguration:
 --
@@ -566,9 +559,8 @@ hasMediaType avCaptureDevice  mediaType =
 --
 -- ObjC selector: @- lockForConfiguration:@
 lockForConfiguration :: (IsAVCaptureDevice avCaptureDevice, IsNSError outError) => avCaptureDevice -> outError -> IO Bool
-lockForConfiguration avCaptureDevice  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "lockForConfiguration:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+lockForConfiguration avCaptureDevice outError =
+  sendMessage avCaptureDevice lockForConfigurationSelector (toNSError outError)
 
 -- | unlockForConfiguration
 --
@@ -578,8 +570,8 @@ lockForConfiguration avCaptureDevice  outError =
 --
 -- ObjC selector: @- unlockForConfiguration@
 unlockForConfiguration :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO ()
-unlockForConfiguration avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "unlockForConfiguration") retVoid []
+unlockForConfiguration avCaptureDevice =
+  sendMessage avCaptureDevice unlockForConfigurationSelector
 
 -- | supportsAVCaptureSessionPreset:
 --
@@ -593,9 +585,8 @@ unlockForConfiguration avCaptureDevice  =
 --
 -- ObjC selector: @- supportsAVCaptureSessionPreset:@
 supportsAVCaptureSessionPreset :: (IsAVCaptureDevice avCaptureDevice, IsNSString preset) => avCaptureDevice -> preset -> IO Bool
-supportsAVCaptureSessionPreset avCaptureDevice  preset =
-  withObjCPtr preset $ \raw_preset ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "supportsAVCaptureSessionPreset:") retCULong [argPtr (castPtr raw_preset :: Ptr ())]
+supportsAVCaptureSessionPreset avCaptureDevice preset =
+  sendMessage avCaptureDevice supportsAVCaptureSessionPresetSelector (toNSString preset)
 
 -- | Updates the dynamic aspect ratio of the device.
 --
@@ -605,9 +596,8 @@ supportsAVCaptureSessionPreset avCaptureDevice  preset =
 --
 -- ObjC selector: @- setDynamicAspectRatio:completionHandler:@
 setDynamicAspectRatio_completionHandler :: (IsAVCaptureDevice avCaptureDevice, IsNSString dynamicAspectRatio) => avCaptureDevice -> dynamicAspectRatio -> Ptr () -> IO ()
-setDynamicAspectRatio_completionHandler avCaptureDevice  dynamicAspectRatio handler =
-  withObjCPtr dynamicAspectRatio $ \raw_dynamicAspectRatio ->
-      sendMsg avCaptureDevice (mkSelector "setDynamicAspectRatio:completionHandler:") retVoid [argPtr (castPtr raw_dynamicAspectRatio :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+setDynamicAspectRatio_completionHandler avCaptureDevice dynamicAspectRatio handler =
+  sendMessage avCaptureDevice setDynamicAspectRatio_completionHandlerSelector (toNSString dynamicAspectRatio) handler
 
 -- | showSystemUserInterface:
 --
@@ -622,7 +612,7 @@ showSystemUserInterface :: AVCaptureSystemUserInterface -> IO ()
 showSystemUserInterface systemUserInterface =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    sendClassMsg cls' (mkSelector "showSystemUserInterface:") retVoid [argCLong (coerce systemUserInterface)]
+    sendClassMessage cls' showSystemUserInterfaceSelector systemUserInterface
 
 -- | performEffectForReaction:
 --
@@ -636,9 +626,8 @@ showSystemUserInterface systemUserInterface =
 --
 -- ObjC selector: @- performEffectForReaction:@
 performEffectForReaction :: (IsAVCaptureDevice avCaptureDevice, IsNSString reactionType) => avCaptureDevice -> reactionType -> IO ()
-performEffectForReaction avCaptureDevice  reactionType =
-  withObjCPtr reactionType $ \raw_reactionType ->
-      sendMsg avCaptureDevice (mkSelector "performEffectForReaction:") retVoid [argPtr (castPtr raw_reactionType :: Ptr ())]
+performEffectForReaction avCaptureDevice reactionType =
+  sendMessage avCaptureDevice performEffectForReactionSelector (toNSString reactionType)
 
 -- | extrinsicMatrixFromDevice:toDevice:
 --
@@ -657,9 +646,7 @@ extrinsicMatrixFromDevice_toDevice :: (IsAVCaptureDevice fromDevice, IsAVCapture
 extrinsicMatrixFromDevice_toDevice fromDevice toDevice =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    withObjCPtr fromDevice $ \raw_fromDevice ->
-      withObjCPtr toDevice $ \raw_toDevice ->
-        sendClassMsg cls' (mkSelector "extrinsicMatrixFromDevice:toDevice:") (retPtr retVoid) [argPtr (castPtr raw_fromDevice :: Ptr ()), argPtr (castPtr raw_toDevice :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' extrinsicMatrixFromDevice_toDeviceSelector (toAVCaptureDevice fromDevice) (toAVCaptureDevice toDevice)
 
 -- | setTransportControlsPlaybackMode:speed:
 --
@@ -673,8 +660,8 @@ extrinsicMatrixFromDevice_toDevice fromDevice toDevice =
 --
 -- ObjC selector: @- setTransportControlsPlaybackMode:speed:@
 setTransportControlsPlaybackMode_speed :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureDeviceTransportControlsPlaybackMode -> CFloat -> IO ()
-setTransportControlsPlaybackMode_speed avCaptureDevice  mode speed =
-    sendMsg avCaptureDevice (mkSelector "setTransportControlsPlaybackMode:speed:") retVoid [argCLong (coerce mode), argCFloat speed]
+setTransportControlsPlaybackMode_speed avCaptureDevice mode speed =
+  sendMessage avCaptureDevice setTransportControlsPlaybackMode_speedSelector mode speed
 
 -- | authorizationStatusForMediaType:
 --
@@ -691,8 +678,7 @@ authorizationStatusForMediaType :: IsNSString mediaType => mediaType -> IO AVAut
 authorizationStatusForMediaType mediaType =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    withObjCPtr mediaType $ \raw_mediaType ->
-      fmap (coerce :: CLong -> AVAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatusForMediaType:") retCLong [argPtr (castPtr raw_mediaType :: Ptr ())]
+    sendClassMessage cls' authorizationStatusForMediaTypeSelector (toNSString mediaType)
 
 -- | requestAccessForMediaType:completionHandler:
 --
@@ -717,8 +703,7 @@ requestAccessForMediaType_completionHandler :: IsNSString mediaType => mediaType
 requestAccessForMediaType_completionHandler mediaType handler =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    withObjCPtr mediaType $ \raw_mediaType ->
-      sendClassMsg cls' (mkSelector "requestAccessForMediaType:completionHandler:") retVoid [argPtr (castPtr raw_mediaType :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' requestAccessForMediaType_completionHandlerSelector (toNSString mediaType) handler
 
 -- | rampToVideoZoomFactor:withRate:
 --
@@ -736,8 +721,8 @@ requestAccessForMediaType_completionHandler mediaType handler =
 --
 -- ObjC selector: @- rampToVideoZoomFactor:withRate:@
 rampToVideoZoomFactor_withRate :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> CDouble -> CFloat -> IO ()
-rampToVideoZoomFactor_withRate avCaptureDevice  factor rate =
-    sendMsg avCaptureDevice (mkSelector "rampToVideoZoomFactor:withRate:") retVoid [argCDouble factor, argCFloat rate]
+rampToVideoZoomFactor_withRate avCaptureDevice factor rate =
+  sendMessage avCaptureDevice rampToVideoZoomFactor_withRateSelector factor rate
 
 -- | cancelVideoZoomRamp
 --
@@ -749,8 +734,8 @@ rampToVideoZoomFactor_withRate avCaptureDevice  factor rate =
 --
 -- ObjC selector: @- cancelVideoZoomRamp@
 cancelVideoZoomRamp :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO ()
-cancelVideoZoomRamp avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "cancelVideoZoomRamp") retVoid []
+cancelVideoZoomRamp avCaptureDevice =
+  sendMessage avCaptureDevice cancelVideoZoomRampSelector
 
 -- | isWhiteBalanceModeSupported:
 --
@@ -764,8 +749,8 @@ cancelVideoZoomRamp avCaptureDevice  =
 --
 -- ObjC selector: @- isWhiteBalanceModeSupported:@
 isWhiteBalanceModeSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureWhiteBalanceMode -> IO Bool
-isWhiteBalanceModeSupported avCaptureDevice  whiteBalanceMode =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "isWhiteBalanceModeSupported:") retCULong [argCLong (coerce whiteBalanceMode)]
+isWhiteBalanceModeSupported avCaptureDevice whiteBalanceMode =
+  sendMessage avCaptureDevice isWhiteBalanceModeSupportedSelector whiteBalanceMode
 
 -- | isExposureModeSupported:
 --
@@ -779,8 +764,8 @@ isWhiteBalanceModeSupported avCaptureDevice  whiteBalanceMode =
 --
 -- ObjC selector: @- isExposureModeSupported:@
 isExposureModeSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureExposureMode -> IO Bool
-isExposureModeSupported avCaptureDevice  exposureMode =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "isExposureModeSupported:") retCULong [argCLong (coerce exposureMode)]
+isExposureModeSupported avCaptureDevice exposureMode =
+  sendMessage avCaptureDevice isExposureModeSupportedSelector exposureMode
 
 -- | setExposureTargetBias:completionHandler:
 --
@@ -794,8 +779,8 @@ isExposureModeSupported avCaptureDevice  exposureMode =
 --
 -- ObjC selector: @- setExposureTargetBias:completionHandler:@
 setExposureTargetBias_completionHandler :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> CFloat -> Ptr () -> IO ()
-setExposureTargetBias_completionHandler avCaptureDevice  bias handler =
-    sendMsg avCaptureDevice (mkSelector "setExposureTargetBias:completionHandler:") retVoid [argCFloat bias, argPtr (castPtr handler :: Ptr ())]
+setExposureTargetBias_completionHandler avCaptureDevice bias handler =
+  sendMessage avCaptureDevice setExposureTargetBias_completionHandlerSelector bias handler
 
 -- | isFocusModeSupported:
 --
@@ -809,8 +794,8 @@ setExposureTargetBias_completionHandler avCaptureDevice  bias handler =
 --
 -- ObjC selector: @- isFocusModeSupported:@
 isFocusModeSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureFocusMode -> IO Bool
-isFocusModeSupported avCaptureDevice  focusMode =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "isFocusModeSupported:") retCULong [argCLong (coerce focusMode)]
+isFocusModeSupported avCaptureDevice focusMode =
+  sendMessage avCaptureDevice isFocusModeSupportedSelector focusMode
 
 -- | setFocusModeLockedWithLensPosition:completionHandler:
 --
@@ -824,8 +809,8 @@ isFocusModeSupported avCaptureDevice  focusMode =
 --
 -- ObjC selector: @- setFocusModeLockedWithLensPosition:completionHandler:@
 setFocusModeLockedWithLensPosition_completionHandler :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> CFloat -> Ptr () -> IO ()
-setFocusModeLockedWithLensPosition_completionHandler avCaptureDevice  lensPosition handler =
-    sendMsg avCaptureDevice (mkSelector "setFocusModeLockedWithLensPosition:completionHandler:") retVoid [argCFloat lensPosition, argPtr (castPtr handler :: Ptr ())]
+setFocusModeLockedWithLensPosition_completionHandler avCaptureDevice lensPosition handler =
+  sendMessage avCaptureDevice setFocusModeLockedWithLensPosition_completionHandlerSelector lensPosition handler
 
 -- | Focus on and start tracking a detected object.
 --
@@ -833,8 +818,8 @@ setFocusModeLockedWithLensPosition_completionHandler avCaptureDevice  lensPositi
 --
 -- ObjC selector: @- setCinematicVideoTrackingFocusWithDetectedObjectID:focusMode:@
 setCinematicVideoTrackingFocusWithDetectedObjectID_focusMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> CLong -> AVCaptureCinematicVideoFocusMode -> IO ()
-setCinematicVideoTrackingFocusWithDetectedObjectID_focusMode avCaptureDevice  detectedObjectID focusMode =
-    sendMsg avCaptureDevice (mkSelector "setCinematicVideoTrackingFocusWithDetectedObjectID:focusMode:") retVoid [argCLong detectedObjectID, argCLong (coerce focusMode)]
+setCinematicVideoTrackingFocusWithDetectedObjectID_focusMode avCaptureDevice detectedObjectID focusMode =
+  sendMessage avCaptureDevice setCinematicVideoTrackingFocusWithDetectedObjectID_focusModeSelector detectedObjectID focusMode
 
 -- | isTorchModeSupported:
 --
@@ -848,8 +833,8 @@ setCinematicVideoTrackingFocusWithDetectedObjectID_focusMode avCaptureDevice  de
 --
 -- ObjC selector: @- isTorchModeSupported:@
 isTorchModeSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureTorchMode -> IO Bool
-isTorchModeSupported avCaptureDevice  torchMode =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "isTorchModeSupported:") retCULong [argCLong (coerce torchMode)]
+isTorchModeSupported avCaptureDevice torchMode =
+  sendMessage avCaptureDevice isTorchModeSupportedSelector torchMode
 
 -- | setTorchModeOnWithLevel:error:
 --
@@ -859,9 +844,8 @@ isTorchModeSupported avCaptureDevice  torchMode =
 --
 -- ObjC selector: @- setTorchModeOnWithLevel:error:@
 setTorchModeOnWithLevel_error :: (IsAVCaptureDevice avCaptureDevice, IsNSError outError) => avCaptureDevice -> CFloat -> outError -> IO Bool
-setTorchModeOnWithLevel_error avCaptureDevice  torchLevel outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "setTorchModeOnWithLevel:error:") retCULong [argCFloat torchLevel, argPtr (castPtr raw_outError :: Ptr ())]
+setTorchModeOnWithLevel_error avCaptureDevice torchLevel outError =
+  sendMessage avCaptureDevice setTorchModeOnWithLevel_errorSelector torchLevel (toNSError outError)
 
 -- | isFlashModeSupported:
 --
@@ -875,8 +859,8 @@ setTorchModeOnWithLevel_error avCaptureDevice  torchLevel outError =
 --
 -- ObjC selector: @- isFlashModeSupported:@
 isFlashModeSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureFlashMode -> IO Bool
-isFlashModeSupported avCaptureDevice  flashMode =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "isFlashModeSupported:") retCULong [argCLong (coerce flashMode)]
+isFlashModeSupported avCaptureDevice flashMode =
+  sendMessage avCaptureDevice isFlashModeSupportedSelector flashMode
 
 -- | setPrimaryConstituentDeviceSwitchingBehavior:restrictedSwitchingBehaviorConditions:
 --
@@ -890,8 +874,8 @@ isFlashModeSupported avCaptureDevice  flashMode =
 --
 -- ObjC selector: @- setPrimaryConstituentDeviceSwitchingBehavior:restrictedSwitchingBehaviorConditions:@
 setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditions :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCapturePrimaryConstituentDeviceSwitchingBehavior -> AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions -> IO ()
-setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditions avCaptureDevice  switchingBehavior restrictedSwitchingBehaviorConditions =
-    sendMsg avCaptureDevice (mkSelector "setPrimaryConstituentDeviceSwitchingBehavior:restrictedSwitchingBehaviorConditions:") retVoid [argCLong (coerce switchingBehavior), argCULong (coerce restrictedSwitchingBehaviorConditions)]
+setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditions avCaptureDevice switchingBehavior restrictedSwitchingBehaviorConditions =
+  sendMessage avCaptureDevice setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditionsSelector switchingBehavior restrictedSwitchingBehaviorConditions
 
 -- | defaultDeviceWithDeviceType:mediaType:position:
 --
@@ -912,9 +896,7 @@ defaultDeviceWithDeviceType_mediaType_position :: (IsNSString deviceType, IsNSSt
 defaultDeviceWithDeviceType_mediaType_position deviceType mediaType position =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    withObjCPtr deviceType $ \raw_deviceType ->
-      withObjCPtr mediaType $ \raw_mediaType ->
-        sendClassMsg cls' (mkSelector "defaultDeviceWithDeviceType:mediaType:position:") (retPtr retVoid) [argPtr (castPtr raw_deviceType :: Ptr ()), argPtr (castPtr raw_mediaType :: Ptr ()), argCLong (coerce position)] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultDeviceWithDeviceType_mediaType_positionSelector (toNSString deviceType) (toNSString mediaType) position
 
 -- | uniqueID
 --
@@ -924,8 +906,8 @@ defaultDeviceWithDeviceType_mediaType_position deviceType mediaType position =
 --
 -- ObjC selector: @- uniqueID@
 uniqueID :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSString)
-uniqueID avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "uniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueID avCaptureDevice =
+  sendMessage avCaptureDevice uniqueIDSelector
 
 -- | modelID
 --
@@ -935,8 +917,8 @@ uniqueID avCaptureDevice  =
 --
 -- ObjC selector: @- modelID@
 modelID :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSString)
-modelID avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "modelID") (retPtr retVoid) [] >>= retainedObject . castPtr
+modelID avCaptureDevice =
+  sendMessage avCaptureDevice modelIDSelector
 
 -- | localizedName
 --
@@ -946,8 +928,8 @@ modelID avCaptureDevice  =
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSString)
-localizedName avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName avCaptureDevice =
+  sendMessage avCaptureDevice localizedNameSelector
 
 -- | manufacturer
 --
@@ -957,8 +939,8 @@ localizedName avCaptureDevice  =
 --
 -- ObjC selector: @- manufacturer@
 manufacturer :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSString)
-manufacturer avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "manufacturer") (retPtr retVoid) [] >>= retainedObject . castPtr
+manufacturer avCaptureDevice =
+  sendMessage avCaptureDevice manufacturerSelector
 
 -- | transportType
 --
@@ -968,8 +950,8 @@ manufacturer avCaptureDevice  =
 --
 -- ObjC selector: @- transportType@
 transportType :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CInt
-transportType avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "transportType") retCInt []
+transportType avCaptureDevice =
+  sendMessage avCaptureDevice transportTypeSelector
 
 -- | connected
 --
@@ -979,8 +961,8 @@ transportType avCaptureDevice  =
 --
 -- ObjC selector: @- connected@
 connected :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-connected avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "connected") retCULong []
+connected avCaptureDevice =
+  sendMessage avCaptureDevice connectedSelector
 
 -- | inUseByAnotherApplication
 --
@@ -990,8 +972,8 @@ connected avCaptureDevice  =
 --
 -- ObjC selector: @- inUseByAnotherApplication@
 inUseByAnotherApplication :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-inUseByAnotherApplication avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "inUseByAnotherApplication") retCULong []
+inUseByAnotherApplication avCaptureDevice =
+  sendMessage avCaptureDevice inUseByAnotherApplicationSelector
 
 -- | suspended
 --
@@ -1001,8 +983,8 @@ inUseByAnotherApplication avCaptureDevice  =
 --
 -- ObjC selector: @- suspended@
 suspended :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-suspended avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "suspended") retCULong []
+suspended avCaptureDevice =
+  sendMessage avCaptureDevice suspendedSelector
 
 -- | linkedDevices
 --
@@ -1012,8 +994,8 @@ suspended avCaptureDevice  =
 --
 -- ObjC selector: @- linkedDevices@
 linkedDevices :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
-linkedDevices avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "linkedDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+linkedDevices avCaptureDevice =
+  sendMessage avCaptureDevice linkedDevicesSelector
 
 -- | formats
 --
@@ -1023,8 +1005,8 @@ linkedDevices avCaptureDevice  =
 --
 -- ObjC selector: @- formats@
 formats :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
-formats avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "formats") (retPtr retVoid) [] >>= retainedObject . castPtr
+formats avCaptureDevice =
+  sendMessage avCaptureDevice formatsSelector
 
 -- | activeFormat
 --
@@ -1048,8 +1030,8 @@ formats avCaptureDevice  =
 --
 -- ObjC selector: @- activeFormat@
 activeFormat :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureDeviceFormat)
-activeFormat avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "activeFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeFormat avCaptureDevice =
+  sendMessage avCaptureDevice activeFormatSelector
 
 -- | activeFormat
 --
@@ -1073,9 +1055,8 @@ activeFormat avCaptureDevice  =
 --
 -- ObjC selector: @- setActiveFormat:@
 setActiveFormat :: (IsAVCaptureDevice avCaptureDevice, IsAVCaptureDeviceFormat value) => avCaptureDevice -> value -> IO ()
-setActiveFormat avCaptureDevice  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureDevice (mkSelector "setActiveFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActiveFormat avCaptureDevice value =
+  sendMessage avCaptureDevice setActiveFormatSelector (toAVCaptureDeviceFormat value)
 
 -- | Whether the device's video frame rate (expressed as a duration) is currently locked.
 --
@@ -1083,8 +1064,8 @@ setActiveFormat avCaptureDevice  value =
 --
 -- ObjC selector: @- videoFrameDurationLocked@
 videoFrameDurationLocked :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-videoFrameDurationLocked avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "videoFrameDurationLocked") retCULong []
+videoFrameDurationLocked avCaptureDevice =
+  sendMessage avCaptureDevice videoFrameDurationLockedSelector
 
 -- | Whether the device is following an external sync device.
 --
@@ -1092,8 +1073,8 @@ videoFrameDurationLocked avCaptureDevice  =
 --
 -- ObjC selector: @- followingExternalSyncDevice@
 followingExternalSyncDevice :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-followingExternalSyncDevice avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "followingExternalSyncDevice") retCULong []
+followingExternalSyncDevice avCaptureDevice =
+  sendMessage avCaptureDevice followingExternalSyncDeviceSelector
 
 -- | Indicates whether the receiver should enable auto video frame rate.
 --
@@ -1107,8 +1088,8 @@ followingExternalSyncDevice avCaptureDevice  =
 --
 -- ObjC selector: @- autoVideoFrameRateEnabled@
 autoVideoFrameRateEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-autoVideoFrameRateEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "autoVideoFrameRateEnabled") retCULong []
+autoVideoFrameRateEnabled avCaptureDevice =
+  sendMessage avCaptureDevice autoVideoFrameRateEnabledSelector
 
 -- | Indicates whether the receiver should enable auto video frame rate.
 --
@@ -1122,8 +1103,8 @@ autoVideoFrameRateEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setAutoVideoFrameRateEnabled:@
 setAutoVideoFrameRateEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setAutoVideoFrameRateEnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setAutoVideoFrameRateEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutoVideoFrameRateEnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setAutoVideoFrameRateEnabledSelector value
 
 -- | inputSources
 --
@@ -1133,8 +1114,8 @@ setAutoVideoFrameRateEnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- inputSources@
 inputSources :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
-inputSources avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "inputSources") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputSources avCaptureDevice =
+  sendMessage avCaptureDevice inputSourcesSelector
 
 -- | activeInputSource
 --
@@ -1144,8 +1125,8 @@ inputSources avCaptureDevice  =
 --
 -- ObjC selector: @- activeInputSource@
 activeInputSource :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureDeviceInputSource)
-activeInputSource avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "activeInputSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeInputSource avCaptureDevice =
+  sendMessage avCaptureDevice activeInputSourceSelector
 
 -- | activeInputSource
 --
@@ -1155,9 +1136,8 @@ activeInputSource avCaptureDevice  =
 --
 -- ObjC selector: @- setActiveInputSource:@
 setActiveInputSource :: (IsAVCaptureDevice avCaptureDevice, IsAVCaptureDeviceInputSource value) => avCaptureDevice -> value -> IO ()
-setActiveInputSource avCaptureDevice  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureDevice (mkSelector "setActiveInputSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActiveInputSource avCaptureDevice value =
+  sendMessage avCaptureDevice setActiveInputSourceSelector (toAVCaptureDeviceInputSource value)
 
 -- | Whether camera lens smudge detection is enabled.
 --
@@ -1165,8 +1145,8 @@ setActiveInputSource avCaptureDevice  value =
 --
 -- ObjC selector: @- cameraLensSmudgeDetectionEnabled@
 cameraLensSmudgeDetectionEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-cameraLensSmudgeDetectionEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "cameraLensSmudgeDetectionEnabled") retCULong []
+cameraLensSmudgeDetectionEnabled avCaptureDevice =
+  sendMessage avCaptureDevice cameraLensSmudgeDetectionEnabledSelector
 
 -- | A value specifying the status of camera lens smudge detection.
 --
@@ -1174,8 +1154,8 @@ cameraLensSmudgeDetectionEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- cameraLensSmudgeDetectionStatus@
 cameraLensSmudgeDetectionStatus :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureCameraLensSmudgeDetectionStatus
-cameraLensSmudgeDetectionStatus avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureCameraLensSmudgeDetectionStatus) $ sendMsg avCaptureDevice (mkSelector "cameraLensSmudgeDetectionStatus") retCLong []
+cameraLensSmudgeDetectionStatus avCaptureDevice =
+  sendMessage avCaptureDevice cameraLensSmudgeDetectionStatusSelector
 
 -- | A class property indicating whether the Edge Light feature is currently enabled in Control Center.
 --
@@ -1186,7 +1166,7 @@ edgeLightEnabled :: IO Bool
 edgeLightEnabled  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "edgeLightEnabled") retCULong []
+    sendClassMessage cls' edgeLightEnabledSelector
 
 -- | A class property indicating whether the edge light UI is actively being shown on a screen.
 --
@@ -1197,7 +1177,7 @@ edgeLightActive :: IO Bool
 edgeLightActive  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "edgeLightActive") retCULong []
+    sendClassMessage cls' edgeLightActiveSelector
 
 -- | studioLightEnabled
 --
@@ -1210,7 +1190,7 @@ studioLightEnabled :: IO Bool
 studioLightEnabled  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "studioLightEnabled") retCULong []
+    sendClassMessage cls' studioLightEnabledSelector
 
 -- | studioLightActive
 --
@@ -1220,8 +1200,8 @@ studioLightEnabled  =
 --
 -- ObjC selector: @- studioLightActive@
 studioLightActive :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-studioLightActive avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "studioLightActive") retCULong []
+studioLightActive avCaptureDevice =
+  sendMessage avCaptureDevice studioLightActiveSelector
 
 -- | The nominal 35mm equivalent focal length of the capture device's lens.
 --
@@ -1231,8 +1211,8 @@ studioLightActive avCaptureDevice  =
 --
 -- ObjC selector: @- nominalFocalLengthIn35mmFilm@
 nominalFocalLengthIn35mmFilm :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-nominalFocalLengthIn35mmFilm avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "nominalFocalLengthIn35mmFilm") retCFloat []
+nominalFocalLengthIn35mmFilm avCaptureDevice =
+  sendMessage avCaptureDevice nominalFocalLengthIn35mmFilmSelector
 
 -- | A monitor owned by the device that recommends an optimal framing based on the content in the scene.
 --
@@ -1240,8 +1220,8 @@ nominalFocalLengthIn35mmFilm avCaptureDevice  =
 --
 -- ObjC selector: @- smartFramingMonitor@
 smartFramingMonitor :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureSmartFramingMonitor)
-smartFramingMonitor avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "smartFramingMonitor") (retPtr retVoid) [] >>= retainedObject . castPtr
+smartFramingMonitor avCaptureDevice =
+  sendMessage avCaptureDevice smartFramingMonitorSelector
 
 -- | A key-value observable property indicating the current aspect ratio for a device.
 --
@@ -1249,8 +1229,8 @@ smartFramingMonitor avCaptureDevice  =
 --
 -- ObjC selector: @- dynamicAspectRatio@
 dynamicAspectRatio :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSString)
-dynamicAspectRatio avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "dynamicAspectRatio") (retPtr retVoid) [] >>= retainedObject . castPtr
+dynamicAspectRatio avCaptureDevice =
+  sendMessage avCaptureDevice dynamicAspectRatioSelector
 
 -- | The current scene monitoring statuses related to Cinematic Video capture.
 --
@@ -1258,8 +1238,8 @@ dynamicAspectRatio avCaptureDevice  =
 --
 -- ObjC selector: @- cinematicVideoCaptureSceneMonitoringStatuses@
 cinematicVideoCaptureSceneMonitoringStatuses :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSSet)
-cinematicVideoCaptureSceneMonitoringStatuses avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "cinematicVideoCaptureSceneMonitoringStatuses") (retPtr retVoid) [] >>= retainedObject . castPtr
+cinematicVideoCaptureSceneMonitoringStatuses avCaptureDevice =
+  sendMessage avCaptureDevice cinematicVideoCaptureSceneMonitoringStatusesSelector
 
 -- | spatialCaptureDiscomfortReasons
 --
@@ -1269,8 +1249,8 @@ cinematicVideoCaptureSceneMonitoringStatuses avCaptureDevice  =
 --
 -- ObjC selector: @- spatialCaptureDiscomfortReasons@
 spatialCaptureDiscomfortReasons :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSSet)
-spatialCaptureDiscomfortReasons avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "spatialCaptureDiscomfortReasons") (retPtr retVoid) [] >>= retainedObject . castPtr
+spatialCaptureDiscomfortReasons avCaptureDevice =
+  sendMessage avCaptureDevice spatialCaptureDiscomfortReasonsSelector
 
 -- | preferredMicrophoneMode
 --
@@ -1283,7 +1263,7 @@ preferredMicrophoneMode :: IO AVCaptureMicrophoneMode
 preferredMicrophoneMode  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap (coerce :: CLong -> AVCaptureMicrophoneMode) $ sendClassMsg cls' (mkSelector "preferredMicrophoneMode") retCLong []
+    sendClassMessage cls' preferredMicrophoneModeSelector
 
 -- | activeMicrophoneMode
 --
@@ -1296,7 +1276,7 @@ activeMicrophoneMode :: IO AVCaptureMicrophoneMode
 activeMicrophoneMode  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap (coerce :: CLong -> AVCaptureMicrophoneMode) $ sendClassMsg cls' (mkSelector "activeMicrophoneMode") retCLong []
+    sendClassMessage cls' activeMicrophoneModeSelector
 
 -- | companionDeskViewCamera
 --
@@ -1306,8 +1286,8 @@ activeMicrophoneMode  =
 --
 -- ObjC selector: @- companionDeskViewCamera@
 companionDeskViewCamera :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureDevice)
-companionDeskViewCamera avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "companionDeskViewCamera") (retPtr retVoid) [] >>= retainedObject . castPtr
+companionDeskViewCamera avCaptureDevice =
+  sendMessage avCaptureDevice companionDeskViewCameraSelector
 
 -- | continuityCamera
 --
@@ -1317,8 +1297,8 @@ companionDeskViewCamera avCaptureDevice  =
 --
 -- ObjC selector: @- continuityCamera@
 continuityCamera :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-continuityCamera avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "continuityCamera") retCULong []
+continuityCamera avCaptureDevice =
+  sendMessage avCaptureDevice continuityCameraSelector
 
 -- | backgroundReplacementEnabled
 --
@@ -1329,7 +1309,7 @@ backgroundReplacementEnabled :: IO Bool
 backgroundReplacementEnabled  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "backgroundReplacementEnabled") retCULong []
+    sendClassMessage cls' backgroundReplacementEnabledSelector
 
 -- | backgroundReplacementActive
 --
@@ -1339,8 +1319,8 @@ backgroundReplacementEnabled  =
 --
 -- ObjC selector: @- backgroundReplacementActive@
 backgroundReplacementActive :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-backgroundReplacementActive avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "backgroundReplacementActive") retCULong []
+backgroundReplacementActive avCaptureDevice =
+  sendMessage avCaptureDevice backgroundReplacementActiveSelector
 
 -- | reactionEffectsEnabled
 --
@@ -1353,7 +1333,7 @@ reactionEffectsEnabled :: IO Bool
 reactionEffectsEnabled  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "reactionEffectsEnabled") retCULong []
+    sendClassMessage cls' reactionEffectsEnabledSelector
 
 -- | reactionEffectGesturesEnabled
 --
@@ -1366,7 +1346,7 @@ reactionEffectGesturesEnabled :: IO Bool
 reactionEffectGesturesEnabled  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "reactionEffectGesturesEnabled") retCULong []
+    sendClassMessage cls' reactionEffectGesturesEnabledSelector
 
 -- | canPerformReactionEffects
 --
@@ -1376,8 +1356,8 @@ reactionEffectGesturesEnabled  =
 --
 -- ObjC selector: @- canPerformReactionEffects@
 canPerformReactionEffects :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-canPerformReactionEffects avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "canPerformReactionEffects") retCULong []
+canPerformReactionEffects avCaptureDevice =
+  sendMessage avCaptureDevice canPerformReactionEffectsSelector
 
 -- | availableReactionTypes
 --
@@ -1387,8 +1367,8 @@ canPerformReactionEffects avCaptureDevice  =
 --
 -- ObjC selector: @- availableReactionTypes@
 availableReactionTypes :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSSet)
-availableReactionTypes avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "availableReactionTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableReactionTypes avCaptureDevice =
+  sendMessage avCaptureDevice availableReactionTypesSelector
 
 -- | reactionEffectsInProgress
 --
@@ -1398,8 +1378,8 @@ availableReactionTypes avCaptureDevice  =
 --
 -- ObjC selector: @- reactionEffectsInProgress@
 reactionEffectsInProgress :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
-reactionEffectsInProgress avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "reactionEffectsInProgress") (retPtr retVoid) [] >>= retainedObject . castPtr
+reactionEffectsInProgress avCaptureDevice =
+  sendMessage avCaptureDevice reactionEffectsInProgressSelector
 
 -- | portraitEffectEnabled
 --
@@ -1412,7 +1392,7 @@ portraitEffectEnabled :: IO Bool
 portraitEffectEnabled  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "portraitEffectEnabled") retCULong []
+    sendClassMessage cls' portraitEffectEnabledSelector
 
 -- | portraitEffectActive
 --
@@ -1422,8 +1402,8 @@ portraitEffectEnabled  =
 --
 -- ObjC selector: @- portraitEffectActive@
 portraitEffectActive :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-portraitEffectActive avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "portraitEffectActive") retCULong []
+portraitEffectActive avCaptureDevice =
+  sendMessage avCaptureDevice portraitEffectActiveSelector
 
 -- | centerStageControlMode
 --
@@ -1436,7 +1416,7 @@ centerStageControlMode :: IO AVCaptureCenterStageControlMode
 centerStageControlMode  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap (coerce :: CLong -> AVCaptureCenterStageControlMode) $ sendClassMsg cls' (mkSelector "centerStageControlMode") retCLong []
+    sendClassMessage cls' centerStageControlModeSelector
 
 -- | centerStageControlMode
 --
@@ -1449,7 +1429,7 @@ setCenterStageControlMode :: AVCaptureCenterStageControlMode -> IO ()
 setCenterStageControlMode value =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    sendClassMsg cls' (mkSelector "setCenterStageControlMode:") retVoid [argCLong (coerce value)]
+    sendClassMessage cls' setCenterStageControlModeSelector value
 
 -- | centerStageEnabled
 --
@@ -1462,7 +1442,7 @@ centerStageEnabled :: IO Bool
 centerStageEnabled  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "centerStageEnabled") retCULong []
+    sendClassMessage cls' centerStageEnabledSelector
 
 -- | centerStageEnabled
 --
@@ -1475,7 +1455,7 @@ setCenterStageEnabled :: Bool -> IO ()
 setCenterStageEnabled value =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    sendClassMsg cls' (mkSelector "setCenterStageEnabled:") retVoid [argCULong (if value then 1 else 0)]
+    sendClassMessage cls' setCenterStageEnabledSelector value
 
 -- | centerStageActive
 --
@@ -1485,8 +1465,8 @@ setCenterStageEnabled value =
 --
 -- ObjC selector: @- centerStageActive@
 centerStageActive :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-centerStageActive avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "centerStageActive") retCULong []
+centerStageActive avCaptureDevice =
+  sendMessage avCaptureDevice centerStageActiveSelector
 
 -- | centerStageRectOfInterestSupported
 --
@@ -1496,8 +1476,8 @@ centerStageActive avCaptureDevice  =
 --
 -- ObjC selector: @- centerStageRectOfInterestSupported@
 centerStageRectOfInterestSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-centerStageRectOfInterestSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "centerStageRectOfInterestSupported") retCULong []
+centerStageRectOfInterestSupported avCaptureDevice =
+  sendMessage avCaptureDevice centerStageRectOfInterestSupportedSelector
 
 -- | geometricDistortionCorrectionSupported
 --
@@ -1507,8 +1487,8 @@ centerStageRectOfInterestSupported avCaptureDevice  =
 --
 -- ObjC selector: @- geometricDistortionCorrectionSupported@
 geometricDistortionCorrectionSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-geometricDistortionCorrectionSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "geometricDistortionCorrectionSupported") retCULong []
+geometricDistortionCorrectionSupported avCaptureDevice =
+  sendMessage avCaptureDevice geometricDistortionCorrectionSupportedSelector
 
 -- | geometricDistortionCorrectionEnabled
 --
@@ -1522,8 +1502,8 @@ geometricDistortionCorrectionSupported avCaptureDevice  =
 --
 -- ObjC selector: @- geometricDistortionCorrectionEnabled@
 geometricDistortionCorrectionEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-geometricDistortionCorrectionEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "geometricDistortionCorrectionEnabled") retCULong []
+geometricDistortionCorrectionEnabled avCaptureDevice =
+  sendMessage avCaptureDevice geometricDistortionCorrectionEnabledSelector
 
 -- | geometricDistortionCorrectionEnabled
 --
@@ -1537,8 +1517,8 @@ geometricDistortionCorrectionEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setGeometricDistortionCorrectionEnabled:@
 setGeometricDistortionCorrectionEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setGeometricDistortionCorrectionEnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setGeometricDistortionCorrectionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setGeometricDistortionCorrectionEnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setGeometricDistortionCorrectionEnabledSelector value
 
 -- | activeDepthDataFormat
 --
@@ -1552,8 +1532,8 @@ setGeometricDistortionCorrectionEnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- activeDepthDataFormat@
 activeDepthDataFormat :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureDeviceFormat)
-activeDepthDataFormat avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "activeDepthDataFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeDepthDataFormat avCaptureDevice =
+  sendMessage avCaptureDevice activeDepthDataFormatSelector
 
 -- | activeDepthDataFormat
 --
@@ -1567,9 +1547,8 @@ activeDepthDataFormat avCaptureDevice  =
 --
 -- ObjC selector: @- setActiveDepthDataFormat:@
 setActiveDepthDataFormat :: (IsAVCaptureDevice avCaptureDevice, IsAVCaptureDeviceFormat value) => avCaptureDevice -> value -> IO ()
-setActiveDepthDataFormat avCaptureDevice  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureDevice (mkSelector "setActiveDepthDataFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActiveDepthDataFormat avCaptureDevice value =
+  sendMessage avCaptureDevice setActiveDepthDataFormatSelector (toAVCaptureDeviceFormat value)
 
 -- | minAvailableVideoZoomFactor
 --
@@ -1579,8 +1558,8 @@ setActiveDepthDataFormat avCaptureDevice  value =
 --
 -- ObjC selector: @- minAvailableVideoZoomFactor@
 minAvailableVideoZoomFactor :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CDouble
-minAvailableVideoZoomFactor avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "minAvailableVideoZoomFactor") retCDouble []
+minAvailableVideoZoomFactor avCaptureDevice =
+  sendMessage avCaptureDevice minAvailableVideoZoomFactorSelector
 
 -- | maxAvailableVideoZoomFactor
 --
@@ -1590,8 +1569,8 @@ minAvailableVideoZoomFactor avCaptureDevice  =
 --
 -- ObjC selector: @- maxAvailableVideoZoomFactor@
 maxAvailableVideoZoomFactor :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CDouble
-maxAvailableVideoZoomFactor avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "maxAvailableVideoZoomFactor") retCDouble []
+maxAvailableVideoZoomFactor avCaptureDevice =
+  sendMessage avCaptureDevice maxAvailableVideoZoomFactorSelector
 
 -- | activeColorSpace
 --
@@ -1601,8 +1580,8 @@ maxAvailableVideoZoomFactor avCaptureDevice  =
 --
 -- ObjC selector: @- activeColorSpace@
 activeColorSpace :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureColorSpace
-activeColorSpace avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureColorSpace) $ sendMsg avCaptureDevice (mkSelector "activeColorSpace") retCLong []
+activeColorSpace avCaptureDevice =
+  sendMessage avCaptureDevice activeColorSpaceSelector
 
 -- | activeColorSpace
 --
@@ -1612,8 +1591,8 @@ activeColorSpace avCaptureDevice  =
 --
 -- ObjC selector: @- setActiveColorSpace:@
 setActiveColorSpace :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureColorSpace -> IO ()
-setActiveColorSpace avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setActiveColorSpace:") retVoid [argCLong (coerce value)]
+setActiveColorSpace avCaptureDevice value =
+  sendMessage avCaptureDevice setActiveColorSpaceSelector value
 
 -- | automaticallyAdjustsVideoHDREnabled
 --
@@ -1623,8 +1602,8 @@ setActiveColorSpace avCaptureDevice  value =
 --
 -- ObjC selector: @- automaticallyAdjustsVideoHDREnabled@
 automaticallyAdjustsVideoHDREnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-automaticallyAdjustsVideoHDREnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "automaticallyAdjustsVideoHDREnabled") retCULong []
+automaticallyAdjustsVideoHDREnabled avCaptureDevice =
+  sendMessage avCaptureDevice automaticallyAdjustsVideoHDREnabledSelector
 
 -- | automaticallyAdjustsVideoHDREnabled
 --
@@ -1634,8 +1613,8 @@ automaticallyAdjustsVideoHDREnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setAutomaticallyAdjustsVideoHDREnabled:@
 setAutomaticallyAdjustsVideoHDREnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setAutomaticallyAdjustsVideoHDREnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setAutomaticallyAdjustsVideoHDREnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAdjustsVideoHDREnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setAutomaticallyAdjustsVideoHDREnabledSelector value
 
 -- | videoHDREnabled
 --
@@ -1647,8 +1626,8 @@ setAutomaticallyAdjustsVideoHDREnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- videoHDREnabled@
 videoHDREnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-videoHDREnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "videoHDREnabled") retCULong []
+videoHDREnabled avCaptureDevice =
+  sendMessage avCaptureDevice videoHDREnabledSelector
 
 -- | videoHDREnabled
 --
@@ -1660,8 +1639,8 @@ videoHDREnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setVideoHDREnabled:@
 setVideoHDREnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setVideoHDREnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setVideoHDREnabled:") retVoid [argCULong (if value then 1 else 0)]
+setVideoHDREnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setVideoHDREnabledSelector value
 
 -- | transportControlsSupported
 --
@@ -1671,8 +1650,8 @@ setVideoHDREnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- transportControlsSupported@
 transportControlsSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-transportControlsSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "transportControlsSupported") retCULong []
+transportControlsSupported avCaptureDevice =
+  sendMessage avCaptureDevice transportControlsSupportedSelector
 
 -- | transportControlsPlaybackMode
 --
@@ -1682,8 +1661,8 @@ transportControlsSupported avCaptureDevice  =
 --
 -- ObjC selector: @- transportControlsPlaybackMode@
 transportControlsPlaybackMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureDeviceTransportControlsPlaybackMode
-transportControlsPlaybackMode avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureDeviceTransportControlsPlaybackMode) $ sendMsg avCaptureDevice (mkSelector "transportControlsPlaybackMode") retCLong []
+transportControlsPlaybackMode avCaptureDevice =
+  sendMessage avCaptureDevice transportControlsPlaybackModeSelector
 
 -- | transportControlsSpeed
 --
@@ -1693,8 +1672,8 @@ transportControlsPlaybackMode avCaptureDevice  =
 --
 -- ObjC selector: @- transportControlsSpeed@
 transportControlsSpeed :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-transportControlsSpeed avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "transportControlsSpeed") retCFloat []
+transportControlsSpeed avCaptureDevice =
+  sendMessage avCaptureDevice transportControlsSpeedSelector
 
 -- | videoZoomFactor
 --
@@ -1708,8 +1687,8 @@ transportControlsSpeed avCaptureDevice  =
 --
 -- ObjC selector: @- videoZoomFactor@
 videoZoomFactor :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CDouble
-videoZoomFactor avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "videoZoomFactor") retCDouble []
+videoZoomFactor avCaptureDevice =
+  sendMessage avCaptureDevice videoZoomFactorSelector
 
 -- | videoZoomFactor
 --
@@ -1723,8 +1702,8 @@ videoZoomFactor avCaptureDevice  =
 --
 -- ObjC selector: @- setVideoZoomFactor:@
 setVideoZoomFactor :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> CDouble -> IO ()
-setVideoZoomFactor avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setVideoZoomFactor:") retVoid [argCDouble value]
+setVideoZoomFactor avCaptureDevice value =
+  sendMessage avCaptureDevice setVideoZoomFactorSelector value
 
 -- | rampingVideoZoom
 --
@@ -1734,8 +1713,8 @@ setVideoZoomFactor avCaptureDevice  value =
 --
 -- ObjC selector: @- rampingVideoZoom@
 rampingVideoZoom :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-rampingVideoZoom avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "rampingVideoZoom") retCULong []
+rampingVideoZoom avCaptureDevice =
+  sendMessage avCaptureDevice rampingVideoZoomSelector
 
 -- | dualCameraSwitchOverVideoZoomFactor
 --
@@ -1745,8 +1724,8 @@ rampingVideoZoom avCaptureDevice  =
 --
 -- ObjC selector: @- dualCameraSwitchOverVideoZoomFactor@
 dualCameraSwitchOverVideoZoomFactor :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CDouble
-dualCameraSwitchOverVideoZoomFactor avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "dualCameraSwitchOverVideoZoomFactor") retCDouble []
+dualCameraSwitchOverVideoZoomFactor avCaptureDevice =
+  sendMessage avCaptureDevice dualCameraSwitchOverVideoZoomFactorSelector
 
 -- | displayVideoZoomFactorMultiplier
 --
@@ -1756,8 +1735,8 @@ dualCameraSwitchOverVideoZoomFactor avCaptureDevice  =
 --
 -- ObjC selector: @- displayVideoZoomFactorMultiplier@
 displayVideoZoomFactorMultiplier :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CDouble
-displayVideoZoomFactorMultiplier avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "displayVideoZoomFactorMultiplier") retCDouble []
+displayVideoZoomFactorMultiplier avCaptureDevice =
+  sendMessage avCaptureDevice displayVideoZoomFactorMultiplierSelector
 
 -- | lowLightBoostSupported
 --
@@ -1767,8 +1746,8 @@ displayVideoZoomFactorMultiplier avCaptureDevice  =
 --
 -- ObjC selector: @- lowLightBoostSupported@
 lowLightBoostSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-lowLightBoostSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "lowLightBoostSupported") retCULong []
+lowLightBoostSupported avCaptureDevice =
+  sendMessage avCaptureDevice lowLightBoostSupportedSelector
 
 -- | lowLightBoostEnabled
 --
@@ -1778,8 +1757,8 @@ lowLightBoostSupported avCaptureDevice  =
 --
 -- ObjC selector: @- lowLightBoostEnabled@
 lowLightBoostEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-lowLightBoostEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "lowLightBoostEnabled") retCULong []
+lowLightBoostEnabled avCaptureDevice =
+  sendMessage avCaptureDevice lowLightBoostEnabledSelector
 
 -- | automaticallyEnablesLowLightBoostWhenAvailable
 --
@@ -1789,8 +1768,8 @@ lowLightBoostEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- automaticallyEnablesLowLightBoostWhenAvailable@
 automaticallyEnablesLowLightBoostWhenAvailable :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-automaticallyEnablesLowLightBoostWhenAvailable avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "automaticallyEnablesLowLightBoostWhenAvailable") retCULong []
+automaticallyEnablesLowLightBoostWhenAvailable avCaptureDevice =
+  sendMessage avCaptureDevice automaticallyEnablesLowLightBoostWhenAvailableSelector
 
 -- | automaticallyEnablesLowLightBoostWhenAvailable
 --
@@ -1800,8 +1779,8 @@ automaticallyEnablesLowLightBoostWhenAvailable avCaptureDevice  =
 --
 -- ObjC selector: @- setAutomaticallyEnablesLowLightBoostWhenAvailable:@
 setAutomaticallyEnablesLowLightBoostWhenAvailable :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setAutomaticallyEnablesLowLightBoostWhenAvailable avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setAutomaticallyEnablesLowLightBoostWhenAvailable:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyEnablesLowLightBoostWhenAvailable avCaptureDevice value =
+  sendMessage avCaptureDevice setAutomaticallyEnablesLowLightBoostWhenAvailableSelector value
 
 -- | subjectAreaChangeMonitoringEnabled
 --
@@ -1811,8 +1790,8 @@ setAutomaticallyEnablesLowLightBoostWhenAvailable avCaptureDevice  value =
 --
 -- ObjC selector: @- subjectAreaChangeMonitoringEnabled@
 subjectAreaChangeMonitoringEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-subjectAreaChangeMonitoringEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "subjectAreaChangeMonitoringEnabled") retCULong []
+subjectAreaChangeMonitoringEnabled avCaptureDevice =
+  sendMessage avCaptureDevice subjectAreaChangeMonitoringEnabledSelector
 
 -- | subjectAreaChangeMonitoringEnabled
 --
@@ -1822,8 +1801,8 @@ subjectAreaChangeMonitoringEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setSubjectAreaChangeMonitoringEnabled:@
 setSubjectAreaChangeMonitoringEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setSubjectAreaChangeMonitoringEnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setSubjectAreaChangeMonitoringEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setSubjectAreaChangeMonitoringEnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setSubjectAreaChangeMonitoringEnabledSelector value
 
 -- | lockingWhiteBalanceWithCustomDeviceGainsSupported
 --
@@ -1833,8 +1812,8 @@ setSubjectAreaChangeMonitoringEnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- lockingWhiteBalanceWithCustomDeviceGainsSupported@
 lockingWhiteBalanceWithCustomDeviceGainsSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-lockingWhiteBalanceWithCustomDeviceGainsSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "lockingWhiteBalanceWithCustomDeviceGainsSupported") retCULong []
+lockingWhiteBalanceWithCustomDeviceGainsSupported avCaptureDevice =
+  sendMessage avCaptureDevice lockingWhiteBalanceWithCustomDeviceGainsSupportedSelector
 
 -- | whiteBalanceMode
 --
@@ -1844,8 +1823,8 @@ lockingWhiteBalanceWithCustomDeviceGainsSupported avCaptureDevice  =
 --
 -- ObjC selector: @- whiteBalanceMode@
 whiteBalanceMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureWhiteBalanceMode
-whiteBalanceMode avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureWhiteBalanceMode) $ sendMsg avCaptureDevice (mkSelector "whiteBalanceMode") retCLong []
+whiteBalanceMode avCaptureDevice =
+  sendMessage avCaptureDevice whiteBalanceModeSelector
 
 -- | whiteBalanceMode
 --
@@ -1855,8 +1834,8 @@ whiteBalanceMode avCaptureDevice  =
 --
 -- ObjC selector: @- setWhiteBalanceMode:@
 setWhiteBalanceMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureWhiteBalanceMode -> IO ()
-setWhiteBalanceMode avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setWhiteBalanceMode:") retVoid [argCLong (coerce value)]
+setWhiteBalanceMode avCaptureDevice value =
+  sendMessage avCaptureDevice setWhiteBalanceModeSelector value
 
 -- | adjustingWhiteBalance
 --
@@ -1866,8 +1845,8 @@ setWhiteBalanceMode avCaptureDevice  value =
 --
 -- ObjC selector: @- adjustingWhiteBalance@
 adjustingWhiteBalance :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-adjustingWhiteBalance avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "adjustingWhiteBalance") retCULong []
+adjustingWhiteBalance avCaptureDevice =
+  sendMessage avCaptureDevice adjustingWhiteBalanceSelector
 
 -- | maxWhiteBalanceGain
 --
@@ -1877,8 +1856,8 @@ adjustingWhiteBalance avCaptureDevice  =
 --
 -- ObjC selector: @- maxWhiteBalanceGain@
 maxWhiteBalanceGain :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-maxWhiteBalanceGain avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "maxWhiteBalanceGain") retCFloat []
+maxWhiteBalanceGain avCaptureDevice =
+  sendMessage avCaptureDevice maxWhiteBalanceGainSelector
 
 -- | globalToneMappingEnabled
 --
@@ -1898,8 +1877,8 @@ maxWhiteBalanceGain avCaptureDevice  =
 --
 -- ObjC selector: @- globalToneMappingEnabled@
 globalToneMappingEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-globalToneMappingEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "globalToneMappingEnabled") retCULong []
+globalToneMappingEnabled avCaptureDevice =
+  sendMessage avCaptureDevice globalToneMappingEnabledSelector
 
 -- | globalToneMappingEnabled
 --
@@ -1919,8 +1898,8 @@ globalToneMappingEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setGlobalToneMappingEnabled:@
 setGlobalToneMappingEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setGlobalToneMappingEnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setGlobalToneMappingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setGlobalToneMappingEnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setGlobalToneMappingEnabledSelector value
 
 -- | exposureMode
 --
@@ -1930,8 +1909,8 @@ setGlobalToneMappingEnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- exposureMode@
 exposureMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureExposureMode
-exposureMode avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureExposureMode) $ sendMsg avCaptureDevice (mkSelector "exposureMode") retCLong []
+exposureMode avCaptureDevice =
+  sendMessage avCaptureDevice exposureModeSelector
 
 -- | exposureMode
 --
@@ -1941,8 +1920,8 @@ exposureMode avCaptureDevice  =
 --
 -- ObjC selector: @- setExposureMode:@
 setExposureMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureExposureMode -> IO ()
-setExposureMode avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setExposureMode:") retVoid [argCLong (coerce value)]
+setExposureMode avCaptureDevice value =
+  sendMessage avCaptureDevice setExposureModeSelector value
 
 -- | exposurePointOfInterestSupported:
 --
@@ -1952,8 +1931,8 @@ setExposureMode avCaptureDevice  value =
 --
 -- ObjC selector: @- exposurePointOfInterestSupported@
 exposurePointOfInterestSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-exposurePointOfInterestSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "exposurePointOfInterestSupported") retCULong []
+exposurePointOfInterestSupported avCaptureDevice =
+  sendMessage avCaptureDevice exposurePointOfInterestSupportedSelector
 
 -- | Whether the device supports exposure rectangles of interest.
 --
@@ -1961,8 +1940,8 @@ exposurePointOfInterestSupported avCaptureDevice  =
 --
 -- ObjC selector: @- exposureRectOfInterestSupported@
 exposureRectOfInterestSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-exposureRectOfInterestSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "exposureRectOfInterestSupported") retCULong []
+exposureRectOfInterestSupported avCaptureDevice =
+  sendMessage avCaptureDevice exposureRectOfInterestSupportedSelector
 
 -- | automaticallyAdjustsFaceDrivenAutoExposureEnabled
 --
@@ -1972,8 +1951,8 @@ exposureRectOfInterestSupported avCaptureDevice  =
 --
 -- ObjC selector: @- automaticallyAdjustsFaceDrivenAutoExposureEnabled@
 automaticallyAdjustsFaceDrivenAutoExposureEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-automaticallyAdjustsFaceDrivenAutoExposureEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "automaticallyAdjustsFaceDrivenAutoExposureEnabled") retCULong []
+automaticallyAdjustsFaceDrivenAutoExposureEnabled avCaptureDevice =
+  sendMessage avCaptureDevice automaticallyAdjustsFaceDrivenAutoExposureEnabledSelector
 
 -- | automaticallyAdjustsFaceDrivenAutoExposureEnabled
 --
@@ -1983,8 +1962,8 @@ automaticallyAdjustsFaceDrivenAutoExposureEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setAutomaticallyAdjustsFaceDrivenAutoExposureEnabled:@
 setAutomaticallyAdjustsFaceDrivenAutoExposureEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setAutomaticallyAdjustsFaceDrivenAutoExposureEnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setAutomaticallyAdjustsFaceDrivenAutoExposureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAdjustsFaceDrivenAutoExposureEnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setAutomaticallyAdjustsFaceDrivenAutoExposureEnabledSelector value
 
 -- | faceDrivenAutoExposureEnabled
 --
@@ -1994,8 +1973,8 @@ setAutomaticallyAdjustsFaceDrivenAutoExposureEnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- faceDrivenAutoExposureEnabled@
 faceDrivenAutoExposureEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-faceDrivenAutoExposureEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "faceDrivenAutoExposureEnabled") retCULong []
+faceDrivenAutoExposureEnabled avCaptureDevice =
+  sendMessage avCaptureDevice faceDrivenAutoExposureEnabledSelector
 
 -- | faceDrivenAutoExposureEnabled
 --
@@ -2005,8 +1984,8 @@ faceDrivenAutoExposureEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setFaceDrivenAutoExposureEnabled:@
 setFaceDrivenAutoExposureEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setFaceDrivenAutoExposureEnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setFaceDrivenAutoExposureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setFaceDrivenAutoExposureEnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setFaceDrivenAutoExposureEnabledSelector value
 
 -- | adjustingExposure
 --
@@ -2016,8 +1995,8 @@ setFaceDrivenAutoExposureEnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- adjustingExposure@
 adjustingExposure :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-adjustingExposure avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "adjustingExposure") retCULong []
+adjustingExposure avCaptureDevice =
+  sendMessage avCaptureDevice adjustingExposureSelector
 
 -- | lensAperture
 --
@@ -2027,8 +2006,8 @@ adjustingExposure avCaptureDevice  =
 --
 -- ObjC selector: @- lensAperture@
 lensAperture :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-lensAperture avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "lensAperture") retCFloat []
+lensAperture avCaptureDevice =
+  sendMessage avCaptureDevice lensApertureSelector
 
 -- | ISO
 --
@@ -2038,8 +2017,8 @@ lensAperture avCaptureDevice  =
 --
 -- ObjC selector: @- ISO@
 iso :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-iso avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "ISO") retCFloat []
+iso avCaptureDevice =
+  sendMessage avCaptureDevice isoSelector
 
 -- | exposureTargetOffset
 --
@@ -2049,8 +2028,8 @@ iso avCaptureDevice  =
 --
 -- ObjC selector: @- exposureTargetOffset@
 exposureTargetOffset :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-exposureTargetOffset avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "exposureTargetOffset") retCFloat []
+exposureTargetOffset avCaptureDevice =
+  sendMessage avCaptureDevice exposureTargetOffsetSelector
 
 -- | exposureTargetBias
 --
@@ -2060,8 +2039,8 @@ exposureTargetOffset avCaptureDevice  =
 --
 -- ObjC selector: @- exposureTargetBias@
 exposureTargetBias :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-exposureTargetBias avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "exposureTargetBias") retCFloat []
+exposureTargetBias avCaptureDevice =
+  sendMessage avCaptureDevice exposureTargetBiasSelector
 
 -- | minExposureTargetBias
 --
@@ -2071,8 +2050,8 @@ exposureTargetBias avCaptureDevice  =
 --
 -- ObjC selector: @- minExposureTargetBias@
 minExposureTargetBias :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-minExposureTargetBias avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "minExposureTargetBias") retCFloat []
+minExposureTargetBias avCaptureDevice =
+  sendMessage avCaptureDevice minExposureTargetBiasSelector
 
 -- | maxExposureTargetBias
 --
@@ -2082,8 +2061,8 @@ minExposureTargetBias avCaptureDevice  =
 --
 -- ObjC selector: @- maxExposureTargetBias@
 maxExposureTargetBias :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-maxExposureTargetBias avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "maxExposureTargetBias") retCFloat []
+maxExposureTargetBias avCaptureDevice =
+  sendMessage avCaptureDevice maxExposureTargetBiasSelector
 
 -- | lockingFocusWithCustomLensPositionSupported
 --
@@ -2093,8 +2072,8 @@ maxExposureTargetBias avCaptureDevice  =
 --
 -- ObjC selector: @- lockingFocusWithCustomLensPositionSupported@
 lockingFocusWithCustomLensPositionSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-lockingFocusWithCustomLensPositionSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "lockingFocusWithCustomLensPositionSupported") retCULong []
+lockingFocusWithCustomLensPositionSupported avCaptureDevice =
+  sendMessage avCaptureDevice lockingFocusWithCustomLensPositionSupportedSelector
 
 -- | focusMode
 --
@@ -2104,8 +2083,8 @@ lockingFocusWithCustomLensPositionSupported avCaptureDevice  =
 --
 -- ObjC selector: @- focusMode@
 focusMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureFocusMode
-focusMode avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureFocusMode) $ sendMsg avCaptureDevice (mkSelector "focusMode") retCLong []
+focusMode avCaptureDevice =
+  sendMessage avCaptureDevice focusModeSelector
 
 -- | focusMode
 --
@@ -2115,8 +2094,8 @@ focusMode avCaptureDevice  =
 --
 -- ObjC selector: @- setFocusMode:@
 setFocusMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureFocusMode -> IO ()
-setFocusMode avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setFocusMode:") retVoid [argCLong (coerce value)]
+setFocusMode avCaptureDevice value =
+  sendMessage avCaptureDevice setFocusModeSelector value
 
 -- | focusPointOfInterestSupported
 --
@@ -2126,8 +2105,8 @@ setFocusMode avCaptureDevice  value =
 --
 -- ObjC selector: @- focusPointOfInterestSupported@
 focusPointOfInterestSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-focusPointOfInterestSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "focusPointOfInterestSupported") retCULong []
+focusPointOfInterestSupported avCaptureDevice =
+  sendMessage avCaptureDevice focusPointOfInterestSupportedSelector
 
 -- | Whether the receiver supports focus rectangles of interest.
 --
@@ -2135,8 +2114,8 @@ focusPointOfInterestSupported avCaptureDevice  =
 --
 -- ObjC selector: @- focusRectOfInterestSupported@
 focusRectOfInterestSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-focusRectOfInterestSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "focusRectOfInterestSupported") retCULong []
+focusRectOfInterestSupported avCaptureDevice =
+  sendMessage avCaptureDevice focusRectOfInterestSupportedSelector
 
 -- | adjustingFocus
 --
@@ -2150,8 +2129,8 @@ focusRectOfInterestSupported avCaptureDevice  =
 --
 -- ObjC selector: @- adjustingFocus@
 adjustingFocus :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-adjustingFocus avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "adjustingFocus") retCULong []
+adjustingFocus avCaptureDevice =
+  sendMessage avCaptureDevice adjustingFocusSelector
 
 -- | autoFocusRangeRestrictionSupported
 --
@@ -2161,8 +2140,8 @@ adjustingFocus avCaptureDevice  =
 --
 -- ObjC selector: @- autoFocusRangeRestrictionSupported@
 autoFocusRangeRestrictionSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-autoFocusRangeRestrictionSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "autoFocusRangeRestrictionSupported") retCULong []
+autoFocusRangeRestrictionSupported avCaptureDevice =
+  sendMessage avCaptureDevice autoFocusRangeRestrictionSupportedSelector
 
 -- | autoFocusRangeRestriction
 --
@@ -2172,8 +2151,8 @@ autoFocusRangeRestrictionSupported avCaptureDevice  =
 --
 -- ObjC selector: @- autoFocusRangeRestriction@
 autoFocusRangeRestriction :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureAutoFocusRangeRestriction
-autoFocusRangeRestriction avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureAutoFocusRangeRestriction) $ sendMsg avCaptureDevice (mkSelector "autoFocusRangeRestriction") retCLong []
+autoFocusRangeRestriction avCaptureDevice =
+  sendMessage avCaptureDevice autoFocusRangeRestrictionSelector
 
 -- | autoFocusRangeRestriction
 --
@@ -2183,8 +2162,8 @@ autoFocusRangeRestriction avCaptureDevice  =
 --
 -- ObjC selector: @- setAutoFocusRangeRestriction:@
 setAutoFocusRangeRestriction :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureAutoFocusRangeRestriction -> IO ()
-setAutoFocusRangeRestriction avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setAutoFocusRangeRestriction:") retVoid [argCLong (coerce value)]
+setAutoFocusRangeRestriction avCaptureDevice value =
+  sendMessage avCaptureDevice setAutoFocusRangeRestrictionSelector value
 
 -- | smoothAutoFocusSupported
 --
@@ -2194,8 +2173,8 @@ setAutoFocusRangeRestriction avCaptureDevice  value =
 --
 -- ObjC selector: @- smoothAutoFocusSupported@
 smoothAutoFocusSupported :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-smoothAutoFocusSupported avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "smoothAutoFocusSupported") retCULong []
+smoothAutoFocusSupported avCaptureDevice =
+  sendMessage avCaptureDevice smoothAutoFocusSupportedSelector
 
 -- | smoothAutoFocusEnabled
 --
@@ -2205,8 +2184,8 @@ smoothAutoFocusSupported avCaptureDevice  =
 --
 -- ObjC selector: @- smoothAutoFocusEnabled@
 smoothAutoFocusEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-smoothAutoFocusEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "smoothAutoFocusEnabled") retCULong []
+smoothAutoFocusEnabled avCaptureDevice =
+  sendMessage avCaptureDevice smoothAutoFocusEnabledSelector
 
 -- | smoothAutoFocusEnabled
 --
@@ -2216,8 +2195,8 @@ smoothAutoFocusEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setSmoothAutoFocusEnabled:@
 setSmoothAutoFocusEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setSmoothAutoFocusEnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setSmoothAutoFocusEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setSmoothAutoFocusEnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setSmoothAutoFocusEnabledSelector value
 
 -- | automaticallyAdjustsFaceDrivenAutoFocusEnabled
 --
@@ -2227,8 +2206,8 @@ setSmoothAutoFocusEnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- automaticallyAdjustsFaceDrivenAutoFocusEnabled@
 automaticallyAdjustsFaceDrivenAutoFocusEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-automaticallyAdjustsFaceDrivenAutoFocusEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "automaticallyAdjustsFaceDrivenAutoFocusEnabled") retCULong []
+automaticallyAdjustsFaceDrivenAutoFocusEnabled avCaptureDevice =
+  sendMessage avCaptureDevice automaticallyAdjustsFaceDrivenAutoFocusEnabledSelector
 
 -- | automaticallyAdjustsFaceDrivenAutoFocusEnabled
 --
@@ -2238,8 +2217,8 @@ automaticallyAdjustsFaceDrivenAutoFocusEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setAutomaticallyAdjustsFaceDrivenAutoFocusEnabled:@
 setAutomaticallyAdjustsFaceDrivenAutoFocusEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setAutomaticallyAdjustsFaceDrivenAutoFocusEnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setAutomaticallyAdjustsFaceDrivenAutoFocusEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAdjustsFaceDrivenAutoFocusEnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setAutomaticallyAdjustsFaceDrivenAutoFocusEnabledSelector value
 
 -- | faceDrivenAutoFocusEnabled
 --
@@ -2249,8 +2228,8 @@ setAutomaticallyAdjustsFaceDrivenAutoFocusEnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- faceDrivenAutoFocusEnabled@
 faceDrivenAutoFocusEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-faceDrivenAutoFocusEnabled avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "faceDrivenAutoFocusEnabled") retCULong []
+faceDrivenAutoFocusEnabled avCaptureDevice =
+  sendMessage avCaptureDevice faceDrivenAutoFocusEnabledSelector
 
 -- | faceDrivenAutoFocusEnabled
 --
@@ -2260,8 +2239,8 @@ faceDrivenAutoFocusEnabled avCaptureDevice  =
 --
 -- ObjC selector: @- setFaceDrivenAutoFocusEnabled:@
 setFaceDrivenAutoFocusEnabled :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> Bool -> IO ()
-setFaceDrivenAutoFocusEnabled avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setFaceDrivenAutoFocusEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setFaceDrivenAutoFocusEnabled avCaptureDevice value =
+  sendMessage avCaptureDevice setFaceDrivenAutoFocusEnabledSelector value
 
 -- | lensPosition
 --
@@ -2271,8 +2250,8 @@ setFaceDrivenAutoFocusEnabled avCaptureDevice  value =
 --
 -- ObjC selector: @- lensPosition@
 lensPosition :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-lensPosition avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "lensPosition") retCFloat []
+lensPosition avCaptureDevice =
+  sendMessage avCaptureDevice lensPositionSelector
 
 -- | minimumFocusDistance
 --
@@ -2282,8 +2261,8 @@ lensPosition avCaptureDevice  =
 --
 -- ObjC selector: @- minimumFocusDistance@
 minimumFocusDistance :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CLong
-minimumFocusDistance avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "minimumFocusDistance") retCLong []
+minimumFocusDistance avCaptureDevice =
+  sendMessage avCaptureDevice minimumFocusDistanceSelector
 
 -- | hasTorch
 --
@@ -2293,8 +2272,8 @@ minimumFocusDistance avCaptureDevice  =
 --
 -- ObjC selector: @- hasTorch@
 hasTorch :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-hasTorch avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "hasTorch") retCULong []
+hasTorch avCaptureDevice =
+  sendMessage avCaptureDevice hasTorchSelector
 
 -- | torchAvailable
 --
@@ -2304,8 +2283,8 @@ hasTorch avCaptureDevice  =
 --
 -- ObjC selector: @- torchAvailable@
 torchAvailable :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-torchAvailable avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "torchAvailable") retCULong []
+torchAvailable avCaptureDevice =
+  sendMessage avCaptureDevice torchAvailableSelector
 
 -- | torchActive
 --
@@ -2315,8 +2294,8 @@ torchAvailable avCaptureDevice  =
 --
 -- ObjC selector: @- torchActive@
 torchActive :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-torchActive avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "torchActive") retCULong []
+torchActive avCaptureDevice =
+  sendMessage avCaptureDevice torchActiveSelector
 
 -- | torchLevel
 --
@@ -2326,8 +2305,8 @@ torchActive avCaptureDevice  =
 --
 -- ObjC selector: @- torchLevel@
 torchLevel :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO CFloat
-torchLevel avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "torchLevel") retCFloat []
+torchLevel avCaptureDevice =
+  sendMessage avCaptureDevice torchLevelSelector
 
 -- | torchMode
 --
@@ -2337,8 +2316,8 @@ torchLevel avCaptureDevice  =
 --
 -- ObjC selector: @- torchMode@
 torchMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureTorchMode
-torchMode avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureTorchMode) $ sendMsg avCaptureDevice (mkSelector "torchMode") retCLong []
+torchMode avCaptureDevice =
+  sendMessage avCaptureDevice torchModeSelector
 
 -- | torchMode
 --
@@ -2348,8 +2327,8 @@ torchMode avCaptureDevice  =
 --
 -- ObjC selector: @- setTorchMode:@
 setTorchMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureTorchMode -> IO ()
-setTorchMode avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setTorchMode:") retVoid [argCLong (coerce value)]
+setTorchMode avCaptureDevice value =
+  sendMessage avCaptureDevice setTorchModeSelector value
 
 -- | hasFlash
 --
@@ -2359,8 +2338,8 @@ setTorchMode avCaptureDevice  value =
 --
 -- ObjC selector: @- hasFlash@
 hasFlash :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-hasFlash avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "hasFlash") retCULong []
+hasFlash avCaptureDevice =
+  sendMessage avCaptureDevice hasFlashSelector
 
 -- | flashAvailable
 --
@@ -2370,8 +2349,8 @@ hasFlash avCaptureDevice  =
 --
 -- ObjC selector: @- flashAvailable@
 flashAvailable :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-flashAvailable avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "flashAvailable") retCULong []
+flashAvailable avCaptureDevice =
+  sendMessage avCaptureDevice flashAvailableSelector
 
 -- | flashActive
 --
@@ -2381,8 +2360,8 @@ flashAvailable avCaptureDevice  =
 --
 -- ObjC selector: @- flashActive@
 flashActive :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-flashActive avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "flashActive") retCULong []
+flashActive avCaptureDevice =
+  sendMessage avCaptureDevice flashActiveSelector
 
 -- | flashMode
 --
@@ -2394,8 +2373,8 @@ flashActive avCaptureDevice  =
 --
 -- ObjC selector: @- flashMode@
 flashMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureFlashMode
-flashMode avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureFlashMode) $ sendMsg avCaptureDevice (mkSelector "flashMode") retCLong []
+flashMode avCaptureDevice =
+  sendMessage avCaptureDevice flashModeSelector
 
 -- | flashMode
 --
@@ -2407,8 +2386,8 @@ flashMode avCaptureDevice  =
 --
 -- ObjC selector: @- setFlashMode:@
 setFlashMode :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> AVCaptureFlashMode -> IO ()
-setFlashMode avCaptureDevice  value =
-    sendMsg avCaptureDevice (mkSelector "setFlashMode:") retVoid [argCLong (coerce value)]
+setFlashMode avCaptureDevice value =
+  sendMessage avCaptureDevice setFlashModeSelector value
 
 -- | virtualDevice
 --
@@ -2418,8 +2397,8 @@ setFlashMode avCaptureDevice  value =
 --
 -- ObjC selector: @- virtualDevice@
 virtualDevice :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO Bool
-virtualDevice avCaptureDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDevice (mkSelector "virtualDevice") retCULong []
+virtualDevice avCaptureDevice =
+  sendMessage avCaptureDevice virtualDeviceSelector
 
 -- | constituentDevices
 --
@@ -2429,8 +2408,8 @@ virtualDevice avCaptureDevice  =
 --
 -- ObjC selector: @- constituentDevices@
 constituentDevices :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
-constituentDevices avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "constituentDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+constituentDevices avCaptureDevice =
+  sendMessage avCaptureDevice constituentDevicesSelector
 
 -- | virtualDeviceSwitchOverVideoZoomFactors
 --
@@ -2440,8 +2419,8 @@ constituentDevices avCaptureDevice  =
 --
 -- ObjC selector: @- virtualDeviceSwitchOverVideoZoomFactors@
 virtualDeviceSwitchOverVideoZoomFactors :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
-virtualDeviceSwitchOverVideoZoomFactors avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "virtualDeviceSwitchOverVideoZoomFactors") (retPtr retVoid) [] >>= retainedObject . castPtr
+virtualDeviceSwitchOverVideoZoomFactors avCaptureDevice =
+  sendMessage avCaptureDevice virtualDeviceSwitchOverVideoZoomFactorsSelector
 
 -- | primaryConstituentDeviceSwitchingBehavior
 --
@@ -2451,8 +2430,8 @@ virtualDeviceSwitchOverVideoZoomFactors avCaptureDevice  =
 --
 -- ObjC selector: @- primaryConstituentDeviceSwitchingBehavior@
 primaryConstituentDeviceSwitchingBehavior :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCapturePrimaryConstituentDeviceSwitchingBehavior
-primaryConstituentDeviceSwitchingBehavior avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCapturePrimaryConstituentDeviceSwitchingBehavior) $ sendMsg avCaptureDevice (mkSelector "primaryConstituentDeviceSwitchingBehavior") retCLong []
+primaryConstituentDeviceSwitchingBehavior avCaptureDevice =
+  sendMessage avCaptureDevice primaryConstituentDeviceSwitchingBehaviorSelector
 
 -- | primaryConstituentDeviceRestrictedSwitchingBehaviorConditions
 --
@@ -2462,8 +2441,8 @@ primaryConstituentDeviceSwitchingBehavior avCaptureDevice  =
 --
 -- ObjC selector: @- primaryConstituentDeviceRestrictedSwitchingBehaviorConditions@
 primaryConstituentDeviceRestrictedSwitchingBehaviorConditions :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
-primaryConstituentDeviceRestrictedSwitchingBehaviorConditions avCaptureDevice  =
-    fmap (coerce :: CULong -> AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions) $ sendMsg avCaptureDevice (mkSelector "primaryConstituentDeviceRestrictedSwitchingBehaviorConditions") retCULong []
+primaryConstituentDeviceRestrictedSwitchingBehaviorConditions avCaptureDevice =
+  sendMessage avCaptureDevice primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector
 
 -- | activePrimaryConstituentDeviceSwitchingBehavior
 --
@@ -2473,8 +2452,8 @@ primaryConstituentDeviceRestrictedSwitchingBehaviorConditions avCaptureDevice  =
 --
 -- ObjC selector: @- activePrimaryConstituentDeviceSwitchingBehavior@
 activePrimaryConstituentDeviceSwitchingBehavior :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCapturePrimaryConstituentDeviceSwitchingBehavior
-activePrimaryConstituentDeviceSwitchingBehavior avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCapturePrimaryConstituentDeviceSwitchingBehavior) $ sendMsg avCaptureDevice (mkSelector "activePrimaryConstituentDeviceSwitchingBehavior") retCLong []
+activePrimaryConstituentDeviceSwitchingBehavior avCaptureDevice =
+  sendMessage avCaptureDevice activePrimaryConstituentDeviceSwitchingBehaviorSelector
 
 -- | activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
 --
@@ -2484,8 +2463,8 @@ activePrimaryConstituentDeviceSwitchingBehavior avCaptureDevice  =
 --
 -- ObjC selector: @- activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions@
 activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
-activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions avCaptureDevice  =
-    fmap (coerce :: CULong -> AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions) $ sendMsg avCaptureDevice (mkSelector "activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions") retCULong []
+activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions avCaptureDevice =
+  sendMessage avCaptureDevice activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector
 
 -- | activePrimaryConstituentDevice
 --
@@ -2495,8 +2474,8 @@ activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions avCaptureDev
 --
 -- ObjC selector: @- activePrimaryConstituentDevice@
 activePrimaryConstituentDevice :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureDevice)
-activePrimaryConstituentDevice avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "activePrimaryConstituentDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+activePrimaryConstituentDevice avCaptureDevice =
+  sendMessage avCaptureDevice activePrimaryConstituentDeviceSelector
 
 -- | supportedFallbackPrimaryConstituentDevices
 --
@@ -2506,8 +2485,8 @@ activePrimaryConstituentDevice avCaptureDevice  =
 --
 -- ObjC selector: @- supportedFallbackPrimaryConstituentDevices@
 supportedFallbackPrimaryConstituentDevices :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
-supportedFallbackPrimaryConstituentDevices avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "supportedFallbackPrimaryConstituentDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedFallbackPrimaryConstituentDevices avCaptureDevice =
+  sendMessage avCaptureDevice supportedFallbackPrimaryConstituentDevicesSelector
 
 -- | fallbackPrimaryConstituentDevices
 --
@@ -2517,8 +2496,8 @@ supportedFallbackPrimaryConstituentDevices avCaptureDevice  =
 --
 -- ObjC selector: @- fallbackPrimaryConstituentDevices@
 fallbackPrimaryConstituentDevices :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSArray)
-fallbackPrimaryConstituentDevices avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "fallbackPrimaryConstituentDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+fallbackPrimaryConstituentDevices avCaptureDevice =
+  sendMessage avCaptureDevice fallbackPrimaryConstituentDevicesSelector
 
 -- | fallbackPrimaryConstituentDevices
 --
@@ -2528,9 +2507,8 @@ fallbackPrimaryConstituentDevices avCaptureDevice  =
 --
 -- ObjC selector: @- setFallbackPrimaryConstituentDevices:@
 setFallbackPrimaryConstituentDevices :: (IsAVCaptureDevice avCaptureDevice, IsNSArray value) => avCaptureDevice -> value -> IO ()
-setFallbackPrimaryConstituentDevices avCaptureDevice  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureDevice (mkSelector "setFallbackPrimaryConstituentDevices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFallbackPrimaryConstituentDevices avCaptureDevice value =
+  sendMessage avCaptureDevice setFallbackPrimaryConstituentDevicesSelector (toNSArray value)
 
 -- | systemPressureState
 --
@@ -2540,8 +2518,8 @@ setFallbackPrimaryConstituentDevices avCaptureDevice  value =
 --
 -- ObjC selector: @- systemPressureState@
 systemPressureState :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id AVCaptureSystemPressureState)
-systemPressureState avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "systemPressureState") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemPressureState avCaptureDevice =
+  sendMessage avCaptureDevice systemPressureStateSelector
 
 -- | userPreferredCamera
 --
@@ -2554,7 +2532,7 @@ userPreferredCamera :: IO (Id AVCaptureDevice)
 userPreferredCamera  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    sendClassMsg cls' (mkSelector "userPreferredCamera") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' userPreferredCameraSelector
 
 -- | userPreferredCamera
 --
@@ -2567,8 +2545,7 @@ setUserPreferredCamera :: IsAVCaptureDevice value => value -> IO ()
 setUserPreferredCamera value =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "setUserPreferredCamera:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+    sendClassMessage cls' setUserPreferredCameraSelector (toAVCaptureDevice value)
 
 -- | systemPreferredCamera
 --
@@ -2585,7 +2562,7 @@ systemPreferredCamera :: IO (Id AVCaptureDevice)
 systemPreferredCamera  =
   do
     cls' <- getRequiredClass "AVCaptureDevice"
-    sendClassMsg cls' (mkSelector "systemPreferredCamera") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' systemPreferredCameraSelector
 
 -- | deviceType
 --
@@ -2595,8 +2572,8 @@ systemPreferredCamera  =
 --
 -- ObjC selector: @- deviceType@
 deviceType :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO (Id NSString)
-deviceType avCaptureDevice  =
-    sendMsg avCaptureDevice (mkSelector "deviceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceType avCaptureDevice =
+  sendMessage avCaptureDevice deviceTypeSelector
 
 -- | position
 --
@@ -2606,706 +2583,706 @@ deviceType avCaptureDevice  =
 --
 -- ObjC selector: @- position@
 position :: IsAVCaptureDevice avCaptureDevice => avCaptureDevice -> IO AVCaptureDevicePosition
-position avCaptureDevice  =
-    fmap (coerce :: CLong -> AVCaptureDevicePosition) $ sendMsg avCaptureDevice (mkSelector "position") retCLong []
+position avCaptureDevice =
+  sendMessage avCaptureDevice positionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @devices@
-devicesSelector :: Selector
+devicesSelector :: Selector '[] (Id NSArray)
 devicesSelector = mkSelector "devices"
 
 -- | @Selector@ for @devicesWithMediaType:@
-devicesWithMediaTypeSelector :: Selector
+devicesWithMediaTypeSelector :: Selector '[Id NSString] (Id NSArray)
 devicesWithMediaTypeSelector = mkSelector "devicesWithMediaType:"
 
 -- | @Selector@ for @defaultDeviceWithMediaType:@
-defaultDeviceWithMediaTypeSelector :: Selector
+defaultDeviceWithMediaTypeSelector :: Selector '[Id NSString] (Id AVCaptureDevice)
 defaultDeviceWithMediaTypeSelector = mkSelector "defaultDeviceWithMediaType:"
 
 -- | @Selector@ for @deviceWithUniqueID:@
-deviceWithUniqueIDSelector :: Selector
+deviceWithUniqueIDSelector :: Selector '[Id NSString] (Id AVCaptureDevice)
 deviceWithUniqueIDSelector = mkSelector "deviceWithUniqueID:"
 
 -- | @Selector@ for @hasMediaType:@
-hasMediaTypeSelector :: Selector
+hasMediaTypeSelector :: Selector '[Id NSString] Bool
 hasMediaTypeSelector = mkSelector "hasMediaType:"
 
 -- | @Selector@ for @lockForConfiguration:@
-lockForConfigurationSelector :: Selector
+lockForConfigurationSelector :: Selector '[Id NSError] Bool
 lockForConfigurationSelector = mkSelector "lockForConfiguration:"
 
 -- | @Selector@ for @unlockForConfiguration@
-unlockForConfigurationSelector :: Selector
+unlockForConfigurationSelector :: Selector '[] ()
 unlockForConfigurationSelector = mkSelector "unlockForConfiguration"
 
 -- | @Selector@ for @supportsAVCaptureSessionPreset:@
-supportsAVCaptureSessionPresetSelector :: Selector
+supportsAVCaptureSessionPresetSelector :: Selector '[Id NSString] Bool
 supportsAVCaptureSessionPresetSelector = mkSelector "supportsAVCaptureSessionPreset:"
 
 -- | @Selector@ for @setDynamicAspectRatio:completionHandler:@
-setDynamicAspectRatio_completionHandlerSelector :: Selector
+setDynamicAspectRatio_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 setDynamicAspectRatio_completionHandlerSelector = mkSelector "setDynamicAspectRatio:completionHandler:"
 
 -- | @Selector@ for @showSystemUserInterface:@
-showSystemUserInterfaceSelector :: Selector
+showSystemUserInterfaceSelector :: Selector '[AVCaptureSystemUserInterface] ()
 showSystemUserInterfaceSelector = mkSelector "showSystemUserInterface:"
 
 -- | @Selector@ for @performEffectForReaction:@
-performEffectForReactionSelector :: Selector
+performEffectForReactionSelector :: Selector '[Id NSString] ()
 performEffectForReactionSelector = mkSelector "performEffectForReaction:"
 
 -- | @Selector@ for @extrinsicMatrixFromDevice:toDevice:@
-extrinsicMatrixFromDevice_toDeviceSelector :: Selector
+extrinsicMatrixFromDevice_toDeviceSelector :: Selector '[Id AVCaptureDevice, Id AVCaptureDevice] (Id NSData)
 extrinsicMatrixFromDevice_toDeviceSelector = mkSelector "extrinsicMatrixFromDevice:toDevice:"
 
 -- | @Selector@ for @setTransportControlsPlaybackMode:speed:@
-setTransportControlsPlaybackMode_speedSelector :: Selector
+setTransportControlsPlaybackMode_speedSelector :: Selector '[AVCaptureDeviceTransportControlsPlaybackMode, CFloat] ()
 setTransportControlsPlaybackMode_speedSelector = mkSelector "setTransportControlsPlaybackMode:speed:"
 
 -- | @Selector@ for @authorizationStatusForMediaType:@
-authorizationStatusForMediaTypeSelector :: Selector
+authorizationStatusForMediaTypeSelector :: Selector '[Id NSString] AVAuthorizationStatus
 authorizationStatusForMediaTypeSelector = mkSelector "authorizationStatusForMediaType:"
 
 -- | @Selector@ for @requestAccessForMediaType:completionHandler:@
-requestAccessForMediaType_completionHandlerSelector :: Selector
+requestAccessForMediaType_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 requestAccessForMediaType_completionHandlerSelector = mkSelector "requestAccessForMediaType:completionHandler:"
 
 -- | @Selector@ for @rampToVideoZoomFactor:withRate:@
-rampToVideoZoomFactor_withRateSelector :: Selector
+rampToVideoZoomFactor_withRateSelector :: Selector '[CDouble, CFloat] ()
 rampToVideoZoomFactor_withRateSelector = mkSelector "rampToVideoZoomFactor:withRate:"
 
 -- | @Selector@ for @cancelVideoZoomRamp@
-cancelVideoZoomRampSelector :: Selector
+cancelVideoZoomRampSelector :: Selector '[] ()
 cancelVideoZoomRampSelector = mkSelector "cancelVideoZoomRamp"
 
 -- | @Selector@ for @isWhiteBalanceModeSupported:@
-isWhiteBalanceModeSupportedSelector :: Selector
+isWhiteBalanceModeSupportedSelector :: Selector '[AVCaptureWhiteBalanceMode] Bool
 isWhiteBalanceModeSupportedSelector = mkSelector "isWhiteBalanceModeSupported:"
 
 -- | @Selector@ for @isExposureModeSupported:@
-isExposureModeSupportedSelector :: Selector
+isExposureModeSupportedSelector :: Selector '[AVCaptureExposureMode] Bool
 isExposureModeSupportedSelector = mkSelector "isExposureModeSupported:"
 
 -- | @Selector@ for @setExposureTargetBias:completionHandler:@
-setExposureTargetBias_completionHandlerSelector :: Selector
+setExposureTargetBias_completionHandlerSelector :: Selector '[CFloat, Ptr ()] ()
 setExposureTargetBias_completionHandlerSelector = mkSelector "setExposureTargetBias:completionHandler:"
 
 -- | @Selector@ for @isFocusModeSupported:@
-isFocusModeSupportedSelector :: Selector
+isFocusModeSupportedSelector :: Selector '[AVCaptureFocusMode] Bool
 isFocusModeSupportedSelector = mkSelector "isFocusModeSupported:"
 
 -- | @Selector@ for @setFocusModeLockedWithLensPosition:completionHandler:@
-setFocusModeLockedWithLensPosition_completionHandlerSelector :: Selector
+setFocusModeLockedWithLensPosition_completionHandlerSelector :: Selector '[CFloat, Ptr ()] ()
 setFocusModeLockedWithLensPosition_completionHandlerSelector = mkSelector "setFocusModeLockedWithLensPosition:completionHandler:"
 
 -- | @Selector@ for @setCinematicVideoTrackingFocusWithDetectedObjectID:focusMode:@
-setCinematicVideoTrackingFocusWithDetectedObjectID_focusModeSelector :: Selector
+setCinematicVideoTrackingFocusWithDetectedObjectID_focusModeSelector :: Selector '[CLong, AVCaptureCinematicVideoFocusMode] ()
 setCinematicVideoTrackingFocusWithDetectedObjectID_focusModeSelector = mkSelector "setCinematicVideoTrackingFocusWithDetectedObjectID:focusMode:"
 
 -- | @Selector@ for @isTorchModeSupported:@
-isTorchModeSupportedSelector :: Selector
+isTorchModeSupportedSelector :: Selector '[AVCaptureTorchMode] Bool
 isTorchModeSupportedSelector = mkSelector "isTorchModeSupported:"
 
 -- | @Selector@ for @setTorchModeOnWithLevel:error:@
-setTorchModeOnWithLevel_errorSelector :: Selector
+setTorchModeOnWithLevel_errorSelector :: Selector '[CFloat, Id NSError] Bool
 setTorchModeOnWithLevel_errorSelector = mkSelector "setTorchModeOnWithLevel:error:"
 
 -- | @Selector@ for @isFlashModeSupported:@
-isFlashModeSupportedSelector :: Selector
+isFlashModeSupportedSelector :: Selector '[AVCaptureFlashMode] Bool
 isFlashModeSupportedSelector = mkSelector "isFlashModeSupported:"
 
 -- | @Selector@ for @setPrimaryConstituentDeviceSwitchingBehavior:restrictedSwitchingBehaviorConditions:@
-setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditionsSelector :: Selector
+setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditionsSelector :: Selector '[AVCapturePrimaryConstituentDeviceSwitchingBehavior, AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions] ()
 setPrimaryConstituentDeviceSwitchingBehavior_restrictedSwitchingBehaviorConditionsSelector = mkSelector "setPrimaryConstituentDeviceSwitchingBehavior:restrictedSwitchingBehaviorConditions:"
 
 -- | @Selector@ for @defaultDeviceWithDeviceType:mediaType:position:@
-defaultDeviceWithDeviceType_mediaType_positionSelector :: Selector
+defaultDeviceWithDeviceType_mediaType_positionSelector :: Selector '[Id NSString, Id NSString, AVCaptureDevicePosition] (Id AVCaptureDevice)
 defaultDeviceWithDeviceType_mediaType_positionSelector = mkSelector "defaultDeviceWithDeviceType:mediaType:position:"
 
 -- | @Selector@ for @uniqueID@
-uniqueIDSelector :: Selector
+uniqueIDSelector :: Selector '[] (Id NSString)
 uniqueIDSelector = mkSelector "uniqueID"
 
 -- | @Selector@ for @modelID@
-modelIDSelector :: Selector
+modelIDSelector :: Selector '[] (Id NSString)
 modelIDSelector = mkSelector "modelID"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @manufacturer@
-manufacturerSelector :: Selector
+manufacturerSelector :: Selector '[] (Id NSString)
 manufacturerSelector = mkSelector "manufacturer"
 
 -- | @Selector@ for @transportType@
-transportTypeSelector :: Selector
+transportTypeSelector :: Selector '[] CInt
 transportTypeSelector = mkSelector "transportType"
 
 -- | @Selector@ for @connected@
-connectedSelector :: Selector
+connectedSelector :: Selector '[] Bool
 connectedSelector = mkSelector "connected"
 
 -- | @Selector@ for @inUseByAnotherApplication@
-inUseByAnotherApplicationSelector :: Selector
+inUseByAnotherApplicationSelector :: Selector '[] Bool
 inUseByAnotherApplicationSelector = mkSelector "inUseByAnotherApplication"
 
 -- | @Selector@ for @suspended@
-suspendedSelector :: Selector
+suspendedSelector :: Selector '[] Bool
 suspendedSelector = mkSelector "suspended"
 
 -- | @Selector@ for @linkedDevices@
-linkedDevicesSelector :: Selector
+linkedDevicesSelector :: Selector '[] (Id NSArray)
 linkedDevicesSelector = mkSelector "linkedDevices"
 
 -- | @Selector@ for @formats@
-formatsSelector :: Selector
+formatsSelector :: Selector '[] (Id NSArray)
 formatsSelector = mkSelector "formats"
 
 -- | @Selector@ for @activeFormat@
-activeFormatSelector :: Selector
+activeFormatSelector :: Selector '[] (Id AVCaptureDeviceFormat)
 activeFormatSelector = mkSelector "activeFormat"
 
 -- | @Selector@ for @setActiveFormat:@
-setActiveFormatSelector :: Selector
+setActiveFormatSelector :: Selector '[Id AVCaptureDeviceFormat] ()
 setActiveFormatSelector = mkSelector "setActiveFormat:"
 
 -- | @Selector@ for @videoFrameDurationLocked@
-videoFrameDurationLockedSelector :: Selector
+videoFrameDurationLockedSelector :: Selector '[] Bool
 videoFrameDurationLockedSelector = mkSelector "videoFrameDurationLocked"
 
 -- | @Selector@ for @followingExternalSyncDevice@
-followingExternalSyncDeviceSelector :: Selector
+followingExternalSyncDeviceSelector :: Selector '[] Bool
 followingExternalSyncDeviceSelector = mkSelector "followingExternalSyncDevice"
 
 -- | @Selector@ for @autoVideoFrameRateEnabled@
-autoVideoFrameRateEnabledSelector :: Selector
+autoVideoFrameRateEnabledSelector :: Selector '[] Bool
 autoVideoFrameRateEnabledSelector = mkSelector "autoVideoFrameRateEnabled"
 
 -- | @Selector@ for @setAutoVideoFrameRateEnabled:@
-setAutoVideoFrameRateEnabledSelector :: Selector
+setAutoVideoFrameRateEnabledSelector :: Selector '[Bool] ()
 setAutoVideoFrameRateEnabledSelector = mkSelector "setAutoVideoFrameRateEnabled:"
 
 -- | @Selector@ for @inputSources@
-inputSourcesSelector :: Selector
+inputSourcesSelector :: Selector '[] (Id NSArray)
 inputSourcesSelector = mkSelector "inputSources"
 
 -- | @Selector@ for @activeInputSource@
-activeInputSourceSelector :: Selector
+activeInputSourceSelector :: Selector '[] (Id AVCaptureDeviceInputSource)
 activeInputSourceSelector = mkSelector "activeInputSource"
 
 -- | @Selector@ for @setActiveInputSource:@
-setActiveInputSourceSelector :: Selector
+setActiveInputSourceSelector :: Selector '[Id AVCaptureDeviceInputSource] ()
 setActiveInputSourceSelector = mkSelector "setActiveInputSource:"
 
 -- | @Selector@ for @cameraLensSmudgeDetectionEnabled@
-cameraLensSmudgeDetectionEnabledSelector :: Selector
+cameraLensSmudgeDetectionEnabledSelector :: Selector '[] Bool
 cameraLensSmudgeDetectionEnabledSelector = mkSelector "cameraLensSmudgeDetectionEnabled"
 
 -- | @Selector@ for @cameraLensSmudgeDetectionStatus@
-cameraLensSmudgeDetectionStatusSelector :: Selector
+cameraLensSmudgeDetectionStatusSelector :: Selector '[] AVCaptureCameraLensSmudgeDetectionStatus
 cameraLensSmudgeDetectionStatusSelector = mkSelector "cameraLensSmudgeDetectionStatus"
 
 -- | @Selector@ for @edgeLightEnabled@
-edgeLightEnabledSelector :: Selector
+edgeLightEnabledSelector :: Selector '[] Bool
 edgeLightEnabledSelector = mkSelector "edgeLightEnabled"
 
 -- | @Selector@ for @edgeLightActive@
-edgeLightActiveSelector :: Selector
+edgeLightActiveSelector :: Selector '[] Bool
 edgeLightActiveSelector = mkSelector "edgeLightActive"
 
 -- | @Selector@ for @studioLightEnabled@
-studioLightEnabledSelector :: Selector
+studioLightEnabledSelector :: Selector '[] Bool
 studioLightEnabledSelector = mkSelector "studioLightEnabled"
 
 -- | @Selector@ for @studioLightActive@
-studioLightActiveSelector :: Selector
+studioLightActiveSelector :: Selector '[] Bool
 studioLightActiveSelector = mkSelector "studioLightActive"
 
 -- | @Selector@ for @nominalFocalLengthIn35mmFilm@
-nominalFocalLengthIn35mmFilmSelector :: Selector
+nominalFocalLengthIn35mmFilmSelector :: Selector '[] CFloat
 nominalFocalLengthIn35mmFilmSelector = mkSelector "nominalFocalLengthIn35mmFilm"
 
 -- | @Selector@ for @smartFramingMonitor@
-smartFramingMonitorSelector :: Selector
+smartFramingMonitorSelector :: Selector '[] (Id AVCaptureSmartFramingMonitor)
 smartFramingMonitorSelector = mkSelector "smartFramingMonitor"
 
 -- | @Selector@ for @dynamicAspectRatio@
-dynamicAspectRatioSelector :: Selector
+dynamicAspectRatioSelector :: Selector '[] (Id NSString)
 dynamicAspectRatioSelector = mkSelector "dynamicAspectRatio"
 
 -- | @Selector@ for @cinematicVideoCaptureSceneMonitoringStatuses@
-cinematicVideoCaptureSceneMonitoringStatusesSelector :: Selector
+cinematicVideoCaptureSceneMonitoringStatusesSelector :: Selector '[] (Id NSSet)
 cinematicVideoCaptureSceneMonitoringStatusesSelector = mkSelector "cinematicVideoCaptureSceneMonitoringStatuses"
 
 -- | @Selector@ for @spatialCaptureDiscomfortReasons@
-spatialCaptureDiscomfortReasonsSelector :: Selector
+spatialCaptureDiscomfortReasonsSelector :: Selector '[] (Id NSSet)
 spatialCaptureDiscomfortReasonsSelector = mkSelector "spatialCaptureDiscomfortReasons"
 
 -- | @Selector@ for @preferredMicrophoneMode@
-preferredMicrophoneModeSelector :: Selector
+preferredMicrophoneModeSelector :: Selector '[] AVCaptureMicrophoneMode
 preferredMicrophoneModeSelector = mkSelector "preferredMicrophoneMode"
 
 -- | @Selector@ for @activeMicrophoneMode@
-activeMicrophoneModeSelector :: Selector
+activeMicrophoneModeSelector :: Selector '[] AVCaptureMicrophoneMode
 activeMicrophoneModeSelector = mkSelector "activeMicrophoneMode"
 
 -- | @Selector@ for @companionDeskViewCamera@
-companionDeskViewCameraSelector :: Selector
+companionDeskViewCameraSelector :: Selector '[] (Id AVCaptureDevice)
 companionDeskViewCameraSelector = mkSelector "companionDeskViewCamera"
 
 -- | @Selector@ for @continuityCamera@
-continuityCameraSelector :: Selector
+continuityCameraSelector :: Selector '[] Bool
 continuityCameraSelector = mkSelector "continuityCamera"
 
 -- | @Selector@ for @backgroundReplacementEnabled@
-backgroundReplacementEnabledSelector :: Selector
+backgroundReplacementEnabledSelector :: Selector '[] Bool
 backgroundReplacementEnabledSelector = mkSelector "backgroundReplacementEnabled"
 
 -- | @Selector@ for @backgroundReplacementActive@
-backgroundReplacementActiveSelector :: Selector
+backgroundReplacementActiveSelector :: Selector '[] Bool
 backgroundReplacementActiveSelector = mkSelector "backgroundReplacementActive"
 
 -- | @Selector@ for @reactionEffectsEnabled@
-reactionEffectsEnabledSelector :: Selector
+reactionEffectsEnabledSelector :: Selector '[] Bool
 reactionEffectsEnabledSelector = mkSelector "reactionEffectsEnabled"
 
 -- | @Selector@ for @reactionEffectGesturesEnabled@
-reactionEffectGesturesEnabledSelector :: Selector
+reactionEffectGesturesEnabledSelector :: Selector '[] Bool
 reactionEffectGesturesEnabledSelector = mkSelector "reactionEffectGesturesEnabled"
 
 -- | @Selector@ for @canPerformReactionEffects@
-canPerformReactionEffectsSelector :: Selector
+canPerformReactionEffectsSelector :: Selector '[] Bool
 canPerformReactionEffectsSelector = mkSelector "canPerformReactionEffects"
 
 -- | @Selector@ for @availableReactionTypes@
-availableReactionTypesSelector :: Selector
+availableReactionTypesSelector :: Selector '[] (Id NSSet)
 availableReactionTypesSelector = mkSelector "availableReactionTypes"
 
 -- | @Selector@ for @reactionEffectsInProgress@
-reactionEffectsInProgressSelector :: Selector
+reactionEffectsInProgressSelector :: Selector '[] (Id NSArray)
 reactionEffectsInProgressSelector = mkSelector "reactionEffectsInProgress"
 
 -- | @Selector@ for @portraitEffectEnabled@
-portraitEffectEnabledSelector :: Selector
+portraitEffectEnabledSelector :: Selector '[] Bool
 portraitEffectEnabledSelector = mkSelector "portraitEffectEnabled"
 
 -- | @Selector@ for @portraitEffectActive@
-portraitEffectActiveSelector :: Selector
+portraitEffectActiveSelector :: Selector '[] Bool
 portraitEffectActiveSelector = mkSelector "portraitEffectActive"
 
 -- | @Selector@ for @centerStageControlMode@
-centerStageControlModeSelector :: Selector
+centerStageControlModeSelector :: Selector '[] AVCaptureCenterStageControlMode
 centerStageControlModeSelector = mkSelector "centerStageControlMode"
 
 -- | @Selector@ for @setCenterStageControlMode:@
-setCenterStageControlModeSelector :: Selector
+setCenterStageControlModeSelector :: Selector '[AVCaptureCenterStageControlMode] ()
 setCenterStageControlModeSelector = mkSelector "setCenterStageControlMode:"
 
 -- | @Selector@ for @centerStageEnabled@
-centerStageEnabledSelector :: Selector
+centerStageEnabledSelector :: Selector '[] Bool
 centerStageEnabledSelector = mkSelector "centerStageEnabled"
 
 -- | @Selector@ for @setCenterStageEnabled:@
-setCenterStageEnabledSelector :: Selector
+setCenterStageEnabledSelector :: Selector '[Bool] ()
 setCenterStageEnabledSelector = mkSelector "setCenterStageEnabled:"
 
 -- | @Selector@ for @centerStageActive@
-centerStageActiveSelector :: Selector
+centerStageActiveSelector :: Selector '[] Bool
 centerStageActiveSelector = mkSelector "centerStageActive"
 
 -- | @Selector@ for @centerStageRectOfInterestSupported@
-centerStageRectOfInterestSupportedSelector :: Selector
+centerStageRectOfInterestSupportedSelector :: Selector '[] Bool
 centerStageRectOfInterestSupportedSelector = mkSelector "centerStageRectOfInterestSupported"
 
 -- | @Selector@ for @geometricDistortionCorrectionSupported@
-geometricDistortionCorrectionSupportedSelector :: Selector
+geometricDistortionCorrectionSupportedSelector :: Selector '[] Bool
 geometricDistortionCorrectionSupportedSelector = mkSelector "geometricDistortionCorrectionSupported"
 
 -- | @Selector@ for @geometricDistortionCorrectionEnabled@
-geometricDistortionCorrectionEnabledSelector :: Selector
+geometricDistortionCorrectionEnabledSelector :: Selector '[] Bool
 geometricDistortionCorrectionEnabledSelector = mkSelector "geometricDistortionCorrectionEnabled"
 
 -- | @Selector@ for @setGeometricDistortionCorrectionEnabled:@
-setGeometricDistortionCorrectionEnabledSelector :: Selector
+setGeometricDistortionCorrectionEnabledSelector :: Selector '[Bool] ()
 setGeometricDistortionCorrectionEnabledSelector = mkSelector "setGeometricDistortionCorrectionEnabled:"
 
 -- | @Selector@ for @activeDepthDataFormat@
-activeDepthDataFormatSelector :: Selector
+activeDepthDataFormatSelector :: Selector '[] (Id AVCaptureDeviceFormat)
 activeDepthDataFormatSelector = mkSelector "activeDepthDataFormat"
 
 -- | @Selector@ for @setActiveDepthDataFormat:@
-setActiveDepthDataFormatSelector :: Selector
+setActiveDepthDataFormatSelector :: Selector '[Id AVCaptureDeviceFormat] ()
 setActiveDepthDataFormatSelector = mkSelector "setActiveDepthDataFormat:"
 
 -- | @Selector@ for @minAvailableVideoZoomFactor@
-minAvailableVideoZoomFactorSelector :: Selector
+minAvailableVideoZoomFactorSelector :: Selector '[] CDouble
 minAvailableVideoZoomFactorSelector = mkSelector "minAvailableVideoZoomFactor"
 
 -- | @Selector@ for @maxAvailableVideoZoomFactor@
-maxAvailableVideoZoomFactorSelector :: Selector
+maxAvailableVideoZoomFactorSelector :: Selector '[] CDouble
 maxAvailableVideoZoomFactorSelector = mkSelector "maxAvailableVideoZoomFactor"
 
 -- | @Selector@ for @activeColorSpace@
-activeColorSpaceSelector :: Selector
+activeColorSpaceSelector :: Selector '[] AVCaptureColorSpace
 activeColorSpaceSelector = mkSelector "activeColorSpace"
 
 -- | @Selector@ for @setActiveColorSpace:@
-setActiveColorSpaceSelector :: Selector
+setActiveColorSpaceSelector :: Selector '[AVCaptureColorSpace] ()
 setActiveColorSpaceSelector = mkSelector "setActiveColorSpace:"
 
 -- | @Selector@ for @automaticallyAdjustsVideoHDREnabled@
-automaticallyAdjustsVideoHDREnabledSelector :: Selector
+automaticallyAdjustsVideoHDREnabledSelector :: Selector '[] Bool
 automaticallyAdjustsVideoHDREnabledSelector = mkSelector "automaticallyAdjustsVideoHDREnabled"
 
 -- | @Selector@ for @setAutomaticallyAdjustsVideoHDREnabled:@
-setAutomaticallyAdjustsVideoHDREnabledSelector :: Selector
+setAutomaticallyAdjustsVideoHDREnabledSelector :: Selector '[Bool] ()
 setAutomaticallyAdjustsVideoHDREnabledSelector = mkSelector "setAutomaticallyAdjustsVideoHDREnabled:"
 
 -- | @Selector@ for @videoHDREnabled@
-videoHDREnabledSelector :: Selector
+videoHDREnabledSelector :: Selector '[] Bool
 videoHDREnabledSelector = mkSelector "videoHDREnabled"
 
 -- | @Selector@ for @setVideoHDREnabled:@
-setVideoHDREnabledSelector :: Selector
+setVideoHDREnabledSelector :: Selector '[Bool] ()
 setVideoHDREnabledSelector = mkSelector "setVideoHDREnabled:"
 
 -- | @Selector@ for @transportControlsSupported@
-transportControlsSupportedSelector :: Selector
+transportControlsSupportedSelector :: Selector '[] Bool
 transportControlsSupportedSelector = mkSelector "transportControlsSupported"
 
 -- | @Selector@ for @transportControlsPlaybackMode@
-transportControlsPlaybackModeSelector :: Selector
+transportControlsPlaybackModeSelector :: Selector '[] AVCaptureDeviceTransportControlsPlaybackMode
 transportControlsPlaybackModeSelector = mkSelector "transportControlsPlaybackMode"
 
 -- | @Selector@ for @transportControlsSpeed@
-transportControlsSpeedSelector :: Selector
+transportControlsSpeedSelector :: Selector '[] CFloat
 transportControlsSpeedSelector = mkSelector "transportControlsSpeed"
 
 -- | @Selector@ for @videoZoomFactor@
-videoZoomFactorSelector :: Selector
+videoZoomFactorSelector :: Selector '[] CDouble
 videoZoomFactorSelector = mkSelector "videoZoomFactor"
 
 -- | @Selector@ for @setVideoZoomFactor:@
-setVideoZoomFactorSelector :: Selector
+setVideoZoomFactorSelector :: Selector '[CDouble] ()
 setVideoZoomFactorSelector = mkSelector "setVideoZoomFactor:"
 
 -- | @Selector@ for @rampingVideoZoom@
-rampingVideoZoomSelector :: Selector
+rampingVideoZoomSelector :: Selector '[] Bool
 rampingVideoZoomSelector = mkSelector "rampingVideoZoom"
 
 -- | @Selector@ for @dualCameraSwitchOverVideoZoomFactor@
-dualCameraSwitchOverVideoZoomFactorSelector :: Selector
+dualCameraSwitchOverVideoZoomFactorSelector :: Selector '[] CDouble
 dualCameraSwitchOverVideoZoomFactorSelector = mkSelector "dualCameraSwitchOverVideoZoomFactor"
 
 -- | @Selector@ for @displayVideoZoomFactorMultiplier@
-displayVideoZoomFactorMultiplierSelector :: Selector
+displayVideoZoomFactorMultiplierSelector :: Selector '[] CDouble
 displayVideoZoomFactorMultiplierSelector = mkSelector "displayVideoZoomFactorMultiplier"
 
 -- | @Selector@ for @lowLightBoostSupported@
-lowLightBoostSupportedSelector :: Selector
+lowLightBoostSupportedSelector :: Selector '[] Bool
 lowLightBoostSupportedSelector = mkSelector "lowLightBoostSupported"
 
 -- | @Selector@ for @lowLightBoostEnabled@
-lowLightBoostEnabledSelector :: Selector
+lowLightBoostEnabledSelector :: Selector '[] Bool
 lowLightBoostEnabledSelector = mkSelector "lowLightBoostEnabled"
 
 -- | @Selector@ for @automaticallyEnablesLowLightBoostWhenAvailable@
-automaticallyEnablesLowLightBoostWhenAvailableSelector :: Selector
+automaticallyEnablesLowLightBoostWhenAvailableSelector :: Selector '[] Bool
 automaticallyEnablesLowLightBoostWhenAvailableSelector = mkSelector "automaticallyEnablesLowLightBoostWhenAvailable"
 
 -- | @Selector@ for @setAutomaticallyEnablesLowLightBoostWhenAvailable:@
-setAutomaticallyEnablesLowLightBoostWhenAvailableSelector :: Selector
+setAutomaticallyEnablesLowLightBoostWhenAvailableSelector :: Selector '[Bool] ()
 setAutomaticallyEnablesLowLightBoostWhenAvailableSelector = mkSelector "setAutomaticallyEnablesLowLightBoostWhenAvailable:"
 
 -- | @Selector@ for @subjectAreaChangeMonitoringEnabled@
-subjectAreaChangeMonitoringEnabledSelector :: Selector
+subjectAreaChangeMonitoringEnabledSelector :: Selector '[] Bool
 subjectAreaChangeMonitoringEnabledSelector = mkSelector "subjectAreaChangeMonitoringEnabled"
 
 -- | @Selector@ for @setSubjectAreaChangeMonitoringEnabled:@
-setSubjectAreaChangeMonitoringEnabledSelector :: Selector
+setSubjectAreaChangeMonitoringEnabledSelector :: Selector '[Bool] ()
 setSubjectAreaChangeMonitoringEnabledSelector = mkSelector "setSubjectAreaChangeMonitoringEnabled:"
 
 -- | @Selector@ for @lockingWhiteBalanceWithCustomDeviceGainsSupported@
-lockingWhiteBalanceWithCustomDeviceGainsSupportedSelector :: Selector
+lockingWhiteBalanceWithCustomDeviceGainsSupportedSelector :: Selector '[] Bool
 lockingWhiteBalanceWithCustomDeviceGainsSupportedSelector = mkSelector "lockingWhiteBalanceWithCustomDeviceGainsSupported"
 
 -- | @Selector@ for @whiteBalanceMode@
-whiteBalanceModeSelector :: Selector
+whiteBalanceModeSelector :: Selector '[] AVCaptureWhiteBalanceMode
 whiteBalanceModeSelector = mkSelector "whiteBalanceMode"
 
 -- | @Selector@ for @setWhiteBalanceMode:@
-setWhiteBalanceModeSelector :: Selector
+setWhiteBalanceModeSelector :: Selector '[AVCaptureWhiteBalanceMode] ()
 setWhiteBalanceModeSelector = mkSelector "setWhiteBalanceMode:"
 
 -- | @Selector@ for @adjustingWhiteBalance@
-adjustingWhiteBalanceSelector :: Selector
+adjustingWhiteBalanceSelector :: Selector '[] Bool
 adjustingWhiteBalanceSelector = mkSelector "adjustingWhiteBalance"
 
 -- | @Selector@ for @maxWhiteBalanceGain@
-maxWhiteBalanceGainSelector :: Selector
+maxWhiteBalanceGainSelector :: Selector '[] CFloat
 maxWhiteBalanceGainSelector = mkSelector "maxWhiteBalanceGain"
 
 -- | @Selector@ for @globalToneMappingEnabled@
-globalToneMappingEnabledSelector :: Selector
+globalToneMappingEnabledSelector :: Selector '[] Bool
 globalToneMappingEnabledSelector = mkSelector "globalToneMappingEnabled"
 
 -- | @Selector@ for @setGlobalToneMappingEnabled:@
-setGlobalToneMappingEnabledSelector :: Selector
+setGlobalToneMappingEnabledSelector :: Selector '[Bool] ()
 setGlobalToneMappingEnabledSelector = mkSelector "setGlobalToneMappingEnabled:"
 
 -- | @Selector@ for @exposureMode@
-exposureModeSelector :: Selector
+exposureModeSelector :: Selector '[] AVCaptureExposureMode
 exposureModeSelector = mkSelector "exposureMode"
 
 -- | @Selector@ for @setExposureMode:@
-setExposureModeSelector :: Selector
+setExposureModeSelector :: Selector '[AVCaptureExposureMode] ()
 setExposureModeSelector = mkSelector "setExposureMode:"
 
 -- | @Selector@ for @exposurePointOfInterestSupported@
-exposurePointOfInterestSupportedSelector :: Selector
+exposurePointOfInterestSupportedSelector :: Selector '[] Bool
 exposurePointOfInterestSupportedSelector = mkSelector "exposurePointOfInterestSupported"
 
 -- | @Selector@ for @exposureRectOfInterestSupported@
-exposureRectOfInterestSupportedSelector :: Selector
+exposureRectOfInterestSupportedSelector :: Selector '[] Bool
 exposureRectOfInterestSupportedSelector = mkSelector "exposureRectOfInterestSupported"
 
 -- | @Selector@ for @automaticallyAdjustsFaceDrivenAutoExposureEnabled@
-automaticallyAdjustsFaceDrivenAutoExposureEnabledSelector :: Selector
+automaticallyAdjustsFaceDrivenAutoExposureEnabledSelector :: Selector '[] Bool
 automaticallyAdjustsFaceDrivenAutoExposureEnabledSelector = mkSelector "automaticallyAdjustsFaceDrivenAutoExposureEnabled"
 
 -- | @Selector@ for @setAutomaticallyAdjustsFaceDrivenAutoExposureEnabled:@
-setAutomaticallyAdjustsFaceDrivenAutoExposureEnabledSelector :: Selector
+setAutomaticallyAdjustsFaceDrivenAutoExposureEnabledSelector :: Selector '[Bool] ()
 setAutomaticallyAdjustsFaceDrivenAutoExposureEnabledSelector = mkSelector "setAutomaticallyAdjustsFaceDrivenAutoExposureEnabled:"
 
 -- | @Selector@ for @faceDrivenAutoExposureEnabled@
-faceDrivenAutoExposureEnabledSelector :: Selector
+faceDrivenAutoExposureEnabledSelector :: Selector '[] Bool
 faceDrivenAutoExposureEnabledSelector = mkSelector "faceDrivenAutoExposureEnabled"
 
 -- | @Selector@ for @setFaceDrivenAutoExposureEnabled:@
-setFaceDrivenAutoExposureEnabledSelector :: Selector
+setFaceDrivenAutoExposureEnabledSelector :: Selector '[Bool] ()
 setFaceDrivenAutoExposureEnabledSelector = mkSelector "setFaceDrivenAutoExposureEnabled:"
 
 -- | @Selector@ for @adjustingExposure@
-adjustingExposureSelector :: Selector
+adjustingExposureSelector :: Selector '[] Bool
 adjustingExposureSelector = mkSelector "adjustingExposure"
 
 -- | @Selector@ for @lensAperture@
-lensApertureSelector :: Selector
+lensApertureSelector :: Selector '[] CFloat
 lensApertureSelector = mkSelector "lensAperture"
 
 -- | @Selector@ for @ISO@
-isoSelector :: Selector
+isoSelector :: Selector '[] CFloat
 isoSelector = mkSelector "ISO"
 
 -- | @Selector@ for @exposureTargetOffset@
-exposureTargetOffsetSelector :: Selector
+exposureTargetOffsetSelector :: Selector '[] CFloat
 exposureTargetOffsetSelector = mkSelector "exposureTargetOffset"
 
 -- | @Selector@ for @exposureTargetBias@
-exposureTargetBiasSelector :: Selector
+exposureTargetBiasSelector :: Selector '[] CFloat
 exposureTargetBiasSelector = mkSelector "exposureTargetBias"
 
 -- | @Selector@ for @minExposureTargetBias@
-minExposureTargetBiasSelector :: Selector
+minExposureTargetBiasSelector :: Selector '[] CFloat
 minExposureTargetBiasSelector = mkSelector "minExposureTargetBias"
 
 -- | @Selector@ for @maxExposureTargetBias@
-maxExposureTargetBiasSelector :: Selector
+maxExposureTargetBiasSelector :: Selector '[] CFloat
 maxExposureTargetBiasSelector = mkSelector "maxExposureTargetBias"
 
 -- | @Selector@ for @lockingFocusWithCustomLensPositionSupported@
-lockingFocusWithCustomLensPositionSupportedSelector :: Selector
+lockingFocusWithCustomLensPositionSupportedSelector :: Selector '[] Bool
 lockingFocusWithCustomLensPositionSupportedSelector = mkSelector "lockingFocusWithCustomLensPositionSupported"
 
 -- | @Selector@ for @focusMode@
-focusModeSelector :: Selector
+focusModeSelector :: Selector '[] AVCaptureFocusMode
 focusModeSelector = mkSelector "focusMode"
 
 -- | @Selector@ for @setFocusMode:@
-setFocusModeSelector :: Selector
+setFocusModeSelector :: Selector '[AVCaptureFocusMode] ()
 setFocusModeSelector = mkSelector "setFocusMode:"
 
 -- | @Selector@ for @focusPointOfInterestSupported@
-focusPointOfInterestSupportedSelector :: Selector
+focusPointOfInterestSupportedSelector :: Selector '[] Bool
 focusPointOfInterestSupportedSelector = mkSelector "focusPointOfInterestSupported"
 
 -- | @Selector@ for @focusRectOfInterestSupported@
-focusRectOfInterestSupportedSelector :: Selector
+focusRectOfInterestSupportedSelector :: Selector '[] Bool
 focusRectOfInterestSupportedSelector = mkSelector "focusRectOfInterestSupported"
 
 -- | @Selector@ for @adjustingFocus@
-adjustingFocusSelector :: Selector
+adjustingFocusSelector :: Selector '[] Bool
 adjustingFocusSelector = mkSelector "adjustingFocus"
 
 -- | @Selector@ for @autoFocusRangeRestrictionSupported@
-autoFocusRangeRestrictionSupportedSelector :: Selector
+autoFocusRangeRestrictionSupportedSelector :: Selector '[] Bool
 autoFocusRangeRestrictionSupportedSelector = mkSelector "autoFocusRangeRestrictionSupported"
 
 -- | @Selector@ for @autoFocusRangeRestriction@
-autoFocusRangeRestrictionSelector :: Selector
+autoFocusRangeRestrictionSelector :: Selector '[] AVCaptureAutoFocusRangeRestriction
 autoFocusRangeRestrictionSelector = mkSelector "autoFocusRangeRestriction"
 
 -- | @Selector@ for @setAutoFocusRangeRestriction:@
-setAutoFocusRangeRestrictionSelector :: Selector
+setAutoFocusRangeRestrictionSelector :: Selector '[AVCaptureAutoFocusRangeRestriction] ()
 setAutoFocusRangeRestrictionSelector = mkSelector "setAutoFocusRangeRestriction:"
 
 -- | @Selector@ for @smoothAutoFocusSupported@
-smoothAutoFocusSupportedSelector :: Selector
+smoothAutoFocusSupportedSelector :: Selector '[] Bool
 smoothAutoFocusSupportedSelector = mkSelector "smoothAutoFocusSupported"
 
 -- | @Selector@ for @smoothAutoFocusEnabled@
-smoothAutoFocusEnabledSelector :: Selector
+smoothAutoFocusEnabledSelector :: Selector '[] Bool
 smoothAutoFocusEnabledSelector = mkSelector "smoothAutoFocusEnabled"
 
 -- | @Selector@ for @setSmoothAutoFocusEnabled:@
-setSmoothAutoFocusEnabledSelector :: Selector
+setSmoothAutoFocusEnabledSelector :: Selector '[Bool] ()
 setSmoothAutoFocusEnabledSelector = mkSelector "setSmoothAutoFocusEnabled:"
 
 -- | @Selector@ for @automaticallyAdjustsFaceDrivenAutoFocusEnabled@
-automaticallyAdjustsFaceDrivenAutoFocusEnabledSelector :: Selector
+automaticallyAdjustsFaceDrivenAutoFocusEnabledSelector :: Selector '[] Bool
 automaticallyAdjustsFaceDrivenAutoFocusEnabledSelector = mkSelector "automaticallyAdjustsFaceDrivenAutoFocusEnabled"
 
 -- | @Selector@ for @setAutomaticallyAdjustsFaceDrivenAutoFocusEnabled:@
-setAutomaticallyAdjustsFaceDrivenAutoFocusEnabledSelector :: Selector
+setAutomaticallyAdjustsFaceDrivenAutoFocusEnabledSelector :: Selector '[Bool] ()
 setAutomaticallyAdjustsFaceDrivenAutoFocusEnabledSelector = mkSelector "setAutomaticallyAdjustsFaceDrivenAutoFocusEnabled:"
 
 -- | @Selector@ for @faceDrivenAutoFocusEnabled@
-faceDrivenAutoFocusEnabledSelector :: Selector
+faceDrivenAutoFocusEnabledSelector :: Selector '[] Bool
 faceDrivenAutoFocusEnabledSelector = mkSelector "faceDrivenAutoFocusEnabled"
 
 -- | @Selector@ for @setFaceDrivenAutoFocusEnabled:@
-setFaceDrivenAutoFocusEnabledSelector :: Selector
+setFaceDrivenAutoFocusEnabledSelector :: Selector '[Bool] ()
 setFaceDrivenAutoFocusEnabledSelector = mkSelector "setFaceDrivenAutoFocusEnabled:"
 
 -- | @Selector@ for @lensPosition@
-lensPositionSelector :: Selector
+lensPositionSelector :: Selector '[] CFloat
 lensPositionSelector = mkSelector "lensPosition"
 
 -- | @Selector@ for @minimumFocusDistance@
-minimumFocusDistanceSelector :: Selector
+minimumFocusDistanceSelector :: Selector '[] CLong
 minimumFocusDistanceSelector = mkSelector "minimumFocusDistance"
 
 -- | @Selector@ for @hasTorch@
-hasTorchSelector :: Selector
+hasTorchSelector :: Selector '[] Bool
 hasTorchSelector = mkSelector "hasTorch"
 
 -- | @Selector@ for @torchAvailable@
-torchAvailableSelector :: Selector
+torchAvailableSelector :: Selector '[] Bool
 torchAvailableSelector = mkSelector "torchAvailable"
 
 -- | @Selector@ for @torchActive@
-torchActiveSelector :: Selector
+torchActiveSelector :: Selector '[] Bool
 torchActiveSelector = mkSelector "torchActive"
 
 -- | @Selector@ for @torchLevel@
-torchLevelSelector :: Selector
+torchLevelSelector :: Selector '[] CFloat
 torchLevelSelector = mkSelector "torchLevel"
 
 -- | @Selector@ for @torchMode@
-torchModeSelector :: Selector
+torchModeSelector :: Selector '[] AVCaptureTorchMode
 torchModeSelector = mkSelector "torchMode"
 
 -- | @Selector@ for @setTorchMode:@
-setTorchModeSelector :: Selector
+setTorchModeSelector :: Selector '[AVCaptureTorchMode] ()
 setTorchModeSelector = mkSelector "setTorchMode:"
 
 -- | @Selector@ for @hasFlash@
-hasFlashSelector :: Selector
+hasFlashSelector :: Selector '[] Bool
 hasFlashSelector = mkSelector "hasFlash"
 
 -- | @Selector@ for @flashAvailable@
-flashAvailableSelector :: Selector
+flashAvailableSelector :: Selector '[] Bool
 flashAvailableSelector = mkSelector "flashAvailable"
 
 -- | @Selector@ for @flashActive@
-flashActiveSelector :: Selector
+flashActiveSelector :: Selector '[] Bool
 flashActiveSelector = mkSelector "flashActive"
 
 -- | @Selector@ for @flashMode@
-flashModeSelector :: Selector
+flashModeSelector :: Selector '[] AVCaptureFlashMode
 flashModeSelector = mkSelector "flashMode"
 
 -- | @Selector@ for @setFlashMode:@
-setFlashModeSelector :: Selector
+setFlashModeSelector :: Selector '[AVCaptureFlashMode] ()
 setFlashModeSelector = mkSelector "setFlashMode:"
 
 -- | @Selector@ for @virtualDevice@
-virtualDeviceSelector :: Selector
+virtualDeviceSelector :: Selector '[] Bool
 virtualDeviceSelector = mkSelector "virtualDevice"
 
 -- | @Selector@ for @constituentDevices@
-constituentDevicesSelector :: Selector
+constituentDevicesSelector :: Selector '[] (Id NSArray)
 constituentDevicesSelector = mkSelector "constituentDevices"
 
 -- | @Selector@ for @virtualDeviceSwitchOverVideoZoomFactors@
-virtualDeviceSwitchOverVideoZoomFactorsSelector :: Selector
+virtualDeviceSwitchOverVideoZoomFactorsSelector :: Selector '[] (Id NSArray)
 virtualDeviceSwitchOverVideoZoomFactorsSelector = mkSelector "virtualDeviceSwitchOverVideoZoomFactors"
 
 -- | @Selector@ for @primaryConstituentDeviceSwitchingBehavior@
-primaryConstituentDeviceSwitchingBehaviorSelector :: Selector
+primaryConstituentDeviceSwitchingBehaviorSelector :: Selector '[] AVCapturePrimaryConstituentDeviceSwitchingBehavior
 primaryConstituentDeviceSwitchingBehaviorSelector = mkSelector "primaryConstituentDeviceSwitchingBehavior"
 
 -- | @Selector@ for @primaryConstituentDeviceRestrictedSwitchingBehaviorConditions@
-primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector :: Selector
+primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector :: Selector '[] AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
 primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector = mkSelector "primaryConstituentDeviceRestrictedSwitchingBehaviorConditions"
 
 -- | @Selector@ for @activePrimaryConstituentDeviceSwitchingBehavior@
-activePrimaryConstituentDeviceSwitchingBehaviorSelector :: Selector
+activePrimaryConstituentDeviceSwitchingBehaviorSelector :: Selector '[] AVCapturePrimaryConstituentDeviceSwitchingBehavior
 activePrimaryConstituentDeviceSwitchingBehaviorSelector = mkSelector "activePrimaryConstituentDeviceSwitchingBehavior"
 
 -- | @Selector@ for @activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions@
-activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector :: Selector
+activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector :: Selector '[] AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
 activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditionsSelector = mkSelector "activePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions"
 
 -- | @Selector@ for @activePrimaryConstituentDevice@
-activePrimaryConstituentDeviceSelector :: Selector
+activePrimaryConstituentDeviceSelector :: Selector '[] (Id AVCaptureDevice)
 activePrimaryConstituentDeviceSelector = mkSelector "activePrimaryConstituentDevice"
 
 -- | @Selector@ for @supportedFallbackPrimaryConstituentDevices@
-supportedFallbackPrimaryConstituentDevicesSelector :: Selector
+supportedFallbackPrimaryConstituentDevicesSelector :: Selector '[] (Id NSArray)
 supportedFallbackPrimaryConstituentDevicesSelector = mkSelector "supportedFallbackPrimaryConstituentDevices"
 
 -- | @Selector@ for @fallbackPrimaryConstituentDevices@
-fallbackPrimaryConstituentDevicesSelector :: Selector
+fallbackPrimaryConstituentDevicesSelector :: Selector '[] (Id NSArray)
 fallbackPrimaryConstituentDevicesSelector = mkSelector "fallbackPrimaryConstituentDevices"
 
 -- | @Selector@ for @setFallbackPrimaryConstituentDevices:@
-setFallbackPrimaryConstituentDevicesSelector :: Selector
+setFallbackPrimaryConstituentDevicesSelector :: Selector '[Id NSArray] ()
 setFallbackPrimaryConstituentDevicesSelector = mkSelector "setFallbackPrimaryConstituentDevices:"
 
 -- | @Selector@ for @systemPressureState@
-systemPressureStateSelector :: Selector
+systemPressureStateSelector :: Selector '[] (Id AVCaptureSystemPressureState)
 systemPressureStateSelector = mkSelector "systemPressureState"
 
 -- | @Selector@ for @userPreferredCamera@
-userPreferredCameraSelector :: Selector
+userPreferredCameraSelector :: Selector '[] (Id AVCaptureDevice)
 userPreferredCameraSelector = mkSelector "userPreferredCamera"
 
 -- | @Selector@ for @setUserPreferredCamera:@
-setUserPreferredCameraSelector :: Selector
+setUserPreferredCameraSelector :: Selector '[Id AVCaptureDevice] ()
 setUserPreferredCameraSelector = mkSelector "setUserPreferredCamera:"
 
 -- | @Selector@ for @systemPreferredCamera@
-systemPreferredCameraSelector :: Selector
+systemPreferredCameraSelector :: Selector '[] (Id AVCaptureDevice)
 systemPreferredCameraSelector = mkSelector "systemPreferredCamera"
 
 -- | @Selector@ for @deviceType@
-deviceTypeSelector :: Selector
+deviceTypeSelector :: Selector '[] (Id NSString)
 deviceTypeSelector = mkSelector "deviceType"
 
 -- | @Selector@ for @position@
-positionSelector :: Selector
+positionSelector :: Selector '[] AVCaptureDevicePosition
 positionSelector = mkSelector "position"
 

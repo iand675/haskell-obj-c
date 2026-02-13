@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.GameController.GCControllerDirectionPad
   , down
   , left
   , right
-  , setValueForXAxis_yAxisSelector
-  , valueChangedHandlerSelector
-  , setValueChangedHandlerSelector
-  , xAxisSelector
-  , yAxisSelector
-  , upSelector
   , downSelector
   , leftSelector
   , rightSelector
+  , setValueChangedHandlerSelector
+  , setValueForXAxis_yAxisSelector
+  , upSelector
+  , valueChangedHandlerSelector
+  , xAxisSelector
+  , yAxisSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,86 +56,86 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setValueForXAxis:yAxis:@
 setValueForXAxis_yAxis :: IsGCControllerDirectionPad gcControllerDirectionPad => gcControllerDirectionPad -> CFloat -> CFloat -> IO ()
-setValueForXAxis_yAxis gcControllerDirectionPad  xAxis yAxis =
-    sendMsg gcControllerDirectionPad (mkSelector "setValueForXAxis:yAxis:") retVoid [argCFloat xAxis, argCFloat yAxis]
+setValueForXAxis_yAxis gcControllerDirectionPad xAxis yAxis =
+  sendMessage gcControllerDirectionPad setValueForXAxis_yAxisSelector xAxis yAxis
 
 -- | @- valueChangedHandler@
 valueChangedHandler :: IsGCControllerDirectionPad gcControllerDirectionPad => gcControllerDirectionPad -> IO (Ptr ())
-valueChangedHandler gcControllerDirectionPad  =
-    fmap castPtr $ sendMsg gcControllerDirectionPad (mkSelector "valueChangedHandler") (retPtr retVoid) []
+valueChangedHandler gcControllerDirectionPad =
+  sendMessage gcControllerDirectionPad valueChangedHandlerSelector
 
 -- | @- setValueChangedHandler:@
 setValueChangedHandler :: IsGCControllerDirectionPad gcControllerDirectionPad => gcControllerDirectionPad -> Ptr () -> IO ()
-setValueChangedHandler gcControllerDirectionPad  value =
-    sendMsg gcControllerDirectionPad (mkSelector "setValueChangedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setValueChangedHandler gcControllerDirectionPad value =
+  sendMessage gcControllerDirectionPad setValueChangedHandlerSelector value
 
 -- | @- xAxis@
 xAxis :: IsGCControllerDirectionPad gcControllerDirectionPad => gcControllerDirectionPad -> IO (Id GCControllerAxisInput)
-xAxis gcControllerDirectionPad  =
-    sendMsg gcControllerDirectionPad (mkSelector "xAxis") (retPtr retVoid) [] >>= retainedObject . castPtr
+xAxis gcControllerDirectionPad =
+  sendMessage gcControllerDirectionPad xAxisSelector
 
 -- | @- yAxis@
 yAxis :: IsGCControllerDirectionPad gcControllerDirectionPad => gcControllerDirectionPad -> IO (Id GCControllerAxisInput)
-yAxis gcControllerDirectionPad  =
-    sendMsg gcControllerDirectionPad (mkSelector "yAxis") (retPtr retVoid) [] >>= retainedObject . castPtr
+yAxis gcControllerDirectionPad =
+  sendMessage gcControllerDirectionPad yAxisSelector
 
 -- | @- up@
 up :: IsGCControllerDirectionPad gcControllerDirectionPad => gcControllerDirectionPad -> IO (Id GCControllerButtonInput)
-up gcControllerDirectionPad  =
-    sendMsg gcControllerDirectionPad (mkSelector "up") (retPtr retVoid) [] >>= retainedObject . castPtr
+up gcControllerDirectionPad =
+  sendMessage gcControllerDirectionPad upSelector
 
 -- | @- down@
 down :: IsGCControllerDirectionPad gcControllerDirectionPad => gcControllerDirectionPad -> IO (Id GCControllerButtonInput)
-down gcControllerDirectionPad  =
-    sendMsg gcControllerDirectionPad (mkSelector "down") (retPtr retVoid) [] >>= retainedObject . castPtr
+down gcControllerDirectionPad =
+  sendMessage gcControllerDirectionPad downSelector
 
 -- | @- left@
 left :: IsGCControllerDirectionPad gcControllerDirectionPad => gcControllerDirectionPad -> IO (Id GCControllerButtonInput)
-left gcControllerDirectionPad  =
-    sendMsg gcControllerDirectionPad (mkSelector "left") (retPtr retVoid) [] >>= retainedObject . castPtr
+left gcControllerDirectionPad =
+  sendMessage gcControllerDirectionPad leftSelector
 
 -- | @- right@
 right :: IsGCControllerDirectionPad gcControllerDirectionPad => gcControllerDirectionPad -> IO (Id GCControllerButtonInput)
-right gcControllerDirectionPad  =
-    sendMsg gcControllerDirectionPad (mkSelector "right") (retPtr retVoid) [] >>= retainedObject . castPtr
+right gcControllerDirectionPad =
+  sendMessage gcControllerDirectionPad rightSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setValueForXAxis:yAxis:@
-setValueForXAxis_yAxisSelector :: Selector
+setValueForXAxis_yAxisSelector :: Selector '[CFloat, CFloat] ()
 setValueForXAxis_yAxisSelector = mkSelector "setValueForXAxis:yAxis:"
 
 -- | @Selector@ for @valueChangedHandler@
-valueChangedHandlerSelector :: Selector
+valueChangedHandlerSelector :: Selector '[] (Ptr ())
 valueChangedHandlerSelector = mkSelector "valueChangedHandler"
 
 -- | @Selector@ for @setValueChangedHandler:@
-setValueChangedHandlerSelector :: Selector
+setValueChangedHandlerSelector :: Selector '[Ptr ()] ()
 setValueChangedHandlerSelector = mkSelector "setValueChangedHandler:"
 
 -- | @Selector@ for @xAxis@
-xAxisSelector :: Selector
+xAxisSelector :: Selector '[] (Id GCControllerAxisInput)
 xAxisSelector = mkSelector "xAxis"
 
 -- | @Selector@ for @yAxis@
-yAxisSelector :: Selector
+yAxisSelector :: Selector '[] (Id GCControllerAxisInput)
 yAxisSelector = mkSelector "yAxis"
 
 -- | @Selector@ for @up@
-upSelector :: Selector
+upSelector :: Selector '[] (Id GCControllerButtonInput)
 upSelector = mkSelector "up"
 
 -- | @Selector@ for @down@
-downSelector :: Selector
+downSelector :: Selector '[] (Id GCControllerButtonInput)
 downSelector = mkSelector "down"
 
 -- | @Selector@ for @left@
-leftSelector :: Selector
+leftSelector :: Selector '[] (Id GCControllerButtonInput)
 leftSelector = mkSelector "left"
 
 -- | @Selector@ for @right@
-rightSelector :: Selector
+rightSelector :: Selector '[] (Id GCControllerButtonInput)
 rightSelector = mkSelector "right"
 

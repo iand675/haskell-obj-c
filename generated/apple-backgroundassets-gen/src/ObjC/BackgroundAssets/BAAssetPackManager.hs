@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,18 +24,18 @@ module ObjC.BackgroundAssets.BAAssetPackManager
   , sharedManager
   , delegate
   , setDelegate
-  , initSelector
-  , newSelector
+  , contentsAtPath_searchingInAssetPackWithIdentifier_options_errorSelector
+  , delegateSelector
+  , ensureLocalAvailabilityOfAssetPack_completionHandlerSelector
+  , fileDescriptorForPath_searchingInAssetPackWithIdentifier_errorSelector
   , getAssetPackWithIdentifier_completionHandlerSelector
   , getStatusOfAssetPackWithIdentifier_completionHandlerSelector
-  , ensureLocalAvailabilityOfAssetPack_completionHandlerSelector
-  , contentsAtPath_searchingInAssetPackWithIdentifier_options_errorSelector
-  , fileDescriptorForPath_searchingInAssetPackWithIdentifier_errorSelector
-  , urlForPath_errorSelector
+  , initSelector
+  , newSelector
   , removeAssetPackWithIdentifier_completionHandlerSelector
-  , sharedManagerSelector
-  , delegateSelector
   , setDelegateSelector
+  , sharedManagerSelector
+  , urlForPath_errorSelector
 
   -- * Enum types
   , NSDataReadingOptions(NSDataReadingOptions)
@@ -47,15 +48,11 @@ module ObjC.BackgroundAssets.BAAssetPackManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,15 +62,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBAAssetPackManager baAssetPackManager => baAssetPackManager -> IO (Id BAAssetPackManager)
-init_ baAssetPackManager  =
-    sendMsg baAssetPackManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ baAssetPackManager =
+  sendOwnedMessage baAssetPackManager initSelector
 
 -- | @+ new@
 new :: IO (Id BAAssetPackManager)
 new  =
   do
     cls' <- getRequiredClass "BAAssetPackManager"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Gets the asset pack with the given identifier.
 --
@@ -81,9 +78,8 @@ new  =
 --
 -- ObjC selector: @- getAssetPackWithIdentifier:completionHandler:@
 getAssetPackWithIdentifier_completionHandler :: (IsBAAssetPackManager baAssetPackManager, IsNSString assetPackIdentifier) => baAssetPackManager -> assetPackIdentifier -> Ptr () -> IO ()
-getAssetPackWithIdentifier_completionHandler baAssetPackManager  assetPackIdentifier completionHandler =
-  withObjCPtr assetPackIdentifier $ \raw_assetPackIdentifier ->
-      sendMsg baAssetPackManager (mkSelector "getAssetPackWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_assetPackIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getAssetPackWithIdentifier_completionHandler baAssetPackManager assetPackIdentifier completionHandler =
+  sendMessage baAssetPackManager getAssetPackWithIdentifier_completionHandlerSelector (toNSString assetPackIdentifier) completionHandler
 
 -- | Gets the status of the asset pack with the specified identifier.
 --
@@ -91,9 +87,8 @@ getAssetPackWithIdentifier_completionHandler baAssetPackManager  assetPackIdenti
 --
 -- ObjC selector: @- getStatusOfAssetPackWithIdentifier:completionHandler:@
 getStatusOfAssetPackWithIdentifier_completionHandler :: (IsBAAssetPackManager baAssetPackManager, IsNSString assetPackIdentifier) => baAssetPackManager -> assetPackIdentifier -> Ptr () -> IO ()
-getStatusOfAssetPackWithIdentifier_completionHandler baAssetPackManager  assetPackIdentifier completionHandler =
-  withObjCPtr assetPackIdentifier $ \raw_assetPackIdentifier ->
-      sendMsg baAssetPackManager (mkSelector "getStatusOfAssetPackWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_assetPackIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getStatusOfAssetPackWithIdentifier_completionHandler baAssetPackManager assetPackIdentifier completionHandler =
+  sendMessage baAssetPackManager getStatusOfAssetPackWithIdentifier_completionHandlerSelector (toNSString assetPackIdentifier) completionHandler
 
 -- | Ensures that the specified asset pack be available locally.
 --
@@ -101,9 +96,8 @@ getStatusOfAssetPackWithIdentifier_completionHandler baAssetPackManager  assetPa
 --
 -- ObjC selector: @- ensureLocalAvailabilityOfAssetPack:completionHandler:@
 ensureLocalAvailabilityOfAssetPack_completionHandler :: (IsBAAssetPackManager baAssetPackManager, IsBAAssetPack assetPack) => baAssetPackManager -> assetPack -> Ptr () -> IO ()
-ensureLocalAvailabilityOfAssetPack_completionHandler baAssetPackManager  assetPack completionHandler =
-  withObjCPtr assetPack $ \raw_assetPack ->
-      sendMsg baAssetPackManager (mkSelector "ensureLocalAvailabilityOfAssetPack:completionHandler:") retVoid [argPtr (castPtr raw_assetPack :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+ensureLocalAvailabilityOfAssetPack_completionHandler baAssetPackManager assetPack completionHandler =
+  sendMessage baAssetPackManager ensureLocalAvailabilityOfAssetPack_completionHandlerSelector (toBAAssetPack assetPack) completionHandler
 
 -- | Returns the contents of an asset file at the specified relative path.
 --
@@ -111,11 +105,8 @@ ensureLocalAvailabilityOfAssetPack_completionHandler baAssetPackManager  assetPa
 --
 -- ObjC selector: @- contentsAtPath:searchingInAssetPackWithIdentifier:options:error:@
 contentsAtPath_searchingInAssetPackWithIdentifier_options_error :: (IsBAAssetPackManager baAssetPackManager, IsNSString path, IsNSString assetPackIdentifier, IsNSError error_) => baAssetPackManager -> path -> assetPackIdentifier -> NSDataReadingOptions -> error_ -> IO (Id NSData)
-contentsAtPath_searchingInAssetPackWithIdentifier_options_error baAssetPackManager  path assetPackIdentifier options error_ =
-  withObjCPtr path $ \raw_path ->
-    withObjCPtr assetPackIdentifier $ \raw_assetPackIdentifier ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg baAssetPackManager (mkSelector "contentsAtPath:searchingInAssetPackWithIdentifier:options:error:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ()), argPtr (castPtr raw_assetPackIdentifier :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+contentsAtPath_searchingInAssetPackWithIdentifier_options_error baAssetPackManager path assetPackIdentifier options error_ =
+  sendMessage baAssetPackManager contentsAtPath_searchingInAssetPackWithIdentifier_options_errorSelector (toNSString path) (toNSString assetPackIdentifier) options (toNSError error_)
 
 -- | Opens and returns a file descriptor for the asset file at the specified relative path.
 --
@@ -123,11 +114,8 @@ contentsAtPath_searchingInAssetPackWithIdentifier_options_error baAssetPackManag
 --
 -- ObjC selector: @- fileDescriptorForPath:searchingInAssetPackWithIdentifier:error:@
 fileDescriptorForPath_searchingInAssetPackWithIdentifier_error :: (IsBAAssetPackManager baAssetPackManager, IsNSString path, IsNSString assetPackIdentifier, IsNSError error_) => baAssetPackManager -> path -> assetPackIdentifier -> error_ -> IO CInt
-fileDescriptorForPath_searchingInAssetPackWithIdentifier_error baAssetPackManager  path assetPackIdentifier error_ =
-  withObjCPtr path $ \raw_path ->
-    withObjCPtr assetPackIdentifier $ \raw_assetPackIdentifier ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg baAssetPackManager (mkSelector "fileDescriptorForPath:searchingInAssetPackWithIdentifier:error:") retCInt [argPtr (castPtr raw_path :: Ptr ()), argPtr (castPtr raw_assetPackIdentifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+fileDescriptorForPath_searchingInAssetPackWithIdentifier_error baAssetPackManager path assetPackIdentifier error_ =
+  sendMessage baAssetPackManager fileDescriptorForPath_searchingInAssetPackWithIdentifier_errorSelector (toNSString path) (toNSString assetPackIdentifier) (toNSError error_)
 
 -- | Returns a URL for the specified relative path.
 --
@@ -135,18 +123,15 @@ fileDescriptorForPath_searchingInAssetPackWithIdentifier_error baAssetPackManage
 --
 -- ObjC selector: @- URLForPath:error:@
 urlForPath_error :: (IsBAAssetPackManager baAssetPackManager, IsNSString path, IsNSError error_) => baAssetPackManager -> path -> error_ -> IO (Id NSURL)
-urlForPath_error baAssetPackManager  path error_ =
-  withObjCPtr path $ \raw_path ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg baAssetPackManager (mkSelector "URLForPath:error:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+urlForPath_error baAssetPackManager path error_ =
+  sendMessage baAssetPackManager urlForPath_errorSelector (toNSString path) (toNSError error_)
 
 -- | Removes the specified asset pack from the device. - Parameters:   - assetPackIdentifier: The asset pack’s identifier.   - completionHandler: A block that receives an error if one occurs.
 --
 -- ObjC selector: @- removeAssetPackWithIdentifier:completionHandler:@
 removeAssetPackWithIdentifier_completionHandler :: (IsBAAssetPackManager baAssetPackManager, IsNSString assetPackIdentifier) => baAssetPackManager -> assetPackIdentifier -> Ptr () -> IO ()
-removeAssetPackWithIdentifier_completionHandler baAssetPackManager  assetPackIdentifier completionHandler =
-  withObjCPtr assetPackIdentifier $ \raw_assetPackIdentifier ->
-      sendMsg baAssetPackManager (mkSelector "removeAssetPackWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_assetPackIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+removeAssetPackWithIdentifier_completionHandler baAssetPackManager assetPackIdentifier completionHandler =
+  sendMessage baAssetPackManager removeAssetPackWithIdentifier_completionHandlerSelector (toNSString assetPackIdentifier) completionHandler
 
 -- | The shared asset-pack manager.
 --
@@ -155,71 +140,71 @@ sharedManager :: IO (Id BAAssetPackManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "BAAssetPackManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | An object that receives notifications about events that occur as an asset pack is downloaded.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsBAAssetPackManager baAssetPackManager => baAssetPackManager -> IO RawId
-delegate baAssetPackManager  =
-    fmap (RawId . castPtr) $ sendMsg baAssetPackManager (mkSelector "delegate") (retPtr retVoid) []
+delegate baAssetPackManager =
+  sendMessage baAssetPackManager delegateSelector
 
 -- | An object that receives notifications about events that occur as an asset pack is downloaded.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsBAAssetPackManager baAssetPackManager => baAssetPackManager -> RawId -> IO ()
-setDelegate baAssetPackManager  value =
-    sendMsg baAssetPackManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate baAssetPackManager value =
+  sendMessage baAssetPackManager setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BAAssetPackManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BAAssetPackManager)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @getAssetPackWithIdentifier:completionHandler:@
-getAssetPackWithIdentifier_completionHandlerSelector :: Selector
+getAssetPackWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 getAssetPackWithIdentifier_completionHandlerSelector = mkSelector "getAssetPackWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @getStatusOfAssetPackWithIdentifier:completionHandler:@
-getStatusOfAssetPackWithIdentifier_completionHandlerSelector :: Selector
+getStatusOfAssetPackWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 getStatusOfAssetPackWithIdentifier_completionHandlerSelector = mkSelector "getStatusOfAssetPackWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @ensureLocalAvailabilityOfAssetPack:completionHandler:@
-ensureLocalAvailabilityOfAssetPack_completionHandlerSelector :: Selector
+ensureLocalAvailabilityOfAssetPack_completionHandlerSelector :: Selector '[Id BAAssetPack, Ptr ()] ()
 ensureLocalAvailabilityOfAssetPack_completionHandlerSelector = mkSelector "ensureLocalAvailabilityOfAssetPack:completionHandler:"
 
 -- | @Selector@ for @contentsAtPath:searchingInAssetPackWithIdentifier:options:error:@
-contentsAtPath_searchingInAssetPackWithIdentifier_options_errorSelector :: Selector
+contentsAtPath_searchingInAssetPackWithIdentifier_options_errorSelector :: Selector '[Id NSString, Id NSString, NSDataReadingOptions, Id NSError] (Id NSData)
 contentsAtPath_searchingInAssetPackWithIdentifier_options_errorSelector = mkSelector "contentsAtPath:searchingInAssetPackWithIdentifier:options:error:"
 
 -- | @Selector@ for @fileDescriptorForPath:searchingInAssetPackWithIdentifier:error:@
-fileDescriptorForPath_searchingInAssetPackWithIdentifier_errorSelector :: Selector
+fileDescriptorForPath_searchingInAssetPackWithIdentifier_errorSelector :: Selector '[Id NSString, Id NSString, Id NSError] CInt
 fileDescriptorForPath_searchingInAssetPackWithIdentifier_errorSelector = mkSelector "fileDescriptorForPath:searchingInAssetPackWithIdentifier:error:"
 
 -- | @Selector@ for @URLForPath:error:@
-urlForPath_errorSelector :: Selector
+urlForPath_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSURL)
 urlForPath_errorSelector = mkSelector "URLForPath:error:"
 
 -- | @Selector@ for @removeAssetPackWithIdentifier:completionHandler:@
-removeAssetPackWithIdentifier_completionHandlerSelector :: Selector
+removeAssetPackWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 removeAssetPackWithIdentifier_completionHandlerSelector = mkSelector "removeAssetPackWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id BAAssetPackManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.CoreLocation.CLMonitorConfiguration
   , queue
   , eventHandler
   , configWithMonitorName_queue_eventHandlerSelector
+  , eventHandlerSelector
   , nameSelector
   , queueSelector
-  , eventHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,42 +35,40 @@ configWithMonitorName_queue_eventHandler :: (IsNSString name, IsNSObject queue) 
 configWithMonitorName_queue_eventHandler name queue eventHandler =
   do
     cls' <- getRequiredClass "CLMonitorConfiguration"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr queue $ \raw_queue ->
-        sendClassMsg cls' (mkSelector "configWithMonitorName:queue:eventHandler:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr eventHandler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' configWithMonitorName_queue_eventHandlerSelector (toNSString name) (toNSObject queue) eventHandler
 
 -- | @- name@
 name :: IsCLMonitorConfiguration clMonitorConfiguration => clMonitorConfiguration -> IO (Id NSString)
-name clMonitorConfiguration  =
-    sendMsg clMonitorConfiguration (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name clMonitorConfiguration =
+  sendMessage clMonitorConfiguration nameSelector
 
 -- | @- queue@
 queue :: IsCLMonitorConfiguration clMonitorConfiguration => clMonitorConfiguration -> IO (Id NSObject)
-queue clMonitorConfiguration  =
-    sendMsg clMonitorConfiguration (mkSelector "queue") (retPtr retVoid) [] >>= retainedObject . castPtr
+queue clMonitorConfiguration =
+  sendMessage clMonitorConfiguration queueSelector
 
 -- | @- eventHandler@
 eventHandler :: IsCLMonitorConfiguration clMonitorConfiguration => clMonitorConfiguration -> IO (Ptr ())
-eventHandler clMonitorConfiguration  =
-    fmap castPtr $ sendMsg clMonitorConfiguration (mkSelector "eventHandler") (retPtr retVoid) []
+eventHandler clMonitorConfiguration =
+  sendMessage clMonitorConfiguration eventHandlerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @configWithMonitorName:queue:eventHandler:@
-configWithMonitorName_queue_eventHandlerSelector :: Selector
+configWithMonitorName_queue_eventHandlerSelector :: Selector '[Id NSString, Id NSObject, Ptr ()] (Id CLMonitorConfiguration)
 configWithMonitorName_queue_eventHandlerSelector = mkSelector "configWithMonitorName:queue:eventHandler:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @queue@
-queueSelector :: Selector
+queueSelector :: Selector '[] (Id NSObject)
 queueSelector = mkSelector "queue"
 
 -- | @Selector@ for @eventHandler@
-eventHandlerSelector :: Selector
+eventHandlerSelector :: Selector '[] (Ptr ())
 eventHandlerSelector = mkSelector "eventHandler"
 

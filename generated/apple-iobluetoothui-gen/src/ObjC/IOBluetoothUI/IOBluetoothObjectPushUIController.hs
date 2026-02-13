@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.IOBluetoothUI.IOBluetoothObjectPushUIController
   , setIconImage
   , getDevice
   , isTransferInProgress
+  , beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector
+  , getDeviceSelector
+  , getTitleSelector
   , initObjectPushWithBluetoothDevice_withFiles_delegateSelector
+  , isTransferInProgressSelector
   , runModalSelector
   , runPanelSelector
-  , beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector
-  , stopSelector
-  , setTitleSelector
-  , getTitleSelector
   , setIconImageSelector
-  , getDeviceSelector
-  , isTransferInProgressSelector
+  , setTitleSelector
+  , stopSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,10 +66,8 @@ import ObjC.IOBluetooth.Internal.Classes
 --
 -- ObjC selector: @- initObjectPushWithBluetoothDevice:withFiles:delegate:@
 initObjectPushWithBluetoothDevice_withFiles_delegate :: (IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController, IsIOBluetoothDevice inDevice, IsNSArray inFiles) => ioBluetoothObjectPushUIController -> inDevice -> inFiles -> RawId -> IO (Id IOBluetoothObjectPushUIController)
-initObjectPushWithBluetoothDevice_withFiles_delegate ioBluetoothObjectPushUIController  inDevice inFiles inDelegate =
-  withObjCPtr inDevice $ \raw_inDevice ->
-    withObjCPtr inFiles $ \raw_inFiles ->
-        sendMsg ioBluetoothObjectPushUIController (mkSelector "initObjectPushWithBluetoothDevice:withFiles:delegate:") (retPtr retVoid) [argPtr (castPtr raw_inDevice :: Ptr ()), argPtr (castPtr raw_inFiles :: Ptr ()), argPtr (castPtr (unRawId inDelegate) :: Ptr ())] >>= ownedObject . castPtr
+initObjectPushWithBluetoothDevice_withFiles_delegate ioBluetoothObjectPushUIController inDevice inFiles inDelegate =
+  sendOwnedMessage ioBluetoothObjectPushUIController initObjectPushWithBluetoothDevice_withFiles_delegateSelector (toIOBluetoothDevice inDevice) (toNSArray inFiles) inDelegate
 
 -- | runModal
 --
@@ -84,8 +79,8 @@ initObjectPushWithBluetoothDevice_withFiles_delegate ioBluetoothObjectPushUICont
 --
 -- ObjC selector: @- runModal@
 runModal :: IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController => ioBluetoothObjectPushUIController -> IO ()
-runModal ioBluetoothObjectPushUIController  =
-    sendMsg ioBluetoothObjectPushUIController (mkSelector "runModal") retVoid []
+runModal ioBluetoothObjectPushUIController =
+  sendMessage ioBluetoothObjectPushUIController runModalSelector
 
 -- | runPanel
 --
@@ -97,8 +92,8 @@ runModal ioBluetoothObjectPushUIController  =
 --
 -- ObjC selector: @- runPanel@
 runPanel :: IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController => ioBluetoothObjectPushUIController -> IO ()
-runPanel ioBluetoothObjectPushUIController  =
-    sendMsg ioBluetoothObjectPushUIController (mkSelector "runPanel") retVoid []
+runPanel ioBluetoothObjectPushUIController =
+  sendMessage ioBluetoothObjectPushUIController runPanelSelector
 
 -- | beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:
 --
@@ -119,10 +114,9 @@ runPanel ioBluetoothObjectPushUIController  =
 -- Returns: Returns kIOReturnSuccess if the sheet modal session was started.
 --
 -- ObjC selector: @- beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:@
-beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController, IsNSWindow sheetWindow) => ioBluetoothObjectPushUIController -> sheetWindow -> RawId -> Selector -> Ptr () -> IO CInt
-beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo ioBluetoothObjectPushUIController  sheetWindow modalDelegate didEndSelector contextInfo =
-  withObjCPtr sheetWindow $ \raw_sheetWindow ->
-      sendMsg ioBluetoothObjectPushUIController (mkSelector "beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:") retCInt [argPtr (castPtr raw_sheetWindow :: Ptr ()), argPtr (castPtr (unRawId modalDelegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController, IsNSWindow sheetWindow) => ioBluetoothObjectPushUIController -> sheetWindow -> RawId -> Sel -> Ptr () -> IO CInt
+beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo ioBluetoothObjectPushUIController sheetWindow modalDelegate didEndSelector contextInfo =
+  sendMessage ioBluetoothObjectPushUIController beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector (toNSWindow sheetWindow) modalDelegate didEndSelector contextInfo
 
 -- | stop
 --
@@ -134,8 +128,8 @@ beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo ioBluetoothObj
 --
 -- ObjC selector: @- stop@
 stop :: IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController => ioBluetoothObjectPushUIController -> IO ()
-stop ioBluetoothObjectPushUIController  =
-    sendMsg ioBluetoothObjectPushUIController (mkSelector "stop") retVoid []
+stop ioBluetoothObjectPushUIController =
+  sendMessage ioBluetoothObjectPushUIController stopSelector
 
 -- | setTitle:
 --
@@ -147,9 +141,8 @@ stop ioBluetoothObjectPushUIController  =
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController, IsNSString windowTitle) => ioBluetoothObjectPushUIController -> windowTitle -> IO ()
-setTitle ioBluetoothObjectPushUIController  windowTitle =
-  withObjCPtr windowTitle $ \raw_windowTitle ->
-      sendMsg ioBluetoothObjectPushUIController (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_windowTitle :: Ptr ())]
+setTitle ioBluetoothObjectPushUIController windowTitle =
+  sendMessage ioBluetoothObjectPushUIController setTitleSelector (toNSString windowTitle)
 
 -- | getTitle
 --
@@ -159,8 +152,8 @@ setTitle ioBluetoothObjectPushUIController  windowTitle =
 --
 -- ObjC selector: @- getTitle@
 getTitle :: IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController => ioBluetoothObjectPushUIController -> IO (Id NSString)
-getTitle ioBluetoothObjectPushUIController  =
-    sendMsg ioBluetoothObjectPushUIController (mkSelector "getTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+getTitle ioBluetoothObjectPushUIController =
+  sendMessage ioBluetoothObjectPushUIController getTitleSelector
 
 -- | setIconImage:
 --
@@ -172,9 +165,8 @@ getTitle ioBluetoothObjectPushUIController  =
 --
 -- ObjC selector: @- setIconImage:@
 setIconImage :: (IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController, IsNSImage image) => ioBluetoothObjectPushUIController -> image -> IO ()
-setIconImage ioBluetoothObjectPushUIController  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg ioBluetoothObjectPushUIController (mkSelector "setIconImage:") retVoid [argPtr (castPtr raw_image :: Ptr ())]
+setIconImage ioBluetoothObjectPushUIController image =
+  sendMessage ioBluetoothObjectPushUIController setIconImageSelector (toNSImage image)
 
 -- | getDevice:
 --
@@ -184,8 +176,8 @@ setIconImage ioBluetoothObjectPushUIController  image =
 --
 -- ObjC selector: @- getDevice@
 getDevice :: IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController => ioBluetoothObjectPushUIController -> IO (Id IOBluetoothDevice)
-getDevice ioBluetoothObjectPushUIController  =
-    sendMsg ioBluetoothObjectPushUIController (mkSelector "getDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+getDevice ioBluetoothObjectPushUIController =
+  sendMessage ioBluetoothObjectPushUIController getDeviceSelector
 
 -- | isTransferInProgress:
 --
@@ -195,50 +187,50 @@ getDevice ioBluetoothObjectPushUIController  =
 --
 -- ObjC selector: @- isTransferInProgress@
 isTransferInProgress :: IsIOBluetoothObjectPushUIController ioBluetoothObjectPushUIController => ioBluetoothObjectPushUIController -> IO Bool
-isTransferInProgress ioBluetoothObjectPushUIController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothObjectPushUIController (mkSelector "isTransferInProgress") retCULong []
+isTransferInProgress ioBluetoothObjectPushUIController =
+  sendMessage ioBluetoothObjectPushUIController isTransferInProgressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initObjectPushWithBluetoothDevice:withFiles:delegate:@
-initObjectPushWithBluetoothDevice_withFiles_delegateSelector :: Selector
+initObjectPushWithBluetoothDevice_withFiles_delegateSelector :: Selector '[Id IOBluetoothDevice, Id NSArray, RawId] (Id IOBluetoothObjectPushUIController)
 initObjectPushWithBluetoothDevice_withFiles_delegateSelector = mkSelector "initObjectPushWithBluetoothDevice:withFiles:delegate:"
 
 -- | @Selector@ for @runModal@
-runModalSelector :: Selector
+runModalSelector :: Selector '[] ()
 runModalSelector = mkSelector "runModal"
 
 -- | @Selector@ for @runPanel@
-runPanelSelector :: Selector
+runPanelSelector :: Selector '[] ()
 runPanelSelector = mkSelector "runPanel"
 
 -- | @Selector@ for @beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:@
-beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector
+beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr ()] CInt
 beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector = mkSelector "beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @getTitle@
-getTitleSelector :: Selector
+getTitleSelector :: Selector '[] (Id NSString)
 getTitleSelector = mkSelector "getTitle"
 
 -- | @Selector@ for @setIconImage:@
-setIconImageSelector :: Selector
+setIconImageSelector :: Selector '[Id NSImage] ()
 setIconImageSelector = mkSelector "setIconImage:"
 
 -- | @Selector@ for @getDevice@
-getDeviceSelector :: Selector
+getDeviceSelector :: Selector '[] (Id IOBluetoothDevice)
 getDeviceSelector = mkSelector "getDevice"
 
 -- | @Selector@ for @isTransferInProgress@
-isTransferInProgressSelector :: Selector
+isTransferInProgressSelector :: Selector '[] Bool
 isTransferInProgressSelector = mkSelector "isTransferInProgress"
 

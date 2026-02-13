@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.SensorKit.SRPhotoplethysmogramSample
   , opticalSamples
   , accelerometerSamples
   , temperature
-  , initSelector
-  , newSelector
-  , startDateSelector
-  , nanosecondsSinceStartSelector
-  , usageSelector
-  , opticalSamplesSelector
   , accelerometerSamplesSelector
+  , initSelector
+  , nanosecondsSinceStartSelector
+  , newSelector
+  , opticalSamplesSelector
+  , startDateSelector
   , temperatureSelector
+  , usageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSRPhotoplethysmogramSample srPhotoplethysmogramSample => srPhotoplethysmogramSample -> IO (Id SRPhotoplethysmogramSample)
-init_ srPhotoplethysmogramSample  =
-    sendMsg srPhotoplethysmogramSample (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srPhotoplethysmogramSample =
+  sendOwnedMessage srPhotoplethysmogramSample initSelector
 
 -- | @+ new@
 new :: IO (Id SRPhotoplethysmogramSample)
 new  =
   do
     cls' <- getRequiredClass "SRPhotoplethysmogramSample"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | startDate
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- startDate@
 startDate :: IsSRPhotoplethysmogramSample srPhotoplethysmogramSample => srPhotoplethysmogramSample -> IO (Id NSDate)
-startDate srPhotoplethysmogramSample  =
-    sendMsg srPhotoplethysmogramSample (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate srPhotoplethysmogramSample =
+  sendMessage srPhotoplethysmogramSample startDateSelector
 
 -- | nanosecondsSinceStart
 --
@@ -68,8 +65,8 @@ startDate srPhotoplethysmogramSample  =
 --
 -- ObjC selector: @- nanosecondsSinceStart@
 nanosecondsSinceStart :: IsSRPhotoplethysmogramSample srPhotoplethysmogramSample => srPhotoplethysmogramSample -> IO CLong
-nanosecondsSinceStart srPhotoplethysmogramSample  =
-    sendMsg srPhotoplethysmogramSample (mkSelector "nanosecondsSinceStart") retCLong []
+nanosecondsSinceStart srPhotoplethysmogramSample =
+  sendMessage srPhotoplethysmogramSample nanosecondsSinceStartSelector
 
 -- | usage
 --
@@ -79,18 +76,18 @@ nanosecondsSinceStart srPhotoplethysmogramSample  =
 --
 -- ObjC selector: @- usage@
 usage :: IsSRPhotoplethysmogramSample srPhotoplethysmogramSample => srPhotoplethysmogramSample -> IO (Id NSArray)
-usage srPhotoplethysmogramSample  =
-    sendMsg srPhotoplethysmogramSample (mkSelector "usage") (retPtr retVoid) [] >>= retainedObject . castPtr
+usage srPhotoplethysmogramSample =
+  sendMessage srPhotoplethysmogramSample usageSelector
 
 -- | @- opticalSamples@
 opticalSamples :: IsSRPhotoplethysmogramSample srPhotoplethysmogramSample => srPhotoplethysmogramSample -> IO (Id NSArray)
-opticalSamples srPhotoplethysmogramSample  =
-    sendMsg srPhotoplethysmogramSample (mkSelector "opticalSamples") (retPtr retVoid) [] >>= retainedObject . castPtr
+opticalSamples srPhotoplethysmogramSample =
+  sendMessage srPhotoplethysmogramSample opticalSamplesSelector
 
 -- | @- accelerometerSamples@
 accelerometerSamples :: IsSRPhotoplethysmogramSample srPhotoplethysmogramSample => srPhotoplethysmogramSample -> IO (Id NSArray)
-accelerometerSamples srPhotoplethysmogramSample  =
-    sendMsg srPhotoplethysmogramSample (mkSelector "accelerometerSamples") (retPtr retVoid) [] >>= retainedObject . castPtr
+accelerometerSamples srPhotoplethysmogramSample =
+  sendMessage srPhotoplethysmogramSample accelerometerSamplesSelector
 
 -- | temperature
 --
@@ -100,42 +97,42 @@ accelerometerSamples srPhotoplethysmogramSample  =
 --
 -- ObjC selector: @- temperature@
 temperature :: IsSRPhotoplethysmogramSample srPhotoplethysmogramSample => srPhotoplethysmogramSample -> IO (Id NSMeasurement)
-temperature srPhotoplethysmogramSample  =
-    sendMsg srPhotoplethysmogramSample (mkSelector "temperature") (retPtr retVoid) [] >>= retainedObject . castPtr
+temperature srPhotoplethysmogramSample =
+  sendMessage srPhotoplethysmogramSample temperatureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRPhotoplethysmogramSample)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRPhotoplethysmogramSample)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @nanosecondsSinceStart@
-nanosecondsSinceStartSelector :: Selector
+nanosecondsSinceStartSelector :: Selector '[] CLong
 nanosecondsSinceStartSelector = mkSelector "nanosecondsSinceStart"
 
 -- | @Selector@ for @usage@
-usageSelector :: Selector
+usageSelector :: Selector '[] (Id NSArray)
 usageSelector = mkSelector "usage"
 
 -- | @Selector@ for @opticalSamples@
-opticalSamplesSelector :: Selector
+opticalSamplesSelector :: Selector '[] (Id NSArray)
 opticalSamplesSelector = mkSelector "opticalSamples"
 
 -- | @Selector@ for @accelerometerSamples@
-accelerometerSamplesSelector :: Selector
+accelerometerSamplesSelector :: Selector '[] (Id NSArray)
 accelerometerSamplesSelector = mkSelector "accelerometerSamples"
 
 -- | @Selector@ for @temperature@
-temperatureSelector :: Selector
+temperatureSelector :: Selector '[] (Id NSMeasurement)
 temperatureSelector = mkSelector "temperature"
 

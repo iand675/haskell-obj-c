@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,40 +34,36 @@ module ObjC.IOBluetooth.IOBluetoothSDPServiceRecord
   , device
   , attributes
   , sortedAttributes
-  , publishedServiceRecordWithDictionarySelector
-  , removeServiceRecordSelector
-  , withServiceDictionary_deviceSelector
-  , initWithServiceDictionary_deviceSelector
-  , withSDPServiceRecordRefSelector
-  , getSDPServiceRecordRefSelector
-  , getDeviceSelector
-  , getAttributesSelector
+  , attributesSelector
+  , deviceSelector
   , getAttributeDataElementSelector
-  , getServiceNameSelector
-  , getRFCOMMChannelIDSelector
+  , getAttributesSelector
+  , getDeviceSelector
   , getL2CAPPSMSelector
+  , getRFCOMMChannelIDSelector
+  , getSDPServiceRecordRefSelector
+  , getServiceNameSelector
   , getServiceRecordHandleSelector
+  , handsFreeSupportedFeaturesSelector
+  , hasServiceFromArraySelector
+  , initWithServiceDictionary_deviceSelector
+  , matchesSearchArraySelector
   , matchesUUID16Selector
   , matchesUUIDArraySelector
-  , matchesSearchArraySelector
-  , hasServiceFromArraySelector
-  , handsFreeSupportedFeaturesSelector
-  , deviceSelector
-  , attributesSelector
+  , publishedServiceRecordWithDictionarySelector
+  , removeServiceRecordSelector
   , sortedAttributesSelector
+  , withSDPServiceRecordRefSelector
+  , withServiceDictionary_deviceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,8 +99,7 @@ publishedServiceRecordWithDictionary :: IsNSDictionary serviceDict => serviceDic
 publishedServiceRecordWithDictionary serviceDict =
   do
     cls' <- getRequiredClass "IOBluetoothSDPServiceRecord"
-    withObjCPtr serviceDict $ \raw_serviceDict ->
-      sendClassMsg cls' (mkSelector "publishedServiceRecordWithDictionary:") (retPtr retVoid) [argPtr (castPtr raw_serviceDict :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' publishedServiceRecordWithDictionarySelector (toNSDictionary serviceDict)
 
 -- | removeServiceRecord
 --
@@ -113,8 +109,8 @@ publishedServiceRecordWithDictionary serviceDict =
 --
 -- ObjC selector: @- removeServiceRecord@
 removeServiceRecord :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO CInt
-removeServiceRecord ioBluetoothSDPServiceRecord  =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "removeServiceRecord") retCInt []
+removeServiceRecord ioBluetoothSDPServiceRecord =
+  sendMessage ioBluetoothSDPServiceRecord removeServiceRecordSelector
 
 -- | withServiceDictionary:device:
 --
@@ -127,9 +123,7 @@ withServiceDictionary_device :: (IsNSDictionary serviceDict, IsIOBluetoothDevice
 withServiceDictionary_device serviceDict device =
   do
     cls' <- getRequiredClass "IOBluetoothSDPServiceRecord"
-    withObjCPtr serviceDict $ \raw_serviceDict ->
-      withObjCPtr device $ \raw_device ->
-        sendClassMsg cls' (mkSelector "withServiceDictionary:device:") (retPtr retVoid) [argPtr (castPtr raw_serviceDict :: Ptr ()), argPtr (castPtr raw_device :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' withServiceDictionary_deviceSelector (toNSDictionary serviceDict) (toIOBluetoothDevice device)
 
 -- | initWithServiceDictionary
 --
@@ -139,10 +133,8 @@ withServiceDictionary_device serviceDict device =
 --
 -- ObjC selector: @- initWithServiceDictionary:device:@
 initWithServiceDictionary_device :: (IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord, IsNSDictionary serviceDict, IsIOBluetoothDevice device) => ioBluetoothSDPServiceRecord -> serviceDict -> device -> IO (Id IOBluetoothSDPServiceRecord)
-initWithServiceDictionary_device ioBluetoothSDPServiceRecord  serviceDict device =
-  withObjCPtr serviceDict $ \raw_serviceDict ->
-    withObjCPtr device $ \raw_device ->
-        sendMsg ioBluetoothSDPServiceRecord (mkSelector "initWithServiceDictionary:device:") (retPtr retVoid) [argPtr (castPtr raw_serviceDict :: Ptr ()), argPtr (castPtr raw_device :: Ptr ())] >>= ownedObject . castPtr
+initWithServiceDictionary_device ioBluetoothSDPServiceRecord serviceDict device =
+  sendOwnedMessage ioBluetoothSDPServiceRecord initWithServiceDictionary_deviceSelector (toNSDictionary serviceDict) (toIOBluetoothDevice device)
 
 -- | withSDPServiceRecordRef:
 --
@@ -157,7 +149,7 @@ withSDPServiceRecordRef :: Ptr () -> IO (Id IOBluetoothSDPServiceRecord)
 withSDPServiceRecordRef sdpServiceRecordRef =
   do
     cls' <- getRequiredClass "IOBluetoothSDPServiceRecord"
-    sendClassMsg cls' (mkSelector "withSDPServiceRecordRef:") (retPtr retVoid) [argPtr sdpServiceRecordRef] >>= retainedObject . castPtr
+    sendClassMessage cls' withSDPServiceRecordRefSelector sdpServiceRecordRef
 
 -- | getSDPServiceRecordRef
 --
@@ -167,18 +159,18 @@ withSDPServiceRecordRef sdpServiceRecordRef =
 --
 -- ObjC selector: @- getSDPServiceRecordRef@
 getSDPServiceRecordRef :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO (Ptr ())
-getSDPServiceRecordRef ioBluetoothSDPServiceRecord  =
-    fmap castPtr $ sendMsg ioBluetoothSDPServiceRecord (mkSelector "getSDPServiceRecordRef") (retPtr retVoid) []
+getSDPServiceRecordRef ioBluetoothSDPServiceRecord =
+  sendMessage ioBluetoothSDPServiceRecord getSDPServiceRecordRefSelector
 
 -- | @- getDevice@
 getDevice :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO (Id IOBluetoothDevice)
-getDevice ioBluetoothSDPServiceRecord  =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+getDevice ioBluetoothSDPServiceRecord =
+  sendMessage ioBluetoothSDPServiceRecord getDeviceSelector
 
 -- | @- getAttributes@
 getAttributes :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO (Id NSDictionary)
-getAttributes ioBluetoothSDPServiceRecord  =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+getAttributes ioBluetoothSDPServiceRecord =
+  sendMessage ioBluetoothSDPServiceRecord getAttributesSelector
 
 -- | getAttributeDataElement:
 --
@@ -190,8 +182,8 @@ getAttributes ioBluetoothSDPServiceRecord  =
 --
 -- ObjC selector: @- getAttributeDataElement:@
 getAttributeDataElement :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> CUShort -> IO (Id IOBluetoothSDPDataElement)
-getAttributeDataElement ioBluetoothSDPServiceRecord  attributeID =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getAttributeDataElement:") (retPtr retVoid) [argCUInt (fromIntegral attributeID)] >>= retainedObject . castPtr
+getAttributeDataElement ioBluetoothSDPServiceRecord attributeID =
+  sendMessage ioBluetoothSDPServiceRecord getAttributeDataElementSelector attributeID
 
 -- | getServiceName
 --
@@ -203,8 +195,8 @@ getAttributeDataElement ioBluetoothSDPServiceRecord  attributeID =
 --
 -- ObjC selector: @- getServiceName@
 getServiceName :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO (Id NSString)
-getServiceName ioBluetoothSDPServiceRecord  =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getServiceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+getServiceName ioBluetoothSDPServiceRecord =
+  sendMessage ioBluetoothSDPServiceRecord getServiceNameSelector
 
 -- | getRFCOMMChannelID:
 --
@@ -218,8 +210,8 @@ getServiceName ioBluetoothSDPServiceRecord  =
 --
 -- ObjC selector: @- getRFCOMMChannelID:@
 getRFCOMMChannelID :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> RawId -> IO CInt
-getRFCOMMChannelID ioBluetoothSDPServiceRecord  rfcommChannelID =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getRFCOMMChannelID:") retCInt [argPtr (castPtr (unRawId rfcommChannelID) :: Ptr ())]
+getRFCOMMChannelID ioBluetoothSDPServiceRecord rfcommChannelID =
+  sendMessage ioBluetoothSDPServiceRecord getRFCOMMChannelIDSelector rfcommChannelID
 
 -- | getL2CAPPSM:
 --
@@ -233,8 +225,8 @@ getRFCOMMChannelID ioBluetoothSDPServiceRecord  rfcommChannelID =
 --
 -- ObjC selector: @- getL2CAPPSM:@
 getL2CAPPSM :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> RawId -> IO CInt
-getL2CAPPSM ioBluetoothSDPServiceRecord  outPSM =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getL2CAPPSM:") retCInt [argPtr (castPtr (unRawId outPSM) :: Ptr ())]
+getL2CAPPSM ioBluetoothSDPServiceRecord outPSM =
+  sendMessage ioBluetoothSDPServiceRecord getL2CAPPSMSelector outPSM
 
 -- | getServiceRecordHandle:
 --
@@ -248,8 +240,8 @@ getL2CAPPSM ioBluetoothSDPServiceRecord  outPSM =
 --
 -- ObjC selector: @- getServiceRecordHandle:@
 getServiceRecordHandle :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> RawId -> IO CInt
-getServiceRecordHandle ioBluetoothSDPServiceRecord  outServiceRecordHandle =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "getServiceRecordHandle:") retCInt [argPtr (castPtr (unRawId outServiceRecordHandle) :: Ptr ())]
+getServiceRecordHandle ioBluetoothSDPServiceRecord outServiceRecordHandle =
+  sendMessage ioBluetoothSDPServiceRecord getServiceRecordHandleSelector outServiceRecordHandle
 
 -- | matchesUUID16:
 --
@@ -263,8 +255,8 @@ getServiceRecordHandle ioBluetoothSDPServiceRecord  outServiceRecordHandle =
 --
 -- ObjC selector: @- matchesUUID16:@
 matchesUUID16 :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> CUShort -> IO Bool
-matchesUUID16 ioBluetoothSDPServiceRecord  uuid16 =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothSDPServiceRecord (mkSelector "matchesUUID16:") retCULong [argCUInt (fromIntegral uuid16)]
+matchesUUID16 ioBluetoothSDPServiceRecord uuid16 =
+  sendMessage ioBluetoothSDPServiceRecord matchesUUID16Selector uuid16
 
 -- | matchesUUIDArray:
 --
@@ -280,9 +272,8 @@ matchesUUID16 ioBluetoothSDPServiceRecord  uuid16 =
 --
 -- ObjC selector: @- matchesUUIDArray:@
 matchesUUIDArray :: (IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord, IsNSArray uuidArray) => ioBluetoothSDPServiceRecord -> uuidArray -> IO Bool
-matchesUUIDArray ioBluetoothSDPServiceRecord  uuidArray =
-  withObjCPtr uuidArray $ \raw_uuidArray ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothSDPServiceRecord (mkSelector "matchesUUIDArray:") retCULong [argPtr (castPtr raw_uuidArray :: Ptr ())]
+matchesUUIDArray ioBluetoothSDPServiceRecord uuidArray =
+  sendMessage ioBluetoothSDPServiceRecord matchesUUIDArraySelector (toNSArray uuidArray)
 
 -- | matchesSearchArray:
 --
@@ -298,9 +289,8 @@ matchesUUIDArray ioBluetoothSDPServiceRecord  uuidArray =
 --
 -- ObjC selector: @- matchesSearchArray:@
 matchesSearchArray :: (IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord, IsNSArray searchArray) => ioBluetoothSDPServiceRecord -> searchArray -> IO Bool
-matchesSearchArray ioBluetoothSDPServiceRecord  searchArray =
-  withObjCPtr searchArray $ \raw_searchArray ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothSDPServiceRecord (mkSelector "matchesSearchArray:") retCULong [argPtr (castPtr raw_searchArray :: Ptr ())]
+matchesSearchArray ioBluetoothSDPServiceRecord searchArray =
+  sendMessage ioBluetoothSDPServiceRecord matchesSearchArraySelector (toNSArray searchArray)
 
 -- | hasServiceFromArray:
 --
@@ -314,9 +304,8 @@ matchesSearchArray ioBluetoothSDPServiceRecord  searchArray =
 --
 -- ObjC selector: @- hasServiceFromArray:@
 hasServiceFromArray :: (IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord, IsNSArray array) => ioBluetoothSDPServiceRecord -> array -> IO Bool
-hasServiceFromArray ioBluetoothSDPServiceRecord  array =
-  withObjCPtr array $ \raw_array ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothSDPServiceRecord (mkSelector "hasServiceFromArray:") retCULong [argPtr (castPtr raw_array :: Ptr ())]
+hasServiceFromArray ioBluetoothSDPServiceRecord array =
+  sendMessage ioBluetoothSDPServiceRecord hasServiceFromArraySelector (toNSArray array)
 
 -- | handsFreeSupportedFeatures
 --
@@ -328,8 +317,8 @@ hasServiceFromArray ioBluetoothSDPServiceRecord  array =
 --
 -- ObjC selector: @- handsFreeSupportedFeatures@
 handsFreeSupportedFeatures :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO CUShort
-handsFreeSupportedFeatures ioBluetoothSDPServiceRecord  =
-    fmap fromIntegral $ sendMsg ioBluetoothSDPServiceRecord (mkSelector "handsFreeSupportedFeatures") retCUInt []
+handsFreeSupportedFeatures ioBluetoothSDPServiceRecord =
+  sendMessage ioBluetoothSDPServiceRecord handsFreeSupportedFeaturesSelector
 
 -- | device
 --
@@ -341,8 +330,8 @@ handsFreeSupportedFeatures ioBluetoothSDPServiceRecord  =
 --
 -- ObjC selector: @- device@
 device :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO (Id IOBluetoothDevice)
-device ioBluetoothSDPServiceRecord  =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device ioBluetoothSDPServiceRecord =
+  sendMessage ioBluetoothSDPServiceRecord deviceSelector
 
 -- | attributes
 --
@@ -354,8 +343,8 @@ device ioBluetoothSDPServiceRecord  =
 --
 -- ObjC selector: @- attributes@
 attributes :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO (Id NSDictionary)
-attributes ioBluetoothSDPServiceRecord  =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes ioBluetoothSDPServiceRecord =
+  sendMessage ioBluetoothSDPServiceRecord attributesSelector
 
 -- | sortedAttributes:
 --
@@ -367,94 +356,94 @@ attributes ioBluetoothSDPServiceRecord  =
 --
 -- ObjC selector: @- sortedAttributes@
 sortedAttributes :: IsIOBluetoothSDPServiceRecord ioBluetoothSDPServiceRecord => ioBluetoothSDPServiceRecord -> IO (Id NSArray)
-sortedAttributes ioBluetoothSDPServiceRecord  =
-    sendMsg ioBluetoothSDPServiceRecord (mkSelector "sortedAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortedAttributes ioBluetoothSDPServiceRecord =
+  sendMessage ioBluetoothSDPServiceRecord sortedAttributesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @publishedServiceRecordWithDictionary:@
-publishedServiceRecordWithDictionarySelector :: Selector
+publishedServiceRecordWithDictionarySelector :: Selector '[Id NSDictionary] (Id IOBluetoothSDPServiceRecord)
 publishedServiceRecordWithDictionarySelector = mkSelector "publishedServiceRecordWithDictionary:"
 
 -- | @Selector@ for @removeServiceRecord@
-removeServiceRecordSelector :: Selector
+removeServiceRecordSelector :: Selector '[] CInt
 removeServiceRecordSelector = mkSelector "removeServiceRecord"
 
 -- | @Selector@ for @withServiceDictionary:device:@
-withServiceDictionary_deviceSelector :: Selector
+withServiceDictionary_deviceSelector :: Selector '[Id NSDictionary, Id IOBluetoothDevice] (Id IOBluetoothSDPServiceRecord)
 withServiceDictionary_deviceSelector = mkSelector "withServiceDictionary:device:"
 
 -- | @Selector@ for @initWithServiceDictionary:device:@
-initWithServiceDictionary_deviceSelector :: Selector
+initWithServiceDictionary_deviceSelector :: Selector '[Id NSDictionary, Id IOBluetoothDevice] (Id IOBluetoothSDPServiceRecord)
 initWithServiceDictionary_deviceSelector = mkSelector "initWithServiceDictionary:device:"
 
 -- | @Selector@ for @withSDPServiceRecordRef:@
-withSDPServiceRecordRefSelector :: Selector
+withSDPServiceRecordRefSelector :: Selector '[Ptr ()] (Id IOBluetoothSDPServiceRecord)
 withSDPServiceRecordRefSelector = mkSelector "withSDPServiceRecordRef:"
 
 -- | @Selector@ for @getSDPServiceRecordRef@
-getSDPServiceRecordRefSelector :: Selector
+getSDPServiceRecordRefSelector :: Selector '[] (Ptr ())
 getSDPServiceRecordRefSelector = mkSelector "getSDPServiceRecordRef"
 
 -- | @Selector@ for @getDevice@
-getDeviceSelector :: Selector
+getDeviceSelector :: Selector '[] (Id IOBluetoothDevice)
 getDeviceSelector = mkSelector "getDevice"
 
 -- | @Selector@ for @getAttributes@
-getAttributesSelector :: Selector
+getAttributesSelector :: Selector '[] (Id NSDictionary)
 getAttributesSelector = mkSelector "getAttributes"
 
 -- | @Selector@ for @getAttributeDataElement:@
-getAttributeDataElementSelector :: Selector
+getAttributeDataElementSelector :: Selector '[CUShort] (Id IOBluetoothSDPDataElement)
 getAttributeDataElementSelector = mkSelector "getAttributeDataElement:"
 
 -- | @Selector@ for @getServiceName@
-getServiceNameSelector :: Selector
+getServiceNameSelector :: Selector '[] (Id NSString)
 getServiceNameSelector = mkSelector "getServiceName"
 
 -- | @Selector@ for @getRFCOMMChannelID:@
-getRFCOMMChannelIDSelector :: Selector
+getRFCOMMChannelIDSelector :: Selector '[RawId] CInt
 getRFCOMMChannelIDSelector = mkSelector "getRFCOMMChannelID:"
 
 -- | @Selector@ for @getL2CAPPSM:@
-getL2CAPPSMSelector :: Selector
+getL2CAPPSMSelector :: Selector '[RawId] CInt
 getL2CAPPSMSelector = mkSelector "getL2CAPPSM:"
 
 -- | @Selector@ for @getServiceRecordHandle:@
-getServiceRecordHandleSelector :: Selector
+getServiceRecordHandleSelector :: Selector '[RawId] CInt
 getServiceRecordHandleSelector = mkSelector "getServiceRecordHandle:"
 
 -- | @Selector@ for @matchesUUID16:@
-matchesUUID16Selector :: Selector
+matchesUUID16Selector :: Selector '[CUShort] Bool
 matchesUUID16Selector = mkSelector "matchesUUID16:"
 
 -- | @Selector@ for @matchesUUIDArray:@
-matchesUUIDArraySelector :: Selector
+matchesUUIDArraySelector :: Selector '[Id NSArray] Bool
 matchesUUIDArraySelector = mkSelector "matchesUUIDArray:"
 
 -- | @Selector@ for @matchesSearchArray:@
-matchesSearchArraySelector :: Selector
+matchesSearchArraySelector :: Selector '[Id NSArray] Bool
 matchesSearchArraySelector = mkSelector "matchesSearchArray:"
 
 -- | @Selector@ for @hasServiceFromArray:@
-hasServiceFromArraySelector :: Selector
+hasServiceFromArraySelector :: Selector '[Id NSArray] Bool
 hasServiceFromArraySelector = mkSelector "hasServiceFromArray:"
 
 -- | @Selector@ for @handsFreeSupportedFeatures@
-handsFreeSupportedFeaturesSelector :: Selector
+handsFreeSupportedFeaturesSelector :: Selector '[] CUShort
 handsFreeSupportedFeaturesSelector = mkSelector "handsFreeSupportedFeatures"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id IOBluetoothDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @sortedAttributes@
-sortedAttributesSelector :: Selector
+sortedAttributesSelector :: Selector '[] (Id NSArray)
 sortedAttributesSelector = mkSelector "sortedAttributes"
 

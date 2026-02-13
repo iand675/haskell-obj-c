@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,32 +26,28 @@ module ObjC.SharedWithYouCore.SWCollaborationOption
   , setSelected
   , requiredOptionsIdentifiers
   , setRequiredOptionsIdentifiers
-  , initWithTitle_identifierSelector
+  , identifierSelector
   , initSelector
+  , initWithTitle_identifierSelector
   , newSelector
   , optionWithTitle_identifierSelector
-  , titleSelector
-  , setTitleSelector
-  , identifierSelector
-  , subtitleSelector
-  , setSubtitleSelector
-  , selectedSelector
-  , setSelectedSelector
   , requiredOptionsIdentifiersSelector
+  , selectedSelector
   , setRequiredOptionsIdentifiersSelector
+  , setSelectedSelector
+  , setSubtitleSelector
+  , setTitleSelector
+  , subtitleSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,22 +62,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithTitle:identifier:@
 initWithTitle_identifier :: (IsSWCollaborationOption swCollaborationOption, IsNSString title, IsNSString identifier) => swCollaborationOption -> title -> identifier -> IO (Id SWCollaborationOption)
-initWithTitle_identifier swCollaborationOption  title identifier =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg swCollaborationOption (mkSelector "initWithTitle:identifier:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_identifier swCollaborationOption title identifier =
+  sendOwnedMessage swCollaborationOption initWithTitle_identifierSelector (toNSString title) (toNSString identifier)
 
 -- | @- init@
 init_ :: IsSWCollaborationOption swCollaborationOption => swCollaborationOption -> IO (Id SWCollaborationOption)
-init_ swCollaborationOption  =
-    sendMsg swCollaborationOption (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swCollaborationOption =
+  sendOwnedMessage swCollaborationOption initSelector
 
 -- | @+ new@
 new :: IO (Id SWCollaborationOption)
 new  =
   do
     cls' <- getRequiredClass "SWCollaborationOption"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Initializes a collaboration option with a title and unique identifier
 --
@@ -93,46 +88,42 @@ optionWithTitle_identifier :: (IsNSString title, IsNSString identifier) => title
 optionWithTitle_identifier title identifier =
   do
     cls' <- getRequiredClass "SWCollaborationOption"
-    withObjCPtr title $ \raw_title ->
-      withObjCPtr identifier $ \raw_identifier ->
-        sendClassMsg cls' (mkSelector "optionWithTitle:identifier:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' optionWithTitle_identifierSelector (toNSString title) (toNSString identifier)
 
 -- | A localized title string to be used when displaying the option
 --
 -- ObjC selector: @- title@
 title :: IsSWCollaborationOption swCollaborationOption => swCollaborationOption -> IO (Id NSString)
-title swCollaborationOption  =
-    sendMsg swCollaborationOption (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title swCollaborationOption =
+  sendMessage swCollaborationOption titleSelector
 
 -- | A localized title string to be used when displaying the option
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsSWCollaborationOption swCollaborationOption, IsNSString value) => swCollaborationOption -> value -> IO ()
-setTitle swCollaborationOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationOption (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle swCollaborationOption value =
+  sendMessage swCollaborationOption setTitleSelector (toNSString value)
 
 -- | Unique identifier
 --
 -- ObjC selector: @- identifier@
 identifier :: IsSWCollaborationOption swCollaborationOption => swCollaborationOption -> IO (Id NSString)
-identifier swCollaborationOption  =
-    sendMsg swCollaborationOption (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier swCollaborationOption =
+  sendMessage swCollaborationOption identifierSelector
 
 -- | A localized subtitle string to be used when displaying the option
 --
 -- ObjC selector: @- subtitle@
 subtitle :: IsSWCollaborationOption swCollaborationOption => swCollaborationOption -> IO (Id NSString)
-subtitle swCollaborationOption  =
-    sendMsg swCollaborationOption (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitle swCollaborationOption =
+  sendMessage swCollaborationOption subtitleSelector
 
 -- | A localized subtitle string to be used when displaying the option
 --
 -- ObjC selector: @- setSubtitle:@
 setSubtitle :: (IsSWCollaborationOption swCollaborationOption, IsNSString value) => swCollaborationOption -> value -> IO ()
-setSubtitle swCollaborationOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationOption (mkSelector "setSubtitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubtitle swCollaborationOption value =
+  sendMessage swCollaborationOption setSubtitleSelector (toNSString value)
 
 -- | A flag that indicates whether the option is selected.
 --
@@ -140,8 +131,8 @@ setSubtitle swCollaborationOption  value =
 --
 -- ObjC selector: @- selected@
 selected :: IsSWCollaborationOption swCollaborationOption => swCollaborationOption -> IO Bool
-selected swCollaborationOption  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg swCollaborationOption (mkSelector "selected") retCULong []
+selected swCollaborationOption =
+  sendMessage swCollaborationOption selectedSelector
 
 -- | A flag that indicates whether the option is selected.
 --
@@ -149,77 +140,76 @@ selected swCollaborationOption  =
 --
 -- ObjC selector: @- setSelected:@
 setSelected :: IsSWCollaborationOption swCollaborationOption => swCollaborationOption -> Bool -> IO ()
-setSelected swCollaborationOption  value =
-    sendMsg swCollaborationOption (mkSelector "setSelected:") retVoid [argCULong (if value then 1 else 0)]
+setSelected swCollaborationOption value =
+  sendMessage swCollaborationOption setSelectedSelector value
 
 -- | An array of option identifiers that must already be selected in order to be interacted with
 --
 -- ObjC selector: @- requiredOptionsIdentifiers@
 requiredOptionsIdentifiers :: IsSWCollaborationOption swCollaborationOption => swCollaborationOption -> IO (Id NSArray)
-requiredOptionsIdentifiers swCollaborationOption  =
-    sendMsg swCollaborationOption (mkSelector "requiredOptionsIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+requiredOptionsIdentifiers swCollaborationOption =
+  sendMessage swCollaborationOption requiredOptionsIdentifiersSelector
 
 -- | An array of option identifiers that must already be selected in order to be interacted with
 --
 -- ObjC selector: @- setRequiredOptionsIdentifiers:@
 setRequiredOptionsIdentifiers :: (IsSWCollaborationOption swCollaborationOption, IsNSArray value) => swCollaborationOption -> value -> IO ()
-setRequiredOptionsIdentifiers swCollaborationOption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swCollaborationOption (mkSelector "setRequiredOptionsIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequiredOptionsIdentifiers swCollaborationOption value =
+  sendMessage swCollaborationOption setRequiredOptionsIdentifiersSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTitle:identifier:@
-initWithTitle_identifierSelector :: Selector
+initWithTitle_identifierSelector :: Selector '[Id NSString, Id NSString] (Id SWCollaborationOption)
 initWithTitle_identifierSelector = mkSelector "initWithTitle:identifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWCollaborationOption)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWCollaborationOption)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @optionWithTitle:identifier:@
-optionWithTitle_identifierSelector :: Selector
+optionWithTitle_identifierSelector :: Selector '[Id NSString, Id NSString] (Id SWCollaborationOption)
 optionWithTitle_identifierSelector = mkSelector "optionWithTitle:identifier:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @subtitle@
-subtitleSelector :: Selector
+subtitleSelector :: Selector '[] (Id NSString)
 subtitleSelector = mkSelector "subtitle"
 
 -- | @Selector@ for @setSubtitle:@
-setSubtitleSelector :: Selector
+setSubtitleSelector :: Selector '[Id NSString] ()
 setSubtitleSelector = mkSelector "setSubtitle:"
 
 -- | @Selector@ for @selected@
-selectedSelector :: Selector
+selectedSelector :: Selector '[] Bool
 selectedSelector = mkSelector "selected"
 
 -- | @Selector@ for @setSelected:@
-setSelectedSelector :: Selector
+setSelectedSelector :: Selector '[Bool] ()
 setSelectedSelector = mkSelector "setSelected:"
 
 -- | @Selector@ for @requiredOptionsIdentifiers@
-requiredOptionsIdentifiersSelector :: Selector
+requiredOptionsIdentifiersSelector :: Selector '[] (Id NSArray)
 requiredOptionsIdentifiersSelector = mkSelector "requiredOptionsIdentifiers"
 
 -- | @Selector@ for @setRequiredOptionsIdentifiers:@
-setRequiredOptionsIdentifiersSelector :: Selector
+setRequiredOptionsIdentifiersSelector :: Selector '[Id NSArray] ()
 setRequiredOptionsIdentifiersSelector = mkSelector "setRequiredOptionsIdentifiers:"
 

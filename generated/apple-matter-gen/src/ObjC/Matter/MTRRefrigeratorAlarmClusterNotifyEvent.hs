@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRRefrigeratorAlarmClusterNotifyEvent
   , mask
   , setMask
   , activeSelector
-  , setActiveSelector
   , inactiveSelector
-  , setInactiveSelector
-  , stateSelector
-  , setStateSelector
   , maskSelector
+  , setActiveSelector
+  , setInactiveSelector
   , setMaskSelector
+  , setStateSelector
+  , stateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- active@
 active :: IsMTRRefrigeratorAlarmClusterNotifyEvent mtrRefrigeratorAlarmClusterNotifyEvent => mtrRefrigeratorAlarmClusterNotifyEvent -> IO (Id NSNumber)
-active mtrRefrigeratorAlarmClusterNotifyEvent  =
-    sendMsg mtrRefrigeratorAlarmClusterNotifyEvent (mkSelector "active") (retPtr retVoid) [] >>= retainedObject . castPtr
+active mtrRefrigeratorAlarmClusterNotifyEvent =
+  sendMessage mtrRefrigeratorAlarmClusterNotifyEvent activeSelector
 
 -- | @- setActive:@
 setActive :: (IsMTRRefrigeratorAlarmClusterNotifyEvent mtrRefrigeratorAlarmClusterNotifyEvent, IsNSNumber value) => mtrRefrigeratorAlarmClusterNotifyEvent -> value -> IO ()
-setActive mtrRefrigeratorAlarmClusterNotifyEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrRefrigeratorAlarmClusterNotifyEvent (mkSelector "setActive:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActive mtrRefrigeratorAlarmClusterNotifyEvent value =
+  sendMessage mtrRefrigeratorAlarmClusterNotifyEvent setActiveSelector (toNSNumber value)
 
 -- | @- inactive@
 inactive :: IsMTRRefrigeratorAlarmClusterNotifyEvent mtrRefrigeratorAlarmClusterNotifyEvent => mtrRefrigeratorAlarmClusterNotifyEvent -> IO (Id NSNumber)
-inactive mtrRefrigeratorAlarmClusterNotifyEvent  =
-    sendMsg mtrRefrigeratorAlarmClusterNotifyEvent (mkSelector "inactive") (retPtr retVoid) [] >>= retainedObject . castPtr
+inactive mtrRefrigeratorAlarmClusterNotifyEvent =
+  sendMessage mtrRefrigeratorAlarmClusterNotifyEvent inactiveSelector
 
 -- | @- setInactive:@
 setInactive :: (IsMTRRefrigeratorAlarmClusterNotifyEvent mtrRefrigeratorAlarmClusterNotifyEvent, IsNSNumber value) => mtrRefrigeratorAlarmClusterNotifyEvent -> value -> IO ()
-setInactive mtrRefrigeratorAlarmClusterNotifyEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrRefrigeratorAlarmClusterNotifyEvent (mkSelector "setInactive:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInactive mtrRefrigeratorAlarmClusterNotifyEvent value =
+  sendMessage mtrRefrigeratorAlarmClusterNotifyEvent setInactiveSelector (toNSNumber value)
 
 -- | @- state@
 state :: IsMTRRefrigeratorAlarmClusterNotifyEvent mtrRefrigeratorAlarmClusterNotifyEvent => mtrRefrigeratorAlarmClusterNotifyEvent -> IO (Id NSNumber)
-state mtrRefrigeratorAlarmClusterNotifyEvent  =
-    sendMsg mtrRefrigeratorAlarmClusterNotifyEvent (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state mtrRefrigeratorAlarmClusterNotifyEvent =
+  sendMessage mtrRefrigeratorAlarmClusterNotifyEvent stateSelector
 
 -- | @- setState:@
 setState :: (IsMTRRefrigeratorAlarmClusterNotifyEvent mtrRefrigeratorAlarmClusterNotifyEvent, IsNSNumber value) => mtrRefrigeratorAlarmClusterNotifyEvent -> value -> IO ()
-setState mtrRefrigeratorAlarmClusterNotifyEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrRefrigeratorAlarmClusterNotifyEvent (mkSelector "setState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setState mtrRefrigeratorAlarmClusterNotifyEvent value =
+  sendMessage mtrRefrigeratorAlarmClusterNotifyEvent setStateSelector (toNSNumber value)
 
 -- | @- mask@
 mask :: IsMTRRefrigeratorAlarmClusterNotifyEvent mtrRefrigeratorAlarmClusterNotifyEvent => mtrRefrigeratorAlarmClusterNotifyEvent -> IO (Id NSNumber)
-mask mtrRefrigeratorAlarmClusterNotifyEvent  =
-    sendMsg mtrRefrigeratorAlarmClusterNotifyEvent (mkSelector "mask") (retPtr retVoid) [] >>= retainedObject . castPtr
+mask mtrRefrigeratorAlarmClusterNotifyEvent =
+  sendMessage mtrRefrigeratorAlarmClusterNotifyEvent maskSelector
 
 -- | @- setMask:@
 setMask :: (IsMTRRefrigeratorAlarmClusterNotifyEvent mtrRefrigeratorAlarmClusterNotifyEvent, IsNSNumber value) => mtrRefrigeratorAlarmClusterNotifyEvent -> value -> IO ()
-setMask mtrRefrigeratorAlarmClusterNotifyEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrRefrigeratorAlarmClusterNotifyEvent (mkSelector "setMask:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMask mtrRefrigeratorAlarmClusterNotifyEvent value =
+  sendMessage mtrRefrigeratorAlarmClusterNotifyEvent setMaskSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] (Id NSNumber)
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @setActive:@
-setActiveSelector :: Selector
+setActiveSelector :: Selector '[Id NSNumber] ()
 setActiveSelector = mkSelector "setActive:"
 
 -- | @Selector@ for @inactive@
-inactiveSelector :: Selector
+inactiveSelector :: Selector '[] (Id NSNumber)
 inactiveSelector = mkSelector "inactive"
 
 -- | @Selector@ for @setInactive:@
-setInactiveSelector :: Selector
+setInactiveSelector :: Selector '[Id NSNumber] ()
 setInactiveSelector = mkSelector "setInactive:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id NSNumber)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @setState:@
-setStateSelector :: Selector
+setStateSelector :: Selector '[Id NSNumber] ()
 setStateSelector = mkSelector "setState:"
 
 -- | @Selector@ for @mask@
-maskSelector :: Selector
+maskSelector :: Selector '[] (Id NSNumber)
 maskSelector = mkSelector "mask"
 
 -- | @Selector@ for @setMask:@
-setMaskSelector :: Selector
+setMaskSelector :: Selector '[Id NSNumber] ()
 setMaskSelector = mkSelector "setMask:"
 

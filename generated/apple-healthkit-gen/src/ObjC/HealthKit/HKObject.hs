@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.HealthKit.HKObject
   , sourceRevision
   , device
   , metadata
-  , initSelector
-  , uuidSelector
-  , sourceSelector
-  , sourceRevisionSelector
   , deviceSelector
+  , initSelector
   , metadataSelector
+  , sourceRevisionSelector
+  , sourceSelector
+  , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKObject hkObject => hkObject -> IO (Id HKObject)
-init_ hkObject  =
-    sendMsg hkObject (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkObject =
+  sendOwnedMessage hkObject initSelector
 
 -- | UUID
 --
@@ -48,13 +45,13 @@ init_ hkObject  =
 --
 -- ObjC selector: @- UUID@
 uuid :: IsHKObject hkObject => hkObject -> IO (Id NSUUID)
-uuid hkObject  =
-    sendMsg hkObject (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid hkObject =
+  sendMessage hkObject uuidSelector
 
 -- | @- source@
 source :: IsHKObject hkObject => hkObject -> IO (Id HKSource)
-source hkObject  =
-    sendMsg hkObject (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+source hkObject =
+  sendMessage hkObject sourceSelector
 
 -- | sourceRevision
 --
@@ -62,8 +59,8 @@ source hkObject  =
 --
 -- ObjC selector: @- sourceRevision@
 sourceRevision :: IsHKObject hkObject => hkObject -> IO (Id HKSourceRevision)
-sourceRevision hkObject  =
-    sendMsg hkObject (mkSelector "sourceRevision") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceRevision hkObject =
+  sendMessage hkObject sourceRevisionSelector
 
 -- | device
 --
@@ -71,8 +68,8 @@ sourceRevision hkObject  =
 --
 -- ObjC selector: @- device@
 device :: IsHKObject hkObject => hkObject -> IO (Id HKDevice)
-device hkObject  =
-    sendMsg hkObject (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device hkObject =
+  sendMessage hkObject deviceSelector
 
 -- | metadata
 --
@@ -82,34 +79,34 @@ device hkObject  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsHKObject hkObject => hkObject -> IO (Id NSDictionary)
-metadata hkObject  =
-    sendMsg hkObject (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata hkObject =
+  sendMessage hkObject metadataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKObject)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "UUID"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id HKSource)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @sourceRevision@
-sourceRevisionSelector :: Selector
+sourceRevisionSelector :: Selector '[] (Id HKSourceRevision)
 sourceRevisionSelector = mkSelector "sourceRevision"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id HKDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSDictionary)
 metadataSelector = mkSelector "metadata"
 

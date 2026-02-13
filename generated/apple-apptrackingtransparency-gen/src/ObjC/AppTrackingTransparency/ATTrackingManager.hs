@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,9 +14,9 @@ module ObjC.AppTrackingTransparency.ATTrackingManager
   , new
   , init_
   , trackingAuthorizationStatus
-  , requestTrackingAuthorizationWithCompletionHandlerSelector
-  , newSelector
   , initSelector
+  , newSelector
+  , requestTrackingAuthorizationWithCompletionHandlerSelector
   , trackingAuthorizationStatusSelector
 
   -- * Enum types
@@ -27,15 +28,11 @@ module ObjC.AppTrackingTransparency.ATTrackingManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,19 +55,19 @@ requestTrackingAuthorizationWithCompletionHandler :: Ptr () -> IO ()
 requestTrackingAuthorizationWithCompletionHandler completion =
   do
     cls' <- getRequiredClass "ATTrackingManager"
-    sendClassMsg cls' (mkSelector "requestTrackingAuthorizationWithCompletionHandler:") retVoid [argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' requestTrackingAuthorizationWithCompletionHandlerSelector completion
 
 -- | @+ new@
 new :: IO (Id ATTrackingManager)
 new  =
   do
     cls' <- getRequiredClass "ATTrackingManager"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsATTrackingManager atTrackingManager => atTrackingManager -> IO (Id ATTrackingManager)
-init_ atTrackingManager  =
-    sendMsg atTrackingManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ atTrackingManager =
+  sendOwnedMessage atTrackingManager initSelector
 
 -- | The authorization status that is current for the calling application.
 --
@@ -85,25 +82,25 @@ trackingAuthorizationStatus :: IO ATTrackingManagerAuthorizationStatus
 trackingAuthorizationStatus  =
   do
     cls' <- getRequiredClass "ATTrackingManager"
-    fmap (coerce :: CULong -> ATTrackingManagerAuthorizationStatus) $ sendClassMsg cls' (mkSelector "trackingAuthorizationStatus") retCULong []
+    sendClassMessage cls' trackingAuthorizationStatusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestTrackingAuthorizationWithCompletionHandler:@
-requestTrackingAuthorizationWithCompletionHandlerSelector :: Selector
+requestTrackingAuthorizationWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestTrackingAuthorizationWithCompletionHandlerSelector = mkSelector "requestTrackingAuthorizationWithCompletionHandler:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ATTrackingManager)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ATTrackingManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @trackingAuthorizationStatus@
-trackingAuthorizationStatusSelector :: Selector
+trackingAuthorizationStatusSelector :: Selector '[] ATTrackingManagerAuthorizationStatus
 trackingAuthorizationStatusSelector = mkSelector "trackingAuthorizationStatus"
 

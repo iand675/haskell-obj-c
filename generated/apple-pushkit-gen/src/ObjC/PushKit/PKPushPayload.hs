@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.PushKit.PKPushPayload
   , IsPKPushPayload(..)
   , type_
   , dictionaryPayload
-  , typeSelector
   , dictionaryPayloadSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- type@
 type_ :: IsPKPushPayload pkPushPayload => pkPushPayload -> IO (Id NSString)
-type_ pkPushPayload  =
-    sendMsg pkPushPayload (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ pkPushPayload =
+  sendMessage pkPushPayload typeSelector
 
 -- | The contents of the received payload.
 --
@@ -52,18 +49,18 @@ type_ pkPushPayload  =
 --
 -- ObjC selector: @- dictionaryPayload@
 dictionaryPayload :: IsPKPushPayload pkPushPayload => pkPushPayload -> IO (Id NSDictionary)
-dictionaryPayload pkPushPayload  =
-    sendMsg pkPushPayload (mkSelector "dictionaryPayload") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryPayload pkPushPayload =
+  sendMessage pkPushPayload dictionaryPayloadSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @dictionaryPayload@
-dictionaryPayloadSelector :: Selector
+dictionaryPayloadSelector :: Selector '[] (Id NSDictionary)
 dictionaryPayloadSelector = mkSelector "dictionaryPayload"
 

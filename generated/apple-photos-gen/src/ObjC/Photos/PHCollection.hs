@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,11 +14,11 @@ module ObjC.Photos.PHCollection
   , canContainAssets
   , canContainCollections
   , localizedTitle
+  , canContainAssetsSelector
+  , canContainCollectionsSelector
   , canPerformEditOperationSelector
   , fetchCollectionsInCollectionList_optionsSelector
   , fetchTopLevelUserCollectionsWithOptionsSelector
-  , canContainAssetsSelector
-  , canContainCollectionsSelector
   , localizedTitleSelector
 
   -- * Enum types
@@ -32,15 +33,11 @@ module ObjC.Photos.PHCollection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,66 +47,63 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- canPerformEditOperation:@
 canPerformEditOperation :: IsPHCollection phCollection => phCollection -> PHCollectionEditOperation -> IO Bool
-canPerformEditOperation phCollection  anOperation =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phCollection (mkSelector "canPerformEditOperation:") retCULong [argCLong (coerce anOperation)]
+canPerformEditOperation phCollection anOperation =
+  sendMessage phCollection canPerformEditOperationSelector anOperation
 
 -- | @+ fetchCollectionsInCollectionList:options:@
 fetchCollectionsInCollectionList_options :: (IsPHCollectionList collectionList, IsPHFetchOptions options) => collectionList -> options -> IO (Id PHFetchResult)
 fetchCollectionsInCollectionList_options collectionList options =
   do
     cls' <- getRequiredClass "PHCollection"
-    withObjCPtr collectionList $ \raw_collectionList ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "fetchCollectionsInCollectionList:options:") (retPtr retVoid) [argPtr (castPtr raw_collectionList :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchCollectionsInCollectionList_optionsSelector (toPHCollectionList collectionList) (toPHFetchOptions options)
 
 -- | @+ fetchTopLevelUserCollectionsWithOptions:@
 fetchTopLevelUserCollectionsWithOptions :: IsPHFetchOptions options => options -> IO (Id PHFetchResult)
 fetchTopLevelUserCollectionsWithOptions options =
   do
     cls' <- getRequiredClass "PHCollection"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "fetchTopLevelUserCollectionsWithOptions:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchTopLevelUserCollectionsWithOptionsSelector (toPHFetchOptions options)
 
 -- | @- canContainAssets@
 canContainAssets :: IsPHCollection phCollection => phCollection -> IO Bool
-canContainAssets phCollection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phCollection (mkSelector "canContainAssets") retCULong []
+canContainAssets phCollection =
+  sendMessage phCollection canContainAssetsSelector
 
 -- | @- canContainCollections@
 canContainCollections :: IsPHCollection phCollection => phCollection -> IO Bool
-canContainCollections phCollection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phCollection (mkSelector "canContainCollections") retCULong []
+canContainCollections phCollection =
+  sendMessage phCollection canContainCollectionsSelector
 
 -- | @- localizedTitle@
 localizedTitle :: IsPHCollection phCollection => phCollection -> IO (Id NSString)
-localizedTitle phCollection  =
-    sendMsg phCollection (mkSelector "localizedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedTitle phCollection =
+  sendMessage phCollection localizedTitleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @canPerformEditOperation:@
-canPerformEditOperationSelector :: Selector
+canPerformEditOperationSelector :: Selector '[PHCollectionEditOperation] Bool
 canPerformEditOperationSelector = mkSelector "canPerformEditOperation:"
 
 -- | @Selector@ for @fetchCollectionsInCollectionList:options:@
-fetchCollectionsInCollectionList_optionsSelector :: Selector
+fetchCollectionsInCollectionList_optionsSelector :: Selector '[Id PHCollectionList, Id PHFetchOptions] (Id PHFetchResult)
 fetchCollectionsInCollectionList_optionsSelector = mkSelector "fetchCollectionsInCollectionList:options:"
 
 -- | @Selector@ for @fetchTopLevelUserCollectionsWithOptions:@
-fetchTopLevelUserCollectionsWithOptionsSelector :: Selector
+fetchTopLevelUserCollectionsWithOptionsSelector :: Selector '[Id PHFetchOptions] (Id PHFetchResult)
 fetchTopLevelUserCollectionsWithOptionsSelector = mkSelector "fetchTopLevelUserCollectionsWithOptions:"
 
 -- | @Selector@ for @canContainAssets@
-canContainAssetsSelector :: Selector
+canContainAssetsSelector :: Selector '[] Bool
 canContainAssetsSelector = mkSelector "canContainAssets"
 
 -- | @Selector@ for @canContainCollections@
-canContainCollectionsSelector :: Selector
+canContainCollectionsSelector :: Selector '[] Bool
 canContainCollectionsSelector = mkSelector "canContainCollections"
 
 -- | @Selector@ for @localizedTitle@
-localizedTitleSelector :: Selector
+localizedTitleSelector :: Selector '[] (Id NSString)
 localizedTitleSelector = mkSelector "localizedTitle"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRBarrierControlClusterBarrierControlGoToPercentParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , percentOpenSelector
-  , setPercentOpenSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setPercentOpenSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- percentOpen@
 percentOpen :: IsMTRBarrierControlClusterBarrierControlGoToPercentParams mtrBarrierControlClusterBarrierControlGoToPercentParams => mtrBarrierControlClusterBarrierControlGoToPercentParams -> IO (Id NSNumber)
-percentOpen mtrBarrierControlClusterBarrierControlGoToPercentParams  =
-    sendMsg mtrBarrierControlClusterBarrierControlGoToPercentParams (mkSelector "percentOpen") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentOpen mtrBarrierControlClusterBarrierControlGoToPercentParams =
+  sendMessage mtrBarrierControlClusterBarrierControlGoToPercentParams percentOpenSelector
 
 -- | @- setPercentOpen:@
 setPercentOpen :: (IsMTRBarrierControlClusterBarrierControlGoToPercentParams mtrBarrierControlClusterBarrierControlGoToPercentParams, IsNSNumber value) => mtrBarrierControlClusterBarrierControlGoToPercentParams -> value -> IO ()
-setPercentOpen mtrBarrierControlClusterBarrierControlGoToPercentParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBarrierControlClusterBarrierControlGoToPercentParams (mkSelector "setPercentOpen:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentOpen mtrBarrierControlClusterBarrierControlGoToPercentParams value =
+  sendMessage mtrBarrierControlClusterBarrierControlGoToPercentParams setPercentOpenSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setPercentOpen mtrBarrierControlClusterBarrierControlGoToPercentParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRBarrierControlClusterBarrierControlGoToPercentParams mtrBarrierControlClusterBarrierControlGoToPercentParams => mtrBarrierControlClusterBarrierControlGoToPercentParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrBarrierControlClusterBarrierControlGoToPercentParams  =
-    sendMsg mtrBarrierControlClusterBarrierControlGoToPercentParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrBarrierControlClusterBarrierControlGoToPercentParams =
+  sendMessage mtrBarrierControlClusterBarrierControlGoToPercentParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrBarrierControlClusterBarrierControlGoToPercentParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRBarrierControlClusterBarrierControlGoToPercentParams mtrBarrierControlClusterBarrierControlGoToPercentParams, IsNSNumber value) => mtrBarrierControlClusterBarrierControlGoToPercentParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrBarrierControlClusterBarrierControlGoToPercentParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBarrierControlClusterBarrierControlGoToPercentParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrBarrierControlClusterBarrierControlGoToPercentParams value =
+  sendMessage mtrBarrierControlClusterBarrierControlGoToPercentParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrBarrierControlClusterBarrierControlGoToPercentParams 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRBarrierControlClusterBarrierControlGoToPercentParams mtrBarrierControlClusterBarrierControlGoToPercentParams => mtrBarrierControlClusterBarrierControlGoToPercentParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrBarrierControlClusterBarrierControlGoToPercentParams  =
-    sendMsg mtrBarrierControlClusterBarrierControlGoToPercentParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrBarrierControlClusterBarrierControlGoToPercentParams =
+  sendMessage mtrBarrierControlClusterBarrierControlGoToPercentParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrBarrierControlClusterBarrierControlGoToPercentPar
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRBarrierControlClusterBarrierControlGoToPercentParams mtrBarrierControlClusterBarrierControlGoToPercentParams, IsNSNumber value) => mtrBarrierControlClusterBarrierControlGoToPercentParams -> value -> IO ()
-setServerSideProcessingTimeout mtrBarrierControlClusterBarrierControlGoToPercentParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBarrierControlClusterBarrierControlGoToPercentParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrBarrierControlClusterBarrierControlGoToPercentParams value =
+  sendMessage mtrBarrierControlClusterBarrierControlGoToPercentParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @percentOpen@
-percentOpenSelector :: Selector
+percentOpenSelector :: Selector '[] (Id NSNumber)
 percentOpenSelector = mkSelector "percentOpen"
 
 -- | @Selector@ for @setPercentOpen:@
-setPercentOpenSelector :: Selector
+setPercentOpenSelector :: Selector '[Id NSNumber] ()
 setPercentOpenSelector = mkSelector "setPercentOpen:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

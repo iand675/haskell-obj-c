@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Matter.MTRAsyncCallbackQueueWorkItem
   , setReadyHandler
   , cancelHandler
   , setCancelHandler
-  , initSelector
-  , newSelector
-  , initWithQueueSelector
-  , endWorkSelector
-  , retryWorkSelector
-  , readyHandlerSelector
-  , setReadyHandlerSelector
   , cancelHandlerSelector
+  , endWorkSelector
+  , initSelector
+  , initWithQueueSelector
+  , newSelector
+  , readyHandlerSelector
+  , retryWorkSelector
   , setCancelHandlerSelector
+  , setReadyHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,89 +42,88 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRAsyncCallbackQueueWorkItem mtrAsyncCallbackQueueWorkItem => mtrAsyncCallbackQueueWorkItem -> IO (Id MTRAsyncCallbackQueueWorkItem)
-init_ mtrAsyncCallbackQueueWorkItem  =
-    sendMsg mtrAsyncCallbackQueueWorkItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrAsyncCallbackQueueWorkItem =
+  sendOwnedMessage mtrAsyncCallbackQueueWorkItem initSelector
 
 -- | @+ new@
 new :: IO (Id MTRAsyncCallbackQueueWorkItem)
 new  =
   do
     cls' <- getRequiredClass "MTRAsyncCallbackQueueWorkItem"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithQueue:@
 initWithQueue :: (IsMTRAsyncCallbackQueueWorkItem mtrAsyncCallbackQueueWorkItem, IsNSObject queue) => mtrAsyncCallbackQueueWorkItem -> queue -> IO (Id MTRAsyncCallbackQueueWorkItem)
-initWithQueue mtrAsyncCallbackQueueWorkItem  queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrAsyncCallbackQueueWorkItem (mkSelector "initWithQueue:") (retPtr retVoid) [argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithQueue mtrAsyncCallbackQueueWorkItem queue =
+  sendOwnedMessage mtrAsyncCallbackQueueWorkItem initWithQueueSelector (toNSObject queue)
 
 -- | @- endWork@
 endWork :: IsMTRAsyncCallbackQueueWorkItem mtrAsyncCallbackQueueWorkItem => mtrAsyncCallbackQueueWorkItem -> IO ()
-endWork mtrAsyncCallbackQueueWorkItem  =
-    sendMsg mtrAsyncCallbackQueueWorkItem (mkSelector "endWork") retVoid []
+endWork mtrAsyncCallbackQueueWorkItem =
+  sendMessage mtrAsyncCallbackQueueWorkItem endWorkSelector
 
 -- | @- retryWork@
 retryWork :: IsMTRAsyncCallbackQueueWorkItem mtrAsyncCallbackQueueWorkItem => mtrAsyncCallbackQueueWorkItem -> IO ()
-retryWork mtrAsyncCallbackQueueWorkItem  =
-    sendMsg mtrAsyncCallbackQueueWorkItem (mkSelector "retryWork") retVoid []
+retryWork mtrAsyncCallbackQueueWorkItem =
+  sendMessage mtrAsyncCallbackQueueWorkItem retryWorkSelector
 
 -- | @- readyHandler@
 readyHandler :: IsMTRAsyncCallbackQueueWorkItem mtrAsyncCallbackQueueWorkItem => mtrAsyncCallbackQueueWorkItem -> IO (Ptr ())
-readyHandler mtrAsyncCallbackQueueWorkItem  =
-    fmap castPtr $ sendMsg mtrAsyncCallbackQueueWorkItem (mkSelector "readyHandler") (retPtr retVoid) []
+readyHandler mtrAsyncCallbackQueueWorkItem =
+  sendMessage mtrAsyncCallbackQueueWorkItem readyHandlerSelector
 
 -- | @- setReadyHandler:@
 setReadyHandler :: IsMTRAsyncCallbackQueueWorkItem mtrAsyncCallbackQueueWorkItem => mtrAsyncCallbackQueueWorkItem -> Ptr () -> IO ()
-setReadyHandler mtrAsyncCallbackQueueWorkItem  value =
-    sendMsg mtrAsyncCallbackQueueWorkItem (mkSelector "setReadyHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setReadyHandler mtrAsyncCallbackQueueWorkItem value =
+  sendMessage mtrAsyncCallbackQueueWorkItem setReadyHandlerSelector value
 
 -- | @- cancelHandler@
 cancelHandler :: IsMTRAsyncCallbackQueueWorkItem mtrAsyncCallbackQueueWorkItem => mtrAsyncCallbackQueueWorkItem -> IO (Ptr ())
-cancelHandler mtrAsyncCallbackQueueWorkItem  =
-    fmap castPtr $ sendMsg mtrAsyncCallbackQueueWorkItem (mkSelector "cancelHandler") (retPtr retVoid) []
+cancelHandler mtrAsyncCallbackQueueWorkItem =
+  sendMessage mtrAsyncCallbackQueueWorkItem cancelHandlerSelector
 
 -- | @- setCancelHandler:@
 setCancelHandler :: IsMTRAsyncCallbackQueueWorkItem mtrAsyncCallbackQueueWorkItem => mtrAsyncCallbackQueueWorkItem -> Ptr () -> IO ()
-setCancelHandler mtrAsyncCallbackQueueWorkItem  value =
-    sendMsg mtrAsyncCallbackQueueWorkItem (mkSelector "setCancelHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCancelHandler mtrAsyncCallbackQueueWorkItem value =
+  sendMessage mtrAsyncCallbackQueueWorkItem setCancelHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRAsyncCallbackQueueWorkItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRAsyncCallbackQueueWorkItem)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithQueue:@
-initWithQueueSelector :: Selector
+initWithQueueSelector :: Selector '[Id NSObject] (Id MTRAsyncCallbackQueueWorkItem)
 initWithQueueSelector = mkSelector "initWithQueue:"
 
 -- | @Selector@ for @endWork@
-endWorkSelector :: Selector
+endWorkSelector :: Selector '[] ()
 endWorkSelector = mkSelector "endWork"
 
 -- | @Selector@ for @retryWork@
-retryWorkSelector :: Selector
+retryWorkSelector :: Selector '[] ()
 retryWorkSelector = mkSelector "retryWork"
 
 -- | @Selector@ for @readyHandler@
-readyHandlerSelector :: Selector
+readyHandlerSelector :: Selector '[] (Ptr ())
 readyHandlerSelector = mkSelector "readyHandler"
 
 -- | @Selector@ for @setReadyHandler:@
-setReadyHandlerSelector :: Selector
+setReadyHandlerSelector :: Selector '[Ptr ()] ()
 setReadyHandlerSelector = mkSelector "setReadyHandler:"
 
 -- | @Selector@ for @cancelHandler@
-cancelHandlerSelector :: Selector
+cancelHandlerSelector :: Selector '[] (Ptr ())
 cancelHandlerSelector = mkSelector "cancelHandler"
 
 -- | @Selector@ for @setCancelHandler:@
-setCancelHandlerSelector :: Selector
+setCancelHandlerSelector :: Selector '[Ptr ()] ()
 setCancelHandlerSelector = mkSelector "setCancelHandler:"
 

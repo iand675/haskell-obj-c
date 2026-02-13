@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,11 +21,11 @@ module ObjC.Virtualization.VZLinuxRosettaDirectoryShare
   , options
   , setOptions
   , availability
+  , availabilitySelector
   , initWithErrorSelector
   , installRosettaWithCompletionHandlerSelector
   , optionsSelector
   , setOptionsSelector
-  , availabilitySelector
 
   -- * Enum types
   , VZLinuxRosettaAvailability(VZLinuxRosettaAvailability)
@@ -34,15 +35,11 @@ module ObjC.Virtualization.VZLinuxRosettaDirectoryShare
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,9 +57,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithError:@
 initWithError :: (IsVZLinuxRosettaDirectoryShare vzLinuxRosettaDirectoryShare, IsNSError error_) => vzLinuxRosettaDirectoryShare -> error_ -> IO (Id VZLinuxRosettaDirectoryShare)
-initWithError vzLinuxRosettaDirectoryShare  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vzLinuxRosettaDirectoryShare (mkSelector "initWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithError vzLinuxRosettaDirectoryShare error_ =
+  sendOwnedMessage vzLinuxRosettaDirectoryShare initWithErrorSelector (toNSError error_)
 
 -- | Download and install Rosetta support for Linux binaries if necessary.
 --
@@ -77,22 +73,21 @@ installRosettaWithCompletionHandler :: Ptr () -> IO ()
 installRosettaWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "VZLinuxRosettaDirectoryShare"
-    sendClassMsg cls' (mkSelector "installRosettaWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' installRosettaWithCompletionHandlerSelector completionHandler
 
 -- | Enable translation caching and configure the socket communication type for Rosetta.
 --
 -- ObjC selector: @- options@
 options :: IsVZLinuxRosettaDirectoryShare vzLinuxRosettaDirectoryShare => vzLinuxRosettaDirectoryShare -> IO (Id VZLinuxRosettaCachingOptions)
-options vzLinuxRosettaDirectoryShare  =
-    sendMsg vzLinuxRosettaDirectoryShare (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+options vzLinuxRosettaDirectoryShare =
+  sendMessage vzLinuxRosettaDirectoryShare optionsSelector
 
 -- | Enable translation caching and configure the socket communication type for Rosetta.
 --
 -- ObjC selector: @- setOptions:@
 setOptions :: (IsVZLinuxRosettaDirectoryShare vzLinuxRosettaDirectoryShare, IsVZLinuxRosettaCachingOptions value) => vzLinuxRosettaDirectoryShare -> value -> IO ()
-setOptions vzLinuxRosettaDirectoryShare  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzLinuxRosettaDirectoryShare (mkSelector "setOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptions vzLinuxRosettaDirectoryShare value =
+  sendMessage vzLinuxRosettaDirectoryShare setOptionsSelector (toVZLinuxRosettaCachingOptions value)
 
 -- | Check the availability of Rosetta support for the directory share.
 --
@@ -101,29 +96,29 @@ availability :: IO VZLinuxRosettaAvailability
 availability  =
   do
     cls' <- getRequiredClass "VZLinuxRosettaDirectoryShare"
-    fmap (coerce :: CLong -> VZLinuxRosettaAvailability) $ sendClassMsg cls' (mkSelector "availability") retCLong []
+    sendClassMessage cls' availabilitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithError:@
-initWithErrorSelector :: Selector
+initWithErrorSelector :: Selector '[Id NSError] (Id VZLinuxRosettaDirectoryShare)
 initWithErrorSelector = mkSelector "initWithError:"
 
 -- | @Selector@ for @installRosettaWithCompletionHandler:@
-installRosettaWithCompletionHandlerSelector :: Selector
+installRosettaWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 installRosettaWithCompletionHandlerSelector = mkSelector "installRosettaWithCompletionHandler:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] (Id VZLinuxRosettaCachingOptions)
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[Id VZLinuxRosettaCachingOptions] ()
 setOptionsSelector = mkSelector "setOptions:"
 
 -- | @Selector@ for @availability@
-availabilitySelector :: Selector
+availabilitySelector :: Selector '[] VZLinuxRosettaAvailability
 availabilitySelector = mkSelector "availability"
 

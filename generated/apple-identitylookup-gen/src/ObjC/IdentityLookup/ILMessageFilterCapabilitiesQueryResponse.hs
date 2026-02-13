@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.IdentityLookup.ILMessageFilterCapabilitiesQueryResponse
   , setTransactionalSubActions
   , promotionalSubActions
   , setPromotionalSubActions
-  , transactionalSubActionsSelector
-  , setTransactionalSubActionsSelector
   , promotionalSubActionsSelector
   , setPromotionalSubActionsSelector
+  , setTransactionalSubActionsSelector
+  , transactionalSubActionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,49 +36,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- transactionalSubActions@
 transactionalSubActions :: IsILMessageFilterCapabilitiesQueryResponse ilMessageFilterCapabilitiesQueryResponse => ilMessageFilterCapabilitiesQueryResponse -> IO (Id NSArray)
-transactionalSubActions ilMessageFilterCapabilitiesQueryResponse  =
-    sendMsg ilMessageFilterCapabilitiesQueryResponse (mkSelector "transactionalSubActions") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionalSubActions ilMessageFilterCapabilitiesQueryResponse =
+  sendMessage ilMessageFilterCapabilitiesQueryResponse transactionalSubActionsSelector
 
 -- | Array of type ILMessageFilterSubAction under Transactional
 --
 -- ObjC selector: @- setTransactionalSubActions:@
 setTransactionalSubActions :: (IsILMessageFilterCapabilitiesQueryResponse ilMessageFilterCapabilitiesQueryResponse, IsNSArray value) => ilMessageFilterCapabilitiesQueryResponse -> value -> IO ()
-setTransactionalSubActions ilMessageFilterCapabilitiesQueryResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ilMessageFilterCapabilitiesQueryResponse (mkSelector "setTransactionalSubActions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransactionalSubActions ilMessageFilterCapabilitiesQueryResponse value =
+  sendMessage ilMessageFilterCapabilitiesQueryResponse setTransactionalSubActionsSelector (toNSArray value)
 
 -- | Array of type ILMessageFilterSubAction under Promotional
 --
 -- ObjC selector: @- promotionalSubActions@
 promotionalSubActions :: IsILMessageFilterCapabilitiesQueryResponse ilMessageFilterCapabilitiesQueryResponse => ilMessageFilterCapabilitiesQueryResponse -> IO (Id NSArray)
-promotionalSubActions ilMessageFilterCapabilitiesQueryResponse  =
-    sendMsg ilMessageFilterCapabilitiesQueryResponse (mkSelector "promotionalSubActions") (retPtr retVoid) [] >>= retainedObject . castPtr
+promotionalSubActions ilMessageFilterCapabilitiesQueryResponse =
+  sendMessage ilMessageFilterCapabilitiesQueryResponse promotionalSubActionsSelector
 
 -- | Array of type ILMessageFilterSubAction under Promotional
 --
 -- ObjC selector: @- setPromotionalSubActions:@
 setPromotionalSubActions :: (IsILMessageFilterCapabilitiesQueryResponse ilMessageFilterCapabilitiesQueryResponse, IsNSArray value) => ilMessageFilterCapabilitiesQueryResponse -> value -> IO ()
-setPromotionalSubActions ilMessageFilterCapabilitiesQueryResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ilMessageFilterCapabilitiesQueryResponse (mkSelector "setPromotionalSubActions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPromotionalSubActions ilMessageFilterCapabilitiesQueryResponse value =
+  sendMessage ilMessageFilterCapabilitiesQueryResponse setPromotionalSubActionsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @transactionalSubActions@
-transactionalSubActionsSelector :: Selector
+transactionalSubActionsSelector :: Selector '[] (Id NSArray)
 transactionalSubActionsSelector = mkSelector "transactionalSubActions"
 
 -- | @Selector@ for @setTransactionalSubActions:@
-setTransactionalSubActionsSelector :: Selector
+setTransactionalSubActionsSelector :: Selector '[Id NSArray] ()
 setTransactionalSubActionsSelector = mkSelector "setTransactionalSubActions:"
 
 -- | @Selector@ for @promotionalSubActions@
-promotionalSubActionsSelector :: Selector
+promotionalSubActionsSelector :: Selector '[] (Id NSArray)
 promotionalSubActionsSelector = mkSelector "promotionalSubActions"
 
 -- | @Selector@ for @setPromotionalSubActions:@
-setPromotionalSubActionsSelector :: Selector
+setPromotionalSubActionsSelector :: Selector '[Id NSArray] ()
 setPromotionalSubActionsSelector = mkSelector "setPromotionalSubActions:"
 

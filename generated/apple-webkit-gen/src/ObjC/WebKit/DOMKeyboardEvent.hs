@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.WebKit.DOMKeyboardEvent
   , altGraphKey
   , keyCode
   , charCode
-  , getModifierStateSelector
-  , initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector
-  , initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKeySelector
-  , initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector
-  , initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKeySelector
-  , keyIdentifierSelector
-  , locationSelector
-  , keyLocationSelector
-  , ctrlKeySelector
-  , shiftKeySelector
-  , altKeySelector
-  , metaKeySelector
   , altGraphKeySelector
-  , keyCodeSelector
+  , altKeySelector
   , charCodeSelector
+  , ctrlKeySelector
+  , getModifierStateSelector
+  , initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKeySelector
+  , initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector
+  , initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKeySelector
+  , initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector
+  , keyCodeSelector
+  , keyIdentifierSelector
+  , keyLocationSelector
+  , locationSelector
+  , metaKeySelector
+  , shiftKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,153 +54,140 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- getModifierState:@
 getModifierState :: (IsDOMKeyboardEvent domKeyboardEvent, IsNSString keyIdentifierArg) => domKeyboardEvent -> keyIdentifierArg -> IO Bool
-getModifierState domKeyboardEvent  keyIdentifierArg =
-  withObjCPtr keyIdentifierArg $ \raw_keyIdentifierArg ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domKeyboardEvent (mkSelector "getModifierState:") retCULong [argPtr (castPtr raw_keyIdentifierArg :: Ptr ())]
+getModifierState domKeyboardEvent keyIdentifierArg =
+  sendMessage domKeyboardEvent getModifierStateSelector (toNSString keyIdentifierArg)
 
 -- | @- initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:location:ctrlKey:altKey:shiftKey:metaKey:altGraphKey:@
 initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey_altGraphKey :: (IsDOMKeyboardEvent domKeyboardEvent, IsNSString type_, IsDOMAbstractView view, IsNSString keyIdentifier) => domKeyboardEvent -> type_ -> Bool -> Bool -> view -> keyIdentifier -> CUInt -> Bool -> Bool -> Bool -> Bool -> Bool -> IO ()
-initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey_altGraphKey domKeyboardEvent  type_ canBubble cancelable view keyIdentifier location ctrlKey altKey shiftKey metaKey altGraphKey =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr keyIdentifier $ \raw_keyIdentifier ->
-          sendMsg domKeyboardEvent (mkSelector "initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:location:ctrlKey:altKey:shiftKey:metaKey:altGraphKey:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argCULong (if canBubble then 1 else 0), argCULong (if cancelable then 1 else 0), argPtr (castPtr raw_view :: Ptr ()), argPtr (castPtr raw_keyIdentifier :: Ptr ()), argCUInt location, argCULong (if ctrlKey then 1 else 0), argCULong (if altKey then 1 else 0), argCULong (if shiftKey then 1 else 0), argCULong (if metaKey then 1 else 0), argCULong (if altGraphKey then 1 else 0)]
+initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey_altGraphKey domKeyboardEvent type_ canBubble cancelable view keyIdentifier location ctrlKey altKey shiftKey metaKey altGraphKey =
+  sendOwnedMessage domKeyboardEvent initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector (toNSString type_) canBubble cancelable (toDOMAbstractView view) (toNSString keyIdentifier) location ctrlKey altKey shiftKey metaKey altGraphKey
 
 -- | @- initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:location:ctrlKey:altKey:shiftKey:metaKey:@
 initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey :: (IsDOMKeyboardEvent domKeyboardEvent, IsNSString type_, IsDOMAbstractView view, IsNSString keyIdentifier) => domKeyboardEvent -> type_ -> Bool -> Bool -> view -> keyIdentifier -> CUInt -> Bool -> Bool -> Bool -> Bool -> IO ()
-initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey domKeyboardEvent  type_ canBubble cancelable view keyIdentifier location ctrlKey altKey shiftKey metaKey =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr keyIdentifier $ \raw_keyIdentifier ->
-          sendMsg domKeyboardEvent (mkSelector "initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:location:ctrlKey:altKey:shiftKey:metaKey:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argCULong (if canBubble then 1 else 0), argCULong (if cancelable then 1 else 0), argPtr (castPtr raw_view :: Ptr ()), argPtr (castPtr raw_keyIdentifier :: Ptr ()), argCUInt location, argCULong (if ctrlKey then 1 else 0), argCULong (if altKey then 1 else 0), argCULong (if shiftKey then 1 else 0), argCULong (if metaKey then 1 else 0)]
+initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey domKeyboardEvent type_ canBubble cancelable view keyIdentifier location ctrlKey altKey shiftKey metaKey =
+  sendOwnedMessage domKeyboardEvent initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKeySelector (toNSString type_) canBubble cancelable (toDOMAbstractView view) (toNSString keyIdentifier) location ctrlKey altKey shiftKey metaKey
 
 -- | @- initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:keyLocation:ctrlKey:altKey:shiftKey:metaKey:altGraphKey:@
 initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey_altGraphKey :: (IsDOMKeyboardEvent domKeyboardEvent, IsNSString type_, IsDOMAbstractView view, IsNSString keyIdentifier) => domKeyboardEvent -> type_ -> Bool -> Bool -> view -> keyIdentifier -> CUInt -> Bool -> Bool -> Bool -> Bool -> Bool -> IO ()
-initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey_altGraphKey domKeyboardEvent  type_ canBubble cancelable view keyIdentifier keyLocation ctrlKey altKey shiftKey metaKey altGraphKey =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr keyIdentifier $ \raw_keyIdentifier ->
-          sendMsg domKeyboardEvent (mkSelector "initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:keyLocation:ctrlKey:altKey:shiftKey:metaKey:altGraphKey:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argCULong (if canBubble then 1 else 0), argCULong (if cancelable then 1 else 0), argPtr (castPtr raw_view :: Ptr ()), argPtr (castPtr raw_keyIdentifier :: Ptr ()), argCUInt keyLocation, argCULong (if ctrlKey then 1 else 0), argCULong (if altKey then 1 else 0), argCULong (if shiftKey then 1 else 0), argCULong (if metaKey then 1 else 0), argCULong (if altGraphKey then 1 else 0)]
+initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey_altGraphKey domKeyboardEvent type_ canBubble cancelable view keyIdentifier keyLocation ctrlKey altKey shiftKey metaKey altGraphKey =
+  sendOwnedMessage domKeyboardEvent initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector (toNSString type_) canBubble cancelable (toDOMAbstractView view) (toNSString keyIdentifier) keyLocation ctrlKey altKey shiftKey metaKey altGraphKey
 
 -- | @- initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:keyLocation:ctrlKey:altKey:shiftKey:metaKey:@
 initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey :: (IsDOMKeyboardEvent domKeyboardEvent, IsNSString type_, IsDOMAbstractView view, IsNSString keyIdentifier) => domKeyboardEvent -> type_ -> Bool -> Bool -> view -> keyIdentifier -> CUInt -> Bool -> Bool -> Bool -> Bool -> IO ()
-initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey domKeyboardEvent  type_ canBubble cancelable view keyIdentifier keyLocation ctrlKey altKey shiftKey metaKey =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr keyIdentifier $ \raw_keyIdentifier ->
-          sendMsg domKeyboardEvent (mkSelector "initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:keyLocation:ctrlKey:altKey:shiftKey:metaKey:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argCULong (if canBubble then 1 else 0), argCULong (if cancelable then 1 else 0), argPtr (castPtr raw_view :: Ptr ()), argPtr (castPtr raw_keyIdentifier :: Ptr ()), argCUInt keyLocation, argCULong (if ctrlKey then 1 else 0), argCULong (if altKey then 1 else 0), argCULong (if shiftKey then 1 else 0), argCULong (if metaKey then 1 else 0)]
+initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey domKeyboardEvent type_ canBubble cancelable view keyIdentifier keyLocation ctrlKey altKey shiftKey metaKey =
+  sendOwnedMessage domKeyboardEvent initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKeySelector (toNSString type_) canBubble cancelable (toDOMAbstractView view) (toNSString keyIdentifier) keyLocation ctrlKey altKey shiftKey metaKey
 
 -- | @- keyIdentifier@
 keyIdentifier :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO (Id NSString)
-keyIdentifier domKeyboardEvent  =
-    sendMsg domKeyboardEvent (mkSelector "keyIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyIdentifier domKeyboardEvent =
+  sendMessage domKeyboardEvent keyIdentifierSelector
 
 -- | @- location@
 location :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO CUInt
-location domKeyboardEvent  =
-    sendMsg domKeyboardEvent (mkSelector "location") retCUInt []
+location domKeyboardEvent =
+  sendMessage domKeyboardEvent locationSelector
 
 -- | @- keyLocation@
 keyLocation :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO CUInt
-keyLocation domKeyboardEvent  =
-    sendMsg domKeyboardEvent (mkSelector "keyLocation") retCUInt []
+keyLocation domKeyboardEvent =
+  sendMessage domKeyboardEvent keyLocationSelector
 
 -- | @- ctrlKey@
 ctrlKey :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO Bool
-ctrlKey domKeyboardEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domKeyboardEvent (mkSelector "ctrlKey") retCULong []
+ctrlKey domKeyboardEvent =
+  sendMessage domKeyboardEvent ctrlKeySelector
 
 -- | @- shiftKey@
 shiftKey :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO Bool
-shiftKey domKeyboardEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domKeyboardEvent (mkSelector "shiftKey") retCULong []
+shiftKey domKeyboardEvent =
+  sendMessage domKeyboardEvent shiftKeySelector
 
 -- | @- altKey@
 altKey :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO Bool
-altKey domKeyboardEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domKeyboardEvent (mkSelector "altKey") retCULong []
+altKey domKeyboardEvent =
+  sendMessage domKeyboardEvent altKeySelector
 
 -- | @- metaKey@
 metaKey :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO Bool
-metaKey domKeyboardEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domKeyboardEvent (mkSelector "metaKey") retCULong []
+metaKey domKeyboardEvent =
+  sendMessage domKeyboardEvent metaKeySelector
 
 -- | @- altGraphKey@
 altGraphKey :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO Bool
-altGraphKey domKeyboardEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domKeyboardEvent (mkSelector "altGraphKey") retCULong []
+altGraphKey domKeyboardEvent =
+  sendMessage domKeyboardEvent altGraphKeySelector
 
 -- | @- keyCode@
 keyCode :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO CInt
-keyCode domKeyboardEvent  =
-    sendMsg domKeyboardEvent (mkSelector "keyCode") retCInt []
+keyCode domKeyboardEvent =
+  sendMessage domKeyboardEvent keyCodeSelector
 
 -- | @- charCode@
 charCode :: IsDOMKeyboardEvent domKeyboardEvent => domKeyboardEvent -> IO CInt
-charCode domKeyboardEvent  =
-    sendMsg domKeyboardEvent (mkSelector "charCode") retCInt []
+charCode domKeyboardEvent =
+  sendMessage domKeyboardEvent charCodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getModifierState:@
-getModifierStateSelector :: Selector
+getModifierStateSelector :: Selector '[Id NSString] Bool
 getModifierStateSelector = mkSelector "getModifierState:"
 
 -- | @Selector@ for @initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:location:ctrlKey:altKey:shiftKey:metaKey:altGraphKey:@
-initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector :: Selector
+initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector :: Selector '[Id NSString, Bool, Bool, Id DOMAbstractView, Id NSString, CUInt, Bool, Bool, Bool, Bool, Bool] ()
 initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector = mkSelector "initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:location:ctrlKey:altKey:shiftKey:metaKey:altGraphKey:"
 
 -- | @Selector@ for @initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:location:ctrlKey:altKey:shiftKey:metaKey:@
-initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKeySelector :: Selector
+initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKeySelector :: Selector '[Id NSString, Bool, Bool, Id DOMAbstractView, Id NSString, CUInt, Bool, Bool, Bool, Bool] ()
 initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_location_ctrlKey_altKey_shiftKey_metaKeySelector = mkSelector "initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:location:ctrlKey:altKey:shiftKey:metaKey:"
 
 -- | @Selector@ for @initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:keyLocation:ctrlKey:altKey:shiftKey:metaKey:altGraphKey:@
-initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector :: Selector
+initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector :: Selector '[Id NSString, Bool, Bool, Id DOMAbstractView, Id NSString, CUInt, Bool, Bool, Bool, Bool, Bool] ()
 initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKey_altGraphKeySelector = mkSelector "initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:keyLocation:ctrlKey:altKey:shiftKey:metaKey:altGraphKey:"
 
 -- | @Selector@ for @initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:keyLocation:ctrlKey:altKey:shiftKey:metaKey:@
-initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKeySelector :: Selector
+initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKeySelector :: Selector '[Id NSString, Bool, Bool, Id DOMAbstractView, Id NSString, CUInt, Bool, Bool, Bool, Bool] ()
 initKeyboardEvent_canBubble_cancelable_view_keyIdentifier_keyLocation_ctrlKey_altKey_shiftKey_metaKeySelector = mkSelector "initKeyboardEvent:canBubble:cancelable:view:keyIdentifier:keyLocation:ctrlKey:altKey:shiftKey:metaKey:"
 
 -- | @Selector@ for @keyIdentifier@
-keyIdentifierSelector :: Selector
+keyIdentifierSelector :: Selector '[] (Id NSString)
 keyIdentifierSelector = mkSelector "keyIdentifier"
 
 -- | @Selector@ for @location@
-locationSelector :: Selector
+locationSelector :: Selector '[] CUInt
 locationSelector = mkSelector "location"
 
 -- | @Selector@ for @keyLocation@
-keyLocationSelector :: Selector
+keyLocationSelector :: Selector '[] CUInt
 keyLocationSelector = mkSelector "keyLocation"
 
 -- | @Selector@ for @ctrlKey@
-ctrlKeySelector :: Selector
+ctrlKeySelector :: Selector '[] Bool
 ctrlKeySelector = mkSelector "ctrlKey"
 
 -- | @Selector@ for @shiftKey@
-shiftKeySelector :: Selector
+shiftKeySelector :: Selector '[] Bool
 shiftKeySelector = mkSelector "shiftKey"
 
 -- | @Selector@ for @altKey@
-altKeySelector :: Selector
+altKeySelector :: Selector '[] Bool
 altKeySelector = mkSelector "altKey"
 
 -- | @Selector@ for @metaKey@
-metaKeySelector :: Selector
+metaKeySelector :: Selector '[] Bool
 metaKeySelector = mkSelector "metaKey"
 
 -- | @Selector@ for @altGraphKey@
-altGraphKeySelector :: Selector
+altGraphKeySelector :: Selector '[] Bool
 altGraphKeySelector = mkSelector "altGraphKey"
 
 -- | @Selector@ for @keyCode@
-keyCodeSelector :: Selector
+keyCodeSelector :: Selector '[] CInt
 keyCodeSelector = mkSelector "keyCode"
 
 -- | @Selector@ for @charCode@
-charCodeSelector :: Selector
+charCodeSelector :: Selector '[] CInt
 charCodeSelector = mkSelector "charCode"
 

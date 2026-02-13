@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTREcosystemInformationClusterDeviceTypeStruct
   , revision
   , setRevision
   , deviceTypeSelector
-  , setDeviceTypeSelector
   , revisionSelector
+  , setDeviceTypeSelector
   , setRevisionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- deviceType@
 deviceType :: IsMTREcosystemInformationClusterDeviceTypeStruct mtrEcosystemInformationClusterDeviceTypeStruct => mtrEcosystemInformationClusterDeviceTypeStruct -> IO (Id NSNumber)
-deviceType mtrEcosystemInformationClusterDeviceTypeStruct  =
-    sendMsg mtrEcosystemInformationClusterDeviceTypeStruct (mkSelector "deviceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceType mtrEcosystemInformationClusterDeviceTypeStruct =
+  sendMessage mtrEcosystemInformationClusterDeviceTypeStruct deviceTypeSelector
 
 -- | @- setDeviceType:@
 setDeviceType :: (IsMTREcosystemInformationClusterDeviceTypeStruct mtrEcosystemInformationClusterDeviceTypeStruct, IsNSNumber value) => mtrEcosystemInformationClusterDeviceTypeStruct -> value -> IO ()
-setDeviceType mtrEcosystemInformationClusterDeviceTypeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterDeviceTypeStruct (mkSelector "setDeviceType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeviceType mtrEcosystemInformationClusterDeviceTypeStruct value =
+  sendMessage mtrEcosystemInformationClusterDeviceTypeStruct setDeviceTypeSelector (toNSNumber value)
 
 -- | @- revision@
 revision :: IsMTREcosystemInformationClusterDeviceTypeStruct mtrEcosystemInformationClusterDeviceTypeStruct => mtrEcosystemInformationClusterDeviceTypeStruct -> IO (Id NSNumber)
-revision mtrEcosystemInformationClusterDeviceTypeStruct  =
-    sendMsg mtrEcosystemInformationClusterDeviceTypeStruct (mkSelector "revision") (retPtr retVoid) [] >>= retainedObject . castPtr
+revision mtrEcosystemInformationClusterDeviceTypeStruct =
+  sendMessage mtrEcosystemInformationClusterDeviceTypeStruct revisionSelector
 
 -- | @- setRevision:@
 setRevision :: (IsMTREcosystemInformationClusterDeviceTypeStruct mtrEcosystemInformationClusterDeviceTypeStruct, IsNSNumber value) => mtrEcosystemInformationClusterDeviceTypeStruct -> value -> IO ()
-setRevision mtrEcosystemInformationClusterDeviceTypeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterDeviceTypeStruct (mkSelector "setRevision:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRevision mtrEcosystemInformationClusterDeviceTypeStruct value =
+  sendMessage mtrEcosystemInformationClusterDeviceTypeStruct setRevisionSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @deviceType@
-deviceTypeSelector :: Selector
+deviceTypeSelector :: Selector '[] (Id NSNumber)
 deviceTypeSelector = mkSelector "deviceType"
 
 -- | @Selector@ for @setDeviceType:@
-setDeviceTypeSelector :: Selector
+setDeviceTypeSelector :: Selector '[Id NSNumber] ()
 setDeviceTypeSelector = mkSelector "setDeviceType:"
 
 -- | @Selector@ for @revision@
-revisionSelector :: Selector
+revisionSelector :: Selector '[] (Id NSNumber)
 revisionSelector = mkSelector "revision"
 
 -- | @Selector@ for @setRevision:@
-setRevisionSelector :: Selector
+setRevisionSelector :: Selector '[Id NSNumber] ()
 setRevisionSelector = mkSelector "setRevision:"
 

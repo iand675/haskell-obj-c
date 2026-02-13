@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.SpriteKit.SKUniform
   , setTextureValue
   , floatValue
   , setFloatValue
-  , uniformWithNameSelector
-  , uniformWithName_textureSelector
-  , uniformWithName_floatSelector
-  , initWithNameSelector
-  , initWithName_textureSelector
-  , initWithName_floatSelector
-  , nameSelector
-  , uniformTypeSelector
-  , textureValueSelector
-  , setTextureValueSelector
   , floatValueSelector
+  , initWithNameSelector
+  , initWithName_floatSelector
+  , initWithName_textureSelector
+  , nameSelector
   , setFloatValueSelector
+  , setTextureValueSelector
+  , textureValueSelector
+  , uniformTypeSelector
+  , uniformWithNameSelector
+  , uniformWithName_floatSelector
+  , uniformWithName_textureSelector
 
   -- * Enum types
   , SKUniformType(SKUniformType)
@@ -46,15 +47,11 @@ module ObjC.SpriteKit.SKUniform
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,8 +68,7 @@ uniformWithName :: IsNSString name => name -> IO (Id SKUniform)
 uniformWithName name =
   do
     cls' <- getRequiredClass "SKUniform"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "uniformWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' uniformWithNameSelector (toNSString name)
 
 -- | Create a shader uniform with a given name, and texture data
 --
@@ -85,9 +81,7 @@ uniformWithName_texture :: (IsNSString name, IsSKTexture texture) => name -> tex
 uniformWithName_texture name texture =
   do
     cls' <- getRequiredClass "SKUniform"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr texture $ \raw_texture ->
-        sendClassMsg cls' (mkSelector "uniformWithName:texture:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_texture :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' uniformWithName_textureSelector (toNSString name) (toSKTexture texture)
 
 -- | Create a shader uniform with a given name, and a float value
 --
@@ -100,108 +94,102 @@ uniformWithName_float :: IsNSString name => name -> CFloat -> IO (Id SKUniform)
 uniformWithName_float name value =
   do
     cls' <- getRequiredClass "SKUniform"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "uniformWithName:float:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCFloat value] >>= retainedObject . castPtr
+    sendClassMessage cls' uniformWithName_floatSelector (toNSString name) value
 
 -- | @- initWithName:@
 initWithName :: (IsSKUniform skUniform, IsNSString name) => skUniform -> name -> IO (Id SKUniform)
-initWithName skUniform  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skUniform (mkSelector "initWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithName skUniform name =
+  sendOwnedMessage skUniform initWithNameSelector (toNSString name)
 
 -- | @- initWithName:texture:@
 initWithName_texture :: (IsSKUniform skUniform, IsNSString name, IsSKTexture texture) => skUniform -> name -> texture -> IO (Id SKUniform)
-initWithName_texture skUniform  name texture =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr texture $ \raw_texture ->
-        sendMsg skUniform (mkSelector "initWithName:texture:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_texture :: Ptr ())] >>= ownedObject . castPtr
+initWithName_texture skUniform name texture =
+  sendOwnedMessage skUniform initWithName_textureSelector (toNSString name) (toSKTexture texture)
 
 -- | @- initWithName:float:@
 initWithName_float :: (IsSKUniform skUniform, IsNSString name) => skUniform -> name -> CFloat -> IO (Id SKUniform)
-initWithName_float skUniform  name value =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skUniform (mkSelector "initWithName:float:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCFloat value] >>= ownedObject . castPtr
+initWithName_float skUniform name value =
+  sendOwnedMessage skUniform initWithName_floatSelector (toNSString name) value
 
 -- | @- name@
 name :: IsSKUniform skUniform => skUniform -> IO (Id NSString)
-name skUniform  =
-    sendMsg skUniform (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name skUniform =
+  sendMessage skUniform nameSelector
 
 -- | @- uniformType@
 uniformType :: IsSKUniform skUniform => skUniform -> IO SKUniformType
-uniformType skUniform  =
-    fmap (coerce :: CLong -> SKUniformType) $ sendMsg skUniform (mkSelector "uniformType") retCLong []
+uniformType skUniform =
+  sendMessage skUniform uniformTypeSelector
 
 -- | @- textureValue@
 textureValue :: IsSKUniform skUniform => skUniform -> IO (Id SKTexture)
-textureValue skUniform  =
-    sendMsg skUniform (mkSelector "textureValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+textureValue skUniform =
+  sendMessage skUniform textureValueSelector
 
 -- | @- setTextureValue:@
 setTextureValue :: (IsSKUniform skUniform, IsSKTexture value) => skUniform -> value -> IO ()
-setTextureValue skUniform  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skUniform (mkSelector "setTextureValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextureValue skUniform value =
+  sendMessage skUniform setTextureValueSelector (toSKTexture value)
 
 -- | @- floatValue@
 floatValue :: IsSKUniform skUniform => skUniform -> IO CFloat
-floatValue skUniform  =
-    sendMsg skUniform (mkSelector "floatValue") retCFloat []
+floatValue skUniform =
+  sendMessage skUniform floatValueSelector
 
 -- | @- setFloatValue:@
 setFloatValue :: IsSKUniform skUniform => skUniform -> CFloat -> IO ()
-setFloatValue skUniform  value =
-    sendMsg skUniform (mkSelector "setFloatValue:") retVoid [argCFloat value]
+setFloatValue skUniform value =
+  sendMessage skUniform setFloatValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @uniformWithName:@
-uniformWithNameSelector :: Selector
+uniformWithNameSelector :: Selector '[Id NSString] (Id SKUniform)
 uniformWithNameSelector = mkSelector "uniformWithName:"
 
 -- | @Selector@ for @uniformWithName:texture:@
-uniformWithName_textureSelector :: Selector
+uniformWithName_textureSelector :: Selector '[Id NSString, Id SKTexture] (Id SKUniform)
 uniformWithName_textureSelector = mkSelector "uniformWithName:texture:"
 
 -- | @Selector@ for @uniformWithName:float:@
-uniformWithName_floatSelector :: Selector
+uniformWithName_floatSelector :: Selector '[Id NSString, CFloat] (Id SKUniform)
 uniformWithName_floatSelector = mkSelector "uniformWithName:float:"
 
 -- | @Selector@ for @initWithName:@
-initWithNameSelector :: Selector
+initWithNameSelector :: Selector '[Id NSString] (Id SKUniform)
 initWithNameSelector = mkSelector "initWithName:"
 
 -- | @Selector@ for @initWithName:texture:@
-initWithName_textureSelector :: Selector
+initWithName_textureSelector :: Selector '[Id NSString, Id SKTexture] (Id SKUniform)
 initWithName_textureSelector = mkSelector "initWithName:texture:"
 
 -- | @Selector@ for @initWithName:float:@
-initWithName_floatSelector :: Selector
+initWithName_floatSelector :: Selector '[Id NSString, CFloat] (Id SKUniform)
 initWithName_floatSelector = mkSelector "initWithName:float:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @uniformType@
-uniformTypeSelector :: Selector
+uniformTypeSelector :: Selector '[] SKUniformType
 uniformTypeSelector = mkSelector "uniformType"
 
 -- | @Selector@ for @textureValue@
-textureValueSelector :: Selector
+textureValueSelector :: Selector '[] (Id SKTexture)
 textureValueSelector = mkSelector "textureValue"
 
 -- | @Selector@ for @setTextureValue:@
-setTextureValueSelector :: Selector
+setTextureValueSelector :: Selector '[Id SKTexture] ()
 setTextureValueSelector = mkSelector "setTextureValue:"
 
 -- | @Selector@ for @floatValue@
-floatValueSelector :: Selector
+floatValueSelector :: Selector '[] CFloat
 floatValueSelector = mkSelector "floatValue"
 
 -- | @Selector@ for @setFloatValue:@
-setFloatValueSelector :: Selector
+setFloatValueSelector :: Selector '[CFloat] ()
 setFloatValueSelector = mkSelector "setFloatValue:"
 

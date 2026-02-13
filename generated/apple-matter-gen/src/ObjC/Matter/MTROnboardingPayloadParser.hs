@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.Matter.MTROnboardingPayloadParser
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,15 +29,13 @@ setupPayloadForOnboardingPayload_error :: (IsNSString onboardingPayload, IsNSErr
 setupPayloadForOnboardingPayload_error onboardingPayload error_ =
   do
     cls' <- getRequiredClass "MTROnboardingPayloadParser"
-    withObjCPtr onboardingPayload $ \raw_onboardingPayload ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "setupPayloadForOnboardingPayload:error:") (retPtr retVoid) [argPtr (castPtr raw_onboardingPayload :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' setupPayloadForOnboardingPayload_errorSelector (toNSString onboardingPayload) (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setupPayloadForOnboardingPayload:error:@
-setupPayloadForOnboardingPayload_errorSelector :: Selector
+setupPayloadForOnboardingPayload_errorSelector :: Selector '[Id NSString, Id NSError] (Id MTRSetupPayload)
 setupPayloadForOnboardingPayload_errorSelector = mkSelector "setupPayloadForOnboardingPayload:error:"
 

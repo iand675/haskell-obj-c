@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterVideoStreamModifyParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , videoStreamIDSelector
-  , setVideoStreamIDSelector
-  , watermarkEnabledSelector
-  , setWatermarkEnabledSelector
   , osdEnabledSelector
-  , setOsdEnabledSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setOsdEnabledSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setVideoStreamIDSelector
+  , setWatermarkEnabledSelector
+  , timedInvokeTimeoutMsSelector
+  , videoStreamIDSelector
+  , watermarkEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- videoStreamID@
 videoStreamID :: IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> IO (Id NSNumber)
-videoStreamID mtrCameraAVStreamManagementClusterVideoStreamModifyParams  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "videoStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoStreamID mtrCameraAVStreamManagementClusterVideoStreamModifyParams =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams videoStreamIDSelector
 
 -- | @- setVideoStreamID:@
 setVideoStreamID :: (IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> value -> IO ()
-setVideoStreamID mtrCameraAVStreamManagementClusterVideoStreamModifyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "setVideoStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoStreamID mtrCameraAVStreamManagementClusterVideoStreamModifyParams value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams setVideoStreamIDSelector (toNSNumber value)
 
 -- | @- watermarkEnabled@
 watermarkEnabled :: IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> IO (Id NSNumber)
-watermarkEnabled mtrCameraAVStreamManagementClusterVideoStreamModifyParams  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "watermarkEnabled") (retPtr retVoid) [] >>= retainedObject . castPtr
+watermarkEnabled mtrCameraAVStreamManagementClusterVideoStreamModifyParams =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams watermarkEnabledSelector
 
 -- | @- setWatermarkEnabled:@
 setWatermarkEnabled :: (IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> value -> IO ()
-setWatermarkEnabled mtrCameraAVStreamManagementClusterVideoStreamModifyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "setWatermarkEnabled:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWatermarkEnabled mtrCameraAVStreamManagementClusterVideoStreamModifyParams value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams setWatermarkEnabledSelector (toNSNumber value)
 
 -- | @- osdEnabled@
 osdEnabled :: IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> IO (Id NSNumber)
-osdEnabled mtrCameraAVStreamManagementClusterVideoStreamModifyParams  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "osdEnabled") (retPtr retVoid) [] >>= retainedObject . castPtr
+osdEnabled mtrCameraAVStreamManagementClusterVideoStreamModifyParams =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams osdEnabledSelector
 
 -- | @- setOsdEnabled:@
 setOsdEnabled :: (IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> value -> IO ()
-setOsdEnabled mtrCameraAVStreamManagementClusterVideoStreamModifyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "setOsdEnabled:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOsdEnabled mtrCameraAVStreamManagementClusterVideoStreamModifyParams value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams setOsdEnabledSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setOsdEnabled mtrCameraAVStreamManagementClusterVideoStreamModifyParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamModifyParams  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamModifyParams =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamModifyParams  
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamModifyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamModifyParams value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamModifyParam
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamModifyParams  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamModifyParams =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamModifyP
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCameraAVStreamManagementClusterVideoStreamModifyParams mtrCameraAVStreamManagementClusterVideoStreamModifyParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamModifyParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamModifyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamModifyParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamModifyParams value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamModifyParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @videoStreamID@
-videoStreamIDSelector :: Selector
+videoStreamIDSelector :: Selector '[] (Id NSNumber)
 videoStreamIDSelector = mkSelector "videoStreamID"
 
 -- | @Selector@ for @setVideoStreamID:@
-setVideoStreamIDSelector :: Selector
+setVideoStreamIDSelector :: Selector '[Id NSNumber] ()
 setVideoStreamIDSelector = mkSelector "setVideoStreamID:"
 
 -- | @Selector@ for @watermarkEnabled@
-watermarkEnabledSelector :: Selector
+watermarkEnabledSelector :: Selector '[] (Id NSNumber)
 watermarkEnabledSelector = mkSelector "watermarkEnabled"
 
 -- | @Selector@ for @setWatermarkEnabled:@
-setWatermarkEnabledSelector :: Selector
+setWatermarkEnabledSelector :: Selector '[Id NSNumber] ()
 setWatermarkEnabledSelector = mkSelector "setWatermarkEnabled:"
 
 -- | @Selector@ for @osdEnabled@
-osdEnabledSelector :: Selector
+osdEnabledSelector :: Selector '[] (Id NSNumber)
 osdEnabledSelector = mkSelector "osdEnabled"
 
 -- | @Selector@ for @setOsdEnabled:@
-setOsdEnabledSelector :: Selector
+setOsdEnabledSelector :: Selector '[Id NSNumber] ()
 setOsdEnabledSelector = mkSelector "setOsdEnabled:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

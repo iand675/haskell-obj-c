@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.BrowserEngineCore.BEAudioSession
   , setPreferredOutput_error
   , availableOutputs
   , preferredOutput
-  , initWithAudioSessionSelector
-  , setPreferredOutput_errorSelector
   , availableOutputsSelector
+  , initWithAudioSessionSelector
   , preferredOutputSelector
+  , setPreferredOutput_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,50 +39,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAudioSession:@
 initWithAudioSession :: (IsBEAudioSession beAudioSession, IsAVAudioSession audioSession) => beAudioSession -> audioSession -> IO (Id BEAudioSession)
-initWithAudioSession beAudioSession  audioSession =
-  withObjCPtr audioSession $ \raw_audioSession ->
-      sendMsg beAudioSession (mkSelector "initWithAudioSession:") (retPtr retVoid) [argPtr (castPtr raw_audioSession :: Ptr ())] >>= ownedObject . castPtr
+initWithAudioSession beAudioSession audioSession =
+  sendOwnedMessage beAudioSession initWithAudioSessionSelector (toAVAudioSession audioSession)
 
 -- | Select a preferred output port for audio routing.    Setting a nil value will clear the preference.
 --
 -- ObjC selector: @- setPreferredOutput:error:@
 setPreferredOutput_error :: (IsBEAudioSession beAudioSession, IsAVAudioSessionPortDescription outPort, IsNSError outError) => beAudioSession -> outPort -> outError -> IO Bool
-setPreferredOutput_error beAudioSession  outPort outError =
-  withObjCPtr outPort $ \raw_outPort ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg beAudioSession (mkSelector "setPreferredOutput:error:") retCULong [argPtr (castPtr raw_outPort :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setPreferredOutput_error beAudioSession outPort outError =
+  sendMessage beAudioSession setPreferredOutput_errorSelector (toAVAudioSessionPortDescription outPort) (toNSError outError)
 
 -- | Gets the set of output ports that are available for routing.
 --
 -- ObjC selector: @- availableOutputs@
 availableOutputs :: IsBEAudioSession beAudioSession => beAudioSession -> IO (Id NSArray)
-availableOutputs beAudioSession  =
-    sendMsg beAudioSession (mkSelector "availableOutputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableOutputs beAudioSession =
+  sendMessage beAudioSession availableOutputsSelector
 
 -- | Get the preferred output port.  Will be nil if no preference has been set.
 --
 -- ObjC selector: @- preferredOutput@
 preferredOutput :: IsBEAudioSession beAudioSession => beAudioSession -> IO (Id AVAudioSessionPortDescription)
-preferredOutput beAudioSession  =
-    sendMsg beAudioSession (mkSelector "preferredOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredOutput beAudioSession =
+  sendMessage beAudioSession preferredOutputSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAudioSession:@
-initWithAudioSessionSelector :: Selector
+initWithAudioSessionSelector :: Selector '[Id AVAudioSession] (Id BEAudioSession)
 initWithAudioSessionSelector = mkSelector "initWithAudioSession:"
 
 -- | @Selector@ for @setPreferredOutput:error:@
-setPreferredOutput_errorSelector :: Selector
+setPreferredOutput_errorSelector :: Selector '[Id AVAudioSessionPortDescription, Id NSError] Bool
 setPreferredOutput_errorSelector = mkSelector "setPreferredOutput:error:"
 
 -- | @Selector@ for @availableOutputs@
-availableOutputsSelector :: Selector
+availableOutputsSelector :: Selector '[] (Id NSArray)
 availableOutputsSelector = mkSelector "availableOutputs"
 
 -- | @Selector@ for @preferredOutput@
-preferredOutputSelector :: Selector
+preferredOutputSelector :: Selector '[] (Id AVAudioSessionPortDescription)
 preferredOutputSelector = mkSelector "preferredOutput"
 

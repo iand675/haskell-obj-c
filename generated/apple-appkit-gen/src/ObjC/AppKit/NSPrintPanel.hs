@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,27 +29,27 @@ module ObjC.AppKit.NSPrintPanel
   , jobStyleHint
   , setJobStyleHint
   , printInfo
-  , printPanelSelector
+  , accessoryControllersSelector
+  , accessoryViewSelector
   , addAccessoryControllerSelector
-  , removeAccessoryControllerSelector
-  , setDefaultButtonTitleSelector
-  , defaultButtonTitleSelector
   , beginSheetUsingPrintInfo_onWindow_completionHandlerSelector
   , beginSheetWithPrintInfo_modalForWindow_delegate_didEndSelector_contextInfoSelector
-  , runModalWithPrintInfoSelector
-  , runModalSelector
-  , setAccessoryViewSelector
-  , accessoryViewSelector
-  , updateFromPrintInfoSelector
+  , defaultButtonTitleSelector
   , finalWritePrintInfoSelector
-  , accessoryControllersSelector
-  , optionsSelector
-  , setOptionsSelector
   , helpAnchorSelector
-  , setHelpAnchorSelector
   , jobStyleHintSelector
-  , setJobStyleHintSelector
+  , optionsSelector
   , printInfoSelector
+  , printPanelSelector
+  , removeAccessoryControllerSelector
+  , runModalSelector
+  , runModalWithPrintInfoSelector
+  , setAccessoryViewSelector
+  , setDefaultButtonTitleSelector
+  , setHelpAnchorSelector
+  , setJobStyleHintSelector
+  , setOptionsSelector
+  , updateFromPrintInfoSelector
 
   -- * Enum types
   , NSPrintPanelOptions(NSPrintPanelOptions)
@@ -63,15 +64,11 @@ module ObjC.AppKit.NSPrintPanel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -84,204 +81,193 @@ printPanel :: IO (Id NSPrintPanel)
 printPanel  =
   do
     cls' <- getRequiredClass "NSPrintPanel"
-    sendClassMsg cls' (mkSelector "printPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' printPanelSelector
 
 -- | @- addAccessoryController:@
 addAccessoryController :: (IsNSPrintPanel nsPrintPanel, IsNSViewController accessoryController) => nsPrintPanel -> accessoryController -> IO ()
-addAccessoryController nsPrintPanel  accessoryController =
-  withObjCPtr accessoryController $ \raw_accessoryController ->
-      sendMsg nsPrintPanel (mkSelector "addAccessoryController:") retVoid [argPtr (castPtr raw_accessoryController :: Ptr ())]
+addAccessoryController nsPrintPanel accessoryController =
+  sendMessage nsPrintPanel addAccessoryControllerSelector (toNSViewController accessoryController)
 
 -- | @- removeAccessoryController:@
 removeAccessoryController :: (IsNSPrintPanel nsPrintPanel, IsNSViewController accessoryController) => nsPrintPanel -> accessoryController -> IO ()
-removeAccessoryController nsPrintPanel  accessoryController =
-  withObjCPtr accessoryController $ \raw_accessoryController ->
-      sendMsg nsPrintPanel (mkSelector "removeAccessoryController:") retVoid [argPtr (castPtr raw_accessoryController :: Ptr ())]
+removeAccessoryController nsPrintPanel accessoryController =
+  sendMessage nsPrintPanel removeAccessoryControllerSelector (toNSViewController accessoryController)
 
 -- | @- setDefaultButtonTitle:@
 setDefaultButtonTitle :: (IsNSPrintPanel nsPrintPanel, IsNSString defaultButtonTitle) => nsPrintPanel -> defaultButtonTitle -> IO ()
-setDefaultButtonTitle nsPrintPanel  defaultButtonTitle =
-  withObjCPtr defaultButtonTitle $ \raw_defaultButtonTitle ->
-      sendMsg nsPrintPanel (mkSelector "setDefaultButtonTitle:") retVoid [argPtr (castPtr raw_defaultButtonTitle :: Ptr ())]
+setDefaultButtonTitle nsPrintPanel defaultButtonTitle =
+  sendMessage nsPrintPanel setDefaultButtonTitleSelector (toNSString defaultButtonTitle)
 
 -- | @- defaultButtonTitle@
 defaultButtonTitle :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO (Id NSString)
-defaultButtonTitle nsPrintPanel  =
-    sendMsg nsPrintPanel (mkSelector "defaultButtonTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultButtonTitle nsPrintPanel =
+  sendMessage nsPrintPanel defaultButtonTitleSelector
 
 -- | @- beginSheetUsingPrintInfo:onWindow:completionHandler:@
 beginSheetUsingPrintInfo_onWindow_completionHandler :: (IsNSPrintPanel nsPrintPanel, IsNSPrintInfo printInfo, IsNSWindow parentWindow) => nsPrintPanel -> printInfo -> parentWindow -> Ptr () -> IO ()
-beginSheetUsingPrintInfo_onWindow_completionHandler nsPrintPanel  printInfo parentWindow handler =
-  withObjCPtr printInfo $ \raw_printInfo ->
-    withObjCPtr parentWindow $ \raw_parentWindow ->
-        sendMsg nsPrintPanel (mkSelector "beginSheetUsingPrintInfo:onWindow:completionHandler:") retVoid [argPtr (castPtr raw_printInfo :: Ptr ()), argPtr (castPtr raw_parentWindow :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+beginSheetUsingPrintInfo_onWindow_completionHandler nsPrintPanel printInfo parentWindow handler =
+  sendMessage nsPrintPanel beginSheetUsingPrintInfo_onWindow_completionHandlerSelector (toNSPrintInfo printInfo) (toNSWindow parentWindow) handler
 
 -- | @- beginSheetWithPrintInfo:modalForWindow:delegate:didEndSelector:contextInfo:@
-beginSheetWithPrintInfo_modalForWindow_delegate_didEndSelector_contextInfo :: (IsNSPrintPanel nsPrintPanel, IsNSPrintInfo printInfo, IsNSWindow docWindow) => nsPrintPanel -> printInfo -> docWindow -> RawId -> Selector -> Ptr () -> IO ()
-beginSheetWithPrintInfo_modalForWindow_delegate_didEndSelector_contextInfo nsPrintPanel  printInfo docWindow delegate didEndSelector contextInfo =
-  withObjCPtr printInfo $ \raw_printInfo ->
-    withObjCPtr docWindow $ \raw_docWindow ->
-        sendMsg nsPrintPanel (mkSelector "beginSheetWithPrintInfo:modalForWindow:delegate:didEndSelector:contextInfo:") retVoid [argPtr (castPtr raw_printInfo :: Ptr ()), argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+beginSheetWithPrintInfo_modalForWindow_delegate_didEndSelector_contextInfo :: (IsNSPrintPanel nsPrintPanel, IsNSPrintInfo printInfo, IsNSWindow docWindow) => nsPrintPanel -> printInfo -> docWindow -> RawId -> Sel -> Ptr () -> IO ()
+beginSheetWithPrintInfo_modalForWindow_delegate_didEndSelector_contextInfo nsPrintPanel printInfo docWindow delegate didEndSelector contextInfo =
+  sendMessage nsPrintPanel beginSheetWithPrintInfo_modalForWindow_delegate_didEndSelector_contextInfoSelector (toNSPrintInfo printInfo) (toNSWindow docWindow) delegate didEndSelector contextInfo
 
 -- | @- runModalWithPrintInfo:@
 runModalWithPrintInfo :: (IsNSPrintPanel nsPrintPanel, IsNSPrintInfo printInfo) => nsPrintPanel -> printInfo -> IO CLong
-runModalWithPrintInfo nsPrintPanel  printInfo =
-  withObjCPtr printInfo $ \raw_printInfo ->
-      sendMsg nsPrintPanel (mkSelector "runModalWithPrintInfo:") retCLong [argPtr (castPtr raw_printInfo :: Ptr ())]
+runModalWithPrintInfo nsPrintPanel printInfo =
+  sendMessage nsPrintPanel runModalWithPrintInfoSelector (toNSPrintInfo printInfo)
 
 -- | @- runModal@
 runModal :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO CLong
-runModal nsPrintPanel  =
-    sendMsg nsPrintPanel (mkSelector "runModal") retCLong []
+runModal nsPrintPanel =
+  sendMessage nsPrintPanel runModalSelector
 
 -- | @- setAccessoryView:@
 setAccessoryView :: (IsNSPrintPanel nsPrintPanel, IsNSView accessoryView) => nsPrintPanel -> accessoryView -> IO ()
-setAccessoryView nsPrintPanel  accessoryView =
-  withObjCPtr accessoryView $ \raw_accessoryView ->
-      sendMsg nsPrintPanel (mkSelector "setAccessoryView:") retVoid [argPtr (castPtr raw_accessoryView :: Ptr ())]
+setAccessoryView nsPrintPanel accessoryView =
+  sendMessage nsPrintPanel setAccessoryViewSelector (toNSView accessoryView)
 
 -- | @- accessoryView@
 accessoryView :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO (Id NSView)
-accessoryView nsPrintPanel  =
-    sendMsg nsPrintPanel (mkSelector "accessoryView") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessoryView nsPrintPanel =
+  sendMessage nsPrintPanel accessoryViewSelector
 
 -- | @- updateFromPrintInfo@
 updateFromPrintInfo :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO ()
-updateFromPrintInfo nsPrintPanel  =
-    sendMsg nsPrintPanel (mkSelector "updateFromPrintInfo") retVoid []
+updateFromPrintInfo nsPrintPanel =
+  sendMessage nsPrintPanel updateFromPrintInfoSelector
 
 -- | @- finalWritePrintInfo@
 finalWritePrintInfo :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO ()
-finalWritePrintInfo nsPrintPanel  =
-    sendMsg nsPrintPanel (mkSelector "finalWritePrintInfo") retVoid []
+finalWritePrintInfo nsPrintPanel =
+  sendMessage nsPrintPanel finalWritePrintInfoSelector
 
 -- | @- accessoryControllers@
 accessoryControllers :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO (Id NSArray)
-accessoryControllers nsPrintPanel  =
-    sendMsg nsPrintPanel (mkSelector "accessoryControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessoryControllers nsPrintPanel =
+  sendMessage nsPrintPanel accessoryControllersSelector
 
 -- | @- options@
 options :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO NSPrintPanelOptions
-options nsPrintPanel  =
-    fmap (coerce :: CULong -> NSPrintPanelOptions) $ sendMsg nsPrintPanel (mkSelector "options") retCULong []
+options nsPrintPanel =
+  sendMessage nsPrintPanel optionsSelector
 
 -- | @- setOptions:@
 setOptions :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> NSPrintPanelOptions -> IO ()
-setOptions nsPrintPanel  value =
-    sendMsg nsPrintPanel (mkSelector "setOptions:") retVoid [argCULong (coerce value)]
+setOptions nsPrintPanel value =
+  sendMessage nsPrintPanel setOptionsSelector value
 
 -- | @- helpAnchor@
 helpAnchor :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO (Id NSString)
-helpAnchor nsPrintPanel  =
-    sendMsg nsPrintPanel (mkSelector "helpAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+helpAnchor nsPrintPanel =
+  sendMessage nsPrintPanel helpAnchorSelector
 
 -- | @- setHelpAnchor:@
 setHelpAnchor :: (IsNSPrintPanel nsPrintPanel, IsNSString value) => nsPrintPanel -> value -> IO ()
-setHelpAnchor nsPrintPanel  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPrintPanel (mkSelector "setHelpAnchor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHelpAnchor nsPrintPanel value =
+  sendMessage nsPrintPanel setHelpAnchorSelector (toNSString value)
 
 -- | @- jobStyleHint@
 jobStyleHint :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO (Id NSString)
-jobStyleHint nsPrintPanel  =
-    sendMsg nsPrintPanel (mkSelector "jobStyleHint") (retPtr retVoid) [] >>= retainedObject . castPtr
+jobStyleHint nsPrintPanel =
+  sendMessage nsPrintPanel jobStyleHintSelector
 
 -- | @- setJobStyleHint:@
 setJobStyleHint :: (IsNSPrintPanel nsPrintPanel, IsNSString value) => nsPrintPanel -> value -> IO ()
-setJobStyleHint nsPrintPanel  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPrintPanel (mkSelector "setJobStyleHint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setJobStyleHint nsPrintPanel value =
+  sendMessage nsPrintPanel setJobStyleHintSelector (toNSString value)
 
 -- | @- printInfo@
 printInfo :: IsNSPrintPanel nsPrintPanel => nsPrintPanel -> IO (Id NSPrintInfo)
-printInfo nsPrintPanel  =
-    sendMsg nsPrintPanel (mkSelector "printInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+printInfo nsPrintPanel =
+  sendMessage nsPrintPanel printInfoSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @printPanel@
-printPanelSelector :: Selector
+printPanelSelector :: Selector '[] (Id NSPrintPanel)
 printPanelSelector = mkSelector "printPanel"
 
 -- | @Selector@ for @addAccessoryController:@
-addAccessoryControllerSelector :: Selector
+addAccessoryControllerSelector :: Selector '[Id NSViewController] ()
 addAccessoryControllerSelector = mkSelector "addAccessoryController:"
 
 -- | @Selector@ for @removeAccessoryController:@
-removeAccessoryControllerSelector :: Selector
+removeAccessoryControllerSelector :: Selector '[Id NSViewController] ()
 removeAccessoryControllerSelector = mkSelector "removeAccessoryController:"
 
 -- | @Selector@ for @setDefaultButtonTitle:@
-setDefaultButtonTitleSelector :: Selector
+setDefaultButtonTitleSelector :: Selector '[Id NSString] ()
 setDefaultButtonTitleSelector = mkSelector "setDefaultButtonTitle:"
 
 -- | @Selector@ for @defaultButtonTitle@
-defaultButtonTitleSelector :: Selector
+defaultButtonTitleSelector :: Selector '[] (Id NSString)
 defaultButtonTitleSelector = mkSelector "defaultButtonTitle"
 
 -- | @Selector@ for @beginSheetUsingPrintInfo:onWindow:completionHandler:@
-beginSheetUsingPrintInfo_onWindow_completionHandlerSelector :: Selector
+beginSheetUsingPrintInfo_onWindow_completionHandlerSelector :: Selector '[Id NSPrintInfo, Id NSWindow, Ptr ()] ()
 beginSheetUsingPrintInfo_onWindow_completionHandlerSelector = mkSelector "beginSheetUsingPrintInfo:onWindow:completionHandler:"
 
 -- | @Selector@ for @beginSheetWithPrintInfo:modalForWindow:delegate:didEndSelector:contextInfo:@
-beginSheetWithPrintInfo_modalForWindow_delegate_didEndSelector_contextInfoSelector :: Selector
+beginSheetWithPrintInfo_modalForWindow_delegate_didEndSelector_contextInfoSelector :: Selector '[Id NSPrintInfo, Id NSWindow, RawId, Sel, Ptr ()] ()
 beginSheetWithPrintInfo_modalForWindow_delegate_didEndSelector_contextInfoSelector = mkSelector "beginSheetWithPrintInfo:modalForWindow:delegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @runModalWithPrintInfo:@
-runModalWithPrintInfoSelector :: Selector
+runModalWithPrintInfoSelector :: Selector '[Id NSPrintInfo] CLong
 runModalWithPrintInfoSelector = mkSelector "runModalWithPrintInfo:"
 
 -- | @Selector@ for @runModal@
-runModalSelector :: Selector
+runModalSelector :: Selector '[] CLong
 runModalSelector = mkSelector "runModal"
 
 -- | @Selector@ for @setAccessoryView:@
-setAccessoryViewSelector :: Selector
+setAccessoryViewSelector :: Selector '[Id NSView] ()
 setAccessoryViewSelector = mkSelector "setAccessoryView:"
 
 -- | @Selector@ for @accessoryView@
-accessoryViewSelector :: Selector
+accessoryViewSelector :: Selector '[] (Id NSView)
 accessoryViewSelector = mkSelector "accessoryView"
 
 -- | @Selector@ for @updateFromPrintInfo@
-updateFromPrintInfoSelector :: Selector
+updateFromPrintInfoSelector :: Selector '[] ()
 updateFromPrintInfoSelector = mkSelector "updateFromPrintInfo"
 
 -- | @Selector@ for @finalWritePrintInfo@
-finalWritePrintInfoSelector :: Selector
+finalWritePrintInfoSelector :: Selector '[] ()
 finalWritePrintInfoSelector = mkSelector "finalWritePrintInfo"
 
 -- | @Selector@ for @accessoryControllers@
-accessoryControllersSelector :: Selector
+accessoryControllersSelector :: Selector '[] (Id NSArray)
 accessoryControllersSelector = mkSelector "accessoryControllers"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] NSPrintPanelOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[NSPrintPanelOptions] ()
 setOptionsSelector = mkSelector "setOptions:"
 
 -- | @Selector@ for @helpAnchor@
-helpAnchorSelector :: Selector
+helpAnchorSelector :: Selector '[] (Id NSString)
 helpAnchorSelector = mkSelector "helpAnchor"
 
 -- | @Selector@ for @setHelpAnchor:@
-setHelpAnchorSelector :: Selector
+setHelpAnchorSelector :: Selector '[Id NSString] ()
 setHelpAnchorSelector = mkSelector "setHelpAnchor:"
 
 -- | @Selector@ for @jobStyleHint@
-jobStyleHintSelector :: Selector
+jobStyleHintSelector :: Selector '[] (Id NSString)
 jobStyleHintSelector = mkSelector "jobStyleHint"
 
 -- | @Selector@ for @setJobStyleHint:@
-setJobStyleHintSelector :: Selector
+setJobStyleHintSelector :: Selector '[Id NSString] ()
 setJobStyleHintSelector = mkSelector "setJobStyleHint:"
 
 -- | @Selector@ for @printInfo@
-printInfoSelector :: Selector
+printInfoSelector :: Selector '[] (Id NSPrintInfo)
 printInfoSelector = mkSelector "printInfo"
 

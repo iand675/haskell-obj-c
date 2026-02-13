@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,42 +52,42 @@ module ObjC.WebKit.WKWebViewConfiguration
   , setSupportsAdaptiveImageGlyph
   , writingToolsBehavior
   , setWritingToolsBehavior
-  , setURLSchemeHandler_forURLSchemeSelector
-  , urlSchemeHandlerForURLSchemeSelector
-  , processPoolSelector
-  , setProcessPoolSelector
-  , preferencesSelector
-  , setPreferencesSelector
-  , userContentControllerSelector
-  , setUserContentControllerSelector
-  , webExtensionControllerSelector
-  , setWebExtensionControllerSelector
-  , websiteDataStoreSelector
-  , setWebsiteDataStoreSelector
-  , suppressesIncrementalRenderingSelector
-  , setSuppressesIncrementalRenderingSelector
-  , applicationNameForUserAgentSelector
-  , setApplicationNameForUserAgentSelector
   , allowsAirPlayForMediaPlaybackSelector
-  , setAllowsAirPlayForMediaPlaybackSelector
-  , showsSystemScreenTimeBlockingViewSelector
-  , setShowsSystemScreenTimeBlockingViewSelector
-  , upgradeKnownHostsToHTTPSSelector
-  , setUpgradeKnownHostsToHTTPSSelector
-  , mediaTypesRequiringUserActionForPlaybackSelector
-  , setMediaTypesRequiringUserActionForPlaybackSelector
-  , defaultWebpagePreferencesSelector
-  , setDefaultWebpagePreferencesSelector
-  , limitsNavigationsToAppBoundDomainsSelector
-  , setLimitsNavigationsToAppBoundDomainsSelector
   , allowsInlinePredictionsSelector
+  , applicationNameForUserAgentSelector
+  , defaultWebpagePreferencesSelector
+  , limitsNavigationsToAppBoundDomainsSelector
+  , mediaTypesRequiringUserActionForPlaybackSelector
+  , preferencesSelector
+  , processPoolSelector
+  , setAllowsAirPlayForMediaPlaybackSelector
   , setAllowsInlinePredictionsSelector
-  , userInterfaceDirectionPolicySelector
-  , setUserInterfaceDirectionPolicySelector
-  , supportsAdaptiveImageGlyphSelector
+  , setApplicationNameForUserAgentSelector
+  , setDefaultWebpagePreferencesSelector
+  , setLimitsNavigationsToAppBoundDomainsSelector
+  , setMediaTypesRequiringUserActionForPlaybackSelector
+  , setPreferencesSelector
+  , setProcessPoolSelector
+  , setShowsSystemScreenTimeBlockingViewSelector
   , setSupportsAdaptiveImageGlyphSelector
-  , writingToolsBehaviorSelector
+  , setSuppressesIncrementalRenderingSelector
+  , setURLSchemeHandler_forURLSchemeSelector
+  , setUpgradeKnownHostsToHTTPSSelector
+  , setUserContentControllerSelector
+  , setUserInterfaceDirectionPolicySelector
+  , setWebExtensionControllerSelector
+  , setWebsiteDataStoreSelector
   , setWritingToolsBehaviorSelector
+  , showsSystemScreenTimeBlockingViewSelector
+  , supportsAdaptiveImageGlyphSelector
+  , suppressesIncrementalRenderingSelector
+  , upgradeKnownHostsToHTTPSSelector
+  , urlSchemeHandlerForURLSchemeSelector
+  , userContentControllerSelector
+  , userInterfaceDirectionPolicySelector
+  , webExtensionControllerSelector
+  , websiteDataStoreSelector
+  , writingToolsBehaviorSelector
 
   -- * Enum types
   , NSWritingToolsBehavior(NSWritingToolsBehavior)
@@ -105,15 +106,11 @@ module ObjC.WebKit.WKWebViewConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -124,15 +121,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setURLSchemeHandler:forURLScheme:@
 setURLSchemeHandler_forURLScheme :: (IsWKWebViewConfiguration wkWebViewConfiguration, IsNSString urlScheme) => wkWebViewConfiguration -> RawId -> urlScheme -> IO ()
-setURLSchemeHandler_forURLScheme wkWebViewConfiguration  urlSchemeHandler urlScheme =
-  withObjCPtr urlScheme $ \raw_urlScheme ->
-      sendMsg wkWebViewConfiguration (mkSelector "setURLSchemeHandler:forURLScheme:") retVoid [argPtr (castPtr (unRawId urlSchemeHandler) :: Ptr ()), argPtr (castPtr raw_urlScheme :: Ptr ())]
+setURLSchemeHandler_forURLScheme wkWebViewConfiguration urlSchemeHandler urlScheme =
+  sendMessage wkWebViewConfiguration setURLSchemeHandler_forURLSchemeSelector urlSchemeHandler (toNSString urlScheme)
 
 -- | @- urlSchemeHandlerForURLScheme:@
 urlSchemeHandlerForURLScheme :: (IsWKWebViewConfiguration wkWebViewConfiguration, IsNSString urlScheme) => wkWebViewConfiguration -> urlScheme -> IO RawId
-urlSchemeHandlerForURLScheme wkWebViewConfiguration  urlScheme =
-  withObjCPtr urlScheme $ \raw_urlScheme ->
-      fmap (RawId . castPtr) $ sendMsg wkWebViewConfiguration (mkSelector "urlSchemeHandlerForURLScheme:") (retPtr retVoid) [argPtr (castPtr raw_urlScheme :: Ptr ())]
+urlSchemeHandlerForURLScheme wkWebViewConfiguration urlScheme =
+  sendMessage wkWebViewConfiguration urlSchemeHandlerForURLSchemeSelector (toNSString urlScheme)
 
 -- | The process pool from which to obtain the view's web content process.
 --
@@ -140,8 +135,8 @@ urlSchemeHandlerForURLScheme wkWebViewConfiguration  urlScheme =
 --
 -- ObjC selector: @- processPool@
 processPool :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO (Id WKProcessPool)
-processPool wkWebViewConfiguration  =
-    sendMsg wkWebViewConfiguration (mkSelector "processPool") (retPtr retVoid) [] >>= retainedObject . castPtr
+processPool wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration processPoolSelector
 
 -- | The process pool from which to obtain the view's web content process.
 --
@@ -149,69 +144,64 @@ processPool wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setProcessPool:@
 setProcessPool :: (IsWKWebViewConfiguration wkWebViewConfiguration, IsWKProcessPool value) => wkWebViewConfiguration -> value -> IO ()
-setProcessPool wkWebViewConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebViewConfiguration (mkSelector "setProcessPool:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProcessPool wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setProcessPoolSelector (toWKProcessPool value)
 
 -- | The preference settings to be used by the web view.
 --
 -- ObjC selector: @- preferences@
 preferences :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO (Id WKPreferences)
-preferences wkWebViewConfiguration  =
-    sendMsg wkWebViewConfiguration (mkSelector "preferences") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferences wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration preferencesSelector
 
 -- | The preference settings to be used by the web view.
 --
 -- ObjC selector: @- setPreferences:@
 setPreferences :: (IsWKWebViewConfiguration wkWebViewConfiguration, IsWKPreferences value) => wkWebViewConfiguration -> value -> IO ()
-setPreferences wkWebViewConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebViewConfiguration (mkSelector "setPreferences:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferences wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setPreferencesSelector (toWKPreferences value)
 
 -- | The user content controller to associate with the web view.
 --
 -- ObjC selector: @- userContentController@
 userContentController :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO (Id WKUserContentController)
-userContentController wkWebViewConfiguration  =
-    sendMsg wkWebViewConfiguration (mkSelector "userContentController") (retPtr retVoid) [] >>= retainedObject . castPtr
+userContentController wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration userContentControllerSelector
 
 -- | The user content controller to associate with the web view.
 --
 -- ObjC selector: @- setUserContentController:@
 setUserContentController :: (IsWKWebViewConfiguration wkWebViewConfiguration, IsWKUserContentController value) => wkWebViewConfiguration -> value -> IO ()
-setUserContentController wkWebViewConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebViewConfiguration (mkSelector "setUserContentController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserContentController wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setUserContentControllerSelector (toWKUserContentController value)
 
 -- | The web extension controller to associate with the web view.
 --
 -- ObjC selector: @- webExtensionController@
 webExtensionController :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO (Id WKWebExtensionController)
-webExtensionController wkWebViewConfiguration  =
-    sendMsg wkWebViewConfiguration (mkSelector "webExtensionController") (retPtr retVoid) [] >>= retainedObject . castPtr
+webExtensionController wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration webExtensionControllerSelector
 
 -- | The web extension controller to associate with the web view.
 --
 -- ObjC selector: @- setWebExtensionController:@
 setWebExtensionController :: (IsWKWebViewConfiguration wkWebViewConfiguration, IsWKWebExtensionController value) => wkWebViewConfiguration -> value -> IO ()
-setWebExtensionController wkWebViewConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebViewConfiguration (mkSelector "setWebExtensionController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWebExtensionController wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setWebExtensionControllerSelector (toWKWebExtensionController value)
 
 -- | The website data store to be used by the web view.
 --
 -- ObjC selector: @- websiteDataStore@
 websiteDataStore :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO (Id WKWebsiteDataStore)
-websiteDataStore wkWebViewConfiguration  =
-    sendMsg wkWebViewConfiguration (mkSelector "websiteDataStore") (retPtr retVoid) [] >>= retainedObject . castPtr
+websiteDataStore wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration websiteDataStoreSelector
 
 -- | The website data store to be used by the web view.
 --
 -- ObjC selector: @- setWebsiteDataStore:@
 setWebsiteDataStore :: (IsWKWebViewConfiguration wkWebViewConfiguration, IsWKWebsiteDataStore value) => wkWebViewConfiguration -> value -> IO ()
-setWebsiteDataStore wkWebViewConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebViewConfiguration (mkSelector "setWebsiteDataStore:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWebsiteDataStore wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setWebsiteDataStoreSelector (toWKWebsiteDataStore value)
 
 -- | A Boolean value indicating whether the web view suppresses content rendering until it is fully loaded into memory.
 --
@@ -219,8 +209,8 @@ setWebsiteDataStore wkWebViewConfiguration  value =
 --
 -- ObjC selector: @- suppressesIncrementalRendering@
 suppressesIncrementalRendering :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO Bool
-suppressesIncrementalRendering wkWebViewConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebViewConfiguration (mkSelector "suppressesIncrementalRendering") retCULong []
+suppressesIncrementalRendering wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration suppressesIncrementalRenderingSelector
 
 -- | A Boolean value indicating whether the web view suppresses content rendering until it is fully loaded into memory.
 --
@@ -228,23 +218,22 @@ suppressesIncrementalRendering wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setSuppressesIncrementalRendering:@
 setSuppressesIncrementalRendering :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> Bool -> IO ()
-setSuppressesIncrementalRendering wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setSuppressesIncrementalRendering:") retVoid [argCULong (if value then 1 else 0)]
+setSuppressesIncrementalRendering wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setSuppressesIncrementalRenderingSelector value
 
 -- | The name of the application as used in the user agent string.
 --
 -- ObjC selector: @- applicationNameForUserAgent@
 applicationNameForUserAgent :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO (Id NSString)
-applicationNameForUserAgent wkWebViewConfiguration  =
-    sendMsg wkWebViewConfiguration (mkSelector "applicationNameForUserAgent") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationNameForUserAgent wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration applicationNameForUserAgentSelector
 
 -- | The name of the application as used in the user agent string.
 --
 -- ObjC selector: @- setApplicationNameForUserAgent:@
 setApplicationNameForUserAgent :: (IsWKWebViewConfiguration wkWebViewConfiguration, IsNSString value) => wkWebViewConfiguration -> value -> IO ()
-setApplicationNameForUserAgent wkWebViewConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebViewConfiguration (mkSelector "setApplicationNameForUserAgent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplicationNameForUserAgent wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setApplicationNameForUserAgentSelector (toNSString value)
 
 -- | A Boolean value indicating whether AirPlay is allowed.
 --
@@ -252,8 +241,8 @@ setApplicationNameForUserAgent wkWebViewConfiguration  value =
 --
 -- ObjC selector: @- allowsAirPlayForMediaPlayback@
 allowsAirPlayForMediaPlayback :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO Bool
-allowsAirPlayForMediaPlayback wkWebViewConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebViewConfiguration (mkSelector "allowsAirPlayForMediaPlayback") retCULong []
+allowsAirPlayForMediaPlayback wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration allowsAirPlayForMediaPlaybackSelector
 
 -- | A Boolean value indicating whether AirPlay is allowed.
 --
@@ -261,8 +250,8 @@ allowsAirPlayForMediaPlayback wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setAllowsAirPlayForMediaPlayback:@
 setAllowsAirPlayForMediaPlayback :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> Bool -> IO ()
-setAllowsAirPlayForMediaPlayback wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setAllowsAirPlayForMediaPlayback:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAirPlayForMediaPlayback wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setAllowsAirPlayForMediaPlaybackSelector value
 
 -- | A Boolean value indicating whether the System Screen Time blocking view should be shown.
 --
@@ -270,8 +259,8 @@ setAllowsAirPlayForMediaPlayback wkWebViewConfiguration  value =
 --
 -- ObjC selector: @- showsSystemScreenTimeBlockingView@
 showsSystemScreenTimeBlockingView :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO Bool
-showsSystemScreenTimeBlockingView wkWebViewConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebViewConfiguration (mkSelector "showsSystemScreenTimeBlockingView") retCULong []
+showsSystemScreenTimeBlockingView wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration showsSystemScreenTimeBlockingViewSelector
 
 -- | A Boolean value indicating whether the System Screen Time blocking view should be shown.
 --
@@ -279,8 +268,8 @@ showsSystemScreenTimeBlockingView wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setShowsSystemScreenTimeBlockingView:@
 setShowsSystemScreenTimeBlockingView :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> Bool -> IO ()
-setShowsSystemScreenTimeBlockingView wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setShowsSystemScreenTimeBlockingView:") retVoid [argCULong (if value then 1 else 0)]
+setShowsSystemScreenTimeBlockingView wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setShowsSystemScreenTimeBlockingViewSelector value
 
 -- | A Boolean value indicating whether HTTP requests to servers known to support HTTPS should be automatically upgraded to HTTPS requests.
 --
@@ -288,8 +277,8 @@ setShowsSystemScreenTimeBlockingView wkWebViewConfiguration  value =
 --
 -- ObjC selector: @- upgradeKnownHostsToHTTPS@
 upgradeKnownHostsToHTTPS :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO Bool
-upgradeKnownHostsToHTTPS wkWebViewConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebViewConfiguration (mkSelector "upgradeKnownHostsToHTTPS") retCULong []
+upgradeKnownHostsToHTTPS wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration upgradeKnownHostsToHTTPSSelector
 
 -- | A Boolean value indicating whether HTTP requests to servers known to support HTTPS should be automatically upgraded to HTTPS requests.
 --
@@ -297,18 +286,18 @@ upgradeKnownHostsToHTTPS wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setUpgradeKnownHostsToHTTPS:@
 setUpgradeKnownHostsToHTTPS :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> Bool -> IO ()
-setUpgradeKnownHostsToHTTPS wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setUpgradeKnownHostsToHTTPS:") retVoid [argCULong (if value then 1 else 0)]
+setUpgradeKnownHostsToHTTPS wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setUpgradeKnownHostsToHTTPSSelector value
 
 -- | @- mediaTypesRequiringUserActionForPlayback@
 mediaTypesRequiringUserActionForPlayback :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO WKAudiovisualMediaTypes
-mediaTypesRequiringUserActionForPlayback wkWebViewConfiguration  =
-    fmap (coerce :: CULong -> WKAudiovisualMediaTypes) $ sendMsg wkWebViewConfiguration (mkSelector "mediaTypesRequiringUserActionForPlayback") retCULong []
+mediaTypesRequiringUserActionForPlayback wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration mediaTypesRequiringUserActionForPlaybackSelector
 
 -- | @- setMediaTypesRequiringUserActionForPlayback:@
 setMediaTypesRequiringUserActionForPlayback :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> WKAudiovisualMediaTypes -> IO ()
-setMediaTypesRequiringUserActionForPlayback wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setMediaTypesRequiringUserActionForPlayback:") retVoid [argCULong (coerce value)]
+setMediaTypesRequiringUserActionForPlayback wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setMediaTypesRequiringUserActionForPlaybackSelector value
 
 -- | The set of default webpage preferences to use when loading and rendering content.
 --
@@ -316,8 +305,8 @@ setMediaTypesRequiringUserActionForPlayback wkWebViewConfiguration  value =
 --
 -- ObjC selector: @- defaultWebpagePreferences@
 defaultWebpagePreferences :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO (Id WKWebpagePreferences)
-defaultWebpagePreferences wkWebViewConfiguration  =
-    sendMsg wkWebViewConfiguration (mkSelector "defaultWebpagePreferences") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultWebpagePreferences wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration defaultWebpagePreferencesSelector
 
 -- | The set of default webpage preferences to use when loading and rendering content.
 --
@@ -325,19 +314,18 @@ defaultWebpagePreferences wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setDefaultWebpagePreferences:@
 setDefaultWebpagePreferences :: (IsWKWebViewConfiguration wkWebViewConfiguration, IsWKWebpagePreferences value) => wkWebViewConfiguration -> value -> IO ()
-setDefaultWebpagePreferences wkWebViewConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg wkWebViewConfiguration (mkSelector "setDefaultWebpagePreferences:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultWebpagePreferences wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setDefaultWebpagePreferencesSelector (toWKWebpagePreferences value)
 
 -- | @- limitsNavigationsToAppBoundDomains@
 limitsNavigationsToAppBoundDomains :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO Bool
-limitsNavigationsToAppBoundDomains wkWebViewConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebViewConfiguration (mkSelector "limitsNavigationsToAppBoundDomains") retCULong []
+limitsNavigationsToAppBoundDomains wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration limitsNavigationsToAppBoundDomainsSelector
 
 -- | @- setLimitsNavigationsToAppBoundDomains:@
 setLimitsNavigationsToAppBoundDomains :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> Bool -> IO ()
-setLimitsNavigationsToAppBoundDomains wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setLimitsNavigationsToAppBoundDomains:") retVoid [argCULong (if value then 1 else 0)]
+setLimitsNavigationsToAppBoundDomains wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setLimitsNavigationsToAppBoundDomainsSelector value
 
 -- | A Boolean value indicating whether inline predictions are allowed.
 --
@@ -345,8 +333,8 @@ setLimitsNavigationsToAppBoundDomains wkWebViewConfiguration  value =
 --
 -- ObjC selector: @- allowsInlinePredictions@
 allowsInlinePredictions :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO Bool
-allowsInlinePredictions wkWebViewConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebViewConfiguration (mkSelector "allowsInlinePredictions") retCULong []
+allowsInlinePredictions wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration allowsInlinePredictionsSelector
 
 -- | A Boolean value indicating whether inline predictions are allowed.
 --
@@ -354,8 +342,8 @@ allowsInlinePredictions wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setAllowsInlinePredictions:@
 setAllowsInlinePredictions :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> Bool -> IO ()
-setAllowsInlinePredictions wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setAllowsInlinePredictions:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsInlinePredictions wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setAllowsInlinePredictionsSelector value
 
 -- | The directionality of user interface elements.
 --
@@ -363,8 +351,8 @@ setAllowsInlinePredictions wkWebViewConfiguration  value =
 --
 -- ObjC selector: @- userInterfaceDirectionPolicy@
 userInterfaceDirectionPolicy :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO WKUserInterfaceDirectionPolicy
-userInterfaceDirectionPolicy wkWebViewConfiguration  =
-    fmap (coerce :: CLong -> WKUserInterfaceDirectionPolicy) $ sendMsg wkWebViewConfiguration (mkSelector "userInterfaceDirectionPolicy") retCLong []
+userInterfaceDirectionPolicy wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration userInterfaceDirectionPolicySelector
 
 -- | The directionality of user interface elements.
 --
@@ -372,8 +360,8 @@ userInterfaceDirectionPolicy wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setUserInterfaceDirectionPolicy:@
 setUserInterfaceDirectionPolicy :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> WKUserInterfaceDirectionPolicy -> IO ()
-setUserInterfaceDirectionPolicy wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setUserInterfaceDirectionPolicy:") retVoid [argCLong (coerce value)]
+setUserInterfaceDirectionPolicy wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setUserInterfaceDirectionPolicySelector value
 
 -- | A Boolean value indicating whether insertion of adaptive image glyphs is allowed.
 --
@@ -381,8 +369,8 @@ setUserInterfaceDirectionPolicy wkWebViewConfiguration  value =
 --
 -- ObjC selector: @- supportsAdaptiveImageGlyph@
 supportsAdaptiveImageGlyph :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO Bool
-supportsAdaptiveImageGlyph wkWebViewConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebViewConfiguration (mkSelector "supportsAdaptiveImageGlyph") retCULong []
+supportsAdaptiveImageGlyph wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration supportsAdaptiveImageGlyphSelector
 
 -- | A Boolean value indicating whether insertion of adaptive image glyphs is allowed.
 --
@@ -390,8 +378,8 @@ supportsAdaptiveImageGlyph wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setSupportsAdaptiveImageGlyph:@
 setSupportsAdaptiveImageGlyph :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> Bool -> IO ()
-setSupportsAdaptiveImageGlyph wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setSupportsAdaptiveImageGlyph:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsAdaptiveImageGlyph wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setSupportsAdaptiveImageGlyphSelector value
 
 -- | The preferred behavior of Writing Tools.
 --
@@ -399,8 +387,8 @@ setSupportsAdaptiveImageGlyph wkWebViewConfiguration  value =
 --
 -- ObjC selector: @- writingToolsBehavior@
 writingToolsBehavior :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> IO NSWritingToolsBehavior
-writingToolsBehavior wkWebViewConfiguration  =
-    fmap (coerce :: CLong -> NSWritingToolsBehavior) $ sendMsg wkWebViewConfiguration (mkSelector "writingToolsBehavior") retCLong []
+writingToolsBehavior wkWebViewConfiguration =
+  sendMessage wkWebViewConfiguration writingToolsBehaviorSelector
 
 -- | The preferred behavior of Writing Tools.
 --
@@ -408,154 +396,154 @@ writingToolsBehavior wkWebViewConfiguration  =
 --
 -- ObjC selector: @- setWritingToolsBehavior:@
 setWritingToolsBehavior :: IsWKWebViewConfiguration wkWebViewConfiguration => wkWebViewConfiguration -> NSWritingToolsBehavior -> IO ()
-setWritingToolsBehavior wkWebViewConfiguration  value =
-    sendMsg wkWebViewConfiguration (mkSelector "setWritingToolsBehavior:") retVoid [argCLong (coerce value)]
+setWritingToolsBehavior wkWebViewConfiguration value =
+  sendMessage wkWebViewConfiguration setWritingToolsBehaviorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setURLSchemeHandler:forURLScheme:@
-setURLSchemeHandler_forURLSchemeSelector :: Selector
+setURLSchemeHandler_forURLSchemeSelector :: Selector '[RawId, Id NSString] ()
 setURLSchemeHandler_forURLSchemeSelector = mkSelector "setURLSchemeHandler:forURLScheme:"
 
 -- | @Selector@ for @urlSchemeHandlerForURLScheme:@
-urlSchemeHandlerForURLSchemeSelector :: Selector
+urlSchemeHandlerForURLSchemeSelector :: Selector '[Id NSString] RawId
 urlSchemeHandlerForURLSchemeSelector = mkSelector "urlSchemeHandlerForURLScheme:"
 
 -- | @Selector@ for @processPool@
-processPoolSelector :: Selector
+processPoolSelector :: Selector '[] (Id WKProcessPool)
 processPoolSelector = mkSelector "processPool"
 
 -- | @Selector@ for @setProcessPool:@
-setProcessPoolSelector :: Selector
+setProcessPoolSelector :: Selector '[Id WKProcessPool] ()
 setProcessPoolSelector = mkSelector "setProcessPool:"
 
 -- | @Selector@ for @preferences@
-preferencesSelector :: Selector
+preferencesSelector :: Selector '[] (Id WKPreferences)
 preferencesSelector = mkSelector "preferences"
 
 -- | @Selector@ for @setPreferences:@
-setPreferencesSelector :: Selector
+setPreferencesSelector :: Selector '[Id WKPreferences] ()
 setPreferencesSelector = mkSelector "setPreferences:"
 
 -- | @Selector@ for @userContentController@
-userContentControllerSelector :: Selector
+userContentControllerSelector :: Selector '[] (Id WKUserContentController)
 userContentControllerSelector = mkSelector "userContentController"
 
 -- | @Selector@ for @setUserContentController:@
-setUserContentControllerSelector :: Selector
+setUserContentControllerSelector :: Selector '[Id WKUserContentController] ()
 setUserContentControllerSelector = mkSelector "setUserContentController:"
 
 -- | @Selector@ for @webExtensionController@
-webExtensionControllerSelector :: Selector
+webExtensionControllerSelector :: Selector '[] (Id WKWebExtensionController)
 webExtensionControllerSelector = mkSelector "webExtensionController"
 
 -- | @Selector@ for @setWebExtensionController:@
-setWebExtensionControllerSelector :: Selector
+setWebExtensionControllerSelector :: Selector '[Id WKWebExtensionController] ()
 setWebExtensionControllerSelector = mkSelector "setWebExtensionController:"
 
 -- | @Selector@ for @websiteDataStore@
-websiteDataStoreSelector :: Selector
+websiteDataStoreSelector :: Selector '[] (Id WKWebsiteDataStore)
 websiteDataStoreSelector = mkSelector "websiteDataStore"
 
 -- | @Selector@ for @setWebsiteDataStore:@
-setWebsiteDataStoreSelector :: Selector
+setWebsiteDataStoreSelector :: Selector '[Id WKWebsiteDataStore] ()
 setWebsiteDataStoreSelector = mkSelector "setWebsiteDataStore:"
 
 -- | @Selector@ for @suppressesIncrementalRendering@
-suppressesIncrementalRenderingSelector :: Selector
+suppressesIncrementalRenderingSelector :: Selector '[] Bool
 suppressesIncrementalRenderingSelector = mkSelector "suppressesIncrementalRendering"
 
 -- | @Selector@ for @setSuppressesIncrementalRendering:@
-setSuppressesIncrementalRenderingSelector :: Selector
+setSuppressesIncrementalRenderingSelector :: Selector '[Bool] ()
 setSuppressesIncrementalRenderingSelector = mkSelector "setSuppressesIncrementalRendering:"
 
 -- | @Selector@ for @applicationNameForUserAgent@
-applicationNameForUserAgentSelector :: Selector
+applicationNameForUserAgentSelector :: Selector '[] (Id NSString)
 applicationNameForUserAgentSelector = mkSelector "applicationNameForUserAgent"
 
 -- | @Selector@ for @setApplicationNameForUserAgent:@
-setApplicationNameForUserAgentSelector :: Selector
+setApplicationNameForUserAgentSelector :: Selector '[Id NSString] ()
 setApplicationNameForUserAgentSelector = mkSelector "setApplicationNameForUserAgent:"
 
 -- | @Selector@ for @allowsAirPlayForMediaPlayback@
-allowsAirPlayForMediaPlaybackSelector :: Selector
+allowsAirPlayForMediaPlaybackSelector :: Selector '[] Bool
 allowsAirPlayForMediaPlaybackSelector = mkSelector "allowsAirPlayForMediaPlayback"
 
 -- | @Selector@ for @setAllowsAirPlayForMediaPlayback:@
-setAllowsAirPlayForMediaPlaybackSelector :: Selector
+setAllowsAirPlayForMediaPlaybackSelector :: Selector '[Bool] ()
 setAllowsAirPlayForMediaPlaybackSelector = mkSelector "setAllowsAirPlayForMediaPlayback:"
 
 -- | @Selector@ for @showsSystemScreenTimeBlockingView@
-showsSystemScreenTimeBlockingViewSelector :: Selector
+showsSystemScreenTimeBlockingViewSelector :: Selector '[] Bool
 showsSystemScreenTimeBlockingViewSelector = mkSelector "showsSystemScreenTimeBlockingView"
 
 -- | @Selector@ for @setShowsSystemScreenTimeBlockingView:@
-setShowsSystemScreenTimeBlockingViewSelector :: Selector
+setShowsSystemScreenTimeBlockingViewSelector :: Selector '[Bool] ()
 setShowsSystemScreenTimeBlockingViewSelector = mkSelector "setShowsSystemScreenTimeBlockingView:"
 
 -- | @Selector@ for @upgradeKnownHostsToHTTPS@
-upgradeKnownHostsToHTTPSSelector :: Selector
+upgradeKnownHostsToHTTPSSelector :: Selector '[] Bool
 upgradeKnownHostsToHTTPSSelector = mkSelector "upgradeKnownHostsToHTTPS"
 
 -- | @Selector@ for @setUpgradeKnownHostsToHTTPS:@
-setUpgradeKnownHostsToHTTPSSelector :: Selector
+setUpgradeKnownHostsToHTTPSSelector :: Selector '[Bool] ()
 setUpgradeKnownHostsToHTTPSSelector = mkSelector "setUpgradeKnownHostsToHTTPS:"
 
 -- | @Selector@ for @mediaTypesRequiringUserActionForPlayback@
-mediaTypesRequiringUserActionForPlaybackSelector :: Selector
+mediaTypesRequiringUserActionForPlaybackSelector :: Selector '[] WKAudiovisualMediaTypes
 mediaTypesRequiringUserActionForPlaybackSelector = mkSelector "mediaTypesRequiringUserActionForPlayback"
 
 -- | @Selector@ for @setMediaTypesRequiringUserActionForPlayback:@
-setMediaTypesRequiringUserActionForPlaybackSelector :: Selector
+setMediaTypesRequiringUserActionForPlaybackSelector :: Selector '[WKAudiovisualMediaTypes] ()
 setMediaTypesRequiringUserActionForPlaybackSelector = mkSelector "setMediaTypesRequiringUserActionForPlayback:"
 
 -- | @Selector@ for @defaultWebpagePreferences@
-defaultWebpagePreferencesSelector :: Selector
+defaultWebpagePreferencesSelector :: Selector '[] (Id WKWebpagePreferences)
 defaultWebpagePreferencesSelector = mkSelector "defaultWebpagePreferences"
 
 -- | @Selector@ for @setDefaultWebpagePreferences:@
-setDefaultWebpagePreferencesSelector :: Selector
+setDefaultWebpagePreferencesSelector :: Selector '[Id WKWebpagePreferences] ()
 setDefaultWebpagePreferencesSelector = mkSelector "setDefaultWebpagePreferences:"
 
 -- | @Selector@ for @limitsNavigationsToAppBoundDomains@
-limitsNavigationsToAppBoundDomainsSelector :: Selector
+limitsNavigationsToAppBoundDomainsSelector :: Selector '[] Bool
 limitsNavigationsToAppBoundDomainsSelector = mkSelector "limitsNavigationsToAppBoundDomains"
 
 -- | @Selector@ for @setLimitsNavigationsToAppBoundDomains:@
-setLimitsNavigationsToAppBoundDomainsSelector :: Selector
+setLimitsNavigationsToAppBoundDomainsSelector :: Selector '[Bool] ()
 setLimitsNavigationsToAppBoundDomainsSelector = mkSelector "setLimitsNavigationsToAppBoundDomains:"
 
 -- | @Selector@ for @allowsInlinePredictions@
-allowsInlinePredictionsSelector :: Selector
+allowsInlinePredictionsSelector :: Selector '[] Bool
 allowsInlinePredictionsSelector = mkSelector "allowsInlinePredictions"
 
 -- | @Selector@ for @setAllowsInlinePredictions:@
-setAllowsInlinePredictionsSelector :: Selector
+setAllowsInlinePredictionsSelector :: Selector '[Bool] ()
 setAllowsInlinePredictionsSelector = mkSelector "setAllowsInlinePredictions:"
 
 -- | @Selector@ for @userInterfaceDirectionPolicy@
-userInterfaceDirectionPolicySelector :: Selector
+userInterfaceDirectionPolicySelector :: Selector '[] WKUserInterfaceDirectionPolicy
 userInterfaceDirectionPolicySelector = mkSelector "userInterfaceDirectionPolicy"
 
 -- | @Selector@ for @setUserInterfaceDirectionPolicy:@
-setUserInterfaceDirectionPolicySelector :: Selector
+setUserInterfaceDirectionPolicySelector :: Selector '[WKUserInterfaceDirectionPolicy] ()
 setUserInterfaceDirectionPolicySelector = mkSelector "setUserInterfaceDirectionPolicy:"
 
 -- | @Selector@ for @supportsAdaptiveImageGlyph@
-supportsAdaptiveImageGlyphSelector :: Selector
+supportsAdaptiveImageGlyphSelector :: Selector '[] Bool
 supportsAdaptiveImageGlyphSelector = mkSelector "supportsAdaptiveImageGlyph"
 
 -- | @Selector@ for @setSupportsAdaptiveImageGlyph:@
-setSupportsAdaptiveImageGlyphSelector :: Selector
+setSupportsAdaptiveImageGlyphSelector :: Selector '[Bool] ()
 setSupportsAdaptiveImageGlyphSelector = mkSelector "setSupportsAdaptiveImageGlyph:"
 
 -- | @Selector@ for @writingToolsBehavior@
-writingToolsBehaviorSelector :: Selector
+writingToolsBehaviorSelector :: Selector '[] NSWritingToolsBehavior
 writingToolsBehaviorSelector = mkSelector "writingToolsBehavior"
 
 -- | @Selector@ for @setWritingToolsBehavior:@
-setWritingToolsBehaviorSelector :: Selector
+setWritingToolsBehaviorSelector :: Selector '[NSWritingToolsBehavior] ()
 setWritingToolsBehaviorSelector = mkSelector "setWritingToolsBehavior:"
 

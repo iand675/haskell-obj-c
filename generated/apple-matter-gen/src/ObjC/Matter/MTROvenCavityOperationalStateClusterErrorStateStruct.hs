@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTROvenCavityOperationalStateClusterErrorStateStruct
   , setErrorStateLabel
   , errorStateDetails
   , setErrorStateDetails
-  , errorStateIDSelector
-  , setErrorStateIDSelector
-  , errorStateLabelSelector
-  , setErrorStateLabelSelector
   , errorStateDetailsSelector
+  , errorStateIDSelector
+  , errorStateLabelSelector
   , setErrorStateDetailsSelector
+  , setErrorStateIDSelector
+  , setErrorStateLabelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- errorStateID@
 errorStateID :: IsMTROvenCavityOperationalStateClusterErrorStateStruct mtrOvenCavityOperationalStateClusterErrorStateStruct => mtrOvenCavityOperationalStateClusterErrorStateStruct -> IO (Id NSNumber)
-errorStateID mtrOvenCavityOperationalStateClusterErrorStateStruct  =
-    sendMsg mtrOvenCavityOperationalStateClusterErrorStateStruct (mkSelector "errorStateID") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorStateID mtrOvenCavityOperationalStateClusterErrorStateStruct =
+  sendMessage mtrOvenCavityOperationalStateClusterErrorStateStruct errorStateIDSelector
 
 -- | @- setErrorStateID:@
 setErrorStateID :: (IsMTROvenCavityOperationalStateClusterErrorStateStruct mtrOvenCavityOperationalStateClusterErrorStateStruct, IsNSNumber value) => mtrOvenCavityOperationalStateClusterErrorStateStruct -> value -> IO ()
-setErrorStateID mtrOvenCavityOperationalStateClusterErrorStateStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOvenCavityOperationalStateClusterErrorStateStruct (mkSelector "setErrorStateID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setErrorStateID mtrOvenCavityOperationalStateClusterErrorStateStruct value =
+  sendMessage mtrOvenCavityOperationalStateClusterErrorStateStruct setErrorStateIDSelector (toNSNumber value)
 
 -- | @- errorStateLabel@
 errorStateLabel :: IsMTROvenCavityOperationalStateClusterErrorStateStruct mtrOvenCavityOperationalStateClusterErrorStateStruct => mtrOvenCavityOperationalStateClusterErrorStateStruct -> IO (Id NSString)
-errorStateLabel mtrOvenCavityOperationalStateClusterErrorStateStruct  =
-    sendMsg mtrOvenCavityOperationalStateClusterErrorStateStruct (mkSelector "errorStateLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorStateLabel mtrOvenCavityOperationalStateClusterErrorStateStruct =
+  sendMessage mtrOvenCavityOperationalStateClusterErrorStateStruct errorStateLabelSelector
 
 -- | @- setErrorStateLabel:@
 setErrorStateLabel :: (IsMTROvenCavityOperationalStateClusterErrorStateStruct mtrOvenCavityOperationalStateClusterErrorStateStruct, IsNSString value) => mtrOvenCavityOperationalStateClusterErrorStateStruct -> value -> IO ()
-setErrorStateLabel mtrOvenCavityOperationalStateClusterErrorStateStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOvenCavityOperationalStateClusterErrorStateStruct (mkSelector "setErrorStateLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setErrorStateLabel mtrOvenCavityOperationalStateClusterErrorStateStruct value =
+  sendMessage mtrOvenCavityOperationalStateClusterErrorStateStruct setErrorStateLabelSelector (toNSString value)
 
 -- | @- errorStateDetails@
 errorStateDetails :: IsMTROvenCavityOperationalStateClusterErrorStateStruct mtrOvenCavityOperationalStateClusterErrorStateStruct => mtrOvenCavityOperationalStateClusterErrorStateStruct -> IO (Id NSString)
-errorStateDetails mtrOvenCavityOperationalStateClusterErrorStateStruct  =
-    sendMsg mtrOvenCavityOperationalStateClusterErrorStateStruct (mkSelector "errorStateDetails") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorStateDetails mtrOvenCavityOperationalStateClusterErrorStateStruct =
+  sendMessage mtrOvenCavityOperationalStateClusterErrorStateStruct errorStateDetailsSelector
 
 -- | @- setErrorStateDetails:@
 setErrorStateDetails :: (IsMTROvenCavityOperationalStateClusterErrorStateStruct mtrOvenCavityOperationalStateClusterErrorStateStruct, IsNSString value) => mtrOvenCavityOperationalStateClusterErrorStateStruct -> value -> IO ()
-setErrorStateDetails mtrOvenCavityOperationalStateClusterErrorStateStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOvenCavityOperationalStateClusterErrorStateStruct (mkSelector "setErrorStateDetails:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setErrorStateDetails mtrOvenCavityOperationalStateClusterErrorStateStruct value =
+  sendMessage mtrOvenCavityOperationalStateClusterErrorStateStruct setErrorStateDetailsSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @errorStateID@
-errorStateIDSelector :: Selector
+errorStateIDSelector :: Selector '[] (Id NSNumber)
 errorStateIDSelector = mkSelector "errorStateID"
 
 -- | @Selector@ for @setErrorStateID:@
-setErrorStateIDSelector :: Selector
+setErrorStateIDSelector :: Selector '[Id NSNumber] ()
 setErrorStateIDSelector = mkSelector "setErrorStateID:"
 
 -- | @Selector@ for @errorStateLabel@
-errorStateLabelSelector :: Selector
+errorStateLabelSelector :: Selector '[] (Id NSString)
 errorStateLabelSelector = mkSelector "errorStateLabel"
 
 -- | @Selector@ for @setErrorStateLabel:@
-setErrorStateLabelSelector :: Selector
+setErrorStateLabelSelector :: Selector '[Id NSString] ()
 setErrorStateLabelSelector = mkSelector "setErrorStateLabel:"
 
 -- | @Selector@ for @errorStateDetails@
-errorStateDetailsSelector :: Selector
+errorStateDetailsSelector :: Selector '[] (Id NSString)
 errorStateDetailsSelector = mkSelector "errorStateDetails"
 
 -- | @Selector@ for @setErrorStateDetails:@
-setErrorStateDetailsSelector :: Selector
+setErrorStateDetailsSelector :: Selector '[Id NSString] ()
 setErrorStateDetailsSelector = mkSelector "setErrorStateDetails:"
 

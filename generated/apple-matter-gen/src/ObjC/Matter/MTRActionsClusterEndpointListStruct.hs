@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRActionsClusterEndpointListStruct
   , endpoints
   , setEndpoints
   , endpointListIDSelector
-  , setEndpointListIDSelector
-  , nameSelector
-  , setNameSelector
-  , typeSelector
-  , setTypeSelector
   , endpointsSelector
+  , nameSelector
+  , setEndpointListIDSelector
   , setEndpointsSelector
+  , setNameSelector
+  , setTypeSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- endpointListID@
 endpointListID :: IsMTRActionsClusterEndpointListStruct mtrActionsClusterEndpointListStruct => mtrActionsClusterEndpointListStruct -> IO (Id NSNumber)
-endpointListID mtrActionsClusterEndpointListStruct  =
-    sendMsg mtrActionsClusterEndpointListStruct (mkSelector "endpointListID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointListID mtrActionsClusterEndpointListStruct =
+  sendMessage mtrActionsClusterEndpointListStruct endpointListIDSelector
 
 -- | @- setEndpointListID:@
 setEndpointListID :: (IsMTRActionsClusterEndpointListStruct mtrActionsClusterEndpointListStruct, IsNSNumber value) => mtrActionsClusterEndpointListStruct -> value -> IO ()
-setEndpointListID mtrActionsClusterEndpointListStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterEndpointListStruct (mkSelector "setEndpointListID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpointListID mtrActionsClusterEndpointListStruct value =
+  sendMessage mtrActionsClusterEndpointListStruct setEndpointListIDSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRActionsClusterEndpointListStruct mtrActionsClusterEndpointListStruct => mtrActionsClusterEndpointListStruct -> IO (Id NSString)
-name mtrActionsClusterEndpointListStruct  =
-    sendMsg mtrActionsClusterEndpointListStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrActionsClusterEndpointListStruct =
+  sendMessage mtrActionsClusterEndpointListStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRActionsClusterEndpointListStruct mtrActionsClusterEndpointListStruct, IsNSString value) => mtrActionsClusterEndpointListStruct -> value -> IO ()
-setName mtrActionsClusterEndpointListStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterEndpointListStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrActionsClusterEndpointListStruct value =
+  sendMessage mtrActionsClusterEndpointListStruct setNameSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsMTRActionsClusterEndpointListStruct mtrActionsClusterEndpointListStruct => mtrActionsClusterEndpointListStruct -> IO (Id NSNumber)
-type_ mtrActionsClusterEndpointListStruct  =
-    sendMsg mtrActionsClusterEndpointListStruct (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ mtrActionsClusterEndpointListStruct =
+  sendMessage mtrActionsClusterEndpointListStruct typeSelector
 
 -- | @- setType:@
 setType :: (IsMTRActionsClusterEndpointListStruct mtrActionsClusterEndpointListStruct, IsNSNumber value) => mtrActionsClusterEndpointListStruct -> value -> IO ()
-setType mtrActionsClusterEndpointListStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterEndpointListStruct (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType mtrActionsClusterEndpointListStruct value =
+  sendMessage mtrActionsClusterEndpointListStruct setTypeSelector (toNSNumber value)
 
 -- | @- endpoints@
 endpoints :: IsMTRActionsClusterEndpointListStruct mtrActionsClusterEndpointListStruct => mtrActionsClusterEndpointListStruct -> IO (Id NSArray)
-endpoints mtrActionsClusterEndpointListStruct  =
-    sendMsg mtrActionsClusterEndpointListStruct (mkSelector "endpoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoints mtrActionsClusterEndpointListStruct =
+  sendMessage mtrActionsClusterEndpointListStruct endpointsSelector
 
 -- | @- setEndpoints:@
 setEndpoints :: (IsMTRActionsClusterEndpointListStruct mtrActionsClusterEndpointListStruct, IsNSArray value) => mtrActionsClusterEndpointListStruct -> value -> IO ()
-setEndpoints mtrActionsClusterEndpointListStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterEndpointListStruct (mkSelector "setEndpoints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpoints mtrActionsClusterEndpointListStruct value =
+  sendMessage mtrActionsClusterEndpointListStruct setEndpointsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @endpointListID@
-endpointListIDSelector :: Selector
+endpointListIDSelector :: Selector '[] (Id NSNumber)
 endpointListIDSelector = mkSelector "endpointListID"
 
 -- | @Selector@ for @setEndpointListID:@
-setEndpointListIDSelector :: Selector
+setEndpointListIDSelector :: Selector '[Id NSNumber] ()
 setEndpointListIDSelector = mkSelector "setEndpointListID:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSNumber)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSNumber] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @endpoints@
-endpointsSelector :: Selector
+endpointsSelector :: Selector '[] (Id NSArray)
 endpointsSelector = mkSelector "endpoints"
 
 -- | @Selector@ for @setEndpoints:@
-setEndpointsSelector :: Selector
+setEndpointsSelector :: Selector '[Id NSArray] ()
 setEndpointsSelector = mkSelector "setEndpoints:"
 

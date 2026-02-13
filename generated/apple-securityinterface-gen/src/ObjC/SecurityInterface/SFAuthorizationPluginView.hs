@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,32 +26,28 @@ module ObjC.SecurityInterface.SFAuthorizationPluginView
   , setEnabled
   , displayView
   , updateView
-  , initWithCallbacks_andEngineRefSelector
-  , engineRefSelector
   , callbacksSelector
-  , lastErrorSelector
   , didActivateSelector
-  , willActivateWithUserSelector
   , didDeactivateSelector
+  , displayViewSelector
+  , engineRefSelector
   , firstKeyViewSelector
   , firstResponderSelector
+  , initWithCallbacks_andEngineRefSelector
+  , lastErrorSelector
   , lastKeyViewSelector
   , setEnabledSelector
-  , displayViewSelector
   , updateViewSelector
+  , willActivateWithUserSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,8 +65,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithCallbacks:andEngineRef:@
 initWithCallbacks_andEngineRef :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> Const RawId -> Ptr () -> IO RawId
-initWithCallbacks_andEngineRef sfAuthorizationPluginView  callbacks engineRef =
-    fmap (RawId . castPtr) $ sendMsg sfAuthorizationPluginView (mkSelector "initWithCallbacks:andEngineRef:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst callbacks)) :: Ptr ()), argPtr engineRef]
+initWithCallbacks_andEngineRef sfAuthorizationPluginView callbacks engineRef =
+  sendOwnedMessage sfAuthorizationPluginView initWithCallbacks_andEngineRefSelector callbacks engineRef
 
 -- | engineRef
 --
@@ -77,8 +74,8 @@ initWithCallbacks_andEngineRef sfAuthorizationPluginView  callbacks engineRef =
 --
 -- ObjC selector: @- engineRef@
 engineRef :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO (Ptr ())
-engineRef sfAuthorizationPluginView  =
-    fmap castPtr $ sendMsg sfAuthorizationPluginView (mkSelector "engineRef") (retPtr retVoid) []
+engineRef sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView engineRefSelector
 
 -- | callbacks
 --
@@ -86,8 +83,8 @@ engineRef sfAuthorizationPluginView  =
 --
 -- ObjC selector: @- callbacks@
 callbacks :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO (Const RawId)
-callbacks sfAuthorizationPluginView  =
-    fmap Const $ fmap (RawId . castPtr) $ sendMsg sfAuthorizationPluginView (mkSelector "callbacks") (retPtr retVoid) []
+callbacks sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView callbacksSelector
 
 -- | lastError
 --
@@ -97,8 +94,8 @@ callbacks sfAuthorizationPluginView  =
 --
 -- ObjC selector: @- lastError@
 lastError :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO (Id NSError)
-lastError sfAuthorizationPluginView  =
-    sendMsg sfAuthorizationPluginView (mkSelector "lastError") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastError sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView lastErrorSelector
 
 -- | didActivate
 --
@@ -106,8 +103,8 @@ lastError sfAuthorizationPluginView  =
 --
 -- ObjC selector: @- didActivate@
 didActivate :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO ()
-didActivate sfAuthorizationPluginView  =
-    sendMsg sfAuthorizationPluginView (mkSelector "didActivate") retVoid []
+didActivate sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView didActivateSelector
 
 -- | willActivateWithUser:
 --
@@ -119,9 +116,8 @@ didActivate sfAuthorizationPluginView  =
 --
 -- ObjC selector: @- willActivateWithUser:@
 willActivateWithUser :: (IsSFAuthorizationPluginView sfAuthorizationPluginView, IsNSDictionary inUserInformation) => sfAuthorizationPluginView -> inUserInformation -> IO ()
-willActivateWithUser sfAuthorizationPluginView  inUserInformation =
-  withObjCPtr inUserInformation $ \raw_inUserInformation ->
-      sendMsg sfAuthorizationPluginView (mkSelector "willActivateWithUser:") retVoid [argPtr (castPtr raw_inUserInformation :: Ptr ())]
+willActivateWithUser sfAuthorizationPluginView inUserInformation =
+  sendMessage sfAuthorizationPluginView willActivateWithUserSelector (toNSDictionary inUserInformation)
 
 -- | didDeactivate
 --
@@ -129,8 +125,8 @@ willActivateWithUser sfAuthorizationPluginView  inUserInformation =
 --
 -- ObjC selector: @- didDeactivate@
 didDeactivate :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO ()
-didDeactivate sfAuthorizationPluginView  =
-    sendMsg sfAuthorizationPluginView (mkSelector "didDeactivate") retVoid []
+didDeactivate sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView didDeactivateSelector
 
 -- | firstKeyView
 --
@@ -138,8 +134,8 @@ didDeactivate sfAuthorizationPluginView  =
 --
 -- ObjC selector: @- firstKeyView@
 firstKeyView :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO (Id NSView)
-firstKeyView sfAuthorizationPluginView  =
-    sendMsg sfAuthorizationPluginView (mkSelector "firstKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstKeyView sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView firstKeyViewSelector
 
 -- | firstResponder
 --
@@ -147,8 +143,8 @@ firstKeyView sfAuthorizationPluginView  =
 --
 -- ObjC selector: @- firstResponder@
 firstResponder :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO (Id NSResponder)
-firstResponder sfAuthorizationPluginView  =
-    sendMsg sfAuthorizationPluginView (mkSelector "firstResponder") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstResponder sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView firstResponderSelector
 
 -- | lastKeyView
 --
@@ -156,8 +152,8 @@ firstResponder sfAuthorizationPluginView  =
 --
 -- ObjC selector: @- lastKeyView@
 lastKeyView :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO (Id NSView)
-lastKeyView sfAuthorizationPluginView  =
-    sendMsg sfAuthorizationPluginView (mkSelector "lastKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastKeyView sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView lastKeyViewSelector
 
 -- | setEnabled:
 --
@@ -167,8 +163,8 @@ lastKeyView sfAuthorizationPluginView  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> Bool -> IO ()
-setEnabled sfAuthorizationPluginView  inEnabled =
-    sendMsg sfAuthorizationPluginView (mkSelector "setEnabled:") retVoid [argCULong (if inEnabled then 1 else 0)]
+setEnabled sfAuthorizationPluginView inEnabled =
+  sendMessage sfAuthorizationPluginView setEnabledSelector inEnabled
 
 -- | displayView
 --
@@ -176,8 +172,8 @@ setEnabled sfAuthorizationPluginView  inEnabled =
 --
 -- ObjC selector: @- displayView@
 displayView :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO ()
-displayView sfAuthorizationPluginView  =
-    sendMsg sfAuthorizationPluginView (mkSelector "displayView") retVoid []
+displayView sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView displayViewSelector
 
 -- | updateView
 --
@@ -185,62 +181,62 @@ displayView sfAuthorizationPluginView  =
 --
 -- ObjC selector: @- updateView@
 updateView :: IsSFAuthorizationPluginView sfAuthorizationPluginView => sfAuthorizationPluginView -> IO ()
-updateView sfAuthorizationPluginView  =
-    sendMsg sfAuthorizationPluginView (mkSelector "updateView") retVoid []
+updateView sfAuthorizationPluginView =
+  sendMessage sfAuthorizationPluginView updateViewSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCallbacks:andEngineRef:@
-initWithCallbacks_andEngineRefSelector :: Selector
+initWithCallbacks_andEngineRefSelector :: Selector '[Const RawId, Ptr ()] RawId
 initWithCallbacks_andEngineRefSelector = mkSelector "initWithCallbacks:andEngineRef:"
 
 -- | @Selector@ for @engineRef@
-engineRefSelector :: Selector
+engineRefSelector :: Selector '[] (Ptr ())
 engineRefSelector = mkSelector "engineRef"
 
 -- | @Selector@ for @callbacks@
-callbacksSelector :: Selector
+callbacksSelector :: Selector '[] (Const RawId)
 callbacksSelector = mkSelector "callbacks"
 
 -- | @Selector@ for @lastError@
-lastErrorSelector :: Selector
+lastErrorSelector :: Selector '[] (Id NSError)
 lastErrorSelector = mkSelector "lastError"
 
 -- | @Selector@ for @didActivate@
-didActivateSelector :: Selector
+didActivateSelector :: Selector '[] ()
 didActivateSelector = mkSelector "didActivate"
 
 -- | @Selector@ for @willActivateWithUser:@
-willActivateWithUserSelector :: Selector
+willActivateWithUserSelector :: Selector '[Id NSDictionary] ()
 willActivateWithUserSelector = mkSelector "willActivateWithUser:"
 
 -- | @Selector@ for @didDeactivate@
-didDeactivateSelector :: Selector
+didDeactivateSelector :: Selector '[] ()
 didDeactivateSelector = mkSelector "didDeactivate"
 
 -- | @Selector@ for @firstKeyView@
-firstKeyViewSelector :: Selector
+firstKeyViewSelector :: Selector '[] (Id NSView)
 firstKeyViewSelector = mkSelector "firstKeyView"
 
 -- | @Selector@ for @firstResponder@
-firstResponderSelector :: Selector
+firstResponderSelector :: Selector '[] (Id NSResponder)
 firstResponderSelector = mkSelector "firstResponder"
 
 -- | @Selector@ for @lastKeyView@
-lastKeyViewSelector :: Selector
+lastKeyViewSelector :: Selector '[] (Id NSView)
 lastKeyViewSelector = mkSelector "lastKeyView"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @displayView@
-displayViewSelector :: Selector
+displayViewSelector :: Selector '[] ()
 displayViewSelector = mkSelector "displayView"
 
 -- | @Selector@ for @updateView@
-updateViewSelector :: Selector
+updateViewSelector :: Selector '[] ()
 updateViewSelector = mkSelector "updateView"
 

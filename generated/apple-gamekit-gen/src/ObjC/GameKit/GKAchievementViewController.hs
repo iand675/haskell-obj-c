@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.GameKit.GKAchievementViewController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,23 +31,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- achievementDelegate@
 achievementDelegate :: IsGKAchievementViewController gkAchievementViewController => gkAchievementViewController -> IO RawId
-achievementDelegate gkAchievementViewController  =
-    fmap (RawId . castPtr) $ sendMsg gkAchievementViewController (mkSelector "achievementDelegate") (retPtr retVoid) []
+achievementDelegate gkAchievementViewController =
+  sendMessage gkAchievementViewController achievementDelegateSelector
 
 -- | @- setAchievementDelegate:@
 setAchievementDelegate :: IsGKAchievementViewController gkAchievementViewController => gkAchievementViewController -> RawId -> IO ()
-setAchievementDelegate gkAchievementViewController  value =
-    sendMsg gkAchievementViewController (mkSelector "setAchievementDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setAchievementDelegate gkAchievementViewController value =
+  sendMessage gkAchievementViewController setAchievementDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @achievementDelegate@
-achievementDelegateSelector :: Selector
+achievementDelegateSelector :: Selector '[] RawId
 achievementDelegateSelector = mkSelector "achievementDelegate"
 
 -- | @Selector@ for @setAchievementDelegate:@
-setAchievementDelegateSelector :: Selector
+setAchievementDelegateSelector :: Selector '[RawId] ()
 setAchievementDelegateSelector = mkSelector "setAchievementDelegate:"
 

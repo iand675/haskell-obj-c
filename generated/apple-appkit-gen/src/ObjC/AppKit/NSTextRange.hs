@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,32 +24,28 @@ module ObjC.AppKit.NSTextRange
   , empty
   , location
   , endLocation
-  , initWithLocation_endLocationSelector
-  , initWithLocationSelector
-  , initSelector
-  , newSelector
-  , isEqualToTextRangeSelector
   , containsLocationSelector
   , containsRangeSelector
-  , intersectsWithTextRangeSelector
-  , textRangeByIntersectingWithTextRangeSelector
-  , textRangeByFormingUnionWithTextRangeSelector
   , emptySelector
-  , locationSelector
   , endLocationSelector
+  , initSelector
+  , initWithLocationSelector
+  , initWithLocation_endLocationSelector
+  , intersectsWithTextRangeSelector
+  , isEqualToTextRangeSelector
+  , locationSelector
+  , newSelector
+  , textRangeByFormingUnionWithTextRangeSelector
+  , textRangeByIntersectingWithTextRangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithLocation:endLocation:@
 initWithLocation_endLocation :: IsNSTextRange nsTextRange => nsTextRange -> RawId -> RawId -> IO (Id NSTextRange)
-initWithLocation_endLocation nsTextRange  location endLocation =
-    sendMsg nsTextRange (mkSelector "initWithLocation:endLocation:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ()), argPtr (castPtr (unRawId endLocation) :: Ptr ())] >>= ownedObject . castPtr
+initWithLocation_endLocation nsTextRange location endLocation =
+  sendOwnedMessage nsTextRange initWithLocation_endLocationSelector location endLocation
 
 -- | Creates a new text range at the location you specify.
 --
@@ -70,20 +67,20 @@ initWithLocation_endLocation nsTextRange  location endLocation =
 --
 -- ObjC selector: @- initWithLocation:@
 initWithLocation :: IsNSTextRange nsTextRange => nsTextRange -> RawId -> IO (Id NSTextRange)
-initWithLocation nsTextRange  location =
-    sendMsg nsTextRange (mkSelector "initWithLocation:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ())] >>= ownedObject . castPtr
+initWithLocation nsTextRange location =
+  sendOwnedMessage nsTextRange initWithLocationSelector location
 
 -- | @- init@
 init_ :: IsNSTextRange nsTextRange => nsTextRange -> IO (Id NSTextRange)
-init_ nsTextRange  =
-    sendMsg nsTextRange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextRange =
+  sendOwnedMessage nsTextRange initSelector
 
 -- | @+ new@
 new :: IO (Id NSTextRange)
 new  =
   do
     cls' <- getRequiredClass "NSTextRange"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Compares two text ranges.
 --
@@ -93,9 +90,8 @@ new  =
 --
 -- ObjC selector: @- isEqualToTextRange:@
 isEqualToTextRange :: (IsNSTextRange nsTextRange, IsNSTextRange textRange) => nsTextRange -> textRange -> IO Bool
-isEqualToTextRange nsTextRange  textRange =
-  withObjCPtr textRange $ \raw_textRange ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextRange (mkSelector "isEqualToTextRange:") retCULong [argPtr (castPtr raw_textRange :: Ptr ())]
+isEqualToTextRange nsTextRange textRange =
+  sendMessage nsTextRange isEqualToTextRangeSelector (toNSTextRange textRange)
 
 -- | Determines if the text location you specify is in the current text range.
 --
@@ -105,8 +101,8 @@ isEqualToTextRange nsTextRange  textRange =
 --
 -- ObjC selector: @- containsLocation:@
 containsLocation :: IsNSTextRange nsTextRange => nsTextRange -> RawId -> IO Bool
-containsLocation nsTextRange  location =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextRange (mkSelector "containsLocation:") retCULong [argPtr (castPtr (unRawId location) :: Ptr ())]
+containsLocation nsTextRange location =
+  sendMessage nsTextRange containsLocationSelector location
 
 -- | Determines if the text range you specify is in the current text range.
 --
@@ -116,9 +112,8 @@ containsLocation nsTextRange  location =
 --
 -- ObjC selector: @- containsRange:@
 containsRange :: (IsNSTextRange nsTextRange, IsNSTextRange textRange) => nsTextRange -> textRange -> IO Bool
-containsRange nsTextRange  textRange =
-  withObjCPtr textRange $ \raw_textRange ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextRange (mkSelector "containsRange:") retCULong [argPtr (castPtr raw_textRange :: Ptr ())]
+containsRange nsTextRange textRange =
+  sendMessage nsTextRange containsRangeSelector (toNSTextRange textRange)
 
 -- | Determines if two ranges intersect.
 --
@@ -128,9 +123,8 @@ containsRange nsTextRange  textRange =
 --
 -- ObjC selector: @- intersectsWithTextRange:@
 intersectsWithTextRange :: (IsNSTextRange nsTextRange, IsNSTextRange textRange) => nsTextRange -> textRange -> IO Bool
-intersectsWithTextRange nsTextRange  textRange =
-  withObjCPtr textRange $ \raw_textRange ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextRange (mkSelector "intersectsWithTextRange:") retCULong [argPtr (castPtr raw_textRange :: Ptr ())]
+intersectsWithTextRange nsTextRange textRange =
+  sendMessage nsTextRange intersectsWithTextRangeSelector (toNSTextRange textRange)
 
 -- | Returns the range, if any, where two text ranges intersect.
 --
@@ -140,9 +134,8 @@ intersectsWithTextRange nsTextRange  textRange =
 --
 -- ObjC selector: @- textRangeByIntersectingWithTextRange:@
 textRangeByIntersectingWithTextRange :: (IsNSTextRange nsTextRange, IsNSTextRange textRange) => nsTextRange -> textRange -> IO (Id NSTextRange)
-textRangeByIntersectingWithTextRange nsTextRange  textRange =
-  withObjCPtr textRange $ \raw_textRange ->
-      sendMsg nsTextRange (mkSelector "textRangeByIntersectingWithTextRange:") (retPtr retVoid) [argPtr (castPtr raw_textRange :: Ptr ())] >>= retainedObject . castPtr
+textRangeByIntersectingWithTextRange nsTextRange textRange =
+  sendMessage nsTextRange textRangeByIntersectingWithTextRangeSelector (toNSTextRange textRange)
 
 -- | Returns a new text range by forming the union with the text range you provide.
 --
@@ -152,84 +145,83 @@ textRangeByIntersectingWithTextRange nsTextRange  textRange =
 --
 -- ObjC selector: @- textRangeByFormingUnionWithTextRange:@
 textRangeByFormingUnionWithTextRange :: (IsNSTextRange nsTextRange, IsNSTextRange textRange) => nsTextRange -> textRange -> IO (Id NSTextRange)
-textRangeByFormingUnionWithTextRange nsTextRange  textRange =
-  withObjCPtr textRange $ \raw_textRange ->
-      sendMsg nsTextRange (mkSelector "textRangeByFormingUnionWithTextRange:") (retPtr retVoid) [argPtr (castPtr raw_textRange :: Ptr ())] >>= retainedObject . castPtr
+textRangeByFormingUnionWithTextRange nsTextRange textRange =
+  sendMessage nsTextRange textRangeByFormingUnionWithTextRangeSelector (toNSTextRange textRange)
 
 -- | Returns whether the text range is empty.
 --
 -- ObjC selector: @- empty@
 empty :: IsNSTextRange nsTextRange => nsTextRange -> IO Bool
-empty nsTextRange  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextRange (mkSelector "empty") retCULong []
+empty nsTextRange =
+  sendMessage nsTextRange emptySelector
 
 -- | The starting location of the text range.
 --
 -- ObjC selector: @- location@
 location :: IsNSTextRange nsTextRange => nsTextRange -> IO RawId
-location nsTextRange  =
-    fmap (RawId . castPtr) $ sendMsg nsTextRange (mkSelector "location") (retPtr retVoid) []
+location nsTextRange =
+  sendMessage nsTextRange locationSelector
 
 -- | The ending location of the text range.
 --
 -- ObjC selector: @- endLocation@
 endLocation :: IsNSTextRange nsTextRange => nsTextRange -> IO RawId
-endLocation nsTextRange  =
-    fmap (RawId . castPtr) $ sendMsg nsTextRange (mkSelector "endLocation") (retPtr retVoid) []
+endLocation nsTextRange =
+  sendMessage nsTextRange endLocationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLocation:endLocation:@
-initWithLocation_endLocationSelector :: Selector
+initWithLocation_endLocationSelector :: Selector '[RawId, RawId] (Id NSTextRange)
 initWithLocation_endLocationSelector = mkSelector "initWithLocation:endLocation:"
 
 -- | @Selector@ for @initWithLocation:@
-initWithLocationSelector :: Selector
+initWithLocationSelector :: Selector '[RawId] (Id NSTextRange)
 initWithLocationSelector = mkSelector "initWithLocation:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextRange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSTextRange)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @isEqualToTextRange:@
-isEqualToTextRangeSelector :: Selector
+isEqualToTextRangeSelector :: Selector '[Id NSTextRange] Bool
 isEqualToTextRangeSelector = mkSelector "isEqualToTextRange:"
 
 -- | @Selector@ for @containsLocation:@
-containsLocationSelector :: Selector
+containsLocationSelector :: Selector '[RawId] Bool
 containsLocationSelector = mkSelector "containsLocation:"
 
 -- | @Selector@ for @containsRange:@
-containsRangeSelector :: Selector
+containsRangeSelector :: Selector '[Id NSTextRange] Bool
 containsRangeSelector = mkSelector "containsRange:"
 
 -- | @Selector@ for @intersectsWithTextRange:@
-intersectsWithTextRangeSelector :: Selector
+intersectsWithTextRangeSelector :: Selector '[Id NSTextRange] Bool
 intersectsWithTextRangeSelector = mkSelector "intersectsWithTextRange:"
 
 -- | @Selector@ for @textRangeByIntersectingWithTextRange:@
-textRangeByIntersectingWithTextRangeSelector :: Selector
+textRangeByIntersectingWithTextRangeSelector :: Selector '[Id NSTextRange] (Id NSTextRange)
 textRangeByIntersectingWithTextRangeSelector = mkSelector "textRangeByIntersectingWithTextRange:"
 
 -- | @Selector@ for @textRangeByFormingUnionWithTextRange:@
-textRangeByFormingUnionWithTextRangeSelector :: Selector
+textRangeByFormingUnionWithTextRangeSelector :: Selector '[Id NSTextRange] (Id NSTextRange)
 textRangeByFormingUnionWithTextRangeSelector = mkSelector "textRangeByFormingUnionWithTextRange:"
 
 -- | @Selector@ for @empty@
-emptySelector :: Selector
+emptySelector :: Selector '[] Bool
 emptySelector = mkSelector "empty"
 
 -- | @Selector@ for @location@
-locationSelector :: Selector
+locationSelector :: Selector '[] RawId
 locationSelector = mkSelector "location"
 
 -- | @Selector@ for @endLocation@
-endLocationSelector :: Selector
+endLocationSelector :: Selector '[] RawId
 endLocationSelector = mkSelector "endLocation"
 

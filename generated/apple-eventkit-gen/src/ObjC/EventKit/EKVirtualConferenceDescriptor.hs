@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.EventKit.EKVirtualConferenceDescriptor
   , title
   , urlDescriptors
   , conferenceDetails
-  , initWithTitle_URLDescriptors_conferenceDetailsSelector
+  , conferenceDetailsSelector
   , initSelector
+  , initWithTitle_URLDescriptors_conferenceDetailsSelector
   , newSelector
   , titleSelector
   , urlDescriptorsSelector
-  , conferenceDetailsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,64 +50,61 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithTitle:URLDescriptors:conferenceDetails:@
 initWithTitle_URLDescriptors_conferenceDetails :: (IsEKVirtualConferenceDescriptor ekVirtualConferenceDescriptor, IsNSString title, IsNSArray urlDescriptors, IsNSString conferenceDetails) => ekVirtualConferenceDescriptor -> title -> urlDescriptors -> conferenceDetails -> IO (Id EKVirtualConferenceDescriptor)
-initWithTitle_URLDescriptors_conferenceDetails ekVirtualConferenceDescriptor  title urlDescriptors conferenceDetails =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr urlDescriptors $ \raw_urlDescriptors ->
-      withObjCPtr conferenceDetails $ \raw_conferenceDetails ->
-          sendMsg ekVirtualConferenceDescriptor (mkSelector "initWithTitle:URLDescriptors:conferenceDetails:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_urlDescriptors :: Ptr ()), argPtr (castPtr raw_conferenceDetails :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_URLDescriptors_conferenceDetails ekVirtualConferenceDescriptor title urlDescriptors conferenceDetails =
+  sendOwnedMessage ekVirtualConferenceDescriptor initWithTitle_URLDescriptors_conferenceDetailsSelector (toNSString title) (toNSArray urlDescriptors) (toNSString conferenceDetails)
 
 -- | @- init@
 init_ :: IsEKVirtualConferenceDescriptor ekVirtualConferenceDescriptor => ekVirtualConferenceDescriptor -> IO (Id EKVirtualConferenceDescriptor)
-init_ ekVirtualConferenceDescriptor  =
-    sendMsg ekVirtualConferenceDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ekVirtualConferenceDescriptor =
+  sendOwnedMessage ekVirtualConferenceDescriptor initSelector
 
 -- | @+ new@
 new :: IO (Id EKVirtualConferenceDescriptor)
 new  =
   do
     cls' <- getRequiredClass "EKVirtualConferenceDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- title@
 title :: IsEKVirtualConferenceDescriptor ekVirtualConferenceDescriptor => ekVirtualConferenceDescriptor -> IO (Id NSString)
-title ekVirtualConferenceDescriptor  =
-    sendMsg ekVirtualConferenceDescriptor (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title ekVirtualConferenceDescriptor =
+  sendMessage ekVirtualConferenceDescriptor titleSelector
 
 -- | @- URLDescriptors@
 urlDescriptors :: IsEKVirtualConferenceDescriptor ekVirtualConferenceDescriptor => ekVirtualConferenceDescriptor -> IO (Id NSArray)
-urlDescriptors ekVirtualConferenceDescriptor  =
-    sendMsg ekVirtualConferenceDescriptor (mkSelector "URLDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlDescriptors ekVirtualConferenceDescriptor =
+  sendMessage ekVirtualConferenceDescriptor urlDescriptorsSelector
 
 -- | @- conferenceDetails@
 conferenceDetails :: IsEKVirtualConferenceDescriptor ekVirtualConferenceDescriptor => ekVirtualConferenceDescriptor -> IO (Id NSString)
-conferenceDetails ekVirtualConferenceDescriptor  =
-    sendMsg ekVirtualConferenceDescriptor (mkSelector "conferenceDetails") (retPtr retVoid) [] >>= retainedObject . castPtr
+conferenceDetails ekVirtualConferenceDescriptor =
+  sendMessage ekVirtualConferenceDescriptor conferenceDetailsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTitle:URLDescriptors:conferenceDetails:@
-initWithTitle_URLDescriptors_conferenceDetailsSelector :: Selector
+initWithTitle_URLDescriptors_conferenceDetailsSelector :: Selector '[Id NSString, Id NSArray, Id NSString] (Id EKVirtualConferenceDescriptor)
 initWithTitle_URLDescriptors_conferenceDetailsSelector = mkSelector "initWithTitle:URLDescriptors:conferenceDetails:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id EKVirtualConferenceDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id EKVirtualConferenceDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @URLDescriptors@
-urlDescriptorsSelector :: Selector
+urlDescriptorsSelector :: Selector '[] (Id NSArray)
 urlDescriptorsSelector = mkSelector "URLDescriptors"
 
 -- | @Selector@ for @conferenceDetails@
-conferenceDetailsSelector :: Selector
+conferenceDetailsSelector :: Selector '[] (Id NSString)
 conferenceDetailsSelector = mkSelector "conferenceDetails"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,16 +24,16 @@ module ObjC.AVFoundation.AVCaptureInputPort
   , clock
   , sourceDeviceType
   , sourceDevicePosition
+  , clockSelector
+  , enabledSelector
+  , formatDescriptionSelector
   , initSelector
-  , newSelector
   , inputSelector
   , mediaTypeSelector
-  , formatDescriptionSelector
-  , enabledSelector
+  , newSelector
   , setEnabledSelector
-  , clockSelector
-  , sourceDeviceTypeSelector
   , sourceDevicePositionSelector
+  , sourceDeviceTypeSelector
 
   -- * Enum types
   , AVCaptureDevicePosition(AVCaptureDevicePosition)
@@ -42,15 +43,11 @@ module ObjC.AVFoundation.AVCaptureInputPort
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,15 +57,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureInputPort avCaptureInputPort => avCaptureInputPort -> IO (Id AVCaptureInputPort)
-init_ avCaptureInputPort  =
-    sendMsg avCaptureInputPort (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureInputPort =
+  sendOwnedMessage avCaptureInputPort initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureInputPort)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureInputPort"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | input
 --
@@ -78,8 +75,8 @@ new  =
 --
 -- ObjC selector: @- input@
 input :: IsAVCaptureInputPort avCaptureInputPort => avCaptureInputPort -> IO (Id AVCaptureInput)
-input avCaptureInputPort  =
-    sendMsg avCaptureInputPort (mkSelector "input") (retPtr retVoid) [] >>= retainedObject . castPtr
+input avCaptureInputPort =
+  sendMessage avCaptureInputPort inputSelector
 
 -- | mediaType
 --
@@ -89,8 +86,8 @@ input avCaptureInputPort  =
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVCaptureInputPort avCaptureInputPort => avCaptureInputPort -> IO (Id NSString)
-mediaType avCaptureInputPort  =
-    sendMsg avCaptureInputPort (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avCaptureInputPort =
+  sendMessage avCaptureInputPort mediaTypeSelector
 
 -- | formatDescription
 --
@@ -100,8 +97,8 @@ mediaType avCaptureInputPort  =
 --
 -- ObjC selector: @- formatDescription@
 formatDescription :: IsAVCaptureInputPort avCaptureInputPort => avCaptureInputPort -> IO RawId
-formatDescription avCaptureInputPort  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureInputPort (mkSelector "formatDescription") (retPtr retVoid) []
+formatDescription avCaptureInputPort =
+  sendMessage avCaptureInputPort formatDescriptionSelector
 
 -- | enabled
 --
@@ -111,8 +108,8 @@ formatDescription avCaptureInputPort  =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAVCaptureInputPort avCaptureInputPort => avCaptureInputPort -> IO Bool
-enabled avCaptureInputPort  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureInputPort (mkSelector "enabled") retCULong []
+enabled avCaptureInputPort =
+  sendMessage avCaptureInputPort enabledSelector
 
 -- | enabled
 --
@@ -122,8 +119,8 @@ enabled avCaptureInputPort  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsAVCaptureInputPort avCaptureInputPort => avCaptureInputPort -> Bool -> IO ()
-setEnabled avCaptureInputPort  value =
-    sendMsg avCaptureInputPort (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled avCaptureInputPort value =
+  sendMessage avCaptureInputPort setEnabledSelector value
 
 -- | clock
 --
@@ -133,8 +130,8 @@ setEnabled avCaptureInputPort  value =
 --
 -- ObjC selector: @- clock@
 clock :: IsAVCaptureInputPort avCaptureInputPort => avCaptureInputPort -> IO (Ptr ())
-clock avCaptureInputPort  =
-    fmap castPtr $ sendMsg avCaptureInputPort (mkSelector "clock") (retPtr retVoid) []
+clock avCaptureInputPort =
+  sendMessage avCaptureInputPort clockSelector
 
 -- | sourceDeviceType
 --
@@ -144,8 +141,8 @@ clock avCaptureInputPort  =
 --
 -- ObjC selector: @- sourceDeviceType@
 sourceDeviceType :: IsAVCaptureInputPort avCaptureInputPort => avCaptureInputPort -> IO (Id NSString)
-sourceDeviceType avCaptureInputPort  =
-    sendMsg avCaptureInputPort (mkSelector "sourceDeviceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceDeviceType avCaptureInputPort =
+  sendMessage avCaptureInputPort sourceDeviceTypeSelector
 
 -- | sourceDevicePosition
 --
@@ -157,50 +154,50 @@ sourceDeviceType avCaptureInputPort  =
 --
 -- ObjC selector: @- sourceDevicePosition@
 sourceDevicePosition :: IsAVCaptureInputPort avCaptureInputPort => avCaptureInputPort -> IO AVCaptureDevicePosition
-sourceDevicePosition avCaptureInputPort  =
-    fmap (coerce :: CLong -> AVCaptureDevicePosition) $ sendMsg avCaptureInputPort (mkSelector "sourceDevicePosition") retCLong []
+sourceDevicePosition avCaptureInputPort =
+  sendMessage avCaptureInputPort sourceDevicePositionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureInputPort)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureInputPort)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @input@
-inputSelector :: Selector
+inputSelector :: Selector '[] (Id AVCaptureInput)
 inputSelector = mkSelector "input"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @formatDescription@
-formatDescriptionSelector :: Selector
+formatDescriptionSelector :: Selector '[] RawId
 formatDescriptionSelector = mkSelector "formatDescription"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @clock@
-clockSelector :: Selector
+clockSelector :: Selector '[] (Ptr ())
 clockSelector = mkSelector "clock"
 
 -- | @Selector@ for @sourceDeviceType@
-sourceDeviceTypeSelector :: Selector
+sourceDeviceTypeSelector :: Selector '[] (Id NSString)
 sourceDeviceTypeSelector = mkSelector "sourceDeviceType"
 
 -- | @Selector@ for @sourceDevicePosition@
-sourceDevicePositionSelector :: Selector
+sourceDevicePositionSelector :: Selector '[] AVCaptureDevicePosition
 sourceDevicePositionSelector = mkSelector "sourceDevicePosition"
 

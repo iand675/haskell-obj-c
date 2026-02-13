@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.HealthKit.HKSampleType
   , isMinimumDurationRestricted
   , minimumAllowedDuration
   , allowsRecalibrationForEstimates
-  , isMaximumDurationRestrictedSelector
-  , maximumAllowedDurationSelector
-  , isMinimumDurationRestrictedSelector
-  , minimumAllowedDurationSelector
   , allowsRecalibrationForEstimatesSelector
+  , isMaximumDurationRestrictedSelector
+  , isMinimumDurationRestrictedSelector
+  , maximumAllowedDurationSelector
+  , minimumAllowedDurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isMaximumDurationRestricted@
 isMaximumDurationRestricted :: IsHKSampleType hkSampleType => hkSampleType -> IO Bool
-isMaximumDurationRestricted hkSampleType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkSampleType (mkSelector "isMaximumDurationRestricted") retCULong []
+isMaximumDurationRestricted hkSampleType =
+  sendMessage hkSampleType isMaximumDurationRestrictedSelector
 
 -- | maximumAllowedDuration
 --
@@ -56,8 +53,8 @@ isMaximumDurationRestricted hkSampleType  =
 --
 -- ObjC selector: @- maximumAllowedDuration@
 maximumAllowedDuration :: IsHKSampleType hkSampleType => hkSampleType -> IO CDouble
-maximumAllowedDuration hkSampleType  =
-    sendMsg hkSampleType (mkSelector "maximumAllowedDuration") retCDouble []
+maximumAllowedDuration hkSampleType =
+  sendMessage hkSampleType maximumAllowedDurationSelector
 
 -- | isMinimumDurationRestricted
 --
@@ -65,8 +62,8 @@ maximumAllowedDuration hkSampleType  =
 --
 -- ObjC selector: @- isMinimumDurationRestricted@
 isMinimumDurationRestricted :: IsHKSampleType hkSampleType => hkSampleType -> IO Bool
-isMinimumDurationRestricted hkSampleType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkSampleType (mkSelector "isMinimumDurationRestricted") retCULong []
+isMinimumDurationRestricted hkSampleType =
+  sendMessage hkSampleType isMinimumDurationRestrictedSelector
 
 -- | minimumAllowedDuration
 --
@@ -76,8 +73,8 @@ isMinimumDurationRestricted hkSampleType  =
 --
 -- ObjC selector: @- minimumAllowedDuration@
 minimumAllowedDuration :: IsHKSampleType hkSampleType => hkSampleType -> IO CDouble
-minimumAllowedDuration hkSampleType  =
-    sendMsg hkSampleType (mkSelector "minimumAllowedDuration") retCDouble []
+minimumAllowedDuration hkSampleType =
+  sendMessage hkSampleType minimumAllowedDurationSelector
 
 -- | allowsRecalibrationForEstimates
 --
@@ -85,30 +82,30 @@ minimumAllowedDuration hkSampleType  =
 --
 -- ObjC selector: @- allowsRecalibrationForEstimates@
 allowsRecalibrationForEstimates :: IsHKSampleType hkSampleType => hkSampleType -> IO Bool
-allowsRecalibrationForEstimates hkSampleType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkSampleType (mkSelector "allowsRecalibrationForEstimates") retCULong []
+allowsRecalibrationForEstimates hkSampleType =
+  sendMessage hkSampleType allowsRecalibrationForEstimatesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isMaximumDurationRestricted@
-isMaximumDurationRestrictedSelector :: Selector
+isMaximumDurationRestrictedSelector :: Selector '[] Bool
 isMaximumDurationRestrictedSelector = mkSelector "isMaximumDurationRestricted"
 
 -- | @Selector@ for @maximumAllowedDuration@
-maximumAllowedDurationSelector :: Selector
+maximumAllowedDurationSelector :: Selector '[] CDouble
 maximumAllowedDurationSelector = mkSelector "maximumAllowedDuration"
 
 -- | @Selector@ for @isMinimumDurationRestricted@
-isMinimumDurationRestrictedSelector :: Selector
+isMinimumDurationRestrictedSelector :: Selector '[] Bool
 isMinimumDurationRestrictedSelector = mkSelector "isMinimumDurationRestricted"
 
 -- | @Selector@ for @minimumAllowedDuration@
-minimumAllowedDurationSelector :: Selector
+minimumAllowedDurationSelector :: Selector '[] CDouble
 minimumAllowedDurationSelector = mkSelector "minimumAllowedDuration"
 
 -- | @Selector@ for @allowsRecalibrationForEstimates@
-allowsRecalibrationForEstimatesSelector :: Selector
+allowsRecalibrationForEstimatesSelector :: Selector '[] Bool
 allowsRecalibrationForEstimatesSelector = mkSelector "allowsRecalibrationForEstimates"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreAudioTypes.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | AVAudioSessionErrorCode
 --
@@ -124,6 +127,16 @@ pattern AVAudioSessionErrorCodeExpiredSession = AVAudioSessionErrorCode 56121073
 pattern AVAudioSessionErrorCodeSessionNotActive :: AVAudioSessionErrorCode
 pattern AVAudioSessionErrorCodeSessionNotActive = AVAudioSessionErrorCode 1768841571
 
+instance ObjCArgument AVAudioSessionErrorCode where
+  withObjCArg (AVAudioSessionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioSessionErrorCode where
+  type RawReturn AVAudioSessionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionErrorCode x)
+  fromOwned x = pure (AVAudioSessionErrorCode x)
+
 -- | AudioChannelBitmap
 --
 -- These constants are for use in the mChannelBitmap field of an                    AudioChannelLayout structure.
@@ -219,6 +232,16 @@ pattern KAudioChannelBit_CenterTopRear = AudioChannelBitmap 33554432
 pattern KAudioChannelBit_RightTopRear :: AudioChannelBitmap
 pattern KAudioChannelBit_RightTopRear = AudioChannelBitmap 67108864
 
+instance ObjCArgument AudioChannelBitmap where
+  withObjCArg (AudioChannelBitmap x) k = k (argCUInt x)
+
+instance ObjCReturn AudioChannelBitmap where
+  type RawReturn AudioChannelBitmap = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioChannelBitmap x)
+  fromOwned x = pure (AudioChannelBitmap x)
+
 -- | AudioChannelCoordinateIndex
 --
 -- Constants for indexing the mCoordinates array in an AudioChannelDescription                    structure.
@@ -269,6 +292,16 @@ pattern KAudioChannelCoordinates_Elevation = AudioChannelCoordinateIndex 1
 pattern KAudioChannelCoordinates_Distance :: AudioChannelCoordinateIndex
 pattern KAudioChannelCoordinates_Distance = AudioChannelCoordinateIndex 2
 
+instance ObjCArgument AudioChannelCoordinateIndex where
+  withObjCArg (AudioChannelCoordinateIndex x) k = k (argCUInt x)
+
+instance ObjCReturn AudioChannelCoordinateIndex where
+  type RawReturn AudioChannelCoordinateIndex = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioChannelCoordinateIndex x)
+  fromOwned x = pure (AudioChannelCoordinateIndex x)
+
 -- | AudioChannelFlags
 --
 -- These constants are used in the mChannelFlags field of an                    AudioChannelDescription structure.
@@ -306,6 +339,16 @@ pattern KAudioChannelFlags_SphericalCoordinates = AudioChannelFlags 2
 
 pattern KAudioChannelFlags_Meters :: AudioChannelFlags
 pattern KAudioChannelFlags_Meters = AudioChannelFlags 4
+
+instance ObjCArgument AudioChannelFlags where
+  withObjCArg (AudioChannelFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioChannelFlags where
+  type RawReturn AudioChannelFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioChannelFlags x)
+  fromOwned x = pure (AudioChannelFlags x)
 
 -- | AudioTimeStampFlags
 --
@@ -366,6 +409,16 @@ pattern KAudioTimeStampSMPTETimeValid = AudioTimeStampFlags 16
 pattern KAudioTimeStampSampleHostTimeValid :: AudioTimeStampFlags
 pattern KAudioTimeStampSampleHostTimeValid = AudioTimeStampFlags 3
 
+instance ObjCArgument AudioTimeStampFlags where
+  withObjCArg (AudioTimeStampFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioTimeStampFlags where
+  type RawReturn AudioTimeStampFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioTimeStampFlags x)
+  fromOwned x = pure (AudioTimeStampFlags x)
+
 -- | MPEG4ObjectID
 --
 -- \@ deprecated    in version 10.5
@@ -405,6 +458,16 @@ pattern KMPEG4Object_CELP = MPEG4ObjectID 8
 pattern KMPEG4Object_HVXC :: MPEG4ObjectID
 pattern KMPEG4Object_HVXC = MPEG4ObjectID 9
 
+instance ObjCArgument MPEG4ObjectID where
+  withObjCArg (MPEG4ObjectID x) k = k (argCLong x)
+
+instance ObjCReturn MPEG4ObjectID where
+  type RawReturn MPEG4ObjectID = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MPEG4ObjectID x)
+  fromOwned x = pure (MPEG4ObjectID x)
+
 -- | SMPTETimeFlags
 --
 -- Flags that describe the SMPTE time state.
@@ -435,6 +498,16 @@ pattern KSMPTETimeValid = SMPTETimeFlags 1
 
 pattern KSMPTETimeRunning :: SMPTETimeFlags
 pattern KSMPTETimeRunning = SMPTETimeFlags 2
+
+instance ObjCArgument SMPTETimeFlags where
+  withObjCArg (SMPTETimeFlags x) k = k (argCUInt x)
+
+instance ObjCReturn SMPTETimeFlags where
+  type RawReturn SMPTETimeFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SMPTETimeFlags x)
+  fromOwned x = pure (SMPTETimeFlags x)
 
 -- | SMPTE Time Types
 --
@@ -527,3 +600,13 @@ pattern KSMPTETimeType50 = SMPTETimeType 10
 
 pattern KSMPTETimeType2398 :: SMPTETimeType
 pattern KSMPTETimeType2398 = SMPTETimeType 11
+
+instance ObjCArgument SMPTETimeType where
+  withObjCArg (SMPTETimeType x) k = k (argCUInt x)
+
+instance ObjCReturn SMPTETimeType where
+  type RawReturn SMPTETimeType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SMPTETimeType x)
+  fromOwned x = pure (SMPTETimeType x)

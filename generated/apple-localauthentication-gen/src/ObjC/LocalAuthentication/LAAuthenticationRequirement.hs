@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.LocalAuthentication.LAAuthenticationRequirement
   , defaultRequirement
   , biometryRequirement
   , biometryCurrentSetRequirement
+  , biometryCurrentSetRequirementSelector
+  , biometryRequirementSelector
   , biometryRequirementWithFallbackSelector
   , defaultRequirementSelector
-  , biometryRequirementSelector
-  , biometryCurrentSetRequirementSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,8 +43,7 @@ biometryRequirementWithFallback :: IsLABiometryFallbackRequirement fallback => f
 biometryRequirementWithFallback fallback =
   do
     cls' <- getRequiredClass "LAAuthenticationRequirement"
-    withObjCPtr fallback $ \raw_fallback ->
-      sendClassMsg cls' (mkSelector "biometryRequirementWithFallback:") (retPtr retVoid) [argPtr (castPtr raw_fallback :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' biometryRequirementWithFallbackSelector (toLABiometryFallbackRequirement fallback)
 
 -- | Requires user authentication
 --
@@ -58,7 +54,7 @@ defaultRequirement :: IO (Id LAAuthenticationRequirement)
 defaultRequirement  =
   do
     cls' <- getRequiredClass "LAAuthenticationRequirement"
-    sendClassMsg cls' (mkSelector "defaultRequirement") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultRequirementSelector
 
 -- | Requires biometric authentication
 --
@@ -75,7 +71,7 @@ biometryRequirement :: IO (Id LAAuthenticationRequirement)
 biometryRequirement  =
   do
     cls' <- getRequiredClass "LAAuthenticationRequirement"
-    sendClassMsg cls' (mkSelector "biometryRequirement") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' biometryRequirementSelector
 
 -- | Requires user authentication with the current biometric set
 --
@@ -94,25 +90,25 @@ biometryCurrentSetRequirement :: IO (Id LAAuthenticationRequirement)
 biometryCurrentSetRequirement  =
   do
     cls' <- getRequiredClass "LAAuthenticationRequirement"
-    sendClassMsg cls' (mkSelector "biometryCurrentSetRequirement") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' biometryCurrentSetRequirementSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @biometryRequirementWithFallback:@
-biometryRequirementWithFallbackSelector :: Selector
+biometryRequirementWithFallbackSelector :: Selector '[Id LABiometryFallbackRequirement] (Id LAAuthenticationRequirement)
 biometryRequirementWithFallbackSelector = mkSelector "biometryRequirementWithFallback:"
 
 -- | @Selector@ for @defaultRequirement@
-defaultRequirementSelector :: Selector
+defaultRequirementSelector :: Selector '[] (Id LAAuthenticationRequirement)
 defaultRequirementSelector = mkSelector "defaultRequirement"
 
 -- | @Selector@ for @biometryRequirement@
-biometryRequirementSelector :: Selector
+biometryRequirementSelector :: Selector '[] (Id LAAuthenticationRequirement)
 biometryRequirementSelector = mkSelector "biometryRequirement"
 
 -- | @Selector@ for @biometryCurrentSetRequirement@
-biometryCurrentSetRequirementSelector :: Selector
+biometryCurrentSetRequirementSelector :: Selector '[] (Id LAAuthenticationRequirement)
 biometryCurrentSetRequirementSelector = mkSelector "biometryCurrentSetRequirement"
 

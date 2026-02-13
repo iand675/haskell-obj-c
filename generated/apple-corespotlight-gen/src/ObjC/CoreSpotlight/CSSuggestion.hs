@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,15 +29,11 @@ module ObjC.CoreSpotlight.CSSuggestion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,43 +44,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- compareByRank:@
 compareByRank :: (IsCSSuggestion csSuggestion, IsCSSuggestion other) => csSuggestion -> other -> IO NSComparisonResult
-compareByRank csSuggestion  other =
-  withObjCPtr other $ \raw_other ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg csSuggestion (mkSelector "compareByRank:") retCLong [argPtr (castPtr raw_other :: Ptr ())]
+compareByRank csSuggestion other =
+  sendMessage csSuggestion compareByRankSelector (toCSSuggestion other)
 
 -- | @- compare:@
 compare_ :: (IsCSSuggestion csSuggestion, IsCSSuggestion other) => csSuggestion -> other -> IO NSComparisonResult
-compare_ csSuggestion  other =
-  withObjCPtr other $ \raw_other ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg csSuggestion (mkSelector "compare:") retCLong [argPtr (castPtr raw_other :: Ptr ())]
+compare_ csSuggestion other =
+  sendMessage csSuggestion compareSelector (toCSSuggestion other)
 
 -- | @- localizedAttributedSuggestion@
 localizedAttributedSuggestion :: IsCSSuggestion csSuggestion => csSuggestion -> IO (Id NSAttributedString)
-localizedAttributedSuggestion csSuggestion  =
-    sendMsg csSuggestion (mkSelector "localizedAttributedSuggestion") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedAttributedSuggestion csSuggestion =
+  sendMessage csSuggestion localizedAttributedSuggestionSelector
 
 -- | @- suggestionKind@
 suggestionKind :: IsCSSuggestion csSuggestion => csSuggestion -> IO CSSuggestionKind
-suggestionKind csSuggestion  =
-    fmap (coerce :: CLong -> CSSuggestionKind) $ sendMsg csSuggestion (mkSelector "suggestionKind") retCLong []
+suggestionKind csSuggestion =
+  sendMessage csSuggestion suggestionKindSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @compareByRank:@
-compareByRankSelector :: Selector
+compareByRankSelector :: Selector '[Id CSSuggestion] NSComparisonResult
 compareByRankSelector = mkSelector "compareByRank:"
 
 -- | @Selector@ for @compare:@
-compareSelector :: Selector
+compareSelector :: Selector '[Id CSSuggestion] NSComparisonResult
 compareSelector = mkSelector "compare:"
 
 -- | @Selector@ for @localizedAttributedSuggestion@
-localizedAttributedSuggestionSelector :: Selector
+localizedAttributedSuggestionSelector :: Selector '[] (Id NSAttributedString)
 localizedAttributedSuggestionSelector = mkSelector "localizedAttributedSuggestion"
 
 -- | @Selector@ for @suggestionKind@
-suggestionKindSelector :: Selector
+suggestionKindSelector :: Selector '[] CSSuggestionKind
 suggestionKindSelector = mkSelector "suggestionKind"
 

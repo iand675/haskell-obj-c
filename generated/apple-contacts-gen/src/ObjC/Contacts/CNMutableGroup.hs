@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.Contacts.CNMutableGroup
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,24 +32,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsCNMutableGroup cnMutableGroup => cnMutableGroup -> IO (Id NSString)
-name cnMutableGroup  =
-    sendMsg cnMutableGroup (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name cnMutableGroup =
+  sendMessage cnMutableGroup nameSelector
 
 -- | @- setName:@
 setName :: (IsCNMutableGroup cnMutableGroup, IsNSString value) => cnMutableGroup -> value -> IO ()
-setName cnMutableGroup  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnMutableGroup (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName cnMutableGroup value =
+  sendMessage cnMutableGroup setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

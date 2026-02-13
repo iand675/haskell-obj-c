@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.Foundation.NSInvocation
   , setTarget
   , selector
   , setSelector
-  , invocationWithMethodSignatureSelector
-  , retainArgumentsSelector
-  , getReturnValueSelector
-  , setReturnValueSelector
-  , getArgument_atIndexSelector
-  , setArgument_atIndexSelector
-  , invokeSelector
-  , invokeWithTargetSelector
-  , invokeUsingIMPSelector
-  , methodSignatureSelector
   , argumentsRetainedSelector
-  , targetSelector
-  , setTargetSelector
+  , getArgument_atIndexSelector
+  , getReturnValueSelector
+  , invocationWithMethodSignatureSelector
+  , invokeSelector
+  , invokeUsingIMPSelector
+  , invokeWithTargetSelector
+  , methodSignatureSelector
+  , retainArgumentsSelector
   , selectorSelector
+  , setArgument_atIndexSelector
+  , setReturnValueSelector
   , setSelectorSelector
+  , setTargetSelector
+  , targetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,140 +56,139 @@ invocationWithMethodSignature :: IsNSMethodSignature sig => sig -> IO (Id NSInvo
 invocationWithMethodSignature sig =
   do
     cls' <- getRequiredClass "NSInvocation"
-    withObjCPtr sig $ \raw_sig ->
-      sendClassMsg cls' (mkSelector "invocationWithMethodSignature:") (retPtr retVoid) [argPtr (castPtr raw_sig :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' invocationWithMethodSignatureSelector (toNSMethodSignature sig)
 
 -- | @- retainArguments@
 retainArguments :: IsNSInvocation nsInvocation => nsInvocation -> IO ()
-retainArguments nsInvocation  =
-    sendMsg nsInvocation (mkSelector "retainArguments") retVoid []
+retainArguments nsInvocation =
+  sendMessage nsInvocation retainArgumentsSelector
 
 -- | @- getReturnValue:@
 getReturnValue :: IsNSInvocation nsInvocation => nsInvocation -> Ptr () -> IO ()
-getReturnValue nsInvocation  retLoc =
-    sendMsg nsInvocation (mkSelector "getReturnValue:") retVoid [argPtr retLoc]
+getReturnValue nsInvocation retLoc =
+  sendMessage nsInvocation getReturnValueSelector retLoc
 
 -- | @- setReturnValue:@
 setReturnValue :: IsNSInvocation nsInvocation => nsInvocation -> Ptr () -> IO ()
-setReturnValue nsInvocation  retLoc =
-    sendMsg nsInvocation (mkSelector "setReturnValue:") retVoid [argPtr retLoc]
+setReturnValue nsInvocation retLoc =
+  sendMessage nsInvocation setReturnValueSelector retLoc
 
 -- | @- getArgument:atIndex:@
 getArgument_atIndex :: IsNSInvocation nsInvocation => nsInvocation -> Ptr () -> CLong -> IO ()
-getArgument_atIndex nsInvocation  argumentLocation idx =
-    sendMsg nsInvocation (mkSelector "getArgument:atIndex:") retVoid [argPtr argumentLocation, argCLong idx]
+getArgument_atIndex nsInvocation argumentLocation idx =
+  sendMessage nsInvocation getArgument_atIndexSelector argumentLocation idx
 
 -- | @- setArgument:atIndex:@
 setArgument_atIndex :: IsNSInvocation nsInvocation => nsInvocation -> Ptr () -> CLong -> IO ()
-setArgument_atIndex nsInvocation  argumentLocation idx =
-    sendMsg nsInvocation (mkSelector "setArgument:atIndex:") retVoid [argPtr argumentLocation, argCLong idx]
+setArgument_atIndex nsInvocation argumentLocation idx =
+  sendMessage nsInvocation setArgument_atIndexSelector argumentLocation idx
 
 -- | @- invoke@
 invoke :: IsNSInvocation nsInvocation => nsInvocation -> IO ()
-invoke nsInvocation  =
-    sendMsg nsInvocation (mkSelector "invoke") retVoid []
+invoke nsInvocation =
+  sendMessage nsInvocation invokeSelector
 
 -- | @- invokeWithTarget:@
 invokeWithTarget :: IsNSInvocation nsInvocation => nsInvocation -> RawId -> IO ()
-invokeWithTarget nsInvocation  target =
-    sendMsg nsInvocation (mkSelector "invokeWithTarget:") retVoid [argPtr (castPtr (unRawId target) :: Ptr ())]
+invokeWithTarget nsInvocation target =
+  sendMessage nsInvocation invokeWithTargetSelector target
 
 -- | @- invokeUsingIMP:@
 invokeUsingIMP :: IsNSInvocation nsInvocation => nsInvocation -> Ptr () -> IO ()
-invokeUsingIMP nsInvocation  imp =
-    sendMsg nsInvocation (mkSelector "invokeUsingIMP:") retVoid [argPtr imp]
+invokeUsingIMP nsInvocation imp =
+  sendMessage nsInvocation invokeUsingIMPSelector imp
 
 -- | @- methodSignature@
 methodSignature :: IsNSInvocation nsInvocation => nsInvocation -> IO (Id NSMethodSignature)
-methodSignature nsInvocation  =
-    sendMsg nsInvocation (mkSelector "methodSignature") (retPtr retVoid) [] >>= retainedObject . castPtr
+methodSignature nsInvocation =
+  sendMessage nsInvocation methodSignatureSelector
 
 -- | @- argumentsRetained@
 argumentsRetained :: IsNSInvocation nsInvocation => nsInvocation -> IO Bool
-argumentsRetained nsInvocation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsInvocation (mkSelector "argumentsRetained") retCULong []
+argumentsRetained nsInvocation =
+  sendMessage nsInvocation argumentsRetainedSelector
 
 -- | @- target@
 target :: IsNSInvocation nsInvocation => nsInvocation -> IO RawId
-target nsInvocation  =
-    fmap (RawId . castPtr) $ sendMsg nsInvocation (mkSelector "target") (retPtr retVoid) []
+target nsInvocation =
+  sendMessage nsInvocation targetSelector
 
 -- | @- setTarget:@
 setTarget :: IsNSInvocation nsInvocation => nsInvocation -> RawId -> IO ()
-setTarget nsInvocation  value =
-    sendMsg nsInvocation (mkSelector "setTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTarget nsInvocation value =
+  sendMessage nsInvocation setTargetSelector value
 
 -- | @- selector@
-selector :: IsNSInvocation nsInvocation => nsInvocation -> IO Selector
-selector nsInvocation  =
-    fmap (Selector . castPtr) $ sendMsg nsInvocation (mkSelector "selector") (retPtr retVoid) []
+selector :: IsNSInvocation nsInvocation => nsInvocation -> IO Sel
+selector nsInvocation =
+  sendMessage nsInvocation selectorSelector
 
 -- | @- setSelector:@
-setSelector :: IsNSInvocation nsInvocation => nsInvocation -> Selector -> IO ()
-setSelector nsInvocation  value =
-    sendMsg nsInvocation (mkSelector "setSelector:") retVoid [argPtr (unSelector value)]
+setSelector :: IsNSInvocation nsInvocation => nsInvocation -> Sel -> IO ()
+setSelector nsInvocation value =
+  sendMessage nsInvocation setSelectorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @invocationWithMethodSignature:@
-invocationWithMethodSignatureSelector :: Selector
+invocationWithMethodSignatureSelector :: Selector '[Id NSMethodSignature] (Id NSInvocation)
 invocationWithMethodSignatureSelector = mkSelector "invocationWithMethodSignature:"
 
 -- | @Selector@ for @retainArguments@
-retainArgumentsSelector :: Selector
+retainArgumentsSelector :: Selector '[] ()
 retainArgumentsSelector = mkSelector "retainArguments"
 
 -- | @Selector@ for @getReturnValue:@
-getReturnValueSelector :: Selector
+getReturnValueSelector :: Selector '[Ptr ()] ()
 getReturnValueSelector = mkSelector "getReturnValue:"
 
 -- | @Selector@ for @setReturnValue:@
-setReturnValueSelector :: Selector
+setReturnValueSelector :: Selector '[Ptr ()] ()
 setReturnValueSelector = mkSelector "setReturnValue:"
 
 -- | @Selector@ for @getArgument:atIndex:@
-getArgument_atIndexSelector :: Selector
+getArgument_atIndexSelector :: Selector '[Ptr (), CLong] ()
 getArgument_atIndexSelector = mkSelector "getArgument:atIndex:"
 
 -- | @Selector@ for @setArgument:atIndex:@
-setArgument_atIndexSelector :: Selector
+setArgument_atIndexSelector :: Selector '[Ptr (), CLong] ()
 setArgument_atIndexSelector = mkSelector "setArgument:atIndex:"
 
 -- | @Selector@ for @invoke@
-invokeSelector :: Selector
+invokeSelector :: Selector '[] ()
 invokeSelector = mkSelector "invoke"
 
 -- | @Selector@ for @invokeWithTarget:@
-invokeWithTargetSelector :: Selector
+invokeWithTargetSelector :: Selector '[RawId] ()
 invokeWithTargetSelector = mkSelector "invokeWithTarget:"
 
 -- | @Selector@ for @invokeUsingIMP:@
-invokeUsingIMPSelector :: Selector
+invokeUsingIMPSelector :: Selector '[Ptr ()] ()
 invokeUsingIMPSelector = mkSelector "invokeUsingIMP:"
 
 -- | @Selector@ for @methodSignature@
-methodSignatureSelector :: Selector
+methodSignatureSelector :: Selector '[] (Id NSMethodSignature)
 methodSignatureSelector = mkSelector "methodSignature"
 
 -- | @Selector@ for @argumentsRetained@
-argumentsRetainedSelector :: Selector
+argumentsRetainedSelector :: Selector '[] Bool
 argumentsRetainedSelector = mkSelector "argumentsRetained"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] RawId
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[RawId] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @selector@
-selectorSelector :: Selector
+selectorSelector :: Selector '[] Sel
 selectorSelector = mkSelector "selector"
 
 -- | @Selector@ for @setSelector:@
-setSelectorSelector :: Selector
+setSelectorSelector :: Selector '[Sel] ()
 setSelectorSelector = mkSelector "setSelector:"
 

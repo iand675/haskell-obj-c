@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,15 +24,11 @@ module ObjC.FSKit.FSExtentPacker
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSExtentPacker fsExtentPacker => fsExtentPacker -> IO (Id FSExtentPacker)
-init_ fsExtentPacker  =
-    sendMsg fsExtentPacker (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsExtentPacker =
+  sendOwnedMessage fsExtentPacker initSelector
 
 -- | Packs a single extent to send to the kernel.
 --
@@ -50,19 +47,18 @@ init_ fsExtentPacker  =
 --
 -- ObjC selector: @- packExtentWithResource:type:logicalOffset:physicalOffset:length:@
 packExtentWithResource_type_logicalOffset_physicalOffset_length :: (IsFSExtentPacker fsExtentPacker, IsFSBlockDeviceResource resource) => fsExtentPacker -> resource -> FSExtentType -> CLong -> CLong -> CULong -> IO Bool
-packExtentWithResource_type_logicalOffset_physicalOffset_length fsExtentPacker  resource type_ logicalOffset physicalOffset length_ =
-  withObjCPtr resource $ \raw_resource ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsExtentPacker (mkSelector "packExtentWithResource:type:logicalOffset:physicalOffset:length:") retCULong [argPtr (castPtr raw_resource :: Ptr ()), argCLong (coerce type_), argCLong logicalOffset, argCLong physicalOffset, argCULong length_]
+packExtentWithResource_type_logicalOffset_physicalOffset_length fsExtentPacker resource type_ logicalOffset physicalOffset length_ =
+  sendMessage fsExtentPacker packExtentWithResource_type_logicalOffset_physicalOffset_lengthSelector (toFSBlockDeviceResource resource) type_ logicalOffset physicalOffset length_
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSExtentPacker)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @packExtentWithResource:type:logicalOffset:physicalOffset:length:@
-packExtentWithResource_type_logicalOffset_physicalOffset_lengthSelector :: Selector
+packExtentWithResource_type_logicalOffset_physicalOffset_lengthSelector :: Selector '[Id FSBlockDeviceResource, FSExtentType, CLong, CLong, CULong] Bool
 packExtentWithResource_type_logicalOffset_physicalOffset_lengthSelector = mkSelector "packExtentWithResource:type:logicalOffset:physicalOffset:length:"
 

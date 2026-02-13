@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.Vision.VNDetectBarcodesRequest
   , coalesceCompositeSymbologies
   , setCoalesceCompositeSymbologies
   , results
+  , coalesceCompositeSymbologiesSelector
+  , resultsSelector
+  , setCoalesceCompositeSymbologiesSelector
+  , setSymbologiesSelector
   , supportedSymbologiesAndReturnErrorSelector
   , supportedSymbologiesSelector
   , symbologiesSelector
-  , setSymbologiesSelector
-  , coalesceCompositeSymbologiesSelector
-  , setCoalesceCompositeSymbologiesSelector
-  , resultsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,9 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supportedSymbologiesAndReturnError:@
 supportedSymbologiesAndReturnError :: (IsVNDetectBarcodesRequest vnDetectBarcodesRequest, IsNSError error_) => vnDetectBarcodesRequest -> error_ -> IO (Id NSArray)
-supportedSymbologiesAndReturnError vnDetectBarcodesRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnDetectBarcodesRequest (mkSelector "supportedSymbologiesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedSymbologiesAndReturnError vnDetectBarcodesRequest error_ =
+  sendMessage vnDetectBarcodesRequest supportedSymbologiesAndReturnErrorSelector (toNSError error_)
 
 -- | Obtain the collection of barcode symbologies currently recognized by the Vision framework.
 --
@@ -66,73 +62,72 @@ supportedSymbologies :: IO (Id NSArray)
 supportedSymbologies  =
   do
     cls' <- getRequiredClass "VNDetectBarcodesRequest"
-    sendClassMsg cls' (mkSelector "supportedSymbologies") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedSymbologiesSelector
 
 -- | The collection of barcode symbologies that are to be detected in the image.  The default is to scan for all possible symbologies. Setting a revision on the request will reset the symbologies to all symbologies for the specified revision.
 --
 -- ObjC selector: @- symbologies@
 symbologies :: IsVNDetectBarcodesRequest vnDetectBarcodesRequest => vnDetectBarcodesRequest -> IO (Id NSArray)
-symbologies vnDetectBarcodesRequest  =
-    sendMsg vnDetectBarcodesRequest (mkSelector "symbologies") (retPtr retVoid) [] >>= retainedObject . castPtr
+symbologies vnDetectBarcodesRequest =
+  sendMessage vnDetectBarcodesRequest symbologiesSelector
 
 -- | The collection of barcode symbologies that are to be detected in the image.  The default is to scan for all possible symbologies. Setting a revision on the request will reset the symbologies to all symbologies for the specified revision.
 --
 -- ObjC selector: @- setSymbologies:@
 setSymbologies :: (IsVNDetectBarcodesRequest vnDetectBarcodesRequest, IsNSArray value) => vnDetectBarcodesRequest -> value -> IO ()
-setSymbologies vnDetectBarcodesRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vnDetectBarcodesRequest (mkSelector "setSymbologies:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSymbologies vnDetectBarcodesRequest value =
+  sendMessage vnDetectBarcodesRequest setSymbologiesSelector (toNSArray value)
 
 -- | An option to coalesce multiple codes if applicable based on the symbology
 --
 -- ObjC selector: @- coalesceCompositeSymbologies@
 coalesceCompositeSymbologies :: IsVNDetectBarcodesRequest vnDetectBarcodesRequest => vnDetectBarcodesRequest -> IO Bool
-coalesceCompositeSymbologies vnDetectBarcodesRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnDetectBarcodesRequest (mkSelector "coalesceCompositeSymbologies") retCULong []
+coalesceCompositeSymbologies vnDetectBarcodesRequest =
+  sendMessage vnDetectBarcodesRequest coalesceCompositeSymbologiesSelector
 
 -- | An option to coalesce multiple codes if applicable based on the symbology
 --
 -- ObjC selector: @- setCoalesceCompositeSymbologies:@
 setCoalesceCompositeSymbologies :: IsVNDetectBarcodesRequest vnDetectBarcodesRequest => vnDetectBarcodesRequest -> Bool -> IO ()
-setCoalesceCompositeSymbologies vnDetectBarcodesRequest  value =
-    sendMsg vnDetectBarcodesRequest (mkSelector "setCoalesceCompositeSymbologies:") retVoid [argCULong (if value then 1 else 0)]
+setCoalesceCompositeSymbologies vnDetectBarcodesRequest value =
+  sendMessage vnDetectBarcodesRequest setCoalesceCompositeSymbologiesSelector value
 
 -- | VNBarcodeObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNDetectBarcodesRequest vnDetectBarcodesRequest => vnDetectBarcodesRequest -> IO (Id NSArray)
-results vnDetectBarcodesRequest  =
-    sendMsg vnDetectBarcodesRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnDetectBarcodesRequest =
+  sendMessage vnDetectBarcodesRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedSymbologiesAndReturnError:@
-supportedSymbologiesAndReturnErrorSelector :: Selector
+supportedSymbologiesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSArray)
 supportedSymbologiesAndReturnErrorSelector = mkSelector "supportedSymbologiesAndReturnError:"
 
 -- | @Selector@ for @supportedSymbologies@
-supportedSymbologiesSelector :: Selector
+supportedSymbologiesSelector :: Selector '[] (Id NSArray)
 supportedSymbologiesSelector = mkSelector "supportedSymbologies"
 
 -- | @Selector@ for @symbologies@
-symbologiesSelector :: Selector
+symbologiesSelector :: Selector '[] (Id NSArray)
 symbologiesSelector = mkSelector "symbologies"
 
 -- | @Selector@ for @setSymbologies:@
-setSymbologiesSelector :: Selector
+setSymbologiesSelector :: Selector '[Id NSArray] ()
 setSymbologiesSelector = mkSelector "setSymbologies:"
 
 -- | @Selector@ for @coalesceCompositeSymbologies@
-coalesceCompositeSymbologiesSelector :: Selector
+coalesceCompositeSymbologiesSelector :: Selector '[] Bool
 coalesceCompositeSymbologiesSelector = mkSelector "coalesceCompositeSymbologies"
 
 -- | @Selector@ for @setCoalesceCompositeSymbologies:@
-setCoalesceCompositeSymbologiesSelector :: Selector
+setCoalesceCompositeSymbologiesSelector :: Selector '[Bool] ()
 setCoalesceCompositeSymbologiesSelector = mkSelector "setCoalesceCompositeSymbologies:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

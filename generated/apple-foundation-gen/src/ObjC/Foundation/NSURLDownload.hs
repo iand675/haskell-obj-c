@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.Foundation.NSURLDownload
   , deletesFileUponFailure
   , setDeletesFileUponFailure
   , canResumeDownloadDecodedWithEncodingMIMETypeSelector
+  , cancelSelector
+  , deletesFileUponFailureSelector
   , initWithRequest_delegateSelector
   , initWithResumeData_delegate_pathSelector
-  , cancelSelector
-  , setDestination_allowOverwriteSelector
   , requestSelector
   , resumeDataSelector
-  , deletesFileUponFailureSelector
   , setDeletesFileUponFailureSelector
+  , setDestination_allowOverwriteSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,8 +54,7 @@ canResumeDownloadDecodedWithEncodingMIMEType :: IsNSString mimeType => mimeType 
 canResumeDownloadDecodedWithEncodingMIMEType mimeType =
   do
     cls' <- getRequiredClass "NSURLDownload"
-    withObjCPtr mimeType $ \raw_mimeType ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canResumeDownloadDecodedWithEncodingMIMEType:") retCULong [argPtr (castPtr raw_mimeType :: Ptr ())]
+    sendClassMessage cls' canResumeDownloadDecodedWithEncodingMIMETypeSelector (toNSString mimeType)
 
 -- | initWithRequest:delegate:
 --
@@ -72,9 +68,8 @@ canResumeDownloadDecodedWithEncodingMIMEType mimeType =
 --
 -- ObjC selector: @- initWithRequest:delegate:@
 initWithRequest_delegate :: (IsNSURLDownload nsurlDownload, IsNSURLRequest request) => nsurlDownload -> request -> RawId -> IO (Id NSURLDownload)
-initWithRequest_delegate nsurlDownload  request delegate =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlDownload (mkSelector "initWithRequest:delegate:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithRequest_delegate nsurlDownload request delegate =
+  sendOwnedMessage nsurlDownload initWithRequest_delegateSelector (toNSURLRequest request) delegate
 
 -- | initWithResumeData:delegate:path:
 --
@@ -90,10 +85,8 @@ initWithRequest_delegate nsurlDownload  request delegate =
 --
 -- ObjC selector: @- initWithResumeData:delegate:path:@
 initWithResumeData_delegate_path :: (IsNSURLDownload nsurlDownload, IsNSData resumeData, IsNSString path) => nsurlDownload -> resumeData -> RawId -> path -> IO (Id NSURLDownload)
-initWithResumeData_delegate_path nsurlDownload  resumeData delegate path =
-  withObjCPtr resumeData $ \raw_resumeData ->
-    withObjCPtr path $ \raw_path ->
-        sendMsg nsurlDownload (mkSelector "initWithResumeData:delegate:path:") (retPtr retVoid) [argPtr (castPtr raw_resumeData :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_path :: Ptr ())] >>= ownedObject . castPtr
+initWithResumeData_delegate_path nsurlDownload resumeData delegate path =
+  sendOwnedMessage nsurlDownload initWithResumeData_delegate_pathSelector (toNSData resumeData) delegate (toNSString path)
 
 -- | cancel
 --
@@ -101,8 +94,8 @@ initWithResumeData_delegate_path nsurlDownload  resumeData delegate path =
 --
 -- ObjC selector: @- cancel@
 cancel :: IsNSURLDownload nsurlDownload => nsurlDownload -> IO ()
-cancel nsurlDownload  =
-    sendMsg nsurlDownload (mkSelector "cancel") retVoid []
+cancel nsurlDownload =
+  sendMessage nsurlDownload cancelSelector
 
 -- | setDestination:allowOverwrite:
 --
@@ -116,9 +109,8 @@ cancel nsurlDownload  =
 --
 -- ObjC selector: @- setDestination:allowOverwrite:@
 setDestination_allowOverwrite :: (IsNSURLDownload nsurlDownload, IsNSString path) => nsurlDownload -> path -> Bool -> IO ()
-setDestination_allowOverwrite nsurlDownload  path allowOverwrite =
-  withObjCPtr path $ \raw_path ->
-      sendMsg nsurlDownload (mkSelector "setDestination:allowOverwrite:") retVoid [argPtr (castPtr raw_path :: Ptr ()), argCULong (if allowOverwrite then 1 else 0)]
+setDestination_allowOverwrite nsurlDownload path allowOverwrite =
+  sendMessage nsurlDownload setDestination_allowOverwriteSelector (toNSString path) allowOverwrite
 
 -- | Returns the request of the download.
 --
@@ -126,8 +118,8 @@ setDestination_allowOverwrite nsurlDownload  path allowOverwrite =
 --
 -- ObjC selector: @- request@
 request :: IsNSURLDownload nsurlDownload => nsurlDownload -> IO (Id NSURLRequest)
-request nsurlDownload  =
-    sendMsg nsurlDownload (mkSelector "request") (retPtr retVoid) [] >>= retainedObject . castPtr
+request nsurlDownload =
+  sendMessage nsurlDownload requestSelector
 
 -- | Returns the resume data of a download that is incomplete.
 --
@@ -135,60 +127,60 @@ request nsurlDownload  =
 --
 -- ObjC selector: @- resumeData@
 resumeData :: IsNSURLDownload nsurlDownload => nsurlDownload -> IO (Id NSData)
-resumeData nsurlDownload  =
-    sendMsg nsurlDownload (mkSelector "resumeData") (retPtr retVoid) [] >>= retainedObject . castPtr
+resumeData nsurlDownload =
+  sendMessage nsurlDownload resumeDataSelector
 
 -- | Sets whether or not the downloaded file should be deleted upon failure.1     To allow the download to be resumed in case the download ends prematurely,    deletesFileUponFailure must be set to NO as soon as possible to prevent the downloaded file    from being deleted. deletesFileUponFailure is YES by default.
 --
 -- ObjC selector: @- deletesFileUponFailure@
 deletesFileUponFailure :: IsNSURLDownload nsurlDownload => nsurlDownload -> IO Bool
-deletesFileUponFailure nsurlDownload  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlDownload (mkSelector "deletesFileUponFailure") retCULong []
+deletesFileUponFailure nsurlDownload =
+  sendMessage nsurlDownload deletesFileUponFailureSelector
 
 -- | Sets whether or not the downloaded file should be deleted upon failure.1     To allow the download to be resumed in case the download ends prematurely,    deletesFileUponFailure must be set to NO as soon as possible to prevent the downloaded file    from being deleted. deletesFileUponFailure is YES by default.
 --
 -- ObjC selector: @- setDeletesFileUponFailure:@
 setDeletesFileUponFailure :: IsNSURLDownload nsurlDownload => nsurlDownload -> Bool -> IO ()
-setDeletesFileUponFailure nsurlDownload  value =
-    sendMsg nsurlDownload (mkSelector "setDeletesFileUponFailure:") retVoid [argCULong (if value then 1 else 0)]
+setDeletesFileUponFailure nsurlDownload value =
+  sendMessage nsurlDownload setDeletesFileUponFailureSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @canResumeDownloadDecodedWithEncodingMIMEType:@
-canResumeDownloadDecodedWithEncodingMIMETypeSelector :: Selector
+canResumeDownloadDecodedWithEncodingMIMETypeSelector :: Selector '[Id NSString] Bool
 canResumeDownloadDecodedWithEncodingMIMETypeSelector = mkSelector "canResumeDownloadDecodedWithEncodingMIMEType:"
 
 -- | @Selector@ for @initWithRequest:delegate:@
-initWithRequest_delegateSelector :: Selector
+initWithRequest_delegateSelector :: Selector '[Id NSURLRequest, RawId] (Id NSURLDownload)
 initWithRequest_delegateSelector = mkSelector "initWithRequest:delegate:"
 
 -- | @Selector@ for @initWithResumeData:delegate:path:@
-initWithResumeData_delegate_pathSelector :: Selector
+initWithResumeData_delegate_pathSelector :: Selector '[Id NSData, RawId, Id NSString] (Id NSURLDownload)
 initWithResumeData_delegate_pathSelector = mkSelector "initWithResumeData:delegate:path:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @setDestination:allowOverwrite:@
-setDestination_allowOverwriteSelector :: Selector
+setDestination_allowOverwriteSelector :: Selector '[Id NSString, Bool] ()
 setDestination_allowOverwriteSelector = mkSelector "setDestination:allowOverwrite:"
 
 -- | @Selector@ for @request@
-requestSelector :: Selector
+requestSelector :: Selector '[] (Id NSURLRequest)
 requestSelector = mkSelector "request"
 
 -- | @Selector@ for @resumeData@
-resumeDataSelector :: Selector
+resumeDataSelector :: Selector '[] (Id NSData)
 resumeDataSelector = mkSelector "resumeData"
 
 -- | @Selector@ for @deletesFileUponFailure@
-deletesFileUponFailureSelector :: Selector
+deletesFileUponFailureSelector :: Selector '[] Bool
 deletesFileUponFailureSelector = mkSelector "deletesFileUponFailure"
 
 -- | @Selector@ for @setDeletesFileUponFailure:@
-setDeletesFileUponFailureSelector :: Selector
+setDeletesFileUponFailureSelector :: Selector '[Bool] ()
 setDeletesFileUponFailureSelector = mkSelector "setDeletesFileUponFailure:"
 

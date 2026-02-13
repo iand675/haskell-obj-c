@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INDateComponentsResolutionResult
   , successWithResolvedDateComponents
   , disambiguationWithDateComponentsToDisambiguate
   , confirmationRequiredWithDateComponentsToConfirm
-  , successWithResolvedDateComponentsSelector
-  , disambiguationWithDateComponentsToDisambiguateSelector
   , confirmationRequiredWithDateComponentsToConfirmSelector
+  , disambiguationWithDateComponentsToDisambiguateSelector
+  , successWithResolvedDateComponentsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedDateComponents :: IsNSDateComponents resolvedDateComponents =
 successWithResolvedDateComponents resolvedDateComponents =
   do
     cls' <- getRequiredClass "INDateComponentsResolutionResult"
-    withObjCPtr resolvedDateComponents $ \raw_resolvedDateComponents ->
-      sendClassMsg cls' (mkSelector "successWithResolvedDateComponents:") (retPtr retVoid) [argPtr (castPtr raw_resolvedDateComponents :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedDateComponentsSelector (toNSDateComponents resolvedDateComponents)
 
 -- | @+ disambiguationWithDateComponentsToDisambiguate:@
 disambiguationWithDateComponentsToDisambiguate :: IsNSArray dateComponentsToDisambiguate => dateComponentsToDisambiguate -> IO (Id INDateComponentsResolutionResult)
 disambiguationWithDateComponentsToDisambiguate dateComponentsToDisambiguate =
   do
     cls' <- getRequiredClass "INDateComponentsResolutionResult"
-    withObjCPtr dateComponentsToDisambiguate $ \raw_dateComponentsToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithDateComponentsToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_dateComponentsToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithDateComponentsToDisambiguateSelector (toNSArray dateComponentsToDisambiguate)
 
 -- | @+ confirmationRequiredWithDateComponentsToConfirm:@
 confirmationRequiredWithDateComponentsToConfirm :: IsNSDateComponents dateComponentsToConfirm => dateComponentsToConfirm -> IO (Id INDateComponentsResolutionResult)
 confirmationRequiredWithDateComponentsToConfirm dateComponentsToConfirm =
   do
     cls' <- getRequiredClass "INDateComponentsResolutionResult"
-    withObjCPtr dateComponentsToConfirm $ \raw_dateComponentsToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithDateComponentsToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_dateComponentsToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithDateComponentsToConfirmSelector (toNSDateComponents dateComponentsToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedDateComponents:@
-successWithResolvedDateComponentsSelector :: Selector
+successWithResolvedDateComponentsSelector :: Selector '[Id NSDateComponents] (Id INDateComponentsResolutionResult)
 successWithResolvedDateComponentsSelector = mkSelector "successWithResolvedDateComponents:"
 
 -- | @Selector@ for @disambiguationWithDateComponentsToDisambiguate:@
-disambiguationWithDateComponentsToDisambiguateSelector :: Selector
+disambiguationWithDateComponentsToDisambiguateSelector :: Selector '[Id NSArray] (Id INDateComponentsResolutionResult)
 disambiguationWithDateComponentsToDisambiguateSelector = mkSelector "disambiguationWithDateComponentsToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithDateComponentsToConfirm:@
-confirmationRequiredWithDateComponentsToConfirmSelector :: Selector
+confirmationRequiredWithDateComponentsToConfirmSelector :: Selector '[Id NSDateComponents] (Id INDateComponentsResolutionResult)
 confirmationRequiredWithDateComponentsToConfirmSelector = mkSelector "confirmationRequiredWithDateComponentsToConfirm:"
 

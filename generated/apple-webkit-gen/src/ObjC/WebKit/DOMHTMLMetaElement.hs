@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.WebKit.DOMHTMLMetaElement
   , scheme
   , setScheme
   , contentSelector
-  , setContentSelector
   , httpEquivSelector
-  , setHttpEquivSelector
   , nameSelector
-  , setNameSelector
   , schemeSelector
+  , setContentSelector
+  , setHttpEquivSelector
+  , setNameSelector
   , setSchemeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- content@
 content :: IsDOMHTMLMetaElement domhtmlMetaElement => domhtmlMetaElement -> IO (Id NSString)
-content domhtmlMetaElement  =
-    sendMsg domhtmlMetaElement (mkSelector "content") (retPtr retVoid) [] >>= retainedObject . castPtr
+content domhtmlMetaElement =
+  sendMessage domhtmlMetaElement contentSelector
 
 -- | @- setContent:@
 setContent :: (IsDOMHTMLMetaElement domhtmlMetaElement, IsNSString value) => domhtmlMetaElement -> value -> IO ()
-setContent domhtmlMetaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlMetaElement (mkSelector "setContent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContent domhtmlMetaElement value =
+  sendMessage domhtmlMetaElement setContentSelector (toNSString value)
 
 -- | @- httpEquiv@
 httpEquiv :: IsDOMHTMLMetaElement domhtmlMetaElement => domhtmlMetaElement -> IO (Id NSString)
-httpEquiv domhtmlMetaElement  =
-    sendMsg domhtmlMetaElement (mkSelector "httpEquiv") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpEquiv domhtmlMetaElement =
+  sendMessage domhtmlMetaElement httpEquivSelector
 
 -- | @- setHttpEquiv:@
 setHttpEquiv :: (IsDOMHTMLMetaElement domhtmlMetaElement, IsNSString value) => domhtmlMetaElement -> value -> IO ()
-setHttpEquiv domhtmlMetaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlMetaElement (mkSelector "setHttpEquiv:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHttpEquiv domhtmlMetaElement value =
+  sendMessage domhtmlMetaElement setHttpEquivSelector (toNSString value)
 
 -- | @- name@
 name :: IsDOMHTMLMetaElement domhtmlMetaElement => domhtmlMetaElement -> IO (Id NSString)
-name domhtmlMetaElement  =
-    sendMsg domhtmlMetaElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlMetaElement =
+  sendMessage domhtmlMetaElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLMetaElement domhtmlMetaElement, IsNSString value) => domhtmlMetaElement -> value -> IO ()
-setName domhtmlMetaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlMetaElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlMetaElement value =
+  sendMessage domhtmlMetaElement setNameSelector (toNSString value)
 
 -- | @- scheme@
 scheme :: IsDOMHTMLMetaElement domhtmlMetaElement => domhtmlMetaElement -> IO (Id NSString)
-scheme domhtmlMetaElement  =
-    sendMsg domhtmlMetaElement (mkSelector "scheme") (retPtr retVoid) [] >>= retainedObject . castPtr
+scheme domhtmlMetaElement =
+  sendMessage domhtmlMetaElement schemeSelector
 
 -- | @- setScheme:@
 setScheme :: (IsDOMHTMLMetaElement domhtmlMetaElement, IsNSString value) => domhtmlMetaElement -> value -> IO ()
-setScheme domhtmlMetaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlMetaElement (mkSelector "setScheme:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScheme domhtmlMetaElement value =
+  sendMessage domhtmlMetaElement setSchemeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @content@
-contentSelector :: Selector
+contentSelector :: Selector '[] (Id NSString)
 contentSelector = mkSelector "content"
 
 -- | @Selector@ for @setContent:@
-setContentSelector :: Selector
+setContentSelector :: Selector '[Id NSString] ()
 setContentSelector = mkSelector "setContent:"
 
 -- | @Selector@ for @httpEquiv@
-httpEquivSelector :: Selector
+httpEquivSelector :: Selector '[] (Id NSString)
 httpEquivSelector = mkSelector "httpEquiv"
 
 -- | @Selector@ for @setHttpEquiv:@
-setHttpEquivSelector :: Selector
+setHttpEquivSelector :: Selector '[Id NSString] ()
 setHttpEquivSelector = mkSelector "setHttpEquiv:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @scheme@
-schemeSelector :: Selector
+schemeSelector :: Selector '[] (Id NSString)
 schemeSelector = mkSelector "scheme"
 
 -- | @Selector@ for @setScheme:@
-setSchemeSelector :: Selector
+setSchemeSelector :: Selector '[Id NSString] ()
 setSchemeSelector = mkSelector "setScheme:"
 

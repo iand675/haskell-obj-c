@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,22 +38,18 @@ module ObjC.GameController.GCStylus
   , input
   , haptics
   , styli
-  , inputSelector
   , hapticsSelector
+  , inputSelector
   , styliSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- input@
 input :: IsGCStylus gcStylus => gcStylus -> IO RawId
-input gcStylus  =
-    fmap (RawId . castPtr) $ sendMsg gcStylus (mkSelector "input") (retPtr retVoid) []
+input gcStylus =
+  sendMessage gcStylus inputSelector
 
 -- | Gets the haptics profile for the stylus, if supported.
 --
@@ -78,8 +75,8 @@ input gcStylus  =
 --
 -- ObjC selector: @- haptics@
 haptics :: IsGCStylus gcStylus => gcStylus -> IO (Id GCDeviceHaptics)
-haptics gcStylus  =
-    sendMsg gcStylus (mkSelector "haptics") (retPtr retVoid) [] >>= retainedObject . castPtr
+haptics gcStylus =
+  sendMessage gcStylus hapticsSelector
 
 -- | Get the collection of stylus accessories currently connected to the device.
 --
@@ -92,21 +89,21 @@ styli :: IO (Id NSArray)
 styli  =
   do
     cls' <- getRequiredClass "GCStylus"
-    sendClassMsg cls' (mkSelector "styli") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' styliSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @input@
-inputSelector :: Selector
+inputSelector :: Selector '[] RawId
 inputSelector = mkSelector "input"
 
 -- | @Selector@ for @haptics@
-hapticsSelector :: Selector
+hapticsSelector :: Selector '[] (Id GCDeviceHaptics)
 hapticsSelector = mkSelector "haptics"
 
 -- | @Selector@ for @styli@
-styliSelector :: Selector
+styliSelector :: Selector '[] (Id NSArray)
 styliSelector = mkSelector "styli"
 

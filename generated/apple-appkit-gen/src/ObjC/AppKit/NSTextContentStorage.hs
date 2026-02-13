@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.AppKit.NSTextContentStorage
   , setIncludesTextListMarkers
   , attributedString
   , setAttributedString
+  , adjustedRangeFromRange_forEditingTextSelectionSelector
   , attributedStringForTextElementSelector
-  , textElementForAttributedStringSelector
+  , attributedStringSelector
+  , delegateSelector
+  , includesTextListMarkersSelector
   , locationFromLocation_withOffsetSelector
   , offsetFromLocation_toLocationSelector
-  , adjustedRangeFromRange_forEditingTextSelectionSelector
-  , delegateSelector
-  , setDelegateSelector
-  , includesTextListMarkersSelector
-  , setIncludesTextListMarkersSelector
-  , attributedStringSelector
   , setAttributedStringSelector
+  , setDelegateSelector
+  , setIncludesTextListMarkersSelector
+  , textElementForAttributedStringSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,108 +46,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- attributedStringForTextElement:@
 attributedStringForTextElement :: (IsNSTextContentStorage nsTextContentStorage, IsNSTextElement textElement) => nsTextContentStorage -> textElement -> IO (Id NSAttributedString)
-attributedStringForTextElement nsTextContentStorage  textElement =
-  withObjCPtr textElement $ \raw_textElement ->
-      sendMsg nsTextContentStorage (mkSelector "attributedStringForTextElement:") (retPtr retVoid) [argPtr (castPtr raw_textElement :: Ptr ())] >>= retainedObject . castPtr
+attributedStringForTextElement nsTextContentStorage textElement =
+  sendMessage nsTextContentStorage attributedStringForTextElementSelector (toNSTextElement textElement)
 
 -- | @- textElementForAttributedString:@
 textElementForAttributedString :: (IsNSTextContentStorage nsTextContentStorage, IsNSAttributedString attributedString) => nsTextContentStorage -> attributedString -> IO (Id NSTextElement)
-textElementForAttributedString nsTextContentStorage  attributedString =
-  withObjCPtr attributedString $ \raw_attributedString ->
-      sendMsg nsTextContentStorage (mkSelector "textElementForAttributedString:") (retPtr retVoid) [argPtr (castPtr raw_attributedString :: Ptr ())] >>= retainedObject . castPtr
+textElementForAttributedString nsTextContentStorage attributedString =
+  sendMessage nsTextContentStorage textElementForAttributedStringSelector (toNSAttributedString attributedString)
 
 -- | @- locationFromLocation:withOffset:@
 locationFromLocation_withOffset :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> RawId -> CLong -> IO RawId
-locationFromLocation_withOffset nsTextContentStorage  location offset =
-    fmap (RawId . castPtr) $ sendMsg nsTextContentStorage (mkSelector "locationFromLocation:withOffset:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ()), argCLong offset]
+locationFromLocation_withOffset nsTextContentStorage location offset =
+  sendMessage nsTextContentStorage locationFromLocation_withOffsetSelector location offset
 
 -- | @- offsetFromLocation:toLocation:@
 offsetFromLocation_toLocation :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> RawId -> RawId -> IO CLong
-offsetFromLocation_toLocation nsTextContentStorage  from to =
-    sendMsg nsTextContentStorage (mkSelector "offsetFromLocation:toLocation:") retCLong [argPtr (castPtr (unRawId from) :: Ptr ()), argPtr (castPtr (unRawId to) :: Ptr ())]
+offsetFromLocation_toLocation nsTextContentStorage from to =
+  sendMessage nsTextContentStorage offsetFromLocation_toLocationSelector from to
 
 -- | @- adjustedRangeFromRange:forEditingTextSelection:@
 adjustedRangeFromRange_forEditingTextSelection :: (IsNSTextContentStorage nsTextContentStorage, IsNSTextRange textRange) => nsTextContentStorage -> textRange -> Bool -> IO (Id NSTextRange)
-adjustedRangeFromRange_forEditingTextSelection nsTextContentStorage  textRange forEditingTextSelection =
-  withObjCPtr textRange $ \raw_textRange ->
-      sendMsg nsTextContentStorage (mkSelector "adjustedRangeFromRange:forEditingTextSelection:") (retPtr retVoid) [argPtr (castPtr raw_textRange :: Ptr ()), argCULong (if forEditingTextSelection then 1 else 0)] >>= retainedObject . castPtr
+adjustedRangeFromRange_forEditingTextSelection nsTextContentStorage textRange forEditingTextSelection =
+  sendMessage nsTextContentStorage adjustedRangeFromRange_forEditingTextSelectionSelector (toNSTextRange textRange) forEditingTextSelection
 
 -- | @- delegate@
 delegate :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> IO RawId
-delegate nsTextContentStorage  =
-    fmap (RawId . castPtr) $ sendMsg nsTextContentStorage (mkSelector "delegate") (retPtr retVoid) []
+delegate nsTextContentStorage =
+  sendMessage nsTextContentStorage delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> RawId -> IO ()
-setDelegate nsTextContentStorage  value =
-    sendMsg nsTextContentStorage (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsTextContentStorage value =
+  sendMessage nsTextContentStorage setDelegateSelector value
 
 -- | @- includesTextListMarkers@
 includesTextListMarkers :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> IO Bool
-includesTextListMarkers nsTextContentStorage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextContentStorage (mkSelector "includesTextListMarkers") retCULong []
+includesTextListMarkers nsTextContentStorage =
+  sendMessage nsTextContentStorage includesTextListMarkersSelector
 
 -- | @- setIncludesTextListMarkers:@
 setIncludesTextListMarkers :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> Bool -> IO ()
-setIncludesTextListMarkers nsTextContentStorage  value =
-    sendMsg nsTextContentStorage (mkSelector "setIncludesTextListMarkers:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesTextListMarkers nsTextContentStorage value =
+  sendMessage nsTextContentStorage setIncludesTextListMarkersSelector value
 
 -- | @- attributedString@
 attributedString :: IsNSTextContentStorage nsTextContentStorage => nsTextContentStorage -> IO (Id NSAttributedString)
-attributedString nsTextContentStorage  =
-    sendMsg nsTextContentStorage (mkSelector "attributedString") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedString nsTextContentStorage =
+  sendMessage nsTextContentStorage attributedStringSelector
 
 -- | @- setAttributedString:@
 setAttributedString :: (IsNSTextContentStorage nsTextContentStorage, IsNSAttributedString value) => nsTextContentStorage -> value -> IO ()
-setAttributedString nsTextContentStorage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextContentStorage (mkSelector "setAttributedString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedString nsTextContentStorage value =
+  sendMessage nsTextContentStorage setAttributedStringSelector (toNSAttributedString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @attributedStringForTextElement:@
-attributedStringForTextElementSelector :: Selector
+attributedStringForTextElementSelector :: Selector '[Id NSTextElement] (Id NSAttributedString)
 attributedStringForTextElementSelector = mkSelector "attributedStringForTextElement:"
 
 -- | @Selector@ for @textElementForAttributedString:@
-textElementForAttributedStringSelector :: Selector
+textElementForAttributedStringSelector :: Selector '[Id NSAttributedString] (Id NSTextElement)
 textElementForAttributedStringSelector = mkSelector "textElementForAttributedString:"
 
 -- | @Selector@ for @locationFromLocation:withOffset:@
-locationFromLocation_withOffsetSelector :: Selector
+locationFromLocation_withOffsetSelector :: Selector '[RawId, CLong] RawId
 locationFromLocation_withOffsetSelector = mkSelector "locationFromLocation:withOffset:"
 
 -- | @Selector@ for @offsetFromLocation:toLocation:@
-offsetFromLocation_toLocationSelector :: Selector
+offsetFromLocation_toLocationSelector :: Selector '[RawId, RawId] CLong
 offsetFromLocation_toLocationSelector = mkSelector "offsetFromLocation:toLocation:"
 
 -- | @Selector@ for @adjustedRangeFromRange:forEditingTextSelection:@
-adjustedRangeFromRange_forEditingTextSelectionSelector :: Selector
+adjustedRangeFromRange_forEditingTextSelectionSelector :: Selector '[Id NSTextRange, Bool] (Id NSTextRange)
 adjustedRangeFromRange_forEditingTextSelectionSelector = mkSelector "adjustedRangeFromRange:forEditingTextSelection:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @includesTextListMarkers@
-includesTextListMarkersSelector :: Selector
+includesTextListMarkersSelector :: Selector '[] Bool
 includesTextListMarkersSelector = mkSelector "includesTextListMarkers"
 
 -- | @Selector@ for @setIncludesTextListMarkers:@
-setIncludesTextListMarkersSelector :: Selector
+setIncludesTextListMarkersSelector :: Selector '[Bool] ()
 setIncludesTextListMarkersSelector = mkSelector "setIncludesTextListMarkers:"
 
 -- | @Selector@ for @attributedString@
-attributedStringSelector :: Selector
+attributedStringSelector :: Selector '[] (Id NSAttributedString)
 attributedStringSelector = mkSelector "attributedString"
 
 -- | @Selector@ for @setAttributedString:@
-setAttributedStringSelector :: Selector
+setAttributedStringSelector :: Selector '[Id NSAttributedString] ()
 setAttributedStringSelector = mkSelector "setAttributedString:"
 

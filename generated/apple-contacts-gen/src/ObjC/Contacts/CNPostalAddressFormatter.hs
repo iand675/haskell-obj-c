@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.Contacts.CNPostalAddressFormatter
   , attributedStringFromPostalAddress_withDefaultAttributes
   , style
   , setStyle
-  , stringFromPostalAddress_styleSelector
   , attributedStringFromPostalAddress_style_withDefaultAttributesSelector
-  , stringFromPostalAddressSelector
   , attributedStringFromPostalAddress_withDefaultAttributesSelector
-  , styleSelector
   , setStyleSelector
+  , stringFromPostalAddressSelector
+  , stringFromPostalAddress_styleSelector
+  , styleSelector
 
   -- * Enum types
   , CNPostalAddressFormatterStyle(CNPostalAddressFormatterStyle)
@@ -30,15 +31,11 @@ module ObjC.Contacts.CNPostalAddressFormatter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,7 @@ stringFromPostalAddress_style :: IsCNPostalAddress postalAddress => postalAddres
 stringFromPostalAddress_style postalAddress style =
   do
     cls' <- getRequiredClass "CNPostalAddressFormatter"
-    withObjCPtr postalAddress $ \raw_postalAddress ->
-      sendClassMsg cls' (mkSelector "stringFromPostalAddress:style:") (retPtr retVoid) [argPtr (castPtr raw_postalAddress :: Ptr ()), argCLong (coerce style)] >>= retainedObject . castPtr
+    sendClassMessage cls' stringFromPostalAddress_styleSelector (toCNPostalAddress postalAddress) style
 
 -- | Formats the postal address returning an attributed string.
 --
@@ -79,9 +75,7 @@ attributedStringFromPostalAddress_style_withDefaultAttributes :: (IsCNPostalAddr
 attributedStringFromPostalAddress_style_withDefaultAttributes postalAddress style attributes =
   do
     cls' <- getRequiredClass "CNPostalAddressFormatter"
-    withObjCPtr postalAddress $ \raw_postalAddress ->
-      withObjCPtr attributes $ \raw_attributes ->
-        sendClassMsg cls' (mkSelector "attributedStringFromPostalAddress:style:withDefaultAttributes:") (retPtr retVoid) [argPtr (castPtr raw_postalAddress :: Ptr ()), argCLong (coerce style), argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' attributedStringFromPostalAddress_style_withDefaultAttributesSelector (toCNPostalAddress postalAddress) style (toNSDictionary attributes)
 
 -- | Formats the postal address.
 --
@@ -91,9 +85,8 @@ attributedStringFromPostalAddress_style_withDefaultAttributes postalAddress styl
 --
 -- ObjC selector: @- stringFromPostalAddress:@
 stringFromPostalAddress :: (IsCNPostalAddressFormatter cnPostalAddressFormatter, IsCNPostalAddress postalAddress) => cnPostalAddressFormatter -> postalAddress -> IO (Id NSString)
-stringFromPostalAddress cnPostalAddressFormatter  postalAddress =
-  withObjCPtr postalAddress $ \raw_postalAddress ->
-      sendMsg cnPostalAddressFormatter (mkSelector "stringFromPostalAddress:") (retPtr retVoid) [argPtr (castPtr raw_postalAddress :: Ptr ())] >>= retainedObject . castPtr
+stringFromPostalAddress cnPostalAddressFormatter postalAddress =
+  sendMessage cnPostalAddressFormatter stringFromPostalAddressSelector (toCNPostalAddress postalAddress)
 
 -- | Formats the postal address returning an attributed string.
 --
@@ -107,10 +100,8 @@ stringFromPostalAddress cnPostalAddressFormatter  postalAddress =
 --
 -- ObjC selector: @- attributedStringFromPostalAddress:withDefaultAttributes:@
 attributedStringFromPostalAddress_withDefaultAttributes :: (IsCNPostalAddressFormatter cnPostalAddressFormatter, IsCNPostalAddress postalAddress, IsNSDictionary attributes) => cnPostalAddressFormatter -> postalAddress -> attributes -> IO (Id NSAttributedString)
-attributedStringFromPostalAddress_withDefaultAttributes cnPostalAddressFormatter  postalAddress attributes =
-  withObjCPtr postalAddress $ \raw_postalAddress ->
-    withObjCPtr attributes $ \raw_attributes ->
-        sendMsg cnPostalAddressFormatter (mkSelector "attributedStringFromPostalAddress:withDefaultAttributes:") (retPtr retVoid) [argPtr (castPtr raw_postalAddress :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
+attributedStringFromPostalAddress_withDefaultAttributes cnPostalAddressFormatter postalAddress attributes =
+  sendMessage cnPostalAddressFormatter attributedStringFromPostalAddress_withDefaultAttributesSelector (toCNPostalAddress postalAddress) (toNSDictionary attributes)
 
 -- | The style for a postal address formatter instance.
 --
@@ -118,8 +109,8 @@ attributedStringFromPostalAddress_withDefaultAttributes cnPostalAddressFormatter
 --
 -- ObjC selector: @- style@
 style :: IsCNPostalAddressFormatter cnPostalAddressFormatter => cnPostalAddressFormatter -> IO CNPostalAddressFormatterStyle
-style cnPostalAddressFormatter  =
-    fmap (coerce :: CLong -> CNPostalAddressFormatterStyle) $ sendMsg cnPostalAddressFormatter (mkSelector "style") retCLong []
+style cnPostalAddressFormatter =
+  sendMessage cnPostalAddressFormatter styleSelector
 
 -- | The style for a postal address formatter instance.
 --
@@ -127,34 +118,34 @@ style cnPostalAddressFormatter  =
 --
 -- ObjC selector: @- setStyle:@
 setStyle :: IsCNPostalAddressFormatter cnPostalAddressFormatter => cnPostalAddressFormatter -> CNPostalAddressFormatterStyle -> IO ()
-setStyle cnPostalAddressFormatter  value =
-    sendMsg cnPostalAddressFormatter (mkSelector "setStyle:") retVoid [argCLong (coerce value)]
+setStyle cnPostalAddressFormatter value =
+  sendMessage cnPostalAddressFormatter setStyleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stringFromPostalAddress:style:@
-stringFromPostalAddress_styleSelector :: Selector
+stringFromPostalAddress_styleSelector :: Selector '[Id CNPostalAddress, CNPostalAddressFormatterStyle] (Id NSString)
 stringFromPostalAddress_styleSelector = mkSelector "stringFromPostalAddress:style:"
 
 -- | @Selector@ for @attributedStringFromPostalAddress:style:withDefaultAttributes:@
-attributedStringFromPostalAddress_style_withDefaultAttributesSelector :: Selector
+attributedStringFromPostalAddress_style_withDefaultAttributesSelector :: Selector '[Id CNPostalAddress, CNPostalAddressFormatterStyle, Id NSDictionary] (Id NSAttributedString)
 attributedStringFromPostalAddress_style_withDefaultAttributesSelector = mkSelector "attributedStringFromPostalAddress:style:withDefaultAttributes:"
 
 -- | @Selector@ for @stringFromPostalAddress:@
-stringFromPostalAddressSelector :: Selector
+stringFromPostalAddressSelector :: Selector '[Id CNPostalAddress] (Id NSString)
 stringFromPostalAddressSelector = mkSelector "stringFromPostalAddress:"
 
 -- | @Selector@ for @attributedStringFromPostalAddress:withDefaultAttributes:@
-attributedStringFromPostalAddress_withDefaultAttributesSelector :: Selector
+attributedStringFromPostalAddress_withDefaultAttributesSelector :: Selector '[Id CNPostalAddress, Id NSDictionary] (Id NSAttributedString)
 attributedStringFromPostalAddress_withDefaultAttributesSelector = mkSelector "attributedStringFromPostalAddress:withDefaultAttributes:"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] CNPostalAddressFormatterStyle
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @setStyle:@
-setStyleSelector :: Selector
+setStyleSelector :: Selector '[CNPostalAddressFormatterStyle] ()
 setStyleSelector = mkSelector "setStyle:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INBalanceTypeResolutionResult
   , IsINBalanceTypeResolutionResult(..)
   , successWithResolvedBalanceType
   , confirmationRequiredWithBalanceTypeToConfirm
-  , successWithResolvedBalanceTypeSelector
   , confirmationRequiredWithBalanceTypeToConfirmSelector
+  , successWithResolvedBalanceTypeSelector
 
   -- * Enum types
   , INBalanceType(INBalanceType)
@@ -21,15 +22,11 @@ module ObjC.Intents.INBalanceTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,24 +39,24 @@ successWithResolvedBalanceType :: INBalanceType -> IO (Id INBalanceTypeResolutio
 successWithResolvedBalanceType resolvedBalanceType =
   do
     cls' <- getRequiredClass "INBalanceTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedBalanceType:") (retPtr retVoid) [argCLong (coerce resolvedBalanceType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedBalanceTypeSelector resolvedBalanceType
 
 -- | @+ confirmationRequiredWithBalanceTypeToConfirm:@
 confirmationRequiredWithBalanceTypeToConfirm :: INBalanceType -> IO (Id INBalanceTypeResolutionResult)
 confirmationRequiredWithBalanceTypeToConfirm balanceTypeToConfirm =
   do
     cls' <- getRequiredClass "INBalanceTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithBalanceTypeToConfirm:") (retPtr retVoid) [argCLong (coerce balanceTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithBalanceTypeToConfirmSelector balanceTypeToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedBalanceType:@
-successWithResolvedBalanceTypeSelector :: Selector
+successWithResolvedBalanceTypeSelector :: Selector '[INBalanceType] (Id INBalanceTypeResolutionResult)
 successWithResolvedBalanceTypeSelector = mkSelector "successWithResolvedBalanceType:"
 
 -- | @Selector@ for @confirmationRequiredWithBalanceTypeToConfirm:@
-confirmationRequiredWithBalanceTypeToConfirmSelector :: Selector
+confirmationRequiredWithBalanceTypeToConfirmSelector :: Selector '[INBalanceType] (Id INBalanceTypeResolutionResult)
 confirmationRequiredWithBalanceTypeToConfirmSelector = mkSelector "confirmationRequiredWithBalanceTypeToConfirm:"
 

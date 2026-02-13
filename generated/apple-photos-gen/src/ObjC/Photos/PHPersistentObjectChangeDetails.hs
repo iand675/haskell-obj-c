@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.Photos.PHPersistentObjectChangeDetails
   , insertedLocalIdentifiers
   , updatedLocalIdentifiers
   , deletedLocalIdentifiers
-  , newSelector
-  , initSelector
-  , objectTypeSelector
-  , insertedLocalIdentifiersSelector
-  , updatedLocalIdentifiersSelector
   , deletedLocalIdentifiersSelector
+  , initSelector
+  , insertedLocalIdentifiersSelector
+  , newSelector
+  , objectTypeSelector
+  , updatedLocalIdentifiersSelector
 
   -- * Enum types
   , PHObjectType(PHObjectType)
@@ -28,15 +29,11 @@ module ObjC.Photos.PHPersistentObjectChangeDetails
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,58 +46,58 @@ new :: IO (Id PHPersistentObjectChangeDetails)
 new  =
   do
     cls' <- getRequiredClass "PHPersistentObjectChangeDetails"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsPHPersistentObjectChangeDetails phPersistentObjectChangeDetails => phPersistentObjectChangeDetails -> IO (Id PHPersistentObjectChangeDetails)
-init_ phPersistentObjectChangeDetails  =
-    sendMsg phPersistentObjectChangeDetails (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phPersistentObjectChangeDetails =
+  sendOwnedMessage phPersistentObjectChangeDetails initSelector
 
 -- | @- objectType@
 objectType :: IsPHPersistentObjectChangeDetails phPersistentObjectChangeDetails => phPersistentObjectChangeDetails -> IO PHObjectType
-objectType phPersistentObjectChangeDetails  =
-    fmap (coerce :: CLong -> PHObjectType) $ sendMsg phPersistentObjectChangeDetails (mkSelector "objectType") retCLong []
+objectType phPersistentObjectChangeDetails =
+  sendMessage phPersistentObjectChangeDetails objectTypeSelector
 
 -- | @- insertedLocalIdentifiers@
 insertedLocalIdentifiers :: IsPHPersistentObjectChangeDetails phPersistentObjectChangeDetails => phPersistentObjectChangeDetails -> IO (Id NSSet)
-insertedLocalIdentifiers phPersistentObjectChangeDetails  =
-    sendMsg phPersistentObjectChangeDetails (mkSelector "insertedLocalIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+insertedLocalIdentifiers phPersistentObjectChangeDetails =
+  sendMessage phPersistentObjectChangeDetails insertedLocalIdentifiersSelector
 
 -- | @- updatedLocalIdentifiers@
 updatedLocalIdentifiers :: IsPHPersistentObjectChangeDetails phPersistentObjectChangeDetails => phPersistentObjectChangeDetails -> IO (Id NSSet)
-updatedLocalIdentifiers phPersistentObjectChangeDetails  =
-    sendMsg phPersistentObjectChangeDetails (mkSelector "updatedLocalIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+updatedLocalIdentifiers phPersistentObjectChangeDetails =
+  sendMessage phPersistentObjectChangeDetails updatedLocalIdentifiersSelector
 
 -- | @- deletedLocalIdentifiers@
 deletedLocalIdentifiers :: IsPHPersistentObjectChangeDetails phPersistentObjectChangeDetails => phPersistentObjectChangeDetails -> IO (Id NSSet)
-deletedLocalIdentifiers phPersistentObjectChangeDetails  =
-    sendMsg phPersistentObjectChangeDetails (mkSelector "deletedLocalIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+deletedLocalIdentifiers phPersistentObjectChangeDetails =
+  sendMessage phPersistentObjectChangeDetails deletedLocalIdentifiersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHPersistentObjectChangeDetails)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHPersistentObjectChangeDetails)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @objectType@
-objectTypeSelector :: Selector
+objectTypeSelector :: Selector '[] PHObjectType
 objectTypeSelector = mkSelector "objectType"
 
 -- | @Selector@ for @insertedLocalIdentifiers@
-insertedLocalIdentifiersSelector :: Selector
+insertedLocalIdentifiersSelector :: Selector '[] (Id NSSet)
 insertedLocalIdentifiersSelector = mkSelector "insertedLocalIdentifiers"
 
 -- | @Selector@ for @updatedLocalIdentifiers@
-updatedLocalIdentifiersSelector :: Selector
+updatedLocalIdentifiersSelector :: Selector '[] (Id NSSet)
 updatedLocalIdentifiersSelector = mkSelector "updatedLocalIdentifiers"
 
 -- | @Selector@ for @deletedLocalIdentifiers@
-deletedLocalIdentifiersSelector :: Selector
+deletedLocalIdentifiersSelector :: Selector '[] (Id NSSet)
 deletedLocalIdentifiersSelector = mkSelector "deletedLocalIdentifiers"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,33 +25,29 @@ module ObjC.GameplayKit.GKAgent
   , setMaxAcceleration
   , maxSpeed
   , setMaxSpeed
-  , delegateSelector
-  , setDelegateSelector
   , behaviorSelector
-  , setBehaviorSelector
+  , delegateSelector
   , massSelector
-  , setMassSelector
-  , radiusSelector
-  , setRadiusSelector
-  , speedSelector
-  , setSpeedSelector
   , maxAccelerationSelector
-  , setMaxAccelerationSelector
   , maxSpeedSelector
+  , radiusSelector
+  , setBehaviorSelector
+  , setDelegateSelector
+  , setMassSelector
+  , setMaxAccelerationSelector
   , setMaxSpeedSelector
+  , setRadiusSelector
+  , setSpeedSelector
+  , speedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,30 +58,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- delegate@
 delegate :: IsGKAgent gkAgent => gkAgent -> IO RawId
-delegate gkAgent  =
-    fmap (RawId . castPtr) $ sendMsg gkAgent (mkSelector "delegate") (retPtr retVoid) []
+delegate gkAgent =
+  sendMessage gkAgent delegateSelector
 
 -- | Object which has agentDidUpdate called on it during this agent's behavior updatekbeha
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsGKAgent gkAgent => gkAgent -> RawId -> IO ()
-setDelegate gkAgent  value =
-    sendMsg gkAgent (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate gkAgent value =
+  sendMessage gkAgent setDelegateSelector value
 
 -- | The behavior to apply when updateWithDeltaTime is called. All forces from the goals in the behavior are summed and then applied.
 --
 -- ObjC selector: @- behavior@
 behavior :: IsGKAgent gkAgent => gkAgent -> IO (Id GKBehavior)
-behavior gkAgent  =
-    sendMsg gkAgent (mkSelector "behavior") (retPtr retVoid) [] >>= retainedObject . castPtr
+behavior gkAgent =
+  sendMessage gkAgent behaviorSelector
 
 -- | The behavior to apply when updateWithDeltaTime is called. All forces from the goals in the behavior are summed and then applied.
 --
 -- ObjC selector: @- setBehavior:@
 setBehavior :: (IsGKAgent gkAgent, IsGKBehavior value) => gkAgent -> value -> IO ()
-setBehavior gkAgent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkAgent (mkSelector "setBehavior:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBehavior gkAgent value =
+  sendMessage gkAgent setBehaviorSelector (toGKBehavior value)
 
 -- | Agent's mass. Used for agent impulse application purposes.
 --
@@ -92,8 +88,8 @@ setBehavior gkAgent  value =
 --
 -- ObjC selector: @- mass@
 mass :: IsGKAgent gkAgent => gkAgent -> IO CFloat
-mass gkAgent  =
-    sendMsg gkAgent (mkSelector "mass") retCFloat []
+mass gkAgent =
+  sendMessage gkAgent massSelector
 
 -- | Agent's mass. Used for agent impulse application purposes.
 --
@@ -101,8 +97,8 @@ mass gkAgent  =
 --
 -- ObjC selector: @- setMass:@
 setMass :: IsGKAgent gkAgent => gkAgent -> CFloat -> IO ()
-setMass gkAgent  value =
-    sendMsg gkAgent (mkSelector "setMass:") retVoid [argCFloat value]
+setMass gkAgent value =
+  sendMessage gkAgent setMassSelector value
 
 -- | Radius of the agent's bounding circle.  Used by the agent avoid steering functions.
 --
@@ -110,8 +106,8 @@ setMass gkAgent  value =
 --
 -- ObjC selector: @- radius@
 radius :: IsGKAgent gkAgent => gkAgent -> IO CFloat
-radius gkAgent  =
-    sendMsg gkAgent (mkSelector "radius") retCFloat []
+radius gkAgent =
+  sendMessage gkAgent radiusSelector
 
 -- | Radius of the agent's bounding circle.  Used by the agent avoid steering functions.
 --
@@ -119,8 +115,8 @@ radius gkAgent  =
 --
 -- ObjC selector: @- setRadius:@
 setRadius :: IsGKAgent gkAgent => gkAgent -> CFloat -> IO ()
-setRadius gkAgent  value =
-    sendMsg gkAgent (mkSelector "setRadius:") retVoid [argCFloat value]
+setRadius gkAgent value =
+  sendMessage gkAgent setRadiusSelector value
 
 -- | Current speed of the agent along its foward direction.
 --
@@ -128,8 +124,8 @@ setRadius gkAgent  value =
 --
 -- ObjC selector: @- speed@
 speed :: IsGKAgent gkAgent => gkAgent -> IO CFloat
-speed gkAgent  =
-    sendMsg gkAgent (mkSelector "speed") retCFloat []
+speed gkAgent =
+  sendMessage gkAgent speedSelector
 
 -- | Current speed of the agent along its foward direction.
 --
@@ -137,8 +133,8 @@ speed gkAgent  =
 --
 -- ObjC selector: @- setSpeed:@
 setSpeed :: IsGKAgent gkAgent => gkAgent -> CFloat -> IO ()
-setSpeed gkAgent  value =
-    sendMsg gkAgent (mkSelector "setSpeed:") retVoid [argCFloat value]
+setSpeed gkAgent value =
+  sendMessage gkAgent setSpeedSelector value
 
 -- | Maximum amount of acceleration that can be applied to this agent.  All applied impulses are clipped to this amount.
 --
@@ -146,8 +142,8 @@ setSpeed gkAgent  value =
 --
 -- ObjC selector: @- maxAcceleration@
 maxAcceleration :: IsGKAgent gkAgent => gkAgent -> IO CFloat
-maxAcceleration gkAgent  =
-    sendMsg gkAgent (mkSelector "maxAcceleration") retCFloat []
+maxAcceleration gkAgent =
+  sendMessage gkAgent maxAccelerationSelector
 
 -- | Maximum amount of acceleration that can be applied to this agent.  All applied impulses are clipped to this amount.
 --
@@ -155,8 +151,8 @@ maxAcceleration gkAgent  =
 --
 -- ObjC selector: @- setMaxAcceleration:@
 setMaxAcceleration :: IsGKAgent gkAgent => gkAgent -> CFloat -> IO ()
-setMaxAcceleration gkAgent  value =
-    sendMsg gkAgent (mkSelector "setMaxAcceleration:") retVoid [argCFloat value]
+setMaxAcceleration gkAgent value =
+  sendMessage gkAgent setMaxAccelerationSelector value
 
 -- | Maximum speed of this agent. Impulses cannot cause the agents speed to ever be greater than this value.
 --
@@ -164,8 +160,8 @@ setMaxAcceleration gkAgent  value =
 --
 -- ObjC selector: @- maxSpeed@
 maxSpeed :: IsGKAgent gkAgent => gkAgent -> IO CFloat
-maxSpeed gkAgent  =
-    sendMsg gkAgent (mkSelector "maxSpeed") retCFloat []
+maxSpeed gkAgent =
+  sendMessage gkAgent maxSpeedSelector
 
 -- | Maximum speed of this agent. Impulses cannot cause the agents speed to ever be greater than this value.
 --
@@ -173,66 +169,66 @@ maxSpeed gkAgent  =
 --
 -- ObjC selector: @- setMaxSpeed:@
 setMaxSpeed :: IsGKAgent gkAgent => gkAgent -> CFloat -> IO ()
-setMaxSpeed gkAgent  value =
-    sendMsg gkAgent (mkSelector "setMaxSpeed:") retVoid [argCFloat value]
+setMaxSpeed gkAgent value =
+  sendMessage gkAgent setMaxSpeedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @behavior@
-behaviorSelector :: Selector
+behaviorSelector :: Selector '[] (Id GKBehavior)
 behaviorSelector = mkSelector "behavior"
 
 -- | @Selector@ for @setBehavior:@
-setBehaviorSelector :: Selector
+setBehaviorSelector :: Selector '[Id GKBehavior] ()
 setBehaviorSelector = mkSelector "setBehavior:"
 
 -- | @Selector@ for @mass@
-massSelector :: Selector
+massSelector :: Selector '[] CFloat
 massSelector = mkSelector "mass"
 
 -- | @Selector@ for @setMass:@
-setMassSelector :: Selector
+setMassSelector :: Selector '[CFloat] ()
 setMassSelector = mkSelector "setMass:"
 
 -- | @Selector@ for @radius@
-radiusSelector :: Selector
+radiusSelector :: Selector '[] CFloat
 radiusSelector = mkSelector "radius"
 
 -- | @Selector@ for @setRadius:@
-setRadiusSelector :: Selector
+setRadiusSelector :: Selector '[CFloat] ()
 setRadiusSelector = mkSelector "setRadius:"
 
 -- | @Selector@ for @speed@
-speedSelector :: Selector
+speedSelector :: Selector '[] CFloat
 speedSelector = mkSelector "speed"
 
 -- | @Selector@ for @setSpeed:@
-setSpeedSelector :: Selector
+setSpeedSelector :: Selector '[CFloat] ()
 setSpeedSelector = mkSelector "setSpeed:"
 
 -- | @Selector@ for @maxAcceleration@
-maxAccelerationSelector :: Selector
+maxAccelerationSelector :: Selector '[] CFloat
 maxAccelerationSelector = mkSelector "maxAcceleration"
 
 -- | @Selector@ for @setMaxAcceleration:@
-setMaxAccelerationSelector :: Selector
+setMaxAccelerationSelector :: Selector '[CFloat] ()
 setMaxAccelerationSelector = mkSelector "setMaxAcceleration:"
 
 -- | @Selector@ for @maxSpeed@
-maxSpeedSelector :: Selector
+maxSpeedSelector :: Selector '[] CFloat
 maxSpeedSelector = mkSelector "maxSpeed"
 
 -- | @Selector@ for @setMaxSpeed:@
-setMaxSpeedSelector :: Selector
+setMaxSpeedSelector :: Selector '[CFloat] ()
 setMaxSpeedSelector = mkSelector "setMaxSpeed:"
 

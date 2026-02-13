@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.NetworkExtension.NSMutableURLRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bindToHotspotHelperCommand:@
 bindToHotspotHelperCommand :: (IsNSMutableURLRequest nsMutableURLRequest, IsNEHotspotHelperCommand command) => nsMutableURLRequest -> command -> IO ()
-bindToHotspotHelperCommand nsMutableURLRequest  command =
-  withObjCPtr command $ \raw_command ->
-      sendMsg nsMutableURLRequest (mkSelector "bindToHotspotHelperCommand:") retVoid [argPtr (castPtr raw_command :: Ptr ())]
+bindToHotspotHelperCommand nsMutableURLRequest command =
+  sendMessage nsMutableURLRequest bindToHotspotHelperCommandSelector (toNEHotspotHelperCommand command)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bindToHotspotHelperCommand:@
-bindToHotspotHelperCommandSelector :: Selector
+bindToHotspotHelperCommandSelector :: Selector '[Id NEHotspotHelperCommand] ()
 bindToHotspotHelperCommandSelector = mkSelector "bindToHotspotHelperCommand:"
 

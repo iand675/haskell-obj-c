@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.NaturalLanguage.NLModel
   , predictedLabelHypothesesForString_maximumCount
   , predictedLabelHypothesesForTokens_maximumCount
   , configuration
+  , configurationSelector
   , modelWithContentsOfURL_errorSelector
   , modelWithMLModel_errorSelector
   , predictedLabelForStringSelector
-  , predictedLabelsForTokensSelector
   , predictedLabelHypothesesForString_maximumCountSelector
   , predictedLabelHypothesesForTokens_maximumCountSelector
-  , configurationSelector
+  , predictedLabelsForTokensSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,77 +42,69 @@ modelWithContentsOfURL_error :: (IsNSURL url, IsNSError error_) => url -> error_
 modelWithContentsOfURL_error url error_ =
   do
     cls' <- getRequiredClass "NLModel"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "modelWithContentsOfURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' modelWithContentsOfURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | @+ modelWithMLModel:error:@
 modelWithMLModel_error :: (IsMLModel mlModel, IsNSError error_) => mlModel -> error_ -> IO (Id NLModel)
 modelWithMLModel_error mlModel error_ =
   do
     cls' <- getRequiredClass "NLModel"
-    withObjCPtr mlModel $ \raw_mlModel ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "modelWithMLModel:error:") (retPtr retVoid) [argPtr (castPtr raw_mlModel :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' modelWithMLModel_errorSelector (toMLModel mlModel) (toNSError error_)
 
 -- | @- predictedLabelForString:@
 predictedLabelForString :: (IsNLModel nlModel, IsNSString string) => nlModel -> string -> IO (Id NSString)
-predictedLabelForString nlModel  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nlModel (mkSelector "predictedLabelForString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+predictedLabelForString nlModel string =
+  sendMessage nlModel predictedLabelForStringSelector (toNSString string)
 
 -- | @- predictedLabelsForTokens:@
 predictedLabelsForTokens :: (IsNLModel nlModel, IsNSArray tokens) => nlModel -> tokens -> IO (Id NSArray)
-predictedLabelsForTokens nlModel  tokens =
-  withObjCPtr tokens $ \raw_tokens ->
-      sendMsg nlModel (mkSelector "predictedLabelsForTokens:") (retPtr retVoid) [argPtr (castPtr raw_tokens :: Ptr ())] >>= retainedObject . castPtr
+predictedLabelsForTokens nlModel tokens =
+  sendMessage nlModel predictedLabelsForTokensSelector (toNSArray tokens)
 
 -- | @- predictedLabelHypothesesForString:maximumCount:@
 predictedLabelHypothesesForString_maximumCount :: (IsNLModel nlModel, IsNSString string) => nlModel -> string -> CULong -> IO (Id NSDictionary)
-predictedLabelHypothesesForString_maximumCount nlModel  string maximumCount =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nlModel (mkSelector "predictedLabelHypothesesForString:maximumCount:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argCULong maximumCount] >>= retainedObject . castPtr
+predictedLabelHypothesesForString_maximumCount nlModel string maximumCount =
+  sendMessage nlModel predictedLabelHypothesesForString_maximumCountSelector (toNSString string) maximumCount
 
 -- | @- predictedLabelHypothesesForTokens:maximumCount:@
 predictedLabelHypothesesForTokens_maximumCount :: (IsNLModel nlModel, IsNSArray tokens) => nlModel -> tokens -> CULong -> IO (Id NSArray)
-predictedLabelHypothesesForTokens_maximumCount nlModel  tokens maximumCount =
-  withObjCPtr tokens $ \raw_tokens ->
-      sendMsg nlModel (mkSelector "predictedLabelHypothesesForTokens:maximumCount:") (retPtr retVoid) [argPtr (castPtr raw_tokens :: Ptr ()), argCULong maximumCount] >>= retainedObject . castPtr
+predictedLabelHypothesesForTokens_maximumCount nlModel tokens maximumCount =
+  sendMessage nlModel predictedLabelHypothesesForTokens_maximumCountSelector (toNSArray tokens) maximumCount
 
 -- | @- configuration@
 configuration :: IsNLModel nlModel => nlModel -> IO (Id NLModelConfiguration)
-configuration nlModel  =
-    sendMsg nlModel (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration nlModel =
+  sendMessage nlModel configurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @modelWithContentsOfURL:error:@
-modelWithContentsOfURL_errorSelector :: Selector
+modelWithContentsOfURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id NLModel)
 modelWithContentsOfURL_errorSelector = mkSelector "modelWithContentsOfURL:error:"
 
 -- | @Selector@ for @modelWithMLModel:error:@
-modelWithMLModel_errorSelector :: Selector
+modelWithMLModel_errorSelector :: Selector '[Id MLModel, Id NSError] (Id NLModel)
 modelWithMLModel_errorSelector = mkSelector "modelWithMLModel:error:"
 
 -- | @Selector@ for @predictedLabelForString:@
-predictedLabelForStringSelector :: Selector
+predictedLabelForStringSelector :: Selector '[Id NSString] (Id NSString)
 predictedLabelForStringSelector = mkSelector "predictedLabelForString:"
 
 -- | @Selector@ for @predictedLabelsForTokens:@
-predictedLabelsForTokensSelector :: Selector
+predictedLabelsForTokensSelector :: Selector '[Id NSArray] (Id NSArray)
 predictedLabelsForTokensSelector = mkSelector "predictedLabelsForTokens:"
 
 -- | @Selector@ for @predictedLabelHypothesesForString:maximumCount:@
-predictedLabelHypothesesForString_maximumCountSelector :: Selector
+predictedLabelHypothesesForString_maximumCountSelector :: Selector '[Id NSString, CULong] (Id NSDictionary)
 predictedLabelHypothesesForString_maximumCountSelector = mkSelector "predictedLabelHypothesesForString:maximumCount:"
 
 -- | @Selector@ for @predictedLabelHypothesesForTokens:maximumCount:@
-predictedLabelHypothesesForTokens_maximumCountSelector :: Selector
+predictedLabelHypothesesForTokens_maximumCountSelector :: Selector '[Id NSArray, CULong] (Id NSArray)
 predictedLabelHypothesesForTokens_maximumCountSelector = mkSelector "predictedLabelHypothesesForTokens:maximumCount:"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id NLModelConfiguration)
 configurationSelector = mkSelector "configuration"
 

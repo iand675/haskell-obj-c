@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AppKit.NSCollectionLayoutGroupCustomItem
   , zIndex
   , customItemWithFrameSelector
   , customItemWithFrame_zIndexSelector
+  , frameSelector
   , initSelector
   , newSelector
-  , frameSelector
   , zIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,62 +40,62 @@ customItemWithFrame :: NSRect -> IO (Id NSCollectionLayoutGroupCustomItem)
 customItemWithFrame frame =
   do
     cls' <- getRequiredClass "NSCollectionLayoutGroupCustomItem"
-    sendClassMsg cls' (mkSelector "customItemWithFrame:") (retPtr retVoid) [argNSRect frame] >>= retainedObject . castPtr
+    sendClassMessage cls' customItemWithFrameSelector frame
 
 -- | @+ customItemWithFrame:zIndex:@
 customItemWithFrame_zIndex :: NSRect -> CLong -> IO (Id NSCollectionLayoutGroupCustomItem)
 customItemWithFrame_zIndex frame zIndex =
   do
     cls' <- getRequiredClass "NSCollectionLayoutGroupCustomItem"
-    sendClassMsg cls' (mkSelector "customItemWithFrame:zIndex:") (retPtr retVoid) [argNSRect frame, argCLong zIndex] >>= retainedObject . castPtr
+    sendClassMessage cls' customItemWithFrame_zIndexSelector frame zIndex
 
 -- | @- init@
 init_ :: IsNSCollectionLayoutGroupCustomItem nsCollectionLayoutGroupCustomItem => nsCollectionLayoutGroupCustomItem -> IO (Id NSCollectionLayoutGroupCustomItem)
-init_ nsCollectionLayoutGroupCustomItem  =
-    sendMsg nsCollectionLayoutGroupCustomItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionLayoutGroupCustomItem =
+  sendOwnedMessage nsCollectionLayoutGroupCustomItem initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionLayoutGroupCustomItem)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionLayoutGroupCustomItem"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- frame@
 frame :: IsNSCollectionLayoutGroupCustomItem nsCollectionLayoutGroupCustomItem => nsCollectionLayoutGroupCustomItem -> IO NSRect
-frame nsCollectionLayoutGroupCustomItem  =
-    sendMsgStret nsCollectionLayoutGroupCustomItem (mkSelector "frame") retNSRect []
+frame nsCollectionLayoutGroupCustomItem =
+  sendMessage nsCollectionLayoutGroupCustomItem frameSelector
 
 -- | @- zIndex@
 zIndex :: IsNSCollectionLayoutGroupCustomItem nsCollectionLayoutGroupCustomItem => nsCollectionLayoutGroupCustomItem -> IO CLong
-zIndex nsCollectionLayoutGroupCustomItem  =
-    sendMsg nsCollectionLayoutGroupCustomItem (mkSelector "zIndex") retCLong []
+zIndex nsCollectionLayoutGroupCustomItem =
+  sendMessage nsCollectionLayoutGroupCustomItem zIndexSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @customItemWithFrame:@
-customItemWithFrameSelector :: Selector
+customItemWithFrameSelector :: Selector '[NSRect] (Id NSCollectionLayoutGroupCustomItem)
 customItemWithFrameSelector = mkSelector "customItemWithFrame:"
 
 -- | @Selector@ for @customItemWithFrame:zIndex:@
-customItemWithFrame_zIndexSelector :: Selector
+customItemWithFrame_zIndexSelector :: Selector '[NSRect, CLong] (Id NSCollectionLayoutGroupCustomItem)
 customItemWithFrame_zIndexSelector = mkSelector "customItemWithFrame:zIndex:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionLayoutGroupCustomItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionLayoutGroupCustomItem)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @frame@
-frameSelector :: Selector
+frameSelector :: Selector '[] NSRect
 frameSelector = mkSelector "frame"
 
 -- | @Selector@ for @zIndex@
-zIndexSelector :: Selector
+zIndexSelector :: Selector '[] CLong
 zIndexSelector = mkSelector "zIndex"
 

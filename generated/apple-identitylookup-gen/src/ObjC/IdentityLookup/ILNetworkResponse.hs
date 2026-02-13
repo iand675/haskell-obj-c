@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.IdentityLookup.ILNetworkResponse
   , init_
   , urlResponse
   , data_
+  , dataSelector
   , initSelector
   , urlResponseSelector
-  , dataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsILNetworkResponse ilNetworkResponse => ilNetworkResponse -> IO (Id ILNetworkResponse)
-init_ ilNetworkResponse  =
-    sendMsg ilNetworkResponse (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ilNetworkResponse =
+  sendOwnedMessage ilNetworkResponse initSelector
 
 -- | Represents the URL response itself. See documentation for NSHTTPURLResponse.
 --
 -- ObjC selector: @- urlResponse@
 urlResponse :: IsILNetworkResponse ilNetworkResponse => ilNetworkResponse -> IO (Id NSHTTPURLResponse)
-urlResponse ilNetworkResponse  =
-    sendMsg ilNetworkResponse (mkSelector "urlResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlResponse ilNetworkResponse =
+  sendMessage ilNetworkResponse urlResponseSelector
 
 -- | Data returned in the HTTPS response.
 --
 -- ObjC selector: @- data@
 data_ :: IsILNetworkResponse ilNetworkResponse => ilNetworkResponse -> IO (Id NSData)
-data_ ilNetworkResponse  =
-    sendMsg ilNetworkResponse (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ ilNetworkResponse =
+  sendMessage ilNetworkResponse dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ILNetworkResponse)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @urlResponse@
-urlResponseSelector :: Selector
+urlResponseSelector :: Selector '[] (Id NSHTTPURLResponse)
 urlResponseSelector = mkSelector "urlResponse"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 

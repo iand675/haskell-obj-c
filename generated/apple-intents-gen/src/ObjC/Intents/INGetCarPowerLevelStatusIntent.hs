@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Intents.INGetCarPowerLevelStatusIntent
   , IsINGetCarPowerLevelStatusIntent(..)
   , initWithCarName
   , carName
-  , initWithCarNameSelector
   , carNameSelector
+  , initWithCarNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCarName:@
 initWithCarName :: (IsINGetCarPowerLevelStatusIntent inGetCarPowerLevelStatusIntent, IsINSpeakableString carName) => inGetCarPowerLevelStatusIntent -> carName -> IO (Id INGetCarPowerLevelStatusIntent)
-initWithCarName inGetCarPowerLevelStatusIntent  carName =
-  withObjCPtr carName $ \raw_carName ->
-      sendMsg inGetCarPowerLevelStatusIntent (mkSelector "initWithCarName:") (retPtr retVoid) [argPtr (castPtr raw_carName :: Ptr ())] >>= ownedObject . castPtr
+initWithCarName inGetCarPowerLevelStatusIntent carName =
+  sendOwnedMessage inGetCarPowerLevelStatusIntent initWithCarNameSelector (toINSpeakableString carName)
 
 -- | @- carName@
 carName :: IsINGetCarPowerLevelStatusIntent inGetCarPowerLevelStatusIntent => inGetCarPowerLevelStatusIntent -> IO (Id INSpeakableString)
-carName inGetCarPowerLevelStatusIntent  =
-    sendMsg inGetCarPowerLevelStatusIntent (mkSelector "carName") (retPtr retVoid) [] >>= retainedObject . castPtr
+carName inGetCarPowerLevelStatusIntent =
+  sendMessage inGetCarPowerLevelStatusIntent carNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCarName:@
-initWithCarNameSelector :: Selector
+initWithCarNameSelector :: Selector '[Id INSpeakableString] (Id INGetCarPowerLevelStatusIntent)
 initWithCarNameSelector = mkSelector "initWithCarName:"
 
 -- | @Selector@ for @carName@
-carNameSelector :: Selector
+carNameSelector :: Selector '[] (Id INSpeakableString)
 carNameSelector = mkSelector "carName"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.WebKit.DOMMediaList
   , mediaText
   , setMediaText
   , length_
-  , itemSelector
-  , deleteMediumSelector
   , appendMediumSelector
+  , deleteMediumSelector
+  , itemSelector
+  , lengthSelector
   , mediaTextSelector
   , setMediaTextSelector
-  , lengthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- item:@
 item :: IsDOMMediaList domMediaList => domMediaList -> CUInt -> IO (Id NSString)
-item domMediaList  index =
-    sendMsg domMediaList (mkSelector "item:") (retPtr retVoid) [argCUInt index] >>= retainedObject . castPtr
+item domMediaList index =
+  sendMessage domMediaList itemSelector index
 
 -- | @- deleteMedium:@
 deleteMedium :: (IsDOMMediaList domMediaList, IsNSString oldMedium) => domMediaList -> oldMedium -> IO ()
-deleteMedium domMediaList  oldMedium =
-  withObjCPtr oldMedium $ \raw_oldMedium ->
-      sendMsg domMediaList (mkSelector "deleteMedium:") retVoid [argPtr (castPtr raw_oldMedium :: Ptr ())]
+deleteMedium domMediaList oldMedium =
+  sendMessage domMediaList deleteMediumSelector (toNSString oldMedium)
 
 -- | @- appendMedium:@
 appendMedium :: (IsDOMMediaList domMediaList, IsNSString newMedium) => domMediaList -> newMedium -> IO ()
-appendMedium domMediaList  newMedium =
-  withObjCPtr newMedium $ \raw_newMedium ->
-      sendMsg domMediaList (mkSelector "appendMedium:") retVoid [argPtr (castPtr raw_newMedium :: Ptr ())]
+appendMedium domMediaList newMedium =
+  sendMessage domMediaList appendMediumSelector (toNSString newMedium)
 
 -- | @- mediaText@
 mediaText :: IsDOMMediaList domMediaList => domMediaList -> IO (Id NSString)
-mediaText domMediaList  =
-    sendMsg domMediaList (mkSelector "mediaText") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaText domMediaList =
+  sendMessage domMediaList mediaTextSelector
 
 -- | @- setMediaText:@
 setMediaText :: (IsDOMMediaList domMediaList, IsNSString value) => domMediaList -> value -> IO ()
-setMediaText domMediaList  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domMediaList (mkSelector "setMediaText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMediaText domMediaList value =
+  sendMessage domMediaList setMediaTextSelector (toNSString value)
 
 -- | @- length@
 length_ :: IsDOMMediaList domMediaList => domMediaList -> IO CUInt
-length_ domMediaList  =
-    sendMsg domMediaList (mkSelector "length") retCUInt []
+length_ domMediaList =
+  sendMessage domMediaList lengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @item:@
-itemSelector :: Selector
+itemSelector :: Selector '[CUInt] (Id NSString)
 itemSelector = mkSelector "item:"
 
 -- | @Selector@ for @deleteMedium:@
-deleteMediumSelector :: Selector
+deleteMediumSelector :: Selector '[Id NSString] ()
 deleteMediumSelector = mkSelector "deleteMedium:"
 
 -- | @Selector@ for @appendMedium:@
-appendMediumSelector :: Selector
+appendMediumSelector :: Selector '[Id NSString] ()
 appendMediumSelector = mkSelector "appendMedium:"
 
 -- | @Selector@ for @mediaText@
-mediaTextSelector :: Selector
+mediaTextSelector :: Selector '[] (Id NSString)
 mediaTextSelector = mkSelector "mediaText"
 
 -- | @Selector@ for @setMediaText:@
-setMediaTextSelector :: Selector
+setMediaTextSelector :: Selector '[Id NSString] ()
 setMediaTextSelector = mkSelector "setMediaText:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CUInt
 lengthSelector = mkSelector "length"
 

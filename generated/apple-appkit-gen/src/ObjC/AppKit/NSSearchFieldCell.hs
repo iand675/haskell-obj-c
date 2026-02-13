@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,43 +31,39 @@ module ObjC.AppKit.NSSearchFieldCell
   , setRecentsAutosaveName
   , sendsSearchStringImmediately
   , setSendsSearchStringImmediately
+  , cancelButtonCellSelector
+  , cancelButtonRectForBoundsSelector
+  , initImageCellSelector
   , initTextCellSelector
   , initWithCoderSelector
-  , initImageCellSelector
-  , resetSearchButtonCellSelector
-  , resetCancelButtonCellSelector
-  , searchTextRectForBoundsSelector
-  , searchButtonRectForBoundsSelector
-  , cancelButtonRectForBoundsSelector
-  , searchButtonCellSelector
-  , setSearchButtonCellSelector
-  , cancelButtonCellSelector
-  , setCancelButtonCellSelector
-  , searchMenuTemplateSelector
-  , setSearchMenuTemplateSelector
-  , sendsWholeSearchStringSelector
-  , setSendsWholeSearchStringSelector
   , maximumRecentsSelector
-  , setMaximumRecentsSelector
   , recentSearchesSelector
-  , setRecentSearchesSelector
   , recentsAutosaveNameSelector
-  , setRecentsAutosaveNameSelector
+  , resetCancelButtonCellSelector
+  , resetSearchButtonCellSelector
+  , searchButtonCellSelector
+  , searchButtonRectForBoundsSelector
+  , searchMenuTemplateSelector
+  , searchTextRectForBoundsSelector
   , sendsSearchStringImmediatelySelector
+  , sendsWholeSearchStringSelector
+  , setCancelButtonCellSelector
+  , setMaximumRecentsSelector
+  , setRecentSearchesSelector
+  , setRecentsAutosaveNameSelector
+  , setSearchButtonCellSelector
+  , setSearchMenuTemplateSelector
   , setSendsSearchStringImmediatelySelector
+  , setSendsWholeSearchStringSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,229 +73,221 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initTextCell:@
 initTextCell :: (IsNSSearchFieldCell nsSearchFieldCell, IsNSString string) => nsSearchFieldCell -> string -> IO (Id NSSearchFieldCell)
-initTextCell nsSearchFieldCell  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsSearchFieldCell (mkSelector "initTextCell:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initTextCell nsSearchFieldCell string =
+  sendOwnedMessage nsSearchFieldCell initTextCellSelector (toNSString string)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSSearchFieldCell nsSearchFieldCell, IsNSCoder coder) => nsSearchFieldCell -> coder -> IO (Id NSSearchFieldCell)
-initWithCoder nsSearchFieldCell  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsSearchFieldCell (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsSearchFieldCell coder =
+  sendOwnedMessage nsSearchFieldCell initWithCoderSelector (toNSCoder coder)
 
 -- | @- initImageCell:@
 initImageCell :: (IsNSSearchFieldCell nsSearchFieldCell, IsNSImage image) => nsSearchFieldCell -> image -> IO (Id NSSearchFieldCell)
-initImageCell nsSearchFieldCell  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg nsSearchFieldCell (mkSelector "initImageCell:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= ownedObject . castPtr
+initImageCell nsSearchFieldCell image =
+  sendOwnedMessage nsSearchFieldCell initImageCellSelector (toNSImage image)
 
 -- | @- resetSearchButtonCell@
 resetSearchButtonCell :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO ()
-resetSearchButtonCell nsSearchFieldCell  =
-    sendMsg nsSearchFieldCell (mkSelector "resetSearchButtonCell") retVoid []
+resetSearchButtonCell nsSearchFieldCell =
+  sendMessage nsSearchFieldCell resetSearchButtonCellSelector
 
 -- | @- resetCancelButtonCell@
 resetCancelButtonCell :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO ()
-resetCancelButtonCell nsSearchFieldCell  =
-    sendMsg nsSearchFieldCell (mkSelector "resetCancelButtonCell") retVoid []
+resetCancelButtonCell nsSearchFieldCell =
+  sendMessage nsSearchFieldCell resetCancelButtonCellSelector
 
 -- | @- searchTextRectForBounds:@
 searchTextRectForBounds :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> NSRect -> IO NSRect
-searchTextRectForBounds nsSearchFieldCell  rect =
-    sendMsgStret nsSearchFieldCell (mkSelector "searchTextRectForBounds:") retNSRect [argNSRect rect]
+searchTextRectForBounds nsSearchFieldCell rect =
+  sendMessage nsSearchFieldCell searchTextRectForBoundsSelector rect
 
 -- | @- searchButtonRectForBounds:@
 searchButtonRectForBounds :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> NSRect -> IO NSRect
-searchButtonRectForBounds nsSearchFieldCell  rect =
-    sendMsgStret nsSearchFieldCell (mkSelector "searchButtonRectForBounds:") retNSRect [argNSRect rect]
+searchButtonRectForBounds nsSearchFieldCell rect =
+  sendMessage nsSearchFieldCell searchButtonRectForBoundsSelector rect
 
 -- | @- cancelButtonRectForBounds:@
 cancelButtonRectForBounds :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> NSRect -> IO NSRect
-cancelButtonRectForBounds nsSearchFieldCell  rect =
-    sendMsgStret nsSearchFieldCell (mkSelector "cancelButtonRectForBounds:") retNSRect [argNSRect rect]
+cancelButtonRectForBounds nsSearchFieldCell rect =
+  sendMessage nsSearchFieldCell cancelButtonRectForBoundsSelector rect
 
 -- | @- searchButtonCell@
 searchButtonCell :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO (Id NSButtonCell)
-searchButtonCell nsSearchFieldCell  =
-    sendMsg nsSearchFieldCell (mkSelector "searchButtonCell") (retPtr retVoid) [] >>= retainedObject . castPtr
+searchButtonCell nsSearchFieldCell =
+  sendMessage nsSearchFieldCell searchButtonCellSelector
 
 -- | @- setSearchButtonCell:@
 setSearchButtonCell :: (IsNSSearchFieldCell nsSearchFieldCell, IsNSButtonCell value) => nsSearchFieldCell -> value -> IO ()
-setSearchButtonCell nsSearchFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSearchFieldCell (mkSelector "setSearchButtonCell:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSearchButtonCell nsSearchFieldCell value =
+  sendMessage nsSearchFieldCell setSearchButtonCellSelector (toNSButtonCell value)
 
 -- | @- cancelButtonCell@
 cancelButtonCell :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO (Id NSButtonCell)
-cancelButtonCell nsSearchFieldCell  =
-    sendMsg nsSearchFieldCell (mkSelector "cancelButtonCell") (retPtr retVoid) [] >>= retainedObject . castPtr
+cancelButtonCell nsSearchFieldCell =
+  sendMessage nsSearchFieldCell cancelButtonCellSelector
 
 -- | @- setCancelButtonCell:@
 setCancelButtonCell :: (IsNSSearchFieldCell nsSearchFieldCell, IsNSButtonCell value) => nsSearchFieldCell -> value -> IO ()
-setCancelButtonCell nsSearchFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSearchFieldCell (mkSelector "setCancelButtonCell:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCancelButtonCell nsSearchFieldCell value =
+  sendMessage nsSearchFieldCell setCancelButtonCellSelector (toNSButtonCell value)
 
 -- | @- searchMenuTemplate@
 searchMenuTemplate :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO (Id NSMenu)
-searchMenuTemplate nsSearchFieldCell  =
-    sendMsg nsSearchFieldCell (mkSelector "searchMenuTemplate") (retPtr retVoid) [] >>= retainedObject . castPtr
+searchMenuTemplate nsSearchFieldCell =
+  sendMessage nsSearchFieldCell searchMenuTemplateSelector
 
 -- | @- setSearchMenuTemplate:@
 setSearchMenuTemplate :: (IsNSSearchFieldCell nsSearchFieldCell, IsNSMenu value) => nsSearchFieldCell -> value -> IO ()
-setSearchMenuTemplate nsSearchFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSearchFieldCell (mkSelector "setSearchMenuTemplate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSearchMenuTemplate nsSearchFieldCell value =
+  sendMessage nsSearchFieldCell setSearchMenuTemplateSelector (toNSMenu value)
 
 -- | @- sendsWholeSearchString@
 sendsWholeSearchString :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO Bool
-sendsWholeSearchString nsSearchFieldCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSearchFieldCell (mkSelector "sendsWholeSearchString") retCULong []
+sendsWholeSearchString nsSearchFieldCell =
+  sendMessage nsSearchFieldCell sendsWholeSearchStringSelector
 
 -- | @- setSendsWholeSearchString:@
 setSendsWholeSearchString :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> Bool -> IO ()
-setSendsWholeSearchString nsSearchFieldCell  value =
-    sendMsg nsSearchFieldCell (mkSelector "setSendsWholeSearchString:") retVoid [argCULong (if value then 1 else 0)]
+setSendsWholeSearchString nsSearchFieldCell value =
+  sendMessage nsSearchFieldCell setSendsWholeSearchStringSelector value
 
 -- | @- maximumRecents@
 maximumRecents :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO CLong
-maximumRecents nsSearchFieldCell  =
-    sendMsg nsSearchFieldCell (mkSelector "maximumRecents") retCLong []
+maximumRecents nsSearchFieldCell =
+  sendMessage nsSearchFieldCell maximumRecentsSelector
 
 -- | @- setMaximumRecents:@
 setMaximumRecents :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> CLong -> IO ()
-setMaximumRecents nsSearchFieldCell  value =
-    sendMsg nsSearchFieldCell (mkSelector "setMaximumRecents:") retVoid [argCLong value]
+setMaximumRecents nsSearchFieldCell value =
+  sendMessage nsSearchFieldCell setMaximumRecentsSelector value
 
 -- | @- recentSearches@
 recentSearches :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO (Id NSArray)
-recentSearches nsSearchFieldCell  =
-    sendMsg nsSearchFieldCell (mkSelector "recentSearches") (retPtr retVoid) [] >>= retainedObject . castPtr
+recentSearches nsSearchFieldCell =
+  sendMessage nsSearchFieldCell recentSearchesSelector
 
 -- | @- setRecentSearches:@
 setRecentSearches :: (IsNSSearchFieldCell nsSearchFieldCell, IsNSArray value) => nsSearchFieldCell -> value -> IO ()
-setRecentSearches nsSearchFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSearchFieldCell (mkSelector "setRecentSearches:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecentSearches nsSearchFieldCell value =
+  sendMessage nsSearchFieldCell setRecentSearchesSelector (toNSArray value)
 
 -- | @- recentsAutosaveName@
 recentsAutosaveName :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO (Id NSString)
-recentsAutosaveName nsSearchFieldCell  =
-    sendMsg nsSearchFieldCell (mkSelector "recentsAutosaveName") (retPtr retVoid) [] >>= retainedObject . castPtr
+recentsAutosaveName nsSearchFieldCell =
+  sendMessage nsSearchFieldCell recentsAutosaveNameSelector
 
 -- | @- setRecentsAutosaveName:@
 setRecentsAutosaveName :: (IsNSSearchFieldCell nsSearchFieldCell, IsNSString value) => nsSearchFieldCell -> value -> IO ()
-setRecentsAutosaveName nsSearchFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSearchFieldCell (mkSelector "setRecentsAutosaveName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecentsAutosaveName nsSearchFieldCell value =
+  sendMessage nsSearchFieldCell setRecentsAutosaveNameSelector (toNSString value)
 
 -- | @- sendsSearchStringImmediately@
 sendsSearchStringImmediately :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> IO Bool
-sendsSearchStringImmediately nsSearchFieldCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSearchFieldCell (mkSelector "sendsSearchStringImmediately") retCULong []
+sendsSearchStringImmediately nsSearchFieldCell =
+  sendMessage nsSearchFieldCell sendsSearchStringImmediatelySelector
 
 -- | @- setSendsSearchStringImmediately:@
 setSendsSearchStringImmediately :: IsNSSearchFieldCell nsSearchFieldCell => nsSearchFieldCell -> Bool -> IO ()
-setSendsSearchStringImmediately nsSearchFieldCell  value =
-    sendMsg nsSearchFieldCell (mkSelector "setSendsSearchStringImmediately:") retVoid [argCULong (if value then 1 else 0)]
+setSendsSearchStringImmediately nsSearchFieldCell value =
+  sendMessage nsSearchFieldCell setSendsSearchStringImmediatelySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initTextCell:@
-initTextCellSelector :: Selector
+initTextCellSelector :: Selector '[Id NSString] (Id NSSearchFieldCell)
 initTextCellSelector = mkSelector "initTextCell:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSSearchFieldCell)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initImageCell:@
-initImageCellSelector :: Selector
+initImageCellSelector :: Selector '[Id NSImage] (Id NSSearchFieldCell)
 initImageCellSelector = mkSelector "initImageCell:"
 
 -- | @Selector@ for @resetSearchButtonCell@
-resetSearchButtonCellSelector :: Selector
+resetSearchButtonCellSelector :: Selector '[] ()
 resetSearchButtonCellSelector = mkSelector "resetSearchButtonCell"
 
 -- | @Selector@ for @resetCancelButtonCell@
-resetCancelButtonCellSelector :: Selector
+resetCancelButtonCellSelector :: Selector '[] ()
 resetCancelButtonCellSelector = mkSelector "resetCancelButtonCell"
 
 -- | @Selector@ for @searchTextRectForBounds:@
-searchTextRectForBoundsSelector :: Selector
+searchTextRectForBoundsSelector :: Selector '[NSRect] NSRect
 searchTextRectForBoundsSelector = mkSelector "searchTextRectForBounds:"
 
 -- | @Selector@ for @searchButtonRectForBounds:@
-searchButtonRectForBoundsSelector :: Selector
+searchButtonRectForBoundsSelector :: Selector '[NSRect] NSRect
 searchButtonRectForBoundsSelector = mkSelector "searchButtonRectForBounds:"
 
 -- | @Selector@ for @cancelButtonRectForBounds:@
-cancelButtonRectForBoundsSelector :: Selector
+cancelButtonRectForBoundsSelector :: Selector '[NSRect] NSRect
 cancelButtonRectForBoundsSelector = mkSelector "cancelButtonRectForBounds:"
 
 -- | @Selector@ for @searchButtonCell@
-searchButtonCellSelector :: Selector
+searchButtonCellSelector :: Selector '[] (Id NSButtonCell)
 searchButtonCellSelector = mkSelector "searchButtonCell"
 
 -- | @Selector@ for @setSearchButtonCell:@
-setSearchButtonCellSelector :: Selector
+setSearchButtonCellSelector :: Selector '[Id NSButtonCell] ()
 setSearchButtonCellSelector = mkSelector "setSearchButtonCell:"
 
 -- | @Selector@ for @cancelButtonCell@
-cancelButtonCellSelector :: Selector
+cancelButtonCellSelector :: Selector '[] (Id NSButtonCell)
 cancelButtonCellSelector = mkSelector "cancelButtonCell"
 
 -- | @Selector@ for @setCancelButtonCell:@
-setCancelButtonCellSelector :: Selector
+setCancelButtonCellSelector :: Selector '[Id NSButtonCell] ()
 setCancelButtonCellSelector = mkSelector "setCancelButtonCell:"
 
 -- | @Selector@ for @searchMenuTemplate@
-searchMenuTemplateSelector :: Selector
+searchMenuTemplateSelector :: Selector '[] (Id NSMenu)
 searchMenuTemplateSelector = mkSelector "searchMenuTemplate"
 
 -- | @Selector@ for @setSearchMenuTemplate:@
-setSearchMenuTemplateSelector :: Selector
+setSearchMenuTemplateSelector :: Selector '[Id NSMenu] ()
 setSearchMenuTemplateSelector = mkSelector "setSearchMenuTemplate:"
 
 -- | @Selector@ for @sendsWholeSearchString@
-sendsWholeSearchStringSelector :: Selector
+sendsWholeSearchStringSelector :: Selector '[] Bool
 sendsWholeSearchStringSelector = mkSelector "sendsWholeSearchString"
 
 -- | @Selector@ for @setSendsWholeSearchString:@
-setSendsWholeSearchStringSelector :: Selector
+setSendsWholeSearchStringSelector :: Selector '[Bool] ()
 setSendsWholeSearchStringSelector = mkSelector "setSendsWholeSearchString:"
 
 -- | @Selector@ for @maximumRecents@
-maximumRecentsSelector :: Selector
+maximumRecentsSelector :: Selector '[] CLong
 maximumRecentsSelector = mkSelector "maximumRecents"
 
 -- | @Selector@ for @setMaximumRecents:@
-setMaximumRecentsSelector :: Selector
+setMaximumRecentsSelector :: Selector '[CLong] ()
 setMaximumRecentsSelector = mkSelector "setMaximumRecents:"
 
 -- | @Selector@ for @recentSearches@
-recentSearchesSelector :: Selector
+recentSearchesSelector :: Selector '[] (Id NSArray)
 recentSearchesSelector = mkSelector "recentSearches"
 
 -- | @Selector@ for @setRecentSearches:@
-setRecentSearchesSelector :: Selector
+setRecentSearchesSelector :: Selector '[Id NSArray] ()
 setRecentSearchesSelector = mkSelector "setRecentSearches:"
 
 -- | @Selector@ for @recentsAutosaveName@
-recentsAutosaveNameSelector :: Selector
+recentsAutosaveNameSelector :: Selector '[] (Id NSString)
 recentsAutosaveNameSelector = mkSelector "recentsAutosaveName"
 
 -- | @Selector@ for @setRecentsAutosaveName:@
-setRecentsAutosaveNameSelector :: Selector
+setRecentsAutosaveNameSelector :: Selector '[Id NSString] ()
 setRecentsAutosaveNameSelector = mkSelector "setRecentsAutosaveName:"
 
 -- | @Selector@ for @sendsSearchStringImmediately@
-sendsSearchStringImmediatelySelector :: Selector
+sendsSearchStringImmediatelySelector :: Selector '[] Bool
 sendsSearchStringImmediatelySelector = mkSelector "sendsSearchStringImmediately"
 
 -- | @Selector@ for @setSendsSearchStringImmediately:@
-setSendsSearchStringImmediatelySelector :: Selector
+setSendsSearchStringImmediatelySelector :: Selector '[Bool] ()
 setSendsSearchStringImmediatelySelector = mkSelector "setSendsSearchStringImmediately:"
 

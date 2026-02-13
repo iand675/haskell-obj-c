@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.CoreML.MLPredictionOptions
   , setUsesCPUOnly
   , outputBackings
   , setOutputBackings
-  , usesCPUOnlySelector
-  , setUsesCPUOnlySelector
   , outputBackingsSelector
   , setOutputBackingsSelector
+  , setUsesCPUOnlySelector
+  , usesCPUOnlySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- usesCPUOnly@
 usesCPUOnly :: IsMLPredictionOptions mlPredictionOptions => mlPredictionOptions -> IO Bool
-usesCPUOnly mlPredictionOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlPredictionOptions (mkSelector "usesCPUOnly") retCULong []
+usesCPUOnly mlPredictionOptions =
+  sendMessage mlPredictionOptions usesCPUOnlySelector
 
 -- | Set to YES to force computation to be on the CPU only
 --
 -- ObjC selector: @- setUsesCPUOnly:@
 setUsesCPUOnly :: IsMLPredictionOptions mlPredictionOptions => mlPredictionOptions -> Bool -> IO ()
-setUsesCPUOnly mlPredictionOptions  value =
-    sendMsg mlPredictionOptions (mkSelector "setUsesCPUOnly:") retVoid [argCULong (if value then 1 else 0)]
+setUsesCPUOnly mlPredictionOptions value =
+  sendMessage mlPredictionOptions setUsesCPUOnlySelector value
 
 -- | Propose the model to use the specified backing objects for the output feature values.
 --
@@ -92,8 +89,8 @@ setUsesCPUOnly mlPredictionOptions  value =
 --
 -- ObjC selector: @- outputBackings@
 outputBackings :: IsMLPredictionOptions mlPredictionOptions => mlPredictionOptions -> IO (Id NSDictionary)
-outputBackings mlPredictionOptions  =
-    sendMsg mlPredictionOptions (mkSelector "outputBackings") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputBackings mlPredictionOptions =
+  sendMessage mlPredictionOptions outputBackingsSelector
 
 -- | Propose the model to use the specified backing objects for the output feature values.
 --
@@ -136,27 +133,26 @@ outputBackings mlPredictionOptions  =
 --
 -- ObjC selector: @- setOutputBackings:@
 setOutputBackings :: (IsMLPredictionOptions mlPredictionOptions, IsNSDictionary value) => mlPredictionOptions -> value -> IO ()
-setOutputBackings mlPredictionOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mlPredictionOptions (mkSelector "setOutputBackings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputBackings mlPredictionOptions value =
+  sendMessage mlPredictionOptions setOutputBackingsSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @usesCPUOnly@
-usesCPUOnlySelector :: Selector
+usesCPUOnlySelector :: Selector '[] Bool
 usesCPUOnlySelector = mkSelector "usesCPUOnly"
 
 -- | @Selector@ for @setUsesCPUOnly:@
-setUsesCPUOnlySelector :: Selector
+setUsesCPUOnlySelector :: Selector '[Bool] ()
 setUsesCPUOnlySelector = mkSelector "setUsesCPUOnly:"
 
 -- | @Selector@ for @outputBackings@
-outputBackingsSelector :: Selector
+outputBackingsSelector :: Selector '[] (Id NSDictionary)
 outputBackingsSelector = mkSelector "outputBackings"
 
 -- | @Selector@ for @setOutputBackings:@
-setOutputBackingsSelector :: Selector
+setOutputBackingsSelector :: Selector '[Id NSDictionary] ()
 setOutputBackingsSelector = mkSelector "setOutputBackings:"
 

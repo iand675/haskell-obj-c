@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.AVFoundation.AVAssetVariant
   , videoAttributes
   , audioAttributes
   , url
+  , audioAttributesSelector
+  , averageBitRateSelector
   , initSelector
   , newSelector
   , peakBitRateSelector
-  , averageBitRateSelector
-  , videoAttributesSelector
-  , audioAttributesSelector
   , urlSelector
+  , videoAttributesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,80 +40,80 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetVariant avAssetVariant => avAssetVariant -> IO (Id AVAssetVariant)
-init_ avAssetVariant  =
-    sendMsg avAssetVariant (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetVariant =
+  sendOwnedMessage avAssetVariant initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetVariant)
 new  =
   do
     cls' <- getRequiredClass "AVAssetVariant"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | If it is not declared, the value will be negative.
 --
 -- ObjC selector: @- peakBitRate@
 peakBitRate :: IsAVAssetVariant avAssetVariant => avAssetVariant -> IO CDouble
-peakBitRate avAssetVariant  =
-    sendMsg avAssetVariant (mkSelector "peakBitRate") retCDouble []
+peakBitRate avAssetVariant =
+  sendMessage avAssetVariant peakBitRateSelector
 
 -- | If it is not declared, the value will be negative.
 --
 -- ObjC selector: @- averageBitRate@
 averageBitRate :: IsAVAssetVariant avAssetVariant => avAssetVariant -> IO CDouble
-averageBitRate avAssetVariant  =
-    sendMsg avAssetVariant (mkSelector "averageBitRate") retCDouble []
+averageBitRate avAssetVariant =
+  sendMessage avAssetVariant averageBitRateSelector
 
 -- | Provides variant's video rendition attributes. If no video attributes are declared, it will be nil.
 --
 -- ObjC selector: @- videoAttributes@
 videoAttributes :: IsAVAssetVariant avAssetVariant => avAssetVariant -> IO (Id AVAssetVariantVideoAttributes)
-videoAttributes avAssetVariant  =
-    sendMsg avAssetVariant (mkSelector "videoAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoAttributes avAssetVariant =
+  sendMessage avAssetVariant videoAttributesSelector
 
 -- | Provides variant's audio rendition attributes. If no audio attributes are declared, it will be nil.
 --
 -- ObjC selector: @- audioAttributes@
 audioAttributes :: IsAVAssetVariant avAssetVariant => avAssetVariant -> IO (Id AVAssetVariantAudioAttributes)
-audioAttributes avAssetVariant  =
-    sendMsg avAssetVariant (mkSelector "audioAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioAttributes avAssetVariant =
+  sendMessage avAssetVariant audioAttributesSelector
 
 -- | Provides URL to media playlist corresponding to variant
 --
 -- ObjC selector: @- URL@
 url :: IsAVAssetVariant avAssetVariant => avAssetVariant -> IO (Id NSURL)
-url avAssetVariant  =
-    sendMsg avAssetVariant (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url avAssetVariant =
+  sendMessage avAssetVariant urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetVariant)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetVariant)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @peakBitRate@
-peakBitRateSelector :: Selector
+peakBitRateSelector :: Selector '[] CDouble
 peakBitRateSelector = mkSelector "peakBitRate"
 
 -- | @Selector@ for @averageBitRate@
-averageBitRateSelector :: Selector
+averageBitRateSelector :: Selector '[] CDouble
 averageBitRateSelector = mkSelector "averageBitRate"
 
 -- | @Selector@ for @videoAttributes@
-videoAttributesSelector :: Selector
+videoAttributesSelector :: Selector '[] (Id AVAssetVariantVideoAttributes)
 videoAttributesSelector = mkSelector "videoAttributes"
 
 -- | @Selector@ for @audioAttributes@
-audioAttributesSelector :: Selector
+audioAttributesSelector :: Selector '[] (Id AVAssetVariantAudioAttributes)
 audioAttributesSelector = mkSelector "audioAttributes"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.SceneKit.SCNLevelOfDetail
   , geometry
   , screenSpaceRadius
   , worldSpaceDistance
+  , geometrySelector
   , levelOfDetailWithGeometry_screenSpaceRadiusSelector
   , levelOfDetailWithGeometry_worldSpaceDistanceSelector
-  , geometrySelector
   , screenSpaceRadiusSelector
   , worldSpaceDistanceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,7 @@ levelOfDetailWithGeometry_screenSpaceRadius :: IsSCNGeometry geometry => geometr
 levelOfDetailWithGeometry_screenSpaceRadius geometry radius =
   do
     cls' <- getRequiredClass "SCNLevelOfDetail"
-    withObjCPtr geometry $ \raw_geometry ->
-      sendClassMsg cls' (mkSelector "levelOfDetailWithGeometry:screenSpaceRadius:") (retPtr retVoid) [argPtr (castPtr raw_geometry :: Ptr ()), argCDouble radius] >>= retainedObject . castPtr
+    sendClassMessage cls' levelOfDetailWithGeometry_screenSpaceRadiusSelector (toSCNGeometry geometry) radius
 
 -- | levelOfDetailWithGeometry:worldSpaceDistance:
 --
@@ -68,8 +64,7 @@ levelOfDetailWithGeometry_worldSpaceDistance :: IsSCNGeometry geometry => geomet
 levelOfDetailWithGeometry_worldSpaceDistance geometry distance =
   do
     cls' <- getRequiredClass "SCNLevelOfDetail"
-    withObjCPtr geometry $ \raw_geometry ->
-      sendClassMsg cls' (mkSelector "levelOfDetailWithGeometry:worldSpaceDistance:") (retPtr retVoid) [argPtr (castPtr raw_geometry :: Ptr ()), argCDouble distance] >>= retainedObject . castPtr
+    sendClassMessage cls' levelOfDetailWithGeometry_worldSpaceDistanceSelector (toSCNGeometry geometry) distance
 
 -- | geometry
 --
@@ -77,8 +72,8 @@ levelOfDetailWithGeometry_worldSpaceDistance geometry distance =
 --
 -- ObjC selector: @- geometry@
 geometry :: IsSCNLevelOfDetail scnLevelOfDetail => scnLevelOfDetail -> IO (Id SCNGeometry)
-geometry scnLevelOfDetail  =
-    sendMsg scnLevelOfDetail (mkSelector "geometry") (retPtr retVoid) [] >>= retainedObject . castPtr
+geometry scnLevelOfDetail =
+  sendMessage scnLevelOfDetail geometrySelector
 
 -- | screenSpaceRadius
 --
@@ -86,8 +81,8 @@ geometry scnLevelOfDetail  =
 --
 -- ObjC selector: @- screenSpaceRadius@
 screenSpaceRadius :: IsSCNLevelOfDetail scnLevelOfDetail => scnLevelOfDetail -> IO CDouble
-screenSpaceRadius scnLevelOfDetail  =
-    sendMsg scnLevelOfDetail (mkSelector "screenSpaceRadius") retCDouble []
+screenSpaceRadius scnLevelOfDetail =
+  sendMessage scnLevelOfDetail screenSpaceRadiusSelector
 
 -- | worldSpaceDistance
 --
@@ -95,30 +90,30 @@ screenSpaceRadius scnLevelOfDetail  =
 --
 -- ObjC selector: @- worldSpaceDistance@
 worldSpaceDistance :: IsSCNLevelOfDetail scnLevelOfDetail => scnLevelOfDetail -> IO CDouble
-worldSpaceDistance scnLevelOfDetail  =
-    sendMsg scnLevelOfDetail (mkSelector "worldSpaceDistance") retCDouble []
+worldSpaceDistance scnLevelOfDetail =
+  sendMessage scnLevelOfDetail worldSpaceDistanceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @levelOfDetailWithGeometry:screenSpaceRadius:@
-levelOfDetailWithGeometry_screenSpaceRadiusSelector :: Selector
+levelOfDetailWithGeometry_screenSpaceRadiusSelector :: Selector '[Id SCNGeometry, CDouble] (Id SCNLevelOfDetail)
 levelOfDetailWithGeometry_screenSpaceRadiusSelector = mkSelector "levelOfDetailWithGeometry:screenSpaceRadius:"
 
 -- | @Selector@ for @levelOfDetailWithGeometry:worldSpaceDistance:@
-levelOfDetailWithGeometry_worldSpaceDistanceSelector :: Selector
+levelOfDetailWithGeometry_worldSpaceDistanceSelector :: Selector '[Id SCNGeometry, CDouble] (Id SCNLevelOfDetail)
 levelOfDetailWithGeometry_worldSpaceDistanceSelector = mkSelector "levelOfDetailWithGeometry:worldSpaceDistance:"
 
 -- | @Selector@ for @geometry@
-geometrySelector :: Selector
+geometrySelector :: Selector '[] (Id SCNGeometry)
 geometrySelector = mkSelector "geometry"
 
 -- | @Selector@ for @screenSpaceRadius@
-screenSpaceRadiusSelector :: Selector
+screenSpaceRadiusSelector :: Selector '[] CDouble
 screenSpaceRadiusSelector = mkSelector "screenSpaceRadius"
 
 -- | @Selector@ for @worldSpaceDistance@
-worldSpaceDistanceSelector :: Selector
+worldSpaceDistanceSelector :: Selector '[] CDouble
 worldSpaceDistanceSelector = mkSelector "worldSpaceDistance"
 

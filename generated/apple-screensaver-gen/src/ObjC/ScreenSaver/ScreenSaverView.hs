@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,19 +29,19 @@ module ObjC.ScreenSaver.ScreenSaverView
   , hasConfigureSheet
   , configureSheet
   , preview
+  , animateOneFrameSelector
+  , animatingSelector
+  , animationTimeIntervalSelector
   , backingStoreTypeSelector
-  , performGammaFadeSelector
+  , configureSheetSelector
+  , drawRectSelector
+  , hasConfigureSheetSelector
   , initWithFrame_isPreviewSelector
+  , performGammaFadeSelector
+  , previewSelector
+  , setAnimationTimeIntervalSelector
   , startAnimationSelector
   , stopAnimationSelector
-  , drawRectSelector
-  , animateOneFrameSelector
-  , animationTimeIntervalSelector
-  , setAnimationTimeIntervalSelector
-  , animatingSelector
-  , hasConfigureSheetSelector
-  , configureSheetSelector
-  , previewSelector
 
   -- * Enum types
   , NSBackingStoreType(NSBackingStoreType)
@@ -50,15 +51,11 @@ module ObjC.ScreenSaver.ScreenSaverView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,7 +76,7 @@ backingStoreType :: IO NSBackingStoreType
 backingStoreType  =
   do
     cls' <- getRequiredClass "ScreenSaverView"
-    fmap (coerce :: CULong -> NSBackingStoreType) $ sendClassMsg cls' (mkSelector "backingStoreType") retCULong []
+    sendClassMessage cls' backingStoreTypeSelector
 
 -- | Indicates whether to perform a gradual screen fade when the system starts and stops your screen saver’s animation.
 --
@@ -92,7 +89,7 @@ performGammaFade :: IO Bool
 performGammaFade  =
   do
     cls' <- getRequiredClass "ScreenSaverView"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "performGammaFade") retCULong []
+    sendClassMessage cls' performGammaFadeSelector
 
 -- | Creates a newly allocated screen saver view with the specified frame rectangle and preview information.
 --
@@ -106,8 +103,8 @@ performGammaFade  =
 --
 -- ObjC selector: @- initWithFrame:isPreview:@
 initWithFrame_isPreview :: IsScreenSaverView screenSaverView => screenSaverView -> NSRect -> Bool -> IO (Id ScreenSaverView)
-initWithFrame_isPreview screenSaverView  frame isPreview =
-    sendMsg screenSaverView (mkSelector "initWithFrame:isPreview:") (retPtr retVoid) [argNSRect frame, argCULong (if isPreview then 1 else 0)] >>= ownedObject . castPtr
+initWithFrame_isPreview screenSaverView frame isPreview =
+  sendOwnedMessage screenSaverView initWithFrame_isPreviewSelector frame isPreview
 
 -- | Activates the periodic timer that animates the screen saver.
 --
@@ -121,8 +118,8 @@ initWithFrame_isPreview screenSaverView  frame isPreview =
 --
 -- ObjC selector: @- startAnimation@
 startAnimation :: IsScreenSaverView screenSaverView => screenSaverView -> IO ()
-startAnimation screenSaverView  =
-    sendMsg screenSaverView (mkSelector "startAnimation") retVoid []
+startAnimation screenSaverView =
+  sendMessage screenSaverView startAnimationSelector
 
 -- | Deactivates the timer that advances the animation.
 --
@@ -136,8 +133,8 @@ startAnimation screenSaverView  =
 --
 -- ObjC selector: @- stopAnimation@
 stopAnimation :: IsScreenSaverView screenSaverView => screenSaverView -> IO ()
-stopAnimation screenSaverView  =
-    sendMsg screenSaverView (mkSelector "stopAnimation") retVoid []
+stopAnimation screenSaverView =
+  sendMessage screenSaverView stopAnimationSelector
 
 -- | Draws the screen saver view.
 --
@@ -151,8 +148,8 @@ stopAnimation screenSaverView  =
 --
 -- ObjC selector: @- drawRect:@
 drawRect :: IsScreenSaverView screenSaverView => screenSaverView -> NSRect -> IO ()
-drawRect screenSaverView  rect =
-    sendMsg screenSaverView (mkSelector "drawRect:") retVoid [argNSRect rect]
+drawRect screenSaverView rect =
+  sendMessage screenSaverView drawRectSelector rect
 
 -- | Advances the screen saver’s animation by a single frame.
 --
@@ -166,8 +163,8 @@ drawRect screenSaverView  rect =
 --
 -- ObjC selector: @- animateOneFrame@
 animateOneFrame :: IsScreenSaverView screenSaverView => screenSaverView -> IO ()
-animateOneFrame screenSaverView  =
-    sendMsg screenSaverView (mkSelector "animateOneFrame") retVoid []
+animateOneFrame screenSaverView =
+  sendMessage screenSaverView animateOneFrameSelector
 
 -- | The time interval between animation frames.
 --
@@ -175,8 +172,8 @@ animateOneFrame screenSaverView  =
 --
 -- ObjC selector: @- animationTimeInterval@
 animationTimeInterval :: IsScreenSaverView screenSaverView => screenSaverView -> IO CDouble
-animationTimeInterval screenSaverView  =
-    sendMsg screenSaverView (mkSelector "animationTimeInterval") retCDouble []
+animationTimeInterval screenSaverView =
+  sendMessage screenSaverView animationTimeIntervalSelector
 
 -- | The time interval between animation frames.
 --
@@ -184,8 +181,8 @@ animationTimeInterval screenSaverView  =
 --
 -- ObjC selector: @- setAnimationTimeInterval:@
 setAnimationTimeInterval :: IsScreenSaverView screenSaverView => screenSaverView -> CDouble -> IO ()
-setAnimationTimeInterval screenSaverView  value =
-    sendMsg screenSaverView (mkSelector "setAnimationTimeInterval:") retVoid [argCDouble value]
+setAnimationTimeInterval screenSaverView value =
+  sendMessage screenSaverView setAnimationTimeIntervalSelector value
 
 -- | A Boolean value that indicates whether the screen saver is animating.
 --
@@ -199,8 +196,8 @@ setAnimationTimeInterval screenSaverView  value =
 --
 -- ObjC selector: @- animating@
 animating :: IsScreenSaverView screenSaverView => screenSaverView -> IO Bool
-animating screenSaverView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg screenSaverView (mkSelector "animating") retCULong []
+animating screenSaverView =
+  sendMessage screenSaverView animatingSelector
 
 -- | A Boolean value that indicates whether the screen saver has an associated configuration sheet.
 --
@@ -212,8 +209,8 @@ animating screenSaverView  =
 --
 -- ObjC selector: @- hasConfigureSheet@
 hasConfigureSheet :: IsScreenSaverView screenSaverView => screenSaverView -> IO Bool
-hasConfigureSheet screenSaverView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg screenSaverView (mkSelector "hasConfigureSheet") retCULong []
+hasConfigureSheet screenSaverView =
+  sendMessage screenSaverView hasConfigureSheetSelector
 
 -- | The window that contains the controls to configure the screen saver.
 --
@@ -225,8 +222,8 @@ hasConfigureSheet screenSaverView  =
 --
 -- ObjC selector: @- configureSheet@
 configureSheet :: IsScreenSaverView screenSaverView => screenSaverView -> IO (Id NSWindow)
-configureSheet screenSaverView  =
-    sendMsg screenSaverView (mkSelector "configureSheet") (retPtr retVoid) [] >>= retainedObject . castPtr
+configureSheet screenSaverView =
+  sendMessage screenSaverView configureSheetSelector
 
 -- | A Boolean value that indicates whether the screen saver view is set to a size suitable for previewing its content.
 --
@@ -236,62 +233,62 @@ configureSheet screenSaverView  =
 --
 -- ObjC selector: @- preview@
 preview :: IsScreenSaverView screenSaverView => screenSaverView -> IO Bool
-preview screenSaverView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg screenSaverView (mkSelector "preview") retCULong []
+preview screenSaverView =
+  sendMessage screenSaverView previewSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @backingStoreType@
-backingStoreTypeSelector :: Selector
+backingStoreTypeSelector :: Selector '[] NSBackingStoreType
 backingStoreTypeSelector = mkSelector "backingStoreType"
 
 -- | @Selector@ for @performGammaFade@
-performGammaFadeSelector :: Selector
+performGammaFadeSelector :: Selector '[] Bool
 performGammaFadeSelector = mkSelector "performGammaFade"
 
 -- | @Selector@ for @initWithFrame:isPreview:@
-initWithFrame_isPreviewSelector :: Selector
+initWithFrame_isPreviewSelector :: Selector '[NSRect, Bool] (Id ScreenSaverView)
 initWithFrame_isPreviewSelector = mkSelector "initWithFrame:isPreview:"
 
 -- | @Selector@ for @startAnimation@
-startAnimationSelector :: Selector
+startAnimationSelector :: Selector '[] ()
 startAnimationSelector = mkSelector "startAnimation"
 
 -- | @Selector@ for @stopAnimation@
-stopAnimationSelector :: Selector
+stopAnimationSelector :: Selector '[] ()
 stopAnimationSelector = mkSelector "stopAnimation"
 
 -- | @Selector@ for @drawRect:@
-drawRectSelector :: Selector
+drawRectSelector :: Selector '[NSRect] ()
 drawRectSelector = mkSelector "drawRect:"
 
 -- | @Selector@ for @animateOneFrame@
-animateOneFrameSelector :: Selector
+animateOneFrameSelector :: Selector '[] ()
 animateOneFrameSelector = mkSelector "animateOneFrame"
 
 -- | @Selector@ for @animationTimeInterval@
-animationTimeIntervalSelector :: Selector
+animationTimeIntervalSelector :: Selector '[] CDouble
 animationTimeIntervalSelector = mkSelector "animationTimeInterval"
 
 -- | @Selector@ for @setAnimationTimeInterval:@
-setAnimationTimeIntervalSelector :: Selector
+setAnimationTimeIntervalSelector :: Selector '[CDouble] ()
 setAnimationTimeIntervalSelector = mkSelector "setAnimationTimeInterval:"
 
 -- | @Selector@ for @animating@
-animatingSelector :: Selector
+animatingSelector :: Selector '[] Bool
 animatingSelector = mkSelector "animating"
 
 -- | @Selector@ for @hasConfigureSheet@
-hasConfigureSheetSelector :: Selector
+hasConfigureSheetSelector :: Selector '[] Bool
 hasConfigureSheetSelector = mkSelector "hasConfigureSheet"
 
 -- | @Selector@ for @configureSheet@
-configureSheetSelector :: Selector
+configureSheetSelector :: Selector '[] (Id NSWindow)
 configureSheetSelector = mkSelector "configureSheet"
 
 -- | @Selector@ for @preview@
-previewSelector :: Selector
+previewSelector :: Selector '[] Bool
 previewSelector = mkSelector "preview"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRMediaPlaybackClusterSkipForwardParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , deltaPositionMillisecondsSelector
-  , setDeltaPositionMillisecondsSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setDeltaPositionMillisecondsSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- deltaPositionMilliseconds@
 deltaPositionMilliseconds :: IsMTRMediaPlaybackClusterSkipForwardParams mtrMediaPlaybackClusterSkipForwardParams => mtrMediaPlaybackClusterSkipForwardParams -> IO (Id NSNumber)
-deltaPositionMilliseconds mtrMediaPlaybackClusterSkipForwardParams  =
-    sendMsg mtrMediaPlaybackClusterSkipForwardParams (mkSelector "deltaPositionMilliseconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+deltaPositionMilliseconds mtrMediaPlaybackClusterSkipForwardParams =
+  sendMessage mtrMediaPlaybackClusterSkipForwardParams deltaPositionMillisecondsSelector
 
 -- | @- setDeltaPositionMilliseconds:@
 setDeltaPositionMilliseconds :: (IsMTRMediaPlaybackClusterSkipForwardParams mtrMediaPlaybackClusterSkipForwardParams, IsNSNumber value) => mtrMediaPlaybackClusterSkipForwardParams -> value -> IO ()
-setDeltaPositionMilliseconds mtrMediaPlaybackClusterSkipForwardParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterSkipForwardParams (mkSelector "setDeltaPositionMilliseconds:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeltaPositionMilliseconds mtrMediaPlaybackClusterSkipForwardParams value =
+  sendMessage mtrMediaPlaybackClusterSkipForwardParams setDeltaPositionMillisecondsSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setDeltaPositionMilliseconds mtrMediaPlaybackClusterSkipForwardParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRMediaPlaybackClusterSkipForwardParams mtrMediaPlaybackClusterSkipForwardParams => mtrMediaPlaybackClusterSkipForwardParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrMediaPlaybackClusterSkipForwardParams  =
-    sendMsg mtrMediaPlaybackClusterSkipForwardParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrMediaPlaybackClusterSkipForwardParams =
+  sendMessage mtrMediaPlaybackClusterSkipForwardParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrMediaPlaybackClusterSkipForwardParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRMediaPlaybackClusterSkipForwardParams mtrMediaPlaybackClusterSkipForwardParams, IsNSNumber value) => mtrMediaPlaybackClusterSkipForwardParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrMediaPlaybackClusterSkipForwardParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterSkipForwardParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrMediaPlaybackClusterSkipForwardParams value =
+  sendMessage mtrMediaPlaybackClusterSkipForwardParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrMediaPlaybackClusterSkipForwardParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRMediaPlaybackClusterSkipForwardParams mtrMediaPlaybackClusterSkipForwardParams => mtrMediaPlaybackClusterSkipForwardParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrMediaPlaybackClusterSkipForwardParams  =
-    sendMsg mtrMediaPlaybackClusterSkipForwardParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrMediaPlaybackClusterSkipForwardParams =
+  sendMessage mtrMediaPlaybackClusterSkipForwardParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrMediaPlaybackClusterSkipForwardParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRMediaPlaybackClusterSkipForwardParams mtrMediaPlaybackClusterSkipForwardParams, IsNSNumber value) => mtrMediaPlaybackClusterSkipForwardParams -> value -> IO ()
-setServerSideProcessingTimeout mtrMediaPlaybackClusterSkipForwardParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterSkipForwardParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrMediaPlaybackClusterSkipForwardParams value =
+  sendMessage mtrMediaPlaybackClusterSkipForwardParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @deltaPositionMilliseconds@
-deltaPositionMillisecondsSelector :: Selector
+deltaPositionMillisecondsSelector :: Selector '[] (Id NSNumber)
 deltaPositionMillisecondsSelector = mkSelector "deltaPositionMilliseconds"
 
 -- | @Selector@ for @setDeltaPositionMilliseconds:@
-setDeltaPositionMillisecondsSelector :: Selector
+setDeltaPositionMillisecondsSelector :: Selector '[Id NSNumber] ()
 setDeltaPositionMillisecondsSelector = mkSelector "setDeltaPositionMilliseconds:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

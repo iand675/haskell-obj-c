@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,42 +32,38 @@ module ObjC.Matter.MTRTestClusterClusterNullablesAndOptionalsStruct
   , nullableOptionalList
   , setNullableOptionalList
   , nullableIntSelector
-  , setNullableIntSelector
-  , optionalIntSelector
-  , setOptionalIntSelector
-  , nullableOptionalIntSelector
-  , setNullableOptionalIntSelector
-  , nullableStringSelector
-  , setNullableStringSelector
-  , optionalStringSelector
-  , setOptionalStringSelector
-  , nullableOptionalStringSelector
-  , setNullableOptionalStringSelector
-  , nullableStructSelector
-  , setNullableStructSelector
-  , optionalStructSelector
-  , setOptionalStructSelector
-  , nullableOptionalStructSelector
-  , setNullableOptionalStructSelector
   , nullableListSelector
-  , setNullableListSelector
-  , optionalListSelector
-  , setOptionalListSelector
+  , nullableOptionalIntSelector
   , nullableOptionalListSelector
+  , nullableOptionalStringSelector
+  , nullableOptionalStructSelector
+  , nullableStringSelector
+  , nullableStructSelector
+  , optionalIntSelector
+  , optionalListSelector
+  , optionalStringSelector
+  , optionalStructSelector
+  , setNullableIntSelector
+  , setNullableListSelector
+  , setNullableOptionalIntSelector
   , setNullableOptionalListSelector
+  , setNullableOptionalStringSelector
+  , setNullableOptionalStructSelector
+  , setNullableStringSelector
+  , setNullableStructSelector
+  , setOptionalIntSelector
+  , setOptionalListSelector
+  , setOptionalStringSelector
+  , setOptionalStructSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,233 +72,221 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nullableInt@
 nullableInt :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id NSNumber)
-nullableInt mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "nullableInt") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableInt mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct nullableIntSelector
 
 -- | @- setNullableInt:@
 setNullableInt :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsNSNumber value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setNullableInt mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setNullableInt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableInt mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setNullableIntSelector (toNSNumber value)
 
 -- | @- optionalInt@
 optionalInt :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id NSNumber)
-optionalInt mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "optionalInt") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalInt mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct optionalIntSelector
 
 -- | @- setOptionalInt:@
 setOptionalInt :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsNSNumber value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setOptionalInt mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setOptionalInt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionalInt mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setOptionalIntSelector (toNSNumber value)
 
 -- | @- nullableOptionalInt@
 nullableOptionalInt :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id NSNumber)
-nullableOptionalInt mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "nullableOptionalInt") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableOptionalInt mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct nullableOptionalIntSelector
 
 -- | @- setNullableOptionalInt:@
 setNullableOptionalInt :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsNSNumber value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setNullableOptionalInt mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setNullableOptionalInt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableOptionalInt mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setNullableOptionalIntSelector (toNSNumber value)
 
 -- | @- nullableString@
 nullableString :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id NSString)
-nullableString mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "nullableString") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableString mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct nullableStringSelector
 
 -- | @- setNullableString:@
 setNullableString :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsNSString value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setNullableString mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setNullableString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableString mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setNullableStringSelector (toNSString value)
 
 -- | @- optionalString@
 optionalString :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id NSString)
-optionalString mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "optionalString") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalString mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct optionalStringSelector
 
 -- | @- setOptionalString:@
 setOptionalString :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsNSString value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setOptionalString mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setOptionalString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionalString mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setOptionalStringSelector (toNSString value)
 
 -- | @- nullableOptionalString@
 nullableOptionalString :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id NSString)
-nullableOptionalString mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "nullableOptionalString") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableOptionalString mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct nullableOptionalStringSelector
 
 -- | @- setNullableOptionalString:@
 setNullableOptionalString :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsNSString value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setNullableOptionalString mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setNullableOptionalString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableOptionalString mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setNullableOptionalStringSelector (toNSString value)
 
 -- | @- nullableStruct@
 nullableStruct :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id MTRTestClusterClusterSimpleStruct)
-nullableStruct mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "nullableStruct") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableStruct mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct nullableStructSelector
 
 -- | @- setNullableStruct:@
 setNullableStruct :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsMTRTestClusterClusterSimpleStruct value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setNullableStruct mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setNullableStruct:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableStruct mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setNullableStructSelector (toMTRTestClusterClusterSimpleStruct value)
 
 -- | @- optionalStruct@
 optionalStruct :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id MTRTestClusterClusterSimpleStruct)
-optionalStruct mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "optionalStruct") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalStruct mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct optionalStructSelector
 
 -- | @- setOptionalStruct:@
 setOptionalStruct :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsMTRTestClusterClusterSimpleStruct value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setOptionalStruct mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setOptionalStruct:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionalStruct mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setOptionalStructSelector (toMTRTestClusterClusterSimpleStruct value)
 
 -- | @- nullableOptionalStruct@
 nullableOptionalStruct :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id MTRTestClusterClusterSimpleStruct)
-nullableOptionalStruct mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "nullableOptionalStruct") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableOptionalStruct mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct nullableOptionalStructSelector
 
 -- | @- setNullableOptionalStruct:@
 setNullableOptionalStruct :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsMTRTestClusterClusterSimpleStruct value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setNullableOptionalStruct mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setNullableOptionalStruct:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableOptionalStruct mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setNullableOptionalStructSelector (toMTRTestClusterClusterSimpleStruct value)
 
 -- | @- nullableList@
 nullableList :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id NSArray)
-nullableList mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "nullableList") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableList mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct nullableListSelector
 
 -- | @- setNullableList:@
 setNullableList :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsNSArray value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setNullableList mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setNullableList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableList mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setNullableListSelector (toNSArray value)
 
 -- | @- optionalList@
 optionalList :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id NSArray)
-optionalList mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "optionalList") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionalList mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct optionalListSelector
 
 -- | @- setOptionalList:@
 setOptionalList :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsNSArray value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setOptionalList mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setOptionalList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionalList mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setOptionalListSelector (toNSArray value)
 
 -- | @- nullableOptionalList@
 nullableOptionalList :: IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct => mtrTestClusterClusterNullablesAndOptionalsStruct -> IO (Id NSArray)
-nullableOptionalList mtrTestClusterClusterNullablesAndOptionalsStruct  =
-    sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "nullableOptionalList") (retPtr retVoid) [] >>= retainedObject . castPtr
+nullableOptionalList mtrTestClusterClusterNullablesAndOptionalsStruct =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct nullableOptionalListSelector
 
 -- | @- setNullableOptionalList:@
 setNullableOptionalList :: (IsMTRTestClusterClusterNullablesAndOptionalsStruct mtrTestClusterClusterNullablesAndOptionalsStruct, IsNSArray value) => mtrTestClusterClusterNullablesAndOptionalsStruct -> value -> IO ()
-setNullableOptionalList mtrTestClusterClusterNullablesAndOptionalsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNullablesAndOptionalsStruct (mkSelector "setNullableOptionalList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNullableOptionalList mtrTestClusterClusterNullablesAndOptionalsStruct value =
+  sendMessage mtrTestClusterClusterNullablesAndOptionalsStruct setNullableOptionalListSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nullableInt@
-nullableIntSelector :: Selector
+nullableIntSelector :: Selector '[] (Id NSNumber)
 nullableIntSelector = mkSelector "nullableInt"
 
 -- | @Selector@ for @setNullableInt:@
-setNullableIntSelector :: Selector
+setNullableIntSelector :: Selector '[Id NSNumber] ()
 setNullableIntSelector = mkSelector "setNullableInt:"
 
 -- | @Selector@ for @optionalInt@
-optionalIntSelector :: Selector
+optionalIntSelector :: Selector '[] (Id NSNumber)
 optionalIntSelector = mkSelector "optionalInt"
 
 -- | @Selector@ for @setOptionalInt:@
-setOptionalIntSelector :: Selector
+setOptionalIntSelector :: Selector '[Id NSNumber] ()
 setOptionalIntSelector = mkSelector "setOptionalInt:"
 
 -- | @Selector@ for @nullableOptionalInt@
-nullableOptionalIntSelector :: Selector
+nullableOptionalIntSelector :: Selector '[] (Id NSNumber)
 nullableOptionalIntSelector = mkSelector "nullableOptionalInt"
 
 -- | @Selector@ for @setNullableOptionalInt:@
-setNullableOptionalIntSelector :: Selector
+setNullableOptionalIntSelector :: Selector '[Id NSNumber] ()
 setNullableOptionalIntSelector = mkSelector "setNullableOptionalInt:"
 
 -- | @Selector@ for @nullableString@
-nullableStringSelector :: Selector
+nullableStringSelector :: Selector '[] (Id NSString)
 nullableStringSelector = mkSelector "nullableString"
 
 -- | @Selector@ for @setNullableString:@
-setNullableStringSelector :: Selector
+setNullableStringSelector :: Selector '[Id NSString] ()
 setNullableStringSelector = mkSelector "setNullableString:"
 
 -- | @Selector@ for @optionalString@
-optionalStringSelector :: Selector
+optionalStringSelector :: Selector '[] (Id NSString)
 optionalStringSelector = mkSelector "optionalString"
 
 -- | @Selector@ for @setOptionalString:@
-setOptionalStringSelector :: Selector
+setOptionalStringSelector :: Selector '[Id NSString] ()
 setOptionalStringSelector = mkSelector "setOptionalString:"
 
 -- | @Selector@ for @nullableOptionalString@
-nullableOptionalStringSelector :: Selector
+nullableOptionalStringSelector :: Selector '[] (Id NSString)
 nullableOptionalStringSelector = mkSelector "nullableOptionalString"
 
 -- | @Selector@ for @setNullableOptionalString:@
-setNullableOptionalStringSelector :: Selector
+setNullableOptionalStringSelector :: Selector '[Id NSString] ()
 setNullableOptionalStringSelector = mkSelector "setNullableOptionalString:"
 
 -- | @Selector@ for @nullableStruct@
-nullableStructSelector :: Selector
+nullableStructSelector :: Selector '[] (Id MTRTestClusterClusterSimpleStruct)
 nullableStructSelector = mkSelector "nullableStruct"
 
 -- | @Selector@ for @setNullableStruct:@
-setNullableStructSelector :: Selector
+setNullableStructSelector :: Selector '[Id MTRTestClusterClusterSimpleStruct] ()
 setNullableStructSelector = mkSelector "setNullableStruct:"
 
 -- | @Selector@ for @optionalStruct@
-optionalStructSelector :: Selector
+optionalStructSelector :: Selector '[] (Id MTRTestClusterClusterSimpleStruct)
 optionalStructSelector = mkSelector "optionalStruct"
 
 -- | @Selector@ for @setOptionalStruct:@
-setOptionalStructSelector :: Selector
+setOptionalStructSelector :: Selector '[Id MTRTestClusterClusterSimpleStruct] ()
 setOptionalStructSelector = mkSelector "setOptionalStruct:"
 
 -- | @Selector@ for @nullableOptionalStruct@
-nullableOptionalStructSelector :: Selector
+nullableOptionalStructSelector :: Selector '[] (Id MTRTestClusterClusterSimpleStruct)
 nullableOptionalStructSelector = mkSelector "nullableOptionalStruct"
 
 -- | @Selector@ for @setNullableOptionalStruct:@
-setNullableOptionalStructSelector :: Selector
+setNullableOptionalStructSelector :: Selector '[Id MTRTestClusterClusterSimpleStruct] ()
 setNullableOptionalStructSelector = mkSelector "setNullableOptionalStruct:"
 
 -- | @Selector@ for @nullableList@
-nullableListSelector :: Selector
+nullableListSelector :: Selector '[] (Id NSArray)
 nullableListSelector = mkSelector "nullableList"
 
 -- | @Selector@ for @setNullableList:@
-setNullableListSelector :: Selector
+setNullableListSelector :: Selector '[Id NSArray] ()
 setNullableListSelector = mkSelector "setNullableList:"
 
 -- | @Selector@ for @optionalList@
-optionalListSelector :: Selector
+optionalListSelector :: Selector '[] (Id NSArray)
 optionalListSelector = mkSelector "optionalList"
 
 -- | @Selector@ for @setOptionalList:@
-setOptionalListSelector :: Selector
+setOptionalListSelector :: Selector '[Id NSArray] ()
 setOptionalListSelector = mkSelector "setOptionalList:"
 
 -- | @Selector@ for @nullableOptionalList@
-nullableOptionalListSelector :: Selector
+nullableOptionalListSelector :: Selector '[] (Id NSArray)
 nullableOptionalListSelector = mkSelector "nullableOptionalList"
 
 -- | @Selector@ for @setNullableOptionalList:@
-setNullableOptionalListSelector :: Selector
+setNullableOptionalListSelector :: Selector '[Id NSArray] ()
 setNullableOptionalListSelector = mkSelector "setNullableOptionalList:"
 

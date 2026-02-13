@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.PassKit.PKIdentityDocumentMetadata
   , setServerEnvironmentIdentifier
   , issuingCountryCode
   , documentType
-  , initSelector
-  , newSelector
-  , credentialIdentifierSelector
-  , sharingInstanceIdentifierSelector
-  , cardTemplateIdentifierSelector
   , cardConfigurationIdentifierSelector
+  , cardTemplateIdentifierSelector
+  , credentialIdentifierSelector
+  , documentTypeSelector
+  , initSelector
+  , issuingCountryCodeSelector
+  , newSelector
   , serverEnvironmentIdentifierSelector
   , setServerEnvironmentIdentifierSelector
-  , issuingCountryCodeSelector
-  , documentTypeSelector
+  , sharingInstanceIdentifierSelector
 
   -- * Enum types
   , PKAddIdentityDocumentType(PKAddIdentityDocumentType)
@@ -36,15 +37,11 @@ module ObjC.PassKit.PKIdentityDocumentMetadata
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,114 +51,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata => pkIdentityDocumentMetadata -> IO (Id PKIdentityDocumentMetadata)
-init_ pkIdentityDocumentMetadata  =
-    sendMsg pkIdentityDocumentMetadata (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkIdentityDocumentMetadata =
+  sendOwnedMessage pkIdentityDocumentMetadata initSelector
 
 -- | @+ new@
 new :: IO (Id PKIdentityDocumentMetadata)
 new  =
   do
     cls' <- getRequiredClass "PKIdentityDocumentMetadata"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | credentialIdentifier: A unique identifier for provisioning credential data.
 --
 -- ObjC selector: @- credentialIdentifier@
 credentialIdentifier :: IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata => pkIdentityDocumentMetadata -> IO (Id NSString)
-credentialIdentifier pkIdentityDocumentMetadata  =
-    sendMsg pkIdentityDocumentMetadata (mkSelector "credentialIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentialIdentifier pkIdentityDocumentMetadata =
+  sendMessage pkIdentityDocumentMetadata credentialIdentifierSelector
 
 -- | sharingInstanceIdentifier: A unique identifier that refers to an instance of sharing of credentials to a user's device initiated from another user, device, or web.
 --
 -- ObjC selector: @- sharingInstanceIdentifier@
 sharingInstanceIdentifier :: IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata => pkIdentityDocumentMetadata -> IO (Id NSString)
-sharingInstanceIdentifier pkIdentityDocumentMetadata  =
-    sendMsg pkIdentityDocumentMetadata (mkSelector "sharingInstanceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+sharingInstanceIdentifier pkIdentityDocumentMetadata =
+  sendMessage pkIdentityDocumentMetadata sharingInstanceIdentifierSelector
 
 -- | cardTemplateIdentifier: Identifier referencing a card template registered by developers in web portal - identifies a combination of cardProfileIdentifier, cardConfigurationIdentifier, and cardArtBundleName. Returns empty string if no identifier is set.
 --
 -- ObjC selector: @- cardTemplateIdentifier@
 cardTemplateIdentifier :: IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata => pkIdentityDocumentMetadata -> IO (Id NSString)
-cardTemplateIdentifier pkIdentityDocumentMetadata  =
-    sendMsg pkIdentityDocumentMetadata (mkSelector "cardTemplateIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+cardTemplateIdentifier pkIdentityDocumentMetadata =
+  sendMessage pkIdentityDocumentMetadata cardTemplateIdentifierSelector
 
 -- | cardConfigurationIdentifier: Identifier referencing a card configuration registered by developers. Returns empty string if no identifier is set.
 --
 -- ObjC selector: @- cardConfigurationIdentifier@
 cardConfigurationIdentifier :: IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata => pkIdentityDocumentMetadata -> IO (Id NSString)
-cardConfigurationIdentifier pkIdentityDocumentMetadata  =
-    sendMsg pkIdentityDocumentMetadata (mkSelector "cardConfigurationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+cardConfigurationIdentifier pkIdentityDocumentMetadata =
+  sendMessage pkIdentityDocumentMetadata cardConfigurationIdentifierSelector
 
 -- | serverEnvironmentIdentifier: Identifier referencing the target server environment Apple Pay servers should reach out to to provision this pass. If not present, the default Apply Pay server environment will be used and an empty string will be returned.
 --
 -- ObjC selector: @- serverEnvironmentIdentifier@
 serverEnvironmentIdentifier :: IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata => pkIdentityDocumentMetadata -> IO (Id NSString)
-serverEnvironmentIdentifier pkIdentityDocumentMetadata  =
-    sendMsg pkIdentityDocumentMetadata (mkSelector "serverEnvironmentIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverEnvironmentIdentifier pkIdentityDocumentMetadata =
+  sendMessage pkIdentityDocumentMetadata serverEnvironmentIdentifierSelector
 
 -- | serverEnvironmentIdentifier: Identifier referencing the target server environment Apple Pay servers should reach out to to provision this pass. If not present, the default Apply Pay server environment will be used and an empty string will be returned.
 --
 -- ObjC selector: @- setServerEnvironmentIdentifier:@
 setServerEnvironmentIdentifier :: (IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata, IsNSString value) => pkIdentityDocumentMetadata -> value -> IO ()
-setServerEnvironmentIdentifier pkIdentityDocumentMetadata  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkIdentityDocumentMetadata (mkSelector "setServerEnvironmentIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerEnvironmentIdentifier pkIdentityDocumentMetadata value =
+  sendMessage pkIdentityDocumentMetadata setServerEnvironmentIdentifierSelector (toNSString value)
 
 -- | issuingCountryCode: identifies the issuing country of the identity document
 --
 -- ObjC selector: @- issuingCountryCode@
 issuingCountryCode :: IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata => pkIdentityDocumentMetadata -> IO (Id NSString)
-issuingCountryCode pkIdentityDocumentMetadata  =
-    sendMsg pkIdentityDocumentMetadata (mkSelector "issuingCountryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+issuingCountryCode pkIdentityDocumentMetadata =
+  sendMessage pkIdentityDocumentMetadata issuingCountryCodeSelector
 
 -- | identityDocumentType: identifies the type of the identity document
 --
 -- ObjC selector: @- documentType@
 documentType :: IsPKIdentityDocumentMetadata pkIdentityDocumentMetadata => pkIdentityDocumentMetadata -> IO PKAddIdentityDocumentType
-documentType pkIdentityDocumentMetadata  =
-    fmap (coerce :: CLong -> PKAddIdentityDocumentType) $ sendMsg pkIdentityDocumentMetadata (mkSelector "documentType") retCLong []
+documentType pkIdentityDocumentMetadata =
+  sendMessage pkIdentityDocumentMetadata documentTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKIdentityDocumentMetadata)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PKIdentityDocumentMetadata)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @credentialIdentifier@
-credentialIdentifierSelector :: Selector
+credentialIdentifierSelector :: Selector '[] (Id NSString)
 credentialIdentifierSelector = mkSelector "credentialIdentifier"
 
 -- | @Selector@ for @sharingInstanceIdentifier@
-sharingInstanceIdentifierSelector :: Selector
+sharingInstanceIdentifierSelector :: Selector '[] (Id NSString)
 sharingInstanceIdentifierSelector = mkSelector "sharingInstanceIdentifier"
 
 -- | @Selector@ for @cardTemplateIdentifier@
-cardTemplateIdentifierSelector :: Selector
+cardTemplateIdentifierSelector :: Selector '[] (Id NSString)
 cardTemplateIdentifierSelector = mkSelector "cardTemplateIdentifier"
 
 -- | @Selector@ for @cardConfigurationIdentifier@
-cardConfigurationIdentifierSelector :: Selector
+cardConfigurationIdentifierSelector :: Selector '[] (Id NSString)
 cardConfigurationIdentifierSelector = mkSelector "cardConfigurationIdentifier"
 
 -- | @Selector@ for @serverEnvironmentIdentifier@
-serverEnvironmentIdentifierSelector :: Selector
+serverEnvironmentIdentifierSelector :: Selector '[] (Id NSString)
 serverEnvironmentIdentifierSelector = mkSelector "serverEnvironmentIdentifier"
 
 -- | @Selector@ for @setServerEnvironmentIdentifier:@
-setServerEnvironmentIdentifierSelector :: Selector
+setServerEnvironmentIdentifierSelector :: Selector '[Id NSString] ()
 setServerEnvironmentIdentifierSelector = mkSelector "setServerEnvironmentIdentifier:"
 
 -- | @Selector@ for @issuingCountryCode@
-issuingCountryCodeSelector :: Selector
+issuingCountryCodeSelector :: Selector '[] (Id NSString)
 issuingCountryCodeSelector = mkSelector "issuingCountryCode"
 
 -- | @Selector@ for @documentType@
-documentTypeSelector :: Selector
+documentTypeSelector :: Selector '[] PKAddIdentityDocumentType
 documentTypeSelector = mkSelector "documentType"
 

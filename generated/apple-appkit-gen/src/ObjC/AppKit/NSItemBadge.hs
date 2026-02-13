@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.AppKit.NSItemBadge
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,7 +45,7 @@ badgeWithCount :: CLong -> IO (Id NSItemBadge)
 badgeWithCount count =
   do
     cls' <- getRequiredClass "NSItemBadge"
-    sendClassMsg cls' (mkSelector "badgeWithCount:") (retPtr retVoid) [argCLong count] >>= retainedObject . castPtr
+    sendClassMessage cls' badgeWithCountSelector count
 
 -- | Creates a badge displaying a text.
 --
@@ -61,8 +58,7 @@ badgeWithText :: IsNSString text => text -> IO (Id NSItemBadge)
 badgeWithText text =
   do
     cls' <- getRequiredClass "NSItemBadge"
-    withObjCPtr text $ \raw_text ->
-      sendClassMsg cls' (mkSelector "badgeWithText:") (retPtr retVoid) [argPtr (castPtr raw_text :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' badgeWithTextSelector (toNSString text)
 
 -- | Creates a badge styled as an indicator. In this context, an indicator is simply a badge without any text.
 --
@@ -73,32 +69,32 @@ indicatorBadge :: IO (Id NSItemBadge)
 indicatorBadge  =
   do
     cls' <- getRequiredClass "NSItemBadge"
-    sendClassMsg cls' (mkSelector "indicatorBadge") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' indicatorBadgeSelector
 
 -- | The text to be displayed within the badge.
 --
 -- ObjC selector: @- text@
 text :: IsNSItemBadge nsItemBadge => nsItemBadge -> IO (Id NSString)
-text nsItemBadge  =
-    sendMsg nsItemBadge (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text nsItemBadge =
+  sendMessage nsItemBadge textSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @badgeWithCount:@
-badgeWithCountSelector :: Selector
+badgeWithCountSelector :: Selector '[CLong] (Id NSItemBadge)
 badgeWithCountSelector = mkSelector "badgeWithCount:"
 
 -- | @Selector@ for @badgeWithText:@
-badgeWithTextSelector :: Selector
+badgeWithTextSelector :: Selector '[Id NSString] (Id NSItemBadge)
 badgeWithTextSelector = mkSelector "badgeWithText:"
 
 -- | @Selector@ for @indicatorBadge@
-indicatorBadgeSelector :: Selector
+indicatorBadgeSelector :: Selector '[] (Id NSItemBadge)
 indicatorBadgeSelector = mkSelector "indicatorBadge"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.SensitiveContentAnalysis.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | SensitivityAnalysis Policy on device, represents type of interventions when enabled
 -- | @SCSensitivityAnalysisPolicy@
@@ -26,6 +29,16 @@ pattern SCSensitivityAnalysisPolicySimpleInterventions = SCSensitivityAnalysisPo
 pattern SCSensitivityAnalysisPolicyDescriptiveInterventions :: SCSensitivityAnalysisPolicy
 pattern SCSensitivityAnalysisPolicyDescriptiveInterventions = SCSensitivityAnalysisPolicy 2
 
+instance ObjCArgument SCSensitivityAnalysisPolicy where
+  withObjCArg (SCSensitivityAnalysisPolicy x) k = k (argCLong x)
+
+instance ObjCReturn SCSensitivityAnalysisPolicy where
+  type RawReturn SCSensitivityAnalysisPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCSensitivityAnalysisPolicy x)
+  fromOwned x = pure (SCSensitivityAnalysisPolicy x)
+
 -- | Options for the different types of analyzed video streams.
 --
 -- Pass this enum into the ``SCVideoStreamAnalyzer/init(participantUUID:streamDirection:)`` initializer when creating an ``SCVideoStreamAnalyzer`` to analyze video streams.
@@ -39,3 +52,13 @@ pattern SCVideoStreamAnalyzerStreamDirectionOutgoing = SCVideoStreamAnalyzerStre
 
 pattern SCVideoStreamAnalyzerStreamDirectionIncoming :: SCVideoStreamAnalyzerStreamDirection
 pattern SCVideoStreamAnalyzerStreamDirectionIncoming = SCVideoStreamAnalyzerStreamDirection 2
+
+instance ObjCArgument SCVideoStreamAnalyzerStreamDirection where
+  withObjCArg (SCVideoStreamAnalyzerStreamDirection x) k = k (argCLong x)
+
+instance ObjCReturn SCVideoStreamAnalyzerStreamDirection where
+  type RawReturn SCVideoStreamAnalyzerStreamDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCVideoStreamAnalyzerStreamDirection x)
+  fromOwned x = pure (SCVideoStreamAnalyzerStreamDirection x)

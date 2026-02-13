@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRContentControlClusterSetScreenDailyTimeParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , screenTimeSelector
-  , setScreenTimeSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setScreenTimeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- screenTime@
 screenTime :: IsMTRContentControlClusterSetScreenDailyTimeParams mtrContentControlClusterSetScreenDailyTimeParams => mtrContentControlClusterSetScreenDailyTimeParams -> IO (Id NSNumber)
-screenTime mtrContentControlClusterSetScreenDailyTimeParams  =
-    sendMsg mtrContentControlClusterSetScreenDailyTimeParams (mkSelector "screenTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+screenTime mtrContentControlClusterSetScreenDailyTimeParams =
+  sendMessage mtrContentControlClusterSetScreenDailyTimeParams screenTimeSelector
 
 -- | @- setScreenTime:@
 setScreenTime :: (IsMTRContentControlClusterSetScreenDailyTimeParams mtrContentControlClusterSetScreenDailyTimeParams, IsNSNumber value) => mtrContentControlClusterSetScreenDailyTimeParams -> value -> IO ()
-setScreenTime mtrContentControlClusterSetScreenDailyTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterSetScreenDailyTimeParams (mkSelector "setScreenTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScreenTime mtrContentControlClusterSetScreenDailyTimeParams value =
+  sendMessage mtrContentControlClusterSetScreenDailyTimeParams setScreenTimeSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setScreenTime mtrContentControlClusterSetScreenDailyTimeParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRContentControlClusterSetScreenDailyTimeParams mtrContentControlClusterSetScreenDailyTimeParams => mtrContentControlClusterSetScreenDailyTimeParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrContentControlClusterSetScreenDailyTimeParams  =
-    sendMsg mtrContentControlClusterSetScreenDailyTimeParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrContentControlClusterSetScreenDailyTimeParams =
+  sendMessage mtrContentControlClusterSetScreenDailyTimeParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrContentControlClusterSetScreenDailyTimeParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRContentControlClusterSetScreenDailyTimeParams mtrContentControlClusterSetScreenDailyTimeParams, IsNSNumber value) => mtrContentControlClusterSetScreenDailyTimeParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrContentControlClusterSetScreenDailyTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterSetScreenDailyTimeParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrContentControlClusterSetScreenDailyTimeParams value =
+  sendMessage mtrContentControlClusterSetScreenDailyTimeParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrContentControlClusterSetScreenDailyTimeParams  value 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRContentControlClusterSetScreenDailyTimeParams mtrContentControlClusterSetScreenDailyTimeParams => mtrContentControlClusterSetScreenDailyTimeParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrContentControlClusterSetScreenDailyTimeParams  =
-    sendMsg mtrContentControlClusterSetScreenDailyTimeParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrContentControlClusterSetScreenDailyTimeParams =
+  sendMessage mtrContentControlClusterSetScreenDailyTimeParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrContentControlClusterSetScreenDailyTimeParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRContentControlClusterSetScreenDailyTimeParams mtrContentControlClusterSetScreenDailyTimeParams, IsNSNumber value) => mtrContentControlClusterSetScreenDailyTimeParams -> value -> IO ()
-setServerSideProcessingTimeout mtrContentControlClusterSetScreenDailyTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterSetScreenDailyTimeParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrContentControlClusterSetScreenDailyTimeParams value =
+  sendMessage mtrContentControlClusterSetScreenDailyTimeParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @screenTime@
-screenTimeSelector :: Selector
+screenTimeSelector :: Selector '[] (Id NSNumber)
 screenTimeSelector = mkSelector "screenTime"
 
 -- | @Selector@ for @setScreenTime:@
-setScreenTimeSelector :: Selector
+setScreenTimeSelector :: Selector '[Id NSNumber] ()
 setScreenTimeSelector = mkSelector "setScreenTime:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

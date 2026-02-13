@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.MediaLibrary.MLMediaObject
   , fileSize
   , modificationDate
   , thumbnailURL
-  , mediaLibrarySelector
-  , identifierSelector
-  , mediaSourceIdentifierSelector
   , attributesSelector
-  , mediaTypeSelector
   , contentTypeSelector
-  , nameSelector
-  , urlSelector
-  , originalURLSelector
   , fileSizeSelector
+  , identifierSelector
+  , mediaLibrarySelector
+  , mediaSourceIdentifierSelector
+  , mediaTypeSelector
   , modificationDateSelector
+  , nameSelector
+  , originalURLSelector
   , thumbnailURLSelector
+  , urlSelector
 
   -- * Enum types
   , MLMediaType(MLMediaType)
@@ -40,15 +41,11 @@ module ObjC.MediaLibrary.MLMediaObject
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,113 +55,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- mediaLibrary@
 mediaLibrary :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id MLMediaLibrary)
-mediaLibrary mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "mediaLibrary") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaLibrary mlMediaObject =
+  sendMessage mlMediaObject mediaLibrarySelector
 
 -- | @- identifier@
 identifier :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id NSString)
-identifier mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier mlMediaObject =
+  sendMessage mlMediaObject identifierSelector
 
 -- | @- mediaSourceIdentifier@
 mediaSourceIdentifier :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id NSString)
-mediaSourceIdentifier mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "mediaSourceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaSourceIdentifier mlMediaObject =
+  sendMessage mlMediaObject mediaSourceIdentifierSelector
 
 -- | @- attributes@
 attributes :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id NSDictionary)
-attributes mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes mlMediaObject =
+  sendMessage mlMediaObject attributesSelector
 
 -- | @- mediaType@
 mediaType :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO MLMediaType
-mediaType mlMediaObject  =
-    fmap (coerce :: CULong -> MLMediaType) $ sendMsg mlMediaObject (mkSelector "mediaType") retCULong []
+mediaType mlMediaObject =
+  sendMessage mlMediaObject mediaTypeSelector
 
 -- | @- contentType@
 contentType :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id NSString)
-contentType mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentType mlMediaObject =
+  sendMessage mlMediaObject contentTypeSelector
 
 -- | @- name@
 name :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id NSString)
-name mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mlMediaObject =
+  sendMessage mlMediaObject nameSelector
 
 -- | @- URL@
 url :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id NSURL)
-url mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url mlMediaObject =
+  sendMessage mlMediaObject urlSelector
 
 -- | @- originalURL@
 originalURL :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id NSURL)
-originalURL mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "originalURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalURL mlMediaObject =
+  sendMessage mlMediaObject originalURLSelector
 
 -- | @- fileSize@
 fileSize :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO CULong
-fileSize mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "fileSize") retCULong []
+fileSize mlMediaObject =
+  sendMessage mlMediaObject fileSizeSelector
 
 -- | @- modificationDate@
 modificationDate :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id NSDate)
-modificationDate mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "modificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+modificationDate mlMediaObject =
+  sendMessage mlMediaObject modificationDateSelector
 
 -- | @- thumbnailURL@
 thumbnailURL :: IsMLMediaObject mlMediaObject => mlMediaObject -> IO (Id NSURL)
-thumbnailURL mlMediaObject  =
-    sendMsg mlMediaObject (mkSelector "thumbnailURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+thumbnailURL mlMediaObject =
+  sendMessage mlMediaObject thumbnailURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mediaLibrary@
-mediaLibrarySelector :: Selector
+mediaLibrarySelector :: Selector '[] (Id MLMediaLibrary)
 mediaLibrarySelector = mkSelector "mediaLibrary"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @mediaSourceIdentifier@
-mediaSourceIdentifierSelector :: Selector
+mediaSourceIdentifierSelector :: Selector '[] (Id NSString)
 mediaSourceIdentifierSelector = mkSelector "mediaSourceIdentifier"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] MLMediaType
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id NSString)
 contentTypeSelector = mkSelector "contentType"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @originalURL@
-originalURLSelector :: Selector
+originalURLSelector :: Selector '[] (Id NSURL)
 originalURLSelector = mkSelector "originalURL"
 
 -- | @Selector@ for @fileSize@
-fileSizeSelector :: Selector
+fileSizeSelector :: Selector '[] CULong
 fileSizeSelector = mkSelector "fileSize"
 
 -- | @Selector@ for @modificationDate@
-modificationDateSelector :: Selector
+modificationDateSelector :: Selector '[] (Id NSDate)
 modificationDateSelector = mkSelector "modificationDate"
 
 -- | @Selector@ for @thumbnailURL@
-thumbnailURLSelector :: Selector
+thumbnailURLSelector :: Selector '[] (Id NSURL)
 thumbnailURLSelector = mkSelector "thumbnailURL"
 

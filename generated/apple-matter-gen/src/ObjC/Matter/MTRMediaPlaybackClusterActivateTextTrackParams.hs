@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRMediaPlaybackClusterActivateTextTrackParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , trackIDSelector
-  , setTrackIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setTrackIDSelector
+  , timedInvokeTimeoutMsSelector
+  , trackIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- trackID@
 trackID :: IsMTRMediaPlaybackClusterActivateTextTrackParams mtrMediaPlaybackClusterActivateTextTrackParams => mtrMediaPlaybackClusterActivateTextTrackParams -> IO (Id NSString)
-trackID mtrMediaPlaybackClusterActivateTextTrackParams  =
-    sendMsg mtrMediaPlaybackClusterActivateTextTrackParams (mkSelector "trackID") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackID mtrMediaPlaybackClusterActivateTextTrackParams =
+  sendMessage mtrMediaPlaybackClusterActivateTextTrackParams trackIDSelector
 
 -- | @- setTrackID:@
 setTrackID :: (IsMTRMediaPlaybackClusterActivateTextTrackParams mtrMediaPlaybackClusterActivateTextTrackParams, IsNSString value) => mtrMediaPlaybackClusterActivateTextTrackParams -> value -> IO ()
-setTrackID mtrMediaPlaybackClusterActivateTextTrackParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterActivateTextTrackParams (mkSelector "setTrackID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTrackID mtrMediaPlaybackClusterActivateTextTrackParams value =
+  sendMessage mtrMediaPlaybackClusterActivateTextTrackParams setTrackIDSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setTrackID mtrMediaPlaybackClusterActivateTextTrackParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRMediaPlaybackClusterActivateTextTrackParams mtrMediaPlaybackClusterActivateTextTrackParams => mtrMediaPlaybackClusterActivateTextTrackParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrMediaPlaybackClusterActivateTextTrackParams  =
-    sendMsg mtrMediaPlaybackClusterActivateTextTrackParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrMediaPlaybackClusterActivateTextTrackParams =
+  sendMessage mtrMediaPlaybackClusterActivateTextTrackParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrMediaPlaybackClusterActivateTextTrackParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRMediaPlaybackClusterActivateTextTrackParams mtrMediaPlaybackClusterActivateTextTrackParams, IsNSNumber value) => mtrMediaPlaybackClusterActivateTextTrackParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrMediaPlaybackClusterActivateTextTrackParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterActivateTextTrackParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrMediaPlaybackClusterActivateTextTrackParams value =
+  sendMessage mtrMediaPlaybackClusterActivateTextTrackParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrMediaPlaybackClusterActivateTextTrackParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRMediaPlaybackClusterActivateTextTrackParams mtrMediaPlaybackClusterActivateTextTrackParams => mtrMediaPlaybackClusterActivateTextTrackParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrMediaPlaybackClusterActivateTextTrackParams  =
-    sendMsg mtrMediaPlaybackClusterActivateTextTrackParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrMediaPlaybackClusterActivateTextTrackParams =
+  sendMessage mtrMediaPlaybackClusterActivateTextTrackParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrMediaPlaybackClusterActivateTextTrackParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRMediaPlaybackClusterActivateTextTrackParams mtrMediaPlaybackClusterActivateTextTrackParams, IsNSNumber value) => mtrMediaPlaybackClusterActivateTextTrackParams -> value -> IO ()
-setServerSideProcessingTimeout mtrMediaPlaybackClusterActivateTextTrackParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterActivateTextTrackParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrMediaPlaybackClusterActivateTextTrackParams value =
+  sendMessage mtrMediaPlaybackClusterActivateTextTrackParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @trackID@
-trackIDSelector :: Selector
+trackIDSelector :: Selector '[] (Id NSString)
 trackIDSelector = mkSelector "trackID"
 
 -- | @Selector@ for @setTrackID:@
-setTrackIDSelector :: Selector
+setTrackIDSelector :: Selector '[Id NSString] ()
 setTrackIDSelector = mkSelector "setTrackID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

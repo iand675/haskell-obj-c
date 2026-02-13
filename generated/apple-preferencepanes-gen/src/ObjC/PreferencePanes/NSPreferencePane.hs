@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,29 +31,29 @@ module ObjC.PreferencePanes.NSPreferencePane
   , setLastKeyView
   , autoSaveTextFields
   , selected
-  , initWithBundleSelector
-  , loadMainViewSelector
-  , mainViewDidLoadSelector
   , assignMainViewSelector
-  , willSelectSelector
-  , didSelectSelector
-  , replyToShouldUnselectSelector
-  , willUnselectSelector
-  , didUnselectSelector
-  , updateHelpMenuWithArraySelector
-  , bundleSelector
-  , mainNibNameSelector
-  , shouldUnselectSelector
-  , mainViewSelector
-  , setMainViewSelector
-  , initialKeyViewSelector
-  , setInitialKeyViewSelector
-  , firstKeyViewSelector
-  , setFirstKeyViewSelector
-  , lastKeyViewSelector
-  , setLastKeyViewSelector
   , autoSaveTextFieldsSelector
+  , bundleSelector
+  , didSelectSelector
+  , didUnselectSelector
+  , firstKeyViewSelector
+  , initWithBundleSelector
+  , initialKeyViewSelector
+  , lastKeyViewSelector
+  , loadMainViewSelector
+  , mainNibNameSelector
+  , mainViewDidLoadSelector
+  , mainViewSelector
+  , replyToShouldUnselectSelector
   , selectedSelector
+  , setFirstKeyViewSelector
+  , setInitialKeyViewSelector
+  , setLastKeyViewSelector
+  , setMainViewSelector
+  , shouldUnselectSelector
+  , updateHelpMenuWithArraySelector
+  , willSelectSelector
+  , willUnselectSelector
 
   -- * Enum types
   , NSPreferencePaneUnselectReply(NSPreferencePaneUnselectReply)
@@ -62,15 +63,11 @@ module ObjC.PreferencePanes.NSPreferencePane
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,218 +78,212 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithBundle:@
 initWithBundle :: (IsNSPreferencePane nsPreferencePane, IsNSBundle bundle) => nsPreferencePane -> bundle -> IO (Id NSPreferencePane)
-initWithBundle nsPreferencePane  bundle =
-  withObjCPtr bundle $ \raw_bundle ->
-      sendMsg nsPreferencePane (mkSelector "initWithBundle:") (retPtr retVoid) [argPtr (castPtr raw_bundle :: Ptr ())] >>= ownedObject . castPtr
+initWithBundle nsPreferencePane bundle =
+  sendOwnedMessage nsPreferencePane initWithBundleSelector (toNSBundle bundle)
 
 -- | @- loadMainView@
 loadMainView :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO (Id NSView)
-loadMainView nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "loadMainView") (retPtr retVoid) [] >>= retainedObject . castPtr
+loadMainView nsPreferencePane =
+  sendMessage nsPreferencePane loadMainViewSelector
 
 -- | @- mainViewDidLoad@
 mainViewDidLoad :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO ()
-mainViewDidLoad nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "mainViewDidLoad") retVoid []
+mainViewDidLoad nsPreferencePane =
+  sendMessage nsPreferencePane mainViewDidLoadSelector
 
 -- | @- assignMainView@
 assignMainView :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO ()
-assignMainView nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "assignMainView") retVoid []
+assignMainView nsPreferencePane =
+  sendMessage nsPreferencePane assignMainViewSelector
 
 -- | @- willSelect@
 willSelect :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO ()
-willSelect nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "willSelect") retVoid []
+willSelect nsPreferencePane =
+  sendMessage nsPreferencePane willSelectSelector
 
 -- | @- didSelect@
 didSelect :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO ()
-didSelect nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "didSelect") retVoid []
+didSelect nsPreferencePane =
+  sendMessage nsPreferencePane didSelectSelector
 
 -- | @- replyToShouldUnselect:@
 replyToShouldUnselect :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> Bool -> IO ()
-replyToShouldUnselect nsPreferencePane  shouldUnselect =
-    sendMsg nsPreferencePane (mkSelector "replyToShouldUnselect:") retVoid [argCULong (if shouldUnselect then 1 else 0)]
+replyToShouldUnselect nsPreferencePane shouldUnselect =
+  sendMessage nsPreferencePane replyToShouldUnselectSelector shouldUnselect
 
 -- | @- willUnselect@
 willUnselect :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO ()
-willUnselect nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "willUnselect") retVoid []
+willUnselect nsPreferencePane =
+  sendMessage nsPreferencePane willUnselectSelector
 
 -- | @- didUnselect@
 didUnselect :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO ()
-didUnselect nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "didUnselect") retVoid []
+didUnselect nsPreferencePane =
+  sendMessage nsPreferencePane didUnselectSelector
 
 -- | @- updateHelpMenuWithArray:@
 updateHelpMenuWithArray :: (IsNSPreferencePane nsPreferencePane, IsNSArray inArrayOfMenuItems) => nsPreferencePane -> inArrayOfMenuItems -> IO ()
-updateHelpMenuWithArray nsPreferencePane  inArrayOfMenuItems =
-  withObjCPtr inArrayOfMenuItems $ \raw_inArrayOfMenuItems ->
-      sendMsg nsPreferencePane (mkSelector "updateHelpMenuWithArray:") retVoid [argPtr (castPtr raw_inArrayOfMenuItems :: Ptr ())]
+updateHelpMenuWithArray nsPreferencePane inArrayOfMenuItems =
+  sendMessage nsPreferencePane updateHelpMenuWithArraySelector (toNSArray inArrayOfMenuItems)
 
 -- | @- bundle@
 bundle :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO (Id NSBundle)
-bundle nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "bundle") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundle nsPreferencePane =
+  sendMessage nsPreferencePane bundleSelector
 
 -- | @- mainNibName@
 mainNibName :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO (Id NSString)
-mainNibName nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "mainNibName") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainNibName nsPreferencePane =
+  sendMessage nsPreferencePane mainNibNameSelector
 
 -- | @- shouldUnselect@
 shouldUnselect :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO NSPreferencePaneUnselectReply
-shouldUnselect nsPreferencePane  =
-    fmap (coerce :: CULong -> NSPreferencePaneUnselectReply) $ sendMsg nsPreferencePane (mkSelector "shouldUnselect") retCULong []
+shouldUnselect nsPreferencePane =
+  sendMessage nsPreferencePane shouldUnselectSelector
 
 -- | @- mainView@
 mainView :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO (Id NSView)
-mainView nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "mainView") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainView nsPreferencePane =
+  sendMessage nsPreferencePane mainViewSelector
 
 -- | @- setMainView:@
 setMainView :: (IsNSPreferencePane nsPreferencePane, IsNSView value) => nsPreferencePane -> value -> IO ()
-setMainView nsPreferencePane  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPreferencePane (mkSelector "setMainView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMainView nsPreferencePane value =
+  sendMessage nsPreferencePane setMainViewSelector (toNSView value)
 
 -- | @- initialKeyView@
 initialKeyView :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO (Id NSView)
-initialKeyView nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "initialKeyView") (retPtr retVoid) [] >>= ownedObject . castPtr
+initialKeyView nsPreferencePane =
+  sendOwnedMessage nsPreferencePane initialKeyViewSelector
 
 -- | @- setInitialKeyView:@
 setInitialKeyView :: (IsNSPreferencePane nsPreferencePane, IsNSView value) => nsPreferencePane -> value -> IO ()
-setInitialKeyView nsPreferencePane  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPreferencePane (mkSelector "setInitialKeyView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInitialKeyView nsPreferencePane value =
+  sendMessage nsPreferencePane setInitialKeyViewSelector (toNSView value)
 
 -- | @- firstKeyView@
 firstKeyView :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO (Id NSView)
-firstKeyView nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "firstKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstKeyView nsPreferencePane =
+  sendMessage nsPreferencePane firstKeyViewSelector
 
 -- | @- setFirstKeyView:@
 setFirstKeyView :: (IsNSPreferencePane nsPreferencePane, IsNSView value) => nsPreferencePane -> value -> IO ()
-setFirstKeyView nsPreferencePane  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPreferencePane (mkSelector "setFirstKeyView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFirstKeyView nsPreferencePane value =
+  sendMessage nsPreferencePane setFirstKeyViewSelector (toNSView value)
 
 -- | @- lastKeyView@
 lastKeyView :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO (Id NSView)
-lastKeyView nsPreferencePane  =
-    sendMsg nsPreferencePane (mkSelector "lastKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastKeyView nsPreferencePane =
+  sendMessage nsPreferencePane lastKeyViewSelector
 
 -- | @- setLastKeyView:@
 setLastKeyView :: (IsNSPreferencePane nsPreferencePane, IsNSView value) => nsPreferencePane -> value -> IO ()
-setLastKeyView nsPreferencePane  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPreferencePane (mkSelector "setLastKeyView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLastKeyView nsPreferencePane value =
+  sendMessage nsPreferencePane setLastKeyViewSelector (toNSView value)
 
 -- | @- autoSaveTextFields@
 autoSaveTextFields :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO Bool
-autoSaveTextFields nsPreferencePane  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPreferencePane (mkSelector "autoSaveTextFields") retCULong []
+autoSaveTextFields nsPreferencePane =
+  sendMessage nsPreferencePane autoSaveTextFieldsSelector
 
 -- | @- selected@
 selected :: IsNSPreferencePane nsPreferencePane => nsPreferencePane -> IO Bool
-selected nsPreferencePane  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPreferencePane (mkSelector "selected") retCULong []
+selected nsPreferencePane =
+  sendMessage nsPreferencePane selectedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBundle:@
-initWithBundleSelector :: Selector
+initWithBundleSelector :: Selector '[Id NSBundle] (Id NSPreferencePane)
 initWithBundleSelector = mkSelector "initWithBundle:"
 
 -- | @Selector@ for @loadMainView@
-loadMainViewSelector :: Selector
+loadMainViewSelector :: Selector '[] (Id NSView)
 loadMainViewSelector = mkSelector "loadMainView"
 
 -- | @Selector@ for @mainViewDidLoad@
-mainViewDidLoadSelector :: Selector
+mainViewDidLoadSelector :: Selector '[] ()
 mainViewDidLoadSelector = mkSelector "mainViewDidLoad"
 
 -- | @Selector@ for @assignMainView@
-assignMainViewSelector :: Selector
+assignMainViewSelector :: Selector '[] ()
 assignMainViewSelector = mkSelector "assignMainView"
 
 -- | @Selector@ for @willSelect@
-willSelectSelector :: Selector
+willSelectSelector :: Selector '[] ()
 willSelectSelector = mkSelector "willSelect"
 
 -- | @Selector@ for @didSelect@
-didSelectSelector :: Selector
+didSelectSelector :: Selector '[] ()
 didSelectSelector = mkSelector "didSelect"
 
 -- | @Selector@ for @replyToShouldUnselect:@
-replyToShouldUnselectSelector :: Selector
+replyToShouldUnselectSelector :: Selector '[Bool] ()
 replyToShouldUnselectSelector = mkSelector "replyToShouldUnselect:"
 
 -- | @Selector@ for @willUnselect@
-willUnselectSelector :: Selector
+willUnselectSelector :: Selector '[] ()
 willUnselectSelector = mkSelector "willUnselect"
 
 -- | @Selector@ for @didUnselect@
-didUnselectSelector :: Selector
+didUnselectSelector :: Selector '[] ()
 didUnselectSelector = mkSelector "didUnselect"
 
 -- | @Selector@ for @updateHelpMenuWithArray:@
-updateHelpMenuWithArraySelector :: Selector
+updateHelpMenuWithArraySelector :: Selector '[Id NSArray] ()
 updateHelpMenuWithArraySelector = mkSelector "updateHelpMenuWithArray:"
 
 -- | @Selector@ for @bundle@
-bundleSelector :: Selector
+bundleSelector :: Selector '[] (Id NSBundle)
 bundleSelector = mkSelector "bundle"
 
 -- | @Selector@ for @mainNibName@
-mainNibNameSelector :: Selector
+mainNibNameSelector :: Selector '[] (Id NSString)
 mainNibNameSelector = mkSelector "mainNibName"
 
 -- | @Selector@ for @shouldUnselect@
-shouldUnselectSelector :: Selector
+shouldUnselectSelector :: Selector '[] NSPreferencePaneUnselectReply
 shouldUnselectSelector = mkSelector "shouldUnselect"
 
 -- | @Selector@ for @mainView@
-mainViewSelector :: Selector
+mainViewSelector :: Selector '[] (Id NSView)
 mainViewSelector = mkSelector "mainView"
 
 -- | @Selector@ for @setMainView:@
-setMainViewSelector :: Selector
+setMainViewSelector :: Selector '[Id NSView] ()
 setMainViewSelector = mkSelector "setMainView:"
 
 -- | @Selector@ for @initialKeyView@
-initialKeyViewSelector :: Selector
+initialKeyViewSelector :: Selector '[] (Id NSView)
 initialKeyViewSelector = mkSelector "initialKeyView"
 
 -- | @Selector@ for @setInitialKeyView:@
-setInitialKeyViewSelector :: Selector
+setInitialKeyViewSelector :: Selector '[Id NSView] ()
 setInitialKeyViewSelector = mkSelector "setInitialKeyView:"
 
 -- | @Selector@ for @firstKeyView@
-firstKeyViewSelector :: Selector
+firstKeyViewSelector :: Selector '[] (Id NSView)
 firstKeyViewSelector = mkSelector "firstKeyView"
 
 -- | @Selector@ for @setFirstKeyView:@
-setFirstKeyViewSelector :: Selector
+setFirstKeyViewSelector :: Selector '[Id NSView] ()
 setFirstKeyViewSelector = mkSelector "setFirstKeyView:"
 
 -- | @Selector@ for @lastKeyView@
-lastKeyViewSelector :: Selector
+lastKeyViewSelector :: Selector '[] (Id NSView)
 lastKeyViewSelector = mkSelector "lastKeyView"
 
 -- | @Selector@ for @setLastKeyView:@
-setLastKeyViewSelector :: Selector
+setLastKeyViewSelector :: Selector '[Id NSView] ()
 setLastKeyViewSelector = mkSelector "setLastKeyView:"
 
 -- | @Selector@ for @autoSaveTextFields@
-autoSaveTextFieldsSelector :: Selector
+autoSaveTextFieldsSelector :: Selector '[] Bool
 autoSaveTextFieldsSelector = mkSelector "autoSaveTextFields"
 
 -- | @Selector@ for @selected@
-selectedSelector :: Selector
+selectedSelector :: Selector '[] Bool
 selectedSelector = mkSelector "selected"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,31 +25,27 @@ module ObjC.AVFoundation.AVCaptureTimecodeGenerator
   , setTimecodeAlignmentOffset
   , frameCountSource
   , realTimeClockSource
-  , setDelegate_queueSelector
-  , startSynchronizationWithTimecodeSourceSelector
   , availableSourcesSelector
   , currentSourceSelector
-  , delegateSelector
   , delegateCallbackQueueSelector
-  , synchronizationTimeoutSelector
-  , setSynchronizationTimeoutSelector
-  , timecodeAlignmentOffsetSelector
-  , setTimecodeAlignmentOffsetSelector
+  , delegateSelector
   , frameCountSourceSelector
   , realTimeClockSourceSelector
+  , setDelegate_queueSelector
+  , setSynchronizationTimeoutSelector
+  , setTimecodeAlignmentOffsetSelector
+  , startSynchronizationWithTimecodeSourceSelector
+  , synchronizationTimeoutSelector
+  , timecodeAlignmentOffsetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,9 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setDelegate:queue:@
 setDelegate_queue :: (IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator, IsNSObject callbackQueue) => avCaptureTimecodeGenerator -> RawId -> callbackQueue -> IO ()
-setDelegate_queue avCaptureTimecodeGenerator  delegate callbackQueue =
-  withObjCPtr callbackQueue $ \raw_callbackQueue ->
-      sendMsg avCaptureTimecodeGenerator (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_callbackQueue :: Ptr ())]
+setDelegate_queue avCaptureTimecodeGenerator delegate callbackQueue =
+  sendMessage avCaptureTimecodeGenerator setDelegate_queueSelector delegate (toNSObject callbackQueue)
 
 -- | Synchronizes the generator with the specified timecode source.
 --
@@ -73,9 +69,8 @@ setDelegate_queue avCaptureTimecodeGenerator  delegate callbackQueue =
 --
 -- ObjC selector: @- startSynchronizationWithTimecodeSource:@
 startSynchronizationWithTimecodeSource :: (IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator, IsAVCaptureTimecodeSource source) => avCaptureTimecodeGenerator -> source -> IO ()
-startSynchronizationWithTimecodeSource avCaptureTimecodeGenerator  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg avCaptureTimecodeGenerator (mkSelector "startSynchronizationWithTimecodeSource:") retVoid [argPtr (castPtr raw_source :: Ptr ())]
+startSynchronizationWithTimecodeSource avCaptureTimecodeGenerator source =
+  sendMessage avCaptureTimecodeGenerator startSynchronizationWithTimecodeSourceSelector (toAVCaptureTimecodeSource source)
 
 -- | An array of available timecode synchronization sources that can be used by the timecode generator.
 --
@@ -87,8 +82,8 @@ startSynchronizationWithTimecodeSource avCaptureTimecodeGenerator  source =
 --
 -- ObjC selector: @- availableSources@
 availableSources :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> IO (Id NSArray)
-availableSources avCaptureTimecodeGenerator  =
-    sendMsg avCaptureTimecodeGenerator (mkSelector "availableSources") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableSources avCaptureTimecodeGenerator =
+  sendMessage avCaptureTimecodeGenerator availableSourcesSelector
 
 -- | The active timecode source used by ``AVCaptureTimecodeGenerator`` to maintain clock synchronization for accurate timecode generation.
 --
@@ -96,8 +91,8 @@ availableSources avCaptureTimecodeGenerator  =
 --
 -- ObjC selector: @- currentSource@
 currentSource :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> IO (Id AVCaptureTimecodeSource)
-currentSource avCaptureTimecodeGenerator  =
-    sendMsg avCaptureTimecodeGenerator (mkSelector "currentSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentSource avCaptureTimecodeGenerator =
+  sendMessage avCaptureTimecodeGenerator currentSourceSelector
 
 -- | The delegate that receives timecode updates from the timecode generator.
 --
@@ -105,8 +100,8 @@ currentSource avCaptureTimecodeGenerator  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> IO RawId
-delegate avCaptureTimecodeGenerator  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureTimecodeGenerator (mkSelector "delegate") (retPtr retVoid) []
+delegate avCaptureTimecodeGenerator =
+  sendMessage avCaptureTimecodeGenerator delegateSelector
 
 -- | The dispatch queue on which delegate callbacks are invoked.
 --
@@ -114,8 +109,8 @@ delegate avCaptureTimecodeGenerator  =
 --
 -- ObjC selector: @- delegateCallbackQueue@
 delegateCallbackQueue :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> IO (Id NSObject)
-delegateCallbackQueue avCaptureTimecodeGenerator  =
-    sendMsg avCaptureTimecodeGenerator (mkSelector "delegateCallbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateCallbackQueue avCaptureTimecodeGenerator =
+  sendMessage avCaptureTimecodeGenerator delegateCallbackQueueSelector
 
 -- | The maximum time interval allowed for source synchronization attempts before timing out.
 --
@@ -123,8 +118,8 @@ delegateCallbackQueue avCaptureTimecodeGenerator  =
 --
 -- ObjC selector: @- synchronizationTimeout@
 synchronizationTimeout :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> IO CDouble
-synchronizationTimeout avCaptureTimecodeGenerator  =
-    sendMsg avCaptureTimecodeGenerator (mkSelector "synchronizationTimeout") retCDouble []
+synchronizationTimeout avCaptureTimecodeGenerator =
+  sendMessage avCaptureTimecodeGenerator synchronizationTimeoutSelector
 
 -- | The maximum time interval allowed for source synchronization attempts before timing out.
 --
@@ -132,8 +127,8 @@ synchronizationTimeout avCaptureTimecodeGenerator  =
 --
 -- ObjC selector: @- setSynchronizationTimeout:@
 setSynchronizationTimeout :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> CDouble -> IO ()
-setSynchronizationTimeout avCaptureTimecodeGenerator  value =
-    sendMsg avCaptureTimecodeGenerator (mkSelector "setSynchronizationTimeout:") retVoid [argCDouble value]
+setSynchronizationTimeout avCaptureTimecodeGenerator value =
+  sendMessage avCaptureTimecodeGenerator setSynchronizationTimeoutSelector value
 
 -- | The time offset, in seconds, applied to the generated timecode.
 --
@@ -141,8 +136,8 @@ setSynchronizationTimeout avCaptureTimecodeGenerator  value =
 --
 -- ObjC selector: @- timecodeAlignmentOffset@
 timecodeAlignmentOffset :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> IO CDouble
-timecodeAlignmentOffset avCaptureTimecodeGenerator  =
-    sendMsg avCaptureTimecodeGenerator (mkSelector "timecodeAlignmentOffset") retCDouble []
+timecodeAlignmentOffset avCaptureTimecodeGenerator =
+  sendMessage avCaptureTimecodeGenerator timecodeAlignmentOffsetSelector
 
 -- | The time offset, in seconds, applied to the generated timecode.
 --
@@ -150,8 +145,8 @@ timecodeAlignmentOffset avCaptureTimecodeGenerator  =
 --
 -- ObjC selector: @- setTimecodeAlignmentOffset:@
 setTimecodeAlignmentOffset :: IsAVCaptureTimecodeGenerator avCaptureTimecodeGenerator => avCaptureTimecodeGenerator -> CDouble -> IO ()
-setTimecodeAlignmentOffset avCaptureTimecodeGenerator  value =
-    sendMsg avCaptureTimecodeGenerator (mkSelector "setTimecodeAlignmentOffset:") retVoid [argCDouble value]
+setTimecodeAlignmentOffset avCaptureTimecodeGenerator value =
+  sendMessage avCaptureTimecodeGenerator setTimecodeAlignmentOffsetSelector value
 
 -- | A frame counter timecode source that operates independently of any internal or external synchronization.
 --
@@ -162,7 +157,7 @@ frameCountSource :: IO (Id AVCaptureTimecodeSource)
 frameCountSource  =
   do
     cls' <- getRequiredClass "AVCaptureTimecodeGenerator"
-    sendClassMsg cls' (mkSelector "frameCountSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' frameCountSourceSelector
 
 -- | A predefined timecode source synchronized to the real-time system clock.
 --
@@ -173,57 +168,57 @@ realTimeClockSource :: IO (Id AVCaptureTimecodeSource)
 realTimeClockSource  =
   do
     cls' <- getRequiredClass "AVCaptureTimecodeGenerator"
-    sendClassMsg cls' (mkSelector "realTimeClockSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' realTimeClockSourceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setDelegate:queue:@
-setDelegate_queueSelector :: Selector
+setDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 
 -- | @Selector@ for @startSynchronizationWithTimecodeSource:@
-startSynchronizationWithTimecodeSourceSelector :: Selector
+startSynchronizationWithTimecodeSourceSelector :: Selector '[Id AVCaptureTimecodeSource] ()
 startSynchronizationWithTimecodeSourceSelector = mkSelector "startSynchronizationWithTimecodeSource:"
 
 -- | @Selector@ for @availableSources@
-availableSourcesSelector :: Selector
+availableSourcesSelector :: Selector '[] (Id NSArray)
 availableSourcesSelector = mkSelector "availableSources"
 
 -- | @Selector@ for @currentSource@
-currentSourceSelector :: Selector
+currentSourceSelector :: Selector '[] (Id AVCaptureTimecodeSource)
 currentSourceSelector = mkSelector "currentSource"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateCallbackQueue@
-delegateCallbackQueueSelector :: Selector
+delegateCallbackQueueSelector :: Selector '[] (Id NSObject)
 delegateCallbackQueueSelector = mkSelector "delegateCallbackQueue"
 
 -- | @Selector@ for @synchronizationTimeout@
-synchronizationTimeoutSelector :: Selector
+synchronizationTimeoutSelector :: Selector '[] CDouble
 synchronizationTimeoutSelector = mkSelector "synchronizationTimeout"
 
 -- | @Selector@ for @setSynchronizationTimeout:@
-setSynchronizationTimeoutSelector :: Selector
+setSynchronizationTimeoutSelector :: Selector '[CDouble] ()
 setSynchronizationTimeoutSelector = mkSelector "setSynchronizationTimeout:"
 
 -- | @Selector@ for @timecodeAlignmentOffset@
-timecodeAlignmentOffsetSelector :: Selector
+timecodeAlignmentOffsetSelector :: Selector '[] CDouble
 timecodeAlignmentOffsetSelector = mkSelector "timecodeAlignmentOffset"
 
 -- | @Selector@ for @setTimecodeAlignmentOffset:@
-setTimecodeAlignmentOffsetSelector :: Selector
+setTimecodeAlignmentOffsetSelector :: Selector '[CDouble] ()
 setTimecodeAlignmentOffsetSelector = mkSelector "setTimecodeAlignmentOffset:"
 
 -- | @Selector@ for @frameCountSource@
-frameCountSourceSelector :: Selector
+frameCountSourceSelector :: Selector '[] (Id AVCaptureTimecodeSource)
 frameCountSourceSelector = mkSelector "frameCountSource"
 
 -- | @Selector@ for @realTimeClockSource@
-realTimeClockSourceSelector :: Selector
+realTimeClockSourceSelector :: Selector '[] (Id AVCaptureTimecodeSource)
 realTimeClockSourceSelector = mkSelector "realTimeClockSource"
 

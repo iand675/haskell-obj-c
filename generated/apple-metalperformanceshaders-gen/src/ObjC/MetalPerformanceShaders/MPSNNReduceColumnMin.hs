@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MetalPerformanceShaders.MPSNNReduceColumnMin
   , IsMPSNNReduceColumnMin(..)
   , initWithDevice
   , initWithCoder_device
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
+  , initWithDeviceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNReduceColumnMin mpsnnReduceColumnMin => mpsnnReduceColumnMin -> RawId -> IO (Id MPSNNReduceColumnMin)
-initWithDevice mpsnnReduceColumnMin  device =
-    sendMsg mpsnnReduceColumnMin (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnReduceColumnMin device =
+  sendOwnedMessage mpsnnReduceColumnMin initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -56,19 +53,18 @@ initWithDevice mpsnnReduceColumnMin  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNReduceColumnMin mpsnnReduceColumnMin, IsNSCoder aDecoder) => mpsnnReduceColumnMin -> aDecoder -> RawId -> IO (Id MPSNNReduceColumnMin)
-initWithCoder_device mpsnnReduceColumnMin  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnReduceColumnMin (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnReduceColumnMin aDecoder device =
+  sendOwnedMessage mpsnnReduceColumnMin initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNReduceColumnMin)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNReduceColumnMin)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 

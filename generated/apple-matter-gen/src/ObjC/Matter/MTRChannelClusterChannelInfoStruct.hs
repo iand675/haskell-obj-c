@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Matter.MTRChannelClusterChannelInfoStruct
   , setIdentifier
   , type_
   , setType
-  , majorNumberSelector
-  , setMajorNumberSelector
-  , minorNumberSelector
-  , setMinorNumberSelector
-  , nameSelector
-  , setNameSelector
-  , callSignSelector
-  , setCallSignSelector
   , affiliateCallSignSelector
-  , setAffiliateCallSignSelector
+  , callSignSelector
   , identifierSelector
+  , majorNumberSelector
+  , minorNumberSelector
+  , nameSelector
+  , setAffiliateCallSignSelector
+  , setCallSignSelector
   , setIdentifierSelector
-  , typeSelector
+  , setMajorNumberSelector
+  , setMinorNumberSelector
+  , setNameSelector
   , setTypeSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,138 +52,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- majorNumber@
 majorNumber :: IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct => mtrChannelClusterChannelInfoStruct -> IO (Id NSNumber)
-majorNumber mtrChannelClusterChannelInfoStruct  =
-    sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "majorNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+majorNumber mtrChannelClusterChannelInfoStruct =
+  sendMessage mtrChannelClusterChannelInfoStruct majorNumberSelector
 
 -- | @- setMajorNumber:@
 setMajorNumber :: (IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct, IsNSNumber value) => mtrChannelClusterChannelInfoStruct -> value -> IO ()
-setMajorNumber mtrChannelClusterChannelInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "setMajorNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMajorNumber mtrChannelClusterChannelInfoStruct value =
+  sendMessage mtrChannelClusterChannelInfoStruct setMajorNumberSelector (toNSNumber value)
 
 -- | @- minorNumber@
 minorNumber :: IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct => mtrChannelClusterChannelInfoStruct -> IO (Id NSNumber)
-minorNumber mtrChannelClusterChannelInfoStruct  =
-    sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "minorNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+minorNumber mtrChannelClusterChannelInfoStruct =
+  sendMessage mtrChannelClusterChannelInfoStruct minorNumberSelector
 
 -- | @- setMinorNumber:@
 setMinorNumber :: (IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct, IsNSNumber value) => mtrChannelClusterChannelInfoStruct -> value -> IO ()
-setMinorNumber mtrChannelClusterChannelInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "setMinorNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinorNumber mtrChannelClusterChannelInfoStruct value =
+  sendMessage mtrChannelClusterChannelInfoStruct setMinorNumberSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct => mtrChannelClusterChannelInfoStruct -> IO (Id NSString)
-name mtrChannelClusterChannelInfoStruct  =
-    sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrChannelClusterChannelInfoStruct =
+  sendMessage mtrChannelClusterChannelInfoStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct, IsNSString value) => mtrChannelClusterChannelInfoStruct -> value -> IO ()
-setName mtrChannelClusterChannelInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrChannelClusterChannelInfoStruct value =
+  sendMessage mtrChannelClusterChannelInfoStruct setNameSelector (toNSString value)
 
 -- | @- callSign@
 callSign :: IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct => mtrChannelClusterChannelInfoStruct -> IO (Id NSString)
-callSign mtrChannelClusterChannelInfoStruct  =
-    sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "callSign") (retPtr retVoid) [] >>= retainedObject . castPtr
+callSign mtrChannelClusterChannelInfoStruct =
+  sendMessage mtrChannelClusterChannelInfoStruct callSignSelector
 
 -- | @- setCallSign:@
 setCallSign :: (IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct, IsNSString value) => mtrChannelClusterChannelInfoStruct -> value -> IO ()
-setCallSign mtrChannelClusterChannelInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "setCallSign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCallSign mtrChannelClusterChannelInfoStruct value =
+  sendMessage mtrChannelClusterChannelInfoStruct setCallSignSelector (toNSString value)
 
 -- | @- affiliateCallSign@
 affiliateCallSign :: IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct => mtrChannelClusterChannelInfoStruct -> IO (Id NSString)
-affiliateCallSign mtrChannelClusterChannelInfoStruct  =
-    sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "affiliateCallSign") (retPtr retVoid) [] >>= retainedObject . castPtr
+affiliateCallSign mtrChannelClusterChannelInfoStruct =
+  sendMessage mtrChannelClusterChannelInfoStruct affiliateCallSignSelector
 
 -- | @- setAffiliateCallSign:@
 setAffiliateCallSign :: (IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct, IsNSString value) => mtrChannelClusterChannelInfoStruct -> value -> IO ()
-setAffiliateCallSign mtrChannelClusterChannelInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "setAffiliateCallSign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAffiliateCallSign mtrChannelClusterChannelInfoStruct value =
+  sendMessage mtrChannelClusterChannelInfoStruct setAffiliateCallSignSelector (toNSString value)
 
 -- | @- identifier@
 identifier :: IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct => mtrChannelClusterChannelInfoStruct -> IO (Id NSString)
-identifier mtrChannelClusterChannelInfoStruct  =
-    sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier mtrChannelClusterChannelInfoStruct =
+  sendMessage mtrChannelClusterChannelInfoStruct identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct, IsNSString value) => mtrChannelClusterChannelInfoStruct -> value -> IO ()
-setIdentifier mtrChannelClusterChannelInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier mtrChannelClusterChannelInfoStruct value =
+  sendMessage mtrChannelClusterChannelInfoStruct setIdentifierSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct => mtrChannelClusterChannelInfoStruct -> IO (Id NSNumber)
-type_ mtrChannelClusterChannelInfoStruct  =
-    sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ mtrChannelClusterChannelInfoStruct =
+  sendMessage mtrChannelClusterChannelInfoStruct typeSelector
 
 -- | @- setType:@
 setType :: (IsMTRChannelClusterChannelInfoStruct mtrChannelClusterChannelInfoStruct, IsNSNumber value) => mtrChannelClusterChannelInfoStruct -> value -> IO ()
-setType mtrChannelClusterChannelInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChannelInfoStruct (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType mtrChannelClusterChannelInfoStruct value =
+  sendMessage mtrChannelClusterChannelInfoStruct setTypeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @majorNumber@
-majorNumberSelector :: Selector
+majorNumberSelector :: Selector '[] (Id NSNumber)
 majorNumberSelector = mkSelector "majorNumber"
 
 -- | @Selector@ for @setMajorNumber:@
-setMajorNumberSelector :: Selector
+setMajorNumberSelector :: Selector '[Id NSNumber] ()
 setMajorNumberSelector = mkSelector "setMajorNumber:"
 
 -- | @Selector@ for @minorNumber@
-minorNumberSelector :: Selector
+minorNumberSelector :: Selector '[] (Id NSNumber)
 minorNumberSelector = mkSelector "minorNumber"
 
 -- | @Selector@ for @setMinorNumber:@
-setMinorNumberSelector :: Selector
+setMinorNumberSelector :: Selector '[Id NSNumber] ()
 setMinorNumberSelector = mkSelector "setMinorNumber:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @callSign@
-callSignSelector :: Selector
+callSignSelector :: Selector '[] (Id NSString)
 callSignSelector = mkSelector "callSign"
 
 -- | @Selector@ for @setCallSign:@
-setCallSignSelector :: Selector
+setCallSignSelector :: Selector '[Id NSString] ()
 setCallSignSelector = mkSelector "setCallSign:"
 
 -- | @Selector@ for @affiliateCallSign@
-affiliateCallSignSelector :: Selector
+affiliateCallSignSelector :: Selector '[] (Id NSString)
 affiliateCallSignSelector = mkSelector "affiliateCallSign"
 
 -- | @Selector@ for @setAffiliateCallSign:@
-setAffiliateCallSignSelector :: Selector
+setAffiliateCallSignSelector :: Selector '[Id NSString] ()
 setAffiliateCallSignSelector = mkSelector "setAffiliateCallSign:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSNumber)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSNumber] ()
 setTypeSelector = mkSelector "setType:"
 

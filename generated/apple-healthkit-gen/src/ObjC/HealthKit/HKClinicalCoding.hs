@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.HealthKit.HKClinicalCoding
   , system
   , version
   , code
+  , codeSelector
   , initSelector
   , initWithSystem_version_codeSelector
   , systemSelector
   , versionSelector
-  , codeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKClinicalCoding hkClinicalCoding => hkClinicalCoding -> IO (Id HKClinicalCoding)
-init_ hkClinicalCoding  =
-    sendMsg hkClinicalCoding (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkClinicalCoding =
+  sendOwnedMessage hkClinicalCoding initSelector
 
 -- | Creates a clinical coding with the specified system, version, and code.
 --
@@ -58,11 +55,8 @@ init_ hkClinicalCoding  =
 --
 -- ObjC selector: @- initWithSystem:version:code:@
 initWithSystem_version_code :: (IsHKClinicalCoding hkClinicalCoding, IsNSString system, IsNSString version, IsNSString code) => hkClinicalCoding -> system -> version -> code -> IO (Id HKClinicalCoding)
-initWithSystem_version_code hkClinicalCoding  system version code =
-  withObjCPtr system $ \raw_system ->
-    withObjCPtr version $ \raw_version ->
-      withObjCPtr code $ \raw_code ->
-          sendMsg hkClinicalCoding (mkSelector "initWithSystem:version:code:") (retPtr retVoid) [argPtr (castPtr raw_system :: Ptr ()), argPtr (castPtr raw_version :: Ptr ()), argPtr (castPtr raw_code :: Ptr ())] >>= ownedObject . castPtr
+initWithSystem_version_code hkClinicalCoding system version code =
+  sendOwnedMessage hkClinicalCoding initWithSystem_version_codeSelector (toNSString system) (toNSString version) (toNSString code)
 
 -- | The string that identifies the coding system that defines this clinical code.
 --
@@ -70,15 +64,15 @@ initWithSystem_version_code hkClinicalCoding  system version code =
 --
 -- ObjC selector: @- system@
 system :: IsHKClinicalCoding hkClinicalCoding => hkClinicalCoding -> IO (Id NSString)
-system hkClinicalCoding  =
-    sendMsg hkClinicalCoding (mkSelector "system") (retPtr retVoid) [] >>= retainedObject . castPtr
+system hkClinicalCoding =
+  sendMessage hkClinicalCoding systemSelector
 
 -- | The version of the coding system.
 --
 -- ObjC selector: @- version@
 version :: IsHKClinicalCoding hkClinicalCoding => hkClinicalCoding -> IO (Id NSString)
-version hkClinicalCoding  =
-    sendMsg hkClinicalCoding (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version hkClinicalCoding =
+  sendMessage hkClinicalCoding versionSelector
 
 -- | The clinical code that represents a medical concept inside the coding system.
 --
@@ -86,30 +80,30 @@ version hkClinicalCoding  =
 --
 -- ObjC selector: @- code@
 code :: IsHKClinicalCoding hkClinicalCoding => hkClinicalCoding -> IO (Id NSString)
-code hkClinicalCoding  =
-    sendMsg hkClinicalCoding (mkSelector "code") (retPtr retVoid) [] >>= retainedObject . castPtr
+code hkClinicalCoding =
+  sendMessage hkClinicalCoding codeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKClinicalCoding)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithSystem:version:code:@
-initWithSystem_version_codeSelector :: Selector
+initWithSystem_version_codeSelector :: Selector '[Id NSString, Id NSString, Id NSString] (Id HKClinicalCoding)
 initWithSystem_version_codeSelector = mkSelector "initWithSystem:version:code:"
 
 -- | @Selector@ for @system@
-systemSelector :: Selector
+systemSelector :: Selector '[] (Id NSString)
 systemSelector = mkSelector "system"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] (Id NSString)
 codeSelector = mkSelector "code"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -87,86 +88,86 @@ module ObjC.SensorKit.SRKeyboardMetrics
   , totalSubstitutionCorrections
   , totalHitTestCorrections
   , totalTypingDuration
-  , wordCountForSentimentCategorySelector
-  , emojiCountForSentimentCategorySelector
+  , anyTapToCharKeySelector
+  , anyTapToPlaneChangeKeySelector
+  , charKeyToAnyTapKeySelector
+  , charKeyToDeleteSelector
+  , charKeyToPlaneChangeKeySelector
+  , charKeyToPredictionSelector
+  , charKeyToSpaceKeySelector
+  , deleteDownErrorDistanceSelector
+  , deleteToCharKeySelector
+  , deleteToDeleteSelector
+  , deleteToDeletesSelector
+  , deleteToPathSelector
+  , deleteToPlaneChangeKeySelector
+  , deleteToShiftKeySelector
+  , deleteToSpaceKeySelector
+  , deleteTouchDownUpSelector
+  , deleteUpErrorDistanceSelector
+  , downErrorDistanceSelector
   , durationSelector
-  , keyboardIdentifierSelector
-  , versionSelector
-  , widthSelector
+  , emojiCountForSentimentCategorySelector
   , heightSelector
   , inputModesSelector
-  , sessionIdentifiersSelector
-  , totalPausesSelector
-  , totalPathPausesSelector
-  , typingSpeedSelector
-  , pathTypingSpeedSelector
-  , totalTypingEpisodesSelector
-  , longWordUpErrorDistanceSelector
+  , keyboardIdentifierSelector
   , longWordDownErrorDistanceSelector
-  , longWordTouchDownUpSelector
   , longWordTouchDownDownSelector
+  , longWordTouchDownUpSelector
   , longWordTouchUpDownSelector
-  , deleteToDeletesSelector
-  , upErrorDistanceSelector
-  , downErrorDistanceSelector
-  , spaceUpErrorDistanceSelector
-  , spaceDownErrorDistanceSelector
-  , deleteUpErrorDistanceSelector
-  , deleteDownErrorDistanceSelector
-  , shortWordCharKeyUpErrorDistanceSelector
+  , longWordUpErrorDistanceSelector
+  , pathErrorDistanceRatioSelector
+  , pathToDeleteSelector
+  , pathToPathSelector
+  , pathToSpaceSelector
+  , pathTypingSpeedSelector
+  , planeChangeKeyToCharKeySelector
+  , planeChangeToAnyTapSelector
+  , sessionIdentifiersSelector
   , shortWordCharKeyDownErrorDistanceSelector
-  , touchDownUpSelector
-  , spaceTouchDownUpSelector
-  , deleteTouchDownUpSelector
-  , shortWordCharKeyTouchDownUpSelector
-  , touchDownDownSelector
-  , touchUpDownSelector
-  , charKeyToPredictionSelector
   , shortWordCharKeyToCharKeySelector
-  , charKeyToAnyTapKeySelector
-  , anyTapToCharKeySelector
+  , shortWordCharKeyTouchDownUpSelector
+  , shortWordCharKeyUpErrorDistanceSelector
+  , spaceDownErrorDistanceSelector
   , spaceToCharKeySelector
-  , charKeyToSpaceKeySelector
   , spaceToDeleteKeySelector
-  , deleteToSpaceKeySelector
-  , spaceToSpaceKeySelector
-  , spaceToShiftKeySelector
+  , spaceToPathSelector
   , spaceToPlaneChangeKeySelector
   , spaceToPredictionKeySelector
-  , deleteToCharKeySelector
-  , charKeyToDeleteSelector
-  , deleteToDeleteSelector
-  , deleteToShiftKeySelector
-  , deleteToPlaneChangeKeySelector
-  , anyTapToPlaneChangeKeySelector
-  , planeChangeToAnyTapSelector
-  , charKeyToPlaneChangeKeySelector
-  , planeChangeKeyToCharKeySelector
-  , pathErrorDistanceRatioSelector
-  , deleteToPathSelector
-  , pathToDeleteSelector
-  , spaceToPathSelector
-  , pathToSpaceSelector
-  , pathToPathSelector
-  , totalWordsSelector
+  , spaceToShiftKeySelector
+  , spaceToSpaceKeySelector
+  , spaceTouchDownUpSelector
+  , spaceUpErrorDistanceSelector
   , totalAlteredWordsSelector
-  , totalTapsSelector
-  , totalDragsSelector
-  , totalDeletesSelector
-  , totalEmojisSelector
-  , totalPathsSelector
-  , totalPathTimeSelector
-  , totalPathLengthSelector
   , totalAutoCorrectionsSelector
-  , totalSpaceCorrectionsSelector
-  , totalRetroCorrectionsSelector
-  , totalTranspositionCorrectionsSelector
-  , totalInsertKeyCorrectionsSelector
-  , totalSkipTouchCorrectionsSelector
-  , totalNearKeyCorrectionsSelector
-  , totalSubstitutionCorrectionsSelector
+  , totalDeletesSelector
+  , totalDragsSelector
+  , totalEmojisSelector
   , totalHitTestCorrectionsSelector
+  , totalInsertKeyCorrectionsSelector
+  , totalNearKeyCorrectionsSelector
+  , totalPathLengthSelector
+  , totalPathPausesSelector
+  , totalPathTimeSelector
+  , totalPathsSelector
+  , totalPausesSelector
+  , totalRetroCorrectionsSelector
+  , totalSkipTouchCorrectionsSelector
+  , totalSpaceCorrectionsSelector
+  , totalSubstitutionCorrectionsSelector
+  , totalTapsSelector
+  , totalTranspositionCorrectionsSelector
   , totalTypingDurationSelector
+  , totalTypingEpisodesSelector
+  , totalWordsSelector
+  , touchDownDownSelector
+  , touchDownUpSelector
+  , touchUpDownSelector
+  , typingSpeedSelector
+  , upErrorDistanceSelector
+  , versionSelector
+  , widthSelector
+  , wordCountForSentimentCategorySelector
 
   -- * Enum types
   , SRKeyboardMetricsSentimentCategory(SRKeyboardMetricsSentimentCategory)
@@ -183,15 +184,11 @@ module ObjC.SensorKit.SRKeyboardMetrics
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -203,883 +200,883 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- wordCountForSentimentCategory:@
 wordCountForSentimentCategory :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> SRKeyboardMetricsSentimentCategory -> IO CLong
-wordCountForSentimentCategory srKeyboardMetrics  category =
-    sendMsg srKeyboardMetrics (mkSelector "wordCountForSentimentCategory:") retCLong [argCLong (coerce category)]
+wordCountForSentimentCategory srKeyboardMetrics category =
+  sendMessage srKeyboardMetrics wordCountForSentimentCategorySelector category
 
 -- | The count of emoji typed per category in the session
 --
 -- ObjC selector: @- emojiCountForSentimentCategory:@
 emojiCountForSentimentCategory :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> SRKeyboardMetricsSentimentCategory -> IO CLong
-emojiCountForSentimentCategory srKeyboardMetrics  category =
-    sendMsg srKeyboardMetrics (mkSelector "emojiCountForSentimentCategory:") retCLong [argCLong (coerce category)]
+emojiCountForSentimentCategory srKeyboardMetrics category =
+  sendMessage srKeyboardMetrics emojiCountForSentimentCategorySelector category
 
 -- | The duration over which these metrics were calculated
 --
 -- ObjC selector: @- duration@
 duration :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CDouble
-duration srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "duration") retCDouble []
+duration srKeyboardMetrics =
+  sendMessage srKeyboardMetrics durationSelector
 
 -- | The identifier of the keyboard in the keyboard list
 --
 -- ObjC selector: @- keyboardIdentifier@
 keyboardIdentifier :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSString)
-keyboardIdentifier srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "keyboardIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyboardIdentifier srKeyboardMetrics =
+  sendMessage srKeyboardMetrics keyboardIdentifierSelector
 
 -- | The version of keyboard metrics
 --
 -- ObjC selector: @- version@
 version :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSString)
-version srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version srKeyboardMetrics =
+  sendMessage srKeyboardMetrics versionSelector
 
 -- | The width of the keyboard in mm in the session
 --
 -- ObjC selector: @- width@
 width :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSMeasurement)
-width srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "width") (retPtr retVoid) [] >>= retainedObject . castPtr
+width srKeyboardMetrics =
+  sendMessage srKeyboardMetrics widthSelector
 
 -- | The height of the keyboard in mm in the session
 --
 -- ObjC selector: @- height@
 height :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSMeasurement)
-height srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "height") (retPtr retVoid) [] >>= retainedObject . castPtr
+height srKeyboardMetrics =
+  sendMessage srKeyboardMetrics heightSelector
 
 -- | The input modes used during a keyboard session
 --
 -- ObjC selector: @- inputModes@
 inputModes :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSArray)
-inputModes srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "inputModes") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputModes srKeyboardMetrics =
+  sendMessage srKeyboardMetrics inputModesSelector
 
 -- | The keyboard session identifiers. These are the identifiers of the keyboard sessions that contributed to keyboard metrics sample to correlate current stream with another stream using the same keyboard session indentifiers
 --
 -- ObjC selector: @- sessionIdentifiers@
 sessionIdentifiers :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSArray)
-sessionIdentifiers srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "sessionIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionIdentifiers srKeyboardMetrics =
+  sendMessage srKeyboardMetrics sessionIdentifiersSelector
 
 -- | The total number of pauses during the session
 --
 -- ObjC selector: @- totalPauses@
 totalPauses :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalPauses srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalPauses") retCLong []
+totalPauses srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalPausesSelector
 
 -- | The total number of pauses made while entering the path for any words composed using continuous path during the session
 --
 -- ObjC selector: @- totalPathPauses@
 totalPathPauses :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalPathPauses srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalPathPauses") retCLong []
+totalPathPauses srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalPathPausesSelector
 
 -- | The words per minute typed during the session
 --
 -- ObjC selector: @- typingSpeed@
 typingSpeed :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CDouble
-typingSpeed srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "typingSpeed") retCDouble []
+typingSpeed srKeyboardMetrics =
+  sendMessage srKeyboardMetrics typingSpeedSelector
 
 -- | The words per minute typed using continuous path during the session
 --
 -- ObjC selector: @- pathTypingSpeed@
 pathTypingSpeed :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CDouble
-pathTypingSpeed srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "pathTypingSpeed") retCDouble []
+pathTypingSpeed srKeyboardMetrics =
+  sendMessage srKeyboardMetrics pathTypingSpeedSelector
 
 -- | Total number of continuous typing episodes during the session
 --
 -- ObjC selector: @- totalTypingEpisodes@
 totalTypingEpisodes :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalTypingEpisodes srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalTypingEpisodes") retCLong []
+totalTypingEpisodes srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalTypingEpisodesSelector
 
 -- | The distance from the touch up to the center of the intended key of the characters of a long word
 --
 -- ObjC selector: @- longWordUpErrorDistance@
 longWordUpErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSArray)
-longWordUpErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "longWordUpErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+longWordUpErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics longWordUpErrorDistanceSelector
 
 -- | The distance from the touch down to the center of the intended key of the characters of a long word
 --
 -- ObjC selector: @- longWordDownErrorDistance@
 longWordDownErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSArray)
-longWordDownErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "longWordDownErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+longWordDownErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics longWordDownErrorDistanceSelector
 
 -- | The duration between touch down and touchup of the character keys of all the long words in the session.
 --
 -- ObjC selector: @- longWordTouchDownUp@
 longWordTouchDownUp :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSArray)
-longWordTouchDownUp srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "longWordTouchDownUp") (retPtr retVoid) [] >>= retainedObject . castPtr
+longWordTouchDownUp srKeyboardMetrics =
+  sendMessage srKeyboardMetrics longWordTouchDownUpSelector
 
 -- | The duration between touch down and touch down of the character keys of all the long words in the session.
 --
 -- ObjC selector: @- longWordTouchDownDown@
 longWordTouchDownDown :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSArray)
-longWordTouchDownDown srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "longWordTouchDownDown") (retPtr retVoid) [] >>= retainedObject . castPtr
+longWordTouchDownDown srKeyboardMetrics =
+  sendMessage srKeyboardMetrics longWordTouchDownDownSelector
 
 -- | The duration between touch up and touch down of the character keys of all the long words in the session.
 --
 -- ObjC selector: @- longWordTouchUpDown@
 longWordTouchUpDown :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSArray)
-longWordTouchUpDown srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "longWordTouchUpDown") (retPtr retVoid) [] >>= retainedObject . castPtr
+longWordTouchUpDown srKeyboardMetrics =
+  sendMessage srKeyboardMetrics longWordTouchUpDownSelector
 
 -- | The duration between touchup of the delete key and touch down of a sequential delete key
 --
 -- ObjC selector: @- deleteToDeletes@
 deleteToDeletes :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSArray)
-deleteToDeletes srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteToDeletes") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteToDeletes srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteToDeletesSelector
 
 -- | The distance from the touch up to the center of any key
 --
 -- ObjC selector: @- upErrorDistance@
 upErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-upErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "upErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+upErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics upErrorDistanceSelector
 
 -- | The distance from the touch down to the center of any key
 --
 -- ObjC selector: @- downErrorDistance@
 downErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-downErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "downErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+downErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics downErrorDistanceSelector
 
 -- | The distance from the touch up to the right centroid of the space key
 --
 -- ObjC selector: @- spaceUpErrorDistance@
 spaceUpErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceUpErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceUpErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceUpErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceUpErrorDistanceSelector
 
 -- | The distance from the touch down to the right centroid of the space key
 --
 -- ObjC selector: @- spaceDownErrorDistance@
 spaceDownErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceDownErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceDownErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceDownErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceDownErrorDistanceSelector
 
 -- | The distance from the touch up to the center of the delete key
 --
 -- ObjC selector: @- deleteUpErrorDistance@
 deleteUpErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-deleteUpErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteUpErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteUpErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteUpErrorDistanceSelector
 
 -- | The distance from the touch down to the center of the delete key
 --
 -- ObjC selector: @- deleteDownErrorDistance@
 deleteDownErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-deleteDownErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteDownErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteDownErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteDownErrorDistanceSelector
 
 -- | The distance from the touch up to the center of the intended key of a character in a short word
 --
 -- ObjC selector: @- shortWordCharKeyUpErrorDistance@
 shortWordCharKeyUpErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-shortWordCharKeyUpErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "shortWordCharKeyUpErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortWordCharKeyUpErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics shortWordCharKeyUpErrorDistanceSelector
 
 -- | The distance from the touch down to the center of the intended key of a character in a short word
 --
 -- ObjC selector: @- shortWordCharKeyDownErrorDistance@
 shortWordCharKeyDownErrorDistance :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-shortWordCharKeyDownErrorDistance srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "shortWordCharKeyDownErrorDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortWordCharKeyDownErrorDistance srKeyboardMetrics =
+  sendMessage srKeyboardMetrics shortWordCharKeyDownErrorDistanceSelector
 
 -- | The duration between touch down to touchup for any key
 --
 -- ObjC selector: @- touchDownUp@
 touchDownUp :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-touchDownUp srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "touchDownUp") (retPtr retVoid) [] >>= retainedObject . castPtr
+touchDownUp srKeyboardMetrics =
+  sendMessage srKeyboardMetrics touchDownUpSelector
 
 -- | The duration between touch down and touchup of all space key events in the session.
 --
 -- ObjC selector: @- spaceTouchDownUp@
 spaceTouchDownUp :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceTouchDownUp srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceTouchDownUp") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceTouchDownUp srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceTouchDownUpSelector
 
 -- | The duration between touch down and touchup of all delete key events in the session.
 --
 -- ObjC selector: @- deleteTouchDownUp@
 deleteTouchDownUp :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-deleteTouchDownUp srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteTouchDownUp") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteTouchDownUp srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteTouchDownUpSelector
 
 -- | The duration between touch down and touchup of all character keys in short words in the session.
 --
 -- ObjC selector: @- shortWordCharKeyTouchDownUp@
 shortWordCharKeyTouchDownUp :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-shortWordCharKeyTouchDownUp srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "shortWordCharKeyTouchDownUp") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortWordCharKeyTouchDownUp srKeyboardMetrics =
+  sendMessage srKeyboardMetrics shortWordCharKeyTouchDownUpSelector
 
 -- | The duration between touch down to touch down for any key
 --
 -- ObjC selector: @- touchDownDown@
 touchDownDown :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-touchDownDown srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "touchDownDown") (retPtr retVoid) [] >>= retainedObject . castPtr
+touchDownDown srKeyboardMetrics =
+  sendMessage srKeyboardMetrics touchDownDownSelector
 
 -- | The duration between touch up and touch down for any key
 --
 -- ObjC selector: @- touchUpDown@
 touchUpDown :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-touchUpDown srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "touchUpDown") (retPtr retVoid) [] >>= retainedObject . castPtr
+touchUpDown srKeyboardMetrics =
+  sendMessage srKeyboardMetrics touchUpDownSelector
 
 -- | The duration between touchup on a character key and touch down on a word in the prediction bar
 --
 -- ObjC selector: @- charKeyToPrediction@
 charKeyToPrediction :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-charKeyToPrediction srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "charKeyToPrediction") (retPtr retVoid) [] >>= retainedObject . castPtr
+charKeyToPrediction srKeyboardMetrics =
+  sendMessage srKeyboardMetrics charKeyToPredictionSelector
 
 -- | The duration between touchup on a character key and touch down on any sequential character key in a short word
 --
 -- ObjC selector: @- shortWordCharKeyToCharKey@
 shortWordCharKeyToCharKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-shortWordCharKeyToCharKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "shortWordCharKeyToCharKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortWordCharKeyToCharKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics shortWordCharKeyToCharKeySelector
 
 -- | The duration between touchup on a character key and touch down on the next sequential key (any key)
 --
 -- ObjC selector: @- charKeyToAnyTapKey@
 charKeyToAnyTapKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-charKeyToAnyTapKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "charKeyToAnyTapKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+charKeyToAnyTapKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics charKeyToAnyTapKeySelector
 
 -- | The duration between touchup of any key and touch down on a sequential character key
 --
 -- ObjC selector: @- anyTapToCharKey@
 anyTapToCharKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-anyTapToCharKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "anyTapToCharKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+anyTapToCharKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics anyTapToCharKeySelector
 
 -- | The duration between touchup of a space key and touch down of a sequential character key
 --
 -- ObjC selector: @- spaceToCharKey@
 spaceToCharKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceToCharKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceToCharKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceToCharKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceToCharKeySelector
 
 -- | The duration between touchup of a character key and touch down of a sequential space key
 --
 -- ObjC selector: @- charKeyToSpaceKey@
 charKeyToSpaceKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-charKeyToSpaceKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "charKeyToSpaceKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+charKeyToSpaceKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics charKeyToSpaceKeySelector
 
 -- | The duration between touchup of a space key and touch down of a sequential delete key
 --
 -- ObjC selector: @- spaceToDeleteKey@
 spaceToDeleteKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceToDeleteKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceToDeleteKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceToDeleteKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceToDeleteKeySelector
 
 -- | The duration between touchup of a delete key and touch down of a sequential space key
 --
 -- ObjC selector: @- deleteToSpaceKey@
 deleteToSpaceKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-deleteToSpaceKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteToSpaceKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteToSpaceKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteToSpaceKeySelector
 
 -- | The duration between touchup of a space key and touch down of a sequential space key
 --
 -- ObjC selector: @- spaceToSpaceKey@
 spaceToSpaceKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceToSpaceKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceToSpaceKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceToSpaceKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceToSpaceKeySelector
 
 -- | The duration between touchup of a space key and touch down of a sequential Shift key
 --
 -- ObjC selector: @- spaceToShiftKey@
 spaceToShiftKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceToShiftKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceToShiftKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceToShiftKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceToShiftKeySelector
 
 -- | The duration between touchup of a space key and touch down of a sequential plane change key
 --
 -- ObjC selector: @- spaceToPlaneChangeKey@
 spaceToPlaneChangeKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceToPlaneChangeKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceToPlaneChangeKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceToPlaneChangeKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceToPlaneChangeKeySelector
 
 -- | The duration between touchup on the space key and touch down of a sequential selection from the prediction bar
 --
 -- ObjC selector: @- spaceToPredictionKey@
 spaceToPredictionKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceToPredictionKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceToPredictionKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceToPredictionKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceToPredictionKeySelector
 
 -- | The duration between touchup of a delete key and touch down of a sequential character key
 --
 -- ObjC selector: @- deleteToCharKey@
 deleteToCharKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-deleteToCharKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteToCharKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteToCharKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteToCharKeySelector
 
 -- | The duration between touchup of a character key and touch down of a sequential delete key
 --
 -- ObjC selector: @- charKeyToDelete@
 charKeyToDelete :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-charKeyToDelete srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "charKeyToDelete") (retPtr retVoid) [] >>= retainedObject . castPtr
+charKeyToDelete srKeyboardMetrics =
+  sendMessage srKeyboardMetrics charKeyToDeleteSelector
 
 -- | The duration between touchup of a delete key and touch down of a sequential delete key
 --
 -- ObjC selector: @- deleteToDelete@
 deleteToDelete :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-deleteToDelete srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteToDelete") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteToDelete srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteToDeleteSelector
 
 -- | The duration between touchup of a delete key and touch down of a sequential Shift key
 --
 -- ObjC selector: @- deleteToShiftKey@
 deleteToShiftKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-deleteToShiftKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteToShiftKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteToShiftKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteToShiftKeySelector
 
 -- | The duration between touchup of a delete key and touch down of a sequential plane change key
 --
 -- ObjC selector: @- deleteToPlaneChangeKey@
 deleteToPlaneChangeKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-deleteToPlaneChangeKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteToPlaneChangeKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteToPlaneChangeKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteToPlaneChangeKeySelector
 
 -- | The duration between touchup of any key and touch down on a plane change key
 --
 -- ObjC selector: @- anyTapToPlaneChangeKey@
 anyTapToPlaneChangeKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-anyTapToPlaneChangeKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "anyTapToPlaneChangeKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+anyTapToPlaneChangeKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics anyTapToPlaneChangeKeySelector
 
 -- | The duration between touchup on a plane change key and touch down on the next sequential key
 --
 -- ObjC selector: @- planeChangeToAnyTap@
 planeChangeToAnyTap :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-planeChangeToAnyTap srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "planeChangeToAnyTap") (retPtr retVoid) [] >>= retainedObject . castPtr
+planeChangeToAnyTap srKeyboardMetrics =
+  sendMessage srKeyboardMetrics planeChangeToAnyTapSelector
 
 -- | The duration between touchup of a character key and touch down of a sequential plane change key
 --
 -- ObjC selector: @- charKeyToPlaneChangeKey@
 charKeyToPlaneChangeKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-charKeyToPlaneChangeKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "charKeyToPlaneChangeKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+charKeyToPlaneChangeKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics charKeyToPlaneChangeKeySelector
 
 -- | The duration between touchup of a plane change key and touch down of any key
 --
 -- ObjC selector: @- planeChangeKeyToCharKey@
 planeChangeKeyToCharKey :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-planeChangeKeyToCharKey srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "planeChangeKeyToCharKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+planeChangeKeyToCharKey srKeyboardMetrics =
+  sendMessage srKeyboardMetrics planeChangeKeyToCharKeySelector
 
 -- | sample values of the ratio of error distance between intended and actual path
 --
 -- ObjC selector: @- pathErrorDistanceRatio@
 pathErrorDistanceRatio :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSArray)
-pathErrorDistanceRatio srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "pathErrorDistanceRatio") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathErrorDistanceRatio srKeyboardMetrics =
+  sendMessage srKeyboardMetrics pathErrorDistanceRatioSelector
 
 -- | The duration between touchup of a delete key and touch down of a sequential path
 --
 -- ObjC selector: @- deleteToPath@
 deleteToPath :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-deleteToPath srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "deleteToPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+deleteToPath srKeyboardMetrics =
+  sendMessage srKeyboardMetrics deleteToPathSelector
 
 -- | The duration between touchup of a delete key and touch down of a sequential path (ie. Continuous Path)
 --
 -- ObjC selector: @- pathToDelete@
 pathToDelete :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-pathToDelete srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "pathToDelete") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathToDelete srKeyboardMetrics =
+  sendMessage srKeyboardMetrics pathToDeleteSelector
 
 -- | The duration between touchup on the space key and touch down to begin a sequential path
 --
 -- ObjC selector: @- spaceToPath@
 spaceToPath :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-spaceToPath srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "spaceToPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+spaceToPath srKeyboardMetrics =
+  sendMessage srKeyboardMetrics spaceToPathSelector
 
 -- | The duration between touchup of a path and touch down of a sequential space key
 --
 -- ObjC selector: @- pathToSpace@
 pathToSpace :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-pathToSpace srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "pathToSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathToSpace srKeyboardMetrics =
+  sendMessage srKeyboardMetrics pathToSpaceSelector
 
 -- | The duration between touchup of a path and touch down of a sequential path
 --
 -- ObjC selector: @- pathToPath@
 pathToPath :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id SRKeyboardProbabilityMetric)
-pathToPath srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "pathToPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathToPath srKeyboardMetrics =
+  sendMessage srKeyboardMetrics pathToPathSelector
 
 -- | The total number of words typed during the session
 --
 -- ObjC selector: @- totalWords@
 totalWords :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalWords srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalWords") retCLong []
+totalWords srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalWordsSelector
 
 -- | The total number of altered words during the session
 --
 -- ObjC selector: @- totalAlteredWords@
 totalAlteredWords :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalAlteredWords srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalAlteredWords") retCLong []
+totalAlteredWords srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalAlteredWordsSelector
 
 -- | The total number of taps during the session
 --
 -- ObjC selector: @- totalTaps@
 totalTaps :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalTaps srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalTaps") retCLong []
+totalTaps srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalTapsSelector
 
 -- | The total number of drags during the session
 --
 -- ObjC selector: @- totalDrags@
 totalDrags :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalDrags srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalDrags") retCLong []
+totalDrags srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalDragsSelector
 
 -- | The total number of deletes during the session
 --
 -- ObjC selector: @- totalDeletes@
 totalDeletes :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalDeletes srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalDeletes") retCLong []
+totalDeletes srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalDeletesSelector
 
 -- | The total number of emojis used during the session
 --
 -- ObjC selector: @- totalEmojis@
 totalEmojis :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalEmojis srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalEmojis") retCLong []
+totalEmojis srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalEmojisSelector
 
 -- | The total number of paths used during the sesion
 --
 -- ObjC selector: @- totalPaths@
 totalPaths :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalPaths srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalPaths") retCLong []
+totalPaths srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalPathsSelector
 
 -- | The total time taken to complete paths in the session
 --
 -- ObjC selector: @- totalPathTime@
 totalPathTime :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CDouble
-totalPathTime srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalPathTime") retCDouble []
+totalPathTime srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalPathTimeSelector
 
 -- | The total length of paths completed in the session
 --
 -- ObjC selector: @- totalPathLength@
 totalPathLength :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO (Id NSMeasurement)
-totalPathLength srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalPathLength") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalPathLength srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalPathLengthSelector
 
 -- | The total number of autocorrections in the session
 --
 -- ObjC selector: @- totalAutoCorrections@
 totalAutoCorrections :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalAutoCorrections srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalAutoCorrections") retCLong []
+totalAutoCorrections srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalAutoCorrectionsSelector
 
 -- | The total number of space corrections in the session
 --
 -- ObjC selector: @- totalSpaceCorrections@
 totalSpaceCorrections :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalSpaceCorrections srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalSpaceCorrections") retCLong []
+totalSpaceCorrections srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalSpaceCorrectionsSelector
 
 -- | The total number of retro corrections in the session
 --
 -- ObjC selector: @- totalRetroCorrections@
 totalRetroCorrections :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalRetroCorrections srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalRetroCorrections") retCLong []
+totalRetroCorrections srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalRetroCorrectionsSelector
 
 -- | The total number of transposition corrections in the session
 --
 -- ObjC selector: @- totalTranspositionCorrections@
 totalTranspositionCorrections :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalTranspositionCorrections srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalTranspositionCorrections") retCLong []
+totalTranspositionCorrections srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalTranspositionCorrectionsSelector
 
 -- | The total number of insert key corrections in the session
 --
 -- ObjC selector: @- totalInsertKeyCorrections@
 totalInsertKeyCorrections :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalInsertKeyCorrections srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalInsertKeyCorrections") retCLong []
+totalInsertKeyCorrections srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalInsertKeyCorrectionsSelector
 
 -- | The total number of skip touch corrections in the session
 --
 -- ObjC selector: @- totalSkipTouchCorrections@
 totalSkipTouchCorrections :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalSkipTouchCorrections srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalSkipTouchCorrections") retCLong []
+totalSkipTouchCorrections srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalSkipTouchCorrectionsSelector
 
 -- | The total number of near key corrections in the session
 --
 -- ObjC selector: @- totalNearKeyCorrections@
 totalNearKeyCorrections :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalNearKeyCorrections srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalNearKeyCorrections") retCLong []
+totalNearKeyCorrections srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalNearKeyCorrectionsSelector
 
 -- | The total number of substitution corrections in the session
 --
 -- ObjC selector: @- totalSubstitutionCorrections@
 totalSubstitutionCorrections :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalSubstitutionCorrections srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalSubstitutionCorrections") retCLong []
+totalSubstitutionCorrections srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalSubstitutionCorrectionsSelector
 
 -- | The total number of hit test corrections in the session
 --
 -- ObjC selector: @- totalHitTestCorrections@
 totalHitTestCorrections :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CLong
-totalHitTestCorrections srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalHitTestCorrections") retCLong []
+totalHitTestCorrections srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalHitTestCorrectionsSelector
 
 -- | The total amount of time typing during the session
 --
 -- ObjC selector: @- totalTypingDuration@
 totalTypingDuration :: IsSRKeyboardMetrics srKeyboardMetrics => srKeyboardMetrics -> IO CDouble
-totalTypingDuration srKeyboardMetrics  =
-    sendMsg srKeyboardMetrics (mkSelector "totalTypingDuration") retCDouble []
+totalTypingDuration srKeyboardMetrics =
+  sendMessage srKeyboardMetrics totalTypingDurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @wordCountForSentimentCategory:@
-wordCountForSentimentCategorySelector :: Selector
+wordCountForSentimentCategorySelector :: Selector '[SRKeyboardMetricsSentimentCategory] CLong
 wordCountForSentimentCategorySelector = mkSelector "wordCountForSentimentCategory:"
 
 -- | @Selector@ for @emojiCountForSentimentCategory:@
-emojiCountForSentimentCategorySelector :: Selector
+emojiCountForSentimentCategorySelector :: Selector '[SRKeyboardMetricsSentimentCategory] CLong
 emojiCountForSentimentCategorySelector = mkSelector "emojiCountForSentimentCategory:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @keyboardIdentifier@
-keyboardIdentifierSelector :: Selector
+keyboardIdentifierSelector :: Selector '[] (Id NSString)
 keyboardIdentifierSelector = mkSelector "keyboardIdentifier"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] (Id NSMeasurement)
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] (Id NSMeasurement)
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @inputModes@
-inputModesSelector :: Selector
+inputModesSelector :: Selector '[] (Id NSArray)
 inputModesSelector = mkSelector "inputModes"
 
 -- | @Selector@ for @sessionIdentifiers@
-sessionIdentifiersSelector :: Selector
+sessionIdentifiersSelector :: Selector '[] (Id NSArray)
 sessionIdentifiersSelector = mkSelector "sessionIdentifiers"
 
 -- | @Selector@ for @totalPauses@
-totalPausesSelector :: Selector
+totalPausesSelector :: Selector '[] CLong
 totalPausesSelector = mkSelector "totalPauses"
 
 -- | @Selector@ for @totalPathPauses@
-totalPathPausesSelector :: Selector
+totalPathPausesSelector :: Selector '[] CLong
 totalPathPausesSelector = mkSelector "totalPathPauses"
 
 -- | @Selector@ for @typingSpeed@
-typingSpeedSelector :: Selector
+typingSpeedSelector :: Selector '[] CDouble
 typingSpeedSelector = mkSelector "typingSpeed"
 
 -- | @Selector@ for @pathTypingSpeed@
-pathTypingSpeedSelector :: Selector
+pathTypingSpeedSelector :: Selector '[] CDouble
 pathTypingSpeedSelector = mkSelector "pathTypingSpeed"
 
 -- | @Selector@ for @totalTypingEpisodes@
-totalTypingEpisodesSelector :: Selector
+totalTypingEpisodesSelector :: Selector '[] CLong
 totalTypingEpisodesSelector = mkSelector "totalTypingEpisodes"
 
 -- | @Selector@ for @longWordUpErrorDistance@
-longWordUpErrorDistanceSelector :: Selector
+longWordUpErrorDistanceSelector :: Selector '[] (Id NSArray)
 longWordUpErrorDistanceSelector = mkSelector "longWordUpErrorDistance"
 
 -- | @Selector@ for @longWordDownErrorDistance@
-longWordDownErrorDistanceSelector :: Selector
+longWordDownErrorDistanceSelector :: Selector '[] (Id NSArray)
 longWordDownErrorDistanceSelector = mkSelector "longWordDownErrorDistance"
 
 -- | @Selector@ for @longWordTouchDownUp@
-longWordTouchDownUpSelector :: Selector
+longWordTouchDownUpSelector :: Selector '[] (Id NSArray)
 longWordTouchDownUpSelector = mkSelector "longWordTouchDownUp"
 
 -- | @Selector@ for @longWordTouchDownDown@
-longWordTouchDownDownSelector :: Selector
+longWordTouchDownDownSelector :: Selector '[] (Id NSArray)
 longWordTouchDownDownSelector = mkSelector "longWordTouchDownDown"
 
 -- | @Selector@ for @longWordTouchUpDown@
-longWordTouchUpDownSelector :: Selector
+longWordTouchUpDownSelector :: Selector '[] (Id NSArray)
 longWordTouchUpDownSelector = mkSelector "longWordTouchUpDown"
 
 -- | @Selector@ for @deleteToDeletes@
-deleteToDeletesSelector :: Selector
+deleteToDeletesSelector :: Selector '[] (Id NSArray)
 deleteToDeletesSelector = mkSelector "deleteToDeletes"
 
 -- | @Selector@ for @upErrorDistance@
-upErrorDistanceSelector :: Selector
+upErrorDistanceSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 upErrorDistanceSelector = mkSelector "upErrorDistance"
 
 -- | @Selector@ for @downErrorDistance@
-downErrorDistanceSelector :: Selector
+downErrorDistanceSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 downErrorDistanceSelector = mkSelector "downErrorDistance"
 
 -- | @Selector@ for @spaceUpErrorDistance@
-spaceUpErrorDistanceSelector :: Selector
+spaceUpErrorDistanceSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceUpErrorDistanceSelector = mkSelector "spaceUpErrorDistance"
 
 -- | @Selector@ for @spaceDownErrorDistance@
-spaceDownErrorDistanceSelector :: Selector
+spaceDownErrorDistanceSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceDownErrorDistanceSelector = mkSelector "spaceDownErrorDistance"
 
 -- | @Selector@ for @deleteUpErrorDistance@
-deleteUpErrorDistanceSelector :: Selector
+deleteUpErrorDistanceSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 deleteUpErrorDistanceSelector = mkSelector "deleteUpErrorDistance"
 
 -- | @Selector@ for @deleteDownErrorDistance@
-deleteDownErrorDistanceSelector :: Selector
+deleteDownErrorDistanceSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 deleteDownErrorDistanceSelector = mkSelector "deleteDownErrorDistance"
 
 -- | @Selector@ for @shortWordCharKeyUpErrorDistance@
-shortWordCharKeyUpErrorDistanceSelector :: Selector
+shortWordCharKeyUpErrorDistanceSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 shortWordCharKeyUpErrorDistanceSelector = mkSelector "shortWordCharKeyUpErrorDistance"
 
 -- | @Selector@ for @shortWordCharKeyDownErrorDistance@
-shortWordCharKeyDownErrorDistanceSelector :: Selector
+shortWordCharKeyDownErrorDistanceSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 shortWordCharKeyDownErrorDistanceSelector = mkSelector "shortWordCharKeyDownErrorDistance"
 
 -- | @Selector@ for @touchDownUp@
-touchDownUpSelector :: Selector
+touchDownUpSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 touchDownUpSelector = mkSelector "touchDownUp"
 
 -- | @Selector@ for @spaceTouchDownUp@
-spaceTouchDownUpSelector :: Selector
+spaceTouchDownUpSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceTouchDownUpSelector = mkSelector "spaceTouchDownUp"
 
 -- | @Selector@ for @deleteTouchDownUp@
-deleteTouchDownUpSelector :: Selector
+deleteTouchDownUpSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 deleteTouchDownUpSelector = mkSelector "deleteTouchDownUp"
 
 -- | @Selector@ for @shortWordCharKeyTouchDownUp@
-shortWordCharKeyTouchDownUpSelector :: Selector
+shortWordCharKeyTouchDownUpSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 shortWordCharKeyTouchDownUpSelector = mkSelector "shortWordCharKeyTouchDownUp"
 
 -- | @Selector@ for @touchDownDown@
-touchDownDownSelector :: Selector
+touchDownDownSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 touchDownDownSelector = mkSelector "touchDownDown"
 
 -- | @Selector@ for @touchUpDown@
-touchUpDownSelector :: Selector
+touchUpDownSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 touchUpDownSelector = mkSelector "touchUpDown"
 
 -- | @Selector@ for @charKeyToPrediction@
-charKeyToPredictionSelector :: Selector
+charKeyToPredictionSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 charKeyToPredictionSelector = mkSelector "charKeyToPrediction"
 
 -- | @Selector@ for @shortWordCharKeyToCharKey@
-shortWordCharKeyToCharKeySelector :: Selector
+shortWordCharKeyToCharKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 shortWordCharKeyToCharKeySelector = mkSelector "shortWordCharKeyToCharKey"
 
 -- | @Selector@ for @charKeyToAnyTapKey@
-charKeyToAnyTapKeySelector :: Selector
+charKeyToAnyTapKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 charKeyToAnyTapKeySelector = mkSelector "charKeyToAnyTapKey"
 
 -- | @Selector@ for @anyTapToCharKey@
-anyTapToCharKeySelector :: Selector
+anyTapToCharKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 anyTapToCharKeySelector = mkSelector "anyTapToCharKey"
 
 -- | @Selector@ for @spaceToCharKey@
-spaceToCharKeySelector :: Selector
+spaceToCharKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceToCharKeySelector = mkSelector "spaceToCharKey"
 
 -- | @Selector@ for @charKeyToSpaceKey@
-charKeyToSpaceKeySelector :: Selector
+charKeyToSpaceKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 charKeyToSpaceKeySelector = mkSelector "charKeyToSpaceKey"
 
 -- | @Selector@ for @spaceToDeleteKey@
-spaceToDeleteKeySelector :: Selector
+spaceToDeleteKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceToDeleteKeySelector = mkSelector "spaceToDeleteKey"
 
 -- | @Selector@ for @deleteToSpaceKey@
-deleteToSpaceKeySelector :: Selector
+deleteToSpaceKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 deleteToSpaceKeySelector = mkSelector "deleteToSpaceKey"
 
 -- | @Selector@ for @spaceToSpaceKey@
-spaceToSpaceKeySelector :: Selector
+spaceToSpaceKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceToSpaceKeySelector = mkSelector "spaceToSpaceKey"
 
 -- | @Selector@ for @spaceToShiftKey@
-spaceToShiftKeySelector :: Selector
+spaceToShiftKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceToShiftKeySelector = mkSelector "spaceToShiftKey"
 
 -- | @Selector@ for @spaceToPlaneChangeKey@
-spaceToPlaneChangeKeySelector :: Selector
+spaceToPlaneChangeKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceToPlaneChangeKeySelector = mkSelector "spaceToPlaneChangeKey"
 
 -- | @Selector@ for @spaceToPredictionKey@
-spaceToPredictionKeySelector :: Selector
+spaceToPredictionKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceToPredictionKeySelector = mkSelector "spaceToPredictionKey"
 
 -- | @Selector@ for @deleteToCharKey@
-deleteToCharKeySelector :: Selector
+deleteToCharKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 deleteToCharKeySelector = mkSelector "deleteToCharKey"
 
 -- | @Selector@ for @charKeyToDelete@
-charKeyToDeleteSelector :: Selector
+charKeyToDeleteSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 charKeyToDeleteSelector = mkSelector "charKeyToDelete"
 
 -- | @Selector@ for @deleteToDelete@
-deleteToDeleteSelector :: Selector
+deleteToDeleteSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 deleteToDeleteSelector = mkSelector "deleteToDelete"
 
 -- | @Selector@ for @deleteToShiftKey@
-deleteToShiftKeySelector :: Selector
+deleteToShiftKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 deleteToShiftKeySelector = mkSelector "deleteToShiftKey"
 
 -- | @Selector@ for @deleteToPlaneChangeKey@
-deleteToPlaneChangeKeySelector :: Selector
+deleteToPlaneChangeKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 deleteToPlaneChangeKeySelector = mkSelector "deleteToPlaneChangeKey"
 
 -- | @Selector@ for @anyTapToPlaneChangeKey@
-anyTapToPlaneChangeKeySelector :: Selector
+anyTapToPlaneChangeKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 anyTapToPlaneChangeKeySelector = mkSelector "anyTapToPlaneChangeKey"
 
 -- | @Selector@ for @planeChangeToAnyTap@
-planeChangeToAnyTapSelector :: Selector
+planeChangeToAnyTapSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 planeChangeToAnyTapSelector = mkSelector "planeChangeToAnyTap"
 
 -- | @Selector@ for @charKeyToPlaneChangeKey@
-charKeyToPlaneChangeKeySelector :: Selector
+charKeyToPlaneChangeKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 charKeyToPlaneChangeKeySelector = mkSelector "charKeyToPlaneChangeKey"
 
 -- | @Selector@ for @planeChangeKeyToCharKey@
-planeChangeKeyToCharKeySelector :: Selector
+planeChangeKeyToCharKeySelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 planeChangeKeyToCharKeySelector = mkSelector "planeChangeKeyToCharKey"
 
 -- | @Selector@ for @pathErrorDistanceRatio@
-pathErrorDistanceRatioSelector :: Selector
+pathErrorDistanceRatioSelector :: Selector '[] (Id NSArray)
 pathErrorDistanceRatioSelector = mkSelector "pathErrorDistanceRatio"
 
 -- | @Selector@ for @deleteToPath@
-deleteToPathSelector :: Selector
+deleteToPathSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 deleteToPathSelector = mkSelector "deleteToPath"
 
 -- | @Selector@ for @pathToDelete@
-pathToDeleteSelector :: Selector
+pathToDeleteSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 pathToDeleteSelector = mkSelector "pathToDelete"
 
 -- | @Selector@ for @spaceToPath@
-spaceToPathSelector :: Selector
+spaceToPathSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 spaceToPathSelector = mkSelector "spaceToPath"
 
 -- | @Selector@ for @pathToSpace@
-pathToSpaceSelector :: Selector
+pathToSpaceSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 pathToSpaceSelector = mkSelector "pathToSpace"
 
 -- | @Selector@ for @pathToPath@
-pathToPathSelector :: Selector
+pathToPathSelector :: Selector '[] (Id SRKeyboardProbabilityMetric)
 pathToPathSelector = mkSelector "pathToPath"
 
 -- | @Selector@ for @totalWords@
-totalWordsSelector :: Selector
+totalWordsSelector :: Selector '[] CLong
 totalWordsSelector = mkSelector "totalWords"
 
 -- | @Selector@ for @totalAlteredWords@
-totalAlteredWordsSelector :: Selector
+totalAlteredWordsSelector :: Selector '[] CLong
 totalAlteredWordsSelector = mkSelector "totalAlteredWords"
 
 -- | @Selector@ for @totalTaps@
-totalTapsSelector :: Selector
+totalTapsSelector :: Selector '[] CLong
 totalTapsSelector = mkSelector "totalTaps"
 
 -- | @Selector@ for @totalDrags@
-totalDragsSelector :: Selector
+totalDragsSelector :: Selector '[] CLong
 totalDragsSelector = mkSelector "totalDrags"
 
 -- | @Selector@ for @totalDeletes@
-totalDeletesSelector :: Selector
+totalDeletesSelector :: Selector '[] CLong
 totalDeletesSelector = mkSelector "totalDeletes"
 
 -- | @Selector@ for @totalEmojis@
-totalEmojisSelector :: Selector
+totalEmojisSelector :: Selector '[] CLong
 totalEmojisSelector = mkSelector "totalEmojis"
 
 -- | @Selector@ for @totalPaths@
-totalPathsSelector :: Selector
+totalPathsSelector :: Selector '[] CLong
 totalPathsSelector = mkSelector "totalPaths"
 
 -- | @Selector@ for @totalPathTime@
-totalPathTimeSelector :: Selector
+totalPathTimeSelector :: Selector '[] CDouble
 totalPathTimeSelector = mkSelector "totalPathTime"
 
 -- | @Selector@ for @totalPathLength@
-totalPathLengthSelector :: Selector
+totalPathLengthSelector :: Selector '[] (Id NSMeasurement)
 totalPathLengthSelector = mkSelector "totalPathLength"
 
 -- | @Selector@ for @totalAutoCorrections@
-totalAutoCorrectionsSelector :: Selector
+totalAutoCorrectionsSelector :: Selector '[] CLong
 totalAutoCorrectionsSelector = mkSelector "totalAutoCorrections"
 
 -- | @Selector@ for @totalSpaceCorrections@
-totalSpaceCorrectionsSelector :: Selector
+totalSpaceCorrectionsSelector :: Selector '[] CLong
 totalSpaceCorrectionsSelector = mkSelector "totalSpaceCorrections"
 
 -- | @Selector@ for @totalRetroCorrections@
-totalRetroCorrectionsSelector :: Selector
+totalRetroCorrectionsSelector :: Selector '[] CLong
 totalRetroCorrectionsSelector = mkSelector "totalRetroCorrections"
 
 -- | @Selector@ for @totalTranspositionCorrections@
-totalTranspositionCorrectionsSelector :: Selector
+totalTranspositionCorrectionsSelector :: Selector '[] CLong
 totalTranspositionCorrectionsSelector = mkSelector "totalTranspositionCorrections"
 
 -- | @Selector@ for @totalInsertKeyCorrections@
-totalInsertKeyCorrectionsSelector :: Selector
+totalInsertKeyCorrectionsSelector :: Selector '[] CLong
 totalInsertKeyCorrectionsSelector = mkSelector "totalInsertKeyCorrections"
 
 -- | @Selector@ for @totalSkipTouchCorrections@
-totalSkipTouchCorrectionsSelector :: Selector
+totalSkipTouchCorrectionsSelector :: Selector '[] CLong
 totalSkipTouchCorrectionsSelector = mkSelector "totalSkipTouchCorrections"
 
 -- | @Selector@ for @totalNearKeyCorrections@
-totalNearKeyCorrectionsSelector :: Selector
+totalNearKeyCorrectionsSelector :: Selector '[] CLong
 totalNearKeyCorrectionsSelector = mkSelector "totalNearKeyCorrections"
 
 -- | @Selector@ for @totalSubstitutionCorrections@
-totalSubstitutionCorrectionsSelector :: Selector
+totalSubstitutionCorrectionsSelector :: Selector '[] CLong
 totalSubstitutionCorrectionsSelector = mkSelector "totalSubstitutionCorrections"
 
 -- | @Selector@ for @totalHitTestCorrections@
-totalHitTestCorrectionsSelector :: Selector
+totalHitTestCorrectionsSelector :: Selector '[] CLong
 totalHitTestCorrectionsSelector = mkSelector "totalHitTestCorrections"
 
 -- | @Selector@ for @totalTypingDuration@
-totalTypingDurationSelector :: Selector
+totalTypingDurationSelector :: Selector '[] CDouble
 totalTypingDurationSelector = mkSelector "totalTypingDuration"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.Virtualization.VZVirtioConsolePortArray
   , init_
   , objectAtIndexedSubscript
   , maximumPortCount
-  , newSelector
   , initSelector
-  , objectAtIndexedSubscriptSelector
   , maximumPortCountSelector
+  , newSelector
+  , objectAtIndexedSubscriptSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,44 +43,44 @@ new :: IO (Id VZVirtioConsolePortArray)
 new  =
   do
     cls' <- getRequiredClass "VZVirtioConsolePortArray"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZVirtioConsolePortArray vzVirtioConsolePortArray => vzVirtioConsolePortArray -> IO (Id VZVirtioConsolePortArray)
-init_ vzVirtioConsolePortArray  =
-    sendMsg vzVirtioConsolePortArray (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioConsolePortArray =
+  sendOwnedMessage vzVirtioConsolePortArray initSelector
 
 -- | Get a port at the specified index.
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsVZVirtioConsolePortArray vzVirtioConsolePortArray => vzVirtioConsolePortArray -> CULong -> IO (Id VZVirtioConsolePort)
-objectAtIndexedSubscript vzVirtioConsolePortArray  portIndex =
-    sendMsg vzVirtioConsolePortArray (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong portIndex] >>= retainedObject . castPtr
+objectAtIndexedSubscript vzVirtioConsolePortArray portIndex =
+  sendMessage vzVirtioConsolePortArray objectAtIndexedSubscriptSelector portIndex
 
 -- | The maximum number of ports allocated by this device.
 --
 -- ObjC selector: @- maximumPortCount@
 maximumPortCount :: IsVZVirtioConsolePortArray vzVirtioConsolePortArray => vzVirtioConsolePortArray -> IO CUInt
-maximumPortCount vzVirtioConsolePortArray  =
-    sendMsg vzVirtioConsolePortArray (mkSelector "maximumPortCount") retCUInt []
+maximumPortCount vzVirtioConsolePortArray =
+  sendMessage vzVirtioConsolePortArray maximumPortCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZVirtioConsolePortArray)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioConsolePortArray)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id VZVirtioConsolePort)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @maximumPortCount@
-maximumPortCountSelector :: Selector
+maximumPortCountSelector :: Selector '[] CUInt
 maximumPortCountSelector = mkSelector "maximumPortCount"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.CoreText.Internal.Enums
 
 data ALMXGlyphEntry = ALMXGlyphEntry
@@ -46,6 +48,16 @@ argALMXGlyphEntry = mkStorableArg almxGlyphEntryStructType
 
 retALMXGlyphEntry :: RetType ALMXGlyphEntry
 retALMXGlyphEntry = mkStorableRetType almxGlyphEntryStructType
+
+instance ObjCArgument ALMXGlyphEntry where
+  withObjCArg x k = k (argALMXGlyphEntry x)
+
+instance ObjCReturn ALMXGlyphEntry where
+  type RawReturn ALMXGlyphEntry = ALMXGlyphEntry
+  objcRetType = retALMXGlyphEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ALMXHeader = ALMXHeader
   { almxHeaderVersion :: !CInt
@@ -83,6 +95,16 @@ argALMXHeader = mkStorableArg almxHeaderStructType
 retALMXHeader :: RetType ALMXHeader
 retALMXHeader = mkStorableRetType almxHeaderStructType
 
+instance ObjCArgument ALMXHeader where
+  withObjCArg x k = k (argALMXHeader x)
+
+instance ObjCReturn ALMXHeader where
+  type RawReturn ALMXHeader = ALMXHeader
+  objcRetType = retALMXHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AnchorPoint = AnchorPoint
   { anchorPointX :: !CShort
   , anchorPointY :: !CShort
@@ -106,6 +128,16 @@ argAnchorPoint = mkStorableArg anchorPointStructType
 
 retAnchorPoint :: RetType AnchorPoint
 retAnchorPoint = mkStorableRetType anchorPointStructType
+
+instance ObjCArgument AnchorPoint where
+  withObjCArg x k = k (argAnchorPoint x)
+
+instance ObjCReturn AnchorPoint where
+  type RawReturn AnchorPoint = AnchorPoint
+  objcRetType = retAnchorPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AnkrTable = AnkrTable
   { ankrTableVersion :: !CUShort
@@ -136,6 +168,16 @@ argAnkrTable = mkStorableArg ankrTableStructType
 
 retAnkrTable :: RetType AnkrTable
 retAnkrTable = mkStorableRetType ankrTableStructType
+
+instance ObjCArgument AnkrTable where
+  withObjCArg x k = k (argAnkrTable x)
+
+instance ObjCReturn AnkrTable where
+  type RawReturn AnkrTable = AnkrTable
+  objcRetType = retAnkrTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | CTParagraphStyleSetting
 --
@@ -173,6 +215,16 @@ argCTParagraphStyleSetting = mkStorableArg ctParagraphStyleSettingStructType
 retCTParagraphStyleSetting :: RetType CTParagraphStyleSetting
 retCTParagraphStyleSetting = mkStorableRetType ctParagraphStyleSettingStructType
 
+instance ObjCArgument CTParagraphStyleSetting where
+  withObjCArg x k = k (argCTParagraphStyleSetting x)
+
+instance ObjCReturn CTParagraphStyleSetting where
+  type RawReturn CTParagraphStyleSetting = CTParagraphStyleSetting
+  objcRetType = retCTParagraphStyleSetting
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FontVariation = FontVariation
   { fontVariationName :: !CUInt
   , fontVariationValue :: !CInt
@@ -196,6 +248,16 @@ argFontVariation = mkStorableArg fontVariationStructType
 
 retFontVariation :: RetType FontVariation
 retFontVariation = mkStorableRetType fontVariationStructType
+
+instance ObjCArgument FontVariation where
+  withObjCArg x k = k (argFontVariation x)
+
+instance ObjCReturn FontVariation where
+  type RawReturn FontVariation = FontVariation
+  objcRetType = retFontVariation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data JustDirectionTable = JustDirectionTable
   { justDirectionTableJustClass :: !CUShort
@@ -227,6 +289,16 @@ argJustDirectionTable = mkStorableArg justDirectionTableStructType
 retJustDirectionTable :: RetType JustDirectionTable
 retJustDirectionTable = mkStorableRetType justDirectionTableStructType
 
+instance ObjCArgument JustDirectionTable where
+  withObjCArg x k = k (argJustDirectionTable x)
+
+instance ObjCReturn JustDirectionTable where
+  type RawReturn JustDirectionTable = JustDirectionTable
+  objcRetType = retJustDirectionTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data JustPCActionSubrecord = JustPCActionSubrecord
   { justPCActionSubrecordTheClass :: !CUShort
   , justPCActionSubrecordTheType :: !CUShort
@@ -257,6 +329,16 @@ argJustPCActionSubrecord = mkStorableArg justPCActionSubrecordStructType
 retJustPCActionSubrecord :: RetType JustPCActionSubrecord
 retJustPCActionSubrecord = mkStorableRetType justPCActionSubrecordStructType
 
+instance ObjCArgument JustPCActionSubrecord where
+  withObjCArg x k = k (argJustPCActionSubrecord x)
+
+instance ObjCReturn JustPCActionSubrecord where
+  type RawReturn JustPCActionSubrecord = JustPCActionSubrecord
+  objcRetType = retJustPCActionSubrecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data JustPCConditionalAddAction = JustPCConditionalAddAction
   { justPCConditionalAddActionSubstThreshold :: !CInt
   , justPCConditionalAddActionAddGlyph :: !CUShort
@@ -283,6 +365,16 @@ argJustPCConditionalAddAction = mkStorableArg justPCConditionalAddActionStructTy
 
 retJustPCConditionalAddAction :: RetType JustPCConditionalAddAction
 retJustPCConditionalAddAction = mkStorableRetType justPCConditionalAddActionStructType
+
+instance ObjCArgument JustPCConditionalAddAction where
+  withObjCArg x k = k (argJustPCConditionalAddAction x)
+
+instance ObjCReturn JustPCConditionalAddAction where
+  type RawReturn JustPCConditionalAddAction = JustPCConditionalAddAction
+  objcRetType = retJustPCConditionalAddAction
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data JustPCDuctilityAction = JustPCDuctilityAction
   { justPCDuctilityActionDuctilityAxis :: !CUInt
@@ -314,6 +406,16 @@ argJustPCDuctilityAction = mkStorableArg justPCDuctilityActionStructType
 retJustPCDuctilityAction :: RetType JustPCDuctilityAction
 retJustPCDuctilityAction = mkStorableRetType justPCDuctilityActionStructType
 
+instance ObjCArgument JustPCDuctilityAction where
+  withObjCArg x k = k (argJustPCDuctilityAction x)
+
+instance ObjCReturn JustPCDuctilityAction where
+  type RawReturn JustPCDuctilityAction = JustPCDuctilityAction
+  objcRetType = retJustPCDuctilityAction
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data JustPCGlyphRepeatAddAction = JustPCGlyphRepeatAddAction
   { justPCGlyphRepeatAddActionFlags :: !CUShort
   , justPCGlyphRepeatAddActionGlyph :: !CUShort
@@ -338,6 +440,16 @@ argJustPCGlyphRepeatAddAction = mkStorableArg justPCGlyphRepeatAddActionStructTy
 retJustPCGlyphRepeatAddAction :: RetType JustPCGlyphRepeatAddAction
 retJustPCGlyphRepeatAddAction = mkStorableRetType justPCGlyphRepeatAddActionStructType
 
+instance ObjCArgument JustPCGlyphRepeatAddAction where
+  withObjCArg x k = k (argJustPCGlyphRepeatAddAction x)
+
+instance ObjCReturn JustPCGlyphRepeatAddAction where
+  type RawReturn JustPCGlyphRepeatAddAction = JustPCGlyphRepeatAddAction
+  objcRetType = retJustPCGlyphRepeatAddAction
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data JustPostcompTable = JustPostcompTable
   { justPostcompTableLookupTable :: !(Ptr ())
   } deriving (Eq, Show)
@@ -358,6 +470,16 @@ argJustPostcompTable = mkStorableArg justPostcompTableStructType
 
 retJustPostcompTable :: RetType JustPostcompTable
 retJustPostcompTable = mkStorableRetType justPostcompTableStructType
+
+instance ObjCArgument JustPostcompTable where
+  withObjCArg x k = k (argJustPostcompTable x)
+
+instance ObjCReturn JustPostcompTable where
+  type RawReturn JustPostcompTable = JustPostcompTable
+  objcRetType = retJustPostcompTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data JustTable = JustTable
   { justTableVersion :: !CInt
@@ -388,6 +510,16 @@ argJustTable = mkStorableArg justTableStructType
 
 retJustTable :: RetType JustTable
 retJustTable = mkStorableRetType justTableStructType
+
+instance ObjCArgument JustTable where
+  withObjCArg x k = k (argJustTable x)
+
+instance ObjCReturn JustTable where
+  type RawReturn JustTable = JustTable
+  objcRetType = retJustTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data JustWidthDeltaEntry = JustWidthDeltaEntry
   { justWidthDeltaEntryJustClass :: !CUInt
@@ -428,6 +560,16 @@ argJustWidthDeltaEntry = mkStorableArg justWidthDeltaEntryStructType
 retJustWidthDeltaEntry :: RetType JustWidthDeltaEntry
 retJustWidthDeltaEntry = mkStorableRetType justWidthDeltaEntryStructType
 
+instance ObjCArgument JustWidthDeltaEntry where
+  withObjCArg x k = k (argJustWidthDeltaEntry x)
+
+instance ObjCReturn JustWidthDeltaEntry where
+  type RawReturn JustWidthDeltaEntry = JustWidthDeltaEntry
+  objcRetType = retJustWidthDeltaEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data KernKerningPair = KernKerningPair
   { kernKerningPairLeft :: !CUShort
   , kernKerningPairRight :: !CUShort
@@ -451,6 +593,16 @@ argKernKerningPair = mkStorableArg kernKerningPairStructType
 
 retKernKerningPair :: RetType KernKerningPair
 retKernKerningPair = mkStorableRetType kernKerningPairStructType
+
+instance ObjCArgument KernKerningPair where
+  withObjCArg x k = k (argKernKerningPair x)
+
+instance ObjCReturn KernKerningPair where
+  type RawReturn KernKerningPair = KernKerningPair
+  objcRetType = retKernKerningPair
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data KernStateEntry = KernStateEntry
   { kernStateEntryNewState :: !CUShort
@@ -476,6 +628,16 @@ argKernStateEntry = mkStorableArg kernStateEntryStructType
 retKernStateEntry :: RetType KernStateEntry
 retKernStateEntry = mkStorableRetType kernStateEntryStructType
 
+instance ObjCArgument KernStateEntry where
+  withObjCArg x k = k (argKernStateEntry x)
+
+instance ObjCReturn KernStateEntry where
+  type RawReturn KernStateEntry = KernStateEntry
+  objcRetType = retKernStateEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data KerxAnchorPointAction = KerxAnchorPointAction
   { kerxAnchorPointActionMarkAnchorPoint :: !CUShort
   , kerxAnchorPointActionCurrAnchorPoint :: !CUShort
@@ -500,6 +662,16 @@ argKerxAnchorPointAction = mkStorableArg kerxAnchorPointActionStructType
 retKerxAnchorPointAction :: RetType KerxAnchorPointAction
 retKerxAnchorPointAction = mkStorableRetType kerxAnchorPointActionStructType
 
+instance ObjCArgument KerxAnchorPointAction where
+  withObjCArg x k = k (argKerxAnchorPointAction x)
+
+instance ObjCReturn KerxAnchorPointAction where
+  type RawReturn KerxAnchorPointAction = KerxAnchorPointAction
+  objcRetType = retKerxAnchorPointAction
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data KerxControlPointAction = KerxControlPointAction
   { kerxControlPointActionMarkControlPoint :: !CUShort
   , kerxControlPointActionCurrControlPoint :: !CUShort
@@ -523,6 +695,16 @@ argKerxControlPointAction = mkStorableArg kerxControlPointActionStructType
 
 retKerxControlPointAction :: RetType KerxControlPointAction
 retKerxControlPointAction = mkStorableRetType kerxControlPointActionStructType
+
+instance ObjCArgument KerxControlPointAction where
+  withObjCArg x k = k (argKerxControlPointAction x)
+
+instance ObjCReturn KerxControlPointAction where
+  type RawReturn KerxControlPointAction = KerxControlPointAction
+  objcRetType = retKerxControlPointAction
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data KerxControlPointEntry = KerxControlPointEntry
   { kerxControlPointEntryNewState :: !CUShort
@@ -550,6 +732,16 @@ argKerxControlPointEntry = mkStorableArg kerxControlPointEntryStructType
 
 retKerxControlPointEntry :: RetType KerxControlPointEntry
 retKerxControlPointEntry = mkStorableRetType kerxControlPointEntryStructType
+
+instance ObjCArgument KerxControlPointEntry where
+  withObjCArg x k = k (argKerxControlPointEntry x)
+
+instance ObjCReturn KerxControlPointEntry where
+  type RawReturn KerxControlPointEntry = KerxControlPointEntry
+  objcRetType = retKerxControlPointEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data KerxCoordinateAction = KerxCoordinateAction
   { kerxCoordinateActionMarkX :: !CUShort
@@ -580,6 +772,16 @@ argKerxCoordinateAction = mkStorableArg kerxCoordinateActionStructType
 
 retKerxCoordinateAction :: RetType KerxCoordinateAction
 retKerxCoordinateAction = mkStorableRetType kerxCoordinateActionStructType
+
+instance ObjCArgument KerxCoordinateAction where
+  withObjCArg x k = k (argKerxCoordinateAction x)
+
+instance ObjCReturn KerxCoordinateAction where
+  type RawReturn KerxCoordinateAction = KerxCoordinateAction
+  objcRetType = retKerxCoordinateAction
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data KerxIndexArrayHeader = KerxIndexArrayHeader
   { kerxIndexArrayHeaderFlags :: !CUInt
@@ -620,6 +822,16 @@ argKerxIndexArrayHeader = mkStorableArg kerxIndexArrayHeaderStructType
 retKerxIndexArrayHeader :: RetType KerxIndexArrayHeader
 retKerxIndexArrayHeader = mkStorableRetType kerxIndexArrayHeaderStructType
 
+instance ObjCArgument KerxIndexArrayHeader where
+  withObjCArg x k = k (argKerxIndexArrayHeader x)
+
+instance ObjCReturn KerxIndexArrayHeader where
+  type RawReturn KerxIndexArrayHeader = KerxIndexArrayHeader
+  objcRetType = retKerxIndexArrayHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data KerxKerningPair = KerxKerningPair
   { kerxKerningPairLeft :: !CUShort
   , kerxKerningPairRight :: !CUShort
@@ -643,6 +855,16 @@ argKerxKerningPair = mkStorableArg kerxKerningPairStructType
 
 retKerxKerningPair :: RetType KerxKerningPair
 retKerxKerningPair = mkStorableRetType kerxKerningPairStructType
+
+instance ObjCArgument KerxKerningPair where
+  withObjCArg x k = k (argKerxKerningPair x)
+
+instance ObjCReturn KerxKerningPair where
+  type RawReturn KerxKerningPair = KerxKerningPair
+  objcRetType = retKerxKerningPair
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data KerxStateEntry = KerxStateEntry
   { kerxStateEntryNewState :: !CUShort
@@ -671,6 +893,16 @@ argKerxStateEntry = mkStorableArg kerxStateEntryStructType
 retKerxStateEntry :: RetType KerxStateEntry
 retKerxStateEntry = mkStorableRetType kerxStateEntryStructType
 
+instance ObjCArgument KerxStateEntry where
+  withObjCArg x k = k (argKerxStateEntry x)
+
+instance ObjCReturn KerxStateEntry where
+  type RawReturn KerxStateEntry = KerxStateEntry
+  objcRetType = retKerxStateEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LcarCaretTable = LcarCaretTable
   { lcarCaretTableVersion :: !CInt
   , lcarCaretTableFormat :: !CUShort
@@ -698,6 +930,16 @@ argLcarCaretTable = mkStorableArg lcarCaretTableStructType
 retLcarCaretTable :: RetType LcarCaretTable
 retLcarCaretTable = mkStorableRetType lcarCaretTableStructType
 
+instance ObjCArgument LcarCaretTable where
+  withObjCArg x k = k (argLcarCaretTable x)
+
+instance ObjCReturn LcarCaretTable where
+  type RawReturn LcarCaretTable = LcarCaretTable
+  objcRetType = retLcarCaretTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LtagStringRange = LtagStringRange
   { ltagStringRangeOffset :: !CUShort
   , ltagStringRangeLength :: !CUShort
@@ -721,6 +963,16 @@ argLtagStringRange = mkStorableArg ltagStringRangeStructType
 
 retLtagStringRange :: RetType LtagStringRange
 retLtagStringRange = mkStorableRetType ltagStringRangeStructType
+
+instance ObjCArgument LtagStringRange where
+  withObjCArg x k = k (argLtagStringRange x)
+
+instance ObjCReturn LtagStringRange where
+  type RawReturn LtagStringRange = LtagStringRange
+  objcRetType = retLtagStringRange
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MortFeatureEntry = MortFeatureEntry
   { mortFeatureEntryFeatureType :: !CUShort
@@ -752,6 +1004,16 @@ argMortFeatureEntry = mkStorableArg mortFeatureEntryStructType
 retMortFeatureEntry :: RetType MortFeatureEntry
 retMortFeatureEntry = mkStorableRetType mortFeatureEntryStructType
 
+instance ObjCArgument MortFeatureEntry where
+  withObjCArg x k = k (argMortFeatureEntry x)
+
+instance ObjCReturn MortFeatureEntry where
+  type RawReturn MortFeatureEntry = MortFeatureEntry
+  objcRetType = retMortFeatureEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MortSwashSubtable = MortSwashSubtable
   { mortSwashSubtableLookup :: !(Ptr ())
   } deriving (Eq, Show)
@@ -772,6 +1034,16 @@ argMortSwashSubtable = mkStorableArg mortSwashSubtableStructType
 
 retMortSwashSubtable :: RetType MortSwashSubtable
 retMortSwashSubtable = mkStorableRetType mortSwashSubtableStructType
+
+instance ObjCArgument MortSwashSubtable where
+  withObjCArg x k = k (argMortSwashSubtable x)
+
+instance ObjCReturn MortSwashSubtable where
+  type RawReturn MortSwashSubtable = MortSwashSubtable
+  objcRetType = retMortSwashSubtable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data OpbdSideValues = OpbdSideValues
   { opbdSideValuesLeftSideShift :: !CShort
@@ -803,6 +1075,16 @@ argOpbdSideValues = mkStorableArg opbdSideValuesStructType
 retOpbdSideValues :: RetType OpbdSideValues
 retOpbdSideValues = mkStorableRetType opbdSideValuesStructType
 
+instance ObjCArgument OpbdSideValues where
+  withObjCArg x k = k (argOpbdSideValues x)
+
+instance ObjCReturn OpbdSideValues where
+  type RawReturn OpbdSideValues = OpbdSideValues
+  objcRetType = retOpbdSideValues
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data OpbdTable = OpbdTable
   { opbdTableVersion :: !CInt
   , opbdTableFormat :: !CUShort
@@ -829,6 +1111,16 @@ argOpbdTable = mkStorableArg opbdTableStructType
 
 retOpbdTable :: RetType OpbdTable
 retOpbdTable = mkStorableRetType opbdTableStructType
+
+instance ObjCArgument OpbdTable where
+  withObjCArg x k = k (argOpbdTable x)
+
+instance ObjCReturn OpbdTable where
+  type RawReturn OpbdTable = OpbdTable
+  objcRetType = retOpbdTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PropLookupSegment = PropLookupSegment
   { propLookupSegmentLastGlyph :: !CUShort
@@ -857,6 +1149,16 @@ argPropLookupSegment = mkStorableArg propLookupSegmentStructType
 retPropLookupSegment :: RetType PropLookupSegment
 retPropLookupSegment = mkStorableRetType propLookupSegmentStructType
 
+instance ObjCArgument PropLookupSegment where
+  withObjCArg x k = k (argPropLookupSegment x)
+
+instance ObjCReturn PropLookupSegment where
+  type RawReturn PropLookupSegment = PropLookupSegment
+  objcRetType = retPropLookupSegment
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data PropLookupSingle = PropLookupSingle
   { propLookupSingleGlyph :: !CUShort
   , propLookupSingleProps :: !CUShort
@@ -880,6 +1182,16 @@ argPropLookupSingle = mkStorableArg propLookupSingleStructType
 
 retPropLookupSingle :: RetType PropLookupSingle
 retPropLookupSingle = mkStorableRetType propLookupSingleStructType
+
+instance ObjCArgument PropLookupSingle where
+  withObjCArg x k = k (argPropLookupSingle x)
+
+instance ObjCReturn PropLookupSingle where
+  type RawReturn PropLookupSingle = PropLookupSingle
+  objcRetType = retPropLookupSingle
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PropTable = PropTable
   { propTableVersion :: !CInt
@@ -911,6 +1223,16 @@ argPropTable = mkStorableArg propTableStructType
 retPropTable :: RetType PropTable
 retPropTable = mkStorableRetType propTableStructType
 
+instance ObjCArgument PropTable where
+  withObjCArg x k = k (argPropTable x)
+
+instance ObjCReturn PropTable where
+  type RawReturn PropTable = PropTable
+  objcRetType = retPropTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ROTAGlyphEntry = ROTAGlyphEntry
   { rotaGlyphEntryGlyphIndexOffset :: !CShort
   , rotaGlyphEntryHBaselineOffset :: !CShort
@@ -937,6 +1259,16 @@ argROTAGlyphEntry = mkStorableArg rotaGlyphEntryStructType
 
 retROTAGlyphEntry :: RetType ROTAGlyphEntry
 retROTAGlyphEntry = mkStorableRetType rotaGlyphEntryStructType
+
+instance ObjCArgument ROTAGlyphEntry where
+  withObjCArg x k = k (argROTAGlyphEntry x)
+
+instance ObjCReturn ROTAGlyphEntry where
+  type RawReturn ROTAGlyphEntry = ROTAGlyphEntry
+  objcRetType = retROTAGlyphEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ROTAHeader = ROTAHeader
   { rotaHeaderVersion :: !CInt
@@ -974,6 +1306,16 @@ argROTAHeader = mkStorableArg rotaHeaderStructType
 retROTAHeader :: RetType ROTAHeader
 retROTAHeader = mkStorableRetType rotaHeaderStructType
 
+instance ObjCArgument ROTAHeader where
+  withObjCArg x k = k (argROTAHeader x)
+
+instance ObjCReturn ROTAHeader where
+  type RawReturn ROTAHeader = ROTAHeader
+  objcRetType = retROTAHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SFNTLookupBinarySearchHeader = SFNTLookupBinarySearchHeader
   { sfntLookupBinarySearchHeaderUnitSize :: !CUShort
   , sfntLookupBinarySearchHeaderNUnits :: !CUShort
@@ -1007,6 +1349,16 @@ argSFNTLookupBinarySearchHeader = mkStorableArg sfntLookupBinarySearchHeaderStru
 retSFNTLookupBinarySearchHeader :: RetType SFNTLookupBinarySearchHeader
 retSFNTLookupBinarySearchHeader = mkStorableRetType sfntLookupBinarySearchHeaderStructType
 
+instance ObjCArgument SFNTLookupBinarySearchHeader where
+  withObjCArg x k = k (argSFNTLookupBinarySearchHeader x)
+
+instance ObjCReturn SFNTLookupBinarySearchHeader where
+  type RawReturn SFNTLookupBinarySearchHeader = SFNTLookupBinarySearchHeader
+  objcRetType = retSFNTLookupBinarySearchHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data STEntryOne = STEntryOne
   { stEntryOneNewState :: !CUShort
   , stEntryOneFlags :: !CUShort
@@ -1033,6 +1385,16 @@ argSTEntryOne = mkStorableArg stEntryOneStructType
 
 retSTEntryOne :: RetType STEntryOne
 retSTEntryOne = mkStorableRetType stEntryOneStructType
+
+instance ObjCArgument STEntryOne where
+  withObjCArg x k = k (argSTEntryOne x)
+
+instance ObjCReturn STEntryOne where
+  type RawReturn STEntryOne = STEntryOne
+  objcRetType = retSTEntryOne
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data STEntryTwo = STEntryTwo
   { stEntryTwoNewState :: !CUShort
@@ -1064,6 +1426,16 @@ argSTEntryTwo = mkStorableArg stEntryTwoStructType
 retSTEntryTwo :: RetType STEntryTwo
 retSTEntryTwo = mkStorableRetType stEntryTwoStructType
 
+instance ObjCArgument STEntryTwo where
+  withObjCArg x k = k (argSTEntryTwo x)
+
+instance ObjCReturn STEntryTwo where
+  type RawReturn STEntryTwo = STEntryTwo
+  objcRetType = retSTEntryTwo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data STEntryZero = STEntryZero
   { stEntryZeroNewState :: !CUShort
   , stEntryZeroFlags :: !CUShort
@@ -1087,6 +1459,16 @@ argSTEntryZero = mkStorableArg stEntryZeroStructType
 
 retSTEntryZero :: RetType STEntryZero
 retSTEntryZero = mkStorableRetType stEntryZeroStructType
+
+instance ObjCArgument STEntryZero where
+  withObjCArg x k = k (argSTEntryZero x)
+
+instance ObjCReturn STEntryZero where
+  type RawReturn STEntryZero = STEntryZero
+  objcRetType = retSTEntryZero
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data STHeader = STHeader
   { stHeaderFiller :: !CUChar
@@ -1121,6 +1503,16 @@ argSTHeader = mkStorableArg stHeaderStructType
 retSTHeader :: RetType STHeader
 retSTHeader = mkStorableRetType stHeaderStructType
 
+instance ObjCArgument STHeader where
+  withObjCArg x k = k (argSTHeader x)
+
+instance ObjCReturn STHeader where
+  type RawReturn STHeader = STHeader
+  objcRetType = retSTHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data STXEntryOne = STXEntryOne
   { stxEntryOneNewState :: !CUShort
   , stxEntryOneFlags :: !CUShort
@@ -1147,6 +1539,16 @@ argSTXEntryOne = mkStorableArg stxEntryOneStructType
 
 retSTXEntryOne :: RetType STXEntryOne
 retSTXEntryOne = mkStorableRetType stxEntryOneStructType
+
+instance ObjCArgument STXEntryOne where
+  withObjCArg x k = k (argSTXEntryOne x)
+
+instance ObjCReturn STXEntryOne where
+  type RawReturn STXEntryOne = STXEntryOne
+  objcRetType = retSTXEntryOne
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data STXEntryTwo = STXEntryTwo
   { stxEntryTwoNewState :: !CUShort
@@ -1178,6 +1580,16 @@ argSTXEntryTwo = mkStorableArg stxEntryTwoStructType
 retSTXEntryTwo :: RetType STXEntryTwo
 retSTXEntryTwo = mkStorableRetType stxEntryTwoStructType
 
+instance ObjCArgument STXEntryTwo where
+  withObjCArg x k = k (argSTXEntryTwo x)
+
+instance ObjCReturn STXEntryTwo where
+  type RawReturn STXEntryTwo = STXEntryTwo
+  objcRetType = retSTXEntryTwo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data STXEntryZero = STXEntryZero
   { stxEntryZeroNewState :: !CUShort
   , stxEntryZeroFlags :: !CUShort
@@ -1201,6 +1613,16 @@ argSTXEntryZero = mkStorableArg stxEntryZeroStructType
 
 retSTXEntryZero :: RetType STXEntryZero
 retSTXEntryZero = mkStorableRetType stxEntryZeroStructType
+
+instance ObjCArgument STXEntryZero where
+  withObjCArg x k = k (argSTXEntryZero x)
+
+instance ObjCReturn STXEntryZero where
+  type RawReturn STXEntryZero = STXEntryZero
+  objcRetType = retSTXEntryZero
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data STXHeader = STXHeader
   { stxHeaderNClasses :: !CUInt
@@ -1232,6 +1654,16 @@ argSTXHeader = mkStorableArg stxHeaderStructType
 retSTXHeader :: RetType STXHeader
 retSTXHeader = mkStorableRetType stxHeaderStructType
 
+instance ObjCArgument STXHeader where
+  withObjCArg x k = k (argSTXHeader x)
+
+instance ObjCReturn STXHeader where
+  type RawReturn STXHeader = STXHeader
+  objcRetType = retSTXHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TrakTable = TrakTable
   { trakTableVersion :: !CInt
   , trakTableFormat :: !CUShort
@@ -1262,6 +1694,16 @@ argTrakTable = mkStorableArg trakTableStructType
 retTrakTable :: RetType TrakTable
 retTrakTable = mkStorableRetType trakTableStructType
 
+instance ObjCArgument TrakTable where
+  withObjCArg x k = k (argTrakTable x)
+
+instance ObjCReturn TrakTable where
+  type RawReturn TrakTable = TrakTable
+  objcRetType = retTrakTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TrakTableEntry = TrakTableEntry
   { trakTableEntryTrack :: !CInt
   , trakTableEntryNameTableIndex :: !CUShort
@@ -1289,6 +1731,16 @@ argTrakTableEntry = mkStorableArg trakTableEntryStructType
 retTrakTableEntry :: RetType TrakTableEntry
 retTrakTableEntry = mkStorableRetType trakTableEntryStructType
 
+instance ObjCArgument TrakTableEntry where
+  withObjCArg x k = k (argTrakTableEntry x)
+
+instance ObjCReturn TrakTableEntry where
+  type RawReturn TrakTableEntry = TrakTableEntry
+  objcRetType = retTrakTableEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data KernOrderedListEntry = KernOrderedListEntry
   { kernOrderedListEntryPair :: !KernKerningPair
   , kernOrderedListEntryValue :: !CShort
@@ -1312,6 +1764,16 @@ argKernOrderedListEntry = mkStorableArg kernOrderedListEntryStructType
 
 retKernOrderedListEntry :: RetType KernOrderedListEntry
 retKernOrderedListEntry = mkStorableRetType kernOrderedListEntryStructType
+
+instance ObjCArgument KernOrderedListEntry where
+  withObjCArg x k = k (argKernOrderedListEntry x)
+
+instance ObjCReturn KernOrderedListEntry where
+  type RawReturn KernOrderedListEntry = KernOrderedListEntry
+  objcRetType = retKernOrderedListEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data KerxOrderedListEntry = KerxOrderedListEntry
   { kerxOrderedListEntryPair :: !KerxKerningPair
@@ -1337,6 +1799,16 @@ argKerxOrderedListEntry = mkStorableArg kerxOrderedListEntryStructType
 retKerxOrderedListEntry :: RetType KerxOrderedListEntry
 retKerxOrderedListEntry = mkStorableRetType kerxOrderedListEntryStructType
 
+instance ObjCArgument KerxOrderedListEntry where
+  withObjCArg x k = k (argKerxOrderedListEntry x)
+
+instance ObjCReturn KerxOrderedListEntry where
+  type RawReturn KerxOrderedListEntry = KerxOrderedListEntry
+  objcRetType = retKerxOrderedListEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MortContextualSubtable = MortContextualSubtable
   { mortContextualSubtableHeader :: !STHeader
   , mortContextualSubtableSubstitutionTableOffset :: !CUShort
@@ -1361,6 +1833,16 @@ argMortContextualSubtable = mkStorableArg mortContextualSubtableStructType
 retMortContextualSubtable :: RetType MortContextualSubtable
 retMortContextualSubtable = mkStorableRetType mortContextualSubtableStructType
 
+instance ObjCArgument MortContextualSubtable where
+  withObjCArg x k = k (argMortContextualSubtable x)
+
+instance ObjCReturn MortContextualSubtable where
+  type RawReturn MortContextualSubtable = MortContextualSubtable
+  objcRetType = retMortContextualSubtable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MortInsertionSubtable = MortInsertionSubtable
   { mortInsertionSubtableHeader :: !STHeader
   } deriving (Eq, Show)
@@ -1381,6 +1863,16 @@ argMortInsertionSubtable = mkStorableArg mortInsertionSubtableStructType
 
 retMortInsertionSubtable :: RetType MortInsertionSubtable
 retMortInsertionSubtable = mkStorableRetType mortInsertionSubtableStructType
+
+instance ObjCArgument MortInsertionSubtable where
+  withObjCArg x k = k (argMortInsertionSubtable x)
+
+instance ObjCReturn MortInsertionSubtable where
+  type RawReturn MortInsertionSubtable = MortInsertionSubtable
+  objcRetType = retMortInsertionSubtable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MortLigatureSubtable = MortLigatureSubtable
   { mortLigatureSubtableHeader :: !STHeader
@@ -1412,6 +1904,16 @@ argMortLigatureSubtable = mkStorableArg mortLigatureSubtableStructType
 retMortLigatureSubtable :: RetType MortLigatureSubtable
 retMortLigatureSubtable = mkStorableRetType mortLigatureSubtableStructType
 
+instance ObjCArgument MortLigatureSubtable where
+  withObjCArg x k = k (argMortLigatureSubtable x)
+
+instance ObjCReturn MortLigatureSubtable where
+  type RawReturn MortLigatureSubtable = MortLigatureSubtable
+  objcRetType = retMortLigatureSubtable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MortRearrangementSubtable = MortRearrangementSubtable
   { mortRearrangementSubtableHeader :: !STHeader
   } deriving (Eq, Show)
@@ -1432,6 +1934,16 @@ argMortRearrangementSubtable = mkStorableArg mortRearrangementSubtableStructType
 
 retMortRearrangementSubtable :: RetType MortRearrangementSubtable
 retMortRearrangementSubtable = mkStorableRetType mortRearrangementSubtableStructType
+
+instance ObjCArgument MortRearrangementSubtable where
+  withObjCArg x k = k (argMortRearrangementSubtable x)
+
+instance ObjCReturn MortRearrangementSubtable where
+  type RawReturn MortRearrangementSubtable = MortRearrangementSubtable
+  objcRetType = retMortRearrangementSubtable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MorxContextualSubtable = MorxContextualSubtable
   { morxContextualSubtableHeader :: !STXHeader
@@ -1457,6 +1969,16 @@ argMorxContextualSubtable = mkStorableArg morxContextualSubtableStructType
 retMorxContextualSubtable :: RetType MorxContextualSubtable
 retMorxContextualSubtable = mkStorableRetType morxContextualSubtableStructType
 
+instance ObjCArgument MorxContextualSubtable where
+  withObjCArg x k = k (argMorxContextualSubtable x)
+
+instance ObjCReturn MorxContextualSubtable where
+  type RawReturn MorxContextualSubtable = MorxContextualSubtable
+  objcRetType = retMorxContextualSubtable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MorxInsertionSubtable = MorxInsertionSubtable
   { morxInsertionSubtableHeader :: !STXHeader
   , morxInsertionSubtableInsertionGlyphTableOffset :: !CUInt
@@ -1480,6 +2002,16 @@ argMorxInsertionSubtable = mkStorableArg morxInsertionSubtableStructType
 
 retMorxInsertionSubtable :: RetType MorxInsertionSubtable
 retMorxInsertionSubtable = mkStorableRetType morxInsertionSubtableStructType
+
+instance ObjCArgument MorxInsertionSubtable where
+  withObjCArg x k = k (argMorxInsertionSubtable x)
+
+instance ObjCReturn MorxInsertionSubtable where
+  type RawReturn MorxInsertionSubtable = MorxInsertionSubtable
+  objcRetType = retMorxInsertionSubtable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MorxLigatureSubtable = MorxLigatureSubtable
   { morxLigatureSubtableHeader :: !STXHeader
@@ -1511,6 +2043,16 @@ argMorxLigatureSubtable = mkStorableArg morxLigatureSubtableStructType
 retMorxLigatureSubtable :: RetType MorxLigatureSubtable
 retMorxLigatureSubtable = mkStorableRetType morxLigatureSubtableStructType
 
+instance ObjCArgument MorxLigatureSubtable where
+  withObjCArg x k = k (argMorxLigatureSubtable x)
+
+instance ObjCReturn MorxLigatureSubtable where
+  type RawReturn MorxLigatureSubtable = MorxLigatureSubtable
+  objcRetType = retMorxLigatureSubtable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MorxRearrangementSubtable = MorxRearrangementSubtable
   { morxRearrangementSubtableHeader :: !STXHeader
   } deriving (Eq, Show)
@@ -1531,3 +2073,13 @@ argMorxRearrangementSubtable = mkStorableArg morxRearrangementSubtableStructType
 
 retMorxRearrangementSubtable :: RetType MorxRearrangementSubtable
 retMorxRearrangementSubtable = mkStorableRetType morxRearrangementSubtableStructType
+
+instance ObjCArgument MorxRearrangementSubtable where
+  withObjCArg x k = k (argMorxRearrangementSubtable x)
+
+instance ObjCReturn MorxRearrangementSubtable where
+  type RawReturn MorxRearrangementSubtable = MorxRearrangementSubtable
+  objcRetType = retMorxRearrangementSubtable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

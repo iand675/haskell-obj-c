@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.MetalPerformanceShaders.MPSNNSlice
   , IsMPSNNSlice(..)
   , initWithDevice
   , initWithCoder_device
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
+  , initWithDeviceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,24 +34,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNSlice mpsnnSlice => mpsnnSlice -> RawId -> IO (Id MPSNNSlice)
-initWithDevice mpsnnSlice  device =
-    sendMsg mpsnnSlice (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnSlice device =
+  sendOwnedMessage mpsnnSlice initWithDeviceSelector device
 
 -- | @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNSlice mpsnnSlice, IsNSCoder aDecoder) => mpsnnSlice -> aDecoder -> RawId -> IO (Id MPSNNSlice)
-initWithCoder_device mpsnnSlice  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnSlice (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnSlice aDecoder device =
+  sendOwnedMessage mpsnnSlice initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNSlice)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNSlice)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 

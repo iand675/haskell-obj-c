@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.SpriteKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Adjust the timing of an action
 --
@@ -45,6 +48,16 @@ pattern SKActionTimingEaseOut = SKActionTimingMode 2
 pattern SKActionTimingEaseInEaseOut :: SKActionTimingMode
 pattern SKActionTimingEaseInEaseOut = SKActionTimingMode 3
 
+instance ObjCArgument SKActionTimingMode where
+  withObjCArg (SKActionTimingMode x) k = k (argCLong x)
+
+instance ObjCReturn SKActionTimingMode where
+  type RawReturn SKActionTimingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKActionTimingMode x)
+  fromOwned x = pure (SKActionTimingMode x)
+
 -- | @SKAttributeType@
 newtype SKAttributeType = SKAttributeType CLong
   deriving stock (Eq, Ord, Show)
@@ -77,6 +90,16 @@ pattern SKAttributeTypeVectorHalfFloat3 = SKAttributeType 7
 pattern SKAttributeTypeVectorHalfFloat4 :: SKAttributeType
 pattern SKAttributeTypeVectorHalfFloat4 = SKAttributeType 8
 
+instance ObjCArgument SKAttributeType where
+  withObjCArg (SKAttributeType x) k = k (argCLong x)
+
+instance ObjCReturn SKAttributeType where
+  type RawReturn SKAttributeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKAttributeType x)
+  fromOwned x = pure (SKAttributeType x)
+
 -- | Blend modes that the SKNode uses to compose with the framebuffer to produce blended colors.
 -- | @SKBlendMode@
 newtype SKBlendMode = SKBlendMode CLong
@@ -107,6 +130,16 @@ pattern SKBlendModeReplace = SKBlendMode 6
 pattern SKBlendModeMultiplyAlpha :: SKBlendMode
 pattern SKBlendModeMultiplyAlpha = SKBlendMode 7
 
+instance ObjCArgument SKBlendMode where
+  withObjCArg (SKBlendMode x) k = k (argCLong x)
+
+instance ObjCReturn SKBlendMode where
+  type RawReturn SKBlendMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKBlendMode x)
+  fromOwned x = pure (SKBlendMode x)
+
 -- | @SKInterpolationMode@
 newtype SKInterpolationMode = SKInterpolationMode CLong
   deriving stock (Eq, Ord, Show)
@@ -121,6 +154,16 @@ pattern SKInterpolationModeSpline = SKInterpolationMode 2
 pattern SKInterpolationModeStep :: SKInterpolationMode
 pattern SKInterpolationModeStep = SKInterpolationMode 3
 
+instance ObjCArgument SKInterpolationMode where
+  withObjCArg (SKInterpolationMode x) k = k (argCLong x)
+
+instance ObjCReturn SKInterpolationMode where
+  type RawReturn SKInterpolationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKInterpolationMode x)
+  fromOwned x = pure (SKInterpolationMode x)
+
 -- | @SKLabelHorizontalAlignmentMode@
 newtype SKLabelHorizontalAlignmentMode = SKLabelHorizontalAlignmentMode CLong
   deriving stock (Eq, Ord, Show)
@@ -134,6 +177,16 @@ pattern SKLabelHorizontalAlignmentModeLeft = SKLabelHorizontalAlignmentMode 1
 
 pattern SKLabelHorizontalAlignmentModeRight :: SKLabelHorizontalAlignmentMode
 pattern SKLabelHorizontalAlignmentModeRight = SKLabelHorizontalAlignmentMode 2
+
+instance ObjCArgument SKLabelHorizontalAlignmentMode where
+  withObjCArg (SKLabelHorizontalAlignmentMode x) k = k (argCLong x)
+
+instance ObjCReturn SKLabelHorizontalAlignmentMode where
+  type RawReturn SKLabelHorizontalAlignmentMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKLabelHorizontalAlignmentMode x)
+  fromOwned x = pure (SKLabelHorizontalAlignmentMode x)
 
 -- | @SKLabelVerticalAlignmentMode@
 newtype SKLabelVerticalAlignmentMode = SKLabelVerticalAlignmentMode CLong
@@ -152,6 +205,16 @@ pattern SKLabelVerticalAlignmentModeTop = SKLabelVerticalAlignmentMode 2
 pattern SKLabelVerticalAlignmentModeBottom :: SKLabelVerticalAlignmentMode
 pattern SKLabelVerticalAlignmentModeBottom = SKLabelVerticalAlignmentMode 3
 
+instance ObjCArgument SKLabelVerticalAlignmentMode where
+  withObjCArg (SKLabelVerticalAlignmentMode x) k = k (argCLong x)
+
+instance ObjCReturn SKLabelVerticalAlignmentMode where
+  type RawReturn SKLabelVerticalAlignmentMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKLabelVerticalAlignmentMode x)
+  fromOwned x = pure (SKLabelVerticalAlignmentMode x)
+
 -- | @SKNodeFocusBehavior@
 newtype SKNodeFocusBehavior = SKNodeFocusBehavior CLong
   deriving stock (Eq, Ord, Show)
@@ -165,6 +228,16 @@ pattern SKNodeFocusBehaviorOccluding = SKNodeFocusBehavior 1
 
 pattern SKNodeFocusBehaviorFocusable :: SKNodeFocusBehavior
 pattern SKNodeFocusBehaviorFocusable = SKNodeFocusBehavior 2
+
+instance ObjCArgument SKNodeFocusBehavior where
+  withObjCArg (SKNodeFocusBehavior x) k = k (argCLong x)
+
+instance ObjCReturn SKNodeFocusBehavior where
+  type RawReturn SKNodeFocusBehavior = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKNodeFocusBehavior x)
+  fromOwned x = pure (SKNodeFocusBehavior x)
 
 -- | @SKParticleRenderOrder@
 newtype SKParticleRenderOrder = SKParticleRenderOrder CULong
@@ -180,6 +253,16 @@ pattern SKParticleRenderOrderOldestFirst = SKParticleRenderOrder 1
 pattern SKParticleRenderOrderDontCare :: SKParticleRenderOrder
 pattern SKParticleRenderOrderDontCare = SKParticleRenderOrder 2
 
+instance ObjCArgument SKParticleRenderOrder where
+  withObjCArg (SKParticleRenderOrder x) k = k (argCULong x)
+
+instance ObjCReturn SKParticleRenderOrder where
+  type RawReturn SKParticleRenderOrder = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKParticleRenderOrder x)
+  fromOwned x = pure (SKParticleRenderOrder x)
+
 -- | @SKRepeatMode@
 newtype SKRepeatMode = SKRepeatMode CLong
   deriving stock (Eq, Ord, Show)
@@ -190,6 +273,16 @@ pattern SKRepeatModeClamp = SKRepeatMode 1
 
 pattern SKRepeatModeLoop :: SKRepeatMode
 pattern SKRepeatModeLoop = SKRepeatMode 2
+
+instance ObjCArgument SKRepeatMode where
+  withObjCArg (SKRepeatMode x) k = k (argCLong x)
+
+instance ObjCReturn SKRepeatMode where
+  type RawReturn SKRepeatMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKRepeatMode x)
+  fromOwned x = pure (SKRepeatMode x)
 
 -- | @SKSceneScaleMode@
 newtype SKSceneScaleMode = SKSceneScaleMode CLong
@@ -208,6 +301,16 @@ pattern SKSceneScaleModeAspectFit = SKSceneScaleMode 2
 pattern SKSceneScaleModeResizeFill :: SKSceneScaleMode
 pattern SKSceneScaleModeResizeFill = SKSceneScaleMode 3
 
+instance ObjCArgument SKSceneScaleMode where
+  withObjCArg (SKSceneScaleMode x) k = k (argCLong x)
+
+instance ObjCReturn SKSceneScaleMode where
+  type RawReturn SKSceneScaleMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKSceneScaleMode x)
+  fromOwned x = pure (SKSceneScaleMode x)
+
 -- | @SKTextureFilteringMode@
 newtype SKTextureFilteringMode = SKTextureFilteringMode CLong
   deriving stock (Eq, Ord, Show)
@@ -218,6 +321,16 @@ pattern SKTextureFilteringNearest = SKTextureFilteringMode 0
 
 pattern SKTextureFilteringLinear :: SKTextureFilteringMode
 pattern SKTextureFilteringLinear = SKTextureFilteringMode 1
+
+instance ObjCArgument SKTextureFilteringMode where
+  withObjCArg (SKTextureFilteringMode x) k = k (argCLong x)
+
+instance ObjCReturn SKTextureFilteringMode where
+  type RawReturn SKTextureFilteringMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKTextureFilteringMode x)
+  fromOwned x = pure (SKTextureFilteringMode x)
 
 -- | The adjacency mask is used to specify which neighboring tiles need to be filled in for a rule to go into effect.
 -- | @SKTileAdjacencyMask@ (bitmask)
@@ -336,6 +449,16 @@ pattern SKTileAdjacencyLowerLeftCorner = SKTileAdjacencyMask 253
 pattern SKTileAdjacencyUpperLeftCorner :: SKTileAdjacencyMask
 pattern SKTileAdjacencyUpperLeftCorner = SKTileAdjacencyMask 247
 
+instance ObjCArgument SKTileAdjacencyMask where
+  withObjCArg (SKTileAdjacencyMask x) k = k (argCULong x)
+
+instance ObjCReturn SKTileAdjacencyMask where
+  type RawReturn SKTileAdjacencyMask = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKTileAdjacencyMask x)
+  fromOwned x = pure (SKTileAdjacencyMask x)
+
 -- | Adjust the rotation of the tile definition image, in 90 degree increments.
 -- | @SKTileDefinitionRotation@
 newtype SKTileDefinitionRotation = SKTileDefinitionRotation CULong
@@ -353,6 +476,16 @@ pattern SKTileDefinitionRotation180 = SKTileDefinitionRotation 2
 
 pattern SKTileDefinitionRotation270 :: SKTileDefinitionRotation
 pattern SKTileDefinitionRotation270 = SKTileDefinitionRotation 3
+
+instance ObjCArgument SKTileDefinitionRotation where
+  withObjCArg (SKTileDefinitionRotation x) k = k (argCULong x)
+
+instance ObjCReturn SKTileDefinitionRotation where
+  type RawReturn SKTileDefinitionRotation = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKTileDefinitionRotation x)
+  fromOwned x = pure (SKTileDefinitionRotation x)
 
 -- | The tile set type is used to describe how the tiles will be arranged in a tile map.
 --
@@ -380,6 +513,16 @@ pattern SKTileSetTypeHexagonalFlat = SKTileSetType 2
 pattern SKTileSetTypeHexagonalPointy :: SKTileSetType
 pattern SKTileSetTypeHexagonalPointy = SKTileSetType 3
 
+instance ObjCArgument SKTileSetType where
+  withObjCArg (SKTileSetType x) k = k (argCULong x)
+
+instance ObjCReturn SKTileSetType where
+  type RawReturn SKTileSetType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKTileSetType x)
+  fromOwned x = pure (SKTileSetType x)
+
 -- | @SKTransitionDirection@
 newtype SKTransitionDirection = SKTransitionDirection CLong
   deriving stock (Eq, Ord, Show)
@@ -396,6 +539,16 @@ pattern SKTransitionDirectionRight = SKTransitionDirection 2
 
 pattern SKTransitionDirectionLeft :: SKTransitionDirection
 pattern SKTransitionDirectionLeft = SKTransitionDirection 3
+
+instance ObjCArgument SKTransitionDirection where
+  withObjCArg (SKTransitionDirection x) k = k (argCLong x)
+
+instance ObjCReturn SKTransitionDirection where
+  type RawReturn SKTransitionDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKTransitionDirection x)
+  fromOwned x = pure (SKTransitionDirection x)
 
 -- | @SKUniformType@
 newtype SKUniformType = SKUniformType CLong
@@ -428,3 +581,13 @@ pattern SKUniformTypeFloatMatrix4 = SKUniformType 7
 
 pattern SKUniformTypeTexture :: SKUniformType
 pattern SKUniformTypeTexture = SKUniformType 8
+
+instance ObjCArgument SKUniformType where
+  withObjCArg (SKUniformType x) k = k (argCLong x)
+
+instance ObjCReturn SKUniformType where
+  type RawReturn SKUniformType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKUniformType x)
+  fromOwned x = pure (SKUniformType x)

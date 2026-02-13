@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRThermostatClusterActiveScheduleChangeEvent
   , setPreviousScheduleHandle
   , currentScheduleHandle
   , setCurrentScheduleHandle
-  , previousScheduleHandleSelector
-  , setPreviousScheduleHandleSelector
   , currentScheduleHandleSelector
+  , previousScheduleHandleSelector
   , setCurrentScheduleHandleSelector
+  , setPreviousScheduleHandleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- previousScheduleHandle@
 previousScheduleHandle :: IsMTRThermostatClusterActiveScheduleChangeEvent mtrThermostatClusterActiveScheduleChangeEvent => mtrThermostatClusterActiveScheduleChangeEvent -> IO (Id NSData)
-previousScheduleHandle mtrThermostatClusterActiveScheduleChangeEvent  =
-    sendMsg mtrThermostatClusterActiveScheduleChangeEvent (mkSelector "previousScheduleHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousScheduleHandle mtrThermostatClusterActiveScheduleChangeEvent =
+  sendMessage mtrThermostatClusterActiveScheduleChangeEvent previousScheduleHandleSelector
 
 -- | @- setPreviousScheduleHandle:@
 setPreviousScheduleHandle :: (IsMTRThermostatClusterActiveScheduleChangeEvent mtrThermostatClusterActiveScheduleChangeEvent, IsNSData value) => mtrThermostatClusterActiveScheduleChangeEvent -> value -> IO ()
-setPreviousScheduleHandle mtrThermostatClusterActiveScheduleChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterActiveScheduleChangeEvent (mkSelector "setPreviousScheduleHandle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreviousScheduleHandle mtrThermostatClusterActiveScheduleChangeEvent value =
+  sendMessage mtrThermostatClusterActiveScheduleChangeEvent setPreviousScheduleHandleSelector (toNSData value)
 
 -- | @- currentScheduleHandle@
 currentScheduleHandle :: IsMTRThermostatClusterActiveScheduleChangeEvent mtrThermostatClusterActiveScheduleChangeEvent => mtrThermostatClusterActiveScheduleChangeEvent -> IO (Id NSData)
-currentScheduleHandle mtrThermostatClusterActiveScheduleChangeEvent  =
-    sendMsg mtrThermostatClusterActiveScheduleChangeEvent (mkSelector "currentScheduleHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentScheduleHandle mtrThermostatClusterActiveScheduleChangeEvent =
+  sendMessage mtrThermostatClusterActiveScheduleChangeEvent currentScheduleHandleSelector
 
 -- | @- setCurrentScheduleHandle:@
 setCurrentScheduleHandle :: (IsMTRThermostatClusterActiveScheduleChangeEvent mtrThermostatClusterActiveScheduleChangeEvent, IsNSData value) => mtrThermostatClusterActiveScheduleChangeEvent -> value -> IO ()
-setCurrentScheduleHandle mtrThermostatClusterActiveScheduleChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterActiveScheduleChangeEvent (mkSelector "setCurrentScheduleHandle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentScheduleHandle mtrThermostatClusterActiveScheduleChangeEvent value =
+  sendMessage mtrThermostatClusterActiveScheduleChangeEvent setCurrentScheduleHandleSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @previousScheduleHandle@
-previousScheduleHandleSelector :: Selector
+previousScheduleHandleSelector :: Selector '[] (Id NSData)
 previousScheduleHandleSelector = mkSelector "previousScheduleHandle"
 
 -- | @Selector@ for @setPreviousScheduleHandle:@
-setPreviousScheduleHandleSelector :: Selector
+setPreviousScheduleHandleSelector :: Selector '[Id NSData] ()
 setPreviousScheduleHandleSelector = mkSelector "setPreviousScheduleHandle:"
 
 -- | @Selector@ for @currentScheduleHandle@
-currentScheduleHandleSelector :: Selector
+currentScheduleHandleSelector :: Selector '[] (Id NSData)
 currentScheduleHandleSelector = mkSelector "currentScheduleHandle"
 
 -- | @Selector@ for @setCurrentScheduleHandle:@
-setCurrentScheduleHandleSelector :: Selector
+setCurrentScheduleHandleSelector :: Selector '[Id NSData] ()
 setCurrentScheduleHandleSelector = mkSelector "setCurrentScheduleHandle:"
 

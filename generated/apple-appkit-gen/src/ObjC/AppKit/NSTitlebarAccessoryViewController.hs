@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.AppKit.NSTitlebarAccessoryViewController
   , setAutomaticallyAdjustsSize
   , preferredScrollEdgeEffectStyle
   , setPreferredScrollEdgeEffectStyle
-  , viewWillAppearSelector
+  , automaticallyAdjustsSizeSelector
+  , fullScreenMinHeightSelector
+  , hiddenSelector
+  , layoutAttributeSelector
+  , preferredScrollEdgeEffectStyleSelector
+  , setAutomaticallyAdjustsSizeSelector
+  , setFullScreenMinHeightSelector
+  , setHiddenSelector
+  , setLayoutAttributeSelector
+  , setPreferredScrollEdgeEffectStyleSelector
   , viewDidAppearSelector
   , viewDidDisappearSelector
-  , layoutAttributeSelector
-  , setLayoutAttributeSelector
-  , fullScreenMinHeightSelector
-  , setFullScreenMinHeightSelector
-  , hiddenSelector
-  , setHiddenSelector
-  , automaticallyAdjustsSizeSelector
-  , setAutomaticallyAdjustsSizeSelector
-  , preferredScrollEdgeEffectStyleSelector
-  , setPreferredScrollEdgeEffectStyleSelector
+  , viewWillAppearSelector
 
   -- * Enum types
   , NSLayoutAttribute(NSLayoutAttribute)
@@ -53,15 +54,11 @@ module ObjC.AppKit.NSTitlebarAccessoryViewController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,58 +68,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- viewWillAppear@
 viewWillAppear :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> IO ()
-viewWillAppear nsTitlebarAccessoryViewController  =
-    sendMsg nsTitlebarAccessoryViewController (mkSelector "viewWillAppear") retVoid []
+viewWillAppear nsTitlebarAccessoryViewController =
+  sendMessage nsTitlebarAccessoryViewController viewWillAppearSelector
 
 -- | @- viewDidAppear@
 viewDidAppear :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> IO ()
-viewDidAppear nsTitlebarAccessoryViewController  =
-    sendMsg nsTitlebarAccessoryViewController (mkSelector "viewDidAppear") retVoid []
+viewDidAppear nsTitlebarAccessoryViewController =
+  sendMessage nsTitlebarAccessoryViewController viewDidAppearSelector
 
 -- | @- viewDidDisappear@
 viewDidDisappear :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> IO ()
-viewDidDisappear nsTitlebarAccessoryViewController  =
-    sendMsg nsTitlebarAccessoryViewController (mkSelector "viewDidDisappear") retVoid []
+viewDidDisappear nsTitlebarAccessoryViewController =
+  sendMessage nsTitlebarAccessoryViewController viewDidDisappearSelector
 
 -- | @- layoutAttribute@
 layoutAttribute :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> IO NSLayoutAttribute
-layoutAttribute nsTitlebarAccessoryViewController  =
-    fmap (coerce :: CLong -> NSLayoutAttribute) $ sendMsg nsTitlebarAccessoryViewController (mkSelector "layoutAttribute") retCLong []
+layoutAttribute nsTitlebarAccessoryViewController =
+  sendMessage nsTitlebarAccessoryViewController layoutAttributeSelector
 
 -- | @- setLayoutAttribute:@
 setLayoutAttribute :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> NSLayoutAttribute -> IO ()
-setLayoutAttribute nsTitlebarAccessoryViewController  value =
-    sendMsg nsTitlebarAccessoryViewController (mkSelector "setLayoutAttribute:") retVoid [argCLong (coerce value)]
+setLayoutAttribute nsTitlebarAccessoryViewController value =
+  sendMessage nsTitlebarAccessoryViewController setLayoutAttributeSelector value
 
 -- | @- fullScreenMinHeight@
 fullScreenMinHeight :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> IO CDouble
-fullScreenMinHeight nsTitlebarAccessoryViewController  =
-    sendMsg nsTitlebarAccessoryViewController (mkSelector "fullScreenMinHeight") retCDouble []
+fullScreenMinHeight nsTitlebarAccessoryViewController =
+  sendMessage nsTitlebarAccessoryViewController fullScreenMinHeightSelector
 
 -- | @- setFullScreenMinHeight:@
 setFullScreenMinHeight :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> CDouble -> IO ()
-setFullScreenMinHeight nsTitlebarAccessoryViewController  value =
-    sendMsg nsTitlebarAccessoryViewController (mkSelector "setFullScreenMinHeight:") retVoid [argCDouble value]
+setFullScreenMinHeight nsTitlebarAccessoryViewController value =
+  sendMessage nsTitlebarAccessoryViewController setFullScreenMinHeightSelector value
 
 -- | @- hidden@
 hidden :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> IO Bool
-hidden nsTitlebarAccessoryViewController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTitlebarAccessoryViewController (mkSelector "hidden") retCULong []
+hidden nsTitlebarAccessoryViewController =
+  sendMessage nsTitlebarAccessoryViewController hiddenSelector
 
 -- | @- setHidden:@
 setHidden :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> Bool -> IO ()
-setHidden nsTitlebarAccessoryViewController  value =
-    sendMsg nsTitlebarAccessoryViewController (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden nsTitlebarAccessoryViewController value =
+  sendMessage nsTitlebarAccessoryViewController setHiddenSelector value
 
 -- | @- automaticallyAdjustsSize@
 automaticallyAdjustsSize :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> IO Bool
-automaticallyAdjustsSize nsTitlebarAccessoryViewController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTitlebarAccessoryViewController (mkSelector "automaticallyAdjustsSize") retCULong []
+automaticallyAdjustsSize nsTitlebarAccessoryViewController =
+  sendMessage nsTitlebarAccessoryViewController automaticallyAdjustsSizeSelector
 
 -- | @- setAutomaticallyAdjustsSize:@
 setAutomaticallyAdjustsSize :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> Bool -> IO ()
-setAutomaticallyAdjustsSize nsTitlebarAccessoryViewController  value =
-    sendMsg nsTitlebarAccessoryViewController (mkSelector "setAutomaticallyAdjustsSize:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAdjustsSize nsTitlebarAccessoryViewController value =
+  sendMessage nsTitlebarAccessoryViewController setAutomaticallyAdjustsSizeSelector value
 
 -- | The titlebar accessory’s preferred effect for content scrolling behind it.
 --
@@ -132,8 +129,8 @@ setAutomaticallyAdjustsSize nsTitlebarAccessoryViewController  value =
 --
 -- ObjC selector: @- preferredScrollEdgeEffectStyle@
 preferredScrollEdgeEffectStyle :: IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController => nsTitlebarAccessoryViewController -> IO (Id NSScrollEdgeEffectStyle)
-preferredScrollEdgeEffectStyle nsTitlebarAccessoryViewController  =
-    sendMsg nsTitlebarAccessoryViewController (mkSelector "preferredScrollEdgeEffectStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredScrollEdgeEffectStyle nsTitlebarAccessoryViewController =
+  sendMessage nsTitlebarAccessoryViewController preferredScrollEdgeEffectStyleSelector
 
 -- | The titlebar accessory’s preferred effect for content scrolling behind it.
 --
@@ -143,63 +140,62 @@ preferredScrollEdgeEffectStyle nsTitlebarAccessoryViewController  =
 --
 -- ObjC selector: @- setPreferredScrollEdgeEffectStyle:@
 setPreferredScrollEdgeEffectStyle :: (IsNSTitlebarAccessoryViewController nsTitlebarAccessoryViewController, IsNSScrollEdgeEffectStyle value) => nsTitlebarAccessoryViewController -> value -> IO ()
-setPreferredScrollEdgeEffectStyle nsTitlebarAccessoryViewController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTitlebarAccessoryViewController (mkSelector "setPreferredScrollEdgeEffectStyle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredScrollEdgeEffectStyle nsTitlebarAccessoryViewController value =
+  sendMessage nsTitlebarAccessoryViewController setPreferredScrollEdgeEffectStyleSelector (toNSScrollEdgeEffectStyle value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @viewWillAppear@
-viewWillAppearSelector :: Selector
+viewWillAppearSelector :: Selector '[] ()
 viewWillAppearSelector = mkSelector "viewWillAppear"
 
 -- | @Selector@ for @viewDidAppear@
-viewDidAppearSelector :: Selector
+viewDidAppearSelector :: Selector '[] ()
 viewDidAppearSelector = mkSelector "viewDidAppear"
 
 -- | @Selector@ for @viewDidDisappear@
-viewDidDisappearSelector :: Selector
+viewDidDisappearSelector :: Selector '[] ()
 viewDidDisappearSelector = mkSelector "viewDidDisappear"
 
 -- | @Selector@ for @layoutAttribute@
-layoutAttributeSelector :: Selector
+layoutAttributeSelector :: Selector '[] NSLayoutAttribute
 layoutAttributeSelector = mkSelector "layoutAttribute"
 
 -- | @Selector@ for @setLayoutAttribute:@
-setLayoutAttributeSelector :: Selector
+setLayoutAttributeSelector :: Selector '[NSLayoutAttribute] ()
 setLayoutAttributeSelector = mkSelector "setLayoutAttribute:"
 
 -- | @Selector@ for @fullScreenMinHeight@
-fullScreenMinHeightSelector :: Selector
+fullScreenMinHeightSelector :: Selector '[] CDouble
 fullScreenMinHeightSelector = mkSelector "fullScreenMinHeight"
 
 -- | @Selector@ for @setFullScreenMinHeight:@
-setFullScreenMinHeightSelector :: Selector
+setFullScreenMinHeightSelector :: Selector '[CDouble] ()
 setFullScreenMinHeightSelector = mkSelector "setFullScreenMinHeight:"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 
 -- | @Selector@ for @automaticallyAdjustsSize@
-automaticallyAdjustsSizeSelector :: Selector
+automaticallyAdjustsSizeSelector :: Selector '[] Bool
 automaticallyAdjustsSizeSelector = mkSelector "automaticallyAdjustsSize"
 
 -- | @Selector@ for @setAutomaticallyAdjustsSize:@
-setAutomaticallyAdjustsSizeSelector :: Selector
+setAutomaticallyAdjustsSizeSelector :: Selector '[Bool] ()
 setAutomaticallyAdjustsSizeSelector = mkSelector "setAutomaticallyAdjustsSize:"
 
 -- | @Selector@ for @preferredScrollEdgeEffectStyle@
-preferredScrollEdgeEffectStyleSelector :: Selector
+preferredScrollEdgeEffectStyleSelector :: Selector '[] (Id NSScrollEdgeEffectStyle)
 preferredScrollEdgeEffectStyleSelector = mkSelector "preferredScrollEdgeEffectStyle"
 
 -- | @Selector@ for @setPreferredScrollEdgeEffectStyle:@
-setPreferredScrollEdgeEffectStyleSelector :: Selector
+setPreferredScrollEdgeEffectStyleSelector :: Selector '[Id NSScrollEdgeEffectStyle] ()
 setPreferredScrollEdgeEffectStyleSelector = mkSelector "setPreferredScrollEdgeEffectStyle:"
 

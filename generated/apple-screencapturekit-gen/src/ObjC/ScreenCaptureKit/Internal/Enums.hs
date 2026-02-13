@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ScreenCaptureKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | SCCaptureDynamicRange
 --
@@ -34,6 +37,16 @@ pattern SCCaptureDynamicRangeHDRLocalDisplay = SCCaptureDynamicRange 1
 pattern SCCaptureDynamicRangeHDRCanonicalDisplay :: SCCaptureDynamicRange
 pattern SCCaptureDynamicRangeHDRCanonicalDisplay = SCCaptureDynamicRange 2
 
+instance ObjCArgument SCCaptureDynamicRange where
+  withObjCArg (SCCaptureDynamicRange x) k = k (argCLong x)
+
+instance ObjCReturn SCCaptureDynamicRange where
+  type RawReturn SCCaptureDynamicRange = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCCaptureDynamicRange x)
+  fromOwned x = pure (SCCaptureDynamicRange x)
+
 -- | @SCCaptureResolutionType@
 newtype SCCaptureResolutionType = SCCaptureResolutionType CLong
   deriving stock (Eq, Ord, Show)
@@ -47,6 +60,16 @@ pattern SCCaptureResolutionBest = SCCaptureResolutionType 1
 
 pattern SCCaptureResolutionNominal :: SCCaptureResolutionType
 pattern SCCaptureResolutionNominal = SCCaptureResolutionType 2
+
+instance ObjCArgument SCCaptureResolutionType where
+  withObjCArg (SCCaptureResolutionType x) k = k (argCLong x)
+
+instance ObjCReturn SCCaptureResolutionType where
+  type RawReturn SCCaptureResolutionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCCaptureResolutionType x)
+  fromOwned x = pure (SCCaptureResolutionType x)
 
 -- | SCContentSharingPickerMode
 --
@@ -82,6 +105,16 @@ pattern SCContentSharingPickerModeMultipleApplications = SCContentSharingPickerM
 
 pattern SCContentSharingPickerModeSingleDisplay :: SCContentSharingPickerMode
 pattern SCContentSharingPickerModeSingleDisplay = SCContentSharingPickerMode 16
+
+instance ObjCArgument SCContentSharingPickerMode where
+  withObjCArg (SCContentSharingPickerMode x) k = k (argCULong x)
+
+instance ObjCReturn SCContentSharingPickerMode where
+  type RawReturn SCContentSharingPickerMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCContentSharingPickerMode x)
+  fromOwned x = pure (SCContentSharingPickerMode x)
 
 -- | SCFrameStatus
 --
@@ -121,6 +154,16 @@ pattern SCFrameStatusStarted = SCFrameStatus 4
 pattern SCFrameStatusStopped :: SCFrameStatus
 pattern SCFrameStatusStopped = SCFrameStatus 5
 
+instance ObjCArgument SCFrameStatus where
+  withObjCArg (SCFrameStatus x) k = k (argCLong x)
+
+instance ObjCReturn SCFrameStatus where
+  type RawReturn SCFrameStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCFrameStatus x)
+  fromOwned x = pure (SCFrameStatus x)
+
 -- | SCPresenterOverlayAlertSetting
 --
 -- SCPresenterOverlayAlertSetting denotes the setting that can be set to determine when to show the presenter overlay alert for any stream
@@ -144,6 +187,16 @@ pattern SCPresenterOverlayAlertSettingNever = SCPresenterOverlayAlertSetting 1
 pattern SCPresenterOverlayAlertSettingAlways :: SCPresenterOverlayAlertSetting
 pattern SCPresenterOverlayAlertSettingAlways = SCPresenterOverlayAlertSetting 2
 
+instance ObjCArgument SCPresenterOverlayAlertSetting where
+  withObjCArg (SCPresenterOverlayAlertSetting x) k = k (argCLong x)
+
+instance ObjCReturn SCPresenterOverlayAlertSetting where
+  type RawReturn SCPresenterOverlayAlertSetting = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCPresenterOverlayAlertSetting x)
+  fromOwned x = pure (SCPresenterOverlayAlertSetting x)
+
 -- | @SCScreenshotDisplayIntent@
 newtype SCScreenshotDisplayIntent = SCScreenshotDisplayIntent CLong
   deriving stock (Eq, Ord, Show)
@@ -154,6 +207,16 @@ pattern SCScreenshotDisplayIntentCanonical = SCScreenshotDisplayIntent 0
 
 pattern SCScreenshotDisplayIntentLocal :: SCScreenshotDisplayIntent
 pattern SCScreenshotDisplayIntentLocal = SCScreenshotDisplayIntent 1
+
+instance ObjCArgument SCScreenshotDisplayIntent where
+  withObjCArg (SCScreenshotDisplayIntent x) k = k (argCLong x)
+
+instance ObjCReturn SCScreenshotDisplayIntent where
+  type RawReturn SCScreenshotDisplayIntent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCScreenshotDisplayIntent x)
+  fromOwned x = pure (SCScreenshotDisplayIntent x)
 
 -- | @SCScreenshotDynamicRange@
 newtype SCScreenshotDynamicRange = SCScreenshotDynamicRange CLong
@@ -168,6 +231,16 @@ pattern SCScreenshotDynamicRangeHDR = SCScreenshotDynamicRange 1
 
 pattern SCScreenshotDynamicRangeSDRAndHDR :: SCScreenshotDynamicRange
 pattern SCScreenshotDynamicRangeSDRAndHDR = SCScreenshotDynamicRange 2
+
+instance ObjCArgument SCScreenshotDynamicRange where
+  withObjCArg (SCScreenshotDynamicRange x) k = k (argCLong x)
+
+instance ObjCReturn SCScreenshotDynamicRange where
+  type RawReturn SCScreenshotDynamicRange = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCScreenshotDynamicRange x)
+  fromOwned x = pure (SCScreenshotDynamicRange x)
 
 -- | SCShareableContentStyle
 --
@@ -194,6 +267,16 @@ pattern SCShareableContentStyleDisplay = SCShareableContentStyle 2
 
 pattern SCShareableContentStyleApplication :: SCShareableContentStyle
 pattern SCShareableContentStyleApplication = SCShareableContentStyle 3
+
+instance ObjCArgument SCShareableContentStyle where
+  withObjCArg (SCShareableContentStyle x) k = k (argCLong x)
+
+instance ObjCReturn SCShareableContentStyle where
+  type RawReturn SCShareableContentStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCShareableContentStyle x)
+  fromOwned x = pure (SCShareableContentStyle x)
 
 -- | SCStreamConfigurationPreset
 --
@@ -227,6 +310,16 @@ pattern SCStreamConfigurationPresetCaptureHDRScreenshotCanonicalDisplay = SCStre
 
 pattern SCStreamConfigurationPresetCaptureHDRRecordingPreservedSDRHDR10 :: SCStreamConfigurationPreset
 pattern SCStreamConfigurationPresetCaptureHDRRecordingPreservedSDRHDR10 = SCStreamConfigurationPreset 4
+
+instance ObjCArgument SCStreamConfigurationPreset where
+  withObjCArg (SCStreamConfigurationPreset x) k = k (argCLong x)
+
+instance ObjCReturn SCStreamConfigurationPreset where
+  type RawReturn SCStreamConfigurationPreset = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCStreamConfigurationPreset x)
+  fromOwned x = pure (SCStreamConfigurationPreset x)
 
 -- | @SCStreamErrorCode@
 newtype SCStreamErrorCode = SCStreamErrorCode CLong
@@ -296,6 +389,16 @@ pattern SCStreamErrorFailedToStartMicrophoneCapture = SCStreamErrorCode (-3820)
 pattern SCStreamErrorSystemStoppedStream :: SCStreamErrorCode
 pattern SCStreamErrorSystemStoppedStream = SCStreamErrorCode (-3821)
 
+instance ObjCArgument SCStreamErrorCode where
+  withObjCArg (SCStreamErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn SCStreamErrorCode where
+  type RawReturn SCStreamErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCStreamErrorCode x)
+  fromOwned x = pure (SCStreamErrorCode x)
+
 -- | SCStreamOutputType
 --
 -- SCStreamOutputTypeScreen screen sample output type.
@@ -321,6 +424,16 @@ pattern SCStreamOutputTypeAudio = SCStreamOutputType 1
 pattern SCStreamOutputTypeMicrophone :: SCStreamOutputType
 pattern SCStreamOutputTypeMicrophone = SCStreamOutputType 2
 
+instance ObjCArgument SCStreamOutputType where
+  withObjCArg (SCStreamOutputType x) k = k (argCLong x)
+
+instance ObjCReturn SCStreamOutputType where
+  type RawReturn SCStreamOutputType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCStreamOutputType x)
+  fromOwned x = pure (SCStreamOutputType x)
+
 -- | SCStreamType
 --
 -- SCStreamTypeWindow window stream
@@ -336,3 +449,13 @@ pattern SCStreamTypeWindow = SCStreamType 0
 
 pattern SCStreamTypeDisplay :: SCStreamType
 pattern SCStreamTypeDisplay = SCStreamType 1
+
+instance ObjCArgument SCStreamType where
+  withObjCArg (SCStreamType x) k = k (argCLong x)
+
+instance ObjCReturn SCStreamType where
+  type RawReturn SCStreamType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCStreamType x)
+  fromOwned x = pure (SCStreamType x)

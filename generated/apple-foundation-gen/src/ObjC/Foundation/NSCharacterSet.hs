@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,51 +39,47 @@ module ObjC.Foundation.NSCharacterSet
   , urlPathAllowedCharacterSet
   , urlQueryAllowedCharacterSet
   , urlFragmentAllowedCharacterSet
-  , characterSetWithRangeSelector
-  , characterSetWithCharactersInStringSelector
-  , characterSetWithBitmapRepresentationSelector
-  , characterSetWithContentsOfFileSelector
-  , initWithCoderSelector
-  , characterIsMemberSelector
-  , longCharacterIsMemberSelector
-  , isSupersetOfSetSelector
-  , hasMemberInPlaneSelector
-  , controlCharacterSetSelector
-  , whitespaceCharacterSetSelector
-  , whitespaceAndNewlineCharacterSetSelector
-  , decimalDigitCharacterSetSelector
-  , letterCharacterSetSelector
-  , lowercaseLetterCharacterSetSelector
-  , uppercaseLetterCharacterSetSelector
-  , nonBaseCharacterSetSelector
   , alphanumericCharacterSetSelector
-  , decomposableCharacterSetSelector
-  , illegalCharacterSetSelector
-  , punctuationCharacterSetSelector
-  , capitalizedLetterCharacterSetSelector
-  , symbolCharacterSetSelector
-  , newlineCharacterSetSelector
   , bitmapRepresentationSelector
+  , capitalizedLetterCharacterSetSelector
+  , characterIsMemberSelector
+  , characterSetWithBitmapRepresentationSelector
+  , characterSetWithCharactersInStringSelector
+  , characterSetWithContentsOfFileSelector
+  , characterSetWithRangeSelector
+  , controlCharacterSetSelector
+  , decimalDigitCharacterSetSelector
+  , decomposableCharacterSetSelector
+  , hasMemberInPlaneSelector
+  , illegalCharacterSetSelector
+  , initWithCoderSelector
   , invertedSetSelector
-  , urlUserAllowedCharacterSetSelector
-  , urlPasswordAllowedCharacterSetSelector
+  , isSupersetOfSetSelector
+  , letterCharacterSetSelector
+  , longCharacterIsMemberSelector
+  , lowercaseLetterCharacterSetSelector
+  , newlineCharacterSetSelector
+  , nonBaseCharacterSetSelector
+  , punctuationCharacterSetSelector
+  , symbolCharacterSetSelector
+  , uppercaseLetterCharacterSetSelector
+  , urlFragmentAllowedCharacterSetSelector
   , urlHostAllowedCharacterSetSelector
+  , urlPasswordAllowedCharacterSetSelector
   , urlPathAllowedCharacterSetSelector
   , urlQueryAllowedCharacterSetSelector
-  , urlFragmentAllowedCharacterSetSelector
+  , urlUserAllowedCharacterSetSelector
+  , whitespaceAndNewlineCharacterSetSelector
+  , whitespaceCharacterSetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -94,345 +91,340 @@ characterSetWithRange :: NSRange -> IO (Id NSCharacterSet)
 characterSetWithRange aRange =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "characterSetWithRange:") (retPtr retVoid) [argNSRange aRange] >>= retainedObject . castPtr
+    sendClassMessage cls' characterSetWithRangeSelector aRange
 
 -- | @+ characterSetWithCharactersInString:@
 characterSetWithCharactersInString :: IsNSString aString => aString -> IO (Id NSCharacterSet)
 characterSetWithCharactersInString aString =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    withObjCPtr aString $ \raw_aString ->
-      sendClassMsg cls' (mkSelector "characterSetWithCharactersInString:") (retPtr retVoid) [argPtr (castPtr raw_aString :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' characterSetWithCharactersInStringSelector (toNSString aString)
 
 -- | @+ characterSetWithBitmapRepresentation:@
 characterSetWithBitmapRepresentation :: IsNSData data_ => data_ -> IO (Id NSCharacterSet)
 characterSetWithBitmapRepresentation data_ =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    withObjCPtr data_ $ \raw_data_ ->
-      sendClassMsg cls' (mkSelector "characterSetWithBitmapRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' characterSetWithBitmapRepresentationSelector (toNSData data_)
 
 -- | @+ characterSetWithContentsOfFile:@
 characterSetWithContentsOfFile :: IsNSString fName => fName -> IO (Id NSCharacterSet)
 characterSetWithContentsOfFile fName =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    withObjCPtr fName $ \raw_fName ->
-      sendClassMsg cls' (mkSelector "characterSetWithContentsOfFile:") (retPtr retVoid) [argPtr (castPtr raw_fName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' characterSetWithContentsOfFileSelector (toNSString fName)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSCharacterSet nsCharacterSet, IsNSCoder coder) => nsCharacterSet -> coder -> IO (Id NSCharacterSet)
-initWithCoder nsCharacterSet  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsCharacterSet (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsCharacterSet coder =
+  sendOwnedMessage nsCharacterSet initWithCoderSelector (toNSCoder coder)
 
 -- | @- characterIsMember:@
 characterIsMember :: IsNSCharacterSet nsCharacterSet => nsCharacterSet -> CUShort -> IO Bool
-characterIsMember nsCharacterSet  aCharacter =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCharacterSet (mkSelector "characterIsMember:") retCULong [argCUInt (fromIntegral aCharacter)]
+characterIsMember nsCharacterSet aCharacter =
+  sendMessage nsCharacterSet characterIsMemberSelector aCharacter
 
 -- | @- longCharacterIsMember:@
 longCharacterIsMember :: IsNSCharacterSet nsCharacterSet => nsCharacterSet -> CUInt -> IO Bool
-longCharacterIsMember nsCharacterSet  theLongChar =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCharacterSet (mkSelector "longCharacterIsMember:") retCULong [argCUInt theLongChar]
+longCharacterIsMember nsCharacterSet theLongChar =
+  sendMessage nsCharacterSet longCharacterIsMemberSelector theLongChar
 
 -- | @- isSupersetOfSet:@
 isSupersetOfSet :: (IsNSCharacterSet nsCharacterSet, IsNSCharacterSet theOtherSet) => nsCharacterSet -> theOtherSet -> IO Bool
-isSupersetOfSet nsCharacterSet  theOtherSet =
-  withObjCPtr theOtherSet $ \raw_theOtherSet ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCharacterSet (mkSelector "isSupersetOfSet:") retCULong [argPtr (castPtr raw_theOtherSet :: Ptr ())]
+isSupersetOfSet nsCharacterSet theOtherSet =
+  sendMessage nsCharacterSet isSupersetOfSetSelector (toNSCharacterSet theOtherSet)
 
 -- | @- hasMemberInPlane:@
 hasMemberInPlane :: IsNSCharacterSet nsCharacterSet => nsCharacterSet -> CUChar -> IO Bool
-hasMemberInPlane nsCharacterSet  thePlane =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCharacterSet (mkSelector "hasMemberInPlane:") retCULong [argCUChar thePlane]
+hasMemberInPlane nsCharacterSet thePlane =
+  sendMessage nsCharacterSet hasMemberInPlaneSelector thePlane
 
 -- | @+ controlCharacterSet@
 controlCharacterSet :: IO (Id NSCharacterSet)
 controlCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "controlCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' controlCharacterSetSelector
 
 -- | @+ whitespaceCharacterSet@
 whitespaceCharacterSet :: IO (Id NSCharacterSet)
 whitespaceCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "whitespaceCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' whitespaceCharacterSetSelector
 
 -- | @+ whitespaceAndNewlineCharacterSet@
 whitespaceAndNewlineCharacterSet :: IO (Id NSCharacterSet)
 whitespaceAndNewlineCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "whitespaceAndNewlineCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' whitespaceAndNewlineCharacterSetSelector
 
 -- | @+ decimalDigitCharacterSet@
 decimalDigitCharacterSet :: IO (Id NSCharacterSet)
 decimalDigitCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "decimalDigitCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' decimalDigitCharacterSetSelector
 
 -- | @+ letterCharacterSet@
 letterCharacterSet :: IO (Id NSCharacterSet)
 letterCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "letterCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' letterCharacterSetSelector
 
 -- | @+ lowercaseLetterCharacterSet@
 lowercaseLetterCharacterSet :: IO (Id NSCharacterSet)
 lowercaseLetterCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "lowercaseLetterCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' lowercaseLetterCharacterSetSelector
 
 -- | @+ uppercaseLetterCharacterSet@
 uppercaseLetterCharacterSet :: IO (Id NSCharacterSet)
 uppercaseLetterCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "uppercaseLetterCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' uppercaseLetterCharacterSetSelector
 
 -- | @+ nonBaseCharacterSet@
 nonBaseCharacterSet :: IO (Id NSCharacterSet)
 nonBaseCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "nonBaseCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nonBaseCharacterSetSelector
 
 -- | @+ alphanumericCharacterSet@
 alphanumericCharacterSet :: IO (Id NSCharacterSet)
 alphanumericCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "alphanumericCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' alphanumericCharacterSetSelector
 
 -- | @+ decomposableCharacterSet@
 decomposableCharacterSet :: IO (Id NSCharacterSet)
 decomposableCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "decomposableCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' decomposableCharacterSetSelector
 
 -- | @+ illegalCharacterSet@
 illegalCharacterSet :: IO (Id NSCharacterSet)
 illegalCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "illegalCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' illegalCharacterSetSelector
 
 -- | @+ punctuationCharacterSet@
 punctuationCharacterSet :: IO (Id NSCharacterSet)
 punctuationCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "punctuationCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' punctuationCharacterSetSelector
 
 -- | @+ capitalizedLetterCharacterSet@
 capitalizedLetterCharacterSet :: IO (Id NSCharacterSet)
 capitalizedLetterCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "capitalizedLetterCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' capitalizedLetterCharacterSetSelector
 
 -- | @+ symbolCharacterSet@
 symbolCharacterSet :: IO (Id NSCharacterSet)
 symbolCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "symbolCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' symbolCharacterSetSelector
 
 -- | @+ newlineCharacterSet@
 newlineCharacterSet :: IO (Id NSCharacterSet)
 newlineCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "newlineCharacterSet") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newlineCharacterSetSelector
 
 -- | @- bitmapRepresentation@
 bitmapRepresentation :: IsNSCharacterSet nsCharacterSet => nsCharacterSet -> IO (Id NSData)
-bitmapRepresentation nsCharacterSet  =
-    sendMsg nsCharacterSet (mkSelector "bitmapRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+bitmapRepresentation nsCharacterSet =
+  sendMessage nsCharacterSet bitmapRepresentationSelector
 
 -- | @- invertedSet@
 invertedSet :: IsNSCharacterSet nsCharacterSet => nsCharacterSet -> IO (Id NSCharacterSet)
-invertedSet nsCharacterSet  =
-    sendMsg nsCharacterSet (mkSelector "invertedSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+invertedSet nsCharacterSet =
+  sendMessage nsCharacterSet invertedSetSelector
 
 -- | @+ URLUserAllowedCharacterSet@
 urlUserAllowedCharacterSet :: IO (Id NSCharacterSet)
 urlUserAllowedCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "URLUserAllowedCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' urlUserAllowedCharacterSetSelector
 
 -- | @+ URLPasswordAllowedCharacterSet@
 urlPasswordAllowedCharacterSet :: IO (Id NSCharacterSet)
 urlPasswordAllowedCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "URLPasswordAllowedCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' urlPasswordAllowedCharacterSetSelector
 
 -- | @+ URLHostAllowedCharacterSet@
 urlHostAllowedCharacterSet :: IO (Id NSCharacterSet)
 urlHostAllowedCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "URLHostAllowedCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' urlHostAllowedCharacterSetSelector
 
 -- | @+ URLPathAllowedCharacterSet@
 urlPathAllowedCharacterSet :: IO (Id NSCharacterSet)
 urlPathAllowedCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "URLPathAllowedCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' urlPathAllowedCharacterSetSelector
 
 -- | @+ URLQueryAllowedCharacterSet@
 urlQueryAllowedCharacterSet :: IO (Id NSCharacterSet)
 urlQueryAllowedCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "URLQueryAllowedCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' urlQueryAllowedCharacterSetSelector
 
 -- | @+ URLFragmentAllowedCharacterSet@
 urlFragmentAllowedCharacterSet :: IO (Id NSCharacterSet)
 urlFragmentAllowedCharacterSet  =
   do
     cls' <- getRequiredClass "NSCharacterSet"
-    sendClassMsg cls' (mkSelector "URLFragmentAllowedCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' urlFragmentAllowedCharacterSetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @characterSetWithRange:@
-characterSetWithRangeSelector :: Selector
+characterSetWithRangeSelector :: Selector '[NSRange] (Id NSCharacterSet)
 characterSetWithRangeSelector = mkSelector "characterSetWithRange:"
 
 -- | @Selector@ for @characterSetWithCharactersInString:@
-characterSetWithCharactersInStringSelector :: Selector
+characterSetWithCharactersInStringSelector :: Selector '[Id NSString] (Id NSCharacterSet)
 characterSetWithCharactersInStringSelector = mkSelector "characterSetWithCharactersInString:"
 
 -- | @Selector@ for @characterSetWithBitmapRepresentation:@
-characterSetWithBitmapRepresentationSelector :: Selector
+characterSetWithBitmapRepresentationSelector :: Selector '[Id NSData] (Id NSCharacterSet)
 characterSetWithBitmapRepresentationSelector = mkSelector "characterSetWithBitmapRepresentation:"
 
 -- | @Selector@ for @characterSetWithContentsOfFile:@
-characterSetWithContentsOfFileSelector :: Selector
+characterSetWithContentsOfFileSelector :: Selector '[Id NSString] (Id NSCharacterSet)
 characterSetWithContentsOfFileSelector = mkSelector "characterSetWithContentsOfFile:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSCharacterSet)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @characterIsMember:@
-characterIsMemberSelector :: Selector
+characterIsMemberSelector :: Selector '[CUShort] Bool
 characterIsMemberSelector = mkSelector "characterIsMember:"
 
 -- | @Selector@ for @longCharacterIsMember:@
-longCharacterIsMemberSelector :: Selector
+longCharacterIsMemberSelector :: Selector '[CUInt] Bool
 longCharacterIsMemberSelector = mkSelector "longCharacterIsMember:"
 
 -- | @Selector@ for @isSupersetOfSet:@
-isSupersetOfSetSelector :: Selector
+isSupersetOfSetSelector :: Selector '[Id NSCharacterSet] Bool
 isSupersetOfSetSelector = mkSelector "isSupersetOfSet:"
 
 -- | @Selector@ for @hasMemberInPlane:@
-hasMemberInPlaneSelector :: Selector
+hasMemberInPlaneSelector :: Selector '[CUChar] Bool
 hasMemberInPlaneSelector = mkSelector "hasMemberInPlane:"
 
 -- | @Selector@ for @controlCharacterSet@
-controlCharacterSetSelector :: Selector
+controlCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 controlCharacterSetSelector = mkSelector "controlCharacterSet"
 
 -- | @Selector@ for @whitespaceCharacterSet@
-whitespaceCharacterSetSelector :: Selector
+whitespaceCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 whitespaceCharacterSetSelector = mkSelector "whitespaceCharacterSet"
 
 -- | @Selector@ for @whitespaceAndNewlineCharacterSet@
-whitespaceAndNewlineCharacterSetSelector :: Selector
+whitespaceAndNewlineCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 whitespaceAndNewlineCharacterSetSelector = mkSelector "whitespaceAndNewlineCharacterSet"
 
 -- | @Selector@ for @decimalDigitCharacterSet@
-decimalDigitCharacterSetSelector :: Selector
+decimalDigitCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 decimalDigitCharacterSetSelector = mkSelector "decimalDigitCharacterSet"
 
 -- | @Selector@ for @letterCharacterSet@
-letterCharacterSetSelector :: Selector
+letterCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 letterCharacterSetSelector = mkSelector "letterCharacterSet"
 
 -- | @Selector@ for @lowercaseLetterCharacterSet@
-lowercaseLetterCharacterSetSelector :: Selector
+lowercaseLetterCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 lowercaseLetterCharacterSetSelector = mkSelector "lowercaseLetterCharacterSet"
 
 -- | @Selector@ for @uppercaseLetterCharacterSet@
-uppercaseLetterCharacterSetSelector :: Selector
+uppercaseLetterCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 uppercaseLetterCharacterSetSelector = mkSelector "uppercaseLetterCharacterSet"
 
 -- | @Selector@ for @nonBaseCharacterSet@
-nonBaseCharacterSetSelector :: Selector
+nonBaseCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 nonBaseCharacterSetSelector = mkSelector "nonBaseCharacterSet"
 
 -- | @Selector@ for @alphanumericCharacterSet@
-alphanumericCharacterSetSelector :: Selector
+alphanumericCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 alphanumericCharacterSetSelector = mkSelector "alphanumericCharacterSet"
 
 -- | @Selector@ for @decomposableCharacterSet@
-decomposableCharacterSetSelector :: Selector
+decomposableCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 decomposableCharacterSetSelector = mkSelector "decomposableCharacterSet"
 
 -- | @Selector@ for @illegalCharacterSet@
-illegalCharacterSetSelector :: Selector
+illegalCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 illegalCharacterSetSelector = mkSelector "illegalCharacterSet"
 
 -- | @Selector@ for @punctuationCharacterSet@
-punctuationCharacterSetSelector :: Selector
+punctuationCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 punctuationCharacterSetSelector = mkSelector "punctuationCharacterSet"
 
 -- | @Selector@ for @capitalizedLetterCharacterSet@
-capitalizedLetterCharacterSetSelector :: Selector
+capitalizedLetterCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 capitalizedLetterCharacterSetSelector = mkSelector "capitalizedLetterCharacterSet"
 
 -- | @Selector@ for @symbolCharacterSet@
-symbolCharacterSetSelector :: Selector
+symbolCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 symbolCharacterSetSelector = mkSelector "symbolCharacterSet"
 
 -- | @Selector@ for @newlineCharacterSet@
-newlineCharacterSetSelector :: Selector
+newlineCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 newlineCharacterSetSelector = mkSelector "newlineCharacterSet"
 
 -- | @Selector@ for @bitmapRepresentation@
-bitmapRepresentationSelector :: Selector
+bitmapRepresentationSelector :: Selector '[] (Id NSData)
 bitmapRepresentationSelector = mkSelector "bitmapRepresentation"
 
 -- | @Selector@ for @invertedSet@
-invertedSetSelector :: Selector
+invertedSetSelector :: Selector '[] (Id NSCharacterSet)
 invertedSetSelector = mkSelector "invertedSet"
 
 -- | @Selector@ for @URLUserAllowedCharacterSet@
-urlUserAllowedCharacterSetSelector :: Selector
+urlUserAllowedCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 urlUserAllowedCharacterSetSelector = mkSelector "URLUserAllowedCharacterSet"
 
 -- | @Selector@ for @URLPasswordAllowedCharacterSet@
-urlPasswordAllowedCharacterSetSelector :: Selector
+urlPasswordAllowedCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 urlPasswordAllowedCharacterSetSelector = mkSelector "URLPasswordAllowedCharacterSet"
 
 -- | @Selector@ for @URLHostAllowedCharacterSet@
-urlHostAllowedCharacterSetSelector :: Selector
+urlHostAllowedCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 urlHostAllowedCharacterSetSelector = mkSelector "URLHostAllowedCharacterSet"
 
 -- | @Selector@ for @URLPathAllowedCharacterSet@
-urlPathAllowedCharacterSetSelector :: Selector
+urlPathAllowedCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 urlPathAllowedCharacterSetSelector = mkSelector "URLPathAllowedCharacterSet"
 
 -- | @Selector@ for @URLQueryAllowedCharacterSet@
-urlQueryAllowedCharacterSetSelector :: Selector
+urlQueryAllowedCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 urlQueryAllowedCharacterSetSelector = mkSelector "URLQueryAllowedCharacterSet"
 
 -- | @Selector@ for @URLFragmentAllowedCharacterSet@
-urlFragmentAllowedCharacterSetSelector :: Selector
+urlFragmentAllowedCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 urlFragmentAllowedCharacterSetSelector = mkSelector "URLFragmentAllowedCharacterSet"
 

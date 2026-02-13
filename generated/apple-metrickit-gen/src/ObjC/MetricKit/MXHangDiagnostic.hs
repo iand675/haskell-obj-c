@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.MetricKit.MXHangDiagnostic
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- callStackTree@
 callStackTree :: IsMXHangDiagnostic mxHangDiagnostic => mxHangDiagnostic -> IO (Id MXCallStackTree)
-callStackTree mxHangDiagnostic  =
-    sendMsg mxHangDiagnostic (mkSelector "callStackTree") (retPtr retVoid) [] >>= retainedObject . castPtr
+callStackTree mxHangDiagnostic =
+  sendMessage mxHangDiagnostic callStackTreeSelector
 
 -- | hangDuration
 --
@@ -54,18 +51,18 @@ callStackTree mxHangDiagnostic  =
 --
 -- ObjC selector: @- hangDuration@
 hangDuration :: IsMXHangDiagnostic mxHangDiagnostic => mxHangDiagnostic -> IO (Id NSMeasurement)
-hangDuration mxHangDiagnostic  =
-    sendMsg mxHangDiagnostic (mkSelector "hangDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+hangDuration mxHangDiagnostic =
+  sendMessage mxHangDiagnostic hangDurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @callStackTree@
-callStackTreeSelector :: Selector
+callStackTreeSelector :: Selector '[] (Id MXCallStackTree)
 callStackTreeSelector = mkSelector "callStackTree"
 
 -- | @Selector@ for @hangDuration@
-hangDurationSelector :: Selector
+hangDurationSelector :: Selector '[] (Id NSMeasurement)
 hangDurationSelector = mkSelector "hangDuration"
 

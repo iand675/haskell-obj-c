@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.Intents.INAddTasksIntent
   , spatialEventTrigger
   , temporalEventTrigger
   , priority
-  , initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger_prioritySelector
   , initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTriggerSelector
+  , initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger_prioritySelector
+  , prioritySelector
+  , spatialEventTriggerSelector
   , targetTaskListSelector
   , taskTitlesSelector
-  , spatialEventTriggerSelector
   , temporalEventTriggerSelector
-  , prioritySelector
 
   -- * Enum types
   , INTaskPriority(INTaskPriority)
@@ -30,15 +31,11 @@ module ObjC.Intents.INAddTasksIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,76 +45,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTargetTaskList:taskTitles:spatialEventTrigger:temporalEventTrigger:priority:@
 initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger_priority :: (IsINAddTasksIntent inAddTasksIntent, IsINTaskList targetTaskList, IsNSArray taskTitles, IsINSpatialEventTrigger spatialEventTrigger, IsINTemporalEventTrigger temporalEventTrigger) => inAddTasksIntent -> targetTaskList -> taskTitles -> spatialEventTrigger -> temporalEventTrigger -> INTaskPriority -> IO (Id INAddTasksIntent)
-initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger_priority inAddTasksIntent  targetTaskList taskTitles spatialEventTrigger temporalEventTrigger priority =
-  withObjCPtr targetTaskList $ \raw_targetTaskList ->
-    withObjCPtr taskTitles $ \raw_taskTitles ->
-      withObjCPtr spatialEventTrigger $ \raw_spatialEventTrigger ->
-        withObjCPtr temporalEventTrigger $ \raw_temporalEventTrigger ->
-            sendMsg inAddTasksIntent (mkSelector "initWithTargetTaskList:taskTitles:spatialEventTrigger:temporalEventTrigger:priority:") (retPtr retVoid) [argPtr (castPtr raw_targetTaskList :: Ptr ()), argPtr (castPtr raw_taskTitles :: Ptr ()), argPtr (castPtr raw_spatialEventTrigger :: Ptr ()), argPtr (castPtr raw_temporalEventTrigger :: Ptr ()), argCLong (coerce priority)] >>= ownedObject . castPtr
+initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger_priority inAddTasksIntent targetTaskList taskTitles spatialEventTrigger temporalEventTrigger priority =
+  sendOwnedMessage inAddTasksIntent initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger_prioritySelector (toINTaskList targetTaskList) (toNSArray taskTitles) (toINSpatialEventTrigger spatialEventTrigger) (toINTemporalEventTrigger temporalEventTrigger) priority
 
 -- | @- initWithTargetTaskList:taskTitles:spatialEventTrigger:temporalEventTrigger:@
 initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger :: (IsINAddTasksIntent inAddTasksIntent, IsINTaskList targetTaskList, IsNSArray taskTitles, IsINSpatialEventTrigger spatialEventTrigger, IsINTemporalEventTrigger temporalEventTrigger) => inAddTasksIntent -> targetTaskList -> taskTitles -> spatialEventTrigger -> temporalEventTrigger -> IO (Id INAddTasksIntent)
-initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger inAddTasksIntent  targetTaskList taskTitles spatialEventTrigger temporalEventTrigger =
-  withObjCPtr targetTaskList $ \raw_targetTaskList ->
-    withObjCPtr taskTitles $ \raw_taskTitles ->
-      withObjCPtr spatialEventTrigger $ \raw_spatialEventTrigger ->
-        withObjCPtr temporalEventTrigger $ \raw_temporalEventTrigger ->
-            sendMsg inAddTasksIntent (mkSelector "initWithTargetTaskList:taskTitles:spatialEventTrigger:temporalEventTrigger:") (retPtr retVoid) [argPtr (castPtr raw_targetTaskList :: Ptr ()), argPtr (castPtr raw_taskTitles :: Ptr ()), argPtr (castPtr raw_spatialEventTrigger :: Ptr ()), argPtr (castPtr raw_temporalEventTrigger :: Ptr ())] >>= ownedObject . castPtr
+initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger inAddTasksIntent targetTaskList taskTitles spatialEventTrigger temporalEventTrigger =
+  sendOwnedMessage inAddTasksIntent initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTriggerSelector (toINTaskList targetTaskList) (toNSArray taskTitles) (toINSpatialEventTrigger spatialEventTrigger) (toINTemporalEventTrigger temporalEventTrigger)
 
 -- | @- targetTaskList@
 targetTaskList :: IsINAddTasksIntent inAddTasksIntent => inAddTasksIntent -> IO (Id INTaskList)
-targetTaskList inAddTasksIntent  =
-    sendMsg inAddTasksIntent (mkSelector "targetTaskList") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetTaskList inAddTasksIntent =
+  sendMessage inAddTasksIntent targetTaskListSelector
 
 -- | @- taskTitles@
 taskTitles :: IsINAddTasksIntent inAddTasksIntent => inAddTasksIntent -> IO (Id NSArray)
-taskTitles inAddTasksIntent  =
-    sendMsg inAddTasksIntent (mkSelector "taskTitles") (retPtr retVoid) [] >>= retainedObject . castPtr
+taskTitles inAddTasksIntent =
+  sendMessage inAddTasksIntent taskTitlesSelector
 
 -- | @- spatialEventTrigger@
 spatialEventTrigger :: IsINAddTasksIntent inAddTasksIntent => inAddTasksIntent -> IO (Id INSpatialEventTrigger)
-spatialEventTrigger inAddTasksIntent  =
-    sendMsg inAddTasksIntent (mkSelector "spatialEventTrigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+spatialEventTrigger inAddTasksIntent =
+  sendMessage inAddTasksIntent spatialEventTriggerSelector
 
 -- | @- temporalEventTrigger@
 temporalEventTrigger :: IsINAddTasksIntent inAddTasksIntent => inAddTasksIntent -> IO (Id INTemporalEventTrigger)
-temporalEventTrigger inAddTasksIntent  =
-    sendMsg inAddTasksIntent (mkSelector "temporalEventTrigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+temporalEventTrigger inAddTasksIntent =
+  sendMessage inAddTasksIntent temporalEventTriggerSelector
 
 -- | @- priority@
 priority :: IsINAddTasksIntent inAddTasksIntent => inAddTasksIntent -> IO INTaskPriority
-priority inAddTasksIntent  =
-    fmap (coerce :: CLong -> INTaskPriority) $ sendMsg inAddTasksIntent (mkSelector "priority") retCLong []
+priority inAddTasksIntent =
+  sendMessage inAddTasksIntent prioritySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTargetTaskList:taskTitles:spatialEventTrigger:temporalEventTrigger:priority:@
-initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger_prioritySelector :: Selector
+initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger_prioritySelector :: Selector '[Id INTaskList, Id NSArray, Id INSpatialEventTrigger, Id INTemporalEventTrigger, INTaskPriority] (Id INAddTasksIntent)
 initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTrigger_prioritySelector = mkSelector "initWithTargetTaskList:taskTitles:spatialEventTrigger:temporalEventTrigger:priority:"
 
 -- | @Selector@ for @initWithTargetTaskList:taskTitles:spatialEventTrigger:temporalEventTrigger:@
-initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTriggerSelector :: Selector
+initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTriggerSelector :: Selector '[Id INTaskList, Id NSArray, Id INSpatialEventTrigger, Id INTemporalEventTrigger] (Id INAddTasksIntent)
 initWithTargetTaskList_taskTitles_spatialEventTrigger_temporalEventTriggerSelector = mkSelector "initWithTargetTaskList:taskTitles:spatialEventTrigger:temporalEventTrigger:"
 
 -- | @Selector@ for @targetTaskList@
-targetTaskListSelector :: Selector
+targetTaskListSelector :: Selector '[] (Id INTaskList)
 targetTaskListSelector = mkSelector "targetTaskList"
 
 -- | @Selector@ for @taskTitles@
-taskTitlesSelector :: Selector
+taskTitlesSelector :: Selector '[] (Id NSArray)
 taskTitlesSelector = mkSelector "taskTitles"
 
 -- | @Selector@ for @spatialEventTrigger@
-spatialEventTriggerSelector :: Selector
+spatialEventTriggerSelector :: Selector '[] (Id INSpatialEventTrigger)
 spatialEventTriggerSelector = mkSelector "spatialEventTrigger"
 
 -- | @Selector@ for @temporalEventTrigger@
-temporalEventTriggerSelector :: Selector
+temporalEventTriggerSelector :: Selector '[] (Id INTemporalEventTrigger)
 temporalEventTriggerSelector = mkSelector "temporalEventTrigger"
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] INTaskPriority
 prioritySelector = mkSelector "priority"
 

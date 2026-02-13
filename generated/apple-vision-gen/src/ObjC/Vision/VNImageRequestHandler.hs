@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,34 +28,30 @@ module ObjC.Vision.VNImageRequestHandler
   , initWithCMSampleBuffer_depthData_orientation_options
   , performRequests_error
   , initSelector
-  , initWithCVPixelBuffer_optionsSelector
-  , initWithCVPixelBuffer_orientation_optionsSelector
-  , initWithCVPixelBuffer_depthData_orientation_optionsSelector
   , initWithCGImage_optionsSelector
   , initWithCGImage_orientation_optionsSelector
   , initWithCIImage_optionsSelector
   , initWithCIImage_orientation_optionsSelector
-  , initWithURL_optionsSelector
-  , initWithURL_orientation_optionsSelector
-  , initWithData_optionsSelector
-  , initWithData_orientation_optionsSelector
+  , initWithCMSampleBuffer_depthData_orientation_optionsSelector
   , initWithCMSampleBuffer_optionsSelector
   , initWithCMSampleBuffer_orientation_optionsSelector
-  , initWithCMSampleBuffer_depthData_orientation_optionsSelector
+  , initWithCVPixelBuffer_depthData_orientation_optionsSelector
+  , initWithCVPixelBuffer_optionsSelector
+  , initWithCVPixelBuffer_orientation_optionsSelector
+  , initWithData_optionsSelector
+  , initWithData_orientation_optionsSelector
+  , initWithURL_optionsSelector
+  , initWithURL_orientation_optionsSelector
   , performRequests_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVNImageRequestHandler vnImageRequestHandler => vnImageRequestHandler -> IO (Id VNImageRequestHandler)
-init_ vnImageRequestHandler  =
-    sendMsg vnImageRequestHandler (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnImageRequestHandler =
+  sendOwnedMessage vnImageRequestHandler initSelector
 
 -- | initWithCVPixelBuffer:options creates a VNImageRequestHandler to be used for performing requests against the image passed in as buffer.
 --
@@ -76,9 +73,8 @@ init_ vnImageRequestHandler  =
 --
 -- ObjC selector: @- initWithCVPixelBuffer:options:@
 initWithCVPixelBuffer_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSDictionary options) => vnImageRequestHandler -> Ptr () -> options -> IO (Id VNImageRequestHandler)
-initWithCVPixelBuffer_options vnImageRequestHandler  pixelBuffer options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg vnImageRequestHandler (mkSelector "initWithCVPixelBuffer:options:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCVPixelBuffer_options vnImageRequestHandler pixelBuffer options =
+  sendOwnedMessage vnImageRequestHandler initWithCVPixelBuffer_optionsSelector pixelBuffer (toNSDictionary options)
 
 -- | initWithCVPixelBuffer:options creates a VNImageRequestHandler to be used for performing requests against the image passed in as buffer.
 --
@@ -90,9 +86,8 @@ initWithCVPixelBuffer_options vnImageRequestHandler  pixelBuffer options =
 --
 -- ObjC selector: @- initWithCVPixelBuffer:orientation:options:@
 initWithCVPixelBuffer_orientation_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSDictionary options) => vnImageRequestHandler -> Ptr () -> CInt -> options -> IO (Id VNImageRequestHandler)
-initWithCVPixelBuffer_orientation_options vnImageRequestHandler  pixelBuffer orientation options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg vnImageRequestHandler (mkSelector "initWithCVPixelBuffer:orientation:options:") (retPtr retVoid) [argPtr pixelBuffer, argCInt (fromIntegral orientation), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCVPixelBuffer_orientation_options vnImageRequestHandler pixelBuffer orientation options =
+  sendOwnedMessage vnImageRequestHandler initWithCVPixelBuffer_orientation_optionsSelector pixelBuffer orientation (toNSDictionary options)
 
 -- | initWithCVPixelBuffer:depthData:orientation:options creates a VNImageRequestHandler to be used for performing requests against the image passed in as buffer with depth information.
 --
@@ -106,10 +101,8 @@ initWithCVPixelBuffer_orientation_options vnImageRequestHandler  pixelBuffer ori
 --
 -- ObjC selector: @- initWithCVPixelBuffer:depthData:orientation:options:@
 initWithCVPixelBuffer_depthData_orientation_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsAVDepthData depthData, IsNSDictionary options) => vnImageRequestHandler -> Ptr () -> depthData -> CInt -> options -> IO (Id VNImageRequestHandler)
-initWithCVPixelBuffer_depthData_orientation_options vnImageRequestHandler  pixelBuffer depthData orientation options =
-  withObjCPtr depthData $ \raw_depthData ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg vnImageRequestHandler (mkSelector "initWithCVPixelBuffer:depthData:orientation:options:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_depthData :: Ptr ()), argCInt (fromIntegral orientation), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCVPixelBuffer_depthData_orientation_options vnImageRequestHandler pixelBuffer depthData orientation options =
+  sendOwnedMessage vnImageRequestHandler initWithCVPixelBuffer_depthData_orientation_optionsSelector pixelBuffer (toAVDepthData depthData) orientation (toNSDictionary options)
 
 -- | initWithCGImage:options creates a VNImageRequestHandler to be used for performing requests against the image passed in as a CGImageRef.
 --
@@ -119,9 +112,8 @@ initWithCVPixelBuffer_depthData_orientation_options vnImageRequestHandler  pixel
 --
 -- ObjC selector: @- initWithCGImage:options:@
 initWithCGImage_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSDictionary options) => vnImageRequestHandler -> Ptr () -> options -> IO (Id VNImageRequestHandler)
-initWithCGImage_options vnImageRequestHandler  image options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg vnImageRequestHandler (mkSelector "initWithCGImage:options:") (retPtr retVoid) [argPtr image, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCGImage_options vnImageRequestHandler image options =
+  sendOwnedMessage vnImageRequestHandler initWithCGImage_optionsSelector image (toNSDictionary options)
 
 -- | initWithCGImage:options creates a VNImageRequestHandler to be used for performing requests against the image passed in as a CGImageRef.
 --
@@ -133,9 +125,8 @@ initWithCGImage_options vnImageRequestHandler  image options =
 --
 -- ObjC selector: @- initWithCGImage:orientation:options:@
 initWithCGImage_orientation_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSDictionary options) => vnImageRequestHandler -> Ptr () -> CInt -> options -> IO (Id VNImageRequestHandler)
-initWithCGImage_orientation_options vnImageRequestHandler  image orientation options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg vnImageRequestHandler (mkSelector "initWithCGImage:orientation:options:") (retPtr retVoid) [argPtr image, argCInt (fromIntegral orientation), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCGImage_orientation_options vnImageRequestHandler image orientation options =
+  sendOwnedMessage vnImageRequestHandler initWithCGImage_orientation_optionsSelector image orientation (toNSDictionary options)
 
 -- | initWithCIImage:options creates a VNImageRequestHandler to be used for performing requests against the image passed in as a CIImage.
 --
@@ -147,10 +138,8 @@ initWithCGImage_orientation_options vnImageRequestHandler  image orientation opt
 --
 -- ObjC selector: @- initWithCIImage:options:@
 initWithCIImage_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsCIImage image, IsNSDictionary options) => vnImageRequestHandler -> image -> options -> IO (Id VNImageRequestHandler)
-initWithCIImage_options vnImageRequestHandler  image options =
-  withObjCPtr image $ \raw_image ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg vnImageRequestHandler (mkSelector "initWithCIImage:options:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCIImage_options vnImageRequestHandler image options =
+  sendOwnedMessage vnImageRequestHandler initWithCIImage_optionsSelector (toCIImage image) (toNSDictionary options)
 
 -- | initWithCIImage:options:orientation creates a VNImageRequestHandler to be used for performing requests against the image passed in as a CIImage.
 --
@@ -164,10 +153,8 @@ initWithCIImage_options vnImageRequestHandler  image options =
 --
 -- ObjC selector: @- initWithCIImage:orientation:options:@
 initWithCIImage_orientation_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsCIImage image, IsNSDictionary options) => vnImageRequestHandler -> image -> CInt -> options -> IO (Id VNImageRequestHandler)
-initWithCIImage_orientation_options vnImageRequestHandler  image orientation options =
-  withObjCPtr image $ \raw_image ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg vnImageRequestHandler (mkSelector "initWithCIImage:orientation:options:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ()), argCInt (fromIntegral orientation), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCIImage_orientation_options vnImageRequestHandler image orientation options =
+  sendOwnedMessage vnImageRequestHandler initWithCIImage_orientation_optionsSelector (toCIImage image) orientation (toNSDictionary options)
 
 -- | initWithURL:options creates a VNImageRequestHandler to be used for performing requests against an image specified by it's URL
 --
@@ -179,10 +166,8 @@ initWithCIImage_orientation_options vnImageRequestHandler  image orientation opt
 --
 -- ObjC selector: @- initWithURL:options:@
 initWithURL_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSURL imageURL, IsNSDictionary options) => vnImageRequestHandler -> imageURL -> options -> IO (Id VNImageRequestHandler)
-initWithURL_options vnImageRequestHandler  imageURL options =
-  withObjCPtr imageURL $ \raw_imageURL ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg vnImageRequestHandler (mkSelector "initWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_imageURL :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_options vnImageRequestHandler imageURL options =
+  sendOwnedMessage vnImageRequestHandler initWithURL_optionsSelector (toNSURL imageURL) (toNSDictionary options)
 
 -- | initWithURL:options creates a VNImageRequestHandler to be used for performing requests against an image specified by it's URL
 --
@@ -196,10 +181,8 @@ initWithURL_options vnImageRequestHandler  imageURL options =
 --
 -- ObjC selector: @- initWithURL:orientation:options:@
 initWithURL_orientation_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSURL imageURL, IsNSDictionary options) => vnImageRequestHandler -> imageURL -> CInt -> options -> IO (Id VNImageRequestHandler)
-initWithURL_orientation_options vnImageRequestHandler  imageURL orientation options =
-  withObjCPtr imageURL $ \raw_imageURL ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg vnImageRequestHandler (mkSelector "initWithURL:orientation:options:") (retPtr retVoid) [argPtr (castPtr raw_imageURL :: Ptr ()), argCInt (fromIntegral orientation), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_orientation_options vnImageRequestHandler imageURL orientation options =
+  sendOwnedMessage vnImageRequestHandler initWithURL_orientation_optionsSelector (toNSURL imageURL) orientation (toNSDictionary options)
 
 -- | initWithData:options creates a VNImageRequestHandler to be used for performing requests against an image contained in an NSData object.
 --
@@ -211,10 +194,8 @@ initWithURL_orientation_options vnImageRequestHandler  imageURL orientation opti
 --
 -- ObjC selector: @- initWithData:options:@
 initWithData_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSData imageData, IsNSDictionary options) => vnImageRequestHandler -> imageData -> options -> IO (Id VNImageRequestHandler)
-initWithData_options vnImageRequestHandler  imageData options =
-  withObjCPtr imageData $ \raw_imageData ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg vnImageRequestHandler (mkSelector "initWithData:options:") (retPtr retVoid) [argPtr (castPtr raw_imageData :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithData_options vnImageRequestHandler imageData options =
+  sendOwnedMessage vnImageRequestHandler initWithData_optionsSelector (toNSData imageData) (toNSDictionary options)
 
 -- | initWithData:options creates a VNImageRequestHandler to be used for performing requests against an image contained in an NSData object.
 --
@@ -228,10 +209,8 @@ initWithData_options vnImageRequestHandler  imageData options =
 --
 -- ObjC selector: @- initWithData:orientation:options:@
 initWithData_orientation_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSData imageData, IsNSDictionary options) => vnImageRequestHandler -> imageData -> CInt -> options -> IO (Id VNImageRequestHandler)
-initWithData_orientation_options vnImageRequestHandler  imageData orientation options =
-  withObjCPtr imageData $ \raw_imageData ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg vnImageRequestHandler (mkSelector "initWithData:orientation:options:") (retPtr retVoid) [argPtr (castPtr raw_imageData :: Ptr ()), argCInt (fromIntegral orientation), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithData_orientation_options vnImageRequestHandler imageData orientation options =
+  sendOwnedMessage vnImageRequestHandler initWithData_orientation_optionsSelector (toNSData imageData) orientation (toNSDictionary options)
 
 -- | Creates a VNImageRequestHandler to be used for performing requests against the image buffer contained in the CMSampleBufferRef
 --
@@ -243,9 +222,8 @@ initWithData_orientation_options vnImageRequestHandler  imageData orientation op
 --
 -- ObjC selector: @- initWithCMSampleBuffer:options:@
 initWithCMSampleBuffer_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSDictionary options) => vnImageRequestHandler -> Ptr () -> options -> IO (Id VNImageRequestHandler)
-initWithCMSampleBuffer_options vnImageRequestHandler  sampleBuffer options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg vnImageRequestHandler (mkSelector "initWithCMSampleBuffer:options:") (retPtr retVoid) [argPtr sampleBuffer, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCMSampleBuffer_options vnImageRequestHandler sampleBuffer options =
+  sendOwnedMessage vnImageRequestHandler initWithCMSampleBuffer_optionsSelector sampleBuffer (toNSDictionary options)
 
 -- | Creates a VNImageRequestHandler to be used for performing requests against the image buffer contained in the CMSampleBufferRef
 --
@@ -261,9 +239,8 @@ initWithCMSampleBuffer_options vnImageRequestHandler  sampleBuffer options =
 --
 -- ObjC selector: @- initWithCMSampleBuffer:orientation:options:@
 initWithCMSampleBuffer_orientation_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSDictionary options) => vnImageRequestHandler -> Ptr () -> CInt -> options -> IO (Id VNImageRequestHandler)
-initWithCMSampleBuffer_orientation_options vnImageRequestHandler  sampleBuffer orientation options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg vnImageRequestHandler (mkSelector "initWithCMSampleBuffer:orientation:options:") (retPtr retVoid) [argPtr sampleBuffer, argCInt (fromIntegral orientation), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCMSampleBuffer_orientation_options vnImageRequestHandler sampleBuffer orientation options =
+  sendOwnedMessage vnImageRequestHandler initWithCMSampleBuffer_orientation_optionsSelector sampleBuffer orientation (toNSDictionary options)
 
 -- | Creates a VNImageRequestHandler to be used for performing requests against the image buffer contained in the CMSampleBufferRef
 --
@@ -281,10 +258,8 @@ initWithCMSampleBuffer_orientation_options vnImageRequestHandler  sampleBuffer o
 --
 -- ObjC selector: @- initWithCMSampleBuffer:depthData:orientation:options:@
 initWithCMSampleBuffer_depthData_orientation_options :: (IsVNImageRequestHandler vnImageRequestHandler, IsAVDepthData depthData, IsNSDictionary options) => vnImageRequestHandler -> Ptr () -> depthData -> CInt -> options -> IO (Id VNImageRequestHandler)
-initWithCMSampleBuffer_depthData_orientation_options vnImageRequestHandler  sampleBuffer depthData orientation options =
-  withObjCPtr depthData $ \raw_depthData ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg vnImageRequestHandler (mkSelector "initWithCMSampleBuffer:depthData:orientation:options:") (retPtr retVoid) [argPtr sampleBuffer, argPtr (castPtr raw_depthData :: Ptr ()), argCInt (fromIntegral orientation), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCMSampleBuffer_depthData_orientation_options vnImageRequestHandler sampleBuffer depthData orientation options =
+  sendOwnedMessage vnImageRequestHandler initWithCMSampleBuffer_depthData_orientation_optionsSelector sampleBuffer (toAVDepthData depthData) orientation (toNSDictionary options)
 
 -- | performRequests schedules one or more VNRequests to be performed. The function returns once all requests have been finished.
 --
@@ -298,76 +273,74 @@ initWithCMSampleBuffer_depthData_orientation_options vnImageRequestHandler  samp
 --
 -- ObjC selector: @- performRequests:error:@
 performRequests_error :: (IsVNImageRequestHandler vnImageRequestHandler, IsNSArray requests, IsNSError error_) => vnImageRequestHandler -> requests -> error_ -> IO Bool
-performRequests_error vnImageRequestHandler  requests error_ =
-  withObjCPtr requests $ \raw_requests ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnImageRequestHandler (mkSelector "performRequests:error:") retCULong [argPtr (castPtr raw_requests :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+performRequests_error vnImageRequestHandler requests error_ =
+  sendMessage vnImageRequestHandler performRequests_errorSelector (toNSArray requests) (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNImageRequestHandler)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCVPixelBuffer:options:@
-initWithCVPixelBuffer_optionsSelector :: Selector
+initWithCVPixelBuffer_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id VNImageRequestHandler)
 initWithCVPixelBuffer_optionsSelector = mkSelector "initWithCVPixelBuffer:options:"
 
 -- | @Selector@ for @initWithCVPixelBuffer:orientation:options:@
-initWithCVPixelBuffer_orientation_optionsSelector :: Selector
+initWithCVPixelBuffer_orientation_optionsSelector :: Selector '[Ptr (), CInt, Id NSDictionary] (Id VNImageRequestHandler)
 initWithCVPixelBuffer_orientation_optionsSelector = mkSelector "initWithCVPixelBuffer:orientation:options:"
 
 -- | @Selector@ for @initWithCVPixelBuffer:depthData:orientation:options:@
-initWithCVPixelBuffer_depthData_orientation_optionsSelector :: Selector
+initWithCVPixelBuffer_depthData_orientation_optionsSelector :: Selector '[Ptr (), Id AVDepthData, CInt, Id NSDictionary] (Id VNImageRequestHandler)
 initWithCVPixelBuffer_depthData_orientation_optionsSelector = mkSelector "initWithCVPixelBuffer:depthData:orientation:options:"
 
 -- | @Selector@ for @initWithCGImage:options:@
-initWithCGImage_optionsSelector :: Selector
+initWithCGImage_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id VNImageRequestHandler)
 initWithCGImage_optionsSelector = mkSelector "initWithCGImage:options:"
 
 -- | @Selector@ for @initWithCGImage:orientation:options:@
-initWithCGImage_orientation_optionsSelector :: Selector
+initWithCGImage_orientation_optionsSelector :: Selector '[Ptr (), CInt, Id NSDictionary] (Id VNImageRequestHandler)
 initWithCGImage_orientation_optionsSelector = mkSelector "initWithCGImage:orientation:options:"
 
 -- | @Selector@ for @initWithCIImage:options:@
-initWithCIImage_optionsSelector :: Selector
+initWithCIImage_optionsSelector :: Selector '[Id CIImage, Id NSDictionary] (Id VNImageRequestHandler)
 initWithCIImage_optionsSelector = mkSelector "initWithCIImage:options:"
 
 -- | @Selector@ for @initWithCIImage:orientation:options:@
-initWithCIImage_orientation_optionsSelector :: Selector
+initWithCIImage_orientation_optionsSelector :: Selector '[Id CIImage, CInt, Id NSDictionary] (Id VNImageRequestHandler)
 initWithCIImage_orientation_optionsSelector = mkSelector "initWithCIImage:orientation:options:"
 
 -- | @Selector@ for @initWithURL:options:@
-initWithURL_optionsSelector :: Selector
+initWithURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id VNImageRequestHandler)
 initWithURL_optionsSelector = mkSelector "initWithURL:options:"
 
 -- | @Selector@ for @initWithURL:orientation:options:@
-initWithURL_orientation_optionsSelector :: Selector
+initWithURL_orientation_optionsSelector :: Selector '[Id NSURL, CInt, Id NSDictionary] (Id VNImageRequestHandler)
 initWithURL_orientation_optionsSelector = mkSelector "initWithURL:orientation:options:"
 
 -- | @Selector@ for @initWithData:options:@
-initWithData_optionsSelector :: Selector
+initWithData_optionsSelector :: Selector '[Id NSData, Id NSDictionary] (Id VNImageRequestHandler)
 initWithData_optionsSelector = mkSelector "initWithData:options:"
 
 -- | @Selector@ for @initWithData:orientation:options:@
-initWithData_orientation_optionsSelector :: Selector
+initWithData_orientation_optionsSelector :: Selector '[Id NSData, CInt, Id NSDictionary] (Id VNImageRequestHandler)
 initWithData_orientation_optionsSelector = mkSelector "initWithData:orientation:options:"
 
 -- | @Selector@ for @initWithCMSampleBuffer:options:@
-initWithCMSampleBuffer_optionsSelector :: Selector
+initWithCMSampleBuffer_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id VNImageRequestHandler)
 initWithCMSampleBuffer_optionsSelector = mkSelector "initWithCMSampleBuffer:options:"
 
 -- | @Selector@ for @initWithCMSampleBuffer:orientation:options:@
-initWithCMSampleBuffer_orientation_optionsSelector :: Selector
+initWithCMSampleBuffer_orientation_optionsSelector :: Selector '[Ptr (), CInt, Id NSDictionary] (Id VNImageRequestHandler)
 initWithCMSampleBuffer_orientation_optionsSelector = mkSelector "initWithCMSampleBuffer:orientation:options:"
 
 -- | @Selector@ for @initWithCMSampleBuffer:depthData:orientation:options:@
-initWithCMSampleBuffer_depthData_orientation_optionsSelector :: Selector
+initWithCMSampleBuffer_depthData_orientation_optionsSelector :: Selector '[Ptr (), Id AVDepthData, CInt, Id NSDictionary] (Id VNImageRequestHandler)
 initWithCMSampleBuffer_depthData_orientation_optionsSelector = mkSelector "initWithCMSampleBuffer:depthData:orientation:options:"
 
 -- | @Selector@ for @performRequests:error:@
-performRequests_errorSelector :: Selector
+performRequests_errorSelector :: Selector '[Id NSArray, Id NSError] Bool
 performRequests_errorSelector = mkSelector "performRequests:error:"
 

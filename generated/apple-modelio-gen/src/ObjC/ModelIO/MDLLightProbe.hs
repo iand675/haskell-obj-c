@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.ModelIO.MDLLightProbe
   , irradianceTexture
   , sphericalHarmonicsLevel
   , sphericalHarmonicsCoefficients
-  , initWithReflectiveTexture_irradianceTextureSelector
   , generateSphericalHarmonicsFromIrradianceSelector
+  , initWithReflectiveTexture_irradianceTextureSelector
+  , irradianceTextureSelector
   , lightProbeWithTextureSize_forLocation_lightsToConsider_objectsToConsider_reflectiveCubemap_irradianceCubemapSelector
   , reflectiveTextureSelector
-  , irradianceTextureSelector
-  , sphericalHarmonicsLevelSelector
   , sphericalHarmonicsCoefficientsSelector
+  , sphericalHarmonicsLevelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,77 +38,70 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithReflectiveTexture:irradianceTexture:@
 initWithReflectiveTexture_irradianceTexture :: (IsMDLLightProbe mdlLightProbe, IsMDLTexture reflectiveTexture, IsMDLTexture irradianceTexture) => mdlLightProbe -> reflectiveTexture -> irradianceTexture -> IO (Id MDLLightProbe)
-initWithReflectiveTexture_irradianceTexture mdlLightProbe  reflectiveTexture irradianceTexture =
-  withObjCPtr reflectiveTexture $ \raw_reflectiveTexture ->
-    withObjCPtr irradianceTexture $ \raw_irradianceTexture ->
-        sendMsg mdlLightProbe (mkSelector "initWithReflectiveTexture:irradianceTexture:") (retPtr retVoid) [argPtr (castPtr raw_reflectiveTexture :: Ptr ()), argPtr (castPtr raw_irradianceTexture :: Ptr ())] >>= ownedObject . castPtr
+initWithReflectiveTexture_irradianceTexture mdlLightProbe reflectiveTexture irradianceTexture =
+  sendOwnedMessage mdlLightProbe initWithReflectiveTexture_irradianceTextureSelector (toMDLTexture reflectiveTexture) (toMDLTexture irradianceTexture)
 
 -- | @- generateSphericalHarmonicsFromIrradiance:@
 generateSphericalHarmonicsFromIrradiance :: IsMDLLightProbe mdlLightProbe => mdlLightProbe -> CULong -> IO ()
-generateSphericalHarmonicsFromIrradiance mdlLightProbe  sphericalHarmonicsLevel =
-    sendMsg mdlLightProbe (mkSelector "generateSphericalHarmonicsFromIrradiance:") retVoid [argCULong sphericalHarmonicsLevel]
+generateSphericalHarmonicsFromIrradiance mdlLightProbe sphericalHarmonicsLevel =
+  sendMessage mdlLightProbe generateSphericalHarmonicsFromIrradianceSelector sphericalHarmonicsLevel
 
 -- | @+ lightProbeWithTextureSize:forLocation:lightsToConsider:objectsToConsider:reflectiveCubemap:irradianceCubemap:@
 lightProbeWithTextureSize_forLocation_lightsToConsider_objectsToConsider_reflectiveCubemap_irradianceCubemap :: (IsMDLTransform transform, IsNSArray lightsToConsider, IsNSArray objectsToConsider, IsMDLTexture reflectiveCubemap, IsMDLTexture irradianceCubemap) => CLong -> transform -> lightsToConsider -> objectsToConsider -> reflectiveCubemap -> irradianceCubemap -> IO (Id MDLLightProbe)
 lightProbeWithTextureSize_forLocation_lightsToConsider_objectsToConsider_reflectiveCubemap_irradianceCubemap textureSize transform lightsToConsider objectsToConsider reflectiveCubemap irradianceCubemap =
   do
     cls' <- getRequiredClass "MDLLightProbe"
-    withObjCPtr transform $ \raw_transform ->
-      withObjCPtr lightsToConsider $ \raw_lightsToConsider ->
-        withObjCPtr objectsToConsider $ \raw_objectsToConsider ->
-          withObjCPtr reflectiveCubemap $ \raw_reflectiveCubemap ->
-            withObjCPtr irradianceCubemap $ \raw_irradianceCubemap ->
-              sendClassMsg cls' (mkSelector "lightProbeWithTextureSize:forLocation:lightsToConsider:objectsToConsider:reflectiveCubemap:irradianceCubemap:") (retPtr retVoid) [argCLong textureSize, argPtr (castPtr raw_transform :: Ptr ()), argPtr (castPtr raw_lightsToConsider :: Ptr ()), argPtr (castPtr raw_objectsToConsider :: Ptr ()), argPtr (castPtr raw_reflectiveCubemap :: Ptr ()), argPtr (castPtr raw_irradianceCubemap :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' lightProbeWithTextureSize_forLocation_lightsToConsider_objectsToConsider_reflectiveCubemap_irradianceCubemapSelector textureSize (toMDLTransform transform) (toNSArray lightsToConsider) (toNSArray objectsToConsider) (toMDLTexture reflectiveCubemap) (toMDLTexture irradianceCubemap)
 
 -- | @- reflectiveTexture@
 reflectiveTexture :: IsMDLLightProbe mdlLightProbe => mdlLightProbe -> IO (Id MDLTexture)
-reflectiveTexture mdlLightProbe  =
-    sendMsg mdlLightProbe (mkSelector "reflectiveTexture") (retPtr retVoid) [] >>= retainedObject . castPtr
+reflectiveTexture mdlLightProbe =
+  sendMessage mdlLightProbe reflectiveTextureSelector
 
 -- | @- irradianceTexture@
 irradianceTexture :: IsMDLLightProbe mdlLightProbe => mdlLightProbe -> IO (Id MDLTexture)
-irradianceTexture mdlLightProbe  =
-    sendMsg mdlLightProbe (mkSelector "irradianceTexture") (retPtr retVoid) [] >>= retainedObject . castPtr
+irradianceTexture mdlLightProbe =
+  sendMessage mdlLightProbe irradianceTextureSelector
 
 -- | @- sphericalHarmonicsLevel@
 sphericalHarmonicsLevel :: IsMDLLightProbe mdlLightProbe => mdlLightProbe -> IO CULong
-sphericalHarmonicsLevel mdlLightProbe  =
-    sendMsg mdlLightProbe (mkSelector "sphericalHarmonicsLevel") retCULong []
+sphericalHarmonicsLevel mdlLightProbe =
+  sendMessage mdlLightProbe sphericalHarmonicsLevelSelector
 
 -- | @- sphericalHarmonicsCoefficients@
 sphericalHarmonicsCoefficients :: IsMDLLightProbe mdlLightProbe => mdlLightProbe -> IO (Id NSData)
-sphericalHarmonicsCoefficients mdlLightProbe  =
-    sendMsg mdlLightProbe (mkSelector "sphericalHarmonicsCoefficients") (retPtr retVoid) [] >>= retainedObject . castPtr
+sphericalHarmonicsCoefficients mdlLightProbe =
+  sendMessage mdlLightProbe sphericalHarmonicsCoefficientsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithReflectiveTexture:irradianceTexture:@
-initWithReflectiveTexture_irradianceTextureSelector :: Selector
+initWithReflectiveTexture_irradianceTextureSelector :: Selector '[Id MDLTexture, Id MDLTexture] (Id MDLLightProbe)
 initWithReflectiveTexture_irradianceTextureSelector = mkSelector "initWithReflectiveTexture:irradianceTexture:"
 
 -- | @Selector@ for @generateSphericalHarmonicsFromIrradiance:@
-generateSphericalHarmonicsFromIrradianceSelector :: Selector
+generateSphericalHarmonicsFromIrradianceSelector :: Selector '[CULong] ()
 generateSphericalHarmonicsFromIrradianceSelector = mkSelector "generateSphericalHarmonicsFromIrradiance:"
 
 -- | @Selector@ for @lightProbeWithTextureSize:forLocation:lightsToConsider:objectsToConsider:reflectiveCubemap:irradianceCubemap:@
-lightProbeWithTextureSize_forLocation_lightsToConsider_objectsToConsider_reflectiveCubemap_irradianceCubemapSelector :: Selector
+lightProbeWithTextureSize_forLocation_lightsToConsider_objectsToConsider_reflectiveCubemap_irradianceCubemapSelector :: Selector '[CLong, Id MDLTransform, Id NSArray, Id NSArray, Id MDLTexture, Id MDLTexture] (Id MDLLightProbe)
 lightProbeWithTextureSize_forLocation_lightsToConsider_objectsToConsider_reflectiveCubemap_irradianceCubemapSelector = mkSelector "lightProbeWithTextureSize:forLocation:lightsToConsider:objectsToConsider:reflectiveCubemap:irradianceCubemap:"
 
 -- | @Selector@ for @reflectiveTexture@
-reflectiveTextureSelector :: Selector
+reflectiveTextureSelector :: Selector '[] (Id MDLTexture)
 reflectiveTextureSelector = mkSelector "reflectiveTexture"
 
 -- | @Selector@ for @irradianceTexture@
-irradianceTextureSelector :: Selector
+irradianceTextureSelector :: Selector '[] (Id MDLTexture)
 irradianceTextureSelector = mkSelector "irradianceTexture"
 
 -- | @Selector@ for @sphericalHarmonicsLevel@
-sphericalHarmonicsLevelSelector :: Selector
+sphericalHarmonicsLevelSelector :: Selector '[] CULong
 sphericalHarmonicsLevelSelector = mkSelector "sphericalHarmonicsLevel"
 
 -- | @Selector@ for @sphericalHarmonicsCoefficients@
-sphericalHarmonicsCoefficientsSelector :: Selector
+sphericalHarmonicsCoefficientsSelector :: Selector '[] (Id NSData)
 sphericalHarmonicsCoefficientsSelector = mkSelector "sphericalHarmonicsCoefficients"
 

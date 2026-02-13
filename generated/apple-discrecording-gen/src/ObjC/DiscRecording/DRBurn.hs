@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,36 +24,32 @@ module ObjC.DiscRecording.DRBurn
   , setVerifyDisc
   , completionAction
   , setCompletionAction
-  , burnForDeviceSelector
-  , initWithDeviceSelector
-  , writeLayoutSelector
-  , statusSelector
   , abortSelector
-  , propertiesSelector
-  , setPropertiesSelector
-  , deviceSelector
-  , layoutForImageFileSelector
-  , requestedBurnSpeedSelector
-  , setRequestedBurnSpeedSelector
   , appendableSelector
-  , setAppendableSelector
-  , verifyDiscSelector
-  , setVerifyDiscSelector
+  , burnForDeviceSelector
   , completionActionSelector
+  , deviceSelector
+  , initWithDeviceSelector
+  , layoutForImageFileSelector
+  , propertiesSelector
+  , requestedBurnSpeedSelector
+  , setAppendableSelector
   , setCompletionActionSelector
+  , setPropertiesSelector
+  , setRequestedBurnSpeedSelector
+  , setVerifyDiscSelector
+  , statusSelector
+  , verifyDiscSelector
+  , writeLayoutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,8 +71,7 @@ burnForDevice :: IsDRDevice device => device -> IO (Id DRBurn)
 burnForDevice device =
   do
     cls' <- getRequiredClass "DRBurn"
-    withObjCPtr device $ \raw_device ->
-      sendClassMsg cls' (mkSelector "burnForDevice:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' burnForDeviceSelector (toDRDevice device)
 
 -- | initWithDevice:
 --
@@ -89,9 +85,8 @@ burnForDevice device =
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: (IsDRBurn drBurn, IsDRDevice device) => drBurn -> device -> IO RawId
-initWithDevice drBurn  device =
-  withObjCPtr device $ \raw_device ->
-      fmap (RawId . castPtr) $ sendMsg drBurn (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ())]
+initWithDevice drBurn device =
+  sendOwnedMessage drBurn initWithDeviceSelector (toDRDevice device)
 
 -- | writeLayout:
 --
@@ -131,8 +126,8 @@ initWithDevice drBurn  device =
 --
 -- ObjC selector: @- writeLayout:@
 writeLayout :: IsDRBurn drBurn => drBurn -> RawId -> IO ()
-writeLayout drBurn  layout =
-    sendMsg drBurn (mkSelector "writeLayout:") retVoid [argPtr (castPtr (unRawId layout) :: Ptr ())]
+writeLayout drBurn layout =
+  sendMessage drBurn writeLayoutSelector layout
 
 -- | status
 --
@@ -148,8 +143,8 @@ writeLayout drBurn  layout =
 --
 -- ObjC selector: @- status@
 status :: IsDRBurn drBurn => drBurn -> IO (Id NSDictionary)
-status drBurn  =
-    sendMsg drBurn (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status drBurn =
+  sendMessage drBurn statusSelector
 
 -- | abort
 --
@@ -161,8 +156,8 @@ status drBurn  =
 --
 -- ObjC selector: @- abort@
 abort :: IsDRBurn drBurn => drBurn -> IO ()
-abort drBurn  =
-    sendMsg drBurn (mkSelector "abort") retVoid []
+abort drBurn =
+  sendMessage drBurn abortSelector
 
 -- | properties
 --
@@ -172,8 +167,8 @@ abort drBurn  =
 --
 -- ObjC selector: @- properties@
 properties :: IsDRBurn drBurn => drBurn -> IO (Id NSDictionary)
-properties drBurn  =
-    sendMsg drBurn (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+properties drBurn =
+  sendMessage drBurn propertiesSelector
 
 -- | setProperties:
 --
@@ -183,9 +178,8 @@ properties drBurn  =
 --
 -- ObjC selector: @- setProperties:@
 setProperties :: (IsDRBurn drBurn, IsNSDictionary properties) => drBurn -> properties -> IO ()
-setProperties drBurn  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg drBurn (mkSelector "setProperties:") retVoid [argPtr (castPtr raw_properties :: Ptr ())]
+setProperties drBurn properties =
+  sendMessage drBurn setPropertiesSelector (toNSDictionary properties)
 
 -- | device
 --
@@ -195,8 +189,8 @@ setProperties drBurn  properties =
 --
 -- ObjC selector: @- device@
 device :: IsDRBurn drBurn => drBurn -> IO (Id DRDevice)
-device drBurn  =
-    sendMsg drBurn (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device drBurn =
+  sendMessage drBurn deviceSelector
 
 -- | layoutForImageFile:
 --
@@ -213,8 +207,7 @@ layoutForImageFile :: IsNSString path => path -> IO RawId
 layoutForImageFile path =
   do
     cls' <- getRequiredClass "DRBurn"
-    withObjCPtr path $ \raw_path ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "layoutForImageFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())]
+    sendClassMessage cls' layoutForImageFileSelector (toNSString path)
 
 -- | requestedBurnSpeed
 --
@@ -226,8 +219,8 @@ layoutForImageFile path =
 --
 -- ObjC selector: @- requestedBurnSpeed@
 requestedBurnSpeed :: IsDRBurn drBurn => drBurn -> IO CFloat
-requestedBurnSpeed drBurn  =
-    sendMsg drBurn (mkSelector "requestedBurnSpeed") retCFloat []
+requestedBurnSpeed drBurn =
+  sendMessage drBurn requestedBurnSpeedSelector
 
 -- | setRequestedBurnSpeed:
 --
@@ -239,8 +232,8 @@ requestedBurnSpeed drBurn  =
 --
 -- ObjC selector: @- setRequestedBurnSpeed:@
 setRequestedBurnSpeed :: IsDRBurn drBurn => drBurn -> CFloat -> IO ()
-setRequestedBurnSpeed drBurn  speed =
-    sendMsg drBurn (mkSelector "setRequestedBurnSpeed:") retVoid [argCFloat speed]
+setRequestedBurnSpeed drBurn speed =
+  sendMessage drBurn setRequestedBurnSpeedSelector speed
 
 -- | appendable
 --
@@ -252,8 +245,8 @@ setRequestedBurnSpeed drBurn  speed =
 --
 -- ObjC selector: @- appendable@
 appendable :: IsDRBurn drBurn => drBurn -> IO Bool
-appendable drBurn  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drBurn (mkSelector "appendable") retCULong []
+appendable drBurn =
+  sendMessage drBurn appendableSelector
 
 -- | setAppendable:
 --
@@ -265,8 +258,8 @@ appendable drBurn  =
 --
 -- ObjC selector: @- setAppendable:@
 setAppendable :: IsDRBurn drBurn => drBurn -> Bool -> IO ()
-setAppendable drBurn  appendable =
-    sendMsg drBurn (mkSelector "setAppendable:") retVoid [argCULong (if appendable then 1 else 0)]
+setAppendable drBurn appendable =
+  sendMessage drBurn setAppendableSelector appendable
 
 -- | verifyDisc
 --
@@ -282,8 +275,8 @@ setAppendable drBurn  appendable =
 --
 -- ObjC selector: @- verifyDisc@
 verifyDisc :: IsDRBurn drBurn => drBurn -> IO Bool
-verifyDisc drBurn  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drBurn (mkSelector "verifyDisc") retCULong []
+verifyDisc drBurn =
+  sendMessage drBurn verifyDiscSelector
 
 -- | setVerifyDisc:
 --
@@ -293,8 +286,8 @@ verifyDisc drBurn  =
 --
 -- ObjC selector: @- setVerifyDisc:@
 setVerifyDisc :: IsDRBurn drBurn => drBurn -> Bool -> IO ()
-setVerifyDisc drBurn  verify =
-    sendMsg drBurn (mkSelector "setVerifyDisc:") retVoid [argCULong (if verify then 1 else 0)]
+setVerifyDisc drBurn verify =
+  sendMessage drBurn setVerifyDiscSelector verify
 
 -- | completionAction
 --
@@ -304,8 +297,8 @@ setVerifyDisc drBurn  verify =
 --
 -- ObjC selector: @- completionAction@
 completionAction :: IsDRBurn drBurn => drBurn -> IO (Id NSString)
-completionAction drBurn  =
-    sendMsg drBurn (mkSelector "completionAction") (retPtr retVoid) [] >>= retainedObject . castPtr
+completionAction drBurn =
+  sendMessage drBurn completionActionSelector
 
 -- | setCompletionAction:
 --
@@ -315,79 +308,78 @@ completionAction drBurn  =
 --
 -- ObjC selector: @- setCompletionAction:@
 setCompletionAction :: (IsDRBurn drBurn, IsNSString action) => drBurn -> action -> IO ()
-setCompletionAction drBurn  action =
-  withObjCPtr action $ \raw_action ->
-      sendMsg drBurn (mkSelector "setCompletionAction:") retVoid [argPtr (castPtr raw_action :: Ptr ())]
+setCompletionAction drBurn action =
+  sendMessage drBurn setCompletionActionSelector (toNSString action)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @burnForDevice:@
-burnForDeviceSelector :: Selector
+burnForDeviceSelector :: Selector '[Id DRDevice] (Id DRBurn)
 burnForDeviceSelector = mkSelector "burnForDevice:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[Id DRDevice] RawId
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @writeLayout:@
-writeLayoutSelector :: Selector
+writeLayoutSelector :: Selector '[RawId] ()
 writeLayoutSelector = mkSelector "writeLayout:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSDictionary)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @abort@
-abortSelector :: Selector
+abortSelector :: Selector '[] ()
 abortSelector = mkSelector "abort"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSDictionary)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @setProperties:@
-setPropertiesSelector :: Selector
+setPropertiesSelector :: Selector '[Id NSDictionary] ()
 setPropertiesSelector = mkSelector "setProperties:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id DRDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @layoutForImageFile:@
-layoutForImageFileSelector :: Selector
+layoutForImageFileSelector :: Selector '[Id NSString] RawId
 layoutForImageFileSelector = mkSelector "layoutForImageFile:"
 
 -- | @Selector@ for @requestedBurnSpeed@
-requestedBurnSpeedSelector :: Selector
+requestedBurnSpeedSelector :: Selector '[] CFloat
 requestedBurnSpeedSelector = mkSelector "requestedBurnSpeed"
 
 -- | @Selector@ for @setRequestedBurnSpeed:@
-setRequestedBurnSpeedSelector :: Selector
+setRequestedBurnSpeedSelector :: Selector '[CFloat] ()
 setRequestedBurnSpeedSelector = mkSelector "setRequestedBurnSpeed:"
 
 -- | @Selector@ for @appendable@
-appendableSelector :: Selector
+appendableSelector :: Selector '[] Bool
 appendableSelector = mkSelector "appendable"
 
 -- | @Selector@ for @setAppendable:@
-setAppendableSelector :: Selector
+setAppendableSelector :: Selector '[Bool] ()
 setAppendableSelector = mkSelector "setAppendable:"
 
 -- | @Selector@ for @verifyDisc@
-verifyDiscSelector :: Selector
+verifyDiscSelector :: Selector '[] Bool
 verifyDiscSelector = mkSelector "verifyDisc"
 
 -- | @Selector@ for @setVerifyDisc:@
-setVerifyDiscSelector :: Selector
+setVerifyDiscSelector :: Selector '[Bool] ()
 setVerifyDiscSelector = mkSelector "setVerifyDisc:"
 
 -- | @Selector@ for @completionAction@
-completionActionSelector :: Selector
+completionActionSelector :: Selector '[] (Id NSString)
 completionActionSelector = mkSelector "completionAction"
 
 -- | @Selector@ for @setCompletionAction:@
-setCompletionActionSelector :: Selector
+setCompletionActionSelector :: Selector '[Id NSString] ()
 setCompletionActionSelector = mkSelector "setCompletionAction:"
 

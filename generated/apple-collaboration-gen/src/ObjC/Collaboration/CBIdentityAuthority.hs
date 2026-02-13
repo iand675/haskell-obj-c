@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.Collaboration.CBIdentityAuthority
   , identityAuthorityWithCSIdentityAuthority
   , csIdentityAuthority
   , localizedName
-  , localIdentityAuthoritySelector
-  , managedIdentityAuthoritySelector
+  , csIdentityAuthoritySelector
   , defaultIdentityAuthoritySelector
   , identityAuthorityWithCSIdentityAuthoritySelector
-  , csIdentityAuthoritySelector
+  , localIdentityAuthoritySelector
   , localizedNameSelector
+  , managedIdentityAuthoritySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,7 +47,7 @@ localIdentityAuthority :: IO (Id CBIdentityAuthority)
 localIdentityAuthority  =
   do
     cls' <- getRequiredClass "CBIdentityAuthority"
-    sendClassMsg cls' (mkSelector "localIdentityAuthority") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' localIdentityAuthoritySelector
 
 -- | Returns the identity authority that contains all the identities in bound network directory servers.
 --
@@ -63,7 +60,7 @@ managedIdentityAuthority :: IO (Id CBIdentityAuthority)
 managedIdentityAuthority  =
   do
     cls' <- getRequiredClass "CBIdentityAuthority"
-    sendClassMsg cls' (mkSelector "managedIdentityAuthority") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' managedIdentityAuthoritySelector
 
 -- | Returns an identity authority that contains the identities in both the local and the network-bound authorities.
 --
@@ -76,7 +73,7 @@ defaultIdentityAuthority :: IO (Id CBIdentityAuthority)
 defaultIdentityAuthority  =
   do
     cls' <- getRequiredClass "CBIdentityAuthority"
-    sendClassMsg cls' (mkSelector "defaultIdentityAuthority") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultIdentityAuthoritySelector
 
 -- | Returns an identity authority specified by a given Core Services Identity authority object.
 --
@@ -91,7 +88,7 @@ identityAuthorityWithCSIdentityAuthority :: Ptr () -> IO (Id CBIdentityAuthority
 identityAuthorityWithCSIdentityAuthority csIdentityAuthority =
   do
     cls' <- getRequiredClass "CBIdentityAuthority"
-    sendClassMsg cls' (mkSelector "identityAuthorityWithCSIdentityAuthority:") (retPtr retVoid) [argPtr csIdentityAuthority] >>= retainedObject . castPtr
+    sendClassMessage cls' identityAuthorityWithCSIdentityAuthoritySelector csIdentityAuthority
 
 -- | Returns an identity authority for use with the Core Services Identity API.
 --
@@ -101,8 +98,8 @@ identityAuthorityWithCSIdentityAuthority csIdentityAuthority =
 --
 -- ObjC selector: @- CSIdentityAuthority@
 csIdentityAuthority :: IsCBIdentityAuthority cbIdentityAuthority => cbIdentityAuthority -> IO (Ptr ())
-csIdentityAuthority cbIdentityAuthority  =
-    fmap castPtr $ sendMsg cbIdentityAuthority (mkSelector "CSIdentityAuthority") (retPtr retVoid) []
+csIdentityAuthority cbIdentityAuthority =
+  sendMessage cbIdentityAuthority csIdentityAuthoritySelector
 
 -- | Returns the localized name of the identity authority.
 --
@@ -110,34 +107,34 @@ csIdentityAuthority cbIdentityAuthority  =
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsCBIdentityAuthority cbIdentityAuthority => cbIdentityAuthority -> IO (Id NSString)
-localizedName cbIdentityAuthority  =
-    sendMsg cbIdentityAuthority (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName cbIdentityAuthority =
+  sendMessage cbIdentityAuthority localizedNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @localIdentityAuthority@
-localIdentityAuthoritySelector :: Selector
+localIdentityAuthoritySelector :: Selector '[] (Id CBIdentityAuthority)
 localIdentityAuthoritySelector = mkSelector "localIdentityAuthority"
 
 -- | @Selector@ for @managedIdentityAuthority@
-managedIdentityAuthoritySelector :: Selector
+managedIdentityAuthoritySelector :: Selector '[] (Id CBIdentityAuthority)
 managedIdentityAuthoritySelector = mkSelector "managedIdentityAuthority"
 
 -- | @Selector@ for @defaultIdentityAuthority@
-defaultIdentityAuthoritySelector :: Selector
+defaultIdentityAuthoritySelector :: Selector '[] (Id CBIdentityAuthority)
 defaultIdentityAuthoritySelector = mkSelector "defaultIdentityAuthority"
 
 -- | @Selector@ for @identityAuthorityWithCSIdentityAuthority:@
-identityAuthorityWithCSIdentityAuthoritySelector :: Selector
+identityAuthorityWithCSIdentityAuthoritySelector :: Selector '[Ptr ()] (Id CBIdentityAuthority)
 identityAuthorityWithCSIdentityAuthoritySelector = mkSelector "identityAuthorityWithCSIdentityAuthority:"
 
 -- | @Selector@ for @CSIdentityAuthority@
-csIdentityAuthoritySelector :: Selector
+csIdentityAuthoritySelector :: Selector '[] (Ptr ())
 csIdentityAuthoritySelector = mkSelector "CSIdentityAuthority"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 

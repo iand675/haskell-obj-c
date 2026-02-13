@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterPushTransportBeginEvent
   , setTriggerType
   , activationReason
   , setActivationReason
-  , connectionIDSelector
-  , setConnectionIDSelector
-  , triggerTypeSelector
-  , setTriggerTypeSelector
   , activationReasonSelector
+  , connectionIDSelector
   , setActivationReasonSelector
+  , setConnectionIDSelector
+  , setTriggerTypeSelector
+  , triggerTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- connectionID@
 connectionID :: IsMTRPushAVStreamTransportClusterPushTransportBeginEvent mtrPushAVStreamTransportClusterPushTransportBeginEvent => mtrPushAVStreamTransportClusterPushTransportBeginEvent -> IO (Id NSNumber)
-connectionID mtrPushAVStreamTransportClusterPushTransportBeginEvent  =
-    sendMsg mtrPushAVStreamTransportClusterPushTransportBeginEvent (mkSelector "connectionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectionID mtrPushAVStreamTransportClusterPushTransportBeginEvent =
+  sendMessage mtrPushAVStreamTransportClusterPushTransportBeginEvent connectionIDSelector
 
 -- | @- setConnectionID:@
 setConnectionID :: (IsMTRPushAVStreamTransportClusterPushTransportBeginEvent mtrPushAVStreamTransportClusterPushTransportBeginEvent, IsNSNumber value) => mtrPushAVStreamTransportClusterPushTransportBeginEvent -> value -> IO ()
-setConnectionID mtrPushAVStreamTransportClusterPushTransportBeginEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterPushTransportBeginEvent (mkSelector "setConnectionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConnectionID mtrPushAVStreamTransportClusterPushTransportBeginEvent value =
+  sendMessage mtrPushAVStreamTransportClusterPushTransportBeginEvent setConnectionIDSelector (toNSNumber value)
 
 -- | @- triggerType@
 triggerType :: IsMTRPushAVStreamTransportClusterPushTransportBeginEvent mtrPushAVStreamTransportClusterPushTransportBeginEvent => mtrPushAVStreamTransportClusterPushTransportBeginEvent -> IO (Id NSNumber)
-triggerType mtrPushAVStreamTransportClusterPushTransportBeginEvent  =
-    sendMsg mtrPushAVStreamTransportClusterPushTransportBeginEvent (mkSelector "triggerType") (retPtr retVoid) [] >>= retainedObject . castPtr
+triggerType mtrPushAVStreamTransportClusterPushTransportBeginEvent =
+  sendMessage mtrPushAVStreamTransportClusterPushTransportBeginEvent triggerTypeSelector
 
 -- | @- setTriggerType:@
 setTriggerType :: (IsMTRPushAVStreamTransportClusterPushTransportBeginEvent mtrPushAVStreamTransportClusterPushTransportBeginEvent, IsNSNumber value) => mtrPushAVStreamTransportClusterPushTransportBeginEvent -> value -> IO ()
-setTriggerType mtrPushAVStreamTransportClusterPushTransportBeginEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterPushTransportBeginEvent (mkSelector "setTriggerType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTriggerType mtrPushAVStreamTransportClusterPushTransportBeginEvent value =
+  sendMessage mtrPushAVStreamTransportClusterPushTransportBeginEvent setTriggerTypeSelector (toNSNumber value)
 
 -- | @- activationReason@
 activationReason :: IsMTRPushAVStreamTransportClusterPushTransportBeginEvent mtrPushAVStreamTransportClusterPushTransportBeginEvent => mtrPushAVStreamTransportClusterPushTransportBeginEvent -> IO (Id NSNumber)
-activationReason mtrPushAVStreamTransportClusterPushTransportBeginEvent  =
-    sendMsg mtrPushAVStreamTransportClusterPushTransportBeginEvent (mkSelector "activationReason") (retPtr retVoid) [] >>= retainedObject . castPtr
+activationReason mtrPushAVStreamTransportClusterPushTransportBeginEvent =
+  sendMessage mtrPushAVStreamTransportClusterPushTransportBeginEvent activationReasonSelector
 
 -- | @- setActivationReason:@
 setActivationReason :: (IsMTRPushAVStreamTransportClusterPushTransportBeginEvent mtrPushAVStreamTransportClusterPushTransportBeginEvent, IsNSNumber value) => mtrPushAVStreamTransportClusterPushTransportBeginEvent -> value -> IO ()
-setActivationReason mtrPushAVStreamTransportClusterPushTransportBeginEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterPushTransportBeginEvent (mkSelector "setActivationReason:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActivationReason mtrPushAVStreamTransportClusterPushTransportBeginEvent value =
+  sendMessage mtrPushAVStreamTransportClusterPushTransportBeginEvent setActivationReasonSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @connectionID@
-connectionIDSelector :: Selector
+connectionIDSelector :: Selector '[] (Id NSNumber)
 connectionIDSelector = mkSelector "connectionID"
 
 -- | @Selector@ for @setConnectionID:@
-setConnectionIDSelector :: Selector
+setConnectionIDSelector :: Selector '[Id NSNumber] ()
 setConnectionIDSelector = mkSelector "setConnectionID:"
 
 -- | @Selector@ for @triggerType@
-triggerTypeSelector :: Selector
+triggerTypeSelector :: Selector '[] (Id NSNumber)
 triggerTypeSelector = mkSelector "triggerType"
 
 -- | @Selector@ for @setTriggerType:@
-setTriggerTypeSelector :: Selector
+setTriggerTypeSelector :: Selector '[Id NSNumber] ()
 setTriggerTypeSelector = mkSelector "setTriggerType:"
 
 -- | @Selector@ for @activationReason@
-activationReasonSelector :: Selector
+activationReasonSelector :: Selector '[] (Id NSNumber)
 activationReasonSelector = mkSelector "activationReason"
 
 -- | @Selector@ for @setActivationReason:@
-setActivationReasonSelector :: Selector
+setActivationReasonSelector :: Selector '[Id NSNumber] ()
 setActivationReasonSelector = mkSelector "setActivationReason:"
 

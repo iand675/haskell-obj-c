@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.StoreKit.SKAdNetwork
   , updatePostbackConversionValue_completionHandler
   , updatePostbackConversionValue_coarseValue_completionHandler
   , updatePostbackConversionValue_coarseValue_lockWindow_completionHandler
-  , startImpression_completionHandlerSelector
   , endImpression_completionHandlerSelector
   , registerAppForAdNetworkAttributionSelector
+  , startImpression_completionHandlerSelector
   , updateConversionValueSelector
-  , updatePostbackConversionValue_completionHandlerSelector
   , updatePostbackConversionValue_coarseValue_completionHandlerSelector
   , updatePostbackConversionValue_coarseValue_lockWindow_completionHandlerSelector
+  , updatePostbackConversionValue_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,83 +41,79 @@ startImpression_completionHandler :: IsSKAdImpression impression => impression -
 startImpression_completionHandler impression completion =
   do
     cls' <- getRequiredClass "SKAdNetwork"
-    withObjCPtr impression $ \raw_impression ->
-      sendClassMsg cls' (mkSelector "startImpression:completionHandler:") retVoid [argPtr (castPtr raw_impression :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' startImpression_completionHandlerSelector (toSKAdImpression impression) completion
 
 -- | @+ endImpression:completionHandler:@
 endImpression_completionHandler :: IsSKAdImpression impression => impression -> Ptr () -> IO ()
 endImpression_completionHandler impression completion =
   do
     cls' <- getRequiredClass "SKAdNetwork"
-    withObjCPtr impression $ \raw_impression ->
-      sendClassMsg cls' (mkSelector "endImpression:completionHandler:") retVoid [argPtr (castPtr raw_impression :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' endImpression_completionHandlerSelector (toSKAdImpression impression) completion
 
 -- | @+ registerAppForAdNetworkAttribution@
 registerAppForAdNetworkAttribution :: IO ()
 registerAppForAdNetworkAttribution  =
   do
     cls' <- getRequiredClass "SKAdNetwork"
-    sendClassMsg cls' (mkSelector "registerAppForAdNetworkAttribution") retVoid []
+    sendClassMessage cls' registerAppForAdNetworkAttributionSelector
 
 -- | @+ updateConversionValue:@
 updateConversionValue :: CLong -> IO ()
 updateConversionValue conversionValue =
   do
     cls' <- getRequiredClass "SKAdNetwork"
-    sendClassMsg cls' (mkSelector "updateConversionValue:") retVoid [argCLong conversionValue]
+    sendClassMessage cls' updateConversionValueSelector conversionValue
 
 -- | @+ updatePostbackConversionValue:completionHandler:@
 updatePostbackConversionValue_completionHandler :: CLong -> Ptr () -> IO ()
 updatePostbackConversionValue_completionHandler conversionValue completion =
   do
     cls' <- getRequiredClass "SKAdNetwork"
-    sendClassMsg cls' (mkSelector "updatePostbackConversionValue:completionHandler:") retVoid [argCLong conversionValue, argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' updatePostbackConversionValue_completionHandlerSelector conversionValue completion
 
 -- | @+ updatePostbackConversionValue:coarseValue:completionHandler:@
 updatePostbackConversionValue_coarseValue_completionHandler :: IsNSString coarseValue => CLong -> coarseValue -> Ptr () -> IO ()
 updatePostbackConversionValue_coarseValue_completionHandler fineValue coarseValue completion =
   do
     cls' <- getRequiredClass "SKAdNetwork"
-    withObjCPtr coarseValue $ \raw_coarseValue ->
-      sendClassMsg cls' (mkSelector "updatePostbackConversionValue:coarseValue:completionHandler:") retVoid [argCLong fineValue, argPtr (castPtr raw_coarseValue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' updatePostbackConversionValue_coarseValue_completionHandlerSelector fineValue (toNSString coarseValue) completion
 
 -- | @+ updatePostbackConversionValue:coarseValue:lockWindow:completionHandler:@
 updatePostbackConversionValue_coarseValue_lockWindow_completionHandler :: IsNSString coarseValue => CLong -> coarseValue -> Bool -> Ptr () -> IO ()
 updatePostbackConversionValue_coarseValue_lockWindow_completionHandler fineValue coarseValue lockWindow completion =
   do
     cls' <- getRequiredClass "SKAdNetwork"
-    withObjCPtr coarseValue $ \raw_coarseValue ->
-      sendClassMsg cls' (mkSelector "updatePostbackConversionValue:coarseValue:lockWindow:completionHandler:") retVoid [argCLong fineValue, argPtr (castPtr raw_coarseValue :: Ptr ()), argCULong (if lockWindow then 1 else 0), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' updatePostbackConversionValue_coarseValue_lockWindow_completionHandlerSelector fineValue (toNSString coarseValue) lockWindow completion
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startImpression:completionHandler:@
-startImpression_completionHandlerSelector :: Selector
+startImpression_completionHandlerSelector :: Selector '[Id SKAdImpression, Ptr ()] ()
 startImpression_completionHandlerSelector = mkSelector "startImpression:completionHandler:"
 
 -- | @Selector@ for @endImpression:completionHandler:@
-endImpression_completionHandlerSelector :: Selector
+endImpression_completionHandlerSelector :: Selector '[Id SKAdImpression, Ptr ()] ()
 endImpression_completionHandlerSelector = mkSelector "endImpression:completionHandler:"
 
 -- | @Selector@ for @registerAppForAdNetworkAttribution@
-registerAppForAdNetworkAttributionSelector :: Selector
+registerAppForAdNetworkAttributionSelector :: Selector '[] ()
 registerAppForAdNetworkAttributionSelector = mkSelector "registerAppForAdNetworkAttribution"
 
 -- | @Selector@ for @updateConversionValue:@
-updateConversionValueSelector :: Selector
+updateConversionValueSelector :: Selector '[CLong] ()
 updateConversionValueSelector = mkSelector "updateConversionValue:"
 
 -- | @Selector@ for @updatePostbackConversionValue:completionHandler:@
-updatePostbackConversionValue_completionHandlerSelector :: Selector
+updatePostbackConversionValue_completionHandlerSelector :: Selector '[CLong, Ptr ()] ()
 updatePostbackConversionValue_completionHandlerSelector = mkSelector "updatePostbackConversionValue:completionHandler:"
 
 -- | @Selector@ for @updatePostbackConversionValue:coarseValue:completionHandler:@
-updatePostbackConversionValue_coarseValue_completionHandlerSelector :: Selector
+updatePostbackConversionValue_coarseValue_completionHandlerSelector :: Selector '[CLong, Id NSString, Ptr ()] ()
 updatePostbackConversionValue_coarseValue_completionHandlerSelector = mkSelector "updatePostbackConversionValue:coarseValue:completionHandler:"
 
 -- | @Selector@ for @updatePostbackConversionValue:coarseValue:lockWindow:completionHandler:@
-updatePostbackConversionValue_coarseValue_lockWindow_completionHandlerSelector :: Selector
+updatePostbackConversionValue_coarseValue_lockWindow_completionHandlerSelector :: Selector '[CLong, Id NSString, Bool, Ptr ()] ()
 updatePostbackConversionValue_coarseValue_lockWindow_completionHandlerSelector = mkSelector "updatePostbackConversionValue:coarseValue:lockWindow:completionHandler:"
 

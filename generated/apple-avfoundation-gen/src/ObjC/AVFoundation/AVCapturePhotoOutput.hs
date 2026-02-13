@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -110,93 +111,93 @@ module ObjC.AVFoundation.AVCapturePhotoOutput
   , availableSemanticSegmentationMatteTypes
   , enabledSemanticSegmentationMatteTypes
   , setEnabledSemanticSegmentationMatteTypes
-  , initSelector
-  , newSelector
+  , appleProRAWEnabledSelector
+  , appleProRAWSupportedSelector
+  , autoDeferredPhotoDeliveryEnabledSelector
+  , autoDeferredPhotoDeliverySupportedSelector
+  , autoRedEyeReductionSupportedSelector
+  , availableLivePhotoVideoCodecTypesSelector
+  , availablePhotoCodecTypesSelector
+  , availablePhotoFileTypesSelector
+  , availablePhotoPixelFormatTypesSelector
+  , availableRawPhotoCodecTypesSelector
+  , availableRawPhotoFileTypesSelector
+  , availableRawPhotoPixelFormatTypesSelector
+  , availableSemanticSegmentationMatteTypesSelector
+  , cameraCalibrationDataDeliverySupportedSelector
+  , cameraSensorOrientationCompensationEnabledSelector
+  , cameraSensorOrientationCompensationSupportedSelector
   , capturePhotoWithSettings_delegateSelector
-  , setPreparedPhotoSettingsArray_completionHandlerSelector
-  , isBayerRAWPixelFormatSelector
+  , captureReadinessSelector
+  , constantColorEnabledSelector
+  , constantColorSupportedSelector
+  , contentAwareDistortionCorrectionEnabledSelector
+  , contentAwareDistortionCorrectionSupportedSelector
+  , depthDataDeliveryEnabledSelector
+  , depthDataDeliverySupportedSelector
+  , dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBufferSelector
+  , dualCameraDualPhotoDeliveryEnabledSelector
+  , dualCameraDualPhotoDeliverySupportedSelector
+  , dualCameraFusionSupportedSelector
+  , enabledSemanticSegmentationMatteTypesSelector
+  , fastCapturePrioritizationEnabledSelector
+  , fastCapturePrioritizationSupportedSelector
+  , highResolutionCaptureEnabledSelector
+  , initSelector
   , isAppleProRAWPixelFormatSelector
-  , supportedPhotoPixelFormatTypesForFileTypeSelector
+  , isBayerRAWPixelFormatSelector
+  , isFlashSceneSelector
+  , isStillImageStabilizationSceneSelector
+  , jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBufferSelector
+  , lensStabilizationDuringBracketedCaptureSupportedSelector
+  , livePhotoAutoTrimmingEnabledSelector
+  , livePhotoCaptureEnabledSelector
+  , livePhotoCaptureSupportedSelector
+  , livePhotoCaptureSuspendedSelector
+  , maxBracketedCapturePhotoCountSelector
+  , maxPhotoQualityPrioritizationSelector
+  , newSelector
+  , photoSettingsForSceneMonitoringSelector
+  , portraitEffectsMatteDeliveryEnabledSelector
+  , portraitEffectsMatteDeliverySupportedSelector
+  , preparedPhotoSettingsArraySelector
+  , preservesLivePhotoCaptureSuspendedOnSessionStopSelector
+  , responsiveCaptureEnabledSelector
+  , responsiveCaptureSupportedSelector
+  , setAppleProRAWEnabledSelector
+  , setAutoDeferredPhotoDeliveryEnabledSelector
+  , setCameraSensorOrientationCompensationEnabledSelector
+  , setConstantColorEnabledSelector
+  , setContentAwareDistortionCorrectionEnabledSelector
+  , setDepthDataDeliveryEnabledSelector
+  , setDualCameraDualPhotoDeliveryEnabledSelector
+  , setEnabledSemanticSegmentationMatteTypesSelector
+  , setFastCapturePrioritizationEnabledSelector
+  , setFastCapturePrioritizationSupportedSelector
+  , setHighResolutionCaptureEnabledSelector
+  , setLivePhotoAutoTrimmingEnabledSelector
+  , setLivePhotoCaptureEnabledSelector
+  , setLivePhotoCaptureSuspendedSelector
+  , setMaxPhotoQualityPrioritizationSelector
+  , setPhotoSettingsForSceneMonitoringSelector
+  , setPortraitEffectsMatteDeliveryEnabledSelector
+  , setPreparedPhotoSettingsArray_completionHandlerSelector
+  , setPreservesLivePhotoCaptureSuspendedOnSessionStopSelector
+  , setResponsiveCaptureEnabledSelector
+  , setVirtualDeviceConstituentPhotoDeliveryEnabledSelector
+  , setZeroShutterLagEnabledSelector
+  , shutterSoundSuppressionSupportedSelector
+  , stillImageStabilizationSupportedSelector
+  , supportedFlashModesSelector
   , supportedPhotoCodecTypesForFileTypeSelector
+  , supportedPhotoPixelFormatTypesForFileTypeSelector
   , supportedRawPhotoCodecTypesForRawPhotoPixelFormatType_fileTypeSelector
   , supportedRawPhotoPixelFormatTypesForFileTypeSelector
-  , jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBufferSelector
-  , dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBufferSelector
-  , preparedPhotoSettingsArraySelector
-  , availablePhotoPixelFormatTypesSelector
-  , availablePhotoCodecTypesSelector
-  , availableRawPhotoCodecTypesSelector
-  , appleProRAWSupportedSelector
-  , appleProRAWEnabledSelector
-  , setAppleProRAWEnabledSelector
-  , availableRawPhotoPixelFormatTypesSelector
-  , availablePhotoFileTypesSelector
-  , availableRawPhotoFileTypesSelector
-  , maxPhotoQualityPrioritizationSelector
-  , setMaxPhotoQualityPrioritizationSelector
-  , fastCapturePrioritizationSupportedSelector
-  , setFastCapturePrioritizationSupportedSelector
-  , fastCapturePrioritizationEnabledSelector
-  , setFastCapturePrioritizationEnabledSelector
-  , autoDeferredPhotoDeliverySupportedSelector
-  , autoDeferredPhotoDeliveryEnabledSelector
-  , setAutoDeferredPhotoDeliveryEnabledSelector
-  , stillImageStabilizationSupportedSelector
-  , isStillImageStabilizationSceneSelector
-  , virtualDeviceFusionSupportedSelector
-  , dualCameraFusionSupportedSelector
-  , virtualDeviceConstituentPhotoDeliverySupportedSelector
-  , dualCameraDualPhotoDeliverySupportedSelector
   , virtualDeviceConstituentPhotoDeliveryEnabledSelector
-  , setVirtualDeviceConstituentPhotoDeliveryEnabledSelector
-  , dualCameraDualPhotoDeliveryEnabledSelector
-  , setDualCameraDualPhotoDeliveryEnabledSelector
-  , cameraCalibrationDataDeliverySupportedSelector
-  , supportedFlashModesSelector
-  , autoRedEyeReductionSupportedSelector
-  , isFlashSceneSelector
-  , photoSettingsForSceneMonitoringSelector
-  , setPhotoSettingsForSceneMonitoringSelector
-  , highResolutionCaptureEnabledSelector
-  , setHighResolutionCaptureEnabledSelector
-  , maxBracketedCapturePhotoCountSelector
-  , lensStabilizationDuringBracketedCaptureSupportedSelector
-  , livePhotoCaptureSupportedSelector
-  , livePhotoCaptureEnabledSelector
-  , setLivePhotoCaptureEnabledSelector
-  , livePhotoCaptureSuspendedSelector
-  , setLivePhotoCaptureSuspendedSelector
-  , preservesLivePhotoCaptureSuspendedOnSessionStopSelector
-  , setPreservesLivePhotoCaptureSuspendedOnSessionStopSelector
-  , livePhotoAutoTrimmingEnabledSelector
-  , setLivePhotoAutoTrimmingEnabledSelector
-  , availableLivePhotoVideoCodecTypesSelector
-  , contentAwareDistortionCorrectionSupportedSelector
-  , contentAwareDistortionCorrectionEnabledSelector
-  , setContentAwareDistortionCorrectionEnabledSelector
-  , zeroShutterLagSupportedSelector
+  , virtualDeviceConstituentPhotoDeliverySupportedSelector
+  , virtualDeviceFusionSupportedSelector
   , zeroShutterLagEnabledSelector
-  , setZeroShutterLagEnabledSelector
-  , responsiveCaptureSupportedSelector
-  , responsiveCaptureEnabledSelector
-  , setResponsiveCaptureEnabledSelector
-  , captureReadinessSelector
-  , constantColorSupportedSelector
-  , constantColorEnabledSelector
-  , setConstantColorEnabledSelector
-  , shutterSoundSuppressionSupportedSelector
-  , cameraSensorOrientationCompensationSupportedSelector
-  , cameraSensorOrientationCompensationEnabledSelector
-  , setCameraSensorOrientationCompensationEnabledSelector
-  , depthDataDeliverySupportedSelector
-  , depthDataDeliveryEnabledSelector
-  , setDepthDataDeliveryEnabledSelector
-  , portraitEffectsMatteDeliverySupportedSelector
-  , portraitEffectsMatteDeliveryEnabledSelector
-  , setPortraitEffectsMatteDeliveryEnabledSelector
-  , availableSemanticSegmentationMatteTypesSelector
-  , enabledSemanticSegmentationMatteTypesSelector
-  , setEnabledSemanticSegmentationMatteTypesSelector
+  , zeroShutterLagSupportedSelector
 
   -- * Enum types
   , AVCapturePhotoOutputCaptureReadiness(AVCapturePhotoOutputCaptureReadiness)
@@ -212,15 +213,11 @@ module ObjC.AVFoundation.AVCapturePhotoOutput
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -230,15 +227,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id AVCapturePhotoOutput)
-init_ avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCapturePhotoOutput =
+  sendOwnedMessage avCapturePhotoOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCapturePhotoOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCapturePhotoOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | capturePhotoWithSettings:delegate:
 --
@@ -256,9 +253,8 @@ new  =
 --
 -- ObjC selector: @- capturePhotoWithSettings:delegate:@
 capturePhotoWithSettings_delegate :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsAVCapturePhotoSettings settings) => avCapturePhotoOutput -> settings -> RawId -> IO ()
-capturePhotoWithSettings_delegate avCapturePhotoOutput  settings delegate =
-  withObjCPtr settings $ \raw_settings ->
-      sendMsg avCapturePhotoOutput (mkSelector "capturePhotoWithSettings:delegate:") retVoid [argPtr (castPtr raw_settings :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())]
+capturePhotoWithSettings_delegate avCapturePhotoOutput settings delegate =
+  sendMessage avCapturePhotoOutput capturePhotoWithSettings_delegateSelector (toAVCapturePhotoSettings settings) delegate
 
 -- | setPreparedPhotoSettingsArray:completionHandler:
 --
@@ -278,9 +274,8 @@ capturePhotoWithSettings_delegate avCapturePhotoOutput  settings delegate =
 --
 -- ObjC selector: @- setPreparedPhotoSettingsArray:completionHandler:@
 setPreparedPhotoSettingsArray_completionHandler :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsNSArray preparedPhotoSettingsArray) => avCapturePhotoOutput -> preparedPhotoSettingsArray -> Ptr () -> IO ()
-setPreparedPhotoSettingsArray_completionHandler avCapturePhotoOutput  preparedPhotoSettingsArray completionHandler =
-  withObjCPtr preparedPhotoSettingsArray $ \raw_preparedPhotoSettingsArray ->
-      sendMsg avCapturePhotoOutput (mkSelector "setPreparedPhotoSettingsArray:completionHandler:") retVoid [argPtr (castPtr raw_preparedPhotoSettingsArray :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setPreparedPhotoSettingsArray_completionHandler avCapturePhotoOutput preparedPhotoSettingsArray completionHandler =
+  sendMessage avCapturePhotoOutput setPreparedPhotoSettingsArray_completionHandlerSelector (toNSArray preparedPhotoSettingsArray) completionHandler
 
 -- | isBayerRAWPixelFormat:
 --
@@ -293,7 +288,7 @@ isBayerRAWPixelFormat :: CUInt -> IO Bool
 isBayerRAWPixelFormat pixelFormat =
   do
     cls' <- getRequiredClass "AVCapturePhotoOutput"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isBayerRAWPixelFormat:") retCULong [argCUInt pixelFormat]
+    sendClassMessage cls' isBayerRAWPixelFormatSelector pixelFormat
 
 -- | isAppleProRAWPixelFormat:
 --
@@ -308,7 +303,7 @@ isAppleProRAWPixelFormat :: CUInt -> IO Bool
 isAppleProRAWPixelFormat pixelFormat =
   do
     cls' <- getRequiredClass "AVCapturePhotoOutput"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isAppleProRAWPixelFormat:") retCULong [argCUInt pixelFormat]
+    sendClassMessage cls' isAppleProRAWPixelFormatSelector pixelFormat
 
 -- | supportedPhotoPixelFormatTypesForFileType:
 --
@@ -322,9 +317,8 @@ isAppleProRAWPixelFormat pixelFormat =
 --
 -- ObjC selector: @- supportedPhotoPixelFormatTypesForFileType:@
 supportedPhotoPixelFormatTypesForFileType :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsNSString fileType) => avCapturePhotoOutput -> fileType -> IO (Id NSArray)
-supportedPhotoPixelFormatTypesForFileType avCapturePhotoOutput  fileType =
-  withObjCPtr fileType $ \raw_fileType ->
-      sendMsg avCapturePhotoOutput (mkSelector "supportedPhotoPixelFormatTypesForFileType:") (retPtr retVoid) [argPtr (castPtr raw_fileType :: Ptr ())] >>= retainedObject . castPtr
+supportedPhotoPixelFormatTypesForFileType avCapturePhotoOutput fileType =
+  sendMessage avCapturePhotoOutput supportedPhotoPixelFormatTypesForFileTypeSelector (toNSString fileType)
 
 -- | supportedPhotoCodecTypesForFileType:
 --
@@ -338,9 +332,8 @@ supportedPhotoPixelFormatTypesForFileType avCapturePhotoOutput  fileType =
 --
 -- ObjC selector: @- supportedPhotoCodecTypesForFileType:@
 supportedPhotoCodecTypesForFileType :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsNSString fileType) => avCapturePhotoOutput -> fileType -> IO (Id NSArray)
-supportedPhotoCodecTypesForFileType avCapturePhotoOutput  fileType =
-  withObjCPtr fileType $ \raw_fileType ->
-      sendMsg avCapturePhotoOutput (mkSelector "supportedPhotoCodecTypesForFileType:") (retPtr retVoid) [argPtr (castPtr raw_fileType :: Ptr ())] >>= retainedObject . castPtr
+supportedPhotoCodecTypesForFileType avCapturePhotoOutput fileType =
+  sendMessage avCapturePhotoOutput supportedPhotoCodecTypesForFileTypeSelector (toNSString fileType)
 
 -- | supportedRawPhotoCodecTypesForRawPhotoPixelFormatType:fileType:
 --
@@ -356,9 +349,8 @@ supportedPhotoCodecTypesForFileType avCapturePhotoOutput  fileType =
 --
 -- ObjC selector: @- supportedRawPhotoCodecTypesForRawPhotoPixelFormatType:fileType:@
 supportedRawPhotoCodecTypesForRawPhotoPixelFormatType_fileType :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsNSString fileType) => avCapturePhotoOutput -> CUInt -> fileType -> IO (Id NSArray)
-supportedRawPhotoCodecTypesForRawPhotoPixelFormatType_fileType avCapturePhotoOutput  pixelFormatType fileType =
-  withObjCPtr fileType $ \raw_fileType ->
-      sendMsg avCapturePhotoOutput (mkSelector "supportedRawPhotoCodecTypesForRawPhotoPixelFormatType:fileType:") (retPtr retVoid) [argCUInt pixelFormatType, argPtr (castPtr raw_fileType :: Ptr ())] >>= retainedObject . castPtr
+supportedRawPhotoCodecTypesForRawPhotoPixelFormatType_fileType avCapturePhotoOutput pixelFormatType fileType =
+  sendMessage avCapturePhotoOutput supportedRawPhotoCodecTypesForRawPhotoPixelFormatType_fileTypeSelector pixelFormatType (toNSString fileType)
 
 -- | supportedRawPhotoPixelFormatTypesForFileType:
 --
@@ -372,9 +364,8 @@ supportedRawPhotoCodecTypesForRawPhotoPixelFormatType_fileType avCapturePhotoOut
 --
 -- ObjC selector: @- supportedRawPhotoPixelFormatTypesForFileType:@
 supportedRawPhotoPixelFormatTypesForFileType :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsNSString fileType) => avCapturePhotoOutput -> fileType -> IO (Id NSArray)
-supportedRawPhotoPixelFormatTypesForFileType avCapturePhotoOutput  fileType =
-  withObjCPtr fileType $ \raw_fileType ->
-      sendMsg avCapturePhotoOutput (mkSelector "supportedRawPhotoPixelFormatTypesForFileType:") (retPtr retVoid) [argPtr (castPtr raw_fileType :: Ptr ())] >>= retainedObject . castPtr
+supportedRawPhotoPixelFormatTypesForFileType avCapturePhotoOutput fileType =
+  sendMessage avCapturePhotoOutput supportedRawPhotoPixelFormatTypesForFileTypeSelector (toNSString fileType)
 
 -- | JPEGPhotoDataRepresentationForJPEGSampleBuffer:previewPhotoSampleBuffer:
 --
@@ -393,7 +384,7 @@ jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBuffer :: Ptr (
 jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBuffer jpegSampleBuffer previewPhotoSampleBuffer =
   do
     cls' <- getRequiredClass "AVCapturePhotoOutput"
-    sendClassMsg cls' (mkSelector "JPEGPhotoDataRepresentationForJPEGSampleBuffer:previewPhotoSampleBuffer:") (retPtr retVoid) [argPtr jpegSampleBuffer, argPtr previewPhotoSampleBuffer] >>= retainedObject . castPtr
+    sendClassMessage cls' jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBufferSelector jpegSampleBuffer previewPhotoSampleBuffer
 
 -- | DNGPhotoDataRepresentationForRawSampleBuffer:previewPhotoSampleBuffer:
 --
@@ -412,7 +403,7 @@ dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBuffer :: Ptr () 
 dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBuffer rawSampleBuffer previewPhotoSampleBuffer =
   do
     cls' <- getRequiredClass "AVCapturePhotoOutput"
-    sendClassMsg cls' (mkSelector "DNGPhotoDataRepresentationForRawSampleBuffer:previewPhotoSampleBuffer:") (retPtr retVoid) [argPtr rawSampleBuffer, argPtr previewPhotoSampleBuffer] >>= retainedObject . castPtr
+    sendClassMessage cls' dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBufferSelector rawSampleBuffer previewPhotoSampleBuffer
 
 -- | preparedPhotoSettingsArray
 --
@@ -422,8 +413,8 @@ dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBuffer rawSampleB
 --
 -- ObjC selector: @- preparedPhotoSettingsArray@
 preparedPhotoSettingsArray :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-preparedPhotoSettingsArray avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "preparedPhotoSettingsArray") (retPtr retVoid) [] >>= retainedObject . castPtr
+preparedPhotoSettingsArray avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput preparedPhotoSettingsArraySelector
 
 -- | availablePhotoPixelFormatTypes
 --
@@ -433,8 +424,8 @@ preparedPhotoSettingsArray avCapturePhotoOutput  =
 --
 -- ObjC selector: @- availablePhotoPixelFormatTypes@
 availablePhotoPixelFormatTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-availablePhotoPixelFormatTypes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "availablePhotoPixelFormatTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availablePhotoPixelFormatTypes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput availablePhotoPixelFormatTypesSelector
 
 -- | availablePhotoCodecTypes
 --
@@ -444,8 +435,8 @@ availablePhotoPixelFormatTypes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- availablePhotoCodecTypes@
 availablePhotoCodecTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-availablePhotoCodecTypes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "availablePhotoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availablePhotoCodecTypes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput availablePhotoCodecTypesSelector
 
 -- | availableRawPhotoCodecTypes
 --
@@ -455,8 +446,8 @@ availablePhotoCodecTypes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- availableRawPhotoCodecTypes@
 availableRawPhotoCodecTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-availableRawPhotoCodecTypes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "availableRawPhotoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableRawPhotoCodecTypes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput availableRawPhotoCodecTypesSelector
 
 -- | appleProRAWSupported
 --
@@ -466,8 +457,8 @@ availableRawPhotoCodecTypes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- appleProRAWSupported@
 appleProRAWSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-appleProRAWSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "appleProRAWSupported") retCULong []
+appleProRAWSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput appleProRAWSupportedSelector
 
 -- | appleProRAWEnabled
 --
@@ -479,8 +470,8 @@ appleProRAWSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- appleProRAWEnabled@
 appleProRAWEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-appleProRAWEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "appleProRAWEnabled") retCULong []
+appleProRAWEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput appleProRAWEnabledSelector
 
 -- | appleProRAWEnabled
 --
@@ -492,8 +483,8 @@ appleProRAWEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setAppleProRAWEnabled:@
 setAppleProRAWEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setAppleProRAWEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setAppleProRAWEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAppleProRAWEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setAppleProRAWEnabledSelector value
 
 -- | availableRawPhotoPixelFormatTypes
 --
@@ -503,8 +494,8 @@ setAppleProRAWEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- availableRawPhotoPixelFormatTypes@
 availableRawPhotoPixelFormatTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-availableRawPhotoPixelFormatTypes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "availableRawPhotoPixelFormatTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableRawPhotoPixelFormatTypes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput availableRawPhotoPixelFormatTypesSelector
 
 -- | availablePhotoFileTypes
 --
@@ -514,8 +505,8 @@ availableRawPhotoPixelFormatTypes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- availablePhotoFileTypes@
 availablePhotoFileTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-availablePhotoFileTypes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "availablePhotoFileTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availablePhotoFileTypes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput availablePhotoFileTypesSelector
 
 -- | availableRawPhotoFileTypes
 --
@@ -525,8 +516,8 @@ availablePhotoFileTypes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- availableRawPhotoFileTypes@
 availableRawPhotoFileTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-availableRawPhotoFileTypes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "availableRawPhotoFileTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableRawPhotoFileTypes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput availableRawPhotoFileTypesSelector
 
 -- | maxPhotoQualityPrioritization
 --
@@ -540,8 +531,8 @@ availableRawPhotoFileTypes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- maxPhotoQualityPrioritization@
 maxPhotoQualityPrioritization :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO AVCapturePhotoQualityPrioritization
-maxPhotoQualityPrioritization avCapturePhotoOutput  =
-    fmap (coerce :: CLong -> AVCapturePhotoQualityPrioritization) $ sendMsg avCapturePhotoOutput (mkSelector "maxPhotoQualityPrioritization") retCLong []
+maxPhotoQualityPrioritization avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput maxPhotoQualityPrioritizationSelector
 
 -- | maxPhotoQualityPrioritization
 --
@@ -555,8 +546,8 @@ maxPhotoQualityPrioritization avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setMaxPhotoQualityPrioritization:@
 setMaxPhotoQualityPrioritization :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> AVCapturePhotoQualityPrioritization -> IO ()
-setMaxPhotoQualityPrioritization avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setMaxPhotoQualityPrioritization:") retVoid [argCLong (coerce value)]
+setMaxPhotoQualityPrioritization avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setMaxPhotoQualityPrioritizationSelector value
 
 -- | fastCapturePrioritizationSupported
 --
@@ -566,8 +557,8 @@ setMaxPhotoQualityPrioritization avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- fastCapturePrioritizationSupported@
 fastCapturePrioritizationSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-fastCapturePrioritizationSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "fastCapturePrioritizationSupported") retCULong []
+fastCapturePrioritizationSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput fastCapturePrioritizationSupportedSelector
 
 -- | fastCapturePrioritizationSupported
 --
@@ -577,8 +568,8 @@ fastCapturePrioritizationSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setFastCapturePrioritizationSupported:@
 setFastCapturePrioritizationSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setFastCapturePrioritizationSupported avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setFastCapturePrioritizationSupported:") retVoid [argCULong (if value then 1 else 0)]
+setFastCapturePrioritizationSupported avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setFastCapturePrioritizationSupportedSelector value
 
 -- | fastCapturePrioritizationEnabled
 --
@@ -588,8 +579,8 @@ setFastCapturePrioritizationSupported avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- fastCapturePrioritizationEnabled@
 fastCapturePrioritizationEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-fastCapturePrioritizationEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "fastCapturePrioritizationEnabled") retCULong []
+fastCapturePrioritizationEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput fastCapturePrioritizationEnabledSelector
 
 -- | fastCapturePrioritizationEnabled
 --
@@ -599,8 +590,8 @@ fastCapturePrioritizationEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setFastCapturePrioritizationEnabled:@
 setFastCapturePrioritizationEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setFastCapturePrioritizationEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setFastCapturePrioritizationEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setFastCapturePrioritizationEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setFastCapturePrioritizationEnabledSelector value
 
 -- | autoDeferredPhotoDeliverySupported
 --
@@ -612,8 +603,8 @@ setFastCapturePrioritizationEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- autoDeferredPhotoDeliverySupported@
 autoDeferredPhotoDeliverySupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-autoDeferredPhotoDeliverySupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "autoDeferredPhotoDeliverySupported") retCULong []
+autoDeferredPhotoDeliverySupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput autoDeferredPhotoDeliverySupportedSelector
 
 -- | autoDeferredPhotoDeliveryEnabled
 --
@@ -623,8 +614,8 @@ autoDeferredPhotoDeliverySupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- autoDeferredPhotoDeliveryEnabled@
 autoDeferredPhotoDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-autoDeferredPhotoDeliveryEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "autoDeferredPhotoDeliveryEnabled") retCULong []
+autoDeferredPhotoDeliveryEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput autoDeferredPhotoDeliveryEnabledSelector
 
 -- | autoDeferredPhotoDeliveryEnabled
 --
@@ -634,8 +625,8 @@ autoDeferredPhotoDeliveryEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setAutoDeferredPhotoDeliveryEnabled:@
 setAutoDeferredPhotoDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setAutoDeferredPhotoDeliveryEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setAutoDeferredPhotoDeliveryEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutoDeferredPhotoDeliveryEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setAutoDeferredPhotoDeliveryEnabledSelector value
 
 -- | stillImageStabilizationSupported
 --
@@ -647,8 +638,8 @@ setAutoDeferredPhotoDeliveryEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- stillImageStabilizationSupported@
 stillImageStabilizationSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-stillImageStabilizationSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "stillImageStabilizationSupported") retCULong []
+stillImageStabilizationSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput stillImageStabilizationSupportedSelector
 
 -- | isStillImageStabilizationScene
 --
@@ -660,8 +651,8 @@ stillImageStabilizationSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- isStillImageStabilizationScene@
 isStillImageStabilizationScene :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-isStillImageStabilizationScene avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "isStillImageStabilizationScene") retCULong []
+isStillImageStabilizationScene avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput isStillImageStabilizationSceneSelector
 
 -- | virtualDeviceFusionSupported
 --
@@ -671,8 +662,8 @@ isStillImageStabilizationScene avCapturePhotoOutput  =
 --
 -- ObjC selector: @- virtualDeviceFusionSupported@
 virtualDeviceFusionSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-virtualDeviceFusionSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "virtualDeviceFusionSupported") retCULong []
+virtualDeviceFusionSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput virtualDeviceFusionSupportedSelector
 
 -- | dualCameraFusionSupported
 --
@@ -682,8 +673,8 @@ virtualDeviceFusionSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- dualCameraFusionSupported@
 dualCameraFusionSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-dualCameraFusionSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "dualCameraFusionSupported") retCULong []
+dualCameraFusionSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput dualCameraFusionSupportedSelector
 
 -- | virtualDeviceConstituentPhotoDeliverySupported
 --
@@ -693,8 +684,8 @@ dualCameraFusionSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- virtualDeviceConstituentPhotoDeliverySupported@
 virtualDeviceConstituentPhotoDeliverySupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-virtualDeviceConstituentPhotoDeliverySupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "virtualDeviceConstituentPhotoDeliverySupported") retCULong []
+virtualDeviceConstituentPhotoDeliverySupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput virtualDeviceConstituentPhotoDeliverySupportedSelector
 
 -- | dualCameraDualPhotoDeliverySupported
 --
@@ -704,8 +695,8 @@ virtualDeviceConstituentPhotoDeliverySupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- dualCameraDualPhotoDeliverySupported@
 dualCameraDualPhotoDeliverySupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-dualCameraDualPhotoDeliverySupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "dualCameraDualPhotoDeliverySupported") retCULong []
+dualCameraDualPhotoDeliverySupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput dualCameraDualPhotoDeliverySupportedSelector
 
 -- | virtualDeviceConstituentPhotoDeliveryEnabled
 --
@@ -715,8 +706,8 @@ dualCameraDualPhotoDeliverySupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- virtualDeviceConstituentPhotoDeliveryEnabled@
 virtualDeviceConstituentPhotoDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-virtualDeviceConstituentPhotoDeliveryEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "virtualDeviceConstituentPhotoDeliveryEnabled") retCULong []
+virtualDeviceConstituentPhotoDeliveryEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput virtualDeviceConstituentPhotoDeliveryEnabledSelector
 
 -- | virtualDeviceConstituentPhotoDeliveryEnabled
 --
@@ -726,8 +717,8 @@ virtualDeviceConstituentPhotoDeliveryEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setVirtualDeviceConstituentPhotoDeliveryEnabled:@
 setVirtualDeviceConstituentPhotoDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setVirtualDeviceConstituentPhotoDeliveryEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setVirtualDeviceConstituentPhotoDeliveryEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setVirtualDeviceConstituentPhotoDeliveryEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setVirtualDeviceConstituentPhotoDeliveryEnabledSelector value
 
 -- | dualCameraDualPhotoDeliveryEnabled
 --
@@ -737,8 +728,8 @@ setVirtualDeviceConstituentPhotoDeliveryEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- dualCameraDualPhotoDeliveryEnabled@
 dualCameraDualPhotoDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-dualCameraDualPhotoDeliveryEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "dualCameraDualPhotoDeliveryEnabled") retCULong []
+dualCameraDualPhotoDeliveryEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput dualCameraDualPhotoDeliveryEnabledSelector
 
 -- | dualCameraDualPhotoDeliveryEnabled
 --
@@ -748,8 +739,8 @@ dualCameraDualPhotoDeliveryEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setDualCameraDualPhotoDeliveryEnabled:@
 setDualCameraDualPhotoDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setDualCameraDualPhotoDeliveryEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setDualCameraDualPhotoDeliveryEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setDualCameraDualPhotoDeliveryEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setDualCameraDualPhotoDeliveryEnabledSelector value
 
 -- | cameraCalibrationDataDeliverySupported
 --
@@ -759,8 +750,8 @@ setDualCameraDualPhotoDeliveryEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- cameraCalibrationDataDeliverySupported@
 cameraCalibrationDataDeliverySupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-cameraCalibrationDataDeliverySupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "cameraCalibrationDataDeliverySupported") retCULong []
+cameraCalibrationDataDeliverySupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput cameraCalibrationDataDeliverySupportedSelector
 
 -- | supportedFlashModes
 --
@@ -770,8 +761,8 @@ cameraCalibrationDataDeliverySupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- supportedFlashModes@
 supportedFlashModes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-supportedFlashModes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "supportedFlashModes") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedFlashModes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput supportedFlashModesSelector
 
 -- | autoRedEyeReductionSupported
 --
@@ -781,8 +772,8 @@ supportedFlashModes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- autoRedEyeReductionSupported@
 autoRedEyeReductionSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-autoRedEyeReductionSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "autoRedEyeReductionSupported") retCULong []
+autoRedEyeReductionSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput autoRedEyeReductionSupportedSelector
 
 -- | isFlashScene
 --
@@ -792,8 +783,8 @@ autoRedEyeReductionSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- isFlashScene@
 isFlashScene :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-isFlashScene avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "isFlashScene") retCULong []
+isFlashScene avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput isFlashSceneSelector
 
 -- | photoSettingsForSceneMonitoring
 --
@@ -803,8 +794,8 @@ isFlashScene avCapturePhotoOutput  =
 --
 -- ObjC selector: @- photoSettingsForSceneMonitoring@
 photoSettingsForSceneMonitoring :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id AVCapturePhotoSettings)
-photoSettingsForSceneMonitoring avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "photoSettingsForSceneMonitoring") (retPtr retVoid) [] >>= retainedObject . castPtr
+photoSettingsForSceneMonitoring avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput photoSettingsForSceneMonitoringSelector
 
 -- | photoSettingsForSceneMonitoring
 --
@@ -814,9 +805,8 @@ photoSettingsForSceneMonitoring avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setPhotoSettingsForSceneMonitoring:@
 setPhotoSettingsForSceneMonitoring :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsAVCapturePhotoSettings value) => avCapturePhotoOutput -> value -> IO ()
-setPhotoSettingsForSceneMonitoring avCapturePhotoOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCapturePhotoOutput (mkSelector "setPhotoSettingsForSceneMonitoring:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPhotoSettingsForSceneMonitoring avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setPhotoSettingsForSceneMonitoringSelector (toAVCapturePhotoSettings value)
 
 -- | highResolutionCaptureEnabled
 --
@@ -826,8 +816,8 @@ setPhotoSettingsForSceneMonitoring avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- highResolutionCaptureEnabled@
 highResolutionCaptureEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-highResolutionCaptureEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "highResolutionCaptureEnabled") retCULong []
+highResolutionCaptureEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput highResolutionCaptureEnabledSelector
 
 -- | highResolutionCaptureEnabled
 --
@@ -837,8 +827,8 @@ highResolutionCaptureEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setHighResolutionCaptureEnabled:@
 setHighResolutionCaptureEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setHighResolutionCaptureEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setHighResolutionCaptureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setHighResolutionCaptureEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setHighResolutionCaptureEnabledSelector value
 
 -- | maxBracketedCapturePhotoCount
 --
@@ -848,8 +838,8 @@ setHighResolutionCaptureEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- maxBracketedCapturePhotoCount@
 maxBracketedCapturePhotoCount :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO CULong
-maxBracketedCapturePhotoCount avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "maxBracketedCapturePhotoCount") retCULong []
+maxBracketedCapturePhotoCount avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput maxBracketedCapturePhotoCountSelector
 
 -- | lensStabilizationDuringBracketedCaptureSupported
 --
@@ -859,8 +849,8 @@ maxBracketedCapturePhotoCount avCapturePhotoOutput  =
 --
 -- ObjC selector: @- lensStabilizationDuringBracketedCaptureSupported@
 lensStabilizationDuringBracketedCaptureSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-lensStabilizationDuringBracketedCaptureSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "lensStabilizationDuringBracketedCaptureSupported") retCULong []
+lensStabilizationDuringBracketedCaptureSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput lensStabilizationDuringBracketedCaptureSupportedSelector
 
 -- | livePhotoCaptureSupported
 --
@@ -870,8 +860,8 @@ lensStabilizationDuringBracketedCaptureSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- livePhotoCaptureSupported@
 livePhotoCaptureSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-livePhotoCaptureSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "livePhotoCaptureSupported") retCULong []
+livePhotoCaptureSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput livePhotoCaptureSupportedSelector
 
 -- | livePhotoCaptureEnabled
 --
@@ -881,8 +871,8 @@ livePhotoCaptureSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- livePhotoCaptureEnabled@
 livePhotoCaptureEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-livePhotoCaptureEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "livePhotoCaptureEnabled") retCULong []
+livePhotoCaptureEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput livePhotoCaptureEnabledSelector
 
 -- | livePhotoCaptureEnabled
 --
@@ -892,8 +882,8 @@ livePhotoCaptureEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setLivePhotoCaptureEnabled:@
 setLivePhotoCaptureEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setLivePhotoCaptureEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setLivePhotoCaptureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setLivePhotoCaptureEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setLivePhotoCaptureEnabledSelector value
 
 -- | livePhotoCaptureSuspended
 --
@@ -903,8 +893,8 @@ setLivePhotoCaptureEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- livePhotoCaptureSuspended@
 livePhotoCaptureSuspended :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-livePhotoCaptureSuspended avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "livePhotoCaptureSuspended") retCULong []
+livePhotoCaptureSuspended avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput livePhotoCaptureSuspendedSelector
 
 -- | livePhotoCaptureSuspended
 --
@@ -914,8 +904,8 @@ livePhotoCaptureSuspended avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setLivePhotoCaptureSuspended:@
 setLivePhotoCaptureSuspended :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setLivePhotoCaptureSuspended avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setLivePhotoCaptureSuspended:") retVoid [argCULong (if value then 1 else 0)]
+setLivePhotoCaptureSuspended avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setLivePhotoCaptureSuspendedSelector value
 
 -- | preservesLivePhotoCaptureSuspendedOnSessionStop
 --
@@ -925,8 +915,8 @@ setLivePhotoCaptureSuspended avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- preservesLivePhotoCaptureSuspendedOnSessionStop@
 preservesLivePhotoCaptureSuspendedOnSessionStop :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-preservesLivePhotoCaptureSuspendedOnSessionStop avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "preservesLivePhotoCaptureSuspendedOnSessionStop") retCULong []
+preservesLivePhotoCaptureSuspendedOnSessionStop avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput preservesLivePhotoCaptureSuspendedOnSessionStopSelector
 
 -- | preservesLivePhotoCaptureSuspendedOnSessionStop
 --
@@ -936,8 +926,8 @@ preservesLivePhotoCaptureSuspendedOnSessionStop avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setPreservesLivePhotoCaptureSuspendedOnSessionStop:@
 setPreservesLivePhotoCaptureSuspendedOnSessionStop :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setPreservesLivePhotoCaptureSuspendedOnSessionStop avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setPreservesLivePhotoCaptureSuspendedOnSessionStop:") retVoid [argCULong (if value then 1 else 0)]
+setPreservesLivePhotoCaptureSuspendedOnSessionStop avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setPreservesLivePhotoCaptureSuspendedOnSessionStopSelector value
 
 -- | livePhotoAutoTrimmingEnabled
 --
@@ -947,8 +937,8 @@ setPreservesLivePhotoCaptureSuspendedOnSessionStop avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- livePhotoAutoTrimmingEnabled@
 livePhotoAutoTrimmingEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-livePhotoAutoTrimmingEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "livePhotoAutoTrimmingEnabled") retCULong []
+livePhotoAutoTrimmingEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput livePhotoAutoTrimmingEnabledSelector
 
 -- | livePhotoAutoTrimmingEnabled
 --
@@ -958,8 +948,8 @@ livePhotoAutoTrimmingEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setLivePhotoAutoTrimmingEnabled:@
 setLivePhotoAutoTrimmingEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setLivePhotoAutoTrimmingEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setLivePhotoAutoTrimmingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setLivePhotoAutoTrimmingEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setLivePhotoAutoTrimmingEnabledSelector value
 
 -- | availableLivePhotoVideoCodecTypes
 --
@@ -969,8 +959,8 @@ setLivePhotoAutoTrimmingEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- availableLivePhotoVideoCodecTypes@
 availableLivePhotoVideoCodecTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-availableLivePhotoVideoCodecTypes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "availableLivePhotoVideoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableLivePhotoVideoCodecTypes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput availableLivePhotoVideoCodecTypesSelector
 
 -- | contentAwareDistortionCorrectionSupported
 --
@@ -980,8 +970,8 @@ availableLivePhotoVideoCodecTypes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- contentAwareDistortionCorrectionSupported@
 contentAwareDistortionCorrectionSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-contentAwareDistortionCorrectionSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "contentAwareDistortionCorrectionSupported") retCULong []
+contentAwareDistortionCorrectionSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput contentAwareDistortionCorrectionSupportedSelector
 
 -- | contentAwareDistortionCorrectionEnabled
 --
@@ -991,8 +981,8 @@ contentAwareDistortionCorrectionSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- contentAwareDistortionCorrectionEnabled@
 contentAwareDistortionCorrectionEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-contentAwareDistortionCorrectionEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "contentAwareDistortionCorrectionEnabled") retCULong []
+contentAwareDistortionCorrectionEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput contentAwareDistortionCorrectionEnabledSelector
 
 -- | contentAwareDistortionCorrectionEnabled
 --
@@ -1002,8 +992,8 @@ contentAwareDistortionCorrectionEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setContentAwareDistortionCorrectionEnabled:@
 setContentAwareDistortionCorrectionEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setContentAwareDistortionCorrectionEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setContentAwareDistortionCorrectionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setContentAwareDistortionCorrectionEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setContentAwareDistortionCorrectionEnabledSelector value
 
 -- | zeroShutterLagSupported
 --
@@ -1013,8 +1003,8 @@ setContentAwareDistortionCorrectionEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- zeroShutterLagSupported@
 zeroShutterLagSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-zeroShutterLagSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "zeroShutterLagSupported") retCULong []
+zeroShutterLagSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput zeroShutterLagSupportedSelector
 
 -- | zeroShutterLagEnabled
 --
@@ -1024,8 +1014,8 @@ zeroShutterLagSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- zeroShutterLagEnabled@
 zeroShutterLagEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-zeroShutterLagEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "zeroShutterLagEnabled") retCULong []
+zeroShutterLagEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput zeroShutterLagEnabledSelector
 
 -- | zeroShutterLagEnabled
 --
@@ -1035,8 +1025,8 @@ zeroShutterLagEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setZeroShutterLagEnabled:@
 setZeroShutterLagEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setZeroShutterLagEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setZeroShutterLagEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setZeroShutterLagEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setZeroShutterLagEnabledSelector value
 
 -- | responsiveCaptureSupported
 --
@@ -1046,8 +1036,8 @@ setZeroShutterLagEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- responsiveCaptureSupported@
 responsiveCaptureSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-responsiveCaptureSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "responsiveCaptureSupported") retCULong []
+responsiveCaptureSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput responsiveCaptureSupportedSelector
 
 -- | responsiveCaptureEnabled
 --
@@ -1057,8 +1047,8 @@ responsiveCaptureSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- responsiveCaptureEnabled@
 responsiveCaptureEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-responsiveCaptureEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "responsiveCaptureEnabled") retCULong []
+responsiveCaptureEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput responsiveCaptureEnabledSelector
 
 -- | responsiveCaptureEnabled
 --
@@ -1068,8 +1058,8 @@ responsiveCaptureEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setResponsiveCaptureEnabled:@
 setResponsiveCaptureEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setResponsiveCaptureEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setResponsiveCaptureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setResponsiveCaptureEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setResponsiveCaptureEnabledSelector value
 
 -- | captureReadiness
 --
@@ -1079,8 +1069,8 @@ setResponsiveCaptureEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- captureReadiness@
 captureReadiness :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO AVCapturePhotoOutputCaptureReadiness
-captureReadiness avCapturePhotoOutput  =
-    fmap (coerce :: CLong -> AVCapturePhotoOutputCaptureReadiness) $ sendMsg avCapturePhotoOutput (mkSelector "captureReadiness") retCLong []
+captureReadiness avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput captureReadinessSelector
 
 -- | constantColorSupported
 --
@@ -1098,8 +1088,8 @@ captureReadiness avCapturePhotoOutput  =
 --
 -- ObjC selector: @- constantColorSupported@
 constantColorSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-constantColorSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "constantColorSupported") retCULong []
+constantColorSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput constantColorSupportedSelector
 
 -- | constantColorEnabled
 --
@@ -1109,8 +1099,8 @@ constantColorSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- constantColorEnabled@
 constantColorEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-constantColorEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "constantColorEnabled") retCULong []
+constantColorEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput constantColorEnabledSelector
 
 -- | constantColorEnabled
 --
@@ -1120,8 +1110,8 @@ constantColorEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setConstantColorEnabled:@
 setConstantColorEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setConstantColorEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setConstantColorEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setConstantColorEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setConstantColorEnabledSelector value
 
 -- | shutterSoundSuppressionSupported
 --
@@ -1131,8 +1121,8 @@ setConstantColorEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- shutterSoundSuppressionSupported@
 shutterSoundSuppressionSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-shutterSoundSuppressionSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "shutterSoundSuppressionSupported") retCULong []
+shutterSoundSuppressionSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput shutterSoundSuppressionSupportedSelector
 
 -- | cameraSensorOrientationCompensationSupported
 --
@@ -1142,8 +1132,8 @@ shutterSoundSuppressionSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- cameraSensorOrientationCompensationSupported@
 cameraSensorOrientationCompensationSupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-cameraSensorOrientationCompensationSupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "cameraSensorOrientationCompensationSupported") retCULong []
+cameraSensorOrientationCompensationSupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput cameraSensorOrientationCompensationSupportedSelector
 
 -- | cameraSensorOrientationCompensationEnabled
 --
@@ -1153,8 +1143,8 @@ cameraSensorOrientationCompensationSupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- cameraSensorOrientationCompensationEnabled@
 cameraSensorOrientationCompensationEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-cameraSensorOrientationCompensationEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "cameraSensorOrientationCompensationEnabled") retCULong []
+cameraSensorOrientationCompensationEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput cameraSensorOrientationCompensationEnabledSelector
 
 -- | cameraSensorOrientationCompensationEnabled
 --
@@ -1164,8 +1154,8 @@ cameraSensorOrientationCompensationEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setCameraSensorOrientationCompensationEnabled:@
 setCameraSensorOrientationCompensationEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setCameraSensorOrientationCompensationEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setCameraSensorOrientationCompensationEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setCameraSensorOrientationCompensationEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setCameraSensorOrientationCompensationEnabledSelector value
 
 -- | depthDataDeliverySupported
 --
@@ -1175,8 +1165,8 @@ setCameraSensorOrientationCompensationEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- depthDataDeliverySupported@
 depthDataDeliverySupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-depthDataDeliverySupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "depthDataDeliverySupported") retCULong []
+depthDataDeliverySupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput depthDataDeliverySupportedSelector
 
 -- | depthDataDeliveryEnabled
 --
@@ -1186,8 +1176,8 @@ depthDataDeliverySupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- depthDataDeliveryEnabled@
 depthDataDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-depthDataDeliveryEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "depthDataDeliveryEnabled") retCULong []
+depthDataDeliveryEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput depthDataDeliveryEnabledSelector
 
 -- | depthDataDeliveryEnabled
 --
@@ -1197,8 +1187,8 @@ depthDataDeliveryEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setDepthDataDeliveryEnabled:@
 setDepthDataDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setDepthDataDeliveryEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setDepthDataDeliveryEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setDepthDataDeliveryEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setDepthDataDeliveryEnabledSelector value
 
 -- | portraitEffectsMatteDeliverySupported
 --
@@ -1208,8 +1198,8 @@ setDepthDataDeliveryEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- portraitEffectsMatteDeliverySupported@
 portraitEffectsMatteDeliverySupported :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-portraitEffectsMatteDeliverySupported avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "portraitEffectsMatteDeliverySupported") retCULong []
+portraitEffectsMatteDeliverySupported avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput portraitEffectsMatteDeliverySupportedSelector
 
 -- | portraitEffectsMatteDeliveryEnabled
 --
@@ -1219,8 +1209,8 @@ portraitEffectsMatteDeliverySupported avCapturePhotoOutput  =
 --
 -- ObjC selector: @- portraitEffectsMatteDeliveryEnabled@
 portraitEffectsMatteDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO Bool
-portraitEffectsMatteDeliveryEnabled avCapturePhotoOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhotoOutput (mkSelector "portraitEffectsMatteDeliveryEnabled") retCULong []
+portraitEffectsMatteDeliveryEnabled avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput portraitEffectsMatteDeliveryEnabledSelector
 
 -- | portraitEffectsMatteDeliveryEnabled
 --
@@ -1230,8 +1220,8 @@ portraitEffectsMatteDeliveryEnabled avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setPortraitEffectsMatteDeliveryEnabled:@
 setPortraitEffectsMatteDeliveryEnabled :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> Bool -> IO ()
-setPortraitEffectsMatteDeliveryEnabled avCapturePhotoOutput  value =
-    sendMsg avCapturePhotoOutput (mkSelector "setPortraitEffectsMatteDeliveryEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setPortraitEffectsMatteDeliveryEnabled avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setPortraitEffectsMatteDeliveryEnabledSelector value
 
 -- | availableSemanticSegmentationMatteTypes
 --
@@ -1241,8 +1231,8 @@ setPortraitEffectsMatteDeliveryEnabled avCapturePhotoOutput  value =
 --
 -- ObjC selector: @- availableSemanticSegmentationMatteTypes@
 availableSemanticSegmentationMatteTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-availableSemanticSegmentationMatteTypes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "availableSemanticSegmentationMatteTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableSemanticSegmentationMatteTypes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput availableSemanticSegmentationMatteTypesSelector
 
 -- | enabledSemanticSegmentationMatteTypes
 --
@@ -1252,8 +1242,8 @@ availableSemanticSegmentationMatteTypes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- enabledSemanticSegmentationMatteTypes@
 enabledSemanticSegmentationMatteTypes :: IsAVCapturePhotoOutput avCapturePhotoOutput => avCapturePhotoOutput -> IO (Id NSArray)
-enabledSemanticSegmentationMatteTypes avCapturePhotoOutput  =
-    sendMsg avCapturePhotoOutput (mkSelector "enabledSemanticSegmentationMatteTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+enabledSemanticSegmentationMatteTypes avCapturePhotoOutput =
+  sendMessage avCapturePhotoOutput enabledSemanticSegmentationMatteTypesSelector
 
 -- | enabledSemanticSegmentationMatteTypes
 --
@@ -1263,359 +1253,358 @@ enabledSemanticSegmentationMatteTypes avCapturePhotoOutput  =
 --
 -- ObjC selector: @- setEnabledSemanticSegmentationMatteTypes:@
 setEnabledSemanticSegmentationMatteTypes :: (IsAVCapturePhotoOutput avCapturePhotoOutput, IsNSArray value) => avCapturePhotoOutput -> value -> IO ()
-setEnabledSemanticSegmentationMatteTypes avCapturePhotoOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCapturePhotoOutput (mkSelector "setEnabledSemanticSegmentationMatteTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEnabledSemanticSegmentationMatteTypes avCapturePhotoOutput value =
+  sendMessage avCapturePhotoOutput setEnabledSemanticSegmentationMatteTypesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCapturePhotoOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCapturePhotoOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @capturePhotoWithSettings:delegate:@
-capturePhotoWithSettings_delegateSelector :: Selector
+capturePhotoWithSettings_delegateSelector :: Selector '[Id AVCapturePhotoSettings, RawId] ()
 capturePhotoWithSettings_delegateSelector = mkSelector "capturePhotoWithSettings:delegate:"
 
 -- | @Selector@ for @setPreparedPhotoSettingsArray:completionHandler:@
-setPreparedPhotoSettingsArray_completionHandlerSelector :: Selector
+setPreparedPhotoSettingsArray_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 setPreparedPhotoSettingsArray_completionHandlerSelector = mkSelector "setPreparedPhotoSettingsArray:completionHandler:"
 
 -- | @Selector@ for @isBayerRAWPixelFormat:@
-isBayerRAWPixelFormatSelector :: Selector
+isBayerRAWPixelFormatSelector :: Selector '[CUInt] Bool
 isBayerRAWPixelFormatSelector = mkSelector "isBayerRAWPixelFormat:"
 
 -- | @Selector@ for @isAppleProRAWPixelFormat:@
-isAppleProRAWPixelFormatSelector :: Selector
+isAppleProRAWPixelFormatSelector :: Selector '[CUInt] Bool
 isAppleProRAWPixelFormatSelector = mkSelector "isAppleProRAWPixelFormat:"
 
 -- | @Selector@ for @supportedPhotoPixelFormatTypesForFileType:@
-supportedPhotoPixelFormatTypesForFileTypeSelector :: Selector
+supportedPhotoPixelFormatTypesForFileTypeSelector :: Selector '[Id NSString] (Id NSArray)
 supportedPhotoPixelFormatTypesForFileTypeSelector = mkSelector "supportedPhotoPixelFormatTypesForFileType:"
 
 -- | @Selector@ for @supportedPhotoCodecTypesForFileType:@
-supportedPhotoCodecTypesForFileTypeSelector :: Selector
+supportedPhotoCodecTypesForFileTypeSelector :: Selector '[Id NSString] (Id NSArray)
 supportedPhotoCodecTypesForFileTypeSelector = mkSelector "supportedPhotoCodecTypesForFileType:"
 
 -- | @Selector@ for @supportedRawPhotoCodecTypesForRawPhotoPixelFormatType:fileType:@
-supportedRawPhotoCodecTypesForRawPhotoPixelFormatType_fileTypeSelector :: Selector
+supportedRawPhotoCodecTypesForRawPhotoPixelFormatType_fileTypeSelector :: Selector '[CUInt, Id NSString] (Id NSArray)
 supportedRawPhotoCodecTypesForRawPhotoPixelFormatType_fileTypeSelector = mkSelector "supportedRawPhotoCodecTypesForRawPhotoPixelFormatType:fileType:"
 
 -- | @Selector@ for @supportedRawPhotoPixelFormatTypesForFileType:@
-supportedRawPhotoPixelFormatTypesForFileTypeSelector :: Selector
+supportedRawPhotoPixelFormatTypesForFileTypeSelector :: Selector '[Id NSString] (Id NSArray)
 supportedRawPhotoPixelFormatTypesForFileTypeSelector = mkSelector "supportedRawPhotoPixelFormatTypesForFileType:"
 
 -- | @Selector@ for @JPEGPhotoDataRepresentationForJPEGSampleBuffer:previewPhotoSampleBuffer:@
-jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBufferSelector :: Selector
+jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBufferSelector :: Selector '[Ptr (), Ptr ()] (Id NSData)
 jpegPhotoDataRepresentationForJPEGSampleBuffer_previewPhotoSampleBufferSelector = mkSelector "JPEGPhotoDataRepresentationForJPEGSampleBuffer:previewPhotoSampleBuffer:"
 
 -- | @Selector@ for @DNGPhotoDataRepresentationForRawSampleBuffer:previewPhotoSampleBuffer:@
-dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBufferSelector :: Selector
+dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBufferSelector :: Selector '[Ptr (), Ptr ()] (Id NSData)
 dngPhotoDataRepresentationForRawSampleBuffer_previewPhotoSampleBufferSelector = mkSelector "DNGPhotoDataRepresentationForRawSampleBuffer:previewPhotoSampleBuffer:"
 
 -- | @Selector@ for @preparedPhotoSettingsArray@
-preparedPhotoSettingsArraySelector :: Selector
+preparedPhotoSettingsArraySelector :: Selector '[] (Id NSArray)
 preparedPhotoSettingsArraySelector = mkSelector "preparedPhotoSettingsArray"
 
 -- | @Selector@ for @availablePhotoPixelFormatTypes@
-availablePhotoPixelFormatTypesSelector :: Selector
+availablePhotoPixelFormatTypesSelector :: Selector '[] (Id NSArray)
 availablePhotoPixelFormatTypesSelector = mkSelector "availablePhotoPixelFormatTypes"
 
 -- | @Selector@ for @availablePhotoCodecTypes@
-availablePhotoCodecTypesSelector :: Selector
+availablePhotoCodecTypesSelector :: Selector '[] (Id NSArray)
 availablePhotoCodecTypesSelector = mkSelector "availablePhotoCodecTypes"
 
 -- | @Selector@ for @availableRawPhotoCodecTypes@
-availableRawPhotoCodecTypesSelector :: Selector
+availableRawPhotoCodecTypesSelector :: Selector '[] (Id NSArray)
 availableRawPhotoCodecTypesSelector = mkSelector "availableRawPhotoCodecTypes"
 
 -- | @Selector@ for @appleProRAWSupported@
-appleProRAWSupportedSelector :: Selector
+appleProRAWSupportedSelector :: Selector '[] Bool
 appleProRAWSupportedSelector = mkSelector "appleProRAWSupported"
 
 -- | @Selector@ for @appleProRAWEnabled@
-appleProRAWEnabledSelector :: Selector
+appleProRAWEnabledSelector :: Selector '[] Bool
 appleProRAWEnabledSelector = mkSelector "appleProRAWEnabled"
 
 -- | @Selector@ for @setAppleProRAWEnabled:@
-setAppleProRAWEnabledSelector :: Selector
+setAppleProRAWEnabledSelector :: Selector '[Bool] ()
 setAppleProRAWEnabledSelector = mkSelector "setAppleProRAWEnabled:"
 
 -- | @Selector@ for @availableRawPhotoPixelFormatTypes@
-availableRawPhotoPixelFormatTypesSelector :: Selector
+availableRawPhotoPixelFormatTypesSelector :: Selector '[] (Id NSArray)
 availableRawPhotoPixelFormatTypesSelector = mkSelector "availableRawPhotoPixelFormatTypes"
 
 -- | @Selector@ for @availablePhotoFileTypes@
-availablePhotoFileTypesSelector :: Selector
+availablePhotoFileTypesSelector :: Selector '[] (Id NSArray)
 availablePhotoFileTypesSelector = mkSelector "availablePhotoFileTypes"
 
 -- | @Selector@ for @availableRawPhotoFileTypes@
-availableRawPhotoFileTypesSelector :: Selector
+availableRawPhotoFileTypesSelector :: Selector '[] (Id NSArray)
 availableRawPhotoFileTypesSelector = mkSelector "availableRawPhotoFileTypes"
 
 -- | @Selector@ for @maxPhotoQualityPrioritization@
-maxPhotoQualityPrioritizationSelector :: Selector
+maxPhotoQualityPrioritizationSelector :: Selector '[] AVCapturePhotoQualityPrioritization
 maxPhotoQualityPrioritizationSelector = mkSelector "maxPhotoQualityPrioritization"
 
 -- | @Selector@ for @setMaxPhotoQualityPrioritization:@
-setMaxPhotoQualityPrioritizationSelector :: Selector
+setMaxPhotoQualityPrioritizationSelector :: Selector '[AVCapturePhotoQualityPrioritization] ()
 setMaxPhotoQualityPrioritizationSelector = mkSelector "setMaxPhotoQualityPrioritization:"
 
 -- | @Selector@ for @fastCapturePrioritizationSupported@
-fastCapturePrioritizationSupportedSelector :: Selector
+fastCapturePrioritizationSupportedSelector :: Selector '[] Bool
 fastCapturePrioritizationSupportedSelector = mkSelector "fastCapturePrioritizationSupported"
 
 -- | @Selector@ for @setFastCapturePrioritizationSupported:@
-setFastCapturePrioritizationSupportedSelector :: Selector
+setFastCapturePrioritizationSupportedSelector :: Selector '[Bool] ()
 setFastCapturePrioritizationSupportedSelector = mkSelector "setFastCapturePrioritizationSupported:"
 
 -- | @Selector@ for @fastCapturePrioritizationEnabled@
-fastCapturePrioritizationEnabledSelector :: Selector
+fastCapturePrioritizationEnabledSelector :: Selector '[] Bool
 fastCapturePrioritizationEnabledSelector = mkSelector "fastCapturePrioritizationEnabled"
 
 -- | @Selector@ for @setFastCapturePrioritizationEnabled:@
-setFastCapturePrioritizationEnabledSelector :: Selector
+setFastCapturePrioritizationEnabledSelector :: Selector '[Bool] ()
 setFastCapturePrioritizationEnabledSelector = mkSelector "setFastCapturePrioritizationEnabled:"
 
 -- | @Selector@ for @autoDeferredPhotoDeliverySupported@
-autoDeferredPhotoDeliverySupportedSelector :: Selector
+autoDeferredPhotoDeliverySupportedSelector :: Selector '[] Bool
 autoDeferredPhotoDeliverySupportedSelector = mkSelector "autoDeferredPhotoDeliverySupported"
 
 -- | @Selector@ for @autoDeferredPhotoDeliveryEnabled@
-autoDeferredPhotoDeliveryEnabledSelector :: Selector
+autoDeferredPhotoDeliveryEnabledSelector :: Selector '[] Bool
 autoDeferredPhotoDeliveryEnabledSelector = mkSelector "autoDeferredPhotoDeliveryEnabled"
 
 -- | @Selector@ for @setAutoDeferredPhotoDeliveryEnabled:@
-setAutoDeferredPhotoDeliveryEnabledSelector :: Selector
+setAutoDeferredPhotoDeliveryEnabledSelector :: Selector '[Bool] ()
 setAutoDeferredPhotoDeliveryEnabledSelector = mkSelector "setAutoDeferredPhotoDeliveryEnabled:"
 
 -- | @Selector@ for @stillImageStabilizationSupported@
-stillImageStabilizationSupportedSelector :: Selector
+stillImageStabilizationSupportedSelector :: Selector '[] Bool
 stillImageStabilizationSupportedSelector = mkSelector "stillImageStabilizationSupported"
 
 -- | @Selector@ for @isStillImageStabilizationScene@
-isStillImageStabilizationSceneSelector :: Selector
+isStillImageStabilizationSceneSelector :: Selector '[] Bool
 isStillImageStabilizationSceneSelector = mkSelector "isStillImageStabilizationScene"
 
 -- | @Selector@ for @virtualDeviceFusionSupported@
-virtualDeviceFusionSupportedSelector :: Selector
+virtualDeviceFusionSupportedSelector :: Selector '[] Bool
 virtualDeviceFusionSupportedSelector = mkSelector "virtualDeviceFusionSupported"
 
 -- | @Selector@ for @dualCameraFusionSupported@
-dualCameraFusionSupportedSelector :: Selector
+dualCameraFusionSupportedSelector :: Selector '[] Bool
 dualCameraFusionSupportedSelector = mkSelector "dualCameraFusionSupported"
 
 -- | @Selector@ for @virtualDeviceConstituentPhotoDeliverySupported@
-virtualDeviceConstituentPhotoDeliverySupportedSelector :: Selector
+virtualDeviceConstituentPhotoDeliverySupportedSelector :: Selector '[] Bool
 virtualDeviceConstituentPhotoDeliverySupportedSelector = mkSelector "virtualDeviceConstituentPhotoDeliverySupported"
 
 -- | @Selector@ for @dualCameraDualPhotoDeliverySupported@
-dualCameraDualPhotoDeliverySupportedSelector :: Selector
+dualCameraDualPhotoDeliverySupportedSelector :: Selector '[] Bool
 dualCameraDualPhotoDeliverySupportedSelector = mkSelector "dualCameraDualPhotoDeliverySupported"
 
 -- | @Selector@ for @virtualDeviceConstituentPhotoDeliveryEnabled@
-virtualDeviceConstituentPhotoDeliveryEnabledSelector :: Selector
+virtualDeviceConstituentPhotoDeliveryEnabledSelector :: Selector '[] Bool
 virtualDeviceConstituentPhotoDeliveryEnabledSelector = mkSelector "virtualDeviceConstituentPhotoDeliveryEnabled"
 
 -- | @Selector@ for @setVirtualDeviceConstituentPhotoDeliveryEnabled:@
-setVirtualDeviceConstituentPhotoDeliveryEnabledSelector :: Selector
+setVirtualDeviceConstituentPhotoDeliveryEnabledSelector :: Selector '[Bool] ()
 setVirtualDeviceConstituentPhotoDeliveryEnabledSelector = mkSelector "setVirtualDeviceConstituentPhotoDeliveryEnabled:"
 
 -- | @Selector@ for @dualCameraDualPhotoDeliveryEnabled@
-dualCameraDualPhotoDeliveryEnabledSelector :: Selector
+dualCameraDualPhotoDeliveryEnabledSelector :: Selector '[] Bool
 dualCameraDualPhotoDeliveryEnabledSelector = mkSelector "dualCameraDualPhotoDeliveryEnabled"
 
 -- | @Selector@ for @setDualCameraDualPhotoDeliveryEnabled:@
-setDualCameraDualPhotoDeliveryEnabledSelector :: Selector
+setDualCameraDualPhotoDeliveryEnabledSelector :: Selector '[Bool] ()
 setDualCameraDualPhotoDeliveryEnabledSelector = mkSelector "setDualCameraDualPhotoDeliveryEnabled:"
 
 -- | @Selector@ for @cameraCalibrationDataDeliverySupported@
-cameraCalibrationDataDeliverySupportedSelector :: Selector
+cameraCalibrationDataDeliverySupportedSelector :: Selector '[] Bool
 cameraCalibrationDataDeliverySupportedSelector = mkSelector "cameraCalibrationDataDeliverySupported"
 
 -- | @Selector@ for @supportedFlashModes@
-supportedFlashModesSelector :: Selector
+supportedFlashModesSelector :: Selector '[] (Id NSArray)
 supportedFlashModesSelector = mkSelector "supportedFlashModes"
 
 -- | @Selector@ for @autoRedEyeReductionSupported@
-autoRedEyeReductionSupportedSelector :: Selector
+autoRedEyeReductionSupportedSelector :: Selector '[] Bool
 autoRedEyeReductionSupportedSelector = mkSelector "autoRedEyeReductionSupported"
 
 -- | @Selector@ for @isFlashScene@
-isFlashSceneSelector :: Selector
+isFlashSceneSelector :: Selector '[] Bool
 isFlashSceneSelector = mkSelector "isFlashScene"
 
 -- | @Selector@ for @photoSettingsForSceneMonitoring@
-photoSettingsForSceneMonitoringSelector :: Selector
+photoSettingsForSceneMonitoringSelector :: Selector '[] (Id AVCapturePhotoSettings)
 photoSettingsForSceneMonitoringSelector = mkSelector "photoSettingsForSceneMonitoring"
 
 -- | @Selector@ for @setPhotoSettingsForSceneMonitoring:@
-setPhotoSettingsForSceneMonitoringSelector :: Selector
+setPhotoSettingsForSceneMonitoringSelector :: Selector '[Id AVCapturePhotoSettings] ()
 setPhotoSettingsForSceneMonitoringSelector = mkSelector "setPhotoSettingsForSceneMonitoring:"
 
 -- | @Selector@ for @highResolutionCaptureEnabled@
-highResolutionCaptureEnabledSelector :: Selector
+highResolutionCaptureEnabledSelector :: Selector '[] Bool
 highResolutionCaptureEnabledSelector = mkSelector "highResolutionCaptureEnabled"
 
 -- | @Selector@ for @setHighResolutionCaptureEnabled:@
-setHighResolutionCaptureEnabledSelector :: Selector
+setHighResolutionCaptureEnabledSelector :: Selector '[Bool] ()
 setHighResolutionCaptureEnabledSelector = mkSelector "setHighResolutionCaptureEnabled:"
 
 -- | @Selector@ for @maxBracketedCapturePhotoCount@
-maxBracketedCapturePhotoCountSelector :: Selector
+maxBracketedCapturePhotoCountSelector :: Selector '[] CULong
 maxBracketedCapturePhotoCountSelector = mkSelector "maxBracketedCapturePhotoCount"
 
 -- | @Selector@ for @lensStabilizationDuringBracketedCaptureSupported@
-lensStabilizationDuringBracketedCaptureSupportedSelector :: Selector
+lensStabilizationDuringBracketedCaptureSupportedSelector :: Selector '[] Bool
 lensStabilizationDuringBracketedCaptureSupportedSelector = mkSelector "lensStabilizationDuringBracketedCaptureSupported"
 
 -- | @Selector@ for @livePhotoCaptureSupported@
-livePhotoCaptureSupportedSelector :: Selector
+livePhotoCaptureSupportedSelector :: Selector '[] Bool
 livePhotoCaptureSupportedSelector = mkSelector "livePhotoCaptureSupported"
 
 -- | @Selector@ for @livePhotoCaptureEnabled@
-livePhotoCaptureEnabledSelector :: Selector
+livePhotoCaptureEnabledSelector :: Selector '[] Bool
 livePhotoCaptureEnabledSelector = mkSelector "livePhotoCaptureEnabled"
 
 -- | @Selector@ for @setLivePhotoCaptureEnabled:@
-setLivePhotoCaptureEnabledSelector :: Selector
+setLivePhotoCaptureEnabledSelector :: Selector '[Bool] ()
 setLivePhotoCaptureEnabledSelector = mkSelector "setLivePhotoCaptureEnabled:"
 
 -- | @Selector@ for @livePhotoCaptureSuspended@
-livePhotoCaptureSuspendedSelector :: Selector
+livePhotoCaptureSuspendedSelector :: Selector '[] Bool
 livePhotoCaptureSuspendedSelector = mkSelector "livePhotoCaptureSuspended"
 
 -- | @Selector@ for @setLivePhotoCaptureSuspended:@
-setLivePhotoCaptureSuspendedSelector :: Selector
+setLivePhotoCaptureSuspendedSelector :: Selector '[Bool] ()
 setLivePhotoCaptureSuspendedSelector = mkSelector "setLivePhotoCaptureSuspended:"
 
 -- | @Selector@ for @preservesLivePhotoCaptureSuspendedOnSessionStop@
-preservesLivePhotoCaptureSuspendedOnSessionStopSelector :: Selector
+preservesLivePhotoCaptureSuspendedOnSessionStopSelector :: Selector '[] Bool
 preservesLivePhotoCaptureSuspendedOnSessionStopSelector = mkSelector "preservesLivePhotoCaptureSuspendedOnSessionStop"
 
 -- | @Selector@ for @setPreservesLivePhotoCaptureSuspendedOnSessionStop:@
-setPreservesLivePhotoCaptureSuspendedOnSessionStopSelector :: Selector
+setPreservesLivePhotoCaptureSuspendedOnSessionStopSelector :: Selector '[Bool] ()
 setPreservesLivePhotoCaptureSuspendedOnSessionStopSelector = mkSelector "setPreservesLivePhotoCaptureSuspendedOnSessionStop:"
 
 -- | @Selector@ for @livePhotoAutoTrimmingEnabled@
-livePhotoAutoTrimmingEnabledSelector :: Selector
+livePhotoAutoTrimmingEnabledSelector :: Selector '[] Bool
 livePhotoAutoTrimmingEnabledSelector = mkSelector "livePhotoAutoTrimmingEnabled"
 
 -- | @Selector@ for @setLivePhotoAutoTrimmingEnabled:@
-setLivePhotoAutoTrimmingEnabledSelector :: Selector
+setLivePhotoAutoTrimmingEnabledSelector :: Selector '[Bool] ()
 setLivePhotoAutoTrimmingEnabledSelector = mkSelector "setLivePhotoAutoTrimmingEnabled:"
 
 -- | @Selector@ for @availableLivePhotoVideoCodecTypes@
-availableLivePhotoVideoCodecTypesSelector :: Selector
+availableLivePhotoVideoCodecTypesSelector :: Selector '[] (Id NSArray)
 availableLivePhotoVideoCodecTypesSelector = mkSelector "availableLivePhotoVideoCodecTypes"
 
 -- | @Selector@ for @contentAwareDistortionCorrectionSupported@
-contentAwareDistortionCorrectionSupportedSelector :: Selector
+contentAwareDistortionCorrectionSupportedSelector :: Selector '[] Bool
 contentAwareDistortionCorrectionSupportedSelector = mkSelector "contentAwareDistortionCorrectionSupported"
 
 -- | @Selector@ for @contentAwareDistortionCorrectionEnabled@
-contentAwareDistortionCorrectionEnabledSelector :: Selector
+contentAwareDistortionCorrectionEnabledSelector :: Selector '[] Bool
 contentAwareDistortionCorrectionEnabledSelector = mkSelector "contentAwareDistortionCorrectionEnabled"
 
 -- | @Selector@ for @setContentAwareDistortionCorrectionEnabled:@
-setContentAwareDistortionCorrectionEnabledSelector :: Selector
+setContentAwareDistortionCorrectionEnabledSelector :: Selector '[Bool] ()
 setContentAwareDistortionCorrectionEnabledSelector = mkSelector "setContentAwareDistortionCorrectionEnabled:"
 
 -- | @Selector@ for @zeroShutterLagSupported@
-zeroShutterLagSupportedSelector :: Selector
+zeroShutterLagSupportedSelector :: Selector '[] Bool
 zeroShutterLagSupportedSelector = mkSelector "zeroShutterLagSupported"
 
 -- | @Selector@ for @zeroShutterLagEnabled@
-zeroShutterLagEnabledSelector :: Selector
+zeroShutterLagEnabledSelector :: Selector '[] Bool
 zeroShutterLagEnabledSelector = mkSelector "zeroShutterLagEnabled"
 
 -- | @Selector@ for @setZeroShutterLagEnabled:@
-setZeroShutterLagEnabledSelector :: Selector
+setZeroShutterLagEnabledSelector :: Selector '[Bool] ()
 setZeroShutterLagEnabledSelector = mkSelector "setZeroShutterLagEnabled:"
 
 -- | @Selector@ for @responsiveCaptureSupported@
-responsiveCaptureSupportedSelector :: Selector
+responsiveCaptureSupportedSelector :: Selector '[] Bool
 responsiveCaptureSupportedSelector = mkSelector "responsiveCaptureSupported"
 
 -- | @Selector@ for @responsiveCaptureEnabled@
-responsiveCaptureEnabledSelector :: Selector
+responsiveCaptureEnabledSelector :: Selector '[] Bool
 responsiveCaptureEnabledSelector = mkSelector "responsiveCaptureEnabled"
 
 -- | @Selector@ for @setResponsiveCaptureEnabled:@
-setResponsiveCaptureEnabledSelector :: Selector
+setResponsiveCaptureEnabledSelector :: Selector '[Bool] ()
 setResponsiveCaptureEnabledSelector = mkSelector "setResponsiveCaptureEnabled:"
 
 -- | @Selector@ for @captureReadiness@
-captureReadinessSelector :: Selector
+captureReadinessSelector :: Selector '[] AVCapturePhotoOutputCaptureReadiness
 captureReadinessSelector = mkSelector "captureReadiness"
 
 -- | @Selector@ for @constantColorSupported@
-constantColorSupportedSelector :: Selector
+constantColorSupportedSelector :: Selector '[] Bool
 constantColorSupportedSelector = mkSelector "constantColorSupported"
 
 -- | @Selector@ for @constantColorEnabled@
-constantColorEnabledSelector :: Selector
+constantColorEnabledSelector :: Selector '[] Bool
 constantColorEnabledSelector = mkSelector "constantColorEnabled"
 
 -- | @Selector@ for @setConstantColorEnabled:@
-setConstantColorEnabledSelector :: Selector
+setConstantColorEnabledSelector :: Selector '[Bool] ()
 setConstantColorEnabledSelector = mkSelector "setConstantColorEnabled:"
 
 -- | @Selector@ for @shutterSoundSuppressionSupported@
-shutterSoundSuppressionSupportedSelector :: Selector
+shutterSoundSuppressionSupportedSelector :: Selector '[] Bool
 shutterSoundSuppressionSupportedSelector = mkSelector "shutterSoundSuppressionSupported"
 
 -- | @Selector@ for @cameraSensorOrientationCompensationSupported@
-cameraSensorOrientationCompensationSupportedSelector :: Selector
+cameraSensorOrientationCompensationSupportedSelector :: Selector '[] Bool
 cameraSensorOrientationCompensationSupportedSelector = mkSelector "cameraSensorOrientationCompensationSupported"
 
 -- | @Selector@ for @cameraSensorOrientationCompensationEnabled@
-cameraSensorOrientationCompensationEnabledSelector :: Selector
+cameraSensorOrientationCompensationEnabledSelector :: Selector '[] Bool
 cameraSensorOrientationCompensationEnabledSelector = mkSelector "cameraSensorOrientationCompensationEnabled"
 
 -- | @Selector@ for @setCameraSensorOrientationCompensationEnabled:@
-setCameraSensorOrientationCompensationEnabledSelector :: Selector
+setCameraSensorOrientationCompensationEnabledSelector :: Selector '[Bool] ()
 setCameraSensorOrientationCompensationEnabledSelector = mkSelector "setCameraSensorOrientationCompensationEnabled:"
 
 -- | @Selector@ for @depthDataDeliverySupported@
-depthDataDeliverySupportedSelector :: Selector
+depthDataDeliverySupportedSelector :: Selector '[] Bool
 depthDataDeliverySupportedSelector = mkSelector "depthDataDeliverySupported"
 
 -- | @Selector@ for @depthDataDeliveryEnabled@
-depthDataDeliveryEnabledSelector :: Selector
+depthDataDeliveryEnabledSelector :: Selector '[] Bool
 depthDataDeliveryEnabledSelector = mkSelector "depthDataDeliveryEnabled"
 
 -- | @Selector@ for @setDepthDataDeliveryEnabled:@
-setDepthDataDeliveryEnabledSelector :: Selector
+setDepthDataDeliveryEnabledSelector :: Selector '[Bool] ()
 setDepthDataDeliveryEnabledSelector = mkSelector "setDepthDataDeliveryEnabled:"
 
 -- | @Selector@ for @portraitEffectsMatteDeliverySupported@
-portraitEffectsMatteDeliverySupportedSelector :: Selector
+portraitEffectsMatteDeliverySupportedSelector :: Selector '[] Bool
 portraitEffectsMatteDeliverySupportedSelector = mkSelector "portraitEffectsMatteDeliverySupported"
 
 -- | @Selector@ for @portraitEffectsMatteDeliveryEnabled@
-portraitEffectsMatteDeliveryEnabledSelector :: Selector
+portraitEffectsMatteDeliveryEnabledSelector :: Selector '[] Bool
 portraitEffectsMatteDeliveryEnabledSelector = mkSelector "portraitEffectsMatteDeliveryEnabled"
 
 -- | @Selector@ for @setPortraitEffectsMatteDeliveryEnabled:@
-setPortraitEffectsMatteDeliveryEnabledSelector :: Selector
+setPortraitEffectsMatteDeliveryEnabledSelector :: Selector '[Bool] ()
 setPortraitEffectsMatteDeliveryEnabledSelector = mkSelector "setPortraitEffectsMatteDeliveryEnabled:"
 
 -- | @Selector@ for @availableSemanticSegmentationMatteTypes@
-availableSemanticSegmentationMatteTypesSelector :: Selector
+availableSemanticSegmentationMatteTypesSelector :: Selector '[] (Id NSArray)
 availableSemanticSegmentationMatteTypesSelector = mkSelector "availableSemanticSegmentationMatteTypes"
 
 -- | @Selector@ for @enabledSemanticSegmentationMatteTypes@
-enabledSemanticSegmentationMatteTypesSelector :: Selector
+enabledSemanticSegmentationMatteTypesSelector :: Selector '[] (Id NSArray)
 enabledSemanticSegmentationMatteTypesSelector = mkSelector "enabledSemanticSegmentationMatteTypes"
 
 -- | @Selector@ for @setEnabledSemanticSegmentationMatteTypes:@
-setEnabledSemanticSegmentationMatteTypesSelector :: Selector
+setEnabledSemanticSegmentationMatteTypesSelector :: Selector '[Id NSArray] ()
 setEnabledSemanticSegmentationMatteTypesSelector = mkSelector "setEnabledSemanticSegmentationMatteTypes:"
 

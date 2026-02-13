@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.MapKit.MKRoute
   , steps
   , hasTolls
   , hasHighways
-  , nameSelector
   , advisoryNoticesSelector
   , distanceSelector
   , expectedTravelTimeSelector
-  , transportTypeSelector
+  , hasHighwaysSelector
+  , hasTollsSelector
+  , nameSelector
   , polylineSelector
   , stepsSelector
-  , hasTollsSelector
-  , hasHighwaysSelector
+  , transportTypeSelector
 
   -- * Enum types
   , MKDirectionsTransportType(MKDirectionsTransportType)
@@ -36,15 +37,11 @@ module ObjC.MapKit.MKRoute
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,86 +51,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMKRoute mkRoute => mkRoute -> IO (Id NSString)
-name mkRoute  =
-    sendMsg mkRoute (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mkRoute =
+  sendMessage mkRoute nameSelector
 
 -- | @- advisoryNotices@
 advisoryNotices :: IsMKRoute mkRoute => mkRoute -> IO (Id NSArray)
-advisoryNotices mkRoute  =
-    sendMsg mkRoute (mkSelector "advisoryNotices") (retPtr retVoid) [] >>= retainedObject . castPtr
+advisoryNotices mkRoute =
+  sendMessage mkRoute advisoryNoticesSelector
 
 -- | @- distance@
 distance :: IsMKRoute mkRoute => mkRoute -> IO CDouble
-distance mkRoute  =
-    sendMsg mkRoute (mkSelector "distance") retCDouble []
+distance mkRoute =
+  sendMessage mkRoute distanceSelector
 
 -- | @- expectedTravelTime@
 expectedTravelTime :: IsMKRoute mkRoute => mkRoute -> IO CDouble
-expectedTravelTime mkRoute  =
-    sendMsg mkRoute (mkSelector "expectedTravelTime") retCDouble []
+expectedTravelTime mkRoute =
+  sendMessage mkRoute expectedTravelTimeSelector
 
 -- | @- transportType@
 transportType :: IsMKRoute mkRoute => mkRoute -> IO MKDirectionsTransportType
-transportType mkRoute  =
-    fmap (coerce :: CULong -> MKDirectionsTransportType) $ sendMsg mkRoute (mkSelector "transportType") retCULong []
+transportType mkRoute =
+  sendMessage mkRoute transportTypeSelector
 
 -- | @- polyline@
 polyline :: IsMKRoute mkRoute => mkRoute -> IO (Id MKPolyline)
-polyline mkRoute  =
-    sendMsg mkRoute (mkSelector "polyline") (retPtr retVoid) [] >>= retainedObject . castPtr
+polyline mkRoute =
+  sendMessage mkRoute polylineSelector
 
 -- | @- steps@
 steps :: IsMKRoute mkRoute => mkRoute -> IO (Id NSArray)
-steps mkRoute  =
-    sendMsg mkRoute (mkSelector "steps") (retPtr retVoid) [] >>= retainedObject . castPtr
+steps mkRoute =
+  sendMessage mkRoute stepsSelector
 
 -- | @- hasTolls@
 hasTolls :: IsMKRoute mkRoute => mkRoute -> IO Bool
-hasTolls mkRoute  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkRoute (mkSelector "hasTolls") retCULong []
+hasTolls mkRoute =
+  sendMessage mkRoute hasTollsSelector
 
 -- | @- hasHighways@
 hasHighways :: IsMKRoute mkRoute => mkRoute -> IO Bool
-hasHighways mkRoute  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkRoute (mkSelector "hasHighways") retCULong []
+hasHighways mkRoute =
+  sendMessage mkRoute hasHighwaysSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @advisoryNotices@
-advisoryNoticesSelector :: Selector
+advisoryNoticesSelector :: Selector '[] (Id NSArray)
 advisoryNoticesSelector = mkSelector "advisoryNotices"
 
 -- | @Selector@ for @distance@
-distanceSelector :: Selector
+distanceSelector :: Selector '[] CDouble
 distanceSelector = mkSelector "distance"
 
 -- | @Selector@ for @expectedTravelTime@
-expectedTravelTimeSelector :: Selector
+expectedTravelTimeSelector :: Selector '[] CDouble
 expectedTravelTimeSelector = mkSelector "expectedTravelTime"
 
 -- | @Selector@ for @transportType@
-transportTypeSelector :: Selector
+transportTypeSelector :: Selector '[] MKDirectionsTransportType
 transportTypeSelector = mkSelector "transportType"
 
 -- | @Selector@ for @polyline@
-polylineSelector :: Selector
+polylineSelector :: Selector '[] (Id MKPolyline)
 polylineSelector = mkSelector "polyline"
 
 -- | @Selector@ for @steps@
-stepsSelector :: Selector
+stepsSelector :: Selector '[] (Id NSArray)
 stepsSelector = mkSelector "steps"
 
 -- | @Selector@ for @hasTolls@
-hasTollsSelector :: Selector
+hasTollsSelector :: Selector '[] Bool
 hasTollsSelector = mkSelector "hasTolls"
 
 -- | @Selector@ for @hasHighways@
-hasHighwaysSelector :: Selector
+hasHighwaysSelector :: Selector '[] Bool
 hasHighwaysSelector = mkSelector "hasHighways"
 

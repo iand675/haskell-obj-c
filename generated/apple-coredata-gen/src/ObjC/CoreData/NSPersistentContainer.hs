@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.CoreData.NSPersistentContainer
   , persistentStoreCoordinator
   , persistentStoreDescriptions
   , setPersistentStoreDescriptions
-  , persistentContainerWithNameSelector
-  , persistentContainerWithName_managedObjectModelSelector
   , defaultDirectoryURLSelector
   , initWithNameSelector
   , initWithName_managedObjectModelSelector
   , loadPersistentStoresWithCompletionHandlerSelector
+  , managedObjectModelSelector
+  , nameSelector
   , newBackgroundContextSelector
   , performBackgroundTaskSelector
-  , nameSelector
-  , viewContextSelector
-  , managedObjectModelSelector
+  , persistentContainerWithNameSelector
+  , persistentContainerWithName_managedObjectModelSelector
   , persistentStoreCoordinatorSelector
   , persistentStoreDescriptionsSelector
   , setPersistentStoreDescriptionsSelector
+  , viewContextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,141 +55,134 @@ persistentContainerWithName :: IsNSString name => name -> IO (Id NSPersistentCon
 persistentContainerWithName name =
   do
     cls' <- getRequiredClass "NSPersistentContainer"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "persistentContainerWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' persistentContainerWithNameSelector (toNSString name)
 
 -- | @+ persistentContainerWithName:managedObjectModel:@
 persistentContainerWithName_managedObjectModel :: (IsNSString name, IsNSManagedObjectModel model) => name -> model -> IO (Id NSPersistentContainer)
 persistentContainerWithName_managedObjectModel name model =
   do
     cls' <- getRequiredClass "NSPersistentContainer"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr model $ \raw_model ->
-        sendClassMsg cls' (mkSelector "persistentContainerWithName:managedObjectModel:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_model :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' persistentContainerWithName_managedObjectModelSelector (toNSString name) (toNSManagedObjectModel model)
 
 -- | @+ defaultDirectoryURL@
 defaultDirectoryURL :: IO (Id NSURL)
 defaultDirectoryURL  =
   do
     cls' <- getRequiredClass "NSPersistentContainer"
-    sendClassMsg cls' (mkSelector "defaultDirectoryURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultDirectoryURLSelector
 
 -- | @- initWithName:@
 initWithName :: (IsNSPersistentContainer nsPersistentContainer, IsNSString name) => nsPersistentContainer -> name -> IO (Id NSPersistentContainer)
-initWithName nsPersistentContainer  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsPersistentContainer (mkSelector "initWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithName nsPersistentContainer name =
+  sendOwnedMessage nsPersistentContainer initWithNameSelector (toNSString name)
 
 -- | @- initWithName:managedObjectModel:@
 initWithName_managedObjectModel :: (IsNSPersistentContainer nsPersistentContainer, IsNSString name, IsNSManagedObjectModel model) => nsPersistentContainer -> name -> model -> IO (Id NSPersistentContainer)
-initWithName_managedObjectModel nsPersistentContainer  name model =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr model $ \raw_model ->
-        sendMsg nsPersistentContainer (mkSelector "initWithName:managedObjectModel:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_model :: Ptr ())] >>= ownedObject . castPtr
+initWithName_managedObjectModel nsPersistentContainer name model =
+  sendOwnedMessage nsPersistentContainer initWithName_managedObjectModelSelector (toNSString name) (toNSManagedObjectModel model)
 
 -- | @- loadPersistentStoresWithCompletionHandler:@
 loadPersistentStoresWithCompletionHandler :: IsNSPersistentContainer nsPersistentContainer => nsPersistentContainer -> Ptr () -> IO ()
-loadPersistentStoresWithCompletionHandler nsPersistentContainer  block =
-    sendMsg nsPersistentContainer (mkSelector "loadPersistentStoresWithCompletionHandler:") retVoid [argPtr (castPtr block :: Ptr ())]
+loadPersistentStoresWithCompletionHandler nsPersistentContainer block =
+  sendMessage nsPersistentContainer loadPersistentStoresWithCompletionHandlerSelector block
 
 -- | @- newBackgroundContext@
 newBackgroundContext :: IsNSPersistentContainer nsPersistentContainer => nsPersistentContainer -> IO (Id NSManagedObjectContext)
-newBackgroundContext nsPersistentContainer  =
-    sendMsg nsPersistentContainer (mkSelector "newBackgroundContext") (retPtr retVoid) [] >>= ownedObject . castPtr
+newBackgroundContext nsPersistentContainer =
+  sendOwnedMessage nsPersistentContainer newBackgroundContextSelector
 
 -- | @- performBackgroundTask:@
 performBackgroundTask :: IsNSPersistentContainer nsPersistentContainer => nsPersistentContainer -> Ptr () -> IO ()
-performBackgroundTask nsPersistentContainer  block =
-    sendMsg nsPersistentContainer (mkSelector "performBackgroundTask:") retVoid [argPtr (castPtr block :: Ptr ())]
+performBackgroundTask nsPersistentContainer block =
+  sendMessage nsPersistentContainer performBackgroundTaskSelector block
 
 -- | @- name@
 name :: IsNSPersistentContainer nsPersistentContainer => nsPersistentContainer -> IO (Id NSString)
-name nsPersistentContainer  =
-    sendMsg nsPersistentContainer (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsPersistentContainer =
+  sendMessage nsPersistentContainer nameSelector
 
 -- | @- viewContext@
 viewContext :: IsNSPersistentContainer nsPersistentContainer => nsPersistentContainer -> IO (Id NSManagedObjectContext)
-viewContext nsPersistentContainer  =
-    sendMsg nsPersistentContainer (mkSelector "viewContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+viewContext nsPersistentContainer =
+  sendMessage nsPersistentContainer viewContextSelector
 
 -- | @- managedObjectModel@
 managedObjectModel :: IsNSPersistentContainer nsPersistentContainer => nsPersistentContainer -> IO (Id NSManagedObjectModel)
-managedObjectModel nsPersistentContainer  =
-    sendMsg nsPersistentContainer (mkSelector "managedObjectModel") (retPtr retVoid) [] >>= retainedObject . castPtr
+managedObjectModel nsPersistentContainer =
+  sendMessage nsPersistentContainer managedObjectModelSelector
 
 -- | @- persistentStoreCoordinator@
 persistentStoreCoordinator :: IsNSPersistentContainer nsPersistentContainer => nsPersistentContainer -> IO (Id NSPersistentStoreCoordinator)
-persistentStoreCoordinator nsPersistentContainer  =
-    sendMsg nsPersistentContainer (mkSelector "persistentStoreCoordinator") (retPtr retVoid) [] >>= retainedObject . castPtr
+persistentStoreCoordinator nsPersistentContainer =
+  sendMessage nsPersistentContainer persistentStoreCoordinatorSelector
 
 -- | @- persistentStoreDescriptions@
 persistentStoreDescriptions :: IsNSPersistentContainer nsPersistentContainer => nsPersistentContainer -> IO (Id NSArray)
-persistentStoreDescriptions nsPersistentContainer  =
-    sendMsg nsPersistentContainer (mkSelector "persistentStoreDescriptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+persistentStoreDescriptions nsPersistentContainer =
+  sendMessage nsPersistentContainer persistentStoreDescriptionsSelector
 
 -- | @- setPersistentStoreDescriptions:@
 setPersistentStoreDescriptions :: (IsNSPersistentContainer nsPersistentContainer, IsNSArray value) => nsPersistentContainer -> value -> IO ()
-setPersistentStoreDescriptions nsPersistentContainer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersistentContainer (mkSelector "setPersistentStoreDescriptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPersistentStoreDescriptions nsPersistentContainer value =
+  sendMessage nsPersistentContainer setPersistentStoreDescriptionsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @persistentContainerWithName:@
-persistentContainerWithNameSelector :: Selector
+persistentContainerWithNameSelector :: Selector '[Id NSString] (Id NSPersistentContainer)
 persistentContainerWithNameSelector = mkSelector "persistentContainerWithName:"
 
 -- | @Selector@ for @persistentContainerWithName:managedObjectModel:@
-persistentContainerWithName_managedObjectModelSelector :: Selector
+persistentContainerWithName_managedObjectModelSelector :: Selector '[Id NSString, Id NSManagedObjectModel] (Id NSPersistentContainer)
 persistentContainerWithName_managedObjectModelSelector = mkSelector "persistentContainerWithName:managedObjectModel:"
 
 -- | @Selector@ for @defaultDirectoryURL@
-defaultDirectoryURLSelector :: Selector
+defaultDirectoryURLSelector :: Selector '[] (Id NSURL)
 defaultDirectoryURLSelector = mkSelector "defaultDirectoryURL"
 
 -- | @Selector@ for @initWithName:@
-initWithNameSelector :: Selector
+initWithNameSelector :: Selector '[Id NSString] (Id NSPersistentContainer)
 initWithNameSelector = mkSelector "initWithName:"
 
 -- | @Selector@ for @initWithName:managedObjectModel:@
-initWithName_managedObjectModelSelector :: Selector
+initWithName_managedObjectModelSelector :: Selector '[Id NSString, Id NSManagedObjectModel] (Id NSPersistentContainer)
 initWithName_managedObjectModelSelector = mkSelector "initWithName:managedObjectModel:"
 
 -- | @Selector@ for @loadPersistentStoresWithCompletionHandler:@
-loadPersistentStoresWithCompletionHandlerSelector :: Selector
+loadPersistentStoresWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadPersistentStoresWithCompletionHandlerSelector = mkSelector "loadPersistentStoresWithCompletionHandler:"
 
 -- | @Selector@ for @newBackgroundContext@
-newBackgroundContextSelector :: Selector
+newBackgroundContextSelector :: Selector '[] (Id NSManagedObjectContext)
 newBackgroundContextSelector = mkSelector "newBackgroundContext"
 
 -- | @Selector@ for @performBackgroundTask:@
-performBackgroundTaskSelector :: Selector
+performBackgroundTaskSelector :: Selector '[Ptr ()] ()
 performBackgroundTaskSelector = mkSelector "performBackgroundTask:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @viewContext@
-viewContextSelector :: Selector
+viewContextSelector :: Selector '[] (Id NSManagedObjectContext)
 viewContextSelector = mkSelector "viewContext"
 
 -- | @Selector@ for @managedObjectModel@
-managedObjectModelSelector :: Selector
+managedObjectModelSelector :: Selector '[] (Id NSManagedObjectModel)
 managedObjectModelSelector = mkSelector "managedObjectModel"
 
 -- | @Selector@ for @persistentStoreCoordinator@
-persistentStoreCoordinatorSelector :: Selector
+persistentStoreCoordinatorSelector :: Selector '[] (Id NSPersistentStoreCoordinator)
 persistentStoreCoordinatorSelector = mkSelector "persistentStoreCoordinator"
 
 -- | @Selector@ for @persistentStoreDescriptions@
-persistentStoreDescriptionsSelector :: Selector
+persistentStoreDescriptionsSelector :: Selector '[] (Id NSArray)
 persistentStoreDescriptionsSelector = mkSelector "persistentStoreDescriptions"
 
 -- | @Selector@ for @setPersistentStoreDescriptions:@
-setPersistentStoreDescriptionsSelector :: Selector
+setPersistentStoreDescriptionsSelector :: Selector '[Id NSArray] ()
 setPersistentStoreDescriptionsSelector = mkSelector "setPersistentStoreDescriptions:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterRemoveGroupParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , groupIDSelector
-  , setGroupIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setGroupIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupID@
 groupID :: IsMTRJointFabricDatastoreClusterRemoveGroupParams mtrJointFabricDatastoreClusterRemoveGroupParams => mtrJointFabricDatastoreClusterRemoveGroupParams -> IO (Id NSNumber)
-groupID mtrJointFabricDatastoreClusterRemoveGroupParams  =
-    sendMsg mtrJointFabricDatastoreClusterRemoveGroupParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrJointFabricDatastoreClusterRemoveGroupParams =
+  sendMessage mtrJointFabricDatastoreClusterRemoveGroupParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRJointFabricDatastoreClusterRemoveGroupParams mtrJointFabricDatastoreClusterRemoveGroupParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRemoveGroupParams -> value -> IO ()
-setGroupID mtrJointFabricDatastoreClusterRemoveGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRemoveGroupParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrJointFabricDatastoreClusterRemoveGroupParams value =
+  sendMessage mtrJointFabricDatastoreClusterRemoveGroupParams setGroupIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setGroupID mtrJointFabricDatastoreClusterRemoveGroupParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricDatastoreClusterRemoveGroupParams mtrJointFabricDatastoreClusterRemoveGroupParams => mtrJointFabricDatastoreClusterRemoveGroupParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveGroupParams  =
-    sendMsg mtrJointFabricDatastoreClusterRemoveGroupParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveGroupParams =
+  sendMessage mtrJointFabricDatastoreClusterRemoveGroupParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveGroupParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricDatastoreClusterRemoveGroupParams mtrJointFabricDatastoreClusterRemoveGroupParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRemoveGroupParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRemoveGroupParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveGroupParams value =
+  sendMessage mtrJointFabricDatastoreClusterRemoveGroupParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterRemoveGroupParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricDatastoreClusterRemoveGroupParams mtrJointFabricDatastoreClusterRemoveGroupParams => mtrJointFabricDatastoreClusterRemoveGroupParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveGroupParams  =
-    sendMsg mtrJointFabricDatastoreClusterRemoveGroupParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveGroupParams =
+  sendMessage mtrJointFabricDatastoreClusterRemoveGroupParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveGroupParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricDatastoreClusterRemoveGroupParams mtrJointFabricDatastoreClusterRemoveGroupParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRemoveGroupParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRemoveGroupParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricDatastoreClusterRemoveGroupParams value =
+  sendMessage mtrJointFabricDatastoreClusterRemoveGroupParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

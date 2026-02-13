@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,44 +50,44 @@ module ObjC.AVFAudio.AVAudioConverter
   , availableEncodeSampleRates
   , applicableEncodeSampleRates
   , availableEncodeChannelLayoutTags
-  , initFromFormat_toFormatSelector
-  , resetSelector
-  , convertToBuffer_fromBuffer_errorSelector
-  , convertToBuffer_error_withInputFromBlockSelector
-  , inputFormatSelector
-  , outputFormatSelector
-  , channelMapSelector
-  , setChannelMapSelector
-  , magicCookieSelector
-  , setMagicCookieSelector
-  , downmixSelector
-  , setDownmixSelector
-  , ditherSelector
-  , setDitherSelector
-  , sampleRateConverterQualitySelector
-  , setSampleRateConverterQualitySelector
-  , sampleRateConverterAlgorithmSelector
-  , setSampleRateConverterAlgorithmSelector
-  , primeMethodSelector
-  , setPrimeMethodSelector
-  , primeInfoSelector
-  , setPrimeInfoSelector
-  , audioSyncPacketFrequencySelector
-  , setAudioSyncPacketFrequencySelector
-  , contentSourceSelector
-  , setContentSourceSelector
-  , dynamicRangeControlConfigurationSelector
-  , setDynamicRangeControlConfigurationSelector
-  , bitRateSelector
-  , setBitRateSelector
-  , bitRateStrategySelector
-  , setBitRateStrategySelector
-  , maximumOutputPacketSizeSelector
-  , availableEncodeBitRatesSelector
   , applicableEncodeBitRatesSelector
-  , availableEncodeSampleRatesSelector
   , applicableEncodeSampleRatesSelector
+  , audioSyncPacketFrequencySelector
+  , availableEncodeBitRatesSelector
   , availableEncodeChannelLayoutTagsSelector
+  , availableEncodeSampleRatesSelector
+  , bitRateSelector
+  , bitRateStrategySelector
+  , channelMapSelector
+  , contentSourceSelector
+  , convertToBuffer_error_withInputFromBlockSelector
+  , convertToBuffer_fromBuffer_errorSelector
+  , ditherSelector
+  , downmixSelector
+  , dynamicRangeControlConfigurationSelector
+  , initFromFormat_toFormatSelector
+  , inputFormatSelector
+  , magicCookieSelector
+  , maximumOutputPacketSizeSelector
+  , outputFormatSelector
+  , primeInfoSelector
+  , primeMethodSelector
+  , resetSelector
+  , sampleRateConverterAlgorithmSelector
+  , sampleRateConverterQualitySelector
+  , setAudioSyncPacketFrequencySelector
+  , setBitRateSelector
+  , setBitRateStrategySelector
+  , setChannelMapSelector
+  , setContentSourceSelector
+  , setDitherSelector
+  , setDownmixSelector
+  , setDynamicRangeControlConfigurationSelector
+  , setMagicCookieSelector
+  , setPrimeInfoSelector
+  , setPrimeMethodSelector
+  , setSampleRateConverterAlgorithmSelector
+  , setSampleRateConverterQualitySelector
 
   -- * Enum types
   , AVAudioContentSource(AVAudioContentSource)
@@ -130,15 +131,11 @@ module ObjC.AVFAudio.AVAudioConverter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -159,10 +156,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initFromFormat:toFormat:@
 initFromFormat_toFormat :: (IsAVAudioConverter avAudioConverter, IsAVAudioFormat fromFormat, IsAVAudioFormat toFormat) => avAudioConverter -> fromFormat -> toFormat -> IO (Id AVAudioConverter)
-initFromFormat_toFormat avAudioConverter  fromFormat toFormat =
-  withObjCPtr fromFormat $ \raw_fromFormat ->
-    withObjCPtr toFormat $ \raw_toFormat ->
-        sendMsg avAudioConverter (mkSelector "initFromFormat:toFormat:") (retPtr retVoid) [argPtr (castPtr raw_fromFormat :: Ptr ()), argPtr (castPtr raw_toFormat :: Ptr ())] >>= ownedObject . castPtr
+initFromFormat_toFormat avAudioConverter fromFormat toFormat =
+  sendOwnedMessage avAudioConverter initFromFormat_toFormatSelector (toAVAudioFormat fromFormat) (toAVAudioFormat toFormat)
 
 -- | reset
 --
@@ -170,8 +165,8 @@ initFromFormat_toFormat avAudioConverter  fromFormat toFormat =
 --
 -- ObjC selector: @- reset@
 reset :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO ()
-reset avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "reset") retVoid []
+reset avAudioConverter =
+  sendMessage avAudioConverter resetSelector
 
 -- | convertToBuffer:fromBuffer:error:
 --
@@ -189,11 +184,8 @@ reset avAudioConverter  =
 --
 -- ObjC selector: @- convertToBuffer:fromBuffer:error:@
 convertToBuffer_fromBuffer_error :: (IsAVAudioConverter avAudioConverter, IsAVAudioPCMBuffer outputBuffer, IsNSError outError) => avAudioConverter -> outputBuffer -> Const (Id AVAudioPCMBuffer) -> outError -> IO Bool
-convertToBuffer_fromBuffer_error avAudioConverter  outputBuffer inputBuffer outError =
-  withObjCPtr outputBuffer $ \raw_outputBuffer ->
-    withObjCPtr inputBuffer $ \raw_inputBuffer ->
-      withObjCPtr outError $ \raw_outError ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioConverter (mkSelector "convertToBuffer:fromBuffer:error:") retCULong [argPtr (castPtr raw_outputBuffer :: Ptr ()), argPtr (castPtr raw_inputBuffer :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+convertToBuffer_fromBuffer_error avAudioConverter outputBuffer inputBuffer outError =
+  sendMessage avAudioConverter convertToBuffer_fromBuffer_errorSelector (toAVAudioPCMBuffer outputBuffer) inputBuffer (toNSError outError)
 
 -- | convertToBuffer:error:withInputFromBlock:
 --
@@ -211,10 +203,8 @@ convertToBuffer_fromBuffer_error avAudioConverter  outputBuffer inputBuffer outE
 --
 -- ObjC selector: @- convertToBuffer:error:withInputFromBlock:@
 convertToBuffer_error_withInputFromBlock :: (IsAVAudioConverter avAudioConverter, IsAVAudioBuffer outputBuffer, IsNSError outError) => avAudioConverter -> outputBuffer -> outError -> Ptr () -> IO AVAudioConverterOutputStatus
-convertToBuffer_error_withInputFromBlock avAudioConverter  outputBuffer outError inputBlock =
-  withObjCPtr outputBuffer $ \raw_outputBuffer ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap (coerce :: CLong -> AVAudioConverterOutputStatus) $ sendMsg avAudioConverter (mkSelector "convertToBuffer:error:withInputFromBlock:") retCLong [argPtr (castPtr raw_outputBuffer :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ()), argPtr (castPtr inputBlock :: Ptr ())]
+convertToBuffer_error_withInputFromBlock avAudioConverter outputBuffer outError inputBlock =
+  sendMessage avAudioConverter convertToBuffer_error_withInputFromBlockSelector (toAVAudioBuffer outputBuffer) (toNSError outError) inputBlock
 
 -- | inputFormat
 --
@@ -222,8 +212,8 @@ convertToBuffer_error_withInputFromBlock avAudioConverter  outputBuffer outError
 --
 -- ObjC selector: @- inputFormat@
 inputFormat :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id AVAudioFormat)
-inputFormat avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "inputFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputFormat avAudioConverter =
+  sendMessage avAudioConverter inputFormatSelector
 
 -- | outputFormat
 --
@@ -231,8 +221,8 @@ inputFormat avAudioConverter  =
 --
 -- ObjC selector: @- outputFormat@
 outputFormat :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id AVAudioFormat)
-outputFormat avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "outputFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputFormat avAudioConverter =
+  sendMessage avAudioConverter outputFormatSelector
 
 -- | channelMap
 --
@@ -242,8 +232,8 @@ outputFormat avAudioConverter  =
 --
 -- ObjC selector: @- channelMap@
 channelMap :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id NSArray)
-channelMap avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "channelMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelMap avAudioConverter =
+  sendMessage avAudioConverter channelMapSelector
 
 -- | channelMap
 --
@@ -253,9 +243,8 @@ channelMap avAudioConverter  =
 --
 -- ObjC selector: @- setChannelMap:@
 setChannelMap :: (IsAVAudioConverter avAudioConverter, IsNSArray value) => avAudioConverter -> value -> IO ()
-setChannelMap avAudioConverter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAudioConverter (mkSelector "setChannelMap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannelMap avAudioConverter value =
+  sendMessage avAudioConverter setChannelMapSelector (toNSArray value)
 
 -- | magicCookie
 --
@@ -263,8 +252,8 @@ setChannelMap avAudioConverter  value =
 --
 -- ObjC selector: @- magicCookie@
 magicCookie :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id NSData)
-magicCookie avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "magicCookie") (retPtr retVoid) [] >>= retainedObject . castPtr
+magicCookie avAudioConverter =
+  sendMessage avAudioConverter magicCookieSelector
 
 -- | magicCookie
 --
@@ -272,9 +261,8 @@ magicCookie avAudioConverter  =
 --
 -- ObjC selector: @- setMagicCookie:@
 setMagicCookie :: (IsAVAudioConverter avAudioConverter, IsNSData value) => avAudioConverter -> value -> IO ()
-setMagicCookie avAudioConverter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAudioConverter (mkSelector "setMagicCookie:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMagicCookie avAudioConverter value =
+  sendMessage avAudioConverter setMagicCookieSelector (toNSData value)
 
 -- | downmix
 --
@@ -282,8 +270,8 @@ setMagicCookie avAudioConverter  value =
 --
 -- ObjC selector: @- downmix@
 downmix :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO Bool
-downmix avAudioConverter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioConverter (mkSelector "downmix") retCULong []
+downmix avAudioConverter =
+  sendMessage avAudioConverter downmixSelector
 
 -- | downmix
 --
@@ -291,8 +279,8 @@ downmix avAudioConverter  =
 --
 -- ObjC selector: @- setDownmix:@
 setDownmix :: IsAVAudioConverter avAudioConverter => avAudioConverter -> Bool -> IO ()
-setDownmix avAudioConverter  value =
-    sendMsg avAudioConverter (mkSelector "setDownmix:") retVoid [argCULong (if value then 1 else 0)]
+setDownmix avAudioConverter value =
+  sendMessage avAudioConverter setDownmixSelector value
 
 -- | dither
 --
@@ -300,8 +288,8 @@ setDownmix avAudioConverter  value =
 --
 -- ObjC selector: @- dither@
 dither :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO Bool
-dither avAudioConverter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioConverter (mkSelector "dither") retCULong []
+dither avAudioConverter =
+  sendMessage avAudioConverter ditherSelector
 
 -- | dither
 --
@@ -309,8 +297,8 @@ dither avAudioConverter  =
 --
 -- ObjC selector: @- setDither:@
 setDither :: IsAVAudioConverter avAudioConverter => avAudioConverter -> Bool -> IO ()
-setDither avAudioConverter  value =
-    sendMsg avAudioConverter (mkSelector "setDither:") retVoid [argCULong (if value then 1 else 0)]
+setDither avAudioConverter value =
+  sendMessage avAudioConverter setDitherSelector value
 
 -- | sampleRateConverterQuality
 --
@@ -318,8 +306,8 @@ setDither avAudioConverter  value =
 --
 -- ObjC selector: @- sampleRateConverterQuality@
 sampleRateConverterQuality :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO CLong
-sampleRateConverterQuality avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "sampleRateConverterQuality") retCLong []
+sampleRateConverterQuality avAudioConverter =
+  sendMessage avAudioConverter sampleRateConverterQualitySelector
 
 -- | sampleRateConverterQuality
 --
@@ -327,8 +315,8 @@ sampleRateConverterQuality avAudioConverter  =
 --
 -- ObjC selector: @- setSampleRateConverterQuality:@
 setSampleRateConverterQuality :: IsAVAudioConverter avAudioConverter => avAudioConverter -> CLong -> IO ()
-setSampleRateConverterQuality avAudioConverter  value =
-    sendMsg avAudioConverter (mkSelector "setSampleRateConverterQuality:") retVoid [argCLong value]
+setSampleRateConverterQuality avAudioConverter value =
+  sendMessage avAudioConverter setSampleRateConverterQualitySelector value
 
 -- | sampleRateConverterAlgorithm
 --
@@ -336,8 +324,8 @@ setSampleRateConverterQuality avAudioConverter  value =
 --
 -- ObjC selector: @- sampleRateConverterAlgorithm@
 sampleRateConverterAlgorithm :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id NSString)
-sampleRateConverterAlgorithm avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "sampleRateConverterAlgorithm") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleRateConverterAlgorithm avAudioConverter =
+  sendMessage avAudioConverter sampleRateConverterAlgorithmSelector
 
 -- | sampleRateConverterAlgorithm
 --
@@ -345,9 +333,8 @@ sampleRateConverterAlgorithm avAudioConverter  =
 --
 -- ObjC selector: @- setSampleRateConverterAlgorithm:@
 setSampleRateConverterAlgorithm :: (IsAVAudioConverter avAudioConverter, IsNSString value) => avAudioConverter -> value -> IO ()
-setSampleRateConverterAlgorithm avAudioConverter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAudioConverter (mkSelector "setSampleRateConverterAlgorithm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSampleRateConverterAlgorithm avAudioConverter value =
+  sendMessage avAudioConverter setSampleRateConverterAlgorithmSelector (toNSString value)
 
 -- | primeMethod
 --
@@ -355,8 +342,8 @@ setSampleRateConverterAlgorithm avAudioConverter  value =
 --
 -- ObjC selector: @- primeMethod@
 primeMethod :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO AVAudioConverterPrimeMethod
-primeMethod avAudioConverter  =
-    fmap (coerce :: CLong -> AVAudioConverterPrimeMethod) $ sendMsg avAudioConverter (mkSelector "primeMethod") retCLong []
+primeMethod avAudioConverter =
+  sendMessage avAudioConverter primeMethodSelector
 
 -- | primeMethod
 --
@@ -364,8 +351,8 @@ primeMethod avAudioConverter  =
 --
 -- ObjC selector: @- setPrimeMethod:@
 setPrimeMethod :: IsAVAudioConverter avAudioConverter => avAudioConverter -> AVAudioConverterPrimeMethod -> IO ()
-setPrimeMethod avAudioConverter  value =
-    sendMsg avAudioConverter (mkSelector "setPrimeMethod:") retVoid [argCLong (coerce value)]
+setPrimeMethod avAudioConverter value =
+  sendMessage avAudioConverter setPrimeMethodSelector value
 
 -- | primeInfo
 --
@@ -373,8 +360,8 @@ setPrimeMethod avAudioConverter  value =
 --
 -- ObjC selector: @- primeInfo@
 primeInfo :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO AVAudioConverterPrimeInfo
-primeInfo avAudioConverter  =
-    sendMsgStret avAudioConverter (mkSelector "primeInfo") retAVAudioConverterPrimeInfo []
+primeInfo avAudioConverter =
+  sendMessage avAudioConverter primeInfoSelector
 
 -- | primeInfo
 --
@@ -382,8 +369,8 @@ primeInfo avAudioConverter  =
 --
 -- ObjC selector: @- setPrimeInfo:@
 setPrimeInfo :: IsAVAudioConverter avAudioConverter => avAudioConverter -> AVAudioConverterPrimeInfo -> IO ()
-setPrimeInfo avAudioConverter  value =
-    sendMsg avAudioConverter (mkSelector "setPrimeInfo:") retVoid [argAVAudioConverterPrimeInfo value]
+setPrimeInfo avAudioConverter value =
+  sendMessage avAudioConverter setPrimeInfoSelector value
 
 -- | audioSyncPacketFrequency
 --
@@ -393,8 +380,8 @@ setPrimeInfo avAudioConverter  value =
 --
 -- ObjC selector: @- audioSyncPacketFrequency@
 audioSyncPacketFrequency :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO CLong
-audioSyncPacketFrequency avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "audioSyncPacketFrequency") retCLong []
+audioSyncPacketFrequency avAudioConverter =
+  sendMessage avAudioConverter audioSyncPacketFrequencySelector
 
 -- | audioSyncPacketFrequency
 --
@@ -404,8 +391,8 @@ audioSyncPacketFrequency avAudioConverter  =
 --
 -- ObjC selector: @- setAudioSyncPacketFrequency:@
 setAudioSyncPacketFrequency :: IsAVAudioConverter avAudioConverter => avAudioConverter -> CLong -> IO ()
-setAudioSyncPacketFrequency avAudioConverter  value =
-    sendMsg avAudioConverter (mkSelector "setAudioSyncPacketFrequency:") retVoid [argCLong value]
+setAudioSyncPacketFrequency avAudioConverter value =
+  sendMessage avAudioConverter setAudioSyncPacketFrequencySelector value
 
 -- | contentSource
 --
@@ -413,8 +400,8 @@ setAudioSyncPacketFrequency avAudioConverter  value =
 --
 -- ObjC selector: @- contentSource@
 contentSource :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO AVAudioContentSource
-contentSource avAudioConverter  =
-    fmap (coerce :: CLong -> AVAudioContentSource) $ sendMsg avAudioConverter (mkSelector "contentSource") retCLong []
+contentSource avAudioConverter =
+  sendMessage avAudioConverter contentSourceSelector
 
 -- | contentSource
 --
@@ -422,8 +409,8 @@ contentSource avAudioConverter  =
 --
 -- ObjC selector: @- setContentSource:@
 setContentSource :: IsAVAudioConverter avAudioConverter => avAudioConverter -> AVAudioContentSource -> IO ()
-setContentSource avAudioConverter  value =
-    sendMsg avAudioConverter (mkSelector "setContentSource:") retVoid [argCLong (coerce value)]
+setContentSource avAudioConverter value =
+  sendMessage avAudioConverter setContentSourceSelector value
 
 -- | dynamicRangeControlConfiguration
 --
@@ -433,8 +420,8 @@ setContentSource avAudioConverter  value =
 --
 -- ObjC selector: @- dynamicRangeControlConfiguration@
 dynamicRangeControlConfiguration :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO AVAudioDynamicRangeControlConfiguration
-dynamicRangeControlConfiguration avAudioConverter  =
-    fmap (coerce :: CLong -> AVAudioDynamicRangeControlConfiguration) $ sendMsg avAudioConverter (mkSelector "dynamicRangeControlConfiguration") retCLong []
+dynamicRangeControlConfiguration avAudioConverter =
+  sendMessage avAudioConverter dynamicRangeControlConfigurationSelector
 
 -- | dynamicRangeControlConfiguration
 --
@@ -444,8 +431,8 @@ dynamicRangeControlConfiguration avAudioConverter  =
 --
 -- ObjC selector: @- setDynamicRangeControlConfiguration:@
 setDynamicRangeControlConfiguration :: IsAVAudioConverter avAudioConverter => avAudioConverter -> AVAudioDynamicRangeControlConfiguration -> IO ()
-setDynamicRangeControlConfiguration avAudioConverter  value =
-    sendMsg avAudioConverter (mkSelector "setDynamicRangeControlConfiguration:") retVoid [argCLong (coerce value)]
+setDynamicRangeControlConfiguration avAudioConverter value =
+  sendMessage avAudioConverter setDynamicRangeControlConfigurationSelector value
 
 -- | bitRate
 --
@@ -453,8 +440,8 @@ setDynamicRangeControlConfiguration avAudioConverter  value =
 --
 -- ObjC selector: @- bitRate@
 bitRate :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO CLong
-bitRate avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "bitRate") retCLong []
+bitRate avAudioConverter =
+  sendMessage avAudioConverter bitRateSelector
 
 -- | bitRate
 --
@@ -462,8 +449,8 @@ bitRate avAudioConverter  =
 --
 -- ObjC selector: @- setBitRate:@
 setBitRate :: IsAVAudioConverter avAudioConverter => avAudioConverter -> CLong -> IO ()
-setBitRate avAudioConverter  value =
-    sendMsg avAudioConverter (mkSelector "setBitRate:") retVoid [argCLong value]
+setBitRate avAudioConverter value =
+  sendMessage avAudioConverter setBitRateSelector value
 
 -- | bitRateStrategy
 --
@@ -471,8 +458,8 @@ setBitRate avAudioConverter  value =
 --
 -- ObjC selector: @- bitRateStrategy@
 bitRateStrategy :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id NSString)
-bitRateStrategy avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "bitRateStrategy") (retPtr retVoid) [] >>= retainedObject . castPtr
+bitRateStrategy avAudioConverter =
+  sendMessage avAudioConverter bitRateStrategySelector
 
 -- | bitRateStrategy
 --
@@ -480,9 +467,8 @@ bitRateStrategy avAudioConverter  =
 --
 -- ObjC selector: @- setBitRateStrategy:@
 setBitRateStrategy :: (IsAVAudioConverter avAudioConverter, IsNSString value) => avAudioConverter -> value -> IO ()
-setBitRateStrategy avAudioConverter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAudioConverter (mkSelector "setBitRateStrategy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBitRateStrategy avAudioConverter value =
+  sendMessage avAudioConverter setBitRateStrategySelector (toNSString value)
 
 -- | maximumOutputPacketSize
 --
@@ -492,8 +478,8 @@ setBitRateStrategy avAudioConverter  value =
 --
 -- ObjC selector: @- maximumOutputPacketSize@
 maximumOutputPacketSize :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO CLong
-maximumOutputPacketSize avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "maximumOutputPacketSize") retCLong []
+maximumOutputPacketSize avAudioConverter =
+  sendMessage avAudioConverter maximumOutputPacketSizeSelector
 
 -- | availableEncodeBitRates
 --
@@ -501,8 +487,8 @@ maximumOutputPacketSize avAudioConverter  =
 --
 -- ObjC selector: @- availableEncodeBitRates@
 availableEncodeBitRates :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id NSArray)
-availableEncodeBitRates avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "availableEncodeBitRates") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableEncodeBitRates avAudioConverter =
+  sendMessage avAudioConverter availableEncodeBitRatesSelector
 
 -- | applicableEncodeBitRates
 --
@@ -510,8 +496,8 @@ availableEncodeBitRates avAudioConverter  =
 --
 -- ObjC selector: @- applicableEncodeBitRates@
 applicableEncodeBitRates :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id NSArray)
-applicableEncodeBitRates avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "applicableEncodeBitRates") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicableEncodeBitRates avAudioConverter =
+  sendMessage avAudioConverter applicableEncodeBitRatesSelector
 
 -- | availableEncodeSampleRates
 --
@@ -519,8 +505,8 @@ applicableEncodeBitRates avAudioConverter  =
 --
 -- ObjC selector: @- availableEncodeSampleRates@
 availableEncodeSampleRates :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id NSArray)
-availableEncodeSampleRates avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "availableEncodeSampleRates") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableEncodeSampleRates avAudioConverter =
+  sendMessage avAudioConverter availableEncodeSampleRatesSelector
 
 -- | applicableEncodeSampleRates
 --
@@ -528,8 +514,8 @@ availableEncodeSampleRates avAudioConverter  =
 --
 -- ObjC selector: @- applicableEncodeSampleRates@
 applicableEncodeSampleRates :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id NSArray)
-applicableEncodeSampleRates avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "applicableEncodeSampleRates") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicableEncodeSampleRates avAudioConverter =
+  sendMessage avAudioConverter applicableEncodeSampleRatesSelector
 
 -- | availableEncodeChannelLayoutTags
 --
@@ -537,162 +523,162 @@ applicableEncodeSampleRates avAudioConverter  =
 --
 -- ObjC selector: @- availableEncodeChannelLayoutTags@
 availableEncodeChannelLayoutTags :: IsAVAudioConverter avAudioConverter => avAudioConverter -> IO (Id NSArray)
-availableEncodeChannelLayoutTags avAudioConverter  =
-    sendMsg avAudioConverter (mkSelector "availableEncodeChannelLayoutTags") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableEncodeChannelLayoutTags avAudioConverter =
+  sendMessage avAudioConverter availableEncodeChannelLayoutTagsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initFromFormat:toFormat:@
-initFromFormat_toFormatSelector :: Selector
+initFromFormat_toFormatSelector :: Selector '[Id AVAudioFormat, Id AVAudioFormat] (Id AVAudioConverter)
 initFromFormat_toFormatSelector = mkSelector "initFromFormat:toFormat:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @convertToBuffer:fromBuffer:error:@
-convertToBuffer_fromBuffer_errorSelector :: Selector
+convertToBuffer_fromBuffer_errorSelector :: Selector '[Id AVAudioPCMBuffer, Const (Id AVAudioPCMBuffer), Id NSError] Bool
 convertToBuffer_fromBuffer_errorSelector = mkSelector "convertToBuffer:fromBuffer:error:"
 
 -- | @Selector@ for @convertToBuffer:error:withInputFromBlock:@
-convertToBuffer_error_withInputFromBlockSelector :: Selector
+convertToBuffer_error_withInputFromBlockSelector :: Selector '[Id AVAudioBuffer, Id NSError, Ptr ()] AVAudioConverterOutputStatus
 convertToBuffer_error_withInputFromBlockSelector = mkSelector "convertToBuffer:error:withInputFromBlock:"
 
 -- | @Selector@ for @inputFormat@
-inputFormatSelector :: Selector
+inputFormatSelector :: Selector '[] (Id AVAudioFormat)
 inputFormatSelector = mkSelector "inputFormat"
 
 -- | @Selector@ for @outputFormat@
-outputFormatSelector :: Selector
+outputFormatSelector :: Selector '[] (Id AVAudioFormat)
 outputFormatSelector = mkSelector "outputFormat"
 
 -- | @Selector@ for @channelMap@
-channelMapSelector :: Selector
+channelMapSelector :: Selector '[] (Id NSArray)
 channelMapSelector = mkSelector "channelMap"
 
 -- | @Selector@ for @setChannelMap:@
-setChannelMapSelector :: Selector
+setChannelMapSelector :: Selector '[Id NSArray] ()
 setChannelMapSelector = mkSelector "setChannelMap:"
 
 -- | @Selector@ for @magicCookie@
-magicCookieSelector :: Selector
+magicCookieSelector :: Selector '[] (Id NSData)
 magicCookieSelector = mkSelector "magicCookie"
 
 -- | @Selector@ for @setMagicCookie:@
-setMagicCookieSelector :: Selector
+setMagicCookieSelector :: Selector '[Id NSData] ()
 setMagicCookieSelector = mkSelector "setMagicCookie:"
 
 -- | @Selector@ for @downmix@
-downmixSelector :: Selector
+downmixSelector :: Selector '[] Bool
 downmixSelector = mkSelector "downmix"
 
 -- | @Selector@ for @setDownmix:@
-setDownmixSelector :: Selector
+setDownmixSelector :: Selector '[Bool] ()
 setDownmixSelector = mkSelector "setDownmix:"
 
 -- | @Selector@ for @dither@
-ditherSelector :: Selector
+ditherSelector :: Selector '[] Bool
 ditherSelector = mkSelector "dither"
 
 -- | @Selector@ for @setDither:@
-setDitherSelector :: Selector
+setDitherSelector :: Selector '[Bool] ()
 setDitherSelector = mkSelector "setDither:"
 
 -- | @Selector@ for @sampleRateConverterQuality@
-sampleRateConverterQualitySelector :: Selector
+sampleRateConverterQualitySelector :: Selector '[] CLong
 sampleRateConverterQualitySelector = mkSelector "sampleRateConverterQuality"
 
 -- | @Selector@ for @setSampleRateConverterQuality:@
-setSampleRateConverterQualitySelector :: Selector
+setSampleRateConverterQualitySelector :: Selector '[CLong] ()
 setSampleRateConverterQualitySelector = mkSelector "setSampleRateConverterQuality:"
 
 -- | @Selector@ for @sampleRateConverterAlgorithm@
-sampleRateConverterAlgorithmSelector :: Selector
+sampleRateConverterAlgorithmSelector :: Selector '[] (Id NSString)
 sampleRateConverterAlgorithmSelector = mkSelector "sampleRateConverterAlgorithm"
 
 -- | @Selector@ for @setSampleRateConverterAlgorithm:@
-setSampleRateConverterAlgorithmSelector :: Selector
+setSampleRateConverterAlgorithmSelector :: Selector '[Id NSString] ()
 setSampleRateConverterAlgorithmSelector = mkSelector "setSampleRateConverterAlgorithm:"
 
 -- | @Selector@ for @primeMethod@
-primeMethodSelector :: Selector
+primeMethodSelector :: Selector '[] AVAudioConverterPrimeMethod
 primeMethodSelector = mkSelector "primeMethod"
 
 -- | @Selector@ for @setPrimeMethod:@
-setPrimeMethodSelector :: Selector
+setPrimeMethodSelector :: Selector '[AVAudioConverterPrimeMethod] ()
 setPrimeMethodSelector = mkSelector "setPrimeMethod:"
 
 -- | @Selector@ for @primeInfo@
-primeInfoSelector :: Selector
+primeInfoSelector :: Selector '[] AVAudioConverterPrimeInfo
 primeInfoSelector = mkSelector "primeInfo"
 
 -- | @Selector@ for @setPrimeInfo:@
-setPrimeInfoSelector :: Selector
+setPrimeInfoSelector :: Selector '[AVAudioConverterPrimeInfo] ()
 setPrimeInfoSelector = mkSelector "setPrimeInfo:"
 
 -- | @Selector@ for @audioSyncPacketFrequency@
-audioSyncPacketFrequencySelector :: Selector
+audioSyncPacketFrequencySelector :: Selector '[] CLong
 audioSyncPacketFrequencySelector = mkSelector "audioSyncPacketFrequency"
 
 -- | @Selector@ for @setAudioSyncPacketFrequency:@
-setAudioSyncPacketFrequencySelector :: Selector
+setAudioSyncPacketFrequencySelector :: Selector '[CLong] ()
 setAudioSyncPacketFrequencySelector = mkSelector "setAudioSyncPacketFrequency:"
 
 -- | @Selector@ for @contentSource@
-contentSourceSelector :: Selector
+contentSourceSelector :: Selector '[] AVAudioContentSource
 contentSourceSelector = mkSelector "contentSource"
 
 -- | @Selector@ for @setContentSource:@
-setContentSourceSelector :: Selector
+setContentSourceSelector :: Selector '[AVAudioContentSource] ()
 setContentSourceSelector = mkSelector "setContentSource:"
 
 -- | @Selector@ for @dynamicRangeControlConfiguration@
-dynamicRangeControlConfigurationSelector :: Selector
+dynamicRangeControlConfigurationSelector :: Selector '[] AVAudioDynamicRangeControlConfiguration
 dynamicRangeControlConfigurationSelector = mkSelector "dynamicRangeControlConfiguration"
 
 -- | @Selector@ for @setDynamicRangeControlConfiguration:@
-setDynamicRangeControlConfigurationSelector :: Selector
+setDynamicRangeControlConfigurationSelector :: Selector '[AVAudioDynamicRangeControlConfiguration] ()
 setDynamicRangeControlConfigurationSelector = mkSelector "setDynamicRangeControlConfiguration:"
 
 -- | @Selector@ for @bitRate@
-bitRateSelector :: Selector
+bitRateSelector :: Selector '[] CLong
 bitRateSelector = mkSelector "bitRate"
 
 -- | @Selector@ for @setBitRate:@
-setBitRateSelector :: Selector
+setBitRateSelector :: Selector '[CLong] ()
 setBitRateSelector = mkSelector "setBitRate:"
 
 -- | @Selector@ for @bitRateStrategy@
-bitRateStrategySelector :: Selector
+bitRateStrategySelector :: Selector '[] (Id NSString)
 bitRateStrategySelector = mkSelector "bitRateStrategy"
 
 -- | @Selector@ for @setBitRateStrategy:@
-setBitRateStrategySelector :: Selector
+setBitRateStrategySelector :: Selector '[Id NSString] ()
 setBitRateStrategySelector = mkSelector "setBitRateStrategy:"
 
 -- | @Selector@ for @maximumOutputPacketSize@
-maximumOutputPacketSizeSelector :: Selector
+maximumOutputPacketSizeSelector :: Selector '[] CLong
 maximumOutputPacketSizeSelector = mkSelector "maximumOutputPacketSize"
 
 -- | @Selector@ for @availableEncodeBitRates@
-availableEncodeBitRatesSelector :: Selector
+availableEncodeBitRatesSelector :: Selector '[] (Id NSArray)
 availableEncodeBitRatesSelector = mkSelector "availableEncodeBitRates"
 
 -- | @Selector@ for @applicableEncodeBitRates@
-applicableEncodeBitRatesSelector :: Selector
+applicableEncodeBitRatesSelector :: Selector '[] (Id NSArray)
 applicableEncodeBitRatesSelector = mkSelector "applicableEncodeBitRates"
 
 -- | @Selector@ for @availableEncodeSampleRates@
-availableEncodeSampleRatesSelector :: Selector
+availableEncodeSampleRatesSelector :: Selector '[] (Id NSArray)
 availableEncodeSampleRatesSelector = mkSelector "availableEncodeSampleRates"
 
 -- | @Selector@ for @applicableEncodeSampleRates@
-applicableEncodeSampleRatesSelector :: Selector
+applicableEncodeSampleRatesSelector :: Selector '[] (Id NSArray)
 applicableEncodeSampleRatesSelector = mkSelector "applicableEncodeSampleRates"
 
 -- | @Selector@ for @availableEncodeChannelLayoutTags@
-availableEncodeChannelLayoutTagsSelector :: Selector
+availableEncodeChannelLayoutTagsSelector :: Selector '[] (Id NSArray)
 availableEncodeChannelLayoutTagsSelector = mkSelector "availableEncodeChannelLayoutTags"
 

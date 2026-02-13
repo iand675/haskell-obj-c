@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.CoreMotion.CMAltitudeData
   , IsCMAltitudeData(..)
   , relativeAltitude
   , pressure
-  , relativeAltitudeSelector
   , pressureSelector
+  , relativeAltitudeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- relativeAltitude@
 relativeAltitude :: IsCMAltitudeData cmAltitudeData => cmAltitudeData -> IO (Id NSNumber)
-relativeAltitude cmAltitudeData  =
-    sendMsg cmAltitudeData (mkSelector "relativeAltitude") (retPtr retVoid) [] >>= retainedObject . castPtr
+relativeAltitude cmAltitudeData =
+  sendMessage cmAltitudeData relativeAltitudeSelector
 
 -- | @- pressure@
 pressure :: IsCMAltitudeData cmAltitudeData => cmAltitudeData -> IO (Id NSNumber)
-pressure cmAltitudeData  =
-    sendMsg cmAltitudeData (mkSelector "pressure") (retPtr retVoid) [] >>= retainedObject . castPtr
+pressure cmAltitudeData =
+  sendMessage cmAltitudeData pressureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @relativeAltitude@
-relativeAltitudeSelector :: Selector
+relativeAltitudeSelector :: Selector '[] (Id NSNumber)
 relativeAltitudeSelector = mkSelector "relativeAltitude"
 
 -- | @Selector@ for @pressure@
-pressureSelector :: Selector
+pressureSelector :: Selector '[] (Id NSNumber)
 pressureSelector = mkSelector "pressure"
 

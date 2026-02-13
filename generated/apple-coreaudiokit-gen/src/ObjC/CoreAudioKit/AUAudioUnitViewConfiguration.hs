@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.CoreAudioKit.AUAudioUnitViewConfiguration
   , width
   , height
   , hostHasController
-  , initWithWidth_height_hostHasControllerSelector
-  , widthSelector
   , heightSelector
   , hostHasControllerSelector
+  , initWithWidth_height_hostHasControllerSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithWidth:height:hostHasController:@
 initWithWidth_height_hostHasController :: IsAUAudioUnitViewConfiguration auAudioUnitViewConfiguration => auAudioUnitViewConfiguration -> CDouble -> CDouble -> Bool -> IO (Id AUAudioUnitViewConfiguration)
-initWithWidth_height_hostHasController auAudioUnitViewConfiguration  width height hostHasController =
-    sendMsg auAudioUnitViewConfiguration (mkSelector "initWithWidth:height:hostHasController:") (retPtr retVoid) [argCDouble width, argCDouble height, argCULong (if hostHasController then 1 else 0)] >>= ownedObject . castPtr
+initWithWidth_height_hostHasController auAudioUnitViewConfiguration width height hostHasController =
+  sendOwnedMessage auAudioUnitViewConfiguration initWithWidth_height_hostHasControllerSelector width height hostHasController
 
 -- | width
 --
@@ -66,8 +63,8 @@ initWithWidth_height_hostHasController auAudioUnitViewConfiguration  width heigh
 --
 -- ObjC selector: @- width@
 width :: IsAUAudioUnitViewConfiguration auAudioUnitViewConfiguration => auAudioUnitViewConfiguration -> IO CDouble
-width auAudioUnitViewConfiguration  =
-    sendMsg auAudioUnitViewConfiguration (mkSelector "width") retCDouble []
+width auAudioUnitViewConfiguration =
+  sendMessage auAudioUnitViewConfiguration widthSelector
 
 -- | height
 --
@@ -77,8 +74,8 @@ width auAudioUnitViewConfiguration  =
 --
 -- ObjC selector: @- height@
 height :: IsAUAudioUnitViewConfiguration auAudioUnitViewConfiguration => auAudioUnitViewConfiguration -> IO CDouble
-height auAudioUnitViewConfiguration  =
-    sendMsg auAudioUnitViewConfiguration (mkSelector "height") retCDouble []
+height auAudioUnitViewConfiguration =
+  sendMessage auAudioUnitViewConfiguration heightSelector
 
 -- | hostHasController
 --
@@ -86,26 +83,26 @@ height auAudioUnitViewConfiguration  =
 --
 -- ObjC selector: @- hostHasController@
 hostHasController :: IsAUAudioUnitViewConfiguration auAudioUnitViewConfiguration => auAudioUnitViewConfiguration -> IO Bool
-hostHasController auAudioUnitViewConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnitViewConfiguration (mkSelector "hostHasController") retCULong []
+hostHasController auAudioUnitViewConfiguration =
+  sendMessage auAudioUnitViewConfiguration hostHasControllerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithWidth:height:hostHasController:@
-initWithWidth_height_hostHasControllerSelector :: Selector
+initWithWidth_height_hostHasControllerSelector :: Selector '[CDouble, CDouble, Bool] (Id AUAudioUnitViewConfiguration)
 initWithWidth_height_hostHasControllerSelector = mkSelector "initWithWidth:height:hostHasController:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CDouble
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CDouble
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @hostHasController@
-hostHasControllerSelector :: Selector
+hostHasControllerSelector :: Selector '[] Bool
 hostHasControllerSelector = mkSelector "hostHasController"
 

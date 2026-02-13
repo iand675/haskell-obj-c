@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.AuthenticationServices.ASAuthorizationSecurityKeyPublicKeyCredential
   , appID
   , setAppID
   , allowedCredentialsSelector
-  , setAllowedCredentialsSelector
   , appIDSelector
+  , setAllowedCredentialsSelector
   , setAppIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,49 +34,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- allowedCredentials@
 allowedCredentials :: IsASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest => asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest -> IO (Id NSArray)
-allowedCredentials asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest  =
-    sendMsg asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest (mkSelector "allowedCredentials") (retPtr retVoid) [] >>= retainedObject . castPtr
+allowedCredentials asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest =
+  sendMessage asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest allowedCredentialsSelector
 
 -- | A list of descriptors indicating credentials that may be used to sign in. If this is non-empty, only credentials matching the provided descriptors can be used when authenticating.
 --
 -- ObjC selector: @- setAllowedCredentials:@
 setAllowedCredentials :: (IsASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest, IsNSArray value) => asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest -> value -> IO ()
-setAllowedCredentials asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest (mkSelector "setAllowedCredentials:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAllowedCredentials asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest value =
+  sendMessage asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest setAllowedCredentialsSelector (toNSArray value)
 
 -- | Use this value to request the appid WebAuthn extension. This can only be requested by web browsers.
 --
 -- ObjC selector: @- appID@
 appID :: IsASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest => asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest -> IO (Id NSString)
-appID asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest  =
-    sendMsg asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest (mkSelector "appID") (retPtr retVoid) [] >>= retainedObject . castPtr
+appID asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest =
+  sendMessage asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest appIDSelector
 
 -- | Use this value to request the appid WebAuthn extension. This can only be requested by web browsers.
 --
 -- ObjC selector: @- setAppID:@
 setAppID :: (IsASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest, IsNSString value) => asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest -> value -> IO ()
-setAppID asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest (mkSelector "setAppID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppID asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest value =
+  sendMessage asAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest setAppIDSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @allowedCredentials@
-allowedCredentialsSelector :: Selector
+allowedCredentialsSelector :: Selector '[] (Id NSArray)
 allowedCredentialsSelector = mkSelector "allowedCredentials"
 
 -- | @Selector@ for @setAllowedCredentials:@
-setAllowedCredentialsSelector :: Selector
+setAllowedCredentialsSelector :: Selector '[Id NSArray] ()
 setAllowedCredentialsSelector = mkSelector "setAllowedCredentials:"
 
 -- | @Selector@ for @appID@
-appIDSelector :: Selector
+appIDSelector :: Selector '[] (Id NSString)
 appIDSelector = mkSelector "appID"
 
 -- | @Selector@ for @setAppID:@
-setAppIDSelector :: Selector
+setAppIDSelector :: Selector '[Id NSString] ()
 setAppIDSelector = mkSelector "setAppID:"
 

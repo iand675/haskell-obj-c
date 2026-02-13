@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,40 +44,40 @@ module ObjC.GameKit.GKLeaderboard
   , maxRange
   , localPlayerScore
   , loading
-  , loadPreviousOccurrenceWithCompletionHandlerSelector
-  , submitScore_context_player_leaderboardIDs_completionHandlerSelector
-  , submitScore_context_player_completionHandlerSelector
-  , loadImageWithCompletionHandlerSelector
-  , initWithPlayerIDsSelector
-  , setDefaultLeaderboard_withCompletionHandlerSelector
-  , initSelector
-  , initWithPlayersSelector
-  , titleSelector
-  , groupIdentifierSelector
-  , baseLeaderboardIDSelector
-  , typeSelector
-  , startDateSelector
-  , nextStartDateSelector
-  , durationSelector
-  , leaderboardDescriptionSelector
-  , releaseStateSelector
   , activityIdentifierSelector
   , activityPropertiesSelector
-  , isHiddenSelector
+  , baseLeaderboardIDSelector
   , categorySelector
-  , setCategorySelector
-  , timeScopeSelector
-  , setTimeScopeSelector
-  , playerScopeSelector
-  , setPlayerScopeSelector
+  , durationSelector
+  , groupIdentifierSelector
   , identifierSelector
-  , setIdentifierSelector
-  , rangeSelector
-  , setRangeSelector
-  , scoresSelector
-  , maxRangeSelector
-  , localPlayerScoreSelector
+  , initSelector
+  , initWithPlayerIDsSelector
+  , initWithPlayersSelector
+  , isHiddenSelector
+  , leaderboardDescriptionSelector
+  , loadImageWithCompletionHandlerSelector
+  , loadPreviousOccurrenceWithCompletionHandlerSelector
   , loadingSelector
+  , localPlayerScoreSelector
+  , maxRangeSelector
+  , nextStartDateSelector
+  , playerScopeSelector
+  , rangeSelector
+  , releaseStateSelector
+  , scoresSelector
+  , setCategorySelector
+  , setDefaultLeaderboard_withCompletionHandlerSelector
+  , setIdentifierSelector
+  , setPlayerScopeSelector
+  , setRangeSelector
+  , setTimeScopeSelector
+  , startDateSelector
+  , submitScore_context_player_completionHandlerSelector
+  , submitScore_context_player_leaderboardIDs_completionHandlerSelector
+  , timeScopeSelector
+  , titleSelector
+  , typeSelector
 
   -- * Enum types
   , GKLeaderboardPlayerScope(GKLeaderboardPlayerScope)
@@ -96,15 +97,11 @@ module ObjC.GameKit.GKLeaderboard
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -117,8 +114,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- loadPreviousOccurrenceWithCompletionHandler:@
 loadPreviousOccurrenceWithCompletionHandler :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> Ptr () -> IO ()
-loadPreviousOccurrenceWithCompletionHandler gkLeaderboard  completionHandler =
-    sendMsg gkLeaderboard (mkSelector "loadPreviousOccurrenceWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadPreviousOccurrenceWithCompletionHandler gkLeaderboard completionHandler =
+  sendMessage gkLeaderboard loadPreviousOccurrenceWithCompletionHandlerSelector completionHandler
 
 -- | Class method to submit a single score to multiple leaderboards   score - earned by the player   context - developer supplied metadata associated with the player's score   player - the player for whom this score is being submitted   leaderboardIDs - one or more leaderboard IDs defined in App Store Connect
 --
@@ -127,130 +124,124 @@ submitScore_context_player_leaderboardIDs_completionHandler :: (IsGKPlayer playe
 submitScore_context_player_leaderboardIDs_completionHandler score context player leaderboardIDs completionHandler =
   do
     cls' <- getRequiredClass "GKLeaderboard"
-    withObjCPtr player $ \raw_player ->
-      withObjCPtr leaderboardIDs $ \raw_leaderboardIDs ->
-        sendClassMsg cls' (mkSelector "submitScore:context:player:leaderboardIDs:completionHandler:") retVoid [argCLong score, argCULong context, argPtr (castPtr raw_player :: Ptr ()), argPtr (castPtr raw_leaderboardIDs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' submitScore_context_player_leaderboardIDs_completionHandlerSelector score context (toGKPlayer player) (toNSArray leaderboardIDs) completionHandler
 
 -- | Instance method to submit a single score to the leaderboard associated with this instance   score - earned by the player   context - developer supplied metadata associated with the player's score   player - the player for whom this score is being submitted
 --
 -- ObjC selector: @- submitScore:context:player:completionHandler:@
 submitScore_context_player_completionHandler :: (IsGKLeaderboard gkLeaderboard, IsGKPlayer player) => gkLeaderboard -> CLong -> CULong -> player -> Ptr () -> IO ()
-submitScore_context_player_completionHandler gkLeaderboard  score context player completionHandler =
-  withObjCPtr player $ \raw_player ->
-      sendMsg gkLeaderboard (mkSelector "submitScore:context:player:completionHandler:") retVoid [argCLong score, argCULong context, argPtr (castPtr raw_player :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+submitScore_context_player_completionHandler gkLeaderboard score context player completionHandler =
+  sendMessage gkLeaderboard submitScore_context_player_completionHandlerSelector score context (toGKPlayer player) completionHandler
 
 -- | Asynchronously load the image. Error will be nil on success.
 --
 -- ObjC selector: @- loadImageWithCompletionHandler:@
 loadImageWithCompletionHandler :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> Ptr () -> IO ()
-loadImageWithCompletionHandler gkLeaderboard  completionHandler =
-    sendMsg gkLeaderboard (mkSelector "loadImageWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadImageWithCompletionHandler gkLeaderboard completionHandler =
+  sendMessage gkLeaderboard loadImageWithCompletionHandlerSelector completionHandler
 
 -- | @- initWithPlayerIDs:@
 initWithPlayerIDs :: (IsGKLeaderboard gkLeaderboard, IsNSArray playerIDs) => gkLeaderboard -> playerIDs -> IO (Id GKLeaderboard)
-initWithPlayerIDs gkLeaderboard  playerIDs =
-  withObjCPtr playerIDs $ \raw_playerIDs ->
-      sendMsg gkLeaderboard (mkSelector "initWithPlayerIDs:") (retPtr retVoid) [argPtr (castPtr raw_playerIDs :: Ptr ())] >>= ownedObject . castPtr
+initWithPlayerIDs gkLeaderboard playerIDs =
+  sendOwnedMessage gkLeaderboard initWithPlayerIDsSelector (toNSArray playerIDs)
 
 -- | @+ setDefaultLeaderboard:withCompletionHandler:@
 setDefaultLeaderboard_withCompletionHandler :: IsNSString leaderboardIdentifier => leaderboardIdentifier -> Ptr () -> IO ()
 setDefaultLeaderboard_withCompletionHandler leaderboardIdentifier completionHandler =
   do
     cls' <- getRequiredClass "GKLeaderboard"
-    withObjCPtr leaderboardIdentifier $ \raw_leaderboardIdentifier ->
-      sendClassMsg cls' (mkSelector "setDefaultLeaderboard:withCompletionHandler:") retVoid [argPtr (castPtr raw_leaderboardIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' setDefaultLeaderboard_withCompletionHandlerSelector (toNSString leaderboardIdentifier) completionHandler
 
 -- | Default is the range 1-10 with Global/AllTime scopes. If you want to change the scopes or range, set the properites before loading the scores.
 --
 -- ObjC selector: @- init@
 init_ :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id GKLeaderboard)
-init_ gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkLeaderboard =
+  sendOwnedMessage gkLeaderboard initSelector
 
 -- | Specify an array of GKPlayers. For example, the players who are in a match together Defaults to AllTime score, if you want to change the timeScope, set the property before loading the scores. Range and playerScope are not applicable. players may not be nil.
 --
 -- ObjC selector: @- initWithPlayers:@
 initWithPlayers :: (IsGKLeaderboard gkLeaderboard, IsNSArray players) => gkLeaderboard -> players -> IO (Id GKLeaderboard)
-initWithPlayers gkLeaderboard  players =
-  withObjCPtr players $ \raw_players ->
-      sendMsg gkLeaderboard (mkSelector "initWithPlayers:") (retPtr retVoid) [argPtr (castPtr raw_players :: Ptr ())] >>= ownedObject . castPtr
+initWithPlayers gkLeaderboard players =
+  sendOwnedMessage gkLeaderboard initWithPlayersSelector (toNSArray players)
 
 -- | Localized title
 --
 -- ObjC selector: @- title@
 title :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSString)
-title gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title gkLeaderboard =
+  sendMessage gkLeaderboard titleSelector
 
 -- | set when leaderboards have been designated a game group; set when loadLeaderboardsWithCompletionHandler has been called for leaderboards that support game groups
 --
 -- ObjC selector: @- groupIdentifier@
 groupIdentifier :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSString)
-groupIdentifier gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "groupIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupIdentifier gkLeaderboard =
+  sendMessage gkLeaderboard groupIdentifierSelector
 
 -- | Leaderboard ID defined in App Store Connect that this instance is associated with
 --
 -- ObjC selector: @- baseLeaderboardID@
 baseLeaderboardID :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSString)
-baseLeaderboardID gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "baseLeaderboardID") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseLeaderboardID gkLeaderboard =
+  sendMessage gkLeaderboard baseLeaderboardIDSelector
 
 -- | Type of leaderboard
 --
 -- ObjC selector: @- type@
 type_ :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO GKLeaderboardType
-type_ gkLeaderboard  =
-    fmap (coerce :: CLong -> GKLeaderboardType) $ sendMsg gkLeaderboard (mkSelector "type") retCLong []
+type_ gkLeaderboard =
+  sendMessage gkLeaderboard typeSelector
 
 -- | Date and time this instance started accepting score submissions (only applicable to recurring leaderboards)
 --
 -- ObjC selector: @- startDate@
 startDate :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSDate)
-startDate gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate gkLeaderboard =
+  sendMessage gkLeaderboard startDateSelector
 
 -- | Date and time the next instance will start accepting score submissions (only applicable to recurring leaderboards)
 --
 -- ObjC selector: @- nextStartDate@
 nextStartDate :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSDate)
-nextStartDate gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "nextStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextStartDate gkLeaderboard =
+  sendMessage gkLeaderboard nextStartDateSelector
 
 -- | Duration from startDate during which this leaderboard instance accepts score submissions (only applicable to recurring leaderboards)
 --
 -- ObjC selector: @- duration@
 duration :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO CDouble
-duration gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "duration") retCDouble []
+duration gkLeaderboard =
+  sendMessage gkLeaderboard durationSelector
 
 -- | The description of this Leaderboard as configured by the developer in App Store Connect.
 --
 -- ObjC selector: @- leaderboardDescription@
 leaderboardDescription :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSString)
-leaderboardDescription gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "leaderboardDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+leaderboardDescription gkLeaderboard =
+  sendMessage gkLeaderboard leaderboardDescriptionSelector
 
 -- | The release state of the leaderboard in App Store Connect.
 --
 -- ObjC selector: @- releaseState@
 releaseState :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO GKReleaseState
-releaseState gkLeaderboard  =
-    fmap (coerce :: CULong -> GKReleaseState) $ sendMsg gkLeaderboard (mkSelector "releaseState") retCULong []
+releaseState gkLeaderboard =
+  sendMessage gkLeaderboard releaseStateSelector
 
 -- | The identifier of the game activity associated with this leaderboard, as configured by the developer in App Store Connect.
 --
 -- ObjC selector: @- activityIdentifier@
 activityIdentifier :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSString)
-activityIdentifier gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "activityIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+activityIdentifier gkLeaderboard =
+  sendMessage gkLeaderboard activityIdentifierSelector
 
 -- | The properties when associating this leaderboard with a game activity, as configured by the developer in App Store Connect.
 --
 -- ObjC selector: @- activityProperties@
 activityProperties :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSDictionary)
-activityProperties gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "activityProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+activityProperties gkLeaderboard =
+  sendMessage gkLeaderboard activityPropertiesSelector
 
 -- | A Boolean value that indicates whether the current leaderboard isn't visible in Game Center views.
 --
@@ -258,238 +249,236 @@ activityProperties gkLeaderboard  =
 --
 -- ObjC selector: @- isHidden@
 isHidden :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO Bool
-isHidden gkLeaderboard  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLeaderboard (mkSelector "isHidden") retCULong []
+isHidden gkLeaderboard =
+  sendMessage gkLeaderboard isHiddenSelector
 
 -- | @- category@
 category :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSString)
-category gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "category") (retPtr retVoid) [] >>= retainedObject . castPtr
+category gkLeaderboard =
+  sendMessage gkLeaderboard categorySelector
 
 -- | @- setCategory:@
 setCategory :: (IsGKLeaderboard gkLeaderboard, IsNSString value) => gkLeaderboard -> value -> IO ()
-setCategory gkLeaderboard  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkLeaderboard (mkSelector "setCategory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCategory gkLeaderboard value =
+  sendMessage gkLeaderboard setCategorySelector (toNSString value)
 
 -- | @- timeScope@
 timeScope :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO GKLeaderboardTimeScope
-timeScope gkLeaderboard  =
-    fmap (coerce :: CLong -> GKLeaderboardTimeScope) $ sendMsg gkLeaderboard (mkSelector "timeScope") retCLong []
+timeScope gkLeaderboard =
+  sendMessage gkLeaderboard timeScopeSelector
 
 -- | @- setTimeScope:@
 setTimeScope :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> GKLeaderboardTimeScope -> IO ()
-setTimeScope gkLeaderboard  value =
-    sendMsg gkLeaderboard (mkSelector "setTimeScope:") retVoid [argCLong (coerce value)]
+setTimeScope gkLeaderboard value =
+  sendMessage gkLeaderboard setTimeScopeSelector value
 
 -- | Filter on friends. Does not apply to leaderboard initialized with players.
 --
 -- ObjC selector: @- playerScope@
 playerScope :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO GKLeaderboardPlayerScope
-playerScope gkLeaderboard  =
-    fmap (coerce :: CLong -> GKLeaderboardPlayerScope) $ sendMsg gkLeaderboard (mkSelector "playerScope") retCLong []
+playerScope gkLeaderboard =
+  sendMessage gkLeaderboard playerScopeSelector
 
 -- | Filter on friends. Does not apply to leaderboard initialized with players.
 --
 -- ObjC selector: @- setPlayerScope:@
 setPlayerScope :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> GKLeaderboardPlayerScope -> IO ()
-setPlayerScope gkLeaderboard  value =
-    sendMsg gkLeaderboard (mkSelector "setPlayerScope:") retVoid [argCLong (coerce value)]
+setPlayerScope gkLeaderboard value =
+  sendMessage gkLeaderboard setPlayerScopeSelector value
 
 -- | leaderboardID. If nil, fetch the aggregate leaderboard.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSString)
-identifier gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier gkLeaderboard =
+  sendMessage gkLeaderboard identifierSelector
 
 -- | leaderboardID. If nil, fetch the aggregate leaderboard.
 --
 -- ObjC selector: @- setIdentifier:@
 setIdentifier :: (IsGKLeaderboard gkLeaderboard, IsNSString value) => gkLeaderboard -> value -> IO ()
-setIdentifier gkLeaderboard  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkLeaderboard (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier gkLeaderboard value =
+  sendMessage gkLeaderboard setIdentifierSelector (toNSString value)
 
 -- | Leaderboards start at index 1 and the length should be less than 100. Does not apply to leaderboards initialized with players.  Exception will be thrown if developer tries to set an invalid range.
 --
 -- ObjC selector: @- range@
 range :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO NSRange
-range gkLeaderboard  =
-    sendMsgStret gkLeaderboard (mkSelector "range") retNSRange []
+range gkLeaderboard =
+  sendMessage gkLeaderboard rangeSelector
 
 -- | Leaderboards start at index 1 and the length should be less than 100. Does not apply to leaderboards initialized with players.  Exception will be thrown if developer tries to set an invalid range.
 --
 -- ObjC selector: @- setRange:@
 setRange :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> NSRange -> IO ()
-setRange gkLeaderboard  value =
-    sendMsg gkLeaderboard (mkSelector "setRange:") retVoid [argNSRange value]
+setRange gkLeaderboard value =
+  sendMessage gkLeaderboard setRangeSelector value
 
 -- | Scores are not valid until loadScores: has completed.
 --
 -- ObjC selector: @- scores@
 scores :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id NSArray)
-scores gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "scores") (retPtr retVoid) [] >>= retainedObject . castPtr
+scores gkLeaderboard =
+  sendMessage gkLeaderboard scoresSelector
 
 -- | The maxRange which represents the size of the leaderboard is not valid until loadScores: has completed.
 --
 -- ObjC selector: @- maxRange@
 maxRange :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO CULong
-maxRange gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "maxRange") retCULong []
+maxRange gkLeaderboard =
+  sendMessage gkLeaderboard maxRangeSelector
 
 -- | The local player's score
 --
 -- ObjC selector: @- localPlayerScore@
 localPlayerScore :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO (Id GKScore)
-localPlayerScore gkLeaderboard  =
-    sendMsg gkLeaderboard (mkSelector "localPlayerScore") (retPtr retVoid) [] >>= retainedObject . castPtr
+localPlayerScore gkLeaderboard =
+  sendMessage gkLeaderboard localPlayerScoreSelector
 
 -- | This property is true if the leaderboard is currently loading
 --
 -- ObjC selector: @- loading@
 loading :: IsGKLeaderboard gkLeaderboard => gkLeaderboard -> IO Bool
-loading gkLeaderboard  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkLeaderboard (mkSelector "loading") retCULong []
+loading gkLeaderboard =
+  sendMessage gkLeaderboard loadingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadPreviousOccurrenceWithCompletionHandler:@
-loadPreviousOccurrenceWithCompletionHandlerSelector :: Selector
+loadPreviousOccurrenceWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadPreviousOccurrenceWithCompletionHandlerSelector = mkSelector "loadPreviousOccurrenceWithCompletionHandler:"
 
 -- | @Selector@ for @submitScore:context:player:leaderboardIDs:completionHandler:@
-submitScore_context_player_leaderboardIDs_completionHandlerSelector :: Selector
+submitScore_context_player_leaderboardIDs_completionHandlerSelector :: Selector '[CLong, CULong, Id GKPlayer, Id NSArray, Ptr ()] ()
 submitScore_context_player_leaderboardIDs_completionHandlerSelector = mkSelector "submitScore:context:player:leaderboardIDs:completionHandler:"
 
 -- | @Selector@ for @submitScore:context:player:completionHandler:@
-submitScore_context_player_completionHandlerSelector :: Selector
+submitScore_context_player_completionHandlerSelector :: Selector '[CLong, CULong, Id GKPlayer, Ptr ()] ()
 submitScore_context_player_completionHandlerSelector = mkSelector "submitScore:context:player:completionHandler:"
 
 -- | @Selector@ for @loadImageWithCompletionHandler:@
-loadImageWithCompletionHandlerSelector :: Selector
+loadImageWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadImageWithCompletionHandlerSelector = mkSelector "loadImageWithCompletionHandler:"
 
 -- | @Selector@ for @initWithPlayerIDs:@
-initWithPlayerIDsSelector :: Selector
+initWithPlayerIDsSelector :: Selector '[Id NSArray] (Id GKLeaderboard)
 initWithPlayerIDsSelector = mkSelector "initWithPlayerIDs:"
 
 -- | @Selector@ for @setDefaultLeaderboard:withCompletionHandler:@
-setDefaultLeaderboard_withCompletionHandlerSelector :: Selector
+setDefaultLeaderboard_withCompletionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 setDefaultLeaderboard_withCompletionHandlerSelector = mkSelector "setDefaultLeaderboard:withCompletionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKLeaderboard)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithPlayers:@
-initWithPlayersSelector :: Selector
+initWithPlayersSelector :: Selector '[Id NSArray] (Id GKLeaderboard)
 initWithPlayersSelector = mkSelector "initWithPlayers:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @groupIdentifier@
-groupIdentifierSelector :: Selector
+groupIdentifierSelector :: Selector '[] (Id NSString)
 groupIdentifierSelector = mkSelector "groupIdentifier"
 
 -- | @Selector@ for @baseLeaderboardID@
-baseLeaderboardIDSelector :: Selector
+baseLeaderboardIDSelector :: Selector '[] (Id NSString)
 baseLeaderboardIDSelector = mkSelector "baseLeaderboardID"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] GKLeaderboardType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @nextStartDate@
-nextStartDateSelector :: Selector
+nextStartDateSelector :: Selector '[] (Id NSDate)
 nextStartDateSelector = mkSelector "nextStartDate"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @leaderboardDescription@
-leaderboardDescriptionSelector :: Selector
+leaderboardDescriptionSelector :: Selector '[] (Id NSString)
 leaderboardDescriptionSelector = mkSelector "leaderboardDescription"
 
 -- | @Selector@ for @releaseState@
-releaseStateSelector :: Selector
+releaseStateSelector :: Selector '[] GKReleaseState
 releaseStateSelector = mkSelector "releaseState"
 
 -- | @Selector@ for @activityIdentifier@
-activityIdentifierSelector :: Selector
+activityIdentifierSelector :: Selector '[] (Id NSString)
 activityIdentifierSelector = mkSelector "activityIdentifier"
 
 -- | @Selector@ for @activityProperties@
-activityPropertiesSelector :: Selector
+activityPropertiesSelector :: Selector '[] (Id NSDictionary)
 activityPropertiesSelector = mkSelector "activityProperties"
 
 -- | @Selector@ for @isHidden@
-isHiddenSelector :: Selector
+isHiddenSelector :: Selector '[] Bool
 isHiddenSelector = mkSelector "isHidden"
 
 -- | @Selector@ for @category@
-categorySelector :: Selector
+categorySelector :: Selector '[] (Id NSString)
 categorySelector = mkSelector "category"
 
 -- | @Selector@ for @setCategory:@
-setCategorySelector :: Selector
+setCategorySelector :: Selector '[Id NSString] ()
 setCategorySelector = mkSelector "setCategory:"
 
 -- | @Selector@ for @timeScope@
-timeScopeSelector :: Selector
+timeScopeSelector :: Selector '[] GKLeaderboardTimeScope
 timeScopeSelector = mkSelector "timeScope"
 
 -- | @Selector@ for @setTimeScope:@
-setTimeScopeSelector :: Selector
+setTimeScopeSelector :: Selector '[GKLeaderboardTimeScope] ()
 setTimeScopeSelector = mkSelector "setTimeScope:"
 
 -- | @Selector@ for @playerScope@
-playerScopeSelector :: Selector
+playerScopeSelector :: Selector '[] GKLeaderboardPlayerScope
 playerScopeSelector = mkSelector "playerScope"
 
 -- | @Selector@ for @setPlayerScope:@
-setPlayerScopeSelector :: Selector
+setPlayerScopeSelector :: Selector '[GKLeaderboardPlayerScope] ()
 setPlayerScopeSelector = mkSelector "setPlayerScope:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @range@
-rangeSelector :: Selector
+rangeSelector :: Selector '[] NSRange
 rangeSelector = mkSelector "range"
 
 -- | @Selector@ for @setRange:@
-setRangeSelector :: Selector
+setRangeSelector :: Selector '[NSRange] ()
 setRangeSelector = mkSelector "setRange:"
 
 -- | @Selector@ for @scores@
-scoresSelector :: Selector
+scoresSelector :: Selector '[] (Id NSArray)
 scoresSelector = mkSelector "scores"
 
 -- | @Selector@ for @maxRange@
-maxRangeSelector :: Selector
+maxRangeSelector :: Selector '[] CULong
 maxRangeSelector = mkSelector "maxRange"
 
 -- | @Selector@ for @localPlayerScore@
-localPlayerScoreSelector :: Selector
+localPlayerScoreSelector :: Selector '[] (Id GKScore)
 localPlayerScoreSelector = mkSelector "localPlayerScore"
 
 -- | @Selector@ for @loading@
-loadingSelector :: Selector
+loadingSelector :: Selector '[] Bool
 loadingSelector = mkSelector "loading"
 

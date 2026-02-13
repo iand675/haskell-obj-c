@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INMassResolutionResult
   , successWithResolvedMass
   , disambiguationWithMassToDisambiguate
   , confirmationRequiredWithMassToConfirm
-  , successWithResolvedMassSelector
-  , disambiguationWithMassToDisambiguateSelector
   , confirmationRequiredWithMassToConfirmSelector
+  , disambiguationWithMassToDisambiguateSelector
+  , successWithResolvedMassSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedMass :: IsNSMeasurement resolvedMass => resolvedMass -> IO (I
 successWithResolvedMass resolvedMass =
   do
     cls' <- getRequiredClass "INMassResolutionResult"
-    withObjCPtr resolvedMass $ \raw_resolvedMass ->
-      sendClassMsg cls' (mkSelector "successWithResolvedMass:") (retPtr retVoid) [argPtr (castPtr raw_resolvedMass :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedMassSelector (toNSMeasurement resolvedMass)
 
 -- | @+ disambiguationWithMassToDisambiguate:@
 disambiguationWithMassToDisambiguate :: IsNSArray massToDisambiguate => massToDisambiguate -> IO (Id INMassResolutionResult)
 disambiguationWithMassToDisambiguate massToDisambiguate =
   do
     cls' <- getRequiredClass "INMassResolutionResult"
-    withObjCPtr massToDisambiguate $ \raw_massToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithMassToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_massToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithMassToDisambiguateSelector (toNSArray massToDisambiguate)
 
 -- | @+ confirmationRequiredWithMassToConfirm:@
 confirmationRequiredWithMassToConfirm :: IsNSMeasurement massToConfirm => massToConfirm -> IO (Id INMassResolutionResult)
 confirmationRequiredWithMassToConfirm massToConfirm =
   do
     cls' <- getRequiredClass "INMassResolutionResult"
-    withObjCPtr massToConfirm $ \raw_massToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithMassToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_massToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithMassToConfirmSelector (toNSMeasurement massToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedMass:@
-successWithResolvedMassSelector :: Selector
+successWithResolvedMassSelector :: Selector '[Id NSMeasurement] (Id INMassResolutionResult)
 successWithResolvedMassSelector = mkSelector "successWithResolvedMass:"
 
 -- | @Selector@ for @disambiguationWithMassToDisambiguate:@
-disambiguationWithMassToDisambiguateSelector :: Selector
+disambiguationWithMassToDisambiguateSelector :: Selector '[Id NSArray] (Id INMassResolutionResult)
 disambiguationWithMassToDisambiguateSelector = mkSelector "disambiguationWithMassToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithMassToConfirm:@
-confirmationRequiredWithMassToConfirmSelector :: Selector
+confirmationRequiredWithMassToConfirmSelector :: Selector '[Id NSMeasurement] (Id INMassResolutionResult)
 confirmationRequiredWithMassToConfirmSelector = mkSelector "confirmationRequiredWithMassToConfirm:"
 

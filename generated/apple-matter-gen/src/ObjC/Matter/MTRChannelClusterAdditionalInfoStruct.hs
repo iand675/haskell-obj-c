@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Matter.MTRChannelClusterAdditionalInfoStruct
   , setValue
   , nameSelector
   , setNameSelector
-  , valueSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMTRChannelClusterAdditionalInfoStruct mtrChannelClusterAdditionalInfoStruct => mtrChannelClusterAdditionalInfoStruct -> IO (Id NSString)
-name mtrChannelClusterAdditionalInfoStruct  =
-    sendMsg mtrChannelClusterAdditionalInfoStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrChannelClusterAdditionalInfoStruct =
+  sendMessage mtrChannelClusterAdditionalInfoStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRChannelClusterAdditionalInfoStruct mtrChannelClusterAdditionalInfoStruct, IsNSString value) => mtrChannelClusterAdditionalInfoStruct -> value -> IO ()
-setName mtrChannelClusterAdditionalInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterAdditionalInfoStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrChannelClusterAdditionalInfoStruct value =
+  sendMessage mtrChannelClusterAdditionalInfoStruct setNameSelector (toNSString value)
 
 -- | @- value@
 value :: IsMTRChannelClusterAdditionalInfoStruct mtrChannelClusterAdditionalInfoStruct => mtrChannelClusterAdditionalInfoStruct -> IO (Id NSString)
-value mtrChannelClusterAdditionalInfoStruct  =
-    sendMsg mtrChannelClusterAdditionalInfoStruct (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mtrChannelClusterAdditionalInfoStruct =
+  sendMessage mtrChannelClusterAdditionalInfoStruct valueSelector
 
 -- | @- setValue:@
 setValue :: (IsMTRChannelClusterAdditionalInfoStruct mtrChannelClusterAdditionalInfoStruct, IsNSString value) => mtrChannelClusterAdditionalInfoStruct -> value -> IO ()
-setValue mtrChannelClusterAdditionalInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterAdditionalInfoStruct (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue mtrChannelClusterAdditionalInfoStruct value =
+  sendMessage mtrChannelClusterAdditionalInfoStruct setValueSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 

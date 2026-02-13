@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.CoreWLAN.CWConfiguration
   , requireAdministratorForIBSSMode
   , rememberJoinedNetworks
   , configurationSelector
+  , configurationWithConfigurationSelector
   , initSelector
   , initWithConfigurationSelector
-  , configurationWithConfigurationSelector
   , isEqualToConfigurationSelector
-  , requireAdministratorForAssociationSelector
-  , requireAdministratorForPowerSelector
-  , requireAdministratorForIBSSModeSelector
   , rememberJoinedNetworksSelector
+  , requireAdministratorForAssociationSelector
+  , requireAdministratorForIBSSModeSelector
+  , requireAdministratorForPowerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,14 +51,14 @@ configuration :: IO (Id CWConfiguration)
 configuration  =
   do
     cls' <- getRequiredClass "CWConfiguration"
-    sendClassMsg cls' (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationSelector
 
 -- | Initializes a CWConfiguration object.
 --
 -- ObjC selector: @- init@
 init_ :: IsCWConfiguration cwConfiguration => cwConfiguration -> IO (Id CWConfiguration)
-init_ cwConfiguration  =
-    sendMsg cwConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cwConfiguration =
+  sendOwnedMessage cwConfiguration initSelector
 
 -- | @configuration@ — A CWConfiguration object.
 --
@@ -71,9 +68,8 @@ init_ cwConfiguration  =
 --
 -- ObjC selector: @- initWithConfiguration:@
 initWithConfiguration :: (IsCWConfiguration cwConfiguration, IsCWConfiguration configuration) => cwConfiguration -> configuration -> IO (Id CWConfiguration)
-initWithConfiguration cwConfiguration  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg cwConfiguration (mkSelector "initWithConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration cwConfiguration configuration =
+  sendOwnedMessage cwConfiguration initWithConfigurationSelector (toCWConfiguration configuration)
 
 -- | @configuration@ — A CWConfiguration object.
 --
@@ -86,8 +82,7 @@ configurationWithConfiguration :: IsCWConfiguration configuration => configurati
 configurationWithConfiguration configuration =
   do
     cls' <- getRequiredClass "CWConfiguration"
-    withObjCPtr configuration $ \raw_configuration ->
-      sendClassMsg cls' (mkSelector "configurationWithConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithConfigurationSelector (toCWConfiguration configuration)
 
 -- | @configuration@ — The CWConfiguration with which to compare the receiver.
 --
@@ -99,9 +94,8 @@ configurationWithConfiguration configuration =
 --
 -- ObjC selector: @- isEqualToConfiguration:@
 isEqualToConfiguration :: (IsCWConfiguration cwConfiguration, IsCWConfiguration configuration) => cwConfiguration -> configuration -> IO Bool
-isEqualToConfiguration cwConfiguration  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwConfiguration (mkSelector "isEqualToConfiguration:") retCULong [argPtr (castPtr raw_configuration :: Ptr ())]
+isEqualToConfiguration cwConfiguration configuration =
+  sendMessage cwConfiguration isEqualToConfigurationSelector (toCWConfiguration configuration)
 
 -- | Returns: YES if the preference is enabled, NO otherwise.
 --
@@ -111,8 +105,8 @@ isEqualToConfiguration cwConfiguration  configuration =
 --
 -- ObjC selector: @- requireAdministratorForAssociation@
 requireAdministratorForAssociation :: IsCWConfiguration cwConfiguration => cwConfiguration -> IO Bool
-requireAdministratorForAssociation cwConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwConfiguration (mkSelector "requireAdministratorForAssociation") retCULong []
+requireAdministratorForAssociation cwConfiguration =
+  sendMessage cwConfiguration requireAdministratorForAssociationSelector
 
 -- | Returns: YES if the preference is enabled, NO otherwise.
 --
@@ -122,8 +116,8 @@ requireAdministratorForAssociation cwConfiguration  =
 --
 -- ObjC selector: @- requireAdministratorForPower@
 requireAdministratorForPower :: IsCWConfiguration cwConfiguration => cwConfiguration -> IO Bool
-requireAdministratorForPower cwConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwConfiguration (mkSelector "requireAdministratorForPower") retCULong []
+requireAdministratorForPower cwConfiguration =
+  sendMessage cwConfiguration requireAdministratorForPowerSelector
 
 -- | Returns: YES if the preference is enabled, NO otherwise.
 --
@@ -133,8 +127,8 @@ requireAdministratorForPower cwConfiguration  =
 --
 -- ObjC selector: @- requireAdministratorForIBSSMode@
 requireAdministratorForIBSSMode :: IsCWConfiguration cwConfiguration => cwConfiguration -> IO Bool
-requireAdministratorForIBSSMode cwConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwConfiguration (mkSelector "requireAdministratorForIBSSMode") retCULong []
+requireAdministratorForIBSSMode cwConfiguration =
+  sendMessage cwConfiguration requireAdministratorForIBSSModeSelector
 
 -- | Returns: YES if the preference is enabled, NO otherwise.
 --
@@ -142,46 +136,46 @@ requireAdministratorForIBSSMode cwConfiguration  =
 --
 -- ObjC selector: @- rememberJoinedNetworks@
 rememberJoinedNetworks :: IsCWConfiguration cwConfiguration => cwConfiguration -> IO Bool
-rememberJoinedNetworks cwConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwConfiguration (mkSelector "rememberJoinedNetworks") retCULong []
+rememberJoinedNetworks cwConfiguration =
+  sendMessage cwConfiguration rememberJoinedNetworksSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id CWConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CWConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithConfiguration:@
-initWithConfigurationSelector :: Selector
+initWithConfigurationSelector :: Selector '[Id CWConfiguration] (Id CWConfiguration)
 initWithConfigurationSelector = mkSelector "initWithConfiguration:"
 
 -- | @Selector@ for @configurationWithConfiguration:@
-configurationWithConfigurationSelector :: Selector
+configurationWithConfigurationSelector :: Selector '[Id CWConfiguration] (Id CWConfiguration)
 configurationWithConfigurationSelector = mkSelector "configurationWithConfiguration:"
 
 -- | @Selector@ for @isEqualToConfiguration:@
-isEqualToConfigurationSelector :: Selector
+isEqualToConfigurationSelector :: Selector '[Id CWConfiguration] Bool
 isEqualToConfigurationSelector = mkSelector "isEqualToConfiguration:"
 
 -- | @Selector@ for @requireAdministratorForAssociation@
-requireAdministratorForAssociationSelector :: Selector
+requireAdministratorForAssociationSelector :: Selector '[] Bool
 requireAdministratorForAssociationSelector = mkSelector "requireAdministratorForAssociation"
 
 -- | @Selector@ for @requireAdministratorForPower@
-requireAdministratorForPowerSelector :: Selector
+requireAdministratorForPowerSelector :: Selector '[] Bool
 requireAdministratorForPowerSelector = mkSelector "requireAdministratorForPower"
 
 -- | @Selector@ for @requireAdministratorForIBSSMode@
-requireAdministratorForIBSSModeSelector :: Selector
+requireAdministratorForIBSSModeSelector :: Selector '[] Bool
 requireAdministratorForIBSSModeSelector = mkSelector "requireAdministratorForIBSSMode"
 
 -- | @Selector@ for @rememberJoinedNetworks@
-rememberJoinedNetworksSelector :: Selector
+rememberJoinedNetworksSelector :: Selector '[] Bool
 rememberJoinedNetworksSelector = mkSelector "rememberJoinedNetworks"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,19 +23,19 @@ module ObjC.OSAKit.OSAScriptController
   , scriptState
   , compiling
   , compileScriptSelector
-  , recordScriptSelector
-  , runScriptSelector
-  , stopScriptSelector
-  , scriptViewSelector
-  , setScriptViewSelector
-  , resultViewSelector
-  , setResultViewSelector
-  , scriptSelector
-  , setScriptSelector
-  , languageSelector
-  , setLanguageSelector
-  , scriptStateSelector
   , compilingSelector
+  , languageSelector
+  , recordScriptSelector
+  , resultViewSelector
+  , runScriptSelector
+  , scriptSelector
+  , scriptStateSelector
+  , scriptViewSelector
+  , setLanguageSelector
+  , setResultViewSelector
+  , setScriptSelector
+  , setScriptViewSelector
+  , stopScriptSelector
 
   -- * Enum types
   , OSAScriptState(OSAScriptState)
@@ -44,15 +45,11 @@ module ObjC.OSAKit.OSAScriptController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,135 +60,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- compileScript:@
 compileScript :: IsOSAScriptController osaScriptController => osaScriptController -> RawId -> IO ()
-compileScript osaScriptController  sender =
-    sendMsg osaScriptController (mkSelector "compileScript:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+compileScript osaScriptController sender =
+  sendMessage osaScriptController compileScriptSelector sender
 
 -- | @- recordScript:@
 recordScript :: IsOSAScriptController osaScriptController => osaScriptController -> RawId -> IO ()
-recordScript osaScriptController  sender =
-    sendMsg osaScriptController (mkSelector "recordScript:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+recordScript osaScriptController sender =
+  sendMessage osaScriptController recordScriptSelector sender
 
 -- | @- runScript:@
 runScript :: IsOSAScriptController osaScriptController => osaScriptController -> RawId -> IO ()
-runScript osaScriptController  sender =
-    sendMsg osaScriptController (mkSelector "runScript:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+runScript osaScriptController sender =
+  sendMessage osaScriptController runScriptSelector sender
 
 -- | @- stopScript:@
 stopScript :: IsOSAScriptController osaScriptController => osaScriptController -> RawId -> IO ()
-stopScript osaScriptController  sender =
-    sendMsg osaScriptController (mkSelector "stopScript:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stopScript osaScriptController sender =
+  sendMessage osaScriptController stopScriptSelector sender
 
 -- | @- scriptView@
 scriptView :: IsOSAScriptController osaScriptController => osaScriptController -> IO (Id OSAScriptView)
-scriptView osaScriptController  =
-    sendMsg osaScriptController (mkSelector "scriptView") (retPtr retVoid) [] >>= retainedObject . castPtr
+scriptView osaScriptController =
+  sendMessage osaScriptController scriptViewSelector
 
 -- | @- setScriptView:@
 setScriptView :: (IsOSAScriptController osaScriptController, IsOSAScriptView value) => osaScriptController -> value -> IO ()
-setScriptView osaScriptController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg osaScriptController (mkSelector "setScriptView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScriptView osaScriptController value =
+  sendMessage osaScriptController setScriptViewSelector (toOSAScriptView value)
 
 -- | @- resultView@
 resultView :: IsOSAScriptController osaScriptController => osaScriptController -> IO (Id NSTextView)
-resultView osaScriptController  =
-    sendMsg osaScriptController (mkSelector "resultView") (retPtr retVoid) [] >>= retainedObject . castPtr
+resultView osaScriptController =
+  sendMessage osaScriptController resultViewSelector
 
 -- | @- setResultView:@
 setResultView :: (IsOSAScriptController osaScriptController, IsNSTextView value) => osaScriptController -> value -> IO ()
-setResultView osaScriptController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg osaScriptController (mkSelector "setResultView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResultView osaScriptController value =
+  sendMessage osaScriptController setResultViewSelector (toNSTextView value)
 
 -- | @- script@
 script :: IsOSAScriptController osaScriptController => osaScriptController -> IO (Id OSAScript)
-script osaScriptController  =
-    sendMsg osaScriptController (mkSelector "script") (retPtr retVoid) [] >>= retainedObject . castPtr
+script osaScriptController =
+  sendMessage osaScriptController scriptSelector
 
 -- | @- setScript:@
 setScript :: (IsOSAScriptController osaScriptController, IsOSAScript value) => osaScriptController -> value -> IO ()
-setScript osaScriptController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg osaScriptController (mkSelector "setScript:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScript osaScriptController value =
+  sendMessage osaScriptController setScriptSelector (toOSAScript value)
 
 -- | @- language@
 language :: IsOSAScriptController osaScriptController => osaScriptController -> IO (Id OSALanguage)
-language osaScriptController  =
-    sendMsg osaScriptController (mkSelector "language") (retPtr retVoid) [] >>= retainedObject . castPtr
+language osaScriptController =
+  sendMessage osaScriptController languageSelector
 
 -- | @- setLanguage:@
 setLanguage :: (IsOSAScriptController osaScriptController, IsOSALanguage value) => osaScriptController -> value -> IO ()
-setLanguage osaScriptController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg osaScriptController (mkSelector "setLanguage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLanguage osaScriptController value =
+  sendMessage osaScriptController setLanguageSelector (toOSALanguage value)
 
 -- | @- scriptState@
 scriptState :: IsOSAScriptController osaScriptController => osaScriptController -> IO OSAScriptState
-scriptState osaScriptController  =
-    fmap (coerce :: CLong -> OSAScriptState) $ sendMsg osaScriptController (mkSelector "scriptState") retCLong []
+scriptState osaScriptController =
+  sendMessage osaScriptController scriptStateSelector
 
 -- | @- compiling@
 compiling :: IsOSAScriptController osaScriptController => osaScriptController -> IO Bool
-compiling osaScriptController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg osaScriptController (mkSelector "compiling") retCULong []
+compiling osaScriptController =
+  sendMessage osaScriptController compilingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @compileScript:@
-compileScriptSelector :: Selector
+compileScriptSelector :: Selector '[RawId] ()
 compileScriptSelector = mkSelector "compileScript:"
 
 -- | @Selector@ for @recordScript:@
-recordScriptSelector :: Selector
+recordScriptSelector :: Selector '[RawId] ()
 recordScriptSelector = mkSelector "recordScript:"
 
 -- | @Selector@ for @runScript:@
-runScriptSelector :: Selector
+runScriptSelector :: Selector '[RawId] ()
 runScriptSelector = mkSelector "runScript:"
 
 -- | @Selector@ for @stopScript:@
-stopScriptSelector :: Selector
+stopScriptSelector :: Selector '[RawId] ()
 stopScriptSelector = mkSelector "stopScript:"
 
 -- | @Selector@ for @scriptView@
-scriptViewSelector :: Selector
+scriptViewSelector :: Selector '[] (Id OSAScriptView)
 scriptViewSelector = mkSelector "scriptView"
 
 -- | @Selector@ for @setScriptView:@
-setScriptViewSelector :: Selector
+setScriptViewSelector :: Selector '[Id OSAScriptView] ()
 setScriptViewSelector = mkSelector "setScriptView:"
 
 -- | @Selector@ for @resultView@
-resultViewSelector :: Selector
+resultViewSelector :: Selector '[] (Id NSTextView)
 resultViewSelector = mkSelector "resultView"
 
 -- | @Selector@ for @setResultView:@
-setResultViewSelector :: Selector
+setResultViewSelector :: Selector '[Id NSTextView] ()
 setResultViewSelector = mkSelector "setResultView:"
 
 -- | @Selector@ for @script@
-scriptSelector :: Selector
+scriptSelector :: Selector '[] (Id OSAScript)
 scriptSelector = mkSelector "script"
 
 -- | @Selector@ for @setScript:@
-setScriptSelector :: Selector
+setScriptSelector :: Selector '[Id OSAScript] ()
 setScriptSelector = mkSelector "setScript:"
 
 -- | @Selector@ for @language@
-languageSelector :: Selector
+languageSelector :: Selector '[] (Id OSALanguage)
 languageSelector = mkSelector "language"
 
 -- | @Selector@ for @setLanguage:@
-setLanguageSelector :: Selector
+setLanguageSelector :: Selector '[Id OSALanguage] ()
 setLanguageSelector = mkSelector "setLanguage:"
 
 -- | @Selector@ for @scriptState@
-scriptStateSelector :: Selector
+scriptStateSelector :: Selector '[] OSAScriptState
 scriptStateSelector = mkSelector "scriptState"
 
 -- | @Selector@ for @compiling@
-compilingSelector :: Selector
+compilingSelector :: Selector '[] Bool
 compilingSelector = mkSelector "compiling"
 

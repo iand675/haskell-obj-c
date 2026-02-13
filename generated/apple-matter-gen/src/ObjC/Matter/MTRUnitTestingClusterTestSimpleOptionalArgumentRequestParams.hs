@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , arg1Selector
-  , setArg1Selector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setArg1Selector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- arg1@
 arg1 :: IsMTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams => mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams -> IO (Id NSNumber)
-arg1 mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams (mkSelector "arg1") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg1 mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams arg1Selector
 
 -- | @- setArg1:@
 setArg1 :: (IsMTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams -> value -> IO ()
-setArg1 mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams (mkSelector "setArg1:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg1 mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams setArg1Selector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setArg1 mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams => mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParam
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrUnitTestingClusterTestSimpleOptionalArgumentRequestPa
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams => mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams  =
-    sendMsg mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams =
+  sendMessage mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrUnitTestingClusterTestSimpleOptionalArgumentReque
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRUnitTestingClusterTestSimpleOptionalArgumentRequestParams mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams value =
+  sendMessage mtrUnitTestingClusterTestSimpleOptionalArgumentRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @arg1@
-arg1Selector :: Selector
+arg1Selector :: Selector '[] (Id NSNumber)
 arg1Selector = mkSelector "arg1"
 
 -- | @Selector@ for @setArg1:@
-setArg1Selector :: Selector
+setArg1Selector :: Selector '[Id NSNumber] ()
 setArg1Selector = mkSelector "setArg1:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

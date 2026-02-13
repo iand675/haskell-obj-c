@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.BackgroundAssets.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | The status of an asset pack.
 -- | @BAAssetPackStatus@ (bitmask)
@@ -44,6 +47,16 @@ pattern BAAssetPackStatusDownloading = BAAssetPackStatus 32
 pattern BAAssetPackStatusDownloaded :: BAAssetPackStatus
 pattern BAAssetPackStatusDownloaded = BAAssetPackStatus 64
 
+instance ObjCArgument BAAssetPackStatus where
+  withObjCArg (BAAssetPackStatus x) k = k (argCULong x)
+
+instance ObjCReturn BAAssetPackStatus where
+  type RawReturn BAAssetPackStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BAAssetPackStatus x)
+  fromOwned x = pure (BAAssetPackStatus x)
+
 -- | The content request type used in the BADownloaderExtension.
 --
 -- BAContentRequestInstall  Content is being requested because the application was installed.
@@ -65,6 +78,16 @@ pattern BAContentRequestUpdate = BAContentRequest 2
 pattern BAContentRequestPeriodic :: BAContentRequest
 pattern BAContentRequestPeriodic = BAContentRequest 3
 
+instance ObjCArgument BAContentRequest where
+  withObjCArg (BAContentRequest x) k = k (argCLong x)
+
+instance ObjCReturn BAContentRequest where
+  type RawReturn BAContentRequest = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BAContentRequest x)
+  fromOwned x = pure (BAContentRequest x)
+
 -- | Download state
 -- | @BADownloadState@
 newtype BADownloadState = BADownloadState CLong
@@ -85,6 +108,16 @@ pattern BADownloadStateDownloading = BADownloadState 2
 
 pattern BADownloadStateFinished :: BADownloadState
 pattern BADownloadStateFinished = BADownloadState 3
+
+instance ObjCArgument BADownloadState where
+  withObjCArg (BADownloadState x) k = k (argCLong x)
+
+instance ObjCReturn BADownloadState where
+  type RawReturn BADownloadState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BADownloadState x)
+  fromOwned x = pure (BADownloadState x)
 
 -- | Background Assets error codes.
 --
@@ -177,6 +210,16 @@ pattern BAErrorCodeSessionDownloadAllowanceExceeded = BAErrorCode 204
 pattern BAErrorCodeSessionDownloadNotPermittedBeforeAppLaunch :: BAErrorCode
 pattern BAErrorCodeSessionDownloadNotPermittedBeforeAppLaunch = BAErrorCode 206
 
+instance ObjCArgument BAErrorCode where
+  withObjCArg (BAErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn BAErrorCode where
+  type RawReturn BAErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BAErrorCode x)
+  fromOwned x = pure (BAErrorCode x)
+
 -- | An error code for a managed asset pack.
 -- | @BAManagedErrorCode@
 newtype BAManagedErrorCode = BAManagedErrorCode CLong
@@ -188,3 +231,13 @@ pattern BAManagedErrorCodeAssetPackNotFound = BAManagedErrorCode 0
 
 pattern BAManagedErrorCodeFileNotFound :: BAManagedErrorCode
 pattern BAManagedErrorCodeFileNotFound = BAManagedErrorCode 1
+
+instance ObjCArgument BAManagedErrorCode where
+  withObjCArg (BAManagedErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn BAManagedErrorCode where
+  type RawReturn BAManagedErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BAManagedErrorCode x)
+  fromOwned x = pure (BAManagedErrorCode x)

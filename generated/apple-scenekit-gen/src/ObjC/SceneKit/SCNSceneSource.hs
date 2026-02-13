@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.SceneKit.SCNSceneSource
   , entriesPassingTest
   , url
   , data_
-  , sceneSourceWithURL_optionsSelector
-  , sceneSourceWithData_optionsSelector
-  , initWithURL_optionsSelector
-  , initWithData_optionsSelector
-  , sceneWithOptions_statusHandlerSelector
-  , sceneWithOptions_errorSelector
-  , propertyForKeySelector
+  , dataSelector
+  , entriesPassingTestSelector
   , entryWithIdentifier_withClassSelector
   , identifiersOfEntriesWithClassSelector
-  , entriesPassingTestSelector
+  , initWithData_optionsSelector
+  , initWithURL_optionsSelector
+  , propertyForKeySelector
+  , sceneSourceWithData_optionsSelector
+  , sceneSourceWithURL_optionsSelector
+  , sceneWithOptions_errorSelector
+  , sceneWithOptions_statusHandlerSelector
   , urlSelector
-  , dataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,9 +63,7 @@ sceneSourceWithURL_options :: (IsNSURL url, IsNSDictionary options) => url -> op
 sceneSourceWithURL_options url options =
   do
     cls' <- getRequiredClass "SCNSceneSource"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "sceneSourceWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sceneSourceWithURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | sceneSourceWithData:options:
 --
@@ -83,9 +78,7 @@ sceneSourceWithData_options :: (IsNSData data_, IsNSDictionary options) => data_
 sceneSourceWithData_options data_ options =
   do
     cls' <- getRequiredClass "SCNSceneSource"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "sceneSourceWithData:options:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sceneSourceWithData_optionsSelector (toNSData data_) (toNSDictionary options)
 
 -- | initWithURL:options:
 --
@@ -97,10 +90,8 @@ sceneSourceWithData_options data_ options =
 --
 -- ObjC selector: @- initWithURL:options:@
 initWithURL_options :: (IsSCNSceneSource scnSceneSource, IsNSURL url, IsNSDictionary options) => scnSceneSource -> url -> options -> IO (Id SCNSceneSource)
-initWithURL_options scnSceneSource  url options =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg scnSceneSource (mkSelector "initWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_options scnSceneSource url options =
+  sendOwnedMessage scnSceneSource initWithURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | initWithData:options:
 --
@@ -112,10 +103,8 @@ initWithURL_options scnSceneSource  url options =
 --
 -- ObjC selector: @- initWithData:options:@
 initWithData_options :: (IsSCNSceneSource scnSceneSource, IsNSData data_, IsNSDictionary options) => scnSceneSource -> data_ -> options -> IO (Id SCNSceneSource)
-initWithData_options scnSceneSource  data_ options =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg scnSceneSource (mkSelector "initWithData:options:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithData_options scnSceneSource data_ options =
+  sendOwnedMessage scnSceneSource initWithData_optionsSelector (toNSData data_) (toNSDictionary options)
 
 -- | sceneWithOptions:statusHandler:
 --
@@ -127,9 +116,8 @@ initWithData_options scnSceneSource  data_ options =
 --
 -- ObjC selector: @- sceneWithOptions:statusHandler:@
 sceneWithOptions_statusHandler :: (IsSCNSceneSource scnSceneSource, IsNSDictionary options) => scnSceneSource -> options -> Ptr () -> IO (Id SCNScene)
-sceneWithOptions_statusHandler scnSceneSource  options statusHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg scnSceneSource (mkSelector "sceneWithOptions:statusHandler:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr statusHandler :: Ptr ())] >>= retainedObject . castPtr
+sceneWithOptions_statusHandler scnSceneSource options statusHandler =
+  sendMessage scnSceneSource sceneWithOptions_statusHandlerSelector (toNSDictionary options) statusHandler
 
 -- | sceneWithOptions:error:
 --
@@ -143,10 +131,8 @@ sceneWithOptions_statusHandler scnSceneSource  options statusHandler =
 --
 -- ObjC selector: @- sceneWithOptions:error:@
 sceneWithOptions_error :: (IsSCNSceneSource scnSceneSource, IsNSDictionary options, IsNSError error_) => scnSceneSource -> options -> error_ -> IO (Id SCNScene)
-sceneWithOptions_error scnSceneSource  options error_ =
-  withObjCPtr options $ \raw_options ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg scnSceneSource (mkSelector "sceneWithOptions:error:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+sceneWithOptions_error scnSceneSource options error_ =
+  sendMessage scnSceneSource sceneWithOptions_errorSelector (toNSDictionary options) (toNSError error_)
 
 -- | propertyForKey:
 --
@@ -156,9 +142,8 @@ sceneWithOptions_error scnSceneSource  options error_ =
 --
 -- ObjC selector: @- propertyForKey:@
 propertyForKey :: (IsSCNSceneSource scnSceneSource, IsNSString key) => scnSceneSource -> key -> IO RawId
-propertyForKey scnSceneSource  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg scnSceneSource (mkSelector "propertyForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+propertyForKey scnSceneSource key =
+  sendMessage scnSceneSource propertyForKeySelector (toNSString key)
 
 -- | entryWithIdentifier:classType:
 --
@@ -172,9 +157,8 @@ propertyForKey scnSceneSource  key =
 --
 -- ObjC selector: @- entryWithIdentifier:withClass:@
 entryWithIdentifier_withClass :: (IsSCNSceneSource scnSceneSource, IsNSString uid) => scnSceneSource -> uid -> Class -> IO RawId
-entryWithIdentifier_withClass scnSceneSource  uid entryClass =
-  withObjCPtr uid $ \raw_uid ->
-      fmap (RawId . castPtr) $ sendMsg scnSceneSource (mkSelector "entryWithIdentifier:withClass:") (retPtr retVoid) [argPtr (castPtr raw_uid :: Ptr ()), argPtr (unClass entryClass)]
+entryWithIdentifier_withClass scnSceneSource uid entryClass =
+  sendMessage scnSceneSource entryWithIdentifier_withClassSelector (toNSString uid) entryClass
 
 -- | identifiersOfEntriesWithClass:
 --
@@ -184,8 +168,8 @@ entryWithIdentifier_withClass scnSceneSource  uid entryClass =
 --
 -- ObjC selector: @- identifiersOfEntriesWithClass:@
 identifiersOfEntriesWithClass :: IsSCNSceneSource scnSceneSource => scnSceneSource -> Class -> IO (Id NSArray)
-identifiersOfEntriesWithClass scnSceneSource  entryClass =
-    sendMsg scnSceneSource (mkSelector "identifiersOfEntriesWithClass:") (retPtr retVoid) [argPtr (unClass entryClass)] >>= retainedObject . castPtr
+identifiersOfEntriesWithClass scnSceneSource entryClass =
+  sendMessage scnSceneSource identifiersOfEntriesWithClassSelector entryClass
 
 -- | entriesPassingTest:
 --
@@ -197,8 +181,8 @@ identifiersOfEntriesWithClass scnSceneSource  entryClass =
 --
 -- ObjC selector: @- entriesPassingTest:@
 entriesPassingTest :: IsSCNSceneSource scnSceneSource => scnSceneSource -> Ptr () -> IO (Id NSArray)
-entriesPassingTest scnSceneSource  predicate =
-    sendMsg scnSceneSource (mkSelector "entriesPassingTest:") (retPtr retVoid) [argPtr (castPtr predicate :: Ptr ())] >>= retainedObject . castPtr
+entriesPassingTest scnSceneSource predicate =
+  sendMessage scnSceneSource entriesPassingTestSelector predicate
 
 -- | url
 --
@@ -206,8 +190,8 @@ entriesPassingTest scnSceneSource  predicate =
 --
 -- ObjC selector: @- url@
 url :: IsSCNSceneSource scnSceneSource => scnSceneSource -> IO (Id NSURL)
-url scnSceneSource  =
-    sendMsg scnSceneSource (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url scnSceneSource =
+  sendMessage scnSceneSource urlSelector
 
 -- | data
 --
@@ -215,58 +199,58 @@ url scnSceneSource  =
 --
 -- ObjC selector: @- data@
 data_ :: IsSCNSceneSource scnSceneSource => scnSceneSource -> IO (Id NSData)
-data_ scnSceneSource  =
-    sendMsg scnSceneSource (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ scnSceneSource =
+  sendMessage scnSceneSource dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sceneSourceWithURL:options:@
-sceneSourceWithURL_optionsSelector :: Selector
+sceneSourceWithURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id SCNSceneSource)
 sceneSourceWithURL_optionsSelector = mkSelector "sceneSourceWithURL:options:"
 
 -- | @Selector@ for @sceneSourceWithData:options:@
-sceneSourceWithData_optionsSelector :: Selector
+sceneSourceWithData_optionsSelector :: Selector '[Id NSData, Id NSDictionary] (Id SCNSceneSource)
 sceneSourceWithData_optionsSelector = mkSelector "sceneSourceWithData:options:"
 
 -- | @Selector@ for @initWithURL:options:@
-initWithURL_optionsSelector :: Selector
+initWithURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id SCNSceneSource)
 initWithURL_optionsSelector = mkSelector "initWithURL:options:"
 
 -- | @Selector@ for @initWithData:options:@
-initWithData_optionsSelector :: Selector
+initWithData_optionsSelector :: Selector '[Id NSData, Id NSDictionary] (Id SCNSceneSource)
 initWithData_optionsSelector = mkSelector "initWithData:options:"
 
 -- | @Selector@ for @sceneWithOptions:statusHandler:@
-sceneWithOptions_statusHandlerSelector :: Selector
+sceneWithOptions_statusHandlerSelector :: Selector '[Id NSDictionary, Ptr ()] (Id SCNScene)
 sceneWithOptions_statusHandlerSelector = mkSelector "sceneWithOptions:statusHandler:"
 
 -- | @Selector@ for @sceneWithOptions:error:@
-sceneWithOptions_errorSelector :: Selector
+sceneWithOptions_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id SCNScene)
 sceneWithOptions_errorSelector = mkSelector "sceneWithOptions:error:"
 
 -- | @Selector@ for @propertyForKey:@
-propertyForKeySelector :: Selector
+propertyForKeySelector :: Selector '[Id NSString] RawId
 propertyForKeySelector = mkSelector "propertyForKey:"
 
 -- | @Selector@ for @entryWithIdentifier:withClass:@
-entryWithIdentifier_withClassSelector :: Selector
+entryWithIdentifier_withClassSelector :: Selector '[Id NSString, Class] RawId
 entryWithIdentifier_withClassSelector = mkSelector "entryWithIdentifier:withClass:"
 
 -- | @Selector@ for @identifiersOfEntriesWithClass:@
-identifiersOfEntriesWithClassSelector :: Selector
+identifiersOfEntriesWithClassSelector :: Selector '[Class] (Id NSArray)
 identifiersOfEntriesWithClassSelector = mkSelector "identifiersOfEntriesWithClass:"
 
 -- | @Selector@ for @entriesPassingTest:@
-entriesPassingTestSelector :: Selector
+entriesPassingTestSelector :: Selector '[Ptr ()] (Id NSArray)
 entriesPassingTestSelector = mkSelector "entriesPassingTest:"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 

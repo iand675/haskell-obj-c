@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRTestClusterClusterBooleanResponseParams
   , setValue
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , valueSelector
+  , setTimedInvokeTimeoutMsSelector
   , setValueSelector
   , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,14 +32,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- value@
 value :: IsMTRTestClusterClusterBooleanResponseParams mtrTestClusterClusterBooleanResponseParams => mtrTestClusterClusterBooleanResponseParams -> IO (Id NSNumber)
-value mtrTestClusterClusterBooleanResponseParams  =
-    sendMsg mtrTestClusterClusterBooleanResponseParams (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mtrTestClusterClusterBooleanResponseParams =
+  sendMessage mtrTestClusterClusterBooleanResponseParams valueSelector
 
 -- | @- setValue:@
 setValue :: (IsMTRTestClusterClusterBooleanResponseParams mtrTestClusterClusterBooleanResponseParams, IsNSNumber value) => mtrTestClusterClusterBooleanResponseParams -> value -> IO ()
-setValue mtrTestClusterClusterBooleanResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterBooleanResponseParams (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue mtrTestClusterClusterBooleanResponseParams value =
+  sendMessage mtrTestClusterClusterBooleanResponseParams setValueSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -52,8 +48,8 @@ setValue mtrTestClusterClusterBooleanResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTestClusterClusterBooleanResponseParams mtrTestClusterClusterBooleanResponseParams => mtrTestClusterClusterBooleanResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTestClusterClusterBooleanResponseParams  =
-    sendMsg mtrTestClusterClusterBooleanResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrTestClusterClusterBooleanResponseParams =
+  sendMessage mtrTestClusterClusterBooleanResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -63,27 +59,26 @@ timedInvokeTimeoutMs mtrTestClusterClusterBooleanResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTestClusterClusterBooleanResponseParams mtrTestClusterClusterBooleanResponseParams, IsNSNumber value) => mtrTestClusterClusterBooleanResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTestClusterClusterBooleanResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterBooleanResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrTestClusterClusterBooleanResponseParams value =
+  sendMessage mtrTestClusterClusterBooleanResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSNumber)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSNumber] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

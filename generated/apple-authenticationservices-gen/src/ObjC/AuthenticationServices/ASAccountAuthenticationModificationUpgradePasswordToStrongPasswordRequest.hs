@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.AuthenticationServices.ASAccountAuthenticationModificationUpgradePas
   , serviceIdentifier
   , userInfo
   , initWithUser_serviceIdentifier_userInfoSelector
-  , userSelector
   , serviceIdentifierSelector
   , userInfoSelector
+  , userSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,44 +42,41 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithUser:serviceIdentifier:userInfo:@
 initWithUser_serviceIdentifier_userInfo :: (IsASAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest, IsNSString user, IsASCredentialServiceIdentifier serviceIdentifier, IsNSDictionary userInfo) => asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest -> user -> serviceIdentifier -> userInfo -> IO (Id ASAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest)
-initWithUser_serviceIdentifier_userInfo asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest  user serviceIdentifier userInfo =
-  withObjCPtr user $ \raw_user ->
-    withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-      withObjCPtr userInfo $ \raw_userInfo ->
-          sendMsg asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest (mkSelector "initWithUser:serviceIdentifier:userInfo:") (retPtr retVoid) [argPtr (castPtr raw_user :: Ptr ()), argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ())] >>= ownedObject . castPtr
+initWithUser_serviceIdentifier_userInfo asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest user serviceIdentifier userInfo =
+  sendOwnedMessage asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest initWithUser_serviceIdentifier_userInfoSelector (toNSString user) (toASCredentialServiceIdentifier serviceIdentifier) (toNSDictionary userInfo)
 
 -- | @- user@
 user :: IsASAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest => asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest -> IO (Id NSString)
-user asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest  =
-    sendMsg asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest (mkSelector "user") (retPtr retVoid) [] >>= retainedObject . castPtr
+user asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest =
+  sendMessage asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest userSelector
 
 -- | @- serviceIdentifier@
 serviceIdentifier :: IsASAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest => asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest -> IO (Id ASCredentialServiceIdentifier)
-serviceIdentifier asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest  =
-    sendMsg asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest (mkSelector "serviceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+serviceIdentifier asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest =
+  sendMessage asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest serviceIdentifierSelector
 
 -- | @- userInfo@
 userInfo :: IsASAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest => asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest -> IO (Id NSDictionary)
-userInfo asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest  =
-    sendMsg asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest =
+  sendMessage asAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest userInfoSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUser:serviceIdentifier:userInfo:@
-initWithUser_serviceIdentifier_userInfoSelector :: Selector
+initWithUser_serviceIdentifier_userInfoSelector :: Selector '[Id NSString, Id ASCredentialServiceIdentifier, Id NSDictionary] (Id ASAccountAuthenticationModificationUpgradePasswordToStrongPasswordRequest)
 initWithUser_serviceIdentifier_userInfoSelector = mkSelector "initWithUser:serviceIdentifier:userInfo:"
 
 -- | @Selector@ for @user@
-userSelector :: Selector
+userSelector :: Selector '[] (Id NSString)
 userSelector = mkSelector "user"
 
 -- | @Selector@ for @serviceIdentifier@
-serviceIdentifierSelector :: Selector
+serviceIdentifierSelector :: Selector '[] (Id ASCredentialServiceIdentifier)
 serviceIdentifierSelector = mkSelector "serviceIdentifier"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 

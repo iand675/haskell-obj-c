@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.GameplayKit.GKAgent3D
   , updateWithDeltaTime
   , rightHanded
   , setRightHanded
-  , updateWithDeltaTimeSelector
   , rightHandedSelector
   , setRightHandedSelector
+  , updateWithDeltaTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,36 +34,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- updateWithDeltaTime:@
 updateWithDeltaTime :: IsGKAgent3D gkAgent3D => gkAgent3D -> CDouble -> IO ()
-updateWithDeltaTime gkAgent3D  seconds =
-    sendMsg gkAgent3D (mkSelector "updateWithDeltaTime:") retVoid [argCDouble seconds]
+updateWithDeltaTime gkAgent3D seconds =
+  sendMessage gkAgent3D updateWithDeltaTimeSelector seconds
 
 -- | Should this vehicle operate in a right-handed coordinate system? NO means it will be left-handed
 --
 -- ObjC selector: @- rightHanded@
 rightHanded :: IsGKAgent3D gkAgent3D => gkAgent3D -> IO Bool
-rightHanded gkAgent3D  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkAgent3D (mkSelector "rightHanded") retCULong []
+rightHanded gkAgent3D =
+  sendMessage gkAgent3D rightHandedSelector
 
 -- | Should this vehicle operate in a right-handed coordinate system? NO means it will be left-handed
 --
 -- ObjC selector: @- setRightHanded:@
 setRightHanded :: IsGKAgent3D gkAgent3D => gkAgent3D -> Bool -> IO ()
-setRightHanded gkAgent3D  value =
-    sendMsg gkAgent3D (mkSelector "setRightHanded:") retVoid [argCULong (if value then 1 else 0)]
+setRightHanded gkAgent3D value =
+  sendMessage gkAgent3D setRightHandedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateWithDeltaTime:@
-updateWithDeltaTimeSelector :: Selector
+updateWithDeltaTimeSelector :: Selector '[CDouble] ()
 updateWithDeltaTimeSelector = mkSelector "updateWithDeltaTime:"
 
 -- | @Selector@ for @rightHanded@
-rightHandedSelector :: Selector
+rightHandedSelector :: Selector '[] Bool
 rightHandedSelector = mkSelector "rightHanded"
 
 -- | @Selector@ for @setRightHanded:@
-setRightHandedSelector :: Selector
+setRightHandedSelector :: Selector '[Bool] ()
 setRightHandedSelector = mkSelector "setRightHanded:"
 

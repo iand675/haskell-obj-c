@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,22 +18,18 @@ module ObjC.PHASE.PHASEStringMetaParameterDefinition
   , initWithValue_identifier
   , initWithValue
   , initSelector
-  , newSelector
-  , initWithValue_identifierSelector
   , initWithValueSelector
+  , initWithValue_identifierSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEStringMetaParameterDefinition phaseStringMetaParameterDefinition => phaseStringMetaParameterDefinition -> IO (Id PHASEStringMetaParameterDefinition)
-init_ phaseStringMetaParameterDefinition  =
-    sendMsg phaseStringMetaParameterDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseStringMetaParameterDefinition =
+  sendOwnedMessage phaseStringMetaParameterDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEStringMetaParameterDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASEStringMetaParameterDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithValue:identifier
 --
@@ -63,10 +60,8 @@ new  =
 --
 -- ObjC selector: @- initWithValue:identifier:@
 initWithValue_identifier :: (IsPHASEStringMetaParameterDefinition phaseStringMetaParameterDefinition, IsNSString value, IsNSString identifier) => phaseStringMetaParameterDefinition -> value -> identifier -> IO (Id PHASEStringMetaParameterDefinition)
-initWithValue_identifier phaseStringMetaParameterDefinition  value identifier =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg phaseStringMetaParameterDefinition (mkSelector "initWithValue:identifier:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithValue_identifier phaseStringMetaParameterDefinition value identifier =
+  sendOwnedMessage phaseStringMetaParameterDefinition initWithValue_identifierSelector (toNSString value) (toNSString identifier)
 
 -- | initWithValue
 --
@@ -78,27 +73,26 @@ initWithValue_identifier phaseStringMetaParameterDefinition  value identifier =
 --
 -- ObjC selector: @- initWithValue:@
 initWithValue :: (IsPHASEStringMetaParameterDefinition phaseStringMetaParameterDefinition, IsNSString value) => phaseStringMetaParameterDefinition -> value -> IO (Id PHASEStringMetaParameterDefinition)
-initWithValue phaseStringMetaParameterDefinition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseStringMetaParameterDefinition (mkSelector "initWithValue:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ())] >>= ownedObject . castPtr
+initWithValue phaseStringMetaParameterDefinition value =
+  sendOwnedMessage phaseStringMetaParameterDefinition initWithValueSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEStringMetaParameterDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEStringMetaParameterDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithValue:identifier:@
-initWithValue_identifierSelector :: Selector
+initWithValue_identifierSelector :: Selector '[Id NSString, Id NSString] (Id PHASEStringMetaParameterDefinition)
 initWithValue_identifierSelector = mkSelector "initWithValue:identifier:"
 
 -- | @Selector@ for @initWithValue:@
-initWithValueSelector :: Selector
+initWithValueSelector :: Selector '[Id NSString] (Id PHASEStringMetaParameterDefinition)
 initWithValueSelector = mkSelector "initWithValue:"
 

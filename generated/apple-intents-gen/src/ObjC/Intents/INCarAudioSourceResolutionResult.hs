@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INCarAudioSourceResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithCarAudioSourceToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedCarAudioSourceSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithCarAudioSourceToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedCarAudioSourceSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INCarAudioSource(INCarAudioSource)
@@ -31,15 +32,11 @@ module ObjC.Intents.INCarAudioSourceResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,46 +49,46 @@ successWithResolvedCarAudioSource :: INCarAudioSource -> IO (Id INCarAudioSource
 successWithResolvedCarAudioSource resolvedCarAudioSource =
   do
     cls' <- getRequiredClass "INCarAudioSourceResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedCarAudioSource:") (retPtr retVoid) [argCLong (coerce resolvedCarAudioSource)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedCarAudioSourceSelector resolvedCarAudioSource
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INCarAudioSource -> IO (Id INCarAudioSourceResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INCarAudioSourceResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithCarAudioSourceToConfirm:@
 confirmationRequiredWithCarAudioSourceToConfirm :: INCarAudioSource -> IO (Id INCarAudioSourceResolutionResult)
 confirmationRequiredWithCarAudioSourceToConfirm carAudioSourceToConfirm =
   do
     cls' <- getRequiredClass "INCarAudioSourceResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithCarAudioSourceToConfirm:") (retPtr retVoid) [argCLong (coerce carAudioSourceToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithCarAudioSourceToConfirmSelector carAudioSourceToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INCarAudioSource -> IO (Id INCarAudioSourceResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INCarAudioSourceResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedCarAudioSource:@
-successWithResolvedCarAudioSourceSelector :: Selector
+successWithResolvedCarAudioSourceSelector :: Selector '[INCarAudioSource] (Id INCarAudioSourceResolutionResult)
 successWithResolvedCarAudioSourceSelector = mkSelector "successWithResolvedCarAudioSource:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INCarAudioSource] (Id INCarAudioSourceResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithCarAudioSourceToConfirm:@
-confirmationRequiredWithCarAudioSourceToConfirmSelector :: Selector
+confirmationRequiredWithCarAudioSourceToConfirmSelector :: Selector '[INCarAudioSource] (Id INCarAudioSourceResolutionResult)
 confirmationRequiredWithCarAudioSourceToConfirmSelector = mkSelector "confirmationRequiredWithCarAudioSourceToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INCarAudioSource] (Id INCarAudioSourceResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

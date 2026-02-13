@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -47,42 +48,42 @@ module ObjC.CoreWLAN.CWInterface
   , startIBSSModeWithSSID_security_channel_password_error
   , commitConfiguration_authorization_error
   , interfaceName
-  , powerOnSelector
-  , supportedWLANChannelsSelector
-  , wlanChannelSelector
   , activePHYModeSelector
-  , ssidSelector
-  , ssidDataSelector
+  , associateToEnterpriseNetwork_identity_username_password_errorSelector
+  , associateToNetwork_password_errorSelector
   , bssidSelector
-  , rssiValueSelector
-  , noiseMeasurementSelector
-  , securitySelector
-  , transmitRateSelector
-  , countryCodeSelector
-  , interfaceModeSelector
-  , transmitPowerSelector
-  , hardwareAddressSelector
-  , serviceActiveSelector
   , cachedScanResultsSelector
+  , commitConfiguration_authorization_errorSelector
   , configurationSelector
+  , countryCodeSelector
+  , disassociateSelector
+  , hardwareAddressSelector
+  , initWithInterfaceNameSelector
+  , interfaceModeSelector
+  , interfaceNameSelector
   , interfaceNamesSelector
   , interfaceSelector
   , interfaceWithNameSelector
-  , initWithInterfaceNameSelector
-  , setPower_errorSelector
-  , setWLANChannel_errorSelector
-  , setPairwiseMasterKey_errorSelector
-  , setWEPKey_flags_index_errorSelector
-  , scanForNetworksWithSSID_errorSelector
-  , scanForNetworksWithSSID_includeHidden_errorSelector
+  , noiseMeasurementSelector
+  , powerOnSelector
+  , rssiValueSelector
   , scanForNetworksWithName_errorSelector
   , scanForNetworksWithName_includeHidden_errorSelector
-  , associateToNetwork_password_errorSelector
-  , disassociateSelector
-  , associateToEnterpriseNetwork_identity_username_password_errorSelector
+  , scanForNetworksWithSSID_errorSelector
+  , scanForNetworksWithSSID_includeHidden_errorSelector
+  , securitySelector
+  , serviceActiveSelector
+  , setPairwiseMasterKey_errorSelector
+  , setPower_errorSelector
+  , setWEPKey_flags_index_errorSelector
+  , setWLANChannel_errorSelector
+  , ssidDataSelector
+  , ssidSelector
   , startIBSSModeWithSSID_security_channel_password_errorSelector
-  , commitConfiguration_authorization_errorSelector
-  , interfaceNameSelector
+  , supportedWLANChannelsSelector
+  , transmitPowerSelector
+  , transmitRateSelector
+  , wlanChannelSelector
 
   -- * Enum types
   , CWCipherKeyFlags(CWCipherKeyFlags)
@@ -129,15 +130,11 @@ module ObjC.CoreWLAN.CWInterface
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -154,8 +151,8 @@ import ObjC.SecurityFoundation.Internal.Classes
 --
 -- ObjC selector: @- powerOn@
 powerOn :: IsCWInterface cwInterface => cwInterface -> IO Bool
-powerOn cwInterface  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "powerOn") retCULong []
+powerOn cwInterface =
+  sendMessage cwInterface powerOnSelector
 
 -- | Returns: An NSSet of CWChannel objects.
 --
@@ -165,8 +162,8 @@ powerOn cwInterface  =
 --
 -- ObjC selector: @- supportedWLANChannels@
 supportedWLANChannels :: IsCWInterface cwInterface => cwInterface -> IO (Id NSSet)
-supportedWLANChannels cwInterface  =
-    sendMsg cwInterface (mkSelector "supportedWLANChannels") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedWLANChannels cwInterface =
+  sendMessage cwInterface supportedWLANChannelsSelector
 
 -- | Returns the current channel of the Wi-Fi interface.
 --
@@ -174,8 +171,8 @@ supportedWLANChannels cwInterface  =
 --
 -- ObjC selector: @- wlanChannel@
 wlanChannel :: IsCWInterface cwInterface => cwInterface -> IO (Id CWChannel)
-wlanChannel cwInterface  =
-    sendMsg cwInterface (mkSelector "wlanChannel") (retPtr retVoid) [] >>= retainedObject . castPtr
+wlanChannel cwInterface =
+  sendMessage cwInterface wlanChannelSelector
 
 -- | Returns the currently active physical layer (PHY) mode of the Wi-Fi interface.
 --
@@ -183,8 +180,8 @@ wlanChannel cwInterface  =
 --
 -- ObjC selector: @- activePHYMode@
 activePHYMode :: IsCWInterface cwInterface => cwInterface -> IO CWPHYMode
-activePHYMode cwInterface  =
-    fmap (coerce :: CLong -> CWPHYMode) $ sendMsg cwInterface (mkSelector "activePHYMode") retCLong []
+activePHYMode cwInterface =
+  sendMessage cwInterface activePHYModeSelector
 
 -- | Returns the current service set identifier (SSID) of the Wi-Fi interface, encoded as a string.
 --
@@ -196,8 +193,8 @@ activePHYMode cwInterface  =
 --
 -- ObjC selector: @- ssid@
 ssid :: IsCWInterface cwInterface => cwInterface -> IO (Id NSString)
-ssid cwInterface  =
-    sendMsg cwInterface (mkSelector "ssid") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssid cwInterface =
+  sendMessage cwInterface ssidSelector
 
 -- | Returns the current service set identifier (SSID) for the interface, encapsulated in an NSData object.
 --
@@ -209,8 +206,8 @@ ssid cwInterface  =
 --
 -- ObjC selector: @- ssidData@
 ssidData :: IsCWInterface cwInterface => cwInterface -> IO (Id NSData)
-ssidData cwInterface  =
-    sendMsg cwInterface (mkSelector "ssidData") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssidData cwInterface =
+  sendMessage cwInterface ssidDataSelector
 
 -- | Returns the current basic service set identifier (BSSID) of the Wi-Fi interface, returned as an UTF-8 string.
 --
@@ -222,8 +219,8 @@ ssidData cwInterface  =
 --
 -- ObjC selector: @- bssid@
 bssid :: IsCWInterface cwInterface => cwInterface -> IO (Id NSString)
-bssid cwInterface  =
-    sendMsg cwInterface (mkSelector "bssid") (retPtr retVoid) [] >>= retainedObject . castPtr
+bssid cwInterface =
+  sendMessage cwInterface bssidSelector
 
 -- | Returns the current received signal strength indication (RSSI) measurement (dBm) for the Wi-Fi interface.
 --
@@ -231,8 +228,8 @@ bssid cwInterface  =
 --
 -- ObjC selector: @- rssiValue@
 rssiValue :: IsCWInterface cwInterface => cwInterface -> IO CLong
-rssiValue cwInterface  =
-    sendMsg cwInterface (mkSelector "rssiValue") retCLong []
+rssiValue cwInterface =
+  sendMessage cwInterface rssiValueSelector
 
 -- | Returns the current noise measurement (dBm) for the Wi-Fi interface.
 --
@@ -240,8 +237,8 @@ rssiValue cwInterface  =
 --
 -- ObjC selector: @- noiseMeasurement@
 noiseMeasurement :: IsCWInterface cwInterface => cwInterface -> IO CLong
-noiseMeasurement cwInterface  =
-    sendMsg cwInterface (mkSelector "noiseMeasurement") retCLong []
+noiseMeasurement cwInterface =
+  sendMessage cwInterface noiseMeasurementSelector
 
 -- | Returns the current security type of the Wi-Fi interface.
 --
@@ -249,8 +246,8 @@ noiseMeasurement cwInterface  =
 --
 -- ObjC selector: @- security@
 security :: IsCWInterface cwInterface => cwInterface -> IO CWSecurity
-security cwInterface  =
-    fmap (coerce :: CLong -> CWSecurity) $ sendMsg cwInterface (mkSelector "security") retCLong []
+security cwInterface =
+  sendMessage cwInterface securitySelector
 
 -- | Returns the current transmit rate (Mbps) for the Wi-Fi interface.
 --
@@ -258,8 +255,8 @@ security cwInterface  =
 --
 -- ObjC selector: @- transmitRate@
 transmitRate :: IsCWInterface cwInterface => cwInterface -> IO CDouble
-transmitRate cwInterface  =
-    sendMsg cwInterface (mkSelector "transmitRate") retCDouble []
+transmitRate cwInterface =
+  sendMessage cwInterface transmitRateSelector
 
 -- | Returns the currently adopted country code (ISO/IEC 3166-1:1997) for the Wi-Fi interface.
 --
@@ -271,8 +268,8 @@ transmitRate cwInterface  =
 --
 -- ObjC selector: @- countryCode@
 countryCode :: IsCWInterface cwInterface => cwInterface -> IO (Id NSString)
-countryCode cwInterface  =
-    sendMsg cwInterface (mkSelector "countryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+countryCode cwInterface =
+  sendMessage cwInterface countryCodeSelector
 
 -- | Returns the current operating mode for the Wi-Fi interface.
 --
@@ -280,8 +277,8 @@ countryCode cwInterface  =
 --
 -- ObjC selector: @- interfaceMode@
 interfaceMode :: IsCWInterface cwInterface => cwInterface -> IO CWInterfaceMode
-interfaceMode cwInterface  =
-    fmap (coerce :: CLong -> CWInterfaceMode) $ sendMsg cwInterface (mkSelector "interfaceMode") retCLong []
+interfaceMode cwInterface =
+  sendMessage cwInterface interfaceModeSelector
 
 -- | Returns the current transmit power (mW) for the Wi-Fi interface.
 --
@@ -289,8 +286,8 @@ interfaceMode cwInterface  =
 --
 -- ObjC selector: @- transmitPower@
 transmitPower :: IsCWInterface cwInterface => cwInterface -> IO CLong
-transmitPower cwInterface  =
-    sendMsg cwInterface (mkSelector "transmitPower") retCLong []
+transmitPower cwInterface =
+  sendMessage cwInterface transmitPowerSelector
 
 -- | Returns the hardware media access control (MAC) address for the Wi-Fi interface, returned as an UTF-8 string.
 --
@@ -298,8 +295,8 @@ transmitPower cwInterface  =
 --
 -- ObjC selector: @- hardwareAddress@
 hardwareAddress :: IsCWInterface cwInterface => cwInterface -> IO (Id NSString)
-hardwareAddress cwInterface  =
-    sendMsg cwInterface (mkSelector "hardwareAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+hardwareAddress cwInterface =
+  sendMessage cwInterface hardwareAddressSelector
 
 -- | Returns: YES if the corresponding network service is active, NO otherwise.
 --
@@ -309,8 +306,8 @@ hardwareAddress cwInterface  =
 --
 -- ObjC selector: @- serviceActive@
 serviceActive :: IsCWInterface cwInterface => cwInterface -> IO Bool
-serviceActive cwInterface  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "serviceActive") retCULong []
+serviceActive cwInterface =
+  sendMessage cwInterface serviceActiveSelector
 
 -- | Returns: An NSSet of CWNetwork objects.
 --
@@ -320,8 +317,8 @@ serviceActive cwInterface  =
 --
 -- ObjC selector: @- cachedScanResults@
 cachedScanResults :: IsCWInterface cwInterface => cwInterface -> IO (Id NSSet)
-cachedScanResults cwInterface  =
-    sendMsg cwInterface (mkSelector "cachedScanResults") (retPtr retVoid) [] >>= retainedObject . castPtr
+cachedScanResults cwInterface =
+  sendMessage cwInterface cachedScanResultsSelector
 
 -- | Returns the current configuration for the Wi-Fi interface.
 --
@@ -329,8 +326,8 @@ cachedScanResults cwInterface  =
 --
 -- ObjC selector: @- configuration@
 configuration :: IsCWInterface cwInterface => cwInterface -> IO (Id CWConfiguration)
-configuration cwInterface  =
-    sendMsg cwInterface (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration cwInterface =
+  sendMessage cwInterface configurationSelector
 
 -- | Returns: An NSSet of NSString objects.
 --
@@ -343,7 +340,7 @@ interfaceNames :: IO (Id NSSet)
 interfaceNames  =
   do
     cls' <- getRequiredClass "CWInterface"
-    sendClassMsg cls' (mkSelector "interfaceNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' interfaceNamesSelector
 
 -- | Convenience method for getting a CWInterface object for the default Wi-Fi interface.
 --
@@ -352,7 +349,7 @@ interface :: IO (Id CWInterface)
 interface  =
   do
     cls' <- getRequiredClass "CWInterface"
-    sendClassMsg cls' (mkSelector "interface") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' interfaceSelector
 
 -- | @name@ — The name of an available Wi-Fi interface.
 --
@@ -365,8 +362,7 @@ interfaceWithName :: IsNSString name => name -> IO (Id CWInterface)
 interfaceWithName name =
   do
     cls' <- getRequiredClass "CWInterface"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "interfaceWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' interfaceWithNameSelector (toNSString name)
 
 -- | @name@ — The name of an available Wi-Fi interface.
 --
@@ -376,9 +372,8 @@ interfaceWithName name =
 --
 -- ObjC selector: @- initWithInterfaceName:@
 initWithInterfaceName :: (IsCWInterface cwInterface, IsNSString name) => cwInterface -> name -> IO (Id CWInterface)
-initWithInterfaceName cwInterface  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg cwInterface (mkSelector "initWithInterfaceName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithInterfaceName cwInterface name =
+  sendOwnedMessage cwInterface initWithInterfaceNameSelector (toNSString name)
 
 -- | @power@ — A BOOL value indicating Wi-Fi power state. Specify YES to turn on the Wi-Fi interface.
 --
@@ -390,9 +385,8 @@ initWithInterfaceName cwInterface  name =
 --
 -- ObjC selector: @- setPower:error:@
 setPower_error :: (IsCWInterface cwInterface, IsNSError error_) => cwInterface -> Bool -> error_ -> IO Bool
-setPower_error cwInterface  power error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "setPower:error:") retCULong [argCULong (if power then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+setPower_error cwInterface power error_ =
+  sendMessage cwInterface setPower_errorSelector power (toNSError error_)
 
 -- | @channel@ — A CWChannel object.
 --
@@ -406,10 +400,8 @@ setPower_error cwInterface  power error_ =
 --
 -- ObjC selector: @- setWLANChannel:error:@
 setWLANChannel_error :: (IsCWInterface cwInterface, IsCWChannel channel, IsNSError error_) => cwInterface -> channel -> error_ -> IO Bool
-setWLANChannel_error cwInterface  channel error_ =
-  withObjCPtr channel $ \raw_channel ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "setWLANChannel:error:") retCULong [argPtr (castPtr raw_channel :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setWLANChannel_error cwInterface channel error_ =
+  sendMessage cwInterface setWLANChannel_errorSelector (toCWChannel channel) (toNSError error_)
 
 -- | @key@ — An NSData object containing the pairwise master key (PMK). Passing nil clear the PMK for the Wi-Fi interface.
 --
@@ -423,10 +415,8 @@ setWLANChannel_error cwInterface  channel error_ =
 --
 -- ObjC selector: @- setPairwiseMasterKey:error:@
 setPairwiseMasterKey_error :: (IsCWInterface cwInterface, IsNSData key, IsNSError error_) => cwInterface -> key -> error_ -> IO Bool
-setPairwiseMasterKey_error cwInterface  key error_ =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "setPairwiseMasterKey:error:") retCULong [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setPairwiseMasterKey_error cwInterface key error_ =
+  sendMessage cwInterface setPairwiseMasterKey_errorSelector (toNSData key) (toNSError error_)
 
 -- | @key@ — An NSData object containing the WEP key. Passing nil clears the WEP key for the Wi-Fi interface.
 --
@@ -442,10 +432,8 @@ setPairwiseMasterKey_error cwInterface  key error_ =
 --
 -- ObjC selector: @- setWEPKey:flags:index:error:@
 setWEPKey_flags_index_error :: (IsCWInterface cwInterface, IsNSData key, IsNSError error_) => cwInterface -> key -> CWCipherKeyFlags -> CLong -> error_ -> IO Bool
-setWEPKey_flags_index_error cwInterface  key flags index error_ =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "setWEPKey:flags:index:error:") retCULong [argPtr (castPtr raw_key :: Ptr ()), argCULong (coerce flags), argCLong index, argPtr (castPtr raw_error_ :: Ptr ())]
+setWEPKey_flags_index_error cwInterface key flags index error_ =
+  sendMessage cwInterface setWEPKey_flags_index_errorSelector (toNSData key) flags index (toNSError error_)
 
 -- | @ssid@ — Probe request SSID.   Pass an SSID to perform a directed scan for hidden Wi-Fi networks. This parameter is optional.
 --
@@ -463,10 +451,8 @@ setWEPKey_flags_index_error cwInterface  key flags index error_ =
 --
 -- ObjC selector: @- scanForNetworksWithSSID:error:@
 scanForNetworksWithSSID_error :: (IsCWInterface cwInterface, IsNSData ssid, IsNSError error_) => cwInterface -> ssid -> error_ -> IO (Id NSSet)
-scanForNetworksWithSSID_error cwInterface  ssid error_ =
-  withObjCPtr ssid $ \raw_ssid ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg cwInterface (mkSelector "scanForNetworksWithSSID:error:") (retPtr retVoid) [argPtr (castPtr raw_ssid :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+scanForNetworksWithSSID_error cwInterface ssid error_ =
+  sendMessage cwInterface scanForNetworksWithSSID_errorSelector (toNSData ssid) (toNSError error_)
 
 -- | @ssid@ — Probe request SSID. Pass an SSID to perform a directed scan for hidden Wi-Fi networks. This parameter is optional.
 --
@@ -486,10 +472,8 @@ scanForNetworksWithSSID_error cwInterface  ssid error_ =
 --
 -- ObjC selector: @- scanForNetworksWithSSID:includeHidden:error:@
 scanForNetworksWithSSID_includeHidden_error :: (IsCWInterface cwInterface, IsNSData ssid, IsNSError error_) => cwInterface -> ssid -> Bool -> error_ -> IO (Id NSSet)
-scanForNetworksWithSSID_includeHidden_error cwInterface  ssid includeHidden error_ =
-  withObjCPtr ssid $ \raw_ssid ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg cwInterface (mkSelector "scanForNetworksWithSSID:includeHidden:error:") (retPtr retVoid) [argPtr (castPtr raw_ssid :: Ptr ()), argCULong (if includeHidden then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+scanForNetworksWithSSID_includeHidden_error cwInterface ssid includeHidden error_ =
+  sendMessage cwInterface scanForNetworksWithSSID_includeHidden_errorSelector (toNSData ssid) includeHidden (toNSError error_)
 
 -- | @networkName@ — Probe request SSID, encoded as an UTF-8 string. Pass a networkName to perform a directed scan for hidden Wi-Fi networks. This parameter is optional.
 --
@@ -507,10 +491,8 @@ scanForNetworksWithSSID_includeHidden_error cwInterface  ssid includeHidden erro
 --
 -- ObjC selector: @- scanForNetworksWithName:error:@
 scanForNetworksWithName_error :: (IsCWInterface cwInterface, IsNSString networkName, IsNSError error_) => cwInterface -> networkName -> error_ -> IO (Id NSSet)
-scanForNetworksWithName_error cwInterface  networkName error_ =
-  withObjCPtr networkName $ \raw_networkName ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg cwInterface (mkSelector "scanForNetworksWithName:error:") (retPtr retVoid) [argPtr (castPtr raw_networkName :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+scanForNetworksWithName_error cwInterface networkName error_ =
+  sendMessage cwInterface scanForNetworksWithName_errorSelector (toNSString networkName) (toNSError error_)
 
 -- | @networkName@ — Probe request SSID, encoded as an UTF-8 string. Pass a networkName to perform a directed scan for hidden Wi-Fi networks. This parameter is optional.
 --
@@ -530,10 +512,8 @@ scanForNetworksWithName_error cwInterface  networkName error_ =
 --
 -- ObjC selector: @- scanForNetworksWithName:includeHidden:error:@
 scanForNetworksWithName_includeHidden_error :: (IsCWInterface cwInterface, IsNSString networkName, IsNSError error_) => cwInterface -> networkName -> Bool -> error_ -> IO (Id NSSet)
-scanForNetworksWithName_includeHidden_error cwInterface  networkName includeHidden error_ =
-  withObjCPtr networkName $ \raw_networkName ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg cwInterface (mkSelector "scanForNetworksWithName:includeHidden:error:") (retPtr retVoid) [argPtr (castPtr raw_networkName :: Ptr ()), argCULong (if includeHidden then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+scanForNetworksWithName_includeHidden_error cwInterface networkName includeHidden error_ =
+  sendMessage cwInterface scanForNetworksWithName_includeHidden_errorSelector (toNSString networkName) includeHidden (toNSError error_)
 
 -- | @network@ — The network to which the Wi-Fi interface will associate.
 --
@@ -549,18 +529,15 @@ scanForNetworksWithName_includeHidden_error cwInterface  networkName includeHidd
 --
 -- ObjC selector: @- associateToNetwork:password:error:@
 associateToNetwork_password_error :: (IsCWInterface cwInterface, IsCWNetwork network, IsNSString password, IsNSError error_) => cwInterface -> network -> password -> error_ -> IO Bool
-associateToNetwork_password_error cwInterface  network password error_ =
-  withObjCPtr network $ \raw_network ->
-    withObjCPtr password $ \raw_password ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "associateToNetwork:password:error:") retCULong [argPtr (castPtr raw_network :: Ptr ()), argPtr (castPtr raw_password :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+associateToNetwork_password_error cwInterface network password error_ =
+  sendMessage cwInterface associateToNetwork_password_errorSelector (toCWNetwork network) (toNSString password) (toNSError error_)
 
 -- | Disassociates from the current Wi-Fi network.
 --
 -- ObjC selector: @- disassociate@
 disassociate :: IsCWInterface cwInterface => cwInterface -> IO ()
-disassociate cwInterface  =
-    sendMsg cwInterface (mkSelector "disassociate") retVoid []
+disassociate cwInterface =
+  sendMessage cwInterface disassociateSelector
 
 -- | @network@ — The network to which the Wi-Fi interface will associate.
 --
@@ -580,12 +557,8 @@ disassociate cwInterface  =
 --
 -- ObjC selector: @- associateToEnterpriseNetwork:identity:username:password:error:@
 associateToEnterpriseNetwork_identity_username_password_error :: (IsCWInterface cwInterface, IsCWNetwork network, IsNSString username, IsNSString password, IsNSError error_) => cwInterface -> network -> Ptr () -> username -> password -> error_ -> IO Bool
-associateToEnterpriseNetwork_identity_username_password_error cwInterface  network identity username password error_ =
-  withObjCPtr network $ \raw_network ->
-    withObjCPtr username $ \raw_username ->
-      withObjCPtr password $ \raw_password ->
-        withObjCPtr error_ $ \raw_error_ ->
-            fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "associateToEnterpriseNetwork:identity:username:password:error:") retCULong [argPtr (castPtr raw_network :: Ptr ()), argPtr identity, argPtr (castPtr raw_username :: Ptr ()), argPtr (castPtr raw_password :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+associateToEnterpriseNetwork_identity_username_password_error cwInterface network identity username password error_ =
+  sendMessage cwInterface associateToEnterpriseNetwork_identity_username_password_errorSelector (toCWNetwork network) identity (toNSString username) (toNSString password) (toNSError error_)
 
 -- | @ssidData@ — The SSID to use for the IBSS network. Pass nil to use the machine name as the IBSS network name.
 --
@@ -603,11 +576,8 @@ associateToEnterpriseNetwork_identity_username_password_error cwInterface  netwo
 --
 -- ObjC selector: @- startIBSSModeWithSSID:security:channel:password:error:@
 startIBSSModeWithSSID_security_channel_password_error :: (IsCWInterface cwInterface, IsNSData ssidData, IsNSString password, IsNSError error_) => cwInterface -> ssidData -> CWIBSSModeSecurity -> CULong -> password -> error_ -> IO Bool
-startIBSSModeWithSSID_security_channel_password_error cwInterface  ssidData security channel password error_ =
-  withObjCPtr ssidData $ \raw_ssidData ->
-    withObjCPtr password $ \raw_password ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "startIBSSModeWithSSID:security:channel:password:error:") retCULong [argPtr (castPtr raw_ssidData :: Ptr ()), argCLong (coerce security), argCULong channel, argPtr (castPtr raw_password :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+startIBSSModeWithSSID_security_channel_password_error cwInterface ssidData security channel password error_ =
+  sendMessage cwInterface startIBSSModeWithSSID_security_channel_password_errorSelector (toNSData ssidData) security channel (toNSString password) (toNSError error_)
 
 -- | @configuration@ — The Wi-Fi configuration to commit to disk.
 --
@@ -623,164 +593,161 @@ startIBSSModeWithSSID_security_channel_password_error cwInterface  ssidData secu
 --
 -- ObjC selector: @- commitConfiguration:authorization:error:@
 commitConfiguration_authorization_error :: (IsCWInterface cwInterface, IsCWConfiguration configuration, IsSFAuthorization authorization, IsNSError error_) => cwInterface -> configuration -> authorization -> error_ -> IO Bool
-commitConfiguration_authorization_error cwInterface  configuration authorization error_ =
-  withObjCPtr configuration $ \raw_configuration ->
-    withObjCPtr authorization $ \raw_authorization ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwInterface (mkSelector "commitConfiguration:authorization:error:") retCULong [argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_authorization :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+commitConfiguration_authorization_error cwInterface configuration authorization error_ =
+  sendMessage cwInterface commitConfiguration_authorization_errorSelector (toCWConfiguration configuration) (toSFAuthorization authorization) (toNSError error_)
 
 -- | Returns the BSD name of the Wi-Fi interface (e.g. "en0").
 --
 -- ObjC selector: @- interfaceName@
 interfaceName :: IsCWInterface cwInterface => cwInterface -> IO RawId
-interfaceName cwInterface  =
-    fmap (RawId . castPtr) $ sendMsg cwInterface (mkSelector "interfaceName") (retPtr retVoid) []
+interfaceName cwInterface =
+  sendMessage cwInterface interfaceNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @powerOn@
-powerOnSelector :: Selector
+powerOnSelector :: Selector '[] Bool
 powerOnSelector = mkSelector "powerOn"
 
 -- | @Selector@ for @supportedWLANChannels@
-supportedWLANChannelsSelector :: Selector
+supportedWLANChannelsSelector :: Selector '[] (Id NSSet)
 supportedWLANChannelsSelector = mkSelector "supportedWLANChannels"
 
 -- | @Selector@ for @wlanChannel@
-wlanChannelSelector :: Selector
+wlanChannelSelector :: Selector '[] (Id CWChannel)
 wlanChannelSelector = mkSelector "wlanChannel"
 
 -- | @Selector@ for @activePHYMode@
-activePHYModeSelector :: Selector
+activePHYModeSelector :: Selector '[] CWPHYMode
 activePHYModeSelector = mkSelector "activePHYMode"
 
 -- | @Selector@ for @ssid@
-ssidSelector :: Selector
+ssidSelector :: Selector '[] (Id NSString)
 ssidSelector = mkSelector "ssid"
 
 -- | @Selector@ for @ssidData@
-ssidDataSelector :: Selector
+ssidDataSelector :: Selector '[] (Id NSData)
 ssidDataSelector = mkSelector "ssidData"
 
 -- | @Selector@ for @bssid@
-bssidSelector :: Selector
+bssidSelector :: Selector '[] (Id NSString)
 bssidSelector = mkSelector "bssid"
 
 -- | @Selector@ for @rssiValue@
-rssiValueSelector :: Selector
+rssiValueSelector :: Selector '[] CLong
 rssiValueSelector = mkSelector "rssiValue"
 
 -- | @Selector@ for @noiseMeasurement@
-noiseMeasurementSelector :: Selector
+noiseMeasurementSelector :: Selector '[] CLong
 noiseMeasurementSelector = mkSelector "noiseMeasurement"
 
 -- | @Selector@ for @security@
-securitySelector :: Selector
+securitySelector :: Selector '[] CWSecurity
 securitySelector = mkSelector "security"
 
 -- | @Selector@ for @transmitRate@
-transmitRateSelector :: Selector
+transmitRateSelector :: Selector '[] CDouble
 transmitRateSelector = mkSelector "transmitRate"
 
 -- | @Selector@ for @countryCode@
-countryCodeSelector :: Selector
+countryCodeSelector :: Selector '[] (Id NSString)
 countryCodeSelector = mkSelector "countryCode"
 
 -- | @Selector@ for @interfaceMode@
-interfaceModeSelector :: Selector
+interfaceModeSelector :: Selector '[] CWInterfaceMode
 interfaceModeSelector = mkSelector "interfaceMode"
 
 -- | @Selector@ for @transmitPower@
-transmitPowerSelector :: Selector
+transmitPowerSelector :: Selector '[] CLong
 transmitPowerSelector = mkSelector "transmitPower"
 
 -- | @Selector@ for @hardwareAddress@
-hardwareAddressSelector :: Selector
+hardwareAddressSelector :: Selector '[] (Id NSString)
 hardwareAddressSelector = mkSelector "hardwareAddress"
 
 -- | @Selector@ for @serviceActive@
-serviceActiveSelector :: Selector
+serviceActiveSelector :: Selector '[] Bool
 serviceActiveSelector = mkSelector "serviceActive"
 
 -- | @Selector@ for @cachedScanResults@
-cachedScanResultsSelector :: Selector
+cachedScanResultsSelector :: Selector '[] (Id NSSet)
 cachedScanResultsSelector = mkSelector "cachedScanResults"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id CWConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @interfaceNames@
-interfaceNamesSelector :: Selector
+interfaceNamesSelector :: Selector '[] (Id NSSet)
 interfaceNamesSelector = mkSelector "interfaceNames"
 
 -- | @Selector@ for @interface@
-interfaceSelector :: Selector
+interfaceSelector :: Selector '[] (Id CWInterface)
 interfaceSelector = mkSelector "interface"
 
 -- | @Selector@ for @interfaceWithName:@
-interfaceWithNameSelector :: Selector
+interfaceWithNameSelector :: Selector '[Id NSString] (Id CWInterface)
 interfaceWithNameSelector = mkSelector "interfaceWithName:"
 
 -- | @Selector@ for @initWithInterfaceName:@
-initWithInterfaceNameSelector :: Selector
+initWithInterfaceNameSelector :: Selector '[Id NSString] (Id CWInterface)
 initWithInterfaceNameSelector = mkSelector "initWithInterfaceName:"
 
 -- | @Selector@ for @setPower:error:@
-setPower_errorSelector :: Selector
+setPower_errorSelector :: Selector '[Bool, Id NSError] Bool
 setPower_errorSelector = mkSelector "setPower:error:"
 
 -- | @Selector@ for @setWLANChannel:error:@
-setWLANChannel_errorSelector :: Selector
+setWLANChannel_errorSelector :: Selector '[Id CWChannel, Id NSError] Bool
 setWLANChannel_errorSelector = mkSelector "setWLANChannel:error:"
 
 -- | @Selector@ for @setPairwiseMasterKey:error:@
-setPairwiseMasterKey_errorSelector :: Selector
+setPairwiseMasterKey_errorSelector :: Selector '[Id NSData, Id NSError] Bool
 setPairwiseMasterKey_errorSelector = mkSelector "setPairwiseMasterKey:error:"
 
 -- | @Selector@ for @setWEPKey:flags:index:error:@
-setWEPKey_flags_index_errorSelector :: Selector
+setWEPKey_flags_index_errorSelector :: Selector '[Id NSData, CWCipherKeyFlags, CLong, Id NSError] Bool
 setWEPKey_flags_index_errorSelector = mkSelector "setWEPKey:flags:index:error:"
 
 -- | @Selector@ for @scanForNetworksWithSSID:error:@
-scanForNetworksWithSSID_errorSelector :: Selector
+scanForNetworksWithSSID_errorSelector :: Selector '[Id NSData, Id NSError] (Id NSSet)
 scanForNetworksWithSSID_errorSelector = mkSelector "scanForNetworksWithSSID:error:"
 
 -- | @Selector@ for @scanForNetworksWithSSID:includeHidden:error:@
-scanForNetworksWithSSID_includeHidden_errorSelector :: Selector
+scanForNetworksWithSSID_includeHidden_errorSelector :: Selector '[Id NSData, Bool, Id NSError] (Id NSSet)
 scanForNetworksWithSSID_includeHidden_errorSelector = mkSelector "scanForNetworksWithSSID:includeHidden:error:"
 
 -- | @Selector@ for @scanForNetworksWithName:error:@
-scanForNetworksWithName_errorSelector :: Selector
+scanForNetworksWithName_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSSet)
 scanForNetworksWithName_errorSelector = mkSelector "scanForNetworksWithName:error:"
 
 -- | @Selector@ for @scanForNetworksWithName:includeHidden:error:@
-scanForNetworksWithName_includeHidden_errorSelector :: Selector
+scanForNetworksWithName_includeHidden_errorSelector :: Selector '[Id NSString, Bool, Id NSError] (Id NSSet)
 scanForNetworksWithName_includeHidden_errorSelector = mkSelector "scanForNetworksWithName:includeHidden:error:"
 
 -- | @Selector@ for @associateToNetwork:password:error:@
-associateToNetwork_password_errorSelector :: Selector
+associateToNetwork_password_errorSelector :: Selector '[Id CWNetwork, Id NSString, Id NSError] Bool
 associateToNetwork_password_errorSelector = mkSelector "associateToNetwork:password:error:"
 
 -- | @Selector@ for @disassociate@
-disassociateSelector :: Selector
+disassociateSelector :: Selector '[] ()
 disassociateSelector = mkSelector "disassociate"
 
 -- | @Selector@ for @associateToEnterpriseNetwork:identity:username:password:error:@
-associateToEnterpriseNetwork_identity_username_password_errorSelector :: Selector
+associateToEnterpriseNetwork_identity_username_password_errorSelector :: Selector '[Id CWNetwork, Ptr (), Id NSString, Id NSString, Id NSError] Bool
 associateToEnterpriseNetwork_identity_username_password_errorSelector = mkSelector "associateToEnterpriseNetwork:identity:username:password:error:"
 
 -- | @Selector@ for @startIBSSModeWithSSID:security:channel:password:error:@
-startIBSSModeWithSSID_security_channel_password_errorSelector :: Selector
+startIBSSModeWithSSID_security_channel_password_errorSelector :: Selector '[Id NSData, CWIBSSModeSecurity, CULong, Id NSString, Id NSError] Bool
 startIBSSModeWithSSID_security_channel_password_errorSelector = mkSelector "startIBSSModeWithSSID:security:channel:password:error:"
 
 -- | @Selector@ for @commitConfiguration:authorization:error:@
-commitConfiguration_authorization_errorSelector :: Selector
+commitConfiguration_authorization_errorSelector :: Selector '[Id CWConfiguration, Id SFAuthorization, Id NSError] Bool
 commitConfiguration_authorization_errorSelector = mkSelector "commitConfiguration:authorization:error:"
 
 -- | @Selector@ for @interfaceName@
-interfaceNameSelector :: Selector
+interfaceNameSelector :: Selector '[] RawId
 interfaceNameSelector = mkSelector "interfaceName"
 

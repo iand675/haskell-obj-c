@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRActionsClusterPauseActionParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , actionIDSelector
-  , setActionIDSelector
   , invokeIDSelector
-  , setInvokeIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setActionIDSelector
+  , setInvokeIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- actionID@
 actionID :: IsMTRActionsClusterPauseActionParams mtrActionsClusterPauseActionParams => mtrActionsClusterPauseActionParams -> IO (Id NSNumber)
-actionID mtrActionsClusterPauseActionParams  =
-    sendMsg mtrActionsClusterPauseActionParams (mkSelector "actionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+actionID mtrActionsClusterPauseActionParams =
+  sendMessage mtrActionsClusterPauseActionParams actionIDSelector
 
 -- | @- setActionID:@
 setActionID :: (IsMTRActionsClusterPauseActionParams mtrActionsClusterPauseActionParams, IsNSNumber value) => mtrActionsClusterPauseActionParams -> value -> IO ()
-setActionID mtrActionsClusterPauseActionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterPauseActionParams (mkSelector "setActionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActionID mtrActionsClusterPauseActionParams value =
+  sendMessage mtrActionsClusterPauseActionParams setActionIDSelector (toNSNumber value)
 
 -- | @- invokeID@
 invokeID :: IsMTRActionsClusterPauseActionParams mtrActionsClusterPauseActionParams => mtrActionsClusterPauseActionParams -> IO (Id NSNumber)
-invokeID mtrActionsClusterPauseActionParams  =
-    sendMsg mtrActionsClusterPauseActionParams (mkSelector "invokeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+invokeID mtrActionsClusterPauseActionParams =
+  sendMessage mtrActionsClusterPauseActionParams invokeIDSelector
 
 -- | @- setInvokeID:@
 setInvokeID :: (IsMTRActionsClusterPauseActionParams mtrActionsClusterPauseActionParams, IsNSNumber value) => mtrActionsClusterPauseActionParams -> value -> IO ()
-setInvokeID mtrActionsClusterPauseActionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterPauseActionParams (mkSelector "setInvokeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInvokeID mtrActionsClusterPauseActionParams value =
+  sendMessage mtrActionsClusterPauseActionParams setInvokeIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setInvokeID mtrActionsClusterPauseActionParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRActionsClusterPauseActionParams mtrActionsClusterPauseActionParams => mtrActionsClusterPauseActionParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrActionsClusterPauseActionParams  =
-    sendMsg mtrActionsClusterPauseActionParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrActionsClusterPauseActionParams =
+  sendMessage mtrActionsClusterPauseActionParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrActionsClusterPauseActionParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRActionsClusterPauseActionParams mtrActionsClusterPauseActionParams, IsNSNumber value) => mtrActionsClusterPauseActionParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrActionsClusterPauseActionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterPauseActionParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrActionsClusterPauseActionParams value =
+  sendMessage mtrActionsClusterPauseActionParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrActionsClusterPauseActionParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRActionsClusterPauseActionParams mtrActionsClusterPauseActionParams => mtrActionsClusterPauseActionParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrActionsClusterPauseActionParams  =
-    sendMsg mtrActionsClusterPauseActionParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrActionsClusterPauseActionParams =
+  sendMessage mtrActionsClusterPauseActionParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrActionsClusterPauseActionParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRActionsClusterPauseActionParams mtrActionsClusterPauseActionParams, IsNSNumber value) => mtrActionsClusterPauseActionParams -> value -> IO ()
-setServerSideProcessingTimeout mtrActionsClusterPauseActionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterPauseActionParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrActionsClusterPauseActionParams value =
+  sendMessage mtrActionsClusterPauseActionParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @actionID@
-actionIDSelector :: Selector
+actionIDSelector :: Selector '[] (Id NSNumber)
 actionIDSelector = mkSelector "actionID"
 
 -- | @Selector@ for @setActionID:@
-setActionIDSelector :: Selector
+setActionIDSelector :: Selector '[Id NSNumber] ()
 setActionIDSelector = mkSelector "setActionID:"
 
 -- | @Selector@ for @invokeID@
-invokeIDSelector :: Selector
+invokeIDSelector :: Selector '[] (Id NSNumber)
 invokeIDSelector = mkSelector "invokeID"
 
 -- | @Selector@ for @setInvokeID:@
-setInvokeIDSelector :: Selector
+setInvokeIDSelector :: Selector '[Id NSNumber] ()
 setInvokeIDSelector = mkSelector "setInvokeID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

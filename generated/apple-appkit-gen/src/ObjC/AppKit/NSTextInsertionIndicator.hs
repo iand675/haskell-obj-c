@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,13 +16,13 @@ module ObjC.AppKit.NSTextInsertionIndicator
   , setAutomaticModeOptions
   , effectsViewInserter
   , setEffectsViewInserter
-  , displayModeSelector
-  , setDisplayModeSelector
-  , colorSelector
-  , setColorSelector
   , automaticModeOptionsSelector
-  , setAutomaticModeOptionsSelector
+  , colorSelector
+  , displayModeSelector
   , effectsViewInserterSelector
+  , setAutomaticModeOptionsSelector
+  , setColorSelector
+  , setDisplayModeSelector
   , setEffectsViewInserterSelector
 
   -- * Enum types
@@ -35,15 +36,11 @@ module ObjC.AppKit.NSTextInsertionIndicator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,15 +52,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- displayMode@
 displayMode :: IsNSTextInsertionIndicator nsTextInsertionIndicator => nsTextInsertionIndicator -> IO NSTextInsertionIndicatorDisplayMode
-displayMode nsTextInsertionIndicator  =
-    fmap (coerce :: CLong -> NSTextInsertionIndicatorDisplayMode) $ sendMsg nsTextInsertionIndicator (mkSelector "displayMode") retCLong []
+displayMode nsTextInsertionIndicator =
+  sendMessage nsTextInsertionIndicator displayModeSelector
 
 -- | Sets-returns the indicator's display mode.
 --
 -- ObjC selector: @- setDisplayMode:@
 setDisplayMode :: IsNSTextInsertionIndicator nsTextInsertionIndicator => nsTextInsertionIndicator -> NSTextInsertionIndicatorDisplayMode -> IO ()
-setDisplayMode nsTextInsertionIndicator  value =
-    sendMsg nsTextInsertionIndicator (mkSelector "setDisplayMode:") retVoid [argCLong (coerce value)]
+setDisplayMode nsTextInsertionIndicator value =
+  sendMessage nsTextInsertionIndicator setDisplayModeSelector value
 
 -- | The color of the indicator.
 --
@@ -73,8 +70,8 @@ setDisplayMode nsTextInsertionIndicator  value =
 --
 -- ObjC selector: @- color@
 color :: IsNSTextInsertionIndicator nsTextInsertionIndicator => nsTextInsertionIndicator -> IO (Id NSColor)
-color nsTextInsertionIndicator  =
-    sendMsg nsTextInsertionIndicator (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color nsTextInsertionIndicator =
+  sendMessage nsTextInsertionIndicator colorSelector
 
 -- | The color of the indicator.
 --
@@ -84,23 +81,22 @@ color nsTextInsertionIndicator  =
 --
 -- ObjC selector: @- setColor:@
 setColor :: (IsNSTextInsertionIndicator nsTextInsertionIndicator, IsNSColor value) => nsTextInsertionIndicator -> value -> IO ()
-setColor nsTextInsertionIndicator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextInsertionIndicator (mkSelector "setColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColor nsTextInsertionIndicator value =
+  sendMessage nsTextInsertionIndicator setColorSelector (toNSColor value)
 
 -- | Options for the NSTextInsertionIndicatorDisplayModeAutomatic display mode. Defaults to NSTextInsertionIndicatorAutomaticModeOptionsShowEffectsView.
 --
 -- ObjC selector: @- automaticModeOptions@
 automaticModeOptions :: IsNSTextInsertionIndicator nsTextInsertionIndicator => nsTextInsertionIndicator -> IO NSTextInsertionIndicatorAutomaticModeOptions
-automaticModeOptions nsTextInsertionIndicator  =
-    fmap (coerce :: CLong -> NSTextInsertionIndicatorAutomaticModeOptions) $ sendMsg nsTextInsertionIndicator (mkSelector "automaticModeOptions") retCLong []
+automaticModeOptions nsTextInsertionIndicator =
+  sendMessage nsTextInsertionIndicator automaticModeOptionsSelector
 
 -- | Options for the NSTextInsertionIndicatorDisplayModeAutomatic display mode. Defaults to NSTextInsertionIndicatorAutomaticModeOptionsShowEffectsView.
 --
 -- ObjC selector: @- setAutomaticModeOptions:@
 setAutomaticModeOptions :: IsNSTextInsertionIndicator nsTextInsertionIndicator => nsTextInsertionIndicator -> NSTextInsertionIndicatorAutomaticModeOptions -> IO ()
-setAutomaticModeOptions nsTextInsertionIndicator  value =
-    sendMsg nsTextInsertionIndicator (mkSelector "setAutomaticModeOptions:") retVoid [argCLong (coerce value)]
+setAutomaticModeOptions nsTextInsertionIndicator value =
+  sendMessage nsTextInsertionIndicator setAutomaticModeOptionsSelector value
 
 -- | Sets-returns a block that inserts a view into the view hierarchy.
 --
@@ -108,8 +104,8 @@ setAutomaticModeOptions nsTextInsertionIndicator  value =
 --
 -- ObjC selector: @- effectsViewInserter@
 effectsViewInserter :: IsNSTextInsertionIndicator nsTextInsertionIndicator => nsTextInsertionIndicator -> IO (Ptr ())
-effectsViewInserter nsTextInsertionIndicator  =
-    fmap castPtr $ sendMsg nsTextInsertionIndicator (mkSelector "effectsViewInserter") (retPtr retVoid) []
+effectsViewInserter nsTextInsertionIndicator =
+  sendMessage nsTextInsertionIndicator effectsViewInserterSelector
 
 -- | Sets-returns a block that inserts a view into the view hierarchy.
 --
@@ -117,42 +113,42 @@ effectsViewInserter nsTextInsertionIndicator  =
 --
 -- ObjC selector: @- setEffectsViewInserter:@
 setEffectsViewInserter :: IsNSTextInsertionIndicator nsTextInsertionIndicator => nsTextInsertionIndicator -> Ptr () -> IO ()
-setEffectsViewInserter nsTextInsertionIndicator  value =
-    sendMsg nsTextInsertionIndicator (mkSelector "setEffectsViewInserter:") retVoid [argPtr (castPtr value :: Ptr ())]
+setEffectsViewInserter nsTextInsertionIndicator value =
+  sendMessage nsTextInsertionIndicator setEffectsViewInserterSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @displayMode@
-displayModeSelector :: Selector
+displayModeSelector :: Selector '[] NSTextInsertionIndicatorDisplayMode
 displayModeSelector = mkSelector "displayMode"
 
 -- | @Selector@ for @setDisplayMode:@
-setDisplayModeSelector :: Selector
+setDisplayModeSelector :: Selector '[NSTextInsertionIndicatorDisplayMode] ()
 setDisplayModeSelector = mkSelector "setDisplayMode:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSColor)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Id NSColor] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @automaticModeOptions@
-automaticModeOptionsSelector :: Selector
+automaticModeOptionsSelector :: Selector '[] NSTextInsertionIndicatorAutomaticModeOptions
 automaticModeOptionsSelector = mkSelector "automaticModeOptions"
 
 -- | @Selector@ for @setAutomaticModeOptions:@
-setAutomaticModeOptionsSelector :: Selector
+setAutomaticModeOptionsSelector :: Selector '[NSTextInsertionIndicatorAutomaticModeOptions] ()
 setAutomaticModeOptionsSelector = mkSelector "setAutomaticModeOptions:"
 
 -- | @Selector@ for @effectsViewInserter@
-effectsViewInserterSelector :: Selector
+effectsViewInserterSelector :: Selector '[] (Ptr ())
 effectsViewInserterSelector = mkSelector "effectsViewInserter"
 
 -- | @Selector@ for @setEffectsViewInserter:@
-setEffectsViewInserterSelector :: Selector
+setEffectsViewInserterSelector :: Selector '[Ptr ()] ()
 setEffectsViewInserterSelector = mkSelector "setEffectsViewInserter:"
 

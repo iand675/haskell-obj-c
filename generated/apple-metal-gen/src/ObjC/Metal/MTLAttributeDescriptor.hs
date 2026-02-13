@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.Metal.MTLAttributeDescriptor
   , setOffset
   , bufferIndex
   , setBufferIndex
-  , formatSelector
-  , setFormatSelector
-  , offsetSelector
-  , setOffsetSelector
   , bufferIndexSelector
+  , formatSelector
+  , offsetSelector
   , setBufferIndexSelector
+  , setFormatSelector
+  , setOffsetSelector
 
   -- * Enum types
   , MTLAttributeFormat(MTLAttributeFormat)
@@ -79,15 +80,11 @@ module ObjC.Metal.MTLAttributeDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -97,59 +94,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- format@
 format :: IsMTLAttributeDescriptor mtlAttributeDescriptor => mtlAttributeDescriptor -> IO MTLAttributeFormat
-format mtlAttributeDescriptor  =
-    fmap (coerce :: CULong -> MTLAttributeFormat) $ sendMsg mtlAttributeDescriptor (mkSelector "format") retCULong []
+format mtlAttributeDescriptor =
+  sendMessage mtlAttributeDescriptor formatSelector
 
 -- | @- setFormat:@
 setFormat :: IsMTLAttributeDescriptor mtlAttributeDescriptor => mtlAttributeDescriptor -> MTLAttributeFormat -> IO ()
-setFormat mtlAttributeDescriptor  value =
-    sendMsg mtlAttributeDescriptor (mkSelector "setFormat:") retVoid [argCULong (coerce value)]
+setFormat mtlAttributeDescriptor value =
+  sendMessage mtlAttributeDescriptor setFormatSelector value
 
 -- | @- offset@
 offset :: IsMTLAttributeDescriptor mtlAttributeDescriptor => mtlAttributeDescriptor -> IO CULong
-offset mtlAttributeDescriptor  =
-    sendMsg mtlAttributeDescriptor (mkSelector "offset") retCULong []
+offset mtlAttributeDescriptor =
+  sendMessage mtlAttributeDescriptor offsetSelector
 
 -- | @- setOffset:@
 setOffset :: IsMTLAttributeDescriptor mtlAttributeDescriptor => mtlAttributeDescriptor -> CULong -> IO ()
-setOffset mtlAttributeDescriptor  value =
-    sendMsg mtlAttributeDescriptor (mkSelector "setOffset:") retVoid [argCULong value]
+setOffset mtlAttributeDescriptor value =
+  sendMessage mtlAttributeDescriptor setOffsetSelector value
 
 -- | @- bufferIndex@
 bufferIndex :: IsMTLAttributeDescriptor mtlAttributeDescriptor => mtlAttributeDescriptor -> IO CULong
-bufferIndex mtlAttributeDescriptor  =
-    sendMsg mtlAttributeDescriptor (mkSelector "bufferIndex") retCULong []
+bufferIndex mtlAttributeDescriptor =
+  sendMessage mtlAttributeDescriptor bufferIndexSelector
 
 -- | @- setBufferIndex:@
 setBufferIndex :: IsMTLAttributeDescriptor mtlAttributeDescriptor => mtlAttributeDescriptor -> CULong -> IO ()
-setBufferIndex mtlAttributeDescriptor  value =
-    sendMsg mtlAttributeDescriptor (mkSelector "setBufferIndex:") retVoid [argCULong value]
+setBufferIndex mtlAttributeDescriptor value =
+  sendMessage mtlAttributeDescriptor setBufferIndexSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] MTLAttributeFormat
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @setFormat:@
-setFormatSelector :: Selector
+setFormatSelector :: Selector '[MTLAttributeFormat] ()
 setFormatSelector = mkSelector "setFormat:"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] CULong
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @setOffset:@
-setOffsetSelector :: Selector
+setOffsetSelector :: Selector '[CULong] ()
 setOffsetSelector = mkSelector "setOffset:"
 
 -- | @Selector@ for @bufferIndex@
-bufferIndexSelector :: Selector
+bufferIndexSelector :: Selector '[] CULong
 bufferIndexSelector = mkSelector "bufferIndex"
 
 -- | @Selector@ for @setBufferIndex:@
-setBufferIndexSelector :: Selector
+setBufferIndexSelector :: Selector '[CULong] ()
 setBufferIndexSelector = mkSelector "setBufferIndex:"
 

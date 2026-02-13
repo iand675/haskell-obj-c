@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,22 +22,18 @@ module ObjC.GameplayKit.GKNoiseMap
   , initWithNoise
   , seamless
   , initSelector
-  , noiseMapWithNoiseSelector
   , initWithNoiseSelector
+  , noiseMapWithNoiseSelector
   , seamlessSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsGKNoiseMap gkNoiseMap => gkNoiseMap -> IO (Id GKNoiseMap)
-init_ gkNoiseMap  =
-    sendMsg gkNoiseMap (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkNoiseMap =
+  sendOwnedMessage gkNoiseMap initSelector
 
 -- | Initializes a noise map with specified noise.
 --
@@ -59,8 +56,7 @@ noiseMapWithNoise :: IsGKNoise noise => noise -> IO (Id GKNoiseMap)
 noiseMapWithNoise noise =
   do
     cls' <- getRequiredClass "GKNoiseMap"
-    withObjCPtr noise $ \raw_noise ->
-      sendClassMsg cls' (mkSelector "noiseMapWithNoise:") (retPtr retVoid) [argPtr (castPtr raw_noise :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' noiseMapWithNoiseSelector (toGKNoise noise)
 
 -- | Initializes a noise map with specified noise.
 --
@@ -68,34 +64,33 @@ noiseMapWithNoise noise =
 --
 -- ObjC selector: @- initWithNoise:@
 initWithNoise :: (IsGKNoiseMap gkNoiseMap, IsGKNoise noise) => gkNoiseMap -> noise -> IO (Id GKNoiseMap)
-initWithNoise gkNoiseMap  noise =
-  withObjCPtr noise $ \raw_noise ->
-      sendMsg gkNoiseMap (mkSelector "initWithNoise:") (retPtr retVoid) [argPtr (castPtr raw_noise :: Ptr ())] >>= ownedObject . castPtr
+initWithNoise gkNoiseMap noise =
+  sendOwnedMessage gkNoiseMap initWithNoiseSelector (toGKNoise noise)
 
 -- | Whether the values at the edges of the 2D plane are modified to allow seamless tiling of the extracted noise map.
 --
 -- ObjC selector: @- seamless@
 seamless :: IsGKNoiseMap gkNoiseMap => gkNoiseMap -> IO Bool
-seamless gkNoiseMap  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkNoiseMap (mkSelector "seamless") retCULong []
+seamless gkNoiseMap =
+  sendMessage gkNoiseMap seamlessSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKNoiseMap)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @noiseMapWithNoise:@
-noiseMapWithNoiseSelector :: Selector
+noiseMapWithNoiseSelector :: Selector '[Id GKNoise] (Id GKNoiseMap)
 noiseMapWithNoiseSelector = mkSelector "noiseMapWithNoise:"
 
 -- | @Selector@ for @initWithNoise:@
-initWithNoiseSelector :: Selector
+initWithNoiseSelector :: Selector '[Id GKNoise] (Id GKNoiseMap)
 initWithNoiseSelector = mkSelector "initWithNoise:"
 
 -- | @Selector@ for @seamless@
-seamlessSelector :: Selector
+seamlessSelector :: Selector '[] Bool
 seamlessSelector = mkSelector "seamless"
 

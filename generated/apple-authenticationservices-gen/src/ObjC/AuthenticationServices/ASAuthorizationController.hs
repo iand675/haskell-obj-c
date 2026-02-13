@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.AuthenticationServices.ASAuthorizationController
   , setPresentationContextProvider
   , customAuthorizationMethods
   , setCustomAuthorizationMethods
-  , initWithAuthorizationRequestsSelector
-  , performRequestsSelector
-  , performAutoFillAssistedRequestsSelector
-  , performRequestsWithOptionsSelector
-  , cancelSelector
-  , newSelector
-  , initSelector
   , authorizationRequestsSelector
-  , delegateSelector
-  , setDelegateSelector
-  , presentationContextProviderSelector
-  , setPresentationContextProviderSelector
+  , cancelSelector
   , customAuthorizationMethodsSelector
+  , delegateSelector
+  , initSelector
+  , initWithAuthorizationRequestsSelector
+  , newSelector
+  , performAutoFillAssistedRequestsSelector
+  , performRequestsSelector
+  , performRequestsWithOptionsSelector
+  , presentationContextProviderSelector
   , setCustomAuthorizationMethodsSelector
+  , setDelegateSelector
+  , setPresentationContextProviderSelector
 
   -- * Enum types
   , ASAuthorizationControllerRequestOptions(ASAuthorizationControllerRequestOptions)
@@ -42,15 +43,11 @@ module ObjC.AuthenticationServices.ASAuthorizationController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,9 +61,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAuthorizationRequests:@
 initWithAuthorizationRequests :: (IsASAuthorizationController asAuthorizationController, IsNSArray authorizationRequests) => asAuthorizationController -> authorizationRequests -> IO (Id ASAuthorizationController)
-initWithAuthorizationRequests asAuthorizationController  authorizationRequests =
-  withObjCPtr authorizationRequests $ \raw_authorizationRequests ->
-      sendMsg asAuthorizationController (mkSelector "initWithAuthorizationRequests:") (retPtr retVoid) [argPtr (castPtr raw_authorizationRequests :: Ptr ())] >>= ownedObject . castPtr
+initWithAuthorizationRequests asAuthorizationController authorizationRequests =
+  sendOwnedMessage asAuthorizationController initWithAuthorizationRequestsSelector (toNSArray authorizationRequests)
 
 -- | Initiate the authorization flows. Upon completion, the delegate will be called with either success or failure. Certain authorization flows may require a presentation context. The @presentationContextProvider@ will be called to provide it.
 --
@@ -74,8 +70,8 @@ initWithAuthorizationRequests asAuthorizationController  authorizationRequests =
 --
 -- ObjC selector: @- performRequests@
 performRequests :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> IO ()
-performRequests asAuthorizationController  =
-    sendMsg asAuthorizationController (mkSelector "performRequests") retVoid []
+performRequests asAuthorizationController =
+  sendMessage asAuthorizationController performRequestsSelector
 
 -- | Initiate the authorization flows for requests that support AutoFill presentation. UI will be shown when focusing a text field with the appropriate text content type. Upon completion, the delegate will be called with either success or failure.
 --
@@ -83,8 +79,8 @@ performRequests asAuthorizationController  =
 --
 -- ObjC selector: @- performAutoFillAssistedRequests@
 performAutoFillAssistedRequests :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> IO ()
-performAutoFillAssistedRequests asAuthorizationController  =
-    sendMsg asAuthorizationController (mkSelector "performAutoFillAssistedRequests") retVoid []
+performAutoFillAssistedRequests asAuthorizationController =
+  sendMessage asAuthorizationController performAutoFillAssistedRequestsSelector
 
 -- | Initiate the authorization flows. Upon completion, the delegate will be called with either success or failure. Certain authorization flows may require a presentation context. The @presentationContextProvider@ will be called to provide it.
 --
@@ -92,62 +88,62 @@ performAutoFillAssistedRequests asAuthorizationController  =
 --
 -- ObjC selector: @- performRequestsWithOptions:@
 performRequestsWithOptions :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> ASAuthorizationControllerRequestOptions -> IO ()
-performRequestsWithOptions asAuthorizationController  options =
-    sendMsg asAuthorizationController (mkSelector "performRequestsWithOptions:") retVoid [argCULong (coerce options)]
+performRequestsWithOptions asAuthorizationController options =
+  sendMessage asAuthorizationController performRequestsWithOptionsSelector options
 
 -- | Cancel the running authorization flows, if there are any. If a flow is canceled, the delegate callback will be made indicating the cancel.
 --
 -- ObjC selector: @- cancel@
 cancel :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> IO ()
-cancel asAuthorizationController  =
-    sendMsg asAuthorizationController (mkSelector "cancel") retVoid []
+cancel asAuthorizationController =
+  sendMessage asAuthorizationController cancelSelector
 
 -- | @+ new@
 new :: IO (Id ASAuthorizationController)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationController"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> IO (Id ASAuthorizationController)
-init_ asAuthorizationController  =
-    sendMsg asAuthorizationController (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationController =
+  sendOwnedMessage asAuthorizationController initSelector
 
 -- | Authorization requests that are being serviced by this controller
 --
 -- ObjC selector: @- authorizationRequests@
 authorizationRequests :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> IO (Id NSArray)
-authorizationRequests asAuthorizationController  =
-    sendMsg asAuthorizationController (mkSelector "authorizationRequests") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorizationRequests asAuthorizationController =
+  sendMessage asAuthorizationController authorizationRequestsSelector
 
 -- | This delegate will be invoked upon completion of the authorization indicating success or failure. Delegate is required to receive the results of authorization.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> IO RawId
-delegate asAuthorizationController  =
-    fmap (RawId . castPtr) $ sendMsg asAuthorizationController (mkSelector "delegate") (retPtr retVoid) []
+delegate asAuthorizationController =
+  sendMessage asAuthorizationController delegateSelector
 
 -- | This delegate will be invoked upon completion of the authorization indicating success or failure. Delegate is required to receive the results of authorization.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> RawId -> IO ()
-setDelegate asAuthorizationController  value =
-    sendMsg asAuthorizationController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate asAuthorizationController value =
+  sendMessage asAuthorizationController setDelegateSelector value
 
 -- | This delegate will be invoked upon needing a presentation context to display authorization UI.
 --
 -- ObjC selector: @- presentationContextProvider@
 presentationContextProvider :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> IO RawId
-presentationContextProvider asAuthorizationController  =
-    fmap (RawId . castPtr) $ sendMsg asAuthorizationController (mkSelector "presentationContextProvider") (retPtr retVoid) []
+presentationContextProvider asAuthorizationController =
+  sendMessage asAuthorizationController presentationContextProviderSelector
 
 -- | This delegate will be invoked upon needing a presentation context to display authorization UI.
 --
 -- ObjC selector: @- setPresentationContextProvider:@
 setPresentationContextProvider :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> RawId -> IO ()
-setPresentationContextProvider asAuthorizationController  value =
-    sendMsg asAuthorizationController (mkSelector "setPresentationContextProvider:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPresentationContextProvider asAuthorizationController value =
+  sendMessage asAuthorizationController setPresentationContextProviderSelector value
 
 -- | A list of custom authorization methods that may be displayed in the authorization UI.
 --
@@ -155,8 +151,8 @@ setPresentationContextProvider asAuthorizationController  value =
 --
 -- ObjC selector: @- customAuthorizationMethods@
 customAuthorizationMethods :: IsASAuthorizationController asAuthorizationController => asAuthorizationController -> IO (Id NSArray)
-customAuthorizationMethods asAuthorizationController  =
-    sendMsg asAuthorizationController (mkSelector "customAuthorizationMethods") (retPtr retVoid) [] >>= retainedObject . castPtr
+customAuthorizationMethods asAuthorizationController =
+  sendMessage asAuthorizationController customAuthorizationMethodsSelector
 
 -- | A list of custom authorization methods that may be displayed in the authorization UI.
 --
@@ -164,67 +160,66 @@ customAuthorizationMethods asAuthorizationController  =
 --
 -- ObjC selector: @- setCustomAuthorizationMethods:@
 setCustomAuthorizationMethods :: (IsASAuthorizationController asAuthorizationController, IsNSArray value) => asAuthorizationController -> value -> IO ()
-setCustomAuthorizationMethods asAuthorizationController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationController (mkSelector "setCustomAuthorizationMethods:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomAuthorizationMethods asAuthorizationController value =
+  sendMessage asAuthorizationController setCustomAuthorizationMethodsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAuthorizationRequests:@
-initWithAuthorizationRequestsSelector :: Selector
+initWithAuthorizationRequestsSelector :: Selector '[Id NSArray] (Id ASAuthorizationController)
 initWithAuthorizationRequestsSelector = mkSelector "initWithAuthorizationRequests:"
 
 -- | @Selector@ for @performRequests@
-performRequestsSelector :: Selector
+performRequestsSelector :: Selector '[] ()
 performRequestsSelector = mkSelector "performRequests"
 
 -- | @Selector@ for @performAutoFillAssistedRequests@
-performAutoFillAssistedRequestsSelector :: Selector
+performAutoFillAssistedRequestsSelector :: Selector '[] ()
 performAutoFillAssistedRequestsSelector = mkSelector "performAutoFillAssistedRequests"
 
 -- | @Selector@ for @performRequestsWithOptions:@
-performRequestsWithOptionsSelector :: Selector
+performRequestsWithOptionsSelector :: Selector '[ASAuthorizationControllerRequestOptions] ()
 performRequestsWithOptionsSelector = mkSelector "performRequestsWithOptions:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationController)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationController)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @authorizationRequests@
-authorizationRequestsSelector :: Selector
+authorizationRequestsSelector :: Selector '[] (Id NSArray)
 authorizationRequestsSelector = mkSelector "authorizationRequests"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @presentationContextProvider@
-presentationContextProviderSelector :: Selector
+presentationContextProviderSelector :: Selector '[] RawId
 presentationContextProviderSelector = mkSelector "presentationContextProvider"
 
 -- | @Selector@ for @setPresentationContextProvider:@
-setPresentationContextProviderSelector :: Selector
+setPresentationContextProviderSelector :: Selector '[RawId] ()
 setPresentationContextProviderSelector = mkSelector "setPresentationContextProvider:"
 
 -- | @Selector@ for @customAuthorizationMethods@
-customAuthorizationMethodsSelector :: Selector
+customAuthorizationMethodsSelector :: Selector '[] (Id NSArray)
 customAuthorizationMethodsSelector = mkSelector "customAuthorizationMethods"
 
 -- | @Selector@ for @setCustomAuthorizationMethods:@
-setCustomAuthorizationMethodsSelector :: Selector
+setCustomAuthorizationMethodsSelector :: Selector '[Id NSArray] ()
 setCustomAuthorizationMethodsSelector = mkSelector "setCustomAuthorizationMethods:"
 

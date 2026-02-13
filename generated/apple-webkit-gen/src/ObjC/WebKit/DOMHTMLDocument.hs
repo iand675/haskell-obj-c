@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,48 +36,44 @@ module ObjC.WebKit.DOMHTMLDocument
   , setLinkColor
   , vlinkColor
   , setVlinkColor
-  , openSelector
-  , closeSelector
-  , writeSelector
-  , writelnSelector
-  , clearSelector
+  , alinkColorSelector
+  , bgColorSelector
   , captureEventsSelector
-  , releaseEventsSelector
+  , clearSelector
+  , closeSelector
+  , compatModeSelector
   , createDocumentFragmentWithMarkupString_baseURLSelector
   , createDocumentFragmentWithTextSelector
-  , embedsSelector
-  , pluginsSelector
-  , scriptsSelector
-  , widthSelector
-  , heightSelector
-  , dirSelector
-  , setDirSelector
   , designModeSelector
-  , setDesignModeSelector
-  , compatModeSelector
-  , bgColorSelector
-  , setBgColorSelector
+  , dirSelector
+  , embedsSelector
   , fgColorSelector
-  , setFgColorSelector
-  , alinkColorSelector
-  , setAlinkColorSelector
+  , heightSelector
   , linkColorSelector
+  , openSelector
+  , pluginsSelector
+  , releaseEventsSelector
+  , scriptsSelector
+  , setAlinkColorSelector
+  , setBgColorSelector
+  , setDesignModeSelector
+  , setDirSelector
+  , setFgColorSelector
   , setLinkColorSelector
-  , vlinkColorSelector
   , setVlinkColorSelector
+  , vlinkColorSelector
+  , widthSelector
+  , writeSelector
+  , writelnSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,278 +82,266 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- open@
 open :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO ()
-open domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "open") retVoid []
+open domhtmlDocument =
+  sendMessage domhtmlDocument openSelector
 
 -- | @- close@
 close :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO ()
-close domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "close") retVoid []
+close domhtmlDocument =
+  sendMessage domhtmlDocument closeSelector
 
 -- | @- write:@
 write :: (IsDOMHTMLDocument domhtmlDocument, IsNSString text) => domhtmlDocument -> text -> IO ()
-write domhtmlDocument  text =
-  withObjCPtr text $ \raw_text ->
-      sendMsg domhtmlDocument (mkSelector "write:") retVoid [argPtr (castPtr raw_text :: Ptr ())]
+write domhtmlDocument text =
+  sendMessage domhtmlDocument writeSelector (toNSString text)
 
 -- | @- writeln:@
 writeln :: (IsDOMHTMLDocument domhtmlDocument, IsNSString text) => domhtmlDocument -> text -> IO ()
-writeln domhtmlDocument  text =
-  withObjCPtr text $ \raw_text ->
-      sendMsg domhtmlDocument (mkSelector "writeln:") retVoid [argPtr (castPtr raw_text :: Ptr ())]
+writeln domhtmlDocument text =
+  sendMessage domhtmlDocument writelnSelector (toNSString text)
 
 -- | @- clear@
 clear :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO ()
-clear domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "clear") retVoid []
+clear domhtmlDocument =
+  sendMessage domhtmlDocument clearSelector
 
 -- | @- captureEvents@
 captureEvents :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO ()
-captureEvents domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "captureEvents") retVoid []
+captureEvents domhtmlDocument =
+  sendMessage domhtmlDocument captureEventsSelector
 
 -- | @- releaseEvents@
 releaseEvents :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO ()
-releaseEvents domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "releaseEvents") retVoid []
+releaseEvents domhtmlDocument =
+  sendMessage domhtmlDocument releaseEventsSelector
 
 -- | @- createDocumentFragmentWithMarkupString:baseURL:@
 createDocumentFragmentWithMarkupString_baseURL :: (IsDOMHTMLDocument domhtmlDocument, IsNSString markupString, IsNSURL baseURL) => domhtmlDocument -> markupString -> baseURL -> IO (Id DOMDocumentFragment)
-createDocumentFragmentWithMarkupString_baseURL domhtmlDocument  markupString baseURL =
-  withObjCPtr markupString $ \raw_markupString ->
-    withObjCPtr baseURL $ \raw_baseURL ->
-        sendMsg domhtmlDocument (mkSelector "createDocumentFragmentWithMarkupString:baseURL:") (retPtr retVoid) [argPtr (castPtr raw_markupString :: Ptr ()), argPtr (castPtr raw_baseURL :: Ptr ())] >>= retainedObject . castPtr
+createDocumentFragmentWithMarkupString_baseURL domhtmlDocument markupString baseURL =
+  sendMessage domhtmlDocument createDocumentFragmentWithMarkupString_baseURLSelector (toNSString markupString) (toNSURL baseURL)
 
 -- | @- createDocumentFragmentWithText:@
 createDocumentFragmentWithText :: (IsDOMHTMLDocument domhtmlDocument, IsNSString text) => domhtmlDocument -> text -> IO (Id DOMDocumentFragment)
-createDocumentFragmentWithText domhtmlDocument  text =
-  withObjCPtr text $ \raw_text ->
-      sendMsg domhtmlDocument (mkSelector "createDocumentFragmentWithText:") (retPtr retVoid) [argPtr (castPtr raw_text :: Ptr ())] >>= retainedObject . castPtr
+createDocumentFragmentWithText domhtmlDocument text =
+  sendMessage domhtmlDocument createDocumentFragmentWithTextSelector (toNSString text)
 
 -- | @- embeds@
 embeds :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id DOMHTMLCollection)
-embeds domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "embeds") (retPtr retVoid) [] >>= retainedObject . castPtr
+embeds domhtmlDocument =
+  sendMessage domhtmlDocument embedsSelector
 
 -- | @- plugins@
 plugins :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id DOMHTMLCollection)
-plugins domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "plugins") (retPtr retVoid) [] >>= retainedObject . castPtr
+plugins domhtmlDocument =
+  sendMessage domhtmlDocument pluginsSelector
 
 -- | @- scripts@
 scripts :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id DOMHTMLCollection)
-scripts domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "scripts") (retPtr retVoid) [] >>= retainedObject . castPtr
+scripts domhtmlDocument =
+  sendMessage domhtmlDocument scriptsSelector
 
 -- | @- width@
 width :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO CInt
-width domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "width") retCInt []
+width domhtmlDocument =
+  sendMessage domhtmlDocument widthSelector
 
 -- | @- height@
 height :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO CInt
-height domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "height") retCInt []
+height domhtmlDocument =
+  sendMessage domhtmlDocument heightSelector
 
 -- | @- dir@
 dir :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id NSString)
-dir domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "dir") (retPtr retVoid) [] >>= retainedObject . castPtr
+dir domhtmlDocument =
+  sendMessage domhtmlDocument dirSelector
 
 -- | @- setDir:@
 setDir :: (IsDOMHTMLDocument domhtmlDocument, IsNSString value) => domhtmlDocument -> value -> IO ()
-setDir domhtmlDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlDocument (mkSelector "setDir:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDir domhtmlDocument value =
+  sendMessage domhtmlDocument setDirSelector (toNSString value)
 
 -- | @- designMode@
 designMode :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id NSString)
-designMode domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "designMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+designMode domhtmlDocument =
+  sendMessage domhtmlDocument designModeSelector
 
 -- | @- setDesignMode:@
 setDesignMode :: (IsDOMHTMLDocument domhtmlDocument, IsNSString value) => domhtmlDocument -> value -> IO ()
-setDesignMode domhtmlDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlDocument (mkSelector "setDesignMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDesignMode domhtmlDocument value =
+  sendMessage domhtmlDocument setDesignModeSelector (toNSString value)
 
 -- | @- compatMode@
 compatMode :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id NSString)
-compatMode domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "compatMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+compatMode domhtmlDocument =
+  sendMessage domhtmlDocument compatModeSelector
 
 -- | @- bgColor@
 bgColor :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id NSString)
-bgColor domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "bgColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+bgColor domhtmlDocument =
+  sendMessage domhtmlDocument bgColorSelector
 
 -- | @- setBgColor:@
 setBgColor :: (IsDOMHTMLDocument domhtmlDocument, IsNSString value) => domhtmlDocument -> value -> IO ()
-setBgColor domhtmlDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlDocument (mkSelector "setBgColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBgColor domhtmlDocument value =
+  sendMessage domhtmlDocument setBgColorSelector (toNSString value)
 
 -- | @- fgColor@
 fgColor :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id NSString)
-fgColor domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "fgColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fgColor domhtmlDocument =
+  sendMessage domhtmlDocument fgColorSelector
 
 -- | @- setFgColor:@
 setFgColor :: (IsDOMHTMLDocument domhtmlDocument, IsNSString value) => domhtmlDocument -> value -> IO ()
-setFgColor domhtmlDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlDocument (mkSelector "setFgColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFgColor domhtmlDocument value =
+  sendMessage domhtmlDocument setFgColorSelector (toNSString value)
 
 -- | @- alinkColor@
 alinkColor :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id NSString)
-alinkColor domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "alinkColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+alinkColor domhtmlDocument =
+  sendMessage domhtmlDocument alinkColorSelector
 
 -- | @- setAlinkColor:@
 setAlinkColor :: (IsDOMHTMLDocument domhtmlDocument, IsNSString value) => domhtmlDocument -> value -> IO ()
-setAlinkColor domhtmlDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlDocument (mkSelector "setAlinkColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlinkColor domhtmlDocument value =
+  sendMessage domhtmlDocument setAlinkColorSelector (toNSString value)
 
 -- | @- linkColor@
 linkColor :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id NSString)
-linkColor domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "linkColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+linkColor domhtmlDocument =
+  sendMessage domhtmlDocument linkColorSelector
 
 -- | @- setLinkColor:@
 setLinkColor :: (IsDOMHTMLDocument domhtmlDocument, IsNSString value) => domhtmlDocument -> value -> IO ()
-setLinkColor domhtmlDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlDocument (mkSelector "setLinkColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLinkColor domhtmlDocument value =
+  sendMessage domhtmlDocument setLinkColorSelector (toNSString value)
 
 -- | @- vlinkColor@
 vlinkColor :: IsDOMHTMLDocument domhtmlDocument => domhtmlDocument -> IO (Id NSString)
-vlinkColor domhtmlDocument  =
-    sendMsg domhtmlDocument (mkSelector "vlinkColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+vlinkColor domhtmlDocument =
+  sendMessage domhtmlDocument vlinkColorSelector
 
 -- | @- setVlinkColor:@
 setVlinkColor :: (IsDOMHTMLDocument domhtmlDocument, IsNSString value) => domhtmlDocument -> value -> IO ()
-setVlinkColor domhtmlDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlDocument (mkSelector "setVlinkColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVlinkColor domhtmlDocument value =
+  sendMessage domhtmlDocument setVlinkColorSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @open@
-openSelector :: Selector
+openSelector :: Selector '[] ()
 openSelector = mkSelector "open"
 
 -- | @Selector@ for @close@
-closeSelector :: Selector
+closeSelector :: Selector '[] ()
 closeSelector = mkSelector "close"
 
 -- | @Selector@ for @write:@
-writeSelector :: Selector
+writeSelector :: Selector '[Id NSString] ()
 writeSelector = mkSelector "write:"
 
 -- | @Selector@ for @writeln:@
-writelnSelector :: Selector
+writelnSelector :: Selector '[Id NSString] ()
 writelnSelector = mkSelector "writeln:"
 
 -- | @Selector@ for @clear@
-clearSelector :: Selector
+clearSelector :: Selector '[] ()
 clearSelector = mkSelector "clear"
 
 -- | @Selector@ for @captureEvents@
-captureEventsSelector :: Selector
+captureEventsSelector :: Selector '[] ()
 captureEventsSelector = mkSelector "captureEvents"
 
 -- | @Selector@ for @releaseEvents@
-releaseEventsSelector :: Selector
+releaseEventsSelector :: Selector '[] ()
 releaseEventsSelector = mkSelector "releaseEvents"
 
 -- | @Selector@ for @createDocumentFragmentWithMarkupString:baseURL:@
-createDocumentFragmentWithMarkupString_baseURLSelector :: Selector
+createDocumentFragmentWithMarkupString_baseURLSelector :: Selector '[Id NSString, Id NSURL] (Id DOMDocumentFragment)
 createDocumentFragmentWithMarkupString_baseURLSelector = mkSelector "createDocumentFragmentWithMarkupString:baseURL:"
 
 -- | @Selector@ for @createDocumentFragmentWithText:@
-createDocumentFragmentWithTextSelector :: Selector
+createDocumentFragmentWithTextSelector :: Selector '[Id NSString] (Id DOMDocumentFragment)
 createDocumentFragmentWithTextSelector = mkSelector "createDocumentFragmentWithText:"
 
 -- | @Selector@ for @embeds@
-embedsSelector :: Selector
+embedsSelector :: Selector '[] (Id DOMHTMLCollection)
 embedsSelector = mkSelector "embeds"
 
 -- | @Selector@ for @plugins@
-pluginsSelector :: Selector
+pluginsSelector :: Selector '[] (Id DOMHTMLCollection)
 pluginsSelector = mkSelector "plugins"
 
 -- | @Selector@ for @scripts@
-scriptsSelector :: Selector
+scriptsSelector :: Selector '[] (Id DOMHTMLCollection)
 scriptsSelector = mkSelector "scripts"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CInt
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CInt
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @dir@
-dirSelector :: Selector
+dirSelector :: Selector '[] (Id NSString)
 dirSelector = mkSelector "dir"
 
 -- | @Selector@ for @setDir:@
-setDirSelector :: Selector
+setDirSelector :: Selector '[Id NSString] ()
 setDirSelector = mkSelector "setDir:"
 
 -- | @Selector@ for @designMode@
-designModeSelector :: Selector
+designModeSelector :: Selector '[] (Id NSString)
 designModeSelector = mkSelector "designMode"
 
 -- | @Selector@ for @setDesignMode:@
-setDesignModeSelector :: Selector
+setDesignModeSelector :: Selector '[Id NSString] ()
 setDesignModeSelector = mkSelector "setDesignMode:"
 
 -- | @Selector@ for @compatMode@
-compatModeSelector :: Selector
+compatModeSelector :: Selector '[] (Id NSString)
 compatModeSelector = mkSelector "compatMode"
 
 -- | @Selector@ for @bgColor@
-bgColorSelector :: Selector
+bgColorSelector :: Selector '[] (Id NSString)
 bgColorSelector = mkSelector "bgColor"
 
 -- | @Selector@ for @setBgColor:@
-setBgColorSelector :: Selector
+setBgColorSelector :: Selector '[Id NSString] ()
 setBgColorSelector = mkSelector "setBgColor:"
 
 -- | @Selector@ for @fgColor@
-fgColorSelector :: Selector
+fgColorSelector :: Selector '[] (Id NSString)
 fgColorSelector = mkSelector "fgColor"
 
 -- | @Selector@ for @setFgColor:@
-setFgColorSelector :: Selector
+setFgColorSelector :: Selector '[Id NSString] ()
 setFgColorSelector = mkSelector "setFgColor:"
 
 -- | @Selector@ for @alinkColor@
-alinkColorSelector :: Selector
+alinkColorSelector :: Selector '[] (Id NSString)
 alinkColorSelector = mkSelector "alinkColor"
 
 -- | @Selector@ for @setAlinkColor:@
-setAlinkColorSelector :: Selector
+setAlinkColorSelector :: Selector '[Id NSString] ()
 setAlinkColorSelector = mkSelector "setAlinkColor:"
 
 -- | @Selector@ for @linkColor@
-linkColorSelector :: Selector
+linkColorSelector :: Selector '[] (Id NSString)
 linkColorSelector = mkSelector "linkColor"
 
 -- | @Selector@ for @setLinkColor:@
-setLinkColorSelector :: Selector
+setLinkColorSelector :: Selector '[Id NSString] ()
 setLinkColorSelector = mkSelector "setLinkColor:"
 
 -- | @Selector@ for @vlinkColor@
-vlinkColorSelector :: Selector
+vlinkColorSelector :: Selector '[] (Id NSString)
 vlinkColorSelector = mkSelector "vlinkColor"
 
 -- | @Selector@ for @setVlinkColor:@
-setVlinkColorSelector :: Selector
+setVlinkColorSelector :: Selector '[Id NSString] ()
 setVlinkColorSelector = mkSelector "setVlinkColor:"
 

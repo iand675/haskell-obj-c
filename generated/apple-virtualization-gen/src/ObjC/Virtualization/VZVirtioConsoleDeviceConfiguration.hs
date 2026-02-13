@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.Virtualization.VZVirtioConsoleDeviceConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,25 +38,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVZVirtioConsoleDeviceConfiguration vzVirtioConsoleDeviceConfiguration => vzVirtioConsoleDeviceConfiguration -> IO (Id VZVirtioConsoleDeviceConfiguration)
-init_ vzVirtioConsoleDeviceConfiguration  =
-    sendMsg vzVirtioConsoleDeviceConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioConsoleDeviceConfiguration =
+  sendOwnedMessage vzVirtioConsoleDeviceConfiguration initSelector
 
 -- | The console ports to be configured for this console device.
 --
 -- ObjC selector: @- ports@
 ports :: IsVZVirtioConsoleDeviceConfiguration vzVirtioConsoleDeviceConfiguration => vzVirtioConsoleDeviceConfiguration -> IO (Id VZVirtioConsolePortConfigurationArray)
-ports vzVirtioConsoleDeviceConfiguration  =
-    sendMsg vzVirtioConsoleDeviceConfiguration (mkSelector "ports") (retPtr retVoid) [] >>= retainedObject . castPtr
+ports vzVirtioConsoleDeviceConfiguration =
+  sendMessage vzVirtioConsoleDeviceConfiguration portsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioConsoleDeviceConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @ports@
-portsSelector :: Selector
+portsSelector :: Selector '[] (Id VZVirtioConsolePortConfigurationArray)
 portsSelector = mkSelector "ports"
 

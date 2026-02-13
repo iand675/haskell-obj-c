@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.AVFoundation.AVRenderedCaptionImage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVRenderedCaptionImage avRenderedCaptionImage => avRenderedCaptionImage -> IO (Id AVRenderedCaptionImage)
-init_ avRenderedCaptionImage  =
-    sendMsg avRenderedCaptionImage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avRenderedCaptionImage =
+  sendOwnedMessage avRenderedCaptionImage initSelector
 
 -- | @+ new@
 new :: IO (Id AVRenderedCaptionImage)
 new  =
   do
     cls' <- getRequiredClass "AVRenderedCaptionImage"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | pixelBuffer
 --
@@ -59,22 +56,22 @@ new  =
 --
 -- ObjC selector: @- pixelBuffer@
 pixelBuffer :: IsAVRenderedCaptionImage avRenderedCaptionImage => avRenderedCaptionImage -> IO (Ptr ())
-pixelBuffer avRenderedCaptionImage  =
-    fmap castPtr $ sendMsg avRenderedCaptionImage (mkSelector "pixelBuffer") (retPtr retVoid) []
+pixelBuffer avRenderedCaptionImage =
+  sendMessage avRenderedCaptionImage pixelBufferSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVRenderedCaptionImage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVRenderedCaptionImage)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @pixelBuffer@
-pixelBufferSelector :: Selector
+pixelBufferSelector :: Selector '[] (Ptr ())
 pixelBufferSelector = mkSelector "pixelBuffer"
 

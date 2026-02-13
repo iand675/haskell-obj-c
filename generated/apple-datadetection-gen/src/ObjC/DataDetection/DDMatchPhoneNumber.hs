@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.DataDetection.DDMatchPhoneNumber
   , IsDDMatchPhoneNumber(..)
   , phoneNumber
   , label
-  , phoneNumberSelector
   , labelSelector
+  , phoneNumberSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,25 +34,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- phoneNumber@
 phoneNumber :: IsDDMatchPhoneNumber ddMatchPhoneNumber => ddMatchPhoneNumber -> IO (Id NSString)
-phoneNumber ddMatchPhoneNumber  =
-    sendMsg ddMatchPhoneNumber (mkSelector "phoneNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneNumber ddMatchPhoneNumber =
+  sendMessage ddMatchPhoneNumber phoneNumberSelector
 
 -- | A string that categorizes a phone number, such as Home or Work.
 --
 -- ObjC selector: @- label@
 label :: IsDDMatchPhoneNumber ddMatchPhoneNumber => ddMatchPhoneNumber -> IO (Id NSString)
-label ddMatchPhoneNumber  =
-    sendMsg ddMatchPhoneNumber (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label ddMatchPhoneNumber =
+  sendMessage ddMatchPhoneNumber labelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @phoneNumber@
-phoneNumberSelector :: Selector
+phoneNumberSelector :: Selector '[] (Id NSString)
 phoneNumberSelector = mkSelector "phoneNumber"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 

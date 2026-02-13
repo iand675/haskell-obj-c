@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,20 +26,20 @@ module ObjC.CoreBluetooth.CBCentralManager
   , delegate
   , setDelegate
   , isScanning
-  , supportsFeaturesSelector
+  , cancelPeripheralConnectionSelector
+  , connectPeripheral_optionsSelector
+  , delegateSelector
   , initSelector
   , initWithDelegate_queueSelector
   , initWithDelegate_queue_optionsSelector
-  , retrievePeripheralsWithIdentifiersSelector
-  , retrieveConnectedPeripheralsWithServicesSelector
-  , scanForPeripheralsWithServices_optionsSelector
-  , stopScanSelector
-  , connectPeripheral_optionsSelector
-  , cancelPeripheralConnectionSelector
-  , registerForConnectionEventsWithOptionsSelector
-  , delegateSelector
-  , setDelegateSelector
   , isScanningSelector
+  , registerForConnectionEventsWithOptionsSelector
+  , retrieveConnectedPeripheralsWithServicesSelector
+  , retrievePeripheralsWithIdentifiersSelector
+  , scanForPeripheralsWithServices_optionsSelector
+  , setDelegateSelector
+  , stopScanSelector
+  , supportsFeaturesSelector
 
   -- * Enum types
   , CBCentralManagerFeature(CBCentralManagerFeature)
@@ -46,15 +47,11 @@ module ObjC.CoreBluetooth.CBCentralManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,12 +70,12 @@ supportsFeatures :: CBCentralManagerFeature -> IO Bool
 supportsFeatures features =
   do
     cls' <- getRequiredClass "CBCentralManager"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsFeatures:") retCULong [argCULong (coerce features)]
+    sendClassMessage cls' supportsFeaturesSelector features
 
 -- | @- init@
 init_ :: IsCBCentralManager cbCentralManager => cbCentralManager -> IO (Id CBCentralManager)
-init_ cbCentralManager  =
-    sendMsg cbCentralManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cbCentralManager =
+  sendOwnedMessage cbCentralManager initSelector
 
 -- | initWithDelegate:queue:
 --
@@ -90,9 +87,8 @@ init_ cbCentralManager  =
 --
 -- ObjC selector: @- initWithDelegate:queue:@
 initWithDelegate_queue :: (IsCBCentralManager cbCentralManager, IsNSObject queue) => cbCentralManager -> RawId -> queue -> IO (Id CBCentralManager)
-initWithDelegate_queue cbCentralManager  delegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cbCentralManager (mkSelector "initWithDelegate:queue:") (retPtr retVoid) [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDelegate_queue cbCentralManager delegate queue =
+  sendOwnedMessage cbCentralManager initWithDelegate_queueSelector delegate (toNSObject queue)
 
 -- | initWithDelegate:queue:options:
 --
@@ -110,10 +106,8 @@ initWithDelegate_queue cbCentralManager  delegate queue =
 --
 -- ObjC selector: @- initWithDelegate:queue:options:@
 initWithDelegate_queue_options :: (IsCBCentralManager cbCentralManager, IsNSObject queue, IsNSDictionary options) => cbCentralManager -> RawId -> queue -> options -> IO (Id CBCentralManager)
-initWithDelegate_queue_options cbCentralManager  delegate queue options =
-  withObjCPtr queue $ \raw_queue ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg cbCentralManager (mkSelector "initWithDelegate:queue:options:") (retPtr retVoid) [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithDelegate_queue_options cbCentralManager delegate queue options =
+  sendOwnedMessage cbCentralManager initWithDelegate_queue_optionsSelector delegate (toNSObject queue) (toNSDictionary options)
 
 -- | retrievePeripheralsWithIdentifiers:
 --
@@ -125,9 +119,8 @@ initWithDelegate_queue_options cbCentralManager  delegate queue options =
 --
 -- ObjC selector: @- retrievePeripheralsWithIdentifiers:@
 retrievePeripheralsWithIdentifiers :: (IsCBCentralManager cbCentralManager, IsNSArray identifiers) => cbCentralManager -> identifiers -> IO (Id NSArray)
-retrievePeripheralsWithIdentifiers cbCentralManager  identifiers =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg cbCentralManager (mkSelector "retrievePeripheralsWithIdentifiers:") (retPtr retVoid) [argPtr (castPtr raw_identifiers :: Ptr ())] >>= retainedObject . castPtr
+retrievePeripheralsWithIdentifiers cbCentralManager identifiers =
+  sendMessage cbCentralManager retrievePeripheralsWithIdentifiersSelector (toNSArray identifiers)
 
 -- | retrieveConnectedPeripheralsWithServices
 --
@@ -139,9 +132,8 @@ retrievePeripheralsWithIdentifiers cbCentralManager  identifiers =
 --
 -- ObjC selector: @- retrieveConnectedPeripheralsWithServices:@
 retrieveConnectedPeripheralsWithServices :: (IsCBCentralManager cbCentralManager, IsNSArray serviceUUIDs) => cbCentralManager -> serviceUUIDs -> IO (Id NSArray)
-retrieveConnectedPeripheralsWithServices cbCentralManager  serviceUUIDs =
-  withObjCPtr serviceUUIDs $ \raw_serviceUUIDs ->
-      sendMsg cbCentralManager (mkSelector "retrieveConnectedPeripheralsWithServices:") (retPtr retVoid) [argPtr (castPtr raw_serviceUUIDs :: Ptr ())] >>= retainedObject . castPtr
+retrieveConnectedPeripheralsWithServices cbCentralManager serviceUUIDs =
+  sendMessage cbCentralManager retrieveConnectedPeripheralsWithServicesSelector (toNSArray serviceUUIDs)
 
 -- | scanForPeripheralsWithServices:options:
 --
@@ -159,10 +151,8 @@ retrieveConnectedPeripheralsWithServices cbCentralManager  serviceUUIDs =
 --
 -- ObjC selector: @- scanForPeripheralsWithServices:options:@
 scanForPeripheralsWithServices_options :: (IsCBCentralManager cbCentralManager, IsNSArray serviceUUIDs, IsNSDictionary options) => cbCentralManager -> serviceUUIDs -> options -> IO ()
-scanForPeripheralsWithServices_options cbCentralManager  serviceUUIDs options =
-  withObjCPtr serviceUUIDs $ \raw_serviceUUIDs ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg cbCentralManager (mkSelector "scanForPeripheralsWithServices:options:") retVoid [argPtr (castPtr raw_serviceUUIDs :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())]
+scanForPeripheralsWithServices_options cbCentralManager serviceUUIDs options =
+  sendMessage cbCentralManager scanForPeripheralsWithServices_optionsSelector (toNSArray serviceUUIDs) (toNSDictionary options)
 
 -- | stopScan:
 --
@@ -170,8 +160,8 @@ scanForPeripheralsWithServices_options cbCentralManager  serviceUUIDs options =
 --
 -- ObjC selector: @- stopScan@
 stopScan :: IsCBCentralManager cbCentralManager => cbCentralManager -> IO ()
-stopScan cbCentralManager  =
-    sendMsg cbCentralManager (mkSelector "stopScan") retVoid []
+stopScan cbCentralManager =
+  sendMessage cbCentralManager stopScanSelector
 
 -- | connectPeripheral:options:
 --
@@ -195,10 +185,8 @@ stopScan cbCentralManager  =
 --
 -- ObjC selector: @- connectPeripheral:options:@
 connectPeripheral_options :: (IsCBCentralManager cbCentralManager, IsCBPeripheral peripheral, IsNSDictionary options) => cbCentralManager -> peripheral -> options -> IO ()
-connectPeripheral_options cbCentralManager  peripheral options =
-  withObjCPtr peripheral $ \raw_peripheral ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg cbCentralManager (mkSelector "connectPeripheral:options:") retVoid [argPtr (castPtr raw_peripheral :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())]
+connectPeripheral_options cbCentralManager peripheral options =
+  sendMessage cbCentralManager connectPeripheral_optionsSelector (toCBPeripheral peripheral) (toNSDictionary options)
 
 -- | cancelPeripheralConnection:
 --
@@ -210,9 +198,8 @@ connectPeripheral_options cbCentralManager  peripheral options =
 --
 -- ObjC selector: @- cancelPeripheralConnection:@
 cancelPeripheralConnection :: (IsCBCentralManager cbCentralManager, IsCBPeripheral peripheral) => cbCentralManager -> peripheral -> IO ()
-cancelPeripheralConnection cbCentralManager  peripheral =
-  withObjCPtr peripheral $ \raw_peripheral ->
-      sendMsg cbCentralManager (mkSelector "cancelPeripheralConnection:") retVoid [argPtr (castPtr raw_peripheral :: Ptr ())]
+cancelPeripheralConnection cbCentralManager peripheral =
+  sendMessage cbCentralManager cancelPeripheralConnectionSelector (toCBPeripheral peripheral)
 
 -- | registerForConnectionEventsWithOptions:
 --
@@ -229,9 +216,8 @@ cancelPeripheralConnection cbCentralManager  peripheral =
 --
 -- ObjC selector: @- registerForConnectionEventsWithOptions:@
 registerForConnectionEventsWithOptions :: (IsCBCentralManager cbCentralManager, IsNSDictionary options) => cbCentralManager -> options -> IO ()
-registerForConnectionEventsWithOptions cbCentralManager  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg cbCentralManager (mkSelector "registerForConnectionEventsWithOptions:") retVoid [argPtr (castPtr raw_options :: Ptr ())]
+registerForConnectionEventsWithOptions cbCentralManager options =
+  sendMessage cbCentralManager registerForConnectionEventsWithOptionsSelector (toNSDictionary options)
 
 -- | delegate
 --
@@ -239,8 +225,8 @@ registerForConnectionEventsWithOptions cbCentralManager  options =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsCBCentralManager cbCentralManager => cbCentralManager -> IO RawId
-delegate cbCentralManager  =
-    fmap (RawId . castPtr) $ sendMsg cbCentralManager (mkSelector "delegate") (retPtr retVoid) []
+delegate cbCentralManager =
+  sendMessage cbCentralManager delegateSelector
 
 -- | delegate
 --
@@ -248,8 +234,8 @@ delegate cbCentralManager  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsCBCentralManager cbCentralManager => cbCentralManager -> RawId -> IO ()
-setDelegate cbCentralManager  value =
-    sendMsg cbCentralManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate cbCentralManager value =
+  sendMessage cbCentralManager setDelegateSelector value
 
 -- | isScanning
 --
@@ -257,66 +243,66 @@ setDelegate cbCentralManager  value =
 --
 -- ObjC selector: @- isScanning@
 isScanning :: IsCBCentralManager cbCentralManager => cbCentralManager -> IO Bool
-isScanning cbCentralManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbCentralManager (mkSelector "isScanning") retCULong []
+isScanning cbCentralManager =
+  sendMessage cbCentralManager isScanningSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportsFeatures:@
-supportsFeaturesSelector :: Selector
+supportsFeaturesSelector :: Selector '[CBCentralManagerFeature] Bool
 supportsFeaturesSelector = mkSelector "supportsFeatures:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CBCentralManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDelegate:queue:@
-initWithDelegate_queueSelector :: Selector
+initWithDelegate_queueSelector :: Selector '[RawId, Id NSObject] (Id CBCentralManager)
 initWithDelegate_queueSelector = mkSelector "initWithDelegate:queue:"
 
 -- | @Selector@ for @initWithDelegate:queue:options:@
-initWithDelegate_queue_optionsSelector :: Selector
+initWithDelegate_queue_optionsSelector :: Selector '[RawId, Id NSObject, Id NSDictionary] (Id CBCentralManager)
 initWithDelegate_queue_optionsSelector = mkSelector "initWithDelegate:queue:options:"
 
 -- | @Selector@ for @retrievePeripheralsWithIdentifiers:@
-retrievePeripheralsWithIdentifiersSelector :: Selector
+retrievePeripheralsWithIdentifiersSelector :: Selector '[Id NSArray] (Id NSArray)
 retrievePeripheralsWithIdentifiersSelector = mkSelector "retrievePeripheralsWithIdentifiers:"
 
 -- | @Selector@ for @retrieveConnectedPeripheralsWithServices:@
-retrieveConnectedPeripheralsWithServicesSelector :: Selector
+retrieveConnectedPeripheralsWithServicesSelector :: Selector '[Id NSArray] (Id NSArray)
 retrieveConnectedPeripheralsWithServicesSelector = mkSelector "retrieveConnectedPeripheralsWithServices:"
 
 -- | @Selector@ for @scanForPeripheralsWithServices:options:@
-scanForPeripheralsWithServices_optionsSelector :: Selector
+scanForPeripheralsWithServices_optionsSelector :: Selector '[Id NSArray, Id NSDictionary] ()
 scanForPeripheralsWithServices_optionsSelector = mkSelector "scanForPeripheralsWithServices:options:"
 
 -- | @Selector@ for @stopScan@
-stopScanSelector :: Selector
+stopScanSelector :: Selector '[] ()
 stopScanSelector = mkSelector "stopScan"
 
 -- | @Selector@ for @connectPeripheral:options:@
-connectPeripheral_optionsSelector :: Selector
+connectPeripheral_optionsSelector :: Selector '[Id CBPeripheral, Id NSDictionary] ()
 connectPeripheral_optionsSelector = mkSelector "connectPeripheral:options:"
 
 -- | @Selector@ for @cancelPeripheralConnection:@
-cancelPeripheralConnectionSelector :: Selector
+cancelPeripheralConnectionSelector :: Selector '[Id CBPeripheral] ()
 cancelPeripheralConnectionSelector = mkSelector "cancelPeripheralConnection:"
 
 -- | @Selector@ for @registerForConnectionEventsWithOptions:@
-registerForConnectionEventsWithOptionsSelector :: Selector
+registerForConnectionEventsWithOptionsSelector :: Selector '[Id NSDictionary] ()
 registerForConnectionEventsWithOptionsSelector = mkSelector "registerForConnectionEventsWithOptions:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @isScanning@
-isScanningSelector :: Selector
+isScanningSelector :: Selector '[] Bool
 isScanningSelector = mkSelector "isScanning"
 

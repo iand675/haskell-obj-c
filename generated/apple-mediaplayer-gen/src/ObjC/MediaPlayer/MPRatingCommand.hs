@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.MediaPlayer.MPRatingCommand
   , setMinimumRating
   , maximumRating
   , setMaximumRating
-  , minimumRatingSelector
-  , setMinimumRatingSelector
   , maximumRatingSelector
+  , minimumRatingSelector
   , setMaximumRatingSelector
+  , setMinimumRatingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,47 +34,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- minimumRating@
 minimumRating :: IsMPRatingCommand mpRatingCommand => mpRatingCommand -> IO CFloat
-minimumRating mpRatingCommand  =
-    sendMsg mpRatingCommand (mkSelector "minimumRating") retCFloat []
+minimumRating mpRatingCommand =
+  sendMessage mpRatingCommand minimumRatingSelector
 
 -- | Minimum rating for the command.
 --
 -- ObjC selector: @- setMinimumRating:@
 setMinimumRating :: IsMPRatingCommand mpRatingCommand => mpRatingCommand -> CFloat -> IO ()
-setMinimumRating mpRatingCommand  value =
-    sendMsg mpRatingCommand (mkSelector "setMinimumRating:") retVoid [argCFloat value]
+setMinimumRating mpRatingCommand value =
+  sendMessage mpRatingCommand setMinimumRatingSelector value
 
 -- | Maximum rating for the command.
 --
 -- ObjC selector: @- maximumRating@
 maximumRating :: IsMPRatingCommand mpRatingCommand => mpRatingCommand -> IO CFloat
-maximumRating mpRatingCommand  =
-    sendMsg mpRatingCommand (mkSelector "maximumRating") retCFloat []
+maximumRating mpRatingCommand =
+  sendMessage mpRatingCommand maximumRatingSelector
 
 -- | Maximum rating for the command.
 --
 -- ObjC selector: @- setMaximumRating:@
 setMaximumRating :: IsMPRatingCommand mpRatingCommand => mpRatingCommand -> CFloat -> IO ()
-setMaximumRating mpRatingCommand  value =
-    sendMsg mpRatingCommand (mkSelector "setMaximumRating:") retVoid [argCFloat value]
+setMaximumRating mpRatingCommand value =
+  sendMessage mpRatingCommand setMaximumRatingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @minimumRating@
-minimumRatingSelector :: Selector
+minimumRatingSelector :: Selector '[] CFloat
 minimumRatingSelector = mkSelector "minimumRating"
 
 -- | @Selector@ for @setMinimumRating:@
-setMinimumRatingSelector :: Selector
+setMinimumRatingSelector :: Selector '[CFloat] ()
 setMinimumRatingSelector = mkSelector "setMinimumRating:"
 
 -- | @Selector@ for @maximumRating@
-maximumRatingSelector :: Selector
+maximumRatingSelector :: Selector '[] CFloat
 maximumRatingSelector = mkSelector "maximumRating"
 
 -- | @Selector@ for @setMaximumRating:@
-setMaximumRatingSelector :: Selector
+setMaximumRatingSelector :: Selector '[CFloat] ()
 setMaximumRatingSelector = mkSelector "setMaximumRating:"
 

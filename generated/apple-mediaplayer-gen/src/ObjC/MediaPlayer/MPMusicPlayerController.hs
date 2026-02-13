@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,34 +36,34 @@ module ObjC.MediaPlayer.MPMusicPlayerController
   , setNowPlayingItem
   , indexOfNowPlayingItem
   , iPodMusicPlayer
-  , newSelector
-  , initSelector
-  , setQueueWithQuerySelector
-  , setQueueWithItemCollectionSelector
-  , setQueueWithStoreIDsSelector
-  , setQueueWithDescriptorSelector
-  , prependQueueDescriptorSelector
   , appendQueueDescriptorSelector
-  , prepareToPlayWithCompletionHandlerSelector
-  , skipToNextItemSelector
-  , skipToBeginningSelector
-  , skipToPreviousItemSelector
-  , beginGeneratingPlaybackNotificationsSelector
-  , endGeneratingPlaybackNotificationsSelector
   , applicationMusicPlayerSelector
   , applicationQueuePlayerSelector
-  , systemMusicPlayerSelector
-  , playbackStateSelector
-  , repeatModeSelector
-  , setRepeatModeSelector
-  , shuffleModeSelector
-  , setShuffleModeSelector
-  , volumeSelector
-  , setVolumeSelector
-  , nowPlayingItemSelector
-  , setNowPlayingItemSelector
-  , indexOfNowPlayingItemSelector
+  , beginGeneratingPlaybackNotificationsSelector
+  , endGeneratingPlaybackNotificationsSelector
   , iPodMusicPlayerSelector
+  , indexOfNowPlayingItemSelector
+  , initSelector
+  , newSelector
+  , nowPlayingItemSelector
+  , playbackStateSelector
+  , prepareToPlayWithCompletionHandlerSelector
+  , prependQueueDescriptorSelector
+  , repeatModeSelector
+  , setNowPlayingItemSelector
+  , setQueueWithDescriptorSelector
+  , setQueueWithItemCollectionSelector
+  , setQueueWithQuerySelector
+  , setQueueWithStoreIDsSelector
+  , setRepeatModeSelector
+  , setShuffleModeSelector
+  , setVolumeSelector
+  , shuffleModeSelector
+  , skipToBeginningSelector
+  , skipToNextItemSelector
+  , skipToPreviousItemSelector
+  , systemMusicPlayerSelector
+  , volumeSelector
 
   -- * Enum types
   , MPMusicPlaybackState(MPMusicPlaybackState)
@@ -85,15 +86,11 @@ module ObjC.MediaPlayer.MPMusicPlayerController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -106,78 +103,72 @@ new :: IO (Id MPMusicPlayerController)
 new  =
   do
     cls' <- getRequiredClass "MPMusicPlayerController"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO (Id MPMusicPlayerController)
-init_ mpMusicPlayerController  =
-    sendMsg mpMusicPlayerController (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpMusicPlayerController =
+  sendOwnedMessage mpMusicPlayerController initSelector
 
 -- | @- setQueueWithQuery:@
 setQueueWithQuery :: (IsMPMusicPlayerController mpMusicPlayerController, IsMPMediaQuery query) => mpMusicPlayerController -> query -> IO ()
-setQueueWithQuery mpMusicPlayerController  query =
-  withObjCPtr query $ \raw_query ->
-      sendMsg mpMusicPlayerController (mkSelector "setQueueWithQuery:") retVoid [argPtr (castPtr raw_query :: Ptr ())]
+setQueueWithQuery mpMusicPlayerController query =
+  sendMessage mpMusicPlayerController setQueueWithQuerySelector (toMPMediaQuery query)
 
 -- | @- setQueueWithItemCollection:@
 setQueueWithItemCollection :: (IsMPMusicPlayerController mpMusicPlayerController, IsMPMediaItemCollection itemCollection) => mpMusicPlayerController -> itemCollection -> IO ()
-setQueueWithItemCollection mpMusicPlayerController  itemCollection =
-  withObjCPtr itemCollection $ \raw_itemCollection ->
-      sendMsg mpMusicPlayerController (mkSelector "setQueueWithItemCollection:") retVoid [argPtr (castPtr raw_itemCollection :: Ptr ())]
+setQueueWithItemCollection mpMusicPlayerController itemCollection =
+  sendMessage mpMusicPlayerController setQueueWithItemCollectionSelector (toMPMediaItemCollection itemCollection)
 
 -- | @- setQueueWithStoreIDs:@
 setQueueWithStoreIDs :: (IsMPMusicPlayerController mpMusicPlayerController, IsNSArray storeIDs) => mpMusicPlayerController -> storeIDs -> IO ()
-setQueueWithStoreIDs mpMusicPlayerController  storeIDs =
-  withObjCPtr storeIDs $ \raw_storeIDs ->
-      sendMsg mpMusicPlayerController (mkSelector "setQueueWithStoreIDs:") retVoid [argPtr (castPtr raw_storeIDs :: Ptr ())]
+setQueueWithStoreIDs mpMusicPlayerController storeIDs =
+  sendMessage mpMusicPlayerController setQueueWithStoreIDsSelector (toNSArray storeIDs)
 
 -- | @- setQueueWithDescriptor:@
 setQueueWithDescriptor :: (IsMPMusicPlayerController mpMusicPlayerController, IsMPMusicPlayerQueueDescriptor descriptor) => mpMusicPlayerController -> descriptor -> IO ()
-setQueueWithDescriptor mpMusicPlayerController  descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpMusicPlayerController (mkSelector "setQueueWithDescriptor:") retVoid [argPtr (castPtr raw_descriptor :: Ptr ())]
+setQueueWithDescriptor mpMusicPlayerController descriptor =
+  sendMessage mpMusicPlayerController setQueueWithDescriptorSelector (toMPMusicPlayerQueueDescriptor descriptor)
 
 -- | @- prependQueueDescriptor:@
 prependQueueDescriptor :: (IsMPMusicPlayerController mpMusicPlayerController, IsMPMusicPlayerQueueDescriptor descriptor) => mpMusicPlayerController -> descriptor -> IO ()
-prependQueueDescriptor mpMusicPlayerController  descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpMusicPlayerController (mkSelector "prependQueueDescriptor:") retVoid [argPtr (castPtr raw_descriptor :: Ptr ())]
+prependQueueDescriptor mpMusicPlayerController descriptor =
+  sendMessage mpMusicPlayerController prependQueueDescriptorSelector (toMPMusicPlayerQueueDescriptor descriptor)
 
 -- | @- appendQueueDescriptor:@
 appendQueueDescriptor :: (IsMPMusicPlayerController mpMusicPlayerController, IsMPMusicPlayerQueueDescriptor descriptor) => mpMusicPlayerController -> descriptor -> IO ()
-appendQueueDescriptor mpMusicPlayerController  descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpMusicPlayerController (mkSelector "appendQueueDescriptor:") retVoid [argPtr (castPtr raw_descriptor :: Ptr ())]
+appendQueueDescriptor mpMusicPlayerController descriptor =
+  sendMessage mpMusicPlayerController appendQueueDescriptorSelector (toMPMusicPlayerQueueDescriptor descriptor)
 
 -- | @- prepareToPlayWithCompletionHandler:@
 prepareToPlayWithCompletionHandler :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> Ptr () -> IO ()
-prepareToPlayWithCompletionHandler mpMusicPlayerController  completionHandler =
-    sendMsg mpMusicPlayerController (mkSelector "prepareToPlayWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+prepareToPlayWithCompletionHandler mpMusicPlayerController completionHandler =
+  sendMessage mpMusicPlayerController prepareToPlayWithCompletionHandlerSelector completionHandler
 
 -- | @- skipToNextItem@
 skipToNextItem :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO ()
-skipToNextItem mpMusicPlayerController  =
-    sendMsg mpMusicPlayerController (mkSelector "skipToNextItem") retVoid []
+skipToNextItem mpMusicPlayerController =
+  sendMessage mpMusicPlayerController skipToNextItemSelector
 
 -- | @- skipToBeginning@
 skipToBeginning :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO ()
-skipToBeginning mpMusicPlayerController  =
-    sendMsg mpMusicPlayerController (mkSelector "skipToBeginning") retVoid []
+skipToBeginning mpMusicPlayerController =
+  sendMessage mpMusicPlayerController skipToBeginningSelector
 
 -- | @- skipToPreviousItem@
 skipToPreviousItem :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO ()
-skipToPreviousItem mpMusicPlayerController  =
-    sendMsg mpMusicPlayerController (mkSelector "skipToPreviousItem") retVoid []
+skipToPreviousItem mpMusicPlayerController =
+  sendMessage mpMusicPlayerController skipToPreviousItemSelector
 
 -- | @- beginGeneratingPlaybackNotifications@
 beginGeneratingPlaybackNotifications :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO ()
-beginGeneratingPlaybackNotifications mpMusicPlayerController  =
-    sendMsg mpMusicPlayerController (mkSelector "beginGeneratingPlaybackNotifications") retVoid []
+beginGeneratingPlaybackNotifications mpMusicPlayerController =
+  sendMessage mpMusicPlayerController beginGeneratingPlaybackNotificationsSelector
 
 -- | @- endGeneratingPlaybackNotifications@
 endGeneratingPlaybackNotifications :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO ()
-endGeneratingPlaybackNotifications mpMusicPlayerController  =
-    sendMsg mpMusicPlayerController (mkSelector "endGeneratingPlaybackNotifications") retVoid []
+endGeneratingPlaybackNotifications mpMusicPlayerController =
+  sendMessage mpMusicPlayerController endGeneratingPlaybackNotificationsSelector
 
 -- | Playing items with applicationMusicPlayer does not affect Music's playback state.
 --
@@ -186,7 +177,7 @@ applicationMusicPlayer :: IO (Id MPMusicPlayerController)
 applicationMusicPlayer  =
   do
     cls' <- getRequiredClass "MPMusicPlayerController"
-    sendClassMsg cls' (mkSelector "applicationMusicPlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' applicationMusicPlayerSelector
 
 -- | Similar to applicationMusicPlayer, but allows direct manipulation of the queue.
 --
@@ -195,7 +186,7 @@ applicationQueuePlayer :: IO (Id MPMusicPlayerApplicationController)
 applicationQueuePlayer  =
   do
     cls' <- getRequiredClass "MPMusicPlayerController"
-    sendClassMsg cls' (mkSelector "applicationQueuePlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' applicationQueuePlayerSelector
 
 -- | Playing media items with the systemMusicPlayer will replace the user's current Music state.
 --
@@ -204,179 +195,178 @@ systemMusicPlayer :: IO (Id MPMusicPlayerController)
 systemMusicPlayer  =
   do
     cls' <- getRequiredClass "MPMusicPlayerController"
-    sendClassMsg cls' (mkSelector "systemMusicPlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' systemMusicPlayerSelector
 
 -- | @- playbackState@
 playbackState :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO MPMusicPlaybackState
-playbackState mpMusicPlayerController  =
-    fmap (coerce :: CLong -> MPMusicPlaybackState) $ sendMsg mpMusicPlayerController (mkSelector "playbackState") retCLong []
+playbackState mpMusicPlayerController =
+  sendMessage mpMusicPlayerController playbackStateSelector
 
 -- | @- repeatMode@
 repeatMode :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO MPMusicRepeatMode
-repeatMode mpMusicPlayerController  =
-    fmap (coerce :: CLong -> MPMusicRepeatMode) $ sendMsg mpMusicPlayerController (mkSelector "repeatMode") retCLong []
+repeatMode mpMusicPlayerController =
+  sendMessage mpMusicPlayerController repeatModeSelector
 
 -- | @- setRepeatMode:@
 setRepeatMode :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> MPMusicRepeatMode -> IO ()
-setRepeatMode mpMusicPlayerController  value =
-    sendMsg mpMusicPlayerController (mkSelector "setRepeatMode:") retVoid [argCLong (coerce value)]
+setRepeatMode mpMusicPlayerController value =
+  sendMessage mpMusicPlayerController setRepeatModeSelector value
 
 -- | @- shuffleMode@
 shuffleMode :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO MPMusicShuffleMode
-shuffleMode mpMusicPlayerController  =
-    fmap (coerce :: CLong -> MPMusicShuffleMode) $ sendMsg mpMusicPlayerController (mkSelector "shuffleMode") retCLong []
+shuffleMode mpMusicPlayerController =
+  sendMessage mpMusicPlayerController shuffleModeSelector
 
 -- | @- setShuffleMode:@
 setShuffleMode :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> MPMusicShuffleMode -> IO ()
-setShuffleMode mpMusicPlayerController  value =
-    sendMsg mpMusicPlayerController (mkSelector "setShuffleMode:") retVoid [argCLong (coerce value)]
+setShuffleMode mpMusicPlayerController value =
+  sendMessage mpMusicPlayerController setShuffleModeSelector value
 
 -- | @- volume@
 volume :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO CFloat
-volume mpMusicPlayerController  =
-    sendMsg mpMusicPlayerController (mkSelector "volume") retCFloat []
+volume mpMusicPlayerController =
+  sendMessage mpMusicPlayerController volumeSelector
 
 -- | @- setVolume:@
 setVolume :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> CFloat -> IO ()
-setVolume mpMusicPlayerController  value =
-    sendMsg mpMusicPlayerController (mkSelector "setVolume:") retVoid [argCFloat value]
+setVolume mpMusicPlayerController value =
+  sendMessage mpMusicPlayerController setVolumeSelector value
 
 -- | @- nowPlayingItem@
 nowPlayingItem :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO (Id MPMediaItem)
-nowPlayingItem mpMusicPlayerController  =
-    sendMsg mpMusicPlayerController (mkSelector "nowPlayingItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+nowPlayingItem mpMusicPlayerController =
+  sendMessage mpMusicPlayerController nowPlayingItemSelector
 
 -- | @- setNowPlayingItem:@
 setNowPlayingItem :: (IsMPMusicPlayerController mpMusicPlayerController, IsMPMediaItem value) => mpMusicPlayerController -> value -> IO ()
-setNowPlayingItem mpMusicPlayerController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpMusicPlayerController (mkSelector "setNowPlayingItem:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNowPlayingItem mpMusicPlayerController value =
+  sendMessage mpMusicPlayerController setNowPlayingItemSelector (toMPMediaItem value)
 
 -- | @- indexOfNowPlayingItem@
 indexOfNowPlayingItem :: IsMPMusicPlayerController mpMusicPlayerController => mpMusicPlayerController -> IO CULong
-indexOfNowPlayingItem mpMusicPlayerController  =
-    sendMsg mpMusicPlayerController (mkSelector "indexOfNowPlayingItem") retCULong []
+indexOfNowPlayingItem mpMusicPlayerController =
+  sendMessage mpMusicPlayerController indexOfNowPlayingItemSelector
 
 -- | @+ iPodMusicPlayer@
 iPodMusicPlayer :: IO RawId
 iPodMusicPlayer  =
   do
     cls' <- getRequiredClass "MPMusicPlayerController"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "iPodMusicPlayer") (retPtr retVoid) []
+    sendClassMessage cls' iPodMusicPlayerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MPMusicPlayerController)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPMusicPlayerController)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setQueueWithQuery:@
-setQueueWithQuerySelector :: Selector
+setQueueWithQuerySelector :: Selector '[Id MPMediaQuery] ()
 setQueueWithQuerySelector = mkSelector "setQueueWithQuery:"
 
 -- | @Selector@ for @setQueueWithItemCollection:@
-setQueueWithItemCollectionSelector :: Selector
+setQueueWithItemCollectionSelector :: Selector '[Id MPMediaItemCollection] ()
 setQueueWithItemCollectionSelector = mkSelector "setQueueWithItemCollection:"
 
 -- | @Selector@ for @setQueueWithStoreIDs:@
-setQueueWithStoreIDsSelector :: Selector
+setQueueWithStoreIDsSelector :: Selector '[Id NSArray] ()
 setQueueWithStoreIDsSelector = mkSelector "setQueueWithStoreIDs:"
 
 -- | @Selector@ for @setQueueWithDescriptor:@
-setQueueWithDescriptorSelector :: Selector
+setQueueWithDescriptorSelector :: Selector '[Id MPMusicPlayerQueueDescriptor] ()
 setQueueWithDescriptorSelector = mkSelector "setQueueWithDescriptor:"
 
 -- | @Selector@ for @prependQueueDescriptor:@
-prependQueueDescriptorSelector :: Selector
+prependQueueDescriptorSelector :: Selector '[Id MPMusicPlayerQueueDescriptor] ()
 prependQueueDescriptorSelector = mkSelector "prependQueueDescriptor:"
 
 -- | @Selector@ for @appendQueueDescriptor:@
-appendQueueDescriptorSelector :: Selector
+appendQueueDescriptorSelector :: Selector '[Id MPMusicPlayerQueueDescriptor] ()
 appendQueueDescriptorSelector = mkSelector "appendQueueDescriptor:"
 
 -- | @Selector@ for @prepareToPlayWithCompletionHandler:@
-prepareToPlayWithCompletionHandlerSelector :: Selector
+prepareToPlayWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 prepareToPlayWithCompletionHandlerSelector = mkSelector "prepareToPlayWithCompletionHandler:"
 
 -- | @Selector@ for @skipToNextItem@
-skipToNextItemSelector :: Selector
+skipToNextItemSelector :: Selector '[] ()
 skipToNextItemSelector = mkSelector "skipToNextItem"
 
 -- | @Selector@ for @skipToBeginning@
-skipToBeginningSelector :: Selector
+skipToBeginningSelector :: Selector '[] ()
 skipToBeginningSelector = mkSelector "skipToBeginning"
 
 -- | @Selector@ for @skipToPreviousItem@
-skipToPreviousItemSelector :: Selector
+skipToPreviousItemSelector :: Selector '[] ()
 skipToPreviousItemSelector = mkSelector "skipToPreviousItem"
 
 -- | @Selector@ for @beginGeneratingPlaybackNotifications@
-beginGeneratingPlaybackNotificationsSelector :: Selector
+beginGeneratingPlaybackNotificationsSelector :: Selector '[] ()
 beginGeneratingPlaybackNotificationsSelector = mkSelector "beginGeneratingPlaybackNotifications"
 
 -- | @Selector@ for @endGeneratingPlaybackNotifications@
-endGeneratingPlaybackNotificationsSelector :: Selector
+endGeneratingPlaybackNotificationsSelector :: Selector '[] ()
 endGeneratingPlaybackNotificationsSelector = mkSelector "endGeneratingPlaybackNotifications"
 
 -- | @Selector@ for @applicationMusicPlayer@
-applicationMusicPlayerSelector :: Selector
+applicationMusicPlayerSelector :: Selector '[] (Id MPMusicPlayerController)
 applicationMusicPlayerSelector = mkSelector "applicationMusicPlayer"
 
 -- | @Selector@ for @applicationQueuePlayer@
-applicationQueuePlayerSelector :: Selector
+applicationQueuePlayerSelector :: Selector '[] (Id MPMusicPlayerApplicationController)
 applicationQueuePlayerSelector = mkSelector "applicationQueuePlayer"
 
 -- | @Selector@ for @systemMusicPlayer@
-systemMusicPlayerSelector :: Selector
+systemMusicPlayerSelector :: Selector '[] (Id MPMusicPlayerController)
 systemMusicPlayerSelector = mkSelector "systemMusicPlayer"
 
 -- | @Selector@ for @playbackState@
-playbackStateSelector :: Selector
+playbackStateSelector :: Selector '[] MPMusicPlaybackState
 playbackStateSelector = mkSelector "playbackState"
 
 -- | @Selector@ for @repeatMode@
-repeatModeSelector :: Selector
+repeatModeSelector :: Selector '[] MPMusicRepeatMode
 repeatModeSelector = mkSelector "repeatMode"
 
 -- | @Selector@ for @setRepeatMode:@
-setRepeatModeSelector :: Selector
+setRepeatModeSelector :: Selector '[MPMusicRepeatMode] ()
 setRepeatModeSelector = mkSelector "setRepeatMode:"
 
 -- | @Selector@ for @shuffleMode@
-shuffleModeSelector :: Selector
+shuffleModeSelector :: Selector '[] MPMusicShuffleMode
 shuffleModeSelector = mkSelector "shuffleMode"
 
 -- | @Selector@ for @setShuffleMode:@
-setShuffleModeSelector :: Selector
+setShuffleModeSelector :: Selector '[MPMusicShuffleMode] ()
 setShuffleModeSelector = mkSelector "setShuffleMode:"
 
 -- | @Selector@ for @volume@
-volumeSelector :: Selector
+volumeSelector :: Selector '[] CFloat
 volumeSelector = mkSelector "volume"
 
 -- | @Selector@ for @setVolume:@
-setVolumeSelector :: Selector
+setVolumeSelector :: Selector '[CFloat] ()
 setVolumeSelector = mkSelector "setVolume:"
 
 -- | @Selector@ for @nowPlayingItem@
-nowPlayingItemSelector :: Selector
+nowPlayingItemSelector :: Selector '[] (Id MPMediaItem)
 nowPlayingItemSelector = mkSelector "nowPlayingItem"
 
 -- | @Selector@ for @setNowPlayingItem:@
-setNowPlayingItemSelector :: Selector
+setNowPlayingItemSelector :: Selector '[Id MPMediaItem] ()
 setNowPlayingItemSelector = mkSelector "setNowPlayingItem:"
 
 -- | @Selector@ for @indexOfNowPlayingItem@
-indexOfNowPlayingItemSelector :: Selector
+indexOfNowPlayingItemSelector :: Selector '[] CULong
 indexOfNowPlayingItemSelector = mkSelector "indexOfNowPlayingItem"
 
 -- | @Selector@ for @iPodMusicPlayer@
-iPodMusicPlayerSelector :: Selector
+iPodMusicPlayerSelector :: Selector '[] RawId
 iPodMusicPlayerSelector = mkSelector "iPodMusicPlayer"
 

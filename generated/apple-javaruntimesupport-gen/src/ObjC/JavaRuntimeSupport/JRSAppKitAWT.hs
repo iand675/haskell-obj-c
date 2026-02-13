@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.JavaRuntimeSupport.JRSAppKitAWT
   , registerAWTAppWithOptions
   , markAppIsDaemon
   , awtAppDelegateSelector
-  , registerAWTAppWithOptionsSelector
   , markAppIsDaemonSelector
+  , registerAWTAppWithOptionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,36 +33,35 @@ awtAppDelegate :: IO RawId
 awtAppDelegate  =
   do
     cls' <- getRequiredClass "JRSAppKitAWT"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "awtAppDelegate") (retPtr retVoid) []
+    sendClassMessage cls' awtAppDelegateSelector
 
 -- | @+ registerAWTAppWithOptions:@
 registerAWTAppWithOptions :: IsNSDictionary options => options -> IO ()
 registerAWTAppWithOptions options =
   do
     cls' <- getRequiredClass "JRSAppKitAWT"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "registerAWTAppWithOptions:") retVoid [argPtr (castPtr raw_options :: Ptr ())]
+    sendClassMessage cls' registerAWTAppWithOptionsSelector (toNSDictionary options)
 
 -- | @+ markAppIsDaemon@
 markAppIsDaemon :: IO Bool
 markAppIsDaemon  =
   do
     cls' <- getRequiredClass "JRSAppKitAWT"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "markAppIsDaemon") retCULong []
+    sendClassMessage cls' markAppIsDaemonSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @awtAppDelegate@
-awtAppDelegateSelector :: Selector
+awtAppDelegateSelector :: Selector '[] RawId
 awtAppDelegateSelector = mkSelector "awtAppDelegate"
 
 -- | @Selector@ for @registerAWTAppWithOptions:@
-registerAWTAppWithOptionsSelector :: Selector
+registerAWTAppWithOptionsSelector :: Selector '[Id NSDictionary] ()
 registerAWTAppWithOptionsSelector = mkSelector "registerAWTAppWithOptions:"
 
 -- | @Selector@ for @markAppIsDaemon@
-markAppIsDaemonSelector :: Selector
+markAppIsDaemonSelector :: Selector '[] Bool
 markAppIsDaemonSelector = mkSelector "markAppIsDaemon"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.PassKit.PKStoredValuePassProperties
   , blocked
   , expirationDate
   , balances
-  , passPropertiesForPassSelector
+  , balancesSelector
   , blacklistedSelector
   , blockedSelector
   , expirationDateSelector
-  , balancesSelector
+  , passPropertiesForPassSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,50 +37,49 @@ passPropertiesForPass :: IsPKPass pass => pass -> IO (Id PKStoredValuePassProper
 passPropertiesForPass pass =
   do
     cls' <- getRequiredClass "PKStoredValuePassProperties"
-    withObjCPtr pass $ \raw_pass ->
-      sendClassMsg cls' (mkSelector "passPropertiesForPass:") (retPtr retVoid) [argPtr (castPtr raw_pass :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' passPropertiesForPassSelector (toPKPass pass)
 
 -- | @- blacklisted@
 blacklisted :: IsPKStoredValuePassProperties pkStoredValuePassProperties => pkStoredValuePassProperties -> IO Bool
-blacklisted pkStoredValuePassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkStoredValuePassProperties (mkSelector "blacklisted") retCULong []
+blacklisted pkStoredValuePassProperties =
+  sendMessage pkStoredValuePassProperties blacklistedSelector
 
 -- | @- blocked@
 blocked :: IsPKStoredValuePassProperties pkStoredValuePassProperties => pkStoredValuePassProperties -> IO Bool
-blocked pkStoredValuePassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkStoredValuePassProperties (mkSelector "blocked") retCULong []
+blocked pkStoredValuePassProperties =
+  sendMessage pkStoredValuePassProperties blockedSelector
 
 -- | @- expirationDate@
 expirationDate :: IsPKStoredValuePassProperties pkStoredValuePassProperties => pkStoredValuePassProperties -> IO (Id NSDate)
-expirationDate pkStoredValuePassProperties  =
-    sendMsg pkStoredValuePassProperties (mkSelector "expirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationDate pkStoredValuePassProperties =
+  sendMessage pkStoredValuePassProperties expirationDateSelector
 
 -- | @- balances@
 balances :: IsPKStoredValuePassProperties pkStoredValuePassProperties => pkStoredValuePassProperties -> IO (Id NSArray)
-balances pkStoredValuePassProperties  =
-    sendMsg pkStoredValuePassProperties (mkSelector "balances") (retPtr retVoid) [] >>= retainedObject . castPtr
+balances pkStoredValuePassProperties =
+  sendMessage pkStoredValuePassProperties balancesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @passPropertiesForPass:@
-passPropertiesForPassSelector :: Selector
+passPropertiesForPassSelector :: Selector '[Id PKPass] (Id PKStoredValuePassProperties)
 passPropertiesForPassSelector = mkSelector "passPropertiesForPass:"
 
 -- | @Selector@ for @blacklisted@
-blacklistedSelector :: Selector
+blacklistedSelector :: Selector '[] Bool
 blacklistedSelector = mkSelector "blacklisted"
 
 -- | @Selector@ for @blocked@
-blockedSelector :: Selector
+blockedSelector :: Selector '[] Bool
 blockedSelector = mkSelector "blocked"
 
 -- | @Selector@ for @expirationDate@
-expirationDateSelector :: Selector
+expirationDateSelector :: Selector '[] (Id NSDate)
 expirationDateSelector = mkSelector "expirationDate"
 
 -- | @Selector@ for @balances@
-balancesSelector :: Selector
+balancesSelector :: Selector '[] (Id NSArray)
 balancesSelector = mkSelector "balances"
 

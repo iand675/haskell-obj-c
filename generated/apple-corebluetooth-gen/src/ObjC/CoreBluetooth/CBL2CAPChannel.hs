@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.CoreBluetooth.CBL2CAPChannel
   , inputStream
   , outputStream
   , psm
-  , peerSelector
   , inputStreamSelector
   , outputStreamSelector
+  , peerSelector
   , psmSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- peer@
 peer :: IsCBL2CAPChannel cbL2CAPChannel => cbL2CAPChannel -> IO (Id CBPeer)
-peer cbL2CAPChannel  =
-    sendMsg cbL2CAPChannel (mkSelector "peer") (retPtr retVoid) [] >>= retainedObject . castPtr
+peer cbL2CAPChannel =
+  sendMessage cbL2CAPChannel peerSelector
 
 -- | inputStream
 --
@@ -52,8 +49,8 @@ peer cbL2CAPChannel  =
 --
 -- ObjC selector: @- inputStream@
 inputStream :: IsCBL2CAPChannel cbL2CAPChannel => cbL2CAPChannel -> IO (Id NSInputStream)
-inputStream cbL2CAPChannel  =
-    sendMsg cbL2CAPChannel (mkSelector "inputStream") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputStream cbL2CAPChannel =
+  sendMessage cbL2CAPChannel inputStreamSelector
 
 -- | outputStream
 --
@@ -61,8 +58,8 @@ inputStream cbL2CAPChannel  =
 --
 -- ObjC selector: @- outputStream@
 outputStream :: IsCBL2CAPChannel cbL2CAPChannel => cbL2CAPChannel -> IO (Id NSOutputStream)
-outputStream cbL2CAPChannel  =
-    sendMsg cbL2CAPChannel (mkSelector "outputStream") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputStream cbL2CAPChannel =
+  sendMessage cbL2CAPChannel outputStreamSelector
 
 -- | PSM
 --
@@ -70,26 +67,26 @@ outputStream cbL2CAPChannel  =
 --
 -- ObjC selector: @- PSM@
 psm :: IsCBL2CAPChannel cbL2CAPChannel => cbL2CAPChannel -> IO CUShort
-psm cbL2CAPChannel  =
-    fmap fromIntegral $ sendMsg cbL2CAPChannel (mkSelector "PSM") retCUInt []
+psm cbL2CAPChannel =
+  sendMessage cbL2CAPChannel psmSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @peer@
-peerSelector :: Selector
+peerSelector :: Selector '[] (Id CBPeer)
 peerSelector = mkSelector "peer"
 
 -- | @Selector@ for @inputStream@
-inputStreamSelector :: Selector
+inputStreamSelector :: Selector '[] (Id NSInputStream)
 inputStreamSelector = mkSelector "inputStream"
 
 -- | @Selector@ for @outputStream@
-outputStreamSelector :: Selector
+outputStreamSelector :: Selector '[] (Id NSOutputStream)
 outputStreamSelector = mkSelector "outputStream"
 
 -- | @Selector@ for @PSM@
-psmSelector :: Selector
+psmSelector :: Selector '[] CUShort
 psmSelector = mkSelector "PSM"
 

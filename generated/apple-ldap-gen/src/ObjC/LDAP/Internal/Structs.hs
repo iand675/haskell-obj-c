@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data LDAPAPIFeatureInfo = LDAPAPIFeatureInfo
   { ldapapiFeatureInfoLdapaif_info_version :: !CInt
@@ -39,6 +41,16 @@ argLDAPAPIFeatureInfo = mkStorableArg ldapapiFeatureInfoStructType
 
 retLDAPAPIFeatureInfo :: RetType LDAPAPIFeatureInfo
 retLDAPAPIFeatureInfo = mkStorableRetType ldapapiFeatureInfoStructType
+
+instance ObjCArgument LDAPAPIFeatureInfo where
+  withObjCArg x k = k (argLDAPAPIFeatureInfo x)
+
+instance ObjCReturn LDAPAPIFeatureInfo where
+  type RawReturn LDAPAPIFeatureInfo = LDAPAPIFeatureInfo
+  objcRetType = retLDAPAPIFeatureInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data LDAPAPIInfo = LDAPAPIInfo
   { ldapapiInfoLdapai_info_version :: !CInt
@@ -76,6 +88,16 @@ argLDAPAPIInfo = mkStorableArg ldapapiInfoStructType
 retLDAPAPIInfo :: RetType LDAPAPIInfo
 retLDAPAPIInfo = mkStorableRetType ldapapiInfoStructType
 
+instance ObjCArgument LDAPAPIInfo where
+  withObjCArg x k = k (argLDAPAPIInfo x)
+
+instance ObjCReturn LDAPAPIInfo where
+  type RawReturn LDAPAPIInfo = LDAPAPIInfo
+  objcRetType = retLDAPAPIInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LDAPAVA = LDAPAVA
   { ldapavaLa_attr :: !(Ptr ())
   , ldapavaLa_value :: !(Ptr ())
@@ -106,6 +128,16 @@ argLDAPAVA = mkStorableArg ldapavaStructType
 retLDAPAVA :: RetType LDAPAVA
 retLDAPAVA = mkStorableRetType ldapavaStructType
 
+instance ObjCArgument LDAPAVA where
+  withObjCArg x k = k (argLDAPAVA x)
+
+instance ObjCReturn LDAPAVA where
+  type RawReturn LDAPAVA = LDAPAVA
+  objcRetType = retLDAPAVA
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LDAPControl = LDAPControl
   { ldapControlLdctl_oid :: !(Ptr ())
   , ldapControlLdctl_value :: !(Ptr ())
@@ -133,6 +165,16 @@ argLDAPControl = mkStorableArg ldapControlStructType
 retLDAPControl :: RetType LDAPControl
 retLDAPControl = mkStorableRetType ldapControlStructType
 
+instance ObjCArgument LDAPControl where
+  withObjCArg x k = k (argLDAPControl x)
+
+instance ObjCReturn LDAPControl where
+  type RawReturn LDAPControl = LDAPControl
+  objcRetType = retLDAPControl
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LDAPDerefSpec = LDAPDerefSpec
   { ldapDerefSpecDerefAttr :: !(Ptr ())
   , ldapDerefSpecAttributes :: !(Ptr ())
@@ -156,6 +198,16 @@ argLDAPDerefSpec = mkStorableArg ldapDerefSpecStructType
 
 retLDAPDerefSpec :: RetType LDAPDerefSpec
 retLDAPDerefSpec = mkStorableRetType ldapDerefSpecStructType
+
+instance ObjCArgument LDAPDerefSpec where
+  withObjCArg x k = k (argLDAPDerefSpec x)
+
+instance ObjCReturn LDAPDerefSpec where
+  type RawReturn LDAPDerefSpec = LDAPDerefSpec
+  objcRetType = retLDAPDerefSpec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data LDAPDerefVal = LDAPDerefVal
   { ldapDerefValType :: !(Ptr ())
@@ -184,6 +236,16 @@ argLDAPDerefVal = mkStorableArg ldapDerefValStructType
 retLDAPDerefVal :: RetType LDAPDerefVal
 retLDAPDerefVal = mkStorableRetType ldapDerefValStructType
 
+instance ObjCArgument LDAPDerefVal where
+  withObjCArg x k = k (argLDAPDerefVal x)
+
+instance ObjCReturn LDAPDerefVal where
+  type RawReturn LDAPDerefVal = LDAPDerefVal
+  objcRetType = retLDAPDerefVal
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LDAPSortKey = LDAPSortKey
   { ldapSortKeyAttributeType :: !(Ptr ())
   , ldapSortKeyOrderingRule :: !(Ptr ())
@@ -210,6 +272,16 @@ argLDAPSortKey = mkStorableArg ldapSortKeyStructType
 
 retLDAPSortKey :: RetType LDAPSortKey
 retLDAPSortKey = mkStorableRetType ldapSortKeyStructType
+
+instance ObjCArgument LDAPSortKey where
+  withObjCArg x k = k (argLDAPSortKey x)
+
+instance ObjCReturn LDAPSortKey where
+  type RawReturn LDAPSortKey = LDAPSortKey
+  objcRetType = retLDAPSortKey
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data LDAPURLDesc = LDAPURLDesc
   { ldapurlDescLud_next :: !(Ptr ())
@@ -259,6 +331,16 @@ argLDAPURLDesc = mkStorableArg ldapurlDescStructType
 retLDAPURLDesc :: RetType LDAPURLDesc
 retLDAPURLDesc = mkStorableRetType ldapurlDescStructType
 
+instance ObjCArgument LDAPURLDesc where
+  withObjCArg x k = k (argLDAPURLDesc x)
+
+instance ObjCReturn LDAPURLDesc where
+  type RawReturn LDAPURLDesc = LDAPURLDesc
+  objcRetType = retLDAPURLDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LDAPVLVInfo = LDAPVLVInfo
   { ldapvlvInfoLdvlv_version :: !CInt
   , ldapvlvInfoLdvlv_before_count :: !CInt
@@ -300,3 +382,13 @@ argLDAPVLVInfo = mkStorableArg ldapvlvInfoStructType
 
 retLDAPVLVInfo :: RetType LDAPVLVInfo
 retLDAPVLVInfo = mkStorableRetType ldapvlvInfoStructType
+
+instance ObjCArgument LDAPVLVInfo where
+  withObjCArg x k = k (argLDAPVLVInfo x)
+
+instance ObjCReturn LDAPVLVInfo where
+  type RawReturn LDAPVLVInfo = LDAPVLVInfo
+  objcRetType = retLDAPVLVInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

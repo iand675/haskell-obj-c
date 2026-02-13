@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.QuartzCore.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CAAutoresizingMask@ (bitmask)
 newtype CAAutoresizingMask = CAAutoresizingMask CUInt
@@ -43,6 +46,16 @@ pattern KCALayerHeightSizable = CAAutoresizingMask 16
 pattern KCALayerMaxYMargin :: CAAutoresizingMask
 pattern KCALayerMaxYMargin = CAAutoresizingMask 32
 
+instance ObjCArgument CAAutoresizingMask where
+  withObjCArg (CAAutoresizingMask x) k = k (argCUInt x)
+
+instance ObjCReturn CAAutoresizingMask where
+  type RawReturn CAAutoresizingMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAAutoresizingMask x)
+  fromOwned x = pure (CAAutoresizingMask x)
+
 -- | @CAConstraintAttribute@
 newtype CAConstraintAttribute = CAConstraintAttribute CInt
   deriving stock (Eq, Ord, Show)
@@ -72,6 +85,16 @@ pattern KCAConstraintMaxY = CAConstraintAttribute 6
 pattern KCAConstraintHeight :: CAConstraintAttribute
 pattern KCAConstraintHeight = CAConstraintAttribute 7
 
+instance ObjCArgument CAConstraintAttribute where
+  withObjCArg (CAConstraintAttribute x) k = k (argCInt x)
+
+instance ObjCReturn CAConstraintAttribute where
+  type RawReturn CAConstraintAttribute = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAConstraintAttribute x)
+  fromOwned x = pure (CAConstraintAttribute x)
+
 -- | @CACornerMask@ (bitmask)
 newtype CACornerMask = CACornerMask CULong
   deriving stock (Eq, Ord, Show)
@@ -95,6 +118,16 @@ pattern KCALayerMinXMaxYCorner = CACornerMask 4
 pattern KCALayerMaxXMaxYCorner :: CACornerMask
 pattern KCALayerMaxXMaxYCorner = CACornerMask 8
 
+instance ObjCArgument CACornerMask where
+  withObjCArg (CACornerMask x) k = k (argCULong x)
+
+instance ObjCReturn CACornerMask where
+  type RawReturn CACornerMask = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CACornerMask x)
+  fromOwned x = pure (CACornerMask x)
+
 -- | @CAEdgeAntialiasingMask@ (bitmask)
 newtype CAEdgeAntialiasingMask = CAEdgeAntialiasingMask CUInt
   deriving stock (Eq, Ord, Show)
@@ -117,3 +150,13 @@ pattern KCALayerBottomEdge = CAEdgeAntialiasingMask 4
 
 pattern KCALayerTopEdge :: CAEdgeAntialiasingMask
 pattern KCALayerTopEdge = CAEdgeAntialiasingMask 8
+
+instance ObjCArgument CAEdgeAntialiasingMask where
+  withObjCArg (CAEdgeAntialiasingMask x) k = k (argCUInt x)
+
+instance ObjCReturn CAEdgeAntialiasingMask where
+  type RawReturn CAEdgeAntialiasingMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAEdgeAntialiasingMask x)
+  fromOwned x = pure (CAEdgeAntialiasingMask x)

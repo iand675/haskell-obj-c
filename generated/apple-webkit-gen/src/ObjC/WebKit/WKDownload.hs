@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.WebKit.WKDownload
   , userInitiated
   , originatingFrame
   , cancelSelector
-  , originalRequestSelector
-  , webViewSelector
   , delegateSelector
+  , originalRequestSelector
+  , originatingFrameSelector
   , setDelegateSelector
   , userInitiatedSelector
-  , originatingFrameSelector
+  , webViewSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,68 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cancel:@
 cancel :: IsWKDownload wkDownload => wkDownload -> Ptr () -> IO ()
-cancel wkDownload  completionHandler =
-    sendMsg wkDownload (mkSelector "cancel:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+cancel wkDownload completionHandler =
+  sendMessage wkDownload cancelSelector completionHandler
 
 -- | @- originalRequest@
 originalRequest :: IsWKDownload wkDownload => wkDownload -> IO (Id NSURLRequest)
-originalRequest wkDownload  =
-    sendMsg wkDownload (mkSelector "originalRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalRequest wkDownload =
+  sendMessage wkDownload originalRequestSelector
 
 -- | @- webView@
 webView :: IsWKDownload wkDownload => wkDownload -> IO (Id WKWebView)
-webView wkDownload  =
-    sendMsg wkDownload (mkSelector "webView") (retPtr retVoid) [] >>= retainedObject . castPtr
+webView wkDownload =
+  sendMessage wkDownload webViewSelector
 
 -- | @- delegate@
 delegate :: IsWKDownload wkDownload => wkDownload -> IO RawId
-delegate wkDownload  =
-    fmap (RawId . castPtr) $ sendMsg wkDownload (mkSelector "delegate") (retPtr retVoid) []
+delegate wkDownload =
+  sendMessage wkDownload delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsWKDownload wkDownload => wkDownload -> RawId -> IO ()
-setDelegate wkDownload  value =
-    sendMsg wkDownload (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate wkDownload value =
+  sendMessage wkDownload setDelegateSelector value
 
 -- | @- userInitiated@
 userInitiated :: IsWKDownload wkDownload => wkDownload -> IO Bool
-userInitiated wkDownload  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkDownload (mkSelector "userInitiated") retCULong []
+userInitiated wkDownload =
+  sendMessage wkDownload userInitiatedSelector
 
 -- | @- originatingFrame@
 originatingFrame :: IsWKDownload wkDownload => wkDownload -> IO (Id WKFrameInfo)
-originatingFrame wkDownload  =
-    sendMsg wkDownload (mkSelector "originatingFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+originatingFrame wkDownload =
+  sendMessage wkDownload originatingFrameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cancel:@
-cancelSelector :: Selector
+cancelSelector :: Selector '[Ptr ()] ()
 cancelSelector = mkSelector "cancel:"
 
 -- | @Selector@ for @originalRequest@
-originalRequestSelector :: Selector
+originalRequestSelector :: Selector '[] (Id NSURLRequest)
 originalRequestSelector = mkSelector "originalRequest"
 
 -- | @Selector@ for @webView@
-webViewSelector :: Selector
+webViewSelector :: Selector '[] (Id WKWebView)
 webViewSelector = mkSelector "webView"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @userInitiated@
-userInitiatedSelector :: Selector
+userInitiatedSelector :: Selector '[] Bool
 userInitiatedSelector = mkSelector "userInitiated"
 
 -- | @Selector@ for @originatingFrame@
-originatingFrameSelector :: Selector
+originatingFrameSelector :: Selector '[] (Id WKFrameInfo)
 originatingFrameSelector = mkSelector "originatingFrame"
 

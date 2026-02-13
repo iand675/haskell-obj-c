@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -145,144 +146,144 @@ module ObjC.Foundation.NSNumberFormatter
   , setAttributedStringForNotANumber
   , roundingBehavior
   , setRoundingBehavior
-  , getObjectValue_forString_range_errorSelector
-  , stringFromNumberSelector
-  , numberFromStringSelector
-  , localizedStringFromNumber_numberStyleSelector
-  , defaultFormatterBehaviorSelector
-  , setDefaultFormatterBehaviorSelector
-  , formattingContextSelector
-  , setFormattingContextSelector
-  , minimumGroupingDigitsSelector
-  , setMinimumGroupingDigitsSelector
-  , numberStyleSelector
-  , setNumberStyleSelector
-  , localeSelector
-  , setLocaleSelector
-  , generatesDecimalNumbersSelector
-  , setGeneratesDecimalNumbersSelector
-  , formatterBehaviorSelector
-  , setFormatterBehaviorSelector
-  , negativeFormatSelector
-  , setNegativeFormatSelector
-  , textAttributesForNegativeValuesSelector
-  , setTextAttributesForNegativeValuesSelector
-  , positiveFormatSelector
-  , setPositiveFormatSelector
-  , textAttributesForPositiveValuesSelector
-  , setTextAttributesForPositiveValuesSelector
   , allowsFloatsSelector
-  , setAllowsFloatsSelector
-  , decimalSeparatorSelector
-  , setDecimalSeparatorSelector
   , alwaysShowsDecimalSeparatorSelector
-  , setAlwaysShowsDecimalSeparatorSelector
-  , currencyDecimalSeparatorSelector
-  , setCurrencyDecimalSeparatorSelector
-  , usesGroupingSeparatorSelector
-  , setUsesGroupingSeparatorSelector
-  , groupingSeparatorSelector
-  , setGroupingSeparatorSelector
-  , zeroSymbolSelector
-  , setZeroSymbolSelector
-  , textAttributesForZeroSelector
-  , setTextAttributesForZeroSelector
-  , nilSymbolSelector
-  , setNilSymbolSelector
-  , textAttributesForNilSelector
-  , setTextAttributesForNilSelector
-  , notANumberSymbolSelector
-  , setNotANumberSymbolSelector
-  , textAttributesForNotANumberSelector
-  , setTextAttributesForNotANumberSelector
-  , positiveInfinitySymbolSelector
-  , setPositiveInfinitySymbolSelector
-  , textAttributesForPositiveInfinitySelector
-  , setTextAttributesForPositiveInfinitySelector
-  , negativeInfinitySymbolSelector
-  , setNegativeInfinitySymbolSelector
-  , textAttributesForNegativeInfinitySelector
-  , setTextAttributesForNegativeInfinitySelector
-  , positivePrefixSelector
-  , setPositivePrefixSelector
-  , positiveSuffixSelector
-  , setPositiveSuffixSelector
-  , negativePrefixSelector
-  , setNegativePrefixSelector
-  , negativeSuffixSelector
-  , setNegativeSuffixSelector
-  , currencyCodeSelector
-  , setCurrencyCodeSelector
-  , currencySymbolSelector
-  , setCurrencySymbolSelector
-  , internationalCurrencySymbolSelector
-  , setInternationalCurrencySymbolSelector
-  , percentSymbolSelector
-  , setPercentSymbolSelector
-  , perMillSymbolSelector
-  , setPerMillSymbolSelector
-  , minusSignSelector
-  , setMinusSignSelector
-  , plusSignSelector
-  , setPlusSignSelector
-  , exponentSymbolSelector
-  , setExponentSymbolSelector
-  , groupingSizeSelector
-  , setGroupingSizeSelector
-  , secondaryGroupingSizeSelector
-  , setSecondaryGroupingSizeSelector
-  , multiplierSelector
-  , setMultiplierSelector
-  , formatWidthSelector
-  , setFormatWidthSelector
-  , paddingCharacterSelector
-  , setPaddingCharacterSelector
-  , paddingPositionSelector
-  , setPaddingPositionSelector
-  , roundingModeSelector
-  , setRoundingModeSelector
-  , roundingIncrementSelector
-  , setRoundingIncrementSelector
-  , minimumIntegerDigitsSelector
-  , setMinimumIntegerDigitsSelector
-  , maximumIntegerDigitsSelector
-  , setMaximumIntegerDigitsSelector
-  , minimumFractionDigitsSelector
-  , setMinimumFractionDigitsSelector
-  , maximumFractionDigitsSelector
-  , setMaximumFractionDigitsSelector
-  , minimumSelector
-  , setMinimumSelector
-  , maximumSelector
-  , setMaximumSelector
-  , currencyGroupingSeparatorSelector
-  , setCurrencyGroupingSeparatorSelector
-  , lenientSelector
-  , setLenientSelector
-  , usesSignificantDigitsSelector
-  , setUsesSignificantDigitsSelector
-  , minimumSignificantDigitsSelector
-  , setMinimumSignificantDigitsSelector
-  , maximumSignificantDigitsSelector
-  , setMaximumSignificantDigitsSelector
-  , partialStringValidationEnabledSelector
-  , setPartialStringValidationEnabledSelector
-  , hasThousandSeparatorsSelector
-  , setHasThousandSeparatorsSelector
-  , thousandSeparatorSelector
-  , setThousandSeparatorSelector
-  , localizesFormatSelector
-  , setLocalizesFormatSelector
-  , formatSelector
-  , setFormatSelector
-  , attributedStringForZeroSelector
-  , setAttributedStringForZeroSelector
   , attributedStringForNilSelector
-  , setAttributedStringForNilSelector
   , attributedStringForNotANumberSelector
-  , setAttributedStringForNotANumberSelector
+  , attributedStringForZeroSelector
+  , currencyCodeSelector
+  , currencyDecimalSeparatorSelector
+  , currencyGroupingSeparatorSelector
+  , currencySymbolSelector
+  , decimalSeparatorSelector
+  , defaultFormatterBehaviorSelector
+  , exponentSymbolSelector
+  , formatSelector
+  , formatWidthSelector
+  , formatterBehaviorSelector
+  , formattingContextSelector
+  , generatesDecimalNumbersSelector
+  , getObjectValue_forString_range_errorSelector
+  , groupingSeparatorSelector
+  , groupingSizeSelector
+  , hasThousandSeparatorsSelector
+  , internationalCurrencySymbolSelector
+  , lenientSelector
+  , localeSelector
+  , localizedStringFromNumber_numberStyleSelector
+  , localizesFormatSelector
+  , maximumFractionDigitsSelector
+  , maximumIntegerDigitsSelector
+  , maximumSelector
+  , maximumSignificantDigitsSelector
+  , minimumFractionDigitsSelector
+  , minimumGroupingDigitsSelector
+  , minimumIntegerDigitsSelector
+  , minimumSelector
+  , minimumSignificantDigitsSelector
+  , minusSignSelector
+  , multiplierSelector
+  , negativeFormatSelector
+  , negativeInfinitySymbolSelector
+  , negativePrefixSelector
+  , negativeSuffixSelector
+  , nilSymbolSelector
+  , notANumberSymbolSelector
+  , numberFromStringSelector
+  , numberStyleSelector
+  , paddingCharacterSelector
+  , paddingPositionSelector
+  , partialStringValidationEnabledSelector
+  , perMillSymbolSelector
+  , percentSymbolSelector
+  , plusSignSelector
+  , positiveFormatSelector
+  , positiveInfinitySymbolSelector
+  , positivePrefixSelector
+  , positiveSuffixSelector
   , roundingBehaviorSelector
+  , roundingIncrementSelector
+  , roundingModeSelector
+  , secondaryGroupingSizeSelector
+  , setAllowsFloatsSelector
+  , setAlwaysShowsDecimalSeparatorSelector
+  , setAttributedStringForNilSelector
+  , setAttributedStringForNotANumberSelector
+  , setAttributedStringForZeroSelector
+  , setCurrencyCodeSelector
+  , setCurrencyDecimalSeparatorSelector
+  , setCurrencyGroupingSeparatorSelector
+  , setCurrencySymbolSelector
+  , setDecimalSeparatorSelector
+  , setDefaultFormatterBehaviorSelector
+  , setExponentSymbolSelector
+  , setFormatSelector
+  , setFormatWidthSelector
+  , setFormatterBehaviorSelector
+  , setFormattingContextSelector
+  , setGeneratesDecimalNumbersSelector
+  , setGroupingSeparatorSelector
+  , setGroupingSizeSelector
+  , setHasThousandSeparatorsSelector
+  , setInternationalCurrencySymbolSelector
+  , setLenientSelector
+  , setLocaleSelector
+  , setLocalizesFormatSelector
+  , setMaximumFractionDigitsSelector
+  , setMaximumIntegerDigitsSelector
+  , setMaximumSelector
+  , setMaximumSignificantDigitsSelector
+  , setMinimumFractionDigitsSelector
+  , setMinimumGroupingDigitsSelector
+  , setMinimumIntegerDigitsSelector
+  , setMinimumSelector
+  , setMinimumSignificantDigitsSelector
+  , setMinusSignSelector
+  , setMultiplierSelector
+  , setNegativeFormatSelector
+  , setNegativeInfinitySymbolSelector
+  , setNegativePrefixSelector
+  , setNegativeSuffixSelector
+  , setNilSymbolSelector
+  , setNotANumberSymbolSelector
+  , setNumberStyleSelector
+  , setPaddingCharacterSelector
+  , setPaddingPositionSelector
+  , setPartialStringValidationEnabledSelector
+  , setPerMillSymbolSelector
+  , setPercentSymbolSelector
+  , setPlusSignSelector
+  , setPositiveFormatSelector
+  , setPositiveInfinitySymbolSelector
+  , setPositivePrefixSelector
+  , setPositiveSuffixSelector
   , setRoundingBehaviorSelector
+  , setRoundingIncrementSelector
+  , setRoundingModeSelector
+  , setSecondaryGroupingSizeSelector
+  , setTextAttributesForNegativeInfinitySelector
+  , setTextAttributesForNegativeValuesSelector
+  , setTextAttributesForNilSelector
+  , setTextAttributesForNotANumberSelector
+  , setTextAttributesForPositiveInfinitySelector
+  , setTextAttributesForPositiveValuesSelector
+  , setTextAttributesForZeroSelector
+  , setThousandSeparatorSelector
+  , setUsesGroupingSeparatorSelector
+  , setUsesSignificantDigitsSelector
+  , setZeroSymbolSelector
+  , stringFromNumberSelector
+  , textAttributesForNegativeInfinitySelector
+  , textAttributesForNegativeValuesSelector
+  , textAttributesForNilSelector
+  , textAttributesForNotANumberSelector
+  , textAttributesForPositiveInfinitySelector
+  , textAttributesForPositiveValuesSelector
+  , textAttributesForZeroSelector
+  , thousandSeparatorSelector
+  , usesGroupingSeparatorSelector
+  , usesSignificantDigitsSelector
+  , zeroSymbolSelector
 
   -- * Enum types
   , NSFormattingContext(NSFormattingContext)
@@ -323,15 +324,11 @@ module ObjC.Foundation.NSNumberFormatter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -341,1300 +338,1253 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- getObjectValue:forString:range:error:@
 getObjectValue_forString_range_error :: (IsNSNumberFormatter nsNumberFormatter, IsNSString string, IsNSError error_) => nsNumberFormatter -> Ptr RawId -> string -> Ptr NSRange -> error_ -> IO Bool
-getObjectValue_forString_range_error nsNumberFormatter  obj_ string rangep error_ =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "getObjectValue:forString:range:error:") retCULong [argPtr obj_, argPtr (castPtr raw_string :: Ptr ()), argPtr rangep, argPtr (castPtr raw_error_ :: Ptr ())]
+getObjectValue_forString_range_error nsNumberFormatter obj_ string rangep error_ =
+  sendMessage nsNumberFormatter getObjectValue_forString_range_errorSelector obj_ (toNSString string) rangep (toNSError error_)
 
 -- | @- stringFromNumber:@
 stringFromNumber :: (IsNSNumberFormatter nsNumberFormatter, IsNSNumber number) => nsNumberFormatter -> number -> IO (Id NSString)
-stringFromNumber nsNumberFormatter  number =
-  withObjCPtr number $ \raw_number ->
-      sendMsg nsNumberFormatter (mkSelector "stringFromNumber:") (retPtr retVoid) [argPtr (castPtr raw_number :: Ptr ())] >>= retainedObject . castPtr
+stringFromNumber nsNumberFormatter number =
+  sendMessage nsNumberFormatter stringFromNumberSelector (toNSNumber number)
 
 -- | @- numberFromString:@
 numberFromString :: (IsNSNumberFormatter nsNumberFormatter, IsNSString string) => nsNumberFormatter -> string -> IO (Id NSNumber)
-numberFromString nsNumberFormatter  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsNumberFormatter (mkSelector "numberFromString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+numberFromString nsNumberFormatter string =
+  sendMessage nsNumberFormatter numberFromStringSelector (toNSString string)
 
 -- | @+ localizedStringFromNumber:numberStyle:@
 localizedStringFromNumber_numberStyle :: IsNSNumber num => num -> NSNumberFormatterStyle -> IO (Id NSString)
 localizedStringFromNumber_numberStyle num nstyle =
   do
     cls' <- getRequiredClass "NSNumberFormatter"
-    withObjCPtr num $ \raw_num ->
-      sendClassMsg cls' (mkSelector "localizedStringFromNumber:numberStyle:") (retPtr retVoid) [argPtr (castPtr raw_num :: Ptr ()), argCULong (coerce nstyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedStringFromNumber_numberStyleSelector (toNSNumber num) nstyle
 
 -- | @+ defaultFormatterBehavior@
 defaultFormatterBehavior :: IO NSNumberFormatterBehavior
 defaultFormatterBehavior  =
   do
     cls' <- getRequiredClass "NSNumberFormatter"
-    fmap (coerce :: CULong -> NSNumberFormatterBehavior) $ sendClassMsg cls' (mkSelector "defaultFormatterBehavior") retCULong []
+    sendClassMessage cls' defaultFormatterBehaviorSelector
 
 -- | @+ setDefaultFormatterBehavior:@
 setDefaultFormatterBehavior :: NSNumberFormatterBehavior -> IO ()
 setDefaultFormatterBehavior behavior =
   do
     cls' <- getRequiredClass "NSNumberFormatter"
-    sendClassMsg cls' (mkSelector "setDefaultFormatterBehavior:") retVoid [argCULong (coerce behavior)]
+    sendClassMessage cls' setDefaultFormatterBehaviorSelector behavior
 
 -- | @- formattingContext@
 formattingContext :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO NSFormattingContext
-formattingContext nsNumberFormatter  =
-    fmap (coerce :: CLong -> NSFormattingContext) $ sendMsg nsNumberFormatter (mkSelector "formattingContext") retCLong []
+formattingContext nsNumberFormatter =
+  sendMessage nsNumberFormatter formattingContextSelector
 
 -- | @- setFormattingContext:@
 setFormattingContext :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> NSFormattingContext -> IO ()
-setFormattingContext nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setFormattingContext:") retVoid [argCLong (coerce value)]
+setFormattingContext nsNumberFormatter value =
+  sendMessage nsNumberFormatter setFormattingContextSelector value
 
 -- | @- minimumGroupingDigits@
 minimumGroupingDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CLong
-minimumGroupingDigits nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "minimumGroupingDigits") retCLong []
+minimumGroupingDigits nsNumberFormatter =
+  sendMessage nsNumberFormatter minimumGroupingDigitsSelector
 
 -- | @- setMinimumGroupingDigits:@
 setMinimumGroupingDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CLong -> IO ()
-setMinimumGroupingDigits nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setMinimumGroupingDigits:") retVoid [argCLong value]
+setMinimumGroupingDigits nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMinimumGroupingDigitsSelector value
 
 -- | @- numberStyle@
 numberStyle :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO NSNumberFormatterStyle
-numberStyle nsNumberFormatter  =
-    fmap (coerce :: CULong -> NSNumberFormatterStyle) $ sendMsg nsNumberFormatter (mkSelector "numberStyle") retCULong []
+numberStyle nsNumberFormatter =
+  sendMessage nsNumberFormatter numberStyleSelector
 
 -- | @- setNumberStyle:@
 setNumberStyle :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> NSNumberFormatterStyle -> IO ()
-setNumberStyle nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setNumberStyle:") retVoid [argCULong (coerce value)]
+setNumberStyle nsNumberFormatter value =
+  sendMessage nsNumberFormatter setNumberStyleSelector value
 
 -- | @- locale@
 locale :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSLocale)
-locale nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale nsNumberFormatter =
+  sendMessage nsNumberFormatter localeSelector
 
 -- | @- setLocale:@
 setLocale :: (IsNSNumberFormatter nsNumberFormatter, IsNSLocale value) => nsNumberFormatter -> value -> IO ()
-setLocale nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale nsNumberFormatter value =
+  sendMessage nsNumberFormatter setLocaleSelector (toNSLocale value)
 
 -- | @- generatesDecimalNumbers@
 generatesDecimalNumbers :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO Bool
-generatesDecimalNumbers nsNumberFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "generatesDecimalNumbers") retCULong []
+generatesDecimalNumbers nsNumberFormatter =
+  sendMessage nsNumberFormatter generatesDecimalNumbersSelector
 
 -- | @- setGeneratesDecimalNumbers:@
 setGeneratesDecimalNumbers :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> Bool -> IO ()
-setGeneratesDecimalNumbers nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setGeneratesDecimalNumbers:") retVoid [argCULong (if value then 1 else 0)]
+setGeneratesDecimalNumbers nsNumberFormatter value =
+  sendMessage nsNumberFormatter setGeneratesDecimalNumbersSelector value
 
 -- | @- formatterBehavior@
 formatterBehavior :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO NSNumberFormatterBehavior
-formatterBehavior nsNumberFormatter  =
-    fmap (coerce :: CULong -> NSNumberFormatterBehavior) $ sendMsg nsNumberFormatter (mkSelector "formatterBehavior") retCULong []
+formatterBehavior nsNumberFormatter =
+  sendMessage nsNumberFormatter formatterBehaviorSelector
 
 -- | @- setFormatterBehavior:@
 setFormatterBehavior :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> NSNumberFormatterBehavior -> IO ()
-setFormatterBehavior nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setFormatterBehavior:") retVoid [argCULong (coerce value)]
+setFormatterBehavior nsNumberFormatter value =
+  sendMessage nsNumberFormatter setFormatterBehaviorSelector value
 
 -- | @- negativeFormat@
 negativeFormat :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-negativeFormat nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "negativeFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+negativeFormat nsNumberFormatter =
+  sendMessage nsNumberFormatter negativeFormatSelector
 
 -- | @- setNegativeFormat:@
 setNegativeFormat :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setNegativeFormat nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setNegativeFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNegativeFormat nsNumberFormatter value =
+  sendMessage nsNumberFormatter setNegativeFormatSelector (toNSString value)
 
 -- | @- textAttributesForNegativeValues@
 textAttributesForNegativeValues :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSDictionary)
-textAttributesForNegativeValues nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "textAttributesForNegativeValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+textAttributesForNegativeValues nsNumberFormatter =
+  sendMessage nsNumberFormatter textAttributesForNegativeValuesSelector
 
 -- | @- setTextAttributesForNegativeValues:@
 setTextAttributesForNegativeValues :: (IsNSNumberFormatter nsNumberFormatter, IsNSDictionary value) => nsNumberFormatter -> value -> IO ()
-setTextAttributesForNegativeValues nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setTextAttributesForNegativeValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextAttributesForNegativeValues nsNumberFormatter value =
+  sendMessage nsNumberFormatter setTextAttributesForNegativeValuesSelector (toNSDictionary value)
 
 -- | @- positiveFormat@
 positiveFormat :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-positiveFormat nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "positiveFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+positiveFormat nsNumberFormatter =
+  sendMessage nsNumberFormatter positiveFormatSelector
 
 -- | @- setPositiveFormat:@
 setPositiveFormat :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setPositiveFormat nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setPositiveFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPositiveFormat nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPositiveFormatSelector (toNSString value)
 
 -- | @- textAttributesForPositiveValues@
 textAttributesForPositiveValues :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSDictionary)
-textAttributesForPositiveValues nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "textAttributesForPositiveValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+textAttributesForPositiveValues nsNumberFormatter =
+  sendMessage nsNumberFormatter textAttributesForPositiveValuesSelector
 
 -- | @- setTextAttributesForPositiveValues:@
 setTextAttributesForPositiveValues :: (IsNSNumberFormatter nsNumberFormatter, IsNSDictionary value) => nsNumberFormatter -> value -> IO ()
-setTextAttributesForPositiveValues nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setTextAttributesForPositiveValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextAttributesForPositiveValues nsNumberFormatter value =
+  sendMessage nsNumberFormatter setTextAttributesForPositiveValuesSelector (toNSDictionary value)
 
 -- | @- allowsFloats@
 allowsFloats :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO Bool
-allowsFloats nsNumberFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "allowsFloats") retCULong []
+allowsFloats nsNumberFormatter =
+  sendMessage nsNumberFormatter allowsFloatsSelector
 
 -- | @- setAllowsFloats:@
 setAllowsFloats :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> Bool -> IO ()
-setAllowsFloats nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setAllowsFloats:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsFloats nsNumberFormatter value =
+  sendMessage nsNumberFormatter setAllowsFloatsSelector value
 
 -- | @- decimalSeparator@
 decimalSeparator :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-decimalSeparator nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "decimalSeparator") (retPtr retVoid) [] >>= retainedObject . castPtr
+decimalSeparator nsNumberFormatter =
+  sendMessage nsNumberFormatter decimalSeparatorSelector
 
 -- | @- setDecimalSeparator:@
 setDecimalSeparator :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setDecimalSeparator nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setDecimalSeparator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDecimalSeparator nsNumberFormatter value =
+  sendMessage nsNumberFormatter setDecimalSeparatorSelector (toNSString value)
 
 -- | @- alwaysShowsDecimalSeparator@
 alwaysShowsDecimalSeparator :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO Bool
-alwaysShowsDecimalSeparator nsNumberFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "alwaysShowsDecimalSeparator") retCULong []
+alwaysShowsDecimalSeparator nsNumberFormatter =
+  sendMessage nsNumberFormatter alwaysShowsDecimalSeparatorSelector
 
 -- | @- setAlwaysShowsDecimalSeparator:@
 setAlwaysShowsDecimalSeparator :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> Bool -> IO ()
-setAlwaysShowsDecimalSeparator nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setAlwaysShowsDecimalSeparator:") retVoid [argCULong (if value then 1 else 0)]
+setAlwaysShowsDecimalSeparator nsNumberFormatter value =
+  sendMessage nsNumberFormatter setAlwaysShowsDecimalSeparatorSelector value
 
 -- | @- currencyDecimalSeparator@
 currencyDecimalSeparator :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-currencyDecimalSeparator nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "currencyDecimalSeparator") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyDecimalSeparator nsNumberFormatter =
+  sendMessage nsNumberFormatter currencyDecimalSeparatorSelector
 
 -- | @- setCurrencyDecimalSeparator:@
 setCurrencyDecimalSeparator :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setCurrencyDecimalSeparator nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setCurrencyDecimalSeparator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrencyDecimalSeparator nsNumberFormatter value =
+  sendMessage nsNumberFormatter setCurrencyDecimalSeparatorSelector (toNSString value)
 
 -- | @- usesGroupingSeparator@
 usesGroupingSeparator :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO Bool
-usesGroupingSeparator nsNumberFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "usesGroupingSeparator") retCULong []
+usesGroupingSeparator nsNumberFormatter =
+  sendMessage nsNumberFormatter usesGroupingSeparatorSelector
 
 -- | @- setUsesGroupingSeparator:@
 setUsesGroupingSeparator :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> Bool -> IO ()
-setUsesGroupingSeparator nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setUsesGroupingSeparator:") retVoid [argCULong (if value then 1 else 0)]
+setUsesGroupingSeparator nsNumberFormatter value =
+  sendMessage nsNumberFormatter setUsesGroupingSeparatorSelector value
 
 -- | @- groupingSeparator@
 groupingSeparator :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-groupingSeparator nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "groupingSeparator") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupingSeparator nsNumberFormatter =
+  sendMessage nsNumberFormatter groupingSeparatorSelector
 
 -- | @- setGroupingSeparator:@
 setGroupingSeparator :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setGroupingSeparator nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setGroupingSeparator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupingSeparator nsNumberFormatter value =
+  sendMessage nsNumberFormatter setGroupingSeparatorSelector (toNSString value)
 
 -- | @- zeroSymbol@
 zeroSymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-zeroSymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "zeroSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+zeroSymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter zeroSymbolSelector
 
 -- | @- setZeroSymbol:@
 setZeroSymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setZeroSymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setZeroSymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setZeroSymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setZeroSymbolSelector (toNSString value)
 
 -- | @- textAttributesForZero@
 textAttributesForZero :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSDictionary)
-textAttributesForZero nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "textAttributesForZero") (retPtr retVoid) [] >>= retainedObject . castPtr
+textAttributesForZero nsNumberFormatter =
+  sendMessage nsNumberFormatter textAttributesForZeroSelector
 
 -- | @- setTextAttributesForZero:@
 setTextAttributesForZero :: (IsNSNumberFormatter nsNumberFormatter, IsNSDictionary value) => nsNumberFormatter -> value -> IO ()
-setTextAttributesForZero nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setTextAttributesForZero:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextAttributesForZero nsNumberFormatter value =
+  sendMessage nsNumberFormatter setTextAttributesForZeroSelector (toNSDictionary value)
 
 -- | @- nilSymbol@
 nilSymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-nilSymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "nilSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+nilSymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter nilSymbolSelector
 
 -- | @- setNilSymbol:@
 setNilSymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setNilSymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setNilSymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNilSymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setNilSymbolSelector (toNSString value)
 
 -- | @- textAttributesForNil@
 textAttributesForNil :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSDictionary)
-textAttributesForNil nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "textAttributesForNil") (retPtr retVoid) [] >>= retainedObject . castPtr
+textAttributesForNil nsNumberFormatter =
+  sendMessage nsNumberFormatter textAttributesForNilSelector
 
 -- | @- setTextAttributesForNil:@
 setTextAttributesForNil :: (IsNSNumberFormatter nsNumberFormatter, IsNSDictionary value) => nsNumberFormatter -> value -> IO ()
-setTextAttributesForNil nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setTextAttributesForNil:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextAttributesForNil nsNumberFormatter value =
+  sendMessage nsNumberFormatter setTextAttributesForNilSelector (toNSDictionary value)
 
 -- | @- notANumberSymbol@
 notANumberSymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-notANumberSymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "notANumberSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+notANumberSymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter notANumberSymbolSelector
 
 -- | @- setNotANumberSymbol:@
 setNotANumberSymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setNotANumberSymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setNotANumberSymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNotANumberSymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setNotANumberSymbolSelector (toNSString value)
 
 -- | @- textAttributesForNotANumber@
 textAttributesForNotANumber :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSDictionary)
-textAttributesForNotANumber nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "textAttributesForNotANumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+textAttributesForNotANumber nsNumberFormatter =
+  sendMessage nsNumberFormatter textAttributesForNotANumberSelector
 
 -- | @- setTextAttributesForNotANumber:@
 setTextAttributesForNotANumber :: (IsNSNumberFormatter nsNumberFormatter, IsNSDictionary value) => nsNumberFormatter -> value -> IO ()
-setTextAttributesForNotANumber nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setTextAttributesForNotANumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextAttributesForNotANumber nsNumberFormatter value =
+  sendMessage nsNumberFormatter setTextAttributesForNotANumberSelector (toNSDictionary value)
 
 -- | @- positiveInfinitySymbol@
 positiveInfinitySymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-positiveInfinitySymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "positiveInfinitySymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+positiveInfinitySymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter positiveInfinitySymbolSelector
 
 -- | @- setPositiveInfinitySymbol:@
 setPositiveInfinitySymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setPositiveInfinitySymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setPositiveInfinitySymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPositiveInfinitySymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPositiveInfinitySymbolSelector (toNSString value)
 
 -- | @- textAttributesForPositiveInfinity@
 textAttributesForPositiveInfinity :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSDictionary)
-textAttributesForPositiveInfinity nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "textAttributesForPositiveInfinity") (retPtr retVoid) [] >>= retainedObject . castPtr
+textAttributesForPositiveInfinity nsNumberFormatter =
+  sendMessage nsNumberFormatter textAttributesForPositiveInfinitySelector
 
 -- | @- setTextAttributesForPositiveInfinity:@
 setTextAttributesForPositiveInfinity :: (IsNSNumberFormatter nsNumberFormatter, IsNSDictionary value) => nsNumberFormatter -> value -> IO ()
-setTextAttributesForPositiveInfinity nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setTextAttributesForPositiveInfinity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextAttributesForPositiveInfinity nsNumberFormatter value =
+  sendMessage nsNumberFormatter setTextAttributesForPositiveInfinitySelector (toNSDictionary value)
 
 -- | @- negativeInfinitySymbol@
 negativeInfinitySymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-negativeInfinitySymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "negativeInfinitySymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+negativeInfinitySymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter negativeInfinitySymbolSelector
 
 -- | @- setNegativeInfinitySymbol:@
 setNegativeInfinitySymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setNegativeInfinitySymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setNegativeInfinitySymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNegativeInfinitySymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setNegativeInfinitySymbolSelector (toNSString value)
 
 -- | @- textAttributesForNegativeInfinity@
 textAttributesForNegativeInfinity :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSDictionary)
-textAttributesForNegativeInfinity nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "textAttributesForNegativeInfinity") (retPtr retVoid) [] >>= retainedObject . castPtr
+textAttributesForNegativeInfinity nsNumberFormatter =
+  sendMessage nsNumberFormatter textAttributesForNegativeInfinitySelector
 
 -- | @- setTextAttributesForNegativeInfinity:@
 setTextAttributesForNegativeInfinity :: (IsNSNumberFormatter nsNumberFormatter, IsNSDictionary value) => nsNumberFormatter -> value -> IO ()
-setTextAttributesForNegativeInfinity nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setTextAttributesForNegativeInfinity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextAttributesForNegativeInfinity nsNumberFormatter value =
+  sendMessage nsNumberFormatter setTextAttributesForNegativeInfinitySelector (toNSDictionary value)
 
 -- | @- positivePrefix@
 positivePrefix :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-positivePrefix nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "positivePrefix") (retPtr retVoid) [] >>= retainedObject . castPtr
+positivePrefix nsNumberFormatter =
+  sendMessage nsNumberFormatter positivePrefixSelector
 
 -- | @- setPositivePrefix:@
 setPositivePrefix :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setPositivePrefix nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setPositivePrefix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPositivePrefix nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPositivePrefixSelector (toNSString value)
 
 -- | @- positiveSuffix@
 positiveSuffix :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-positiveSuffix nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "positiveSuffix") (retPtr retVoid) [] >>= retainedObject . castPtr
+positiveSuffix nsNumberFormatter =
+  sendMessage nsNumberFormatter positiveSuffixSelector
 
 -- | @- setPositiveSuffix:@
 setPositiveSuffix :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setPositiveSuffix nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setPositiveSuffix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPositiveSuffix nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPositiveSuffixSelector (toNSString value)
 
 -- | @- negativePrefix@
 negativePrefix :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-negativePrefix nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "negativePrefix") (retPtr retVoid) [] >>= retainedObject . castPtr
+negativePrefix nsNumberFormatter =
+  sendMessage nsNumberFormatter negativePrefixSelector
 
 -- | @- setNegativePrefix:@
 setNegativePrefix :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setNegativePrefix nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setNegativePrefix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNegativePrefix nsNumberFormatter value =
+  sendMessage nsNumberFormatter setNegativePrefixSelector (toNSString value)
 
 -- | @- negativeSuffix@
 negativeSuffix :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-negativeSuffix nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "negativeSuffix") (retPtr retVoid) [] >>= retainedObject . castPtr
+negativeSuffix nsNumberFormatter =
+  sendMessage nsNumberFormatter negativeSuffixSelector
 
 -- | @- setNegativeSuffix:@
 setNegativeSuffix :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setNegativeSuffix nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setNegativeSuffix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNegativeSuffix nsNumberFormatter value =
+  sendMessage nsNumberFormatter setNegativeSuffixSelector (toNSString value)
 
 -- | @- currencyCode@
 currencyCode :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-currencyCode nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "currencyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyCode nsNumberFormatter =
+  sendMessage nsNumberFormatter currencyCodeSelector
 
 -- | @- setCurrencyCode:@
 setCurrencyCode :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setCurrencyCode nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setCurrencyCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrencyCode nsNumberFormatter value =
+  sendMessage nsNumberFormatter setCurrencyCodeSelector (toNSString value)
 
 -- | @- currencySymbol@
 currencySymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-currencySymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "currencySymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencySymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter currencySymbolSelector
 
 -- | @- setCurrencySymbol:@
 setCurrencySymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setCurrencySymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setCurrencySymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrencySymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setCurrencySymbolSelector (toNSString value)
 
 -- | @- internationalCurrencySymbol@
 internationalCurrencySymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-internationalCurrencySymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "internationalCurrencySymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+internationalCurrencySymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter internationalCurrencySymbolSelector
 
 -- | @- setInternationalCurrencySymbol:@
 setInternationalCurrencySymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setInternationalCurrencySymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setInternationalCurrencySymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInternationalCurrencySymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setInternationalCurrencySymbolSelector (toNSString value)
 
 -- | @- percentSymbol@
 percentSymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-percentSymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "percentSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentSymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter percentSymbolSelector
 
 -- | @- setPercentSymbol:@
 setPercentSymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setPercentSymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setPercentSymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentSymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPercentSymbolSelector (toNSString value)
 
 -- | @- perMillSymbol@
 perMillSymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-perMillSymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "perMillSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+perMillSymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter perMillSymbolSelector
 
 -- | @- setPerMillSymbol:@
 setPerMillSymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setPerMillSymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setPerMillSymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPerMillSymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPerMillSymbolSelector (toNSString value)
 
 -- | @- minusSign@
 minusSign :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-minusSign nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "minusSign") (retPtr retVoid) [] >>= retainedObject . castPtr
+minusSign nsNumberFormatter =
+  sendMessage nsNumberFormatter minusSignSelector
 
 -- | @- setMinusSign:@
 setMinusSign :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setMinusSign nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setMinusSign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinusSign nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMinusSignSelector (toNSString value)
 
 -- | @- plusSign@
 plusSign :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-plusSign nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "plusSign") (retPtr retVoid) [] >>= retainedObject . castPtr
+plusSign nsNumberFormatter =
+  sendMessage nsNumberFormatter plusSignSelector
 
 -- | @- setPlusSign:@
 setPlusSign :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setPlusSign nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setPlusSign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlusSign nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPlusSignSelector (toNSString value)
 
 -- | @- exponentSymbol@
 exponentSymbol :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-exponentSymbol nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "exponentSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+exponentSymbol nsNumberFormatter =
+  sendMessage nsNumberFormatter exponentSymbolSelector
 
 -- | @- setExponentSymbol:@
 setExponentSymbol :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setExponentSymbol nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setExponentSymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExponentSymbol nsNumberFormatter value =
+  sendMessage nsNumberFormatter setExponentSymbolSelector (toNSString value)
 
 -- | @- groupingSize@
 groupingSize :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CULong
-groupingSize nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "groupingSize") retCULong []
+groupingSize nsNumberFormatter =
+  sendMessage nsNumberFormatter groupingSizeSelector
 
 -- | @- setGroupingSize:@
 setGroupingSize :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CULong -> IO ()
-setGroupingSize nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setGroupingSize:") retVoid [argCULong value]
+setGroupingSize nsNumberFormatter value =
+  sendMessage nsNumberFormatter setGroupingSizeSelector value
 
 -- | @- secondaryGroupingSize@
 secondaryGroupingSize :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CULong
-secondaryGroupingSize nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "secondaryGroupingSize") retCULong []
+secondaryGroupingSize nsNumberFormatter =
+  sendMessage nsNumberFormatter secondaryGroupingSizeSelector
 
 -- | @- setSecondaryGroupingSize:@
 setSecondaryGroupingSize :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CULong -> IO ()
-setSecondaryGroupingSize nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setSecondaryGroupingSize:") retVoid [argCULong value]
+setSecondaryGroupingSize nsNumberFormatter value =
+  sendMessage nsNumberFormatter setSecondaryGroupingSizeSelector value
 
 -- | @- multiplier@
 multiplier :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSNumber)
-multiplier nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "multiplier") (retPtr retVoid) [] >>= retainedObject . castPtr
+multiplier nsNumberFormatter =
+  sendMessage nsNumberFormatter multiplierSelector
 
 -- | @- setMultiplier:@
 setMultiplier :: (IsNSNumberFormatter nsNumberFormatter, IsNSNumber value) => nsNumberFormatter -> value -> IO ()
-setMultiplier nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setMultiplier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMultiplier nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMultiplierSelector (toNSNumber value)
 
 -- | @- formatWidth@
 formatWidth :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CULong
-formatWidth nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "formatWidth") retCULong []
+formatWidth nsNumberFormatter =
+  sendMessage nsNumberFormatter formatWidthSelector
 
 -- | @- setFormatWidth:@
 setFormatWidth :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CULong -> IO ()
-setFormatWidth nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setFormatWidth:") retVoid [argCULong value]
+setFormatWidth nsNumberFormatter value =
+  sendMessage nsNumberFormatter setFormatWidthSelector value
 
 -- | @- paddingCharacter@
 paddingCharacter :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-paddingCharacter nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "paddingCharacter") (retPtr retVoid) [] >>= retainedObject . castPtr
+paddingCharacter nsNumberFormatter =
+  sendMessage nsNumberFormatter paddingCharacterSelector
 
 -- | @- setPaddingCharacter:@
 setPaddingCharacter :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setPaddingCharacter nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setPaddingCharacter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaddingCharacter nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPaddingCharacterSelector (toNSString value)
 
 -- | @- paddingPosition@
 paddingPosition :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO NSNumberFormatterPadPosition
-paddingPosition nsNumberFormatter  =
-    fmap (coerce :: CULong -> NSNumberFormatterPadPosition) $ sendMsg nsNumberFormatter (mkSelector "paddingPosition") retCULong []
+paddingPosition nsNumberFormatter =
+  sendMessage nsNumberFormatter paddingPositionSelector
 
 -- | @- setPaddingPosition:@
 setPaddingPosition :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> NSNumberFormatterPadPosition -> IO ()
-setPaddingPosition nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setPaddingPosition:") retVoid [argCULong (coerce value)]
+setPaddingPosition nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPaddingPositionSelector value
 
 -- | @- roundingMode@
 roundingMode :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO NSNumberFormatterRoundingMode
-roundingMode nsNumberFormatter  =
-    fmap (coerce :: CULong -> NSNumberFormatterRoundingMode) $ sendMsg nsNumberFormatter (mkSelector "roundingMode") retCULong []
+roundingMode nsNumberFormatter =
+  sendMessage nsNumberFormatter roundingModeSelector
 
 -- | @- setRoundingMode:@
 setRoundingMode :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> NSNumberFormatterRoundingMode -> IO ()
-setRoundingMode nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setRoundingMode:") retVoid [argCULong (coerce value)]
+setRoundingMode nsNumberFormatter value =
+  sendMessage nsNumberFormatter setRoundingModeSelector value
 
 -- | @- roundingIncrement@
 roundingIncrement :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSNumber)
-roundingIncrement nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "roundingIncrement") (retPtr retVoid) [] >>= retainedObject . castPtr
+roundingIncrement nsNumberFormatter =
+  sendMessage nsNumberFormatter roundingIncrementSelector
 
 -- | @- setRoundingIncrement:@
 setRoundingIncrement :: (IsNSNumberFormatter nsNumberFormatter, IsNSNumber value) => nsNumberFormatter -> value -> IO ()
-setRoundingIncrement nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setRoundingIncrement:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRoundingIncrement nsNumberFormatter value =
+  sendMessage nsNumberFormatter setRoundingIncrementSelector (toNSNumber value)
 
 -- | @- minimumIntegerDigits@
 minimumIntegerDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CULong
-minimumIntegerDigits nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "minimumIntegerDigits") retCULong []
+minimumIntegerDigits nsNumberFormatter =
+  sendMessage nsNumberFormatter minimumIntegerDigitsSelector
 
 -- | @- setMinimumIntegerDigits:@
 setMinimumIntegerDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CULong -> IO ()
-setMinimumIntegerDigits nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setMinimumIntegerDigits:") retVoid [argCULong value]
+setMinimumIntegerDigits nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMinimumIntegerDigitsSelector value
 
 -- | @- maximumIntegerDigits@
 maximumIntegerDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CULong
-maximumIntegerDigits nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "maximumIntegerDigits") retCULong []
+maximumIntegerDigits nsNumberFormatter =
+  sendMessage nsNumberFormatter maximumIntegerDigitsSelector
 
 -- | @- setMaximumIntegerDigits:@
 setMaximumIntegerDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CULong -> IO ()
-setMaximumIntegerDigits nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setMaximumIntegerDigits:") retVoid [argCULong value]
+setMaximumIntegerDigits nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMaximumIntegerDigitsSelector value
 
 -- | @- minimumFractionDigits@
 minimumFractionDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CULong
-minimumFractionDigits nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "minimumFractionDigits") retCULong []
+minimumFractionDigits nsNumberFormatter =
+  sendMessage nsNumberFormatter minimumFractionDigitsSelector
 
 -- | @- setMinimumFractionDigits:@
 setMinimumFractionDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CULong -> IO ()
-setMinimumFractionDigits nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setMinimumFractionDigits:") retVoid [argCULong value]
+setMinimumFractionDigits nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMinimumFractionDigitsSelector value
 
 -- | @- maximumFractionDigits@
 maximumFractionDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CULong
-maximumFractionDigits nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "maximumFractionDigits") retCULong []
+maximumFractionDigits nsNumberFormatter =
+  sendMessage nsNumberFormatter maximumFractionDigitsSelector
 
 -- | @- setMaximumFractionDigits:@
 setMaximumFractionDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CULong -> IO ()
-setMaximumFractionDigits nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setMaximumFractionDigits:") retVoid [argCULong value]
+setMaximumFractionDigits nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMaximumFractionDigitsSelector value
 
 -- | @- minimum@
 minimum_ :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSNumber)
-minimum_ nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "minimum") (retPtr retVoid) [] >>= retainedObject . castPtr
+minimum_ nsNumberFormatter =
+  sendMessage nsNumberFormatter minimumSelector
 
 -- | @- setMinimum:@
 setMinimum :: (IsNSNumberFormatter nsNumberFormatter, IsNSNumber value) => nsNumberFormatter -> value -> IO ()
-setMinimum nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setMinimum:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinimum nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMinimumSelector (toNSNumber value)
 
 -- | @- maximum@
 maximum_ :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSNumber)
-maximum_ nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "maximum") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximum_ nsNumberFormatter =
+  sendMessage nsNumberFormatter maximumSelector
 
 -- | @- setMaximum:@
 setMaximum :: (IsNSNumberFormatter nsNumberFormatter, IsNSNumber value) => nsNumberFormatter -> value -> IO ()
-setMaximum nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setMaximum:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaximum nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMaximumSelector (toNSNumber value)
 
 -- | @- currencyGroupingSeparator@
 currencyGroupingSeparator :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-currencyGroupingSeparator nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "currencyGroupingSeparator") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyGroupingSeparator nsNumberFormatter =
+  sendMessage nsNumberFormatter currencyGroupingSeparatorSelector
 
 -- | @- setCurrencyGroupingSeparator:@
 setCurrencyGroupingSeparator :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setCurrencyGroupingSeparator nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setCurrencyGroupingSeparator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrencyGroupingSeparator nsNumberFormatter value =
+  sendMessage nsNumberFormatter setCurrencyGroupingSeparatorSelector (toNSString value)
 
 -- | @- lenient@
 lenient :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO Bool
-lenient nsNumberFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "lenient") retCULong []
+lenient nsNumberFormatter =
+  sendMessage nsNumberFormatter lenientSelector
 
 -- | @- setLenient:@
 setLenient :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> Bool -> IO ()
-setLenient nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setLenient:") retVoid [argCULong (if value then 1 else 0)]
+setLenient nsNumberFormatter value =
+  sendMessage nsNumberFormatter setLenientSelector value
 
 -- | @- usesSignificantDigits@
 usesSignificantDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO Bool
-usesSignificantDigits nsNumberFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "usesSignificantDigits") retCULong []
+usesSignificantDigits nsNumberFormatter =
+  sendMessage nsNumberFormatter usesSignificantDigitsSelector
 
 -- | @- setUsesSignificantDigits:@
 setUsesSignificantDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> Bool -> IO ()
-setUsesSignificantDigits nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setUsesSignificantDigits:") retVoid [argCULong (if value then 1 else 0)]
+setUsesSignificantDigits nsNumberFormatter value =
+  sendMessage nsNumberFormatter setUsesSignificantDigitsSelector value
 
 -- | @- minimumSignificantDigits@
 minimumSignificantDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CULong
-minimumSignificantDigits nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "minimumSignificantDigits") retCULong []
+minimumSignificantDigits nsNumberFormatter =
+  sendMessage nsNumberFormatter minimumSignificantDigitsSelector
 
 -- | @- setMinimumSignificantDigits:@
 setMinimumSignificantDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CULong -> IO ()
-setMinimumSignificantDigits nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setMinimumSignificantDigits:") retVoid [argCULong value]
+setMinimumSignificantDigits nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMinimumSignificantDigitsSelector value
 
 -- | @- maximumSignificantDigits@
 maximumSignificantDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO CULong
-maximumSignificantDigits nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "maximumSignificantDigits") retCULong []
+maximumSignificantDigits nsNumberFormatter =
+  sendMessage nsNumberFormatter maximumSignificantDigitsSelector
 
 -- | @- setMaximumSignificantDigits:@
 setMaximumSignificantDigits :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> CULong -> IO ()
-setMaximumSignificantDigits nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setMaximumSignificantDigits:") retVoid [argCULong value]
+setMaximumSignificantDigits nsNumberFormatter value =
+  sendMessage nsNumberFormatter setMaximumSignificantDigitsSelector value
 
 -- | @- partialStringValidationEnabled@
 partialStringValidationEnabled :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO Bool
-partialStringValidationEnabled nsNumberFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "partialStringValidationEnabled") retCULong []
+partialStringValidationEnabled nsNumberFormatter =
+  sendMessage nsNumberFormatter partialStringValidationEnabledSelector
 
 -- | @- setPartialStringValidationEnabled:@
 setPartialStringValidationEnabled :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> Bool -> IO ()
-setPartialStringValidationEnabled nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setPartialStringValidationEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setPartialStringValidationEnabled nsNumberFormatter value =
+  sendMessage nsNumberFormatter setPartialStringValidationEnabledSelector value
 
 -- | @- hasThousandSeparators@
 hasThousandSeparators :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO Bool
-hasThousandSeparators nsNumberFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "hasThousandSeparators") retCULong []
+hasThousandSeparators nsNumberFormatter =
+  sendMessage nsNumberFormatter hasThousandSeparatorsSelector
 
 -- | @- setHasThousandSeparators:@
 setHasThousandSeparators :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> Bool -> IO ()
-setHasThousandSeparators nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setHasThousandSeparators:") retVoid [argCULong (if value then 1 else 0)]
+setHasThousandSeparators nsNumberFormatter value =
+  sendMessage nsNumberFormatter setHasThousandSeparatorsSelector value
 
 -- | @- thousandSeparator@
 thousandSeparator :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-thousandSeparator nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "thousandSeparator") (retPtr retVoid) [] >>= retainedObject . castPtr
+thousandSeparator nsNumberFormatter =
+  sendMessage nsNumberFormatter thousandSeparatorSelector
 
 -- | @- setThousandSeparator:@
 setThousandSeparator :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setThousandSeparator nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setThousandSeparator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setThousandSeparator nsNumberFormatter value =
+  sendMessage nsNumberFormatter setThousandSeparatorSelector (toNSString value)
 
 -- | @- localizesFormat@
 localizesFormat :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO Bool
-localizesFormat nsNumberFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsNumberFormatter (mkSelector "localizesFormat") retCULong []
+localizesFormat nsNumberFormatter =
+  sendMessage nsNumberFormatter localizesFormatSelector
 
 -- | @- setLocalizesFormat:@
 setLocalizesFormat :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> Bool -> IO ()
-setLocalizesFormat nsNumberFormatter  value =
-    sendMsg nsNumberFormatter (mkSelector "setLocalizesFormat:") retVoid [argCULong (if value then 1 else 0)]
+setLocalizesFormat nsNumberFormatter value =
+  sendMessage nsNumberFormatter setLocalizesFormatSelector value
 
 -- | @- format@
 format :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSString)
-format nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "format") (retPtr retVoid) [] >>= retainedObject . castPtr
+format nsNumberFormatter =
+  sendMessage nsNumberFormatter formatSelector
 
 -- | @- setFormat:@
 setFormat :: (IsNSNumberFormatter nsNumberFormatter, IsNSString value) => nsNumberFormatter -> value -> IO ()
-setFormat nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFormat nsNumberFormatter value =
+  sendMessage nsNumberFormatter setFormatSelector (toNSString value)
 
 -- | @- attributedStringForZero@
 attributedStringForZero :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSAttributedString)
-attributedStringForZero nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "attributedStringForZero") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedStringForZero nsNumberFormatter =
+  sendMessage nsNumberFormatter attributedStringForZeroSelector
 
 -- | @- setAttributedStringForZero:@
 setAttributedStringForZero :: (IsNSNumberFormatter nsNumberFormatter, IsNSAttributedString value) => nsNumberFormatter -> value -> IO ()
-setAttributedStringForZero nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setAttributedStringForZero:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedStringForZero nsNumberFormatter value =
+  sendMessage nsNumberFormatter setAttributedStringForZeroSelector (toNSAttributedString value)
 
 -- | @- attributedStringForNil@
 attributedStringForNil :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSAttributedString)
-attributedStringForNil nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "attributedStringForNil") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedStringForNil nsNumberFormatter =
+  sendMessage nsNumberFormatter attributedStringForNilSelector
 
 -- | @- setAttributedStringForNil:@
 setAttributedStringForNil :: (IsNSNumberFormatter nsNumberFormatter, IsNSAttributedString value) => nsNumberFormatter -> value -> IO ()
-setAttributedStringForNil nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setAttributedStringForNil:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedStringForNil nsNumberFormatter value =
+  sendMessage nsNumberFormatter setAttributedStringForNilSelector (toNSAttributedString value)
 
 -- | @- attributedStringForNotANumber@
 attributedStringForNotANumber :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSAttributedString)
-attributedStringForNotANumber nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "attributedStringForNotANumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedStringForNotANumber nsNumberFormatter =
+  sendMessage nsNumberFormatter attributedStringForNotANumberSelector
 
 -- | @- setAttributedStringForNotANumber:@
 setAttributedStringForNotANumber :: (IsNSNumberFormatter nsNumberFormatter, IsNSAttributedString value) => nsNumberFormatter -> value -> IO ()
-setAttributedStringForNotANumber nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setAttributedStringForNotANumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedStringForNotANumber nsNumberFormatter value =
+  sendMessage nsNumberFormatter setAttributedStringForNotANumberSelector (toNSAttributedString value)
 
 -- | @- roundingBehavior@
 roundingBehavior :: IsNSNumberFormatter nsNumberFormatter => nsNumberFormatter -> IO (Id NSDecimalNumberHandler)
-roundingBehavior nsNumberFormatter  =
-    sendMsg nsNumberFormatter (mkSelector "roundingBehavior") (retPtr retVoid) [] >>= retainedObject . castPtr
+roundingBehavior nsNumberFormatter =
+  sendMessage nsNumberFormatter roundingBehaviorSelector
 
 -- | @- setRoundingBehavior:@
 setRoundingBehavior :: (IsNSNumberFormatter nsNumberFormatter, IsNSDecimalNumberHandler value) => nsNumberFormatter -> value -> IO ()
-setRoundingBehavior nsNumberFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsNumberFormatter (mkSelector "setRoundingBehavior:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRoundingBehavior nsNumberFormatter value =
+  sendMessage nsNumberFormatter setRoundingBehaviorSelector (toNSDecimalNumberHandler value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getObjectValue:forString:range:error:@
-getObjectValue_forString_range_errorSelector :: Selector
+getObjectValue_forString_range_errorSelector :: Selector '[Ptr RawId, Id NSString, Ptr NSRange, Id NSError] Bool
 getObjectValue_forString_range_errorSelector = mkSelector "getObjectValue:forString:range:error:"
 
 -- | @Selector@ for @stringFromNumber:@
-stringFromNumberSelector :: Selector
+stringFromNumberSelector :: Selector '[Id NSNumber] (Id NSString)
 stringFromNumberSelector = mkSelector "stringFromNumber:"
 
 -- | @Selector@ for @numberFromString:@
-numberFromStringSelector :: Selector
+numberFromStringSelector :: Selector '[Id NSString] (Id NSNumber)
 numberFromStringSelector = mkSelector "numberFromString:"
 
 -- | @Selector@ for @localizedStringFromNumber:numberStyle:@
-localizedStringFromNumber_numberStyleSelector :: Selector
+localizedStringFromNumber_numberStyleSelector :: Selector '[Id NSNumber, NSNumberFormatterStyle] (Id NSString)
 localizedStringFromNumber_numberStyleSelector = mkSelector "localizedStringFromNumber:numberStyle:"
 
 -- | @Selector@ for @defaultFormatterBehavior@
-defaultFormatterBehaviorSelector :: Selector
+defaultFormatterBehaviorSelector :: Selector '[] NSNumberFormatterBehavior
 defaultFormatterBehaviorSelector = mkSelector "defaultFormatterBehavior"
 
 -- | @Selector@ for @setDefaultFormatterBehavior:@
-setDefaultFormatterBehaviorSelector :: Selector
+setDefaultFormatterBehaviorSelector :: Selector '[NSNumberFormatterBehavior] ()
 setDefaultFormatterBehaviorSelector = mkSelector "setDefaultFormatterBehavior:"
 
 -- | @Selector@ for @formattingContext@
-formattingContextSelector :: Selector
+formattingContextSelector :: Selector '[] NSFormattingContext
 formattingContextSelector = mkSelector "formattingContext"
 
 -- | @Selector@ for @setFormattingContext:@
-setFormattingContextSelector :: Selector
+setFormattingContextSelector :: Selector '[NSFormattingContext] ()
 setFormattingContextSelector = mkSelector "setFormattingContext:"
 
 -- | @Selector@ for @minimumGroupingDigits@
-minimumGroupingDigitsSelector :: Selector
+minimumGroupingDigitsSelector :: Selector '[] CLong
 minimumGroupingDigitsSelector = mkSelector "minimumGroupingDigits"
 
 -- | @Selector@ for @setMinimumGroupingDigits:@
-setMinimumGroupingDigitsSelector :: Selector
+setMinimumGroupingDigitsSelector :: Selector '[CLong] ()
 setMinimumGroupingDigitsSelector = mkSelector "setMinimumGroupingDigits:"
 
 -- | @Selector@ for @numberStyle@
-numberStyleSelector :: Selector
+numberStyleSelector :: Selector '[] NSNumberFormatterStyle
 numberStyleSelector = mkSelector "numberStyle"
 
 -- | @Selector@ for @setNumberStyle:@
-setNumberStyleSelector :: Selector
+setNumberStyleSelector :: Selector '[NSNumberFormatterStyle] ()
 setNumberStyleSelector = mkSelector "setNumberStyle:"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 
 -- | @Selector@ for @generatesDecimalNumbers@
-generatesDecimalNumbersSelector :: Selector
+generatesDecimalNumbersSelector :: Selector '[] Bool
 generatesDecimalNumbersSelector = mkSelector "generatesDecimalNumbers"
 
 -- | @Selector@ for @setGeneratesDecimalNumbers:@
-setGeneratesDecimalNumbersSelector :: Selector
+setGeneratesDecimalNumbersSelector :: Selector '[Bool] ()
 setGeneratesDecimalNumbersSelector = mkSelector "setGeneratesDecimalNumbers:"
 
 -- | @Selector@ for @formatterBehavior@
-formatterBehaviorSelector :: Selector
+formatterBehaviorSelector :: Selector '[] NSNumberFormatterBehavior
 formatterBehaviorSelector = mkSelector "formatterBehavior"
 
 -- | @Selector@ for @setFormatterBehavior:@
-setFormatterBehaviorSelector :: Selector
+setFormatterBehaviorSelector :: Selector '[NSNumberFormatterBehavior] ()
 setFormatterBehaviorSelector = mkSelector "setFormatterBehavior:"
 
 -- | @Selector@ for @negativeFormat@
-negativeFormatSelector :: Selector
+negativeFormatSelector :: Selector '[] (Id NSString)
 negativeFormatSelector = mkSelector "negativeFormat"
 
 -- | @Selector@ for @setNegativeFormat:@
-setNegativeFormatSelector :: Selector
+setNegativeFormatSelector :: Selector '[Id NSString] ()
 setNegativeFormatSelector = mkSelector "setNegativeFormat:"
 
 -- | @Selector@ for @textAttributesForNegativeValues@
-textAttributesForNegativeValuesSelector :: Selector
+textAttributesForNegativeValuesSelector :: Selector '[] (Id NSDictionary)
 textAttributesForNegativeValuesSelector = mkSelector "textAttributesForNegativeValues"
 
 -- | @Selector@ for @setTextAttributesForNegativeValues:@
-setTextAttributesForNegativeValuesSelector :: Selector
+setTextAttributesForNegativeValuesSelector :: Selector '[Id NSDictionary] ()
 setTextAttributesForNegativeValuesSelector = mkSelector "setTextAttributesForNegativeValues:"
 
 -- | @Selector@ for @positiveFormat@
-positiveFormatSelector :: Selector
+positiveFormatSelector :: Selector '[] (Id NSString)
 positiveFormatSelector = mkSelector "positiveFormat"
 
 -- | @Selector@ for @setPositiveFormat:@
-setPositiveFormatSelector :: Selector
+setPositiveFormatSelector :: Selector '[Id NSString] ()
 setPositiveFormatSelector = mkSelector "setPositiveFormat:"
 
 -- | @Selector@ for @textAttributesForPositiveValues@
-textAttributesForPositiveValuesSelector :: Selector
+textAttributesForPositiveValuesSelector :: Selector '[] (Id NSDictionary)
 textAttributesForPositiveValuesSelector = mkSelector "textAttributesForPositiveValues"
 
 -- | @Selector@ for @setTextAttributesForPositiveValues:@
-setTextAttributesForPositiveValuesSelector :: Selector
+setTextAttributesForPositiveValuesSelector :: Selector '[Id NSDictionary] ()
 setTextAttributesForPositiveValuesSelector = mkSelector "setTextAttributesForPositiveValues:"
 
 -- | @Selector@ for @allowsFloats@
-allowsFloatsSelector :: Selector
+allowsFloatsSelector :: Selector '[] Bool
 allowsFloatsSelector = mkSelector "allowsFloats"
 
 -- | @Selector@ for @setAllowsFloats:@
-setAllowsFloatsSelector :: Selector
+setAllowsFloatsSelector :: Selector '[Bool] ()
 setAllowsFloatsSelector = mkSelector "setAllowsFloats:"
 
 -- | @Selector@ for @decimalSeparator@
-decimalSeparatorSelector :: Selector
+decimalSeparatorSelector :: Selector '[] (Id NSString)
 decimalSeparatorSelector = mkSelector "decimalSeparator"
 
 -- | @Selector@ for @setDecimalSeparator:@
-setDecimalSeparatorSelector :: Selector
+setDecimalSeparatorSelector :: Selector '[Id NSString] ()
 setDecimalSeparatorSelector = mkSelector "setDecimalSeparator:"
 
 -- | @Selector@ for @alwaysShowsDecimalSeparator@
-alwaysShowsDecimalSeparatorSelector :: Selector
+alwaysShowsDecimalSeparatorSelector :: Selector '[] Bool
 alwaysShowsDecimalSeparatorSelector = mkSelector "alwaysShowsDecimalSeparator"
 
 -- | @Selector@ for @setAlwaysShowsDecimalSeparator:@
-setAlwaysShowsDecimalSeparatorSelector :: Selector
+setAlwaysShowsDecimalSeparatorSelector :: Selector '[Bool] ()
 setAlwaysShowsDecimalSeparatorSelector = mkSelector "setAlwaysShowsDecimalSeparator:"
 
 -- | @Selector@ for @currencyDecimalSeparator@
-currencyDecimalSeparatorSelector :: Selector
+currencyDecimalSeparatorSelector :: Selector '[] (Id NSString)
 currencyDecimalSeparatorSelector = mkSelector "currencyDecimalSeparator"
 
 -- | @Selector@ for @setCurrencyDecimalSeparator:@
-setCurrencyDecimalSeparatorSelector :: Selector
+setCurrencyDecimalSeparatorSelector :: Selector '[Id NSString] ()
 setCurrencyDecimalSeparatorSelector = mkSelector "setCurrencyDecimalSeparator:"
 
 -- | @Selector@ for @usesGroupingSeparator@
-usesGroupingSeparatorSelector :: Selector
+usesGroupingSeparatorSelector :: Selector '[] Bool
 usesGroupingSeparatorSelector = mkSelector "usesGroupingSeparator"
 
 -- | @Selector@ for @setUsesGroupingSeparator:@
-setUsesGroupingSeparatorSelector :: Selector
+setUsesGroupingSeparatorSelector :: Selector '[Bool] ()
 setUsesGroupingSeparatorSelector = mkSelector "setUsesGroupingSeparator:"
 
 -- | @Selector@ for @groupingSeparator@
-groupingSeparatorSelector :: Selector
+groupingSeparatorSelector :: Selector '[] (Id NSString)
 groupingSeparatorSelector = mkSelector "groupingSeparator"
 
 -- | @Selector@ for @setGroupingSeparator:@
-setGroupingSeparatorSelector :: Selector
+setGroupingSeparatorSelector :: Selector '[Id NSString] ()
 setGroupingSeparatorSelector = mkSelector "setGroupingSeparator:"
 
 -- | @Selector@ for @zeroSymbol@
-zeroSymbolSelector :: Selector
+zeroSymbolSelector :: Selector '[] (Id NSString)
 zeroSymbolSelector = mkSelector "zeroSymbol"
 
 -- | @Selector@ for @setZeroSymbol:@
-setZeroSymbolSelector :: Selector
+setZeroSymbolSelector :: Selector '[Id NSString] ()
 setZeroSymbolSelector = mkSelector "setZeroSymbol:"
 
 -- | @Selector@ for @textAttributesForZero@
-textAttributesForZeroSelector :: Selector
+textAttributesForZeroSelector :: Selector '[] (Id NSDictionary)
 textAttributesForZeroSelector = mkSelector "textAttributesForZero"
 
 -- | @Selector@ for @setTextAttributesForZero:@
-setTextAttributesForZeroSelector :: Selector
+setTextAttributesForZeroSelector :: Selector '[Id NSDictionary] ()
 setTextAttributesForZeroSelector = mkSelector "setTextAttributesForZero:"
 
 -- | @Selector@ for @nilSymbol@
-nilSymbolSelector :: Selector
+nilSymbolSelector :: Selector '[] (Id NSString)
 nilSymbolSelector = mkSelector "nilSymbol"
 
 -- | @Selector@ for @setNilSymbol:@
-setNilSymbolSelector :: Selector
+setNilSymbolSelector :: Selector '[Id NSString] ()
 setNilSymbolSelector = mkSelector "setNilSymbol:"
 
 -- | @Selector@ for @textAttributesForNil@
-textAttributesForNilSelector :: Selector
+textAttributesForNilSelector :: Selector '[] (Id NSDictionary)
 textAttributesForNilSelector = mkSelector "textAttributesForNil"
 
 -- | @Selector@ for @setTextAttributesForNil:@
-setTextAttributesForNilSelector :: Selector
+setTextAttributesForNilSelector :: Selector '[Id NSDictionary] ()
 setTextAttributesForNilSelector = mkSelector "setTextAttributesForNil:"
 
 -- | @Selector@ for @notANumberSymbol@
-notANumberSymbolSelector :: Selector
+notANumberSymbolSelector :: Selector '[] (Id NSString)
 notANumberSymbolSelector = mkSelector "notANumberSymbol"
 
 -- | @Selector@ for @setNotANumberSymbol:@
-setNotANumberSymbolSelector :: Selector
+setNotANumberSymbolSelector :: Selector '[Id NSString] ()
 setNotANumberSymbolSelector = mkSelector "setNotANumberSymbol:"
 
 -- | @Selector@ for @textAttributesForNotANumber@
-textAttributesForNotANumberSelector :: Selector
+textAttributesForNotANumberSelector :: Selector '[] (Id NSDictionary)
 textAttributesForNotANumberSelector = mkSelector "textAttributesForNotANumber"
 
 -- | @Selector@ for @setTextAttributesForNotANumber:@
-setTextAttributesForNotANumberSelector :: Selector
+setTextAttributesForNotANumberSelector :: Selector '[Id NSDictionary] ()
 setTextAttributesForNotANumberSelector = mkSelector "setTextAttributesForNotANumber:"
 
 -- | @Selector@ for @positiveInfinitySymbol@
-positiveInfinitySymbolSelector :: Selector
+positiveInfinitySymbolSelector :: Selector '[] (Id NSString)
 positiveInfinitySymbolSelector = mkSelector "positiveInfinitySymbol"
 
 -- | @Selector@ for @setPositiveInfinitySymbol:@
-setPositiveInfinitySymbolSelector :: Selector
+setPositiveInfinitySymbolSelector :: Selector '[Id NSString] ()
 setPositiveInfinitySymbolSelector = mkSelector "setPositiveInfinitySymbol:"
 
 -- | @Selector@ for @textAttributesForPositiveInfinity@
-textAttributesForPositiveInfinitySelector :: Selector
+textAttributesForPositiveInfinitySelector :: Selector '[] (Id NSDictionary)
 textAttributesForPositiveInfinitySelector = mkSelector "textAttributesForPositiveInfinity"
 
 -- | @Selector@ for @setTextAttributesForPositiveInfinity:@
-setTextAttributesForPositiveInfinitySelector :: Selector
+setTextAttributesForPositiveInfinitySelector :: Selector '[Id NSDictionary] ()
 setTextAttributesForPositiveInfinitySelector = mkSelector "setTextAttributesForPositiveInfinity:"
 
 -- | @Selector@ for @negativeInfinitySymbol@
-negativeInfinitySymbolSelector :: Selector
+negativeInfinitySymbolSelector :: Selector '[] (Id NSString)
 negativeInfinitySymbolSelector = mkSelector "negativeInfinitySymbol"
 
 -- | @Selector@ for @setNegativeInfinitySymbol:@
-setNegativeInfinitySymbolSelector :: Selector
+setNegativeInfinitySymbolSelector :: Selector '[Id NSString] ()
 setNegativeInfinitySymbolSelector = mkSelector "setNegativeInfinitySymbol:"
 
 -- | @Selector@ for @textAttributesForNegativeInfinity@
-textAttributesForNegativeInfinitySelector :: Selector
+textAttributesForNegativeInfinitySelector :: Selector '[] (Id NSDictionary)
 textAttributesForNegativeInfinitySelector = mkSelector "textAttributesForNegativeInfinity"
 
 -- | @Selector@ for @setTextAttributesForNegativeInfinity:@
-setTextAttributesForNegativeInfinitySelector :: Selector
+setTextAttributesForNegativeInfinitySelector :: Selector '[Id NSDictionary] ()
 setTextAttributesForNegativeInfinitySelector = mkSelector "setTextAttributesForNegativeInfinity:"
 
 -- | @Selector@ for @positivePrefix@
-positivePrefixSelector :: Selector
+positivePrefixSelector :: Selector '[] (Id NSString)
 positivePrefixSelector = mkSelector "positivePrefix"
 
 -- | @Selector@ for @setPositivePrefix:@
-setPositivePrefixSelector :: Selector
+setPositivePrefixSelector :: Selector '[Id NSString] ()
 setPositivePrefixSelector = mkSelector "setPositivePrefix:"
 
 -- | @Selector@ for @positiveSuffix@
-positiveSuffixSelector :: Selector
+positiveSuffixSelector :: Selector '[] (Id NSString)
 positiveSuffixSelector = mkSelector "positiveSuffix"
 
 -- | @Selector@ for @setPositiveSuffix:@
-setPositiveSuffixSelector :: Selector
+setPositiveSuffixSelector :: Selector '[Id NSString] ()
 setPositiveSuffixSelector = mkSelector "setPositiveSuffix:"
 
 -- | @Selector@ for @negativePrefix@
-negativePrefixSelector :: Selector
+negativePrefixSelector :: Selector '[] (Id NSString)
 negativePrefixSelector = mkSelector "negativePrefix"
 
 -- | @Selector@ for @setNegativePrefix:@
-setNegativePrefixSelector :: Selector
+setNegativePrefixSelector :: Selector '[Id NSString] ()
 setNegativePrefixSelector = mkSelector "setNegativePrefix:"
 
 -- | @Selector@ for @negativeSuffix@
-negativeSuffixSelector :: Selector
+negativeSuffixSelector :: Selector '[] (Id NSString)
 negativeSuffixSelector = mkSelector "negativeSuffix"
 
 -- | @Selector@ for @setNegativeSuffix:@
-setNegativeSuffixSelector :: Selector
+setNegativeSuffixSelector :: Selector '[Id NSString] ()
 setNegativeSuffixSelector = mkSelector "setNegativeSuffix:"
 
 -- | @Selector@ for @currencyCode@
-currencyCodeSelector :: Selector
+currencyCodeSelector :: Selector '[] (Id NSString)
 currencyCodeSelector = mkSelector "currencyCode"
 
 -- | @Selector@ for @setCurrencyCode:@
-setCurrencyCodeSelector :: Selector
+setCurrencyCodeSelector :: Selector '[Id NSString] ()
 setCurrencyCodeSelector = mkSelector "setCurrencyCode:"
 
 -- | @Selector@ for @currencySymbol@
-currencySymbolSelector :: Selector
+currencySymbolSelector :: Selector '[] (Id NSString)
 currencySymbolSelector = mkSelector "currencySymbol"
 
 -- | @Selector@ for @setCurrencySymbol:@
-setCurrencySymbolSelector :: Selector
+setCurrencySymbolSelector :: Selector '[Id NSString] ()
 setCurrencySymbolSelector = mkSelector "setCurrencySymbol:"
 
 -- | @Selector@ for @internationalCurrencySymbol@
-internationalCurrencySymbolSelector :: Selector
+internationalCurrencySymbolSelector :: Selector '[] (Id NSString)
 internationalCurrencySymbolSelector = mkSelector "internationalCurrencySymbol"
 
 -- | @Selector@ for @setInternationalCurrencySymbol:@
-setInternationalCurrencySymbolSelector :: Selector
+setInternationalCurrencySymbolSelector :: Selector '[Id NSString] ()
 setInternationalCurrencySymbolSelector = mkSelector "setInternationalCurrencySymbol:"
 
 -- | @Selector@ for @percentSymbol@
-percentSymbolSelector :: Selector
+percentSymbolSelector :: Selector '[] (Id NSString)
 percentSymbolSelector = mkSelector "percentSymbol"
 
 -- | @Selector@ for @setPercentSymbol:@
-setPercentSymbolSelector :: Selector
+setPercentSymbolSelector :: Selector '[Id NSString] ()
 setPercentSymbolSelector = mkSelector "setPercentSymbol:"
 
 -- | @Selector@ for @perMillSymbol@
-perMillSymbolSelector :: Selector
+perMillSymbolSelector :: Selector '[] (Id NSString)
 perMillSymbolSelector = mkSelector "perMillSymbol"
 
 -- | @Selector@ for @setPerMillSymbol:@
-setPerMillSymbolSelector :: Selector
+setPerMillSymbolSelector :: Selector '[Id NSString] ()
 setPerMillSymbolSelector = mkSelector "setPerMillSymbol:"
 
 -- | @Selector@ for @minusSign@
-minusSignSelector :: Selector
+minusSignSelector :: Selector '[] (Id NSString)
 minusSignSelector = mkSelector "minusSign"
 
 -- | @Selector@ for @setMinusSign:@
-setMinusSignSelector :: Selector
+setMinusSignSelector :: Selector '[Id NSString] ()
 setMinusSignSelector = mkSelector "setMinusSign:"
 
 -- | @Selector@ for @plusSign@
-plusSignSelector :: Selector
+plusSignSelector :: Selector '[] (Id NSString)
 plusSignSelector = mkSelector "plusSign"
 
 -- | @Selector@ for @setPlusSign:@
-setPlusSignSelector :: Selector
+setPlusSignSelector :: Selector '[Id NSString] ()
 setPlusSignSelector = mkSelector "setPlusSign:"
 
 -- | @Selector@ for @exponentSymbol@
-exponentSymbolSelector :: Selector
+exponentSymbolSelector :: Selector '[] (Id NSString)
 exponentSymbolSelector = mkSelector "exponentSymbol"
 
 -- | @Selector@ for @setExponentSymbol:@
-setExponentSymbolSelector :: Selector
+setExponentSymbolSelector :: Selector '[Id NSString] ()
 setExponentSymbolSelector = mkSelector "setExponentSymbol:"
 
 -- | @Selector@ for @groupingSize@
-groupingSizeSelector :: Selector
+groupingSizeSelector :: Selector '[] CULong
 groupingSizeSelector = mkSelector "groupingSize"
 
 -- | @Selector@ for @setGroupingSize:@
-setGroupingSizeSelector :: Selector
+setGroupingSizeSelector :: Selector '[CULong] ()
 setGroupingSizeSelector = mkSelector "setGroupingSize:"
 
 -- | @Selector@ for @secondaryGroupingSize@
-secondaryGroupingSizeSelector :: Selector
+secondaryGroupingSizeSelector :: Selector '[] CULong
 secondaryGroupingSizeSelector = mkSelector "secondaryGroupingSize"
 
 -- | @Selector@ for @setSecondaryGroupingSize:@
-setSecondaryGroupingSizeSelector :: Selector
+setSecondaryGroupingSizeSelector :: Selector '[CULong] ()
 setSecondaryGroupingSizeSelector = mkSelector "setSecondaryGroupingSize:"
 
 -- | @Selector@ for @multiplier@
-multiplierSelector :: Selector
+multiplierSelector :: Selector '[] (Id NSNumber)
 multiplierSelector = mkSelector "multiplier"
 
 -- | @Selector@ for @setMultiplier:@
-setMultiplierSelector :: Selector
+setMultiplierSelector :: Selector '[Id NSNumber] ()
 setMultiplierSelector = mkSelector "setMultiplier:"
 
 -- | @Selector@ for @formatWidth@
-formatWidthSelector :: Selector
+formatWidthSelector :: Selector '[] CULong
 formatWidthSelector = mkSelector "formatWidth"
 
 -- | @Selector@ for @setFormatWidth:@
-setFormatWidthSelector :: Selector
+setFormatWidthSelector :: Selector '[CULong] ()
 setFormatWidthSelector = mkSelector "setFormatWidth:"
 
 -- | @Selector@ for @paddingCharacter@
-paddingCharacterSelector :: Selector
+paddingCharacterSelector :: Selector '[] (Id NSString)
 paddingCharacterSelector = mkSelector "paddingCharacter"
 
 -- | @Selector@ for @setPaddingCharacter:@
-setPaddingCharacterSelector :: Selector
+setPaddingCharacterSelector :: Selector '[Id NSString] ()
 setPaddingCharacterSelector = mkSelector "setPaddingCharacter:"
 
 -- | @Selector@ for @paddingPosition@
-paddingPositionSelector :: Selector
+paddingPositionSelector :: Selector '[] NSNumberFormatterPadPosition
 paddingPositionSelector = mkSelector "paddingPosition"
 
 -- | @Selector@ for @setPaddingPosition:@
-setPaddingPositionSelector :: Selector
+setPaddingPositionSelector :: Selector '[NSNumberFormatterPadPosition] ()
 setPaddingPositionSelector = mkSelector "setPaddingPosition:"
 
 -- | @Selector@ for @roundingMode@
-roundingModeSelector :: Selector
+roundingModeSelector :: Selector '[] NSNumberFormatterRoundingMode
 roundingModeSelector = mkSelector "roundingMode"
 
 -- | @Selector@ for @setRoundingMode:@
-setRoundingModeSelector :: Selector
+setRoundingModeSelector :: Selector '[NSNumberFormatterRoundingMode] ()
 setRoundingModeSelector = mkSelector "setRoundingMode:"
 
 -- | @Selector@ for @roundingIncrement@
-roundingIncrementSelector :: Selector
+roundingIncrementSelector :: Selector '[] (Id NSNumber)
 roundingIncrementSelector = mkSelector "roundingIncrement"
 
 -- | @Selector@ for @setRoundingIncrement:@
-setRoundingIncrementSelector :: Selector
+setRoundingIncrementSelector :: Selector '[Id NSNumber] ()
 setRoundingIncrementSelector = mkSelector "setRoundingIncrement:"
 
 -- | @Selector@ for @minimumIntegerDigits@
-minimumIntegerDigitsSelector :: Selector
+minimumIntegerDigitsSelector :: Selector '[] CULong
 minimumIntegerDigitsSelector = mkSelector "minimumIntegerDigits"
 
 -- | @Selector@ for @setMinimumIntegerDigits:@
-setMinimumIntegerDigitsSelector :: Selector
+setMinimumIntegerDigitsSelector :: Selector '[CULong] ()
 setMinimumIntegerDigitsSelector = mkSelector "setMinimumIntegerDigits:"
 
 -- | @Selector@ for @maximumIntegerDigits@
-maximumIntegerDigitsSelector :: Selector
+maximumIntegerDigitsSelector :: Selector '[] CULong
 maximumIntegerDigitsSelector = mkSelector "maximumIntegerDigits"
 
 -- | @Selector@ for @setMaximumIntegerDigits:@
-setMaximumIntegerDigitsSelector :: Selector
+setMaximumIntegerDigitsSelector :: Selector '[CULong] ()
 setMaximumIntegerDigitsSelector = mkSelector "setMaximumIntegerDigits:"
 
 -- | @Selector@ for @minimumFractionDigits@
-minimumFractionDigitsSelector :: Selector
+minimumFractionDigitsSelector :: Selector '[] CULong
 minimumFractionDigitsSelector = mkSelector "minimumFractionDigits"
 
 -- | @Selector@ for @setMinimumFractionDigits:@
-setMinimumFractionDigitsSelector :: Selector
+setMinimumFractionDigitsSelector :: Selector '[CULong] ()
 setMinimumFractionDigitsSelector = mkSelector "setMinimumFractionDigits:"
 
 -- | @Selector@ for @maximumFractionDigits@
-maximumFractionDigitsSelector :: Selector
+maximumFractionDigitsSelector :: Selector '[] CULong
 maximumFractionDigitsSelector = mkSelector "maximumFractionDigits"
 
 -- | @Selector@ for @setMaximumFractionDigits:@
-setMaximumFractionDigitsSelector :: Selector
+setMaximumFractionDigitsSelector :: Selector '[CULong] ()
 setMaximumFractionDigitsSelector = mkSelector "setMaximumFractionDigits:"
 
 -- | @Selector@ for @minimum@
-minimumSelector :: Selector
+minimumSelector :: Selector '[] (Id NSNumber)
 minimumSelector = mkSelector "minimum"
 
 -- | @Selector@ for @setMinimum:@
-setMinimumSelector :: Selector
+setMinimumSelector :: Selector '[Id NSNumber] ()
 setMinimumSelector = mkSelector "setMinimum:"
 
 -- | @Selector@ for @maximum@
-maximumSelector :: Selector
+maximumSelector :: Selector '[] (Id NSNumber)
 maximumSelector = mkSelector "maximum"
 
 -- | @Selector@ for @setMaximum:@
-setMaximumSelector :: Selector
+setMaximumSelector :: Selector '[Id NSNumber] ()
 setMaximumSelector = mkSelector "setMaximum:"
 
 -- | @Selector@ for @currencyGroupingSeparator@
-currencyGroupingSeparatorSelector :: Selector
+currencyGroupingSeparatorSelector :: Selector '[] (Id NSString)
 currencyGroupingSeparatorSelector = mkSelector "currencyGroupingSeparator"
 
 -- | @Selector@ for @setCurrencyGroupingSeparator:@
-setCurrencyGroupingSeparatorSelector :: Selector
+setCurrencyGroupingSeparatorSelector :: Selector '[Id NSString] ()
 setCurrencyGroupingSeparatorSelector = mkSelector "setCurrencyGroupingSeparator:"
 
 -- | @Selector@ for @lenient@
-lenientSelector :: Selector
+lenientSelector :: Selector '[] Bool
 lenientSelector = mkSelector "lenient"
 
 -- | @Selector@ for @setLenient:@
-setLenientSelector :: Selector
+setLenientSelector :: Selector '[Bool] ()
 setLenientSelector = mkSelector "setLenient:"
 
 -- | @Selector@ for @usesSignificantDigits@
-usesSignificantDigitsSelector :: Selector
+usesSignificantDigitsSelector :: Selector '[] Bool
 usesSignificantDigitsSelector = mkSelector "usesSignificantDigits"
 
 -- | @Selector@ for @setUsesSignificantDigits:@
-setUsesSignificantDigitsSelector :: Selector
+setUsesSignificantDigitsSelector :: Selector '[Bool] ()
 setUsesSignificantDigitsSelector = mkSelector "setUsesSignificantDigits:"
 
 -- | @Selector@ for @minimumSignificantDigits@
-minimumSignificantDigitsSelector :: Selector
+minimumSignificantDigitsSelector :: Selector '[] CULong
 minimumSignificantDigitsSelector = mkSelector "minimumSignificantDigits"
 
 -- | @Selector@ for @setMinimumSignificantDigits:@
-setMinimumSignificantDigitsSelector :: Selector
+setMinimumSignificantDigitsSelector :: Selector '[CULong] ()
 setMinimumSignificantDigitsSelector = mkSelector "setMinimumSignificantDigits:"
 
 -- | @Selector@ for @maximumSignificantDigits@
-maximumSignificantDigitsSelector :: Selector
+maximumSignificantDigitsSelector :: Selector '[] CULong
 maximumSignificantDigitsSelector = mkSelector "maximumSignificantDigits"
 
 -- | @Selector@ for @setMaximumSignificantDigits:@
-setMaximumSignificantDigitsSelector :: Selector
+setMaximumSignificantDigitsSelector :: Selector '[CULong] ()
 setMaximumSignificantDigitsSelector = mkSelector "setMaximumSignificantDigits:"
 
 -- | @Selector@ for @partialStringValidationEnabled@
-partialStringValidationEnabledSelector :: Selector
+partialStringValidationEnabledSelector :: Selector '[] Bool
 partialStringValidationEnabledSelector = mkSelector "partialStringValidationEnabled"
 
 -- | @Selector@ for @setPartialStringValidationEnabled:@
-setPartialStringValidationEnabledSelector :: Selector
+setPartialStringValidationEnabledSelector :: Selector '[Bool] ()
 setPartialStringValidationEnabledSelector = mkSelector "setPartialStringValidationEnabled:"
 
 -- | @Selector@ for @hasThousandSeparators@
-hasThousandSeparatorsSelector :: Selector
+hasThousandSeparatorsSelector :: Selector '[] Bool
 hasThousandSeparatorsSelector = mkSelector "hasThousandSeparators"
 
 -- | @Selector@ for @setHasThousandSeparators:@
-setHasThousandSeparatorsSelector :: Selector
+setHasThousandSeparatorsSelector :: Selector '[Bool] ()
 setHasThousandSeparatorsSelector = mkSelector "setHasThousandSeparators:"
 
 -- | @Selector@ for @thousandSeparator@
-thousandSeparatorSelector :: Selector
+thousandSeparatorSelector :: Selector '[] (Id NSString)
 thousandSeparatorSelector = mkSelector "thousandSeparator"
 
 -- | @Selector@ for @setThousandSeparator:@
-setThousandSeparatorSelector :: Selector
+setThousandSeparatorSelector :: Selector '[Id NSString] ()
 setThousandSeparatorSelector = mkSelector "setThousandSeparator:"
 
 -- | @Selector@ for @localizesFormat@
-localizesFormatSelector :: Selector
+localizesFormatSelector :: Selector '[] Bool
 localizesFormatSelector = mkSelector "localizesFormat"
 
 -- | @Selector@ for @setLocalizesFormat:@
-setLocalizesFormatSelector :: Selector
+setLocalizesFormatSelector :: Selector '[Bool] ()
 setLocalizesFormatSelector = mkSelector "setLocalizesFormat:"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] (Id NSString)
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @setFormat:@
-setFormatSelector :: Selector
+setFormatSelector :: Selector '[Id NSString] ()
 setFormatSelector = mkSelector "setFormat:"
 
 -- | @Selector@ for @attributedStringForZero@
-attributedStringForZeroSelector :: Selector
+attributedStringForZeroSelector :: Selector '[] (Id NSAttributedString)
 attributedStringForZeroSelector = mkSelector "attributedStringForZero"
 
 -- | @Selector@ for @setAttributedStringForZero:@
-setAttributedStringForZeroSelector :: Selector
+setAttributedStringForZeroSelector :: Selector '[Id NSAttributedString] ()
 setAttributedStringForZeroSelector = mkSelector "setAttributedStringForZero:"
 
 -- | @Selector@ for @attributedStringForNil@
-attributedStringForNilSelector :: Selector
+attributedStringForNilSelector :: Selector '[] (Id NSAttributedString)
 attributedStringForNilSelector = mkSelector "attributedStringForNil"
 
 -- | @Selector@ for @setAttributedStringForNil:@
-setAttributedStringForNilSelector :: Selector
+setAttributedStringForNilSelector :: Selector '[Id NSAttributedString] ()
 setAttributedStringForNilSelector = mkSelector "setAttributedStringForNil:"
 
 -- | @Selector@ for @attributedStringForNotANumber@
-attributedStringForNotANumberSelector :: Selector
+attributedStringForNotANumberSelector :: Selector '[] (Id NSAttributedString)
 attributedStringForNotANumberSelector = mkSelector "attributedStringForNotANumber"
 
 -- | @Selector@ for @setAttributedStringForNotANumber:@
-setAttributedStringForNotANumberSelector :: Selector
+setAttributedStringForNotANumberSelector :: Selector '[Id NSAttributedString] ()
 setAttributedStringForNotANumberSelector = mkSelector "setAttributedStringForNotANumber:"
 
 -- | @Selector@ for @roundingBehavior@
-roundingBehaviorSelector :: Selector
+roundingBehaviorSelector :: Selector '[] (Id NSDecimalNumberHandler)
 roundingBehaviorSelector = mkSelector "roundingBehavior"
 
 -- | @Selector@ for @setRoundingBehavior:@
-setRoundingBehaviorSelector :: Selector
+setRoundingBehaviorSelector :: Selector '[Id NSDecimalNumberHandler] ()
 setRoundingBehaviorSelector = mkSelector "setRoundingBehavior:"
 

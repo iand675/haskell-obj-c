@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.GameplayKit.GKLinearCongruentialRandomSource
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,47 +38,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsGKLinearCongruentialRandomSource gkLinearCongruentialRandomSource => gkLinearCongruentialRandomSource -> IO (Id GKLinearCongruentialRandomSource)
-init_ gkLinearCongruentialRandomSource  =
-    sendMsg gkLinearCongruentialRandomSource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkLinearCongruentialRandomSource =
+  sendOwnedMessage gkLinearCongruentialRandomSource initSelector
 
 -- | Initializes a linear congruential random source with bits the given 64 bit seed.
 --
 -- ObjC selector: @- initWithSeed:@
 initWithSeed :: IsGKLinearCongruentialRandomSource gkLinearCongruentialRandomSource => gkLinearCongruentialRandomSource -> CULong -> IO (Id GKLinearCongruentialRandomSource)
-initWithSeed gkLinearCongruentialRandomSource  seed =
-    sendMsg gkLinearCongruentialRandomSource (mkSelector "initWithSeed:") (retPtr retVoid) [argCULong seed] >>= ownedObject . castPtr
+initWithSeed gkLinearCongruentialRandomSource seed =
+  sendOwnedMessage gkLinearCongruentialRandomSource initWithSeedSelector seed
 
 -- | The seed used to stir the linear congruential random source. The seed changes each time a random value is generated from this source, as the seed is the state buffer. The seed is encoded through archiving.
 --
 -- ObjC selector: @- seed@
 seed :: IsGKLinearCongruentialRandomSource gkLinearCongruentialRandomSource => gkLinearCongruentialRandomSource -> IO CULong
-seed gkLinearCongruentialRandomSource  =
-    sendMsg gkLinearCongruentialRandomSource (mkSelector "seed") retCULong []
+seed gkLinearCongruentialRandomSource =
+  sendMessage gkLinearCongruentialRandomSource seedSelector
 
 -- | The seed used to stir the linear congruential random source. The seed changes each time a random value is generated from this source, as the seed is the state buffer. The seed is encoded through archiving.
 --
 -- ObjC selector: @- setSeed:@
 setSeed :: IsGKLinearCongruentialRandomSource gkLinearCongruentialRandomSource => gkLinearCongruentialRandomSource -> CULong -> IO ()
-setSeed gkLinearCongruentialRandomSource  value =
-    sendMsg gkLinearCongruentialRandomSource (mkSelector "setSeed:") retVoid [argCULong value]
+setSeed gkLinearCongruentialRandomSource value =
+  sendMessage gkLinearCongruentialRandomSource setSeedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKLinearCongruentialRandomSource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithSeed:@
-initWithSeedSelector :: Selector
+initWithSeedSelector :: Selector '[CULong] (Id GKLinearCongruentialRandomSource)
 initWithSeedSelector = mkSelector "initWithSeed:"
 
 -- | @Selector@ for @seed@
-seedSelector :: Selector
+seedSelector :: Selector '[] CULong
 seedSelector = mkSelector "seed"
 
 -- | @Selector@ for @setSeed:@
-setSeedSelector :: Selector
+setSeedSelector :: Selector '[CULong] ()
 setSeedSelector = mkSelector "setSeed:"
 

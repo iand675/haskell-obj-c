@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.BrowserEngineKit.BENetworkingProcess
   , makeLibXPCConnectionError
   , grantCapability_error_invalidationHandler
   , grantCapability_error
+  , grantCapability_errorSelector
+  , grantCapability_error_invalidationHandlerSelector
   , initSelector
-  , newSelector
-  , networkProcessWithInterruptionHandler_completionSelector
-  , networkProcessWithBundleID_interruptionHandler_completionSelector
   , invalidateSelector
   , makeLibXPCConnectionErrorSelector
-  , grantCapability_error_invalidationHandlerSelector
-  , grantCapability_errorSelector
+  , networkProcessWithBundleID_interruptionHandler_completionSelector
+  , networkProcessWithInterruptionHandler_completionSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBENetworkingProcess beNetworkingProcess => beNetworkingProcess -> IO (Id BENetworkingProcess)
-init_ beNetworkingProcess  =
-    sendMsg beNetworkingProcess (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ beNetworkingProcess =
+  sendOwnedMessage beNetworkingProcess initSelector
 
 -- | @+ new@
 new :: IO (Id BENetworkingProcess)
 new  =
   do
     cls' <- getRequiredClass "BENetworkingProcess"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Asynchronously finds an existing network extension process or launches a one.
 --
@@ -68,7 +65,7 @@ networkProcessWithInterruptionHandler_completion :: Ptr () -> Ptr () -> IO ()
 networkProcessWithInterruptionHandler_completion interruptionHandler completion =
   do
     cls' <- getRequiredClass "BENetworkingProcess"
-    sendClassMsg cls' (mkSelector "networkProcessWithInterruptionHandler:completion:") retVoid [argPtr (castPtr interruptionHandler :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' networkProcessWithInterruptionHandler_completionSelector interruptionHandler completion
 
 -- | Asynchronously launches a network extension process.
 --
@@ -81,8 +78,7 @@ networkProcessWithBundleID_interruptionHandler_completion :: IsNSString bundleID
 networkProcessWithBundleID_interruptionHandler_completion bundleID interruptionHandler completion =
   do
     cls' <- getRequiredClass "BENetworkingProcess"
-    withObjCPtr bundleID $ \raw_bundleID ->
-      sendClassMsg cls' (mkSelector "networkProcessWithBundleID:interruptionHandler:completion:") retVoid [argPtr (castPtr raw_bundleID :: Ptr ()), argPtr (castPtr interruptionHandler :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' networkProcessWithBundleID_interruptionHandler_completionSelector (toNSString bundleID) interruptionHandler completion
 
 -- | Stops the extension process.
 --
@@ -90,8 +86,8 @@ networkProcessWithBundleID_interruptionHandler_completion bundleID interruptionH
 --
 -- ObjC selector: @- invalidate@
 invalidate :: IsBENetworkingProcess beNetworkingProcess => beNetworkingProcess -> IO ()
-invalidate beNetworkingProcess  =
-    sendMsg beNetworkingProcess (mkSelector "invalidate") retVoid []
+invalidate beNetworkingProcess =
+  sendMessage beNetworkingProcess invalidateSelector
 
 -- | Creates a new libXPC connection to the extension process.
 --
@@ -101,9 +97,8 @@ invalidate beNetworkingProcess  =
 --
 -- ObjC selector: @- makeLibXPCConnectionError:@
 makeLibXPCConnectionError :: (IsBENetworkingProcess beNetworkingProcess, IsNSError error_) => beNetworkingProcess -> error_ -> IO (Id NSObject)
-makeLibXPCConnectionError beNetworkingProcess  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg beNetworkingProcess (mkSelector "makeLibXPCConnectionError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+makeLibXPCConnectionError beNetworkingProcess error_ =
+  sendMessage beNetworkingProcess makeLibXPCConnectionErrorSelector (toNSError error_)
 
 -- | Grants the specified capability to the process with invalidation handler.
 --
@@ -115,10 +110,8 @@ makeLibXPCConnectionError beNetworkingProcess  error_ =
 --
 -- ObjC selector: @- grantCapability:error:invalidationHandler:@
 grantCapability_error_invalidationHandler :: (IsBENetworkingProcess beNetworkingProcess, IsBEProcessCapability capability, IsNSError error_) => beNetworkingProcess -> capability -> error_ -> Ptr () -> IO RawId
-grantCapability_error_invalidationHandler beNetworkingProcess  capability error_ invalidationHandler =
-  withObjCPtr capability $ \raw_capability ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg beNetworkingProcess (mkSelector "grantCapability:error:invalidationHandler:") (retPtr retVoid) [argPtr (castPtr raw_capability :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr invalidationHandler :: Ptr ())]
+grantCapability_error_invalidationHandler beNetworkingProcess capability error_ invalidationHandler =
+  sendMessage beNetworkingProcess grantCapability_error_invalidationHandlerSelector (toBEProcessCapability capability) (toNSError error_) invalidationHandler
 
 -- | Grants the specified capability to the process.
 --
@@ -130,44 +123,42 @@ grantCapability_error_invalidationHandler beNetworkingProcess  capability error_
 --
 -- ObjC selector: @- grantCapability:error:@
 grantCapability_error :: (IsBENetworkingProcess beNetworkingProcess, IsBEProcessCapability capability, IsNSError error_) => beNetworkingProcess -> capability -> error_ -> IO RawId
-grantCapability_error beNetworkingProcess  capability error_ =
-  withObjCPtr capability $ \raw_capability ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg beNetworkingProcess (mkSelector "grantCapability:error:") (retPtr retVoid) [argPtr (castPtr raw_capability :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+grantCapability_error beNetworkingProcess capability error_ =
+  sendMessage beNetworkingProcess grantCapability_errorSelector (toBEProcessCapability capability) (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BENetworkingProcess)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BENetworkingProcess)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @networkProcessWithInterruptionHandler:completion:@
-networkProcessWithInterruptionHandler_completionSelector :: Selector
+networkProcessWithInterruptionHandler_completionSelector :: Selector '[Ptr (), Ptr ()] ()
 networkProcessWithInterruptionHandler_completionSelector = mkSelector "networkProcessWithInterruptionHandler:completion:"
 
 -- | @Selector@ for @networkProcessWithBundleID:interruptionHandler:completion:@
-networkProcessWithBundleID_interruptionHandler_completionSelector :: Selector
+networkProcessWithBundleID_interruptionHandler_completionSelector :: Selector '[Id NSString, Ptr (), Ptr ()] ()
 networkProcessWithBundleID_interruptionHandler_completionSelector = mkSelector "networkProcessWithBundleID:interruptionHandler:completion:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @makeLibXPCConnectionError:@
-makeLibXPCConnectionErrorSelector :: Selector
+makeLibXPCConnectionErrorSelector :: Selector '[Id NSError] (Id NSObject)
 makeLibXPCConnectionErrorSelector = mkSelector "makeLibXPCConnectionError:"
 
 -- | @Selector@ for @grantCapability:error:invalidationHandler:@
-grantCapability_error_invalidationHandlerSelector :: Selector
+grantCapability_error_invalidationHandlerSelector :: Selector '[Id BEProcessCapability, Id NSError, Ptr ()] RawId
 grantCapability_error_invalidationHandlerSelector = mkSelector "grantCapability:error:invalidationHandler:"
 
 -- | @Selector@ for @grantCapability:error:@
-grantCapability_errorSelector :: Selector
+grantCapability_errorSelector :: Selector '[Id BEProcessCapability, Id NSError] RawId
 grantCapability_errorSelector = mkSelector "grantCapability:error:"
 

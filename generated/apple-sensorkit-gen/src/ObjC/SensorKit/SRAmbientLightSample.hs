@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.SensorKit.SRAmbientLightSample
   , IsSRAmbientLightSample(..)
   , placement
   , lux
-  , placementSelector
   , luxSelector
+  , placementSelector
 
   -- * Enum types
   , SRAmbientLightSensorPlacement(SRAmbientLightSensorPlacement)
@@ -26,15 +27,11 @@ module ObjC.SensorKit.SRAmbientLightSample
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,23 +41,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- placement@
 placement :: IsSRAmbientLightSample srAmbientLightSample => srAmbientLightSample -> IO SRAmbientLightSensorPlacement
-placement srAmbientLightSample  =
-    fmap (coerce :: CLong -> SRAmbientLightSensorPlacement) $ sendMsg srAmbientLightSample (mkSelector "placement") retCLong []
+placement srAmbientLightSample =
+  sendMessage srAmbientLightSample placementSelector
 
 -- | @- lux@
 lux :: IsSRAmbientLightSample srAmbientLightSample => srAmbientLightSample -> IO (Id NSMeasurement)
-lux srAmbientLightSample  =
-    sendMsg srAmbientLightSample (mkSelector "lux") (retPtr retVoid) [] >>= retainedObject . castPtr
+lux srAmbientLightSample =
+  sendMessage srAmbientLightSample luxSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @placement@
-placementSelector :: Selector
+placementSelector :: Selector '[] SRAmbientLightSensorPlacement
 placementSelector = mkSelector "placement"
 
 -- | @Selector@ for @lux@
-luxSelector :: Selector
+luxSelector :: Selector '[] (Id NSMeasurement)
 luxSelector = mkSelector "lux"
 

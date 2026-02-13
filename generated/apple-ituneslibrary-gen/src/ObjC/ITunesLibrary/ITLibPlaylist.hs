@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,15 @@ module ObjC.ITunesLibrary.ITLibPlaylist
   , distinguishedKind
   , kind
   , master
-  , nameSelector
-  , primarySelector
-  , parentIDSelector
-  , visibleSelector
   , allItemsPlaylistSelector
-  , itemsSelector
   , distinguishedKindSelector
+  , itemsSelector
   , kindSelector
   , masterSelector
+  , nameSelector
+  , parentIDSelector
+  , primarySelector
+  , visibleSelector
 
   -- * Enum types
   , ITLibDistinguishedPlaylistKind(ITLibDistinguishedPlaylistKind)
@@ -62,15 +63,11 @@ module ObjC.ITunesLibrary.ITLibPlaylist
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,102 +79,102 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- name@
 name :: IsITLibPlaylist itLibPlaylist => itLibPlaylist -> IO (Id NSString)
-name itLibPlaylist  =
-    sendMsg itLibPlaylist (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name itLibPlaylist =
+  sendMessage itLibPlaylist nameSelector
 
 -- | Whether this playlist is the primary playlist.
 --
 -- ObjC selector: @- primary@
 primary :: IsITLibPlaylist itLibPlaylist => itLibPlaylist -> IO Bool
-primary itLibPlaylist  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibPlaylist (mkSelector "primary") retCULong []
+primary itLibPlaylist =
+  sendMessage itLibPlaylist primarySelector
 
 -- | The unique identifier of this playlist' parent.
 --
 -- ObjC selector: @- parentID@
 parentID :: IsITLibPlaylist itLibPlaylist => itLibPlaylist -> IO (Id NSNumber)
-parentID itLibPlaylist  =
-    sendMsg itLibPlaylist (mkSelector "parentID") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentID itLibPlaylist =
+  sendMessage itLibPlaylist parentIDSelector
 
 -- | Whether this playlist is visible.
 --
 -- ObjC selector: @- visible@
 visible :: IsITLibPlaylist itLibPlaylist => itLibPlaylist -> IO Bool
-visible itLibPlaylist  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibPlaylist (mkSelector "visible") retCULong []
+visible itLibPlaylist =
+  sendMessage itLibPlaylist visibleSelector
 
 -- | Whether or not every item in this playlist is exposed via this API.  Generally true but not that useful.
 --
 -- ObjC selector: @- allItemsPlaylist@
 allItemsPlaylist :: IsITLibPlaylist itLibPlaylist => itLibPlaylist -> IO Bool
-allItemsPlaylist itLibPlaylist  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibPlaylist (mkSelector "allItemsPlaylist") retCULong []
+allItemsPlaylist itLibPlaylist =
+  sendMessage itLibPlaylist allItemsPlaylistSelector
 
 -- | The media items contained within this playlist.
 --
 -- ObjC selector: @- items@
 items :: IsITLibPlaylist itLibPlaylist => itLibPlaylist -> IO (Id NSArray)
-items itLibPlaylist  =
-    sendMsg itLibPlaylist (mkSelector "items") (retPtr retVoid) [] >>= retainedObject . castPtr
+items itLibPlaylist =
+  sendMessage itLibPlaylist itemsSelector
 
 -- | The distinguished kind of this playlist.
 --
 -- ObjC selector: @- distinguishedKind@
 distinguishedKind :: IsITLibPlaylist itLibPlaylist => itLibPlaylist -> IO ITLibDistinguishedPlaylistKind
-distinguishedKind itLibPlaylist  =
-    fmap (coerce :: CULong -> ITLibDistinguishedPlaylistKind) $ sendMsg itLibPlaylist (mkSelector "distinguishedKind") retCULong []
+distinguishedKind itLibPlaylist =
+  sendMessage itLibPlaylist distinguishedKindSelector
 
 -- | The kind of this playlist.
 --
 -- ObjC selector: @- kind@
 kind :: IsITLibPlaylist itLibPlaylist => itLibPlaylist -> IO ITLibPlaylistKind
-kind itLibPlaylist  =
-    fmap (coerce :: CULong -> ITLibPlaylistKind) $ sendMsg itLibPlaylist (mkSelector "kind") retCULong []
+kind itLibPlaylist =
+  sendMessage itLibPlaylist kindSelector
 
 -- | Whether this playlist is the primary playlist.
 --
 -- ObjC selector: @- master@
 master :: IsITLibPlaylist itLibPlaylist => itLibPlaylist -> IO Bool
-master itLibPlaylist  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibPlaylist (mkSelector "master") retCULong []
+master itLibPlaylist =
+  sendMessage itLibPlaylist masterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @primary@
-primarySelector :: Selector
+primarySelector :: Selector '[] Bool
 primarySelector = mkSelector "primary"
 
 -- | @Selector@ for @parentID@
-parentIDSelector :: Selector
+parentIDSelector :: Selector '[] (Id NSNumber)
 parentIDSelector = mkSelector "parentID"
 
 -- | @Selector@ for @visible@
-visibleSelector :: Selector
+visibleSelector :: Selector '[] Bool
 visibleSelector = mkSelector "visible"
 
 -- | @Selector@ for @allItemsPlaylist@
-allItemsPlaylistSelector :: Selector
+allItemsPlaylistSelector :: Selector '[] Bool
 allItemsPlaylistSelector = mkSelector "allItemsPlaylist"
 
 -- | @Selector@ for @items@
-itemsSelector :: Selector
+itemsSelector :: Selector '[] (Id NSArray)
 itemsSelector = mkSelector "items"
 
 -- | @Selector@ for @distinguishedKind@
-distinguishedKindSelector :: Selector
+distinguishedKindSelector :: Selector '[] ITLibDistinguishedPlaylistKind
 distinguishedKindSelector = mkSelector "distinguishedKind"
 
 -- | @Selector@ for @kind@
-kindSelector :: Selector
+kindSelector :: Selector '[] ITLibPlaylistKind
 kindSelector = mkSelector "kind"
 
 -- | @Selector@ for @master@
-masterSelector :: Selector
+masterSelector :: Selector '[] Bool
 masterSelector = mkSelector "master"
 

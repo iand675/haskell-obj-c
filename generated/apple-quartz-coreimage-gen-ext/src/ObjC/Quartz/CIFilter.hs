@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Quartz.CIFilter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,16 +63,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- viewForUIConfiguration:excludedKeys:@
 viewForUIConfiguration_excludedKeys :: (IsCIFilter ciFilter, IsNSDictionary inUIConfiguration, IsNSArray inKeys) => ciFilter -> inUIConfiguration -> inKeys -> IO (Id IKFilterUIView)
-viewForUIConfiguration_excludedKeys ciFilter  inUIConfiguration inKeys =
-  withObjCPtr inUIConfiguration $ \raw_inUIConfiguration ->
-    withObjCPtr inKeys $ \raw_inKeys ->
-        sendMsg ciFilter (mkSelector "viewForUIConfiguration:excludedKeys:") (retPtr retVoid) [argPtr (castPtr raw_inUIConfiguration :: Ptr ()), argPtr (castPtr raw_inKeys :: Ptr ())] >>= retainedObject . castPtr
+viewForUIConfiguration_excludedKeys ciFilter inUIConfiguration inKeys =
+  sendMessage ciFilter viewForUIConfiguration_excludedKeysSelector (toNSDictionary inUIConfiguration) (toNSArray inKeys)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @viewForUIConfiguration:excludedKeys:@
-viewForUIConfiguration_excludedKeysSelector :: Selector
+viewForUIConfiguration_excludedKeysSelector :: Selector '[Id NSDictionary, Id NSArray] (Id IKFilterUIView)
 viewForUIConfiguration_excludedKeysSelector = mkSelector "viewForUIConfiguration:excludedKeys:"
 

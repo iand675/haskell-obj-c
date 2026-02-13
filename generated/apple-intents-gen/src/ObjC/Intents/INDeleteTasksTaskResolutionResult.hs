@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INDeleteTasksTaskResolutionResult
   , IsINDeleteTasksTaskResolutionResult(..)
   , unsupportedForReason
   , initWithTaskResolutionResult
-  , unsupportedForReasonSelector
   , initWithTaskResolutionResultSelector
+  , unsupportedForReasonSelector
 
   -- * Enum types
   , INDeleteTasksTaskUnsupportedReason(INDeleteTasksTaskUnsupportedReason)
@@ -19,15 +20,11 @@ module ObjC.Intents.INDeleteTasksTaskResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,23 +37,22 @@ unsupportedForReason :: INDeleteTasksTaskUnsupportedReason -> IO (Id INDeleteTas
 unsupportedForReason reason =
   do
     cls' <- getRequiredClass "INDeleteTasksTaskResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupportedForReason:") (retPtr retVoid) [argCLong (coerce reason)] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedForReasonSelector reason
 
 -- | @- initWithTaskResolutionResult:@
 initWithTaskResolutionResult :: (IsINDeleteTasksTaskResolutionResult inDeleteTasksTaskResolutionResult, IsINTaskResolutionResult taskResolutionResult) => inDeleteTasksTaskResolutionResult -> taskResolutionResult -> IO (Id INDeleteTasksTaskResolutionResult)
-initWithTaskResolutionResult inDeleteTasksTaskResolutionResult  taskResolutionResult =
-  withObjCPtr taskResolutionResult $ \raw_taskResolutionResult ->
-      sendMsg inDeleteTasksTaskResolutionResult (mkSelector "initWithTaskResolutionResult:") (retPtr retVoid) [argPtr (castPtr raw_taskResolutionResult :: Ptr ())] >>= ownedObject . castPtr
+initWithTaskResolutionResult inDeleteTasksTaskResolutionResult taskResolutionResult =
+  sendOwnedMessage inDeleteTasksTaskResolutionResult initWithTaskResolutionResultSelector (toINTaskResolutionResult taskResolutionResult)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @unsupportedForReason:@
-unsupportedForReasonSelector :: Selector
+unsupportedForReasonSelector :: Selector '[INDeleteTasksTaskUnsupportedReason] (Id INDeleteTasksTaskResolutionResult)
 unsupportedForReasonSelector = mkSelector "unsupportedForReason:"
 
 -- | @Selector@ for @initWithTaskResolutionResult:@
-initWithTaskResolutionResultSelector :: Selector
+initWithTaskResolutionResultSelector :: Selector '[Id INTaskResolutionResult] (Id INDeleteTasksTaskResolutionResult)
 initWithTaskResolutionResultSelector = mkSelector "initWithTaskResolutionResult:"
 

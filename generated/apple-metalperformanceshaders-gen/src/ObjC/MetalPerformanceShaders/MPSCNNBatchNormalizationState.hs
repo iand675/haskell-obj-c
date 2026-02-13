@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.MetalPerformanceShaders.MPSCNNBatchNormalizationState
   , gradientForGamma
   , gradientForBeta
   , batchNormalization
+  , batchNormalizationSelector
+  , betaSelector
+  , gammaSelector
+  , gradientForBetaSelector
+  , gradientForGammaSelector
   , initWithResourceSelector
+  , meanSelector
+  , resetSelector
   , temporaryStateWithCommandBuffer_bufferSizeSelector
   , temporaryStateWithCommandBuffer_textureDescriptorSelector
-  , resetSelector
-  , gammaSelector
-  , betaSelector
-  , meanSelector
   , varianceSelector
-  , gradientForGammaSelector
-  , gradientForBetaSelector
-  , batchNormalizationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,8 @@ import ObjC.Metal.Internal.Classes
 --
 -- ObjC selector: @- initWithResource:@
 initWithResource :: IsMPSCNNBatchNormalizationState mpscnnBatchNormalizationState => mpscnnBatchNormalizationState -> RawId -> IO (Id MPSCNNBatchNormalizationState)
-initWithResource mpscnnBatchNormalizationState  resource =
-    sendMsg mpscnnBatchNormalizationState (mkSelector "initWithResource:") (retPtr retVoid) [argPtr (castPtr (unRawId resource) :: Ptr ())] >>= ownedObject . castPtr
+initWithResource mpscnnBatchNormalizationState resource =
+  sendOwnedMessage mpscnnBatchNormalizationState initWithResourceSelector resource
 
 -- | Unavailable.  Use MPSCNNBatchNormalizationStatistics methods to create the temporary state object.
 --
@@ -68,115 +65,114 @@ temporaryStateWithCommandBuffer_bufferSize :: RawId -> CULong -> IO (Id MPSCNNBa
 temporaryStateWithCommandBuffer_bufferSize cmdBuf bufferSize =
   do
     cls' <- getRequiredClass "MPSCNNBatchNormalizationState"
-    sendClassMsg cls' (mkSelector "temporaryStateWithCommandBuffer:bufferSize:") (retPtr retVoid) [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argCULong bufferSize] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryStateWithCommandBuffer_bufferSizeSelector cmdBuf bufferSize
 
 -- | @+ temporaryStateWithCommandBuffer:textureDescriptor:@
 temporaryStateWithCommandBuffer_textureDescriptor :: IsMTLTextureDescriptor descriptor => RawId -> descriptor -> IO (Id MPSCNNBatchNormalizationState)
 temporaryStateWithCommandBuffer_textureDescriptor cmdBuf descriptor =
   do
     cls' <- getRequiredClass "MPSCNNBatchNormalizationState"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      sendClassMsg cls' (mkSelector "temporaryStateWithCommandBuffer:textureDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryStateWithCommandBuffer_textureDescriptorSelector cmdBuf (toMTLTextureDescriptor descriptor)
 
 -- | Reset any accumulated state data to its initial values.
 --
 -- ObjC selector: @- reset@
 reset :: IsMPSCNNBatchNormalizationState mpscnnBatchNormalizationState => mpscnnBatchNormalizationState -> IO ()
-reset mpscnnBatchNormalizationState  =
-    sendMsg mpscnnBatchNormalizationState (mkSelector "reset") retVoid []
+reset mpscnnBatchNormalizationState =
+  sendMessage mpscnnBatchNormalizationState resetSelector
 
 -- | Return an MTLBuffer object with the state's current gamma values.
 --
 -- ObjC selector: @- gamma@
 gamma :: IsMPSCNNBatchNormalizationState mpscnnBatchNormalizationState => mpscnnBatchNormalizationState -> IO RawId
-gamma mpscnnBatchNormalizationState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalizationState (mkSelector "gamma") (retPtr retVoid) []
+gamma mpscnnBatchNormalizationState =
+  sendMessage mpscnnBatchNormalizationState gammaSelector
 
 -- | Return an MTLBuffer object with the state's current beta values..
 --
 -- ObjC selector: @- beta@
 beta :: IsMPSCNNBatchNormalizationState mpscnnBatchNormalizationState => mpscnnBatchNormalizationState -> IO RawId
-beta mpscnnBatchNormalizationState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalizationState (mkSelector "beta") (retPtr retVoid) []
+beta mpscnnBatchNormalizationState =
+  sendMessage mpscnnBatchNormalizationState betaSelector
 
 -- | Return an MTLBuffer object with the most recently computed batch mean values.
 --
 -- ObjC selector: @- mean@
 mean :: IsMPSCNNBatchNormalizationState mpscnnBatchNormalizationState => mpscnnBatchNormalizationState -> IO RawId
-mean mpscnnBatchNormalizationState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalizationState (mkSelector "mean") (retPtr retVoid) []
+mean mpscnnBatchNormalizationState =
+  sendMessage mpscnnBatchNormalizationState meanSelector
 
 -- | Return an MTLBuffer object with the most recently computed batch variance values.
 --
 -- ObjC selector: @- variance@
 variance :: IsMPSCNNBatchNormalizationState mpscnnBatchNormalizationState => mpscnnBatchNormalizationState -> IO RawId
-variance mpscnnBatchNormalizationState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalizationState (mkSelector "variance") (retPtr retVoid) []
+variance mpscnnBatchNormalizationState =
+  sendMessage mpscnnBatchNormalizationState varianceSelector
 
 -- | Return an MTLBuffer object containing the values of the gradient of the loss function              with respect to the scale factors.  If a MPSCNNBatchNormalizationGradient kernel              has not successfully generated these values nil will be returned.
 --
 -- ObjC selector: @- gradientForGamma@
 gradientForGamma :: IsMPSCNNBatchNormalizationState mpscnnBatchNormalizationState => mpscnnBatchNormalizationState -> IO RawId
-gradientForGamma mpscnnBatchNormalizationState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalizationState (mkSelector "gradientForGamma") (retPtr retVoid) []
+gradientForGamma mpscnnBatchNormalizationState =
+  sendMessage mpscnnBatchNormalizationState gradientForGammaSelector
 
 -- | Return an MTLBuffer object containing the values of the gradient of the loss function              with respect to the bias terms.  If a MPSCNNBatchNormalizationGradient kernel              has not successfully generated these values nil will be returned.
 --
 -- ObjC selector: @- gradientForBeta@
 gradientForBeta :: IsMPSCNNBatchNormalizationState mpscnnBatchNormalizationState => mpscnnBatchNormalizationState -> IO RawId
-gradientForBeta mpscnnBatchNormalizationState  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnBatchNormalizationState (mkSelector "gradientForBeta") (retPtr retVoid) []
+gradientForBeta mpscnnBatchNormalizationState =
+  sendMessage mpscnnBatchNormalizationState gradientForBetaSelector
 
 -- | @- batchNormalization@
 batchNormalization :: IsMPSCNNBatchNormalizationState mpscnnBatchNormalizationState => mpscnnBatchNormalizationState -> IO (Id MPSCNNBatchNormalization)
-batchNormalization mpscnnBatchNormalizationState  =
-    sendMsg mpscnnBatchNormalizationState (mkSelector "batchNormalization") (retPtr retVoid) [] >>= retainedObject . castPtr
+batchNormalization mpscnnBatchNormalizationState =
+  sendMessage mpscnnBatchNormalizationState batchNormalizationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResource:@
-initWithResourceSelector :: Selector
+initWithResourceSelector :: Selector '[RawId] (Id MPSCNNBatchNormalizationState)
 initWithResourceSelector = mkSelector "initWithResource:"
 
 -- | @Selector@ for @temporaryStateWithCommandBuffer:bufferSize:@
-temporaryStateWithCommandBuffer_bufferSizeSelector :: Selector
+temporaryStateWithCommandBuffer_bufferSizeSelector :: Selector '[RawId, CULong] (Id MPSCNNBatchNormalizationState)
 temporaryStateWithCommandBuffer_bufferSizeSelector = mkSelector "temporaryStateWithCommandBuffer:bufferSize:"
 
 -- | @Selector@ for @temporaryStateWithCommandBuffer:textureDescriptor:@
-temporaryStateWithCommandBuffer_textureDescriptorSelector :: Selector
+temporaryStateWithCommandBuffer_textureDescriptorSelector :: Selector '[RawId, Id MTLTextureDescriptor] (Id MPSCNNBatchNormalizationState)
 temporaryStateWithCommandBuffer_textureDescriptorSelector = mkSelector "temporaryStateWithCommandBuffer:textureDescriptor:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @gamma@
-gammaSelector :: Selector
+gammaSelector :: Selector '[] RawId
 gammaSelector = mkSelector "gamma"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] RawId
 betaSelector = mkSelector "beta"
 
 -- | @Selector@ for @mean@
-meanSelector :: Selector
+meanSelector :: Selector '[] RawId
 meanSelector = mkSelector "mean"
 
 -- | @Selector@ for @variance@
-varianceSelector :: Selector
+varianceSelector :: Selector '[] RawId
 varianceSelector = mkSelector "variance"
 
 -- | @Selector@ for @gradientForGamma@
-gradientForGammaSelector :: Selector
+gradientForGammaSelector :: Selector '[] RawId
 gradientForGammaSelector = mkSelector "gradientForGamma"
 
 -- | @Selector@ for @gradientForBeta@
-gradientForBetaSelector :: Selector
+gradientForBetaSelector :: Selector '[] RawId
 gradientForBetaSelector = mkSelector "gradientForBeta"
 
 -- | @Selector@ for @batchNormalization@
-batchNormalizationSelector :: Selector
+batchNormalizationSelector :: Selector '[] (Id MPSCNNBatchNormalization)
 batchNormalizationSelector = mkSelector "batchNormalization"
 

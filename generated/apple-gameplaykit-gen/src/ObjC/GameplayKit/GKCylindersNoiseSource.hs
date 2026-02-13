@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.GameplayKit.GKCylindersNoiseSource
   , frequency
   , setFrequency
   , cylindersNoiseWithFrequencySelector
-  , initWithFrequencySelector
   , frequencySelector
+  , initWithFrequencySelector
   , setFrequencySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,40 +37,40 @@ cylindersNoiseWithFrequency :: CDouble -> IO (Id GKCylindersNoiseSource)
 cylindersNoiseWithFrequency frequency =
   do
     cls' <- getRequiredClass "GKCylindersNoiseSource"
-    sendClassMsg cls' (mkSelector "cylindersNoiseWithFrequency:") (retPtr retVoid) [argCDouble frequency] >>= retainedObject . castPtr
+    sendClassMessage cls' cylindersNoiseWithFrequencySelector frequency
 
 -- | @- initWithFrequency:@
 initWithFrequency :: IsGKCylindersNoiseSource gkCylindersNoiseSource => gkCylindersNoiseSource -> CDouble -> IO (Id GKCylindersNoiseSource)
-initWithFrequency gkCylindersNoiseSource  frequency =
-    sendMsg gkCylindersNoiseSource (mkSelector "initWithFrequency:") (retPtr retVoid) [argCDouble frequency] >>= ownedObject . castPtr
+initWithFrequency gkCylindersNoiseSource frequency =
+  sendOwnedMessage gkCylindersNoiseSource initWithFrequencySelector frequency
 
 -- | @- frequency@
 frequency :: IsGKCylindersNoiseSource gkCylindersNoiseSource => gkCylindersNoiseSource -> IO CDouble
-frequency gkCylindersNoiseSource  =
-    sendMsg gkCylindersNoiseSource (mkSelector "frequency") retCDouble []
+frequency gkCylindersNoiseSource =
+  sendMessage gkCylindersNoiseSource frequencySelector
 
 -- | @- setFrequency:@
 setFrequency :: IsGKCylindersNoiseSource gkCylindersNoiseSource => gkCylindersNoiseSource -> CDouble -> IO ()
-setFrequency gkCylindersNoiseSource  value =
-    sendMsg gkCylindersNoiseSource (mkSelector "setFrequency:") retVoid [argCDouble value]
+setFrequency gkCylindersNoiseSource value =
+  sendMessage gkCylindersNoiseSource setFrequencySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cylindersNoiseWithFrequency:@
-cylindersNoiseWithFrequencySelector :: Selector
+cylindersNoiseWithFrequencySelector :: Selector '[CDouble] (Id GKCylindersNoiseSource)
 cylindersNoiseWithFrequencySelector = mkSelector "cylindersNoiseWithFrequency:"
 
 -- | @Selector@ for @initWithFrequency:@
-initWithFrequencySelector :: Selector
+initWithFrequencySelector :: Selector '[CDouble] (Id GKCylindersNoiseSource)
 initWithFrequencySelector = mkSelector "initWithFrequency:"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] CDouble
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @setFrequency:@
-setFrequencySelector :: Selector
+setFrequencySelector :: Selector '[CDouble] ()
 setFrequencySelector = mkSelector "setFrequency:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,22 +20,18 @@ module ObjC.Speech.SFVoiceAnalytics
   , pitch
   , voicing
   , jitterSelector
-  , shimmerSelector
   , pitchSelector
+  , shimmerSelector
   , voicingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- jitter@
 jitter :: IsSFVoiceAnalytics sfVoiceAnalytics => sfVoiceAnalytics -> IO (Id SFAcousticFeature)
-jitter sfVoiceAnalytics  =
-    sendMsg sfVoiceAnalytics (mkSelector "jitter") (retPtr retVoid) [] >>= retainedObject . castPtr
+jitter sfVoiceAnalytics =
+  sendMessage sfVoiceAnalytics jitterSelector
 
 -- | The variation in vocal volume stability (amplitude) in each frame of a transcription segment, expressed in decibels.
 --
 -- ObjC selector: @- shimmer@
 shimmer :: IsSFVoiceAnalytics sfVoiceAnalytics => sfVoiceAnalytics -> IO (Id SFAcousticFeature)
-shimmer sfVoiceAnalytics  =
-    sendMsg sfVoiceAnalytics (mkSelector "shimmer") (retPtr retVoid) [] >>= retainedObject . castPtr
+shimmer sfVoiceAnalytics =
+  sendMessage sfVoiceAnalytics shimmerSelector
 
 -- | The highness or lowness of the tone (fundamental frequency) in each frame of a transcription segment, expressed as a logarithm.
 --
@@ -61,8 +58,8 @@ shimmer sfVoiceAnalytics  =
 --
 -- ObjC selector: @- pitch@
 pitch :: IsSFVoiceAnalytics sfVoiceAnalytics => sfVoiceAnalytics -> IO (Id SFAcousticFeature)
-pitch sfVoiceAnalytics  =
-    sendMsg sfVoiceAnalytics (mkSelector "pitch") (retPtr retVoid) [] >>= retainedObject . castPtr
+pitch sfVoiceAnalytics =
+  sendMessage sfVoiceAnalytics pitchSelector
 
 -- | The likelihood of a voice in each frame of a transcription segment.
 --
@@ -70,26 +67,26 @@ pitch sfVoiceAnalytics  =
 --
 -- ObjC selector: @- voicing@
 voicing :: IsSFVoiceAnalytics sfVoiceAnalytics => sfVoiceAnalytics -> IO (Id SFAcousticFeature)
-voicing sfVoiceAnalytics  =
-    sendMsg sfVoiceAnalytics (mkSelector "voicing") (retPtr retVoid) [] >>= retainedObject . castPtr
+voicing sfVoiceAnalytics =
+  sendMessage sfVoiceAnalytics voicingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @jitter@
-jitterSelector :: Selector
+jitterSelector :: Selector '[] (Id SFAcousticFeature)
 jitterSelector = mkSelector "jitter"
 
 -- | @Selector@ for @shimmer@
-shimmerSelector :: Selector
+shimmerSelector :: Selector '[] (Id SFAcousticFeature)
 shimmerSelector = mkSelector "shimmer"
 
 -- | @Selector@ for @pitch@
-pitchSelector :: Selector
+pitchSelector :: Selector '[] (Id SFAcousticFeature)
 pitchSelector = mkSelector "pitch"
 
 -- | @Selector@ for @voicing@
-voicingSelector :: Selector
+voicingSelector :: Selector '[] (Id SFAcousticFeature)
 voicingSelector = mkSelector "voicing"
 

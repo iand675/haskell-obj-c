@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.FileProvider.NSFileProviderItemVersion
   , beforeFirstSyncComponent
   , contentVersion
   , metadataVersion
-  , initWithContentVersion_metadataVersionSelector
   , beforeFirstSyncComponentSelector
   , contentVersionSelector
+  , initWithContentVersion_metadataVersionSelector
   , metadataVersionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,10 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithContentVersion:metadataVersion:@
 initWithContentVersion_metadataVersion :: (IsNSFileProviderItemVersion nsFileProviderItemVersion, IsNSData contentVersion, IsNSData metadataVersion) => nsFileProviderItemVersion -> contentVersion -> metadataVersion -> IO (Id NSFileProviderItemVersion)
-initWithContentVersion_metadataVersion nsFileProviderItemVersion  contentVersion metadataVersion =
-  withObjCPtr contentVersion $ \raw_contentVersion ->
-    withObjCPtr metadataVersion $ \raw_metadataVersion ->
-        sendMsg nsFileProviderItemVersion (mkSelector "initWithContentVersion:metadataVersion:") (retPtr retVoid) [argPtr (castPtr raw_contentVersion :: Ptr ()), argPtr (castPtr raw_metadataVersion :: Ptr ())] >>= ownedObject . castPtr
+initWithContentVersion_metadataVersion nsFileProviderItemVersion contentVersion metadataVersion =
+  sendOwnedMessage nsFileProviderItemVersion initWithContentVersion_metadataVersionSelector (toNSData contentVersion) (toNSData metadataVersion)
 
 -- | Version component exposed by the system to denote a state that predates a version returned by the provider.
 --
@@ -55,7 +50,7 @@ beforeFirstSyncComponent :: IO (Id NSData)
 beforeFirstSyncComponent  =
   do
     cls' <- getRequiredClass "NSFileProviderItemVersion"
-    sendClassMsg cls' (mkSelector "beforeFirstSyncComponent") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' beforeFirstSyncComponentSelector
 
 -- | Version data for the content of the file.
 --
@@ -65,8 +60,8 @@ beforeFirstSyncComponent  =
 --
 -- ObjC selector: @- contentVersion@
 contentVersion :: IsNSFileProviderItemVersion nsFileProviderItemVersion => nsFileProviderItemVersion -> IO (Id NSData)
-contentVersion nsFileProviderItemVersion  =
-    sendMsg nsFileProviderItemVersion (mkSelector "contentVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentVersion nsFileProviderItemVersion =
+  sendMessage nsFileProviderItemVersion contentVersionSelector
 
 -- | Version data for the metadata of the item, i.e everything but the data fork and the resource fork.
 --
@@ -74,26 +69,26 @@ contentVersion nsFileProviderItemVersion  =
 --
 -- ObjC selector: @- metadataVersion@
 metadataVersion :: IsNSFileProviderItemVersion nsFileProviderItemVersion => nsFileProviderItemVersion -> IO (Id NSData)
-metadataVersion nsFileProviderItemVersion  =
-    sendMsg nsFileProviderItemVersion (mkSelector "metadataVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadataVersion nsFileProviderItemVersion =
+  sendMessage nsFileProviderItemVersion metadataVersionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithContentVersion:metadataVersion:@
-initWithContentVersion_metadataVersionSelector :: Selector
+initWithContentVersion_metadataVersionSelector :: Selector '[Id NSData, Id NSData] (Id NSFileProviderItemVersion)
 initWithContentVersion_metadataVersionSelector = mkSelector "initWithContentVersion:metadataVersion:"
 
 -- | @Selector@ for @beforeFirstSyncComponent@
-beforeFirstSyncComponentSelector :: Selector
+beforeFirstSyncComponentSelector :: Selector '[] (Id NSData)
 beforeFirstSyncComponentSelector = mkSelector "beforeFirstSyncComponent"
 
 -- | @Selector@ for @contentVersion@
-contentVersionSelector :: Selector
+contentVersionSelector :: Selector '[] (Id NSData)
 contentVersionSelector = mkSelector "contentVersion"
 
 -- | @Selector@ for @metadataVersion@
-metadataVersionSelector :: Selector
+metadataVersionSelector :: Selector '[] (Id NSData)
 metadataVersionSelector = mkSelector "metadataVersion"
 

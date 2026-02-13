@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.Virtualization.VZLinuxRosettaUnixSocketCachingOptions
   , init_
   , path
   , maximumPathLength
-  , initWithPath_errorSelector
   , initSelector
-  , pathSelector
+  , initWithPath_errorSelector
   , maximumPathLengthSelector
+  , pathSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,10 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPath:error:@
 initWithPath_error :: (IsVZLinuxRosettaUnixSocketCachingOptions vzLinuxRosettaUnixSocketCachingOptions, IsNSString path, IsNSError error_) => vzLinuxRosettaUnixSocketCachingOptions -> path -> error_ -> IO (Id VZLinuxRosettaUnixSocketCachingOptions)
-initWithPath_error vzLinuxRosettaUnixSocketCachingOptions  path error_ =
-  withObjCPtr path $ \raw_path ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vzLinuxRosettaUnixSocketCachingOptions (mkSelector "initWithPath:error:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithPath_error vzLinuxRosettaUnixSocketCachingOptions path error_ =
+  sendOwnedMessage vzLinuxRosettaUnixSocketCachingOptions initWithPath_errorSelector (toNSString path) (toNSError error_)
 
 -- | Initialize default options to be set on a VZLinuxRosettaDirectoryShare.
 --
@@ -60,8 +55,8 @@ initWithPath_error vzLinuxRosettaUnixSocketCachingOptions  path error_ =
 --
 -- ObjC selector: @- init@
 init_ :: IsVZLinuxRosettaUnixSocketCachingOptions vzLinuxRosettaUnixSocketCachingOptions => vzLinuxRosettaUnixSocketCachingOptions -> IO (Id VZLinuxRosettaUnixSocketCachingOptions)
-init_ vzLinuxRosettaUnixSocketCachingOptions  =
-    sendMsg vzLinuxRosettaUnixSocketCachingOptions (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzLinuxRosettaUnixSocketCachingOptions =
+  sendOwnedMessage vzLinuxRosettaUnixSocketCachingOptions initSelector
 
 -- | Path set by initWithPath.
 --
@@ -69,8 +64,8 @@ init_ vzLinuxRosettaUnixSocketCachingOptions  =
 --
 -- ObjC selector: @- path@
 path :: IsVZLinuxRosettaUnixSocketCachingOptions vzLinuxRosettaUnixSocketCachingOptions => vzLinuxRosettaUnixSocketCachingOptions -> IO (Id NSString)
-path vzLinuxRosettaUnixSocketCachingOptions  =
-    sendMsg vzLinuxRosettaUnixSocketCachingOptions (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path vzLinuxRosettaUnixSocketCachingOptions =
+  sendMessage vzLinuxRosettaUnixSocketCachingOptions pathSelector
 
 -- | The maximum allowed length of path, as defined by the sockaddr_un structure in Linux.
 --
@@ -79,25 +74,25 @@ maximumPathLength :: IO CULong
 maximumPathLength  =
   do
     cls' <- getRequiredClass "VZLinuxRosettaUnixSocketCachingOptions"
-    sendClassMsg cls' (mkSelector "maximumPathLength") retCULong []
+    sendClassMessage cls' maximumPathLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPath:error:@
-initWithPath_errorSelector :: Selector
+initWithPath_errorSelector :: Selector '[Id NSString, Id NSError] (Id VZLinuxRosettaUnixSocketCachingOptions)
 initWithPath_errorSelector = mkSelector "initWithPath:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZLinuxRosettaUnixSocketCachingOptions)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id NSString)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @maximumPathLength@
-maximumPathLengthSelector :: Selector
+maximumPathLengthSelector :: Selector '[] CULong
 maximumPathLengthSelector = mkSelector "maximumPathLength"
 

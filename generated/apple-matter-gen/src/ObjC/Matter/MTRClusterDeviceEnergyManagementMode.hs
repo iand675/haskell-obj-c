@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.Matter.MTRClusterDeviceEnergyManagementMode
   , new
   , initWithDevice_endpointID_queue
   , changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeSupportedModesWithParamsSelector
-  , readAttributeCurrentModeWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeCurrentModeWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeSupportedModesWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,121 +48,108 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- changeToModeWithParams:expectedValues:expectedValueInterval:completion:@
 changeToModeWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode, IsMTRDeviceEnergyManagementModeClusterChangeToModeParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterDeviceEnergyManagementMode -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-changeToModeWithParams_expectedValues_expectedValueInterval_completion mtrClusterDeviceEnergyManagementMode  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "changeToModeWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+changeToModeWithParams_expectedValues_expectedValueInterval_completion mtrClusterDeviceEnergyManagementMode params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterDeviceEnergyManagementMode changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRDeviceEnergyManagementModeClusterChangeToModeParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeSupportedModesWithParams:@
 readAttributeSupportedModesWithParams :: (IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode, IsMTRReadParams params) => mtrClusterDeviceEnergyManagementMode -> params -> IO (Id NSDictionary)
-readAttributeSupportedModesWithParams mtrClusterDeviceEnergyManagementMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "readAttributeSupportedModesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupportedModesWithParams mtrClusterDeviceEnergyManagementMode params =
+  sendMessage mtrClusterDeviceEnergyManagementMode readAttributeSupportedModesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentModeWithParams:@
 readAttributeCurrentModeWithParams :: (IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode, IsMTRReadParams params) => mtrClusterDeviceEnergyManagementMode -> params -> IO (Id NSDictionary)
-readAttributeCurrentModeWithParams mtrClusterDeviceEnergyManagementMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "readAttributeCurrentModeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentModeWithParams mtrClusterDeviceEnergyManagementMode params =
+  sendMessage mtrClusterDeviceEnergyManagementMode readAttributeCurrentModeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode, IsMTRReadParams params) => mtrClusterDeviceEnergyManagementMode -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterDeviceEnergyManagementMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterDeviceEnergyManagementMode params =
+  sendMessage mtrClusterDeviceEnergyManagementMode readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode, IsMTRReadParams params) => mtrClusterDeviceEnergyManagementMode -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterDeviceEnergyManagementMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterDeviceEnergyManagementMode params =
+  sendMessage mtrClusterDeviceEnergyManagementMode readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode, IsMTRReadParams params) => mtrClusterDeviceEnergyManagementMode -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterDeviceEnergyManagementMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterDeviceEnergyManagementMode params =
+  sendMessage mtrClusterDeviceEnergyManagementMode readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode, IsMTRReadParams params) => mtrClusterDeviceEnergyManagementMode -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterDeviceEnergyManagementMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterDeviceEnergyManagementMode params =
+  sendMessage mtrClusterDeviceEnergyManagementMode readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode, IsMTRReadParams params) => mtrClusterDeviceEnergyManagementMode -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterDeviceEnergyManagementMode  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterDeviceEnergyManagementMode params =
+  sendMessage mtrClusterDeviceEnergyManagementMode readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode => mtrClusterDeviceEnergyManagementMode -> IO (Id MTRClusterDeviceEnergyManagementMode)
-init_ mtrClusterDeviceEnergyManagementMode  =
-    sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterDeviceEnergyManagementMode =
+  sendOwnedMessage mtrClusterDeviceEnergyManagementMode initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterDeviceEnergyManagementMode)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterDeviceEnergyManagementMode"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterDeviceEnergyManagementMode mtrClusterDeviceEnergyManagementMode, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterDeviceEnergyManagementMode -> device -> endpointID -> queue -> IO (Id MTRClusterDeviceEnergyManagementMode)
-initWithDevice_endpointID_queue mtrClusterDeviceEnergyManagementMode  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterDeviceEnergyManagementMode (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterDeviceEnergyManagementMode device endpointID queue =
+  sendOwnedMessage mtrClusterDeviceEnergyManagementMode initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @changeToModeWithParams:expectedValues:expectedValueInterval:completion:@
-changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRDeviceEnergyManagementModeClusterChangeToModeParams, Id NSArray, Id NSNumber, Ptr ()] ()
 changeToModeWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "changeToModeWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeSupportedModesWithParams:@
-readAttributeSupportedModesWithParamsSelector :: Selector
+readAttributeSupportedModesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupportedModesWithParamsSelector = mkSelector "readAttributeSupportedModesWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentModeWithParams:@
-readAttributeCurrentModeWithParamsSelector :: Selector
+readAttributeCurrentModeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentModeWithParamsSelector = mkSelector "readAttributeCurrentModeWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterDeviceEnergyManagementMode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterDeviceEnergyManagementMode)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterDeviceEnergyManagementMode)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

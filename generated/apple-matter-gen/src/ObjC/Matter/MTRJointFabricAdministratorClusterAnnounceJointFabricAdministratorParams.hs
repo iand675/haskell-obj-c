@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRJointFabricAdministratorClusterAnnounceJointFabricAdminist
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , endpointIDSelector
-  , setEndpointIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setEndpointIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- endpointID@
 endpointID :: IsMTRJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams => mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams -> IO (Id NSNumber)
-endpointID mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams  =
-    sendMsg mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointID mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams =
+  sendMessage mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams endpointIDSelector
 
 -- | @- setEndpointID:@
 setEndpointID :: (IsMTRJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams, IsNSNumber value) => mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams -> value -> IO ()
-setEndpointID mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams (mkSelector "setEndpointID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpointID mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams value =
+  sendMessage mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams setEndpointIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setEndpointID mtrJointFabricAdministratorClusterAnnounceJointFabricAdministrator
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams => mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams  =
-    sendMsg mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams =
+  sendMessage mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrJointFabricAdministratorClusterAnnounceJointFabricAdmini
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams, IsNSNumber value) => mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams value =
+  sendMessage mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterAnnounceJointFabricAdm
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams => mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams  =
-    sendMsg mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams =
+  sendMessage mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrJointFabricAdministratorClusterAnnounceJointFabri
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams, IsNSNumber value) => mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams value =
+  sendMessage mtrJointFabricAdministratorClusterAnnounceJointFabricAdministratorParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @endpointID@
-endpointIDSelector :: Selector
+endpointIDSelector :: Selector '[] (Id NSNumber)
 endpointIDSelector = mkSelector "endpointID"
 
 -- | @Selector@ for @setEndpointID:@
-setEndpointIDSelector :: Selector
+setEndpointIDSelector :: Selector '[Id NSNumber] ()
 setEndpointIDSelector = mkSelector "setEndpointID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

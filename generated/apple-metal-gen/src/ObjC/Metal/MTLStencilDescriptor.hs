@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.Metal.MTLStencilDescriptor
   , setReadMask
   , writeMask
   , setWriteMask
-  , stencilCompareFunctionSelector
-  , setStencilCompareFunctionSelector
-  , stencilFailureOperationSelector
-  , setStencilFailureOperationSelector
   , depthFailureOperationSelector
-  , setDepthFailureOperationSelector
   , depthStencilPassOperationSelector
-  , setDepthStencilPassOperationSelector
   , readMaskSelector
+  , setDepthFailureOperationSelector
+  , setDepthStencilPassOperationSelector
   , setReadMaskSelector
-  , writeMaskSelector
+  , setStencilCompareFunctionSelector
+  , setStencilFailureOperationSelector
   , setWriteMaskSelector
+  , stencilCompareFunctionSelector
+  , stencilFailureOperationSelector
+  , writeMaskSelector
 
   -- * Enum types
   , MTLCompareFunction(MTLCompareFunction)
@@ -54,15 +55,11 @@ module ObjC.Metal.MTLStencilDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,125 +69,125 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- stencilCompareFunction@
 stencilCompareFunction :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> IO MTLCompareFunction
-stencilCompareFunction mtlStencilDescriptor  =
-    fmap (coerce :: CULong -> MTLCompareFunction) $ sendMsg mtlStencilDescriptor (mkSelector "stencilCompareFunction") retCULong []
+stencilCompareFunction mtlStencilDescriptor =
+  sendMessage mtlStencilDescriptor stencilCompareFunctionSelector
 
 -- | @- setStencilCompareFunction:@
 setStencilCompareFunction :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> MTLCompareFunction -> IO ()
-setStencilCompareFunction mtlStencilDescriptor  value =
-    sendMsg mtlStencilDescriptor (mkSelector "setStencilCompareFunction:") retVoid [argCULong (coerce value)]
+setStencilCompareFunction mtlStencilDescriptor value =
+  sendMessage mtlStencilDescriptor setStencilCompareFunctionSelector value
 
 -- | Stencil is tested first.  stencilFailureOperation declares how the stencil buffer is updated when the stencil test fails.
 --
 -- ObjC selector: @- stencilFailureOperation@
 stencilFailureOperation :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> IO MTLStencilOperation
-stencilFailureOperation mtlStencilDescriptor  =
-    fmap (coerce :: CULong -> MTLStencilOperation) $ sendMsg mtlStencilDescriptor (mkSelector "stencilFailureOperation") retCULong []
+stencilFailureOperation mtlStencilDescriptor =
+  sendMessage mtlStencilDescriptor stencilFailureOperationSelector
 
 -- | Stencil is tested first.  stencilFailureOperation declares how the stencil buffer is updated when the stencil test fails.
 --
 -- ObjC selector: @- setStencilFailureOperation:@
 setStencilFailureOperation :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> MTLStencilOperation -> IO ()
-setStencilFailureOperation mtlStencilDescriptor  value =
-    sendMsg mtlStencilDescriptor (mkSelector "setStencilFailureOperation:") retVoid [argCULong (coerce value)]
+setStencilFailureOperation mtlStencilDescriptor value =
+  sendMessage mtlStencilDescriptor setStencilFailureOperationSelector value
 
 -- | If stencil passes, depth is tested next.  Declare what happens when the depth test fails.
 --
 -- ObjC selector: @- depthFailureOperation@
 depthFailureOperation :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> IO MTLStencilOperation
-depthFailureOperation mtlStencilDescriptor  =
-    fmap (coerce :: CULong -> MTLStencilOperation) $ sendMsg mtlStencilDescriptor (mkSelector "depthFailureOperation") retCULong []
+depthFailureOperation mtlStencilDescriptor =
+  sendMessage mtlStencilDescriptor depthFailureOperationSelector
 
 -- | If stencil passes, depth is tested next.  Declare what happens when the depth test fails.
 --
 -- ObjC selector: @- setDepthFailureOperation:@
 setDepthFailureOperation :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> MTLStencilOperation -> IO ()
-setDepthFailureOperation mtlStencilDescriptor  value =
-    sendMsg mtlStencilDescriptor (mkSelector "setDepthFailureOperation:") retVoid [argCULong (coerce value)]
+setDepthFailureOperation mtlStencilDescriptor value =
+  sendMessage mtlStencilDescriptor setDepthFailureOperationSelector value
 
 -- | If both the stencil and depth tests pass, declare how the stencil buffer is updated.
 --
 -- ObjC selector: @- depthStencilPassOperation@
 depthStencilPassOperation :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> IO MTLStencilOperation
-depthStencilPassOperation mtlStencilDescriptor  =
-    fmap (coerce :: CULong -> MTLStencilOperation) $ sendMsg mtlStencilDescriptor (mkSelector "depthStencilPassOperation") retCULong []
+depthStencilPassOperation mtlStencilDescriptor =
+  sendMessage mtlStencilDescriptor depthStencilPassOperationSelector
 
 -- | If both the stencil and depth tests pass, declare how the stencil buffer is updated.
 --
 -- ObjC selector: @- setDepthStencilPassOperation:@
 setDepthStencilPassOperation :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> MTLStencilOperation -> IO ()
-setDepthStencilPassOperation mtlStencilDescriptor  value =
-    sendMsg mtlStencilDescriptor (mkSelector "setDepthStencilPassOperation:") retVoid [argCULong (coerce value)]
+setDepthStencilPassOperation mtlStencilDescriptor value =
+  sendMessage mtlStencilDescriptor setDepthStencilPassOperationSelector value
 
 -- | @- readMask@
 readMask :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> IO CUInt
-readMask mtlStencilDescriptor  =
-    sendMsg mtlStencilDescriptor (mkSelector "readMask") retCUInt []
+readMask mtlStencilDescriptor =
+  sendMessage mtlStencilDescriptor readMaskSelector
 
 -- | @- setReadMask:@
 setReadMask :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> CUInt -> IO ()
-setReadMask mtlStencilDescriptor  value =
-    sendMsg mtlStencilDescriptor (mkSelector "setReadMask:") retVoid [argCUInt value]
+setReadMask mtlStencilDescriptor value =
+  sendMessage mtlStencilDescriptor setReadMaskSelector value
 
 -- | @- writeMask@
 writeMask :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> IO CUInt
-writeMask mtlStencilDescriptor  =
-    sendMsg mtlStencilDescriptor (mkSelector "writeMask") retCUInt []
+writeMask mtlStencilDescriptor =
+  sendMessage mtlStencilDescriptor writeMaskSelector
 
 -- | @- setWriteMask:@
 setWriteMask :: IsMTLStencilDescriptor mtlStencilDescriptor => mtlStencilDescriptor -> CUInt -> IO ()
-setWriteMask mtlStencilDescriptor  value =
-    sendMsg mtlStencilDescriptor (mkSelector "setWriteMask:") retVoid [argCUInt value]
+setWriteMask mtlStencilDescriptor value =
+  sendMessage mtlStencilDescriptor setWriteMaskSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stencilCompareFunction@
-stencilCompareFunctionSelector :: Selector
+stencilCompareFunctionSelector :: Selector '[] MTLCompareFunction
 stencilCompareFunctionSelector = mkSelector "stencilCompareFunction"
 
 -- | @Selector@ for @setStencilCompareFunction:@
-setStencilCompareFunctionSelector :: Selector
+setStencilCompareFunctionSelector :: Selector '[MTLCompareFunction] ()
 setStencilCompareFunctionSelector = mkSelector "setStencilCompareFunction:"
 
 -- | @Selector@ for @stencilFailureOperation@
-stencilFailureOperationSelector :: Selector
+stencilFailureOperationSelector :: Selector '[] MTLStencilOperation
 stencilFailureOperationSelector = mkSelector "stencilFailureOperation"
 
 -- | @Selector@ for @setStencilFailureOperation:@
-setStencilFailureOperationSelector :: Selector
+setStencilFailureOperationSelector :: Selector '[MTLStencilOperation] ()
 setStencilFailureOperationSelector = mkSelector "setStencilFailureOperation:"
 
 -- | @Selector@ for @depthFailureOperation@
-depthFailureOperationSelector :: Selector
+depthFailureOperationSelector :: Selector '[] MTLStencilOperation
 depthFailureOperationSelector = mkSelector "depthFailureOperation"
 
 -- | @Selector@ for @setDepthFailureOperation:@
-setDepthFailureOperationSelector :: Selector
+setDepthFailureOperationSelector :: Selector '[MTLStencilOperation] ()
 setDepthFailureOperationSelector = mkSelector "setDepthFailureOperation:"
 
 -- | @Selector@ for @depthStencilPassOperation@
-depthStencilPassOperationSelector :: Selector
+depthStencilPassOperationSelector :: Selector '[] MTLStencilOperation
 depthStencilPassOperationSelector = mkSelector "depthStencilPassOperation"
 
 -- | @Selector@ for @setDepthStencilPassOperation:@
-setDepthStencilPassOperationSelector :: Selector
+setDepthStencilPassOperationSelector :: Selector '[MTLStencilOperation] ()
 setDepthStencilPassOperationSelector = mkSelector "setDepthStencilPassOperation:"
 
 -- | @Selector@ for @readMask@
-readMaskSelector :: Selector
+readMaskSelector :: Selector '[] CUInt
 readMaskSelector = mkSelector "readMask"
 
 -- | @Selector@ for @setReadMask:@
-setReadMaskSelector :: Selector
+setReadMaskSelector :: Selector '[CUInt] ()
 setReadMaskSelector = mkSelector "setReadMask:"
 
 -- | @Selector@ for @writeMask@
-writeMaskSelector :: Selector
+writeMaskSelector :: Selector '[] CUInt
 writeMaskSelector = mkSelector "writeMask"
 
 -- | @Selector@ for @setWriteMask:@
-setWriteMaskSelector :: Selector
+setWriteMaskSelector :: Selector '[CUInt] ()
 setWriteMaskSelector = mkSelector "setWriteMask:"
 

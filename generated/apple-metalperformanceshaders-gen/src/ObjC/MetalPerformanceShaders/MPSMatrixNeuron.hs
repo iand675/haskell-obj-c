@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,22 +40,22 @@ module ObjC.MetalPerformanceShaders.MPSMatrixNeuron
   , setSourceInputFeatureChannels
   , alpha
   , setAlpha
-  , setNeuronType_parameterA_parameterB_parameterCSelector
-  , neuronTypeSelector
+  , alphaSelector
+  , copyWithZone_deviceSelector
+  , encodeToCommandBuffer_inputMatrix_biasVector_resultMatrixSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , neuronParameterASelector
   , neuronParameterBSelector
   , neuronParameterCSelector
+  , neuronTypeSelector
+  , setAlphaSelector
   , setNeuronToPReLUWithParametersASelector
-  , initWithDeviceSelector
-  , encodeToCommandBuffer_inputMatrix_biasVector_resultMatrixSelector
-  , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
-  , sourceNumberOfFeatureVectorsSelector
+  , setNeuronType_parameterA_parameterB_parameterCSelector
+  , setSourceInputFeatureChannelsSelector
   , setSourceNumberOfFeatureVectorsSelector
   , sourceInputFeatureChannelsSelector
-  , setSourceInputFeatureChannelsSelector
-  , alphaSelector
-  , setAlphaSelector
+  , sourceNumberOfFeatureVectorsSelector
 
   -- * Enum types
   , MPSCNNNeuronType(MPSCNNNeuronType)
@@ -78,15 +79,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixNeuron
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -108,36 +105,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setNeuronType:parameterA:parameterB:parameterC:@
 setNeuronType_parameterA_parameterB_parameterC :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> MPSCNNNeuronType -> CFloat -> CFloat -> CFloat -> IO ()
-setNeuronType_parameterA_parameterB_parameterC mpsMatrixNeuron  neuronType parameterA parameterB parameterC =
-    sendMsg mpsMatrixNeuron (mkSelector "setNeuronType:parameterA:parameterB:parameterC:") retVoid [argCInt (coerce neuronType), argCFloat parameterA, argCFloat parameterB, argCFloat parameterC]
+setNeuronType_parameterA_parameterB_parameterC mpsMatrixNeuron neuronType parameterA parameterB parameterC =
+  sendMessage mpsMatrixNeuron setNeuronType_parameterA_parameterB_parameterCSelector neuronType parameterA parameterB parameterC
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronType@
 neuronType :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> IO MPSCNNNeuronType
-neuronType mpsMatrixNeuron  =
-    fmap (coerce :: CInt -> MPSCNNNeuronType) $ sendMsg mpsMatrixNeuron (mkSelector "neuronType") retCInt []
+neuronType mpsMatrixNeuron =
+  sendMessage mpsMatrixNeuron neuronTypeSelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronParameterA@
 neuronParameterA :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> IO CFloat
-neuronParameterA mpsMatrixNeuron  =
-    sendMsg mpsMatrixNeuron (mkSelector "neuronParameterA") retCFloat []
+neuronParameterA mpsMatrixNeuron =
+  sendMessage mpsMatrixNeuron neuronParameterASelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronParameterB@
 neuronParameterB :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> IO CFloat
-neuronParameterB mpsMatrixNeuron  =
-    sendMsg mpsMatrixNeuron (mkSelector "neuronParameterB") retCFloat []
+neuronParameterB mpsMatrixNeuron =
+  sendMessage mpsMatrixNeuron neuronParameterBSelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronParameterC@
 neuronParameterC :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> IO CFloat
-neuronParameterC mpsMatrixNeuron  =
-    sendMsg mpsMatrixNeuron (mkSelector "neuronParameterC") retCFloat []
+neuronParameterC mpsMatrixNeuron =
+  sendMessage mpsMatrixNeuron neuronParameterCSelector
 
 -- | Add per output value neuron parameters A for PReLu neuron activation functions.
 --
@@ -155,14 +152,13 @@ neuronParameterC mpsMatrixNeuron  =
 --
 -- ObjC selector: @- setNeuronToPReLUWithParametersA:@
 setNeuronToPReLUWithParametersA :: (IsMPSMatrixNeuron mpsMatrixNeuron, IsNSData a) => mpsMatrixNeuron -> a -> IO ()
-setNeuronToPReLUWithParametersA mpsMatrixNeuron  a =
-  withObjCPtr a $ \raw_a ->
-      sendMsg mpsMatrixNeuron (mkSelector "setNeuronToPReLUWithParametersA:") retVoid [argPtr (castPtr raw_a :: Ptr ())]
+setNeuronToPReLUWithParametersA mpsMatrixNeuron a =
+  sendMessage mpsMatrixNeuron setNeuronToPReLUWithParametersASelector (toNSData a)
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> RawId -> IO (Id MPSMatrixNeuron)
-initWithDevice mpsMatrixNeuron  device =
-    sendMsg mpsMatrixNeuron (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixNeuron device =
+  sendOwnedMessage mpsMatrixNeuron initWithDeviceSelector device
 
 -- | Encode a MPSMatrixNeuron object to a command buffer.
 --
@@ -180,11 +176,8 @@ initWithDevice mpsMatrixNeuron  device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:inputMatrix:biasVector:resultMatrix:@
 encodeToCommandBuffer_inputMatrix_biasVector_resultMatrix :: (IsMPSMatrixNeuron mpsMatrixNeuron, IsMPSMatrix inputMatrix, IsMPSVector biasVector, IsMPSMatrix resultMatrix) => mpsMatrixNeuron -> RawId -> inputMatrix -> biasVector -> resultMatrix -> IO ()
-encodeToCommandBuffer_inputMatrix_biasVector_resultMatrix mpsMatrixNeuron  commandBuffer inputMatrix biasVector resultMatrix =
-  withObjCPtr inputMatrix $ \raw_inputMatrix ->
-    withObjCPtr biasVector $ \raw_biasVector ->
-      withObjCPtr resultMatrix $ \raw_resultMatrix ->
-          sendMsg mpsMatrixNeuron (mkSelector "encodeToCommandBuffer:inputMatrix:biasVector:resultMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_inputMatrix :: Ptr ()), argPtr (castPtr raw_biasVector :: Ptr ()), argPtr (castPtr raw_resultMatrix :: Ptr ())]
+encodeToCommandBuffer_inputMatrix_biasVector_resultMatrix mpsMatrixNeuron commandBuffer inputMatrix biasVector resultMatrix =
+  sendMessage mpsMatrixNeuron encodeToCommandBuffer_inputMatrix_biasVector_resultMatrixSelector commandBuffer (toMPSMatrix inputMatrix) (toMPSVector biasVector) (toMPSMatrix resultMatrix)
 
 -- | NSSecureCoding compatability
 --
@@ -198,9 +191,8 @@ encodeToCommandBuffer_inputMatrix_biasVector_resultMatrix mpsMatrixNeuron  comma
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixNeuron mpsMatrixNeuron, IsNSCoder aDecoder) => mpsMatrixNeuron -> aDecoder -> RawId -> IO (Id MPSMatrixNeuron)
-initWithCoder_device mpsMatrixNeuron  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixNeuron (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixNeuron aDecoder device =
+  sendOwnedMessage mpsMatrixNeuron initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Make a copy of this kernel for a new device -
 --
@@ -214,8 +206,8 @@ initWithCoder_device mpsMatrixNeuron  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> Ptr () -> RawId -> IO (Id MPSMatrixNeuron)
-copyWithZone_device mpsMatrixNeuron  zone device =
-    sendMsg mpsMatrixNeuron (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsMatrixNeuron zone device =
+  sendOwnedMessage mpsMatrixNeuron copyWithZone_deviceSelector zone device
 
 -- | sourceNumberOfFeatureVectors
 --
@@ -223,8 +215,8 @@ copyWithZone_device mpsMatrixNeuron  zone device =
 --
 -- ObjC selector: @- sourceNumberOfFeatureVectors@
 sourceNumberOfFeatureVectors :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> IO CULong
-sourceNumberOfFeatureVectors mpsMatrixNeuron  =
-    sendMsg mpsMatrixNeuron (mkSelector "sourceNumberOfFeatureVectors") retCULong []
+sourceNumberOfFeatureVectors mpsMatrixNeuron =
+  sendMessage mpsMatrixNeuron sourceNumberOfFeatureVectorsSelector
 
 -- | sourceNumberOfFeatureVectors
 --
@@ -232,8 +224,8 @@ sourceNumberOfFeatureVectors mpsMatrixNeuron  =
 --
 -- ObjC selector: @- setSourceNumberOfFeatureVectors:@
 setSourceNumberOfFeatureVectors :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> CULong -> IO ()
-setSourceNumberOfFeatureVectors mpsMatrixNeuron  value =
-    sendMsg mpsMatrixNeuron (mkSelector "setSourceNumberOfFeatureVectors:") retVoid [argCULong value]
+setSourceNumberOfFeatureVectors mpsMatrixNeuron value =
+  sendMessage mpsMatrixNeuron setSourceNumberOfFeatureVectorsSelector value
 
 -- | sourceInputFeatureChannels
 --
@@ -241,8 +233,8 @@ setSourceNumberOfFeatureVectors mpsMatrixNeuron  value =
 --
 -- ObjC selector: @- sourceInputFeatureChannels@
 sourceInputFeatureChannels :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> IO CULong
-sourceInputFeatureChannels mpsMatrixNeuron  =
-    sendMsg mpsMatrixNeuron (mkSelector "sourceInputFeatureChannels") retCULong []
+sourceInputFeatureChannels mpsMatrixNeuron =
+  sendMessage mpsMatrixNeuron sourceInputFeatureChannelsSelector
 
 -- | sourceInputFeatureChannels
 --
@@ -250,8 +242,8 @@ sourceInputFeatureChannels mpsMatrixNeuron  =
 --
 -- ObjC selector: @- setSourceInputFeatureChannels:@
 setSourceInputFeatureChannels :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> CULong -> IO ()
-setSourceInputFeatureChannels mpsMatrixNeuron  value =
-    sendMsg mpsMatrixNeuron (mkSelector "setSourceInputFeatureChannels:") retVoid [argCULong value]
+setSourceInputFeatureChannels mpsMatrixNeuron value =
+  sendMessage mpsMatrixNeuron setSourceInputFeatureChannelsSelector value
 
 -- | alpha
 --
@@ -259,8 +251,8 @@ setSourceInputFeatureChannels mpsMatrixNeuron  value =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> IO CDouble
-alpha mpsMatrixNeuron  =
-    sendMsg mpsMatrixNeuron (mkSelector "alpha") retCDouble []
+alpha mpsMatrixNeuron =
+  sendMessage mpsMatrixNeuron alphaSelector
 
 -- | alpha
 --
@@ -268,74 +260,74 @@ alpha mpsMatrixNeuron  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSMatrixNeuron mpsMatrixNeuron => mpsMatrixNeuron -> CDouble -> IO ()
-setAlpha mpsMatrixNeuron  value =
-    sendMsg mpsMatrixNeuron (mkSelector "setAlpha:") retVoid [argCDouble value]
+setAlpha mpsMatrixNeuron value =
+  sendMessage mpsMatrixNeuron setAlphaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setNeuronType:parameterA:parameterB:parameterC:@
-setNeuronType_parameterA_parameterB_parameterCSelector :: Selector
+setNeuronType_parameterA_parameterB_parameterCSelector :: Selector '[MPSCNNNeuronType, CFloat, CFloat, CFloat] ()
 setNeuronType_parameterA_parameterB_parameterCSelector = mkSelector "setNeuronType:parameterA:parameterB:parameterC:"
 
 -- | @Selector@ for @neuronType@
-neuronTypeSelector :: Selector
+neuronTypeSelector :: Selector '[] MPSCNNNeuronType
 neuronTypeSelector = mkSelector "neuronType"
 
 -- | @Selector@ for @neuronParameterA@
-neuronParameterASelector :: Selector
+neuronParameterASelector :: Selector '[] CFloat
 neuronParameterASelector = mkSelector "neuronParameterA"
 
 -- | @Selector@ for @neuronParameterB@
-neuronParameterBSelector :: Selector
+neuronParameterBSelector :: Selector '[] CFloat
 neuronParameterBSelector = mkSelector "neuronParameterB"
 
 -- | @Selector@ for @neuronParameterC@
-neuronParameterCSelector :: Selector
+neuronParameterCSelector :: Selector '[] CFloat
 neuronParameterCSelector = mkSelector "neuronParameterC"
 
 -- | @Selector@ for @setNeuronToPReLUWithParametersA:@
-setNeuronToPReLUWithParametersASelector :: Selector
+setNeuronToPReLUWithParametersASelector :: Selector '[Id NSData] ()
 setNeuronToPReLUWithParametersASelector = mkSelector "setNeuronToPReLUWithParametersA:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixNeuron)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inputMatrix:biasVector:resultMatrix:@
-encodeToCommandBuffer_inputMatrix_biasVector_resultMatrixSelector :: Selector
+encodeToCommandBuffer_inputMatrix_biasVector_resultMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSVector, Id MPSMatrix] ()
 encodeToCommandBuffer_inputMatrix_biasVector_resultMatrixSelector = mkSelector "encodeToCommandBuffer:inputMatrix:biasVector:resultMatrix:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixNeuron)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSMatrixNeuron)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @sourceNumberOfFeatureVectors@
-sourceNumberOfFeatureVectorsSelector :: Selector
+sourceNumberOfFeatureVectorsSelector :: Selector '[] CULong
 sourceNumberOfFeatureVectorsSelector = mkSelector "sourceNumberOfFeatureVectors"
 
 -- | @Selector@ for @setSourceNumberOfFeatureVectors:@
-setSourceNumberOfFeatureVectorsSelector :: Selector
+setSourceNumberOfFeatureVectorsSelector :: Selector '[CULong] ()
 setSourceNumberOfFeatureVectorsSelector = mkSelector "setSourceNumberOfFeatureVectors:"
 
 -- | @Selector@ for @sourceInputFeatureChannels@
-sourceInputFeatureChannelsSelector :: Selector
+sourceInputFeatureChannelsSelector :: Selector '[] CULong
 sourceInputFeatureChannelsSelector = mkSelector "sourceInputFeatureChannels"
 
 -- | @Selector@ for @setSourceInputFeatureChannels:@
-setSourceInputFeatureChannelsSelector :: Selector
+setSourceInputFeatureChannelsSelector :: Selector '[CULong] ()
 setSourceInputFeatureChannelsSelector = mkSelector "setSourceInputFeatureChannels:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CDouble
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CDouble] ()
 setAlphaSelector = mkSelector "setAlpha:"
 

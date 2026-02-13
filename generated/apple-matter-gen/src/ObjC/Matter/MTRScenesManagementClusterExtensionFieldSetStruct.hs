@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRScenesManagementClusterExtensionFieldSetStruct
   , setClusterID
   , attributeValueList
   , setAttributeValueList
-  , clusterIDSelector
-  , setClusterIDSelector
   , attributeValueListSelector
+  , clusterIDSelector
   , setAttributeValueListSelector
+  , setClusterIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- clusterID@
 clusterID :: IsMTRScenesManagementClusterExtensionFieldSetStruct mtrScenesManagementClusterExtensionFieldSetStruct => mtrScenesManagementClusterExtensionFieldSetStruct -> IO (Id NSNumber)
-clusterID mtrScenesManagementClusterExtensionFieldSetStruct  =
-    sendMsg mtrScenesManagementClusterExtensionFieldSetStruct (mkSelector "clusterID") (retPtr retVoid) [] >>= retainedObject . castPtr
+clusterID mtrScenesManagementClusterExtensionFieldSetStruct =
+  sendMessage mtrScenesManagementClusterExtensionFieldSetStruct clusterIDSelector
 
 -- | @- setClusterID:@
 setClusterID :: (IsMTRScenesManagementClusterExtensionFieldSetStruct mtrScenesManagementClusterExtensionFieldSetStruct, IsNSNumber value) => mtrScenesManagementClusterExtensionFieldSetStruct -> value -> IO ()
-setClusterID mtrScenesManagementClusterExtensionFieldSetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterExtensionFieldSetStruct (mkSelector "setClusterID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClusterID mtrScenesManagementClusterExtensionFieldSetStruct value =
+  sendMessage mtrScenesManagementClusterExtensionFieldSetStruct setClusterIDSelector (toNSNumber value)
 
 -- | @- attributeValueList@
 attributeValueList :: IsMTRScenesManagementClusterExtensionFieldSetStruct mtrScenesManagementClusterExtensionFieldSetStruct => mtrScenesManagementClusterExtensionFieldSetStruct -> IO (Id NSArray)
-attributeValueList mtrScenesManagementClusterExtensionFieldSetStruct  =
-    sendMsg mtrScenesManagementClusterExtensionFieldSetStruct (mkSelector "attributeValueList") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeValueList mtrScenesManagementClusterExtensionFieldSetStruct =
+  sendMessage mtrScenesManagementClusterExtensionFieldSetStruct attributeValueListSelector
 
 -- | @- setAttributeValueList:@
 setAttributeValueList :: (IsMTRScenesManagementClusterExtensionFieldSetStruct mtrScenesManagementClusterExtensionFieldSetStruct, IsNSArray value) => mtrScenesManagementClusterExtensionFieldSetStruct -> value -> IO ()
-setAttributeValueList mtrScenesManagementClusterExtensionFieldSetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterExtensionFieldSetStruct (mkSelector "setAttributeValueList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributeValueList mtrScenesManagementClusterExtensionFieldSetStruct value =
+  sendMessage mtrScenesManagementClusterExtensionFieldSetStruct setAttributeValueListSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @clusterID@
-clusterIDSelector :: Selector
+clusterIDSelector :: Selector '[] (Id NSNumber)
 clusterIDSelector = mkSelector "clusterID"
 
 -- | @Selector@ for @setClusterID:@
-setClusterIDSelector :: Selector
+setClusterIDSelector :: Selector '[Id NSNumber] ()
 setClusterIDSelector = mkSelector "setClusterID:"
 
 -- | @Selector@ for @attributeValueList@
-attributeValueListSelector :: Selector
+attributeValueListSelector :: Selector '[] (Id NSArray)
 attributeValueListSelector = mkSelector "attributeValueList"
 
 -- | @Selector@ for @setAttributeValueList:@
-setAttributeValueListSelector :: Selector
+setAttributeValueListSelector :: Selector '[Id NSArray] ()
 setAttributeValueListSelector = mkSelector "setAttributeValueList:"
 

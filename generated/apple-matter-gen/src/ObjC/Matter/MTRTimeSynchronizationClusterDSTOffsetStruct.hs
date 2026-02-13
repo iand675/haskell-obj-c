@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.Matter.MTRTimeSynchronizationClusterDSTOffsetStruct
   , setValidUntil
   , offsetSelector
   , setOffsetSelector
-  , validStartingSelector
   , setValidStartingSelector
-  , validUntilSelector
   , setValidUntilSelector
+  , validStartingSelector
+  , validUntilSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- offset@
 offset :: IsMTRTimeSynchronizationClusterDSTOffsetStruct mtrTimeSynchronizationClusterDSTOffsetStruct => mtrTimeSynchronizationClusterDSTOffsetStruct -> IO (Id NSNumber)
-offset mtrTimeSynchronizationClusterDSTOffsetStruct  =
-    sendMsg mtrTimeSynchronizationClusterDSTOffsetStruct (mkSelector "offset") (retPtr retVoid) [] >>= retainedObject . castPtr
+offset mtrTimeSynchronizationClusterDSTOffsetStruct =
+  sendMessage mtrTimeSynchronizationClusterDSTOffsetStruct offsetSelector
 
 -- | @- setOffset:@
 setOffset :: (IsMTRTimeSynchronizationClusterDSTOffsetStruct mtrTimeSynchronizationClusterDSTOffsetStruct, IsNSNumber value) => mtrTimeSynchronizationClusterDSTOffsetStruct -> value -> IO ()
-setOffset mtrTimeSynchronizationClusterDSTOffsetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterDSTOffsetStruct (mkSelector "setOffset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOffset mtrTimeSynchronizationClusterDSTOffsetStruct value =
+  sendMessage mtrTimeSynchronizationClusterDSTOffsetStruct setOffsetSelector (toNSNumber value)
 
 -- | @- validStarting@
 validStarting :: IsMTRTimeSynchronizationClusterDSTOffsetStruct mtrTimeSynchronizationClusterDSTOffsetStruct => mtrTimeSynchronizationClusterDSTOffsetStruct -> IO (Id NSNumber)
-validStarting mtrTimeSynchronizationClusterDSTOffsetStruct  =
-    sendMsg mtrTimeSynchronizationClusterDSTOffsetStruct (mkSelector "validStarting") (retPtr retVoid) [] >>= retainedObject . castPtr
+validStarting mtrTimeSynchronizationClusterDSTOffsetStruct =
+  sendMessage mtrTimeSynchronizationClusterDSTOffsetStruct validStartingSelector
 
 -- | @- setValidStarting:@
 setValidStarting :: (IsMTRTimeSynchronizationClusterDSTOffsetStruct mtrTimeSynchronizationClusterDSTOffsetStruct, IsNSNumber value) => mtrTimeSynchronizationClusterDSTOffsetStruct -> value -> IO ()
-setValidStarting mtrTimeSynchronizationClusterDSTOffsetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterDSTOffsetStruct (mkSelector "setValidStarting:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValidStarting mtrTimeSynchronizationClusterDSTOffsetStruct value =
+  sendMessage mtrTimeSynchronizationClusterDSTOffsetStruct setValidStartingSelector (toNSNumber value)
 
 -- | @- validUntil@
 validUntil :: IsMTRTimeSynchronizationClusterDSTOffsetStruct mtrTimeSynchronizationClusterDSTOffsetStruct => mtrTimeSynchronizationClusterDSTOffsetStruct -> IO (Id NSNumber)
-validUntil mtrTimeSynchronizationClusterDSTOffsetStruct  =
-    sendMsg mtrTimeSynchronizationClusterDSTOffsetStruct (mkSelector "validUntil") (retPtr retVoid) [] >>= retainedObject . castPtr
+validUntil mtrTimeSynchronizationClusterDSTOffsetStruct =
+  sendMessage mtrTimeSynchronizationClusterDSTOffsetStruct validUntilSelector
 
 -- | @- setValidUntil:@
 setValidUntil :: (IsMTRTimeSynchronizationClusterDSTOffsetStruct mtrTimeSynchronizationClusterDSTOffsetStruct, IsNSNumber value) => mtrTimeSynchronizationClusterDSTOffsetStruct -> value -> IO ()
-setValidUntil mtrTimeSynchronizationClusterDSTOffsetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterDSTOffsetStruct (mkSelector "setValidUntil:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValidUntil mtrTimeSynchronizationClusterDSTOffsetStruct value =
+  sendMessage mtrTimeSynchronizationClusterDSTOffsetStruct setValidUntilSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] (Id NSNumber)
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @setOffset:@
-setOffsetSelector :: Selector
+setOffsetSelector :: Selector '[Id NSNumber] ()
 setOffsetSelector = mkSelector "setOffset:"
 
 -- | @Selector@ for @validStarting@
-validStartingSelector :: Selector
+validStartingSelector :: Selector '[] (Id NSNumber)
 validStartingSelector = mkSelector "validStarting"
 
 -- | @Selector@ for @setValidStarting:@
-setValidStartingSelector :: Selector
+setValidStartingSelector :: Selector '[Id NSNumber] ()
 setValidStartingSelector = mkSelector "setValidStarting:"
 
 -- | @Selector@ for @validUntil@
-validUntilSelector :: Selector
+validUntilSelector :: Selector '[] (Id NSNumber)
 validUntilSelector = mkSelector "validUntil"
 
 -- | @Selector@ for @setValidUntil:@
-setValidUntilSelector :: Selector
+setValidUntilSelector :: Selector '[Id NSNumber] ()
 setValidUntilSelector = mkSelector "setValidUntil:"
 

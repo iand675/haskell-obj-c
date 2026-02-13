@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,36 +32,32 @@ module ObjC.Collaboration.CBIdentity
   , persistentReference
   , hidden
   , csIdentity
-  , identityWithName_authoritySelector
-  , identityWithUniqueIdentifier_authoritySelector
-  , identityWithUUIDString_authoritySelector
-  , identityWithPersistentReferenceSelector
-  , identityWithCSIdentitySelector
-  , isMemberOfGroupSelector
+  , aliasesSelector
   , authoritySelector
+  , csIdentitySelector
+  , emailAddressSelector
+  , fullNameSelector
+  , hiddenSelector
+  , identityWithCSIdentitySelector
+  , identityWithName_authoritySelector
+  , identityWithPersistentReferenceSelector
+  , identityWithUUIDString_authoritySelector
+  , identityWithUniqueIdentifier_authoritySelector
+  , imageSelector
+  , isMemberOfGroupSelector
+  , persistentReferenceSelector
+  , posixNameSelector
   , uniqueIdentifierSelector
   , uuidStringSelector
-  , fullNameSelector
-  , posixNameSelector
-  , aliasesSelector
-  , emailAddressSelector
-  , imageSelector
-  , persistentReferenceSelector
-  , hiddenSelector
-  , csIdentitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,18 +80,14 @@ identityWithName_authority :: (IsNSString name, IsCBIdentityAuthority authority)
 identityWithName_authority name authority =
   do
     cls' <- getRequiredClass "CBIdentity"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr authority $ \raw_authority ->
-        sendClassMsg cls' (mkSelector "identityWithName:authority:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_authority :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' identityWithName_authoritySelector (toNSString name) (toCBIdentityAuthority authority)
 
 -- | @+ identityWithUniqueIdentifier:authority:@
 identityWithUniqueIdentifier_authority :: (IsNSUUID uuid, IsCBIdentityAuthority authority) => uuid -> authority -> IO (Id CBIdentity)
 identityWithUniqueIdentifier_authority uuid authority =
   do
     cls' <- getRequiredClass "CBIdentity"
-    withObjCPtr uuid $ \raw_uuid ->
-      withObjCPtr authority $ \raw_authority ->
-        sendClassMsg cls' (mkSelector "identityWithUniqueIdentifier:authority:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ()), argPtr (castPtr raw_authority :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' identityWithUniqueIdentifier_authoritySelector (toNSUUID uuid) (toCBIdentityAuthority authority)
 
 -- | Returns the identity object with the given UUID from the specified identity authority.
 --
@@ -109,9 +102,7 @@ identityWithUUIDString_authority :: (IsNSString uuid, IsCBIdentityAuthority auth
 identityWithUUIDString_authority uuid authority =
   do
     cls' <- getRequiredClass "CBIdentity"
-    withObjCPtr uuid $ \raw_uuid ->
-      withObjCPtr authority $ \raw_authority ->
-        sendClassMsg cls' (mkSelector "identityWithUUIDString:authority:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ()), argPtr (castPtr raw_authority :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' identityWithUUIDString_authoritySelector (toNSString uuid) (toCBIdentityAuthority authority)
 
 -- | Returns the identity object matching the persistent reference data.
 --
@@ -126,8 +117,7 @@ identityWithPersistentReference :: IsNSData data_ => data_ -> IO (Id CBIdentity)
 identityWithPersistentReference data_ =
   do
     cls' <- getRequiredClass "CBIdentity"
-    withObjCPtr data_ $ \raw_data_ ->
-      sendClassMsg cls' (mkSelector "identityWithPersistentReference:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' identityWithPersistentReferenceSelector (toNSData data_)
 
 -- | Returns an identity object created from the specified Core Services Identity opaque object.
 --
@@ -142,7 +132,7 @@ identityWithCSIdentity :: Ptr () -> IO (Id CBIdentity)
 identityWithCSIdentity csIdentity =
   do
     cls' <- getRequiredClass "CBIdentity"
-    sendClassMsg cls' (mkSelector "identityWithCSIdentity:") (retPtr retVoid) [argPtr csIdentity] >>= retainedObject . castPtr
+    sendClassMessage cls' identityWithCSIdentitySelector csIdentity
 
 -- | Returns a Boolean value indicating whether the identity is a member of the specified group.
 --
@@ -152,9 +142,8 @@ identityWithCSIdentity csIdentity =
 --
 -- ObjC selector: @- isMemberOfGroup:@
 isMemberOfGroup :: (IsCBIdentity cbIdentity, IsCBGroupIdentity group) => cbIdentity -> group -> IO Bool
-isMemberOfGroup cbIdentity  group =
-  withObjCPtr group $ \raw_group ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbIdentity (mkSelector "isMemberOfGroup:") retCULong [argPtr (castPtr raw_group :: Ptr ())]
+isMemberOfGroup cbIdentity group =
+  sendMessage cbIdentity isMemberOfGroupSelector (toCBGroupIdentity group)
 
 -- | Returns the identity authority where the identity is stored.
 --
@@ -162,13 +151,13 @@ isMemberOfGroup cbIdentity  group =
 --
 -- ObjC selector: @- authority@
 authority :: IsCBIdentity cbIdentity => cbIdentity -> IO (Id CBIdentityAuthority)
-authority cbIdentity  =
-    sendMsg cbIdentity (mkSelector "authority") (retPtr retVoid) [] >>= retainedObject . castPtr
+authority cbIdentity =
+  sendMessage cbIdentity authoritySelector
 
 -- | @- uniqueIdentifier@
 uniqueIdentifier :: IsCBIdentity cbIdentity => cbIdentity -> IO RawId
-uniqueIdentifier cbIdentity  =
-    fmap (RawId . castPtr) $ sendMsg cbIdentity (mkSelector "uniqueIdentifier") (retPtr retVoid) []
+uniqueIdentifier cbIdentity =
+  sendMessage cbIdentity uniqueIdentifierSelector
 
 -- | Returns the UUID of the identity as a string.
 --
@@ -178,8 +167,8 @@ uniqueIdentifier cbIdentity  =
 --
 -- ObjC selector: @- UUIDString@
 uuidString :: IsCBIdentity cbIdentity => cbIdentity -> IO RawId
-uuidString cbIdentity  =
-    fmap (RawId . castPtr) $ sendMsg cbIdentity (mkSelector "UUIDString") (retPtr retVoid) []
+uuidString cbIdentity =
+  sendMessage cbIdentity uuidStringSelector
 
 -- | Returns the full name of the identity.
 --
@@ -187,8 +176,8 @@ uuidString cbIdentity  =
 --
 -- ObjC selector: @- fullName@
 fullName :: IsCBIdentity cbIdentity => cbIdentity -> IO (Id NSString)
-fullName cbIdentity  =
-    sendMsg cbIdentity (mkSelector "fullName") (retPtr retVoid) [] >>= retainedObject . castPtr
+fullName cbIdentity =
+  sendMessage cbIdentity fullNameSelector
 
 -- | Returns the POSIX name of the identity.
 --
@@ -198,8 +187,8 @@ fullName cbIdentity  =
 --
 -- ObjC selector: @- posixName@
 posixName :: IsCBIdentity cbIdentity => cbIdentity -> IO (Id NSString)
-posixName cbIdentity  =
-    sendMsg cbIdentity (mkSelector "posixName") (retPtr retVoid) [] >>= retainedObject . castPtr
+posixName cbIdentity =
+  sendMessage cbIdentity posixNameSelector
 
 -- | Returns an array of aliases (alternate names) for the identity.
 --
@@ -209,8 +198,8 @@ posixName cbIdentity  =
 --
 -- ObjC selector: @- aliases@
 aliases :: IsCBIdentity cbIdentity => cbIdentity -> IO (Id NSArray)
-aliases cbIdentity  =
-    sendMsg cbIdentity (mkSelector "aliases") (retPtr retVoid) [] >>= retainedObject . castPtr
+aliases cbIdentity =
+  sendMessage cbIdentity aliasesSelector
 
 -- | Returns the email address of an identity.
 --
@@ -218,8 +207,8 @@ aliases cbIdentity  =
 --
 -- ObjC selector: @- emailAddress@
 emailAddress :: IsCBIdentity cbIdentity => cbIdentity -> IO (Id NSString)
-emailAddress cbIdentity  =
-    sendMsg cbIdentity (mkSelector "emailAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+emailAddress cbIdentity =
+  sendMessage cbIdentity emailAddressSelector
 
 -- | Returns the image associated with an identity.
 --
@@ -227,8 +216,8 @@ emailAddress cbIdentity  =
 --
 -- ObjC selector: @- image@
 image :: IsCBIdentity cbIdentity => cbIdentity -> IO (Id NSImage)
-image cbIdentity  =
-    sendMsg cbIdentity (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image cbIdentity =
+  sendMessage cbIdentity imageSelector
 
 -- | Returns a persistent reference to store a reference to an identity.
 --
@@ -238,8 +227,8 @@ image cbIdentity  =
 --
 -- ObjC selector: @- persistentReference@
 persistentReference :: IsCBIdentity cbIdentity => cbIdentity -> IO (Id NSData)
-persistentReference cbIdentity  =
-    sendMsg cbIdentity (mkSelector "persistentReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+persistentReference cbIdentity =
+  sendMessage cbIdentity persistentReferenceSelector
 
 -- | Returns a Boolean value indicating the state of the identity’s hidden property.
 --
@@ -249,8 +238,8 @@ persistentReference cbIdentity  =
 --
 -- ObjC selector: @- hidden@
 hidden :: IsCBIdentity cbIdentity => cbIdentity -> IO Bool
-hidden cbIdentity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbIdentity (mkSelector "hidden") retCULong []
+hidden cbIdentity =
+  sendMessage cbIdentity hiddenSelector
 
 -- | Returns an opaque object for use with the Core Services Identity API.
 --
@@ -260,78 +249,78 @@ hidden cbIdentity  =
 --
 -- ObjC selector: @- CSIdentity@
 csIdentity :: IsCBIdentity cbIdentity => cbIdentity -> IO (Ptr ())
-csIdentity cbIdentity  =
-    fmap castPtr $ sendMsg cbIdentity (mkSelector "CSIdentity") (retPtr retVoid) []
+csIdentity cbIdentity =
+  sendMessage cbIdentity csIdentitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @identityWithName:authority:@
-identityWithName_authoritySelector :: Selector
+identityWithName_authoritySelector :: Selector '[Id NSString, Id CBIdentityAuthority] (Id CBIdentity)
 identityWithName_authoritySelector = mkSelector "identityWithName:authority:"
 
 -- | @Selector@ for @identityWithUniqueIdentifier:authority:@
-identityWithUniqueIdentifier_authoritySelector :: Selector
+identityWithUniqueIdentifier_authoritySelector :: Selector '[Id NSUUID, Id CBIdentityAuthority] (Id CBIdentity)
 identityWithUniqueIdentifier_authoritySelector = mkSelector "identityWithUniqueIdentifier:authority:"
 
 -- | @Selector@ for @identityWithUUIDString:authority:@
-identityWithUUIDString_authoritySelector :: Selector
+identityWithUUIDString_authoritySelector :: Selector '[Id NSString, Id CBIdentityAuthority] (Id CBIdentity)
 identityWithUUIDString_authoritySelector = mkSelector "identityWithUUIDString:authority:"
 
 -- | @Selector@ for @identityWithPersistentReference:@
-identityWithPersistentReferenceSelector :: Selector
+identityWithPersistentReferenceSelector :: Selector '[Id NSData] (Id CBIdentity)
 identityWithPersistentReferenceSelector = mkSelector "identityWithPersistentReference:"
 
 -- | @Selector@ for @identityWithCSIdentity:@
-identityWithCSIdentitySelector :: Selector
+identityWithCSIdentitySelector :: Selector '[Ptr ()] (Id CBIdentity)
 identityWithCSIdentitySelector = mkSelector "identityWithCSIdentity:"
 
 -- | @Selector@ for @isMemberOfGroup:@
-isMemberOfGroupSelector :: Selector
+isMemberOfGroupSelector :: Selector '[Id CBGroupIdentity] Bool
 isMemberOfGroupSelector = mkSelector "isMemberOfGroup:"
 
 -- | @Selector@ for @authority@
-authoritySelector :: Selector
+authoritySelector :: Selector '[] (Id CBIdentityAuthority)
 authoritySelector = mkSelector "authority"
 
 -- | @Selector@ for @uniqueIdentifier@
-uniqueIdentifierSelector :: Selector
+uniqueIdentifierSelector :: Selector '[] RawId
 uniqueIdentifierSelector = mkSelector "uniqueIdentifier"
 
 -- | @Selector@ for @UUIDString@
-uuidStringSelector :: Selector
+uuidStringSelector :: Selector '[] RawId
 uuidStringSelector = mkSelector "UUIDString"
 
 -- | @Selector@ for @fullName@
-fullNameSelector :: Selector
+fullNameSelector :: Selector '[] (Id NSString)
 fullNameSelector = mkSelector "fullName"
 
 -- | @Selector@ for @posixName@
-posixNameSelector :: Selector
+posixNameSelector :: Selector '[] (Id NSString)
 posixNameSelector = mkSelector "posixName"
 
 -- | @Selector@ for @aliases@
-aliasesSelector :: Selector
+aliasesSelector :: Selector '[] (Id NSArray)
 aliasesSelector = mkSelector "aliases"
 
 -- | @Selector@ for @emailAddress@
-emailAddressSelector :: Selector
+emailAddressSelector :: Selector '[] (Id NSString)
 emailAddressSelector = mkSelector "emailAddress"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @persistentReference@
-persistentReferenceSelector :: Selector
+persistentReferenceSelector :: Selector '[] (Id NSData)
 persistentReferenceSelector = mkSelector "persistentReference"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @CSIdentity@
-csIdentitySelector :: Selector
+csIdentitySelector :: Selector '[] (Ptr ())
 csIdentitySelector = mkSelector "CSIdentity"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.Cinematic.AVMutableComposition
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,15 +28,14 @@ import ObjC.AVFoundation.Internal.Classes
 --
 -- ObjC selector: @- addTracksForCinematicAssetInfo:preferredStartingTrackID:@
 addTracksForCinematicAssetInfo_preferredStartingTrackID :: (IsAVMutableComposition avMutableComposition, IsCNAssetInfo assetInfo) => avMutableComposition -> assetInfo -> CInt -> IO (Id CNCompositionInfo)
-addTracksForCinematicAssetInfo_preferredStartingTrackID avMutableComposition  assetInfo preferredStartingTrackID =
-  withObjCPtr assetInfo $ \raw_assetInfo ->
-      sendMsg avMutableComposition (mkSelector "addTracksForCinematicAssetInfo:preferredStartingTrackID:") (retPtr retVoid) [argPtr (castPtr raw_assetInfo :: Ptr ()), argCInt preferredStartingTrackID] >>= retainedObject . castPtr
+addTracksForCinematicAssetInfo_preferredStartingTrackID avMutableComposition assetInfo preferredStartingTrackID =
+  sendMessage avMutableComposition addTracksForCinematicAssetInfo_preferredStartingTrackIDSelector (toCNAssetInfo assetInfo) preferredStartingTrackID
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addTracksForCinematicAssetInfo:preferredStartingTrackID:@
-addTracksForCinematicAssetInfo_preferredStartingTrackIDSelector :: Selector
+addTracksForCinematicAssetInfo_preferredStartingTrackIDSelector :: Selector '[Id CNAssetInfo, CInt] (Id CNCompositionInfo)
 addTracksForCinematicAssetInfo_preferredStartingTrackIDSelector = mkSelector "addTracksForCinematicAssetInfo:preferredStartingTrackID:"
 

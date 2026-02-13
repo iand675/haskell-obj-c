@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Photos.PHProject
   , IsPHProject(..)
   , projectExtensionData
   , hasProjectPreview
-  , projectExtensionDataSelector
   , hasProjectPreviewSelector
+  , projectExtensionDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,25 +28,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- projectExtensionData@
 projectExtensionData :: IsPHProject phProject => phProject -> IO (Id NSData)
-projectExtensionData phProject  =
-    sendMsg phProject (mkSelector "projectExtensionData") (retPtr retVoid) [] >>= retainedObject . castPtr
+projectExtensionData phProject =
+  sendMessage phProject projectExtensionDataSelector
 
 -- | Property to determine if a project preview was previously set. Use -[PHProjectChangeRequest setProjectPreviewImage:] to set a project preview.
 --
 -- ObjC selector: @- hasProjectPreview@
 hasProjectPreview :: IsPHProject phProject => phProject -> IO Bool
-hasProjectPreview phProject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phProject (mkSelector "hasProjectPreview") retCULong []
+hasProjectPreview phProject =
+  sendMessage phProject hasProjectPreviewSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @projectExtensionData@
-projectExtensionDataSelector :: Selector
+projectExtensionDataSelector :: Selector '[] (Id NSData)
 projectExtensionDataSelector = mkSelector "projectExtensionData"
 
 -- | @Selector@ for @hasProjectPreview@
-hasProjectPreviewSelector :: Selector
+hasProjectPreviewSelector :: Selector '[] Bool
 hasProjectPreviewSelector = mkSelector "hasProjectPreview"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MetricKit.MXAnimationMetric
   , IsMXAnimationMetric(..)
   , scrollHitchTimeRatio
   , hitchTimeRatio
-  , scrollHitchTimeRatioSelector
   , hitchTimeRatioSelector
+  , scrollHitchTimeRatioSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- scrollHitchTimeRatio@
 scrollHitchTimeRatio :: IsMXAnimationMetric mxAnimationMetric => mxAnimationMetric -> IO (Id NSMeasurement)
-scrollHitchTimeRatio mxAnimationMetric  =
-    sendMsg mxAnimationMetric (mkSelector "scrollHitchTimeRatio") (retPtr retVoid) [] >>= retainedObject . castPtr
+scrollHitchTimeRatio mxAnimationMetric =
+  sendMessage mxAnimationMetric scrollHitchTimeRatioSelector
 
 -- | hitchTimeRatio
 --
@@ -64,18 +61,18 @@ scrollHitchTimeRatio mxAnimationMetric  =
 --
 -- ObjC selector: @- hitchTimeRatio@
 hitchTimeRatio :: IsMXAnimationMetric mxAnimationMetric => mxAnimationMetric -> IO (Id NSMeasurement)
-hitchTimeRatio mxAnimationMetric  =
-    sendMsg mxAnimationMetric (mkSelector "hitchTimeRatio") (retPtr retVoid) [] >>= retainedObject . castPtr
+hitchTimeRatio mxAnimationMetric =
+  sendMessage mxAnimationMetric hitchTimeRatioSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scrollHitchTimeRatio@
-scrollHitchTimeRatioSelector :: Selector
+scrollHitchTimeRatioSelector :: Selector '[] (Id NSMeasurement)
 scrollHitchTimeRatioSelector = mkSelector "scrollHitchTimeRatio"
 
 -- | @Selector@ for @hitchTimeRatio@
-hitchTimeRatioSelector :: Selector
+hitchTimeRatioSelector :: Selector '[] (Id NSMeasurement)
 hitchTimeRatioSelector = mkSelector "hitchTimeRatio"
 

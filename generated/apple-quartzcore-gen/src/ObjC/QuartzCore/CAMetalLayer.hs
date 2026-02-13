@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,44 +32,40 @@ module ObjC.QuartzCore.CAMetalLayer
   , developerHUDProperties
   , setDeveloperHUDProperties
   , residencySet
-  , nextDrawableSelector
-  , deviceSelector
-  , setDeviceSelector
-  , preferredDeviceSelector
-  , pixelFormatSelector
-  , setPixelFormatSelector
-  , framebufferOnlySelector
-  , setFramebufferOnlySelector
-  , maximumDrawableCountSelector
-  , setMaximumDrawableCountSelector
-  , presentsWithTransactionSelector
-  , setPresentsWithTransactionSelector
-  , colorspaceSelector
-  , setColorspaceSelector
-  , wantsExtendedDynamicRangeContentSelector
-  , setWantsExtendedDynamicRangeContentSelector
-  , edrMetadataSelector
-  , setEDRMetadataSelector
-  , displaySyncEnabledSelector
-  , setDisplaySyncEnabledSelector
   , allowsNextDrawableTimeoutSelector
-  , setAllowsNextDrawableTimeoutSelector
+  , colorspaceSelector
   , developerHUDPropertiesSelector
-  , setDeveloperHUDPropertiesSelector
+  , deviceSelector
+  , displaySyncEnabledSelector
+  , edrMetadataSelector
+  , framebufferOnlySelector
+  , maximumDrawableCountSelector
+  , nextDrawableSelector
+  , pixelFormatSelector
+  , preferredDeviceSelector
+  , presentsWithTransactionSelector
   , residencySetSelector
+  , setAllowsNextDrawableTimeoutSelector
+  , setColorspaceSelector
+  , setDeveloperHUDPropertiesSelector
+  , setDeviceSelector
+  , setDisplaySyncEnabledSelector
+  , setEDRMetadataSelector
+  , setFramebufferOnlySelector
+  , setMaximumDrawableCountSelector
+  , setPixelFormatSelector
+  , setPresentsWithTransactionSelector
+  , setWantsExtendedDynamicRangeContentSelector
+  , wantsExtendedDynamicRangeContentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,232 +74,230 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nextDrawable@
 nextDrawable :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO RawId
-nextDrawable caMetalLayer  =
-    fmap (RawId . castPtr) $ sendMsg caMetalLayer (mkSelector "nextDrawable") (retPtr retVoid) []
+nextDrawable caMetalLayer =
+  sendMessage caMetalLayer nextDrawableSelector
 
 -- | @- device@
 device :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO RawId
-device caMetalLayer  =
-    fmap (RawId . castPtr) $ sendMsg caMetalLayer (mkSelector "device") (retPtr retVoid) []
+device caMetalLayer =
+  sendMessage caMetalLayer deviceSelector
 
 -- | @- setDevice:@
 setDevice :: IsCAMetalLayer caMetalLayer => caMetalLayer -> RawId -> IO ()
-setDevice caMetalLayer  value =
-    sendMsg caMetalLayer (mkSelector "setDevice:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDevice caMetalLayer value =
+  sendMessage caMetalLayer setDeviceSelector value
 
 -- | @- preferredDevice@
 preferredDevice :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO RawId
-preferredDevice caMetalLayer  =
-    fmap (RawId . castPtr) $ sendMsg caMetalLayer (mkSelector "preferredDevice") (retPtr retVoid) []
+preferredDevice caMetalLayer =
+  sendMessage caMetalLayer preferredDeviceSelector
 
 -- | @- pixelFormat@
 pixelFormat :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO CInt
-pixelFormat caMetalLayer  =
-    sendMsg caMetalLayer (mkSelector "pixelFormat") retCInt []
+pixelFormat caMetalLayer =
+  sendMessage caMetalLayer pixelFormatSelector
 
 -- | @- setPixelFormat:@
 setPixelFormat :: IsCAMetalLayer caMetalLayer => caMetalLayer -> CInt -> IO ()
-setPixelFormat caMetalLayer  value =
-    sendMsg caMetalLayer (mkSelector "setPixelFormat:") retVoid [argCInt (fromIntegral value)]
+setPixelFormat caMetalLayer value =
+  sendMessage caMetalLayer setPixelFormatSelector value
 
 -- | @- framebufferOnly@
 framebufferOnly :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO Bool
-framebufferOnly caMetalLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caMetalLayer (mkSelector "framebufferOnly") retCULong []
+framebufferOnly caMetalLayer =
+  sendMessage caMetalLayer framebufferOnlySelector
 
 -- | @- setFramebufferOnly:@
 setFramebufferOnly :: IsCAMetalLayer caMetalLayer => caMetalLayer -> Bool -> IO ()
-setFramebufferOnly caMetalLayer  value =
-    sendMsg caMetalLayer (mkSelector "setFramebufferOnly:") retVoid [argCULong (if value then 1 else 0)]
+setFramebufferOnly caMetalLayer value =
+  sendMessage caMetalLayer setFramebufferOnlySelector value
 
 -- | @- maximumDrawableCount@
 maximumDrawableCount :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO CULong
-maximumDrawableCount caMetalLayer  =
-    sendMsg caMetalLayer (mkSelector "maximumDrawableCount") retCULong []
+maximumDrawableCount caMetalLayer =
+  sendMessage caMetalLayer maximumDrawableCountSelector
 
 -- | @- setMaximumDrawableCount:@
 setMaximumDrawableCount :: IsCAMetalLayer caMetalLayer => caMetalLayer -> CULong -> IO ()
-setMaximumDrawableCount caMetalLayer  value =
-    sendMsg caMetalLayer (mkSelector "setMaximumDrawableCount:") retVoid [argCULong value]
+setMaximumDrawableCount caMetalLayer value =
+  sendMessage caMetalLayer setMaximumDrawableCountSelector value
 
 -- | @- presentsWithTransaction@
 presentsWithTransaction :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO Bool
-presentsWithTransaction caMetalLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caMetalLayer (mkSelector "presentsWithTransaction") retCULong []
+presentsWithTransaction caMetalLayer =
+  sendMessage caMetalLayer presentsWithTransactionSelector
 
 -- | @- setPresentsWithTransaction:@
 setPresentsWithTransaction :: IsCAMetalLayer caMetalLayer => caMetalLayer -> Bool -> IO ()
-setPresentsWithTransaction caMetalLayer  value =
-    sendMsg caMetalLayer (mkSelector "setPresentsWithTransaction:") retVoid [argCULong (if value then 1 else 0)]
+setPresentsWithTransaction caMetalLayer value =
+  sendMessage caMetalLayer setPresentsWithTransactionSelector value
 
 -- | @- colorspace@
 colorspace :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO (Ptr ())
-colorspace caMetalLayer  =
-    fmap castPtr $ sendMsg caMetalLayer (mkSelector "colorspace") (retPtr retVoid) []
+colorspace caMetalLayer =
+  sendMessage caMetalLayer colorspaceSelector
 
 -- | @- setColorspace:@
 setColorspace :: IsCAMetalLayer caMetalLayer => caMetalLayer -> Ptr () -> IO ()
-setColorspace caMetalLayer  value =
-    sendMsg caMetalLayer (mkSelector "setColorspace:") retVoid [argPtr value]
+setColorspace caMetalLayer value =
+  sendMessage caMetalLayer setColorspaceSelector value
 
 -- | @- wantsExtendedDynamicRangeContent@
 wantsExtendedDynamicRangeContent :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO Bool
-wantsExtendedDynamicRangeContent caMetalLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caMetalLayer (mkSelector "wantsExtendedDynamicRangeContent") retCULong []
+wantsExtendedDynamicRangeContent caMetalLayer =
+  sendMessage caMetalLayer wantsExtendedDynamicRangeContentSelector
 
 -- | @- setWantsExtendedDynamicRangeContent:@
 setWantsExtendedDynamicRangeContent :: IsCAMetalLayer caMetalLayer => caMetalLayer -> Bool -> IO ()
-setWantsExtendedDynamicRangeContent caMetalLayer  value =
-    sendMsg caMetalLayer (mkSelector "setWantsExtendedDynamicRangeContent:") retVoid [argCULong (if value then 1 else 0)]
+setWantsExtendedDynamicRangeContent caMetalLayer value =
+  sendMessage caMetalLayer setWantsExtendedDynamicRangeContentSelector value
 
 -- | @- EDRMetadata@
 edrMetadata :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO (Id CAEDRMetadata)
-edrMetadata caMetalLayer  =
-    sendMsg caMetalLayer (mkSelector "EDRMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+edrMetadata caMetalLayer =
+  sendMessage caMetalLayer edrMetadataSelector
 
 -- | @- setEDRMetadata:@
 setEDRMetadata :: (IsCAMetalLayer caMetalLayer, IsCAEDRMetadata value) => caMetalLayer -> value -> IO ()
-setEDRMetadata caMetalLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caMetalLayer (mkSelector "setEDRMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEDRMetadata caMetalLayer value =
+  sendMessage caMetalLayer setEDRMetadataSelector (toCAEDRMetadata value)
 
 -- | @- displaySyncEnabled@
 displaySyncEnabled :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO Bool
-displaySyncEnabled caMetalLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caMetalLayer (mkSelector "displaySyncEnabled") retCULong []
+displaySyncEnabled caMetalLayer =
+  sendMessage caMetalLayer displaySyncEnabledSelector
 
 -- | @- setDisplaySyncEnabled:@
 setDisplaySyncEnabled :: IsCAMetalLayer caMetalLayer => caMetalLayer -> Bool -> IO ()
-setDisplaySyncEnabled caMetalLayer  value =
-    sendMsg caMetalLayer (mkSelector "setDisplaySyncEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaySyncEnabled caMetalLayer value =
+  sendMessage caMetalLayer setDisplaySyncEnabledSelector value
 
 -- | @- allowsNextDrawableTimeout@
 allowsNextDrawableTimeout :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO Bool
-allowsNextDrawableTimeout caMetalLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caMetalLayer (mkSelector "allowsNextDrawableTimeout") retCULong []
+allowsNextDrawableTimeout caMetalLayer =
+  sendMessage caMetalLayer allowsNextDrawableTimeoutSelector
 
 -- | @- setAllowsNextDrawableTimeout:@
 setAllowsNextDrawableTimeout :: IsCAMetalLayer caMetalLayer => caMetalLayer -> Bool -> IO ()
-setAllowsNextDrawableTimeout caMetalLayer  value =
-    sendMsg caMetalLayer (mkSelector "setAllowsNextDrawableTimeout:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsNextDrawableTimeout caMetalLayer value =
+  sendMessage caMetalLayer setAllowsNextDrawableTimeoutSelector value
 
 -- | @- developerHUDProperties@
 developerHUDProperties :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO (Id NSDictionary)
-developerHUDProperties caMetalLayer  =
-    sendMsg caMetalLayer (mkSelector "developerHUDProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+developerHUDProperties caMetalLayer =
+  sendMessage caMetalLayer developerHUDPropertiesSelector
 
 -- | @- setDeveloperHUDProperties:@
 setDeveloperHUDProperties :: (IsCAMetalLayer caMetalLayer, IsNSDictionary value) => caMetalLayer -> value -> IO ()
-setDeveloperHUDProperties caMetalLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caMetalLayer (mkSelector "setDeveloperHUDProperties:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeveloperHUDProperties caMetalLayer value =
+  sendMessage caMetalLayer setDeveloperHUDPropertiesSelector (toNSDictionary value)
 
 -- | @- residencySet@
 residencySet :: IsCAMetalLayer caMetalLayer => caMetalLayer -> IO RawId
-residencySet caMetalLayer  =
-    fmap (RawId . castPtr) $ sendMsg caMetalLayer (mkSelector "residencySet") (retPtr retVoid) []
+residencySet caMetalLayer =
+  sendMessage caMetalLayer residencySetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nextDrawable@
-nextDrawableSelector :: Selector
+nextDrawableSelector :: Selector '[] RawId
 nextDrawableSelector = mkSelector "nextDrawable"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @setDevice:@
-setDeviceSelector :: Selector
+setDeviceSelector :: Selector '[RawId] ()
 setDeviceSelector = mkSelector "setDevice:"
 
 -- | @Selector@ for @preferredDevice@
-preferredDeviceSelector :: Selector
+preferredDeviceSelector :: Selector '[] RawId
 preferredDeviceSelector = mkSelector "preferredDevice"
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] CInt
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @setPixelFormat:@
-setPixelFormatSelector :: Selector
+setPixelFormatSelector :: Selector '[CInt] ()
 setPixelFormatSelector = mkSelector "setPixelFormat:"
 
 -- | @Selector@ for @framebufferOnly@
-framebufferOnlySelector :: Selector
+framebufferOnlySelector :: Selector '[] Bool
 framebufferOnlySelector = mkSelector "framebufferOnly"
 
 -- | @Selector@ for @setFramebufferOnly:@
-setFramebufferOnlySelector :: Selector
+setFramebufferOnlySelector :: Selector '[Bool] ()
 setFramebufferOnlySelector = mkSelector "setFramebufferOnly:"
 
 -- | @Selector@ for @maximumDrawableCount@
-maximumDrawableCountSelector :: Selector
+maximumDrawableCountSelector :: Selector '[] CULong
 maximumDrawableCountSelector = mkSelector "maximumDrawableCount"
 
 -- | @Selector@ for @setMaximumDrawableCount:@
-setMaximumDrawableCountSelector :: Selector
+setMaximumDrawableCountSelector :: Selector '[CULong] ()
 setMaximumDrawableCountSelector = mkSelector "setMaximumDrawableCount:"
 
 -- | @Selector@ for @presentsWithTransaction@
-presentsWithTransactionSelector :: Selector
+presentsWithTransactionSelector :: Selector '[] Bool
 presentsWithTransactionSelector = mkSelector "presentsWithTransaction"
 
 -- | @Selector@ for @setPresentsWithTransaction:@
-setPresentsWithTransactionSelector :: Selector
+setPresentsWithTransactionSelector :: Selector '[Bool] ()
 setPresentsWithTransactionSelector = mkSelector "setPresentsWithTransaction:"
 
 -- | @Selector@ for @colorspace@
-colorspaceSelector :: Selector
+colorspaceSelector :: Selector '[] (Ptr ())
 colorspaceSelector = mkSelector "colorspace"
 
 -- | @Selector@ for @setColorspace:@
-setColorspaceSelector :: Selector
+setColorspaceSelector :: Selector '[Ptr ()] ()
 setColorspaceSelector = mkSelector "setColorspace:"
 
 -- | @Selector@ for @wantsExtendedDynamicRangeContent@
-wantsExtendedDynamicRangeContentSelector :: Selector
+wantsExtendedDynamicRangeContentSelector :: Selector '[] Bool
 wantsExtendedDynamicRangeContentSelector = mkSelector "wantsExtendedDynamicRangeContent"
 
 -- | @Selector@ for @setWantsExtendedDynamicRangeContent:@
-setWantsExtendedDynamicRangeContentSelector :: Selector
+setWantsExtendedDynamicRangeContentSelector :: Selector '[Bool] ()
 setWantsExtendedDynamicRangeContentSelector = mkSelector "setWantsExtendedDynamicRangeContent:"
 
 -- | @Selector@ for @EDRMetadata@
-edrMetadataSelector :: Selector
+edrMetadataSelector :: Selector '[] (Id CAEDRMetadata)
 edrMetadataSelector = mkSelector "EDRMetadata"
 
 -- | @Selector@ for @setEDRMetadata:@
-setEDRMetadataSelector :: Selector
+setEDRMetadataSelector :: Selector '[Id CAEDRMetadata] ()
 setEDRMetadataSelector = mkSelector "setEDRMetadata:"
 
 -- | @Selector@ for @displaySyncEnabled@
-displaySyncEnabledSelector :: Selector
+displaySyncEnabledSelector :: Selector '[] Bool
 displaySyncEnabledSelector = mkSelector "displaySyncEnabled"
 
 -- | @Selector@ for @setDisplaySyncEnabled:@
-setDisplaySyncEnabledSelector :: Selector
+setDisplaySyncEnabledSelector :: Selector '[Bool] ()
 setDisplaySyncEnabledSelector = mkSelector "setDisplaySyncEnabled:"
 
 -- | @Selector@ for @allowsNextDrawableTimeout@
-allowsNextDrawableTimeoutSelector :: Selector
+allowsNextDrawableTimeoutSelector :: Selector '[] Bool
 allowsNextDrawableTimeoutSelector = mkSelector "allowsNextDrawableTimeout"
 
 -- | @Selector@ for @setAllowsNextDrawableTimeout:@
-setAllowsNextDrawableTimeoutSelector :: Selector
+setAllowsNextDrawableTimeoutSelector :: Selector '[Bool] ()
 setAllowsNextDrawableTimeoutSelector = mkSelector "setAllowsNextDrawableTimeout:"
 
 -- | @Selector@ for @developerHUDProperties@
-developerHUDPropertiesSelector :: Selector
+developerHUDPropertiesSelector :: Selector '[] (Id NSDictionary)
 developerHUDPropertiesSelector = mkSelector "developerHUDProperties"
 
 -- | @Selector@ for @setDeveloperHUDProperties:@
-setDeveloperHUDPropertiesSelector :: Selector
+setDeveloperHUDPropertiesSelector :: Selector '[Id NSDictionary] ()
 setDeveloperHUDPropertiesSelector = mkSelector "setDeveloperHUDProperties:"
 
 -- | @Selector@ for @residencySet@
-residencySetSelector :: Selector
+residencySetSelector :: Selector '[] RawId
 residencySetSelector = mkSelector "residencySet"
 

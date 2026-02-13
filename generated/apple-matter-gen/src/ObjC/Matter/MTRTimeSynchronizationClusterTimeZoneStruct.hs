@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRTimeSynchronizationClusterTimeZoneStruct
   , setValidAt
   , name
   , setName
-  , offsetSelector
-  , setOffsetSelector
-  , validAtSelector
-  , setValidAtSelector
   , nameSelector
+  , offsetSelector
   , setNameSelector
+  , setOffsetSelector
+  , setValidAtSelector
+  , validAtSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- offset@
 offset :: IsMTRTimeSynchronizationClusterTimeZoneStruct mtrTimeSynchronizationClusterTimeZoneStruct => mtrTimeSynchronizationClusterTimeZoneStruct -> IO (Id NSNumber)
-offset mtrTimeSynchronizationClusterTimeZoneStruct  =
-    sendMsg mtrTimeSynchronizationClusterTimeZoneStruct (mkSelector "offset") (retPtr retVoid) [] >>= retainedObject . castPtr
+offset mtrTimeSynchronizationClusterTimeZoneStruct =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStruct offsetSelector
 
 -- | @- setOffset:@
 setOffset :: (IsMTRTimeSynchronizationClusterTimeZoneStruct mtrTimeSynchronizationClusterTimeZoneStruct, IsNSNumber value) => mtrTimeSynchronizationClusterTimeZoneStruct -> value -> IO ()
-setOffset mtrTimeSynchronizationClusterTimeZoneStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterTimeZoneStruct (mkSelector "setOffset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOffset mtrTimeSynchronizationClusterTimeZoneStruct value =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStruct setOffsetSelector (toNSNumber value)
 
 -- | @- validAt@
 validAt :: IsMTRTimeSynchronizationClusterTimeZoneStruct mtrTimeSynchronizationClusterTimeZoneStruct => mtrTimeSynchronizationClusterTimeZoneStruct -> IO (Id NSNumber)
-validAt mtrTimeSynchronizationClusterTimeZoneStruct  =
-    sendMsg mtrTimeSynchronizationClusterTimeZoneStruct (mkSelector "validAt") (retPtr retVoid) [] >>= retainedObject . castPtr
+validAt mtrTimeSynchronizationClusterTimeZoneStruct =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStruct validAtSelector
 
 -- | @- setValidAt:@
 setValidAt :: (IsMTRTimeSynchronizationClusterTimeZoneStruct mtrTimeSynchronizationClusterTimeZoneStruct, IsNSNumber value) => mtrTimeSynchronizationClusterTimeZoneStruct -> value -> IO ()
-setValidAt mtrTimeSynchronizationClusterTimeZoneStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterTimeZoneStruct (mkSelector "setValidAt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValidAt mtrTimeSynchronizationClusterTimeZoneStruct value =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStruct setValidAtSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRTimeSynchronizationClusterTimeZoneStruct mtrTimeSynchronizationClusterTimeZoneStruct => mtrTimeSynchronizationClusterTimeZoneStruct -> IO (Id NSString)
-name mtrTimeSynchronizationClusterTimeZoneStruct  =
-    sendMsg mtrTimeSynchronizationClusterTimeZoneStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrTimeSynchronizationClusterTimeZoneStruct =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRTimeSynchronizationClusterTimeZoneStruct mtrTimeSynchronizationClusterTimeZoneStruct, IsNSString value) => mtrTimeSynchronizationClusterTimeZoneStruct -> value -> IO ()
-setName mtrTimeSynchronizationClusterTimeZoneStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterTimeZoneStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrTimeSynchronizationClusterTimeZoneStruct value =
+  sendMessage mtrTimeSynchronizationClusterTimeZoneStruct setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] (Id NSNumber)
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @setOffset:@
-setOffsetSelector :: Selector
+setOffsetSelector :: Selector '[Id NSNumber] ()
 setOffsetSelector = mkSelector "setOffset:"
 
 -- | @Selector@ for @validAt@
-validAtSelector :: Selector
+validAtSelector :: Selector '[] (Id NSNumber)
 validAtSelector = mkSelector "validAt"
 
 -- | @Selector@ for @setValidAt:@
-setValidAtSelector :: Selector
+setValidAtSelector :: Selector '[Id NSNumber] ()
 setValidAtSelector = mkSelector "setValidAt:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

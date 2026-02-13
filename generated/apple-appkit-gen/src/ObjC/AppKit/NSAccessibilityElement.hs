@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AppKit.NSAccessibilityElement
   , accessibilityAddChildElement
   , accessibilityFrameInParentSpace
   , setAccessibilityFrameInParentSpace
-  , accessibilityElementWithRole_frame_label_parentSelector
   , accessibilityAddChildElementSelector
+  , accessibilityElementWithRole_frame_label_parentSelector
   , accessibilityFrameInParentSpaceSelector
   , setAccessibilityFrameInParentSpaceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,43 +36,40 @@ accessibilityElementWithRole_frame_label_parent :: (IsNSString role_, IsNSString
 accessibilityElementWithRole_frame_label_parent role_ frame label parent =
   do
     cls' <- getRequiredClass "NSAccessibilityElement"
-    withObjCPtr role_ $ \raw_role_ ->
-      withObjCPtr label $ \raw_label ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "accessibilityElementWithRole:frame:label:parent:") (retPtr retVoid) [argPtr (castPtr raw_role_ :: Ptr ()), argNSRect frame, argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr (unRawId parent) :: Ptr ())]
+    sendClassMessage cls' accessibilityElementWithRole_frame_label_parentSelector (toNSString role_) frame (toNSString label) parent
 
 -- | @- accessibilityAddChildElement:@
 accessibilityAddChildElement :: (IsNSAccessibilityElement nsAccessibilityElement, IsNSAccessibilityElement childElement) => nsAccessibilityElement -> childElement -> IO ()
-accessibilityAddChildElement nsAccessibilityElement  childElement =
-  withObjCPtr childElement $ \raw_childElement ->
-      sendMsg nsAccessibilityElement (mkSelector "accessibilityAddChildElement:") retVoid [argPtr (castPtr raw_childElement :: Ptr ())]
+accessibilityAddChildElement nsAccessibilityElement childElement =
+  sendMessage nsAccessibilityElement accessibilityAddChildElementSelector (toNSAccessibilityElement childElement)
 
 -- | @- accessibilityFrameInParentSpace@
 accessibilityFrameInParentSpace :: IsNSAccessibilityElement nsAccessibilityElement => nsAccessibilityElement -> IO NSRect
-accessibilityFrameInParentSpace nsAccessibilityElement  =
-    sendMsgStret nsAccessibilityElement (mkSelector "accessibilityFrameInParentSpace") retNSRect []
+accessibilityFrameInParentSpace nsAccessibilityElement =
+  sendMessage nsAccessibilityElement accessibilityFrameInParentSpaceSelector
 
 -- | @- setAccessibilityFrameInParentSpace:@
 setAccessibilityFrameInParentSpace :: IsNSAccessibilityElement nsAccessibilityElement => nsAccessibilityElement -> NSRect -> IO ()
-setAccessibilityFrameInParentSpace nsAccessibilityElement  value =
-    sendMsg nsAccessibilityElement (mkSelector "setAccessibilityFrameInParentSpace:") retVoid [argNSRect value]
+setAccessibilityFrameInParentSpace nsAccessibilityElement value =
+  sendMessage nsAccessibilityElement setAccessibilityFrameInParentSpaceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @accessibilityElementWithRole:frame:label:parent:@
-accessibilityElementWithRole_frame_label_parentSelector :: Selector
+accessibilityElementWithRole_frame_label_parentSelector :: Selector '[Id NSString, NSRect, Id NSString, RawId] RawId
 accessibilityElementWithRole_frame_label_parentSelector = mkSelector "accessibilityElementWithRole:frame:label:parent:"
 
 -- | @Selector@ for @accessibilityAddChildElement:@
-accessibilityAddChildElementSelector :: Selector
+accessibilityAddChildElementSelector :: Selector '[Id NSAccessibilityElement] ()
 accessibilityAddChildElementSelector = mkSelector "accessibilityAddChildElement:"
 
 -- | @Selector@ for @accessibilityFrameInParentSpace@
-accessibilityFrameInParentSpaceSelector :: Selector
+accessibilityFrameInParentSpaceSelector :: Selector '[] NSRect
 accessibilityFrameInParentSpaceSelector = mkSelector "accessibilityFrameInParentSpace"
 
 -- | @Selector@ for @setAccessibilityFrameInParentSpace:@
-setAccessibilityFrameInParentSpaceSelector :: Selector
+setAccessibilityFrameInParentSpaceSelector :: Selector '[NSRect] ()
 setAccessibilityFrameInParentSpaceSelector = mkSelector "setAccessibilityFrameInParentSpace:"
 

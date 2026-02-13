@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRAttributeReport
   , path
   , value
   , error_
+  , errorSelector
   , initWithResponseValue_errorSelector
   , pathSelector
   , valueSelector
-  , errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRAttributeReport mtrAttributeReport, IsNSDictionary responseValue, IsNSError error_) => mtrAttributeReport -> responseValue -> error_ -> IO (Id MTRAttributeReport)
-initWithResponseValue_error mtrAttributeReport  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrAttributeReport (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrAttributeReport responseValue error_ =
+  sendOwnedMessage mtrAttributeReport initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- path@
 path :: IsMTRAttributeReport mtrAttributeReport => mtrAttributeReport -> IO (Id MTRAttributePath)
-path mtrAttributeReport  =
-    sendMsg mtrAttributeReport (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path mtrAttributeReport =
+  sendMessage mtrAttributeReport pathSelector
 
 -- | value will be nil in the following cases:
 --
@@ -67,33 +62,33 @@ path mtrAttributeReport  =
 --
 -- ObjC selector: @- value@
 value :: IsMTRAttributeReport mtrAttributeReport => mtrAttributeReport -> IO RawId
-value mtrAttributeReport  =
-    fmap (RawId . castPtr) $ sendMsg mtrAttributeReport (mkSelector "value") (retPtr retVoid) []
+value mtrAttributeReport =
+  sendMessage mtrAttributeReport valueSelector
 
 -- | If this specific path resulted in an error, the error (in the MTRInteractionErrorDomain or MTRErrorDomain) that corresponds to this path.
 --
 -- ObjC selector: @- error@
 error_ :: IsMTRAttributeReport mtrAttributeReport => mtrAttributeReport -> IO (Id NSError)
-error_ mtrAttributeReport  =
-    sendMsg mtrAttributeReport (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ mtrAttributeReport =
+  sendMessage mtrAttributeReport errorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRAttributeReport)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id MTRAttributePath)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] RawId
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 

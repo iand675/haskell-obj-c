@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,15 +52,15 @@ module ObjC.MetalPerformanceShaders.MPSKernel
   , device
   , label
   , setLabel
-  , initWithDeviceSelector
   , copyWithZone_deviceSelector
+  , deviceSelector
   , initWithCoderSelector
   , initWithCoder_deviceSelector
-  , optionsSelector
-  , setOptionsSelector
-  , deviceSelector
+  , initWithDeviceSelector
   , labelSelector
+  , optionsSelector
   , setLabelSelector
+  , setOptionsSelector
 
   -- * Enum types
   , MPSKernelOptions(MPSKernelOptions)
@@ -72,15 +73,11 @@ module ObjC.MetalPerformanceShaders.MPSKernel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -96,8 +93,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSKernel mpsKernel => mpsKernel -> RawId -> IO (Id MPSKernel)
-initWithDevice mpsKernel  device =
-    sendMsg mpsKernel (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsKernel device =
+  sendOwnedMessage mpsKernel initWithDeviceSelector device
 
 -- | Make a copy of this MPSKernel for a new device
 --
@@ -111,8 +108,8 @@ initWithDevice mpsKernel  device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSKernel mpsKernel => mpsKernel -> Ptr () -> RawId -> IO (Id MPSKernel)
-copyWithZone_device mpsKernel  zone device =
-    sendMsg mpsKernel (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsKernel zone device =
+  sendOwnedMessage mpsKernel copyWithZone_deviceSelector zone device
 
 -- | Called by NSCoder to decode MPSKernels
 --
@@ -120,9 +117,8 @@ copyWithZone_device mpsKernel  zone device =
 --
 -- ObjC selector: @- initWithCoder:@
 initWithCoder :: (IsMPSKernel mpsKernel, IsNSCoder aDecoder) => mpsKernel -> aDecoder -> IO (Id MPSKernel)
-initWithCoder mpsKernel  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsKernel (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder mpsKernel aDecoder =
+  sendOwnedMessage mpsKernel initWithCoderSelector (toNSCoder aDecoder)
 
 -- | NSSecureCoding compatability
 --
@@ -136,9 +132,8 @@ initWithCoder mpsKernel  aDecoder =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSKernel mpsKernel, IsNSCoder aDecoder) => mpsKernel -> aDecoder -> RawId -> IO (Id MPSKernel)
-initWithCoder_device mpsKernel  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsKernel (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsKernel aDecoder device =
+  sendOwnedMessage mpsKernel initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | options
 --
@@ -146,8 +141,8 @@ initWithCoder_device mpsKernel  aDecoder device =
 --
 -- ObjC selector: @- options@
 options :: IsMPSKernel mpsKernel => mpsKernel -> IO MPSKernelOptions
-options mpsKernel  =
-    fmap (coerce :: CULong -> MPSKernelOptions) $ sendMsg mpsKernel (mkSelector "options") retCULong []
+options mpsKernel =
+  sendMessage mpsKernel optionsSelector
 
 -- | options
 --
@@ -155,8 +150,8 @@ options mpsKernel  =
 --
 -- ObjC selector: @- setOptions:@
 setOptions :: IsMPSKernel mpsKernel => mpsKernel -> MPSKernelOptions -> IO ()
-setOptions mpsKernel  value =
-    sendMsg mpsKernel (mkSelector "setOptions:") retVoid [argCULong (coerce value)]
+setOptions mpsKernel value =
+  sendMessage mpsKernel setOptionsSelector value
 
 -- | device
 --
@@ -164,8 +159,8 @@ setOptions mpsKernel  value =
 --
 -- ObjC selector: @- device@
 device :: IsMPSKernel mpsKernel => mpsKernel -> IO RawId
-device mpsKernel  =
-    fmap (RawId . castPtr) $ sendMsg mpsKernel (mkSelector "device") (retPtr retVoid) []
+device mpsKernel =
+  sendMessage mpsKernel deviceSelector
 
 -- | label
 --
@@ -173,8 +168,8 @@ device mpsKernel  =
 --
 -- ObjC selector: @- label@
 label :: IsMPSKernel mpsKernel => mpsKernel -> IO (Id NSString)
-label mpsKernel  =
-    sendMsg mpsKernel (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mpsKernel =
+  sendMessage mpsKernel labelSelector
 
 -- | label
 --
@@ -182,47 +177,46 @@ label mpsKernel  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMPSKernel mpsKernel, IsNSString value) => mpsKernel -> value -> IO ()
-setLabel mpsKernel  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsKernel (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mpsKernel value =
+  sendMessage mpsKernel setLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSKernel)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSKernel)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id MPSKernel)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSKernel)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] MPSKernelOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[MPSKernelOptions] ()
 setOptionsSelector = mkSelector "setOptions:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 

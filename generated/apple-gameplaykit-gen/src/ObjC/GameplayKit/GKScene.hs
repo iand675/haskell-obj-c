@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.GameplayKit.GKScene
   , rootNode
   , setRootNode
   , graphs
+  , addEntitySelector
+  , addGraph_nameSelector
+  , entitiesSelector
+  , graphsSelector
+  , removeEntitySelector
+  , removeGraphSelector
+  , rootNodeSelector
   , sceneWithFileNamedSelector
   , sceneWithFileNamed_rootNodeSelector
-  , addEntitySelector
-  , removeEntitySelector
-  , addGraph_nameSelector
-  , removeGraphSelector
-  , entitiesSelector
-  , rootNodeSelector
   , setRootNodeSelector
-  , graphsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,7 @@ sceneWithFileNamed :: IsNSString filename => filename -> IO (Id GKScene)
 sceneWithFileNamed filename =
   do
     cls' <- getRequiredClass "GKScene"
-    withObjCPtr filename $ \raw_filename ->
-      sendClassMsg cls' (mkSelector "sceneWithFileNamed:") (retPtr retVoid) [argPtr (castPtr raw_filename :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sceneWithFileNamedSelector (toNSString filename)
 
 -- | Loads a scene from a file contained within the bundle and link with the specified rootNode.
 --
@@ -64,8 +60,7 @@ sceneWithFileNamed_rootNode :: IsNSString filename => filename -> RawId -> IO (I
 sceneWithFileNamed_rootNode filename rootNode =
   do
     cls' <- getRequiredClass "GKScene"
-    withObjCPtr filename $ \raw_filename ->
-      sendClassMsg cls' (mkSelector "sceneWithFileNamed:rootNode:") (retPtr retVoid) [argPtr (castPtr raw_filename :: Ptr ()), argPtr (castPtr (unRawId rootNode) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sceneWithFileNamed_rootNodeSelector (toNSString filename) rootNode
 
 -- | Adds an entity to the scene's list of entities.
 --
@@ -73,9 +68,8 @@ sceneWithFileNamed_rootNode filename rootNode =
 --
 -- ObjC selector: @- addEntity:@
 addEntity :: (IsGKScene gkScene, IsGKEntity entity) => gkScene -> entity -> IO ()
-addEntity gkScene  entity =
-  withObjCPtr entity $ \raw_entity ->
-      sendMsg gkScene (mkSelector "addEntity:") retVoid [argPtr (castPtr raw_entity :: Ptr ())]
+addEntity gkScene entity =
+  sendMessage gkScene addEntitySelector (toGKEntity entity)
 
 -- | Removes an entity from the scene's list of entities.
 --
@@ -83,9 +77,8 @@ addEntity gkScene  entity =
 --
 -- ObjC selector: @- removeEntity:@
 removeEntity :: (IsGKScene gkScene, IsGKEntity entity) => gkScene -> entity -> IO ()
-removeEntity gkScene  entity =
-  withObjCPtr entity $ \raw_entity ->
-      sendMsg gkScene (mkSelector "removeEntity:") retVoid [argPtr (castPtr raw_entity :: Ptr ())]
+removeEntity gkScene entity =
+  sendMessage gkScene removeEntitySelector (toGKEntity entity)
 
 -- | Adds a graph to the scene's list of graphs.
 --
@@ -93,10 +86,8 @@ removeEntity gkScene  entity =
 --
 -- ObjC selector: @- addGraph:name:@
 addGraph_name :: (IsGKScene gkScene, IsGKGraph graph, IsNSString name) => gkScene -> graph -> name -> IO ()
-addGraph_name gkScene  graph name =
-  withObjCPtr graph $ \raw_graph ->
-    withObjCPtr name $ \raw_name ->
-        sendMsg gkScene (mkSelector "addGraph:name:") retVoid [argPtr (castPtr raw_graph :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())]
+addGraph_name gkScene graph name =
+  sendMessage gkScene addGraph_nameSelector (toGKGraph graph) (toNSString name)
 
 -- | Removes a graph from the scene's list of graphs.
 --
@@ -104,16 +95,15 @@ addGraph_name gkScene  graph name =
 --
 -- ObjC selector: @- removeGraph:@
 removeGraph :: (IsGKScene gkScene, IsNSString name) => gkScene -> name -> IO ()
-removeGraph gkScene  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg gkScene (mkSelector "removeGraph:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+removeGraph gkScene name =
+  sendMessage gkScene removeGraphSelector (toNSString name)
 
 -- | The entities of this scene.
 --
 -- ObjC selector: @- entities@
 entities :: IsGKScene gkScene => gkScene -> IO (Id NSArray)
-entities gkScene  =
-    sendMsg gkScene (mkSelector "entities") (retPtr retVoid) [] >>= retainedObject . castPtr
+entities gkScene =
+  sendMessage gkScene entitiesSelector
 
 -- | The root node for the scene.
 --
@@ -121,8 +111,8 @@ entities gkScene  =
 --
 -- ObjC selector: @- rootNode@
 rootNode :: IsGKScene gkScene => gkScene -> IO RawId
-rootNode gkScene  =
-    fmap (RawId . castPtr) $ sendMsg gkScene (mkSelector "rootNode") (retPtr retVoid) []
+rootNode gkScene =
+  sendMessage gkScene rootNodeSelector
 
 -- | The root node for the scene.
 --
@@ -130,57 +120,57 @@ rootNode gkScene  =
 --
 -- ObjC selector: @- setRootNode:@
 setRootNode :: IsGKScene gkScene => gkScene -> RawId -> IO ()
-setRootNode gkScene  value =
-    sendMsg gkScene (mkSelector "setRootNode:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRootNode gkScene value =
+  sendMessage gkScene setRootNodeSelector value
 
 -- | The navigational graphs of this scene.
 --
 -- ObjC selector: @- graphs@
 graphs :: IsGKScene gkScene => gkScene -> IO (Id NSDictionary)
-graphs gkScene  =
-    sendMsg gkScene (mkSelector "graphs") (retPtr retVoid) [] >>= retainedObject . castPtr
+graphs gkScene =
+  sendMessage gkScene graphsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sceneWithFileNamed:@
-sceneWithFileNamedSelector :: Selector
+sceneWithFileNamedSelector :: Selector '[Id NSString] (Id GKScene)
 sceneWithFileNamedSelector = mkSelector "sceneWithFileNamed:"
 
 -- | @Selector@ for @sceneWithFileNamed:rootNode:@
-sceneWithFileNamed_rootNodeSelector :: Selector
+sceneWithFileNamed_rootNodeSelector :: Selector '[Id NSString, RawId] (Id GKScene)
 sceneWithFileNamed_rootNodeSelector = mkSelector "sceneWithFileNamed:rootNode:"
 
 -- | @Selector@ for @addEntity:@
-addEntitySelector :: Selector
+addEntitySelector :: Selector '[Id GKEntity] ()
 addEntitySelector = mkSelector "addEntity:"
 
 -- | @Selector@ for @removeEntity:@
-removeEntitySelector :: Selector
+removeEntitySelector :: Selector '[Id GKEntity] ()
 removeEntitySelector = mkSelector "removeEntity:"
 
 -- | @Selector@ for @addGraph:name:@
-addGraph_nameSelector :: Selector
+addGraph_nameSelector :: Selector '[Id GKGraph, Id NSString] ()
 addGraph_nameSelector = mkSelector "addGraph:name:"
 
 -- | @Selector@ for @removeGraph:@
-removeGraphSelector :: Selector
+removeGraphSelector :: Selector '[Id NSString] ()
 removeGraphSelector = mkSelector "removeGraph:"
 
 -- | @Selector@ for @entities@
-entitiesSelector :: Selector
+entitiesSelector :: Selector '[] (Id NSArray)
 entitiesSelector = mkSelector "entities"
 
 -- | @Selector@ for @rootNode@
-rootNodeSelector :: Selector
+rootNodeSelector :: Selector '[] RawId
 rootNodeSelector = mkSelector "rootNode"
 
 -- | @Selector@ for @setRootNode:@
-setRootNodeSelector :: Selector
+setRootNodeSelector :: Selector '[RawId] ()
 setRootNodeSelector = mkSelector "setRootNode:"
 
 -- | @Selector@ for @graphs@
-graphsSelector :: Selector
+graphsSelector :: Selector '[] (Id NSDictionary)
 graphsSelector = mkSelector "graphs"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.SpriteKit.SKPhysicsContact
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- bodyA@
 bodyA :: IsSKPhysicsContact skPhysicsContact => skPhysicsContact -> IO (Id SKPhysicsBody)
-bodyA skPhysicsContact  =
-    sendMsg skPhysicsContact (mkSelector "bodyA") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyA skPhysicsContact =
+  sendMessage skPhysicsContact bodyASelector
 
 -- | @- bodyB@
 bodyB :: IsSKPhysicsContact skPhysicsContact => skPhysicsContact -> IO (Id SKPhysicsBody)
-bodyB skPhysicsContact  =
-    sendMsg skPhysicsContact (mkSelector "bodyB") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyB skPhysicsContact =
+  sendMessage skPhysicsContact bodyBSelector
 
 -- | @- collisionImpulse@
 collisionImpulse :: IsSKPhysicsContact skPhysicsContact => skPhysicsContact -> IO CDouble
-collisionImpulse skPhysicsContact  =
-    sendMsg skPhysicsContact (mkSelector "collisionImpulse") retCDouble []
+collisionImpulse skPhysicsContact =
+  sendMessage skPhysicsContact collisionImpulseSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bodyA@
-bodyASelector :: Selector
+bodyASelector :: Selector '[] (Id SKPhysicsBody)
 bodyASelector = mkSelector "bodyA"
 
 -- | @Selector@ for @bodyB@
-bodyBSelector :: Selector
+bodyBSelector :: Selector '[] (Id SKPhysicsBody)
 bodyBSelector = mkSelector "bodyB"
 
 -- | @Selector@ for @collisionImpulse@
-collisionImpulseSelector :: Selector
+collisionImpulseSelector :: Selector '[] CDouble
 collisionImpulseSelector = mkSelector "collisionImpulse"
 

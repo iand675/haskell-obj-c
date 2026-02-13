@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,16 +22,16 @@ module ObjC.MLCompute.MLCActivationDescriptor
   , a
   , b
   , c
-  , newSelector
-  , initSelector
+  , aSelector
+  , activationTypeSelector
+  , bSelector
+  , cSelector
   , descriptorWithTypeSelector
   , descriptorWithType_aSelector
   , descriptorWithType_a_bSelector
   , descriptorWithType_a_b_cSelector
-  , activationTypeSelector
-  , aSelector
-  , bSelector
-  , cSelector
+  , initSelector
+  , newSelector
 
   -- * Enum types
   , MLCActivationType(MLCActivationType)
@@ -59,15 +60,11 @@ module ObjC.MLCompute.MLCActivationDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,12 +77,12 @@ new :: IO (Id MLCActivationDescriptor)
 new  =
   do
     cls' <- getRequiredClass "MLCActivationDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCActivationDescriptor mlcActivationDescriptor => mlcActivationDescriptor -> IO (Id MLCActivationDescriptor)
-init_ mlcActivationDescriptor  =
-    sendMsg mlcActivationDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcActivationDescriptor =
+  sendOwnedMessage mlcActivationDescriptor initSelector
 
 -- | Create a MLCActivationDescriptor object
 --
@@ -98,7 +95,7 @@ descriptorWithType :: MLCActivationType -> IO (Id MLCActivationDescriptor)
 descriptorWithType activationType =
   do
     cls' <- getRequiredClass "MLCActivationDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithType:") (retPtr retVoid) [argCInt (coerce activationType)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithTypeSelector activationType
 
 -- | Create a MLCActivationDescriptor object
 --
@@ -113,7 +110,7 @@ descriptorWithType_a :: MLCActivationType -> CFloat -> IO (Id MLCActivationDescr
 descriptorWithType_a activationType a =
   do
     cls' <- getRequiredClass "MLCActivationDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithType:a:") (retPtr retVoid) [argCInt (coerce activationType), argCFloat a] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithType_aSelector activationType a
 
 -- | Create a MLCActivationDescriptor object
 --
@@ -130,7 +127,7 @@ descriptorWithType_a_b :: MLCActivationType -> CFloat -> CFloat -> IO (Id MLCAct
 descriptorWithType_a_b activationType a b =
   do
     cls' <- getRequiredClass "MLCActivationDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithType:a:b:") (retPtr retVoid) [argCInt (coerce activationType), argCFloat a, argCFloat b] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithType_a_bSelector activationType a b
 
 -- | Create a MLCActivationDescriptor object
 --
@@ -149,7 +146,7 @@ descriptorWithType_a_b_c :: MLCActivationType -> CFloat -> CFloat -> CFloat -> I
 descriptorWithType_a_b_c activationType a b c =
   do
     cls' <- getRequiredClass "MLCActivationDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithType:a:b:c:") (retPtr retVoid) [argCInt (coerce activationType), argCFloat a, argCFloat b, argCFloat c] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithType_a_b_cSelector activationType a b c
 
 -- | activationType
 --
@@ -157,8 +154,8 @@ descriptorWithType_a_b_c activationType a b c =
 --
 -- ObjC selector: @- activationType@
 activationType :: IsMLCActivationDescriptor mlcActivationDescriptor => mlcActivationDescriptor -> IO MLCActivationType
-activationType mlcActivationDescriptor  =
-    fmap (coerce :: CInt -> MLCActivationType) $ sendMsg mlcActivationDescriptor (mkSelector "activationType") retCInt []
+activationType mlcActivationDescriptor =
+  sendMessage mlcActivationDescriptor activationTypeSelector
 
 -- | a
 --
@@ -166,8 +163,8 @@ activationType mlcActivationDescriptor  =
 --
 -- ObjC selector: @- a@
 a :: IsMLCActivationDescriptor mlcActivationDescriptor => mlcActivationDescriptor -> IO CFloat
-a mlcActivationDescriptor  =
-    sendMsg mlcActivationDescriptor (mkSelector "a") retCFloat []
+a mlcActivationDescriptor =
+  sendMessage mlcActivationDescriptor aSelector
 
 -- | b
 --
@@ -175,8 +172,8 @@ a mlcActivationDescriptor  =
 --
 -- ObjC selector: @- b@
 b :: IsMLCActivationDescriptor mlcActivationDescriptor => mlcActivationDescriptor -> IO CFloat
-b mlcActivationDescriptor  =
-    sendMsg mlcActivationDescriptor (mkSelector "b") retCFloat []
+b mlcActivationDescriptor =
+  sendMessage mlcActivationDescriptor bSelector
 
 -- | c
 --
@@ -184,50 +181,50 @@ b mlcActivationDescriptor  =
 --
 -- ObjC selector: @- c@
 c :: IsMLCActivationDescriptor mlcActivationDescriptor => mlcActivationDescriptor -> IO CFloat
-c mlcActivationDescriptor  =
-    sendMsg mlcActivationDescriptor (mkSelector "c") retCFloat []
+c mlcActivationDescriptor =
+  sendMessage mlcActivationDescriptor cSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCActivationDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCActivationDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @descriptorWithType:@
-descriptorWithTypeSelector :: Selector
+descriptorWithTypeSelector :: Selector '[MLCActivationType] (Id MLCActivationDescriptor)
 descriptorWithTypeSelector = mkSelector "descriptorWithType:"
 
 -- | @Selector@ for @descriptorWithType:a:@
-descriptorWithType_aSelector :: Selector
+descriptorWithType_aSelector :: Selector '[MLCActivationType, CFloat] (Id MLCActivationDescriptor)
 descriptorWithType_aSelector = mkSelector "descriptorWithType:a:"
 
 -- | @Selector@ for @descriptorWithType:a:b:@
-descriptorWithType_a_bSelector :: Selector
+descriptorWithType_a_bSelector :: Selector '[MLCActivationType, CFloat, CFloat] (Id MLCActivationDescriptor)
 descriptorWithType_a_bSelector = mkSelector "descriptorWithType:a:b:"
 
 -- | @Selector@ for @descriptorWithType:a:b:c:@
-descriptorWithType_a_b_cSelector :: Selector
+descriptorWithType_a_b_cSelector :: Selector '[MLCActivationType, CFloat, CFloat, CFloat] (Id MLCActivationDescriptor)
 descriptorWithType_a_b_cSelector = mkSelector "descriptorWithType:a:b:c:"
 
 -- | @Selector@ for @activationType@
-activationTypeSelector :: Selector
+activationTypeSelector :: Selector '[] MLCActivationType
 activationTypeSelector = mkSelector "activationType"
 
 -- | @Selector@ for @a@
-aSelector :: Selector
+aSelector :: Selector '[] CFloat
 aSelector = mkSelector "a"
 
 -- | @Selector@ for @b@
-bSelector :: Selector
+bSelector :: Selector '[] CFloat
 bSelector = mkSelector "b"
 
 -- | @Selector@ for @c@
-cSelector :: Selector
+cSelector :: Selector '[] CFloat
 cSelector = mkSelector "c"
 

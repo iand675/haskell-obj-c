@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterDatastoreAccessControlTargetStr
   , deviceType
   , setDeviceType
   , clusterSelector
-  , setClusterSelector
-  , endpointSelector
-  , setEndpointSelector
   , deviceTypeSelector
+  , endpointSelector
+  , setClusterSelector
   , setDeviceTypeSelector
+  , setEndpointSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cluster@
 cluster :: IsMTRJointFabricDatastoreClusterDatastoreAccessControlTargetStruct mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct => mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct -> IO (Id NSNumber)
-cluster mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct (mkSelector "cluster") (retPtr retVoid) [] >>= retainedObject . castPtr
+cluster mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct clusterSelector
 
 -- | @- setCluster:@
 setCluster :: (IsMTRJointFabricDatastoreClusterDatastoreAccessControlTargetStruct mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct -> value -> IO ()
-setCluster mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct (mkSelector "setCluster:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCluster mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct setClusterSelector (toNSNumber value)
 
 -- | @- endpoint@
 endpoint :: IsMTRJointFabricDatastoreClusterDatastoreAccessControlTargetStruct mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct => mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct -> IO (Id NSNumber)
-endpoint mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoint mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct endpointSelector
 
 -- | @- setEndpoint:@
 setEndpoint :: (IsMTRJointFabricDatastoreClusterDatastoreAccessControlTargetStruct mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct -> value -> IO ()
-setEndpoint mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct (mkSelector "setEndpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpoint mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct setEndpointSelector (toNSNumber value)
 
 -- | @- deviceType@
 deviceType :: IsMTRJointFabricDatastoreClusterDatastoreAccessControlTargetStruct mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct => mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct -> IO (Id NSNumber)
-deviceType mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct (mkSelector "deviceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceType mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct deviceTypeSelector
 
 -- | @- setDeviceType:@
 setDeviceType :: (IsMTRJointFabricDatastoreClusterDatastoreAccessControlTargetStruct mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct -> value -> IO ()
-setDeviceType mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct (mkSelector "setDeviceType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeviceType mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAccessControlTargetStruct setDeviceTypeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cluster@
-clusterSelector :: Selector
+clusterSelector :: Selector '[] (Id NSNumber)
 clusterSelector = mkSelector "cluster"
 
 -- | @Selector@ for @setCluster:@
-setClusterSelector :: Selector
+setClusterSelector :: Selector '[Id NSNumber] ()
 setClusterSelector = mkSelector "setCluster:"
 
 -- | @Selector@ for @endpoint@
-endpointSelector :: Selector
+endpointSelector :: Selector '[] (Id NSNumber)
 endpointSelector = mkSelector "endpoint"
 
 -- | @Selector@ for @setEndpoint:@
-setEndpointSelector :: Selector
+setEndpointSelector :: Selector '[Id NSNumber] ()
 setEndpointSelector = mkSelector "setEndpoint:"
 
 -- | @Selector@ for @deviceType@
-deviceTypeSelector :: Selector
+deviceTypeSelector :: Selector '[] (Id NSNumber)
 deviceTypeSelector = mkSelector "deviceType"
 
 -- | @Selector@ for @setDeviceType:@
-setDeviceTypeSelector :: Selector
+setDeviceTypeSelector :: Selector '[Id NSNumber] ()
 setDeviceTypeSelector = mkSelector "setDeviceType:"
 

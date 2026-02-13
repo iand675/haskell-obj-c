@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.HealthKit.HKCorrelationQuery
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- correlationType@
 correlationType :: IsHKCorrelationQuery hkCorrelationQuery => hkCorrelationQuery -> IO (Id HKCorrelationType)
-correlationType hkCorrelationQuery  =
-    sendMsg hkCorrelationQuery (mkSelector "correlationType") (retPtr retVoid) [] >>= retainedObject . castPtr
+correlationType hkCorrelationQuery =
+  sendMessage hkCorrelationQuery correlationTypeSelector
 
 -- | samplePredicates
 --
@@ -48,18 +45,18 @@ correlationType hkCorrelationQuery  =
 --
 -- ObjC selector: @- samplePredicates@
 samplePredicates :: IsHKCorrelationQuery hkCorrelationQuery => hkCorrelationQuery -> IO (Id NSDictionary)
-samplePredicates hkCorrelationQuery  =
-    sendMsg hkCorrelationQuery (mkSelector "samplePredicates") (retPtr retVoid) [] >>= retainedObject . castPtr
+samplePredicates hkCorrelationQuery =
+  sendMessage hkCorrelationQuery samplePredicatesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @correlationType@
-correlationTypeSelector :: Selector
+correlationTypeSelector :: Selector '[] (Id HKCorrelationType)
 correlationTypeSelector = mkSelector "correlationType"
 
 -- | @Selector@ for @samplePredicates@
-samplePredicatesSelector :: Selector
+samplePredicatesSelector :: Selector '[] (Id NSDictionary)
 samplePredicatesSelector = mkSelector "samplePredicates"
 

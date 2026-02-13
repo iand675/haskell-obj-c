@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRMediaPlaybackClusterTrackAttributesStruct
   , setLanguageCode
   , displayName
   , setDisplayName
-  , languageCodeSelector
-  , setLanguageCodeSelector
   , displayNameSelector
+  , languageCodeSelector
   , setDisplayNameSelector
+  , setLanguageCodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- languageCode@
 languageCode :: IsMTRMediaPlaybackClusterTrackAttributesStruct mtrMediaPlaybackClusterTrackAttributesStruct => mtrMediaPlaybackClusterTrackAttributesStruct -> IO (Id NSString)
-languageCode mtrMediaPlaybackClusterTrackAttributesStruct  =
-    sendMsg mtrMediaPlaybackClusterTrackAttributesStruct (mkSelector "languageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageCode mtrMediaPlaybackClusterTrackAttributesStruct =
+  sendMessage mtrMediaPlaybackClusterTrackAttributesStruct languageCodeSelector
 
 -- | @- setLanguageCode:@
 setLanguageCode :: (IsMTRMediaPlaybackClusterTrackAttributesStruct mtrMediaPlaybackClusterTrackAttributesStruct, IsNSString value) => mtrMediaPlaybackClusterTrackAttributesStruct -> value -> IO ()
-setLanguageCode mtrMediaPlaybackClusterTrackAttributesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterTrackAttributesStruct (mkSelector "setLanguageCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLanguageCode mtrMediaPlaybackClusterTrackAttributesStruct value =
+  sendMessage mtrMediaPlaybackClusterTrackAttributesStruct setLanguageCodeSelector (toNSString value)
 
 -- | @- displayName@
 displayName :: IsMTRMediaPlaybackClusterTrackAttributesStruct mtrMediaPlaybackClusterTrackAttributesStruct => mtrMediaPlaybackClusterTrackAttributesStruct -> IO (Id NSString)
-displayName mtrMediaPlaybackClusterTrackAttributesStruct  =
-    sendMsg mtrMediaPlaybackClusterTrackAttributesStruct (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName mtrMediaPlaybackClusterTrackAttributesStruct =
+  sendMessage mtrMediaPlaybackClusterTrackAttributesStruct displayNameSelector
 
 -- | @- setDisplayName:@
 setDisplayName :: (IsMTRMediaPlaybackClusterTrackAttributesStruct mtrMediaPlaybackClusterTrackAttributesStruct, IsNSString value) => mtrMediaPlaybackClusterTrackAttributesStruct -> value -> IO ()
-setDisplayName mtrMediaPlaybackClusterTrackAttributesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterTrackAttributesStruct (mkSelector "setDisplayName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDisplayName mtrMediaPlaybackClusterTrackAttributesStruct value =
+  sendMessage mtrMediaPlaybackClusterTrackAttributesStruct setDisplayNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @languageCode@
-languageCodeSelector :: Selector
+languageCodeSelector :: Selector '[] (Id NSString)
 languageCodeSelector = mkSelector "languageCode"
 
 -- | @Selector@ for @setLanguageCode:@
-setLanguageCodeSelector :: Selector
+setLanguageCodeSelector :: Selector '[Id NSString] ()
 setLanguageCodeSelector = mkSelector "setLanguageCode:"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @setDisplayName:@
-setDisplayNameSelector :: Selector
+setDisplayNameSelector :: Selector '[Id NSString] ()
 setDisplayNameSelector = mkSelector "setDisplayName:"
 

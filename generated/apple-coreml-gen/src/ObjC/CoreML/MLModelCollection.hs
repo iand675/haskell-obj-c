@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.CoreML.MLModelCollection
   , identifier
   , deploymentID
   , beginAccessingModelCollectionWithIdentifier_completionHandlerSelector
+  , deploymentIDSelector
   , endAccessingModelCollectionWithIdentifier_completionHandlerSelector
+  , identifierSelector
   , initSelector
   , newSelector
-  , identifierSelector
-  , deploymentIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,8 +53,7 @@ beginAccessingModelCollectionWithIdentifier_completionHandler :: IsNSString iden
 beginAccessingModelCollectionWithIdentifier_completionHandler identifier completionHandler =
   do
     cls' <- getRequiredClass "MLModelCollection"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "beginAccessingModelCollectionWithIdentifier:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' beginAccessingModelCollectionWithIdentifier_completionHandlerSelector (toNSString identifier) completionHandler
 
 -- | End access to a model collection. This informs the system you have finished accessing the models within the collection.
 --
@@ -72,60 +68,59 @@ endAccessingModelCollectionWithIdentifier_completionHandler :: IsNSString identi
 endAccessingModelCollectionWithIdentifier_completionHandler identifier completionHandler =
   do
     cls' <- getRequiredClass "MLModelCollection"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "endAccessingModelCollectionWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' endAccessingModelCollectionWithIdentifier_completionHandlerSelector (toNSString identifier) completionHandler
 
 -- | @- init@
 init_ :: IsMLModelCollection mlModelCollection => mlModelCollection -> IO (Id MLModelCollection)
-init_ mlModelCollection  =
-    sendMsg mlModelCollection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlModelCollection =
+  sendOwnedMessage mlModelCollection initSelector
 
 -- | @+ new@
 new :: IO RawId
 new  =
   do
     cls' <- getRequiredClass "MLModelCollection"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+    sendOwnedClassMessage cls' newSelector
 
 -- | The identifier of the model collection you want to access, as configured in the Core ML Model Deployment dashboard.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsMLModelCollection mlModelCollection => mlModelCollection -> IO RawId
-identifier mlModelCollection  =
-    fmap (RawId . castPtr) $ sendMsg mlModelCollection (mkSelector "identifier") (retPtr retVoid) []
+identifier mlModelCollection =
+  sendMessage mlModelCollection identifierSelector
 
 -- | The identifier for the currently downloaded deployment, corresponding to a recent deployment on the Core ML Model Deployment dashboard.
 --
 -- ObjC selector: @- deploymentID@
 deploymentID :: IsMLModelCollection mlModelCollection => mlModelCollection -> IO RawId
-deploymentID mlModelCollection  =
-    fmap (RawId . castPtr) $ sendMsg mlModelCollection (mkSelector "deploymentID") (retPtr retVoid) []
+deploymentID mlModelCollection =
+  sendMessage mlModelCollection deploymentIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @beginAccessingModelCollectionWithIdentifier:completionHandler:@
-beginAccessingModelCollectionWithIdentifier_completionHandlerSelector :: Selector
+beginAccessingModelCollectionWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] (Id NSProgress)
 beginAccessingModelCollectionWithIdentifier_completionHandlerSelector = mkSelector "beginAccessingModelCollectionWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @endAccessingModelCollectionWithIdentifier:completionHandler:@
-endAccessingModelCollectionWithIdentifier_completionHandlerSelector :: Selector
+endAccessingModelCollectionWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 endAccessingModelCollectionWithIdentifier_completionHandlerSelector = mkSelector "endAccessingModelCollectionWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLModelCollection)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] RawId
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] RawId
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @deploymentID@
-deploymentIDSelector :: Selector
+deploymentIDSelector :: Selector '[] RawId
 deploymentIDSelector = mkSelector "deploymentID"
 

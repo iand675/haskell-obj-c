@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.WebKit.WKContentWorld
   , pageWorld
   , defaultClientWorld
   , name
-  , newSelector
-  , initSelector
-  , worldWithNameSelector
-  , pageWorldSelector
   , defaultClientWorldSelector
+  , initSelector
   , nameSelector
+  , newSelector
+  , pageWorldSelector
+  , worldWithNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,12 +45,12 @@ new :: IO (Id WKContentWorld)
 new  =
   do
     cls' <- getRequiredClass "WKContentWorld"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsWKContentWorld wkContentWorld => wkContentWorld -> IO (Id WKContentWorld)
-init_ wkContentWorld  =
-    sendMsg wkContentWorld (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkContentWorld =
+  sendOwnedMessage wkContentWorld initSelector
 
 -- | Retrieves a named content world for API client use.
 --
@@ -66,8 +63,7 @@ worldWithName :: IsNSString name => name -> IO (Id WKContentWorld)
 worldWithName name =
   do
     cls' <- getRequiredClass "WKContentWorld"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "worldWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' worldWithNameSelector (toNSString name)
 
 -- | Retrieve the main world that page content itself uses.
 --
@@ -78,7 +74,7 @@ pageWorld :: IO (Id WKContentWorld)
 pageWorld  =
   do
     cls' <- getRequiredClass "WKContentWorld"
-    sendClassMsg cls' (mkSelector "pageWorld") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pageWorldSelector
 
 -- | Retrieve the default world for API client use.
 --
@@ -89,7 +85,7 @@ defaultClientWorld :: IO (Id WKContentWorld)
 defaultClientWorld  =
   do
     cls' <- getRequiredClass "WKContentWorld"
-    sendClassMsg cls' (mkSelector "defaultClientWorld") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultClientWorldSelector
 
 -- | The name of the WKContentWorld
 --
@@ -97,34 +93,34 @@ defaultClientWorld  =
 --
 -- ObjC selector: @- name@
 name :: IsWKContentWorld wkContentWorld => wkContentWorld -> IO (Id NSString)
-name wkContentWorld  =
-    sendMsg wkContentWorld (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name wkContentWorld =
+  sendMessage wkContentWorld nameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id WKContentWorld)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKContentWorld)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @worldWithName:@
-worldWithNameSelector :: Selector
+worldWithNameSelector :: Selector '[Id NSString] (Id WKContentWorld)
 worldWithNameSelector = mkSelector "worldWithName:"
 
 -- | @Selector@ for @pageWorld@
-pageWorldSelector :: Selector
+pageWorldSelector :: Selector '[] (Id WKContentWorld)
 pageWorldSelector = mkSelector "pageWorld"
 
 -- | @Selector@ for @defaultClientWorld@
-defaultClientWorldSelector :: Selector
+defaultClientWorldSelector :: Selector '[] (Id WKContentWorld)
 defaultClientWorldSelector = mkSelector "defaultClientWorld"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 

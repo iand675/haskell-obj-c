@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRThermostatClusterScheduleTransitionStruct
   , setCoolingSetpoint
   , heatingSetpoint
   , setHeatingSetpoint
-  , dayOfWeekSelector
-  , setDayOfWeekSelector
-  , transitionTimeSelector
-  , setTransitionTimeSelector
-  , presetHandleSelector
-  , setPresetHandleSelector
-  , systemModeSelector
-  , setSystemModeSelector
   , coolingSetpointSelector
-  , setCoolingSetpointSelector
+  , dayOfWeekSelector
   , heatingSetpointSelector
+  , presetHandleSelector
+  , setCoolingSetpointSelector
+  , setDayOfWeekSelector
   , setHeatingSetpointSelector
+  , setPresetHandleSelector
+  , setSystemModeSelector
+  , setTransitionTimeSelector
+  , systemModeSelector
+  , transitionTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- dayOfWeek@
 dayOfWeek :: IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct => mtrThermostatClusterScheduleTransitionStruct -> IO (Id NSNumber)
-dayOfWeek mtrThermostatClusterScheduleTransitionStruct  =
-    sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "dayOfWeek") (retPtr retVoid) [] >>= retainedObject . castPtr
+dayOfWeek mtrThermostatClusterScheduleTransitionStruct =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct dayOfWeekSelector
 
 -- | @- setDayOfWeek:@
 setDayOfWeek :: (IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct, IsNSNumber value) => mtrThermostatClusterScheduleTransitionStruct -> value -> IO ()
-setDayOfWeek mtrThermostatClusterScheduleTransitionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "setDayOfWeek:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDayOfWeek mtrThermostatClusterScheduleTransitionStruct value =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct setDayOfWeekSelector (toNSNumber value)
 
 -- | @- transitionTime@
 transitionTime :: IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct => mtrThermostatClusterScheduleTransitionStruct -> IO (Id NSNumber)
-transitionTime mtrThermostatClusterScheduleTransitionStruct  =
-    sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "transitionTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitionTime mtrThermostatClusterScheduleTransitionStruct =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct transitionTimeSelector
 
 -- | @- setTransitionTime:@
 setTransitionTime :: (IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct, IsNSNumber value) => mtrThermostatClusterScheduleTransitionStruct -> value -> IO ()
-setTransitionTime mtrThermostatClusterScheduleTransitionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "setTransitionTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransitionTime mtrThermostatClusterScheduleTransitionStruct value =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct setTransitionTimeSelector (toNSNumber value)
 
 -- | @- presetHandle@
 presetHandle :: IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct => mtrThermostatClusterScheduleTransitionStruct -> IO (Id NSData)
-presetHandle mtrThermostatClusterScheduleTransitionStruct  =
-    sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "presetHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetHandle mtrThermostatClusterScheduleTransitionStruct =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct presetHandleSelector
 
 -- | @- setPresetHandle:@
 setPresetHandle :: (IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct, IsNSData value) => mtrThermostatClusterScheduleTransitionStruct -> value -> IO ()
-setPresetHandle mtrThermostatClusterScheduleTransitionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "setPresetHandle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPresetHandle mtrThermostatClusterScheduleTransitionStruct value =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct setPresetHandleSelector (toNSData value)
 
 -- | @- systemMode@
 systemMode :: IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct => mtrThermostatClusterScheduleTransitionStruct -> IO (Id NSNumber)
-systemMode mtrThermostatClusterScheduleTransitionStruct  =
-    sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "systemMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemMode mtrThermostatClusterScheduleTransitionStruct =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct systemModeSelector
 
 -- | @- setSystemMode:@
 setSystemMode :: (IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct, IsNSNumber value) => mtrThermostatClusterScheduleTransitionStruct -> value -> IO ()
-setSystemMode mtrThermostatClusterScheduleTransitionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "setSystemMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSystemMode mtrThermostatClusterScheduleTransitionStruct value =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct setSystemModeSelector (toNSNumber value)
 
 -- | @- coolingSetpoint@
 coolingSetpoint :: IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct => mtrThermostatClusterScheduleTransitionStruct -> IO (Id NSNumber)
-coolingSetpoint mtrThermostatClusterScheduleTransitionStruct  =
-    sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "coolingSetpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+coolingSetpoint mtrThermostatClusterScheduleTransitionStruct =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct coolingSetpointSelector
 
 -- | @- setCoolingSetpoint:@
 setCoolingSetpoint :: (IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct, IsNSNumber value) => mtrThermostatClusterScheduleTransitionStruct -> value -> IO ()
-setCoolingSetpoint mtrThermostatClusterScheduleTransitionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "setCoolingSetpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCoolingSetpoint mtrThermostatClusterScheduleTransitionStruct value =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct setCoolingSetpointSelector (toNSNumber value)
 
 -- | @- heatingSetpoint@
 heatingSetpoint :: IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct => mtrThermostatClusterScheduleTransitionStruct -> IO (Id NSNumber)
-heatingSetpoint mtrThermostatClusterScheduleTransitionStruct  =
-    sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "heatingSetpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+heatingSetpoint mtrThermostatClusterScheduleTransitionStruct =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct heatingSetpointSelector
 
 -- | @- setHeatingSetpoint:@
 setHeatingSetpoint :: (IsMTRThermostatClusterScheduleTransitionStruct mtrThermostatClusterScheduleTransitionStruct, IsNSNumber value) => mtrThermostatClusterScheduleTransitionStruct -> value -> IO ()
-setHeatingSetpoint mtrThermostatClusterScheduleTransitionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleTransitionStruct (mkSelector "setHeatingSetpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeatingSetpoint mtrThermostatClusterScheduleTransitionStruct value =
+  sendMessage mtrThermostatClusterScheduleTransitionStruct setHeatingSetpointSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dayOfWeek@
-dayOfWeekSelector :: Selector
+dayOfWeekSelector :: Selector '[] (Id NSNumber)
 dayOfWeekSelector = mkSelector "dayOfWeek"
 
 -- | @Selector@ for @setDayOfWeek:@
-setDayOfWeekSelector :: Selector
+setDayOfWeekSelector :: Selector '[Id NSNumber] ()
 setDayOfWeekSelector = mkSelector "setDayOfWeek:"
 
 -- | @Selector@ for @transitionTime@
-transitionTimeSelector :: Selector
+transitionTimeSelector :: Selector '[] (Id NSNumber)
 transitionTimeSelector = mkSelector "transitionTime"
 
 -- | @Selector@ for @setTransitionTime:@
-setTransitionTimeSelector :: Selector
+setTransitionTimeSelector :: Selector '[Id NSNumber] ()
 setTransitionTimeSelector = mkSelector "setTransitionTime:"
 
 -- | @Selector@ for @presetHandle@
-presetHandleSelector :: Selector
+presetHandleSelector :: Selector '[] (Id NSData)
 presetHandleSelector = mkSelector "presetHandle"
 
 -- | @Selector@ for @setPresetHandle:@
-setPresetHandleSelector :: Selector
+setPresetHandleSelector :: Selector '[Id NSData] ()
 setPresetHandleSelector = mkSelector "setPresetHandle:"
 
 -- | @Selector@ for @systemMode@
-systemModeSelector :: Selector
+systemModeSelector :: Selector '[] (Id NSNumber)
 systemModeSelector = mkSelector "systemMode"
 
 -- | @Selector@ for @setSystemMode:@
-setSystemModeSelector :: Selector
+setSystemModeSelector :: Selector '[Id NSNumber] ()
 setSystemModeSelector = mkSelector "setSystemMode:"
 
 -- | @Selector@ for @coolingSetpoint@
-coolingSetpointSelector :: Selector
+coolingSetpointSelector :: Selector '[] (Id NSNumber)
 coolingSetpointSelector = mkSelector "coolingSetpoint"
 
 -- | @Selector@ for @setCoolingSetpoint:@
-setCoolingSetpointSelector :: Selector
+setCoolingSetpointSelector :: Selector '[Id NSNumber] ()
 setCoolingSetpointSelector = mkSelector "setCoolingSetpoint:"
 
 -- | @Selector@ for @heatingSetpoint@
-heatingSetpointSelector :: Selector
+heatingSetpointSelector :: Selector '[] (Id NSNumber)
 heatingSetpointSelector = mkSelector "heatingSetpoint"
 
 -- | @Selector@ for @setHeatingSetpoint:@
-setHeatingSetpointSelector :: Selector
+setHeatingSetpointSelector :: Selector '[Id NSNumber] ()
 setHeatingSetpointSelector = mkSelector "setHeatingSetpoint:"
 

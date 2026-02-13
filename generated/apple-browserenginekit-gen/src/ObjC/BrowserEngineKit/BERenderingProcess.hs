@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.BrowserEngineKit.BERenderingProcess
   , makeLibXPCConnectionError
   , grantCapability_error_invalidationHandler
   , grantCapability_error
+  , grantCapability_errorSelector
+  , grantCapability_error_invalidationHandlerSelector
   , initSelector
-  , newSelector
-  , renderingProcessWithInterruptionHandler_completionSelector
-  , renderingProcessWithBundleID_interruptionHandler_completionSelector
   , invalidateSelector
   , makeLibXPCConnectionErrorSelector
-  , grantCapability_error_invalidationHandlerSelector
-  , grantCapability_errorSelector
+  , newSelector
+  , renderingProcessWithBundleID_interruptionHandler_completionSelector
+  , renderingProcessWithInterruptionHandler_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBERenderingProcess beRenderingProcess => beRenderingProcess -> IO (Id BERenderingProcess)
-init_ beRenderingProcess  =
-    sendMsg beRenderingProcess (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ beRenderingProcess =
+  sendOwnedMessage beRenderingProcess initSelector
 
 -- | @+ new@
 new :: IO (Id BERenderingProcess)
 new  =
   do
     cls' <- getRequiredClass "BERenderingProcess"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Asynchronously finds an existing extension process or launches one.
 --
@@ -68,7 +65,7 @@ renderingProcessWithInterruptionHandler_completion :: Ptr () -> Ptr () -> IO ()
 renderingProcessWithInterruptionHandler_completion interruptionHandler completion =
   do
     cls' <- getRequiredClass "BERenderingProcess"
-    sendClassMsg cls' (mkSelector "renderingProcessWithInterruptionHandler:completion:") retVoid [argPtr (castPtr interruptionHandler :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' renderingProcessWithInterruptionHandler_completionSelector interruptionHandler completion
 
 -- | Asynchronously launches a rendering extension process.
 --
@@ -81,8 +78,7 @@ renderingProcessWithBundleID_interruptionHandler_completion :: IsNSString bundle
 renderingProcessWithBundleID_interruptionHandler_completion bundleID interruptionHandler completion =
   do
     cls' <- getRequiredClass "BERenderingProcess"
-    withObjCPtr bundleID $ \raw_bundleID ->
-      sendClassMsg cls' (mkSelector "renderingProcessWithBundleID:interruptionHandler:completion:") retVoid [argPtr (castPtr raw_bundleID :: Ptr ()), argPtr (castPtr interruptionHandler :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' renderingProcessWithBundleID_interruptionHandler_completionSelector (toNSString bundleID) interruptionHandler completion
 
 -- | Stops the extension process.
 --
@@ -90,8 +86,8 @@ renderingProcessWithBundleID_interruptionHandler_completion bundleID interruptio
 --
 -- ObjC selector: @- invalidate@
 invalidate :: IsBERenderingProcess beRenderingProcess => beRenderingProcess -> IO ()
-invalidate beRenderingProcess  =
-    sendMsg beRenderingProcess (mkSelector "invalidate") retVoid []
+invalidate beRenderingProcess =
+  sendMessage beRenderingProcess invalidateSelector
 
 -- | Creates a new libXPC connection to the extension process.
 --
@@ -101,9 +97,8 @@ invalidate beRenderingProcess  =
 --
 -- ObjC selector: @- makeLibXPCConnectionError:@
 makeLibXPCConnectionError :: (IsBERenderingProcess beRenderingProcess, IsNSError error_) => beRenderingProcess -> error_ -> IO (Id NSObject)
-makeLibXPCConnectionError beRenderingProcess  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg beRenderingProcess (mkSelector "makeLibXPCConnectionError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+makeLibXPCConnectionError beRenderingProcess error_ =
+  sendMessage beRenderingProcess makeLibXPCConnectionErrorSelector (toNSError error_)
 
 -- | Grants the specified capability to the process with invalidation handler.
 --
@@ -115,10 +110,8 @@ makeLibXPCConnectionError beRenderingProcess  error_ =
 --
 -- ObjC selector: @- grantCapability:error:invalidationHandler:@
 grantCapability_error_invalidationHandler :: (IsBERenderingProcess beRenderingProcess, IsBEProcessCapability capability, IsNSError error_) => beRenderingProcess -> capability -> error_ -> Ptr () -> IO RawId
-grantCapability_error_invalidationHandler beRenderingProcess  capability error_ invalidationHandler =
-  withObjCPtr capability $ \raw_capability ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg beRenderingProcess (mkSelector "grantCapability:error:invalidationHandler:") (retPtr retVoid) [argPtr (castPtr raw_capability :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr invalidationHandler :: Ptr ())]
+grantCapability_error_invalidationHandler beRenderingProcess capability error_ invalidationHandler =
+  sendMessage beRenderingProcess grantCapability_error_invalidationHandlerSelector (toBEProcessCapability capability) (toNSError error_) invalidationHandler
 
 -- | Grants the specified capability to the process.
 --
@@ -130,44 +123,42 @@ grantCapability_error_invalidationHandler beRenderingProcess  capability error_ 
 --
 -- ObjC selector: @- grantCapability:error:@
 grantCapability_error :: (IsBERenderingProcess beRenderingProcess, IsBEProcessCapability capability, IsNSError error_) => beRenderingProcess -> capability -> error_ -> IO RawId
-grantCapability_error beRenderingProcess  capability error_ =
-  withObjCPtr capability $ \raw_capability ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg beRenderingProcess (mkSelector "grantCapability:error:") (retPtr retVoid) [argPtr (castPtr raw_capability :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+grantCapability_error beRenderingProcess capability error_ =
+  sendMessage beRenderingProcess grantCapability_errorSelector (toBEProcessCapability capability) (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BERenderingProcess)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BERenderingProcess)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @renderingProcessWithInterruptionHandler:completion:@
-renderingProcessWithInterruptionHandler_completionSelector :: Selector
+renderingProcessWithInterruptionHandler_completionSelector :: Selector '[Ptr (), Ptr ()] ()
 renderingProcessWithInterruptionHandler_completionSelector = mkSelector "renderingProcessWithInterruptionHandler:completion:"
 
 -- | @Selector@ for @renderingProcessWithBundleID:interruptionHandler:completion:@
-renderingProcessWithBundleID_interruptionHandler_completionSelector :: Selector
+renderingProcessWithBundleID_interruptionHandler_completionSelector :: Selector '[Id NSString, Ptr (), Ptr ()] ()
 renderingProcessWithBundleID_interruptionHandler_completionSelector = mkSelector "renderingProcessWithBundleID:interruptionHandler:completion:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @makeLibXPCConnectionError:@
-makeLibXPCConnectionErrorSelector :: Selector
+makeLibXPCConnectionErrorSelector :: Selector '[Id NSError] (Id NSObject)
 makeLibXPCConnectionErrorSelector = mkSelector "makeLibXPCConnectionError:"
 
 -- | @Selector@ for @grantCapability:error:invalidationHandler:@
-grantCapability_error_invalidationHandlerSelector :: Selector
+grantCapability_error_invalidationHandlerSelector :: Selector '[Id BEProcessCapability, Id NSError, Ptr ()] RawId
 grantCapability_error_invalidationHandlerSelector = mkSelector "grantCapability:error:invalidationHandler:"
 
 -- | @Selector@ for @grantCapability:error:@
-grantCapability_errorSelector :: Selector
+grantCapability_errorSelector :: Selector '[Id BEProcessCapability, Id NSError] RawId
 grantCapability_errorSelector = mkSelector "grantCapability:error:"
 

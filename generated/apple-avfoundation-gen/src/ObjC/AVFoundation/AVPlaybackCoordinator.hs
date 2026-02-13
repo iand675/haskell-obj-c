@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.AVFoundation.AVPlaybackCoordinator
   , setSuspensionReasonsThatTriggerWaiting
   , pauseSnapsToMediaTimeOfOriginator
   , setPauseSnapsToMediaTimeOfOriginator
+  , beginSuspensionForReasonSelector
   , initSelector
   , newSelector
-  , beginSuspensionForReasonSelector
-  , setParticipantLimit_forWaitingOutSuspensionsWithReasonSelector
-  , participantLimitForWaitingOutSuspensionsWithReasonSelector
   , otherParticipantsSelector
+  , participantLimitForWaitingOutSuspensionsWithReasonSelector
+  , pauseSnapsToMediaTimeOfOriginatorSelector
+  , setParticipantLimit_forWaitingOutSuspensionsWithReasonSelector
+  , setPauseSnapsToMediaTimeOfOriginatorSelector
+  , setSuspensionReasonsThatTriggerWaitingSelector
   , suspensionReasonsSelector
   , suspensionReasonsThatTriggerWaitingSelector
-  , setSuspensionReasonsThatTriggerWaitingSelector
-  , pauseSnapsToMediaTimeOfOriginatorSelector
-  , setPauseSnapsToMediaTimeOfOriginatorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlaybackCoordinator avPlaybackCoordinator => avPlaybackCoordinator -> IO (Id AVPlaybackCoordinator)
-init_ avPlaybackCoordinator  =
-    sendMsg avPlaybackCoordinator (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlaybackCoordinator =
+  sendOwnedMessage avPlaybackCoordinator initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlaybackCoordinator)
 new  =
   do
     cls' <- getRequiredClass "AVPlaybackCoordinator"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Informs the coordinator that its playback object is detached from the group for some reason and should not receive any playback commands from the coordinator.
 --
@@ -73,9 +70,8 @@ new  =
 --
 -- ObjC selector: @- beginSuspensionForReason:@
 beginSuspensionForReason :: (IsAVPlaybackCoordinator avPlaybackCoordinator, IsNSString suspensionReason) => avPlaybackCoordinator -> suspensionReason -> IO (Id AVCoordinatedPlaybackSuspension)
-beginSuspensionForReason avPlaybackCoordinator  suspensionReason =
-  withObjCPtr suspensionReason $ \raw_suspensionReason ->
-      sendMsg avPlaybackCoordinator (mkSelector "beginSuspensionForReason:") (retPtr retVoid) [argPtr (castPtr raw_suspensionReason :: Ptr ())] >>= retainedObject . castPtr
+beginSuspensionForReason avPlaybackCoordinator suspensionReason =
+  sendMessage avPlaybackCoordinator beginSuspensionForReasonSelector (toNSString suspensionReason)
 
 -- | Sets the amount of participants that can join a group before the coordinator stops waiting for this particular suspension reason.
 --
@@ -83,17 +79,15 @@ beginSuspensionForReason avPlaybackCoordinator  suspensionReason =
 --
 -- ObjC selector: @- setParticipantLimit:forWaitingOutSuspensionsWithReason:@
 setParticipantLimit_forWaitingOutSuspensionsWithReason :: (IsAVPlaybackCoordinator avPlaybackCoordinator, IsNSString reason) => avPlaybackCoordinator -> CLong -> reason -> IO ()
-setParticipantLimit_forWaitingOutSuspensionsWithReason avPlaybackCoordinator  participantLimit reason =
-  withObjCPtr reason $ \raw_reason ->
-      sendMsg avPlaybackCoordinator (mkSelector "setParticipantLimit:forWaitingOutSuspensionsWithReason:") retVoid [argCLong participantLimit, argPtr (castPtr raw_reason :: Ptr ())]
+setParticipantLimit_forWaitingOutSuspensionsWithReason avPlaybackCoordinator participantLimit reason =
+  sendMessage avPlaybackCoordinator setParticipantLimit_forWaitingOutSuspensionsWithReasonSelector participantLimit (toNSString reason)
 
 -- | Returns the maximum number of participants that can be in a group before the coordinator stops waiting out this particular suspensions reason. Default value is NSIntegerMax.
 --
 -- ObjC selector: @- participantLimitForWaitingOutSuspensionsWithReason:@
 participantLimitForWaitingOutSuspensionsWithReason :: (IsAVPlaybackCoordinator avPlaybackCoordinator, IsNSString reason) => avPlaybackCoordinator -> reason -> IO CLong
-participantLimitForWaitingOutSuspensionsWithReason avPlaybackCoordinator  reason =
-  withObjCPtr reason $ \raw_reason ->
-      sendMsg avPlaybackCoordinator (mkSelector "participantLimitForWaitingOutSuspensionsWithReason:") retCLong [argPtr (castPtr raw_reason :: Ptr ())]
+participantLimitForWaitingOutSuspensionsWithReason avPlaybackCoordinator reason =
+  sendMessage avPlaybackCoordinator participantLimitForWaitingOutSuspensionsWithReasonSelector (toNSString reason)
 
 -- | The playback states of the other participants in the group.
 --
@@ -103,8 +97,8 @@ participantLimitForWaitingOutSuspensionsWithReason avPlaybackCoordinator  reason
 --
 -- ObjC selector: @- otherParticipants@
 otherParticipants :: IsAVPlaybackCoordinator avPlaybackCoordinator => avPlaybackCoordinator -> IO (Id NSArray)
-otherParticipants avPlaybackCoordinator  =
-    sendMsg avPlaybackCoordinator (mkSelector "otherParticipants") (retPtr retVoid) [] >>= retainedObject . castPtr
+otherParticipants avPlaybackCoordinator =
+  sendMessage avPlaybackCoordinator otherParticipantsSelector
 
 -- | Describes why the coordinator is currently not able to participate in group playback.
 --
@@ -112,23 +106,22 @@ otherParticipants avPlaybackCoordinator  =
 --
 -- ObjC selector: @- suspensionReasons@
 suspensionReasons :: IsAVPlaybackCoordinator avPlaybackCoordinator => avPlaybackCoordinator -> IO (Id NSArray)
-suspensionReasons avPlaybackCoordinator  =
-    sendMsg avPlaybackCoordinator (mkSelector "suspensionReasons") (retPtr retVoid) [] >>= retainedObject . castPtr
+suspensionReasons avPlaybackCoordinator =
+  sendMessage avPlaybackCoordinator suspensionReasonsSelector
 
 -- | If the coordinator decides to delay playback to wait for others, it will wait out these reasons, but not others.
 --
 -- ObjC selector: @- suspensionReasonsThatTriggerWaiting@
 suspensionReasonsThatTriggerWaiting :: IsAVPlaybackCoordinator avPlaybackCoordinator => avPlaybackCoordinator -> IO (Id NSArray)
-suspensionReasonsThatTriggerWaiting avPlaybackCoordinator  =
-    sendMsg avPlaybackCoordinator (mkSelector "suspensionReasonsThatTriggerWaiting") (retPtr retVoid) [] >>= retainedObject . castPtr
+suspensionReasonsThatTriggerWaiting avPlaybackCoordinator =
+  sendMessage avPlaybackCoordinator suspensionReasonsThatTriggerWaitingSelector
 
 -- | If the coordinator decides to delay playback to wait for others, it will wait out these reasons, but not others.
 --
 -- ObjC selector: @- setSuspensionReasonsThatTriggerWaiting:@
 setSuspensionReasonsThatTriggerWaiting :: (IsAVPlaybackCoordinator avPlaybackCoordinator, IsNSArray value) => avPlaybackCoordinator -> value -> IO ()
-setSuspensionReasonsThatTriggerWaiting avPlaybackCoordinator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlaybackCoordinator (mkSelector "setSuspensionReasonsThatTriggerWaiting:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSuspensionReasonsThatTriggerWaiting avPlaybackCoordinator value =
+  sendMessage avPlaybackCoordinator setSuspensionReasonsThatTriggerWaitingSelector (toNSArray value)
 
 -- | Determines if participants should mirror the originator's stop time when pausing.
 --
@@ -136,8 +129,8 @@ setSuspensionReasonsThatTriggerWaiting avPlaybackCoordinator  value =
 --
 -- ObjC selector: @- pauseSnapsToMediaTimeOfOriginator@
 pauseSnapsToMediaTimeOfOriginator :: IsAVPlaybackCoordinator avPlaybackCoordinator => avPlaybackCoordinator -> IO Bool
-pauseSnapsToMediaTimeOfOriginator avPlaybackCoordinator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlaybackCoordinator (mkSelector "pauseSnapsToMediaTimeOfOriginator") retCULong []
+pauseSnapsToMediaTimeOfOriginator avPlaybackCoordinator =
+  sendMessage avPlaybackCoordinator pauseSnapsToMediaTimeOfOriginatorSelector
 
 -- | Determines if participants should mirror the originator's stop time when pausing.
 --
@@ -145,54 +138,54 @@ pauseSnapsToMediaTimeOfOriginator avPlaybackCoordinator  =
 --
 -- ObjC selector: @- setPauseSnapsToMediaTimeOfOriginator:@
 setPauseSnapsToMediaTimeOfOriginator :: IsAVPlaybackCoordinator avPlaybackCoordinator => avPlaybackCoordinator -> Bool -> IO ()
-setPauseSnapsToMediaTimeOfOriginator avPlaybackCoordinator  value =
-    sendMsg avPlaybackCoordinator (mkSelector "setPauseSnapsToMediaTimeOfOriginator:") retVoid [argCULong (if value then 1 else 0)]
+setPauseSnapsToMediaTimeOfOriginator avPlaybackCoordinator value =
+  sendMessage avPlaybackCoordinator setPauseSnapsToMediaTimeOfOriginatorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlaybackCoordinator)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlaybackCoordinator)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @beginSuspensionForReason:@
-beginSuspensionForReasonSelector :: Selector
+beginSuspensionForReasonSelector :: Selector '[Id NSString] (Id AVCoordinatedPlaybackSuspension)
 beginSuspensionForReasonSelector = mkSelector "beginSuspensionForReason:"
 
 -- | @Selector@ for @setParticipantLimit:forWaitingOutSuspensionsWithReason:@
-setParticipantLimit_forWaitingOutSuspensionsWithReasonSelector :: Selector
+setParticipantLimit_forWaitingOutSuspensionsWithReasonSelector :: Selector '[CLong, Id NSString] ()
 setParticipantLimit_forWaitingOutSuspensionsWithReasonSelector = mkSelector "setParticipantLimit:forWaitingOutSuspensionsWithReason:"
 
 -- | @Selector@ for @participantLimitForWaitingOutSuspensionsWithReason:@
-participantLimitForWaitingOutSuspensionsWithReasonSelector :: Selector
+participantLimitForWaitingOutSuspensionsWithReasonSelector :: Selector '[Id NSString] CLong
 participantLimitForWaitingOutSuspensionsWithReasonSelector = mkSelector "participantLimitForWaitingOutSuspensionsWithReason:"
 
 -- | @Selector@ for @otherParticipants@
-otherParticipantsSelector :: Selector
+otherParticipantsSelector :: Selector '[] (Id NSArray)
 otherParticipantsSelector = mkSelector "otherParticipants"
 
 -- | @Selector@ for @suspensionReasons@
-suspensionReasonsSelector :: Selector
+suspensionReasonsSelector :: Selector '[] (Id NSArray)
 suspensionReasonsSelector = mkSelector "suspensionReasons"
 
 -- | @Selector@ for @suspensionReasonsThatTriggerWaiting@
-suspensionReasonsThatTriggerWaitingSelector :: Selector
+suspensionReasonsThatTriggerWaitingSelector :: Selector '[] (Id NSArray)
 suspensionReasonsThatTriggerWaitingSelector = mkSelector "suspensionReasonsThatTriggerWaiting"
 
 -- | @Selector@ for @setSuspensionReasonsThatTriggerWaiting:@
-setSuspensionReasonsThatTriggerWaitingSelector :: Selector
+setSuspensionReasonsThatTriggerWaitingSelector :: Selector '[Id NSArray] ()
 setSuspensionReasonsThatTriggerWaitingSelector = mkSelector "setSuspensionReasonsThatTriggerWaiting:"
 
 -- | @Selector@ for @pauseSnapsToMediaTimeOfOriginator@
-pauseSnapsToMediaTimeOfOriginatorSelector :: Selector
+pauseSnapsToMediaTimeOfOriginatorSelector :: Selector '[] Bool
 pauseSnapsToMediaTimeOfOriginatorSelector = mkSelector "pauseSnapsToMediaTimeOfOriginator"
 
 -- | @Selector@ for @setPauseSnapsToMediaTimeOfOriginator:@
-setPauseSnapsToMediaTimeOfOriginatorSelector :: Selector
+setPauseSnapsToMediaTimeOfOriginatorSelector :: Selector '[Bool] ()
 setPauseSnapsToMediaTimeOfOriginatorSelector = mkSelector "setPauseSnapsToMediaTimeOfOriginator:"
 

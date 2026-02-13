@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,30 +26,26 @@ module ObjC.AVFAudio.AVAudioUnitSampler
   , setMasterGain
   , globalTuning
   , setGlobalTuning
-  , loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_errorSelector
-  , loadInstrumentAtURL_errorSelector
-  , loadAudioFilesAtURLs_errorSelector
-  , stereoPanSelector
-  , setStereoPanSelector
-  , overallGainSelector
-  , setOverallGainSelector
-  , masterGainSelector
-  , setMasterGainSelector
   , globalTuningSelector
+  , loadAudioFilesAtURLs_errorSelector
+  , loadInstrumentAtURL_errorSelector
+  , loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_errorSelector
+  , masterGainSelector
+  , overallGainSelector
   , setGlobalTuningSelector
+  , setMasterGainSelector
+  , setOverallGainSelector
+  , setStereoPanSelector
+  , stereoPanSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,10 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- loadSoundBankInstrumentAtURL:program:bankMSB:bankLSB:error:@
 loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_error :: (IsAVAudioUnitSampler avAudioUnitSampler, IsNSURL bankURL, IsNSError outError) => avAudioUnitSampler -> bankURL -> CUChar -> CUChar -> CUChar -> outError -> IO Bool
-loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_error avAudioUnitSampler  bankURL program bankMSB bankLSB outError =
-  withObjCPtr bankURL $ \raw_bankURL ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitSampler (mkSelector "loadSoundBankInstrumentAtURL:program:bankMSB:bankLSB:error:") retCULong [argPtr (castPtr raw_bankURL :: Ptr ()), argCUChar program, argCUChar bankMSB, argCUChar bankLSB, argPtr (castPtr raw_outError :: Ptr ())]
+loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_error avAudioUnitSampler bankURL program bankMSB bankLSB outError =
+  sendMessage avAudioUnitSampler loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_errorSelector (toNSURL bankURL) program bankMSB bankLSB (toNSError outError)
 
 -- | loadInstrumentAtURL:error:
 --
@@ -92,10 +87,8 @@ loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_error avAudioUnitSampler  b
 --
 -- ObjC selector: @- loadInstrumentAtURL:error:@
 loadInstrumentAtURL_error :: (IsAVAudioUnitSampler avAudioUnitSampler, IsNSURL instrumentURL, IsNSError outError) => avAudioUnitSampler -> instrumentURL -> outError -> IO Bool
-loadInstrumentAtURL_error avAudioUnitSampler  instrumentURL outError =
-  withObjCPtr instrumentURL $ \raw_instrumentURL ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitSampler (mkSelector "loadInstrumentAtURL:error:") retCULong [argPtr (castPtr raw_instrumentURL :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+loadInstrumentAtURL_error avAudioUnitSampler instrumentURL outError =
+  sendMessage avAudioUnitSampler loadInstrumentAtURL_errorSelector (toNSURL instrumentURL) (toNSError outError)
 
 -- | loadAudioFilesAtURLs:error:
 --
@@ -109,10 +102,8 @@ loadInstrumentAtURL_error avAudioUnitSampler  instrumentURL outError =
 --
 -- ObjC selector: @- loadAudioFilesAtURLs:error:@
 loadAudioFilesAtURLs_error :: (IsAVAudioUnitSampler avAudioUnitSampler, IsNSArray audioFiles, IsNSError outError) => avAudioUnitSampler -> audioFiles -> outError -> IO Bool
-loadAudioFilesAtURLs_error avAudioUnitSampler  audioFiles outError =
-  withObjCPtr audioFiles $ \raw_audioFiles ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitSampler (mkSelector "loadAudioFilesAtURLs:error:") retCULong [argPtr (castPtr raw_audioFiles :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+loadAudioFilesAtURLs_error avAudioUnitSampler audioFiles outError =
+  sendMessage avAudioUnitSampler loadAudioFilesAtURLs_errorSelector (toNSArray audioFiles) (toNSError outError)
 
 -- | stereoPan
 --
@@ -120,8 +111,8 @@ loadAudioFilesAtURLs_error avAudioUnitSampler  audioFiles outError =
 --
 -- ObjC selector: @- stereoPan@
 stereoPan :: IsAVAudioUnitSampler avAudioUnitSampler => avAudioUnitSampler -> IO CFloat
-stereoPan avAudioUnitSampler  =
-    sendMsg avAudioUnitSampler (mkSelector "stereoPan") retCFloat []
+stereoPan avAudioUnitSampler =
+  sendMessage avAudioUnitSampler stereoPanSelector
 
 -- | stereoPan
 --
@@ -129,8 +120,8 @@ stereoPan avAudioUnitSampler  =
 --
 -- ObjC selector: @- setStereoPan:@
 setStereoPan :: IsAVAudioUnitSampler avAudioUnitSampler => avAudioUnitSampler -> CFloat -> IO ()
-setStereoPan avAudioUnitSampler  value =
-    sendMsg avAudioUnitSampler (mkSelector "setStereoPan:") retVoid [argCFloat value]
+setStereoPan avAudioUnitSampler value =
+  sendMessage avAudioUnitSampler setStereoPanSelector value
 
 -- | overallGain
 --
@@ -138,8 +129,8 @@ setStereoPan avAudioUnitSampler  value =
 --
 -- ObjC selector: @- overallGain@
 overallGain :: IsAVAudioUnitSampler avAudioUnitSampler => avAudioUnitSampler -> IO CFloat
-overallGain avAudioUnitSampler  =
-    sendMsg avAudioUnitSampler (mkSelector "overallGain") retCFloat []
+overallGain avAudioUnitSampler =
+  sendMessage avAudioUnitSampler overallGainSelector
 
 -- | overallGain
 --
@@ -147,8 +138,8 @@ overallGain avAudioUnitSampler  =
 --
 -- ObjC selector: @- setOverallGain:@
 setOverallGain :: IsAVAudioUnitSampler avAudioUnitSampler => avAudioUnitSampler -> CFloat -> IO ()
-setOverallGain avAudioUnitSampler  value =
-    sendMsg avAudioUnitSampler (mkSelector "setOverallGain:") retVoid [argCFloat value]
+setOverallGain avAudioUnitSampler value =
+  sendMessage avAudioUnitSampler setOverallGainSelector value
 
 -- | masterGain
 --
@@ -156,8 +147,8 @@ setOverallGain avAudioUnitSampler  value =
 --
 -- ObjC selector: @- masterGain@
 masterGain :: IsAVAudioUnitSampler avAudioUnitSampler => avAudioUnitSampler -> IO CFloat
-masterGain avAudioUnitSampler  =
-    sendMsg avAudioUnitSampler (mkSelector "masterGain") retCFloat []
+masterGain avAudioUnitSampler =
+  sendMessage avAudioUnitSampler masterGainSelector
 
 -- | masterGain
 --
@@ -165,8 +156,8 @@ masterGain avAudioUnitSampler  =
 --
 -- ObjC selector: @- setMasterGain:@
 setMasterGain :: IsAVAudioUnitSampler avAudioUnitSampler => avAudioUnitSampler -> CFloat -> IO ()
-setMasterGain avAudioUnitSampler  value =
-    sendMsg avAudioUnitSampler (mkSelector "setMasterGain:") retVoid [argCFloat value]
+setMasterGain avAudioUnitSampler value =
+  sendMessage avAudioUnitSampler setMasterGainSelector value
 
 -- | globalTuning
 --
@@ -174,8 +165,8 @@ setMasterGain avAudioUnitSampler  value =
 --
 -- ObjC selector: @- globalTuning@
 globalTuning :: IsAVAudioUnitSampler avAudioUnitSampler => avAudioUnitSampler -> IO CFloat
-globalTuning avAudioUnitSampler  =
-    sendMsg avAudioUnitSampler (mkSelector "globalTuning") retCFloat []
+globalTuning avAudioUnitSampler =
+  sendMessage avAudioUnitSampler globalTuningSelector
 
 -- | globalTuning
 --
@@ -183,54 +174,54 @@ globalTuning avAudioUnitSampler  =
 --
 -- ObjC selector: @- setGlobalTuning:@
 setGlobalTuning :: IsAVAudioUnitSampler avAudioUnitSampler => avAudioUnitSampler -> CFloat -> IO ()
-setGlobalTuning avAudioUnitSampler  value =
-    sendMsg avAudioUnitSampler (mkSelector "setGlobalTuning:") retVoid [argCFloat value]
+setGlobalTuning avAudioUnitSampler value =
+  sendMessage avAudioUnitSampler setGlobalTuningSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadSoundBankInstrumentAtURL:program:bankMSB:bankLSB:error:@
-loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_errorSelector :: Selector
+loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_errorSelector :: Selector '[Id NSURL, CUChar, CUChar, CUChar, Id NSError] Bool
 loadSoundBankInstrumentAtURL_program_bankMSB_bankLSB_errorSelector = mkSelector "loadSoundBankInstrumentAtURL:program:bankMSB:bankLSB:error:"
 
 -- | @Selector@ for @loadInstrumentAtURL:error:@
-loadInstrumentAtURL_errorSelector :: Selector
+loadInstrumentAtURL_errorSelector :: Selector '[Id NSURL, Id NSError] Bool
 loadInstrumentAtURL_errorSelector = mkSelector "loadInstrumentAtURL:error:"
 
 -- | @Selector@ for @loadAudioFilesAtURLs:error:@
-loadAudioFilesAtURLs_errorSelector :: Selector
+loadAudioFilesAtURLs_errorSelector :: Selector '[Id NSArray, Id NSError] Bool
 loadAudioFilesAtURLs_errorSelector = mkSelector "loadAudioFilesAtURLs:error:"
 
 -- | @Selector@ for @stereoPan@
-stereoPanSelector :: Selector
+stereoPanSelector :: Selector '[] CFloat
 stereoPanSelector = mkSelector "stereoPan"
 
 -- | @Selector@ for @setStereoPan:@
-setStereoPanSelector :: Selector
+setStereoPanSelector :: Selector '[CFloat] ()
 setStereoPanSelector = mkSelector "setStereoPan:"
 
 -- | @Selector@ for @overallGain@
-overallGainSelector :: Selector
+overallGainSelector :: Selector '[] CFloat
 overallGainSelector = mkSelector "overallGain"
 
 -- | @Selector@ for @setOverallGain:@
-setOverallGainSelector :: Selector
+setOverallGainSelector :: Selector '[CFloat] ()
 setOverallGainSelector = mkSelector "setOverallGain:"
 
 -- | @Selector@ for @masterGain@
-masterGainSelector :: Selector
+masterGainSelector :: Selector '[] CFloat
 masterGainSelector = mkSelector "masterGain"
 
 -- | @Selector@ for @setMasterGain:@
-setMasterGainSelector :: Selector
+setMasterGainSelector :: Selector '[CFloat] ()
 setMasterGainSelector = mkSelector "setMasterGain:"
 
 -- | @Selector@ for @globalTuning@
-globalTuningSelector :: Selector
+globalTuningSelector :: Selector '[] CFloat
 globalTuningSelector = mkSelector "globalTuning"
 
 -- | @Selector@ for @setGlobalTuning:@
-setGlobalTuningSelector :: Selector
+setGlobalTuningSelector :: Selector '[CFloat] ()
 setGlobalTuningSelector = mkSelector "setGlobalTuning:"
 

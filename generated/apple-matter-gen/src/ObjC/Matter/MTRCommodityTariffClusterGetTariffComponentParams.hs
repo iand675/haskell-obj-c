@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRCommodityTariffClusterGetTariffComponentParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , tariffComponentIDSelector
-  , setTariffComponentIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTariffComponentIDSelector
+  , setTimedInvokeTimeoutMsSelector
+  , tariffComponentIDSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- tariffComponentID@
 tariffComponentID :: IsMTRCommodityTariffClusterGetTariffComponentParams mtrCommodityTariffClusterGetTariffComponentParams => mtrCommodityTariffClusterGetTariffComponentParams -> IO (Id NSNumber)
-tariffComponentID mtrCommodityTariffClusterGetTariffComponentParams  =
-    sendMsg mtrCommodityTariffClusterGetTariffComponentParams (mkSelector "tariffComponentID") (retPtr retVoid) [] >>= retainedObject . castPtr
+tariffComponentID mtrCommodityTariffClusterGetTariffComponentParams =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentParams tariffComponentIDSelector
 
 -- | @- setTariffComponentID:@
 setTariffComponentID :: (IsMTRCommodityTariffClusterGetTariffComponentParams mtrCommodityTariffClusterGetTariffComponentParams, IsNSNumber value) => mtrCommodityTariffClusterGetTariffComponentParams -> value -> IO ()
-setTariffComponentID mtrCommodityTariffClusterGetTariffComponentParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterGetTariffComponentParams (mkSelector "setTariffComponentID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTariffComponentID mtrCommodityTariffClusterGetTariffComponentParams value =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentParams setTariffComponentIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setTariffComponentID mtrCommodityTariffClusterGetTariffComponentParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCommodityTariffClusterGetTariffComponentParams mtrCommodityTariffClusterGetTariffComponentParams => mtrCommodityTariffClusterGetTariffComponentParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCommodityTariffClusterGetTariffComponentParams  =
-    sendMsg mtrCommodityTariffClusterGetTariffComponentParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCommodityTariffClusterGetTariffComponentParams =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrCommodityTariffClusterGetTariffComponentParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCommodityTariffClusterGetTariffComponentParams mtrCommodityTariffClusterGetTariffComponentParams, IsNSNumber value) => mtrCommodityTariffClusterGetTariffComponentParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCommodityTariffClusterGetTariffComponentParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterGetTariffComponentParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCommodityTariffClusterGetTariffComponentParams value =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrCommodityTariffClusterGetTariffComponentParams  value
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCommodityTariffClusterGetTariffComponentParams mtrCommodityTariffClusterGetTariffComponentParams => mtrCommodityTariffClusterGetTariffComponentParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCommodityTariffClusterGetTariffComponentParams  =
-    sendMsg mtrCommodityTariffClusterGetTariffComponentParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCommodityTariffClusterGetTariffComponentParams =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrCommodityTariffClusterGetTariffComponentParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCommodityTariffClusterGetTariffComponentParams mtrCommodityTariffClusterGetTariffComponentParams, IsNSNumber value) => mtrCommodityTariffClusterGetTariffComponentParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCommodityTariffClusterGetTariffComponentParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterGetTariffComponentParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCommodityTariffClusterGetTariffComponentParams value =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tariffComponentID@
-tariffComponentIDSelector :: Selector
+tariffComponentIDSelector :: Selector '[] (Id NSNumber)
 tariffComponentIDSelector = mkSelector "tariffComponentID"
 
 -- | @Selector@ for @setTariffComponentID:@
-setTariffComponentIDSelector :: Selector
+setTariffComponentIDSelector :: Selector '[Id NSNumber] ()
 setTariffComponentIDSelector = mkSelector "setTariffComponentID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

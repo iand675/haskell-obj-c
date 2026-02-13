@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.CoreMIDI.MIDICIDeviceManager
   , IsMIDICIDeviceManager(..)
   , sharedInstance
   , discoveredCIDevices
-  , sharedInstanceSelector
   , discoveredCIDevicesSelector
+  , sharedInstanceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,7 +43,7 @@ sharedInstance :: IO (Id MIDICIDeviceManager)
 sharedInstance  =
   do
     cls' <- getRequiredClass "MIDICIDeviceManager"
-    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedInstanceSelector
 
 -- | discoveredCIDevices
 --
@@ -54,18 +51,18 @@ sharedInstance  =
 --
 -- ObjC selector: @- discoveredCIDevices@
 discoveredCIDevices :: IsMIDICIDeviceManager midiciDeviceManager => midiciDeviceManager -> IO (Id NSArray)
-discoveredCIDevices midiciDeviceManager  =
-    sendMsg midiciDeviceManager (mkSelector "discoveredCIDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+discoveredCIDevices midiciDeviceManager =
+  sendMessage midiciDeviceManager discoveredCIDevicesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedInstance@
-sharedInstanceSelector :: Selector
+sharedInstanceSelector :: Selector '[] (Id MIDICIDeviceManager)
 sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @discoveredCIDevices@
-discoveredCIDevicesSelector :: Selector
+discoveredCIDevicesSelector :: Selector '[] (Id NSArray)
 discoveredCIDevicesSelector = mkSelector "discoveredCIDevices"
 

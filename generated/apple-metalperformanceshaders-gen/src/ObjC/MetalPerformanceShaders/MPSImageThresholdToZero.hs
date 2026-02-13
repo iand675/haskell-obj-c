@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.MetalPerformanceShaders.MPSImageThresholdToZero
   , initWithCoder_device
   , thresholdValue
   , transform
-  , initWithDevice_thresholdValue_linearGrayColorTransformSelector
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_thresholdValue_linearGrayColorTransformSelector
   , thresholdValueSelector
   , transformSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,13 +46,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:thresholdValue:linearGrayColorTransform:@
 initWithDevice_thresholdValue_linearGrayColorTransform :: IsMPSImageThresholdToZero mpsImageThresholdToZero => mpsImageThresholdToZero -> RawId -> CFloat -> Const (Ptr CFloat) -> IO (Id MPSImageThresholdToZero)
-initWithDevice_thresholdValue_linearGrayColorTransform mpsImageThresholdToZero  device thresholdValue transform =
-    sendMsg mpsImageThresholdToZero (mkSelector "initWithDevice:thresholdValue:linearGrayColorTransform:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat thresholdValue, argPtr (unConst transform)] >>= ownedObject . castPtr
+initWithDevice_thresholdValue_linearGrayColorTransform mpsImageThresholdToZero device thresholdValue transform =
+  sendOwnedMessage mpsImageThresholdToZero initWithDevice_thresholdValue_linearGrayColorTransformSelector device thresholdValue transform
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageThresholdToZero mpsImageThresholdToZero => mpsImageThresholdToZero -> RawId -> IO (Id MPSImageThresholdToZero)
-initWithDevice mpsImageThresholdToZero  device =
-    sendMsg mpsImageThresholdToZero (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageThresholdToZero device =
+  sendOwnedMessage mpsImageThresholdToZero initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -69,9 +66,8 @@ initWithDevice mpsImageThresholdToZero  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageThresholdToZero mpsImageThresholdToZero, IsNSCoder aDecoder) => mpsImageThresholdToZero -> aDecoder -> RawId -> IO (Id MPSImageThresholdToZero)
-initWithCoder_device mpsImageThresholdToZero  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageThresholdToZero (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageThresholdToZero aDecoder device =
+  sendOwnedMessage mpsImageThresholdToZero initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | thresholdValue
 --
@@ -79,8 +75,8 @@ initWithCoder_device mpsImageThresholdToZero  aDecoder device =
 --
 -- ObjC selector: @- thresholdValue@
 thresholdValue :: IsMPSImageThresholdToZero mpsImageThresholdToZero => mpsImageThresholdToZero -> IO CFloat
-thresholdValue mpsImageThresholdToZero  =
-    sendMsg mpsImageThresholdToZero (mkSelector "thresholdValue") retCFloat []
+thresholdValue mpsImageThresholdToZero =
+  sendMessage mpsImageThresholdToZero thresholdValueSelector
 
 -- | transform
 --
@@ -88,30 +84,30 @@ thresholdValue mpsImageThresholdToZero  =
 --
 -- ObjC selector: @- transform@
 transform :: IsMPSImageThresholdToZero mpsImageThresholdToZero => mpsImageThresholdToZero -> IO (Const (Ptr CFloat))
-transform mpsImageThresholdToZero  =
-    fmap Const $ fmap castPtr $ sendMsg mpsImageThresholdToZero (mkSelector "transform") (retPtr retVoid) []
+transform mpsImageThresholdToZero =
+  sendMessage mpsImageThresholdToZero transformSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:thresholdValue:linearGrayColorTransform:@
-initWithDevice_thresholdValue_linearGrayColorTransformSelector :: Selector
+initWithDevice_thresholdValue_linearGrayColorTransformSelector :: Selector '[RawId, CFloat, Const (Ptr CFloat)] (Id MPSImageThresholdToZero)
 initWithDevice_thresholdValue_linearGrayColorTransformSelector = mkSelector "initWithDevice:thresholdValue:linearGrayColorTransform:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageThresholdToZero)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageThresholdToZero)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @thresholdValue@
-thresholdValueSelector :: Selector
+thresholdValueSelector :: Selector '[] CFloat
 thresholdValueSelector = mkSelector "thresholdValue"
 
 -- | @Selector@ for @transform@
-transformSelector :: Selector
+transformSelector :: Selector '[] (Const (Ptr CFloat))
 transformSelector = mkSelector "transform"
 

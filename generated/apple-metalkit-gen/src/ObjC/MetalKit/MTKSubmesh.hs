@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.MetalKit.MTKSubmesh
   , mesh
   , name
   , setName
-  , initSelector
-  , primitiveTypeSelector
-  , indexTypeSelector
   , indexBufferSelector
   , indexCountSelector
+  , indexTypeSelector
+  , initSelector
   , meshSelector
   , nameSelector
+  , primitiveTypeSelector
   , setNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsMTKSubmesh mtkSubmesh => mtkSubmesh -> IO (Id MTKSubmesh)
-init_ mtkSubmesh  =
-    sendMsg mtkSubmesh (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtkSubmesh =
+  sendOwnedMessage mtkSubmesh initSelector
 
 -- | primitiveType
 --
@@ -64,8 +61,8 @@ init_ mtkSubmesh  =
 --
 -- ObjC selector: @- primitiveType@
 primitiveType :: IsMTKSubmesh mtkSubmesh => mtkSubmesh -> IO CInt
-primitiveType mtkSubmesh  =
-    sendMsg mtkSubmesh (mkSelector "primitiveType") retCInt []
+primitiveType mtkSubmesh =
+  sendMessage mtkSubmesh primitiveTypeSelector
 
 -- | indexType
 --
@@ -75,8 +72,8 @@ primitiveType mtkSubmesh  =
 --
 -- ObjC selector: @- indexType@
 indexType :: IsMTKSubmesh mtkSubmesh => mtkSubmesh -> IO CInt
-indexType mtkSubmesh  =
-    sendMsg mtkSubmesh (mkSelector "indexType") retCInt []
+indexType mtkSubmesh =
+  sendMessage mtkSubmesh indexTypeSelector
 
 -- | indexBuffer
 --
@@ -86,8 +83,8 @@ indexType mtkSubmesh  =
 --
 -- ObjC selector: @- indexBuffer@
 indexBuffer :: IsMTKSubmesh mtkSubmesh => mtkSubmesh -> IO (Id MTKMeshBuffer)
-indexBuffer mtkSubmesh  =
-    sendMsg mtkSubmesh (mkSelector "indexBuffer") (retPtr retVoid) [] >>= retainedObject . castPtr
+indexBuffer mtkSubmesh =
+  sendMessage mtkSubmesh indexBufferSelector
 
 -- | indexCount
 --
@@ -97,8 +94,8 @@ indexBuffer mtkSubmesh  =
 --
 -- ObjC selector: @- indexCount@
 indexCount :: IsMTKSubmesh mtkSubmesh => mtkSubmesh -> IO CULong
-indexCount mtkSubmesh  =
-    sendMsg mtkSubmesh (mkSelector "indexCount") retCULong []
+indexCount mtkSubmesh =
+  sendMessage mtkSubmesh indexCountSelector
 
 -- | mesh
 --
@@ -108,8 +105,8 @@ indexCount mtkSubmesh  =
 --
 -- ObjC selector: @- mesh@
 mesh :: IsMTKSubmesh mtkSubmesh => mtkSubmesh -> IO (Id MTKMesh)
-mesh mtkSubmesh  =
-    sendMsg mtkSubmesh (mkSelector "mesh") (retPtr retVoid) [] >>= retainedObject . castPtr
+mesh mtkSubmesh =
+  sendMessage mtkSubmesh meshSelector
 
 -- | name
 --
@@ -119,8 +116,8 @@ mesh mtkSubmesh  =
 --
 -- ObjC selector: @- name@
 name :: IsMTKSubmesh mtkSubmesh => mtkSubmesh -> IO (Id NSString)
-name mtkSubmesh  =
-    sendMsg mtkSubmesh (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtkSubmesh =
+  sendMessage mtkSubmesh nameSelector
 
 -- | name
 --
@@ -130,43 +127,42 @@ name mtkSubmesh  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsMTKSubmesh mtkSubmesh, IsNSString value) => mtkSubmesh -> value -> IO ()
-setName mtkSubmesh  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtkSubmesh (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtkSubmesh value =
+  sendMessage mtkSubmesh setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTKSubmesh)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @primitiveType@
-primitiveTypeSelector :: Selector
+primitiveTypeSelector :: Selector '[] CInt
 primitiveTypeSelector = mkSelector "primitiveType"
 
 -- | @Selector@ for @indexType@
-indexTypeSelector :: Selector
+indexTypeSelector :: Selector '[] CInt
 indexTypeSelector = mkSelector "indexType"
 
 -- | @Selector@ for @indexBuffer@
-indexBufferSelector :: Selector
+indexBufferSelector :: Selector '[] (Id MTKMeshBuffer)
 indexBufferSelector = mkSelector "indexBuffer"
 
 -- | @Selector@ for @indexCount@
-indexCountSelector :: Selector
+indexCountSelector :: Selector '[] CULong
 indexCountSelector = mkSelector "indexCount"
 
 -- | @Selector@ for @mesh@
-meshSelector :: Selector
+meshSelector :: Selector '[] (Id MTKMesh)
 meshSelector = mkSelector "mesh"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

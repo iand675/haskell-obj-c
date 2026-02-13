@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.SystemExtensions.OSSystemExtensionManager
   , sharedManager
   , initSelector
   , newSelector
-  , submitRequestSelector
   , sharedManagerSelector
+  , submitRequestSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,13 +32,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsOSSystemExtensionManager osSystemExtensionManager => osSystemExtensionManager -> IO (Id OSSystemExtensionManager)
-init_ osSystemExtensionManager  =
-    sendMsg osSystemExtensionManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ osSystemExtensionManager =
+  sendOwnedMessage osSystemExtensionManager initSelector
 
 -- | @- new@
 new :: IsOSSystemExtensionManager osSystemExtensionManager => osSystemExtensionManager -> IO (Id OSSystemExtensionManager)
-new osSystemExtensionManager  =
-    sendMsg osSystemExtensionManager (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+new osSystemExtensionManager =
+  sendOwnedMessage osSystemExtensionManager newSelector
 
 -- | Submits a System Extension request to the manager.
 --
@@ -49,34 +46,33 @@ new osSystemExtensionManager  =
 --
 -- ObjC selector: @- submitRequest:@
 submitRequest :: (IsOSSystemExtensionManager osSystemExtensionManager, IsOSSystemExtensionRequest request) => osSystemExtensionManager -> request -> IO ()
-submitRequest osSystemExtensionManager  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg osSystemExtensionManager (mkSelector "submitRequest:") retVoid [argPtr (castPtr raw_request :: Ptr ())]
+submitRequest osSystemExtensionManager request =
+  sendMessage osSystemExtensionManager submitRequestSelector (toOSSystemExtensionRequest request)
 
 -- | @+ sharedManager@
 sharedManager :: IO (Id OSSystemExtensionManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "OSSystemExtensionManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id OSSystemExtensionManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id OSSystemExtensionManager)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @submitRequest:@
-submitRequestSelector :: Selector
+submitRequestSelector :: Selector '[Id OSSystemExtensionRequest] ()
 submitRequestSelector = mkSelector "submitRequest:"
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id OSSystemExtensionManager)
 sharedManagerSelector = mkSelector "sharedManager"
 

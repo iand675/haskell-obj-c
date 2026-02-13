@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.MediaExtension.MERAWProcessingBooleanParameter
   , initialValue
   , currentValue
   , setCurrentValue
-  , initWithName_key_description_initialValueSelector
-  , initWithName_key_description_initialValue_neutralValueSelector
-  , initWithName_key_description_initialValue_cameraValueSelector
-  , initWithName_key_description_initialValue_neutralValue_cameraValueSelector
-  , hasNeutralValueSelector
-  , hasCameraValueSelector
-  , initialValueSelector
   , currentValueSelector
+  , hasCameraValueSelector
+  , hasNeutralValueSelector
+  , initWithName_key_description_initialValueSelector
+  , initWithName_key_description_initialValue_cameraValueSelector
+  , initWithName_key_description_initialValue_neutralValueSelector
+  , initWithName_key_description_initialValue_neutralValue_cameraValueSelector
+  , initialValueSelector
   , setCurrentValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,35 +42,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithName:key:description:initialValue:@
 initWithName_key_description_initialValue :: (IsMERAWProcessingBooleanParameter merawProcessingBooleanParameter, IsNSString name, IsNSString key, IsNSString description) => merawProcessingBooleanParameter -> name -> key -> description -> Bool -> IO (Id MERAWProcessingBooleanParameter)
-initWithName_key_description_initialValue merawProcessingBooleanParameter  name key description initialValue =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr description $ \raw_description ->
-          sendMsg merawProcessingBooleanParameter (mkSelector "initWithName:key:description:initialValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_description :: Ptr ()), argCULong (if initialValue then 1 else 0)] >>= ownedObject . castPtr
+initWithName_key_description_initialValue merawProcessingBooleanParameter name key description initialValue =
+  sendOwnedMessage merawProcessingBooleanParameter initWithName_key_description_initialValueSelector (toNSString name) (toNSString key) (toNSString description) initialValue
 
 -- | @- initWithName:key:description:initialValue:neutralValue:@
 initWithName_key_description_initialValue_neutralValue :: (IsMERAWProcessingBooleanParameter merawProcessingBooleanParameter, IsNSString name, IsNSString key, IsNSString description) => merawProcessingBooleanParameter -> name -> key -> description -> Bool -> Bool -> IO (Id MERAWProcessingBooleanParameter)
-initWithName_key_description_initialValue_neutralValue merawProcessingBooleanParameter  name key description initialValue neutralValue =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr description $ \raw_description ->
-          sendMsg merawProcessingBooleanParameter (mkSelector "initWithName:key:description:initialValue:neutralValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_description :: Ptr ()), argCULong (if initialValue then 1 else 0), argCULong (if neutralValue then 1 else 0)] >>= ownedObject . castPtr
+initWithName_key_description_initialValue_neutralValue merawProcessingBooleanParameter name key description initialValue neutralValue =
+  sendOwnedMessage merawProcessingBooleanParameter initWithName_key_description_initialValue_neutralValueSelector (toNSString name) (toNSString key) (toNSString description) initialValue neutralValue
 
 -- | @- initWithName:key:description:initialValue:cameraValue:@
 initWithName_key_description_initialValue_cameraValue :: (IsMERAWProcessingBooleanParameter merawProcessingBooleanParameter, IsNSString name, IsNSString key, IsNSString description) => merawProcessingBooleanParameter -> name -> key -> description -> Bool -> Bool -> IO (Id MERAWProcessingBooleanParameter)
-initWithName_key_description_initialValue_cameraValue merawProcessingBooleanParameter  name key description initialValue cameraValue =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr description $ \raw_description ->
-          sendMsg merawProcessingBooleanParameter (mkSelector "initWithName:key:description:initialValue:cameraValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_description :: Ptr ()), argCULong (if initialValue then 1 else 0), argCULong (if cameraValue then 1 else 0)] >>= ownedObject . castPtr
+initWithName_key_description_initialValue_cameraValue merawProcessingBooleanParameter name key description initialValue cameraValue =
+  sendOwnedMessage merawProcessingBooleanParameter initWithName_key_description_initialValue_cameraValueSelector (toNSString name) (toNSString key) (toNSString description) initialValue cameraValue
 
 -- | @- initWithName:key:description:initialValue:neutralValue:cameraValue:@
 initWithName_key_description_initialValue_neutralValue_cameraValue :: (IsMERAWProcessingBooleanParameter merawProcessingBooleanParameter, IsNSString name, IsNSString key, IsNSString description) => merawProcessingBooleanParameter -> name -> key -> description -> Bool -> Bool -> Bool -> IO (Id MERAWProcessingBooleanParameter)
-initWithName_key_description_initialValue_neutralValue_cameraValue merawProcessingBooleanParameter  name key description initialValue neutralValue cameraValue =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr description $ \raw_description ->
-          sendMsg merawProcessingBooleanParameter (mkSelector "initWithName:key:description:initialValue:neutralValue:cameraValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_description :: Ptr ()), argCULong (if initialValue then 1 else 0), argCULong (if neutralValue then 1 else 0), argCULong (if cameraValue then 1 else 0)] >>= ownedObject . castPtr
+initWithName_key_description_initialValue_neutralValue_cameraValue merawProcessingBooleanParameter name key description initialValue neutralValue cameraValue =
+  sendOwnedMessage merawProcessingBooleanParameter initWithName_key_description_initialValue_neutralValue_cameraValueSelector (toNSString name) (toNSString key) (toNSString description) initialValue neutralValue cameraValue
 
 -- | hasNeutralValue
 --
@@ -83,8 +68,8 @@ initWithName_key_description_initialValue_neutralValue_cameraValue merawProcessi
 --
 -- ObjC selector: @- hasNeutralValue:@
 hasNeutralValue :: IsMERAWProcessingBooleanParameter merawProcessingBooleanParameter => merawProcessingBooleanParameter -> Ptr Bool -> IO Bool
-hasNeutralValue merawProcessingBooleanParameter  outNeutralValue =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg merawProcessingBooleanParameter (mkSelector "hasNeutralValue:") retCULong [argPtr outNeutralValue]
+hasNeutralValue merawProcessingBooleanParameter outNeutralValue =
+  sendMessage merawProcessingBooleanParameter hasNeutralValueSelector outNeutralValue
 
 -- | hasCameraValue
 --
@@ -94,8 +79,8 @@ hasNeutralValue merawProcessingBooleanParameter  outNeutralValue =
 --
 -- ObjC selector: @- hasCameraValue:@
 hasCameraValue :: IsMERAWProcessingBooleanParameter merawProcessingBooleanParameter => merawProcessingBooleanParameter -> Ptr Bool -> IO Bool
-hasCameraValue merawProcessingBooleanParameter  outCameraValue =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg merawProcessingBooleanParameter (mkSelector "hasCameraValue:") retCULong [argPtr outCameraValue]
+hasCameraValue merawProcessingBooleanParameter outCameraValue =
+  sendMessage merawProcessingBooleanParameter hasCameraValueSelector outCameraValue
 
 -- | initialValue
 --
@@ -103,8 +88,8 @@ hasCameraValue merawProcessingBooleanParameter  outCameraValue =
 --
 -- ObjC selector: @- initialValue@
 initialValue :: IsMERAWProcessingBooleanParameter merawProcessingBooleanParameter => merawProcessingBooleanParameter -> IO Bool
-initialValue merawProcessingBooleanParameter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg merawProcessingBooleanParameter (mkSelector "initialValue") retCULong []
+initialValue merawProcessingBooleanParameter =
+  sendOwnedMessage merawProcessingBooleanParameter initialValueSelector
 
 -- | currentValue
 --
@@ -114,8 +99,8 @@ initialValue merawProcessingBooleanParameter  =
 --
 -- ObjC selector: @- currentValue@
 currentValue :: IsMERAWProcessingBooleanParameter merawProcessingBooleanParameter => merawProcessingBooleanParameter -> IO Bool
-currentValue merawProcessingBooleanParameter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg merawProcessingBooleanParameter (mkSelector "currentValue") retCULong []
+currentValue merawProcessingBooleanParameter =
+  sendMessage merawProcessingBooleanParameter currentValueSelector
 
 -- | currentValue
 --
@@ -125,46 +110,46 @@ currentValue merawProcessingBooleanParameter  =
 --
 -- ObjC selector: @- setCurrentValue:@
 setCurrentValue :: IsMERAWProcessingBooleanParameter merawProcessingBooleanParameter => merawProcessingBooleanParameter -> Bool -> IO ()
-setCurrentValue merawProcessingBooleanParameter  value =
-    sendMsg merawProcessingBooleanParameter (mkSelector "setCurrentValue:") retVoid [argCULong (if value then 1 else 0)]
+setCurrentValue merawProcessingBooleanParameter value =
+  sendMessage merawProcessingBooleanParameter setCurrentValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:key:description:initialValue:@
-initWithName_key_description_initialValueSelector :: Selector
+initWithName_key_description_initialValueSelector :: Selector '[Id NSString, Id NSString, Id NSString, Bool] (Id MERAWProcessingBooleanParameter)
 initWithName_key_description_initialValueSelector = mkSelector "initWithName:key:description:initialValue:"
 
 -- | @Selector@ for @initWithName:key:description:initialValue:neutralValue:@
-initWithName_key_description_initialValue_neutralValueSelector :: Selector
+initWithName_key_description_initialValue_neutralValueSelector :: Selector '[Id NSString, Id NSString, Id NSString, Bool, Bool] (Id MERAWProcessingBooleanParameter)
 initWithName_key_description_initialValue_neutralValueSelector = mkSelector "initWithName:key:description:initialValue:neutralValue:"
 
 -- | @Selector@ for @initWithName:key:description:initialValue:cameraValue:@
-initWithName_key_description_initialValue_cameraValueSelector :: Selector
+initWithName_key_description_initialValue_cameraValueSelector :: Selector '[Id NSString, Id NSString, Id NSString, Bool, Bool] (Id MERAWProcessingBooleanParameter)
 initWithName_key_description_initialValue_cameraValueSelector = mkSelector "initWithName:key:description:initialValue:cameraValue:"
 
 -- | @Selector@ for @initWithName:key:description:initialValue:neutralValue:cameraValue:@
-initWithName_key_description_initialValue_neutralValue_cameraValueSelector :: Selector
+initWithName_key_description_initialValue_neutralValue_cameraValueSelector :: Selector '[Id NSString, Id NSString, Id NSString, Bool, Bool, Bool] (Id MERAWProcessingBooleanParameter)
 initWithName_key_description_initialValue_neutralValue_cameraValueSelector = mkSelector "initWithName:key:description:initialValue:neutralValue:cameraValue:"
 
 -- | @Selector@ for @hasNeutralValue:@
-hasNeutralValueSelector :: Selector
+hasNeutralValueSelector :: Selector '[Ptr Bool] Bool
 hasNeutralValueSelector = mkSelector "hasNeutralValue:"
 
 -- | @Selector@ for @hasCameraValue:@
-hasCameraValueSelector :: Selector
+hasCameraValueSelector :: Selector '[Ptr Bool] Bool
 hasCameraValueSelector = mkSelector "hasCameraValue:"
 
 -- | @Selector@ for @initialValue@
-initialValueSelector :: Selector
+initialValueSelector :: Selector '[] Bool
 initialValueSelector = mkSelector "initialValue"
 
 -- | @Selector@ for @currentValue@
-currentValueSelector :: Selector
+currentValueSelector :: Selector '[] Bool
 currentValueSelector = mkSelector "currentValue"
 
 -- | @Selector@ for @setCurrentValue:@
-setCurrentValueSelector :: Selector
+setCurrentValueSelector :: Selector '[Bool] ()
 setCurrentValueSelector = mkSelector "setCurrentValue:"
 

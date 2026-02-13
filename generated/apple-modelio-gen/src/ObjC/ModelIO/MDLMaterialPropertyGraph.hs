@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.ModelIO.MDLMaterialPropertyGraph
   , evaluate
   , nodes
   , connections
+  , connectionsSelector
+  , evaluateSelector
   , initSelector
   , initWithNodes_connectionsSelector
-  , evaluateSelector
   , nodesSelector
-  , connectionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,52 +36,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMDLMaterialPropertyGraph mdlMaterialPropertyGraph => mdlMaterialPropertyGraph -> IO (Id MDLMaterialPropertyGraph)
-init_ mdlMaterialPropertyGraph  =
-    sendMsg mdlMaterialPropertyGraph (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mdlMaterialPropertyGraph =
+  sendOwnedMessage mdlMaterialPropertyGraph initSelector
 
 -- | @- initWithNodes:connections:@
 initWithNodes_connections :: (IsMDLMaterialPropertyGraph mdlMaterialPropertyGraph, IsNSArray nodes, IsNSArray connections) => mdlMaterialPropertyGraph -> nodes -> connections -> IO (Id MDLMaterialPropertyGraph)
-initWithNodes_connections mdlMaterialPropertyGraph  nodes connections =
-  withObjCPtr nodes $ \raw_nodes ->
-    withObjCPtr connections $ \raw_connections ->
-        sendMsg mdlMaterialPropertyGraph (mkSelector "initWithNodes:connections:") (retPtr retVoid) [argPtr (castPtr raw_nodes :: Ptr ()), argPtr (castPtr raw_connections :: Ptr ())] >>= ownedObject . castPtr
+initWithNodes_connections mdlMaterialPropertyGraph nodes connections =
+  sendOwnedMessage mdlMaterialPropertyGraph initWithNodes_connectionsSelector (toNSArray nodes) (toNSArray connections)
 
 -- | @- evaluate@
 evaluate :: IsMDLMaterialPropertyGraph mdlMaterialPropertyGraph => mdlMaterialPropertyGraph -> IO ()
-evaluate mdlMaterialPropertyGraph  =
-    sendMsg mdlMaterialPropertyGraph (mkSelector "evaluate") retVoid []
+evaluate mdlMaterialPropertyGraph =
+  sendMessage mdlMaterialPropertyGraph evaluateSelector
 
 -- | @- nodes@
 nodes :: IsMDLMaterialPropertyGraph mdlMaterialPropertyGraph => mdlMaterialPropertyGraph -> IO (Id NSArray)
-nodes mdlMaterialPropertyGraph  =
-    sendMsg mdlMaterialPropertyGraph (mkSelector "nodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodes mdlMaterialPropertyGraph =
+  sendMessage mdlMaterialPropertyGraph nodesSelector
 
 -- | @- connections@
 connections :: IsMDLMaterialPropertyGraph mdlMaterialPropertyGraph => mdlMaterialPropertyGraph -> IO (Id NSArray)
-connections mdlMaterialPropertyGraph  =
-    sendMsg mdlMaterialPropertyGraph (mkSelector "connections") (retPtr retVoid) [] >>= retainedObject . castPtr
+connections mdlMaterialPropertyGraph =
+  sendMessage mdlMaterialPropertyGraph connectionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MDLMaterialPropertyGraph)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithNodes:connections:@
-initWithNodes_connectionsSelector :: Selector
+initWithNodes_connectionsSelector :: Selector '[Id NSArray, Id NSArray] (Id MDLMaterialPropertyGraph)
 initWithNodes_connectionsSelector = mkSelector "initWithNodes:connections:"
 
 -- | @Selector@ for @evaluate@
-evaluateSelector :: Selector
+evaluateSelector :: Selector '[] ()
 evaluateSelector = mkSelector "evaluate"
 
 -- | @Selector@ for @nodes@
-nodesSelector :: Selector
+nodesSelector :: Selector '[] (Id NSArray)
 nodesSelector = mkSelector "nodes"
 
 -- | @Selector@ for @connections@
-connectionsSelector :: Selector
+connectionsSelector :: Selector '[] (Id NSArray)
 connectionsSelector = mkSelector "connections"
 

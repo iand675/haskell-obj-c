@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INTaskListResolutionResult
   , successWithResolvedTaskList
   , disambiguationWithTaskListsToDisambiguate
   , confirmationRequiredWithTaskListToConfirm
-  , successWithResolvedTaskListSelector
-  , disambiguationWithTaskListsToDisambiguateSelector
   , confirmationRequiredWithTaskListToConfirmSelector
+  , disambiguationWithTaskListsToDisambiguateSelector
+  , successWithResolvedTaskListSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedTaskList :: IsINTaskList resolvedTaskList => resolvedTaskList
 successWithResolvedTaskList resolvedTaskList =
   do
     cls' <- getRequiredClass "INTaskListResolutionResult"
-    withObjCPtr resolvedTaskList $ \raw_resolvedTaskList ->
-      sendClassMsg cls' (mkSelector "successWithResolvedTaskList:") (retPtr retVoid) [argPtr (castPtr raw_resolvedTaskList :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedTaskListSelector (toINTaskList resolvedTaskList)
 
 -- | @+ disambiguationWithTaskListsToDisambiguate:@
 disambiguationWithTaskListsToDisambiguate :: IsNSArray taskListsToDisambiguate => taskListsToDisambiguate -> IO (Id INTaskListResolutionResult)
 disambiguationWithTaskListsToDisambiguate taskListsToDisambiguate =
   do
     cls' <- getRequiredClass "INTaskListResolutionResult"
-    withObjCPtr taskListsToDisambiguate $ \raw_taskListsToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithTaskListsToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_taskListsToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithTaskListsToDisambiguateSelector (toNSArray taskListsToDisambiguate)
 
 -- | @+ confirmationRequiredWithTaskListToConfirm:@
 confirmationRequiredWithTaskListToConfirm :: IsINTaskList taskListToConfirm => taskListToConfirm -> IO (Id INTaskListResolutionResult)
 confirmationRequiredWithTaskListToConfirm taskListToConfirm =
   do
     cls' <- getRequiredClass "INTaskListResolutionResult"
-    withObjCPtr taskListToConfirm $ \raw_taskListToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithTaskListToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_taskListToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithTaskListToConfirmSelector (toINTaskList taskListToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedTaskList:@
-successWithResolvedTaskListSelector :: Selector
+successWithResolvedTaskListSelector :: Selector '[Id INTaskList] (Id INTaskListResolutionResult)
 successWithResolvedTaskListSelector = mkSelector "successWithResolvedTaskList:"
 
 -- | @Selector@ for @disambiguationWithTaskListsToDisambiguate:@
-disambiguationWithTaskListsToDisambiguateSelector :: Selector
+disambiguationWithTaskListsToDisambiguateSelector :: Selector '[Id NSArray] (Id INTaskListResolutionResult)
 disambiguationWithTaskListsToDisambiguateSelector = mkSelector "disambiguationWithTaskListsToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithTaskListToConfirm:@
-confirmationRequiredWithTaskListToConfirmSelector :: Selector
+confirmationRequiredWithTaskListToConfirmSelector :: Selector '[Id INTaskList] (Id INTaskListResolutionResult)
 confirmationRequiredWithTaskListToConfirmSelector = mkSelector "confirmationRequiredWithTaskListToConfirm:"
 

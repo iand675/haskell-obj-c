@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,27 +31,23 @@ module ObjC.InstallerPlugins.InstallerState
   , choiceDictionaries
   , installStarted
   , installSucceeded
-  , choiceDictionaryForIdentifierSelector
-  , licenseAgreedSelector
-  , licenseAgreedLanguageSelector
-  , targetVolumePathSelector
-  , targetPathSelector
   , choiceDictionariesSelector
+  , choiceDictionaryForIdentifierSelector
   , installStartedSelector
   , installSucceededSelector
+  , licenseAgreedLanguageSelector
+  , licenseAgreedSelector
+  , targetPathSelector
+  , targetVolumePathSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,9 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- choiceDictionaryForIdentifier:@
 choiceDictionaryForIdentifier :: (IsInstallerState installerState, IsNSString choiceIdentifier) => installerState -> choiceIdentifier -> IO (Id NSDictionary)
-choiceDictionaryForIdentifier installerState  choiceIdentifier =
-  withObjCPtr choiceIdentifier $ \raw_choiceIdentifier ->
-      sendMsg installerState (mkSelector "choiceDictionaryForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_choiceIdentifier :: Ptr ())] >>= retainedObject . castPtr
+choiceDictionaryForIdentifier installerState choiceIdentifier =
+  sendMessage installerState choiceDictionaryForIdentifierSelector (toNSString choiceIdentifier)
 
 -- | licenseAgreed
 --
@@ -75,8 +71,8 @@ choiceDictionaryForIdentifier installerState  choiceIdentifier =
 --
 -- ObjC selector: @- licenseAgreed@
 licenseAgreed :: IsInstallerState installerState => installerState -> IO Bool
-licenseAgreed installerState  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerState (mkSelector "licenseAgreed") retCULong []
+licenseAgreed installerState =
+  sendMessage installerState licenseAgreedSelector
 
 -- | licenseAgreedLanguage
 --
@@ -84,8 +80,8 @@ licenseAgreed installerState  =
 --
 -- ObjC selector: @- licenseAgreedLanguage@
 licenseAgreedLanguage :: IsInstallerState installerState => installerState -> IO (Id NSString)
-licenseAgreedLanguage installerState  =
-    sendMsg installerState (mkSelector "licenseAgreedLanguage") (retPtr retVoid) [] >>= retainedObject . castPtr
+licenseAgreedLanguage installerState =
+  sendMessage installerState licenseAgreedLanguageSelector
 
 -- | targetVolumePath
 --
@@ -95,8 +91,8 @@ licenseAgreedLanguage installerState  =
 --
 -- ObjC selector: @- targetVolumePath@
 targetVolumePath :: IsInstallerState installerState => installerState -> IO (Id NSString)
-targetVolumePath installerState  =
-    sendMsg installerState (mkSelector "targetVolumePath") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetVolumePath installerState =
+  sendMessage installerState targetVolumePathSelector
 
 -- | targetPath
 --
@@ -106,8 +102,8 @@ targetVolumePath installerState  =
 --
 -- ObjC selector: @- targetPath@
 targetPath :: IsInstallerState installerState => installerState -> IO (Id NSString)
-targetPath installerState  =
-    sendMsg installerState (mkSelector "targetPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetPath installerState =
+  sendMessage installerState targetPathSelector
 
 -- | choiceDictionaries
 --
@@ -117,8 +113,8 @@ targetPath installerState  =
 --
 -- ObjC selector: @- choiceDictionaries@
 choiceDictionaries :: IsInstallerState installerState => installerState -> IO (Id NSArray)
-choiceDictionaries installerState  =
-    sendMsg installerState (mkSelector "choiceDictionaries") (retPtr retVoid) [] >>= retainedObject . castPtr
+choiceDictionaries installerState =
+  sendMessage installerState choiceDictionariesSelector
 
 -- | installStarted
 --
@@ -128,8 +124,8 @@ choiceDictionaries installerState  =
 --
 -- ObjC selector: @- installStarted@
 installStarted :: IsInstallerState installerState => installerState -> IO Bool
-installStarted installerState  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerState (mkSelector "installStarted") retCULong []
+installStarted installerState =
+  sendMessage installerState installStartedSelector
 
 -- | installSucceeded
 --
@@ -139,42 +135,42 @@ installStarted installerState  =
 --
 -- ObjC selector: @- installSucceeded@
 installSucceeded :: IsInstallerState installerState => installerState -> IO Bool
-installSucceeded installerState  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerState (mkSelector "installSucceeded") retCULong []
+installSucceeded installerState =
+  sendMessage installerState installSucceededSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @choiceDictionaryForIdentifier:@
-choiceDictionaryForIdentifierSelector :: Selector
+choiceDictionaryForIdentifierSelector :: Selector '[Id NSString] (Id NSDictionary)
 choiceDictionaryForIdentifierSelector = mkSelector "choiceDictionaryForIdentifier:"
 
 -- | @Selector@ for @licenseAgreed@
-licenseAgreedSelector :: Selector
+licenseAgreedSelector :: Selector '[] Bool
 licenseAgreedSelector = mkSelector "licenseAgreed"
 
 -- | @Selector@ for @licenseAgreedLanguage@
-licenseAgreedLanguageSelector :: Selector
+licenseAgreedLanguageSelector :: Selector '[] (Id NSString)
 licenseAgreedLanguageSelector = mkSelector "licenseAgreedLanguage"
 
 -- | @Selector@ for @targetVolumePath@
-targetVolumePathSelector :: Selector
+targetVolumePathSelector :: Selector '[] (Id NSString)
 targetVolumePathSelector = mkSelector "targetVolumePath"
 
 -- | @Selector@ for @targetPath@
-targetPathSelector :: Selector
+targetPathSelector :: Selector '[] (Id NSString)
 targetPathSelector = mkSelector "targetPath"
 
 -- | @Selector@ for @choiceDictionaries@
-choiceDictionariesSelector :: Selector
+choiceDictionariesSelector :: Selector '[] (Id NSArray)
 choiceDictionariesSelector = mkSelector "choiceDictionaries"
 
 -- | @Selector@ for @installStarted@
-installStartedSelector :: Selector
+installStartedSelector :: Selector '[] Bool
 installStartedSelector = mkSelector "installStarted"
 
 -- | @Selector@ for @installSucceeded@
-installSucceededSelector :: Selector
+installSucceededSelector :: Selector '[] Bool
 installSucceededSelector = mkSelector "installSucceeded"
 

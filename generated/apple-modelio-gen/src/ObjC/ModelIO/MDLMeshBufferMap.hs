@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.ModelIO.MDLMeshBufferMap
   , IsMDLMeshBufferMap(..)
   , initWithBytes_deallocator
   , bytes
-  , initWithBytes_deallocatorSelector
   , bytesSelector
+  , initWithBytes_deallocatorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithBytes:deallocator:@
 initWithBytes_deallocator :: IsMDLMeshBufferMap mdlMeshBufferMap => mdlMeshBufferMap -> Ptr () -> Ptr () -> IO (Id MDLMeshBufferMap)
-initWithBytes_deallocator mdlMeshBufferMap  bytes deallocator =
-    sendMsg mdlMeshBufferMap (mkSelector "initWithBytes:deallocator:") (retPtr retVoid) [argPtr bytes, argPtr (castPtr deallocator :: Ptr ())] >>= ownedObject . castPtr
+initWithBytes_deallocator mdlMeshBufferMap bytes deallocator =
+  sendOwnedMessage mdlMeshBufferMap initWithBytes_deallocatorSelector bytes deallocator
 
 -- | bytes
 --
@@ -48,18 +45,18 @@ initWithBytes_deallocator mdlMeshBufferMap  bytes deallocator =
 --
 -- ObjC selector: @- bytes@
 bytes :: IsMDLMeshBufferMap mdlMeshBufferMap => mdlMeshBufferMap -> IO (Ptr ())
-bytes mdlMeshBufferMap  =
-    fmap castPtr $ sendMsg mdlMeshBufferMap (mkSelector "bytes") (retPtr retVoid) []
+bytes mdlMeshBufferMap =
+  sendMessage mdlMeshBufferMap bytesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBytes:deallocator:@
-initWithBytes_deallocatorSelector :: Selector
+initWithBytes_deallocatorSelector :: Selector '[Ptr (), Ptr ()] (Id MDLMeshBufferMap)
 initWithBytes_deallocatorSelector = mkSelector "initWithBytes:deallocator:"
 
 -- | @Selector@ for @bytes@
-bytesSelector :: Selector
+bytesSelector :: Selector '[] (Ptr ())
 bytesSelector = mkSelector "bytes"
 

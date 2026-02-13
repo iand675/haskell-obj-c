@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Matter.MTROvenModeClusterChangeToModeResponseParams
   , statusText
   , setStatusText
   , initWithResponseValue_errorSelector
-  , statusSelector
   , setStatusSelector
-  , statusTextSelector
   , setStatusTextSelector
+  , statusSelector
+  , statusTextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,54 +40,50 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTROvenModeClusterChangeToModeResponseParams mtrOvenModeClusterChangeToModeResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrOvenModeClusterChangeToModeResponseParams -> responseValue -> error_ -> IO (Id MTROvenModeClusterChangeToModeResponseParams)
-initWithResponseValue_error mtrOvenModeClusterChangeToModeResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrOvenModeClusterChangeToModeResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrOvenModeClusterChangeToModeResponseParams responseValue error_ =
+  sendOwnedMessage mtrOvenModeClusterChangeToModeResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTROvenModeClusterChangeToModeResponseParams mtrOvenModeClusterChangeToModeResponseParams => mtrOvenModeClusterChangeToModeResponseParams -> IO (Id NSNumber)
-status mtrOvenModeClusterChangeToModeResponseParams  =
-    sendMsg mtrOvenModeClusterChangeToModeResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrOvenModeClusterChangeToModeResponseParams =
+  sendMessage mtrOvenModeClusterChangeToModeResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTROvenModeClusterChangeToModeResponseParams mtrOvenModeClusterChangeToModeResponseParams, IsNSNumber value) => mtrOvenModeClusterChangeToModeResponseParams -> value -> IO ()
-setStatus mtrOvenModeClusterChangeToModeResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOvenModeClusterChangeToModeResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrOvenModeClusterChangeToModeResponseParams value =
+  sendMessage mtrOvenModeClusterChangeToModeResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- statusText@
 statusText :: IsMTROvenModeClusterChangeToModeResponseParams mtrOvenModeClusterChangeToModeResponseParams => mtrOvenModeClusterChangeToModeResponseParams -> IO (Id NSString)
-statusText mtrOvenModeClusterChangeToModeResponseParams  =
-    sendMsg mtrOvenModeClusterChangeToModeResponseParams (mkSelector "statusText") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusText mtrOvenModeClusterChangeToModeResponseParams =
+  sendMessage mtrOvenModeClusterChangeToModeResponseParams statusTextSelector
 
 -- | @- setStatusText:@
 setStatusText :: (IsMTROvenModeClusterChangeToModeResponseParams mtrOvenModeClusterChangeToModeResponseParams, IsNSString value) => mtrOvenModeClusterChangeToModeResponseParams -> value -> IO ()
-setStatusText mtrOvenModeClusterChangeToModeResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOvenModeClusterChangeToModeResponseParams (mkSelector "setStatusText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatusText mtrOvenModeClusterChangeToModeResponseParams value =
+  sendMessage mtrOvenModeClusterChangeToModeResponseParams setStatusTextSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTROvenModeClusterChangeToModeResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @statusText@
-statusTextSelector :: Selector
+statusTextSelector :: Selector '[] (Id NSString)
 statusTextSelector = mkSelector "statusText"
 
 -- | @Selector@ for @setStatusText:@
-setStatusTextSelector :: Selector
+setStatusTextSelector :: Selector '[Id NSString] ()
 setStatusTextSelector = mkSelector "setStatusText:"
 

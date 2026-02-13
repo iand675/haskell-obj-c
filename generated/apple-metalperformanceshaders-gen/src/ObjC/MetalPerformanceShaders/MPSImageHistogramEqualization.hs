@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,22 +22,18 @@ module ObjC.MetalPerformanceShaders.MPSImageHistogramEqualization
   , initWithDevice_histogramInfo
   , initWithCoder_device
   , encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffset
-  , initWithDevice_histogramInfoSelector
-  , initWithCoder_deviceSelector
   , encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_histogramInfoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:histogramInfo:@
 initWithDevice_histogramInfo :: IsMPSImageHistogramEqualization mpsImageHistogramEqualization => mpsImageHistogramEqualization -> RawId -> Const RawId -> IO (Id MPSImageHistogramEqualization)
-initWithDevice_histogramInfo mpsImageHistogramEqualization  device histogramInfo =
-    sendMsg mpsImageHistogramEqualization (mkSelector "initWithDevice:histogramInfo:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId (unConst histogramInfo)) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_histogramInfo mpsImageHistogramEqualization device histogramInfo =
+  sendOwnedMessage mpsImageHistogramEqualization initWithDevice_histogramInfoSelector device histogramInfo
 
 -- | NSSecureCoding compatability
 --
@@ -68,9 +65,8 @@ initWithDevice_histogramInfo mpsImageHistogramEqualization  device histogramInfo
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageHistogramEqualization mpsImageHistogramEqualization, IsNSCoder aDecoder) => mpsImageHistogramEqualization -> aDecoder -> RawId -> IO (Id MPSImageHistogramEqualization)
-initWithCoder_device mpsImageHistogramEqualization  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageHistogramEqualization (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageHistogramEqualization aDecoder device =
+  sendOwnedMessage mpsImageHistogramEqualization initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode the transform function to a command buffer using a MTLComputeCommandEncoder.            The transform function computes the equalization lookup table.
 --
@@ -86,22 +82,22 @@ initWithCoder_device mpsImageHistogramEqualization  aDecoder device =
 --
 -- ObjC selector: @- encodeTransformToCommandBuffer:sourceTexture:histogram:histogramOffset:@
 encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffset :: IsMPSImageHistogramEqualization mpsImageHistogramEqualization => mpsImageHistogramEqualization -> RawId -> RawId -> RawId -> CULong -> IO ()
-encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffset mpsImageHistogramEqualization  commandBuffer source histogram histogramOffset =
-    sendMsg mpsImageHistogramEqualization (mkSelector "encodeTransformToCommandBuffer:sourceTexture:histogram:histogramOffset:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ()), argPtr (castPtr (unRawId histogram) :: Ptr ()), argCULong histogramOffset]
+encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffset mpsImageHistogramEqualization commandBuffer source histogram histogramOffset =
+  sendMessage mpsImageHistogramEqualization encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector commandBuffer source histogram histogramOffset
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:histogramInfo:@
-initWithDevice_histogramInfoSelector :: Selector
+initWithDevice_histogramInfoSelector :: Selector '[RawId, Const RawId] (Id MPSImageHistogramEqualization)
 initWithDevice_histogramInfoSelector = mkSelector "initWithDevice:histogramInfo:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageHistogramEqualization)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeTransformToCommandBuffer:sourceTexture:histogram:histogramOffset:@
-encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector :: Selector
+encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector :: Selector '[RawId, RawId, RawId, CULong] ()
 encodeTransformToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector = mkSelector "encodeTransformToCommandBuffer:sourceTexture:histogram:histogramOffset:"
 

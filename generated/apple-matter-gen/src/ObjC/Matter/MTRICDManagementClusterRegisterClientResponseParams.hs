@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Matter.MTRICDManagementClusterRegisterClientResponseParams
   , initWithResponseValue_error
   , icdCounter
   , setIcdCounter
-  , initWithResponseValue_errorSelector
   , icdCounterSelector
+  , initWithResponseValue_errorSelector
   , setIcdCounterSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRICDManagementClusterRegisterClientResponseParams mtricdManagementClusterRegisterClientResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtricdManagementClusterRegisterClientResponseParams -> responseValue -> error_ -> IO (Id MTRICDManagementClusterRegisterClientResponseParams)
-initWithResponseValue_error mtricdManagementClusterRegisterClientResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtricdManagementClusterRegisterClientResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtricdManagementClusterRegisterClientResponseParams responseValue error_ =
+  sendOwnedMessage mtricdManagementClusterRegisterClientResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- icdCounter@
 icdCounter :: IsMTRICDManagementClusterRegisterClientResponseParams mtricdManagementClusterRegisterClientResponseParams => mtricdManagementClusterRegisterClientResponseParams -> IO (Id NSNumber)
-icdCounter mtricdManagementClusterRegisterClientResponseParams  =
-    sendMsg mtricdManagementClusterRegisterClientResponseParams (mkSelector "icdCounter") (retPtr retVoid) [] >>= retainedObject . castPtr
+icdCounter mtricdManagementClusterRegisterClientResponseParams =
+  sendMessage mtricdManagementClusterRegisterClientResponseParams icdCounterSelector
 
 -- | @- setIcdCounter:@
 setIcdCounter :: (IsMTRICDManagementClusterRegisterClientResponseParams mtricdManagementClusterRegisterClientResponseParams, IsNSNumber value) => mtricdManagementClusterRegisterClientResponseParams -> value -> IO ()
-setIcdCounter mtricdManagementClusterRegisterClientResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterRegisterClientResponseParams (mkSelector "setIcdCounter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIcdCounter mtricdManagementClusterRegisterClientResponseParams value =
+  sendMessage mtricdManagementClusterRegisterClientResponseParams setIcdCounterSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRICDManagementClusterRegisterClientResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @icdCounter@
-icdCounterSelector :: Selector
+icdCounterSelector :: Selector '[] (Id NSNumber)
 icdCounterSelector = mkSelector "icdCounter"
 
 -- | @Selector@ for @setIcdCounter:@
-setIcdCounterSelector :: Selector
+setIcdCounterSelector :: Selector '[Id NSNumber] ()
 setIcdCounterSelector = mkSelector "setIcdCounter:"
 

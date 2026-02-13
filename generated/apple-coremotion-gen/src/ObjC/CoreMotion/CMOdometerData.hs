@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.CoreMotion.CMOdometerData
   , originDevice
   , slope
   , maxAbsSlope
-  , startDateSelector
-  , endDateSelector
-  , deltaDistanceSelector
-  , deltaDistanceAccuracySelector
-  , speedSelector
-  , speedAccuracySelector
-  , gpsDateSelector
   , deltaAltitudeSelector
-  , verticalAccuracySelector
+  , deltaDistanceAccuracySelector
+  , deltaDistanceSelector
+  , endDateSelector
+  , gpsDateSelector
+  , maxAbsSlopeSelector
   , originDeviceSelector
   , slopeSelector
-  , maxAbsSlopeSelector
+  , speedAccuracySelector
+  , speedSelector
+  , startDateSelector
+  , verticalAccuracySelector
 
   -- * Enum types
   , CMOdometerOriginDevice(CMOdometerOriginDevice)
@@ -40,15 +41,11 @@ module ObjC.CoreMotion.CMOdometerData
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,113 +55,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- startDate@
 startDate :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO (Id NSDate)
-startDate cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate cmOdometerData =
+  sendMessage cmOdometerData startDateSelector
 
 -- | @- endDate@
 endDate :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO (Id NSDate)
-endDate cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate cmOdometerData =
+  sendMessage cmOdometerData endDateSelector
 
 -- | @- deltaDistance@
 deltaDistance :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO CDouble
-deltaDistance cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "deltaDistance") retCDouble []
+deltaDistance cmOdometerData =
+  sendMessage cmOdometerData deltaDistanceSelector
 
 -- | @- deltaDistanceAccuracy@
 deltaDistanceAccuracy :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO CDouble
-deltaDistanceAccuracy cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "deltaDistanceAccuracy") retCDouble []
+deltaDistanceAccuracy cmOdometerData =
+  sendMessage cmOdometerData deltaDistanceAccuracySelector
 
 -- | @- speed@
 speed :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO CDouble
-speed cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "speed") retCDouble []
+speed cmOdometerData =
+  sendMessage cmOdometerData speedSelector
 
 -- | @- speedAccuracy@
 speedAccuracy :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO CDouble
-speedAccuracy cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "speedAccuracy") retCDouble []
+speedAccuracy cmOdometerData =
+  sendMessage cmOdometerData speedAccuracySelector
 
 -- | @- gpsDate@
 gpsDate :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO (Id NSDate)
-gpsDate cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "gpsDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsDate cmOdometerData =
+  sendMessage cmOdometerData gpsDateSelector
 
 -- | @- deltaAltitude@
 deltaAltitude :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO CDouble
-deltaAltitude cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "deltaAltitude") retCDouble []
+deltaAltitude cmOdometerData =
+  sendMessage cmOdometerData deltaAltitudeSelector
 
 -- | @- verticalAccuracy@
 verticalAccuracy :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO CDouble
-verticalAccuracy cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "verticalAccuracy") retCDouble []
+verticalAccuracy cmOdometerData =
+  sendMessage cmOdometerData verticalAccuracySelector
 
 -- | @- originDevice@
 originDevice :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO CMOdometerOriginDevice
-originDevice cmOdometerData  =
-    fmap (coerce :: CLong -> CMOdometerOriginDevice) $ sendMsg cmOdometerData (mkSelector "originDevice") retCLong []
+originDevice cmOdometerData =
+  sendMessage cmOdometerData originDeviceSelector
 
 -- | @- slope@
 slope :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO (Id NSNumber)
-slope cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "slope") (retPtr retVoid) [] >>= retainedObject . castPtr
+slope cmOdometerData =
+  sendMessage cmOdometerData slopeSelector
 
 -- | @- maxAbsSlope@
 maxAbsSlope :: IsCMOdometerData cmOdometerData => cmOdometerData -> IO (Id NSNumber)
-maxAbsSlope cmOdometerData  =
-    sendMsg cmOdometerData (mkSelector "maxAbsSlope") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxAbsSlope cmOdometerData =
+  sendMessage cmOdometerData maxAbsSlopeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @deltaDistance@
-deltaDistanceSelector :: Selector
+deltaDistanceSelector :: Selector '[] CDouble
 deltaDistanceSelector = mkSelector "deltaDistance"
 
 -- | @Selector@ for @deltaDistanceAccuracy@
-deltaDistanceAccuracySelector :: Selector
+deltaDistanceAccuracySelector :: Selector '[] CDouble
 deltaDistanceAccuracySelector = mkSelector "deltaDistanceAccuracy"
 
 -- | @Selector@ for @speed@
-speedSelector :: Selector
+speedSelector :: Selector '[] CDouble
 speedSelector = mkSelector "speed"
 
 -- | @Selector@ for @speedAccuracy@
-speedAccuracySelector :: Selector
+speedAccuracySelector :: Selector '[] CDouble
 speedAccuracySelector = mkSelector "speedAccuracy"
 
 -- | @Selector@ for @gpsDate@
-gpsDateSelector :: Selector
+gpsDateSelector :: Selector '[] (Id NSDate)
 gpsDateSelector = mkSelector "gpsDate"
 
 -- | @Selector@ for @deltaAltitude@
-deltaAltitudeSelector :: Selector
+deltaAltitudeSelector :: Selector '[] CDouble
 deltaAltitudeSelector = mkSelector "deltaAltitude"
 
 -- | @Selector@ for @verticalAccuracy@
-verticalAccuracySelector :: Selector
+verticalAccuracySelector :: Selector '[] CDouble
 verticalAccuracySelector = mkSelector "verticalAccuracy"
 
 -- | @Selector@ for @originDevice@
-originDeviceSelector :: Selector
+originDeviceSelector :: Selector '[] CMOdometerOriginDevice
 originDeviceSelector = mkSelector "originDevice"
 
 -- | @Selector@ for @slope@
-slopeSelector :: Selector
+slopeSelector :: Selector '[] (Id NSNumber)
 slopeSelector = mkSelector "slope"
 
 -- | @Selector@ for @maxAbsSlope@
-maxAbsSlopeSelector :: Selector
+maxAbsSlopeSelector :: Selector '[] (Id NSNumber)
 maxAbsSlopeSelector = mkSelector "maxAbsSlope"
 

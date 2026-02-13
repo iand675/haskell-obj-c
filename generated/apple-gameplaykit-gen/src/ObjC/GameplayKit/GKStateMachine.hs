@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.GameplayKit.GKStateMachine
   , canEnterState
   , enterState
   , currentState
-  , stateMachineWithStatesSelector
-  , initWithStatesSelector
-  , updateWithDeltaTimeSelector
-  , stateForClassSelector
   , canEnterStateSelector
-  , enterStateSelector
   , currentStateSelector
+  , enterStateSelector
+  , initWithStatesSelector
+  , stateForClassSelector
+  , stateMachineWithStatesSelector
+  , updateWithDeltaTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,14 +47,12 @@ stateMachineWithStates :: IsNSArray states => states -> IO (Id GKStateMachine)
 stateMachineWithStates states =
   do
     cls' <- getRequiredClass "GKStateMachine"
-    withObjCPtr states $ \raw_states ->
-      sendClassMsg cls' (mkSelector "stateMachineWithStates:") (retPtr retVoid) [argPtr (castPtr raw_states :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' stateMachineWithStatesSelector (toNSArray states)
 
 -- | @- initWithStates:@
 initWithStates :: (IsGKStateMachine gkStateMachine, IsNSArray states) => gkStateMachine -> states -> IO (Id GKStateMachine)
-initWithStates gkStateMachine  states =
-  withObjCPtr states $ \raw_states ->
-      sendMsg gkStateMachine (mkSelector "initWithStates:") (retPtr retVoid) [argPtr (castPtr raw_states :: Ptr ())] >>= ownedObject . castPtr
+initWithStates gkStateMachine states =
+  sendOwnedMessage gkStateMachine initWithStatesSelector (toNSArray states)
 
 -- | Updates the current state machine.
 --
@@ -65,8 +60,8 @@ initWithStates gkStateMachine  states =
 --
 -- ObjC selector: @- updateWithDeltaTime:@
 updateWithDeltaTime :: IsGKStateMachine gkStateMachine => gkStateMachine -> CDouble -> IO ()
-updateWithDeltaTime gkStateMachine  sec =
-    sendMsg gkStateMachine (mkSelector "updateWithDeltaTime:") retVoid [argCDouble sec]
+updateWithDeltaTime gkStateMachine sec =
+  sendMessage gkStateMachine updateWithDeltaTimeSelector sec
 
 -- | Gets the instance of the indicated state class from this state machine. Returns nil if the state does not exist
 --
@@ -74,8 +69,8 @@ updateWithDeltaTime gkStateMachine  sec =
 --
 -- ObjC selector: @- stateForClass:@
 stateForClass :: IsGKStateMachine gkStateMachine => gkStateMachine -> Class -> IO (Id GKState)
-stateForClass gkStateMachine  stateClass =
-    sendMsg gkStateMachine (mkSelector "stateForClass:") (retPtr retVoid) [argPtr (unClass stateClass)] >>= retainedObject . castPtr
+stateForClass gkStateMachine stateClass =
+  sendMessage gkStateMachine stateForClassSelector stateClass
 
 -- | Returns YES if the indicated class is a a valid next state or if currentState is nil
 --
@@ -83,8 +78,8 @@ stateForClass gkStateMachine  stateClass =
 --
 -- ObjC selector: @- canEnterState:@
 canEnterState :: IsGKStateMachine gkStateMachine => gkStateMachine -> Class -> IO Bool
-canEnterState gkStateMachine  stateClass =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkStateMachine (mkSelector "canEnterState:") retCULong [argPtr (unClass stateClass)]
+canEnterState gkStateMachine stateClass =
+  sendMessage gkStateMachine canEnterStateSelector stateClass
 
 -- | Calls canEnterState to check if we can enter the given state and then enters that state if so. [GKState willExitWithNextState:] is called on the old current state. [GKState didEnterWithPreviousState:] is called on the new state.
 --
@@ -94,45 +89,45 @@ canEnterState gkStateMachine  stateClass =
 --
 -- ObjC selector: @- enterState:@
 enterState :: IsGKStateMachine gkStateMachine => gkStateMachine -> Class -> IO Bool
-enterState gkStateMachine  stateClass =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkStateMachine (mkSelector "enterState:") retCULong [argPtr (unClass stateClass)]
+enterState gkStateMachine stateClass =
+  sendMessage gkStateMachine enterStateSelector stateClass
 
 -- | The current state that the state machine is in. Prior to the first called to enterState this is equal to nil.
 --
 -- ObjC selector: @- currentState@
 currentState :: IsGKStateMachine gkStateMachine => gkStateMachine -> IO (Id GKState)
-currentState gkStateMachine  =
-    sendMsg gkStateMachine (mkSelector "currentState") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentState gkStateMachine =
+  sendMessage gkStateMachine currentStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stateMachineWithStates:@
-stateMachineWithStatesSelector :: Selector
+stateMachineWithStatesSelector :: Selector '[Id NSArray] (Id GKStateMachine)
 stateMachineWithStatesSelector = mkSelector "stateMachineWithStates:"
 
 -- | @Selector@ for @initWithStates:@
-initWithStatesSelector :: Selector
+initWithStatesSelector :: Selector '[Id NSArray] (Id GKStateMachine)
 initWithStatesSelector = mkSelector "initWithStates:"
 
 -- | @Selector@ for @updateWithDeltaTime:@
-updateWithDeltaTimeSelector :: Selector
+updateWithDeltaTimeSelector :: Selector '[CDouble] ()
 updateWithDeltaTimeSelector = mkSelector "updateWithDeltaTime:"
 
 -- | @Selector@ for @stateForClass:@
-stateForClassSelector :: Selector
+stateForClassSelector :: Selector '[Class] (Id GKState)
 stateForClassSelector = mkSelector "stateForClass:"
 
 -- | @Selector@ for @canEnterState:@
-canEnterStateSelector :: Selector
+canEnterStateSelector :: Selector '[Class] Bool
 canEnterStateSelector = mkSelector "canEnterState:"
 
 -- | @Selector@ for @enterState:@
-enterStateSelector :: Selector
+enterStateSelector :: Selector '[Class] Bool
 enterStateSelector = mkSelector "enterState:"
 
 -- | @Selector@ for @currentState@
-currentStateSelector :: Selector
+currentStateSelector :: Selector '[] (Id GKState)
 currentStateSelector = mkSelector "currentState"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -149,146 +150,146 @@ module ObjC.QuartzCore.CALayer
   , setStyle
   , constraints
   , setConstraints
-  , layerSelector
-  , initSelector
-  , initWithLayerSelector
-  , presentationLayerSelector
-  , modelLayerSelector
-  , defaultValueForKeySelector
-  , needsDisplayForKeySelector
-  , shouldArchiveValueForKeySelector
-  , contentsAreFlippedSelector
-  , removeFromSuperlayerSelector
+  , actionForKeySelector
+  , actionsSelector
+  , addAnimation_forKeySelector
+  , addConstraintSelector
   , addSublayerSelector
-  , insertSublayer_atIndexSelector
-  , insertSublayer_belowSelector
-  , insertSublayer_aboveSelector
-  , replaceSublayer_withSelector
+  , allowsEdgeAntialiasingSelector
+  , allowsGroupOpacitySelector
+  , anchorPointZSelector
+  , animationForKeySelector
+  , animationKeysSelector
+  , autoresizingMaskSelector
+  , backgroundColorSelector
+  , backgroundFiltersSelector
+  , borderColorSelector
+  , borderWidthSelector
+  , compositingFilterSelector
+  , constraintsSelector
+  , contentsAreFlippedSelector
+  , contentsFormatSelector
+  , contentsGravitySelector
+  , contentsHeadroomSelector
+  , contentsScaleSelector
+  , contentsSelector
   , convertTime_fromLayerSelector
   , convertTime_toLayerSelector
-  , displaySelector
-  , setNeedsDisplaySelector
-  , needsDisplaySelector
-  , displayIfNeededSelector
-  , drawInContextSelector
-  , renderInContextSelector
   , cornerCurveExpansionFactorSelector
-  , setNeedsLayoutSelector
-  , needsLayoutSelector
-  , layoutIfNeededSelector
-  , layoutSublayersSelector
+  , cornerCurveSelector
+  , cornerRadiusSelector
   , defaultActionForKeySelector
-  , actionForKeySelector
-  , addAnimation_forKeySelector
+  , defaultValueForKeySelector
+  , delegateSelector
+  , displayIfNeededSelector
+  , displaySelector
+  , doubleSidedSelector
+  , drawInContextSelector
+  , drawsAsynchronouslySelector
+  , edgeAntialiasingMaskSelector
+  , filtersSelector
+  , geometryFlippedSelector
+  , hiddenSelector
+  , initSelector
+  , initWithLayerSelector
+  , insertSublayer_aboveSelector
+  , insertSublayer_atIndexSelector
+  , insertSublayer_belowSelector
+  , layerSelector
+  , layerWithRemoteClientIdSelector
+  , layoutIfNeededSelector
+  , layoutManagerSelector
+  , layoutSublayersSelector
+  , magnificationFilterSelector
+  , maskSelector
+  , maskedCornersSelector
+  , masksToBoundsSelector
+  , minificationFilterBiasSelector
+  , minificationFilterSelector
+  , modelLayerSelector
+  , nameSelector
+  , needsDisplayForKeySelector
+  , needsDisplayOnBoundsChangeSelector
+  , needsDisplaySelector
+  , needsLayoutSelector
+  , opacitySelector
+  , opaqueSelector
+  , preferredDynamicRangeSelector
+  , presentationLayerSelector
+  , rasterizationScaleSelector
   , removeAllAnimationsSelector
   , removeAnimationForKeySelector
-  , animationKeysSelector
-  , animationForKeySelector
-  , layerWithRemoteClientIdSelector
-  , addConstraintSelector
-  , zPositionSelector
-  , setZPositionSelector
-  , anchorPointZSelector
-  , setAnchorPointZSelector
-  , transformSelector
-  , setTransformSelector
-  , hiddenSelector
-  , setHiddenSelector
-  , doubleSidedSelector
-  , setDoubleSidedSelector
-  , geometryFlippedSelector
-  , setGeometryFlippedSelector
-  , superlayerSelector
-  , sublayersSelector
-  , setSublayersSelector
-  , sublayerTransformSelector
-  , setSublayerTransformSelector
-  , maskSelector
-  , setMaskSelector
-  , masksToBoundsSelector
-  , setMasksToBoundsSelector
-  , contentsSelector
-  , setContentsSelector
-  , contentsGravitySelector
-  , setContentsGravitySelector
-  , contentsScaleSelector
-  , setContentsScaleSelector
-  , contentsFormatSelector
-  , setContentsFormatSelector
-  , wantsExtendedDynamicRangeContentSelector
-  , setWantsExtendedDynamicRangeContentSelector
-  , toneMapModeSelector
-  , setToneMapModeSelector
-  , preferredDynamicRangeSelector
-  , setPreferredDynamicRangeSelector
-  , contentsHeadroomSelector
-  , setContentsHeadroomSelector
-  , wantsDynamicContentScalingSelector
-  , setWantsDynamicContentScalingSelector
-  , minificationFilterSelector
-  , setMinificationFilterSelector
-  , magnificationFilterSelector
-  , setMagnificationFilterSelector
-  , minificationFilterBiasSelector
-  , setMinificationFilterBiasSelector
-  , opaqueSelector
-  , setOpaqueSelector
-  , needsDisplayOnBoundsChangeSelector
-  , setNeedsDisplayOnBoundsChangeSelector
-  , drawsAsynchronouslySelector
-  , setDrawsAsynchronouslySelector
-  , edgeAntialiasingMaskSelector
-  , setEdgeAntialiasingMaskSelector
-  , allowsEdgeAntialiasingSelector
-  , setAllowsEdgeAntialiasingSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , cornerRadiusSelector
-  , setCornerRadiusSelector
-  , maskedCornersSelector
-  , setMaskedCornersSelector
-  , cornerCurveSelector
-  , setCornerCurveSelector
-  , borderWidthSelector
-  , setBorderWidthSelector
-  , borderColorSelector
-  , setBorderColorSelector
-  , opacitySelector
-  , setOpacitySelector
-  , allowsGroupOpacitySelector
-  , setAllowsGroupOpacitySelector
-  , compositingFilterSelector
-  , setCompositingFilterSelector
-  , filtersSelector
-  , setFiltersSelector
-  , backgroundFiltersSelector
-  , setBackgroundFiltersSelector
-  , shouldRasterizeSelector
-  , setShouldRasterizeSelector
-  , rasterizationScaleSelector
-  , setRasterizationScaleSelector
-  , shadowColorSelector
-  , setShadowColorSelector
-  , shadowOpacitySelector
-  , setShadowOpacitySelector
-  , shadowRadiusSelector
-  , setShadowRadiusSelector
-  , shadowPathSelector
-  , setShadowPathSelector
-  , autoresizingMaskSelector
-  , setAutoresizingMaskSelector
-  , layoutManagerSelector
-  , setLayoutManagerSelector
-  , actionsSelector
+  , removeFromSuperlayerSelector
+  , renderInContextSelector
+  , replaceSublayer_withSelector
   , setActionsSelector
-  , nameSelector
-  , setNameSelector
-  , delegateSelector
-  , setDelegateSelector
-  , styleSelector
-  , setStyleSelector
-  , constraintsSelector
+  , setAllowsEdgeAntialiasingSelector
+  , setAllowsGroupOpacitySelector
+  , setAnchorPointZSelector
+  , setAutoresizingMaskSelector
+  , setBackgroundColorSelector
+  , setBackgroundFiltersSelector
+  , setBorderColorSelector
+  , setBorderWidthSelector
+  , setCompositingFilterSelector
   , setConstraintsSelector
+  , setContentsFormatSelector
+  , setContentsGravitySelector
+  , setContentsHeadroomSelector
+  , setContentsScaleSelector
+  , setContentsSelector
+  , setCornerCurveSelector
+  , setCornerRadiusSelector
+  , setDelegateSelector
+  , setDoubleSidedSelector
+  , setDrawsAsynchronouslySelector
+  , setEdgeAntialiasingMaskSelector
+  , setFiltersSelector
+  , setGeometryFlippedSelector
+  , setHiddenSelector
+  , setLayoutManagerSelector
+  , setMagnificationFilterSelector
+  , setMaskSelector
+  , setMaskedCornersSelector
+  , setMasksToBoundsSelector
+  , setMinificationFilterBiasSelector
+  , setMinificationFilterSelector
+  , setNameSelector
+  , setNeedsDisplayOnBoundsChangeSelector
+  , setNeedsDisplaySelector
+  , setNeedsLayoutSelector
+  , setOpacitySelector
+  , setOpaqueSelector
+  , setPreferredDynamicRangeSelector
+  , setRasterizationScaleSelector
+  , setShadowColorSelector
+  , setShadowOpacitySelector
+  , setShadowPathSelector
+  , setShadowRadiusSelector
+  , setShouldRasterizeSelector
+  , setStyleSelector
+  , setSublayerTransformSelector
+  , setSublayersSelector
+  , setToneMapModeSelector
+  , setTransformSelector
+  , setWantsDynamicContentScalingSelector
+  , setWantsExtendedDynamicRangeContentSelector
+  , setZPositionSelector
+  , shadowColorSelector
+  , shadowOpacitySelector
+  , shadowPathSelector
+  , shadowRadiusSelector
+  , shouldArchiveValueForKeySelector
+  , shouldRasterizeSelector
+  , styleSelector
+  , sublayerTransformSelector
+  , sublayersSelector
+  , superlayerSelector
+  , toneMapModeSelector
+  , transformSelector
+  , wantsDynamicContentScalingSelector
+  , wantsExtendedDynamicRangeContentSelector
+  , zPositionSelector
 
   -- * Enum types
   , CAAutoresizingMask(CAAutoresizingMask)
@@ -312,15 +313,11 @@ module ObjC.QuartzCore.CALayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -336,27 +333,27 @@ layer :: IO (Id CALayer)
 layer  =
   do
     cls' <- getRequiredClass "CALayer"
-    sendClassMsg cls' (mkSelector "layer") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' layerSelector
 
 -- | @- init@
 init_ :: IsCALayer caLayer => caLayer -> IO (Id CALayer)
-init_ caLayer  =
-    sendMsg caLayer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ caLayer =
+  sendOwnedMessage caLayer initSelector
 
 -- | @- initWithLayer:@
 initWithLayer :: IsCALayer caLayer => caLayer -> RawId -> IO (Id CALayer)
-initWithLayer caLayer  layer =
-    sendMsg caLayer (mkSelector "initWithLayer:") (retPtr retVoid) [argPtr (castPtr (unRawId layer) :: Ptr ())] >>= ownedObject . castPtr
+initWithLayer caLayer layer =
+  sendOwnedMessage caLayer initWithLayerSelector layer
 
 -- | @- presentationLayer@
 presentationLayer :: IsCALayer caLayer => caLayer -> IO (Id CALayer)
-presentationLayer caLayer  =
-    sendMsg caLayer (mkSelector "presentationLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+presentationLayer caLayer =
+  sendMessage caLayer presentationLayerSelector
 
 -- | @- modelLayer@
 modelLayer :: IsCALayer caLayer => caLayer -> IO (Id CALayer)
-modelLayer caLayer  =
-    sendMsg caLayer (mkSelector "modelLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+modelLayer caLayer =
+  sendMessage caLayer modelLayerSelector
 
 -- | Property methods. *
 --
@@ -365,137 +362,123 @@ defaultValueForKey :: IsNSString key => key -> IO RawId
 defaultValueForKey key =
   do
     cls' <- getRequiredClass "CALayer"
-    withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+    sendClassMessage cls' defaultValueForKeySelector (toNSString key)
 
 -- | @+ needsDisplayForKey:@
 needsDisplayForKey :: IsNSString key => key -> IO Bool
 needsDisplayForKey key =
   do
     cls' <- getRequiredClass "CALayer"
-    withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "needsDisplayForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+    sendClassMessage cls' needsDisplayForKeySelector (toNSString key)
 
 -- | @- shouldArchiveValueForKey:@
 shouldArchiveValueForKey :: (IsCALayer caLayer, IsNSString key) => caLayer -> key -> IO Bool
-shouldArchiveValueForKey caLayer  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "shouldArchiveValueForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+shouldArchiveValueForKey caLayer key =
+  sendMessage caLayer shouldArchiveValueForKeySelector (toNSString key)
 
 -- | @- contentsAreFlipped@
 contentsAreFlipped :: IsCALayer caLayer => caLayer -> IO Bool
-contentsAreFlipped caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "contentsAreFlipped") retCULong []
+contentsAreFlipped caLayer =
+  sendMessage caLayer contentsAreFlippedSelector
 
 -- | @- removeFromSuperlayer@
 removeFromSuperlayer :: IsCALayer caLayer => caLayer -> IO ()
-removeFromSuperlayer caLayer  =
-    sendMsg caLayer (mkSelector "removeFromSuperlayer") retVoid []
+removeFromSuperlayer caLayer =
+  sendMessage caLayer removeFromSuperlayerSelector
 
 -- | @- addSublayer:@
 addSublayer :: (IsCALayer caLayer, IsCALayer layer) => caLayer -> layer -> IO ()
-addSublayer caLayer  layer =
-  withObjCPtr layer $ \raw_layer ->
-      sendMsg caLayer (mkSelector "addSublayer:") retVoid [argPtr (castPtr raw_layer :: Ptr ())]
+addSublayer caLayer layer =
+  sendMessage caLayer addSublayerSelector (toCALayer layer)
 
 -- | @- insertSublayer:atIndex:@
 insertSublayer_atIndex :: (IsCALayer caLayer, IsCALayer layer) => caLayer -> layer -> CUInt -> IO ()
-insertSublayer_atIndex caLayer  layer idx =
-  withObjCPtr layer $ \raw_layer ->
-      sendMsg caLayer (mkSelector "insertSublayer:atIndex:") retVoid [argPtr (castPtr raw_layer :: Ptr ()), argCUInt idx]
+insertSublayer_atIndex caLayer layer idx =
+  sendMessage caLayer insertSublayer_atIndexSelector (toCALayer layer) idx
 
 -- | @- insertSublayer:below:@
 insertSublayer_below :: (IsCALayer caLayer, IsCALayer layer, IsCALayer sibling) => caLayer -> layer -> sibling -> IO ()
-insertSublayer_below caLayer  layer sibling =
-  withObjCPtr layer $ \raw_layer ->
-    withObjCPtr sibling $ \raw_sibling ->
-        sendMsg caLayer (mkSelector "insertSublayer:below:") retVoid [argPtr (castPtr raw_layer :: Ptr ()), argPtr (castPtr raw_sibling :: Ptr ())]
+insertSublayer_below caLayer layer sibling =
+  sendMessage caLayer insertSublayer_belowSelector (toCALayer layer) (toCALayer sibling)
 
 -- | @- insertSublayer:above:@
 insertSublayer_above :: (IsCALayer caLayer, IsCALayer layer, IsCALayer sibling) => caLayer -> layer -> sibling -> IO ()
-insertSublayer_above caLayer  layer sibling =
-  withObjCPtr layer $ \raw_layer ->
-    withObjCPtr sibling $ \raw_sibling ->
-        sendMsg caLayer (mkSelector "insertSublayer:above:") retVoid [argPtr (castPtr raw_layer :: Ptr ()), argPtr (castPtr raw_sibling :: Ptr ())]
+insertSublayer_above caLayer layer sibling =
+  sendMessage caLayer insertSublayer_aboveSelector (toCALayer layer) (toCALayer sibling)
 
 -- | @- replaceSublayer:with:@
 replaceSublayer_with :: (IsCALayer caLayer, IsCALayer oldLayer, IsCALayer newLayer) => caLayer -> oldLayer -> newLayer -> IO ()
-replaceSublayer_with caLayer  oldLayer newLayer =
-  withObjCPtr oldLayer $ \raw_oldLayer ->
-    withObjCPtr newLayer $ \raw_newLayer ->
-        sendMsg caLayer (mkSelector "replaceSublayer:with:") retVoid [argPtr (castPtr raw_oldLayer :: Ptr ()), argPtr (castPtr raw_newLayer :: Ptr ())]
+replaceSublayer_with caLayer oldLayer newLayer =
+  sendMessage caLayer replaceSublayer_withSelector (toCALayer oldLayer) (toCALayer newLayer)
 
 -- | @- convertTime:fromLayer:@
 convertTime_fromLayer :: (IsCALayer caLayer, IsCALayer l) => caLayer -> CDouble -> l -> IO CDouble
-convertTime_fromLayer caLayer  t l =
-  withObjCPtr l $ \raw_l ->
-      sendMsg caLayer (mkSelector "convertTime:fromLayer:") retCDouble [argCDouble t, argPtr (castPtr raw_l :: Ptr ())]
+convertTime_fromLayer caLayer t l =
+  sendMessage caLayer convertTime_fromLayerSelector t (toCALayer l)
 
 -- | @- convertTime:toLayer:@
 convertTime_toLayer :: (IsCALayer caLayer, IsCALayer l) => caLayer -> CDouble -> l -> IO CDouble
-convertTime_toLayer caLayer  t l =
-  withObjCPtr l $ \raw_l ->
-      sendMsg caLayer (mkSelector "convertTime:toLayer:") retCDouble [argCDouble t, argPtr (castPtr raw_l :: Ptr ())]
+convertTime_toLayer caLayer t l =
+  sendMessage caLayer convertTime_toLayerSelector t (toCALayer l)
 
 -- | @- display@
 display :: IsCALayer caLayer => caLayer -> IO ()
-display caLayer  =
-    sendMsg caLayer (mkSelector "display") retVoid []
+display caLayer =
+  sendMessage caLayer displaySelector
 
 -- | @- setNeedsDisplay@
 setNeedsDisplay :: IsCALayer caLayer => caLayer -> IO ()
-setNeedsDisplay caLayer  =
-    sendMsg caLayer (mkSelector "setNeedsDisplay") retVoid []
+setNeedsDisplay caLayer =
+  sendMessage caLayer setNeedsDisplaySelector
 
 -- | @- needsDisplay@
 needsDisplay :: IsCALayer caLayer => caLayer -> IO Bool
-needsDisplay caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "needsDisplay") retCULong []
+needsDisplay caLayer =
+  sendMessage caLayer needsDisplaySelector
 
 -- | @- displayIfNeeded@
 displayIfNeeded :: IsCALayer caLayer => caLayer -> IO ()
-displayIfNeeded caLayer  =
-    sendMsg caLayer (mkSelector "displayIfNeeded") retVoid []
+displayIfNeeded caLayer =
+  sendMessage caLayer displayIfNeededSelector
 
 -- | @- drawInContext:@
 drawInContext :: IsCALayer caLayer => caLayer -> Ptr () -> IO ()
-drawInContext caLayer  ctx =
-    sendMsg caLayer (mkSelector "drawInContext:") retVoid [argPtr ctx]
+drawInContext caLayer ctx =
+  sendMessage caLayer drawInContextSelector ctx
 
 -- | Rendering properties and methods. *
 --
 -- ObjC selector: @- renderInContext:@
 renderInContext :: IsCALayer caLayer => caLayer -> Ptr () -> IO ()
-renderInContext caLayer  ctx =
-    sendMsg caLayer (mkSelector "renderInContext:") retVoid [argPtr ctx]
+renderInContext caLayer ctx =
+  sendMessage caLayer renderInContextSelector ctx
 
 -- | @+ cornerCurveExpansionFactor:@
 cornerCurveExpansionFactor :: IsNSString curve => curve -> IO CDouble
 cornerCurveExpansionFactor curve =
   do
     cls' <- getRequiredClass "CALayer"
-    withObjCPtr curve $ \raw_curve ->
-      sendClassMsg cls' (mkSelector "cornerCurveExpansionFactor:") retCDouble [argPtr (castPtr raw_curve :: Ptr ())]
+    sendClassMessage cls' cornerCurveExpansionFactorSelector (toNSString curve)
 
 -- | @- setNeedsLayout@
 setNeedsLayout :: IsCALayer caLayer => caLayer -> IO ()
-setNeedsLayout caLayer  =
-    sendMsg caLayer (mkSelector "setNeedsLayout") retVoid []
+setNeedsLayout caLayer =
+  sendMessage caLayer setNeedsLayoutSelector
 
 -- | @- needsLayout@
 needsLayout :: IsCALayer caLayer => caLayer -> IO Bool
-needsLayout caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "needsLayout") retCULong []
+needsLayout caLayer =
+  sendMessage caLayer needsLayoutSelector
 
 -- | @- layoutIfNeeded@
 layoutIfNeeded :: IsCALayer caLayer => caLayer -> IO ()
-layoutIfNeeded caLayer  =
-    sendMsg caLayer (mkSelector "layoutIfNeeded") retVoid []
+layoutIfNeeded caLayer =
+  sendMessage caLayer layoutIfNeededSelector
 
 -- | @- layoutSublayers@
 layoutSublayers :: IsCALayer caLayer => caLayer -> IO ()
-layoutSublayers caLayer  =
-    sendMsg caLayer (mkSelector "layoutSublayers") retVoid []
+layoutSublayers caLayer =
+  sendMessage caLayer layoutSublayersSelector
 
 -- | Action methods. *
 --
@@ -504,1166 +487,1144 @@ defaultActionForKey :: IsNSString event => event -> IO RawId
 defaultActionForKey event =
   do
     cls' <- getRequiredClass "CALayer"
-    withObjCPtr event $ \raw_event ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultActionForKey:") (retPtr retVoid) [argPtr (castPtr raw_event :: Ptr ())]
+    sendClassMessage cls' defaultActionForKeySelector (toNSString event)
 
 -- | @- actionForKey:@
 actionForKey :: (IsCALayer caLayer, IsNSString event) => caLayer -> event -> IO RawId
-actionForKey caLayer  event =
-  withObjCPtr event $ \raw_event ->
-      fmap (RawId . castPtr) $ sendMsg caLayer (mkSelector "actionForKey:") (retPtr retVoid) [argPtr (castPtr raw_event :: Ptr ())]
+actionForKey caLayer event =
+  sendMessage caLayer actionForKeySelector (toNSString event)
 
 -- | Animation methods. *
 --
 -- ObjC selector: @- addAnimation:forKey:@
 addAnimation_forKey :: (IsCALayer caLayer, IsCAAnimation anim, IsNSString key) => caLayer -> anim -> key -> IO ()
-addAnimation_forKey caLayer  anim key =
-  withObjCPtr anim $ \raw_anim ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg caLayer (mkSelector "addAnimation:forKey:") retVoid [argPtr (castPtr raw_anim :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+addAnimation_forKey caLayer anim key =
+  sendMessage caLayer addAnimation_forKeySelector (toCAAnimation anim) (toNSString key)
 
 -- | @- removeAllAnimations@
 removeAllAnimations :: IsCALayer caLayer => caLayer -> IO ()
-removeAllAnimations caLayer  =
-    sendMsg caLayer (mkSelector "removeAllAnimations") retVoid []
+removeAllAnimations caLayer =
+  sendMessage caLayer removeAllAnimationsSelector
 
 -- | @- removeAnimationForKey:@
 removeAnimationForKey :: (IsCALayer caLayer, IsNSString key) => caLayer -> key -> IO ()
-removeAnimationForKey caLayer  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg caLayer (mkSelector "removeAnimationForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+removeAnimationForKey caLayer key =
+  sendMessage caLayer removeAnimationForKeySelector (toNSString key)
 
 -- | @- animationKeys@
 animationKeys :: IsCALayer caLayer => caLayer -> IO (Id NSArray)
-animationKeys caLayer  =
-    sendMsg caLayer (mkSelector "animationKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+animationKeys caLayer =
+  sendMessage caLayer animationKeysSelector
 
 -- | @- animationForKey:@
 animationForKey :: (IsCALayer caLayer, IsNSString key) => caLayer -> key -> IO (Id CAAnimation)
-animationForKey caLayer  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg caLayer (mkSelector "animationForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+animationForKey caLayer key =
+  sendMessage caLayer animationForKeySelector (toNSString key)
 
 -- | @+ layerWithRemoteClientId:@
 layerWithRemoteClientId :: CUInt -> IO (Id CALayer)
 layerWithRemoteClientId client_id =
   do
     cls' <- getRequiredClass "CALayer"
-    sendClassMsg cls' (mkSelector "layerWithRemoteClientId:") (retPtr retVoid) [argCUInt client_id] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithRemoteClientIdSelector client_id
 
 -- | @- addConstraint:@
 addConstraint :: (IsCALayer caLayer, IsCAConstraint c) => caLayer -> c -> IO ()
-addConstraint caLayer  c =
-  withObjCPtr c $ \raw_c ->
-      sendMsg caLayer (mkSelector "addConstraint:") retVoid [argPtr (castPtr raw_c :: Ptr ())]
+addConstraint caLayer c =
+  sendMessage caLayer addConstraintSelector (toCAConstraint c)
 
 -- | @- zPosition@
 zPosition :: IsCALayer caLayer => caLayer -> IO CDouble
-zPosition caLayer  =
-    sendMsg caLayer (mkSelector "zPosition") retCDouble []
+zPosition caLayer =
+  sendMessage caLayer zPositionSelector
 
 -- | @- setZPosition:@
 setZPosition :: IsCALayer caLayer => caLayer -> CDouble -> IO ()
-setZPosition caLayer  value =
-    sendMsg caLayer (mkSelector "setZPosition:") retVoid [argCDouble value]
+setZPosition caLayer value =
+  sendMessage caLayer setZPositionSelector value
 
 -- | @- anchorPointZ@
 anchorPointZ :: IsCALayer caLayer => caLayer -> IO CDouble
-anchorPointZ caLayer  =
-    sendMsg caLayer (mkSelector "anchorPointZ") retCDouble []
+anchorPointZ caLayer =
+  sendMessage caLayer anchorPointZSelector
 
 -- | @- setAnchorPointZ:@
 setAnchorPointZ :: IsCALayer caLayer => caLayer -> CDouble -> IO ()
-setAnchorPointZ caLayer  value =
-    sendMsg caLayer (mkSelector "setAnchorPointZ:") retVoid [argCDouble value]
+setAnchorPointZ caLayer value =
+  sendMessage caLayer setAnchorPointZSelector value
 
 -- | @- transform@
 transform :: IsCALayer caLayer => caLayer -> IO CATransform3D
-transform caLayer  =
-    sendMsgStret caLayer (mkSelector "transform") retCATransform3D []
+transform caLayer =
+  sendMessage caLayer transformSelector
 
 -- | @- setTransform:@
 setTransform :: IsCALayer caLayer => caLayer -> CATransform3D -> IO ()
-setTransform caLayer  value =
-    sendMsg caLayer (mkSelector "setTransform:") retVoid [argCATransform3D value]
+setTransform caLayer value =
+  sendMessage caLayer setTransformSelector value
 
 -- | @- hidden@
 hidden :: IsCALayer caLayer => caLayer -> IO Bool
-hidden caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "hidden") retCULong []
+hidden caLayer =
+  sendMessage caLayer hiddenSelector
 
 -- | @- setHidden:@
 setHidden :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setHidden caLayer  value =
-    sendMsg caLayer (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden caLayer value =
+  sendMessage caLayer setHiddenSelector value
 
 -- | @- doubleSided@
 doubleSided :: IsCALayer caLayer => caLayer -> IO Bool
-doubleSided caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "doubleSided") retCULong []
+doubleSided caLayer =
+  sendMessage caLayer doubleSidedSelector
 
 -- | @- setDoubleSided:@
 setDoubleSided :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setDoubleSided caLayer  value =
-    sendMsg caLayer (mkSelector "setDoubleSided:") retVoid [argCULong (if value then 1 else 0)]
+setDoubleSided caLayer value =
+  sendMessage caLayer setDoubleSidedSelector value
 
 -- | @- geometryFlipped@
 geometryFlipped :: IsCALayer caLayer => caLayer -> IO Bool
-geometryFlipped caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "geometryFlipped") retCULong []
+geometryFlipped caLayer =
+  sendMessage caLayer geometryFlippedSelector
 
 -- | @- setGeometryFlipped:@
 setGeometryFlipped :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setGeometryFlipped caLayer  value =
-    sendMsg caLayer (mkSelector "setGeometryFlipped:") retVoid [argCULong (if value then 1 else 0)]
+setGeometryFlipped caLayer value =
+  sendMessage caLayer setGeometryFlippedSelector value
 
 -- | @- superlayer@
 superlayer :: IsCALayer caLayer => caLayer -> IO (Id CALayer)
-superlayer caLayer  =
-    sendMsg caLayer (mkSelector "superlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+superlayer caLayer =
+  sendMessage caLayer superlayerSelector
 
 -- | @- sublayers@
 sublayers :: IsCALayer caLayer => caLayer -> IO (Id NSArray)
-sublayers caLayer  =
-    sendMsg caLayer (mkSelector "sublayers") (retPtr retVoid) [] >>= retainedObject . castPtr
+sublayers caLayer =
+  sendMessage caLayer sublayersSelector
 
 -- | @- setSublayers:@
 setSublayers :: (IsCALayer caLayer, IsNSArray value) => caLayer -> value -> IO ()
-setSublayers caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setSublayers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSublayers caLayer value =
+  sendMessage caLayer setSublayersSelector (toNSArray value)
 
 -- | @- sublayerTransform@
 sublayerTransform :: IsCALayer caLayer => caLayer -> IO CATransform3D
-sublayerTransform caLayer  =
-    sendMsgStret caLayer (mkSelector "sublayerTransform") retCATransform3D []
+sublayerTransform caLayer =
+  sendMessage caLayer sublayerTransformSelector
 
 -- | @- setSublayerTransform:@
 setSublayerTransform :: IsCALayer caLayer => caLayer -> CATransform3D -> IO ()
-setSublayerTransform caLayer  value =
-    sendMsg caLayer (mkSelector "setSublayerTransform:") retVoid [argCATransform3D value]
+setSublayerTransform caLayer value =
+  sendMessage caLayer setSublayerTransformSelector value
 
 -- | @- mask@
 mask :: IsCALayer caLayer => caLayer -> IO (Id CALayer)
-mask caLayer  =
-    sendMsg caLayer (mkSelector "mask") (retPtr retVoid) [] >>= retainedObject . castPtr
+mask caLayer =
+  sendMessage caLayer maskSelector
 
 -- | @- setMask:@
 setMask :: (IsCALayer caLayer, IsCALayer value) => caLayer -> value -> IO ()
-setMask caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setMask:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMask caLayer value =
+  sendMessage caLayer setMaskSelector (toCALayer value)
 
 -- | @- masksToBounds@
 masksToBounds :: IsCALayer caLayer => caLayer -> IO Bool
-masksToBounds caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "masksToBounds") retCULong []
+masksToBounds caLayer =
+  sendMessage caLayer masksToBoundsSelector
 
 -- | @- setMasksToBounds:@
 setMasksToBounds :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setMasksToBounds caLayer  value =
-    sendMsg caLayer (mkSelector "setMasksToBounds:") retVoid [argCULong (if value then 1 else 0)]
+setMasksToBounds caLayer value =
+  sendMessage caLayer setMasksToBoundsSelector value
 
 -- | Layer content properties and methods. *
 --
 -- ObjC selector: @- contents@
 contents :: IsCALayer caLayer => caLayer -> IO RawId
-contents caLayer  =
-    fmap (RawId . castPtr) $ sendMsg caLayer (mkSelector "contents") (retPtr retVoid) []
+contents caLayer =
+  sendMessage caLayer contentsSelector
 
 -- | Layer content properties and methods. *
 --
 -- ObjC selector: @- setContents:@
 setContents :: IsCALayer caLayer => caLayer -> RawId -> IO ()
-setContents caLayer  value =
-    sendMsg caLayer (mkSelector "setContents:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setContents caLayer value =
+  sendMessage caLayer setContentsSelector value
 
 -- | @- contentsGravity@
 contentsGravity :: IsCALayer caLayer => caLayer -> IO (Id NSString)
-contentsGravity caLayer  =
-    sendMsg caLayer (mkSelector "contentsGravity") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentsGravity caLayer =
+  sendMessage caLayer contentsGravitySelector
 
 -- | @- setContentsGravity:@
 setContentsGravity :: (IsCALayer caLayer, IsNSString value) => caLayer -> value -> IO ()
-setContentsGravity caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setContentsGravity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentsGravity caLayer value =
+  sendMessage caLayer setContentsGravitySelector (toNSString value)
 
 -- | @- contentsScale@
 contentsScale :: IsCALayer caLayer => caLayer -> IO CDouble
-contentsScale caLayer  =
-    sendMsg caLayer (mkSelector "contentsScale") retCDouble []
+contentsScale caLayer =
+  sendMessage caLayer contentsScaleSelector
 
 -- | @- setContentsScale:@
 setContentsScale :: IsCALayer caLayer => caLayer -> CDouble -> IO ()
-setContentsScale caLayer  value =
-    sendMsg caLayer (mkSelector "setContentsScale:") retVoid [argCDouble value]
+setContentsScale caLayer value =
+  sendMessage caLayer setContentsScaleSelector value
 
 -- | @- contentsFormat@
 contentsFormat :: IsCALayer caLayer => caLayer -> IO (Id NSString)
-contentsFormat caLayer  =
-    sendMsg caLayer (mkSelector "contentsFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentsFormat caLayer =
+  sendMessage caLayer contentsFormatSelector
 
 -- | @- setContentsFormat:@
 setContentsFormat :: (IsCALayer caLayer, IsNSString value) => caLayer -> value -> IO ()
-setContentsFormat caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setContentsFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentsFormat caLayer value =
+  sendMessage caLayer setContentsFormatSelector (toNSString value)
 
 -- | @- wantsExtendedDynamicRangeContent@
 wantsExtendedDynamicRangeContent :: IsCALayer caLayer => caLayer -> IO Bool
-wantsExtendedDynamicRangeContent caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "wantsExtendedDynamicRangeContent") retCULong []
+wantsExtendedDynamicRangeContent caLayer =
+  sendMessage caLayer wantsExtendedDynamicRangeContentSelector
 
 -- | @- setWantsExtendedDynamicRangeContent:@
 setWantsExtendedDynamicRangeContent :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setWantsExtendedDynamicRangeContent caLayer  value =
-    sendMsg caLayer (mkSelector "setWantsExtendedDynamicRangeContent:") retVoid [argCULong (if value then 1 else 0)]
+setWantsExtendedDynamicRangeContent caLayer value =
+  sendMessage caLayer setWantsExtendedDynamicRangeContentSelector value
 
 -- | @- toneMapMode@
 toneMapMode :: IsCALayer caLayer => caLayer -> IO (Id NSString)
-toneMapMode caLayer  =
-    sendMsg caLayer (mkSelector "toneMapMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+toneMapMode caLayer =
+  sendMessage caLayer toneMapModeSelector
 
 -- | @- setToneMapMode:@
 setToneMapMode :: (IsCALayer caLayer, IsNSString value) => caLayer -> value -> IO ()
-setToneMapMode caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setToneMapMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setToneMapMode caLayer value =
+  sendMessage caLayer setToneMapModeSelector (toNSString value)
 
 -- | @- preferredDynamicRange@
 preferredDynamicRange :: IsCALayer caLayer => caLayer -> IO (Id NSString)
-preferredDynamicRange caLayer  =
-    sendMsg caLayer (mkSelector "preferredDynamicRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredDynamicRange caLayer =
+  sendMessage caLayer preferredDynamicRangeSelector
 
 -- | @- setPreferredDynamicRange:@
 setPreferredDynamicRange :: (IsCALayer caLayer, IsNSString value) => caLayer -> value -> IO ()
-setPreferredDynamicRange caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setPreferredDynamicRange:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredDynamicRange caLayer value =
+  sendMessage caLayer setPreferredDynamicRangeSelector (toNSString value)
 
 -- | @- contentsHeadroom@
 contentsHeadroom :: IsCALayer caLayer => caLayer -> IO CDouble
-contentsHeadroom caLayer  =
-    sendMsg caLayer (mkSelector "contentsHeadroom") retCDouble []
+contentsHeadroom caLayer =
+  sendMessage caLayer contentsHeadroomSelector
 
 -- | @- setContentsHeadroom:@
 setContentsHeadroom :: IsCALayer caLayer => caLayer -> CDouble -> IO ()
-setContentsHeadroom caLayer  value =
-    sendMsg caLayer (mkSelector "setContentsHeadroom:") retVoid [argCDouble value]
+setContentsHeadroom caLayer value =
+  sendMessage caLayer setContentsHeadroomSelector value
 
 -- | @- wantsDynamicContentScaling@
 wantsDynamicContentScaling :: IsCALayer caLayer => caLayer -> IO Bool
-wantsDynamicContentScaling caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "wantsDynamicContentScaling") retCULong []
+wantsDynamicContentScaling caLayer =
+  sendMessage caLayer wantsDynamicContentScalingSelector
 
 -- | @- setWantsDynamicContentScaling:@
 setWantsDynamicContentScaling :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setWantsDynamicContentScaling caLayer  value =
-    sendMsg caLayer (mkSelector "setWantsDynamicContentScaling:") retVoid [argCULong (if value then 1 else 0)]
+setWantsDynamicContentScaling caLayer value =
+  sendMessage caLayer setWantsDynamicContentScalingSelector value
 
 -- | @- minificationFilter@
 minificationFilter :: IsCALayer caLayer => caLayer -> IO (Id NSString)
-minificationFilter caLayer  =
-    sendMsg caLayer (mkSelector "minificationFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+minificationFilter caLayer =
+  sendMessage caLayer minificationFilterSelector
 
 -- | @- setMinificationFilter:@
 setMinificationFilter :: (IsCALayer caLayer, IsNSString value) => caLayer -> value -> IO ()
-setMinificationFilter caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setMinificationFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinificationFilter caLayer value =
+  sendMessage caLayer setMinificationFilterSelector (toNSString value)
 
 -- | @- magnificationFilter@
 magnificationFilter :: IsCALayer caLayer => caLayer -> IO (Id NSString)
-magnificationFilter caLayer  =
-    sendMsg caLayer (mkSelector "magnificationFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+magnificationFilter caLayer =
+  sendMessage caLayer magnificationFilterSelector
 
 -- | @- setMagnificationFilter:@
 setMagnificationFilter :: (IsCALayer caLayer, IsNSString value) => caLayer -> value -> IO ()
-setMagnificationFilter caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setMagnificationFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMagnificationFilter caLayer value =
+  sendMessage caLayer setMagnificationFilterSelector (toNSString value)
 
 -- | @- minificationFilterBias@
 minificationFilterBias :: IsCALayer caLayer => caLayer -> IO CFloat
-minificationFilterBias caLayer  =
-    sendMsg caLayer (mkSelector "minificationFilterBias") retCFloat []
+minificationFilterBias caLayer =
+  sendMessage caLayer minificationFilterBiasSelector
 
 -- | @- setMinificationFilterBias:@
 setMinificationFilterBias :: IsCALayer caLayer => caLayer -> CFloat -> IO ()
-setMinificationFilterBias caLayer  value =
-    sendMsg caLayer (mkSelector "setMinificationFilterBias:") retVoid [argCFloat value]
+setMinificationFilterBias caLayer value =
+  sendMessage caLayer setMinificationFilterBiasSelector value
 
 -- | @- opaque@
 opaque :: IsCALayer caLayer => caLayer -> IO Bool
-opaque caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "opaque") retCULong []
+opaque caLayer =
+  sendMessage caLayer opaqueSelector
 
 -- | @- setOpaque:@
 setOpaque :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setOpaque caLayer  value =
-    sendMsg caLayer (mkSelector "setOpaque:") retVoid [argCULong (if value then 1 else 0)]
+setOpaque caLayer value =
+  sendMessage caLayer setOpaqueSelector value
 
 -- | @- needsDisplayOnBoundsChange@
 needsDisplayOnBoundsChange :: IsCALayer caLayer => caLayer -> IO Bool
-needsDisplayOnBoundsChange caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "needsDisplayOnBoundsChange") retCULong []
+needsDisplayOnBoundsChange caLayer =
+  sendMessage caLayer needsDisplayOnBoundsChangeSelector
 
 -- | @- setNeedsDisplayOnBoundsChange:@
 setNeedsDisplayOnBoundsChange :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setNeedsDisplayOnBoundsChange caLayer  value =
-    sendMsg caLayer (mkSelector "setNeedsDisplayOnBoundsChange:") retVoid [argCULong (if value then 1 else 0)]
+setNeedsDisplayOnBoundsChange caLayer value =
+  sendMessage caLayer setNeedsDisplayOnBoundsChangeSelector value
 
 -- | @- drawsAsynchronously@
 drawsAsynchronously :: IsCALayer caLayer => caLayer -> IO Bool
-drawsAsynchronously caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "drawsAsynchronously") retCULong []
+drawsAsynchronously caLayer =
+  sendMessage caLayer drawsAsynchronouslySelector
 
 -- | @- setDrawsAsynchronously:@
 setDrawsAsynchronously :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setDrawsAsynchronously caLayer  value =
-    sendMsg caLayer (mkSelector "setDrawsAsynchronously:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsAsynchronously caLayer value =
+  sendMessage caLayer setDrawsAsynchronouslySelector value
 
 -- | @- edgeAntialiasingMask@
 edgeAntialiasingMask :: IsCALayer caLayer => caLayer -> IO CAEdgeAntialiasingMask
-edgeAntialiasingMask caLayer  =
-    fmap (coerce :: CUInt -> CAEdgeAntialiasingMask) $ sendMsg caLayer (mkSelector "edgeAntialiasingMask") retCUInt []
+edgeAntialiasingMask caLayer =
+  sendMessage caLayer edgeAntialiasingMaskSelector
 
 -- | @- setEdgeAntialiasingMask:@
 setEdgeAntialiasingMask :: IsCALayer caLayer => caLayer -> CAEdgeAntialiasingMask -> IO ()
-setEdgeAntialiasingMask caLayer  value =
-    sendMsg caLayer (mkSelector "setEdgeAntialiasingMask:") retVoid [argCUInt (coerce value)]
+setEdgeAntialiasingMask caLayer value =
+  sendMessage caLayer setEdgeAntialiasingMaskSelector value
 
 -- | @- allowsEdgeAntialiasing@
 allowsEdgeAntialiasing :: IsCALayer caLayer => caLayer -> IO Bool
-allowsEdgeAntialiasing caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "allowsEdgeAntialiasing") retCULong []
+allowsEdgeAntialiasing caLayer =
+  sendMessage caLayer allowsEdgeAntialiasingSelector
 
 -- | @- setAllowsEdgeAntialiasing:@
 setAllowsEdgeAntialiasing :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setAllowsEdgeAntialiasing caLayer  value =
-    sendMsg caLayer (mkSelector "setAllowsEdgeAntialiasing:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsEdgeAntialiasing caLayer value =
+  sendMessage caLayer setAllowsEdgeAntialiasingSelector value
 
 -- | @- backgroundColor@
 backgroundColor :: IsCALayer caLayer => caLayer -> IO (Ptr ())
-backgroundColor caLayer  =
-    fmap castPtr $ sendMsg caLayer (mkSelector "backgroundColor") (retPtr retVoid) []
+backgroundColor caLayer =
+  sendMessage caLayer backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: IsCALayer caLayer => caLayer -> Ptr () -> IO ()
-setBackgroundColor caLayer  value =
-    sendMsg caLayer (mkSelector "setBackgroundColor:") retVoid [argPtr value]
+setBackgroundColor caLayer value =
+  sendMessage caLayer setBackgroundColorSelector value
 
 -- | @- cornerRadius@
 cornerRadius :: IsCALayer caLayer => caLayer -> IO CDouble
-cornerRadius caLayer  =
-    sendMsg caLayer (mkSelector "cornerRadius") retCDouble []
+cornerRadius caLayer =
+  sendMessage caLayer cornerRadiusSelector
 
 -- | @- setCornerRadius:@
 setCornerRadius :: IsCALayer caLayer => caLayer -> CDouble -> IO ()
-setCornerRadius caLayer  value =
-    sendMsg caLayer (mkSelector "setCornerRadius:") retVoid [argCDouble value]
+setCornerRadius caLayer value =
+  sendMessage caLayer setCornerRadiusSelector value
 
 -- | @- maskedCorners@
 maskedCorners :: IsCALayer caLayer => caLayer -> IO CACornerMask
-maskedCorners caLayer  =
-    fmap (coerce :: CULong -> CACornerMask) $ sendMsg caLayer (mkSelector "maskedCorners") retCULong []
+maskedCorners caLayer =
+  sendMessage caLayer maskedCornersSelector
 
 -- | @- setMaskedCorners:@
 setMaskedCorners :: IsCALayer caLayer => caLayer -> CACornerMask -> IO ()
-setMaskedCorners caLayer  value =
-    sendMsg caLayer (mkSelector "setMaskedCorners:") retVoid [argCULong (coerce value)]
+setMaskedCorners caLayer value =
+  sendMessage caLayer setMaskedCornersSelector value
 
 -- | @- cornerCurve@
 cornerCurve :: IsCALayer caLayer => caLayer -> IO (Id NSString)
-cornerCurve caLayer  =
-    sendMsg caLayer (mkSelector "cornerCurve") (retPtr retVoid) [] >>= retainedObject . castPtr
+cornerCurve caLayer =
+  sendMessage caLayer cornerCurveSelector
 
 -- | @- setCornerCurve:@
 setCornerCurve :: (IsCALayer caLayer, IsNSString value) => caLayer -> value -> IO ()
-setCornerCurve caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setCornerCurve:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCornerCurve caLayer value =
+  sendMessage caLayer setCornerCurveSelector (toNSString value)
 
 -- | @- borderWidth@
 borderWidth :: IsCALayer caLayer => caLayer -> IO CDouble
-borderWidth caLayer  =
-    sendMsg caLayer (mkSelector "borderWidth") retCDouble []
+borderWidth caLayer =
+  sendMessage caLayer borderWidthSelector
 
 -- | @- setBorderWidth:@
 setBorderWidth :: IsCALayer caLayer => caLayer -> CDouble -> IO ()
-setBorderWidth caLayer  value =
-    sendMsg caLayer (mkSelector "setBorderWidth:") retVoid [argCDouble value]
+setBorderWidth caLayer value =
+  sendMessage caLayer setBorderWidthSelector value
 
 -- | @- borderColor@
 borderColor :: IsCALayer caLayer => caLayer -> IO (Ptr ())
-borderColor caLayer  =
-    fmap castPtr $ sendMsg caLayer (mkSelector "borderColor") (retPtr retVoid) []
+borderColor caLayer =
+  sendMessage caLayer borderColorSelector
 
 -- | @- setBorderColor:@
 setBorderColor :: IsCALayer caLayer => caLayer -> Ptr () -> IO ()
-setBorderColor caLayer  value =
-    sendMsg caLayer (mkSelector "setBorderColor:") retVoid [argPtr value]
+setBorderColor caLayer value =
+  sendMessage caLayer setBorderColorSelector value
 
 -- | @- opacity@
 opacity :: IsCALayer caLayer => caLayer -> IO CFloat
-opacity caLayer  =
-    sendMsg caLayer (mkSelector "opacity") retCFloat []
+opacity caLayer =
+  sendMessage caLayer opacitySelector
 
 -- | @- setOpacity:@
 setOpacity :: IsCALayer caLayer => caLayer -> CFloat -> IO ()
-setOpacity caLayer  value =
-    sendMsg caLayer (mkSelector "setOpacity:") retVoid [argCFloat value]
+setOpacity caLayer value =
+  sendMessage caLayer setOpacitySelector value
 
 -- | @- allowsGroupOpacity@
 allowsGroupOpacity :: IsCALayer caLayer => caLayer -> IO Bool
-allowsGroupOpacity caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "allowsGroupOpacity") retCULong []
+allowsGroupOpacity caLayer =
+  sendMessage caLayer allowsGroupOpacitySelector
 
 -- | @- setAllowsGroupOpacity:@
 setAllowsGroupOpacity :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setAllowsGroupOpacity caLayer  value =
-    sendMsg caLayer (mkSelector "setAllowsGroupOpacity:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsGroupOpacity caLayer value =
+  sendMessage caLayer setAllowsGroupOpacitySelector value
 
 -- | @- compositingFilter@
 compositingFilter :: IsCALayer caLayer => caLayer -> IO RawId
-compositingFilter caLayer  =
-    fmap (RawId . castPtr) $ sendMsg caLayer (mkSelector "compositingFilter") (retPtr retVoid) []
+compositingFilter caLayer =
+  sendMessage caLayer compositingFilterSelector
 
 -- | @- setCompositingFilter:@
 setCompositingFilter :: IsCALayer caLayer => caLayer -> RawId -> IO ()
-setCompositingFilter caLayer  value =
-    sendMsg caLayer (mkSelector "setCompositingFilter:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setCompositingFilter caLayer value =
+  sendMessage caLayer setCompositingFilterSelector value
 
 -- | @- filters@
 filters :: IsCALayer caLayer => caLayer -> IO (Id NSArray)
-filters caLayer  =
-    sendMsg caLayer (mkSelector "filters") (retPtr retVoid) [] >>= retainedObject . castPtr
+filters caLayer =
+  sendMessage caLayer filtersSelector
 
 -- | @- setFilters:@
 setFilters :: (IsCALayer caLayer, IsNSArray value) => caLayer -> value -> IO ()
-setFilters caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setFilters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFilters caLayer value =
+  sendMessage caLayer setFiltersSelector (toNSArray value)
 
 -- | @- backgroundFilters@
 backgroundFilters :: IsCALayer caLayer => caLayer -> IO (Id NSArray)
-backgroundFilters caLayer  =
-    sendMsg caLayer (mkSelector "backgroundFilters") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundFilters caLayer =
+  sendMessage caLayer backgroundFiltersSelector
 
 -- | @- setBackgroundFilters:@
 setBackgroundFilters :: (IsCALayer caLayer, IsNSArray value) => caLayer -> value -> IO ()
-setBackgroundFilters caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setBackgroundFilters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundFilters caLayer value =
+  sendMessage caLayer setBackgroundFiltersSelector (toNSArray value)
 
 -- | @- shouldRasterize@
 shouldRasterize :: IsCALayer caLayer => caLayer -> IO Bool
-shouldRasterize caLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caLayer (mkSelector "shouldRasterize") retCULong []
+shouldRasterize caLayer =
+  sendMessage caLayer shouldRasterizeSelector
 
 -- | @- setShouldRasterize:@
 setShouldRasterize :: IsCALayer caLayer => caLayer -> Bool -> IO ()
-setShouldRasterize caLayer  value =
-    sendMsg caLayer (mkSelector "setShouldRasterize:") retVoid [argCULong (if value then 1 else 0)]
+setShouldRasterize caLayer value =
+  sendMessage caLayer setShouldRasterizeSelector value
 
 -- | @- rasterizationScale@
 rasterizationScale :: IsCALayer caLayer => caLayer -> IO CDouble
-rasterizationScale caLayer  =
-    sendMsg caLayer (mkSelector "rasterizationScale") retCDouble []
+rasterizationScale caLayer =
+  sendMessage caLayer rasterizationScaleSelector
 
 -- | @- setRasterizationScale:@
 setRasterizationScale :: IsCALayer caLayer => caLayer -> CDouble -> IO ()
-setRasterizationScale caLayer  value =
-    sendMsg caLayer (mkSelector "setRasterizationScale:") retVoid [argCDouble value]
+setRasterizationScale caLayer value =
+  sendMessage caLayer setRasterizationScaleSelector value
 
 -- | Shadow properties. *
 --
 -- ObjC selector: @- shadowColor@
 shadowColor :: IsCALayer caLayer => caLayer -> IO (Ptr ())
-shadowColor caLayer  =
-    fmap castPtr $ sendMsg caLayer (mkSelector "shadowColor") (retPtr retVoid) []
+shadowColor caLayer =
+  sendMessage caLayer shadowColorSelector
 
 -- | Shadow properties. *
 --
 -- ObjC selector: @- setShadowColor:@
 setShadowColor :: IsCALayer caLayer => caLayer -> Ptr () -> IO ()
-setShadowColor caLayer  value =
-    sendMsg caLayer (mkSelector "setShadowColor:") retVoid [argPtr value]
+setShadowColor caLayer value =
+  sendMessage caLayer setShadowColorSelector value
 
 -- | @- shadowOpacity@
 shadowOpacity :: IsCALayer caLayer => caLayer -> IO CFloat
-shadowOpacity caLayer  =
-    sendMsg caLayer (mkSelector "shadowOpacity") retCFloat []
+shadowOpacity caLayer =
+  sendMessage caLayer shadowOpacitySelector
 
 -- | @- setShadowOpacity:@
 setShadowOpacity :: IsCALayer caLayer => caLayer -> CFloat -> IO ()
-setShadowOpacity caLayer  value =
-    sendMsg caLayer (mkSelector "setShadowOpacity:") retVoid [argCFloat value]
+setShadowOpacity caLayer value =
+  sendMessage caLayer setShadowOpacitySelector value
 
 -- | @- shadowRadius@
 shadowRadius :: IsCALayer caLayer => caLayer -> IO CDouble
-shadowRadius caLayer  =
-    sendMsg caLayer (mkSelector "shadowRadius") retCDouble []
+shadowRadius caLayer =
+  sendMessage caLayer shadowRadiusSelector
 
 -- | @- setShadowRadius:@
 setShadowRadius :: IsCALayer caLayer => caLayer -> CDouble -> IO ()
-setShadowRadius caLayer  value =
-    sendMsg caLayer (mkSelector "setShadowRadius:") retVoid [argCDouble value]
+setShadowRadius caLayer value =
+  sendMessage caLayer setShadowRadiusSelector value
 
 -- | @- shadowPath@
 shadowPath :: IsCALayer caLayer => caLayer -> IO RawId
-shadowPath caLayer  =
-    fmap (RawId . castPtr) $ sendMsg caLayer (mkSelector "shadowPath") (retPtr retVoid) []
+shadowPath caLayer =
+  sendMessage caLayer shadowPathSelector
 
 -- | @- setShadowPath:@
 setShadowPath :: IsCALayer caLayer => caLayer -> RawId -> IO ()
-setShadowPath caLayer  value =
-    sendMsg caLayer (mkSelector "setShadowPath:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setShadowPath caLayer value =
+  sendMessage caLayer setShadowPathSelector value
 
 -- | Layout methods. *
 --
 -- ObjC selector: @- autoresizingMask@
 autoresizingMask :: IsCALayer caLayer => caLayer -> IO CAAutoresizingMask
-autoresizingMask caLayer  =
-    fmap (coerce :: CUInt -> CAAutoresizingMask) $ sendMsg caLayer (mkSelector "autoresizingMask") retCUInt []
+autoresizingMask caLayer =
+  sendMessage caLayer autoresizingMaskSelector
 
 -- | Layout methods. *
 --
 -- ObjC selector: @- setAutoresizingMask:@
 setAutoresizingMask :: IsCALayer caLayer => caLayer -> CAAutoresizingMask -> IO ()
-setAutoresizingMask caLayer  value =
-    sendMsg caLayer (mkSelector "setAutoresizingMask:") retVoid [argCUInt (coerce value)]
+setAutoresizingMask caLayer value =
+  sendMessage caLayer setAutoresizingMaskSelector value
 
 -- | @- layoutManager@
 layoutManager :: IsCALayer caLayer => caLayer -> IO RawId
-layoutManager caLayer  =
-    fmap (RawId . castPtr) $ sendMsg caLayer (mkSelector "layoutManager") (retPtr retVoid) []
+layoutManager caLayer =
+  sendMessage caLayer layoutManagerSelector
 
 -- | @- setLayoutManager:@
 setLayoutManager :: IsCALayer caLayer => caLayer -> RawId -> IO ()
-setLayoutManager caLayer  value =
-    sendMsg caLayer (mkSelector "setLayoutManager:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setLayoutManager caLayer value =
+  sendMessage caLayer setLayoutManagerSelector value
 
 -- | @- actions@
 actions :: IsCALayer caLayer => caLayer -> IO (Id NSDictionary)
-actions caLayer  =
-    sendMsg caLayer (mkSelector "actions") (retPtr retVoid) [] >>= retainedObject . castPtr
+actions caLayer =
+  sendMessage caLayer actionsSelector
 
 -- | @- setActions:@
 setActions :: (IsCALayer caLayer, IsNSDictionary value) => caLayer -> value -> IO ()
-setActions caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setActions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActions caLayer value =
+  sendMessage caLayer setActionsSelector (toNSDictionary value)
 
 -- | Miscellaneous properties. *
 --
 -- ObjC selector: @- name@
 name :: IsCALayer caLayer => caLayer -> IO (Id NSString)
-name caLayer  =
-    sendMsg caLayer (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name caLayer =
+  sendMessage caLayer nameSelector
 
 -- | Miscellaneous properties. *
 --
 -- ObjC selector: @- setName:@
 setName :: (IsCALayer caLayer, IsNSString value) => caLayer -> value -> IO ()
-setName caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName caLayer value =
+  sendMessage caLayer setNameSelector (toNSString value)
 
 -- | @- delegate@
 delegate :: IsCALayer caLayer => caLayer -> IO RawId
-delegate caLayer  =
-    fmap (RawId . castPtr) $ sendMsg caLayer (mkSelector "delegate") (retPtr retVoid) []
+delegate caLayer =
+  sendMessage caLayer delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsCALayer caLayer => caLayer -> RawId -> IO ()
-setDelegate caLayer  value =
-    sendMsg caLayer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate caLayer value =
+  sendMessage caLayer setDelegateSelector value
 
 -- | @- style@
 style :: IsCALayer caLayer => caLayer -> IO (Id NSDictionary)
-style caLayer  =
-    sendMsg caLayer (mkSelector "style") (retPtr retVoid) [] >>= retainedObject . castPtr
+style caLayer =
+  sendMessage caLayer styleSelector
 
 -- | @- setStyle:@
 setStyle :: (IsCALayer caLayer, IsNSDictionary value) => caLayer -> value -> IO ()
-setStyle caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setStyle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStyle caLayer value =
+  sendMessage caLayer setStyleSelector (toNSDictionary value)
 
 -- | @- constraints@
 constraints :: IsCALayer caLayer => caLayer -> IO (Id NSArray)
-constraints caLayer  =
-    sendMsg caLayer (mkSelector "constraints") (retPtr retVoid) [] >>= retainedObject . castPtr
+constraints caLayer =
+  sendMessage caLayer constraintsSelector
 
 -- | @- setConstraints:@
 setConstraints :: (IsCALayer caLayer, IsNSArray value) => caLayer -> value -> IO ()
-setConstraints caLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caLayer (mkSelector "setConstraints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConstraints caLayer value =
+  sendMessage caLayer setConstraintsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layer@
-layerSelector :: Selector
+layerSelector :: Selector '[] (Id CALayer)
 layerSelector = mkSelector "layer"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CALayer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithLayer:@
-initWithLayerSelector :: Selector
+initWithLayerSelector :: Selector '[RawId] (Id CALayer)
 initWithLayerSelector = mkSelector "initWithLayer:"
 
 -- | @Selector@ for @presentationLayer@
-presentationLayerSelector :: Selector
+presentationLayerSelector :: Selector '[] (Id CALayer)
 presentationLayerSelector = mkSelector "presentationLayer"
 
 -- | @Selector@ for @modelLayer@
-modelLayerSelector :: Selector
+modelLayerSelector :: Selector '[] (Id CALayer)
 modelLayerSelector = mkSelector "modelLayer"
 
 -- | @Selector@ for @defaultValueForKey:@
-defaultValueForKeySelector :: Selector
+defaultValueForKeySelector :: Selector '[Id NSString] RawId
 defaultValueForKeySelector = mkSelector "defaultValueForKey:"
 
 -- | @Selector@ for @needsDisplayForKey:@
-needsDisplayForKeySelector :: Selector
+needsDisplayForKeySelector :: Selector '[Id NSString] Bool
 needsDisplayForKeySelector = mkSelector "needsDisplayForKey:"
 
 -- | @Selector@ for @shouldArchiveValueForKey:@
-shouldArchiveValueForKeySelector :: Selector
+shouldArchiveValueForKeySelector :: Selector '[Id NSString] Bool
 shouldArchiveValueForKeySelector = mkSelector "shouldArchiveValueForKey:"
 
 -- | @Selector@ for @contentsAreFlipped@
-contentsAreFlippedSelector :: Selector
+contentsAreFlippedSelector :: Selector '[] Bool
 contentsAreFlippedSelector = mkSelector "contentsAreFlipped"
 
 -- | @Selector@ for @removeFromSuperlayer@
-removeFromSuperlayerSelector :: Selector
+removeFromSuperlayerSelector :: Selector '[] ()
 removeFromSuperlayerSelector = mkSelector "removeFromSuperlayer"
 
 -- | @Selector@ for @addSublayer:@
-addSublayerSelector :: Selector
+addSublayerSelector :: Selector '[Id CALayer] ()
 addSublayerSelector = mkSelector "addSublayer:"
 
 -- | @Selector@ for @insertSublayer:atIndex:@
-insertSublayer_atIndexSelector :: Selector
+insertSublayer_atIndexSelector :: Selector '[Id CALayer, CUInt] ()
 insertSublayer_atIndexSelector = mkSelector "insertSublayer:atIndex:"
 
 -- | @Selector@ for @insertSublayer:below:@
-insertSublayer_belowSelector :: Selector
+insertSublayer_belowSelector :: Selector '[Id CALayer, Id CALayer] ()
 insertSublayer_belowSelector = mkSelector "insertSublayer:below:"
 
 -- | @Selector@ for @insertSublayer:above:@
-insertSublayer_aboveSelector :: Selector
+insertSublayer_aboveSelector :: Selector '[Id CALayer, Id CALayer] ()
 insertSublayer_aboveSelector = mkSelector "insertSublayer:above:"
 
 -- | @Selector@ for @replaceSublayer:with:@
-replaceSublayer_withSelector :: Selector
+replaceSublayer_withSelector :: Selector '[Id CALayer, Id CALayer] ()
 replaceSublayer_withSelector = mkSelector "replaceSublayer:with:"
 
 -- | @Selector@ for @convertTime:fromLayer:@
-convertTime_fromLayerSelector :: Selector
+convertTime_fromLayerSelector :: Selector '[CDouble, Id CALayer] CDouble
 convertTime_fromLayerSelector = mkSelector "convertTime:fromLayer:"
 
 -- | @Selector@ for @convertTime:toLayer:@
-convertTime_toLayerSelector :: Selector
+convertTime_toLayerSelector :: Selector '[CDouble, Id CALayer] CDouble
 convertTime_toLayerSelector = mkSelector "convertTime:toLayer:"
 
 -- | @Selector@ for @display@
-displaySelector :: Selector
+displaySelector :: Selector '[] ()
 displaySelector = mkSelector "display"
 
 -- | @Selector@ for @setNeedsDisplay@
-setNeedsDisplaySelector :: Selector
+setNeedsDisplaySelector :: Selector '[] ()
 setNeedsDisplaySelector = mkSelector "setNeedsDisplay"
 
 -- | @Selector@ for @needsDisplay@
-needsDisplaySelector :: Selector
+needsDisplaySelector :: Selector '[] Bool
 needsDisplaySelector = mkSelector "needsDisplay"
 
 -- | @Selector@ for @displayIfNeeded@
-displayIfNeededSelector :: Selector
+displayIfNeededSelector :: Selector '[] ()
 displayIfNeededSelector = mkSelector "displayIfNeeded"
 
 -- | @Selector@ for @drawInContext:@
-drawInContextSelector :: Selector
+drawInContextSelector :: Selector '[Ptr ()] ()
 drawInContextSelector = mkSelector "drawInContext:"
 
 -- | @Selector@ for @renderInContext:@
-renderInContextSelector :: Selector
+renderInContextSelector :: Selector '[Ptr ()] ()
 renderInContextSelector = mkSelector "renderInContext:"
 
 -- | @Selector@ for @cornerCurveExpansionFactor:@
-cornerCurveExpansionFactorSelector :: Selector
+cornerCurveExpansionFactorSelector :: Selector '[Id NSString] CDouble
 cornerCurveExpansionFactorSelector = mkSelector "cornerCurveExpansionFactor:"
 
 -- | @Selector@ for @setNeedsLayout@
-setNeedsLayoutSelector :: Selector
+setNeedsLayoutSelector :: Selector '[] ()
 setNeedsLayoutSelector = mkSelector "setNeedsLayout"
 
 -- | @Selector@ for @needsLayout@
-needsLayoutSelector :: Selector
+needsLayoutSelector :: Selector '[] Bool
 needsLayoutSelector = mkSelector "needsLayout"
 
 -- | @Selector@ for @layoutIfNeeded@
-layoutIfNeededSelector :: Selector
+layoutIfNeededSelector :: Selector '[] ()
 layoutIfNeededSelector = mkSelector "layoutIfNeeded"
 
 -- | @Selector@ for @layoutSublayers@
-layoutSublayersSelector :: Selector
+layoutSublayersSelector :: Selector '[] ()
 layoutSublayersSelector = mkSelector "layoutSublayers"
 
 -- | @Selector@ for @defaultActionForKey:@
-defaultActionForKeySelector :: Selector
+defaultActionForKeySelector :: Selector '[Id NSString] RawId
 defaultActionForKeySelector = mkSelector "defaultActionForKey:"
 
 -- | @Selector@ for @actionForKey:@
-actionForKeySelector :: Selector
+actionForKeySelector :: Selector '[Id NSString] RawId
 actionForKeySelector = mkSelector "actionForKey:"
 
 -- | @Selector@ for @addAnimation:forKey:@
-addAnimation_forKeySelector :: Selector
+addAnimation_forKeySelector :: Selector '[Id CAAnimation, Id NSString] ()
 addAnimation_forKeySelector = mkSelector "addAnimation:forKey:"
 
 -- | @Selector@ for @removeAllAnimations@
-removeAllAnimationsSelector :: Selector
+removeAllAnimationsSelector :: Selector '[] ()
 removeAllAnimationsSelector = mkSelector "removeAllAnimations"
 
 -- | @Selector@ for @removeAnimationForKey:@
-removeAnimationForKeySelector :: Selector
+removeAnimationForKeySelector :: Selector '[Id NSString] ()
 removeAnimationForKeySelector = mkSelector "removeAnimationForKey:"
 
 -- | @Selector@ for @animationKeys@
-animationKeysSelector :: Selector
+animationKeysSelector :: Selector '[] (Id NSArray)
 animationKeysSelector = mkSelector "animationKeys"
 
 -- | @Selector@ for @animationForKey:@
-animationForKeySelector :: Selector
+animationForKeySelector :: Selector '[Id NSString] (Id CAAnimation)
 animationForKeySelector = mkSelector "animationForKey:"
 
 -- | @Selector@ for @layerWithRemoteClientId:@
-layerWithRemoteClientIdSelector :: Selector
+layerWithRemoteClientIdSelector :: Selector '[CUInt] (Id CALayer)
 layerWithRemoteClientIdSelector = mkSelector "layerWithRemoteClientId:"
 
 -- | @Selector@ for @addConstraint:@
-addConstraintSelector :: Selector
+addConstraintSelector :: Selector '[Id CAConstraint] ()
 addConstraintSelector = mkSelector "addConstraint:"
 
 -- | @Selector@ for @zPosition@
-zPositionSelector :: Selector
+zPositionSelector :: Selector '[] CDouble
 zPositionSelector = mkSelector "zPosition"
 
 -- | @Selector@ for @setZPosition:@
-setZPositionSelector :: Selector
+setZPositionSelector :: Selector '[CDouble] ()
 setZPositionSelector = mkSelector "setZPosition:"
 
 -- | @Selector@ for @anchorPointZ@
-anchorPointZSelector :: Selector
+anchorPointZSelector :: Selector '[] CDouble
 anchorPointZSelector = mkSelector "anchorPointZ"
 
 -- | @Selector@ for @setAnchorPointZ:@
-setAnchorPointZSelector :: Selector
+setAnchorPointZSelector :: Selector '[CDouble] ()
 setAnchorPointZSelector = mkSelector "setAnchorPointZ:"
 
 -- | @Selector@ for @transform@
-transformSelector :: Selector
+transformSelector :: Selector '[] CATransform3D
 transformSelector = mkSelector "transform"
 
 -- | @Selector@ for @setTransform:@
-setTransformSelector :: Selector
+setTransformSelector :: Selector '[CATransform3D] ()
 setTransformSelector = mkSelector "setTransform:"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 
 -- | @Selector@ for @doubleSided@
-doubleSidedSelector :: Selector
+doubleSidedSelector :: Selector '[] Bool
 doubleSidedSelector = mkSelector "doubleSided"
 
 -- | @Selector@ for @setDoubleSided:@
-setDoubleSidedSelector :: Selector
+setDoubleSidedSelector :: Selector '[Bool] ()
 setDoubleSidedSelector = mkSelector "setDoubleSided:"
 
 -- | @Selector@ for @geometryFlipped@
-geometryFlippedSelector :: Selector
+geometryFlippedSelector :: Selector '[] Bool
 geometryFlippedSelector = mkSelector "geometryFlipped"
 
 -- | @Selector@ for @setGeometryFlipped:@
-setGeometryFlippedSelector :: Selector
+setGeometryFlippedSelector :: Selector '[Bool] ()
 setGeometryFlippedSelector = mkSelector "setGeometryFlipped:"
 
 -- | @Selector@ for @superlayer@
-superlayerSelector :: Selector
+superlayerSelector :: Selector '[] (Id CALayer)
 superlayerSelector = mkSelector "superlayer"
 
 -- | @Selector@ for @sublayers@
-sublayersSelector :: Selector
+sublayersSelector :: Selector '[] (Id NSArray)
 sublayersSelector = mkSelector "sublayers"
 
 -- | @Selector@ for @setSublayers:@
-setSublayersSelector :: Selector
+setSublayersSelector :: Selector '[Id NSArray] ()
 setSublayersSelector = mkSelector "setSublayers:"
 
 -- | @Selector@ for @sublayerTransform@
-sublayerTransformSelector :: Selector
+sublayerTransformSelector :: Selector '[] CATransform3D
 sublayerTransformSelector = mkSelector "sublayerTransform"
 
 -- | @Selector@ for @setSublayerTransform:@
-setSublayerTransformSelector :: Selector
+setSublayerTransformSelector :: Selector '[CATransform3D] ()
 setSublayerTransformSelector = mkSelector "setSublayerTransform:"
 
 -- | @Selector@ for @mask@
-maskSelector :: Selector
+maskSelector :: Selector '[] (Id CALayer)
 maskSelector = mkSelector "mask"
 
 -- | @Selector@ for @setMask:@
-setMaskSelector :: Selector
+setMaskSelector :: Selector '[Id CALayer] ()
 setMaskSelector = mkSelector "setMask:"
 
 -- | @Selector@ for @masksToBounds@
-masksToBoundsSelector :: Selector
+masksToBoundsSelector :: Selector '[] Bool
 masksToBoundsSelector = mkSelector "masksToBounds"
 
 -- | @Selector@ for @setMasksToBounds:@
-setMasksToBoundsSelector :: Selector
+setMasksToBoundsSelector :: Selector '[Bool] ()
 setMasksToBoundsSelector = mkSelector "setMasksToBounds:"
 
 -- | @Selector@ for @contents@
-contentsSelector :: Selector
+contentsSelector :: Selector '[] RawId
 contentsSelector = mkSelector "contents"
 
 -- | @Selector@ for @setContents:@
-setContentsSelector :: Selector
+setContentsSelector :: Selector '[RawId] ()
 setContentsSelector = mkSelector "setContents:"
 
 -- | @Selector@ for @contentsGravity@
-contentsGravitySelector :: Selector
+contentsGravitySelector :: Selector '[] (Id NSString)
 contentsGravitySelector = mkSelector "contentsGravity"
 
 -- | @Selector@ for @setContentsGravity:@
-setContentsGravitySelector :: Selector
+setContentsGravitySelector :: Selector '[Id NSString] ()
 setContentsGravitySelector = mkSelector "setContentsGravity:"
 
 -- | @Selector@ for @contentsScale@
-contentsScaleSelector :: Selector
+contentsScaleSelector :: Selector '[] CDouble
 contentsScaleSelector = mkSelector "contentsScale"
 
 -- | @Selector@ for @setContentsScale:@
-setContentsScaleSelector :: Selector
+setContentsScaleSelector :: Selector '[CDouble] ()
 setContentsScaleSelector = mkSelector "setContentsScale:"
 
 -- | @Selector@ for @contentsFormat@
-contentsFormatSelector :: Selector
+contentsFormatSelector :: Selector '[] (Id NSString)
 contentsFormatSelector = mkSelector "contentsFormat"
 
 -- | @Selector@ for @setContentsFormat:@
-setContentsFormatSelector :: Selector
+setContentsFormatSelector :: Selector '[Id NSString] ()
 setContentsFormatSelector = mkSelector "setContentsFormat:"
 
 -- | @Selector@ for @wantsExtendedDynamicRangeContent@
-wantsExtendedDynamicRangeContentSelector :: Selector
+wantsExtendedDynamicRangeContentSelector :: Selector '[] Bool
 wantsExtendedDynamicRangeContentSelector = mkSelector "wantsExtendedDynamicRangeContent"
 
 -- | @Selector@ for @setWantsExtendedDynamicRangeContent:@
-setWantsExtendedDynamicRangeContentSelector :: Selector
+setWantsExtendedDynamicRangeContentSelector :: Selector '[Bool] ()
 setWantsExtendedDynamicRangeContentSelector = mkSelector "setWantsExtendedDynamicRangeContent:"
 
 -- | @Selector@ for @toneMapMode@
-toneMapModeSelector :: Selector
+toneMapModeSelector :: Selector '[] (Id NSString)
 toneMapModeSelector = mkSelector "toneMapMode"
 
 -- | @Selector@ for @setToneMapMode:@
-setToneMapModeSelector :: Selector
+setToneMapModeSelector :: Selector '[Id NSString] ()
 setToneMapModeSelector = mkSelector "setToneMapMode:"
 
 -- | @Selector@ for @preferredDynamicRange@
-preferredDynamicRangeSelector :: Selector
+preferredDynamicRangeSelector :: Selector '[] (Id NSString)
 preferredDynamicRangeSelector = mkSelector "preferredDynamicRange"
 
 -- | @Selector@ for @setPreferredDynamicRange:@
-setPreferredDynamicRangeSelector :: Selector
+setPreferredDynamicRangeSelector :: Selector '[Id NSString] ()
 setPreferredDynamicRangeSelector = mkSelector "setPreferredDynamicRange:"
 
 -- | @Selector@ for @contentsHeadroom@
-contentsHeadroomSelector :: Selector
+contentsHeadroomSelector :: Selector '[] CDouble
 contentsHeadroomSelector = mkSelector "contentsHeadroom"
 
 -- | @Selector@ for @setContentsHeadroom:@
-setContentsHeadroomSelector :: Selector
+setContentsHeadroomSelector :: Selector '[CDouble] ()
 setContentsHeadroomSelector = mkSelector "setContentsHeadroom:"
 
 -- | @Selector@ for @wantsDynamicContentScaling@
-wantsDynamicContentScalingSelector :: Selector
+wantsDynamicContentScalingSelector :: Selector '[] Bool
 wantsDynamicContentScalingSelector = mkSelector "wantsDynamicContentScaling"
 
 -- | @Selector@ for @setWantsDynamicContentScaling:@
-setWantsDynamicContentScalingSelector :: Selector
+setWantsDynamicContentScalingSelector :: Selector '[Bool] ()
 setWantsDynamicContentScalingSelector = mkSelector "setWantsDynamicContentScaling:"
 
 -- | @Selector@ for @minificationFilter@
-minificationFilterSelector :: Selector
+minificationFilterSelector :: Selector '[] (Id NSString)
 minificationFilterSelector = mkSelector "minificationFilter"
 
 -- | @Selector@ for @setMinificationFilter:@
-setMinificationFilterSelector :: Selector
+setMinificationFilterSelector :: Selector '[Id NSString] ()
 setMinificationFilterSelector = mkSelector "setMinificationFilter:"
 
 -- | @Selector@ for @magnificationFilter@
-magnificationFilterSelector :: Selector
+magnificationFilterSelector :: Selector '[] (Id NSString)
 magnificationFilterSelector = mkSelector "magnificationFilter"
 
 -- | @Selector@ for @setMagnificationFilter:@
-setMagnificationFilterSelector :: Selector
+setMagnificationFilterSelector :: Selector '[Id NSString] ()
 setMagnificationFilterSelector = mkSelector "setMagnificationFilter:"
 
 -- | @Selector@ for @minificationFilterBias@
-minificationFilterBiasSelector :: Selector
+minificationFilterBiasSelector :: Selector '[] CFloat
 minificationFilterBiasSelector = mkSelector "minificationFilterBias"
 
 -- | @Selector@ for @setMinificationFilterBias:@
-setMinificationFilterBiasSelector :: Selector
+setMinificationFilterBiasSelector :: Selector '[CFloat] ()
 setMinificationFilterBiasSelector = mkSelector "setMinificationFilterBias:"
 
 -- | @Selector@ for @opaque@
-opaqueSelector :: Selector
+opaqueSelector :: Selector '[] Bool
 opaqueSelector = mkSelector "opaque"
 
 -- | @Selector@ for @setOpaque:@
-setOpaqueSelector :: Selector
+setOpaqueSelector :: Selector '[Bool] ()
 setOpaqueSelector = mkSelector "setOpaque:"
 
 -- | @Selector@ for @needsDisplayOnBoundsChange@
-needsDisplayOnBoundsChangeSelector :: Selector
+needsDisplayOnBoundsChangeSelector :: Selector '[] Bool
 needsDisplayOnBoundsChangeSelector = mkSelector "needsDisplayOnBoundsChange"
 
 -- | @Selector@ for @setNeedsDisplayOnBoundsChange:@
-setNeedsDisplayOnBoundsChangeSelector :: Selector
+setNeedsDisplayOnBoundsChangeSelector :: Selector '[Bool] ()
 setNeedsDisplayOnBoundsChangeSelector = mkSelector "setNeedsDisplayOnBoundsChange:"
 
 -- | @Selector@ for @drawsAsynchronously@
-drawsAsynchronouslySelector :: Selector
+drawsAsynchronouslySelector :: Selector '[] Bool
 drawsAsynchronouslySelector = mkSelector "drawsAsynchronously"
 
 -- | @Selector@ for @setDrawsAsynchronously:@
-setDrawsAsynchronouslySelector :: Selector
+setDrawsAsynchronouslySelector :: Selector '[Bool] ()
 setDrawsAsynchronouslySelector = mkSelector "setDrawsAsynchronously:"
 
 -- | @Selector@ for @edgeAntialiasingMask@
-edgeAntialiasingMaskSelector :: Selector
+edgeAntialiasingMaskSelector :: Selector '[] CAEdgeAntialiasingMask
 edgeAntialiasingMaskSelector = mkSelector "edgeAntialiasingMask"
 
 -- | @Selector@ for @setEdgeAntialiasingMask:@
-setEdgeAntialiasingMaskSelector :: Selector
+setEdgeAntialiasingMaskSelector :: Selector '[CAEdgeAntialiasingMask] ()
 setEdgeAntialiasingMaskSelector = mkSelector "setEdgeAntialiasingMask:"
 
 -- | @Selector@ for @allowsEdgeAntialiasing@
-allowsEdgeAntialiasingSelector :: Selector
+allowsEdgeAntialiasingSelector :: Selector '[] Bool
 allowsEdgeAntialiasingSelector = mkSelector "allowsEdgeAntialiasing"
 
 -- | @Selector@ for @setAllowsEdgeAntialiasing:@
-setAllowsEdgeAntialiasingSelector :: Selector
+setAllowsEdgeAntialiasingSelector :: Selector '[Bool] ()
 setAllowsEdgeAntialiasingSelector = mkSelector "setAllowsEdgeAntialiasing:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Ptr ())
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Ptr ()] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @cornerRadius@
-cornerRadiusSelector :: Selector
+cornerRadiusSelector :: Selector '[] CDouble
 cornerRadiusSelector = mkSelector "cornerRadius"
 
 -- | @Selector@ for @setCornerRadius:@
-setCornerRadiusSelector :: Selector
+setCornerRadiusSelector :: Selector '[CDouble] ()
 setCornerRadiusSelector = mkSelector "setCornerRadius:"
 
 -- | @Selector@ for @maskedCorners@
-maskedCornersSelector :: Selector
+maskedCornersSelector :: Selector '[] CACornerMask
 maskedCornersSelector = mkSelector "maskedCorners"
 
 -- | @Selector@ for @setMaskedCorners:@
-setMaskedCornersSelector :: Selector
+setMaskedCornersSelector :: Selector '[CACornerMask] ()
 setMaskedCornersSelector = mkSelector "setMaskedCorners:"
 
 -- | @Selector@ for @cornerCurve@
-cornerCurveSelector :: Selector
+cornerCurveSelector :: Selector '[] (Id NSString)
 cornerCurveSelector = mkSelector "cornerCurve"
 
 -- | @Selector@ for @setCornerCurve:@
-setCornerCurveSelector :: Selector
+setCornerCurveSelector :: Selector '[Id NSString] ()
 setCornerCurveSelector = mkSelector "setCornerCurve:"
 
 -- | @Selector@ for @borderWidth@
-borderWidthSelector :: Selector
+borderWidthSelector :: Selector '[] CDouble
 borderWidthSelector = mkSelector "borderWidth"
 
 -- | @Selector@ for @setBorderWidth:@
-setBorderWidthSelector :: Selector
+setBorderWidthSelector :: Selector '[CDouble] ()
 setBorderWidthSelector = mkSelector "setBorderWidth:"
 
 -- | @Selector@ for @borderColor@
-borderColorSelector :: Selector
+borderColorSelector :: Selector '[] (Ptr ())
 borderColorSelector = mkSelector "borderColor"
 
 -- | @Selector@ for @setBorderColor:@
-setBorderColorSelector :: Selector
+setBorderColorSelector :: Selector '[Ptr ()] ()
 setBorderColorSelector = mkSelector "setBorderColor:"
 
 -- | @Selector@ for @opacity@
-opacitySelector :: Selector
+opacitySelector :: Selector '[] CFloat
 opacitySelector = mkSelector "opacity"
 
 -- | @Selector@ for @setOpacity:@
-setOpacitySelector :: Selector
+setOpacitySelector :: Selector '[CFloat] ()
 setOpacitySelector = mkSelector "setOpacity:"
 
 -- | @Selector@ for @allowsGroupOpacity@
-allowsGroupOpacitySelector :: Selector
+allowsGroupOpacitySelector :: Selector '[] Bool
 allowsGroupOpacitySelector = mkSelector "allowsGroupOpacity"
 
 -- | @Selector@ for @setAllowsGroupOpacity:@
-setAllowsGroupOpacitySelector :: Selector
+setAllowsGroupOpacitySelector :: Selector '[Bool] ()
 setAllowsGroupOpacitySelector = mkSelector "setAllowsGroupOpacity:"
 
 -- | @Selector@ for @compositingFilter@
-compositingFilterSelector :: Selector
+compositingFilterSelector :: Selector '[] RawId
 compositingFilterSelector = mkSelector "compositingFilter"
 
 -- | @Selector@ for @setCompositingFilter:@
-setCompositingFilterSelector :: Selector
+setCompositingFilterSelector :: Selector '[RawId] ()
 setCompositingFilterSelector = mkSelector "setCompositingFilter:"
 
 -- | @Selector@ for @filters@
-filtersSelector :: Selector
+filtersSelector :: Selector '[] (Id NSArray)
 filtersSelector = mkSelector "filters"
 
 -- | @Selector@ for @setFilters:@
-setFiltersSelector :: Selector
+setFiltersSelector :: Selector '[Id NSArray] ()
 setFiltersSelector = mkSelector "setFilters:"
 
 -- | @Selector@ for @backgroundFilters@
-backgroundFiltersSelector :: Selector
+backgroundFiltersSelector :: Selector '[] (Id NSArray)
 backgroundFiltersSelector = mkSelector "backgroundFilters"
 
 -- | @Selector@ for @setBackgroundFilters:@
-setBackgroundFiltersSelector :: Selector
+setBackgroundFiltersSelector :: Selector '[Id NSArray] ()
 setBackgroundFiltersSelector = mkSelector "setBackgroundFilters:"
 
 -- | @Selector@ for @shouldRasterize@
-shouldRasterizeSelector :: Selector
+shouldRasterizeSelector :: Selector '[] Bool
 shouldRasterizeSelector = mkSelector "shouldRasterize"
 
 -- | @Selector@ for @setShouldRasterize:@
-setShouldRasterizeSelector :: Selector
+setShouldRasterizeSelector :: Selector '[Bool] ()
 setShouldRasterizeSelector = mkSelector "setShouldRasterize:"
 
 -- | @Selector@ for @rasterizationScale@
-rasterizationScaleSelector :: Selector
+rasterizationScaleSelector :: Selector '[] CDouble
 rasterizationScaleSelector = mkSelector "rasterizationScale"
 
 -- | @Selector@ for @setRasterizationScale:@
-setRasterizationScaleSelector :: Selector
+setRasterizationScaleSelector :: Selector '[CDouble] ()
 setRasterizationScaleSelector = mkSelector "setRasterizationScale:"
 
 -- | @Selector@ for @shadowColor@
-shadowColorSelector :: Selector
+shadowColorSelector :: Selector '[] (Ptr ())
 shadowColorSelector = mkSelector "shadowColor"
 
 -- | @Selector@ for @setShadowColor:@
-setShadowColorSelector :: Selector
+setShadowColorSelector :: Selector '[Ptr ()] ()
 setShadowColorSelector = mkSelector "setShadowColor:"
 
 -- | @Selector@ for @shadowOpacity@
-shadowOpacitySelector :: Selector
+shadowOpacitySelector :: Selector '[] CFloat
 shadowOpacitySelector = mkSelector "shadowOpacity"
 
 -- | @Selector@ for @setShadowOpacity:@
-setShadowOpacitySelector :: Selector
+setShadowOpacitySelector :: Selector '[CFloat] ()
 setShadowOpacitySelector = mkSelector "setShadowOpacity:"
 
 -- | @Selector@ for @shadowRadius@
-shadowRadiusSelector :: Selector
+shadowRadiusSelector :: Selector '[] CDouble
 shadowRadiusSelector = mkSelector "shadowRadius"
 
 -- | @Selector@ for @setShadowRadius:@
-setShadowRadiusSelector :: Selector
+setShadowRadiusSelector :: Selector '[CDouble] ()
 setShadowRadiusSelector = mkSelector "setShadowRadius:"
 
 -- | @Selector@ for @shadowPath@
-shadowPathSelector :: Selector
+shadowPathSelector :: Selector '[] RawId
 shadowPathSelector = mkSelector "shadowPath"
 
 -- | @Selector@ for @setShadowPath:@
-setShadowPathSelector :: Selector
+setShadowPathSelector :: Selector '[RawId] ()
 setShadowPathSelector = mkSelector "setShadowPath:"
 
 -- | @Selector@ for @autoresizingMask@
-autoresizingMaskSelector :: Selector
+autoresizingMaskSelector :: Selector '[] CAAutoresizingMask
 autoresizingMaskSelector = mkSelector "autoresizingMask"
 
 -- | @Selector@ for @setAutoresizingMask:@
-setAutoresizingMaskSelector :: Selector
+setAutoresizingMaskSelector :: Selector '[CAAutoresizingMask] ()
 setAutoresizingMaskSelector = mkSelector "setAutoresizingMask:"
 
 -- | @Selector@ for @layoutManager@
-layoutManagerSelector :: Selector
+layoutManagerSelector :: Selector '[] RawId
 layoutManagerSelector = mkSelector "layoutManager"
 
 -- | @Selector@ for @setLayoutManager:@
-setLayoutManagerSelector :: Selector
+setLayoutManagerSelector :: Selector '[RawId] ()
 setLayoutManagerSelector = mkSelector "setLayoutManager:"
 
 -- | @Selector@ for @actions@
-actionsSelector :: Selector
+actionsSelector :: Selector '[] (Id NSDictionary)
 actionsSelector = mkSelector "actions"
 
 -- | @Selector@ for @setActions:@
-setActionsSelector :: Selector
+setActionsSelector :: Selector '[Id NSDictionary] ()
 setActionsSelector = mkSelector "setActions:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] (Id NSDictionary)
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @setStyle:@
-setStyleSelector :: Selector
+setStyleSelector :: Selector '[Id NSDictionary] ()
 setStyleSelector = mkSelector "setStyle:"
 
 -- | @Selector@ for @constraints@
-constraintsSelector :: Selector
+constraintsSelector :: Selector '[] (Id NSArray)
 constraintsSelector = mkSelector "constraints"
 
 -- | @Selector@ for @setConstraints:@
-setConstraintsSelector :: Selector
+setConstraintsSelector :: Selector '[Id NSArray] ()
 setConstraintsSelector = mkSelector "setConstraints:"
 

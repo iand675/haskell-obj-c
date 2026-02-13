@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.AVFoundation.AVPlayerItemMetadataCollector
   , setDelegate_queue
   , delegate
   , delegateQueue
+  , delegateQueueSelector
+  , delegateSelector
   , initWithIdentifiers_classifyingLabelsSelector
   , setDelegate_queueSelector
-  , delegateSelector
-  , delegateQueueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,10 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifiers:classifyingLabels:@
 initWithIdentifiers_classifyingLabels :: (IsAVPlayerItemMetadataCollector avPlayerItemMetadataCollector, IsNSArray identifiers, IsNSArray classifyingLabels) => avPlayerItemMetadataCollector -> identifiers -> classifyingLabels -> IO (Id AVPlayerItemMetadataCollector)
-initWithIdentifiers_classifyingLabels avPlayerItemMetadataCollector  identifiers classifyingLabels =
-  withObjCPtr identifiers $ \raw_identifiers ->
-    withObjCPtr classifyingLabels $ \raw_classifyingLabels ->
-        sendMsg avPlayerItemMetadataCollector (mkSelector "initWithIdentifiers:classifyingLabels:") (retPtr retVoid) [argPtr (castPtr raw_identifiers :: Ptr ()), argPtr (castPtr raw_classifyingLabels :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifiers_classifyingLabels avPlayerItemMetadataCollector identifiers classifyingLabels =
+  sendOwnedMessage avPlayerItemMetadataCollector initWithIdentifiers_classifyingLabelsSelector (toNSArray identifiers) (toNSArray classifyingLabels)
 
 -- | setDelegate:queue:
 --
@@ -70,9 +65,8 @@ initWithIdentifiers_classifyingLabels avPlayerItemMetadataCollector  identifiers
 --
 -- ObjC selector: @- setDelegate:queue:@
 setDelegate_queue :: (IsAVPlayerItemMetadataCollector avPlayerItemMetadataCollector, IsNSObject delegateQueue) => avPlayerItemMetadataCollector -> RawId -> delegateQueue -> IO ()
-setDelegate_queue avPlayerItemMetadataCollector  delegate delegateQueue =
-  withObjCPtr delegateQueue $ \raw_delegateQueue ->
-      sendMsg avPlayerItemMetadataCollector (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateQueue :: Ptr ())]
+setDelegate_queue avPlayerItemMetadataCollector delegate delegateQueue =
+  sendMessage avPlayerItemMetadataCollector setDelegate_queueSelector delegate (toNSObject delegateQueue)
 
 -- | delegate
 --
@@ -82,8 +76,8 @@ setDelegate_queue avPlayerItemMetadataCollector  delegate delegateQueue =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVPlayerItemMetadataCollector avPlayerItemMetadataCollector => avPlayerItemMetadataCollector -> IO RawId
-delegate avPlayerItemMetadataCollector  =
-    fmap (RawId . castPtr) $ sendMsg avPlayerItemMetadataCollector (mkSelector "delegate") (retPtr retVoid) []
+delegate avPlayerItemMetadataCollector =
+  sendMessage avPlayerItemMetadataCollector delegateSelector
 
 -- | delegateQueue
 --
@@ -93,26 +87,26 @@ delegate avPlayerItemMetadataCollector  =
 --
 -- ObjC selector: @- delegateQueue@
 delegateQueue :: IsAVPlayerItemMetadataCollector avPlayerItemMetadataCollector => avPlayerItemMetadataCollector -> IO (Id NSObject)
-delegateQueue avPlayerItemMetadataCollector  =
-    sendMsg avPlayerItemMetadataCollector (mkSelector "delegateQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateQueue avPlayerItemMetadataCollector =
+  sendMessage avPlayerItemMetadataCollector delegateQueueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifiers:classifyingLabels:@
-initWithIdentifiers_classifyingLabelsSelector :: Selector
+initWithIdentifiers_classifyingLabelsSelector :: Selector '[Id NSArray, Id NSArray] (Id AVPlayerItemMetadataCollector)
 initWithIdentifiers_classifyingLabelsSelector = mkSelector "initWithIdentifiers:classifyingLabels:"
 
 -- | @Selector@ for @setDelegate:queue:@
-setDelegate_queueSelector :: Selector
+setDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
-delegateQueueSelector :: Selector
+delegateQueueSelector :: Selector '[] (Id NSObject)
 delegateQueueSelector = mkSelector "delegateQueue"
 

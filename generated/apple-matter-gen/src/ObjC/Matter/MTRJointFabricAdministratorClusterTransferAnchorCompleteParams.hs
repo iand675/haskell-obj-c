@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRJointFabricAdministratorClusterTransferAnchorCompleteParam
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricAdministratorClusterTransferAnchorCompleteParams mtrJointFabricAdministratorClusterTransferAnchorCompleteParams => mtrJointFabricAdministratorClusterTransferAnchorCompleteParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricAdministratorClusterTransferAnchorCompleteParams  =
-    sendMsg mtrJointFabricAdministratorClusterTransferAnchorCompleteParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricAdministratorClusterTransferAnchorCompleteParams =
+  sendMessage mtrJointFabricAdministratorClusterTransferAnchorCompleteParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -52,9 +49,8 @@ timedInvokeTimeoutMs mtrJointFabricAdministratorClusterTransferAnchorCompletePar
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricAdministratorClusterTransferAnchorCompleteParams mtrJointFabricAdministratorClusterTransferAnchorCompleteParams, IsNSNumber value) => mtrJointFabricAdministratorClusterTransferAnchorCompleteParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterTransferAnchorCompleteParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterTransferAnchorCompleteParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterTransferAnchorCompleteParams value =
+  sendMessage mtrJointFabricAdministratorClusterTransferAnchorCompleteParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -64,8 +60,8 @@ setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterTransferAnchorComplete
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricAdministratorClusterTransferAnchorCompleteParams mtrJointFabricAdministratorClusterTransferAnchorCompleteParams => mtrJointFabricAdministratorClusterTransferAnchorCompleteParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricAdministratorClusterTransferAnchorCompleteParams  =
-    sendMsg mtrJointFabricAdministratorClusterTransferAnchorCompleteParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricAdministratorClusterTransferAnchorCompleteParams =
+  sendMessage mtrJointFabricAdministratorClusterTransferAnchorCompleteParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -75,27 +71,26 @@ serverSideProcessingTimeout mtrJointFabricAdministratorClusterTransferAnchorComp
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricAdministratorClusterTransferAnchorCompleteParams mtrJointFabricAdministratorClusterTransferAnchorCompleteParams, IsNSNumber value) => mtrJointFabricAdministratorClusterTransferAnchorCompleteParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricAdministratorClusterTransferAnchorCompleteParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterTransferAnchorCompleteParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricAdministratorClusterTransferAnchorCompleteParams value =
+  sendMessage mtrJointFabricAdministratorClusterTransferAnchorCompleteParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

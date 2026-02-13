@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,10 +19,10 @@ module ObjC.AVFoundation.AVCaptureDeviceDiscoverySession
   , discoverySessionWithDeviceTypes_mediaType_position
   , devices
   , supportedMultiCamDeviceSets
+  , devicesSelector
+  , discoverySessionWithDeviceTypes_mediaType_positionSelector
   , initSelector
   , newSelector
-  , discoverySessionWithDeviceTypes_mediaType_positionSelector
-  , devicesSelector
   , supportedMultiCamDeviceSetsSelector
 
   -- * Enum types
@@ -32,15 +33,11 @@ module ObjC.AVFoundation.AVCaptureDeviceDiscoverySession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,15 +47,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureDeviceDiscoverySession avCaptureDeviceDiscoverySession => avCaptureDeviceDiscoverySession -> IO (Id AVCaptureDeviceDiscoverySession)
-init_ avCaptureDeviceDiscoverySession  =
-    sendMsg avCaptureDeviceDiscoverySession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureDeviceDiscoverySession =
+  sendOwnedMessage avCaptureDeviceDiscoverySession initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureDeviceDiscoverySession)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureDeviceDiscoverySession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | discoverySessionWithDeviceTypes:
 --
@@ -79,9 +76,7 @@ discoverySessionWithDeviceTypes_mediaType_position :: (IsNSArray deviceTypes, Is
 discoverySessionWithDeviceTypes_mediaType_position deviceTypes mediaType position =
   do
     cls' <- getRequiredClass "AVCaptureDeviceDiscoverySession"
-    withObjCPtr deviceTypes $ \raw_deviceTypes ->
-      withObjCPtr mediaType $ \raw_mediaType ->
-        sendClassMsg cls' (mkSelector "discoverySessionWithDeviceTypes:mediaType:position:") (retPtr retVoid) [argPtr (castPtr raw_deviceTypes :: Ptr ()), argPtr (castPtr raw_mediaType :: Ptr ()), argCLong (coerce position)] >>= retainedObject . castPtr
+    sendClassMessage cls' discoverySessionWithDeviceTypes_mediaType_positionSelector (toNSArray deviceTypes) (toNSString mediaType) position
 
 -- | devices
 --
@@ -91,8 +86,8 @@ discoverySessionWithDeviceTypes_mediaType_position deviceTypes mediaType positio
 --
 -- ObjC selector: @- devices@
 devices :: IsAVCaptureDeviceDiscoverySession avCaptureDeviceDiscoverySession => avCaptureDeviceDiscoverySession -> IO (Id NSArray)
-devices avCaptureDeviceDiscoverySession  =
-    sendMsg avCaptureDeviceDiscoverySession (mkSelector "devices") (retPtr retVoid) [] >>= retainedObject . castPtr
+devices avCaptureDeviceDiscoverySession =
+  sendMessage avCaptureDeviceDiscoverySession devicesSelector
 
 -- | supportedMultiCamDeviceSets
 --
@@ -102,30 +97,30 @@ devices avCaptureDeviceDiscoverySession  =
 --
 -- ObjC selector: @- supportedMultiCamDeviceSets@
 supportedMultiCamDeviceSets :: IsAVCaptureDeviceDiscoverySession avCaptureDeviceDiscoverySession => avCaptureDeviceDiscoverySession -> IO (Id NSArray)
-supportedMultiCamDeviceSets avCaptureDeviceDiscoverySession  =
-    sendMsg avCaptureDeviceDiscoverySession (mkSelector "supportedMultiCamDeviceSets") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedMultiCamDeviceSets avCaptureDeviceDiscoverySession =
+  sendMessage avCaptureDeviceDiscoverySession supportedMultiCamDeviceSetsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureDeviceDiscoverySession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureDeviceDiscoverySession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @discoverySessionWithDeviceTypes:mediaType:position:@
-discoverySessionWithDeviceTypes_mediaType_positionSelector :: Selector
+discoverySessionWithDeviceTypes_mediaType_positionSelector :: Selector '[Id NSArray, Id NSString, AVCaptureDevicePosition] (Id AVCaptureDeviceDiscoverySession)
 discoverySessionWithDeviceTypes_mediaType_positionSelector = mkSelector "discoverySessionWithDeviceTypes:mediaType:position:"
 
 -- | @Selector@ for @devices@
-devicesSelector :: Selector
+devicesSelector :: Selector '[] (Id NSArray)
 devicesSelector = mkSelector "devices"
 
 -- | @Selector@ for @supportedMultiCamDeviceSets@
-supportedMultiCamDeviceSetsSelector :: Selector
+supportedMultiCamDeviceSetsSelector :: Selector '[] (Id NSArray)
 supportedMultiCamDeviceSetsSelector = mkSelector "supportedMultiCamDeviceSets"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.Symbols.NSSymbolWiggleEffect
   , effectWithByLayer
   , effectWithWholeSymbol
   , effectSelector
+  , effectWithByLayerSelector
+  , effectWithWholeSymbolSelector
+  , wiggleBackwardEffectSelector
   , wiggleClockwiseEffectSelector
   , wiggleCounterClockwiseEffectSelector
+  , wiggleCustomAngleEffectSelector
+  , wiggleDownEffectSelector
+  , wiggleForwardEffectSelector
   , wiggleLeftEffectSelector
   , wiggleRightEffectSelector
   , wiggleUpEffectSelector
-  , wiggleDownEffectSelector
-  , wiggleForwardEffectSelector
-  , wiggleBackwardEffectSelector
-  , wiggleCustomAngleEffectSelector
-  , effectWithByLayerSelector
-  , effectWithWholeSymbolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,7 +57,7 @@ effect :: IO (Id NSSymbolWiggleEffect)
 effect  =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "effect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' effectSelector
 
 -- | Convenience initializer for a wiggle effect that rotates back and forth, starting by rotating clockwise.
 --
@@ -69,7 +66,7 @@ wiggleClockwiseEffect :: IO (Id NSSymbolWiggleEffect)
 wiggleClockwiseEffect  =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "wiggleClockwiseEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wiggleClockwiseEffectSelector
 
 -- | Convenience initializer for a wiggle effect that rotates back and forth, starting by rotating counter-clockwise.
 --
@@ -78,7 +75,7 @@ wiggleCounterClockwiseEffect :: IO (Id NSSymbolWiggleEffect)
 wiggleCounterClockwiseEffect  =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "wiggleCounterClockwiseEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wiggleCounterClockwiseEffectSelector
 
 -- | Convenience initializer for a wiggle effect that moves back and forth horizontally, starting by moving left.
 --
@@ -87,7 +84,7 @@ wiggleLeftEffect :: IO (Id NSSymbolWiggleEffect)
 wiggleLeftEffect  =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "wiggleLeftEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wiggleLeftEffectSelector
 
 -- | Convenience initializer for a wiggle effect that moves back and forth horizontally, starting by moving right.
 --
@@ -96,7 +93,7 @@ wiggleRightEffect :: IO (Id NSSymbolWiggleEffect)
 wiggleRightEffect  =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "wiggleRightEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wiggleRightEffectSelector
 
 -- | Convenience initializer for a wiggle effect that moves back and forth vertically, starting by moving up.
 --
@@ -105,7 +102,7 @@ wiggleUpEffect :: IO (Id NSSymbolWiggleEffect)
 wiggleUpEffect  =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "wiggleUpEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wiggleUpEffectSelector
 
 -- | Convenience initializer for a wiggle effect that moves back and forth vertically, starting by moving down.
 --
@@ -114,7 +111,7 @@ wiggleDownEffect :: IO (Id NSSymbolWiggleEffect)
 wiggleDownEffect  =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "wiggleDownEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wiggleDownEffectSelector
 
 -- | Convenience initializer for a wiggle effect that moves back and forth horizontally based on the current locale, starting by moving forward.
 --
@@ -123,7 +120,7 @@ wiggleForwardEffect :: IO (Id NSSymbolWiggleEffect)
 wiggleForwardEffect  =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "wiggleForwardEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wiggleForwardEffectSelector
 
 -- | Convenience initializer for a wiggle effect that moves back and forth horizontally based on the current locale, starting by moving backward.
 --
@@ -132,7 +129,7 @@ wiggleBackwardEffect :: IO (Id NSSymbolWiggleEffect)
 wiggleBackwardEffect  =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "wiggleBackwardEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wiggleBackwardEffectSelector
 
 -- | Convenience initializer for a wiggle effect that moves back and forth along an axis, starting by moving toward a custom angle.
 --
@@ -143,71 +140,71 @@ wiggleCustomAngleEffect :: CDouble -> IO (Id NSSymbolWiggleEffect)
 wiggleCustomAngleEffect angle =
   do
     cls' <- getRequiredClass "NSSymbolWiggleEffect"
-    sendClassMsg cls' (mkSelector "wiggleCustomAngleEffect:") (retPtr retVoid) [argCDouble angle] >>= retainedObject . castPtr
+    sendClassMessage cls' wiggleCustomAngleEffectSelector angle
 
 -- | Returns a copy of the effect that animates incrementally, by layer.
 --
 -- ObjC selector: @- effectWithByLayer@
 effectWithByLayer :: IsNSSymbolWiggleEffect nsSymbolWiggleEffect => nsSymbolWiggleEffect -> IO (Id NSSymbolWiggleEffect)
-effectWithByLayer nsSymbolWiggleEffect  =
-    sendMsg nsSymbolWiggleEffect (mkSelector "effectWithByLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithByLayer nsSymbolWiggleEffect =
+  sendMessage nsSymbolWiggleEffect effectWithByLayerSelector
 
 -- | Returns a copy of the effect that animates all layers of the symbol simultaneously.
 --
 -- ObjC selector: @- effectWithWholeSymbol@
 effectWithWholeSymbol :: IsNSSymbolWiggleEffect nsSymbolWiggleEffect => nsSymbolWiggleEffect -> IO (Id NSSymbolWiggleEffect)
-effectWithWholeSymbol nsSymbolWiggleEffect  =
-    sendMsg nsSymbolWiggleEffect (mkSelector "effectWithWholeSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithWholeSymbol nsSymbolWiggleEffect =
+  sendMessage nsSymbolWiggleEffect effectWithWholeSymbolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effect@
-effectSelector :: Selector
+effectSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 effectSelector = mkSelector "effect"
 
 -- | @Selector@ for @wiggleClockwiseEffect@
-wiggleClockwiseEffectSelector :: Selector
+wiggleClockwiseEffectSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 wiggleClockwiseEffectSelector = mkSelector "wiggleClockwiseEffect"
 
 -- | @Selector@ for @wiggleCounterClockwiseEffect@
-wiggleCounterClockwiseEffectSelector :: Selector
+wiggleCounterClockwiseEffectSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 wiggleCounterClockwiseEffectSelector = mkSelector "wiggleCounterClockwiseEffect"
 
 -- | @Selector@ for @wiggleLeftEffect@
-wiggleLeftEffectSelector :: Selector
+wiggleLeftEffectSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 wiggleLeftEffectSelector = mkSelector "wiggleLeftEffect"
 
 -- | @Selector@ for @wiggleRightEffect@
-wiggleRightEffectSelector :: Selector
+wiggleRightEffectSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 wiggleRightEffectSelector = mkSelector "wiggleRightEffect"
 
 -- | @Selector@ for @wiggleUpEffect@
-wiggleUpEffectSelector :: Selector
+wiggleUpEffectSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 wiggleUpEffectSelector = mkSelector "wiggleUpEffect"
 
 -- | @Selector@ for @wiggleDownEffect@
-wiggleDownEffectSelector :: Selector
+wiggleDownEffectSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 wiggleDownEffectSelector = mkSelector "wiggleDownEffect"
 
 -- | @Selector@ for @wiggleForwardEffect@
-wiggleForwardEffectSelector :: Selector
+wiggleForwardEffectSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 wiggleForwardEffectSelector = mkSelector "wiggleForwardEffect"
 
 -- | @Selector@ for @wiggleBackwardEffect@
-wiggleBackwardEffectSelector :: Selector
+wiggleBackwardEffectSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 wiggleBackwardEffectSelector = mkSelector "wiggleBackwardEffect"
 
 -- | @Selector@ for @wiggleCustomAngleEffect:@
-wiggleCustomAngleEffectSelector :: Selector
+wiggleCustomAngleEffectSelector :: Selector '[CDouble] (Id NSSymbolWiggleEffect)
 wiggleCustomAngleEffectSelector = mkSelector "wiggleCustomAngleEffect:"
 
 -- | @Selector@ for @effectWithByLayer@
-effectWithByLayerSelector :: Selector
+effectWithByLayerSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 effectWithByLayerSelector = mkSelector "effectWithByLayer"
 
 -- | @Selector@ for @effectWithWholeSymbol@
-effectWithWholeSymbolSelector :: Selector
+effectWithWholeSymbolSelector :: Selector '[] (Id NSSymbolWiggleEffect)
 effectWithWholeSymbolSelector = mkSelector "effectWithWholeSymbol"
 

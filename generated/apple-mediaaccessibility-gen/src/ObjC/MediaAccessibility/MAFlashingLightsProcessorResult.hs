@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.MediaAccessibility.MAFlashingLightsProcessorResult
   , surfaceProcessed
   , mitigationLevel
   , intensityLevel
-  , surfaceProcessedSelector
-  , mitigationLevelSelector
   , intensityLevelSelector
+  , mitigationLevelSelector
+  , surfaceProcessedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- surfaceProcessed@
 surfaceProcessed :: IsMAFlashingLightsProcessorResult maFlashingLightsProcessorResult => maFlashingLightsProcessorResult -> IO Bool
-surfaceProcessed maFlashingLightsProcessorResult  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg maFlashingLightsProcessorResult (mkSelector "surfaceProcessed") retCULong []
+surfaceProcessed maFlashingLightsProcessorResult =
+  sendMessage maFlashingLightsProcessorResult surfaceProcessedSelector
 
 -- | @- mitigationLevel@
 mitigationLevel :: IsMAFlashingLightsProcessorResult maFlashingLightsProcessorResult => maFlashingLightsProcessorResult -> IO CFloat
-mitigationLevel maFlashingLightsProcessorResult  =
-    sendMsg maFlashingLightsProcessorResult (mkSelector "mitigationLevel") retCFloat []
+mitigationLevel maFlashingLightsProcessorResult =
+  sendMessage maFlashingLightsProcessorResult mitigationLevelSelector
 
 -- | @- intensityLevel@
 intensityLevel :: IsMAFlashingLightsProcessorResult maFlashingLightsProcessorResult => maFlashingLightsProcessorResult -> IO CFloat
-intensityLevel maFlashingLightsProcessorResult  =
-    sendMsg maFlashingLightsProcessorResult (mkSelector "intensityLevel") retCFloat []
+intensityLevel maFlashingLightsProcessorResult =
+  sendMessage maFlashingLightsProcessorResult intensityLevelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @surfaceProcessed@
-surfaceProcessedSelector :: Selector
+surfaceProcessedSelector :: Selector '[] Bool
 surfaceProcessedSelector = mkSelector "surfaceProcessed"
 
 -- | @Selector@ for @mitigationLevel@
-mitigationLevelSelector :: Selector
+mitigationLevelSelector :: Selector '[] CFloat
 mitigationLevelSelector = mkSelector "mitigationLevel"
 
 -- | @Selector@ for @intensityLevel@
-intensityLevelSelector :: Selector
+intensityLevelSelector :: Selector '[] CFloat
 intensityLevelSelector = mkSelector "intensityLevel"
 

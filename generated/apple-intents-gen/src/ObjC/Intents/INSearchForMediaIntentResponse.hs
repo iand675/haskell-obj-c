@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.Intents.INSearchForMediaIntentResponse
   , code
   , mediaItems
   , setMediaItems
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
   , mediaItemsSelector
   , setMediaItemsSelector
 
@@ -30,15 +31,11 @@ module ObjC.Intents.INSearchForMediaIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,52 +45,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSearchForMediaIntentResponse inSearchForMediaIntentResponse => inSearchForMediaIntentResponse -> IO RawId
-init_ inSearchForMediaIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inSearchForMediaIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inSearchForMediaIntentResponse =
+  sendOwnedMessage inSearchForMediaIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINSearchForMediaIntentResponse inSearchForMediaIntentResponse, IsNSUserActivity userActivity) => inSearchForMediaIntentResponse -> INSearchForMediaIntentResponseCode -> userActivity -> IO (Id INSearchForMediaIntentResponse)
-initWithCode_userActivity inSearchForMediaIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inSearchForMediaIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inSearchForMediaIntentResponse code userActivity =
+  sendOwnedMessage inSearchForMediaIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINSearchForMediaIntentResponse inSearchForMediaIntentResponse => inSearchForMediaIntentResponse -> IO INSearchForMediaIntentResponseCode
-code inSearchForMediaIntentResponse  =
-    fmap (coerce :: CLong -> INSearchForMediaIntentResponseCode) $ sendMsg inSearchForMediaIntentResponse (mkSelector "code") retCLong []
+code inSearchForMediaIntentResponse =
+  sendMessage inSearchForMediaIntentResponse codeSelector
 
 -- | @- mediaItems@
 mediaItems :: IsINSearchForMediaIntentResponse inSearchForMediaIntentResponse => inSearchForMediaIntentResponse -> IO (Id NSArray)
-mediaItems inSearchForMediaIntentResponse  =
-    sendMsg inSearchForMediaIntentResponse (mkSelector "mediaItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaItems inSearchForMediaIntentResponse =
+  sendMessage inSearchForMediaIntentResponse mediaItemsSelector
 
 -- | @- setMediaItems:@
 setMediaItems :: (IsINSearchForMediaIntentResponse inSearchForMediaIntentResponse, IsNSArray value) => inSearchForMediaIntentResponse -> value -> IO ()
-setMediaItems inSearchForMediaIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSearchForMediaIntentResponse (mkSelector "setMediaItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMediaItems inSearchForMediaIntentResponse value =
+  sendMessage inSearchForMediaIntentResponse setMediaItemsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INSearchForMediaIntentResponseCode, Id NSUserActivity] (Id INSearchForMediaIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INSearchForMediaIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @mediaItems@
-mediaItemsSelector :: Selector
+mediaItemsSelector :: Selector '[] (Id NSArray)
 mediaItemsSelector = mkSelector "mediaItems"
 
 -- | @Selector@ for @setMediaItems:@
-setMediaItemsSelector :: Selector
+setMediaItemsSelector :: Selector '[Id NSArray] ()
 setMediaItemsSelector = mkSelector "setMediaItems:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,16 +25,16 @@ module ObjC.Quartz.IKDeviceBrowserView
   , mode
   , setMode
   , delegateSelector
-  , setDelegateSelector
   , displaysLocalCamerasSelector
-  , setDisplaysLocalCamerasSelector
-  , displaysNetworkCamerasSelector
-  , setDisplaysNetworkCamerasSelector
   , displaysLocalScannersSelector
-  , setDisplaysLocalScannersSelector
+  , displaysNetworkCamerasSelector
   , displaysNetworkScannersSelector
-  , setDisplaysNetworkScannersSelector
   , modeSelector
+  , setDelegateSelector
+  , setDisplaysLocalCamerasSelector
+  , setDisplaysLocalScannersSelector
+  , setDisplaysNetworkCamerasSelector
+  , setDisplaysNetworkScannersSelector
   , setModeSelector
 
   -- * Enum types
@@ -44,15 +45,11 @@ module ObjC.Quartz.IKDeviceBrowserView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,8 +64,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> IO RawId
-delegate ikDeviceBrowserView  =
-    fmap (RawId . castPtr) $ sendMsg ikDeviceBrowserView (mkSelector "delegate") (retPtr retVoid) []
+delegate ikDeviceBrowserView =
+  sendMessage ikDeviceBrowserView delegateSelector
 
 -- | delegate
 --
@@ -76,8 +73,8 @@ delegate ikDeviceBrowserView  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> RawId -> IO ()
-setDelegate ikDeviceBrowserView  value =
-    sendMsg ikDeviceBrowserView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ikDeviceBrowserView value =
+  sendMessage ikDeviceBrowserView setDelegateSelector value
 
 -- | displaysLocalCameras
 --
@@ -85,8 +82,8 @@ setDelegate ikDeviceBrowserView  value =
 --
 -- ObjC selector: @- displaysLocalCameras@
 displaysLocalCameras :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> IO Bool
-displaysLocalCameras ikDeviceBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikDeviceBrowserView (mkSelector "displaysLocalCameras") retCULong []
+displaysLocalCameras ikDeviceBrowserView =
+  sendMessage ikDeviceBrowserView displaysLocalCamerasSelector
 
 -- | displaysLocalCameras
 --
@@ -94,8 +91,8 @@ displaysLocalCameras ikDeviceBrowserView  =
 --
 -- ObjC selector: @- setDisplaysLocalCameras:@
 setDisplaysLocalCameras :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> Bool -> IO ()
-setDisplaysLocalCameras ikDeviceBrowserView  value =
-    sendMsg ikDeviceBrowserView (mkSelector "setDisplaysLocalCameras:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysLocalCameras ikDeviceBrowserView value =
+  sendMessage ikDeviceBrowserView setDisplaysLocalCamerasSelector value
 
 -- | displaysNetworkCameras
 --
@@ -103,8 +100,8 @@ setDisplaysLocalCameras ikDeviceBrowserView  value =
 --
 -- ObjC selector: @- displaysNetworkCameras@
 displaysNetworkCameras :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> IO Bool
-displaysNetworkCameras ikDeviceBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikDeviceBrowserView (mkSelector "displaysNetworkCameras") retCULong []
+displaysNetworkCameras ikDeviceBrowserView =
+  sendMessage ikDeviceBrowserView displaysNetworkCamerasSelector
 
 -- | displaysNetworkCameras
 --
@@ -112,8 +109,8 @@ displaysNetworkCameras ikDeviceBrowserView  =
 --
 -- ObjC selector: @- setDisplaysNetworkCameras:@
 setDisplaysNetworkCameras :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> Bool -> IO ()
-setDisplaysNetworkCameras ikDeviceBrowserView  value =
-    sendMsg ikDeviceBrowserView (mkSelector "setDisplaysNetworkCameras:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysNetworkCameras ikDeviceBrowserView value =
+  sendMessage ikDeviceBrowserView setDisplaysNetworkCamerasSelector value
 
 -- | displaysLocalScanners
 --
@@ -121,8 +118,8 @@ setDisplaysNetworkCameras ikDeviceBrowserView  value =
 --
 -- ObjC selector: @- displaysLocalScanners@
 displaysLocalScanners :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> IO Bool
-displaysLocalScanners ikDeviceBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikDeviceBrowserView (mkSelector "displaysLocalScanners") retCULong []
+displaysLocalScanners ikDeviceBrowserView =
+  sendMessage ikDeviceBrowserView displaysLocalScannersSelector
 
 -- | displaysLocalScanners
 --
@@ -130,8 +127,8 @@ displaysLocalScanners ikDeviceBrowserView  =
 --
 -- ObjC selector: @- setDisplaysLocalScanners:@
 setDisplaysLocalScanners :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> Bool -> IO ()
-setDisplaysLocalScanners ikDeviceBrowserView  value =
-    sendMsg ikDeviceBrowserView (mkSelector "setDisplaysLocalScanners:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysLocalScanners ikDeviceBrowserView value =
+  sendMessage ikDeviceBrowserView setDisplaysLocalScannersSelector value
 
 -- | displaysNetworkScanners
 --
@@ -139,8 +136,8 @@ setDisplaysLocalScanners ikDeviceBrowserView  value =
 --
 -- ObjC selector: @- displaysNetworkScanners@
 displaysNetworkScanners :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> IO Bool
-displaysNetworkScanners ikDeviceBrowserView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikDeviceBrowserView (mkSelector "displaysNetworkScanners") retCULong []
+displaysNetworkScanners ikDeviceBrowserView =
+  sendMessage ikDeviceBrowserView displaysNetworkScannersSelector
 
 -- | displaysNetworkScanners
 --
@@ -148,8 +145,8 @@ displaysNetworkScanners ikDeviceBrowserView  =
 --
 -- ObjC selector: @- setDisplaysNetworkScanners:@
 setDisplaysNetworkScanners :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> Bool -> IO ()
-setDisplaysNetworkScanners ikDeviceBrowserView  value =
-    sendMsg ikDeviceBrowserView (mkSelector "setDisplaysNetworkScanners:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysNetworkScanners ikDeviceBrowserView value =
+  sendMessage ikDeviceBrowserView setDisplaysNetworkScannersSelector value
 
 -- | mode
 --
@@ -157,8 +154,8 @@ setDisplaysNetworkScanners ikDeviceBrowserView  value =
 --
 -- ObjC selector: @- mode@
 mode :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> IO IKDeviceBrowserViewDisplayMode
-mode ikDeviceBrowserView  =
-    fmap (coerce :: CLong -> IKDeviceBrowserViewDisplayMode) $ sendMsg ikDeviceBrowserView (mkSelector "mode") retCLong []
+mode ikDeviceBrowserView =
+  sendMessage ikDeviceBrowserView modeSelector
 
 -- | mode
 --
@@ -166,58 +163,58 @@ mode ikDeviceBrowserView  =
 --
 -- ObjC selector: @- setMode:@
 setMode :: IsIKDeviceBrowserView ikDeviceBrowserView => ikDeviceBrowserView -> IKDeviceBrowserViewDisplayMode -> IO ()
-setMode ikDeviceBrowserView  value =
-    sendMsg ikDeviceBrowserView (mkSelector "setMode:") retVoid [argCLong (coerce value)]
+setMode ikDeviceBrowserView value =
+  sendMessage ikDeviceBrowserView setModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @displaysLocalCameras@
-displaysLocalCamerasSelector :: Selector
+displaysLocalCamerasSelector :: Selector '[] Bool
 displaysLocalCamerasSelector = mkSelector "displaysLocalCameras"
 
 -- | @Selector@ for @setDisplaysLocalCameras:@
-setDisplaysLocalCamerasSelector :: Selector
+setDisplaysLocalCamerasSelector :: Selector '[Bool] ()
 setDisplaysLocalCamerasSelector = mkSelector "setDisplaysLocalCameras:"
 
 -- | @Selector@ for @displaysNetworkCameras@
-displaysNetworkCamerasSelector :: Selector
+displaysNetworkCamerasSelector :: Selector '[] Bool
 displaysNetworkCamerasSelector = mkSelector "displaysNetworkCameras"
 
 -- | @Selector@ for @setDisplaysNetworkCameras:@
-setDisplaysNetworkCamerasSelector :: Selector
+setDisplaysNetworkCamerasSelector :: Selector '[Bool] ()
 setDisplaysNetworkCamerasSelector = mkSelector "setDisplaysNetworkCameras:"
 
 -- | @Selector@ for @displaysLocalScanners@
-displaysLocalScannersSelector :: Selector
+displaysLocalScannersSelector :: Selector '[] Bool
 displaysLocalScannersSelector = mkSelector "displaysLocalScanners"
 
 -- | @Selector@ for @setDisplaysLocalScanners:@
-setDisplaysLocalScannersSelector :: Selector
+setDisplaysLocalScannersSelector :: Selector '[Bool] ()
 setDisplaysLocalScannersSelector = mkSelector "setDisplaysLocalScanners:"
 
 -- | @Selector@ for @displaysNetworkScanners@
-displaysNetworkScannersSelector :: Selector
+displaysNetworkScannersSelector :: Selector '[] Bool
 displaysNetworkScannersSelector = mkSelector "displaysNetworkScanners"
 
 -- | @Selector@ for @setDisplaysNetworkScanners:@
-setDisplaysNetworkScannersSelector :: Selector
+setDisplaysNetworkScannersSelector :: Selector '[Bool] ()
 setDisplaysNetworkScannersSelector = mkSelector "setDisplaysNetworkScanners:"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] IKDeviceBrowserViewDisplayMode
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[IKDeviceBrowserViewDisplayMode] ()
 setModeSelector = mkSelector "setMode:"
 

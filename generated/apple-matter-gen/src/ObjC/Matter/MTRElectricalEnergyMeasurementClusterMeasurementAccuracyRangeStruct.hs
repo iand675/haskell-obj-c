@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTRElectricalEnergyMeasurementClusterMeasurementAccuracyRange
   , setFixedMin
   , fixedTypical
   , setFixedTypical
-  , rangeMinSelector
-  , setRangeMinSelector
-  , rangeMaxSelector
-  , setRangeMaxSelector
-  , percentMaxSelector
-  , setPercentMaxSelector
-  , percentMinSelector
-  , setPercentMinSelector
-  , percentTypicalSelector
-  , setPercentTypicalSelector
   , fixedMaxSelector
-  , setFixedMaxSelector
   , fixedMinSelector
-  , setFixedMinSelector
   , fixedTypicalSelector
+  , percentMaxSelector
+  , percentMinSelector
+  , percentTypicalSelector
+  , rangeMaxSelector
+  , rangeMinSelector
+  , setFixedMaxSelector
+  , setFixedMinSelector
   , setFixedTypicalSelector
+  , setPercentMaxSelector
+  , setPercentMinSelector
+  , setPercentTypicalSelector
+  , setRangeMaxSelector
+  , setRangeMinSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,157 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rangeMin@
 rangeMin :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-rangeMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "rangeMin") (retPtr retVoid) [] >>= retainedObject . castPtr
+rangeMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct rangeMinSelector
 
 -- | @- setRangeMin:@
 setRangeMin :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> value -> IO ()
-setRangeMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "setRangeMin:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRangeMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct setRangeMinSelector (toNSNumber value)
 
 -- | @- rangeMax@
 rangeMax :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-rangeMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "rangeMax") (retPtr retVoid) [] >>= retainedObject . castPtr
+rangeMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct rangeMaxSelector
 
 -- | @- setRangeMax:@
 setRangeMax :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> value -> IO ()
-setRangeMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "setRangeMax:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRangeMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct setRangeMaxSelector (toNSNumber value)
 
 -- | @- percentMax@
 percentMax :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-percentMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "percentMax") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct percentMaxSelector
 
 -- | @- setPercentMax:@
 setPercentMax :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> value -> IO ()
-setPercentMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "setPercentMax:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct setPercentMaxSelector (toNSNumber value)
 
 -- | @- percentMin@
 percentMin :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-percentMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "percentMin") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct percentMinSelector
 
 -- | @- setPercentMin:@
 setPercentMin :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> value -> IO ()
-setPercentMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "setPercentMin:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct setPercentMinSelector (toNSNumber value)
 
 -- | @- percentTypical@
 percentTypical :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-percentTypical mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "percentTypical") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentTypical mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct percentTypicalSelector
 
 -- | @- setPercentTypical:@
 setPercentTypical :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> value -> IO ()
-setPercentTypical mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "setPercentTypical:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentTypical mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct setPercentTypicalSelector (toNSNumber value)
 
 -- | @- fixedMax@
 fixedMax :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-fixedMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "fixedMax") (retPtr retVoid) [] >>= retainedObject . castPtr
+fixedMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct fixedMaxSelector
 
 -- | @- setFixedMax:@
 setFixedMax :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> value -> IO ()
-setFixedMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "setFixedMax:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFixedMax mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct setFixedMaxSelector (toNSNumber value)
 
 -- | @- fixedMin@
 fixedMin :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-fixedMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "fixedMin") (retPtr retVoid) [] >>= retainedObject . castPtr
+fixedMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct fixedMinSelector
 
 -- | @- setFixedMin:@
 setFixedMin :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> value -> IO ()
-setFixedMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "setFixedMin:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFixedMin mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct setFixedMinSelector (toNSNumber value)
 
 -- | @- fixedTypical@
 fixedTypical :: IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> IO (Id NSNumber)
-fixedTypical mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "fixedTypical") (retPtr retVoid) [] >>= retainedObject . castPtr
+fixedTypical mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct fixedTypicalSelector
 
 -- | @- setFixedTypical:@
 setFixedTypical :: (IsMTRElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct -> value -> IO ()
-setFixedTypical mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct (mkSelector "setFixedTypical:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFixedTypical mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterMeasurementAccuracyRangeStruct setFixedTypicalSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rangeMin@
-rangeMinSelector :: Selector
+rangeMinSelector :: Selector '[] (Id NSNumber)
 rangeMinSelector = mkSelector "rangeMin"
 
 -- | @Selector@ for @setRangeMin:@
-setRangeMinSelector :: Selector
+setRangeMinSelector :: Selector '[Id NSNumber] ()
 setRangeMinSelector = mkSelector "setRangeMin:"
 
 -- | @Selector@ for @rangeMax@
-rangeMaxSelector :: Selector
+rangeMaxSelector :: Selector '[] (Id NSNumber)
 rangeMaxSelector = mkSelector "rangeMax"
 
 -- | @Selector@ for @setRangeMax:@
-setRangeMaxSelector :: Selector
+setRangeMaxSelector :: Selector '[Id NSNumber] ()
 setRangeMaxSelector = mkSelector "setRangeMax:"
 
 -- | @Selector@ for @percentMax@
-percentMaxSelector :: Selector
+percentMaxSelector :: Selector '[] (Id NSNumber)
 percentMaxSelector = mkSelector "percentMax"
 
 -- | @Selector@ for @setPercentMax:@
-setPercentMaxSelector :: Selector
+setPercentMaxSelector :: Selector '[Id NSNumber] ()
 setPercentMaxSelector = mkSelector "setPercentMax:"
 
 -- | @Selector@ for @percentMin@
-percentMinSelector :: Selector
+percentMinSelector :: Selector '[] (Id NSNumber)
 percentMinSelector = mkSelector "percentMin"
 
 -- | @Selector@ for @setPercentMin:@
-setPercentMinSelector :: Selector
+setPercentMinSelector :: Selector '[Id NSNumber] ()
 setPercentMinSelector = mkSelector "setPercentMin:"
 
 -- | @Selector@ for @percentTypical@
-percentTypicalSelector :: Selector
+percentTypicalSelector :: Selector '[] (Id NSNumber)
 percentTypicalSelector = mkSelector "percentTypical"
 
 -- | @Selector@ for @setPercentTypical:@
-setPercentTypicalSelector :: Selector
+setPercentTypicalSelector :: Selector '[Id NSNumber] ()
 setPercentTypicalSelector = mkSelector "setPercentTypical:"
 
 -- | @Selector@ for @fixedMax@
-fixedMaxSelector :: Selector
+fixedMaxSelector :: Selector '[] (Id NSNumber)
 fixedMaxSelector = mkSelector "fixedMax"
 
 -- | @Selector@ for @setFixedMax:@
-setFixedMaxSelector :: Selector
+setFixedMaxSelector :: Selector '[Id NSNumber] ()
 setFixedMaxSelector = mkSelector "setFixedMax:"
 
 -- | @Selector@ for @fixedMin@
-fixedMinSelector :: Selector
+fixedMinSelector :: Selector '[] (Id NSNumber)
 fixedMinSelector = mkSelector "fixedMin"
 
 -- | @Selector@ for @setFixedMin:@
-setFixedMinSelector :: Selector
+setFixedMinSelector :: Selector '[Id NSNumber] ()
 setFixedMinSelector = mkSelector "setFixedMin:"
 
 -- | @Selector@ for @fixedTypical@
-fixedTypicalSelector :: Selector
+fixedTypicalSelector :: Selector '[] (Id NSNumber)
 fixedTypicalSelector = mkSelector "fixedTypical"
 
 -- | @Selector@ for @setFixedTypical:@
-setFixedTypicalSelector :: Selector
+setFixedTypicalSelector :: Selector '[Id NSNumber] ()
 setFixedTypicalSelector = mkSelector "setFixedTypical:"
 

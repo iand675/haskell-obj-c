@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.HealthKit.HKQueryDescriptor
   , sampleType
   , predicate
   , initSelector
-  , newSelector
   , initWithSampleType_predicateSelector
-  , sampleTypeSelector
+  , newSelector
   , predicateSelector
+  , sampleTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,15 +34,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKQueryDescriptor hkQueryDescriptor => hkQueryDescriptor -> IO (Id HKQueryDescriptor)
-init_ hkQueryDescriptor  =
-    sendMsg hkQueryDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkQueryDescriptor =
+  sendOwnedMessage hkQueryDescriptor initSelector
 
 -- | @+ new@
 new :: IO (Id HKQueryDescriptor)
 new  =
   do
     cls' <- getRequiredClass "HKQueryDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithSampleType:predicate:
 --
@@ -57,10 +54,8 @@ new  =
 --
 -- ObjC selector: @- initWithSampleType:predicate:@
 initWithSampleType_predicate :: (IsHKQueryDescriptor hkQueryDescriptor, IsHKSampleType sampleType, IsNSPredicate predicate) => hkQueryDescriptor -> sampleType -> predicate -> IO (Id HKQueryDescriptor)
-initWithSampleType_predicate hkQueryDescriptor  sampleType predicate =
-  withObjCPtr sampleType $ \raw_sampleType ->
-    withObjCPtr predicate $ \raw_predicate ->
-        sendMsg hkQueryDescriptor (mkSelector "initWithSampleType:predicate:") (retPtr retVoid) [argPtr (castPtr raw_sampleType :: Ptr ()), argPtr (castPtr raw_predicate :: Ptr ())] >>= ownedObject . castPtr
+initWithSampleType_predicate hkQueryDescriptor sampleType predicate =
+  sendOwnedMessage hkQueryDescriptor initWithSampleType_predicateSelector (toHKSampleType sampleType) (toNSPredicate predicate)
 
 -- | sampleType
 --
@@ -68,8 +63,8 @@ initWithSampleType_predicate hkQueryDescriptor  sampleType predicate =
 --
 -- ObjC selector: @- sampleType@
 sampleType :: IsHKQueryDescriptor hkQueryDescriptor => hkQueryDescriptor -> IO (Id HKSampleType)
-sampleType hkQueryDescriptor  =
-    sendMsg hkQueryDescriptor (mkSelector "sampleType") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleType hkQueryDescriptor =
+  sendMessage hkQueryDescriptor sampleTypeSelector
 
 -- | predicate
 --
@@ -77,30 +72,30 @@ sampleType hkQueryDescriptor  =
 --
 -- ObjC selector: @- predicate@
 predicate :: IsHKQueryDescriptor hkQueryDescriptor => hkQueryDescriptor -> IO (Id NSPredicate)
-predicate hkQueryDescriptor  =
-    sendMsg hkQueryDescriptor (mkSelector "predicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicate hkQueryDescriptor =
+  sendMessage hkQueryDescriptor predicateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKQueryDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKQueryDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithSampleType:predicate:@
-initWithSampleType_predicateSelector :: Selector
+initWithSampleType_predicateSelector :: Selector '[Id HKSampleType, Id NSPredicate] (Id HKQueryDescriptor)
 initWithSampleType_predicateSelector = mkSelector "initWithSampleType:predicate:"
 
 -- | @Selector@ for @sampleType@
-sampleTypeSelector :: Selector
+sampleTypeSelector :: Selector '[] (Id HKSampleType)
 sampleTypeSelector = mkSelector "sampleType"
 
 -- | @Selector@ for @predicate@
-predicateSelector :: Selector
+predicateSelector :: Selector '[] (Id NSPredicate)
 predicateSelector = mkSelector "predicate"
 

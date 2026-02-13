@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AuthenticationServices.ASAuthorizationSecurityKeyPublicKeyCredential
   , init_
   , new
   , relyingPartyIdentifier
-  , initWithRelyingPartyIdentifierSelector
-  , createCredentialRegistrationRequestWithChallenge_displayName_name_userIDSelector
   , createCredentialAssertionRequestWithChallengeSelector
+  , createCredentialRegistrationRequestWithChallenge_displayName_name_userIDSelector
   , initSelector
+  , initWithRelyingPartyIdentifierSelector
   , newSelector
   , relyingPartyIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,9 +36,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRelyingPartyIdentifier:@
 initWithRelyingPartyIdentifier :: (IsASAuthorizationSecurityKeyPublicKeyCredentialProvider asAuthorizationSecurityKeyPublicKeyCredentialProvider, IsNSString relyingPartyIdentifier) => asAuthorizationSecurityKeyPublicKeyCredentialProvider -> relyingPartyIdentifier -> IO (Id ASAuthorizationSecurityKeyPublicKeyCredentialProvider)
-initWithRelyingPartyIdentifier asAuthorizationSecurityKeyPublicKeyCredentialProvider  relyingPartyIdentifier =
-  withObjCPtr relyingPartyIdentifier $ \raw_relyingPartyIdentifier ->
-      sendMsg asAuthorizationSecurityKeyPublicKeyCredentialProvider (mkSelector "initWithRelyingPartyIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_relyingPartyIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithRelyingPartyIdentifier asAuthorizationSecurityKeyPublicKeyCredentialProvider relyingPartyIdentifier =
+  sendOwnedMessage asAuthorizationSecurityKeyPublicKeyCredentialProvider initWithRelyingPartyIdentifierSelector (toNSString relyingPartyIdentifier)
 
 -- | Create a request to register a new security key credential.
 --
@@ -55,12 +51,8 @@ initWithRelyingPartyIdentifier asAuthorizationSecurityKeyPublicKeyCredentialProv
 --
 -- ObjC selector: @- createCredentialRegistrationRequestWithChallenge:displayName:name:userID:@
 createCredentialRegistrationRequestWithChallenge_displayName_name_userID :: (IsASAuthorizationSecurityKeyPublicKeyCredentialProvider asAuthorizationSecurityKeyPublicKeyCredentialProvider, IsNSData challenge, IsNSString displayName, IsNSString name, IsNSData userID) => asAuthorizationSecurityKeyPublicKeyCredentialProvider -> challenge -> displayName -> name -> userID -> IO (Id ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest)
-createCredentialRegistrationRequestWithChallenge_displayName_name_userID asAuthorizationSecurityKeyPublicKeyCredentialProvider  challenge displayName name userID =
-  withObjCPtr challenge $ \raw_challenge ->
-    withObjCPtr displayName $ \raw_displayName ->
-      withObjCPtr name $ \raw_name ->
-        withObjCPtr userID $ \raw_userID ->
-            sendMsg asAuthorizationSecurityKeyPublicKeyCredentialProvider (mkSelector "createCredentialRegistrationRequestWithChallenge:displayName:name:userID:") (retPtr retVoid) [argPtr (castPtr raw_challenge :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_userID :: Ptr ())] >>= retainedObject . castPtr
+createCredentialRegistrationRequestWithChallenge_displayName_name_userID asAuthorizationSecurityKeyPublicKeyCredentialProvider challenge displayName name userID =
+  sendMessage asAuthorizationSecurityKeyPublicKeyCredentialProvider createCredentialRegistrationRequestWithChallenge_displayName_name_userIDSelector (toNSData challenge) (toNSString displayName) (toNSString name) (toNSData userID)
 
 -- | Create a request to authenticate using an existing credential.
 --
@@ -68,54 +60,53 @@ createCredentialRegistrationRequestWithChallenge_displayName_name_userID asAutho
 --
 -- ObjC selector: @- createCredentialAssertionRequestWithChallenge:@
 createCredentialAssertionRequestWithChallenge :: (IsASAuthorizationSecurityKeyPublicKeyCredentialProvider asAuthorizationSecurityKeyPublicKeyCredentialProvider, IsNSData challenge) => asAuthorizationSecurityKeyPublicKeyCredentialProvider -> challenge -> IO (Id ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest)
-createCredentialAssertionRequestWithChallenge asAuthorizationSecurityKeyPublicKeyCredentialProvider  challenge =
-  withObjCPtr challenge $ \raw_challenge ->
-      sendMsg asAuthorizationSecurityKeyPublicKeyCredentialProvider (mkSelector "createCredentialAssertionRequestWithChallenge:") (retPtr retVoid) [argPtr (castPtr raw_challenge :: Ptr ())] >>= retainedObject . castPtr
+createCredentialAssertionRequestWithChallenge asAuthorizationSecurityKeyPublicKeyCredentialProvider challenge =
+  sendMessage asAuthorizationSecurityKeyPublicKeyCredentialProvider createCredentialAssertionRequestWithChallengeSelector (toNSData challenge)
 
 -- | @- init@
 init_ :: IsASAuthorizationSecurityKeyPublicKeyCredentialProvider asAuthorizationSecurityKeyPublicKeyCredentialProvider => asAuthorizationSecurityKeyPublicKeyCredentialProvider -> IO (Id ASAuthorizationSecurityKeyPublicKeyCredentialProvider)
-init_ asAuthorizationSecurityKeyPublicKeyCredentialProvider  =
-    sendMsg asAuthorizationSecurityKeyPublicKeyCredentialProvider (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationSecurityKeyPublicKeyCredentialProvider =
+  sendOwnedMessage asAuthorizationSecurityKeyPublicKeyCredentialProvider initSelector
 
 -- | @+ new@
 new :: IO (Id ASAuthorizationSecurityKeyPublicKeyCredentialProvider)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationSecurityKeyPublicKeyCredentialProvider"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The Relying Party identifier used for all requests created by this object.
 --
 -- ObjC selector: @- relyingPartyIdentifier@
 relyingPartyIdentifier :: IsASAuthorizationSecurityKeyPublicKeyCredentialProvider asAuthorizationSecurityKeyPublicKeyCredentialProvider => asAuthorizationSecurityKeyPublicKeyCredentialProvider -> IO (Id NSString)
-relyingPartyIdentifier asAuthorizationSecurityKeyPublicKeyCredentialProvider  =
-    sendMsg asAuthorizationSecurityKeyPublicKeyCredentialProvider (mkSelector "relyingPartyIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+relyingPartyIdentifier asAuthorizationSecurityKeyPublicKeyCredentialProvider =
+  sendMessage asAuthorizationSecurityKeyPublicKeyCredentialProvider relyingPartyIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRelyingPartyIdentifier:@
-initWithRelyingPartyIdentifierSelector :: Selector
+initWithRelyingPartyIdentifierSelector :: Selector '[Id NSString] (Id ASAuthorizationSecurityKeyPublicKeyCredentialProvider)
 initWithRelyingPartyIdentifierSelector = mkSelector "initWithRelyingPartyIdentifier:"
 
 -- | @Selector@ for @createCredentialRegistrationRequestWithChallenge:displayName:name:userID:@
-createCredentialRegistrationRequestWithChallenge_displayName_name_userIDSelector :: Selector
+createCredentialRegistrationRequestWithChallenge_displayName_name_userIDSelector :: Selector '[Id NSData, Id NSString, Id NSString, Id NSData] (Id ASAuthorizationSecurityKeyPublicKeyCredentialRegistrationRequest)
 createCredentialRegistrationRequestWithChallenge_displayName_name_userIDSelector = mkSelector "createCredentialRegistrationRequestWithChallenge:displayName:name:userID:"
 
 -- | @Selector@ for @createCredentialAssertionRequestWithChallenge:@
-createCredentialAssertionRequestWithChallengeSelector :: Selector
+createCredentialAssertionRequestWithChallengeSelector :: Selector '[Id NSData] (Id ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest)
 createCredentialAssertionRequestWithChallengeSelector = mkSelector "createCredentialAssertionRequestWithChallenge:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationSecurityKeyPublicKeyCredentialProvider)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationSecurityKeyPublicKeyCredentialProvider)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @relyingPartyIdentifier@
-relyingPartyIdentifierSelector :: Selector
+relyingPartyIdentifierSelector :: Selector '[] (Id NSString)
 relyingPartyIdentifierSelector = mkSelector "relyingPartyIdentifier"
 

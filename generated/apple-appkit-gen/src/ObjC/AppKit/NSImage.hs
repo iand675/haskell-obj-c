@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -103,102 +104,102 @@ module ObjC.AppKit.NSImage
   , setResizingMode
   , symbolConfiguration
   , locale
-  , imageNamedSelector
-  , imageWithSystemSymbolName_accessibilityDescriptionSelector
-  , imageWithSystemSymbolName_variableValue_accessibilityDescriptionSelector
-  , imageWithSymbolName_variableValueSelector
-  , imageWithSymbolName_bundle_variableValueSelector
-  , initWithSizeSelector
-  , initWithCoderSelector
-  , initWithDataSelector
-  , initWithContentsOfFileSelector
-  , initWithContentsOfURLSelector
-  , initByReferencingFileSelector
-  , initByReferencingURLSelector
-  , initWithPasteboardSelector
-  , initWithDataIgnoringOrientationSelector
-  , imageWithSize_flipped_drawingHandlerSelector
-  , setNameSelector
-  , nameSelector
+  , accessibilityDescriptionSelector
+  , addRepresentationSelector
+  , addRepresentationsSelector
+  , alignmentRectSelector
+  , backgroundColorSelector
+  , bestRepresentationForDeviceSelector
+  , bestRepresentationForRect_context_hintsSelector
+  , cacheDepthMatchesImageDepthSelector
+  , cacheModeSelector
+  , canInitWithPasteboardSelector
+  , cancelIncrementalLoadSelector
+  , capInsetsSelector
+  , cgImageForProposedRect_context_hintsSelector
+  , compositeToPoint_fromRect_operationSelector
+  , compositeToPoint_fromRect_operation_fractionSelector
+  , compositeToPoint_operationSelector
+  , compositeToPoint_operation_fractionSelector
+  , delegateSelector
+  , dissolveToPoint_fractionSelector
+  , dissolveToPoint_fromRect_fractionSelector
   , drawAtPoint_fromRect_operation_fractionSelector
+  , drawInRectSelector
   , drawInRect_fromRect_operation_fractionSelector
   , drawInRect_fromRect_operation_fraction_respectFlipped_hintsSelector
   , drawRepresentation_inRectSelector
-  , drawInRectSelector
-  , recacheSelector
-  , tiffRepresentationUsingCompression_factorSelector
-  , addRepresentationsSelector
-  , addRepresentationSelector
-  , removeRepresentationSelector
-  , canInitWithPasteboardSelector
-  , initWithCGImage_sizeSelector
-  , cgImageForProposedRect_context_hintsSelector
-  , bestRepresentationForRect_context_hintsSelector
   , hitTestRect_withImageDestinationRect_context_hints_flippedSelector
-  , recommendedLayerContentsScaleSelector
-  , layerContentsForContentsScaleSelector
-  , imageWithSymbolConfigurationSelector
-  , imageWithLocaleSelector
+  , imageFileTypesSelector
+  , imageNamedSelector
+  , imagePasteboardTypesSelector
+  , imageTypesSelector
   , imageUnfilteredFileTypesSelector
   , imageUnfilteredPasteboardTypesSelector
-  , imageFileTypesSelector
-  , imagePasteboardTypesSelector
-  , initWithIconRefSelector
-  , bestRepresentationForDeviceSelector
-  , lockFocusSelector
-  , lockFocusFlippedSelector
-  , unlockFocusSelector
-  , setFlippedSelector
-  , isFlippedSelector
-  , setScalesWhenResizedSelector
-  , scalesWhenResizedSelector
-  , setDataRetainedSelector
-  , isDataRetainedSelector
-  , setCachedSeparatelySelector
-  , isCachedSeparatelySelector
-  , setCacheDepthMatchesImageDepthSelector
-  , cacheDepthMatchesImageDepthSelector
-  , dissolveToPoint_fractionSelector
-  , dissolveToPoint_fromRect_fractionSelector
-  , compositeToPoint_operationSelector
-  , compositeToPoint_fromRect_operationSelector
-  , compositeToPoint_operation_fractionSelector
-  , compositeToPoint_fromRect_operation_fractionSelector
-  , lockFocusOnRepresentationSelector
-  , cancelIncrementalLoadSelector
-  , sizeSelector
-  , setSizeSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , usesEPSOnResolutionMismatchSelector
-  , setUsesEPSOnResolutionMismatchSelector
-  , prefersColorMatchSelector
-  , setPrefersColorMatchSelector
-  , matchesOnMultipleResolutionSelector
-  , setMatchesOnMultipleResolutionSelector
-  , matchesOnlyOnBestFittingAxisSelector
-  , setMatchesOnlyOnBestFittingAxisSelector
-  , tiffRepresentationSelector
-  , representationsSelector
-  , validSelector
-  , delegateSelector
-  , setDelegateSelector
-  , imageTypesSelector
   , imageUnfilteredTypesSelector
-  , cacheModeSelector
-  , setCacheModeSelector
-  , alignmentRectSelector
-  , setAlignmentRectSelector
-  , templateSelector
-  , setTemplateSelector
-  , accessibilityDescriptionSelector
-  , setAccessibilityDescriptionSelector
-  , capInsetsSelector
-  , setCapInsetsSelector
-  , resizingModeSelector
-  , setResizingModeSelector
-  , symbolConfigurationSelector
+  , imageWithLocaleSelector
+  , imageWithSize_flipped_drawingHandlerSelector
+  , imageWithSymbolConfigurationSelector
+  , imageWithSymbolName_bundle_variableValueSelector
+  , imageWithSymbolName_variableValueSelector
+  , imageWithSystemSymbolName_accessibilityDescriptionSelector
+  , imageWithSystemSymbolName_variableValue_accessibilityDescriptionSelector
+  , initByReferencingFileSelector
+  , initByReferencingURLSelector
+  , initWithCGImage_sizeSelector
+  , initWithCoderSelector
+  , initWithContentsOfFileSelector
+  , initWithContentsOfURLSelector
+  , initWithDataIgnoringOrientationSelector
+  , initWithDataSelector
+  , initWithIconRefSelector
+  , initWithPasteboardSelector
+  , initWithSizeSelector
+  , isCachedSeparatelySelector
+  , isDataRetainedSelector
+  , isFlippedSelector
+  , layerContentsForContentsScaleSelector
   , localeSelector
+  , lockFocusFlippedSelector
+  , lockFocusOnRepresentationSelector
+  , lockFocusSelector
+  , matchesOnMultipleResolutionSelector
+  , matchesOnlyOnBestFittingAxisSelector
+  , nameSelector
+  , prefersColorMatchSelector
+  , recacheSelector
+  , recommendedLayerContentsScaleSelector
+  , removeRepresentationSelector
+  , representationsSelector
+  , resizingModeSelector
+  , scalesWhenResizedSelector
+  , setAccessibilityDescriptionSelector
+  , setAlignmentRectSelector
+  , setBackgroundColorSelector
+  , setCacheDepthMatchesImageDepthSelector
+  , setCacheModeSelector
+  , setCachedSeparatelySelector
+  , setCapInsetsSelector
+  , setDataRetainedSelector
+  , setDelegateSelector
+  , setFlippedSelector
+  , setMatchesOnMultipleResolutionSelector
+  , setMatchesOnlyOnBestFittingAxisSelector
+  , setNameSelector
+  , setPrefersColorMatchSelector
+  , setResizingModeSelector
+  , setScalesWhenResizedSelector
+  , setSizeSelector
+  , setTemplateSelector
+  , setUsesEPSOnResolutionMismatchSelector
+  , sizeSelector
+  , symbolConfigurationSelector
+  , templateSelector
+  , tiffRepresentationSelector
+  , tiffRepresentationUsingCompression_factorSelector
+  , unlockFocusSelector
+  , usesEPSOnResolutionMismatchSelector
+  , validSelector
 
   -- * Enum types
   , NSCompositingOperation(NSCompositingOperation)
@@ -251,15 +252,11 @@ module ObjC.AppKit.NSImage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -273,8 +270,7 @@ imageNamed :: IsNSString name => name -> IO (Id NSImage)
 imageNamed name =
   do
     cls' <- getRequiredClass "NSImage"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "imageNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageNamedSelector (toNSString name)
 
 -- | Creates a system symbol image with the specified name and value
 --
@@ -287,9 +283,7 @@ imageWithSystemSymbolName_accessibilityDescription :: (IsNSString name, IsNSStri
 imageWithSystemSymbolName_accessibilityDescription name description =
   do
     cls' <- getRequiredClass "NSImage"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr description $ \raw_description ->
-        sendClassMsg cls' (mkSelector "imageWithSystemSymbolName:accessibilityDescription:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_description :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithSystemSymbolName_accessibilityDescriptionSelector (toNSString name) (toNSString description)
 
 -- | Creates a system symbol image with the specified name and value. The @value@ argument is only accommodated if the symbol supports variable rendering.
 --
@@ -306,9 +300,7 @@ imageWithSystemSymbolName_variableValue_accessibilityDescription :: (IsNSString 
 imageWithSystemSymbolName_variableValue_accessibilityDescription name value description =
   do
     cls' <- getRequiredClass "NSImage"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr description $ \raw_description ->
-        sendClassMsg cls' (mkSelector "imageWithSystemSymbolName:variableValue:accessibilityDescription:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCDouble value, argPtr (castPtr raw_description :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithSystemSymbolName_variableValue_accessibilityDescriptionSelector (toNSString name) value (toNSString description)
 
 -- | Creates a symbol image with the specified name and value. The @value@ argument is only accommodated if the symbol supports variable rendering.
 --
@@ -323,8 +315,7 @@ imageWithSymbolName_variableValue :: IsNSString name => name -> CDouble -> IO (I
 imageWithSymbolName_variableValue name value =
   do
     cls' <- getRequiredClass "NSImage"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "imageWithSymbolName:variableValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCDouble value] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithSymbolName_variableValueSelector (toNSString name) value
 
 -- | Creates a symbol image with the specified name and value. The @value@ argument is only accommodated if the symbol supports variable rendering.
 --
@@ -341,897 +332,868 @@ imageWithSymbolName_bundle_variableValue :: (IsNSString name, IsNSBundle bundle)
 imageWithSymbolName_bundle_variableValue name bundle value =
   do
     cls' <- getRequiredClass "NSImage"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr bundle $ \raw_bundle ->
-        sendClassMsg cls' (mkSelector "imageWithSymbolName:bundle:variableValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_bundle :: Ptr ()), argCDouble value] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithSymbolName_bundle_variableValueSelector (toNSString name) (toNSBundle bundle) value
 
 -- | @- initWithSize:@
 initWithSize :: IsNSImage nsImage => nsImage -> NSSize -> IO (Id NSImage)
-initWithSize nsImage  size =
-    sendMsg nsImage (mkSelector "initWithSize:") (retPtr retVoid) [argNSSize size] >>= ownedObject . castPtr
+initWithSize nsImage size =
+  sendOwnedMessage nsImage initWithSizeSelector size
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSImage nsImage, IsNSCoder coder) => nsImage -> coder -> IO (Id NSImage)
-initWithCoder nsImage  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsImage (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsImage coder =
+  sendOwnedMessage nsImage initWithCoderSelector (toNSCoder coder)
 
 -- | @- initWithData:@
 initWithData :: (IsNSImage nsImage, IsNSData data_) => nsImage -> data_ -> IO (Id NSImage)
-initWithData nsImage  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nsImage (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData nsImage data_ =
+  sendOwnedMessage nsImage initWithDataSelector (toNSData data_)
 
 -- | @- initWithContentsOfFile:@
 initWithContentsOfFile :: (IsNSImage nsImage, IsNSString fileName) => nsImage -> fileName -> IO (Id NSImage)
-initWithContentsOfFile nsImage  fileName =
-  withObjCPtr fileName $ \raw_fileName ->
-      sendMsg nsImage (mkSelector "initWithContentsOfFile:") (retPtr retVoid) [argPtr (castPtr raw_fileName :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfFile nsImage fileName =
+  sendOwnedMessage nsImage initWithContentsOfFileSelector (toNSString fileName)
 
 -- | @- initWithContentsOfURL:@
 initWithContentsOfURL :: (IsNSImage nsImage, IsNSURL url) => nsImage -> url -> IO (Id NSImage)
-initWithContentsOfURL nsImage  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsImage (mkSelector "initWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL nsImage url =
+  sendOwnedMessage nsImage initWithContentsOfURLSelector (toNSURL url)
 
 -- | @- initByReferencingFile:@
 initByReferencingFile :: (IsNSImage nsImage, IsNSString fileName) => nsImage -> fileName -> IO (Id NSImage)
-initByReferencingFile nsImage  fileName =
-  withObjCPtr fileName $ \raw_fileName ->
-      sendMsg nsImage (mkSelector "initByReferencingFile:") (retPtr retVoid) [argPtr (castPtr raw_fileName :: Ptr ())] >>= ownedObject . castPtr
+initByReferencingFile nsImage fileName =
+  sendOwnedMessage nsImage initByReferencingFileSelector (toNSString fileName)
 
 -- | @- initByReferencingURL:@
 initByReferencingURL :: (IsNSImage nsImage, IsNSURL url) => nsImage -> url -> IO (Id NSImage)
-initByReferencingURL nsImage  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsImage (mkSelector "initByReferencingURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initByReferencingURL nsImage url =
+  sendOwnedMessage nsImage initByReferencingURLSelector (toNSURL url)
 
 -- | @- initWithPasteboard:@
 initWithPasteboard :: (IsNSImage nsImage, IsNSPasteboard pasteboard) => nsImage -> pasteboard -> IO (Id NSImage)
-initWithPasteboard nsImage  pasteboard =
-  withObjCPtr pasteboard $ \raw_pasteboard ->
-      sendMsg nsImage (mkSelector "initWithPasteboard:") (retPtr retVoid) [argPtr (castPtr raw_pasteboard :: Ptr ())] >>= ownedObject . castPtr
+initWithPasteboard nsImage pasteboard =
+  sendOwnedMessage nsImage initWithPasteboardSelector (toNSPasteboard pasteboard)
 
 -- | @- initWithDataIgnoringOrientation:@
 initWithDataIgnoringOrientation :: (IsNSImage nsImage, IsNSData data_) => nsImage -> data_ -> IO (Id NSImage)
-initWithDataIgnoringOrientation nsImage  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nsImage (mkSelector "initWithDataIgnoringOrientation:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithDataIgnoringOrientation nsImage data_ =
+  sendOwnedMessage nsImage initWithDataIgnoringOrientationSelector (toNSData data_)
 
 -- | @+ imageWithSize:flipped:drawingHandler:@
 imageWithSize_flipped_drawingHandler :: NSSize -> Bool -> Ptr () -> IO (Id NSImage)
 imageWithSize_flipped_drawingHandler size drawingHandlerShouldBeCalledWithFlippedContext drawingHandler =
   do
     cls' <- getRequiredClass "NSImage"
-    sendClassMsg cls' (mkSelector "imageWithSize:flipped:drawingHandler:") (retPtr retVoid) [argNSSize size, argCULong (if drawingHandlerShouldBeCalledWithFlippedContext then 1 else 0), argPtr (castPtr drawingHandler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithSize_flipped_drawingHandlerSelector size drawingHandlerShouldBeCalledWithFlippedContext drawingHandler
 
 -- | @- setName:@
 setName :: (IsNSImage nsImage, IsNSString string) => nsImage -> string -> IO Bool
-setName nsImage  string =
-  withObjCPtr string $ \raw_string ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "setName:") retCULong [argPtr (castPtr raw_string :: Ptr ())]
+setName nsImage string =
+  sendMessage nsImage setNameSelector (toNSString string)
 
 -- | @- name@
 name :: IsNSImage nsImage => nsImage -> IO (Id NSString)
-name nsImage  =
-    sendMsg nsImage (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsImage =
+  sendMessage nsImage nameSelector
 
 -- | @- drawAtPoint:fromRect:operation:fraction:@
 drawAtPoint_fromRect_operation_fraction :: IsNSImage nsImage => nsImage -> NSPoint -> NSRect -> NSCompositingOperation -> CDouble -> IO ()
-drawAtPoint_fromRect_operation_fraction nsImage  point fromRect op delta =
-    sendMsg nsImage (mkSelector "drawAtPoint:fromRect:operation:fraction:") retVoid [argNSPoint point, argNSRect fromRect, argCULong (coerce op), argCDouble delta]
+drawAtPoint_fromRect_operation_fraction nsImage point fromRect op delta =
+  sendMessage nsImage drawAtPoint_fromRect_operation_fractionSelector point fromRect op delta
 
 -- | @- drawInRect:fromRect:operation:fraction:@
 drawInRect_fromRect_operation_fraction :: IsNSImage nsImage => nsImage -> NSRect -> NSRect -> NSCompositingOperation -> CDouble -> IO ()
-drawInRect_fromRect_operation_fraction nsImage  rect fromRect op delta =
-    sendMsg nsImage (mkSelector "drawInRect:fromRect:operation:fraction:") retVoid [argNSRect rect, argNSRect fromRect, argCULong (coerce op), argCDouble delta]
+drawInRect_fromRect_operation_fraction nsImage rect fromRect op delta =
+  sendMessage nsImage drawInRect_fromRect_operation_fractionSelector rect fromRect op delta
 
 -- | @- drawInRect:fromRect:operation:fraction:respectFlipped:hints:@
 drawInRect_fromRect_operation_fraction_respectFlipped_hints :: (IsNSImage nsImage, IsNSDictionary hints) => nsImage -> NSRect -> NSRect -> NSCompositingOperation -> CDouble -> Bool -> hints -> IO ()
-drawInRect_fromRect_operation_fraction_respectFlipped_hints nsImage  dstSpacePortionRect srcSpacePortionRect op requestedAlpha respectContextIsFlipped hints =
-  withObjCPtr hints $ \raw_hints ->
-      sendMsg nsImage (mkSelector "drawInRect:fromRect:operation:fraction:respectFlipped:hints:") retVoid [argNSRect dstSpacePortionRect, argNSRect srcSpacePortionRect, argCULong (coerce op), argCDouble requestedAlpha, argCULong (if respectContextIsFlipped then 1 else 0), argPtr (castPtr raw_hints :: Ptr ())]
+drawInRect_fromRect_operation_fraction_respectFlipped_hints nsImage dstSpacePortionRect srcSpacePortionRect op requestedAlpha respectContextIsFlipped hints =
+  sendMessage nsImage drawInRect_fromRect_operation_fraction_respectFlipped_hintsSelector dstSpacePortionRect srcSpacePortionRect op requestedAlpha respectContextIsFlipped (toNSDictionary hints)
 
 -- | @- drawRepresentation:inRect:@
 drawRepresentation_inRect :: (IsNSImage nsImage, IsNSImageRep imageRep) => nsImage -> imageRep -> NSRect -> IO Bool
-drawRepresentation_inRect nsImage  imageRep rect =
-  withObjCPtr imageRep $ \raw_imageRep ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "drawRepresentation:inRect:") retCULong [argPtr (castPtr raw_imageRep :: Ptr ()), argNSRect rect]
+drawRepresentation_inRect nsImage imageRep rect =
+  sendMessage nsImage drawRepresentation_inRectSelector (toNSImageRep imageRep) rect
 
 -- | @- drawInRect:@
 drawInRect :: IsNSImage nsImage => nsImage -> NSRect -> IO ()
-drawInRect nsImage  rect =
-    sendMsg nsImage (mkSelector "drawInRect:") retVoid [argNSRect rect]
+drawInRect nsImage rect =
+  sendMessage nsImage drawInRectSelector rect
 
 -- | @- recache@
 recache :: IsNSImage nsImage => nsImage -> IO ()
-recache nsImage  =
-    sendMsg nsImage (mkSelector "recache") retVoid []
+recache nsImage =
+  sendMessage nsImage recacheSelector
 
 -- | @- TIFFRepresentationUsingCompression:factor:@
 tiffRepresentationUsingCompression_factor :: IsNSImage nsImage => nsImage -> NSTIFFCompression -> CFloat -> IO (Id NSData)
-tiffRepresentationUsingCompression_factor nsImage  comp factor =
-    sendMsg nsImage (mkSelector "TIFFRepresentationUsingCompression:factor:") (retPtr retVoid) [argCULong (coerce comp), argCFloat factor] >>= retainedObject . castPtr
+tiffRepresentationUsingCompression_factor nsImage comp factor =
+  sendMessage nsImage tiffRepresentationUsingCompression_factorSelector comp factor
 
 -- | @- addRepresentations:@
 addRepresentations :: (IsNSImage nsImage, IsNSArray imageReps) => nsImage -> imageReps -> IO ()
-addRepresentations nsImage  imageReps =
-  withObjCPtr imageReps $ \raw_imageReps ->
-      sendMsg nsImage (mkSelector "addRepresentations:") retVoid [argPtr (castPtr raw_imageReps :: Ptr ())]
+addRepresentations nsImage imageReps =
+  sendMessage nsImage addRepresentationsSelector (toNSArray imageReps)
 
 -- | @- addRepresentation:@
 addRepresentation :: (IsNSImage nsImage, IsNSImageRep imageRep) => nsImage -> imageRep -> IO ()
-addRepresentation nsImage  imageRep =
-  withObjCPtr imageRep $ \raw_imageRep ->
-      sendMsg nsImage (mkSelector "addRepresentation:") retVoid [argPtr (castPtr raw_imageRep :: Ptr ())]
+addRepresentation nsImage imageRep =
+  sendMessage nsImage addRepresentationSelector (toNSImageRep imageRep)
 
 -- | @- removeRepresentation:@
 removeRepresentation :: (IsNSImage nsImage, IsNSImageRep imageRep) => nsImage -> imageRep -> IO ()
-removeRepresentation nsImage  imageRep =
-  withObjCPtr imageRep $ \raw_imageRep ->
-      sendMsg nsImage (mkSelector "removeRepresentation:") retVoid [argPtr (castPtr raw_imageRep :: Ptr ())]
+removeRepresentation nsImage imageRep =
+  sendMessage nsImage removeRepresentationSelector (toNSImageRep imageRep)
 
 -- | @+ canInitWithPasteboard:@
 canInitWithPasteboard :: IsNSPasteboard pasteboard => pasteboard -> IO Bool
 canInitWithPasteboard pasteboard =
   do
     cls' <- getRequiredClass "NSImage"
-    withObjCPtr pasteboard $ \raw_pasteboard ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canInitWithPasteboard:") retCULong [argPtr (castPtr raw_pasteboard :: Ptr ())]
+    sendClassMessage cls' canInitWithPasteboardSelector (toNSPasteboard pasteboard)
 
 -- | @- initWithCGImage:size:@
 initWithCGImage_size :: IsNSImage nsImage => nsImage -> Ptr () -> NSSize -> IO (Id NSImage)
-initWithCGImage_size nsImage  cgImage size =
-    sendMsg nsImage (mkSelector "initWithCGImage:size:") (retPtr retVoid) [argPtr cgImage, argNSSize size] >>= ownedObject . castPtr
+initWithCGImage_size nsImage cgImage size =
+  sendOwnedMessage nsImage initWithCGImage_sizeSelector cgImage size
 
 -- | @- CGImageForProposedRect:context:hints:@
 cgImageForProposedRect_context_hints :: (IsNSImage nsImage, IsNSGraphicsContext referenceContext, IsNSDictionary hints) => nsImage -> Ptr NSRect -> referenceContext -> hints -> IO (Ptr ())
-cgImageForProposedRect_context_hints nsImage  proposedDestRect referenceContext hints =
-  withObjCPtr referenceContext $ \raw_referenceContext ->
-    withObjCPtr hints $ \raw_hints ->
-        fmap castPtr $ sendMsg nsImage (mkSelector "CGImageForProposedRect:context:hints:") (retPtr retVoid) [argPtr proposedDestRect, argPtr (castPtr raw_referenceContext :: Ptr ()), argPtr (castPtr raw_hints :: Ptr ())]
+cgImageForProposedRect_context_hints nsImage proposedDestRect referenceContext hints =
+  sendMessage nsImage cgImageForProposedRect_context_hintsSelector proposedDestRect (toNSGraphicsContext referenceContext) (toNSDictionary hints)
 
 -- | @- bestRepresentationForRect:context:hints:@
 bestRepresentationForRect_context_hints :: (IsNSImage nsImage, IsNSGraphicsContext referenceContext, IsNSDictionary hints) => nsImage -> NSRect -> referenceContext -> hints -> IO (Id NSImageRep)
-bestRepresentationForRect_context_hints nsImage  rect referenceContext hints =
-  withObjCPtr referenceContext $ \raw_referenceContext ->
-    withObjCPtr hints $ \raw_hints ->
-        sendMsg nsImage (mkSelector "bestRepresentationForRect:context:hints:") (retPtr retVoid) [argNSRect rect, argPtr (castPtr raw_referenceContext :: Ptr ()), argPtr (castPtr raw_hints :: Ptr ())] >>= retainedObject . castPtr
+bestRepresentationForRect_context_hints nsImage rect referenceContext hints =
+  sendMessage nsImage bestRepresentationForRect_context_hintsSelector rect (toNSGraphicsContext referenceContext) (toNSDictionary hints)
 
 -- | @- hitTestRect:withImageDestinationRect:context:hints:flipped:@
 hitTestRect_withImageDestinationRect_context_hints_flipped :: (IsNSImage nsImage, IsNSGraphicsContext context, IsNSDictionary hints) => nsImage -> NSRect -> NSRect -> context -> hints -> Bool -> IO Bool
-hitTestRect_withImageDestinationRect_context_hints_flipped nsImage  testRectDestSpace imageRectDestSpace context hints flipped =
-  withObjCPtr context $ \raw_context ->
-    withObjCPtr hints $ \raw_hints ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "hitTestRect:withImageDestinationRect:context:hints:flipped:") retCULong [argNSRect testRectDestSpace, argNSRect imageRectDestSpace, argPtr (castPtr raw_context :: Ptr ()), argPtr (castPtr raw_hints :: Ptr ()), argCULong (if flipped then 1 else 0)]
+hitTestRect_withImageDestinationRect_context_hints_flipped nsImage testRectDestSpace imageRectDestSpace context hints flipped =
+  sendMessage nsImage hitTestRect_withImageDestinationRect_context_hints_flippedSelector testRectDestSpace imageRectDestSpace (toNSGraphicsContext context) (toNSDictionary hints) flipped
 
 -- | @- recommendedLayerContentsScale:@
 recommendedLayerContentsScale :: IsNSImage nsImage => nsImage -> CDouble -> IO CDouble
-recommendedLayerContentsScale nsImage  preferredContentsScale =
-    sendMsg nsImage (mkSelector "recommendedLayerContentsScale:") retCDouble [argCDouble preferredContentsScale]
+recommendedLayerContentsScale nsImage preferredContentsScale =
+  sendMessage nsImage recommendedLayerContentsScaleSelector preferredContentsScale
 
 -- | @- layerContentsForContentsScale:@
 layerContentsForContentsScale :: IsNSImage nsImage => nsImage -> CDouble -> IO RawId
-layerContentsForContentsScale nsImage  layerContentsScale =
-    fmap (RawId . castPtr) $ sendMsg nsImage (mkSelector "layerContentsForContentsScale:") (retPtr retVoid) [argCDouble layerContentsScale]
+layerContentsForContentsScale nsImage layerContentsScale =
+  sendMessage nsImage layerContentsForContentsScaleSelector layerContentsScale
 
 -- | @- imageWithSymbolConfiguration:@
 imageWithSymbolConfiguration :: (IsNSImage nsImage, IsNSImageSymbolConfiguration configuration) => nsImage -> configuration -> IO (Id NSImage)
-imageWithSymbolConfiguration nsImage  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg nsImage (mkSelector "imageWithSymbolConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= retainedObject . castPtr
+imageWithSymbolConfiguration nsImage configuration =
+  sendMessage nsImage imageWithSymbolConfigurationSelector (toNSImageSymbolConfiguration configuration)
 
 -- | Creates and returns a new image with the specified locale. If the receiver contains locale-sensitive representations, the returned image will prefer to draw using representations appropriate for the specified locale. If locale is @nil@, the returned image uses the default behavior of choosing representations appropriate for the system’s currently-configured locale.
 --
 -- ObjC selector: @- imageWithLocale:@
 imageWithLocale :: (IsNSImage nsImage, IsNSLocale locale) => nsImage -> locale -> IO (Id NSImage)
-imageWithLocale nsImage  locale =
-  withObjCPtr locale $ \raw_locale ->
-      sendMsg nsImage (mkSelector "imageWithLocale:") (retPtr retVoid) [argPtr (castPtr raw_locale :: Ptr ())] >>= retainedObject . castPtr
+imageWithLocale nsImage locale =
+  sendMessage nsImage imageWithLocaleSelector (toNSLocale locale)
 
 -- | @+ imageUnfilteredFileTypes@
 imageUnfilteredFileTypes :: IO (Id NSArray)
 imageUnfilteredFileTypes  =
   do
     cls' <- getRequiredClass "NSImage"
-    sendClassMsg cls' (mkSelector "imageUnfilteredFileTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imageUnfilteredFileTypesSelector
 
 -- | @+ imageUnfilteredPasteboardTypes@
 imageUnfilteredPasteboardTypes :: IO (Id NSArray)
 imageUnfilteredPasteboardTypes  =
   do
     cls' <- getRequiredClass "NSImage"
-    sendClassMsg cls' (mkSelector "imageUnfilteredPasteboardTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imageUnfilteredPasteboardTypesSelector
 
 -- | @+ imageFileTypes@
 imageFileTypes :: IO (Id NSArray)
 imageFileTypes  =
   do
     cls' <- getRequiredClass "NSImage"
-    sendClassMsg cls' (mkSelector "imageFileTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imageFileTypesSelector
 
 -- | @+ imagePasteboardTypes@
 imagePasteboardTypes :: IO (Id NSArray)
 imagePasteboardTypes  =
   do
     cls' <- getRequiredClass "NSImage"
-    sendClassMsg cls' (mkSelector "imagePasteboardTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imagePasteboardTypesSelector
 
 -- | @- initWithIconRef:@
 initWithIconRef :: IsNSImage nsImage => nsImage -> Ptr () -> IO (Id NSImage)
-initWithIconRef nsImage  iconRef =
-    sendMsg nsImage (mkSelector "initWithIconRef:") (retPtr retVoid) [argPtr iconRef] >>= ownedObject . castPtr
+initWithIconRef nsImage iconRef =
+  sendOwnedMessage nsImage initWithIconRefSelector iconRef
 
 -- | @- bestRepresentationForDevice:@
 bestRepresentationForDevice :: (IsNSImage nsImage, IsNSDictionary deviceDescription) => nsImage -> deviceDescription -> IO (Id NSImageRep)
-bestRepresentationForDevice nsImage  deviceDescription =
-  withObjCPtr deviceDescription $ \raw_deviceDescription ->
-      sendMsg nsImage (mkSelector "bestRepresentationForDevice:") (retPtr retVoid) [argPtr (castPtr raw_deviceDescription :: Ptr ())] >>= retainedObject . castPtr
+bestRepresentationForDevice nsImage deviceDescription =
+  sendMessage nsImage bestRepresentationForDeviceSelector (toNSDictionary deviceDescription)
 
 -- | @- lockFocus@
 lockFocus :: IsNSImage nsImage => nsImage -> IO ()
-lockFocus nsImage  =
-    sendMsg nsImage (mkSelector "lockFocus") retVoid []
+lockFocus nsImage =
+  sendMessage nsImage lockFocusSelector
 
 -- | @- lockFocusFlipped:@
 lockFocusFlipped :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-lockFocusFlipped nsImage  flipped =
-    sendMsg nsImage (mkSelector "lockFocusFlipped:") retVoid [argCULong (if flipped then 1 else 0)]
+lockFocusFlipped nsImage flipped =
+  sendMessage nsImage lockFocusFlippedSelector flipped
 
 -- | @- unlockFocus@
 unlockFocus :: IsNSImage nsImage => nsImage -> IO ()
-unlockFocus nsImage  =
-    sendMsg nsImage (mkSelector "unlockFocus") retVoid []
+unlockFocus nsImage =
+  sendMessage nsImage unlockFocusSelector
 
 -- | @- setFlipped:@
 setFlipped :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setFlipped nsImage  flag =
-    sendMsg nsImage (mkSelector "setFlipped:") retVoid [argCULong (if flag then 1 else 0)]
+setFlipped nsImage flag =
+  sendMessage nsImage setFlippedSelector flag
 
 -- | @- isFlipped@
 isFlipped :: IsNSImage nsImage => nsImage -> IO Bool
-isFlipped nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "isFlipped") retCULong []
+isFlipped nsImage =
+  sendMessage nsImage isFlippedSelector
 
 -- | @- setScalesWhenResized:@
 setScalesWhenResized :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setScalesWhenResized nsImage  flag =
-    sendMsg nsImage (mkSelector "setScalesWhenResized:") retVoid [argCULong (if flag then 1 else 0)]
+setScalesWhenResized nsImage flag =
+  sendMessage nsImage setScalesWhenResizedSelector flag
 
 -- | @- scalesWhenResized@
 scalesWhenResized :: IsNSImage nsImage => nsImage -> IO Bool
-scalesWhenResized nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "scalesWhenResized") retCULong []
+scalesWhenResized nsImage =
+  sendMessage nsImage scalesWhenResizedSelector
 
 -- | @- setDataRetained:@
 setDataRetained :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setDataRetained nsImage  flag =
-    sendMsg nsImage (mkSelector "setDataRetained:") retVoid [argCULong (if flag then 1 else 0)]
+setDataRetained nsImage flag =
+  sendMessage nsImage setDataRetainedSelector flag
 
 -- | @- isDataRetained@
 isDataRetained :: IsNSImage nsImage => nsImage -> IO Bool
-isDataRetained nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "isDataRetained") retCULong []
+isDataRetained nsImage =
+  sendMessage nsImage isDataRetainedSelector
 
 -- | @- setCachedSeparately:@
 setCachedSeparately :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setCachedSeparately nsImage  flag =
-    sendMsg nsImage (mkSelector "setCachedSeparately:") retVoid [argCULong (if flag then 1 else 0)]
+setCachedSeparately nsImage flag =
+  sendMessage nsImage setCachedSeparatelySelector flag
 
 -- | @- isCachedSeparately@
 isCachedSeparately :: IsNSImage nsImage => nsImage -> IO Bool
-isCachedSeparately nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "isCachedSeparately") retCULong []
+isCachedSeparately nsImage =
+  sendMessage nsImage isCachedSeparatelySelector
 
 -- | @- setCacheDepthMatchesImageDepth:@
 setCacheDepthMatchesImageDepth :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setCacheDepthMatchesImageDepth nsImage  flag =
-    sendMsg nsImage (mkSelector "setCacheDepthMatchesImageDepth:") retVoid [argCULong (if flag then 1 else 0)]
+setCacheDepthMatchesImageDepth nsImage flag =
+  sendMessage nsImage setCacheDepthMatchesImageDepthSelector flag
 
 -- | @- cacheDepthMatchesImageDepth@
 cacheDepthMatchesImageDepth :: IsNSImage nsImage => nsImage -> IO Bool
-cacheDepthMatchesImageDepth nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "cacheDepthMatchesImageDepth") retCULong []
+cacheDepthMatchesImageDepth nsImage =
+  sendMessage nsImage cacheDepthMatchesImageDepthSelector
 
 -- | @- dissolveToPoint:fraction:@
 dissolveToPoint_fraction :: IsNSImage nsImage => nsImage -> NSPoint -> CDouble -> IO ()
-dissolveToPoint_fraction nsImage  point fraction =
-    sendMsg nsImage (mkSelector "dissolveToPoint:fraction:") retVoid [argNSPoint point, argCDouble fraction]
+dissolveToPoint_fraction nsImage point fraction =
+  sendMessage nsImage dissolveToPoint_fractionSelector point fraction
 
 -- | @- dissolveToPoint:fromRect:fraction:@
 dissolveToPoint_fromRect_fraction :: IsNSImage nsImage => nsImage -> NSPoint -> NSRect -> CDouble -> IO ()
-dissolveToPoint_fromRect_fraction nsImage  point rect fraction =
-    sendMsg nsImage (mkSelector "dissolveToPoint:fromRect:fraction:") retVoid [argNSPoint point, argNSRect rect, argCDouble fraction]
+dissolveToPoint_fromRect_fraction nsImage point rect fraction =
+  sendMessage nsImage dissolveToPoint_fromRect_fractionSelector point rect fraction
 
 -- | @- compositeToPoint:operation:@
 compositeToPoint_operation :: IsNSImage nsImage => nsImage -> NSPoint -> NSCompositingOperation -> IO ()
-compositeToPoint_operation nsImage  point operation =
-    sendMsg nsImage (mkSelector "compositeToPoint:operation:") retVoid [argNSPoint point, argCULong (coerce operation)]
+compositeToPoint_operation nsImage point operation =
+  sendMessage nsImage compositeToPoint_operationSelector point operation
 
 -- | @- compositeToPoint:fromRect:operation:@
 compositeToPoint_fromRect_operation :: IsNSImage nsImage => nsImage -> NSPoint -> NSRect -> NSCompositingOperation -> IO ()
-compositeToPoint_fromRect_operation nsImage  point rect operation =
-    sendMsg nsImage (mkSelector "compositeToPoint:fromRect:operation:") retVoid [argNSPoint point, argNSRect rect, argCULong (coerce operation)]
+compositeToPoint_fromRect_operation nsImage point rect operation =
+  sendMessage nsImage compositeToPoint_fromRect_operationSelector point rect operation
 
 -- | @- compositeToPoint:operation:fraction:@
 compositeToPoint_operation_fraction :: IsNSImage nsImage => nsImage -> NSPoint -> NSCompositingOperation -> CDouble -> IO ()
-compositeToPoint_operation_fraction nsImage  point operation fraction =
-    sendMsg nsImage (mkSelector "compositeToPoint:operation:fraction:") retVoid [argNSPoint point, argCULong (coerce operation), argCDouble fraction]
+compositeToPoint_operation_fraction nsImage point operation fraction =
+  sendMessage nsImage compositeToPoint_operation_fractionSelector point operation fraction
 
 -- | @- compositeToPoint:fromRect:operation:fraction:@
 compositeToPoint_fromRect_operation_fraction :: IsNSImage nsImage => nsImage -> NSPoint -> NSRect -> NSCompositingOperation -> CDouble -> IO ()
-compositeToPoint_fromRect_operation_fraction nsImage  point rect operation fraction =
-    sendMsg nsImage (mkSelector "compositeToPoint:fromRect:operation:fraction:") retVoid [argNSPoint point, argNSRect rect, argCULong (coerce operation), argCDouble fraction]
+compositeToPoint_fromRect_operation_fraction nsImage point rect operation fraction =
+  sendMessage nsImage compositeToPoint_fromRect_operation_fractionSelector point rect operation fraction
 
 -- | @- lockFocusOnRepresentation:@
 lockFocusOnRepresentation :: (IsNSImage nsImage, IsNSImageRep imageRepresentation) => nsImage -> imageRepresentation -> IO ()
-lockFocusOnRepresentation nsImage  imageRepresentation =
-  withObjCPtr imageRepresentation $ \raw_imageRepresentation ->
-      sendMsg nsImage (mkSelector "lockFocusOnRepresentation:") retVoid [argPtr (castPtr raw_imageRepresentation :: Ptr ())]
+lockFocusOnRepresentation nsImage imageRepresentation =
+  sendMessage nsImage lockFocusOnRepresentationSelector (toNSImageRep imageRepresentation)
 
 -- | @- cancelIncrementalLoad@
 cancelIncrementalLoad :: IsNSImage nsImage => nsImage -> IO ()
-cancelIncrementalLoad nsImage  =
-    sendMsg nsImage (mkSelector "cancelIncrementalLoad") retVoid []
+cancelIncrementalLoad nsImage =
+  sendMessage nsImage cancelIncrementalLoadSelector
 
 -- | @- size@
 size :: IsNSImage nsImage => nsImage -> IO NSSize
-size nsImage  =
-    sendMsgStret nsImage (mkSelector "size") retNSSize []
+size nsImage =
+  sendMessage nsImage sizeSelector
 
 -- | @- setSize:@
 setSize :: IsNSImage nsImage => nsImage -> NSSize -> IO ()
-setSize nsImage  value =
-    sendMsg nsImage (mkSelector "setSize:") retVoid [argNSSize value]
+setSize nsImage value =
+  sendMessage nsImage setSizeSelector value
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSImage nsImage => nsImage -> IO (Id NSColor)
-backgroundColor nsImage  =
-    sendMsg nsImage (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsImage =
+  sendMessage nsImage backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSImage nsImage, IsNSColor value) => nsImage -> value -> IO ()
-setBackgroundColor nsImage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsImage (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsImage value =
+  sendMessage nsImage setBackgroundColorSelector (toNSColor value)
 
 -- | @- usesEPSOnResolutionMismatch@
 usesEPSOnResolutionMismatch :: IsNSImage nsImage => nsImage -> IO Bool
-usesEPSOnResolutionMismatch nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "usesEPSOnResolutionMismatch") retCULong []
+usesEPSOnResolutionMismatch nsImage =
+  sendMessage nsImage usesEPSOnResolutionMismatchSelector
 
 -- | @- setUsesEPSOnResolutionMismatch:@
 setUsesEPSOnResolutionMismatch :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setUsesEPSOnResolutionMismatch nsImage  value =
-    sendMsg nsImage (mkSelector "setUsesEPSOnResolutionMismatch:") retVoid [argCULong (if value then 1 else 0)]
+setUsesEPSOnResolutionMismatch nsImage value =
+  sendMessage nsImage setUsesEPSOnResolutionMismatchSelector value
 
 -- | @- prefersColorMatch@
 prefersColorMatch :: IsNSImage nsImage => nsImage -> IO Bool
-prefersColorMatch nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "prefersColorMatch") retCULong []
+prefersColorMatch nsImage =
+  sendMessage nsImage prefersColorMatchSelector
 
 -- | @- setPrefersColorMatch:@
 setPrefersColorMatch :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setPrefersColorMatch nsImage  value =
-    sendMsg nsImage (mkSelector "setPrefersColorMatch:") retVoid [argCULong (if value then 1 else 0)]
+setPrefersColorMatch nsImage value =
+  sendMessage nsImage setPrefersColorMatchSelector value
 
 -- | @- matchesOnMultipleResolution@
 matchesOnMultipleResolution :: IsNSImage nsImage => nsImage -> IO Bool
-matchesOnMultipleResolution nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "matchesOnMultipleResolution") retCULong []
+matchesOnMultipleResolution nsImage =
+  sendMessage nsImage matchesOnMultipleResolutionSelector
 
 -- | @- setMatchesOnMultipleResolution:@
 setMatchesOnMultipleResolution :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setMatchesOnMultipleResolution nsImage  value =
-    sendMsg nsImage (mkSelector "setMatchesOnMultipleResolution:") retVoid [argCULong (if value then 1 else 0)]
+setMatchesOnMultipleResolution nsImage value =
+  sendMessage nsImage setMatchesOnMultipleResolutionSelector value
 
 -- | @- matchesOnlyOnBestFittingAxis@
 matchesOnlyOnBestFittingAxis :: IsNSImage nsImage => nsImage -> IO Bool
-matchesOnlyOnBestFittingAxis nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "matchesOnlyOnBestFittingAxis") retCULong []
+matchesOnlyOnBestFittingAxis nsImage =
+  sendMessage nsImage matchesOnlyOnBestFittingAxisSelector
 
 -- | @- setMatchesOnlyOnBestFittingAxis:@
 setMatchesOnlyOnBestFittingAxis :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setMatchesOnlyOnBestFittingAxis nsImage  value =
-    sendMsg nsImage (mkSelector "setMatchesOnlyOnBestFittingAxis:") retVoid [argCULong (if value then 1 else 0)]
+setMatchesOnlyOnBestFittingAxis nsImage value =
+  sendMessage nsImage setMatchesOnlyOnBestFittingAxisSelector value
 
 -- | @- TIFFRepresentation@
 tiffRepresentation :: IsNSImage nsImage => nsImage -> IO (Id NSData)
-tiffRepresentation nsImage  =
-    sendMsg nsImage (mkSelector "TIFFRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+tiffRepresentation nsImage =
+  sendMessage nsImage tiffRepresentationSelector
 
 -- | @- representations@
 representations :: IsNSImage nsImage => nsImage -> IO (Id NSArray)
-representations nsImage  =
-    sendMsg nsImage (mkSelector "representations") (retPtr retVoid) [] >>= retainedObject . castPtr
+representations nsImage =
+  sendMessage nsImage representationsSelector
 
 -- | @- valid@
 valid :: IsNSImage nsImage => nsImage -> IO Bool
-valid nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "valid") retCULong []
+valid nsImage =
+  sendMessage nsImage validSelector
 
 -- | @- delegate@
 delegate :: IsNSImage nsImage => nsImage -> IO RawId
-delegate nsImage  =
-    fmap (RawId . castPtr) $ sendMsg nsImage (mkSelector "delegate") (retPtr retVoid) []
+delegate nsImage =
+  sendMessage nsImage delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSImage nsImage => nsImage -> RawId -> IO ()
-setDelegate nsImage  value =
-    sendMsg nsImage (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsImage value =
+  sendMessage nsImage setDelegateSelector value
 
 -- | @+ imageTypes@
 imageTypes :: IO (Id NSArray)
 imageTypes  =
   do
     cls' <- getRequiredClass "NSImage"
-    sendClassMsg cls' (mkSelector "imageTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imageTypesSelector
 
 -- | @+ imageUnfilteredTypes@
 imageUnfilteredTypes :: IO (Id NSArray)
 imageUnfilteredTypes  =
   do
     cls' <- getRequiredClass "NSImage"
-    sendClassMsg cls' (mkSelector "imageUnfilteredTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imageUnfilteredTypesSelector
 
 -- | @- cacheMode@
 cacheMode :: IsNSImage nsImage => nsImage -> IO NSImageCacheMode
-cacheMode nsImage  =
-    fmap (coerce :: CULong -> NSImageCacheMode) $ sendMsg nsImage (mkSelector "cacheMode") retCULong []
+cacheMode nsImage =
+  sendMessage nsImage cacheModeSelector
 
 -- | @- setCacheMode:@
 setCacheMode :: IsNSImage nsImage => nsImage -> NSImageCacheMode -> IO ()
-setCacheMode nsImage  value =
-    sendMsg nsImage (mkSelector "setCacheMode:") retVoid [argCULong (coerce value)]
+setCacheMode nsImage value =
+  sendMessage nsImage setCacheModeSelector value
 
 -- | @- alignmentRect@
 alignmentRect :: IsNSImage nsImage => nsImage -> IO NSRect
-alignmentRect nsImage  =
-    sendMsgStret nsImage (mkSelector "alignmentRect") retNSRect []
+alignmentRect nsImage =
+  sendMessage nsImage alignmentRectSelector
 
 -- | @- setAlignmentRect:@
 setAlignmentRect :: IsNSImage nsImage => nsImage -> NSRect -> IO ()
-setAlignmentRect nsImage  value =
-    sendMsg nsImage (mkSelector "setAlignmentRect:") retVoid [argNSRect value]
+setAlignmentRect nsImage value =
+  sendMessage nsImage setAlignmentRectSelector value
 
 -- | @- template@
 template :: IsNSImage nsImage => nsImage -> IO Bool
-template nsImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsImage (mkSelector "template") retCULong []
+template nsImage =
+  sendMessage nsImage templateSelector
 
 -- | @- setTemplate:@
 setTemplate :: IsNSImage nsImage => nsImage -> Bool -> IO ()
-setTemplate nsImage  value =
-    sendMsg nsImage (mkSelector "setTemplate:") retVoid [argCULong (if value then 1 else 0)]
+setTemplate nsImage value =
+  sendMessage nsImage setTemplateSelector value
 
 -- | @- accessibilityDescription@
 accessibilityDescription :: IsNSImage nsImage => nsImage -> IO (Id NSString)
-accessibilityDescription nsImage  =
-    sendMsg nsImage (mkSelector "accessibilityDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessibilityDescription nsImage =
+  sendMessage nsImage accessibilityDescriptionSelector
 
 -- | @- setAccessibilityDescription:@
 setAccessibilityDescription :: (IsNSImage nsImage, IsNSString value) => nsImage -> value -> IO ()
-setAccessibilityDescription nsImage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsImage (mkSelector "setAccessibilityDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessibilityDescription nsImage value =
+  sendMessage nsImage setAccessibilityDescriptionSelector (toNSString value)
 
 -- | @- capInsets@
 capInsets :: IsNSImage nsImage => nsImage -> IO NSEdgeInsets
-capInsets nsImage  =
-    sendMsgStret nsImage (mkSelector "capInsets") retNSEdgeInsets []
+capInsets nsImage =
+  sendMessage nsImage capInsetsSelector
 
 -- | @- setCapInsets:@
 setCapInsets :: IsNSImage nsImage => nsImage -> NSEdgeInsets -> IO ()
-setCapInsets nsImage  value =
-    sendMsg nsImage (mkSelector "setCapInsets:") retVoid [argNSEdgeInsets value]
+setCapInsets nsImage value =
+  sendMessage nsImage setCapInsetsSelector value
 
 -- | @- resizingMode@
 resizingMode :: IsNSImage nsImage => nsImage -> IO NSImageResizingMode
-resizingMode nsImage  =
-    fmap (coerce :: CLong -> NSImageResizingMode) $ sendMsg nsImage (mkSelector "resizingMode") retCLong []
+resizingMode nsImage =
+  sendMessage nsImage resizingModeSelector
 
 -- | @- setResizingMode:@
 setResizingMode :: IsNSImage nsImage => nsImage -> NSImageResizingMode -> IO ()
-setResizingMode nsImage  value =
-    sendMsg nsImage (mkSelector "setResizingMode:") retVoid [argCLong (coerce value)]
+setResizingMode nsImage value =
+  sendMessage nsImage setResizingModeSelector value
 
 -- | @- symbolConfiguration@
 symbolConfiguration :: IsNSImage nsImage => nsImage -> IO (Id NSImageSymbolConfiguration)
-symbolConfiguration nsImage  =
-    sendMsg nsImage (mkSelector "symbolConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+symbolConfiguration nsImage =
+  sendMessage nsImage symbolConfigurationSelector
 
 -- | The image’s preferred locale for resolving representations, if one has been specified using @-imageWithLocale:@. Otherwise, @nil@.
 --
 -- ObjC selector: @- locale@
 locale :: IsNSImage nsImage => nsImage -> IO (Id NSLocale)
-locale nsImage  =
-    sendMsg nsImage (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale nsImage =
+  sendMessage nsImage localeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageNamed:@
-imageNamedSelector :: Selector
+imageNamedSelector :: Selector '[Id NSString] (Id NSImage)
 imageNamedSelector = mkSelector "imageNamed:"
 
 -- | @Selector@ for @imageWithSystemSymbolName:accessibilityDescription:@
-imageWithSystemSymbolName_accessibilityDescriptionSelector :: Selector
+imageWithSystemSymbolName_accessibilityDescriptionSelector :: Selector '[Id NSString, Id NSString] (Id NSImage)
 imageWithSystemSymbolName_accessibilityDescriptionSelector = mkSelector "imageWithSystemSymbolName:accessibilityDescription:"
 
 -- | @Selector@ for @imageWithSystemSymbolName:variableValue:accessibilityDescription:@
-imageWithSystemSymbolName_variableValue_accessibilityDescriptionSelector :: Selector
+imageWithSystemSymbolName_variableValue_accessibilityDescriptionSelector :: Selector '[Id NSString, CDouble, Id NSString] (Id NSImage)
 imageWithSystemSymbolName_variableValue_accessibilityDescriptionSelector = mkSelector "imageWithSystemSymbolName:variableValue:accessibilityDescription:"
 
 -- | @Selector@ for @imageWithSymbolName:variableValue:@
-imageWithSymbolName_variableValueSelector :: Selector
+imageWithSymbolName_variableValueSelector :: Selector '[Id NSString, CDouble] (Id NSImage)
 imageWithSymbolName_variableValueSelector = mkSelector "imageWithSymbolName:variableValue:"
 
 -- | @Selector@ for @imageWithSymbolName:bundle:variableValue:@
-imageWithSymbolName_bundle_variableValueSelector :: Selector
+imageWithSymbolName_bundle_variableValueSelector :: Selector '[Id NSString, Id NSBundle, CDouble] (Id NSImage)
 imageWithSymbolName_bundle_variableValueSelector = mkSelector "imageWithSymbolName:bundle:variableValue:"
 
 -- | @Selector@ for @initWithSize:@
-initWithSizeSelector :: Selector
+initWithSizeSelector :: Selector '[NSSize] (Id NSImage)
 initWithSizeSelector = mkSelector "initWithSize:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSImage)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id NSImage)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @initWithContentsOfFile:@
-initWithContentsOfFileSelector :: Selector
+initWithContentsOfFileSelector :: Selector '[Id NSString] (Id NSImage)
 initWithContentsOfFileSelector = mkSelector "initWithContentsOfFile:"
 
 -- | @Selector@ for @initWithContentsOfURL:@
-initWithContentsOfURLSelector :: Selector
+initWithContentsOfURLSelector :: Selector '[Id NSURL] (Id NSImage)
 initWithContentsOfURLSelector = mkSelector "initWithContentsOfURL:"
 
 -- | @Selector@ for @initByReferencingFile:@
-initByReferencingFileSelector :: Selector
+initByReferencingFileSelector :: Selector '[Id NSString] (Id NSImage)
 initByReferencingFileSelector = mkSelector "initByReferencingFile:"
 
 -- | @Selector@ for @initByReferencingURL:@
-initByReferencingURLSelector :: Selector
+initByReferencingURLSelector :: Selector '[Id NSURL] (Id NSImage)
 initByReferencingURLSelector = mkSelector "initByReferencingURL:"
 
 -- | @Selector@ for @initWithPasteboard:@
-initWithPasteboardSelector :: Selector
+initWithPasteboardSelector :: Selector '[Id NSPasteboard] (Id NSImage)
 initWithPasteboardSelector = mkSelector "initWithPasteboard:"
 
 -- | @Selector@ for @initWithDataIgnoringOrientation:@
-initWithDataIgnoringOrientationSelector :: Selector
+initWithDataIgnoringOrientationSelector :: Selector '[Id NSData] (Id NSImage)
 initWithDataIgnoringOrientationSelector = mkSelector "initWithDataIgnoringOrientation:"
 
 -- | @Selector@ for @imageWithSize:flipped:drawingHandler:@
-imageWithSize_flipped_drawingHandlerSelector :: Selector
+imageWithSize_flipped_drawingHandlerSelector :: Selector '[NSSize, Bool, Ptr ()] (Id NSImage)
 imageWithSize_flipped_drawingHandlerSelector = mkSelector "imageWithSize:flipped:drawingHandler:"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] Bool
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @drawAtPoint:fromRect:operation:fraction:@
-drawAtPoint_fromRect_operation_fractionSelector :: Selector
+drawAtPoint_fromRect_operation_fractionSelector :: Selector '[NSPoint, NSRect, NSCompositingOperation, CDouble] ()
 drawAtPoint_fromRect_operation_fractionSelector = mkSelector "drawAtPoint:fromRect:operation:fraction:"
 
 -- | @Selector@ for @drawInRect:fromRect:operation:fraction:@
-drawInRect_fromRect_operation_fractionSelector :: Selector
+drawInRect_fromRect_operation_fractionSelector :: Selector '[NSRect, NSRect, NSCompositingOperation, CDouble] ()
 drawInRect_fromRect_operation_fractionSelector = mkSelector "drawInRect:fromRect:operation:fraction:"
 
 -- | @Selector@ for @drawInRect:fromRect:operation:fraction:respectFlipped:hints:@
-drawInRect_fromRect_operation_fraction_respectFlipped_hintsSelector :: Selector
+drawInRect_fromRect_operation_fraction_respectFlipped_hintsSelector :: Selector '[NSRect, NSRect, NSCompositingOperation, CDouble, Bool, Id NSDictionary] ()
 drawInRect_fromRect_operation_fraction_respectFlipped_hintsSelector = mkSelector "drawInRect:fromRect:operation:fraction:respectFlipped:hints:"
 
 -- | @Selector@ for @drawRepresentation:inRect:@
-drawRepresentation_inRectSelector :: Selector
+drawRepresentation_inRectSelector :: Selector '[Id NSImageRep, NSRect] Bool
 drawRepresentation_inRectSelector = mkSelector "drawRepresentation:inRect:"
 
 -- | @Selector@ for @drawInRect:@
-drawInRectSelector :: Selector
+drawInRectSelector :: Selector '[NSRect] ()
 drawInRectSelector = mkSelector "drawInRect:"
 
 -- | @Selector@ for @recache@
-recacheSelector :: Selector
+recacheSelector :: Selector '[] ()
 recacheSelector = mkSelector "recache"
 
 -- | @Selector@ for @TIFFRepresentationUsingCompression:factor:@
-tiffRepresentationUsingCompression_factorSelector :: Selector
+tiffRepresentationUsingCompression_factorSelector :: Selector '[NSTIFFCompression, CFloat] (Id NSData)
 tiffRepresentationUsingCompression_factorSelector = mkSelector "TIFFRepresentationUsingCompression:factor:"
 
 -- | @Selector@ for @addRepresentations:@
-addRepresentationsSelector :: Selector
+addRepresentationsSelector :: Selector '[Id NSArray] ()
 addRepresentationsSelector = mkSelector "addRepresentations:"
 
 -- | @Selector@ for @addRepresentation:@
-addRepresentationSelector :: Selector
+addRepresentationSelector :: Selector '[Id NSImageRep] ()
 addRepresentationSelector = mkSelector "addRepresentation:"
 
 -- | @Selector@ for @removeRepresentation:@
-removeRepresentationSelector :: Selector
+removeRepresentationSelector :: Selector '[Id NSImageRep] ()
 removeRepresentationSelector = mkSelector "removeRepresentation:"
 
 -- | @Selector@ for @canInitWithPasteboard:@
-canInitWithPasteboardSelector :: Selector
+canInitWithPasteboardSelector :: Selector '[Id NSPasteboard] Bool
 canInitWithPasteboardSelector = mkSelector "canInitWithPasteboard:"
 
 -- | @Selector@ for @initWithCGImage:size:@
-initWithCGImage_sizeSelector :: Selector
+initWithCGImage_sizeSelector :: Selector '[Ptr (), NSSize] (Id NSImage)
 initWithCGImage_sizeSelector = mkSelector "initWithCGImage:size:"
 
 -- | @Selector@ for @CGImageForProposedRect:context:hints:@
-cgImageForProposedRect_context_hintsSelector :: Selector
+cgImageForProposedRect_context_hintsSelector :: Selector '[Ptr NSRect, Id NSGraphicsContext, Id NSDictionary] (Ptr ())
 cgImageForProposedRect_context_hintsSelector = mkSelector "CGImageForProposedRect:context:hints:"
 
 -- | @Selector@ for @bestRepresentationForRect:context:hints:@
-bestRepresentationForRect_context_hintsSelector :: Selector
+bestRepresentationForRect_context_hintsSelector :: Selector '[NSRect, Id NSGraphicsContext, Id NSDictionary] (Id NSImageRep)
 bestRepresentationForRect_context_hintsSelector = mkSelector "bestRepresentationForRect:context:hints:"
 
 -- | @Selector@ for @hitTestRect:withImageDestinationRect:context:hints:flipped:@
-hitTestRect_withImageDestinationRect_context_hints_flippedSelector :: Selector
+hitTestRect_withImageDestinationRect_context_hints_flippedSelector :: Selector '[NSRect, NSRect, Id NSGraphicsContext, Id NSDictionary, Bool] Bool
 hitTestRect_withImageDestinationRect_context_hints_flippedSelector = mkSelector "hitTestRect:withImageDestinationRect:context:hints:flipped:"
 
 -- | @Selector@ for @recommendedLayerContentsScale:@
-recommendedLayerContentsScaleSelector :: Selector
+recommendedLayerContentsScaleSelector :: Selector '[CDouble] CDouble
 recommendedLayerContentsScaleSelector = mkSelector "recommendedLayerContentsScale:"
 
 -- | @Selector@ for @layerContentsForContentsScale:@
-layerContentsForContentsScaleSelector :: Selector
+layerContentsForContentsScaleSelector :: Selector '[CDouble] RawId
 layerContentsForContentsScaleSelector = mkSelector "layerContentsForContentsScale:"
 
 -- | @Selector@ for @imageWithSymbolConfiguration:@
-imageWithSymbolConfigurationSelector :: Selector
+imageWithSymbolConfigurationSelector :: Selector '[Id NSImageSymbolConfiguration] (Id NSImage)
 imageWithSymbolConfigurationSelector = mkSelector "imageWithSymbolConfiguration:"
 
 -- | @Selector@ for @imageWithLocale:@
-imageWithLocaleSelector :: Selector
+imageWithLocaleSelector :: Selector '[Id NSLocale] (Id NSImage)
 imageWithLocaleSelector = mkSelector "imageWithLocale:"
 
 -- | @Selector@ for @imageUnfilteredFileTypes@
-imageUnfilteredFileTypesSelector :: Selector
+imageUnfilteredFileTypesSelector :: Selector '[] (Id NSArray)
 imageUnfilteredFileTypesSelector = mkSelector "imageUnfilteredFileTypes"
 
 -- | @Selector@ for @imageUnfilteredPasteboardTypes@
-imageUnfilteredPasteboardTypesSelector :: Selector
+imageUnfilteredPasteboardTypesSelector :: Selector '[] (Id NSArray)
 imageUnfilteredPasteboardTypesSelector = mkSelector "imageUnfilteredPasteboardTypes"
 
 -- | @Selector@ for @imageFileTypes@
-imageFileTypesSelector :: Selector
+imageFileTypesSelector :: Selector '[] (Id NSArray)
 imageFileTypesSelector = mkSelector "imageFileTypes"
 
 -- | @Selector@ for @imagePasteboardTypes@
-imagePasteboardTypesSelector :: Selector
+imagePasteboardTypesSelector :: Selector '[] (Id NSArray)
 imagePasteboardTypesSelector = mkSelector "imagePasteboardTypes"
 
 -- | @Selector@ for @initWithIconRef:@
-initWithIconRefSelector :: Selector
+initWithIconRefSelector :: Selector '[Ptr ()] (Id NSImage)
 initWithIconRefSelector = mkSelector "initWithIconRef:"
 
 -- | @Selector@ for @bestRepresentationForDevice:@
-bestRepresentationForDeviceSelector :: Selector
+bestRepresentationForDeviceSelector :: Selector '[Id NSDictionary] (Id NSImageRep)
 bestRepresentationForDeviceSelector = mkSelector "bestRepresentationForDevice:"
 
 -- | @Selector@ for @lockFocus@
-lockFocusSelector :: Selector
+lockFocusSelector :: Selector '[] ()
 lockFocusSelector = mkSelector "lockFocus"
 
 -- | @Selector@ for @lockFocusFlipped:@
-lockFocusFlippedSelector :: Selector
+lockFocusFlippedSelector :: Selector '[Bool] ()
 lockFocusFlippedSelector = mkSelector "lockFocusFlipped:"
 
 -- | @Selector@ for @unlockFocus@
-unlockFocusSelector :: Selector
+unlockFocusSelector :: Selector '[] ()
 unlockFocusSelector = mkSelector "unlockFocus"
 
 -- | @Selector@ for @setFlipped:@
-setFlippedSelector :: Selector
+setFlippedSelector :: Selector '[Bool] ()
 setFlippedSelector = mkSelector "setFlipped:"
 
 -- | @Selector@ for @isFlipped@
-isFlippedSelector :: Selector
+isFlippedSelector :: Selector '[] Bool
 isFlippedSelector = mkSelector "isFlipped"
 
 -- | @Selector@ for @setScalesWhenResized:@
-setScalesWhenResizedSelector :: Selector
+setScalesWhenResizedSelector :: Selector '[Bool] ()
 setScalesWhenResizedSelector = mkSelector "setScalesWhenResized:"
 
 -- | @Selector@ for @scalesWhenResized@
-scalesWhenResizedSelector :: Selector
+scalesWhenResizedSelector :: Selector '[] Bool
 scalesWhenResizedSelector = mkSelector "scalesWhenResized"
 
 -- | @Selector@ for @setDataRetained:@
-setDataRetainedSelector :: Selector
+setDataRetainedSelector :: Selector '[Bool] ()
 setDataRetainedSelector = mkSelector "setDataRetained:"
 
 -- | @Selector@ for @isDataRetained@
-isDataRetainedSelector :: Selector
+isDataRetainedSelector :: Selector '[] Bool
 isDataRetainedSelector = mkSelector "isDataRetained"
 
 -- | @Selector@ for @setCachedSeparately:@
-setCachedSeparatelySelector :: Selector
+setCachedSeparatelySelector :: Selector '[Bool] ()
 setCachedSeparatelySelector = mkSelector "setCachedSeparately:"
 
 -- | @Selector@ for @isCachedSeparately@
-isCachedSeparatelySelector :: Selector
+isCachedSeparatelySelector :: Selector '[] Bool
 isCachedSeparatelySelector = mkSelector "isCachedSeparately"
 
 -- | @Selector@ for @setCacheDepthMatchesImageDepth:@
-setCacheDepthMatchesImageDepthSelector :: Selector
+setCacheDepthMatchesImageDepthSelector :: Selector '[Bool] ()
 setCacheDepthMatchesImageDepthSelector = mkSelector "setCacheDepthMatchesImageDepth:"
 
 -- | @Selector@ for @cacheDepthMatchesImageDepth@
-cacheDepthMatchesImageDepthSelector :: Selector
+cacheDepthMatchesImageDepthSelector :: Selector '[] Bool
 cacheDepthMatchesImageDepthSelector = mkSelector "cacheDepthMatchesImageDepth"
 
 -- | @Selector@ for @dissolveToPoint:fraction:@
-dissolveToPoint_fractionSelector :: Selector
+dissolveToPoint_fractionSelector :: Selector '[NSPoint, CDouble] ()
 dissolveToPoint_fractionSelector = mkSelector "dissolveToPoint:fraction:"
 
 -- | @Selector@ for @dissolveToPoint:fromRect:fraction:@
-dissolveToPoint_fromRect_fractionSelector :: Selector
+dissolveToPoint_fromRect_fractionSelector :: Selector '[NSPoint, NSRect, CDouble] ()
 dissolveToPoint_fromRect_fractionSelector = mkSelector "dissolveToPoint:fromRect:fraction:"
 
 -- | @Selector@ for @compositeToPoint:operation:@
-compositeToPoint_operationSelector :: Selector
+compositeToPoint_operationSelector :: Selector '[NSPoint, NSCompositingOperation] ()
 compositeToPoint_operationSelector = mkSelector "compositeToPoint:operation:"
 
 -- | @Selector@ for @compositeToPoint:fromRect:operation:@
-compositeToPoint_fromRect_operationSelector :: Selector
+compositeToPoint_fromRect_operationSelector :: Selector '[NSPoint, NSRect, NSCompositingOperation] ()
 compositeToPoint_fromRect_operationSelector = mkSelector "compositeToPoint:fromRect:operation:"
 
 -- | @Selector@ for @compositeToPoint:operation:fraction:@
-compositeToPoint_operation_fractionSelector :: Selector
+compositeToPoint_operation_fractionSelector :: Selector '[NSPoint, NSCompositingOperation, CDouble] ()
 compositeToPoint_operation_fractionSelector = mkSelector "compositeToPoint:operation:fraction:"
 
 -- | @Selector@ for @compositeToPoint:fromRect:operation:fraction:@
-compositeToPoint_fromRect_operation_fractionSelector :: Selector
+compositeToPoint_fromRect_operation_fractionSelector :: Selector '[NSPoint, NSRect, NSCompositingOperation, CDouble] ()
 compositeToPoint_fromRect_operation_fractionSelector = mkSelector "compositeToPoint:fromRect:operation:fraction:"
 
 -- | @Selector@ for @lockFocusOnRepresentation:@
-lockFocusOnRepresentationSelector :: Selector
+lockFocusOnRepresentationSelector :: Selector '[Id NSImageRep] ()
 lockFocusOnRepresentationSelector = mkSelector "lockFocusOnRepresentation:"
 
 -- | @Selector@ for @cancelIncrementalLoad@
-cancelIncrementalLoadSelector :: Selector
+cancelIncrementalLoadSelector :: Selector '[] ()
 cancelIncrementalLoadSelector = mkSelector "cancelIncrementalLoad"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] NSSize
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @setSize:@
-setSizeSelector :: Selector
+setSizeSelector :: Selector '[NSSize] ()
 setSizeSelector = mkSelector "setSize:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @usesEPSOnResolutionMismatch@
-usesEPSOnResolutionMismatchSelector :: Selector
+usesEPSOnResolutionMismatchSelector :: Selector '[] Bool
 usesEPSOnResolutionMismatchSelector = mkSelector "usesEPSOnResolutionMismatch"
 
 -- | @Selector@ for @setUsesEPSOnResolutionMismatch:@
-setUsesEPSOnResolutionMismatchSelector :: Selector
+setUsesEPSOnResolutionMismatchSelector :: Selector '[Bool] ()
 setUsesEPSOnResolutionMismatchSelector = mkSelector "setUsesEPSOnResolutionMismatch:"
 
 -- | @Selector@ for @prefersColorMatch@
-prefersColorMatchSelector :: Selector
+prefersColorMatchSelector :: Selector '[] Bool
 prefersColorMatchSelector = mkSelector "prefersColorMatch"
 
 -- | @Selector@ for @setPrefersColorMatch:@
-setPrefersColorMatchSelector :: Selector
+setPrefersColorMatchSelector :: Selector '[Bool] ()
 setPrefersColorMatchSelector = mkSelector "setPrefersColorMatch:"
 
 -- | @Selector@ for @matchesOnMultipleResolution@
-matchesOnMultipleResolutionSelector :: Selector
+matchesOnMultipleResolutionSelector :: Selector '[] Bool
 matchesOnMultipleResolutionSelector = mkSelector "matchesOnMultipleResolution"
 
 -- | @Selector@ for @setMatchesOnMultipleResolution:@
-setMatchesOnMultipleResolutionSelector :: Selector
+setMatchesOnMultipleResolutionSelector :: Selector '[Bool] ()
 setMatchesOnMultipleResolutionSelector = mkSelector "setMatchesOnMultipleResolution:"
 
 -- | @Selector@ for @matchesOnlyOnBestFittingAxis@
-matchesOnlyOnBestFittingAxisSelector :: Selector
+matchesOnlyOnBestFittingAxisSelector :: Selector '[] Bool
 matchesOnlyOnBestFittingAxisSelector = mkSelector "matchesOnlyOnBestFittingAxis"
 
 -- | @Selector@ for @setMatchesOnlyOnBestFittingAxis:@
-setMatchesOnlyOnBestFittingAxisSelector :: Selector
+setMatchesOnlyOnBestFittingAxisSelector :: Selector '[Bool] ()
 setMatchesOnlyOnBestFittingAxisSelector = mkSelector "setMatchesOnlyOnBestFittingAxis:"
 
 -- | @Selector@ for @TIFFRepresentation@
-tiffRepresentationSelector :: Selector
+tiffRepresentationSelector :: Selector '[] (Id NSData)
 tiffRepresentationSelector = mkSelector "TIFFRepresentation"
 
 -- | @Selector@ for @representations@
-representationsSelector :: Selector
+representationsSelector :: Selector '[] (Id NSArray)
 representationsSelector = mkSelector "representations"
 
 -- | @Selector@ for @valid@
-validSelector :: Selector
+validSelector :: Selector '[] Bool
 validSelector = mkSelector "valid"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @imageTypes@
-imageTypesSelector :: Selector
+imageTypesSelector :: Selector '[] (Id NSArray)
 imageTypesSelector = mkSelector "imageTypes"
 
 -- | @Selector@ for @imageUnfilteredTypes@
-imageUnfilteredTypesSelector :: Selector
+imageUnfilteredTypesSelector :: Selector '[] (Id NSArray)
 imageUnfilteredTypesSelector = mkSelector "imageUnfilteredTypes"
 
 -- | @Selector@ for @cacheMode@
-cacheModeSelector :: Selector
+cacheModeSelector :: Selector '[] NSImageCacheMode
 cacheModeSelector = mkSelector "cacheMode"
 
 -- | @Selector@ for @setCacheMode:@
-setCacheModeSelector :: Selector
+setCacheModeSelector :: Selector '[NSImageCacheMode] ()
 setCacheModeSelector = mkSelector "setCacheMode:"
 
 -- | @Selector@ for @alignmentRect@
-alignmentRectSelector :: Selector
+alignmentRectSelector :: Selector '[] NSRect
 alignmentRectSelector = mkSelector "alignmentRect"
 
 -- | @Selector@ for @setAlignmentRect:@
-setAlignmentRectSelector :: Selector
+setAlignmentRectSelector :: Selector '[NSRect] ()
 setAlignmentRectSelector = mkSelector "setAlignmentRect:"
 
 -- | @Selector@ for @template@
-templateSelector :: Selector
+templateSelector :: Selector '[] Bool
 templateSelector = mkSelector "template"
 
 -- | @Selector@ for @setTemplate:@
-setTemplateSelector :: Selector
+setTemplateSelector :: Selector '[Bool] ()
 setTemplateSelector = mkSelector "setTemplate:"
 
 -- | @Selector@ for @accessibilityDescription@
-accessibilityDescriptionSelector :: Selector
+accessibilityDescriptionSelector :: Selector '[] (Id NSString)
 accessibilityDescriptionSelector = mkSelector "accessibilityDescription"
 
 -- | @Selector@ for @setAccessibilityDescription:@
-setAccessibilityDescriptionSelector :: Selector
+setAccessibilityDescriptionSelector :: Selector '[Id NSString] ()
 setAccessibilityDescriptionSelector = mkSelector "setAccessibilityDescription:"
 
 -- | @Selector@ for @capInsets@
-capInsetsSelector :: Selector
+capInsetsSelector :: Selector '[] NSEdgeInsets
 capInsetsSelector = mkSelector "capInsets"
 
 -- | @Selector@ for @setCapInsets:@
-setCapInsetsSelector :: Selector
+setCapInsetsSelector :: Selector '[NSEdgeInsets] ()
 setCapInsetsSelector = mkSelector "setCapInsets:"
 
 -- | @Selector@ for @resizingMode@
-resizingModeSelector :: Selector
+resizingModeSelector :: Selector '[] NSImageResizingMode
 resizingModeSelector = mkSelector "resizingMode"
 
 -- | @Selector@ for @setResizingMode:@
-setResizingModeSelector :: Selector
+setResizingModeSelector :: Selector '[NSImageResizingMode] ()
 setResizingModeSelector = mkSelector "setResizingMode:"
 
 -- | @Selector@ for @symbolConfiguration@
-symbolConfigurationSelector :: Selector
+symbolConfigurationSelector :: Selector '[] (Id NSImageSymbolConfiguration)
 symbolConfigurationSelector = mkSelector "symbolConfiguration"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 

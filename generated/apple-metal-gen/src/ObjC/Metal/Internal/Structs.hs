@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | A struct representing a range of a Metal buffer. The offset into the buffer is included in the address. The length is generally optional, which a value of (uint64_t)-1 representing the range from the given address to the end of the buffer. However, providing the length can enable more accurate API validation, especially when sub-allocating ranges of a buffer.
 data MTL4BufferRange = MTL4BufferRange
@@ -38,6 +40,16 @@ argMTL4BufferRange = mkStorableArg mtL4BufferRangeStructType
 retMTL4BufferRange :: RetType MTL4BufferRange
 retMTL4BufferRange = mkStorableRetType mtL4BufferRangeStructType
 
+instance ObjCArgument MTL4BufferRange where
+  withObjCArg x k = k (argMTL4BufferRange x)
+
+instance ObjCReturn MTL4BufferRange where
+  type RawReturn MTL4BufferRange = MTL4BufferRange
+  objcRetType = retMTL4BufferRange
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | An axis aligned bounding box with a min and max point
 data MTLAxisAlignedBoundingBox = MTLAxisAlignedBoundingBox
   { mtlAxisAlignedBoundingBoxMin :: !(Ptr ())
@@ -62,6 +74,16 @@ argMTLAxisAlignedBoundingBox = mkStorableArg mtlAxisAlignedBoundingBoxStructType
 
 retMTLAxisAlignedBoundingBox :: RetType MTLAxisAlignedBoundingBox
 retMTLAxisAlignedBoundingBox = mkStorableRetType mtlAxisAlignedBoundingBoxStructType
+
+instance ObjCArgument MTLAxisAlignedBoundingBox where
+  withObjCArg x k = k (argMTLAxisAlignedBoundingBox x)
+
+instance ObjCReturn MTLAxisAlignedBoundingBox where
+  type RawReturn MTLAxisAlignedBoundingBox = MTLAxisAlignedBoundingBox
+  objcRetType = retMTLAxisAlignedBoundingBox
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MTLPackedFloatQuaternion = MTLPackedFloatQuaternion
   { mtlPackedFloatQuaternionX :: !CFloat
@@ -93,6 +115,16 @@ argMTLPackedFloatQuaternion = mkStorableArg mtlPackedFloatQuaternionStructType
 retMTLPackedFloatQuaternion :: RetType MTLPackedFloatQuaternion
 retMTLPackedFloatQuaternion = mkStorableRetType mtlPackedFloatQuaternionStructType
 
+instance ObjCArgument MTLPackedFloatQuaternion where
+  withObjCArg x k = k (argMTLPackedFloatQuaternion x)
+
+instance ObjCReturn MTLPackedFloatQuaternion where
+  type RawReturn MTLPackedFloatQuaternion = MTLPackedFloatQuaternion
+  objcRetType = retMTLPackedFloatQuaternion
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MTLResourceID
 --
 -- Handle of the GPU resource used for binding resources to argument tables, navigating resource view pools and storing resources in an argument buffer
@@ -118,3 +150,13 @@ argMTLResourceID = mkStorableArg mtlResourceIDStructType
 
 retMTLResourceID :: RetType MTLResourceID
 retMTLResourceID = mkStorableRetType mtlResourceIDStructType
+
+instance ObjCArgument MTLResourceID where
+  withObjCArg x k = k (argMTLResourceID x)
+
+instance ObjCReturn MTLResourceID where
+  type RawReturn MTLResourceID = MTLResourceID
+  objcRetType = retMTLResourceID
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

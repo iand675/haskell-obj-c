@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRWindowCoveringClusterGoToTiltValueParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , tiltValueSelector
-  , setTiltValueSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTiltValueSelector
+  , setTimedInvokeTimeoutMsSelector
+  , tiltValueSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- tiltValue@
 tiltValue :: IsMTRWindowCoveringClusterGoToTiltValueParams mtrWindowCoveringClusterGoToTiltValueParams => mtrWindowCoveringClusterGoToTiltValueParams -> IO (Id NSNumber)
-tiltValue mtrWindowCoveringClusterGoToTiltValueParams  =
-    sendMsg mtrWindowCoveringClusterGoToTiltValueParams (mkSelector "tiltValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+tiltValue mtrWindowCoveringClusterGoToTiltValueParams =
+  sendMessage mtrWindowCoveringClusterGoToTiltValueParams tiltValueSelector
 
 -- | @- setTiltValue:@
 setTiltValue :: (IsMTRWindowCoveringClusterGoToTiltValueParams mtrWindowCoveringClusterGoToTiltValueParams, IsNSNumber value) => mtrWindowCoveringClusterGoToTiltValueParams -> value -> IO ()
-setTiltValue mtrWindowCoveringClusterGoToTiltValueParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWindowCoveringClusterGoToTiltValueParams (mkSelector "setTiltValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTiltValue mtrWindowCoveringClusterGoToTiltValueParams value =
+  sendMessage mtrWindowCoveringClusterGoToTiltValueParams setTiltValueSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setTiltValue mtrWindowCoveringClusterGoToTiltValueParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRWindowCoveringClusterGoToTiltValueParams mtrWindowCoveringClusterGoToTiltValueParams => mtrWindowCoveringClusterGoToTiltValueParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrWindowCoveringClusterGoToTiltValueParams  =
-    sendMsg mtrWindowCoveringClusterGoToTiltValueParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrWindowCoveringClusterGoToTiltValueParams =
+  sendMessage mtrWindowCoveringClusterGoToTiltValueParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrWindowCoveringClusterGoToTiltValueParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRWindowCoveringClusterGoToTiltValueParams mtrWindowCoveringClusterGoToTiltValueParams, IsNSNumber value) => mtrWindowCoveringClusterGoToTiltValueParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrWindowCoveringClusterGoToTiltValueParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWindowCoveringClusterGoToTiltValueParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrWindowCoveringClusterGoToTiltValueParams value =
+  sendMessage mtrWindowCoveringClusterGoToTiltValueParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrWindowCoveringClusterGoToTiltValueParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRWindowCoveringClusterGoToTiltValueParams mtrWindowCoveringClusterGoToTiltValueParams => mtrWindowCoveringClusterGoToTiltValueParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrWindowCoveringClusterGoToTiltValueParams  =
-    sendMsg mtrWindowCoveringClusterGoToTiltValueParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrWindowCoveringClusterGoToTiltValueParams =
+  sendMessage mtrWindowCoveringClusterGoToTiltValueParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrWindowCoveringClusterGoToTiltValueParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRWindowCoveringClusterGoToTiltValueParams mtrWindowCoveringClusterGoToTiltValueParams, IsNSNumber value) => mtrWindowCoveringClusterGoToTiltValueParams -> value -> IO ()
-setServerSideProcessingTimeout mtrWindowCoveringClusterGoToTiltValueParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWindowCoveringClusterGoToTiltValueParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrWindowCoveringClusterGoToTiltValueParams value =
+  sendMessage mtrWindowCoveringClusterGoToTiltValueParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tiltValue@
-tiltValueSelector :: Selector
+tiltValueSelector :: Selector '[] (Id NSNumber)
 tiltValueSelector = mkSelector "tiltValue"
 
 -- | @Selector@ for @setTiltValue:@
-setTiltValueSelector :: Selector
+setTiltValueSelector :: Selector '[Id NSNumber] ()
 setTiltValueSelector = mkSelector "setTiltValue:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Accessibility.AXMathExpressionRow
   , IsAXMathExpressionRow(..)
   , initWithExpressions
   , expressions
-  , initWithExpressionsSelector
   , expressionsSelector
+  , initWithExpressionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithExpressions:@
 initWithExpressions :: (IsAXMathExpressionRow axMathExpressionRow, IsNSArray expressions) => axMathExpressionRow -> expressions -> IO (Id AXMathExpressionRow)
-initWithExpressions axMathExpressionRow  expressions =
-  withObjCPtr expressions $ \raw_expressions ->
-      sendMsg axMathExpressionRow (mkSelector "initWithExpressions:") (retPtr retVoid) [argPtr (castPtr raw_expressions :: Ptr ())] >>= ownedObject . castPtr
+initWithExpressions axMathExpressionRow expressions =
+  sendOwnedMessage axMathExpressionRow initWithExpressionsSelector (toNSArray expressions)
 
 -- | @- expressions@
 expressions :: IsAXMathExpressionRow axMathExpressionRow => axMathExpressionRow -> IO (Id NSArray)
-expressions axMathExpressionRow  =
-    sendMsg axMathExpressionRow (mkSelector "expressions") (retPtr retVoid) [] >>= retainedObject . castPtr
+expressions axMathExpressionRow =
+  sendMessage axMathExpressionRow expressionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithExpressions:@
-initWithExpressionsSelector :: Selector
+initWithExpressionsSelector :: Selector '[Id NSArray] (Id AXMathExpressionRow)
 initWithExpressionsSelector = mkSelector "initWithExpressions:"
 
 -- | @Selector@ for @expressions@
-expressionsSelector :: Selector
+expressionsSelector :: Selector '[] (Id NSArray)
 expressionsSelector = mkSelector "expressions"
 

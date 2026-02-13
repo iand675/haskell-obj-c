@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreWLAN.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | CWChannelBand
 --
@@ -46,6 +49,16 @@ pattern KCWChannelBand5GHz = CWChannelBand 2
 
 pattern KCWChannelBand6GHz :: CWChannelBand
 pattern KCWChannelBand6GHz = CWChannelBand 3
+
+instance ObjCArgument CWChannelBand where
+  withObjCArg (CWChannelBand x) k = k (argCLong x)
+
+instance ObjCReturn CWChannelBand where
+  type RawReturn CWChannelBand = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWChannelBand x)
+  fromOwned x = pure (CWChannelBand x)
 
 -- | CWChannelWidth
 --
@@ -89,6 +102,16 @@ pattern KCWChannelWidth80MHz = CWChannelWidth 3
 
 pattern KCWChannelWidth160MHz :: CWChannelWidth
 pattern KCWChannelWidth160MHz = CWChannelWidth 4
+
+instance ObjCArgument CWChannelWidth where
+  withObjCArg (CWChannelWidth x) k = k (argCLong x)
+
+instance ObjCReturn CWChannelWidth where
+  type RawReturn CWChannelWidth = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWChannelWidth x)
+  fromOwned x = pure (CWChannelWidth x)
 
 -- | CWCipherKeyFlags
 --
@@ -138,6 +161,16 @@ pattern KCWCipherKeyFlagsTx = CWCipherKeyFlags 8
 
 pattern KCWCipherKeyFlagsRx :: CWCipherKeyFlags
 pattern KCWCipherKeyFlagsRx = CWCipherKeyFlags 16
+
+instance ObjCArgument CWCipherKeyFlags where
+  withObjCArg (CWCipherKeyFlags x) k = k (argCULong x)
+
+instance ObjCReturn CWCipherKeyFlags where
+  type RawReturn CWCipherKeyFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWCipherKeyFlags x)
+  fromOwned x = pure (CWCipherKeyFlags x)
 
 -- | CWErr
 --
@@ -385,6 +418,16 @@ pattern KCWOperationNotPermittedErr = CWErr (-3930)
 pattern KCWErr :: CWErr
 pattern KCWErr = CWErr (-3931)
 
+instance ObjCArgument CWErr where
+  withObjCArg (CWErr x) k = k (argCLong x)
+
+instance ObjCReturn CWErr where
+  type RawReturn CWErr = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWErr x)
+  fromOwned x = pure (CWErr x)
+
 -- | CWEventType
 --
 -- Wi-Fi event types used in -[CWWiFiClient startMonitoringEventWithType:error:].
@@ -466,6 +509,16 @@ pattern CWEventTypeBtCoexStats = CWEventType 9
 pattern CWEventTypeUnknown :: CWEventType
 pattern CWEventTypeUnknown = CWEventType 9223372036854775807
 
+instance ObjCArgument CWEventType where
+  withObjCArg (CWEventType x) k = k (argCLong x)
+
+instance ObjCReturn CWEventType where
+  type RawReturn CWEventType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWEventType x)
+  fromOwned x = pure (CWEventType x)
+
 -- | CWIBSSModeSecurity
 --
 -- IBSS security types used in -[CWInterface startIBSSModeWithSSID:security:channel:password:error:].
@@ -494,6 +547,16 @@ pattern KCWIBSSModeSecurityWEP40 = CWIBSSModeSecurity 1
 
 pattern KCWIBSSModeSecurityWEP104 :: CWIBSSModeSecurity
 pattern KCWIBSSModeSecurityWEP104 = CWIBSSModeSecurity 2
+
+instance ObjCArgument CWIBSSModeSecurity where
+  withObjCArg (CWIBSSModeSecurity x) k = k (argCLong x)
+
+instance ObjCReturn CWIBSSModeSecurity where
+  type RawReturn CWIBSSModeSecurity = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWIBSSModeSecurity x)
+  fromOwned x = pure (CWIBSSModeSecurity x)
 
 -- | CWInterfaceMode
 --
@@ -531,6 +594,16 @@ pattern KCWInterfaceModeIBSS = CWInterfaceMode 2
 pattern KCWInterfaceModeHostAP :: CWInterfaceMode
 pattern KCWInterfaceModeHostAP = CWInterfaceMode 3
 
+instance ObjCArgument CWInterfaceMode where
+  withObjCArg (CWInterfaceMode x) k = k (argCLong x)
+
+instance ObjCReturn CWInterfaceMode where
+  type RawReturn CWInterfaceMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWInterfaceMode x)
+  fromOwned x = pure (CWInterfaceMode x)
+
 -- | CWKeychainDomain
 --
 -- Keychain domain types used by CoreWLAN keychain methods.
@@ -559,6 +632,16 @@ pattern KCWKeychainDomainUser = CWKeychainDomain 1
 
 pattern KCWKeychainDomainSystem :: CWKeychainDomain
 pattern KCWKeychainDomainSystem = CWKeychainDomain 2
+
+instance ObjCArgument CWKeychainDomain where
+  withObjCArg (CWKeychainDomain x) k = k (argCLong x)
+
+instance ObjCReturn CWKeychainDomain where
+  type RawReturn CWKeychainDomain = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWKeychainDomain x)
+  fromOwned x = pure (CWKeychainDomain x)
 
 -- | CWPHYMode
 --
@@ -618,6 +701,16 @@ pattern KCWPHYMode11ac = CWPHYMode 5
 
 pattern KCWPHYMode11ax :: CWPHYMode
 pattern KCWPHYMode11ax = CWPHYMode 6
+
+instance ObjCArgument CWPHYMode where
+  withObjCArg (CWPHYMode x) k = k (argCLong x)
+
+instance ObjCReturn CWPHYMode where
+  type RawReturn CWPHYMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWPHYMode x)
+  fromOwned x = pure (CWPHYMode x)
 
 -- | CWSecurity
 --
@@ -737,3 +830,13 @@ pattern KCWSecurityOWETransition = CWSecurity 15
 
 pattern KCWSecurityUnknown :: CWSecurity
 pattern KCWSecurityUnknown = CWSecurity 9223372036854775807
+
+instance ObjCArgument CWSecurity where
+  withObjCArg (CWSecurity x) k = k (argCLong x)
+
+instance ObjCReturn CWSecurity where
+  type RawReturn CWSecurity = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CWSecurity x)
+  fromOwned x = pure (CWSecurity x)

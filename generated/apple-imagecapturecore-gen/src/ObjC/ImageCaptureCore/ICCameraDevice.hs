@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,35 +41,35 @@ module ObjC.ImageCaptureCore.ICCameraDevice
   , tetheredCaptureEnabled
   , ptpEventHandler
   , setPtpEventHandler
-  , filesOfTypeSelector
-  , requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfoSelector
-  , requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfoSelector
-  , cancelDownloadSelector
-  , requestDeleteFilesSelector
-  , cancelDeleteSelector
-  , requestSyncClockSelector
-  , requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfoSelector
-  , requestTakePictureSelector
-  , requestEnableTetheringSelector
-  , requestDisableTetheringSelector
-  , requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfoSelector
-  , requestSendPTPCommand_outData_completionSelector
-  , contentCatalogPercentCompletedSelector
-  , contentsSelector
-  , mediaFilesSelector
-  , ejectableSelector
-  , lockedSelector
   , accessRestrictedAppleDeviceSelector
-  , iCloudPhotosEnabledSelector
-  , mountPointSelector
-  , mediaPresentationSelector
-  , setMediaPresentationSelector
-  , timeOffsetSelector
   , batteryLevelAvailableSelector
   , batteryLevelSelector
-  , tetheredCaptureEnabledSelector
+  , cancelDeleteSelector
+  , cancelDownloadSelector
+  , contentCatalogPercentCompletedSelector
+  , contentsSelector
+  , ejectableSelector
+  , filesOfTypeSelector
+  , iCloudPhotosEnabledSelector
+  , lockedSelector
+  , mediaFilesSelector
+  , mediaPresentationSelector
+  , mountPointSelector
   , ptpEventHandlerSelector
+  , requestDeleteFilesSelector
+  , requestDisableTetheringSelector
+  , requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfoSelector
+  , requestEnableTetheringSelector
+  , requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfoSelector
+  , requestSendPTPCommand_outData_completionSelector
+  , requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfoSelector
+  , requestSyncClockSelector
+  , requestTakePictureSelector
+  , requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfoSelector
+  , setMediaPresentationSelector
   , setPtpEventHandlerSelector
+  , tetheredCaptureEnabledSelector
+  , timeOffsetSelector
 
   -- * Enum types
   , ICMediaPresentation(ICMediaPresentation)
@@ -77,15 +78,11 @@ module ObjC.ImageCaptureCore.ICCameraDevice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,9 +98,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- filesOfType:@
 filesOfType :: (IsICCameraDevice icCameraDevice, IsNSString fileUTType) => icCameraDevice -> fileUTType -> IO (Id NSArray)
-filesOfType icCameraDevice  fileUTType =
-  withObjCPtr fileUTType $ \raw_fileUTType ->
-      sendMsg icCameraDevice (mkSelector "filesOfType:") (retPtr retVoid) [argPtr (castPtr raw_fileUTType :: Ptr ())] >>= retainedObject . castPtr
+filesOfType icCameraDevice fileUTType =
+  sendMessage icCameraDevice filesOfTypeSelector (toNSString fileUTType)
 
 -- | requestReadDataFromFile:atOffset:length:readDelegate:didReadDataSelector:contextInfo:
 --
@@ -112,10 +108,9 @@ filesOfType icCameraDevice  fileUTType =
 -- The readDelegate passed must not be nil. When this request is completed, the didReadDataSelector of the readDelegate object is called. The didReadDataSelector should have the same signature as: - (void)didReadData:(NSData*)data fromFile:(ICCameraFile*)file error:(NSError*)error contextInfo:(void*)contextInfo. The content of error returned should be examined to determine if the request completed successfully.
 --
 -- ObjC selector: @- requestReadDataFromFile:atOffset:length:readDelegate:didReadDataSelector:contextInfo:@
-requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfo :: (IsICCameraDevice icCameraDevice, IsICCameraFile file) => icCameraDevice -> file -> CLong -> CLong -> RawId -> Selector -> Ptr () -> IO ()
-requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfo icCameraDevice  file offset length_ readDelegate selector contextInfo =
-  withObjCPtr file $ \raw_file ->
-      sendMsg icCameraDevice (mkSelector "requestReadDataFromFile:atOffset:length:readDelegate:didReadDataSelector:contextInfo:") retVoid [argPtr (castPtr raw_file :: Ptr ()), argCLong offset, argCLong length_, argPtr (castPtr (unRawId readDelegate) :: Ptr ()), argPtr (unSelector selector), argPtr contextInfo]
+requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfo :: (IsICCameraDevice icCameraDevice, IsICCameraFile file) => icCameraDevice -> file -> CLong -> CLong -> RawId -> Sel -> Ptr () -> IO ()
+requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfo icCameraDevice file offset length_ readDelegate selector contextInfo =
+  sendMessage icCameraDevice requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfoSelector (toICCameraFile file) offset length_ readDelegate selector contextInfo
 
 -- | requestDownloadFile:options:downloadDelegate:didDownloadSelector:contextInfo:
 --
@@ -124,11 +119,9 @@ requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_context
 -- The downloadDelegate passed must not be nil. When this request is completed, the didDownloadSelector of the downloadDelegate object is called.The didDownloadSelector should have the same signature as: - (void)didDownloadFile:(ICCameraFile*)file error:(NSError*)error options:(NSDictionary*)options contextInfo:(void*)contextInfo. The content of error returned should be examined to determine if the request completed successfully.
 --
 -- ObjC selector: @- requestDownloadFile:options:downloadDelegate:didDownloadSelector:contextInfo:@
-requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfo :: (IsICCameraDevice icCameraDevice, IsICCameraFile file, IsNSDictionary options) => icCameraDevice -> file -> options -> RawId -> Selector -> Ptr () -> IO ()
-requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfo icCameraDevice  file options downloadDelegate selector contextInfo =
-  withObjCPtr file $ \raw_file ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg icCameraDevice (mkSelector "requestDownloadFile:options:downloadDelegate:didDownloadSelector:contextInfo:") retVoid [argPtr (castPtr raw_file :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr (unRawId downloadDelegate) :: Ptr ()), argPtr (unSelector selector), argPtr contextInfo]
+requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfo :: (IsICCameraDevice icCameraDevice, IsICCameraFile file, IsNSDictionary options) => icCameraDevice -> file -> options -> RawId -> Sel -> Ptr () -> IO ()
+requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfo icCameraDevice file options downloadDelegate selector contextInfo =
+  sendMessage icCameraDevice requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfoSelector (toICCameraFile file) (toNSDictionary options) downloadDelegate selector contextInfo
 
 -- | cancelDownload
 --
@@ -136,8 +129,8 @@ requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfo icC
 --
 -- ObjC selector: @- cancelDownload@
 cancelDownload :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO ()
-cancelDownload icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "cancelDownload") retVoid []
+cancelDownload icCameraDevice =
+  sendMessage icCameraDevice cancelDownloadSelector
 
 -- | requestDeleteFiles
 --
@@ -145,9 +138,8 @@ cancelDownload icCameraDevice  =
 --
 -- ObjC selector: @- requestDeleteFiles:@
 requestDeleteFiles :: (IsICCameraDevice icCameraDevice, IsNSArray files) => icCameraDevice -> files -> IO ()
-requestDeleteFiles icCameraDevice  files =
-  withObjCPtr files $ \raw_files ->
-      sendMsg icCameraDevice (mkSelector "requestDeleteFiles:") retVoid [argPtr (castPtr raw_files :: Ptr ())]
+requestDeleteFiles icCameraDevice files =
+  sendMessage icCameraDevice requestDeleteFilesSelector (toNSArray files)
 
 -- | cancelDelete
 --
@@ -155,8 +147,8 @@ requestDeleteFiles icCameraDevice  files =
 --
 -- ObjC selector: @- cancelDelete@
 cancelDelete :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO ()
-cancelDelete icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "cancelDelete") retVoid []
+cancelDelete icCameraDevice =
+  sendMessage icCameraDevice cancelDeleteSelector
 
 -- | requestSyncClock
 --
@@ -164,8 +156,8 @@ cancelDelete icCameraDevice  =
 --
 -- ObjC selector: @- requestSyncClock@
 requestSyncClock :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO ()
-requestSyncClock icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "requestSyncClock") retVoid []
+requestSyncClock icCameraDevice =
+  sendMessage icCameraDevice requestSyncClockSelector
 
 -- | requestUploadFile:options:uploadDelegate:didUploadSelector:contextInfo:
 --
@@ -174,11 +166,9 @@ requestSyncClock icCameraDevice  =
 -- The uploadDelegate passed must not be nil. When this request is completed, the didUploadSelector of the uploadDelegate object is called. The didUploadSelector should have the same signature as: - (void)didUploadFile:(NSURL*)fileURL error:(NSError*)error contextInfo:(void*)contextInfo. The content of error returned should be examined to determine if the request completed successfully.
 --
 -- ObjC selector: @- requestUploadFile:options:uploadDelegate:didUploadSelector:contextInfo:@
-requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfo :: (IsICCameraDevice icCameraDevice, IsNSURL fileURL, IsNSDictionary options) => icCameraDevice -> fileURL -> options -> RawId -> Selector -> Ptr () -> IO ()
-requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfo icCameraDevice  fileURL options uploadDelegate selector contextInfo =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg icCameraDevice (mkSelector "requestUploadFile:options:uploadDelegate:didUploadSelector:contextInfo:") retVoid [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr (unRawId uploadDelegate) :: Ptr ()), argPtr (unSelector selector), argPtr contextInfo]
+requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfo :: (IsICCameraDevice icCameraDevice, IsNSURL fileURL, IsNSDictionary options) => icCameraDevice -> fileURL -> options -> RawId -> Sel -> Ptr () -> IO ()
+requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfo icCameraDevice fileURL options uploadDelegate selector contextInfo =
+  sendMessage icCameraDevice requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfoSelector (toNSURL fileURL) (toNSDictionary options) uploadDelegate selector contextInfo
 
 -- | requestTakePicture
 --
@@ -186,8 +176,8 @@ requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfo icCameraD
 --
 -- ObjC selector: @- requestTakePicture@
 requestTakePicture :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO ()
-requestTakePicture icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "requestTakePicture") retVoid []
+requestTakePicture icCameraDevice =
+  sendMessage icCameraDevice requestTakePictureSelector
 
 -- | requestEnableTethering
 --
@@ -195,8 +185,8 @@ requestTakePicture icCameraDevice  =
 --
 -- ObjC selector: @- requestEnableTethering@
 requestEnableTethering :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO ()
-requestEnableTethering icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "requestEnableTethering") retVoid []
+requestEnableTethering icCameraDevice =
+  sendMessage icCameraDevice requestEnableTetheringSelector
 
 -- | requestDisableTethering
 --
@@ -204,8 +194,8 @@ requestEnableTethering icCameraDevice  =
 --
 -- ObjC selector: @- requestDisableTethering@
 requestDisableTethering :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO ()
-requestDisableTethering icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "requestDisableTethering") retVoid []
+requestDisableTethering icCameraDevice =
+  sendMessage icCameraDevice requestDisableTetheringSelector
 
 -- | requestSendPTPCommand:outData:sendCommandDelegate:sendCommandDelegate:contextInfo:
 --
@@ -214,11 +204,9 @@ requestDisableTethering icCameraDevice  =
 -- This should be sent only if the 'capabilities' property contains 'ICCameraDeviceCanAcceptPTPCommands'. All PTP cameras have this capability. The response to this command will be delivered using didSendCommandSelector of sendCommandDelegate. The didSendCommandSelector should have the same signature as: - (void)didSendPTPCommand:(NSData*)command inData:(NSData*)data response:(NSData*)response error:(NSError*)error contextInfo:(void*)contextInfo. The content of error returned should be examined to determine if the request completed successfully.
 --
 -- ObjC selector: @- requestSendPTPCommand:outData:sendCommandDelegate:didSendCommandSelector:contextInfo:@
-requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfo :: (IsICCameraDevice icCameraDevice, IsNSData command, IsNSData data_) => icCameraDevice -> command -> data_ -> RawId -> Selector -> Ptr () -> IO ()
-requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfo icCameraDevice  command data_ sendCommandDelegate selector contextInfo =
-  withObjCPtr command $ \raw_command ->
-    withObjCPtr data_ $ \raw_data_ ->
-        sendMsg icCameraDevice (mkSelector "requestSendPTPCommand:outData:sendCommandDelegate:didSendCommandSelector:contextInfo:") retVoid [argPtr (castPtr raw_command :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr (unRawId sendCommandDelegate) :: Ptr ()), argPtr (unSelector selector), argPtr contextInfo]
+requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfo :: (IsICCameraDevice icCameraDevice, IsNSData command, IsNSData data_) => icCameraDevice -> command -> data_ -> RawId -> Sel -> Ptr () -> IO ()
+requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfo icCameraDevice command data_ sendCommandDelegate selector contextInfo =
+  sendMessage icCameraDevice requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfoSelector (toNSData command) (toNSData data_) sendCommandDelegate selector contextInfo
 
 -- | requestSendPTPCommand:outData:completion
 --
@@ -228,10 +216,8 @@ requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_context
 --
 -- ObjC selector: @- requestSendPTPCommand:outData:completion:@
 requestSendPTPCommand_outData_completion :: (IsICCameraDevice icCameraDevice, IsNSData ptpCommand, IsNSData ptpData) => icCameraDevice -> ptpCommand -> ptpData -> Ptr () -> IO ()
-requestSendPTPCommand_outData_completion icCameraDevice  ptpCommand ptpData completion =
-  withObjCPtr ptpCommand $ \raw_ptpCommand ->
-    withObjCPtr ptpData $ \raw_ptpData ->
-        sendMsg icCameraDevice (mkSelector "requestSendPTPCommand:outData:completion:") retVoid [argPtr (castPtr raw_ptpCommand :: Ptr ()), argPtr (castPtr raw_ptpData :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+requestSendPTPCommand_outData_completion icCameraDevice ptpCommand ptpData completion =
+  sendMessage icCameraDevice requestSendPTPCommand_outData_completionSelector (toNSData ptpCommand) (toNSData ptpData) completion
 
 -- | contentCatalogPercentCompleted
 --
@@ -239,8 +225,8 @@ requestSendPTPCommand_outData_completion icCameraDevice  ptpCommand ptpData comp
 --
 -- ObjC selector: @- contentCatalogPercentCompleted@
 contentCatalogPercentCompleted :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO CULong
-contentCatalogPercentCompleted icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "contentCatalogPercentCompleted") retCULong []
+contentCatalogPercentCompleted icCameraDevice =
+  sendMessage icCameraDevice contentCatalogPercentCompletedSelector
 
 -- | contents
 --
@@ -248,8 +234,8 @@ contentCatalogPercentCompleted icCameraDevice  =
 --
 -- ObjC selector: @- contents@
 contents :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO (Id NSArray)
-contents icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "contents") (retPtr retVoid) [] >>= retainedObject . castPtr
+contents icCameraDevice =
+  sendMessage icCameraDevice contentsSelector
 
 -- | mediaFiles
 --
@@ -257,8 +243,8 @@ contents icCameraDevice  =
 --
 -- ObjC selector: @- mediaFiles@
 mediaFiles :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO (Id NSArray)
-mediaFiles icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "mediaFiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaFiles icCameraDevice =
+  sendMessage icCameraDevice mediaFilesSelector
 
 -- | ejectable
 --
@@ -266,8 +252,8 @@ mediaFiles icCameraDevice  =
 --
 -- ObjC selector: @- ejectable@
 ejectable :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO Bool
-ejectable icCameraDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraDevice (mkSelector "ejectable") retCULong []
+ejectable icCameraDevice =
+  sendMessage icCameraDevice ejectableSelector
 
 -- | locked
 --
@@ -275,8 +261,8 @@ ejectable icCameraDevice  =
 --
 -- ObjC selector: @- locked@
 locked :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO Bool
-locked icCameraDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraDevice (mkSelector "locked") retCULong []
+locked icCameraDevice =
+  sendMessage icCameraDevice lockedSelector
 
 -- | accessRestrictedAppleDevice
 --
@@ -284,8 +270,8 @@ locked icCameraDevice  =
 --
 -- ObjC selector: @- accessRestrictedAppleDevice@
 accessRestrictedAppleDevice :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO Bool
-accessRestrictedAppleDevice icCameraDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraDevice (mkSelector "accessRestrictedAppleDevice") retCULong []
+accessRestrictedAppleDevice icCameraDevice =
+  sendMessage icCameraDevice accessRestrictedAppleDeviceSelector
 
 -- | iCloudPhotosEnabled
 --
@@ -293,8 +279,8 @@ accessRestrictedAppleDevice icCameraDevice  =
 --
 -- ObjC selector: @- iCloudPhotosEnabled@
 iCloudPhotosEnabled :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO Bool
-iCloudPhotosEnabled icCameraDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraDevice (mkSelector "iCloudPhotosEnabled") retCULong []
+iCloudPhotosEnabled icCameraDevice =
+  sendMessage icCameraDevice iCloudPhotosEnabledSelector
 
 -- | mountPoint
 --
@@ -302,8 +288,8 @@ iCloudPhotosEnabled icCameraDevice  =
 --
 -- ObjC selector: @- mountPoint@
 mountPoint :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO RawId
-mountPoint icCameraDevice  =
-    fmap (RawId . castPtr) $ sendMsg icCameraDevice (mkSelector "mountPoint") (retPtr retVoid) []
+mountPoint icCameraDevice =
+  sendMessage icCameraDevice mountPointSelector
 
 -- | mediaPresentation
 --
@@ -315,8 +301,8 @@ mountPoint icCameraDevice  =
 --
 -- ObjC selector: @- mediaPresentation@
 mediaPresentation :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO ICMediaPresentation
-mediaPresentation icCameraDevice  =
-    fmap (coerce :: CULong -> ICMediaPresentation) $ sendMsg icCameraDevice (mkSelector "mediaPresentation") retCULong []
+mediaPresentation icCameraDevice =
+  sendMessage icCameraDevice mediaPresentationSelector
 
 -- | mediaPresentation
 --
@@ -328,8 +314,8 @@ mediaPresentation icCameraDevice  =
 --
 -- ObjC selector: @- setMediaPresentation:@
 setMediaPresentation :: IsICCameraDevice icCameraDevice => icCameraDevice -> ICMediaPresentation -> IO ()
-setMediaPresentation icCameraDevice  value =
-    sendMsg icCameraDevice (mkSelector "setMediaPresentation:") retVoid [argCULong (coerce value)]
+setMediaPresentation icCameraDevice value =
+  sendMessage icCameraDevice setMediaPresentationSelector value
 
 -- | timeOffset
 --
@@ -337,8 +323,8 @@ setMediaPresentation icCameraDevice  value =
 --
 -- ObjC selector: @- timeOffset@
 timeOffset :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO CDouble
-timeOffset icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "timeOffset") retCDouble []
+timeOffset icCameraDevice =
+  sendMessage icCameraDevice timeOffsetSelector
 
 -- | batteryLevelAvailable
 --
@@ -346,8 +332,8 @@ timeOffset icCameraDevice  =
 --
 -- ObjC selector: @- batteryLevelAvailable@
 batteryLevelAvailable :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO Bool
-batteryLevelAvailable icCameraDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraDevice (mkSelector "batteryLevelAvailable") retCULong []
+batteryLevelAvailable icCameraDevice =
+  sendMessage icCameraDevice batteryLevelAvailableSelector
 
 -- | batteryLevel
 --
@@ -355,8 +341,8 @@ batteryLevelAvailable icCameraDevice  =
 --
 -- ObjC selector: @- batteryLevel@
 batteryLevel :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO CULong
-batteryLevel icCameraDevice  =
-    sendMsg icCameraDevice (mkSelector "batteryLevel") retCULong []
+batteryLevel icCameraDevice =
+  sendMessage icCameraDevice batteryLevelSelector
 
 -- | tetheredCaptureEnabled
 --
@@ -366,8 +352,8 @@ batteryLevel icCameraDevice  =
 --
 -- ObjC selector: @- tetheredCaptureEnabled@
 tetheredCaptureEnabled :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO Bool
-tetheredCaptureEnabled icCameraDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraDevice (mkSelector "tetheredCaptureEnabled") retCULong []
+tetheredCaptureEnabled icCameraDevice =
+  sendMessage icCameraDevice tetheredCaptureEnabledSelector
 
 -- | ptpEventHandler
 --
@@ -375,8 +361,8 @@ tetheredCaptureEnabled icCameraDevice  =
 --
 -- ObjC selector: @- ptpEventHandler@
 ptpEventHandler :: IsICCameraDevice icCameraDevice => icCameraDevice -> IO (Ptr ())
-ptpEventHandler icCameraDevice  =
-    fmap castPtr $ sendMsg icCameraDevice (mkSelector "ptpEventHandler") (retPtr retVoid) []
+ptpEventHandler icCameraDevice =
+  sendMessage icCameraDevice ptpEventHandlerSelector
 
 -- | ptpEventHandler
 --
@@ -384,126 +370,126 @@ ptpEventHandler icCameraDevice  =
 --
 -- ObjC selector: @- setPtpEventHandler:@
 setPtpEventHandler :: IsICCameraDevice icCameraDevice => icCameraDevice -> Ptr () -> IO ()
-setPtpEventHandler icCameraDevice  value =
-    sendMsg icCameraDevice (mkSelector "setPtpEventHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPtpEventHandler icCameraDevice value =
+  sendMessage icCameraDevice setPtpEventHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @filesOfType:@
-filesOfTypeSelector :: Selector
+filesOfTypeSelector :: Selector '[Id NSString] (Id NSArray)
 filesOfTypeSelector = mkSelector "filesOfType:"
 
 -- | @Selector@ for @requestReadDataFromFile:atOffset:length:readDelegate:didReadDataSelector:contextInfo:@
-requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfoSelector :: Selector
+requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfoSelector :: Selector '[Id ICCameraFile, CLong, CLong, RawId, Sel, Ptr ()] ()
 requestReadDataFromFile_atOffset_length_readDelegate_didReadDataSelector_contextInfoSelector = mkSelector "requestReadDataFromFile:atOffset:length:readDelegate:didReadDataSelector:contextInfo:"
 
 -- | @Selector@ for @requestDownloadFile:options:downloadDelegate:didDownloadSelector:contextInfo:@
-requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfoSelector :: Selector
+requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfoSelector :: Selector '[Id ICCameraFile, Id NSDictionary, RawId, Sel, Ptr ()] ()
 requestDownloadFile_options_downloadDelegate_didDownloadSelector_contextInfoSelector = mkSelector "requestDownloadFile:options:downloadDelegate:didDownloadSelector:contextInfo:"
 
 -- | @Selector@ for @cancelDownload@
-cancelDownloadSelector :: Selector
+cancelDownloadSelector :: Selector '[] ()
 cancelDownloadSelector = mkSelector "cancelDownload"
 
 -- | @Selector@ for @requestDeleteFiles:@
-requestDeleteFilesSelector :: Selector
+requestDeleteFilesSelector :: Selector '[Id NSArray] ()
 requestDeleteFilesSelector = mkSelector "requestDeleteFiles:"
 
 -- | @Selector@ for @cancelDelete@
-cancelDeleteSelector :: Selector
+cancelDeleteSelector :: Selector '[] ()
 cancelDeleteSelector = mkSelector "cancelDelete"
 
 -- | @Selector@ for @requestSyncClock@
-requestSyncClockSelector :: Selector
+requestSyncClockSelector :: Selector '[] ()
 requestSyncClockSelector = mkSelector "requestSyncClock"
 
 -- | @Selector@ for @requestUploadFile:options:uploadDelegate:didUploadSelector:contextInfo:@
-requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfoSelector :: Selector
+requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfoSelector :: Selector '[Id NSURL, Id NSDictionary, RawId, Sel, Ptr ()] ()
 requestUploadFile_options_uploadDelegate_didUploadSelector_contextInfoSelector = mkSelector "requestUploadFile:options:uploadDelegate:didUploadSelector:contextInfo:"
 
 -- | @Selector@ for @requestTakePicture@
-requestTakePictureSelector :: Selector
+requestTakePictureSelector :: Selector '[] ()
 requestTakePictureSelector = mkSelector "requestTakePicture"
 
 -- | @Selector@ for @requestEnableTethering@
-requestEnableTetheringSelector :: Selector
+requestEnableTetheringSelector :: Selector '[] ()
 requestEnableTetheringSelector = mkSelector "requestEnableTethering"
 
 -- | @Selector@ for @requestDisableTethering@
-requestDisableTetheringSelector :: Selector
+requestDisableTetheringSelector :: Selector '[] ()
 requestDisableTetheringSelector = mkSelector "requestDisableTethering"
 
 -- | @Selector@ for @requestSendPTPCommand:outData:sendCommandDelegate:didSendCommandSelector:contextInfo:@
-requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfoSelector :: Selector
+requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfoSelector :: Selector '[Id NSData, Id NSData, RawId, Sel, Ptr ()] ()
 requestSendPTPCommand_outData_sendCommandDelegate_didSendCommandSelector_contextInfoSelector = mkSelector "requestSendPTPCommand:outData:sendCommandDelegate:didSendCommandSelector:contextInfo:"
 
 -- | @Selector@ for @requestSendPTPCommand:outData:completion:@
-requestSendPTPCommand_outData_completionSelector :: Selector
+requestSendPTPCommand_outData_completionSelector :: Selector '[Id NSData, Id NSData, Ptr ()] ()
 requestSendPTPCommand_outData_completionSelector = mkSelector "requestSendPTPCommand:outData:completion:"
 
 -- | @Selector@ for @contentCatalogPercentCompleted@
-contentCatalogPercentCompletedSelector :: Selector
+contentCatalogPercentCompletedSelector :: Selector '[] CULong
 contentCatalogPercentCompletedSelector = mkSelector "contentCatalogPercentCompleted"
 
 -- | @Selector@ for @contents@
-contentsSelector :: Selector
+contentsSelector :: Selector '[] (Id NSArray)
 contentsSelector = mkSelector "contents"
 
 -- | @Selector@ for @mediaFiles@
-mediaFilesSelector :: Selector
+mediaFilesSelector :: Selector '[] (Id NSArray)
 mediaFilesSelector = mkSelector "mediaFiles"
 
 -- | @Selector@ for @ejectable@
-ejectableSelector :: Selector
+ejectableSelector :: Selector '[] Bool
 ejectableSelector = mkSelector "ejectable"
 
 -- | @Selector@ for @locked@
-lockedSelector :: Selector
+lockedSelector :: Selector '[] Bool
 lockedSelector = mkSelector "locked"
 
 -- | @Selector@ for @accessRestrictedAppleDevice@
-accessRestrictedAppleDeviceSelector :: Selector
+accessRestrictedAppleDeviceSelector :: Selector '[] Bool
 accessRestrictedAppleDeviceSelector = mkSelector "accessRestrictedAppleDevice"
 
 -- | @Selector@ for @iCloudPhotosEnabled@
-iCloudPhotosEnabledSelector :: Selector
+iCloudPhotosEnabledSelector :: Selector '[] Bool
 iCloudPhotosEnabledSelector = mkSelector "iCloudPhotosEnabled"
 
 -- | @Selector@ for @mountPoint@
-mountPointSelector :: Selector
+mountPointSelector :: Selector '[] RawId
 mountPointSelector = mkSelector "mountPoint"
 
 -- | @Selector@ for @mediaPresentation@
-mediaPresentationSelector :: Selector
+mediaPresentationSelector :: Selector '[] ICMediaPresentation
 mediaPresentationSelector = mkSelector "mediaPresentation"
 
 -- | @Selector@ for @setMediaPresentation:@
-setMediaPresentationSelector :: Selector
+setMediaPresentationSelector :: Selector '[ICMediaPresentation] ()
 setMediaPresentationSelector = mkSelector "setMediaPresentation:"
 
 -- | @Selector@ for @timeOffset@
-timeOffsetSelector :: Selector
+timeOffsetSelector :: Selector '[] CDouble
 timeOffsetSelector = mkSelector "timeOffset"
 
 -- | @Selector@ for @batteryLevelAvailable@
-batteryLevelAvailableSelector :: Selector
+batteryLevelAvailableSelector :: Selector '[] Bool
 batteryLevelAvailableSelector = mkSelector "batteryLevelAvailable"
 
 -- | @Selector@ for @batteryLevel@
-batteryLevelSelector :: Selector
+batteryLevelSelector :: Selector '[] CULong
 batteryLevelSelector = mkSelector "batteryLevel"
 
 -- | @Selector@ for @tetheredCaptureEnabled@
-tetheredCaptureEnabledSelector :: Selector
+tetheredCaptureEnabledSelector :: Selector '[] Bool
 tetheredCaptureEnabledSelector = mkSelector "tetheredCaptureEnabled"
 
 -- | @Selector@ for @ptpEventHandler@
-ptpEventHandlerSelector :: Selector
+ptpEventHandlerSelector :: Selector '[] (Ptr ())
 ptpEventHandlerSelector = mkSelector "ptpEventHandler"
 
 -- | @Selector@ for @setPtpEventHandler:@
-setPtpEventHandlerSelector :: Selector
+setPtpEventHandlerSelector :: Selector '[Ptr ()] ()
 setPtpEventHandlerSelector = mkSelector "setPtpEventHandler:"
 

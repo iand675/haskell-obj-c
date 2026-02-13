@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.QuickLookUI.QLPreviewReplyAttachment
   , initWithData_contentType
   , data_
   , contentType
-  , initWithData_contentTypeSelector
-  , dataSelector
   , contentTypeSelector
+  , dataSelector
+  , initWithData_contentTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,38 +39,36 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 --
 -- ObjC selector: @- initWithData:contentType:@
 initWithData_contentType :: (IsQLPreviewReplyAttachment qlPreviewReplyAttachment, IsNSData data_, IsUTType contentType) => qlPreviewReplyAttachment -> data_ -> contentType -> IO (Id QLPreviewReplyAttachment)
-initWithData_contentType qlPreviewReplyAttachment  data_ contentType =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr contentType $ \raw_contentType ->
-        sendMsg qlPreviewReplyAttachment (mkSelector "initWithData:contentType:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_contentType :: Ptr ())] >>= ownedObject . castPtr
+initWithData_contentType qlPreviewReplyAttachment data_ contentType =
+  sendOwnedMessage qlPreviewReplyAttachment initWithData_contentTypeSelector (toNSData data_) (toUTType contentType)
 
 -- | The data content of an html preview
 --
 -- ObjC selector: @- data@
 data_ :: IsQLPreviewReplyAttachment qlPreviewReplyAttachment => qlPreviewReplyAttachment -> IO (Id NSData)
-data_ qlPreviewReplyAttachment  =
-    sendMsg qlPreviewReplyAttachment (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ qlPreviewReplyAttachment =
+  sendMessage qlPreviewReplyAttachment dataSelector
 
 -- | The content type of the attachment for an html preview
 --
 -- ObjC selector: @- contentType@
 contentType :: IsQLPreviewReplyAttachment qlPreviewReplyAttachment => qlPreviewReplyAttachment -> IO (Id UTType)
-contentType qlPreviewReplyAttachment  =
-    sendMsg qlPreviewReplyAttachment (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentType qlPreviewReplyAttachment =
+  sendMessage qlPreviewReplyAttachment contentTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithData:contentType:@
-initWithData_contentTypeSelector :: Selector
+initWithData_contentTypeSelector :: Selector '[Id NSData, Id UTType] (Id QLPreviewReplyAttachment)
 initWithData_contentTypeSelector = mkSelector "initWithData:contentType:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id UTType)
 contentTypeSelector = mkSelector "contentType"
 

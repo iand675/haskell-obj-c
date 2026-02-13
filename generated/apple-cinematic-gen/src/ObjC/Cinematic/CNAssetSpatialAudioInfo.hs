@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,17 +26,17 @@ module ObjC.Cinematic.CNAssetSpatialAudioInfo
   , defaultEffectIntensity
   , defaultRenderingStyle
   , spatialAudioMixMetadata
-  , initSelector
-  , newSelector
-  , checkIfContainsSpatialAudio_completionHandlerSelector
-  , loadFromAsset_completionHandlerSelector
-  , audioMixWithEffectIntensity_renderingStyleSelector
   , assetReaderOutputSettingsForContentTypeSelector
   , assetWriterInputSettingsForContentTypeSelector
-  , isSupportedSelector
-  , defaultSpatialAudioTrackSelector
+  , audioMixWithEffectIntensity_renderingStyleSelector
+  , checkIfContainsSpatialAudio_completionHandlerSelector
   , defaultEffectIntensitySelector
   , defaultRenderingStyleSelector
+  , defaultSpatialAudioTrackSelector
+  , initSelector
+  , isSupportedSelector
+  , loadFromAsset_completionHandlerSelector
+  , newSelector
   , spatialAudioMixMetadataSelector
 
   -- * Enum types
@@ -56,15 +57,11 @@ module ObjC.Cinematic.CNAssetSpatialAudioInfo
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,15 +72,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCNAssetSpatialAudioInfo cnAssetSpatialAudioInfo => cnAssetSpatialAudioInfo -> IO (Id CNAssetSpatialAudioInfo)
-init_ cnAssetSpatialAudioInfo  =
-    sendMsg cnAssetSpatialAudioInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnAssetSpatialAudioInfo =
+  sendOwnedMessage cnAssetSpatialAudioInfo initSelector
 
 -- | @+ new@
 new :: IO (Id CNAssetSpatialAudioInfo)
 new  =
   do
     cls' <- getRequiredClass "CNAssetSpatialAudioInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | checkIfContainsSpatialAudio:
 --
@@ -100,8 +97,7 @@ checkIfContainsSpatialAudio_completionHandler :: IsAVAsset asset => asset -> Ptr
 checkIfContainsSpatialAudio_completionHandler asset completionHandler =
   do
     cls' <- getRequiredClass "CNAssetSpatialAudioInfo"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "checkIfContainsSpatialAudio:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' checkIfContainsSpatialAudio_completionHandlerSelector (toAVAsset asset) completionHandler
 
 -- | loadFromAsset:
 --
@@ -118,8 +114,7 @@ loadFromAsset_completionHandler :: IsAVAsset asset => asset -> Ptr () -> IO ()
 loadFromAsset_completionHandler asset completionHandler =
   do
     cls' <- getRequiredClass "CNAssetSpatialAudioInfo"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "loadFromAsset:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' loadFromAsset_completionHandlerSelector (toAVAsset asset) completionHandler
 
 -- | audioMixWithEffectIntensity:renderingStyle:
 --
@@ -129,8 +124,8 @@ loadFromAsset_completionHandler asset completionHandler =
 --
 -- ObjC selector: @- audioMixWithEffectIntensity:renderingStyle:@
 audioMixWithEffectIntensity_renderingStyle :: IsCNAssetSpatialAudioInfo cnAssetSpatialAudioInfo => cnAssetSpatialAudioInfo -> CFloat -> CNSpatialAudioRenderingStyle -> IO (Id AVAudioMix)
-audioMixWithEffectIntensity_renderingStyle cnAssetSpatialAudioInfo  effectIntensity renderingStyle =
-    sendMsg cnAssetSpatialAudioInfo (mkSelector "audioMixWithEffectIntensity:renderingStyle:") (retPtr retVoid) [argCFloat effectIntensity, argCLong (coerce renderingStyle)] >>= retainedObject . castPtr
+audioMixWithEffectIntensity_renderingStyle cnAssetSpatialAudioInfo effectIntensity renderingStyle =
+  sendMessage cnAssetSpatialAudioInfo audioMixWithEffectIntensity_renderingStyleSelector effectIntensity renderingStyle
 
 -- | assetReaderOutputSettingsForContentType
 --
@@ -140,8 +135,8 @@ audioMixWithEffectIntensity_renderingStyle cnAssetSpatialAudioInfo  effectIntens
 --
 -- ObjC selector: @- assetReaderOutputSettingsForContentType:@
 assetReaderOutputSettingsForContentType :: IsCNAssetSpatialAudioInfo cnAssetSpatialAudioInfo => cnAssetSpatialAudioInfo -> CNSpatialAudioContentType -> IO (Id NSDictionary)
-assetReaderOutputSettingsForContentType cnAssetSpatialAudioInfo  contentType =
-    sendMsg cnAssetSpatialAudioInfo (mkSelector "assetReaderOutputSettingsForContentType:") (retPtr retVoid) [argCLong (coerce contentType)] >>= retainedObject . castPtr
+assetReaderOutputSettingsForContentType cnAssetSpatialAudioInfo contentType =
+  sendMessage cnAssetSpatialAudioInfo assetReaderOutputSettingsForContentTypeSelector contentType
 
 -- | assetWriterInputSettingsForContentType
 --
@@ -149,8 +144,8 @@ assetReaderOutputSettingsForContentType cnAssetSpatialAudioInfo  contentType =
 --
 -- ObjC selector: @- assetWriterInputSettingsForContentType:@
 assetWriterInputSettingsForContentType :: IsCNAssetSpatialAudioInfo cnAssetSpatialAudioInfo => cnAssetSpatialAudioInfo -> CNSpatialAudioContentType -> IO (Id NSDictionary)
-assetWriterInputSettingsForContentType cnAssetSpatialAudioInfo  contentType =
-    sendMsg cnAssetSpatialAudioInfo (mkSelector "assetWriterInputSettingsForContentType:") (retPtr retVoid) [argCLong (coerce contentType)] >>= retainedObject . castPtr
+assetWriterInputSettingsForContentType cnAssetSpatialAudioInfo contentType =
+  sendMessage cnAssetSpatialAudioInfo assetWriterInputSettingsForContentTypeSelector contentType
 
 -- | isSupported
 --
@@ -161,7 +156,7 @@ isSupported :: IO Bool
 isSupported  =
   do
     cls' <- getRequiredClass "CNAssetSpatialAudioInfo"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isSupported") retCULong []
+    sendClassMessage cls' isSupportedSelector
 
 -- | defaulSpatialAudioTrack
 --
@@ -169,8 +164,8 @@ isSupported  =
 --
 -- ObjC selector: @- defaultSpatialAudioTrack@
 defaultSpatialAudioTrack :: IsCNAssetSpatialAudioInfo cnAssetSpatialAudioInfo => cnAssetSpatialAudioInfo -> IO (Id AVAssetTrack)
-defaultSpatialAudioTrack cnAssetSpatialAudioInfo  =
-    sendMsg cnAssetSpatialAudioInfo (mkSelector "defaultSpatialAudioTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultSpatialAudioTrack cnAssetSpatialAudioInfo =
+  sendMessage cnAssetSpatialAudioInfo defaultSpatialAudioTrackSelector
 
 -- | defaultEffectIntensity
 --
@@ -178,8 +173,8 @@ defaultSpatialAudioTrack cnAssetSpatialAudioInfo  =
 --
 -- ObjC selector: @- defaultEffectIntensity@
 defaultEffectIntensity :: IsCNAssetSpatialAudioInfo cnAssetSpatialAudioInfo => cnAssetSpatialAudioInfo -> IO CFloat
-defaultEffectIntensity cnAssetSpatialAudioInfo  =
-    sendMsg cnAssetSpatialAudioInfo (mkSelector "defaultEffectIntensity") retCFloat []
+defaultEffectIntensity cnAssetSpatialAudioInfo =
+  sendMessage cnAssetSpatialAudioInfo defaultEffectIntensitySelector
 
 -- | defaultRenderingStyle
 --
@@ -187,8 +182,8 @@ defaultEffectIntensity cnAssetSpatialAudioInfo  =
 --
 -- ObjC selector: @- defaultRenderingStyle@
 defaultRenderingStyle :: IsCNAssetSpatialAudioInfo cnAssetSpatialAudioInfo => cnAssetSpatialAudioInfo -> IO CNSpatialAudioRenderingStyle
-defaultRenderingStyle cnAssetSpatialAudioInfo  =
-    fmap (coerce :: CLong -> CNSpatialAudioRenderingStyle) $ sendMsg cnAssetSpatialAudioInfo (mkSelector "defaultRenderingStyle") retCLong []
+defaultRenderingStyle cnAssetSpatialAudioInfo =
+  sendMessage cnAssetSpatialAudioInfo defaultRenderingStyleSelector
 
 -- | spatialAudioMixMetadata
 --
@@ -196,58 +191,58 @@ defaultRenderingStyle cnAssetSpatialAudioInfo  =
 --
 -- ObjC selector: @- spatialAudioMixMetadata@
 spatialAudioMixMetadata :: IsCNAssetSpatialAudioInfo cnAssetSpatialAudioInfo => cnAssetSpatialAudioInfo -> IO (Id NSData)
-spatialAudioMixMetadata cnAssetSpatialAudioInfo  =
-    sendMsg cnAssetSpatialAudioInfo (mkSelector "spatialAudioMixMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+spatialAudioMixMetadata cnAssetSpatialAudioInfo =
+  sendMessage cnAssetSpatialAudioInfo spatialAudioMixMetadataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNAssetSpatialAudioInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNAssetSpatialAudioInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @checkIfContainsSpatialAudio:completionHandler:@
-checkIfContainsSpatialAudio_completionHandlerSelector :: Selector
+checkIfContainsSpatialAudio_completionHandlerSelector :: Selector '[Id AVAsset, Ptr ()] ()
 checkIfContainsSpatialAudio_completionHandlerSelector = mkSelector "checkIfContainsSpatialAudio:completionHandler:"
 
 -- | @Selector@ for @loadFromAsset:completionHandler:@
-loadFromAsset_completionHandlerSelector :: Selector
+loadFromAsset_completionHandlerSelector :: Selector '[Id AVAsset, Ptr ()] ()
 loadFromAsset_completionHandlerSelector = mkSelector "loadFromAsset:completionHandler:"
 
 -- | @Selector@ for @audioMixWithEffectIntensity:renderingStyle:@
-audioMixWithEffectIntensity_renderingStyleSelector :: Selector
+audioMixWithEffectIntensity_renderingStyleSelector :: Selector '[CFloat, CNSpatialAudioRenderingStyle] (Id AVAudioMix)
 audioMixWithEffectIntensity_renderingStyleSelector = mkSelector "audioMixWithEffectIntensity:renderingStyle:"
 
 -- | @Selector@ for @assetReaderOutputSettingsForContentType:@
-assetReaderOutputSettingsForContentTypeSelector :: Selector
+assetReaderOutputSettingsForContentTypeSelector :: Selector '[CNSpatialAudioContentType] (Id NSDictionary)
 assetReaderOutputSettingsForContentTypeSelector = mkSelector "assetReaderOutputSettingsForContentType:"
 
 -- | @Selector@ for @assetWriterInputSettingsForContentType:@
-assetWriterInputSettingsForContentTypeSelector :: Selector
+assetWriterInputSettingsForContentTypeSelector :: Selector '[CNSpatialAudioContentType] (Id NSDictionary)
 assetWriterInputSettingsForContentTypeSelector = mkSelector "assetWriterInputSettingsForContentType:"
 
 -- | @Selector@ for @isSupported@
-isSupportedSelector :: Selector
+isSupportedSelector :: Selector '[] Bool
 isSupportedSelector = mkSelector "isSupported"
 
 -- | @Selector@ for @defaultSpatialAudioTrack@
-defaultSpatialAudioTrackSelector :: Selector
+defaultSpatialAudioTrackSelector :: Selector '[] (Id AVAssetTrack)
 defaultSpatialAudioTrackSelector = mkSelector "defaultSpatialAudioTrack"
 
 -- | @Selector@ for @defaultEffectIntensity@
-defaultEffectIntensitySelector :: Selector
+defaultEffectIntensitySelector :: Selector '[] CFloat
 defaultEffectIntensitySelector = mkSelector "defaultEffectIntensity"
 
 -- | @Selector@ for @defaultRenderingStyle@
-defaultRenderingStyleSelector :: Selector
+defaultRenderingStyleSelector :: Selector '[] CNSpatialAudioRenderingStyle
 defaultRenderingStyleSelector = mkSelector "defaultRenderingStyle"
 
 -- | @Selector@ for @spatialAudioMixMetadata@
-spatialAudioMixMetadataSelector :: Selector
+spatialAudioMixMetadataSelector :: Selector '[] (Id NSData)
 spatialAudioMixMetadataSelector = mkSelector "spatialAudioMixMetadata"
 

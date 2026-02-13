@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTRGeneralDiagnosticsClusterNetworkInterface
   , setIPv6Addresses
   , type_
   , setType
-  , nameSelector
-  , setNameSelector
-  , isOperationalSelector
-  , setIsOperationalSelector
-  , offPremiseServicesReachableIPv4Selector
-  , setOffPremiseServicesReachableIPv4Selector
-  , offPremiseServicesReachableIPv6Selector
-  , setOffPremiseServicesReachableIPv6Selector
   , hardwareAddressSelector
-  , setHardwareAddressSelector
   , iPv4AddressesSelector
-  , setIPv4AddressesSelector
   , iPv6AddressesSelector
+  , isOperationalSelector
+  , nameSelector
+  , offPremiseServicesReachableIPv4Selector
+  , offPremiseServicesReachableIPv6Selector
+  , setHardwareAddressSelector
+  , setIPv4AddressesSelector
   , setIPv6AddressesSelector
-  , typeSelector
+  , setIsOperationalSelector
+  , setNameSelector
+  , setOffPremiseServicesReachableIPv4Selector
+  , setOffPremiseServicesReachableIPv6Selector
   , setTypeSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,157 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface => mtrGeneralDiagnosticsClusterNetworkInterface -> IO (Id NSString)
-name mtrGeneralDiagnosticsClusterNetworkInterface  =
-    sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrGeneralDiagnosticsClusterNetworkInterface =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface, IsNSString value) => mtrGeneralDiagnosticsClusterNetworkInterface -> value -> IO ()
-setName mtrGeneralDiagnosticsClusterNetworkInterface  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrGeneralDiagnosticsClusterNetworkInterface value =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface setNameSelector (toNSString value)
 
 -- | @- isOperational@
 isOperational :: IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface => mtrGeneralDiagnosticsClusterNetworkInterface -> IO (Id NSNumber)
-isOperational mtrGeneralDiagnosticsClusterNetworkInterface  =
-    sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "isOperational") (retPtr retVoid) [] >>= retainedObject . castPtr
+isOperational mtrGeneralDiagnosticsClusterNetworkInterface =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface isOperationalSelector
 
 -- | @- setIsOperational:@
 setIsOperational :: (IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface, IsNSNumber value) => mtrGeneralDiagnosticsClusterNetworkInterface -> value -> IO ()
-setIsOperational mtrGeneralDiagnosticsClusterNetworkInterface  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "setIsOperational:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIsOperational mtrGeneralDiagnosticsClusterNetworkInterface value =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface setIsOperationalSelector (toNSNumber value)
 
 -- | @- offPremiseServicesReachableIPv4@
 offPremiseServicesReachableIPv4 :: IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface => mtrGeneralDiagnosticsClusterNetworkInterface -> IO (Id NSNumber)
-offPremiseServicesReachableIPv4 mtrGeneralDiagnosticsClusterNetworkInterface  =
-    sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "offPremiseServicesReachableIPv4") (retPtr retVoid) [] >>= retainedObject . castPtr
+offPremiseServicesReachableIPv4 mtrGeneralDiagnosticsClusterNetworkInterface =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface offPremiseServicesReachableIPv4Selector
 
 -- | @- setOffPremiseServicesReachableIPv4:@
 setOffPremiseServicesReachableIPv4 :: (IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface, IsNSNumber value) => mtrGeneralDiagnosticsClusterNetworkInterface -> value -> IO ()
-setOffPremiseServicesReachableIPv4 mtrGeneralDiagnosticsClusterNetworkInterface  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "setOffPremiseServicesReachableIPv4:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOffPremiseServicesReachableIPv4 mtrGeneralDiagnosticsClusterNetworkInterface value =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface setOffPremiseServicesReachableIPv4Selector (toNSNumber value)
 
 -- | @- offPremiseServicesReachableIPv6@
 offPremiseServicesReachableIPv6 :: IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface => mtrGeneralDiagnosticsClusterNetworkInterface -> IO (Id NSNumber)
-offPremiseServicesReachableIPv6 mtrGeneralDiagnosticsClusterNetworkInterface  =
-    sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "offPremiseServicesReachableIPv6") (retPtr retVoid) [] >>= retainedObject . castPtr
+offPremiseServicesReachableIPv6 mtrGeneralDiagnosticsClusterNetworkInterface =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface offPremiseServicesReachableIPv6Selector
 
 -- | @- setOffPremiseServicesReachableIPv6:@
 setOffPremiseServicesReachableIPv6 :: (IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface, IsNSNumber value) => mtrGeneralDiagnosticsClusterNetworkInterface -> value -> IO ()
-setOffPremiseServicesReachableIPv6 mtrGeneralDiagnosticsClusterNetworkInterface  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "setOffPremiseServicesReachableIPv6:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOffPremiseServicesReachableIPv6 mtrGeneralDiagnosticsClusterNetworkInterface value =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface setOffPremiseServicesReachableIPv6Selector (toNSNumber value)
 
 -- | @- hardwareAddress@
 hardwareAddress :: IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface => mtrGeneralDiagnosticsClusterNetworkInterface -> IO (Id NSData)
-hardwareAddress mtrGeneralDiagnosticsClusterNetworkInterface  =
-    sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "hardwareAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+hardwareAddress mtrGeneralDiagnosticsClusterNetworkInterface =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface hardwareAddressSelector
 
 -- | @- setHardwareAddress:@
 setHardwareAddress :: (IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface, IsNSData value) => mtrGeneralDiagnosticsClusterNetworkInterface -> value -> IO ()
-setHardwareAddress mtrGeneralDiagnosticsClusterNetworkInterface  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "setHardwareAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHardwareAddress mtrGeneralDiagnosticsClusterNetworkInterface value =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface setHardwareAddressSelector (toNSData value)
 
 -- | @- iPv4Addresses@
 iPv4Addresses :: IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface => mtrGeneralDiagnosticsClusterNetworkInterface -> IO (Id NSArray)
-iPv4Addresses mtrGeneralDiagnosticsClusterNetworkInterface  =
-    sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "iPv4Addresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+iPv4Addresses mtrGeneralDiagnosticsClusterNetworkInterface =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface iPv4AddressesSelector
 
 -- | @- setIPv4Addresses:@
 setIPv4Addresses :: (IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface, IsNSArray value) => mtrGeneralDiagnosticsClusterNetworkInterface -> value -> IO ()
-setIPv4Addresses mtrGeneralDiagnosticsClusterNetworkInterface  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "setIPv4Addresses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIPv4Addresses mtrGeneralDiagnosticsClusterNetworkInterface value =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface setIPv4AddressesSelector (toNSArray value)
 
 -- | @- iPv6Addresses@
 iPv6Addresses :: IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface => mtrGeneralDiagnosticsClusterNetworkInterface -> IO (Id NSArray)
-iPv6Addresses mtrGeneralDiagnosticsClusterNetworkInterface  =
-    sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "iPv6Addresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+iPv6Addresses mtrGeneralDiagnosticsClusterNetworkInterface =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface iPv6AddressesSelector
 
 -- | @- setIPv6Addresses:@
 setIPv6Addresses :: (IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface, IsNSArray value) => mtrGeneralDiagnosticsClusterNetworkInterface -> value -> IO ()
-setIPv6Addresses mtrGeneralDiagnosticsClusterNetworkInterface  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "setIPv6Addresses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIPv6Addresses mtrGeneralDiagnosticsClusterNetworkInterface value =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface setIPv6AddressesSelector (toNSArray value)
 
 -- | @- type@
 type_ :: IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface => mtrGeneralDiagnosticsClusterNetworkInterface -> IO (Id NSNumber)
-type_ mtrGeneralDiagnosticsClusterNetworkInterface  =
-    sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ mtrGeneralDiagnosticsClusterNetworkInterface =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface typeSelector
 
 -- | @- setType:@
 setType :: (IsMTRGeneralDiagnosticsClusterNetworkInterface mtrGeneralDiagnosticsClusterNetworkInterface, IsNSNumber value) => mtrGeneralDiagnosticsClusterNetworkInterface -> value -> IO ()
-setType mtrGeneralDiagnosticsClusterNetworkInterface  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralDiagnosticsClusterNetworkInterface (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType mtrGeneralDiagnosticsClusterNetworkInterface value =
+  sendMessage mtrGeneralDiagnosticsClusterNetworkInterface setTypeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @isOperational@
-isOperationalSelector :: Selector
+isOperationalSelector :: Selector '[] (Id NSNumber)
 isOperationalSelector = mkSelector "isOperational"
 
 -- | @Selector@ for @setIsOperational:@
-setIsOperationalSelector :: Selector
+setIsOperationalSelector :: Selector '[Id NSNumber] ()
 setIsOperationalSelector = mkSelector "setIsOperational:"
 
 -- | @Selector@ for @offPremiseServicesReachableIPv4@
-offPremiseServicesReachableIPv4Selector :: Selector
+offPremiseServicesReachableIPv4Selector :: Selector '[] (Id NSNumber)
 offPremiseServicesReachableIPv4Selector = mkSelector "offPremiseServicesReachableIPv4"
 
 -- | @Selector@ for @setOffPremiseServicesReachableIPv4:@
-setOffPremiseServicesReachableIPv4Selector :: Selector
+setOffPremiseServicesReachableIPv4Selector :: Selector '[Id NSNumber] ()
 setOffPremiseServicesReachableIPv4Selector = mkSelector "setOffPremiseServicesReachableIPv4:"
 
 -- | @Selector@ for @offPremiseServicesReachableIPv6@
-offPremiseServicesReachableIPv6Selector :: Selector
+offPremiseServicesReachableIPv6Selector :: Selector '[] (Id NSNumber)
 offPremiseServicesReachableIPv6Selector = mkSelector "offPremiseServicesReachableIPv6"
 
 -- | @Selector@ for @setOffPremiseServicesReachableIPv6:@
-setOffPremiseServicesReachableIPv6Selector :: Selector
+setOffPremiseServicesReachableIPv6Selector :: Selector '[Id NSNumber] ()
 setOffPremiseServicesReachableIPv6Selector = mkSelector "setOffPremiseServicesReachableIPv6:"
 
 -- | @Selector@ for @hardwareAddress@
-hardwareAddressSelector :: Selector
+hardwareAddressSelector :: Selector '[] (Id NSData)
 hardwareAddressSelector = mkSelector "hardwareAddress"
 
 -- | @Selector@ for @setHardwareAddress:@
-setHardwareAddressSelector :: Selector
+setHardwareAddressSelector :: Selector '[Id NSData] ()
 setHardwareAddressSelector = mkSelector "setHardwareAddress:"
 
 -- | @Selector@ for @iPv4Addresses@
-iPv4AddressesSelector :: Selector
+iPv4AddressesSelector :: Selector '[] (Id NSArray)
 iPv4AddressesSelector = mkSelector "iPv4Addresses"
 
 -- | @Selector@ for @setIPv4Addresses:@
-setIPv4AddressesSelector :: Selector
+setIPv4AddressesSelector :: Selector '[Id NSArray] ()
 setIPv4AddressesSelector = mkSelector "setIPv4Addresses:"
 
 -- | @Selector@ for @iPv6Addresses@
-iPv6AddressesSelector :: Selector
+iPv6AddressesSelector :: Selector '[] (Id NSArray)
 iPv6AddressesSelector = mkSelector "iPv6Addresses"
 
 -- | @Selector@ for @setIPv6Addresses:@
-setIPv6AddressesSelector :: Selector
+setIPv6AddressesSelector :: Selector '[Id NSArray] ()
 setIPv6AddressesSelector = mkSelector "setIPv6Addresses:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSNumber)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSNumber] ()
 setTypeSelector = mkSelector "setType:"
 

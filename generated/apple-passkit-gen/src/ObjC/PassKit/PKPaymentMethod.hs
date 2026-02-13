@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,9 +15,9 @@ module ObjC.PassKit.PKPaymentMethod
   , secureElementPass
   , displayNameSelector
   , networkSelector
-  , typeSelector
   , paymentPassSelector
   , secureElementPassSelector
+  , typeSelector
 
   -- * Enum types
   , PKPaymentMethodType(PKPaymentMethodType)
@@ -29,15 +30,11 @@ module ObjC.PassKit.PKPaymentMethod
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,50 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- displayName@
 displayName :: IsPKPaymentMethod pkPaymentMethod => pkPaymentMethod -> IO (Id NSString)
-displayName pkPaymentMethod  =
-    sendMsg pkPaymentMethod (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName pkPaymentMethod =
+  sendMessage pkPaymentMethod displayNameSelector
 
 -- | @- network@
 network :: IsPKPaymentMethod pkPaymentMethod => pkPaymentMethod -> IO (Id NSString)
-network pkPaymentMethod  =
-    sendMsg pkPaymentMethod (mkSelector "network") (retPtr retVoid) [] >>= retainedObject . castPtr
+network pkPaymentMethod =
+  sendMessage pkPaymentMethod networkSelector
 
 -- | @- type@
 type_ :: IsPKPaymentMethod pkPaymentMethod => pkPaymentMethod -> IO PKPaymentMethodType
-type_ pkPaymentMethod  =
-    fmap (coerce :: CULong -> PKPaymentMethodType) $ sendMsg pkPaymentMethod (mkSelector "type") retCULong []
+type_ pkPaymentMethod =
+  sendMessage pkPaymentMethod typeSelector
 
 -- | @- paymentPass@
 paymentPass :: IsPKPaymentMethod pkPaymentMethod => pkPaymentMethod -> IO (Id PKPaymentPass)
-paymentPass pkPaymentMethod  =
-    sendMsg pkPaymentMethod (mkSelector "paymentPass") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentPass pkPaymentMethod =
+  sendMessage pkPaymentMethod paymentPassSelector
 
 -- | @- secureElementPass@
 secureElementPass :: IsPKPaymentMethod pkPaymentMethod => pkPaymentMethod -> IO (Id PKSecureElementPass)
-secureElementPass pkPaymentMethod  =
-    sendMsg pkPaymentMethod (mkSelector "secureElementPass") (retPtr retVoid) [] >>= retainedObject . castPtr
+secureElementPass pkPaymentMethod =
+  sendMessage pkPaymentMethod secureElementPassSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @network@
-networkSelector :: Selector
+networkSelector :: Selector '[] (Id NSString)
 networkSelector = mkSelector "network"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] PKPaymentMethodType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @paymentPass@
-paymentPassSelector :: Selector
+paymentPassSelector :: Selector '[] (Id PKPaymentPass)
 paymentPassSelector = mkSelector "paymentPass"
 
 -- | @Selector@ for @secureElementPass@
-secureElementPassSelector :: Selector
+secureElementPassSelector :: Selector '[] (Id PKSecureElementPass)
 secureElementPassSelector = mkSelector "secureElementPass"
 

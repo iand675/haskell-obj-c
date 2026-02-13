@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | FFCONDITION
 --
@@ -54,6 +56,16 @@ argFFCONDITION = mkStorableArg ffconditionStructType
 retFFCONDITION :: RetType FFCONDITION
 retFFCONDITION = mkStorableRetType ffconditionStructType
 
+instance ObjCArgument FFCONDITION where
+  withObjCArg x k = k (argFFCONDITION x)
+
+instance ObjCReturn FFCONDITION where
+  type RawReturn FFCONDITION = FFCONDITION
+  objcRetType = retFFCONDITION
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | FFCONSTANTFORCE
 --
 -- Contains type-specific information for the CONSTANTFORCE effect.
@@ -79,6 +91,16 @@ argFFCONSTANTFORCE = mkStorableArg ffconstantforceStructType
 
 retFFCONSTANTFORCE :: RetType FFCONSTANTFORCE
 retFFCONSTANTFORCE = mkStorableRetType ffconstantforceStructType
+
+instance ObjCArgument FFCONSTANTFORCE where
+  withObjCArg x k = k (argFFCONSTANTFORCE x)
+
+instance ObjCReturn FFCONSTANTFORCE where
+  type RawReturn FFCONSTANTFORCE = FFCONSTANTFORCE
+  objcRetType = retFFCONSTANTFORCE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | FFCUSTOMFORCE
 --
@@ -118,6 +140,16 @@ argFFCUSTOMFORCE = mkStorableArg ffcustomforceStructType
 
 retFFCUSTOMFORCE :: RetType FFCUSTOMFORCE
 retFFCUSTOMFORCE = mkStorableRetType ffcustomforceStructType
+
+instance ObjCArgument FFCUSTOMFORCE where
+  withObjCArg x k = k (argFFCUSTOMFORCE x)
+
+instance ObjCReturn FFCUSTOMFORCE where
+  type RawReturn FFCUSTOMFORCE = FFCUSTOMFORCE
+  objcRetType = retFFCUSTOMFORCE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | FFEFFECT
 --
@@ -184,6 +216,16 @@ argFFEFFECT = mkStorableArg ffeffectStructType
 retFFEFFECT :: RetType FFEFFECT
 retFFEFFECT = mkStorableRetType ffeffectStructType
 
+instance ObjCArgument FFEFFECT where
+  withObjCArg x k = k (argFFEFFECT x)
+
+instance ObjCReturn FFEFFECT where
+  type RawReturn FFEFFECT = FFEFFECT
+  objcRetType = retFFEFFECT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | FFEFFESCAPE
 --
 -- The FFEFFESCAPE structure passes hardware-specific data directly to the Force Feedback plugIn.
@@ -225,6 +267,16 @@ argFFEFFESCAPE = mkStorableArg ffeffescapeStructType
 retFFEFFESCAPE :: RetType FFEFFESCAPE
 retFFEFFESCAPE = mkStorableRetType ffeffescapeStructType
 
+instance ObjCArgument FFEFFESCAPE where
+  withObjCArg x k = k (argFFEFFESCAPE x)
+
+instance ObjCReturn FFEFFESCAPE where
+  type RawReturn FFEFFESCAPE = FFEFFESCAPE
+  objcRetType = retFFEFFESCAPE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | FFENVELOPE
 --
 -- Used by the FFEFFECT structure to specify the optional envelope parameters for an effect.
@@ -263,6 +315,16 @@ argFFENVELOPE = mkStorableArg ffenvelopeStructType
 retFFENVELOPE :: RetType FFENVELOPE
 retFFENVELOPE = mkStorableRetType ffenvelopeStructType
 
+instance ObjCArgument FFENVELOPE where
+  withObjCArg x k = k (argFFENVELOPE x)
+
+instance ObjCReturn FFENVELOPE where
+  type RawReturn FFENVELOPE = FFENVELOPE
+  objcRetType = retFFENVELOPE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | FFPERIODIC
 --
 -- Contains type-specific information for the following effects.	SINE	SQUARE	TRIANGLE	SAWTOOTHUP	SAWTOOTHDOWN
@@ -300,6 +362,16 @@ argFFPERIODIC = mkStorableArg ffperiodicStructType
 retFFPERIODIC :: RetType FFPERIODIC
 retFFPERIODIC = mkStorableRetType ffperiodicStructType
 
+instance ObjCArgument FFPERIODIC where
+  withObjCArg x k = k (argFFPERIODIC x)
+
+instance ObjCReturn FFPERIODIC where
+  type RawReturn FFPERIODIC = FFPERIODIC
+  objcRetType = retFFPERIODIC
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | FFRAMPFORCE
 --
 -- Contains type-specific information for the RAMPFORCE effect.
@@ -332,3 +404,13 @@ argFFRAMPFORCE = mkStorableArg fframpforceStructType
 
 retFFRAMPFORCE :: RetType FFRAMPFORCE
 retFFRAMPFORCE = mkStorableRetType fframpforceStructType
+
+instance ObjCArgument FFRAMPFORCE where
+  withObjCArg x k = k (argFFRAMPFORCE x)
+
+instance ObjCReturn FFRAMPFORCE where
+  type RawReturn FFRAMPFORCE = FFRAMPFORCE
+  objcRetType = retFFRAMPFORCE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

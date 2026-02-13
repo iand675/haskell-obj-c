@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data TW_CALLBACK = TW_CALLBACK
   { tW_CALLBACKCallBackProc :: !(Ptr ())
@@ -39,6 +41,16 @@ argTW_CALLBACK = mkStorableArg tW_CALLBACKStructType
 
 retTW_CALLBACK :: RetType TW_CALLBACK
 retTW_CALLBACK = mkStorableRetType tW_CALLBACKStructType
+
+instance ObjCArgument TW_CALLBACK where
+  withObjCArg x k = k (argTW_CALLBACK x)
+
+instance ObjCReturn TW_CALLBACK where
+  type RawReturn TW_CALLBACK = TW_CALLBACK
+  objcRetType = retTW_CALLBACK
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TW_ELEMENT8 = TW_ELEMENT8
   { tW_ELEMENT8Index :: !CUChar
@@ -70,6 +82,16 @@ argTW_ELEMENT8 = mkStorableArg tW_ELEMENT8StructType
 retTW_ELEMENT8 :: RetType TW_ELEMENT8
 retTW_ELEMENT8 = mkStorableRetType tW_ELEMENT8StructType
 
+instance ObjCArgument TW_ELEMENT8 where
+  withObjCArg x k = k (argTW_ELEMENT8 x)
+
+instance ObjCReturn TW_ELEMENT8 where
+  type RawReturn TW_ELEMENT8 = TW_ELEMENT8
+  objcRetType = retTW_ELEMENT8
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_EVENT = TW_EVENT
   { tW_EVENTPEvent :: !(Ptr ())
   , tW_EVENTTWMessage :: !CUShort
@@ -94,6 +116,16 @@ argTW_EVENT = mkStorableArg tW_EVENTStructType
 retTW_EVENT :: RetType TW_EVENT
 retTW_EVENT = mkStorableRetType tW_EVENTStructType
 
+instance ObjCArgument TW_EVENT where
+  withObjCArg x k = k (argTW_EVENT x)
+
+instance ObjCReturn TW_EVENT where
+  type RawReturn TW_EVENT = TW_EVENT
+  objcRetType = retTW_EVENT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_FIX32 = TW_FIX32
   { tW_FIX32Whole :: !CShort
   , tW_FIX32Frac :: !CUShort
@@ -117,6 +149,16 @@ argTW_FIX32 = mkStorableArg tW_FIX32StructType
 
 retTW_FIX32 :: RetType TW_FIX32
 retTW_FIX32 = mkStorableRetType tW_FIX32StructType
+
+instance ObjCArgument TW_FIX32 where
+  withObjCArg x k = k (argTW_FIX32 x)
+
+instance ObjCReturn TW_FIX32 where
+  type RawReturn TW_FIX32 = TW_FIX32
+  objcRetType = retTW_FIX32
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TW_INFO = TW_INFO
   { tW_INFOInfoID :: !CUShort
@@ -151,6 +193,16 @@ argTW_INFO = mkStorableArg tW_INFOStructType
 retTW_INFO :: RetType TW_INFO
 retTW_INFO = mkStorableRetType tW_INFOStructType
 
+instance ObjCArgument TW_INFO where
+  withObjCArg x k = k (argTW_INFO x)
+
+instance ObjCReturn TW_INFO where
+  type RawReturn TW_INFO = TW_INFO
+  objcRetType = retTW_INFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_MEMORY = TW_MEMORY
   { tW_MEMORYFlags :: !CUInt
   , tW_MEMORYLength :: !CUInt
@@ -178,6 +230,16 @@ argTW_MEMORY = mkStorableArg tW_MEMORYStructType
 retTW_MEMORY :: RetType TW_MEMORY
 retTW_MEMORY = mkStorableRetType tW_MEMORYStructType
 
+instance ObjCArgument TW_MEMORY where
+  withObjCArg x k = k (argTW_MEMORY x)
+
+instance ObjCReturn TW_MEMORY where
+  type RawReturn TW_MEMORY = TW_MEMORY
+  objcRetType = retTW_MEMORY
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_ONEVALUE = TW_ONEVALUE
   { tW_ONEVALUEItemType :: !CUShort
   , tW_ONEVALUEItem :: !CUInt
@@ -201,6 +263,16 @@ argTW_ONEVALUE = mkStorableArg tW_ONEVALUEStructType
 
 retTW_ONEVALUE :: RetType TW_ONEVALUE
 retTW_ONEVALUE = mkStorableRetType tW_ONEVALUEStructType
+
+instance ObjCArgument TW_ONEVALUE where
+  withObjCArg x k = k (argTW_ONEVALUE x)
+
+instance ObjCReturn TW_ONEVALUE where
+  type RawReturn TW_ONEVALUE = TW_ONEVALUE
+  objcRetType = retTW_ONEVALUE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TW_PASSTHRU = TW_PASSTHRU
   { tW_PASSTHRUPCommand :: !(Ptr ())
@@ -238,6 +310,16 @@ argTW_PASSTHRU = mkStorableArg tW_PASSTHRUStructType
 retTW_PASSTHRU :: RetType TW_PASSTHRU
 retTW_PASSTHRU = mkStorableRetType tW_PASSTHRUStructType
 
+instance ObjCArgument TW_PASSTHRU where
+  withObjCArg x k = k (argTW_PASSTHRU x)
+
+instance ObjCReturn TW_PASSTHRU where
+  type RawReturn TW_PASSTHRU = TW_PASSTHRU
+  objcRetType = retTW_PASSTHRU
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_RANGE = TW_RANGE
   { tW_RANGEItemType :: !CUShort
   , tW_RANGEMinValue :: !CUInt
@@ -274,6 +356,16 @@ argTW_RANGE = mkStorableArg tW_RANGEStructType
 retTW_RANGE :: RetType TW_RANGE
 retTW_RANGE = mkStorableRetType tW_RANGEStructType
 
+instance ObjCArgument TW_RANGE where
+  withObjCArg x k = k (argTW_RANGE x)
+
+instance ObjCReturn TW_RANGE where
+  type RawReturn TW_RANGE = TW_RANGE
+  objcRetType = retTW_RANGE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_SETUPFILEXFER2 = TW_SETUPFILEXFER2
   { tW_SETUPFILEXFER2FileName :: !(Ptr ())
   , tW_SETUPFILEXFER2FileNameType :: !CUShort
@@ -307,6 +399,16 @@ argTW_SETUPFILEXFER2 = mkStorableArg tW_SETUPFILEXFER2StructType
 retTW_SETUPFILEXFER2 :: RetType TW_SETUPFILEXFER2
 retTW_SETUPFILEXFER2 = mkStorableRetType tW_SETUPFILEXFER2StructType
 
+instance ObjCArgument TW_SETUPFILEXFER2 where
+  withObjCArg x k = k (argTW_SETUPFILEXFER2 x)
+
+instance ObjCReturn TW_SETUPFILEXFER2 where
+  type RawReturn TW_SETUPFILEXFER2 = TW_SETUPFILEXFER2
+  objcRetType = retTW_SETUPFILEXFER2
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_SETUPMEMXFER = TW_SETUPMEMXFER
   { tW_SETUPMEMXFERMinBufSize :: !CUInt
   , tW_SETUPMEMXFERMaxBufSize :: !CUInt
@@ -334,6 +436,16 @@ argTW_SETUPMEMXFER = mkStorableArg tW_SETUPMEMXFERStructType
 retTW_SETUPMEMXFER :: RetType TW_SETUPMEMXFER
 retTW_SETUPMEMXFER = mkStorableRetType tW_SETUPMEMXFERStructType
 
+instance ObjCArgument TW_SETUPMEMXFER where
+  withObjCArg x k = k (argTW_SETUPMEMXFER x)
+
+instance ObjCReturn TW_SETUPMEMXFER where
+  type RawReturn TW_SETUPMEMXFER = TW_SETUPMEMXFER
+  objcRetType = retTW_SETUPMEMXFER
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_STATUS = TW_STATUS
   { tW_STATUSConditionCode :: !CUShort
   , tW_STATUSReserved :: !CUShort
@@ -357,6 +469,16 @@ argTW_STATUS = mkStorableArg tW_STATUSStructType
 
 retTW_STATUS :: RetType TW_STATUS
 retTW_STATUS = mkStorableRetType tW_STATUSStructType
+
+instance ObjCArgument TW_STATUS where
+  withObjCArg x k = k (argTW_STATUS x)
+
+instance ObjCReturn TW_STATUS where
+  type RawReturn TW_STATUS = TW_STATUS
+  objcRetType = retTW_STATUS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | ************************************************************************** Structure Definitions                                                    ***************************************************************************
 data TW_CIEPOINT = TW_CIEPOINT
@@ -385,6 +507,16 @@ argTW_CIEPOINT = mkStorableArg tW_CIEPOINTStructType
 
 retTW_CIEPOINT :: RetType TW_CIEPOINT
 retTW_CIEPOINT = mkStorableRetType tW_CIEPOINTStructType
+
+instance ObjCArgument TW_CIEPOINT where
+  withObjCArg x k = k (argTW_CIEPOINT x)
+
+instance ObjCReturn TW_CIEPOINT where
+  type RawReturn TW_CIEPOINT = TW_CIEPOINT
+  objcRetType = retTW_CIEPOINT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TW_DECODEFUNCTION = TW_DECODEFUNCTION
   { tW_DECODEFUNCTIONStartIn :: !TW_FIX32
@@ -428,6 +560,16 @@ argTW_DECODEFUNCTION = mkStorableArg tW_DECODEFUNCTIONStructType
 retTW_DECODEFUNCTION :: RetType TW_DECODEFUNCTION
 retTW_DECODEFUNCTION = mkStorableRetType tW_DECODEFUNCTIONStructType
 
+instance ObjCArgument TW_DECODEFUNCTION where
+  withObjCArg x k = k (argTW_DECODEFUNCTION x)
+
+instance ObjCReturn TW_DECODEFUNCTION where
+  type RawReturn TW_DECODEFUNCTION = TW_DECODEFUNCTION
+  objcRetType = retTW_DECODEFUNCTION
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_FRAME = TW_FRAME
   { tW_FRAMELeft :: !TW_FIX32
   , tW_FRAMETop :: !TW_FIX32
@@ -457,6 +599,16 @@ argTW_FRAME = mkStorableArg tW_FRAMEStructType
 
 retTW_FRAME :: RetType TW_FRAME
 retTW_FRAME = mkStorableRetType tW_FRAMEStructType
+
+instance ObjCArgument TW_FRAME where
+  withObjCArg x k = k (argTW_FRAME x)
+
+instance ObjCReturn TW_FRAME where
+  type RawReturn TW_FRAME = TW_FRAME
+  objcRetType = retTW_FRAME
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TW_IMAGEMEMXFER = TW_IMAGEMEMXFER
   { tW_IMAGEMEMXFERCompression :: !CUShort
@@ -500,6 +652,16 @@ argTW_IMAGEMEMXFER = mkStorableArg tW_IMAGEMEMXFERStructType
 retTW_IMAGEMEMXFER :: RetType TW_IMAGEMEMXFER
 retTW_IMAGEMEMXFER = mkStorableRetType tW_IMAGEMEMXFERStructType
 
+instance ObjCArgument TW_IMAGEMEMXFER where
+  withObjCArg x k = k (argTW_IMAGEMEMXFER x)
+
+instance ObjCReturn TW_IMAGEMEMXFER where
+  type RawReturn TW_IMAGEMEMXFER = TW_IMAGEMEMXFER
+  objcRetType = retTW_IMAGEMEMXFER
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TW_IMAGELAYOUT = TW_IMAGELAYOUT
   { tW_IMAGELAYOUTFrame :: !TW_FRAME
   , tW_IMAGELAYOUTDocumentNumber :: !CUInt
@@ -529,3 +691,13 @@ argTW_IMAGELAYOUT = mkStorableArg tW_IMAGELAYOUTStructType
 
 retTW_IMAGELAYOUT :: RetType TW_IMAGELAYOUT
 retTW_IMAGELAYOUT = mkStorableRetType tW_IMAGELAYOUTStructType
+
+instance ObjCArgument TW_IMAGELAYOUT where
+  withObjCArg x k = k (argTW_IMAGELAYOUT x)
+
+instance ObjCReturn TW_IMAGELAYOUT where
+  type RawReturn TW_IMAGELAYOUT = TW_IMAGELAYOUT
+  objcRetType = retTW_IMAGELAYOUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

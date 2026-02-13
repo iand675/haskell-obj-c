@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.Foundation.NSDateInterval
   , startDate
   , endDate
   , duration
+  , compareSelector
+  , containsDateSelector
+  , durationSelector
+  , endDateSelector
   , initSelector
   , initWithCoderSelector
   , initWithStartDate_durationSelector
   , initWithStartDate_endDateSelector
-  , compareSelector
-  , isEqualToDateIntervalSelector
-  , intersectsDateIntervalSelector
   , intersectionWithDateIntervalSelector
-  , containsDateSelector
+  , intersectsDateIntervalSelector
+  , isEqualToDateIntervalSelector
   , startDateSelector
-  , endDateSelector
-  , durationSelector
 
   -- * Enum types
   , NSComparisonResult(NSComparisonResult)
@@ -40,15 +41,11 @@ module ObjC.Foundation.NSDateInterval
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,122 +54,113 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- init@
 init_ :: IsNSDateInterval nsDateInterval => nsDateInterval -> IO (Id NSDateInterval)
-init_ nsDateInterval  =
-    sendMsg nsDateInterval (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsDateInterval =
+  sendOwnedMessage nsDateInterval initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSDateInterval nsDateInterval, IsNSCoder coder) => nsDateInterval -> coder -> IO (Id NSDateInterval)
-initWithCoder nsDateInterval  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsDateInterval (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsDateInterval coder =
+  sendOwnedMessage nsDateInterval initWithCoderSelector (toNSCoder coder)
 
 -- | @- initWithStartDate:duration:@
 initWithStartDate_duration :: (IsNSDateInterval nsDateInterval, IsNSDate startDate) => nsDateInterval -> startDate -> CDouble -> IO (Id NSDateInterval)
-initWithStartDate_duration nsDateInterval  startDate duration =
-  withObjCPtr startDate $ \raw_startDate ->
-      sendMsg nsDateInterval (mkSelector "initWithStartDate:duration:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argCDouble duration] >>= ownedObject . castPtr
+initWithStartDate_duration nsDateInterval startDate duration =
+  sendOwnedMessage nsDateInterval initWithStartDate_durationSelector (toNSDate startDate) duration
 
 -- | @- initWithStartDate:endDate:@
 initWithStartDate_endDate :: (IsNSDateInterval nsDateInterval, IsNSDate startDate, IsNSDate endDate) => nsDateInterval -> startDate -> endDate -> IO (Id NSDateInterval)
-initWithStartDate_endDate nsDateInterval  startDate endDate =
-  withObjCPtr startDate $ \raw_startDate ->
-    withObjCPtr endDate $ \raw_endDate ->
-        sendMsg nsDateInterval (mkSelector "initWithStartDate:endDate:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ())] >>= ownedObject . castPtr
+initWithStartDate_endDate nsDateInterval startDate endDate =
+  sendOwnedMessage nsDateInterval initWithStartDate_endDateSelector (toNSDate startDate) (toNSDate endDate)
 
 -- | @- compare:@
 compare_ :: (IsNSDateInterval nsDateInterval, IsNSDateInterval dateInterval) => nsDateInterval -> dateInterval -> IO NSComparisonResult
-compare_ nsDateInterval  dateInterval =
-  withObjCPtr dateInterval $ \raw_dateInterval ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg nsDateInterval (mkSelector "compare:") retCLong [argPtr (castPtr raw_dateInterval :: Ptr ())]
+compare_ nsDateInterval dateInterval =
+  sendMessage nsDateInterval compareSelector (toNSDateInterval dateInterval)
 
 -- | @- isEqualToDateInterval:@
 isEqualToDateInterval :: (IsNSDateInterval nsDateInterval, IsNSDateInterval dateInterval) => nsDateInterval -> dateInterval -> IO Bool
-isEqualToDateInterval nsDateInterval  dateInterval =
-  withObjCPtr dateInterval $ \raw_dateInterval ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateInterval (mkSelector "isEqualToDateInterval:") retCULong [argPtr (castPtr raw_dateInterval :: Ptr ())]
+isEqualToDateInterval nsDateInterval dateInterval =
+  sendMessage nsDateInterval isEqualToDateIntervalSelector (toNSDateInterval dateInterval)
 
 -- | @- intersectsDateInterval:@
 intersectsDateInterval :: (IsNSDateInterval nsDateInterval, IsNSDateInterval dateInterval) => nsDateInterval -> dateInterval -> IO Bool
-intersectsDateInterval nsDateInterval  dateInterval =
-  withObjCPtr dateInterval $ \raw_dateInterval ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateInterval (mkSelector "intersectsDateInterval:") retCULong [argPtr (castPtr raw_dateInterval :: Ptr ())]
+intersectsDateInterval nsDateInterval dateInterval =
+  sendMessage nsDateInterval intersectsDateIntervalSelector (toNSDateInterval dateInterval)
 
 -- | @- intersectionWithDateInterval:@
 intersectionWithDateInterval :: (IsNSDateInterval nsDateInterval, IsNSDateInterval dateInterval) => nsDateInterval -> dateInterval -> IO (Id NSDateInterval)
-intersectionWithDateInterval nsDateInterval  dateInterval =
-  withObjCPtr dateInterval $ \raw_dateInterval ->
-      sendMsg nsDateInterval (mkSelector "intersectionWithDateInterval:") (retPtr retVoid) [argPtr (castPtr raw_dateInterval :: Ptr ())] >>= retainedObject . castPtr
+intersectionWithDateInterval nsDateInterval dateInterval =
+  sendMessage nsDateInterval intersectionWithDateIntervalSelector (toNSDateInterval dateInterval)
 
 -- | @- containsDate:@
 containsDate :: (IsNSDateInterval nsDateInterval, IsNSDate date) => nsDateInterval -> date -> IO Bool
-containsDate nsDateInterval  date =
-  withObjCPtr date $ \raw_date ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateInterval (mkSelector "containsDate:") retCULong [argPtr (castPtr raw_date :: Ptr ())]
+containsDate nsDateInterval date =
+  sendMessage nsDateInterval containsDateSelector (toNSDate date)
 
 -- | @- startDate@
 startDate :: IsNSDateInterval nsDateInterval => nsDateInterval -> IO (Id NSDate)
-startDate nsDateInterval  =
-    sendMsg nsDateInterval (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate nsDateInterval =
+  sendMessage nsDateInterval startDateSelector
 
 -- | @- endDate@
 endDate :: IsNSDateInterval nsDateInterval => nsDateInterval -> IO (Id NSDate)
-endDate nsDateInterval  =
-    sendMsg nsDateInterval (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate nsDateInterval =
+  sendMessage nsDateInterval endDateSelector
 
 -- | @- duration@
 duration :: IsNSDateInterval nsDateInterval => nsDateInterval -> IO CDouble
-duration nsDateInterval  =
-    sendMsg nsDateInterval (mkSelector "duration") retCDouble []
+duration nsDateInterval =
+  sendMessage nsDateInterval durationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSDateInterval)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSDateInterval)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initWithStartDate:duration:@
-initWithStartDate_durationSelector :: Selector
+initWithStartDate_durationSelector :: Selector '[Id NSDate, CDouble] (Id NSDateInterval)
 initWithStartDate_durationSelector = mkSelector "initWithStartDate:duration:"
 
 -- | @Selector@ for @initWithStartDate:endDate:@
-initWithStartDate_endDateSelector :: Selector
+initWithStartDate_endDateSelector :: Selector '[Id NSDate, Id NSDate] (Id NSDateInterval)
 initWithStartDate_endDateSelector = mkSelector "initWithStartDate:endDate:"
 
 -- | @Selector@ for @compare:@
-compareSelector :: Selector
+compareSelector :: Selector '[Id NSDateInterval] NSComparisonResult
 compareSelector = mkSelector "compare:"
 
 -- | @Selector@ for @isEqualToDateInterval:@
-isEqualToDateIntervalSelector :: Selector
+isEqualToDateIntervalSelector :: Selector '[Id NSDateInterval] Bool
 isEqualToDateIntervalSelector = mkSelector "isEqualToDateInterval:"
 
 -- | @Selector@ for @intersectsDateInterval:@
-intersectsDateIntervalSelector :: Selector
+intersectsDateIntervalSelector :: Selector '[Id NSDateInterval] Bool
 intersectsDateIntervalSelector = mkSelector "intersectsDateInterval:"
 
 -- | @Selector@ for @intersectionWithDateInterval:@
-intersectionWithDateIntervalSelector :: Selector
+intersectionWithDateIntervalSelector :: Selector '[Id NSDateInterval] (Id NSDateInterval)
 intersectionWithDateIntervalSelector = mkSelector "intersectionWithDateInterval:"
 
 -- | @Selector@ for @containsDate:@
-containsDateSelector :: Selector
+containsDateSelector :: Selector '[Id NSDate] Bool
 containsDateSelector = mkSelector "containsDate:"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 

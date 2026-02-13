@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.MediaPlayer.MPRemoteCommandEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,25 +30,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- command@
 command :: IsMPRemoteCommandEvent mpRemoteCommandEvent => mpRemoteCommandEvent -> IO (Id MPRemoteCommand)
-command mpRemoteCommandEvent  =
-    sendMsg mpRemoteCommandEvent (mkSelector "command") (retPtr retVoid) [] >>= retainedObject . castPtr
+command mpRemoteCommandEvent =
+  sendMessage mpRemoteCommandEvent commandSelector
 
 -- | The time when the event occurred.
 --
 -- ObjC selector: @- timestamp@
 timestamp :: IsMPRemoteCommandEvent mpRemoteCommandEvent => mpRemoteCommandEvent -> IO CDouble
-timestamp mpRemoteCommandEvent  =
-    sendMsg mpRemoteCommandEvent (mkSelector "timestamp") retCDouble []
+timestamp mpRemoteCommandEvent =
+  sendMessage mpRemoteCommandEvent timestampSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @command@
-commandSelector :: Selector
+commandSelector :: Selector '[] (Id MPRemoteCommand)
 commandSelector = mkSelector "command"
 
 -- | @Selector@ for @timestamp@
-timestampSelector :: Selector
+timestampSelector :: Selector '[] CDouble
 timestampSelector = mkSelector "timestamp"
 

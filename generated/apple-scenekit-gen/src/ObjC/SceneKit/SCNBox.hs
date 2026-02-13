@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,35 +29,31 @@ module ObjC.SceneKit.SCNBox
   , chamferSegmentCount
   , setChamferSegmentCount
   , boxWithWidth_height_length_chamferRadiusSelector
-  , widthSelector
-  , setWidthSelector
-  , heightSelector
-  , setHeightSelector
-  , lengthSelector
-  , setLengthSelector
   , chamferRadiusSelector
-  , setChamferRadiusSelector
-  , widthSegmentCountSelector
-  , setWidthSegmentCountSelector
-  , heightSegmentCountSelector
-  , setHeightSegmentCountSelector
-  , lengthSegmentCountSelector
-  , setLengthSegmentCountSelector
   , chamferSegmentCountSelector
+  , heightSegmentCountSelector
+  , heightSelector
+  , lengthSegmentCountSelector
+  , lengthSelector
+  , setChamferRadiusSelector
   , setChamferSegmentCountSelector
+  , setHeightSegmentCountSelector
+  , setHeightSelector
+  , setLengthSegmentCountSelector
+  , setLengthSelector
+  , setWidthSegmentCountSelector
+  , setWidthSelector
+  , widthSegmentCountSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,7 +77,7 @@ boxWithWidth_height_length_chamferRadius :: CDouble -> CDouble -> CDouble -> CDo
 boxWithWidth_height_length_chamferRadius width height length_ chamferRadius =
   do
     cls' <- getRequiredClass "SCNBox"
-    sendClassMsg cls' (mkSelector "boxWithWidth:height:length:chamferRadius:") (retPtr retVoid) [argCDouble width, argCDouble height, argCDouble length_, argCDouble chamferRadius] >>= retainedObject . castPtr
+    sendClassMessage cls' boxWithWidth_height_length_chamferRadiusSelector width height length_ chamferRadius
 
 -- | width
 --
@@ -90,8 +87,8 @@ boxWithWidth_height_length_chamferRadius width height length_ chamferRadius =
 --
 -- ObjC selector: @- width@
 width :: IsSCNBox scnBox => scnBox -> IO CDouble
-width scnBox  =
-    sendMsg scnBox (mkSelector "width") retCDouble []
+width scnBox =
+  sendMessage scnBox widthSelector
 
 -- | width
 --
@@ -101,8 +98,8 @@ width scnBox  =
 --
 -- ObjC selector: @- setWidth:@
 setWidth :: IsSCNBox scnBox => scnBox -> CDouble -> IO ()
-setWidth scnBox  value =
-    sendMsg scnBox (mkSelector "setWidth:") retVoid [argCDouble value]
+setWidth scnBox value =
+  sendMessage scnBox setWidthSelector value
 
 -- | height
 --
@@ -112,8 +109,8 @@ setWidth scnBox  value =
 --
 -- ObjC selector: @- height@
 height :: IsSCNBox scnBox => scnBox -> IO CDouble
-height scnBox  =
-    sendMsg scnBox (mkSelector "height") retCDouble []
+height scnBox =
+  sendMessage scnBox heightSelector
 
 -- | height
 --
@@ -123,8 +120,8 @@ height scnBox  =
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsSCNBox scnBox => scnBox -> CDouble -> IO ()
-setHeight scnBox  value =
-    sendMsg scnBox (mkSelector "setHeight:") retVoid [argCDouble value]
+setHeight scnBox value =
+  sendMessage scnBox setHeightSelector value
 
 -- | length
 --
@@ -134,8 +131,8 @@ setHeight scnBox  value =
 --
 -- ObjC selector: @- length@
 length_ :: IsSCNBox scnBox => scnBox -> IO CDouble
-length_ scnBox  =
-    sendMsg scnBox (mkSelector "length") retCDouble []
+length_ scnBox =
+  sendMessage scnBox lengthSelector
 
 -- | length
 --
@@ -145,8 +142,8 @@ length_ scnBox  =
 --
 -- ObjC selector: @- setLength:@
 setLength :: IsSCNBox scnBox => scnBox -> CDouble -> IO ()
-setLength scnBox  value =
-    sendMsg scnBox (mkSelector "setLength:") retVoid [argCDouble value]
+setLength scnBox value =
+  sendMessage scnBox setLengthSelector value
 
 -- | chamferRadius
 --
@@ -156,8 +153,8 @@ setLength scnBox  value =
 --
 -- ObjC selector: @- chamferRadius@
 chamferRadius :: IsSCNBox scnBox => scnBox -> IO CDouble
-chamferRadius scnBox  =
-    sendMsg scnBox (mkSelector "chamferRadius") retCDouble []
+chamferRadius scnBox =
+  sendMessage scnBox chamferRadiusSelector
 
 -- | chamferRadius
 --
@@ -167,8 +164,8 @@ chamferRadius scnBox  =
 --
 -- ObjC selector: @- setChamferRadius:@
 setChamferRadius :: IsSCNBox scnBox => scnBox -> CDouble -> IO ()
-setChamferRadius scnBox  value =
-    sendMsg scnBox (mkSelector "setChamferRadius:") retVoid [argCDouble value]
+setChamferRadius scnBox value =
+  sendMessage scnBox setChamferRadiusSelector value
 
 -- | widthSegmentCount
 --
@@ -178,8 +175,8 @@ setChamferRadius scnBox  value =
 --
 -- ObjC selector: @- widthSegmentCount@
 widthSegmentCount :: IsSCNBox scnBox => scnBox -> IO CLong
-widthSegmentCount scnBox  =
-    sendMsg scnBox (mkSelector "widthSegmentCount") retCLong []
+widthSegmentCount scnBox =
+  sendMessage scnBox widthSegmentCountSelector
 
 -- | widthSegmentCount
 --
@@ -189,8 +186,8 @@ widthSegmentCount scnBox  =
 --
 -- ObjC selector: @- setWidthSegmentCount:@
 setWidthSegmentCount :: IsSCNBox scnBox => scnBox -> CLong -> IO ()
-setWidthSegmentCount scnBox  value =
-    sendMsg scnBox (mkSelector "setWidthSegmentCount:") retVoid [argCLong value]
+setWidthSegmentCount scnBox value =
+  sendMessage scnBox setWidthSegmentCountSelector value
 
 -- | heightSegmentCount
 --
@@ -200,8 +197,8 @@ setWidthSegmentCount scnBox  value =
 --
 -- ObjC selector: @- heightSegmentCount@
 heightSegmentCount :: IsSCNBox scnBox => scnBox -> IO CLong
-heightSegmentCount scnBox  =
-    sendMsg scnBox (mkSelector "heightSegmentCount") retCLong []
+heightSegmentCount scnBox =
+  sendMessage scnBox heightSegmentCountSelector
 
 -- | heightSegmentCount
 --
@@ -211,8 +208,8 @@ heightSegmentCount scnBox  =
 --
 -- ObjC selector: @- setHeightSegmentCount:@
 setHeightSegmentCount :: IsSCNBox scnBox => scnBox -> CLong -> IO ()
-setHeightSegmentCount scnBox  value =
-    sendMsg scnBox (mkSelector "setHeightSegmentCount:") retVoid [argCLong value]
+setHeightSegmentCount scnBox value =
+  sendMessage scnBox setHeightSegmentCountSelector value
 
 -- | lengthSegmentCount
 --
@@ -222,8 +219,8 @@ setHeightSegmentCount scnBox  value =
 --
 -- ObjC selector: @- lengthSegmentCount@
 lengthSegmentCount :: IsSCNBox scnBox => scnBox -> IO CLong
-lengthSegmentCount scnBox  =
-    sendMsg scnBox (mkSelector "lengthSegmentCount") retCLong []
+lengthSegmentCount scnBox =
+  sendMessage scnBox lengthSegmentCountSelector
 
 -- | lengthSegmentCount
 --
@@ -233,8 +230,8 @@ lengthSegmentCount scnBox  =
 --
 -- ObjC selector: @- setLengthSegmentCount:@
 setLengthSegmentCount :: IsSCNBox scnBox => scnBox -> CLong -> IO ()
-setLengthSegmentCount scnBox  value =
-    sendMsg scnBox (mkSelector "setLengthSegmentCount:") retVoid [argCLong value]
+setLengthSegmentCount scnBox value =
+  sendMessage scnBox setLengthSegmentCountSelector value
 
 -- | chamferSegmentCount
 --
@@ -244,8 +241,8 @@ setLengthSegmentCount scnBox  value =
 --
 -- ObjC selector: @- chamferSegmentCount@
 chamferSegmentCount :: IsSCNBox scnBox => scnBox -> IO CLong
-chamferSegmentCount scnBox  =
-    sendMsg scnBox (mkSelector "chamferSegmentCount") retCLong []
+chamferSegmentCount scnBox =
+  sendMessage scnBox chamferSegmentCountSelector
 
 -- | chamferSegmentCount
 --
@@ -255,78 +252,78 @@ chamferSegmentCount scnBox  =
 --
 -- ObjC selector: @- setChamferSegmentCount:@
 setChamferSegmentCount :: IsSCNBox scnBox => scnBox -> CLong -> IO ()
-setChamferSegmentCount scnBox  value =
-    sendMsg scnBox (mkSelector "setChamferSegmentCount:") retVoid [argCLong value]
+setChamferSegmentCount scnBox value =
+  sendMessage scnBox setChamferSegmentCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @boxWithWidth:height:length:chamferRadius:@
-boxWithWidth_height_length_chamferRadiusSelector :: Selector
+boxWithWidth_height_length_chamferRadiusSelector :: Selector '[CDouble, CDouble, CDouble, CDouble] (Id SCNBox)
 boxWithWidth_height_length_chamferRadiusSelector = mkSelector "boxWithWidth:height:length:chamferRadius:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CDouble
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CDouble] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CDouble
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CDouble] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CDouble
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @setLength:@
-setLengthSelector :: Selector
+setLengthSelector :: Selector '[CDouble] ()
 setLengthSelector = mkSelector "setLength:"
 
 -- | @Selector@ for @chamferRadius@
-chamferRadiusSelector :: Selector
+chamferRadiusSelector :: Selector '[] CDouble
 chamferRadiusSelector = mkSelector "chamferRadius"
 
 -- | @Selector@ for @setChamferRadius:@
-setChamferRadiusSelector :: Selector
+setChamferRadiusSelector :: Selector '[CDouble] ()
 setChamferRadiusSelector = mkSelector "setChamferRadius:"
 
 -- | @Selector@ for @widthSegmentCount@
-widthSegmentCountSelector :: Selector
+widthSegmentCountSelector :: Selector '[] CLong
 widthSegmentCountSelector = mkSelector "widthSegmentCount"
 
 -- | @Selector@ for @setWidthSegmentCount:@
-setWidthSegmentCountSelector :: Selector
+setWidthSegmentCountSelector :: Selector '[CLong] ()
 setWidthSegmentCountSelector = mkSelector "setWidthSegmentCount:"
 
 -- | @Selector@ for @heightSegmentCount@
-heightSegmentCountSelector :: Selector
+heightSegmentCountSelector :: Selector '[] CLong
 heightSegmentCountSelector = mkSelector "heightSegmentCount"
 
 -- | @Selector@ for @setHeightSegmentCount:@
-setHeightSegmentCountSelector :: Selector
+setHeightSegmentCountSelector :: Selector '[CLong] ()
 setHeightSegmentCountSelector = mkSelector "setHeightSegmentCount:"
 
 -- | @Selector@ for @lengthSegmentCount@
-lengthSegmentCountSelector :: Selector
+lengthSegmentCountSelector :: Selector '[] CLong
 lengthSegmentCountSelector = mkSelector "lengthSegmentCount"
 
 -- | @Selector@ for @setLengthSegmentCount:@
-setLengthSegmentCountSelector :: Selector
+setLengthSegmentCountSelector :: Selector '[CLong] ()
 setLengthSegmentCountSelector = mkSelector "setLengthSegmentCount:"
 
 -- | @Selector@ for @chamferSegmentCount@
-chamferSegmentCountSelector :: Selector
+chamferSegmentCountSelector :: Selector '[] CLong
 chamferSegmentCountSelector = mkSelector "chamferSegmentCount"
 
 -- | @Selector@ for @setChamferSegmentCount:@
-setChamferSegmentCountSelector :: Selector
+setChamferSegmentCountSelector :: Selector '[CLong] ()
 setChamferSegmentCountSelector = mkSelector "setChamferSegmentCount:"
 

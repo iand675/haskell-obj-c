@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRGroupcastClusterLeaveGroupParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , groupIDSelector
-  , setGroupIDSelector
   , endpointsSelector
-  , setEndpointsSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , groupIDSelector
   , serverSideProcessingTimeoutSelector
+  , setEndpointsSelector
+  , setGroupIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupID@
 groupID :: IsMTRGroupcastClusterLeaveGroupParams mtrGroupcastClusterLeaveGroupParams => mtrGroupcastClusterLeaveGroupParams -> IO (Id NSNumber)
-groupID mtrGroupcastClusterLeaveGroupParams  =
-    sendMsg mtrGroupcastClusterLeaveGroupParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrGroupcastClusterLeaveGroupParams =
+  sendMessage mtrGroupcastClusterLeaveGroupParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRGroupcastClusterLeaveGroupParams mtrGroupcastClusterLeaveGroupParams, IsNSNumber value) => mtrGroupcastClusterLeaveGroupParams -> value -> IO ()
-setGroupID mtrGroupcastClusterLeaveGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterLeaveGroupParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrGroupcastClusterLeaveGroupParams value =
+  sendMessage mtrGroupcastClusterLeaveGroupParams setGroupIDSelector (toNSNumber value)
 
 -- | @- endpoints@
 endpoints :: IsMTRGroupcastClusterLeaveGroupParams mtrGroupcastClusterLeaveGroupParams => mtrGroupcastClusterLeaveGroupParams -> IO (Id NSArray)
-endpoints mtrGroupcastClusterLeaveGroupParams  =
-    sendMsg mtrGroupcastClusterLeaveGroupParams (mkSelector "endpoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoints mtrGroupcastClusterLeaveGroupParams =
+  sendMessage mtrGroupcastClusterLeaveGroupParams endpointsSelector
 
 -- | @- setEndpoints:@
 setEndpoints :: (IsMTRGroupcastClusterLeaveGroupParams mtrGroupcastClusterLeaveGroupParams, IsNSArray value) => mtrGroupcastClusterLeaveGroupParams -> value -> IO ()
-setEndpoints mtrGroupcastClusterLeaveGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterLeaveGroupParams (mkSelector "setEndpoints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpoints mtrGroupcastClusterLeaveGroupParams value =
+  sendMessage mtrGroupcastClusterLeaveGroupParams setEndpointsSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setEndpoints mtrGroupcastClusterLeaveGroupParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGroupcastClusterLeaveGroupParams mtrGroupcastClusterLeaveGroupParams => mtrGroupcastClusterLeaveGroupParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGroupcastClusterLeaveGroupParams  =
-    sendMsg mtrGroupcastClusterLeaveGroupParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGroupcastClusterLeaveGroupParams =
+  sendMessage mtrGroupcastClusterLeaveGroupParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrGroupcastClusterLeaveGroupParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGroupcastClusterLeaveGroupParams mtrGroupcastClusterLeaveGroupParams, IsNSNumber value) => mtrGroupcastClusterLeaveGroupParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGroupcastClusterLeaveGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterLeaveGroupParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGroupcastClusterLeaveGroupParams value =
+  sendMessage mtrGroupcastClusterLeaveGroupParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrGroupcastClusterLeaveGroupParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRGroupcastClusterLeaveGroupParams mtrGroupcastClusterLeaveGroupParams => mtrGroupcastClusterLeaveGroupParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrGroupcastClusterLeaveGroupParams  =
-    sendMsg mtrGroupcastClusterLeaveGroupParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrGroupcastClusterLeaveGroupParams =
+  sendMessage mtrGroupcastClusterLeaveGroupParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrGroupcastClusterLeaveGroupParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRGroupcastClusterLeaveGroupParams mtrGroupcastClusterLeaveGroupParams, IsNSNumber value) => mtrGroupcastClusterLeaveGroupParams -> value -> IO ()
-setServerSideProcessingTimeout mtrGroupcastClusterLeaveGroupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterLeaveGroupParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrGroupcastClusterLeaveGroupParams value =
+  sendMessage mtrGroupcastClusterLeaveGroupParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @endpoints@
-endpointsSelector :: Selector
+endpointsSelector :: Selector '[] (Id NSArray)
 endpointsSelector = mkSelector "endpoints"
 
 -- | @Selector@ for @setEndpoints:@
-setEndpointsSelector :: Selector
+setEndpointsSelector :: Selector '[Id NSArray] ()
 setEndpointsSelector = mkSelector "setEndpoints:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

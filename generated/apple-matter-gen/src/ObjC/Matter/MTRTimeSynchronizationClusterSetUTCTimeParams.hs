@@ -1,11 +1,12 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 
--- | Generated bindings for @MTRTimeSynchronizationClusterSetUtcTimeParams@.
-module ObjC.Matter.MTRTimeSynchronizationClusterSetUtcTimeParams
-  ( MTRTimeSynchronizationClusterSetUtcTimeParams
-  , IsMTRTimeSynchronizationClusterSetUtcTimeParams(..)
+-- | Generated bindings for @MTRTimeSynchronizationClusterSetUTCTimeParams@.
+module ObjC.Matter.MTRTimeSynchronizationClusterSetUTCTimeParams
+  ( MTRTimeSynchronizationClusterSetUTCTimeParams
+  , IsMTRTimeSynchronizationClusterSetUTCTimeParams(..)
   , utcTime
   , setUtcTime
   , granularity
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRTimeSynchronizationClusterSetUtcTimeParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , utcTimeSelector
-  , setUtcTimeSelector
   , granularitySelector
-  , setGranularitySelector
-  , timeSourceSelector
-  , setTimeSourceSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setGranularitySelector
   , setServerSideProcessingTimeoutSelector
+  , setTimeSourceSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setUtcTimeSelector
+  , timeSourceSelector
+  , timedInvokeTimeoutMsSelector
+  , utcTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,37 +43,34 @@ import ObjC.Matter.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
 -- | @- utcTime@
-utcTime :: IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams => mtrTimeSynchronizationClusterSetUtcTimeParams -> IO (Id NSNumber)
-utcTime mtrTimeSynchronizationClusterSetUtcTimeParams  =
-    sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "utcTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+utcTime :: IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams => mtrTimeSynchronizationClusterSetUTCTimeParams -> IO (Id NSNumber)
+utcTime mtrTimeSynchronizationClusterSetUTCTimeParams =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams utcTimeSelector
 
 -- | @- setUtcTime:@
-setUtcTime :: (IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUtcTimeParams -> value -> IO ()
-setUtcTime mtrTimeSynchronizationClusterSetUtcTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "setUtcTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUtcTime :: (IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUTCTimeParams -> value -> IO ()
+setUtcTime mtrTimeSynchronizationClusterSetUTCTimeParams value =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams setUtcTimeSelector (toNSNumber value)
 
 -- | @- granularity@
-granularity :: IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams => mtrTimeSynchronizationClusterSetUtcTimeParams -> IO (Id NSNumber)
-granularity mtrTimeSynchronizationClusterSetUtcTimeParams  =
-    sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "granularity") (retPtr retVoid) [] >>= retainedObject . castPtr
+granularity :: IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams => mtrTimeSynchronizationClusterSetUTCTimeParams -> IO (Id NSNumber)
+granularity mtrTimeSynchronizationClusterSetUTCTimeParams =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams granularitySelector
 
 -- | @- setGranularity:@
-setGranularity :: (IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUtcTimeParams -> value -> IO ()
-setGranularity mtrTimeSynchronizationClusterSetUtcTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "setGranularity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGranularity :: (IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUTCTimeParams -> value -> IO ()
+setGranularity mtrTimeSynchronizationClusterSetUTCTimeParams value =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams setGranularitySelector (toNSNumber value)
 
 -- | @- timeSource@
-timeSource :: IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams => mtrTimeSynchronizationClusterSetUtcTimeParams -> IO (Id NSNumber)
-timeSource mtrTimeSynchronizationClusterSetUtcTimeParams  =
-    sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "timeSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeSource :: IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams => mtrTimeSynchronizationClusterSetUTCTimeParams -> IO (Id NSNumber)
+timeSource mtrTimeSynchronizationClusterSetUTCTimeParams =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams timeSourceSelector
 
 -- | @- setTimeSource:@
-setTimeSource :: (IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUtcTimeParams -> value -> IO ()
-setTimeSource mtrTimeSynchronizationClusterSetUtcTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "setTimeSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeSource :: (IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUTCTimeParams -> value -> IO ()
+setTimeSource mtrTimeSynchronizationClusterSetUTCTimeParams value =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams setTimeSourceSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -85,9 +79,9 @@ setTimeSource mtrTimeSynchronizationClusterSetUtcTimeParams  value =
 -- If not nil, a timed invoke is done, with the provided value used as the timed request timeout.  The value should be chosen small enough to provide the desired security properties but large enough that it will allow a round-trip from the sever to the client (for the status response and actual invoke request) within the timeout window.
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
-timedInvokeTimeoutMs :: IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams => mtrTimeSynchronizationClusterSetUtcTimeParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetUtcTimeParams  =
-    sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs :: IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams => mtrTimeSynchronizationClusterSetUTCTimeParams -> IO (Id NSNumber)
+timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetUTCTimeParams =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -96,10 +90,9 @@ timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetUtcTimeParams  =
 -- If not nil, a timed invoke is done, with the provided value used as the timed request timeout.  The value should be chosen small enough to provide the desired security properties but large enough that it will allow a round-trip from the sever to the client (for the status response and actual invoke request) within the timeout window.
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMs :: (IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUtcTimeParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetUtcTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs :: (IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUTCTimeParams -> value -> IO ()
+setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetUTCTimeParams value =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -108,9 +101,9 @@ setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetUtcTimeParams  value =
 -- If nil, the framework will try to select an appropriate timeout value itself.
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
-serverSideProcessingTimeout :: IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams => mtrTimeSynchronizationClusterSetUtcTimeParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrTimeSynchronizationClusterSetUtcTimeParams  =
-    sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout :: IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams => mtrTimeSynchronizationClusterSetUTCTimeParams -> IO (Id NSNumber)
+serverSideProcessingTimeout mtrTimeSynchronizationClusterSetUTCTimeParams =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -119,52 +112,51 @@ serverSideProcessingTimeout mtrTimeSynchronizationClusterSetUtcTimeParams  =
 -- If nil, the framework will try to select an appropriate timeout value itself.
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
-setServerSideProcessingTimeout :: (IsMTRTimeSynchronizationClusterSetUtcTimeParams mtrTimeSynchronizationClusterSetUtcTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUtcTimeParams -> value -> IO ()
-setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetUtcTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetUtcTimeParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout :: (IsMTRTimeSynchronizationClusterSetUTCTimeParams mtrTimeSynchronizationClusterSetUTCTimeParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetUTCTimeParams -> value -> IO ()
+setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetUTCTimeParams value =
+  sendMessage mtrTimeSynchronizationClusterSetUTCTimeParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @utcTime@
-utcTimeSelector :: Selector
+utcTimeSelector :: Selector '[] (Id NSNumber)
 utcTimeSelector = mkSelector "utcTime"
 
 -- | @Selector@ for @setUtcTime:@
-setUtcTimeSelector :: Selector
+setUtcTimeSelector :: Selector '[Id NSNumber] ()
 setUtcTimeSelector = mkSelector "setUtcTime:"
 
 -- | @Selector@ for @granularity@
-granularitySelector :: Selector
+granularitySelector :: Selector '[] (Id NSNumber)
 granularitySelector = mkSelector "granularity"
 
 -- | @Selector@ for @setGranularity:@
-setGranularitySelector :: Selector
+setGranularitySelector :: Selector '[Id NSNumber] ()
 setGranularitySelector = mkSelector "setGranularity:"
 
 -- | @Selector@ for @timeSource@
-timeSourceSelector :: Selector
+timeSourceSelector :: Selector '[] (Id NSNumber)
 timeSourceSelector = mkSelector "timeSource"
 
 -- | @Selector@ for @setTimeSource:@
-setTimeSourceSelector :: Selector
+setTimeSourceSelector :: Selector '[Id NSNumber] ()
 setTimeSourceSelector = mkSelector "setTimeSource:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

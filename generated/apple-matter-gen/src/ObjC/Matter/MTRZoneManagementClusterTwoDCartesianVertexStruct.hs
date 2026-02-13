@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRZoneManagementClusterTwoDCartesianVertexStruct
   , setX
   , y
   , setY
-  , xSelector
   , setXSelector
-  , ySelector
   , setYSelector
+  , xSelector
+  , ySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- x@
 x :: IsMTRZoneManagementClusterTwoDCartesianVertexStruct mtrZoneManagementClusterTwoDCartesianVertexStruct => mtrZoneManagementClusterTwoDCartesianVertexStruct -> IO (Id NSNumber)
-x mtrZoneManagementClusterTwoDCartesianVertexStruct  =
-    sendMsg mtrZoneManagementClusterTwoDCartesianVertexStruct (mkSelector "x") (retPtr retVoid) [] >>= retainedObject . castPtr
+x mtrZoneManagementClusterTwoDCartesianVertexStruct =
+  sendMessage mtrZoneManagementClusterTwoDCartesianVertexStruct xSelector
 
 -- | @- setX:@
 setX :: (IsMTRZoneManagementClusterTwoDCartesianVertexStruct mtrZoneManagementClusterTwoDCartesianVertexStruct, IsNSNumber value) => mtrZoneManagementClusterTwoDCartesianVertexStruct -> value -> IO ()
-setX mtrZoneManagementClusterTwoDCartesianVertexStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterTwoDCartesianVertexStruct (mkSelector "setX:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setX mtrZoneManagementClusterTwoDCartesianVertexStruct value =
+  sendMessage mtrZoneManagementClusterTwoDCartesianVertexStruct setXSelector (toNSNumber value)
 
 -- | @- y@
 y :: IsMTRZoneManagementClusterTwoDCartesianVertexStruct mtrZoneManagementClusterTwoDCartesianVertexStruct => mtrZoneManagementClusterTwoDCartesianVertexStruct -> IO (Id NSNumber)
-y mtrZoneManagementClusterTwoDCartesianVertexStruct  =
-    sendMsg mtrZoneManagementClusterTwoDCartesianVertexStruct (mkSelector "y") (retPtr retVoid) [] >>= retainedObject . castPtr
+y mtrZoneManagementClusterTwoDCartesianVertexStruct =
+  sendMessage mtrZoneManagementClusterTwoDCartesianVertexStruct ySelector
 
 -- | @- setY:@
 setY :: (IsMTRZoneManagementClusterTwoDCartesianVertexStruct mtrZoneManagementClusterTwoDCartesianVertexStruct, IsNSNumber value) => mtrZoneManagementClusterTwoDCartesianVertexStruct -> value -> IO ()
-setY mtrZoneManagementClusterTwoDCartesianVertexStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterTwoDCartesianVertexStruct (mkSelector "setY:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setY mtrZoneManagementClusterTwoDCartesianVertexStruct value =
+  sendMessage mtrZoneManagementClusterTwoDCartesianVertexStruct setYSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @x@
-xSelector :: Selector
+xSelector :: Selector '[] (Id NSNumber)
 xSelector = mkSelector "x"
 
 -- | @Selector@ for @setX:@
-setXSelector :: Selector
+setXSelector :: Selector '[Id NSNumber] ()
 setXSelector = mkSelector "setX:"
 
 -- | @Selector@ for @y@
-ySelector :: Selector
+ySelector :: Selector '[] (Id NSNumber)
 ySelector = mkSelector "y"
 
 -- | @Selector@ for @setY:@
-setYSelector :: Selector
+setYSelector :: Selector '[Id NSNumber] ()
 setYSelector = mkSelector "setY:"
 

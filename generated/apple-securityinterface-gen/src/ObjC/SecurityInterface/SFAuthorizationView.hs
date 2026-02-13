@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.SecurityInterface.SFAuthorizationView
   , delegate
   , authorize
   , deauthorize
-  , setStringSelector
-  , setAuthorizationRightsSelector
   , authorizationRightsSelector
   , authorizationSelector
-  , updateStatusSelector
-  , setAutoupdateSelector
-  , setAutoupdate_intervalSelector
-  , setEnabledSelector
-  , isEnabledSelector
-  , setFlagsSelector
-  , setDelegateSelector
-  , delegateSelector
   , authorizeSelector
   , deauthorizeSelector
+  , delegateSelector
+  , isEnabledSelector
+  , setAuthorizationRightsSelector
+  , setAutoupdateSelector
+  , setAutoupdate_intervalSelector
+  , setDelegateSelector
+  , setEnabledSelector
+  , setFlagsSelector
+  , setStringSelector
+  , updateStatusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.SecurityFoundation.Internal.Classes
 --
 -- ObjC selector: @- setString:@
 setString :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> RawId -> IO ()
-setString sfAuthorizationView  authorizationString =
-    sendMsg sfAuthorizationView (mkSelector "setString:") retVoid [argPtr (castPtr (unRawId authorizationString) :: Ptr ())]
+setString sfAuthorizationView authorizationString =
+  sendMessage sfAuthorizationView setStringSelector authorizationString
 
 -- | setAuthorizationRights:
 --
@@ -74,8 +71,8 @@ setString sfAuthorizationView  authorizationString =
 --
 -- ObjC selector: @- setAuthorizationRights:@
 setAuthorizationRights :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> Const RawId -> IO ()
-setAuthorizationRights sfAuthorizationView  authorizationRights =
-    sendMsg sfAuthorizationView (mkSelector "setAuthorizationRights:") retVoid [argPtr (castPtr (unRawId (unConst authorizationRights)) :: Ptr ())]
+setAuthorizationRights sfAuthorizationView authorizationRights =
+  sendMessage sfAuthorizationView setAuthorizationRightsSelector authorizationRights
 
 -- | authorizationRights
 --
@@ -83,8 +80,8 @@ setAuthorizationRights sfAuthorizationView  authorizationRights =
 --
 -- ObjC selector: @- authorizationRights@
 authorizationRights :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> IO RawId
-authorizationRights sfAuthorizationView  =
-    fmap (RawId . castPtr) $ sendMsg sfAuthorizationView (mkSelector "authorizationRights") (retPtr retVoid) []
+authorizationRights sfAuthorizationView =
+  sendMessage sfAuthorizationView authorizationRightsSelector
 
 -- | authorization
 --
@@ -92,8 +89,8 @@ authorizationRights sfAuthorizationView  =
 --
 -- ObjC selector: @- authorization@
 authorization :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> IO (Id SFAuthorization)
-authorization sfAuthorizationView  =
-    sendMsg sfAuthorizationView (mkSelector "authorization") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorization sfAuthorizationView =
+  sendMessage sfAuthorizationView authorizationSelector
 
 -- | updateStatus:
 --
@@ -103,22 +100,22 @@ authorization sfAuthorizationView  =
 --
 -- ObjC selector: @- updateStatus:@
 updateStatus :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> RawId -> IO Bool
-updateStatus sfAuthorizationView  inSender =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfAuthorizationView (mkSelector "updateStatus:") retCULong [argPtr (castPtr (unRawId inSender) :: Ptr ())]
+updateStatus sfAuthorizationView inSender =
+  sendMessage sfAuthorizationView updateStatusSelector inSender
 
 -- | setAutoupdate:
 --
 -- ObjC selector: @- setAutoupdate:@
 setAutoupdate :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> Bool -> IO ()
-setAutoupdate sfAuthorizationView  autoupdate =
-    sendMsg sfAuthorizationView (mkSelector "setAutoupdate:") retVoid [argCULong (if autoupdate then 1 else 0)]
+setAutoupdate sfAuthorizationView autoupdate =
+  sendMessage sfAuthorizationView setAutoupdateSelector autoupdate
 
 -- | setAutoUpdate:interval:
 --
 -- ObjC selector: @- setAutoupdate:interval:@
 setAutoupdate_interval :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> Bool -> CDouble -> IO ()
-setAutoupdate_interval sfAuthorizationView  autoupdate interval =
-    sendMsg sfAuthorizationView (mkSelector "setAutoupdate:interval:") retVoid [argCULong (if autoupdate then 1 else 0), argCDouble interval]
+setAutoupdate_interval sfAuthorizationView autoupdate interval =
+  sendMessage sfAuthorizationView setAutoupdate_intervalSelector autoupdate interval
 
 -- | setEnabled:
 --
@@ -128,8 +125,8 @@ setAutoupdate_interval sfAuthorizationView  autoupdate interval =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> Bool -> IO ()
-setEnabled sfAuthorizationView  enabled =
-    sendMsg sfAuthorizationView (mkSelector "setEnabled:") retVoid [argCULong (if enabled then 1 else 0)]
+setEnabled sfAuthorizationView enabled =
+  sendMessage sfAuthorizationView setEnabledSelector enabled
 
 -- | isEnabled
 --
@@ -137,8 +134,8 @@ setEnabled sfAuthorizationView  enabled =
 --
 -- ObjC selector: @- isEnabled@
 isEnabled :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> IO Bool
-isEnabled sfAuthorizationView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfAuthorizationView (mkSelector "isEnabled") retCULong []
+isEnabled sfAuthorizationView =
+  sendMessage sfAuthorizationView isEnabledSelector
 
 -- | setFlags:
 --
@@ -148,8 +145,8 @@ isEnabled sfAuthorizationView  =
 --
 -- ObjC selector: @- setFlags:@
 setFlags :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> CInt -> IO ()
-setFlags sfAuthorizationView  flags =
-    sendMsg sfAuthorizationView (mkSelector "setFlags:") retVoid [argCInt (fromIntegral flags)]
+setFlags sfAuthorizationView flags =
+  sendMessage sfAuthorizationView setFlagsSelector flags
 
 -- | setDelegate:
 --
@@ -159,87 +156,87 @@ setFlags sfAuthorizationView  flags =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> RawId -> IO ()
-setDelegate sfAuthorizationView  delegate =
-    sendMsg sfAuthorizationView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ())]
+setDelegate sfAuthorizationView delegate =
+  sendMessage sfAuthorizationView setDelegateSelector delegate
 
 -- | delegate
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> IO RawId
-delegate sfAuthorizationView  =
-    fmap (RawId . castPtr) $ sendMsg sfAuthorizationView (mkSelector "delegate") (retPtr retVoid) []
+delegate sfAuthorizationView =
+  sendMessage sfAuthorizationView delegateSelector
 
 -- | authorize:
 --
 -- ObjC selector: @- authorize:@
 authorize :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> RawId -> IO Bool
-authorize sfAuthorizationView  inSender =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfAuthorizationView (mkSelector "authorize:") retCULong [argPtr (castPtr (unRawId inSender) :: Ptr ())]
+authorize sfAuthorizationView inSender =
+  sendMessage sfAuthorizationView authorizeSelector inSender
 
 -- | deauthorize:
 --
 -- ObjC selector: @- deauthorize:@
 deauthorize :: IsSFAuthorizationView sfAuthorizationView => sfAuthorizationView -> RawId -> IO Bool
-deauthorize sfAuthorizationView  inSender =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfAuthorizationView (mkSelector "deauthorize:") retCULong [argPtr (castPtr (unRawId inSender) :: Ptr ())]
+deauthorize sfAuthorizationView inSender =
+  sendMessage sfAuthorizationView deauthorizeSelector inSender
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setString:@
-setStringSelector :: Selector
+setStringSelector :: Selector '[RawId] ()
 setStringSelector = mkSelector "setString:"
 
 -- | @Selector@ for @setAuthorizationRights:@
-setAuthorizationRightsSelector :: Selector
+setAuthorizationRightsSelector :: Selector '[Const RawId] ()
 setAuthorizationRightsSelector = mkSelector "setAuthorizationRights:"
 
 -- | @Selector@ for @authorizationRights@
-authorizationRightsSelector :: Selector
+authorizationRightsSelector :: Selector '[] RawId
 authorizationRightsSelector = mkSelector "authorizationRights"
 
 -- | @Selector@ for @authorization@
-authorizationSelector :: Selector
+authorizationSelector :: Selector '[] (Id SFAuthorization)
 authorizationSelector = mkSelector "authorization"
 
 -- | @Selector@ for @updateStatus:@
-updateStatusSelector :: Selector
+updateStatusSelector :: Selector '[RawId] Bool
 updateStatusSelector = mkSelector "updateStatus:"
 
 -- | @Selector@ for @setAutoupdate:@
-setAutoupdateSelector :: Selector
+setAutoupdateSelector :: Selector '[Bool] ()
 setAutoupdateSelector = mkSelector "setAutoupdate:"
 
 -- | @Selector@ for @setAutoupdate:interval:@
-setAutoupdate_intervalSelector :: Selector
+setAutoupdate_intervalSelector :: Selector '[Bool, CDouble] ()
 setAutoupdate_intervalSelector = mkSelector "setAutoupdate:interval:"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @isEnabled@
-isEnabledSelector :: Selector
+isEnabledSelector :: Selector '[] Bool
 isEnabledSelector = mkSelector "isEnabled"
 
 -- | @Selector@ for @setFlags:@
-setFlagsSelector :: Selector
+setFlagsSelector :: Selector '[CInt] ()
 setFlagsSelector = mkSelector "setFlags:"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @authorize:@
-authorizeSelector :: Selector
+authorizeSelector :: Selector '[RawId] Bool
 authorizeSelector = mkSelector "authorize:"
 
 -- | @Selector@ for @deauthorize:@
-deauthorizeSelector :: Selector
+deauthorizeSelector :: Selector '[RawId] Bool
 deauthorizeSelector = mkSelector "deauthorize:"
 

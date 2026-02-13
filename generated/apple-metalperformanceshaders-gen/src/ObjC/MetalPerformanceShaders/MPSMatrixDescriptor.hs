@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,21 +29,21 @@ module ObjC.MetalPerformanceShaders.MPSMatrixDescriptor
   , rowBytes
   , setRowBytes
   , matrixBytes
-  , matrixDescriptorWithDimensions_columns_rowBytes_dataTypeSelector
-  , matrixDescriptorWithRows_columns_rowBytes_dataTypeSelector
-  , matrixDescriptorWithRows_columns_matrices_rowBytes_matrixBytes_dataTypeSelector
-  , rowBytesFromColumns_dataTypeSelector
-  , rowBytesForColumns_dataTypeSelector
-  , rowsSelector
-  , setRowsSelector
   , columnsSelector
-  , setColumnsSelector
-  , matricesSelector
   , dataTypeSelector
-  , setDataTypeSelector
-  , rowBytesSelector
-  , setRowBytesSelector
+  , matricesSelector
   , matrixBytesSelector
+  , matrixDescriptorWithDimensions_columns_rowBytes_dataTypeSelector
+  , matrixDescriptorWithRows_columns_matrices_rowBytes_matrixBytes_dataTypeSelector
+  , matrixDescriptorWithRows_columns_rowBytes_dataTypeSelector
+  , rowBytesForColumns_dataTypeSelector
+  , rowBytesFromColumns_dataTypeSelector
+  , rowBytesSelector
+  , rowsSelector
+  , setColumnsSelector
+  , setDataTypeSelector
+  , setRowBytesSelector
+  , setRowsSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -76,15 +77,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -109,14 +106,14 @@ matrixDescriptorWithDimensions_columns_rowBytes_dataType :: CULong -> CULong -> 
 matrixDescriptorWithDimensions_columns_rowBytes_dataType rows columns rowBytes dataType =
   do
     cls' <- getRequiredClass "MPSMatrixDescriptor"
-    sendClassMsg cls' (mkSelector "matrixDescriptorWithDimensions:columns:rowBytes:dataType:") (retPtr retVoid) [argCULong rows, argCULong columns, argCULong rowBytes, argCUInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' matrixDescriptorWithDimensions_columns_rowBytes_dataTypeSelector rows columns rowBytes dataType
 
 -- | @+ matrixDescriptorWithRows:columns:rowBytes:dataType:@
 matrixDescriptorWithRows_columns_rowBytes_dataType :: CULong -> CULong -> CULong -> MPSDataType -> IO (Id MPSMatrixDescriptor)
 matrixDescriptorWithRows_columns_rowBytes_dataType rows columns rowBytes dataType =
   do
     cls' <- getRequiredClass "MPSMatrixDescriptor"
-    sendClassMsg cls' (mkSelector "matrixDescriptorWithRows:columns:rowBytes:dataType:") (retPtr retVoid) [argCULong rows, argCULong columns, argCULong rowBytes, argCUInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' matrixDescriptorWithRows_columns_rowBytes_dataTypeSelector rows columns rowBytes dataType
 
 -- | Create a MPSMatrixDescriptor with the specified dimensions and data type.
 --
@@ -139,7 +136,7 @@ matrixDescriptorWithRows_columns_matrices_rowBytes_matrixBytes_dataType :: CULon
 matrixDescriptorWithRows_columns_matrices_rowBytes_matrixBytes_dataType rows columns matrices rowBytes matrixBytes dataType =
   do
     cls' <- getRequiredClass "MPSMatrixDescriptor"
-    sendClassMsg cls' (mkSelector "matrixDescriptorWithRows:columns:matrices:rowBytes:matrixBytes:dataType:") (retPtr retVoid) [argCULong rows, argCULong columns, argCULong matrices, argCULong rowBytes, argCULong matrixBytes, argCUInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' matrixDescriptorWithRows_columns_matrices_rowBytes_matrixBytes_dataTypeSelector rows columns matrices rowBytes matrixBytes dataType
 
 -- | Return the recommended row stride, in bytes, for a given number of              columns.
 --
@@ -154,14 +151,14 @@ rowBytesFromColumns_dataType :: CULong -> MPSDataType -> IO CULong
 rowBytesFromColumns_dataType columns dataType =
   do
     cls' <- getRequiredClass "MPSMatrixDescriptor"
-    sendClassMsg cls' (mkSelector "rowBytesFromColumns:dataType:") retCULong [argCULong columns, argCUInt (coerce dataType)]
+    sendClassMessage cls' rowBytesFromColumns_dataTypeSelector columns dataType
 
 -- | @+ rowBytesForColumns:dataType:@
 rowBytesForColumns_dataType :: CULong -> MPSDataType -> IO CULong
 rowBytesForColumns_dataType columns dataType =
   do
     cls' <- getRequiredClass "MPSMatrixDescriptor"
-    sendClassMsg cls' (mkSelector "rowBytesForColumns:dataType:") retCULong [argCULong columns, argCUInt (coerce dataType)]
+    sendClassMessage cls' rowBytesForColumns_dataTypeSelector columns dataType
 
 -- | rows
 --
@@ -169,8 +166,8 @@ rowBytesForColumns_dataType columns dataType =
 --
 -- ObjC selector: @- rows@
 rows :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> IO CULong
-rows mpsMatrixDescriptor  =
-    sendMsg mpsMatrixDescriptor (mkSelector "rows") retCULong []
+rows mpsMatrixDescriptor =
+  sendMessage mpsMatrixDescriptor rowsSelector
 
 -- | rows
 --
@@ -178,8 +175,8 @@ rows mpsMatrixDescriptor  =
 --
 -- ObjC selector: @- setRows:@
 setRows :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> CULong -> IO ()
-setRows mpsMatrixDescriptor  value =
-    sendMsg mpsMatrixDescriptor (mkSelector "setRows:") retVoid [argCULong value]
+setRows mpsMatrixDescriptor value =
+  sendMessage mpsMatrixDescriptor setRowsSelector value
 
 -- | columns
 --
@@ -187,8 +184,8 @@ setRows mpsMatrixDescriptor  value =
 --
 -- ObjC selector: @- columns@
 columns :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> IO CULong
-columns mpsMatrixDescriptor  =
-    sendMsg mpsMatrixDescriptor (mkSelector "columns") retCULong []
+columns mpsMatrixDescriptor =
+  sendMessage mpsMatrixDescriptor columnsSelector
 
 -- | columns
 --
@@ -196,8 +193,8 @@ columns mpsMatrixDescriptor  =
 --
 -- ObjC selector: @- setColumns:@
 setColumns :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> CULong -> IO ()
-setColumns mpsMatrixDescriptor  value =
-    sendMsg mpsMatrixDescriptor (mkSelector "setColumns:") retVoid [argCULong value]
+setColumns mpsMatrixDescriptor value =
+  sendMessage mpsMatrixDescriptor setColumnsSelector value
 
 -- | matrices
 --
@@ -205,8 +202,8 @@ setColumns mpsMatrixDescriptor  value =
 --
 -- ObjC selector: @- matrices@
 matrices :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> IO CULong
-matrices mpsMatrixDescriptor  =
-    sendMsg mpsMatrixDescriptor (mkSelector "matrices") retCULong []
+matrices mpsMatrixDescriptor =
+  sendMessage mpsMatrixDescriptor matricesSelector
 
 -- | dataType
 --
@@ -214,8 +211,8 @@ matrices mpsMatrixDescriptor  =
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> IO MPSDataType
-dataType mpsMatrixDescriptor  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsMatrixDescriptor (mkSelector "dataType") retCUInt []
+dataType mpsMatrixDescriptor =
+  sendMessage mpsMatrixDescriptor dataTypeSelector
 
 -- | dataType
 --
@@ -223,8 +220,8 @@ dataType mpsMatrixDescriptor  =
 --
 -- ObjC selector: @- setDataType:@
 setDataType :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> MPSDataType -> IO ()
-setDataType mpsMatrixDescriptor  value =
-    sendMsg mpsMatrixDescriptor (mkSelector "setDataType:") retVoid [argCUInt (coerce value)]
+setDataType mpsMatrixDescriptor value =
+  sendMessage mpsMatrixDescriptor setDataTypeSelector value
 
 -- | rowBytes
 --
@@ -232,8 +229,8 @@ setDataType mpsMatrixDescriptor  value =
 --
 -- ObjC selector: @- rowBytes@
 rowBytes :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> IO CULong
-rowBytes mpsMatrixDescriptor  =
-    sendMsg mpsMatrixDescriptor (mkSelector "rowBytes") retCULong []
+rowBytes mpsMatrixDescriptor =
+  sendMessage mpsMatrixDescriptor rowBytesSelector
 
 -- | rowBytes
 --
@@ -241,8 +238,8 @@ rowBytes mpsMatrixDescriptor  =
 --
 -- ObjC selector: @- setRowBytes:@
 setRowBytes :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> CULong -> IO ()
-setRowBytes mpsMatrixDescriptor  value =
-    sendMsg mpsMatrixDescriptor (mkSelector "setRowBytes:") retVoid [argCULong value]
+setRowBytes mpsMatrixDescriptor value =
+  sendMessage mpsMatrixDescriptor setRowBytesSelector value
 
 -- | matrixBytes
 --
@@ -250,70 +247,70 @@ setRowBytes mpsMatrixDescriptor  value =
 --
 -- ObjC selector: @- matrixBytes@
 matrixBytes :: IsMPSMatrixDescriptor mpsMatrixDescriptor => mpsMatrixDescriptor -> IO CULong
-matrixBytes mpsMatrixDescriptor  =
-    sendMsg mpsMatrixDescriptor (mkSelector "matrixBytes") retCULong []
+matrixBytes mpsMatrixDescriptor =
+  sendMessage mpsMatrixDescriptor matrixBytesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @matrixDescriptorWithDimensions:columns:rowBytes:dataType:@
-matrixDescriptorWithDimensions_columns_rowBytes_dataTypeSelector :: Selector
+matrixDescriptorWithDimensions_columns_rowBytes_dataTypeSelector :: Selector '[CULong, CULong, CULong, MPSDataType] (Id MPSMatrixDescriptor)
 matrixDescriptorWithDimensions_columns_rowBytes_dataTypeSelector = mkSelector "matrixDescriptorWithDimensions:columns:rowBytes:dataType:"
 
 -- | @Selector@ for @matrixDescriptorWithRows:columns:rowBytes:dataType:@
-matrixDescriptorWithRows_columns_rowBytes_dataTypeSelector :: Selector
+matrixDescriptorWithRows_columns_rowBytes_dataTypeSelector :: Selector '[CULong, CULong, CULong, MPSDataType] (Id MPSMatrixDescriptor)
 matrixDescriptorWithRows_columns_rowBytes_dataTypeSelector = mkSelector "matrixDescriptorWithRows:columns:rowBytes:dataType:"
 
 -- | @Selector@ for @matrixDescriptorWithRows:columns:matrices:rowBytes:matrixBytes:dataType:@
-matrixDescriptorWithRows_columns_matrices_rowBytes_matrixBytes_dataTypeSelector :: Selector
+matrixDescriptorWithRows_columns_matrices_rowBytes_matrixBytes_dataTypeSelector :: Selector '[CULong, CULong, CULong, CULong, CULong, MPSDataType] (Id MPSMatrixDescriptor)
 matrixDescriptorWithRows_columns_matrices_rowBytes_matrixBytes_dataTypeSelector = mkSelector "matrixDescriptorWithRows:columns:matrices:rowBytes:matrixBytes:dataType:"
 
 -- | @Selector@ for @rowBytesFromColumns:dataType:@
-rowBytesFromColumns_dataTypeSelector :: Selector
+rowBytesFromColumns_dataTypeSelector :: Selector '[CULong, MPSDataType] CULong
 rowBytesFromColumns_dataTypeSelector = mkSelector "rowBytesFromColumns:dataType:"
 
 -- | @Selector@ for @rowBytesForColumns:dataType:@
-rowBytesForColumns_dataTypeSelector :: Selector
+rowBytesForColumns_dataTypeSelector :: Selector '[CULong, MPSDataType] CULong
 rowBytesForColumns_dataTypeSelector = mkSelector "rowBytesForColumns:dataType:"
 
 -- | @Selector@ for @rows@
-rowsSelector :: Selector
+rowsSelector :: Selector '[] CULong
 rowsSelector = mkSelector "rows"
 
 -- | @Selector@ for @setRows:@
-setRowsSelector :: Selector
+setRowsSelector :: Selector '[CULong] ()
 setRowsSelector = mkSelector "setRows:"
 
 -- | @Selector@ for @columns@
-columnsSelector :: Selector
+columnsSelector :: Selector '[] CULong
 columnsSelector = mkSelector "columns"
 
 -- | @Selector@ for @setColumns:@
-setColumnsSelector :: Selector
+setColumnsSelector :: Selector '[CULong] ()
 setColumnsSelector = mkSelector "setColumns:"
 
 -- | @Selector@ for @matrices@
-matricesSelector :: Selector
+matricesSelector :: Selector '[] CULong
 matricesSelector = mkSelector "matrices"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @setDataType:@
-setDataTypeSelector :: Selector
+setDataTypeSelector :: Selector '[MPSDataType] ()
 setDataTypeSelector = mkSelector "setDataType:"
 
 -- | @Selector@ for @rowBytes@
-rowBytesSelector :: Selector
+rowBytesSelector :: Selector '[] CULong
 rowBytesSelector = mkSelector "rowBytes"
 
 -- | @Selector@ for @setRowBytes:@
-setRowBytesSelector :: Selector
+setRowBytesSelector :: Selector '[CULong] ()
 setRowBytesSelector = mkSelector "setRowBytes:"
 
 -- | @Selector@ for @matrixBytes@
-matrixBytesSelector :: Selector
+matrixBytesSelector :: Selector '[] CULong
 matrixBytesSelector = mkSelector "matrixBytes"
 

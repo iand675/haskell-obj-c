@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,11 +17,11 @@ module ObjC.CoreML.MLSequence
   , stringValues
   , int64Values
   , emptySequenceWithTypeSelector
-  , sequenceWithStringArraySelector
-  , sequenceWithInt64ArraySelector
-  , typeSelector
-  , stringValuesSelector
   , int64ValuesSelector
+  , sequenceWithInt64ArraySelector
+  , sequenceWithStringArraySelector
+  , stringValuesSelector
+  , typeSelector
 
   -- * Enum types
   , MLFeatureType(MLFeatureType)
@@ -36,15 +37,11 @@ module ObjC.CoreML.MLSequence
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,7 +56,7 @@ emptySequenceWithType :: MLFeatureType -> IO (Id MLSequence)
 emptySequenceWithType type_ =
   do
     cls' <- getRequiredClass "MLSequence"
-    sendClassMsg cls' (mkSelector "emptySequenceWithType:") (retPtr retVoid) [argCLong (coerce type_)] >>= retainedObject . castPtr
+    sendClassMessage cls' emptySequenceWithTypeSelector type_
 
 -- | String sequences, property will be empty array if type is MLFeatureTypeString
 --
@@ -68,8 +65,7 @@ sequenceWithStringArray :: IsNSArray stringValues => stringValues -> IO (Id MLSe
 sequenceWithStringArray stringValues =
   do
     cls' <- getRequiredClass "MLSequence"
-    withObjCPtr stringValues $ \raw_stringValues ->
-      sendClassMsg cls' (mkSelector "sequenceWithStringArray:") (retPtr retVoid) [argPtr (castPtr raw_stringValues :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sequenceWithStringArraySelector (toNSArray stringValues)
 
 -- | int64 sequence, propery will be empty array if type is MLFeatureTypeInt64
 --
@@ -78,51 +74,50 @@ sequenceWithInt64Array :: IsNSArray int64Values => int64Values -> IO (Id MLSeque
 sequenceWithInt64Array int64Values =
   do
     cls' <- getRequiredClass "MLSequence"
-    withObjCPtr int64Values $ \raw_int64Values ->
-      sendClassMsg cls' (mkSelector "sequenceWithInt64Array:") (retPtr retVoid) [argPtr (castPtr raw_int64Values :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sequenceWithInt64ArraySelector (toNSArray int64Values)
 
 -- | Type of values held
 --
 -- ObjC selector: @- type@
 type_ :: IsMLSequence mlSequence => mlSequence -> IO MLFeatureType
-type_ mlSequence  =
-    fmap (coerce :: CLong -> MLFeatureType) $ sendMsg mlSequence (mkSelector "type") retCLong []
+type_ mlSequence =
+  sendMessage mlSequence typeSelector
 
 -- | @- stringValues@
 stringValues :: IsMLSequence mlSequence => mlSequence -> IO (Id NSArray)
-stringValues mlSequence  =
-    sendMsg mlSequence (mkSelector "stringValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringValues mlSequence =
+  sendMessage mlSequence stringValuesSelector
 
 -- | @- int64Values@
 int64Values :: IsMLSequence mlSequence => mlSequence -> IO (Id NSArray)
-int64Values mlSequence  =
-    sendMsg mlSequence (mkSelector "int64Values") (retPtr retVoid) [] >>= retainedObject . castPtr
+int64Values mlSequence =
+  sendMessage mlSequence int64ValuesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @emptySequenceWithType:@
-emptySequenceWithTypeSelector :: Selector
+emptySequenceWithTypeSelector :: Selector '[MLFeatureType] (Id MLSequence)
 emptySequenceWithTypeSelector = mkSelector "emptySequenceWithType:"
 
 -- | @Selector@ for @sequenceWithStringArray:@
-sequenceWithStringArraySelector :: Selector
+sequenceWithStringArraySelector :: Selector '[Id NSArray] (Id MLSequence)
 sequenceWithStringArraySelector = mkSelector "sequenceWithStringArray:"
 
 -- | @Selector@ for @sequenceWithInt64Array:@
-sequenceWithInt64ArraySelector :: Selector
+sequenceWithInt64ArraySelector :: Selector '[Id NSArray] (Id MLSequence)
 sequenceWithInt64ArraySelector = mkSelector "sequenceWithInt64Array:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MLFeatureType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @stringValues@
-stringValuesSelector :: Selector
+stringValuesSelector :: Selector '[] (Id NSArray)
 stringValuesSelector = mkSelector "stringValues"
 
 -- | @Selector@ for @int64Values@
-int64ValuesSelector :: Selector
+int64ValuesSelector :: Selector '[] (Id NSArray)
 int64ValuesSelector = mkSelector "int64Values"
 

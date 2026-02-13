@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -47,46 +48,46 @@ module ObjC.MapKit.MKAnnotationView
   , setSelectedZPriority
   , collisionMode
   , setCollisionMode
+  , annotationSelector
+  , canShowCalloutSelector
+  , clusterAnnotationViewSelector
+  , clusteringIdentifierSelector
+  , collisionModeSelector
+  , detailCalloutAccessoryViewSelector
+  , displayPrioritySelector
+  , dragStateSelector
+  , draggableSelector
+  , enabledSelector
+  , highlightedSelector
+  , imageSelector
   , initWithAnnotation_reuseIdentifierSelector
   , initWithCoderSelector
-  , prepareForReuseSelector
-  , prepareForDisplaySelector
-  , setSelected_animatedSelector
-  , setDragState_animatedSelector
-  , reuseIdentifierSelector
-  , annotationSelector
-  , setAnnotationSelector
-  , imageSelector
-  , setImageSelector
-  , enabledSelector
-  , setEnabledSelector
-  , highlightedSelector
-  , setHighlightedSelector
-  , selectedSelector
-  , setSelectedSelector
-  , canShowCalloutSelector
-  , setCanShowCalloutSelector
   , leftCalloutAccessoryViewSelector
-  , setLeftCalloutAccessoryViewSelector
+  , prepareForDisplaySelector
+  , prepareForReuseSelector
+  , reuseIdentifierSelector
   , rightCalloutAccessoryViewSelector
-  , setRightCalloutAccessoryViewSelector
-  , detailCalloutAccessoryViewSelector
-  , setDetailCalloutAccessoryViewSelector
-  , draggableSelector
-  , setDraggableSelector
-  , dragStateSelector
-  , setDragStateSelector
-  , clusteringIdentifierSelector
-  , setClusteringIdentifierSelector
-  , clusterAnnotationViewSelector
-  , displayPrioritySelector
-  , setDisplayPrioritySelector
-  , zPrioritySelector
-  , setZPrioritySelector
+  , selectedSelector
   , selectedZPrioritySelector
-  , setSelectedZPrioritySelector
-  , collisionModeSelector
+  , setAnnotationSelector
+  , setCanShowCalloutSelector
+  , setClusteringIdentifierSelector
   , setCollisionModeSelector
+  , setDetailCalloutAccessoryViewSelector
+  , setDisplayPrioritySelector
+  , setDragStateSelector
+  , setDragState_animatedSelector
+  , setDraggableSelector
+  , setEnabledSelector
+  , setHighlightedSelector
+  , setImageSelector
+  , setLeftCalloutAccessoryViewSelector
+  , setRightCalloutAccessoryViewSelector
+  , setSelectedSelector
+  , setSelectedZPrioritySelector
+  , setSelected_animatedSelector
+  , setZPrioritySelector
+  , zPrioritySelector
 
   -- * Enum types
   , MKAnnotationViewCollisionMode(MKAnnotationViewCollisionMode)
@@ -102,15 +103,11 @@ module ObjC.MapKit.MKAnnotationView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -121,371 +118,365 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithAnnotation:reuseIdentifier:@
 initWithAnnotation_reuseIdentifier :: (IsMKAnnotationView mkAnnotationView, IsNSString reuseIdentifier) => mkAnnotationView -> RawId -> reuseIdentifier -> IO (Id MKAnnotationView)
-initWithAnnotation_reuseIdentifier mkAnnotationView  annotation reuseIdentifier =
-  withObjCPtr reuseIdentifier $ \raw_reuseIdentifier ->
-      sendMsg mkAnnotationView (mkSelector "initWithAnnotation:reuseIdentifier:") (retPtr retVoid) [argPtr (castPtr (unRawId annotation) :: Ptr ()), argPtr (castPtr raw_reuseIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithAnnotation_reuseIdentifier mkAnnotationView annotation reuseIdentifier =
+  sendOwnedMessage mkAnnotationView initWithAnnotation_reuseIdentifierSelector annotation (toNSString reuseIdentifier)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsMKAnnotationView mkAnnotationView, IsNSCoder aDecoder) => mkAnnotationView -> aDecoder -> IO (Id MKAnnotationView)
-initWithCoder mkAnnotationView  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mkAnnotationView (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder mkAnnotationView aDecoder =
+  sendOwnedMessage mkAnnotationView initWithCoderSelector (toNSCoder aDecoder)
 
 -- | @- prepareForReuse@
 prepareForReuse :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO ()
-prepareForReuse mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "prepareForReuse") retVoid []
+prepareForReuse mkAnnotationView =
+  sendMessage mkAnnotationView prepareForReuseSelector
 
 -- | @- prepareForDisplay@
 prepareForDisplay :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO ()
-prepareForDisplay mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "prepareForDisplay") retVoid []
+prepareForDisplay mkAnnotationView =
+  sendMessage mkAnnotationView prepareForDisplaySelector
 
 -- | @- setSelected:animated:@
 setSelected_animated :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> Bool -> Bool -> IO ()
-setSelected_animated mkAnnotationView  selected animated =
-    sendMsg mkAnnotationView (mkSelector "setSelected:animated:") retVoid [argCULong (if selected then 1 else 0), argCULong (if animated then 1 else 0)]
+setSelected_animated mkAnnotationView selected animated =
+  sendMessage mkAnnotationView setSelected_animatedSelector selected animated
 
 -- | @- setDragState:animated:@
 setDragState_animated :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> MKAnnotationViewDragState -> Bool -> IO ()
-setDragState_animated mkAnnotationView  newDragState animated =
-    sendMsg mkAnnotationView (mkSelector "setDragState:animated:") retVoid [argCULong (coerce newDragState), argCULong (if animated then 1 else 0)]
+setDragState_animated mkAnnotationView newDragState animated =
+  sendMessage mkAnnotationView setDragState_animatedSelector newDragState animated
 
 -- | @- reuseIdentifier@
 reuseIdentifier :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO (Id NSString)
-reuseIdentifier mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "reuseIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+reuseIdentifier mkAnnotationView =
+  sendMessage mkAnnotationView reuseIdentifierSelector
 
 -- | @- annotation@
 annotation :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO RawId
-annotation mkAnnotationView  =
-    fmap (RawId . castPtr) $ sendMsg mkAnnotationView (mkSelector "annotation") (retPtr retVoid) []
+annotation mkAnnotationView =
+  sendMessage mkAnnotationView annotationSelector
 
 -- | @- setAnnotation:@
 setAnnotation :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> RawId -> IO ()
-setAnnotation mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setAnnotation:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setAnnotation mkAnnotationView value =
+  sendMessage mkAnnotationView setAnnotationSelector value
 
 -- | @- image@
 image :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO (Id NSImage)
-image mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image mkAnnotationView =
+  sendMessage mkAnnotationView imageSelector
 
 -- | @- setImage:@
 setImage :: (IsMKAnnotationView mkAnnotationView, IsNSImage value) => mkAnnotationView -> value -> IO ()
-setImage mkAnnotationView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkAnnotationView (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImage mkAnnotationView value =
+  sendMessage mkAnnotationView setImageSelector (toNSImage value)
 
 -- | @- enabled@
 enabled :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO Bool
-enabled mkAnnotationView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkAnnotationView (mkSelector "enabled") retCULong []
+enabled mkAnnotationView =
+  sendMessage mkAnnotationView enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> Bool -> IO ()
-setEnabled mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled mkAnnotationView value =
+  sendMessage mkAnnotationView setEnabledSelector value
 
 -- | @- highlighted@
 highlighted :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO Bool
-highlighted mkAnnotationView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkAnnotationView (mkSelector "highlighted") retCULong []
+highlighted mkAnnotationView =
+  sendMessage mkAnnotationView highlightedSelector
 
 -- | @- setHighlighted:@
 setHighlighted :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> Bool -> IO ()
-setHighlighted mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setHighlighted:") retVoid [argCULong (if value then 1 else 0)]
+setHighlighted mkAnnotationView value =
+  sendMessage mkAnnotationView setHighlightedSelector value
 
 -- | @- selected@
 selected :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO Bool
-selected mkAnnotationView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkAnnotationView (mkSelector "selected") retCULong []
+selected mkAnnotationView =
+  sendMessage mkAnnotationView selectedSelector
 
 -- | @- setSelected:@
 setSelected :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> Bool -> IO ()
-setSelected mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setSelected:") retVoid [argCULong (if value then 1 else 0)]
+setSelected mkAnnotationView value =
+  sendMessage mkAnnotationView setSelectedSelector value
 
 -- | @- canShowCallout@
 canShowCallout :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO Bool
-canShowCallout mkAnnotationView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkAnnotationView (mkSelector "canShowCallout") retCULong []
+canShowCallout mkAnnotationView =
+  sendMessage mkAnnotationView canShowCalloutSelector
 
 -- | @- setCanShowCallout:@
 setCanShowCallout :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> Bool -> IO ()
-setCanShowCallout mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setCanShowCallout:") retVoid [argCULong (if value then 1 else 0)]
+setCanShowCallout mkAnnotationView value =
+  sendMessage mkAnnotationView setCanShowCalloutSelector value
 
 -- | @- leftCalloutAccessoryView@
 leftCalloutAccessoryView :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO (Id NSView)
-leftCalloutAccessoryView mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "leftCalloutAccessoryView") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftCalloutAccessoryView mkAnnotationView =
+  sendMessage mkAnnotationView leftCalloutAccessoryViewSelector
 
 -- | @- setLeftCalloutAccessoryView:@
 setLeftCalloutAccessoryView :: (IsMKAnnotationView mkAnnotationView, IsNSView value) => mkAnnotationView -> value -> IO ()
-setLeftCalloutAccessoryView mkAnnotationView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkAnnotationView (mkSelector "setLeftCalloutAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLeftCalloutAccessoryView mkAnnotationView value =
+  sendMessage mkAnnotationView setLeftCalloutAccessoryViewSelector (toNSView value)
 
 -- | @- rightCalloutAccessoryView@
 rightCalloutAccessoryView :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO (Id NSView)
-rightCalloutAccessoryView mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "rightCalloutAccessoryView") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightCalloutAccessoryView mkAnnotationView =
+  sendMessage mkAnnotationView rightCalloutAccessoryViewSelector
 
 -- | @- setRightCalloutAccessoryView:@
 setRightCalloutAccessoryView :: (IsMKAnnotationView mkAnnotationView, IsNSView value) => mkAnnotationView -> value -> IO ()
-setRightCalloutAccessoryView mkAnnotationView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkAnnotationView (mkSelector "setRightCalloutAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRightCalloutAccessoryView mkAnnotationView value =
+  sendMessage mkAnnotationView setRightCalloutAccessoryViewSelector (toNSView value)
 
 -- | @- detailCalloutAccessoryView@
 detailCalloutAccessoryView :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO RawId
-detailCalloutAccessoryView mkAnnotationView  =
-    fmap (RawId . castPtr) $ sendMsg mkAnnotationView (mkSelector "detailCalloutAccessoryView") (retPtr retVoid) []
+detailCalloutAccessoryView mkAnnotationView =
+  sendMessage mkAnnotationView detailCalloutAccessoryViewSelector
 
 -- | @- setDetailCalloutAccessoryView:@
 setDetailCalloutAccessoryView :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> RawId -> IO ()
-setDetailCalloutAccessoryView mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setDetailCalloutAccessoryView:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDetailCalloutAccessoryView mkAnnotationView value =
+  sendMessage mkAnnotationView setDetailCalloutAccessoryViewSelector value
 
 -- | @- draggable@
 draggable :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO Bool
-draggable mkAnnotationView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkAnnotationView (mkSelector "draggable") retCULong []
+draggable mkAnnotationView =
+  sendMessage mkAnnotationView draggableSelector
 
 -- | @- setDraggable:@
 setDraggable :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> Bool -> IO ()
-setDraggable mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setDraggable:") retVoid [argCULong (if value then 1 else 0)]
+setDraggable mkAnnotationView value =
+  sendMessage mkAnnotationView setDraggableSelector value
 
 -- | @- dragState@
 dragState :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO MKAnnotationViewDragState
-dragState mkAnnotationView  =
-    fmap (coerce :: CULong -> MKAnnotationViewDragState) $ sendMsg mkAnnotationView (mkSelector "dragState") retCULong []
+dragState mkAnnotationView =
+  sendMessage mkAnnotationView dragStateSelector
 
 -- | @- setDragState:@
 setDragState :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> MKAnnotationViewDragState -> IO ()
-setDragState mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setDragState:") retVoid [argCULong (coerce value)]
+setDragState mkAnnotationView value =
+  sendMessage mkAnnotationView setDragStateSelector value
 
 -- | @- clusteringIdentifier@
 clusteringIdentifier :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO (Id NSString)
-clusteringIdentifier mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "clusteringIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+clusteringIdentifier mkAnnotationView =
+  sendMessage mkAnnotationView clusteringIdentifierSelector
 
 -- | @- setClusteringIdentifier:@
 setClusteringIdentifier :: (IsMKAnnotationView mkAnnotationView, IsNSString value) => mkAnnotationView -> value -> IO ()
-setClusteringIdentifier mkAnnotationView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkAnnotationView (mkSelector "setClusteringIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClusteringIdentifier mkAnnotationView value =
+  sendMessage mkAnnotationView setClusteringIdentifierSelector (toNSString value)
 
 -- | @- clusterAnnotationView@
 clusterAnnotationView :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO (Id MKAnnotationView)
-clusterAnnotationView mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "clusterAnnotationView") (retPtr retVoid) [] >>= retainedObject . castPtr
+clusterAnnotationView mkAnnotationView =
+  sendMessage mkAnnotationView clusterAnnotationViewSelector
 
 -- | @- displayPriority@
 displayPriority :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO CFloat
-displayPriority mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "displayPriority") retCFloat []
+displayPriority mkAnnotationView =
+  sendMessage mkAnnotationView displayPrioritySelector
 
 -- | @- setDisplayPriority:@
 setDisplayPriority :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> CFloat -> IO ()
-setDisplayPriority mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setDisplayPriority:") retVoid [argCFloat value]
+setDisplayPriority mkAnnotationView value =
+  sendMessage mkAnnotationView setDisplayPrioritySelector value
 
 -- | @- zPriority@
 zPriority :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO CFloat
-zPriority mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "zPriority") retCFloat []
+zPriority mkAnnotationView =
+  sendMessage mkAnnotationView zPrioritySelector
 
 -- | @- setZPriority:@
 setZPriority :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> CFloat -> IO ()
-setZPriority mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setZPriority:") retVoid [argCFloat value]
+setZPriority mkAnnotationView value =
+  sendMessage mkAnnotationView setZPrioritySelector value
 
 -- | @- selectedZPriority@
 selectedZPriority :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO CFloat
-selectedZPriority mkAnnotationView  =
-    sendMsg mkAnnotationView (mkSelector "selectedZPriority") retCFloat []
+selectedZPriority mkAnnotationView =
+  sendMessage mkAnnotationView selectedZPrioritySelector
 
 -- | @- setSelectedZPriority:@
 setSelectedZPriority :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> CFloat -> IO ()
-setSelectedZPriority mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setSelectedZPriority:") retVoid [argCFloat value]
+setSelectedZPriority mkAnnotationView value =
+  sendMessage mkAnnotationView setSelectedZPrioritySelector value
 
 -- | @- collisionMode@
 collisionMode :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> IO MKAnnotationViewCollisionMode
-collisionMode mkAnnotationView  =
-    fmap (coerce :: CLong -> MKAnnotationViewCollisionMode) $ sendMsg mkAnnotationView (mkSelector "collisionMode") retCLong []
+collisionMode mkAnnotationView =
+  sendMessage mkAnnotationView collisionModeSelector
 
 -- | @- setCollisionMode:@
 setCollisionMode :: IsMKAnnotationView mkAnnotationView => mkAnnotationView -> MKAnnotationViewCollisionMode -> IO ()
-setCollisionMode mkAnnotationView  value =
-    sendMsg mkAnnotationView (mkSelector "setCollisionMode:") retVoid [argCLong (coerce value)]
+setCollisionMode mkAnnotationView value =
+  sendMessage mkAnnotationView setCollisionModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAnnotation:reuseIdentifier:@
-initWithAnnotation_reuseIdentifierSelector :: Selector
+initWithAnnotation_reuseIdentifierSelector :: Selector '[RawId, Id NSString] (Id MKAnnotationView)
 initWithAnnotation_reuseIdentifierSelector = mkSelector "initWithAnnotation:reuseIdentifier:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id MKAnnotationView)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @prepareForReuse@
-prepareForReuseSelector :: Selector
+prepareForReuseSelector :: Selector '[] ()
 prepareForReuseSelector = mkSelector "prepareForReuse"
 
 -- | @Selector@ for @prepareForDisplay@
-prepareForDisplaySelector :: Selector
+prepareForDisplaySelector :: Selector '[] ()
 prepareForDisplaySelector = mkSelector "prepareForDisplay"
 
 -- | @Selector@ for @setSelected:animated:@
-setSelected_animatedSelector :: Selector
+setSelected_animatedSelector :: Selector '[Bool, Bool] ()
 setSelected_animatedSelector = mkSelector "setSelected:animated:"
 
 -- | @Selector@ for @setDragState:animated:@
-setDragState_animatedSelector :: Selector
+setDragState_animatedSelector :: Selector '[MKAnnotationViewDragState, Bool] ()
 setDragState_animatedSelector = mkSelector "setDragState:animated:"
 
 -- | @Selector@ for @reuseIdentifier@
-reuseIdentifierSelector :: Selector
+reuseIdentifierSelector :: Selector '[] (Id NSString)
 reuseIdentifierSelector = mkSelector "reuseIdentifier"
 
 -- | @Selector@ for @annotation@
-annotationSelector :: Selector
+annotationSelector :: Selector '[] RawId
 annotationSelector = mkSelector "annotation"
 
 -- | @Selector@ for @setAnnotation:@
-setAnnotationSelector :: Selector
+setAnnotationSelector :: Selector '[RawId] ()
 setAnnotationSelector = mkSelector "setAnnotation:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @highlighted@
-highlightedSelector :: Selector
+highlightedSelector :: Selector '[] Bool
 highlightedSelector = mkSelector "highlighted"
 
 -- | @Selector@ for @setHighlighted:@
-setHighlightedSelector :: Selector
+setHighlightedSelector :: Selector '[Bool] ()
 setHighlightedSelector = mkSelector "setHighlighted:"
 
 -- | @Selector@ for @selected@
-selectedSelector :: Selector
+selectedSelector :: Selector '[] Bool
 selectedSelector = mkSelector "selected"
 
 -- | @Selector@ for @setSelected:@
-setSelectedSelector :: Selector
+setSelectedSelector :: Selector '[Bool] ()
 setSelectedSelector = mkSelector "setSelected:"
 
 -- | @Selector@ for @canShowCallout@
-canShowCalloutSelector :: Selector
+canShowCalloutSelector :: Selector '[] Bool
 canShowCalloutSelector = mkSelector "canShowCallout"
 
 -- | @Selector@ for @setCanShowCallout:@
-setCanShowCalloutSelector :: Selector
+setCanShowCalloutSelector :: Selector '[Bool] ()
 setCanShowCalloutSelector = mkSelector "setCanShowCallout:"
 
 -- | @Selector@ for @leftCalloutAccessoryView@
-leftCalloutAccessoryViewSelector :: Selector
+leftCalloutAccessoryViewSelector :: Selector '[] (Id NSView)
 leftCalloutAccessoryViewSelector = mkSelector "leftCalloutAccessoryView"
 
 -- | @Selector@ for @setLeftCalloutAccessoryView:@
-setLeftCalloutAccessoryViewSelector :: Selector
+setLeftCalloutAccessoryViewSelector :: Selector '[Id NSView] ()
 setLeftCalloutAccessoryViewSelector = mkSelector "setLeftCalloutAccessoryView:"
 
 -- | @Selector@ for @rightCalloutAccessoryView@
-rightCalloutAccessoryViewSelector :: Selector
+rightCalloutAccessoryViewSelector :: Selector '[] (Id NSView)
 rightCalloutAccessoryViewSelector = mkSelector "rightCalloutAccessoryView"
 
 -- | @Selector@ for @setRightCalloutAccessoryView:@
-setRightCalloutAccessoryViewSelector :: Selector
+setRightCalloutAccessoryViewSelector :: Selector '[Id NSView] ()
 setRightCalloutAccessoryViewSelector = mkSelector "setRightCalloutAccessoryView:"
 
 -- | @Selector@ for @detailCalloutAccessoryView@
-detailCalloutAccessoryViewSelector :: Selector
+detailCalloutAccessoryViewSelector :: Selector '[] RawId
 detailCalloutAccessoryViewSelector = mkSelector "detailCalloutAccessoryView"
 
 -- | @Selector@ for @setDetailCalloutAccessoryView:@
-setDetailCalloutAccessoryViewSelector :: Selector
+setDetailCalloutAccessoryViewSelector :: Selector '[RawId] ()
 setDetailCalloutAccessoryViewSelector = mkSelector "setDetailCalloutAccessoryView:"
 
 -- | @Selector@ for @draggable@
-draggableSelector :: Selector
+draggableSelector :: Selector '[] Bool
 draggableSelector = mkSelector "draggable"
 
 -- | @Selector@ for @setDraggable:@
-setDraggableSelector :: Selector
+setDraggableSelector :: Selector '[Bool] ()
 setDraggableSelector = mkSelector "setDraggable:"
 
 -- | @Selector@ for @dragState@
-dragStateSelector :: Selector
+dragStateSelector :: Selector '[] MKAnnotationViewDragState
 dragStateSelector = mkSelector "dragState"
 
 -- | @Selector@ for @setDragState:@
-setDragStateSelector :: Selector
+setDragStateSelector :: Selector '[MKAnnotationViewDragState] ()
 setDragStateSelector = mkSelector "setDragState:"
 
 -- | @Selector@ for @clusteringIdentifier@
-clusteringIdentifierSelector :: Selector
+clusteringIdentifierSelector :: Selector '[] (Id NSString)
 clusteringIdentifierSelector = mkSelector "clusteringIdentifier"
 
 -- | @Selector@ for @setClusteringIdentifier:@
-setClusteringIdentifierSelector :: Selector
+setClusteringIdentifierSelector :: Selector '[Id NSString] ()
 setClusteringIdentifierSelector = mkSelector "setClusteringIdentifier:"
 
 -- | @Selector@ for @clusterAnnotationView@
-clusterAnnotationViewSelector :: Selector
+clusterAnnotationViewSelector :: Selector '[] (Id MKAnnotationView)
 clusterAnnotationViewSelector = mkSelector "clusterAnnotationView"
 
 -- | @Selector@ for @displayPriority@
-displayPrioritySelector :: Selector
+displayPrioritySelector :: Selector '[] CFloat
 displayPrioritySelector = mkSelector "displayPriority"
 
 -- | @Selector@ for @setDisplayPriority:@
-setDisplayPrioritySelector :: Selector
+setDisplayPrioritySelector :: Selector '[CFloat] ()
 setDisplayPrioritySelector = mkSelector "setDisplayPriority:"
 
 -- | @Selector@ for @zPriority@
-zPrioritySelector :: Selector
+zPrioritySelector :: Selector '[] CFloat
 zPrioritySelector = mkSelector "zPriority"
 
 -- | @Selector@ for @setZPriority:@
-setZPrioritySelector :: Selector
+setZPrioritySelector :: Selector '[CFloat] ()
 setZPrioritySelector = mkSelector "setZPriority:"
 
 -- | @Selector@ for @selectedZPriority@
-selectedZPrioritySelector :: Selector
+selectedZPrioritySelector :: Selector '[] CFloat
 selectedZPrioritySelector = mkSelector "selectedZPriority"
 
 -- | @Selector@ for @setSelectedZPriority:@
-setSelectedZPrioritySelector :: Selector
+setSelectedZPrioritySelector :: Selector '[CFloat] ()
 setSelectedZPrioritySelector = mkSelector "setSelectedZPriority:"
 
 -- | @Selector@ for @collisionMode@
-collisionModeSelector :: Selector
+collisionModeSelector :: Selector '[] MKAnnotationViewCollisionMode
 collisionModeSelector = mkSelector "collisionMode"
 
 -- | @Selector@ for @setCollisionMode:@
-setCollisionModeSelector :: Selector
+setCollisionModeSelector :: Selector '[MKAnnotationViewCollisionMode] ()
 setCollisionModeSelector = mkSelector "setCollisionMode:"
 

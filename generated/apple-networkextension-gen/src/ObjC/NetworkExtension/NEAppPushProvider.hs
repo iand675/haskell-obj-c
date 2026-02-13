@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,14 +20,14 @@ module ObjC.NetworkExtension.NEAppPushProvider
   , handleTimerEvent
   , unmatchEthernet
   , providerConfiguration
-  , startWithCompletionHandlerSelector
-  , startSelector
-  , stopWithReason_completionHandlerSelector
+  , handleTimerEventSelector
+  , providerConfigurationSelector
   , reportIncomingCallWithUserInfoSelector
   , reportPushToTalkMessageWithUserInfoSelector
-  , handleTimerEventSelector
+  , startSelector
+  , startWithCompletionHandlerSelector
+  , stopWithReason_completionHandlerSelector
   , unmatchEthernetSelector
-  , providerConfigurationSelector
 
   -- * Enum types
   , NEProviderStopReason(NEProviderStopReason)
@@ -51,15 +52,11 @@ module ObjC.NetworkExtension.NEAppPushProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,8 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startWithCompletionHandler:@
 startWithCompletionHandler :: IsNEAppPushProvider neAppPushProvider => neAppPushProvider -> Ptr () -> IO ()
-startWithCompletionHandler neAppPushProvider  completionHandler =
-    sendMsg neAppPushProvider (mkSelector "startWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+startWithCompletionHandler neAppPushProvider completionHandler =
+  sendMessage neAppPushProvider startWithCompletionHandlerSelector completionHandler
 
 -- | start
 --
@@ -84,8 +81,8 @@ startWithCompletionHandler neAppPushProvider  completionHandler =
 --
 -- ObjC selector: @- start@
 start :: IsNEAppPushProvider neAppPushProvider => neAppPushProvider -> IO ()
-start neAppPushProvider  =
-    sendMsg neAppPushProvider (mkSelector "start") retVoid []
+start neAppPushProvider =
+  sendMessage neAppPushProvider startSelector
 
 -- | stopWithReason:reason:completionHandler:
 --
@@ -97,8 +94,8 @@ start neAppPushProvider  =
 --
 -- ObjC selector: @- stopWithReason:completionHandler:@
 stopWithReason_completionHandler :: IsNEAppPushProvider neAppPushProvider => neAppPushProvider -> NEProviderStopReason -> Ptr () -> IO ()
-stopWithReason_completionHandler neAppPushProvider  reason completionHandler =
-    sendMsg neAppPushProvider (mkSelector "stopWithReason:completionHandler:") retVoid [argCLong (coerce reason), argPtr (castPtr completionHandler :: Ptr ())]
+stopWithReason_completionHandler neAppPushProvider reason completionHandler =
+  sendMessage neAppPushProvider stopWithReason_completionHandlerSelector reason completionHandler
 
 -- | reportIncomingCallWithUserInfo:userinfo:
 --
@@ -108,9 +105,8 @@ stopWithReason_completionHandler neAppPushProvider  reason completionHandler =
 --
 -- ObjC selector: @- reportIncomingCallWithUserInfo:@
 reportIncomingCallWithUserInfo :: (IsNEAppPushProvider neAppPushProvider, IsNSDictionary userInfo) => neAppPushProvider -> userInfo -> IO ()
-reportIncomingCallWithUserInfo neAppPushProvider  userInfo =
-  withObjCPtr userInfo $ \raw_userInfo ->
-      sendMsg neAppPushProvider (mkSelector "reportIncomingCallWithUserInfo:") retVoid [argPtr (castPtr raw_userInfo :: Ptr ())]
+reportIncomingCallWithUserInfo neAppPushProvider userInfo =
+  sendMessage neAppPushProvider reportIncomingCallWithUserInfoSelector (toNSDictionary userInfo)
 
 -- | reportPushToTalkMessageWithUserInfo:userinfo:
 --
@@ -120,9 +116,8 @@ reportIncomingCallWithUserInfo neAppPushProvider  userInfo =
 --
 -- ObjC selector: @- reportPushToTalkMessageWithUserInfo:@
 reportPushToTalkMessageWithUserInfo :: (IsNEAppPushProvider neAppPushProvider, IsNSDictionary userInfo) => neAppPushProvider -> userInfo -> IO ()
-reportPushToTalkMessageWithUserInfo neAppPushProvider  userInfo =
-  withObjCPtr userInfo $ \raw_userInfo ->
-      sendMsg neAppPushProvider (mkSelector "reportPushToTalkMessageWithUserInfo:") retVoid [argPtr (castPtr raw_userInfo :: Ptr ())]
+reportPushToTalkMessageWithUserInfo neAppPushProvider userInfo =
+  sendMessage neAppPushProvider reportPushToTalkMessageWithUserInfoSelector (toNSDictionary userInfo)
 
 -- | handleTimerEvent
 --
@@ -130,8 +125,8 @@ reportPushToTalkMessageWithUserInfo neAppPushProvider  userInfo =
 --
 -- ObjC selector: @- handleTimerEvent@
 handleTimerEvent :: IsNEAppPushProvider neAppPushProvider => neAppPushProvider -> IO ()
-handleTimerEvent neAppPushProvider  =
-    sendMsg neAppPushProvider (mkSelector "handleTimerEvent") retVoid []
+handleTimerEvent neAppPushProvider =
+  sendMessage neAppPushProvider handleTimerEventSelector
 
 -- | unmatchEthernet
 --
@@ -139,8 +134,8 @@ handleTimerEvent neAppPushProvider  =
 --
 -- ObjC selector: @- unmatchEthernet@
 unmatchEthernet :: IsNEAppPushProvider neAppPushProvider => neAppPushProvider -> IO ()
-unmatchEthernet neAppPushProvider  =
-    sendMsg neAppPushProvider (mkSelector "unmatchEthernet") retVoid []
+unmatchEthernet neAppPushProvider =
+  sendMessage neAppPushProvider unmatchEthernetSelector
 
 -- | providerConfiguration
 --
@@ -148,42 +143,42 @@ unmatchEthernet neAppPushProvider  =
 --
 -- ObjC selector: @- providerConfiguration@
 providerConfiguration :: IsNEAppPushProvider neAppPushProvider => neAppPushProvider -> IO (Id NSDictionary)
-providerConfiguration neAppPushProvider  =
-    sendMsg neAppPushProvider (mkSelector "providerConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerConfiguration neAppPushProvider =
+  sendMessage neAppPushProvider providerConfigurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startWithCompletionHandler:@
-startWithCompletionHandlerSelector :: Selector
+startWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 startWithCompletionHandlerSelector = mkSelector "startWithCompletionHandler:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @stopWithReason:completionHandler:@
-stopWithReason_completionHandlerSelector :: Selector
+stopWithReason_completionHandlerSelector :: Selector '[NEProviderStopReason, Ptr ()] ()
 stopWithReason_completionHandlerSelector = mkSelector "stopWithReason:completionHandler:"
 
 -- | @Selector@ for @reportIncomingCallWithUserInfo:@
-reportIncomingCallWithUserInfoSelector :: Selector
+reportIncomingCallWithUserInfoSelector :: Selector '[Id NSDictionary] ()
 reportIncomingCallWithUserInfoSelector = mkSelector "reportIncomingCallWithUserInfo:"
 
 -- | @Selector@ for @reportPushToTalkMessageWithUserInfo:@
-reportPushToTalkMessageWithUserInfoSelector :: Selector
+reportPushToTalkMessageWithUserInfoSelector :: Selector '[Id NSDictionary] ()
 reportPushToTalkMessageWithUserInfoSelector = mkSelector "reportPushToTalkMessageWithUserInfo:"
 
 -- | @Selector@ for @handleTimerEvent@
-handleTimerEventSelector :: Selector
+handleTimerEventSelector :: Selector '[] ()
 handleTimerEventSelector = mkSelector "handleTimerEvent"
 
 -- | @Selector@ for @unmatchEthernet@
-unmatchEthernetSelector :: Selector
+unmatchEthernetSelector :: Selector '[] ()
 unmatchEthernetSelector = mkSelector "unmatchEthernet"
 
 -- | @Selector@ for @providerConfiguration@
-providerConfigurationSelector :: Selector
+providerConfigurationSelector :: Selector '[] (Id NSDictionary)
 providerConfigurationSelector = mkSelector "providerConfiguration"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRNetworkCommissioningClusterRemoveNetworkParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , networkIDSelector
-  , setNetworkIDSelector
   , breadcrumbSelector
-  , setBreadcrumbSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , networkIDSelector
   , serverSideProcessingTimeoutSelector
+  , setBreadcrumbSelector
+  , setNetworkIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- networkID@
 networkID :: IsMTRNetworkCommissioningClusterRemoveNetworkParams mtrNetworkCommissioningClusterRemoveNetworkParams => mtrNetworkCommissioningClusterRemoveNetworkParams -> IO (Id NSData)
-networkID mtrNetworkCommissioningClusterRemoveNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterRemoveNetworkParams (mkSelector "networkID") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkID mtrNetworkCommissioningClusterRemoveNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterRemoveNetworkParams networkIDSelector
 
 -- | @- setNetworkID:@
 setNetworkID :: (IsMTRNetworkCommissioningClusterRemoveNetworkParams mtrNetworkCommissioningClusterRemoveNetworkParams, IsNSData value) => mtrNetworkCommissioningClusterRemoveNetworkParams -> value -> IO ()
-setNetworkID mtrNetworkCommissioningClusterRemoveNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterRemoveNetworkParams (mkSelector "setNetworkID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNetworkID mtrNetworkCommissioningClusterRemoveNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterRemoveNetworkParams setNetworkIDSelector (toNSData value)
 
 -- | @- breadcrumb@
 breadcrumb :: IsMTRNetworkCommissioningClusterRemoveNetworkParams mtrNetworkCommissioningClusterRemoveNetworkParams => mtrNetworkCommissioningClusterRemoveNetworkParams -> IO (Id NSNumber)
-breadcrumb mtrNetworkCommissioningClusterRemoveNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterRemoveNetworkParams (mkSelector "breadcrumb") (retPtr retVoid) [] >>= retainedObject . castPtr
+breadcrumb mtrNetworkCommissioningClusterRemoveNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterRemoveNetworkParams breadcrumbSelector
 
 -- | @- setBreadcrumb:@
 setBreadcrumb :: (IsMTRNetworkCommissioningClusterRemoveNetworkParams mtrNetworkCommissioningClusterRemoveNetworkParams, IsNSNumber value) => mtrNetworkCommissioningClusterRemoveNetworkParams -> value -> IO ()
-setBreadcrumb mtrNetworkCommissioningClusterRemoveNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterRemoveNetworkParams (mkSelector "setBreadcrumb:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBreadcrumb mtrNetworkCommissioningClusterRemoveNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterRemoveNetworkParams setBreadcrumbSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setBreadcrumb mtrNetworkCommissioningClusterRemoveNetworkParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRNetworkCommissioningClusterRemoveNetworkParams mtrNetworkCommissioningClusterRemoveNetworkParams => mtrNetworkCommissioningClusterRemoveNetworkParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrNetworkCommissioningClusterRemoveNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterRemoveNetworkParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrNetworkCommissioningClusterRemoveNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterRemoveNetworkParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrNetworkCommissioningClusterRemoveNetworkParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRNetworkCommissioningClusterRemoveNetworkParams mtrNetworkCommissioningClusterRemoveNetworkParams, IsNSNumber value) => mtrNetworkCommissioningClusterRemoveNetworkParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterRemoveNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterRemoveNetworkParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterRemoveNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterRemoveNetworkParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterRemoveNetworkParams  value
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRNetworkCommissioningClusterRemoveNetworkParams mtrNetworkCommissioningClusterRemoveNetworkParams => mtrNetworkCommissioningClusterRemoveNetworkParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrNetworkCommissioningClusterRemoveNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterRemoveNetworkParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrNetworkCommissioningClusterRemoveNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterRemoveNetworkParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrNetworkCommissioningClusterRemoveNetworkParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRNetworkCommissioningClusterRemoveNetworkParams mtrNetworkCommissioningClusterRemoveNetworkParams, IsNSNumber value) => mtrNetworkCommissioningClusterRemoveNetworkParams -> value -> IO ()
-setServerSideProcessingTimeout mtrNetworkCommissioningClusterRemoveNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterRemoveNetworkParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrNetworkCommissioningClusterRemoveNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterRemoveNetworkParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @networkID@
-networkIDSelector :: Selector
+networkIDSelector :: Selector '[] (Id NSData)
 networkIDSelector = mkSelector "networkID"
 
 -- | @Selector@ for @setNetworkID:@
-setNetworkIDSelector :: Selector
+setNetworkIDSelector :: Selector '[Id NSData] ()
 setNetworkIDSelector = mkSelector "setNetworkID:"
 
 -- | @Selector@ for @breadcrumb@
-breadcrumbSelector :: Selector
+breadcrumbSelector :: Selector '[] (Id NSNumber)
 breadcrumbSelector = mkSelector "breadcrumb"
 
 -- | @Selector@ for @setBreadcrumb:@
-setBreadcrumbSelector :: Selector
+setBreadcrumbSelector :: Selector '[Id NSNumber] ()
 setBreadcrumbSelector = mkSelector "setBreadcrumb:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

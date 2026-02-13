@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.VideoSubscriberAccount.VSAppleSubscription
   , setCustomerID
   , productCodes
   , setProductCodes
-  , initWithCustomerID_productCodesSelector
-  , initSelector
-  , newSelector
   , customerIDSelector
-  , setCustomerIDSelector
+  , initSelector
+  , initWithCustomerID_productCodesSelector
+  , newSelector
   , productCodesSelector
+  , setCustomerIDSelector
   , setProductCodesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,74 +38,70 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCustomerID:productCodes:@
 initWithCustomerID_productCodes :: (IsVSAppleSubscription vsAppleSubscription, IsNSString customerID, IsNSArray productCodes) => vsAppleSubscription -> customerID -> productCodes -> IO (Id VSAppleSubscription)
-initWithCustomerID_productCodes vsAppleSubscription  customerID productCodes =
-  withObjCPtr customerID $ \raw_customerID ->
-    withObjCPtr productCodes $ \raw_productCodes ->
-        sendMsg vsAppleSubscription (mkSelector "initWithCustomerID:productCodes:") (retPtr retVoid) [argPtr (castPtr raw_customerID :: Ptr ()), argPtr (castPtr raw_productCodes :: Ptr ())] >>= ownedObject . castPtr
+initWithCustomerID_productCodes vsAppleSubscription customerID productCodes =
+  sendOwnedMessage vsAppleSubscription initWithCustomerID_productCodesSelector (toNSString customerID) (toNSArray productCodes)
 
 -- | @- init@
 init_ :: IsVSAppleSubscription vsAppleSubscription => vsAppleSubscription -> IO (Id VSAppleSubscription)
-init_ vsAppleSubscription  =
-    sendMsg vsAppleSubscription (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vsAppleSubscription =
+  sendOwnedMessage vsAppleSubscription initSelector
 
 -- | @+ new@
 new :: IO (Id VSAppleSubscription)
 new  =
   do
     cls' <- getRequiredClass "VSAppleSubscription"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- customerID@
 customerID :: IsVSAppleSubscription vsAppleSubscription => vsAppleSubscription -> IO (Id NSString)
-customerID vsAppleSubscription  =
-    sendMsg vsAppleSubscription (mkSelector "customerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+customerID vsAppleSubscription =
+  sendMessage vsAppleSubscription customerIDSelector
 
 -- | @- setCustomerID:@
 setCustomerID :: (IsVSAppleSubscription vsAppleSubscription, IsNSString value) => vsAppleSubscription -> value -> IO ()
-setCustomerID vsAppleSubscription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsAppleSubscription (mkSelector "setCustomerID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomerID vsAppleSubscription value =
+  sendMessage vsAppleSubscription setCustomerIDSelector (toNSString value)
 
 -- | @- productCodes@
 productCodes :: IsVSAppleSubscription vsAppleSubscription => vsAppleSubscription -> IO (Id NSArray)
-productCodes vsAppleSubscription  =
-    sendMsg vsAppleSubscription (mkSelector "productCodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+productCodes vsAppleSubscription =
+  sendMessage vsAppleSubscription productCodesSelector
 
 -- | @- setProductCodes:@
 setProductCodes :: (IsVSAppleSubscription vsAppleSubscription, IsNSArray value) => vsAppleSubscription -> value -> IO ()
-setProductCodes vsAppleSubscription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vsAppleSubscription (mkSelector "setProductCodes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProductCodes vsAppleSubscription value =
+  sendMessage vsAppleSubscription setProductCodesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCustomerID:productCodes:@
-initWithCustomerID_productCodesSelector :: Selector
+initWithCustomerID_productCodesSelector :: Selector '[Id NSString, Id NSArray] (Id VSAppleSubscription)
 initWithCustomerID_productCodesSelector = mkSelector "initWithCustomerID:productCodes:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VSAppleSubscription)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VSAppleSubscription)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @customerID@
-customerIDSelector :: Selector
+customerIDSelector :: Selector '[] (Id NSString)
 customerIDSelector = mkSelector "customerID"
 
 -- | @Selector@ for @setCustomerID:@
-setCustomerIDSelector :: Selector
+setCustomerIDSelector :: Selector '[Id NSString] ()
 setCustomerIDSelector = mkSelector "setCustomerID:"
 
 -- | @Selector@ for @productCodes@
-productCodesSelector :: Selector
+productCodesSelector :: Selector '[] (Id NSArray)
 productCodesSelector = mkSelector "productCodes"
 
 -- | @Selector@ for @setProductCodes:@
-setProductCodesSelector :: Selector
+setProductCodesSelector :: Selector '[Id NSArray] ()
 setProductCodesSelector = mkSelector "setProductCodes:"
 

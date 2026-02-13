@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.Virtualization.VZVirtioSoundDeviceOutputStreamConfiguration
   , sink
   , setSink
   , initSelector
-  , sinkSelector
   , setSinkSelector
+  , sinkSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVZVirtioSoundDeviceOutputStreamConfiguration vzVirtioSoundDeviceOutputStreamConfiguration => vzVirtioSoundDeviceOutputStreamConfiguration -> IO (Id VZVirtioSoundDeviceOutputStreamConfiguration)
-init_ vzVirtioSoundDeviceOutputStreamConfiguration  =
-    sendMsg vzVirtioSoundDeviceOutputStreamConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioSoundDeviceOutputStreamConfiguration =
+  sendOwnedMessage vzVirtioSoundDeviceOutputStreamConfiguration initSelector
 
 -- | Audio Stream Sink. Defines how the audio data produced by the guest is handled on the host. The default is nil.
 --
@@ -50,8 +47,8 @@ init_ vzVirtioSoundDeviceOutputStreamConfiguration  =
 --
 -- ObjC selector: @- sink@
 sink :: IsVZVirtioSoundDeviceOutputStreamConfiguration vzVirtioSoundDeviceOutputStreamConfiguration => vzVirtioSoundDeviceOutputStreamConfiguration -> IO (Id VZAudioOutputStreamSink)
-sink vzVirtioSoundDeviceOutputStreamConfiguration  =
-    sendMsg vzVirtioSoundDeviceOutputStreamConfiguration (mkSelector "sink") (retPtr retVoid) [] >>= retainedObject . castPtr
+sink vzVirtioSoundDeviceOutputStreamConfiguration =
+  sendMessage vzVirtioSoundDeviceOutputStreamConfiguration sinkSelector
 
 -- | Audio Stream Sink. Defines how the audio data produced by the guest is handled on the host. The default is nil.
 --
@@ -61,23 +58,22 @@ sink vzVirtioSoundDeviceOutputStreamConfiguration  =
 --
 -- ObjC selector: @- setSink:@
 setSink :: (IsVZVirtioSoundDeviceOutputStreamConfiguration vzVirtioSoundDeviceOutputStreamConfiguration, IsVZAudioOutputStreamSink value) => vzVirtioSoundDeviceOutputStreamConfiguration -> value -> IO ()
-setSink vzVirtioSoundDeviceOutputStreamConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzVirtioSoundDeviceOutputStreamConfiguration (mkSelector "setSink:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSink vzVirtioSoundDeviceOutputStreamConfiguration value =
+  sendMessage vzVirtioSoundDeviceOutputStreamConfiguration setSinkSelector (toVZAudioOutputStreamSink value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioSoundDeviceOutputStreamConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @sink@
-sinkSelector :: Selector
+sinkSelector :: Selector '[] (Id VZAudioOutputStreamSink)
 sinkSelector = mkSelector "sink"
 
 -- | @Selector@ for @setSink:@
-setSinkSelector :: Selector
+setSinkSelector :: Selector '[Id VZAudioOutputStreamSink] ()
 setSinkSelector = mkSelector "setSink:"
 

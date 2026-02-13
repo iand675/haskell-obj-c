@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Photos.PHAssetResourceRequestOptions
   , progressHandler
   , setProgressHandler
   , networkAccessAllowedSelector
-  , setNetworkAccessAllowedSelector
   , progressHandlerSelector
+  , setNetworkAccessAllowedSelector
   , setProgressHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- networkAccessAllowed@
 networkAccessAllowed :: IsPHAssetResourceRequestOptions phAssetResourceRequestOptions => phAssetResourceRequestOptions -> IO Bool
-networkAccessAllowed phAssetResourceRequestOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAssetResourceRequestOptions (mkSelector "networkAccessAllowed") retCULong []
+networkAccessAllowed phAssetResourceRequestOptions =
+  sendMessage phAssetResourceRequestOptions networkAccessAllowedSelector
 
 -- | @- setNetworkAccessAllowed:@
 setNetworkAccessAllowed :: IsPHAssetResourceRequestOptions phAssetResourceRequestOptions => phAssetResourceRequestOptions -> Bool -> IO ()
-setNetworkAccessAllowed phAssetResourceRequestOptions  value =
-    sendMsg phAssetResourceRequestOptions (mkSelector "setNetworkAccessAllowed:") retVoid [argCULong (if value then 1 else 0)]
+setNetworkAccessAllowed phAssetResourceRequestOptions value =
+  sendMessage phAssetResourceRequestOptions setNetworkAccessAllowedSelector value
 
 -- | @- progressHandler@
 progressHandler :: IsPHAssetResourceRequestOptions phAssetResourceRequestOptions => phAssetResourceRequestOptions -> IO (Ptr ())
-progressHandler phAssetResourceRequestOptions  =
-    fmap castPtr $ sendMsg phAssetResourceRequestOptions (mkSelector "progressHandler") (retPtr retVoid) []
+progressHandler phAssetResourceRequestOptions =
+  sendMessage phAssetResourceRequestOptions progressHandlerSelector
 
 -- | @- setProgressHandler:@
 setProgressHandler :: IsPHAssetResourceRequestOptions phAssetResourceRequestOptions => phAssetResourceRequestOptions -> Ptr () -> IO ()
-setProgressHandler phAssetResourceRequestOptions  value =
-    sendMsg phAssetResourceRequestOptions (mkSelector "setProgressHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setProgressHandler phAssetResourceRequestOptions value =
+  sendMessage phAssetResourceRequestOptions setProgressHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @networkAccessAllowed@
-networkAccessAllowedSelector :: Selector
+networkAccessAllowedSelector :: Selector '[] Bool
 networkAccessAllowedSelector = mkSelector "networkAccessAllowed"
 
 -- | @Selector@ for @setNetworkAccessAllowed:@
-setNetworkAccessAllowedSelector :: Selector
+setNetworkAccessAllowedSelector :: Selector '[Bool] ()
 setNetworkAccessAllowedSelector = mkSelector "setNetworkAccessAllowed:"
 
 -- | @Selector@ for @progressHandler@
-progressHandlerSelector :: Selector
+progressHandlerSelector :: Selector '[] (Ptr ())
 progressHandlerSelector = mkSelector "progressHandler"
 
 -- | @Selector@ for @setProgressHandler:@
-setProgressHandlerSelector :: Selector
+setProgressHandlerSelector :: Selector '[Ptr ()] ()
 setProgressHandlerSelector = mkSelector "setProgressHandler:"
 

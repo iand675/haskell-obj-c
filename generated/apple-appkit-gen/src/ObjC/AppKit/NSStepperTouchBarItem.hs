@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.AppKit.NSStepperTouchBarItem
   , setAction
   , customizationLabel
   , setCustomizationLabel
-  , stepperTouchBarItemWithIdentifier_formatterSelector
-  , stepperTouchBarItemWithIdentifier_drawingHandlerSelector
-  , maxValueSelector
-  , setMaxValueSelector
-  , minValueSelector
-  , setMinValueSelector
-  , incrementSelector
-  , setIncrementSelector
-  , valueSelector
-  , setValueSelector
-  , targetSelector
-  , setTargetSelector
   , actionSelector
-  , setActionSelector
   , customizationLabelSelector
+  , incrementSelector
+  , maxValueSelector
+  , minValueSelector
+  , setActionSelector
   , setCustomizationLabelSelector
+  , setIncrementSelector
+  , setMaxValueSelector
+  , setMinValueSelector
+  , setTargetSelector
+  , setValueSelector
+  , stepperTouchBarItemWithIdentifier_drawingHandlerSelector
+  , stepperTouchBarItemWithIdentifier_formatterSelector
+  , targetSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,9 +63,7 @@ stepperTouchBarItemWithIdentifier_formatter :: (IsNSString identifier, IsNSForma
 stepperTouchBarItemWithIdentifier_formatter identifier formatter =
   do
     cls' <- getRequiredClass "NSStepperTouchBarItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr formatter $ \raw_formatter ->
-        sendClassMsg cls' (mkSelector "stepperTouchBarItemWithIdentifier:formatter:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_formatter :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' stepperTouchBarItemWithIdentifier_formatterSelector (toNSString identifier) (toNSFormatter formatter)
 
 -- | Creates an @NSStepperTouchBarItem@ using the result of @drawingHandler@ to display the stepper's value as an image
 --
@@ -79,173 +74,171 @@ stepperTouchBarItemWithIdentifier_drawingHandler :: IsNSString identifier => ide
 stepperTouchBarItemWithIdentifier_drawingHandler identifier drawingHandler =
   do
     cls' <- getRequiredClass "NSStepperTouchBarItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "stepperTouchBarItemWithIdentifier:drawingHandler:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr drawingHandler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' stepperTouchBarItemWithIdentifier_drawingHandlerSelector (toNSString identifier) drawingHandler
 
 -- | The stepper's maximum value. The default is 59.0.
 --
 -- ObjC selector: @- maxValue@
 maxValue :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> IO CDouble
-maxValue nsStepperTouchBarItem  =
-    sendMsg nsStepperTouchBarItem (mkSelector "maxValue") retCDouble []
+maxValue nsStepperTouchBarItem =
+  sendMessage nsStepperTouchBarItem maxValueSelector
 
 -- | The stepper's maximum value. The default is 59.0.
 --
 -- ObjC selector: @- setMaxValue:@
 setMaxValue :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> CDouble -> IO ()
-setMaxValue nsStepperTouchBarItem  value =
-    sendMsg nsStepperTouchBarItem (mkSelector "setMaxValue:") retVoid [argCDouble value]
+setMaxValue nsStepperTouchBarItem value =
+  sendMessage nsStepperTouchBarItem setMaxValueSelector value
 
 -- | The stepper's minimum value. The default is 0.0.
 --
 -- ObjC selector: @- minValue@
 minValue :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> IO CDouble
-minValue nsStepperTouchBarItem  =
-    sendMsg nsStepperTouchBarItem (mkSelector "minValue") retCDouble []
+minValue nsStepperTouchBarItem =
+  sendMessage nsStepperTouchBarItem minValueSelector
 
 -- | The stepper's minimum value. The default is 0.0.
 --
 -- ObjC selector: @- setMinValue:@
 setMinValue :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> CDouble -> IO ()
-setMinValue nsStepperTouchBarItem  value =
-    sendMsg nsStepperTouchBarItem (mkSelector "setMinValue:") retVoid [argCDouble value]
+setMinValue nsStepperTouchBarItem value =
+  sendMessage nsStepperTouchBarItem setMinValueSelector value
 
 -- | The stepper's increment value. The default is 1.0.
 --
 -- ObjC selector: @- increment@
 increment :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> IO CDouble
-increment nsStepperTouchBarItem  =
-    sendMsg nsStepperTouchBarItem (mkSelector "increment") retCDouble []
+increment nsStepperTouchBarItem =
+  sendMessage nsStepperTouchBarItem incrementSelector
 
 -- | The stepper's increment value. The default is 1.0.
 --
 -- ObjC selector: @- setIncrement:@
 setIncrement :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> CDouble -> IO ()
-setIncrement nsStepperTouchBarItem  value =
-    sendMsg nsStepperTouchBarItem (mkSelector "setIncrement:") retVoid [argCDouble value]
+setIncrement nsStepperTouchBarItem value =
+  sendMessage nsStepperTouchBarItem setIncrementSelector value
 
 -- | The current value of the stepper.
 --
 -- ObjC selector: @- value@
 value :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> IO CDouble
-value nsStepperTouchBarItem  =
-    sendMsg nsStepperTouchBarItem (mkSelector "value") retCDouble []
+value nsStepperTouchBarItem =
+  sendMessage nsStepperTouchBarItem valueSelector
 
 -- | The current value of the stepper.
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> CDouble -> IO ()
-setValue nsStepperTouchBarItem  value =
-    sendMsg nsStepperTouchBarItem (mkSelector "setValue:") retVoid [argCDouble value]
+setValue nsStepperTouchBarItem value =
+  sendMessage nsStepperTouchBarItem setValueSelector value
 
 -- | The target object that receives action messages from the stepper.
 --
 -- ObjC selector: @- target@
 target :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> IO RawId
-target nsStepperTouchBarItem  =
-    fmap (RawId . castPtr) $ sendMsg nsStepperTouchBarItem (mkSelector "target") (retPtr retVoid) []
+target nsStepperTouchBarItem =
+  sendMessage nsStepperTouchBarItem targetSelector
 
 -- | The target object that receives action messages from the stepper.
 --
 -- ObjC selector: @- setTarget:@
 setTarget :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> RawId -> IO ()
-setTarget nsStepperTouchBarItem  value =
-    sendMsg nsStepperTouchBarItem (mkSelector "setTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTarget nsStepperTouchBarItem value =
+  sendMessage nsStepperTouchBarItem setTargetSelector value
 
 -- | The action-message selector associated with the stepper.
 --
 -- ObjC selector: @- action@
-action :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> IO Selector
-action nsStepperTouchBarItem  =
-    fmap (Selector . castPtr) $ sendMsg nsStepperTouchBarItem (mkSelector "action") (retPtr retVoid) []
+action :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> IO Sel
+action nsStepperTouchBarItem =
+  sendMessage nsStepperTouchBarItem actionSelector
 
 -- | The action-message selector associated with the stepper.
 --
 -- ObjC selector: @- setAction:@
-setAction :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> Selector -> IO ()
-setAction nsStepperTouchBarItem  value =
-    sendMsg nsStepperTouchBarItem (mkSelector "setAction:") retVoid [argPtr (unSelector value)]
+setAction :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> Sel -> IO ()
+setAction nsStepperTouchBarItem value =
+  sendMessage nsStepperTouchBarItem setActionSelector value
 
 -- | The localized string labelling this item during user customization. The default value is empty string.
 --
 -- ObjC selector: @- customizationLabel@
 customizationLabel :: IsNSStepperTouchBarItem nsStepperTouchBarItem => nsStepperTouchBarItem -> IO (Id NSString)
-customizationLabel nsStepperTouchBarItem  =
-    sendMsg nsStepperTouchBarItem (mkSelector "customizationLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+customizationLabel nsStepperTouchBarItem =
+  sendMessage nsStepperTouchBarItem customizationLabelSelector
 
 -- | The localized string labelling this item during user customization. The default value is empty string.
 --
 -- ObjC selector: @- setCustomizationLabel:@
 setCustomizationLabel :: (IsNSStepperTouchBarItem nsStepperTouchBarItem, IsNSString value) => nsStepperTouchBarItem -> value -> IO ()
-setCustomizationLabel nsStepperTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsStepperTouchBarItem (mkSelector "setCustomizationLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomizationLabel nsStepperTouchBarItem value =
+  sendMessage nsStepperTouchBarItem setCustomizationLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stepperTouchBarItemWithIdentifier:formatter:@
-stepperTouchBarItemWithIdentifier_formatterSelector :: Selector
+stepperTouchBarItemWithIdentifier_formatterSelector :: Selector '[Id NSString, Id NSFormatter] (Id NSStepperTouchBarItem)
 stepperTouchBarItemWithIdentifier_formatterSelector = mkSelector "stepperTouchBarItemWithIdentifier:formatter:"
 
 -- | @Selector@ for @stepperTouchBarItemWithIdentifier:drawingHandler:@
-stepperTouchBarItemWithIdentifier_drawingHandlerSelector :: Selector
+stepperTouchBarItemWithIdentifier_drawingHandlerSelector :: Selector '[Id NSString, Ptr ()] (Id NSStepperTouchBarItem)
 stepperTouchBarItemWithIdentifier_drawingHandlerSelector = mkSelector "stepperTouchBarItemWithIdentifier:drawingHandler:"
 
 -- | @Selector@ for @maxValue@
-maxValueSelector :: Selector
+maxValueSelector :: Selector '[] CDouble
 maxValueSelector = mkSelector "maxValue"
 
 -- | @Selector@ for @setMaxValue:@
-setMaxValueSelector :: Selector
+setMaxValueSelector :: Selector '[CDouble] ()
 setMaxValueSelector = mkSelector "setMaxValue:"
 
 -- | @Selector@ for @minValue@
-minValueSelector :: Selector
+minValueSelector :: Selector '[] CDouble
 minValueSelector = mkSelector "minValue"
 
 -- | @Selector@ for @setMinValue:@
-setMinValueSelector :: Selector
+setMinValueSelector :: Selector '[CDouble] ()
 setMinValueSelector = mkSelector "setMinValue:"
 
 -- | @Selector@ for @increment@
-incrementSelector :: Selector
+incrementSelector :: Selector '[] CDouble
 incrementSelector = mkSelector "increment"
 
 -- | @Selector@ for @setIncrement:@
-setIncrementSelector :: Selector
+setIncrementSelector :: Selector '[CDouble] ()
 setIncrementSelector = mkSelector "setIncrement:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CDouble
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[CDouble] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] RawId
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[RawId] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] Sel
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[Sel] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @customizationLabel@
-customizationLabelSelector :: Selector
+customizationLabelSelector :: Selector '[] (Id NSString)
 customizationLabelSelector = mkSelector "customizationLabel"
 
 -- | @Selector@ for @setCustomizationLabel:@
-setCustomizationLabelSelector :: Selector
+setCustomizationLabelSelector :: Selector '[Id NSString] ()
 setCustomizationLabelSelector = mkSelector "setCustomizationLabel:"
 

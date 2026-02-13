@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,31 +33,31 @@ module ObjC.AppKit.NSTextContainer
   , setExclusionPaths
   , textView
   , setTextView
+  , containerSizeSelector
+  , containsPointSelector
+  , exclusionPathsSelector
+  , heightTracksTextViewSelector
   , initWithCoderSelector
   , initWithContainerSizeSelector
-  , lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRectSelector
-  , containsPointSelector
-  , replaceLayoutManagerSelector
-  , textLayoutManagerSelector
-  , lineBreakModeSelector
-  , setLineBreakModeSelector
-  , lineFragmentPaddingSelector
-  , setLineFragmentPaddingSelector
-  , maximumNumberOfLinesSelector
-  , setMaximumNumberOfLinesSelector
-  , simpleRectangularTextContainerSelector
-  , widthTracksTextViewSelector
-  , setWidthTracksTextViewSelector
-  , heightTracksTextViewSelector
-  , setHeightTracksTextViewSelector
-  , containerSizeSelector
-  , setContainerSizeSelector
   , layoutManagerSelector
-  , setLayoutManagerSelector
-  , exclusionPathsSelector
+  , lineBreakModeSelector
+  , lineFragmentPaddingSelector
+  , lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRectSelector
+  , maximumNumberOfLinesSelector
+  , replaceLayoutManagerSelector
+  , setContainerSizeSelector
   , setExclusionPathsSelector
-  , textViewSelector
+  , setHeightTracksTextViewSelector
+  , setLayoutManagerSelector
+  , setLineBreakModeSelector
+  , setLineFragmentPaddingSelector
+  , setMaximumNumberOfLinesSelector
   , setTextViewSelector
+  , setWidthTracksTextViewSelector
+  , simpleRectangularTextContainerSelector
+  , textLayoutManagerSelector
+  , textViewSelector
+  , widthTracksTextViewSelector
 
   -- * Enum types
   , NSLineBreakMode(NSLineBreakMode)
@@ -84,15 +85,11 @@ module ObjC.AppKit.NSTextContainer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -103,243 +100,238 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSTextContainer nsTextContainer, IsNSCoder coder) => nsTextContainer -> coder -> IO (Id NSTextContainer)
-initWithCoder nsTextContainer  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsTextContainer (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsTextContainer coder =
+  sendOwnedMessage nsTextContainer initWithCoderSelector (toNSCoder coder)
 
 -- | @- initWithContainerSize:@
 initWithContainerSize :: IsNSTextContainer nsTextContainer => nsTextContainer -> NSSize -> IO (Id NSTextContainer)
-initWithContainerSize nsTextContainer  aContainerSize =
-    sendMsg nsTextContainer (mkSelector "initWithContainerSize:") (retPtr retVoid) [argNSSize aContainerSize] >>= ownedObject . castPtr
+initWithContainerSize nsTextContainer aContainerSize =
+  sendOwnedMessage nsTextContainer initWithContainerSizeSelector aContainerSize
 
 -- | @- lineFragmentRectForProposedRect:sweepDirection:movementDirection:remainingRect:@
 lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRect :: IsNSTextContainer nsTextContainer => nsTextContainer -> NSRect -> NSLineSweepDirection -> NSLineMovementDirection -> Ptr NSRect -> IO NSRect
-lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRect nsTextContainer  proposedRect sweepDirection movementDirection remainingRect =
-    sendMsgStret nsTextContainer (mkSelector "lineFragmentRectForProposedRect:sweepDirection:movementDirection:remainingRect:") retNSRect [argNSRect proposedRect, argCULong (coerce sweepDirection), argCULong (coerce movementDirection), argPtr remainingRect]
+lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRect nsTextContainer proposedRect sweepDirection movementDirection remainingRect =
+  sendMessage nsTextContainer lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRectSelector proposedRect sweepDirection movementDirection remainingRect
 
 -- | @- containsPoint:@
 containsPoint :: IsNSTextContainer nsTextContainer => nsTextContainer -> NSPoint -> IO Bool
-containsPoint nsTextContainer  point =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextContainer (mkSelector "containsPoint:") retCULong [argNSPoint point]
+containsPoint nsTextContainer point =
+  sendMessage nsTextContainer containsPointSelector point
 
 -- | @- replaceLayoutManager:@
 replaceLayoutManager :: (IsNSTextContainer nsTextContainer, IsNSLayoutManager newLayoutManager) => nsTextContainer -> newLayoutManager -> IO ()
-replaceLayoutManager nsTextContainer  newLayoutManager =
-  withObjCPtr newLayoutManager $ \raw_newLayoutManager ->
-      sendMsg nsTextContainer (mkSelector "replaceLayoutManager:") retVoid [argPtr (castPtr raw_newLayoutManager :: Ptr ())]
+replaceLayoutManager nsTextContainer newLayoutManager =
+  sendMessage nsTextContainer replaceLayoutManagerSelector (toNSLayoutManager newLayoutManager)
 
 -- | @- textLayoutManager@
 textLayoutManager :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO (Id NSTextLayoutManager)
-textLayoutManager nsTextContainer  =
-    sendMsg nsTextContainer (mkSelector "textLayoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+textLayoutManager nsTextContainer =
+  sendMessage nsTextContainer textLayoutManagerSelector
 
 -- | @- lineBreakMode@
 lineBreakMode :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO NSLineBreakMode
-lineBreakMode nsTextContainer  =
-    fmap (coerce :: CULong -> NSLineBreakMode) $ sendMsg nsTextContainer (mkSelector "lineBreakMode") retCULong []
+lineBreakMode nsTextContainer =
+  sendMessage nsTextContainer lineBreakModeSelector
 
 -- | @- setLineBreakMode:@
 setLineBreakMode :: IsNSTextContainer nsTextContainer => nsTextContainer -> NSLineBreakMode -> IO ()
-setLineBreakMode nsTextContainer  value =
-    sendMsg nsTextContainer (mkSelector "setLineBreakMode:") retVoid [argCULong (coerce value)]
+setLineBreakMode nsTextContainer value =
+  sendMessage nsTextContainer setLineBreakModeSelector value
 
 -- | *********************** Layout constraint properties ************************
 --
 -- ObjC selector: @- lineFragmentPadding@
 lineFragmentPadding :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO CDouble
-lineFragmentPadding nsTextContainer  =
-    sendMsg nsTextContainer (mkSelector "lineFragmentPadding") retCDouble []
+lineFragmentPadding nsTextContainer =
+  sendMessage nsTextContainer lineFragmentPaddingSelector
 
 -- | *********************** Layout constraint properties ************************
 --
 -- ObjC selector: @- setLineFragmentPadding:@
 setLineFragmentPadding :: IsNSTextContainer nsTextContainer => nsTextContainer -> CDouble -> IO ()
-setLineFragmentPadding nsTextContainer  value =
-    sendMsg nsTextContainer (mkSelector "setLineFragmentPadding:") retVoid [argCDouble value]
+setLineFragmentPadding nsTextContainer value =
+  sendMessage nsTextContainer setLineFragmentPaddingSelector value
 
 -- | @- maximumNumberOfLines@
 maximumNumberOfLines :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO CULong
-maximumNumberOfLines nsTextContainer  =
-    sendMsg nsTextContainer (mkSelector "maximumNumberOfLines") retCULong []
+maximumNumberOfLines nsTextContainer =
+  sendMessage nsTextContainer maximumNumberOfLinesSelector
 
 -- | @- setMaximumNumberOfLines:@
 setMaximumNumberOfLines :: IsNSTextContainer nsTextContainer => nsTextContainer -> CULong -> IO ()
-setMaximumNumberOfLines nsTextContainer  value =
-    sendMsg nsTextContainer (mkSelector "setMaximumNumberOfLines:") retVoid [argCULong value]
+setMaximumNumberOfLines nsTextContainer value =
+  sendMessage nsTextContainer setMaximumNumberOfLinesSelector value
 
 -- | @- simpleRectangularTextContainer@
 simpleRectangularTextContainer :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO Bool
-simpleRectangularTextContainer nsTextContainer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextContainer (mkSelector "simpleRectangularTextContainer") retCULong []
+simpleRectangularTextContainer nsTextContainer =
+  sendMessage nsTextContainer simpleRectangularTextContainerSelector
 
 -- | ************************** View synchronization ***************************
 --
 -- ObjC selector: @- widthTracksTextView@
 widthTracksTextView :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO Bool
-widthTracksTextView nsTextContainer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextContainer (mkSelector "widthTracksTextView") retCULong []
+widthTracksTextView nsTextContainer =
+  sendMessage nsTextContainer widthTracksTextViewSelector
 
 -- | ************************** View synchronization ***************************
 --
 -- ObjC selector: @- setWidthTracksTextView:@
 setWidthTracksTextView :: IsNSTextContainer nsTextContainer => nsTextContainer -> Bool -> IO ()
-setWidthTracksTextView nsTextContainer  value =
-    sendMsg nsTextContainer (mkSelector "setWidthTracksTextView:") retVoid [argCULong (if value then 1 else 0)]
+setWidthTracksTextView nsTextContainer value =
+  sendMessage nsTextContainer setWidthTracksTextViewSelector value
 
 -- | @- heightTracksTextView@
 heightTracksTextView :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO Bool
-heightTracksTextView nsTextContainer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextContainer (mkSelector "heightTracksTextView") retCULong []
+heightTracksTextView nsTextContainer =
+  sendMessage nsTextContainer heightTracksTextViewSelector
 
 -- | @- setHeightTracksTextView:@
 setHeightTracksTextView :: IsNSTextContainer nsTextContainer => nsTextContainer -> Bool -> IO ()
-setHeightTracksTextView nsTextContainer  value =
-    sendMsg nsTextContainer (mkSelector "setHeightTracksTextView:") retVoid [argCULong (if value then 1 else 0)]
+setHeightTracksTextView nsTextContainer value =
+  sendMessage nsTextContainer setHeightTracksTextViewSelector value
 
 -- | @- containerSize@
 containerSize :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO NSSize
-containerSize nsTextContainer  =
-    sendMsgStret nsTextContainer (mkSelector "containerSize") retNSSize []
+containerSize nsTextContainer =
+  sendMessage nsTextContainer containerSizeSelector
 
 -- | @- setContainerSize:@
 setContainerSize :: IsNSTextContainer nsTextContainer => nsTextContainer -> NSSize -> IO ()
-setContainerSize nsTextContainer  value =
-    sendMsg nsTextContainer (mkSelector "setContainerSize:") retVoid [argNSSize value]
+setContainerSize nsTextContainer value =
+  sendMessage nsTextContainer setContainerSizeSelector value
 
 -- | @- layoutManager@
 layoutManager :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO (Id NSLayoutManager)
-layoutManager nsTextContainer  =
-    sendMsg nsTextContainer (mkSelector "layoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+layoutManager nsTextContainer =
+  sendMessage nsTextContainer layoutManagerSelector
 
 -- | @- setLayoutManager:@
 setLayoutManager :: (IsNSTextContainer nsTextContainer, IsNSLayoutManager value) => nsTextContainer -> value -> IO ()
-setLayoutManager nsTextContainer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextContainer (mkSelector "setLayoutManager:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLayoutManager nsTextContainer value =
+  sendMessage nsTextContainer setLayoutManagerSelector (toNSLayoutManager value)
 
 -- | @- exclusionPaths@
 exclusionPaths :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO (Id NSArray)
-exclusionPaths nsTextContainer  =
-    sendMsg nsTextContainer (mkSelector "exclusionPaths") (retPtr retVoid) [] >>= retainedObject . castPtr
+exclusionPaths nsTextContainer =
+  sendMessage nsTextContainer exclusionPathsSelector
 
 -- | @- setExclusionPaths:@
 setExclusionPaths :: (IsNSTextContainer nsTextContainer, IsNSArray value) => nsTextContainer -> value -> IO ()
-setExclusionPaths nsTextContainer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextContainer (mkSelector "setExclusionPaths:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExclusionPaths nsTextContainer value =
+  sendMessage nsTextContainer setExclusionPathsSelector (toNSArray value)
 
 -- | @- textView@
 textView :: IsNSTextContainer nsTextContainer => nsTextContainer -> IO (Id NSTextView)
-textView nsTextContainer  =
-    sendMsg nsTextContainer (mkSelector "textView") (retPtr retVoid) [] >>= retainedObject . castPtr
+textView nsTextContainer =
+  sendMessage nsTextContainer textViewSelector
 
 -- | @- setTextView:@
 setTextView :: (IsNSTextContainer nsTextContainer, IsNSTextView value) => nsTextContainer -> value -> IO ()
-setTextView nsTextContainer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextContainer (mkSelector "setTextView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextView nsTextContainer value =
+  sendMessage nsTextContainer setTextViewSelector (toNSTextView value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSTextContainer)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initWithContainerSize:@
-initWithContainerSizeSelector :: Selector
+initWithContainerSizeSelector :: Selector '[NSSize] (Id NSTextContainer)
 initWithContainerSizeSelector = mkSelector "initWithContainerSize:"
 
 -- | @Selector@ for @lineFragmentRectForProposedRect:sweepDirection:movementDirection:remainingRect:@
-lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRectSelector :: Selector
+lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRectSelector :: Selector '[NSRect, NSLineSweepDirection, NSLineMovementDirection, Ptr NSRect] NSRect
 lineFragmentRectForProposedRect_sweepDirection_movementDirection_remainingRectSelector = mkSelector "lineFragmentRectForProposedRect:sweepDirection:movementDirection:remainingRect:"
 
 -- | @Selector@ for @containsPoint:@
-containsPointSelector :: Selector
+containsPointSelector :: Selector '[NSPoint] Bool
 containsPointSelector = mkSelector "containsPoint:"
 
 -- | @Selector@ for @replaceLayoutManager:@
-replaceLayoutManagerSelector :: Selector
+replaceLayoutManagerSelector :: Selector '[Id NSLayoutManager] ()
 replaceLayoutManagerSelector = mkSelector "replaceLayoutManager:"
 
 -- | @Selector@ for @textLayoutManager@
-textLayoutManagerSelector :: Selector
+textLayoutManagerSelector :: Selector '[] (Id NSTextLayoutManager)
 textLayoutManagerSelector = mkSelector "textLayoutManager"
 
 -- | @Selector@ for @lineBreakMode@
-lineBreakModeSelector :: Selector
+lineBreakModeSelector :: Selector '[] NSLineBreakMode
 lineBreakModeSelector = mkSelector "lineBreakMode"
 
 -- | @Selector@ for @setLineBreakMode:@
-setLineBreakModeSelector :: Selector
+setLineBreakModeSelector :: Selector '[NSLineBreakMode] ()
 setLineBreakModeSelector = mkSelector "setLineBreakMode:"
 
 -- | @Selector@ for @lineFragmentPadding@
-lineFragmentPaddingSelector :: Selector
+lineFragmentPaddingSelector :: Selector '[] CDouble
 lineFragmentPaddingSelector = mkSelector "lineFragmentPadding"
 
 -- | @Selector@ for @setLineFragmentPadding:@
-setLineFragmentPaddingSelector :: Selector
+setLineFragmentPaddingSelector :: Selector '[CDouble] ()
 setLineFragmentPaddingSelector = mkSelector "setLineFragmentPadding:"
 
 -- | @Selector@ for @maximumNumberOfLines@
-maximumNumberOfLinesSelector :: Selector
+maximumNumberOfLinesSelector :: Selector '[] CULong
 maximumNumberOfLinesSelector = mkSelector "maximumNumberOfLines"
 
 -- | @Selector@ for @setMaximumNumberOfLines:@
-setMaximumNumberOfLinesSelector :: Selector
+setMaximumNumberOfLinesSelector :: Selector '[CULong] ()
 setMaximumNumberOfLinesSelector = mkSelector "setMaximumNumberOfLines:"
 
 -- | @Selector@ for @simpleRectangularTextContainer@
-simpleRectangularTextContainerSelector :: Selector
+simpleRectangularTextContainerSelector :: Selector '[] Bool
 simpleRectangularTextContainerSelector = mkSelector "simpleRectangularTextContainer"
 
 -- | @Selector@ for @widthTracksTextView@
-widthTracksTextViewSelector :: Selector
+widthTracksTextViewSelector :: Selector '[] Bool
 widthTracksTextViewSelector = mkSelector "widthTracksTextView"
 
 -- | @Selector@ for @setWidthTracksTextView:@
-setWidthTracksTextViewSelector :: Selector
+setWidthTracksTextViewSelector :: Selector '[Bool] ()
 setWidthTracksTextViewSelector = mkSelector "setWidthTracksTextView:"
 
 -- | @Selector@ for @heightTracksTextView@
-heightTracksTextViewSelector :: Selector
+heightTracksTextViewSelector :: Selector '[] Bool
 heightTracksTextViewSelector = mkSelector "heightTracksTextView"
 
 -- | @Selector@ for @setHeightTracksTextView:@
-setHeightTracksTextViewSelector :: Selector
+setHeightTracksTextViewSelector :: Selector '[Bool] ()
 setHeightTracksTextViewSelector = mkSelector "setHeightTracksTextView:"
 
 -- | @Selector@ for @containerSize@
-containerSizeSelector :: Selector
+containerSizeSelector :: Selector '[] NSSize
 containerSizeSelector = mkSelector "containerSize"
 
 -- | @Selector@ for @setContainerSize:@
-setContainerSizeSelector :: Selector
+setContainerSizeSelector :: Selector '[NSSize] ()
 setContainerSizeSelector = mkSelector "setContainerSize:"
 
 -- | @Selector@ for @layoutManager@
-layoutManagerSelector :: Selector
+layoutManagerSelector :: Selector '[] (Id NSLayoutManager)
 layoutManagerSelector = mkSelector "layoutManager"
 
 -- | @Selector@ for @setLayoutManager:@
-setLayoutManagerSelector :: Selector
+setLayoutManagerSelector :: Selector '[Id NSLayoutManager] ()
 setLayoutManagerSelector = mkSelector "setLayoutManager:"
 
 -- | @Selector@ for @exclusionPaths@
-exclusionPathsSelector :: Selector
+exclusionPathsSelector :: Selector '[] (Id NSArray)
 exclusionPathsSelector = mkSelector "exclusionPaths"
 
 -- | @Selector@ for @setExclusionPaths:@
-setExclusionPathsSelector :: Selector
+setExclusionPathsSelector :: Selector '[Id NSArray] ()
 setExclusionPathsSelector = mkSelector "setExclusionPaths:"
 
 -- | @Selector@ for @textView@
-textViewSelector :: Selector
+textViewSelector :: Selector '[] (Id NSTextView)
 textViewSelector = mkSelector "textView"
 
 -- | @Selector@ for @setTextView:@
-setTextViewSelector :: Selector
+setTextViewSelector :: Selector '[Id NSTextView] ()
 setTextViewSelector = mkSelector "setTextView:"
 

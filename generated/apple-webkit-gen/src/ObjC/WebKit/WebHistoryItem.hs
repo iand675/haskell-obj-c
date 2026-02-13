@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.WebKit.WebHistoryItem
   , alternateTitle
   , setAlternateTitle
   , icon
-  , initWithURLString_title_lastVisitedTimeIntervalSelector
-  , originalURLStringSelector
-  , urlStringSelector
-  , titleSelector
-  , lastVisitedTimeIntervalSelector
   , alternateTitleSelector
-  , setAlternateTitleSelector
   , iconSelector
+  , initWithURLString_title_lastVisitedTimeIntervalSelector
+  , lastVisitedTimeIntervalSelector
+  , originalURLStringSelector
+  , setAlternateTitleSelector
+  , titleSelector
+  , urlStringSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,10 +57,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURLString:title:lastVisitedTimeInterval:@
 initWithURLString_title_lastVisitedTimeInterval :: (IsWebHistoryItem webHistoryItem, IsNSString urlString, IsNSString title) => webHistoryItem -> urlString -> title -> CDouble -> IO (Id WebHistoryItem)
-initWithURLString_title_lastVisitedTimeInterval webHistoryItem  urlString title time =
-  withObjCPtr urlString $ \raw_urlString ->
-    withObjCPtr title $ \raw_title ->
-        sendMsg webHistoryItem (mkSelector "initWithURLString:title:lastVisitedTimeInterval:") (retPtr retVoid) [argPtr (castPtr raw_urlString :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argCDouble time] >>= ownedObject . castPtr
+initWithURLString_title_lastVisitedTimeInterval webHistoryItem urlString title time =
+  sendOwnedMessage webHistoryItem initWithURLString_title_lastVisitedTimeIntervalSelector (toNSString urlString) (toNSString title) time
 
 -- | originalURLString
 --
@@ -71,8 +66,8 @@ initWithURLString_title_lastVisitedTimeInterval webHistoryItem  urlString title 
 --
 -- ObjC selector: @- originalURLString@
 originalURLString :: IsWebHistoryItem webHistoryItem => webHistoryItem -> IO (Id NSString)
-originalURLString webHistoryItem  =
-    sendMsg webHistoryItem (mkSelector "originalURLString") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalURLString webHistoryItem =
+  sendMessage webHistoryItem originalURLStringSelector
 
 -- | URLString
 --
@@ -82,8 +77,8 @@ originalURLString webHistoryItem  =
 --
 -- ObjC selector: @- URLString@
 urlString :: IsWebHistoryItem webHistoryItem => webHistoryItem -> IO (Id NSString)
-urlString webHistoryItem  =
-    sendMsg webHistoryItem (mkSelector "URLString") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlString webHistoryItem =
+  sendMessage webHistoryItem urlStringSelector
 
 -- | title
 --
@@ -93,8 +88,8 @@ urlString webHistoryItem  =
 --
 -- ObjC selector: @- title@
 title :: IsWebHistoryItem webHistoryItem => webHistoryItem -> IO (Id NSString)
-title webHistoryItem  =
-    sendMsg webHistoryItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title webHistoryItem =
+  sendMessage webHistoryItem titleSelector
 
 -- | lastVisitedTimeInterval
 --
@@ -102,19 +97,18 @@ title webHistoryItem  =
 --
 -- ObjC selector: @- lastVisitedTimeInterval@
 lastVisitedTimeInterval :: IsWebHistoryItem webHistoryItem => webHistoryItem -> IO CDouble
-lastVisitedTimeInterval webHistoryItem  =
-    sendMsg webHistoryItem (mkSelector "lastVisitedTimeInterval") retCDouble []
+lastVisitedTimeInterval webHistoryItem =
+  sendMessage webHistoryItem lastVisitedTimeIntervalSelector
 
 -- | @- alternateTitle@
 alternateTitle :: IsWebHistoryItem webHistoryItem => webHistoryItem -> IO (Id NSString)
-alternateTitle webHistoryItem  =
-    sendMsg webHistoryItem (mkSelector "alternateTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateTitle webHistoryItem =
+  sendMessage webHistoryItem alternateTitleSelector
 
 -- | @- setAlternateTitle:@
 setAlternateTitle :: (IsWebHistoryItem webHistoryItem, IsNSString value) => webHistoryItem -> value -> IO ()
-setAlternateTitle webHistoryItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webHistoryItem (mkSelector "setAlternateTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlternateTitle webHistoryItem value =
+  sendMessage webHistoryItem setAlternateTitleSelector (toNSString value)
 
 -- | icon
 --
@@ -124,42 +118,42 @@ setAlternateTitle webHistoryItem  value =
 --
 -- ObjC selector: @- icon@
 icon :: IsWebHistoryItem webHistoryItem => webHistoryItem -> IO (Id NSImage)
-icon webHistoryItem  =
-    sendMsg webHistoryItem (mkSelector "icon") (retPtr retVoid) [] >>= retainedObject . castPtr
+icon webHistoryItem =
+  sendMessage webHistoryItem iconSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURLString:title:lastVisitedTimeInterval:@
-initWithURLString_title_lastVisitedTimeIntervalSelector :: Selector
+initWithURLString_title_lastVisitedTimeIntervalSelector :: Selector '[Id NSString, Id NSString, CDouble] (Id WebHistoryItem)
 initWithURLString_title_lastVisitedTimeIntervalSelector = mkSelector "initWithURLString:title:lastVisitedTimeInterval:"
 
 -- | @Selector@ for @originalURLString@
-originalURLStringSelector :: Selector
+originalURLStringSelector :: Selector '[] (Id NSString)
 originalURLStringSelector = mkSelector "originalURLString"
 
 -- | @Selector@ for @URLString@
-urlStringSelector :: Selector
+urlStringSelector :: Selector '[] (Id NSString)
 urlStringSelector = mkSelector "URLString"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @lastVisitedTimeInterval@
-lastVisitedTimeIntervalSelector :: Selector
+lastVisitedTimeIntervalSelector :: Selector '[] CDouble
 lastVisitedTimeIntervalSelector = mkSelector "lastVisitedTimeInterval"
 
 -- | @Selector@ for @alternateTitle@
-alternateTitleSelector :: Selector
+alternateTitleSelector :: Selector '[] (Id NSString)
 alternateTitleSelector = mkSelector "alternateTitle"
 
 -- | @Selector@ for @setAlternateTitle:@
-setAlternateTitleSelector :: Selector
+setAlternateTitleSelector :: Selector '[Id NSString] ()
 setAlternateTitleSelector = mkSelector "setAlternateTitle:"
 
 -- | @Selector@ for @icon@
-iconSelector :: Selector
+iconSelector :: Selector '[] (Id NSImage)
 iconSelector = mkSelector "icon"
 

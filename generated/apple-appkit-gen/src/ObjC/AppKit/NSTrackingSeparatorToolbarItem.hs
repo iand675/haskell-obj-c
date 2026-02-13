@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.AppKit.NSTrackingSeparatorToolbarItem
   , setSplitView
   , dividerIndex
   , setDividerIndex
-  , trackingSeparatorToolbarItemWithIdentifier_splitView_dividerIndexSelector
-  , splitViewSelector
-  , setSplitViewSelector
   , dividerIndexSelector
   , setDividerIndexSelector
+  , setSplitViewSelector
+  , splitViewSelector
+  , trackingSeparatorToolbarItemWithIdentifier_splitView_dividerIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,60 +39,57 @@ trackingSeparatorToolbarItemWithIdentifier_splitView_dividerIndex :: (IsNSString
 trackingSeparatorToolbarItemWithIdentifier_splitView_dividerIndex identifier splitView dividerIndex =
   do
     cls' <- getRequiredClass "NSTrackingSeparatorToolbarItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr splitView $ \raw_splitView ->
-        sendClassMsg cls' (mkSelector "trackingSeparatorToolbarItemWithIdentifier:splitView:dividerIndex:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_splitView :: Ptr ()), argCLong dividerIndex] >>= retainedObject . castPtr
+    sendClassMessage cls' trackingSeparatorToolbarItemWithIdentifier_splitView_dividerIndexSelector (toNSString identifier) (toNSSplitView splitView) dividerIndex
 
 -- | The @splitView@ must be in the same window as the toolbar containing this item by the time the toolbar is shown. Only vertical @splitViews@ are supported.
 --
 -- ObjC selector: @- splitView@
 splitView :: IsNSTrackingSeparatorToolbarItem nsTrackingSeparatorToolbarItem => nsTrackingSeparatorToolbarItem -> IO (Id NSSplitView)
-splitView nsTrackingSeparatorToolbarItem  =
-    sendMsg nsTrackingSeparatorToolbarItem (mkSelector "splitView") (retPtr retVoid) [] >>= retainedObject . castPtr
+splitView nsTrackingSeparatorToolbarItem =
+  sendMessage nsTrackingSeparatorToolbarItem splitViewSelector
 
 -- | The @splitView@ must be in the same window as the toolbar containing this item by the time the toolbar is shown. Only vertical @splitViews@ are supported.
 --
 -- ObjC selector: @- setSplitView:@
 setSplitView :: (IsNSTrackingSeparatorToolbarItem nsTrackingSeparatorToolbarItem, IsNSSplitView value) => nsTrackingSeparatorToolbarItem -> value -> IO ()
-setSplitView nsTrackingSeparatorToolbarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTrackingSeparatorToolbarItem (mkSelector "setSplitView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSplitView nsTrackingSeparatorToolbarItem value =
+  sendMessage nsTrackingSeparatorToolbarItem setSplitViewSelector (toNSSplitView value)
 
 -- | The specific divider of the @splitView@ which will be tracked.
 --
 -- ObjC selector: @- dividerIndex@
 dividerIndex :: IsNSTrackingSeparatorToolbarItem nsTrackingSeparatorToolbarItem => nsTrackingSeparatorToolbarItem -> IO CLong
-dividerIndex nsTrackingSeparatorToolbarItem  =
-    sendMsg nsTrackingSeparatorToolbarItem (mkSelector "dividerIndex") retCLong []
+dividerIndex nsTrackingSeparatorToolbarItem =
+  sendMessage nsTrackingSeparatorToolbarItem dividerIndexSelector
 
 -- | The specific divider of the @splitView@ which will be tracked.
 --
 -- ObjC selector: @- setDividerIndex:@
 setDividerIndex :: IsNSTrackingSeparatorToolbarItem nsTrackingSeparatorToolbarItem => nsTrackingSeparatorToolbarItem -> CLong -> IO ()
-setDividerIndex nsTrackingSeparatorToolbarItem  value =
-    sendMsg nsTrackingSeparatorToolbarItem (mkSelector "setDividerIndex:") retVoid [argCLong value]
+setDividerIndex nsTrackingSeparatorToolbarItem value =
+  sendMessage nsTrackingSeparatorToolbarItem setDividerIndexSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @trackingSeparatorToolbarItemWithIdentifier:splitView:dividerIndex:@
-trackingSeparatorToolbarItemWithIdentifier_splitView_dividerIndexSelector :: Selector
+trackingSeparatorToolbarItemWithIdentifier_splitView_dividerIndexSelector :: Selector '[Id NSString, Id NSSplitView, CLong] (Id NSTrackingSeparatorToolbarItem)
 trackingSeparatorToolbarItemWithIdentifier_splitView_dividerIndexSelector = mkSelector "trackingSeparatorToolbarItemWithIdentifier:splitView:dividerIndex:"
 
 -- | @Selector@ for @splitView@
-splitViewSelector :: Selector
+splitViewSelector :: Selector '[] (Id NSSplitView)
 splitViewSelector = mkSelector "splitView"
 
 -- | @Selector@ for @setSplitView:@
-setSplitViewSelector :: Selector
+setSplitViewSelector :: Selector '[Id NSSplitView] ()
 setSplitViewSelector = mkSelector "setSplitView:"
 
 -- | @Selector@ for @dividerIndex@
-dividerIndexSelector :: Selector
+dividerIndexSelector :: Selector '[] CLong
 dividerIndexSelector = mkSelector "dividerIndex"
 
 -- | @Selector@ for @setDividerIndex:@
-setDividerIndexSelector :: Selector
+setDividerIndexSelector :: Selector '[CLong] ()
 setDividerIndexSelector = mkSelector "setDividerIndex:"
 

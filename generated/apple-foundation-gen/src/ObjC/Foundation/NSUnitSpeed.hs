@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Foundation.NSUnitSpeed
   , kilometersPerHour
   , milesPerHour
   , knots
-  , metersPerSecondSelector
   , kilometersPerHourSelector
-  , milesPerHourSelector
   , knotsSelector
+  , metersPerSecondSelector
+  , milesPerHourSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,46 +34,46 @@ metersPerSecond :: IO (Id NSUnitSpeed)
 metersPerSecond  =
   do
     cls' <- getRequiredClass "NSUnitSpeed"
-    sendClassMsg cls' (mkSelector "metersPerSecond") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' metersPerSecondSelector
 
 -- | @+ kilometersPerHour@
 kilometersPerHour :: IO (Id NSUnitSpeed)
 kilometersPerHour  =
   do
     cls' <- getRequiredClass "NSUnitSpeed"
-    sendClassMsg cls' (mkSelector "kilometersPerHour") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilometersPerHourSelector
 
 -- | @+ milesPerHour@
 milesPerHour :: IO (Id NSUnitSpeed)
 milesPerHour  =
   do
     cls' <- getRequiredClass "NSUnitSpeed"
-    sendClassMsg cls' (mkSelector "milesPerHour") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' milesPerHourSelector
 
 -- | @+ knots@
 knots :: IO (Id NSUnitSpeed)
 knots  =
   do
     cls' <- getRequiredClass "NSUnitSpeed"
-    sendClassMsg cls' (mkSelector "knots") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' knotsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @metersPerSecond@
-metersPerSecondSelector :: Selector
+metersPerSecondSelector :: Selector '[] (Id NSUnitSpeed)
 metersPerSecondSelector = mkSelector "metersPerSecond"
 
 -- | @Selector@ for @kilometersPerHour@
-kilometersPerHourSelector :: Selector
+kilometersPerHourSelector :: Selector '[] (Id NSUnitSpeed)
 kilometersPerHourSelector = mkSelector "kilometersPerHour"
 
 -- | @Selector@ for @milesPerHour@
-milesPerHourSelector :: Selector
+milesPerHourSelector :: Selector '[] (Id NSUnitSpeed)
 milesPerHourSelector = mkSelector "milesPerHour"
 
 -- | @Selector@ for @knots@
-knotsSelector :: Selector
+knotsSelector :: Selector '[] (Id NSUnitSpeed)
 knotsSelector = mkSelector "knots"
 

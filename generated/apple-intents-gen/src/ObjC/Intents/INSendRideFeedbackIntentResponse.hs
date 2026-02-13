@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.Intents.INSendRideFeedbackIntentResponse
   , init_
   , initWithCode_userActivity
   , code
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
 
   -- * Enum types
   , INSendRideFeedbackIntentResponseCode(INSendRideFeedbackIntentResponseCode)
@@ -23,15 +24,11 @@ module ObjC.Intents.INSendRideFeedbackIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,33 +38,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSendRideFeedbackIntentResponse inSendRideFeedbackIntentResponse => inSendRideFeedbackIntentResponse -> IO RawId
-init_ inSendRideFeedbackIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inSendRideFeedbackIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inSendRideFeedbackIntentResponse =
+  sendOwnedMessage inSendRideFeedbackIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINSendRideFeedbackIntentResponse inSendRideFeedbackIntentResponse, IsNSUserActivity userActivity) => inSendRideFeedbackIntentResponse -> INSendRideFeedbackIntentResponseCode -> userActivity -> IO (Id INSendRideFeedbackIntentResponse)
-initWithCode_userActivity inSendRideFeedbackIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inSendRideFeedbackIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inSendRideFeedbackIntentResponse code userActivity =
+  sendOwnedMessage inSendRideFeedbackIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINSendRideFeedbackIntentResponse inSendRideFeedbackIntentResponse => inSendRideFeedbackIntentResponse -> IO INSendRideFeedbackIntentResponseCode
-code inSendRideFeedbackIntentResponse  =
-    fmap (coerce :: CLong -> INSendRideFeedbackIntentResponseCode) $ sendMsg inSendRideFeedbackIntentResponse (mkSelector "code") retCLong []
+code inSendRideFeedbackIntentResponse =
+  sendMessage inSendRideFeedbackIntentResponse codeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INSendRideFeedbackIntentResponseCode, Id NSUserActivity] (Id INSendRideFeedbackIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INSendRideFeedbackIntentResponseCode
 codeSelector = mkSelector "code"
 

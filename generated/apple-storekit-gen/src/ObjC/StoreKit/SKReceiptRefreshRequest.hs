@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.StoreKit.SKReceiptRefreshRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithReceiptProperties:@
 initWithReceiptProperties :: (IsSKReceiptRefreshRequest skReceiptRefreshRequest, IsNSDictionary properties) => skReceiptRefreshRequest -> properties -> IO (Id SKReceiptRefreshRequest)
-initWithReceiptProperties skReceiptRefreshRequest  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg skReceiptRefreshRequest (mkSelector "initWithReceiptProperties:") (retPtr retVoid) [argPtr (castPtr raw_properties :: Ptr ())] >>= ownedObject . castPtr
+initWithReceiptProperties skReceiptRefreshRequest properties =
+  sendOwnedMessage skReceiptRefreshRequest initWithReceiptPropertiesSelector (toNSDictionary properties)
 
 -- | @- receiptProperties@
 receiptProperties :: IsSKReceiptRefreshRequest skReceiptRefreshRequest => skReceiptRefreshRequest -> IO (Id NSDictionary)
-receiptProperties skReceiptRefreshRequest  =
-    sendMsg skReceiptRefreshRequest (mkSelector "receiptProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+receiptProperties skReceiptRefreshRequest =
+  sendMessage skReceiptRefreshRequest receiptPropertiesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithReceiptProperties:@
-initWithReceiptPropertiesSelector :: Selector
+initWithReceiptPropertiesSelector :: Selector '[Id NSDictionary] (Id SKReceiptRefreshRequest)
 initWithReceiptPropertiesSelector = mkSelector "initWithReceiptProperties:"
 
 -- | @Selector@ for @receiptProperties@
-receiptPropertiesSelector :: Selector
+receiptPropertiesSelector :: Selector '[] (Id NSDictionary)
 receiptPropertiesSelector = mkSelector "receiptProperties"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AppKit.NSCollectionLayoutSpacing
   , spacing
   , isFlexibleSpacing
   , isFixedSpacing
-  , flexibleSpacingSelector
   , fixedSpacingSelector
+  , flexibleSpacingSelector
   , initSelector
+  , isFixedSpacingSelector
+  , isFlexibleSpacingSelector
   , newSelector
   , spacingSelector
-  , isFlexibleSpacingSelector
-  , isFixedSpacingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,71 +41,71 @@ flexibleSpacing :: CDouble -> IO (Id NSCollectionLayoutSpacing)
 flexibleSpacing flexibleSpacing =
   do
     cls' <- getRequiredClass "NSCollectionLayoutSpacing"
-    sendClassMsg cls' (mkSelector "flexibleSpacing:") (retPtr retVoid) [argCDouble flexibleSpacing] >>= retainedObject . castPtr
+    sendClassMessage cls' flexibleSpacingSelector flexibleSpacing
 
 -- | @+ fixedSpacing:@
 fixedSpacing :: CDouble -> IO (Id NSCollectionLayoutSpacing)
 fixedSpacing fixedSpacing =
   do
     cls' <- getRequiredClass "NSCollectionLayoutSpacing"
-    sendClassMsg cls' (mkSelector "fixedSpacing:") (retPtr retVoid) [argCDouble fixedSpacing] >>= retainedObject . castPtr
+    sendClassMessage cls' fixedSpacingSelector fixedSpacing
 
 -- | @- init@
 init_ :: IsNSCollectionLayoutSpacing nsCollectionLayoutSpacing => nsCollectionLayoutSpacing -> IO (Id NSCollectionLayoutSpacing)
-init_ nsCollectionLayoutSpacing  =
-    sendMsg nsCollectionLayoutSpacing (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionLayoutSpacing =
+  sendOwnedMessage nsCollectionLayoutSpacing initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionLayoutSpacing)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionLayoutSpacing"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- spacing@
 spacing :: IsNSCollectionLayoutSpacing nsCollectionLayoutSpacing => nsCollectionLayoutSpacing -> IO CDouble
-spacing nsCollectionLayoutSpacing  =
-    sendMsg nsCollectionLayoutSpacing (mkSelector "spacing") retCDouble []
+spacing nsCollectionLayoutSpacing =
+  sendMessage nsCollectionLayoutSpacing spacingSelector
 
 -- | @- isFlexibleSpacing@
 isFlexibleSpacing :: IsNSCollectionLayoutSpacing nsCollectionLayoutSpacing => nsCollectionLayoutSpacing -> IO Bool
-isFlexibleSpacing nsCollectionLayoutSpacing  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionLayoutSpacing (mkSelector "isFlexibleSpacing") retCULong []
+isFlexibleSpacing nsCollectionLayoutSpacing =
+  sendMessage nsCollectionLayoutSpacing isFlexibleSpacingSelector
 
 -- | @- isFixedSpacing@
 isFixedSpacing :: IsNSCollectionLayoutSpacing nsCollectionLayoutSpacing => nsCollectionLayoutSpacing -> IO Bool
-isFixedSpacing nsCollectionLayoutSpacing  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionLayoutSpacing (mkSelector "isFixedSpacing") retCULong []
+isFixedSpacing nsCollectionLayoutSpacing =
+  sendMessage nsCollectionLayoutSpacing isFixedSpacingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @flexibleSpacing:@
-flexibleSpacingSelector :: Selector
+flexibleSpacingSelector :: Selector '[CDouble] (Id NSCollectionLayoutSpacing)
 flexibleSpacingSelector = mkSelector "flexibleSpacing:"
 
 -- | @Selector@ for @fixedSpacing:@
-fixedSpacingSelector :: Selector
+fixedSpacingSelector :: Selector '[CDouble] (Id NSCollectionLayoutSpacing)
 fixedSpacingSelector = mkSelector "fixedSpacing:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionLayoutSpacing)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionLayoutSpacing)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @spacing@
-spacingSelector :: Selector
+spacingSelector :: Selector '[] CDouble
 spacingSelector = mkSelector "spacing"
 
 -- | @Selector@ for @isFlexibleSpacing@
-isFlexibleSpacingSelector :: Selector
+isFlexibleSpacingSelector :: Selector '[] Bool
 isFlexibleSpacingSelector = mkSelector "isFlexibleSpacing"
 
 -- | @Selector@ for @isFixedSpacing@
-isFixedSpacingSelector :: Selector
+isFixedSpacingSelector :: Selector '[] Bool
 isFixedSpacingSelector = mkSelector "isFixedSpacing"
 

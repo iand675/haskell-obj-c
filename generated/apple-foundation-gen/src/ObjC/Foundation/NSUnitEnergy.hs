@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Foundation.NSUnitEnergy
   , kilocalories
   , calories
   , kilowattHours
-  , kilojoulesSelector
+  , caloriesSelector
   , joulesSelector
   , kilocaloriesSelector
-  , caloriesSelector
+  , kilojoulesSelector
   , kilowattHoursSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,57 +36,57 @@ kilojoules :: IO (Id NSUnitEnergy)
 kilojoules  =
   do
     cls' <- getRequiredClass "NSUnitEnergy"
-    sendClassMsg cls' (mkSelector "kilojoules") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilojoulesSelector
 
 -- | @+ joules@
 joules :: IO (Id NSUnitEnergy)
 joules  =
   do
     cls' <- getRequiredClass "NSUnitEnergy"
-    sendClassMsg cls' (mkSelector "joules") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' joulesSelector
 
 -- | @+ kilocalories@
 kilocalories :: IO (Id NSUnitEnergy)
 kilocalories  =
   do
     cls' <- getRequiredClass "NSUnitEnergy"
-    sendClassMsg cls' (mkSelector "kilocalories") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilocaloriesSelector
 
 -- | @+ calories@
 calories :: IO (Id NSUnitEnergy)
 calories  =
   do
     cls' <- getRequiredClass "NSUnitEnergy"
-    sendClassMsg cls' (mkSelector "calories") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' caloriesSelector
 
 -- | @+ kilowattHours@
 kilowattHours :: IO (Id NSUnitEnergy)
 kilowattHours  =
   do
     cls' <- getRequiredClass "NSUnitEnergy"
-    sendClassMsg cls' (mkSelector "kilowattHours") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilowattHoursSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @kilojoules@
-kilojoulesSelector :: Selector
+kilojoulesSelector :: Selector '[] (Id NSUnitEnergy)
 kilojoulesSelector = mkSelector "kilojoules"
 
 -- | @Selector@ for @joules@
-joulesSelector :: Selector
+joulesSelector :: Selector '[] (Id NSUnitEnergy)
 joulesSelector = mkSelector "joules"
 
 -- | @Selector@ for @kilocalories@
-kilocaloriesSelector :: Selector
+kilocaloriesSelector :: Selector '[] (Id NSUnitEnergy)
 kilocaloriesSelector = mkSelector "kilocalories"
 
 -- | @Selector@ for @calories@
-caloriesSelector :: Selector
+caloriesSelector :: Selector '[] (Id NSUnitEnergy)
 caloriesSelector = mkSelector "calories"
 
 -- | @Selector@ for @kilowattHours@
-kilowattHoursSelector :: Selector
+kilowattHoursSelector :: Selector '[] (Id NSUnitEnergy)
 kilowattHoursSelector = mkSelector "kilowattHours"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,20 +24,20 @@ module ObjC.GameController.GCControllerElement
   , unmappedLocalizedName
   , setUnmappedLocalizedName
   , aliases
-  , collectionSelector
+  , aliasesSelector
   , analogSelector
   , boundToSystemGestureSelector
-  , preferredSystemGestureStateSelector
-  , setPreferredSystemGestureStateSelector
-  , sfSymbolsNameSelector
-  , setSfSymbolsNameSelector
+  , collectionSelector
   , localizedNameSelector
+  , preferredSystemGestureStateSelector
   , setLocalizedNameSelector
-  , unmappedSfSymbolsNameSelector
-  , setUnmappedSfSymbolsNameSelector
-  , unmappedLocalizedNameSelector
+  , setPreferredSystemGestureStateSelector
+  , setSfSymbolsNameSelector
   , setUnmappedLocalizedNameSelector
-  , aliasesSelector
+  , setUnmappedSfSymbolsNameSelector
+  , sfSymbolsNameSelector
+  , unmappedLocalizedNameSelector
+  , unmappedSfSymbolsNameSelector
 
   -- * Enum types
   , GCSystemGestureState(GCSystemGestureState)
@@ -46,15 +47,11 @@ module ObjC.GameController.GCControllerElement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,15 +63,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- collection@
 collection :: IsGCControllerElement gcControllerElement => gcControllerElement -> IO (Id GCControllerElement)
-collection gcControllerElement  =
-    sendMsg gcControllerElement (mkSelector "collection") (retPtr retVoid) [] >>= retainedObject . castPtr
+collection gcControllerElement =
+  sendMessage gcControllerElement collectionSelector
 
 -- | Check if the element can support more than just digital values, such as decimal ranges between 0 and 1. Defaults to YES for most elements.
 --
 -- ObjC selector: @- analog@
 analog :: IsGCControllerElement gcControllerElement => gcControllerElement -> IO Bool
-analog gcControllerElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcControllerElement (mkSelector "analog") retCULong []
+analog gcControllerElement =
+  sendMessage gcControllerElement analogSelector
 
 -- | Check if the element is bound to a system gesture. Defaults to NO for most elements.
 --
@@ -84,8 +81,8 @@ analog gcControllerElement  =
 --
 -- ObjC selector: @- boundToSystemGesture@
 boundToSystemGesture :: IsGCControllerElement gcControllerElement => gcControllerElement -> IO Bool
-boundToSystemGesture gcControllerElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcControllerElement (mkSelector "boundToSystemGesture") retCULong []
+boundToSystemGesture gcControllerElement =
+  sendMessage gcControllerElement boundToSystemGestureSelector
 
 -- | The preferred system gesture state for this element. Defaults to GCSystemGestureStateEnabled for most elements
 --
@@ -97,8 +94,8 @@ boundToSystemGesture gcControllerElement  =
 --
 -- ObjC selector: @- preferredSystemGestureState@
 preferredSystemGestureState :: IsGCControllerElement gcControllerElement => gcControllerElement -> IO GCSystemGestureState
-preferredSystemGestureState gcControllerElement  =
-    fmap (coerce :: CLong -> GCSystemGestureState) $ sendMsg gcControllerElement (mkSelector "preferredSystemGestureState") retCLong []
+preferredSystemGestureState gcControllerElement =
+  sendMessage gcControllerElement preferredSystemGestureStateSelector
 
 -- | The preferred system gesture state for this element. Defaults to GCSystemGestureStateEnabled for most elements
 --
@@ -110,8 +107,8 @@ preferredSystemGestureState gcControllerElement  =
 --
 -- ObjC selector: @- setPreferredSystemGestureState:@
 setPreferredSystemGestureState :: IsGCControllerElement gcControllerElement => gcControllerElement -> GCSystemGestureState -> IO ()
-setPreferredSystemGestureState gcControllerElement  value =
-    sendMsg gcControllerElement (mkSelector "setPreferredSystemGestureState:") retVoid [argCLong (coerce value)]
+setPreferredSystemGestureState gcControllerElement value =
+  sendMessage gcControllerElement setPreferredSystemGestureStateSelector value
 
 -- | The element's SF Symbols name, taking input remapping into account.
 --
@@ -119,8 +116,8 @@ setPreferredSystemGestureState gcControllerElement  value =
 --
 -- ObjC selector: @- sfSymbolsName@
 sfSymbolsName :: IsGCControllerElement gcControllerElement => gcControllerElement -> IO (Id NSString)
-sfSymbolsName gcControllerElement  =
-    sendMsg gcControllerElement (mkSelector "sfSymbolsName") (retPtr retVoid) [] >>= retainedObject . castPtr
+sfSymbolsName gcControllerElement =
+  sendMessage gcControllerElement sfSymbolsNameSelector
 
 -- | The element's SF Symbols name, taking input remapping into account.
 --
@@ -128,9 +125,8 @@ sfSymbolsName gcControllerElement  =
 --
 -- ObjC selector: @- setSfSymbolsName:@
 setSfSymbolsName :: (IsGCControllerElement gcControllerElement, IsNSString value) => gcControllerElement -> value -> IO ()
-setSfSymbolsName gcControllerElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gcControllerElement (mkSelector "setSfSymbolsName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSfSymbolsName gcControllerElement value =
+  sendMessage gcControllerElement setSfSymbolsNameSelector (toNSString value)
 
 -- | The element's localized name, taking input remapping into account.
 --
@@ -138,8 +134,8 @@ setSfSymbolsName gcControllerElement  value =
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsGCControllerElement gcControllerElement => gcControllerElement -> IO (Id NSString)
-localizedName gcControllerElement  =
-    sendMsg gcControllerElement (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName gcControllerElement =
+  sendMessage gcControllerElement localizedNameSelector
 
 -- | The element's localized name, taking input remapping into account.
 --
@@ -147,9 +143,8 @@ localizedName gcControllerElement  =
 --
 -- ObjC selector: @- setLocalizedName:@
 setLocalizedName :: (IsGCControllerElement gcControllerElement, IsNSString value) => gcControllerElement -> value -> IO ()
-setLocalizedName gcControllerElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gcControllerElement (mkSelector "setLocalizedName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedName gcControllerElement value =
+  sendMessage gcControllerElement setLocalizedNameSelector (toNSString value)
 
 -- | The element's SF Symbols name, not taking any input remapping into account.
 --
@@ -157,8 +152,8 @@ setLocalizedName gcControllerElement  value =
 --
 -- ObjC selector: @- unmappedSfSymbolsName@
 unmappedSfSymbolsName :: IsGCControllerElement gcControllerElement => gcControllerElement -> IO (Id NSString)
-unmappedSfSymbolsName gcControllerElement  =
-    sendMsg gcControllerElement (mkSelector "unmappedSfSymbolsName") (retPtr retVoid) [] >>= retainedObject . castPtr
+unmappedSfSymbolsName gcControllerElement =
+  sendMessage gcControllerElement unmappedSfSymbolsNameSelector
 
 -- | The element's SF Symbols name, not taking any input remapping into account.
 --
@@ -166,9 +161,8 @@ unmappedSfSymbolsName gcControllerElement  =
 --
 -- ObjC selector: @- setUnmappedSfSymbolsName:@
 setUnmappedSfSymbolsName :: (IsGCControllerElement gcControllerElement, IsNSString value) => gcControllerElement -> value -> IO ()
-setUnmappedSfSymbolsName gcControllerElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gcControllerElement (mkSelector "setUnmappedSfSymbolsName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUnmappedSfSymbolsName gcControllerElement value =
+  sendMessage gcControllerElement setUnmappedSfSymbolsNameSelector (toNSString value)
 
 -- | The element's localized name, not taking any input remapping into account.
 --
@@ -176,8 +170,8 @@ setUnmappedSfSymbolsName gcControllerElement  value =
 --
 -- ObjC selector: @- unmappedLocalizedName@
 unmappedLocalizedName :: IsGCControllerElement gcControllerElement => gcControllerElement -> IO (Id NSString)
-unmappedLocalizedName gcControllerElement  =
-    sendMsg gcControllerElement (mkSelector "unmappedLocalizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+unmappedLocalizedName gcControllerElement =
+  sendMessage gcControllerElement unmappedLocalizedNameSelector
 
 -- | The element's localized name, not taking any input remapping into account.
 --
@@ -185,74 +179,73 @@ unmappedLocalizedName gcControllerElement  =
 --
 -- ObjC selector: @- setUnmappedLocalizedName:@
 setUnmappedLocalizedName :: (IsGCControllerElement gcControllerElement, IsNSString value) => gcControllerElement -> value -> IO ()
-setUnmappedLocalizedName gcControllerElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gcControllerElement (mkSelector "setUnmappedLocalizedName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUnmappedLocalizedName gcControllerElement value =
+  sendMessage gcControllerElement setUnmappedLocalizedNameSelector (toNSString value)
 
 -- | A set of aliases that can be used to access this element with keyed subscript notation.
 --
 -- ObjC selector: @- aliases@
 aliases :: IsGCControllerElement gcControllerElement => gcControllerElement -> IO (Id NSSet)
-aliases gcControllerElement  =
-    sendMsg gcControllerElement (mkSelector "aliases") (retPtr retVoid) [] >>= retainedObject . castPtr
+aliases gcControllerElement =
+  sendMessage gcControllerElement aliasesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @collection@
-collectionSelector :: Selector
+collectionSelector :: Selector '[] (Id GCControllerElement)
 collectionSelector = mkSelector "collection"
 
 -- | @Selector@ for @analog@
-analogSelector :: Selector
+analogSelector :: Selector '[] Bool
 analogSelector = mkSelector "analog"
 
 -- | @Selector@ for @boundToSystemGesture@
-boundToSystemGestureSelector :: Selector
+boundToSystemGestureSelector :: Selector '[] Bool
 boundToSystemGestureSelector = mkSelector "boundToSystemGesture"
 
 -- | @Selector@ for @preferredSystemGestureState@
-preferredSystemGestureStateSelector :: Selector
+preferredSystemGestureStateSelector :: Selector '[] GCSystemGestureState
 preferredSystemGestureStateSelector = mkSelector "preferredSystemGestureState"
 
 -- | @Selector@ for @setPreferredSystemGestureState:@
-setPreferredSystemGestureStateSelector :: Selector
+setPreferredSystemGestureStateSelector :: Selector '[GCSystemGestureState] ()
 setPreferredSystemGestureStateSelector = mkSelector "setPreferredSystemGestureState:"
 
 -- | @Selector@ for @sfSymbolsName@
-sfSymbolsNameSelector :: Selector
+sfSymbolsNameSelector :: Selector '[] (Id NSString)
 sfSymbolsNameSelector = mkSelector "sfSymbolsName"
 
 -- | @Selector@ for @setSfSymbolsName:@
-setSfSymbolsNameSelector :: Selector
+setSfSymbolsNameSelector :: Selector '[Id NSString] ()
 setSfSymbolsNameSelector = mkSelector "setSfSymbolsName:"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @setLocalizedName:@
-setLocalizedNameSelector :: Selector
+setLocalizedNameSelector :: Selector '[Id NSString] ()
 setLocalizedNameSelector = mkSelector "setLocalizedName:"
 
 -- | @Selector@ for @unmappedSfSymbolsName@
-unmappedSfSymbolsNameSelector :: Selector
+unmappedSfSymbolsNameSelector :: Selector '[] (Id NSString)
 unmappedSfSymbolsNameSelector = mkSelector "unmappedSfSymbolsName"
 
 -- | @Selector@ for @setUnmappedSfSymbolsName:@
-setUnmappedSfSymbolsNameSelector :: Selector
+setUnmappedSfSymbolsNameSelector :: Selector '[Id NSString] ()
 setUnmappedSfSymbolsNameSelector = mkSelector "setUnmappedSfSymbolsName:"
 
 -- | @Selector@ for @unmappedLocalizedName@
-unmappedLocalizedNameSelector :: Selector
+unmappedLocalizedNameSelector :: Selector '[] (Id NSString)
 unmappedLocalizedNameSelector = mkSelector "unmappedLocalizedName"
 
 -- | @Selector@ for @setUnmappedLocalizedName:@
-setUnmappedLocalizedNameSelector :: Selector
+setUnmappedLocalizedNameSelector :: Selector '[Id NSString] ()
 setUnmappedLocalizedNameSelector = mkSelector "setUnmappedLocalizedName:"
 
 -- | @Selector@ for @aliases@
-aliasesSelector :: Selector
+aliasesSelector :: Selector '[] (Id NSSet)
 aliasesSelector = mkSelector "aliases"
 

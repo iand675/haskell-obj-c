@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,8 +14,8 @@ module ObjC.FileProvider.NSFileProviderDomainVersion
   , IsNSFileProviderDomainVersion(..)
   , next
   , compare_
-  , nextSelector
   , compareSelector
+  , nextSelector
 
   -- * Enum types
   , NSComparisonResult(NSComparisonResult)
@@ -24,15 +25,11 @@ module ObjC.FileProvider.NSFileProviderDomainVersion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- next@
 next :: IsNSFileProviderDomainVersion nsFileProviderDomainVersion => nsFileProviderDomainVersion -> IO (Id NSFileProviderDomainVersion)
-next nsFileProviderDomainVersion  =
-    sendMsg nsFileProviderDomainVersion (mkSelector "next") (retPtr retVoid) [] >>= retainedObject . castPtr
+next nsFileProviderDomainVersion =
+  sendMessage nsFileProviderDomainVersion nextSelector
 
 -- | Compare two domain versions.
 --
@@ -55,19 +52,18 @@ next nsFileProviderDomainVersion  =
 --
 -- ObjC selector: @- compare:@
 compare_ :: (IsNSFileProviderDomainVersion nsFileProviderDomainVersion, IsNSFileProviderDomainVersion otherVersion) => nsFileProviderDomainVersion -> otherVersion -> IO NSComparisonResult
-compare_ nsFileProviderDomainVersion  otherVersion =
-  withObjCPtr otherVersion $ \raw_otherVersion ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg nsFileProviderDomainVersion (mkSelector "compare:") retCLong [argPtr (castPtr raw_otherVersion :: Ptr ())]
+compare_ nsFileProviderDomainVersion otherVersion =
+  sendMessage nsFileProviderDomainVersion compareSelector (toNSFileProviderDomainVersion otherVersion)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @next@
-nextSelector :: Selector
+nextSelector :: Selector '[] (Id NSFileProviderDomainVersion)
 nextSelector = mkSelector "next"
 
 -- | @Selector@ for @compare:@
-compareSelector :: Selector
+compareSelector :: Selector '[Id NSFileProviderDomainVersion] NSComparisonResult
 compareSelector = mkSelector "compare:"
 

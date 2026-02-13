@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.ExceptionHandling.NSExceptionHandler
   , setDelegate
   , delegate
   , defaultExceptionHandlerSelector
-  , setExceptionHandlingMaskSelector
+  , delegateSelector
   , exceptionHandlingMaskSelector
-  , setExceptionHangingMaskSelector
   , exceptionHangingMaskSelector
   , setDelegateSelector
-  , delegateSelector
+  , setExceptionHandlingMaskSelector
+  , setExceptionHangingMaskSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,67 +41,67 @@ defaultExceptionHandler :: IO (Id NSExceptionHandler)
 defaultExceptionHandler  =
   do
     cls' <- getRequiredClass "NSExceptionHandler"
-    sendClassMsg cls' (mkSelector "defaultExceptionHandler") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultExceptionHandlerSelector
 
 -- | @- setExceptionHandlingMask:@
 setExceptionHandlingMask :: IsNSExceptionHandler nsExceptionHandler => nsExceptionHandler -> CULong -> IO ()
-setExceptionHandlingMask nsExceptionHandler  aMask =
-    sendMsg nsExceptionHandler (mkSelector "setExceptionHandlingMask:") retVoid [argCULong aMask]
+setExceptionHandlingMask nsExceptionHandler aMask =
+  sendMessage nsExceptionHandler setExceptionHandlingMaskSelector aMask
 
 -- | @- exceptionHandlingMask@
 exceptionHandlingMask :: IsNSExceptionHandler nsExceptionHandler => nsExceptionHandler -> IO CULong
-exceptionHandlingMask nsExceptionHandler  =
-    sendMsg nsExceptionHandler (mkSelector "exceptionHandlingMask") retCULong []
+exceptionHandlingMask nsExceptionHandler =
+  sendMessage nsExceptionHandler exceptionHandlingMaskSelector
 
 -- | @- setExceptionHangingMask:@
 setExceptionHangingMask :: IsNSExceptionHandler nsExceptionHandler => nsExceptionHandler -> CULong -> IO ()
-setExceptionHangingMask nsExceptionHandler  aMask =
-    sendMsg nsExceptionHandler (mkSelector "setExceptionHangingMask:") retVoid [argCULong aMask]
+setExceptionHangingMask nsExceptionHandler aMask =
+  sendMessage nsExceptionHandler setExceptionHangingMaskSelector aMask
 
 -- | @- exceptionHangingMask@
 exceptionHangingMask :: IsNSExceptionHandler nsExceptionHandler => nsExceptionHandler -> IO CULong
-exceptionHangingMask nsExceptionHandler  =
-    sendMsg nsExceptionHandler (mkSelector "exceptionHangingMask") retCULong []
+exceptionHangingMask nsExceptionHandler =
+  sendMessage nsExceptionHandler exceptionHangingMaskSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSExceptionHandler nsExceptionHandler => nsExceptionHandler -> RawId -> IO ()
-setDelegate nsExceptionHandler  anObject =
-    sendMsg nsExceptionHandler (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+setDelegate nsExceptionHandler anObject =
+  sendMessage nsExceptionHandler setDelegateSelector anObject
 
 -- | @- delegate@
 delegate :: IsNSExceptionHandler nsExceptionHandler => nsExceptionHandler -> IO RawId
-delegate nsExceptionHandler  =
-    fmap (RawId . castPtr) $ sendMsg nsExceptionHandler (mkSelector "delegate") (retPtr retVoid) []
+delegate nsExceptionHandler =
+  sendMessage nsExceptionHandler delegateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultExceptionHandler@
-defaultExceptionHandlerSelector :: Selector
+defaultExceptionHandlerSelector :: Selector '[] (Id NSExceptionHandler)
 defaultExceptionHandlerSelector = mkSelector "defaultExceptionHandler"
 
 -- | @Selector@ for @setExceptionHandlingMask:@
-setExceptionHandlingMaskSelector :: Selector
+setExceptionHandlingMaskSelector :: Selector '[CULong] ()
 setExceptionHandlingMaskSelector = mkSelector "setExceptionHandlingMask:"
 
 -- | @Selector@ for @exceptionHandlingMask@
-exceptionHandlingMaskSelector :: Selector
+exceptionHandlingMaskSelector :: Selector '[] CULong
 exceptionHandlingMaskSelector = mkSelector "exceptionHandlingMask"
 
 -- | @Selector@ for @setExceptionHangingMask:@
-setExceptionHangingMaskSelector :: Selector
+setExceptionHangingMaskSelector :: Selector '[CULong] ()
 setExceptionHangingMaskSelector = mkSelector "setExceptionHangingMask:"
 
 -- | @Selector@ for @exceptionHangingMask@
-exceptionHangingMaskSelector :: Selector
+exceptionHangingMaskSelector :: Selector '[] CULong
 exceptionHangingMaskSelector = mkSelector "exceptionHangingMask"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 

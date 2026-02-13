@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.GameplayKit.GKComponent
   , didAddToEntity
   , willRemoveFromEntity
   , entity
-  , updateWithDeltaTimeSelector
   , didAddToEntitySelector
-  , willRemoveFromEntitySelector
   , entitySelector
+  , updateWithDeltaTimeSelector
+  , willRemoveFromEntitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,47 +40,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- updateWithDeltaTime:@
 updateWithDeltaTime :: IsGKComponent gkComponent => gkComponent -> CDouble -> IO ()
-updateWithDeltaTime gkComponent  seconds =
-    sendMsg gkComponent (mkSelector "updateWithDeltaTime:") retVoid [argCDouble seconds]
+updateWithDeltaTime gkComponent seconds =
+  sendMessage gkComponent updateWithDeltaTimeSelector seconds
 
 -- | Override this to perform game logic when this component is added to an entity
 --
 -- ObjC selector: @- didAddToEntity@
 didAddToEntity :: IsGKComponent gkComponent => gkComponent -> IO ()
-didAddToEntity gkComponent  =
-    sendMsg gkComponent (mkSelector "didAddToEntity") retVoid []
+didAddToEntity gkComponent =
+  sendMessage gkComponent didAddToEntitySelector
 
 -- | Override this to perform game logic before this entity is removed from it's entity
 --
 -- ObjC selector: @- willRemoveFromEntity@
 willRemoveFromEntity :: IsGKComponent gkComponent => gkComponent -> IO ()
-willRemoveFromEntity gkComponent  =
-    sendMsg gkComponent (mkSelector "willRemoveFromEntity") retVoid []
+willRemoveFromEntity gkComponent =
+  sendMessage gkComponent willRemoveFromEntitySelector
 
 -- | The entity that this component belongs to. Defaults to nil until the component is added to an entity.
 --
 -- ObjC selector: @- entity@
 entity :: IsGKComponent gkComponent => gkComponent -> IO (Id GKEntity)
-entity gkComponent  =
-    sendMsg gkComponent (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+entity gkComponent =
+  sendMessage gkComponent entitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateWithDeltaTime:@
-updateWithDeltaTimeSelector :: Selector
+updateWithDeltaTimeSelector :: Selector '[CDouble] ()
 updateWithDeltaTimeSelector = mkSelector "updateWithDeltaTime:"
 
 -- | @Selector@ for @didAddToEntity@
-didAddToEntitySelector :: Selector
+didAddToEntitySelector :: Selector '[] ()
 didAddToEntitySelector = mkSelector "didAddToEntity"
 
 -- | @Selector@ for @willRemoveFromEntity@
-willRemoveFromEntitySelector :: Selector
+willRemoveFromEntitySelector :: Selector '[] ()
 willRemoveFromEntitySelector = mkSelector "willRemoveFromEntity"
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] (Id GKEntity)
 entitySelector = mkSelector "entity"
 

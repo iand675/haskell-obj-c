@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.GameplayKit.GKMonteCarloStrategist
   , explorationParameter
   , setExplorationParameter
   , budgetSelector
-  , setBudgetSelector
   , explorationParameterSelector
+  , setBudgetSelector
   , setExplorationParameterSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,47 +36,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- budget@
 budget :: IsGKMonteCarloStrategist gkMonteCarloStrategist => gkMonteCarloStrategist -> IO CULong
-budget gkMonteCarloStrategist  =
-    sendMsg gkMonteCarloStrategist (mkSelector "budget") retCULong []
+budget gkMonteCarloStrategist =
+  sendMessage gkMonteCarloStrategist budgetSelector
 
 -- | The maximum number of samples that will be processed when searching for a move.
 --
 -- ObjC selector: @- setBudget:@
 setBudget :: IsGKMonteCarloStrategist gkMonteCarloStrategist => gkMonteCarloStrategist -> CULong -> IO ()
-setBudget gkMonteCarloStrategist  value =
-    sendMsg gkMonteCarloStrategist (mkSelector "setBudget:") retVoid [argCULong value]
+setBudget gkMonteCarloStrategist value =
+  sendMessage gkMonteCarloStrategist setBudgetSelector value
 
 -- | A weight that encourages exploration of less visited updates versus the continued exploitation of previously visited updates.
 --
 -- ObjC selector: @- explorationParameter@
 explorationParameter :: IsGKMonteCarloStrategist gkMonteCarloStrategist => gkMonteCarloStrategist -> IO CULong
-explorationParameter gkMonteCarloStrategist  =
-    sendMsg gkMonteCarloStrategist (mkSelector "explorationParameter") retCULong []
+explorationParameter gkMonteCarloStrategist =
+  sendMessage gkMonteCarloStrategist explorationParameterSelector
 
 -- | A weight that encourages exploration of less visited updates versus the continued exploitation of previously visited updates.
 --
 -- ObjC selector: @- setExplorationParameter:@
 setExplorationParameter :: IsGKMonteCarloStrategist gkMonteCarloStrategist => gkMonteCarloStrategist -> CULong -> IO ()
-setExplorationParameter gkMonteCarloStrategist  value =
-    sendMsg gkMonteCarloStrategist (mkSelector "setExplorationParameter:") retVoid [argCULong value]
+setExplorationParameter gkMonteCarloStrategist value =
+  sendMessage gkMonteCarloStrategist setExplorationParameterSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @budget@
-budgetSelector :: Selector
+budgetSelector :: Selector '[] CULong
 budgetSelector = mkSelector "budget"
 
 -- | @Selector@ for @setBudget:@
-setBudgetSelector :: Selector
+setBudgetSelector :: Selector '[CULong] ()
 setBudgetSelector = mkSelector "setBudget:"
 
 -- | @Selector@ for @explorationParameter@
-explorationParameterSelector :: Selector
+explorationParameterSelector :: Selector '[] CULong
 explorationParameterSelector = mkSelector "explorationParameter"
 
 -- | @Selector@ for @setExplorationParameter:@
-setExplorationParameterSelector :: Selector
+setExplorationParameterSelector :: Selector '[CULong] ()
 setExplorationParameterSelector = mkSelector "setExplorationParameter:"
 

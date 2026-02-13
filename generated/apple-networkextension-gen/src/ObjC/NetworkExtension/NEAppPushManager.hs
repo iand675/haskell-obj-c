@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,39 +35,35 @@ module ObjC.NetworkExtension.NEAppPushManager
   , enabled
   , setEnabled
   , active
+  , activeSelector
+  , delegateSelector
+  , enabledSelector
   , loadFromPreferencesWithCompletionHandlerSelector
+  , localizedDescriptionSelector
+  , matchEthernetSelector
+  , matchPrivateLTENetworksSelector
+  , matchSSIDsSelector
+  , providerBundleIdentifierSelector
+  , providerConfigurationSelector
   , removeFromPreferencesWithCompletionHandlerSelector
   , saveToPreferencesWithCompletionHandlerSelector
-  , matchSSIDsSelector
-  , setMatchSSIDsSelector
-  , matchPrivateLTENetworksSelector
-  , setMatchPrivateLTENetworksSelector
-  , matchEthernetSelector
-  , setMatchEthernetSelector
-  , providerConfigurationSelector
-  , setProviderConfigurationSelector
-  , providerBundleIdentifierSelector
-  , setProviderBundleIdentifierSelector
-  , delegateSelector
   , setDelegateSelector
-  , localizedDescriptionSelector
-  , setLocalizedDescriptionSelector
-  , enabledSelector
   , setEnabledSelector
-  , activeSelector
+  , setLocalizedDescriptionSelector
+  , setMatchEthernetSelector
+  , setMatchPrivateLTENetworksSelector
+  , setMatchSSIDsSelector
+  , setProviderBundleIdentifierSelector
+  , setProviderConfigurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,8 +78,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- loadFromPreferencesWithCompletionHandler:@
 loadFromPreferencesWithCompletionHandler :: IsNEAppPushManager neAppPushManager => neAppPushManager -> Ptr () -> IO ()
-loadFromPreferencesWithCompletionHandler neAppPushManager  completionHandler =
-    sendMsg neAppPushManager (mkSelector "loadFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadFromPreferencesWithCompletionHandler neAppPushManager completionHandler =
+  sendMessage neAppPushManager loadFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | removeFromPreferencesWithCompletionHandler:
 --
@@ -92,8 +89,8 @@ loadFromPreferencesWithCompletionHandler neAppPushManager  completionHandler =
 --
 -- ObjC selector: @- removeFromPreferencesWithCompletionHandler:@
 removeFromPreferencesWithCompletionHandler :: IsNEAppPushManager neAppPushManager => neAppPushManager -> Ptr () -> IO ()
-removeFromPreferencesWithCompletionHandler neAppPushManager  completionHandler =
-    sendMsg neAppPushManager (mkSelector "removeFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+removeFromPreferencesWithCompletionHandler neAppPushManager completionHandler =
+  sendMessage neAppPushManager removeFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | saveToPreferencesWithCompletionHandler:
 --
@@ -103,8 +100,8 @@ removeFromPreferencesWithCompletionHandler neAppPushManager  completionHandler =
 --
 -- ObjC selector: @- saveToPreferencesWithCompletionHandler:@
 saveToPreferencesWithCompletionHandler :: IsNEAppPushManager neAppPushManager => neAppPushManager -> Ptr () -> IO ()
-saveToPreferencesWithCompletionHandler neAppPushManager  completionHandler =
-    sendMsg neAppPushManager (mkSelector "saveToPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+saveToPreferencesWithCompletionHandler neAppPushManager completionHandler =
+  sendMessage neAppPushManager saveToPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | matchSSIDs
 --
@@ -112,8 +109,8 @@ saveToPreferencesWithCompletionHandler neAppPushManager  completionHandler =
 --
 -- ObjC selector: @- matchSSIDs@
 matchSSIDs :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSArray)
-matchSSIDs neAppPushManager  =
-    sendMsg neAppPushManager (mkSelector "matchSSIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchSSIDs neAppPushManager =
+  sendMessage neAppPushManager matchSSIDsSelector
 
 -- | matchSSIDs
 --
@@ -121,9 +118,8 @@ matchSSIDs neAppPushManager  =
 --
 -- ObjC selector: @- setMatchSSIDs:@
 setMatchSSIDs :: (IsNEAppPushManager neAppPushManager, IsNSArray value) => neAppPushManager -> value -> IO ()
-setMatchSSIDs neAppPushManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neAppPushManager (mkSelector "setMatchSSIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatchSSIDs neAppPushManager value =
+  sendMessage neAppPushManager setMatchSSIDsSelector (toNSArray value)
 
 -- | matchPrivateLTENetworks
 --
@@ -131,8 +127,8 @@ setMatchSSIDs neAppPushManager  value =
 --
 -- ObjC selector: @- matchPrivateLTENetworks@
 matchPrivateLTENetworks :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSArray)
-matchPrivateLTENetworks neAppPushManager  =
-    sendMsg neAppPushManager (mkSelector "matchPrivateLTENetworks") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchPrivateLTENetworks neAppPushManager =
+  sendMessage neAppPushManager matchPrivateLTENetworksSelector
 
 -- | matchPrivateLTENetworks
 --
@@ -140,9 +136,8 @@ matchPrivateLTENetworks neAppPushManager  =
 --
 -- ObjC selector: @- setMatchPrivateLTENetworks:@
 setMatchPrivateLTENetworks :: (IsNEAppPushManager neAppPushManager, IsNSArray value) => neAppPushManager -> value -> IO ()
-setMatchPrivateLTENetworks neAppPushManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neAppPushManager (mkSelector "setMatchPrivateLTENetworks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatchPrivateLTENetworks neAppPushManager value =
+  sendMessage neAppPushManager setMatchPrivateLTENetworksSelector (toNSArray value)
 
 -- | matchEthernet
 --
@@ -150,8 +145,8 @@ setMatchPrivateLTENetworks neAppPushManager  value =
 --
 -- ObjC selector: @- matchEthernet@
 matchEthernet :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO Bool
-matchEthernet neAppPushManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neAppPushManager (mkSelector "matchEthernet") retCULong []
+matchEthernet neAppPushManager =
+  sendMessage neAppPushManager matchEthernetSelector
 
 -- | matchEthernet
 --
@@ -159,8 +154,8 @@ matchEthernet neAppPushManager  =
 --
 -- ObjC selector: @- setMatchEthernet:@
 setMatchEthernet :: IsNEAppPushManager neAppPushManager => neAppPushManager -> Bool -> IO ()
-setMatchEthernet neAppPushManager  value =
-    sendMsg neAppPushManager (mkSelector "setMatchEthernet:") retVoid [argCULong (if value then 1 else 0)]
+setMatchEthernet neAppPushManager value =
+  sendMessage neAppPushManager setMatchEthernetSelector value
 
 -- | providerConfiguration
 --
@@ -168,8 +163,8 @@ setMatchEthernet neAppPushManager  value =
 --
 -- ObjC selector: @- providerConfiguration@
 providerConfiguration :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSDictionary)
-providerConfiguration neAppPushManager  =
-    sendMsg neAppPushManager (mkSelector "providerConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerConfiguration neAppPushManager =
+  sendMessage neAppPushManager providerConfigurationSelector
 
 -- | providerConfiguration
 --
@@ -177,9 +172,8 @@ providerConfiguration neAppPushManager  =
 --
 -- ObjC selector: @- setProviderConfiguration:@
 setProviderConfiguration :: (IsNEAppPushManager neAppPushManager, IsNSDictionary value) => neAppPushManager -> value -> IO ()
-setProviderConfiguration neAppPushManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neAppPushManager (mkSelector "setProviderConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderConfiguration neAppPushManager value =
+  sendMessage neAppPushManager setProviderConfigurationSelector (toNSDictionary value)
 
 -- | providerBundleIdentifier
 --
@@ -187,8 +181,8 @@ setProviderConfiguration neAppPushManager  value =
 --
 -- ObjC selector: @- providerBundleIdentifier@
 providerBundleIdentifier :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSString)
-providerBundleIdentifier neAppPushManager  =
-    sendMsg neAppPushManager (mkSelector "providerBundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerBundleIdentifier neAppPushManager =
+  sendMessage neAppPushManager providerBundleIdentifierSelector
 
 -- | providerBundleIdentifier
 --
@@ -196,9 +190,8 @@ providerBundleIdentifier neAppPushManager  =
 --
 -- ObjC selector: @- setProviderBundleIdentifier:@
 setProviderBundleIdentifier :: (IsNEAppPushManager neAppPushManager, IsNSString value) => neAppPushManager -> value -> IO ()
-setProviderBundleIdentifier neAppPushManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neAppPushManager (mkSelector "setProviderBundleIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderBundleIdentifier neAppPushManager value =
+  sendMessage neAppPushManager setProviderBundleIdentifierSelector (toNSString value)
 
 -- | delegate
 --
@@ -206,8 +199,8 @@ setProviderBundleIdentifier neAppPushManager  value =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO RawId
-delegate neAppPushManager  =
-    fmap (RawId . castPtr) $ sendMsg neAppPushManager (mkSelector "delegate") (retPtr retVoid) []
+delegate neAppPushManager =
+  sendMessage neAppPushManager delegateSelector
 
 -- | delegate
 --
@@ -215,8 +208,8 @@ delegate neAppPushManager  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsNEAppPushManager neAppPushManager => neAppPushManager -> RawId -> IO ()
-setDelegate neAppPushManager  value =
-    sendMsg neAppPushManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate neAppPushManager value =
+  sendMessage neAppPushManager setDelegateSelector value
 
 -- | localizedDescription
 --
@@ -224,8 +217,8 @@ setDelegate neAppPushManager  value =
 --
 -- ObjC selector: @- localizedDescription@
 localizedDescription :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO (Id NSString)
-localizedDescription neAppPushManager  =
-    sendMsg neAppPushManager (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription neAppPushManager =
+  sendMessage neAppPushManager localizedDescriptionSelector
 
 -- | localizedDescription
 --
@@ -233,9 +226,8 @@ localizedDescription neAppPushManager  =
 --
 -- ObjC selector: @- setLocalizedDescription:@
 setLocalizedDescription :: (IsNEAppPushManager neAppPushManager, IsNSString value) => neAppPushManager -> value -> IO ()
-setLocalizedDescription neAppPushManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neAppPushManager (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedDescription neAppPushManager value =
+  sendMessage neAppPushManager setLocalizedDescriptionSelector (toNSString value)
 
 -- | enabled
 --
@@ -243,8 +235,8 @@ setLocalizedDescription neAppPushManager  value =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO Bool
-enabled neAppPushManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neAppPushManager (mkSelector "enabled") retCULong []
+enabled neAppPushManager =
+  sendMessage neAppPushManager enabledSelector
 
 -- | enabled
 --
@@ -252,8 +244,8 @@ enabled neAppPushManager  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsNEAppPushManager neAppPushManager => neAppPushManager -> Bool -> IO ()
-setEnabled neAppPushManager  value =
-    sendMsg neAppPushManager (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled neAppPushManager value =
+  sendMessage neAppPushManager setEnabledSelector value
 
 -- | active
 --
@@ -261,90 +253,90 @@ setEnabled neAppPushManager  value =
 --
 -- ObjC selector: @- active@
 active :: IsNEAppPushManager neAppPushManager => neAppPushManager -> IO Bool
-active neAppPushManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neAppPushManager (mkSelector "active") retCULong []
+active neAppPushManager =
+  sendMessage neAppPushManager activeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadFromPreferencesWithCompletionHandler:@
-loadFromPreferencesWithCompletionHandlerSelector :: Selector
+loadFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadFromPreferencesWithCompletionHandlerSelector = mkSelector "loadFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @removeFromPreferencesWithCompletionHandler:@
-removeFromPreferencesWithCompletionHandlerSelector :: Selector
+removeFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 removeFromPreferencesWithCompletionHandlerSelector = mkSelector "removeFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @saveToPreferencesWithCompletionHandler:@
-saveToPreferencesWithCompletionHandlerSelector :: Selector
+saveToPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 saveToPreferencesWithCompletionHandlerSelector = mkSelector "saveToPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @matchSSIDs@
-matchSSIDsSelector :: Selector
+matchSSIDsSelector :: Selector '[] (Id NSArray)
 matchSSIDsSelector = mkSelector "matchSSIDs"
 
 -- | @Selector@ for @setMatchSSIDs:@
-setMatchSSIDsSelector :: Selector
+setMatchSSIDsSelector :: Selector '[Id NSArray] ()
 setMatchSSIDsSelector = mkSelector "setMatchSSIDs:"
 
 -- | @Selector@ for @matchPrivateLTENetworks@
-matchPrivateLTENetworksSelector :: Selector
+matchPrivateLTENetworksSelector :: Selector '[] (Id NSArray)
 matchPrivateLTENetworksSelector = mkSelector "matchPrivateLTENetworks"
 
 -- | @Selector@ for @setMatchPrivateLTENetworks:@
-setMatchPrivateLTENetworksSelector :: Selector
+setMatchPrivateLTENetworksSelector :: Selector '[Id NSArray] ()
 setMatchPrivateLTENetworksSelector = mkSelector "setMatchPrivateLTENetworks:"
 
 -- | @Selector@ for @matchEthernet@
-matchEthernetSelector :: Selector
+matchEthernetSelector :: Selector '[] Bool
 matchEthernetSelector = mkSelector "matchEthernet"
 
 -- | @Selector@ for @setMatchEthernet:@
-setMatchEthernetSelector :: Selector
+setMatchEthernetSelector :: Selector '[Bool] ()
 setMatchEthernetSelector = mkSelector "setMatchEthernet:"
 
 -- | @Selector@ for @providerConfiguration@
-providerConfigurationSelector :: Selector
+providerConfigurationSelector :: Selector '[] (Id NSDictionary)
 providerConfigurationSelector = mkSelector "providerConfiguration"
 
 -- | @Selector@ for @setProviderConfiguration:@
-setProviderConfigurationSelector :: Selector
+setProviderConfigurationSelector :: Selector '[Id NSDictionary] ()
 setProviderConfigurationSelector = mkSelector "setProviderConfiguration:"
 
 -- | @Selector@ for @providerBundleIdentifier@
-providerBundleIdentifierSelector :: Selector
+providerBundleIdentifierSelector :: Selector '[] (Id NSString)
 providerBundleIdentifierSelector = mkSelector "providerBundleIdentifier"
 
 -- | @Selector@ for @setProviderBundleIdentifier:@
-setProviderBundleIdentifierSelector :: Selector
+setProviderBundleIdentifierSelector :: Selector '[Id NSString] ()
 setProviderBundleIdentifierSelector = mkSelector "setProviderBundleIdentifier:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @setLocalizedDescription:@
-setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector :: Selector '[Id NSString] ()
 setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 

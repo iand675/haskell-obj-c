@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.CoreMediaIO.CMIOExtensionClient
   , clientID
   , signingID
   , pid
+  , clientIDSelector
   , initSelector
   , newSelector
-  , clientIDSelector
-  , signingIDSelector
   , pidSelector
+  , signingIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,15 +34,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMIOExtensionClient cmioExtensionClient => cmioExtensionClient -> IO (Id CMIOExtensionClient)
-init_ cmioExtensionClient  =
-    sendMsg cmioExtensionClient (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionClient =
+  sendOwnedMessage cmioExtensionClient initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionClient)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionClient"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | clientID
 --
@@ -53,8 +50,8 @@ new  =
 --
 -- ObjC selector: @- clientID@
 clientID :: IsCMIOExtensionClient cmioExtensionClient => cmioExtensionClient -> IO (Id NSUUID)
-clientID cmioExtensionClient  =
-    sendMsg cmioExtensionClient (mkSelector "clientID") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientID cmioExtensionClient =
+  sendMessage cmioExtensionClient clientIDSelector
 
 -- | signingID
 --
@@ -62,8 +59,8 @@ clientID cmioExtensionClient  =
 --
 -- ObjC selector: @- signingID@
 signingID :: IsCMIOExtensionClient cmioExtensionClient => cmioExtensionClient -> IO (Id NSString)
-signingID cmioExtensionClient  =
-    sendMsg cmioExtensionClient (mkSelector "signingID") (retPtr retVoid) [] >>= retainedObject . castPtr
+signingID cmioExtensionClient =
+  sendMessage cmioExtensionClient signingIDSelector
 
 -- | pid
 --
@@ -71,30 +68,30 @@ signingID cmioExtensionClient  =
 --
 -- ObjC selector: @- pid@
 pid :: IsCMIOExtensionClient cmioExtensionClient => cmioExtensionClient -> IO CInt
-pid cmioExtensionClient  =
-    sendMsg cmioExtensionClient (mkSelector "pid") retCInt []
+pid cmioExtensionClient =
+  sendMessage cmioExtensionClient pidSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionClient)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionClient)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @clientID@
-clientIDSelector :: Selector
+clientIDSelector :: Selector '[] (Id NSUUID)
 clientIDSelector = mkSelector "clientID"
 
 -- | @Selector@ for @signingID@
-signingIDSelector :: Selector
+signingIDSelector :: Selector '[] (Id NSString)
 signingIDSelector = mkSelector "signingID"
 
 -- | @Selector@ for @pid@
-pidSelector :: Selector
+pidSelector :: Selector '[] CInt
 pidSelector = mkSelector "pid"
 

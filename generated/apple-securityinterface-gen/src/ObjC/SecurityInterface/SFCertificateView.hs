@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,34 +26,30 @@ module ObjC.SecurityInterface.SFCertificateView
   , detailsDisclosed
   , setPoliciesDisclosed
   , policiesDisclosed
-  , setCertificateSelector
   , certificateSelector
-  , setPoliciesSelector
-  , policiesSelector
-  , setEditableTrustSelector
-  , isEditableSelector
-  , setDisplayTrustSelector
-  , isTrustDisplayedSelector
-  , saveTrustSettingsSelector
-  , setDisplayDetailsSelector
-  , detailsDisplayedSelector
-  , setDetailsDisclosedSelector
   , detailsDisclosedSelector
-  , setPoliciesDisclosedSelector
+  , detailsDisplayedSelector
+  , isEditableSelector
+  , isTrustDisplayedSelector
   , policiesDisclosedSelector
+  , policiesSelector
+  , saveTrustSettingsSelector
+  , setCertificateSelector
+  , setDetailsDisclosedSelector
+  , setDisplayDetailsSelector
+  , setDisplayTrustSelector
+  , setEditableTrustSelector
+  , setPoliciesDisclosedSelector
+  , setPoliciesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,8 +65,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setCertificate:@
 setCertificate :: IsSFCertificateView sfCertificateView => sfCertificateView -> Ptr () -> IO ()
-setCertificate sfCertificateView  certificate =
-    sendMsg sfCertificateView (mkSelector "setCertificate:") retVoid [argPtr certificate]
+setCertificate sfCertificateView certificate =
+  sendMessage sfCertificateView setCertificateSelector certificate
 
 -- | certificate
 --
@@ -77,8 +74,8 @@ setCertificate sfCertificateView  certificate =
 --
 -- ObjC selector: @- certificate@
 certificate :: IsSFCertificateView sfCertificateView => sfCertificateView -> IO (Ptr ())
-certificate sfCertificateView  =
-    fmap castPtr $ sendMsg sfCertificateView (mkSelector "certificate") (retPtr retVoid) []
+certificate sfCertificateView =
+  sendMessage sfCertificateView certificateSelector
 
 -- | setPolicies:
 --
@@ -90,8 +87,8 @@ certificate sfCertificateView  =
 --
 -- ObjC selector: @- setPolicies:@
 setPolicies :: IsSFCertificateView sfCertificateView => sfCertificateView -> RawId -> IO ()
-setPolicies sfCertificateView  policies =
-    sendMsg sfCertificateView (mkSelector "setPolicies:") retVoid [argPtr (castPtr (unRawId policies) :: Ptr ())]
+setPolicies sfCertificateView policies =
+  sendMessage sfCertificateView setPoliciesSelector policies
 
 -- | policies
 --
@@ -101,8 +98,8 @@ setPolicies sfCertificateView  policies =
 --
 -- ObjC selector: @- policies@
 policies :: IsSFCertificateView sfCertificateView => sfCertificateView -> IO (Id NSArray)
-policies sfCertificateView  =
-    sendMsg sfCertificateView (mkSelector "policies") (retPtr retVoid) [] >>= retainedObject . castPtr
+policies sfCertificateView =
+  sendMessage sfCertificateView policiesSelector
 
 -- | setEditableTrust:
 --
@@ -112,8 +109,8 @@ policies sfCertificateView  =
 --
 -- ObjC selector: @- setEditableTrust:@
 setEditableTrust :: IsSFCertificateView sfCertificateView => sfCertificateView -> Bool -> IO ()
-setEditableTrust sfCertificateView  editable =
-    sendMsg sfCertificateView (mkSelector "setEditableTrust:") retVoid [argCULong (if editable then 1 else 0)]
+setEditableTrust sfCertificateView editable =
+  sendMessage sfCertificateView setEditableTrustSelector editable
 
 -- | isEditable
 --
@@ -121,8 +118,8 @@ setEditableTrust sfCertificateView  editable =
 --
 -- ObjC selector: @- isEditable@
 isEditable :: IsSFCertificateView sfCertificateView => sfCertificateView -> IO Bool
-isEditable sfCertificateView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfCertificateView (mkSelector "isEditable") retCULong []
+isEditable sfCertificateView =
+  sendMessage sfCertificateView isEditableSelector
 
 -- | setDisplayTrust:
 --
@@ -134,8 +131,8 @@ isEditable sfCertificateView  =
 --
 -- ObjC selector: @- setDisplayTrust:@
 setDisplayTrust :: IsSFCertificateView sfCertificateView => sfCertificateView -> Bool -> IO ()
-setDisplayTrust sfCertificateView  display =
-    sendMsg sfCertificateView (mkSelector "setDisplayTrust:") retVoid [argCULong (if display then 1 else 0)]
+setDisplayTrust sfCertificateView display =
+  sendMessage sfCertificateView setDisplayTrustSelector display
 
 -- | isTrustDisplayed
 --
@@ -143,8 +140,8 @@ setDisplayTrust sfCertificateView  display =
 --
 -- ObjC selector: @- isTrustDisplayed@
 isTrustDisplayed :: IsSFCertificateView sfCertificateView => sfCertificateView -> IO Bool
-isTrustDisplayed sfCertificateView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfCertificateView (mkSelector "isTrustDisplayed") retCULong []
+isTrustDisplayed sfCertificateView =
+  sendMessage sfCertificateView isTrustDisplayedSelector
 
 -- | saveTrustSettings
 --
@@ -154,8 +151,8 @@ isTrustDisplayed sfCertificateView  =
 --
 -- ObjC selector: @- saveTrustSettings@
 saveTrustSettings :: IsSFCertificateView sfCertificateView => sfCertificateView -> IO ()
-saveTrustSettings sfCertificateView  =
-    sendMsg sfCertificateView (mkSelector "saveTrustSettings") retVoid []
+saveTrustSettings sfCertificateView =
+  sendMessage sfCertificateView saveTrustSettingsSelector
 
 -- | setDisplayDetails:
 --
@@ -167,8 +164,8 @@ saveTrustSettings sfCertificateView  =
 --
 -- ObjC selector: @- setDisplayDetails:@
 setDisplayDetails :: IsSFCertificateView sfCertificateView => sfCertificateView -> Bool -> IO ()
-setDisplayDetails sfCertificateView  display =
-    sendMsg sfCertificateView (mkSelector "setDisplayDetails:") retVoid [argCULong (if display then 1 else 0)]
+setDisplayDetails sfCertificateView display =
+  sendMessage sfCertificateView setDisplayDetailsSelector display
 
 -- | detailsDisplayed
 --
@@ -176,8 +173,8 @@ setDisplayDetails sfCertificateView  display =
 --
 -- ObjC selector: @- detailsDisplayed@
 detailsDisplayed :: IsSFCertificateView sfCertificateView => sfCertificateView -> IO Bool
-detailsDisplayed sfCertificateView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfCertificateView (mkSelector "detailsDisplayed") retCULong []
+detailsDisplayed sfCertificateView =
+  sendMessage sfCertificateView detailsDisplayedSelector
 
 -- | setDetailsDisclosed:
 --
@@ -189,8 +186,8 @@ detailsDisplayed sfCertificateView  =
 --
 -- ObjC selector: @- setDetailsDisclosed:@
 setDetailsDisclosed :: IsSFCertificateView sfCertificateView => sfCertificateView -> Bool -> IO ()
-setDetailsDisclosed sfCertificateView  disclosed =
-    sendMsg sfCertificateView (mkSelector "setDetailsDisclosed:") retVoid [argCULong (if disclosed then 1 else 0)]
+setDetailsDisclosed sfCertificateView disclosed =
+  sendMessage sfCertificateView setDetailsDisclosedSelector disclosed
 
 -- | detailsDisclosed
 --
@@ -198,8 +195,8 @@ setDetailsDisclosed sfCertificateView  disclosed =
 --
 -- ObjC selector: @- detailsDisclosed@
 detailsDisclosed :: IsSFCertificateView sfCertificateView => sfCertificateView -> IO Bool
-detailsDisclosed sfCertificateView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfCertificateView (mkSelector "detailsDisclosed") retCULong []
+detailsDisclosed sfCertificateView =
+  sendMessage sfCertificateView detailsDisclosedSelector
 
 -- | setPoliciesDisclosed:
 --
@@ -211,8 +208,8 @@ detailsDisclosed sfCertificateView  =
 --
 -- ObjC selector: @- setPoliciesDisclosed:@
 setPoliciesDisclosed :: IsSFCertificateView sfCertificateView => sfCertificateView -> Bool -> IO ()
-setPoliciesDisclosed sfCertificateView  disclosed =
-    sendMsg sfCertificateView (mkSelector "setPoliciesDisclosed:") retVoid [argCULong (if disclosed then 1 else 0)]
+setPoliciesDisclosed sfCertificateView disclosed =
+  sendMessage sfCertificateView setPoliciesDisclosedSelector disclosed
 
 -- | policiesDisclosed
 --
@@ -220,70 +217,70 @@ setPoliciesDisclosed sfCertificateView  disclosed =
 --
 -- ObjC selector: @- policiesDisclosed@
 policiesDisclosed :: IsSFCertificateView sfCertificateView => sfCertificateView -> IO Bool
-policiesDisclosed sfCertificateView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfCertificateView (mkSelector "policiesDisclosed") retCULong []
+policiesDisclosed sfCertificateView =
+  sendMessage sfCertificateView policiesDisclosedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setCertificate:@
-setCertificateSelector :: Selector
+setCertificateSelector :: Selector '[Ptr ()] ()
 setCertificateSelector = mkSelector "setCertificate:"
 
 -- | @Selector@ for @certificate@
-certificateSelector :: Selector
+certificateSelector :: Selector '[] (Ptr ())
 certificateSelector = mkSelector "certificate"
 
 -- | @Selector@ for @setPolicies:@
-setPoliciesSelector :: Selector
+setPoliciesSelector :: Selector '[RawId] ()
 setPoliciesSelector = mkSelector "setPolicies:"
 
 -- | @Selector@ for @policies@
-policiesSelector :: Selector
+policiesSelector :: Selector '[] (Id NSArray)
 policiesSelector = mkSelector "policies"
 
 -- | @Selector@ for @setEditableTrust:@
-setEditableTrustSelector :: Selector
+setEditableTrustSelector :: Selector '[Bool] ()
 setEditableTrustSelector = mkSelector "setEditableTrust:"
 
 -- | @Selector@ for @isEditable@
-isEditableSelector :: Selector
+isEditableSelector :: Selector '[] Bool
 isEditableSelector = mkSelector "isEditable"
 
 -- | @Selector@ for @setDisplayTrust:@
-setDisplayTrustSelector :: Selector
+setDisplayTrustSelector :: Selector '[Bool] ()
 setDisplayTrustSelector = mkSelector "setDisplayTrust:"
 
 -- | @Selector@ for @isTrustDisplayed@
-isTrustDisplayedSelector :: Selector
+isTrustDisplayedSelector :: Selector '[] Bool
 isTrustDisplayedSelector = mkSelector "isTrustDisplayed"
 
 -- | @Selector@ for @saveTrustSettings@
-saveTrustSettingsSelector :: Selector
+saveTrustSettingsSelector :: Selector '[] ()
 saveTrustSettingsSelector = mkSelector "saveTrustSettings"
 
 -- | @Selector@ for @setDisplayDetails:@
-setDisplayDetailsSelector :: Selector
+setDisplayDetailsSelector :: Selector '[Bool] ()
 setDisplayDetailsSelector = mkSelector "setDisplayDetails:"
 
 -- | @Selector@ for @detailsDisplayed@
-detailsDisplayedSelector :: Selector
+detailsDisplayedSelector :: Selector '[] Bool
 detailsDisplayedSelector = mkSelector "detailsDisplayed"
 
 -- | @Selector@ for @setDetailsDisclosed:@
-setDetailsDisclosedSelector :: Selector
+setDetailsDisclosedSelector :: Selector '[Bool] ()
 setDetailsDisclosedSelector = mkSelector "setDetailsDisclosed:"
 
 -- | @Selector@ for @detailsDisclosed@
-detailsDisclosedSelector :: Selector
+detailsDisclosedSelector :: Selector '[] Bool
 detailsDisclosedSelector = mkSelector "detailsDisclosed"
 
 -- | @Selector@ for @setPoliciesDisclosed:@
-setPoliciesDisclosedSelector :: Selector
+setPoliciesDisclosedSelector :: Selector '[Bool] ()
 setPoliciesDisclosedSelector = mkSelector "setPoliciesDisclosed:"
 
 -- | @Selector@ for @policiesDisclosed@
-policiesDisclosedSelector :: Selector
+policiesDisclosedSelector :: Selector '[] Bool
 policiesDisclosedSelector = mkSelector "policiesDisclosed"
 

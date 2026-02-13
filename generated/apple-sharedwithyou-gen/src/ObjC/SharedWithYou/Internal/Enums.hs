@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.SharedWithYou.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | The background styling of SWAttributionView's contents
 -- | @SWAttributionViewBackgroundStyle@
@@ -26,6 +29,16 @@ pattern SWAttributionViewBackgroundStyleColor = SWAttributionViewBackgroundStyle
 pattern SWAttributionViewBackgroundStyleMaterial :: SWAttributionViewBackgroundStyle
 pattern SWAttributionViewBackgroundStyleMaterial = SWAttributionViewBackgroundStyle 2
 
+instance ObjCArgument SWAttributionViewBackgroundStyle where
+  withObjCArg (SWAttributionViewBackgroundStyle x) k = k (argCLong x)
+
+instance ObjCReturn SWAttributionViewBackgroundStyle where
+  type RawReturn SWAttributionViewBackgroundStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SWAttributionViewBackgroundStyle x)
+  fromOwned x = pure (SWAttributionViewBackgroundStyle x)
+
 -- | The context for the content being displayed; influences future ranking of this view's SWHighlight
 --
 -- Set the appropriate display context on SWAttributionView before it is added to a window. This informs the system about how the user is consuming the attributed content, and influences future relevancy ranking of the SWHighlight for this view.
@@ -39,6 +52,16 @@ pattern SWAttributionViewDisplayContextSummary = SWAttributionViewDisplayContext
 
 pattern SWAttributionViewDisplayContextDetail :: SWAttributionViewDisplayContext
 pattern SWAttributionViewDisplayContextDetail = SWAttributionViewDisplayContext 1
+
+instance ObjCArgument SWAttributionViewDisplayContext where
+  withObjCArg (SWAttributionViewDisplayContext x) k = k (argCLong x)
+
+instance ObjCReturn SWAttributionViewDisplayContext where
+  type RawReturn SWAttributionViewDisplayContext = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SWAttributionViewDisplayContext x)
+  fromOwned x = pure (SWAttributionViewDisplayContext x)
 
 -- | The horizontal alignment of SWAttributionView's contents
 -- | @SWAttributionViewHorizontalAlignment@
@@ -58,6 +81,16 @@ pattern SWAttributionViewHorizontalAlignmentCenter = SWAttributionViewHorizontal
 pattern SWAttributionViewHorizontalAlignmentTrailing :: SWAttributionViewHorizontalAlignment
 pattern SWAttributionViewHorizontalAlignmentTrailing = SWAttributionViewHorizontalAlignment 3
 
+instance ObjCArgument SWAttributionViewHorizontalAlignment where
+  withObjCArg (SWAttributionViewHorizontalAlignment x) k = k (argCLong x)
+
+instance ObjCReturn SWAttributionViewHorizontalAlignment where
+  type RawReturn SWAttributionViewHorizontalAlignment = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SWAttributionViewHorizontalAlignment x)
+  fromOwned x = pure (SWAttributionViewHorizontalAlignment x)
+
 -- | @SWHighlightCenterErrorCode@
 newtype SWHighlightCenterErrorCode = SWHighlightCenterErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -75,6 +108,16 @@ pattern SWHighlightCenterErrorCodeInvalidURL = SWHighlightCenterErrorCode 2
 pattern SWHighlightCenterErrorCodeAccessDenied :: SWHighlightCenterErrorCode
 pattern SWHighlightCenterErrorCodeAccessDenied = SWHighlightCenterErrorCode 3
 
+instance ObjCArgument SWHighlightCenterErrorCode where
+  withObjCArg (SWHighlightCenterErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn SWHighlightCenterErrorCode where
+  type RawReturn SWHighlightCenterErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SWHighlightCenterErrorCode x)
+  fromOwned x = pure (SWHighlightCenterErrorCode x)
+
 -- | @SWHighlightChangeEventTrigger@
 newtype SWHighlightChangeEventTrigger = SWHighlightChangeEventTrigger CLong
   deriving stock (Eq, Ord, Show)
@@ -86,6 +129,16 @@ pattern SWHighlightChangeEventTriggerEdit = SWHighlightChangeEventTrigger 1
 pattern SWHighlightChangeEventTriggerComment :: SWHighlightChangeEventTrigger
 pattern SWHighlightChangeEventTriggerComment = SWHighlightChangeEventTrigger 2
 
+instance ObjCArgument SWHighlightChangeEventTrigger where
+  withObjCArg (SWHighlightChangeEventTrigger x) k = k (argCLong x)
+
+instance ObjCReturn SWHighlightChangeEventTrigger where
+  type RawReturn SWHighlightChangeEventTrigger = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SWHighlightChangeEventTrigger x)
+  fromOwned x = pure (SWHighlightChangeEventTrigger x)
+
 -- | @SWHighlightMembershipEventTrigger@
 newtype SWHighlightMembershipEventTrigger = SWHighlightMembershipEventTrigger CLong
   deriving stock (Eq, Ord, Show)
@@ -96,6 +149,16 @@ pattern SWHighlightMembershipEventTriggerAddedCollaborator = SWHighlightMembersh
 
 pattern SWHighlightMembershipEventTriggerRemovedCollaborator :: SWHighlightMembershipEventTrigger
 pattern SWHighlightMembershipEventTriggerRemovedCollaborator = SWHighlightMembershipEventTrigger 2
+
+instance ObjCArgument SWHighlightMembershipEventTrigger where
+  withObjCArg (SWHighlightMembershipEventTrigger x) k = k (argCLong x)
+
+instance ObjCReturn SWHighlightMembershipEventTrigger where
+  type RawReturn SWHighlightMembershipEventTrigger = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SWHighlightMembershipEventTrigger x)
+  fromOwned x = pure (SWHighlightMembershipEventTrigger x)
 
 -- | @SWHighlightPersistenceEventTrigger@
 newtype SWHighlightPersistenceEventTrigger = SWHighlightPersistenceEventTrigger CLong
@@ -113,3 +176,13 @@ pattern SWHighlightPersistenceEventTriggerRenamed = SWHighlightPersistenceEventT
 
 pattern SWHighlightPersistenceEventTriggerMoved :: SWHighlightPersistenceEventTrigger
 pattern SWHighlightPersistenceEventTriggerMoved = SWHighlightPersistenceEventTrigger 4
+
+instance ObjCArgument SWHighlightPersistenceEventTrigger where
+  withObjCArg (SWHighlightPersistenceEventTrigger x) k = k (argCLong x)
+
+instance ObjCReturn SWHighlightPersistenceEventTrigger where
+  type RawReturn SWHighlightPersistenceEventTrigger = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SWHighlightPersistenceEventTrigger x)
+  fromOwned x = pure (SWHighlightPersistenceEventTrigger x)

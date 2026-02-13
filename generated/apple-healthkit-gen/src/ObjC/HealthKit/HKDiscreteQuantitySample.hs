@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.HealthKit.HKDiscreteQuantitySample
   , maximumQuantity
   , mostRecentQuantity
   , mostRecentQuantityDateInterval
-  , minimumQuantitySelector
   , averageQuantitySelector
   , maximumQuantitySelector
-  , mostRecentQuantitySelector
+  , minimumQuantitySelector
   , mostRecentQuantityDateIntervalSelector
+  , mostRecentQuantitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- minimumQuantity@
 minimumQuantity :: IsHKDiscreteQuantitySample hkDiscreteQuantitySample => hkDiscreteQuantitySample -> IO (Id HKQuantity)
-minimumQuantity hkDiscreteQuantitySample  =
-    sendMsg hkDiscreteQuantitySample (mkSelector "minimumQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+minimumQuantity hkDiscreteQuantitySample =
+  sendMessage hkDiscreteQuantitySample minimumQuantitySelector
 
 -- | averageQuantity
 --
@@ -54,8 +51,8 @@ minimumQuantity hkDiscreteQuantitySample  =
 --
 -- ObjC selector: @- averageQuantity@
 averageQuantity :: IsHKDiscreteQuantitySample hkDiscreteQuantitySample => hkDiscreteQuantitySample -> IO (Id HKQuantity)
-averageQuantity hkDiscreteQuantitySample  =
-    sendMsg hkDiscreteQuantitySample (mkSelector "averageQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+averageQuantity hkDiscreteQuantitySample =
+  sendMessage hkDiscreteQuantitySample averageQuantitySelector
 
 -- | maximumQuantity
 --
@@ -63,8 +60,8 @@ averageQuantity hkDiscreteQuantitySample  =
 --
 -- ObjC selector: @- maximumQuantity@
 maximumQuantity :: IsHKDiscreteQuantitySample hkDiscreteQuantitySample => hkDiscreteQuantitySample -> IO (Id HKQuantity)
-maximumQuantity hkDiscreteQuantitySample  =
-    sendMsg hkDiscreteQuantitySample (mkSelector "maximumQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumQuantity hkDiscreteQuantitySample =
+  sendMessage hkDiscreteQuantitySample maximumQuantitySelector
 
 -- | mostRecentQuantity
 --
@@ -72,8 +69,8 @@ maximumQuantity hkDiscreteQuantitySample  =
 --
 -- ObjC selector: @- mostRecentQuantity@
 mostRecentQuantity :: IsHKDiscreteQuantitySample hkDiscreteQuantitySample => hkDiscreteQuantitySample -> IO (Id HKQuantity)
-mostRecentQuantity hkDiscreteQuantitySample  =
-    sendMsg hkDiscreteQuantitySample (mkSelector "mostRecentQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+mostRecentQuantity hkDiscreteQuantitySample =
+  sendMessage hkDiscreteQuantitySample mostRecentQuantitySelector
 
 -- | mostRecentQuantityDateInterval
 --
@@ -81,30 +78,30 @@ mostRecentQuantity hkDiscreteQuantitySample  =
 --
 -- ObjC selector: @- mostRecentQuantityDateInterval@
 mostRecentQuantityDateInterval :: IsHKDiscreteQuantitySample hkDiscreteQuantitySample => hkDiscreteQuantitySample -> IO (Id NSDateInterval)
-mostRecentQuantityDateInterval hkDiscreteQuantitySample  =
-    sendMsg hkDiscreteQuantitySample (mkSelector "mostRecentQuantityDateInterval") (retPtr retVoid) [] >>= retainedObject . castPtr
+mostRecentQuantityDateInterval hkDiscreteQuantitySample =
+  sendMessage hkDiscreteQuantitySample mostRecentQuantityDateIntervalSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @minimumQuantity@
-minimumQuantitySelector :: Selector
+minimumQuantitySelector :: Selector '[] (Id HKQuantity)
 minimumQuantitySelector = mkSelector "minimumQuantity"
 
 -- | @Selector@ for @averageQuantity@
-averageQuantitySelector :: Selector
+averageQuantitySelector :: Selector '[] (Id HKQuantity)
 averageQuantitySelector = mkSelector "averageQuantity"
 
 -- | @Selector@ for @maximumQuantity@
-maximumQuantitySelector :: Selector
+maximumQuantitySelector :: Selector '[] (Id HKQuantity)
 maximumQuantitySelector = mkSelector "maximumQuantity"
 
 -- | @Selector@ for @mostRecentQuantity@
-mostRecentQuantitySelector :: Selector
+mostRecentQuantitySelector :: Selector '[] (Id HKQuantity)
 mostRecentQuantitySelector = mkSelector "mostRecentQuantity"
 
 -- | @Selector@ for @mostRecentQuantityDateInterval@
-mostRecentQuantityDateIntervalSelector :: Selector
+mostRecentQuantityDateIntervalSelector :: Selector '[] (Id NSDateInterval)
 mostRecentQuantityDateIntervalSelector = mkSelector "mostRecentQuantityDateInterval"
 

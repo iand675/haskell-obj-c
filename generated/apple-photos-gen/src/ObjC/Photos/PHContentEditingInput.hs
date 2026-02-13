@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.Photos.PHContentEditingInput
   , fullSizeImageOrientation
   , avAsset
   , livePhoto
-  , mediaTypeSelector
-  , mediaSubtypesSelector
-  , creationDateSelector
-  , contentTypeSelector
-  , uniformTypeIdentifierSelector
-  , playbackStyleSelector
   , adjustmentDataSelector
-  , displaySizeImageSelector
-  , fullSizeImageURLSelector
-  , fullSizeImageOrientationSelector
   , avAssetSelector
+  , contentTypeSelector
+  , creationDateSelector
+  , displaySizeImageSelector
+  , fullSizeImageOrientationSelector
+  , fullSizeImageURLSelector
   , livePhotoSelector
+  , mediaSubtypesSelector
+  , mediaTypeSelector
+  , playbackStyleSelector
+  , uniformTypeIdentifierSelector
 
   -- * Enum types
   , PHAssetMediaSubtype(PHAssetMediaSubtype)
@@ -61,15 +62,11 @@ module ObjC.Photos.PHContentEditingInput
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,115 +78,115 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 
 -- | @- mediaType@
 mediaType :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO PHAssetMediaType
-mediaType phContentEditingInput  =
-    fmap (coerce :: CLong -> PHAssetMediaType) $ sendMsg phContentEditingInput (mkSelector "mediaType") retCLong []
+mediaType phContentEditingInput =
+  sendMessage phContentEditingInput mediaTypeSelector
 
 -- | @- mediaSubtypes@
 mediaSubtypes :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO PHAssetMediaSubtype
-mediaSubtypes phContentEditingInput  =
-    fmap (coerce :: CULong -> PHAssetMediaSubtype) $ sendMsg phContentEditingInput (mkSelector "mediaSubtypes") retCULong []
+mediaSubtypes phContentEditingInput =
+  sendMessage phContentEditingInput mediaSubtypesSelector
 
 -- | @- creationDate@
 creationDate :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO (Id NSDate)
-creationDate phContentEditingInput  =
-    sendMsg phContentEditingInput (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate phContentEditingInput =
+  sendMessage phContentEditingInput creationDateSelector
 
 -- | The type of data provided as the asset's content editing input image or video.
 --
 -- ObjC selector: @- contentType@
 contentType :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO (Id UTType)
-contentType phContentEditingInput  =
-    sendMsg phContentEditingInput (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentType phContentEditingInput =
+  sendMessage phContentEditingInput contentTypeSelector
 
 -- | @- uniformTypeIdentifier@
 uniformTypeIdentifier :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO (Id NSString)
-uniformTypeIdentifier phContentEditingInput  =
-    sendMsg phContentEditingInput (mkSelector "uniformTypeIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniformTypeIdentifier phContentEditingInput =
+  sendMessage phContentEditingInput uniformTypeIdentifierSelector
 
 -- | @- playbackStyle@
 playbackStyle :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO PHAssetPlaybackStyle
-playbackStyle phContentEditingInput  =
-    fmap (coerce :: CLong -> PHAssetPlaybackStyle) $ sendMsg phContentEditingInput (mkSelector "playbackStyle") retCLong []
+playbackStyle phContentEditingInput =
+  sendMessage phContentEditingInput playbackStyleSelector
 
 -- | @- adjustmentData@
 adjustmentData :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO (Id PHAdjustmentData)
-adjustmentData phContentEditingInput  =
-    sendMsg phContentEditingInput (mkSelector "adjustmentData") (retPtr retVoid) [] >>= retainedObject . castPtr
+adjustmentData phContentEditingInput =
+  sendMessage phContentEditingInput adjustmentDataSelector
 
 -- | @- displaySizeImage@
 displaySizeImage :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO (Id NSImage)
-displaySizeImage phContentEditingInput  =
-    sendMsg phContentEditingInput (mkSelector "displaySizeImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+displaySizeImage phContentEditingInput =
+  sendMessage phContentEditingInput displaySizeImageSelector
 
 -- | @- fullSizeImageURL@
 fullSizeImageURL :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO (Id NSURL)
-fullSizeImageURL phContentEditingInput  =
-    sendMsg phContentEditingInput (mkSelector "fullSizeImageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+fullSizeImageURL phContentEditingInput =
+  sendMessage phContentEditingInput fullSizeImageURLSelector
 
 -- | @- fullSizeImageOrientation@
 fullSizeImageOrientation :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO CInt
-fullSizeImageOrientation phContentEditingInput  =
-    sendMsg phContentEditingInput (mkSelector "fullSizeImageOrientation") retCInt []
+fullSizeImageOrientation phContentEditingInput =
+  sendMessage phContentEditingInput fullSizeImageOrientationSelector
 
 -- | @- avAsset@
 avAsset :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO RawId
-avAsset phContentEditingInput  =
-    fmap (RawId . castPtr) $ sendMsg phContentEditingInput (mkSelector "avAsset") (retPtr retVoid) []
+avAsset phContentEditingInput =
+  sendMessage phContentEditingInput avAssetSelector
 
 -- | @- livePhoto@
 livePhoto :: IsPHContentEditingInput phContentEditingInput => phContentEditingInput -> IO (Id PHLivePhoto)
-livePhoto phContentEditingInput  =
-    sendMsg phContentEditingInput (mkSelector "livePhoto") (retPtr retVoid) [] >>= retainedObject . castPtr
+livePhoto phContentEditingInput =
+  sendMessage phContentEditingInput livePhotoSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] PHAssetMediaType
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @mediaSubtypes@
-mediaSubtypesSelector :: Selector
+mediaSubtypesSelector :: Selector '[] PHAssetMediaSubtype
 mediaSubtypesSelector = mkSelector "mediaSubtypes"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id UTType)
 contentTypeSelector = mkSelector "contentType"
 
 -- | @Selector@ for @uniformTypeIdentifier@
-uniformTypeIdentifierSelector :: Selector
+uniformTypeIdentifierSelector :: Selector '[] (Id NSString)
 uniformTypeIdentifierSelector = mkSelector "uniformTypeIdentifier"
 
 -- | @Selector@ for @playbackStyle@
-playbackStyleSelector :: Selector
+playbackStyleSelector :: Selector '[] PHAssetPlaybackStyle
 playbackStyleSelector = mkSelector "playbackStyle"
 
 -- | @Selector@ for @adjustmentData@
-adjustmentDataSelector :: Selector
+adjustmentDataSelector :: Selector '[] (Id PHAdjustmentData)
 adjustmentDataSelector = mkSelector "adjustmentData"
 
 -- | @Selector@ for @displaySizeImage@
-displaySizeImageSelector :: Selector
+displaySizeImageSelector :: Selector '[] (Id NSImage)
 displaySizeImageSelector = mkSelector "displaySizeImage"
 
 -- | @Selector@ for @fullSizeImageURL@
-fullSizeImageURLSelector :: Selector
+fullSizeImageURLSelector :: Selector '[] (Id NSURL)
 fullSizeImageURLSelector = mkSelector "fullSizeImageURL"
 
 -- | @Selector@ for @fullSizeImageOrientation@
-fullSizeImageOrientationSelector :: Selector
+fullSizeImageOrientationSelector :: Selector '[] CInt
 fullSizeImageOrientationSelector = mkSelector "fullSizeImageOrientation"
 
 -- | @Selector@ for @avAsset@
-avAssetSelector :: Selector
+avAssetSelector :: Selector '[] RawId
 avAssetSelector = mkSelector "avAsset"
 
 -- | @Selector@ for @livePhoto@
-livePhotoSelector :: Selector
+livePhotoSelector :: Selector '[] (Id PHLivePhoto)
 livePhotoSelector = mkSelector "livePhoto"
 

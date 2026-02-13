@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,29 +37,29 @@ module ObjC.Quartz.IKScannerDeviceView
   , postProcessApplication
   , setPostProcessApplication
   , delegateSelector
-  , setDelegateSelector
-  , modeSelector
-  , setModeSelector
-  , hasDisplayModeSimpleSelector
-  , setHasDisplayModeSimpleSelector
-  , hasDisplayModeAdvancedSelector
-  , setHasDisplayModeAdvancedSelector
-  , transferModeSelector
-  , setTransferModeSelector
-  , scanControlLabelSelector
-  , setScanControlLabelSelector
-  , overviewControlLabelSelector
-  , setOverviewControlLabelSelector
   , displaysDownloadsDirectoryControlSelector
-  , setDisplaysDownloadsDirectoryControlSelector
-  , downloadsDirectorySelector
-  , setDownloadsDirectorySelector
-  , documentNameSelector
-  , setDocumentNameSelector
   , displaysPostProcessApplicationControlSelector
-  , setDisplaysPostProcessApplicationControlSelector
+  , documentNameSelector
+  , downloadsDirectorySelector
+  , hasDisplayModeAdvancedSelector
+  , hasDisplayModeSimpleSelector
+  , modeSelector
+  , overviewControlLabelSelector
   , postProcessApplicationSelector
+  , scanControlLabelSelector
+  , setDelegateSelector
+  , setDisplaysDownloadsDirectoryControlSelector
+  , setDisplaysPostProcessApplicationControlSelector
+  , setDocumentNameSelector
+  , setDownloadsDirectorySelector
+  , setHasDisplayModeAdvancedSelector
+  , setHasDisplayModeSimpleSelector
+  , setModeSelector
+  , setOverviewControlLabelSelector
   , setPostProcessApplicationSelector
+  , setScanControlLabelSelector
+  , setTransferModeSelector
+  , transferModeSelector
 
   -- * Enum types
   , IKScannerDeviceViewDisplayMode(IKScannerDeviceViewDisplayMode)
@@ -71,15 +72,11 @@ module ObjC.Quartz.IKScannerDeviceView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -94,8 +91,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO RawId
-delegate ikScannerDeviceView  =
-    fmap (RawId . castPtr) $ sendMsg ikScannerDeviceView (mkSelector "delegate") (retPtr retVoid) []
+delegate ikScannerDeviceView =
+  sendMessage ikScannerDeviceView delegateSelector
 
 -- | delegate
 --
@@ -103,8 +100,8 @@ delegate ikScannerDeviceView  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> RawId -> IO ()
-setDelegate ikScannerDeviceView  value =
-    sendMsg ikScannerDeviceView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setDelegateSelector value
 
 -- | mode
 --
@@ -112,8 +109,8 @@ setDelegate ikScannerDeviceView  value =
 --
 -- ObjC selector: @- mode@
 mode :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO IKScannerDeviceViewDisplayMode
-mode ikScannerDeviceView  =
-    fmap (coerce :: CLong -> IKScannerDeviceViewDisplayMode) $ sendMsg ikScannerDeviceView (mkSelector "mode") retCLong []
+mode ikScannerDeviceView =
+  sendMessage ikScannerDeviceView modeSelector
 
 -- | mode
 --
@@ -121,8 +118,8 @@ mode ikScannerDeviceView  =
 --
 -- ObjC selector: @- setMode:@
 setMode :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IKScannerDeviceViewDisplayMode -> IO ()
-setMode ikScannerDeviceView  value =
-    sendMsg ikScannerDeviceView (mkSelector "setMode:") retVoid [argCLong (coerce value)]
+setMode ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setModeSelector value
 
 -- | hasDisplayModeSimple
 --
@@ -130,8 +127,8 @@ setMode ikScannerDeviceView  value =
 --
 -- ObjC selector: @- hasDisplayModeSimple@
 hasDisplayModeSimple :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO Bool
-hasDisplayModeSimple ikScannerDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikScannerDeviceView (mkSelector "hasDisplayModeSimple") retCULong []
+hasDisplayModeSimple ikScannerDeviceView =
+  sendMessage ikScannerDeviceView hasDisplayModeSimpleSelector
 
 -- | hasDisplayModeSimple
 --
@@ -139,8 +136,8 @@ hasDisplayModeSimple ikScannerDeviceView  =
 --
 -- ObjC selector: @- setHasDisplayModeSimple:@
 setHasDisplayModeSimple :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> Bool -> IO ()
-setHasDisplayModeSimple ikScannerDeviceView  value =
-    sendMsg ikScannerDeviceView (mkSelector "setHasDisplayModeSimple:") retVoid [argCULong (if value then 1 else 0)]
+setHasDisplayModeSimple ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setHasDisplayModeSimpleSelector value
 
 -- | hasDisplayModeAdvanced
 --
@@ -148,8 +145,8 @@ setHasDisplayModeSimple ikScannerDeviceView  value =
 --
 -- ObjC selector: @- hasDisplayModeAdvanced@
 hasDisplayModeAdvanced :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO Bool
-hasDisplayModeAdvanced ikScannerDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikScannerDeviceView (mkSelector "hasDisplayModeAdvanced") retCULong []
+hasDisplayModeAdvanced ikScannerDeviceView =
+  sendMessage ikScannerDeviceView hasDisplayModeAdvancedSelector
 
 -- | hasDisplayModeAdvanced
 --
@@ -157,8 +154,8 @@ hasDisplayModeAdvanced ikScannerDeviceView  =
 --
 -- ObjC selector: @- setHasDisplayModeAdvanced:@
 setHasDisplayModeAdvanced :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> Bool -> IO ()
-setHasDisplayModeAdvanced ikScannerDeviceView  value =
-    sendMsg ikScannerDeviceView (mkSelector "setHasDisplayModeAdvanced:") retVoid [argCULong (if value then 1 else 0)]
+setHasDisplayModeAdvanced ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setHasDisplayModeAdvancedSelector value
 
 -- | transferMode
 --
@@ -166,8 +163,8 @@ setHasDisplayModeAdvanced ikScannerDeviceView  value =
 --
 -- ObjC selector: @- transferMode@
 transferMode :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO IKScannerDeviceViewTransferMode
-transferMode ikScannerDeviceView  =
-    fmap (coerce :: CLong -> IKScannerDeviceViewTransferMode) $ sendMsg ikScannerDeviceView (mkSelector "transferMode") retCLong []
+transferMode ikScannerDeviceView =
+  sendMessage ikScannerDeviceView transferModeSelector
 
 -- | transferMode
 --
@@ -175,8 +172,8 @@ transferMode ikScannerDeviceView  =
 --
 -- ObjC selector: @- setTransferMode:@
 setTransferMode :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IKScannerDeviceViewTransferMode -> IO ()
-setTransferMode ikScannerDeviceView  value =
-    sendMsg ikScannerDeviceView (mkSelector "setTransferMode:") retVoid [argCLong (coerce value)]
+setTransferMode ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setTransferModeSelector value
 
 -- | scanControlLabel
 --
@@ -184,8 +181,8 @@ setTransferMode ikScannerDeviceView  value =
 --
 -- ObjC selector: @- scanControlLabel@
 scanControlLabel :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO (Id NSString)
-scanControlLabel ikScannerDeviceView  =
-    sendMsg ikScannerDeviceView (mkSelector "scanControlLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+scanControlLabel ikScannerDeviceView =
+  sendMessage ikScannerDeviceView scanControlLabelSelector
 
 -- | scanControlLabel
 --
@@ -193,9 +190,8 @@ scanControlLabel ikScannerDeviceView  =
 --
 -- ObjC selector: @- setScanControlLabel:@
 setScanControlLabel :: (IsIKScannerDeviceView ikScannerDeviceView, IsNSString value) => ikScannerDeviceView -> value -> IO ()
-setScanControlLabel ikScannerDeviceView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikScannerDeviceView (mkSelector "setScanControlLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScanControlLabel ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setScanControlLabelSelector (toNSString value)
 
 -- | overviewControlLabel
 --
@@ -203,8 +199,8 @@ setScanControlLabel ikScannerDeviceView  value =
 --
 -- ObjC selector: @- overviewControlLabel@
 overviewControlLabel :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO (Id NSString)
-overviewControlLabel ikScannerDeviceView  =
-    sendMsg ikScannerDeviceView (mkSelector "overviewControlLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+overviewControlLabel ikScannerDeviceView =
+  sendMessage ikScannerDeviceView overviewControlLabelSelector
 
 -- | overviewControlLabel
 --
@@ -212,9 +208,8 @@ overviewControlLabel ikScannerDeviceView  =
 --
 -- ObjC selector: @- setOverviewControlLabel:@
 setOverviewControlLabel :: (IsIKScannerDeviceView ikScannerDeviceView, IsNSString value) => ikScannerDeviceView -> value -> IO ()
-setOverviewControlLabel ikScannerDeviceView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikScannerDeviceView (mkSelector "setOverviewControlLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOverviewControlLabel ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setOverviewControlLabelSelector (toNSString value)
 
 -- | displaysDownloadsDirectoryControl
 --
@@ -222,8 +217,8 @@ setOverviewControlLabel ikScannerDeviceView  value =
 --
 -- ObjC selector: @- displaysDownloadsDirectoryControl@
 displaysDownloadsDirectoryControl :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO Bool
-displaysDownloadsDirectoryControl ikScannerDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikScannerDeviceView (mkSelector "displaysDownloadsDirectoryControl") retCULong []
+displaysDownloadsDirectoryControl ikScannerDeviceView =
+  sendMessage ikScannerDeviceView displaysDownloadsDirectoryControlSelector
 
 -- | displaysDownloadsDirectoryControl
 --
@@ -231,8 +226,8 @@ displaysDownloadsDirectoryControl ikScannerDeviceView  =
 --
 -- ObjC selector: @- setDisplaysDownloadsDirectoryControl:@
 setDisplaysDownloadsDirectoryControl :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> Bool -> IO ()
-setDisplaysDownloadsDirectoryControl ikScannerDeviceView  value =
-    sendMsg ikScannerDeviceView (mkSelector "setDisplaysDownloadsDirectoryControl:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysDownloadsDirectoryControl ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setDisplaysDownloadsDirectoryControlSelector value
 
 -- | downloadsDirectory
 --
@@ -240,8 +235,8 @@ setDisplaysDownloadsDirectoryControl ikScannerDeviceView  value =
 --
 -- ObjC selector: @- downloadsDirectory@
 downloadsDirectory :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO (Id NSURL)
-downloadsDirectory ikScannerDeviceView  =
-    sendMsg ikScannerDeviceView (mkSelector "downloadsDirectory") (retPtr retVoid) [] >>= retainedObject . castPtr
+downloadsDirectory ikScannerDeviceView =
+  sendMessage ikScannerDeviceView downloadsDirectorySelector
 
 -- | downloadsDirectory
 --
@@ -249,9 +244,8 @@ downloadsDirectory ikScannerDeviceView  =
 --
 -- ObjC selector: @- setDownloadsDirectory:@
 setDownloadsDirectory :: (IsIKScannerDeviceView ikScannerDeviceView, IsNSURL value) => ikScannerDeviceView -> value -> IO ()
-setDownloadsDirectory ikScannerDeviceView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikScannerDeviceView (mkSelector "setDownloadsDirectory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDownloadsDirectory ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setDownloadsDirectorySelector (toNSURL value)
 
 -- | documentName
 --
@@ -259,8 +253,8 @@ setDownloadsDirectory ikScannerDeviceView  value =
 --
 -- ObjC selector: @- documentName@
 documentName :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO (Id NSString)
-documentName ikScannerDeviceView  =
-    sendMsg ikScannerDeviceView (mkSelector "documentName") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentName ikScannerDeviceView =
+  sendMessage ikScannerDeviceView documentNameSelector
 
 -- | documentName
 --
@@ -268,9 +262,8 @@ documentName ikScannerDeviceView  =
 --
 -- ObjC selector: @- setDocumentName:@
 setDocumentName :: (IsIKScannerDeviceView ikScannerDeviceView, IsNSString value) => ikScannerDeviceView -> value -> IO ()
-setDocumentName ikScannerDeviceView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikScannerDeviceView (mkSelector "setDocumentName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDocumentName ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setDocumentNameSelector (toNSString value)
 
 -- | displaysPostProcessApplicationControl
 --
@@ -278,8 +271,8 @@ setDocumentName ikScannerDeviceView  value =
 --
 -- ObjC selector: @- displaysPostProcessApplicationControl@
 displaysPostProcessApplicationControl :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO Bool
-displaysPostProcessApplicationControl ikScannerDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikScannerDeviceView (mkSelector "displaysPostProcessApplicationControl") retCULong []
+displaysPostProcessApplicationControl ikScannerDeviceView =
+  sendMessage ikScannerDeviceView displaysPostProcessApplicationControlSelector
 
 -- | displaysPostProcessApplicationControl
 --
@@ -287,8 +280,8 @@ displaysPostProcessApplicationControl ikScannerDeviceView  =
 --
 -- ObjC selector: @- setDisplaysPostProcessApplicationControl:@
 setDisplaysPostProcessApplicationControl :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> Bool -> IO ()
-setDisplaysPostProcessApplicationControl ikScannerDeviceView  value =
-    sendMsg ikScannerDeviceView (mkSelector "setDisplaysPostProcessApplicationControl:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysPostProcessApplicationControl ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setDisplaysPostProcessApplicationControlSelector value
 
 -- | postProcessApplication
 --
@@ -296,8 +289,8 @@ setDisplaysPostProcessApplicationControl ikScannerDeviceView  value =
 --
 -- ObjC selector: @- postProcessApplication@
 postProcessApplication :: IsIKScannerDeviceView ikScannerDeviceView => ikScannerDeviceView -> IO (Id NSURL)
-postProcessApplication ikScannerDeviceView  =
-    sendMsg ikScannerDeviceView (mkSelector "postProcessApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+postProcessApplication ikScannerDeviceView =
+  sendMessage ikScannerDeviceView postProcessApplicationSelector
 
 -- | postProcessApplication
 --
@@ -305,107 +298,106 @@ postProcessApplication ikScannerDeviceView  =
 --
 -- ObjC selector: @- setPostProcessApplication:@
 setPostProcessApplication :: (IsIKScannerDeviceView ikScannerDeviceView, IsNSURL value) => ikScannerDeviceView -> value -> IO ()
-setPostProcessApplication ikScannerDeviceView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikScannerDeviceView (mkSelector "setPostProcessApplication:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPostProcessApplication ikScannerDeviceView value =
+  sendMessage ikScannerDeviceView setPostProcessApplicationSelector (toNSURL value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] IKScannerDeviceViewDisplayMode
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[IKScannerDeviceViewDisplayMode] ()
 setModeSelector = mkSelector "setMode:"
 
 -- | @Selector@ for @hasDisplayModeSimple@
-hasDisplayModeSimpleSelector :: Selector
+hasDisplayModeSimpleSelector :: Selector '[] Bool
 hasDisplayModeSimpleSelector = mkSelector "hasDisplayModeSimple"
 
 -- | @Selector@ for @setHasDisplayModeSimple:@
-setHasDisplayModeSimpleSelector :: Selector
+setHasDisplayModeSimpleSelector :: Selector '[Bool] ()
 setHasDisplayModeSimpleSelector = mkSelector "setHasDisplayModeSimple:"
 
 -- | @Selector@ for @hasDisplayModeAdvanced@
-hasDisplayModeAdvancedSelector :: Selector
+hasDisplayModeAdvancedSelector :: Selector '[] Bool
 hasDisplayModeAdvancedSelector = mkSelector "hasDisplayModeAdvanced"
 
 -- | @Selector@ for @setHasDisplayModeAdvanced:@
-setHasDisplayModeAdvancedSelector :: Selector
+setHasDisplayModeAdvancedSelector :: Selector '[Bool] ()
 setHasDisplayModeAdvancedSelector = mkSelector "setHasDisplayModeAdvanced:"
 
 -- | @Selector@ for @transferMode@
-transferModeSelector :: Selector
+transferModeSelector :: Selector '[] IKScannerDeviceViewTransferMode
 transferModeSelector = mkSelector "transferMode"
 
 -- | @Selector@ for @setTransferMode:@
-setTransferModeSelector :: Selector
+setTransferModeSelector :: Selector '[IKScannerDeviceViewTransferMode] ()
 setTransferModeSelector = mkSelector "setTransferMode:"
 
 -- | @Selector@ for @scanControlLabel@
-scanControlLabelSelector :: Selector
+scanControlLabelSelector :: Selector '[] (Id NSString)
 scanControlLabelSelector = mkSelector "scanControlLabel"
 
 -- | @Selector@ for @setScanControlLabel:@
-setScanControlLabelSelector :: Selector
+setScanControlLabelSelector :: Selector '[Id NSString] ()
 setScanControlLabelSelector = mkSelector "setScanControlLabel:"
 
 -- | @Selector@ for @overviewControlLabel@
-overviewControlLabelSelector :: Selector
+overviewControlLabelSelector :: Selector '[] (Id NSString)
 overviewControlLabelSelector = mkSelector "overviewControlLabel"
 
 -- | @Selector@ for @setOverviewControlLabel:@
-setOverviewControlLabelSelector :: Selector
+setOverviewControlLabelSelector :: Selector '[Id NSString] ()
 setOverviewControlLabelSelector = mkSelector "setOverviewControlLabel:"
 
 -- | @Selector@ for @displaysDownloadsDirectoryControl@
-displaysDownloadsDirectoryControlSelector :: Selector
+displaysDownloadsDirectoryControlSelector :: Selector '[] Bool
 displaysDownloadsDirectoryControlSelector = mkSelector "displaysDownloadsDirectoryControl"
 
 -- | @Selector@ for @setDisplaysDownloadsDirectoryControl:@
-setDisplaysDownloadsDirectoryControlSelector :: Selector
+setDisplaysDownloadsDirectoryControlSelector :: Selector '[Bool] ()
 setDisplaysDownloadsDirectoryControlSelector = mkSelector "setDisplaysDownloadsDirectoryControl:"
 
 -- | @Selector@ for @downloadsDirectory@
-downloadsDirectorySelector :: Selector
+downloadsDirectorySelector :: Selector '[] (Id NSURL)
 downloadsDirectorySelector = mkSelector "downloadsDirectory"
 
 -- | @Selector@ for @setDownloadsDirectory:@
-setDownloadsDirectorySelector :: Selector
+setDownloadsDirectorySelector :: Selector '[Id NSURL] ()
 setDownloadsDirectorySelector = mkSelector "setDownloadsDirectory:"
 
 -- | @Selector@ for @documentName@
-documentNameSelector :: Selector
+documentNameSelector :: Selector '[] (Id NSString)
 documentNameSelector = mkSelector "documentName"
 
 -- | @Selector@ for @setDocumentName:@
-setDocumentNameSelector :: Selector
+setDocumentNameSelector :: Selector '[Id NSString] ()
 setDocumentNameSelector = mkSelector "setDocumentName:"
 
 -- | @Selector@ for @displaysPostProcessApplicationControl@
-displaysPostProcessApplicationControlSelector :: Selector
+displaysPostProcessApplicationControlSelector :: Selector '[] Bool
 displaysPostProcessApplicationControlSelector = mkSelector "displaysPostProcessApplicationControl"
 
 -- | @Selector@ for @setDisplaysPostProcessApplicationControl:@
-setDisplaysPostProcessApplicationControlSelector :: Selector
+setDisplaysPostProcessApplicationControlSelector :: Selector '[Bool] ()
 setDisplaysPostProcessApplicationControlSelector = mkSelector "setDisplaysPostProcessApplicationControl:"
 
 -- | @Selector@ for @postProcessApplication@
-postProcessApplicationSelector :: Selector
+postProcessApplicationSelector :: Selector '[] (Id NSURL)
 postProcessApplicationSelector = mkSelector "postProcessApplication"
 
 -- | @Selector@ for @setPostProcessApplication:@
-setPostProcessApplicationSelector :: Selector
+setPostProcessApplicationSelector :: Selector '[Id NSURL] ()
 setPostProcessApplicationSelector = mkSelector "setPostProcessApplication:"
 

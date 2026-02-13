@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data COMPLEX = COMPLEX
   { complexReal :: !CFloat
@@ -37,6 +39,16 @@ argCOMPLEX = mkStorableArg complexStructType
 retCOMPLEX :: RetType COMPLEX
 retCOMPLEX = mkStorableRetType complexStructType
 
+instance ObjCArgument COMPLEX where
+  withObjCArg x k = k (argCOMPLEX x)
+
+instance ObjCReturn COMPLEX where
+  type RawReturn COMPLEX = COMPLEX
+  objcRetType = retCOMPLEX
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data COMPLEX_SPLIT = COMPLEX_SPLIT
   { compleX_SPLITRealp :: !(Ptr ())
   , compleX_SPLITImagp :: !(Ptr ())
@@ -60,6 +72,16 @@ argCOMPLEX_SPLIT = mkStorableArg compleX_SPLITStructType
 
 retCOMPLEX_SPLIT :: RetType COMPLEX_SPLIT
 retCOMPLEX_SPLIT = mkStorableRetType compleX_SPLITStructType
+
+instance ObjCArgument COMPLEX_SPLIT where
+  withObjCArg x k = k (argCOMPLEX_SPLIT x)
+
+instance ObjCReturn COMPLEX_SPLIT where
+  type RawReturn COMPLEX_SPLIT = COMPLEX_SPLIT
+  objcRetType = retCOMPLEX_SPLIT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data DOUBLE_COMPLEX = DOUBLE_COMPLEX
   { doublE_COMPLEXReal :: !CDouble
@@ -85,6 +107,16 @@ argDOUBLE_COMPLEX = mkStorableArg doublE_COMPLEXStructType
 retDOUBLE_COMPLEX :: RetType DOUBLE_COMPLEX
 retDOUBLE_COMPLEX = mkStorableRetType doublE_COMPLEXStructType
 
+instance ObjCArgument DOUBLE_COMPLEX where
+  withObjCArg x k = k (argDOUBLE_COMPLEX x)
+
+instance ObjCReturn DOUBLE_COMPLEX where
+  type RawReturn DOUBLE_COMPLEX = DOUBLE_COMPLEX
+  objcRetType = retDOUBLE_COMPLEX
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data DOUBLE_COMPLEX_SPLIT = DOUBLE_COMPLEX_SPLIT
   { doublE_COMPLEX_SPLITRealp :: !(Ptr ())
   , doublE_COMPLEX_SPLITImagp :: !(Ptr ())
@@ -108,6 +140,16 @@ argDOUBLE_COMPLEX_SPLIT = mkStorableArg doublE_COMPLEX_SPLITStructType
 
 retDOUBLE_COMPLEX_SPLIT :: RetType DOUBLE_COMPLEX_SPLIT
 retDOUBLE_COMPLEX_SPLIT = mkStorableRetType doublE_COMPLEX_SPLITStructType
+
+instance ObjCArgument DOUBLE_COMPLEX_SPLIT where
+  withObjCArg x k = k (argDOUBLE_COMPLEX_SPLIT x)
+
+instance ObjCReturn DOUBLE_COMPLEX_SPLIT where
+  type RawReturn DOUBLE_COMPLEX_SPLIT = DOUBLE_COMPLEX_SPLIT
+  objcRetType = retDOUBLE_COMPLEX_SPLIT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data DSPComplex = DSPComplex
   { dspComplexReal :: !CFloat
@@ -133,6 +175,16 @@ argDSPComplex = mkStorableArg dspComplexStructType
 retDSPComplex :: RetType DSPComplex
 retDSPComplex = mkStorableRetType dspComplexStructType
 
+instance ObjCArgument DSPComplex where
+  withObjCArg x k = k (argDSPComplex x)
+
+instance ObjCReturn DSPComplex where
+  type RawReturn DSPComplex = DSPComplex
+  objcRetType = retDSPComplex
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data DSPDoubleComplex = DSPDoubleComplex
   { dspDoubleComplexReal :: !CDouble
   , dspDoubleComplexImag :: !CDouble
@@ -156,6 +208,16 @@ argDSPDoubleComplex = mkStorableArg dspDoubleComplexStructType
 
 retDSPDoubleComplex :: RetType DSPDoubleComplex
 retDSPDoubleComplex = mkStorableRetType dspDoubleComplexStructType
+
+instance ObjCArgument DSPDoubleComplex where
+  withObjCArg x k = k (argDSPDoubleComplex x)
+
+instance ObjCReturn DSPDoubleComplex where
+  type RawReturn DSPDoubleComplex = DSPDoubleComplex
+  objcRetType = retDSPDoubleComplex
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data DSPDoubleSplitComplex = DSPDoubleSplitComplex
   { dspDoubleSplitComplexRealp :: !(Ptr ())
@@ -181,6 +243,16 @@ argDSPDoubleSplitComplex = mkStorableArg dspDoubleSplitComplexStructType
 retDSPDoubleSplitComplex :: RetType DSPDoubleSplitComplex
 retDSPDoubleSplitComplex = mkStorableRetType dspDoubleSplitComplexStructType
 
+instance ObjCArgument DSPDoubleSplitComplex where
+  withObjCArg x k = k (argDSPDoubleSplitComplex x)
+
+instance ObjCReturn DSPDoubleSplitComplex where
+  type RawReturn DSPDoubleSplitComplex = DSPDoubleSplitComplex
+  objcRetType = retDSPDoubleSplitComplex
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data DSPSplitComplex = DSPSplitComplex
   { dspSplitComplexRealp :: !(Ptr ())
   , dspSplitComplexImagp :: !(Ptr ())
@@ -204,3 +276,13 @@ argDSPSplitComplex = mkStorableArg dspSplitComplexStructType
 
 retDSPSplitComplex :: RetType DSPSplitComplex
 retDSPSplitComplex = mkStorableRetType dspSplitComplexStructType
+
+instance ObjCArgument DSPSplitComplex where
+  withObjCArg x k = k (argDSPSplitComplex x)
+
+instance ObjCReturn DSPSplitComplex where
+  type RawReturn DSPSplitComplex = DSPSplitComplex
+  objcRetType = retDSPSplitComplex
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

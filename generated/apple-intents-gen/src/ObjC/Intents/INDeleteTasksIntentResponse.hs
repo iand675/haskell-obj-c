@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.Intents.INDeleteTasksIntentResponse
   , code
   , deletedTasks
   , setDeletedTasks
-  , initSelector
-  , initWithCode_userActivitySelector
   , codeSelector
   , deletedTasksSelector
+  , initSelector
+  , initWithCode_userActivitySelector
   , setDeletedTasksSelector
 
   -- * Enum types
@@ -29,15 +30,11 @@ module ObjC.Intents.INDeleteTasksIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,52 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINDeleteTasksIntentResponse inDeleteTasksIntentResponse => inDeleteTasksIntentResponse -> IO RawId
-init_ inDeleteTasksIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inDeleteTasksIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inDeleteTasksIntentResponse =
+  sendOwnedMessage inDeleteTasksIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINDeleteTasksIntentResponse inDeleteTasksIntentResponse, IsNSUserActivity userActivity) => inDeleteTasksIntentResponse -> INDeleteTasksIntentResponseCode -> userActivity -> IO (Id INDeleteTasksIntentResponse)
-initWithCode_userActivity inDeleteTasksIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inDeleteTasksIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inDeleteTasksIntentResponse code userActivity =
+  sendOwnedMessage inDeleteTasksIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINDeleteTasksIntentResponse inDeleteTasksIntentResponse => inDeleteTasksIntentResponse -> IO INDeleteTasksIntentResponseCode
-code inDeleteTasksIntentResponse  =
-    fmap (coerce :: CLong -> INDeleteTasksIntentResponseCode) $ sendMsg inDeleteTasksIntentResponse (mkSelector "code") retCLong []
+code inDeleteTasksIntentResponse =
+  sendMessage inDeleteTasksIntentResponse codeSelector
 
 -- | @- deletedTasks@
 deletedTasks :: IsINDeleteTasksIntentResponse inDeleteTasksIntentResponse => inDeleteTasksIntentResponse -> IO (Id NSArray)
-deletedTasks inDeleteTasksIntentResponse  =
-    sendMsg inDeleteTasksIntentResponse (mkSelector "deletedTasks") (retPtr retVoid) [] >>= retainedObject . castPtr
+deletedTasks inDeleteTasksIntentResponse =
+  sendMessage inDeleteTasksIntentResponse deletedTasksSelector
 
 -- | @- setDeletedTasks:@
 setDeletedTasks :: (IsINDeleteTasksIntentResponse inDeleteTasksIntentResponse, IsNSArray value) => inDeleteTasksIntentResponse -> value -> IO ()
-setDeletedTasks inDeleteTasksIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inDeleteTasksIntentResponse (mkSelector "setDeletedTasks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeletedTasks inDeleteTasksIntentResponse value =
+  sendMessage inDeleteTasksIntentResponse setDeletedTasksSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INDeleteTasksIntentResponseCode, Id NSUserActivity] (Id INDeleteTasksIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INDeleteTasksIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @deletedTasks@
-deletedTasksSelector :: Selector
+deletedTasksSelector :: Selector '[] (Id NSArray)
 deletedTasksSelector = mkSelector "deletedTasks"
 
 -- | @Selector@ for @setDeletedTasks:@
-setDeletedTasksSelector :: Selector
+setDeletedTasksSelector :: Selector '[Id NSArray] ()
 setDeletedTasksSelector = mkSelector "setDeletedTasks:"
 

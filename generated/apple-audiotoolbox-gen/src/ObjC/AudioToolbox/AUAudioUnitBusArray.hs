@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,18 +32,18 @@ module ObjC.AudioToolbox.AUAudioUnitBusArray
   , countChangeable
   , ownerAudioUnit
   , busType
-  , initSelector
-  , initWithAudioUnit_busType_bussesSelector
-  , initWithAudioUnit_busTypeSelector
-  , objectAtIndexedSubscriptSelector
-  , setBusCount_errorSelector
   , addObserverToAllBusses_forKeyPath_options_contextSelector
+  , busTypeSelector
+  , countChangeableSelector
+  , countSelector
+  , initSelector
+  , initWithAudioUnit_busTypeSelector
+  , initWithAudioUnit_busType_bussesSelector
+  , objectAtIndexedSubscriptSelector
+  , ownerAudioUnitSelector
   , removeObserverFromAllBusses_forKeyPath_contextSelector
   , replaceBussesSelector
-  , countSelector
-  , countChangeableSelector
-  , ownerAudioUnitSelector
-  , busTypeSelector
+  , setBusCount_errorSelector
 
   -- * Enum types
   , AUAudioUnitBusType(AUAudioUnitBusType)
@@ -56,15 +57,11 @@ module ObjC.AudioToolbox.AUAudioUnitBusArray
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,8 +72,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAUAudioUnitBusArray auAudioUnitBusArray => auAudioUnitBusArray -> IO (Id AUAudioUnitBusArray)
-init_ auAudioUnitBusArray  =
-    sendMsg auAudioUnitBusArray (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ auAudioUnitBusArray =
+  sendOwnedMessage auAudioUnitBusArray initSelector
 
 -- | initWithAudioUnit:busType:busses:
 --
@@ -84,10 +81,8 @@ init_ auAudioUnitBusArray  =
 --
 -- ObjC selector: @- initWithAudioUnit:busType:busses:@
 initWithAudioUnit_busType_busses :: (IsAUAudioUnitBusArray auAudioUnitBusArray, IsAUAudioUnit owner, IsNSArray busArray) => auAudioUnitBusArray -> owner -> AUAudioUnitBusType -> busArray -> IO (Id AUAudioUnitBusArray)
-initWithAudioUnit_busType_busses auAudioUnitBusArray  owner busType busArray =
-  withObjCPtr owner $ \raw_owner ->
-    withObjCPtr busArray $ \raw_busArray ->
-        sendMsg auAudioUnitBusArray (mkSelector "initWithAudioUnit:busType:busses:") (retPtr retVoid) [argPtr (castPtr raw_owner :: Ptr ()), argCLong (coerce busType), argPtr (castPtr raw_busArray :: Ptr ())] >>= ownedObject . castPtr
+initWithAudioUnit_busType_busses auAudioUnitBusArray owner busType busArray =
+  sendOwnedMessage auAudioUnitBusArray initWithAudioUnit_busType_bussesSelector (toAUAudioUnit owner) busType (toNSArray busArray)
 
 -- | initWithAudioUnit:busType:
 --
@@ -95,16 +90,15 @@ initWithAudioUnit_busType_busses auAudioUnitBusArray  owner busType busArray =
 --
 -- ObjC selector: @- initWithAudioUnit:busType:@
 initWithAudioUnit_busType :: (IsAUAudioUnitBusArray auAudioUnitBusArray, IsAUAudioUnit owner) => auAudioUnitBusArray -> owner -> AUAudioUnitBusType -> IO (Id AUAudioUnitBusArray)
-initWithAudioUnit_busType auAudioUnitBusArray  owner busType =
-  withObjCPtr owner $ \raw_owner ->
-      sendMsg auAudioUnitBusArray (mkSelector "initWithAudioUnit:busType:") (retPtr retVoid) [argPtr (castPtr raw_owner :: Ptr ()), argCLong (coerce busType)] >>= ownedObject . castPtr
+initWithAudioUnit_busType auAudioUnitBusArray owner busType =
+  sendOwnedMessage auAudioUnitBusArray initWithAudioUnit_busTypeSelector (toAUAudioUnit owner) busType
 
 -- | objectAtIndexedSubscript:
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsAUAudioUnitBusArray auAudioUnitBusArray => auAudioUnitBusArray -> CULong -> IO (Id AUAudioUnitBus)
-objectAtIndexedSubscript auAudioUnitBusArray  index =
-    sendMsg auAudioUnitBusArray (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+objectAtIndexedSubscript auAudioUnitBusArray index =
+  sendMessage auAudioUnitBusArray objectAtIndexedSubscriptSelector index
 
 -- | setBusCount:error:
 --
@@ -112,9 +106,8 @@ objectAtIndexedSubscript auAudioUnitBusArray  index =
 --
 -- ObjC selector: @- setBusCount:error:@
 setBusCount_error :: (IsAUAudioUnitBusArray auAudioUnitBusArray, IsNSError outError) => auAudioUnitBusArray -> CULong -> outError -> IO Bool
-setBusCount_error auAudioUnitBusArray  count outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnitBusArray (mkSelector "setBusCount:error:") retCULong [argCULong count, argPtr (castPtr raw_outError :: Ptr ())]
+setBusCount_error auAudioUnitBusArray count outError =
+  sendMessage auAudioUnitBusArray setBusCount_errorSelector count (toNSError outError)
 
 -- | addObserverToAllBusses:forKeyPath:options:context:
 --
@@ -122,10 +115,8 @@ setBusCount_error auAudioUnitBusArray  count outError =
 --
 -- ObjC selector: @- addObserverToAllBusses:forKeyPath:options:context:@
 addObserverToAllBusses_forKeyPath_options_context :: (IsAUAudioUnitBusArray auAudioUnitBusArray, IsNSObject observer, IsNSString keyPath) => auAudioUnitBusArray -> observer -> keyPath -> NSKeyValueObservingOptions -> Ptr () -> IO ()
-addObserverToAllBusses_forKeyPath_options_context auAudioUnitBusArray  observer keyPath options context =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr keyPath $ \raw_keyPath ->
-        sendMsg auAudioUnitBusArray (mkSelector "addObserverToAllBusses:forKeyPath:options:context:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ()), argCULong (coerce options), argPtr context]
+addObserverToAllBusses_forKeyPath_options_context auAudioUnitBusArray observer keyPath options context =
+  sendMessage auAudioUnitBusArray addObserverToAllBusses_forKeyPath_options_contextSelector (toNSObject observer) (toNSString keyPath) options context
 
 -- | removeObserverFromAllBusses:forKeyPath:context:
 --
@@ -133,25 +124,22 @@ addObserverToAllBusses_forKeyPath_options_context auAudioUnitBusArray  observer 
 --
 -- ObjC selector: @- removeObserverFromAllBusses:forKeyPath:context:@
 removeObserverFromAllBusses_forKeyPath_context :: (IsAUAudioUnitBusArray auAudioUnitBusArray, IsNSObject observer, IsNSString keyPath) => auAudioUnitBusArray -> observer -> keyPath -> Ptr () -> IO ()
-removeObserverFromAllBusses_forKeyPath_context auAudioUnitBusArray  observer keyPath context =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr keyPath $ \raw_keyPath ->
-        sendMsg auAudioUnitBusArray (mkSelector "removeObserverFromAllBusses:forKeyPath:context:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ()), argPtr context]
+removeObserverFromAllBusses_forKeyPath_context auAudioUnitBusArray observer keyPath context =
+  sendMessage auAudioUnitBusArray removeObserverFromAllBusses_forKeyPath_contextSelector (toNSObject observer) (toNSString keyPath) context
 
 -- | Sets the bus array to be a copy of the supplied array. The base class issues KVO notifications.
 --
 -- ObjC selector: @- replaceBusses:@
 replaceBusses :: (IsAUAudioUnitBusArray auAudioUnitBusArray, IsNSArray busArray) => auAudioUnitBusArray -> busArray -> IO ()
-replaceBusses auAudioUnitBusArray  busArray =
-  withObjCPtr busArray $ \raw_busArray ->
-      sendMsg auAudioUnitBusArray (mkSelector "replaceBusses:") retVoid [argPtr (castPtr raw_busArray :: Ptr ())]
+replaceBusses auAudioUnitBusArray busArray =
+  sendMessage auAudioUnitBusArray replaceBussesSelector (toNSArray busArray)
 
 -- | count
 --
 -- ObjC selector: @- count@
 count :: IsAUAudioUnitBusArray auAudioUnitBusArray => auAudioUnitBusArray -> IO CULong
-count auAudioUnitBusArray  =
-    sendMsg auAudioUnitBusArray (mkSelector "count") retCULong []
+count auAudioUnitBusArray =
+  sendMessage auAudioUnitBusArray countSelector
 
 -- | countChangeable
 --
@@ -161,72 +149,72 @@ count auAudioUnitBusArray  =
 --
 -- ObjC selector: @- countChangeable@
 countChangeable :: IsAUAudioUnitBusArray auAudioUnitBusArray => auAudioUnitBusArray -> IO Bool
-countChangeable auAudioUnitBusArray  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnitBusArray (mkSelector "countChangeable") retCULong []
+countChangeable auAudioUnitBusArray =
+  sendMessage auAudioUnitBusArray countChangeableSelector
 
 -- | The audio unit that owns the bus.
 --
 -- ObjC selector: @- ownerAudioUnit@
 ownerAudioUnit :: IsAUAudioUnitBusArray auAudioUnitBusArray => auAudioUnitBusArray -> IO (Id AUAudioUnit)
-ownerAudioUnit auAudioUnitBusArray  =
-    sendMsg auAudioUnitBusArray (mkSelector "ownerAudioUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+ownerAudioUnit auAudioUnitBusArray =
+  sendMessage auAudioUnitBusArray ownerAudioUnitSelector
 
 -- | Which bus array this is (input or output).
 --
 -- ObjC selector: @- busType@
 busType :: IsAUAudioUnitBusArray auAudioUnitBusArray => auAudioUnitBusArray -> IO AUAudioUnitBusType
-busType auAudioUnitBusArray  =
-    fmap (coerce :: CLong -> AUAudioUnitBusType) $ sendMsg auAudioUnitBusArray (mkSelector "busType") retCLong []
+busType auAudioUnitBusArray =
+  sendMessage auAudioUnitBusArray busTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AUAudioUnitBusArray)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithAudioUnit:busType:busses:@
-initWithAudioUnit_busType_bussesSelector :: Selector
+initWithAudioUnit_busType_bussesSelector :: Selector '[Id AUAudioUnit, AUAudioUnitBusType, Id NSArray] (Id AUAudioUnitBusArray)
 initWithAudioUnit_busType_bussesSelector = mkSelector "initWithAudioUnit:busType:busses:"
 
 -- | @Selector@ for @initWithAudioUnit:busType:@
-initWithAudioUnit_busTypeSelector :: Selector
+initWithAudioUnit_busTypeSelector :: Selector '[Id AUAudioUnit, AUAudioUnitBusType] (Id AUAudioUnitBusArray)
 initWithAudioUnit_busTypeSelector = mkSelector "initWithAudioUnit:busType:"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id AUAudioUnitBus)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @setBusCount:error:@
-setBusCount_errorSelector :: Selector
+setBusCount_errorSelector :: Selector '[CULong, Id NSError] Bool
 setBusCount_errorSelector = mkSelector "setBusCount:error:"
 
 -- | @Selector@ for @addObserverToAllBusses:forKeyPath:options:context:@
-addObserverToAllBusses_forKeyPath_options_contextSelector :: Selector
+addObserverToAllBusses_forKeyPath_options_contextSelector :: Selector '[Id NSObject, Id NSString, NSKeyValueObservingOptions, Ptr ()] ()
 addObserverToAllBusses_forKeyPath_options_contextSelector = mkSelector "addObserverToAllBusses:forKeyPath:options:context:"
 
 -- | @Selector@ for @removeObserverFromAllBusses:forKeyPath:context:@
-removeObserverFromAllBusses_forKeyPath_contextSelector :: Selector
+removeObserverFromAllBusses_forKeyPath_contextSelector :: Selector '[Id NSObject, Id NSString, Ptr ()] ()
 removeObserverFromAllBusses_forKeyPath_contextSelector = mkSelector "removeObserverFromAllBusses:forKeyPath:context:"
 
 -- | @Selector@ for @replaceBusses:@
-replaceBussesSelector :: Selector
+replaceBussesSelector :: Selector '[Id NSArray] ()
 replaceBussesSelector = mkSelector "replaceBusses:"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @countChangeable@
-countChangeableSelector :: Selector
+countChangeableSelector :: Selector '[] Bool
 countChangeableSelector = mkSelector "countChangeable"
 
 -- | @Selector@ for @ownerAudioUnit@
-ownerAudioUnitSelector :: Selector
+ownerAudioUnitSelector :: Selector '[] (Id AUAudioUnit)
 ownerAudioUnitSelector = mkSelector "ownerAudioUnit"
 
 -- | @Selector@ for @busType@
-busTypeSelector :: Selector
+busTypeSelector :: Selector '[] AUAudioUnitBusType
 busTypeSelector = mkSelector "busType"
 

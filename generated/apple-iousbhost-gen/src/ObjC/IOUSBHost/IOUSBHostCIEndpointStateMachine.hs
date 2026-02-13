@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,27 +25,23 @@ module ObjC.IOUSBHost.IOUSBHostCIEndpointStateMachine
   , endpointAddress
   , currentTransferMessage
   , controllerInterface
+  , controllerInterfaceSelector
+  , currentTransferMessageSelector
+  , deviceAddressSelector
+  , endpointAddressSelector
   , initSelector
   , initWithInterface_command_errorSelector
   , inspectCommand_errorSelector
   , processDoorbell_errorSelector
-  , deviceAddressSelector
-  , endpointAddressSelector
-  , currentTransferMessageSelector
-  , controllerInterfaceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsIOUSBHostCIEndpointStateMachine iousbHostCIEndpointStateMachine => iousbHostCIEndpointStateMachine -> IO (Id IOUSBHostCIEndpointStateMachine)
-init_ iousbHostCIEndpointStateMachine  =
-    sendMsg iousbHostCIEndpointStateMachine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ iousbHostCIEndpointStateMachine =
+  sendOwnedMessage iousbHostCIEndpointStateMachine initSelector
 
 -- | Initializes an IOUSBHostCIEndpointStateMachine object
 --
@@ -69,10 +66,8 @@ init_ iousbHostCIEndpointStateMachine  =
 --
 -- ObjC selector: @- initWithInterface:command:error:@
 initWithInterface_command_error :: (IsIOUSBHostCIEndpointStateMachine iousbHostCIEndpointStateMachine, IsIOUSBHostControllerInterface interface, IsNSError error_) => iousbHostCIEndpointStateMachine -> interface -> Const (Ptr IOUSBHostCIMessage) -> error_ -> IO (Id IOUSBHostCIEndpointStateMachine)
-initWithInterface_command_error iousbHostCIEndpointStateMachine  interface command error_ =
-  withObjCPtr interface $ \raw_interface ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg iousbHostCIEndpointStateMachine (mkSelector "initWithInterface:command:error:") (retPtr retVoid) [argPtr (castPtr raw_interface :: Ptr ()), argPtr (unConst command), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithInterface_command_error iousbHostCIEndpointStateMachine interface command error_ =
+  sendOwnedMessage iousbHostCIEndpointStateMachine initWithInterface_command_errorSelector (toIOUSBHostControllerInterface interface) command (toNSError error_)
 
 -- | Inspect an IOUSBHostCIMessage command
 --
@@ -84,9 +79,8 @@ initWithInterface_command_error iousbHostCIEndpointStateMachine  interface comma
 --
 -- ObjC selector: @- inspectCommand:error:@
 inspectCommand_error :: (IsIOUSBHostCIEndpointStateMachine iousbHostCIEndpointStateMachine, IsNSError error_) => iousbHostCIEndpointStateMachine -> Const (Ptr IOUSBHostCIMessage) -> error_ -> IO Bool
-inspectCommand_error iousbHostCIEndpointStateMachine  command error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostCIEndpointStateMachine (mkSelector "inspectCommand:error:") retCULong [argPtr (unConst command), argPtr (castPtr raw_error_ :: Ptr ())]
+inspectCommand_error iousbHostCIEndpointStateMachine command error_ =
+  sendMessage iousbHostCIEndpointStateMachine inspectCommand_errorSelector command (toNSError error_)
 
 -- | Advance the state machine and process an IOUSBHostCIDoorbell message
 --
@@ -98,63 +92,62 @@ inspectCommand_error iousbHostCIEndpointStateMachine  command error_ =
 --
 -- ObjC selector: @- processDoorbell:error:@
 processDoorbell_error :: (IsIOUSBHostCIEndpointStateMachine iousbHostCIEndpointStateMachine, IsNSError error_) => iousbHostCIEndpointStateMachine -> Const CUInt -> error_ -> IO Bool
-processDoorbell_error iousbHostCIEndpointStateMachine  doorbell error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostCIEndpointStateMachine (mkSelector "processDoorbell:error:") retCULong [argCUInt (unConst doorbell), argPtr (castPtr raw_error_ :: Ptr ())]
+processDoorbell_error iousbHostCIEndpointStateMachine doorbell error_ =
+  sendMessage iousbHostCIEndpointStateMachine processDoorbell_errorSelector doorbell (toNSError error_)
 
 -- | @- deviceAddress@
 deviceAddress :: IsIOUSBHostCIEndpointStateMachine iousbHostCIEndpointStateMachine => iousbHostCIEndpointStateMachine -> IO CULong
-deviceAddress iousbHostCIEndpointStateMachine  =
-    sendMsg iousbHostCIEndpointStateMachine (mkSelector "deviceAddress") retCULong []
+deviceAddress iousbHostCIEndpointStateMachine =
+  sendMessage iousbHostCIEndpointStateMachine deviceAddressSelector
 
 -- | @- endpointAddress@
 endpointAddress :: IsIOUSBHostCIEndpointStateMachine iousbHostCIEndpointStateMachine => iousbHostCIEndpointStateMachine -> IO CULong
-endpointAddress iousbHostCIEndpointStateMachine  =
-    sendMsg iousbHostCIEndpointStateMachine (mkSelector "endpointAddress") retCULong []
+endpointAddress iousbHostCIEndpointStateMachine =
+  sendMessage iousbHostCIEndpointStateMachine endpointAddressSelector
 
 -- | @- currentTransferMessage@
 currentTransferMessage :: IsIOUSBHostCIEndpointStateMachine iousbHostCIEndpointStateMachine => iousbHostCIEndpointStateMachine -> IO (Const (Ptr IOUSBHostCIMessage))
-currentTransferMessage iousbHostCIEndpointStateMachine  =
-    fmap Const $ fmap castPtr $ sendMsg iousbHostCIEndpointStateMachine (mkSelector "currentTransferMessage") (retPtr retVoid) []
+currentTransferMessage iousbHostCIEndpointStateMachine =
+  sendMessage iousbHostCIEndpointStateMachine currentTransferMessageSelector
 
 -- | @- controllerInterface@
 controllerInterface :: IsIOUSBHostCIEndpointStateMachine iousbHostCIEndpointStateMachine => iousbHostCIEndpointStateMachine -> IO (Id IOUSBHostControllerInterface)
-controllerInterface iousbHostCIEndpointStateMachine  =
-    sendMsg iousbHostCIEndpointStateMachine (mkSelector "controllerInterface") (retPtr retVoid) [] >>= retainedObject . castPtr
+controllerInterface iousbHostCIEndpointStateMachine =
+  sendMessage iousbHostCIEndpointStateMachine controllerInterfaceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id IOUSBHostCIEndpointStateMachine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithInterface:command:error:@
-initWithInterface_command_errorSelector :: Selector
+initWithInterface_command_errorSelector :: Selector '[Id IOUSBHostControllerInterface, Const (Ptr IOUSBHostCIMessage), Id NSError] (Id IOUSBHostCIEndpointStateMachine)
 initWithInterface_command_errorSelector = mkSelector "initWithInterface:command:error:"
 
 -- | @Selector@ for @inspectCommand:error:@
-inspectCommand_errorSelector :: Selector
+inspectCommand_errorSelector :: Selector '[Const (Ptr IOUSBHostCIMessage), Id NSError] Bool
 inspectCommand_errorSelector = mkSelector "inspectCommand:error:"
 
 -- | @Selector@ for @processDoorbell:error:@
-processDoorbell_errorSelector :: Selector
+processDoorbell_errorSelector :: Selector '[Const CUInt, Id NSError] Bool
 processDoorbell_errorSelector = mkSelector "processDoorbell:error:"
 
 -- | @Selector@ for @deviceAddress@
-deviceAddressSelector :: Selector
+deviceAddressSelector :: Selector '[] CULong
 deviceAddressSelector = mkSelector "deviceAddress"
 
 -- | @Selector@ for @endpointAddress@
-endpointAddressSelector :: Selector
+endpointAddressSelector :: Selector '[] CULong
 endpointAddressSelector = mkSelector "endpointAddress"
 
 -- | @Selector@ for @currentTransferMessage@
-currentTransferMessageSelector :: Selector
+currentTransferMessageSelector :: Selector '[] (Const (Ptr IOUSBHostCIMessage))
 currentTransferMessageSelector = mkSelector "currentTransferMessage"
 
 -- | @Selector@ for @controllerInterface@
-controllerInterfaceSelector :: Selector
+controllerInterfaceSelector :: Selector '[] (Id IOUSBHostControllerInterface)
 controllerInterfaceSelector = mkSelector "controllerInterface"
 

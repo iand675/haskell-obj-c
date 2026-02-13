@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,37 +33,33 @@ module ObjC.GameplayKit.GKRuleSystem
   , agenda
   , executed
   , facts
-  , initSelector
-  , evaluateSelector
   , addRuleSelector
   , addRulesFromArraySelector
-  , removeAllRulesSelector
-  , gradeForFactSelector
-  , minimumGradeForFactsSelector
-  , maximumGradeForFactsSelector
+  , agendaSelector
   , assertFactSelector
   , assertFact_gradeSelector
-  , retractFactSelector
-  , retractFact_gradeSelector
-  , resetSelector
-  , stateSelector
-  , rulesSelector
-  , agendaSelector
+  , evaluateSelector
   , executedSelector
   , factsSelector
+  , gradeForFactSelector
+  , initSelector
+  , maximumGradeForFactsSelector
+  , minimumGradeForFactsSelector
+  , removeAllRulesSelector
+  , resetSelector
+  , retractFactSelector
+  , retractFact_gradeSelector
+  , rulesSelector
+  , stateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,8 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> IO (Id GKRuleSystem)
-init_ gkRuleSystem  =
-    sendMsg gkRuleSystem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkRuleSystem =
+  sendOwnedMessage gkRuleSystem initSelector
 
 -- | Explicitly evaluate the agenda of the rule system based on the current state and the current set of facts.
 --
@@ -82,31 +79,29 @@ init_ gkRuleSystem  =
 --
 -- ObjC selector: @- evaluate@
 evaluate :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> IO ()
-evaluate gkRuleSystem  =
-    sendMsg gkRuleSystem (mkSelector "evaluate") retVoid []
+evaluate gkRuleSystem =
+  sendMessage gkRuleSystem evaluateSelector
 
 -- | Adds a rule to the system. Also adds it to the agenda in salience order.
 --
 -- ObjC selector: @- addRule:@
 addRule :: (IsGKRuleSystem gkRuleSystem, IsGKRule rule) => gkRuleSystem -> rule -> IO ()
-addRule gkRuleSystem  rule =
-  withObjCPtr rule $ \raw_rule ->
-      sendMsg gkRuleSystem (mkSelector "addRule:") retVoid [argPtr (castPtr raw_rule :: Ptr ())]
+addRule gkRuleSystem rule =
+  sendMessage gkRuleSystem addRuleSelector (toGKRule rule)
 
 -- | Adds rules to the system. Also adds them to the agenda in salience order.
 --
 -- ObjC selector: @- addRulesFromArray:@
 addRulesFromArray :: (IsGKRuleSystem gkRuleSystem, IsNSArray rules) => gkRuleSystem -> rules -> IO ()
-addRulesFromArray gkRuleSystem  rules =
-  withObjCPtr rules $ \raw_rules ->
-      sendMsg gkRuleSystem (mkSelector "addRulesFromArray:") retVoid [argPtr (castPtr raw_rules :: Ptr ())]
+addRulesFromArray gkRuleSystem rules =
+  sendMessage gkRuleSystem addRulesFromArraySelector (toNSArray rules)
 
 -- | Removes all rules from the system.  This also removes them from the agenda and executed sets.
 --
 -- ObjC selector: @- removeAllRules@
 removeAllRules :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> IO ()
-removeAllRules gkRuleSystem  =
-    sendMsg gkRuleSystem (mkSelector "removeAllRules") retVoid []
+removeAllRules gkRuleSystem =
+  sendMessage gkRuleSystem removeAllRulesSelector
 
 -- | Returns the current membership grade for the given fact, which is 0.0 if the fact is not a member of the current set of facts.
 --
@@ -114,8 +109,8 @@ removeAllRules gkRuleSystem  =
 --
 -- ObjC selector: @- gradeForFact:@
 gradeForFact :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> RawId -> IO CFloat
-gradeForFact gkRuleSystem  fact =
-    sendMsg gkRuleSystem (mkSelector "gradeForFact:") retCFloat [argPtr (castPtr (unRawId fact) :: Ptr ())]
+gradeForFact gkRuleSystem fact =
+  sendMessage gkRuleSystem gradeForFactSelector fact
 
 -- | Returns the combined membership grade for the all the given facts.
 --
@@ -125,9 +120,8 @@ gradeForFact gkRuleSystem  fact =
 --
 -- ObjC selector: @- minimumGradeForFacts:@
 minimumGradeForFacts :: (IsGKRuleSystem gkRuleSystem, IsNSArray facts) => gkRuleSystem -> facts -> IO CFloat
-minimumGradeForFacts gkRuleSystem  facts =
-  withObjCPtr facts $ \raw_facts ->
-      sendMsg gkRuleSystem (mkSelector "minimumGradeForFacts:") retCFloat [argPtr (castPtr raw_facts :: Ptr ())]
+minimumGradeForFacts gkRuleSystem facts =
+  sendMessage gkRuleSystem minimumGradeForFactsSelector (toNSArray facts)
 
 -- | Returns the maximum membership grade for the any one of the given facts.
 --
@@ -137,9 +131,8 @@ minimumGradeForFacts gkRuleSystem  facts =
 --
 -- ObjC selector: @- maximumGradeForFacts:@
 maximumGradeForFacts :: (IsGKRuleSystem gkRuleSystem, IsNSArray facts) => gkRuleSystem -> facts -> IO CFloat
-maximumGradeForFacts gkRuleSystem  facts =
-  withObjCPtr facts $ \raw_facts ->
-      sendMsg gkRuleSystem (mkSelector "maximumGradeForFacts:") retCFloat [argPtr (castPtr raw_facts :: Ptr ())]
+maximumGradeForFacts gkRuleSystem facts =
+  sendMessage gkRuleSystem maximumGradeForFactsSelector (toNSArray facts)
 
 -- | Asserts a fact with membership grade of 1.0.
 --
@@ -155,8 +148,8 @@ maximumGradeForFacts gkRuleSystem  facts =
 --
 -- ObjC selector: @- assertFact:@
 assertFact :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> RawId -> IO ()
-assertFact gkRuleSystem  fact =
-    sendMsg gkRuleSystem (mkSelector "assertFact:") retVoid [argPtr (castPtr (unRawId fact) :: Ptr ())]
+assertFact gkRuleSystem fact =
+  sendMessage gkRuleSystem assertFactSelector fact
 
 -- | Asserts a fact with the supplied membership grade.
 --
@@ -166,8 +159,8 @@ assertFact gkRuleSystem  fact =
 --
 -- ObjC selector: @- assertFact:grade:@
 assertFact_grade :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> RawId -> CFloat -> IO ()
-assertFact_grade gkRuleSystem  fact grade =
-    sendMsg gkRuleSystem (mkSelector "assertFact:grade:") retVoid [argPtr (castPtr (unRawId fact) :: Ptr ()), argCFloat grade]
+assertFact_grade gkRuleSystem fact grade =
+  sendMessage gkRuleSystem assertFact_gradeSelector fact grade
 
 -- | Retracts a fact, setting its membership grade to 0, which also removes it from the fact set.
 --
@@ -181,8 +174,8 @@ assertFact_grade gkRuleSystem  fact grade =
 --
 -- ObjC selector: @- retractFact:@
 retractFact :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> RawId -> IO ()
-retractFact gkRuleSystem  fact =
-    sendMsg gkRuleSystem (mkSelector "retractFact:") retVoid [argPtr (castPtr (unRawId fact) :: Ptr ())]
+retractFact gkRuleSystem fact =
+  sendMessage gkRuleSystem retractFactSelector fact
 
 -- | Retracts a fact, reducing its membership grade by the supplied grade. If this brings the grade to 0 it is also removed from the fact set.
 --
@@ -192,8 +185,8 @@ retractFact gkRuleSystem  fact =
 --
 -- ObjC selector: @- retractFact:grade:@
 retractFact_grade :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> RawId -> CFloat -> IO ()
-retractFact_grade gkRuleSystem  fact grade =
-    sendMsg gkRuleSystem (mkSelector "retractFact:grade:") retVoid [argPtr (castPtr (unRawId fact) :: Ptr ()), argCFloat grade]
+retractFact_grade gkRuleSystem fact grade =
+  sendMessage gkRuleSystem retractFact_gradeSelector fact grade
 
 -- | Clears the agenda and executed sets and removes all facts currently in the system. It then fills the agenda with rules from the rule set, in salience order.
 --
@@ -203,8 +196,8 @@ retractFact_grade gkRuleSystem  fact grade =
 --
 -- ObjC selector: @- reset@
 reset :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> IO ()
-reset gkRuleSystem  =
-    sendMsg gkRuleSystem (mkSelector "reset") retVoid []
+reset gkRuleSystem =
+  sendMessage gkRuleSystem resetSelector
 
 -- | The implementation-defined state. If any changes are made on this outside the system you must call evaluate to have the system take account of the changes.
 --
@@ -212,8 +205,8 @@ reset gkRuleSystem  =
 --
 -- ObjC selector: @- state@
 state :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> IO (Id NSMutableDictionary)
-state gkRuleSystem  =
-    sendMsg gkRuleSystem (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state gkRuleSystem =
+  sendMessage gkRuleSystem stateSelector
 
 -- | The current set of rules that will be used to set the agenda when rules are first added to the system. They will also be used to refill the agenda whenever it is set.
 --
@@ -225,8 +218,8 @@ state gkRuleSystem  =
 --
 -- ObjC selector: @- rules@
 rules :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> IO (Id NSArray)
-rules gkRuleSystem  =
-    sendMsg gkRuleSystem (mkSelector "rules") (retPtr retVoid) [] >>= retainedObject . castPtr
+rules gkRuleSystem =
+  sendMessage gkRuleSystem rulesSelector
 
 -- | The current set of rules to be evaluated, in salience order, where if the salience is equivalent the order of insertion into the agenda is used to decide which is first. Adjust salience of your rules to adjust the order the next time the agenda is reset. Changing salience on a rule currently in the agenda does not change its order in the agenda.
 --
@@ -240,8 +233,8 @@ rules gkRuleSystem  =
 --
 -- ObjC selector: @- agenda@
 agenda :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> IO (Id NSArray)
-agenda gkRuleSystem  =
-    sendMsg gkRuleSystem (mkSelector "agenda") (retPtr retVoid) [] >>= retainedObject . castPtr
+agenda gkRuleSystem =
+  sendMessage gkRuleSystem agendaSelector
 
 -- | The current set of rules that have already executed. Rules in this set will not be executed again until the system is reset.
 --
@@ -255,8 +248,8 @@ agenda gkRuleSystem  =
 --
 -- ObjC selector: @- executed@
 executed :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> IO (Id NSArray)
-executed gkRuleSystem  =
-    sendMsg gkRuleSystem (mkSelector "executed") (retPtr retVoid) [] >>= retainedObject . castPtr
+executed gkRuleSystem =
+  sendMessage gkRuleSystem executedSelector
 
 -- | The current set of facts. Facts have a grade of membership that is >= 0.0. Query the system for the individual grades of membership with gradeForFact:
 --
@@ -264,82 +257,82 @@ executed gkRuleSystem  =
 --
 -- ObjC selector: @- facts@
 facts :: IsGKRuleSystem gkRuleSystem => gkRuleSystem -> IO (Id NSArray)
-facts gkRuleSystem  =
-    sendMsg gkRuleSystem (mkSelector "facts") (retPtr retVoid) [] >>= retainedObject . castPtr
+facts gkRuleSystem =
+  sendMessage gkRuleSystem factsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKRuleSystem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @evaluate@
-evaluateSelector :: Selector
+evaluateSelector :: Selector '[] ()
 evaluateSelector = mkSelector "evaluate"
 
 -- | @Selector@ for @addRule:@
-addRuleSelector :: Selector
+addRuleSelector :: Selector '[Id GKRule] ()
 addRuleSelector = mkSelector "addRule:"
 
 -- | @Selector@ for @addRulesFromArray:@
-addRulesFromArraySelector :: Selector
+addRulesFromArraySelector :: Selector '[Id NSArray] ()
 addRulesFromArraySelector = mkSelector "addRulesFromArray:"
 
 -- | @Selector@ for @removeAllRules@
-removeAllRulesSelector :: Selector
+removeAllRulesSelector :: Selector '[] ()
 removeAllRulesSelector = mkSelector "removeAllRules"
 
 -- | @Selector@ for @gradeForFact:@
-gradeForFactSelector :: Selector
+gradeForFactSelector :: Selector '[RawId] CFloat
 gradeForFactSelector = mkSelector "gradeForFact:"
 
 -- | @Selector@ for @minimumGradeForFacts:@
-minimumGradeForFactsSelector :: Selector
+minimumGradeForFactsSelector :: Selector '[Id NSArray] CFloat
 minimumGradeForFactsSelector = mkSelector "minimumGradeForFacts:"
 
 -- | @Selector@ for @maximumGradeForFacts:@
-maximumGradeForFactsSelector :: Selector
+maximumGradeForFactsSelector :: Selector '[Id NSArray] CFloat
 maximumGradeForFactsSelector = mkSelector "maximumGradeForFacts:"
 
 -- | @Selector@ for @assertFact:@
-assertFactSelector :: Selector
+assertFactSelector :: Selector '[RawId] ()
 assertFactSelector = mkSelector "assertFact:"
 
 -- | @Selector@ for @assertFact:grade:@
-assertFact_gradeSelector :: Selector
+assertFact_gradeSelector :: Selector '[RawId, CFloat] ()
 assertFact_gradeSelector = mkSelector "assertFact:grade:"
 
 -- | @Selector@ for @retractFact:@
-retractFactSelector :: Selector
+retractFactSelector :: Selector '[RawId] ()
 retractFactSelector = mkSelector "retractFact:"
 
 -- | @Selector@ for @retractFact:grade:@
-retractFact_gradeSelector :: Selector
+retractFact_gradeSelector :: Selector '[RawId, CFloat] ()
 retractFact_gradeSelector = mkSelector "retractFact:grade:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id NSMutableDictionary)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @rules@
-rulesSelector :: Selector
+rulesSelector :: Selector '[] (Id NSArray)
 rulesSelector = mkSelector "rules"
 
 -- | @Selector@ for @agenda@
-agendaSelector :: Selector
+agendaSelector :: Selector '[] (Id NSArray)
 agendaSelector = mkSelector "agenda"
 
 -- | @Selector@ for @executed@
-executedSelector :: Selector
+executedSelector :: Selector '[] (Id NSArray)
 executedSelector = mkSelector "executed"
 
 -- | @Selector@ for @facts@
-factsSelector :: Selector
+factsSelector :: Selector '[] (Id NSArray)
 factsSelector = mkSelector "facts"
 

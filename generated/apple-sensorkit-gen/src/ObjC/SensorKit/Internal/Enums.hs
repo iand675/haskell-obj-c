@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.SensorKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @SRAcousticSettingsAccessibilityBackgroundSoundsName@
 newtype SRAcousticSettingsAccessibilityBackgroundSoundsName = SRAcousticSettingsAccessibilityBackgroundSoundsName CLong
@@ -64,6 +67,16 @@ pattern SRAcousticSettingsAccessibilityBackgroundSoundsNameRainOnRoof = SRAcoust
 pattern SRAcousticSettingsAccessibilityBackgroundSoundsNameQuietNight :: SRAcousticSettingsAccessibilityBackgroundSoundsName
 pattern SRAcousticSettingsAccessibilityBackgroundSoundsNameQuietNight = SRAcousticSettingsAccessibilityBackgroundSoundsName 16
 
+instance ObjCArgument SRAcousticSettingsAccessibilityBackgroundSoundsName where
+  withObjCArg (SRAcousticSettingsAccessibilityBackgroundSoundsName x) k = k (argCLong x)
+
+instance ObjCReturn SRAcousticSettingsAccessibilityBackgroundSoundsName where
+  type RawReturn SRAcousticSettingsAccessibilityBackgroundSoundsName = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRAcousticSettingsAccessibilityBackgroundSoundsName x)
+  fromOwned x = pure (SRAcousticSettingsAccessibilityBackgroundSoundsName x)
+
 -- | @SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication@
 newtype SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication = SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication CLong
   deriving stock (Eq, Ord, Show)
@@ -81,6 +94,16 @@ pattern SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplic
 pattern SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplicationPhoneAndMedia :: SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication
 pattern SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplicationPhoneAndMedia = SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication 4
 
+instance ObjCArgument SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication where
+  withObjCArg (SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication x) k = k (argCLong x)
+
+instance ObjCReturn SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication where
+  type RawReturn SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication x)
+  fromOwned x = pure (SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication x)
+
 -- | @SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting@
 newtype SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting = SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting CLong
   deriving stock (Eq, Ord, Show)
@@ -94,6 +117,16 @@ pattern SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosti
 
 pattern SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoostingStrong :: SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting
 pattern SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoostingStrong = SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting 3
+
+instance ObjCArgument SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting where
+  withObjCArg (SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting x) k = k (argCLong x)
+
+instance ObjCReturn SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting where
+  type RawReturn SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting x)
+  fromOwned x = pure (SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting x)
 
 -- | @SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning@
 newtype SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning = SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning CLong
@@ -109,6 +142,16 @@ pattern SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning
 pattern SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuningBrightness :: SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning
 pattern SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuningBrightness = SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning 3
 
+instance ObjCArgument SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning where
+  withObjCArg (SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning x) k = k (argCLong x)
+
+instance ObjCReturn SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning where
+  type RawReturn SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning x)
+  fromOwned x = pure (SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning x)
+
 -- | @SRAcousticSettingsSampleLifetime@
 newtype SRAcousticSettingsSampleLifetime = SRAcousticSettingsSampleLifetime CLong
   deriving stock (Eq, Ord, Show)
@@ -119,6 +162,16 @@ pattern SRAcousticSettingsSampleLifetimeEightDays = SRAcousticSettingsSampleLife
 
 pattern SRAcousticSettingsSampleLifetimeUntilUserDeletes :: SRAcousticSettingsSampleLifetime
 pattern SRAcousticSettingsSampleLifetimeUntilUserDeletes = SRAcousticSettingsSampleLifetime 2
+
+instance ObjCArgument SRAcousticSettingsSampleLifetime where
+  withObjCArg (SRAcousticSettingsSampleLifetime x) k = k (argCLong x)
+
+instance ObjCReturn SRAcousticSettingsSampleLifetime where
+  type RawReturn SRAcousticSettingsSampleLifetime = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRAcousticSettingsSampleLifetime x)
+  fromOwned x = pure (SRAcousticSettingsSampleLifetime x)
 
 -- | @SRAmbientLightSensorPlacement@
 newtype SRAmbientLightSensorPlacement = SRAmbientLightSensorPlacement CLong
@@ -152,6 +205,16 @@ pattern SRAmbientLightSensorPlacementFrontBottomRight = SRAmbientLightSensorPlac
 pattern SRAmbientLightSensorPlacementFrontBottomLeft :: SRAmbientLightSensorPlacement
 pattern SRAmbientLightSensorPlacementFrontBottomLeft = SRAmbientLightSensorPlacement 8
 
+instance ObjCArgument SRAmbientLightSensorPlacement where
+  withObjCArg (SRAmbientLightSensorPlacement x) k = k (argCLong x)
+
+instance ObjCReturn SRAmbientLightSensorPlacement where
+  type RawReturn SRAmbientLightSensorPlacement = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRAmbientLightSensorPlacement x)
+  fromOwned x = pure (SRAmbientLightSensorPlacement x)
+
 -- | @SRAuthorizationStatus@
 newtype SRAuthorizationStatus = SRAuthorizationStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -166,6 +229,16 @@ pattern SRAuthorizationStatusAuthorized = SRAuthorizationStatus 1
 pattern SRAuthorizationStatusDenied :: SRAuthorizationStatus
 pattern SRAuthorizationStatusDenied = SRAuthorizationStatus 2
 
+instance ObjCArgument SRAuthorizationStatus where
+  withObjCArg (SRAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn SRAuthorizationStatus where
+  type RawReturn SRAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRAuthorizationStatus x)
+  fromOwned x = pure (SRAuthorizationStatus x)
+
 -- | @SRCrownOrientation@
 newtype SRCrownOrientation = SRCrownOrientation CLong
   deriving stock (Eq, Ord, Show)
@@ -176,6 +249,16 @@ pattern SRCrownOrientationLeft = SRCrownOrientation 0
 
 pattern SRCrownOrientationRight :: SRCrownOrientation
 pattern SRCrownOrientationRight = SRCrownOrientation 1
+
+instance ObjCArgument SRCrownOrientation where
+  withObjCArg (SRCrownOrientation x) k = k (argCLong x)
+
+instance ObjCReturn SRCrownOrientation where
+  type RawReturn SRCrownOrientation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRCrownOrientation x)
+  fromOwned x = pure (SRCrownOrientation x)
 
 -- | @SRDeletionReason@
 newtype SRDeletionReason = SRDeletionReason CLong
@@ -196,6 +279,16 @@ pattern SRDeletionReasonNoInterestedClients = SRDeletionReason 3
 
 pattern SRDeletionReasonSystemInitiated :: SRDeletionReason
 pattern SRDeletionReasonSystemInitiated = SRDeletionReason 4
+
+instance ObjCArgument SRDeletionReason where
+  withObjCArg (SRDeletionReason x) k = k (argCLong x)
+
+instance ObjCReturn SRDeletionReason where
+  type RawReturn SRDeletionReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRDeletionReason x)
+  fromOwned x = pure (SRDeletionReason x)
 
 -- | SRElectrocardiogramDataFlags
 --
@@ -222,6 +315,16 @@ pattern SRElectrocardiogramDataFlagsSignalInvalid = SRElectrocardiogramDataFlags
 pattern SRElectrocardiogramDataFlagsCrownTouched :: SRElectrocardiogramDataFlags
 pattern SRElectrocardiogramDataFlagsCrownTouched = SRElectrocardiogramDataFlags 2
 
+instance ObjCArgument SRElectrocardiogramDataFlags where
+  withObjCArg (SRElectrocardiogramDataFlags x) k = k (argCULong x)
+
+instance ObjCReturn SRElectrocardiogramDataFlags where
+  type RawReturn SRElectrocardiogramDataFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRElectrocardiogramDataFlags x)
+  fromOwned x = pure (SRElectrocardiogramDataFlags x)
+
 -- | SRElectrocardiogramLead
 --
 -- Which lead was used to record the ECG data
@@ -235,6 +338,16 @@ pattern SRElectrocardiogramLeadRightArmMinusLeftArm = SRElectrocardiogramLead 1
 
 pattern SRElectrocardiogramLeadLeftArmMinusRightArm :: SRElectrocardiogramLead
 pattern SRElectrocardiogramLeadLeftArmMinusRightArm = SRElectrocardiogramLead 2
+
+instance ObjCArgument SRElectrocardiogramLead where
+  withObjCArg (SRElectrocardiogramLead x) k = k (argCLong x)
+
+instance ObjCReturn SRElectrocardiogramLead where
+  type RawReturn SRElectrocardiogramLead = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRElectrocardiogramLead x)
+  fromOwned x = pure (SRElectrocardiogramLead x)
 
 -- | SRElectrocardiogramSessionGuidance
 --
@@ -258,6 +371,16 @@ pattern SRElectrocardiogramSessionGuidanceGuided = SRElectrocardiogramSessionGui
 pattern SRElectrocardiogramSessionGuidanceUnguided :: SRElectrocardiogramSessionGuidance
 pattern SRElectrocardiogramSessionGuidanceUnguided = SRElectrocardiogramSessionGuidance 2
 
+instance ObjCArgument SRElectrocardiogramSessionGuidance where
+  withObjCArg (SRElectrocardiogramSessionGuidance x) k = k (argCLong x)
+
+instance ObjCReturn SRElectrocardiogramSessionGuidance where
+  type RawReturn SRElectrocardiogramSessionGuidance = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRElectrocardiogramSessionGuidance x)
+  fromOwned x = pure (SRElectrocardiogramSessionGuidance x)
+
 -- | SRElectrocardiogramSessionState
 --
 -- The state of the ECG session when this sample was taken
@@ -274,6 +397,16 @@ pattern SRElectrocardiogramSessionStateActive = SRElectrocardiogramSessionState 
 
 pattern SRElectrocardiogramSessionStateEnd :: SRElectrocardiogramSessionState
 pattern SRElectrocardiogramSessionStateEnd = SRElectrocardiogramSessionState 3
+
+instance ObjCArgument SRElectrocardiogramSessionState where
+  withObjCArg (SRElectrocardiogramSessionState x) k = k (argCLong x)
+
+instance ObjCReturn SRElectrocardiogramSessionState where
+  type RawReturn SRElectrocardiogramSessionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRElectrocardiogramSessionState x)
+  fromOwned x = pure (SRElectrocardiogramSessionState x)
 
 -- | @SRErrorCode@
 newtype SRErrorCode = SRErrorCode CLong
@@ -295,6 +428,16 @@ pattern SRErrorFetchRequestInvalid = SRErrorCode 3
 pattern SRErrorPromptDeclined :: SRErrorCode
 pattern SRErrorPromptDeclined = SRErrorCode 4
 
+instance ObjCArgument SRErrorCode where
+  withObjCArg (SRErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn SRErrorCode where
+  type RawReturn SRErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRErrorCode x)
+  fromOwned x = pure (SRErrorCode x)
+
 -- | @SRFaceMetricsContext@ (bitmask)
 newtype SRFaceMetricsContext = SRFaceMetricsContext CULong
   deriving stock (Eq, Ord, Show)
@@ -311,6 +454,16 @@ pattern SRFaceMetricsContextDeviceUnlock = SRFaceMetricsContext 1
 
 pattern SRFaceMetricsContextMessagingAppUsage :: SRFaceMetricsContext
 pattern SRFaceMetricsContextMessagingAppUsage = SRFaceMetricsContext 2
+
+instance ObjCArgument SRFaceMetricsContext where
+  withObjCArg (SRFaceMetricsContext x) k = k (argCULong x)
+
+instance ObjCReturn SRFaceMetricsContext where
+  type RawReturn SRFaceMetricsContext = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRFaceMetricsContext x)
+  fromOwned x = pure (SRFaceMetricsContext x)
 
 -- | Categories of sentiment from words or emoji
 -- | @SRKeyboardMetricsSentimentCategory@
@@ -348,6 +501,16 @@ pattern SRKeyboardMetricsSentimentCategoryLowEnergy = SRKeyboardMetricsSentiment
 pattern SRKeyboardMetricsSentimentCategoryConfused :: SRKeyboardMetricsSentimentCategory
 pattern SRKeyboardMetricsSentimentCategoryConfused = SRKeyboardMetricsSentimentCategory 9
 
+instance ObjCArgument SRKeyboardMetricsSentimentCategory where
+  withObjCArg (SRKeyboardMetricsSentimentCategory x) k = k (argCLong x)
+
+instance ObjCReturn SRKeyboardMetricsSentimentCategory where
+  type RawReturn SRKeyboardMetricsSentimentCategory = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRKeyboardMetricsSentimentCategory x)
+  fromOwned x = pure (SRKeyboardMetricsSentimentCategory x)
+
 -- | @SRLocationCategory@
 newtype SRLocationCategory = SRLocationCategory CLong
   deriving stock (Eq, Ord, Show)
@@ -368,6 +531,16 @@ pattern SRLocationCategorySchool = SRLocationCategory 3
 pattern SRLocationCategoryGym :: SRLocationCategory
 pattern SRLocationCategoryGym = SRLocationCategory 4
 
+instance ObjCArgument SRLocationCategory where
+  withObjCArg (SRLocationCategory x) k = k (argCLong x)
+
+instance ObjCReturn SRLocationCategory where
+  type RawReturn SRLocationCategory = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRLocationCategory x)
+  fromOwned x = pure (SRLocationCategory x)
+
 -- | @SRMediaEventType@
 newtype SRMediaEventType = SRMediaEventType CLong
   deriving stock (Eq, Ord, Show)
@@ -378,6 +551,16 @@ pattern SRMediaEventOnScreen = SRMediaEventType 1
 
 pattern SRMediaEventOffScreen :: SRMediaEventType
 pattern SRMediaEventOffScreen = SRMediaEventType 2
+
+instance ObjCArgument SRMediaEventType where
+  withObjCArg (SRMediaEventType x) k = k (argCLong x)
+
+instance ObjCReturn SRMediaEventType where
+  type RawReturn SRMediaEventType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRMediaEventType x)
+  fromOwned x = pure (SRMediaEventType x)
 
 -- | @SRNotificationEvent@
 newtype SRNotificationEvent = SRNotificationEvent CLong
@@ -435,6 +618,16 @@ pattern SRNotificationEventDeviceActivated = SRNotificationEvent 15
 pattern SRNotificationEventDeviceUnlocked :: SRNotificationEvent
 pattern SRNotificationEventDeviceUnlocked = SRNotificationEvent 16
 
+instance ObjCArgument SRNotificationEvent where
+  withObjCArg (SRNotificationEvent x) k = k (argCLong x)
+
+instance ObjCReturn SRNotificationEvent where
+  type RawReturn SRNotificationEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRNotificationEvent x)
+  fromOwned x = pure (SRNotificationEvent x)
+
 -- | SRSpeechMetricsSessionFlags
 --
 -- Flags indicating more information about how audio processing was done  on the audio stream
@@ -463,6 +656,16 @@ pattern SRSpeechMetricsSessionFlagsDefault = SRSpeechMetricsSessionFlags 0
 pattern SRSpeechMetricsSessionFlagsBypassVoiceProcessing :: SRSpeechMetricsSessionFlags
 pattern SRSpeechMetricsSessionFlagsBypassVoiceProcessing = SRSpeechMetricsSessionFlags 1
 
+instance ObjCArgument SRSpeechMetricsSessionFlags where
+  withObjCArg (SRSpeechMetricsSessionFlags x) k = k (argCULong x)
+
+instance ObjCReturn SRSpeechMetricsSessionFlags where
+  type RawReturn SRSpeechMetricsSessionFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRSpeechMetricsSessionFlags x)
+  fromOwned x = pure (SRSpeechMetricsSessionFlags x)
+
 -- | @SRTextInputSessionType@
 newtype SRTextInputSessionType = SRTextInputSessionType CLong
   deriving stock (Eq, Ord, Show)
@@ -480,6 +683,16 @@ pattern SRTextInputSessionTypePencil = SRTextInputSessionType 3
 pattern SRTextInputSessionTypeDictation :: SRTextInputSessionType
 pattern SRTextInputSessionTypeDictation = SRTextInputSessionType 4
 
+instance ObjCArgument SRTextInputSessionType where
+  withObjCArg (SRTextInputSessionType x) k = k (argCLong x)
+
+instance ObjCReturn SRTextInputSessionType where
+  type RawReturn SRTextInputSessionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRTextInputSessionType x)
+  fromOwned x = pure (SRTextInputSessionType x)
+
 -- | @SRWristLocation@
 newtype SRWristLocation = SRWristLocation CLong
   deriving stock (Eq, Ord, Show)
@@ -490,6 +703,16 @@ pattern SRWristLocationLeft = SRWristLocation 0
 
 pattern SRWristLocationRight :: SRWristLocation
 pattern SRWristLocationRight = SRWristLocation 1
+
+instance ObjCArgument SRWristLocation where
+  withObjCArg (SRWristLocation x) k = k (argCLong x)
+
+instance ObjCReturn SRWristLocation where
+  type RawReturn SRWristLocation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRWristLocation x)
+  fromOwned x = pure (SRWristLocation x)
 
 -- | @SRWristTemperatureCondition@ (bitmask)
 newtype SRWristTemperatureCondition = SRWristTemperatureCondition CULong
@@ -513,3 +736,13 @@ pattern SRWristTemperatureConditionOnCharger = SRWristTemperatureCondition 2
 
 pattern SRWristTemperatureConditionInMotion :: SRWristTemperatureCondition
 pattern SRWristTemperatureConditionInMotion = SRWristTemperatureCondition 4
+
+instance ObjCArgument SRWristTemperatureCondition where
+  withObjCArg (SRWristTemperatureCondition x) k = k (argCULong x)
+
+instance ObjCReturn SRWristTemperatureCondition where
+  type RawReturn SRWristTemperatureCondition = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SRWristTemperatureCondition x)
+  fromOwned x = pure (SRWristTemperatureCondition x)

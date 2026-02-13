@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.GLKit.GLKMesh
   , name
   , initSelector
   , initWithMesh_errorSelector
-  , newMeshesFromAsset_sourceMeshes_errorSelector
-  , vertexCountSelector
-  , vertexBuffersSelector
-  , vertexDescriptorSelector
-  , submeshesSelector
   , nameSelector
+  , newMeshesFromAsset_sourceMeshes_errorSelector
+  , submeshesSelector
+  , vertexBuffersSelector
+  , vertexCountSelector
+  , vertexDescriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,8 +45,8 @@ import ObjC.ModelIO.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsGLKMesh glkMesh => glkMesh -> IO (Id GLKMesh)
-init_ glkMesh  =
-    sendMsg glkMesh (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ glkMesh =
+  sendOwnedMessage glkMesh initSelector
 
 -- | initWithMesh:error:
 --
@@ -61,10 +58,8 @@ init_ glkMesh  =
 --
 -- ObjC selector: @- initWithMesh:error:@
 initWithMesh_error :: (IsGLKMesh glkMesh, IsMDLMesh mesh, IsNSError error_) => glkMesh -> mesh -> error_ -> IO (Id GLKMesh)
-initWithMesh_error glkMesh  mesh error_ =
-  withObjCPtr mesh $ \raw_mesh ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg glkMesh (mkSelector "initWithMesh:error:") (retPtr retVoid) [argPtr (castPtr raw_mesh :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithMesh_error glkMesh mesh error_ =
+  sendOwnedMessage glkMesh initWithMesh_errorSelector (toMDLMesh mesh) (toNSError error_)
 
 -- | newMeshesFromAsset:sourceMeshes:error:
 --
@@ -87,10 +82,7 @@ newMeshesFromAsset_sourceMeshes_error :: (IsMDLAsset asset, IsNSArray sourceMesh
 newMeshesFromAsset_sourceMeshes_error asset sourceMeshes error_ =
   do
     cls' <- getRequiredClass "GLKMesh"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr sourceMeshes $ \raw_sourceMeshes ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "newMeshesFromAsset:sourceMeshes:error:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_sourceMeshes :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newMeshesFromAsset_sourceMeshes_errorSelector (toMDLAsset asset) (toNSArray sourceMeshes) (toNSError error_)
 
 -- | vertexCount
 --
@@ -98,8 +90,8 @@ newMeshesFromAsset_sourceMeshes_error asset sourceMeshes error_ =
 --
 -- ObjC selector: @- vertexCount@
 vertexCount :: IsGLKMesh glkMesh => glkMesh -> IO CULong
-vertexCount glkMesh  =
-    sendMsg glkMesh (mkSelector "vertexCount") retCULong []
+vertexCount glkMesh =
+  sendMessage glkMesh vertexCountSelector
 
 -- | vertexBuffers
 --
@@ -107,8 +99,8 @@ vertexCount glkMesh  =
 --
 -- ObjC selector: @- vertexBuffers@
 vertexBuffers :: IsGLKMesh glkMesh => glkMesh -> IO (Id NSArray)
-vertexBuffers glkMesh  =
-    sendMsg glkMesh (mkSelector "vertexBuffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexBuffers glkMesh =
+  sendMessage glkMesh vertexBuffersSelector
 
 -- | vertexDescriptor
 --
@@ -118,8 +110,8 @@ vertexBuffers glkMesh  =
 --
 -- ObjC selector: @- vertexDescriptor@
 vertexDescriptor :: IsGLKMesh glkMesh => glkMesh -> IO (Id MDLVertexDescriptor)
-vertexDescriptor glkMesh  =
-    sendMsg glkMesh (mkSelector "vertexDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexDescriptor glkMesh =
+  sendMessage glkMesh vertexDescriptorSelector
 
 -- | submeshes
 --
@@ -129,8 +121,8 @@ vertexDescriptor glkMesh  =
 --
 -- ObjC selector: @- submeshes@
 submeshes :: IsGLKMesh glkMesh => glkMesh -> IO (Id NSArray)
-submeshes glkMesh  =
-    sendMsg glkMesh (mkSelector "submeshes") (retPtr retVoid) [] >>= retainedObject . castPtr
+submeshes glkMesh =
+  sendMessage glkMesh submeshesSelector
 
 -- | name
 --
@@ -140,42 +132,42 @@ submeshes glkMesh  =
 --
 -- ObjC selector: @- name@
 name :: IsGLKMesh glkMesh => glkMesh -> IO (Id NSString)
-name glkMesh  =
-    sendMsg glkMesh (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name glkMesh =
+  sendMessage glkMesh nameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GLKMesh)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithMesh:error:@
-initWithMesh_errorSelector :: Selector
+initWithMesh_errorSelector :: Selector '[Id MDLMesh, Id NSError] (Id GLKMesh)
 initWithMesh_errorSelector = mkSelector "initWithMesh:error:"
 
 -- | @Selector@ for @newMeshesFromAsset:sourceMeshes:error:@
-newMeshesFromAsset_sourceMeshes_errorSelector :: Selector
+newMeshesFromAsset_sourceMeshes_errorSelector :: Selector '[Id MDLAsset, Id NSArray, Id NSError] (Id NSArray)
 newMeshesFromAsset_sourceMeshes_errorSelector = mkSelector "newMeshesFromAsset:sourceMeshes:error:"
 
 -- | @Selector@ for @vertexCount@
-vertexCountSelector :: Selector
+vertexCountSelector :: Selector '[] CULong
 vertexCountSelector = mkSelector "vertexCount"
 
 -- | @Selector@ for @vertexBuffers@
-vertexBuffersSelector :: Selector
+vertexBuffersSelector :: Selector '[] (Id NSArray)
 vertexBuffersSelector = mkSelector "vertexBuffers"
 
 -- | @Selector@ for @vertexDescriptor@
-vertexDescriptorSelector :: Selector
+vertexDescriptorSelector :: Selector '[] (Id MDLVertexDescriptor)
 vertexDescriptorSelector = mkSelector "vertexDescriptor"
 
 -- | @Selector@ for @submeshes@
-submeshesSelector :: Selector
+submeshesSelector :: Selector '[] (Id NSArray)
 submeshesSelector = mkSelector "submeshes"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 

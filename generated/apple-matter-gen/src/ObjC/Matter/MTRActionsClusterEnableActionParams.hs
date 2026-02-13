@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRActionsClusterEnableActionParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , actionIDSelector
-  , setActionIDSelector
   , invokeIDSelector
-  , setInvokeIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setActionIDSelector
+  , setInvokeIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- actionID@
 actionID :: IsMTRActionsClusterEnableActionParams mtrActionsClusterEnableActionParams => mtrActionsClusterEnableActionParams -> IO (Id NSNumber)
-actionID mtrActionsClusterEnableActionParams  =
-    sendMsg mtrActionsClusterEnableActionParams (mkSelector "actionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+actionID mtrActionsClusterEnableActionParams =
+  sendMessage mtrActionsClusterEnableActionParams actionIDSelector
 
 -- | @- setActionID:@
 setActionID :: (IsMTRActionsClusterEnableActionParams mtrActionsClusterEnableActionParams, IsNSNumber value) => mtrActionsClusterEnableActionParams -> value -> IO ()
-setActionID mtrActionsClusterEnableActionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterEnableActionParams (mkSelector "setActionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActionID mtrActionsClusterEnableActionParams value =
+  sendMessage mtrActionsClusterEnableActionParams setActionIDSelector (toNSNumber value)
 
 -- | @- invokeID@
 invokeID :: IsMTRActionsClusterEnableActionParams mtrActionsClusterEnableActionParams => mtrActionsClusterEnableActionParams -> IO (Id NSNumber)
-invokeID mtrActionsClusterEnableActionParams  =
-    sendMsg mtrActionsClusterEnableActionParams (mkSelector "invokeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+invokeID mtrActionsClusterEnableActionParams =
+  sendMessage mtrActionsClusterEnableActionParams invokeIDSelector
 
 -- | @- setInvokeID:@
 setInvokeID :: (IsMTRActionsClusterEnableActionParams mtrActionsClusterEnableActionParams, IsNSNumber value) => mtrActionsClusterEnableActionParams -> value -> IO ()
-setInvokeID mtrActionsClusterEnableActionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterEnableActionParams (mkSelector "setInvokeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInvokeID mtrActionsClusterEnableActionParams value =
+  sendMessage mtrActionsClusterEnableActionParams setInvokeIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setInvokeID mtrActionsClusterEnableActionParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRActionsClusterEnableActionParams mtrActionsClusterEnableActionParams => mtrActionsClusterEnableActionParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrActionsClusterEnableActionParams  =
-    sendMsg mtrActionsClusterEnableActionParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrActionsClusterEnableActionParams =
+  sendMessage mtrActionsClusterEnableActionParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrActionsClusterEnableActionParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRActionsClusterEnableActionParams mtrActionsClusterEnableActionParams, IsNSNumber value) => mtrActionsClusterEnableActionParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrActionsClusterEnableActionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterEnableActionParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrActionsClusterEnableActionParams value =
+  sendMessage mtrActionsClusterEnableActionParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrActionsClusterEnableActionParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRActionsClusterEnableActionParams mtrActionsClusterEnableActionParams => mtrActionsClusterEnableActionParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrActionsClusterEnableActionParams  =
-    sendMsg mtrActionsClusterEnableActionParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrActionsClusterEnableActionParams =
+  sendMessage mtrActionsClusterEnableActionParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrActionsClusterEnableActionParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRActionsClusterEnableActionParams mtrActionsClusterEnableActionParams, IsNSNumber value) => mtrActionsClusterEnableActionParams -> value -> IO ()
-setServerSideProcessingTimeout mtrActionsClusterEnableActionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrActionsClusterEnableActionParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrActionsClusterEnableActionParams value =
+  sendMessage mtrActionsClusterEnableActionParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @actionID@
-actionIDSelector :: Selector
+actionIDSelector :: Selector '[] (Id NSNumber)
 actionIDSelector = mkSelector "actionID"
 
 -- | @Selector@ for @setActionID:@
-setActionIDSelector :: Selector
+setActionIDSelector :: Selector '[Id NSNumber] ()
 setActionIDSelector = mkSelector "setActionID:"
 
 -- | @Selector@ for @invokeID@
-invokeIDSelector :: Selector
+invokeIDSelector :: Selector '[] (Id NSNumber)
 invokeIDSelector = mkSelector "invokeID"
 
 -- | @Selector@ for @setInvokeID:@
-setInvokeIDSelector :: Selector
+setInvokeIDSelector :: Selector '[Id NSNumber] ()
 setInvokeIDSelector = mkSelector "setInvokeID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

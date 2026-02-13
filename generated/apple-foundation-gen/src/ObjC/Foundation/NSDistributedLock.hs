@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Foundation.NSDistributedLock
   , unlock
   , breakLock
   , lockDate
-  , lockWithPathSelector
+  , breakLockSelector
   , initSelector
   , initWithPathSelector
+  , lockDateSelector
+  , lockWithPathSelector
   , tryLockSelector
   , unlockSelector
-  , breakLockSelector
-  , lockDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,69 +40,67 @@ lockWithPath :: IsNSString path => path -> IO (Id NSDistributedLock)
 lockWithPath path =
   do
     cls' <- getRequiredClass "NSDistributedLock"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "lockWithPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' lockWithPathSelector (toNSString path)
 
 -- | @- init@
 init_ :: IsNSDistributedLock nsDistributedLock => nsDistributedLock -> IO (Id NSDistributedLock)
-init_ nsDistributedLock  =
-    sendMsg nsDistributedLock (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsDistributedLock =
+  sendOwnedMessage nsDistributedLock initSelector
 
 -- | @- initWithPath:@
 initWithPath :: (IsNSDistributedLock nsDistributedLock, IsNSString path) => nsDistributedLock -> path -> IO (Id NSDistributedLock)
-initWithPath nsDistributedLock  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg nsDistributedLock (mkSelector "initWithPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= ownedObject . castPtr
+initWithPath nsDistributedLock path =
+  sendOwnedMessage nsDistributedLock initWithPathSelector (toNSString path)
 
 -- | @- tryLock@
 tryLock :: IsNSDistributedLock nsDistributedLock => nsDistributedLock -> IO Bool
-tryLock nsDistributedLock  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDistributedLock (mkSelector "tryLock") retCULong []
+tryLock nsDistributedLock =
+  sendMessage nsDistributedLock tryLockSelector
 
 -- | @- unlock@
 unlock :: IsNSDistributedLock nsDistributedLock => nsDistributedLock -> IO ()
-unlock nsDistributedLock  =
-    sendMsg nsDistributedLock (mkSelector "unlock") retVoid []
+unlock nsDistributedLock =
+  sendMessage nsDistributedLock unlockSelector
 
 -- | @- breakLock@
 breakLock :: IsNSDistributedLock nsDistributedLock => nsDistributedLock -> IO ()
-breakLock nsDistributedLock  =
-    sendMsg nsDistributedLock (mkSelector "breakLock") retVoid []
+breakLock nsDistributedLock =
+  sendMessage nsDistributedLock breakLockSelector
 
 -- | @- lockDate@
 lockDate :: IsNSDistributedLock nsDistributedLock => nsDistributedLock -> IO (Id NSDate)
-lockDate nsDistributedLock  =
-    sendMsg nsDistributedLock (mkSelector "lockDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lockDate nsDistributedLock =
+  sendMessage nsDistributedLock lockDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @lockWithPath:@
-lockWithPathSelector :: Selector
+lockWithPathSelector :: Selector '[Id NSString] (Id NSDistributedLock)
 lockWithPathSelector = mkSelector "lockWithPath:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSDistributedLock)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithPath:@
-initWithPathSelector :: Selector
+initWithPathSelector :: Selector '[Id NSString] (Id NSDistributedLock)
 initWithPathSelector = mkSelector "initWithPath:"
 
 -- | @Selector@ for @tryLock@
-tryLockSelector :: Selector
+tryLockSelector :: Selector '[] Bool
 tryLockSelector = mkSelector "tryLock"
 
 -- | @Selector@ for @unlock@
-unlockSelector :: Selector
+unlockSelector :: Selector '[] ()
 unlockSelector = mkSelector "unlock"
 
 -- | @Selector@ for @breakLock@
-breakLockSelector :: Selector
+breakLockSelector :: Selector '[] ()
 breakLockSelector = mkSelector "breakLock"
 
 -- | @Selector@ for @lockDate@
-lockDateSelector :: Selector
+lockDateSelector :: Selector '[] (Id NSDate)
 lockDateSelector = mkSelector "lockDate"
 

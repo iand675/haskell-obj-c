@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,11 +17,11 @@ module ObjC.SharedWithYou.SWHighlightChangeEvent
   , new
   , changeEventTrigger
   , highlightURL
-  , initWithHighlight_triggerSelector
-  , initSelector
-  , newSelector
   , changeEventTriggerSelector
   , highlightURLSelector
+  , initSelector
+  , initWithHighlight_triggerSelector
+  , newSelector
 
   -- * Enum types
   , SWHighlightChangeEventTrigger(SWHighlightChangeEventTrigger)
@@ -29,15 +30,11 @@ module ObjC.SharedWithYou.SWHighlightChangeEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,53 +50,52 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithHighlight:trigger:@
 initWithHighlight_trigger :: (IsSWHighlightChangeEvent swHighlightChangeEvent, IsSWHighlight highlight) => swHighlightChangeEvent -> highlight -> SWHighlightChangeEventTrigger -> IO (Id SWHighlightChangeEvent)
-initWithHighlight_trigger swHighlightChangeEvent  highlight trigger =
-  withObjCPtr highlight $ \raw_highlight ->
-      sendMsg swHighlightChangeEvent (mkSelector "initWithHighlight:trigger:") (retPtr retVoid) [argPtr (castPtr raw_highlight :: Ptr ()), argCLong (coerce trigger)] >>= ownedObject . castPtr
+initWithHighlight_trigger swHighlightChangeEvent highlight trigger =
+  sendOwnedMessage swHighlightChangeEvent initWithHighlight_triggerSelector (toSWHighlight highlight) trigger
 
 -- | @- init@
 init_ :: IsSWHighlightChangeEvent swHighlightChangeEvent => swHighlightChangeEvent -> IO (Id SWHighlightChangeEvent)
-init_ swHighlightChangeEvent  =
-    sendMsg swHighlightChangeEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swHighlightChangeEvent =
+  sendOwnedMessage swHighlightChangeEvent initSelector
 
 -- | @+ new@
 new :: IO (Id SWHighlightChangeEvent)
 new  =
   do
     cls' <- getRequiredClass "SWHighlightChangeEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- changeEventTrigger@
 changeEventTrigger :: IsSWHighlightChangeEvent swHighlightChangeEvent => swHighlightChangeEvent -> IO SWHighlightChangeEventTrigger
-changeEventTrigger swHighlightChangeEvent  =
-    fmap (coerce :: CLong -> SWHighlightChangeEventTrigger) $ sendMsg swHighlightChangeEvent (mkSelector "changeEventTrigger") retCLong []
+changeEventTrigger swHighlightChangeEvent =
+  sendMessage swHighlightChangeEvent changeEventTriggerSelector
 
 -- | @- highlightURL@
 highlightURL :: IsSWHighlightChangeEvent swHighlightChangeEvent => swHighlightChangeEvent -> IO (Id NSURL)
-highlightURL swHighlightChangeEvent  =
-    sendMsg swHighlightChangeEvent (mkSelector "highlightURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+highlightURL swHighlightChangeEvent =
+  sendMessage swHighlightChangeEvent highlightURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHighlight:trigger:@
-initWithHighlight_triggerSelector :: Selector
+initWithHighlight_triggerSelector :: Selector '[Id SWHighlight, SWHighlightChangeEventTrigger] (Id SWHighlightChangeEvent)
 initWithHighlight_triggerSelector = mkSelector "initWithHighlight:trigger:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWHighlightChangeEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWHighlightChangeEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @changeEventTrigger@
-changeEventTriggerSelector :: Selector
+changeEventTriggerSelector :: Selector '[] SWHighlightChangeEventTrigger
 changeEventTriggerSelector = mkSelector "changeEventTrigger"
 
 -- | @Selector@ for @highlightURL@
-highlightURLSelector :: Selector
+highlightURLSelector :: Selector '[] (Id NSURL)
 highlightURLSelector = mkSelector "highlightURL"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ParavirtualizedGraphics.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | PGResumeErrorCode
 --
@@ -48,3 +51,13 @@ pattern PGResumeErrorCodeIncompatibleDevice = PGResumeErrorCode 4
 
 pattern PGResumeErrorCodeInvalidDisplayPortCount :: PGResumeErrorCode
 pattern PGResumeErrorCodeInvalidDisplayPortCount = PGResumeErrorCode 5
+
+instance ObjCArgument PGResumeErrorCode where
+  withObjCArg (PGResumeErrorCode x) k = k (argCULong x)
+
+instance ObjCReturn PGResumeErrorCode where
+  type RawReturn PGResumeErrorCode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PGResumeErrorCode x)
+  fromOwned x = pure (PGResumeErrorCode x)

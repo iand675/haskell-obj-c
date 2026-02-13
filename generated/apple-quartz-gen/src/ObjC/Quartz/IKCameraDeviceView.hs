@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -52,47 +53,47 @@ module ObjC.Quartz.IKCameraDeviceView
   , canRotateSelectedItemsRight
   , canDeleteSelectedItems
   , canDownloadSelectedItems
-  , selectedIndexesSelector
-  , selectIndexes_byExtendingSelectionSelector
-  , rotateLeftSelector
-  , rotateRightSelector
-  , deleteSelectedItemsSelector
-  , downloadSelectedItemsSelector
-  , downloadAllItemsSelector
-  , setCustomIconSizeSliderSelector
-  , setCustomModeControlSelector
-  , setCustomActionControlSelector
-  , setCustomRotateControlSelector
-  , setCustomDeleteControlSelector
-  , setShowStatusInfoAsWindowSubtitleSelector
-  , delegateSelector
-  , setDelegateSelector
-  , modeSelector
-  , setModeSelector
-  , hasDisplayModeTableSelector
-  , setHasDisplayModeTableSelector
-  , hasDisplayModeIconSelector
-  , setHasDisplayModeIconSelector
-  , downloadAllControlLabelSelector
-  , setDownloadAllControlLabelSelector
-  , downloadSelectedControlLabelSelector
-  , setDownloadSelectedControlLabelSelector
-  , iconSizeSelector
-  , setIconSizeSelector
-  , transferModeSelector
-  , setTransferModeSelector
-  , displaysDownloadsDirectoryControlSelector
-  , setDisplaysDownloadsDirectoryControlSelector
-  , downloadsDirectorySelector
-  , setDownloadsDirectorySelector
-  , displaysPostProcessApplicationControlSelector
-  , setDisplaysPostProcessApplicationControlSelector
-  , postProcessApplicationSelector
-  , setPostProcessApplicationSelector
-  , canRotateSelectedItemsLeftSelector
-  , canRotateSelectedItemsRightSelector
   , canDeleteSelectedItemsSelector
   , canDownloadSelectedItemsSelector
+  , canRotateSelectedItemsLeftSelector
+  , canRotateSelectedItemsRightSelector
+  , delegateSelector
+  , deleteSelectedItemsSelector
+  , displaysDownloadsDirectoryControlSelector
+  , displaysPostProcessApplicationControlSelector
+  , downloadAllControlLabelSelector
+  , downloadAllItemsSelector
+  , downloadSelectedControlLabelSelector
+  , downloadSelectedItemsSelector
+  , downloadsDirectorySelector
+  , hasDisplayModeIconSelector
+  , hasDisplayModeTableSelector
+  , iconSizeSelector
+  , modeSelector
+  , postProcessApplicationSelector
+  , rotateLeftSelector
+  , rotateRightSelector
+  , selectIndexes_byExtendingSelectionSelector
+  , selectedIndexesSelector
+  , setCustomActionControlSelector
+  , setCustomDeleteControlSelector
+  , setCustomIconSizeSliderSelector
+  , setCustomModeControlSelector
+  , setCustomRotateControlSelector
+  , setDelegateSelector
+  , setDisplaysDownloadsDirectoryControlSelector
+  , setDisplaysPostProcessApplicationControlSelector
+  , setDownloadAllControlLabelSelector
+  , setDownloadSelectedControlLabelSelector
+  , setDownloadsDirectorySelector
+  , setHasDisplayModeIconSelector
+  , setHasDisplayModeTableSelector
+  , setIconSizeSelector
+  , setModeSelector
+  , setPostProcessApplicationSelector
+  , setShowStatusInfoAsWindowSubtitleSelector
+  , setTransferModeSelector
+  , transferModeSelector
 
   -- * Enum types
   , IKCameraDeviceViewDisplayMode(IKCameraDeviceViewDisplayMode)
@@ -105,15 +106,11 @@ module ObjC.Quartz.IKCameraDeviceView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -128,8 +125,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- selectedIndexes@
 selectedIndexes :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO (Id NSIndexSet)
-selectedIndexes ikCameraDeviceView  =
-    sendMsg ikCameraDeviceView (mkSelector "selectedIndexes") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedIndexes ikCameraDeviceView =
+  sendMessage ikCameraDeviceView selectedIndexesSelector
 
 -- | selectIndexes:byExtendingSelection:
 --
@@ -137,9 +134,8 @@ selectedIndexes ikCameraDeviceView  =
 --
 -- ObjC selector: @- selectIndexes:byExtendingSelection:@
 selectIndexes_byExtendingSelection :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSIndexSet indexes) => ikCameraDeviceView -> indexes -> Bool -> IO ()
-selectIndexes_byExtendingSelection ikCameraDeviceView  indexes extend =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg ikCameraDeviceView (mkSelector "selectIndexes:byExtendingSelection:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argCULong (if extend then 1 else 0)]
+selectIndexes_byExtendingSelection ikCameraDeviceView indexes extend =
+  sendMessage ikCameraDeviceView selectIndexes_byExtendingSelectionSelector (toNSIndexSet indexes) extend
 
 -- | rotateLeft:
 --
@@ -147,8 +143,8 @@ selectIndexes_byExtendingSelection ikCameraDeviceView  indexes extend =
 --
 -- ObjC selector: @- rotateLeft:@
 rotateLeft :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> RawId -> IO ()
-rotateLeft ikCameraDeviceView  sender =
-    sendMsg ikCameraDeviceView (mkSelector "rotateLeft:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+rotateLeft ikCameraDeviceView sender =
+  sendMessage ikCameraDeviceView rotateLeftSelector sender
 
 -- | rotateRight:
 --
@@ -156,8 +152,8 @@ rotateLeft ikCameraDeviceView  sender =
 --
 -- ObjC selector: @- rotateRight:@
 rotateRight :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> RawId -> IO ()
-rotateRight ikCameraDeviceView  sender =
-    sendMsg ikCameraDeviceView (mkSelector "rotateRight:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+rotateRight ikCameraDeviceView sender =
+  sendMessage ikCameraDeviceView rotateRightSelector sender
 
 -- | deleteSelectedItems:
 --
@@ -165,8 +161,8 @@ rotateRight ikCameraDeviceView  sender =
 --
 -- ObjC selector: @- deleteSelectedItems:@
 deleteSelectedItems :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> RawId -> IO ()
-deleteSelectedItems ikCameraDeviceView  sender =
-    sendMsg ikCameraDeviceView (mkSelector "deleteSelectedItems:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+deleteSelectedItems ikCameraDeviceView sender =
+  sendMessage ikCameraDeviceView deleteSelectedItemsSelector sender
 
 -- | downloadSelectedItems:
 --
@@ -174,8 +170,8 @@ deleteSelectedItems ikCameraDeviceView  sender =
 --
 -- ObjC selector: @- downloadSelectedItems:@
 downloadSelectedItems :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> RawId -> IO ()
-downloadSelectedItems ikCameraDeviceView  sender =
-    sendMsg ikCameraDeviceView (mkSelector "downloadSelectedItems:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+downloadSelectedItems ikCameraDeviceView sender =
+  sendMessage ikCameraDeviceView downloadSelectedItemsSelector sender
 
 -- | downloadAllItems:
 --
@@ -183,8 +179,8 @@ downloadSelectedItems ikCameraDeviceView  sender =
 --
 -- ObjC selector: @- downloadAllItems:@
 downloadAllItems :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> RawId -> IO ()
-downloadAllItems ikCameraDeviceView  sender =
-    sendMsg ikCameraDeviceView (mkSelector "downloadAllItems:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+downloadAllItems ikCameraDeviceView sender =
+  sendMessage ikCameraDeviceView downloadAllItemsSelector sender
 
 -- | setCustomIconSizeSlider:
 --
@@ -192,9 +188,8 @@ downloadAllItems ikCameraDeviceView  sender =
 --
 -- ObjC selector: @- setCustomIconSizeSlider:@
 setCustomIconSizeSlider :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSSlider slider) => ikCameraDeviceView -> slider -> IO ()
-setCustomIconSizeSlider ikCameraDeviceView  slider =
-  withObjCPtr slider $ \raw_slider ->
-      sendMsg ikCameraDeviceView (mkSelector "setCustomIconSizeSlider:") retVoid [argPtr (castPtr raw_slider :: Ptr ())]
+setCustomIconSizeSlider ikCameraDeviceView slider =
+  sendMessage ikCameraDeviceView setCustomIconSizeSliderSelector (toNSSlider slider)
 
 -- | setCustomModeControl:
 --
@@ -202,9 +197,8 @@ setCustomIconSizeSlider ikCameraDeviceView  slider =
 --
 -- ObjC selector: @- setCustomModeControl:@
 setCustomModeControl :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSSegmentedControl control) => ikCameraDeviceView -> control -> IO ()
-setCustomModeControl ikCameraDeviceView  control =
-  withObjCPtr control $ \raw_control ->
-      sendMsg ikCameraDeviceView (mkSelector "setCustomModeControl:") retVoid [argPtr (castPtr raw_control :: Ptr ())]
+setCustomModeControl ikCameraDeviceView control =
+  sendMessage ikCameraDeviceView setCustomModeControlSelector (toNSSegmentedControl control)
 
 -- | setCustomActionButton:
 --
@@ -212,9 +206,8 @@ setCustomModeControl ikCameraDeviceView  control =
 --
 -- ObjC selector: @- setCustomActionControl:@
 setCustomActionControl :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSSegmentedControl control) => ikCameraDeviceView -> control -> IO ()
-setCustomActionControl ikCameraDeviceView  control =
-  withObjCPtr control $ \raw_control ->
-      sendMsg ikCameraDeviceView (mkSelector "setCustomActionControl:") retVoid [argPtr (castPtr raw_control :: Ptr ())]
+setCustomActionControl ikCameraDeviceView control =
+  sendMessage ikCameraDeviceView setCustomActionControlSelector (toNSSegmentedControl control)
 
 -- | setCustomRotateButton:
 --
@@ -222,9 +215,8 @@ setCustomActionControl ikCameraDeviceView  control =
 --
 -- ObjC selector: @- setCustomRotateControl:@
 setCustomRotateControl :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSSegmentedControl control) => ikCameraDeviceView -> control -> IO ()
-setCustomRotateControl ikCameraDeviceView  control =
-  withObjCPtr control $ \raw_control ->
-      sendMsg ikCameraDeviceView (mkSelector "setCustomRotateControl:") retVoid [argPtr (castPtr raw_control :: Ptr ())]
+setCustomRotateControl ikCameraDeviceView control =
+  sendMessage ikCameraDeviceView setCustomRotateControlSelector (toNSSegmentedControl control)
 
 -- | setCustomDeleteControl:
 --
@@ -232,9 +224,8 @@ setCustomRotateControl ikCameraDeviceView  control =
 --
 -- ObjC selector: @- setCustomDeleteControl:@
 setCustomDeleteControl :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSSegmentedControl control) => ikCameraDeviceView -> control -> IO ()
-setCustomDeleteControl ikCameraDeviceView  control =
-  withObjCPtr control $ \raw_control ->
-      sendMsg ikCameraDeviceView (mkSelector "setCustomDeleteControl:") retVoid [argPtr (castPtr raw_control :: Ptr ())]
+setCustomDeleteControl ikCameraDeviceView control =
+  sendMessage ikCameraDeviceView setCustomDeleteControlSelector (toNSSegmentedControl control)
 
 -- | setShowStatusInfoAsWindowSubtitle:
 --
@@ -242,8 +233,8 @@ setCustomDeleteControl ikCameraDeviceView  control =
 --
 -- ObjC selector: @- setShowStatusInfoAsWindowSubtitle:@
 setShowStatusInfoAsWindowSubtitle :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> Bool -> IO ()
-setShowStatusInfoAsWindowSubtitle ikCameraDeviceView  value =
-    sendMsg ikCameraDeviceView (mkSelector "setShowStatusInfoAsWindowSubtitle:") retVoid [argCULong (if value then 1 else 0)]
+setShowStatusInfoAsWindowSubtitle ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setShowStatusInfoAsWindowSubtitleSelector value
 
 -- | delegate
 --
@@ -251,8 +242,8 @@ setShowStatusInfoAsWindowSubtitle ikCameraDeviceView  value =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO RawId
-delegate ikCameraDeviceView  =
-    fmap (RawId . castPtr) $ sendMsg ikCameraDeviceView (mkSelector "delegate") (retPtr retVoid) []
+delegate ikCameraDeviceView =
+  sendMessage ikCameraDeviceView delegateSelector
 
 -- | delegate
 --
@@ -260,8 +251,8 @@ delegate ikCameraDeviceView  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> RawId -> IO ()
-setDelegate ikCameraDeviceView  value =
-    sendMsg ikCameraDeviceView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setDelegateSelector value
 
 -- | mode
 --
@@ -269,8 +260,8 @@ setDelegate ikCameraDeviceView  value =
 --
 -- ObjC selector: @- mode@
 mode :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO IKCameraDeviceViewDisplayMode
-mode ikCameraDeviceView  =
-    fmap (coerce :: CLong -> IKCameraDeviceViewDisplayMode) $ sendMsg ikCameraDeviceView (mkSelector "mode") retCLong []
+mode ikCameraDeviceView =
+  sendMessage ikCameraDeviceView modeSelector
 
 -- | mode
 --
@@ -278,8 +269,8 @@ mode ikCameraDeviceView  =
 --
 -- ObjC selector: @- setMode:@
 setMode :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IKCameraDeviceViewDisplayMode -> IO ()
-setMode ikCameraDeviceView  value =
-    sendMsg ikCameraDeviceView (mkSelector "setMode:") retVoid [argCLong (coerce value)]
+setMode ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setModeSelector value
 
 -- | hasDisplayModeTable
 --
@@ -287,8 +278,8 @@ setMode ikCameraDeviceView  value =
 --
 -- ObjC selector: @- hasDisplayModeTable@
 hasDisplayModeTable :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO Bool
-hasDisplayModeTable ikCameraDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikCameraDeviceView (mkSelector "hasDisplayModeTable") retCULong []
+hasDisplayModeTable ikCameraDeviceView =
+  sendMessage ikCameraDeviceView hasDisplayModeTableSelector
 
 -- | hasDisplayModeTable
 --
@@ -296,8 +287,8 @@ hasDisplayModeTable ikCameraDeviceView  =
 --
 -- ObjC selector: @- setHasDisplayModeTable:@
 setHasDisplayModeTable :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> Bool -> IO ()
-setHasDisplayModeTable ikCameraDeviceView  value =
-    sendMsg ikCameraDeviceView (mkSelector "setHasDisplayModeTable:") retVoid [argCULong (if value then 1 else 0)]
+setHasDisplayModeTable ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setHasDisplayModeTableSelector value
 
 -- | hasDisplayModeIcon
 --
@@ -305,8 +296,8 @@ setHasDisplayModeTable ikCameraDeviceView  value =
 --
 -- ObjC selector: @- hasDisplayModeIcon@
 hasDisplayModeIcon :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO Bool
-hasDisplayModeIcon ikCameraDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikCameraDeviceView (mkSelector "hasDisplayModeIcon") retCULong []
+hasDisplayModeIcon ikCameraDeviceView =
+  sendMessage ikCameraDeviceView hasDisplayModeIconSelector
 
 -- | hasDisplayModeIcon
 --
@@ -314,8 +305,8 @@ hasDisplayModeIcon ikCameraDeviceView  =
 --
 -- ObjC selector: @- setHasDisplayModeIcon:@
 setHasDisplayModeIcon :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> Bool -> IO ()
-setHasDisplayModeIcon ikCameraDeviceView  value =
-    sendMsg ikCameraDeviceView (mkSelector "setHasDisplayModeIcon:") retVoid [argCULong (if value then 1 else 0)]
+setHasDisplayModeIcon ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setHasDisplayModeIconSelector value
 
 -- | downloadAllControlLabel
 --
@@ -323,8 +314,8 @@ setHasDisplayModeIcon ikCameraDeviceView  value =
 --
 -- ObjC selector: @- downloadAllControlLabel@
 downloadAllControlLabel :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO (Id NSString)
-downloadAllControlLabel ikCameraDeviceView  =
-    sendMsg ikCameraDeviceView (mkSelector "downloadAllControlLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+downloadAllControlLabel ikCameraDeviceView =
+  sendMessage ikCameraDeviceView downloadAllControlLabelSelector
 
 -- | downloadAllControlLabel
 --
@@ -332,9 +323,8 @@ downloadAllControlLabel ikCameraDeviceView  =
 --
 -- ObjC selector: @- setDownloadAllControlLabel:@
 setDownloadAllControlLabel :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSString value) => ikCameraDeviceView -> value -> IO ()
-setDownloadAllControlLabel ikCameraDeviceView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikCameraDeviceView (mkSelector "setDownloadAllControlLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDownloadAllControlLabel ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setDownloadAllControlLabelSelector (toNSString value)
 
 -- | downloadSelectedControlLabel
 --
@@ -342,8 +332,8 @@ setDownloadAllControlLabel ikCameraDeviceView  value =
 --
 -- ObjC selector: @- downloadSelectedControlLabel@
 downloadSelectedControlLabel :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO (Id NSString)
-downloadSelectedControlLabel ikCameraDeviceView  =
-    sendMsg ikCameraDeviceView (mkSelector "downloadSelectedControlLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+downloadSelectedControlLabel ikCameraDeviceView =
+  sendMessage ikCameraDeviceView downloadSelectedControlLabelSelector
 
 -- | downloadSelectedControlLabel
 --
@@ -351,9 +341,8 @@ downloadSelectedControlLabel ikCameraDeviceView  =
 --
 -- ObjC selector: @- setDownloadSelectedControlLabel:@
 setDownloadSelectedControlLabel :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSString value) => ikCameraDeviceView -> value -> IO ()
-setDownloadSelectedControlLabel ikCameraDeviceView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikCameraDeviceView (mkSelector "setDownloadSelectedControlLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDownloadSelectedControlLabel ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setDownloadSelectedControlLabelSelector (toNSString value)
 
 -- | iconSize
 --
@@ -361,8 +350,8 @@ setDownloadSelectedControlLabel ikCameraDeviceView  value =
 --
 -- ObjC selector: @- iconSize@
 iconSize :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO CULong
-iconSize ikCameraDeviceView  =
-    sendMsg ikCameraDeviceView (mkSelector "iconSize") retCULong []
+iconSize ikCameraDeviceView =
+  sendMessage ikCameraDeviceView iconSizeSelector
 
 -- | iconSize
 --
@@ -370,8 +359,8 @@ iconSize ikCameraDeviceView  =
 --
 -- ObjC selector: @- setIconSize:@
 setIconSize :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> CULong -> IO ()
-setIconSize ikCameraDeviceView  value =
-    sendMsg ikCameraDeviceView (mkSelector "setIconSize:") retVoid [argCULong value]
+setIconSize ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setIconSizeSelector value
 
 -- | transferMode
 --
@@ -379,8 +368,8 @@ setIconSize ikCameraDeviceView  value =
 --
 -- ObjC selector: @- transferMode@
 transferMode :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO IKCameraDeviceViewTransferMode
-transferMode ikCameraDeviceView  =
-    fmap (coerce :: CLong -> IKCameraDeviceViewTransferMode) $ sendMsg ikCameraDeviceView (mkSelector "transferMode") retCLong []
+transferMode ikCameraDeviceView =
+  sendMessage ikCameraDeviceView transferModeSelector
 
 -- | transferMode
 --
@@ -388,8 +377,8 @@ transferMode ikCameraDeviceView  =
 --
 -- ObjC selector: @- setTransferMode:@
 setTransferMode :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IKCameraDeviceViewTransferMode -> IO ()
-setTransferMode ikCameraDeviceView  value =
-    sendMsg ikCameraDeviceView (mkSelector "setTransferMode:") retVoid [argCLong (coerce value)]
+setTransferMode ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setTransferModeSelector value
 
 -- | displaysDownloadsDirectoryControl
 --
@@ -397,8 +386,8 @@ setTransferMode ikCameraDeviceView  value =
 --
 -- ObjC selector: @- displaysDownloadsDirectoryControl@
 displaysDownloadsDirectoryControl :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO Bool
-displaysDownloadsDirectoryControl ikCameraDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikCameraDeviceView (mkSelector "displaysDownloadsDirectoryControl") retCULong []
+displaysDownloadsDirectoryControl ikCameraDeviceView =
+  sendMessage ikCameraDeviceView displaysDownloadsDirectoryControlSelector
 
 -- | displaysDownloadsDirectoryControl
 --
@@ -406,8 +395,8 @@ displaysDownloadsDirectoryControl ikCameraDeviceView  =
 --
 -- ObjC selector: @- setDisplaysDownloadsDirectoryControl:@
 setDisplaysDownloadsDirectoryControl :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> Bool -> IO ()
-setDisplaysDownloadsDirectoryControl ikCameraDeviceView  value =
-    sendMsg ikCameraDeviceView (mkSelector "setDisplaysDownloadsDirectoryControl:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysDownloadsDirectoryControl ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setDisplaysDownloadsDirectoryControlSelector value
 
 -- | downloadsDirectory
 --
@@ -415,8 +404,8 @@ setDisplaysDownloadsDirectoryControl ikCameraDeviceView  value =
 --
 -- ObjC selector: @- downloadsDirectory@
 downloadsDirectory :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO (Id NSURL)
-downloadsDirectory ikCameraDeviceView  =
-    sendMsg ikCameraDeviceView (mkSelector "downloadsDirectory") (retPtr retVoid) [] >>= retainedObject . castPtr
+downloadsDirectory ikCameraDeviceView =
+  sendMessage ikCameraDeviceView downloadsDirectorySelector
 
 -- | downloadsDirectory
 --
@@ -424,9 +413,8 @@ downloadsDirectory ikCameraDeviceView  =
 --
 -- ObjC selector: @- setDownloadsDirectory:@
 setDownloadsDirectory :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSURL value) => ikCameraDeviceView -> value -> IO ()
-setDownloadsDirectory ikCameraDeviceView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikCameraDeviceView (mkSelector "setDownloadsDirectory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDownloadsDirectory ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setDownloadsDirectorySelector (toNSURL value)
 
 -- | displaysPostProcessApplicationControl
 --
@@ -434,8 +422,8 @@ setDownloadsDirectory ikCameraDeviceView  value =
 --
 -- ObjC selector: @- displaysPostProcessApplicationControl@
 displaysPostProcessApplicationControl :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO Bool
-displaysPostProcessApplicationControl ikCameraDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikCameraDeviceView (mkSelector "displaysPostProcessApplicationControl") retCULong []
+displaysPostProcessApplicationControl ikCameraDeviceView =
+  sendMessage ikCameraDeviceView displaysPostProcessApplicationControlSelector
 
 -- | displaysPostProcessApplicationControl
 --
@@ -443,8 +431,8 @@ displaysPostProcessApplicationControl ikCameraDeviceView  =
 --
 -- ObjC selector: @- setDisplaysPostProcessApplicationControl:@
 setDisplaysPostProcessApplicationControl :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> Bool -> IO ()
-setDisplaysPostProcessApplicationControl ikCameraDeviceView  value =
-    sendMsg ikCameraDeviceView (mkSelector "setDisplaysPostProcessApplicationControl:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysPostProcessApplicationControl ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setDisplaysPostProcessApplicationControlSelector value
 
 -- | postProcessApplication
 --
@@ -452,8 +440,8 @@ setDisplaysPostProcessApplicationControl ikCameraDeviceView  value =
 --
 -- ObjC selector: @- postProcessApplication@
 postProcessApplication :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO (Id NSURL)
-postProcessApplication ikCameraDeviceView  =
-    sendMsg ikCameraDeviceView (mkSelector "postProcessApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+postProcessApplication ikCameraDeviceView =
+  sendMessage ikCameraDeviceView postProcessApplicationSelector
 
 -- | postProcessApplication
 --
@@ -461,9 +449,8 @@ postProcessApplication ikCameraDeviceView  =
 --
 -- ObjC selector: @- setPostProcessApplication:@
 setPostProcessApplication :: (IsIKCameraDeviceView ikCameraDeviceView, IsNSURL value) => ikCameraDeviceView -> value -> IO ()
-setPostProcessApplication ikCameraDeviceView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikCameraDeviceView (mkSelector "setPostProcessApplication:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPostProcessApplication ikCameraDeviceView value =
+  sendMessage ikCameraDeviceView setPostProcessApplicationSelector (toNSURL value)
 
 -- | canRotateSelectedItemsLeft
 --
@@ -471,8 +458,8 @@ setPostProcessApplication ikCameraDeviceView  value =
 --
 -- ObjC selector: @- canRotateSelectedItemsLeft@
 canRotateSelectedItemsLeft :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO Bool
-canRotateSelectedItemsLeft ikCameraDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikCameraDeviceView (mkSelector "canRotateSelectedItemsLeft") retCULong []
+canRotateSelectedItemsLeft ikCameraDeviceView =
+  sendMessage ikCameraDeviceView canRotateSelectedItemsLeftSelector
 
 -- | canRotateSelectedItemsRight
 --
@@ -480,8 +467,8 @@ canRotateSelectedItemsLeft ikCameraDeviceView  =
 --
 -- ObjC selector: @- canRotateSelectedItemsRight@
 canRotateSelectedItemsRight :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO Bool
-canRotateSelectedItemsRight ikCameraDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikCameraDeviceView (mkSelector "canRotateSelectedItemsRight") retCULong []
+canRotateSelectedItemsRight ikCameraDeviceView =
+  sendMessage ikCameraDeviceView canRotateSelectedItemsRightSelector
 
 -- | canDeleteSelectedItems
 --
@@ -489,8 +476,8 @@ canRotateSelectedItemsRight ikCameraDeviceView  =
 --
 -- ObjC selector: @- canDeleteSelectedItems@
 canDeleteSelectedItems :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO Bool
-canDeleteSelectedItems ikCameraDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikCameraDeviceView (mkSelector "canDeleteSelectedItems") retCULong []
+canDeleteSelectedItems ikCameraDeviceView =
+  sendMessage ikCameraDeviceView canDeleteSelectedItemsSelector
 
 -- | canDownloadSelectedItems
 --
@@ -498,174 +485,174 @@ canDeleteSelectedItems ikCameraDeviceView  =
 --
 -- ObjC selector: @- canDownloadSelectedItems@
 canDownloadSelectedItems :: IsIKCameraDeviceView ikCameraDeviceView => ikCameraDeviceView -> IO Bool
-canDownloadSelectedItems ikCameraDeviceView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikCameraDeviceView (mkSelector "canDownloadSelectedItems") retCULong []
+canDownloadSelectedItems ikCameraDeviceView =
+  sendMessage ikCameraDeviceView canDownloadSelectedItemsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectedIndexes@
-selectedIndexesSelector :: Selector
+selectedIndexesSelector :: Selector '[] (Id NSIndexSet)
 selectedIndexesSelector = mkSelector "selectedIndexes"
 
 -- | @Selector@ for @selectIndexes:byExtendingSelection:@
-selectIndexes_byExtendingSelectionSelector :: Selector
+selectIndexes_byExtendingSelectionSelector :: Selector '[Id NSIndexSet, Bool] ()
 selectIndexes_byExtendingSelectionSelector = mkSelector "selectIndexes:byExtendingSelection:"
 
 -- | @Selector@ for @rotateLeft:@
-rotateLeftSelector :: Selector
+rotateLeftSelector :: Selector '[RawId] ()
 rotateLeftSelector = mkSelector "rotateLeft:"
 
 -- | @Selector@ for @rotateRight:@
-rotateRightSelector :: Selector
+rotateRightSelector :: Selector '[RawId] ()
 rotateRightSelector = mkSelector "rotateRight:"
 
 -- | @Selector@ for @deleteSelectedItems:@
-deleteSelectedItemsSelector :: Selector
+deleteSelectedItemsSelector :: Selector '[RawId] ()
 deleteSelectedItemsSelector = mkSelector "deleteSelectedItems:"
 
 -- | @Selector@ for @downloadSelectedItems:@
-downloadSelectedItemsSelector :: Selector
+downloadSelectedItemsSelector :: Selector '[RawId] ()
 downloadSelectedItemsSelector = mkSelector "downloadSelectedItems:"
 
 -- | @Selector@ for @downloadAllItems:@
-downloadAllItemsSelector :: Selector
+downloadAllItemsSelector :: Selector '[RawId] ()
 downloadAllItemsSelector = mkSelector "downloadAllItems:"
 
 -- | @Selector@ for @setCustomIconSizeSlider:@
-setCustomIconSizeSliderSelector :: Selector
+setCustomIconSizeSliderSelector :: Selector '[Id NSSlider] ()
 setCustomIconSizeSliderSelector = mkSelector "setCustomIconSizeSlider:"
 
 -- | @Selector@ for @setCustomModeControl:@
-setCustomModeControlSelector :: Selector
+setCustomModeControlSelector :: Selector '[Id NSSegmentedControl] ()
 setCustomModeControlSelector = mkSelector "setCustomModeControl:"
 
 -- | @Selector@ for @setCustomActionControl:@
-setCustomActionControlSelector :: Selector
+setCustomActionControlSelector :: Selector '[Id NSSegmentedControl] ()
 setCustomActionControlSelector = mkSelector "setCustomActionControl:"
 
 -- | @Selector@ for @setCustomRotateControl:@
-setCustomRotateControlSelector :: Selector
+setCustomRotateControlSelector :: Selector '[Id NSSegmentedControl] ()
 setCustomRotateControlSelector = mkSelector "setCustomRotateControl:"
 
 -- | @Selector@ for @setCustomDeleteControl:@
-setCustomDeleteControlSelector :: Selector
+setCustomDeleteControlSelector :: Selector '[Id NSSegmentedControl] ()
 setCustomDeleteControlSelector = mkSelector "setCustomDeleteControl:"
 
 -- | @Selector@ for @setShowStatusInfoAsWindowSubtitle:@
-setShowStatusInfoAsWindowSubtitleSelector :: Selector
+setShowStatusInfoAsWindowSubtitleSelector :: Selector '[Bool] ()
 setShowStatusInfoAsWindowSubtitleSelector = mkSelector "setShowStatusInfoAsWindowSubtitle:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] IKCameraDeviceViewDisplayMode
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[IKCameraDeviceViewDisplayMode] ()
 setModeSelector = mkSelector "setMode:"
 
 -- | @Selector@ for @hasDisplayModeTable@
-hasDisplayModeTableSelector :: Selector
+hasDisplayModeTableSelector :: Selector '[] Bool
 hasDisplayModeTableSelector = mkSelector "hasDisplayModeTable"
 
 -- | @Selector@ for @setHasDisplayModeTable:@
-setHasDisplayModeTableSelector :: Selector
+setHasDisplayModeTableSelector :: Selector '[Bool] ()
 setHasDisplayModeTableSelector = mkSelector "setHasDisplayModeTable:"
 
 -- | @Selector@ for @hasDisplayModeIcon@
-hasDisplayModeIconSelector :: Selector
+hasDisplayModeIconSelector :: Selector '[] Bool
 hasDisplayModeIconSelector = mkSelector "hasDisplayModeIcon"
 
 -- | @Selector@ for @setHasDisplayModeIcon:@
-setHasDisplayModeIconSelector :: Selector
+setHasDisplayModeIconSelector :: Selector '[Bool] ()
 setHasDisplayModeIconSelector = mkSelector "setHasDisplayModeIcon:"
 
 -- | @Selector@ for @downloadAllControlLabel@
-downloadAllControlLabelSelector :: Selector
+downloadAllControlLabelSelector :: Selector '[] (Id NSString)
 downloadAllControlLabelSelector = mkSelector "downloadAllControlLabel"
 
 -- | @Selector@ for @setDownloadAllControlLabel:@
-setDownloadAllControlLabelSelector :: Selector
+setDownloadAllControlLabelSelector :: Selector '[Id NSString] ()
 setDownloadAllControlLabelSelector = mkSelector "setDownloadAllControlLabel:"
 
 -- | @Selector@ for @downloadSelectedControlLabel@
-downloadSelectedControlLabelSelector :: Selector
+downloadSelectedControlLabelSelector :: Selector '[] (Id NSString)
 downloadSelectedControlLabelSelector = mkSelector "downloadSelectedControlLabel"
 
 -- | @Selector@ for @setDownloadSelectedControlLabel:@
-setDownloadSelectedControlLabelSelector :: Selector
+setDownloadSelectedControlLabelSelector :: Selector '[Id NSString] ()
 setDownloadSelectedControlLabelSelector = mkSelector "setDownloadSelectedControlLabel:"
 
 -- | @Selector@ for @iconSize@
-iconSizeSelector :: Selector
+iconSizeSelector :: Selector '[] CULong
 iconSizeSelector = mkSelector "iconSize"
 
 -- | @Selector@ for @setIconSize:@
-setIconSizeSelector :: Selector
+setIconSizeSelector :: Selector '[CULong] ()
 setIconSizeSelector = mkSelector "setIconSize:"
 
 -- | @Selector@ for @transferMode@
-transferModeSelector :: Selector
+transferModeSelector :: Selector '[] IKCameraDeviceViewTransferMode
 transferModeSelector = mkSelector "transferMode"
 
 -- | @Selector@ for @setTransferMode:@
-setTransferModeSelector :: Selector
+setTransferModeSelector :: Selector '[IKCameraDeviceViewTransferMode] ()
 setTransferModeSelector = mkSelector "setTransferMode:"
 
 -- | @Selector@ for @displaysDownloadsDirectoryControl@
-displaysDownloadsDirectoryControlSelector :: Selector
+displaysDownloadsDirectoryControlSelector :: Selector '[] Bool
 displaysDownloadsDirectoryControlSelector = mkSelector "displaysDownloadsDirectoryControl"
 
 -- | @Selector@ for @setDisplaysDownloadsDirectoryControl:@
-setDisplaysDownloadsDirectoryControlSelector :: Selector
+setDisplaysDownloadsDirectoryControlSelector :: Selector '[Bool] ()
 setDisplaysDownloadsDirectoryControlSelector = mkSelector "setDisplaysDownloadsDirectoryControl:"
 
 -- | @Selector@ for @downloadsDirectory@
-downloadsDirectorySelector :: Selector
+downloadsDirectorySelector :: Selector '[] (Id NSURL)
 downloadsDirectorySelector = mkSelector "downloadsDirectory"
 
 -- | @Selector@ for @setDownloadsDirectory:@
-setDownloadsDirectorySelector :: Selector
+setDownloadsDirectorySelector :: Selector '[Id NSURL] ()
 setDownloadsDirectorySelector = mkSelector "setDownloadsDirectory:"
 
 -- | @Selector@ for @displaysPostProcessApplicationControl@
-displaysPostProcessApplicationControlSelector :: Selector
+displaysPostProcessApplicationControlSelector :: Selector '[] Bool
 displaysPostProcessApplicationControlSelector = mkSelector "displaysPostProcessApplicationControl"
 
 -- | @Selector@ for @setDisplaysPostProcessApplicationControl:@
-setDisplaysPostProcessApplicationControlSelector :: Selector
+setDisplaysPostProcessApplicationControlSelector :: Selector '[Bool] ()
 setDisplaysPostProcessApplicationControlSelector = mkSelector "setDisplaysPostProcessApplicationControl:"
 
 -- | @Selector@ for @postProcessApplication@
-postProcessApplicationSelector :: Selector
+postProcessApplicationSelector :: Selector '[] (Id NSURL)
 postProcessApplicationSelector = mkSelector "postProcessApplication"
 
 -- | @Selector@ for @setPostProcessApplication:@
-setPostProcessApplicationSelector :: Selector
+setPostProcessApplicationSelector :: Selector '[Id NSURL] ()
 setPostProcessApplicationSelector = mkSelector "setPostProcessApplication:"
 
 -- | @Selector@ for @canRotateSelectedItemsLeft@
-canRotateSelectedItemsLeftSelector :: Selector
+canRotateSelectedItemsLeftSelector :: Selector '[] Bool
 canRotateSelectedItemsLeftSelector = mkSelector "canRotateSelectedItemsLeft"
 
 -- | @Selector@ for @canRotateSelectedItemsRight@
-canRotateSelectedItemsRightSelector :: Selector
+canRotateSelectedItemsRightSelector :: Selector '[] Bool
 canRotateSelectedItemsRightSelector = mkSelector "canRotateSelectedItemsRight"
 
 -- | @Selector@ for @canDeleteSelectedItems@
-canDeleteSelectedItemsSelector :: Selector
+canDeleteSelectedItemsSelector :: Selector '[] Bool
 canDeleteSelectedItemsSelector = mkSelector "canDeleteSelectedItems"
 
 -- | @Selector@ for @canDownloadSelectedItems@
-canDownloadSelectedItemsSelector :: Selector
+canDownloadSelectedItemsSelector :: Selector '[] Bool
 canDownloadSelectedItemsSelector = mkSelector "canDownloadSelectedItems"
 

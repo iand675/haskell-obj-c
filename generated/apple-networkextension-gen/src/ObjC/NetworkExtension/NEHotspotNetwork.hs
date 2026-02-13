@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,17 +25,17 @@ module ObjC.NetworkExtension.NEHotspotNetwork
   , autoJoined
   , justJoined
   , chosenHelper
+  , autoJoinedSelector
+  , bssidSelector
+  , chosenHelperSelector
   , fetchCurrentWithCompletionHandlerSelector
+  , justJoinedSelector
+  , secureSelector
+  , securityTypeSelector
   , setConfidenceSelector
   , setPasswordSelector
-  , ssidSelector
-  , bssidSelector
-  , securityTypeSelector
   , signalStrengthSelector
-  , secureSelector
-  , autoJoinedSelector
-  , justJoinedSelector
-  , chosenHelperSelector
+  , ssidSelector
 
   -- * Enum types
   , NEHotspotHelperConfidence(NEHotspotHelperConfidence)
@@ -50,15 +51,11 @@ module ObjC.NetworkExtension.NEHotspotNetwork
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,7 +74,7 @@ fetchCurrentWithCompletionHandler :: Ptr () -> IO ()
 fetchCurrentWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "NEHotspotNetwork"
-    sendClassMsg cls' (mkSelector "fetchCurrentWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' fetchCurrentWithCompletionHandlerSelector completionHandler
 
 -- | setConfidence
 --
@@ -87,8 +84,8 @@ fetchCurrentWithCompletionHandler completionHandler =
 --
 -- ObjC selector: @- setConfidence:@
 setConfidence :: IsNEHotspotNetwork neHotspotNetwork => neHotspotNetwork -> NEHotspotHelperConfidence -> IO ()
-setConfidence neHotspotNetwork  confidence =
-    sendMsg neHotspotNetwork (mkSelector "setConfidence:") retVoid [argCLong (coerce confidence)]
+setConfidence neHotspotNetwork confidence =
+  sendMessage neHotspotNetwork setConfidenceSelector confidence
 
 -- | setPassword
 --
@@ -100,9 +97,8 @@ setConfidence neHotspotNetwork  confidence =
 --
 -- ObjC selector: @- setPassword:@
 setPassword :: (IsNEHotspotNetwork neHotspotNetwork, IsNSString password) => neHotspotNetwork -> password -> IO ()
-setPassword neHotspotNetwork  password =
-  withObjCPtr password $ \raw_password ->
-      sendMsg neHotspotNetwork (mkSelector "setPassword:") retVoid [argPtr (castPtr raw_password :: Ptr ())]
+setPassword neHotspotNetwork password =
+  sendMessage neHotspotNetwork setPasswordSelector (toNSString password)
 
 -- | SSID
 --
@@ -110,8 +106,8 @@ setPassword neHotspotNetwork  password =
 --
 -- ObjC selector: @- SSID@
 ssid :: IsNEHotspotNetwork neHotspotNetwork => neHotspotNetwork -> IO (Id NSString)
-ssid neHotspotNetwork  =
-    sendMsg neHotspotNetwork (mkSelector "SSID") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssid neHotspotNetwork =
+  sendMessage neHotspotNetwork ssidSelector
 
 -- | BSSID
 --
@@ -119,8 +115,8 @@ ssid neHotspotNetwork  =
 --
 -- ObjC selector: @- BSSID@
 bssid :: IsNEHotspotNetwork neHotspotNetwork => neHotspotNetwork -> IO (Id NSString)
-bssid neHotspotNetwork  =
-    sendMsg neHotspotNetwork (mkSelector "BSSID") (retPtr retVoid) [] >>= retainedObject . castPtr
+bssid neHotspotNetwork =
+  sendMessage neHotspotNetwork bssidSelector
 
 -- | securityType
 --
@@ -128,8 +124,8 @@ bssid neHotspotNetwork  =
 --
 -- ObjC selector: @- securityType@
 securityType :: IsNEHotspotNetwork neHotspotNetwork => neHotspotNetwork -> IO NEHotspotNetworkSecurityType
-securityType neHotspotNetwork  =
-    fmap (coerce :: CLong -> NEHotspotNetworkSecurityType) $ sendMsg neHotspotNetwork (mkSelector "securityType") retCLong []
+securityType neHotspotNetwork =
+  sendMessage neHotspotNetwork securityTypeSelector
 
 -- | signalStrength
 --
@@ -137,8 +133,8 @@ securityType neHotspotNetwork  =
 --
 -- ObjC selector: @- signalStrength@
 signalStrength :: IsNEHotspotNetwork neHotspotNetwork => neHotspotNetwork -> IO CDouble
-signalStrength neHotspotNetwork  =
-    sendMsg neHotspotNetwork (mkSelector "signalStrength") retCDouble []
+signalStrength neHotspotNetwork =
+  sendMessage neHotspotNetwork signalStrengthSelector
 
 -- | secure
 --
@@ -146,8 +142,8 @@ signalStrength neHotspotNetwork  =
 --
 -- ObjC selector: @- secure@
 secure :: IsNEHotspotNetwork neHotspotNetwork => neHotspotNetwork -> IO Bool
-secure neHotspotNetwork  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotNetwork (mkSelector "secure") retCULong []
+secure neHotspotNetwork =
+  sendMessage neHotspotNetwork secureSelector
 
 -- | autoJoined
 --
@@ -155,8 +151,8 @@ secure neHotspotNetwork  =
 --
 -- ObjC selector: @- autoJoined@
 autoJoined :: IsNEHotspotNetwork neHotspotNetwork => neHotspotNetwork -> IO Bool
-autoJoined neHotspotNetwork  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotNetwork (mkSelector "autoJoined") retCULong []
+autoJoined neHotspotNetwork =
+  sendMessage neHotspotNetwork autoJoinedSelector
 
 -- | justJoined
 --
@@ -164,8 +160,8 @@ autoJoined neHotspotNetwork  =
 --
 -- ObjC selector: @- justJoined@
 justJoined :: IsNEHotspotNetwork neHotspotNetwork => neHotspotNetwork -> IO Bool
-justJoined neHotspotNetwork  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotNetwork (mkSelector "justJoined") retCULong []
+justJoined neHotspotNetwork =
+  sendMessage neHotspotNetwork justJoinedSelector
 
 -- | chosenHelper
 --
@@ -173,54 +169,54 @@ justJoined neHotspotNetwork  =
 --
 -- ObjC selector: @- chosenHelper@
 chosenHelper :: IsNEHotspotNetwork neHotspotNetwork => neHotspotNetwork -> IO Bool
-chosenHelper neHotspotNetwork  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotNetwork (mkSelector "chosenHelper") retCULong []
+chosenHelper neHotspotNetwork =
+  sendMessage neHotspotNetwork chosenHelperSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchCurrentWithCompletionHandler:@
-fetchCurrentWithCompletionHandlerSelector :: Selector
+fetchCurrentWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 fetchCurrentWithCompletionHandlerSelector = mkSelector "fetchCurrentWithCompletionHandler:"
 
 -- | @Selector@ for @setConfidence:@
-setConfidenceSelector :: Selector
+setConfidenceSelector :: Selector '[NEHotspotHelperConfidence] ()
 setConfidenceSelector = mkSelector "setConfidence:"
 
 -- | @Selector@ for @setPassword:@
-setPasswordSelector :: Selector
+setPasswordSelector :: Selector '[Id NSString] ()
 setPasswordSelector = mkSelector "setPassword:"
 
 -- | @Selector@ for @SSID@
-ssidSelector :: Selector
+ssidSelector :: Selector '[] (Id NSString)
 ssidSelector = mkSelector "SSID"
 
 -- | @Selector@ for @BSSID@
-bssidSelector :: Selector
+bssidSelector :: Selector '[] (Id NSString)
 bssidSelector = mkSelector "BSSID"
 
 -- | @Selector@ for @securityType@
-securityTypeSelector :: Selector
+securityTypeSelector :: Selector '[] NEHotspotNetworkSecurityType
 securityTypeSelector = mkSelector "securityType"
 
 -- | @Selector@ for @signalStrength@
-signalStrengthSelector :: Selector
+signalStrengthSelector :: Selector '[] CDouble
 signalStrengthSelector = mkSelector "signalStrength"
 
 -- | @Selector@ for @secure@
-secureSelector :: Selector
+secureSelector :: Selector '[] Bool
 secureSelector = mkSelector "secure"
 
 -- | @Selector@ for @autoJoined@
-autoJoinedSelector :: Selector
+autoJoinedSelector :: Selector '[] Bool
 autoJoinedSelector = mkSelector "autoJoined"
 
 -- | @Selector@ for @justJoined@
-justJoinedSelector :: Selector
+justJoinedSelector :: Selector '[] Bool
 justJoinedSelector = mkSelector "justJoined"
 
 -- | @Selector@ for @chosenHelper@
-chosenHelperSelector :: Selector
+chosenHelperSelector :: Selector '[] Bool
 chosenHelperSelector = mkSelector "chosenHelper"
 

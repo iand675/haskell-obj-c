@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.Intents.INPayBillIntent
   , transactionNote
   , billType
   , dueDate
-  , initWithBillPayee_fromAccount_transactionAmount_transactionScheduledDate_transactionNote_billType_dueDateSelector
   , billPayeeSelector
-  , fromAccountSelector
-  , transactionAmountSelector
-  , transactionScheduledDateSelector
-  , transactionNoteSelector
   , billTypeSelector
   , dueDateSelector
+  , fromAccountSelector
+  , initWithBillPayee_fromAccount_transactionAmount_transactionScheduledDate_transactionNote_billType_dueDateSelector
+  , transactionAmountSelector
+  , transactionNoteSelector
+  , transactionScheduledDateSelector
 
   -- * Enum types
   , INBillType(INBillType)
@@ -52,15 +53,11 @@ module ObjC.Intents.INPayBillIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,83 +67,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithBillPayee:fromAccount:transactionAmount:transactionScheduledDate:transactionNote:billType:dueDate:@
 initWithBillPayee_fromAccount_transactionAmount_transactionScheduledDate_transactionNote_billType_dueDate :: (IsINPayBillIntent inPayBillIntent, IsINBillPayee billPayee, IsINPaymentAccount fromAccount, IsINPaymentAmount transactionAmount, IsINDateComponentsRange transactionScheduledDate, IsNSString transactionNote, IsINDateComponentsRange dueDate) => inPayBillIntent -> billPayee -> fromAccount -> transactionAmount -> transactionScheduledDate -> transactionNote -> INBillType -> dueDate -> IO (Id INPayBillIntent)
-initWithBillPayee_fromAccount_transactionAmount_transactionScheduledDate_transactionNote_billType_dueDate inPayBillIntent  billPayee fromAccount transactionAmount transactionScheduledDate transactionNote billType dueDate =
-  withObjCPtr billPayee $ \raw_billPayee ->
-    withObjCPtr fromAccount $ \raw_fromAccount ->
-      withObjCPtr transactionAmount $ \raw_transactionAmount ->
-        withObjCPtr transactionScheduledDate $ \raw_transactionScheduledDate ->
-          withObjCPtr transactionNote $ \raw_transactionNote ->
-            withObjCPtr dueDate $ \raw_dueDate ->
-                sendMsg inPayBillIntent (mkSelector "initWithBillPayee:fromAccount:transactionAmount:transactionScheduledDate:transactionNote:billType:dueDate:") (retPtr retVoid) [argPtr (castPtr raw_billPayee :: Ptr ()), argPtr (castPtr raw_fromAccount :: Ptr ()), argPtr (castPtr raw_transactionAmount :: Ptr ()), argPtr (castPtr raw_transactionScheduledDate :: Ptr ()), argPtr (castPtr raw_transactionNote :: Ptr ()), argCLong (coerce billType), argPtr (castPtr raw_dueDate :: Ptr ())] >>= ownedObject . castPtr
+initWithBillPayee_fromAccount_transactionAmount_transactionScheduledDate_transactionNote_billType_dueDate inPayBillIntent billPayee fromAccount transactionAmount transactionScheduledDate transactionNote billType dueDate =
+  sendOwnedMessage inPayBillIntent initWithBillPayee_fromAccount_transactionAmount_transactionScheduledDate_transactionNote_billType_dueDateSelector (toINBillPayee billPayee) (toINPaymentAccount fromAccount) (toINPaymentAmount transactionAmount) (toINDateComponentsRange transactionScheduledDate) (toNSString transactionNote) billType (toINDateComponentsRange dueDate)
 
 -- | @- billPayee@
 billPayee :: IsINPayBillIntent inPayBillIntent => inPayBillIntent -> IO (Id INBillPayee)
-billPayee inPayBillIntent  =
-    sendMsg inPayBillIntent (mkSelector "billPayee") (retPtr retVoid) [] >>= retainedObject . castPtr
+billPayee inPayBillIntent =
+  sendMessage inPayBillIntent billPayeeSelector
 
 -- | @- fromAccount@
 fromAccount :: IsINPayBillIntent inPayBillIntent => inPayBillIntent -> IO (Id INPaymentAccount)
-fromAccount inPayBillIntent  =
-    sendMsg inPayBillIntent (mkSelector "fromAccount") (retPtr retVoid) [] >>= retainedObject . castPtr
+fromAccount inPayBillIntent =
+  sendMessage inPayBillIntent fromAccountSelector
 
 -- | @- transactionAmount@
 transactionAmount :: IsINPayBillIntent inPayBillIntent => inPayBillIntent -> IO (Id INPaymentAmount)
-transactionAmount inPayBillIntent  =
-    sendMsg inPayBillIntent (mkSelector "transactionAmount") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionAmount inPayBillIntent =
+  sendMessage inPayBillIntent transactionAmountSelector
 
 -- | @- transactionScheduledDate@
 transactionScheduledDate :: IsINPayBillIntent inPayBillIntent => inPayBillIntent -> IO (Id INDateComponentsRange)
-transactionScheduledDate inPayBillIntent  =
-    sendMsg inPayBillIntent (mkSelector "transactionScheduledDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionScheduledDate inPayBillIntent =
+  sendMessage inPayBillIntent transactionScheduledDateSelector
 
 -- | @- transactionNote@
 transactionNote :: IsINPayBillIntent inPayBillIntent => inPayBillIntent -> IO (Id NSString)
-transactionNote inPayBillIntent  =
-    sendMsg inPayBillIntent (mkSelector "transactionNote") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionNote inPayBillIntent =
+  sendMessage inPayBillIntent transactionNoteSelector
 
 -- | @- billType@
 billType :: IsINPayBillIntent inPayBillIntent => inPayBillIntent -> IO INBillType
-billType inPayBillIntent  =
-    fmap (coerce :: CLong -> INBillType) $ sendMsg inPayBillIntent (mkSelector "billType") retCLong []
+billType inPayBillIntent =
+  sendMessage inPayBillIntent billTypeSelector
 
 -- | @- dueDate@
 dueDate :: IsINPayBillIntent inPayBillIntent => inPayBillIntent -> IO (Id INDateComponentsRange)
-dueDate inPayBillIntent  =
-    sendMsg inPayBillIntent (mkSelector "dueDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+dueDate inPayBillIntent =
+  sendMessage inPayBillIntent dueDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBillPayee:fromAccount:transactionAmount:transactionScheduledDate:transactionNote:billType:dueDate:@
-initWithBillPayee_fromAccount_transactionAmount_transactionScheduledDate_transactionNote_billType_dueDateSelector :: Selector
+initWithBillPayee_fromAccount_transactionAmount_transactionScheduledDate_transactionNote_billType_dueDateSelector :: Selector '[Id INBillPayee, Id INPaymentAccount, Id INPaymentAmount, Id INDateComponentsRange, Id NSString, INBillType, Id INDateComponentsRange] (Id INPayBillIntent)
 initWithBillPayee_fromAccount_transactionAmount_transactionScheduledDate_transactionNote_billType_dueDateSelector = mkSelector "initWithBillPayee:fromAccount:transactionAmount:transactionScheduledDate:transactionNote:billType:dueDate:"
 
 -- | @Selector@ for @billPayee@
-billPayeeSelector :: Selector
+billPayeeSelector :: Selector '[] (Id INBillPayee)
 billPayeeSelector = mkSelector "billPayee"
 
 -- | @Selector@ for @fromAccount@
-fromAccountSelector :: Selector
+fromAccountSelector :: Selector '[] (Id INPaymentAccount)
 fromAccountSelector = mkSelector "fromAccount"
 
 -- | @Selector@ for @transactionAmount@
-transactionAmountSelector :: Selector
+transactionAmountSelector :: Selector '[] (Id INPaymentAmount)
 transactionAmountSelector = mkSelector "transactionAmount"
 
 -- | @Selector@ for @transactionScheduledDate@
-transactionScheduledDateSelector :: Selector
+transactionScheduledDateSelector :: Selector '[] (Id INDateComponentsRange)
 transactionScheduledDateSelector = mkSelector "transactionScheduledDate"
 
 -- | @Selector@ for @transactionNote@
-transactionNoteSelector :: Selector
+transactionNoteSelector :: Selector '[] (Id NSString)
 transactionNoteSelector = mkSelector "transactionNote"
 
 -- | @Selector@ for @billType@
-billTypeSelector :: Selector
+billTypeSelector :: Selector '[] INBillType
 billTypeSelector = mkSelector "billType"
 
 -- | @Selector@ for @dueDate@
-dueDateSelector :: Selector
+dueDateSelector :: Selector '[] (Id INDateComponentsRange)
 dueDateSelector = mkSelector "dueDate"
 

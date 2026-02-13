@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Symbols.NSSymbolAppearEffect
   , appearDownEffect
   , effectWithByLayer
   , effectWithWholeSymbol
-  , effectSelector
-  , appearUpEffectSelector
   , appearDownEffectSelector
+  , appearUpEffectSelector
+  , effectSelector
   , effectWithByLayerSelector
   , effectWithWholeSymbolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,7 +43,7 @@ effect :: IO (Id NSSymbolAppearEffect)
 effect  =
   do
     cls' <- getRequiredClass "NSSymbolAppearEffect"
-    sendClassMsg cls' (mkSelector "effect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' effectSelector
 
 -- | Convenience initializer for an appear effect that appears scaling up.
 --
@@ -55,7 +52,7 @@ appearUpEffect :: IO (Id NSSymbolAppearEffect)
 appearUpEffect  =
   do
     cls' <- getRequiredClass "NSSymbolAppearEffect"
-    sendClassMsg cls' (mkSelector "appearUpEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' appearUpEffectSelector
 
 -- | Convenience initializer for an appear effect that appears scaling down.
 --
@@ -64,43 +61,43 @@ appearDownEffect :: IO (Id NSSymbolAppearEffect)
 appearDownEffect  =
   do
     cls' <- getRequiredClass "NSSymbolAppearEffect"
-    sendClassMsg cls' (mkSelector "appearDownEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' appearDownEffectSelector
 
 -- | Returns a copy of the effect that animates incrementally, by layer.
 --
 -- ObjC selector: @- effectWithByLayer@
 effectWithByLayer :: IsNSSymbolAppearEffect nsSymbolAppearEffect => nsSymbolAppearEffect -> IO (Id NSSymbolAppearEffect)
-effectWithByLayer nsSymbolAppearEffect  =
-    sendMsg nsSymbolAppearEffect (mkSelector "effectWithByLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithByLayer nsSymbolAppearEffect =
+  sendMessage nsSymbolAppearEffect effectWithByLayerSelector
 
 -- | Returns a copy of the effect that animates all layers of the symbol simultaneously.
 --
 -- ObjC selector: @- effectWithWholeSymbol@
 effectWithWholeSymbol :: IsNSSymbolAppearEffect nsSymbolAppearEffect => nsSymbolAppearEffect -> IO (Id NSSymbolAppearEffect)
-effectWithWholeSymbol nsSymbolAppearEffect  =
-    sendMsg nsSymbolAppearEffect (mkSelector "effectWithWholeSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithWholeSymbol nsSymbolAppearEffect =
+  sendMessage nsSymbolAppearEffect effectWithWholeSymbolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effect@
-effectSelector :: Selector
+effectSelector :: Selector '[] (Id NSSymbolAppearEffect)
 effectSelector = mkSelector "effect"
 
 -- | @Selector@ for @appearUpEffect@
-appearUpEffectSelector :: Selector
+appearUpEffectSelector :: Selector '[] (Id NSSymbolAppearEffect)
 appearUpEffectSelector = mkSelector "appearUpEffect"
 
 -- | @Selector@ for @appearDownEffect@
-appearDownEffectSelector :: Selector
+appearDownEffectSelector :: Selector '[] (Id NSSymbolAppearEffect)
 appearDownEffectSelector = mkSelector "appearDownEffect"
 
 -- | @Selector@ for @effectWithByLayer@
-effectWithByLayerSelector :: Selector
+effectWithByLayerSelector :: Selector '[] (Id NSSymbolAppearEffect)
 effectWithByLayerSelector = mkSelector "effectWithByLayer"
 
 -- | @Selector@ for @effectWithWholeSymbol@
-effectWithWholeSymbolSelector :: Selector
+effectWithWholeSymbolSelector :: Selector '[] (Id NSSymbolAppearEffect)
 effectWithWholeSymbolSelector = mkSelector "effectWithWholeSymbol"
 

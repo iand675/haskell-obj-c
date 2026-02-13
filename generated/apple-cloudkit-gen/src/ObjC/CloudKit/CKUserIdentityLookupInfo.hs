@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.CloudKit.CKUserIdentityLookupInfo
   , emailAddress
   , phoneNumber
   , userRecordID
+  , emailAddressSelector
   , initSelector
-  , newSelector
   , initWithEmailAddressSelector
   , initWithPhoneNumberSelector
   , initWithUserRecordIDSelector
   , lookupInfosWithEmailsSelector
   , lookupInfosWithPhoneNumbersSelector
   , lookupInfosWithRecordIDsSelector
-  , emailAddressSelector
+  , newSelector
   , phoneNumberSelector
   , userRecordIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,118 +46,112 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKUserIdentityLookupInfo ckUserIdentityLookupInfo => ckUserIdentityLookupInfo -> IO (Id CKUserIdentityLookupInfo)
-init_ ckUserIdentityLookupInfo  =
-    sendMsg ckUserIdentityLookupInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckUserIdentityLookupInfo =
+  sendOwnedMessage ckUserIdentityLookupInfo initSelector
 
 -- | @+ new@
 new :: IO (Id CKUserIdentityLookupInfo)
 new  =
   do
     cls' <- getRequiredClass "CKUserIdentityLookupInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithEmailAddress:@
 initWithEmailAddress :: (IsCKUserIdentityLookupInfo ckUserIdentityLookupInfo, IsNSString emailAddress) => ckUserIdentityLookupInfo -> emailAddress -> IO (Id CKUserIdentityLookupInfo)
-initWithEmailAddress ckUserIdentityLookupInfo  emailAddress =
-  withObjCPtr emailAddress $ \raw_emailAddress ->
-      sendMsg ckUserIdentityLookupInfo (mkSelector "initWithEmailAddress:") (retPtr retVoid) [argPtr (castPtr raw_emailAddress :: Ptr ())] >>= ownedObject . castPtr
+initWithEmailAddress ckUserIdentityLookupInfo emailAddress =
+  sendOwnedMessage ckUserIdentityLookupInfo initWithEmailAddressSelector (toNSString emailAddress)
 
 -- | @- initWithPhoneNumber:@
 initWithPhoneNumber :: (IsCKUserIdentityLookupInfo ckUserIdentityLookupInfo, IsNSString phoneNumber) => ckUserIdentityLookupInfo -> phoneNumber -> IO (Id CKUserIdentityLookupInfo)
-initWithPhoneNumber ckUserIdentityLookupInfo  phoneNumber =
-  withObjCPtr phoneNumber $ \raw_phoneNumber ->
-      sendMsg ckUserIdentityLookupInfo (mkSelector "initWithPhoneNumber:") (retPtr retVoid) [argPtr (castPtr raw_phoneNumber :: Ptr ())] >>= ownedObject . castPtr
+initWithPhoneNumber ckUserIdentityLookupInfo phoneNumber =
+  sendOwnedMessage ckUserIdentityLookupInfo initWithPhoneNumberSelector (toNSString phoneNumber)
 
 -- | @- initWithUserRecordID:@
 initWithUserRecordID :: (IsCKUserIdentityLookupInfo ckUserIdentityLookupInfo, IsCKRecordID userRecordID) => ckUserIdentityLookupInfo -> userRecordID -> IO (Id CKUserIdentityLookupInfo)
-initWithUserRecordID ckUserIdentityLookupInfo  userRecordID =
-  withObjCPtr userRecordID $ \raw_userRecordID ->
-      sendMsg ckUserIdentityLookupInfo (mkSelector "initWithUserRecordID:") (retPtr retVoid) [argPtr (castPtr raw_userRecordID :: Ptr ())] >>= ownedObject . castPtr
+initWithUserRecordID ckUserIdentityLookupInfo userRecordID =
+  sendOwnedMessage ckUserIdentityLookupInfo initWithUserRecordIDSelector (toCKRecordID userRecordID)
 
 -- | @+ lookupInfosWithEmails:@
 lookupInfosWithEmails :: IsNSArray emails => emails -> IO (Id NSArray)
 lookupInfosWithEmails emails =
   do
     cls' <- getRequiredClass "CKUserIdentityLookupInfo"
-    withObjCPtr emails $ \raw_emails ->
-      sendClassMsg cls' (mkSelector "lookupInfosWithEmails:") (retPtr retVoid) [argPtr (castPtr raw_emails :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' lookupInfosWithEmailsSelector (toNSArray emails)
 
 -- | @+ lookupInfosWithPhoneNumbers:@
 lookupInfosWithPhoneNumbers :: IsNSArray phoneNumbers => phoneNumbers -> IO (Id NSArray)
 lookupInfosWithPhoneNumbers phoneNumbers =
   do
     cls' <- getRequiredClass "CKUserIdentityLookupInfo"
-    withObjCPtr phoneNumbers $ \raw_phoneNumbers ->
-      sendClassMsg cls' (mkSelector "lookupInfosWithPhoneNumbers:") (retPtr retVoid) [argPtr (castPtr raw_phoneNumbers :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' lookupInfosWithPhoneNumbersSelector (toNSArray phoneNumbers)
 
 -- | @+ lookupInfosWithRecordIDs:@
 lookupInfosWithRecordIDs :: IsNSArray recordIDs => recordIDs -> IO (Id NSArray)
 lookupInfosWithRecordIDs recordIDs =
   do
     cls' <- getRequiredClass "CKUserIdentityLookupInfo"
-    withObjCPtr recordIDs $ \raw_recordIDs ->
-      sendClassMsg cls' (mkSelector "lookupInfosWithRecordIDs:") (retPtr retVoid) [argPtr (castPtr raw_recordIDs :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' lookupInfosWithRecordIDsSelector (toNSArray recordIDs)
 
 -- | @- emailAddress@
 emailAddress :: IsCKUserIdentityLookupInfo ckUserIdentityLookupInfo => ckUserIdentityLookupInfo -> IO (Id NSString)
-emailAddress ckUserIdentityLookupInfo  =
-    sendMsg ckUserIdentityLookupInfo (mkSelector "emailAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+emailAddress ckUserIdentityLookupInfo =
+  sendMessage ckUserIdentityLookupInfo emailAddressSelector
 
 -- | @- phoneNumber@
 phoneNumber :: IsCKUserIdentityLookupInfo ckUserIdentityLookupInfo => ckUserIdentityLookupInfo -> IO (Id NSString)
-phoneNumber ckUserIdentityLookupInfo  =
-    sendMsg ckUserIdentityLookupInfo (mkSelector "phoneNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+phoneNumber ckUserIdentityLookupInfo =
+  sendMessage ckUserIdentityLookupInfo phoneNumberSelector
 
 -- | @- userRecordID@
 userRecordID :: IsCKUserIdentityLookupInfo ckUserIdentityLookupInfo => ckUserIdentityLookupInfo -> IO (Id CKRecordID)
-userRecordID ckUserIdentityLookupInfo  =
-    sendMsg ckUserIdentityLookupInfo (mkSelector "userRecordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+userRecordID ckUserIdentityLookupInfo =
+  sendMessage ckUserIdentityLookupInfo userRecordIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKUserIdentityLookupInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKUserIdentityLookupInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEmailAddress:@
-initWithEmailAddressSelector :: Selector
+initWithEmailAddressSelector :: Selector '[Id NSString] (Id CKUserIdentityLookupInfo)
 initWithEmailAddressSelector = mkSelector "initWithEmailAddress:"
 
 -- | @Selector@ for @initWithPhoneNumber:@
-initWithPhoneNumberSelector :: Selector
+initWithPhoneNumberSelector :: Selector '[Id NSString] (Id CKUserIdentityLookupInfo)
 initWithPhoneNumberSelector = mkSelector "initWithPhoneNumber:"
 
 -- | @Selector@ for @initWithUserRecordID:@
-initWithUserRecordIDSelector :: Selector
+initWithUserRecordIDSelector :: Selector '[Id CKRecordID] (Id CKUserIdentityLookupInfo)
 initWithUserRecordIDSelector = mkSelector "initWithUserRecordID:"
 
 -- | @Selector@ for @lookupInfosWithEmails:@
-lookupInfosWithEmailsSelector :: Selector
+lookupInfosWithEmailsSelector :: Selector '[Id NSArray] (Id NSArray)
 lookupInfosWithEmailsSelector = mkSelector "lookupInfosWithEmails:"
 
 -- | @Selector@ for @lookupInfosWithPhoneNumbers:@
-lookupInfosWithPhoneNumbersSelector :: Selector
+lookupInfosWithPhoneNumbersSelector :: Selector '[Id NSArray] (Id NSArray)
 lookupInfosWithPhoneNumbersSelector = mkSelector "lookupInfosWithPhoneNumbers:"
 
 -- | @Selector@ for @lookupInfosWithRecordIDs:@
-lookupInfosWithRecordIDsSelector :: Selector
+lookupInfosWithRecordIDsSelector :: Selector '[Id NSArray] (Id NSArray)
 lookupInfosWithRecordIDsSelector = mkSelector "lookupInfosWithRecordIDs:"
 
 -- | @Selector@ for @emailAddress@
-emailAddressSelector :: Selector
+emailAddressSelector :: Selector '[] (Id NSString)
 emailAddressSelector = mkSelector "emailAddress"
 
 -- | @Selector@ for @phoneNumber@
-phoneNumberSelector :: Selector
+phoneNumberSelector :: Selector '[] (Id NSString)
 phoneNumberSelector = mkSelector "phoneNumber"
 
 -- | @Selector@ for @userRecordID@
-userRecordIDSelector :: Selector
+userRecordIDSelector :: Selector '[] (Id CKRecordID)
 userRecordIDSelector = mkSelector "userRecordID"
 

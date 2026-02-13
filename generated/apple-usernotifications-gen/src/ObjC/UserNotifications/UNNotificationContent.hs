@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,23 +25,23 @@ module ObjC.UserNotifications.UNNotificationContent
   , interruptionLevel
   , relevanceScore
   , filterCriteria
-  , contentByUpdatingWithProvider_errorSelector
   , attachmentsSelector
   , badgeSelector
   , bodySelector
   , categoryIdentifierSelector
+  , contentByUpdatingWithProvider_errorSelector
+  , filterCriteriaSelector
+  , interruptionLevelSelector
   , launchImageNameSelector
+  , relevanceScoreSelector
   , soundSelector
   , subtitleSelector
+  , summaryArgumentCountSelector
+  , summaryArgumentSelector
+  , targetContentIdentifierSelector
   , threadIdentifierSelector
   , titleSelector
   , userInfoSelector
-  , summaryArgumentSelector
-  , summaryArgumentCountSelector
-  , targetContentIdentifierSelector
-  , interruptionLevelSelector
-  , relevanceScoreSelector
-  , filterCriteriaSelector
 
   -- * Enum types
   , UNNotificationInterruptionLevel(UNNotificationInterruptionLevel)
@@ -51,15 +52,11 @@ module ObjC.UserNotifications.UNNotificationContent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,163 +70,162 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- contentByUpdatingWithProvider:error:@
 contentByUpdatingWithProvider_error :: (IsUNNotificationContent unNotificationContent, IsNSError outError) => unNotificationContent -> RawId -> outError -> IO (Id UNNotificationContent)
-contentByUpdatingWithProvider_error unNotificationContent  provider outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg unNotificationContent (mkSelector "contentByUpdatingWithProvider:error:") (retPtr retVoid) [argPtr (castPtr (unRawId provider) :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+contentByUpdatingWithProvider_error unNotificationContent provider outError =
+  sendMessage unNotificationContent contentByUpdatingWithProvider_errorSelector provider (toNSError outError)
 
 -- | @- attachments@
 attachments :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSArray)
-attachments unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "attachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+attachments unNotificationContent =
+  sendMessage unNotificationContent attachmentsSelector
 
 -- | @- badge@
 badge :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSNumber)
-badge unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "badge") (retPtr retVoid) [] >>= retainedObject . castPtr
+badge unNotificationContent =
+  sendMessage unNotificationContent badgeSelector
 
 -- | @- body@
 body :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSString)
-body unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "body") (retPtr retVoid) [] >>= retainedObject . castPtr
+body unNotificationContent =
+  sendMessage unNotificationContent bodySelector
 
 -- | @- categoryIdentifier@
 categoryIdentifier :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSString)
-categoryIdentifier unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "categoryIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+categoryIdentifier unNotificationContent =
+  sendMessage unNotificationContent categoryIdentifierSelector
 
 -- | @- launchImageName@
 launchImageName :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSString)
-launchImageName unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "launchImageName") (retPtr retVoid) [] >>= retainedObject . castPtr
+launchImageName unNotificationContent =
+  sendMessage unNotificationContent launchImageNameSelector
 
 -- | @- sound@
 sound :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id UNNotificationSound)
-sound unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "sound") (retPtr retVoid) [] >>= retainedObject . castPtr
+sound unNotificationContent =
+  sendMessage unNotificationContent soundSelector
 
 -- | @- subtitle@
 subtitle :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSString)
-subtitle unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitle unNotificationContent =
+  sendMessage unNotificationContent subtitleSelector
 
 -- | @- threadIdentifier@
 threadIdentifier :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSString)
-threadIdentifier unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "threadIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+threadIdentifier unNotificationContent =
+  sendMessage unNotificationContent threadIdentifierSelector
 
 -- | @- title@
 title :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSString)
-title unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title unNotificationContent =
+  sendMessage unNotificationContent titleSelector
 
 -- | @- userInfo@
 userInfo :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSDictionary)
-userInfo unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo unNotificationContent =
+  sendMessage unNotificationContent userInfoSelector
 
 -- | The argument to be inserted in the summary for this notification.
 --
 -- ObjC selector: @- summaryArgument@
 summaryArgument :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSString)
-summaryArgument unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "summaryArgument") (retPtr retVoid) [] >>= retainedObject . castPtr
+summaryArgument unNotificationContent =
+  sendMessage unNotificationContent summaryArgumentSelector
 
 -- | A number that indicates how many items in the summary are represented in the summary. For example if a podcast app sends one notification for 3 new episodes in a show, the argument should be the name of the show and the count should be 3. Default is 1 and cannot be 0.
 --
 -- ObjC selector: @- summaryArgumentCount@
 summaryArgumentCount :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO CULong
-summaryArgumentCount unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "summaryArgumentCount") retCULong []
+summaryArgumentCount unNotificationContent =
+  sendMessage unNotificationContent summaryArgumentCountSelector
 
 -- | @- targetContentIdentifier@
 targetContentIdentifier :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSString)
-targetContentIdentifier unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "targetContentIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetContentIdentifier unNotificationContent =
+  sendMessage unNotificationContent targetContentIdentifierSelector
 
 -- | @- interruptionLevel@
 interruptionLevel :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO UNNotificationInterruptionLevel
-interruptionLevel unNotificationContent  =
-    fmap (coerce :: CULong -> UNNotificationInterruptionLevel) $ sendMsg unNotificationContent (mkSelector "interruptionLevel") retCULong []
+interruptionLevel unNotificationContent =
+  sendMessage unNotificationContent interruptionLevelSelector
 
 -- | @- relevanceScore@
 relevanceScore :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO CDouble
-relevanceScore unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "relevanceScore") retCDouble []
+relevanceScore unNotificationContent =
+  sendMessage unNotificationContent relevanceScoreSelector
 
 -- | @- filterCriteria@
 filterCriteria :: IsUNNotificationContent unNotificationContent => unNotificationContent -> IO (Id NSString)
-filterCriteria unNotificationContent  =
-    sendMsg unNotificationContent (mkSelector "filterCriteria") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterCriteria unNotificationContent =
+  sendMessage unNotificationContent filterCriteriaSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contentByUpdatingWithProvider:error:@
-contentByUpdatingWithProvider_errorSelector :: Selector
+contentByUpdatingWithProvider_errorSelector :: Selector '[RawId, Id NSError] (Id UNNotificationContent)
 contentByUpdatingWithProvider_errorSelector = mkSelector "contentByUpdatingWithProvider:error:"
 
 -- | @Selector@ for @attachments@
-attachmentsSelector :: Selector
+attachmentsSelector :: Selector '[] (Id NSArray)
 attachmentsSelector = mkSelector "attachments"
 
 -- | @Selector@ for @badge@
-badgeSelector :: Selector
+badgeSelector :: Selector '[] (Id NSNumber)
 badgeSelector = mkSelector "badge"
 
 -- | @Selector@ for @body@
-bodySelector :: Selector
+bodySelector :: Selector '[] (Id NSString)
 bodySelector = mkSelector "body"
 
 -- | @Selector@ for @categoryIdentifier@
-categoryIdentifierSelector :: Selector
+categoryIdentifierSelector :: Selector '[] (Id NSString)
 categoryIdentifierSelector = mkSelector "categoryIdentifier"
 
 -- | @Selector@ for @launchImageName@
-launchImageNameSelector :: Selector
+launchImageNameSelector :: Selector '[] (Id NSString)
 launchImageNameSelector = mkSelector "launchImageName"
 
 -- | @Selector@ for @sound@
-soundSelector :: Selector
+soundSelector :: Selector '[] (Id UNNotificationSound)
 soundSelector = mkSelector "sound"
 
 -- | @Selector@ for @subtitle@
-subtitleSelector :: Selector
+subtitleSelector :: Selector '[] (Id NSString)
 subtitleSelector = mkSelector "subtitle"
 
 -- | @Selector@ for @threadIdentifier@
-threadIdentifierSelector :: Selector
+threadIdentifierSelector :: Selector '[] (Id NSString)
 threadIdentifierSelector = mkSelector "threadIdentifier"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @summaryArgument@
-summaryArgumentSelector :: Selector
+summaryArgumentSelector :: Selector '[] (Id NSString)
 summaryArgumentSelector = mkSelector "summaryArgument"
 
 -- | @Selector@ for @summaryArgumentCount@
-summaryArgumentCountSelector :: Selector
+summaryArgumentCountSelector :: Selector '[] CULong
 summaryArgumentCountSelector = mkSelector "summaryArgumentCount"
 
 -- | @Selector@ for @targetContentIdentifier@
-targetContentIdentifierSelector :: Selector
+targetContentIdentifierSelector :: Selector '[] (Id NSString)
 targetContentIdentifierSelector = mkSelector "targetContentIdentifier"
 
 -- | @Selector@ for @interruptionLevel@
-interruptionLevelSelector :: Selector
+interruptionLevelSelector :: Selector '[] UNNotificationInterruptionLevel
 interruptionLevelSelector = mkSelector "interruptionLevel"
 
 -- | @Selector@ for @relevanceScore@
-relevanceScoreSelector :: Selector
+relevanceScoreSelector :: Selector '[] CDouble
 relevanceScoreSelector = mkSelector "relevanceScore"
 
 -- | @Selector@ for @filterCriteria@
-filterCriteriaSelector :: Selector
+filterCriteriaSelector :: Selector '[] (Id NSString)
 filterCriteriaSelector = mkSelector "filterCriteria"
 

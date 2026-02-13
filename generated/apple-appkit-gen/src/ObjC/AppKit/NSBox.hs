@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,36 +38,36 @@ module ObjC.AppKit.NSBox
   , setFillColor
   , borderType
   , setBorderType
-  , sizeToFitSelector
-  , setFrameFromContentFrameSelector
-  , setTitleWithMnemonicSelector
-  , boxTypeSelector
-  , setBoxTypeSelector
-  , titlePositionSelector
-  , setTitlePositionSelector
-  , titleSelector
-  , setTitleSelector
-  , titleFontSelector
-  , setTitleFontSelector
-  , borderRectSelector
-  , titleRectSelector
-  , titleCellSelector
-  , contentViewMarginsSelector
-  , setContentViewMarginsSelector
-  , contentViewSelector
-  , setContentViewSelector
-  , transparentSelector
-  , setTransparentSelector
-  , borderWidthSelector
-  , setBorderWidthSelector
-  , cornerRadiusSelector
-  , setCornerRadiusSelector
   , borderColorSelector
-  , setBorderColorSelector
-  , fillColorSelector
-  , setFillColorSelector
+  , borderRectSelector
   , borderTypeSelector
+  , borderWidthSelector
+  , boxTypeSelector
+  , contentViewMarginsSelector
+  , contentViewSelector
+  , cornerRadiusSelector
+  , fillColorSelector
+  , setBorderColorSelector
   , setBorderTypeSelector
+  , setBorderWidthSelector
+  , setBoxTypeSelector
+  , setContentViewMarginsSelector
+  , setContentViewSelector
+  , setCornerRadiusSelector
+  , setFillColorSelector
+  , setFrameFromContentFrameSelector
+  , setTitleFontSelector
+  , setTitlePositionSelector
+  , setTitleSelector
+  , setTitleWithMnemonicSelector
+  , setTransparentSelector
+  , sizeToFitSelector
+  , titleCellSelector
+  , titleFontSelector
+  , titlePositionSelector
+  , titleRectSelector
+  , titleSelector
+  , transparentSelector
 
   -- * Enum types
   , NSBorderType(NSBorderType)
@@ -89,15 +90,11 @@ module ObjC.AppKit.NSBox
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -108,281 +105,275 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sizeToFit@
 sizeToFit :: IsNSBox nsBox => nsBox -> IO ()
-sizeToFit nsBox  =
-    sendMsg nsBox (mkSelector "sizeToFit") retVoid []
+sizeToFit nsBox =
+  sendMessage nsBox sizeToFitSelector
 
 -- | @- setFrameFromContentFrame:@
 setFrameFromContentFrame :: IsNSBox nsBox => nsBox -> NSRect -> IO ()
-setFrameFromContentFrame nsBox  contentFrame =
-    sendMsg nsBox (mkSelector "setFrameFromContentFrame:") retVoid [argNSRect contentFrame]
+setFrameFromContentFrame nsBox contentFrame =
+  sendMessage nsBox setFrameFromContentFrameSelector contentFrame
 
 -- | @- setTitleWithMnemonic:@
 setTitleWithMnemonic :: (IsNSBox nsBox, IsNSString stringWithAmpersand) => nsBox -> stringWithAmpersand -> IO ()
-setTitleWithMnemonic nsBox  stringWithAmpersand =
-  withObjCPtr stringWithAmpersand $ \raw_stringWithAmpersand ->
-      sendMsg nsBox (mkSelector "setTitleWithMnemonic:") retVoid [argPtr (castPtr raw_stringWithAmpersand :: Ptr ())]
+setTitleWithMnemonic nsBox stringWithAmpersand =
+  sendMessage nsBox setTitleWithMnemonicSelector (toNSString stringWithAmpersand)
 
 -- | @- boxType@
 boxType :: IsNSBox nsBox => nsBox -> IO NSBoxType
-boxType nsBox  =
-    fmap (coerce :: CULong -> NSBoxType) $ sendMsg nsBox (mkSelector "boxType") retCULong []
+boxType nsBox =
+  sendMessage nsBox boxTypeSelector
 
 -- | @- setBoxType:@
 setBoxType :: IsNSBox nsBox => nsBox -> NSBoxType -> IO ()
-setBoxType nsBox  value =
-    sendMsg nsBox (mkSelector "setBoxType:") retVoid [argCULong (coerce value)]
+setBoxType nsBox value =
+  sendMessage nsBox setBoxTypeSelector value
 
 -- | @- titlePosition@
 titlePosition :: IsNSBox nsBox => nsBox -> IO NSTitlePosition
-titlePosition nsBox  =
-    fmap (coerce :: CULong -> NSTitlePosition) $ sendMsg nsBox (mkSelector "titlePosition") retCULong []
+titlePosition nsBox =
+  sendMessage nsBox titlePositionSelector
 
 -- | @- setTitlePosition:@
 setTitlePosition :: IsNSBox nsBox => nsBox -> NSTitlePosition -> IO ()
-setTitlePosition nsBox  value =
-    sendMsg nsBox (mkSelector "setTitlePosition:") retVoid [argCULong (coerce value)]
+setTitlePosition nsBox value =
+  sendMessage nsBox setTitlePositionSelector value
 
 -- | @- title@
 title :: IsNSBox nsBox => nsBox -> IO (Id NSString)
-title nsBox  =
-    sendMsg nsBox (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsBox =
+  sendMessage nsBox titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSBox nsBox, IsNSString value) => nsBox -> value -> IO ()
-setTitle nsBox  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBox (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsBox value =
+  sendMessage nsBox setTitleSelector (toNSString value)
 
 -- | @- titleFont@
 titleFont :: IsNSBox nsBox => nsBox -> IO (Id NSFont)
-titleFont nsBox  =
-    sendMsg nsBox (mkSelector "titleFont") (retPtr retVoid) [] >>= retainedObject . castPtr
+titleFont nsBox =
+  sendMessage nsBox titleFontSelector
 
 -- | @- setTitleFont:@
 setTitleFont :: (IsNSBox nsBox, IsNSFont value) => nsBox -> value -> IO ()
-setTitleFont nsBox  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBox (mkSelector "setTitleFont:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitleFont nsBox value =
+  sendMessage nsBox setTitleFontSelector (toNSFont value)
 
 -- | @- borderRect@
 borderRect :: IsNSBox nsBox => nsBox -> IO NSRect
-borderRect nsBox  =
-    sendMsgStret nsBox (mkSelector "borderRect") retNSRect []
+borderRect nsBox =
+  sendMessage nsBox borderRectSelector
 
 -- | @- titleRect@
 titleRect :: IsNSBox nsBox => nsBox -> IO NSRect
-titleRect nsBox  =
-    sendMsgStret nsBox (mkSelector "titleRect") retNSRect []
+titleRect nsBox =
+  sendMessage nsBox titleRectSelector
 
 -- | @- titleCell@
 titleCell :: IsNSBox nsBox => nsBox -> IO RawId
-titleCell nsBox  =
-    fmap (RawId . castPtr) $ sendMsg nsBox (mkSelector "titleCell") (retPtr retVoid) []
+titleCell nsBox =
+  sendMessage nsBox titleCellSelector
 
 -- | @- contentViewMargins@
 contentViewMargins :: IsNSBox nsBox => nsBox -> IO NSSize
-contentViewMargins nsBox  =
-    sendMsgStret nsBox (mkSelector "contentViewMargins") retNSSize []
+contentViewMargins nsBox =
+  sendMessage nsBox contentViewMarginsSelector
 
 -- | @- setContentViewMargins:@
 setContentViewMargins :: IsNSBox nsBox => nsBox -> NSSize -> IO ()
-setContentViewMargins nsBox  value =
-    sendMsg nsBox (mkSelector "setContentViewMargins:") retVoid [argNSSize value]
+setContentViewMargins nsBox value =
+  sendMessage nsBox setContentViewMarginsSelector value
 
 -- | @- contentView@
 contentView :: IsNSBox nsBox => nsBox -> IO (Id NSView)
-contentView nsBox  =
-    sendMsg nsBox (mkSelector "contentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentView nsBox =
+  sendMessage nsBox contentViewSelector
 
 -- | @- setContentView:@
 setContentView :: (IsNSBox nsBox, IsNSView value) => nsBox -> value -> IO ()
-setContentView nsBox  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBox (mkSelector "setContentView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentView nsBox value =
+  sendMessage nsBox setContentViewSelector (toNSView value)
 
 -- | @- transparent@
 transparent :: IsNSBox nsBox => nsBox -> IO Bool
-transparent nsBox  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsBox (mkSelector "transparent") retCULong []
+transparent nsBox =
+  sendMessage nsBox transparentSelector
 
 -- | @- setTransparent:@
 setTransparent :: IsNSBox nsBox => nsBox -> Bool -> IO ()
-setTransparent nsBox  value =
-    sendMsg nsBox (mkSelector "setTransparent:") retVoid [argCULong (if value then 1 else 0)]
+setTransparent nsBox value =
+  sendMessage nsBox setTransparentSelector value
 
 -- | @- borderWidth@
 borderWidth :: IsNSBox nsBox => nsBox -> IO CDouble
-borderWidth nsBox  =
-    sendMsg nsBox (mkSelector "borderWidth") retCDouble []
+borderWidth nsBox =
+  sendMessage nsBox borderWidthSelector
 
 -- | @- setBorderWidth:@
 setBorderWidth :: IsNSBox nsBox => nsBox -> CDouble -> IO ()
-setBorderWidth nsBox  value =
-    sendMsg nsBox (mkSelector "setBorderWidth:") retVoid [argCDouble value]
+setBorderWidth nsBox value =
+  sendMessage nsBox setBorderWidthSelector value
 
 -- | @- cornerRadius@
 cornerRadius :: IsNSBox nsBox => nsBox -> IO CDouble
-cornerRadius nsBox  =
-    sendMsg nsBox (mkSelector "cornerRadius") retCDouble []
+cornerRadius nsBox =
+  sendMessage nsBox cornerRadiusSelector
 
 -- | @- setCornerRadius:@
 setCornerRadius :: IsNSBox nsBox => nsBox -> CDouble -> IO ()
-setCornerRadius nsBox  value =
-    sendMsg nsBox (mkSelector "setCornerRadius:") retVoid [argCDouble value]
+setCornerRadius nsBox value =
+  sendMessage nsBox setCornerRadiusSelector value
 
 -- | @- borderColor@
 borderColor :: IsNSBox nsBox => nsBox -> IO (Id NSColor)
-borderColor nsBox  =
-    sendMsg nsBox (mkSelector "borderColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+borderColor nsBox =
+  sendMessage nsBox borderColorSelector
 
 -- | @- setBorderColor:@
 setBorderColor :: (IsNSBox nsBox, IsNSColor value) => nsBox -> value -> IO ()
-setBorderColor nsBox  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBox (mkSelector "setBorderColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBorderColor nsBox value =
+  sendMessage nsBox setBorderColorSelector (toNSColor value)
 
 -- | @- fillColor@
 fillColor :: IsNSBox nsBox => nsBox -> IO (Id NSColor)
-fillColor nsBox  =
-    sendMsg nsBox (mkSelector "fillColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fillColor nsBox =
+  sendMessage nsBox fillColorSelector
 
 -- | @- setFillColor:@
 setFillColor :: (IsNSBox nsBox, IsNSColor value) => nsBox -> value -> IO ()
-setFillColor nsBox  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBox (mkSelector "setFillColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFillColor nsBox value =
+  sendMessage nsBox setFillColorSelector (toNSColor value)
 
 -- | @- borderType@
 borderType :: IsNSBox nsBox => nsBox -> IO NSBorderType
-borderType nsBox  =
-    fmap (coerce :: CULong -> NSBorderType) $ sendMsg nsBox (mkSelector "borderType") retCULong []
+borderType nsBox =
+  sendMessage nsBox borderTypeSelector
 
 -- | @- setBorderType:@
 setBorderType :: IsNSBox nsBox => nsBox -> NSBorderType -> IO ()
-setBorderType nsBox  value =
-    sendMsg nsBox (mkSelector "setBorderType:") retVoid [argCULong (coerce value)]
+setBorderType nsBox value =
+  sendMessage nsBox setBorderTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sizeToFit@
-sizeToFitSelector :: Selector
+sizeToFitSelector :: Selector '[] ()
 sizeToFitSelector = mkSelector "sizeToFit"
 
 -- | @Selector@ for @setFrameFromContentFrame:@
-setFrameFromContentFrameSelector :: Selector
+setFrameFromContentFrameSelector :: Selector '[NSRect] ()
 setFrameFromContentFrameSelector = mkSelector "setFrameFromContentFrame:"
 
 -- | @Selector@ for @setTitleWithMnemonic:@
-setTitleWithMnemonicSelector :: Selector
+setTitleWithMnemonicSelector :: Selector '[Id NSString] ()
 setTitleWithMnemonicSelector = mkSelector "setTitleWithMnemonic:"
 
 -- | @Selector@ for @boxType@
-boxTypeSelector :: Selector
+boxTypeSelector :: Selector '[] NSBoxType
 boxTypeSelector = mkSelector "boxType"
 
 -- | @Selector@ for @setBoxType:@
-setBoxTypeSelector :: Selector
+setBoxTypeSelector :: Selector '[NSBoxType] ()
 setBoxTypeSelector = mkSelector "setBoxType:"
 
 -- | @Selector@ for @titlePosition@
-titlePositionSelector :: Selector
+titlePositionSelector :: Selector '[] NSTitlePosition
 titlePositionSelector = mkSelector "titlePosition"
 
 -- | @Selector@ for @setTitlePosition:@
-setTitlePositionSelector :: Selector
+setTitlePositionSelector :: Selector '[NSTitlePosition] ()
 setTitlePositionSelector = mkSelector "setTitlePosition:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @titleFont@
-titleFontSelector :: Selector
+titleFontSelector :: Selector '[] (Id NSFont)
 titleFontSelector = mkSelector "titleFont"
 
 -- | @Selector@ for @setTitleFont:@
-setTitleFontSelector :: Selector
+setTitleFontSelector :: Selector '[Id NSFont] ()
 setTitleFontSelector = mkSelector "setTitleFont:"
 
 -- | @Selector@ for @borderRect@
-borderRectSelector :: Selector
+borderRectSelector :: Selector '[] NSRect
 borderRectSelector = mkSelector "borderRect"
 
 -- | @Selector@ for @titleRect@
-titleRectSelector :: Selector
+titleRectSelector :: Selector '[] NSRect
 titleRectSelector = mkSelector "titleRect"
 
 -- | @Selector@ for @titleCell@
-titleCellSelector :: Selector
+titleCellSelector :: Selector '[] RawId
 titleCellSelector = mkSelector "titleCell"
 
 -- | @Selector@ for @contentViewMargins@
-contentViewMarginsSelector :: Selector
+contentViewMarginsSelector :: Selector '[] NSSize
 contentViewMarginsSelector = mkSelector "contentViewMargins"
 
 -- | @Selector@ for @setContentViewMargins:@
-setContentViewMarginsSelector :: Selector
+setContentViewMarginsSelector :: Selector '[NSSize] ()
 setContentViewMarginsSelector = mkSelector "setContentViewMargins:"
 
 -- | @Selector@ for @contentView@
-contentViewSelector :: Selector
+contentViewSelector :: Selector '[] (Id NSView)
 contentViewSelector = mkSelector "contentView"
 
 -- | @Selector@ for @setContentView:@
-setContentViewSelector :: Selector
+setContentViewSelector :: Selector '[Id NSView] ()
 setContentViewSelector = mkSelector "setContentView:"
 
 -- | @Selector@ for @transparent@
-transparentSelector :: Selector
+transparentSelector :: Selector '[] Bool
 transparentSelector = mkSelector "transparent"
 
 -- | @Selector@ for @setTransparent:@
-setTransparentSelector :: Selector
+setTransparentSelector :: Selector '[Bool] ()
 setTransparentSelector = mkSelector "setTransparent:"
 
 -- | @Selector@ for @borderWidth@
-borderWidthSelector :: Selector
+borderWidthSelector :: Selector '[] CDouble
 borderWidthSelector = mkSelector "borderWidth"
 
 -- | @Selector@ for @setBorderWidth:@
-setBorderWidthSelector :: Selector
+setBorderWidthSelector :: Selector '[CDouble] ()
 setBorderWidthSelector = mkSelector "setBorderWidth:"
 
 -- | @Selector@ for @cornerRadius@
-cornerRadiusSelector :: Selector
+cornerRadiusSelector :: Selector '[] CDouble
 cornerRadiusSelector = mkSelector "cornerRadius"
 
 -- | @Selector@ for @setCornerRadius:@
-setCornerRadiusSelector :: Selector
+setCornerRadiusSelector :: Selector '[CDouble] ()
 setCornerRadiusSelector = mkSelector "setCornerRadius:"
 
 -- | @Selector@ for @borderColor@
-borderColorSelector :: Selector
+borderColorSelector :: Selector '[] (Id NSColor)
 borderColorSelector = mkSelector "borderColor"
 
 -- | @Selector@ for @setBorderColor:@
-setBorderColorSelector :: Selector
+setBorderColorSelector :: Selector '[Id NSColor] ()
 setBorderColorSelector = mkSelector "setBorderColor:"
 
 -- | @Selector@ for @fillColor@
-fillColorSelector :: Selector
+fillColorSelector :: Selector '[] (Id NSColor)
 fillColorSelector = mkSelector "fillColor"
 
 -- | @Selector@ for @setFillColor:@
-setFillColorSelector :: Selector
+setFillColorSelector :: Selector '[Id NSColor] ()
 setFillColorSelector = mkSelector "setFillColor:"
 
 -- | @Selector@ for @borderType@
-borderTypeSelector :: Selector
+borderTypeSelector :: Selector '[] NSBorderType
 borderTypeSelector = mkSelector "borderType"
 
 -- | @Selector@ for @setBorderType:@
-setBorderTypeSelector :: Selector
+setBorderTypeSelector :: Selector '[NSBorderType] ()
 setBorderTypeSelector = mkSelector "setBorderType:"
 

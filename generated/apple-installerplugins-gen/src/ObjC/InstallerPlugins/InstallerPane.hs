@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,30 +32,30 @@ module ObjC.InstallerPlugins.InstallerPane
   , setPreviousEnabled
   , gotoNextPane
   , gotoPreviousPane
-  , initWithSectionSelector
   , contentViewSelector
-  , initialKeyViewSelector
-  , firstKeyViewSelector
-  , lastKeyViewSelector
-  , nextPaneSelector
-  , willEnterPaneSelector
   , didEnterPaneSelector
-  , shouldExitPaneSelector
-  , willExitPaneSelector
   , didExitPaneSelector
-  , setContentViewSelector
-  , setInitialKeyViewSelector
-  , setFirstKeyViewSelector
-  , setLastKeyViewSelector
-  , setNextPaneSelector
-  , titleSelector
-  , sectionSelector
-  , nextEnabledSelector
-  , setNextEnabledSelector
-  , previousEnabledSelector
-  , setPreviousEnabledSelector
+  , firstKeyViewSelector
   , gotoNextPaneSelector
   , gotoPreviousPaneSelector
+  , initWithSectionSelector
+  , initialKeyViewSelector
+  , lastKeyViewSelector
+  , nextEnabledSelector
+  , nextPaneSelector
+  , previousEnabledSelector
+  , sectionSelector
+  , setContentViewSelector
+  , setFirstKeyViewSelector
+  , setInitialKeyViewSelector
+  , setLastKeyViewSelector
+  , setNextEnabledSelector
+  , setNextPaneSelector
+  , setPreviousEnabledSelector
+  , shouldExitPaneSelector
+  , titleSelector
+  , willEnterPaneSelector
+  , willExitPaneSelector
 
   -- * Enum types
   , InstallerSectionDirection(InstallerSectionDirection)
@@ -64,15 +65,11 @@ module ObjC.InstallerPlugins.InstallerPane
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -87,8 +84,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSection:@
 initWithSection :: IsInstallerPane installerPane => installerPane -> RawId -> IO (Id InstallerPane)
-initWithSection installerPane  parent =
-    sendMsg installerPane (mkSelector "initWithSection:") (retPtr retVoid) [argPtr (castPtr (unRawId parent) :: Ptr ())] >>= ownedObject . castPtr
+initWithSection installerPane parent =
+  sendOwnedMessage installerPane initWithSectionSelector parent
 
 -- | contentView
 --
@@ -98,8 +95,8 @@ initWithSection installerPane  parent =
 --
 -- ObjC selector: @- contentView@
 contentView :: IsInstallerPane installerPane => installerPane -> IO (Id NSView)
-contentView installerPane  =
-    sendMsg installerPane (mkSelector "contentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentView installerPane =
+  sendMessage installerPane contentViewSelector
 
 -- | initialKeyView
 --
@@ -109,8 +106,8 @@ contentView installerPane  =
 --
 -- ObjC selector: @- initialKeyView@
 initialKeyView :: IsInstallerPane installerPane => installerPane -> IO (Id NSView)
-initialKeyView installerPane  =
-    sendMsg installerPane (mkSelector "initialKeyView") (retPtr retVoid) [] >>= ownedObject . castPtr
+initialKeyView installerPane =
+  sendOwnedMessage installerPane initialKeyViewSelector
 
 -- | firstKeyView
 --
@@ -120,8 +117,8 @@ initialKeyView installerPane  =
 --
 -- ObjC selector: @- firstKeyView@
 firstKeyView :: IsInstallerPane installerPane => installerPane -> IO (Id NSView)
-firstKeyView installerPane  =
-    sendMsg installerPane (mkSelector "firstKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstKeyView installerPane =
+  sendMessage installerPane firstKeyViewSelector
 
 -- | lastKeyView
 --
@@ -131,8 +128,8 @@ firstKeyView installerPane  =
 --
 -- ObjC selector: @- lastKeyView@
 lastKeyView :: IsInstallerPane installerPane => installerPane -> IO (Id NSView)
-lastKeyView installerPane  =
-    sendMsg installerPane (mkSelector "lastKeyView") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastKeyView installerPane =
+  sendMessage installerPane lastKeyViewSelector
 
 -- | nextPane
 --
@@ -142,8 +139,8 @@ lastKeyView installerPane  =
 --
 -- ObjC selector: @- nextPane@
 nextPane :: IsInstallerPane installerPane => installerPane -> IO (Id InstallerPane)
-nextPane installerPane  =
-    sendMsg installerPane (mkSelector "nextPane") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextPane installerPane =
+  sendMessage installerPane nextPaneSelector
 
 -- | willEnterPane:
 --
@@ -153,8 +150,8 @@ nextPane installerPane  =
 --
 -- ObjC selector: @- willEnterPane:@
 willEnterPane :: IsInstallerPane installerPane => installerPane -> InstallerSectionDirection -> IO ()
-willEnterPane installerPane  dir =
-    sendMsg installerPane (mkSelector "willEnterPane:") retVoid [argCLong (coerce dir)]
+willEnterPane installerPane dir =
+  sendMessage installerPane willEnterPaneSelector dir
 
 -- | didEnterPane:
 --
@@ -164,8 +161,8 @@ willEnterPane installerPane  dir =
 --
 -- ObjC selector: @- didEnterPane:@
 didEnterPane :: IsInstallerPane installerPane => installerPane -> InstallerSectionDirection -> IO ()
-didEnterPane installerPane  dir =
-    sendMsg installerPane (mkSelector "didEnterPane:") retVoid [argCLong (coerce dir)]
+didEnterPane installerPane dir =
+  sendMessage installerPane didEnterPaneSelector dir
 
 -- | shouldExitPane:
 --
@@ -181,8 +178,8 @@ didEnterPane installerPane  dir =
 --
 -- ObjC selector: @- shouldExitPane:@
 shouldExitPane :: IsInstallerPane installerPane => installerPane -> InstallerSectionDirection -> IO Bool
-shouldExitPane installerPane  dir =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerPane (mkSelector "shouldExitPane:") retCULong [argCLong (coerce dir)]
+shouldExitPane installerPane dir =
+  sendMessage installerPane shouldExitPaneSelector dir
 
 -- | willExitPane:
 --
@@ -192,8 +189,8 @@ shouldExitPane installerPane  dir =
 --
 -- ObjC selector: @- willExitPane:@
 willExitPane :: IsInstallerPane installerPane => installerPane -> InstallerSectionDirection -> IO ()
-willExitPane installerPane  dir =
-    sendMsg installerPane (mkSelector "willExitPane:") retVoid [argCLong (coerce dir)]
+willExitPane installerPane dir =
+  sendMessage installerPane willExitPaneSelector dir
 
 -- | willExitPane:
 --
@@ -203,38 +200,33 @@ willExitPane installerPane  dir =
 --
 -- ObjC selector: @- didExitPane:@
 didExitPane :: IsInstallerPane installerPane => installerPane -> InstallerSectionDirection -> IO ()
-didExitPane installerPane  dir =
-    sendMsg installerPane (mkSelector "didExitPane:") retVoid [argCLong (coerce dir)]
+didExitPane installerPane dir =
+  sendMessage installerPane didExitPaneSelector dir
 
 -- | @- setContentView:@
 setContentView :: (IsInstallerPane installerPane, IsNSView value) => installerPane -> value -> IO ()
-setContentView installerPane  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg installerPane (mkSelector "setContentView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentView installerPane value =
+  sendMessage installerPane setContentViewSelector (toNSView value)
 
 -- | @- setInitialKeyView:@
 setInitialKeyView :: (IsInstallerPane installerPane, IsNSView value) => installerPane -> value -> IO ()
-setInitialKeyView installerPane  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg installerPane (mkSelector "setInitialKeyView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInitialKeyView installerPane value =
+  sendMessage installerPane setInitialKeyViewSelector (toNSView value)
 
 -- | @- setFirstKeyView:@
 setFirstKeyView :: (IsInstallerPane installerPane, IsNSView value) => installerPane -> value -> IO ()
-setFirstKeyView installerPane  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg installerPane (mkSelector "setFirstKeyView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFirstKeyView installerPane value =
+  sendMessage installerPane setFirstKeyViewSelector (toNSView value)
 
 -- | @- setLastKeyView:@
 setLastKeyView :: (IsInstallerPane installerPane, IsNSView value) => installerPane -> value -> IO ()
-setLastKeyView installerPane  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg installerPane (mkSelector "setLastKeyView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLastKeyView installerPane value =
+  sendMessage installerPane setLastKeyViewSelector (toNSView value)
 
 -- | @- setNextPane:@
 setNextPane :: (IsInstallerPane installerPane, IsInstallerPane value) => installerPane -> value -> IO ()
-setNextPane installerPane  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg installerPane (mkSelector "setNextPane:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNextPane installerPane value =
+  sendMessage installerPane setNextPaneSelector (toInstallerPane value)
 
 -- | title
 --
@@ -244,8 +236,8 @@ setNextPane installerPane  value =
 --
 -- ObjC selector: @- title@
 title :: IsInstallerPane installerPane => installerPane -> IO (Id NSString)
-title installerPane  =
-    sendMsg installerPane (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title installerPane =
+  sendMessage installerPane titleSelector
 
 -- | section
 --
@@ -253,8 +245,8 @@ title installerPane  =
 --
 -- ObjC selector: @- section@
 section :: IsInstallerPane installerPane => installerPane -> IO (Id InstallerSection)
-section installerPane  =
-    sendMsg installerPane (mkSelector "section") (retPtr retVoid) [] >>= retainedObject . castPtr
+section installerPane =
+  sendMessage installerPane sectionSelector
 
 -- | nextEnabled
 --
@@ -262,8 +254,8 @@ section installerPane  =
 --
 -- ObjC selector: @- nextEnabled@
 nextEnabled :: IsInstallerPane installerPane => installerPane -> IO Bool
-nextEnabled installerPane  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerPane (mkSelector "nextEnabled") retCULong []
+nextEnabled installerPane =
+  sendMessage installerPane nextEnabledSelector
 
 -- | nextEnabled
 --
@@ -271,8 +263,8 @@ nextEnabled installerPane  =
 --
 -- ObjC selector: @- setNextEnabled:@
 setNextEnabled :: IsInstallerPane installerPane => installerPane -> Bool -> IO ()
-setNextEnabled installerPane  value =
-    sendMsg installerPane (mkSelector "setNextEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setNextEnabled installerPane value =
+  sendMessage installerPane setNextEnabledSelector value
 
 -- | previousEnabled
 --
@@ -280,8 +272,8 @@ setNextEnabled installerPane  value =
 --
 -- ObjC selector: @- previousEnabled@
 previousEnabled :: IsInstallerPane installerPane => installerPane -> IO Bool
-previousEnabled installerPane  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerPane (mkSelector "previousEnabled") retCULong []
+previousEnabled installerPane =
+  sendMessage installerPane previousEnabledSelector
 
 -- | previousEnabled
 --
@@ -289,8 +281,8 @@ previousEnabled installerPane  =
 --
 -- ObjC selector: @- setPreviousEnabled:@
 setPreviousEnabled :: IsInstallerPane installerPane => installerPane -> Bool -> IO ()
-setPreviousEnabled installerPane  value =
-    sendMsg installerPane (mkSelector "setPreviousEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setPreviousEnabled installerPane value =
+  sendMessage installerPane setPreviousEnabledSelector value
 
 -- | gotoNextPane
 --
@@ -300,8 +292,8 @@ setPreviousEnabled installerPane  value =
 --
 -- ObjC selector: @- gotoNextPane@
 gotoNextPane :: IsInstallerPane installerPane => installerPane -> IO Bool
-gotoNextPane installerPane  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerPane (mkSelector "gotoNextPane") retCULong []
+gotoNextPane installerPane =
+  sendMessage installerPane gotoNextPaneSelector
 
 -- | gotoPreviousPane
 --
@@ -311,106 +303,106 @@ gotoNextPane installerPane  =
 --
 -- ObjC selector: @- gotoPreviousPane@
 gotoPreviousPane :: IsInstallerPane installerPane => installerPane -> IO Bool
-gotoPreviousPane installerPane  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerPane (mkSelector "gotoPreviousPane") retCULong []
+gotoPreviousPane installerPane =
+  sendMessage installerPane gotoPreviousPaneSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSection:@
-initWithSectionSelector :: Selector
+initWithSectionSelector :: Selector '[RawId] (Id InstallerPane)
 initWithSectionSelector = mkSelector "initWithSection:"
 
 -- | @Selector@ for @contentView@
-contentViewSelector :: Selector
+contentViewSelector :: Selector '[] (Id NSView)
 contentViewSelector = mkSelector "contentView"
 
 -- | @Selector@ for @initialKeyView@
-initialKeyViewSelector :: Selector
+initialKeyViewSelector :: Selector '[] (Id NSView)
 initialKeyViewSelector = mkSelector "initialKeyView"
 
 -- | @Selector@ for @firstKeyView@
-firstKeyViewSelector :: Selector
+firstKeyViewSelector :: Selector '[] (Id NSView)
 firstKeyViewSelector = mkSelector "firstKeyView"
 
 -- | @Selector@ for @lastKeyView@
-lastKeyViewSelector :: Selector
+lastKeyViewSelector :: Selector '[] (Id NSView)
 lastKeyViewSelector = mkSelector "lastKeyView"
 
 -- | @Selector@ for @nextPane@
-nextPaneSelector :: Selector
+nextPaneSelector :: Selector '[] (Id InstallerPane)
 nextPaneSelector = mkSelector "nextPane"
 
 -- | @Selector@ for @willEnterPane:@
-willEnterPaneSelector :: Selector
+willEnterPaneSelector :: Selector '[InstallerSectionDirection] ()
 willEnterPaneSelector = mkSelector "willEnterPane:"
 
 -- | @Selector@ for @didEnterPane:@
-didEnterPaneSelector :: Selector
+didEnterPaneSelector :: Selector '[InstallerSectionDirection] ()
 didEnterPaneSelector = mkSelector "didEnterPane:"
 
 -- | @Selector@ for @shouldExitPane:@
-shouldExitPaneSelector :: Selector
+shouldExitPaneSelector :: Selector '[InstallerSectionDirection] Bool
 shouldExitPaneSelector = mkSelector "shouldExitPane:"
 
 -- | @Selector@ for @willExitPane:@
-willExitPaneSelector :: Selector
+willExitPaneSelector :: Selector '[InstallerSectionDirection] ()
 willExitPaneSelector = mkSelector "willExitPane:"
 
 -- | @Selector@ for @didExitPane:@
-didExitPaneSelector :: Selector
+didExitPaneSelector :: Selector '[InstallerSectionDirection] ()
 didExitPaneSelector = mkSelector "didExitPane:"
 
 -- | @Selector@ for @setContentView:@
-setContentViewSelector :: Selector
+setContentViewSelector :: Selector '[Id NSView] ()
 setContentViewSelector = mkSelector "setContentView:"
 
 -- | @Selector@ for @setInitialKeyView:@
-setInitialKeyViewSelector :: Selector
+setInitialKeyViewSelector :: Selector '[Id NSView] ()
 setInitialKeyViewSelector = mkSelector "setInitialKeyView:"
 
 -- | @Selector@ for @setFirstKeyView:@
-setFirstKeyViewSelector :: Selector
+setFirstKeyViewSelector :: Selector '[Id NSView] ()
 setFirstKeyViewSelector = mkSelector "setFirstKeyView:"
 
 -- | @Selector@ for @setLastKeyView:@
-setLastKeyViewSelector :: Selector
+setLastKeyViewSelector :: Selector '[Id NSView] ()
 setLastKeyViewSelector = mkSelector "setLastKeyView:"
 
 -- | @Selector@ for @setNextPane:@
-setNextPaneSelector :: Selector
+setNextPaneSelector :: Selector '[Id InstallerPane] ()
 setNextPaneSelector = mkSelector "setNextPane:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @section@
-sectionSelector :: Selector
+sectionSelector :: Selector '[] (Id InstallerSection)
 sectionSelector = mkSelector "section"
 
 -- | @Selector@ for @nextEnabled@
-nextEnabledSelector :: Selector
+nextEnabledSelector :: Selector '[] Bool
 nextEnabledSelector = mkSelector "nextEnabled"
 
 -- | @Selector@ for @setNextEnabled:@
-setNextEnabledSelector :: Selector
+setNextEnabledSelector :: Selector '[Bool] ()
 setNextEnabledSelector = mkSelector "setNextEnabled:"
 
 -- | @Selector@ for @previousEnabled@
-previousEnabledSelector :: Selector
+previousEnabledSelector :: Selector '[] Bool
 previousEnabledSelector = mkSelector "previousEnabled"
 
 -- | @Selector@ for @setPreviousEnabled:@
-setPreviousEnabledSelector :: Selector
+setPreviousEnabledSelector :: Selector '[Bool] ()
 setPreviousEnabledSelector = mkSelector "setPreviousEnabled:"
 
 -- | @Selector@ for @gotoNextPane@
-gotoNextPaneSelector :: Selector
+gotoNextPaneSelector :: Selector '[] Bool
 gotoNextPaneSelector = mkSelector "gotoNextPane"
 
 -- | @Selector@ for @gotoPreviousPane@
-gotoPreviousPaneSelector :: Selector
+gotoPreviousPaneSelector :: Selector '[] Bool
 gotoPreviousPaneSelector = mkSelector "gotoPreviousPane"
 

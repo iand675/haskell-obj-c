@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,26 +28,26 @@ module ObjC.CloudKit.CKModifyRecordsOperation
   , setPerRecordSaveBlock
   , perRecordDeleteBlock
   , setPerRecordDeleteBlock
+  , atomicSelector
+  , clientChangeTokenDataSelector
   , initSelector
   , initWithRecordsToSave_recordIDsToDeleteSelector
-  , recordsToSaveSelector
-  , setRecordsToSaveSelector
-  , recordIDsToDeleteSelector
-  , setRecordIDsToDeleteSelector
-  , savePolicySelector
-  , setSavePolicySelector
-  , clientChangeTokenDataSelector
-  , setClientChangeTokenDataSelector
-  , atomicSelector
-  , setAtomicSelector
-  , perRecordProgressBlockSelector
-  , setPerRecordProgressBlockSelector
   , perRecordCompletionBlockSelector
-  , setPerRecordCompletionBlockSelector
-  , perRecordSaveBlockSelector
-  , setPerRecordSaveBlockSelector
   , perRecordDeleteBlockSelector
+  , perRecordProgressBlockSelector
+  , perRecordSaveBlockSelector
+  , recordIDsToDeleteSelector
+  , recordsToSaveSelector
+  , savePolicySelector
+  , setAtomicSelector
+  , setClientChangeTokenDataSelector
+  , setPerRecordCompletionBlockSelector
   , setPerRecordDeleteBlockSelector
+  , setPerRecordProgressBlockSelector
+  , setPerRecordSaveBlockSelector
+  , setRecordIDsToDeleteSelector
+  , setRecordsToSaveSelector
+  , setSavePolicySelector
 
   -- * Enum types
   , CKRecordSavePolicy(CKRecordSavePolicy)
@@ -56,15 +57,11 @@ module ObjC.CloudKit.CKModifyRecordsOperation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,37 +71,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO (Id CKModifyRecordsOperation)
-init_ ckModifyRecordsOperation  =
-    sendMsg ckModifyRecordsOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckModifyRecordsOperation =
+  sendOwnedMessage ckModifyRecordsOperation initSelector
 
 -- | @- initWithRecordsToSave:recordIDsToDelete:@
 initWithRecordsToSave_recordIDsToDelete :: (IsCKModifyRecordsOperation ckModifyRecordsOperation, IsNSArray records, IsNSArray recordIDs) => ckModifyRecordsOperation -> records -> recordIDs -> IO (Id CKModifyRecordsOperation)
-initWithRecordsToSave_recordIDsToDelete ckModifyRecordsOperation  records recordIDs =
-  withObjCPtr records $ \raw_records ->
-    withObjCPtr recordIDs $ \raw_recordIDs ->
-        sendMsg ckModifyRecordsOperation (mkSelector "initWithRecordsToSave:recordIDsToDelete:") (retPtr retVoid) [argPtr (castPtr raw_records :: Ptr ()), argPtr (castPtr raw_recordIDs :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordsToSave_recordIDsToDelete ckModifyRecordsOperation records recordIDs =
+  sendOwnedMessage ckModifyRecordsOperation initWithRecordsToSave_recordIDsToDeleteSelector (toNSArray records) (toNSArray recordIDs)
 
 -- | @- recordsToSave@
 recordsToSave :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO (Id NSArray)
-recordsToSave ckModifyRecordsOperation  =
-    sendMsg ckModifyRecordsOperation (mkSelector "recordsToSave") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordsToSave ckModifyRecordsOperation =
+  sendMessage ckModifyRecordsOperation recordsToSaveSelector
 
 -- | @- setRecordsToSave:@
 setRecordsToSave :: (IsCKModifyRecordsOperation ckModifyRecordsOperation, IsNSArray value) => ckModifyRecordsOperation -> value -> IO ()
-setRecordsToSave ckModifyRecordsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckModifyRecordsOperation (mkSelector "setRecordsToSave:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordsToSave ckModifyRecordsOperation value =
+  sendMessage ckModifyRecordsOperation setRecordsToSaveSelector (toNSArray value)
 
 -- | @- recordIDsToDelete@
 recordIDsToDelete :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO (Id NSArray)
-recordIDsToDelete ckModifyRecordsOperation  =
-    sendMsg ckModifyRecordsOperation (mkSelector "recordIDsToDelete") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordIDsToDelete ckModifyRecordsOperation =
+  sendMessage ckModifyRecordsOperation recordIDsToDeleteSelector
 
 -- | @- setRecordIDsToDelete:@
 setRecordIDsToDelete :: (IsCKModifyRecordsOperation ckModifyRecordsOperation, IsNSArray value) => ckModifyRecordsOperation -> value -> IO ()
-setRecordIDsToDelete ckModifyRecordsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckModifyRecordsOperation (mkSelector "setRecordIDsToDelete:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordIDsToDelete ckModifyRecordsOperation value =
+  sendMessage ckModifyRecordsOperation setRecordIDsToDeleteSelector (toNSArray value)
 
 -- | Determines what data is sent to the server and whether the save should succeed even if the record on the server has changed.
 --
@@ -112,8 +105,8 @@ setRecordIDsToDelete ckModifyRecordsOperation  value =
 --
 -- ObjC selector: @- savePolicy@
 savePolicy :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO CKRecordSavePolicy
-savePolicy ckModifyRecordsOperation  =
-    fmap (coerce :: CLong -> CKRecordSavePolicy) $ sendMsg ckModifyRecordsOperation (mkSelector "savePolicy") retCLong []
+savePolicy ckModifyRecordsOperation =
+  sendMessage ckModifyRecordsOperation savePolicySelector
 
 -- | Determines what data is sent to the server and whether the save should succeed even if the record on the server has changed.
 --
@@ -121,23 +114,22 @@ savePolicy ckModifyRecordsOperation  =
 --
 -- ObjC selector: @- setSavePolicy:@
 setSavePolicy :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> CKRecordSavePolicy -> IO ()
-setSavePolicy ckModifyRecordsOperation  value =
-    sendMsg ckModifyRecordsOperation (mkSelector "setSavePolicy:") retVoid [argCLong (coerce value)]
+setSavePolicy ckModifyRecordsOperation value =
+  sendMessage ckModifyRecordsOperation setSavePolicySelector value
 
 -- | This property is kept by the server to identify the last known request from this client.  Multiple requests from the client with the same change token will be ignored by the server.
 --
 -- ObjC selector: @- clientChangeTokenData@
 clientChangeTokenData :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO (Id NSData)
-clientChangeTokenData ckModifyRecordsOperation  =
-    sendMsg ckModifyRecordsOperation (mkSelector "clientChangeTokenData") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientChangeTokenData ckModifyRecordsOperation =
+  sendMessage ckModifyRecordsOperation clientChangeTokenDataSelector
 
 -- | This property is kept by the server to identify the last known request from this client.  Multiple requests from the client with the same change token will be ignored by the server.
 --
 -- ObjC selector: @- setClientChangeTokenData:@
 setClientChangeTokenData :: (IsCKModifyRecordsOperation ckModifyRecordsOperation, IsNSData value) => ckModifyRecordsOperation -> value -> IO ()
-setClientChangeTokenData ckModifyRecordsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckModifyRecordsOperation (mkSelector "setClientChangeTokenData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClientChangeTokenData ckModifyRecordsOperation value =
+  sendMessage ckModifyRecordsOperation setClientChangeTokenDataSelector (toNSData value)
 
 -- | Determines whether the batch should fail atomically or not.
 --
@@ -145,8 +137,8 @@ setClientChangeTokenData ckModifyRecordsOperation  value =
 --
 -- ObjC selector: @- atomic@
 atomic :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO Bool
-atomic ckModifyRecordsOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckModifyRecordsOperation (mkSelector "atomic") retCULong []
+atomic ckModifyRecordsOperation =
+  sendMessage ckModifyRecordsOperation atomicSelector
 
 -- | Determines whether the batch should fail atomically or not.
 --
@@ -154,8 +146,8 @@ atomic ckModifyRecordsOperation  =
 --
 -- ObjC selector: @- setAtomic:@
 setAtomic :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> Bool -> IO ()
-setAtomic ckModifyRecordsOperation  value =
-    sendMsg ckModifyRecordsOperation (mkSelector "setAtomic:") retVoid [argCULong (if value then 1 else 0)]
+setAtomic ckModifyRecordsOperation value =
+  sendMessage ckModifyRecordsOperation setAtomicSelector value
 
 -- | Indicates the progress for each record.
 --
@@ -163,8 +155,8 @@ setAtomic ckModifyRecordsOperation  value =
 --
 -- ObjC selector: @- perRecordProgressBlock@
 perRecordProgressBlock :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO (Ptr ())
-perRecordProgressBlock ckModifyRecordsOperation  =
-    fmap castPtr $ sendMsg ckModifyRecordsOperation (mkSelector "perRecordProgressBlock") (retPtr retVoid) []
+perRecordProgressBlock ckModifyRecordsOperation =
+  sendMessage ckModifyRecordsOperation perRecordProgressBlockSelector
 
 -- | Indicates the progress for each record.
 --
@@ -172,8 +164,8 @@ perRecordProgressBlock ckModifyRecordsOperation  =
 --
 -- ObjC selector: @- setPerRecordProgressBlock:@
 setPerRecordProgressBlock :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> Ptr () -> IO ()
-setPerRecordProgressBlock ckModifyRecordsOperation  value =
-    sendMsg ckModifyRecordsOperation (mkSelector "setPerRecordProgressBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerRecordProgressBlock ckModifyRecordsOperation value =
+  sendMessage ckModifyRecordsOperation setPerRecordProgressBlockSelector value
 
 -- | Called on success or failure for each record.
 --
@@ -181,8 +173,8 @@ setPerRecordProgressBlock ckModifyRecordsOperation  value =
 --
 -- ObjC selector: @- perRecordCompletionBlock@
 perRecordCompletionBlock :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO (Ptr ())
-perRecordCompletionBlock ckModifyRecordsOperation  =
-    fmap castPtr $ sendMsg ckModifyRecordsOperation (mkSelector "perRecordCompletionBlock") (retPtr retVoid) []
+perRecordCompletionBlock ckModifyRecordsOperation =
+  sendMessage ckModifyRecordsOperation perRecordCompletionBlockSelector
 
 -- | Called on success or failure for each record.
 --
@@ -190,8 +182,8 @@ perRecordCompletionBlock ckModifyRecordsOperation  =
 --
 -- ObjC selector: @- setPerRecordCompletionBlock:@
 setPerRecordCompletionBlock :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> Ptr () -> IO ()
-setPerRecordCompletionBlock ckModifyRecordsOperation  value =
-    sendMsg ckModifyRecordsOperation (mkSelector "setPerRecordCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerRecordCompletionBlock ckModifyRecordsOperation value =
+  sendMessage ckModifyRecordsOperation setPerRecordCompletionBlockSelector value
 
 -- | Called on success or failure of a record save
 --
@@ -199,8 +191,8 @@ setPerRecordCompletionBlock ckModifyRecordsOperation  value =
 --
 -- ObjC selector: @- perRecordSaveBlock@
 perRecordSaveBlock :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO (Ptr ())
-perRecordSaveBlock ckModifyRecordsOperation  =
-    fmap castPtr $ sendMsg ckModifyRecordsOperation (mkSelector "perRecordSaveBlock") (retPtr retVoid) []
+perRecordSaveBlock ckModifyRecordsOperation =
+  sendMessage ckModifyRecordsOperation perRecordSaveBlockSelector
 
 -- | Called on success or failure of a record save
 --
@@ -208,8 +200,8 @@ perRecordSaveBlock ckModifyRecordsOperation  =
 --
 -- ObjC selector: @- setPerRecordSaveBlock:@
 setPerRecordSaveBlock :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> Ptr () -> IO ()
-setPerRecordSaveBlock ckModifyRecordsOperation  value =
-    sendMsg ckModifyRecordsOperation (mkSelector "setPerRecordSaveBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerRecordSaveBlock ckModifyRecordsOperation value =
+  sendMessage ckModifyRecordsOperation setPerRecordSaveBlockSelector value
 
 -- | Called on success or failure of a record deletion
 --
@@ -217,8 +209,8 @@ setPerRecordSaveBlock ckModifyRecordsOperation  value =
 --
 -- ObjC selector: @- perRecordDeleteBlock@
 perRecordDeleteBlock :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> IO (Ptr ())
-perRecordDeleteBlock ckModifyRecordsOperation  =
-    fmap castPtr $ sendMsg ckModifyRecordsOperation (mkSelector "perRecordDeleteBlock") (retPtr retVoid) []
+perRecordDeleteBlock ckModifyRecordsOperation =
+  sendMessage ckModifyRecordsOperation perRecordDeleteBlockSelector
 
 -- | Called on success or failure of a record deletion
 --
@@ -226,90 +218,90 @@ perRecordDeleteBlock ckModifyRecordsOperation  =
 --
 -- ObjC selector: @- setPerRecordDeleteBlock:@
 setPerRecordDeleteBlock :: IsCKModifyRecordsOperation ckModifyRecordsOperation => ckModifyRecordsOperation -> Ptr () -> IO ()
-setPerRecordDeleteBlock ckModifyRecordsOperation  value =
-    sendMsg ckModifyRecordsOperation (mkSelector "setPerRecordDeleteBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerRecordDeleteBlock ckModifyRecordsOperation value =
+  sendMessage ckModifyRecordsOperation setPerRecordDeleteBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKModifyRecordsOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRecordsToSave:recordIDsToDelete:@
-initWithRecordsToSave_recordIDsToDeleteSelector :: Selector
+initWithRecordsToSave_recordIDsToDeleteSelector :: Selector '[Id NSArray, Id NSArray] (Id CKModifyRecordsOperation)
 initWithRecordsToSave_recordIDsToDeleteSelector = mkSelector "initWithRecordsToSave:recordIDsToDelete:"
 
 -- | @Selector@ for @recordsToSave@
-recordsToSaveSelector :: Selector
+recordsToSaveSelector :: Selector '[] (Id NSArray)
 recordsToSaveSelector = mkSelector "recordsToSave"
 
 -- | @Selector@ for @setRecordsToSave:@
-setRecordsToSaveSelector :: Selector
+setRecordsToSaveSelector :: Selector '[Id NSArray] ()
 setRecordsToSaveSelector = mkSelector "setRecordsToSave:"
 
 -- | @Selector@ for @recordIDsToDelete@
-recordIDsToDeleteSelector :: Selector
+recordIDsToDeleteSelector :: Selector '[] (Id NSArray)
 recordIDsToDeleteSelector = mkSelector "recordIDsToDelete"
 
 -- | @Selector@ for @setRecordIDsToDelete:@
-setRecordIDsToDeleteSelector :: Selector
+setRecordIDsToDeleteSelector :: Selector '[Id NSArray] ()
 setRecordIDsToDeleteSelector = mkSelector "setRecordIDsToDelete:"
 
 -- | @Selector@ for @savePolicy@
-savePolicySelector :: Selector
+savePolicySelector :: Selector '[] CKRecordSavePolicy
 savePolicySelector = mkSelector "savePolicy"
 
 -- | @Selector@ for @setSavePolicy:@
-setSavePolicySelector :: Selector
+setSavePolicySelector :: Selector '[CKRecordSavePolicy] ()
 setSavePolicySelector = mkSelector "setSavePolicy:"
 
 -- | @Selector@ for @clientChangeTokenData@
-clientChangeTokenDataSelector :: Selector
+clientChangeTokenDataSelector :: Selector '[] (Id NSData)
 clientChangeTokenDataSelector = mkSelector "clientChangeTokenData"
 
 -- | @Selector@ for @setClientChangeTokenData:@
-setClientChangeTokenDataSelector :: Selector
+setClientChangeTokenDataSelector :: Selector '[Id NSData] ()
 setClientChangeTokenDataSelector = mkSelector "setClientChangeTokenData:"
 
 -- | @Selector@ for @atomic@
-atomicSelector :: Selector
+atomicSelector :: Selector '[] Bool
 atomicSelector = mkSelector "atomic"
 
 -- | @Selector@ for @setAtomic:@
-setAtomicSelector :: Selector
+setAtomicSelector :: Selector '[Bool] ()
 setAtomicSelector = mkSelector "setAtomic:"
 
 -- | @Selector@ for @perRecordProgressBlock@
-perRecordProgressBlockSelector :: Selector
+perRecordProgressBlockSelector :: Selector '[] (Ptr ())
 perRecordProgressBlockSelector = mkSelector "perRecordProgressBlock"
 
 -- | @Selector@ for @setPerRecordProgressBlock:@
-setPerRecordProgressBlockSelector :: Selector
+setPerRecordProgressBlockSelector :: Selector '[Ptr ()] ()
 setPerRecordProgressBlockSelector = mkSelector "setPerRecordProgressBlock:"
 
 -- | @Selector@ for @perRecordCompletionBlock@
-perRecordCompletionBlockSelector :: Selector
+perRecordCompletionBlockSelector :: Selector '[] (Ptr ())
 perRecordCompletionBlockSelector = mkSelector "perRecordCompletionBlock"
 
 -- | @Selector@ for @setPerRecordCompletionBlock:@
-setPerRecordCompletionBlockSelector :: Selector
+setPerRecordCompletionBlockSelector :: Selector '[Ptr ()] ()
 setPerRecordCompletionBlockSelector = mkSelector "setPerRecordCompletionBlock:"
 
 -- | @Selector@ for @perRecordSaveBlock@
-perRecordSaveBlockSelector :: Selector
+perRecordSaveBlockSelector :: Selector '[] (Ptr ())
 perRecordSaveBlockSelector = mkSelector "perRecordSaveBlock"
 
 -- | @Selector@ for @setPerRecordSaveBlock:@
-setPerRecordSaveBlockSelector :: Selector
+setPerRecordSaveBlockSelector :: Selector '[Ptr ()] ()
 setPerRecordSaveBlockSelector = mkSelector "setPerRecordSaveBlock:"
 
 -- | @Selector@ for @perRecordDeleteBlock@
-perRecordDeleteBlockSelector :: Selector
+perRecordDeleteBlockSelector :: Selector '[] (Ptr ())
 perRecordDeleteBlockSelector = mkSelector "perRecordDeleteBlock"
 
 -- | @Selector@ for @setPerRecordDeleteBlock:@
-setPerRecordDeleteBlockSelector :: Selector
+setPerRecordDeleteBlockSelector :: Selector '[Ptr ()] ()
 setPerRecordDeleteBlockSelector = mkSelector "setPerRecordDeleteBlock:"
 

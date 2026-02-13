@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,43 +37,39 @@ module ObjC.IOBluetoothUI.IOBluetoothServiceBrowserController
   , getDescriptionText
   , setPrompt
   , getPrompt
-  , serviceBrowserControllerSelector
-  , browseDevices_optionsSelector
-  , browseDevicesAsSheetForWindow_options_windowSelector
-  , withServiceBrowserControllerRefSelector
-  , getServiceBrowserControllerRefSelector
-  , discoverSelector
-  , discoverAsSheetForWindow_withRecordSelector
-  , discoverWithDeviceAttributes_serviceList_serviceRecordSelector
-  , setOptionsSelector
-  , runModalSelector
-  , beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector
-  , getResultsSelector
-  , getOptionsSelector
-  , setSearchAttributesSelector
-  , getSearchAttributesSelector
-  , addAllowedUUIDSelector
   , addAllowedUUIDArraySelector
+  , addAllowedUUIDSelector
+  , beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector
+  , browseDevicesAsSheetForWindow_options_windowSelector
+  , browseDevices_optionsSelector
   , clearAllowedUUIDsSelector
-  , setTitleSelector
-  , getTitleSelector
-  , setDescriptionTextSelector
+  , discoverAsSheetForWindow_withRecordSelector
+  , discoverSelector
+  , discoverWithDeviceAttributes_serviceList_serviceRecordSelector
   , getDescriptionTextSelector
-  , setPromptSelector
+  , getOptionsSelector
   , getPromptSelector
+  , getResultsSelector
+  , getSearchAttributesSelector
+  , getServiceBrowserControllerRefSelector
+  , getTitleSelector
+  , runModalSelector
+  , serviceBrowserControllerSelector
+  , setDescriptionTextSelector
+  , setOptionsSelector
+  , setPromptSelector
+  , setSearchAttributesSelector
+  , setTitleSelector
+  , withServiceBrowserControllerRefSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -94,7 +91,7 @@ serviceBrowserController :: CUInt -> IO (Id IOBluetoothServiceBrowserController)
 serviceBrowserController inOptions =
   do
     cls' <- getRequiredClass "IOBluetoothServiceBrowserController"
-    sendClassMsg cls' (mkSelector "serviceBrowserController:") (retPtr retVoid) [argCUInt inOptions] >>= retainedObject . castPtr
+    sendClassMessage cls' serviceBrowserControllerSelector inOptions
 
 -- | browseDevices:options:
 --
@@ -117,8 +114,7 @@ browseDevices_options :: IsIOBluetoothSDPServiceRecord outRecord => outRecord ->
 browseDevices_options outRecord inOptions =
   do
     cls' <- getRequiredClass "IOBluetoothServiceBrowserController"
-    withObjCPtr outRecord $ \raw_outRecord ->
-      sendClassMsg cls' (mkSelector "browseDevices:options:") retCInt [argPtr (castPtr raw_outRecord :: Ptr ()), argCUInt inOptions]
+    sendClassMessage cls' browseDevices_optionsSelector (toIOBluetoothSDPServiceRecord outRecord) inOptions
 
 -- | browseDevicesAsSheetForWindow:options:window:
 --
@@ -139,9 +135,7 @@ browseDevicesAsSheetForWindow_options_window :: (IsIOBluetoothSDPServiceRecord o
 browseDevicesAsSheetForWindow_options_window outRecord inOptions inWindow =
   do
     cls' <- getRequiredClass "IOBluetoothServiceBrowserController"
-    withObjCPtr outRecord $ \raw_outRecord ->
-      withObjCPtr inWindow $ \raw_inWindow ->
-        sendClassMsg cls' (mkSelector "browseDevicesAsSheetForWindow:options:window:") retCInt [argPtr (castPtr raw_outRecord :: Ptr ()), argCUInt inOptions, argPtr (castPtr raw_inWindow :: Ptr ())]
+    sendClassMessage cls' browseDevicesAsSheetForWindow_options_windowSelector (toIOBluetoothSDPServiceRecord outRecord) inOptions (toNSWindow inWindow)
 
 -- | withServiceBrowserControllerRef:
 --
@@ -156,7 +150,7 @@ withServiceBrowserControllerRef :: Ptr () -> IO (Id IOBluetoothServiceBrowserCon
 withServiceBrowserControllerRef serviceBrowserControllerRef =
   do
     cls' <- getRequiredClass "IOBluetoothServiceBrowserController"
-    sendClassMsg cls' (mkSelector "withServiceBrowserControllerRef:") (retPtr retVoid) [argPtr serviceBrowserControllerRef] >>= retainedObject . castPtr
+    sendClassMessage cls' withServiceBrowserControllerRefSelector serviceBrowserControllerRef
 
 -- | getServiceBrowserControllerRef
 --
@@ -166,8 +160,8 @@ withServiceBrowserControllerRef serviceBrowserControllerRef =
 --
 -- ObjC selector: @- getServiceBrowserControllerRef@
 getServiceBrowserControllerRef :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO (Ptr ())
-getServiceBrowserControllerRef ioBluetoothServiceBrowserController  =
-    fmap castPtr $ sendMsg ioBluetoothServiceBrowserController (mkSelector "getServiceBrowserControllerRef") (retPtr retVoid) []
+getServiceBrowserControllerRef ioBluetoothServiceBrowserController =
+  sendMessage ioBluetoothServiceBrowserController getServiceBrowserControllerRefSelector
 
 -- | discover:
 --
@@ -183,9 +177,8 @@ getServiceBrowserControllerRef ioBluetoothServiceBrowserController  =
 --
 -- ObjC selector: @- discover:@
 discover :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsIOBluetoothSDPServiceRecord outRecord) => ioBluetoothServiceBrowserController -> outRecord -> IO CInt
-discover ioBluetoothServiceBrowserController  outRecord =
-  withObjCPtr outRecord $ \raw_outRecord ->
-      sendMsg ioBluetoothServiceBrowserController (mkSelector "discover:") retCInt [argPtr (castPtr raw_outRecord :: Ptr ())]
+discover ioBluetoothServiceBrowserController outRecord =
+  sendMessage ioBluetoothServiceBrowserController discoverSelector (toIOBluetoothSDPServiceRecord outRecord)
 
 -- | discoverAsSheetForWindow:withRecord:
 --
@@ -203,10 +196,8 @@ discover ioBluetoothServiceBrowserController  outRecord =
 --
 -- ObjC selector: @- discoverAsSheetForWindow:withRecord:@
 discoverAsSheetForWindow_withRecord :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsNSWindow sheetWindow, IsIOBluetoothSDPServiceRecord outRecord) => ioBluetoothServiceBrowserController -> sheetWindow -> outRecord -> IO CInt
-discoverAsSheetForWindow_withRecord ioBluetoothServiceBrowserController  sheetWindow outRecord =
-  withObjCPtr sheetWindow $ \raw_sheetWindow ->
-    withObjCPtr outRecord $ \raw_outRecord ->
-        sendMsg ioBluetoothServiceBrowserController (mkSelector "discoverAsSheetForWindow:withRecord:") retCInt [argPtr (castPtr raw_sheetWindow :: Ptr ()), argPtr (castPtr raw_outRecord :: Ptr ())]
+discoverAsSheetForWindow_withRecord ioBluetoothServiceBrowserController sheetWindow outRecord =
+  sendMessage ioBluetoothServiceBrowserController discoverAsSheetForWindow_withRecordSelector (toNSWindow sheetWindow) (toIOBluetoothSDPServiceRecord outRecord)
 
 -- | discoverWithDeviceAttributes:serviceList:serviceRecord:
 --
@@ -226,10 +217,8 @@ discoverAsSheetForWindow_withRecord ioBluetoothServiceBrowserController  sheetWi
 --
 -- ObjC selector: @- discoverWithDeviceAttributes:serviceList:serviceRecord:@
 discoverWithDeviceAttributes_serviceList_serviceRecord :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsNSArray serviceArray, IsIOBluetoothSDPServiceRecord outRecord) => ioBluetoothServiceBrowserController -> RawId -> serviceArray -> outRecord -> IO CInt
-discoverWithDeviceAttributes_serviceList_serviceRecord ioBluetoothServiceBrowserController  deviceAttributes serviceArray outRecord =
-  withObjCPtr serviceArray $ \raw_serviceArray ->
-    withObjCPtr outRecord $ \raw_outRecord ->
-        sendMsg ioBluetoothServiceBrowserController (mkSelector "discoverWithDeviceAttributes:serviceList:serviceRecord:") retCInt [argPtr (castPtr (unRawId deviceAttributes) :: Ptr ()), argPtr (castPtr raw_serviceArray :: Ptr ()), argPtr (castPtr raw_outRecord :: Ptr ())]
+discoverWithDeviceAttributes_serviceList_serviceRecord ioBluetoothServiceBrowserController deviceAttributes serviceArray outRecord =
+  sendMessage ioBluetoothServiceBrowserController discoverWithDeviceAttributes_serviceList_serviceRecordSelector deviceAttributes (toNSArray serviceArray) (toIOBluetoothSDPServiceRecord outRecord)
 
 -- | setOptions:
 --
@@ -243,8 +232,8 @@ discoverWithDeviceAttributes_serviceList_serviceRecord ioBluetoothServiceBrowser
 --
 -- ObjC selector: @- setOptions:@
 setOptions :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> CUInt -> IO ()
-setOptions ioBluetoothServiceBrowserController  inOptions =
-    sendMsg ioBluetoothServiceBrowserController (mkSelector "setOptions:") retVoid [argCUInt inOptions]
+setOptions ioBluetoothServiceBrowserController inOptions =
+  sendMessage ioBluetoothServiceBrowserController setOptionsSelector inOptions
 
 -- | runModal
 --
@@ -258,8 +247,8 @@ setOptions ioBluetoothServiceBrowserController  inOptions =
 --
 -- ObjC selector: @- runModal@
 runModal :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO CInt
-runModal ioBluetoothServiceBrowserController  =
-    sendMsg ioBluetoothServiceBrowserController (mkSelector "runModal") retCInt []
+runModal ioBluetoothServiceBrowserController =
+  sendMessage ioBluetoothServiceBrowserController runModalSelector
 
 -- | beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:
 --
@@ -280,10 +269,9 @@ runModal ioBluetoothServiceBrowserController  =
 -- Returns: Returns kIOReturnSuccess if the sheet modal session was started.
 --
 -- ObjC selector: @- beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:@
-beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsNSWindow sheetWindow) => ioBluetoothServiceBrowserController -> sheetWindow -> RawId -> Selector -> Ptr () -> IO CInt
-beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo ioBluetoothServiceBrowserController  sheetWindow modalDelegate didEndSelector contextInfo =
-  withObjCPtr sheetWindow $ \raw_sheetWindow ->
-      sendMsg ioBluetoothServiceBrowserController (mkSelector "beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:") retCInt [argPtr (castPtr raw_sheetWindow :: Ptr ()), argPtr (castPtr (unRawId modalDelegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsNSWindow sheetWindow) => ioBluetoothServiceBrowserController -> sheetWindow -> RawId -> Sel -> Ptr () -> IO CInt
+beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo ioBluetoothServiceBrowserController sheetWindow modalDelegate didEndSelector contextInfo =
+  sendMessage ioBluetoothServiceBrowserController beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector (toNSWindow sheetWindow) modalDelegate didEndSelector contextInfo
 
 -- | getResults
 --
@@ -297,8 +285,8 @@ beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfo ioBluetoothSer
 --
 -- ObjC selector: @- getResults@
 getResults :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO (Id NSArray)
-getResults ioBluetoothServiceBrowserController  =
-    sendMsg ioBluetoothServiceBrowserController (mkSelector "getResults") (retPtr retVoid) [] >>= retainedObject . castPtr
+getResults ioBluetoothServiceBrowserController =
+  sendMessage ioBluetoothServiceBrowserController getResultsSelector
 
 -- | getOptions
 --
@@ -310,8 +298,8 @@ getResults ioBluetoothServiceBrowserController  =
 --
 -- ObjC selector: @- getOptions@
 getOptions :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO CUInt
-getOptions ioBluetoothServiceBrowserController  =
-    sendMsg ioBluetoothServiceBrowserController (mkSelector "getOptions") retCUInt []
+getOptions ioBluetoothServiceBrowserController =
+  sendMessage ioBluetoothServiceBrowserController getOptionsSelector
 
 -- | setSearchAttributes:
 --
@@ -325,8 +313,8 @@ getOptions ioBluetoothServiceBrowserController  =
 --
 -- ObjC selector: @- setSearchAttributes:@
 setSearchAttributes :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> Const RawId -> IO ()
-setSearchAttributes ioBluetoothServiceBrowserController  searchAttributes =
-    sendMsg ioBluetoothServiceBrowserController (mkSelector "setSearchAttributes:") retVoid [argPtr (castPtr (unRawId (unConst searchAttributes)) :: Ptr ())]
+setSearchAttributes ioBluetoothServiceBrowserController searchAttributes =
+  sendMessage ioBluetoothServiceBrowserController setSearchAttributesSelector searchAttributes
 
 -- | getSearchAttributes
 --
@@ -338,8 +326,8 @@ setSearchAttributes ioBluetoothServiceBrowserController  searchAttributes =
 --
 -- ObjC selector: @- getSearchAttributes@
 getSearchAttributes :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO (Const RawId)
-getSearchAttributes ioBluetoothServiceBrowserController  =
-    fmap Const $ fmap (RawId . castPtr) $ sendMsg ioBluetoothServiceBrowserController (mkSelector "getSearchAttributes") (retPtr retVoid) []
+getSearchAttributes ioBluetoothServiceBrowserController =
+  sendMessage ioBluetoothServiceBrowserController getSearchAttributesSelector
 
 -- | addAllowedUUID:
 --
@@ -353,9 +341,8 @@ getSearchAttributes ioBluetoothServiceBrowserController  =
 --
 -- ObjC selector: @- addAllowedUUID:@
 addAllowedUUID :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsIOBluetoothSDPUUID allowedUUID) => ioBluetoothServiceBrowserController -> allowedUUID -> IO ()
-addAllowedUUID ioBluetoothServiceBrowserController  allowedUUID =
-  withObjCPtr allowedUUID $ \raw_allowedUUID ->
-      sendMsg ioBluetoothServiceBrowserController (mkSelector "addAllowedUUID:") retVoid [argPtr (castPtr raw_allowedUUID :: Ptr ())]
+addAllowedUUID ioBluetoothServiceBrowserController allowedUUID =
+  sendMessage ioBluetoothServiceBrowserController addAllowedUUIDSelector (toIOBluetoothSDPUUID allowedUUID)
 
 -- | addAllowedUUIDArray:
 --
@@ -369,9 +356,8 @@ addAllowedUUID ioBluetoothServiceBrowserController  allowedUUID =
 --
 -- ObjC selector: @- addAllowedUUIDArray:@
 addAllowedUUIDArray :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsNSArray allowedUUIDArray) => ioBluetoothServiceBrowserController -> allowedUUIDArray -> IO ()
-addAllowedUUIDArray ioBluetoothServiceBrowserController  allowedUUIDArray =
-  withObjCPtr allowedUUIDArray $ \raw_allowedUUIDArray ->
-      sendMsg ioBluetoothServiceBrowserController (mkSelector "addAllowedUUIDArray:") retVoid [argPtr (castPtr raw_allowedUUIDArray :: Ptr ())]
+addAllowedUUIDArray ioBluetoothServiceBrowserController allowedUUIDArray =
+  sendMessage ioBluetoothServiceBrowserController addAllowedUUIDArraySelector (toNSArray allowedUUIDArray)
 
 -- | clearAllowedUUIDs
 --
@@ -381,8 +367,8 @@ addAllowedUUIDArray ioBluetoothServiceBrowserController  allowedUUIDArray =
 --
 -- ObjC selector: @- clearAllowedUUIDs@
 clearAllowedUUIDs :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO ()
-clearAllowedUUIDs ioBluetoothServiceBrowserController  =
-    sendMsg ioBluetoothServiceBrowserController (mkSelector "clearAllowedUUIDs") retVoid []
+clearAllowedUUIDs ioBluetoothServiceBrowserController =
+  sendMessage ioBluetoothServiceBrowserController clearAllowedUUIDsSelector
 
 -- | setTitle:
 --
@@ -396,9 +382,8 @@ clearAllowedUUIDs ioBluetoothServiceBrowserController  =
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsNSString windowTitle) => ioBluetoothServiceBrowserController -> windowTitle -> IO ()
-setTitle ioBluetoothServiceBrowserController  windowTitle =
-  withObjCPtr windowTitle $ \raw_windowTitle ->
-      sendMsg ioBluetoothServiceBrowserController (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_windowTitle :: Ptr ())]
+setTitle ioBluetoothServiceBrowserController windowTitle =
+  sendMessage ioBluetoothServiceBrowserController setTitleSelector (toNSString windowTitle)
 
 -- | getTitle
 --
@@ -410,8 +395,8 @@ setTitle ioBluetoothServiceBrowserController  windowTitle =
 --
 -- ObjC selector: @- getTitle@
 getTitle :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO (Id NSString)
-getTitle ioBluetoothServiceBrowserController  =
-    sendMsg ioBluetoothServiceBrowserController (mkSelector "getTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+getTitle ioBluetoothServiceBrowserController =
+  sendMessage ioBluetoothServiceBrowserController getTitleSelector
 
 -- | setDescriptionText:
 --
@@ -425,9 +410,8 @@ getTitle ioBluetoothServiceBrowserController  =
 --
 -- ObjC selector: @- setDescriptionText:@
 setDescriptionText :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsNSString descriptionText) => ioBluetoothServiceBrowserController -> descriptionText -> IO ()
-setDescriptionText ioBluetoothServiceBrowserController  descriptionText =
-  withObjCPtr descriptionText $ \raw_descriptionText ->
-      sendMsg ioBluetoothServiceBrowserController (mkSelector "setDescriptionText:") retVoid [argPtr (castPtr raw_descriptionText :: Ptr ())]
+setDescriptionText ioBluetoothServiceBrowserController descriptionText =
+  sendMessage ioBluetoothServiceBrowserController setDescriptionTextSelector (toNSString descriptionText)
 
 -- | getDescriptionText
 --
@@ -439,8 +423,8 @@ setDescriptionText ioBluetoothServiceBrowserController  descriptionText =
 --
 -- ObjC selector: @- getDescriptionText@
 getDescriptionText :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO (Id NSString)
-getDescriptionText ioBluetoothServiceBrowserController  =
-    sendMsg ioBluetoothServiceBrowserController (mkSelector "getDescriptionText") (retPtr retVoid) [] >>= retainedObject . castPtr
+getDescriptionText ioBluetoothServiceBrowserController =
+  sendMessage ioBluetoothServiceBrowserController getDescriptionTextSelector
 
 -- | setPrompt:
 --
@@ -454,9 +438,8 @@ getDescriptionText ioBluetoothServiceBrowserController  =
 --
 -- ObjC selector: @- setPrompt:@
 setPrompt :: (IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController, IsNSString prompt) => ioBluetoothServiceBrowserController -> prompt -> IO ()
-setPrompt ioBluetoothServiceBrowserController  prompt =
-  withObjCPtr prompt $ \raw_prompt ->
-      sendMsg ioBluetoothServiceBrowserController (mkSelector "setPrompt:") retVoid [argPtr (castPtr raw_prompt :: Ptr ())]
+setPrompt ioBluetoothServiceBrowserController prompt =
+  sendMessage ioBluetoothServiceBrowserController setPromptSelector (toNSString prompt)
 
 -- | getPrompt
 --
@@ -468,106 +451,106 @@ setPrompt ioBluetoothServiceBrowserController  prompt =
 --
 -- ObjC selector: @- getPrompt@
 getPrompt :: IsIOBluetoothServiceBrowserController ioBluetoothServiceBrowserController => ioBluetoothServiceBrowserController -> IO (Id NSString)
-getPrompt ioBluetoothServiceBrowserController  =
-    sendMsg ioBluetoothServiceBrowserController (mkSelector "getPrompt") (retPtr retVoid) [] >>= retainedObject . castPtr
+getPrompt ioBluetoothServiceBrowserController =
+  sendMessage ioBluetoothServiceBrowserController getPromptSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @serviceBrowserController:@
-serviceBrowserControllerSelector :: Selector
+serviceBrowserControllerSelector :: Selector '[CUInt] (Id IOBluetoothServiceBrowserController)
 serviceBrowserControllerSelector = mkSelector "serviceBrowserController:"
 
 -- | @Selector@ for @browseDevices:options:@
-browseDevices_optionsSelector :: Selector
+browseDevices_optionsSelector :: Selector '[Id IOBluetoothSDPServiceRecord, CUInt] CInt
 browseDevices_optionsSelector = mkSelector "browseDevices:options:"
 
 -- | @Selector@ for @browseDevicesAsSheetForWindow:options:window:@
-browseDevicesAsSheetForWindow_options_windowSelector :: Selector
+browseDevicesAsSheetForWindow_options_windowSelector :: Selector '[Id IOBluetoothSDPServiceRecord, CUInt, Id NSWindow] CInt
 browseDevicesAsSheetForWindow_options_windowSelector = mkSelector "browseDevicesAsSheetForWindow:options:window:"
 
 -- | @Selector@ for @withServiceBrowserControllerRef:@
-withServiceBrowserControllerRefSelector :: Selector
+withServiceBrowserControllerRefSelector :: Selector '[Ptr ()] (Id IOBluetoothServiceBrowserController)
 withServiceBrowserControllerRefSelector = mkSelector "withServiceBrowserControllerRef:"
 
 -- | @Selector@ for @getServiceBrowserControllerRef@
-getServiceBrowserControllerRefSelector :: Selector
+getServiceBrowserControllerRefSelector :: Selector '[] (Ptr ())
 getServiceBrowserControllerRefSelector = mkSelector "getServiceBrowserControllerRef"
 
 -- | @Selector@ for @discover:@
-discoverSelector :: Selector
+discoverSelector :: Selector '[Id IOBluetoothSDPServiceRecord] CInt
 discoverSelector = mkSelector "discover:"
 
 -- | @Selector@ for @discoverAsSheetForWindow:withRecord:@
-discoverAsSheetForWindow_withRecordSelector :: Selector
+discoverAsSheetForWindow_withRecordSelector :: Selector '[Id NSWindow, Id IOBluetoothSDPServiceRecord] CInt
 discoverAsSheetForWindow_withRecordSelector = mkSelector "discoverAsSheetForWindow:withRecord:"
 
 -- | @Selector@ for @discoverWithDeviceAttributes:serviceList:serviceRecord:@
-discoverWithDeviceAttributes_serviceList_serviceRecordSelector :: Selector
+discoverWithDeviceAttributes_serviceList_serviceRecordSelector :: Selector '[RawId, Id NSArray, Id IOBluetoothSDPServiceRecord] CInt
 discoverWithDeviceAttributes_serviceList_serviceRecordSelector = mkSelector "discoverWithDeviceAttributes:serviceList:serviceRecord:"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[CUInt] ()
 setOptionsSelector = mkSelector "setOptions:"
 
 -- | @Selector@ for @runModal@
-runModalSelector :: Selector
+runModalSelector :: Selector '[] CInt
 runModalSelector = mkSelector "runModal"
 
 -- | @Selector@ for @beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:@
-beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector
+beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr ()] CInt
 beginSheetModalForWindow_modalDelegate_didEndSelector_contextInfoSelector = mkSelector "beginSheetModalForWindow:modalDelegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @getResults@
-getResultsSelector :: Selector
+getResultsSelector :: Selector '[] (Id NSArray)
 getResultsSelector = mkSelector "getResults"
 
 -- | @Selector@ for @getOptions@
-getOptionsSelector :: Selector
+getOptionsSelector :: Selector '[] CUInt
 getOptionsSelector = mkSelector "getOptions"
 
 -- | @Selector@ for @setSearchAttributes:@
-setSearchAttributesSelector :: Selector
+setSearchAttributesSelector :: Selector '[Const RawId] ()
 setSearchAttributesSelector = mkSelector "setSearchAttributes:"
 
 -- | @Selector@ for @getSearchAttributes@
-getSearchAttributesSelector :: Selector
+getSearchAttributesSelector :: Selector '[] (Const RawId)
 getSearchAttributesSelector = mkSelector "getSearchAttributes"
 
 -- | @Selector@ for @addAllowedUUID:@
-addAllowedUUIDSelector :: Selector
+addAllowedUUIDSelector :: Selector '[Id IOBluetoothSDPUUID] ()
 addAllowedUUIDSelector = mkSelector "addAllowedUUID:"
 
 -- | @Selector@ for @addAllowedUUIDArray:@
-addAllowedUUIDArraySelector :: Selector
+addAllowedUUIDArraySelector :: Selector '[Id NSArray] ()
 addAllowedUUIDArraySelector = mkSelector "addAllowedUUIDArray:"
 
 -- | @Selector@ for @clearAllowedUUIDs@
-clearAllowedUUIDsSelector :: Selector
+clearAllowedUUIDsSelector :: Selector '[] ()
 clearAllowedUUIDsSelector = mkSelector "clearAllowedUUIDs"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @getTitle@
-getTitleSelector :: Selector
+getTitleSelector :: Selector '[] (Id NSString)
 getTitleSelector = mkSelector "getTitle"
 
 -- | @Selector@ for @setDescriptionText:@
-setDescriptionTextSelector :: Selector
+setDescriptionTextSelector :: Selector '[Id NSString] ()
 setDescriptionTextSelector = mkSelector "setDescriptionText:"
 
 -- | @Selector@ for @getDescriptionText@
-getDescriptionTextSelector :: Selector
+getDescriptionTextSelector :: Selector '[] (Id NSString)
 getDescriptionTextSelector = mkSelector "getDescriptionText"
 
 -- | @Selector@ for @setPrompt:@
-setPromptSelector :: Selector
+setPromptSelector :: Selector '[Id NSString] ()
 setPromptSelector = mkSelector "setPrompt:"
 
 -- | @Selector@ for @getPrompt@
-getPromptSelector :: Selector
+getPromptSelector :: Selector '[] (Id NSString)
 getPromptSelector = mkSelector "getPrompt"
 

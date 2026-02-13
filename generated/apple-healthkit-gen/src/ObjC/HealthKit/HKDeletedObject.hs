@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.HealthKit.HKDeletedObject
   , uuid
   , metadata
   , initSelector
-  , uuidSelector
   , metadataSelector
+  , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKDeletedObject hkDeletedObject => hkDeletedObject -> IO (Id HKDeletedObject)
-init_ hkDeletedObject  =
-    sendMsg hkDeletedObject (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkDeletedObject =
+  sendOwnedMessage hkDeletedObject initSelector
 
 -- | UUID
 --
@@ -46,8 +43,8 @@ init_ hkDeletedObject  =
 --
 -- ObjC selector: @- UUID@
 uuid :: IsHKDeletedObject hkDeletedObject => hkDeletedObject -> IO (Id NSUUID)
-uuid hkDeletedObject  =
-    sendMsg hkDeletedObject (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid hkDeletedObject =
+  sendMessage hkDeletedObject uuidSelector
 
 -- | metadata
 --
@@ -57,22 +54,22 @@ uuid hkDeletedObject  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsHKDeletedObject hkDeletedObject => hkDeletedObject -> IO (Id NSDictionary)
-metadata hkDeletedObject  =
-    sendMsg hkDeletedObject (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata hkDeletedObject =
+  sendMessage hkDeletedObject metadataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKDeletedObject)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "UUID"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSDictionary)
 metadataSelector = mkSelector "metadata"
 

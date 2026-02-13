@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.CoreFoundation.Internal.Structs
 import ObjC.CoreServices.Internal.Enums
 
@@ -39,6 +41,16 @@ argAEAddressDesc = mkStorableArg aeAddressDescStructType
 retAEAddressDesc :: RetType AEAddressDesc
 retAEAddressDesc = mkStorableRetType aeAddressDescStructType
 
+instance ObjCArgument AEAddressDesc where
+  withObjCArg x k = k (argAEAddressDesc x)
+
+instance ObjCReturn AEAddressDesc where
+  type RawReturn AEAddressDesc = AEAddressDesc
+  objcRetType = retAEAddressDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AEBuildError = AEBuildError
   { aeBuildErrorFError :: !CUInt
   , aeBuildErrorFErrorPos :: !CUInt
@@ -62,6 +74,16 @@ argAEBuildError = mkStorableArg aeBuildErrorStructType
 
 retAEBuildError :: RetType AEBuildError
 retAEBuildError = mkStorableRetType aeBuildErrorStructType
+
+instance ObjCArgument AEBuildError where
+  withObjCArg x k = k (argAEBuildError x)
+
+instance ObjCReturn AEBuildError where
+  type RawReturn AEBuildError = AEBuildError
+  objcRetType = retAEBuildError
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AEDesc = AEDesc
   { aeDescDescriptorType :: !CUInt
@@ -87,6 +109,16 @@ argAEDesc = mkStorableArg aeDescStructType
 retAEDesc :: RetType AEDesc
 retAEDesc = mkStorableRetType aeDescStructType
 
+instance ObjCArgument AEDesc where
+  withObjCArg x k = k (argAEDesc x)
+
+instance ObjCReturn AEDesc where
+  type RawReturn AEDesc = AEDesc
+  objcRetType = retAEDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AEDescList = AEDescList
   { aeDescListDescriptorType :: !CUInt
   , aeDescListDataHandle :: !(Ptr ())
@@ -111,6 +143,16 @@ argAEDescList = mkStorableArg aeDescListStructType
 retAEDescList :: RetType AEDescList
 retAEDescList = mkStorableRetType aeDescListStructType
 
+instance ObjCArgument AEDescList where
+  withObjCArg x k = k (argAEDescList x)
+
+instance ObjCReturn AEDescList where
+  type RawReturn AEDescList = AEDescList
+  objcRetType = retAEDescList
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AERecord = AERecord
   { aeRecordDescriptorType :: !CUInt
   , aeRecordDataHandle :: !(Ptr ())
@@ -134,6 +176,16 @@ argAERecord = mkStorableArg aeRecordStructType
 
 retAERecord :: RetType AERecord
 retAERecord = mkStorableRetType aeRecordStructType
+
+instance ObjCArgument AERecord where
+  withObjCArg x k = k (argAERecord x)
+
+instance ObjCReturn AERecord where
+  type RawReturn AERecord = AERecord
+  objcRetType = retAERecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AERemoteProcessResolverContext = AERemoteProcessResolverContext
   { aeRemoteProcessResolverContextVersion :: !CLong
@@ -168,6 +220,16 @@ argAERemoteProcessResolverContext = mkStorableArg aeRemoteProcessResolverContext
 retAERemoteProcessResolverContext :: RetType AERemoteProcessResolverContext
 retAERemoteProcessResolverContext = mkStorableRetType aeRemoteProcessResolverContextStructType
 
+instance ObjCArgument AERemoteProcessResolverContext where
+  withObjCArg x k = k (argAERemoteProcessResolverContext x)
+
+instance ObjCReturn AERemoteProcessResolverContext where
+  type RawReturn AERemoteProcessResolverContext = AERemoteProcessResolverContext
+  objcRetType = retAERemoteProcessResolverContext
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AIFFLoop = AIFFLoop
   { aiffLoopPlayMode :: !CShort
   , aiffLoopBeginLoop :: !CShort
@@ -195,6 +257,16 @@ argAIFFLoop = mkStorableArg aiffLoopStructType
 retAIFFLoop :: RetType AIFFLoop
 retAIFFLoop = mkStorableRetType aiffLoopStructType
 
+instance ObjCArgument AIFFLoop where
+  withObjCArg x k = k (argAIFFLoop x)
+
+instance ObjCReturn AIFFLoop where
+  type RawReturn AIFFLoop = AIFFLoop
+  objcRetType = retAIFFLoop
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data AppleEvent = AppleEvent
   { appleEventDescriptorType :: !CUInt
   , appleEventDataHandle :: !(Ptr ())
@@ -218,6 +290,16 @@ argAppleEvent = mkStorableArg appleEventStructType
 
 retAppleEvent :: RetType AppleEvent
 retAppleEvent = mkStorableRetType appleEventStructType
+
+instance ObjCArgument AppleEvent where
+  withObjCArg x k = k (argAppleEvent x)
+
+instance ObjCReturn AppleEvent where
+  type RawReturn AppleEvent = AppleEvent
+  objcRetType = retAppleEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BTNodeDescriptor = BTNodeDescriptor
   { btNodeDescriptorFLink :: !CUInt
@@ -255,6 +337,16 @@ argBTNodeDescriptor = mkStorableArg btNodeDescriptorStructType
 retBTNodeDescriptor :: RetType BTNodeDescriptor
 retBTNodeDescriptor = mkStorableRetType btNodeDescriptorStructType
 
+instance ObjCArgument BTNodeDescriptor where
+  withObjCArg x k = k (argBTNodeDescriptor x)
+
+instance ObjCReturn BTNodeDescriptor where
+  type RawReturn BTNodeDescriptor = BTNodeDescriptor
+  objcRetType = retBTNodeDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BigEndianFixed = BigEndianFixed
   { bigEndianFixedBigEndianValue :: !CInt
   } deriving (Eq, Show)
@@ -275,6 +367,16 @@ argBigEndianFixed = mkStorableArg bigEndianFixedStructType
 
 retBigEndianFixed :: RetType BigEndianFixed
 retBigEndianFixed = mkStorableRetType bigEndianFixedStructType
+
+instance ObjCArgument BigEndianFixed where
+  withObjCArg x k = k (argBigEndianFixed x)
+
+instance ObjCReturn BigEndianFixed where
+  type RawReturn BigEndianFixed = BigEndianFixed
+  objcRetType = retBigEndianFixed
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BigEndianLong = BigEndianLong
   { bigEndianLongBigEndianValue :: !CLong
@@ -297,6 +399,16 @@ argBigEndianLong = mkStorableArg bigEndianLongStructType
 retBigEndianLong :: RetType BigEndianLong
 retBigEndianLong = mkStorableRetType bigEndianLongStructType
 
+instance ObjCArgument BigEndianLong where
+  withObjCArg x k = k (argBigEndianLong x)
+
+instance ObjCReturn BigEndianLong where
+  type RawReturn BigEndianLong = BigEndianLong
+  objcRetType = retBigEndianLong
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BigEndianOSType = BigEndianOSType
   { bigEndianOSTypeBigEndianValue :: !CUInt
   } deriving (Eq, Show)
@@ -317,6 +429,16 @@ argBigEndianOSType = mkStorableArg bigEndianOSTypeStructType
 
 retBigEndianOSType :: RetType BigEndianOSType
 retBigEndianOSType = mkStorableRetType bigEndianOSTypeStructType
+
+instance ObjCArgument BigEndianOSType where
+  withObjCArg x k = k (argBigEndianOSType x)
+
+instance ObjCReturn BigEndianOSType where
+  type RawReturn BigEndianOSType = BigEndianOSType
+  objcRetType = retBigEndianOSType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BigEndianShort = BigEndianShort
   { bigEndianShortBigEndianValue :: !CShort
@@ -339,6 +461,16 @@ argBigEndianShort = mkStorableArg bigEndianShortStructType
 retBigEndianShort :: RetType BigEndianShort
 retBigEndianShort = mkStorableRetType bigEndianShortStructType
 
+instance ObjCArgument BigEndianShort where
+  withObjCArg x k = k (argBigEndianShort x)
+
+instance ObjCReturn BigEndianShort where
+  type RawReturn BigEndianShort = BigEndianShort
+  objcRetType = retBigEndianShort
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BigEndianUInt32 = BigEndianUInt32
   { bigEndianUInt32BigEndianValue :: !CUInt
   } deriving (Eq, Show)
@@ -359,6 +491,16 @@ argBigEndianUInt32 = mkStorableArg bigEndianUInt32StructType
 
 retBigEndianUInt32 :: RetType BigEndianUInt32
 retBigEndianUInt32 = mkStorableRetType bigEndianUInt32StructType
+
+instance ObjCArgument BigEndianUInt32 where
+  withObjCArg x k = k (argBigEndianUInt32 x)
+
+instance ObjCReturn BigEndianUInt32 where
+  type RawReturn BigEndianUInt32 = BigEndianUInt32
+  objcRetType = retBigEndianUInt32
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BigEndianUnsignedFixed = BigEndianUnsignedFixed
   { bigEndianUnsignedFixedBigEndianValue :: !CUInt
@@ -381,6 +523,16 @@ argBigEndianUnsignedFixed = mkStorableArg bigEndianUnsignedFixedStructType
 retBigEndianUnsignedFixed :: RetType BigEndianUnsignedFixed
 retBigEndianUnsignedFixed = mkStorableRetType bigEndianUnsignedFixedStructType
 
+instance ObjCArgument BigEndianUnsignedFixed where
+  withObjCArg x k = k (argBigEndianUnsignedFixed x)
+
+instance ObjCReturn BigEndianUnsignedFixed where
+  type RawReturn BigEndianUnsignedFixed = BigEndianUnsignedFixed
+  objcRetType = retBigEndianUnsignedFixed
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BigEndianUnsignedLong = BigEndianUnsignedLong
   { bigEndianUnsignedLongBigEndianValue :: !CULong
   } deriving (Eq, Show)
@@ -402,6 +554,16 @@ argBigEndianUnsignedLong = mkStorableArg bigEndianUnsignedLongStructType
 retBigEndianUnsignedLong :: RetType BigEndianUnsignedLong
 retBigEndianUnsignedLong = mkStorableRetType bigEndianUnsignedLongStructType
 
+instance ObjCArgument BigEndianUnsignedLong where
+  withObjCArg x k = k (argBigEndianUnsignedLong x)
+
+instance ObjCReturn BigEndianUnsignedLong where
+  type RawReturn BigEndianUnsignedLong = BigEndianUnsignedLong
+  objcRetType = retBigEndianUnsignedLong
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BigEndianUnsignedShort = BigEndianUnsignedShort
   { bigEndianUnsignedShortBigEndianValue :: !CUShort
   } deriving (Eq, Show)
@@ -422,6 +584,16 @@ argBigEndianUnsignedShort = mkStorableArg bigEndianUnsignedShortStructType
 
 retBigEndianUnsignedShort :: RetType BigEndianUnsignedShort
 retBigEndianUnsignedShort = mkStorableRetType bigEndianUnsignedShortStructType
+
+instance ObjCArgument BigEndianUnsignedShort where
+  withObjCArg x k = k (argBigEndianUnsignedShort x)
+
+instance ObjCReturn BigEndianUnsignedShort where
+  type RawReturn BigEndianUnsignedShort = BigEndianUnsignedShort
+  objcRetType = retBigEndianUnsignedShort
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSIdentityClientContext = CSIdentityClientContext
   { csIdentityClientContextVersion :: !CLong
@@ -459,6 +631,16 @@ argCSIdentityClientContext = mkStorableArg csIdentityClientContextStructType
 retCSIdentityClientContext :: RetType CSIdentityClientContext
 retCSIdentityClientContext = mkStorableRetType csIdentityClientContextStructType
 
+instance ObjCArgument CSIdentityClientContext where
+  withObjCArg x k = k (argCSIdentityClientContext x)
+
+instance ObjCReturn CSIdentityClientContext where
+  type RawReturn CSIdentityClientContext = CSIdentityClientContext
+  objcRetType = retCSIdentityClientContext
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSIdentityQueryClientContext = CSIdentityQueryClientContext
   { csIdentityQueryClientContextVersion :: !CLong
   , csIdentityQueryClientContextInfo :: !(Ptr ())
@@ -495,6 +677,16 @@ argCSIdentityQueryClientContext = mkStorableArg csIdentityQueryClientContextStru
 retCSIdentityQueryClientContext :: RetType CSIdentityQueryClientContext
 retCSIdentityQueryClientContext = mkStorableRetType csIdentityQueryClientContextStructType
 
+instance ObjCArgument CSIdentityQueryClientContext where
+  withObjCArg x k = k (argCSIdentityQueryClientContext x)
+
+instance ObjCReturn CSIdentityQueryClientContext where
+  type RawReturn CSIdentityQueryClientContext = CSIdentityQueryClientContext
+  objcRetType = retCSIdentityQueryClientContext
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ChunkHeader = ChunkHeader
   { chunkHeaderCkID :: !CUInt
   , chunkHeaderCkSize :: !CInt
@@ -518,6 +710,16 @@ argChunkHeader = mkStorableArg chunkHeaderStructType
 
 retChunkHeader :: RetType ChunkHeader
 retChunkHeader = mkStorableRetType chunkHeaderStructType
+
+instance ObjCArgument ChunkHeader where
+  withObjCArg x k = k (argChunkHeader x)
+
+instance ObjCReturn ChunkHeader where
+  type RawReturn ChunkHeader = ChunkHeader
+  objcRetType = retChunkHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CommonChunk = CommonChunk
   { commonChunkCkID :: !CUInt
@@ -555,6 +757,16 @@ argCommonChunk = mkStorableArg commonChunkStructType
 retCommonChunk :: RetType CommonChunk
 retCommonChunk = mkStorableRetType commonChunkStructType
 
+instance ObjCArgument CommonChunk where
+  withObjCArg x k = k (argCommonChunk x)
+
+instance ObjCReturn CommonChunk where
+  type RawReturn CommonChunk = CommonChunk
+  objcRetType = retCommonChunk
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ComponentDescription = ComponentDescription
   { componentDescriptionComponentType :: !CUInt
   , componentDescriptionComponentSubType :: !CUInt
@@ -587,6 +799,16 @@ argComponentDescription = mkStorableArg componentDescriptionStructType
 
 retComponentDescription :: RetType ComponentDescription
 retComponentDescription = mkStorableRetType componentDescriptionStructType
+
+instance ObjCArgument ComponentDescription where
+  withObjCArg x k = k (argComponentDescription x)
+
+instance ObjCReturn ComponentDescription where
+  type RawReturn ComponentDescription = ComponentDescription
+  objcRetType = retComponentDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ComponentMPWorkFunctionHeaderRecord = ComponentMPWorkFunctionHeaderRecord
   { componentMPWorkFunctionHeaderRecordHeaderSize :: !CUInt
@@ -624,6 +846,16 @@ argComponentMPWorkFunctionHeaderRecord = mkStorableArg componentMPWorkFunctionHe
 retComponentMPWorkFunctionHeaderRecord :: RetType ComponentMPWorkFunctionHeaderRecord
 retComponentMPWorkFunctionHeaderRecord = mkStorableRetType componentMPWorkFunctionHeaderRecordStructType
 
+instance ObjCArgument ComponentMPWorkFunctionHeaderRecord where
+  withObjCArg x k = k (argComponentMPWorkFunctionHeaderRecord x)
+
+instance ObjCReturn ComponentMPWorkFunctionHeaderRecord where
+  type RawReturn ComponentMPWorkFunctionHeaderRecord = ComponentMPWorkFunctionHeaderRecord
+  objcRetType = retComponentMPWorkFunctionHeaderRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ComponentResourceExtension = ComponentResourceExtension
   { componentResourceExtensionComponentVersion :: !CInt
   , componentResourceExtensionComponentRegisterFlags :: !CInt
@@ -651,6 +883,16 @@ argComponentResourceExtension = mkStorableArg componentResourceExtensionStructTy
 retComponentResourceExtension :: RetType ComponentResourceExtension
 retComponentResourceExtension = mkStorableRetType componentResourceExtensionStructType
 
+instance ObjCArgument ComponentResourceExtension where
+  withObjCArg x k = k (argComponentResourceExtension x)
+
+instance ObjCReturn ComponentResourceExtension where
+  type RawReturn ComponentResourceExtension = ComponentResourceExtension
+  objcRetType = retComponentResourceExtension
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ContainerChunk = ContainerChunk
   { containerChunkCkID :: !CUInt
   , containerChunkCkSize :: !CInt
@@ -677,6 +919,16 @@ argContainerChunk = mkStorableArg containerChunkStructType
 
 retContainerChunk :: RetType ContainerChunk
 retContainerChunk = mkStorableRetType containerChunkStructType
+
+instance ObjCArgument ContainerChunk where
+  withObjCArg x k = k (argContainerChunk x)
+
+instance ObjCReturn ContainerChunk where
+  type RawReturn ContainerChunk = ContainerChunk
+  objcRetType = retContainerChunk
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CustomBadgeResource = CustomBadgeResource
   { customBadgeResourceVersion :: !CShort
@@ -720,6 +972,16 @@ argCustomBadgeResource = mkStorableArg customBadgeResourceStructType
 retCustomBadgeResource :: RetType CustomBadgeResource
 retCustomBadgeResource = mkStorableRetType customBadgeResourceStructType
 
+instance ObjCArgument CustomBadgeResource where
+  withObjCArg x k = k (argCustomBadgeResource x)
+
+instance ObjCReturn CustomBadgeResource where
+  type RawReturn CustomBadgeResource = CustomBadgeResource
+  objcRetType = retCustomBadgeResource
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data DateTimeRec = DateTimeRec
   { dateTimeRecYear :: !CShort
   , dateTimeRecMonth :: !CShort
@@ -759,6 +1021,16 @@ argDateTimeRec = mkStorableArg dateTimeRecStructType
 retDateTimeRec :: RetType DateTimeRec
 retDateTimeRec = mkStorableRetType dateTimeRecStructType
 
+instance ObjCArgument DateTimeRec where
+  withObjCArg x k = k (argDateTimeRec x)
+
+instance ObjCReturn DateTimeRec where
+  type RawReturn DateTimeRec = DateTimeRec
+  objcRetType = retDateTimeRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FSEventStreamContext = FSEventStreamContext
   { fsEventStreamContextVersion :: !CLong
   , fsEventStreamContextInfo :: !(Ptr ())
@@ -792,6 +1064,16 @@ argFSEventStreamContext = mkStorableArg fsEventStreamContextStructType
 retFSEventStreamContext :: RetType FSEventStreamContext
 retFSEventStreamContext = mkStorableRetType fsEventStreamContextStructType
 
+instance ObjCArgument FSEventStreamContext where
+  withObjCArg x k = k (argFSEventStreamContext x)
+
+instance ObjCReturn FSEventStreamContext where
+  type RawReturn FSEventStreamContext = FSEventStreamContext
+  objcRetType = retFSEventStreamContext
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FSFileOperationClientContext = FSFileOperationClientContext
   { fsFileOperationClientContextVersion :: !CLong
   , fsFileOperationClientContextInfo :: !(Ptr ())
@@ -824,6 +1106,16 @@ argFSFileOperationClientContext = mkStorableArg fsFileOperationClientContextStru
 
 retFSFileOperationClientContext :: RetType FSFileOperationClientContext
 retFSFileOperationClientContext = mkStorableRetType fsFileOperationClientContextStructType
+
+instance ObjCArgument FSFileOperationClientContext where
+  withObjCArg x k = k (argFSFileOperationClientContext x)
+
+instance ObjCReturn FSFileOperationClientContext where
+  type RawReturn FSFileOperationClientContext = FSFileOperationClientContext
+  objcRetType = retFSFileOperationClientContext
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FSForkInfo = FSForkInfo
   { fsForkInfoFlags :: !CUChar
@@ -873,6 +1165,16 @@ argFSForkInfo = mkStorableArg fsForkInfoStructType
 retFSForkInfo :: RetType FSForkInfo
 retFSForkInfo = mkStorableRetType fsForkInfoStructType
 
+instance ObjCArgument FSForkInfo where
+  withObjCArg x k = k (argFSForkInfo x)
+
+instance ObjCReturn FSForkInfo where
+  type RawReturn FSForkInfo = FSForkInfo
+  objcRetType = retFSForkInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FSPermissionInfo = FSPermissionInfo
   { fsPermissionInfoUserID :: !CUInt
   , fsPermissionInfoGroupID :: !CUInt
@@ -908,6 +1210,16 @@ argFSPermissionInfo = mkStorableArg fsPermissionInfoStructType
 
 retFSPermissionInfo :: RetType FSPermissionInfo
 retFSPermissionInfo = mkStorableRetType fsPermissionInfoStructType
+
+instance ObjCArgument FSPermissionInfo where
+  withObjCArg x k = k (argFSPermissionInfo x)
+
+instance ObjCReturn FSPermissionInfo where
+  type RawReturn FSPermissionInfo = FSPermissionInfo
+  objcRetType = retFSPermissionInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FSRangeLockParam = FSRangeLockParam
   { fsRangeLockParamQLink :: !(Ptr ())
@@ -960,6 +1272,16 @@ argFSRangeLockParam = mkStorableArg fsRangeLockParamStructType
 retFSRangeLockParam :: RetType FSRangeLockParam
 retFSRangeLockParam = mkStorableRetType fsRangeLockParamStructType
 
+instance ObjCArgument FSRangeLockParam where
+  withObjCArg x k = k (argFSRangeLockParam x)
+
+instance ObjCReturn FSRangeLockParam where
+  type RawReturn FSRangeLockParam = FSRangeLockParam
+  objcRetType = retFSRangeLockParam
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FVector = FVector
   { fVectorStart :: !CShort
   , fVectorLength :: !CShort
@@ -983,6 +1305,16 @@ argFVector = mkStorableArg fVectorStructType
 
 retFVector :: RetType FVector
 retFVector = mkStorableRetType fVectorStructType
+
+instance ObjCArgument FVector where
+  withObjCArg x k = k (argFVector x)
+
+instance ObjCReturn FVector where
+  type RawReturn FVector = FVector
+  objcRetType = retFVector
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FndrDirInfo = FndrDirInfo
   { fndrDirInfoFrRect :: !(Ptr ())
@@ -1013,6 +1345,16 @@ argFndrDirInfo = mkStorableArg fndrDirInfoStructType
 
 retFndrDirInfo :: RetType FndrDirInfo
 retFndrDirInfo = mkStorableRetType fndrDirInfoStructType
+
+instance ObjCArgument FndrDirInfo where
+  withObjCArg x k = k (argFndrDirInfo x)
+
+instance ObjCReturn FndrDirInfo where
+  type RawReturn FndrDirInfo = FndrDirInfo
+  objcRetType = retFndrDirInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FndrFileInfo = FndrFileInfo
   { fndrFileInfoFdType :: !CUInt
@@ -1047,6 +1389,16 @@ argFndrFileInfo = mkStorableArg fndrFileInfoStructType
 retFndrFileInfo :: RetType FndrFileInfo
 retFndrFileInfo = mkStorableRetType fndrFileInfoStructType
 
+instance ObjCArgument FndrFileInfo where
+  withObjCArg x k = k (argFndrFileInfo x)
+
+instance ObjCReturn FndrFileInfo where
+  type RawReturn FndrFileInfo = FndrFileInfo
+  objcRetType = retFndrFileInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FolderRouting = FolderRouting
   { folderRoutingDescSize :: !CLong
   , folderRoutingFileType :: !CUInt
@@ -1080,6 +1432,16 @@ argFolderRouting = mkStorableArg folderRoutingStructType
 retFolderRouting :: RetType FolderRouting
 retFolderRouting = mkStorableRetType folderRoutingStructType
 
+instance ObjCArgument FolderRouting where
+  withObjCArg x k = k (argFolderRouting x)
+
+instance ObjCReturn FolderRouting where
+  type RawReturn FolderRouting = FolderRouting
+  objcRetType = retFolderRouting
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FormatVersionChunk = FormatVersionChunk
   { formatVersionChunkCkID :: !CUInt
   , formatVersionChunkCkSize :: !CInt
@@ -1106,6 +1468,16 @@ argFormatVersionChunk = mkStorableArg formatVersionChunkStructType
 
 retFormatVersionChunk :: RetType FormatVersionChunk
 retFormatVersionChunk = mkStorableRetType formatVersionChunkStructType
+
+instance ObjCArgument FormatVersionChunk where
+  withObjCArg x k = k (argFormatVersionChunk x)
+
+instance ObjCReturn FormatVersionChunk where
+  type RawReturn FormatVersionChunk = FormatVersionChunk
+  objcRetType = retFormatVersionChunk
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data GetVolParmsInfoBuffer = GetVolParmsInfoBuffer
   { getVolParmsInfoBufferVMVersion :: !CShort
@@ -1152,6 +1524,16 @@ argGetVolParmsInfoBuffer = mkStorableArg getVolParmsInfoBufferStructType
 retGetVolParmsInfoBuffer :: RetType GetVolParmsInfoBuffer
 retGetVolParmsInfoBuffer = mkStorableRetType getVolParmsInfoBufferStructType
 
+instance ObjCArgument GetVolParmsInfoBuffer where
+  withObjCArg x k = k (argGetVolParmsInfoBuffer x)
+
+instance ObjCReturn GetVolParmsInfoBuffer where
+  type RawReturn GetVolParmsInfoBuffer = GetVolParmsInfoBuffer
+  objcRetType = retGetVolParmsInfoBuffer
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HFSExtentDescriptor = HFSExtentDescriptor
   { hfsExtentDescriptorStartBlock :: !CUShort
   , hfsExtentDescriptorBlockCount :: !CUShort
@@ -1175,6 +1557,16 @@ argHFSExtentDescriptor = mkStorableArg hfsExtentDescriptorStructType
 
 retHFSExtentDescriptor :: RetType HFSExtentDescriptor
 retHFSExtentDescriptor = mkStorableRetType hfsExtentDescriptorStructType
+
+instance ObjCArgument HFSExtentDescriptor where
+  withObjCArg x k = k (argHFSExtentDescriptor x)
+
+instance ObjCReturn HFSExtentDescriptor where
+  type RawReturn HFSExtentDescriptor = HFSExtentDescriptor
+  objcRetType = retHFSExtentDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HFSExtentKey = HFSExtentKey
   { hfsExtentKeyKeyLength :: !CUChar
@@ -1206,6 +1598,16 @@ argHFSExtentKey = mkStorableArg hfsExtentKeyStructType
 retHFSExtentKey :: RetType HFSExtentKey
 retHFSExtentKey = mkStorableRetType hfsExtentKeyStructType
 
+instance ObjCArgument HFSExtentKey where
+  withObjCArg x k = k (argHFSExtentKey x)
+
+instance ObjCReturn HFSExtentKey where
+  type RawReturn HFSExtentKey = HFSExtentKey
+  objcRetType = retHFSExtentKey
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HFSPlusAttrForkData = HFSPlusAttrForkData
   { hfsPlusAttrForkDataRecordType :: !CUInt
   , hfsPlusAttrForkDataReserved :: !CUInt
@@ -1232,6 +1634,16 @@ argHFSPlusAttrForkData = mkStorableArg hfsPlusAttrForkDataStructType
 
 retHFSPlusAttrForkData :: RetType HFSPlusAttrForkData
 retHFSPlusAttrForkData = mkStorableRetType hfsPlusAttrForkDataStructType
+
+instance ObjCArgument HFSPlusAttrForkData where
+  withObjCArg x k = k (argHFSPlusAttrForkData x)
+
+instance ObjCReturn HFSPlusAttrForkData where
+  type RawReturn HFSPlusAttrForkData = HFSPlusAttrForkData
+  objcRetType = retHFSPlusAttrForkData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HFSPlusCatalogFile = HFSPlusCatalogFile
   { hfsPlusCatalogFileRecordType :: !CShort
@@ -1299,6 +1711,16 @@ argHFSPlusCatalogFile = mkStorableArg hfsPlusCatalogFileStructType
 retHFSPlusCatalogFile :: RetType HFSPlusCatalogFile
 retHFSPlusCatalogFile = mkStorableRetType hfsPlusCatalogFileStructType
 
+instance ObjCArgument HFSPlusCatalogFile where
+  withObjCArg x k = k (argHFSPlusCatalogFile x)
+
+instance ObjCReturn HFSPlusCatalogFile where
+  type RawReturn HFSPlusCatalogFile = HFSPlusCatalogFile
+  objcRetType = retHFSPlusCatalogFile
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HFSPlusCatalogFolder = HFSPlusCatalogFolder
   { hfsPlusCatalogFolderRecordType :: !CShort
   , hfsPlusCatalogFolderFlags :: !CUShort
@@ -1359,6 +1781,16 @@ argHFSPlusCatalogFolder = mkStorableArg hfsPlusCatalogFolderStructType
 retHFSPlusCatalogFolder :: RetType HFSPlusCatalogFolder
 retHFSPlusCatalogFolder = mkStorableRetType hfsPlusCatalogFolderStructType
 
+instance ObjCArgument HFSPlusCatalogFolder where
+  withObjCArg x k = k (argHFSPlusCatalogFolder x)
+
+instance ObjCReturn HFSPlusCatalogFolder where
+  type RawReturn HFSPlusCatalogFolder = HFSPlusCatalogFolder
+  objcRetType = retHFSPlusCatalogFolder
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HFSPlusCatalogKey = HFSPlusCatalogKey
   { hfsPlusCatalogKeyKeyLength :: !CUShort
   , hfsPlusCatalogKeyParentID :: !CUInt
@@ -1385,6 +1817,16 @@ argHFSPlusCatalogKey = mkStorableArg hfsPlusCatalogKeyStructType
 
 retHFSPlusCatalogKey :: RetType HFSPlusCatalogKey
 retHFSPlusCatalogKey = mkStorableRetType hfsPlusCatalogKeyStructType
+
+instance ObjCArgument HFSPlusCatalogKey where
+  withObjCArg x k = k (argHFSPlusCatalogKey x)
+
+instance ObjCReturn HFSPlusCatalogKey where
+  type RawReturn HFSPlusCatalogKey = HFSPlusCatalogKey
+  objcRetType = retHFSPlusCatalogKey
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HFSPlusCatalogThread = HFSPlusCatalogThread
   { hfsPlusCatalogThreadRecordType :: !CShort
@@ -1416,6 +1858,16 @@ argHFSPlusCatalogThread = mkStorableArg hfsPlusCatalogThreadStructType
 retHFSPlusCatalogThread :: RetType HFSPlusCatalogThread
 retHFSPlusCatalogThread = mkStorableRetType hfsPlusCatalogThreadStructType
 
+instance ObjCArgument HFSPlusCatalogThread where
+  withObjCArg x k = k (argHFSPlusCatalogThread x)
+
+instance ObjCReturn HFSPlusCatalogThread where
+  type RawReturn HFSPlusCatalogThread = HFSPlusCatalogThread
+  objcRetType = retHFSPlusCatalogThread
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data HFSPlusExtentDescriptor = HFSPlusExtentDescriptor
   { hfsPlusExtentDescriptorStartBlock :: !CUInt
   , hfsPlusExtentDescriptorBlockCount :: !CUInt
@@ -1439,6 +1891,16 @@ argHFSPlusExtentDescriptor = mkStorableArg hfsPlusExtentDescriptorStructType
 
 retHFSPlusExtentDescriptor :: RetType HFSPlusExtentDescriptor
 retHFSPlusExtentDescriptor = mkStorableRetType hfsPlusExtentDescriptorStructType
+
+instance ObjCArgument HFSPlusExtentDescriptor where
+  withObjCArg x k = k (argHFSPlusExtentDescriptor x)
+
+instance ObjCReturn HFSPlusExtentDescriptor where
+  type RawReturn HFSPlusExtentDescriptor = HFSPlusExtentDescriptor
+  objcRetType = retHFSPlusExtentDescriptor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data HFSPlusExtentKey = HFSPlusExtentKey
   { hfsPlusExtentKeyKeyLength :: !CUShort
@@ -1472,6 +1934,16 @@ argHFSPlusExtentKey = mkStorableArg hfsPlusExtentKeyStructType
 
 retHFSPlusExtentKey :: RetType HFSPlusExtentKey
 retHFSPlusExtentKey = mkStorableRetType hfsPlusExtentKeyStructType
+
+instance ObjCArgument HFSPlusExtentKey where
+  withObjCArg x k = k (argHFSPlusExtentKey x)
+
+instance ObjCReturn HFSPlusExtentKey where
+  type RawReturn HFSPlusExtentKey = HFSPlusExtentKey
+  objcRetType = retHFSPlusExtentKey
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data Itl4Rec = Itl4Rec
   { itl4RecFlags :: !CShort
@@ -1536,6 +2008,16 @@ argItl4Rec = mkStorableArg itl4RecStructType
 retItl4Rec :: RetType Itl4Rec
 retItl4Rec = mkStorableRetType itl4RecStructType
 
+instance ObjCArgument Itl4Rec where
+  withObjCArg x k = k (argItl4Rec x)
+
+instance ObjCReturn Itl4Rec where
+  type RawReturn Itl4Rec = Itl4Rec
+  objcRetType = retItl4Rec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ItlbRecord = ItlbRecord
   { itlbRecordItlbNumber :: !CShort
   , itlbRecordItlbDate :: !CShort
@@ -1587,6 +2069,16 @@ argItlbRecord = mkStorableArg itlbRecordStructType
 retItlbRecord :: RetType ItlbRecord
 retItlbRecord = mkStorableRetType itlbRecordStructType
 
+instance ObjCArgument ItlbRecord where
+  withObjCArg x k = k (argItlbRecord x)
+
+instance ObjCReturn ItlbRecord where
+  type RawReturn ItlbRecord = ItlbRecord
+  objcRetType = retItlbRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | SecKeychainAttribute
 --
 -- Contains keychain attributes.     tag A 4-byte attribute tag.     length The length of the buffer pointed to by data.     data A pointer to the attribute data.
@@ -1616,6 +2108,16 @@ argKCAttribute = mkStorableArg kcAttributeStructType
 
 retKCAttribute :: RetType KCAttribute
 retKCAttribute = mkStorableRetType kcAttributeStructType
+
+instance ObjCArgument KCAttribute where
+  withObjCArg x k = k (argKCAttribute x)
+
+instance ObjCReturn KCAttribute where
+  type RawReturn KCAttribute = KCAttribute
+  objcRetType = retKCAttribute
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data LSItemInfoRecord = LSItemInfoRecord
   { lsItemInfoRecordFlags :: !LSItemInfoFlags
@@ -1647,6 +2149,16 @@ argLSItemInfoRecord = mkStorableArg lsItemInfoRecordStructType
 retLSItemInfoRecord :: RetType LSItemInfoRecord
 retLSItemInfoRecord = mkStorableRetType lsItemInfoRecordStructType
 
+instance ObjCArgument LSItemInfoRecord where
+  withObjCArg x k = k (argLSItemInfoRecord x)
+
+instance ObjCReturn LSItemInfoRecord where
+  type RawReturn LSItemInfoRecord = LSItemInfoRecord
+  objcRetType = retLSItemInfoRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LocalDateTime = LocalDateTime
   { localDateTimeHighSeconds :: !CUShort
   , localDateTimeLowSeconds :: !CUInt
@@ -1674,6 +2186,16 @@ argLocalDateTime = mkStorableArg localDateTimeStructType
 retLocalDateTime :: RetType LocalDateTime
 retLocalDateTime = mkStorableRetType localDateTimeStructType
 
+instance ObjCArgument LocalDateTime where
+  withObjCArg x k = k (argLocalDateTime x)
+
+instance ObjCReturn LocalDateTime where
+  type RawReturn LocalDateTime = LocalDateTime
+  objcRetType = retLocalDateTime
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data LocaleAndVariant = LocaleAndVariant
   { localeAndVariantLocale :: !(Ptr ())
   , localeAndVariantOpVariant :: !CUInt
@@ -1697,6 +2219,16 @@ argLocaleAndVariant = mkStorableArg localeAndVariantStructType
 
 retLocaleAndVariant :: RetType LocaleAndVariant
 retLocaleAndVariant = mkStorableRetType localeAndVariantStructType
+
+instance ObjCArgument LocaleAndVariant where
+  withObjCArg x k = k (argLocaleAndVariant x)
+
+instance ObjCReturn LocaleAndVariant where
+  type RawReturn LocaleAndVariant = LocaleAndVariant
+  objcRetType = retLocaleAndVariant
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MPCriticalRegionInfo = MPCriticalRegionInfo
   { mpCriticalRegionInfoVersion :: !CUInt
@@ -1737,6 +2269,16 @@ argMPCriticalRegionInfo = mkStorableArg mpCriticalRegionInfoStructType
 retMPCriticalRegionInfo :: RetType MPCriticalRegionInfo
 retMPCriticalRegionInfo = mkStorableRetType mpCriticalRegionInfoStructType
 
+instance ObjCArgument MPCriticalRegionInfo where
+  withObjCArg x k = k (argMPCriticalRegionInfo x)
+
+instance ObjCReturn MPCriticalRegionInfo where
+  type RawReturn MPCriticalRegionInfo = MPCriticalRegionInfo
+  objcRetType = retMPCriticalRegionInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MPEventInfo = MPEventInfo
   { mpEventInfoVersion :: !CUInt
   , mpEventInfoProcessID :: !(Ptr ())
@@ -1772,6 +2314,16 @@ argMPEventInfo = mkStorableArg mpEventInfoStructType
 
 retMPEventInfo :: RetType MPEventInfo
 retMPEventInfo = mkStorableRetType mpEventInfoStructType
+
+instance ObjCArgument MPEventInfo where
+  withObjCArg x k = k (argMPEventInfo x)
+
+instance ObjCReturn MPEventInfo where
+  type RawReturn MPEventInfo = MPEventInfo
+  objcRetType = retMPEventInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MPNotificationInfo = MPNotificationInfo
   { mpNotificationInfoVersion :: !CUInt
@@ -1821,6 +2373,16 @@ argMPNotificationInfo = mkStorableArg mpNotificationInfoStructType
 retMPNotificationInfo :: RetType MPNotificationInfo
 retMPNotificationInfo = mkStorableRetType mpNotificationInfoStructType
 
+instance ObjCArgument MPNotificationInfo where
+  withObjCArg x k = k (argMPNotificationInfo x)
+
+instance ObjCReturn MPNotificationInfo where
+  type RawReturn MPNotificationInfo = MPNotificationInfo
+  objcRetType = retMPNotificationInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MPQueueInfo = MPQueueInfo
   { mpQueueInfoVersion :: !CUInt
   , mpQueueInfoProcessID :: !(Ptr ())
@@ -1869,6 +2431,16 @@ argMPQueueInfo = mkStorableArg mpQueueInfoStructType
 retMPQueueInfo :: RetType MPQueueInfo
 retMPQueueInfo = mkStorableRetType mpQueueInfoStructType
 
+instance ObjCArgument MPQueueInfo where
+  withObjCArg x k = k (argMPQueueInfo x)
+
+instance ObjCReturn MPQueueInfo where
+  type RawReturn MPQueueInfo = MPQueueInfo
+  objcRetType = retMPQueueInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MPSemaphoreInfo = MPSemaphoreInfo
   { mpSemaphoreInfoVersion :: !CUInt
   , mpSemaphoreInfoProcessID :: !(Ptr ())
@@ -1908,6 +2480,16 @@ argMPSemaphoreInfo = mkStorableArg mpSemaphoreInfoStructType
 retMPSemaphoreInfo :: RetType MPSemaphoreInfo
 retMPSemaphoreInfo = mkStorableRetType mpSemaphoreInfoStructType
 
+instance ObjCArgument MPSemaphoreInfo where
+  withObjCArg x k = k (argMPSemaphoreInfo x)
+
+instance ObjCReturn MPSemaphoreInfo where
+  type RawReturn MPSemaphoreInfo = MPSemaphoreInfo
+  objcRetType = retMPSemaphoreInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MemoryExceptionInformation = MemoryExceptionInformation
   { memoryExceptionInformationTheArea :: !(Ptr ())
   , memoryExceptionInformationTheAddress :: !(Ptr ())
@@ -1938,6 +2520,16 @@ argMemoryExceptionInformation = mkStorableArg memoryExceptionInformationStructTy
 retMemoryExceptionInformation :: RetType MemoryExceptionInformation
 retMemoryExceptionInformation = mkStorableRetType memoryExceptionInformationStructType
 
+instance ObjCArgument MemoryExceptionInformation where
+  withObjCArg x k = k (argMemoryExceptionInformation x)
+
+instance ObjCReturn MemoryExceptionInformation where
+  type RawReturn MemoryExceptionInformation = MemoryExceptionInformation
+  objcRetType = retMemoryExceptionInformation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MixedModeStateRecord = MixedModeStateRecord
   { mixedModeStateRecordState1 :: !CUInt
   , mixedModeStateRecordState2 :: !CUInt
@@ -1967,6 +2559,16 @@ argMixedModeStateRecord = mkStorableArg mixedModeStateRecordStructType
 
 retMixedModeStateRecord :: RetType MixedModeStateRecord
 retMixedModeStateRecord = mkStorableRetType mixedModeStateRecordStructType
+
+instance ObjCArgument MixedModeStateRecord where
+  withObjCArg x k = k (argMixedModeStateRecord x)
+
+instance ObjCReturn MixedModeStateRecord where
+  type RawReturn MixedModeStateRecord = MixedModeStateRecord
+  objcRetType = retMixedModeStateRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data NItl4Rec = NItl4Rec
   { nItl4RecFlags :: !CShort
@@ -2058,6 +2660,16 @@ argNItl4Rec = mkStorableArg nItl4RecStructType
 retNItl4Rec :: RetType NItl4Rec
 retNItl4Rec = mkStorableRetType nItl4RecStructType
 
+instance ObjCArgument NItl4Rec where
+  withObjCArg x k = k (argNItl4Rec x)
+
+instance ObjCReturn NItl4Rec where
+  type RawReturn NItl4Rec = NItl4Rec
+  objcRetType = retNItl4Rec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data Nanoseconds = Nanoseconds
   { nanosecondsLo :: !CUInt
   , nanosecondsHi :: !CUInt
@@ -2082,6 +2694,16 @@ argNanoseconds = mkStorableArg nanosecondsStructType
 retNanoseconds :: RetType Nanoseconds
 retNanoseconds = mkStorableRetType nanosecondsStructType
 
+instance ObjCArgument Nanoseconds where
+  withObjCArg x k = k (argNanoseconds x)
+
+instance ObjCReturn Nanoseconds where
+  type RawReturn Nanoseconds = Nanoseconds
+  objcRetType = retNanoseconds
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data OffPair = OffPair
   { offPairOffFirst :: !CShort
   , offPairOffSecond :: !CShort
@@ -2105,6 +2727,16 @@ argOffPair = mkStorableArg offPairStructType
 
 retOffPair :: RetType OffPair
 retOffPair = mkStorableRetType offPairStructType
+
+instance ObjCArgument OffPair where
+  withObjCArg x k = k (argOffPair x)
+
+instance ObjCReturn OffPair where
+  type RawReturn OffPair = OffPair
+  objcRetType = retOffPair
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PEFContainerHeader = PEFContainerHeader
   { pefContainerHeaderTag1 :: !CUInt
@@ -2157,6 +2789,16 @@ argPEFContainerHeader = mkStorableArg pefContainerHeaderStructType
 retPEFContainerHeader :: RetType PEFContainerHeader
 retPEFContainerHeader = mkStorableRetType pefContainerHeaderStructType
 
+instance ObjCArgument PEFContainerHeader where
+  withObjCArg x k = k (argPEFContainerHeader x)
+
+instance ObjCReturn PEFContainerHeader where
+  type RawReturn PEFContainerHeader = PEFContainerHeader
+  objcRetType = retPEFContainerHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data PEFExportedSymbol = PEFExportedSymbol
   { pefExportedSymbolClassAndName :: !CUInt
   , pefExportedSymbolSymbolValue :: !CUInt
@@ -2184,6 +2826,16 @@ argPEFExportedSymbol = mkStorableArg pefExportedSymbolStructType
 retPEFExportedSymbol :: RetType PEFExportedSymbol
 retPEFExportedSymbol = mkStorableRetType pefExportedSymbolStructType
 
+instance ObjCArgument PEFExportedSymbol where
+  withObjCArg x k = k (argPEFExportedSymbol x)
+
+instance ObjCReturn PEFExportedSymbol where
+  type RawReturn PEFExportedSymbol = PEFExportedSymbol
+  objcRetType = retPEFExportedSymbol
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data PEFExportedSymbolHashSlot = PEFExportedSymbolHashSlot
   { pefExportedSymbolHashSlotCountAndStart :: !CUInt
   } deriving (Eq, Show)
@@ -2204,6 +2856,16 @@ argPEFExportedSymbolHashSlot = mkStorableArg pefExportedSymbolHashSlotStructType
 
 retPEFExportedSymbolHashSlot :: RetType PEFExportedSymbolHashSlot
 retPEFExportedSymbolHashSlot = mkStorableRetType pefExportedSymbolHashSlotStructType
+
+instance ObjCArgument PEFExportedSymbolHashSlot where
+  withObjCArg x k = k (argPEFExportedSymbolHashSlot x)
+
+instance ObjCReturn PEFExportedSymbolHashSlot where
+  type RawReturn PEFExportedSymbolHashSlot = PEFExportedSymbolHashSlot
+  objcRetType = retPEFExportedSymbolHashSlot
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PEFImportedLibrary = PEFImportedLibrary
   { pefImportedLibraryNameOffset :: !CUInt
@@ -2247,6 +2909,16 @@ argPEFImportedLibrary = mkStorableArg pefImportedLibraryStructType
 retPEFImportedLibrary :: RetType PEFImportedLibrary
 retPEFImportedLibrary = mkStorableRetType pefImportedLibraryStructType
 
+instance ObjCArgument PEFImportedLibrary where
+  withObjCArg x k = k (argPEFImportedLibrary x)
+
+instance ObjCReturn PEFImportedLibrary where
+  type RawReturn PEFImportedLibrary = PEFImportedLibrary
+  objcRetType = retPEFImportedLibrary
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data PEFImportedSymbol = PEFImportedSymbol
   { pefImportedSymbolClassAndName :: !CUInt
   } deriving (Eq, Show)
@@ -2267,6 +2939,16 @@ argPEFImportedSymbol = mkStorableArg pefImportedSymbolStructType
 
 retPEFImportedSymbol :: RetType PEFImportedSymbol
 retPEFImportedSymbol = mkStorableRetType pefImportedSymbolStructType
+
+instance ObjCArgument PEFImportedSymbol where
+  withObjCArg x k = k (argPEFImportedSymbol x)
+
+instance ObjCReturn PEFImportedSymbol where
+  type RawReturn PEFImportedSymbol = PEFImportedSymbol
+  objcRetType = retPEFImportedSymbol
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PEFLoaderInfoHeader = PEFLoaderInfoHeader
   { pefLoaderInfoHeaderMainSection :: !CInt
@@ -2328,6 +3010,16 @@ argPEFLoaderInfoHeader = mkStorableArg pefLoaderInfoHeaderStructType
 retPEFLoaderInfoHeader :: RetType PEFLoaderInfoHeader
 retPEFLoaderInfoHeader = mkStorableRetType pefLoaderInfoHeaderStructType
 
+instance ObjCArgument PEFLoaderInfoHeader where
+  withObjCArg x k = k (argPEFLoaderInfoHeader x)
+
+instance ObjCReturn PEFLoaderInfoHeader where
+  type RawReturn PEFLoaderInfoHeader = PEFLoaderInfoHeader
+  objcRetType = retPEFLoaderInfoHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data PEFLoaderRelocationHeader = PEFLoaderRelocationHeader
   { pefLoaderRelocationHeaderSectionIndex :: !CUShort
   , pefLoaderRelocationHeaderReservedA :: !CUShort
@@ -2357,6 +3049,16 @@ argPEFLoaderRelocationHeader = mkStorableArg pefLoaderRelocationHeaderStructType
 
 retPEFLoaderRelocationHeader :: RetType PEFLoaderRelocationHeader
 retPEFLoaderRelocationHeader = mkStorableRetType pefLoaderRelocationHeaderStructType
+
+instance ObjCArgument PEFLoaderRelocationHeader where
+  withObjCArg x k = k (argPEFLoaderRelocationHeader x)
+
+instance ObjCReturn PEFLoaderRelocationHeader where
+  type RawReturn PEFLoaderRelocationHeader = PEFLoaderRelocationHeader
+  objcRetType = retPEFLoaderRelocationHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data PEFSectionHeader = PEFSectionHeader
   { pefSectionHeaderNameOffset :: !CInt
@@ -2406,6 +3108,16 @@ argPEFSectionHeader = mkStorableArg pefSectionHeaderStructType
 retPEFSectionHeader :: RetType PEFSectionHeader
 retPEFSectionHeader = mkStorableRetType pefSectionHeaderStructType
 
+instance ObjCArgument PEFSectionHeader where
+  withObjCArg x k = k (argPEFSectionHeader x)
+
+instance ObjCReturn PEFSectionHeader where
+  type RawReturn PEFSectionHeader = PEFSectionHeader
+  objcRetType = retPEFSectionHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data PEFSplitHashWord = PEFSplitHashWord
   { pefSplitHashWordNameLength :: !CUShort
   , pefSplitHashWordHashValue :: !CUShort
@@ -2430,6 +3142,16 @@ argPEFSplitHashWord = mkStorableArg pefSplitHashWordStructType
 retPEFSplitHashWord :: RetType PEFSplitHashWord
 retPEFSplitHashWord = mkStorableRetType pefSplitHashWordStructType
 
+instance ObjCArgument PEFSplitHashWord where
+  withObjCArg x k = k (argPEFSplitHashWord x)
+
+instance ObjCReturn PEFSplitHashWord where
+  type RawReturn PEFSplitHashWord = PEFSplitHashWord
+  objcRetType = retPEFSplitHashWord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ResourceSpec = ResourceSpec
   { resourceSpecResType :: !CUInt
   , resourceSpecResID :: !CShort
@@ -2453,6 +3175,16 @@ argResourceSpec = mkStorableArg resourceSpecStructType
 
 retResourceSpec :: RetType ResourceSpec
 retResourceSpec = mkStorableRetType resourceSpecStructType
+
+instance ObjCArgument ResourceSpec where
+  withObjCArg x k = k (argResourceSpec x)
+
+instance ObjCReturn ResourceSpec where
+  type RawReturn ResourceSpec = ResourceSpec
+  objcRetType = retResourceSpec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data RoutineRecord = RoutineRecord
   { routineRecordProcInfo :: !CULong
@@ -2493,6 +3225,16 @@ argRoutineRecord = mkStorableArg routineRecordStructType
 retRoutineRecord :: RetType RoutineRecord
 retRoutineRecord = mkStorableRetType routineRecordStructType
 
+instance ObjCArgument RoutineRecord where
+  withObjCArg x k = k (argRoutineRecord x)
+
+instance ObjCReturn RoutineRecord where
+  type RawReturn RoutineRecord = RoutineRecord
+  objcRetType = retRoutineRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data RoutingResourceEntry = RoutingResourceEntry
   { routingResourceEntryCreator :: !CUInt
   , routingResourceEntryFileType :: !CUInt
@@ -2525,6 +3267,16 @@ argRoutingResourceEntry = mkStorableArg routingResourceEntryStructType
 
 retRoutingResourceEntry :: RetType RoutingResourceEntry
 retRoutingResourceEntry = mkStorableRetType routingResourceEntryStructType
+
+instance ObjCArgument RoutingResourceEntry where
+  withObjCArg x k = k (argRoutingResourceEntry x)
+
+instance ObjCReturn RoutingResourceEntry where
+  type RawReturn RoutingResourceEntry = RoutingResourceEntry
+  objcRetType = retRoutingResourceEntry
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data RuleBasedTrslRecord = RuleBasedTrslRecord
   { ruleBasedTrslRecordSourceType :: !CShort
@@ -2559,6 +3311,16 @@ argRuleBasedTrslRecord = mkStorableArg ruleBasedTrslRecordStructType
 retRuleBasedTrslRecord :: RetType RuleBasedTrslRecord
 retRuleBasedTrslRecord = mkStorableRetType ruleBasedTrslRecordStructType
 
+instance ObjCArgument RuleBasedTrslRecord where
+  withObjCArg x k = k (argRuleBasedTrslRecord x)
+
+instance ObjCReturn RuleBasedTrslRecord where
+  type RawReturn RuleBasedTrslRecord = RuleBasedTrslRecord
+  objcRetType = retRuleBasedTrslRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SchedulerInfoRec = SchedulerInfoRec
   { schedulerInfoRecInfoRecSize :: !CUInt
   , schedulerInfoRecCurrentThreadID :: !CULong
@@ -2589,6 +3351,16 @@ argSchedulerInfoRec = mkStorableArg schedulerInfoRecStructType
 retSchedulerInfoRec :: RetType SchedulerInfoRec
 retSchedulerInfoRec = mkStorableRetType schedulerInfoRecStructType
 
+instance ObjCArgument SchedulerInfoRec where
+  withObjCArg x k = k (argSchedulerInfoRec x)
+
+instance ObjCReturn SchedulerInfoRec where
+  type RawReturn SchedulerInfoRec = SchedulerInfoRec
+  objcRetType = retSchedulerInfoRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ScriptCodeRun = ScriptCodeRun
   { scriptCodeRunOffset :: !CULong
   , scriptCodeRunScript :: !CShort
@@ -2612,6 +3384,16 @@ argScriptCodeRun = mkStorableArg scriptCodeRunStructType
 
 retScriptCodeRun :: RetType ScriptCodeRun
 retScriptCodeRun = mkStorableRetType scriptCodeRunStructType
+
+instance ObjCArgument ScriptCodeRun where
+  withObjCArg x k = k (argScriptCodeRun x)
+
+instance ObjCReturn ScriptCodeRun where
+  type RawReturn ScriptCodeRun = ScriptCodeRun
+  objcRetType = retScriptCodeRun
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data SleepQRec = SleepQRec
   { sleepQRecSleepQLink :: !(Ptr ())
@@ -2643,6 +3425,16 @@ argSleepQRec = mkStorableArg sleepQRecStructType
 retSleepQRec :: RetType SleepQRec
 retSleepQRec = mkStorableRetType sleepQRecStructType
 
+instance ObjCArgument SleepQRec where
+  withObjCArg x k = k (argSleepQRec x)
+
+instance ObjCReturn SleepQRec where
+  type RawReturn SleepQRec = SleepQRec
+  objcRetType = retSleepQRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SoundDataChunk = SoundDataChunk
   { soundDataChunkCkID :: !CUInt
   , soundDataChunkCkSize :: !CInt
@@ -2672,6 +3464,16 @@ argSoundDataChunk = mkStorableArg soundDataChunkStructType
 
 retSoundDataChunk :: RetType SoundDataChunk
 retSoundDataChunk = mkStorableRetType soundDataChunkStructType
+
+instance ObjCArgument SoundDataChunk where
+  withObjCArg x k = k (argSoundDataChunk x)
+
+instance ObjCReturn SoundDataChunk where
+  type RawReturn SoundDataChunk = SoundDataChunk
+  objcRetType = retSoundDataChunk
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TECBufferContextRec = TECBufferContextRec
   { tecBufferContextRecTextInputBuffer :: !(Ptr ())
@@ -2715,6 +3517,16 @@ argTECBufferContextRec = mkStorableArg tecBufferContextRecStructType
 retTECBufferContextRec :: RetType TECBufferContextRec
 retTECBufferContextRec = mkStorableRetType tecBufferContextRecStructType
 
+instance ObjCArgument TECBufferContextRec where
+  withObjCArg x k = k (argTECBufferContextRec x)
+
+instance ObjCReturn TECBufferContextRec where
+  type RawReturn TECBufferContextRec = TECBufferContextRec
+  objcRetType = retTECBufferContextRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TECConversionInfo = TECConversionInfo
   { tecConversionInfoSourceEncoding :: !CUInt
   , tecConversionInfoDestinationEncoding :: !CUInt
@@ -2745,6 +3557,16 @@ argTECConversionInfo = mkStorableArg tecConversionInfoStructType
 retTECConversionInfo :: RetType TECConversionInfo
 retTECConversionInfo = mkStorableRetType tecConversionInfoStructType
 
+instance ObjCArgument TECConversionInfo where
+  withObjCArg x k = k (argTECConversionInfo x)
+
+instance ObjCReturn TECConversionInfo where
+  type RawReturn TECConversionInfo = TECConversionInfo
+  objcRetType = retTECConversionInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TECInternetNamesRec = TECInternetNamesRec
   { tecInternetNamesRecCount :: !CUInt
   , tecInternetNamesRecInternetNames :: !(Ptr ())
@@ -2768,6 +3590,16 @@ argTECInternetNamesRec = mkStorableArg tecInternetNamesRecStructType
 
 retTECInternetNamesRec :: RetType TECInternetNamesRec
 retTECInternetNamesRec = mkStorableRetType tecInternetNamesRecStructType
+
+instance ObjCArgument TECInternetNamesRec where
+  withObjCArg x k = k (argTECInternetNamesRec x)
+
+instance ObjCReturn TECInternetNamesRec where
+  type RawReturn TECInternetNamesRec = TECInternetNamesRec
+  objcRetType = retTECInternetNamesRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TECLocaleListToEncodingListRec = TECLocaleListToEncodingListRec
   { tecLocaleListToEncodingListRecOffset :: !CUInt
@@ -2795,6 +3627,16 @@ argTECLocaleListToEncodingListRec = mkStorableArg tecLocaleListToEncodingListRec
 
 retTECLocaleListToEncodingListRec :: RetType TECLocaleListToEncodingListRec
 retTECLocaleListToEncodingListRec = mkStorableRetType tecLocaleListToEncodingListRecStructType
+
+instance ObjCArgument TECLocaleListToEncodingListRec where
+  withObjCArg x k = k (argTECLocaleListToEncodingListRec x)
+
+instance ObjCReturn TECLocaleListToEncodingListRec where
+  type RawReturn TECLocaleListToEncodingListRec = TECLocaleListToEncodingListRec
+  objcRetType = retTECLocaleListToEncodingListRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TECPluginDispatchTable = TECPluginDispatchTable
   { tecPluginDispatchTableVersion :: !CUInt
@@ -2877,6 +3719,16 @@ argTECPluginDispatchTable = mkStorableArg tecPluginDispatchTableStructType
 retTECPluginDispatchTable :: RetType TECPluginDispatchTable
 retTECPluginDispatchTable = mkStorableRetType tecPluginDispatchTableStructType
 
+instance ObjCArgument TECPluginDispatchTable where
+  withObjCArg x k = k (argTECPluginDispatchTable x)
+
+instance ObjCReturn TECPluginDispatchTable where
+  type RawReturn TECPluginDispatchTable = TECPluginDispatchTable
+  objcRetType = retTECPluginDispatchTable
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TECPluginStateRec = TECPluginStateRec
   { tecPluginStateRecState1 :: !CUChar
   , tecPluginStateRecState2 :: !CUChar
@@ -2919,6 +3771,16 @@ argTECPluginStateRec = mkStorableArg tecPluginStateRecStructType
 retTECPluginStateRec :: RetType TECPluginStateRec
 retTECPluginStateRec = mkStorableRetType tecPluginStateRecStructType
 
+instance ObjCArgument TECPluginStateRec where
+  withObjCArg x k = k (argTECPluginStateRec x)
+
+instance ObjCReturn TECPluginStateRec where
+  type RawReturn TECPluginStateRec = TECPluginStateRec
+  objcRetType = retTECPluginStateRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TMTask = TMTask
   { tmTaskQLink :: !(Ptr ())
   , tmTaskQType :: !CShort
@@ -2954,6 +3816,16 @@ argTMTask = mkStorableArg tmTaskStructType
 
 retTMTask :: RetType TMTask
 retTMTask = mkStorableRetType tmTaskStructType
+
+instance ObjCArgument TMTask where
+  withObjCArg x k = k (argTMTask x)
+
+instance ObjCReturn TMTask where
+  type RawReturn TMTask = TMTask
+  objcRetType = retTMTask
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TScriptingSizeResource = TScriptingSizeResource
   { tScriptingSizeResourceScriptingSizeFlags :: !CShort
@@ -2994,6 +3866,16 @@ argTScriptingSizeResource = mkStorableArg tScriptingSizeResourceStructType
 retTScriptingSizeResource :: RetType TScriptingSizeResource
 retTScriptingSizeResource = mkStorableRetType tScriptingSizeResourceStructType
 
+instance ObjCArgument TScriptingSizeResource where
+  withObjCArg x k = k (argTScriptingSizeResource x)
+
+instance ObjCReturn TScriptingSizeResource where
+  type RawReturn TScriptingSizeResource = TScriptingSizeResource
+  objcRetType = retTScriptingSizeResource
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TableDirectoryRecord = TableDirectoryRecord
   { tableDirectoryRecordTableSignature :: !CUInt
   , tableDirectoryRecordReserved :: !CUInt
@@ -3024,6 +3906,16 @@ argTableDirectoryRecord = mkStorableArg tableDirectoryRecordStructType
 retTableDirectoryRecord :: RetType TableDirectoryRecord
 retTableDirectoryRecord = mkStorableRetType tableDirectoryRecordStructType
 
+instance ObjCArgument TableDirectoryRecord where
+  withObjCArg x k = k (argTableDirectoryRecord x)
+
+instance ObjCReturn TableDirectoryRecord where
+  type RawReturn TableDirectoryRecord = TableDirectoryRecord
+  objcRetType = retTableDirectoryRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TextEncodingRec = TextEncodingRec
   { textEncodingRecBase :: !CUInt
   , textEncodingRecVariant :: !CUInt
@@ -3051,6 +3943,16 @@ argTextEncodingRec = mkStorableArg textEncodingRecStructType
 retTextEncodingRec :: RetType TextEncodingRec
 retTextEncodingRec = mkStorableRetType textEncodingRecStructType
 
+instance ObjCArgument TextEncodingRec where
+  withObjCArg x k = k (argTextEncodingRec x)
+
+instance ObjCReturn TextEncodingRec where
+  type RawReturn TextEncodingRec = TextEncodingRec
+  objcRetType = retTextEncodingRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TextEncodingRun = TextEncodingRun
   { textEncodingRunOffset :: !CULong
   , textEncodingRunTextEncoding :: !CUInt
@@ -3074,6 +3976,16 @@ argTextEncodingRun = mkStorableArg textEncodingRunStructType
 
 retTextEncodingRun :: RetType TextEncodingRun
 retTextEncodingRun = mkStorableRetType textEncodingRunStructType
+
+instance ObjCArgument TextEncodingRun where
+  withObjCArg x k = k (argTextEncodingRun x)
+
+instance ObjCReturn TextEncodingRun where
+  type RawReturn TextEncodingRun = TextEncodingRun
+  objcRetType = retTextEncodingRun
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TextRange = TextRange
   { textRangeFStart :: !CInt
@@ -3101,6 +4013,16 @@ argTextRange = mkStorableArg textRangeStructType
 
 retTextRange :: RetType TextRange
 retTextRange = mkStorableRetType textRangeStructType
+
+instance ObjCArgument TextRange where
+  withObjCArg x k = k (argTextRange x)
+
+instance ObjCReturn TextRange where
+  type RawReturn TextRange = TextRange
+  objcRetType = retTextRange
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TokenRec = TokenRec
   { tokenRecTheToken :: !CShort
@@ -3132,6 +4054,16 @@ argTokenRec = mkStorableArg tokenRecStructType
 retTokenRec :: RetType TokenRec
 retTokenRec = mkStorableRetType tokenRecStructType
 
+instance ObjCArgument TokenRec where
+  withObjCArg x k = k (argTokenRec x)
+
+instance ObjCReturn TokenRec where
+  type RawReturn TokenRec = TokenRec
+  objcRetType = retTokenRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data UCKeyLayoutFeatureInfo = UCKeyLayoutFeatureInfo
   { ucKeyLayoutFeatureInfoKeyLayoutFeatureInfoFormat :: !CUShort
   , ucKeyLayoutFeatureInfoReserved :: !CUShort
@@ -3158,6 +4090,16 @@ argUCKeyLayoutFeatureInfo = mkStorableArg ucKeyLayoutFeatureInfoStructType
 
 retUCKeyLayoutFeatureInfo :: RetType UCKeyLayoutFeatureInfo
 retUCKeyLayoutFeatureInfo = mkStorableRetType ucKeyLayoutFeatureInfoStructType
+
+instance ObjCArgument UCKeyLayoutFeatureInfo where
+  withObjCArg x k = k (argUCKeyLayoutFeatureInfo x)
+
+instance ObjCReturn UCKeyLayoutFeatureInfo where
+  type RawReturn UCKeyLayoutFeatureInfo = UCKeyLayoutFeatureInfo
+  objcRetType = retUCKeyLayoutFeatureInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data UCKeyStateEntryRange = UCKeyStateEntryRange
   { ucKeyStateEntryRangeCurStateStart :: !CUShort
@@ -3192,6 +4134,16 @@ argUCKeyStateEntryRange = mkStorableArg ucKeyStateEntryRangeStructType
 retUCKeyStateEntryRange :: RetType UCKeyStateEntryRange
 retUCKeyStateEntryRange = mkStorableRetType ucKeyStateEntryRangeStructType
 
+instance ObjCArgument UCKeyStateEntryRange where
+  withObjCArg x k = k (argUCKeyStateEntryRange x)
+
+instance ObjCReturn UCKeyStateEntryRange where
+  type RawReturn UCKeyStateEntryRange = UCKeyStateEntryRange
+  objcRetType = retUCKeyStateEntryRange
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data UCKeyStateEntryTerminal = UCKeyStateEntryTerminal
   { ucKeyStateEntryTerminalCurState :: !CUShort
   , ucKeyStateEntryTerminalCharData :: !CUShort
@@ -3215,6 +4167,16 @@ argUCKeyStateEntryTerminal = mkStorableArg ucKeyStateEntryTerminalStructType
 
 retUCKeyStateEntryTerminal :: RetType UCKeyStateEntryTerminal
 retUCKeyStateEntryTerminal = mkStorableRetType ucKeyStateEntryTerminalStructType
+
+instance ObjCArgument UCKeyStateEntryTerminal where
+  withObjCArg x k = k (argUCKeyStateEntryTerminal x)
+
+instance ObjCReturn UCKeyStateEntryTerminal where
+  type RawReturn UCKeyStateEntryTerminal = UCKeyStateEntryTerminal
+  objcRetType = retUCKeyStateEntryTerminal
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data UCKeyboardTypeHeader = UCKeyboardTypeHeader
   { ucKeyboardTypeHeaderKeyboardTypeFirst :: !CUInt
@@ -3255,6 +4217,16 @@ argUCKeyboardTypeHeader = mkStorableArg ucKeyboardTypeHeaderStructType
 retUCKeyboardTypeHeader :: RetType UCKeyboardTypeHeader
 retUCKeyboardTypeHeader = mkStorableRetType ucKeyboardTypeHeaderStructType
 
+instance ObjCArgument UCKeyboardTypeHeader where
+  withObjCArg x k = k (argUCKeyboardTypeHeader x)
+
+instance ObjCReturn UCKeyboardTypeHeader where
+  type RawReturn UCKeyboardTypeHeader = UCKeyboardTypeHeader
+  objcRetType = retUCKeyboardTypeHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data UTCDateTime = UTCDateTime
   { utcDateTimeHighSeconds :: !CUShort
   , utcDateTimeLowSeconds :: !CUInt
@@ -3281,6 +4253,16 @@ argUTCDateTime = mkStorableArg utcDateTimeStructType
 
 retUTCDateTime :: RetType UTCDateTime
 retUTCDateTime = mkStorableRetType utcDateTimeStructType
+
+instance ObjCArgument UTCDateTime where
+  withObjCArg x k = k (argUTCDateTime x)
+
+instance ObjCReturn UTCDateTime where
+  type RawReturn UTCDateTime = UTCDateTime
+  objcRetType = retUTCDateTime
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data UnicodeMapping = UnicodeMapping
   { unicodeMappingUnicodeEncoding :: !CUInt
@@ -3309,6 +4291,16 @@ argUnicodeMapping = mkStorableArg unicodeMappingStructType
 retUnicodeMapping :: RetType UnicodeMapping
 retUnicodeMapping = mkStorableRetType unicodeMappingStructType
 
+instance ObjCArgument UnicodeMapping where
+  withObjCArg x k = k (argUnicodeMapping x)
+
+instance ObjCReturn UnicodeMapping where
+  type RawReturn UnicodeMapping = UnicodeMapping
+  objcRetType = retUnicodeMapping
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data VolMountInfoHeader = VolMountInfoHeader
   { volMountInfoHeaderLength :: !CShort
   , volMountInfoHeaderMedia :: !CUInt
@@ -3332,6 +4324,16 @@ argVolMountInfoHeader = mkStorableArg volMountInfoHeaderStructType
 
 retVolMountInfoHeader :: RetType VolMountInfoHeader
 retVolMountInfoHeader = mkStorableRetType volMountInfoHeaderStructType
+
+instance ObjCArgument VolMountInfoHeader where
+  withObjCArg x k = k (argVolMountInfoHeader x)
+
+instance ObjCReturn VolMountInfoHeader where
+  type RawReturn VolMountInfoHeader = VolMountInfoHeader
+  objcRetType = retVolMountInfoHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data VolumeMountInfoHeader = VolumeMountInfoHeader
   { volumeMountInfoHeaderLength :: !CShort
@@ -3359,6 +4361,16 @@ argVolumeMountInfoHeader = mkStorableArg volumeMountInfoHeaderStructType
 
 retVolumeMountInfoHeader :: RetType VolumeMountInfoHeader
 retVolumeMountInfoHeader = mkStorableRetType volumeMountInfoHeaderStructType
+
+instance ObjCArgument VolumeMountInfoHeader where
+  withObjCArg x k = k (argVolumeMountInfoHeader x)
+
+instance ObjCReturn VolumeMountInfoHeader where
+  type RawReturn VolumeMountInfoHeader = VolumeMountInfoHeader
+  objcRetType = retVolumeMountInfoHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data WSClientContext = WSClientContext
   { wsClientContextVersion :: !CLong
@@ -3393,6 +4405,16 @@ argWSClientContext = mkStorableArg wsClientContextStructType
 retWSClientContext :: RetType WSClientContext
 retWSClientContext = mkStorableRetType wsClientContextStructType
 
+instance ObjCArgument WSClientContext where
+  withObjCArg x k = k (argWSClientContext x)
+
+instance ObjCReturn WSClientContext where
+  type RawReturn WSClientContext = WSClientContext
+  objcRetType = retWSClientContext
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data WritingCode = WritingCode
   { writingCodeTheScriptCode :: !CShort
   , writingCodeTheLangCode :: !CShort
@@ -3416,6 +4438,16 @@ argWritingCode = mkStorableArg writingCodeStructType
 
 retWritingCode :: RetType WritingCode
 retWritingCode = mkStorableRetType writingCodeStructType
+
+instance ObjCArgument WritingCode where
+  withObjCArg x k = k (argWritingCode x)
+
+instance ObjCReturn WritingCode where
+  type RawReturn WritingCode = WritingCode
+  objcRetType = retWritingCode
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data XLibContainerHeader = XLibContainerHeader
   { xLibContainerHeaderTag1 :: !CUInt
@@ -3495,6 +4527,16 @@ argXLibContainerHeader = mkStorableArg xLibContainerHeaderStructType
 retXLibContainerHeader :: RetType XLibContainerHeader
 retXLibContainerHeader = mkStorableRetType xLibContainerHeaderStructType
 
+instance ObjCArgument XLibContainerHeader where
+  withObjCArg x k = k (argXLibContainerHeader x)
+
+instance ObjCReturn XLibContainerHeader where
+  type RawReturn XLibContainerHeader = XLibContainerHeader
+  objcRetType = retXLibContainerHeader
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data XLibExportedSymbol = XLibExportedSymbol
   { xLibExportedSymbolClassAndName :: !CUInt
   , xLibExportedSymbolBpOffset :: !CUInt
@@ -3519,6 +4561,16 @@ argXLibExportedSymbol = mkStorableArg xLibExportedSymbolStructType
 retXLibExportedSymbol :: RetType XLibExportedSymbol
 retXLibExportedSymbol = mkStorableRetType xLibExportedSymbolStructType
 
+instance ObjCArgument XLibExportedSymbol where
+  withObjCArg x k = k (argXLibExportedSymbol x)
+
+instance ObjCReturn XLibExportedSymbol where
+  type RawReturn XLibExportedSymbol = XLibExportedSymbol
+  objcRetType = retXLibExportedSymbol
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data XLibExportedSymbolHashSlot = XLibExportedSymbolHashSlot
   { xLibExportedSymbolHashSlotCountAndStart :: !CUInt
   } deriving (Eq, Show)
@@ -3539,6 +4591,16 @@ argXLibExportedSymbolHashSlot = mkStorableArg xLibExportedSymbolHashSlotStructTy
 
 retXLibExportedSymbolHashSlot :: RetType XLibExportedSymbolHashSlot
 retXLibExportedSymbolHashSlot = mkStorableRetType xLibExportedSymbolHashSlotStructType
+
+instance ObjCArgument XLibExportedSymbolHashSlot where
+  withObjCArg x k = k (argXLibExportedSymbolHashSlot x)
+
+instance ObjCReturn XLibExportedSymbolHashSlot where
+  type RawReturn XLibExportedSymbolHashSlot = XLibExportedSymbolHashSlot
+  objcRetType = retXLibExportedSymbolHashSlot
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data AEKeyDesc = AEKeyDesc
   { aeKeyDescDescKey :: !CUInt
@@ -3563,6 +4625,16 @@ argAEKeyDesc = mkStorableArg aeKeyDescStructType
 
 retAEKeyDesc :: RetType AEKeyDesc
 retAEKeyDesc = mkStorableRetType aeKeyDescStructType
+
+instance ObjCArgument AEKeyDesc where
+  withObjCArg x k = k (argAEKeyDesc x)
+
+instance ObjCReturn AEKeyDesc where
+  type RawReturn AEKeyDesc = AEKeyDesc
+  objcRetType = retAEKeyDesc
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ComponentPlatformInfo = ComponentPlatformInfo
   { componentPlatformInfoComponentFlags :: !CInt
@@ -3590,6 +4662,16 @@ argComponentPlatformInfo = mkStorableArg componentPlatformInfoStructType
 
 retComponentPlatformInfo :: RetType ComponentPlatformInfo
 retComponentPlatformInfo = mkStorableRetType componentPlatformInfoStructType
+
+instance ObjCArgument ComponentPlatformInfo where
+  withObjCArg x k = k (argComponentPlatformInfo x)
+
+instance ObjCReturn ComponentPlatformInfo where
+  type RawReturn ComponentPlatformInfo = ComponentPlatformInfo
+  objcRetType = retComponentPlatformInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ComponentResource = ComponentResource
   { componentResourceCd :: !ComponentDescription
@@ -3624,6 +4706,16 @@ argComponentResource = mkStorableArg componentResourceStructType
 retComponentResource :: RetType ComponentResource
 retComponentResource = mkStorableRetType componentResourceStructType
 
+instance ObjCArgument ComponentResource where
+  withObjCArg x k = k (argComponentResource x)
+
+instance ObjCReturn ComponentResource where
+  type RawReturn ComponentResource = ComponentResource
+  objcRetType = retComponentResource
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data DInfo = DInfo
   { dInfoFrRect :: !Rect
   , dInfoFrFlags :: !CUShort
@@ -3653,6 +4745,16 @@ argDInfo = mkStorableArg dInfoStructType
 
 retDInfo :: RetType DInfo
 retDInfo = mkStorableRetType dInfoStructType
+
+instance ObjCArgument DInfo where
+  withObjCArg x k = k (argDInfo x)
+
+instance ObjCReturn DInfo where
+  type RawReturn DInfo = DInfo
+  objcRetType = retDInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data DXInfo = DXInfo
   { dxInfoFrScroll :: !Point
@@ -3690,6 +4792,16 @@ argDXInfo = mkStorableArg dxInfoStructType
 retDXInfo :: RetType DXInfo
 retDXInfo = mkStorableRetType dxInfoStructType
 
+instance ObjCArgument DXInfo where
+  withObjCArg x k = k (argDXInfo x)
+
+instance ObjCReturn DXInfo where
+  type RawReturn DXInfo = DXInfo
+  objcRetType = retDXInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ExtendedFolderInfo = ExtendedFolderInfo
   { extendedFolderInfoScrollPosition :: !Point
   , extendedFolderInfoReserved1 :: !CInt
@@ -3723,6 +4835,16 @@ argExtendedFolderInfo = mkStorableArg extendedFolderInfoStructType
 retExtendedFolderInfo :: RetType ExtendedFolderInfo
 retExtendedFolderInfo = mkStorableRetType extendedFolderInfoStructType
 
+instance ObjCArgument ExtendedFolderInfo where
+  withObjCArg x k = k (argExtendedFolderInfo x)
+
+instance ObjCReturn ExtendedFolderInfo where
+  type RawReturn ExtendedFolderInfo = ExtendedFolderInfo
+  objcRetType = retExtendedFolderInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FInfo = FInfo
   { fInfoFdType :: !CUInt
   , fInfoFdCreator :: !CUInt
@@ -3755,6 +4877,16 @@ argFInfo = mkStorableArg fInfoStructType
 
 retFInfo :: RetType FInfo
 retFInfo = mkStorableRetType fInfoStructType
+
+instance ObjCArgument FInfo where
+  withObjCArg x k = k (argFInfo x)
+
+instance ObjCReturn FInfo where
+  type RawReturn FInfo = FInfo
+  objcRetType = retFInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data FSAliasInfo = FSAliasInfo
   { fsAliasInfoVolumeCreateDate :: !UTCDateTime
@@ -3813,6 +4945,16 @@ argFSAliasInfo = mkStorableArg fsAliasInfoStructType
 retFSAliasInfo :: RetType FSAliasInfo
 retFSAliasInfo = mkStorableRetType fsAliasInfoStructType
 
+instance ObjCArgument FSAliasInfo where
+  withObjCArg x k = k (argFSAliasInfo x)
+
+instance ObjCReturn FSAliasInfo where
+  type RawReturn FSAliasInfo = FSAliasInfo
+  objcRetType = retFSAliasInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FileInfo = FileInfo
   { fileInfoFileType :: !CUInt
   , fileInfoFileCreator :: !CUInt
@@ -3846,6 +4988,16 @@ argFileInfo = mkStorableArg fileInfoStructType
 retFileInfo :: RetType FileInfo
 retFileInfo = mkStorableRetType fileInfoStructType
 
+instance ObjCArgument FileInfo where
+  withObjCArg x k = k (argFileInfo x)
+
+instance ObjCReturn FileInfo where
+  type RawReturn FileInfo = FileInfo
+  objcRetType = retFileInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data FolderInfo = FolderInfo
   { folderInfoWindowBounds :: !Rect
   , folderInfoFinderFlags :: !CUShort
@@ -3875,6 +5027,16 @@ argFolderInfo = mkStorableArg folderInfoStructType
 
 retFolderInfo :: RetType FolderInfo
 retFolderInfo = mkStorableRetType folderInfoStructType
+
+instance ObjCArgument FolderInfo where
+  withObjCArg x k = k (argFolderInfo x)
+
+instance ObjCReturn FolderInfo where
+  type RawReturn FolderInfo = FolderInfo
+  objcRetType = retFolderInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data InstrumentChunk = InstrumentChunk
   { instrumentChunkCkID :: !CUInt
@@ -3926,6 +5088,16 @@ argInstrumentChunk = mkStorableArg instrumentChunkStructType
 
 retInstrumentChunk :: RetType InstrumentChunk
 retInstrumentChunk = mkStorableRetType instrumentChunkStructType
+
+instance ObjCArgument InstrumentChunk where
+  withObjCArg x k = k (argInstrumentChunk x)
+
+instance ObjCReturn InstrumentChunk where
+  type RawReturn InstrumentChunk = InstrumentChunk
+  objcRetType = retInstrumentChunk
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data ItlbExtRecord = ItlbExtRecord
   { itlbExtRecordBase :: !ItlbRecord
@@ -3992,6 +5164,16 @@ argItlbExtRecord = mkStorableArg itlbExtRecordStructType
 
 retItlbExtRecord :: RetType ItlbExtRecord
 retItlbExtRecord = mkStorableRetType itlbExtRecordStructType
+
+instance ObjCArgument ItlbExtRecord where
+  withObjCArg x k = k (argItlbExtRecord x)
+
+instance ObjCReturn ItlbExtRecord where
+  type RawReturn ItlbExtRecord = ItlbExtRecord
+  objcRetType = retItlbExtRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MPTaskInfo = MPTaskInfo
   { mpTaskInfoVersion :: !CUInt
@@ -4068,6 +5250,16 @@ argMPTaskInfo = mkStorableArg mpTaskInfoStructType
 retMPTaskInfo :: RetType MPTaskInfo
 retMPTaskInfo = mkStorableRetType mpTaskInfoStructType
 
+instance ObjCArgument MPTaskInfo where
+  withObjCArg x k = k (argMPTaskInfo x)
+
+instance ObjCReturn MPTaskInfo where
+  type RawReturn MPTaskInfo = MPTaskInfo
+  objcRetType = retMPTaskInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MPTaskInfoVersion2 = MPTaskInfoVersion2
   { mpTaskInfoVersion2Version :: !CUInt
   , mpTaskInfoVersion2Name :: !CUInt
@@ -4128,6 +5320,16 @@ argMPTaskInfoVersion2 = mkStorableArg mpTaskInfoVersion2StructType
 retMPTaskInfoVersion2 :: RetType MPTaskInfoVersion2
 retMPTaskInfoVersion2 = mkStorableRetType mpTaskInfoVersion2StructType
 
+instance ObjCArgument MPTaskInfoVersion2 where
+  withObjCArg x k = k (argMPTaskInfoVersion2 x)
+
+instance ObjCReturn MPTaskInfoVersion2 where
+  type RawReturn MPTaskInfoVersion2 = MPTaskInfoVersion2
+  objcRetType = retMPTaskInfoVersion2
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MachineInformationPowerPC = MachineInformationPowerPC
   { machineInformationPowerPCCTR :: !Nanoseconds
   , machineInformationPowerPCLR :: !Nanoseconds
@@ -4178,6 +5380,16 @@ argMachineInformationPowerPC = mkStorableArg machineInformationPowerPCStructType
 
 retMachineInformationPowerPC :: RetType MachineInformationPowerPC
 retMachineInformationPowerPC = mkStorableRetType machineInformationPowerPCStructType
+
+instance ObjCArgument MachineInformationPowerPC where
+  withObjCArg x k = k (argMachineInformationPowerPC x)
+
+instance ObjCReturn MachineInformationPowerPC where
+  type RawReturn MachineInformationPowerPC = MachineInformationPowerPC
+  objcRetType = retMachineInformationPowerPC
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data RegisterInformationPowerPC = RegisterInformationPowerPC
   { registerInformationPowerPCR0 :: !Nanoseconds
@@ -4293,6 +5505,16 @@ argRegisterInformationPowerPC = mkStorableArg registerInformationPowerPCStructTy
 retRegisterInformationPowerPC :: RetType RegisterInformationPowerPC
 retRegisterInformationPowerPC = mkStorableRetType registerInformationPowerPCStructType
 
+instance ObjCArgument RegisterInformationPowerPC where
+  withObjCArg x k = k (argRegisterInformationPowerPC x)
+
+instance ObjCReturn RegisterInformationPowerPC where
+  type RawReturn RegisterInformationPowerPC = RegisterInformationPowerPC
+  objcRetType = retRegisterInformationPowerPC
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TECConverterContextRec = TECConverterContextRec
   { tecConverterContextRecPluginRec :: !(Ptr ())
   , tecConverterContextRecSourceEncoding :: !CUInt
@@ -4350,6 +5572,16 @@ argTECConverterContextRec = mkStorableArg tecConverterContextRecStructType
 retTECConverterContextRec :: RetType TECConverterContextRec
 retTECConverterContextRec = mkStorableRetType tecConverterContextRecStructType
 
+instance ObjCArgument TECConverterContextRec where
+  withObjCArg x k = k (argTECConverterContextRec x)
+
+instance ObjCReturn TECConverterContextRec where
+  type RawReturn TECConverterContextRec = TECConverterContextRec
+  objcRetType = retTECConverterContextRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TECEncodingPairRec = TECEncodingPairRec
   { tecEncodingPairRecSource :: !TextEncodingRec
   , tecEncodingPairRecDest :: !TextEncodingRec
@@ -4373,6 +5605,16 @@ argTECEncodingPairRec = mkStorableArg tecEncodingPairRecStructType
 
 retTECEncodingPairRec :: RetType TECEncodingPairRec
 retTECEncodingPairRec = mkStorableRetType tecEncodingPairRecStructType
+
+instance ObjCArgument TECEncodingPairRec where
+  withObjCArg x k = k (argTECEncodingPairRec x)
+
+instance ObjCReturn TECEncodingPairRec where
+  type RawReturn TECEncodingPairRec = TECEncodingPairRec
+  objcRetType = retTECEncodingPairRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TECEncodingsListRec = TECEncodingsListRec
   { tecEncodingsListRecCount :: !CUInt
@@ -4398,6 +5640,16 @@ argTECEncodingsListRec = mkStorableArg tecEncodingsListRecStructType
 retTECEncodingsListRec :: RetType TECEncodingsListRec
 retTECEncodingsListRec = mkStorableRetType tecEncodingsListRecStructType
 
+instance ObjCArgument TECEncodingsListRec where
+  withObjCArg x k = k (argTECEncodingsListRec x)
+
+instance ObjCReturn TECEncodingsListRec where
+  type RawReturn TECEncodingsListRec = TECEncodingsListRec
+  objcRetType = retTECEncodingsListRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TECLocaleToEncodingsListRec = TECLocaleToEncodingsListRec
   { tecLocaleToEncodingsListRecCount :: !CUInt
   , tecLocaleToEncodingsListRecLocaleListToEncodingList :: !TECLocaleListToEncodingListRec
@@ -4421,6 +5673,16 @@ argTECLocaleToEncodingsListRec = mkStorableArg tecLocaleToEncodingsListRecStruct
 
 retTECLocaleToEncodingsListRec :: RetType TECLocaleToEncodingsListRec
 retTECLocaleToEncodingsListRec = mkStorableRetType tecLocaleToEncodingsListRecStructType
+
+instance ObjCArgument TECLocaleToEncodingsListRec where
+  withObjCArg x k = k (argTECLocaleToEncodingsListRec x)
+
+instance ObjCReturn TECLocaleToEncodingsListRec where
+  type RawReturn TECLocaleToEncodingsListRec = TECLocaleToEncodingsListRec
+  objcRetType = retTECLocaleToEncodingsListRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TECSnifferContextRec = TECSnifferContextRec
   { tecSnifferContextRecPluginRec :: !(Ptr ())
@@ -4476,6 +5738,16 @@ argTECSnifferContextRec = mkStorableArg tecSnifferContextRecStructType
 retTECSnifferContextRec :: RetType TECSnifferContextRec
 retTECSnifferContextRec = mkStorableRetType tecSnifferContextRecStructType
 
+instance ObjCArgument TECSnifferContextRec where
+  withObjCArg x k = k (argTECSnifferContextRec x)
+
+instance ObjCReturn TECSnifferContextRec where
+  type RawReturn TECSnifferContextRec = TECSnifferContextRec
+  objcRetType = retTECSnifferContextRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TECSubTextEncodingRec = TECSubTextEncodingRec
   { tecSubTextEncodingRecOffset :: !CUInt
   , tecSubTextEncodingRecSearchEncoding :: !TextEncodingRec
@@ -4506,6 +5778,16 @@ argTECSubTextEncodingRec = mkStorableArg tecSubTextEncodingRecStructType
 retTECSubTextEncodingRec :: RetType TECSubTextEncodingRec
 retTECSubTextEncodingRec = mkStorableRetType tecSubTextEncodingRecStructType
 
+instance ObjCArgument TECSubTextEncodingRec where
+  withObjCArg x k = k (argTECSubTextEncodingRec x)
+
+instance ObjCReturn TECSubTextEncodingRec where
+  type RawReturn TECSubTextEncodingRec = TECSubTextEncodingRec
+  objcRetType = retTECSubTextEncodingRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data ComponentAliasResource = ComponentAliasResource
   { componentAliasResourceCr :: !ComponentResource
   , componentAliasResourceAliasCD :: !ComponentDescription
@@ -4529,6 +5811,16 @@ argComponentAliasResource = mkStorableArg componentAliasResourceStructType
 
 retComponentAliasResource :: RetType ComponentAliasResource
 retComponentAliasResource = mkStorableRetType componentAliasResourceStructType
+
+instance ObjCArgument ComponentAliasResource where
+  withObjCArg x k = k (argComponentAliasResource x)
+
+instance ObjCReturn ComponentAliasResource where
+  type RawReturn ComponentAliasResource = ComponentAliasResource
+  objcRetType = retComponentAliasResource
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TECEncodingPairs = TECEncodingPairs
   { tecEncodingPairsEncodingPair :: !TECEncodingPairRec
@@ -4557,6 +5849,16 @@ argTECEncodingPairs = mkStorableArg tecEncodingPairsStructType
 retTECEncodingPairs :: RetType TECEncodingPairs
 retTECEncodingPairs = mkStorableRetType tecEncodingPairsStructType
 
+instance ObjCArgument TECEncodingPairs where
+  withObjCArg x k = k (argTECEncodingPairs x)
+
+instance ObjCReturn TECEncodingPairs where
+  type RawReturn TECEncodingPairs = TECEncodingPairs
+  objcRetType = retTECEncodingPairs
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TECSubTextEncodingsRec = TECSubTextEncodingsRec
   { tecSubTextEncodingsRecCount :: !CUInt
   , tecSubTextEncodingsRecSubTextEncodingRec :: !TECSubTextEncodingRec
@@ -4581,6 +5883,16 @@ argTECSubTextEncodingsRec = mkStorableArg tecSubTextEncodingsRecStructType
 retTECSubTextEncodingsRec :: RetType TECSubTextEncodingsRec
 retTECSubTextEncodingsRec = mkStorableRetType tecSubTextEncodingsRecStructType
 
+instance ObjCArgument TECSubTextEncodingsRec where
+  withObjCArg x k = k (argTECSubTextEncodingsRec x)
+
+instance ObjCReturn TECSubTextEncodingsRec where
+  type RawReturn TECSubTextEncodingsRec = TECSubTextEncodingsRec
+  objcRetType = retTECSubTextEncodingsRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data TECEncodingPairsRec = TECEncodingPairsRec
   { tecEncodingPairsRecCount :: !CUInt
   , tecEncodingPairsRecEncodingPairs :: !TECEncodingPairs
@@ -4604,3 +5916,13 @@ argTECEncodingPairsRec = mkStorableArg tecEncodingPairsRecStructType
 
 retTECEncodingPairsRec :: RetType TECEncodingPairsRec
 retTECEncodingPairsRec = mkStorableRetType tecEncodingPairsRecStructType
+
+instance ObjCArgument TECEncodingPairsRec where
+  withObjCArg x k = k (argTECEncodingPairsRec x)
+
+instance ObjCReturn TECEncodingPairsRec where
+  type RawReturn TECEncodingPairsRec = TECEncodingPairsRec
+  objcRetType = retTECEncodingPairsRec
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

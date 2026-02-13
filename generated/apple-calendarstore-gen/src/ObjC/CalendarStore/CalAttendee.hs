@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.CalendarStore.CalAttendee
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- address@
 address :: IsCalAttendee calAttendee => calAttendee -> IO (Id NSURL)
-address calAttendee  =
-    sendMsg calAttendee (mkSelector "address") (retPtr retVoid) [] >>= retainedObject . castPtr
+address calAttendee =
+  sendMessage calAttendee addressSelector
 
 -- | @- commonName@
 commonName :: IsCalAttendee calAttendee => calAttendee -> IO (Id NSString)
-commonName calAttendee  =
-    sendMsg calAttendee (mkSelector "commonName") (retPtr retVoid) [] >>= retainedObject . castPtr
+commonName calAttendee =
+  sendMessage calAttendee commonNameSelector
 
 -- | @- status@
 status :: IsCalAttendee calAttendee => calAttendee -> IO (Id NSString)
-status calAttendee  =
-    sendMsg calAttendee (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status calAttendee =
+  sendMessage calAttendee statusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @address@
-addressSelector :: Selector
+addressSelector :: Selector '[] (Id NSURL)
 addressSelector = mkSelector "address"
 
 -- | @Selector@ for @commonName@
-commonNameSelector :: Selector
+commonNameSelector :: Selector '[] (Id NSString)
 commonNameSelector = mkSelector "commonName"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSString)
 statusSelector = mkSelector "status"
 

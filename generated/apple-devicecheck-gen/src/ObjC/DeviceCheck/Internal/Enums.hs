@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.DeviceCheck.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | DeviceCheck error codes.
 -- | @DCError@
@@ -31,3 +34,13 @@ pattern DCErrorInvalidKey = DCError 3
 
 pattern DCErrorServerUnavailable :: DCError
 pattern DCErrorServerUnavailable = DCError 4
+
+instance ObjCArgument DCError where
+  withObjCArg (DCError x) k = k (argCLong x)
+
+instance ObjCReturn DCError where
+  type RawReturn DCError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DCError x)
+  fromOwned x = pure (DCError x)

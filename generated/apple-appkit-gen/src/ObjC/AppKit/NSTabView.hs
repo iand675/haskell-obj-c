@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -46,45 +47,45 @@ module ObjC.AppKit.NSTabView
   , numberOfTabViewItems
   , controlTint
   , setControlTint
-  , selectTabViewItemSelector
-  , selectTabViewItemAtIndexSelector
-  , selectTabViewItemWithIdentifierSelector
-  , takeSelectedTabViewItemFromSenderSelector
+  , addTabViewItemSelector
+  , allowsTruncatedLabelsSelector
+  , contentRectSelector
+  , controlSizeSelector
+  , controlTintSelector
+  , delegateSelector
+  , drawsBackgroundSelector
+  , fontSelector
+  , indexOfTabViewItemSelector
+  , indexOfTabViewItemWithIdentifierSelector
+  , insertTabViewItem_atIndexSelector
+  , minimumSizeSelector
+  , numberOfTabViewItemsSelector
+  , removeTabViewItemSelector
   , selectFirstTabViewItemSelector
   , selectLastTabViewItemSelector
   , selectNextTabViewItemSelector
   , selectPreviousTabViewItemSelector
-  , addTabViewItemSelector
-  , insertTabViewItem_atIndexSelector
-  , removeTabViewItemSelector
-  , tabViewItemAtPointSelector
-  , indexOfTabViewItemSelector
-  , tabViewItemAtIndexSelector
-  , indexOfTabViewItemWithIdentifierSelector
+  , selectTabViewItemAtIndexSelector
+  , selectTabViewItemSelector
+  , selectTabViewItemWithIdentifierSelector
   , selectedTabViewItemSelector
-  , fontSelector
+  , setAllowsTruncatedLabelsSelector
+  , setControlSizeSelector
+  , setControlTintSelector
+  , setDelegateSelector
+  , setDrawsBackgroundSelector
   , setFontSelector
-  , tabViewTypeSelector
+  , setTabPositionSelector
+  , setTabViewBorderTypeSelector
+  , setTabViewItemsSelector
   , setTabViewTypeSelector
   , tabPositionSelector
-  , setTabPositionSelector
   , tabViewBorderTypeSelector
-  , setTabViewBorderTypeSelector
+  , tabViewItemAtIndexSelector
+  , tabViewItemAtPointSelector
   , tabViewItemsSelector
-  , setTabViewItemsSelector
-  , allowsTruncatedLabelsSelector
-  , setAllowsTruncatedLabelsSelector
-  , minimumSizeSelector
-  , drawsBackgroundSelector
-  , setDrawsBackgroundSelector
-  , controlSizeSelector
-  , setControlSizeSelector
-  , delegateSelector
-  , setDelegateSelector
-  , contentRectSelector
-  , numberOfTabViewItemsSelector
-  , controlTintSelector
-  , setControlTintSelector
+  , tabViewTypeSelector
+  , takeSelectedTabViewItemFromSenderSelector
 
   -- * Enum types
   , NSControlSize(NSControlSize)
@@ -119,15 +120,11 @@ module ObjC.AppKit.NSTabView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -138,363 +135,356 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- selectTabViewItem:@
 selectTabViewItem :: (IsNSTabView nsTabView, IsNSTabViewItem tabViewItem) => nsTabView -> tabViewItem -> IO ()
-selectTabViewItem nsTabView  tabViewItem =
-  withObjCPtr tabViewItem $ \raw_tabViewItem ->
-      sendMsg nsTabView (mkSelector "selectTabViewItem:") retVoid [argPtr (castPtr raw_tabViewItem :: Ptr ())]
+selectTabViewItem nsTabView tabViewItem =
+  sendMessage nsTabView selectTabViewItemSelector (toNSTabViewItem tabViewItem)
 
 -- | @- selectTabViewItemAtIndex:@
 selectTabViewItemAtIndex :: IsNSTabView nsTabView => nsTabView -> CLong -> IO ()
-selectTabViewItemAtIndex nsTabView  index =
-    sendMsg nsTabView (mkSelector "selectTabViewItemAtIndex:") retVoid [argCLong index]
+selectTabViewItemAtIndex nsTabView index =
+  sendMessage nsTabView selectTabViewItemAtIndexSelector index
 
 -- | @- selectTabViewItemWithIdentifier:@
 selectTabViewItemWithIdentifier :: IsNSTabView nsTabView => nsTabView -> RawId -> IO ()
-selectTabViewItemWithIdentifier nsTabView  identifier =
-    sendMsg nsTabView (mkSelector "selectTabViewItemWithIdentifier:") retVoid [argPtr (castPtr (unRawId identifier) :: Ptr ())]
+selectTabViewItemWithIdentifier nsTabView identifier =
+  sendMessage nsTabView selectTabViewItemWithIdentifierSelector identifier
 
 -- | @- takeSelectedTabViewItemFromSender:@
 takeSelectedTabViewItemFromSender :: IsNSTabView nsTabView => nsTabView -> RawId -> IO ()
-takeSelectedTabViewItemFromSender nsTabView  sender =
-    sendMsg nsTabView (mkSelector "takeSelectedTabViewItemFromSender:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeSelectedTabViewItemFromSender nsTabView sender =
+  sendMessage nsTabView takeSelectedTabViewItemFromSenderSelector sender
 
 -- | @- selectFirstTabViewItem:@
 selectFirstTabViewItem :: IsNSTabView nsTabView => nsTabView -> RawId -> IO ()
-selectFirstTabViewItem nsTabView  sender =
-    sendMsg nsTabView (mkSelector "selectFirstTabViewItem:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectFirstTabViewItem nsTabView sender =
+  sendMessage nsTabView selectFirstTabViewItemSelector sender
 
 -- | @- selectLastTabViewItem:@
 selectLastTabViewItem :: IsNSTabView nsTabView => nsTabView -> RawId -> IO ()
-selectLastTabViewItem nsTabView  sender =
-    sendMsg nsTabView (mkSelector "selectLastTabViewItem:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectLastTabViewItem nsTabView sender =
+  sendMessage nsTabView selectLastTabViewItemSelector sender
 
 -- | @- selectNextTabViewItem:@
 selectNextTabViewItem :: IsNSTabView nsTabView => nsTabView -> RawId -> IO ()
-selectNextTabViewItem nsTabView  sender =
-    sendMsg nsTabView (mkSelector "selectNextTabViewItem:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectNextTabViewItem nsTabView sender =
+  sendMessage nsTabView selectNextTabViewItemSelector sender
 
 -- | @- selectPreviousTabViewItem:@
 selectPreviousTabViewItem :: IsNSTabView nsTabView => nsTabView -> RawId -> IO ()
-selectPreviousTabViewItem nsTabView  sender =
-    sendMsg nsTabView (mkSelector "selectPreviousTabViewItem:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectPreviousTabViewItem nsTabView sender =
+  sendMessage nsTabView selectPreviousTabViewItemSelector sender
 
 -- | @- addTabViewItem:@
 addTabViewItem :: (IsNSTabView nsTabView, IsNSTabViewItem tabViewItem) => nsTabView -> tabViewItem -> IO ()
-addTabViewItem nsTabView  tabViewItem =
-  withObjCPtr tabViewItem $ \raw_tabViewItem ->
-      sendMsg nsTabView (mkSelector "addTabViewItem:") retVoid [argPtr (castPtr raw_tabViewItem :: Ptr ())]
+addTabViewItem nsTabView tabViewItem =
+  sendMessage nsTabView addTabViewItemSelector (toNSTabViewItem tabViewItem)
 
 -- | @- insertTabViewItem:atIndex:@
 insertTabViewItem_atIndex :: (IsNSTabView nsTabView, IsNSTabViewItem tabViewItem) => nsTabView -> tabViewItem -> CLong -> IO ()
-insertTabViewItem_atIndex nsTabView  tabViewItem index =
-  withObjCPtr tabViewItem $ \raw_tabViewItem ->
-      sendMsg nsTabView (mkSelector "insertTabViewItem:atIndex:") retVoid [argPtr (castPtr raw_tabViewItem :: Ptr ()), argCLong index]
+insertTabViewItem_atIndex nsTabView tabViewItem index =
+  sendMessage nsTabView insertTabViewItem_atIndexSelector (toNSTabViewItem tabViewItem) index
 
 -- | @- removeTabViewItem:@
 removeTabViewItem :: (IsNSTabView nsTabView, IsNSTabViewItem tabViewItem) => nsTabView -> tabViewItem -> IO ()
-removeTabViewItem nsTabView  tabViewItem =
-  withObjCPtr tabViewItem $ \raw_tabViewItem ->
-      sendMsg nsTabView (mkSelector "removeTabViewItem:") retVoid [argPtr (castPtr raw_tabViewItem :: Ptr ())]
+removeTabViewItem nsTabView tabViewItem =
+  sendMessage nsTabView removeTabViewItemSelector (toNSTabViewItem tabViewItem)
 
 -- | @- tabViewItemAtPoint:@
 tabViewItemAtPoint :: IsNSTabView nsTabView => nsTabView -> NSPoint -> IO (Id NSTabViewItem)
-tabViewItemAtPoint nsTabView  point =
-    sendMsg nsTabView (mkSelector "tabViewItemAtPoint:") (retPtr retVoid) [argNSPoint point] >>= retainedObject . castPtr
+tabViewItemAtPoint nsTabView point =
+  sendMessage nsTabView tabViewItemAtPointSelector point
 
 -- | @- indexOfTabViewItem:@
 indexOfTabViewItem :: (IsNSTabView nsTabView, IsNSTabViewItem tabViewItem) => nsTabView -> tabViewItem -> IO CLong
-indexOfTabViewItem nsTabView  tabViewItem =
-  withObjCPtr tabViewItem $ \raw_tabViewItem ->
-      sendMsg nsTabView (mkSelector "indexOfTabViewItem:") retCLong [argPtr (castPtr raw_tabViewItem :: Ptr ())]
+indexOfTabViewItem nsTabView tabViewItem =
+  sendMessage nsTabView indexOfTabViewItemSelector (toNSTabViewItem tabViewItem)
 
 -- | @- tabViewItemAtIndex:@
 tabViewItemAtIndex :: IsNSTabView nsTabView => nsTabView -> CLong -> IO (Id NSTabViewItem)
-tabViewItemAtIndex nsTabView  index =
-    sendMsg nsTabView (mkSelector "tabViewItemAtIndex:") (retPtr retVoid) [argCLong index] >>= retainedObject . castPtr
+tabViewItemAtIndex nsTabView index =
+  sendMessage nsTabView tabViewItemAtIndexSelector index
 
 -- | @- indexOfTabViewItemWithIdentifier:@
 indexOfTabViewItemWithIdentifier :: IsNSTabView nsTabView => nsTabView -> RawId -> IO CLong
-indexOfTabViewItemWithIdentifier nsTabView  identifier =
-    sendMsg nsTabView (mkSelector "indexOfTabViewItemWithIdentifier:") retCLong [argPtr (castPtr (unRawId identifier) :: Ptr ())]
+indexOfTabViewItemWithIdentifier nsTabView identifier =
+  sendMessage nsTabView indexOfTabViewItemWithIdentifierSelector identifier
 
 -- | @- selectedTabViewItem@
 selectedTabViewItem :: IsNSTabView nsTabView => nsTabView -> IO (Id NSTabViewItem)
-selectedTabViewItem nsTabView  =
-    sendMsg nsTabView (mkSelector "selectedTabViewItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedTabViewItem nsTabView =
+  sendMessage nsTabView selectedTabViewItemSelector
 
 -- | @- font@
 font :: IsNSTabView nsTabView => nsTabView -> IO (Id NSFont)
-font nsTabView  =
-    sendMsg nsTabView (mkSelector "font") (retPtr retVoid) [] >>= retainedObject . castPtr
+font nsTabView =
+  sendMessage nsTabView fontSelector
 
 -- | @- setFont:@
 setFont :: (IsNSTabView nsTabView, IsNSFont value) => nsTabView -> value -> IO ()
-setFont nsTabView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTabView (mkSelector "setFont:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFont nsTabView value =
+  sendMessage nsTabView setFontSelector (toNSFont value)
 
 -- | @- tabViewType@
 tabViewType :: IsNSTabView nsTabView => nsTabView -> IO NSTabViewType
-tabViewType nsTabView  =
-    fmap (coerce :: CULong -> NSTabViewType) $ sendMsg nsTabView (mkSelector "tabViewType") retCULong []
+tabViewType nsTabView =
+  sendMessage nsTabView tabViewTypeSelector
 
 -- | @- setTabViewType:@
 setTabViewType :: IsNSTabView nsTabView => nsTabView -> NSTabViewType -> IO ()
-setTabViewType nsTabView  value =
-    sendMsg nsTabView (mkSelector "setTabViewType:") retVoid [argCULong (coerce value)]
+setTabViewType nsTabView value =
+  sendMessage nsTabView setTabViewTypeSelector value
 
 -- | @- tabPosition@
 tabPosition :: IsNSTabView nsTabView => nsTabView -> IO NSTabPosition
-tabPosition nsTabView  =
-    fmap (coerce :: CULong -> NSTabPosition) $ sendMsg nsTabView (mkSelector "tabPosition") retCULong []
+tabPosition nsTabView =
+  sendMessage nsTabView tabPositionSelector
 
 -- | @- setTabPosition:@
 setTabPosition :: IsNSTabView nsTabView => nsTabView -> NSTabPosition -> IO ()
-setTabPosition nsTabView  value =
-    sendMsg nsTabView (mkSelector "setTabPosition:") retVoid [argCULong (coerce value)]
+setTabPosition nsTabView value =
+  sendMessage nsTabView setTabPositionSelector value
 
 -- | @- tabViewBorderType@
 tabViewBorderType :: IsNSTabView nsTabView => nsTabView -> IO NSTabViewBorderType
-tabViewBorderType nsTabView  =
-    fmap (coerce :: CULong -> NSTabViewBorderType) $ sendMsg nsTabView (mkSelector "tabViewBorderType") retCULong []
+tabViewBorderType nsTabView =
+  sendMessage nsTabView tabViewBorderTypeSelector
 
 -- | @- setTabViewBorderType:@
 setTabViewBorderType :: IsNSTabView nsTabView => nsTabView -> NSTabViewBorderType -> IO ()
-setTabViewBorderType nsTabView  value =
-    sendMsg nsTabView (mkSelector "setTabViewBorderType:") retVoid [argCULong (coerce value)]
+setTabViewBorderType nsTabView value =
+  sendMessage nsTabView setTabViewBorderTypeSelector value
 
 -- | @- tabViewItems@
 tabViewItems :: IsNSTabView nsTabView => nsTabView -> IO (Id NSArray)
-tabViewItems nsTabView  =
-    sendMsg nsTabView (mkSelector "tabViewItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+tabViewItems nsTabView =
+  sendMessage nsTabView tabViewItemsSelector
 
 -- | @- setTabViewItems:@
 setTabViewItems :: (IsNSTabView nsTabView, IsNSArray value) => nsTabView -> value -> IO ()
-setTabViewItems nsTabView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTabView (mkSelector "setTabViewItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTabViewItems nsTabView value =
+  sendMessage nsTabView setTabViewItemsSelector (toNSArray value)
 
 -- | @- allowsTruncatedLabels@
 allowsTruncatedLabels :: IsNSTabView nsTabView => nsTabView -> IO Bool
-allowsTruncatedLabels nsTabView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTabView (mkSelector "allowsTruncatedLabels") retCULong []
+allowsTruncatedLabels nsTabView =
+  sendMessage nsTabView allowsTruncatedLabelsSelector
 
 -- | @- setAllowsTruncatedLabels:@
 setAllowsTruncatedLabels :: IsNSTabView nsTabView => nsTabView -> Bool -> IO ()
-setAllowsTruncatedLabels nsTabView  value =
-    sendMsg nsTabView (mkSelector "setAllowsTruncatedLabels:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsTruncatedLabels nsTabView value =
+  sendMessage nsTabView setAllowsTruncatedLabelsSelector value
 
 -- | @- minimumSize@
 minimumSize :: IsNSTabView nsTabView => nsTabView -> IO NSSize
-minimumSize nsTabView  =
-    sendMsgStret nsTabView (mkSelector "minimumSize") retNSSize []
+minimumSize nsTabView =
+  sendMessage nsTabView minimumSizeSelector
 
 -- | @- drawsBackground@
 drawsBackground :: IsNSTabView nsTabView => nsTabView -> IO Bool
-drawsBackground nsTabView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTabView (mkSelector "drawsBackground") retCULong []
+drawsBackground nsTabView =
+  sendMessage nsTabView drawsBackgroundSelector
 
 -- | @- setDrawsBackground:@
 setDrawsBackground :: IsNSTabView nsTabView => nsTabView -> Bool -> IO ()
-setDrawsBackground nsTabView  value =
-    sendMsg nsTabView (mkSelector "setDrawsBackground:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsBackground nsTabView value =
+  sendMessage nsTabView setDrawsBackgroundSelector value
 
 -- | @- controlSize@
 controlSize :: IsNSTabView nsTabView => nsTabView -> IO NSControlSize
-controlSize nsTabView  =
-    fmap (coerce :: CULong -> NSControlSize) $ sendMsg nsTabView (mkSelector "controlSize") retCULong []
+controlSize nsTabView =
+  sendMessage nsTabView controlSizeSelector
 
 -- | @- setControlSize:@
 setControlSize :: IsNSTabView nsTabView => nsTabView -> NSControlSize -> IO ()
-setControlSize nsTabView  value =
-    sendMsg nsTabView (mkSelector "setControlSize:") retVoid [argCULong (coerce value)]
+setControlSize nsTabView value =
+  sendMessage nsTabView setControlSizeSelector value
 
 -- | @- delegate@
 delegate :: IsNSTabView nsTabView => nsTabView -> IO RawId
-delegate nsTabView  =
-    fmap (RawId . castPtr) $ sendMsg nsTabView (mkSelector "delegate") (retPtr retVoid) []
+delegate nsTabView =
+  sendMessage nsTabView delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSTabView nsTabView => nsTabView -> RawId -> IO ()
-setDelegate nsTabView  value =
-    sendMsg nsTabView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsTabView value =
+  sendMessage nsTabView setDelegateSelector value
 
 -- | @- contentRect@
 contentRect :: IsNSTabView nsTabView => nsTabView -> IO NSRect
-contentRect nsTabView  =
-    sendMsgStret nsTabView (mkSelector "contentRect") retNSRect []
+contentRect nsTabView =
+  sendMessage nsTabView contentRectSelector
 
 -- | @- numberOfTabViewItems@
 numberOfTabViewItems :: IsNSTabView nsTabView => nsTabView -> IO CLong
-numberOfTabViewItems nsTabView  =
-    sendMsg nsTabView (mkSelector "numberOfTabViewItems") retCLong []
+numberOfTabViewItems nsTabView =
+  sendMessage nsTabView numberOfTabViewItemsSelector
 
 -- | @- controlTint@
 controlTint :: IsNSTabView nsTabView => nsTabView -> IO NSControlTint
-controlTint nsTabView  =
-    fmap (coerce :: CULong -> NSControlTint) $ sendMsg nsTabView (mkSelector "controlTint") retCULong []
+controlTint nsTabView =
+  sendMessage nsTabView controlTintSelector
 
 -- | @- setControlTint:@
 setControlTint :: IsNSTabView nsTabView => nsTabView -> NSControlTint -> IO ()
-setControlTint nsTabView  value =
-    sendMsg nsTabView (mkSelector "setControlTint:") retVoid [argCULong (coerce value)]
+setControlTint nsTabView value =
+  sendMessage nsTabView setControlTintSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectTabViewItem:@
-selectTabViewItemSelector :: Selector
+selectTabViewItemSelector :: Selector '[Id NSTabViewItem] ()
 selectTabViewItemSelector = mkSelector "selectTabViewItem:"
 
 -- | @Selector@ for @selectTabViewItemAtIndex:@
-selectTabViewItemAtIndexSelector :: Selector
+selectTabViewItemAtIndexSelector :: Selector '[CLong] ()
 selectTabViewItemAtIndexSelector = mkSelector "selectTabViewItemAtIndex:"
 
 -- | @Selector@ for @selectTabViewItemWithIdentifier:@
-selectTabViewItemWithIdentifierSelector :: Selector
+selectTabViewItemWithIdentifierSelector :: Selector '[RawId] ()
 selectTabViewItemWithIdentifierSelector = mkSelector "selectTabViewItemWithIdentifier:"
 
 -- | @Selector@ for @takeSelectedTabViewItemFromSender:@
-takeSelectedTabViewItemFromSenderSelector :: Selector
+takeSelectedTabViewItemFromSenderSelector :: Selector '[RawId] ()
 takeSelectedTabViewItemFromSenderSelector = mkSelector "takeSelectedTabViewItemFromSender:"
 
 -- | @Selector@ for @selectFirstTabViewItem:@
-selectFirstTabViewItemSelector :: Selector
+selectFirstTabViewItemSelector :: Selector '[RawId] ()
 selectFirstTabViewItemSelector = mkSelector "selectFirstTabViewItem:"
 
 -- | @Selector@ for @selectLastTabViewItem:@
-selectLastTabViewItemSelector :: Selector
+selectLastTabViewItemSelector :: Selector '[RawId] ()
 selectLastTabViewItemSelector = mkSelector "selectLastTabViewItem:"
 
 -- | @Selector@ for @selectNextTabViewItem:@
-selectNextTabViewItemSelector :: Selector
+selectNextTabViewItemSelector :: Selector '[RawId] ()
 selectNextTabViewItemSelector = mkSelector "selectNextTabViewItem:"
 
 -- | @Selector@ for @selectPreviousTabViewItem:@
-selectPreviousTabViewItemSelector :: Selector
+selectPreviousTabViewItemSelector :: Selector '[RawId] ()
 selectPreviousTabViewItemSelector = mkSelector "selectPreviousTabViewItem:"
 
 -- | @Selector@ for @addTabViewItem:@
-addTabViewItemSelector :: Selector
+addTabViewItemSelector :: Selector '[Id NSTabViewItem] ()
 addTabViewItemSelector = mkSelector "addTabViewItem:"
 
 -- | @Selector@ for @insertTabViewItem:atIndex:@
-insertTabViewItem_atIndexSelector :: Selector
+insertTabViewItem_atIndexSelector :: Selector '[Id NSTabViewItem, CLong] ()
 insertTabViewItem_atIndexSelector = mkSelector "insertTabViewItem:atIndex:"
 
 -- | @Selector@ for @removeTabViewItem:@
-removeTabViewItemSelector :: Selector
+removeTabViewItemSelector :: Selector '[Id NSTabViewItem] ()
 removeTabViewItemSelector = mkSelector "removeTabViewItem:"
 
 -- | @Selector@ for @tabViewItemAtPoint:@
-tabViewItemAtPointSelector :: Selector
+tabViewItemAtPointSelector :: Selector '[NSPoint] (Id NSTabViewItem)
 tabViewItemAtPointSelector = mkSelector "tabViewItemAtPoint:"
 
 -- | @Selector@ for @indexOfTabViewItem:@
-indexOfTabViewItemSelector :: Selector
+indexOfTabViewItemSelector :: Selector '[Id NSTabViewItem] CLong
 indexOfTabViewItemSelector = mkSelector "indexOfTabViewItem:"
 
 -- | @Selector@ for @tabViewItemAtIndex:@
-tabViewItemAtIndexSelector :: Selector
+tabViewItemAtIndexSelector :: Selector '[CLong] (Id NSTabViewItem)
 tabViewItemAtIndexSelector = mkSelector "tabViewItemAtIndex:"
 
 -- | @Selector@ for @indexOfTabViewItemWithIdentifier:@
-indexOfTabViewItemWithIdentifierSelector :: Selector
+indexOfTabViewItemWithIdentifierSelector :: Selector '[RawId] CLong
 indexOfTabViewItemWithIdentifierSelector = mkSelector "indexOfTabViewItemWithIdentifier:"
 
 -- | @Selector@ for @selectedTabViewItem@
-selectedTabViewItemSelector :: Selector
+selectedTabViewItemSelector :: Selector '[] (Id NSTabViewItem)
 selectedTabViewItemSelector = mkSelector "selectedTabViewItem"
 
 -- | @Selector@ for @font@
-fontSelector :: Selector
+fontSelector :: Selector '[] (Id NSFont)
 fontSelector = mkSelector "font"
 
 -- | @Selector@ for @setFont:@
-setFontSelector :: Selector
+setFontSelector :: Selector '[Id NSFont] ()
 setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @tabViewType@
-tabViewTypeSelector :: Selector
+tabViewTypeSelector :: Selector '[] NSTabViewType
 tabViewTypeSelector = mkSelector "tabViewType"
 
 -- | @Selector@ for @setTabViewType:@
-setTabViewTypeSelector :: Selector
+setTabViewTypeSelector :: Selector '[NSTabViewType] ()
 setTabViewTypeSelector = mkSelector "setTabViewType:"
 
 -- | @Selector@ for @tabPosition@
-tabPositionSelector :: Selector
+tabPositionSelector :: Selector '[] NSTabPosition
 tabPositionSelector = mkSelector "tabPosition"
 
 -- | @Selector@ for @setTabPosition:@
-setTabPositionSelector :: Selector
+setTabPositionSelector :: Selector '[NSTabPosition] ()
 setTabPositionSelector = mkSelector "setTabPosition:"
 
 -- | @Selector@ for @tabViewBorderType@
-tabViewBorderTypeSelector :: Selector
+tabViewBorderTypeSelector :: Selector '[] NSTabViewBorderType
 tabViewBorderTypeSelector = mkSelector "tabViewBorderType"
 
 -- | @Selector@ for @setTabViewBorderType:@
-setTabViewBorderTypeSelector :: Selector
+setTabViewBorderTypeSelector :: Selector '[NSTabViewBorderType] ()
 setTabViewBorderTypeSelector = mkSelector "setTabViewBorderType:"
 
 -- | @Selector@ for @tabViewItems@
-tabViewItemsSelector :: Selector
+tabViewItemsSelector :: Selector '[] (Id NSArray)
 tabViewItemsSelector = mkSelector "tabViewItems"
 
 -- | @Selector@ for @setTabViewItems:@
-setTabViewItemsSelector :: Selector
+setTabViewItemsSelector :: Selector '[Id NSArray] ()
 setTabViewItemsSelector = mkSelector "setTabViewItems:"
 
 -- | @Selector@ for @allowsTruncatedLabels@
-allowsTruncatedLabelsSelector :: Selector
+allowsTruncatedLabelsSelector :: Selector '[] Bool
 allowsTruncatedLabelsSelector = mkSelector "allowsTruncatedLabels"
 
 -- | @Selector@ for @setAllowsTruncatedLabels:@
-setAllowsTruncatedLabelsSelector :: Selector
+setAllowsTruncatedLabelsSelector :: Selector '[Bool] ()
 setAllowsTruncatedLabelsSelector = mkSelector "setAllowsTruncatedLabels:"
 
 -- | @Selector@ for @minimumSize@
-minimumSizeSelector :: Selector
+minimumSizeSelector :: Selector '[] NSSize
 minimumSizeSelector = mkSelector "minimumSize"
 
 -- | @Selector@ for @drawsBackground@
-drawsBackgroundSelector :: Selector
+drawsBackgroundSelector :: Selector '[] Bool
 drawsBackgroundSelector = mkSelector "drawsBackground"
 
 -- | @Selector@ for @setDrawsBackground:@
-setDrawsBackgroundSelector :: Selector
+setDrawsBackgroundSelector :: Selector '[Bool] ()
 setDrawsBackgroundSelector = mkSelector "setDrawsBackground:"
 
 -- | @Selector@ for @controlSize@
-controlSizeSelector :: Selector
+controlSizeSelector :: Selector '[] NSControlSize
 controlSizeSelector = mkSelector "controlSize"
 
 -- | @Selector@ for @setControlSize:@
-setControlSizeSelector :: Selector
+setControlSizeSelector :: Selector '[NSControlSize] ()
 setControlSizeSelector = mkSelector "setControlSize:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @contentRect@
-contentRectSelector :: Selector
+contentRectSelector :: Selector '[] NSRect
 contentRectSelector = mkSelector "contentRect"
 
 -- | @Selector@ for @numberOfTabViewItems@
-numberOfTabViewItemsSelector :: Selector
+numberOfTabViewItemsSelector :: Selector '[] CLong
 numberOfTabViewItemsSelector = mkSelector "numberOfTabViewItems"
 
 -- | @Selector@ for @controlTint@
-controlTintSelector :: Selector
+controlTintSelector :: Selector '[] NSControlTint
 controlTintSelector = mkSelector "controlTint"
 
 -- | @Selector@ for @setControlTint:@
-setControlTintSelector :: Selector
+setControlTintSelector :: Selector '[NSControlTint] ()
 setControlTintSelector = mkSelector "setControlTint:"
 

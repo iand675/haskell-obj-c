@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.HealthKit.HKHealthConceptIdentifier
   , IsHKHealthConceptIdentifier(..)
   , init_
   , domain
-  , initSelector
   , domainSelector
+  , initSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,8 +32,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKHealthConceptIdentifier hkHealthConceptIdentifier => hkHealthConceptIdentifier -> IO (Id HKHealthConceptIdentifier)
-init_ hkHealthConceptIdentifier  =
-    sendMsg hkHealthConceptIdentifier (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkHealthConceptIdentifier =
+  sendOwnedMessage hkHealthConceptIdentifier initSelector
 
 -- | The domain this identifier belongs to.
 --
@@ -44,18 +41,18 @@ init_ hkHealthConceptIdentifier  =
 --
 -- ObjC selector: @- domain@
 domain :: IsHKHealthConceptIdentifier hkHealthConceptIdentifier => hkHealthConceptIdentifier -> IO (Id NSString)
-domain hkHealthConceptIdentifier  =
-    sendMsg hkHealthConceptIdentifier (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain hkHealthConceptIdentifier =
+  sendMessage hkHealthConceptIdentifier domainSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKHealthConceptIdentifier)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id NSString)
 domainSelector = mkSelector "domain"
 

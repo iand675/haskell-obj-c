@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MetalPerformanceShaders.MPSImageEuclideanDistanceTransform
   , initWithCoder_device
   , searchLimitRadius
   , setSearchLimitRadius
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , searchLimitRadiusSelector
   , setSearchLimitRadiusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSImageEuclideanDistanceTransform mpsImageEuclideanDistanceTransform => mpsImageEuclideanDistanceTransform -> RawId -> IO (Id MPSImageEuclideanDistanceTransform)
-initWithDevice mpsImageEuclideanDistanceTransform  device =
-    sendMsg mpsImageEuclideanDistanceTransform (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageEuclideanDistanceTransform device =
+  sendOwnedMessage mpsImageEuclideanDistanceTransform initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -60,9 +57,8 @@ initWithDevice mpsImageEuclideanDistanceTransform  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageEuclideanDistanceTransform mpsImageEuclideanDistanceTransform, IsNSCoder aDecoder) => mpsImageEuclideanDistanceTransform -> aDecoder -> RawId -> IO (Id MPSImageEuclideanDistanceTransform)
-initWithCoder_device mpsImageEuclideanDistanceTransform  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageEuclideanDistanceTransform (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageEuclideanDistanceTransform aDecoder device =
+  sendOwnedMessage mpsImageEuclideanDistanceTransform initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | searchLimitRadius
 --
@@ -72,8 +68,8 @@ initWithCoder_device mpsImageEuclideanDistanceTransform  aDecoder device =
 --
 -- ObjC selector: @- searchLimitRadius@
 searchLimitRadius :: IsMPSImageEuclideanDistanceTransform mpsImageEuclideanDistanceTransform => mpsImageEuclideanDistanceTransform -> IO CFloat
-searchLimitRadius mpsImageEuclideanDistanceTransform  =
-    sendMsg mpsImageEuclideanDistanceTransform (mkSelector "searchLimitRadius") retCFloat []
+searchLimitRadius mpsImageEuclideanDistanceTransform =
+  sendMessage mpsImageEuclideanDistanceTransform searchLimitRadiusSelector
 
 -- | searchLimitRadius
 --
@@ -83,26 +79,26 @@ searchLimitRadius mpsImageEuclideanDistanceTransform  =
 --
 -- ObjC selector: @- setSearchLimitRadius:@
 setSearchLimitRadius :: IsMPSImageEuclideanDistanceTransform mpsImageEuclideanDistanceTransform => mpsImageEuclideanDistanceTransform -> CFloat -> IO ()
-setSearchLimitRadius mpsImageEuclideanDistanceTransform  value =
-    sendMsg mpsImageEuclideanDistanceTransform (mkSelector "setSearchLimitRadius:") retVoid [argCFloat value]
+setSearchLimitRadius mpsImageEuclideanDistanceTransform value =
+  sendMessage mpsImageEuclideanDistanceTransform setSearchLimitRadiusSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageEuclideanDistanceTransform)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageEuclideanDistanceTransform)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @searchLimitRadius@
-searchLimitRadiusSelector :: Selector
+searchLimitRadiusSelector :: Selector '[] CFloat
 searchLimitRadiusSelector = mkSelector "searchLimitRadius"
 
 -- | @Selector@ for @setSearchLimitRadius:@
-setSearchLimitRadiusSelector :: Selector
+setSearchLimitRadiusSelector :: Selector '[CFloat] ()
 setSearchLimitRadiusSelector = mkSelector "setSearchLimitRadius:"
 

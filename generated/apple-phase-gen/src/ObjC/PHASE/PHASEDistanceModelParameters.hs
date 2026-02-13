@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.PHASE.PHASEDistanceModelParameters
   , new
   , fadeOutParameters
   , setFadeOutParameters
+  , fadeOutParametersSelector
   , initSelector
   , newSelector
-  , fadeOutParametersSelector
   , setFadeOutParametersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEDistanceModelParameters phaseDistanceModelParameters => phaseDistanceModelParameters -> IO (Id PHASEDistanceModelParameters)
-init_ phaseDistanceModelParameters  =
-    sendMsg phaseDistanceModelParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseDistanceModelParameters =
+  sendOwnedMessage phaseDistanceModelParameters initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEDistanceModelParameters)
 new  =
   do
     cls' <- getRequiredClass "PHASEDistanceModelParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | fadeOutParameters
 --
@@ -57,8 +54,8 @@ new  =
 --
 -- ObjC selector: @- fadeOutParameters@
 fadeOutParameters :: IsPHASEDistanceModelParameters phaseDistanceModelParameters => phaseDistanceModelParameters -> IO (Id PHASEDistanceModelFadeOutParameters)
-fadeOutParameters phaseDistanceModelParameters  =
-    sendMsg phaseDistanceModelParameters (mkSelector "fadeOutParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+fadeOutParameters phaseDistanceModelParameters =
+  sendMessage phaseDistanceModelParameters fadeOutParametersSelector
 
 -- | fadeOutParameters
 --
@@ -66,27 +63,26 @@ fadeOutParameters phaseDistanceModelParameters  =
 --
 -- ObjC selector: @- setFadeOutParameters:@
 setFadeOutParameters :: (IsPHASEDistanceModelParameters phaseDistanceModelParameters, IsPHASEDistanceModelFadeOutParameters value) => phaseDistanceModelParameters -> value -> IO ()
-setFadeOutParameters phaseDistanceModelParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseDistanceModelParameters (mkSelector "setFadeOutParameters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFadeOutParameters phaseDistanceModelParameters value =
+  sendMessage phaseDistanceModelParameters setFadeOutParametersSelector (toPHASEDistanceModelFadeOutParameters value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEDistanceModelParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEDistanceModelParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @fadeOutParameters@
-fadeOutParametersSelector :: Selector
+fadeOutParametersSelector :: Selector '[] (Id PHASEDistanceModelFadeOutParameters)
 fadeOutParametersSelector = mkSelector "fadeOutParameters"
 
 -- | @Selector@ for @setFadeOutParameters:@
-setFadeOutParametersSelector :: Selector
+setFadeOutParametersSelector :: Selector '[Id PHASEDistanceModelFadeOutParameters] ()
 setFadeOutParametersSelector = mkSelector "setFadeOutParameters:"
 

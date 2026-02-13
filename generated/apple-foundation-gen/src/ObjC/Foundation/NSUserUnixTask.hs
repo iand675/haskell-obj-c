@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.Foundation.NSUserUnixTask
   , standardError
   , setStandardError
   , executeWithArguments_completionHandlerSelector
-  , standardInputSelector
+  , setStandardErrorSelector
   , setStandardInputSelector
-  , standardOutputSelector
   , setStandardOutputSelector
   , standardErrorSelector
-  , setStandardErrorSelector
+  , standardInputSelector
+  , standardOutputSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,72 +37,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- executeWithArguments:completionHandler:@
 executeWithArguments_completionHandler :: (IsNSUserUnixTask nsUserUnixTask, IsNSArray arguments) => nsUserUnixTask -> arguments -> Ptr () -> IO ()
-executeWithArguments_completionHandler nsUserUnixTask  arguments handler =
-  withObjCPtr arguments $ \raw_arguments ->
-      sendMsg nsUserUnixTask (mkSelector "executeWithArguments:completionHandler:") retVoid [argPtr (castPtr raw_arguments :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+executeWithArguments_completionHandler nsUserUnixTask arguments handler =
+  sendMessage nsUserUnixTask executeWithArguments_completionHandlerSelector (toNSArray arguments) handler
 
 -- | @- standardInput@
 standardInput :: IsNSUserUnixTask nsUserUnixTask => nsUserUnixTask -> IO (Id NSFileHandle)
-standardInput nsUserUnixTask  =
-    sendMsg nsUserUnixTask (mkSelector "standardInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+standardInput nsUserUnixTask =
+  sendMessage nsUserUnixTask standardInputSelector
 
 -- | @- setStandardInput:@
 setStandardInput :: (IsNSUserUnixTask nsUserUnixTask, IsNSFileHandle value) => nsUserUnixTask -> value -> IO ()
-setStandardInput nsUserUnixTask  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsUserUnixTask (mkSelector "setStandardInput:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStandardInput nsUserUnixTask value =
+  sendMessage nsUserUnixTask setStandardInputSelector (toNSFileHandle value)
 
 -- | @- standardOutput@
 standardOutput :: IsNSUserUnixTask nsUserUnixTask => nsUserUnixTask -> IO (Id NSFileHandle)
-standardOutput nsUserUnixTask  =
-    sendMsg nsUserUnixTask (mkSelector "standardOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+standardOutput nsUserUnixTask =
+  sendMessage nsUserUnixTask standardOutputSelector
 
 -- | @- setStandardOutput:@
 setStandardOutput :: (IsNSUserUnixTask nsUserUnixTask, IsNSFileHandle value) => nsUserUnixTask -> value -> IO ()
-setStandardOutput nsUserUnixTask  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsUserUnixTask (mkSelector "setStandardOutput:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStandardOutput nsUserUnixTask value =
+  sendMessage nsUserUnixTask setStandardOutputSelector (toNSFileHandle value)
 
 -- | @- standardError@
 standardError :: IsNSUserUnixTask nsUserUnixTask => nsUserUnixTask -> IO (Id NSFileHandle)
-standardError nsUserUnixTask  =
-    sendMsg nsUserUnixTask (mkSelector "standardError") (retPtr retVoid) [] >>= retainedObject . castPtr
+standardError nsUserUnixTask =
+  sendMessage nsUserUnixTask standardErrorSelector
 
 -- | @- setStandardError:@
 setStandardError :: (IsNSUserUnixTask nsUserUnixTask, IsNSFileHandle value) => nsUserUnixTask -> value -> IO ()
-setStandardError nsUserUnixTask  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsUserUnixTask (mkSelector "setStandardError:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStandardError nsUserUnixTask value =
+  sendMessage nsUserUnixTask setStandardErrorSelector (toNSFileHandle value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @executeWithArguments:completionHandler:@
-executeWithArguments_completionHandlerSelector :: Selector
+executeWithArguments_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 executeWithArguments_completionHandlerSelector = mkSelector "executeWithArguments:completionHandler:"
 
 -- | @Selector@ for @standardInput@
-standardInputSelector :: Selector
+standardInputSelector :: Selector '[] (Id NSFileHandle)
 standardInputSelector = mkSelector "standardInput"
 
 -- | @Selector@ for @setStandardInput:@
-setStandardInputSelector :: Selector
+setStandardInputSelector :: Selector '[Id NSFileHandle] ()
 setStandardInputSelector = mkSelector "setStandardInput:"
 
 -- | @Selector@ for @standardOutput@
-standardOutputSelector :: Selector
+standardOutputSelector :: Selector '[] (Id NSFileHandle)
 standardOutputSelector = mkSelector "standardOutput"
 
 -- | @Selector@ for @setStandardOutput:@
-setStandardOutputSelector :: Selector
+setStandardOutputSelector :: Selector '[Id NSFileHandle] ()
 setStandardOutputSelector = mkSelector "setStandardOutput:"
 
 -- | @Selector@ for @standardError@
-standardErrorSelector :: Selector
+standardErrorSelector :: Selector '[] (Id NSFileHandle)
 standardErrorSelector = mkSelector "standardError"
 
 -- | @Selector@ for @setStandardError:@
-setStandardErrorSelector :: Selector
+setStandardErrorSelector :: Selector '[Id NSFileHandle] ()
 setStandardErrorSelector = mkSelector "setStandardError:"
 

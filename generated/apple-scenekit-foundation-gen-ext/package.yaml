@@ -17,5 +17,4 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
-  - ObjC.SceneKit.CAAnimation
   - ObjC.SceneKit.NSValue

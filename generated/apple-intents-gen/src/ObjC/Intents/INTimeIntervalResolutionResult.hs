@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Intents.INTimeIntervalResolutionResult
   , IsINTimeIntervalResolutionResult(..)
   , successWithResolvedTimeInterval
   , confirmationRequiredWithTimeIntervalToConfirm
-  , successWithResolvedTimeIntervalSelector
   , confirmationRequiredWithTimeIntervalToConfirmSelector
+  , successWithResolvedTimeIntervalSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,24 +31,24 @@ successWithResolvedTimeInterval :: CDouble -> IO (Id INTimeIntervalResolutionRes
 successWithResolvedTimeInterval resolvedTimeInterval =
   do
     cls' <- getRequiredClass "INTimeIntervalResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedTimeInterval:") (retPtr retVoid) [argCDouble resolvedTimeInterval] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedTimeIntervalSelector resolvedTimeInterval
 
 -- | @+ confirmationRequiredWithTimeIntervalToConfirm:@
 confirmationRequiredWithTimeIntervalToConfirm :: CDouble -> IO (Id INTimeIntervalResolutionResult)
 confirmationRequiredWithTimeIntervalToConfirm timeIntervalToConfirm =
   do
     cls' <- getRequiredClass "INTimeIntervalResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithTimeIntervalToConfirm:") (retPtr retVoid) [argCDouble timeIntervalToConfirm] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithTimeIntervalToConfirmSelector timeIntervalToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedTimeInterval:@
-successWithResolvedTimeIntervalSelector :: Selector
+successWithResolvedTimeIntervalSelector :: Selector '[CDouble] (Id INTimeIntervalResolutionResult)
 successWithResolvedTimeIntervalSelector = mkSelector "successWithResolvedTimeInterval:"
 
 -- | @Selector@ for @confirmationRequiredWithTimeIntervalToConfirm:@
-confirmationRequiredWithTimeIntervalToConfirmSelector :: Selector
+confirmationRequiredWithTimeIntervalToConfirmSelector :: Selector '[CDouble] (Id INTimeIntervalResolutionResult)
 confirmationRequiredWithTimeIntervalToConfirmSelector = mkSelector "confirmationRequiredWithTimeIntervalToConfirm:"
 

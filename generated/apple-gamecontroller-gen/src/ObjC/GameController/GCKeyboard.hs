@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.GameController.GCKeyboard
   , IsGCKeyboard(..)
   , keyboardInput
   , coalescedKeyboard
-  , keyboardInputSelector
   , coalescedKeyboardSelector
+  , keyboardInputSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- keyboardInput@
 keyboardInput :: IsGCKeyboard gcKeyboard => gcKeyboard -> IO (Id GCKeyboardInput)
-keyboardInput gcKeyboard  =
-    sendMsg gcKeyboard (mkSelector "keyboardInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyboardInput gcKeyboard =
+  sendMessage gcKeyboard keyboardInputSelector
 
 -- | Keyboard object that represents all keyboards connected to the device Should be used to query key states every time input needs to be handled
 --
@@ -49,17 +46,17 @@ coalescedKeyboard :: IO (Id GCKeyboard)
 coalescedKeyboard  =
   do
     cls' <- getRequiredClass "GCKeyboard"
-    sendClassMsg cls' (mkSelector "coalescedKeyboard") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' coalescedKeyboardSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @keyboardInput@
-keyboardInputSelector :: Selector
+keyboardInputSelector :: Selector '[] (Id GCKeyboardInput)
 keyboardInputSelector = mkSelector "keyboardInput"
 
 -- | @Selector@ for @coalescedKeyboard@
-coalescedKeyboardSelector :: Selector
+coalescedKeyboardSelector :: Selector '[] (Id GCKeyboard)
 coalescedKeyboardSelector = mkSelector "coalescedKeyboard"
 

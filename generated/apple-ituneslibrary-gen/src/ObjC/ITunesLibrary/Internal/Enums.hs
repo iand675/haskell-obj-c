@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ITunesLibrary.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | ITLibArtworkFormat
 --
@@ -81,6 +84,16 @@ pattern ITLibArtworkFormatTIFF = ITLibArtworkFormat 7
 
 pattern ITLibArtworkFormatPICT :: ITLibArtworkFormat
 pattern ITLibArtworkFormatPICT = ITLibArtworkFormat 8
+
+instance ObjCArgument ITLibArtworkFormat where
+  withObjCArg (ITLibArtworkFormat x) k = k (argCULong x)
+
+instance ObjCReturn ITLibArtworkFormat where
+  type RawReturn ITLibArtworkFormat = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ITLibArtworkFormat x)
+  fromOwned x = pure (ITLibArtworkFormat x)
 
 -- | ITLibDistinguishedPlaylistKind
 --
@@ -243,6 +256,16 @@ pattern ITLibDistinguishedPlaylistKindLovedSongs = ITLibDistinguishedPlaylistKin
 pattern ITLibDistinguishedPlaylistKindMusicShowsAndMovies :: ITLibDistinguishedPlaylistKind
 pattern ITLibDistinguishedPlaylistKindMusicShowsAndMovies = ITLibDistinguishedPlaylistKind 53
 
+instance ObjCArgument ITLibDistinguishedPlaylistKind where
+  withObjCArg (ITLibDistinguishedPlaylistKind x) k = k (argCULong x)
+
+instance ObjCReturn ITLibDistinguishedPlaylistKind where
+  type RawReturn ITLibDistinguishedPlaylistKind = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ITLibDistinguishedPlaylistKind x)
+  fromOwned x = pure (ITLibDistinguishedPlaylistKind x)
+
 -- | ITLibExportFeature
 --
 -- These constants describe the features supported by a given iTunes library.
@@ -257,6 +280,16 @@ newtype ITLibExportFeature = ITLibExportFeature CULong
 
 pattern ITLibExportFeatureNone :: ITLibExportFeature
 pattern ITLibExportFeatureNone = ITLibExportFeature 0
+
+instance ObjCArgument ITLibExportFeature where
+  withObjCArg (ITLibExportFeature x) k = k (argCULong x)
+
+instance ObjCReturn ITLibExportFeature where
+  type RawReturn ITLibExportFeature = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ITLibExportFeature x)
+  fromOwned x = pure (ITLibExportFeature x)
 
 -- | ITLibInitOptions
 --
@@ -279,6 +312,16 @@ pattern ITLibInitOptionNone = ITLibInitOptions 0
 
 pattern ITLibInitOptionLazyLoadData :: ITLibInitOptions
 pattern ITLibInitOptionLazyLoadData = ITLibInitOptions 1
+
+instance ObjCArgument ITLibInitOptions where
+  withObjCArg (ITLibInitOptions x) k = k (argCULong x)
+
+instance ObjCReturn ITLibInitOptions where
+  type RawReturn ITLibInitOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ITLibInitOptions x)
+  fromOwned x = pure (ITLibInitOptions x)
 
 -- | ITLibMediaItemLocationType
 --
@@ -316,6 +359,16 @@ pattern ITLibMediaItemLocationTypeURL = ITLibMediaItemLocationType 2
 pattern ITLibMediaItemLocationTypeRemote :: ITLibMediaItemLocationType
 pattern ITLibMediaItemLocationTypeRemote = ITLibMediaItemLocationType 3
 
+instance ObjCArgument ITLibMediaItemLocationType where
+  withObjCArg (ITLibMediaItemLocationType x) k = k (argCULong x)
+
+instance ObjCReturn ITLibMediaItemLocationType where
+  type RawReturn ITLibMediaItemLocationType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ITLibMediaItemLocationType x)
+  fromOwned x = pure (ITLibMediaItemLocationType x)
+
 -- | ITLibMediaItemLyricsContentRating
 --
 -- These constants specify the possible ratings of media item lyrics.
@@ -344,6 +397,16 @@ pattern ITLibMediaItemLyricsContentRatingExplicit = ITLibMediaItemLyricsContentR
 
 pattern ITLibMediaItemLyricsContentRatingClean :: ITLibMediaItemLyricsContentRating
 pattern ITLibMediaItemLyricsContentRatingClean = ITLibMediaItemLyricsContentRating 2
+
+instance ObjCArgument ITLibMediaItemLyricsContentRating where
+  withObjCArg (ITLibMediaItemLyricsContentRating x) k = k (argCULong x)
+
+instance ObjCReturn ITLibMediaItemLyricsContentRating where
+  type RawReturn ITLibMediaItemLyricsContentRating = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ITLibMediaItemLyricsContentRating x)
+  fromOwned x = pure (ITLibMediaItemLyricsContentRating x)
 
 -- | ITLibMediaItemMediaKind
 --
@@ -479,6 +542,16 @@ pattern ITLibMediaItemMediaKindPDFBook = ITLibMediaItemMediaKind 20
 pattern ITLibMediaItemMediaKindAlertTone :: ITLibMediaItemMediaKind
 pattern ITLibMediaItemMediaKindAlertTone = ITLibMediaItemMediaKind 21
 
+instance ObjCArgument ITLibMediaItemMediaKind where
+  withObjCArg (ITLibMediaItemMediaKind x) k = k (argCULong x)
+
+instance ObjCReturn ITLibMediaItemMediaKind where
+  type RawReturn ITLibMediaItemMediaKind = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ITLibMediaItemMediaKind x)
+  fromOwned x = pure (ITLibMediaItemMediaKind x)
+
 -- | ITLibMediaItemPlayStatus
 --
 -- These constants specify the "blue dot" play status of this media item.
@@ -507,6 +580,16 @@ pattern ITLibMediaItemPlayStatusPartiallyPlayed = ITLibMediaItemPlayStatus 1
 
 pattern ITLibMediaItemPlayStatusUnplayed :: ITLibMediaItemPlayStatus
 pattern ITLibMediaItemPlayStatusUnplayed = ITLibMediaItemPlayStatus 2
+
+instance ObjCArgument ITLibMediaItemPlayStatus where
+  withObjCArg (ITLibMediaItemPlayStatus x) k = k (argCULong x)
+
+instance ObjCReturn ITLibMediaItemPlayStatus where
+  type RawReturn ITLibMediaItemPlayStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ITLibMediaItemPlayStatus x)
+  fromOwned x = pure (ITLibMediaItemPlayStatus x)
 
 -- | ITLibPlaylistKind
 --
@@ -550,3 +633,13 @@ pattern ITLibPlaylistKindFolder = ITLibPlaylistKind 3
 
 pattern ITLibPlaylistKindGeniusMix :: ITLibPlaylistKind
 pattern ITLibPlaylistKindGeniusMix = ITLibPlaylistKind 4
+
+instance ObjCArgument ITLibPlaylistKind where
+  withObjCArg (ITLibPlaylistKind x) k = k (argCULong x)
+
+instance ObjCReturn ITLibPlaylistKind where
+  type RawReturn ITLibPlaylistKind = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ITLibPlaylistKind x)
+  fromOwned x = pure (ITLibPlaylistKind x)

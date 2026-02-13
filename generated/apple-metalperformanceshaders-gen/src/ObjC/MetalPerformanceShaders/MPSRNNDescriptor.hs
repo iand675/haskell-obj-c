@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,15 @@ module ObjC.MetalPerformanceShaders.MPSRNNDescriptor
   , layerSequenceDirection
   , setLayerSequenceDirection
   , inputFeatureChannelsSelector
-  , setInputFeatureChannelsSelector
+  , layerSequenceDirectionSelector
   , outputFeatureChannelsSelector
+  , setInputFeatureChannelsSelector
+  , setLayerSequenceDirectionSelector
   , setOutputFeatureChannelsSelector
-  , useLayerInputUnitTransformModeSelector
+  , setUseFloat32WeightsSelector
   , setUseLayerInputUnitTransformModeSelector
   , useFloat32WeightsSelector
-  , setUseFloat32WeightsSelector
-  , layerSequenceDirectionSelector
-  , setLayerSequenceDirectionSelector
+  , useLayerInputUnitTransformModeSelector
 
   -- * Enum types
   , MPSRNNSequenceDirection(MPSRNNSequenceDirection)
@@ -41,15 +42,11 @@ module ObjC.MetalPerformanceShaders.MPSRNNDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- inputFeatureChannels@
 inputFeatureChannels :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> IO CULong
-inputFeatureChannels mpsrnnDescriptor  =
-    sendMsg mpsrnnDescriptor (mkSelector "inputFeatureChannels") retCULong []
+inputFeatureChannels mpsrnnDescriptor =
+  sendMessage mpsrnnDescriptor inputFeatureChannelsSelector
 
 -- | inputFeatureChannels
 --
@@ -72,8 +69,8 @@ inputFeatureChannels mpsrnnDescriptor  =
 --
 -- ObjC selector: @- setInputFeatureChannels:@
 setInputFeatureChannels :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> CULong -> IO ()
-setInputFeatureChannels mpsrnnDescriptor  value =
-    sendMsg mpsrnnDescriptor (mkSelector "setInputFeatureChannels:") retVoid [argCULong value]
+setInputFeatureChannels mpsrnnDescriptor value =
+  sendMessage mpsrnnDescriptor setInputFeatureChannelsSelector value
 
 -- | outputFeatureChannels
 --
@@ -81,8 +78,8 @@ setInputFeatureChannels mpsrnnDescriptor  value =
 --
 -- ObjC selector: @- outputFeatureChannels@
 outputFeatureChannels :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> IO CULong
-outputFeatureChannels mpsrnnDescriptor  =
-    sendMsg mpsrnnDescriptor (mkSelector "outputFeatureChannels") retCULong []
+outputFeatureChannels mpsrnnDescriptor =
+  sendMessage mpsrnnDescriptor outputFeatureChannelsSelector
 
 -- | outputFeatureChannels
 --
@@ -90,8 +87,8 @@ outputFeatureChannels mpsrnnDescriptor  =
 --
 -- ObjC selector: @- setOutputFeatureChannels:@
 setOutputFeatureChannels :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> CULong -> IO ()
-setOutputFeatureChannels mpsrnnDescriptor  value =
-    sendMsg mpsrnnDescriptor (mkSelector "setOutputFeatureChannels:") retVoid [argCULong value]
+setOutputFeatureChannels mpsrnnDescriptor value =
+  sendMessage mpsrnnDescriptor setOutputFeatureChannelsSelector value
 
 -- | useLayerInputUnitTransformMode
 --
@@ -99,8 +96,8 @@ setOutputFeatureChannels mpsrnnDescriptor  value =
 --
 -- ObjC selector: @- useLayerInputUnitTransformMode@
 useLayerInputUnitTransformMode :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> IO Bool
-useLayerInputUnitTransformMode mpsrnnDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnDescriptor (mkSelector "useLayerInputUnitTransformMode") retCULong []
+useLayerInputUnitTransformMode mpsrnnDescriptor =
+  sendMessage mpsrnnDescriptor useLayerInputUnitTransformModeSelector
 
 -- | useLayerInputUnitTransformMode
 --
@@ -108,8 +105,8 @@ useLayerInputUnitTransformMode mpsrnnDescriptor  =
 --
 -- ObjC selector: @- setUseLayerInputUnitTransformMode:@
 setUseLayerInputUnitTransformMode :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> Bool -> IO ()
-setUseLayerInputUnitTransformMode mpsrnnDescriptor  value =
-    sendMsg mpsrnnDescriptor (mkSelector "setUseLayerInputUnitTransformMode:") retVoid [argCULong (if value then 1 else 0)]
+setUseLayerInputUnitTransformMode mpsrnnDescriptor value =
+  sendMessage mpsrnnDescriptor setUseLayerInputUnitTransformModeSelector value
 
 -- | useFloat32Weights
 --
@@ -117,8 +114,8 @@ setUseLayerInputUnitTransformMode mpsrnnDescriptor  value =
 --
 -- ObjC selector: @- useFloat32Weights@
 useFloat32Weights :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> IO Bool
-useFloat32Weights mpsrnnDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnDescriptor (mkSelector "useFloat32Weights") retCULong []
+useFloat32Weights mpsrnnDescriptor =
+  sendMessage mpsrnnDescriptor useFloat32WeightsSelector
 
 -- | useFloat32Weights
 --
@@ -126,8 +123,8 @@ useFloat32Weights mpsrnnDescriptor  =
 --
 -- ObjC selector: @- setUseFloat32Weights:@
 setUseFloat32Weights :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> Bool -> IO ()
-setUseFloat32Weights mpsrnnDescriptor  value =
-    sendMsg mpsrnnDescriptor (mkSelector "setUseFloat32Weights:") retVoid [argCULong (if value then 1 else 0)]
+setUseFloat32Weights mpsrnnDescriptor value =
+  sendMessage mpsrnnDescriptor setUseFloat32WeightsSelector value
 
 -- | layerSequenceDirection
 --
@@ -141,8 +138,8 @@ setUseFloat32Weights mpsrnnDescriptor  value =
 --
 -- ObjC selector: @- layerSequenceDirection@
 layerSequenceDirection :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> IO MPSRNNSequenceDirection
-layerSequenceDirection mpsrnnDescriptor  =
-    fmap (coerce :: CULong -> MPSRNNSequenceDirection) $ sendMsg mpsrnnDescriptor (mkSelector "layerSequenceDirection") retCULong []
+layerSequenceDirection mpsrnnDescriptor =
+  sendMessage mpsrnnDescriptor layerSequenceDirectionSelector
 
 -- | layerSequenceDirection
 --
@@ -156,50 +153,50 @@ layerSequenceDirection mpsrnnDescriptor  =
 --
 -- ObjC selector: @- setLayerSequenceDirection:@
 setLayerSequenceDirection :: IsMPSRNNDescriptor mpsrnnDescriptor => mpsrnnDescriptor -> MPSRNNSequenceDirection -> IO ()
-setLayerSequenceDirection mpsrnnDescriptor  value =
-    sendMsg mpsrnnDescriptor (mkSelector "setLayerSequenceDirection:") retVoid [argCULong (coerce value)]
+setLayerSequenceDirection mpsrnnDescriptor value =
+  sendMessage mpsrnnDescriptor setLayerSequenceDirectionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @inputFeatureChannels@
-inputFeatureChannelsSelector :: Selector
+inputFeatureChannelsSelector :: Selector '[] CULong
 inputFeatureChannelsSelector = mkSelector "inputFeatureChannels"
 
 -- | @Selector@ for @setInputFeatureChannels:@
-setInputFeatureChannelsSelector :: Selector
+setInputFeatureChannelsSelector :: Selector '[CULong] ()
 setInputFeatureChannelsSelector = mkSelector "setInputFeatureChannels:"
 
 -- | @Selector@ for @outputFeatureChannels@
-outputFeatureChannelsSelector :: Selector
+outputFeatureChannelsSelector :: Selector '[] CULong
 outputFeatureChannelsSelector = mkSelector "outputFeatureChannels"
 
 -- | @Selector@ for @setOutputFeatureChannels:@
-setOutputFeatureChannelsSelector :: Selector
+setOutputFeatureChannelsSelector :: Selector '[CULong] ()
 setOutputFeatureChannelsSelector = mkSelector "setOutputFeatureChannels:"
 
 -- | @Selector@ for @useLayerInputUnitTransformMode@
-useLayerInputUnitTransformModeSelector :: Selector
+useLayerInputUnitTransformModeSelector :: Selector '[] Bool
 useLayerInputUnitTransformModeSelector = mkSelector "useLayerInputUnitTransformMode"
 
 -- | @Selector@ for @setUseLayerInputUnitTransformMode:@
-setUseLayerInputUnitTransformModeSelector :: Selector
+setUseLayerInputUnitTransformModeSelector :: Selector '[Bool] ()
 setUseLayerInputUnitTransformModeSelector = mkSelector "setUseLayerInputUnitTransformMode:"
 
 -- | @Selector@ for @useFloat32Weights@
-useFloat32WeightsSelector :: Selector
+useFloat32WeightsSelector :: Selector '[] Bool
 useFloat32WeightsSelector = mkSelector "useFloat32Weights"
 
 -- | @Selector@ for @setUseFloat32Weights:@
-setUseFloat32WeightsSelector :: Selector
+setUseFloat32WeightsSelector :: Selector '[Bool] ()
 setUseFloat32WeightsSelector = mkSelector "setUseFloat32Weights:"
 
 -- | @Selector@ for @layerSequenceDirection@
-layerSequenceDirectionSelector :: Selector
+layerSequenceDirectionSelector :: Selector '[] MPSRNNSequenceDirection
 layerSequenceDirectionSelector = mkSelector "layerSequenceDirection"
 
 -- | @Selector@ for @setLayerSequenceDirection:@
-setLayerSequenceDirectionSelector :: Selector
+setLayerSequenceDirectionSelector :: Selector '[MPSRNNSequenceDirection] ()
 setLayerSequenceDirectionSelector = mkSelector "setLayerSequenceDirection:"
 

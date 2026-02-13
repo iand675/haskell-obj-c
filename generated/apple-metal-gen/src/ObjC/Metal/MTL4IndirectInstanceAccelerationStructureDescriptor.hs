@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,28 +42,28 @@ module ObjC.Metal.MTL4IndirectInstanceAccelerationStructureDescriptor
   , setMotionTransformType
   , motionTransformStride
   , setMotionTransformStride
-  , instanceDescriptorBufferSelector
-  , setInstanceDescriptorBufferSelector
-  , instanceDescriptorStrideSelector
-  , setInstanceDescriptorStrideSelector
-  , maxInstanceCountSelector
-  , setMaxInstanceCountSelector
   , instanceCountBufferSelector
-  , setInstanceCountBufferSelector
+  , instanceDescriptorBufferSelector
+  , instanceDescriptorStrideSelector
   , instanceDescriptorTypeSelector
-  , setInstanceDescriptorTypeSelector
-  , motionTransformBufferSelector
-  , setMotionTransformBufferSelector
-  , maxMotionTransformCountSelector
-  , setMaxMotionTransformCountSelector
-  , motionTransformCountBufferSelector
-  , setMotionTransformCountBufferSelector
   , instanceTransformationMatrixLayoutSelector
-  , setInstanceTransformationMatrixLayoutSelector
-  , motionTransformTypeSelector
-  , setMotionTransformTypeSelector
+  , maxInstanceCountSelector
+  , maxMotionTransformCountSelector
+  , motionTransformBufferSelector
+  , motionTransformCountBufferSelector
   , motionTransformStrideSelector
+  , motionTransformTypeSelector
+  , setInstanceCountBufferSelector
+  , setInstanceDescriptorBufferSelector
+  , setInstanceDescriptorStrideSelector
+  , setInstanceDescriptorTypeSelector
+  , setInstanceTransformationMatrixLayoutSelector
+  , setMaxInstanceCountSelector
+  , setMaxMotionTransformCountSelector
+  , setMotionTransformBufferSelector
+  , setMotionTransformCountBufferSelector
   , setMotionTransformStrideSelector
+  , setMotionTransformTypeSelector
 
   -- * Enum types
   , MTLAccelerationStructureInstanceDescriptorType(MTLAccelerationStructureInstanceDescriptorType)
@@ -80,15 +81,11 @@ module ObjC.Metal.MTL4IndirectInstanceAccelerationStructureDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -105,8 +102,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- instanceDescriptorBuffer@
 instanceDescriptorBuffer :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO MTL4BufferRange
-instanceDescriptorBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    sendMsgStret mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "instanceDescriptorBuffer") retMTL4BufferRange []
+instanceDescriptorBuffer mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor instanceDescriptorBufferSelector
 
 -- | Assigns a reference to a buffer containing instance descriptors for acceleration structures to reference.
 --
@@ -116,8 +113,8 @@ instanceDescriptorBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setInstanceDescriptorBuffer:@
 setInstanceDescriptorBuffer :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> MTL4BufferRange -> IO ()
-setInstanceDescriptorBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setInstanceDescriptorBuffer:") retVoid [argMTL4BufferRange value]
+setInstanceDescriptorBuffer mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setInstanceDescriptorBufferSelector value
 
 -- | Sets the stride, in bytes, between instance descriptors in the instance descriptor buffer.
 --
@@ -127,8 +124,8 @@ setInstanceDescriptorBuffer mtL4IndirectInstanceAccelerationStructureDescriptor 
 --
 -- ObjC selector: @- instanceDescriptorStride@
 instanceDescriptorStride :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO CULong
-instanceDescriptorStride mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "instanceDescriptorStride") retCULong []
+instanceDescriptorStride mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor instanceDescriptorStrideSelector
 
 -- | Sets the stride, in bytes, between instance descriptors in the instance descriptor buffer.
 --
@@ -138,8 +135,8 @@ instanceDescriptorStride mtL4IndirectInstanceAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setInstanceDescriptorStride:@
 setInstanceDescriptorStride :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> CULong -> IO ()
-setInstanceDescriptorStride mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setInstanceDescriptorStride:") retVoid [argCULong value]
+setInstanceDescriptorStride mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setInstanceDescriptorStrideSelector value
 
 -- | Controls the maximum number of instance descriptors the instance descriptor buffer can reference.
 --
@@ -147,8 +144,8 @@ setInstanceDescriptorStride mtL4IndirectInstanceAccelerationStructureDescriptor 
 --
 -- ObjC selector: @- maxInstanceCount@
 maxInstanceCount :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO CULong
-maxInstanceCount mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "maxInstanceCount") retCULong []
+maxInstanceCount mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor maxInstanceCountSelector
 
 -- | Controls the maximum number of instance descriptors the instance descriptor buffer can reference.
 --
@@ -156,8 +153,8 @@ maxInstanceCount mtL4IndirectInstanceAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMaxInstanceCount:@
 setMaxInstanceCount :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> CULong -> IO ()
-setMaxInstanceCount mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setMaxInstanceCount:") retVoid [argCULong value]
+setMaxInstanceCount mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setMaxInstanceCountSelector value
 
 -- | Provides a reference to a buffer containing the number of instances in the instance descriptor buffer, formatted as a 32-bit unsigned integer.
 --
@@ -165,8 +162,8 @@ setMaxInstanceCount mtL4IndirectInstanceAccelerationStructureDescriptor  value =
 --
 -- ObjC selector: @- instanceCountBuffer@
 instanceCountBuffer :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO MTL4BufferRange
-instanceCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    sendMsgStret mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "instanceCountBuffer") retMTL4BufferRange []
+instanceCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor instanceCountBufferSelector
 
 -- | Provides a reference to a buffer containing the number of instances in the instance descriptor buffer, formatted as a 32-bit unsigned integer.
 --
@@ -174,8 +171,8 @@ instanceCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setInstanceCountBuffer:@
 setInstanceCountBuffer :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> MTL4BufferRange -> IO ()
-setInstanceCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setInstanceCountBuffer:") retVoid [argMTL4BufferRange value]
+setInstanceCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setInstanceCountBufferSelector value
 
 -- | Controls the type of instance descriptor that the instance descriptor buffer references.
 --
@@ -185,8 +182,8 @@ setInstanceCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  valu
 --
 -- ObjC selector: @- instanceDescriptorType@
 instanceDescriptorType :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO MTLAccelerationStructureInstanceDescriptorType
-instanceDescriptorType mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    fmap (coerce :: CULong -> MTLAccelerationStructureInstanceDescriptorType) $ sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "instanceDescriptorType") retCULong []
+instanceDescriptorType mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor instanceDescriptorTypeSelector
 
 -- | Controls the type of instance descriptor that the instance descriptor buffer references.
 --
@@ -196,8 +193,8 @@ instanceDescriptorType mtL4IndirectInstanceAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setInstanceDescriptorType:@
 setInstanceDescriptorType :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> MTLAccelerationStructureInstanceDescriptorType -> IO ()
-setInstanceDescriptorType mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setInstanceDescriptorType:") retVoid [argCULong (coerce value)]
+setInstanceDescriptorType mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setInstanceDescriptorTypeSelector value
 
 -- | A buffer containing transformation information for instance motion keyframes, formatted according to the motion transform type.
 --
@@ -207,8 +204,8 @@ setInstanceDescriptorType mtL4IndirectInstanceAccelerationStructureDescriptor  v
 --
 -- ObjC selector: @- motionTransformBuffer@
 motionTransformBuffer :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO MTL4BufferRange
-motionTransformBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    sendMsgStret mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "motionTransformBuffer") retMTL4BufferRange []
+motionTransformBuffer mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor motionTransformBufferSelector
 
 -- | A buffer containing transformation information for instance motion keyframes, formatted according to the motion transform type.
 --
@@ -218,8 +215,8 @@ motionTransformBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMotionTransformBuffer:@
 setMotionTransformBuffer :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> MTL4BufferRange -> IO ()
-setMotionTransformBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setMotionTransformBuffer:") retVoid [argMTL4BufferRange value]
+setMotionTransformBuffer mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setMotionTransformBufferSelector value
 
 -- | Controls the maximum number of motion transforms in the motion transform buffer.
 --
@@ -227,8 +224,8 @@ setMotionTransformBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  va
 --
 -- ObjC selector: @- maxMotionTransformCount@
 maxMotionTransformCount :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO CULong
-maxMotionTransformCount mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "maxMotionTransformCount") retCULong []
+maxMotionTransformCount mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor maxMotionTransformCountSelector
 
 -- | Controls the maximum number of motion transforms in the motion transform buffer.
 --
@@ -236,8 +233,8 @@ maxMotionTransformCount mtL4IndirectInstanceAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMaxMotionTransformCount:@
 setMaxMotionTransformCount :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> CULong -> IO ()
-setMaxMotionTransformCount mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setMaxMotionTransformCount:") retVoid [argCULong value]
+setMaxMotionTransformCount mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setMaxMotionTransformCountSelector value
 
 -- | Associates a buffer reference containing the number of motion transforms in the motion transform buffer, formatted as a 32-bit unsigned integer.
 --
@@ -245,8 +242,8 @@ setMaxMotionTransformCount mtL4IndirectInstanceAccelerationStructureDescriptor  
 --
 -- ObjC selector: @- motionTransformCountBuffer@
 motionTransformCountBuffer :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO MTL4BufferRange
-motionTransformCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    sendMsgStret mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "motionTransformCountBuffer") retMTL4BufferRange []
+motionTransformCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor motionTransformCountBufferSelector
 
 -- | Associates a buffer reference containing the number of motion transforms in the motion transform buffer, formatted as a 32-bit unsigned integer.
 --
@@ -254,8 +251,8 @@ motionTransformCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  
 --
 -- ObjC selector: @- setMotionTransformCountBuffer:@
 setMotionTransformCountBuffer :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> MTL4BufferRange -> IO ()
-setMotionTransformCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setMotionTransformCountBuffer:") retVoid [argMTL4BufferRange value]
+setMotionTransformCountBuffer mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setMotionTransformCountBufferSelector value
 
 -- | Specifies the layout for the transformation matrices in the instance descriptor buffer and the motion transformation matrix buffer.
 --
@@ -265,8 +262,8 @@ setMotionTransformCountBuffer mtL4IndirectInstanceAccelerationStructureDescripto
 --
 -- ObjC selector: @- instanceTransformationMatrixLayout@
 instanceTransformationMatrixLayout :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO MTLMatrixLayout
-instanceTransformationMatrixLayout mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    fmap (coerce :: CLong -> MTLMatrixLayout) $ sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "instanceTransformationMatrixLayout") retCLong []
+instanceTransformationMatrixLayout mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor instanceTransformationMatrixLayoutSelector
 
 -- | Specifies the layout for the transformation matrices in the instance descriptor buffer and the motion transformation matrix buffer.
 --
@@ -276,8 +273,8 @@ instanceTransformationMatrixLayout mtL4IndirectInstanceAccelerationStructureDesc
 --
 -- ObjC selector: @- setInstanceTransformationMatrixLayout:@
 setInstanceTransformationMatrixLayout :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> MTLMatrixLayout -> IO ()
-setInstanceTransformationMatrixLayout mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setInstanceTransformationMatrixLayout:") retVoid [argCLong (coerce value)]
+setInstanceTransformationMatrixLayout mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setInstanceTransformationMatrixLayoutSelector value
 
 -- | Sets the type of motion transforms, either as a matrix or individual components.
 --
@@ -285,8 +282,8 @@ setInstanceTransformationMatrixLayout mtL4IndirectInstanceAccelerationStructureD
 --
 -- ObjC selector: @- motionTransformType@
 motionTransformType :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO MTLTransformType
-motionTransformType mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    fmap (coerce :: CLong -> MTLTransformType) $ sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "motionTransformType") retCLong []
+motionTransformType mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor motionTransformTypeSelector
 
 -- | Sets the type of motion transforms, either as a matrix or individual components.
 --
@@ -294,8 +291,8 @@ motionTransformType mtL4IndirectInstanceAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMotionTransformType:@
 setMotionTransformType :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> MTLTransformType -> IO ()
-setMotionTransformType mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setMotionTransformType:") retVoid [argCLong (coerce value)]
+setMotionTransformType mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setMotionTransformTypeSelector value
 
 -- | Sets the stride for motion transform.
 --
@@ -303,8 +300,8 @@ setMotionTransformType mtL4IndirectInstanceAccelerationStructureDescriptor  valu
 --
 -- ObjC selector: @- motionTransformStride@
 motionTransformStride :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> IO CULong
-motionTransformStride mtL4IndirectInstanceAccelerationStructureDescriptor  =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "motionTransformStride") retCULong []
+motionTransformStride mtL4IndirectInstanceAccelerationStructureDescriptor =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor motionTransformStrideSelector
 
 -- | Sets the stride for motion transform.
 --
@@ -312,98 +309,98 @@ motionTransformStride mtL4IndirectInstanceAccelerationStructureDescriptor  =
 --
 -- ObjC selector: @- setMotionTransformStride:@
 setMotionTransformStride :: IsMTL4IndirectInstanceAccelerationStructureDescriptor mtL4IndirectInstanceAccelerationStructureDescriptor => mtL4IndirectInstanceAccelerationStructureDescriptor -> CULong -> IO ()
-setMotionTransformStride mtL4IndirectInstanceAccelerationStructureDescriptor  value =
-    sendMsg mtL4IndirectInstanceAccelerationStructureDescriptor (mkSelector "setMotionTransformStride:") retVoid [argCULong value]
+setMotionTransformStride mtL4IndirectInstanceAccelerationStructureDescriptor value =
+  sendMessage mtL4IndirectInstanceAccelerationStructureDescriptor setMotionTransformStrideSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @instanceDescriptorBuffer@
-instanceDescriptorBufferSelector :: Selector
+instanceDescriptorBufferSelector :: Selector '[] MTL4BufferRange
 instanceDescriptorBufferSelector = mkSelector "instanceDescriptorBuffer"
 
 -- | @Selector@ for @setInstanceDescriptorBuffer:@
-setInstanceDescriptorBufferSelector :: Selector
+setInstanceDescriptorBufferSelector :: Selector '[MTL4BufferRange] ()
 setInstanceDescriptorBufferSelector = mkSelector "setInstanceDescriptorBuffer:"
 
 -- | @Selector@ for @instanceDescriptorStride@
-instanceDescriptorStrideSelector :: Selector
+instanceDescriptorStrideSelector :: Selector '[] CULong
 instanceDescriptorStrideSelector = mkSelector "instanceDescriptorStride"
 
 -- | @Selector@ for @setInstanceDescriptorStride:@
-setInstanceDescriptorStrideSelector :: Selector
+setInstanceDescriptorStrideSelector :: Selector '[CULong] ()
 setInstanceDescriptorStrideSelector = mkSelector "setInstanceDescriptorStride:"
 
 -- | @Selector@ for @maxInstanceCount@
-maxInstanceCountSelector :: Selector
+maxInstanceCountSelector :: Selector '[] CULong
 maxInstanceCountSelector = mkSelector "maxInstanceCount"
 
 -- | @Selector@ for @setMaxInstanceCount:@
-setMaxInstanceCountSelector :: Selector
+setMaxInstanceCountSelector :: Selector '[CULong] ()
 setMaxInstanceCountSelector = mkSelector "setMaxInstanceCount:"
 
 -- | @Selector@ for @instanceCountBuffer@
-instanceCountBufferSelector :: Selector
+instanceCountBufferSelector :: Selector '[] MTL4BufferRange
 instanceCountBufferSelector = mkSelector "instanceCountBuffer"
 
 -- | @Selector@ for @setInstanceCountBuffer:@
-setInstanceCountBufferSelector :: Selector
+setInstanceCountBufferSelector :: Selector '[MTL4BufferRange] ()
 setInstanceCountBufferSelector = mkSelector "setInstanceCountBuffer:"
 
 -- | @Selector@ for @instanceDescriptorType@
-instanceDescriptorTypeSelector :: Selector
+instanceDescriptorTypeSelector :: Selector '[] MTLAccelerationStructureInstanceDescriptorType
 instanceDescriptorTypeSelector = mkSelector "instanceDescriptorType"
 
 -- | @Selector@ for @setInstanceDescriptorType:@
-setInstanceDescriptorTypeSelector :: Selector
+setInstanceDescriptorTypeSelector :: Selector '[MTLAccelerationStructureInstanceDescriptorType] ()
 setInstanceDescriptorTypeSelector = mkSelector "setInstanceDescriptorType:"
 
 -- | @Selector@ for @motionTransformBuffer@
-motionTransformBufferSelector :: Selector
+motionTransformBufferSelector :: Selector '[] MTL4BufferRange
 motionTransformBufferSelector = mkSelector "motionTransformBuffer"
 
 -- | @Selector@ for @setMotionTransformBuffer:@
-setMotionTransformBufferSelector :: Selector
+setMotionTransformBufferSelector :: Selector '[MTL4BufferRange] ()
 setMotionTransformBufferSelector = mkSelector "setMotionTransformBuffer:"
 
 -- | @Selector@ for @maxMotionTransformCount@
-maxMotionTransformCountSelector :: Selector
+maxMotionTransformCountSelector :: Selector '[] CULong
 maxMotionTransformCountSelector = mkSelector "maxMotionTransformCount"
 
 -- | @Selector@ for @setMaxMotionTransformCount:@
-setMaxMotionTransformCountSelector :: Selector
+setMaxMotionTransformCountSelector :: Selector '[CULong] ()
 setMaxMotionTransformCountSelector = mkSelector "setMaxMotionTransformCount:"
 
 -- | @Selector@ for @motionTransformCountBuffer@
-motionTransformCountBufferSelector :: Selector
+motionTransformCountBufferSelector :: Selector '[] MTL4BufferRange
 motionTransformCountBufferSelector = mkSelector "motionTransformCountBuffer"
 
 -- | @Selector@ for @setMotionTransformCountBuffer:@
-setMotionTransformCountBufferSelector :: Selector
+setMotionTransformCountBufferSelector :: Selector '[MTL4BufferRange] ()
 setMotionTransformCountBufferSelector = mkSelector "setMotionTransformCountBuffer:"
 
 -- | @Selector@ for @instanceTransformationMatrixLayout@
-instanceTransformationMatrixLayoutSelector :: Selector
+instanceTransformationMatrixLayoutSelector :: Selector '[] MTLMatrixLayout
 instanceTransformationMatrixLayoutSelector = mkSelector "instanceTransformationMatrixLayout"
 
 -- | @Selector@ for @setInstanceTransformationMatrixLayout:@
-setInstanceTransformationMatrixLayoutSelector :: Selector
+setInstanceTransformationMatrixLayoutSelector :: Selector '[MTLMatrixLayout] ()
 setInstanceTransformationMatrixLayoutSelector = mkSelector "setInstanceTransformationMatrixLayout:"
 
 -- | @Selector@ for @motionTransformType@
-motionTransformTypeSelector :: Selector
+motionTransformTypeSelector :: Selector '[] MTLTransformType
 motionTransformTypeSelector = mkSelector "motionTransformType"
 
 -- | @Selector@ for @setMotionTransformType:@
-setMotionTransformTypeSelector :: Selector
+setMotionTransformTypeSelector :: Selector '[MTLTransformType] ()
 setMotionTransformTypeSelector = mkSelector "setMotionTransformType:"
 
 -- | @Selector@ for @motionTransformStride@
-motionTransformStrideSelector :: Selector
+motionTransformStrideSelector :: Selector '[] CULong
 motionTransformStrideSelector = mkSelector "motionTransformStride"
 
 -- | @Selector@ for @setMotionTransformStride:@
-setMotionTransformStrideSelector :: Selector
+setMotionTransformStrideSelector :: Selector '[CULong] ()
 setMotionTransformStrideSelector = mkSelector "setMotionTransformStride:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.AppKit.NSWindowTabGroup
   , selectedWindow
   , setSelectedWindow
   , addWindowSelector
-  , insertWindow_atIndexSelector
-  , removeWindowSelector
   , identifierSelector
-  , windowsSelector
+  , insertWindow_atIndexSelector
   , overviewVisibleSelector
-  , setOverviewVisibleSelector
-  , tabBarVisibleSelector
+  , removeWindowSelector
   , selectedWindowSelector
+  , setOverviewVisibleSelector
   , setSelectedWindowSelector
+  , tabBarVisibleSelector
+  , windowsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,99 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- addWindow:@
 addWindow :: (IsNSWindowTabGroup nsWindowTabGroup, IsNSWindow window) => nsWindowTabGroup -> window -> IO ()
-addWindow nsWindowTabGroup  window =
-  withObjCPtr window $ \raw_window ->
-      sendMsg nsWindowTabGroup (mkSelector "addWindow:") retVoid [argPtr (castPtr raw_window :: Ptr ())]
+addWindow nsWindowTabGroup window =
+  sendMessage nsWindowTabGroup addWindowSelector (toNSWindow window)
 
 -- | @- insertWindow:atIndex:@
 insertWindow_atIndex :: (IsNSWindowTabGroup nsWindowTabGroup, IsNSWindow window) => nsWindowTabGroup -> window -> CLong -> IO ()
-insertWindow_atIndex nsWindowTabGroup  window index =
-  withObjCPtr window $ \raw_window ->
-      sendMsg nsWindowTabGroup (mkSelector "insertWindow:atIndex:") retVoid [argPtr (castPtr raw_window :: Ptr ()), argCLong index]
+insertWindow_atIndex nsWindowTabGroup window index =
+  sendMessage nsWindowTabGroup insertWindow_atIndexSelector (toNSWindow window) index
 
 -- | @- removeWindow:@
 removeWindow :: (IsNSWindowTabGroup nsWindowTabGroup, IsNSWindow window) => nsWindowTabGroup -> window -> IO ()
-removeWindow nsWindowTabGroup  window =
-  withObjCPtr window $ \raw_window ->
-      sendMsg nsWindowTabGroup (mkSelector "removeWindow:") retVoid [argPtr (castPtr raw_window :: Ptr ())]
+removeWindow nsWindowTabGroup window =
+  sendMessage nsWindowTabGroup removeWindowSelector (toNSWindow window)
 
 -- | @- identifier@
 identifier :: IsNSWindowTabGroup nsWindowTabGroup => nsWindowTabGroup -> IO (Id NSString)
-identifier nsWindowTabGroup  =
-    sendMsg nsWindowTabGroup (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsWindowTabGroup =
+  sendMessage nsWindowTabGroup identifierSelector
 
 -- | @- windows@
 windows :: IsNSWindowTabGroup nsWindowTabGroup => nsWindowTabGroup -> IO (Id NSArray)
-windows nsWindowTabGroup  =
-    sendMsg nsWindowTabGroup (mkSelector "windows") (retPtr retVoid) [] >>= retainedObject . castPtr
+windows nsWindowTabGroup =
+  sendMessage nsWindowTabGroup windowsSelector
 
 -- | @- overviewVisible@
 overviewVisible :: IsNSWindowTabGroup nsWindowTabGroup => nsWindowTabGroup -> IO Bool
-overviewVisible nsWindowTabGroup  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindowTabGroup (mkSelector "overviewVisible") retCULong []
+overviewVisible nsWindowTabGroup =
+  sendMessage nsWindowTabGroup overviewVisibleSelector
 
 -- | @- setOverviewVisible:@
 setOverviewVisible :: IsNSWindowTabGroup nsWindowTabGroup => nsWindowTabGroup -> Bool -> IO ()
-setOverviewVisible nsWindowTabGroup  value =
-    sendMsg nsWindowTabGroup (mkSelector "setOverviewVisible:") retVoid [argCULong (if value then 1 else 0)]
+setOverviewVisible nsWindowTabGroup value =
+  sendMessage nsWindowTabGroup setOverviewVisibleSelector value
 
 -- | @- tabBarVisible@
 tabBarVisible :: IsNSWindowTabGroup nsWindowTabGroup => nsWindowTabGroup -> IO Bool
-tabBarVisible nsWindowTabGroup  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindowTabGroup (mkSelector "tabBarVisible") retCULong []
+tabBarVisible nsWindowTabGroup =
+  sendMessage nsWindowTabGroup tabBarVisibleSelector
 
 -- | @- selectedWindow@
 selectedWindow :: IsNSWindowTabGroup nsWindowTabGroup => nsWindowTabGroup -> IO (Id NSWindow)
-selectedWindow nsWindowTabGroup  =
-    sendMsg nsWindowTabGroup (mkSelector "selectedWindow") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedWindow nsWindowTabGroup =
+  sendMessage nsWindowTabGroup selectedWindowSelector
 
 -- | @- setSelectedWindow:@
 setSelectedWindow :: (IsNSWindowTabGroup nsWindowTabGroup, IsNSWindow value) => nsWindowTabGroup -> value -> IO ()
-setSelectedWindow nsWindowTabGroup  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindowTabGroup (mkSelector "setSelectedWindow:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSelectedWindow nsWindowTabGroup value =
+  sendMessage nsWindowTabGroup setSelectedWindowSelector (toNSWindow value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addWindow:@
-addWindowSelector :: Selector
+addWindowSelector :: Selector '[Id NSWindow] ()
 addWindowSelector = mkSelector "addWindow:"
 
 -- | @Selector@ for @insertWindow:atIndex:@
-insertWindow_atIndexSelector :: Selector
+insertWindow_atIndexSelector :: Selector '[Id NSWindow, CLong] ()
 insertWindow_atIndexSelector = mkSelector "insertWindow:atIndex:"
 
 -- | @Selector@ for @removeWindow:@
-removeWindowSelector :: Selector
+removeWindowSelector :: Selector '[Id NSWindow] ()
 removeWindowSelector = mkSelector "removeWindow:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @windows@
-windowsSelector :: Selector
+windowsSelector :: Selector '[] (Id NSArray)
 windowsSelector = mkSelector "windows"
 
 -- | @Selector@ for @overviewVisible@
-overviewVisibleSelector :: Selector
+overviewVisibleSelector :: Selector '[] Bool
 overviewVisibleSelector = mkSelector "overviewVisible"
 
 -- | @Selector@ for @setOverviewVisible:@
-setOverviewVisibleSelector :: Selector
+setOverviewVisibleSelector :: Selector '[Bool] ()
 setOverviewVisibleSelector = mkSelector "setOverviewVisible:"
 
 -- | @Selector@ for @tabBarVisible@
-tabBarVisibleSelector :: Selector
+tabBarVisibleSelector :: Selector '[] Bool
 tabBarVisibleSelector = mkSelector "tabBarVisible"
 
 -- | @Selector@ for @selectedWindow@
-selectedWindowSelector :: Selector
+selectedWindowSelector :: Selector '[] (Id NSWindow)
 selectedWindowSelector = mkSelector "selectedWindow"
 
 -- | @Selector@ for @setSelectedWindow:@
-setSelectedWindowSelector :: Selector
+setSelectedWindowSelector :: Selector '[Id NSWindow] ()
 setSelectedWindowSelector = mkSelector "setSelectedWindow:"
 

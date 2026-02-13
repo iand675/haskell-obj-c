@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Foundation.NSUserAutomatorTask
   , variables
   , setVariables
   , executeWithInput_completionHandlerSelector
-  , variablesSelector
   , setVariablesSelector
+  , variablesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,33 +29,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- executeWithInput:completionHandler:@
 executeWithInput_completionHandler :: IsNSUserAutomatorTask nsUserAutomatorTask => nsUserAutomatorTask -> RawId -> Ptr () -> IO ()
-executeWithInput_completionHandler nsUserAutomatorTask  input handler =
-    sendMsg nsUserAutomatorTask (mkSelector "executeWithInput:completionHandler:") retVoid [argPtr (castPtr (unRawId input) :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+executeWithInput_completionHandler nsUserAutomatorTask input handler =
+  sendMessage nsUserAutomatorTask executeWithInput_completionHandlerSelector input handler
 
 -- | @- variables@
 variables :: IsNSUserAutomatorTask nsUserAutomatorTask => nsUserAutomatorTask -> IO (Id NSDictionary)
-variables nsUserAutomatorTask  =
-    sendMsg nsUserAutomatorTask (mkSelector "variables") (retPtr retVoid) [] >>= retainedObject . castPtr
+variables nsUserAutomatorTask =
+  sendMessage nsUserAutomatorTask variablesSelector
 
 -- | @- setVariables:@
 setVariables :: (IsNSUserAutomatorTask nsUserAutomatorTask, IsNSDictionary value) => nsUserAutomatorTask -> value -> IO ()
-setVariables nsUserAutomatorTask  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsUserAutomatorTask (mkSelector "setVariables:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVariables nsUserAutomatorTask value =
+  sendMessage nsUserAutomatorTask setVariablesSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @executeWithInput:completionHandler:@
-executeWithInput_completionHandlerSelector :: Selector
+executeWithInput_completionHandlerSelector :: Selector '[RawId, Ptr ()] ()
 executeWithInput_completionHandlerSelector = mkSelector "executeWithInput:completionHandler:"
 
 -- | @Selector@ for @variables@
-variablesSelector :: Selector
+variablesSelector :: Selector '[] (Id NSDictionary)
 variablesSelector = mkSelector "variables"
 
 -- | @Selector@ for @setVariables:@
-setVariablesSelector :: Selector
+setVariablesSelector :: Selector '[Id NSDictionary] ()
 setVariablesSelector = mkSelector "setVariables:"
 

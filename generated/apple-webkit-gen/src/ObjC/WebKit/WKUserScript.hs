@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,11 +19,11 @@ module ObjC.WebKit.WKUserScript
   , source
   , injectionTime
   , forMainFrameOnly
+  , forMainFrameOnlySelector
   , initWithSource_injectionTime_forMainFrameOnlySelector
   , initWithSource_injectionTime_forMainFrameOnly_inContentWorldSelector
-  , sourceSelector
   , injectionTimeSelector
-  , forMainFrameOnlySelector
+  , sourceSelector
 
   -- * Enum types
   , WKUserScriptInjectionTime(WKUserScriptInjectionTime)
@@ -31,15 +32,11 @@ module ObjC.WebKit.WKUserScript
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,9 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSource:injectionTime:forMainFrameOnly:@
 initWithSource_injectionTime_forMainFrameOnly :: (IsWKUserScript wkUserScript, IsNSString source) => wkUserScript -> source -> WKUserScriptInjectionTime -> Bool -> IO (Id WKUserScript)
-initWithSource_injectionTime_forMainFrameOnly wkUserScript  source injectionTime forMainFrameOnly =
-  withObjCPtr source $ \raw_source ->
-      sendMsg wkUserScript (mkSelector "initWithSource:injectionTime:forMainFrameOnly:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argCLong (coerce injectionTime), argCULong (if forMainFrameOnly then 1 else 0)] >>= ownedObject . castPtr
+initWithSource_injectionTime_forMainFrameOnly wkUserScript source injectionTime forMainFrameOnly =
+  sendOwnedMessage wkUserScript initWithSource_injectionTime_forMainFrameOnlySelector (toNSString source) injectionTime forMainFrameOnly
 
 -- | Returns an initialized user script that can be added to a
 --
@@ -83,47 +79,45 @@ initWithSource_injectionTime_forMainFrameOnly wkUserScript  source injectionTime
 --
 -- ObjC selector: @- initWithSource:injectionTime:forMainFrameOnly:inContentWorld:@
 initWithSource_injectionTime_forMainFrameOnly_inContentWorld :: (IsWKUserScript wkUserScript, IsNSString source, IsWKContentWorld contentWorld) => wkUserScript -> source -> WKUserScriptInjectionTime -> Bool -> contentWorld -> IO (Id WKUserScript)
-initWithSource_injectionTime_forMainFrameOnly_inContentWorld wkUserScript  source injectionTime forMainFrameOnly contentWorld =
-  withObjCPtr source $ \raw_source ->
-    withObjCPtr contentWorld $ \raw_contentWorld ->
-        sendMsg wkUserScript (mkSelector "initWithSource:injectionTime:forMainFrameOnly:inContentWorld:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argCLong (coerce injectionTime), argCULong (if forMainFrameOnly then 1 else 0), argPtr (castPtr raw_contentWorld :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_injectionTime_forMainFrameOnly_inContentWorld wkUserScript source injectionTime forMainFrameOnly contentWorld =
+  sendOwnedMessage wkUserScript initWithSource_injectionTime_forMainFrameOnly_inContentWorldSelector (toNSString source) injectionTime forMainFrameOnly (toWKContentWorld contentWorld)
 
 -- | @- source@
 source :: IsWKUserScript wkUserScript => wkUserScript -> IO (Id NSString)
-source wkUserScript  =
-    sendMsg wkUserScript (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+source wkUserScript =
+  sendMessage wkUserScript sourceSelector
 
 -- | @- injectionTime@
 injectionTime :: IsWKUserScript wkUserScript => wkUserScript -> IO WKUserScriptInjectionTime
-injectionTime wkUserScript  =
-    fmap (coerce :: CLong -> WKUserScriptInjectionTime) $ sendMsg wkUserScript (mkSelector "injectionTime") retCLong []
+injectionTime wkUserScript =
+  sendMessage wkUserScript injectionTimeSelector
 
 -- | @- forMainFrameOnly@
 forMainFrameOnly :: IsWKUserScript wkUserScript => wkUserScript -> IO Bool
-forMainFrameOnly wkUserScript  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkUserScript (mkSelector "forMainFrameOnly") retCULong []
+forMainFrameOnly wkUserScript =
+  sendMessage wkUserScript forMainFrameOnlySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSource:injectionTime:forMainFrameOnly:@
-initWithSource_injectionTime_forMainFrameOnlySelector :: Selector
+initWithSource_injectionTime_forMainFrameOnlySelector :: Selector '[Id NSString, WKUserScriptInjectionTime, Bool] (Id WKUserScript)
 initWithSource_injectionTime_forMainFrameOnlySelector = mkSelector "initWithSource:injectionTime:forMainFrameOnly:"
 
 -- | @Selector@ for @initWithSource:injectionTime:forMainFrameOnly:inContentWorld:@
-initWithSource_injectionTime_forMainFrameOnly_inContentWorldSelector :: Selector
+initWithSource_injectionTime_forMainFrameOnly_inContentWorldSelector :: Selector '[Id NSString, WKUserScriptInjectionTime, Bool, Id WKContentWorld] (Id WKUserScript)
 initWithSource_injectionTime_forMainFrameOnly_inContentWorldSelector = mkSelector "initWithSource:injectionTime:forMainFrameOnly:inContentWorld:"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id NSString)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @injectionTime@
-injectionTimeSelector :: Selector
+injectionTimeSelector :: Selector '[] WKUserScriptInjectionTime
 injectionTimeSelector = mkSelector "injectionTime"
 
 -- | @Selector@ for @forMainFrameOnly@
-forMainFrameOnlySelector :: Selector
+forMainFrameOnlySelector :: Selector '[] Bool
 forMainFrameOnlySelector = mkSelector "forMainFrameOnly"
 

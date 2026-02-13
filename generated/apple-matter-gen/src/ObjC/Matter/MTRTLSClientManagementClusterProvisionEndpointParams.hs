@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Matter.MTRTLSClientManagementClusterProvisionEndpointParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , hostnameSelector
-  , setHostnameSelector
-  , portSelector
-  , setPortSelector
   , caidSelector
-  , setCaidSelector
   , ccdidSelector
-  , setCcdidSelector
   , endpointIDSelector
-  , setEndpointIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , hostnameSelector
+  , portSelector
   , serverSideProcessingTimeoutSelector
+  , setCaidSelector
+  , setCcdidSelector
+  , setEndpointIDSelector
+  , setHostnameSelector
+  , setPortSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,58 +52,53 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- hostname@
 hostname :: IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams => mtrtlsClientManagementClusterProvisionEndpointParams -> IO (Id NSData)
-hostname mtrtlsClientManagementClusterProvisionEndpointParams  =
-    sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "hostname") (retPtr retVoid) [] >>= retainedObject . castPtr
+hostname mtrtlsClientManagementClusterProvisionEndpointParams =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams hostnameSelector
 
 -- | @- setHostname:@
 setHostname :: (IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams, IsNSData value) => mtrtlsClientManagementClusterProvisionEndpointParams -> value -> IO ()
-setHostname mtrtlsClientManagementClusterProvisionEndpointParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "setHostname:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHostname mtrtlsClientManagementClusterProvisionEndpointParams value =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams setHostnameSelector (toNSData value)
 
 -- | @- port@
 port :: IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams => mtrtlsClientManagementClusterProvisionEndpointParams -> IO (Id NSNumber)
-port mtrtlsClientManagementClusterProvisionEndpointParams  =
-    sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "port") (retPtr retVoid) [] >>= retainedObject . castPtr
+port mtrtlsClientManagementClusterProvisionEndpointParams =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams portSelector
 
 -- | @- setPort:@
 setPort :: (IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams, IsNSNumber value) => mtrtlsClientManagementClusterProvisionEndpointParams -> value -> IO ()
-setPort mtrtlsClientManagementClusterProvisionEndpointParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "setPort:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPort mtrtlsClientManagementClusterProvisionEndpointParams value =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams setPortSelector (toNSNumber value)
 
 -- | @- caid@
 caid :: IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams => mtrtlsClientManagementClusterProvisionEndpointParams -> IO (Id NSNumber)
-caid mtrtlsClientManagementClusterProvisionEndpointParams  =
-    sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "caid") (retPtr retVoid) [] >>= retainedObject . castPtr
+caid mtrtlsClientManagementClusterProvisionEndpointParams =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams caidSelector
 
 -- | @- setCaid:@
 setCaid :: (IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams, IsNSNumber value) => mtrtlsClientManagementClusterProvisionEndpointParams -> value -> IO ()
-setCaid mtrtlsClientManagementClusterProvisionEndpointParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "setCaid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaid mtrtlsClientManagementClusterProvisionEndpointParams value =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams setCaidSelector (toNSNumber value)
 
 -- | @- ccdid@
 ccdid :: IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams => mtrtlsClientManagementClusterProvisionEndpointParams -> IO (Id NSNumber)
-ccdid mtrtlsClientManagementClusterProvisionEndpointParams  =
-    sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "ccdid") (retPtr retVoid) [] >>= retainedObject . castPtr
+ccdid mtrtlsClientManagementClusterProvisionEndpointParams =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams ccdidSelector
 
 -- | @- setCcdid:@
 setCcdid :: (IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams, IsNSNumber value) => mtrtlsClientManagementClusterProvisionEndpointParams -> value -> IO ()
-setCcdid mtrtlsClientManagementClusterProvisionEndpointParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "setCcdid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCcdid mtrtlsClientManagementClusterProvisionEndpointParams value =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams setCcdidSelector (toNSNumber value)
 
 -- | @- endpointID@
 endpointID :: IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams => mtrtlsClientManagementClusterProvisionEndpointParams -> IO (Id NSNumber)
-endpointID mtrtlsClientManagementClusterProvisionEndpointParams  =
-    sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointID mtrtlsClientManagementClusterProvisionEndpointParams =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams endpointIDSelector
 
 -- | @- setEndpointID:@
 setEndpointID :: (IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams, IsNSNumber value) => mtrtlsClientManagementClusterProvisionEndpointParams -> value -> IO ()
-setEndpointID mtrtlsClientManagementClusterProvisionEndpointParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "setEndpointID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpointID mtrtlsClientManagementClusterProvisionEndpointParams value =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams setEndpointIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -116,8 +108,8 @@ setEndpointID mtrtlsClientManagementClusterProvisionEndpointParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams => mtrtlsClientManagementClusterProvisionEndpointParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrtlsClientManagementClusterProvisionEndpointParams  =
-    sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrtlsClientManagementClusterProvisionEndpointParams =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -127,9 +119,8 @@ timedInvokeTimeoutMs mtrtlsClientManagementClusterProvisionEndpointParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams, IsNSNumber value) => mtrtlsClientManagementClusterProvisionEndpointParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrtlsClientManagementClusterProvisionEndpointParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrtlsClientManagementClusterProvisionEndpointParams value =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -139,8 +130,8 @@ setTimedInvokeTimeoutMs mtrtlsClientManagementClusterProvisionEndpointParams  va
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams => mtrtlsClientManagementClusterProvisionEndpointParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrtlsClientManagementClusterProvisionEndpointParams  =
-    sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrtlsClientManagementClusterProvisionEndpointParams =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -150,67 +141,66 @@ serverSideProcessingTimeout mtrtlsClientManagementClusterProvisionEndpointParams
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRTLSClientManagementClusterProvisionEndpointParams mtrtlsClientManagementClusterProvisionEndpointParams, IsNSNumber value) => mtrtlsClientManagementClusterProvisionEndpointParams -> value -> IO ()
-setServerSideProcessingTimeout mtrtlsClientManagementClusterProvisionEndpointParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterProvisionEndpointParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrtlsClientManagementClusterProvisionEndpointParams value =
+  sendMessage mtrtlsClientManagementClusterProvisionEndpointParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @hostname@
-hostnameSelector :: Selector
+hostnameSelector :: Selector '[] (Id NSData)
 hostnameSelector = mkSelector "hostname"
 
 -- | @Selector@ for @setHostname:@
-setHostnameSelector :: Selector
+setHostnameSelector :: Selector '[Id NSData] ()
 setHostnameSelector = mkSelector "setHostname:"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] (Id NSNumber)
 portSelector = mkSelector "port"
 
 -- | @Selector@ for @setPort:@
-setPortSelector :: Selector
+setPortSelector :: Selector '[Id NSNumber] ()
 setPortSelector = mkSelector "setPort:"
 
 -- | @Selector@ for @caid@
-caidSelector :: Selector
+caidSelector :: Selector '[] (Id NSNumber)
 caidSelector = mkSelector "caid"
 
 -- | @Selector@ for @setCaid:@
-setCaidSelector :: Selector
+setCaidSelector :: Selector '[Id NSNumber] ()
 setCaidSelector = mkSelector "setCaid:"
 
 -- | @Selector@ for @ccdid@
-ccdidSelector :: Selector
+ccdidSelector :: Selector '[] (Id NSNumber)
 ccdidSelector = mkSelector "ccdid"
 
 -- | @Selector@ for @setCcdid:@
-setCcdidSelector :: Selector
+setCcdidSelector :: Selector '[Id NSNumber] ()
 setCcdidSelector = mkSelector "setCcdid:"
 
 -- | @Selector@ for @endpointID@
-endpointIDSelector :: Selector
+endpointIDSelector :: Selector '[] (Id NSNumber)
 endpointIDSelector = mkSelector "endpointID"
 
 -- | @Selector@ for @setEndpointID:@
-setEndpointIDSelector :: Selector
+setEndpointIDSelector :: Selector '[Id NSNumber] ()
 setEndpointIDSelector = mkSelector "setEndpointID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

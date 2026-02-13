@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Metal.MTL4MachineLearningPipelineReflection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,14 +30,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bindings@
 bindings :: IsMTL4MachineLearningPipelineReflection mtL4MachineLearningPipelineReflection => mtL4MachineLearningPipelineReflection -> IO (Id NSArray)
-bindings mtL4MachineLearningPipelineReflection  =
-    sendMsg mtL4MachineLearningPipelineReflection (mkSelector "bindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+bindings mtL4MachineLearningPipelineReflection =
+  sendMessage mtL4MachineLearningPipelineReflection bindingsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bindings@
-bindingsSelector :: Selector
+bindingsSelector :: Selector '[] (Id NSArray)
 bindingsSelector = mkSelector "bindings"
 

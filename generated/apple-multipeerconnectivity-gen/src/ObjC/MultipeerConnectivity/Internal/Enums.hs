@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MultipeerConnectivity.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @MCEncryptionPreference@
 newtype MCEncryptionPreference = MCEncryptionPreference CLong
@@ -24,6 +27,16 @@ pattern MCEncryptionRequired = MCEncryptionPreference 1
 
 pattern MCEncryptionNone :: MCEncryptionPreference
 pattern MCEncryptionNone = MCEncryptionPreference 2
+
+instance ObjCArgument MCEncryptionPreference where
+  withObjCArg (MCEncryptionPreference x) k = k (argCLong x)
+
+instance ObjCReturn MCEncryptionPreference where
+  type RawReturn MCEncryptionPreference = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MCEncryptionPreference x)
+  fromOwned x = pure (MCEncryptionPreference x)
 
 -- | @MCErrorCode@
 newtype MCErrorCode = MCErrorCode CLong
@@ -51,6 +64,16 @@ pattern MCErrorCancelled = MCErrorCode 5
 pattern MCErrorUnavailable :: MCErrorCode
 pattern MCErrorUnavailable = MCErrorCode 6
 
+instance ObjCArgument MCErrorCode where
+  withObjCArg (MCErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn MCErrorCode where
+  type RawReturn MCErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MCErrorCode x)
+  fromOwned x = pure (MCErrorCode x)
+
 -- | @MCSessionSendDataMode@
 newtype MCSessionSendDataMode = MCSessionSendDataMode CLong
   deriving stock (Eq, Ord, Show)
@@ -61,6 +84,16 @@ pattern MCSessionSendDataReliable = MCSessionSendDataMode 0
 
 pattern MCSessionSendDataUnreliable :: MCSessionSendDataMode
 pattern MCSessionSendDataUnreliable = MCSessionSendDataMode 1
+
+instance ObjCArgument MCSessionSendDataMode where
+  withObjCArg (MCSessionSendDataMode x) k = k (argCLong x)
+
+instance ObjCReturn MCSessionSendDataMode where
+  type RawReturn MCSessionSendDataMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MCSessionSendDataMode x)
+  fromOwned x = pure (MCSessionSendDataMode x)
 
 -- | @MCSessionState@
 newtype MCSessionState = MCSessionState CLong
@@ -75,3 +108,13 @@ pattern MCSessionStateConnecting = MCSessionState 1
 
 pattern MCSessionStateConnected :: MCSessionState
 pattern MCSessionStateConnected = MCSessionState 2
+
+instance ObjCArgument MCSessionState where
+  withObjCArg (MCSessionState x) k = k (argCLong x)
+
+instance ObjCReturn MCSessionState where
+  type RawReturn MCSessionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MCSessionState x)
+  fromOwned x = pure (MCSessionState x)

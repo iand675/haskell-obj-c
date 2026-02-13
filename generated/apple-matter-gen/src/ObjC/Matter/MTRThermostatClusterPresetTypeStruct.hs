@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRThermostatClusterPresetTypeStruct
   , setNumberOfPresets
   , presetTypeFeatures
   , setPresetTypeFeatures
-  , presetScenarioSelector
-  , setPresetScenarioSelector
   , numberOfPresetsSelector
-  , setNumberOfPresetsSelector
+  , presetScenarioSelector
   , presetTypeFeaturesSelector
+  , setNumberOfPresetsSelector
+  , setPresetScenarioSelector
   , setPresetTypeFeaturesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- presetScenario@
 presetScenario :: IsMTRThermostatClusterPresetTypeStruct mtrThermostatClusterPresetTypeStruct => mtrThermostatClusterPresetTypeStruct -> IO (Id NSNumber)
-presetScenario mtrThermostatClusterPresetTypeStruct  =
-    sendMsg mtrThermostatClusterPresetTypeStruct (mkSelector "presetScenario") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetScenario mtrThermostatClusterPresetTypeStruct =
+  sendMessage mtrThermostatClusterPresetTypeStruct presetScenarioSelector
 
 -- | @- setPresetScenario:@
 setPresetScenario :: (IsMTRThermostatClusterPresetTypeStruct mtrThermostatClusterPresetTypeStruct, IsNSNumber value) => mtrThermostatClusterPresetTypeStruct -> value -> IO ()
-setPresetScenario mtrThermostatClusterPresetTypeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterPresetTypeStruct (mkSelector "setPresetScenario:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPresetScenario mtrThermostatClusterPresetTypeStruct value =
+  sendMessage mtrThermostatClusterPresetTypeStruct setPresetScenarioSelector (toNSNumber value)
 
 -- | @- numberOfPresets@
 numberOfPresets :: IsMTRThermostatClusterPresetTypeStruct mtrThermostatClusterPresetTypeStruct => mtrThermostatClusterPresetTypeStruct -> IO (Id NSNumber)
-numberOfPresets mtrThermostatClusterPresetTypeStruct  =
-    sendMsg mtrThermostatClusterPresetTypeStruct (mkSelector "numberOfPresets") (retPtr retVoid) [] >>= retainedObject . castPtr
+numberOfPresets mtrThermostatClusterPresetTypeStruct =
+  sendMessage mtrThermostatClusterPresetTypeStruct numberOfPresetsSelector
 
 -- | @- setNumberOfPresets:@
 setNumberOfPresets :: (IsMTRThermostatClusterPresetTypeStruct mtrThermostatClusterPresetTypeStruct, IsNSNumber value) => mtrThermostatClusterPresetTypeStruct -> value -> IO ()
-setNumberOfPresets mtrThermostatClusterPresetTypeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterPresetTypeStruct (mkSelector "setNumberOfPresets:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNumberOfPresets mtrThermostatClusterPresetTypeStruct value =
+  sendMessage mtrThermostatClusterPresetTypeStruct setNumberOfPresetsSelector (toNSNumber value)
 
 -- | @- presetTypeFeatures@
 presetTypeFeatures :: IsMTRThermostatClusterPresetTypeStruct mtrThermostatClusterPresetTypeStruct => mtrThermostatClusterPresetTypeStruct -> IO (Id NSNumber)
-presetTypeFeatures mtrThermostatClusterPresetTypeStruct  =
-    sendMsg mtrThermostatClusterPresetTypeStruct (mkSelector "presetTypeFeatures") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetTypeFeatures mtrThermostatClusterPresetTypeStruct =
+  sendMessage mtrThermostatClusterPresetTypeStruct presetTypeFeaturesSelector
 
 -- | @- setPresetTypeFeatures:@
 setPresetTypeFeatures :: (IsMTRThermostatClusterPresetTypeStruct mtrThermostatClusterPresetTypeStruct, IsNSNumber value) => mtrThermostatClusterPresetTypeStruct -> value -> IO ()
-setPresetTypeFeatures mtrThermostatClusterPresetTypeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterPresetTypeStruct (mkSelector "setPresetTypeFeatures:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPresetTypeFeatures mtrThermostatClusterPresetTypeStruct value =
+  sendMessage mtrThermostatClusterPresetTypeStruct setPresetTypeFeaturesSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @presetScenario@
-presetScenarioSelector :: Selector
+presetScenarioSelector :: Selector '[] (Id NSNumber)
 presetScenarioSelector = mkSelector "presetScenario"
 
 -- | @Selector@ for @setPresetScenario:@
-setPresetScenarioSelector :: Selector
+setPresetScenarioSelector :: Selector '[Id NSNumber] ()
 setPresetScenarioSelector = mkSelector "setPresetScenario:"
 
 -- | @Selector@ for @numberOfPresets@
-numberOfPresetsSelector :: Selector
+numberOfPresetsSelector :: Selector '[] (Id NSNumber)
 numberOfPresetsSelector = mkSelector "numberOfPresets"
 
 -- | @Selector@ for @setNumberOfPresets:@
-setNumberOfPresetsSelector :: Selector
+setNumberOfPresetsSelector :: Selector '[Id NSNumber] ()
 setNumberOfPresetsSelector = mkSelector "setNumberOfPresets:"
 
 -- | @Selector@ for @presetTypeFeatures@
-presetTypeFeaturesSelector :: Selector
+presetTypeFeaturesSelector :: Selector '[] (Id NSNumber)
 presetTypeFeaturesSelector = mkSelector "presetTypeFeatures"
 
 -- | @Selector@ for @setPresetTypeFeatures:@
-setPresetTypeFeaturesSelector :: Selector
+setPresetTypeFeaturesSelector :: Selector '[Id NSNumber] ()
 setPresetTypeFeaturesSelector = mkSelector "setPresetTypeFeatures:"
 

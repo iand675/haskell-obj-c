@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRDeviceEnergyManagementClusterSlotAdjustmentStruct
   , setNominalPower
   , duration
   , setDuration
-  , slotIndexSelector
-  , setSlotIndexSelector
-  , nominalPowerSelector
-  , setNominalPowerSelector
   , durationSelector
+  , nominalPowerSelector
   , setDurationSelector
+  , setNominalPowerSelector
+  , setSlotIndexSelector
+  , slotIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- slotIndex@
 slotIndex :: IsMTRDeviceEnergyManagementClusterSlotAdjustmentStruct mtrDeviceEnergyManagementClusterSlotAdjustmentStruct => mtrDeviceEnergyManagementClusterSlotAdjustmentStruct -> IO (Id NSNumber)
-slotIndex mtrDeviceEnergyManagementClusterSlotAdjustmentStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterSlotAdjustmentStruct (mkSelector "slotIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+slotIndex mtrDeviceEnergyManagementClusterSlotAdjustmentStruct =
+  sendMessage mtrDeviceEnergyManagementClusterSlotAdjustmentStruct slotIndexSelector
 
 -- | @- setSlotIndex:@
 setSlotIndex :: (IsMTRDeviceEnergyManagementClusterSlotAdjustmentStruct mtrDeviceEnergyManagementClusterSlotAdjustmentStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterSlotAdjustmentStruct -> value -> IO ()
-setSlotIndex mtrDeviceEnergyManagementClusterSlotAdjustmentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterSlotAdjustmentStruct (mkSelector "setSlotIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSlotIndex mtrDeviceEnergyManagementClusterSlotAdjustmentStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterSlotAdjustmentStruct setSlotIndexSelector (toNSNumber value)
 
 -- | @- nominalPower@
 nominalPower :: IsMTRDeviceEnergyManagementClusterSlotAdjustmentStruct mtrDeviceEnergyManagementClusterSlotAdjustmentStruct => mtrDeviceEnergyManagementClusterSlotAdjustmentStruct -> IO (Id NSNumber)
-nominalPower mtrDeviceEnergyManagementClusterSlotAdjustmentStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterSlotAdjustmentStruct (mkSelector "nominalPower") (retPtr retVoid) [] >>= retainedObject . castPtr
+nominalPower mtrDeviceEnergyManagementClusterSlotAdjustmentStruct =
+  sendMessage mtrDeviceEnergyManagementClusterSlotAdjustmentStruct nominalPowerSelector
 
 -- | @- setNominalPower:@
 setNominalPower :: (IsMTRDeviceEnergyManagementClusterSlotAdjustmentStruct mtrDeviceEnergyManagementClusterSlotAdjustmentStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterSlotAdjustmentStruct -> value -> IO ()
-setNominalPower mtrDeviceEnergyManagementClusterSlotAdjustmentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterSlotAdjustmentStruct (mkSelector "setNominalPower:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNominalPower mtrDeviceEnergyManagementClusterSlotAdjustmentStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterSlotAdjustmentStruct setNominalPowerSelector (toNSNumber value)
 
 -- | @- duration@
 duration :: IsMTRDeviceEnergyManagementClusterSlotAdjustmentStruct mtrDeviceEnergyManagementClusterSlotAdjustmentStruct => mtrDeviceEnergyManagementClusterSlotAdjustmentStruct -> IO (Id NSNumber)
-duration mtrDeviceEnergyManagementClusterSlotAdjustmentStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterSlotAdjustmentStruct (mkSelector "duration") (retPtr retVoid) [] >>= retainedObject . castPtr
+duration mtrDeviceEnergyManagementClusterSlotAdjustmentStruct =
+  sendMessage mtrDeviceEnergyManagementClusterSlotAdjustmentStruct durationSelector
 
 -- | @- setDuration:@
 setDuration :: (IsMTRDeviceEnergyManagementClusterSlotAdjustmentStruct mtrDeviceEnergyManagementClusterSlotAdjustmentStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterSlotAdjustmentStruct -> value -> IO ()
-setDuration mtrDeviceEnergyManagementClusterSlotAdjustmentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterSlotAdjustmentStruct (mkSelector "setDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDuration mtrDeviceEnergyManagementClusterSlotAdjustmentStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterSlotAdjustmentStruct setDurationSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @slotIndex@
-slotIndexSelector :: Selector
+slotIndexSelector :: Selector '[] (Id NSNumber)
 slotIndexSelector = mkSelector "slotIndex"
 
 -- | @Selector@ for @setSlotIndex:@
-setSlotIndexSelector :: Selector
+setSlotIndexSelector :: Selector '[Id NSNumber] ()
 setSlotIndexSelector = mkSelector "setSlotIndex:"
 
 -- | @Selector@ for @nominalPower@
-nominalPowerSelector :: Selector
+nominalPowerSelector :: Selector '[] (Id NSNumber)
 nominalPowerSelector = mkSelector "nominalPower"
 
 -- | @Selector@ for @setNominalPower:@
-setNominalPowerSelector :: Selector
+setNominalPowerSelector :: Selector '[Id NSNumber] ()
 setNominalPowerSelector = mkSelector "setNominalPower:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] (Id NSNumber)
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[Id NSNumber] ()
 setDurationSelector = mkSelector "setDuration:"
 

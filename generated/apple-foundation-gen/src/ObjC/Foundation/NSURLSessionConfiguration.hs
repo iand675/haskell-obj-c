@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -76,75 +77,75 @@ module ObjC.Foundation.NSURLSessionConfiguration
   , setUsesClassicLoadingMode
   , enablesEarlyData
   , setEnablesEarlyData
-  , backgroundSessionConfigurationWithIdentifierSelector
-  , initSelector
-  , newSelector
-  , backgroundSessionConfigurationSelector
-  , defaultSessionConfigurationSelector
-  , ephemeralSessionConfigurationSelector
-  , identifierSelector
-  , requestCachePolicySelector
-  , setRequestCachePolicySelector
-  , timeoutIntervalForRequestSelector
-  , setTimeoutIntervalForRequestSelector
-  , timeoutIntervalForResourceSelector
-  , setTimeoutIntervalForResourceSelector
-  , networkServiceTypeSelector
-  , setNetworkServiceTypeSelector
   , allowsCellularAccessSelector
-  , setAllowsCellularAccessSelector
-  , allowsExpensiveNetworkAccessSelector
-  , setAllowsExpensiveNetworkAccessSelector
   , allowsConstrainedNetworkAccessSelector
-  , setAllowsConstrainedNetworkAccessSelector
+  , allowsExpensiveNetworkAccessSelector
   , allowsUltraConstrainedNetworkAccessSelector
-  , setAllowsUltraConstrainedNetworkAccessSelector
-  , requiresDNSSECValidationSelector
-  , setRequiresDNSSECValidationSelector
-  , waitsForConnectivitySelector
-  , setWaitsForConnectivitySelector
-  , discretionarySelector
-  , setDiscretionarySelector
-  , sharedContainerIdentifierSelector
-  , setSharedContainerIdentifierSelector
-  , sessionSendsLaunchEventsSelector
-  , setSessionSendsLaunchEventsSelector
+  , backgroundSessionConfigurationSelector
+  , backgroundSessionConfigurationWithIdentifierSelector
   , connectionProxyDictionarySelector
-  , setConnectionProxyDictionarySelector
-  , tlsMinimumSupportedProtocolSelector
-  , setTLSMinimumSupportedProtocolSelector
-  , tlsMaximumSupportedProtocolSelector
-  , setTLSMaximumSupportedProtocolSelector
-  , tlsMinimumSupportedProtocolVersionSelector
-  , setTLSMinimumSupportedProtocolVersionSelector
-  , tlsMaximumSupportedProtocolVersionSelector
-  , setTLSMaximumSupportedProtocolVersionSelector
-  , httpShouldUsePipeliningSelector
-  , setHTTPShouldUsePipeliningSelector
-  , httpShouldSetCookiesSelector
-  , setHTTPShouldSetCookiesSelector
-  , httpCookieAcceptPolicySelector
-  , setHTTPCookieAcceptPolicySelector
-  , httpAdditionalHeadersSelector
-  , setHTTPAdditionalHeadersSelector
-  , httpMaximumConnectionsPerHostSelector
-  , setHTTPMaximumConnectionsPerHostSelector
-  , httpCookieStorageSelector
-  , setHTTPCookieStorageSelector
-  , urlCredentialStorageSelector
-  , setURLCredentialStorageSelector
-  , urlCacheSelector
-  , setURLCacheSelector
-  , shouldUseExtendedBackgroundIdleModeSelector
-  , setShouldUseExtendedBackgroundIdleModeSelector
-  , protocolClassesSelector
-  , setProtocolClassesSelector
-  , multipathServiceTypeSelector
-  , setMultipathServiceTypeSelector
-  , usesClassicLoadingModeSelector
-  , setUsesClassicLoadingModeSelector
+  , defaultSessionConfigurationSelector
+  , discretionarySelector
   , enablesEarlyDataSelector
+  , ephemeralSessionConfigurationSelector
+  , httpAdditionalHeadersSelector
+  , httpCookieAcceptPolicySelector
+  , httpCookieStorageSelector
+  , httpMaximumConnectionsPerHostSelector
+  , httpShouldSetCookiesSelector
+  , httpShouldUsePipeliningSelector
+  , identifierSelector
+  , initSelector
+  , multipathServiceTypeSelector
+  , networkServiceTypeSelector
+  , newSelector
+  , protocolClassesSelector
+  , requestCachePolicySelector
+  , requiresDNSSECValidationSelector
+  , sessionSendsLaunchEventsSelector
+  , setAllowsCellularAccessSelector
+  , setAllowsConstrainedNetworkAccessSelector
+  , setAllowsExpensiveNetworkAccessSelector
+  , setAllowsUltraConstrainedNetworkAccessSelector
+  , setConnectionProxyDictionarySelector
+  , setDiscretionarySelector
   , setEnablesEarlyDataSelector
+  , setHTTPAdditionalHeadersSelector
+  , setHTTPCookieAcceptPolicySelector
+  , setHTTPCookieStorageSelector
+  , setHTTPMaximumConnectionsPerHostSelector
+  , setHTTPShouldSetCookiesSelector
+  , setHTTPShouldUsePipeliningSelector
+  , setMultipathServiceTypeSelector
+  , setNetworkServiceTypeSelector
+  , setProtocolClassesSelector
+  , setRequestCachePolicySelector
+  , setRequiresDNSSECValidationSelector
+  , setSessionSendsLaunchEventsSelector
+  , setSharedContainerIdentifierSelector
+  , setShouldUseExtendedBackgroundIdleModeSelector
+  , setTLSMaximumSupportedProtocolSelector
+  , setTLSMaximumSupportedProtocolVersionSelector
+  , setTLSMinimumSupportedProtocolSelector
+  , setTLSMinimumSupportedProtocolVersionSelector
+  , setTimeoutIntervalForRequestSelector
+  , setTimeoutIntervalForResourceSelector
+  , setURLCacheSelector
+  , setURLCredentialStorageSelector
+  , setUsesClassicLoadingModeSelector
+  , setWaitsForConnectivitySelector
+  , sharedContainerIdentifierSelector
+  , shouldUseExtendedBackgroundIdleModeSelector
+  , timeoutIntervalForRequestSelector
+  , timeoutIntervalForResourceSelector
+  , tlsMaximumSupportedProtocolSelector
+  , tlsMaximumSupportedProtocolVersionSelector
+  , tlsMinimumSupportedProtocolSelector
+  , tlsMinimumSupportedProtocolVersionSelector
+  , urlCacheSelector
+  , urlCredentialStorageSelector
+  , usesClassicLoadingModeSelector
+  , waitsForConnectivitySelector
 
   -- * Enum types
   , NSHTTPCookieAcceptPolicy(NSHTTPCookieAcceptPolicy)
@@ -177,15 +178,11 @@ module ObjC.Foundation.NSURLSessionConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -197,642 +194,633 @@ backgroundSessionConfigurationWithIdentifier :: IsNSString identifier => identif
 backgroundSessionConfigurationWithIdentifier identifier =
   do
     cls' <- getRequiredClass "NSURLSessionConfiguration"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "backgroundSessionConfigurationWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' backgroundSessionConfigurationWithIdentifierSelector (toNSString identifier)
 
 -- | @- init@
 init_ :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO (Id NSURLSessionConfiguration)
-init_ nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsurlSessionConfiguration =
+  sendOwnedMessage nsurlSessionConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id NSURLSessionConfiguration)
 new  =
   do
     cls' <- getRequiredClass "NSURLSessionConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @+ backgroundSessionConfiguration:@
 backgroundSessionConfiguration :: IsNSString identifier => identifier -> IO (Id NSURLSessionConfiguration)
 backgroundSessionConfiguration identifier =
   do
     cls' <- getRequiredClass "NSURLSessionConfiguration"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "backgroundSessionConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' backgroundSessionConfigurationSelector (toNSString identifier)
 
 -- | @+ defaultSessionConfiguration@
 defaultSessionConfiguration :: IO (Id NSURLSessionConfiguration)
 defaultSessionConfiguration  =
   do
     cls' <- getRequiredClass "NSURLSessionConfiguration"
-    sendClassMsg cls' (mkSelector "defaultSessionConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultSessionConfigurationSelector
 
 -- | @+ ephemeralSessionConfiguration@
 ephemeralSessionConfiguration :: IO (Id NSURLSessionConfiguration)
 ephemeralSessionConfiguration  =
   do
     cls' <- getRequiredClass "NSURLSessionConfiguration"
-    sendClassMsg cls' (mkSelector "ephemeralSessionConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' ephemeralSessionConfigurationSelector
 
 -- | @- identifier@
 identifier :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO (Id NSString)
-identifier nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration identifierSelector
 
 -- | @- requestCachePolicy@
 requestCachePolicy :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO NSURLRequestCachePolicy
-requestCachePolicy nsurlSessionConfiguration  =
-    fmap (coerce :: CULong -> NSURLRequestCachePolicy) $ sendMsg nsurlSessionConfiguration (mkSelector "requestCachePolicy") retCULong []
+requestCachePolicy nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration requestCachePolicySelector
 
 -- | @- setRequestCachePolicy:@
 setRequestCachePolicy :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> NSURLRequestCachePolicy -> IO ()
-setRequestCachePolicy nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setRequestCachePolicy:") retVoid [argCULong (coerce value)]
+setRequestCachePolicy nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setRequestCachePolicySelector value
 
 -- | @- timeoutIntervalForRequest@
 timeoutIntervalForRequest :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO CDouble
-timeoutIntervalForRequest nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "timeoutIntervalForRequest") retCDouble []
+timeoutIntervalForRequest nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration timeoutIntervalForRequestSelector
 
 -- | @- setTimeoutIntervalForRequest:@
 setTimeoutIntervalForRequest :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> CDouble -> IO ()
-setTimeoutIntervalForRequest nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setTimeoutIntervalForRequest:") retVoid [argCDouble value]
+setTimeoutIntervalForRequest nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setTimeoutIntervalForRequestSelector value
 
 -- | @- timeoutIntervalForResource@
 timeoutIntervalForResource :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO CDouble
-timeoutIntervalForResource nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "timeoutIntervalForResource") retCDouble []
+timeoutIntervalForResource nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration timeoutIntervalForResourceSelector
 
 -- | @- setTimeoutIntervalForResource:@
 setTimeoutIntervalForResource :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> CDouble -> IO ()
-setTimeoutIntervalForResource nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setTimeoutIntervalForResource:") retVoid [argCDouble value]
+setTimeoutIntervalForResource nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setTimeoutIntervalForResourceSelector value
 
 -- | @- networkServiceType@
 networkServiceType :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO NSURLRequestNetworkServiceType
-networkServiceType nsurlSessionConfiguration  =
-    fmap (coerce :: CULong -> NSURLRequestNetworkServiceType) $ sendMsg nsurlSessionConfiguration (mkSelector "networkServiceType") retCULong []
+networkServiceType nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration networkServiceTypeSelector
 
 -- | @- setNetworkServiceType:@
 setNetworkServiceType :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> NSURLRequestNetworkServiceType -> IO ()
-setNetworkServiceType nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setNetworkServiceType:") retVoid [argCULong (coerce value)]
+setNetworkServiceType nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setNetworkServiceTypeSelector value
 
 -- | @- allowsCellularAccess@
 allowsCellularAccess :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-allowsCellularAccess nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "allowsCellularAccess") retCULong []
+allowsCellularAccess nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration allowsCellularAccessSelector
 
 -- | @- setAllowsCellularAccess:@
 setAllowsCellularAccess :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setAllowsCellularAccess nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setAllowsCellularAccess:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsCellularAccess nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setAllowsCellularAccessSelector value
 
 -- | @- allowsExpensiveNetworkAccess@
 allowsExpensiveNetworkAccess :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-allowsExpensiveNetworkAccess nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "allowsExpensiveNetworkAccess") retCULong []
+allowsExpensiveNetworkAccess nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration allowsExpensiveNetworkAccessSelector
 
 -- | @- setAllowsExpensiveNetworkAccess:@
 setAllowsExpensiveNetworkAccess :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setAllowsExpensiveNetworkAccess nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setAllowsExpensiveNetworkAccess:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsExpensiveNetworkAccess nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setAllowsExpensiveNetworkAccessSelector value
 
 -- | @- allowsConstrainedNetworkAccess@
 allowsConstrainedNetworkAccess :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-allowsConstrainedNetworkAccess nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "allowsConstrainedNetworkAccess") retCULong []
+allowsConstrainedNetworkAccess nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration allowsConstrainedNetworkAccessSelector
 
 -- | @- setAllowsConstrainedNetworkAccess:@
 setAllowsConstrainedNetworkAccess :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setAllowsConstrainedNetworkAccess nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setAllowsConstrainedNetworkAccess:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsConstrainedNetworkAccess nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setAllowsConstrainedNetworkAccessSelector value
 
 -- | @- allowsUltraConstrainedNetworkAccess@
 allowsUltraConstrainedNetworkAccess :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-allowsUltraConstrainedNetworkAccess nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "allowsUltraConstrainedNetworkAccess") retCULong []
+allowsUltraConstrainedNetworkAccess nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration allowsUltraConstrainedNetworkAccessSelector
 
 -- | @- setAllowsUltraConstrainedNetworkAccess:@
 setAllowsUltraConstrainedNetworkAccess :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setAllowsUltraConstrainedNetworkAccess nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setAllowsUltraConstrainedNetworkAccess:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsUltraConstrainedNetworkAccess nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setAllowsUltraConstrainedNetworkAccessSelector value
 
 -- | @- requiresDNSSECValidation@
 requiresDNSSECValidation :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-requiresDNSSECValidation nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "requiresDNSSECValidation") retCULong []
+requiresDNSSECValidation nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration requiresDNSSECValidationSelector
 
 -- | @- setRequiresDNSSECValidation:@
 setRequiresDNSSECValidation :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setRequiresDNSSECValidation nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setRequiresDNSSECValidation:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresDNSSECValidation nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setRequiresDNSSECValidationSelector value
 
 -- | @- waitsForConnectivity@
 waitsForConnectivity :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-waitsForConnectivity nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "waitsForConnectivity") retCULong []
+waitsForConnectivity nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration waitsForConnectivitySelector
 
 -- | @- setWaitsForConnectivity:@
 setWaitsForConnectivity :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setWaitsForConnectivity nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setWaitsForConnectivity:") retVoid [argCULong (if value then 1 else 0)]
+setWaitsForConnectivity nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setWaitsForConnectivitySelector value
 
 -- | @- discretionary@
 discretionary :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-discretionary nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "discretionary") retCULong []
+discretionary nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration discretionarySelector
 
 -- | @- setDiscretionary:@
 setDiscretionary :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setDiscretionary nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setDiscretionary:") retVoid [argCULong (if value then 1 else 0)]
+setDiscretionary nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setDiscretionarySelector value
 
 -- | @- sharedContainerIdentifier@
 sharedContainerIdentifier :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO (Id NSString)
-sharedContainerIdentifier nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "sharedContainerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+sharedContainerIdentifier nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration sharedContainerIdentifierSelector
 
 -- | @- setSharedContainerIdentifier:@
 setSharedContainerIdentifier :: (IsNSURLSessionConfiguration nsurlSessionConfiguration, IsNSString value) => nsurlSessionConfiguration -> value -> IO ()
-setSharedContainerIdentifier nsurlSessionConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSessionConfiguration (mkSelector "setSharedContainerIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSharedContainerIdentifier nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setSharedContainerIdentifierSelector (toNSString value)
 
 -- | @- sessionSendsLaunchEvents@
 sessionSendsLaunchEvents :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-sessionSendsLaunchEvents nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "sessionSendsLaunchEvents") retCULong []
+sessionSendsLaunchEvents nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration sessionSendsLaunchEventsSelector
 
 -- | @- setSessionSendsLaunchEvents:@
 setSessionSendsLaunchEvents :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setSessionSendsLaunchEvents nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setSessionSendsLaunchEvents:") retVoid [argCULong (if value then 1 else 0)]
+setSessionSendsLaunchEvents nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setSessionSendsLaunchEventsSelector value
 
 -- | @- connectionProxyDictionary@
 connectionProxyDictionary :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO (Id NSDictionary)
-connectionProxyDictionary nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "connectionProxyDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectionProxyDictionary nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration connectionProxyDictionarySelector
 
 -- | @- setConnectionProxyDictionary:@
 setConnectionProxyDictionary :: (IsNSURLSessionConfiguration nsurlSessionConfiguration, IsNSDictionary value) => nsurlSessionConfiguration -> value -> IO ()
-setConnectionProxyDictionary nsurlSessionConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSessionConfiguration (mkSelector "setConnectionProxyDictionary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConnectionProxyDictionary nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setConnectionProxyDictionarySelector (toNSDictionary value)
 
 -- | @- TLSMinimumSupportedProtocol@
 tlsMinimumSupportedProtocol :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO CInt
-tlsMinimumSupportedProtocol nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "TLSMinimumSupportedProtocol") retCInt []
+tlsMinimumSupportedProtocol nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration tlsMinimumSupportedProtocolSelector
 
 -- | @- setTLSMinimumSupportedProtocol:@
 setTLSMinimumSupportedProtocol :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> CInt -> IO ()
-setTLSMinimumSupportedProtocol nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setTLSMinimumSupportedProtocol:") retVoid [argCInt (fromIntegral value)]
+setTLSMinimumSupportedProtocol nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setTLSMinimumSupportedProtocolSelector value
 
 -- | @- TLSMaximumSupportedProtocol@
 tlsMaximumSupportedProtocol :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO CInt
-tlsMaximumSupportedProtocol nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "TLSMaximumSupportedProtocol") retCInt []
+tlsMaximumSupportedProtocol nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration tlsMaximumSupportedProtocolSelector
 
 -- | @- setTLSMaximumSupportedProtocol:@
 setTLSMaximumSupportedProtocol :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> CInt -> IO ()
-setTLSMaximumSupportedProtocol nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setTLSMaximumSupportedProtocol:") retVoid [argCInt (fromIntegral value)]
+setTLSMaximumSupportedProtocol nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setTLSMaximumSupportedProtocolSelector value
 
 -- | @- TLSMinimumSupportedProtocolVersion@
 tlsMinimumSupportedProtocolVersion :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO CInt
-tlsMinimumSupportedProtocolVersion nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "TLSMinimumSupportedProtocolVersion") retCInt []
+tlsMinimumSupportedProtocolVersion nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration tlsMinimumSupportedProtocolVersionSelector
 
 -- | @- setTLSMinimumSupportedProtocolVersion:@
 setTLSMinimumSupportedProtocolVersion :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> CInt -> IO ()
-setTLSMinimumSupportedProtocolVersion nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setTLSMinimumSupportedProtocolVersion:") retVoid [argCInt (fromIntegral value)]
+setTLSMinimumSupportedProtocolVersion nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setTLSMinimumSupportedProtocolVersionSelector value
 
 -- | @- TLSMaximumSupportedProtocolVersion@
 tlsMaximumSupportedProtocolVersion :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO CInt
-tlsMaximumSupportedProtocolVersion nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "TLSMaximumSupportedProtocolVersion") retCInt []
+tlsMaximumSupportedProtocolVersion nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration tlsMaximumSupportedProtocolVersionSelector
 
 -- | @- setTLSMaximumSupportedProtocolVersion:@
 setTLSMaximumSupportedProtocolVersion :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> CInt -> IO ()
-setTLSMaximumSupportedProtocolVersion nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setTLSMaximumSupportedProtocolVersion:") retVoid [argCInt (fromIntegral value)]
+setTLSMaximumSupportedProtocolVersion nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setTLSMaximumSupportedProtocolVersionSelector value
 
 -- | @- HTTPShouldUsePipelining@
 httpShouldUsePipelining :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-httpShouldUsePipelining nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "HTTPShouldUsePipelining") retCULong []
+httpShouldUsePipelining nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration httpShouldUsePipeliningSelector
 
 -- | @- setHTTPShouldUsePipelining:@
 setHTTPShouldUsePipelining :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setHTTPShouldUsePipelining nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setHTTPShouldUsePipelining:") retVoid [argCULong (if value then 1 else 0)]
+setHTTPShouldUsePipelining nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setHTTPShouldUsePipeliningSelector value
 
 -- | @- HTTPShouldSetCookies@
 httpShouldSetCookies :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-httpShouldSetCookies nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "HTTPShouldSetCookies") retCULong []
+httpShouldSetCookies nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration httpShouldSetCookiesSelector
 
 -- | @- setHTTPShouldSetCookies:@
 setHTTPShouldSetCookies :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setHTTPShouldSetCookies nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setHTTPShouldSetCookies:") retVoid [argCULong (if value then 1 else 0)]
+setHTTPShouldSetCookies nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setHTTPShouldSetCookiesSelector value
 
 -- | @- HTTPCookieAcceptPolicy@
 httpCookieAcceptPolicy :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO NSHTTPCookieAcceptPolicy
-httpCookieAcceptPolicy nsurlSessionConfiguration  =
-    fmap (coerce :: CULong -> NSHTTPCookieAcceptPolicy) $ sendMsg nsurlSessionConfiguration (mkSelector "HTTPCookieAcceptPolicy") retCULong []
+httpCookieAcceptPolicy nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration httpCookieAcceptPolicySelector
 
 -- | @- setHTTPCookieAcceptPolicy:@
 setHTTPCookieAcceptPolicy :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> NSHTTPCookieAcceptPolicy -> IO ()
-setHTTPCookieAcceptPolicy nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setHTTPCookieAcceptPolicy:") retVoid [argCULong (coerce value)]
+setHTTPCookieAcceptPolicy nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setHTTPCookieAcceptPolicySelector value
 
 -- | @- HTTPAdditionalHeaders@
 httpAdditionalHeaders :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO (Id NSDictionary)
-httpAdditionalHeaders nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "HTTPAdditionalHeaders") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpAdditionalHeaders nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration httpAdditionalHeadersSelector
 
 -- | @- setHTTPAdditionalHeaders:@
 setHTTPAdditionalHeaders :: (IsNSURLSessionConfiguration nsurlSessionConfiguration, IsNSDictionary value) => nsurlSessionConfiguration -> value -> IO ()
-setHTTPAdditionalHeaders nsurlSessionConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSessionConfiguration (mkSelector "setHTTPAdditionalHeaders:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHTTPAdditionalHeaders nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setHTTPAdditionalHeadersSelector (toNSDictionary value)
 
 -- | @- HTTPMaximumConnectionsPerHost@
 httpMaximumConnectionsPerHost :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO CLong
-httpMaximumConnectionsPerHost nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "HTTPMaximumConnectionsPerHost") retCLong []
+httpMaximumConnectionsPerHost nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration httpMaximumConnectionsPerHostSelector
 
 -- | @- setHTTPMaximumConnectionsPerHost:@
 setHTTPMaximumConnectionsPerHost :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> CLong -> IO ()
-setHTTPMaximumConnectionsPerHost nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setHTTPMaximumConnectionsPerHost:") retVoid [argCLong value]
+setHTTPMaximumConnectionsPerHost nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setHTTPMaximumConnectionsPerHostSelector value
 
 -- | @- HTTPCookieStorage@
 httpCookieStorage :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO (Id NSHTTPCookieStorage)
-httpCookieStorage nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "HTTPCookieStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpCookieStorage nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration httpCookieStorageSelector
 
 -- | @- setHTTPCookieStorage:@
 setHTTPCookieStorage :: (IsNSURLSessionConfiguration nsurlSessionConfiguration, IsNSHTTPCookieStorage value) => nsurlSessionConfiguration -> value -> IO ()
-setHTTPCookieStorage nsurlSessionConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSessionConfiguration (mkSelector "setHTTPCookieStorage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHTTPCookieStorage nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setHTTPCookieStorageSelector (toNSHTTPCookieStorage value)
 
 -- | @- URLCredentialStorage@
 urlCredentialStorage :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO (Id NSURLCredentialStorage)
-urlCredentialStorage nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "URLCredentialStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlCredentialStorage nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration urlCredentialStorageSelector
 
 -- | @- setURLCredentialStorage:@
 setURLCredentialStorage :: (IsNSURLSessionConfiguration nsurlSessionConfiguration, IsNSURLCredentialStorage value) => nsurlSessionConfiguration -> value -> IO ()
-setURLCredentialStorage nsurlSessionConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSessionConfiguration (mkSelector "setURLCredentialStorage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURLCredentialStorage nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setURLCredentialStorageSelector (toNSURLCredentialStorage value)
 
 -- | @- URLCache@
 urlCache :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO (Id NSURLCache)
-urlCache nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "URLCache") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlCache nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration urlCacheSelector
 
 -- | @- setURLCache:@
 setURLCache :: (IsNSURLSessionConfiguration nsurlSessionConfiguration, IsNSURLCache value) => nsurlSessionConfiguration -> value -> IO ()
-setURLCache nsurlSessionConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSessionConfiguration (mkSelector "setURLCache:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURLCache nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setURLCacheSelector (toNSURLCache value)
 
 -- | @- shouldUseExtendedBackgroundIdleMode@
 shouldUseExtendedBackgroundIdleMode :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-shouldUseExtendedBackgroundIdleMode nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "shouldUseExtendedBackgroundIdleMode") retCULong []
+shouldUseExtendedBackgroundIdleMode nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration shouldUseExtendedBackgroundIdleModeSelector
 
 -- | @- setShouldUseExtendedBackgroundIdleMode:@
 setShouldUseExtendedBackgroundIdleMode :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setShouldUseExtendedBackgroundIdleMode nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setShouldUseExtendedBackgroundIdleMode:") retVoid [argCULong (if value then 1 else 0)]
+setShouldUseExtendedBackgroundIdleMode nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setShouldUseExtendedBackgroundIdleModeSelector value
 
 -- | @- protocolClasses@
 protocolClasses :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO (Id NSArray)
-protocolClasses nsurlSessionConfiguration  =
-    sendMsg nsurlSessionConfiguration (mkSelector "protocolClasses") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocolClasses nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration protocolClassesSelector
 
 -- | @- setProtocolClasses:@
 setProtocolClasses :: (IsNSURLSessionConfiguration nsurlSessionConfiguration, IsNSArray value) => nsurlSessionConfiguration -> value -> IO ()
-setProtocolClasses nsurlSessionConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSessionConfiguration (mkSelector "setProtocolClasses:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProtocolClasses nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setProtocolClassesSelector (toNSArray value)
 
 -- | @- multipathServiceType@
 multipathServiceType :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO NSURLSessionMultipathServiceType
-multipathServiceType nsurlSessionConfiguration  =
-    fmap (coerce :: CLong -> NSURLSessionMultipathServiceType) $ sendMsg nsurlSessionConfiguration (mkSelector "multipathServiceType") retCLong []
+multipathServiceType nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration multipathServiceTypeSelector
 
 -- | @- setMultipathServiceType:@
 setMultipathServiceType :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> NSURLSessionMultipathServiceType -> IO ()
-setMultipathServiceType nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setMultipathServiceType:") retVoid [argCLong (coerce value)]
+setMultipathServiceType nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setMultipathServiceTypeSelector value
 
 -- | @- usesClassicLoadingMode@
 usesClassicLoadingMode :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-usesClassicLoadingMode nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "usesClassicLoadingMode") retCULong []
+usesClassicLoadingMode nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration usesClassicLoadingModeSelector
 
 -- | @- setUsesClassicLoadingMode:@
 setUsesClassicLoadingMode :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setUsesClassicLoadingMode nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setUsesClassicLoadingMode:") retVoid [argCULong (if value then 1 else 0)]
+setUsesClassicLoadingMode nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setUsesClassicLoadingModeSelector value
 
 -- | @- enablesEarlyData@
 enablesEarlyData :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> IO Bool
-enablesEarlyData nsurlSessionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionConfiguration (mkSelector "enablesEarlyData") retCULong []
+enablesEarlyData nsurlSessionConfiguration =
+  sendMessage nsurlSessionConfiguration enablesEarlyDataSelector
 
 -- | @- setEnablesEarlyData:@
 setEnablesEarlyData :: IsNSURLSessionConfiguration nsurlSessionConfiguration => nsurlSessionConfiguration -> Bool -> IO ()
-setEnablesEarlyData nsurlSessionConfiguration  value =
-    sendMsg nsurlSessionConfiguration (mkSelector "setEnablesEarlyData:") retVoid [argCULong (if value then 1 else 0)]
+setEnablesEarlyData nsurlSessionConfiguration value =
+  sendMessage nsurlSessionConfiguration setEnablesEarlyDataSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @backgroundSessionConfigurationWithIdentifier:@
-backgroundSessionConfigurationWithIdentifierSelector :: Selector
+backgroundSessionConfigurationWithIdentifierSelector :: Selector '[Id NSString] (Id NSURLSessionConfiguration)
 backgroundSessionConfigurationWithIdentifierSelector = mkSelector "backgroundSessionConfigurationWithIdentifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSURLSessionConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSURLSessionConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @backgroundSessionConfiguration:@
-backgroundSessionConfigurationSelector :: Selector
+backgroundSessionConfigurationSelector :: Selector '[Id NSString] (Id NSURLSessionConfiguration)
 backgroundSessionConfigurationSelector = mkSelector "backgroundSessionConfiguration:"
 
 -- | @Selector@ for @defaultSessionConfiguration@
-defaultSessionConfigurationSelector :: Selector
+defaultSessionConfigurationSelector :: Selector '[] (Id NSURLSessionConfiguration)
 defaultSessionConfigurationSelector = mkSelector "defaultSessionConfiguration"
 
 -- | @Selector@ for @ephemeralSessionConfiguration@
-ephemeralSessionConfigurationSelector :: Selector
+ephemeralSessionConfigurationSelector :: Selector '[] (Id NSURLSessionConfiguration)
 ephemeralSessionConfigurationSelector = mkSelector "ephemeralSessionConfiguration"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @requestCachePolicy@
-requestCachePolicySelector :: Selector
+requestCachePolicySelector :: Selector '[] NSURLRequestCachePolicy
 requestCachePolicySelector = mkSelector "requestCachePolicy"
 
 -- | @Selector@ for @setRequestCachePolicy:@
-setRequestCachePolicySelector :: Selector
+setRequestCachePolicySelector :: Selector '[NSURLRequestCachePolicy] ()
 setRequestCachePolicySelector = mkSelector "setRequestCachePolicy:"
 
 -- | @Selector@ for @timeoutIntervalForRequest@
-timeoutIntervalForRequestSelector :: Selector
+timeoutIntervalForRequestSelector :: Selector '[] CDouble
 timeoutIntervalForRequestSelector = mkSelector "timeoutIntervalForRequest"
 
 -- | @Selector@ for @setTimeoutIntervalForRequest:@
-setTimeoutIntervalForRequestSelector :: Selector
+setTimeoutIntervalForRequestSelector :: Selector '[CDouble] ()
 setTimeoutIntervalForRequestSelector = mkSelector "setTimeoutIntervalForRequest:"
 
 -- | @Selector@ for @timeoutIntervalForResource@
-timeoutIntervalForResourceSelector :: Selector
+timeoutIntervalForResourceSelector :: Selector '[] CDouble
 timeoutIntervalForResourceSelector = mkSelector "timeoutIntervalForResource"
 
 -- | @Selector@ for @setTimeoutIntervalForResource:@
-setTimeoutIntervalForResourceSelector :: Selector
+setTimeoutIntervalForResourceSelector :: Selector '[CDouble] ()
 setTimeoutIntervalForResourceSelector = mkSelector "setTimeoutIntervalForResource:"
 
 -- | @Selector@ for @networkServiceType@
-networkServiceTypeSelector :: Selector
+networkServiceTypeSelector :: Selector '[] NSURLRequestNetworkServiceType
 networkServiceTypeSelector = mkSelector "networkServiceType"
 
 -- | @Selector@ for @setNetworkServiceType:@
-setNetworkServiceTypeSelector :: Selector
+setNetworkServiceTypeSelector :: Selector '[NSURLRequestNetworkServiceType] ()
 setNetworkServiceTypeSelector = mkSelector "setNetworkServiceType:"
 
 -- | @Selector@ for @allowsCellularAccess@
-allowsCellularAccessSelector :: Selector
+allowsCellularAccessSelector :: Selector '[] Bool
 allowsCellularAccessSelector = mkSelector "allowsCellularAccess"
 
 -- | @Selector@ for @setAllowsCellularAccess:@
-setAllowsCellularAccessSelector :: Selector
+setAllowsCellularAccessSelector :: Selector '[Bool] ()
 setAllowsCellularAccessSelector = mkSelector "setAllowsCellularAccess:"
 
 -- | @Selector@ for @allowsExpensiveNetworkAccess@
-allowsExpensiveNetworkAccessSelector :: Selector
+allowsExpensiveNetworkAccessSelector :: Selector '[] Bool
 allowsExpensiveNetworkAccessSelector = mkSelector "allowsExpensiveNetworkAccess"
 
 -- | @Selector@ for @setAllowsExpensiveNetworkAccess:@
-setAllowsExpensiveNetworkAccessSelector :: Selector
+setAllowsExpensiveNetworkAccessSelector :: Selector '[Bool] ()
 setAllowsExpensiveNetworkAccessSelector = mkSelector "setAllowsExpensiveNetworkAccess:"
 
 -- | @Selector@ for @allowsConstrainedNetworkAccess@
-allowsConstrainedNetworkAccessSelector :: Selector
+allowsConstrainedNetworkAccessSelector :: Selector '[] Bool
 allowsConstrainedNetworkAccessSelector = mkSelector "allowsConstrainedNetworkAccess"
 
 -- | @Selector@ for @setAllowsConstrainedNetworkAccess:@
-setAllowsConstrainedNetworkAccessSelector :: Selector
+setAllowsConstrainedNetworkAccessSelector :: Selector '[Bool] ()
 setAllowsConstrainedNetworkAccessSelector = mkSelector "setAllowsConstrainedNetworkAccess:"
 
 -- | @Selector@ for @allowsUltraConstrainedNetworkAccess@
-allowsUltraConstrainedNetworkAccessSelector :: Selector
+allowsUltraConstrainedNetworkAccessSelector :: Selector '[] Bool
 allowsUltraConstrainedNetworkAccessSelector = mkSelector "allowsUltraConstrainedNetworkAccess"
 
 -- | @Selector@ for @setAllowsUltraConstrainedNetworkAccess:@
-setAllowsUltraConstrainedNetworkAccessSelector :: Selector
+setAllowsUltraConstrainedNetworkAccessSelector :: Selector '[Bool] ()
 setAllowsUltraConstrainedNetworkAccessSelector = mkSelector "setAllowsUltraConstrainedNetworkAccess:"
 
 -- | @Selector@ for @requiresDNSSECValidation@
-requiresDNSSECValidationSelector :: Selector
+requiresDNSSECValidationSelector :: Selector '[] Bool
 requiresDNSSECValidationSelector = mkSelector "requiresDNSSECValidation"
 
 -- | @Selector@ for @setRequiresDNSSECValidation:@
-setRequiresDNSSECValidationSelector :: Selector
+setRequiresDNSSECValidationSelector :: Selector '[Bool] ()
 setRequiresDNSSECValidationSelector = mkSelector "setRequiresDNSSECValidation:"
 
 -- | @Selector@ for @waitsForConnectivity@
-waitsForConnectivitySelector :: Selector
+waitsForConnectivitySelector :: Selector '[] Bool
 waitsForConnectivitySelector = mkSelector "waitsForConnectivity"
 
 -- | @Selector@ for @setWaitsForConnectivity:@
-setWaitsForConnectivitySelector :: Selector
+setWaitsForConnectivitySelector :: Selector '[Bool] ()
 setWaitsForConnectivitySelector = mkSelector "setWaitsForConnectivity:"
 
 -- | @Selector@ for @discretionary@
-discretionarySelector :: Selector
+discretionarySelector :: Selector '[] Bool
 discretionarySelector = mkSelector "discretionary"
 
 -- | @Selector@ for @setDiscretionary:@
-setDiscretionarySelector :: Selector
+setDiscretionarySelector :: Selector '[Bool] ()
 setDiscretionarySelector = mkSelector "setDiscretionary:"
 
 -- | @Selector@ for @sharedContainerIdentifier@
-sharedContainerIdentifierSelector :: Selector
+sharedContainerIdentifierSelector :: Selector '[] (Id NSString)
 sharedContainerIdentifierSelector = mkSelector "sharedContainerIdentifier"
 
 -- | @Selector@ for @setSharedContainerIdentifier:@
-setSharedContainerIdentifierSelector :: Selector
+setSharedContainerIdentifierSelector :: Selector '[Id NSString] ()
 setSharedContainerIdentifierSelector = mkSelector "setSharedContainerIdentifier:"
 
 -- | @Selector@ for @sessionSendsLaunchEvents@
-sessionSendsLaunchEventsSelector :: Selector
+sessionSendsLaunchEventsSelector :: Selector '[] Bool
 sessionSendsLaunchEventsSelector = mkSelector "sessionSendsLaunchEvents"
 
 -- | @Selector@ for @setSessionSendsLaunchEvents:@
-setSessionSendsLaunchEventsSelector :: Selector
+setSessionSendsLaunchEventsSelector :: Selector '[Bool] ()
 setSessionSendsLaunchEventsSelector = mkSelector "setSessionSendsLaunchEvents:"
 
 -- | @Selector@ for @connectionProxyDictionary@
-connectionProxyDictionarySelector :: Selector
+connectionProxyDictionarySelector :: Selector '[] (Id NSDictionary)
 connectionProxyDictionarySelector = mkSelector "connectionProxyDictionary"
 
 -- | @Selector@ for @setConnectionProxyDictionary:@
-setConnectionProxyDictionarySelector :: Selector
+setConnectionProxyDictionarySelector :: Selector '[Id NSDictionary] ()
 setConnectionProxyDictionarySelector = mkSelector "setConnectionProxyDictionary:"
 
 -- | @Selector@ for @TLSMinimumSupportedProtocol@
-tlsMinimumSupportedProtocolSelector :: Selector
+tlsMinimumSupportedProtocolSelector :: Selector '[] CInt
 tlsMinimumSupportedProtocolSelector = mkSelector "TLSMinimumSupportedProtocol"
 
 -- | @Selector@ for @setTLSMinimumSupportedProtocol:@
-setTLSMinimumSupportedProtocolSelector :: Selector
+setTLSMinimumSupportedProtocolSelector :: Selector '[CInt] ()
 setTLSMinimumSupportedProtocolSelector = mkSelector "setTLSMinimumSupportedProtocol:"
 
 -- | @Selector@ for @TLSMaximumSupportedProtocol@
-tlsMaximumSupportedProtocolSelector :: Selector
+tlsMaximumSupportedProtocolSelector :: Selector '[] CInt
 tlsMaximumSupportedProtocolSelector = mkSelector "TLSMaximumSupportedProtocol"
 
 -- | @Selector@ for @setTLSMaximumSupportedProtocol:@
-setTLSMaximumSupportedProtocolSelector :: Selector
+setTLSMaximumSupportedProtocolSelector :: Selector '[CInt] ()
 setTLSMaximumSupportedProtocolSelector = mkSelector "setTLSMaximumSupportedProtocol:"
 
 -- | @Selector@ for @TLSMinimumSupportedProtocolVersion@
-tlsMinimumSupportedProtocolVersionSelector :: Selector
+tlsMinimumSupportedProtocolVersionSelector :: Selector '[] CInt
 tlsMinimumSupportedProtocolVersionSelector = mkSelector "TLSMinimumSupportedProtocolVersion"
 
 -- | @Selector@ for @setTLSMinimumSupportedProtocolVersion:@
-setTLSMinimumSupportedProtocolVersionSelector :: Selector
+setTLSMinimumSupportedProtocolVersionSelector :: Selector '[CInt] ()
 setTLSMinimumSupportedProtocolVersionSelector = mkSelector "setTLSMinimumSupportedProtocolVersion:"
 
 -- | @Selector@ for @TLSMaximumSupportedProtocolVersion@
-tlsMaximumSupportedProtocolVersionSelector :: Selector
+tlsMaximumSupportedProtocolVersionSelector :: Selector '[] CInt
 tlsMaximumSupportedProtocolVersionSelector = mkSelector "TLSMaximumSupportedProtocolVersion"
 
 -- | @Selector@ for @setTLSMaximumSupportedProtocolVersion:@
-setTLSMaximumSupportedProtocolVersionSelector :: Selector
+setTLSMaximumSupportedProtocolVersionSelector :: Selector '[CInt] ()
 setTLSMaximumSupportedProtocolVersionSelector = mkSelector "setTLSMaximumSupportedProtocolVersion:"
 
 -- | @Selector@ for @HTTPShouldUsePipelining@
-httpShouldUsePipeliningSelector :: Selector
+httpShouldUsePipeliningSelector :: Selector '[] Bool
 httpShouldUsePipeliningSelector = mkSelector "HTTPShouldUsePipelining"
 
 -- | @Selector@ for @setHTTPShouldUsePipelining:@
-setHTTPShouldUsePipeliningSelector :: Selector
+setHTTPShouldUsePipeliningSelector :: Selector '[Bool] ()
 setHTTPShouldUsePipeliningSelector = mkSelector "setHTTPShouldUsePipelining:"
 
 -- | @Selector@ for @HTTPShouldSetCookies@
-httpShouldSetCookiesSelector :: Selector
+httpShouldSetCookiesSelector :: Selector '[] Bool
 httpShouldSetCookiesSelector = mkSelector "HTTPShouldSetCookies"
 
 -- | @Selector@ for @setHTTPShouldSetCookies:@
-setHTTPShouldSetCookiesSelector :: Selector
+setHTTPShouldSetCookiesSelector :: Selector '[Bool] ()
 setHTTPShouldSetCookiesSelector = mkSelector "setHTTPShouldSetCookies:"
 
 -- | @Selector@ for @HTTPCookieAcceptPolicy@
-httpCookieAcceptPolicySelector :: Selector
+httpCookieAcceptPolicySelector :: Selector '[] NSHTTPCookieAcceptPolicy
 httpCookieAcceptPolicySelector = mkSelector "HTTPCookieAcceptPolicy"
 
 -- | @Selector@ for @setHTTPCookieAcceptPolicy:@
-setHTTPCookieAcceptPolicySelector :: Selector
+setHTTPCookieAcceptPolicySelector :: Selector '[NSHTTPCookieAcceptPolicy] ()
 setHTTPCookieAcceptPolicySelector = mkSelector "setHTTPCookieAcceptPolicy:"
 
 -- | @Selector@ for @HTTPAdditionalHeaders@
-httpAdditionalHeadersSelector :: Selector
+httpAdditionalHeadersSelector :: Selector '[] (Id NSDictionary)
 httpAdditionalHeadersSelector = mkSelector "HTTPAdditionalHeaders"
 
 -- | @Selector@ for @setHTTPAdditionalHeaders:@
-setHTTPAdditionalHeadersSelector :: Selector
+setHTTPAdditionalHeadersSelector :: Selector '[Id NSDictionary] ()
 setHTTPAdditionalHeadersSelector = mkSelector "setHTTPAdditionalHeaders:"
 
 -- | @Selector@ for @HTTPMaximumConnectionsPerHost@
-httpMaximumConnectionsPerHostSelector :: Selector
+httpMaximumConnectionsPerHostSelector :: Selector '[] CLong
 httpMaximumConnectionsPerHostSelector = mkSelector "HTTPMaximumConnectionsPerHost"
 
 -- | @Selector@ for @setHTTPMaximumConnectionsPerHost:@
-setHTTPMaximumConnectionsPerHostSelector :: Selector
+setHTTPMaximumConnectionsPerHostSelector :: Selector '[CLong] ()
 setHTTPMaximumConnectionsPerHostSelector = mkSelector "setHTTPMaximumConnectionsPerHost:"
 
 -- | @Selector@ for @HTTPCookieStorage@
-httpCookieStorageSelector :: Selector
+httpCookieStorageSelector :: Selector '[] (Id NSHTTPCookieStorage)
 httpCookieStorageSelector = mkSelector "HTTPCookieStorage"
 
 -- | @Selector@ for @setHTTPCookieStorage:@
-setHTTPCookieStorageSelector :: Selector
+setHTTPCookieStorageSelector :: Selector '[Id NSHTTPCookieStorage] ()
 setHTTPCookieStorageSelector = mkSelector "setHTTPCookieStorage:"
 
 -- | @Selector@ for @URLCredentialStorage@
-urlCredentialStorageSelector :: Selector
+urlCredentialStorageSelector :: Selector '[] (Id NSURLCredentialStorage)
 urlCredentialStorageSelector = mkSelector "URLCredentialStorage"
 
 -- | @Selector@ for @setURLCredentialStorage:@
-setURLCredentialStorageSelector :: Selector
+setURLCredentialStorageSelector :: Selector '[Id NSURLCredentialStorage] ()
 setURLCredentialStorageSelector = mkSelector "setURLCredentialStorage:"
 
 -- | @Selector@ for @URLCache@
-urlCacheSelector :: Selector
+urlCacheSelector :: Selector '[] (Id NSURLCache)
 urlCacheSelector = mkSelector "URLCache"
 
 -- | @Selector@ for @setURLCache:@
-setURLCacheSelector :: Selector
+setURLCacheSelector :: Selector '[Id NSURLCache] ()
 setURLCacheSelector = mkSelector "setURLCache:"
 
 -- | @Selector@ for @shouldUseExtendedBackgroundIdleMode@
-shouldUseExtendedBackgroundIdleModeSelector :: Selector
+shouldUseExtendedBackgroundIdleModeSelector :: Selector '[] Bool
 shouldUseExtendedBackgroundIdleModeSelector = mkSelector "shouldUseExtendedBackgroundIdleMode"
 
 -- | @Selector@ for @setShouldUseExtendedBackgroundIdleMode:@
-setShouldUseExtendedBackgroundIdleModeSelector :: Selector
+setShouldUseExtendedBackgroundIdleModeSelector :: Selector '[Bool] ()
 setShouldUseExtendedBackgroundIdleModeSelector = mkSelector "setShouldUseExtendedBackgroundIdleMode:"
 
 -- | @Selector@ for @protocolClasses@
-protocolClassesSelector :: Selector
+protocolClassesSelector :: Selector '[] (Id NSArray)
 protocolClassesSelector = mkSelector "protocolClasses"
 
 -- | @Selector@ for @setProtocolClasses:@
-setProtocolClassesSelector :: Selector
+setProtocolClassesSelector :: Selector '[Id NSArray] ()
 setProtocolClassesSelector = mkSelector "setProtocolClasses:"
 
 -- | @Selector@ for @multipathServiceType@
-multipathServiceTypeSelector :: Selector
+multipathServiceTypeSelector :: Selector '[] NSURLSessionMultipathServiceType
 multipathServiceTypeSelector = mkSelector "multipathServiceType"
 
 -- | @Selector@ for @setMultipathServiceType:@
-setMultipathServiceTypeSelector :: Selector
+setMultipathServiceTypeSelector :: Selector '[NSURLSessionMultipathServiceType] ()
 setMultipathServiceTypeSelector = mkSelector "setMultipathServiceType:"
 
 -- | @Selector@ for @usesClassicLoadingMode@
-usesClassicLoadingModeSelector :: Selector
+usesClassicLoadingModeSelector :: Selector '[] Bool
 usesClassicLoadingModeSelector = mkSelector "usesClassicLoadingMode"
 
 -- | @Selector@ for @setUsesClassicLoadingMode:@
-setUsesClassicLoadingModeSelector :: Selector
+setUsesClassicLoadingModeSelector :: Selector '[Bool] ()
 setUsesClassicLoadingModeSelector = mkSelector "setUsesClassicLoadingMode:"
 
 -- | @Selector@ for @enablesEarlyData@
-enablesEarlyDataSelector :: Selector
+enablesEarlyDataSelector :: Selector '[] Bool
 enablesEarlyDataSelector = mkSelector "enablesEarlyData"
 
 -- | @Selector@ for @setEnablesEarlyData:@
-setEnablesEarlyDataSelector :: Selector
+setEnablesEarlyDataSelector :: Selector '[Bool] ()
 setEnablesEarlyDataSelector = mkSelector "setEnablesEarlyData:"
 

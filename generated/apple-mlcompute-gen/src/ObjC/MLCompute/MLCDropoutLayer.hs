@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.MLCompute.MLCDropoutLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,7 +45,7 @@ layerWithRate_seed :: CFloat -> CULong -> IO (Id MLCDropoutLayer)
 layerWithRate_seed rate seed =
   do
     cls' <- getRequiredClass "MLCDropoutLayer"
-    sendClassMsg cls' (mkSelector "layerWithRate:seed:") (retPtr retVoid) [argCFloat rate, argCULong seed] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithRate_seedSelector rate seed
 
 -- | rate
 --
@@ -56,8 +53,8 @@ layerWithRate_seed rate seed =
 --
 -- ObjC selector: @- rate@
 rate :: IsMLCDropoutLayer mlcDropoutLayer => mlcDropoutLayer -> IO CFloat
-rate mlcDropoutLayer  =
-    sendMsg mlcDropoutLayer (mkSelector "rate") retCFloat []
+rate mlcDropoutLayer =
+  sendMessage mlcDropoutLayer rateSelector
 
 -- | seed
 --
@@ -65,22 +62,22 @@ rate mlcDropoutLayer  =
 --
 -- ObjC selector: @- seed@
 seed :: IsMLCDropoutLayer mlcDropoutLayer => mlcDropoutLayer -> IO CULong
-seed mlcDropoutLayer  =
-    sendMsg mlcDropoutLayer (mkSelector "seed") retCULong []
+seed mlcDropoutLayer =
+  sendMessage mlcDropoutLayer seedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithRate:seed:@
-layerWithRate_seedSelector :: Selector
+layerWithRate_seedSelector :: Selector '[CFloat, CULong] (Id MLCDropoutLayer)
 layerWithRate_seedSelector = mkSelector "layerWithRate:seed:"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @seed@
-seedSelector :: Selector
+seedSelector :: Selector '[] CULong
 seedSelector = mkSelector "seed"
 

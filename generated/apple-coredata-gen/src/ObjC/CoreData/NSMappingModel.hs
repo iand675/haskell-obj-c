@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.CoreData.NSMappingModel
   , entityMappings
   , setEntityMappings
   , entityMappingsByName
-  , mappingModelFromBundles_forSourceModel_destinationModelSelector
+  , entityMappingsByNameSelector
+  , entityMappingsSelector
   , inferredMappingModelForSourceModel_destinationModel_errorSelector
   , initWithContentsOfURLSelector
-  , entityMappingsSelector
+  , mappingModelFromBundles_forSourceModel_destinationModelSelector
   , setEntityMappingsSelector
-  , entityMappingsByNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,68 +39,60 @@ mappingModelFromBundles_forSourceModel_destinationModel :: (IsNSArray bundles, I
 mappingModelFromBundles_forSourceModel_destinationModel bundles sourceModel destinationModel =
   do
     cls' <- getRequiredClass "NSMappingModel"
-    withObjCPtr bundles $ \raw_bundles ->
-      withObjCPtr sourceModel $ \raw_sourceModel ->
-        withObjCPtr destinationModel $ \raw_destinationModel ->
-          sendClassMsg cls' (mkSelector "mappingModelFromBundles:forSourceModel:destinationModel:") (retPtr retVoid) [argPtr (castPtr raw_bundles :: Ptr ()), argPtr (castPtr raw_sourceModel :: Ptr ()), argPtr (castPtr raw_destinationModel :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' mappingModelFromBundles_forSourceModel_destinationModelSelector (toNSArray bundles) (toNSManagedObjectModel sourceModel) (toNSManagedObjectModel destinationModel)
 
 -- | @+ inferredMappingModelForSourceModel:destinationModel:error:@
 inferredMappingModelForSourceModel_destinationModel_error :: (IsNSManagedObjectModel sourceModel, IsNSManagedObjectModel destinationModel, IsNSError error_) => sourceModel -> destinationModel -> error_ -> IO (Id NSMappingModel)
 inferredMappingModelForSourceModel_destinationModel_error sourceModel destinationModel error_ =
   do
     cls' <- getRequiredClass "NSMappingModel"
-    withObjCPtr sourceModel $ \raw_sourceModel ->
-      withObjCPtr destinationModel $ \raw_destinationModel ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "inferredMappingModelForSourceModel:destinationModel:error:") (retPtr retVoid) [argPtr (castPtr raw_sourceModel :: Ptr ()), argPtr (castPtr raw_destinationModel :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' inferredMappingModelForSourceModel_destinationModel_errorSelector (toNSManagedObjectModel sourceModel) (toNSManagedObjectModel destinationModel) (toNSError error_)
 
 -- | @- initWithContentsOfURL:@
 initWithContentsOfURL :: (IsNSMappingModel nsMappingModel, IsNSURL url) => nsMappingModel -> url -> IO (Id NSMappingModel)
-initWithContentsOfURL nsMappingModel  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsMappingModel (mkSelector "initWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL nsMappingModel url =
+  sendOwnedMessage nsMappingModel initWithContentsOfURLSelector (toNSURL url)
 
 -- | @- entityMappings@
 entityMappings :: IsNSMappingModel nsMappingModel => nsMappingModel -> IO (Id NSArray)
-entityMappings nsMappingModel  =
-    sendMsg nsMappingModel (mkSelector "entityMappings") (retPtr retVoid) [] >>= retainedObject . castPtr
+entityMappings nsMappingModel =
+  sendMessage nsMappingModel entityMappingsSelector
 
 -- | @- setEntityMappings:@
 setEntityMappings :: (IsNSMappingModel nsMappingModel, IsNSArray value) => nsMappingModel -> value -> IO ()
-setEntityMappings nsMappingModel  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMappingModel (mkSelector "setEntityMappings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEntityMappings nsMappingModel value =
+  sendMessage nsMappingModel setEntityMappingsSelector (toNSArray value)
 
 -- | @- entityMappingsByName@
 entityMappingsByName :: IsNSMappingModel nsMappingModel => nsMappingModel -> IO (Id NSDictionary)
-entityMappingsByName nsMappingModel  =
-    sendMsg nsMappingModel (mkSelector "entityMappingsByName") (retPtr retVoid) [] >>= retainedObject . castPtr
+entityMappingsByName nsMappingModel =
+  sendMessage nsMappingModel entityMappingsByNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mappingModelFromBundles:forSourceModel:destinationModel:@
-mappingModelFromBundles_forSourceModel_destinationModelSelector :: Selector
+mappingModelFromBundles_forSourceModel_destinationModelSelector :: Selector '[Id NSArray, Id NSManagedObjectModel, Id NSManagedObjectModel] (Id NSMappingModel)
 mappingModelFromBundles_forSourceModel_destinationModelSelector = mkSelector "mappingModelFromBundles:forSourceModel:destinationModel:"
 
 -- | @Selector@ for @inferredMappingModelForSourceModel:destinationModel:error:@
-inferredMappingModelForSourceModel_destinationModel_errorSelector :: Selector
+inferredMappingModelForSourceModel_destinationModel_errorSelector :: Selector '[Id NSManagedObjectModel, Id NSManagedObjectModel, Id NSError] (Id NSMappingModel)
 inferredMappingModelForSourceModel_destinationModel_errorSelector = mkSelector "inferredMappingModelForSourceModel:destinationModel:error:"
 
 -- | @Selector@ for @initWithContentsOfURL:@
-initWithContentsOfURLSelector :: Selector
+initWithContentsOfURLSelector :: Selector '[Id NSURL] (Id NSMappingModel)
 initWithContentsOfURLSelector = mkSelector "initWithContentsOfURL:"
 
 -- | @Selector@ for @entityMappings@
-entityMappingsSelector :: Selector
+entityMappingsSelector :: Selector '[] (Id NSArray)
 entityMappingsSelector = mkSelector "entityMappings"
 
 -- | @Selector@ for @setEntityMappings:@
-setEntityMappingsSelector :: Selector
+setEntityMappingsSelector :: Selector '[Id NSArray] ()
 setEntityMappingsSelector = mkSelector "setEntityMappings:"
 
 -- | @Selector@ for @entityMappingsByName@
-entityMappingsByNameSelector :: Selector
+entityMappingsByNameSelector :: Selector '[] (Id NSDictionary)
 entityMappingsByNameSelector = mkSelector "entityMappingsByName"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.SafetyKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @SAAuthorizationStatus@
 newtype SAAuthorizationStatus = SAAuthorizationStatus CLong
@@ -25,6 +28,16 @@ pattern SAAuthorizationStatusDenied = SAAuthorizationStatus 1
 pattern SAAuthorizationStatusAuthorized :: SAAuthorizationStatus
 pattern SAAuthorizationStatusAuthorized = SAAuthorizationStatus 2
 
+instance ObjCArgument SAAuthorizationStatus where
+  withObjCArg (SAAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn SAAuthorizationStatus where
+  type RawReturn SAAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SAAuthorizationStatus x)
+  fromOwned x = pure (SAAuthorizationStatus x)
+
 -- | This enumeration defines possible emergency responses to a crash event
 --
 -- SACrashDetectionEventResponse
@@ -38,6 +51,16 @@ pattern SACrashDetectionEventResponseAttempted = SACrashDetectionEventResponse 0
 
 pattern SACrashDetectionEventResponseDisabled :: SACrashDetectionEventResponse
 pattern SACrashDetectionEventResponseDisabled = SACrashDetectionEventResponse 1
+
+instance ObjCArgument SACrashDetectionEventResponse where
+  withObjCArg (SACrashDetectionEventResponse x) k = k (argCLong x)
+
+instance ObjCReturn SACrashDetectionEventResponse where
+  type RawReturn SACrashDetectionEventResponse = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SACrashDetectionEventResponse x)
+  fromOwned x = pure (SACrashDetectionEventResponse x)
 
 -- | This enumeration defines the status of requested voice call
 --
@@ -58,6 +81,16 @@ pattern SAEmergencyResponseManagerVoiceCallStatusDisconnected = SAEmergencyRespo
 
 pattern SAEmergencyResponseManagerVoiceCallStatusFailed :: SAEmergencyResponseManagerVoiceCallStatus
 pattern SAEmergencyResponseManagerVoiceCallStatusFailed = SAEmergencyResponseManagerVoiceCallStatus 3
+
+instance ObjCArgument SAEmergencyResponseManagerVoiceCallStatus where
+  withObjCArg (SAEmergencyResponseManagerVoiceCallStatus x) k = k (argCLong x)
+
+instance ObjCReturn SAEmergencyResponseManagerVoiceCallStatus where
+  type RawReturn SAEmergencyResponseManagerVoiceCallStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SAEmergencyResponseManagerVoiceCallStatus x)
+  fromOwned x = pure (SAEmergencyResponseManagerVoiceCallStatus x)
 
 -- | SAErrorCode
 --
@@ -84,3 +117,13 @@ pattern SAErrorInvalidArgument = SAErrorCode 3
 
 pattern SAErrorOperationFailed :: SAErrorCode
 pattern SAErrorOperationFailed = SAErrorCode 4
+
+instance ObjCArgument SAErrorCode where
+  withObjCArg (SAErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn SAErrorCode where
+  type RawReturn SAErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SAErrorCode x)
+  fromOwned x = pure (SAErrorCode x)

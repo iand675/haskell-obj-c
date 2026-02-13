@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.GLKit.GLKSkyboxEffect
   , transform
   , label
   , setLabel
-  , prepareToDrawSelector
   , drawSelector
-  , xSizeSelector
+  , labelSelector
+  , prepareToDrawSelector
+  , setLabelSelector
   , setXSizeSelector
-  , ySizeSelector
   , setYSizeSelector
-  , zSizeSelector
   , setZSizeSelector
   , textureCubeMapSelector
   , transformSelector
-  , labelSelector
-  , setLabelSelector
+  , xSizeSelector
+  , ySizeSelector
+  , zSizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,114 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- prepareToDraw@
 prepareToDraw :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> IO ()
-prepareToDraw glkSkyboxEffect  =
-    sendMsg glkSkyboxEffect (mkSelector "prepareToDraw") retVoid []
+prepareToDraw glkSkyboxEffect =
+  sendMessage glkSkyboxEffect prepareToDrawSelector
 
 -- | @- draw@
 draw :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> IO ()
-draw glkSkyboxEffect  =
-    sendMsg glkSkyboxEffect (mkSelector "draw") retVoid []
+draw glkSkyboxEffect =
+  sendMessage glkSkyboxEffect drawSelector
 
 -- | @- xSize@
 xSize :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> IO CFloat
-xSize glkSkyboxEffect  =
-    sendMsg glkSkyboxEffect (mkSelector "xSize") retCFloat []
+xSize glkSkyboxEffect =
+  sendMessage glkSkyboxEffect xSizeSelector
 
 -- | @- setXSize:@
 setXSize :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> CFloat -> IO ()
-setXSize glkSkyboxEffect  value =
-    sendMsg glkSkyboxEffect (mkSelector "setXSize:") retVoid [argCFloat value]
+setXSize glkSkyboxEffect value =
+  sendMessage glkSkyboxEffect setXSizeSelector value
 
 -- | @- ySize@
 ySize :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> IO CFloat
-ySize glkSkyboxEffect  =
-    sendMsg glkSkyboxEffect (mkSelector "ySize") retCFloat []
+ySize glkSkyboxEffect =
+  sendMessage glkSkyboxEffect ySizeSelector
 
 -- | @- setYSize:@
 setYSize :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> CFloat -> IO ()
-setYSize glkSkyboxEffect  value =
-    sendMsg glkSkyboxEffect (mkSelector "setYSize:") retVoid [argCFloat value]
+setYSize glkSkyboxEffect value =
+  sendMessage glkSkyboxEffect setYSizeSelector value
 
 -- | @- zSize@
 zSize :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> IO CFloat
-zSize glkSkyboxEffect  =
-    sendMsg glkSkyboxEffect (mkSelector "zSize") retCFloat []
+zSize glkSkyboxEffect =
+  sendMessage glkSkyboxEffect zSizeSelector
 
 -- | @- setZSize:@
 setZSize :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> CFloat -> IO ()
-setZSize glkSkyboxEffect  value =
-    sendMsg glkSkyboxEffect (mkSelector "setZSize:") retVoid [argCFloat value]
+setZSize glkSkyboxEffect value =
+  sendMessage glkSkyboxEffect setZSizeSelector value
 
 -- | @- textureCubeMap@
 textureCubeMap :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> IO (Id GLKEffectPropertyTexture)
-textureCubeMap glkSkyboxEffect  =
-    sendMsg glkSkyboxEffect (mkSelector "textureCubeMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+textureCubeMap glkSkyboxEffect =
+  sendMessage glkSkyboxEffect textureCubeMapSelector
 
 -- | @- transform@
 transform :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> IO (Id GLKEffectPropertyTransform)
-transform glkSkyboxEffect  =
-    sendMsg glkSkyboxEffect (mkSelector "transform") (retPtr retVoid) [] >>= retainedObject . castPtr
+transform glkSkyboxEffect =
+  sendMessage glkSkyboxEffect transformSelector
 
 -- | @- label@
 label :: IsGLKSkyboxEffect glkSkyboxEffect => glkSkyboxEffect -> IO (Id NSString)
-label glkSkyboxEffect  =
-    sendMsg glkSkyboxEffect (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label glkSkyboxEffect =
+  sendMessage glkSkyboxEffect labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsGLKSkyboxEffect glkSkyboxEffect, IsNSString value) => glkSkyboxEffect -> value -> IO ()
-setLabel glkSkyboxEffect  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg glkSkyboxEffect (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel glkSkyboxEffect value =
+  sendMessage glkSkyboxEffect setLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @prepareToDraw@
-prepareToDrawSelector :: Selector
+prepareToDrawSelector :: Selector '[] ()
 prepareToDrawSelector = mkSelector "prepareToDraw"
 
 -- | @Selector@ for @draw@
-drawSelector :: Selector
+drawSelector :: Selector '[] ()
 drawSelector = mkSelector "draw"
 
 -- | @Selector@ for @xSize@
-xSizeSelector :: Selector
+xSizeSelector :: Selector '[] CFloat
 xSizeSelector = mkSelector "xSize"
 
 -- | @Selector@ for @setXSize:@
-setXSizeSelector :: Selector
+setXSizeSelector :: Selector '[CFloat] ()
 setXSizeSelector = mkSelector "setXSize:"
 
 -- | @Selector@ for @ySize@
-ySizeSelector :: Selector
+ySizeSelector :: Selector '[] CFloat
 ySizeSelector = mkSelector "ySize"
 
 -- | @Selector@ for @setYSize:@
-setYSizeSelector :: Selector
+setYSizeSelector :: Selector '[CFloat] ()
 setYSizeSelector = mkSelector "setYSize:"
 
 -- | @Selector@ for @zSize@
-zSizeSelector :: Selector
+zSizeSelector :: Selector '[] CFloat
 zSizeSelector = mkSelector "zSize"
 
 -- | @Selector@ for @setZSize:@
-setZSizeSelector :: Selector
+setZSizeSelector :: Selector '[CFloat] ()
 setZSizeSelector = mkSelector "setZSize:"
 
 -- | @Selector@ for @textureCubeMap@
-textureCubeMapSelector :: Selector
+textureCubeMapSelector :: Selector '[] (Id GLKEffectPropertyTexture)
 textureCubeMapSelector = mkSelector "textureCubeMap"
 
 -- | @Selector@ for @transform@
-transformSelector :: Selector
+transformSelector :: Selector '[] (Id GLKEffectPropertyTransform)
 transformSelector = mkSelector "transform"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 

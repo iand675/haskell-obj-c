@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,35 +29,31 @@ module ObjC.Contacts.CNMutablePostalAddress
   , setCountry
   , isoCountryCode
   , setISOCountryCode
-  , streetSelector
-  , setStreetSelector
-  , subLocalitySelector
-  , setSubLocalitySelector
   , citySelector
-  , setCitySelector
-  , subAdministrativeAreaSelector
-  , setSubAdministrativeAreaSelector
-  , stateSelector
-  , setStateSelector
-  , postalCodeSelector
-  , setPostalCodeSelector
   , countrySelector
-  , setCountrySelector
   , isoCountryCodeSelector
+  , postalCodeSelector
+  , setCitySelector
+  , setCountrySelector
   , setISOCountryCodeSelector
+  , setPostalCodeSelector
+  , setStateSelector
+  , setStreetSelector
+  , setSubAdministrativeAreaSelector
+  , setSubLocalitySelector
+  , stateSelector
+  , streetSelector
+  , subAdministrativeAreaSelector
+  , subLocalitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,157 +64,151 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- street@
 street :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO (Id NSString)
-street cnMutablePostalAddress  =
-    sendMsg cnMutablePostalAddress (mkSelector "street") (retPtr retVoid) [] >>= retainedObject . castPtr
+street cnMutablePostalAddress =
+  sendMessage cnMutablePostalAddress streetSelector
 
 -- | multi-street address is delimited with carriage returns “”
 --
 -- ObjC selector: @- setStreet:@
 setStreet :: (IsCNMutablePostalAddress cnMutablePostalAddress, IsNSString value) => cnMutablePostalAddress -> value -> IO ()
-setStreet cnMutablePostalAddress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnMutablePostalAddress (mkSelector "setStreet:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStreet cnMutablePostalAddress value =
+  sendMessage cnMutablePostalAddress setStreetSelector (toNSString value)
 
 -- | @- subLocality@
 subLocality :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO RawId
-subLocality cnMutablePostalAddress  =
-    fmap (RawId . castPtr) $ sendMsg cnMutablePostalAddress (mkSelector "subLocality") (retPtr retVoid) []
+subLocality cnMutablePostalAddress =
+  sendMessage cnMutablePostalAddress subLocalitySelector
 
 -- | @- setSubLocality:@
 setSubLocality :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> RawId -> IO ()
-setSubLocality cnMutablePostalAddress  value =
-    sendMsg cnMutablePostalAddress (mkSelector "setSubLocality:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSubLocality cnMutablePostalAddress value =
+  sendMessage cnMutablePostalAddress setSubLocalitySelector value
 
 -- | @- city@
 city :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO (Id NSString)
-city cnMutablePostalAddress  =
-    sendMsg cnMutablePostalAddress (mkSelector "city") (retPtr retVoid) [] >>= retainedObject . castPtr
+city cnMutablePostalAddress =
+  sendMessage cnMutablePostalAddress citySelector
 
 -- | @- setCity:@
 setCity :: (IsCNMutablePostalAddress cnMutablePostalAddress, IsNSString value) => cnMutablePostalAddress -> value -> IO ()
-setCity cnMutablePostalAddress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnMutablePostalAddress (mkSelector "setCity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCity cnMutablePostalAddress value =
+  sendMessage cnMutablePostalAddress setCitySelector (toNSString value)
 
 -- | @- subAdministrativeArea@
 subAdministrativeArea :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO RawId
-subAdministrativeArea cnMutablePostalAddress  =
-    fmap (RawId . castPtr) $ sendMsg cnMutablePostalAddress (mkSelector "subAdministrativeArea") (retPtr retVoid) []
+subAdministrativeArea cnMutablePostalAddress =
+  sendMessage cnMutablePostalAddress subAdministrativeAreaSelector
 
 -- | @- setSubAdministrativeArea:@
 setSubAdministrativeArea :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> RawId -> IO ()
-setSubAdministrativeArea cnMutablePostalAddress  value =
-    sendMsg cnMutablePostalAddress (mkSelector "setSubAdministrativeArea:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSubAdministrativeArea cnMutablePostalAddress value =
+  sendMessage cnMutablePostalAddress setSubAdministrativeAreaSelector value
 
 -- | @- state@
 state :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO (Id NSString)
-state cnMutablePostalAddress  =
-    sendMsg cnMutablePostalAddress (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state cnMutablePostalAddress =
+  sendMessage cnMutablePostalAddress stateSelector
 
 -- | @- setState:@
 setState :: (IsCNMutablePostalAddress cnMutablePostalAddress, IsNSString value) => cnMutablePostalAddress -> value -> IO ()
-setState cnMutablePostalAddress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnMutablePostalAddress (mkSelector "setState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setState cnMutablePostalAddress value =
+  sendMessage cnMutablePostalAddress setStateSelector (toNSString value)
 
 -- | @- postalCode@
 postalCode :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO (Id NSString)
-postalCode cnMutablePostalAddress  =
-    sendMsg cnMutablePostalAddress (mkSelector "postalCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+postalCode cnMutablePostalAddress =
+  sendMessage cnMutablePostalAddress postalCodeSelector
 
 -- | @- setPostalCode:@
 setPostalCode :: (IsCNMutablePostalAddress cnMutablePostalAddress, IsNSString value) => cnMutablePostalAddress -> value -> IO ()
-setPostalCode cnMutablePostalAddress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnMutablePostalAddress (mkSelector "setPostalCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPostalCode cnMutablePostalAddress value =
+  sendMessage cnMutablePostalAddress setPostalCodeSelector (toNSString value)
 
 -- | @- country@
 country :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO (Id NSString)
-country cnMutablePostalAddress  =
-    sendMsg cnMutablePostalAddress (mkSelector "country") (retPtr retVoid) [] >>= retainedObject . castPtr
+country cnMutablePostalAddress =
+  sendMessage cnMutablePostalAddress countrySelector
 
 -- | @- setCountry:@
 setCountry :: (IsCNMutablePostalAddress cnMutablePostalAddress, IsNSString value) => cnMutablePostalAddress -> value -> IO ()
-setCountry cnMutablePostalAddress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnMutablePostalAddress (mkSelector "setCountry:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCountry cnMutablePostalAddress value =
+  sendMessage cnMutablePostalAddress setCountrySelector (toNSString value)
 
 -- | @- ISOCountryCode@
 isoCountryCode :: IsCNMutablePostalAddress cnMutablePostalAddress => cnMutablePostalAddress -> IO (Id NSString)
-isoCountryCode cnMutablePostalAddress  =
-    sendMsg cnMutablePostalAddress (mkSelector "ISOCountryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+isoCountryCode cnMutablePostalAddress =
+  sendMessage cnMutablePostalAddress isoCountryCodeSelector
 
 -- | @- setISOCountryCode:@
 setISOCountryCode :: (IsCNMutablePostalAddress cnMutablePostalAddress, IsNSString value) => cnMutablePostalAddress -> value -> IO ()
-setISOCountryCode cnMutablePostalAddress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnMutablePostalAddress (mkSelector "setISOCountryCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setISOCountryCode cnMutablePostalAddress value =
+  sendMessage cnMutablePostalAddress setISOCountryCodeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @street@
-streetSelector :: Selector
+streetSelector :: Selector '[] (Id NSString)
 streetSelector = mkSelector "street"
 
 -- | @Selector@ for @setStreet:@
-setStreetSelector :: Selector
+setStreetSelector :: Selector '[Id NSString] ()
 setStreetSelector = mkSelector "setStreet:"
 
 -- | @Selector@ for @subLocality@
-subLocalitySelector :: Selector
+subLocalitySelector :: Selector '[] RawId
 subLocalitySelector = mkSelector "subLocality"
 
 -- | @Selector@ for @setSubLocality:@
-setSubLocalitySelector :: Selector
+setSubLocalitySelector :: Selector '[RawId] ()
 setSubLocalitySelector = mkSelector "setSubLocality:"
 
 -- | @Selector@ for @city@
-citySelector :: Selector
+citySelector :: Selector '[] (Id NSString)
 citySelector = mkSelector "city"
 
 -- | @Selector@ for @setCity:@
-setCitySelector :: Selector
+setCitySelector :: Selector '[Id NSString] ()
 setCitySelector = mkSelector "setCity:"
 
 -- | @Selector@ for @subAdministrativeArea@
-subAdministrativeAreaSelector :: Selector
+subAdministrativeAreaSelector :: Selector '[] RawId
 subAdministrativeAreaSelector = mkSelector "subAdministrativeArea"
 
 -- | @Selector@ for @setSubAdministrativeArea:@
-setSubAdministrativeAreaSelector :: Selector
+setSubAdministrativeAreaSelector :: Selector '[RawId] ()
 setSubAdministrativeAreaSelector = mkSelector "setSubAdministrativeArea:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id NSString)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @setState:@
-setStateSelector :: Selector
+setStateSelector :: Selector '[Id NSString] ()
 setStateSelector = mkSelector "setState:"
 
 -- | @Selector@ for @postalCode@
-postalCodeSelector :: Selector
+postalCodeSelector :: Selector '[] (Id NSString)
 postalCodeSelector = mkSelector "postalCode"
 
 -- | @Selector@ for @setPostalCode:@
-setPostalCodeSelector :: Selector
+setPostalCodeSelector :: Selector '[Id NSString] ()
 setPostalCodeSelector = mkSelector "setPostalCode:"
 
 -- | @Selector@ for @country@
-countrySelector :: Selector
+countrySelector :: Selector '[] (Id NSString)
 countrySelector = mkSelector "country"
 
 -- | @Selector@ for @setCountry:@
-setCountrySelector :: Selector
+setCountrySelector :: Selector '[Id NSString] ()
 setCountrySelector = mkSelector "setCountry:"
 
 -- | @Selector@ for @ISOCountryCode@
-isoCountryCodeSelector :: Selector
+isoCountryCodeSelector :: Selector '[] (Id NSString)
 isoCountryCodeSelector = mkSelector "ISOCountryCode"
 
 -- | @Selector@ for @setISOCountryCode:@
-setISOCountryCodeSelector :: Selector
+setISOCountryCodeSelector :: Selector '[Id NSString] ()
 setISOCountryCodeSelector = mkSelector "setISOCountryCode:"
 

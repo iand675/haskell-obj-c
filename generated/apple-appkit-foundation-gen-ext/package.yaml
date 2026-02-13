@@ -18,8 +18,6 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
-  - ObjC.AppKit.CIColor
-  - ObjC.AppKit.CIImage
   - ObjC.AppKit.NSAffineTransform
   - ObjC.AppKit.NSAppleScript
   - ObjC.AppKit.NSAttributedString
@@ -30,7 +28,6 @@ library:
   - ObjC.AppKit.NSIndexPath
   - ObjC.AppKit.NSItemProvider
   - ObjC.AppKit.NSMutableAttributedString
-  - ObjC.AppKit.NSObject
   - ObjC.AppKit.NSSet
   - ObjC.AppKit.NSString
   - ObjC.AppKit.NSURL

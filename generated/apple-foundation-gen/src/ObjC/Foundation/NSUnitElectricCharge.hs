@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Foundation.NSUnitElectricCharge
   , ampereHours
   , milliampereHours
   , microampereHours
-  , coulombsSelector
-  , megaampereHoursSelector
-  , kiloampereHoursSelector
   , ampereHoursSelector
-  , milliampereHoursSelector
+  , coulombsSelector
+  , kiloampereHoursSelector
+  , megaampereHoursSelector
   , microampereHoursSelector
+  , milliampereHoursSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,68 +38,68 @@ coulombs :: IO (Id NSUnitElectricCharge)
 coulombs  =
   do
     cls' <- getRequiredClass "NSUnitElectricCharge"
-    sendClassMsg cls' (mkSelector "coulombs") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' coulombsSelector
 
 -- | @+ megaampereHours@
 megaampereHours :: IO (Id NSUnitElectricCharge)
 megaampereHours  =
   do
     cls' <- getRequiredClass "NSUnitElectricCharge"
-    sendClassMsg cls' (mkSelector "megaampereHours") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' megaampereHoursSelector
 
 -- | @+ kiloampereHours@
 kiloampereHours :: IO (Id NSUnitElectricCharge)
 kiloampereHours  =
   do
     cls' <- getRequiredClass "NSUnitElectricCharge"
-    sendClassMsg cls' (mkSelector "kiloampereHours") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kiloampereHoursSelector
 
 -- | @+ ampereHours@
 ampereHours :: IO (Id NSUnitElectricCharge)
 ampereHours  =
   do
     cls' <- getRequiredClass "NSUnitElectricCharge"
-    sendClassMsg cls' (mkSelector "ampereHours") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' ampereHoursSelector
 
 -- | @+ milliampereHours@
 milliampereHours :: IO (Id NSUnitElectricCharge)
 milliampereHours  =
   do
     cls' <- getRequiredClass "NSUnitElectricCharge"
-    sendClassMsg cls' (mkSelector "milliampereHours") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' milliampereHoursSelector
 
 -- | @+ microampereHours@
 microampereHours :: IO (Id NSUnitElectricCharge)
 microampereHours  =
   do
     cls' <- getRequiredClass "NSUnitElectricCharge"
-    sendClassMsg cls' (mkSelector "microampereHours") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' microampereHoursSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @coulombs@
-coulombsSelector :: Selector
+coulombsSelector :: Selector '[] (Id NSUnitElectricCharge)
 coulombsSelector = mkSelector "coulombs"
 
 -- | @Selector@ for @megaampereHours@
-megaampereHoursSelector :: Selector
+megaampereHoursSelector :: Selector '[] (Id NSUnitElectricCharge)
 megaampereHoursSelector = mkSelector "megaampereHours"
 
 -- | @Selector@ for @kiloampereHours@
-kiloampereHoursSelector :: Selector
+kiloampereHoursSelector :: Selector '[] (Id NSUnitElectricCharge)
 kiloampereHoursSelector = mkSelector "kiloampereHours"
 
 -- | @Selector@ for @ampereHours@
-ampereHoursSelector :: Selector
+ampereHoursSelector :: Selector '[] (Id NSUnitElectricCharge)
 ampereHoursSelector = mkSelector "ampereHours"
 
 -- | @Selector@ for @milliampereHours@
-milliampereHoursSelector :: Selector
+milliampereHoursSelector :: Selector '[] (Id NSUnitElectricCharge)
 milliampereHoursSelector = mkSelector "milliampereHours"
 
 -- | @Selector@ for @microampereHours@
-microampereHoursSelector :: Selector
+microampereHoursSelector :: Selector '[] (Id NSUnitElectricCharge)
 microampereHoursSelector = mkSelector "microampereHours"
 

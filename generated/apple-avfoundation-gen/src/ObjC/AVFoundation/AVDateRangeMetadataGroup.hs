@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVDateRangeMetadataGroup
   , startDate
   , endDate
   , items
-  , initWithItems_startDate_endDateSelector
-  , startDateSelector
   , endDateSelector
+  , initWithItems_startDate_endDateSelector
   , itemsSelector
+  , startDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,44 +48,41 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithItems:startDate:endDate:@
 initWithItems_startDate_endDate :: (IsAVDateRangeMetadataGroup avDateRangeMetadataGroup, IsNSArray items, IsNSDate startDate, IsNSDate endDate) => avDateRangeMetadataGroup -> items -> startDate -> endDate -> IO (Id AVDateRangeMetadataGroup)
-initWithItems_startDate_endDate avDateRangeMetadataGroup  items startDate endDate =
-  withObjCPtr items $ \raw_items ->
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-          sendMsg avDateRangeMetadataGroup (mkSelector "initWithItems:startDate:endDate:") (retPtr retVoid) [argPtr (castPtr raw_items :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ())] >>= ownedObject . castPtr
+initWithItems_startDate_endDate avDateRangeMetadataGroup items startDate endDate =
+  sendOwnedMessage avDateRangeMetadataGroup initWithItems_startDate_endDateSelector (toNSArray items) (toNSDate startDate) (toNSDate endDate)
 
 -- | @- startDate@
 startDate :: IsAVDateRangeMetadataGroup avDateRangeMetadataGroup => avDateRangeMetadataGroup -> IO (Id NSDate)
-startDate avDateRangeMetadataGroup  =
-    sendMsg avDateRangeMetadataGroup (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate avDateRangeMetadataGroup =
+  sendMessage avDateRangeMetadataGroup startDateSelector
 
 -- | @- endDate@
 endDate :: IsAVDateRangeMetadataGroup avDateRangeMetadataGroup => avDateRangeMetadataGroup -> IO (Id NSDate)
-endDate avDateRangeMetadataGroup  =
-    sendMsg avDateRangeMetadataGroup (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate avDateRangeMetadataGroup =
+  sendMessage avDateRangeMetadataGroup endDateSelector
 
 -- | @- items@
 items :: IsAVDateRangeMetadataGroup avDateRangeMetadataGroup => avDateRangeMetadataGroup -> IO (Id NSArray)
-items avDateRangeMetadataGroup  =
-    sendMsg avDateRangeMetadataGroup (mkSelector "items") (retPtr retVoid) [] >>= retainedObject . castPtr
+items avDateRangeMetadataGroup =
+  sendMessage avDateRangeMetadataGroup itemsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithItems:startDate:endDate:@
-initWithItems_startDate_endDateSelector :: Selector
+initWithItems_startDate_endDateSelector :: Selector '[Id NSArray, Id NSDate, Id NSDate] (Id AVDateRangeMetadataGroup)
 initWithItems_startDate_endDateSelector = mkSelector "initWithItems:startDate:endDate:"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @items@
-itemsSelector :: Selector
+itemsSelector :: Selector '[] (Id NSArray)
 itemsSelector = mkSelector "items"
 

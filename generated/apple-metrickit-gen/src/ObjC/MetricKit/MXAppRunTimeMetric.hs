@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MetricKit.MXAppRunTimeMetric
   , cumulativeBackgroundTime
   , cumulativeBackgroundAudioTime
   , cumulativeBackgroundLocationTime
-  , cumulativeForegroundTimeSelector
-  , cumulativeBackgroundTimeSelector
   , cumulativeBackgroundAudioTimeSelector
   , cumulativeBackgroundLocationTimeSelector
+  , cumulativeBackgroundTimeSelector
+  , cumulativeForegroundTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- cumulativeForegroundTime@
 cumulativeForegroundTime :: IsMXAppRunTimeMetric mxAppRunTimeMetric => mxAppRunTimeMetric -> IO (Id NSMeasurement)
-cumulativeForegroundTime mxAppRunTimeMetric  =
-    sendMsg mxAppRunTimeMetric (mkSelector "cumulativeForegroundTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeForegroundTime mxAppRunTimeMetric =
+  sendMessage mxAppRunTimeMetric cumulativeForegroundTimeSelector
 
 -- | cumulativeBackgroundTime
 --
@@ -62,8 +59,8 @@ cumulativeForegroundTime mxAppRunTimeMetric  =
 --
 -- ObjC selector: @- cumulativeBackgroundTime@
 cumulativeBackgroundTime :: IsMXAppRunTimeMetric mxAppRunTimeMetric => mxAppRunTimeMetric -> IO (Id NSMeasurement)
-cumulativeBackgroundTime mxAppRunTimeMetric  =
-    sendMsg mxAppRunTimeMetric (mkSelector "cumulativeBackgroundTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeBackgroundTime mxAppRunTimeMetric =
+  sendMessage mxAppRunTimeMetric cumulativeBackgroundTimeSelector
 
 -- | cumulativeBackgroundAudioTime
 --
@@ -73,8 +70,8 @@ cumulativeBackgroundTime mxAppRunTimeMetric  =
 --
 -- ObjC selector: @- cumulativeBackgroundAudioTime@
 cumulativeBackgroundAudioTime :: IsMXAppRunTimeMetric mxAppRunTimeMetric => mxAppRunTimeMetric -> IO (Id NSMeasurement)
-cumulativeBackgroundAudioTime mxAppRunTimeMetric  =
-    sendMsg mxAppRunTimeMetric (mkSelector "cumulativeBackgroundAudioTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeBackgroundAudioTime mxAppRunTimeMetric =
+  sendMessage mxAppRunTimeMetric cumulativeBackgroundAudioTimeSelector
 
 -- | cumulativeBackgroundLocationTime
 --
@@ -84,26 +81,26 @@ cumulativeBackgroundAudioTime mxAppRunTimeMetric  =
 --
 -- ObjC selector: @- cumulativeBackgroundLocationTime@
 cumulativeBackgroundLocationTime :: IsMXAppRunTimeMetric mxAppRunTimeMetric => mxAppRunTimeMetric -> IO (Id NSMeasurement)
-cumulativeBackgroundLocationTime mxAppRunTimeMetric  =
-    sendMsg mxAppRunTimeMetric (mkSelector "cumulativeBackgroundLocationTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeBackgroundLocationTime mxAppRunTimeMetric =
+  sendMessage mxAppRunTimeMetric cumulativeBackgroundLocationTimeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cumulativeForegroundTime@
-cumulativeForegroundTimeSelector :: Selector
+cumulativeForegroundTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeForegroundTimeSelector = mkSelector "cumulativeForegroundTime"
 
 -- | @Selector@ for @cumulativeBackgroundTime@
-cumulativeBackgroundTimeSelector :: Selector
+cumulativeBackgroundTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeBackgroundTimeSelector = mkSelector "cumulativeBackgroundTime"
 
 -- | @Selector@ for @cumulativeBackgroundAudioTime@
-cumulativeBackgroundAudioTimeSelector :: Selector
+cumulativeBackgroundAudioTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeBackgroundAudioTimeSelector = mkSelector "cumulativeBackgroundAudioTime"
 
 -- | @Selector@ for @cumulativeBackgroundLocationTime@
-cumulativeBackgroundLocationTimeSelector :: Selector
+cumulativeBackgroundLocationTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeBackgroundLocationTimeSelector = mkSelector "cumulativeBackgroundLocationTime"
 

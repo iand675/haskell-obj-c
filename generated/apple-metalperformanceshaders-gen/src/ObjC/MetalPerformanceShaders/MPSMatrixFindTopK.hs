@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,32 +28,28 @@ module ObjC.MetalPerformanceShaders.MPSMatrixFindTopK
   , setIndexOffset
   , numberOfTopKValues
   , setNumberOfTopKValues
-  , initWithDevice_numberOfTopKValuesSelector
-  , initWithDeviceSelector
-  , encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrixSelector
-  , initWithCoder_deviceSelector
   , copyWithZone_deviceSelector
-  , sourceRowsSelector
+  , encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrixSelector
+  , indexOffsetSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_numberOfTopKValuesSelector
+  , numberOfTopKValuesSelector
+  , setIndexOffsetSelector
+  , setNumberOfTopKValuesSelector
+  , setSourceColumnsSelector
   , setSourceRowsSelector
   , sourceColumnsSelector
-  , setSourceColumnsSelector
-  , indexOffsetSelector
-  , setIndexOffsetSelector
-  , numberOfTopKValuesSelector
-  , setNumberOfTopKValuesSelector
+  , sourceRowsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,15 +66,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:numberOfTopKValues:@
 initWithDevice_numberOfTopKValues :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> RawId -> CULong -> IO (Id MPSMatrixFindTopK)
-initWithDevice_numberOfTopKValues mpsMatrixFindTopK  device numberOfTopKValues =
-    sendMsg mpsMatrixFindTopK (mkSelector "initWithDevice:numberOfTopKValues:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong numberOfTopKValues] >>= ownedObject . castPtr
+initWithDevice_numberOfTopKValues mpsMatrixFindTopK device numberOfTopKValues =
+  sendOwnedMessage mpsMatrixFindTopK initWithDevice_numberOfTopKValuesSelector device numberOfTopKValues
 
 -- | Use the above initialization method instead.
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> RawId -> IO (Id MPSMatrixFindTopK)
-initWithDevice mpsMatrixFindTopK  device =
-    sendMsg mpsMatrixFindTopK (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixFindTopK device =
+  sendOwnedMessage mpsMatrixFindTopK initWithDeviceSelector device
 
 -- | Encode a MPSMatrixFindTopK object to a command buffer.
 --
@@ -101,11 +98,8 @@ initWithDevice mpsMatrixFindTopK  device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:inputMatrix:resultIndexMatrix:resultValueMatrix:@
 encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrix :: (IsMPSMatrixFindTopK mpsMatrixFindTopK, IsMPSMatrix inputMatrix, IsMPSMatrix resultIndexMatrix, IsMPSMatrix resultValueMatrix) => mpsMatrixFindTopK -> RawId -> inputMatrix -> resultIndexMatrix -> resultValueMatrix -> IO ()
-encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrix mpsMatrixFindTopK  commandBuffer inputMatrix resultIndexMatrix resultValueMatrix =
-  withObjCPtr inputMatrix $ \raw_inputMatrix ->
-    withObjCPtr resultIndexMatrix $ \raw_resultIndexMatrix ->
-      withObjCPtr resultValueMatrix $ \raw_resultValueMatrix ->
-          sendMsg mpsMatrixFindTopK (mkSelector "encodeToCommandBuffer:inputMatrix:resultIndexMatrix:resultValueMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_inputMatrix :: Ptr ()), argPtr (castPtr raw_resultIndexMatrix :: Ptr ()), argPtr (castPtr raw_resultValueMatrix :: Ptr ())]
+encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrix mpsMatrixFindTopK commandBuffer inputMatrix resultIndexMatrix resultValueMatrix =
+  sendMessage mpsMatrixFindTopK encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrixSelector commandBuffer (toMPSMatrix inputMatrix) (toMPSMatrix resultIndexMatrix) (toMPSMatrix resultValueMatrix)
 
 -- | NSSecureCoding compatability
 --
@@ -119,9 +113,8 @@ encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrix mpsMatrixF
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixFindTopK mpsMatrixFindTopK, IsNSCoder aDecoder) => mpsMatrixFindTopK -> aDecoder -> RawId -> IO (Id MPSMatrixFindTopK)
-initWithCoder_device mpsMatrixFindTopK  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixFindTopK (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixFindTopK aDecoder device =
+  sendOwnedMessage mpsMatrixFindTopK initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Make a copy of this kernel for a new device -
 --
@@ -135,8 +128,8 @@ initWithCoder_device mpsMatrixFindTopK  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> Ptr () -> RawId -> IO (Id MPSMatrixFindTopK)
-copyWithZone_device mpsMatrixFindTopK  zone device =
-    sendMsg mpsMatrixFindTopK (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsMatrixFindTopK zone device =
+  sendOwnedMessage mpsMatrixFindTopK copyWithZone_deviceSelector zone device
 
 -- | sourceRows
 --
@@ -144,8 +137,8 @@ copyWithZone_device mpsMatrixFindTopK  zone device =
 --
 -- ObjC selector: @- sourceRows@
 sourceRows :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> IO CULong
-sourceRows mpsMatrixFindTopK  =
-    sendMsg mpsMatrixFindTopK (mkSelector "sourceRows") retCULong []
+sourceRows mpsMatrixFindTopK =
+  sendMessage mpsMatrixFindTopK sourceRowsSelector
 
 -- | sourceRows
 --
@@ -153,8 +146,8 @@ sourceRows mpsMatrixFindTopK  =
 --
 -- ObjC selector: @- setSourceRows:@
 setSourceRows :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> CULong -> IO ()
-setSourceRows mpsMatrixFindTopK  value =
-    sendMsg mpsMatrixFindTopK (mkSelector "setSourceRows:") retVoid [argCULong value]
+setSourceRows mpsMatrixFindTopK value =
+  sendMessage mpsMatrixFindTopK setSourceRowsSelector value
 
 -- | sourceColumns
 --
@@ -162,8 +155,8 @@ setSourceRows mpsMatrixFindTopK  value =
 --
 -- ObjC selector: @- sourceColumns@
 sourceColumns :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> IO CULong
-sourceColumns mpsMatrixFindTopK  =
-    sendMsg mpsMatrixFindTopK (mkSelector "sourceColumns") retCULong []
+sourceColumns mpsMatrixFindTopK =
+  sendMessage mpsMatrixFindTopK sourceColumnsSelector
 
 -- | sourceColumns
 --
@@ -171,8 +164,8 @@ sourceColumns mpsMatrixFindTopK  =
 --
 -- ObjC selector: @- setSourceColumns:@
 setSourceColumns :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> CULong -> IO ()
-setSourceColumns mpsMatrixFindTopK  value =
-    sendMsg mpsMatrixFindTopK (mkSelector "setSourceColumns:") retVoid [argCULong value]
+setSourceColumns mpsMatrixFindTopK value =
+  sendMessage mpsMatrixFindTopK setSourceColumnsSelector value
 
 -- | indexOffset
 --
@@ -198,8 +191,8 @@ setSourceColumns mpsMatrixFindTopK  value =
 --
 -- ObjC selector: @- indexOffset@
 indexOffset :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> IO CULong
-indexOffset mpsMatrixFindTopK  =
-    sendMsg mpsMatrixFindTopK (mkSelector "indexOffset") retCULong []
+indexOffset mpsMatrixFindTopK =
+  sendMessage mpsMatrixFindTopK indexOffsetSelector
 
 -- | indexOffset
 --
@@ -225,8 +218,8 @@ indexOffset mpsMatrixFindTopK  =
 --
 -- ObjC selector: @- setIndexOffset:@
 setIndexOffset :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> CULong -> IO ()
-setIndexOffset mpsMatrixFindTopK  value =
-    sendMsg mpsMatrixFindTopK (mkSelector "setIndexOffset:") retVoid [argCULong value]
+setIndexOffset mpsMatrixFindTopK value =
+  sendMessage mpsMatrixFindTopK setIndexOffsetSelector value
 
 -- | numberOfTopKValues
 --
@@ -234,8 +227,8 @@ setIndexOffset mpsMatrixFindTopK  value =
 --
 -- ObjC selector: @- numberOfTopKValues@
 numberOfTopKValues :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> IO CULong
-numberOfTopKValues mpsMatrixFindTopK  =
-    sendMsg mpsMatrixFindTopK (mkSelector "numberOfTopKValues") retCULong []
+numberOfTopKValues mpsMatrixFindTopK =
+  sendMessage mpsMatrixFindTopK numberOfTopKValuesSelector
 
 -- | numberOfTopKValues
 --
@@ -243,62 +236,62 @@ numberOfTopKValues mpsMatrixFindTopK  =
 --
 -- ObjC selector: @- setNumberOfTopKValues:@
 setNumberOfTopKValues :: IsMPSMatrixFindTopK mpsMatrixFindTopK => mpsMatrixFindTopK -> CULong -> IO ()
-setNumberOfTopKValues mpsMatrixFindTopK  value =
-    sendMsg mpsMatrixFindTopK (mkSelector "setNumberOfTopKValues:") retVoid [argCULong value]
+setNumberOfTopKValues mpsMatrixFindTopK value =
+  sendMessage mpsMatrixFindTopK setNumberOfTopKValuesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:numberOfTopKValues:@
-initWithDevice_numberOfTopKValuesSelector :: Selector
+initWithDevice_numberOfTopKValuesSelector :: Selector '[RawId, CULong] (Id MPSMatrixFindTopK)
 initWithDevice_numberOfTopKValuesSelector = mkSelector "initWithDevice:numberOfTopKValues:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixFindTopK)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inputMatrix:resultIndexMatrix:resultValueMatrix:@
-encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrixSelector :: Selector
+encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix] ()
 encodeToCommandBuffer_inputMatrix_resultIndexMatrix_resultValueMatrixSelector = mkSelector "encodeToCommandBuffer:inputMatrix:resultIndexMatrix:resultValueMatrix:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixFindTopK)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSMatrixFindTopK)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @sourceRows@
-sourceRowsSelector :: Selector
+sourceRowsSelector :: Selector '[] CULong
 sourceRowsSelector = mkSelector "sourceRows"
 
 -- | @Selector@ for @setSourceRows:@
-setSourceRowsSelector :: Selector
+setSourceRowsSelector :: Selector '[CULong] ()
 setSourceRowsSelector = mkSelector "setSourceRows:"
 
 -- | @Selector@ for @sourceColumns@
-sourceColumnsSelector :: Selector
+sourceColumnsSelector :: Selector '[] CULong
 sourceColumnsSelector = mkSelector "sourceColumns"
 
 -- | @Selector@ for @setSourceColumns:@
-setSourceColumnsSelector :: Selector
+setSourceColumnsSelector :: Selector '[CULong] ()
 setSourceColumnsSelector = mkSelector "setSourceColumns:"
 
 -- | @Selector@ for @indexOffset@
-indexOffsetSelector :: Selector
+indexOffsetSelector :: Selector '[] CULong
 indexOffsetSelector = mkSelector "indexOffset"
 
 -- | @Selector@ for @setIndexOffset:@
-setIndexOffsetSelector :: Selector
+setIndexOffsetSelector :: Selector '[CULong] ()
 setIndexOffsetSelector = mkSelector "setIndexOffset:"
 
 -- | @Selector@ for @numberOfTopKValues@
-numberOfTopKValuesSelector :: Selector
+numberOfTopKValuesSelector :: Selector '[] CULong
 numberOfTopKValuesSelector = mkSelector "numberOfTopKValues"
 
 -- | @Selector@ for @setNumberOfTopKValues:@
-setNumberOfTopKValuesSelector :: Selector
+setNumberOfTopKValuesSelector :: Selector '[CULong] ()
 setNumberOfTopKValuesSelector = mkSelector "setNumberOfTopKValues:"
 

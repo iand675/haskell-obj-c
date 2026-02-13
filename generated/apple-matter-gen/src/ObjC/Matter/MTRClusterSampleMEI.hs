@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,33 +23,29 @@ module ObjC.Matter.MTRClusterSampleMEI
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , pingWithParams_expectedValues_expectedValueInterval_completionSelector
-  , pingWithExpectedValues_expectedValueInterval_completionSelector
   , addArgumentsWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeFlipFlopWithParamsSelector
-  , writeAttributeFlipFlopWithValue_expectedValueIntervalSelector
-  , writeAttributeFlipFlopWithValue_expectedValueInterval_paramsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , pingWithExpectedValues_expectedValueInterval_completionSelector
+  , pingWithParams_expectedValues_expectedValueInterval_completionSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeFlipFlopWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , writeAttributeFlipFlopWithValue_expectedValueIntervalSelector
+  , writeAttributeFlipFlopWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,157 +54,135 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- pingWithParams:expectedValues:expectedValueInterval:completion:@
 pingWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsMTRSampleMEIClusterPingParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterSampleMEI -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-pingWithParams_expectedValues_expectedValueInterval_completion mtrClusterSampleMEI  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterSampleMEI (mkSelector "pingWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+pingWithParams_expectedValues_expectedValueInterval_completion mtrClusterSampleMEI params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterSampleMEI pingWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRSampleMEIClusterPingParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- pingWithExpectedValues:expectedValueInterval:completion:@
 pingWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterSampleMEI -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-pingWithExpectedValues_expectedValueInterval_completion mtrClusterSampleMEI  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterSampleMEI (mkSelector "pingWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+pingWithExpectedValues_expectedValueInterval_completion mtrClusterSampleMEI expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterSampleMEI pingWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- addArgumentsWithParams:expectedValues:expectedValueInterval:completion:@
 addArgumentsWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsMTRSampleMEIClusterAddArgumentsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterSampleMEI -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-addArgumentsWithParams_expectedValues_expectedValueInterval_completion mtrClusterSampleMEI  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterSampleMEI (mkSelector "addArgumentsWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addArgumentsWithParams_expectedValues_expectedValueInterval_completion mtrClusterSampleMEI params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterSampleMEI addArgumentsWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRSampleMEIClusterAddArgumentsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeFlipFlopWithParams:@
 readAttributeFlipFlopWithParams :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsMTRReadParams params) => mtrClusterSampleMEI -> params -> IO (Id NSDictionary)
-readAttributeFlipFlopWithParams mtrClusterSampleMEI  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSampleMEI (mkSelector "readAttributeFlipFlopWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFlipFlopWithParams mtrClusterSampleMEI params =
+  sendMessage mtrClusterSampleMEI readAttributeFlipFlopWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeFlipFlopWithValue:expectedValueInterval:@
 writeAttributeFlipFlopWithValue_expectedValueInterval :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterSampleMEI -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeFlipFlopWithValue_expectedValueInterval mtrClusterSampleMEI  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterSampleMEI (mkSelector "writeAttributeFlipFlopWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeFlipFlopWithValue_expectedValueInterval mtrClusterSampleMEI dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterSampleMEI writeAttributeFlipFlopWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeFlipFlopWithValue:expectedValueInterval:params:@
 writeAttributeFlipFlopWithValue_expectedValueInterval_params :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterSampleMEI -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeFlipFlopWithValue_expectedValueInterval_params mtrClusterSampleMEI  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterSampleMEI (mkSelector "writeAttributeFlipFlopWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeFlipFlopWithValue_expectedValueInterval_params mtrClusterSampleMEI dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterSampleMEI writeAttributeFlipFlopWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsMTRReadParams params) => mtrClusterSampleMEI -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterSampleMEI  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSampleMEI (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterSampleMEI params =
+  sendMessage mtrClusterSampleMEI readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsMTRReadParams params) => mtrClusterSampleMEI -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterSampleMEI  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSampleMEI (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterSampleMEI params =
+  sendMessage mtrClusterSampleMEI readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsMTRReadParams params) => mtrClusterSampleMEI -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterSampleMEI  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSampleMEI (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterSampleMEI params =
+  sendMessage mtrClusterSampleMEI readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsMTRReadParams params) => mtrClusterSampleMEI -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterSampleMEI  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSampleMEI (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterSampleMEI params =
+  sendMessage mtrClusterSampleMEI readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsMTRReadParams params) => mtrClusterSampleMEI -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterSampleMEI  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSampleMEI (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterSampleMEI params =
+  sendMessage mtrClusterSampleMEI readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterSampleMEI mtrClusterSampleMEI => mtrClusterSampleMEI -> IO (Id MTRClusterSampleMEI)
-init_ mtrClusterSampleMEI  =
-    sendMsg mtrClusterSampleMEI (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterSampleMEI =
+  sendOwnedMessage mtrClusterSampleMEI initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterSampleMEI)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterSampleMEI"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterSampleMEI mtrClusterSampleMEI, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterSampleMEI -> device -> endpointID -> queue -> IO (Id MTRClusterSampleMEI)
-initWithDevice_endpointID_queue mtrClusterSampleMEI  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterSampleMEI (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterSampleMEI device endpointID queue =
+  sendOwnedMessage mtrClusterSampleMEI initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pingWithParams:expectedValues:expectedValueInterval:completion:@
-pingWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+pingWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRSampleMEIClusterPingParams, Id NSArray, Id NSNumber, Ptr ()] ()
 pingWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "pingWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @pingWithExpectedValues:expectedValueInterval:completion:@
-pingWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+pingWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 pingWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "pingWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @addArgumentsWithParams:expectedValues:expectedValueInterval:completion:@
-addArgumentsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+addArgumentsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRSampleMEIClusterAddArgumentsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 addArgumentsWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "addArgumentsWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeFlipFlopWithParams:@
-readAttributeFlipFlopWithParamsSelector :: Selector
+readAttributeFlipFlopWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFlipFlopWithParamsSelector = mkSelector "readAttributeFlipFlopWithParams:"
 
 -- | @Selector@ for @writeAttributeFlipFlopWithValue:expectedValueInterval:@
-writeAttributeFlipFlopWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeFlipFlopWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeFlipFlopWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeFlipFlopWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeFlipFlopWithValue:expectedValueInterval:params:@
-writeAttributeFlipFlopWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeFlipFlopWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeFlipFlopWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeFlipFlopWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterSampleMEI)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterSampleMEI)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterSampleMEI)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

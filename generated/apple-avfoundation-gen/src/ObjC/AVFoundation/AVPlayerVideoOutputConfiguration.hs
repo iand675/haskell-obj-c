@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.AVFoundation.AVPlayerVideoOutputConfiguration
   , new
   , sourcePlayerItem
   , dataChannelDescriptions
+  , dataChannelDescriptionsSelector
   , initSelector
   , newSelector
   , sourcePlayerItemSelector
-  , dataChannelDescriptionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerVideoOutputConfiguration avPlayerVideoOutputConfiguration => avPlayerVideoOutputConfiguration -> IO (Id AVPlayerVideoOutputConfiguration)
-init_ avPlayerVideoOutputConfiguration  =
-    sendMsg avPlayerVideoOutputConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerVideoOutputConfiguration =
+  sendOwnedMessage avPlayerVideoOutputConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerVideoOutputConfiguration)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerVideoOutputConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | sourcePlayerItem
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- sourcePlayerItem@
 sourcePlayerItem :: IsAVPlayerVideoOutputConfiguration avPlayerVideoOutputConfiguration => avPlayerVideoOutputConfiguration -> IO (Id AVPlayerItem)
-sourcePlayerItem avPlayerVideoOutputConfiguration  =
-    sendMsg avPlayerVideoOutputConfiguration (mkSelector "sourcePlayerItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourcePlayerItem avPlayerVideoOutputConfiguration =
+  sendMessage avPlayerVideoOutputConfiguration sourcePlayerItemSelector
 
 -- | dataChannelDescriptions
 --
@@ -70,26 +67,26 @@ sourcePlayerItem avPlayerVideoOutputConfiguration  =
 --
 -- ObjC selector: @- dataChannelDescriptions@
 dataChannelDescriptions :: IsAVPlayerVideoOutputConfiguration avPlayerVideoOutputConfiguration => avPlayerVideoOutputConfiguration -> IO (Id NSArray)
-dataChannelDescriptions avPlayerVideoOutputConfiguration  =
-    sendMsg avPlayerVideoOutputConfiguration (mkSelector "dataChannelDescriptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataChannelDescriptions avPlayerVideoOutputConfiguration =
+  sendMessage avPlayerVideoOutputConfiguration dataChannelDescriptionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerVideoOutputConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerVideoOutputConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sourcePlayerItem@
-sourcePlayerItemSelector :: Selector
+sourcePlayerItemSelector :: Selector '[] (Id AVPlayerItem)
 sourcePlayerItemSelector = mkSelector "sourcePlayerItem"
 
 -- | @Selector@ for @dataChannelDescriptions@
-dataChannelDescriptionsSelector :: Selector
+dataChannelDescriptionsSelector :: Selector '[] (Id NSArray)
 dataChannelDescriptionsSelector = mkSelector "dataChannelDescriptions"
 

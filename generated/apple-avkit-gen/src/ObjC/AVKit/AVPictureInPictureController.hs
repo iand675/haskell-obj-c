@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,40 +32,36 @@ module ObjC.AVKit.AVPictureInPictureController
   , setRequiresLinearPlayback
   , canStartPictureInPictureAutomaticallyFromInline
   , setCanStartPictureInPictureAutomaticallyFromInline
-  , isPictureInPictureSupportedSelector
+  , canStartPictureInPictureAutomaticallyFromInlineSelector
+  , canStopPictureInPictureSelector
+  , contentSourceSelector
+  , delegateSelector
   , initWithContentSourceSelector
   , initWithPlayerLayerSelector
-  , startPictureInPictureSelector
-  , stopPictureInPictureSelector
   , invalidatePlaybackStateSelector
+  , isPictureInPictureSupportedSelector
+  , pictureInPictureActiveSelector
   , pictureInPictureButtonStartImageSelector
   , pictureInPictureButtonStopImageSelector
-  , contentSourceSelector
-  , setContentSourceSelector
-  , playerLayerSelector
-  , delegateSelector
-  , setDelegateSelector
   , pictureInPicturePossibleSelector
-  , pictureInPictureActiveSelector
   , pictureInPictureSuspendedSelector
-  , canStopPictureInPictureSelector
+  , playerLayerSelector
   , requiresLinearPlaybackSelector
-  , setRequiresLinearPlaybackSelector
-  , canStartPictureInPictureAutomaticallyFromInlineSelector
   , setCanStartPictureInPictureAutomaticallyFromInlineSelector
+  , setContentSourceSelector
+  , setDelegateSelector
+  , setRequiresLinearPlaybackSelector
+  , startPictureInPictureSelector
+  , stopPictureInPictureSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -84,7 +81,7 @@ isPictureInPictureSupported :: IO Bool
 isPictureInPictureSupported  =
   do
     cls' <- getRequiredClass "AVPictureInPictureController"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isPictureInPictureSupported") retCULong []
+    sendClassMessage cls' isPictureInPictureSupportedSelector
 
 -- | initWithContentSource:
 --
@@ -94,9 +91,8 @@ isPictureInPictureSupported  =
 --
 -- ObjC selector: @- initWithContentSource:@
 initWithContentSource :: (IsAVPictureInPictureController avPictureInPictureController, IsAVPictureInPictureControllerContentSource contentSource) => avPictureInPictureController -> contentSource -> IO (Id AVPictureInPictureController)
-initWithContentSource avPictureInPictureController  contentSource =
-  withObjCPtr contentSource $ \raw_contentSource ->
-      sendMsg avPictureInPictureController (mkSelector "initWithContentSource:") (retPtr retVoid) [argPtr (castPtr raw_contentSource :: Ptr ())] >>= ownedObject . castPtr
+initWithContentSource avPictureInPictureController contentSource =
+  sendOwnedMessage avPictureInPictureController initWithContentSourceSelector (toAVPictureInPictureControllerContentSource contentSource)
 
 -- | initWithPlayerLayer:
 --
@@ -106,9 +102,8 @@ initWithContentSource avPictureInPictureController  contentSource =
 --
 -- ObjC selector: @- initWithPlayerLayer:@
 initWithPlayerLayer :: (IsAVPictureInPictureController avPictureInPictureController, IsAVPlayerLayer playerLayer) => avPictureInPictureController -> playerLayer -> IO (Id AVPictureInPictureController)
-initWithPlayerLayer avPictureInPictureController  playerLayer =
-  withObjCPtr playerLayer $ \raw_playerLayer ->
-      sendMsg avPictureInPictureController (mkSelector "initWithPlayerLayer:") (retPtr retVoid) [argPtr (castPtr raw_playerLayer :: Ptr ())] >>= ownedObject . castPtr
+initWithPlayerLayer avPictureInPictureController playerLayer =
+  sendOwnedMessage avPictureInPictureController initWithPlayerLayerSelector (toAVPlayerLayer playerLayer)
 
 -- | startPictureInPicture
 --
@@ -118,8 +113,8 @@ initWithPlayerLayer avPictureInPictureController  playerLayer =
 --
 -- ObjC selector: @- startPictureInPicture@
 startPictureInPicture :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO ()
-startPictureInPicture avPictureInPictureController  =
-    sendMsg avPictureInPictureController (mkSelector "startPictureInPicture") retVoid []
+startPictureInPicture avPictureInPictureController =
+  sendMessage avPictureInPictureController startPictureInPictureSelector
 
 -- | stopPictureInPicture
 --
@@ -129,8 +124,8 @@ startPictureInPicture avPictureInPictureController  =
 --
 -- ObjC selector: @- stopPictureInPicture@
 stopPictureInPicture :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO ()
-stopPictureInPicture avPictureInPictureController  =
-    sendMsg avPictureInPictureController (mkSelector "stopPictureInPicture") retVoid []
+stopPictureInPicture avPictureInPictureController =
+  sendMessage avPictureInPictureController stopPictureInPictureSelector
 
 -- | invalidatePlaybackState
 --
@@ -140,8 +135,8 @@ stopPictureInPicture avPictureInPictureController  =
 --
 -- ObjC selector: @- invalidatePlaybackState@
 invalidatePlaybackState :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO ()
-invalidatePlaybackState avPictureInPictureController  =
-    sendMsg avPictureInPictureController (mkSelector "invalidatePlaybackState") retVoid []
+invalidatePlaybackState avPictureInPictureController =
+  sendMessage avPictureInPictureController invalidatePlaybackStateSelector
 
 -- | pictureInPictureButtonStartImage
 --
@@ -152,7 +147,7 @@ pictureInPictureButtonStartImage :: IO (Id NSImage)
 pictureInPictureButtonStartImage  =
   do
     cls' <- getRequiredClass "AVPictureInPictureController"
-    sendClassMsg cls' (mkSelector "pictureInPictureButtonStartImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pictureInPictureButtonStartImageSelector
 
 -- | pictureInPictureButtonStopImage
 --
@@ -163,7 +158,7 @@ pictureInPictureButtonStopImage :: IO (Id NSImage)
 pictureInPictureButtonStopImage  =
   do
     cls' <- getRequiredClass "AVPictureInPictureController"
-    sendClassMsg cls' (mkSelector "pictureInPictureButtonStopImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pictureInPictureButtonStopImageSelector
 
 -- | contentSource
 --
@@ -171,8 +166,8 @@ pictureInPictureButtonStopImage  =
 --
 -- ObjC selector: @- contentSource@
 contentSource :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO (Id AVPictureInPictureControllerContentSource)
-contentSource avPictureInPictureController  =
-    sendMsg avPictureInPictureController (mkSelector "contentSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentSource avPictureInPictureController =
+  sendMessage avPictureInPictureController contentSourceSelector
 
 -- | contentSource
 --
@@ -180,9 +175,8 @@ contentSource avPictureInPictureController  =
 --
 -- ObjC selector: @- setContentSource:@
 setContentSource :: (IsAVPictureInPictureController avPictureInPictureController, IsAVPictureInPictureControllerContentSource value) => avPictureInPictureController -> value -> IO ()
-setContentSource avPictureInPictureController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPictureInPictureController (mkSelector "setContentSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentSource avPictureInPictureController value =
+  sendMessage avPictureInPictureController setContentSourceSelector (toAVPictureInPictureControllerContentSource value)
 
 -- | playerLayer
 --
@@ -190,8 +184,8 @@ setContentSource avPictureInPictureController  value =
 --
 -- ObjC selector: @- playerLayer@
 playerLayer :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO (Id AVPlayerLayer)
-playerLayer avPictureInPictureController  =
-    sendMsg avPictureInPictureController (mkSelector "playerLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerLayer avPictureInPictureController =
+  sendMessage avPictureInPictureController playerLayerSelector
 
 -- | delegate
 --
@@ -199,8 +193,8 @@ playerLayer avPictureInPictureController  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO RawId
-delegate avPictureInPictureController  =
-    fmap (RawId . castPtr) $ sendMsg avPictureInPictureController (mkSelector "delegate") (retPtr retVoid) []
+delegate avPictureInPictureController =
+  sendMessage avPictureInPictureController delegateSelector
 
 -- | delegate
 --
@@ -208,8 +202,8 @@ delegate avPictureInPictureController  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> RawId -> IO ()
-setDelegate avPictureInPictureController  value =
-    sendMsg avPictureInPictureController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avPictureInPictureController value =
+  sendMessage avPictureInPictureController setDelegateSelector value
 
 -- | pictureInPicturePossible
 --
@@ -217,8 +211,8 @@ setDelegate avPictureInPictureController  value =
 --
 -- ObjC selector: @- pictureInPicturePossible@
 pictureInPicturePossible :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO Bool
-pictureInPicturePossible avPictureInPictureController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPictureInPictureController (mkSelector "pictureInPicturePossible") retCULong []
+pictureInPicturePossible avPictureInPictureController =
+  sendMessage avPictureInPictureController pictureInPicturePossibleSelector
 
 -- | pictureInPictureActive
 --
@@ -226,8 +220,8 @@ pictureInPicturePossible avPictureInPictureController  =
 --
 -- ObjC selector: @- pictureInPictureActive@
 pictureInPictureActive :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO Bool
-pictureInPictureActive avPictureInPictureController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPictureInPictureController (mkSelector "pictureInPictureActive") retCULong []
+pictureInPictureActive avPictureInPictureController =
+  sendMessage avPictureInPictureController pictureInPictureActiveSelector
 
 -- | pictureInPictureSuspended
 --
@@ -235,8 +229,8 @@ pictureInPictureActive avPictureInPictureController  =
 --
 -- ObjC selector: @- pictureInPictureSuspended@
 pictureInPictureSuspended :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO Bool
-pictureInPictureSuspended avPictureInPictureController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPictureInPictureController (mkSelector "pictureInPictureSuspended") retCULong []
+pictureInPictureSuspended avPictureInPictureController =
+  sendMessage avPictureInPictureController pictureInPictureSuspendedSelector
 
 -- | canStopPictureInPicture
 --
@@ -246,8 +240,8 @@ pictureInPictureSuspended avPictureInPictureController  =
 --
 -- ObjC selector: @- canStopPictureInPicture@
 canStopPictureInPicture :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO Bool
-canStopPictureInPicture avPictureInPictureController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPictureInPictureController (mkSelector "canStopPictureInPicture") retCULong []
+canStopPictureInPicture avPictureInPictureController =
+  sendMessage avPictureInPictureController canStopPictureInPictureSelector
 
 -- | requiresLinearPlayback
 --
@@ -257,8 +251,8 @@ canStopPictureInPicture avPictureInPictureController  =
 --
 -- ObjC selector: @- requiresLinearPlayback@
 requiresLinearPlayback :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO Bool
-requiresLinearPlayback avPictureInPictureController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPictureInPictureController (mkSelector "requiresLinearPlayback") retCULong []
+requiresLinearPlayback avPictureInPictureController =
+  sendMessage avPictureInPictureController requiresLinearPlaybackSelector
 
 -- | requiresLinearPlayback
 --
@@ -268,8 +262,8 @@ requiresLinearPlayback avPictureInPictureController  =
 --
 -- ObjC selector: @- setRequiresLinearPlayback:@
 setRequiresLinearPlayback :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> Bool -> IO ()
-setRequiresLinearPlayback avPictureInPictureController  value =
-    sendMsg avPictureInPictureController (mkSelector "setRequiresLinearPlayback:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresLinearPlayback avPictureInPictureController value =
+  sendMessage avPictureInPictureController setRequiresLinearPlaybackSelector value
 
 -- | canStartPictureInPictureAutomaticallyFromInline
 --
@@ -279,8 +273,8 @@ setRequiresLinearPlayback avPictureInPictureController  value =
 --
 -- ObjC selector: @- canStartPictureInPictureAutomaticallyFromInline@
 canStartPictureInPictureAutomaticallyFromInline :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> IO Bool
-canStartPictureInPictureAutomaticallyFromInline avPictureInPictureController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPictureInPictureController (mkSelector "canStartPictureInPictureAutomaticallyFromInline") retCULong []
+canStartPictureInPictureAutomaticallyFromInline avPictureInPictureController =
+  sendMessage avPictureInPictureController canStartPictureInPictureAutomaticallyFromInlineSelector
 
 -- | canStartPictureInPictureAutomaticallyFromInline
 --
@@ -290,94 +284,94 @@ canStartPictureInPictureAutomaticallyFromInline avPictureInPictureController  =
 --
 -- ObjC selector: @- setCanStartPictureInPictureAutomaticallyFromInline:@
 setCanStartPictureInPictureAutomaticallyFromInline :: IsAVPictureInPictureController avPictureInPictureController => avPictureInPictureController -> Bool -> IO ()
-setCanStartPictureInPictureAutomaticallyFromInline avPictureInPictureController  value =
-    sendMsg avPictureInPictureController (mkSelector "setCanStartPictureInPictureAutomaticallyFromInline:") retVoid [argCULong (if value then 1 else 0)]
+setCanStartPictureInPictureAutomaticallyFromInline avPictureInPictureController value =
+  sendMessage avPictureInPictureController setCanStartPictureInPictureAutomaticallyFromInlineSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isPictureInPictureSupported@
-isPictureInPictureSupportedSelector :: Selector
+isPictureInPictureSupportedSelector :: Selector '[] Bool
 isPictureInPictureSupportedSelector = mkSelector "isPictureInPictureSupported"
 
 -- | @Selector@ for @initWithContentSource:@
-initWithContentSourceSelector :: Selector
+initWithContentSourceSelector :: Selector '[Id AVPictureInPictureControllerContentSource] (Id AVPictureInPictureController)
 initWithContentSourceSelector = mkSelector "initWithContentSource:"
 
 -- | @Selector@ for @initWithPlayerLayer:@
-initWithPlayerLayerSelector :: Selector
+initWithPlayerLayerSelector :: Selector '[Id AVPlayerLayer] (Id AVPictureInPictureController)
 initWithPlayerLayerSelector = mkSelector "initWithPlayerLayer:"
 
 -- | @Selector@ for @startPictureInPicture@
-startPictureInPictureSelector :: Selector
+startPictureInPictureSelector :: Selector '[] ()
 startPictureInPictureSelector = mkSelector "startPictureInPicture"
 
 -- | @Selector@ for @stopPictureInPicture@
-stopPictureInPictureSelector :: Selector
+stopPictureInPictureSelector :: Selector '[] ()
 stopPictureInPictureSelector = mkSelector "stopPictureInPicture"
 
 -- | @Selector@ for @invalidatePlaybackState@
-invalidatePlaybackStateSelector :: Selector
+invalidatePlaybackStateSelector :: Selector '[] ()
 invalidatePlaybackStateSelector = mkSelector "invalidatePlaybackState"
 
 -- | @Selector@ for @pictureInPictureButtonStartImage@
-pictureInPictureButtonStartImageSelector :: Selector
+pictureInPictureButtonStartImageSelector :: Selector '[] (Id NSImage)
 pictureInPictureButtonStartImageSelector = mkSelector "pictureInPictureButtonStartImage"
 
 -- | @Selector@ for @pictureInPictureButtonStopImage@
-pictureInPictureButtonStopImageSelector :: Selector
+pictureInPictureButtonStopImageSelector :: Selector '[] (Id NSImage)
 pictureInPictureButtonStopImageSelector = mkSelector "pictureInPictureButtonStopImage"
 
 -- | @Selector@ for @contentSource@
-contentSourceSelector :: Selector
+contentSourceSelector :: Selector '[] (Id AVPictureInPictureControllerContentSource)
 contentSourceSelector = mkSelector "contentSource"
 
 -- | @Selector@ for @setContentSource:@
-setContentSourceSelector :: Selector
+setContentSourceSelector :: Selector '[Id AVPictureInPictureControllerContentSource] ()
 setContentSourceSelector = mkSelector "setContentSource:"
 
 -- | @Selector@ for @playerLayer@
-playerLayerSelector :: Selector
+playerLayerSelector :: Selector '[] (Id AVPlayerLayer)
 playerLayerSelector = mkSelector "playerLayer"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @pictureInPicturePossible@
-pictureInPicturePossibleSelector :: Selector
+pictureInPicturePossibleSelector :: Selector '[] Bool
 pictureInPicturePossibleSelector = mkSelector "pictureInPicturePossible"
 
 -- | @Selector@ for @pictureInPictureActive@
-pictureInPictureActiveSelector :: Selector
+pictureInPictureActiveSelector :: Selector '[] Bool
 pictureInPictureActiveSelector = mkSelector "pictureInPictureActive"
 
 -- | @Selector@ for @pictureInPictureSuspended@
-pictureInPictureSuspendedSelector :: Selector
+pictureInPictureSuspendedSelector :: Selector '[] Bool
 pictureInPictureSuspendedSelector = mkSelector "pictureInPictureSuspended"
 
 -- | @Selector@ for @canStopPictureInPicture@
-canStopPictureInPictureSelector :: Selector
+canStopPictureInPictureSelector :: Selector '[] Bool
 canStopPictureInPictureSelector = mkSelector "canStopPictureInPicture"
 
 -- | @Selector@ for @requiresLinearPlayback@
-requiresLinearPlaybackSelector :: Selector
+requiresLinearPlaybackSelector :: Selector '[] Bool
 requiresLinearPlaybackSelector = mkSelector "requiresLinearPlayback"
 
 -- | @Selector@ for @setRequiresLinearPlayback:@
-setRequiresLinearPlaybackSelector :: Selector
+setRequiresLinearPlaybackSelector :: Selector '[Bool] ()
 setRequiresLinearPlaybackSelector = mkSelector "setRequiresLinearPlayback:"
 
 -- | @Selector@ for @canStartPictureInPictureAutomaticallyFromInline@
-canStartPictureInPictureAutomaticallyFromInlineSelector :: Selector
+canStartPictureInPictureAutomaticallyFromInlineSelector :: Selector '[] Bool
 canStartPictureInPictureAutomaticallyFromInlineSelector = mkSelector "canStartPictureInPictureAutomaticallyFromInline"
 
 -- | @Selector@ for @setCanStartPictureInPictureAutomaticallyFromInline:@
-setCanStartPictureInPictureAutomaticallyFromInlineSelector :: Selector
+setCanStartPictureInPictureAutomaticallyFromInlineSelector :: Selector '[Bool] ()
 setCanStartPictureInPictureAutomaticallyFromInlineSelector = mkSelector "setCanStartPictureInPictureAutomaticallyFromInline:"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.FileProviderUI.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | The error codes for errors raised by the File Provider UI extension.
 -- | @FPUIExtensionErrorCode@
@@ -22,3 +25,13 @@ pattern FPUIExtensionErrorCodeUserCancelled = FPUIExtensionErrorCode 0
 
 pattern FPUIExtensionErrorCodeFailed :: FPUIExtensionErrorCode
 pattern FPUIExtensionErrorCodeFailed = FPUIExtensionErrorCode 1
+
+instance ObjCArgument FPUIExtensionErrorCode where
+  withObjCArg (FPUIExtensionErrorCode x) k = k (argCULong x)
+
+instance ObjCReturn FPUIExtensionErrorCode where
+  type RawReturn FPUIExtensionErrorCode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FPUIExtensionErrorCode x)
+  fromOwned x = pure (FPUIExtensionErrorCode x)

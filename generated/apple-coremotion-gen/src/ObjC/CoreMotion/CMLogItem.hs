@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.CoreMotion.CMLogItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -29,14 +26,14 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- timestamp@
 timestamp :: IsCMLogItem cmLogItem => cmLogItem -> IO CDouble
-timestamp cmLogItem  =
-    sendMsg cmLogItem (mkSelector "timestamp") retCDouble []
+timestamp cmLogItem =
+  sendMessage cmLogItem timestampSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timestamp@
-timestampSelector :: Selector
+timestampSelector :: Selector '[] CDouble
 timestampSelector = mkSelector "timestamp"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.IdentityLookup.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Describes various classification actions.
 -- | @ILClassificationAction@
@@ -28,6 +31,16 @@ pattern ILClassificationActionReportJunk = ILClassificationAction 2
 
 pattern ILClassificationActionReportJunkAndBlockSender :: ILClassificationAction
 pattern ILClassificationActionReportJunkAndBlockSender = ILClassificationAction 3
+
+instance ObjCArgument ILClassificationAction where
+  withObjCArg (ILClassificationAction x) k = k (argCLong x)
+
+instance ObjCReturn ILClassificationAction where
+  type RawReturn ILClassificationAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ILClassificationAction x)
+  fromOwned x = pure (ILClassificationAction x)
 
 -- | Describes an action to take in response to a received message.
 -- | @ILMessageFilterAction@
@@ -53,6 +66,16 @@ pattern ILMessageFilterActionPromotion = ILMessageFilterAction 3
 pattern ILMessageFilterActionTransaction :: ILMessageFilterAction
 pattern ILMessageFilterActionTransaction = ILMessageFilterAction 4
 
+instance ObjCArgument ILMessageFilterAction where
+  withObjCArg (ILMessageFilterAction x) k = k (argCLong x)
+
+instance ObjCReturn ILMessageFilterAction where
+  type RawReturn ILMessageFilterAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ILMessageFilterAction x)
+  fromOwned x = pure (ILMessageFilterAction x)
+
 -- | @ILMessageFilterError@
 newtype ILMessageFilterError = ILMessageFilterError CLong
   deriving stock (Eq, Ord, Show)
@@ -72,6 +95,16 @@ pattern ILMessageFilterErrorNetworkRequestFailed = ILMessageFilterError 4
 
 pattern ILMessageFilterErrorRedundantNetworkDeferral :: ILMessageFilterError
 pattern ILMessageFilterErrorRedundantNetworkDeferral = ILMessageFilterError 5
+
+instance ObjCArgument ILMessageFilterError where
+  withObjCArg (ILMessageFilterError x) k = k (argCLong x)
+
+instance ObjCReturn ILMessageFilterError where
+  type RawReturn ILMessageFilterError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ILMessageFilterError x)
+  fromOwned x = pure (ILMessageFilterError x)
 
 -- | @ILMessageFilterSubAction@
 newtype ILMessageFilterSubAction = ILMessageFilterSubAction CLong
@@ -116,3 +149,13 @@ pattern ILMessageFilterSubActionPromotionalOffers = ILMessageFilterSubAction 200
 
 pattern ILMessageFilterSubActionPromotionalCoupons :: ILMessageFilterSubAction
 pattern ILMessageFilterSubActionPromotionalCoupons = ILMessageFilterSubAction 20002
+
+instance ObjCArgument ILMessageFilterSubAction where
+  withObjCArg (ILMessageFilterSubAction x) k = k (argCLong x)
+
+instance ObjCReturn ILMessageFilterSubAction where
+  type RawReturn ILMessageFilterSubAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ILMessageFilterSubAction x)
+  fromOwned x = pure (ILMessageFilterSubAction x)

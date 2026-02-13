@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,8 +18,8 @@ module ObjC.Metal.MTLComputePassDescriptor
   , sampleBufferAttachments
   , computePassDescriptorSelector
   , dispatchTypeSelector
-  , setDispatchTypeSelector
   , sampleBufferAttachmentsSelector
+  , setDispatchTypeSelector
 
   -- * Enum types
   , MTLDispatchType(MTLDispatchType)
@@ -27,15 +28,11 @@ module ObjC.Metal.MTLComputePassDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,7 +49,7 @@ computePassDescriptor :: IO (Id MTLComputePassDescriptor)
 computePassDescriptor  =
   do
     cls' <- getRequiredClass "MTLComputePassDescriptor"
-    sendClassMsg cls' (mkSelector "computePassDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' computePassDescriptorSelector
 
 -- | dispatchType
 --
@@ -60,8 +57,8 @@ computePassDescriptor  =
 --
 -- ObjC selector: @- dispatchType@
 dispatchType :: IsMTLComputePassDescriptor mtlComputePassDescriptor => mtlComputePassDescriptor -> IO MTLDispatchType
-dispatchType mtlComputePassDescriptor  =
-    fmap (coerce :: CULong -> MTLDispatchType) $ sendMsg mtlComputePassDescriptor (mkSelector "dispatchType") retCULong []
+dispatchType mtlComputePassDescriptor =
+  sendMessage mtlComputePassDescriptor dispatchTypeSelector
 
 -- | dispatchType
 --
@@ -69,8 +66,8 @@ dispatchType mtlComputePassDescriptor  =
 --
 -- ObjC selector: @- setDispatchType:@
 setDispatchType :: IsMTLComputePassDescriptor mtlComputePassDescriptor => mtlComputePassDescriptor -> MTLDispatchType -> IO ()
-setDispatchType mtlComputePassDescriptor  value =
-    sendMsg mtlComputePassDescriptor (mkSelector "setDispatchType:") retVoid [argCULong (coerce value)]
+setDispatchType mtlComputePassDescriptor value =
+  sendMessage mtlComputePassDescriptor setDispatchTypeSelector value
 
 -- | sampleBufferAttachments
 --
@@ -78,26 +75,26 @@ setDispatchType mtlComputePassDescriptor  value =
 --
 -- ObjC selector: @- sampleBufferAttachments@
 sampleBufferAttachments :: IsMTLComputePassDescriptor mtlComputePassDescriptor => mtlComputePassDescriptor -> IO (Id MTLComputePassSampleBufferAttachmentDescriptorArray)
-sampleBufferAttachments mtlComputePassDescriptor  =
-    sendMsg mtlComputePassDescriptor (mkSelector "sampleBufferAttachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleBufferAttachments mtlComputePassDescriptor =
+  sendMessage mtlComputePassDescriptor sampleBufferAttachmentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @computePassDescriptor@
-computePassDescriptorSelector :: Selector
+computePassDescriptorSelector :: Selector '[] (Id MTLComputePassDescriptor)
 computePassDescriptorSelector = mkSelector "computePassDescriptor"
 
 -- | @Selector@ for @dispatchType@
-dispatchTypeSelector :: Selector
+dispatchTypeSelector :: Selector '[] MTLDispatchType
 dispatchTypeSelector = mkSelector "dispatchType"
 
 -- | @Selector@ for @setDispatchType:@
-setDispatchTypeSelector :: Selector
+setDispatchTypeSelector :: Selector '[MTLDispatchType] ()
 setDispatchTypeSelector = mkSelector "setDispatchType:"
 
 -- | @Selector@ for @sampleBufferAttachments@
-sampleBufferAttachmentsSelector :: Selector
+sampleBufferAttachmentsSelector :: Selector '[] (Id MTLComputePassSampleBufferAttachmentDescriptorArray)
 sampleBufferAttachmentsSelector = mkSelector "sampleBufferAttachments"
 

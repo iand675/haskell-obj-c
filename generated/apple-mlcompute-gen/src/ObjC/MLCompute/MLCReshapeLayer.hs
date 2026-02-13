@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.MLCompute.MLCReshapeLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,7 @@ layerWithShape :: IsNSArray shape => shape -> IO (Id MLCReshapeLayer)
 layerWithShape shape =
   do
     cls' <- getRequiredClass "MLCReshapeLayer"
-    withObjCPtr shape $ \raw_shape ->
-      sendClassMsg cls' (mkSelector "layerWithShape:") (retPtr retVoid) [argPtr (castPtr raw_shape :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithShapeSelector (toNSArray shape)
 
 -- | shape
 --
@@ -53,18 +49,18 @@ layerWithShape shape =
 --
 -- ObjC selector: @- shape@
 shape :: IsMLCReshapeLayer mlcReshapeLayer => mlcReshapeLayer -> IO (Id NSArray)
-shape mlcReshapeLayer  =
-    sendMsg mlcReshapeLayer (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+shape mlcReshapeLayer =
+  sendMessage mlcReshapeLayer shapeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithShape:@
-layerWithShapeSelector :: Selector
+layerWithShapeSelector :: Selector '[Id NSArray] (Id MLCReshapeLayer)
 layerWithShapeSelector = mkSelector "layerWithShape:"
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] (Id NSArray)
 shapeSelector = mkSelector "shape"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,40 +44,40 @@ module ObjC.Foundation.NSMutableOrderedSet
   , sortUsingComparator
   , sortWithOptions_usingComparator
   , sortRange_options_usingComparator
-  , insertObject_atIndexSelector
-  , removeObjectAtIndexSelector
-  , replaceObjectAtIndex_withObjectSelector
-  , initWithCoderSelector
+  , addObjectSelector
+  , addObjectsFromArraySelector
+  , addObjects_countSelector
+  , applyDifferenceSelector
+  , exchangeObjectAtIndex_withObjectAtIndexSelector
+  , filterUsingPredicateSelector
   , initSelector
   , initWithCapacitySelector
-  , filterUsingPredicateSelector
-  , sortUsingDescriptorsSelector
-  , applyDifferenceSelector
-  , orderedSetWithCapacitySelector
-  , addObjectSelector
-  , addObjects_countSelector
-  , addObjectsFromArraySelector
-  , exchangeObjectAtIndex_withObjectAtIndexSelector
-  , moveObjectsAtIndexes_toIndexSelector
+  , initWithCoderSelector
+  , insertObject_atIndexSelector
   , insertObjects_atIndexesSelector
+  , intersectOrderedSetSelector
+  , intersectSetSelector
+  , minusOrderedSetSelector
+  , minusSetSelector
+  , moveObjectsAtIndexes_toIndexSelector
+  , orderedSetWithCapacitySelector
+  , removeAllObjectsSelector
+  , removeObjectAtIndexSelector
+  , removeObjectSelector
+  , removeObjectsAtIndexesSelector
+  , removeObjectsInArraySelector
+  , removeObjectsInRangeSelector
+  , replaceObjectAtIndex_withObjectSelector
+  , replaceObjectsAtIndexes_withObjectsSelector
+  , replaceObjectsInRange_withObjects_countSelector
   , setObject_atIndexSelector
   , setObject_atIndexedSubscriptSelector
-  , replaceObjectsInRange_withObjects_countSelector
-  , replaceObjectsAtIndexes_withObjectsSelector
-  , removeObjectsInRangeSelector
-  , removeObjectsAtIndexesSelector
-  , removeAllObjectsSelector
-  , removeObjectSelector
-  , removeObjectsInArraySelector
-  , intersectOrderedSetSelector
-  , minusOrderedSetSelector
-  , unionOrderedSetSelector
-  , intersectSetSelector
-  , minusSetSelector
-  , unionSetSelector
-  , sortUsingComparatorSelector
-  , sortWithOptions_usingComparatorSelector
   , sortRange_options_usingComparatorSelector
+  , sortUsingComparatorSelector
+  , sortUsingDescriptorsSelector
+  , sortWithOptions_usingComparatorSelector
+  , unionOrderedSetSelector
+  , unionSetSelector
 
   -- * Enum types
   , NSSortOptions(NSSortOptions)
@@ -85,15 +86,11 @@ module ObjC.Foundation.NSMutableOrderedSet
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -103,331 +100,313 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- insertObject:atIndex:@
 insertObject_atIndex :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> RawId -> CULong -> IO ()
-insertObject_atIndex nsMutableOrderedSet  object idx =
-    sendMsg nsMutableOrderedSet (mkSelector "insertObject:atIndex:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argCULong idx]
+insertObject_atIndex nsMutableOrderedSet object idx =
+  sendMessage nsMutableOrderedSet insertObject_atIndexSelector object idx
 
 -- | @- removeObjectAtIndex:@
 removeObjectAtIndex :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> CULong -> IO ()
-removeObjectAtIndex nsMutableOrderedSet  idx =
-    sendMsg nsMutableOrderedSet (mkSelector "removeObjectAtIndex:") retVoid [argCULong idx]
+removeObjectAtIndex nsMutableOrderedSet idx =
+  sendMessage nsMutableOrderedSet removeObjectAtIndexSelector idx
 
 -- | @- replaceObjectAtIndex:withObject:@
 replaceObjectAtIndex_withObject :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> CULong -> RawId -> IO ()
-replaceObjectAtIndex_withObject nsMutableOrderedSet  idx object =
-    sendMsg nsMutableOrderedSet (mkSelector "replaceObjectAtIndex:withObject:") retVoid [argCULong idx, argPtr (castPtr (unRawId object) :: Ptr ())]
+replaceObjectAtIndex_withObject nsMutableOrderedSet idx object =
+  sendMessage nsMutableOrderedSet replaceObjectAtIndex_withObjectSelector idx object
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSCoder coder) => nsMutableOrderedSet -> coder -> IO (Id NSMutableOrderedSet)
-initWithCoder nsMutableOrderedSet  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsMutableOrderedSet (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsMutableOrderedSet coder =
+  sendOwnedMessage nsMutableOrderedSet initWithCoderSelector (toNSCoder coder)
 
 -- | @- init@
 init_ :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> IO (Id NSMutableOrderedSet)
-init_ nsMutableOrderedSet  =
-    sendMsg nsMutableOrderedSet (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsMutableOrderedSet =
+  sendOwnedMessage nsMutableOrderedSet initSelector
 
 -- | @- initWithCapacity:@
 initWithCapacity :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> CULong -> IO (Id NSMutableOrderedSet)
-initWithCapacity nsMutableOrderedSet  numItems =
-    sendMsg nsMutableOrderedSet (mkSelector "initWithCapacity:") (retPtr retVoid) [argCULong numItems] >>= ownedObject . castPtr
+initWithCapacity nsMutableOrderedSet numItems =
+  sendOwnedMessage nsMutableOrderedSet initWithCapacitySelector numItems
 
 -- | @- filterUsingPredicate:@
 filterUsingPredicate :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSPredicate p) => nsMutableOrderedSet -> p -> IO ()
-filterUsingPredicate nsMutableOrderedSet  p =
-  withObjCPtr p $ \raw_p ->
-      sendMsg nsMutableOrderedSet (mkSelector "filterUsingPredicate:") retVoid [argPtr (castPtr raw_p :: Ptr ())]
+filterUsingPredicate nsMutableOrderedSet p =
+  sendMessage nsMutableOrderedSet filterUsingPredicateSelector (toNSPredicate p)
 
 -- | @- sortUsingDescriptors:@
 sortUsingDescriptors :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSArray sortDescriptors) => nsMutableOrderedSet -> sortDescriptors -> IO ()
-sortUsingDescriptors nsMutableOrderedSet  sortDescriptors =
-  withObjCPtr sortDescriptors $ \raw_sortDescriptors ->
-      sendMsg nsMutableOrderedSet (mkSelector "sortUsingDescriptors:") retVoid [argPtr (castPtr raw_sortDescriptors :: Ptr ())]
+sortUsingDescriptors nsMutableOrderedSet sortDescriptors =
+  sendMessage nsMutableOrderedSet sortUsingDescriptorsSelector (toNSArray sortDescriptors)
 
 -- | @- applyDifference:@
 applyDifference :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSOrderedCollectionDifference difference) => nsMutableOrderedSet -> difference -> IO ()
-applyDifference nsMutableOrderedSet  difference =
-  withObjCPtr difference $ \raw_difference ->
-      sendMsg nsMutableOrderedSet (mkSelector "applyDifference:") retVoid [argPtr (castPtr raw_difference :: Ptr ())]
+applyDifference nsMutableOrderedSet difference =
+  sendMessage nsMutableOrderedSet applyDifferenceSelector (toNSOrderedCollectionDifference difference)
 
 -- | @+ orderedSetWithCapacity:@
 orderedSetWithCapacity :: CULong -> IO (Id NSMutableOrderedSet)
 orderedSetWithCapacity numItems =
   do
     cls' <- getRequiredClass "NSMutableOrderedSet"
-    sendClassMsg cls' (mkSelector "orderedSetWithCapacity:") (retPtr retVoid) [argCULong numItems] >>= retainedObject . castPtr
+    sendClassMessage cls' orderedSetWithCapacitySelector numItems
 
 -- | @- addObject:@
 addObject :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> RawId -> IO ()
-addObject nsMutableOrderedSet  object =
-    sendMsg nsMutableOrderedSet (mkSelector "addObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+addObject nsMutableOrderedSet object =
+  sendMessage nsMutableOrderedSet addObjectSelector object
 
 -- | @- addObjects:count:@
 addObjects_count :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> RawId -> CULong -> IO ()
-addObjects_count nsMutableOrderedSet  objects count =
-    sendMsg nsMutableOrderedSet (mkSelector "addObjects:count:") retVoid [argPtr (castPtr (unRawId objects) :: Ptr ()), argCULong count]
+addObjects_count nsMutableOrderedSet objects count =
+  sendMessage nsMutableOrderedSet addObjects_countSelector objects count
 
 -- | @- addObjectsFromArray:@
 addObjectsFromArray :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSArray array) => nsMutableOrderedSet -> array -> IO ()
-addObjectsFromArray nsMutableOrderedSet  array =
-  withObjCPtr array $ \raw_array ->
-      sendMsg nsMutableOrderedSet (mkSelector "addObjectsFromArray:") retVoid [argPtr (castPtr raw_array :: Ptr ())]
+addObjectsFromArray nsMutableOrderedSet array =
+  sendMessage nsMutableOrderedSet addObjectsFromArraySelector (toNSArray array)
 
 -- | @- exchangeObjectAtIndex:withObjectAtIndex:@
 exchangeObjectAtIndex_withObjectAtIndex :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> CULong -> CULong -> IO ()
-exchangeObjectAtIndex_withObjectAtIndex nsMutableOrderedSet  idx1 idx2 =
-    sendMsg nsMutableOrderedSet (mkSelector "exchangeObjectAtIndex:withObjectAtIndex:") retVoid [argCULong idx1, argCULong idx2]
+exchangeObjectAtIndex_withObjectAtIndex nsMutableOrderedSet idx1 idx2 =
+  sendMessage nsMutableOrderedSet exchangeObjectAtIndex_withObjectAtIndexSelector idx1 idx2
 
 -- | @- moveObjectsAtIndexes:toIndex:@
 moveObjectsAtIndexes_toIndex :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSIndexSet indexes) => nsMutableOrderedSet -> indexes -> CULong -> IO ()
-moveObjectsAtIndexes_toIndex nsMutableOrderedSet  indexes idx =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg nsMutableOrderedSet (mkSelector "moveObjectsAtIndexes:toIndex:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argCULong idx]
+moveObjectsAtIndexes_toIndex nsMutableOrderedSet indexes idx =
+  sendMessage nsMutableOrderedSet moveObjectsAtIndexes_toIndexSelector (toNSIndexSet indexes) idx
 
 -- | @- insertObjects:atIndexes:@
 insertObjects_atIndexes :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSArray objects, IsNSIndexSet indexes) => nsMutableOrderedSet -> objects -> indexes -> IO ()
-insertObjects_atIndexes nsMutableOrderedSet  objects indexes =
-  withObjCPtr objects $ \raw_objects ->
-    withObjCPtr indexes $ \raw_indexes ->
-        sendMsg nsMutableOrderedSet (mkSelector "insertObjects:atIndexes:") retVoid [argPtr (castPtr raw_objects :: Ptr ()), argPtr (castPtr raw_indexes :: Ptr ())]
+insertObjects_atIndexes nsMutableOrderedSet objects indexes =
+  sendMessage nsMutableOrderedSet insertObjects_atIndexesSelector (toNSArray objects) (toNSIndexSet indexes)
 
 -- | @- setObject:atIndex:@
 setObject_atIndex :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> RawId -> CULong -> IO ()
-setObject_atIndex nsMutableOrderedSet  obj_ idx =
-    sendMsg nsMutableOrderedSet (mkSelector "setObject:atIndex:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ()), argCULong idx]
+setObject_atIndex nsMutableOrderedSet obj_ idx =
+  sendMessage nsMutableOrderedSet setObject_atIndexSelector obj_ idx
 
 -- | @- setObject:atIndexedSubscript:@
 setObject_atIndexedSubscript :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> RawId -> CULong -> IO ()
-setObject_atIndexedSubscript nsMutableOrderedSet  obj_ idx =
-    sendMsg nsMutableOrderedSet (mkSelector "setObject:atIndexedSubscript:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ()), argCULong idx]
+setObject_atIndexedSubscript nsMutableOrderedSet obj_ idx =
+  sendMessage nsMutableOrderedSet setObject_atIndexedSubscriptSelector obj_ idx
 
 -- | @- replaceObjectsInRange:withObjects:count:@
 replaceObjectsInRange_withObjects_count :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> NSRange -> RawId -> CULong -> IO ()
-replaceObjectsInRange_withObjects_count nsMutableOrderedSet  range objects count =
-    sendMsg nsMutableOrderedSet (mkSelector "replaceObjectsInRange:withObjects:count:") retVoid [argNSRange range, argPtr (castPtr (unRawId objects) :: Ptr ()), argCULong count]
+replaceObjectsInRange_withObjects_count nsMutableOrderedSet range objects count =
+  sendMessage nsMutableOrderedSet replaceObjectsInRange_withObjects_countSelector range objects count
 
 -- | @- replaceObjectsAtIndexes:withObjects:@
 replaceObjectsAtIndexes_withObjects :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSIndexSet indexes, IsNSArray objects) => nsMutableOrderedSet -> indexes -> objects -> IO ()
-replaceObjectsAtIndexes_withObjects nsMutableOrderedSet  indexes objects =
-  withObjCPtr indexes $ \raw_indexes ->
-    withObjCPtr objects $ \raw_objects ->
-        sendMsg nsMutableOrderedSet (mkSelector "replaceObjectsAtIndexes:withObjects:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argPtr (castPtr raw_objects :: Ptr ())]
+replaceObjectsAtIndexes_withObjects nsMutableOrderedSet indexes objects =
+  sendMessage nsMutableOrderedSet replaceObjectsAtIndexes_withObjectsSelector (toNSIndexSet indexes) (toNSArray objects)
 
 -- | @- removeObjectsInRange:@
 removeObjectsInRange :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> NSRange -> IO ()
-removeObjectsInRange nsMutableOrderedSet  range =
-    sendMsg nsMutableOrderedSet (mkSelector "removeObjectsInRange:") retVoid [argNSRange range]
+removeObjectsInRange nsMutableOrderedSet range =
+  sendMessage nsMutableOrderedSet removeObjectsInRangeSelector range
 
 -- | @- removeObjectsAtIndexes:@
 removeObjectsAtIndexes :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSIndexSet indexes) => nsMutableOrderedSet -> indexes -> IO ()
-removeObjectsAtIndexes nsMutableOrderedSet  indexes =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg nsMutableOrderedSet (mkSelector "removeObjectsAtIndexes:") retVoid [argPtr (castPtr raw_indexes :: Ptr ())]
+removeObjectsAtIndexes nsMutableOrderedSet indexes =
+  sendMessage nsMutableOrderedSet removeObjectsAtIndexesSelector (toNSIndexSet indexes)
 
 -- | @- removeAllObjects@
 removeAllObjects :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> IO ()
-removeAllObjects nsMutableOrderedSet  =
-    sendMsg nsMutableOrderedSet (mkSelector "removeAllObjects") retVoid []
+removeAllObjects nsMutableOrderedSet =
+  sendMessage nsMutableOrderedSet removeAllObjectsSelector
 
 -- | @- removeObject:@
 removeObject :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> RawId -> IO ()
-removeObject nsMutableOrderedSet  object =
-    sendMsg nsMutableOrderedSet (mkSelector "removeObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+removeObject nsMutableOrderedSet object =
+  sendMessage nsMutableOrderedSet removeObjectSelector object
 
 -- | @- removeObjectsInArray:@
 removeObjectsInArray :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSArray array) => nsMutableOrderedSet -> array -> IO ()
-removeObjectsInArray nsMutableOrderedSet  array =
-  withObjCPtr array $ \raw_array ->
-      sendMsg nsMutableOrderedSet (mkSelector "removeObjectsInArray:") retVoid [argPtr (castPtr raw_array :: Ptr ())]
+removeObjectsInArray nsMutableOrderedSet array =
+  sendMessage nsMutableOrderedSet removeObjectsInArraySelector (toNSArray array)
 
 -- | @- intersectOrderedSet:@
 intersectOrderedSet :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSOrderedSet other) => nsMutableOrderedSet -> other -> IO ()
-intersectOrderedSet nsMutableOrderedSet  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsMutableOrderedSet (mkSelector "intersectOrderedSet:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+intersectOrderedSet nsMutableOrderedSet other =
+  sendMessage nsMutableOrderedSet intersectOrderedSetSelector (toNSOrderedSet other)
 
 -- | @- minusOrderedSet:@
 minusOrderedSet :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSOrderedSet other) => nsMutableOrderedSet -> other -> IO ()
-minusOrderedSet nsMutableOrderedSet  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsMutableOrderedSet (mkSelector "minusOrderedSet:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+minusOrderedSet nsMutableOrderedSet other =
+  sendMessage nsMutableOrderedSet minusOrderedSetSelector (toNSOrderedSet other)
 
 -- | @- unionOrderedSet:@
 unionOrderedSet :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSOrderedSet other) => nsMutableOrderedSet -> other -> IO ()
-unionOrderedSet nsMutableOrderedSet  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsMutableOrderedSet (mkSelector "unionOrderedSet:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+unionOrderedSet nsMutableOrderedSet other =
+  sendMessage nsMutableOrderedSet unionOrderedSetSelector (toNSOrderedSet other)
 
 -- | @- intersectSet:@
 intersectSet :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSSet other) => nsMutableOrderedSet -> other -> IO ()
-intersectSet nsMutableOrderedSet  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsMutableOrderedSet (mkSelector "intersectSet:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+intersectSet nsMutableOrderedSet other =
+  sendMessage nsMutableOrderedSet intersectSetSelector (toNSSet other)
 
 -- | @- minusSet:@
 minusSet :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSSet other) => nsMutableOrderedSet -> other -> IO ()
-minusSet nsMutableOrderedSet  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsMutableOrderedSet (mkSelector "minusSet:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+minusSet nsMutableOrderedSet other =
+  sendMessage nsMutableOrderedSet minusSetSelector (toNSSet other)
 
 -- | @- unionSet:@
 unionSet :: (IsNSMutableOrderedSet nsMutableOrderedSet, IsNSSet other) => nsMutableOrderedSet -> other -> IO ()
-unionSet nsMutableOrderedSet  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsMutableOrderedSet (mkSelector "unionSet:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+unionSet nsMutableOrderedSet other =
+  sendMessage nsMutableOrderedSet unionSetSelector (toNSSet other)
 
 -- | @- sortUsingComparator:@
 sortUsingComparator :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> Ptr () -> IO ()
-sortUsingComparator nsMutableOrderedSet  cmptr =
-    sendMsg nsMutableOrderedSet (mkSelector "sortUsingComparator:") retVoid [argPtr (castPtr cmptr :: Ptr ())]
+sortUsingComparator nsMutableOrderedSet cmptr =
+  sendMessage nsMutableOrderedSet sortUsingComparatorSelector cmptr
 
 -- | @- sortWithOptions:usingComparator:@
 sortWithOptions_usingComparator :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> NSSortOptions -> Ptr () -> IO ()
-sortWithOptions_usingComparator nsMutableOrderedSet  opts cmptr =
-    sendMsg nsMutableOrderedSet (mkSelector "sortWithOptions:usingComparator:") retVoid [argCULong (coerce opts), argPtr (castPtr cmptr :: Ptr ())]
+sortWithOptions_usingComparator nsMutableOrderedSet opts cmptr =
+  sendMessage nsMutableOrderedSet sortWithOptions_usingComparatorSelector opts cmptr
 
 -- | @- sortRange:options:usingComparator:@
 sortRange_options_usingComparator :: IsNSMutableOrderedSet nsMutableOrderedSet => nsMutableOrderedSet -> NSRange -> NSSortOptions -> Ptr () -> IO ()
-sortRange_options_usingComparator nsMutableOrderedSet  range opts cmptr =
-    sendMsg nsMutableOrderedSet (mkSelector "sortRange:options:usingComparator:") retVoid [argNSRange range, argCULong (coerce opts), argPtr (castPtr cmptr :: Ptr ())]
+sortRange_options_usingComparator nsMutableOrderedSet range opts cmptr =
+  sendMessage nsMutableOrderedSet sortRange_options_usingComparatorSelector range opts cmptr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @insertObject:atIndex:@
-insertObject_atIndexSelector :: Selector
+insertObject_atIndexSelector :: Selector '[RawId, CULong] ()
 insertObject_atIndexSelector = mkSelector "insertObject:atIndex:"
 
 -- | @Selector@ for @removeObjectAtIndex:@
-removeObjectAtIndexSelector :: Selector
+removeObjectAtIndexSelector :: Selector '[CULong] ()
 removeObjectAtIndexSelector = mkSelector "removeObjectAtIndex:"
 
 -- | @Selector@ for @replaceObjectAtIndex:withObject:@
-replaceObjectAtIndex_withObjectSelector :: Selector
+replaceObjectAtIndex_withObjectSelector :: Selector '[CULong, RawId] ()
 replaceObjectAtIndex_withObjectSelector = mkSelector "replaceObjectAtIndex:withObject:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSMutableOrderedSet)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSMutableOrderedSet)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCapacity:@
-initWithCapacitySelector :: Selector
+initWithCapacitySelector :: Selector '[CULong] (Id NSMutableOrderedSet)
 initWithCapacitySelector = mkSelector "initWithCapacity:"
 
 -- | @Selector@ for @filterUsingPredicate:@
-filterUsingPredicateSelector :: Selector
+filterUsingPredicateSelector :: Selector '[Id NSPredicate] ()
 filterUsingPredicateSelector = mkSelector "filterUsingPredicate:"
 
 -- | @Selector@ for @sortUsingDescriptors:@
-sortUsingDescriptorsSelector :: Selector
+sortUsingDescriptorsSelector :: Selector '[Id NSArray] ()
 sortUsingDescriptorsSelector = mkSelector "sortUsingDescriptors:"
 
 -- | @Selector@ for @applyDifference:@
-applyDifferenceSelector :: Selector
+applyDifferenceSelector :: Selector '[Id NSOrderedCollectionDifference] ()
 applyDifferenceSelector = mkSelector "applyDifference:"
 
 -- | @Selector@ for @orderedSetWithCapacity:@
-orderedSetWithCapacitySelector :: Selector
+orderedSetWithCapacitySelector :: Selector '[CULong] (Id NSMutableOrderedSet)
 orderedSetWithCapacitySelector = mkSelector "orderedSetWithCapacity:"
 
 -- | @Selector@ for @addObject:@
-addObjectSelector :: Selector
+addObjectSelector :: Selector '[RawId] ()
 addObjectSelector = mkSelector "addObject:"
 
 -- | @Selector@ for @addObjects:count:@
-addObjects_countSelector :: Selector
+addObjects_countSelector :: Selector '[RawId, CULong] ()
 addObjects_countSelector = mkSelector "addObjects:count:"
 
 -- | @Selector@ for @addObjectsFromArray:@
-addObjectsFromArraySelector :: Selector
+addObjectsFromArraySelector :: Selector '[Id NSArray] ()
 addObjectsFromArraySelector = mkSelector "addObjectsFromArray:"
 
 -- | @Selector@ for @exchangeObjectAtIndex:withObjectAtIndex:@
-exchangeObjectAtIndex_withObjectAtIndexSelector :: Selector
+exchangeObjectAtIndex_withObjectAtIndexSelector :: Selector '[CULong, CULong] ()
 exchangeObjectAtIndex_withObjectAtIndexSelector = mkSelector "exchangeObjectAtIndex:withObjectAtIndex:"
 
 -- | @Selector@ for @moveObjectsAtIndexes:toIndex:@
-moveObjectsAtIndexes_toIndexSelector :: Selector
+moveObjectsAtIndexes_toIndexSelector :: Selector '[Id NSIndexSet, CULong] ()
 moveObjectsAtIndexes_toIndexSelector = mkSelector "moveObjectsAtIndexes:toIndex:"
 
 -- | @Selector@ for @insertObjects:atIndexes:@
-insertObjects_atIndexesSelector :: Selector
+insertObjects_atIndexesSelector :: Selector '[Id NSArray, Id NSIndexSet] ()
 insertObjects_atIndexesSelector = mkSelector "insertObjects:atIndexes:"
 
 -- | @Selector@ for @setObject:atIndex:@
-setObject_atIndexSelector :: Selector
+setObject_atIndexSelector :: Selector '[RawId, CULong] ()
 setObject_atIndexSelector = mkSelector "setObject:atIndex:"
 
 -- | @Selector@ for @setObject:atIndexedSubscript:@
-setObject_atIndexedSubscriptSelector :: Selector
+setObject_atIndexedSubscriptSelector :: Selector '[RawId, CULong] ()
 setObject_atIndexedSubscriptSelector = mkSelector "setObject:atIndexedSubscript:"
 
 -- | @Selector@ for @replaceObjectsInRange:withObjects:count:@
-replaceObjectsInRange_withObjects_countSelector :: Selector
+replaceObjectsInRange_withObjects_countSelector :: Selector '[NSRange, RawId, CULong] ()
 replaceObjectsInRange_withObjects_countSelector = mkSelector "replaceObjectsInRange:withObjects:count:"
 
 -- | @Selector@ for @replaceObjectsAtIndexes:withObjects:@
-replaceObjectsAtIndexes_withObjectsSelector :: Selector
+replaceObjectsAtIndexes_withObjectsSelector :: Selector '[Id NSIndexSet, Id NSArray] ()
 replaceObjectsAtIndexes_withObjectsSelector = mkSelector "replaceObjectsAtIndexes:withObjects:"
 
 -- | @Selector@ for @removeObjectsInRange:@
-removeObjectsInRangeSelector :: Selector
+removeObjectsInRangeSelector :: Selector '[NSRange] ()
 removeObjectsInRangeSelector = mkSelector "removeObjectsInRange:"
 
 -- | @Selector@ for @removeObjectsAtIndexes:@
-removeObjectsAtIndexesSelector :: Selector
+removeObjectsAtIndexesSelector :: Selector '[Id NSIndexSet] ()
 removeObjectsAtIndexesSelector = mkSelector "removeObjectsAtIndexes:"
 
 -- | @Selector@ for @removeAllObjects@
-removeAllObjectsSelector :: Selector
+removeAllObjectsSelector :: Selector '[] ()
 removeAllObjectsSelector = mkSelector "removeAllObjects"
 
 -- | @Selector@ for @removeObject:@
-removeObjectSelector :: Selector
+removeObjectSelector :: Selector '[RawId] ()
 removeObjectSelector = mkSelector "removeObject:"
 
 -- | @Selector@ for @removeObjectsInArray:@
-removeObjectsInArraySelector :: Selector
+removeObjectsInArraySelector :: Selector '[Id NSArray] ()
 removeObjectsInArraySelector = mkSelector "removeObjectsInArray:"
 
 -- | @Selector@ for @intersectOrderedSet:@
-intersectOrderedSetSelector :: Selector
+intersectOrderedSetSelector :: Selector '[Id NSOrderedSet] ()
 intersectOrderedSetSelector = mkSelector "intersectOrderedSet:"
 
 -- | @Selector@ for @minusOrderedSet:@
-minusOrderedSetSelector :: Selector
+minusOrderedSetSelector :: Selector '[Id NSOrderedSet] ()
 minusOrderedSetSelector = mkSelector "minusOrderedSet:"
 
 -- | @Selector@ for @unionOrderedSet:@
-unionOrderedSetSelector :: Selector
+unionOrderedSetSelector :: Selector '[Id NSOrderedSet] ()
 unionOrderedSetSelector = mkSelector "unionOrderedSet:"
 
 -- | @Selector@ for @intersectSet:@
-intersectSetSelector :: Selector
+intersectSetSelector :: Selector '[Id NSSet] ()
 intersectSetSelector = mkSelector "intersectSet:"
 
 -- | @Selector@ for @minusSet:@
-minusSetSelector :: Selector
+minusSetSelector :: Selector '[Id NSSet] ()
 minusSetSelector = mkSelector "minusSet:"
 
 -- | @Selector@ for @unionSet:@
-unionSetSelector :: Selector
+unionSetSelector :: Selector '[Id NSSet] ()
 unionSetSelector = mkSelector "unionSet:"
 
 -- | @Selector@ for @sortUsingComparator:@
-sortUsingComparatorSelector :: Selector
+sortUsingComparatorSelector :: Selector '[Ptr ()] ()
 sortUsingComparatorSelector = mkSelector "sortUsingComparator:"
 
 -- | @Selector@ for @sortWithOptions:usingComparator:@
-sortWithOptions_usingComparatorSelector :: Selector
+sortWithOptions_usingComparatorSelector :: Selector '[NSSortOptions, Ptr ()] ()
 sortWithOptions_usingComparatorSelector = mkSelector "sortWithOptions:usingComparator:"
 
 -- | @Selector@ for @sortRange:options:usingComparator:@
-sortRange_options_usingComparatorSelector :: Selector
+sortRange_options_usingComparatorSelector :: Selector '[NSRange, NSSortOptions, Ptr ()] ()
 sortRange_options_usingComparatorSelector = mkSelector "sortRange:options:usingComparator:"
 

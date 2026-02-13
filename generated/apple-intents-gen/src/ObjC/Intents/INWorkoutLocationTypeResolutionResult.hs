@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INWorkoutLocationTypeResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithWorkoutLocationTypeToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedWorkoutLocationTypeSelector
-  , successWithResolvedValueSelector
-  , confirmationRequiredWithWorkoutLocationTypeToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , confirmationRequiredWithWorkoutLocationTypeToConfirmSelector
+  , successWithResolvedValueSelector
+  , successWithResolvedWorkoutLocationTypeSelector
 
   -- * Enum types
   , INWorkoutLocationType(INWorkoutLocationType)
@@ -24,15 +25,11 @@ module ObjC.Intents.INWorkoutLocationTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,46 +42,46 @@ successWithResolvedWorkoutLocationType :: INWorkoutLocationType -> IO (Id INWork
 successWithResolvedWorkoutLocationType resolvedWorkoutLocationType =
   do
     cls' <- getRequiredClass "INWorkoutLocationTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedWorkoutLocationType:") (retPtr retVoid) [argCLong (coerce resolvedWorkoutLocationType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedWorkoutLocationTypeSelector resolvedWorkoutLocationType
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INWorkoutLocationType -> IO (Id INWorkoutLocationTypeResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INWorkoutLocationTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithWorkoutLocationTypeToConfirm:@
 confirmationRequiredWithWorkoutLocationTypeToConfirm :: INWorkoutLocationType -> IO (Id INWorkoutLocationTypeResolutionResult)
 confirmationRequiredWithWorkoutLocationTypeToConfirm workoutLocationTypeToConfirm =
   do
     cls' <- getRequiredClass "INWorkoutLocationTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithWorkoutLocationTypeToConfirm:") (retPtr retVoid) [argCLong (coerce workoutLocationTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithWorkoutLocationTypeToConfirmSelector workoutLocationTypeToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INWorkoutLocationType -> IO (Id INWorkoutLocationTypeResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INWorkoutLocationTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedWorkoutLocationType:@
-successWithResolvedWorkoutLocationTypeSelector :: Selector
+successWithResolvedWorkoutLocationTypeSelector :: Selector '[INWorkoutLocationType] (Id INWorkoutLocationTypeResolutionResult)
 successWithResolvedWorkoutLocationTypeSelector = mkSelector "successWithResolvedWorkoutLocationType:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INWorkoutLocationType] (Id INWorkoutLocationTypeResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithWorkoutLocationTypeToConfirm:@
-confirmationRequiredWithWorkoutLocationTypeToConfirmSelector :: Selector
+confirmationRequiredWithWorkoutLocationTypeToConfirmSelector :: Selector '[INWorkoutLocationType] (Id INWorkoutLocationTypeResolutionResult)
 confirmationRequiredWithWorkoutLocationTypeToConfirmSelector = mkSelector "confirmationRequiredWithWorkoutLocationTypeToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INWorkoutLocationType] (Id INWorkoutLocationTypeResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

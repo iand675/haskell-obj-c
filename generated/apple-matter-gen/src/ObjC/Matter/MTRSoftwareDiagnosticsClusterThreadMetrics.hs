@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Matter.MTRSoftwareDiagnosticsClusterThreadMetrics
   , stackSize
   , setStackSize
   , idSelector
-  , setIdSelector
   , nameSelector
+  , setIdSelector
   , setNameSelector
-  , stackFreeCurrentSelector
   , setStackFreeCurrentSelector
-  , stackFreeMinimumSelector
   , setStackFreeMinimumSelector
-  , stackSizeSelector
   , setStackSizeSelector
+  , stackFreeCurrentSelector
+  , stackFreeMinimumSelector
+  , stackSizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,100 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- id@
 id_ :: IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics => mtrSoftwareDiagnosticsClusterThreadMetrics -> IO (Id NSNumber)
-id_ mtrSoftwareDiagnosticsClusterThreadMetrics  =
-    sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "id") (retPtr retVoid) [] >>= retainedObject . castPtr
+id_ mtrSoftwareDiagnosticsClusterThreadMetrics =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics idSelector
 
 -- | @- setId:@
 setId :: (IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics, IsNSNumber value) => mtrSoftwareDiagnosticsClusterThreadMetrics -> value -> IO ()
-setId mtrSoftwareDiagnosticsClusterThreadMetrics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "setId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setId mtrSoftwareDiagnosticsClusterThreadMetrics value =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics setIdSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics => mtrSoftwareDiagnosticsClusterThreadMetrics -> IO (Id NSString)
-name mtrSoftwareDiagnosticsClusterThreadMetrics  =
-    sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrSoftwareDiagnosticsClusterThreadMetrics =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics, IsNSString value) => mtrSoftwareDiagnosticsClusterThreadMetrics -> value -> IO ()
-setName mtrSoftwareDiagnosticsClusterThreadMetrics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrSoftwareDiagnosticsClusterThreadMetrics value =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics setNameSelector (toNSString value)
 
 -- | @- stackFreeCurrent@
 stackFreeCurrent :: IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics => mtrSoftwareDiagnosticsClusterThreadMetrics -> IO (Id NSNumber)
-stackFreeCurrent mtrSoftwareDiagnosticsClusterThreadMetrics  =
-    sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "stackFreeCurrent") (retPtr retVoid) [] >>= retainedObject . castPtr
+stackFreeCurrent mtrSoftwareDiagnosticsClusterThreadMetrics =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics stackFreeCurrentSelector
 
 -- | @- setStackFreeCurrent:@
 setStackFreeCurrent :: (IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics, IsNSNumber value) => mtrSoftwareDiagnosticsClusterThreadMetrics -> value -> IO ()
-setStackFreeCurrent mtrSoftwareDiagnosticsClusterThreadMetrics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "setStackFreeCurrent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStackFreeCurrent mtrSoftwareDiagnosticsClusterThreadMetrics value =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics setStackFreeCurrentSelector (toNSNumber value)
 
 -- | @- stackFreeMinimum@
 stackFreeMinimum :: IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics => mtrSoftwareDiagnosticsClusterThreadMetrics -> IO (Id NSNumber)
-stackFreeMinimum mtrSoftwareDiagnosticsClusterThreadMetrics  =
-    sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "stackFreeMinimum") (retPtr retVoid) [] >>= retainedObject . castPtr
+stackFreeMinimum mtrSoftwareDiagnosticsClusterThreadMetrics =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics stackFreeMinimumSelector
 
 -- | @- setStackFreeMinimum:@
 setStackFreeMinimum :: (IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics, IsNSNumber value) => mtrSoftwareDiagnosticsClusterThreadMetrics -> value -> IO ()
-setStackFreeMinimum mtrSoftwareDiagnosticsClusterThreadMetrics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "setStackFreeMinimum:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStackFreeMinimum mtrSoftwareDiagnosticsClusterThreadMetrics value =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics setStackFreeMinimumSelector (toNSNumber value)
 
 -- | @- stackSize@
 stackSize :: IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics => mtrSoftwareDiagnosticsClusterThreadMetrics -> IO (Id NSNumber)
-stackSize mtrSoftwareDiagnosticsClusterThreadMetrics  =
-    sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "stackSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+stackSize mtrSoftwareDiagnosticsClusterThreadMetrics =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics stackSizeSelector
 
 -- | @- setStackSize:@
 setStackSize :: (IsMTRSoftwareDiagnosticsClusterThreadMetrics mtrSoftwareDiagnosticsClusterThreadMetrics, IsNSNumber value) => mtrSoftwareDiagnosticsClusterThreadMetrics -> value -> IO ()
-setStackSize mtrSoftwareDiagnosticsClusterThreadMetrics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSoftwareDiagnosticsClusterThreadMetrics (mkSelector "setStackSize:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStackSize mtrSoftwareDiagnosticsClusterThreadMetrics value =
+  sendMessage mtrSoftwareDiagnosticsClusterThreadMetrics setStackSizeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @id@
-idSelector :: Selector
+idSelector :: Selector '[] (Id NSNumber)
 idSelector = mkSelector "id"
 
 -- | @Selector@ for @setId:@
-setIdSelector :: Selector
+setIdSelector :: Selector '[Id NSNumber] ()
 setIdSelector = mkSelector "setId:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @stackFreeCurrent@
-stackFreeCurrentSelector :: Selector
+stackFreeCurrentSelector :: Selector '[] (Id NSNumber)
 stackFreeCurrentSelector = mkSelector "stackFreeCurrent"
 
 -- | @Selector@ for @setStackFreeCurrent:@
-setStackFreeCurrentSelector :: Selector
+setStackFreeCurrentSelector :: Selector '[Id NSNumber] ()
 setStackFreeCurrentSelector = mkSelector "setStackFreeCurrent:"
 
 -- | @Selector@ for @stackFreeMinimum@
-stackFreeMinimumSelector :: Selector
+stackFreeMinimumSelector :: Selector '[] (Id NSNumber)
 stackFreeMinimumSelector = mkSelector "stackFreeMinimum"
 
 -- | @Selector@ for @setStackFreeMinimum:@
-setStackFreeMinimumSelector :: Selector
+setStackFreeMinimumSelector :: Selector '[Id NSNumber] ()
 setStackFreeMinimumSelector = mkSelector "setStackFreeMinimum:"
 
 -- | @Selector@ for @stackSize@
-stackSizeSelector :: Selector
+stackSizeSelector :: Selector '[] (Id NSNumber)
 stackSizeSelector = mkSelector "stackSize"
 
 -- | @Selector@ for @setStackSize:@
-setStackSizeSelector :: Selector
+setStackSizeSelector :: Selector '[Id NSNumber] ()
 setStackSizeSelector = mkSelector "setStackSize:"
 

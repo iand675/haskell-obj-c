@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.VideoToolbox.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @VTCompressionSessionOptionFlags@ (bitmask)
 newtype VTCompressionSessionOptionFlags = VTCompressionSessionOptionFlags CUInt
@@ -24,6 +27,16 @@ instance Monoid VTCompressionSessionOptionFlags where
 
 pattern KVTCompressionSessionBeginFinalPass :: VTCompressionSessionOptionFlags
 pattern KVTCompressionSessionBeginFinalPass = VTCompressionSessionOptionFlags 1
+
+instance ObjCArgument VTCompressionSessionOptionFlags where
+  withObjCArg (VTCompressionSessionOptionFlags x) k = k (argCUInt x)
+
+instance ObjCReturn VTCompressionSessionOptionFlags where
+  type RawReturn VTCompressionSessionOptionFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTCompressionSessionOptionFlags x)
+  fromOwned x = pure (VTCompressionSessionOptionFlags x)
 
 -- | VTDecodeFrameFlags
 --
@@ -66,6 +79,16 @@ pattern KVTDecodeFrame_1xRealTimePlayback = VTDecodeFrameFlags 4
 
 pattern KVTDecodeFrame_EnableTemporalProcessing :: VTDecodeFrameFlags
 pattern KVTDecodeFrame_EnableTemporalProcessing = VTDecodeFrameFlags 8
+
+instance ObjCArgument VTDecodeFrameFlags where
+  withObjCArg (VTDecodeFrameFlags x) k = k (argCUInt x)
+
+instance ObjCReturn VTDecodeFrameFlags where
+  type RawReturn VTDecodeFrameFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTDecodeFrameFlags x)
+  fromOwned x = pure (VTDecodeFrameFlags x)
 
 -- | VTDecodeInfoFlags
 --
@@ -116,6 +139,16 @@ pattern KVTDecodeInfo_SkippedLeadingFrameDropped = VTDecodeInfoFlags 8
 pattern KVTDecodeInfo_FrameInterrupted :: VTDecodeInfoFlags
 pattern KVTDecodeInfo_FrameInterrupted = VTDecodeInfoFlags 16
 
+instance ObjCArgument VTDecodeInfoFlags where
+  withObjCArg (VTDecodeInfoFlags x) k = k (argCUInt x)
+
+instance ObjCReturn VTDecodeInfoFlags where
+  type RawReturn VTDecodeInfoFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTDecodeInfoFlags x)
+  fromOwned x = pure (VTDecodeInfoFlags x)
+
 -- | @VTEncodeInfoFlags@ (bitmask)
 newtype VTEncodeInfoFlags = VTEncodeInfoFlags CUInt
   deriving stock (Eq, Ord, Show)
@@ -132,6 +165,16 @@ pattern KVTEncodeInfo_Asynchronous = VTEncodeInfoFlags 1
 
 pattern KVTEncodeInfo_FrameDropped :: VTEncodeInfoFlags
 pattern KVTEncodeInfo_FrameDropped = VTEncodeInfoFlags 2
+
+instance ObjCArgument VTEncodeInfoFlags where
+  withObjCArg (VTEncodeInfoFlags x) k = k (argCUInt x)
+
+instance ObjCReturn VTEncodeInfoFlags where
+  type RawReturn VTEncodeInfoFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTEncodeInfoFlags x)
+  fromOwned x = pure (VTEncodeInfoFlags x)
 
 -- | @VTFrameProcessor@ error codes.
 --
@@ -183,6 +226,16 @@ pattern VTFrameProcessorInvalidFrameTiming = VTFrameProcessorError (-19742)
 pattern VTFrameProcessorAssetDownloadFailed :: VTFrameProcessorError
 pattern VTFrameProcessorAssetDownloadFailed = VTFrameProcessorError (-19743)
 
+instance ObjCArgument VTFrameProcessorError where
+  withObjCArg (VTFrameProcessorError x) k = k (argCLong x)
+
+instance ObjCReturn VTFrameProcessorError where
+  type RawReturn VTFrameProcessorError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTFrameProcessorError x)
+  fromOwned x = pure (VTFrameProcessorError x)
+
 -- | Configuration value you set to prioritize quality or performance.
 -- | @VTFrameRateConversionConfigurationQualityPrioritization@
 newtype VTFrameRateConversionConfigurationQualityPrioritization = VTFrameRateConversionConfigurationQualityPrioritization CLong
@@ -195,6 +248,16 @@ pattern VTFrameRateConversionConfigurationQualityPrioritizationNormal = VTFrameR
 pattern VTFrameRateConversionConfigurationQualityPrioritizationQuality :: VTFrameRateConversionConfigurationQualityPrioritization
 pattern VTFrameRateConversionConfigurationQualityPrioritizationQuality = VTFrameRateConversionConfigurationQualityPrioritization 2
 
+instance ObjCArgument VTFrameRateConversionConfigurationQualityPrioritization where
+  withObjCArg (VTFrameRateConversionConfigurationQualityPrioritization x) k = k (argCLong x)
+
+instance ObjCReturn VTFrameRateConversionConfigurationQualityPrioritization where
+  type RawReturn VTFrameRateConversionConfigurationQualityPrioritization = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTFrameRateConversionConfigurationQualityPrioritization x)
+  fromOwned x = pure (VTFrameRateConversionConfigurationQualityPrioritization x)
+
 -- | Available algorithm revisions.
 --
 -- A new enum case with higher revision number is added when the processing algorithm is updated. The ``VTFrameRateConversionConfiguration/defaultRevision`` property provides the default algorithm revision.
@@ -205,6 +268,16 @@ newtype VTFrameRateConversionConfigurationRevision = VTFrameRateConversionConfig
 
 pattern VTFrameRateConversionConfigurationRevision1 :: VTFrameRateConversionConfigurationRevision
 pattern VTFrameRateConversionConfigurationRevision1 = VTFrameRateConversionConfigurationRevision 1
+
+instance ObjCArgument VTFrameRateConversionConfigurationRevision where
+  withObjCArg (VTFrameRateConversionConfigurationRevision x) k = k (argCLong x)
+
+instance ObjCReturn VTFrameRateConversionConfigurationRevision where
+  type RawReturn VTFrameRateConversionConfigurationRevision = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTFrameRateConversionConfigurationRevision x)
+  fromOwned x = pure (VTFrameRateConversionConfigurationRevision x)
 
 -- | Indicates the order of input frames.
 --
@@ -229,6 +302,16 @@ pattern VTFrameRateConversionParametersSubmissionModeSequential = VTFrameRateCon
 pattern VTFrameRateConversionParametersSubmissionModeSequentialReferencesUnchanged :: VTFrameRateConversionParametersSubmissionMode
 pattern VTFrameRateConversionParametersSubmissionModeSequentialReferencesUnchanged = VTFrameRateConversionParametersSubmissionMode 3
 
+instance ObjCArgument VTFrameRateConversionParametersSubmissionMode where
+  withObjCArg (VTFrameRateConversionParametersSubmissionMode x) k = k (argCLong x)
+
+instance ObjCReturn VTFrameRateConversionParametersSubmissionMode where
+  type RawReturn VTFrameRateConversionParametersSubmissionMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTFrameRateConversionParametersSubmissionMode x)
+  fromOwned x = pure (VTFrameRateConversionParametersSubmissionMode x)
+
 -- | Configuration value you set to prioritize quality or performance.
 -- | @VTMotionBlurConfigurationQualityPrioritization@
 newtype VTMotionBlurConfigurationQualityPrioritization = VTMotionBlurConfigurationQualityPrioritization CLong
@@ -241,6 +324,16 @@ pattern VTMotionBlurConfigurationQualityPrioritizationNormal = VTMotionBlurConfi
 pattern VTMotionBlurConfigurationQualityPrioritizationQuality :: VTMotionBlurConfigurationQualityPrioritization
 pattern VTMotionBlurConfigurationQualityPrioritizationQuality = VTMotionBlurConfigurationQualityPrioritization 2
 
+instance ObjCArgument VTMotionBlurConfigurationQualityPrioritization where
+  withObjCArg (VTMotionBlurConfigurationQualityPrioritization x) k = k (argCLong x)
+
+instance ObjCReturn VTMotionBlurConfigurationQualityPrioritization where
+  type RawReturn VTMotionBlurConfigurationQualityPrioritization = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTMotionBlurConfigurationQualityPrioritization x)
+  fromOwned x = pure (VTMotionBlurConfigurationQualityPrioritization x)
+
 -- | Available algorithm revisions.
 --
 -- A new enum case with higher revision number is added when the processing algorithm is updated. The ``VTMotionBlurConfiguration/defaultRevision`` property provides the default algorithm revision.
@@ -251,6 +344,16 @@ newtype VTMotionBlurConfigurationRevision = VTMotionBlurConfigurationRevision CL
 
 pattern VTMotionBlurConfigurationRevision1 :: VTMotionBlurConfigurationRevision
 pattern VTMotionBlurConfigurationRevision1 = VTMotionBlurConfigurationRevision 1
+
+instance ObjCArgument VTMotionBlurConfigurationRevision where
+  withObjCArg (VTMotionBlurConfigurationRevision x) k = k (argCLong x)
+
+instance ObjCReturn VTMotionBlurConfigurationRevision where
+  type RawReturn VTMotionBlurConfigurationRevision = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTMotionBlurConfigurationRevision x)
+  fromOwned x = pure (VTMotionBlurConfigurationRevision x)
 
 -- | Indicates the order of input frames.
 --
@@ -270,6 +373,16 @@ pattern VTMotionBlurParametersSubmissionModeRandom = VTMotionBlurParametersSubmi
 pattern VTMotionBlurParametersSubmissionModeSequential :: VTMotionBlurParametersSubmissionMode
 pattern VTMotionBlurParametersSubmissionModeSequential = VTMotionBlurParametersSubmissionMode 2
 
+instance ObjCArgument VTMotionBlurParametersSubmissionMode where
+  withObjCArg (VTMotionBlurParametersSubmissionMode x) k = k (argCLong x)
+
+instance ObjCReturn VTMotionBlurParametersSubmissionMode where
+  type RawReturn VTMotionBlurParametersSubmissionMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTMotionBlurParametersSubmissionMode x)
+  fromOwned x = pure (VTMotionBlurParametersSubmissionMode x)
+
 -- | Flags to control processing of a frame you pass to the motion-estimation session.
 -- | @VTMotionEstimationFrameFlags@ (bitmask)
 newtype VTMotionEstimationFrameFlags = VTMotionEstimationFrameFlags CUInt
@@ -284,6 +397,16 @@ instance Monoid VTMotionEstimationFrameFlags where
 
 pattern KVTMotionEstimationFrameFlags_CurrentBufferWillBeNextReferenceBuffer :: VTMotionEstimationFrameFlags
 pattern KVTMotionEstimationFrameFlags_CurrentBufferWillBeNextReferenceBuffer = VTMotionEstimationFrameFlags 1
+
+instance ObjCArgument VTMotionEstimationFrameFlags where
+  withObjCArg (VTMotionEstimationFrameFlags x) k = k (argCUInt x)
+
+instance ObjCReturn VTMotionEstimationFrameFlags where
+  type RawReturn VTMotionEstimationFrameFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTMotionEstimationFrameFlags x)
+  fromOwned x = pure (VTMotionEstimationFrameFlags x)
 
 -- | Directives that provide information back to you with the results of motion-estimation.
 -- | @VTMotionEstimationInfoFlags@ (bitmask)
@@ -300,6 +423,16 @@ instance Monoid VTMotionEstimationInfoFlags where
 pattern KVTMotionEstimationInfoFlags_Reserved0 :: VTMotionEstimationInfoFlags
 pattern KVTMotionEstimationInfoFlags_Reserved0 = VTMotionEstimationInfoFlags 1
 
+instance ObjCArgument VTMotionEstimationInfoFlags where
+  withObjCArg (VTMotionEstimationInfoFlags x) k = k (argCUInt x)
+
+instance ObjCReturn VTMotionEstimationInfoFlags where
+  type RawReturn VTMotionEstimationInfoFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTMotionEstimationInfoFlags x)
+  fromOwned x = pure (VTMotionEstimationInfoFlags x)
+
 -- | Configuration value you set to prioritize quality or performance.
 -- | @VTOpticalFlowConfigurationQualityPrioritization@
 newtype VTOpticalFlowConfigurationQualityPrioritization = VTOpticalFlowConfigurationQualityPrioritization CLong
@@ -312,6 +445,16 @@ pattern VTOpticalFlowConfigurationQualityPrioritizationNormal = VTOpticalFlowCon
 pattern VTOpticalFlowConfigurationQualityPrioritizationQuality :: VTOpticalFlowConfigurationQualityPrioritization
 pattern VTOpticalFlowConfigurationQualityPrioritizationQuality = VTOpticalFlowConfigurationQualityPrioritization 2
 
+instance ObjCArgument VTOpticalFlowConfigurationQualityPrioritization where
+  withObjCArg (VTOpticalFlowConfigurationQualityPrioritization x) k = k (argCLong x)
+
+instance ObjCReturn VTOpticalFlowConfigurationQualityPrioritization where
+  type RawReturn VTOpticalFlowConfigurationQualityPrioritization = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTOpticalFlowConfigurationQualityPrioritization x)
+  fromOwned x = pure (VTOpticalFlowConfigurationQualityPrioritization x)
+
 -- | Available algorithm revisions.
 --
 -- A new enum case with higher revision number is added when the processing algorithm is updated. The ``VTOpticalFlowConfiguration/defaultRevision`` property provides the default algorithm revision.
@@ -322,6 +465,16 @@ newtype VTOpticalFlowConfigurationRevision = VTOpticalFlowConfigurationRevision 
 
 pattern VTOpticalFlowConfigurationRevision1 :: VTOpticalFlowConfigurationRevision
 pattern VTOpticalFlowConfigurationRevision1 = VTOpticalFlowConfigurationRevision 1
+
+instance ObjCArgument VTOpticalFlowConfigurationRevision where
+  withObjCArg (VTOpticalFlowConfigurationRevision x) k = k (argCLong x)
+
+instance ObjCReturn VTOpticalFlowConfigurationRevision where
+  type RawReturn VTOpticalFlowConfigurationRevision = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTOpticalFlowConfigurationRevision x)
+  fromOwned x = pure (VTOpticalFlowConfigurationRevision x)
 
 -- | Indicates the order of input frames.
 --
@@ -341,6 +494,16 @@ pattern VTOpticalFlowParametersSubmissionModeRandom = VTOpticalFlowParametersSub
 pattern VTOpticalFlowParametersSubmissionModeSequential :: VTOpticalFlowParametersSubmissionMode
 pattern VTOpticalFlowParametersSubmissionModeSequential = VTOpticalFlowParametersSubmissionMode 2
 
+instance ObjCArgument VTOpticalFlowParametersSubmissionMode where
+  withObjCArg (VTOpticalFlowParametersSubmissionMode x) k = k (argCLong x)
+
+instance ObjCReturn VTOpticalFlowParametersSubmissionMode where
+  type RawReturn VTOpticalFlowParametersSubmissionMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTOpticalFlowParametersSubmissionMode x)
+  fromOwned x = pure (VTOpticalFlowParametersSubmissionMode x)
+
 -- | Available super-resolution processor input types.
 -- | @VTSuperResolutionScalerConfigurationInputType@
 newtype VTSuperResolutionScalerConfigurationInputType = VTSuperResolutionScalerConfigurationInputType CLong
@@ -352,6 +515,16 @@ pattern VTSuperResolutionScalerConfigurationInputTypeVideo = VTSuperResolutionSc
 
 pattern VTSuperResolutionScalerConfigurationInputTypeImage :: VTSuperResolutionScalerConfigurationInputType
 pattern VTSuperResolutionScalerConfigurationInputTypeImage = VTSuperResolutionScalerConfigurationInputType 2
+
+instance ObjCArgument VTSuperResolutionScalerConfigurationInputType where
+  withObjCArg (VTSuperResolutionScalerConfigurationInputType x) k = k (argCLong x)
+
+instance ObjCReturn VTSuperResolutionScalerConfigurationInputType where
+  type RawReturn VTSuperResolutionScalerConfigurationInputType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTSuperResolutionScalerConfigurationInputType x)
+  fromOwned x = pure (VTSuperResolutionScalerConfigurationInputType x)
 
 -- | Available super-resolution processor model status types.
 -- | @VTSuperResolutionScalerConfigurationModelStatus@
@@ -368,6 +541,16 @@ pattern VTSuperResolutionScalerConfigurationModelStatusDownloading = VTSuperReso
 pattern VTSuperResolutionScalerConfigurationModelStatusReady :: VTSuperResolutionScalerConfigurationModelStatus
 pattern VTSuperResolutionScalerConfigurationModelStatusReady = VTSuperResolutionScalerConfigurationModelStatus 2
 
+instance ObjCArgument VTSuperResolutionScalerConfigurationModelStatus where
+  withObjCArg (VTSuperResolutionScalerConfigurationModelStatus x) k = k (argCLong x)
+
+instance ObjCReturn VTSuperResolutionScalerConfigurationModelStatus where
+  type RawReturn VTSuperResolutionScalerConfigurationModelStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTSuperResolutionScalerConfigurationModelStatus x)
+  fromOwned x = pure (VTSuperResolutionScalerConfigurationModelStatus x)
+
 -- | Configuration value you set to prioritize quality or performance.
 -- | @VTSuperResolutionScalerConfigurationQualityPrioritization@
 newtype VTSuperResolutionScalerConfigurationQualityPrioritization = VTSuperResolutionScalerConfigurationQualityPrioritization CLong
@@ -376,6 +559,16 @@ newtype VTSuperResolutionScalerConfigurationQualityPrioritization = VTSuperResol
 
 pattern VTSuperResolutionScalerConfigurationQualityPrioritizationNormal :: VTSuperResolutionScalerConfigurationQualityPrioritization
 pattern VTSuperResolutionScalerConfigurationQualityPrioritizationNormal = VTSuperResolutionScalerConfigurationQualityPrioritization 1
+
+instance ObjCArgument VTSuperResolutionScalerConfigurationQualityPrioritization where
+  withObjCArg (VTSuperResolutionScalerConfigurationQualityPrioritization x) k = k (argCLong x)
+
+instance ObjCReturn VTSuperResolutionScalerConfigurationQualityPrioritization where
+  type RawReturn VTSuperResolutionScalerConfigurationQualityPrioritization = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTSuperResolutionScalerConfigurationQualityPrioritization x)
+  fromOwned x = pure (VTSuperResolutionScalerConfigurationQualityPrioritization x)
 
 -- | Available algorithm revisions.
 --
@@ -387,6 +580,16 @@ newtype VTSuperResolutionScalerConfigurationRevision = VTSuperResolutionScalerCo
 
 pattern VTSuperResolutionScalerConfigurationRevision1 :: VTSuperResolutionScalerConfigurationRevision
 pattern VTSuperResolutionScalerConfigurationRevision1 = VTSuperResolutionScalerConfigurationRevision 1
+
+instance ObjCArgument VTSuperResolutionScalerConfigurationRevision where
+  withObjCArg (VTSuperResolutionScalerConfigurationRevision x) k = k (argCLong x)
+
+instance ObjCReturn VTSuperResolutionScalerConfigurationRevision where
+  type RawReturn VTSuperResolutionScalerConfigurationRevision = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTSuperResolutionScalerConfigurationRevision x)
+  fromOwned x = pure (VTSuperResolutionScalerConfigurationRevision x)
 
 -- | Indicates the order of input frames.
 --
@@ -405,3 +608,13 @@ pattern VTSuperResolutionScalerParametersSubmissionModeRandom = VTSuperResolutio
 
 pattern VTSuperResolutionScalerParametersSubmissionModeSequential :: VTSuperResolutionScalerParametersSubmissionMode
 pattern VTSuperResolutionScalerParametersSubmissionModeSequential = VTSuperResolutionScalerParametersSubmissionMode 2
+
+instance ObjCArgument VTSuperResolutionScalerParametersSubmissionMode where
+  withObjCArg (VTSuperResolutionScalerParametersSubmissionMode x) k = k (argCLong x)
+
+instance ObjCReturn VTSuperResolutionScalerParametersSubmissionMode where
+  type RawReturn VTSuperResolutionScalerParametersSubmissionMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VTSuperResolutionScalerParametersSubmissionMode x)
+  fromOwned x = pure (VTSuperResolutionScalerParametersSubmissionMode x)

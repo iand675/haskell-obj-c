@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.AppKit.NSFileManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,14 +29,13 @@ fileManagerWithAuthorization :: IsNSWorkspaceAuthorization authorization => auth
 fileManagerWithAuthorization authorization =
   do
     cls' <- getRequiredClass "NSFileManager"
-    withObjCPtr authorization $ \raw_authorization ->
-      sendClassMsg cls' (mkSelector "fileManagerWithAuthorization:") (retPtr retVoid) [argPtr (castPtr raw_authorization :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fileManagerWithAuthorizationSelector (toNSWorkspaceAuthorization authorization)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fileManagerWithAuthorization:@
-fileManagerWithAuthorizationSelector :: Selector
+fileManagerWithAuthorizationSelector :: Selector '[Id NSWorkspaceAuthorization] (Id NSFileManager)
 fileManagerWithAuthorizationSelector = mkSelector "fileManagerWithAuthorization:"
 

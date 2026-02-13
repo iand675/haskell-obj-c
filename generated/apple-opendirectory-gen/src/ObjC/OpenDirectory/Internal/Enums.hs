@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.OpenDirectory.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | ODFrameworkErrors
 --
@@ -334,3 +337,13 @@ pattern KODErrorDaemonError = ODFrameworkErrors 10002
 
 pattern KODErrorPluginOperationTimeout :: ODFrameworkErrors
 pattern KODErrorPluginOperationTimeout = ODFrameworkErrors 10003
+
+instance ObjCArgument ODFrameworkErrors where
+  withObjCArg (ODFrameworkErrors x) k = k (argCInt x)
+
+instance ObjCReturn ODFrameworkErrors where
+  type RawReturn ODFrameworkErrors = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ODFrameworkErrors x)
+  fromOwned x = pure (ODFrameworkErrors x)

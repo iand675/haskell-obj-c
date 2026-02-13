@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AVFoundation.AVCaptionRenderer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- captions@
 captions :: IsAVCaptionRenderer avCaptionRenderer => avCaptionRenderer -> IO (Id NSArray)
-captions avCaptionRenderer  =
-    sendMsg avCaptionRenderer (mkSelector "captions") (retPtr retVoid) [] >>= retainedObject . castPtr
+captions avCaptionRenderer =
+  sendMessage avCaptionRenderer captionsSelector
 
 -- | captions
 --
@@ -54,19 +51,18 @@ captions avCaptionRenderer  =
 --
 -- ObjC selector: @- setCaptions:@
 setCaptions :: (IsAVCaptionRenderer avCaptionRenderer, IsNSArray value) => avCaptionRenderer -> value -> IO ()
-setCaptions avCaptionRenderer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptionRenderer (mkSelector "setCaptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaptions avCaptionRenderer value =
+  sendMessage avCaptionRenderer setCaptionsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @captions@
-captionsSelector :: Selector
+captionsSelector :: Selector '[] (Id NSArray)
 captionsSelector = mkSelector "captions"
 
 -- | @Selector@ for @setCaptions:@
-setCaptionsSelector :: Selector
+setCaptionsSelector :: Selector '[Id NSArray] ()
 setCaptionsSelector = mkSelector "setCaptions:"
 

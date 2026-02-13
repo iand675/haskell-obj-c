@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Matter.MTRCommissionableBrowserResult
   , productID
   , discriminator
   , commissioningMode
-  , instanceNameSelector
-  , vendorIDSelector
-  , productIDSelector
-  , discriminatorSelector
   , commissioningModeSelector
+  , discriminatorSelector
+  , instanceNameSelector
+  , productIDSelector
+  , vendorIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,58 +38,58 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- instanceName@
 instanceName :: IsMTRCommissionableBrowserResult mtrCommissionableBrowserResult => mtrCommissionableBrowserResult -> IO (Id NSString)
-instanceName mtrCommissionableBrowserResult  =
-    sendMsg mtrCommissionableBrowserResult (mkSelector "instanceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+instanceName mtrCommissionableBrowserResult =
+  sendMessage mtrCommissionableBrowserResult instanceNameSelector
 
 -- | A 16-bit unsigned value identifying the device manufacturer.
 --
 -- ObjC selector: @- vendorID@
 vendorID :: IsMTRCommissionableBrowserResult mtrCommissionableBrowserResult => mtrCommissionableBrowserResult -> IO (Id NSNumber)
-vendorID mtrCommissionableBrowserResult  =
-    sendMsg mtrCommissionableBrowserResult (mkSelector "vendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorID mtrCommissionableBrowserResult =
+  sendMessage mtrCommissionableBrowserResult vendorIDSelector
 
 -- | A 16-bit unsigned value identifying the product.
 --
 -- ObjC selector: @- productID@
 productID :: IsMTRCommissionableBrowserResult mtrCommissionableBrowserResult => mtrCommissionableBrowserResult -> IO (Id NSNumber)
-productID mtrCommissionableBrowserResult  =
-    sendMsg mtrCommissionableBrowserResult (mkSelector "productID") (retPtr retVoid) [] >>= retainedObject . castPtr
+productID mtrCommissionableBrowserResult =
+  sendMessage mtrCommissionableBrowserResult productIDSelector
 
 -- | A 12-bit value matching the field of the same name in MTRSetupPayload.
 --
 -- ObjC selector: @- discriminator@
 discriminator :: IsMTRCommissionableBrowserResult mtrCommissionableBrowserResult => mtrCommissionableBrowserResult -> IO (Id NSNumber)
-discriminator mtrCommissionableBrowserResult  =
-    sendMsg mtrCommissionableBrowserResult (mkSelector "discriminator") (retPtr retVoid) [] >>= retainedObject . castPtr
+discriminator mtrCommissionableBrowserResult =
+  sendMessage mtrCommissionableBrowserResult discriminatorSelector
 
 -- | A boolean indicating whether the device has a commissioning window open.
 --
 -- ObjC selector: @- commissioningMode@
 commissioningMode :: IsMTRCommissionableBrowserResult mtrCommissionableBrowserResult => mtrCommissionableBrowserResult -> IO Bool
-commissioningMode mtrCommissionableBrowserResult  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrCommissionableBrowserResult (mkSelector "commissioningMode") retCULong []
+commissioningMode mtrCommissionableBrowserResult =
+  sendMessage mtrCommissionableBrowserResult commissioningModeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @instanceName@
-instanceNameSelector :: Selector
+instanceNameSelector :: Selector '[] (Id NSString)
 instanceNameSelector = mkSelector "instanceName"
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] (Id NSNumber)
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @productID@
-productIDSelector :: Selector
+productIDSelector :: Selector '[] (Id NSNumber)
 productIDSelector = mkSelector "productID"
 
 -- | @Selector@ for @discriminator@
-discriminatorSelector :: Selector
+discriminatorSelector :: Selector '[] (Id NSNumber)
 discriminatorSelector = mkSelector "discriminator"
 
 -- | @Selector@ for @commissioningMode@
-commissioningModeSelector :: Selector
+commissioningModeSelector :: Selector '[] Bool
 commissioningModeSelector = mkSelector "commissioningMode"
 

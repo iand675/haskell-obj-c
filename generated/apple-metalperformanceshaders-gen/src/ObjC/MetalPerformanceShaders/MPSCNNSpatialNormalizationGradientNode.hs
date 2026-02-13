@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.MetalPerformanceShaders.MPSCNNSpatialNormalizationGradientNode
   , setBeta
   , delta
   , setDelta
-  , nodeWithSourceGradient_sourceImage_gradientState_kernelSizeSelector
-  , initWithSourceGradient_sourceImage_gradientState_kernelSizeSelector
-  , kernelWidthSelector
-  , setKernelWidthSelector
-  , kernelHeightSelector
-  , setKernelHeightSelector
   , alphaSelector
-  , setAlphaSelector
   , betaSelector
-  , setBetaSelector
   , deltaSelector
+  , initWithSourceGradient_sourceImage_gradientState_kernelSizeSelector
+  , kernelHeightSelector
+  , kernelWidthSelector
+  , nodeWithSourceGradient_sourceImage_gradientState_kernelSizeSelector
+  , setAlphaSelector
+  , setBetaSelector
   , setDeltaSelector
+  , setKernelHeightSelector
+  , setKernelWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,38 +51,32 @@ nodeWithSourceGradient_sourceImage_gradientState_kernelSize :: (IsMPSNNImageNode
 nodeWithSourceGradient_sourceImage_gradientState_kernelSize sourceGradient sourceImage gradientState kernelSize =
   do
     cls' <- getRequiredClass "MPSCNNSpatialNormalizationGradientNode"
-    withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      withObjCPtr sourceImage $ \raw_sourceImage ->
-        withObjCPtr gradientState $ \raw_gradientState ->
-          sendClassMsg cls' (mkSelector "nodeWithSourceGradient:sourceImage:gradientState:kernelSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argCULong kernelSize] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceGradient_sourceImage_gradientState_kernelSizeSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState) kernelSize
 
 -- | @- initWithSourceGradient:sourceImage:gradientState:kernelSize:@
 initWithSourceGradient_sourceImage_gradientState_kernelSize :: (IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode, IsMPSNNImageNode sourceGradient, IsMPSNNImageNode sourceImage, IsMPSNNGradientStateNode gradientState) => mpscnnSpatialNormalizationGradientNode -> sourceGradient -> sourceImage -> gradientState -> CULong -> IO (Id MPSCNNSpatialNormalizationGradientNode)
-initWithSourceGradient_sourceImage_gradientState_kernelSize mpscnnSpatialNormalizationGradientNode  sourceGradient sourceImage gradientState kernelSize =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr gradientState $ \raw_gradientState ->
-          sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "initWithSourceGradient:sourceImage:gradientState:kernelSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argCULong kernelSize] >>= ownedObject . castPtr
+initWithSourceGradient_sourceImage_gradientState_kernelSize mpscnnSpatialNormalizationGradientNode sourceGradient sourceImage gradientState kernelSize =
+  sendOwnedMessage mpscnnSpatialNormalizationGradientNode initWithSourceGradient_sourceImage_gradientState_kernelSizeSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState) kernelSize
 
 -- | @- kernelWidth@
 kernelWidth :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> IO CULong
-kernelWidth mpscnnSpatialNormalizationGradientNode  =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "kernelWidth") retCULong []
+kernelWidth mpscnnSpatialNormalizationGradientNode =
+  sendMessage mpscnnSpatialNormalizationGradientNode kernelWidthSelector
 
 -- | @- setKernelWidth:@
 setKernelWidth :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> CULong -> IO ()
-setKernelWidth mpscnnSpatialNormalizationGradientNode  value =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "setKernelWidth:") retVoid [argCULong value]
+setKernelWidth mpscnnSpatialNormalizationGradientNode value =
+  sendMessage mpscnnSpatialNormalizationGradientNode setKernelWidthSelector value
 
 -- | @- kernelHeight@
 kernelHeight :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> IO CULong
-kernelHeight mpscnnSpatialNormalizationGradientNode  =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "kernelHeight") retCULong []
+kernelHeight mpscnnSpatialNormalizationGradientNode =
+  sendMessage mpscnnSpatialNormalizationGradientNode kernelHeightSelector
 
 -- | @- setKernelHeight:@
 setKernelHeight :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> CULong -> IO ()
-setKernelHeight mpscnnSpatialNormalizationGradientNode  value =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "setKernelHeight:") retVoid [argCULong value]
+setKernelHeight mpscnnSpatialNormalizationGradientNode value =
+  sendMessage mpscnnSpatialNormalizationGradientNode setKernelHeightSelector value
 
 -- | alpha
 --
@@ -93,8 +84,8 @@ setKernelHeight mpscnnSpatialNormalizationGradientNode  value =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> IO CFloat
-alpha mpscnnSpatialNormalizationGradientNode  =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "alpha") retCFloat []
+alpha mpscnnSpatialNormalizationGradientNode =
+  sendMessage mpscnnSpatialNormalizationGradientNode alphaSelector
 
 -- | alpha
 --
@@ -102,8 +93,8 @@ alpha mpscnnSpatialNormalizationGradientNode  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> CFloat -> IO ()
-setAlpha mpscnnSpatialNormalizationGradientNode  value =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "setAlpha:") retVoid [argCFloat value]
+setAlpha mpscnnSpatialNormalizationGradientNode value =
+  sendMessage mpscnnSpatialNormalizationGradientNode setAlphaSelector value
 
 -- | beta
 --
@@ -111,8 +102,8 @@ setAlpha mpscnnSpatialNormalizationGradientNode  value =
 --
 -- ObjC selector: @- beta@
 beta :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> IO CFloat
-beta mpscnnSpatialNormalizationGradientNode  =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "beta") retCFloat []
+beta mpscnnSpatialNormalizationGradientNode =
+  sendMessage mpscnnSpatialNormalizationGradientNode betaSelector
 
 -- | beta
 --
@@ -120,8 +111,8 @@ beta mpscnnSpatialNormalizationGradientNode  =
 --
 -- ObjC selector: @- setBeta:@
 setBeta :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> CFloat -> IO ()
-setBeta mpscnnSpatialNormalizationGradientNode  value =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "setBeta:") retVoid [argCFloat value]
+setBeta mpscnnSpatialNormalizationGradientNode value =
+  sendMessage mpscnnSpatialNormalizationGradientNode setBetaSelector value
 
 -- | delta
 --
@@ -129,8 +120,8 @@ setBeta mpscnnSpatialNormalizationGradientNode  value =
 --
 -- ObjC selector: @- delta@
 delta :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> IO CFloat
-delta mpscnnSpatialNormalizationGradientNode  =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "delta") retCFloat []
+delta mpscnnSpatialNormalizationGradientNode =
+  sendMessage mpscnnSpatialNormalizationGradientNode deltaSelector
 
 -- | delta
 --
@@ -138,58 +129,58 @@ delta mpscnnSpatialNormalizationGradientNode  =
 --
 -- ObjC selector: @- setDelta:@
 setDelta :: IsMPSCNNSpatialNormalizationGradientNode mpscnnSpatialNormalizationGradientNode => mpscnnSpatialNormalizationGradientNode -> CFloat -> IO ()
-setDelta mpscnnSpatialNormalizationGradientNode  value =
-    sendMsg mpscnnSpatialNormalizationGradientNode (mkSelector "setDelta:") retVoid [argCFloat value]
+setDelta mpscnnSpatialNormalizationGradientNode value =
+  sendMessage mpscnnSpatialNormalizationGradientNode setDeltaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSourceGradient:sourceImage:gradientState:kernelSize:@
-nodeWithSourceGradient_sourceImage_gradientState_kernelSizeSelector :: Selector
+nodeWithSourceGradient_sourceImage_gradientState_kernelSizeSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode, CULong] (Id MPSCNNSpatialNormalizationGradientNode)
 nodeWithSourceGradient_sourceImage_gradientState_kernelSizeSelector = mkSelector "nodeWithSourceGradient:sourceImage:gradientState:kernelSize:"
 
 -- | @Selector@ for @initWithSourceGradient:sourceImage:gradientState:kernelSize:@
-initWithSourceGradient_sourceImage_gradientState_kernelSizeSelector :: Selector
+initWithSourceGradient_sourceImage_gradientState_kernelSizeSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode, CULong] (Id MPSCNNSpatialNormalizationGradientNode)
 initWithSourceGradient_sourceImage_gradientState_kernelSizeSelector = mkSelector "initWithSourceGradient:sourceImage:gradientState:kernelSize:"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 
 -- | @Selector@ for @setKernelWidth:@
-setKernelWidthSelector :: Selector
+setKernelWidthSelector :: Selector '[CULong] ()
 setKernelWidthSelector = mkSelector "setKernelWidth:"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @setKernelHeight:@
-setKernelHeightSelector :: Selector
+setKernelHeightSelector :: Selector '[CULong] ()
 setKernelHeightSelector = mkSelector "setKernelHeight:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CFloat] ()
 setAlphaSelector = mkSelector "setAlpha:"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] CFloat
 betaSelector = mkSelector "beta"
 
 -- | @Selector@ for @setBeta:@
-setBetaSelector :: Selector
+setBetaSelector :: Selector '[CFloat] ()
 setBetaSelector = mkSelector "setBeta:"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 
 -- | @Selector@ for @setDelta:@
-setDeltaSelector :: Selector
+setDeltaSelector :: Selector '[CFloat] ()
 setDeltaSelector = mkSelector "setDelta:"
 

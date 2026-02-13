@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,28 +26,24 @@ module ObjC.AVFAudio.AVParameterEvent
   , setElement
   , value
   , setValue
+  , elementSelector
   , initWithParameterID_scope_element_valueSelector
   , parameterIDSelector
-  , setParameterIDSelector
   , scopeSelector
-  , setScopeSelector
-  , elementSelector
   , setElementSelector
-  , valueSelector
+  , setParameterIDSelector
+  , setScopeSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,8 +64,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithParameterID:scope:element:value:@
 initWithParameterID_scope_element_value :: IsAVParameterEvent avParameterEvent => avParameterEvent -> CUInt -> CUInt -> CUInt -> CFloat -> IO (Id AVParameterEvent)
-initWithParameterID_scope_element_value avParameterEvent  parameterID scope element value =
-    sendMsg avParameterEvent (mkSelector "initWithParameterID:scope:element:value:") (retPtr retVoid) [argCUInt parameterID, argCUInt scope, argCUInt element, argCFloat value] >>= ownedObject . castPtr
+initWithParameterID_scope_element_value avParameterEvent parameterID scope element value =
+  sendOwnedMessage avParameterEvent initWithParameterID_scope_element_valueSelector parameterID scope element value
 
 -- | parameterID
 --
@@ -76,8 +73,8 @@ initWithParameterID_scope_element_value avParameterEvent  parameterID scope elem
 --
 -- ObjC selector: @- parameterID@
 parameterID :: IsAVParameterEvent avParameterEvent => avParameterEvent -> IO CUInt
-parameterID avParameterEvent  =
-    sendMsg avParameterEvent (mkSelector "parameterID") retCUInt []
+parameterID avParameterEvent =
+  sendMessage avParameterEvent parameterIDSelector
 
 -- | parameterID
 --
@@ -85,8 +82,8 @@ parameterID avParameterEvent  =
 --
 -- ObjC selector: @- setParameterID:@
 setParameterID :: IsAVParameterEvent avParameterEvent => avParameterEvent -> CUInt -> IO ()
-setParameterID avParameterEvent  value =
-    sendMsg avParameterEvent (mkSelector "setParameterID:") retVoid [argCUInt value]
+setParameterID avParameterEvent value =
+  sendMessage avParameterEvent setParameterIDSelector value
 
 -- | scope
 --
@@ -94,8 +91,8 @@ setParameterID avParameterEvent  value =
 --
 -- ObjC selector: @- scope@
 scope :: IsAVParameterEvent avParameterEvent => avParameterEvent -> IO CUInt
-scope avParameterEvent  =
-    sendMsg avParameterEvent (mkSelector "scope") retCUInt []
+scope avParameterEvent =
+  sendMessage avParameterEvent scopeSelector
 
 -- | scope
 --
@@ -103,8 +100,8 @@ scope avParameterEvent  =
 --
 -- ObjC selector: @- setScope:@
 setScope :: IsAVParameterEvent avParameterEvent => avParameterEvent -> CUInt -> IO ()
-setScope avParameterEvent  value =
-    sendMsg avParameterEvent (mkSelector "setScope:") retVoid [argCUInt value]
+setScope avParameterEvent value =
+  sendMessage avParameterEvent setScopeSelector value
 
 -- | element
 --
@@ -112,8 +109,8 @@ setScope avParameterEvent  value =
 --
 -- ObjC selector: @- element@
 element :: IsAVParameterEvent avParameterEvent => avParameterEvent -> IO CUInt
-element avParameterEvent  =
-    sendMsg avParameterEvent (mkSelector "element") retCUInt []
+element avParameterEvent =
+  sendMessage avParameterEvent elementSelector
 
 -- | element
 --
@@ -121,8 +118,8 @@ element avParameterEvent  =
 --
 -- ObjC selector: @- setElement:@
 setElement :: IsAVParameterEvent avParameterEvent => avParameterEvent -> CUInt -> IO ()
-setElement avParameterEvent  value =
-    sendMsg avParameterEvent (mkSelector "setElement:") retVoid [argCUInt value]
+setElement avParameterEvent value =
+  sendMessage avParameterEvent setElementSelector value
 
 -- | value
 --
@@ -130,8 +127,8 @@ setElement avParameterEvent  value =
 --
 -- ObjC selector: @- value@
 value :: IsAVParameterEvent avParameterEvent => avParameterEvent -> IO CFloat
-value avParameterEvent  =
-    sendMsg avParameterEvent (mkSelector "value") retCFloat []
+value avParameterEvent =
+  sendMessage avParameterEvent valueSelector
 
 -- | value
 --
@@ -139,46 +136,46 @@ value avParameterEvent  =
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsAVParameterEvent avParameterEvent => avParameterEvent -> CFloat -> IO ()
-setValue avParameterEvent  value =
-    sendMsg avParameterEvent (mkSelector "setValue:") retVoid [argCFloat value]
+setValue avParameterEvent value =
+  sendMessage avParameterEvent setValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithParameterID:scope:element:value:@
-initWithParameterID_scope_element_valueSelector :: Selector
+initWithParameterID_scope_element_valueSelector :: Selector '[CUInt, CUInt, CUInt, CFloat] (Id AVParameterEvent)
 initWithParameterID_scope_element_valueSelector = mkSelector "initWithParameterID:scope:element:value:"
 
 -- | @Selector@ for @parameterID@
-parameterIDSelector :: Selector
+parameterIDSelector :: Selector '[] CUInt
 parameterIDSelector = mkSelector "parameterID"
 
 -- | @Selector@ for @setParameterID:@
-setParameterIDSelector :: Selector
+setParameterIDSelector :: Selector '[CUInt] ()
 setParameterIDSelector = mkSelector "setParameterID:"
 
 -- | @Selector@ for @scope@
-scopeSelector :: Selector
+scopeSelector :: Selector '[] CUInt
 scopeSelector = mkSelector "scope"
 
 -- | @Selector@ for @setScope:@
-setScopeSelector :: Selector
+setScopeSelector :: Selector '[CUInt] ()
 setScopeSelector = mkSelector "setScope:"
 
 -- | @Selector@ for @element@
-elementSelector :: Selector
+elementSelector :: Selector '[] CUInt
 elementSelector = mkSelector "element"
 
 -- | @Selector@ for @setElement:@
-setElementSelector :: Selector
+setElementSelector :: Selector '[CUInt] ()
 setElementSelector = mkSelector "setElement:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CFloat
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[CFloat] ()
 setValueSelector = mkSelector "setValue:"
 

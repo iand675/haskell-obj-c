@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,31 +25,27 @@ module ObjC.VideoToolbox.VTLowLatencyFrameInterpolationConfiguration
   , sourcePixelBufferAttributes
   , destinationPixelBufferAttributes
   , supported
+  , destinationPixelBufferAttributesSelector
+  , frameHeightSelector
+  , frameSupportedPixelFormatsSelector
+  , frameWidthSelector
+  , initSelector
   , initWithFrameWidth_frameHeight_numberOfInterpolatedFramesSelector
   , initWithFrameWidth_frameHeight_spatialScaleFactorSelector
-  , initSelector
   , newSelector
-  , frameWidthSelector
-  , frameHeightSelector
-  , spatialScaleFactorSelector
   , numberOfInterpolatedFramesSelector
-  , frameSupportedPixelFormatsSelector
   , sourcePixelBufferAttributesSelector
-  , destinationPixelBufferAttributesSelector
+  , spatialScaleFactorSelector
   , supportedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFrameWidth:frameHeight:numberOfInterpolatedFrames:@
 initWithFrameWidth_frameHeight_numberOfInterpolatedFrames :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> CLong -> CLong -> CLong -> IO (Id VTLowLatencyFrameInterpolationConfiguration)
-initWithFrameWidth_frameHeight_numberOfInterpolatedFrames vtLowLatencyFrameInterpolationConfiguration  frameWidth frameHeight numberOfInterpolatedFrames =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "initWithFrameWidth:frameHeight:numberOfInterpolatedFrames:") (retPtr retVoid) [argCLong frameWidth, argCLong frameHeight, argCLong numberOfInterpolatedFrames] >>= ownedObject . castPtr
+initWithFrameWidth_frameHeight_numberOfInterpolatedFrames vtLowLatencyFrameInterpolationConfiguration frameWidth frameHeight numberOfInterpolatedFrames =
+  sendOwnedMessage vtLowLatencyFrameInterpolationConfiguration initWithFrameWidth_frameHeight_numberOfInterpolatedFramesSelector frameWidth frameHeight numberOfInterpolatedFrames
 
 -- | Creates a new low-latency frame interpolation configuration for spatial scaling and temporal scaling.
 --
@@ -74,55 +71,55 @@ initWithFrameWidth_frameHeight_numberOfInterpolatedFrames vtLowLatencyFrameInter
 --
 -- ObjC selector: @- initWithFrameWidth:frameHeight:spatialScaleFactor:@
 initWithFrameWidth_frameHeight_spatialScaleFactor :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> CLong -> CLong -> CLong -> IO (Id VTLowLatencyFrameInterpolationConfiguration)
-initWithFrameWidth_frameHeight_spatialScaleFactor vtLowLatencyFrameInterpolationConfiguration  frameWidth frameHeight spatialScaleFactor =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "initWithFrameWidth:frameHeight:spatialScaleFactor:") (retPtr retVoid) [argCLong frameWidth, argCLong frameHeight, argCLong spatialScaleFactor] >>= ownedObject . castPtr
+initWithFrameWidth_frameHeight_spatialScaleFactor vtLowLatencyFrameInterpolationConfiguration frameWidth frameHeight spatialScaleFactor =
+  sendOwnedMessage vtLowLatencyFrameInterpolationConfiguration initWithFrameWidth_frameHeight_spatialScaleFactorSelector frameWidth frameHeight spatialScaleFactor
 
 -- | @- init@
 init_ :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> IO (Id VTLowLatencyFrameInterpolationConfiguration)
-init_ vtLowLatencyFrameInterpolationConfiguration  =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtLowLatencyFrameInterpolationConfiguration =
+  sendOwnedMessage vtLowLatencyFrameInterpolationConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id VTLowLatencyFrameInterpolationConfiguration)
 new  =
   do
     cls' <- getRequiredClass "VTLowLatencyFrameInterpolationConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Width of source frames in pixels.
 --
 -- ObjC selector: @- frameWidth@
 frameWidth :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> IO CLong
-frameWidth vtLowLatencyFrameInterpolationConfiguration  =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "frameWidth") retCLong []
+frameWidth vtLowLatencyFrameInterpolationConfiguration =
+  sendMessage vtLowLatencyFrameInterpolationConfiguration frameWidthSelector
 
 -- | Height of source frames in pixels.
 --
 -- ObjC selector: @- frameHeight@
 frameHeight :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> IO CLong
-frameHeight vtLowLatencyFrameInterpolationConfiguration  =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "frameHeight") retCLong []
+frameHeight vtLowLatencyFrameInterpolationConfiguration =
+  sendMessage vtLowLatencyFrameInterpolationConfiguration frameHeightSelector
 
 -- | Configured spatial scale factor as an integer.
 --
 -- ObjC selector: @- spatialScaleFactor@
 spatialScaleFactor :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> IO CLong
-spatialScaleFactor vtLowLatencyFrameInterpolationConfiguration  =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "spatialScaleFactor") retCLong []
+spatialScaleFactor vtLowLatencyFrameInterpolationConfiguration =
+  sendMessage vtLowLatencyFrameInterpolationConfiguration spatialScaleFactorSelector
 
 -- | Number of uniformly spaced frames for which you configured the processor.
 --
 -- ObjC selector: @- numberOfInterpolatedFrames@
 numberOfInterpolatedFrames :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> IO CLong
-numberOfInterpolatedFrames vtLowLatencyFrameInterpolationConfiguration  =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "numberOfInterpolatedFrames") retCLong []
+numberOfInterpolatedFrames vtLowLatencyFrameInterpolationConfiguration =
+  sendMessage vtLowLatencyFrameInterpolationConfiguration numberOfInterpolatedFramesSelector
 
 -- | Available supported pixel formats for current configuration.
 --
 -- ObjC selector: @- frameSupportedPixelFormats@
 frameSupportedPixelFormats :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> IO (Id NSArray)
-frameSupportedPixelFormats vtLowLatencyFrameInterpolationConfiguration  =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameSupportedPixelFormats vtLowLatencyFrameInterpolationConfiguration =
+  sendMessage vtLowLatencyFrameInterpolationConfiguration frameSupportedPixelFormatsSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
@@ -130,8 +127,8 @@ frameSupportedPixelFormats vtLowLatencyFrameInterpolationConfiguration  =
 --
 -- ObjC selector: @- sourcePixelBufferAttributes@
 sourcePixelBufferAttributes :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> IO (Id NSDictionary)
-sourcePixelBufferAttributes vtLowLatencyFrameInterpolationConfiguration  =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "sourcePixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourcePixelBufferAttributes vtLowLatencyFrameInterpolationConfiguration =
+  sendMessage vtLowLatencyFrameInterpolationConfiguration sourcePixelBufferAttributesSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent destination frames.
 --
@@ -139,8 +136,8 @@ sourcePixelBufferAttributes vtLowLatencyFrameInterpolationConfiguration  =
 --
 -- ObjC selector: @- destinationPixelBufferAttributes@
 destinationPixelBufferAttributes :: IsVTLowLatencyFrameInterpolationConfiguration vtLowLatencyFrameInterpolationConfiguration => vtLowLatencyFrameInterpolationConfiguration -> IO (Id NSDictionary)
-destinationPixelBufferAttributes vtLowLatencyFrameInterpolationConfiguration  =
-    sendMsg vtLowLatencyFrameInterpolationConfiguration (mkSelector "destinationPixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationPixelBufferAttributes vtLowLatencyFrameInterpolationConfiguration =
+  sendMessage vtLowLatencyFrameInterpolationConfiguration destinationPixelBufferAttributesSelector
 
 -- | Reports whether the system supports this processor.
 --
@@ -149,57 +146,57 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "VTLowLatencyFrameInterpolationConfiguration"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrameWidth:frameHeight:numberOfInterpolatedFrames:@
-initWithFrameWidth_frameHeight_numberOfInterpolatedFramesSelector :: Selector
+initWithFrameWidth_frameHeight_numberOfInterpolatedFramesSelector :: Selector '[CLong, CLong, CLong] (Id VTLowLatencyFrameInterpolationConfiguration)
 initWithFrameWidth_frameHeight_numberOfInterpolatedFramesSelector = mkSelector "initWithFrameWidth:frameHeight:numberOfInterpolatedFrames:"
 
 -- | @Selector@ for @initWithFrameWidth:frameHeight:spatialScaleFactor:@
-initWithFrameWidth_frameHeight_spatialScaleFactorSelector :: Selector
+initWithFrameWidth_frameHeight_spatialScaleFactorSelector :: Selector '[CLong, CLong, CLong] (Id VTLowLatencyFrameInterpolationConfiguration)
 initWithFrameWidth_frameHeight_spatialScaleFactorSelector = mkSelector "initWithFrameWidth:frameHeight:spatialScaleFactor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTLowLatencyFrameInterpolationConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTLowLatencyFrameInterpolationConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @frameWidth@
-frameWidthSelector :: Selector
+frameWidthSelector :: Selector '[] CLong
 frameWidthSelector = mkSelector "frameWidth"
 
 -- | @Selector@ for @frameHeight@
-frameHeightSelector :: Selector
+frameHeightSelector :: Selector '[] CLong
 frameHeightSelector = mkSelector "frameHeight"
 
 -- | @Selector@ for @spatialScaleFactor@
-spatialScaleFactorSelector :: Selector
+spatialScaleFactorSelector :: Selector '[] CLong
 spatialScaleFactorSelector = mkSelector "spatialScaleFactor"
 
 -- | @Selector@ for @numberOfInterpolatedFrames@
-numberOfInterpolatedFramesSelector :: Selector
+numberOfInterpolatedFramesSelector :: Selector '[] CLong
 numberOfInterpolatedFramesSelector = mkSelector "numberOfInterpolatedFrames"
 
 -- | @Selector@ for @frameSupportedPixelFormats@
-frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector :: Selector '[] (Id NSArray)
 frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
-sourcePixelBufferAttributesSelector :: Selector
+sourcePixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 sourcePixelBufferAttributesSelector = mkSelector "sourcePixelBufferAttributes"
 
 -- | @Selector@ for @destinationPixelBufferAttributes@
-destinationPixelBufferAttributesSelector :: Selector
+destinationPixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 destinationPixelBufferAttributesSelector = mkSelector "destinationPixelBufferAttributes"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 

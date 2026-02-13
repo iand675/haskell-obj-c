@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.CoreData.NSSaveChangesRequest
   , updatedObjects
   , deletedObjects
   , lockedObjects
+  , deletedObjectsSelector
   , initWithInsertedObjects_updatedObjects_deletedObjects_lockedObjectsSelector
   , insertedObjectsSelector
-  , updatedObjectsSelector
-  , deletedObjectsSelector
   , lockedObjectsSelector
+  , updatedObjectsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,54 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithInsertedObjects:updatedObjects:deletedObjects:lockedObjects:@
 initWithInsertedObjects_updatedObjects_deletedObjects_lockedObjects :: (IsNSSaveChangesRequest nsSaveChangesRequest, IsNSSet insertedObjects, IsNSSet updatedObjects, IsNSSet deletedObjects, IsNSSet lockedObjects) => nsSaveChangesRequest -> insertedObjects -> updatedObjects -> deletedObjects -> lockedObjects -> IO (Id NSSaveChangesRequest)
-initWithInsertedObjects_updatedObjects_deletedObjects_lockedObjects nsSaveChangesRequest  insertedObjects updatedObjects deletedObjects lockedObjects =
-  withObjCPtr insertedObjects $ \raw_insertedObjects ->
-    withObjCPtr updatedObjects $ \raw_updatedObjects ->
-      withObjCPtr deletedObjects $ \raw_deletedObjects ->
-        withObjCPtr lockedObjects $ \raw_lockedObjects ->
-            sendMsg nsSaveChangesRequest (mkSelector "initWithInsertedObjects:updatedObjects:deletedObjects:lockedObjects:") (retPtr retVoid) [argPtr (castPtr raw_insertedObjects :: Ptr ()), argPtr (castPtr raw_updatedObjects :: Ptr ()), argPtr (castPtr raw_deletedObjects :: Ptr ()), argPtr (castPtr raw_lockedObjects :: Ptr ())] >>= ownedObject . castPtr
+initWithInsertedObjects_updatedObjects_deletedObjects_lockedObjects nsSaveChangesRequest insertedObjects updatedObjects deletedObjects lockedObjects =
+  sendOwnedMessage nsSaveChangesRequest initWithInsertedObjects_updatedObjects_deletedObjects_lockedObjectsSelector (toNSSet insertedObjects) (toNSSet updatedObjects) (toNSSet deletedObjects) (toNSSet lockedObjects)
 
 -- | @- insertedObjects@
 insertedObjects :: IsNSSaveChangesRequest nsSaveChangesRequest => nsSaveChangesRequest -> IO (Id NSSet)
-insertedObjects nsSaveChangesRequest  =
-    sendMsg nsSaveChangesRequest (mkSelector "insertedObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+insertedObjects nsSaveChangesRequest =
+  sendMessage nsSaveChangesRequest insertedObjectsSelector
 
 -- | @- updatedObjects@
 updatedObjects :: IsNSSaveChangesRequest nsSaveChangesRequest => nsSaveChangesRequest -> IO (Id NSSet)
-updatedObjects nsSaveChangesRequest  =
-    sendMsg nsSaveChangesRequest (mkSelector "updatedObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+updatedObjects nsSaveChangesRequest =
+  sendMessage nsSaveChangesRequest updatedObjectsSelector
 
 -- | @- deletedObjects@
 deletedObjects :: IsNSSaveChangesRequest nsSaveChangesRequest => nsSaveChangesRequest -> IO (Id NSSet)
-deletedObjects nsSaveChangesRequest  =
-    sendMsg nsSaveChangesRequest (mkSelector "deletedObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+deletedObjects nsSaveChangesRequest =
+  sendMessage nsSaveChangesRequest deletedObjectsSelector
 
 -- | @- lockedObjects@
 lockedObjects :: IsNSSaveChangesRequest nsSaveChangesRequest => nsSaveChangesRequest -> IO (Id NSSet)
-lockedObjects nsSaveChangesRequest  =
-    sendMsg nsSaveChangesRequest (mkSelector "lockedObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+lockedObjects nsSaveChangesRequest =
+  sendMessage nsSaveChangesRequest lockedObjectsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithInsertedObjects:updatedObjects:deletedObjects:lockedObjects:@
-initWithInsertedObjects_updatedObjects_deletedObjects_lockedObjectsSelector :: Selector
+initWithInsertedObjects_updatedObjects_deletedObjects_lockedObjectsSelector :: Selector '[Id NSSet, Id NSSet, Id NSSet, Id NSSet] (Id NSSaveChangesRequest)
 initWithInsertedObjects_updatedObjects_deletedObjects_lockedObjectsSelector = mkSelector "initWithInsertedObjects:updatedObjects:deletedObjects:lockedObjects:"
 
 -- | @Selector@ for @insertedObjects@
-insertedObjectsSelector :: Selector
+insertedObjectsSelector :: Selector '[] (Id NSSet)
 insertedObjectsSelector = mkSelector "insertedObjects"
 
 -- | @Selector@ for @updatedObjects@
-updatedObjectsSelector :: Selector
+updatedObjectsSelector :: Selector '[] (Id NSSet)
 updatedObjectsSelector = mkSelector "updatedObjects"
 
 -- | @Selector@ for @deletedObjects@
-deletedObjectsSelector :: Selector
+deletedObjectsSelector :: Selector '[] (Id NSSet)
 deletedObjectsSelector = mkSelector "deletedObjects"
 
 -- | @Selector@ for @lockedObjects@
-lockedObjectsSelector :: Selector
+lockedObjectsSelector :: Selector '[] (Id NSSet)
 lockedObjectsSelector = mkSelector "lockedObjects"
 

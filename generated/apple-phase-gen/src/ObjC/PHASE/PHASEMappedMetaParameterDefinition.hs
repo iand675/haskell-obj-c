@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,31 +25,27 @@ module ObjC.PHASE.PHASEMappedMetaParameterDefinition
   , inputMetaParameterDefinition
   , minimum_
   , maximum_
-  , initSelector
-  , newSelector
-  , initWithValue_identifierSelector
-  , initWithValueSelector
-  , initWithValue_minimum_maximum_identifierSelector
-  , initWithValue_minimum_maximumSelector
-  , initWithInputMetaParameterDefinition_envelope_identifierSelector
-  , initWithInputMetaParameterDefinition_envelopeSelector
   , envelopeSelector
+  , initSelector
+  , initWithInputMetaParameterDefinition_envelopeSelector
+  , initWithInputMetaParameterDefinition_envelope_identifierSelector
+  , initWithValueSelector
+  , initWithValue_identifierSelector
+  , initWithValue_minimum_maximumSelector
+  , initWithValue_minimum_maximum_identifierSelector
   , inputMetaParameterDefinitionSelector
-  , minimumSelector
   , maximumSelector
+  , minimumSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,37 +54,35 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition => phaseMappedMetaParameterDefinition -> IO (Id PHASEMappedMetaParameterDefinition)
-init_ phaseMappedMetaParameterDefinition  =
-    sendMsg phaseMappedMetaParameterDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseMappedMetaParameterDefinition =
+  sendOwnedMessage phaseMappedMetaParameterDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEMappedMetaParameterDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASEMappedMetaParameterDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithValue:identifier:@
 initWithValue_identifier :: (IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition, IsNSString identifier) => phaseMappedMetaParameterDefinition -> CDouble -> identifier -> IO (Id PHASEMappedMetaParameterDefinition)
-initWithValue_identifier phaseMappedMetaParameterDefinition  value identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg phaseMappedMetaParameterDefinition (mkSelector "initWithValue:identifier:") (retPtr retVoid) [argCDouble value, argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithValue_identifier phaseMappedMetaParameterDefinition value identifier =
+  sendOwnedMessage phaseMappedMetaParameterDefinition initWithValue_identifierSelector value (toNSString identifier)
 
 -- | @- initWithValue:@
 initWithValue :: IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition => phaseMappedMetaParameterDefinition -> CDouble -> IO (Id PHASEMappedMetaParameterDefinition)
-initWithValue phaseMappedMetaParameterDefinition  value =
-    sendMsg phaseMappedMetaParameterDefinition (mkSelector "initWithValue:") (retPtr retVoid) [argCDouble value] >>= ownedObject . castPtr
+initWithValue phaseMappedMetaParameterDefinition value =
+  sendOwnedMessage phaseMappedMetaParameterDefinition initWithValueSelector value
 
 -- | @- initWithValue:minimum:maximum:identifier:@
 initWithValue_minimum_maximum_identifier :: (IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition, IsNSString identifier) => phaseMappedMetaParameterDefinition -> CDouble -> CDouble -> CDouble -> identifier -> IO (Id PHASEMappedMetaParameterDefinition)
-initWithValue_minimum_maximum_identifier phaseMappedMetaParameterDefinition  value minimum_ maximum_ identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg phaseMappedMetaParameterDefinition (mkSelector "initWithValue:minimum:maximum:identifier:") (retPtr retVoid) [argCDouble value, argCDouble minimum_, argCDouble maximum_, argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithValue_minimum_maximum_identifier phaseMappedMetaParameterDefinition value minimum_ maximum_ identifier =
+  sendOwnedMessage phaseMappedMetaParameterDefinition initWithValue_minimum_maximum_identifierSelector value minimum_ maximum_ (toNSString identifier)
 
 -- | @- initWithValue:minimum:maximum:@
 initWithValue_minimum_maximum :: IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition => phaseMappedMetaParameterDefinition -> CDouble -> CDouble -> CDouble -> IO (Id PHASEMappedMetaParameterDefinition)
-initWithValue_minimum_maximum phaseMappedMetaParameterDefinition  value minimum_ maximum_ =
-    sendMsg phaseMappedMetaParameterDefinition (mkSelector "initWithValue:minimum:maximum:") (retPtr retVoid) [argCDouble value, argCDouble minimum_, argCDouble maximum_] >>= ownedObject . castPtr
+initWithValue_minimum_maximum phaseMappedMetaParameterDefinition value minimum_ maximum_ =
+  sendOwnedMessage phaseMappedMetaParameterDefinition initWithValue_minimum_maximumSelector value minimum_ maximum_
 
 -- | initWithInputMetaParameterDefinition:identifier
 --
@@ -103,11 +98,8 @@ initWithValue_minimum_maximum phaseMappedMetaParameterDefinition  value minimum_
 --
 -- ObjC selector: @- initWithInputMetaParameterDefinition:envelope:identifier:@
 initWithInputMetaParameterDefinition_envelope_identifier :: (IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition, IsPHASENumberMetaParameterDefinition inputMetaParameterDefinition, IsPHASEEnvelope envelope, IsNSString identifier) => phaseMappedMetaParameterDefinition -> inputMetaParameterDefinition -> envelope -> identifier -> IO (Id PHASEMappedMetaParameterDefinition)
-initWithInputMetaParameterDefinition_envelope_identifier phaseMappedMetaParameterDefinition  inputMetaParameterDefinition envelope identifier =
-  withObjCPtr inputMetaParameterDefinition $ \raw_inputMetaParameterDefinition ->
-    withObjCPtr envelope $ \raw_envelope ->
-      withObjCPtr identifier $ \raw_identifier ->
-          sendMsg phaseMappedMetaParameterDefinition (mkSelector "initWithInputMetaParameterDefinition:envelope:identifier:") (retPtr retVoid) [argPtr (castPtr raw_inputMetaParameterDefinition :: Ptr ()), argPtr (castPtr raw_envelope :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithInputMetaParameterDefinition_envelope_identifier phaseMappedMetaParameterDefinition inputMetaParameterDefinition envelope identifier =
+  sendOwnedMessage phaseMappedMetaParameterDefinition initWithInputMetaParameterDefinition_envelope_identifierSelector (toPHASENumberMetaParameterDefinition inputMetaParameterDefinition) (toPHASEEnvelope envelope) (toNSString identifier)
 
 -- | initWithInputMetaParameterDefinition
 --
@@ -121,10 +113,8 @@ initWithInputMetaParameterDefinition_envelope_identifier phaseMappedMetaParamete
 --
 -- ObjC selector: @- initWithInputMetaParameterDefinition:envelope:@
 initWithInputMetaParameterDefinition_envelope :: (IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition, IsPHASENumberMetaParameterDefinition inputMetaParameterDefinition, IsPHASEEnvelope envelope) => phaseMappedMetaParameterDefinition -> inputMetaParameterDefinition -> envelope -> IO (Id PHASEMappedMetaParameterDefinition)
-initWithInputMetaParameterDefinition_envelope phaseMappedMetaParameterDefinition  inputMetaParameterDefinition envelope =
-  withObjCPtr inputMetaParameterDefinition $ \raw_inputMetaParameterDefinition ->
-    withObjCPtr envelope $ \raw_envelope ->
-        sendMsg phaseMappedMetaParameterDefinition (mkSelector "initWithInputMetaParameterDefinition:envelope:") (retPtr retVoid) [argPtr (castPtr raw_inputMetaParameterDefinition :: Ptr ()), argPtr (castPtr raw_envelope :: Ptr ())] >>= ownedObject . castPtr
+initWithInputMetaParameterDefinition_envelope phaseMappedMetaParameterDefinition inputMetaParameterDefinition envelope =
+  sendOwnedMessage phaseMappedMetaParameterDefinition initWithInputMetaParameterDefinition_envelopeSelector (toPHASENumberMetaParameterDefinition inputMetaParameterDefinition) (toPHASEEnvelope envelope)
 
 -- | envelope
 --
@@ -132,8 +122,8 @@ initWithInputMetaParameterDefinition_envelope phaseMappedMetaParameterDefinition
 --
 -- ObjC selector: @- envelope@
 envelope :: IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition => phaseMappedMetaParameterDefinition -> IO (Id PHASEEnvelope)
-envelope phaseMappedMetaParameterDefinition  =
-    sendMsg phaseMappedMetaParameterDefinition (mkSelector "envelope") (retPtr retVoid) [] >>= retainedObject . castPtr
+envelope phaseMappedMetaParameterDefinition =
+  sendMessage phaseMappedMetaParameterDefinition envelopeSelector
 
 -- | inputMetaParameterDefinition
 --
@@ -141,68 +131,68 @@ envelope phaseMappedMetaParameterDefinition  =
 --
 -- ObjC selector: @- inputMetaParameterDefinition@
 inputMetaParameterDefinition :: IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition => phaseMappedMetaParameterDefinition -> IO (Id PHASENumberMetaParameterDefinition)
-inputMetaParameterDefinition phaseMappedMetaParameterDefinition  =
-    sendMsg phaseMappedMetaParameterDefinition (mkSelector "inputMetaParameterDefinition") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputMetaParameterDefinition phaseMappedMetaParameterDefinition =
+  sendMessage phaseMappedMetaParameterDefinition inputMetaParameterDefinitionSelector
 
 -- | @- minimum@
 minimum_ :: IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition => phaseMappedMetaParameterDefinition -> IO CDouble
-minimum_ phaseMappedMetaParameterDefinition  =
-    sendMsg phaseMappedMetaParameterDefinition (mkSelector "minimum") retCDouble []
+minimum_ phaseMappedMetaParameterDefinition =
+  sendMessage phaseMappedMetaParameterDefinition minimumSelector
 
 -- | @- maximum@
 maximum_ :: IsPHASEMappedMetaParameterDefinition phaseMappedMetaParameterDefinition => phaseMappedMetaParameterDefinition -> IO CDouble
-maximum_ phaseMappedMetaParameterDefinition  =
-    sendMsg phaseMappedMetaParameterDefinition (mkSelector "maximum") retCDouble []
+maximum_ phaseMappedMetaParameterDefinition =
+  sendMessage phaseMappedMetaParameterDefinition maximumSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEMappedMetaParameterDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEMappedMetaParameterDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithValue:identifier:@
-initWithValue_identifierSelector :: Selector
+initWithValue_identifierSelector :: Selector '[CDouble, Id NSString] (Id PHASEMappedMetaParameterDefinition)
 initWithValue_identifierSelector = mkSelector "initWithValue:identifier:"
 
 -- | @Selector@ for @initWithValue:@
-initWithValueSelector :: Selector
+initWithValueSelector :: Selector '[CDouble] (Id PHASEMappedMetaParameterDefinition)
 initWithValueSelector = mkSelector "initWithValue:"
 
 -- | @Selector@ for @initWithValue:minimum:maximum:identifier:@
-initWithValue_minimum_maximum_identifierSelector :: Selector
+initWithValue_minimum_maximum_identifierSelector :: Selector '[CDouble, CDouble, CDouble, Id NSString] (Id PHASEMappedMetaParameterDefinition)
 initWithValue_minimum_maximum_identifierSelector = mkSelector "initWithValue:minimum:maximum:identifier:"
 
 -- | @Selector@ for @initWithValue:minimum:maximum:@
-initWithValue_minimum_maximumSelector :: Selector
+initWithValue_minimum_maximumSelector :: Selector '[CDouble, CDouble, CDouble] (Id PHASEMappedMetaParameterDefinition)
 initWithValue_minimum_maximumSelector = mkSelector "initWithValue:minimum:maximum:"
 
 -- | @Selector@ for @initWithInputMetaParameterDefinition:envelope:identifier:@
-initWithInputMetaParameterDefinition_envelope_identifierSelector :: Selector
+initWithInputMetaParameterDefinition_envelope_identifierSelector :: Selector '[Id PHASENumberMetaParameterDefinition, Id PHASEEnvelope, Id NSString] (Id PHASEMappedMetaParameterDefinition)
 initWithInputMetaParameterDefinition_envelope_identifierSelector = mkSelector "initWithInputMetaParameterDefinition:envelope:identifier:"
 
 -- | @Selector@ for @initWithInputMetaParameterDefinition:envelope:@
-initWithInputMetaParameterDefinition_envelopeSelector :: Selector
+initWithInputMetaParameterDefinition_envelopeSelector :: Selector '[Id PHASENumberMetaParameterDefinition, Id PHASEEnvelope] (Id PHASEMappedMetaParameterDefinition)
 initWithInputMetaParameterDefinition_envelopeSelector = mkSelector "initWithInputMetaParameterDefinition:envelope:"
 
 -- | @Selector@ for @envelope@
-envelopeSelector :: Selector
+envelopeSelector :: Selector '[] (Id PHASEEnvelope)
 envelopeSelector = mkSelector "envelope"
 
 -- | @Selector@ for @inputMetaParameterDefinition@
-inputMetaParameterDefinitionSelector :: Selector
+inputMetaParameterDefinitionSelector :: Selector '[] (Id PHASENumberMetaParameterDefinition)
 inputMetaParameterDefinitionSelector = mkSelector "inputMetaParameterDefinition"
 
 -- | @Selector@ for @minimum@
-minimumSelector :: Selector
+minimumSelector :: Selector '[] CDouble
 minimumSelector = mkSelector "minimum"
 
 -- | @Selector@ for @maximum@
-maximumSelector :: Selector
+maximumSelector :: Selector '[] CDouble
 maximumSelector = mkSelector "maximum"
 

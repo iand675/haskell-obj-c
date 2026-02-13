@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AppKit.NSCIImageRep
   , imageRepWithCIImage
   , initWithCIImage
   , ciImage
+  , ciImageSelector
   , imageRepWithCIImageSelector
   , initWithCIImageSelector
-  , ciImageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,33 +34,31 @@ imageRepWithCIImage :: IsCIImage image => image -> IO (Id NSCIImageRep)
 imageRepWithCIImage image =
   do
     cls' <- getRequiredClass "NSCIImageRep"
-    withObjCPtr image $ \raw_image ->
-      sendClassMsg cls' (mkSelector "imageRepWithCIImage:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageRepWithCIImageSelector (toCIImage image)
 
 -- | @- initWithCIImage:@
 initWithCIImage :: (IsNSCIImageRep nsciImageRep, IsCIImage image) => nsciImageRep -> image -> IO (Id NSCIImageRep)
-initWithCIImage nsciImageRep  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg nsciImageRep (mkSelector "initWithCIImage:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= ownedObject . castPtr
+initWithCIImage nsciImageRep image =
+  sendOwnedMessage nsciImageRep initWithCIImageSelector (toCIImage image)
 
 -- | @- CIImage@
 ciImage :: IsNSCIImageRep nsciImageRep => nsciImageRep -> IO (Id CIImage)
-ciImage nsciImageRep  =
-    sendMsg nsciImageRep (mkSelector "CIImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+ciImage nsciImageRep =
+  sendMessage nsciImageRep ciImageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageRepWithCIImage:@
-imageRepWithCIImageSelector :: Selector
+imageRepWithCIImageSelector :: Selector '[Id CIImage] (Id NSCIImageRep)
 imageRepWithCIImageSelector = mkSelector "imageRepWithCIImage:"
 
 -- | @Selector@ for @initWithCIImage:@
-initWithCIImageSelector :: Selector
+initWithCIImageSelector :: Selector '[Id CIImage] (Id NSCIImageRep)
 initWithCIImageSelector = mkSelector "initWithCIImage:"
 
 -- | @Selector@ for @CIImage@
-ciImageSelector :: Selector
+ciImageSelector :: Selector '[] (Id CIImage)
 ciImageSelector = mkSelector "CIImage"
 

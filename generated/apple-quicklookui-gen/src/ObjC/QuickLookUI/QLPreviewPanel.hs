@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,37 +31,33 @@ module ObjC.QuickLookUI.QLPreviewPanel
   , delegate
   , setDelegate
   , inFullScreenMode
-  , sharedPreviewPanelSelector
-  , sharedPreviewPanelExistsSelector
-  , updateControllerSelector
-  , reloadDataSelector
-  , refreshCurrentPreviewItemSelector
+  , currentControllerSelector
+  , currentPreviewItemIndexSelector
+  , currentPreviewItemSelector
+  , dataSourceSelector
+  , delegateSelector
+  , displayStateSelector
   , enterFullScreenMode_withOptionsSelector
   , exitFullScreenModeWithOptionsSelector
-  , currentControllerSelector
-  , dataSourceSelector
-  , setDataSourceSelector
-  , currentPreviewItemIndexSelector
-  , setCurrentPreviewItemIndexSelector
-  , currentPreviewItemSelector
-  , displayStateSelector
-  , setDisplayStateSelector
-  , delegateSelector
-  , setDelegateSelector
   , inFullScreenModeSelector
+  , refreshCurrentPreviewItemSelector
+  , reloadDataSelector
+  , setCurrentPreviewItemIndexSelector
+  , setDataSourceSelector
+  , setDelegateSelector
+  , setDisplayStateSelector
+  , sharedPreviewPanelExistsSelector
+  , sharedPreviewPanelSelector
+  , updateControllerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,7 +76,7 @@ sharedPreviewPanel :: IO (Id QLPreviewPanel)
 sharedPreviewPanel  =
   do
     cls' <- getRequiredClass "QLPreviewPanel"
-    sendClassMsg cls' (mkSelector "sharedPreviewPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedPreviewPanelSelector
 
 -- | Returns a Boolean value that indicates whether the system has created a shared Quick Look preview panel.
 --
@@ -90,7 +87,7 @@ sharedPreviewPanelExists :: IO Bool
 sharedPreviewPanelExists  =
   do
     cls' <- getRequiredClass "QLPreviewPanel"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "sharedPreviewPanelExists") retCULong []
+    sendClassMessage cls' sharedPreviewPanelExistsSelector
 
 -- | Asks the preview panel to update its current controller.
 --
@@ -98,8 +95,8 @@ sharedPreviewPanelExists  =
 --
 -- ObjC selector: @- updateController@
 updateController :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO ()
-updateController qlPreviewPanel  =
-    sendMsg qlPreviewPanel (mkSelector "updateController") retVoid []
+updateController qlPreviewPanel =
+  sendMessage qlPreviewPanel updateControllerSelector
 
 -- | Asks the preview panel to reload its data from its data source.
 --
@@ -107,15 +104,15 @@ updateController qlPreviewPanel  =
 --
 -- ObjC selector: @- reloadData@
 reloadData :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO ()
-reloadData qlPreviewPanel  =
-    sendMsg qlPreviewPanel (mkSelector "reloadData") retVoid []
+reloadData qlPreviewPanel =
+  sendMessage qlPreviewPanel reloadDataSelector
 
 -- | Asks the preview panel to recompute the preview of the current preview item.
 --
 -- ObjC selector: @- refreshCurrentPreviewItem@
 refreshCurrentPreviewItem :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO ()
-refreshCurrentPreviewItem qlPreviewPanel  =
-    sendMsg qlPreviewPanel (mkSelector "refreshCurrentPreviewItem") retVoid []
+refreshCurrentPreviewItem qlPreviewPanel =
+  sendMessage qlPreviewPanel refreshCurrentPreviewItemSelector
 
 -- | Instructs the panel to enter full screen mode.
 --
@@ -131,10 +128,8 @@ refreshCurrentPreviewItem qlPreviewPanel  =
 --
 -- ObjC selector: @- enterFullScreenMode:withOptions:@
 enterFullScreenMode_withOptions :: (IsQLPreviewPanel qlPreviewPanel, IsNSScreen screen, IsNSDictionary options) => qlPreviewPanel -> screen -> options -> IO Bool
-enterFullScreenMode_withOptions qlPreviewPanel  screen options =
-  withObjCPtr screen $ \raw_screen ->
-    withObjCPtr options $ \raw_options ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg qlPreviewPanel (mkSelector "enterFullScreenMode:withOptions:") retCULong [argPtr (castPtr raw_screen :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())]
+enterFullScreenMode_withOptions qlPreviewPanel screen options =
+  sendMessage qlPreviewPanel enterFullScreenMode_withOptionsSelector (toNSScreen screen) (toNSDictionary options)
 
 -- | Instructs the panel to exit full screen mode.
 --
@@ -142,9 +137,8 @@ enterFullScreenMode_withOptions qlPreviewPanel  screen options =
 --
 -- ObjC selector: @- exitFullScreenModeWithOptions:@
 exitFullScreenModeWithOptions :: (IsQLPreviewPanel qlPreviewPanel, IsNSDictionary options) => qlPreviewPanel -> options -> IO ()
-exitFullScreenModeWithOptions qlPreviewPanel  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg qlPreviewPanel (mkSelector "exitFullScreenModeWithOptions:") retVoid [argPtr (castPtr raw_options :: Ptr ())]
+exitFullScreenModeWithOptions qlPreviewPanel options =
+  sendMessage qlPreviewPanel exitFullScreenModeWithOptionsSelector (toNSDictionary options)
 
 -- | The current first responder accepting to control the preview panel.
 --
@@ -152,22 +146,22 @@ exitFullScreenModeWithOptions qlPreviewPanel  options =
 --
 -- ObjC selector: @- currentController@
 currentController :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO RawId
-currentController qlPreviewPanel  =
-    fmap (RawId . castPtr) $ sendMsg qlPreviewPanel (mkSelector "currentController") (retPtr retVoid) []
+currentController qlPreviewPanel =
+  sendMessage qlPreviewPanel currentControllerSelector
 
 -- | The preview panel data source.
 --
 -- ObjC selector: @- dataSource@
 dataSource :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO RawId
-dataSource qlPreviewPanel  =
-    fmap (RawId . castPtr) $ sendMsg qlPreviewPanel (mkSelector "dataSource") (retPtr retVoid) []
+dataSource qlPreviewPanel =
+  sendMessage qlPreviewPanel dataSourceSelector
 
 -- | The preview panel data source.
 --
 -- ObjC selector: @- setDataSource:@
 setDataSource :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> RawId -> IO ()
-setDataSource qlPreviewPanel  value =
-    sendMsg qlPreviewPanel (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDataSource qlPreviewPanel value =
+  sendMessage qlPreviewPanel setDataSourceSelector value
 
 -- | The index of the current preview item.
 --
@@ -175,8 +169,8 @@ setDataSource qlPreviewPanel  value =
 --
 -- ObjC selector: @- currentPreviewItemIndex@
 currentPreviewItemIndex :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO CLong
-currentPreviewItemIndex qlPreviewPanel  =
-    sendMsg qlPreviewPanel (mkSelector "currentPreviewItemIndex") retCLong []
+currentPreviewItemIndex qlPreviewPanel =
+  sendMessage qlPreviewPanel currentPreviewItemIndexSelector
 
 -- | The index of the current preview item.
 --
@@ -184,8 +178,8 @@ currentPreviewItemIndex qlPreviewPanel  =
 --
 -- ObjC selector: @- setCurrentPreviewItemIndex:@
 setCurrentPreviewItemIndex :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> CLong -> IO ()
-setCurrentPreviewItemIndex qlPreviewPanel  value =
-    sendMsg qlPreviewPanel (mkSelector "setCurrentPreviewItemIndex:") retVoid [argCLong value]
+setCurrentPreviewItemIndex qlPreviewPanel value =
+  sendMessage qlPreviewPanel setCurrentPreviewItemIndexSelector value
 
 -- | The currently previewed item.
 --
@@ -193,8 +187,8 @@ setCurrentPreviewItemIndex qlPreviewPanel  value =
 --
 -- ObjC selector: @- currentPreviewItem@
 currentPreviewItem :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO RawId
-currentPreviewItem qlPreviewPanel  =
-    fmap (RawId . castPtr) $ sendMsg qlPreviewPanel (mkSelector "currentPreviewItem") (retPtr retVoid) []
+currentPreviewItem qlPreviewPanel =
+  sendMessage qlPreviewPanel currentPreviewItemSelector
 
 -- | The preview panel’s display state.
 --
@@ -204,8 +198,8 @@ currentPreviewItem qlPreviewPanel  =
 --
 -- ObjC selector: @- displayState@
 displayState :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO RawId
-displayState qlPreviewPanel  =
-    fmap (RawId . castPtr) $ sendMsg qlPreviewPanel (mkSelector "displayState") (retPtr retVoid) []
+displayState qlPreviewPanel =
+  sendMessage qlPreviewPanel displayStateSelector
 
 -- | The preview panel’s display state.
 --
@@ -215,8 +209,8 @@ displayState qlPreviewPanel  =
 --
 -- ObjC selector: @- setDisplayState:@
 setDisplayState :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> RawId -> IO ()
-setDisplayState qlPreviewPanel  value =
-    sendMsg qlPreviewPanel (mkSelector "setDisplayState:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDisplayState qlPreviewPanel value =
+  sendMessage qlPreviewPanel setDisplayStateSelector value
 
 -- | The delegate object that controls the preview panel’s behavior.
 --
@@ -224,8 +218,8 @@ setDisplayState qlPreviewPanel  value =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO RawId
-delegate qlPreviewPanel  =
-    fmap (RawId . castPtr) $ sendMsg qlPreviewPanel (mkSelector "delegate") (retPtr retVoid) []
+delegate qlPreviewPanel =
+  sendMessage qlPreviewPanel delegateSelector
 
 -- | The delegate object that controls the preview panel’s behavior.
 --
@@ -233,8 +227,8 @@ delegate qlPreviewPanel  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> RawId -> IO ()
-setDelegate qlPreviewPanel  value =
-    sendMsg qlPreviewPanel (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate qlPreviewPanel value =
+  sendMessage qlPreviewPanel setDelegateSelector value
 
 -- | The property that indicates whether the panel is in full screen mode.
 --
@@ -242,82 +236,82 @@ setDelegate qlPreviewPanel  value =
 --
 -- ObjC selector: @- inFullScreenMode@
 inFullScreenMode :: IsQLPreviewPanel qlPreviewPanel => qlPreviewPanel -> IO Bool
-inFullScreenMode qlPreviewPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qlPreviewPanel (mkSelector "inFullScreenMode") retCULong []
+inFullScreenMode qlPreviewPanel =
+  sendMessage qlPreviewPanel inFullScreenModeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedPreviewPanel@
-sharedPreviewPanelSelector :: Selector
+sharedPreviewPanelSelector :: Selector '[] (Id QLPreviewPanel)
 sharedPreviewPanelSelector = mkSelector "sharedPreviewPanel"
 
 -- | @Selector@ for @sharedPreviewPanelExists@
-sharedPreviewPanelExistsSelector :: Selector
+sharedPreviewPanelExistsSelector :: Selector '[] Bool
 sharedPreviewPanelExistsSelector = mkSelector "sharedPreviewPanelExists"
 
 -- | @Selector@ for @updateController@
-updateControllerSelector :: Selector
+updateControllerSelector :: Selector '[] ()
 updateControllerSelector = mkSelector "updateController"
 
 -- | @Selector@ for @reloadData@
-reloadDataSelector :: Selector
+reloadDataSelector :: Selector '[] ()
 reloadDataSelector = mkSelector "reloadData"
 
 -- | @Selector@ for @refreshCurrentPreviewItem@
-refreshCurrentPreviewItemSelector :: Selector
+refreshCurrentPreviewItemSelector :: Selector '[] ()
 refreshCurrentPreviewItemSelector = mkSelector "refreshCurrentPreviewItem"
 
 -- | @Selector@ for @enterFullScreenMode:withOptions:@
-enterFullScreenMode_withOptionsSelector :: Selector
+enterFullScreenMode_withOptionsSelector :: Selector '[Id NSScreen, Id NSDictionary] Bool
 enterFullScreenMode_withOptionsSelector = mkSelector "enterFullScreenMode:withOptions:"
 
 -- | @Selector@ for @exitFullScreenModeWithOptions:@
-exitFullScreenModeWithOptionsSelector :: Selector
+exitFullScreenModeWithOptionsSelector :: Selector '[Id NSDictionary] ()
 exitFullScreenModeWithOptionsSelector = mkSelector "exitFullScreenModeWithOptions:"
 
 -- | @Selector@ for @currentController@
-currentControllerSelector :: Selector
+currentControllerSelector :: Selector '[] RawId
 currentControllerSelector = mkSelector "currentController"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] RawId
 dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @setDataSource:@
-setDataSourceSelector :: Selector
+setDataSourceSelector :: Selector '[RawId] ()
 setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @currentPreviewItemIndex@
-currentPreviewItemIndexSelector :: Selector
+currentPreviewItemIndexSelector :: Selector '[] CLong
 currentPreviewItemIndexSelector = mkSelector "currentPreviewItemIndex"
 
 -- | @Selector@ for @setCurrentPreviewItemIndex:@
-setCurrentPreviewItemIndexSelector :: Selector
+setCurrentPreviewItemIndexSelector :: Selector '[CLong] ()
 setCurrentPreviewItemIndexSelector = mkSelector "setCurrentPreviewItemIndex:"
 
 -- | @Selector@ for @currentPreviewItem@
-currentPreviewItemSelector :: Selector
+currentPreviewItemSelector :: Selector '[] RawId
 currentPreviewItemSelector = mkSelector "currentPreviewItem"
 
 -- | @Selector@ for @displayState@
-displayStateSelector :: Selector
+displayStateSelector :: Selector '[] RawId
 displayStateSelector = mkSelector "displayState"
 
 -- | @Selector@ for @setDisplayState:@
-setDisplayStateSelector :: Selector
+setDisplayStateSelector :: Selector '[RawId] ()
 setDisplayStateSelector = mkSelector "setDisplayState:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @inFullScreenMode@
-inFullScreenModeSelector :: Selector
+inFullScreenModeSelector :: Selector '[] Bool
 inFullScreenModeSelector = mkSelector "inFullScreenMode"
 

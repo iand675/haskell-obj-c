@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRBooleanStateConfigurationClusterEnableDisableAlarmParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , alarmsToEnableDisableSelector
-  , setAlarmsToEnableDisableSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setAlarmsToEnableDisableSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- alarmsToEnableDisable@
 alarmsToEnableDisable :: IsMTRBooleanStateConfigurationClusterEnableDisableAlarmParams mtrBooleanStateConfigurationClusterEnableDisableAlarmParams => mtrBooleanStateConfigurationClusterEnableDisableAlarmParams -> IO (Id NSNumber)
-alarmsToEnableDisable mtrBooleanStateConfigurationClusterEnableDisableAlarmParams  =
-    sendMsg mtrBooleanStateConfigurationClusterEnableDisableAlarmParams (mkSelector "alarmsToEnableDisable") (retPtr retVoid) [] >>= retainedObject . castPtr
+alarmsToEnableDisable mtrBooleanStateConfigurationClusterEnableDisableAlarmParams =
+  sendMessage mtrBooleanStateConfigurationClusterEnableDisableAlarmParams alarmsToEnableDisableSelector
 
 -- | @- setAlarmsToEnableDisable:@
 setAlarmsToEnableDisable :: (IsMTRBooleanStateConfigurationClusterEnableDisableAlarmParams mtrBooleanStateConfigurationClusterEnableDisableAlarmParams, IsNSNumber value) => mtrBooleanStateConfigurationClusterEnableDisableAlarmParams -> value -> IO ()
-setAlarmsToEnableDisable mtrBooleanStateConfigurationClusterEnableDisableAlarmParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBooleanStateConfigurationClusterEnableDisableAlarmParams (mkSelector "setAlarmsToEnableDisable:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlarmsToEnableDisable mtrBooleanStateConfigurationClusterEnableDisableAlarmParams value =
+  sendMessage mtrBooleanStateConfigurationClusterEnableDisableAlarmParams setAlarmsToEnableDisableSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setAlarmsToEnableDisable mtrBooleanStateConfigurationClusterEnableDisableAlarmPa
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRBooleanStateConfigurationClusterEnableDisableAlarmParams mtrBooleanStateConfigurationClusterEnableDisableAlarmParams => mtrBooleanStateConfigurationClusterEnableDisableAlarmParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrBooleanStateConfigurationClusterEnableDisableAlarmParams  =
-    sendMsg mtrBooleanStateConfigurationClusterEnableDisableAlarmParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrBooleanStateConfigurationClusterEnableDisableAlarmParams =
+  sendMessage mtrBooleanStateConfigurationClusterEnableDisableAlarmParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrBooleanStateConfigurationClusterEnableDisableAlarmParams
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRBooleanStateConfigurationClusterEnableDisableAlarmParams mtrBooleanStateConfigurationClusterEnableDisableAlarmParams, IsNSNumber value) => mtrBooleanStateConfigurationClusterEnableDisableAlarmParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrBooleanStateConfigurationClusterEnableDisableAlarmParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBooleanStateConfigurationClusterEnableDisableAlarmParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrBooleanStateConfigurationClusterEnableDisableAlarmParams value =
+  sendMessage mtrBooleanStateConfigurationClusterEnableDisableAlarmParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrBooleanStateConfigurationClusterEnableDisableAlarmPar
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRBooleanStateConfigurationClusterEnableDisableAlarmParams mtrBooleanStateConfigurationClusterEnableDisableAlarmParams => mtrBooleanStateConfigurationClusterEnableDisableAlarmParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrBooleanStateConfigurationClusterEnableDisableAlarmParams  =
-    sendMsg mtrBooleanStateConfigurationClusterEnableDisableAlarmParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrBooleanStateConfigurationClusterEnableDisableAlarmParams =
+  sendMessage mtrBooleanStateConfigurationClusterEnableDisableAlarmParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrBooleanStateConfigurationClusterEnableDisableAlar
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRBooleanStateConfigurationClusterEnableDisableAlarmParams mtrBooleanStateConfigurationClusterEnableDisableAlarmParams, IsNSNumber value) => mtrBooleanStateConfigurationClusterEnableDisableAlarmParams -> value -> IO ()
-setServerSideProcessingTimeout mtrBooleanStateConfigurationClusterEnableDisableAlarmParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBooleanStateConfigurationClusterEnableDisableAlarmParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrBooleanStateConfigurationClusterEnableDisableAlarmParams value =
+  sendMessage mtrBooleanStateConfigurationClusterEnableDisableAlarmParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @alarmsToEnableDisable@
-alarmsToEnableDisableSelector :: Selector
+alarmsToEnableDisableSelector :: Selector '[] (Id NSNumber)
 alarmsToEnableDisableSelector = mkSelector "alarmsToEnableDisable"
 
 -- | @Selector@ for @setAlarmsToEnableDisable:@
-setAlarmsToEnableDisableSelector :: Selector
+setAlarmsToEnableDisableSelector :: Selector '[Id NSNumber] ()
 setAlarmsToEnableDisableSelector = mkSelector "setAlarmsToEnableDisable:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

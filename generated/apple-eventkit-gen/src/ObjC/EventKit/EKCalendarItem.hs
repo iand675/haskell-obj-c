@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,46 +36,42 @@ module ObjC.EventKit.EKCalendarItem
   , alarms
   , setAlarms
   , addAlarmSelector
-  , removeAlarmSelector
   , addRecurrenceRuleSelector
-  , removeRecurrenceRuleSelector
-  , uuidSelector
-  , calendarSelector
-  , setCalendarSelector
-  , calendarItemIdentifierSelector
+  , alarmsSelector
+  , attendeesSelector
   , calendarItemExternalIdentifierSelector
-  , titleSelector
-  , setTitleSelector
-  , locationSelector
-  , setLocationSelector
-  , notesSelector
-  , setNotesSelector
-  , urlSelector
-  , setURLSelector
-  , lastModifiedDateSelector
+  , calendarItemIdentifierSelector
+  , calendarSelector
   , creationDateSelector
-  , timeZoneSelector
-  , setTimeZoneSelector
   , hasAlarmsSelector
-  , hasRecurrenceRulesSelector
   , hasAttendeesSelector
   , hasNotesSelector
-  , attendeesSelector
-  , alarmsSelector
+  , hasRecurrenceRulesSelector
+  , lastModifiedDateSelector
+  , locationSelector
+  , notesSelector
+  , removeAlarmSelector
+  , removeRecurrenceRuleSelector
   , setAlarmsSelector
+  , setCalendarSelector
+  , setLocationSelector
+  , setNotesSelector
+  , setTimeZoneSelector
+  , setTitleSelector
+  , setURLSelector
+  , timeZoneSelector
+  , titleSelector
+  , urlSelector
+  , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,9 +86,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addAlarm:@
 addAlarm :: (IsEKCalendarItem ekCalendarItem, IsEKAlarm alarm) => ekCalendarItem -> alarm -> IO ()
-addAlarm ekCalendarItem  alarm =
-  withObjCPtr alarm $ \raw_alarm ->
-      sendMsg ekCalendarItem (mkSelector "addAlarm:") retVoid [argPtr (castPtr raw_alarm :: Ptr ())]
+addAlarm ekCalendarItem alarm =
+  sendMessage ekCalendarItem addAlarmSelector (toEKAlarm alarm)
 
 -- | removeAlarm:
 --
@@ -99,21 +95,18 @@ addAlarm ekCalendarItem  alarm =
 --
 -- ObjC selector: @- removeAlarm:@
 removeAlarm :: (IsEKCalendarItem ekCalendarItem, IsEKAlarm alarm) => ekCalendarItem -> alarm -> IO ()
-removeAlarm ekCalendarItem  alarm =
-  withObjCPtr alarm $ \raw_alarm ->
-      sendMsg ekCalendarItem (mkSelector "removeAlarm:") retVoid [argPtr (castPtr raw_alarm :: Ptr ())]
+removeAlarm ekCalendarItem alarm =
+  sendMessage ekCalendarItem removeAlarmSelector (toEKAlarm alarm)
 
 -- | @- addRecurrenceRule:@
 addRecurrenceRule :: (IsEKCalendarItem ekCalendarItem, IsEKRecurrenceRule rule) => ekCalendarItem -> rule -> IO ()
-addRecurrenceRule ekCalendarItem  rule =
-  withObjCPtr rule $ \raw_rule ->
-      sendMsg ekCalendarItem (mkSelector "addRecurrenceRule:") retVoid [argPtr (castPtr raw_rule :: Ptr ())]
+addRecurrenceRule ekCalendarItem rule =
+  sendMessage ekCalendarItem addRecurrenceRuleSelector (toEKRecurrenceRule rule)
 
 -- | @- removeRecurrenceRule:@
 removeRecurrenceRule :: (IsEKCalendarItem ekCalendarItem, IsEKRecurrenceRule rule) => ekCalendarItem -> rule -> IO ()
-removeRecurrenceRule ekCalendarItem  rule =
-  withObjCPtr rule $ \raw_rule ->
-      sendMsg ekCalendarItem (mkSelector "removeRecurrenceRule:") retVoid [argPtr (castPtr raw_rule :: Ptr ())]
+removeRecurrenceRule ekCalendarItem rule =
+  sendMessage ekCalendarItem removeRecurrenceRuleSelector (toEKRecurrenceRule rule)
 
 -- | UUID
 --
@@ -121,8 +114,8 @@ removeRecurrenceRule ekCalendarItem  rule =
 --
 -- ObjC selector: @- UUID@
 uuid :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
-uuid ekCalendarItem  =
-    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "UUID") (retPtr retVoid) []
+uuid ekCalendarItem =
+  sendMessage ekCalendarItem uuidSelector
 
 -- | calendar
 --
@@ -132,8 +125,8 @@ uuid ekCalendarItem  =
 --
 -- ObjC selector: @- calendar@
 calendar :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO (Id EKCalendar)
-calendar ekCalendarItem  =
-    sendMsg ekCalendarItem (mkSelector "calendar") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendar ekCalendarItem =
+  sendMessage ekCalendarItem calendarSelector
 
 -- | calendar
 --
@@ -143,9 +136,8 @@ calendar ekCalendarItem  =
 --
 -- ObjC selector: @- setCalendar:@
 setCalendar :: (IsEKCalendarItem ekCalendarItem, IsEKCalendar value) => ekCalendarItem -> value -> IO ()
-setCalendar ekCalendarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekCalendarItem (mkSelector "setCalendar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCalendar ekCalendarItem value =
+  sendMessage ekCalendarItem setCalendarSelector (toEKCalendar value)
 
 -- | calendarItemIdentifier
 --
@@ -155,8 +147,8 @@ setCalendar ekCalendarItem  value =
 --
 -- ObjC selector: @- calendarItemIdentifier@
 calendarItemIdentifier :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
-calendarItemIdentifier ekCalendarItem  =
-    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "calendarItemIdentifier") (retPtr retVoid) []
+calendarItemIdentifier ekCalendarItem =
+  sendMessage ekCalendarItem calendarItemIdentifierSelector
 
 -- | calendarItemExternalIdentifier
 --
@@ -174,8 +166,8 @@ calendarItemIdentifier ekCalendarItem  =
 --
 -- ObjC selector: @- calendarItemExternalIdentifier@
 calendarItemExternalIdentifier :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
-calendarItemExternalIdentifier ekCalendarItem  =
-    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "calendarItemExternalIdentifier") (retPtr retVoid) []
+calendarItemExternalIdentifier ekCalendarItem =
+  sendMessage ekCalendarItem calendarItemExternalIdentifierSelector
 
 -- | title
 --
@@ -185,8 +177,8 @@ calendarItemExternalIdentifier ekCalendarItem  =
 --
 -- ObjC selector: @- title@
 title :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO (Id NSString)
-title ekCalendarItem  =
-    sendMsg ekCalendarItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title ekCalendarItem =
+  sendMessage ekCalendarItem titleSelector
 
 -- | title
 --
@@ -196,211 +188,207 @@ title ekCalendarItem  =
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsEKCalendarItem ekCalendarItem, IsNSString value) => ekCalendarItem -> value -> IO ()
-setTitle ekCalendarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekCalendarItem (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle ekCalendarItem value =
+  sendMessage ekCalendarItem setTitleSelector (toNSString value)
 
 -- | @- location@
 location :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO (Id NSString)
-location ekCalendarItem  =
-    sendMsg ekCalendarItem (mkSelector "location") (retPtr retVoid) [] >>= retainedObject . castPtr
+location ekCalendarItem =
+  sendMessage ekCalendarItem locationSelector
 
 -- | @- setLocation:@
 setLocation :: (IsEKCalendarItem ekCalendarItem, IsNSString value) => ekCalendarItem -> value -> IO ()
-setLocation ekCalendarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekCalendarItem (mkSelector "setLocation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocation ekCalendarItem value =
+  sendMessage ekCalendarItem setLocationSelector (toNSString value)
 
 -- | @- notes@
 notes :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO (Id NSString)
-notes ekCalendarItem  =
-    sendMsg ekCalendarItem (mkSelector "notes") (retPtr retVoid) [] >>= retainedObject . castPtr
+notes ekCalendarItem =
+  sendMessage ekCalendarItem notesSelector
 
 -- | @- setNotes:@
 setNotes :: (IsEKCalendarItem ekCalendarItem, IsNSString value) => ekCalendarItem -> value -> IO ()
-setNotes ekCalendarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekCalendarItem (mkSelector "setNotes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNotes ekCalendarItem value =
+  sendMessage ekCalendarItem setNotesSelector (toNSString value)
 
 -- | @- URL@
 url :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
-url ekCalendarItem  =
-    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "URL") (retPtr retVoid) []
+url ekCalendarItem =
+  sendMessage ekCalendarItem urlSelector
 
 -- | @- setURL:@
 setURL :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> RawId -> IO ()
-setURL ekCalendarItem  value =
-    sendMsg ekCalendarItem (mkSelector "setURL:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setURL ekCalendarItem value =
+  sendMessage ekCalendarItem setURLSelector value
 
 -- | @- lastModifiedDate@
 lastModifiedDate :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO (Id NSDate)
-lastModifiedDate ekCalendarItem  =
-    sendMsg ekCalendarItem (mkSelector "lastModifiedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastModifiedDate ekCalendarItem =
+  sendMessage ekCalendarItem lastModifiedDateSelector
 
 -- | @- creationDate@
 creationDate :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
-creationDate ekCalendarItem  =
-    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "creationDate") (retPtr retVoid) []
+creationDate ekCalendarItem =
+  sendMessage ekCalendarItem creationDateSelector
 
 -- | @- timeZone@
 timeZone :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO RawId
-timeZone ekCalendarItem  =
-    fmap (RawId . castPtr) $ sendMsg ekCalendarItem (mkSelector "timeZone") (retPtr retVoid) []
+timeZone ekCalendarItem =
+  sendMessage ekCalendarItem timeZoneSelector
 
 -- | @- setTimeZone:@
 setTimeZone :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> RawId -> IO ()
-setTimeZone ekCalendarItem  value =
-    sendMsg ekCalendarItem (mkSelector "setTimeZone:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTimeZone ekCalendarItem value =
+  sendMessage ekCalendarItem setTimeZoneSelector value
 
 -- | @- hasAlarms@
 hasAlarms :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO Bool
-hasAlarms ekCalendarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekCalendarItem (mkSelector "hasAlarms") retCULong []
+hasAlarms ekCalendarItem =
+  sendMessage ekCalendarItem hasAlarmsSelector
 
 -- | @- hasRecurrenceRules@
 hasRecurrenceRules :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO Bool
-hasRecurrenceRules ekCalendarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekCalendarItem (mkSelector "hasRecurrenceRules") retCULong []
+hasRecurrenceRules ekCalendarItem =
+  sendMessage ekCalendarItem hasRecurrenceRulesSelector
 
 -- | @- hasAttendees@
 hasAttendees :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO Bool
-hasAttendees ekCalendarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekCalendarItem (mkSelector "hasAttendees") retCULong []
+hasAttendees ekCalendarItem =
+  sendMessage ekCalendarItem hasAttendeesSelector
 
 -- | @- hasNotes@
 hasNotes :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO Bool
-hasNotes ekCalendarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekCalendarItem (mkSelector "hasNotes") retCULong []
+hasNotes ekCalendarItem =
+  sendMessage ekCalendarItem hasNotesSelector
 
 -- | @- attendees@
 attendees :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO (Id NSArray)
-attendees ekCalendarItem  =
-    sendMsg ekCalendarItem (mkSelector "attendees") (retPtr retVoid) [] >>= retainedObject . castPtr
+attendees ekCalendarItem =
+  sendMessage ekCalendarItem attendeesSelector
 
 -- | @- alarms@
 alarms :: IsEKCalendarItem ekCalendarItem => ekCalendarItem -> IO (Id NSArray)
-alarms ekCalendarItem  =
-    sendMsg ekCalendarItem (mkSelector "alarms") (retPtr retVoid) [] >>= retainedObject . castPtr
+alarms ekCalendarItem =
+  sendMessage ekCalendarItem alarmsSelector
 
 -- | @- setAlarms:@
 setAlarms :: (IsEKCalendarItem ekCalendarItem, IsNSArray value) => ekCalendarItem -> value -> IO ()
-setAlarms ekCalendarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekCalendarItem (mkSelector "setAlarms:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlarms ekCalendarItem value =
+  sendMessage ekCalendarItem setAlarmsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addAlarm:@
-addAlarmSelector :: Selector
+addAlarmSelector :: Selector '[Id EKAlarm] ()
 addAlarmSelector = mkSelector "addAlarm:"
 
 -- | @Selector@ for @removeAlarm:@
-removeAlarmSelector :: Selector
+removeAlarmSelector :: Selector '[Id EKAlarm] ()
 removeAlarmSelector = mkSelector "removeAlarm:"
 
 -- | @Selector@ for @addRecurrenceRule:@
-addRecurrenceRuleSelector :: Selector
+addRecurrenceRuleSelector :: Selector '[Id EKRecurrenceRule] ()
 addRecurrenceRuleSelector = mkSelector "addRecurrenceRule:"
 
 -- | @Selector@ for @removeRecurrenceRule:@
-removeRecurrenceRuleSelector :: Selector
+removeRecurrenceRuleSelector :: Selector '[Id EKRecurrenceRule] ()
 removeRecurrenceRuleSelector = mkSelector "removeRecurrenceRule:"
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] RawId
 uuidSelector = mkSelector "UUID"
 
 -- | @Selector@ for @calendar@
-calendarSelector :: Selector
+calendarSelector :: Selector '[] (Id EKCalendar)
 calendarSelector = mkSelector "calendar"
 
 -- | @Selector@ for @setCalendar:@
-setCalendarSelector :: Selector
+setCalendarSelector :: Selector '[Id EKCalendar] ()
 setCalendarSelector = mkSelector "setCalendar:"
 
 -- | @Selector@ for @calendarItemIdentifier@
-calendarItemIdentifierSelector :: Selector
+calendarItemIdentifierSelector :: Selector '[] RawId
 calendarItemIdentifierSelector = mkSelector "calendarItemIdentifier"
 
 -- | @Selector@ for @calendarItemExternalIdentifier@
-calendarItemExternalIdentifierSelector :: Selector
+calendarItemExternalIdentifierSelector :: Selector '[] RawId
 calendarItemExternalIdentifierSelector = mkSelector "calendarItemExternalIdentifier"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @location@
-locationSelector :: Selector
+locationSelector :: Selector '[] (Id NSString)
 locationSelector = mkSelector "location"
 
 -- | @Selector@ for @setLocation:@
-setLocationSelector :: Selector
+setLocationSelector :: Selector '[Id NSString] ()
 setLocationSelector = mkSelector "setLocation:"
 
 -- | @Selector@ for @notes@
-notesSelector :: Selector
+notesSelector :: Selector '[] (Id NSString)
 notesSelector = mkSelector "notes"
 
 -- | @Selector@ for @setNotes:@
-setNotesSelector :: Selector
+setNotesSelector :: Selector '[Id NSString] ()
 setNotesSelector = mkSelector "setNotes:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] RawId
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @setURL:@
-setURLSelector :: Selector
+setURLSelector :: Selector '[RawId] ()
 setURLSelector = mkSelector "setURL:"
 
 -- | @Selector@ for @lastModifiedDate@
-lastModifiedDateSelector :: Selector
+lastModifiedDateSelector :: Selector '[] (Id NSDate)
 lastModifiedDateSelector = mkSelector "lastModifiedDate"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] RawId
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @timeZone@
-timeZoneSelector :: Selector
+timeZoneSelector :: Selector '[] RawId
 timeZoneSelector = mkSelector "timeZone"
 
 -- | @Selector@ for @setTimeZone:@
-setTimeZoneSelector :: Selector
+setTimeZoneSelector :: Selector '[RawId] ()
 setTimeZoneSelector = mkSelector "setTimeZone:"
 
 -- | @Selector@ for @hasAlarms@
-hasAlarmsSelector :: Selector
+hasAlarmsSelector :: Selector '[] Bool
 hasAlarmsSelector = mkSelector "hasAlarms"
 
 -- | @Selector@ for @hasRecurrenceRules@
-hasRecurrenceRulesSelector :: Selector
+hasRecurrenceRulesSelector :: Selector '[] Bool
 hasRecurrenceRulesSelector = mkSelector "hasRecurrenceRules"
 
 -- | @Selector@ for @hasAttendees@
-hasAttendeesSelector :: Selector
+hasAttendeesSelector :: Selector '[] Bool
 hasAttendeesSelector = mkSelector "hasAttendees"
 
 -- | @Selector@ for @hasNotes@
-hasNotesSelector :: Selector
+hasNotesSelector :: Selector '[] Bool
 hasNotesSelector = mkSelector "hasNotes"
 
 -- | @Selector@ for @attendees@
-attendeesSelector :: Selector
+attendeesSelector :: Selector '[] (Id NSArray)
 attendeesSelector = mkSelector "attendees"
 
 -- | @Selector@ for @alarms@
-alarmsSelector :: Selector
+alarmsSelector :: Selector '[] (Id NSArray)
 alarmsSelector = mkSelector "alarms"
 
 -- | @Selector@ for @setAlarms:@
-setAlarmsSelector :: Selector
+setAlarmsSelector :: Selector '[Id NSArray] ()
 setAlarmsSelector = mkSelector "setAlarms:"
 

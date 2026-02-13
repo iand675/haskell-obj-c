@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.GameController.GCControllerAxisInput
   , valueChangedHandler
   , setValueChangedHandler
   , value
+  , setValueChangedHandlerSelector
   , setValueSelector
   , valueChangedHandlerSelector
-  , setValueChangedHandlerSelector
   , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,18 +40,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsGCControllerAxisInput gcControllerAxisInput => gcControllerAxisInput -> CFloat -> IO ()
-setValue gcControllerAxisInput  value =
-    sendMsg gcControllerAxisInput (mkSelector "setValue:") retVoid [argCFloat value]
+setValue gcControllerAxisInput value =
+  sendMessage gcControllerAxisInput setValueSelector value
 
 -- | @- valueChangedHandler@
 valueChangedHandler :: IsGCControllerAxisInput gcControllerAxisInput => gcControllerAxisInput -> IO (Ptr ())
-valueChangedHandler gcControllerAxisInput  =
-    fmap castPtr $ sendMsg gcControllerAxisInput (mkSelector "valueChangedHandler") (retPtr retVoid) []
+valueChangedHandler gcControllerAxisInput =
+  sendMessage gcControllerAxisInput valueChangedHandlerSelector
 
 -- | @- setValueChangedHandler:@
 setValueChangedHandler :: IsGCControllerAxisInput gcControllerAxisInput => gcControllerAxisInput -> Ptr () -> IO ()
-setValueChangedHandler gcControllerAxisInput  value =
-    sendMsg gcControllerAxisInput (mkSelector "setValueChangedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setValueChangedHandler gcControllerAxisInput value =
+  sendMessage gcControllerAxisInput setValueChangedHandlerSelector value
 
 -- | A normalized value for the input, between -1 and 1 for axis inputs. The values are deadzoned and saturated before they are returned so there is no value ouside the range. Deadzoning does not remove values from the range, the full 0 to 1 magnitude of values are possible from the input.
 --
@@ -62,26 +59,26 @@ setValueChangedHandler gcControllerAxisInput  value =
 --
 -- ObjC selector: @- value@
 value :: IsGCControllerAxisInput gcControllerAxisInput => gcControllerAxisInput -> IO CFloat
-value gcControllerAxisInput  =
-    sendMsg gcControllerAxisInput (mkSelector "value") retCFloat []
+value gcControllerAxisInput =
+  sendMessage gcControllerAxisInput valueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[CFloat] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @valueChangedHandler@
-valueChangedHandlerSelector :: Selector
+valueChangedHandlerSelector :: Selector '[] (Ptr ())
 valueChangedHandlerSelector = mkSelector "valueChangedHandler"
 
 -- | @Selector@ for @setValueChangedHandler:@
-setValueChangedHandlerSelector :: Selector
+setValueChangedHandlerSelector :: Selector '[Ptr ()] ()
 setValueChangedHandlerSelector = mkSelector "setValueChangedHandler:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CFloat
 valueSelector = mkSelector "value"
 

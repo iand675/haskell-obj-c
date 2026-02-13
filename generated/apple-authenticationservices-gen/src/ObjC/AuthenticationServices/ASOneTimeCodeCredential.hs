@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AuthenticationServices.ASOneTimeCodeCredential
   , credentialWithCode
   , initWithCode
   , code
-  , initSelector
-  , credentialWithCodeSelector
-  , initWithCodeSelector
   , codeSelector
+  , credentialWithCodeSelector
+  , initSelector
+  , initWithCodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,8 +32,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASOneTimeCodeCredential asOneTimeCodeCredential => asOneTimeCodeCredential -> IO (Id ASOneTimeCodeCredential)
-init_ asOneTimeCodeCredential  =
-    sendMsg asOneTimeCodeCredential (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asOneTimeCodeCredential =
+  sendOwnedMessage asOneTimeCodeCredential initSelector
 
 -- | Creates and initializes a new ASOneTimeCodeCredential object.
 --
@@ -47,8 +44,7 @@ credentialWithCode :: IsNSString code => code -> IO (Id ASOneTimeCodeCredential)
 credentialWithCode code =
   do
     cls' <- getRequiredClass "ASOneTimeCodeCredential"
-    withObjCPtr code $ \raw_code ->
-      sendClassMsg cls' (mkSelector "credentialWithCode:") (retPtr retVoid) [argPtr (castPtr raw_code :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' credentialWithCodeSelector (toNSString code)
 
 -- | Initializes an ASOneTimeCodeCredential object.
 --
@@ -56,9 +52,8 @@ credentialWithCode code =
 --
 -- ObjC selector: @- initWithCode:@
 initWithCode :: (IsASOneTimeCodeCredential asOneTimeCodeCredential, IsNSString code) => asOneTimeCodeCredential -> code -> IO (Id ASOneTimeCodeCredential)
-initWithCode asOneTimeCodeCredential  code =
-  withObjCPtr code $ \raw_code ->
-      sendMsg asOneTimeCodeCredential (mkSelector "initWithCode:") (retPtr retVoid) [argPtr (castPtr raw_code :: Ptr ())] >>= ownedObject . castPtr
+initWithCode asOneTimeCodeCredential code =
+  sendOwnedMessage asOneTimeCodeCredential initWithCodeSelector (toNSString code)
 
 -- | The code of this credential.
 --
@@ -66,26 +61,26 @@ initWithCode asOneTimeCodeCredential  code =
 --
 -- ObjC selector: @- code@
 code :: IsASOneTimeCodeCredential asOneTimeCodeCredential => asOneTimeCodeCredential -> IO (Id NSString)
-code asOneTimeCodeCredential  =
-    sendMsg asOneTimeCodeCredential (mkSelector "code") (retPtr retVoid) [] >>= retainedObject . castPtr
+code asOneTimeCodeCredential =
+  sendMessage asOneTimeCodeCredential codeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASOneTimeCodeCredential)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @credentialWithCode:@
-credentialWithCodeSelector :: Selector
+credentialWithCodeSelector :: Selector '[Id NSString] (Id ASOneTimeCodeCredential)
 credentialWithCodeSelector = mkSelector "credentialWithCode:"
 
 -- | @Selector@ for @initWithCode:@
-initWithCodeSelector :: Selector
+initWithCodeSelector :: Selector '[Id NSString] (Id ASOneTimeCodeCredential)
 initWithCodeSelector = mkSelector "initWithCode:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] (Id NSString)
 codeSelector = mkSelector "code"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.Intents.INSearchForAccountsIntent
   , accountType
   , organizationName
   , requestedBalanceType
-  , initWithAccountNickname_accountType_organizationName_requestedBalanceTypeSelector
   , accountNicknameSelector
   , accountTypeSelector
+  , initWithAccountNickname_accountType_organizationName_requestedBalanceTypeSelector
   , organizationNameSelector
   , requestedBalanceTypeSelector
 
@@ -36,15 +37,11 @@ module ObjC.Intents.INSearchForAccountsIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,52 +51,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithAccountNickname:accountType:organizationName:requestedBalanceType:@
 initWithAccountNickname_accountType_organizationName_requestedBalanceType :: (IsINSearchForAccountsIntent inSearchForAccountsIntent, IsINSpeakableString accountNickname, IsINSpeakableString organizationName) => inSearchForAccountsIntent -> accountNickname -> INAccountType -> organizationName -> INBalanceType -> IO (Id INSearchForAccountsIntent)
-initWithAccountNickname_accountType_organizationName_requestedBalanceType inSearchForAccountsIntent  accountNickname accountType organizationName requestedBalanceType =
-  withObjCPtr accountNickname $ \raw_accountNickname ->
-    withObjCPtr organizationName $ \raw_organizationName ->
-        sendMsg inSearchForAccountsIntent (mkSelector "initWithAccountNickname:accountType:organizationName:requestedBalanceType:") (retPtr retVoid) [argPtr (castPtr raw_accountNickname :: Ptr ()), argCLong (coerce accountType), argPtr (castPtr raw_organizationName :: Ptr ()), argCLong (coerce requestedBalanceType)] >>= ownedObject . castPtr
+initWithAccountNickname_accountType_organizationName_requestedBalanceType inSearchForAccountsIntent accountNickname accountType organizationName requestedBalanceType =
+  sendOwnedMessage inSearchForAccountsIntent initWithAccountNickname_accountType_organizationName_requestedBalanceTypeSelector (toINSpeakableString accountNickname) accountType (toINSpeakableString organizationName) requestedBalanceType
 
 -- | @- accountNickname@
 accountNickname :: IsINSearchForAccountsIntent inSearchForAccountsIntent => inSearchForAccountsIntent -> IO (Id INSpeakableString)
-accountNickname inSearchForAccountsIntent  =
-    sendMsg inSearchForAccountsIntent (mkSelector "accountNickname") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountNickname inSearchForAccountsIntent =
+  sendMessage inSearchForAccountsIntent accountNicknameSelector
 
 -- | @- accountType@
 accountType :: IsINSearchForAccountsIntent inSearchForAccountsIntent => inSearchForAccountsIntent -> IO INAccountType
-accountType inSearchForAccountsIntent  =
-    fmap (coerce :: CLong -> INAccountType) $ sendMsg inSearchForAccountsIntent (mkSelector "accountType") retCLong []
+accountType inSearchForAccountsIntent =
+  sendMessage inSearchForAccountsIntent accountTypeSelector
 
 -- | @- organizationName@
 organizationName :: IsINSearchForAccountsIntent inSearchForAccountsIntent => inSearchForAccountsIntent -> IO (Id INSpeakableString)
-organizationName inSearchForAccountsIntent  =
-    sendMsg inSearchForAccountsIntent (mkSelector "organizationName") (retPtr retVoid) [] >>= retainedObject . castPtr
+organizationName inSearchForAccountsIntent =
+  sendMessage inSearchForAccountsIntent organizationNameSelector
 
 -- | @- requestedBalanceType@
 requestedBalanceType :: IsINSearchForAccountsIntent inSearchForAccountsIntent => inSearchForAccountsIntent -> IO INBalanceType
-requestedBalanceType inSearchForAccountsIntent  =
-    fmap (coerce :: CLong -> INBalanceType) $ sendMsg inSearchForAccountsIntent (mkSelector "requestedBalanceType") retCLong []
+requestedBalanceType inSearchForAccountsIntent =
+  sendMessage inSearchForAccountsIntent requestedBalanceTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAccountNickname:accountType:organizationName:requestedBalanceType:@
-initWithAccountNickname_accountType_organizationName_requestedBalanceTypeSelector :: Selector
+initWithAccountNickname_accountType_organizationName_requestedBalanceTypeSelector :: Selector '[Id INSpeakableString, INAccountType, Id INSpeakableString, INBalanceType] (Id INSearchForAccountsIntent)
 initWithAccountNickname_accountType_organizationName_requestedBalanceTypeSelector = mkSelector "initWithAccountNickname:accountType:organizationName:requestedBalanceType:"
 
 -- | @Selector@ for @accountNickname@
-accountNicknameSelector :: Selector
+accountNicknameSelector :: Selector '[] (Id INSpeakableString)
 accountNicknameSelector = mkSelector "accountNickname"
 
 -- | @Selector@ for @accountType@
-accountTypeSelector :: Selector
+accountTypeSelector :: Selector '[] INAccountType
 accountTypeSelector = mkSelector "accountType"
 
 -- | @Selector@ for @organizationName@
-organizationNameSelector :: Selector
+organizationNameSelector :: Selector '[] (Id INSpeakableString)
 organizationNameSelector = mkSelector "organizationName"
 
 -- | @Selector@ for @requestedBalanceType@
-requestedBalanceTypeSelector :: Selector
+requestedBalanceTypeSelector :: Selector '[] INBalanceType
 requestedBalanceTypeSelector = mkSelector "requestedBalanceType"
 

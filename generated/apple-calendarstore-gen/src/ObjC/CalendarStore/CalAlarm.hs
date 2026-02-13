@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.CalendarStore.CalAlarm
   , setRelativeTrigger
   , absoluteTrigger
   , setAbsoluteTrigger
-  , alarmSelector
-  , setAcknowledgedSelector
-  , acknowledgedSelector
-  , setRelatedToSelector
-  , relatedToSelector
-  , triggerDateRelativeToSelector
-  , actionSelector
-  , setActionSelector
-  , soundSelector
-  , setSoundSelector
-  , emailAddressSelector
-  , setEmailAddressSelector
-  , urlSelector
-  , setUrlSelector
-  , relativeTriggerSelector
-  , setRelativeTriggerSelector
   , absoluteTriggerSelector
+  , acknowledgedSelector
+  , actionSelector
+  , alarmSelector
+  , emailAddressSelector
+  , relatedToSelector
+  , relativeTriggerSelector
   , setAbsoluteTriggerSelector
+  , setAcknowledgedSelector
+  , setActionSelector
+  , setEmailAddressSelector
+  , setRelatedToSelector
+  , setRelativeTriggerSelector
+  , setSoundSelector
+  , setUrlSelector
+  , soundSelector
+  , triggerDateRelativeToSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,174 +63,166 @@ alarm :: IO RawId
 alarm  =
   do
     cls' <- getRequiredClass "CalAlarm"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "alarm") (retPtr retVoid) []
+    sendClassMessage cls' alarmSelector
 
 -- | @- setAcknowledged:@
 setAcknowledged :: (IsCalAlarm calAlarm, IsNSDate date) => calAlarm -> date -> IO ()
-setAcknowledged calAlarm  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg calAlarm (mkSelector "setAcknowledged:") retVoid [argPtr (castPtr raw_date :: Ptr ())]
+setAcknowledged calAlarm date =
+  sendMessage calAlarm setAcknowledgedSelector (toNSDate date)
 
 -- | @- acknowledged@
 acknowledged :: IsCalAlarm calAlarm => calAlarm -> IO (Id NSDate)
-acknowledged calAlarm  =
-    sendMsg calAlarm (mkSelector "acknowledged") (retPtr retVoid) [] >>= retainedObject . castPtr
+acknowledged calAlarm =
+  sendMessage calAlarm acknowledgedSelector
 
 -- | @- setRelatedTo:@
 setRelatedTo :: (IsCalAlarm calAlarm, IsNSString relatedTo) => calAlarm -> relatedTo -> IO ()
-setRelatedTo calAlarm  relatedTo =
-  withObjCPtr relatedTo $ \raw_relatedTo ->
-      sendMsg calAlarm (mkSelector "setRelatedTo:") retVoid [argPtr (castPtr raw_relatedTo :: Ptr ())]
+setRelatedTo calAlarm relatedTo =
+  sendMessage calAlarm setRelatedToSelector (toNSString relatedTo)
 
 -- | @- relatedTo@
 relatedTo :: IsCalAlarm calAlarm => calAlarm -> IO (Id NSString)
-relatedTo calAlarm  =
-    sendMsg calAlarm (mkSelector "relatedTo") (retPtr retVoid) [] >>= retainedObject . castPtr
+relatedTo calAlarm =
+  sendMessage calAlarm relatedToSelector
 
 -- | @- triggerDateRelativeTo:@
 triggerDateRelativeTo :: (IsCalAlarm calAlarm, IsNSDate date) => calAlarm -> date -> IO (Id NSDate)
-triggerDateRelativeTo calAlarm  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg calAlarm (mkSelector "triggerDateRelativeTo:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+triggerDateRelativeTo calAlarm date =
+  sendMessage calAlarm triggerDateRelativeToSelector (toNSDate date)
 
 -- | @- action@
 action :: IsCalAlarm calAlarm => calAlarm -> IO (Id NSString)
-action calAlarm  =
-    sendMsg calAlarm (mkSelector "action") (retPtr retVoid) [] >>= retainedObject . castPtr
+action calAlarm =
+  sendMessage calAlarm actionSelector
 
 -- | @- setAction:@
 setAction :: (IsCalAlarm calAlarm, IsNSString value) => calAlarm -> value -> IO ()
-setAction calAlarm  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg calAlarm (mkSelector "setAction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAction calAlarm value =
+  sendMessage calAlarm setActionSelector (toNSString value)
 
 -- | @- sound@
 sound :: IsCalAlarm calAlarm => calAlarm -> IO (Id NSString)
-sound calAlarm  =
-    sendMsg calAlarm (mkSelector "sound") (retPtr retVoid) [] >>= retainedObject . castPtr
+sound calAlarm =
+  sendMessage calAlarm soundSelector
 
 -- | @- setSound:@
 setSound :: (IsCalAlarm calAlarm, IsNSString value) => calAlarm -> value -> IO ()
-setSound calAlarm  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg calAlarm (mkSelector "setSound:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSound calAlarm value =
+  sendMessage calAlarm setSoundSelector (toNSString value)
 
 -- | @- emailAddress@
 emailAddress :: IsCalAlarm calAlarm => calAlarm -> IO (Id NSString)
-emailAddress calAlarm  =
-    sendMsg calAlarm (mkSelector "emailAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+emailAddress calAlarm =
+  sendMessage calAlarm emailAddressSelector
 
 -- | @- setEmailAddress:@
 setEmailAddress :: (IsCalAlarm calAlarm, IsNSString value) => calAlarm -> value -> IO ()
-setEmailAddress calAlarm  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg calAlarm (mkSelector "setEmailAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEmailAddress calAlarm value =
+  sendMessage calAlarm setEmailAddressSelector (toNSString value)
 
 -- | @- url@
 url :: IsCalAlarm calAlarm => calAlarm -> IO (Id NSURL)
-url calAlarm  =
-    sendMsg calAlarm (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url calAlarm =
+  sendMessage calAlarm urlSelector
 
 -- | @- setUrl:@
 setUrl :: (IsCalAlarm calAlarm, IsNSURL value) => calAlarm -> value -> IO ()
-setUrl calAlarm  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg calAlarm (mkSelector "setUrl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUrl calAlarm value =
+  sendMessage calAlarm setUrlSelector (toNSURL value)
 
 -- | @- relativeTrigger@
 relativeTrigger :: IsCalAlarm calAlarm => calAlarm -> IO CDouble
-relativeTrigger calAlarm  =
-    sendMsg calAlarm (mkSelector "relativeTrigger") retCDouble []
+relativeTrigger calAlarm =
+  sendMessage calAlarm relativeTriggerSelector
 
 -- | @- setRelativeTrigger:@
 setRelativeTrigger :: IsCalAlarm calAlarm => calAlarm -> CDouble -> IO ()
-setRelativeTrigger calAlarm  value =
-    sendMsg calAlarm (mkSelector "setRelativeTrigger:") retVoid [argCDouble value]
+setRelativeTrigger calAlarm value =
+  sendMessage calAlarm setRelativeTriggerSelector value
 
 -- | @- absoluteTrigger@
 absoluteTrigger :: IsCalAlarm calAlarm => calAlarm -> IO (Id NSDate)
-absoluteTrigger calAlarm  =
-    sendMsg calAlarm (mkSelector "absoluteTrigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+absoluteTrigger calAlarm =
+  sendMessage calAlarm absoluteTriggerSelector
 
 -- | @- setAbsoluteTrigger:@
 setAbsoluteTrigger :: (IsCalAlarm calAlarm, IsNSDate value) => calAlarm -> value -> IO ()
-setAbsoluteTrigger calAlarm  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg calAlarm (mkSelector "setAbsoluteTrigger:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAbsoluteTrigger calAlarm value =
+  sendMessage calAlarm setAbsoluteTriggerSelector (toNSDate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @alarm@
-alarmSelector :: Selector
+alarmSelector :: Selector '[] RawId
 alarmSelector = mkSelector "alarm"
 
 -- | @Selector@ for @setAcknowledged:@
-setAcknowledgedSelector :: Selector
+setAcknowledgedSelector :: Selector '[Id NSDate] ()
 setAcknowledgedSelector = mkSelector "setAcknowledged:"
 
 -- | @Selector@ for @acknowledged@
-acknowledgedSelector :: Selector
+acknowledgedSelector :: Selector '[] (Id NSDate)
 acknowledgedSelector = mkSelector "acknowledged"
 
 -- | @Selector@ for @setRelatedTo:@
-setRelatedToSelector :: Selector
+setRelatedToSelector :: Selector '[Id NSString] ()
 setRelatedToSelector = mkSelector "setRelatedTo:"
 
 -- | @Selector@ for @relatedTo@
-relatedToSelector :: Selector
+relatedToSelector :: Selector '[] (Id NSString)
 relatedToSelector = mkSelector "relatedTo"
 
 -- | @Selector@ for @triggerDateRelativeTo:@
-triggerDateRelativeToSelector :: Selector
+triggerDateRelativeToSelector :: Selector '[Id NSDate] (Id NSDate)
 triggerDateRelativeToSelector = mkSelector "triggerDateRelativeTo:"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] (Id NSString)
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[Id NSString] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @sound@
-soundSelector :: Selector
+soundSelector :: Selector '[] (Id NSString)
 soundSelector = mkSelector "sound"
 
 -- | @Selector@ for @setSound:@
-setSoundSelector :: Selector
+setSoundSelector :: Selector '[Id NSString] ()
 setSoundSelector = mkSelector "setSound:"
 
 -- | @Selector@ for @emailAddress@
-emailAddressSelector :: Selector
+emailAddressSelector :: Selector '[] (Id NSString)
 emailAddressSelector = mkSelector "emailAddress"
 
 -- | @Selector@ for @setEmailAddress:@
-setEmailAddressSelector :: Selector
+setEmailAddressSelector :: Selector '[Id NSString] ()
 setEmailAddressSelector = mkSelector "setEmailAddress:"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @setUrl:@
-setUrlSelector :: Selector
+setUrlSelector :: Selector '[Id NSURL] ()
 setUrlSelector = mkSelector "setUrl:"
 
 -- | @Selector@ for @relativeTrigger@
-relativeTriggerSelector :: Selector
+relativeTriggerSelector :: Selector '[] CDouble
 relativeTriggerSelector = mkSelector "relativeTrigger"
 
 -- | @Selector@ for @setRelativeTrigger:@
-setRelativeTriggerSelector :: Selector
+setRelativeTriggerSelector :: Selector '[CDouble] ()
 setRelativeTriggerSelector = mkSelector "setRelativeTrigger:"
 
 -- | @Selector@ for @absoluteTrigger@
-absoluteTriggerSelector :: Selector
+absoluteTriggerSelector :: Selector '[] (Id NSDate)
 absoluteTriggerSelector = mkSelector "absoluteTrigger"
 
 -- | @Selector@ for @setAbsoluteTrigger:@
-setAbsoluteTriggerSelector :: Selector
+setAbsoluteTriggerSelector :: Selector '[Id NSDate] ()
 setAbsoluteTriggerSelector = mkSelector "setAbsoluteTrigger:"
 

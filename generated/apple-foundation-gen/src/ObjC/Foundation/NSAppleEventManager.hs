@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.Foundation.NSAppleEventManager
   , resumeWithSuspensionID
   , currentAppleEvent
   , currentReplyAppleEvent
-  , sharedAppleEventManagerSelector
-  , setEventHandler_andSelector_forEventClass_andEventIDSelector
-  , removeEventHandlerForEventClass_andEventIDSelector
-  , dispatchRawAppleEvent_withRawReply_handlerRefConSelector
-  , suspendCurrentAppleEventSelector
   , appleEventForSuspensionIDSelector
-  , replyAppleEventForSuspensionIDSelector
-  , setCurrentAppleEventAndReplyEventWithSuspensionIDSelector
-  , resumeWithSuspensionIDSelector
   , currentAppleEventSelector
   , currentReplyAppleEventSelector
+  , dispatchRawAppleEvent_withRawReply_handlerRefConSelector
+  , removeEventHandlerForEventClass_andEventIDSelector
+  , replyAppleEventForSuspensionIDSelector
+  , resumeWithSuspensionIDSelector
+  , setCurrentAppleEventAndReplyEventWithSuspensionIDSelector
+  , setEventHandler_andSelector_forEventClass_andEventIDSelector
+  , sharedAppleEventManagerSelector
+  , suspendCurrentAppleEventSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,103 +48,103 @@ sharedAppleEventManager :: IO (Id NSAppleEventManager)
 sharedAppleEventManager  =
   do
     cls' <- getRequiredClass "NSAppleEventManager"
-    sendClassMsg cls' (mkSelector "sharedAppleEventManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedAppleEventManagerSelector
 
 -- | @- setEventHandler:andSelector:forEventClass:andEventID:@
-setEventHandler_andSelector_forEventClass_andEventID :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> RawId -> Selector -> CUInt -> CUInt -> IO ()
-setEventHandler_andSelector_forEventClass_andEventID nsAppleEventManager  handler handleEventSelector eventClass eventID =
-    sendMsg nsAppleEventManager (mkSelector "setEventHandler:andSelector:forEventClass:andEventID:") retVoid [argPtr (castPtr (unRawId handler) :: Ptr ()), argPtr (unSelector handleEventSelector), argCUInt eventClass, argCUInt eventID]
+setEventHandler_andSelector_forEventClass_andEventID :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> RawId -> Sel -> CUInt -> CUInt -> IO ()
+setEventHandler_andSelector_forEventClass_andEventID nsAppleEventManager handler handleEventSelector eventClass eventID =
+  sendMessage nsAppleEventManager setEventHandler_andSelector_forEventClass_andEventIDSelector handler handleEventSelector eventClass eventID
 
 -- | @- removeEventHandlerForEventClass:andEventID:@
 removeEventHandlerForEventClass_andEventID :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> CUInt -> CUInt -> IO ()
-removeEventHandlerForEventClass_andEventID nsAppleEventManager  eventClass eventID =
-    sendMsg nsAppleEventManager (mkSelector "removeEventHandlerForEventClass:andEventID:") retVoid [argCUInt eventClass, argCUInt eventID]
+removeEventHandlerForEventClass_andEventID nsAppleEventManager eventClass eventID =
+  sendMessage nsAppleEventManager removeEventHandlerForEventClass_andEventIDSelector eventClass eventID
 
 -- | @- dispatchRawAppleEvent:withRawReply:handlerRefCon:@
 dispatchRawAppleEvent_withRawReply_handlerRefCon :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> Const RawId -> RawId -> RawId -> IO CShort
-dispatchRawAppleEvent_withRawReply_handlerRefCon nsAppleEventManager  theAppleEvent theReply handlerRefCon =
-    fmap fromIntegral $ sendMsg nsAppleEventManager (mkSelector "dispatchRawAppleEvent:withRawReply:handlerRefCon:") retCInt [argPtr (castPtr (unRawId (unConst theAppleEvent)) :: Ptr ()), argPtr (castPtr (unRawId theReply) :: Ptr ()), argPtr (castPtr (unRawId handlerRefCon) :: Ptr ())]
+dispatchRawAppleEvent_withRawReply_handlerRefCon nsAppleEventManager theAppleEvent theReply handlerRefCon =
+  sendMessage nsAppleEventManager dispatchRawAppleEvent_withRawReply_handlerRefConSelector theAppleEvent theReply handlerRefCon
 
 -- | @- suspendCurrentAppleEvent@
 suspendCurrentAppleEvent :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> IO RawId
-suspendCurrentAppleEvent nsAppleEventManager  =
-    fmap (RawId . castPtr) $ sendMsg nsAppleEventManager (mkSelector "suspendCurrentAppleEvent") (retPtr retVoid) []
+suspendCurrentAppleEvent nsAppleEventManager =
+  sendMessage nsAppleEventManager suspendCurrentAppleEventSelector
 
 -- | @- appleEventForSuspensionID:@
 appleEventForSuspensionID :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> RawId -> IO (Id NSAppleEventDescriptor)
-appleEventForSuspensionID nsAppleEventManager  suspensionID =
-    sendMsg nsAppleEventManager (mkSelector "appleEventForSuspensionID:") (retPtr retVoid) [argPtr (castPtr (unRawId suspensionID) :: Ptr ())] >>= retainedObject . castPtr
+appleEventForSuspensionID nsAppleEventManager suspensionID =
+  sendMessage nsAppleEventManager appleEventForSuspensionIDSelector suspensionID
 
 -- | @- replyAppleEventForSuspensionID:@
 replyAppleEventForSuspensionID :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> RawId -> IO (Id NSAppleEventDescriptor)
-replyAppleEventForSuspensionID nsAppleEventManager  suspensionID =
-    sendMsg nsAppleEventManager (mkSelector "replyAppleEventForSuspensionID:") (retPtr retVoid) [argPtr (castPtr (unRawId suspensionID) :: Ptr ())] >>= retainedObject . castPtr
+replyAppleEventForSuspensionID nsAppleEventManager suspensionID =
+  sendMessage nsAppleEventManager replyAppleEventForSuspensionIDSelector suspensionID
 
 -- | @- setCurrentAppleEventAndReplyEventWithSuspensionID:@
 setCurrentAppleEventAndReplyEventWithSuspensionID :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> RawId -> IO ()
-setCurrentAppleEventAndReplyEventWithSuspensionID nsAppleEventManager  suspensionID =
-    sendMsg nsAppleEventManager (mkSelector "setCurrentAppleEventAndReplyEventWithSuspensionID:") retVoid [argPtr (castPtr (unRawId suspensionID) :: Ptr ())]
+setCurrentAppleEventAndReplyEventWithSuspensionID nsAppleEventManager suspensionID =
+  sendMessage nsAppleEventManager setCurrentAppleEventAndReplyEventWithSuspensionIDSelector suspensionID
 
 -- | @- resumeWithSuspensionID:@
 resumeWithSuspensionID :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> RawId -> IO ()
-resumeWithSuspensionID nsAppleEventManager  suspensionID =
-    sendMsg nsAppleEventManager (mkSelector "resumeWithSuspensionID:") retVoid [argPtr (castPtr (unRawId suspensionID) :: Ptr ())]
+resumeWithSuspensionID nsAppleEventManager suspensionID =
+  sendMessage nsAppleEventManager resumeWithSuspensionIDSelector suspensionID
 
 -- | @- currentAppleEvent@
 currentAppleEvent :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> IO (Id NSAppleEventDescriptor)
-currentAppleEvent nsAppleEventManager  =
-    sendMsg nsAppleEventManager (mkSelector "currentAppleEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentAppleEvent nsAppleEventManager =
+  sendMessage nsAppleEventManager currentAppleEventSelector
 
 -- | @- currentReplyAppleEvent@
 currentReplyAppleEvent :: IsNSAppleEventManager nsAppleEventManager => nsAppleEventManager -> IO (Id NSAppleEventDescriptor)
-currentReplyAppleEvent nsAppleEventManager  =
-    sendMsg nsAppleEventManager (mkSelector "currentReplyAppleEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentReplyAppleEvent nsAppleEventManager =
+  sendMessage nsAppleEventManager currentReplyAppleEventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedAppleEventManager@
-sharedAppleEventManagerSelector :: Selector
+sharedAppleEventManagerSelector :: Selector '[] (Id NSAppleEventManager)
 sharedAppleEventManagerSelector = mkSelector "sharedAppleEventManager"
 
 -- | @Selector@ for @setEventHandler:andSelector:forEventClass:andEventID:@
-setEventHandler_andSelector_forEventClass_andEventIDSelector :: Selector
+setEventHandler_andSelector_forEventClass_andEventIDSelector :: Selector '[RawId, Sel, CUInt, CUInt] ()
 setEventHandler_andSelector_forEventClass_andEventIDSelector = mkSelector "setEventHandler:andSelector:forEventClass:andEventID:"
 
 -- | @Selector@ for @removeEventHandlerForEventClass:andEventID:@
-removeEventHandlerForEventClass_andEventIDSelector :: Selector
+removeEventHandlerForEventClass_andEventIDSelector :: Selector '[CUInt, CUInt] ()
 removeEventHandlerForEventClass_andEventIDSelector = mkSelector "removeEventHandlerForEventClass:andEventID:"
 
 -- | @Selector@ for @dispatchRawAppleEvent:withRawReply:handlerRefCon:@
-dispatchRawAppleEvent_withRawReply_handlerRefConSelector :: Selector
+dispatchRawAppleEvent_withRawReply_handlerRefConSelector :: Selector '[Const RawId, RawId, RawId] CShort
 dispatchRawAppleEvent_withRawReply_handlerRefConSelector = mkSelector "dispatchRawAppleEvent:withRawReply:handlerRefCon:"
 
 -- | @Selector@ for @suspendCurrentAppleEvent@
-suspendCurrentAppleEventSelector :: Selector
+suspendCurrentAppleEventSelector :: Selector '[] RawId
 suspendCurrentAppleEventSelector = mkSelector "suspendCurrentAppleEvent"
 
 -- | @Selector@ for @appleEventForSuspensionID:@
-appleEventForSuspensionIDSelector :: Selector
+appleEventForSuspensionIDSelector :: Selector '[RawId] (Id NSAppleEventDescriptor)
 appleEventForSuspensionIDSelector = mkSelector "appleEventForSuspensionID:"
 
 -- | @Selector@ for @replyAppleEventForSuspensionID:@
-replyAppleEventForSuspensionIDSelector :: Selector
+replyAppleEventForSuspensionIDSelector :: Selector '[RawId] (Id NSAppleEventDescriptor)
 replyAppleEventForSuspensionIDSelector = mkSelector "replyAppleEventForSuspensionID:"
 
 -- | @Selector@ for @setCurrentAppleEventAndReplyEventWithSuspensionID:@
-setCurrentAppleEventAndReplyEventWithSuspensionIDSelector :: Selector
+setCurrentAppleEventAndReplyEventWithSuspensionIDSelector :: Selector '[RawId] ()
 setCurrentAppleEventAndReplyEventWithSuspensionIDSelector = mkSelector "setCurrentAppleEventAndReplyEventWithSuspensionID:"
 
 -- | @Selector@ for @resumeWithSuspensionID:@
-resumeWithSuspensionIDSelector :: Selector
+resumeWithSuspensionIDSelector :: Selector '[RawId] ()
 resumeWithSuspensionIDSelector = mkSelector "resumeWithSuspensionID:"
 
 -- | @Selector@ for @currentAppleEvent@
-currentAppleEventSelector :: Selector
+currentAppleEventSelector :: Selector '[] (Id NSAppleEventDescriptor)
 currentAppleEventSelector = mkSelector "currentAppleEvent"
 
 -- | @Selector@ for @currentReplyAppleEvent@
-currentReplyAppleEventSelector :: Selector
+currentReplyAppleEventSelector :: Selector '[] (Id NSAppleEventDescriptor)
 currentReplyAppleEventSelector = mkSelector "currentReplyAppleEvent"
 

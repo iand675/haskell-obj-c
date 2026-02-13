@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVContinuityDevice
   , connectionID
   , connected
   , videoDevices
+  , connectedSelector
+  , connectionIDSelector
   , initSelector
   , newSelector
-  , connectionIDSelector
-  , connectedSelector
   , videoDevicesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVContinuityDevice avContinuityDevice => avContinuityDevice -> IO (Id AVContinuityDevice)
-init_ avContinuityDevice  =
-    sendMsg avContinuityDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avContinuityDevice =
+  sendOwnedMessage avContinuityDevice initSelector
 
 -- | @+ new@
 new :: IO (Id AVContinuityDevice)
 new  =
   do
     cls' <- getRequiredClass "AVContinuityDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | connectionID
 --
@@ -61,8 +58,8 @@ new  =
 --
 -- ObjC selector: @- connectionID@
 connectionID :: IsAVContinuityDevice avContinuityDevice => avContinuityDevice -> IO (Id NSUUID)
-connectionID avContinuityDevice  =
-    sendMsg avContinuityDevice (mkSelector "connectionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectionID avContinuityDevice =
+  sendMessage avContinuityDevice connectionIDSelector
 
 -- | connected
 --
@@ -72,8 +69,8 @@ connectionID avContinuityDevice  =
 --
 -- ObjC selector: @- connected@
 connected :: IsAVContinuityDevice avContinuityDevice => avContinuityDevice -> IO Bool
-connected avContinuityDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avContinuityDevice (mkSelector "connected") retCULong []
+connected avContinuityDevice =
+  sendMessage avContinuityDevice connectedSelector
 
 -- | videoDevices
 --
@@ -81,30 +78,30 @@ connected avContinuityDevice  =
 --
 -- ObjC selector: @- videoDevices@
 videoDevices :: IsAVContinuityDevice avContinuityDevice => avContinuityDevice -> IO (Id NSArray)
-videoDevices avContinuityDevice  =
-    sendMsg avContinuityDevice (mkSelector "videoDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoDevices avContinuityDevice =
+  sendMessage avContinuityDevice videoDevicesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVContinuityDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVContinuityDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @connectionID@
-connectionIDSelector :: Selector
+connectionIDSelector :: Selector '[] (Id NSUUID)
 connectionIDSelector = mkSelector "connectionID"
 
 -- | @Selector@ for @connected@
-connectedSelector :: Selector
+connectedSelector :: Selector '[] Bool
 connectedSelector = mkSelector "connected"
 
 -- | @Selector@ for @videoDevices@
-videoDevicesSelector :: Selector
+videoDevicesSelector :: Selector '[] (Id NSArray)
 videoDevicesSelector = mkSelector "videoDevices"
 

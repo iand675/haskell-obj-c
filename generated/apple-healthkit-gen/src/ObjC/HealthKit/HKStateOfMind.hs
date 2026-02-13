@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,15 @@ module ObjC.HealthKit.HKStateOfMind
   , valenceClassification
   , labels
   , associations
+  , associationsSelector
+  , initSelector
+  , kindSelector
+  , labelsSelector
+  , newSelector
   , stateOfMindWithDate_kind_valence_labels_associationsSelector
   , stateOfMindWithDate_kind_valence_labels_associations_metadataSelector
-  , initSelector
-  , newSelector
-  , kindSelector
-  , valenceSelector
   , valenceClassificationSelector
-  , labelsSelector
-  , associationsSelector
+  , valenceSelector
 
   -- * Enum types
   , HKStateOfMindKind(HKStateOfMindKind)
@@ -43,15 +44,11 @@ module ObjC.HealthKit.HKStateOfMind
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,10 +63,7 @@ stateOfMindWithDate_kind_valence_labels_associations :: (IsNSDate date, IsNSArra
 stateOfMindWithDate_kind_valence_labels_associations date kind valence labels associations =
   do
     cls' <- getRequiredClass "HKStateOfMind"
-    withObjCPtr date $ \raw_date ->
-      withObjCPtr labels $ \raw_labels ->
-        withObjCPtr associations $ \raw_associations ->
-          sendClassMsg cls' (mkSelector "stateOfMindWithDate:kind:valence:labels:associations:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ()), argCLong (coerce kind), argCDouble valence, argPtr (castPtr raw_labels :: Ptr ()), argPtr (castPtr raw_associations :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' stateOfMindWithDate_kind_valence_labels_associationsSelector (toNSDate date) kind valence (toNSArray labels) (toNSArray associations)
 
 -- | Creates a new log describing an experienced emotion at a moment in time.
 --
@@ -78,23 +72,19 @@ stateOfMindWithDate_kind_valence_labels_associations_metadata :: (IsNSDate date,
 stateOfMindWithDate_kind_valence_labels_associations_metadata date kind valence labels associations metadata =
   do
     cls' <- getRequiredClass "HKStateOfMind"
-    withObjCPtr date $ \raw_date ->
-      withObjCPtr labels $ \raw_labels ->
-        withObjCPtr associations $ \raw_associations ->
-          withObjCPtr metadata $ \raw_metadata ->
-            sendClassMsg cls' (mkSelector "stateOfMindWithDate:kind:valence:labels:associations:metadata:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ()), argCLong (coerce kind), argCDouble valence, argPtr (castPtr raw_labels :: Ptr ()), argPtr (castPtr raw_associations :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' stateOfMindWithDate_kind_valence_labels_associations_metadataSelector (toNSDate date) kind valence (toNSArray labels) (toNSArray associations) (toNSDictionary metadata)
 
 -- | @- init@
 init_ :: IsHKStateOfMind hkStateOfMind => hkStateOfMind -> IO (Id HKStateOfMind)
-init_ hkStateOfMind  =
-    sendMsg hkStateOfMind (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkStateOfMind =
+  sendOwnedMessage hkStateOfMind initSelector
 
 -- | @+ new@
 new :: IO (Id HKStateOfMind)
 new  =
   do
     cls' <- getRequiredClass "HKStateOfMind"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | A description of the kind of feeling type captured by this state of mind.
 --
@@ -102,74 +92,74 @@ new  =
 --
 -- ObjC selector: @- kind@
 kind :: IsHKStateOfMind hkStateOfMind => hkStateOfMind -> IO HKStateOfMindKind
-kind hkStateOfMind  =
-    fmap (coerce :: CLong -> HKStateOfMindKind) $ sendMsg hkStateOfMind (mkSelector "kind") retCLong []
+kind hkStateOfMind =
+  sendMessage hkStateOfMind kindSelector
 
 -- | A signed, self-reported measure of how positive or negative one is feeling, on a continuous scale from -1 to +1.
 --
 -- ObjC selector: @- valence@
 valence :: IsHKStateOfMind hkStateOfMind => hkStateOfMind -> IO CDouble
-valence hkStateOfMind  =
-    sendMsg hkStateOfMind (mkSelector "valence") retCDouble []
+valence hkStateOfMind =
+  sendMessage hkStateOfMind valenceSelector
 
 -- | A general region of pleasantness based on this sample's valence value.
 --
 -- ObjC selector: @- valenceClassification@
 valenceClassification :: IsHKStateOfMind hkStateOfMind => hkStateOfMind -> IO HKStateOfMindValenceClassification
-valenceClassification hkStateOfMind  =
-    fmap (coerce :: CLong -> HKStateOfMindValenceClassification) $ sendMsg hkStateOfMind (mkSelector "valenceClassification") retCLong []
+valenceClassification hkStateOfMind =
+  sendMessage hkStateOfMind valenceClassificationSelector
 
 -- | Zero or more specific sentiments selected to represent a felt experience.
 --
 -- ObjC selector: @- labels@
 labels :: IsHKStateOfMind hkStateOfMind => hkStateOfMind -> IO (Id NSArray)
-labels hkStateOfMind  =
-    sendMsg hkStateOfMind (mkSelector "labels") (retPtr retVoid) [] >>= retainedObject . castPtr
+labels hkStateOfMind =
+  sendMessage hkStateOfMind labelsSelector
 
 -- | Zero or more facets of life with which this felt experience is associated.
 --
 -- ObjC selector: @- associations@
 associations :: IsHKStateOfMind hkStateOfMind => hkStateOfMind -> IO (Id NSArray)
-associations hkStateOfMind  =
-    sendMsg hkStateOfMind (mkSelector "associations") (retPtr retVoid) [] >>= retainedObject . castPtr
+associations hkStateOfMind =
+  sendMessage hkStateOfMind associationsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stateOfMindWithDate:kind:valence:labels:associations:@
-stateOfMindWithDate_kind_valence_labels_associationsSelector :: Selector
+stateOfMindWithDate_kind_valence_labels_associationsSelector :: Selector '[Id NSDate, HKStateOfMindKind, CDouble, Id NSArray, Id NSArray] (Id HKStateOfMind)
 stateOfMindWithDate_kind_valence_labels_associationsSelector = mkSelector "stateOfMindWithDate:kind:valence:labels:associations:"
 
 -- | @Selector@ for @stateOfMindWithDate:kind:valence:labels:associations:metadata:@
-stateOfMindWithDate_kind_valence_labels_associations_metadataSelector :: Selector
+stateOfMindWithDate_kind_valence_labels_associations_metadataSelector :: Selector '[Id NSDate, HKStateOfMindKind, CDouble, Id NSArray, Id NSArray, Id NSDictionary] (Id HKStateOfMind)
 stateOfMindWithDate_kind_valence_labels_associations_metadataSelector = mkSelector "stateOfMindWithDate:kind:valence:labels:associations:metadata:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKStateOfMind)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKStateOfMind)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @kind@
-kindSelector :: Selector
+kindSelector :: Selector '[] HKStateOfMindKind
 kindSelector = mkSelector "kind"
 
 -- | @Selector@ for @valence@
-valenceSelector :: Selector
+valenceSelector :: Selector '[] CDouble
 valenceSelector = mkSelector "valence"
 
 -- | @Selector@ for @valenceClassification@
-valenceClassificationSelector :: Selector
+valenceClassificationSelector :: Selector '[] HKStateOfMindValenceClassification
 valenceClassificationSelector = mkSelector "valenceClassification"
 
 -- | @Selector@ for @labels@
-labelsSelector :: Selector
+labelsSelector :: Selector '[] (Id NSArray)
 labelsSelector = mkSelector "labels"
 
 -- | @Selector@ for @associations@
-associationsSelector :: Selector
+associationsSelector :: Selector '[] (Id NSArray)
 associationsSelector = mkSelector "associations"
 

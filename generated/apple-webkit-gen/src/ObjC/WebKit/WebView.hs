@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -143,142 +144,142 @@ module ObjC.WebKit.WebView
   , canMakeTextLarger
   , canMakeTextSmaller
   , canMakeTextStandardSize
-  , canShowMIMETypeSelector
-  , canShowMIMETypeAsHTMLSelector
-  , mimeTypesShownAsHTMLSelector
-  , setMIMETypesShownAsHTMLSelector
-  , urlFromPasteboardSelector
-  , urlTitleFromPasteboardSelector
-  , registerURLSchemeAsLocalSelector
-  , initWithFrame_frameName_groupNameSelector
-  , closeSelector
-  , setMaintainsBackForwardListSelector
-  , goBackSelector
-  , goForwardSelector
-  , goToBackForwardItemSelector
-  , userAgentForURLSelector
-  , stringByEvaluatingJavaScriptFromStringSelector
-  , searchFor_direction_caseSensitive_wrapSelector
-  , registerViewClass_representationClass_forMIMETypeSelector
-  , elementAtPointSelector
-  , writeSelectionWithPasteboardTypes_toPasteboardSelector
-  , pasteboardTypesForElementSelector
-  , writeElement_withPasteboardTypes_toPasteboardSelector
-  , moveDragCaretToPointSelector
-  , removeDragCaretSelector
-  , copySelector
-  , cutSelector
-  , pasteSelector
-  , copyFontSelector
-  , pasteFontSelector
-  , deleteSelector
-  , pasteAsPlainTextSelector
-  , pasteAsRichTextSelector
-  , changeFontSelector
-  , changeAttributesSelector
-  , changeDocumentBackgroundColorSelector
-  , changeColorSelector
   , alignCenterSelector
   , alignJustifiedSelector
   , alignLeftSelector
   , alignRightSelector
-  , checkSpellingSelector
-  , showGuessPanelSelector
-  , performFindPanelActionSelector
-  , startSpeakingSelector
-  , stopSpeakingSelector
-  , moveToBeginningOfSentenceSelector
-  , moveToBeginningOfSentenceAndModifySelectionSelector
-  , moveToEndOfSentenceSelector
-  , moveToEndOfSentenceAndModifySelectionSelector
-  , selectSentenceSelector
-  , overWriteSelector
-  , replaceSelectionWithNodeSelector
-  , replaceSelectionWithTextSelector
-  , replaceSelectionWithMarkupStringSelector
-  , replaceSelectionWithArchiveSelector
-  , deleteSelectionSelector
-  , applyStyleSelector
-  , editableDOMRangeForPointSelector
-  , setSelectedDOMRange_affinitySelector
-  , styleDeclarationWithTextSelector
-  , computedStyleForElement_pseudoElementSelector
-  , takeStringURLFromSelector
-  , stopLoadingSelector
-  , reloadSelector
-  , reloadFromOriginSelector
-  , makeTextLargerSelector
-  , makeTextSmallerSelector
-  , makeTextStandardSizeSelector
-  , toggleContinuousSpellCheckingSelector
-  , toggleSmartInsertDeleteSelector
-  , shouldCloseWithWindowSelector
-  , setShouldCloseWithWindowSelector
-  , uiDelegateSelector
-  , setUIDelegateSelector
-  , resourceLoadDelegateSelector
-  , setResourceLoadDelegateSelector
-  , downloadDelegateSelector
-  , setDownloadDelegateSelector
-  , frameLoadDelegateSelector
-  , setFrameLoadDelegateSelector
-  , policyDelegateSelector
-  , setPolicyDelegateSelector
-  , mainFrameSelector
-  , selectedFrameSelector
-  , backForwardListSelector
-  , textSizeMultiplierSelector
-  , setTextSizeMultiplierSelector
   , applicationNameForUserAgentSelector
-  , setApplicationNameForUserAgentSelector
-  , customUserAgentSelector
-  , setCustomUserAgentSelector
-  , supportsTextEncodingSelector
-  , customTextEncodingNameSelector
-  , setCustomTextEncodingNameSelector
-  , mediaStyleSelector
-  , setMediaStyleSelector
-  , windowScriptObjectSelector
-  , preferencesSelector
-  , setPreferencesSelector
-  , preferencesIdentifierSelector
-  , setPreferencesIdentifierSelector
-  , hostWindowSelector
-  , setHostWindowSelector
-  , groupNameSelector
-  , setGroupNameSelector
-  , estimatedProgressSelector
-  , loadingSelector
-  , pasteboardTypesForSelectionSelector
-  , drawsBackgroundSelector
-  , setDrawsBackgroundSelector
-  , shouldUpdateWhileOffscreenSelector
-  , setShouldUpdateWhileOffscreenSelector
-  , mainFrameURLSelector
-  , setMainFrameURLSelector
-  , mainFrameDocumentSelector
-  , mainFrameTitleSelector
-  , mainFrameIconSelector
-  , selectedDOMRangeSelector
-  , selectionAffinitySelector
-  , maintainsInactiveSelectionSelector
-  , editableSelector
-  , setEditableSelector
-  , typingStyleSelector
-  , setTypingStyleSelector
-  , smartInsertDeleteEnabledSelector
-  , setSmartInsertDeleteEnabledSelector
-  , continuousSpellCheckingEnabledSelector
-  , setContinuousSpellCheckingEnabledSelector
-  , spellCheckerDocumentTagSelector
-  , undoManagerSelector
-  , editingDelegateSelector
-  , setEditingDelegateSelector
+  , applyStyleSelector
+  , backForwardListSelector
   , canGoBackSelector
   , canGoForwardSelector
   , canMakeTextLargerSelector
   , canMakeTextSmallerSelector
   , canMakeTextStandardSizeSelector
+  , canShowMIMETypeAsHTMLSelector
+  , canShowMIMETypeSelector
+  , changeAttributesSelector
+  , changeColorSelector
+  , changeDocumentBackgroundColorSelector
+  , changeFontSelector
+  , checkSpellingSelector
+  , closeSelector
+  , computedStyleForElement_pseudoElementSelector
+  , continuousSpellCheckingEnabledSelector
+  , copyFontSelector
+  , copySelector
+  , customTextEncodingNameSelector
+  , customUserAgentSelector
+  , cutSelector
+  , deleteSelectionSelector
+  , deleteSelector
+  , downloadDelegateSelector
+  , drawsBackgroundSelector
+  , editableDOMRangeForPointSelector
+  , editableSelector
+  , editingDelegateSelector
+  , elementAtPointSelector
+  , estimatedProgressSelector
+  , frameLoadDelegateSelector
+  , goBackSelector
+  , goForwardSelector
+  , goToBackForwardItemSelector
+  , groupNameSelector
+  , hostWindowSelector
+  , initWithFrame_frameName_groupNameSelector
+  , loadingSelector
+  , mainFrameDocumentSelector
+  , mainFrameIconSelector
+  , mainFrameSelector
+  , mainFrameTitleSelector
+  , mainFrameURLSelector
+  , maintainsInactiveSelectionSelector
+  , makeTextLargerSelector
+  , makeTextSmallerSelector
+  , makeTextStandardSizeSelector
+  , mediaStyleSelector
+  , mimeTypesShownAsHTMLSelector
+  , moveDragCaretToPointSelector
+  , moveToBeginningOfSentenceAndModifySelectionSelector
+  , moveToBeginningOfSentenceSelector
+  , moveToEndOfSentenceAndModifySelectionSelector
+  , moveToEndOfSentenceSelector
+  , overWriteSelector
+  , pasteAsPlainTextSelector
+  , pasteAsRichTextSelector
+  , pasteFontSelector
+  , pasteSelector
+  , pasteboardTypesForElementSelector
+  , pasteboardTypesForSelectionSelector
+  , performFindPanelActionSelector
+  , policyDelegateSelector
+  , preferencesIdentifierSelector
+  , preferencesSelector
+  , registerURLSchemeAsLocalSelector
+  , registerViewClass_representationClass_forMIMETypeSelector
+  , reloadFromOriginSelector
+  , reloadSelector
+  , removeDragCaretSelector
+  , replaceSelectionWithArchiveSelector
+  , replaceSelectionWithMarkupStringSelector
+  , replaceSelectionWithNodeSelector
+  , replaceSelectionWithTextSelector
+  , resourceLoadDelegateSelector
+  , searchFor_direction_caseSensitive_wrapSelector
+  , selectSentenceSelector
+  , selectedDOMRangeSelector
+  , selectedFrameSelector
+  , selectionAffinitySelector
+  , setApplicationNameForUserAgentSelector
+  , setContinuousSpellCheckingEnabledSelector
+  , setCustomTextEncodingNameSelector
+  , setCustomUserAgentSelector
+  , setDownloadDelegateSelector
+  , setDrawsBackgroundSelector
+  , setEditableSelector
+  , setEditingDelegateSelector
+  , setFrameLoadDelegateSelector
+  , setGroupNameSelector
+  , setHostWindowSelector
+  , setMIMETypesShownAsHTMLSelector
+  , setMainFrameURLSelector
+  , setMaintainsBackForwardListSelector
+  , setMediaStyleSelector
+  , setPolicyDelegateSelector
+  , setPreferencesIdentifierSelector
+  , setPreferencesSelector
+  , setResourceLoadDelegateSelector
+  , setSelectedDOMRange_affinitySelector
+  , setShouldCloseWithWindowSelector
+  , setShouldUpdateWhileOffscreenSelector
+  , setSmartInsertDeleteEnabledSelector
+  , setTextSizeMultiplierSelector
+  , setTypingStyleSelector
+  , setUIDelegateSelector
+  , shouldCloseWithWindowSelector
+  , shouldUpdateWhileOffscreenSelector
+  , showGuessPanelSelector
+  , smartInsertDeleteEnabledSelector
+  , spellCheckerDocumentTagSelector
+  , startSpeakingSelector
+  , stopLoadingSelector
+  , stopSpeakingSelector
+  , stringByEvaluatingJavaScriptFromStringSelector
+  , styleDeclarationWithTextSelector
+  , supportsTextEncodingSelector
+  , takeStringURLFromSelector
+  , textSizeMultiplierSelector
+  , toggleContinuousSpellCheckingSelector
+  , toggleSmartInsertDeleteSelector
+  , typingStyleSelector
+  , uiDelegateSelector
+  , undoManagerSelector
+  , urlFromPasteboardSelector
+  , urlTitleFromPasteboardSelector
+  , userAgentForURLSelector
+  , windowScriptObjectSelector
+  , writeElement_withPasteboardTypes_toPasteboardSelector
+  , writeSelectionWithPasteboardTypes_toPasteboardSelector
 
   -- * Enum types
   , NSSelectionAffinity(NSSelectionAffinity)
@@ -287,15 +288,11 @@ module ObjC.WebKit.WebView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -318,8 +315,7 @@ canShowMIMEType :: IsNSString mimeType => mimeType -> IO Bool
 canShowMIMEType mimeType =
   do
     cls' <- getRequiredClass "WebView"
-    withObjCPtr mimeType $ \raw_mimeType ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canShowMIMEType:") retCULong [argPtr (castPtr raw_mimeType :: Ptr ())]
+    sendClassMessage cls' canShowMIMETypeSelector (toNSString mimeType)
 
 -- | canShowMIMETypeAsHTML:
 --
@@ -334,8 +330,7 @@ canShowMIMETypeAsHTML :: IsNSString mimeType => mimeType -> IO Bool
 canShowMIMETypeAsHTML mimeType =
   do
     cls' <- getRequiredClass "WebView"
-    withObjCPtr mimeType $ \raw_mimeType ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canShowMIMETypeAsHTML:") retCULong [argPtr (castPtr raw_mimeType :: Ptr ())]
+    sendClassMessage cls' canShowMIMETypeAsHTMLSelector (toNSString mimeType)
 
 -- | MIMETypesShownAsHTML
 --
@@ -346,7 +341,7 @@ mimeTypesShownAsHTML :: IO (Id NSArray)
 mimeTypesShownAsHTML  =
   do
     cls' <- getRequiredClass "WebView"
-    sendClassMsg cls' (mkSelector "MIMETypesShownAsHTML") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mimeTypesShownAsHTMLSelector
 
 -- | setMIMETypesShownAsHTML:
 --
@@ -357,8 +352,7 @@ setMIMETypesShownAsHTML :: IsNSArray mimeTypes => mimeTypes -> IO ()
 setMIMETypesShownAsHTML mimeTypes =
   do
     cls' <- getRequiredClass "WebView"
-    withObjCPtr mimeTypes $ \raw_mimeTypes ->
-      sendClassMsg cls' (mkSelector "setMIMETypesShownAsHTML:") retVoid [argPtr (castPtr raw_mimeTypes :: Ptr ())]
+    sendClassMessage cls' setMIMETypesShownAsHTMLSelector (toNSArray mimeTypes)
 
 -- | URLFromPasteboard:
 --
@@ -375,8 +369,7 @@ urlFromPasteboard :: IsNSPasteboard pasteboard => pasteboard -> IO (Id NSURL)
 urlFromPasteboard pasteboard =
   do
     cls' <- getRequiredClass "WebView"
-    withObjCPtr pasteboard $ \raw_pasteboard ->
-      sendClassMsg cls' (mkSelector "URLFromPasteboard:") (retPtr retVoid) [argPtr (castPtr raw_pasteboard :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' urlFromPasteboardSelector (toNSPasteboard pasteboard)
 
 -- | URLTitleFromPasteboard:
 --
@@ -393,8 +386,7 @@ urlTitleFromPasteboard :: IsNSPasteboard pasteboard => pasteboard -> IO (Id NSSt
 urlTitleFromPasteboard pasteboard =
   do
     cls' <- getRequiredClass "WebView"
-    withObjCPtr pasteboard $ \raw_pasteboard ->
-      sendClassMsg cls' (mkSelector "URLTitleFromPasteboard:") (retPtr retVoid) [argPtr (castPtr raw_pasteboard :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' urlTitleFromPasteboardSelector (toNSPasteboard pasteboard)
 
 -- | registerURLSchemeAsLocal:
 --
@@ -407,8 +399,7 @@ registerURLSchemeAsLocal :: IsNSString scheme => scheme -> IO ()
 registerURLSchemeAsLocal scheme =
   do
     cls' <- getRequiredClass "WebView"
-    withObjCPtr scheme $ \raw_scheme ->
-      sendClassMsg cls' (mkSelector "registerURLSchemeAsLocal:") retVoid [argPtr (castPtr raw_scheme :: Ptr ())]
+    sendClassMessage cls' registerURLSchemeAsLocalSelector (toNSString scheme)
 
 -- | initWithFrame:frameName:groupName:
 --
@@ -426,10 +417,8 @@ registerURLSchemeAsLocal scheme =
 --
 -- ObjC selector: @- initWithFrame:frameName:groupName:@
 initWithFrame_frameName_groupName :: (IsWebView webView, IsNSString frameName, IsNSString groupName) => webView -> NSRect -> frameName -> groupName -> IO (Id WebView)
-initWithFrame_frameName_groupName webView  frame frameName groupName =
-  withObjCPtr frameName $ \raw_frameName ->
-    withObjCPtr groupName $ \raw_groupName ->
-        sendMsg webView (mkSelector "initWithFrame:frameName:groupName:") (retPtr retVoid) [argNSRect frame, argPtr (castPtr raw_frameName :: Ptr ()), argPtr (castPtr raw_groupName :: Ptr ())] >>= ownedObject . castPtr
+initWithFrame_frameName_groupName webView frame frameName groupName =
+  sendOwnedMessage webView initWithFrame_frameName_groupNameSelector frame (toNSString frameName) (toNSString groupName)
 
 -- | close
 --
@@ -439,8 +428,8 @@ initWithFrame_frameName_groupName webView  frame frameName groupName =
 --
 -- ObjC selector: @- close@
 close :: IsWebView webView => webView -> IO ()
-close webView  =
-    sendMsg webView (mkSelector "close") retVoid []
+close webView =
+  sendMessage webView closeSelector
 
 -- | setMaintainsBackForwardList:
 --
@@ -450,8 +439,8 @@ close webView  =
 --
 -- ObjC selector: @- setMaintainsBackForwardList:@
 setMaintainsBackForwardList :: IsWebView webView => webView -> Bool -> IO ()
-setMaintainsBackForwardList webView  flag =
-    sendMsg webView (mkSelector "setMaintainsBackForwardList:") retVoid [argCULong (if flag then 1 else 0)]
+setMaintainsBackForwardList webView flag =
+  sendMessage webView setMaintainsBackForwardListSelector flag
 
 -- | goBack
 --
@@ -461,8 +450,8 @@ setMaintainsBackForwardList webView  flag =
 --
 -- ObjC selector: @- goBack@
 goBack :: IsWebView webView => webView -> IO Bool
-goBack webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "goBack") retCULong []
+goBack webView =
+  sendMessage webView goBackSelector
 
 -- | goForward
 --
@@ -472,8 +461,8 @@ goBack webView  =
 --
 -- ObjC selector: @- goForward@
 goForward :: IsWebView webView => webView -> IO Bool
-goForward webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "goForward") retCULong []
+goForward webView =
+  sendMessage webView goForwardSelector
 
 -- | goToBackForwardItem:
 --
@@ -483,9 +472,8 @@ goForward webView  =
 --
 -- ObjC selector: @- goToBackForwardItem:@
 goToBackForwardItem :: (IsWebView webView, IsWebHistoryItem item) => webView -> item -> IO Bool
-goToBackForwardItem webView  item =
-  withObjCPtr item $ \raw_item ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "goToBackForwardItem:") retCULong [argPtr (castPtr raw_item :: Ptr ())]
+goToBackForwardItem webView item =
+  sendMessage webView goToBackForwardItemSelector (toWebHistoryItem item)
 
 -- | userAgentForURL:
 --
@@ -497,9 +485,8 @@ goToBackForwardItem webView  item =
 --
 -- ObjC selector: @- userAgentForURL:@
 userAgentForURL :: (IsWebView webView, IsNSURL url) => webView -> url -> IO (Id NSString)
-userAgentForURL webView  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg webView (mkSelector "userAgentForURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+userAgentForURL webView url =
+  sendMessage webView userAgentForURLSelector (toNSURL url)
 
 -- | stringByEvaluatingJavaScriptFromString:
 --
@@ -509,9 +496,8 @@ userAgentForURL webView  url =
 --
 -- ObjC selector: @- stringByEvaluatingJavaScriptFromString:@
 stringByEvaluatingJavaScriptFromString :: (IsWebView webView, IsNSString script) => webView -> script -> IO (Id NSString)
-stringByEvaluatingJavaScriptFromString webView  script =
-  withObjCPtr script $ \raw_script ->
-      sendMsg webView (mkSelector "stringByEvaluatingJavaScriptFromString:") (retPtr retVoid) [argPtr (castPtr raw_script :: Ptr ())] >>= retainedObject . castPtr
+stringByEvaluatingJavaScriptFromString webView script =
+  sendMessage webView stringByEvaluatingJavaScriptFromStringSelector (toNSString script)
 
 -- | searchFor:direction:caseSensitive:
 --
@@ -527,9 +513,8 @@ stringByEvaluatingJavaScriptFromString webView  script =
 --
 -- ObjC selector: @- searchFor:direction:caseSensitive:wrap:@
 searchFor_direction_caseSensitive_wrap :: (IsWebView webView, IsNSString string) => webView -> string -> Bool -> Bool -> Bool -> IO Bool
-searchFor_direction_caseSensitive_wrap webView  string forward caseFlag wrapFlag =
-  withObjCPtr string $ \raw_string ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "searchFor:direction:caseSensitive:wrap:") retCULong [argPtr (castPtr raw_string :: Ptr ()), argCULong (if forward then 1 else 0), argCULong (if caseFlag then 1 else 0), argCULong (if wrapFlag then 1 else 0)]
+searchFor_direction_caseSensitive_wrap webView string forward caseFlag wrapFlag =
+  sendMessage webView searchFor_direction_caseSensitive_wrapSelector (toNSString string) forward caseFlag wrapFlag
 
 -- | registerViewClass:representationClass:forMIMEType:
 --
@@ -546,8 +531,7 @@ registerViewClass_representationClass_forMIMEType :: IsNSString mimeType => Clas
 registerViewClass_representationClass_forMIMEType viewClass representationClass mimeType =
   do
     cls' <- getRequiredClass "WebView"
-    withObjCPtr mimeType $ \raw_mimeType ->
-      sendClassMsg cls' (mkSelector "registerViewClass:representationClass:forMIMEType:") retVoid [argPtr (unClass viewClass), argPtr (unClass representationClass), argPtr (castPtr raw_mimeType :: Ptr ())]
+    sendClassMessage cls' registerViewClass_representationClass_forMIMETypeSelector viewClass representationClass (toNSString mimeType)
 
 -- | elementAtPoint:
 --
@@ -557,8 +541,8 @@ registerViewClass_representationClass_forMIMEType viewClass representationClass 
 --
 -- ObjC selector: @- elementAtPoint:@
 elementAtPoint :: IsWebView webView => webView -> NSPoint -> IO (Id NSDictionary)
-elementAtPoint webView  point =
-    sendMsg webView (mkSelector "elementAtPoint:") (retPtr retVoid) [argNSPoint point] >>= retainedObject . castPtr
+elementAtPoint webView point =
+  sendMessage webView elementAtPointSelector point
 
 -- | writeSelectionWithPasteboardTypes:toPasteboard:
 --
@@ -570,10 +554,8 @@ elementAtPoint webView  point =
 --
 -- ObjC selector: @- writeSelectionWithPasteboardTypes:toPasteboard:@
 writeSelectionWithPasteboardTypes_toPasteboard :: (IsWebView webView, IsNSArray types, IsNSPasteboard pasteboard) => webView -> types -> pasteboard -> IO ()
-writeSelectionWithPasteboardTypes_toPasteboard webView  types pasteboard =
-  withObjCPtr types $ \raw_types ->
-    withObjCPtr pasteboard $ \raw_pasteboard ->
-        sendMsg webView (mkSelector "writeSelectionWithPasteboardTypes:toPasteboard:") retVoid [argPtr (castPtr raw_types :: Ptr ()), argPtr (castPtr raw_pasteboard :: Ptr ())]
+writeSelectionWithPasteboardTypes_toPasteboard webView types pasteboard =
+  sendMessage webView writeSelectionWithPasteboardTypes_toPasteboardSelector (toNSArray types) (toNSPasteboard pasteboard)
 
 -- | pasteboardTypesForElement:
 --
@@ -583,9 +565,8 @@ writeSelectionWithPasteboardTypes_toPasteboard webView  types pasteboard =
 --
 -- ObjC selector: @- pasteboardTypesForElement:@
 pasteboardTypesForElement :: (IsWebView webView, IsNSDictionary element) => webView -> element -> IO (Id NSArray)
-pasteboardTypesForElement webView  element =
-  withObjCPtr element $ \raw_element ->
-      sendMsg webView (mkSelector "pasteboardTypesForElement:") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ())] >>= retainedObject . castPtr
+pasteboardTypesForElement webView element =
+  sendMessage webView pasteboardTypesForElementSelector (toNSDictionary element)
 
 -- | writeElement:withPasteboardTypes:toPasteboard:
 --
@@ -599,11 +580,8 @@ pasteboardTypesForElement webView  element =
 --
 -- ObjC selector: @- writeElement:withPasteboardTypes:toPasteboard:@
 writeElement_withPasteboardTypes_toPasteboard :: (IsWebView webView, IsNSDictionary element, IsNSArray types, IsNSPasteboard pasteboard) => webView -> element -> types -> pasteboard -> IO ()
-writeElement_withPasteboardTypes_toPasteboard webView  element types pasteboard =
-  withObjCPtr element $ \raw_element ->
-    withObjCPtr types $ \raw_types ->
-      withObjCPtr pasteboard $ \raw_pasteboard ->
-          sendMsg webView (mkSelector "writeElement:withPasteboardTypes:toPasteboard:") retVoid [argPtr (castPtr raw_element :: Ptr ()), argPtr (castPtr raw_types :: Ptr ()), argPtr (castPtr raw_pasteboard :: Ptr ())]
+writeElement_withPasteboardTypes_toPasteboard webView element types pasteboard =
+  sendMessage webView writeElement_withPasteboardTypes_toPasteboardSelector (toNSDictionary element) (toNSArray types) (toNSPasteboard pasteboard)
 
 -- | moveDragCaretToPoint:
 --
@@ -613,8 +591,8 @@ writeElement_withPasteboardTypes_toPasteboard webView  element types pasteboard 
 --
 -- ObjC selector: @- moveDragCaretToPoint:@
 moveDragCaretToPoint :: IsWebView webView => webView -> NSPoint -> IO ()
-moveDragCaretToPoint webView  point =
-    sendMsg webView (mkSelector "moveDragCaretToPoint:") retVoid [argNSPoint point]
+moveDragCaretToPoint webView point =
+  sendMessage webView moveDragCaretToPointSelector point
 
 -- | removeDragCaret
 --
@@ -622,247 +600,238 @@ moveDragCaretToPoint webView  point =
 --
 -- ObjC selector: @- removeDragCaret@
 removeDragCaret :: IsWebView webView => webView -> IO ()
-removeDragCaret webView  =
-    sendMsg webView (mkSelector "removeDragCaret") retVoid []
+removeDragCaret webView =
+  sendMessage webView removeDragCaretSelector
 
 -- | @- copy:@
 copy :: IsWebView webView => webView -> RawId -> IO ()
-copy webView  sender =
-    sendMsg webView (mkSelector "copy:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+copy webView sender =
+  sendOwnedMessage webView copySelector sender
 
 -- | @- cut:@
 cut :: IsWebView webView => webView -> RawId -> IO ()
-cut webView  sender =
-    sendMsg webView (mkSelector "cut:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+cut webView sender =
+  sendMessage webView cutSelector sender
 
 -- | @- paste:@
 paste :: IsWebView webView => webView -> RawId -> IO ()
-paste webView  sender =
-    sendMsg webView (mkSelector "paste:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+paste webView sender =
+  sendMessage webView pasteSelector sender
 
 -- | @- copyFont:@
 copyFont :: IsWebView webView => webView -> RawId -> IO ()
-copyFont webView  sender =
-    sendMsg webView (mkSelector "copyFont:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+copyFont webView sender =
+  sendOwnedMessage webView copyFontSelector sender
 
 -- | @- pasteFont:@
 pasteFont :: IsWebView webView => webView -> RawId -> IO ()
-pasteFont webView  sender =
-    sendMsg webView (mkSelector "pasteFont:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+pasteFont webView sender =
+  sendMessage webView pasteFontSelector sender
 
 -- | @- delete:@
 delete :: IsWebView webView => webView -> RawId -> IO ()
-delete webView  sender =
-    sendMsg webView (mkSelector "delete:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+delete webView sender =
+  sendMessage webView deleteSelector sender
 
 -- | @- pasteAsPlainText:@
 pasteAsPlainText :: IsWebView webView => webView -> RawId -> IO ()
-pasteAsPlainText webView  sender =
-    sendMsg webView (mkSelector "pasteAsPlainText:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+pasteAsPlainText webView sender =
+  sendMessage webView pasteAsPlainTextSelector sender
 
 -- | @- pasteAsRichText:@
 pasteAsRichText :: IsWebView webView => webView -> RawId -> IO ()
-pasteAsRichText webView  sender =
-    sendMsg webView (mkSelector "pasteAsRichText:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+pasteAsRichText webView sender =
+  sendMessage webView pasteAsRichTextSelector sender
 
 -- | @- changeFont:@
 changeFont :: IsWebView webView => webView -> RawId -> IO ()
-changeFont webView  sender =
-    sendMsg webView (mkSelector "changeFont:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+changeFont webView sender =
+  sendMessage webView changeFontSelector sender
 
 -- | @- changeAttributes:@
 changeAttributes :: IsWebView webView => webView -> RawId -> IO ()
-changeAttributes webView  sender =
-    sendMsg webView (mkSelector "changeAttributes:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+changeAttributes webView sender =
+  sendMessage webView changeAttributesSelector sender
 
 -- | @- changeDocumentBackgroundColor:@
 changeDocumentBackgroundColor :: IsWebView webView => webView -> RawId -> IO ()
-changeDocumentBackgroundColor webView  sender =
-    sendMsg webView (mkSelector "changeDocumentBackgroundColor:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+changeDocumentBackgroundColor webView sender =
+  sendMessage webView changeDocumentBackgroundColorSelector sender
 
 -- | @- changeColor:@
 changeColor :: IsWebView webView => webView -> RawId -> IO ()
-changeColor webView  sender =
-    sendMsg webView (mkSelector "changeColor:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+changeColor webView sender =
+  sendMessage webView changeColorSelector sender
 
 -- | @- alignCenter:@
 alignCenter :: IsWebView webView => webView -> RawId -> IO ()
-alignCenter webView  sender =
-    sendMsg webView (mkSelector "alignCenter:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+alignCenter webView sender =
+  sendMessage webView alignCenterSelector sender
 
 -- | @- alignJustified:@
 alignJustified :: IsWebView webView => webView -> RawId -> IO ()
-alignJustified webView  sender =
-    sendMsg webView (mkSelector "alignJustified:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+alignJustified webView sender =
+  sendMessage webView alignJustifiedSelector sender
 
 -- | @- alignLeft:@
 alignLeft :: IsWebView webView => webView -> RawId -> IO ()
-alignLeft webView  sender =
-    sendMsg webView (mkSelector "alignLeft:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+alignLeft webView sender =
+  sendMessage webView alignLeftSelector sender
 
 -- | @- alignRight:@
 alignRight :: IsWebView webView => webView -> RawId -> IO ()
-alignRight webView  sender =
-    sendMsg webView (mkSelector "alignRight:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+alignRight webView sender =
+  sendMessage webView alignRightSelector sender
 
 -- | @- checkSpelling:@
 checkSpelling :: IsWebView webView => webView -> RawId -> IO ()
-checkSpelling webView  sender =
-    sendMsg webView (mkSelector "checkSpelling:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+checkSpelling webView sender =
+  sendMessage webView checkSpellingSelector sender
 
 -- | @- showGuessPanel:@
 showGuessPanel :: IsWebView webView => webView -> RawId -> IO ()
-showGuessPanel webView  sender =
-    sendMsg webView (mkSelector "showGuessPanel:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+showGuessPanel webView sender =
+  sendMessage webView showGuessPanelSelector sender
 
 -- | @- performFindPanelAction:@
 performFindPanelAction :: IsWebView webView => webView -> RawId -> IO ()
-performFindPanelAction webView  sender =
-    sendMsg webView (mkSelector "performFindPanelAction:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+performFindPanelAction webView sender =
+  sendMessage webView performFindPanelActionSelector sender
 
 -- | @- startSpeaking:@
 startSpeaking :: IsWebView webView => webView -> RawId -> IO ()
-startSpeaking webView  sender =
-    sendMsg webView (mkSelector "startSpeaking:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+startSpeaking webView sender =
+  sendMessage webView startSpeakingSelector sender
 
 -- | @- stopSpeaking:@
 stopSpeaking :: IsWebView webView => webView -> RawId -> IO ()
-stopSpeaking webView  sender =
-    sendMsg webView (mkSelector "stopSpeaking:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stopSpeaking webView sender =
+  sendMessage webView stopSpeakingSelector sender
 
 -- | @- moveToBeginningOfSentence:@
 moveToBeginningOfSentence :: IsWebView webView => webView -> RawId -> IO ()
-moveToBeginningOfSentence webView  sender =
-    sendMsg webView (mkSelector "moveToBeginningOfSentence:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+moveToBeginningOfSentence webView sender =
+  sendMessage webView moveToBeginningOfSentenceSelector sender
 
 -- | @- moveToBeginningOfSentenceAndModifySelection:@
 moveToBeginningOfSentenceAndModifySelection :: IsWebView webView => webView -> RawId -> IO ()
-moveToBeginningOfSentenceAndModifySelection webView  sender =
-    sendMsg webView (mkSelector "moveToBeginningOfSentenceAndModifySelection:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+moveToBeginningOfSentenceAndModifySelection webView sender =
+  sendMessage webView moveToBeginningOfSentenceAndModifySelectionSelector sender
 
 -- | @- moveToEndOfSentence:@
 moveToEndOfSentence :: IsWebView webView => webView -> RawId -> IO ()
-moveToEndOfSentence webView  sender =
-    sendMsg webView (mkSelector "moveToEndOfSentence:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+moveToEndOfSentence webView sender =
+  sendMessage webView moveToEndOfSentenceSelector sender
 
 -- | @- moveToEndOfSentenceAndModifySelection:@
 moveToEndOfSentenceAndModifySelection :: IsWebView webView => webView -> RawId -> IO ()
-moveToEndOfSentenceAndModifySelection webView  sender =
-    sendMsg webView (mkSelector "moveToEndOfSentenceAndModifySelection:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+moveToEndOfSentenceAndModifySelection webView sender =
+  sendMessage webView moveToEndOfSentenceAndModifySelectionSelector sender
 
 -- | @- selectSentence:@
 selectSentence :: IsWebView webView => webView -> RawId -> IO ()
-selectSentence webView  sender =
-    sendMsg webView (mkSelector "selectSentence:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectSentence webView sender =
+  sendMessage webView selectSentenceSelector sender
 
 -- | @- overWrite:@
 overWrite :: IsWebView webView => webView -> RawId -> IO ()
-overWrite webView  sender =
-    sendMsg webView (mkSelector "overWrite:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+overWrite webView sender =
+  sendMessage webView overWriteSelector sender
 
 -- | @- replaceSelectionWithNode:@
 replaceSelectionWithNode :: (IsWebView webView, IsDOMNode node) => webView -> node -> IO ()
-replaceSelectionWithNode webView  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg webView (mkSelector "replaceSelectionWithNode:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+replaceSelectionWithNode webView node =
+  sendMessage webView replaceSelectionWithNodeSelector (toDOMNode node)
 
 -- | @- replaceSelectionWithText:@
 replaceSelectionWithText :: (IsWebView webView, IsNSString text) => webView -> text -> IO ()
-replaceSelectionWithText webView  text =
-  withObjCPtr text $ \raw_text ->
-      sendMsg webView (mkSelector "replaceSelectionWithText:") retVoid [argPtr (castPtr raw_text :: Ptr ())]
+replaceSelectionWithText webView text =
+  sendMessage webView replaceSelectionWithTextSelector (toNSString text)
 
 -- | @- replaceSelectionWithMarkupString:@
 replaceSelectionWithMarkupString :: (IsWebView webView, IsNSString markupString) => webView -> markupString -> IO ()
-replaceSelectionWithMarkupString webView  markupString =
-  withObjCPtr markupString $ \raw_markupString ->
-      sendMsg webView (mkSelector "replaceSelectionWithMarkupString:") retVoid [argPtr (castPtr raw_markupString :: Ptr ())]
+replaceSelectionWithMarkupString webView markupString =
+  sendMessage webView replaceSelectionWithMarkupStringSelector (toNSString markupString)
 
 -- | @- replaceSelectionWithArchive:@
 replaceSelectionWithArchive :: (IsWebView webView, IsWebArchive archive) => webView -> archive -> IO ()
-replaceSelectionWithArchive webView  archive =
-  withObjCPtr archive $ \raw_archive ->
-      sendMsg webView (mkSelector "replaceSelectionWithArchive:") retVoid [argPtr (castPtr raw_archive :: Ptr ())]
+replaceSelectionWithArchive webView archive =
+  sendMessage webView replaceSelectionWithArchiveSelector (toWebArchive archive)
 
 -- | @- deleteSelection@
 deleteSelection :: IsWebView webView => webView -> IO ()
-deleteSelection webView  =
-    sendMsg webView (mkSelector "deleteSelection") retVoid []
+deleteSelection webView =
+  sendMessage webView deleteSelectionSelector
 
 -- | @- applyStyle:@
 applyStyle :: (IsWebView webView, IsDOMCSSStyleDeclaration style) => webView -> style -> IO ()
-applyStyle webView  style =
-  withObjCPtr style $ \raw_style ->
-      sendMsg webView (mkSelector "applyStyle:") retVoid [argPtr (castPtr raw_style :: Ptr ())]
+applyStyle webView style =
+  sendMessage webView applyStyleSelector (toDOMCSSStyleDeclaration style)
 
 -- | @- editableDOMRangeForPoint:@
 editableDOMRangeForPoint :: IsWebView webView => webView -> NSPoint -> IO (Id DOMRange)
-editableDOMRangeForPoint webView  point =
-    sendMsg webView (mkSelector "editableDOMRangeForPoint:") (retPtr retVoid) [argNSPoint point] >>= retainedObject . castPtr
+editableDOMRangeForPoint webView point =
+  sendMessage webView editableDOMRangeForPointSelector point
 
 -- | @- setSelectedDOMRange:affinity:@
 setSelectedDOMRange_affinity :: (IsWebView webView, IsDOMRange range) => webView -> range -> NSSelectionAffinity -> IO ()
-setSelectedDOMRange_affinity webView  range selectionAffinity =
-  withObjCPtr range $ \raw_range ->
-      sendMsg webView (mkSelector "setSelectedDOMRange:affinity:") retVoid [argPtr (castPtr raw_range :: Ptr ()), argCULong (coerce selectionAffinity)]
+setSelectedDOMRange_affinity webView range selectionAffinity =
+  sendMessage webView setSelectedDOMRange_affinitySelector (toDOMRange range) selectionAffinity
 
 -- | @- styleDeclarationWithText:@
 styleDeclarationWithText :: (IsWebView webView, IsNSString text) => webView -> text -> IO (Id DOMCSSStyleDeclaration)
-styleDeclarationWithText webView  text =
-  withObjCPtr text $ \raw_text ->
-      sendMsg webView (mkSelector "styleDeclarationWithText:") (retPtr retVoid) [argPtr (castPtr raw_text :: Ptr ())] >>= retainedObject . castPtr
+styleDeclarationWithText webView text =
+  sendMessage webView styleDeclarationWithTextSelector (toNSString text)
 
 -- | @- computedStyleForElement:pseudoElement:@
 computedStyleForElement_pseudoElement :: (IsWebView webView, IsDOMElement element, IsNSString pseudoElement) => webView -> element -> pseudoElement -> IO (Id DOMCSSStyleDeclaration)
-computedStyleForElement_pseudoElement webView  element pseudoElement =
-  withObjCPtr element $ \raw_element ->
-    withObjCPtr pseudoElement $ \raw_pseudoElement ->
-        sendMsg webView (mkSelector "computedStyleForElement:pseudoElement:") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ()), argPtr (castPtr raw_pseudoElement :: Ptr ())] >>= retainedObject . castPtr
+computedStyleForElement_pseudoElement webView element pseudoElement =
+  sendMessage webView computedStyleForElement_pseudoElementSelector (toDOMElement element) (toNSString pseudoElement)
 
 -- | @- takeStringURLFrom:@
 takeStringURLFrom :: IsWebView webView => webView -> RawId -> IO ()
-takeStringURLFrom webView  sender =
-    sendMsg webView (mkSelector "takeStringURLFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeStringURLFrom webView sender =
+  sendMessage webView takeStringURLFromSelector sender
 
 -- | @- stopLoading:@
 stopLoading :: IsWebView webView => webView -> RawId -> IO ()
-stopLoading webView  sender =
-    sendMsg webView (mkSelector "stopLoading:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stopLoading webView sender =
+  sendMessage webView stopLoadingSelector sender
 
 -- | @- reload:@
 reload :: IsWebView webView => webView -> RawId -> IO ()
-reload webView  sender =
-    sendMsg webView (mkSelector "reload:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+reload webView sender =
+  sendMessage webView reloadSelector sender
 
 -- | @- reloadFromOrigin:@
 reloadFromOrigin :: IsWebView webView => webView -> RawId -> IO ()
-reloadFromOrigin webView  sender =
-    sendMsg webView (mkSelector "reloadFromOrigin:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+reloadFromOrigin webView sender =
+  sendMessage webView reloadFromOriginSelector sender
 
 -- | @- makeTextLarger:@
 makeTextLarger :: IsWebView webView => webView -> RawId -> IO ()
-makeTextLarger webView  sender =
-    sendMsg webView (mkSelector "makeTextLarger:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+makeTextLarger webView sender =
+  sendMessage webView makeTextLargerSelector sender
 
 -- | @- makeTextSmaller:@
 makeTextSmaller :: IsWebView webView => webView -> RawId -> IO ()
-makeTextSmaller webView  sender =
-    sendMsg webView (mkSelector "makeTextSmaller:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+makeTextSmaller webView sender =
+  sendMessage webView makeTextSmallerSelector sender
 
 -- | @- makeTextStandardSize:@
 makeTextStandardSize :: IsWebView webView => webView -> RawId -> IO ()
-makeTextStandardSize webView  sender =
-    sendMsg webView (mkSelector "makeTextStandardSize:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+makeTextStandardSize webView sender =
+  sendMessage webView makeTextStandardSizeSelector sender
 
 -- | @- toggleContinuousSpellChecking:@
 toggleContinuousSpellChecking :: IsWebView webView => webView -> RawId -> IO ()
-toggleContinuousSpellChecking webView  sender =
-    sendMsg webView (mkSelector "toggleContinuousSpellChecking:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+toggleContinuousSpellChecking webView sender =
+  sendMessage webView toggleContinuousSpellCheckingSelector sender
 
 -- | @- toggleSmartInsertDelete:@
 toggleSmartInsertDelete :: IsWebView webView => webView -> RawId -> IO ()
-toggleSmartInsertDelete webView  sender =
-    sendMsg webView (mkSelector "toggleSmartInsertDelete:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+toggleSmartInsertDelete webView sender =
+  sendMessage webView toggleSmartInsertDeleteSelector sender
 
 -- | shouldCloseWithWindow
 --
@@ -872,8 +841,8 @@ toggleSmartInsertDelete webView  sender =
 --
 -- ObjC selector: @- shouldCloseWithWindow@
 shouldCloseWithWindow :: IsWebView webView => webView -> IO Bool
-shouldCloseWithWindow webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "shouldCloseWithWindow") retCULong []
+shouldCloseWithWindow webView =
+  sendMessage webView shouldCloseWithWindowSelector
 
 -- | shouldCloseWithWindow
 --
@@ -883,8 +852,8 @@ shouldCloseWithWindow webView  =
 --
 -- ObjC selector: @- setShouldCloseWithWindow:@
 setShouldCloseWithWindow :: IsWebView webView => webView -> Bool -> IO ()
-setShouldCloseWithWindow webView  value =
-    sendMsg webView (mkSelector "setShouldCloseWithWindow:") retVoid [argCULong (if value then 1 else 0)]
+setShouldCloseWithWindow webView value =
+  sendMessage webView setShouldCloseWithWindowSelector value
 
 -- | UIDelegate
 --
@@ -892,8 +861,8 @@ setShouldCloseWithWindow webView  value =
 --
 -- ObjC selector: @- UIDelegate@
 uiDelegate :: IsWebView webView => webView -> IO RawId
-uiDelegate webView  =
-    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "UIDelegate") (retPtr retVoid) []
+uiDelegate webView =
+  sendMessage webView uiDelegateSelector
 
 -- | UIDelegate
 --
@@ -901,8 +870,8 @@ uiDelegate webView  =
 --
 -- ObjC selector: @- setUIDelegate:@
 setUIDelegate :: IsWebView webView => webView -> RawId -> IO ()
-setUIDelegate webView  value =
-    sendMsg webView (mkSelector "setUIDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setUIDelegate webView value =
+  sendMessage webView setUIDelegateSelector value
 
 -- | resourceLoadDelegate
 --
@@ -910,8 +879,8 @@ setUIDelegate webView  value =
 --
 -- ObjC selector: @- resourceLoadDelegate@
 resourceLoadDelegate :: IsWebView webView => webView -> IO RawId
-resourceLoadDelegate webView  =
-    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "resourceLoadDelegate") (retPtr retVoid) []
+resourceLoadDelegate webView =
+  sendMessage webView resourceLoadDelegateSelector
 
 -- | resourceLoadDelegate
 --
@@ -919,8 +888,8 @@ resourceLoadDelegate webView  =
 --
 -- ObjC selector: @- setResourceLoadDelegate:@
 setResourceLoadDelegate :: IsWebView webView => webView -> RawId -> IO ()
-setResourceLoadDelegate webView  value =
-    sendMsg webView (mkSelector "setResourceLoadDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setResourceLoadDelegate webView value =
+  sendMessage webView setResourceLoadDelegateSelector value
 
 -- | downloadDelegate
 --
@@ -928,8 +897,8 @@ setResourceLoadDelegate webView  value =
 --
 -- ObjC selector: @- downloadDelegate@
 downloadDelegate :: IsWebView webView => webView -> IO RawId
-downloadDelegate webView  =
-    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "downloadDelegate") (retPtr retVoid) []
+downloadDelegate webView =
+  sendMessage webView downloadDelegateSelector
 
 -- | downloadDelegate
 --
@@ -937,8 +906,8 @@ downloadDelegate webView  =
 --
 -- ObjC selector: @- setDownloadDelegate:@
 setDownloadDelegate :: IsWebView webView => webView -> RawId -> IO ()
-setDownloadDelegate webView  value =
-    sendMsg webView (mkSelector "setDownloadDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDownloadDelegate webView value =
+  sendMessage webView setDownloadDelegateSelector value
 
 -- | frameLoadDelegate
 --
@@ -946,8 +915,8 @@ setDownloadDelegate webView  value =
 --
 -- ObjC selector: @- frameLoadDelegate@
 frameLoadDelegate :: IsWebView webView => webView -> IO RawId
-frameLoadDelegate webView  =
-    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "frameLoadDelegate") (retPtr retVoid) []
+frameLoadDelegate webView =
+  sendMessage webView frameLoadDelegateSelector
 
 -- | frameLoadDelegate
 --
@@ -955,8 +924,8 @@ frameLoadDelegate webView  =
 --
 -- ObjC selector: @- setFrameLoadDelegate:@
 setFrameLoadDelegate :: IsWebView webView => webView -> RawId -> IO ()
-setFrameLoadDelegate webView  value =
-    sendMsg webView (mkSelector "setFrameLoadDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setFrameLoadDelegate webView value =
+  sendMessage webView setFrameLoadDelegateSelector value
 
 -- | policyDelegate
 --
@@ -964,8 +933,8 @@ setFrameLoadDelegate webView  value =
 --
 -- ObjC selector: @- policyDelegate@
 policyDelegate :: IsWebView webView => webView -> IO RawId
-policyDelegate webView  =
-    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "policyDelegate") (retPtr retVoid) []
+policyDelegate webView =
+  sendMessage webView policyDelegateSelector
 
 -- | policyDelegate
 --
@@ -973,8 +942,8 @@ policyDelegate webView  =
 --
 -- ObjC selector: @- setPolicyDelegate:@
 setPolicyDelegate :: IsWebView webView => webView -> RawId -> IO ()
-setPolicyDelegate webView  value =
-    sendMsg webView (mkSelector "setPolicyDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPolicyDelegate webView value =
+  sendMessage webView setPolicyDelegateSelector value
 
 -- | mainFrame
 --
@@ -984,8 +953,8 @@ setPolicyDelegate webView  value =
 --
 -- ObjC selector: @- mainFrame@
 mainFrame :: IsWebView webView => webView -> IO (Id WebFrame)
-mainFrame webView  =
-    sendMsg webView (mkSelector "mainFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainFrame webView =
+  sendMessage webView mainFrameSelector
 
 -- | selectedFrame
 --
@@ -995,8 +964,8 @@ mainFrame webView  =
 --
 -- ObjC selector: @- selectedFrame@
 selectedFrame :: IsWebView webView => webView -> IO (Id WebFrame)
-selectedFrame webView  =
-    sendMsg webView (mkSelector "selectedFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedFrame webView =
+  sendMessage webView selectedFrameSelector
 
 -- | backForwardList
 --
@@ -1004,8 +973,8 @@ selectedFrame webView  =
 --
 -- ObjC selector: @- backForwardList@
 backForwardList :: IsWebView webView => webView -> IO (Id WebBackForwardList)
-backForwardList webView  =
-    sendMsg webView (mkSelector "backForwardList") (retPtr retVoid) [] >>= retainedObject . castPtr
+backForwardList webView =
+  sendMessage webView backForwardListSelector
 
 -- | textSizeMultiplier
 --
@@ -1013,8 +982,8 @@ backForwardList webView  =
 --
 -- ObjC selector: @- textSizeMultiplier@
 textSizeMultiplier :: IsWebView webView => webView -> IO CFloat
-textSizeMultiplier webView  =
-    sendMsg webView (mkSelector "textSizeMultiplier") retCFloat []
+textSizeMultiplier webView =
+  sendMessage webView textSizeMultiplierSelector
 
 -- | textSizeMultiplier
 --
@@ -1022,8 +991,8 @@ textSizeMultiplier webView  =
 --
 -- ObjC selector: @- setTextSizeMultiplier:@
 setTextSizeMultiplier :: IsWebView webView => webView -> CFloat -> IO ()
-setTextSizeMultiplier webView  value =
-    sendMsg webView (mkSelector "setTextSizeMultiplier:") retVoid [argCFloat value]
+setTextSizeMultiplier webView value =
+  sendMessage webView setTextSizeMultiplierSelector value
 
 -- | applicationNameForUserAgent
 --
@@ -1031,8 +1000,8 @@ setTextSizeMultiplier webView  value =
 --
 -- ObjC selector: @- applicationNameForUserAgent@
 applicationNameForUserAgent :: IsWebView webView => webView -> IO (Id NSString)
-applicationNameForUserAgent webView  =
-    sendMsg webView (mkSelector "applicationNameForUserAgent") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationNameForUserAgent webView =
+  sendMessage webView applicationNameForUserAgentSelector
 
 -- | applicationNameForUserAgent
 --
@@ -1040,9 +1009,8 @@ applicationNameForUserAgent webView  =
 --
 -- ObjC selector: @- setApplicationNameForUserAgent:@
 setApplicationNameForUserAgent :: (IsWebView webView, IsNSString value) => webView -> value -> IO ()
-setApplicationNameForUserAgent webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setApplicationNameForUserAgent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplicationNameForUserAgent webView value =
+  sendMessage webView setApplicationNameForUserAgentSelector (toNSString value)
 
 -- | customUserAgent
 --
@@ -1052,8 +1020,8 @@ setApplicationNameForUserAgent webView  value =
 --
 -- ObjC selector: @- customUserAgent@
 customUserAgent :: IsWebView webView => webView -> IO (Id NSString)
-customUserAgent webView  =
-    sendMsg webView (mkSelector "customUserAgent") (retPtr retVoid) [] >>= retainedObject . castPtr
+customUserAgent webView =
+  sendMessage webView customUserAgentSelector
 
 -- | customUserAgent
 --
@@ -1063,9 +1031,8 @@ customUserAgent webView  =
 --
 -- ObjC selector: @- setCustomUserAgent:@
 setCustomUserAgent :: (IsWebView webView, IsNSString value) => webView -> value -> IO ()
-setCustomUserAgent webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setCustomUserAgent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomUserAgent webView value =
+  sendMessage webView setCustomUserAgentSelector (toNSString value)
 
 -- | supportsTextEncoding
 --
@@ -1073,8 +1040,8 @@ setCustomUserAgent webView  value =
 --
 -- ObjC selector: @- supportsTextEncoding@
 supportsTextEncoding :: IsWebView webView => webView -> IO Bool
-supportsTextEncoding webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "supportsTextEncoding") retCULong []
+supportsTextEncoding webView =
+  sendMessage webView supportsTextEncodingSelector
 
 -- | customTextEncodingName
 --
@@ -1084,8 +1051,8 @@ supportsTextEncoding webView  =
 --
 -- ObjC selector: @- customTextEncodingName@
 customTextEncodingName :: IsWebView webView => webView -> IO (Id NSString)
-customTextEncodingName webView  =
-    sendMsg webView (mkSelector "customTextEncodingName") (retPtr retVoid) [] >>= retainedObject . castPtr
+customTextEncodingName webView =
+  sendMessage webView customTextEncodingNameSelector
 
 -- | customTextEncodingName
 --
@@ -1095,9 +1062,8 @@ customTextEncodingName webView  =
 --
 -- ObjC selector: @- setCustomTextEncodingName:@
 setCustomTextEncodingName :: (IsWebView webView, IsNSString value) => webView -> value -> IO ()
-setCustomTextEncodingName webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setCustomTextEncodingName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomTextEncodingName webView value =
+  sendMessage webView setCustomTextEncodingNameSelector (toNSString value)
 
 -- | mediaStyle
 --
@@ -1107,8 +1073,8 @@ setCustomTextEncodingName webView  value =
 --
 -- ObjC selector: @- mediaStyle@
 mediaStyle :: IsWebView webView => webView -> IO (Id NSString)
-mediaStyle webView  =
-    sendMsg webView (mkSelector "mediaStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaStyle webView =
+  sendMessage webView mediaStyleSelector
 
 -- | mediaStyle
 --
@@ -1118,9 +1084,8 @@ mediaStyle webView  =
 --
 -- ObjC selector: @- setMediaStyle:@
 setMediaStyle :: (IsWebView webView, IsNSString value) => webView -> value -> IO ()
-setMediaStyle webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setMediaStyle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMediaStyle webView value =
+  sendMessage webView setMediaStyleSelector (toNSString value)
 
 -- | windowScriptObject
 --
@@ -1128,8 +1093,8 @@ setMediaStyle webView  value =
 --
 -- ObjC selector: @- windowScriptObject@
 windowScriptObject :: IsWebView webView => webView -> IO (Id WebScriptObject)
-windowScriptObject webView  =
-    sendMsg webView (mkSelector "windowScriptObject") (retPtr retVoid) [] >>= retainedObject . castPtr
+windowScriptObject webView =
+  sendMessage webView windowScriptObjectSelector
 
 -- | preferences
 --
@@ -1139,8 +1104,8 @@ windowScriptObject webView  =
 --
 -- ObjC selector: @- preferences@
 preferences :: IsWebView webView => webView -> IO (Id WebPreferences)
-preferences webView  =
-    sendMsg webView (mkSelector "preferences") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferences webView =
+  sendMessage webView preferencesSelector
 
 -- | preferences
 --
@@ -1150,9 +1115,8 @@ preferences webView  =
 --
 -- ObjC selector: @- setPreferences:@
 setPreferences :: (IsWebView webView, IsWebPreferences value) => webView -> value -> IO ()
-setPreferences webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setPreferences:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferences webView value =
+  sendMessage webView setPreferencesSelector (toWebPreferences value)
 
 -- | preferencesIdentifier
 --
@@ -1162,8 +1126,8 @@ setPreferences webView  value =
 --
 -- ObjC selector: @- preferencesIdentifier@
 preferencesIdentifier :: IsWebView webView => webView -> IO (Id NSString)
-preferencesIdentifier webView  =
-    sendMsg webView (mkSelector "preferencesIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferencesIdentifier webView =
+  sendMessage webView preferencesIdentifierSelector
 
 -- | preferencesIdentifier
 --
@@ -1173,9 +1137,8 @@ preferencesIdentifier webView  =
 --
 -- ObjC selector: @- setPreferencesIdentifier:@
 setPreferencesIdentifier :: (IsWebView webView, IsNSString value) => webView -> value -> IO ()
-setPreferencesIdentifier webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setPreferencesIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferencesIdentifier webView value =
+  sendMessage webView setPreferencesIdentifierSelector (toNSString value)
 
 -- | hostWindow
 --
@@ -1185,8 +1148,8 @@ setPreferencesIdentifier webView  value =
 --
 -- ObjC selector: @- hostWindow@
 hostWindow :: IsWebView webView => webView -> IO (Id NSWindow)
-hostWindow webView  =
-    sendMsg webView (mkSelector "hostWindow") (retPtr retVoid) [] >>= retainedObject . castPtr
+hostWindow webView =
+  sendMessage webView hostWindowSelector
 
 -- | hostWindow
 --
@@ -1196,9 +1159,8 @@ hostWindow webView  =
 --
 -- ObjC selector: @- setHostWindow:@
 setHostWindow :: (IsWebView webView, IsNSWindow value) => webView -> value -> IO ()
-setHostWindow webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setHostWindow:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHostWindow webView value =
+  sendMessage webView setHostWindowSelector (toNSWindow value)
 
 -- | groupName
 --
@@ -1208,8 +1170,8 @@ setHostWindow webView  value =
 --
 -- ObjC selector: @- groupName@
 groupName :: IsWebView webView => webView -> IO (Id NSString)
-groupName webView  =
-    sendMsg webView (mkSelector "groupName") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupName webView =
+  sendMessage webView groupNameSelector
 
 -- | groupName
 --
@@ -1219,9 +1181,8 @@ groupName webView  =
 --
 -- ObjC selector: @- setGroupName:@
 setGroupName :: (IsWebView webView, IsNSString value) => webView -> value -> IO ()
-setGroupName webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setGroupName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupName webView value =
+  sendMessage webView setGroupNameSelector (toNSString value)
 
 -- | estimatedProgress
 --
@@ -1229,8 +1190,8 @@ setGroupName webView  value =
 --
 -- ObjC selector: @- estimatedProgress@
 estimatedProgress :: IsWebView webView => webView -> IO CDouble
-estimatedProgress webView  =
-    sendMsg webView (mkSelector "estimatedProgress") retCDouble []
+estimatedProgress webView =
+  sendMessage webView estimatedProgressSelector
 
 -- | loading
 --
@@ -1238,8 +1199,8 @@ estimatedProgress webView  =
 --
 -- ObjC selector: @- loading@
 loading :: IsWebView webView => webView -> IO Bool
-loading webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "loading") retCULong []
+loading webView =
+  sendMessage webView loadingSelector
 
 -- | pasteboardTypesForSelection
 --
@@ -1247,8 +1208,8 @@ loading webView  =
 --
 -- ObjC selector: @- pasteboardTypesForSelection@
 pasteboardTypesForSelection :: IsWebView webView => webView -> IO (Id NSArray)
-pasteboardTypesForSelection webView  =
-    sendMsg webView (mkSelector "pasteboardTypesForSelection") (retPtr retVoid) [] >>= retainedObject . castPtr
+pasteboardTypesForSelection webView =
+  sendMessage webView pasteboardTypesForSelectionSelector
 
 -- | drawsBackground
 --
@@ -1256,8 +1217,8 @@ pasteboardTypesForSelection webView  =
 --
 -- ObjC selector: @- drawsBackground@
 drawsBackground :: IsWebView webView => webView -> IO Bool
-drawsBackground webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "drawsBackground") retCULong []
+drawsBackground webView =
+  sendMessage webView drawsBackgroundSelector
 
 -- | drawsBackground
 --
@@ -1265,8 +1226,8 @@ drawsBackground webView  =
 --
 -- ObjC selector: @- setDrawsBackground:@
 setDrawsBackground :: IsWebView webView => webView -> Bool -> IO ()
-setDrawsBackground webView  value =
-    sendMsg webView (mkSelector "setDrawsBackground:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsBackground webView value =
+  sendMessage webView setDrawsBackgroundSelector value
 
 -- | shouldUpdateWhileOffscreen
 --
@@ -1276,8 +1237,8 @@ setDrawsBackground webView  value =
 --
 -- ObjC selector: @- shouldUpdateWhileOffscreen@
 shouldUpdateWhileOffscreen :: IsWebView webView => webView -> IO Bool
-shouldUpdateWhileOffscreen webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "shouldUpdateWhileOffscreen") retCULong []
+shouldUpdateWhileOffscreen webView =
+  sendMessage webView shouldUpdateWhileOffscreenSelector
 
 -- | shouldUpdateWhileOffscreen
 --
@@ -1287,8 +1248,8 @@ shouldUpdateWhileOffscreen webView  =
 --
 -- ObjC selector: @- setShouldUpdateWhileOffscreen:@
 setShouldUpdateWhileOffscreen :: IsWebView webView => webView -> Bool -> IO ()
-setShouldUpdateWhileOffscreen webView  value =
-    sendMsg webView (mkSelector "setShouldUpdateWhileOffscreen:") retVoid [argCULong (if value then 1 else 0)]
+setShouldUpdateWhileOffscreen webView value =
+  sendMessage webView setShouldUpdateWhileOffscreenSelector value
 
 -- | mainFrameURL
 --
@@ -1296,8 +1257,8 @@ setShouldUpdateWhileOffscreen webView  value =
 --
 -- ObjC selector: @- mainFrameURL@
 mainFrameURL :: IsWebView webView => webView -> IO (Id NSString)
-mainFrameURL webView  =
-    sendMsg webView (mkSelector "mainFrameURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainFrameURL webView =
+  sendMessage webView mainFrameURLSelector
 
 -- | mainFrameURL
 --
@@ -1305,9 +1266,8 @@ mainFrameURL webView  =
 --
 -- ObjC selector: @- setMainFrameURL:@
 setMainFrameURL :: (IsWebView webView, IsNSString value) => webView -> value -> IO ()
-setMainFrameURL webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setMainFrameURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMainFrameURL webView value =
+  sendMessage webView setMainFrameURLSelector (toNSString value)
 
 -- | mainFrameDocument
 --
@@ -1315,8 +1275,8 @@ setMainFrameURL webView  value =
 --
 -- ObjC selector: @- mainFrameDocument@
 mainFrameDocument :: IsWebView webView => webView -> IO (Id DOMDocument)
-mainFrameDocument webView  =
-    sendMsg webView (mkSelector "mainFrameDocument") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainFrameDocument webView =
+  sendMessage webView mainFrameDocumentSelector
 
 -- | mainFrameTitle
 --
@@ -1324,8 +1284,8 @@ mainFrameDocument webView  =
 --
 -- ObjC selector: @- mainFrameTitle@
 mainFrameTitle :: IsWebView webView => webView -> IO (Id NSString)
-mainFrameTitle webView  =
-    sendMsg webView (mkSelector "mainFrameTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainFrameTitle webView =
+  sendMessage webView mainFrameTitleSelector
 
 -- | mainFrameIcon
 --
@@ -1333,655 +1293,654 @@ mainFrameTitle webView  =
 --
 -- ObjC selector: @- mainFrameIcon@
 mainFrameIcon :: IsWebView webView => webView -> IO (Id NSImage)
-mainFrameIcon webView  =
-    sendMsg webView (mkSelector "mainFrameIcon") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainFrameIcon webView =
+  sendMessage webView mainFrameIconSelector
 
 -- | @- selectedDOMRange@
 selectedDOMRange :: IsWebView webView => webView -> IO (Id DOMRange)
-selectedDOMRange webView  =
-    sendMsg webView (mkSelector "selectedDOMRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedDOMRange webView =
+  sendMessage webView selectedDOMRangeSelector
 
 -- | @- selectionAffinity@
 selectionAffinity :: IsWebView webView => webView -> IO NSSelectionAffinity
-selectionAffinity webView  =
-    fmap (coerce :: CULong -> NSSelectionAffinity) $ sendMsg webView (mkSelector "selectionAffinity") retCULong []
+selectionAffinity webView =
+  sendMessage webView selectionAffinitySelector
 
 -- | @- maintainsInactiveSelection@
 maintainsInactiveSelection :: IsWebView webView => webView -> IO Bool
-maintainsInactiveSelection webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "maintainsInactiveSelection") retCULong []
+maintainsInactiveSelection webView =
+  sendMessage webView maintainsInactiveSelectionSelector
 
 -- | @- editable@
 editable :: IsWebView webView => webView -> IO Bool
-editable webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "editable") retCULong []
+editable webView =
+  sendMessage webView editableSelector
 
 -- | @- setEditable:@
 setEditable :: IsWebView webView => webView -> Bool -> IO ()
-setEditable webView  value =
-    sendMsg webView (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable webView value =
+  sendMessage webView setEditableSelector value
 
 -- | @- typingStyle@
 typingStyle :: IsWebView webView => webView -> IO (Id DOMCSSStyleDeclaration)
-typingStyle webView  =
-    sendMsg webView (mkSelector "typingStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+typingStyle webView =
+  sendMessage webView typingStyleSelector
 
 -- | @- setTypingStyle:@
 setTypingStyle :: (IsWebView webView, IsDOMCSSStyleDeclaration value) => webView -> value -> IO ()
-setTypingStyle webView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webView (mkSelector "setTypingStyle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTypingStyle webView value =
+  sendMessage webView setTypingStyleSelector (toDOMCSSStyleDeclaration value)
 
 -- | @- smartInsertDeleteEnabled@
 smartInsertDeleteEnabled :: IsWebView webView => webView -> IO Bool
-smartInsertDeleteEnabled webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "smartInsertDeleteEnabled") retCULong []
+smartInsertDeleteEnabled webView =
+  sendMessage webView smartInsertDeleteEnabledSelector
 
 -- | @- setSmartInsertDeleteEnabled:@
 setSmartInsertDeleteEnabled :: IsWebView webView => webView -> Bool -> IO ()
-setSmartInsertDeleteEnabled webView  value =
-    sendMsg webView (mkSelector "setSmartInsertDeleteEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setSmartInsertDeleteEnabled webView value =
+  sendMessage webView setSmartInsertDeleteEnabledSelector value
 
 -- | @- continuousSpellCheckingEnabled@
 continuousSpellCheckingEnabled :: IsWebView webView => webView -> IO Bool
-continuousSpellCheckingEnabled webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "continuousSpellCheckingEnabled") retCULong []
+continuousSpellCheckingEnabled webView =
+  sendMessage webView continuousSpellCheckingEnabledSelector
 
 -- | @- setContinuousSpellCheckingEnabled:@
 setContinuousSpellCheckingEnabled :: IsWebView webView => webView -> Bool -> IO ()
-setContinuousSpellCheckingEnabled webView  value =
-    sendMsg webView (mkSelector "setContinuousSpellCheckingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setContinuousSpellCheckingEnabled webView value =
+  sendMessage webView setContinuousSpellCheckingEnabledSelector value
 
 -- | @- spellCheckerDocumentTag@
 spellCheckerDocumentTag :: IsWebView webView => webView -> IO CLong
-spellCheckerDocumentTag webView  =
-    sendMsg webView (mkSelector "spellCheckerDocumentTag") retCLong []
+spellCheckerDocumentTag webView =
+  sendMessage webView spellCheckerDocumentTagSelector
 
 -- | @- undoManager@
 undoManager :: IsWebView webView => webView -> IO (Id NSUndoManager)
-undoManager webView  =
-    sendMsg webView (mkSelector "undoManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+undoManager webView =
+  sendMessage webView undoManagerSelector
 
 -- | @- editingDelegate@
 editingDelegate :: IsWebView webView => webView -> IO RawId
-editingDelegate webView  =
-    fmap (RawId . castPtr) $ sendMsg webView (mkSelector "editingDelegate") (retPtr retVoid) []
+editingDelegate webView =
+  sendMessage webView editingDelegateSelector
 
 -- | @- setEditingDelegate:@
 setEditingDelegate :: IsWebView webView => webView -> RawId -> IO ()
-setEditingDelegate webView  value =
-    sendMsg webView (mkSelector "setEditingDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setEditingDelegate webView value =
+  sendMessage webView setEditingDelegateSelector value
 
 -- | @- canGoBack@
 canGoBack :: IsWebView webView => webView -> IO Bool
-canGoBack webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "canGoBack") retCULong []
+canGoBack webView =
+  sendMessage webView canGoBackSelector
 
 -- | @- canGoForward@
 canGoForward :: IsWebView webView => webView -> IO Bool
-canGoForward webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "canGoForward") retCULong []
+canGoForward webView =
+  sendMessage webView canGoForwardSelector
 
 -- | @- canMakeTextLarger@
 canMakeTextLarger :: IsWebView webView => webView -> IO Bool
-canMakeTextLarger webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "canMakeTextLarger") retCULong []
+canMakeTextLarger webView =
+  sendMessage webView canMakeTextLargerSelector
 
 -- | @- canMakeTextSmaller@
 canMakeTextSmaller :: IsWebView webView => webView -> IO Bool
-canMakeTextSmaller webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "canMakeTextSmaller") retCULong []
+canMakeTextSmaller webView =
+  sendMessage webView canMakeTextSmallerSelector
 
 -- | @- canMakeTextStandardSize@
 canMakeTextStandardSize :: IsWebView webView => webView -> IO Bool
-canMakeTextStandardSize webView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webView (mkSelector "canMakeTextStandardSize") retCULong []
+canMakeTextStandardSize webView =
+  sendMessage webView canMakeTextStandardSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @canShowMIMEType:@
-canShowMIMETypeSelector :: Selector
+canShowMIMETypeSelector :: Selector '[Id NSString] Bool
 canShowMIMETypeSelector = mkSelector "canShowMIMEType:"
 
 -- | @Selector@ for @canShowMIMETypeAsHTML:@
-canShowMIMETypeAsHTMLSelector :: Selector
+canShowMIMETypeAsHTMLSelector :: Selector '[Id NSString] Bool
 canShowMIMETypeAsHTMLSelector = mkSelector "canShowMIMETypeAsHTML:"
 
 -- | @Selector@ for @MIMETypesShownAsHTML@
-mimeTypesShownAsHTMLSelector :: Selector
+mimeTypesShownAsHTMLSelector :: Selector '[] (Id NSArray)
 mimeTypesShownAsHTMLSelector = mkSelector "MIMETypesShownAsHTML"
 
 -- | @Selector@ for @setMIMETypesShownAsHTML:@
-setMIMETypesShownAsHTMLSelector :: Selector
+setMIMETypesShownAsHTMLSelector :: Selector '[Id NSArray] ()
 setMIMETypesShownAsHTMLSelector = mkSelector "setMIMETypesShownAsHTML:"
 
 -- | @Selector@ for @URLFromPasteboard:@
-urlFromPasteboardSelector :: Selector
+urlFromPasteboardSelector :: Selector '[Id NSPasteboard] (Id NSURL)
 urlFromPasteboardSelector = mkSelector "URLFromPasteboard:"
 
 -- | @Selector@ for @URLTitleFromPasteboard:@
-urlTitleFromPasteboardSelector :: Selector
+urlTitleFromPasteboardSelector :: Selector '[Id NSPasteboard] (Id NSString)
 urlTitleFromPasteboardSelector = mkSelector "URLTitleFromPasteboard:"
 
 -- | @Selector@ for @registerURLSchemeAsLocal:@
-registerURLSchemeAsLocalSelector :: Selector
+registerURLSchemeAsLocalSelector :: Selector '[Id NSString] ()
 registerURLSchemeAsLocalSelector = mkSelector "registerURLSchemeAsLocal:"
 
 -- | @Selector@ for @initWithFrame:frameName:groupName:@
-initWithFrame_frameName_groupNameSelector :: Selector
+initWithFrame_frameName_groupNameSelector :: Selector '[NSRect, Id NSString, Id NSString] (Id WebView)
 initWithFrame_frameName_groupNameSelector = mkSelector "initWithFrame:frameName:groupName:"
 
 -- | @Selector@ for @close@
-closeSelector :: Selector
+closeSelector :: Selector '[] ()
 closeSelector = mkSelector "close"
 
 -- | @Selector@ for @setMaintainsBackForwardList:@
-setMaintainsBackForwardListSelector :: Selector
+setMaintainsBackForwardListSelector :: Selector '[Bool] ()
 setMaintainsBackForwardListSelector = mkSelector "setMaintainsBackForwardList:"
 
 -- | @Selector@ for @goBack@
-goBackSelector :: Selector
+goBackSelector :: Selector '[] Bool
 goBackSelector = mkSelector "goBack"
 
 -- | @Selector@ for @goForward@
-goForwardSelector :: Selector
+goForwardSelector :: Selector '[] Bool
 goForwardSelector = mkSelector "goForward"
 
 -- | @Selector@ for @goToBackForwardItem:@
-goToBackForwardItemSelector :: Selector
+goToBackForwardItemSelector :: Selector '[Id WebHistoryItem] Bool
 goToBackForwardItemSelector = mkSelector "goToBackForwardItem:"
 
 -- | @Selector@ for @userAgentForURL:@
-userAgentForURLSelector :: Selector
+userAgentForURLSelector :: Selector '[Id NSURL] (Id NSString)
 userAgentForURLSelector = mkSelector "userAgentForURL:"
 
 -- | @Selector@ for @stringByEvaluatingJavaScriptFromString:@
-stringByEvaluatingJavaScriptFromStringSelector :: Selector
+stringByEvaluatingJavaScriptFromStringSelector :: Selector '[Id NSString] (Id NSString)
 stringByEvaluatingJavaScriptFromStringSelector = mkSelector "stringByEvaluatingJavaScriptFromString:"
 
 -- | @Selector@ for @searchFor:direction:caseSensitive:wrap:@
-searchFor_direction_caseSensitive_wrapSelector :: Selector
+searchFor_direction_caseSensitive_wrapSelector :: Selector '[Id NSString, Bool, Bool, Bool] Bool
 searchFor_direction_caseSensitive_wrapSelector = mkSelector "searchFor:direction:caseSensitive:wrap:"
 
 -- | @Selector@ for @registerViewClass:representationClass:forMIMEType:@
-registerViewClass_representationClass_forMIMETypeSelector :: Selector
+registerViewClass_representationClass_forMIMETypeSelector :: Selector '[Class, Class, Id NSString] ()
 registerViewClass_representationClass_forMIMETypeSelector = mkSelector "registerViewClass:representationClass:forMIMEType:"
 
 -- | @Selector@ for @elementAtPoint:@
-elementAtPointSelector :: Selector
+elementAtPointSelector :: Selector '[NSPoint] (Id NSDictionary)
 elementAtPointSelector = mkSelector "elementAtPoint:"
 
 -- | @Selector@ for @writeSelectionWithPasteboardTypes:toPasteboard:@
-writeSelectionWithPasteboardTypes_toPasteboardSelector :: Selector
+writeSelectionWithPasteboardTypes_toPasteboardSelector :: Selector '[Id NSArray, Id NSPasteboard] ()
 writeSelectionWithPasteboardTypes_toPasteboardSelector = mkSelector "writeSelectionWithPasteboardTypes:toPasteboard:"
 
 -- | @Selector@ for @pasteboardTypesForElement:@
-pasteboardTypesForElementSelector :: Selector
+pasteboardTypesForElementSelector :: Selector '[Id NSDictionary] (Id NSArray)
 pasteboardTypesForElementSelector = mkSelector "pasteboardTypesForElement:"
 
 -- | @Selector@ for @writeElement:withPasteboardTypes:toPasteboard:@
-writeElement_withPasteboardTypes_toPasteboardSelector :: Selector
+writeElement_withPasteboardTypes_toPasteboardSelector :: Selector '[Id NSDictionary, Id NSArray, Id NSPasteboard] ()
 writeElement_withPasteboardTypes_toPasteboardSelector = mkSelector "writeElement:withPasteboardTypes:toPasteboard:"
 
 -- | @Selector@ for @moveDragCaretToPoint:@
-moveDragCaretToPointSelector :: Selector
+moveDragCaretToPointSelector :: Selector '[NSPoint] ()
 moveDragCaretToPointSelector = mkSelector "moveDragCaretToPoint:"
 
 -- | @Selector@ for @removeDragCaret@
-removeDragCaretSelector :: Selector
+removeDragCaretSelector :: Selector '[] ()
 removeDragCaretSelector = mkSelector "removeDragCaret"
 
 -- | @Selector@ for @copy:@
-copySelector :: Selector
+copySelector :: Selector '[RawId] ()
 copySelector = mkSelector "copy:"
 
 -- | @Selector@ for @cut:@
-cutSelector :: Selector
+cutSelector :: Selector '[RawId] ()
 cutSelector = mkSelector "cut:"
 
 -- | @Selector@ for @paste:@
-pasteSelector :: Selector
+pasteSelector :: Selector '[RawId] ()
 pasteSelector = mkSelector "paste:"
 
 -- | @Selector@ for @copyFont:@
-copyFontSelector :: Selector
+copyFontSelector :: Selector '[RawId] ()
 copyFontSelector = mkSelector "copyFont:"
 
 -- | @Selector@ for @pasteFont:@
-pasteFontSelector :: Selector
+pasteFontSelector :: Selector '[RawId] ()
 pasteFontSelector = mkSelector "pasteFont:"
 
 -- | @Selector@ for @delete:@
-deleteSelector :: Selector
+deleteSelector :: Selector '[RawId] ()
 deleteSelector = mkSelector "delete:"
 
 -- | @Selector@ for @pasteAsPlainText:@
-pasteAsPlainTextSelector :: Selector
+pasteAsPlainTextSelector :: Selector '[RawId] ()
 pasteAsPlainTextSelector = mkSelector "pasteAsPlainText:"
 
 -- | @Selector@ for @pasteAsRichText:@
-pasteAsRichTextSelector :: Selector
+pasteAsRichTextSelector :: Selector '[RawId] ()
 pasteAsRichTextSelector = mkSelector "pasteAsRichText:"
 
 -- | @Selector@ for @changeFont:@
-changeFontSelector :: Selector
+changeFontSelector :: Selector '[RawId] ()
 changeFontSelector = mkSelector "changeFont:"
 
 -- | @Selector@ for @changeAttributes:@
-changeAttributesSelector :: Selector
+changeAttributesSelector :: Selector '[RawId] ()
 changeAttributesSelector = mkSelector "changeAttributes:"
 
 -- | @Selector@ for @changeDocumentBackgroundColor:@
-changeDocumentBackgroundColorSelector :: Selector
+changeDocumentBackgroundColorSelector :: Selector '[RawId] ()
 changeDocumentBackgroundColorSelector = mkSelector "changeDocumentBackgroundColor:"
 
 -- | @Selector@ for @changeColor:@
-changeColorSelector :: Selector
+changeColorSelector :: Selector '[RawId] ()
 changeColorSelector = mkSelector "changeColor:"
 
 -- | @Selector@ for @alignCenter:@
-alignCenterSelector :: Selector
+alignCenterSelector :: Selector '[RawId] ()
 alignCenterSelector = mkSelector "alignCenter:"
 
 -- | @Selector@ for @alignJustified:@
-alignJustifiedSelector :: Selector
+alignJustifiedSelector :: Selector '[RawId] ()
 alignJustifiedSelector = mkSelector "alignJustified:"
 
 -- | @Selector@ for @alignLeft:@
-alignLeftSelector :: Selector
+alignLeftSelector :: Selector '[RawId] ()
 alignLeftSelector = mkSelector "alignLeft:"
 
 -- | @Selector@ for @alignRight:@
-alignRightSelector :: Selector
+alignRightSelector :: Selector '[RawId] ()
 alignRightSelector = mkSelector "alignRight:"
 
 -- | @Selector@ for @checkSpelling:@
-checkSpellingSelector :: Selector
+checkSpellingSelector :: Selector '[RawId] ()
 checkSpellingSelector = mkSelector "checkSpelling:"
 
 -- | @Selector@ for @showGuessPanel:@
-showGuessPanelSelector :: Selector
+showGuessPanelSelector :: Selector '[RawId] ()
 showGuessPanelSelector = mkSelector "showGuessPanel:"
 
 -- | @Selector@ for @performFindPanelAction:@
-performFindPanelActionSelector :: Selector
+performFindPanelActionSelector :: Selector '[RawId] ()
 performFindPanelActionSelector = mkSelector "performFindPanelAction:"
 
 -- | @Selector@ for @startSpeaking:@
-startSpeakingSelector :: Selector
+startSpeakingSelector :: Selector '[RawId] ()
 startSpeakingSelector = mkSelector "startSpeaking:"
 
 -- | @Selector@ for @stopSpeaking:@
-stopSpeakingSelector :: Selector
+stopSpeakingSelector :: Selector '[RawId] ()
 stopSpeakingSelector = mkSelector "stopSpeaking:"
 
 -- | @Selector@ for @moveToBeginningOfSentence:@
-moveToBeginningOfSentenceSelector :: Selector
+moveToBeginningOfSentenceSelector :: Selector '[RawId] ()
 moveToBeginningOfSentenceSelector = mkSelector "moveToBeginningOfSentence:"
 
 -- | @Selector@ for @moveToBeginningOfSentenceAndModifySelection:@
-moveToBeginningOfSentenceAndModifySelectionSelector :: Selector
+moveToBeginningOfSentenceAndModifySelectionSelector :: Selector '[RawId] ()
 moveToBeginningOfSentenceAndModifySelectionSelector = mkSelector "moveToBeginningOfSentenceAndModifySelection:"
 
 -- | @Selector@ for @moveToEndOfSentence:@
-moveToEndOfSentenceSelector :: Selector
+moveToEndOfSentenceSelector :: Selector '[RawId] ()
 moveToEndOfSentenceSelector = mkSelector "moveToEndOfSentence:"
 
 -- | @Selector@ for @moveToEndOfSentenceAndModifySelection:@
-moveToEndOfSentenceAndModifySelectionSelector :: Selector
+moveToEndOfSentenceAndModifySelectionSelector :: Selector '[RawId] ()
 moveToEndOfSentenceAndModifySelectionSelector = mkSelector "moveToEndOfSentenceAndModifySelection:"
 
 -- | @Selector@ for @selectSentence:@
-selectSentenceSelector :: Selector
+selectSentenceSelector :: Selector '[RawId] ()
 selectSentenceSelector = mkSelector "selectSentence:"
 
 -- | @Selector@ for @overWrite:@
-overWriteSelector :: Selector
+overWriteSelector :: Selector '[RawId] ()
 overWriteSelector = mkSelector "overWrite:"
 
 -- | @Selector@ for @replaceSelectionWithNode:@
-replaceSelectionWithNodeSelector :: Selector
+replaceSelectionWithNodeSelector :: Selector '[Id DOMNode] ()
 replaceSelectionWithNodeSelector = mkSelector "replaceSelectionWithNode:"
 
 -- | @Selector@ for @replaceSelectionWithText:@
-replaceSelectionWithTextSelector :: Selector
+replaceSelectionWithTextSelector :: Selector '[Id NSString] ()
 replaceSelectionWithTextSelector = mkSelector "replaceSelectionWithText:"
 
 -- | @Selector@ for @replaceSelectionWithMarkupString:@
-replaceSelectionWithMarkupStringSelector :: Selector
+replaceSelectionWithMarkupStringSelector :: Selector '[Id NSString] ()
 replaceSelectionWithMarkupStringSelector = mkSelector "replaceSelectionWithMarkupString:"
 
 -- | @Selector@ for @replaceSelectionWithArchive:@
-replaceSelectionWithArchiveSelector :: Selector
+replaceSelectionWithArchiveSelector :: Selector '[Id WebArchive] ()
 replaceSelectionWithArchiveSelector = mkSelector "replaceSelectionWithArchive:"
 
 -- | @Selector@ for @deleteSelection@
-deleteSelectionSelector :: Selector
+deleteSelectionSelector :: Selector '[] ()
 deleteSelectionSelector = mkSelector "deleteSelection"
 
 -- | @Selector@ for @applyStyle:@
-applyStyleSelector :: Selector
+applyStyleSelector :: Selector '[Id DOMCSSStyleDeclaration] ()
 applyStyleSelector = mkSelector "applyStyle:"
 
 -- | @Selector@ for @editableDOMRangeForPoint:@
-editableDOMRangeForPointSelector :: Selector
+editableDOMRangeForPointSelector :: Selector '[NSPoint] (Id DOMRange)
 editableDOMRangeForPointSelector = mkSelector "editableDOMRangeForPoint:"
 
 -- | @Selector@ for @setSelectedDOMRange:affinity:@
-setSelectedDOMRange_affinitySelector :: Selector
+setSelectedDOMRange_affinitySelector :: Selector '[Id DOMRange, NSSelectionAffinity] ()
 setSelectedDOMRange_affinitySelector = mkSelector "setSelectedDOMRange:affinity:"
 
 -- | @Selector@ for @styleDeclarationWithText:@
-styleDeclarationWithTextSelector :: Selector
+styleDeclarationWithTextSelector :: Selector '[Id NSString] (Id DOMCSSStyleDeclaration)
 styleDeclarationWithTextSelector = mkSelector "styleDeclarationWithText:"
 
 -- | @Selector@ for @computedStyleForElement:pseudoElement:@
-computedStyleForElement_pseudoElementSelector :: Selector
+computedStyleForElement_pseudoElementSelector :: Selector '[Id DOMElement, Id NSString] (Id DOMCSSStyleDeclaration)
 computedStyleForElement_pseudoElementSelector = mkSelector "computedStyleForElement:pseudoElement:"
 
 -- | @Selector@ for @takeStringURLFrom:@
-takeStringURLFromSelector :: Selector
+takeStringURLFromSelector :: Selector '[RawId] ()
 takeStringURLFromSelector = mkSelector "takeStringURLFrom:"
 
 -- | @Selector@ for @stopLoading:@
-stopLoadingSelector :: Selector
+stopLoadingSelector :: Selector '[RawId] ()
 stopLoadingSelector = mkSelector "stopLoading:"
 
 -- | @Selector@ for @reload:@
-reloadSelector :: Selector
+reloadSelector :: Selector '[RawId] ()
 reloadSelector = mkSelector "reload:"
 
 -- | @Selector@ for @reloadFromOrigin:@
-reloadFromOriginSelector :: Selector
+reloadFromOriginSelector :: Selector '[RawId] ()
 reloadFromOriginSelector = mkSelector "reloadFromOrigin:"
 
 -- | @Selector@ for @makeTextLarger:@
-makeTextLargerSelector :: Selector
+makeTextLargerSelector :: Selector '[RawId] ()
 makeTextLargerSelector = mkSelector "makeTextLarger:"
 
 -- | @Selector@ for @makeTextSmaller:@
-makeTextSmallerSelector :: Selector
+makeTextSmallerSelector :: Selector '[RawId] ()
 makeTextSmallerSelector = mkSelector "makeTextSmaller:"
 
 -- | @Selector@ for @makeTextStandardSize:@
-makeTextStandardSizeSelector :: Selector
+makeTextStandardSizeSelector :: Selector '[RawId] ()
 makeTextStandardSizeSelector = mkSelector "makeTextStandardSize:"
 
 -- | @Selector@ for @toggleContinuousSpellChecking:@
-toggleContinuousSpellCheckingSelector :: Selector
+toggleContinuousSpellCheckingSelector :: Selector '[RawId] ()
 toggleContinuousSpellCheckingSelector = mkSelector "toggleContinuousSpellChecking:"
 
 -- | @Selector@ for @toggleSmartInsertDelete:@
-toggleSmartInsertDeleteSelector :: Selector
+toggleSmartInsertDeleteSelector :: Selector '[RawId] ()
 toggleSmartInsertDeleteSelector = mkSelector "toggleSmartInsertDelete:"
 
 -- | @Selector@ for @shouldCloseWithWindow@
-shouldCloseWithWindowSelector :: Selector
+shouldCloseWithWindowSelector :: Selector '[] Bool
 shouldCloseWithWindowSelector = mkSelector "shouldCloseWithWindow"
 
 -- | @Selector@ for @setShouldCloseWithWindow:@
-setShouldCloseWithWindowSelector :: Selector
+setShouldCloseWithWindowSelector :: Selector '[Bool] ()
 setShouldCloseWithWindowSelector = mkSelector "setShouldCloseWithWindow:"
 
 -- | @Selector@ for @UIDelegate@
-uiDelegateSelector :: Selector
+uiDelegateSelector :: Selector '[] RawId
 uiDelegateSelector = mkSelector "UIDelegate"
 
 -- | @Selector@ for @setUIDelegate:@
-setUIDelegateSelector :: Selector
+setUIDelegateSelector :: Selector '[RawId] ()
 setUIDelegateSelector = mkSelector "setUIDelegate:"
 
 -- | @Selector@ for @resourceLoadDelegate@
-resourceLoadDelegateSelector :: Selector
+resourceLoadDelegateSelector :: Selector '[] RawId
 resourceLoadDelegateSelector = mkSelector "resourceLoadDelegate"
 
 -- | @Selector@ for @setResourceLoadDelegate:@
-setResourceLoadDelegateSelector :: Selector
+setResourceLoadDelegateSelector :: Selector '[RawId] ()
 setResourceLoadDelegateSelector = mkSelector "setResourceLoadDelegate:"
 
 -- | @Selector@ for @downloadDelegate@
-downloadDelegateSelector :: Selector
+downloadDelegateSelector :: Selector '[] RawId
 downloadDelegateSelector = mkSelector "downloadDelegate"
 
 -- | @Selector@ for @setDownloadDelegate:@
-setDownloadDelegateSelector :: Selector
+setDownloadDelegateSelector :: Selector '[RawId] ()
 setDownloadDelegateSelector = mkSelector "setDownloadDelegate:"
 
 -- | @Selector@ for @frameLoadDelegate@
-frameLoadDelegateSelector :: Selector
+frameLoadDelegateSelector :: Selector '[] RawId
 frameLoadDelegateSelector = mkSelector "frameLoadDelegate"
 
 -- | @Selector@ for @setFrameLoadDelegate:@
-setFrameLoadDelegateSelector :: Selector
+setFrameLoadDelegateSelector :: Selector '[RawId] ()
 setFrameLoadDelegateSelector = mkSelector "setFrameLoadDelegate:"
 
 -- | @Selector@ for @policyDelegate@
-policyDelegateSelector :: Selector
+policyDelegateSelector :: Selector '[] RawId
 policyDelegateSelector = mkSelector "policyDelegate"
 
 -- | @Selector@ for @setPolicyDelegate:@
-setPolicyDelegateSelector :: Selector
+setPolicyDelegateSelector :: Selector '[RawId] ()
 setPolicyDelegateSelector = mkSelector "setPolicyDelegate:"
 
 -- | @Selector@ for @mainFrame@
-mainFrameSelector :: Selector
+mainFrameSelector :: Selector '[] (Id WebFrame)
 mainFrameSelector = mkSelector "mainFrame"
 
 -- | @Selector@ for @selectedFrame@
-selectedFrameSelector :: Selector
+selectedFrameSelector :: Selector '[] (Id WebFrame)
 selectedFrameSelector = mkSelector "selectedFrame"
 
 -- | @Selector@ for @backForwardList@
-backForwardListSelector :: Selector
+backForwardListSelector :: Selector '[] (Id WebBackForwardList)
 backForwardListSelector = mkSelector "backForwardList"
 
 -- | @Selector@ for @textSizeMultiplier@
-textSizeMultiplierSelector :: Selector
+textSizeMultiplierSelector :: Selector '[] CFloat
 textSizeMultiplierSelector = mkSelector "textSizeMultiplier"
 
 -- | @Selector@ for @setTextSizeMultiplier:@
-setTextSizeMultiplierSelector :: Selector
+setTextSizeMultiplierSelector :: Selector '[CFloat] ()
 setTextSizeMultiplierSelector = mkSelector "setTextSizeMultiplier:"
 
 -- | @Selector@ for @applicationNameForUserAgent@
-applicationNameForUserAgentSelector :: Selector
+applicationNameForUserAgentSelector :: Selector '[] (Id NSString)
 applicationNameForUserAgentSelector = mkSelector "applicationNameForUserAgent"
 
 -- | @Selector@ for @setApplicationNameForUserAgent:@
-setApplicationNameForUserAgentSelector :: Selector
+setApplicationNameForUserAgentSelector :: Selector '[Id NSString] ()
 setApplicationNameForUserAgentSelector = mkSelector "setApplicationNameForUserAgent:"
 
 -- | @Selector@ for @customUserAgent@
-customUserAgentSelector :: Selector
+customUserAgentSelector :: Selector '[] (Id NSString)
 customUserAgentSelector = mkSelector "customUserAgent"
 
 -- | @Selector@ for @setCustomUserAgent:@
-setCustomUserAgentSelector :: Selector
+setCustomUserAgentSelector :: Selector '[Id NSString] ()
 setCustomUserAgentSelector = mkSelector "setCustomUserAgent:"
 
 -- | @Selector@ for @supportsTextEncoding@
-supportsTextEncodingSelector :: Selector
+supportsTextEncodingSelector :: Selector '[] Bool
 supportsTextEncodingSelector = mkSelector "supportsTextEncoding"
 
 -- | @Selector@ for @customTextEncodingName@
-customTextEncodingNameSelector :: Selector
+customTextEncodingNameSelector :: Selector '[] (Id NSString)
 customTextEncodingNameSelector = mkSelector "customTextEncodingName"
 
 -- | @Selector@ for @setCustomTextEncodingName:@
-setCustomTextEncodingNameSelector :: Selector
+setCustomTextEncodingNameSelector :: Selector '[Id NSString] ()
 setCustomTextEncodingNameSelector = mkSelector "setCustomTextEncodingName:"
 
 -- | @Selector@ for @mediaStyle@
-mediaStyleSelector :: Selector
+mediaStyleSelector :: Selector '[] (Id NSString)
 mediaStyleSelector = mkSelector "mediaStyle"
 
 -- | @Selector@ for @setMediaStyle:@
-setMediaStyleSelector :: Selector
+setMediaStyleSelector :: Selector '[Id NSString] ()
 setMediaStyleSelector = mkSelector "setMediaStyle:"
 
 -- | @Selector@ for @windowScriptObject@
-windowScriptObjectSelector :: Selector
+windowScriptObjectSelector :: Selector '[] (Id WebScriptObject)
 windowScriptObjectSelector = mkSelector "windowScriptObject"
 
 -- | @Selector@ for @preferences@
-preferencesSelector :: Selector
+preferencesSelector :: Selector '[] (Id WebPreferences)
 preferencesSelector = mkSelector "preferences"
 
 -- | @Selector@ for @setPreferences:@
-setPreferencesSelector :: Selector
+setPreferencesSelector :: Selector '[Id WebPreferences] ()
 setPreferencesSelector = mkSelector "setPreferences:"
 
 -- | @Selector@ for @preferencesIdentifier@
-preferencesIdentifierSelector :: Selector
+preferencesIdentifierSelector :: Selector '[] (Id NSString)
 preferencesIdentifierSelector = mkSelector "preferencesIdentifier"
 
 -- | @Selector@ for @setPreferencesIdentifier:@
-setPreferencesIdentifierSelector :: Selector
+setPreferencesIdentifierSelector :: Selector '[Id NSString] ()
 setPreferencesIdentifierSelector = mkSelector "setPreferencesIdentifier:"
 
 -- | @Selector@ for @hostWindow@
-hostWindowSelector :: Selector
+hostWindowSelector :: Selector '[] (Id NSWindow)
 hostWindowSelector = mkSelector "hostWindow"
 
 -- | @Selector@ for @setHostWindow:@
-setHostWindowSelector :: Selector
+setHostWindowSelector :: Selector '[Id NSWindow] ()
 setHostWindowSelector = mkSelector "setHostWindow:"
 
 -- | @Selector@ for @groupName@
-groupNameSelector :: Selector
+groupNameSelector :: Selector '[] (Id NSString)
 groupNameSelector = mkSelector "groupName"
 
 -- | @Selector@ for @setGroupName:@
-setGroupNameSelector :: Selector
+setGroupNameSelector :: Selector '[Id NSString] ()
 setGroupNameSelector = mkSelector "setGroupName:"
 
 -- | @Selector@ for @estimatedProgress@
-estimatedProgressSelector :: Selector
+estimatedProgressSelector :: Selector '[] CDouble
 estimatedProgressSelector = mkSelector "estimatedProgress"
 
 -- | @Selector@ for @loading@
-loadingSelector :: Selector
+loadingSelector :: Selector '[] Bool
 loadingSelector = mkSelector "loading"
 
 -- | @Selector@ for @pasteboardTypesForSelection@
-pasteboardTypesForSelectionSelector :: Selector
+pasteboardTypesForSelectionSelector :: Selector '[] (Id NSArray)
 pasteboardTypesForSelectionSelector = mkSelector "pasteboardTypesForSelection"
 
 -- | @Selector@ for @drawsBackground@
-drawsBackgroundSelector :: Selector
+drawsBackgroundSelector :: Selector '[] Bool
 drawsBackgroundSelector = mkSelector "drawsBackground"
 
 -- | @Selector@ for @setDrawsBackground:@
-setDrawsBackgroundSelector :: Selector
+setDrawsBackgroundSelector :: Selector '[Bool] ()
 setDrawsBackgroundSelector = mkSelector "setDrawsBackground:"
 
 -- | @Selector@ for @shouldUpdateWhileOffscreen@
-shouldUpdateWhileOffscreenSelector :: Selector
+shouldUpdateWhileOffscreenSelector :: Selector '[] Bool
 shouldUpdateWhileOffscreenSelector = mkSelector "shouldUpdateWhileOffscreen"
 
 -- | @Selector@ for @setShouldUpdateWhileOffscreen:@
-setShouldUpdateWhileOffscreenSelector :: Selector
+setShouldUpdateWhileOffscreenSelector :: Selector '[Bool] ()
 setShouldUpdateWhileOffscreenSelector = mkSelector "setShouldUpdateWhileOffscreen:"
 
 -- | @Selector@ for @mainFrameURL@
-mainFrameURLSelector :: Selector
+mainFrameURLSelector :: Selector '[] (Id NSString)
 mainFrameURLSelector = mkSelector "mainFrameURL"
 
 -- | @Selector@ for @setMainFrameURL:@
-setMainFrameURLSelector :: Selector
+setMainFrameURLSelector :: Selector '[Id NSString] ()
 setMainFrameURLSelector = mkSelector "setMainFrameURL:"
 
 -- | @Selector@ for @mainFrameDocument@
-mainFrameDocumentSelector :: Selector
+mainFrameDocumentSelector :: Selector '[] (Id DOMDocument)
 mainFrameDocumentSelector = mkSelector "mainFrameDocument"
 
 -- | @Selector@ for @mainFrameTitle@
-mainFrameTitleSelector :: Selector
+mainFrameTitleSelector :: Selector '[] (Id NSString)
 mainFrameTitleSelector = mkSelector "mainFrameTitle"
 
 -- | @Selector@ for @mainFrameIcon@
-mainFrameIconSelector :: Selector
+mainFrameIconSelector :: Selector '[] (Id NSImage)
 mainFrameIconSelector = mkSelector "mainFrameIcon"
 
 -- | @Selector@ for @selectedDOMRange@
-selectedDOMRangeSelector :: Selector
+selectedDOMRangeSelector :: Selector '[] (Id DOMRange)
 selectedDOMRangeSelector = mkSelector "selectedDOMRange"
 
 -- | @Selector@ for @selectionAffinity@
-selectionAffinitySelector :: Selector
+selectionAffinitySelector :: Selector '[] NSSelectionAffinity
 selectionAffinitySelector = mkSelector "selectionAffinity"
 
 -- | @Selector@ for @maintainsInactiveSelection@
-maintainsInactiveSelectionSelector :: Selector
+maintainsInactiveSelectionSelector :: Selector '[] Bool
 maintainsInactiveSelectionSelector = mkSelector "maintainsInactiveSelection"
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @typingStyle@
-typingStyleSelector :: Selector
+typingStyleSelector :: Selector '[] (Id DOMCSSStyleDeclaration)
 typingStyleSelector = mkSelector "typingStyle"
 
 -- | @Selector@ for @setTypingStyle:@
-setTypingStyleSelector :: Selector
+setTypingStyleSelector :: Selector '[Id DOMCSSStyleDeclaration] ()
 setTypingStyleSelector = mkSelector "setTypingStyle:"
 
 -- | @Selector@ for @smartInsertDeleteEnabled@
-smartInsertDeleteEnabledSelector :: Selector
+smartInsertDeleteEnabledSelector :: Selector '[] Bool
 smartInsertDeleteEnabledSelector = mkSelector "smartInsertDeleteEnabled"
 
 -- | @Selector@ for @setSmartInsertDeleteEnabled:@
-setSmartInsertDeleteEnabledSelector :: Selector
+setSmartInsertDeleteEnabledSelector :: Selector '[Bool] ()
 setSmartInsertDeleteEnabledSelector = mkSelector "setSmartInsertDeleteEnabled:"
 
 -- | @Selector@ for @continuousSpellCheckingEnabled@
-continuousSpellCheckingEnabledSelector :: Selector
+continuousSpellCheckingEnabledSelector :: Selector '[] Bool
 continuousSpellCheckingEnabledSelector = mkSelector "continuousSpellCheckingEnabled"
 
 -- | @Selector@ for @setContinuousSpellCheckingEnabled:@
-setContinuousSpellCheckingEnabledSelector :: Selector
+setContinuousSpellCheckingEnabledSelector :: Selector '[Bool] ()
 setContinuousSpellCheckingEnabledSelector = mkSelector "setContinuousSpellCheckingEnabled:"
 
 -- | @Selector@ for @spellCheckerDocumentTag@
-spellCheckerDocumentTagSelector :: Selector
+spellCheckerDocumentTagSelector :: Selector '[] CLong
 spellCheckerDocumentTagSelector = mkSelector "spellCheckerDocumentTag"
 
 -- | @Selector@ for @undoManager@
-undoManagerSelector :: Selector
+undoManagerSelector :: Selector '[] (Id NSUndoManager)
 undoManagerSelector = mkSelector "undoManager"
 
 -- | @Selector@ for @editingDelegate@
-editingDelegateSelector :: Selector
+editingDelegateSelector :: Selector '[] RawId
 editingDelegateSelector = mkSelector "editingDelegate"
 
 -- | @Selector@ for @setEditingDelegate:@
-setEditingDelegateSelector :: Selector
+setEditingDelegateSelector :: Selector '[RawId] ()
 setEditingDelegateSelector = mkSelector "setEditingDelegate:"
 
 -- | @Selector@ for @canGoBack@
-canGoBackSelector :: Selector
+canGoBackSelector :: Selector '[] Bool
 canGoBackSelector = mkSelector "canGoBack"
 
 -- | @Selector@ for @canGoForward@
-canGoForwardSelector :: Selector
+canGoForwardSelector :: Selector '[] Bool
 canGoForwardSelector = mkSelector "canGoForward"
 
 -- | @Selector@ for @canMakeTextLarger@
-canMakeTextLargerSelector :: Selector
+canMakeTextLargerSelector :: Selector '[] Bool
 canMakeTextLargerSelector = mkSelector "canMakeTextLarger"
 
 -- | @Selector@ for @canMakeTextSmaller@
-canMakeTextSmallerSelector :: Selector
+canMakeTextSmallerSelector :: Selector '[] Bool
 canMakeTextSmallerSelector = mkSelector "canMakeTextSmaller"
 
 -- | @Selector@ for @canMakeTextStandardSize@
-canMakeTextStandardSizeSelector :: Selector
+canMakeTextStandardSizeSelector :: Selector '[] Bool
 canMakeTextStandardSizeSelector = mkSelector "canMakeTextStandardSize"
 

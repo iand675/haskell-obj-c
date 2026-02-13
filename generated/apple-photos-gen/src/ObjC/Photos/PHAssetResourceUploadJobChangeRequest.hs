@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.Photos.PHAssetResourceUploadJobChangeRequest
   , changeRequestForUploadJob
   , acknowledge
   , retryWithDestination
-  , createJobWithDestination_resourceSelector
-  , changeRequestForUploadJobSelector
   , acknowledgeSelector
+  , changeRequestForUploadJobSelector
+  , createJobWithDestination_resourceSelector
   , retryWithDestinationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,9 +47,7 @@ createJobWithDestination_resource :: (IsNSURLRequest destination, IsPHAssetResou
 createJobWithDestination_resource destination resource =
   do
     cls' <- getRequiredClass "PHAssetResourceUploadJobChangeRequest"
-    withObjCPtr destination $ \raw_destination ->
-      withObjCPtr resource $ \raw_resource ->
-        sendClassMsg cls' (mkSelector "createJobWithDestination:resource:") retVoid [argPtr (castPtr raw_destination :: Ptr ()), argPtr (castPtr raw_resource :: Ptr ())]
+    sendClassMessage cls' createJobWithDestination_resourceSelector (toNSURLRequest destination) (toPHAssetResource resource)
 
 -- | Creates a request for modifying the specified upload job.
 --
@@ -63,41 +58,39 @@ changeRequestForUploadJob :: IsPHAssetResourceUploadJob job => job -> IO (Id PHA
 changeRequestForUploadJob job =
   do
     cls' <- getRequiredClass "PHAssetResourceUploadJobChangeRequest"
-    withObjCPtr job $ \raw_job ->
-      sendClassMsg cls' (mkSelector "changeRequestForUploadJob:") (retPtr retVoid) [argPtr (castPtr raw_job :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' changeRequestForUploadJobSelector (toPHAssetResourceUploadJob job)
 
 -- | Acknowledges a successful or failed job. Jobs must be acknowledged to free up space for ``PHAssetResourceUploadJob/jobLimit``.
 --
 -- ObjC selector: @- acknowledge@
 acknowledge :: IsPHAssetResourceUploadJobChangeRequest phAssetResourceUploadJobChangeRequest => phAssetResourceUploadJobChangeRequest -> IO ()
-acknowledge phAssetResourceUploadJobChangeRequest  =
-    sendMsg phAssetResourceUploadJobChangeRequest (mkSelector "acknowledge") retVoid []
+acknowledge phAssetResourceUploadJobChangeRequest =
+  sendMessage phAssetResourceUploadJobChangeRequest acknowledgeSelector
 
 -- | Retries a job that is failed, unacknowledged, and has not been retried before. Successful retries also free up space for ``PHAssetResourceUploadJob/jobLimit``.
 --
 -- ObjC selector: @- retryWithDestination:@
 retryWithDestination :: (IsPHAssetResourceUploadJobChangeRequest phAssetResourceUploadJobChangeRequest, IsNSURLRequest destination) => phAssetResourceUploadJobChangeRequest -> destination -> IO ()
-retryWithDestination phAssetResourceUploadJobChangeRequest  destination =
-  withObjCPtr destination $ \raw_destination ->
-      sendMsg phAssetResourceUploadJobChangeRequest (mkSelector "retryWithDestination:") retVoid [argPtr (castPtr raw_destination :: Ptr ())]
+retryWithDestination phAssetResourceUploadJobChangeRequest destination =
+  sendMessage phAssetResourceUploadJobChangeRequest retryWithDestinationSelector (toNSURLRequest destination)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createJobWithDestination:resource:@
-createJobWithDestination_resourceSelector :: Selector
+createJobWithDestination_resourceSelector :: Selector '[Id NSURLRequest, Id PHAssetResource] ()
 createJobWithDestination_resourceSelector = mkSelector "createJobWithDestination:resource:"
 
 -- | @Selector@ for @changeRequestForUploadJob:@
-changeRequestForUploadJobSelector :: Selector
+changeRequestForUploadJobSelector :: Selector '[Id PHAssetResourceUploadJob] (Id PHAssetResourceUploadJobChangeRequest)
 changeRequestForUploadJobSelector = mkSelector "changeRequestForUploadJob:"
 
 -- | @Selector@ for @acknowledge@
-acknowledgeSelector :: Selector
+acknowledgeSelector :: Selector '[] ()
 acknowledgeSelector = mkSelector "acknowledge"
 
 -- | @Selector@ for @retryWithDestination:@
-retryWithDestinationSelector :: Selector
+retryWithDestinationSelector :: Selector '[Id NSURLRequest] ()
 retryWithDestinationSelector = mkSelector "retryWithDestination:"
 

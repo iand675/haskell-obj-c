@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -47,41 +48,41 @@ module ObjC.Foundation.NSMutableArray
   , sortUsingComparator
   , sortWithOptions_usingComparator
   , addObjectSelector
-  , insertObject_atIndexSelector
-  , removeLastObjectSelector
-  , removeObjectAtIndexSelector
-  , replaceObjectAtIndex_withObjectSelector
-  , initSelector
-  , initWithCapacitySelector
-  , initWithCoderSelector
-  , filterUsingPredicateSelector
-  , sortUsingDescriptorsSelector
+  , addObjectsFromArraySelector
   , applyDifferenceSelector
   , arrayWithCapacitySelector
   , arrayWithContentsOfFileSelector
   , arrayWithContentsOfURLSelector
+  , exchangeObjectAtIndex_withObjectAtIndexSelector
+  , filterUsingPredicateSelector
+  , initSelector
+  , initWithCapacitySelector
+  , initWithCoderSelector
   , initWithContentsOfFileSelector
   , initWithContentsOfURLSelector
-  , addObjectsFromArraySelector
-  , exchangeObjectAtIndex_withObjectAtIndexSelector
+  , insertObject_atIndexSelector
+  , insertObjects_atIndexesSelector
   , removeAllObjectsSelector
-  , removeObject_inRangeSelector
-  , removeObjectSelector
-  , removeObjectIdenticalTo_inRangeSelector
+  , removeLastObjectSelector
+  , removeObjectAtIndexSelector
   , removeObjectIdenticalToSelector
+  , removeObjectIdenticalTo_inRangeSelector
+  , removeObjectSelector
+  , removeObject_inRangeSelector
+  , removeObjectsAtIndexesSelector
   , removeObjectsFromIndices_numIndicesSelector
   , removeObjectsInArraySelector
   , removeObjectsInRangeSelector
-  , replaceObjectsInRange_withObjectsFromArray_rangeSelector
-  , replaceObjectsInRange_withObjectsFromArraySelector
-  , setArraySelector
-  , sortUsingFunction_contextSelector
-  , sortUsingSelectorSelector
-  , insertObjects_atIndexesSelector
-  , removeObjectsAtIndexesSelector
+  , replaceObjectAtIndex_withObjectSelector
   , replaceObjectsAtIndexes_withObjectsSelector
+  , replaceObjectsInRange_withObjectsFromArraySelector
+  , replaceObjectsInRange_withObjectsFromArray_rangeSelector
+  , setArraySelector
   , setObject_atIndexedSubscriptSelector
   , sortUsingComparatorSelector
+  , sortUsingDescriptorsSelector
+  , sortUsingFunction_contextSelector
+  , sortUsingSelectorSelector
   , sortWithOptions_usingComparatorSelector
 
   -- * Enum types
@@ -91,15 +92,11 @@ module ObjC.Foundation.NSMutableArray
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -109,362 +106,344 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- addObject:@
 addObject :: IsNSMutableArray nsMutableArray => nsMutableArray -> RawId -> IO ()
-addObject nsMutableArray  anObject =
-    sendMsg nsMutableArray (mkSelector "addObject:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+addObject nsMutableArray anObject =
+  sendMessage nsMutableArray addObjectSelector anObject
 
 -- | @- insertObject:atIndex:@
 insertObject_atIndex :: IsNSMutableArray nsMutableArray => nsMutableArray -> RawId -> CULong -> IO ()
-insertObject_atIndex nsMutableArray  anObject index =
-    sendMsg nsMutableArray (mkSelector "insertObject:atIndex:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ()), argCULong index]
+insertObject_atIndex nsMutableArray anObject index =
+  sendMessage nsMutableArray insertObject_atIndexSelector anObject index
 
 -- | @- removeLastObject@
 removeLastObject :: IsNSMutableArray nsMutableArray => nsMutableArray -> IO ()
-removeLastObject nsMutableArray  =
-    sendMsg nsMutableArray (mkSelector "removeLastObject") retVoid []
+removeLastObject nsMutableArray =
+  sendMessage nsMutableArray removeLastObjectSelector
 
 -- | @- removeObjectAtIndex:@
 removeObjectAtIndex :: IsNSMutableArray nsMutableArray => nsMutableArray -> CULong -> IO ()
-removeObjectAtIndex nsMutableArray  index =
-    sendMsg nsMutableArray (mkSelector "removeObjectAtIndex:") retVoid [argCULong index]
+removeObjectAtIndex nsMutableArray index =
+  sendMessage nsMutableArray removeObjectAtIndexSelector index
 
 -- | @- replaceObjectAtIndex:withObject:@
 replaceObjectAtIndex_withObject :: IsNSMutableArray nsMutableArray => nsMutableArray -> CULong -> RawId -> IO ()
-replaceObjectAtIndex_withObject nsMutableArray  index anObject =
-    sendMsg nsMutableArray (mkSelector "replaceObjectAtIndex:withObject:") retVoid [argCULong index, argPtr (castPtr (unRawId anObject) :: Ptr ())]
+replaceObjectAtIndex_withObject nsMutableArray index anObject =
+  sendMessage nsMutableArray replaceObjectAtIndex_withObjectSelector index anObject
 
 -- | @- init@
 init_ :: IsNSMutableArray nsMutableArray => nsMutableArray -> IO (Id NSMutableArray)
-init_ nsMutableArray  =
-    sendMsg nsMutableArray (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsMutableArray =
+  sendOwnedMessage nsMutableArray initSelector
 
 -- | @- initWithCapacity:@
 initWithCapacity :: IsNSMutableArray nsMutableArray => nsMutableArray -> CULong -> IO (Id NSMutableArray)
-initWithCapacity nsMutableArray  numItems =
-    sendMsg nsMutableArray (mkSelector "initWithCapacity:") (retPtr retVoid) [argCULong numItems] >>= ownedObject . castPtr
+initWithCapacity nsMutableArray numItems =
+  sendOwnedMessage nsMutableArray initWithCapacitySelector numItems
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSMutableArray nsMutableArray, IsNSCoder coder) => nsMutableArray -> coder -> IO (Id NSMutableArray)
-initWithCoder nsMutableArray  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsMutableArray (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsMutableArray coder =
+  sendOwnedMessage nsMutableArray initWithCoderSelector (toNSCoder coder)
 
 -- | @- filterUsingPredicate:@
 filterUsingPredicate :: (IsNSMutableArray nsMutableArray, IsNSPredicate predicate) => nsMutableArray -> predicate -> IO ()
-filterUsingPredicate nsMutableArray  predicate =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg nsMutableArray (mkSelector "filterUsingPredicate:") retVoid [argPtr (castPtr raw_predicate :: Ptr ())]
+filterUsingPredicate nsMutableArray predicate =
+  sendMessage nsMutableArray filterUsingPredicateSelector (toNSPredicate predicate)
 
 -- | @- sortUsingDescriptors:@
 sortUsingDescriptors :: (IsNSMutableArray nsMutableArray, IsNSArray sortDescriptors) => nsMutableArray -> sortDescriptors -> IO ()
-sortUsingDescriptors nsMutableArray  sortDescriptors =
-  withObjCPtr sortDescriptors $ \raw_sortDescriptors ->
-      sendMsg nsMutableArray (mkSelector "sortUsingDescriptors:") retVoid [argPtr (castPtr raw_sortDescriptors :: Ptr ())]
+sortUsingDescriptors nsMutableArray sortDescriptors =
+  sendMessage nsMutableArray sortUsingDescriptorsSelector (toNSArray sortDescriptors)
 
 -- | @- applyDifference:@
 applyDifference :: (IsNSMutableArray nsMutableArray, IsNSOrderedCollectionDifference difference) => nsMutableArray -> difference -> IO ()
-applyDifference nsMutableArray  difference =
-  withObjCPtr difference $ \raw_difference ->
-      sendMsg nsMutableArray (mkSelector "applyDifference:") retVoid [argPtr (castPtr raw_difference :: Ptr ())]
+applyDifference nsMutableArray difference =
+  sendMessage nsMutableArray applyDifferenceSelector (toNSOrderedCollectionDifference difference)
 
 -- | @+ arrayWithCapacity:@
 arrayWithCapacity :: CULong -> IO (Id NSMutableArray)
 arrayWithCapacity numItems =
   do
     cls' <- getRequiredClass "NSMutableArray"
-    sendClassMsg cls' (mkSelector "arrayWithCapacity:") (retPtr retVoid) [argCULong numItems] >>= retainedObject . castPtr
+    sendClassMessage cls' arrayWithCapacitySelector numItems
 
 -- | @+ arrayWithContentsOfFile:@
 arrayWithContentsOfFile :: IsNSString path => path -> IO (Id NSMutableArray)
 arrayWithContentsOfFile path =
   do
     cls' <- getRequiredClass "NSMutableArray"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "arrayWithContentsOfFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' arrayWithContentsOfFileSelector (toNSString path)
 
 -- | @+ arrayWithContentsOfURL:@
 arrayWithContentsOfURL :: IsNSURL url => url -> IO (Id NSMutableArray)
 arrayWithContentsOfURL url =
   do
     cls' <- getRequiredClass "NSMutableArray"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "arrayWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' arrayWithContentsOfURLSelector (toNSURL url)
 
 -- | @- initWithContentsOfFile:@
 initWithContentsOfFile :: (IsNSMutableArray nsMutableArray, IsNSString path) => nsMutableArray -> path -> IO (Id NSMutableArray)
-initWithContentsOfFile nsMutableArray  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg nsMutableArray (mkSelector "initWithContentsOfFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfFile nsMutableArray path =
+  sendOwnedMessage nsMutableArray initWithContentsOfFileSelector (toNSString path)
 
 -- | @- initWithContentsOfURL:@
 initWithContentsOfURL :: (IsNSMutableArray nsMutableArray, IsNSURL url) => nsMutableArray -> url -> IO (Id NSMutableArray)
-initWithContentsOfURL nsMutableArray  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsMutableArray (mkSelector "initWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL nsMutableArray url =
+  sendOwnedMessage nsMutableArray initWithContentsOfURLSelector (toNSURL url)
 
 -- | @- addObjectsFromArray:@
 addObjectsFromArray :: (IsNSMutableArray nsMutableArray, IsNSArray otherArray) => nsMutableArray -> otherArray -> IO ()
-addObjectsFromArray nsMutableArray  otherArray =
-  withObjCPtr otherArray $ \raw_otherArray ->
-      sendMsg nsMutableArray (mkSelector "addObjectsFromArray:") retVoid [argPtr (castPtr raw_otherArray :: Ptr ())]
+addObjectsFromArray nsMutableArray otherArray =
+  sendMessage nsMutableArray addObjectsFromArraySelector (toNSArray otherArray)
 
 -- | @- exchangeObjectAtIndex:withObjectAtIndex:@
 exchangeObjectAtIndex_withObjectAtIndex :: IsNSMutableArray nsMutableArray => nsMutableArray -> CULong -> CULong -> IO ()
-exchangeObjectAtIndex_withObjectAtIndex nsMutableArray  idx1 idx2 =
-    sendMsg nsMutableArray (mkSelector "exchangeObjectAtIndex:withObjectAtIndex:") retVoid [argCULong idx1, argCULong idx2]
+exchangeObjectAtIndex_withObjectAtIndex nsMutableArray idx1 idx2 =
+  sendMessage nsMutableArray exchangeObjectAtIndex_withObjectAtIndexSelector idx1 idx2
 
 -- | @- removeAllObjects@
 removeAllObjects :: IsNSMutableArray nsMutableArray => nsMutableArray -> IO ()
-removeAllObjects nsMutableArray  =
-    sendMsg nsMutableArray (mkSelector "removeAllObjects") retVoid []
+removeAllObjects nsMutableArray =
+  sendMessage nsMutableArray removeAllObjectsSelector
 
 -- | @- removeObject:inRange:@
 removeObject_inRange :: IsNSMutableArray nsMutableArray => nsMutableArray -> RawId -> NSRange -> IO ()
-removeObject_inRange nsMutableArray  anObject range =
-    sendMsg nsMutableArray (mkSelector "removeObject:inRange:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ()), argNSRange range]
+removeObject_inRange nsMutableArray anObject range =
+  sendMessage nsMutableArray removeObject_inRangeSelector anObject range
 
 -- | @- removeObject:@
 removeObject :: IsNSMutableArray nsMutableArray => nsMutableArray -> RawId -> IO ()
-removeObject nsMutableArray  anObject =
-    sendMsg nsMutableArray (mkSelector "removeObject:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+removeObject nsMutableArray anObject =
+  sendMessage nsMutableArray removeObjectSelector anObject
 
 -- | @- removeObjectIdenticalTo:inRange:@
 removeObjectIdenticalTo_inRange :: IsNSMutableArray nsMutableArray => nsMutableArray -> RawId -> NSRange -> IO ()
-removeObjectIdenticalTo_inRange nsMutableArray  anObject range =
-    sendMsg nsMutableArray (mkSelector "removeObjectIdenticalTo:inRange:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ()), argNSRange range]
+removeObjectIdenticalTo_inRange nsMutableArray anObject range =
+  sendMessage nsMutableArray removeObjectIdenticalTo_inRangeSelector anObject range
 
 -- | @- removeObjectIdenticalTo:@
 removeObjectIdenticalTo :: IsNSMutableArray nsMutableArray => nsMutableArray -> RawId -> IO ()
-removeObjectIdenticalTo nsMutableArray  anObject =
-    sendMsg nsMutableArray (mkSelector "removeObjectIdenticalTo:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+removeObjectIdenticalTo nsMutableArray anObject =
+  sendMessage nsMutableArray removeObjectIdenticalToSelector anObject
 
 -- | @- removeObjectsFromIndices:numIndices:@
 removeObjectsFromIndices_numIndices :: IsNSMutableArray nsMutableArray => nsMutableArray -> Ptr CULong -> CULong -> IO ()
-removeObjectsFromIndices_numIndices nsMutableArray  indices cnt =
-    sendMsg nsMutableArray (mkSelector "removeObjectsFromIndices:numIndices:") retVoid [argPtr indices, argCULong cnt]
+removeObjectsFromIndices_numIndices nsMutableArray indices cnt =
+  sendMessage nsMutableArray removeObjectsFromIndices_numIndicesSelector indices cnt
 
 -- | @- removeObjectsInArray:@
 removeObjectsInArray :: (IsNSMutableArray nsMutableArray, IsNSArray otherArray) => nsMutableArray -> otherArray -> IO ()
-removeObjectsInArray nsMutableArray  otherArray =
-  withObjCPtr otherArray $ \raw_otherArray ->
-      sendMsg nsMutableArray (mkSelector "removeObjectsInArray:") retVoid [argPtr (castPtr raw_otherArray :: Ptr ())]
+removeObjectsInArray nsMutableArray otherArray =
+  sendMessage nsMutableArray removeObjectsInArraySelector (toNSArray otherArray)
 
 -- | @- removeObjectsInRange:@
 removeObjectsInRange :: IsNSMutableArray nsMutableArray => nsMutableArray -> NSRange -> IO ()
-removeObjectsInRange nsMutableArray  range =
-    sendMsg nsMutableArray (mkSelector "removeObjectsInRange:") retVoid [argNSRange range]
+removeObjectsInRange nsMutableArray range =
+  sendMessage nsMutableArray removeObjectsInRangeSelector range
 
 -- | @- replaceObjectsInRange:withObjectsFromArray:range:@
 replaceObjectsInRange_withObjectsFromArray_range :: (IsNSMutableArray nsMutableArray, IsNSArray otherArray) => nsMutableArray -> NSRange -> otherArray -> NSRange -> IO ()
-replaceObjectsInRange_withObjectsFromArray_range nsMutableArray  range otherArray otherRange =
-  withObjCPtr otherArray $ \raw_otherArray ->
-      sendMsg nsMutableArray (mkSelector "replaceObjectsInRange:withObjectsFromArray:range:") retVoid [argNSRange range, argPtr (castPtr raw_otherArray :: Ptr ()), argNSRange otherRange]
+replaceObjectsInRange_withObjectsFromArray_range nsMutableArray range otherArray otherRange =
+  sendMessage nsMutableArray replaceObjectsInRange_withObjectsFromArray_rangeSelector range (toNSArray otherArray) otherRange
 
 -- | @- replaceObjectsInRange:withObjectsFromArray:@
 replaceObjectsInRange_withObjectsFromArray :: (IsNSMutableArray nsMutableArray, IsNSArray otherArray) => nsMutableArray -> NSRange -> otherArray -> IO ()
-replaceObjectsInRange_withObjectsFromArray nsMutableArray  range otherArray =
-  withObjCPtr otherArray $ \raw_otherArray ->
-      sendMsg nsMutableArray (mkSelector "replaceObjectsInRange:withObjectsFromArray:") retVoid [argNSRange range, argPtr (castPtr raw_otherArray :: Ptr ())]
+replaceObjectsInRange_withObjectsFromArray nsMutableArray range otherArray =
+  sendMessage nsMutableArray replaceObjectsInRange_withObjectsFromArraySelector range (toNSArray otherArray)
 
 -- | @- setArray:@
 setArray :: (IsNSMutableArray nsMutableArray, IsNSArray otherArray) => nsMutableArray -> otherArray -> IO ()
-setArray nsMutableArray  otherArray =
-  withObjCPtr otherArray $ \raw_otherArray ->
-      sendMsg nsMutableArray (mkSelector "setArray:") retVoid [argPtr (castPtr raw_otherArray :: Ptr ())]
+setArray nsMutableArray otherArray =
+  sendMessage nsMutableArray setArraySelector (toNSArray otherArray)
 
 -- | @- sortUsingFunction:context:@
 sortUsingFunction_context :: IsNSMutableArray nsMutableArray => nsMutableArray -> Ptr () -> Ptr () -> IO ()
-sortUsingFunction_context nsMutableArray  compare_ context =
-    sendMsg nsMutableArray (mkSelector "sortUsingFunction:context:") retVoid [argPtr compare_, argPtr context]
+sortUsingFunction_context nsMutableArray compare_ context =
+  sendMessage nsMutableArray sortUsingFunction_contextSelector compare_ context
 
 -- | @- sortUsingSelector:@
-sortUsingSelector :: IsNSMutableArray nsMutableArray => nsMutableArray -> Selector -> IO ()
-sortUsingSelector nsMutableArray  comparator =
-    sendMsg nsMutableArray (mkSelector "sortUsingSelector:") retVoid [argPtr (unSelector comparator)]
+sortUsingSelector :: IsNSMutableArray nsMutableArray => nsMutableArray -> Sel -> IO ()
+sortUsingSelector nsMutableArray comparator =
+  sendMessage nsMutableArray sortUsingSelectorSelector comparator
 
 -- | @- insertObjects:atIndexes:@
 insertObjects_atIndexes :: (IsNSMutableArray nsMutableArray, IsNSArray objects, IsNSIndexSet indexes) => nsMutableArray -> objects -> indexes -> IO ()
-insertObjects_atIndexes nsMutableArray  objects indexes =
-  withObjCPtr objects $ \raw_objects ->
-    withObjCPtr indexes $ \raw_indexes ->
-        sendMsg nsMutableArray (mkSelector "insertObjects:atIndexes:") retVoid [argPtr (castPtr raw_objects :: Ptr ()), argPtr (castPtr raw_indexes :: Ptr ())]
+insertObjects_atIndexes nsMutableArray objects indexes =
+  sendMessage nsMutableArray insertObjects_atIndexesSelector (toNSArray objects) (toNSIndexSet indexes)
 
 -- | @- removeObjectsAtIndexes:@
 removeObjectsAtIndexes :: (IsNSMutableArray nsMutableArray, IsNSIndexSet indexes) => nsMutableArray -> indexes -> IO ()
-removeObjectsAtIndexes nsMutableArray  indexes =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg nsMutableArray (mkSelector "removeObjectsAtIndexes:") retVoid [argPtr (castPtr raw_indexes :: Ptr ())]
+removeObjectsAtIndexes nsMutableArray indexes =
+  sendMessage nsMutableArray removeObjectsAtIndexesSelector (toNSIndexSet indexes)
 
 -- | @- replaceObjectsAtIndexes:withObjects:@
 replaceObjectsAtIndexes_withObjects :: (IsNSMutableArray nsMutableArray, IsNSIndexSet indexes, IsNSArray objects) => nsMutableArray -> indexes -> objects -> IO ()
-replaceObjectsAtIndexes_withObjects nsMutableArray  indexes objects =
-  withObjCPtr indexes $ \raw_indexes ->
-    withObjCPtr objects $ \raw_objects ->
-        sendMsg nsMutableArray (mkSelector "replaceObjectsAtIndexes:withObjects:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argPtr (castPtr raw_objects :: Ptr ())]
+replaceObjectsAtIndexes_withObjects nsMutableArray indexes objects =
+  sendMessage nsMutableArray replaceObjectsAtIndexes_withObjectsSelector (toNSIndexSet indexes) (toNSArray objects)
 
 -- | @- setObject:atIndexedSubscript:@
 setObject_atIndexedSubscript :: IsNSMutableArray nsMutableArray => nsMutableArray -> RawId -> CULong -> IO ()
-setObject_atIndexedSubscript nsMutableArray  obj_ idx =
-    sendMsg nsMutableArray (mkSelector "setObject:atIndexedSubscript:") retVoid [argPtr (castPtr (unRawId obj_) :: Ptr ()), argCULong idx]
+setObject_atIndexedSubscript nsMutableArray obj_ idx =
+  sendMessage nsMutableArray setObject_atIndexedSubscriptSelector obj_ idx
 
 -- | @- sortUsingComparator:@
 sortUsingComparator :: IsNSMutableArray nsMutableArray => nsMutableArray -> Ptr () -> IO ()
-sortUsingComparator nsMutableArray  cmptr =
-    sendMsg nsMutableArray (mkSelector "sortUsingComparator:") retVoid [argPtr (castPtr cmptr :: Ptr ())]
+sortUsingComparator nsMutableArray cmptr =
+  sendMessage nsMutableArray sortUsingComparatorSelector cmptr
 
 -- | @- sortWithOptions:usingComparator:@
 sortWithOptions_usingComparator :: IsNSMutableArray nsMutableArray => nsMutableArray -> NSSortOptions -> Ptr () -> IO ()
-sortWithOptions_usingComparator nsMutableArray  opts cmptr =
-    sendMsg nsMutableArray (mkSelector "sortWithOptions:usingComparator:") retVoid [argCULong (coerce opts), argPtr (castPtr cmptr :: Ptr ())]
+sortWithOptions_usingComparator nsMutableArray opts cmptr =
+  sendMessage nsMutableArray sortWithOptions_usingComparatorSelector opts cmptr
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addObject:@
-addObjectSelector :: Selector
+addObjectSelector :: Selector '[RawId] ()
 addObjectSelector = mkSelector "addObject:"
 
 -- | @Selector@ for @insertObject:atIndex:@
-insertObject_atIndexSelector :: Selector
+insertObject_atIndexSelector :: Selector '[RawId, CULong] ()
 insertObject_atIndexSelector = mkSelector "insertObject:atIndex:"
 
 -- | @Selector@ for @removeLastObject@
-removeLastObjectSelector :: Selector
+removeLastObjectSelector :: Selector '[] ()
 removeLastObjectSelector = mkSelector "removeLastObject"
 
 -- | @Selector@ for @removeObjectAtIndex:@
-removeObjectAtIndexSelector :: Selector
+removeObjectAtIndexSelector :: Selector '[CULong] ()
 removeObjectAtIndexSelector = mkSelector "removeObjectAtIndex:"
 
 -- | @Selector@ for @replaceObjectAtIndex:withObject:@
-replaceObjectAtIndex_withObjectSelector :: Selector
+replaceObjectAtIndex_withObjectSelector :: Selector '[CULong, RawId] ()
 replaceObjectAtIndex_withObjectSelector = mkSelector "replaceObjectAtIndex:withObject:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSMutableArray)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCapacity:@
-initWithCapacitySelector :: Selector
+initWithCapacitySelector :: Selector '[CULong] (Id NSMutableArray)
 initWithCapacitySelector = mkSelector "initWithCapacity:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSMutableArray)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @filterUsingPredicate:@
-filterUsingPredicateSelector :: Selector
+filterUsingPredicateSelector :: Selector '[Id NSPredicate] ()
 filterUsingPredicateSelector = mkSelector "filterUsingPredicate:"
 
 -- | @Selector@ for @sortUsingDescriptors:@
-sortUsingDescriptorsSelector :: Selector
+sortUsingDescriptorsSelector :: Selector '[Id NSArray] ()
 sortUsingDescriptorsSelector = mkSelector "sortUsingDescriptors:"
 
 -- | @Selector@ for @applyDifference:@
-applyDifferenceSelector :: Selector
+applyDifferenceSelector :: Selector '[Id NSOrderedCollectionDifference] ()
 applyDifferenceSelector = mkSelector "applyDifference:"
 
 -- | @Selector@ for @arrayWithCapacity:@
-arrayWithCapacitySelector :: Selector
+arrayWithCapacitySelector :: Selector '[CULong] (Id NSMutableArray)
 arrayWithCapacitySelector = mkSelector "arrayWithCapacity:"
 
 -- | @Selector@ for @arrayWithContentsOfFile:@
-arrayWithContentsOfFileSelector :: Selector
+arrayWithContentsOfFileSelector :: Selector '[Id NSString] (Id NSMutableArray)
 arrayWithContentsOfFileSelector = mkSelector "arrayWithContentsOfFile:"
 
 -- | @Selector@ for @arrayWithContentsOfURL:@
-arrayWithContentsOfURLSelector :: Selector
+arrayWithContentsOfURLSelector :: Selector '[Id NSURL] (Id NSMutableArray)
 arrayWithContentsOfURLSelector = mkSelector "arrayWithContentsOfURL:"
 
 -- | @Selector@ for @initWithContentsOfFile:@
-initWithContentsOfFileSelector :: Selector
+initWithContentsOfFileSelector :: Selector '[Id NSString] (Id NSMutableArray)
 initWithContentsOfFileSelector = mkSelector "initWithContentsOfFile:"
 
 -- | @Selector@ for @initWithContentsOfURL:@
-initWithContentsOfURLSelector :: Selector
+initWithContentsOfURLSelector :: Selector '[Id NSURL] (Id NSMutableArray)
 initWithContentsOfURLSelector = mkSelector "initWithContentsOfURL:"
 
 -- | @Selector@ for @addObjectsFromArray:@
-addObjectsFromArraySelector :: Selector
+addObjectsFromArraySelector :: Selector '[Id NSArray] ()
 addObjectsFromArraySelector = mkSelector "addObjectsFromArray:"
 
 -- | @Selector@ for @exchangeObjectAtIndex:withObjectAtIndex:@
-exchangeObjectAtIndex_withObjectAtIndexSelector :: Selector
+exchangeObjectAtIndex_withObjectAtIndexSelector :: Selector '[CULong, CULong] ()
 exchangeObjectAtIndex_withObjectAtIndexSelector = mkSelector "exchangeObjectAtIndex:withObjectAtIndex:"
 
 -- | @Selector@ for @removeAllObjects@
-removeAllObjectsSelector :: Selector
+removeAllObjectsSelector :: Selector '[] ()
 removeAllObjectsSelector = mkSelector "removeAllObjects"
 
 -- | @Selector@ for @removeObject:inRange:@
-removeObject_inRangeSelector :: Selector
+removeObject_inRangeSelector :: Selector '[RawId, NSRange] ()
 removeObject_inRangeSelector = mkSelector "removeObject:inRange:"
 
 -- | @Selector@ for @removeObject:@
-removeObjectSelector :: Selector
+removeObjectSelector :: Selector '[RawId] ()
 removeObjectSelector = mkSelector "removeObject:"
 
 -- | @Selector@ for @removeObjectIdenticalTo:inRange:@
-removeObjectIdenticalTo_inRangeSelector :: Selector
+removeObjectIdenticalTo_inRangeSelector :: Selector '[RawId, NSRange] ()
 removeObjectIdenticalTo_inRangeSelector = mkSelector "removeObjectIdenticalTo:inRange:"
 
 -- | @Selector@ for @removeObjectIdenticalTo:@
-removeObjectIdenticalToSelector :: Selector
+removeObjectIdenticalToSelector :: Selector '[RawId] ()
 removeObjectIdenticalToSelector = mkSelector "removeObjectIdenticalTo:"
 
 -- | @Selector@ for @removeObjectsFromIndices:numIndices:@
-removeObjectsFromIndices_numIndicesSelector :: Selector
+removeObjectsFromIndices_numIndicesSelector :: Selector '[Ptr CULong, CULong] ()
 removeObjectsFromIndices_numIndicesSelector = mkSelector "removeObjectsFromIndices:numIndices:"
 
 -- | @Selector@ for @removeObjectsInArray:@
-removeObjectsInArraySelector :: Selector
+removeObjectsInArraySelector :: Selector '[Id NSArray] ()
 removeObjectsInArraySelector = mkSelector "removeObjectsInArray:"
 
 -- | @Selector@ for @removeObjectsInRange:@
-removeObjectsInRangeSelector :: Selector
+removeObjectsInRangeSelector :: Selector '[NSRange] ()
 removeObjectsInRangeSelector = mkSelector "removeObjectsInRange:"
 
 -- | @Selector@ for @replaceObjectsInRange:withObjectsFromArray:range:@
-replaceObjectsInRange_withObjectsFromArray_rangeSelector :: Selector
+replaceObjectsInRange_withObjectsFromArray_rangeSelector :: Selector '[NSRange, Id NSArray, NSRange] ()
 replaceObjectsInRange_withObjectsFromArray_rangeSelector = mkSelector "replaceObjectsInRange:withObjectsFromArray:range:"
 
 -- | @Selector@ for @replaceObjectsInRange:withObjectsFromArray:@
-replaceObjectsInRange_withObjectsFromArraySelector :: Selector
+replaceObjectsInRange_withObjectsFromArraySelector :: Selector '[NSRange, Id NSArray] ()
 replaceObjectsInRange_withObjectsFromArraySelector = mkSelector "replaceObjectsInRange:withObjectsFromArray:"
 
 -- | @Selector@ for @setArray:@
-setArraySelector :: Selector
+setArraySelector :: Selector '[Id NSArray] ()
 setArraySelector = mkSelector "setArray:"
 
 -- | @Selector@ for @sortUsingFunction:context:@
-sortUsingFunction_contextSelector :: Selector
+sortUsingFunction_contextSelector :: Selector '[Ptr (), Ptr ()] ()
 sortUsingFunction_contextSelector = mkSelector "sortUsingFunction:context:"
 
 -- | @Selector@ for @sortUsingSelector:@
-sortUsingSelectorSelector :: Selector
+sortUsingSelectorSelector :: Selector '[Sel] ()
 sortUsingSelectorSelector = mkSelector "sortUsingSelector:"
 
 -- | @Selector@ for @insertObjects:atIndexes:@
-insertObjects_atIndexesSelector :: Selector
+insertObjects_atIndexesSelector :: Selector '[Id NSArray, Id NSIndexSet] ()
 insertObjects_atIndexesSelector = mkSelector "insertObjects:atIndexes:"
 
 -- | @Selector@ for @removeObjectsAtIndexes:@
-removeObjectsAtIndexesSelector :: Selector
+removeObjectsAtIndexesSelector :: Selector '[Id NSIndexSet] ()
 removeObjectsAtIndexesSelector = mkSelector "removeObjectsAtIndexes:"
 
 -- | @Selector@ for @replaceObjectsAtIndexes:withObjects:@
-replaceObjectsAtIndexes_withObjectsSelector :: Selector
+replaceObjectsAtIndexes_withObjectsSelector :: Selector '[Id NSIndexSet, Id NSArray] ()
 replaceObjectsAtIndexes_withObjectsSelector = mkSelector "replaceObjectsAtIndexes:withObjects:"
 
 -- | @Selector@ for @setObject:atIndexedSubscript:@
-setObject_atIndexedSubscriptSelector :: Selector
+setObject_atIndexedSubscriptSelector :: Selector '[RawId, CULong] ()
 setObject_atIndexedSubscriptSelector = mkSelector "setObject:atIndexedSubscript:"
 
 -- | @Selector@ for @sortUsingComparator:@
-sortUsingComparatorSelector :: Selector
+sortUsingComparatorSelector :: Selector '[Ptr ()] ()
 sortUsingComparatorSelector = mkSelector "sortUsingComparator:"
 
 -- | @Selector@ for @sortWithOptions:usingComparator:@
-sortWithOptions_usingComparatorSelector :: Selector
+sortWithOptions_usingComparatorSelector :: Selector '[NSSortOptions, Ptr ()] ()
 sortWithOptions_usingComparatorSelector = mkSelector "sortWithOptions:usingComparator:"
 

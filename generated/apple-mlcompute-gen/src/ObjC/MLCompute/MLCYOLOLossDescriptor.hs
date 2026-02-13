@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,40 +32,36 @@ module ObjC.MLCompute.MLCYOLOLossDescriptor
   , setMinimumIOUForObjectPresence
   , maximumIOUForObjectAbsence
   , setMaximumIOUForObjectAbsence
-  , newSelector
-  , initSelector
-  , descriptorWithAnchorBoxes_anchorBoxCountSelector
   , anchorBoxCountSelector
   , anchorBoxesSelector
-  , shouldRescoreSelector
-  , setShouldRescoreSelector
-  , scaleSpatialPositionLossSelector
-  , setScaleSpatialPositionLossSelector
-  , scaleSpatialSizeLossSelector
-  , setScaleSpatialSizeLossSelector
-  , scaleNoObjectConfidenceLossSelector
-  , setScaleNoObjectConfidenceLossSelector
-  , scaleObjectConfidenceLossSelector
-  , setScaleObjectConfidenceLossSelector
-  , scaleClassLossSelector
-  , setScaleClassLossSelector
-  , minimumIOUForObjectPresenceSelector
-  , setMinimumIOUForObjectPresenceSelector
+  , descriptorWithAnchorBoxes_anchorBoxCountSelector
+  , initSelector
   , maximumIOUForObjectAbsenceSelector
+  , minimumIOUForObjectPresenceSelector
+  , newSelector
+  , scaleClassLossSelector
+  , scaleNoObjectConfidenceLossSelector
+  , scaleObjectConfidenceLossSelector
+  , scaleSpatialPositionLossSelector
+  , scaleSpatialSizeLossSelector
   , setMaximumIOUForObjectAbsenceSelector
+  , setMinimumIOUForObjectPresenceSelector
+  , setScaleClassLossSelector
+  , setScaleNoObjectConfidenceLossSelector
+  , setScaleObjectConfidenceLossSelector
+  , setScaleSpatialPositionLossSelector
+  , setScaleSpatialSizeLossSelector
+  , setShouldRescoreSelector
+  , shouldRescoreSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,12 +73,12 @@ new :: IO (Id MLCYOLOLossDescriptor)
 new  =
   do
     cls' <- getRequiredClass "MLCYOLOLossDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO (Id MLCYOLOLossDescriptor)
-init_ mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcyoloLossDescriptor =
+  sendOwnedMessage mlcyoloLossDescriptor initSelector
 
 -- | Create a YOLO loss descriptor object
 --
@@ -96,8 +93,7 @@ descriptorWithAnchorBoxes_anchorBoxCount :: IsNSData anchorBoxes => anchorBoxes 
 descriptorWithAnchorBoxes_anchorBoxCount anchorBoxes anchorBoxCount =
   do
     cls' <- getRequiredClass "MLCYOLOLossDescriptor"
-    withObjCPtr anchorBoxes $ \raw_anchorBoxes ->
-      sendClassMsg cls' (mkSelector "descriptorWithAnchorBoxes:anchorBoxCount:") (retPtr retVoid) [argPtr (castPtr raw_anchorBoxes :: Ptr ()), argCULong anchorBoxCount] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithAnchorBoxes_anchorBoxCountSelector (toNSData anchorBoxes) anchorBoxCount
 
 -- | anchorBoxCount
 --
@@ -105,8 +101,8 @@ descriptorWithAnchorBoxes_anchorBoxCount anchorBoxes anchorBoxCount =
 --
 -- ObjC selector: @- anchorBoxCount@
 anchorBoxCount :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO CULong
-anchorBoxCount mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "anchorBoxCount") retCULong []
+anchorBoxCount mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor anchorBoxCountSelector
 
 -- | anchorBoxes
 --
@@ -114,8 +110,8 @@ anchorBoxCount mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- anchorBoxes@
 anchorBoxes :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO (Id NSData)
-anchorBoxes mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "anchorBoxes") (retPtr retVoid) [] >>= retainedObject . castPtr
+anchorBoxes mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor anchorBoxesSelector
 
 -- | shouldRescore
 --
@@ -123,8 +119,8 @@ anchorBoxes mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- shouldRescore@
 shouldRescore :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO Bool
-shouldRescore mlcyoloLossDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcyoloLossDescriptor (mkSelector "shouldRescore") retCULong []
+shouldRescore mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor shouldRescoreSelector
 
 -- | shouldRescore
 --
@@ -132,8 +128,8 @@ shouldRescore mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- setShouldRescore:@
 setShouldRescore :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> Bool -> IO ()
-setShouldRescore mlcyoloLossDescriptor  value =
-    sendMsg mlcyoloLossDescriptor (mkSelector "setShouldRescore:") retVoid [argCULong (if value then 1 else 0)]
+setShouldRescore mlcyoloLossDescriptor value =
+  sendMessage mlcyoloLossDescriptor setShouldRescoreSelector value
 
 -- | scaleSpatialPositionLoss
 --
@@ -141,8 +137,8 @@ setShouldRescore mlcyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleSpatialPositionLoss@
 scaleSpatialPositionLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO CFloat
-scaleSpatialPositionLoss mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "scaleSpatialPositionLoss") retCFloat []
+scaleSpatialPositionLoss mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor scaleSpatialPositionLossSelector
 
 -- | scaleSpatialPositionLoss
 --
@@ -150,8 +146,8 @@ scaleSpatialPositionLoss mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleSpatialPositionLoss:@
 setScaleSpatialPositionLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> CFloat -> IO ()
-setScaleSpatialPositionLoss mlcyoloLossDescriptor  value =
-    sendMsg mlcyoloLossDescriptor (mkSelector "setScaleSpatialPositionLoss:") retVoid [argCFloat value]
+setScaleSpatialPositionLoss mlcyoloLossDescriptor value =
+  sendMessage mlcyoloLossDescriptor setScaleSpatialPositionLossSelector value
 
 -- | scaleSpatialSizeLoss
 --
@@ -159,8 +155,8 @@ setScaleSpatialPositionLoss mlcyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleSpatialSizeLoss@
 scaleSpatialSizeLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO CFloat
-scaleSpatialSizeLoss mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "scaleSpatialSizeLoss") retCFloat []
+scaleSpatialSizeLoss mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor scaleSpatialSizeLossSelector
 
 -- | scaleSpatialSizeLoss
 --
@@ -168,8 +164,8 @@ scaleSpatialSizeLoss mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleSpatialSizeLoss:@
 setScaleSpatialSizeLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> CFloat -> IO ()
-setScaleSpatialSizeLoss mlcyoloLossDescriptor  value =
-    sendMsg mlcyoloLossDescriptor (mkSelector "setScaleSpatialSizeLoss:") retVoid [argCFloat value]
+setScaleSpatialSizeLoss mlcyoloLossDescriptor value =
+  sendMessage mlcyoloLossDescriptor setScaleSpatialSizeLossSelector value
 
 -- | scaleNoObject
 --
@@ -177,8 +173,8 @@ setScaleSpatialSizeLoss mlcyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleNoObjectConfidenceLoss@
 scaleNoObjectConfidenceLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO CFloat
-scaleNoObjectConfidenceLoss mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "scaleNoObjectConfidenceLoss") retCFloat []
+scaleNoObjectConfidenceLoss mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor scaleNoObjectConfidenceLossSelector
 
 -- | scaleNoObject
 --
@@ -186,8 +182,8 @@ scaleNoObjectConfidenceLoss mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleNoObjectConfidenceLoss:@
 setScaleNoObjectConfidenceLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> CFloat -> IO ()
-setScaleNoObjectConfidenceLoss mlcyoloLossDescriptor  value =
-    sendMsg mlcyoloLossDescriptor (mkSelector "setScaleNoObjectConfidenceLoss:") retVoid [argCFloat value]
+setScaleNoObjectConfidenceLoss mlcyoloLossDescriptor value =
+  sendMessage mlcyoloLossDescriptor setScaleNoObjectConfidenceLossSelector value
 
 -- | scaleObject
 --
@@ -195,8 +191,8 @@ setScaleNoObjectConfidenceLoss mlcyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleObjectConfidenceLoss@
 scaleObjectConfidenceLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO CFloat
-scaleObjectConfidenceLoss mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "scaleObjectConfidenceLoss") retCFloat []
+scaleObjectConfidenceLoss mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor scaleObjectConfidenceLossSelector
 
 -- | scaleObject
 --
@@ -204,8 +200,8 @@ scaleObjectConfidenceLoss mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleObjectConfidenceLoss:@
 setScaleObjectConfidenceLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> CFloat -> IO ()
-setScaleObjectConfidenceLoss mlcyoloLossDescriptor  value =
-    sendMsg mlcyoloLossDescriptor (mkSelector "setScaleObjectConfidenceLoss:") retVoid [argCFloat value]
+setScaleObjectConfidenceLoss mlcyoloLossDescriptor value =
+  sendMessage mlcyoloLossDescriptor setScaleObjectConfidenceLossSelector value
 
 -- | scaleClass
 --
@@ -213,8 +209,8 @@ setScaleObjectConfidenceLoss mlcyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleClassLoss@
 scaleClassLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO CFloat
-scaleClassLoss mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "scaleClassLoss") retCFloat []
+scaleClassLoss mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor scaleClassLossSelector
 
 -- | scaleClass
 --
@@ -222,8 +218,8 @@ scaleClassLoss mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleClassLoss:@
 setScaleClassLoss :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> CFloat -> IO ()
-setScaleClassLoss mlcyoloLossDescriptor  value =
-    sendMsg mlcyoloLossDescriptor (mkSelector "setScaleClassLoss:") retVoid [argCFloat value]
+setScaleClassLoss mlcyoloLossDescriptor value =
+  sendMessage mlcyoloLossDescriptor setScaleClassLossSelector value
 
 -- | positive IOU
 --
@@ -231,8 +227,8 @@ setScaleClassLoss mlcyoloLossDescriptor  value =
 --
 -- ObjC selector: @- minimumIOUForObjectPresence@
 minimumIOUForObjectPresence :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO CFloat
-minimumIOUForObjectPresence mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "minimumIOUForObjectPresence") retCFloat []
+minimumIOUForObjectPresence mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor minimumIOUForObjectPresenceSelector
 
 -- | positive IOU
 --
@@ -240,8 +236,8 @@ minimumIOUForObjectPresence mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- setMinimumIOUForObjectPresence:@
 setMinimumIOUForObjectPresence :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> CFloat -> IO ()
-setMinimumIOUForObjectPresence mlcyoloLossDescriptor  value =
-    sendMsg mlcyoloLossDescriptor (mkSelector "setMinimumIOUForObjectPresence:") retVoid [argCFloat value]
+setMinimumIOUForObjectPresence mlcyoloLossDescriptor value =
+  sendMessage mlcyoloLossDescriptor setMinimumIOUForObjectPresenceSelector value
 
 -- | negative IOU
 --
@@ -249,8 +245,8 @@ setMinimumIOUForObjectPresence mlcyoloLossDescriptor  value =
 --
 -- ObjC selector: @- maximumIOUForObjectAbsence@
 maximumIOUForObjectAbsence :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> IO CFloat
-maximumIOUForObjectAbsence mlcyoloLossDescriptor  =
-    sendMsg mlcyoloLossDescriptor (mkSelector "maximumIOUForObjectAbsence") retCFloat []
+maximumIOUForObjectAbsence mlcyoloLossDescriptor =
+  sendMessage mlcyoloLossDescriptor maximumIOUForObjectAbsenceSelector
 
 -- | negative IOU
 --
@@ -258,94 +254,94 @@ maximumIOUForObjectAbsence mlcyoloLossDescriptor  =
 --
 -- ObjC selector: @- setMaximumIOUForObjectAbsence:@
 setMaximumIOUForObjectAbsence :: IsMLCYOLOLossDescriptor mlcyoloLossDescriptor => mlcyoloLossDescriptor -> CFloat -> IO ()
-setMaximumIOUForObjectAbsence mlcyoloLossDescriptor  value =
-    sendMsg mlcyoloLossDescriptor (mkSelector "setMaximumIOUForObjectAbsence:") retVoid [argCFloat value]
+setMaximumIOUForObjectAbsence mlcyoloLossDescriptor value =
+  sendMessage mlcyoloLossDescriptor setMaximumIOUForObjectAbsenceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCYOLOLossDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCYOLOLossDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @descriptorWithAnchorBoxes:anchorBoxCount:@
-descriptorWithAnchorBoxes_anchorBoxCountSelector :: Selector
+descriptorWithAnchorBoxes_anchorBoxCountSelector :: Selector '[Id NSData, CULong] (Id MLCYOLOLossDescriptor)
 descriptorWithAnchorBoxes_anchorBoxCountSelector = mkSelector "descriptorWithAnchorBoxes:anchorBoxCount:"
 
 -- | @Selector@ for @anchorBoxCount@
-anchorBoxCountSelector :: Selector
+anchorBoxCountSelector :: Selector '[] CULong
 anchorBoxCountSelector = mkSelector "anchorBoxCount"
 
 -- | @Selector@ for @anchorBoxes@
-anchorBoxesSelector :: Selector
+anchorBoxesSelector :: Selector '[] (Id NSData)
 anchorBoxesSelector = mkSelector "anchorBoxes"
 
 -- | @Selector@ for @shouldRescore@
-shouldRescoreSelector :: Selector
+shouldRescoreSelector :: Selector '[] Bool
 shouldRescoreSelector = mkSelector "shouldRescore"
 
 -- | @Selector@ for @setShouldRescore:@
-setShouldRescoreSelector :: Selector
+setShouldRescoreSelector :: Selector '[Bool] ()
 setShouldRescoreSelector = mkSelector "setShouldRescore:"
 
 -- | @Selector@ for @scaleSpatialPositionLoss@
-scaleSpatialPositionLossSelector :: Selector
+scaleSpatialPositionLossSelector :: Selector '[] CFloat
 scaleSpatialPositionLossSelector = mkSelector "scaleSpatialPositionLoss"
 
 -- | @Selector@ for @setScaleSpatialPositionLoss:@
-setScaleSpatialPositionLossSelector :: Selector
+setScaleSpatialPositionLossSelector :: Selector '[CFloat] ()
 setScaleSpatialPositionLossSelector = mkSelector "setScaleSpatialPositionLoss:"
 
 -- | @Selector@ for @scaleSpatialSizeLoss@
-scaleSpatialSizeLossSelector :: Selector
+scaleSpatialSizeLossSelector :: Selector '[] CFloat
 scaleSpatialSizeLossSelector = mkSelector "scaleSpatialSizeLoss"
 
 -- | @Selector@ for @setScaleSpatialSizeLoss:@
-setScaleSpatialSizeLossSelector :: Selector
+setScaleSpatialSizeLossSelector :: Selector '[CFloat] ()
 setScaleSpatialSizeLossSelector = mkSelector "setScaleSpatialSizeLoss:"
 
 -- | @Selector@ for @scaleNoObjectConfidenceLoss@
-scaleNoObjectConfidenceLossSelector :: Selector
+scaleNoObjectConfidenceLossSelector :: Selector '[] CFloat
 scaleNoObjectConfidenceLossSelector = mkSelector "scaleNoObjectConfidenceLoss"
 
 -- | @Selector@ for @setScaleNoObjectConfidenceLoss:@
-setScaleNoObjectConfidenceLossSelector :: Selector
+setScaleNoObjectConfidenceLossSelector :: Selector '[CFloat] ()
 setScaleNoObjectConfidenceLossSelector = mkSelector "setScaleNoObjectConfidenceLoss:"
 
 -- | @Selector@ for @scaleObjectConfidenceLoss@
-scaleObjectConfidenceLossSelector :: Selector
+scaleObjectConfidenceLossSelector :: Selector '[] CFloat
 scaleObjectConfidenceLossSelector = mkSelector "scaleObjectConfidenceLoss"
 
 -- | @Selector@ for @setScaleObjectConfidenceLoss:@
-setScaleObjectConfidenceLossSelector :: Selector
+setScaleObjectConfidenceLossSelector :: Selector '[CFloat] ()
 setScaleObjectConfidenceLossSelector = mkSelector "setScaleObjectConfidenceLoss:"
 
 -- | @Selector@ for @scaleClassLoss@
-scaleClassLossSelector :: Selector
+scaleClassLossSelector :: Selector '[] CFloat
 scaleClassLossSelector = mkSelector "scaleClassLoss"
 
 -- | @Selector@ for @setScaleClassLoss:@
-setScaleClassLossSelector :: Selector
+setScaleClassLossSelector :: Selector '[CFloat] ()
 setScaleClassLossSelector = mkSelector "setScaleClassLoss:"
 
 -- | @Selector@ for @minimumIOUForObjectPresence@
-minimumIOUForObjectPresenceSelector :: Selector
+minimumIOUForObjectPresenceSelector :: Selector '[] CFloat
 minimumIOUForObjectPresenceSelector = mkSelector "minimumIOUForObjectPresence"
 
 -- | @Selector@ for @setMinimumIOUForObjectPresence:@
-setMinimumIOUForObjectPresenceSelector :: Selector
+setMinimumIOUForObjectPresenceSelector :: Selector '[CFloat] ()
 setMinimumIOUForObjectPresenceSelector = mkSelector "setMinimumIOUForObjectPresence:"
 
 -- | @Selector@ for @maximumIOUForObjectAbsence@
-maximumIOUForObjectAbsenceSelector :: Selector
+maximumIOUForObjectAbsenceSelector :: Selector '[] CFloat
 maximumIOUForObjectAbsenceSelector = mkSelector "maximumIOUForObjectAbsence"
 
 -- | @Selector@ for @setMaximumIOUForObjectAbsence:@
-setMaximumIOUForObjectAbsenceSelector :: Selector
+setMaximumIOUForObjectAbsenceSelector :: Selector '[CFloat] ()
 setMaximumIOUForObjectAbsenceSelector = mkSelector "setMaximumIOUForObjectAbsence:"
 

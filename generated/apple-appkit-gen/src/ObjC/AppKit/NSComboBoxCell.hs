@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,55 +43,51 @@ module ObjC.AppKit.NSComboBoxCell
   , setDataSource
   , objectValueOfSelectedItem
   , objectValues
-  , reloadDataSelector
+  , addItemWithObjectValueSelector
+  , addItemsWithObjectValuesSelector
+  , buttonBorderedSelector
+  , completedStringSelector
+  , completesSelector
+  , dataSourceSelector
+  , deselectItemAtIndexSelector
+  , hasVerticalScrollerSelector
+  , indexOfItemWithObjectValueSelector
+  , indexOfSelectedItemSelector
+  , insertItemWithObjectValue_atIndexSelector
+  , intercellSpacingSelector
+  , itemHeightSelector
+  , itemObjectValueAtIndexSelector
   , noteNumberOfItemsChangedSelector
+  , numberOfItemsSelector
+  , numberOfVisibleItemsSelector
+  , objectValueOfSelectedItemSelector
+  , objectValuesSelector
+  , reloadDataSelector
+  , removeAllItemsSelector
+  , removeItemAtIndexSelector
+  , removeItemWithObjectValueSelector
   , scrollItemAtIndexToTopSelector
   , scrollItemAtIndexToVisibleSelector
   , selectItemAtIndexSelector
-  , deselectItemAtIndexSelector
-  , completedStringSelector
-  , addItemWithObjectValueSelector
-  , addItemsWithObjectValuesSelector
-  , insertItemWithObjectValue_atIndexSelector
-  , removeItemWithObjectValueSelector
-  , removeItemAtIndexSelector
-  , removeAllItemsSelector
   , selectItemWithObjectValueSelector
-  , itemObjectValueAtIndexSelector
-  , indexOfItemWithObjectValueSelector
-  , hasVerticalScrollerSelector
-  , setHasVerticalScrollerSelector
-  , intercellSpacingSelector
-  , setIntercellSpacingSelector
-  , itemHeightSelector
-  , setItemHeightSelector
-  , numberOfVisibleItemsSelector
-  , setNumberOfVisibleItemsSelector
-  , buttonBorderedSelector
   , setButtonBorderedSelector
-  , usesDataSourceSelector
-  , setUsesDataSourceSelector
-  , indexOfSelectedItemSelector
-  , numberOfItemsSelector
-  , completesSelector
   , setCompletesSelector
-  , dataSourceSelector
   , setDataSourceSelector
-  , objectValueOfSelectedItemSelector
-  , objectValuesSelector
+  , setHasVerticalScrollerSelector
+  , setIntercellSpacingSelector
+  , setItemHeightSelector
+  , setNumberOfVisibleItemsSelector
+  , setUsesDataSourceSelector
+  , usesDataSourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -100,331 +97,329 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- reloadData@
 reloadData :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO ()
-reloadData nsComboBoxCell  =
-    sendMsg nsComboBoxCell (mkSelector "reloadData") retVoid []
+reloadData nsComboBoxCell =
+  sendMessage nsComboBoxCell reloadDataSelector
 
 -- | @- noteNumberOfItemsChanged@
 noteNumberOfItemsChanged :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO ()
-noteNumberOfItemsChanged nsComboBoxCell  =
-    sendMsg nsComboBoxCell (mkSelector "noteNumberOfItemsChanged") retVoid []
+noteNumberOfItemsChanged nsComboBoxCell =
+  sendMessage nsComboBoxCell noteNumberOfItemsChangedSelector
 
 -- | @- scrollItemAtIndexToTop:@
 scrollItemAtIndexToTop :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> CLong -> IO ()
-scrollItemAtIndexToTop nsComboBoxCell  index =
-    sendMsg nsComboBoxCell (mkSelector "scrollItemAtIndexToTop:") retVoid [argCLong index]
+scrollItemAtIndexToTop nsComboBoxCell index =
+  sendMessage nsComboBoxCell scrollItemAtIndexToTopSelector index
 
 -- | @- scrollItemAtIndexToVisible:@
 scrollItemAtIndexToVisible :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> CLong -> IO ()
-scrollItemAtIndexToVisible nsComboBoxCell  index =
-    sendMsg nsComboBoxCell (mkSelector "scrollItemAtIndexToVisible:") retVoid [argCLong index]
+scrollItemAtIndexToVisible nsComboBoxCell index =
+  sendMessage nsComboBoxCell scrollItemAtIndexToVisibleSelector index
 
 -- | @- selectItemAtIndex:@
 selectItemAtIndex :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> CLong -> IO ()
-selectItemAtIndex nsComboBoxCell  index =
-    sendMsg nsComboBoxCell (mkSelector "selectItemAtIndex:") retVoid [argCLong index]
+selectItemAtIndex nsComboBoxCell index =
+  sendMessage nsComboBoxCell selectItemAtIndexSelector index
 
 -- | @- deselectItemAtIndex:@
 deselectItemAtIndex :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> CLong -> IO ()
-deselectItemAtIndex nsComboBoxCell  index =
-    sendMsg nsComboBoxCell (mkSelector "deselectItemAtIndex:") retVoid [argCLong index]
+deselectItemAtIndex nsComboBoxCell index =
+  sendMessage nsComboBoxCell deselectItemAtIndexSelector index
 
 -- | @- completedString:@
 completedString :: (IsNSComboBoxCell nsComboBoxCell, IsNSString string) => nsComboBoxCell -> string -> IO (Id NSString)
-completedString nsComboBoxCell  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsComboBoxCell (mkSelector "completedString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+completedString nsComboBoxCell string =
+  sendMessage nsComboBoxCell completedStringSelector (toNSString string)
 
 -- | @- addItemWithObjectValue:@
 addItemWithObjectValue :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> RawId -> IO ()
-addItemWithObjectValue nsComboBoxCell  object =
-    sendMsg nsComboBoxCell (mkSelector "addItemWithObjectValue:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+addItemWithObjectValue nsComboBoxCell object =
+  sendMessage nsComboBoxCell addItemWithObjectValueSelector object
 
 -- | @- addItemsWithObjectValues:@
 addItemsWithObjectValues :: (IsNSComboBoxCell nsComboBoxCell, IsNSArray objects) => nsComboBoxCell -> objects -> IO ()
-addItemsWithObjectValues nsComboBoxCell  objects =
-  withObjCPtr objects $ \raw_objects ->
-      sendMsg nsComboBoxCell (mkSelector "addItemsWithObjectValues:") retVoid [argPtr (castPtr raw_objects :: Ptr ())]
+addItemsWithObjectValues nsComboBoxCell objects =
+  sendMessage nsComboBoxCell addItemsWithObjectValuesSelector (toNSArray objects)
 
 -- | @- insertItemWithObjectValue:atIndex:@
 insertItemWithObjectValue_atIndex :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> RawId -> CLong -> IO ()
-insertItemWithObjectValue_atIndex nsComboBoxCell  object index =
-    sendMsg nsComboBoxCell (mkSelector "insertItemWithObjectValue:atIndex:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argCLong index]
+insertItemWithObjectValue_atIndex nsComboBoxCell object index =
+  sendMessage nsComboBoxCell insertItemWithObjectValue_atIndexSelector object index
 
 -- | @- removeItemWithObjectValue:@
 removeItemWithObjectValue :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> RawId -> IO ()
-removeItemWithObjectValue nsComboBoxCell  object =
-    sendMsg nsComboBoxCell (mkSelector "removeItemWithObjectValue:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+removeItemWithObjectValue nsComboBoxCell object =
+  sendMessage nsComboBoxCell removeItemWithObjectValueSelector object
 
 -- | @- removeItemAtIndex:@
 removeItemAtIndex :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> CLong -> IO ()
-removeItemAtIndex nsComboBoxCell  index =
-    sendMsg nsComboBoxCell (mkSelector "removeItemAtIndex:") retVoid [argCLong index]
+removeItemAtIndex nsComboBoxCell index =
+  sendMessage nsComboBoxCell removeItemAtIndexSelector index
 
 -- | @- removeAllItems@
 removeAllItems :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO ()
-removeAllItems nsComboBoxCell  =
-    sendMsg nsComboBoxCell (mkSelector "removeAllItems") retVoid []
+removeAllItems nsComboBoxCell =
+  sendMessage nsComboBoxCell removeAllItemsSelector
 
 -- | @- selectItemWithObjectValue:@
 selectItemWithObjectValue :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> RawId -> IO ()
-selectItemWithObjectValue nsComboBoxCell  object =
-    sendMsg nsComboBoxCell (mkSelector "selectItemWithObjectValue:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+selectItemWithObjectValue nsComboBoxCell object =
+  sendMessage nsComboBoxCell selectItemWithObjectValueSelector object
 
 -- | @- itemObjectValueAtIndex:@
 itemObjectValueAtIndex :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> CLong -> IO RawId
-itemObjectValueAtIndex nsComboBoxCell  index =
-    fmap (RawId . castPtr) $ sendMsg nsComboBoxCell (mkSelector "itemObjectValueAtIndex:") (retPtr retVoid) [argCLong index]
+itemObjectValueAtIndex nsComboBoxCell index =
+  sendMessage nsComboBoxCell itemObjectValueAtIndexSelector index
 
 -- | @- indexOfItemWithObjectValue:@
 indexOfItemWithObjectValue :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> RawId -> IO CLong
-indexOfItemWithObjectValue nsComboBoxCell  object =
-    sendMsg nsComboBoxCell (mkSelector "indexOfItemWithObjectValue:") retCLong [argPtr (castPtr (unRawId object) :: Ptr ())]
+indexOfItemWithObjectValue nsComboBoxCell object =
+  sendMessage nsComboBoxCell indexOfItemWithObjectValueSelector object
 
 -- | @- hasVerticalScroller@
 hasVerticalScroller :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO Bool
-hasVerticalScroller nsComboBoxCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsComboBoxCell (mkSelector "hasVerticalScroller") retCULong []
+hasVerticalScroller nsComboBoxCell =
+  sendMessage nsComboBoxCell hasVerticalScrollerSelector
 
 -- | @- setHasVerticalScroller:@
 setHasVerticalScroller :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> Bool -> IO ()
-setHasVerticalScroller nsComboBoxCell  value =
-    sendMsg nsComboBoxCell (mkSelector "setHasVerticalScroller:") retVoid [argCULong (if value then 1 else 0)]
+setHasVerticalScroller nsComboBoxCell value =
+  sendMessage nsComboBoxCell setHasVerticalScrollerSelector value
 
 -- | @- intercellSpacing@
 intercellSpacing :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO NSSize
-intercellSpacing nsComboBoxCell  =
-    sendMsgStret nsComboBoxCell (mkSelector "intercellSpacing") retNSSize []
+intercellSpacing nsComboBoxCell =
+  sendMessage nsComboBoxCell intercellSpacingSelector
 
 -- | @- setIntercellSpacing:@
 setIntercellSpacing :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> NSSize -> IO ()
-setIntercellSpacing nsComboBoxCell  value =
-    sendMsg nsComboBoxCell (mkSelector "setIntercellSpacing:") retVoid [argNSSize value]
+setIntercellSpacing nsComboBoxCell value =
+  sendMessage nsComboBoxCell setIntercellSpacingSelector value
 
 -- | @- itemHeight@
 itemHeight :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO CDouble
-itemHeight nsComboBoxCell  =
-    sendMsg nsComboBoxCell (mkSelector "itemHeight") retCDouble []
+itemHeight nsComboBoxCell =
+  sendMessage nsComboBoxCell itemHeightSelector
 
 -- | @- setItemHeight:@
 setItemHeight :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> CDouble -> IO ()
-setItemHeight nsComboBoxCell  value =
-    sendMsg nsComboBoxCell (mkSelector "setItemHeight:") retVoid [argCDouble value]
+setItemHeight nsComboBoxCell value =
+  sendMessage nsComboBoxCell setItemHeightSelector value
 
 -- | @- numberOfVisibleItems@
 numberOfVisibleItems :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO CLong
-numberOfVisibleItems nsComboBoxCell  =
-    sendMsg nsComboBoxCell (mkSelector "numberOfVisibleItems") retCLong []
+numberOfVisibleItems nsComboBoxCell =
+  sendMessage nsComboBoxCell numberOfVisibleItemsSelector
 
 -- | @- setNumberOfVisibleItems:@
 setNumberOfVisibleItems :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> CLong -> IO ()
-setNumberOfVisibleItems nsComboBoxCell  value =
-    sendMsg nsComboBoxCell (mkSelector "setNumberOfVisibleItems:") retVoid [argCLong value]
+setNumberOfVisibleItems nsComboBoxCell value =
+  sendMessage nsComboBoxCell setNumberOfVisibleItemsSelector value
 
 -- | @- buttonBordered@
 buttonBordered :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO Bool
-buttonBordered nsComboBoxCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsComboBoxCell (mkSelector "buttonBordered") retCULong []
+buttonBordered nsComboBoxCell =
+  sendMessage nsComboBoxCell buttonBorderedSelector
 
 -- | @- setButtonBordered:@
 setButtonBordered :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> Bool -> IO ()
-setButtonBordered nsComboBoxCell  value =
-    sendMsg nsComboBoxCell (mkSelector "setButtonBordered:") retVoid [argCULong (if value then 1 else 0)]
+setButtonBordered nsComboBoxCell value =
+  sendMessage nsComboBoxCell setButtonBorderedSelector value
 
 -- | @- usesDataSource@
 usesDataSource :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO Bool
-usesDataSource nsComboBoxCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsComboBoxCell (mkSelector "usesDataSource") retCULong []
+usesDataSource nsComboBoxCell =
+  sendMessage nsComboBoxCell usesDataSourceSelector
 
 -- | @- setUsesDataSource:@
 setUsesDataSource :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> Bool -> IO ()
-setUsesDataSource nsComboBoxCell  value =
-    sendMsg nsComboBoxCell (mkSelector "setUsesDataSource:") retVoid [argCULong (if value then 1 else 0)]
+setUsesDataSource nsComboBoxCell value =
+  sendMessage nsComboBoxCell setUsesDataSourceSelector value
 
 -- | @- indexOfSelectedItem@
 indexOfSelectedItem :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO CLong
-indexOfSelectedItem nsComboBoxCell  =
-    sendMsg nsComboBoxCell (mkSelector "indexOfSelectedItem") retCLong []
+indexOfSelectedItem nsComboBoxCell =
+  sendMessage nsComboBoxCell indexOfSelectedItemSelector
 
 -- | @- numberOfItems@
 numberOfItems :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO CLong
-numberOfItems nsComboBoxCell  =
-    sendMsg nsComboBoxCell (mkSelector "numberOfItems") retCLong []
+numberOfItems nsComboBoxCell =
+  sendMessage nsComboBoxCell numberOfItemsSelector
 
 -- | @- completes@
 completes :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO Bool
-completes nsComboBoxCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsComboBoxCell (mkSelector "completes") retCULong []
+completes nsComboBoxCell =
+  sendMessage nsComboBoxCell completesSelector
 
 -- | @- setCompletes:@
 setCompletes :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> Bool -> IO ()
-setCompletes nsComboBoxCell  value =
-    sendMsg nsComboBoxCell (mkSelector "setCompletes:") retVoid [argCULong (if value then 1 else 0)]
+setCompletes nsComboBoxCell value =
+  sendMessage nsComboBoxCell setCompletesSelector value
 
 -- | @- dataSource@
 dataSource :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO RawId
-dataSource nsComboBoxCell  =
-    fmap (RawId . castPtr) $ sendMsg nsComboBoxCell (mkSelector "dataSource") (retPtr retVoid) []
+dataSource nsComboBoxCell =
+  sendMessage nsComboBoxCell dataSourceSelector
 
 -- | @- setDataSource:@
 setDataSource :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> RawId -> IO ()
-setDataSource nsComboBoxCell  value =
-    sendMsg nsComboBoxCell (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDataSource nsComboBoxCell value =
+  sendMessage nsComboBoxCell setDataSourceSelector value
 
 -- | @- objectValueOfSelectedItem@
 objectValueOfSelectedItem :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO RawId
-objectValueOfSelectedItem nsComboBoxCell  =
-    fmap (RawId . castPtr) $ sendMsg nsComboBoxCell (mkSelector "objectValueOfSelectedItem") (retPtr retVoid) []
+objectValueOfSelectedItem nsComboBoxCell =
+  sendMessage nsComboBoxCell objectValueOfSelectedItemSelector
 
 -- | @- objectValues@
 objectValues :: IsNSComboBoxCell nsComboBoxCell => nsComboBoxCell -> IO (Id NSArray)
-objectValues nsComboBoxCell  =
-    sendMsg nsComboBoxCell (mkSelector "objectValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectValues nsComboBoxCell =
+  sendMessage nsComboBoxCell objectValuesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reloadData@
-reloadDataSelector :: Selector
+reloadDataSelector :: Selector '[] ()
 reloadDataSelector = mkSelector "reloadData"
 
 -- | @Selector@ for @noteNumberOfItemsChanged@
-noteNumberOfItemsChangedSelector :: Selector
+noteNumberOfItemsChangedSelector :: Selector '[] ()
 noteNumberOfItemsChangedSelector = mkSelector "noteNumberOfItemsChanged"
 
 -- | @Selector@ for @scrollItemAtIndexToTop:@
-scrollItemAtIndexToTopSelector :: Selector
+scrollItemAtIndexToTopSelector :: Selector '[CLong] ()
 scrollItemAtIndexToTopSelector = mkSelector "scrollItemAtIndexToTop:"
 
 -- | @Selector@ for @scrollItemAtIndexToVisible:@
-scrollItemAtIndexToVisibleSelector :: Selector
+scrollItemAtIndexToVisibleSelector :: Selector '[CLong] ()
 scrollItemAtIndexToVisibleSelector = mkSelector "scrollItemAtIndexToVisible:"
 
 -- | @Selector@ for @selectItemAtIndex:@
-selectItemAtIndexSelector :: Selector
+selectItemAtIndexSelector :: Selector '[CLong] ()
 selectItemAtIndexSelector = mkSelector "selectItemAtIndex:"
 
 -- | @Selector@ for @deselectItemAtIndex:@
-deselectItemAtIndexSelector :: Selector
+deselectItemAtIndexSelector :: Selector '[CLong] ()
 deselectItemAtIndexSelector = mkSelector "deselectItemAtIndex:"
 
 -- | @Selector@ for @completedString:@
-completedStringSelector :: Selector
+completedStringSelector :: Selector '[Id NSString] (Id NSString)
 completedStringSelector = mkSelector "completedString:"
 
 -- | @Selector@ for @addItemWithObjectValue:@
-addItemWithObjectValueSelector :: Selector
+addItemWithObjectValueSelector :: Selector '[RawId] ()
 addItemWithObjectValueSelector = mkSelector "addItemWithObjectValue:"
 
 -- | @Selector@ for @addItemsWithObjectValues:@
-addItemsWithObjectValuesSelector :: Selector
+addItemsWithObjectValuesSelector :: Selector '[Id NSArray] ()
 addItemsWithObjectValuesSelector = mkSelector "addItemsWithObjectValues:"
 
 -- | @Selector@ for @insertItemWithObjectValue:atIndex:@
-insertItemWithObjectValue_atIndexSelector :: Selector
+insertItemWithObjectValue_atIndexSelector :: Selector '[RawId, CLong] ()
 insertItemWithObjectValue_atIndexSelector = mkSelector "insertItemWithObjectValue:atIndex:"
 
 -- | @Selector@ for @removeItemWithObjectValue:@
-removeItemWithObjectValueSelector :: Selector
+removeItemWithObjectValueSelector :: Selector '[RawId] ()
 removeItemWithObjectValueSelector = mkSelector "removeItemWithObjectValue:"
 
 -- | @Selector@ for @removeItemAtIndex:@
-removeItemAtIndexSelector :: Selector
+removeItemAtIndexSelector :: Selector '[CLong] ()
 removeItemAtIndexSelector = mkSelector "removeItemAtIndex:"
 
 -- | @Selector@ for @removeAllItems@
-removeAllItemsSelector :: Selector
+removeAllItemsSelector :: Selector '[] ()
 removeAllItemsSelector = mkSelector "removeAllItems"
 
 -- | @Selector@ for @selectItemWithObjectValue:@
-selectItemWithObjectValueSelector :: Selector
+selectItemWithObjectValueSelector :: Selector '[RawId] ()
 selectItemWithObjectValueSelector = mkSelector "selectItemWithObjectValue:"
 
 -- | @Selector@ for @itemObjectValueAtIndex:@
-itemObjectValueAtIndexSelector :: Selector
+itemObjectValueAtIndexSelector :: Selector '[CLong] RawId
 itemObjectValueAtIndexSelector = mkSelector "itemObjectValueAtIndex:"
 
 -- | @Selector@ for @indexOfItemWithObjectValue:@
-indexOfItemWithObjectValueSelector :: Selector
+indexOfItemWithObjectValueSelector :: Selector '[RawId] CLong
 indexOfItemWithObjectValueSelector = mkSelector "indexOfItemWithObjectValue:"
 
 -- | @Selector@ for @hasVerticalScroller@
-hasVerticalScrollerSelector :: Selector
+hasVerticalScrollerSelector :: Selector '[] Bool
 hasVerticalScrollerSelector = mkSelector "hasVerticalScroller"
 
 -- | @Selector@ for @setHasVerticalScroller:@
-setHasVerticalScrollerSelector :: Selector
+setHasVerticalScrollerSelector :: Selector '[Bool] ()
 setHasVerticalScrollerSelector = mkSelector "setHasVerticalScroller:"
 
 -- | @Selector@ for @intercellSpacing@
-intercellSpacingSelector :: Selector
+intercellSpacingSelector :: Selector '[] NSSize
 intercellSpacingSelector = mkSelector "intercellSpacing"
 
 -- | @Selector@ for @setIntercellSpacing:@
-setIntercellSpacingSelector :: Selector
+setIntercellSpacingSelector :: Selector '[NSSize] ()
 setIntercellSpacingSelector = mkSelector "setIntercellSpacing:"
 
 -- | @Selector@ for @itemHeight@
-itemHeightSelector :: Selector
+itemHeightSelector :: Selector '[] CDouble
 itemHeightSelector = mkSelector "itemHeight"
 
 -- | @Selector@ for @setItemHeight:@
-setItemHeightSelector :: Selector
+setItemHeightSelector :: Selector '[CDouble] ()
 setItemHeightSelector = mkSelector "setItemHeight:"
 
 -- | @Selector@ for @numberOfVisibleItems@
-numberOfVisibleItemsSelector :: Selector
+numberOfVisibleItemsSelector :: Selector '[] CLong
 numberOfVisibleItemsSelector = mkSelector "numberOfVisibleItems"
 
 -- | @Selector@ for @setNumberOfVisibleItems:@
-setNumberOfVisibleItemsSelector :: Selector
+setNumberOfVisibleItemsSelector :: Selector '[CLong] ()
 setNumberOfVisibleItemsSelector = mkSelector "setNumberOfVisibleItems:"
 
 -- | @Selector@ for @buttonBordered@
-buttonBorderedSelector :: Selector
+buttonBorderedSelector :: Selector '[] Bool
 buttonBorderedSelector = mkSelector "buttonBordered"
 
 -- | @Selector@ for @setButtonBordered:@
-setButtonBorderedSelector :: Selector
+setButtonBorderedSelector :: Selector '[Bool] ()
 setButtonBorderedSelector = mkSelector "setButtonBordered:"
 
 -- | @Selector@ for @usesDataSource@
-usesDataSourceSelector :: Selector
+usesDataSourceSelector :: Selector '[] Bool
 usesDataSourceSelector = mkSelector "usesDataSource"
 
 -- | @Selector@ for @setUsesDataSource:@
-setUsesDataSourceSelector :: Selector
+setUsesDataSourceSelector :: Selector '[Bool] ()
 setUsesDataSourceSelector = mkSelector "setUsesDataSource:"
 
 -- | @Selector@ for @indexOfSelectedItem@
-indexOfSelectedItemSelector :: Selector
+indexOfSelectedItemSelector :: Selector '[] CLong
 indexOfSelectedItemSelector = mkSelector "indexOfSelectedItem"
 
 -- | @Selector@ for @numberOfItems@
-numberOfItemsSelector :: Selector
+numberOfItemsSelector :: Selector '[] CLong
 numberOfItemsSelector = mkSelector "numberOfItems"
 
 -- | @Selector@ for @completes@
-completesSelector :: Selector
+completesSelector :: Selector '[] Bool
 completesSelector = mkSelector "completes"
 
 -- | @Selector@ for @setCompletes:@
-setCompletesSelector :: Selector
+setCompletesSelector :: Selector '[Bool] ()
 setCompletesSelector = mkSelector "setCompletes:"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] RawId
 dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @setDataSource:@
-setDataSourceSelector :: Selector
+setDataSourceSelector :: Selector '[RawId] ()
 setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @objectValueOfSelectedItem@
-objectValueOfSelectedItemSelector :: Selector
+objectValueOfSelectedItemSelector :: Selector '[] RawId
 objectValueOfSelectedItemSelector = mkSelector "objectValueOfSelectedItem"
 
 -- | @Selector@ for @objectValues@
-objectValuesSelector :: Selector
+objectValuesSelector :: Selector '[] (Id NSArray)
 objectValuesSelector = mkSelector "objectValues"
 

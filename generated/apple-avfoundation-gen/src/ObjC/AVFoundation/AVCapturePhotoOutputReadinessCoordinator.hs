@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,14 +22,14 @@ module ObjC.AVFoundation.AVCapturePhotoOutputReadinessCoordinator
   , delegate
   , setDelegate
   , captureReadiness
+  , captureReadinessSelector
+  , delegateSelector
   , initSelector
-  , newSelector
   , initWithPhotoOutputSelector
+  , newSelector
+  , setDelegateSelector
   , startTrackingCaptureRequestUsingPhotoSettingsSelector
   , stopTrackingCaptureRequestUsingPhotoSettingsUniqueIDSelector
-  , delegateSelector
-  , setDelegateSelector
-  , captureReadinessSelector
 
   -- * Enum types
   , AVCapturePhotoOutputCaptureReadiness(AVCapturePhotoOutputCaptureReadiness)
@@ -40,15 +41,11 @@ module ObjC.AVFoundation.AVCapturePhotoOutputReadinessCoordinator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,21 +55,20 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCapturePhotoOutputReadinessCoordinator avCapturePhotoOutputReadinessCoordinator => avCapturePhotoOutputReadinessCoordinator -> IO (Id AVCapturePhotoOutputReadinessCoordinator)
-init_ avCapturePhotoOutputReadinessCoordinator  =
-    sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCapturePhotoOutputReadinessCoordinator =
+  sendOwnedMessage avCapturePhotoOutputReadinessCoordinator initSelector
 
 -- | @+ new@
 new :: IO (Id AVCapturePhotoOutputReadinessCoordinator)
 new  =
   do
     cls' <- getRequiredClass "AVCapturePhotoOutputReadinessCoordinator"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithPhotoOutput:@
 initWithPhotoOutput :: (IsAVCapturePhotoOutputReadinessCoordinator avCapturePhotoOutputReadinessCoordinator, IsAVCapturePhotoOutput photoOutput) => avCapturePhotoOutputReadinessCoordinator -> photoOutput -> IO (Id AVCapturePhotoOutputReadinessCoordinator)
-initWithPhotoOutput avCapturePhotoOutputReadinessCoordinator  photoOutput =
-  withObjCPtr photoOutput $ \raw_photoOutput ->
-      sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "initWithPhotoOutput:") (retPtr retVoid) [argPtr (castPtr raw_photoOutput :: Ptr ())] >>= ownedObject . castPtr
+initWithPhotoOutput avCapturePhotoOutputReadinessCoordinator photoOutput =
+  sendOwnedMessage avCapturePhotoOutputReadinessCoordinator initWithPhotoOutputSelector (toAVCapturePhotoOutput photoOutput)
 
 -- | startTrackingCaptureRequestUsingPhotoSettings:
 --
@@ -84,9 +80,8 @@ initWithPhotoOutput avCapturePhotoOutputReadinessCoordinator  photoOutput =
 --
 -- ObjC selector: @- startTrackingCaptureRequestUsingPhotoSettings:@
 startTrackingCaptureRequestUsingPhotoSettings :: (IsAVCapturePhotoOutputReadinessCoordinator avCapturePhotoOutputReadinessCoordinator, IsAVCapturePhotoSettings settings) => avCapturePhotoOutputReadinessCoordinator -> settings -> IO ()
-startTrackingCaptureRequestUsingPhotoSettings avCapturePhotoOutputReadinessCoordinator  settings =
-  withObjCPtr settings $ \raw_settings ->
-      sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "startTrackingCaptureRequestUsingPhotoSettings:") retVoid [argPtr (castPtr raw_settings :: Ptr ())]
+startTrackingCaptureRequestUsingPhotoSettings avCapturePhotoOutputReadinessCoordinator settings =
+  sendMessage avCapturePhotoOutputReadinessCoordinator startTrackingCaptureRequestUsingPhotoSettingsSelector (toAVCapturePhotoSettings settings)
 
 -- | stopTrackingCaptureRequestUsingPhotoSettingsUniqueID:
 --
@@ -98,8 +93,8 @@ startTrackingCaptureRequestUsingPhotoSettings avCapturePhotoOutputReadinessCoord
 --
 -- ObjC selector: @- stopTrackingCaptureRequestUsingPhotoSettingsUniqueID:@
 stopTrackingCaptureRequestUsingPhotoSettingsUniqueID :: IsAVCapturePhotoOutputReadinessCoordinator avCapturePhotoOutputReadinessCoordinator => avCapturePhotoOutputReadinessCoordinator -> CLong -> IO ()
-stopTrackingCaptureRequestUsingPhotoSettingsUniqueID avCapturePhotoOutputReadinessCoordinator  settingsUniqueID =
-    sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "stopTrackingCaptureRequestUsingPhotoSettingsUniqueID:") retVoid [argCLong settingsUniqueID]
+stopTrackingCaptureRequestUsingPhotoSettingsUniqueID avCapturePhotoOutputReadinessCoordinator settingsUniqueID =
+  sendMessage avCapturePhotoOutputReadinessCoordinator stopTrackingCaptureRequestUsingPhotoSettingsUniqueIDSelector settingsUniqueID
 
 -- | delegate
 --
@@ -109,8 +104,8 @@ stopTrackingCaptureRequestUsingPhotoSettingsUniqueID avCapturePhotoOutputReadine
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVCapturePhotoOutputReadinessCoordinator avCapturePhotoOutputReadinessCoordinator => avCapturePhotoOutputReadinessCoordinator -> IO RawId
-delegate avCapturePhotoOutputReadinessCoordinator  =
-    fmap (RawId . castPtr) $ sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "delegate") (retPtr retVoid) []
+delegate avCapturePhotoOutputReadinessCoordinator =
+  sendMessage avCapturePhotoOutputReadinessCoordinator delegateSelector
 
 -- | delegate
 --
@@ -120,8 +115,8 @@ delegate avCapturePhotoOutputReadinessCoordinator  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsAVCapturePhotoOutputReadinessCoordinator avCapturePhotoOutputReadinessCoordinator => avCapturePhotoOutputReadinessCoordinator -> RawId -> IO ()
-setDelegate avCapturePhotoOutputReadinessCoordinator  value =
-    sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avCapturePhotoOutputReadinessCoordinator value =
+  sendMessage avCapturePhotoOutputReadinessCoordinator setDelegateSelector value
 
 -- | captureReadiness
 --
@@ -131,42 +126,42 @@ setDelegate avCapturePhotoOutputReadinessCoordinator  value =
 --
 -- ObjC selector: @- captureReadiness@
 captureReadiness :: IsAVCapturePhotoOutputReadinessCoordinator avCapturePhotoOutputReadinessCoordinator => avCapturePhotoOutputReadinessCoordinator -> IO AVCapturePhotoOutputCaptureReadiness
-captureReadiness avCapturePhotoOutputReadinessCoordinator  =
-    fmap (coerce :: CLong -> AVCapturePhotoOutputCaptureReadiness) $ sendMsg avCapturePhotoOutputReadinessCoordinator (mkSelector "captureReadiness") retCLong []
+captureReadiness avCapturePhotoOutputReadinessCoordinator =
+  sendMessage avCapturePhotoOutputReadinessCoordinator captureReadinessSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCapturePhotoOutputReadinessCoordinator)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCapturePhotoOutputReadinessCoordinator)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithPhotoOutput:@
-initWithPhotoOutputSelector :: Selector
+initWithPhotoOutputSelector :: Selector '[Id AVCapturePhotoOutput] (Id AVCapturePhotoOutputReadinessCoordinator)
 initWithPhotoOutputSelector = mkSelector "initWithPhotoOutput:"
 
 -- | @Selector@ for @startTrackingCaptureRequestUsingPhotoSettings:@
-startTrackingCaptureRequestUsingPhotoSettingsSelector :: Selector
+startTrackingCaptureRequestUsingPhotoSettingsSelector :: Selector '[Id AVCapturePhotoSettings] ()
 startTrackingCaptureRequestUsingPhotoSettingsSelector = mkSelector "startTrackingCaptureRequestUsingPhotoSettings:"
 
 -- | @Selector@ for @stopTrackingCaptureRequestUsingPhotoSettingsUniqueID:@
-stopTrackingCaptureRequestUsingPhotoSettingsUniqueIDSelector :: Selector
+stopTrackingCaptureRequestUsingPhotoSettingsUniqueIDSelector :: Selector '[CLong] ()
 stopTrackingCaptureRequestUsingPhotoSettingsUniqueIDSelector = mkSelector "stopTrackingCaptureRequestUsingPhotoSettingsUniqueID:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @captureReadiness@
-captureReadinessSelector :: Selector
+captureReadinessSelector :: Selector '[] AVCapturePhotoOutputCaptureReadiness
 captureReadinessSelector = mkSelector "captureReadiness"
 

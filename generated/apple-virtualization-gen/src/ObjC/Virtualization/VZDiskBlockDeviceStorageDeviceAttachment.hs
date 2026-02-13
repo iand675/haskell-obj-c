@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,8 +34,8 @@ module ObjC.Virtualization.VZDiskBlockDeviceStorageDeviceAttachment
   , fileHandle
   , readOnly
   , synchronizationMode
-  , initWithFileHandle_readOnly_synchronizationMode_errorSelector
   , fileHandleSelector
+  , initWithFileHandle_readOnly_synchronizationMode_errorSelector
   , readOnlySelector
   , synchronizationModeSelector
 
@@ -45,15 +46,11 @@ module ObjC.Virtualization.VZDiskBlockDeviceStorageDeviceAttachment
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,49 +76,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFileHandle:readOnly:synchronizationMode:error:@
 initWithFileHandle_readOnly_synchronizationMode_error :: (IsVZDiskBlockDeviceStorageDeviceAttachment vzDiskBlockDeviceStorageDeviceAttachment, IsNSFileHandle fileHandle, IsNSError error_) => vzDiskBlockDeviceStorageDeviceAttachment -> fileHandle -> Bool -> VZDiskSynchronizationMode -> error_ -> IO (Id VZDiskBlockDeviceStorageDeviceAttachment)
-initWithFileHandle_readOnly_synchronizationMode_error vzDiskBlockDeviceStorageDeviceAttachment  fileHandle readOnly synchronizationMode error_ =
-  withObjCPtr fileHandle $ \raw_fileHandle ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vzDiskBlockDeviceStorageDeviceAttachment (mkSelector "initWithFileHandle:readOnly:synchronizationMode:error:") (retPtr retVoid) [argPtr (castPtr raw_fileHandle :: Ptr ()), argCULong (if readOnly then 1 else 0), argCLong (coerce synchronizationMode), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithFileHandle_readOnly_synchronizationMode_error vzDiskBlockDeviceStorageDeviceAttachment fileHandle readOnly synchronizationMode error_ =
+  sendOwnedMessage vzDiskBlockDeviceStorageDeviceAttachment initWithFileHandle_readOnly_synchronizationMode_errorSelector (toNSFileHandle fileHandle) readOnly synchronizationMode (toNSError error_)
 
 -- | File handle to the underlying disk used for storage by the attachment.
 --
 -- ObjC selector: @- fileHandle@
 fileHandle :: IsVZDiskBlockDeviceStorageDeviceAttachment vzDiskBlockDeviceStorageDeviceAttachment => vzDiskBlockDeviceStorageDeviceAttachment -> IO (Id NSFileHandle)
-fileHandle vzDiskBlockDeviceStorageDeviceAttachment  =
-    sendMsg vzDiskBlockDeviceStorageDeviceAttachment (mkSelector "fileHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileHandle vzDiskBlockDeviceStorageDeviceAttachment =
+  sendMessage vzDiskBlockDeviceStorageDeviceAttachment fileHandleSelector
 
 -- | Whether the underlying disk attachment is read-only.
 --
 -- ObjC selector: @- readOnly@
 readOnly :: IsVZDiskBlockDeviceStorageDeviceAttachment vzDiskBlockDeviceStorageDeviceAttachment => vzDiskBlockDeviceStorageDeviceAttachment -> IO Bool
-readOnly vzDiskBlockDeviceStorageDeviceAttachment  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzDiskBlockDeviceStorageDeviceAttachment (mkSelector "readOnly") retCULong []
+readOnly vzDiskBlockDeviceStorageDeviceAttachment =
+  sendMessage vzDiskBlockDeviceStorageDeviceAttachment readOnlySelector
 
 -- | The mode in which the disk image synchronizes data with the underlying storage device.
 --
 -- ObjC selector: @- synchronizationMode@
 synchronizationMode :: IsVZDiskBlockDeviceStorageDeviceAttachment vzDiskBlockDeviceStorageDeviceAttachment => vzDiskBlockDeviceStorageDeviceAttachment -> IO VZDiskSynchronizationMode
-synchronizationMode vzDiskBlockDeviceStorageDeviceAttachment  =
-    fmap (coerce :: CLong -> VZDiskSynchronizationMode) $ sendMsg vzDiskBlockDeviceStorageDeviceAttachment (mkSelector "synchronizationMode") retCLong []
+synchronizationMode vzDiskBlockDeviceStorageDeviceAttachment =
+  sendMessage vzDiskBlockDeviceStorageDeviceAttachment synchronizationModeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFileHandle:readOnly:synchronizationMode:error:@
-initWithFileHandle_readOnly_synchronizationMode_errorSelector :: Selector
+initWithFileHandle_readOnly_synchronizationMode_errorSelector :: Selector '[Id NSFileHandle, Bool, VZDiskSynchronizationMode, Id NSError] (Id VZDiskBlockDeviceStorageDeviceAttachment)
 initWithFileHandle_readOnly_synchronizationMode_errorSelector = mkSelector "initWithFileHandle:readOnly:synchronizationMode:error:"
 
 -- | @Selector@ for @fileHandle@
-fileHandleSelector :: Selector
+fileHandleSelector :: Selector '[] (Id NSFileHandle)
 fileHandleSelector = mkSelector "fileHandle"
 
 -- | @Selector@ for @readOnly@
-readOnlySelector :: Selector
+readOnlySelector :: Selector '[] Bool
 readOnlySelector = mkSelector "readOnly"
 
 -- | @Selector@ for @synchronizationMode@
-synchronizationModeSelector :: Selector
+synchronizationModeSelector :: Selector '[] VZDiskSynchronizationMode
 synchronizationModeSelector = mkSelector "synchronizationMode"
 

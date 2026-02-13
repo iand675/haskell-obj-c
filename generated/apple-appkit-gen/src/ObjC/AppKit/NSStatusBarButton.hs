@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.AppKit.NSStatusBarButton
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,25 +32,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- appearsDisabled@
 appearsDisabled :: IsNSStatusBarButton nsStatusBarButton => nsStatusBarButton -> IO Bool
-appearsDisabled nsStatusBarButton  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsStatusBarButton (mkSelector "appearsDisabled") retCULong []
+appearsDisabled nsStatusBarButton =
+  sendMessage nsStatusBarButton appearsDisabledSelector
 
 -- | If @YES@, the status bar icon has a disabled/off appearance while still being functional, such as allowing selection and actions. Defaults to @NO@.
 --
 -- ObjC selector: @- setAppearsDisabled:@
 setAppearsDisabled :: IsNSStatusBarButton nsStatusBarButton => nsStatusBarButton -> Bool -> IO ()
-setAppearsDisabled nsStatusBarButton  value =
-    sendMsg nsStatusBarButton (mkSelector "setAppearsDisabled:") retVoid [argCULong (if value then 1 else 0)]
+setAppearsDisabled nsStatusBarButton value =
+  sendMessage nsStatusBarButton setAppearsDisabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @appearsDisabled@
-appearsDisabledSelector :: Selector
+appearsDisabledSelector :: Selector '[] Bool
 appearsDisabledSelector = mkSelector "appearsDisabled"
 
 -- | @Selector@ for @setAppearsDisabled:@
-setAppearsDisabledSelector :: Selector
+setAppearsDisabledSelector :: Selector '[Bool] ()
 setAppearsDisabledSelector = mkSelector "setAppearsDisabled:"
 

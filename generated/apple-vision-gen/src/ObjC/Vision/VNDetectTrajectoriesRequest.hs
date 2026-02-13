@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.Vision.VNDetectTrajectoriesRequest
   , maximumObjectSize
   , setMaximumObjectSize
   , results
-  , trajectoryLengthSelector
-  , objectMinimumNormalizedRadiusSelector
-  , setObjectMinimumNormalizedRadiusSelector
-  , minimumObjectSizeSelector
-  , setMinimumObjectSizeSelector
-  , objectMaximumNormalizedRadiusSelector
-  , setObjectMaximumNormalizedRadiusSelector
   , maximumObjectSizeSelector
-  , setMaximumObjectSizeSelector
+  , minimumObjectSizeSelector
+  , objectMaximumNormalizedRadiusSelector
+  , objectMinimumNormalizedRadiusSelector
   , resultsSelector
+  , setMaximumObjectSizeSelector
+  , setMinimumObjectSizeSelector
+  , setObjectMaximumNormalizedRadiusSelector
+  , setObjectMinimumNormalizedRadiusSelector
+  , trajectoryLengthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,105 +50,105 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- trajectoryLength@
 trajectoryLength :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> IO CLong
-trajectoryLength vnDetectTrajectoriesRequest  =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "trajectoryLength") retCLong []
+trajectoryLength vnDetectTrajectoriesRequest =
+  sendMessage vnDetectTrajectoriesRequest trajectoryLengthSelector
 
 -- | Specifies the minimum radius of the bounding circle of the object to be tracked. This can be used to filter out noise and small objects. The default is 0.0, which means no filtering is applied. Changing the property from frame to frame can produce eratic trajectories as objects will either disappear or be added to the tracking base on this filtering. The value is specified in normalized coordinates.
 --
 -- ObjC selector: @- objectMinimumNormalizedRadius@
 objectMinimumNormalizedRadius :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> IO CFloat
-objectMinimumNormalizedRadius vnDetectTrajectoriesRequest  =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "objectMinimumNormalizedRadius") retCFloat []
+objectMinimumNormalizedRadius vnDetectTrajectoriesRequest =
+  sendMessage vnDetectTrajectoriesRequest objectMinimumNormalizedRadiusSelector
 
 -- | Specifies the minimum radius of the bounding circle of the object to be tracked. This can be used to filter out noise and small objects. The default is 0.0, which means no filtering is applied. Changing the property from frame to frame can produce eratic trajectories as objects will either disappear or be added to the tracking base on this filtering. The value is specified in normalized coordinates.
 --
 -- ObjC selector: @- setObjectMinimumNormalizedRadius:@
 setObjectMinimumNormalizedRadius :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> CFloat -> IO ()
-setObjectMinimumNormalizedRadius vnDetectTrajectoriesRequest  value =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "setObjectMinimumNormalizedRadius:") retVoid [argCFloat value]
+setObjectMinimumNormalizedRadius vnDetectTrajectoriesRequest value =
+  sendMessage vnDetectTrajectoriesRequest setObjectMinimumNormalizedRadiusSelector value
 
 -- | @- minimumObjectSize@
 minimumObjectSize :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> IO CFloat
-minimumObjectSize vnDetectTrajectoriesRequest  =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "minimumObjectSize") retCFloat []
+minimumObjectSize vnDetectTrajectoriesRequest =
+  sendMessage vnDetectTrajectoriesRequest minimumObjectSizeSelector
 
 -- | @- setMinimumObjectSize:@
 setMinimumObjectSize :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> CFloat -> IO ()
-setMinimumObjectSize vnDetectTrajectoriesRequest  value =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "setMinimumObjectSize:") retVoid [argCFloat value]
+setMinimumObjectSize vnDetectTrajectoriesRequest value =
+  sendMessage vnDetectTrajectoriesRequest setMinimumObjectSizeSelector value
 
 -- | Specifies the maximum radius of the bounding circle of the object to be tracked. This can be used to filter out unwanted trajectories from larger objects moving through the scene. The default is 1.0, which means no filtering is applied. Changing the maximum from frame to frame can produce eratic trajectories as objects will either disappear or be added to the tracking base on this filtering. The size is specified in normalized coordinates.
 --
 -- ObjC selector: @- objectMaximumNormalizedRadius@
 objectMaximumNormalizedRadius :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> IO CFloat
-objectMaximumNormalizedRadius vnDetectTrajectoriesRequest  =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "objectMaximumNormalizedRadius") retCFloat []
+objectMaximumNormalizedRadius vnDetectTrajectoriesRequest =
+  sendMessage vnDetectTrajectoriesRequest objectMaximumNormalizedRadiusSelector
 
 -- | Specifies the maximum radius of the bounding circle of the object to be tracked. This can be used to filter out unwanted trajectories from larger objects moving through the scene. The default is 1.0, which means no filtering is applied. Changing the maximum from frame to frame can produce eratic trajectories as objects will either disappear or be added to the tracking base on this filtering. The size is specified in normalized coordinates.
 --
 -- ObjC selector: @- setObjectMaximumNormalizedRadius:@
 setObjectMaximumNormalizedRadius :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> CFloat -> IO ()
-setObjectMaximumNormalizedRadius vnDetectTrajectoriesRequest  value =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "setObjectMaximumNormalizedRadius:") retVoid [argCFloat value]
+setObjectMaximumNormalizedRadius vnDetectTrajectoriesRequest value =
+  sendMessage vnDetectTrajectoriesRequest setObjectMaximumNormalizedRadiusSelector value
 
 -- | @- maximumObjectSize@
 maximumObjectSize :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> IO CFloat
-maximumObjectSize vnDetectTrajectoriesRequest  =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "maximumObjectSize") retCFloat []
+maximumObjectSize vnDetectTrajectoriesRequest =
+  sendMessage vnDetectTrajectoriesRequest maximumObjectSizeSelector
 
 -- | @- setMaximumObjectSize:@
 setMaximumObjectSize :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> CFloat -> IO ()
-setMaximumObjectSize vnDetectTrajectoriesRequest  value =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "setMaximumObjectSize:") retVoid [argCFloat value]
+setMaximumObjectSize vnDetectTrajectoriesRequest value =
+  sendMessage vnDetectTrajectoriesRequest setMaximumObjectSizeSelector value
 
 -- | Provides VNTrajectoryObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNDetectTrajectoriesRequest vnDetectTrajectoriesRequest => vnDetectTrajectoriesRequest -> IO (Id NSArray)
-results vnDetectTrajectoriesRequest  =
-    sendMsg vnDetectTrajectoriesRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnDetectTrajectoriesRequest =
+  sendMessage vnDetectTrajectoriesRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @trajectoryLength@
-trajectoryLengthSelector :: Selector
+trajectoryLengthSelector :: Selector '[] CLong
 trajectoryLengthSelector = mkSelector "trajectoryLength"
 
 -- | @Selector@ for @objectMinimumNormalizedRadius@
-objectMinimumNormalizedRadiusSelector :: Selector
+objectMinimumNormalizedRadiusSelector :: Selector '[] CFloat
 objectMinimumNormalizedRadiusSelector = mkSelector "objectMinimumNormalizedRadius"
 
 -- | @Selector@ for @setObjectMinimumNormalizedRadius:@
-setObjectMinimumNormalizedRadiusSelector :: Selector
+setObjectMinimumNormalizedRadiusSelector :: Selector '[CFloat] ()
 setObjectMinimumNormalizedRadiusSelector = mkSelector "setObjectMinimumNormalizedRadius:"
 
 -- | @Selector@ for @minimumObjectSize@
-minimumObjectSizeSelector :: Selector
+minimumObjectSizeSelector :: Selector '[] CFloat
 minimumObjectSizeSelector = mkSelector "minimumObjectSize"
 
 -- | @Selector@ for @setMinimumObjectSize:@
-setMinimumObjectSizeSelector :: Selector
+setMinimumObjectSizeSelector :: Selector '[CFloat] ()
 setMinimumObjectSizeSelector = mkSelector "setMinimumObjectSize:"
 
 -- | @Selector@ for @objectMaximumNormalizedRadius@
-objectMaximumNormalizedRadiusSelector :: Selector
+objectMaximumNormalizedRadiusSelector :: Selector '[] CFloat
 objectMaximumNormalizedRadiusSelector = mkSelector "objectMaximumNormalizedRadius"
 
 -- | @Selector@ for @setObjectMaximumNormalizedRadius:@
-setObjectMaximumNormalizedRadiusSelector :: Selector
+setObjectMaximumNormalizedRadiusSelector :: Selector '[CFloat] ()
 setObjectMaximumNormalizedRadiusSelector = mkSelector "setObjectMaximumNormalizedRadius:"
 
 -- | @Selector@ for @maximumObjectSize@
-maximumObjectSizeSelector :: Selector
+maximumObjectSizeSelector :: Selector '[] CFloat
 maximumObjectSizeSelector = mkSelector "maximumObjectSize"
 
 -- | @Selector@ for @setMaximumObjectSize:@
-setMaximumObjectSizeSelector :: Selector
+setMaximumObjectSizeSelector :: Selector '[CFloat] ()
 setMaximumObjectSizeSelector = mkSelector "setMaximumObjectSize:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

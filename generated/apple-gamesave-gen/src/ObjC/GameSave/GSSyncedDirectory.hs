@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.GameSave.GSSyncedDirectory
   , init_
   , new
   , directoryState
-  , openDirectoryForContainerIdentifierSelector
   , closeSelector
-  , triggerPendingUploadWithCompletionHandlerSelector
-  , resolveConflictsWithVersionSelector
+  , directoryStateSelector
   , finishSyncingWithCompletionHandlerSelector
   , finishSyncing_completionHandlerSelector
   , initSelector
   , newSelector
-  , directoryStateSelector
+  , openDirectoryForContainerIdentifierSelector
+  , resolveConflictsWithVersionSelector
+  , triggerPendingUploadWithCompletionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,15 +58,14 @@ openDirectoryForContainerIdentifier :: IsNSString containerIdentifier => contain
 openDirectoryForContainerIdentifier containerIdentifier =
   do
     cls' <- getRequiredClass "GSSyncedDirectory"
-    withObjCPtr containerIdentifier $ \raw_containerIdentifier ->
-      sendClassMsg cls' (mkSelector "openDirectoryForContainerIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_containerIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' openDirectoryForContainerIdentifierSelector (toNSString containerIdentifier)
 
 -- | Closes the directory, and resumes syncing the directory to the cloud.
 --
 -- ObjC selector: @- close@
 close :: IsGSSyncedDirectory gsSyncedDirectory => gsSyncedDirectory -> IO ()
-close gsSyncedDirectory  =
-    sendMsg gsSyncedDirectory (mkSelector "close") retVoid []
+close gsSyncedDirectory =
+  sendMessage gsSyncedDirectory closeSelector
 
 -- | Triggers an upload of the directory for any changes that were pending.
 --
@@ -77,8 +73,8 @@ close gsSyncedDirectory  =
 --
 -- ObjC selector: @- triggerPendingUploadWithCompletionHandler:@
 triggerPendingUploadWithCompletionHandler :: IsGSSyncedDirectory gsSyncedDirectory => gsSyncedDirectory -> Ptr () -> IO ()
-triggerPendingUploadWithCompletionHandler gsSyncedDirectory  completion =
-    sendMsg gsSyncedDirectory (mkSelector "triggerPendingUploadWithCompletionHandler:") retVoid [argPtr (castPtr completion :: Ptr ())]
+triggerPendingUploadWithCompletionHandler gsSyncedDirectory completion =
+  sendMessage gsSyncedDirectory triggerPendingUploadWithCompletionHandlerSelector completion
 
 -- | Indicates that you resolved a conflict.
 --
@@ -90,9 +86,8 @@ triggerPendingUploadWithCompletionHandler gsSyncedDirectory  completion =
 --
 -- ObjC selector: @- resolveConflictsWithVersion:@
 resolveConflictsWithVersion :: (IsGSSyncedDirectory gsSyncedDirectory, IsGSSyncedDirectoryVersion version) => gsSyncedDirectory -> version -> IO ()
-resolveConflictsWithVersion gsSyncedDirectory  version =
-  withObjCPtr version $ \raw_version ->
-      sendMsg gsSyncedDirectory (mkSelector "resolveConflictsWithVersion:") retVoid [argPtr (castPtr raw_version :: Ptr ())]
+resolveConflictsWithVersion gsSyncedDirectory version =
+  sendMessage gsSyncedDirectory resolveConflictsWithVersionSelector (toGSSyncedDirectoryVersion version)
 
 -- | Waits for the directory sync to complete, without showing any user interface.
 --
@@ -100,8 +95,8 @@ resolveConflictsWithVersion gsSyncedDirectory  version =
 --
 -- ObjC selector: @- finishSyncingWithCompletionHandler:@
 finishSyncingWithCompletionHandler :: IsGSSyncedDirectory gsSyncedDirectory => gsSyncedDirectory -> Ptr () -> IO ()
-finishSyncingWithCompletionHandler gsSyncedDirectory  completion =
-    sendMsg gsSyncedDirectory (mkSelector "finishSyncingWithCompletionHandler:") retVoid [argPtr (castPtr completion :: Ptr ())]
+finishSyncingWithCompletionHandler gsSyncedDirectory completion =
+  sendMessage gsSyncedDirectory finishSyncingWithCompletionHandlerSelector completion
 
 -- | Waits for the directory sync to complete, showing the sync's progress in a modal alert.
 --
@@ -111,64 +106,63 @@ finishSyncingWithCompletionHandler gsSyncedDirectory  completion =
 --
 -- ObjC selector: @- finishSyncing:completionHandler:@
 finishSyncing_completionHandler :: (IsGSSyncedDirectory gsSyncedDirectory, IsNSWindow statusDisplay) => gsSyncedDirectory -> statusDisplay -> Ptr () -> IO ()
-finishSyncing_completionHandler gsSyncedDirectory  statusDisplay completion =
-  withObjCPtr statusDisplay $ \raw_statusDisplay ->
-      sendMsg gsSyncedDirectory (mkSelector "finishSyncing:completionHandler:") retVoid [argPtr (castPtr raw_statusDisplay :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+finishSyncing_completionHandler gsSyncedDirectory statusDisplay completion =
+  sendMessage gsSyncedDirectory finishSyncing_completionHandlerSelector (toNSWindow statusDisplay) completion
 
 -- | @- init@
 init_ :: IsGSSyncedDirectory gsSyncedDirectory => gsSyncedDirectory -> IO (Id GSSyncedDirectory)
-init_ gsSyncedDirectory  =
-    sendMsg gsSyncedDirectory (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gsSyncedDirectory =
+  sendOwnedMessage gsSyncedDirectory initSelector
 
 -- | @- new@
 new :: IsGSSyncedDirectory gsSyncedDirectory => gsSyncedDirectory -> IO (Id GSSyncedDirectory)
-new gsSyncedDirectory  =
-    sendMsg gsSyncedDirectory (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+new gsSyncedDirectory =
+  sendOwnedMessage gsSyncedDirectory newSelector
 
 -- | The state of the directory.
 --
 -- ObjC selector: @- directoryState@
 directoryState :: IsGSSyncedDirectory gsSyncedDirectory => gsSyncedDirectory -> IO (Id GSSyncedDirectoryState)
-directoryState gsSyncedDirectory  =
-    sendMsg gsSyncedDirectory (mkSelector "directoryState") (retPtr retVoid) [] >>= retainedObject . castPtr
+directoryState gsSyncedDirectory =
+  sendMessage gsSyncedDirectory directoryStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @openDirectoryForContainerIdentifier:@
-openDirectoryForContainerIdentifierSelector :: Selector
+openDirectoryForContainerIdentifierSelector :: Selector '[Id NSString] (Id GSSyncedDirectory)
 openDirectoryForContainerIdentifierSelector = mkSelector "openDirectoryForContainerIdentifier:"
 
 -- | @Selector@ for @close@
-closeSelector :: Selector
+closeSelector :: Selector '[] ()
 closeSelector = mkSelector "close"
 
 -- | @Selector@ for @triggerPendingUploadWithCompletionHandler:@
-triggerPendingUploadWithCompletionHandlerSelector :: Selector
+triggerPendingUploadWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 triggerPendingUploadWithCompletionHandlerSelector = mkSelector "triggerPendingUploadWithCompletionHandler:"
 
 -- | @Selector@ for @resolveConflictsWithVersion:@
-resolveConflictsWithVersionSelector :: Selector
+resolveConflictsWithVersionSelector :: Selector '[Id GSSyncedDirectoryVersion] ()
 resolveConflictsWithVersionSelector = mkSelector "resolveConflictsWithVersion:"
 
 -- | @Selector@ for @finishSyncingWithCompletionHandler:@
-finishSyncingWithCompletionHandlerSelector :: Selector
+finishSyncingWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 finishSyncingWithCompletionHandlerSelector = mkSelector "finishSyncingWithCompletionHandler:"
 
 -- | @Selector@ for @finishSyncing:completionHandler:@
-finishSyncing_completionHandlerSelector :: Selector
+finishSyncing_completionHandlerSelector :: Selector '[Id NSWindow, Ptr ()] ()
 finishSyncing_completionHandlerSelector = mkSelector "finishSyncing:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GSSyncedDirectory)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id GSSyncedDirectory)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @directoryState@
-directoryStateSelector :: Selector
+directoryStateSelector :: Selector '[] (Id GSSyncedDirectoryState)
 directoryStateSelector = mkSelector "directoryState"
 

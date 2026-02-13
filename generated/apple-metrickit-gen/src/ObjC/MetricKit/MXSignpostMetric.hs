@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MetricKit.MXSignpostMetric
   , signpostCategory
   , signpostIntervalData
   , totalCount
-  , signpostNameSelector
   , signpostCategorySelector
   , signpostIntervalDataSelector
+  , signpostNameSelector
   , totalCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- signpostName@
 signpostName :: IsMXSignpostMetric mxSignpostMetric => mxSignpostMetric -> IO (Id NSString)
-signpostName mxSignpostMetric  =
-    sendMsg mxSignpostMetric (mkSelector "signpostName") (retPtr retVoid) [] >>= retainedObject . castPtr
+signpostName mxSignpostMetric =
+  sendMessage mxSignpostMetric signpostNameSelector
 
 -- | signpostCategory
 --
@@ -54,8 +51,8 @@ signpostName mxSignpostMetric  =
 --
 -- ObjC selector: @- signpostCategory@
 signpostCategory :: IsMXSignpostMetric mxSignpostMetric => mxSignpostMetric -> IO (Id NSString)
-signpostCategory mxSignpostMetric  =
-    sendMsg mxSignpostMetric (mkSelector "signpostCategory") (retPtr retVoid) [] >>= retainedObject . castPtr
+signpostCategory mxSignpostMetric =
+  sendMessage mxSignpostMetric signpostCategorySelector
 
 -- | signpostIntervalData
 --
@@ -65,8 +62,8 @@ signpostCategory mxSignpostMetric  =
 --
 -- ObjC selector: @- signpostIntervalData@
 signpostIntervalData :: IsMXSignpostMetric mxSignpostMetric => mxSignpostMetric -> IO (Id MXSignpostIntervalData)
-signpostIntervalData mxSignpostMetric  =
-    sendMsg mxSignpostMetric (mkSelector "signpostIntervalData") (retPtr retVoid) [] >>= retainedObject . castPtr
+signpostIntervalData mxSignpostMetric =
+  sendMessage mxSignpostMetric signpostIntervalDataSelector
 
 -- | totalCount
 --
@@ -74,26 +71,26 @@ signpostIntervalData mxSignpostMetric  =
 --
 -- ObjC selector: @- totalCount@
 totalCount :: IsMXSignpostMetric mxSignpostMetric => mxSignpostMetric -> IO CULong
-totalCount mxSignpostMetric  =
-    sendMsg mxSignpostMetric (mkSelector "totalCount") retCULong []
+totalCount mxSignpostMetric =
+  sendMessage mxSignpostMetric totalCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @signpostName@
-signpostNameSelector :: Selector
+signpostNameSelector :: Selector '[] (Id NSString)
 signpostNameSelector = mkSelector "signpostName"
 
 -- | @Selector@ for @signpostCategory@
-signpostCategorySelector :: Selector
+signpostCategorySelector :: Selector '[] (Id NSString)
 signpostCategorySelector = mkSelector "signpostCategory"
 
 -- | @Selector@ for @signpostIntervalData@
-signpostIntervalDataSelector :: Selector
+signpostIntervalDataSelector :: Selector '[] (Id MXSignpostIntervalData)
 signpostIntervalDataSelector = mkSelector "signpostIntervalData"
 
 -- | @Selector@ for @totalCount@
-totalCountSelector :: Selector
+totalCountSelector :: Selector '[] CULong
 totalCountSelector = mkSelector "totalCount"
 

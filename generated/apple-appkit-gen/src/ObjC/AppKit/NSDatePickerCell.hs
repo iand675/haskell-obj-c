@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,37 +39,37 @@ module ObjC.AppKit.NSDatePickerCell
   , setMaxDate
   , delegate
   , setDelegate
+  , backgroundColorSelector
+  , calendarSelector
+  , datePickerElementsSelector
+  , datePickerModeSelector
+  , datePickerStyleSelector
+  , dateValueSelector
+  , delegateSelector
+  , drawsBackgroundSelector
+  , initImageCellSelector
   , initTextCellSelector
   , initWithCoderSelector
-  , initImageCellSelector
-  , datePickerStyleSelector
-  , setDatePickerStyleSelector
-  , drawsBackgroundSelector
-  , setDrawsBackgroundSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , textColorSelector
-  , setTextColorSelector
-  , datePickerModeSelector
-  , setDatePickerModeSelector
-  , datePickerElementsSelector
-  , setDatePickerElementsSelector
-  , calendarSelector
-  , setCalendarSelector
   , localeSelector
-  , setLocaleSelector
-  , timeZoneSelector
-  , setTimeZoneSelector
-  , dateValueSelector
-  , setDateValueSelector
-  , timeIntervalSelector
-  , setTimeIntervalSelector
-  , minDateSelector
-  , setMinDateSelector
   , maxDateSelector
-  , setMaxDateSelector
-  , delegateSelector
+  , minDateSelector
+  , setBackgroundColorSelector
+  , setCalendarSelector
+  , setDatePickerElementsSelector
+  , setDatePickerModeSelector
+  , setDatePickerStyleSelector
+  , setDateValueSelector
   , setDelegateSelector
+  , setDrawsBackgroundSelector
+  , setLocaleSelector
+  , setMaxDateSelector
+  , setMinDateSelector
+  , setTextColorSelector
+  , setTimeIntervalSelector
+  , setTimeZoneSelector
+  , textColorSelector
+  , timeIntervalSelector
+  , timeZoneSelector
 
   -- * Enum types
   , NSDatePickerElementFlags(NSDatePickerElementFlags)
@@ -88,15 +89,11 @@ module ObjC.AppKit.NSDatePickerCell
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -106,295 +103,284 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initTextCell:@
 initTextCell :: (IsNSDatePickerCell nsDatePickerCell, IsNSString string) => nsDatePickerCell -> string -> IO (Id NSDatePickerCell)
-initTextCell nsDatePickerCell  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsDatePickerCell (mkSelector "initTextCell:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initTextCell nsDatePickerCell string =
+  sendOwnedMessage nsDatePickerCell initTextCellSelector (toNSString string)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSDatePickerCell nsDatePickerCell, IsNSCoder coder) => nsDatePickerCell -> coder -> IO (Id NSDatePickerCell)
-initWithCoder nsDatePickerCell  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsDatePickerCell (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsDatePickerCell coder =
+  sendOwnedMessage nsDatePickerCell initWithCoderSelector (toNSCoder coder)
 
 -- | @- initImageCell:@
 initImageCell :: (IsNSDatePickerCell nsDatePickerCell, IsNSImage image) => nsDatePickerCell -> image -> IO (Id NSDatePickerCell)
-initImageCell nsDatePickerCell  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg nsDatePickerCell (mkSelector "initImageCell:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= ownedObject . castPtr
+initImageCell nsDatePickerCell image =
+  sendOwnedMessage nsDatePickerCell initImageCellSelector (toNSImage image)
 
 -- | @- datePickerStyle@
 datePickerStyle :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO NSDatePickerStyle
-datePickerStyle nsDatePickerCell  =
-    fmap (coerce :: CULong -> NSDatePickerStyle) $ sendMsg nsDatePickerCell (mkSelector "datePickerStyle") retCULong []
+datePickerStyle nsDatePickerCell =
+  sendMessage nsDatePickerCell datePickerStyleSelector
 
 -- | @- setDatePickerStyle:@
 setDatePickerStyle :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> NSDatePickerStyle -> IO ()
-setDatePickerStyle nsDatePickerCell  value =
-    sendMsg nsDatePickerCell (mkSelector "setDatePickerStyle:") retVoid [argCULong (coerce value)]
+setDatePickerStyle nsDatePickerCell value =
+  sendMessage nsDatePickerCell setDatePickerStyleSelector value
 
 -- | @- drawsBackground@
 drawsBackground :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO Bool
-drawsBackground nsDatePickerCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDatePickerCell (mkSelector "drawsBackground") retCULong []
+drawsBackground nsDatePickerCell =
+  sendMessage nsDatePickerCell drawsBackgroundSelector
 
 -- | @- setDrawsBackground:@
 setDrawsBackground :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> Bool -> IO ()
-setDrawsBackground nsDatePickerCell  value =
-    sendMsg nsDatePickerCell (mkSelector "setDrawsBackground:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsBackground nsDatePickerCell value =
+  sendMessage nsDatePickerCell setDrawsBackgroundSelector value
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO (Id NSColor)
-backgroundColor nsDatePickerCell  =
-    sendMsg nsDatePickerCell (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsDatePickerCell =
+  sendMessage nsDatePickerCell backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSDatePickerCell nsDatePickerCell, IsNSColor value) => nsDatePickerCell -> value -> IO ()
-setBackgroundColor nsDatePickerCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDatePickerCell (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsDatePickerCell value =
+  sendMessage nsDatePickerCell setBackgroundColorSelector (toNSColor value)
 
 -- | @- textColor@
 textColor :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO (Id NSColor)
-textColor nsDatePickerCell  =
-    sendMsg nsDatePickerCell (mkSelector "textColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+textColor nsDatePickerCell =
+  sendMessage nsDatePickerCell textColorSelector
 
 -- | @- setTextColor:@
 setTextColor :: (IsNSDatePickerCell nsDatePickerCell, IsNSColor value) => nsDatePickerCell -> value -> IO ()
-setTextColor nsDatePickerCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDatePickerCell (mkSelector "setTextColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextColor nsDatePickerCell value =
+  sendMessage nsDatePickerCell setTextColorSelector (toNSColor value)
 
 -- | @- datePickerMode@
 datePickerMode :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO NSDatePickerMode
-datePickerMode nsDatePickerCell  =
-    fmap (coerce :: CULong -> NSDatePickerMode) $ sendMsg nsDatePickerCell (mkSelector "datePickerMode") retCULong []
+datePickerMode nsDatePickerCell =
+  sendMessage nsDatePickerCell datePickerModeSelector
 
 -- | @- setDatePickerMode:@
 setDatePickerMode :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> NSDatePickerMode -> IO ()
-setDatePickerMode nsDatePickerCell  value =
-    sendMsg nsDatePickerCell (mkSelector "setDatePickerMode:") retVoid [argCULong (coerce value)]
+setDatePickerMode nsDatePickerCell value =
+  sendMessage nsDatePickerCell setDatePickerModeSelector value
 
 -- | @- datePickerElements@
 datePickerElements :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO NSDatePickerElementFlags
-datePickerElements nsDatePickerCell  =
-    fmap (coerce :: CULong -> NSDatePickerElementFlags) $ sendMsg nsDatePickerCell (mkSelector "datePickerElements") retCULong []
+datePickerElements nsDatePickerCell =
+  sendMessage nsDatePickerCell datePickerElementsSelector
 
 -- | @- setDatePickerElements:@
 setDatePickerElements :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> NSDatePickerElementFlags -> IO ()
-setDatePickerElements nsDatePickerCell  value =
-    sendMsg nsDatePickerCell (mkSelector "setDatePickerElements:") retVoid [argCULong (coerce value)]
+setDatePickerElements nsDatePickerCell value =
+  sendMessage nsDatePickerCell setDatePickerElementsSelector value
 
 -- | @- calendar@
 calendar :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO (Id NSCalendar)
-calendar nsDatePickerCell  =
-    sendMsg nsDatePickerCell (mkSelector "calendar") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendar nsDatePickerCell =
+  sendMessage nsDatePickerCell calendarSelector
 
 -- | @- setCalendar:@
 setCalendar :: (IsNSDatePickerCell nsDatePickerCell, IsNSCalendar value) => nsDatePickerCell -> value -> IO ()
-setCalendar nsDatePickerCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDatePickerCell (mkSelector "setCalendar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCalendar nsDatePickerCell value =
+  sendMessage nsDatePickerCell setCalendarSelector (toNSCalendar value)
 
 -- | @- locale@
 locale :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO (Id NSLocale)
-locale nsDatePickerCell  =
-    sendMsg nsDatePickerCell (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale nsDatePickerCell =
+  sendMessage nsDatePickerCell localeSelector
 
 -- | @- setLocale:@
 setLocale :: (IsNSDatePickerCell nsDatePickerCell, IsNSLocale value) => nsDatePickerCell -> value -> IO ()
-setLocale nsDatePickerCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDatePickerCell (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale nsDatePickerCell value =
+  sendMessage nsDatePickerCell setLocaleSelector (toNSLocale value)
 
 -- | @- timeZone@
 timeZone :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO (Id NSTimeZone)
-timeZone nsDatePickerCell  =
-    sendMsg nsDatePickerCell (mkSelector "timeZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeZone nsDatePickerCell =
+  sendMessage nsDatePickerCell timeZoneSelector
 
 -- | @- setTimeZone:@
 setTimeZone :: (IsNSDatePickerCell nsDatePickerCell, IsNSTimeZone value) => nsDatePickerCell -> value -> IO ()
-setTimeZone nsDatePickerCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDatePickerCell (mkSelector "setTimeZone:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeZone nsDatePickerCell value =
+  sendMessage nsDatePickerCell setTimeZoneSelector (toNSTimeZone value)
 
 -- | @- dateValue@
 dateValue :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO (Id NSDate)
-dateValue nsDatePickerCell  =
-    sendMsg nsDatePickerCell (mkSelector "dateValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateValue nsDatePickerCell =
+  sendMessage nsDatePickerCell dateValueSelector
 
 -- | @- setDateValue:@
 setDateValue :: (IsNSDatePickerCell nsDatePickerCell, IsNSDate value) => nsDatePickerCell -> value -> IO ()
-setDateValue nsDatePickerCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDatePickerCell (mkSelector "setDateValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDateValue nsDatePickerCell value =
+  sendMessage nsDatePickerCell setDateValueSelector (toNSDate value)
 
 -- | @- timeInterval@
 timeInterval :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO CDouble
-timeInterval nsDatePickerCell  =
-    sendMsg nsDatePickerCell (mkSelector "timeInterval") retCDouble []
+timeInterval nsDatePickerCell =
+  sendMessage nsDatePickerCell timeIntervalSelector
 
 -- | @- setTimeInterval:@
 setTimeInterval :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> CDouble -> IO ()
-setTimeInterval nsDatePickerCell  value =
-    sendMsg nsDatePickerCell (mkSelector "setTimeInterval:") retVoid [argCDouble value]
+setTimeInterval nsDatePickerCell value =
+  sendMessage nsDatePickerCell setTimeIntervalSelector value
 
 -- | @- minDate@
 minDate :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO (Id NSDate)
-minDate nsDatePickerCell  =
-    sendMsg nsDatePickerCell (mkSelector "minDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+minDate nsDatePickerCell =
+  sendMessage nsDatePickerCell minDateSelector
 
 -- | @- setMinDate:@
 setMinDate :: (IsNSDatePickerCell nsDatePickerCell, IsNSDate value) => nsDatePickerCell -> value -> IO ()
-setMinDate nsDatePickerCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDatePickerCell (mkSelector "setMinDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinDate nsDatePickerCell value =
+  sendMessage nsDatePickerCell setMinDateSelector (toNSDate value)
 
 -- | @- maxDate@
 maxDate :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO (Id NSDate)
-maxDate nsDatePickerCell  =
-    sendMsg nsDatePickerCell (mkSelector "maxDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxDate nsDatePickerCell =
+  sendMessage nsDatePickerCell maxDateSelector
 
 -- | @- setMaxDate:@
 setMaxDate :: (IsNSDatePickerCell nsDatePickerCell, IsNSDate value) => nsDatePickerCell -> value -> IO ()
-setMaxDate nsDatePickerCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDatePickerCell (mkSelector "setMaxDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxDate nsDatePickerCell value =
+  sendMessage nsDatePickerCell setMaxDateSelector (toNSDate value)
 
 -- | @- delegate@
 delegate :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> IO RawId
-delegate nsDatePickerCell  =
-    fmap (RawId . castPtr) $ sendMsg nsDatePickerCell (mkSelector "delegate") (retPtr retVoid) []
+delegate nsDatePickerCell =
+  sendMessage nsDatePickerCell delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSDatePickerCell nsDatePickerCell => nsDatePickerCell -> RawId -> IO ()
-setDelegate nsDatePickerCell  value =
-    sendMsg nsDatePickerCell (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsDatePickerCell value =
+  sendMessage nsDatePickerCell setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initTextCell:@
-initTextCellSelector :: Selector
+initTextCellSelector :: Selector '[Id NSString] (Id NSDatePickerCell)
 initTextCellSelector = mkSelector "initTextCell:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSDatePickerCell)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initImageCell:@
-initImageCellSelector :: Selector
+initImageCellSelector :: Selector '[Id NSImage] (Id NSDatePickerCell)
 initImageCellSelector = mkSelector "initImageCell:"
 
 -- | @Selector@ for @datePickerStyle@
-datePickerStyleSelector :: Selector
+datePickerStyleSelector :: Selector '[] NSDatePickerStyle
 datePickerStyleSelector = mkSelector "datePickerStyle"
 
 -- | @Selector@ for @setDatePickerStyle:@
-setDatePickerStyleSelector :: Selector
+setDatePickerStyleSelector :: Selector '[NSDatePickerStyle] ()
 setDatePickerStyleSelector = mkSelector "setDatePickerStyle:"
 
 -- | @Selector@ for @drawsBackground@
-drawsBackgroundSelector :: Selector
+drawsBackgroundSelector :: Selector '[] Bool
 drawsBackgroundSelector = mkSelector "drawsBackground"
 
 -- | @Selector@ for @setDrawsBackground:@
-setDrawsBackgroundSelector :: Selector
+setDrawsBackgroundSelector :: Selector '[Bool] ()
 setDrawsBackgroundSelector = mkSelector "setDrawsBackground:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @textColor@
-textColorSelector :: Selector
+textColorSelector :: Selector '[] (Id NSColor)
 textColorSelector = mkSelector "textColor"
 
 -- | @Selector@ for @setTextColor:@
-setTextColorSelector :: Selector
+setTextColorSelector :: Selector '[Id NSColor] ()
 setTextColorSelector = mkSelector "setTextColor:"
 
 -- | @Selector@ for @datePickerMode@
-datePickerModeSelector :: Selector
+datePickerModeSelector :: Selector '[] NSDatePickerMode
 datePickerModeSelector = mkSelector "datePickerMode"
 
 -- | @Selector@ for @setDatePickerMode:@
-setDatePickerModeSelector :: Selector
+setDatePickerModeSelector :: Selector '[NSDatePickerMode] ()
 setDatePickerModeSelector = mkSelector "setDatePickerMode:"
 
 -- | @Selector@ for @datePickerElements@
-datePickerElementsSelector :: Selector
+datePickerElementsSelector :: Selector '[] NSDatePickerElementFlags
 datePickerElementsSelector = mkSelector "datePickerElements"
 
 -- | @Selector@ for @setDatePickerElements:@
-setDatePickerElementsSelector :: Selector
+setDatePickerElementsSelector :: Selector '[NSDatePickerElementFlags] ()
 setDatePickerElementsSelector = mkSelector "setDatePickerElements:"
 
 -- | @Selector@ for @calendar@
-calendarSelector :: Selector
+calendarSelector :: Selector '[] (Id NSCalendar)
 calendarSelector = mkSelector "calendar"
 
 -- | @Selector@ for @setCalendar:@
-setCalendarSelector :: Selector
+setCalendarSelector :: Selector '[Id NSCalendar] ()
 setCalendarSelector = mkSelector "setCalendar:"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 
 -- | @Selector@ for @timeZone@
-timeZoneSelector :: Selector
+timeZoneSelector :: Selector '[] (Id NSTimeZone)
 timeZoneSelector = mkSelector "timeZone"
 
 -- | @Selector@ for @setTimeZone:@
-setTimeZoneSelector :: Selector
+setTimeZoneSelector :: Selector '[Id NSTimeZone] ()
 setTimeZoneSelector = mkSelector "setTimeZone:"
 
 -- | @Selector@ for @dateValue@
-dateValueSelector :: Selector
+dateValueSelector :: Selector '[] (Id NSDate)
 dateValueSelector = mkSelector "dateValue"
 
 -- | @Selector@ for @setDateValue:@
-setDateValueSelector :: Selector
+setDateValueSelector :: Selector '[Id NSDate] ()
 setDateValueSelector = mkSelector "setDateValue:"
 
 -- | @Selector@ for @timeInterval@
-timeIntervalSelector :: Selector
+timeIntervalSelector :: Selector '[] CDouble
 timeIntervalSelector = mkSelector "timeInterval"
 
 -- | @Selector@ for @setTimeInterval:@
-setTimeIntervalSelector :: Selector
+setTimeIntervalSelector :: Selector '[CDouble] ()
 setTimeIntervalSelector = mkSelector "setTimeInterval:"
 
 -- | @Selector@ for @minDate@
-minDateSelector :: Selector
+minDateSelector :: Selector '[] (Id NSDate)
 minDateSelector = mkSelector "minDate"
 
 -- | @Selector@ for @setMinDate:@
-setMinDateSelector :: Selector
+setMinDateSelector :: Selector '[Id NSDate] ()
 setMinDateSelector = mkSelector "setMinDate:"
 
 -- | @Selector@ for @maxDate@
-maxDateSelector :: Selector
+maxDateSelector :: Selector '[] (Id NSDate)
 maxDateSelector = mkSelector "maxDate"
 
 -- | @Selector@ for @setMaxDate:@
-setMaxDateSelector :: Selector
+setMaxDateSelector :: Selector '[Id NSDate] ()
 setMaxDateSelector = mkSelector "setMaxDate:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

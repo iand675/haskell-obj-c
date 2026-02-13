@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AppKit.NSPathControlItem
   , image
   , setImage
   , url
-  , titleSelector
-  , setTitleSelector
   , attributedTitleSelector
-  , setAttributedTitleSelector
   , imageSelector
+  , setAttributedTitleSelector
   , setImageSelector
+  , setTitleSelector
+  , titleSelector
   , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,71 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- title@
 title :: IsNSPathControlItem nsPathControlItem => nsPathControlItem -> IO (Id NSString)
-title nsPathControlItem  =
-    sendMsg nsPathControlItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsPathControlItem =
+  sendMessage nsPathControlItem titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSPathControlItem nsPathControlItem, IsNSString value) => nsPathControlItem -> value -> IO ()
-setTitle nsPathControlItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControlItem (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsPathControlItem value =
+  sendMessage nsPathControlItem setTitleSelector (toNSString value)
 
 -- | @- attributedTitle@
 attributedTitle :: IsNSPathControlItem nsPathControlItem => nsPathControlItem -> IO (Id NSAttributedString)
-attributedTitle nsPathControlItem  =
-    sendMsg nsPathControlItem (mkSelector "attributedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedTitle nsPathControlItem =
+  sendMessage nsPathControlItem attributedTitleSelector
 
 -- | @- setAttributedTitle:@
 setAttributedTitle :: (IsNSPathControlItem nsPathControlItem, IsNSAttributedString value) => nsPathControlItem -> value -> IO ()
-setAttributedTitle nsPathControlItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControlItem (mkSelector "setAttributedTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedTitle nsPathControlItem value =
+  sendMessage nsPathControlItem setAttributedTitleSelector (toNSAttributedString value)
 
 -- | @- image@
 image :: IsNSPathControlItem nsPathControlItem => nsPathControlItem -> IO (Id NSImage)
-image nsPathControlItem  =
-    sendMsg nsPathControlItem (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image nsPathControlItem =
+  sendMessage nsPathControlItem imageSelector
 
 -- | @- setImage:@
 setImage :: (IsNSPathControlItem nsPathControlItem, IsNSImage value) => nsPathControlItem -> value -> IO ()
-setImage nsPathControlItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControlItem (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImage nsPathControlItem value =
+  sendMessage nsPathControlItem setImageSelector (toNSImage value)
 
 -- | @- URL@
 url :: IsNSPathControlItem nsPathControlItem => nsPathControlItem -> IO (Id NSURL)
-url nsPathControlItem  =
-    sendMsg nsPathControlItem (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url nsPathControlItem =
+  sendMessage nsPathControlItem urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @attributedTitle@
-attributedTitleSelector :: Selector
+attributedTitleSelector :: Selector '[] (Id NSAttributedString)
 attributedTitleSelector = mkSelector "attributedTitle"
 
 -- | @Selector@ for @setAttributedTitle:@
-setAttributedTitleSelector :: Selector
+setAttributedTitleSelector :: Selector '[Id NSAttributedString] ()
 setAttributedTitleSelector = mkSelector "setAttributedTitle:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

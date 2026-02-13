@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.SceneKit.SCNPhysicsBallSocketJoint
   , bodyB
   , anchorB
   , setAnchorB
+  , anchorASelector
+  , anchorBSelector
+  , bodyASelector
+  , bodyBSelector
   , jointWithBodyA_anchorA_bodyB_anchorBSelector
   , jointWithBody_anchorSelector
-  , bodyASelector
-  , anchorASelector
   , setAnchorASelector
-  , bodyBSelector
-  , anchorBSelector
   , setAnchorBSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,81 +48,78 @@ jointWithBodyA_anchorA_bodyB_anchorB :: (IsSCNPhysicsBody bodyA, IsSCNPhysicsBod
 jointWithBodyA_anchorA_bodyB_anchorB bodyA anchorA bodyB anchorB =
   do
     cls' <- getRequiredClass "SCNPhysicsBallSocketJoint"
-    withObjCPtr bodyA $ \raw_bodyA ->
-      withObjCPtr bodyB $ \raw_bodyB ->
-        sendClassMsg cls' (mkSelector "jointWithBodyA:anchorA:bodyB:anchorB:") (retPtr retVoid) [argPtr (castPtr raw_bodyA :: Ptr ()), argSCNVector3 anchorA, argPtr (castPtr raw_bodyB :: Ptr ()), argSCNVector3 anchorB] >>= retainedObject . castPtr
+    sendClassMessage cls' jointWithBodyA_anchorA_bodyB_anchorBSelector (toSCNPhysicsBody bodyA) anchorA (toSCNPhysicsBody bodyB) anchorB
 
 -- | @+ jointWithBody:anchor:@
 jointWithBody_anchor :: IsSCNPhysicsBody body => body -> SCNVector3 -> IO (Id SCNPhysicsBallSocketJoint)
 jointWithBody_anchor body anchor =
   do
     cls' <- getRequiredClass "SCNPhysicsBallSocketJoint"
-    withObjCPtr body $ \raw_body ->
-      sendClassMsg cls' (mkSelector "jointWithBody:anchor:") (retPtr retVoid) [argPtr (castPtr raw_body :: Ptr ()), argSCNVector3 anchor] >>= retainedObject . castPtr
+    sendClassMessage cls' jointWithBody_anchorSelector (toSCNPhysicsBody body) anchor
 
 -- | @- bodyA@
 bodyA :: IsSCNPhysicsBallSocketJoint scnPhysicsBallSocketJoint => scnPhysicsBallSocketJoint -> IO (Id SCNPhysicsBody)
-bodyA scnPhysicsBallSocketJoint  =
-    sendMsg scnPhysicsBallSocketJoint (mkSelector "bodyA") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyA scnPhysicsBallSocketJoint =
+  sendMessage scnPhysicsBallSocketJoint bodyASelector
 
 -- | @- anchorA@
 anchorA :: IsSCNPhysicsBallSocketJoint scnPhysicsBallSocketJoint => scnPhysicsBallSocketJoint -> IO SCNVector3
-anchorA scnPhysicsBallSocketJoint  =
-    sendMsgStret scnPhysicsBallSocketJoint (mkSelector "anchorA") retSCNVector3 []
+anchorA scnPhysicsBallSocketJoint =
+  sendMessage scnPhysicsBallSocketJoint anchorASelector
 
 -- | @- setAnchorA:@
 setAnchorA :: IsSCNPhysicsBallSocketJoint scnPhysicsBallSocketJoint => scnPhysicsBallSocketJoint -> SCNVector3 -> IO ()
-setAnchorA scnPhysicsBallSocketJoint  value =
-    sendMsg scnPhysicsBallSocketJoint (mkSelector "setAnchorA:") retVoid [argSCNVector3 value]
+setAnchorA scnPhysicsBallSocketJoint value =
+  sendMessage scnPhysicsBallSocketJoint setAnchorASelector value
 
 -- | @- bodyB@
 bodyB :: IsSCNPhysicsBallSocketJoint scnPhysicsBallSocketJoint => scnPhysicsBallSocketJoint -> IO (Id SCNPhysicsBody)
-bodyB scnPhysicsBallSocketJoint  =
-    sendMsg scnPhysicsBallSocketJoint (mkSelector "bodyB") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyB scnPhysicsBallSocketJoint =
+  sendMessage scnPhysicsBallSocketJoint bodyBSelector
 
 -- | @- anchorB@
 anchorB :: IsSCNPhysicsBallSocketJoint scnPhysicsBallSocketJoint => scnPhysicsBallSocketJoint -> IO SCNVector3
-anchorB scnPhysicsBallSocketJoint  =
-    sendMsgStret scnPhysicsBallSocketJoint (mkSelector "anchorB") retSCNVector3 []
+anchorB scnPhysicsBallSocketJoint =
+  sendMessage scnPhysicsBallSocketJoint anchorBSelector
 
 -- | @- setAnchorB:@
 setAnchorB :: IsSCNPhysicsBallSocketJoint scnPhysicsBallSocketJoint => scnPhysicsBallSocketJoint -> SCNVector3 -> IO ()
-setAnchorB scnPhysicsBallSocketJoint  value =
-    sendMsg scnPhysicsBallSocketJoint (mkSelector "setAnchorB:") retVoid [argSCNVector3 value]
+setAnchorB scnPhysicsBallSocketJoint value =
+  sendMessage scnPhysicsBallSocketJoint setAnchorBSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @jointWithBodyA:anchorA:bodyB:anchorB:@
-jointWithBodyA_anchorA_bodyB_anchorBSelector :: Selector
+jointWithBodyA_anchorA_bodyB_anchorBSelector :: Selector '[Id SCNPhysicsBody, SCNVector3, Id SCNPhysicsBody, SCNVector3] (Id SCNPhysicsBallSocketJoint)
 jointWithBodyA_anchorA_bodyB_anchorBSelector = mkSelector "jointWithBodyA:anchorA:bodyB:anchorB:"
 
 -- | @Selector@ for @jointWithBody:anchor:@
-jointWithBody_anchorSelector :: Selector
+jointWithBody_anchorSelector :: Selector '[Id SCNPhysicsBody, SCNVector3] (Id SCNPhysicsBallSocketJoint)
 jointWithBody_anchorSelector = mkSelector "jointWithBody:anchor:"
 
 -- | @Selector@ for @bodyA@
-bodyASelector :: Selector
+bodyASelector :: Selector '[] (Id SCNPhysicsBody)
 bodyASelector = mkSelector "bodyA"
 
 -- | @Selector@ for @anchorA@
-anchorASelector :: Selector
+anchorASelector :: Selector '[] SCNVector3
 anchorASelector = mkSelector "anchorA"
 
 -- | @Selector@ for @setAnchorA:@
-setAnchorASelector :: Selector
+setAnchorASelector :: Selector '[SCNVector3] ()
 setAnchorASelector = mkSelector "setAnchorA:"
 
 -- | @Selector@ for @bodyB@
-bodyBSelector :: Selector
+bodyBSelector :: Selector '[] (Id SCNPhysicsBody)
 bodyBSelector = mkSelector "bodyB"
 
 -- | @Selector@ for @anchorB@
-anchorBSelector :: Selector
+anchorBSelector :: Selector '[] SCNVector3
 anchorBSelector = mkSelector "anchorB"
 
 -- | @Selector@ for @setAnchorB:@
-setAnchorBSelector :: Selector
+setAnchorBSelector :: Selector '[SCNVector3] ()
 setAnchorBSelector = mkSelector "setAnchorB:"
 

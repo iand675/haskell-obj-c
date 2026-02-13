@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Symbols.NSSymbolReplaceContentTransition
   , transitionWithByLayer
   , transitionWithWholeSymbol
   , magicTransitionWithFallback
-  , transitionSelector
+  , magicTransitionWithFallbackSelector
   , replaceDownUpTransitionSelector
-  , replaceUpUpTransitionSelector
   , replaceOffUpTransitionSelector
+  , replaceUpUpTransitionSelector
+  , transitionSelector
   , transitionWithByLayerSelector
   , transitionWithWholeSymbolSelector
-  , magicTransitionWithFallbackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,7 +45,7 @@ transition :: IO (Id NSSymbolReplaceContentTransition)
 transition  =
   do
     cls' <- getRequiredClass "NSSymbolReplaceContentTransition"
-    sendClassMsg cls' (mkSelector "transition") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' transitionSelector
 
 -- | Convenience initializer for a replace content transition where the initial symbol scales down as it is removed, and the new symbol scales up as it is added.
 --
@@ -57,7 +54,7 @@ replaceDownUpTransition :: IO (Id NSSymbolReplaceContentTransition)
 replaceDownUpTransition  =
   do
     cls' <- getRequiredClass "NSSymbolReplaceContentTransition"
-    sendClassMsg cls' (mkSelector "replaceDownUpTransition") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' replaceDownUpTransitionSelector
 
 -- | Convenience initializer for a replace content transition where the initial symbol scales up as it is removed, and the new symbol scales up as it is added.
 --
@@ -66,7 +63,7 @@ replaceUpUpTransition :: IO (Id NSSymbolReplaceContentTransition)
 replaceUpUpTransition  =
   do
     cls' <- getRequiredClass "NSSymbolReplaceContentTransition"
-    sendClassMsg cls' (mkSelector "replaceUpUpTransition") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' replaceUpUpTransitionSelector
 
 -- | Convenience initializer for a replace content transition where the initial symbol is removed with no animation, and the new symbol scales up as it is added.
 --
@@ -75,21 +72,21 @@ replaceOffUpTransition :: IO (Id NSSymbolReplaceContentTransition)
 replaceOffUpTransition  =
   do
     cls' <- getRequiredClass "NSSymbolReplaceContentTransition"
-    sendClassMsg cls' (mkSelector "replaceOffUpTransition") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' replaceOffUpTransitionSelector
 
 -- | Returns a copy of the content transition that animates incrementally, by layer.
 --
 -- ObjC selector: @- transitionWithByLayer@
 transitionWithByLayer :: IsNSSymbolReplaceContentTransition nsSymbolReplaceContentTransition => nsSymbolReplaceContentTransition -> IO (Id NSSymbolReplaceContentTransition)
-transitionWithByLayer nsSymbolReplaceContentTransition  =
-    sendMsg nsSymbolReplaceContentTransition (mkSelector "transitionWithByLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitionWithByLayer nsSymbolReplaceContentTransition =
+  sendMessage nsSymbolReplaceContentTransition transitionWithByLayerSelector
 
 -- | Returns a copy of the content transition that animates all layers of the symbol simultaneously.
 --
 -- ObjC selector: @- transitionWithWholeSymbol@
 transitionWithWholeSymbol :: IsNSSymbolReplaceContentTransition nsSymbolReplaceContentTransition => nsSymbolReplaceContentTransition -> IO (Id NSSymbolReplaceContentTransition)
-transitionWithWholeSymbol nsSymbolReplaceContentTransition  =
-    sendMsg nsSymbolReplaceContentTransition (mkSelector "transitionWithWholeSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitionWithWholeSymbol nsSymbolReplaceContentTransition =
+  sendMessage nsSymbolReplaceContentTransition transitionWithWholeSymbolSelector
 
 -- | Convenience initializer for a MagicReplace content transition with a configured Replace fallback.
 --
@@ -98,38 +95,37 @@ magicTransitionWithFallback :: IsNSSymbolReplaceContentTransition fallback => fa
 magicTransitionWithFallback fallback =
   do
     cls' <- getRequiredClass "NSSymbolReplaceContentTransition"
-    withObjCPtr fallback $ \raw_fallback ->
-      sendClassMsg cls' (mkSelector "magicTransitionWithFallback:") (retPtr retVoid) [argPtr (castPtr raw_fallback :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' magicTransitionWithFallbackSelector (toNSSymbolReplaceContentTransition fallback)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @transition@
-transitionSelector :: Selector
+transitionSelector :: Selector '[] (Id NSSymbolReplaceContentTransition)
 transitionSelector = mkSelector "transition"
 
 -- | @Selector@ for @replaceDownUpTransition@
-replaceDownUpTransitionSelector :: Selector
+replaceDownUpTransitionSelector :: Selector '[] (Id NSSymbolReplaceContentTransition)
 replaceDownUpTransitionSelector = mkSelector "replaceDownUpTransition"
 
 -- | @Selector@ for @replaceUpUpTransition@
-replaceUpUpTransitionSelector :: Selector
+replaceUpUpTransitionSelector :: Selector '[] (Id NSSymbolReplaceContentTransition)
 replaceUpUpTransitionSelector = mkSelector "replaceUpUpTransition"
 
 -- | @Selector@ for @replaceOffUpTransition@
-replaceOffUpTransitionSelector :: Selector
+replaceOffUpTransitionSelector :: Selector '[] (Id NSSymbolReplaceContentTransition)
 replaceOffUpTransitionSelector = mkSelector "replaceOffUpTransition"
 
 -- | @Selector@ for @transitionWithByLayer@
-transitionWithByLayerSelector :: Selector
+transitionWithByLayerSelector :: Selector '[] (Id NSSymbolReplaceContentTransition)
 transitionWithByLayerSelector = mkSelector "transitionWithByLayer"
 
 -- | @Selector@ for @transitionWithWholeSymbol@
-transitionWithWholeSymbolSelector :: Selector
+transitionWithWholeSymbolSelector :: Selector '[] (Id NSSymbolReplaceContentTransition)
 transitionWithWholeSymbolSelector = mkSelector "transitionWithWholeSymbol"
 
 -- | @Selector@ for @magicTransitionWithFallback:@
-magicTransitionWithFallbackSelector :: Selector
+magicTransitionWithFallbackSelector :: Selector '[Id NSSymbolReplaceContentTransition] (Id NSSymbolMagicReplaceContentTransition)
 magicTransitionWithFallbackSelector = mkSelector "magicTransitionWithFallback:"
 

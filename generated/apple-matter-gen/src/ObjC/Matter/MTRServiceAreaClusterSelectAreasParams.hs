@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRServiceAreaClusterSelectAreasParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , newAreasSelector
-  , setNewAreasSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setNewAreasSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- newAreas@
 newAreas :: IsMTRServiceAreaClusterSelectAreasParams mtrServiceAreaClusterSelectAreasParams => mtrServiceAreaClusterSelectAreasParams -> IO (Id NSArray)
-newAreas mtrServiceAreaClusterSelectAreasParams  =
-    sendMsg mtrServiceAreaClusterSelectAreasParams (mkSelector "newAreas") (retPtr retVoid) [] >>= ownedObject . castPtr
+newAreas mtrServiceAreaClusterSelectAreasParams =
+  sendOwnedMessage mtrServiceAreaClusterSelectAreasParams newAreasSelector
 
 -- | @- setNewAreas:@
 setNewAreas :: (IsMTRServiceAreaClusterSelectAreasParams mtrServiceAreaClusterSelectAreasParams, IsNSArray value) => mtrServiceAreaClusterSelectAreasParams -> value -> IO ()
-setNewAreas mtrServiceAreaClusterSelectAreasParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterSelectAreasParams (mkSelector "setNewAreas:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNewAreas mtrServiceAreaClusterSelectAreasParams value =
+  sendMessage mtrServiceAreaClusterSelectAreasParams setNewAreasSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setNewAreas mtrServiceAreaClusterSelectAreasParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRServiceAreaClusterSelectAreasParams mtrServiceAreaClusterSelectAreasParams => mtrServiceAreaClusterSelectAreasParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrServiceAreaClusterSelectAreasParams  =
-    sendMsg mtrServiceAreaClusterSelectAreasParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrServiceAreaClusterSelectAreasParams =
+  sendMessage mtrServiceAreaClusterSelectAreasParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrServiceAreaClusterSelectAreasParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRServiceAreaClusterSelectAreasParams mtrServiceAreaClusterSelectAreasParams, IsNSNumber value) => mtrServiceAreaClusterSelectAreasParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrServiceAreaClusterSelectAreasParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterSelectAreasParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrServiceAreaClusterSelectAreasParams value =
+  sendMessage mtrServiceAreaClusterSelectAreasParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrServiceAreaClusterSelectAreasParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRServiceAreaClusterSelectAreasParams mtrServiceAreaClusterSelectAreasParams => mtrServiceAreaClusterSelectAreasParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrServiceAreaClusterSelectAreasParams  =
-    sendMsg mtrServiceAreaClusterSelectAreasParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrServiceAreaClusterSelectAreasParams =
+  sendMessage mtrServiceAreaClusterSelectAreasParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrServiceAreaClusterSelectAreasParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRServiceAreaClusterSelectAreasParams mtrServiceAreaClusterSelectAreasParams, IsNSNumber value) => mtrServiceAreaClusterSelectAreasParams -> value -> IO ()
-setServerSideProcessingTimeout mtrServiceAreaClusterSelectAreasParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterSelectAreasParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrServiceAreaClusterSelectAreasParams value =
+  sendMessage mtrServiceAreaClusterSelectAreasParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newAreas@
-newAreasSelector :: Selector
+newAreasSelector :: Selector '[] (Id NSArray)
 newAreasSelector = mkSelector "newAreas"
 
 -- | @Selector@ for @setNewAreas:@
-setNewAreasSelector :: Selector
+setNewAreasSelector :: Selector '[Id NSArray] ()
 setNewAreasSelector = mkSelector "setNewAreas:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

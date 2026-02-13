@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,29 +25,25 @@ module ObjC.NetworkExtension.NEDNSProxyManager
   , setProviderProtocol
   , enabled
   , setEnabled
-  , sharedManagerSelector
+  , enabledSelector
   , loadFromPreferencesWithCompletionHandlerSelector
+  , localizedDescriptionSelector
+  , providerProtocolSelector
   , removeFromPreferencesWithCompletionHandlerSelector
   , saveToPreferencesWithCompletionHandlerSelector
-  , localizedDescriptionSelector
-  , setLocalizedDescriptionSelector
-  , providerProtocolSelector
-  , setProviderProtocolSelector
-  , enabledSelector
   , setEnabledSelector
+  , setLocalizedDescriptionSelector
+  , setProviderProtocolSelector
+  , sharedManagerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,7 +59,7 @@ sharedManager :: IO (Id NEDNSProxyManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "NEDNSProxyManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | loadFromPreferencesWithCompletionHandler:
 --
@@ -72,8 +69,8 @@ sharedManager  =
 --
 -- ObjC selector: @- loadFromPreferencesWithCompletionHandler:@
 loadFromPreferencesWithCompletionHandler :: IsNEDNSProxyManager nednsProxyManager => nednsProxyManager -> Ptr () -> IO ()
-loadFromPreferencesWithCompletionHandler nednsProxyManager  completionHandler =
-    sendMsg nednsProxyManager (mkSelector "loadFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadFromPreferencesWithCompletionHandler nednsProxyManager completionHandler =
+  sendMessage nednsProxyManager loadFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | removeFromPreferencesWithCompletionHandler:
 --
@@ -83,8 +80,8 @@ loadFromPreferencesWithCompletionHandler nednsProxyManager  completionHandler =
 --
 -- ObjC selector: @- removeFromPreferencesWithCompletionHandler:@
 removeFromPreferencesWithCompletionHandler :: IsNEDNSProxyManager nednsProxyManager => nednsProxyManager -> Ptr () -> IO ()
-removeFromPreferencesWithCompletionHandler nednsProxyManager  completionHandler =
-    sendMsg nednsProxyManager (mkSelector "removeFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+removeFromPreferencesWithCompletionHandler nednsProxyManager completionHandler =
+  sendMessage nednsProxyManager removeFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | saveToPreferencesWithCompletionHandler:
 --
@@ -94,8 +91,8 @@ removeFromPreferencesWithCompletionHandler nednsProxyManager  completionHandler 
 --
 -- ObjC selector: @- saveToPreferencesWithCompletionHandler:@
 saveToPreferencesWithCompletionHandler :: IsNEDNSProxyManager nednsProxyManager => nednsProxyManager -> Ptr () -> IO ()
-saveToPreferencesWithCompletionHandler nednsProxyManager  completionHandler =
-    sendMsg nednsProxyManager (mkSelector "saveToPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+saveToPreferencesWithCompletionHandler nednsProxyManager completionHandler =
+  sendMessage nednsProxyManager saveToPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | localizedDescription
 --
@@ -103,8 +100,8 @@ saveToPreferencesWithCompletionHandler nednsProxyManager  completionHandler =
 --
 -- ObjC selector: @- localizedDescription@
 localizedDescription :: IsNEDNSProxyManager nednsProxyManager => nednsProxyManager -> IO (Id NSString)
-localizedDescription nednsProxyManager  =
-    sendMsg nednsProxyManager (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription nednsProxyManager =
+  sendMessage nednsProxyManager localizedDescriptionSelector
 
 -- | localizedDescription
 --
@@ -112,9 +109,8 @@ localizedDescription nednsProxyManager  =
 --
 -- ObjC selector: @- setLocalizedDescription:@
 setLocalizedDescription :: (IsNEDNSProxyManager nednsProxyManager, IsNSString value) => nednsProxyManager -> value -> IO ()
-setLocalizedDescription nednsProxyManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsProxyManager (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedDescription nednsProxyManager value =
+  sendMessage nednsProxyManager setLocalizedDescriptionSelector (toNSString value)
 
 -- | providerProtocol
 --
@@ -122,8 +118,8 @@ setLocalizedDescription nednsProxyManager  value =
 --
 -- ObjC selector: @- providerProtocol@
 providerProtocol :: IsNEDNSProxyManager nednsProxyManager => nednsProxyManager -> IO (Id NEDNSProxyProviderProtocol)
-providerProtocol nednsProxyManager  =
-    sendMsg nednsProxyManager (mkSelector "providerProtocol") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerProtocol nednsProxyManager =
+  sendMessage nednsProxyManager providerProtocolSelector
 
 -- | providerProtocol
 --
@@ -131,9 +127,8 @@ providerProtocol nednsProxyManager  =
 --
 -- ObjC selector: @- setProviderProtocol:@
 setProviderProtocol :: (IsNEDNSProxyManager nednsProxyManager, IsNEDNSProxyProviderProtocol value) => nednsProxyManager -> value -> IO ()
-setProviderProtocol nednsProxyManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsProxyManager (mkSelector "setProviderProtocol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderProtocol nednsProxyManager value =
+  sendMessage nednsProxyManager setProviderProtocolSelector (toNEDNSProxyProviderProtocol value)
 
 -- | enabled
 --
@@ -141,8 +136,8 @@ setProviderProtocol nednsProxyManager  value =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsNEDNSProxyManager nednsProxyManager => nednsProxyManager -> IO Bool
-enabled nednsProxyManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nednsProxyManager (mkSelector "enabled") retCULong []
+enabled nednsProxyManager =
+  sendMessage nednsProxyManager enabledSelector
 
 -- | enabled
 --
@@ -150,50 +145,50 @@ enabled nednsProxyManager  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsNEDNSProxyManager nednsProxyManager => nednsProxyManager -> Bool -> IO ()
-setEnabled nednsProxyManager  value =
-    sendMsg nednsProxyManager (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled nednsProxyManager value =
+  sendMessage nednsProxyManager setEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id NEDNSProxyManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @loadFromPreferencesWithCompletionHandler:@
-loadFromPreferencesWithCompletionHandlerSelector :: Selector
+loadFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadFromPreferencesWithCompletionHandlerSelector = mkSelector "loadFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @removeFromPreferencesWithCompletionHandler:@
-removeFromPreferencesWithCompletionHandlerSelector :: Selector
+removeFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 removeFromPreferencesWithCompletionHandlerSelector = mkSelector "removeFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @saveToPreferencesWithCompletionHandler:@
-saveToPreferencesWithCompletionHandlerSelector :: Selector
+saveToPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 saveToPreferencesWithCompletionHandlerSelector = mkSelector "saveToPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @setLocalizedDescription:@
-setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector :: Selector '[Id NSString] ()
 setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
 
 -- | @Selector@ for @providerProtocol@
-providerProtocolSelector :: Selector
+providerProtocolSelector :: Selector '[] (Id NEDNSProxyProviderProtocol)
 providerProtocolSelector = mkSelector "providerProtocol"
 
 -- | @Selector@ for @setProviderProtocol:@
-setProviderProtocolSelector :: Selector
+setProviderProtocolSelector :: Selector '[Id NEDNSProxyProviderProtocol] ()
 setProviderProtocolSelector = mkSelector "setProviderProtocol:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 

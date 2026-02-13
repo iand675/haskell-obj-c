@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.AVFAudio.AVAudioUnitVarispeed
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- rate@
 rate :: IsAVAudioUnitVarispeed avAudioUnitVarispeed => avAudioUnitVarispeed -> IO CFloat
-rate avAudioUnitVarispeed  =
-    sendMsg avAudioUnitVarispeed (mkSelector "rate") retCFloat []
+rate avAudioUnitVarispeed =
+  sendMessage avAudioUnitVarispeed rateSelector
 
 -- | rate
 --
@@ -68,18 +65,18 @@ rate avAudioUnitVarispeed  =
 --
 -- ObjC selector: @- setRate:@
 setRate :: IsAVAudioUnitVarispeed avAudioUnitVarispeed => avAudioUnitVarispeed -> CFloat -> IO ()
-setRate avAudioUnitVarispeed  value =
-    sendMsg avAudioUnitVarispeed (mkSelector "setRate:") retVoid [argCFloat value]
+setRate avAudioUnitVarispeed value =
+  sendMessage avAudioUnitVarispeed setRateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @setRate:@
-setRateSelector :: Selector
+setRateSelector :: Selector '[CFloat] ()
 setRateSelector = mkSelector "setRate:"
 

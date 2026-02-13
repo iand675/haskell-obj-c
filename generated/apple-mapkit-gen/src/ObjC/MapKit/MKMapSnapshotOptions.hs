@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,22 +24,22 @@ module ObjC.MapKit.MKMapSnapshotOptions
   , setSize
   , appearance
   , setAppearance
-  , preferredConfigurationSelector
-  , setPreferredConfigurationSelector
-  , cameraSelector
-  , setCameraSelector
-  , mapTypeSelector
-  , setMapTypeSelector
-  , pointOfInterestFilterSelector
-  , setPointOfInterestFilterSelector
-  , showsPointsOfInterestSelector
-  , setShowsPointsOfInterestSelector
-  , showsBuildingsSelector
-  , setShowsBuildingsSelector
-  , sizeSelector
-  , setSizeSelector
   , appearanceSelector
+  , cameraSelector
+  , mapTypeSelector
+  , pointOfInterestFilterSelector
+  , preferredConfigurationSelector
   , setAppearanceSelector
+  , setCameraSelector
+  , setMapTypeSelector
+  , setPointOfInterestFilterSelector
+  , setPreferredConfigurationSelector
+  , setShowsBuildingsSelector
+  , setShowsPointsOfInterestSelector
+  , setSizeSelector
+  , showsBuildingsSelector
+  , showsPointsOfInterestSelector
+  , sizeSelector
 
   -- * Enum types
   , MKMapType(MKMapType)
@@ -51,15 +52,11 @@ module ObjC.MapKit.MKMapSnapshotOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,153 +67,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- preferredConfiguration@
 preferredConfiguration :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> IO (Id MKMapConfiguration)
-preferredConfiguration mkMapSnapshotOptions  =
-    sendMsg mkMapSnapshotOptions (mkSelector "preferredConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredConfiguration mkMapSnapshotOptions =
+  sendMessage mkMapSnapshotOptions preferredConfigurationSelector
 
 -- | @- setPreferredConfiguration:@
 setPreferredConfiguration :: (IsMKMapSnapshotOptions mkMapSnapshotOptions, IsMKMapConfiguration value) => mkMapSnapshotOptions -> value -> IO ()
-setPreferredConfiguration mkMapSnapshotOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapSnapshotOptions (mkSelector "setPreferredConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredConfiguration mkMapSnapshotOptions value =
+  sendMessage mkMapSnapshotOptions setPreferredConfigurationSelector (toMKMapConfiguration value)
 
 -- | @- camera@
 camera :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> IO (Id MKMapCamera)
-camera mkMapSnapshotOptions  =
-    sendMsg mkMapSnapshotOptions (mkSelector "camera") (retPtr retVoid) [] >>= retainedObject . castPtr
+camera mkMapSnapshotOptions =
+  sendMessage mkMapSnapshotOptions cameraSelector
 
 -- | @- setCamera:@
 setCamera :: (IsMKMapSnapshotOptions mkMapSnapshotOptions, IsMKMapCamera value) => mkMapSnapshotOptions -> value -> IO ()
-setCamera mkMapSnapshotOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapSnapshotOptions (mkSelector "setCamera:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCamera mkMapSnapshotOptions value =
+  sendMessage mkMapSnapshotOptions setCameraSelector (toMKMapCamera value)
 
 -- | @- mapType@
 mapType :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> IO MKMapType
-mapType mkMapSnapshotOptions  =
-    fmap (coerce :: CULong -> MKMapType) $ sendMsg mkMapSnapshotOptions (mkSelector "mapType") retCULong []
+mapType mkMapSnapshotOptions =
+  sendMessage mkMapSnapshotOptions mapTypeSelector
 
 -- | @- setMapType:@
 setMapType :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> MKMapType -> IO ()
-setMapType mkMapSnapshotOptions  value =
-    sendMsg mkMapSnapshotOptions (mkSelector "setMapType:") retVoid [argCULong (coerce value)]
+setMapType mkMapSnapshotOptions value =
+  sendMessage mkMapSnapshotOptions setMapTypeSelector value
 
 -- | @- pointOfInterestFilter@
 pointOfInterestFilter :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> IO (Id MKPointOfInterestFilter)
-pointOfInterestFilter mkMapSnapshotOptions  =
-    sendMsg mkMapSnapshotOptions (mkSelector "pointOfInterestFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+pointOfInterestFilter mkMapSnapshotOptions =
+  sendMessage mkMapSnapshotOptions pointOfInterestFilterSelector
 
 -- | @- setPointOfInterestFilter:@
 setPointOfInterestFilter :: (IsMKMapSnapshotOptions mkMapSnapshotOptions, IsMKPointOfInterestFilter value) => mkMapSnapshotOptions -> value -> IO ()
-setPointOfInterestFilter mkMapSnapshotOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapSnapshotOptions (mkSelector "setPointOfInterestFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPointOfInterestFilter mkMapSnapshotOptions value =
+  sendMessage mkMapSnapshotOptions setPointOfInterestFilterSelector (toMKPointOfInterestFilter value)
 
 -- | @- showsPointsOfInterest@
 showsPointsOfInterest :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> IO Bool
-showsPointsOfInterest mkMapSnapshotOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapSnapshotOptions (mkSelector "showsPointsOfInterest") retCULong []
+showsPointsOfInterest mkMapSnapshotOptions =
+  sendMessage mkMapSnapshotOptions showsPointsOfInterestSelector
 
 -- | @- setShowsPointsOfInterest:@
 setShowsPointsOfInterest :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> Bool -> IO ()
-setShowsPointsOfInterest mkMapSnapshotOptions  value =
-    sendMsg mkMapSnapshotOptions (mkSelector "setShowsPointsOfInterest:") retVoid [argCULong (if value then 1 else 0)]
+setShowsPointsOfInterest mkMapSnapshotOptions value =
+  sendMessage mkMapSnapshotOptions setShowsPointsOfInterestSelector value
 
 -- | @- showsBuildings@
 showsBuildings :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> IO Bool
-showsBuildings mkMapSnapshotOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkMapSnapshotOptions (mkSelector "showsBuildings") retCULong []
+showsBuildings mkMapSnapshotOptions =
+  sendMessage mkMapSnapshotOptions showsBuildingsSelector
 
 -- | @- setShowsBuildings:@
 setShowsBuildings :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> Bool -> IO ()
-setShowsBuildings mkMapSnapshotOptions  value =
-    sendMsg mkMapSnapshotOptions (mkSelector "setShowsBuildings:") retVoid [argCULong (if value then 1 else 0)]
+setShowsBuildings mkMapSnapshotOptions value =
+  sendMessage mkMapSnapshotOptions setShowsBuildingsSelector value
 
 -- | @- size@
 size :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> IO NSSize
-size mkMapSnapshotOptions  =
-    sendMsgStret mkMapSnapshotOptions (mkSelector "size") retNSSize []
+size mkMapSnapshotOptions =
+  sendMessage mkMapSnapshotOptions sizeSelector
 
 -- | @- setSize:@
 setSize :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> NSSize -> IO ()
-setSize mkMapSnapshotOptions  value =
-    sendMsg mkMapSnapshotOptions (mkSelector "setSize:") retVoid [argNSSize value]
+setSize mkMapSnapshotOptions value =
+  sendMessage mkMapSnapshotOptions setSizeSelector value
 
 -- | @- appearance@
 appearance :: IsMKMapSnapshotOptions mkMapSnapshotOptions => mkMapSnapshotOptions -> IO (Id NSAppearance)
-appearance mkMapSnapshotOptions  =
-    sendMsg mkMapSnapshotOptions (mkSelector "appearance") (retPtr retVoid) [] >>= retainedObject . castPtr
+appearance mkMapSnapshotOptions =
+  sendMessage mkMapSnapshotOptions appearanceSelector
 
 -- | @- setAppearance:@
 setAppearance :: (IsMKMapSnapshotOptions mkMapSnapshotOptions, IsNSAppearance value) => mkMapSnapshotOptions -> value -> IO ()
-setAppearance mkMapSnapshotOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapSnapshotOptions (mkSelector "setAppearance:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppearance mkMapSnapshotOptions value =
+  sendMessage mkMapSnapshotOptions setAppearanceSelector (toNSAppearance value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @preferredConfiguration@
-preferredConfigurationSelector :: Selector
+preferredConfigurationSelector :: Selector '[] (Id MKMapConfiguration)
 preferredConfigurationSelector = mkSelector "preferredConfiguration"
 
 -- | @Selector@ for @setPreferredConfiguration:@
-setPreferredConfigurationSelector :: Selector
+setPreferredConfigurationSelector :: Selector '[Id MKMapConfiguration] ()
 setPreferredConfigurationSelector = mkSelector "setPreferredConfiguration:"
 
 -- | @Selector@ for @camera@
-cameraSelector :: Selector
+cameraSelector :: Selector '[] (Id MKMapCamera)
 cameraSelector = mkSelector "camera"
 
 -- | @Selector@ for @setCamera:@
-setCameraSelector :: Selector
+setCameraSelector :: Selector '[Id MKMapCamera] ()
 setCameraSelector = mkSelector "setCamera:"
 
 -- | @Selector@ for @mapType@
-mapTypeSelector :: Selector
+mapTypeSelector :: Selector '[] MKMapType
 mapTypeSelector = mkSelector "mapType"
 
 -- | @Selector@ for @setMapType:@
-setMapTypeSelector :: Selector
+setMapTypeSelector :: Selector '[MKMapType] ()
 setMapTypeSelector = mkSelector "setMapType:"
 
 -- | @Selector@ for @pointOfInterestFilter@
-pointOfInterestFilterSelector :: Selector
+pointOfInterestFilterSelector :: Selector '[] (Id MKPointOfInterestFilter)
 pointOfInterestFilterSelector = mkSelector "pointOfInterestFilter"
 
 -- | @Selector@ for @setPointOfInterestFilter:@
-setPointOfInterestFilterSelector :: Selector
+setPointOfInterestFilterSelector :: Selector '[Id MKPointOfInterestFilter] ()
 setPointOfInterestFilterSelector = mkSelector "setPointOfInterestFilter:"
 
 -- | @Selector@ for @showsPointsOfInterest@
-showsPointsOfInterestSelector :: Selector
+showsPointsOfInterestSelector :: Selector '[] Bool
 showsPointsOfInterestSelector = mkSelector "showsPointsOfInterest"
 
 -- | @Selector@ for @setShowsPointsOfInterest:@
-setShowsPointsOfInterestSelector :: Selector
+setShowsPointsOfInterestSelector :: Selector '[Bool] ()
 setShowsPointsOfInterestSelector = mkSelector "setShowsPointsOfInterest:"
 
 -- | @Selector@ for @showsBuildings@
-showsBuildingsSelector :: Selector
+showsBuildingsSelector :: Selector '[] Bool
 showsBuildingsSelector = mkSelector "showsBuildings"
 
 -- | @Selector@ for @setShowsBuildings:@
-setShowsBuildingsSelector :: Selector
+setShowsBuildingsSelector :: Selector '[Bool] ()
 setShowsBuildingsSelector = mkSelector "setShowsBuildings:"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] NSSize
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @setSize:@
-setSizeSelector :: Selector
+setSizeSelector :: Selector '[NSSize] ()
 setSizeSelector = mkSelector "setSize:"
 
 -- | @Selector@ for @appearance@
-appearanceSelector :: Selector
+appearanceSelector :: Selector '[] (Id NSAppearance)
 appearanceSelector = mkSelector "appearance"
 
 -- | @Selector@ for @setAppearance:@
-setAppearanceSelector :: Selector
+setAppearanceSelector :: Selector '[Id NSAppearance] ()
 setAppearanceSelector = mkSelector "setAppearance:"
 

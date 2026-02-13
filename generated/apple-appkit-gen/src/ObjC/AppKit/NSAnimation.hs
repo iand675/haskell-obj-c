@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,33 +35,33 @@ module ObjC.AppKit.NSAnimation
   , progressMarks
   , setProgressMarks
   , runLoopModesForAnimating
-  , initWithDuration_animationCurveSelector
-  , initWithCoderSelector
-  , startAnimationSelector
-  , stopAnimationSelector
   , addProgressMarkSelector
-  , removeProgressMarkSelector
-  , startWhenAnimation_reachesProgressSelector
-  , stopWhenAnimation_reachesProgressSelector
+  , animatingSelector
+  , animationBlockingModeSelector
+  , animationCurveSelector
   , clearStartAnimationSelector
   , clearStopAnimationSelector
-  , animatingSelector
   , currentProgressSelector
-  , setCurrentProgressSelector
-  , durationSelector
-  , setDurationSelector
-  , animationBlockingModeSelector
-  , setAnimationBlockingModeSelector
-  , frameRateSelector
-  , setFrameRateSelector
-  , animationCurveSelector
-  , setAnimationCurveSelector
   , currentValueSelector
   , delegateSelector
-  , setDelegateSelector
+  , durationSelector
+  , frameRateSelector
+  , initWithCoderSelector
+  , initWithDuration_animationCurveSelector
   , progressMarksSelector
-  , setProgressMarksSelector
+  , removeProgressMarkSelector
   , runLoopModesForAnimatingSelector
+  , setAnimationBlockingModeSelector
+  , setAnimationCurveSelector
+  , setCurrentProgressSelector
+  , setDelegateSelector
+  , setDurationSelector
+  , setFrameRateSelector
+  , setProgressMarksSelector
+  , startAnimationSelector
+  , startWhenAnimation_reachesProgressSelector
+  , stopAnimationSelector
+  , stopWhenAnimation_reachesProgressSelector
 
   -- * Enum types
   , NSAnimationBlockingMode(NSAnimationBlockingMode)
@@ -75,15 +76,11 @@ module ObjC.AppKit.NSAnimation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,252 +90,248 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDuration:animationCurve:@
 initWithDuration_animationCurve :: IsNSAnimation nsAnimation => nsAnimation -> CDouble -> NSAnimationCurve -> IO (Id NSAnimation)
-initWithDuration_animationCurve nsAnimation  duration animationCurve =
-    sendMsg nsAnimation (mkSelector "initWithDuration:animationCurve:") (retPtr retVoid) [argCDouble duration, argCULong (coerce animationCurve)] >>= ownedObject . castPtr
+initWithDuration_animationCurve nsAnimation duration animationCurve =
+  sendOwnedMessage nsAnimation initWithDuration_animationCurveSelector duration animationCurve
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSAnimation nsAnimation, IsNSCoder coder) => nsAnimation -> coder -> IO (Id NSAnimation)
-initWithCoder nsAnimation  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsAnimation (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsAnimation coder =
+  sendOwnedMessage nsAnimation initWithCoderSelector (toNSCoder coder)
 
 -- | @- startAnimation@
 startAnimation :: IsNSAnimation nsAnimation => nsAnimation -> IO ()
-startAnimation nsAnimation  =
-    sendMsg nsAnimation (mkSelector "startAnimation") retVoid []
+startAnimation nsAnimation =
+  sendMessage nsAnimation startAnimationSelector
 
 -- | @- stopAnimation@
 stopAnimation :: IsNSAnimation nsAnimation => nsAnimation -> IO ()
-stopAnimation nsAnimation  =
-    sendMsg nsAnimation (mkSelector "stopAnimation") retVoid []
+stopAnimation nsAnimation =
+  sendMessage nsAnimation stopAnimationSelector
 
 -- | @- addProgressMark:@
 addProgressMark :: IsNSAnimation nsAnimation => nsAnimation -> CFloat -> IO ()
-addProgressMark nsAnimation  progressMark =
-    sendMsg nsAnimation (mkSelector "addProgressMark:") retVoid [argCFloat progressMark]
+addProgressMark nsAnimation progressMark =
+  sendMessage nsAnimation addProgressMarkSelector progressMark
 
 -- | @- removeProgressMark:@
 removeProgressMark :: IsNSAnimation nsAnimation => nsAnimation -> CFloat -> IO ()
-removeProgressMark nsAnimation  progressMark =
-    sendMsg nsAnimation (mkSelector "removeProgressMark:") retVoid [argCFloat progressMark]
+removeProgressMark nsAnimation progressMark =
+  sendMessage nsAnimation removeProgressMarkSelector progressMark
 
 -- | @- startWhenAnimation:reachesProgress:@
 startWhenAnimation_reachesProgress :: (IsNSAnimation nsAnimation, IsNSAnimation animation) => nsAnimation -> animation -> CFloat -> IO ()
-startWhenAnimation_reachesProgress nsAnimation  animation startProgress =
-  withObjCPtr animation $ \raw_animation ->
-      sendMsg nsAnimation (mkSelector "startWhenAnimation:reachesProgress:") retVoid [argPtr (castPtr raw_animation :: Ptr ()), argCFloat startProgress]
+startWhenAnimation_reachesProgress nsAnimation animation startProgress =
+  sendMessage nsAnimation startWhenAnimation_reachesProgressSelector (toNSAnimation animation) startProgress
 
 -- | @- stopWhenAnimation:reachesProgress:@
 stopWhenAnimation_reachesProgress :: (IsNSAnimation nsAnimation, IsNSAnimation animation) => nsAnimation -> animation -> CFloat -> IO ()
-stopWhenAnimation_reachesProgress nsAnimation  animation stopProgress =
-  withObjCPtr animation $ \raw_animation ->
-      sendMsg nsAnimation (mkSelector "stopWhenAnimation:reachesProgress:") retVoid [argPtr (castPtr raw_animation :: Ptr ()), argCFloat stopProgress]
+stopWhenAnimation_reachesProgress nsAnimation animation stopProgress =
+  sendMessage nsAnimation stopWhenAnimation_reachesProgressSelector (toNSAnimation animation) stopProgress
 
 -- | @- clearStartAnimation@
 clearStartAnimation :: IsNSAnimation nsAnimation => nsAnimation -> IO ()
-clearStartAnimation nsAnimation  =
-    sendMsg nsAnimation (mkSelector "clearStartAnimation") retVoid []
+clearStartAnimation nsAnimation =
+  sendMessage nsAnimation clearStartAnimationSelector
 
 -- | @- clearStopAnimation@
 clearStopAnimation :: IsNSAnimation nsAnimation => nsAnimation -> IO ()
-clearStopAnimation nsAnimation  =
-    sendMsg nsAnimation (mkSelector "clearStopAnimation") retVoid []
+clearStopAnimation nsAnimation =
+  sendMessage nsAnimation clearStopAnimationSelector
 
 -- | @- animating@
 animating :: IsNSAnimation nsAnimation => nsAnimation -> IO Bool
-animating nsAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsAnimation (mkSelector "animating") retCULong []
+animating nsAnimation =
+  sendMessage nsAnimation animatingSelector
 
 -- | @- currentProgress@
 currentProgress :: IsNSAnimation nsAnimation => nsAnimation -> IO CFloat
-currentProgress nsAnimation  =
-    sendMsg nsAnimation (mkSelector "currentProgress") retCFloat []
+currentProgress nsAnimation =
+  sendMessage nsAnimation currentProgressSelector
 
 -- | @- setCurrentProgress:@
 setCurrentProgress :: IsNSAnimation nsAnimation => nsAnimation -> CFloat -> IO ()
-setCurrentProgress nsAnimation  value =
-    sendMsg nsAnimation (mkSelector "setCurrentProgress:") retVoid [argCFloat value]
+setCurrentProgress nsAnimation value =
+  sendMessage nsAnimation setCurrentProgressSelector value
 
 -- | @- duration@
 duration :: IsNSAnimation nsAnimation => nsAnimation -> IO CDouble
-duration nsAnimation  =
-    sendMsg nsAnimation (mkSelector "duration") retCDouble []
+duration nsAnimation =
+  sendMessage nsAnimation durationSelector
 
 -- | @- setDuration:@
 setDuration :: IsNSAnimation nsAnimation => nsAnimation -> CDouble -> IO ()
-setDuration nsAnimation  value =
-    sendMsg nsAnimation (mkSelector "setDuration:") retVoid [argCDouble value]
+setDuration nsAnimation value =
+  sendMessage nsAnimation setDurationSelector value
 
 -- | @- animationBlockingMode@
 animationBlockingMode :: IsNSAnimation nsAnimation => nsAnimation -> IO NSAnimationBlockingMode
-animationBlockingMode nsAnimation  =
-    fmap (coerce :: CULong -> NSAnimationBlockingMode) $ sendMsg nsAnimation (mkSelector "animationBlockingMode") retCULong []
+animationBlockingMode nsAnimation =
+  sendMessage nsAnimation animationBlockingModeSelector
 
 -- | @- setAnimationBlockingMode:@
 setAnimationBlockingMode :: IsNSAnimation nsAnimation => nsAnimation -> NSAnimationBlockingMode -> IO ()
-setAnimationBlockingMode nsAnimation  value =
-    sendMsg nsAnimation (mkSelector "setAnimationBlockingMode:") retVoid [argCULong (coerce value)]
+setAnimationBlockingMode nsAnimation value =
+  sendMessage nsAnimation setAnimationBlockingModeSelector value
 
 -- | @- frameRate@
 frameRate :: IsNSAnimation nsAnimation => nsAnimation -> IO CFloat
-frameRate nsAnimation  =
-    sendMsg nsAnimation (mkSelector "frameRate") retCFloat []
+frameRate nsAnimation =
+  sendMessage nsAnimation frameRateSelector
 
 -- | @- setFrameRate:@
 setFrameRate :: IsNSAnimation nsAnimation => nsAnimation -> CFloat -> IO ()
-setFrameRate nsAnimation  value =
-    sendMsg nsAnimation (mkSelector "setFrameRate:") retVoid [argCFloat value]
+setFrameRate nsAnimation value =
+  sendMessage nsAnimation setFrameRateSelector value
 
 -- | @- animationCurve@
 animationCurve :: IsNSAnimation nsAnimation => nsAnimation -> IO NSAnimationCurve
-animationCurve nsAnimation  =
-    fmap (coerce :: CULong -> NSAnimationCurve) $ sendMsg nsAnimation (mkSelector "animationCurve") retCULong []
+animationCurve nsAnimation =
+  sendMessage nsAnimation animationCurveSelector
 
 -- | @- setAnimationCurve:@
 setAnimationCurve :: IsNSAnimation nsAnimation => nsAnimation -> NSAnimationCurve -> IO ()
-setAnimationCurve nsAnimation  value =
-    sendMsg nsAnimation (mkSelector "setAnimationCurve:") retVoid [argCULong (coerce value)]
+setAnimationCurve nsAnimation value =
+  sendMessage nsAnimation setAnimationCurveSelector value
 
 -- | @- currentValue@
 currentValue :: IsNSAnimation nsAnimation => nsAnimation -> IO CFloat
-currentValue nsAnimation  =
-    sendMsg nsAnimation (mkSelector "currentValue") retCFloat []
+currentValue nsAnimation =
+  sendMessage nsAnimation currentValueSelector
 
 -- | @- delegate@
 delegate :: IsNSAnimation nsAnimation => nsAnimation -> IO RawId
-delegate nsAnimation  =
-    fmap (RawId . castPtr) $ sendMsg nsAnimation (mkSelector "delegate") (retPtr retVoid) []
+delegate nsAnimation =
+  sendMessage nsAnimation delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSAnimation nsAnimation => nsAnimation -> RawId -> IO ()
-setDelegate nsAnimation  value =
-    sendMsg nsAnimation (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsAnimation value =
+  sendMessage nsAnimation setDelegateSelector value
 
 -- | @- progressMarks@
 progressMarks :: IsNSAnimation nsAnimation => nsAnimation -> IO (Id NSArray)
-progressMarks nsAnimation  =
-    sendMsg nsAnimation (mkSelector "progressMarks") (retPtr retVoid) [] >>= retainedObject . castPtr
+progressMarks nsAnimation =
+  sendMessage nsAnimation progressMarksSelector
 
 -- | @- setProgressMarks:@
 setProgressMarks :: (IsNSAnimation nsAnimation, IsNSArray value) => nsAnimation -> value -> IO ()
-setProgressMarks nsAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsAnimation (mkSelector "setProgressMarks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProgressMarks nsAnimation value =
+  sendMessage nsAnimation setProgressMarksSelector (toNSArray value)
 
 -- | @- runLoopModesForAnimating@
 runLoopModesForAnimating :: IsNSAnimation nsAnimation => nsAnimation -> IO (Id NSArray)
-runLoopModesForAnimating nsAnimation  =
-    sendMsg nsAnimation (mkSelector "runLoopModesForAnimating") (retPtr retVoid) [] >>= retainedObject . castPtr
+runLoopModesForAnimating nsAnimation =
+  sendMessage nsAnimation runLoopModesForAnimatingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDuration:animationCurve:@
-initWithDuration_animationCurveSelector :: Selector
+initWithDuration_animationCurveSelector :: Selector '[CDouble, NSAnimationCurve] (Id NSAnimation)
 initWithDuration_animationCurveSelector = mkSelector "initWithDuration:animationCurve:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSAnimation)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @startAnimation@
-startAnimationSelector :: Selector
+startAnimationSelector :: Selector '[] ()
 startAnimationSelector = mkSelector "startAnimation"
 
 -- | @Selector@ for @stopAnimation@
-stopAnimationSelector :: Selector
+stopAnimationSelector :: Selector '[] ()
 stopAnimationSelector = mkSelector "stopAnimation"
 
 -- | @Selector@ for @addProgressMark:@
-addProgressMarkSelector :: Selector
+addProgressMarkSelector :: Selector '[CFloat] ()
 addProgressMarkSelector = mkSelector "addProgressMark:"
 
 -- | @Selector@ for @removeProgressMark:@
-removeProgressMarkSelector :: Selector
+removeProgressMarkSelector :: Selector '[CFloat] ()
 removeProgressMarkSelector = mkSelector "removeProgressMark:"
 
 -- | @Selector@ for @startWhenAnimation:reachesProgress:@
-startWhenAnimation_reachesProgressSelector :: Selector
+startWhenAnimation_reachesProgressSelector :: Selector '[Id NSAnimation, CFloat] ()
 startWhenAnimation_reachesProgressSelector = mkSelector "startWhenAnimation:reachesProgress:"
 
 -- | @Selector@ for @stopWhenAnimation:reachesProgress:@
-stopWhenAnimation_reachesProgressSelector :: Selector
+stopWhenAnimation_reachesProgressSelector :: Selector '[Id NSAnimation, CFloat] ()
 stopWhenAnimation_reachesProgressSelector = mkSelector "stopWhenAnimation:reachesProgress:"
 
 -- | @Selector@ for @clearStartAnimation@
-clearStartAnimationSelector :: Selector
+clearStartAnimationSelector :: Selector '[] ()
 clearStartAnimationSelector = mkSelector "clearStartAnimation"
 
 -- | @Selector@ for @clearStopAnimation@
-clearStopAnimationSelector :: Selector
+clearStopAnimationSelector :: Selector '[] ()
 clearStopAnimationSelector = mkSelector "clearStopAnimation"
 
 -- | @Selector@ for @animating@
-animatingSelector :: Selector
+animatingSelector :: Selector '[] Bool
 animatingSelector = mkSelector "animating"
 
 -- | @Selector@ for @currentProgress@
-currentProgressSelector :: Selector
+currentProgressSelector :: Selector '[] CFloat
 currentProgressSelector = mkSelector "currentProgress"
 
 -- | @Selector@ for @setCurrentProgress:@
-setCurrentProgressSelector :: Selector
+setCurrentProgressSelector :: Selector '[CFloat] ()
 setCurrentProgressSelector = mkSelector "setCurrentProgress:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[CDouble] ()
 setDurationSelector = mkSelector "setDuration:"
 
 -- | @Selector@ for @animationBlockingMode@
-animationBlockingModeSelector :: Selector
+animationBlockingModeSelector :: Selector '[] NSAnimationBlockingMode
 animationBlockingModeSelector = mkSelector "animationBlockingMode"
 
 -- | @Selector@ for @setAnimationBlockingMode:@
-setAnimationBlockingModeSelector :: Selector
+setAnimationBlockingModeSelector :: Selector '[NSAnimationBlockingMode] ()
 setAnimationBlockingModeSelector = mkSelector "setAnimationBlockingMode:"
 
 -- | @Selector@ for @frameRate@
-frameRateSelector :: Selector
+frameRateSelector :: Selector '[] CFloat
 frameRateSelector = mkSelector "frameRate"
 
 -- | @Selector@ for @setFrameRate:@
-setFrameRateSelector :: Selector
+setFrameRateSelector :: Selector '[CFloat] ()
 setFrameRateSelector = mkSelector "setFrameRate:"
 
 -- | @Selector@ for @animationCurve@
-animationCurveSelector :: Selector
+animationCurveSelector :: Selector '[] NSAnimationCurve
 animationCurveSelector = mkSelector "animationCurve"
 
 -- | @Selector@ for @setAnimationCurve:@
-setAnimationCurveSelector :: Selector
+setAnimationCurveSelector :: Selector '[NSAnimationCurve] ()
 setAnimationCurveSelector = mkSelector "setAnimationCurve:"
 
 -- | @Selector@ for @currentValue@
-currentValueSelector :: Selector
+currentValueSelector :: Selector '[] CFloat
 currentValueSelector = mkSelector "currentValue"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @progressMarks@
-progressMarksSelector :: Selector
+progressMarksSelector :: Selector '[] (Id NSArray)
 progressMarksSelector = mkSelector "progressMarks"
 
 -- | @Selector@ for @setProgressMarks:@
-setProgressMarksSelector :: Selector
+setProgressMarksSelector :: Selector '[Id NSArray] ()
 setProgressMarksSelector = mkSelector "setProgressMarks:"
 
 -- | @Selector@ for @runLoopModesForAnimating@
-runLoopModesForAnimatingSelector :: Selector
+runLoopModesForAnimatingSelector :: Selector '[] (Id NSArray)
 runLoopModesForAnimatingSelector = mkSelector "runLoopModesForAnimating"
 

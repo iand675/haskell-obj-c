@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRApplicationLauncherClusterApplicationStruct
   , setApplicationID
   , applicationId
   , setApplicationId
-  , catalogVendorIDSelector
-  , setCatalogVendorIDSelector
-  , catalogVendorIdSelector
-  , setCatalogVendorIdSelector
   , applicationIDSelector
-  , setApplicationIDSelector
   , applicationIdSelector
+  , catalogVendorIDSelector
+  , catalogVendorIdSelector
+  , setApplicationIDSelector
   , setApplicationIdSelector
+  , setCatalogVendorIDSelector
+  , setCatalogVendorIdSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- catalogVendorID@
 catalogVendorID :: IsMTRApplicationLauncherClusterApplicationStruct mtrApplicationLauncherClusterApplicationStruct => mtrApplicationLauncherClusterApplicationStruct -> IO (Id NSNumber)
-catalogVendorID mtrApplicationLauncherClusterApplicationStruct  =
-    sendMsg mtrApplicationLauncherClusterApplicationStruct (mkSelector "catalogVendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+catalogVendorID mtrApplicationLauncherClusterApplicationStruct =
+  sendMessage mtrApplicationLauncherClusterApplicationStruct catalogVendorIDSelector
 
 -- | @- setCatalogVendorID:@
 setCatalogVendorID :: (IsMTRApplicationLauncherClusterApplicationStruct mtrApplicationLauncherClusterApplicationStruct, IsNSNumber value) => mtrApplicationLauncherClusterApplicationStruct -> value -> IO ()
-setCatalogVendorID mtrApplicationLauncherClusterApplicationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterApplicationStruct (mkSelector "setCatalogVendorID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCatalogVendorID mtrApplicationLauncherClusterApplicationStruct value =
+  sendMessage mtrApplicationLauncherClusterApplicationStruct setCatalogVendorIDSelector (toNSNumber value)
 
 -- | @- catalogVendorId@
 catalogVendorId :: IsMTRApplicationLauncherClusterApplicationStruct mtrApplicationLauncherClusterApplicationStruct => mtrApplicationLauncherClusterApplicationStruct -> IO (Id NSNumber)
-catalogVendorId mtrApplicationLauncherClusterApplicationStruct  =
-    sendMsg mtrApplicationLauncherClusterApplicationStruct (mkSelector "catalogVendorId") (retPtr retVoid) [] >>= retainedObject . castPtr
+catalogVendorId mtrApplicationLauncherClusterApplicationStruct =
+  sendMessage mtrApplicationLauncherClusterApplicationStruct catalogVendorIdSelector
 
 -- | @- setCatalogVendorId:@
 setCatalogVendorId :: (IsMTRApplicationLauncherClusterApplicationStruct mtrApplicationLauncherClusterApplicationStruct, IsNSNumber value) => mtrApplicationLauncherClusterApplicationStruct -> value -> IO ()
-setCatalogVendorId mtrApplicationLauncherClusterApplicationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterApplicationStruct (mkSelector "setCatalogVendorId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCatalogVendorId mtrApplicationLauncherClusterApplicationStruct value =
+  sendMessage mtrApplicationLauncherClusterApplicationStruct setCatalogVendorIdSelector (toNSNumber value)
 
 -- | @- applicationID@
 applicationID :: IsMTRApplicationLauncherClusterApplicationStruct mtrApplicationLauncherClusterApplicationStruct => mtrApplicationLauncherClusterApplicationStruct -> IO (Id NSString)
-applicationID mtrApplicationLauncherClusterApplicationStruct  =
-    sendMsg mtrApplicationLauncherClusterApplicationStruct (mkSelector "applicationID") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationID mtrApplicationLauncherClusterApplicationStruct =
+  sendMessage mtrApplicationLauncherClusterApplicationStruct applicationIDSelector
 
 -- | @- setApplicationID:@
 setApplicationID :: (IsMTRApplicationLauncherClusterApplicationStruct mtrApplicationLauncherClusterApplicationStruct, IsNSString value) => mtrApplicationLauncherClusterApplicationStruct -> value -> IO ()
-setApplicationID mtrApplicationLauncherClusterApplicationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterApplicationStruct (mkSelector "setApplicationID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplicationID mtrApplicationLauncherClusterApplicationStruct value =
+  sendMessage mtrApplicationLauncherClusterApplicationStruct setApplicationIDSelector (toNSString value)
 
 -- | @- applicationId@
 applicationId :: IsMTRApplicationLauncherClusterApplicationStruct mtrApplicationLauncherClusterApplicationStruct => mtrApplicationLauncherClusterApplicationStruct -> IO (Id NSString)
-applicationId mtrApplicationLauncherClusterApplicationStruct  =
-    sendMsg mtrApplicationLauncherClusterApplicationStruct (mkSelector "applicationId") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationId mtrApplicationLauncherClusterApplicationStruct =
+  sendMessage mtrApplicationLauncherClusterApplicationStruct applicationIdSelector
 
 -- | @- setApplicationId:@
 setApplicationId :: (IsMTRApplicationLauncherClusterApplicationStruct mtrApplicationLauncherClusterApplicationStruct, IsNSString value) => mtrApplicationLauncherClusterApplicationStruct -> value -> IO ()
-setApplicationId mtrApplicationLauncherClusterApplicationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterApplicationStruct (mkSelector "setApplicationId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplicationId mtrApplicationLauncherClusterApplicationStruct value =
+  sendMessage mtrApplicationLauncherClusterApplicationStruct setApplicationIdSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @catalogVendorID@
-catalogVendorIDSelector :: Selector
+catalogVendorIDSelector :: Selector '[] (Id NSNumber)
 catalogVendorIDSelector = mkSelector "catalogVendorID"
 
 -- | @Selector@ for @setCatalogVendorID:@
-setCatalogVendorIDSelector :: Selector
+setCatalogVendorIDSelector :: Selector '[Id NSNumber] ()
 setCatalogVendorIDSelector = mkSelector "setCatalogVendorID:"
 
 -- | @Selector@ for @catalogVendorId@
-catalogVendorIdSelector :: Selector
+catalogVendorIdSelector :: Selector '[] (Id NSNumber)
 catalogVendorIdSelector = mkSelector "catalogVendorId"
 
 -- | @Selector@ for @setCatalogVendorId:@
-setCatalogVendorIdSelector :: Selector
+setCatalogVendorIdSelector :: Selector '[Id NSNumber] ()
 setCatalogVendorIdSelector = mkSelector "setCatalogVendorId:"
 
 -- | @Selector@ for @applicationID@
-applicationIDSelector :: Selector
+applicationIDSelector :: Selector '[] (Id NSString)
 applicationIDSelector = mkSelector "applicationID"
 
 -- | @Selector@ for @setApplicationID:@
-setApplicationIDSelector :: Selector
+setApplicationIDSelector :: Selector '[Id NSString] ()
 setApplicationIDSelector = mkSelector "setApplicationID:"
 
 -- | @Selector@ for @applicationId@
-applicationIdSelector :: Selector
+applicationIdSelector :: Selector '[] (Id NSString)
 applicationIdSelector = mkSelector "applicationId"
 
 -- | @Selector@ for @setApplicationId:@
-setApplicationIdSelector :: Selector
+setApplicationIdSelector :: Selector '[Id NSString] ()
 setApplicationIdSelector = mkSelector "setApplicationId:"
 

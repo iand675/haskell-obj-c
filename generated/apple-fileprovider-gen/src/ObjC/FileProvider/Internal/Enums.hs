@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.FileProvider.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @NSFileProviderContentPolicy@
 newtype NSFileProviderContentPolicy = NSFileProviderContentPolicy CLong
@@ -27,6 +30,16 @@ pattern NSFileProviderContentPolicyDownloadLazilyAndEvictOnRemoteUpdate = NSFile
 
 pattern NSFileProviderContentPolicyDownloadEagerlyAndKeepDownloaded :: NSFileProviderContentPolicy
 pattern NSFileProviderContentPolicyDownloadEagerlyAndKeepDownloaded = NSFileProviderContentPolicy 3
+
+instance ObjCArgument NSFileProviderContentPolicy where
+  withObjCArg (NSFileProviderContentPolicy x) k = k (argCLong x)
+
+instance ObjCReturn NSFileProviderContentPolicy where
+  type RawReturn NSFileProviderContentPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderContentPolicy x)
+  fromOwned x = pure (NSFileProviderContentPolicy x)
 
 -- | Options passed on item creation.
 -- | @NSFileProviderCreateItemOptions@ (bitmask)
@@ -46,6 +59,16 @@ pattern NSFileProviderCreateItemMayAlreadyExist = NSFileProviderCreateItemOption
 pattern NSFileProviderCreateItemDeletionConflicted :: NSFileProviderCreateItemOptions
 pattern NSFileProviderCreateItemDeletionConflicted = NSFileProviderCreateItemOptions 2
 
+instance ObjCArgument NSFileProviderCreateItemOptions where
+  withObjCArg (NSFileProviderCreateItemOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderCreateItemOptions where
+  type RawReturn NSFileProviderCreateItemOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderCreateItemOptions x)
+  fromOwned x = pure (NSFileProviderCreateItemOptions x)
+
 -- | Options passed on item deletion.
 -- | @NSFileProviderDeleteItemOptions@ (bitmask)
 newtype NSFileProviderDeleteItemOptions = NSFileProviderDeleteItemOptions CULong
@@ -61,6 +84,16 @@ instance Monoid NSFileProviderDeleteItemOptions where
 pattern NSFileProviderDeleteItemRecursive :: NSFileProviderDeleteItemOptions
 pattern NSFileProviderDeleteItemRecursive = NSFileProviderDeleteItemOptions 1
 
+instance ObjCArgument NSFileProviderDeleteItemOptions where
+  withObjCArg (NSFileProviderDeleteItemOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderDeleteItemOptions where
+  type RawReturn NSFileProviderDeleteItemOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderDeleteItemOptions x)
+  fromOwned x = pure (NSFileProviderDeleteItemOptions x)
+
 -- | @NSFileProviderDomainRemovalMode@
 newtype NSFileProviderDomainRemovalMode = NSFileProviderDomainRemovalMode CLong
   deriving stock (Eq, Ord, Show)
@@ -74,6 +107,16 @@ pattern NSFileProviderDomainRemovalModePreserveDirtyUserData = NSFileProviderDom
 
 pattern NSFileProviderDomainRemovalModePreserveDownloadedUserData :: NSFileProviderDomainRemovalMode
 pattern NSFileProviderDomainRemovalModePreserveDownloadedUserData = NSFileProviderDomainRemovalMode 2
+
+instance ObjCArgument NSFileProviderDomainRemovalMode where
+  withObjCArg (NSFileProviderDomainRemovalMode x) k = k (argCLong x)
+
+instance ObjCReturn NSFileProviderDomainRemovalMode where
+  type RawReturn NSFileProviderDomainRemovalMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderDomainRemovalMode x)
+  fromOwned x = pure (NSFileProviderDomainRemovalMode x)
 
 -- | Testing modes.
 -- | @NSFileProviderDomainTestingModes@ (bitmask)
@@ -92,6 +135,16 @@ pattern NSFileProviderDomainTestingModeAlwaysEnabled = NSFileProviderDomainTesti
 
 pattern NSFileProviderDomainTestingModeInteractive :: NSFileProviderDomainTestingModes
 pattern NSFileProviderDomainTestingModeInteractive = NSFileProviderDomainTestingModes 2
+
+instance ObjCArgument NSFileProviderDomainTestingModes where
+  withObjCArg (NSFileProviderDomainTestingModes x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderDomainTestingModes where
+  type RawReturn NSFileProviderDomainTestingModes = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderDomainTestingModes x)
+  fromOwned x = pure (NSFileProviderDomainTestingModes x)
 
 -- | @NSFileProviderErrorCode@
 newtype NSFileProviderErrorCode = NSFileProviderErrorCode CLong
@@ -170,6 +223,16 @@ pattern NSFileProviderErrorApplicationExtensionNotFound = NSFileProviderErrorCod
 pattern NSFileProviderErrorLocalVersionConflictingWithServer :: NSFileProviderErrorCode
 pattern NSFileProviderErrorLocalVersionConflictingWithServer = NSFileProviderErrorCode (-2015)
 
+instance ObjCArgument NSFileProviderErrorCode where
+  withObjCArg (NSFileProviderErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn NSFileProviderErrorCode where
+  type RawReturn NSFileProviderErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderErrorCode x)
+  fromOwned x = pure (NSFileProviderErrorCode x)
+
 -- | Used by the system to express options and constraints to the provider in fetchPartialContentsForItemWithIdentifier.
 -- | @NSFileProviderFetchContentsOptions@ (bitmask)
 newtype NSFileProviderFetchContentsOptions = NSFileProviderFetchContentsOptions CULong
@@ -184,6 +247,16 @@ instance Monoid NSFileProviderFetchContentsOptions where
 
 pattern NSFileProviderFetchContentsOptionsStrictVersioning :: NSFileProviderFetchContentsOptions
 pattern NSFileProviderFetchContentsOptionsStrictVersioning = NSFileProviderFetchContentsOptions 1
+
+instance ObjCArgument NSFileProviderFetchContentsOptions where
+  withObjCArg (NSFileProviderFetchContentsOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderFetchContentsOptions where
+  type RawReturn NSFileProviderFetchContentsOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderFetchContentsOptions x)
+  fromOwned x = pure (NSFileProviderFetchContentsOptions x)
 
 -- | @NSFileProviderFileSystemFlags@ (bitmask)
 newtype NSFileProviderFileSystemFlags = NSFileProviderFileSystemFlags CULong
@@ -210,6 +283,16 @@ pattern NSFileProviderFileSystemHidden = NSFileProviderFileSystemFlags 8
 
 pattern NSFileProviderFileSystemPathExtensionHidden :: NSFileProviderFileSystemFlags
 pattern NSFileProviderFileSystemPathExtensionHidden = NSFileProviderFileSystemFlags 16
+
+instance ObjCArgument NSFileProviderFileSystemFlags where
+  withObjCArg (NSFileProviderFileSystemFlags x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderFileSystemFlags where
+  type RawReturn NSFileProviderFileSystemFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderFileSystemFlags x)
+  fromOwned x = pure (NSFileProviderFileSystemFlags x)
 
 -- | @NSFileProviderItemCapabilities@ (bitmask)
 newtype NSFileProviderItemCapabilities = NSFileProviderItemCapabilities CULong
@@ -254,6 +337,16 @@ pattern NSFileProviderItemCapabilitiesAllowsContentEnumerating = NSFileProviderI
 
 pattern NSFileProviderItemCapabilitiesAllowsAll :: NSFileProviderItemCapabilities
 pattern NSFileProviderItemCapabilitiesAllowsAll = NSFileProviderItemCapabilities 63
+
+instance ObjCArgument NSFileProviderItemCapabilities where
+  withObjCArg (NSFileProviderItemCapabilities x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderItemCapabilities where
+  type RawReturn NSFileProviderItemCapabilities = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderItemCapabilities x)
+  fromOwned x = pure (NSFileProviderItemCapabilities x)
 
 -- | NSFileProviderItemContents corresponds to the item's contents.
 --
@@ -302,6 +395,16 @@ pattern NSFileProviderItemExtendedAttributes = NSFileProviderItemFields 512
 pattern NSFileProviderItemTypeAndCreator :: NSFileProviderItemFields
 pattern NSFileProviderItemTypeAndCreator = NSFileProviderItemFields 1024
 
+instance ObjCArgument NSFileProviderItemFields where
+  withObjCArg (NSFileProviderItemFields x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderItemFields where
+  type RawReturn NSFileProviderItemFields = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderItemFields x)
+  fromOwned x = pure (NSFileProviderItemFields x)
+
 -- | Specifying a list of known folders.
 -- | @NSFileProviderKnownFolders@ (bitmask)
 newtype NSFileProviderKnownFolders = NSFileProviderKnownFolders CULong
@@ -320,6 +423,16 @@ pattern NSFileProviderDesktop = NSFileProviderKnownFolders 1
 pattern NSFileProviderDocuments :: NSFileProviderKnownFolders
 pattern NSFileProviderDocuments = NSFileProviderKnownFolders 2
 
+instance ObjCArgument NSFileProviderKnownFolders where
+  withObjCArg (NSFileProviderKnownFolders x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderKnownFolders where
+  type RawReturn NSFileProviderKnownFolders = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderKnownFolders x)
+  fromOwned x = pure (NSFileProviderKnownFolders x)
+
 -- | @NSFileProviderManagerDisconnectionOptions@ (bitmask)
 newtype NSFileProviderManagerDisconnectionOptions = NSFileProviderManagerDisconnectionOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -333,6 +446,16 @@ instance Monoid NSFileProviderManagerDisconnectionOptions where
 
 pattern NSFileProviderManagerDisconnectionOptionsTemporary :: NSFileProviderManagerDisconnectionOptions
 pattern NSFileProviderManagerDisconnectionOptionsTemporary = NSFileProviderManagerDisconnectionOptions 1
+
+instance ObjCArgument NSFileProviderManagerDisconnectionOptions where
+  withObjCArg (NSFileProviderManagerDisconnectionOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderManagerDisconnectionOptions where
+  type RawReturn NSFileProviderManagerDisconnectionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderManagerDisconnectionOptions x)
+  fromOwned x = pure (NSFileProviderManagerDisconnectionOptions x)
 
 -- | NSFileProviderMaterializationFlags are used to inform the system about specific conditions that apply to the content retrieved by the provider in fetchPartialContentsForItemWithIdentifier.
 -- | @NSFileProviderMaterializationFlags@ (bitmask)
@@ -348,6 +471,16 @@ instance Monoid NSFileProviderMaterializationFlags where
 
 pattern NSFileProviderMaterializationFlagsKnownSparseRanges :: NSFileProviderMaterializationFlags
 pattern NSFileProviderMaterializationFlagsKnownSparseRanges = NSFileProviderMaterializationFlags 1
+
+instance ObjCArgument NSFileProviderMaterializationFlags where
+  withObjCArg (NSFileProviderMaterializationFlags x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderMaterializationFlags where
+  type RawReturn NSFileProviderMaterializationFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderMaterializationFlags x)
+  fromOwned x = pure (NSFileProviderMaterializationFlags x)
 
 -- | Options for modifying items.
 -- | @NSFileProviderModifyItemOptions@ (bitmask)
@@ -370,6 +503,16 @@ pattern NSFileProviderModifyItemFailOnConflict = NSFileProviderModifyItemOptions
 pattern NSFileProviderModifyItemIsImmediateUploadRequestByPresentingApplication :: NSFileProviderModifyItemOptions
 pattern NSFileProviderModifyItemIsImmediateUploadRequestByPresentingApplication = NSFileProviderModifyItemOptions 4
 
+instance ObjCArgument NSFileProviderModifyItemOptions where
+  withObjCArg (NSFileProviderModifyItemOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderModifyItemOptions where
+  type RawReturn NSFileProviderModifyItemOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderModifyItemOptions x)
+  fromOwned x = pure (NSFileProviderModifyItemOptions x)
+
 -- | Side affected by the operation.
 -- | @NSFileProviderTestingOperationSide@
 newtype NSFileProviderTestingOperationSide = NSFileProviderTestingOperationSide CULong
@@ -381,6 +524,16 @@ pattern NSFileProviderTestingOperationSideDisk = NSFileProviderTestingOperationS
 
 pattern NSFileProviderTestingOperationSideFileProvider :: NSFileProviderTestingOperationSide
 pattern NSFileProviderTestingOperationSideFileProvider = NSFileProviderTestingOperationSide 1
+
+instance ObjCArgument NSFileProviderTestingOperationSide where
+  withObjCArg (NSFileProviderTestingOperationSide x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderTestingOperationSide where
+  type RawReturn NSFileProviderTestingOperationSide = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderTestingOperationSide x)
+  fromOwned x = pure (NSFileProviderTestingOperationSide x)
 
 -- | Type of the operation
 -- | @NSFileProviderTestingOperationType@
@@ -411,6 +564,16 @@ pattern NSFileProviderTestingOperationTypeChildrenEnumeration = NSFileProviderTe
 
 pattern NSFileProviderTestingOperationTypeCollisionResolution :: NSFileProviderTestingOperationType
 pattern NSFileProviderTestingOperationTypeCollisionResolution = NSFileProviderTestingOperationType 7
+
+instance ObjCArgument NSFileProviderTestingOperationType where
+  withObjCArg (NSFileProviderTestingOperationType x) k = k (argCLong x)
+
+instance ObjCReturn NSFileProviderTestingOperationType where
+  type RawReturn NSFileProviderTestingOperationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderTestingOperationType x)
+  fromOwned x = pure (NSFileProviderTestingOperationType x)
 
 -- | @NSFileProviderVolumeUnsupportedReason@ (bitmask)
 newtype NSFileProviderVolumeUnsupportedReason = NSFileProviderVolumeUnsupportedReason CULong
@@ -443,3 +606,13 @@ pattern NSFileProviderVolumeUnsupportedReasonNetwork = NSFileProviderVolumeUnsup
 
 pattern NSFileProviderVolumeUnsupportedReasonQuarantined :: NSFileProviderVolumeUnsupportedReason
 pattern NSFileProviderVolumeUnsupportedReasonQuarantined = NSFileProviderVolumeUnsupportedReason 32
+
+instance ObjCArgument NSFileProviderVolumeUnsupportedReason where
+  withObjCArg (NSFileProviderVolumeUnsupportedReason x) k = k (argCULong x)
+
+instance ObjCReturn NSFileProviderVolumeUnsupportedReason where
+  type RawReturn NSFileProviderVolumeUnsupportedReason = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileProviderVolumeUnsupportedReason x)
+  fromOwned x = pure (NSFileProviderVolumeUnsupportedReason x)

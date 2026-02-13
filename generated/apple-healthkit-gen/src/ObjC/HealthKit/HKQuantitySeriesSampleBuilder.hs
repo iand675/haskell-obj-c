@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.HealthKit.HKQuantitySeriesSampleBuilder
   , quantityType
   , startDate
   , device
-  , initWithHealthStore_quantityType_startDate_deviceSelector
+  , deviceSelector
+  , discardSelector
   , initSelector
+  , initWithHealthStore_quantityType_startDate_deviceSelector
   , insertQuantity_dateInterval_errorSelector
   , insertQuantity_date_errorSelector
-  , discardSelector
   , quantityTypeSelector
   , startDateSelector
-  , deviceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,17 +60,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithHealthStore:quantityType:startDate:device:@
 initWithHealthStore_quantityType_startDate_device :: (IsHKQuantitySeriesSampleBuilder hkQuantitySeriesSampleBuilder, IsHKHealthStore healthStore, IsHKQuantityType quantityType, IsNSDate startDate, IsHKDevice device) => hkQuantitySeriesSampleBuilder -> healthStore -> quantityType -> startDate -> device -> IO (Id HKQuantitySeriesSampleBuilder)
-initWithHealthStore_quantityType_startDate_device hkQuantitySeriesSampleBuilder  healthStore quantityType startDate device =
-  withObjCPtr healthStore $ \raw_healthStore ->
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr startDate $ \raw_startDate ->
-        withObjCPtr device $ \raw_device ->
-            sendMsg hkQuantitySeriesSampleBuilder (mkSelector "initWithHealthStore:quantityType:startDate:device:") (retPtr retVoid) [argPtr (castPtr raw_healthStore :: Ptr ()), argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_device :: Ptr ())] >>= ownedObject . castPtr
+initWithHealthStore_quantityType_startDate_device hkQuantitySeriesSampleBuilder healthStore quantityType startDate device =
+  sendOwnedMessage hkQuantitySeriesSampleBuilder initWithHealthStore_quantityType_startDate_deviceSelector (toHKHealthStore healthStore) (toHKQuantityType quantityType) (toNSDate startDate) (toHKDevice device)
 
 -- | @- init@
 init_ :: IsHKQuantitySeriesSampleBuilder hkQuantitySeriesSampleBuilder => hkQuantitySeriesSampleBuilder -> IO (Id HKQuantitySeriesSampleBuilder)
-init_ hkQuantitySeriesSampleBuilder  =
-    sendMsg hkQuantitySeriesSampleBuilder (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkQuantitySeriesSampleBuilder =
+  sendOwnedMessage hkQuantitySeriesSampleBuilder initSelector
 
 -- | insertQuantity:dateInterval:completion:
 --
@@ -87,11 +80,8 @@ init_ hkQuantitySeriesSampleBuilder  =
 --
 -- ObjC selector: @- insertQuantity:dateInterval:error:@
 insertQuantity_dateInterval_error :: (IsHKQuantitySeriesSampleBuilder hkQuantitySeriesSampleBuilder, IsHKQuantity quantity, IsNSDateInterval dateInterval, IsNSError error_) => hkQuantitySeriesSampleBuilder -> quantity -> dateInterval -> error_ -> IO Bool
-insertQuantity_dateInterval_error hkQuantitySeriesSampleBuilder  quantity dateInterval error_ =
-  withObjCPtr quantity $ \raw_quantity ->
-    withObjCPtr dateInterval $ \raw_dateInterval ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkQuantitySeriesSampleBuilder (mkSelector "insertQuantity:dateInterval:error:") retCULong [argPtr (castPtr raw_quantity :: Ptr ()), argPtr (castPtr raw_dateInterval :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+insertQuantity_dateInterval_error hkQuantitySeriesSampleBuilder quantity dateInterval error_ =
+  sendMessage hkQuantitySeriesSampleBuilder insertQuantity_dateInterval_errorSelector (toHKQuantity quantity) (toNSDateInterval dateInterval) (toNSError error_)
 
 -- | insertQuantity:date:completion:
 --
@@ -105,11 +95,8 @@ insertQuantity_dateInterval_error hkQuantitySeriesSampleBuilder  quantity dateIn
 --
 -- ObjC selector: @- insertQuantity:date:error:@
 insertQuantity_date_error :: (IsHKQuantitySeriesSampleBuilder hkQuantitySeriesSampleBuilder, IsHKQuantity quantity, IsNSDate date, IsNSError error_) => hkQuantitySeriesSampleBuilder -> quantity -> date -> error_ -> IO Bool
-insertQuantity_date_error hkQuantitySeriesSampleBuilder  quantity date error_ =
-  withObjCPtr quantity $ \raw_quantity ->
-    withObjCPtr date $ \raw_date ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkQuantitySeriesSampleBuilder (mkSelector "insertQuantity:date:error:") retCULong [argPtr (castPtr raw_quantity :: Ptr ()), argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+insertQuantity_date_error hkQuantitySeriesSampleBuilder quantity date error_ =
+  sendMessage hkQuantitySeriesSampleBuilder insertQuantity_date_errorSelector (toHKQuantity quantity) (toNSDate date) (toNSError error_)
 
 -- | discard
 --
@@ -119,63 +106,63 @@ insertQuantity_date_error hkQuantitySeriesSampleBuilder  quantity date error_ =
 --
 -- ObjC selector: @- discard@
 discard :: IsHKQuantitySeriesSampleBuilder hkQuantitySeriesSampleBuilder => hkQuantitySeriesSampleBuilder -> IO ()
-discard hkQuantitySeriesSampleBuilder  =
-    sendMsg hkQuantitySeriesSampleBuilder (mkSelector "discard") retVoid []
+discard hkQuantitySeriesSampleBuilder =
+  sendMessage hkQuantitySeriesSampleBuilder discardSelector
 
 -- | quantityType
 --
 -- ObjC selector: @- quantityType@
 quantityType :: IsHKQuantitySeriesSampleBuilder hkQuantitySeriesSampleBuilder => hkQuantitySeriesSampleBuilder -> IO (Id HKQuantityType)
-quantityType hkQuantitySeriesSampleBuilder  =
-    sendMsg hkQuantitySeriesSampleBuilder (mkSelector "quantityType") (retPtr retVoid) [] >>= retainedObject . castPtr
+quantityType hkQuantitySeriesSampleBuilder =
+  sendMessage hkQuantitySeriesSampleBuilder quantityTypeSelector
 
 -- | startDate
 --
 -- ObjC selector: @- startDate@
 startDate :: IsHKQuantitySeriesSampleBuilder hkQuantitySeriesSampleBuilder => hkQuantitySeriesSampleBuilder -> IO (Id NSDate)
-startDate hkQuantitySeriesSampleBuilder  =
-    sendMsg hkQuantitySeriesSampleBuilder (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate hkQuantitySeriesSampleBuilder =
+  sendMessage hkQuantitySeriesSampleBuilder startDateSelector
 
 -- | device
 --
 -- ObjC selector: @- device@
 device :: IsHKQuantitySeriesSampleBuilder hkQuantitySeriesSampleBuilder => hkQuantitySeriesSampleBuilder -> IO (Id HKDevice)
-device hkQuantitySeriesSampleBuilder  =
-    sendMsg hkQuantitySeriesSampleBuilder (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device hkQuantitySeriesSampleBuilder =
+  sendMessage hkQuantitySeriesSampleBuilder deviceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHealthStore:quantityType:startDate:device:@
-initWithHealthStore_quantityType_startDate_deviceSelector :: Selector
+initWithHealthStore_quantityType_startDate_deviceSelector :: Selector '[Id HKHealthStore, Id HKQuantityType, Id NSDate, Id HKDevice] (Id HKQuantitySeriesSampleBuilder)
 initWithHealthStore_quantityType_startDate_deviceSelector = mkSelector "initWithHealthStore:quantityType:startDate:device:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKQuantitySeriesSampleBuilder)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @insertQuantity:dateInterval:error:@
-insertQuantity_dateInterval_errorSelector :: Selector
+insertQuantity_dateInterval_errorSelector :: Selector '[Id HKQuantity, Id NSDateInterval, Id NSError] Bool
 insertQuantity_dateInterval_errorSelector = mkSelector "insertQuantity:dateInterval:error:"
 
 -- | @Selector@ for @insertQuantity:date:error:@
-insertQuantity_date_errorSelector :: Selector
+insertQuantity_date_errorSelector :: Selector '[Id HKQuantity, Id NSDate, Id NSError] Bool
 insertQuantity_date_errorSelector = mkSelector "insertQuantity:date:error:"
 
 -- | @Selector@ for @discard@
-discardSelector :: Selector
+discardSelector :: Selector '[] ()
 discardSelector = mkSelector "discard"
 
 -- | @Selector@ for @quantityType@
-quantityTypeSelector :: Selector
+quantityTypeSelector :: Selector '[] (Id HKQuantityType)
 quantityTypeSelector = mkSelector "quantityType"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id HKDevice)
 deviceSelector = mkSelector "device"
 

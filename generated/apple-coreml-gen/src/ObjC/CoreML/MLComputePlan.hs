@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,27 +27,23 @@ module ObjC.CoreML.MLComputePlan
   , computeDeviceUsageForNeuralNetworkLayer
   , computeDeviceUsageForMLProgramOperation
   , modelStructure
+  , computeDeviceUsageForMLProgramOperationSelector
+  , computeDeviceUsageForNeuralNetworkLayerSelector
+  , estimatedCostOfMLProgramOperationSelector
   , initSelector
-  , newSelector
   , loadContentsOfURL_configuration_completionHandlerSelector
   , loadModelAsset_configuration_completionHandlerSelector
-  , estimatedCostOfMLProgramOperationSelector
-  , computeDeviceUsageForNeuralNetworkLayerSelector
-  , computeDeviceUsageForMLProgramOperationSelector
   , modelStructureSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,15 +52,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLComputePlan mlComputePlan => mlComputePlan -> IO (Id MLComputePlan)
-init_ mlComputePlan  =
-    sendMsg mlComputePlan (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlComputePlan =
+  sendOwnedMessage mlComputePlan initSelector
 
 -- | @+ new@
 new :: IO (Id MLComputePlan)
 new  =
   do
     cls' <- getRequiredClass "MLComputePlan"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Construct the compute plan of a model asynchronously given the location of its on-disk representation.
 --
@@ -78,9 +75,7 @@ loadContentsOfURL_configuration_completionHandler :: (IsNSURL url, IsMLModelConf
 loadContentsOfURL_configuration_completionHandler url configuration handler =
   do
     cls' <- getRequiredClass "MLComputePlan"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr configuration $ \raw_configuration ->
-        sendClassMsg cls' (mkSelector "loadContentsOfURL:configuration:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' loadContentsOfURL_configuration_completionHandlerSelector (toNSURL url) (toMLModelConfiguration configuration) handler
 
 -- | Construct the compute plan of a model asynchronously given the model asset.
 --
@@ -95,9 +90,7 @@ loadModelAsset_configuration_completionHandler :: (IsMLModelAsset asset, IsMLMod
 loadModelAsset_configuration_completionHandler asset configuration handler =
   do
     cls' <- getRequiredClass "MLComputePlan"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr configuration $ \raw_configuration ->
-        sendClassMsg cls' (mkSelector "loadModelAsset:configuration:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' loadModelAsset_configuration_completionHandlerSelector (toMLModelAsset asset) (toMLModelConfiguration configuration) handler
 
 -- | Returns the estimated cost of executing an ML Program operation.
 --
@@ -107,9 +100,8 @@ loadModelAsset_configuration_completionHandler asset configuration handler =
 --
 -- ObjC selector: @- estimatedCostOfMLProgramOperation:@
 estimatedCostOfMLProgramOperation :: (IsMLComputePlan mlComputePlan, IsMLModelStructureProgramOperation operation) => mlComputePlan -> operation -> IO (Id MLComputePlanCost)
-estimatedCostOfMLProgramOperation mlComputePlan  operation =
-  withObjCPtr operation $ \raw_operation ->
-      sendMsg mlComputePlan (mkSelector "estimatedCostOfMLProgramOperation:") (retPtr retVoid) [argPtr (castPtr raw_operation :: Ptr ())] >>= retainedObject . castPtr
+estimatedCostOfMLProgramOperation mlComputePlan operation =
+  sendMessage mlComputePlan estimatedCostOfMLProgramOperationSelector (toMLModelStructureProgramOperation operation)
 
 -- | Returns the anticipated compute devices that would be used for executing a NeuralNetwork layer.
 --
@@ -119,9 +111,8 @@ estimatedCostOfMLProgramOperation mlComputePlan  operation =
 --
 -- ObjC selector: @- computeDeviceUsageForNeuralNetworkLayer:@
 computeDeviceUsageForNeuralNetworkLayer :: (IsMLComputePlan mlComputePlan, IsMLModelStructureNeuralNetworkLayer layer) => mlComputePlan -> layer -> IO (Id MLComputePlanDeviceUsage)
-computeDeviceUsageForNeuralNetworkLayer mlComputePlan  layer =
-  withObjCPtr layer $ \raw_layer ->
-      sendMsg mlComputePlan (mkSelector "computeDeviceUsageForNeuralNetworkLayer:") (retPtr retVoid) [argPtr (castPtr raw_layer :: Ptr ())] >>= retainedObject . castPtr
+computeDeviceUsageForNeuralNetworkLayer mlComputePlan layer =
+  sendMessage mlComputePlan computeDeviceUsageForNeuralNetworkLayerSelector (toMLModelStructureNeuralNetworkLayer layer)
 
 -- | Returns The anticipated compute devices that would be used for executing an ML Program operation.
 --
@@ -131,50 +122,49 @@ computeDeviceUsageForNeuralNetworkLayer mlComputePlan  layer =
 --
 -- ObjC selector: @- computeDeviceUsageForMLProgramOperation:@
 computeDeviceUsageForMLProgramOperation :: (IsMLComputePlan mlComputePlan, IsMLModelStructureProgramOperation operation) => mlComputePlan -> operation -> IO (Id MLComputePlanDeviceUsage)
-computeDeviceUsageForMLProgramOperation mlComputePlan  operation =
-  withObjCPtr operation $ \raw_operation ->
-      sendMsg mlComputePlan (mkSelector "computeDeviceUsageForMLProgramOperation:") (retPtr retVoid) [argPtr (castPtr raw_operation :: Ptr ())] >>= retainedObject . castPtr
+computeDeviceUsageForMLProgramOperation mlComputePlan operation =
+  sendMessage mlComputePlan computeDeviceUsageForMLProgramOperationSelector (toMLModelStructureProgramOperation operation)
 
 -- | The model structure.
 --
 -- ObjC selector: @- modelStructure@
 modelStructure :: IsMLComputePlan mlComputePlan => mlComputePlan -> IO (Id MLModelStructure)
-modelStructure mlComputePlan  =
-    sendMsg mlComputePlan (mkSelector "modelStructure") (retPtr retVoid) [] >>= retainedObject . castPtr
+modelStructure mlComputePlan =
+  sendMessage mlComputePlan modelStructureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLComputePlan)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLComputePlan)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @loadContentsOfURL:configuration:completionHandler:@
-loadContentsOfURL_configuration_completionHandlerSelector :: Selector
+loadContentsOfURL_configuration_completionHandlerSelector :: Selector '[Id NSURL, Id MLModelConfiguration, Ptr ()] ()
 loadContentsOfURL_configuration_completionHandlerSelector = mkSelector "loadContentsOfURL:configuration:completionHandler:"
 
 -- | @Selector@ for @loadModelAsset:configuration:completionHandler:@
-loadModelAsset_configuration_completionHandlerSelector :: Selector
+loadModelAsset_configuration_completionHandlerSelector :: Selector '[Id MLModelAsset, Id MLModelConfiguration, Ptr ()] ()
 loadModelAsset_configuration_completionHandlerSelector = mkSelector "loadModelAsset:configuration:completionHandler:"
 
 -- | @Selector@ for @estimatedCostOfMLProgramOperation:@
-estimatedCostOfMLProgramOperationSelector :: Selector
+estimatedCostOfMLProgramOperationSelector :: Selector '[Id MLModelStructureProgramOperation] (Id MLComputePlanCost)
 estimatedCostOfMLProgramOperationSelector = mkSelector "estimatedCostOfMLProgramOperation:"
 
 -- | @Selector@ for @computeDeviceUsageForNeuralNetworkLayer:@
-computeDeviceUsageForNeuralNetworkLayerSelector :: Selector
+computeDeviceUsageForNeuralNetworkLayerSelector :: Selector '[Id MLModelStructureNeuralNetworkLayer] (Id MLComputePlanDeviceUsage)
 computeDeviceUsageForNeuralNetworkLayerSelector = mkSelector "computeDeviceUsageForNeuralNetworkLayer:"
 
 -- | @Selector@ for @computeDeviceUsageForMLProgramOperation:@
-computeDeviceUsageForMLProgramOperationSelector :: Selector
+computeDeviceUsageForMLProgramOperationSelector :: Selector '[Id MLModelStructureProgramOperation] (Id MLComputePlanDeviceUsage)
 computeDeviceUsageForMLProgramOperationSelector = mkSelector "computeDeviceUsageForMLProgramOperation:"
 
 -- | @Selector@ for @modelStructure@
-modelStructureSelector :: Selector
+modelStructureSelector :: Selector '[] (Id MLModelStructure)
 modelStructureSelector = mkSelector "modelStructure"
 

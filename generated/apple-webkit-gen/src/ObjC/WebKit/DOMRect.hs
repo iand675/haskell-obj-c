@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.WebKit.DOMRect
   , right
   , bottom
   , left
-  , topSelector
-  , rightSelector
   , bottomSelector
   , leftSelector
+  , rightSelector
+  , topSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- top@
 top :: IsDOMRect domRect => domRect -> IO (Id DOMCSSPrimitiveValue)
-top domRect  =
-    sendMsg domRect (mkSelector "top") (retPtr retVoid) [] >>= retainedObject . castPtr
+top domRect =
+  sendMessage domRect topSelector
 
 -- | @- right@
 right :: IsDOMRect domRect => domRect -> IO (Id DOMCSSPrimitiveValue)
-right domRect  =
-    sendMsg domRect (mkSelector "right") (retPtr retVoid) [] >>= retainedObject . castPtr
+right domRect =
+  sendMessage domRect rightSelector
 
 -- | @- bottom@
 bottom :: IsDOMRect domRect => domRect -> IO (Id DOMCSSPrimitiveValue)
-bottom domRect  =
-    sendMsg domRect (mkSelector "bottom") (retPtr retVoid) [] >>= retainedObject . castPtr
+bottom domRect =
+  sendMessage domRect bottomSelector
 
 -- | @- left@
 left :: IsDOMRect domRect => domRect -> IO (Id DOMCSSPrimitiveValue)
-left domRect  =
-    sendMsg domRect (mkSelector "left") (retPtr retVoid) [] >>= retainedObject . castPtr
+left domRect =
+  sendMessage domRect leftSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @top@
-topSelector :: Selector
+topSelector :: Selector '[] (Id DOMCSSPrimitiveValue)
 topSelector = mkSelector "top"
 
 -- | @Selector@ for @right@
-rightSelector :: Selector
+rightSelector :: Selector '[] (Id DOMCSSPrimitiveValue)
 rightSelector = mkSelector "right"
 
 -- | @Selector@ for @bottom@
-bottomSelector :: Selector
+bottomSelector :: Selector '[] (Id DOMCSSPrimitiveValue)
 bottomSelector = mkSelector "bottom"
 
 -- | @Selector@ for @left@
-leftSelector :: Selector
+leftSelector :: Selector '[] (Id DOMCSSPrimitiveValue)
 leftSelector = mkSelector "left"
 

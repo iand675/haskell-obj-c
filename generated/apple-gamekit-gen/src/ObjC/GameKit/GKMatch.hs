@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,21 +25,21 @@ module ObjC.GameKit.GKMatch
   , properties
   , playerProperties
   , playerIDs
-  , sendData_toPlayers_dataMode_errorSelector
-  , sendDataToAllPlayers_withDataMode_errorSelector
-  , disconnectSelector
-  , chooseBestHostingPlayerWithCompletionHandlerSelector
-  , rematchWithCompletionHandlerSelector
-  , voiceChatWithNameSelector
   , chooseBestHostPlayerWithCompletionHandlerSelector
-  , sendData_toPlayers_withDataMode_errorSelector
-  , playersSelector
+  , chooseBestHostingPlayerWithCompletionHandlerSelector
   , delegateSelector
-  , setDelegateSelector
+  , disconnectSelector
   , expectedPlayerCountSelector
-  , propertiesSelector
-  , playerPropertiesSelector
   , playerIDsSelector
+  , playerPropertiesSelector
+  , playersSelector
+  , propertiesSelector
+  , rematchWithCompletionHandlerSelector
+  , sendDataToAllPlayers_withDataMode_errorSelector
+  , sendData_toPlayers_dataMode_errorSelector
+  , sendData_toPlayers_withDataMode_errorSelector
+  , setDelegateSelector
+  , voiceChatWithNameSelector
 
   -- * Enum types
   , GKMatchSendDataMode(GKMatchSendDataMode)
@@ -47,15 +48,11 @@ module ObjC.GameKit.GKMatch
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,169 +64,160 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- sendData:toPlayers:dataMode:error:@
 sendData_toPlayers_dataMode_error :: (IsGKMatch gkMatch, IsNSData data_, IsNSArray players, IsNSError error_) => gkMatch -> data_ -> players -> GKMatchSendDataMode -> error_ -> IO Bool
-sendData_toPlayers_dataMode_error gkMatch  data_ players mode error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr players $ \raw_players ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkMatch (mkSelector "sendData:toPlayers:dataMode:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_players :: Ptr ()), argCLong (coerce mode), argPtr (castPtr raw_error_ :: Ptr ())]
+sendData_toPlayers_dataMode_error gkMatch data_ players mode error_ =
+  sendMessage gkMatch sendData_toPlayers_dataMode_errorSelector (toNSData data_) (toNSArray players) mode (toNSError error_)
 
 -- | Asynchronously broadcasts data to all players. Returns YES if delivery started, NO if unable to start sending and error will be set.
 --
 -- ObjC selector: @- sendDataToAllPlayers:withDataMode:error:@
 sendDataToAllPlayers_withDataMode_error :: (IsGKMatch gkMatch, IsNSData data_, IsNSError error_) => gkMatch -> data_ -> GKMatchSendDataMode -> error_ -> IO Bool
-sendDataToAllPlayers_withDataMode_error gkMatch  data_ mode error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkMatch (mkSelector "sendDataToAllPlayers:withDataMode:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argCLong (coerce mode), argPtr (castPtr raw_error_ :: Ptr ())]
+sendDataToAllPlayers_withDataMode_error gkMatch data_ mode error_ =
+  sendMessage gkMatch sendDataToAllPlayers_withDataMode_errorSelector (toNSData data_) mode (toNSError error_)
 
 -- | Disconnect the match. This will show all other players in the match that the local player has disconnected. This should be called before releasing the match instance.
 --
 -- ObjC selector: @- disconnect@
 disconnect :: IsGKMatch gkMatch => gkMatch -> IO ()
-disconnect gkMatch  =
-    sendMsg gkMatch (mkSelector "disconnect") retVoid []
+disconnect gkMatch =
+  sendMessage gkMatch disconnectSelector
 
 -- | Choose the best host from among the connected players using gathered estimates for bandwidth and packet loss. This is intended for applications that wish to implement a client-server model on top of the match. The returned player ID will be nil if the best host cannot currently be determined (e.g. players are still connecting).
 --
 -- ObjC selector: @- chooseBestHostingPlayerWithCompletionHandler:@
 chooseBestHostingPlayerWithCompletionHandler :: IsGKMatch gkMatch => gkMatch -> Ptr () -> IO ()
-chooseBestHostingPlayerWithCompletionHandler gkMatch  completionHandler =
-    sendMsg gkMatch (mkSelector "chooseBestHostingPlayerWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+chooseBestHostingPlayerWithCompletionHandler gkMatch completionHandler =
+  sendMessage gkMatch chooseBestHostingPlayerWithCompletionHandlerSelector completionHandler
 
 -- | Automatching to recreate a previous peer-to-peer match that became disconnected. A new match with the same set of players will be returned by the completion handler. All players should perform this when the match has ended for automatching to succeed. Error will be nil on success. Possible reasons for error: 1. Communications failure 2. Timeout
 --
 -- ObjC selector: @- rematchWithCompletionHandler:@
 rematchWithCompletionHandler :: IsGKMatch gkMatch => gkMatch -> Ptr () -> IO ()
-rematchWithCompletionHandler gkMatch  completionHandler =
-    sendMsg gkMatch (mkSelector "rematchWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+rematchWithCompletionHandler gkMatch completionHandler =
+  sendMessage gkMatch rematchWithCompletionHandlerSelector completionHandler
 
 -- | * This method is deprecated. GKVoiceChat is no longer supported. **
 --
 -- ObjC selector: @- voiceChatWithName:@
 voiceChatWithName :: (IsGKMatch gkMatch, IsNSString name) => gkMatch -> name -> IO (Id GKVoiceChat)
-voiceChatWithName gkMatch  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg gkMatch (mkSelector "voiceChatWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+voiceChatWithName gkMatch name =
+  sendMessage gkMatch voiceChatWithNameSelector (toNSString name)
 
 -- | * This method is obsolete. It will never be invoked and its implementation does nothing**
 --
 -- ObjC selector: @- chooseBestHostPlayerWithCompletionHandler:@
 chooseBestHostPlayerWithCompletionHandler :: IsGKMatch gkMatch => gkMatch -> Ptr () -> IO ()
-chooseBestHostPlayerWithCompletionHandler gkMatch  completionHandler =
-    sendMsg gkMatch (mkSelector "chooseBestHostPlayerWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+chooseBestHostPlayerWithCompletionHandler gkMatch completionHandler =
+  sendMessage gkMatch chooseBestHostPlayerWithCompletionHandlerSelector completionHandler
 
 -- | * This method is obsolete. It will never be invoked and its implementation does nothing**
 --
 -- ObjC selector: @- sendData:toPlayers:withDataMode:error:@
 sendData_toPlayers_withDataMode_error :: (IsGKMatch gkMatch, IsNSData data_, IsNSArray playerIDs, IsNSError error_) => gkMatch -> data_ -> playerIDs -> GKMatchSendDataMode -> error_ -> IO Bool
-sendData_toPlayers_withDataMode_error gkMatch  data_ playerIDs mode error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr playerIDs $ \raw_playerIDs ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkMatch (mkSelector "sendData:toPlayers:withDataMode:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_playerIDs :: Ptr ()), argCLong (coerce mode), argPtr (castPtr raw_error_ :: Ptr ())]
+sendData_toPlayers_withDataMode_error gkMatch data_ playerIDs mode error_ =
+  sendMessage gkMatch sendData_toPlayers_withDataMode_errorSelector (toNSData data_) (toNSArray playerIDs) mode (toNSError error_)
 
 -- | @- players@
 players :: IsGKMatch gkMatch => gkMatch -> IO (Id NSArray)
-players gkMatch  =
-    sendMsg gkMatch (mkSelector "players") (retPtr retVoid) [] >>= retainedObject . castPtr
+players gkMatch =
+  sendMessage gkMatch playersSelector
 
 -- | all the GKPlayers in the match
 --
 -- ObjC selector: @- delegate@
 delegate :: IsGKMatch gkMatch => gkMatch -> IO RawId
-delegate gkMatch  =
-    fmap (RawId . castPtr) $ sendMsg gkMatch (mkSelector "delegate") (retPtr retVoid) []
+delegate gkMatch =
+  sendMessage gkMatch delegateSelector
 
 -- | all the GKPlayers in the match
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsGKMatch gkMatch => gkMatch -> RawId -> IO ()
-setDelegate gkMatch  value =
-    sendMsg gkMatch (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate gkMatch value =
+  sendMessage gkMatch setDelegateSelector value
 
 -- | @- expectedPlayerCount@
 expectedPlayerCount :: IsGKMatch gkMatch => gkMatch -> IO CULong
-expectedPlayerCount gkMatch  =
-    sendMsg gkMatch (mkSelector "expectedPlayerCount") retCULong []
+expectedPlayerCount gkMatch =
+  sendMessage gkMatch expectedPlayerCountSelector
 
 -- | @- properties@
 properties :: IsGKMatch gkMatch => gkMatch -> IO RawId
-properties gkMatch  =
-    fmap (RawId . castPtr) $ sendMsg gkMatch (mkSelector "properties") (retPtr retVoid) []
+properties gkMatch =
+  sendMessage gkMatch propertiesSelector
 
 -- | @- playerProperties@
 playerProperties :: IsGKMatch gkMatch => gkMatch -> IO (Id NSDictionary)
-playerProperties gkMatch  =
-    sendMsg gkMatch (mkSelector "playerProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerProperties gkMatch =
+  sendMessage gkMatch playerPropertiesSelector
 
 -- | * This property is obsolete.  **
 --
 -- ObjC selector: @- playerIDs@
 playerIDs :: IsGKMatch gkMatch => gkMatch -> IO (Id NSArray)
-playerIDs gkMatch  =
-    sendMsg gkMatch (mkSelector "playerIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerIDs gkMatch =
+  sendMessage gkMatch playerIDsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sendData:toPlayers:dataMode:error:@
-sendData_toPlayers_dataMode_errorSelector :: Selector
+sendData_toPlayers_dataMode_errorSelector :: Selector '[Id NSData, Id NSArray, GKMatchSendDataMode, Id NSError] Bool
 sendData_toPlayers_dataMode_errorSelector = mkSelector "sendData:toPlayers:dataMode:error:"
 
 -- | @Selector@ for @sendDataToAllPlayers:withDataMode:error:@
-sendDataToAllPlayers_withDataMode_errorSelector :: Selector
+sendDataToAllPlayers_withDataMode_errorSelector :: Selector '[Id NSData, GKMatchSendDataMode, Id NSError] Bool
 sendDataToAllPlayers_withDataMode_errorSelector = mkSelector "sendDataToAllPlayers:withDataMode:error:"
 
 -- | @Selector@ for @disconnect@
-disconnectSelector :: Selector
+disconnectSelector :: Selector '[] ()
 disconnectSelector = mkSelector "disconnect"
 
 -- | @Selector@ for @chooseBestHostingPlayerWithCompletionHandler:@
-chooseBestHostingPlayerWithCompletionHandlerSelector :: Selector
+chooseBestHostingPlayerWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 chooseBestHostingPlayerWithCompletionHandlerSelector = mkSelector "chooseBestHostingPlayerWithCompletionHandler:"
 
 -- | @Selector@ for @rematchWithCompletionHandler:@
-rematchWithCompletionHandlerSelector :: Selector
+rematchWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 rematchWithCompletionHandlerSelector = mkSelector "rematchWithCompletionHandler:"
 
 -- | @Selector@ for @voiceChatWithName:@
-voiceChatWithNameSelector :: Selector
+voiceChatWithNameSelector :: Selector '[Id NSString] (Id GKVoiceChat)
 voiceChatWithNameSelector = mkSelector "voiceChatWithName:"
 
 -- | @Selector@ for @chooseBestHostPlayerWithCompletionHandler:@
-chooseBestHostPlayerWithCompletionHandlerSelector :: Selector
+chooseBestHostPlayerWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 chooseBestHostPlayerWithCompletionHandlerSelector = mkSelector "chooseBestHostPlayerWithCompletionHandler:"
 
 -- | @Selector@ for @sendData:toPlayers:withDataMode:error:@
-sendData_toPlayers_withDataMode_errorSelector :: Selector
+sendData_toPlayers_withDataMode_errorSelector :: Selector '[Id NSData, Id NSArray, GKMatchSendDataMode, Id NSError] Bool
 sendData_toPlayers_withDataMode_errorSelector = mkSelector "sendData:toPlayers:withDataMode:error:"
 
 -- | @Selector@ for @players@
-playersSelector :: Selector
+playersSelector :: Selector '[] (Id NSArray)
 playersSelector = mkSelector "players"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @expectedPlayerCount@
-expectedPlayerCountSelector :: Selector
+expectedPlayerCountSelector :: Selector '[] CULong
 expectedPlayerCountSelector = mkSelector "expectedPlayerCount"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] RawId
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @playerProperties@
-playerPropertiesSelector :: Selector
+playerPropertiesSelector :: Selector '[] (Id NSDictionary)
 playerPropertiesSelector = mkSelector "playerProperties"
 
 -- | @Selector@ for @playerIDs@
-playerIDsSelector :: Selector
+playerIDsSelector :: Selector '[] (Id NSArray)
 playerIDsSelector = mkSelector "playerIDs"
 

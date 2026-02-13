@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -57,70 +58,66 @@ module ObjC.WebKit.DOMHTMLInputElement
   , setAccessKey
   , altDisplayString
   , absoluteImageURL
-  , selectSelector
-  , setSelectionRange_endSelector
-  , clickSelector
-  , acceptSelector
-  , setAcceptSelector
-  , altSelector
-  , setAltSelector
-  , autofocusSelector
-  , setAutofocusSelector
-  , defaultCheckedSelector
-  , setDefaultCheckedSelector
-  , checkedSelector
-  , setCheckedSelector
-  , disabledSelector
-  , setDisabledSelector
-  , formSelector
-  , filesSelector
-  , setFilesSelector
-  , indeterminateSelector
-  , setIndeterminateSelector
-  , maxLengthSelector
-  , setMaxLengthSelector
-  , multipleSelector
-  , setMultipleSelector
-  , nameSelector
-  , setNameSelector
-  , readOnlySelector
-  , setReadOnlySelector
-  , sizeSelector
-  , setSizeSelector
-  , srcSelector
-  , setSrcSelector
-  , typeSelector
-  , setTypeSelector
-  , defaultValueSelector
-  , setDefaultValueSelector
-  , valueSelector
-  , setValueSelector
-  , willValidateSelector
-  , selectionStartSelector
-  , setSelectionStartSelector
-  , selectionEndSelector
-  , setSelectionEndSelector
-  , alignSelector
-  , setAlignSelector
-  , useMapSelector
-  , setUseMapSelector
-  , accessKeySelector
-  , setAccessKeySelector
-  , altDisplayStringSelector
   , absoluteImageURLSelector
+  , acceptSelector
+  , accessKeySelector
+  , alignSelector
+  , altDisplayStringSelector
+  , altSelector
+  , autofocusSelector
+  , checkedSelector
+  , clickSelector
+  , defaultCheckedSelector
+  , defaultValueSelector
+  , disabledSelector
+  , filesSelector
+  , formSelector
+  , indeterminateSelector
+  , maxLengthSelector
+  , multipleSelector
+  , nameSelector
+  , readOnlySelector
+  , selectSelector
+  , selectionEndSelector
+  , selectionStartSelector
+  , setAcceptSelector
+  , setAccessKeySelector
+  , setAlignSelector
+  , setAltSelector
+  , setAutofocusSelector
+  , setCheckedSelector
+  , setDefaultCheckedSelector
+  , setDefaultValueSelector
+  , setDisabledSelector
+  , setFilesSelector
+  , setIndeterminateSelector
+  , setMaxLengthSelector
+  , setMultipleSelector
+  , setNameSelector
+  , setReadOnlySelector
+  , setSelectionEndSelector
+  , setSelectionRange_endSelector
+  , setSelectionStartSelector
+  , setSizeSelector
+  , setSrcSelector
+  , setTypeSelector
+  , setUseMapSelector
+  , setValueSelector
+  , sizeSelector
+  , srcSelector
+  , typeSelector
+  , useMapSelector
+  , valueSelector
+  , willValidateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -129,476 +126,464 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- select@
 select :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO ()
-select domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "select") retVoid []
+select domhtmlInputElement =
+  sendMessage domhtmlInputElement selectSelector
 
 -- | @- setSelectionRange:end:@
 setSelectionRange_end :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> CInt -> CInt -> IO ()
-setSelectionRange_end domhtmlInputElement  start end =
-    sendMsg domhtmlInputElement (mkSelector "setSelectionRange:end:") retVoid [argCInt start, argCInt end]
+setSelectionRange_end domhtmlInputElement start end =
+  sendMessage domhtmlInputElement setSelectionRange_endSelector start end
 
 -- | @- click@
 click :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO ()
-click domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "click") retVoid []
+click domhtmlInputElement =
+  sendMessage domhtmlInputElement clickSelector
 
 -- | @- accept@
 accept :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-accept domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "accept") (retPtr retVoid) [] >>= retainedObject . castPtr
+accept domhtmlInputElement =
+  sendMessage domhtmlInputElement acceptSelector
 
 -- | @- setAccept:@
 setAccept :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setAccept domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setAccept:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccept domhtmlInputElement value =
+  sendMessage domhtmlInputElement setAcceptSelector (toNSString value)
 
 -- | @- alt@
 alt :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-alt domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "alt") (retPtr retVoid) [] >>= retainedObject . castPtr
+alt domhtmlInputElement =
+  sendMessage domhtmlInputElement altSelector
 
 -- | @- setAlt:@
 setAlt :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setAlt domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setAlt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlt domhtmlInputElement value =
+  sendMessage domhtmlInputElement setAltSelector (toNSString value)
 
 -- | @- autofocus@
 autofocus :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO Bool
-autofocus domhtmlInputElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlInputElement (mkSelector "autofocus") retCULong []
+autofocus domhtmlInputElement =
+  sendMessage domhtmlInputElement autofocusSelector
 
 -- | @- setAutofocus:@
 setAutofocus :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> Bool -> IO ()
-setAutofocus domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setAutofocus:") retVoid [argCULong (if value then 1 else 0)]
+setAutofocus domhtmlInputElement value =
+  sendMessage domhtmlInputElement setAutofocusSelector value
 
 -- | @- defaultChecked@
 defaultChecked :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO Bool
-defaultChecked domhtmlInputElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlInputElement (mkSelector "defaultChecked") retCULong []
+defaultChecked domhtmlInputElement =
+  sendMessage domhtmlInputElement defaultCheckedSelector
 
 -- | @- setDefaultChecked:@
 setDefaultChecked :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> Bool -> IO ()
-setDefaultChecked domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setDefaultChecked:") retVoid [argCULong (if value then 1 else 0)]
+setDefaultChecked domhtmlInputElement value =
+  sendMessage domhtmlInputElement setDefaultCheckedSelector value
 
 -- | @- checked@
 checked :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO Bool
-checked domhtmlInputElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlInputElement (mkSelector "checked") retCULong []
+checked domhtmlInputElement =
+  sendMessage domhtmlInputElement checkedSelector
 
 -- | @- setChecked:@
 setChecked :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> Bool -> IO ()
-setChecked domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setChecked:") retVoid [argCULong (if value then 1 else 0)]
+setChecked domhtmlInputElement value =
+  sendMessage domhtmlInputElement setCheckedSelector value
 
 -- | @- disabled@
 disabled :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO Bool
-disabled domhtmlInputElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlInputElement (mkSelector "disabled") retCULong []
+disabled domhtmlInputElement =
+  sendMessage domhtmlInputElement disabledSelector
 
 -- | @- setDisabled:@
 setDisabled :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> Bool -> IO ()
-setDisabled domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setDisabled:") retVoid [argCULong (if value then 1 else 0)]
+setDisabled domhtmlInputElement value =
+  sendMessage domhtmlInputElement setDisabledSelector value
 
 -- | @- form@
 form :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id DOMHTMLFormElement)
-form domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "form") (retPtr retVoid) [] >>= retainedObject . castPtr
+form domhtmlInputElement =
+  sendMessage domhtmlInputElement formSelector
 
 -- | @- files@
 files :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id DOMFileList)
-files domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "files") (retPtr retVoid) [] >>= retainedObject . castPtr
+files domhtmlInputElement =
+  sendMessage domhtmlInputElement filesSelector
 
 -- | @- setFiles:@
 setFiles :: (IsDOMHTMLInputElement domhtmlInputElement, IsDOMFileList value) => domhtmlInputElement -> value -> IO ()
-setFiles domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setFiles:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFiles domhtmlInputElement value =
+  sendMessage domhtmlInputElement setFilesSelector (toDOMFileList value)
 
 -- | @- indeterminate@
 indeterminate :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO Bool
-indeterminate domhtmlInputElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlInputElement (mkSelector "indeterminate") retCULong []
+indeterminate domhtmlInputElement =
+  sendMessage domhtmlInputElement indeterminateSelector
 
 -- | @- setIndeterminate:@
 setIndeterminate :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> Bool -> IO ()
-setIndeterminate domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setIndeterminate:") retVoid [argCULong (if value then 1 else 0)]
+setIndeterminate domhtmlInputElement value =
+  sendMessage domhtmlInputElement setIndeterminateSelector value
 
 -- | @- maxLength@
 maxLength :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO CInt
-maxLength domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "maxLength") retCInt []
+maxLength domhtmlInputElement =
+  sendMessage domhtmlInputElement maxLengthSelector
 
 -- | @- setMaxLength:@
 setMaxLength :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> CInt -> IO ()
-setMaxLength domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setMaxLength:") retVoid [argCInt value]
+setMaxLength domhtmlInputElement value =
+  sendMessage domhtmlInputElement setMaxLengthSelector value
 
 -- | @- multiple@
 multiple :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO Bool
-multiple domhtmlInputElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlInputElement (mkSelector "multiple") retCULong []
+multiple domhtmlInputElement =
+  sendMessage domhtmlInputElement multipleSelector
 
 -- | @- setMultiple:@
 setMultiple :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> Bool -> IO ()
-setMultiple domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setMultiple:") retVoid [argCULong (if value then 1 else 0)]
+setMultiple domhtmlInputElement value =
+  sendMessage domhtmlInputElement setMultipleSelector value
 
 -- | @- name@
 name :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-name domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlInputElement =
+  sendMessage domhtmlInputElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setName domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlInputElement value =
+  sendMessage domhtmlInputElement setNameSelector (toNSString value)
 
 -- | @- readOnly@
 readOnly :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO Bool
-readOnly domhtmlInputElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlInputElement (mkSelector "readOnly") retCULong []
+readOnly domhtmlInputElement =
+  sendMessage domhtmlInputElement readOnlySelector
 
 -- | @- setReadOnly:@
 setReadOnly :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> Bool -> IO ()
-setReadOnly domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setReadOnly:") retVoid [argCULong (if value then 1 else 0)]
+setReadOnly domhtmlInputElement value =
+  sendMessage domhtmlInputElement setReadOnlySelector value
 
 -- | @- size@
 size :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-size domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "size") (retPtr retVoid) [] >>= retainedObject . castPtr
+size domhtmlInputElement =
+  sendMessage domhtmlInputElement sizeSelector
 
 -- | @- setSize:@
 setSize :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setSize domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setSize:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSize domhtmlInputElement value =
+  sendMessage domhtmlInputElement setSizeSelector (toNSString value)
 
 -- | @- src@
 src :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-src domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "src") (retPtr retVoid) [] >>= retainedObject . castPtr
+src domhtmlInputElement =
+  sendMessage domhtmlInputElement srcSelector
 
 -- | @- setSrc:@
 setSrc :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setSrc domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setSrc:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSrc domhtmlInputElement value =
+  sendMessage domhtmlInputElement setSrcSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-type_ domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmlInputElement =
+  sendMessage domhtmlInputElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setType domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmlInputElement value =
+  sendMessage domhtmlInputElement setTypeSelector (toNSString value)
 
 -- | @- defaultValue@
 defaultValue :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-defaultValue domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "defaultValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultValue domhtmlInputElement =
+  sendMessage domhtmlInputElement defaultValueSelector
 
 -- | @- setDefaultValue:@
 setDefaultValue :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setDefaultValue domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setDefaultValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultValue domhtmlInputElement value =
+  sendMessage domhtmlInputElement setDefaultValueSelector (toNSString value)
 
 -- | @- value@
 value :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-value domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value domhtmlInputElement =
+  sendMessage domhtmlInputElement valueSelector
 
 -- | @- setValue:@
 setValue :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setValue domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue domhtmlInputElement value =
+  sendMessage domhtmlInputElement setValueSelector (toNSString value)
 
 -- | @- willValidate@
 willValidate :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO Bool
-willValidate domhtmlInputElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlInputElement (mkSelector "willValidate") retCULong []
+willValidate domhtmlInputElement =
+  sendMessage domhtmlInputElement willValidateSelector
 
 -- | @- selectionStart@
 selectionStart :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO CInt
-selectionStart domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "selectionStart") retCInt []
+selectionStart domhtmlInputElement =
+  sendMessage domhtmlInputElement selectionStartSelector
 
 -- | @- setSelectionStart:@
 setSelectionStart :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> CInt -> IO ()
-setSelectionStart domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setSelectionStart:") retVoid [argCInt value]
+setSelectionStart domhtmlInputElement value =
+  sendMessage domhtmlInputElement setSelectionStartSelector value
 
 -- | @- selectionEnd@
 selectionEnd :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO CInt
-selectionEnd domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "selectionEnd") retCInt []
+selectionEnd domhtmlInputElement =
+  sendMessage domhtmlInputElement selectionEndSelector
 
 -- | @- setSelectionEnd:@
 setSelectionEnd :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> CInt -> IO ()
-setSelectionEnd domhtmlInputElement  value =
-    sendMsg domhtmlInputElement (mkSelector "setSelectionEnd:") retVoid [argCInt value]
+setSelectionEnd domhtmlInputElement value =
+  sendMessage domhtmlInputElement setSelectionEndSelector value
 
 -- | @- align@
 align :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-align domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "align") (retPtr retVoid) [] >>= retainedObject . castPtr
+align domhtmlInputElement =
+  sendMessage domhtmlInputElement alignSelector
 
 -- | @- setAlign:@
 setAlign :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setAlign domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlign domhtmlInputElement value =
+  sendMessage domhtmlInputElement setAlignSelector (toNSString value)
 
 -- | @- useMap@
 useMap :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-useMap domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "useMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+useMap domhtmlInputElement =
+  sendMessage domhtmlInputElement useMapSelector
 
 -- | @- setUseMap:@
 setUseMap :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setUseMap domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setUseMap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUseMap domhtmlInputElement value =
+  sendMessage domhtmlInputElement setUseMapSelector (toNSString value)
 
 -- | @- accessKey@
 accessKey :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-accessKey domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "accessKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessKey domhtmlInputElement =
+  sendMessage domhtmlInputElement accessKeySelector
 
 -- | @- setAccessKey:@
 setAccessKey :: (IsDOMHTMLInputElement domhtmlInputElement, IsNSString value) => domhtmlInputElement -> value -> IO ()
-setAccessKey domhtmlInputElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlInputElement (mkSelector "setAccessKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessKey domhtmlInputElement value =
+  sendMessage domhtmlInputElement setAccessKeySelector (toNSString value)
 
 -- | @- altDisplayString@
 altDisplayString :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSString)
-altDisplayString domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "altDisplayString") (retPtr retVoid) [] >>= retainedObject . castPtr
+altDisplayString domhtmlInputElement =
+  sendMessage domhtmlInputElement altDisplayStringSelector
 
 -- | @- absoluteImageURL@
 absoluteImageURL :: IsDOMHTMLInputElement domhtmlInputElement => domhtmlInputElement -> IO (Id NSURL)
-absoluteImageURL domhtmlInputElement  =
-    sendMsg domhtmlInputElement (mkSelector "absoluteImageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+absoluteImageURL domhtmlInputElement =
+  sendMessage domhtmlInputElement absoluteImageURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @select@
-selectSelector :: Selector
+selectSelector :: Selector '[] ()
 selectSelector = mkSelector "select"
 
 -- | @Selector@ for @setSelectionRange:end:@
-setSelectionRange_endSelector :: Selector
+setSelectionRange_endSelector :: Selector '[CInt, CInt] ()
 setSelectionRange_endSelector = mkSelector "setSelectionRange:end:"
 
 -- | @Selector@ for @click@
-clickSelector :: Selector
+clickSelector :: Selector '[] ()
 clickSelector = mkSelector "click"
 
 -- | @Selector@ for @accept@
-acceptSelector :: Selector
+acceptSelector :: Selector '[] (Id NSString)
 acceptSelector = mkSelector "accept"
 
 -- | @Selector@ for @setAccept:@
-setAcceptSelector :: Selector
+setAcceptSelector :: Selector '[Id NSString] ()
 setAcceptSelector = mkSelector "setAccept:"
 
 -- | @Selector@ for @alt@
-altSelector :: Selector
+altSelector :: Selector '[] (Id NSString)
 altSelector = mkSelector "alt"
 
 -- | @Selector@ for @setAlt:@
-setAltSelector :: Selector
+setAltSelector :: Selector '[Id NSString] ()
 setAltSelector = mkSelector "setAlt:"
 
 -- | @Selector@ for @autofocus@
-autofocusSelector :: Selector
+autofocusSelector :: Selector '[] Bool
 autofocusSelector = mkSelector "autofocus"
 
 -- | @Selector@ for @setAutofocus:@
-setAutofocusSelector :: Selector
+setAutofocusSelector :: Selector '[Bool] ()
 setAutofocusSelector = mkSelector "setAutofocus:"
 
 -- | @Selector@ for @defaultChecked@
-defaultCheckedSelector :: Selector
+defaultCheckedSelector :: Selector '[] Bool
 defaultCheckedSelector = mkSelector "defaultChecked"
 
 -- | @Selector@ for @setDefaultChecked:@
-setDefaultCheckedSelector :: Selector
+setDefaultCheckedSelector :: Selector '[Bool] ()
 setDefaultCheckedSelector = mkSelector "setDefaultChecked:"
 
 -- | @Selector@ for @checked@
-checkedSelector :: Selector
+checkedSelector :: Selector '[] Bool
 checkedSelector = mkSelector "checked"
 
 -- | @Selector@ for @setChecked:@
-setCheckedSelector :: Selector
+setCheckedSelector :: Selector '[Bool] ()
 setCheckedSelector = mkSelector "setChecked:"
 
 -- | @Selector@ for @disabled@
-disabledSelector :: Selector
+disabledSelector :: Selector '[] Bool
 disabledSelector = mkSelector "disabled"
 
 -- | @Selector@ for @setDisabled:@
-setDisabledSelector :: Selector
+setDisabledSelector :: Selector '[Bool] ()
 setDisabledSelector = mkSelector "setDisabled:"
 
 -- | @Selector@ for @form@
-formSelector :: Selector
+formSelector :: Selector '[] (Id DOMHTMLFormElement)
 formSelector = mkSelector "form"
 
 -- | @Selector@ for @files@
-filesSelector :: Selector
+filesSelector :: Selector '[] (Id DOMFileList)
 filesSelector = mkSelector "files"
 
 -- | @Selector@ for @setFiles:@
-setFilesSelector :: Selector
+setFilesSelector :: Selector '[Id DOMFileList] ()
 setFilesSelector = mkSelector "setFiles:"
 
 -- | @Selector@ for @indeterminate@
-indeterminateSelector :: Selector
+indeterminateSelector :: Selector '[] Bool
 indeterminateSelector = mkSelector "indeterminate"
 
 -- | @Selector@ for @setIndeterminate:@
-setIndeterminateSelector :: Selector
+setIndeterminateSelector :: Selector '[Bool] ()
 setIndeterminateSelector = mkSelector "setIndeterminate:"
 
 -- | @Selector@ for @maxLength@
-maxLengthSelector :: Selector
+maxLengthSelector :: Selector '[] CInt
 maxLengthSelector = mkSelector "maxLength"
 
 -- | @Selector@ for @setMaxLength:@
-setMaxLengthSelector :: Selector
+setMaxLengthSelector :: Selector '[CInt] ()
 setMaxLengthSelector = mkSelector "setMaxLength:"
 
 -- | @Selector@ for @multiple@
-multipleSelector :: Selector
+multipleSelector :: Selector '[] Bool
 multipleSelector = mkSelector "multiple"
 
 -- | @Selector@ for @setMultiple:@
-setMultipleSelector :: Selector
+setMultipleSelector :: Selector '[Bool] ()
 setMultipleSelector = mkSelector "setMultiple:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @readOnly@
-readOnlySelector :: Selector
+readOnlySelector :: Selector '[] Bool
 readOnlySelector = mkSelector "readOnly"
 
 -- | @Selector@ for @setReadOnly:@
-setReadOnlySelector :: Selector
+setReadOnlySelector :: Selector '[Bool] ()
 setReadOnlySelector = mkSelector "setReadOnly:"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] (Id NSString)
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @setSize:@
-setSizeSelector :: Selector
+setSizeSelector :: Selector '[Id NSString] ()
 setSizeSelector = mkSelector "setSize:"
 
 -- | @Selector@ for @src@
-srcSelector :: Selector
+srcSelector :: Selector '[] (Id NSString)
 srcSelector = mkSelector "src"
 
 -- | @Selector@ for @setSrc:@
-setSrcSelector :: Selector
+setSrcSelector :: Selector '[Id NSString] ()
 setSrcSelector = mkSelector "setSrc:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @defaultValue@
-defaultValueSelector :: Selector
+defaultValueSelector :: Selector '[] (Id NSString)
 defaultValueSelector = mkSelector "defaultValue"
 
 -- | @Selector@ for @setDefaultValue:@
-setDefaultValueSelector :: Selector
+setDefaultValueSelector :: Selector '[Id NSString] ()
 setDefaultValueSelector = mkSelector "setDefaultValue:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @willValidate@
-willValidateSelector :: Selector
+willValidateSelector :: Selector '[] Bool
 willValidateSelector = mkSelector "willValidate"
 
 -- | @Selector@ for @selectionStart@
-selectionStartSelector :: Selector
+selectionStartSelector :: Selector '[] CInt
 selectionStartSelector = mkSelector "selectionStart"
 
 -- | @Selector@ for @setSelectionStart:@
-setSelectionStartSelector :: Selector
+setSelectionStartSelector :: Selector '[CInt] ()
 setSelectionStartSelector = mkSelector "setSelectionStart:"
 
 -- | @Selector@ for @selectionEnd@
-selectionEndSelector :: Selector
+selectionEndSelector :: Selector '[] CInt
 selectionEndSelector = mkSelector "selectionEnd"
 
 -- | @Selector@ for @setSelectionEnd:@
-setSelectionEndSelector :: Selector
+setSelectionEndSelector :: Selector '[CInt] ()
 setSelectionEndSelector = mkSelector "setSelectionEnd:"
 
 -- | @Selector@ for @align@
-alignSelector :: Selector
+alignSelector :: Selector '[] (Id NSString)
 alignSelector = mkSelector "align"
 
 -- | @Selector@ for @setAlign:@
-setAlignSelector :: Selector
+setAlignSelector :: Selector '[Id NSString] ()
 setAlignSelector = mkSelector "setAlign:"
 
 -- | @Selector@ for @useMap@
-useMapSelector :: Selector
+useMapSelector :: Selector '[] (Id NSString)
 useMapSelector = mkSelector "useMap"
 
 -- | @Selector@ for @setUseMap:@
-setUseMapSelector :: Selector
+setUseMapSelector :: Selector '[Id NSString] ()
 setUseMapSelector = mkSelector "setUseMap:"
 
 -- | @Selector@ for @accessKey@
-accessKeySelector :: Selector
+accessKeySelector :: Selector '[] (Id NSString)
 accessKeySelector = mkSelector "accessKey"
 
 -- | @Selector@ for @setAccessKey:@
-setAccessKeySelector :: Selector
+setAccessKeySelector :: Selector '[Id NSString] ()
 setAccessKeySelector = mkSelector "setAccessKey:"
 
 -- | @Selector@ for @altDisplayString@
-altDisplayStringSelector :: Selector
+altDisplayStringSelector :: Selector '[] (Id NSString)
 altDisplayStringSelector = mkSelector "altDisplayString"
 
 -- | @Selector@ for @absoluteImageURL@
-absoluteImageURLSelector :: Selector
+absoluteImageURLSelector :: Selector '[] (Id NSURL)
 absoluteImageURLSelector = mkSelector "absoluteImageURL"
 

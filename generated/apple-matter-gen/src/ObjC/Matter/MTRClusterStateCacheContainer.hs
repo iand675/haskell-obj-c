@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Matter.MTRClusterStateCacheContainer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,18 +42,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- readAttributesWithEndpointID:clusterID:attributeID:queue:completion:@
 readAttributesWithEndpointID_clusterID_attributeID_queue_completion :: (IsMTRClusterStateCacheContainer mtrClusterStateCacheContainer, IsNSNumber endpointID, IsNSNumber clusterID, IsNSNumber attributeID, IsNSObject queue) => mtrClusterStateCacheContainer -> endpointID -> clusterID -> attributeID -> queue -> Ptr () -> IO ()
-readAttributesWithEndpointID_clusterID_attributeID_queue_completion mtrClusterStateCacheContainer  endpointID clusterID attributeID queue completion =
-  withObjCPtr endpointID $ \raw_endpointID ->
-    withObjCPtr clusterID $ \raw_clusterID ->
-      withObjCPtr attributeID $ \raw_attributeID ->
-        withObjCPtr queue $ \raw_queue ->
-            sendMsg mtrClusterStateCacheContainer (mkSelector "readAttributesWithEndpointID:clusterID:attributeID:queue:completion:") retVoid [argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_clusterID :: Ptr ()), argPtr (castPtr raw_attributeID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+readAttributesWithEndpointID_clusterID_attributeID_queue_completion mtrClusterStateCacheContainer endpointID clusterID attributeID queue completion =
+  sendMessage mtrClusterStateCacheContainer readAttributesWithEndpointID_clusterID_attributeID_queue_completionSelector (toNSNumber endpointID) (toNSNumber clusterID) (toNSNumber attributeID) (toNSObject queue) completion
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributesWithEndpointID:clusterID:attributeID:queue:completion:@
-readAttributesWithEndpointID_clusterID_attributeID_queue_completionSelector :: Selector
+readAttributesWithEndpointID_clusterID_attributeID_queue_completionSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributesWithEndpointID_clusterID_attributeID_queue_completionSelector = mkSelector "readAttributesWithEndpointID:clusterID:attributeID:queue:completion:"
 

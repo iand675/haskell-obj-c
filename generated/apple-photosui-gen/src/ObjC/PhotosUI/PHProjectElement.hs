@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.PhotosUI.PHProjectElement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHProjectElement phProjectElement => phProjectElement -> IO (Id PHProjectElement)
-init_ phProjectElement  =
-    sendMsg phProjectElement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phProjectElement =
+  sendOwnedMessage phProjectElement initSelector
 
 -- | @+ new@
 new :: IO (Id PHProjectElement)
 new  =
   do
     cls' <- getRequiredClass "PHProjectElement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Relative significance of any element in the section content is defined by it's weight. Values range from 0.0 to 1.0 where the higher numbers represent higher overall significance. Projects that allow a user to reduce the number of elements in any section content can use this hint to determine which elements are most important to keep in order to preserve context. Default is 0.5.
 --
 -- ObjC selector: @- weight@
 weight :: IsPHProjectElement phProjectElement => phProjectElement -> IO CDouble
-weight phProjectElement  =
-    sendMsg phProjectElement (mkSelector "weight") retCDouble []
+weight phProjectElement =
+  sendMessage phProjectElement weightSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHProjectElement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHProjectElement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @weight@
-weightSelector :: Selector
+weightSelector :: Selector '[] CDouble
 weightSelector = mkSelector "weight"
 

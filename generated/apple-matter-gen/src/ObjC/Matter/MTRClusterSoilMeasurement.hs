@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,29 +19,25 @@ module ObjC.Matter.MTRClusterSoilMeasurement
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , readAttributeSoilMoistureMeasurementLimitsWithParamsSelector
-  , readAttributeSoilMoistureMeasuredValueWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeSoilMoistureMeasuredValueWithParamsSelector
+  , readAttributeSoilMoistureMeasurementLimitsWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,109 +46,99 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeSoilMoistureMeasurementLimitsWithParams:@
 readAttributeSoilMoistureMeasurementLimitsWithParams :: (IsMTRClusterSoilMeasurement mtrClusterSoilMeasurement, IsMTRReadParams params) => mtrClusterSoilMeasurement -> params -> IO (Id NSDictionary)
-readAttributeSoilMoistureMeasurementLimitsWithParams mtrClusterSoilMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSoilMeasurement (mkSelector "readAttributeSoilMoistureMeasurementLimitsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSoilMoistureMeasurementLimitsWithParams mtrClusterSoilMeasurement params =
+  sendMessage mtrClusterSoilMeasurement readAttributeSoilMoistureMeasurementLimitsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSoilMoistureMeasuredValueWithParams:@
 readAttributeSoilMoistureMeasuredValueWithParams :: (IsMTRClusterSoilMeasurement mtrClusterSoilMeasurement, IsMTRReadParams params) => mtrClusterSoilMeasurement -> params -> IO (Id NSDictionary)
-readAttributeSoilMoistureMeasuredValueWithParams mtrClusterSoilMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSoilMeasurement (mkSelector "readAttributeSoilMoistureMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSoilMoistureMeasuredValueWithParams mtrClusterSoilMeasurement params =
+  sendMessage mtrClusterSoilMeasurement readAttributeSoilMoistureMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterSoilMeasurement mtrClusterSoilMeasurement, IsMTRReadParams params) => mtrClusterSoilMeasurement -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterSoilMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSoilMeasurement (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterSoilMeasurement params =
+  sendMessage mtrClusterSoilMeasurement readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterSoilMeasurement mtrClusterSoilMeasurement, IsMTRReadParams params) => mtrClusterSoilMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterSoilMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSoilMeasurement (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterSoilMeasurement params =
+  sendMessage mtrClusterSoilMeasurement readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterSoilMeasurement mtrClusterSoilMeasurement, IsMTRReadParams params) => mtrClusterSoilMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterSoilMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSoilMeasurement (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterSoilMeasurement params =
+  sendMessage mtrClusterSoilMeasurement readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterSoilMeasurement mtrClusterSoilMeasurement, IsMTRReadParams params) => mtrClusterSoilMeasurement -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterSoilMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSoilMeasurement (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterSoilMeasurement params =
+  sendMessage mtrClusterSoilMeasurement readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterSoilMeasurement mtrClusterSoilMeasurement, IsMTRReadParams params) => mtrClusterSoilMeasurement -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterSoilMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterSoilMeasurement (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterSoilMeasurement params =
+  sendMessage mtrClusterSoilMeasurement readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterSoilMeasurement mtrClusterSoilMeasurement => mtrClusterSoilMeasurement -> IO (Id MTRClusterSoilMeasurement)
-init_ mtrClusterSoilMeasurement  =
-    sendMsg mtrClusterSoilMeasurement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterSoilMeasurement =
+  sendOwnedMessage mtrClusterSoilMeasurement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterSoilMeasurement)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterSoilMeasurement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterSoilMeasurement mtrClusterSoilMeasurement, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterSoilMeasurement -> device -> endpointID -> queue -> IO (Id MTRClusterSoilMeasurement)
-initWithDevice_endpointID_queue mtrClusterSoilMeasurement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterSoilMeasurement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterSoilMeasurement device endpointID queue =
+  sendOwnedMessage mtrClusterSoilMeasurement initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeSoilMoistureMeasurementLimitsWithParams:@
-readAttributeSoilMoistureMeasurementLimitsWithParamsSelector :: Selector
+readAttributeSoilMoistureMeasurementLimitsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSoilMoistureMeasurementLimitsWithParamsSelector = mkSelector "readAttributeSoilMoistureMeasurementLimitsWithParams:"
 
 -- | @Selector@ for @readAttributeSoilMoistureMeasuredValueWithParams:@
-readAttributeSoilMoistureMeasuredValueWithParamsSelector :: Selector
+readAttributeSoilMoistureMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSoilMoistureMeasuredValueWithParamsSelector = mkSelector "readAttributeSoilMoistureMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterSoilMeasurement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterSoilMeasurement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterSoilMeasurement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

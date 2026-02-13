@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.StoreKit.SKProduct
   , introductoryPrice
   , subscriptionGroupIdentifier
   , discounts
+  , contentLengthsSelector
+  , contentVersionSelector
+  , discountsSelector
+  , downloadContentLengthsSelector
+  , downloadContentVersionSelector
+  , downloadableSelector
+  , introductoryPriceSelector
+  , isDownloadableSelector
+  , isFamilyShareableSelector
   , localizedDescriptionSelector
   , localizedTitleSelector
-  , priceSelector
   , priceLocaleSelector
+  , priceSelector
   , productIdentifierSelector
-  , isDownloadableSelector
-  , downloadableSelector
-  , isFamilyShareableSelector
-  , contentLengthsSelector
-  , downloadContentLengthsSelector
-  , contentVersionSelector
-  , downloadContentVersionSelector
-  , subscriptionPeriodSelector
-  , introductoryPriceSelector
   , subscriptionGroupIdentifierSelector
-  , discountsSelector
+  , subscriptionPeriodSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,149 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- localizedDescription@
 localizedDescription :: IsSKProduct skProduct => skProduct -> IO (Id NSString)
-localizedDescription skProduct  =
-    sendMsg skProduct (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription skProduct =
+  sendMessage skProduct localizedDescriptionSelector
 
 -- | @- localizedTitle@
 localizedTitle :: IsSKProduct skProduct => skProduct -> IO (Id NSString)
-localizedTitle skProduct  =
-    sendMsg skProduct (mkSelector "localizedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedTitle skProduct =
+  sendMessage skProduct localizedTitleSelector
 
 -- | @- price@
 price :: IsSKProduct skProduct => skProduct -> IO (Id NSDecimalNumber)
-price skProduct  =
-    sendMsg skProduct (mkSelector "price") (retPtr retVoid) [] >>= retainedObject . castPtr
+price skProduct =
+  sendMessage skProduct priceSelector
 
 -- | @- priceLocale@
 priceLocale :: IsSKProduct skProduct => skProduct -> IO (Id NSLocale)
-priceLocale skProduct  =
-    sendMsg skProduct (mkSelector "priceLocale") (retPtr retVoid) [] >>= retainedObject . castPtr
+priceLocale skProduct =
+  sendMessage skProduct priceLocaleSelector
 
 -- | @- productIdentifier@
 productIdentifier :: IsSKProduct skProduct => skProduct -> IO (Id NSString)
-productIdentifier skProduct  =
-    sendMsg skProduct (mkSelector "productIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+productIdentifier skProduct =
+  sendMessage skProduct productIdentifierSelector
 
 -- | @- isDownloadable@
 isDownloadable :: IsSKProduct skProduct => skProduct -> IO Bool
-isDownloadable skProduct  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skProduct (mkSelector "isDownloadable") retCULong []
+isDownloadable skProduct =
+  sendMessage skProduct isDownloadableSelector
 
 -- | @- downloadable@
 downloadable :: IsSKProduct skProduct => skProduct -> IO Bool
-downloadable skProduct  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skProduct (mkSelector "downloadable") retCULong []
+downloadable skProduct =
+  sendMessage skProduct downloadableSelector
 
 -- | @- isFamilyShareable@
 isFamilyShareable :: IsSKProduct skProduct => skProduct -> IO Bool
-isFamilyShareable skProduct  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skProduct (mkSelector "isFamilyShareable") retCULong []
+isFamilyShareable skProduct =
+  sendMessage skProduct isFamilyShareableSelector
 
 -- | @- contentLengths@
 contentLengths :: IsSKProduct skProduct => skProduct -> IO (Id NSArray)
-contentLengths skProduct  =
-    sendMsg skProduct (mkSelector "contentLengths") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentLengths skProduct =
+  sendMessage skProduct contentLengthsSelector
 
 -- | @- downloadContentLengths@
 downloadContentLengths :: IsSKProduct skProduct => skProduct -> IO (Id NSArray)
-downloadContentLengths skProduct  =
-    sendMsg skProduct (mkSelector "downloadContentLengths") (retPtr retVoid) [] >>= retainedObject . castPtr
+downloadContentLengths skProduct =
+  sendMessage skProduct downloadContentLengthsSelector
 
 -- | @- contentVersion@
 contentVersion :: IsSKProduct skProduct => skProduct -> IO (Id NSString)
-contentVersion skProduct  =
-    sendMsg skProduct (mkSelector "contentVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentVersion skProduct =
+  sendMessage skProduct contentVersionSelector
 
 -- | @- downloadContentVersion@
 downloadContentVersion :: IsSKProduct skProduct => skProduct -> IO (Id NSString)
-downloadContentVersion skProduct  =
-    sendMsg skProduct (mkSelector "downloadContentVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+downloadContentVersion skProduct =
+  sendMessage skProduct downloadContentVersionSelector
 
 -- | @- subscriptionPeriod@
 subscriptionPeriod :: IsSKProduct skProduct => skProduct -> IO (Id SKProductSubscriptionPeriod)
-subscriptionPeriod skProduct  =
-    sendMsg skProduct (mkSelector "subscriptionPeriod") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionPeriod skProduct =
+  sendMessage skProduct subscriptionPeriodSelector
 
 -- | @- introductoryPrice@
 introductoryPrice :: IsSKProduct skProduct => skProduct -> IO (Id SKProductDiscount)
-introductoryPrice skProduct  =
-    sendMsg skProduct (mkSelector "introductoryPrice") (retPtr retVoid) [] >>= retainedObject . castPtr
+introductoryPrice skProduct =
+  sendMessage skProduct introductoryPriceSelector
 
 -- | @- subscriptionGroupIdentifier@
 subscriptionGroupIdentifier :: IsSKProduct skProduct => skProduct -> IO (Id NSString)
-subscriptionGroupIdentifier skProduct  =
-    sendMsg skProduct (mkSelector "subscriptionGroupIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionGroupIdentifier skProduct =
+  sendMessage skProduct subscriptionGroupIdentifierSelector
 
 -- | @- discounts@
 discounts :: IsSKProduct skProduct => skProduct -> IO (Id NSArray)
-discounts skProduct  =
-    sendMsg skProduct (mkSelector "discounts") (retPtr retVoid) [] >>= retainedObject . castPtr
+discounts skProduct =
+  sendMessage skProduct discountsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @localizedTitle@
-localizedTitleSelector :: Selector
+localizedTitleSelector :: Selector '[] (Id NSString)
 localizedTitleSelector = mkSelector "localizedTitle"
 
 -- | @Selector@ for @price@
-priceSelector :: Selector
+priceSelector :: Selector '[] (Id NSDecimalNumber)
 priceSelector = mkSelector "price"
 
 -- | @Selector@ for @priceLocale@
-priceLocaleSelector :: Selector
+priceLocaleSelector :: Selector '[] (Id NSLocale)
 priceLocaleSelector = mkSelector "priceLocale"
 
 -- | @Selector@ for @productIdentifier@
-productIdentifierSelector :: Selector
+productIdentifierSelector :: Selector '[] (Id NSString)
 productIdentifierSelector = mkSelector "productIdentifier"
 
 -- | @Selector@ for @isDownloadable@
-isDownloadableSelector :: Selector
+isDownloadableSelector :: Selector '[] Bool
 isDownloadableSelector = mkSelector "isDownloadable"
 
 -- | @Selector@ for @downloadable@
-downloadableSelector :: Selector
+downloadableSelector :: Selector '[] Bool
 downloadableSelector = mkSelector "downloadable"
 
 -- | @Selector@ for @isFamilyShareable@
-isFamilyShareableSelector :: Selector
+isFamilyShareableSelector :: Selector '[] Bool
 isFamilyShareableSelector = mkSelector "isFamilyShareable"
 
 -- | @Selector@ for @contentLengths@
-contentLengthsSelector :: Selector
+contentLengthsSelector :: Selector '[] (Id NSArray)
 contentLengthsSelector = mkSelector "contentLengths"
 
 -- | @Selector@ for @downloadContentLengths@
-downloadContentLengthsSelector :: Selector
+downloadContentLengthsSelector :: Selector '[] (Id NSArray)
 downloadContentLengthsSelector = mkSelector "downloadContentLengths"
 
 -- | @Selector@ for @contentVersion@
-contentVersionSelector :: Selector
+contentVersionSelector :: Selector '[] (Id NSString)
 contentVersionSelector = mkSelector "contentVersion"
 
 -- | @Selector@ for @downloadContentVersion@
-downloadContentVersionSelector :: Selector
+downloadContentVersionSelector :: Selector '[] (Id NSString)
 downloadContentVersionSelector = mkSelector "downloadContentVersion"
 
 -- | @Selector@ for @subscriptionPeriod@
-subscriptionPeriodSelector :: Selector
+subscriptionPeriodSelector :: Selector '[] (Id SKProductSubscriptionPeriod)
 subscriptionPeriodSelector = mkSelector "subscriptionPeriod"
 
 -- | @Selector@ for @introductoryPrice@
-introductoryPriceSelector :: Selector
+introductoryPriceSelector :: Selector '[] (Id SKProductDiscount)
 introductoryPriceSelector = mkSelector "introductoryPrice"
 
 -- | @Selector@ for @subscriptionGroupIdentifier@
-subscriptionGroupIdentifierSelector :: Selector
+subscriptionGroupIdentifierSelector :: Selector '[] (Id NSString)
 subscriptionGroupIdentifierSelector = mkSelector "subscriptionGroupIdentifier"
 
 -- | @Selector@ for @discounts@
-discountsSelector :: Selector
+discountsSelector :: Selector '[] (Id NSArray)
 discountsSelector = mkSelector "discounts"
 

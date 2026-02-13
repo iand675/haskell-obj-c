@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.WebKit.DOMHTMLOptionsCollection
   , setSelectedIndex
   , length_
   , setLength
-  , namedItemSelector
   , add_indexSelector
-  , removeSelector
   , itemSelector
-  , selectedIndexSelector
-  , setSelectedIndexSelector
   , lengthSelector
+  , namedItemSelector
+  , removeSelector
+  , selectedIndexSelector
   , setLengthSelector
+  , setSelectedIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,79 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- namedItem:@
 namedItem :: (IsDOMHTMLOptionsCollection domhtmlOptionsCollection, IsNSString name) => domhtmlOptionsCollection -> name -> IO (Id DOMNode)
-namedItem domhtmlOptionsCollection  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domhtmlOptionsCollection (mkSelector "namedItem:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+namedItem domhtmlOptionsCollection name =
+  sendMessage domhtmlOptionsCollection namedItemSelector (toNSString name)
 
 -- | @- add:index:@
 add_index :: (IsDOMHTMLOptionsCollection domhtmlOptionsCollection, IsDOMHTMLOptionElement option) => domhtmlOptionsCollection -> option -> CUInt -> IO ()
-add_index domhtmlOptionsCollection  option index =
-  withObjCPtr option $ \raw_option ->
-      sendMsg domhtmlOptionsCollection (mkSelector "add:index:") retVoid [argPtr (castPtr raw_option :: Ptr ()), argCUInt index]
+add_index domhtmlOptionsCollection option index =
+  sendMessage domhtmlOptionsCollection add_indexSelector (toDOMHTMLOptionElement option) index
 
 -- | @- remove:@
 remove :: IsDOMHTMLOptionsCollection domhtmlOptionsCollection => domhtmlOptionsCollection -> CUInt -> IO ()
-remove domhtmlOptionsCollection  index =
-    sendMsg domhtmlOptionsCollection (mkSelector "remove:") retVoid [argCUInt index]
+remove domhtmlOptionsCollection index =
+  sendMessage domhtmlOptionsCollection removeSelector index
 
 -- | @- item:@
 item :: IsDOMHTMLOptionsCollection domhtmlOptionsCollection => domhtmlOptionsCollection -> CUInt -> IO (Id DOMNode)
-item domhtmlOptionsCollection  index =
-    sendMsg domhtmlOptionsCollection (mkSelector "item:") (retPtr retVoid) [argCUInt index] >>= retainedObject . castPtr
+item domhtmlOptionsCollection index =
+  sendMessage domhtmlOptionsCollection itemSelector index
 
 -- | @- selectedIndex@
 selectedIndex :: IsDOMHTMLOptionsCollection domhtmlOptionsCollection => domhtmlOptionsCollection -> IO CInt
-selectedIndex domhtmlOptionsCollection  =
-    sendMsg domhtmlOptionsCollection (mkSelector "selectedIndex") retCInt []
+selectedIndex domhtmlOptionsCollection =
+  sendMessage domhtmlOptionsCollection selectedIndexSelector
 
 -- | @- setSelectedIndex:@
 setSelectedIndex :: IsDOMHTMLOptionsCollection domhtmlOptionsCollection => domhtmlOptionsCollection -> CInt -> IO ()
-setSelectedIndex domhtmlOptionsCollection  value =
-    sendMsg domhtmlOptionsCollection (mkSelector "setSelectedIndex:") retVoid [argCInt value]
+setSelectedIndex domhtmlOptionsCollection value =
+  sendMessage domhtmlOptionsCollection setSelectedIndexSelector value
 
 -- | @- length@
 length_ :: IsDOMHTMLOptionsCollection domhtmlOptionsCollection => domhtmlOptionsCollection -> IO CUInt
-length_ domhtmlOptionsCollection  =
-    sendMsg domhtmlOptionsCollection (mkSelector "length") retCUInt []
+length_ domhtmlOptionsCollection =
+  sendMessage domhtmlOptionsCollection lengthSelector
 
 -- | @- setLength:@
 setLength :: IsDOMHTMLOptionsCollection domhtmlOptionsCollection => domhtmlOptionsCollection -> CUInt -> IO ()
-setLength domhtmlOptionsCollection  value =
-    sendMsg domhtmlOptionsCollection (mkSelector "setLength:") retVoid [argCUInt value]
+setLength domhtmlOptionsCollection value =
+  sendMessage domhtmlOptionsCollection setLengthSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @namedItem:@
-namedItemSelector :: Selector
+namedItemSelector :: Selector '[Id NSString] (Id DOMNode)
 namedItemSelector = mkSelector "namedItem:"
 
 -- | @Selector@ for @add:index:@
-add_indexSelector :: Selector
+add_indexSelector :: Selector '[Id DOMHTMLOptionElement, CUInt] ()
 add_indexSelector = mkSelector "add:index:"
 
 -- | @Selector@ for @remove:@
-removeSelector :: Selector
+removeSelector :: Selector '[CUInt] ()
 removeSelector = mkSelector "remove:"
 
 -- | @Selector@ for @item:@
-itemSelector :: Selector
+itemSelector :: Selector '[CUInt] (Id DOMNode)
 itemSelector = mkSelector "item:"
 
 -- | @Selector@ for @selectedIndex@
-selectedIndexSelector :: Selector
+selectedIndexSelector :: Selector '[] CInt
 selectedIndexSelector = mkSelector "selectedIndex"
 
 -- | @Selector@ for @setSelectedIndex:@
-setSelectedIndexSelector :: Selector
+setSelectedIndexSelector :: Selector '[CInt] ()
 setSelectedIndexSelector = mkSelector "setSelectedIndex:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CUInt
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @setLength:@
-setLengthSelector :: Selector
+setLengthSelector :: Selector '[CUInt] ()
 setLengthSelector = mkSelector "setLength:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.Matter.MTRServerEndpoint
   , deviceTypes
   , accessGrants
   , serverClusters
-  , initSelector
-  , newSelector
-  , initWithEndpointID_deviceTypesSelector
-  , addAccessGrantSelector
-  , removeAccessGrantSelector
-  , addServerClusterSelector
-  , endpointIDSelector
-  , deviceTypesSelector
   , accessGrantsSelector
+  , addAccessGrantSelector
+  , addServerClusterSelector
+  , deviceTypesSelector
+  , endpointIDSelector
+  , initSelector
+  , initWithEndpointID_deviceTypesSelector
+  , newSelector
+  , removeAccessGrantSelector
   , serverClustersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,40 +48,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRServerEndpoint mtrServerEndpoint => mtrServerEndpoint -> IO (Id MTRServerEndpoint)
-init_ mtrServerEndpoint  =
-    sendMsg mtrServerEndpoint (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrServerEndpoint =
+  sendOwnedMessage mtrServerEndpoint initSelector
 
 -- | @+ new@
 new :: IO (Id MTRServerEndpoint)
 new  =
   do
     cls' <- getRequiredClass "MTRServerEndpoint"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The provided endpointID must be in the range 1-65535.  The list of device types provided must be nonempty (but may include vendor-specific device types).
 --
 -- ObjC selector: @- initWithEndpointID:deviceTypes:@
 initWithEndpointID_deviceTypes :: (IsMTRServerEndpoint mtrServerEndpoint, IsNSNumber endpointID, IsNSArray deviceTypes) => mtrServerEndpoint -> endpointID -> deviceTypes -> IO (Id MTRServerEndpoint)
-initWithEndpointID_deviceTypes mtrServerEndpoint  endpointID deviceTypes =
-  withObjCPtr endpointID $ \raw_endpointID ->
-    withObjCPtr deviceTypes $ \raw_deviceTypes ->
-        sendMsg mtrServerEndpoint (mkSelector "initWithEndpointID:deviceTypes:") (retPtr retVoid) [argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_deviceTypes :: Ptr ())] >>= ownedObject . castPtr
+initWithEndpointID_deviceTypes mtrServerEndpoint endpointID deviceTypes =
+  sendOwnedMessage mtrServerEndpoint initWithEndpointID_deviceTypesSelector (toNSNumber endpointID) (toNSArray deviceTypes)
 
 -- | Add an access grant to the endpoint.  If the same access grant is added multiple times, it will be treated as if it were added once (and removing it once will remove it).
 --
 -- ObjC selector: @- addAccessGrant:@
 addAccessGrant :: (IsMTRServerEndpoint mtrServerEndpoint, IsMTRAccessGrant accessGrant) => mtrServerEndpoint -> accessGrant -> IO ()
-addAccessGrant mtrServerEndpoint  accessGrant =
-  withObjCPtr accessGrant $ \raw_accessGrant ->
-      sendMsg mtrServerEndpoint (mkSelector "addAccessGrant:") retVoid [argPtr (castPtr raw_accessGrant :: Ptr ())]
+addAccessGrant mtrServerEndpoint accessGrant =
+  sendMessage mtrServerEndpoint addAccessGrantSelector (toMTRAccessGrant accessGrant)
 
 -- | Remove an access grant from the endpoint.
 --
 -- ObjC selector: @- removeAccessGrant:@
 removeAccessGrant :: (IsMTRServerEndpoint mtrServerEndpoint, IsMTRAccessGrant accessGrant) => mtrServerEndpoint -> accessGrant -> IO ()
-removeAccessGrant mtrServerEndpoint  accessGrant =
-  withObjCPtr accessGrant $ \raw_accessGrant ->
-      sendMsg mtrServerEndpoint (mkSelector "removeAccessGrant:") retVoid [argPtr (castPtr raw_accessGrant :: Ptr ())]
+removeAccessGrant mtrServerEndpoint accessGrant =
+  sendMessage mtrServerEndpoint removeAccessGrantSelector (toMTRAccessGrant accessGrant)
 
 -- | Add a server cluster to the endpoint.  This can only be done before the endpoint has been added to a controller.
 --
@@ -94,19 +87,18 @@ removeAccessGrant mtrServerEndpoint  accessGrant =
 --
 -- ObjC selector: @- addServerCluster:@
 addServerCluster :: (IsMTRServerEndpoint mtrServerEndpoint, IsMTRServerCluster serverCluster) => mtrServerEndpoint -> serverCluster -> IO Bool
-addServerCluster mtrServerEndpoint  serverCluster =
-  withObjCPtr serverCluster $ \raw_serverCluster ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrServerEndpoint (mkSelector "addServerCluster:") retCULong [argPtr (castPtr raw_serverCluster :: Ptr ())]
+addServerCluster mtrServerEndpoint serverCluster =
+  sendMessage mtrServerEndpoint addServerClusterSelector (toMTRServerCluster serverCluster)
 
 -- | @- endpointID@
 endpointID :: IsMTRServerEndpoint mtrServerEndpoint => mtrServerEndpoint -> IO (Id NSNumber)
-endpointID mtrServerEndpoint  =
-    sendMsg mtrServerEndpoint (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointID mtrServerEndpoint =
+  sendMessage mtrServerEndpoint endpointIDSelector
 
 -- | @- deviceTypes@
 deviceTypes :: IsMTRServerEndpoint mtrServerEndpoint => mtrServerEndpoint -> IO (Id NSArray)
-deviceTypes mtrServerEndpoint  =
-    sendMsg mtrServerEndpoint (mkSelector "deviceTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceTypes mtrServerEndpoint =
+  sendMessage mtrServerEndpoint deviceTypesSelector
 
 -- | The list of entities that are allowed to access all clusters on this endpoint.  If more fine-grained access control is desired, access grants should be defined on individual clusters.
 --
@@ -114,57 +106,57 @@ deviceTypes mtrServerEndpoint  =
 --
 -- ObjC selector: @- accessGrants@
 accessGrants :: IsMTRServerEndpoint mtrServerEndpoint => mtrServerEndpoint -> IO (Id NSArray)
-accessGrants mtrServerEndpoint  =
-    sendMsg mtrServerEndpoint (mkSelector "accessGrants") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessGrants mtrServerEndpoint =
+  sendMessage mtrServerEndpoint accessGrantsSelector
 
 -- | A list of server clusters supported on this endpoint.  The Descriptor cluster does not need to be included unless a TagList attribute is desired on it or it has a non-empty PartsList, or it needs to have cluster-specific access grants.  If not included, the Descriptor cluster will be generated automatically.
 --
 -- ObjC selector: @- serverClusters@
 serverClusters :: IsMTRServerEndpoint mtrServerEndpoint => mtrServerEndpoint -> IO (Id NSArray)
-serverClusters mtrServerEndpoint  =
-    sendMsg mtrServerEndpoint (mkSelector "serverClusters") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverClusters mtrServerEndpoint =
+  sendMessage mtrServerEndpoint serverClustersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRServerEndpoint)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRServerEndpoint)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEndpointID:deviceTypes:@
-initWithEndpointID_deviceTypesSelector :: Selector
+initWithEndpointID_deviceTypesSelector :: Selector '[Id NSNumber, Id NSArray] (Id MTRServerEndpoint)
 initWithEndpointID_deviceTypesSelector = mkSelector "initWithEndpointID:deviceTypes:"
 
 -- | @Selector@ for @addAccessGrant:@
-addAccessGrantSelector :: Selector
+addAccessGrantSelector :: Selector '[Id MTRAccessGrant] ()
 addAccessGrantSelector = mkSelector "addAccessGrant:"
 
 -- | @Selector@ for @removeAccessGrant:@
-removeAccessGrantSelector :: Selector
+removeAccessGrantSelector :: Selector '[Id MTRAccessGrant] ()
 removeAccessGrantSelector = mkSelector "removeAccessGrant:"
 
 -- | @Selector@ for @addServerCluster:@
-addServerClusterSelector :: Selector
+addServerClusterSelector :: Selector '[Id MTRServerCluster] Bool
 addServerClusterSelector = mkSelector "addServerCluster:"
 
 -- | @Selector@ for @endpointID@
-endpointIDSelector :: Selector
+endpointIDSelector :: Selector '[] (Id NSNumber)
 endpointIDSelector = mkSelector "endpointID"
 
 -- | @Selector@ for @deviceTypes@
-deviceTypesSelector :: Selector
+deviceTypesSelector :: Selector '[] (Id NSArray)
 deviceTypesSelector = mkSelector "deviceTypes"
 
 -- | @Selector@ for @accessGrants@
-accessGrantsSelector :: Selector
+accessGrantsSelector :: Selector '[] (Id NSArray)
 accessGrantsSelector = mkSelector "accessGrants"
 
 -- | @Selector@ for @serverClusters@
-serverClustersSelector :: Selector
+serverClustersSelector :: Selector '[] (Id NSArray)
 serverClustersSelector = mkSelector "serverClusters"
 

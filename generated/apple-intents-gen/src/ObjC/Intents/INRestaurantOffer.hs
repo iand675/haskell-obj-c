@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Intents.INRestaurantOffer
   , setOfferDetailText
   , offerIdentifier
   , setOfferIdentifier
-  , offerTitleTextSelector
-  , setOfferTitleTextSelector
   , offerDetailTextSelector
-  , setOfferDetailTextSelector
   , offerIdentifierSelector
+  , offerTitleTextSelector
+  , setOfferDetailTextSelector
   , setOfferIdentifierSelector
+  , setOfferTitleTextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- offerTitleText@
 offerTitleText :: IsINRestaurantOffer inRestaurantOffer => inRestaurantOffer -> IO (Id NSString)
-offerTitleText inRestaurantOffer  =
-    sendMsg inRestaurantOffer (mkSelector "offerTitleText") (retPtr retVoid) [] >>= retainedObject . castPtr
+offerTitleText inRestaurantOffer =
+  sendMessage inRestaurantOffer offerTitleTextSelector
 
 -- | @- setOfferTitleText:@
 setOfferTitleText :: (IsINRestaurantOffer inRestaurantOffer, IsNSString value) => inRestaurantOffer -> value -> IO ()
-setOfferTitleText inRestaurantOffer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRestaurantOffer (mkSelector "setOfferTitleText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOfferTitleText inRestaurantOffer value =
+  sendMessage inRestaurantOffer setOfferTitleTextSelector (toNSString value)
 
 -- | @- offerDetailText@
 offerDetailText :: IsINRestaurantOffer inRestaurantOffer => inRestaurantOffer -> IO (Id NSString)
-offerDetailText inRestaurantOffer  =
-    sendMsg inRestaurantOffer (mkSelector "offerDetailText") (retPtr retVoid) [] >>= retainedObject . castPtr
+offerDetailText inRestaurantOffer =
+  sendMessage inRestaurantOffer offerDetailTextSelector
 
 -- | @- setOfferDetailText:@
 setOfferDetailText :: (IsINRestaurantOffer inRestaurantOffer, IsNSString value) => inRestaurantOffer -> value -> IO ()
-setOfferDetailText inRestaurantOffer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRestaurantOffer (mkSelector "setOfferDetailText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOfferDetailText inRestaurantOffer value =
+  sendMessage inRestaurantOffer setOfferDetailTextSelector (toNSString value)
 
 -- | @- offerIdentifier@
 offerIdentifier :: IsINRestaurantOffer inRestaurantOffer => inRestaurantOffer -> IO (Id NSString)
-offerIdentifier inRestaurantOffer  =
-    sendMsg inRestaurantOffer (mkSelector "offerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+offerIdentifier inRestaurantOffer =
+  sendMessage inRestaurantOffer offerIdentifierSelector
 
 -- | @- setOfferIdentifier:@
 setOfferIdentifier :: (IsINRestaurantOffer inRestaurantOffer, IsNSString value) => inRestaurantOffer -> value -> IO ()
-setOfferIdentifier inRestaurantOffer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRestaurantOffer (mkSelector "setOfferIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOfferIdentifier inRestaurantOffer value =
+  sendMessage inRestaurantOffer setOfferIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @offerTitleText@
-offerTitleTextSelector :: Selector
+offerTitleTextSelector :: Selector '[] (Id NSString)
 offerTitleTextSelector = mkSelector "offerTitleText"
 
 -- | @Selector@ for @setOfferTitleText:@
-setOfferTitleTextSelector :: Selector
+setOfferTitleTextSelector :: Selector '[Id NSString] ()
 setOfferTitleTextSelector = mkSelector "setOfferTitleText:"
 
 -- | @Selector@ for @offerDetailText@
-offerDetailTextSelector :: Selector
+offerDetailTextSelector :: Selector '[] (Id NSString)
 offerDetailTextSelector = mkSelector "offerDetailText"
 
 -- | @Selector@ for @setOfferDetailText:@
-setOfferDetailTextSelector :: Selector
+setOfferDetailTextSelector :: Selector '[Id NSString] ()
 setOfferDetailTextSelector = mkSelector "setOfferDetailText:"
 
 -- | @Selector@ for @offerIdentifier@
-offerIdentifierSelector :: Selector
+offerIdentifierSelector :: Selector '[] (Id NSString)
 offerIdentifierSelector = mkSelector "offerIdentifier"
 
 -- | @Selector@ for @setOfferIdentifier:@
-setOfferIdentifierSelector :: Selector
+setOfferIdentifierSelector :: Selector '[Id NSString] ()
 setOfferIdentifierSelector = mkSelector "setOfferIdentifier:"
 

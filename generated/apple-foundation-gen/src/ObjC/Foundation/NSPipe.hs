@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Foundation.NSPipe
   , pipe
   , fileHandleForReading
   , fileHandleForWriting
-  , pipeSelector
   , fileHandleForReadingSelector
   , fileHandleForWritingSelector
+  , pipeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,31 +32,31 @@ pipe :: IO (Id NSPipe)
 pipe  =
   do
     cls' <- getRequiredClass "NSPipe"
-    sendClassMsg cls' (mkSelector "pipe") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pipeSelector
 
 -- | @- fileHandleForReading@
 fileHandleForReading :: IsNSPipe nsPipe => nsPipe -> IO (Id NSFileHandle)
-fileHandleForReading nsPipe  =
-    sendMsg nsPipe (mkSelector "fileHandleForReading") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileHandleForReading nsPipe =
+  sendMessage nsPipe fileHandleForReadingSelector
 
 -- | @- fileHandleForWriting@
 fileHandleForWriting :: IsNSPipe nsPipe => nsPipe -> IO (Id NSFileHandle)
-fileHandleForWriting nsPipe  =
-    sendMsg nsPipe (mkSelector "fileHandleForWriting") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileHandleForWriting nsPipe =
+  sendMessage nsPipe fileHandleForWritingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pipe@
-pipeSelector :: Selector
+pipeSelector :: Selector '[] (Id NSPipe)
 pipeSelector = mkSelector "pipe"
 
 -- | @Selector@ for @fileHandleForReading@
-fileHandleForReadingSelector :: Selector
+fileHandleForReadingSelector :: Selector '[] (Id NSFileHandle)
 fileHandleForReadingSelector = mkSelector "fileHandleForReading"
 
 -- | @Selector@ for @fileHandleForWriting@
-fileHandleForWritingSelector :: Selector
+fileHandleForWritingSelector :: Selector '[] (Id NSFileHandle)
 fileHandleForWritingSelector = mkSelector "fileHandleForWriting"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.PassKit.PKTransitPassProperties
   , expirationDate
   , blocked
   , inStation
-  , transitBalanceSelector
-  , transitBalanceCurrencyCodeSelector
   , blacklistedSelector
-  , expirationDateSelector
   , blockedSelector
+  , expirationDateSelector
   , inStationSelector
+  , transitBalanceCurrencyCodeSelector
+  , transitBalanceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,59 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- transitBalance@
 transitBalance :: IsPKTransitPassProperties pkTransitPassProperties => pkTransitPassProperties -> IO (Id NSDecimalNumber)
-transitBalance pkTransitPassProperties  =
-    sendMsg pkTransitPassProperties (mkSelector "transitBalance") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitBalance pkTransitPassProperties =
+  sendMessage pkTransitPassProperties transitBalanceSelector
 
 -- | @- transitBalanceCurrencyCode@
 transitBalanceCurrencyCode :: IsPKTransitPassProperties pkTransitPassProperties => pkTransitPassProperties -> IO (Id NSString)
-transitBalanceCurrencyCode pkTransitPassProperties  =
-    sendMsg pkTransitPassProperties (mkSelector "transitBalanceCurrencyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitBalanceCurrencyCode pkTransitPassProperties =
+  sendMessage pkTransitPassProperties transitBalanceCurrencyCodeSelector
 
 -- | @- blacklisted@
 blacklisted :: IsPKTransitPassProperties pkTransitPassProperties => pkTransitPassProperties -> IO Bool
-blacklisted pkTransitPassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkTransitPassProperties (mkSelector "blacklisted") retCULong []
+blacklisted pkTransitPassProperties =
+  sendMessage pkTransitPassProperties blacklistedSelector
 
 -- | @- expirationDate@
 expirationDate :: IsPKTransitPassProperties pkTransitPassProperties => pkTransitPassProperties -> IO (Id NSDate)
-expirationDate pkTransitPassProperties  =
-    sendMsg pkTransitPassProperties (mkSelector "expirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationDate pkTransitPassProperties =
+  sendMessage pkTransitPassProperties expirationDateSelector
 
 -- | @- blocked@
 blocked :: IsPKTransitPassProperties pkTransitPassProperties => pkTransitPassProperties -> IO Bool
-blocked pkTransitPassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkTransitPassProperties (mkSelector "blocked") retCULong []
+blocked pkTransitPassProperties =
+  sendMessage pkTransitPassProperties blockedSelector
 
 -- | @- inStation@
 inStation :: IsPKTransitPassProperties pkTransitPassProperties => pkTransitPassProperties -> IO Bool
-inStation pkTransitPassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkTransitPassProperties (mkSelector "inStation") retCULong []
+inStation pkTransitPassProperties =
+  sendMessage pkTransitPassProperties inStationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @transitBalance@
-transitBalanceSelector :: Selector
+transitBalanceSelector :: Selector '[] (Id NSDecimalNumber)
 transitBalanceSelector = mkSelector "transitBalance"
 
 -- | @Selector@ for @transitBalanceCurrencyCode@
-transitBalanceCurrencyCodeSelector :: Selector
+transitBalanceCurrencyCodeSelector :: Selector '[] (Id NSString)
 transitBalanceCurrencyCodeSelector = mkSelector "transitBalanceCurrencyCode"
 
 -- | @Selector@ for @blacklisted@
-blacklistedSelector :: Selector
+blacklistedSelector :: Selector '[] Bool
 blacklistedSelector = mkSelector "blacklisted"
 
 -- | @Selector@ for @expirationDate@
-expirationDateSelector :: Selector
+expirationDateSelector :: Selector '[] (Id NSDate)
 expirationDateSelector = mkSelector "expirationDate"
 
 -- | @Selector@ for @blocked@
-blockedSelector :: Selector
+blockedSelector :: Selector '[] Bool
 blockedSelector = mkSelector "blocked"
 
 -- | @Selector@ for @inStation@
-inStationSelector :: Selector
+inStationSelector :: Selector '[] Bool
 inStationSelector = mkSelector "inStation"
 

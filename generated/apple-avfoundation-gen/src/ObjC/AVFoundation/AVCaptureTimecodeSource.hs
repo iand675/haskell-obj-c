@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,15 +27,11 @@ module ObjC.AVFoundation.AVCaptureTimecodeSource
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,8 +45,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- displayName@
 displayName :: IsAVCaptureTimecodeSource avCaptureTimecodeSource => avCaptureTimecodeSource -> IO (Id NSString)
-displayName avCaptureTimecodeSource  =
-    sendMsg avCaptureTimecodeSource (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName avCaptureTimecodeSource =
+  sendMessage avCaptureTimecodeSource displayNameSelector
 
 -- | The type of timecode source.
 --
@@ -57,8 +54,8 @@ displayName avCaptureTimecodeSource  =
 --
 -- ObjC selector: @- type@
 type_ :: IsAVCaptureTimecodeSource avCaptureTimecodeSource => avCaptureTimecodeSource -> IO AVCaptureTimecodeSourceType
-type_ avCaptureTimecodeSource  =
-    fmap (coerce :: CLong -> AVCaptureTimecodeSourceType) $ sendMsg avCaptureTimecodeSource (mkSelector "type") retCLong []
+type_ avCaptureTimecodeSource =
+  sendMessage avCaptureTimecodeSource typeSelector
 
 -- | A unique identifier for the timecode source.
 --
@@ -68,22 +65,22 @@ type_ avCaptureTimecodeSource  =
 --
 -- ObjC selector: @- uuid@
 uuid :: IsAVCaptureTimecodeSource avCaptureTimecodeSource => avCaptureTimecodeSource -> IO (Id NSUUID)
-uuid avCaptureTimecodeSource  =
-    sendMsg avCaptureTimecodeSource (mkSelector "uuid") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid avCaptureTimecodeSource =
+  sendMessage avCaptureTimecodeSource uuidSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] AVCaptureTimecodeSourceType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @uuid@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "uuid"
 

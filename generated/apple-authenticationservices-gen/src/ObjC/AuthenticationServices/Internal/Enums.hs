@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AuthenticationServices.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @ASAuthorizationAppleIDButtonStyle@
 newtype ASAuthorizationAppleIDButtonStyle = ASAuthorizationAppleIDButtonStyle CLong
@@ -24,6 +27,16 @@ pattern ASAuthorizationAppleIDButtonStyleWhiteOutline = ASAuthorizationAppleIDBu
 
 pattern ASAuthorizationAppleIDButtonStyleBlack :: ASAuthorizationAppleIDButtonStyle
 pattern ASAuthorizationAppleIDButtonStyleBlack = ASAuthorizationAppleIDButtonStyle 2
+
+instance ObjCArgument ASAuthorizationAppleIDButtonStyle where
+  withObjCArg (ASAuthorizationAppleIDButtonStyle x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationAppleIDButtonStyle where
+  type RawReturn ASAuthorizationAppleIDButtonStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationAppleIDButtonStyle x)
+  fromOwned x = pure (ASAuthorizationAppleIDButtonStyle x)
 
 -- | @ASAuthorizationAppleIDButtonType@
 newtype ASAuthorizationAppleIDButtonType = ASAuthorizationAppleIDButtonType CLong
@@ -41,6 +54,16 @@ pattern ASAuthorizationAppleIDButtonTypeSignUp = ASAuthorizationAppleIDButtonTyp
 
 pattern ASAuthorizationAppleIDButtonTypeDefault :: ASAuthorizationAppleIDButtonType
 pattern ASAuthorizationAppleIDButtonTypeDefault = ASAuthorizationAppleIDButtonType 0
+
+instance ObjCArgument ASAuthorizationAppleIDButtonType where
+  withObjCArg (ASAuthorizationAppleIDButtonType x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationAppleIDButtonType where
+  type RawReturn ASAuthorizationAppleIDButtonType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationAppleIDButtonType x)
+  fromOwned x = pure (ASAuthorizationAppleIDButtonType x)
 
 -- | ASAuthorizationAppleIDProviderCredentialState
 --
@@ -68,6 +91,16 @@ pattern ASAuthorizationAppleIDProviderCredentialNotFound = ASAuthorizationAppleI
 pattern ASAuthorizationAppleIDProviderCredentialTransferred :: ASAuthorizationAppleIDProviderCredentialState
 pattern ASAuthorizationAppleIDProviderCredentialTransferred = ASAuthorizationAppleIDProviderCredentialState 3
 
+instance ObjCArgument ASAuthorizationAppleIDProviderCredentialState where
+  withObjCArg (ASAuthorizationAppleIDProviderCredentialState x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationAppleIDProviderCredentialState where
+  type RawReturn ASAuthorizationAppleIDProviderCredentialState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationAppleIDProviderCredentialState x)
+  fromOwned x = pure (ASAuthorizationAppleIDProviderCredentialState x)
+
 -- | @ASAuthorizationControllerRequestOptions@ (bitmask)
 newtype ASAuthorizationControllerRequestOptions = ASAuthorizationControllerRequestOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -81,6 +114,16 @@ instance Monoid ASAuthorizationControllerRequestOptions where
 
 pattern ASAuthorizationControllerRequestOptionPreferImmediatelyAvailableCredentials :: ASAuthorizationControllerRequestOptions
 pattern ASAuthorizationControllerRequestOptionPreferImmediatelyAvailableCredentials = ASAuthorizationControllerRequestOptions 1
+
+instance ObjCArgument ASAuthorizationControllerRequestOptions where
+  withObjCArg (ASAuthorizationControllerRequestOptions x) k = k (argCULong x)
+
+instance ObjCReturn ASAuthorizationControllerRequestOptions where
+  type RawReturn ASAuthorizationControllerRequestOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationControllerRequestOptions x)
+  fromOwned x = pure (ASAuthorizationControllerRequestOptions x)
 
 -- | @ASAuthorizationError@
 newtype ASAuthorizationError = ASAuthorizationError CLong
@@ -120,6 +163,16 @@ pattern ASAuthorizationErrorPreferSignInWithApple = ASAuthorizationError 1009
 pattern ASAuthorizationErrorDeviceNotConfiguredForPasskeyCreation :: ASAuthorizationError
 pattern ASAuthorizationErrorDeviceNotConfiguredForPasskeyCreation = ASAuthorizationError 1010
 
+instance ObjCArgument ASAuthorizationError where
+  withObjCArg (ASAuthorizationError x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationError where
+  type RawReturn ASAuthorizationError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationError x)
+  fromOwned x = pure (ASAuthorizationError x)
+
 -- | @ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle@
 newtype ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle = ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -130,6 +183,16 @@ pattern ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyleStanda
 
 pattern ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyleConditional :: ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle
 pattern ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyleConditional = ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle 1
+
+instance ObjCArgument ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle where
+  withObjCArg (ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle where
+  type RawReturn ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle x)
+  fromOwned x = pure (ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle x)
 
 -- | @ASAuthorizationProviderExtensionAuthenticationMethod@
 newtype ASAuthorizationProviderExtensionAuthenticationMethod = ASAuthorizationProviderExtensionAuthenticationMethod CLong
@@ -145,6 +208,16 @@ pattern ASAuthorizationProviderExtensionAuthenticationMethodUserSecureEnclaveKey
 pattern ASAuthorizationProviderExtensionAuthenticationMethodSmartCard :: ASAuthorizationProviderExtensionAuthenticationMethod
 pattern ASAuthorizationProviderExtensionAuthenticationMethodSmartCard = ASAuthorizationProviderExtensionAuthenticationMethod 3
 
+instance ObjCArgument ASAuthorizationProviderExtensionAuthenticationMethod where
+  withObjCArg (ASAuthorizationProviderExtensionAuthenticationMethod x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationProviderExtensionAuthenticationMethod where
+  type RawReturn ASAuthorizationProviderExtensionAuthenticationMethod = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationProviderExtensionAuthenticationMethod x)
+  fromOwned x = pure (ASAuthorizationProviderExtensionAuthenticationMethod x)
+
 -- | @ASAuthorizationProviderExtensionFederationType@
 newtype ASAuthorizationProviderExtensionFederationType = ASAuthorizationProviderExtensionFederationType CLong
   deriving stock (Eq, Ord, Show)
@@ -158,6 +231,16 @@ pattern ASAuthorizationProviderExtensionFederationTypeWSTrust = ASAuthorizationP
 
 pattern ASAuthorizationProviderExtensionFederationTypeDynamicWSTrust :: ASAuthorizationProviderExtensionFederationType
 pattern ASAuthorizationProviderExtensionFederationTypeDynamicWSTrust = ASAuthorizationProviderExtensionFederationType 2
+
+instance ObjCArgument ASAuthorizationProviderExtensionFederationType where
+  withObjCArg (ASAuthorizationProviderExtensionFederationType x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationProviderExtensionFederationType where
+  type RawReturn ASAuthorizationProviderExtensionFederationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationProviderExtensionFederationType x)
+  fromOwned x = pure (ASAuthorizationProviderExtensionFederationType x)
 
 -- | @ASAuthorizationProviderExtensionKeyType@
 newtype ASAuthorizationProviderExtensionKeyType = ASAuthorizationProviderExtensionKeyType CLong
@@ -188,6 +271,16 @@ pattern ASAuthorizationProviderExtensionKeyTypeCurrentDeviceEncryption = ASAutho
 pattern ASAuthorizationProviderExtensionKeyTypeUserSmartCard :: ASAuthorizationProviderExtensionKeyType
 pattern ASAuthorizationProviderExtensionKeyTypeUserSmartCard = ASAuthorizationProviderExtensionKeyType 20
 
+instance ObjCArgument ASAuthorizationProviderExtensionKeyType where
+  withObjCArg (ASAuthorizationProviderExtensionKeyType x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationProviderExtensionKeyType where
+  type RawReturn ASAuthorizationProviderExtensionKeyType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationProviderExtensionKeyType x)
+  fromOwned x = pure (ASAuthorizationProviderExtensionKeyType x)
+
 -- | @ASAuthorizationProviderExtensionPlatformSSOProtocolVersion@
 newtype ASAuthorizationProviderExtensionPlatformSSOProtocolVersion = ASAuthorizationProviderExtensionPlatformSSOProtocolVersion CLong
   deriving stock (Eq, Ord, Show)
@@ -198,6 +291,16 @@ pattern ASAuthorizationProviderExtensionPlatformSSOProtocolVersion1_0 = ASAuthor
 
 pattern ASAuthorizationProviderExtensionPlatformSSOProtocolVersion2_0 :: ASAuthorizationProviderExtensionPlatformSSOProtocolVersion
 pattern ASAuthorizationProviderExtensionPlatformSSOProtocolVersion2_0 = ASAuthorizationProviderExtensionPlatformSSOProtocolVersion 1
+
+instance ObjCArgument ASAuthorizationProviderExtensionPlatformSSOProtocolVersion where
+  withObjCArg (ASAuthorizationProviderExtensionPlatformSSOProtocolVersion x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationProviderExtensionPlatformSSOProtocolVersion where
+  type RawReturn ASAuthorizationProviderExtensionPlatformSSOProtocolVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationProviderExtensionPlatformSSOProtocolVersion x)
+  fromOwned x = pure (ASAuthorizationProviderExtensionPlatformSSOProtocolVersion x)
 
 -- | @ASAuthorizationProviderExtensionRegistrationResult@
 newtype ASAuthorizationProviderExtensionRegistrationResult = ASAuthorizationProviderExtensionRegistrationResult CLong
@@ -215,6 +318,16 @@ pattern ASAuthorizationProviderExtensionRegistrationResultUserInterfaceRequired 
 
 pattern ASAuthorizationProviderExtensionRegistrationResultFailedNoRetry :: ASAuthorizationProviderExtensionRegistrationResult
 pattern ASAuthorizationProviderExtensionRegistrationResultFailedNoRetry = ASAuthorizationProviderExtensionRegistrationResult 3
+
+instance ObjCArgument ASAuthorizationProviderExtensionRegistrationResult where
+  withObjCArg (ASAuthorizationProviderExtensionRegistrationResult x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationProviderExtensionRegistrationResult where
+  type RawReturn ASAuthorizationProviderExtensionRegistrationResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationProviderExtensionRegistrationResult x)
+  fromOwned x = pure (ASAuthorizationProviderExtensionRegistrationResult x)
 
 -- | @ASAuthorizationProviderExtensionRequestOptions@ (bitmask)
 newtype ASAuthorizationProviderExtensionRequestOptions = ASAuthorizationProviderExtensionRequestOptions CULong
@@ -251,6 +364,16 @@ pattern ASAuthorizationProviderExtensionRequestOptionsUserKeyInvalid = ASAuthori
 pattern ASAuthorizationProviderExtensionRequestOptionsSetupAssistant :: ASAuthorizationProviderExtensionRequestOptions
 pattern ASAuthorizationProviderExtensionRequestOptionsSetupAssistant = ASAuthorizationProviderExtensionRequestOptions 64
 
+instance ObjCArgument ASAuthorizationProviderExtensionRequestOptions where
+  withObjCArg (ASAuthorizationProviderExtensionRequestOptions x) k = k (argCULong x)
+
+instance ObjCReturn ASAuthorizationProviderExtensionRequestOptions where
+  type RawReturn ASAuthorizationProviderExtensionRequestOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationProviderExtensionRequestOptions x)
+  fromOwned x = pure (ASAuthorizationProviderExtensionRequestOptions x)
+
 -- | @ASAuthorizationProviderExtensionSupportedGrantTypes@ (bitmask)
 newtype ASAuthorizationProviderExtensionSupportedGrantTypes = ASAuthorizationProviderExtensionSupportedGrantTypes CLong
   deriving stock (Eq, Ord, Show)
@@ -276,6 +399,16 @@ pattern ASAuthorizationProviderExtensionSupportedGrantTypesSAML1_1 = ASAuthoriza
 
 pattern ASAuthorizationProviderExtensionSupportedGrantTypesSAML2_0 :: ASAuthorizationProviderExtensionSupportedGrantTypes
 pattern ASAuthorizationProviderExtensionSupportedGrantTypesSAML2_0 = ASAuthorizationProviderExtensionSupportedGrantTypes 8
+
+instance ObjCArgument ASAuthorizationProviderExtensionSupportedGrantTypes where
+  withObjCArg (ASAuthorizationProviderExtensionSupportedGrantTypes x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationProviderExtensionSupportedGrantTypes where
+  type RawReturn ASAuthorizationProviderExtensionSupportedGrantTypes = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationProviderExtensionSupportedGrantTypes x)
+  fromOwned x = pure (ASAuthorizationProviderExtensionSupportedGrantTypes x)
 
 -- | @ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy@ (bitmask)
 newtype ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy = ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy CULong
@@ -303,6 +436,16 @@ pattern ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicyReuse
 pattern ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicyPasswordFallback :: ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy
 pattern ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicyPasswordFallback = ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy 8
 
+instance ObjCArgument ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy where
+  withObjCArg (ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy x) k = k (argCULong x)
+
+instance ObjCReturn ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy where
+  type RawReturn ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy x)
+  fromOwned x = pure (ASAuthorizationProviderExtensionUserSecureEnclaveKeyBiometricPolicy x)
+
 -- | @ASAuthorizationPublicKeyCredentialAttachment@
 newtype ASAuthorizationPublicKeyCredentialAttachment = ASAuthorizationPublicKeyCredentialAttachment CLong
   deriving stock (Eq, Ord, Show)
@@ -313,6 +456,16 @@ pattern ASAuthorizationPublicKeyCredentialAttachmentPlatform = ASAuthorizationPu
 
 pattern ASAuthorizationPublicKeyCredentialAttachmentCrossPlatform :: ASAuthorizationPublicKeyCredentialAttachment
 pattern ASAuthorizationPublicKeyCredentialAttachmentCrossPlatform = ASAuthorizationPublicKeyCredentialAttachment 1
+
+instance ObjCArgument ASAuthorizationPublicKeyCredentialAttachment where
+  withObjCArg (ASAuthorizationPublicKeyCredentialAttachment x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationPublicKeyCredentialAttachment where
+  type RawReturn ASAuthorizationPublicKeyCredentialAttachment = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationPublicKeyCredentialAttachment x)
+  fromOwned x = pure (ASAuthorizationPublicKeyCredentialAttachment x)
 
 -- | @ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation@
 newtype ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation = ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation CLong
@@ -325,6 +478,16 @@ pattern ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperationRead = ASAu
 pattern ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperationWrite :: ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation
 pattern ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperationWrite = ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation 1
 
+instance ObjCArgument ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation where
+  withObjCArg (ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation where
+  type RawReturn ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation x)
+  fromOwned x = pure (ASAuthorizationPublicKeyCredentialLargeBlobAssertionOperation x)
+
 -- | @ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement@
 newtype ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement = ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement CLong
   deriving stock (Eq, Ord, Show)
@@ -335,6 +498,16 @@ pattern ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirementRequired = 
 
 pattern ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirementPreferred :: ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement
 pattern ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirementPreferred = ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement 1
+
+instance ObjCArgument ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement where
+  withObjCArg (ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement where
+  type RawReturn ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement x)
+  fromOwned x = pure (ASAuthorizationPublicKeyCredentialLargeBlobSupportRequirement x)
 
 -- | @ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState@
 newtype ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState = ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState CLong
@@ -349,6 +522,16 @@ pattern ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationStateDen
 
 pattern ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationStateNotDetermined :: ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState
 pattern ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationStateNotDetermined = ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState 2
+
+instance ObjCArgument ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState where
+  withObjCArg (ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState x) k = k (argCLong x)
+
+instance ObjCReturn ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState where
+  type RawReturn ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState x)
+  fromOwned x = pure (ASAuthorizationWebBrowserPublicKeyCredentialManagerAuthorizationState x)
 
 -- | ASCredentialIdentityStoreErrorCode
 --
@@ -370,6 +553,16 @@ pattern ASCredentialIdentityStoreErrorCodeStoreDisabled = ASCredentialIdentitySt
 
 pattern ASCredentialIdentityStoreErrorCodeStoreBusy :: ASCredentialIdentityStoreErrorCode
 pattern ASCredentialIdentityStoreErrorCodeStoreBusy = ASCredentialIdentityStoreErrorCode 2
+
+instance ObjCArgument ASCredentialIdentityStoreErrorCode where
+  withObjCArg (ASCredentialIdentityStoreErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ASCredentialIdentityStoreErrorCode where
+  type RawReturn ASCredentialIdentityStoreErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASCredentialIdentityStoreErrorCode x)
+  fromOwned x = pure (ASCredentialIdentityStoreErrorCode x)
 
 -- | @ASCredentialIdentityTypes@ (bitmask)
 newtype ASCredentialIdentityTypes = ASCredentialIdentityTypes CULong
@@ -393,6 +586,16 @@ pattern ASCredentialIdentityTypesPasskey = ASCredentialIdentityTypes 2
 
 pattern ASCredentialIdentityTypesOneTimeCode :: ASCredentialIdentityTypes
 pattern ASCredentialIdentityTypesOneTimeCode = ASCredentialIdentityTypes 4
+
+instance ObjCArgument ASCredentialIdentityTypes where
+  withObjCArg (ASCredentialIdentityTypes x) k = k (argCULong x)
+
+instance ObjCReturn ASCredentialIdentityTypes where
+  type RawReturn ASCredentialIdentityTypes = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASCredentialIdentityTypes x)
+  fromOwned x = pure (ASCredentialIdentityTypes x)
 
 -- | ASCredentialRequestType
 --
@@ -420,6 +623,16 @@ pattern ASCredentialRequestTypePasskeyRegistration = ASCredentialRequestType 2
 pattern ASCredentialRequestTypeOneTimeCode :: ASCredentialRequestType
 pattern ASCredentialRequestTypeOneTimeCode = ASCredentialRequestType 3
 
+instance ObjCArgument ASCredentialRequestType where
+  withObjCArg (ASCredentialRequestType x) k = k (argCLong x)
+
+instance ObjCReturn ASCredentialRequestType where
+  type RawReturn ASCredentialRequestType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASCredentialRequestType x)
+  fromOwned x = pure (ASCredentialRequestType x)
+
 -- | ASCredentialServiceIdentifierType
 --
 -- The type of value represented by the service identifier.
@@ -441,6 +654,16 @@ pattern ASCredentialServiceIdentifierTypeURL = ASCredentialServiceIdentifierType
 pattern ASCredentialServiceIdentifierTypeApp :: ASCredentialServiceIdentifierType
 pattern ASCredentialServiceIdentifierTypeApp = ASCredentialServiceIdentifierType 2
 
+instance ObjCArgument ASCredentialServiceIdentifierType where
+  withObjCArg (ASCredentialServiceIdentifierType x) k = k (argCLong x)
+
+instance ObjCReturn ASCredentialServiceIdentifierType where
+  type RawReturn ASCredentialServiceIdentifierType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASCredentialServiceIdentifierType x)
+  fromOwned x = pure (ASCredentialServiceIdentifierType x)
+
 -- | @ASExtensionErrorCode@
 newtype ASExtensionErrorCode = ASExtensionErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -461,6 +684,16 @@ pattern ASExtensionErrorCodeCredentialIdentityNotFound = ASExtensionErrorCode 10
 pattern ASExtensionErrorCodeMatchedExcludedCredential :: ASExtensionErrorCode
 pattern ASExtensionErrorCodeMatchedExcludedCredential = ASExtensionErrorCode 102
 
+instance ObjCArgument ASExtensionErrorCode where
+  withObjCArg (ASExtensionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ASExtensionErrorCode where
+  type RawReturn ASExtensionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASExtensionErrorCode x)
+  fromOwned x = pure (ASExtensionErrorCode x)
+
 -- | @ASPublicKeyCredentialClientDataCrossOriginValue@
 newtype ASPublicKeyCredentialClientDataCrossOriginValue = ASPublicKeyCredentialClientDataCrossOriginValue CLong
   deriving stock (Eq, Ord, Show)
@@ -475,6 +708,16 @@ pattern ASPublicKeyCredentialClientDataCrossOriginValueCrossOrigin = ASPublicKey
 pattern ASPublicKeyCredentialClientDataCrossOriginValueSameOriginWithAncestors :: ASPublicKeyCredentialClientDataCrossOriginValue
 pattern ASPublicKeyCredentialClientDataCrossOriginValueSameOriginWithAncestors = ASPublicKeyCredentialClientDataCrossOriginValue 2
 
+instance ObjCArgument ASPublicKeyCredentialClientDataCrossOriginValue where
+  withObjCArg (ASPublicKeyCredentialClientDataCrossOriginValue x) k = k (argCLong x)
+
+instance ObjCReturn ASPublicKeyCredentialClientDataCrossOriginValue where
+  type RawReturn ASPublicKeyCredentialClientDataCrossOriginValue = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASPublicKeyCredentialClientDataCrossOriginValue x)
+  fromOwned x = pure (ASPublicKeyCredentialClientDataCrossOriginValue x)
+
 -- | @ASSavePasswordRequestEvent@
 newtype ASSavePasswordRequestEvent = ASSavePasswordRequestEvent CLong
   deriving stock (Eq, Ord, Show)
@@ -488,6 +731,16 @@ pattern ASSavePasswordRequestEventFormDidDisappear = ASSavePasswordRequestEvent 
 
 pattern ASSavePasswordRequestEventGeneratedPasswordFilled :: ASSavePasswordRequestEvent
 pattern ASSavePasswordRequestEventGeneratedPasswordFilled = ASSavePasswordRequestEvent 2
+
+instance ObjCArgument ASSavePasswordRequestEvent where
+  withObjCArg (ASSavePasswordRequestEvent x) k = k (argCLong x)
+
+instance ObjCReturn ASSavePasswordRequestEvent where
+  type RawReturn ASSavePasswordRequestEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASSavePasswordRequestEvent x)
+  fromOwned x = pure (ASSavePasswordRequestEvent x)
 
 -- | ASUserAgeRange
 --
@@ -510,6 +763,16 @@ pattern ASUserAgeRangeChild = ASUserAgeRange 1
 pattern ASUserAgeRangeNotChild :: ASUserAgeRange
 pattern ASUserAgeRangeNotChild = ASUserAgeRange 2
 
+instance ObjCArgument ASUserAgeRange where
+  withObjCArg (ASUserAgeRange x) k = k (argCLong x)
+
+instance ObjCReturn ASUserAgeRange where
+  type RawReturn ASUserAgeRange = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASUserAgeRange x)
+  fromOwned x = pure (ASUserAgeRange x)
+
 -- | ASUserDetectionStatus
 --
 -- ASUserDetectionStatusUnsupported Not supported on current platform, ignore the value
@@ -530,6 +793,16 @@ pattern ASUserDetectionStatusUnknown = ASUserDetectionStatus 1
 
 pattern ASUserDetectionStatusLikelyReal :: ASUserDetectionStatus
 pattern ASUserDetectionStatusLikelyReal = ASUserDetectionStatus 2
+
+instance ObjCArgument ASUserDetectionStatus where
+  withObjCArg (ASUserDetectionStatus x) k = k (argCLong x)
+
+instance ObjCReturn ASUserDetectionStatus where
+  type RawReturn ASUserDetectionStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASUserDetectionStatus x)
+  fromOwned x = pure (ASUserDetectionStatus x)
 
 -- | ASWebAuthenticationSessionErrorCode
 --
@@ -559,3 +832,13 @@ pattern ASWebAuthenticationSessionErrorCodePresentationContextNotProvided = ASWe
 
 pattern ASWebAuthenticationSessionErrorCodePresentationContextInvalid :: ASWebAuthenticationSessionErrorCode
 pattern ASWebAuthenticationSessionErrorCodePresentationContextInvalid = ASWebAuthenticationSessionErrorCode 3
+
+instance ObjCArgument ASWebAuthenticationSessionErrorCode where
+  withObjCArg (ASWebAuthenticationSessionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn ASWebAuthenticationSessionErrorCode where
+  type RawReturn ASWebAuthenticationSessionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ASWebAuthenticationSessionErrorCode x)
+  fromOwned x = pure (ASWebAuthenticationSessionErrorCode x)

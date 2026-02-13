@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,10 +18,10 @@ module ObjC.ImageCaptureCore.ICScannerFunctionalUnitFlatbed
   , documentType
   , setDocumentType
   , documentSize
-  , supportedDocumentTypesSelector
+  , documentSizeSelector
   , documentTypeSelector
   , setDocumentTypeSelector
-  , documentSizeSelector
+  , supportedDocumentTypesSelector
 
   -- * Enum types
   , ICScannerDocumentType(ICScannerDocumentType)
@@ -99,15 +100,11 @@ module ObjC.ImageCaptureCore.ICScannerFunctionalUnitFlatbed
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -122,8 +119,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supportedDocumentTypes@
 supportedDocumentTypes :: IsICScannerFunctionalUnitFlatbed icScannerFunctionalUnitFlatbed => icScannerFunctionalUnitFlatbed -> IO (Id NSIndexSet)
-supportedDocumentTypes icScannerFunctionalUnitFlatbed  =
-    sendMsg icScannerFunctionalUnitFlatbed (mkSelector "supportedDocumentTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedDocumentTypes icScannerFunctionalUnitFlatbed =
+  sendMessage icScannerFunctionalUnitFlatbed supportedDocumentTypesSelector
 
 -- | documentType
 --
@@ -131,8 +128,8 @@ supportedDocumentTypes icScannerFunctionalUnitFlatbed  =
 --
 -- ObjC selector: @- documentType@
 documentType :: IsICScannerFunctionalUnitFlatbed icScannerFunctionalUnitFlatbed => icScannerFunctionalUnitFlatbed -> IO ICScannerDocumentType
-documentType icScannerFunctionalUnitFlatbed  =
-    fmap (coerce :: CULong -> ICScannerDocumentType) $ sendMsg icScannerFunctionalUnitFlatbed (mkSelector "documentType") retCULong []
+documentType icScannerFunctionalUnitFlatbed =
+  sendMessage icScannerFunctionalUnitFlatbed documentTypeSelector
 
 -- | documentType
 --
@@ -140,8 +137,8 @@ documentType icScannerFunctionalUnitFlatbed  =
 --
 -- ObjC selector: @- setDocumentType:@
 setDocumentType :: IsICScannerFunctionalUnitFlatbed icScannerFunctionalUnitFlatbed => icScannerFunctionalUnitFlatbed -> ICScannerDocumentType -> IO ()
-setDocumentType icScannerFunctionalUnitFlatbed  value =
-    sendMsg icScannerFunctionalUnitFlatbed (mkSelector "setDocumentType:") retVoid [argCULong (coerce value)]
+setDocumentType icScannerFunctionalUnitFlatbed value =
+  sendMessage icScannerFunctionalUnitFlatbed setDocumentTypeSelector value
 
 -- | documentSize
 --
@@ -149,26 +146,26 @@ setDocumentType icScannerFunctionalUnitFlatbed  value =
 --
 -- ObjC selector: @- documentSize@
 documentSize :: IsICScannerFunctionalUnitFlatbed icScannerFunctionalUnitFlatbed => icScannerFunctionalUnitFlatbed -> IO NSSize
-documentSize icScannerFunctionalUnitFlatbed  =
-    sendMsgStret icScannerFunctionalUnitFlatbed (mkSelector "documentSize") retNSSize []
+documentSize icScannerFunctionalUnitFlatbed =
+  sendMessage icScannerFunctionalUnitFlatbed documentSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedDocumentTypes@
-supportedDocumentTypesSelector :: Selector
+supportedDocumentTypesSelector :: Selector '[] (Id NSIndexSet)
 supportedDocumentTypesSelector = mkSelector "supportedDocumentTypes"
 
 -- | @Selector@ for @documentType@
-documentTypeSelector :: Selector
+documentTypeSelector :: Selector '[] ICScannerDocumentType
 documentTypeSelector = mkSelector "documentType"
 
 -- | @Selector@ for @setDocumentType:@
-setDocumentTypeSelector :: Selector
+setDocumentTypeSelector :: Selector '[ICScannerDocumentType] ()
 setDocumentTypeSelector = mkSelector "setDocumentType:"
 
 -- | @Selector@ for @documentSize@
-documentSizeSelector :: Selector
+documentSizeSelector :: Selector '[] NSSize
 documentSizeSelector = mkSelector "documentSize"
 

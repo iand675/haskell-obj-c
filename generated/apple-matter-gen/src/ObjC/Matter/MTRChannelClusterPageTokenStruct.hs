@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRChannelClusterPageTokenStruct
   , setAfter
   , before
   , setBefore
-  , limitSelector
-  , setLimitSelector
   , afterSelector
-  , setAfterSelector
   , beforeSelector
+  , limitSelector
+  , setAfterSelector
   , setBeforeSelector
+  , setLimitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- limit@
 limit :: IsMTRChannelClusterPageTokenStruct mtrChannelClusterPageTokenStruct => mtrChannelClusterPageTokenStruct -> IO (Id NSNumber)
-limit mtrChannelClusterPageTokenStruct  =
-    sendMsg mtrChannelClusterPageTokenStruct (mkSelector "limit") (retPtr retVoid) [] >>= retainedObject . castPtr
+limit mtrChannelClusterPageTokenStruct =
+  sendMessage mtrChannelClusterPageTokenStruct limitSelector
 
 -- | @- setLimit:@
 setLimit :: (IsMTRChannelClusterPageTokenStruct mtrChannelClusterPageTokenStruct, IsNSNumber value) => mtrChannelClusterPageTokenStruct -> value -> IO ()
-setLimit mtrChannelClusterPageTokenStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterPageTokenStruct (mkSelector "setLimit:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLimit mtrChannelClusterPageTokenStruct value =
+  sendMessage mtrChannelClusterPageTokenStruct setLimitSelector (toNSNumber value)
 
 -- | @- after@
 after :: IsMTRChannelClusterPageTokenStruct mtrChannelClusterPageTokenStruct => mtrChannelClusterPageTokenStruct -> IO (Id NSString)
-after mtrChannelClusterPageTokenStruct  =
-    sendMsg mtrChannelClusterPageTokenStruct (mkSelector "after") (retPtr retVoid) [] >>= retainedObject . castPtr
+after mtrChannelClusterPageTokenStruct =
+  sendMessage mtrChannelClusterPageTokenStruct afterSelector
 
 -- | @- setAfter:@
 setAfter :: (IsMTRChannelClusterPageTokenStruct mtrChannelClusterPageTokenStruct, IsNSString value) => mtrChannelClusterPageTokenStruct -> value -> IO ()
-setAfter mtrChannelClusterPageTokenStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterPageTokenStruct (mkSelector "setAfter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAfter mtrChannelClusterPageTokenStruct value =
+  sendMessage mtrChannelClusterPageTokenStruct setAfterSelector (toNSString value)
 
 -- | @- before@
 before :: IsMTRChannelClusterPageTokenStruct mtrChannelClusterPageTokenStruct => mtrChannelClusterPageTokenStruct -> IO (Id NSString)
-before mtrChannelClusterPageTokenStruct  =
-    sendMsg mtrChannelClusterPageTokenStruct (mkSelector "before") (retPtr retVoid) [] >>= retainedObject . castPtr
+before mtrChannelClusterPageTokenStruct =
+  sendMessage mtrChannelClusterPageTokenStruct beforeSelector
 
 -- | @- setBefore:@
 setBefore :: (IsMTRChannelClusterPageTokenStruct mtrChannelClusterPageTokenStruct, IsNSString value) => mtrChannelClusterPageTokenStruct -> value -> IO ()
-setBefore mtrChannelClusterPageTokenStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterPageTokenStruct (mkSelector "setBefore:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBefore mtrChannelClusterPageTokenStruct value =
+  sendMessage mtrChannelClusterPageTokenStruct setBeforeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @limit@
-limitSelector :: Selector
+limitSelector :: Selector '[] (Id NSNumber)
 limitSelector = mkSelector "limit"
 
 -- | @Selector@ for @setLimit:@
-setLimitSelector :: Selector
+setLimitSelector :: Selector '[Id NSNumber] ()
 setLimitSelector = mkSelector "setLimit:"
 
 -- | @Selector@ for @after@
-afterSelector :: Selector
+afterSelector :: Selector '[] (Id NSString)
 afterSelector = mkSelector "after"
 
 -- | @Selector@ for @setAfter:@
-setAfterSelector :: Selector
+setAfterSelector :: Selector '[Id NSString] ()
 setAfterSelector = mkSelector "setAfter:"
 
 -- | @Selector@ for @before@
-beforeSelector :: Selector
+beforeSelector :: Selector '[] (Id NSString)
 beforeSelector = mkSelector "before"
 
 -- | @Selector@ for @setBefore:@
-setBeforeSelector :: Selector
+setBeforeSelector :: Selector '[Id NSString] ()
 setBeforeSelector = mkSelector "setBefore:"
 

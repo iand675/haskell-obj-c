@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.MapKit.MKAddressRepresentations
   , cityWithContext
   , regionName
   , regionCode
-  , initSelector
-  , newSelector
-  , fullAddressIncludingRegion_singleLineSelector
-  , cityWithContextUsingStyleSelector
   , cityNameSelector
   , cityWithContextSelector
-  , regionNameSelector
+  , cityWithContextUsingStyleSelector
+  , fullAddressIncludingRegion_singleLineSelector
+  , initSelector
+  , newSelector
   , regionCodeSelector
+  , regionNameSelector
 
   -- * Enum types
   , MKAddressRepresentationsContextStyle(MKAddressRepresentationsContextStyle)
@@ -32,15 +33,11 @@ module ObjC.MapKit.MKAddressRepresentations
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,79 +47,79 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMKAddressRepresentations mkAddressRepresentations => mkAddressRepresentations -> IO (Id MKAddressRepresentations)
-init_ mkAddressRepresentations  =
-    sendMsg mkAddressRepresentations (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mkAddressRepresentations =
+  sendOwnedMessage mkAddressRepresentations initSelector
 
 -- | @+ new@
 new :: IO (Id MKAddressRepresentations)
 new  =
   do
     cls' <- getRequiredClass "MKAddressRepresentations"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- fullAddressIncludingRegion:singleLine:@
 fullAddressIncludingRegion_singleLine :: IsMKAddressRepresentations mkAddressRepresentations => mkAddressRepresentations -> Bool -> Bool -> IO (Id NSString)
-fullAddressIncludingRegion_singleLine mkAddressRepresentations  includingRegion singleLine =
-    sendMsg mkAddressRepresentations (mkSelector "fullAddressIncludingRegion:singleLine:") (retPtr retVoid) [argCULong (if includingRegion then 1 else 0), argCULong (if singleLine then 1 else 0)] >>= retainedObject . castPtr
+fullAddressIncludingRegion_singleLine mkAddressRepresentations includingRegion singleLine =
+  sendMessage mkAddressRepresentations fullAddressIncludingRegion_singleLineSelector includingRegion singleLine
 
 -- | @- cityWithContextUsingStyle:@
 cityWithContextUsingStyle :: IsMKAddressRepresentations mkAddressRepresentations => mkAddressRepresentations -> MKAddressRepresentationsContextStyle -> IO (Id NSString)
-cityWithContextUsingStyle mkAddressRepresentations  style =
-    sendMsg mkAddressRepresentations (mkSelector "cityWithContextUsingStyle:") (retPtr retVoid) [argCLong (coerce style)] >>= retainedObject . castPtr
+cityWithContextUsingStyle mkAddressRepresentations style =
+  sendMessage mkAddressRepresentations cityWithContextUsingStyleSelector style
 
 -- | @- cityName@
 cityName :: IsMKAddressRepresentations mkAddressRepresentations => mkAddressRepresentations -> IO (Id NSString)
-cityName mkAddressRepresentations  =
-    sendMsg mkAddressRepresentations (mkSelector "cityName") (retPtr retVoid) [] >>= retainedObject . castPtr
+cityName mkAddressRepresentations =
+  sendMessage mkAddressRepresentations cityNameSelector
 
 -- | @- cityWithContext@
 cityWithContext :: IsMKAddressRepresentations mkAddressRepresentations => mkAddressRepresentations -> IO (Id NSString)
-cityWithContext mkAddressRepresentations  =
-    sendMsg mkAddressRepresentations (mkSelector "cityWithContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+cityWithContext mkAddressRepresentations =
+  sendMessage mkAddressRepresentations cityWithContextSelector
 
 -- | @- regionName@
 regionName :: IsMKAddressRepresentations mkAddressRepresentations => mkAddressRepresentations -> IO (Id NSString)
-regionName mkAddressRepresentations  =
-    sendMsg mkAddressRepresentations (mkSelector "regionName") (retPtr retVoid) [] >>= retainedObject . castPtr
+regionName mkAddressRepresentations =
+  sendMessage mkAddressRepresentations regionNameSelector
 
 -- | @- regionCode@
 regionCode :: IsMKAddressRepresentations mkAddressRepresentations => mkAddressRepresentations -> IO (Id NSString)
-regionCode mkAddressRepresentations  =
-    sendMsg mkAddressRepresentations (mkSelector "regionCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+regionCode mkAddressRepresentations =
+  sendMessage mkAddressRepresentations regionCodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MKAddressRepresentations)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MKAddressRepresentations)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @fullAddressIncludingRegion:singleLine:@
-fullAddressIncludingRegion_singleLineSelector :: Selector
+fullAddressIncludingRegion_singleLineSelector :: Selector '[Bool, Bool] (Id NSString)
 fullAddressIncludingRegion_singleLineSelector = mkSelector "fullAddressIncludingRegion:singleLine:"
 
 -- | @Selector@ for @cityWithContextUsingStyle:@
-cityWithContextUsingStyleSelector :: Selector
+cityWithContextUsingStyleSelector :: Selector '[MKAddressRepresentationsContextStyle] (Id NSString)
 cityWithContextUsingStyleSelector = mkSelector "cityWithContextUsingStyle:"
 
 -- | @Selector@ for @cityName@
-cityNameSelector :: Selector
+cityNameSelector :: Selector '[] (Id NSString)
 cityNameSelector = mkSelector "cityName"
 
 -- | @Selector@ for @cityWithContext@
-cityWithContextSelector :: Selector
+cityWithContextSelector :: Selector '[] (Id NSString)
 cityWithContextSelector = mkSelector "cityWithContext"
 
 -- | @Selector@ for @regionName@
-regionNameSelector :: Selector
+regionNameSelector :: Selector '[] (Id NSString)
 regionNameSelector = mkSelector "regionName"
 
 -- | @Selector@ for @regionCode@
-regionCodeSelector :: Selector
+regionCodeSelector :: Selector '[] (Id NSString)
 regionCodeSelector = mkSelector "regionCode"
 

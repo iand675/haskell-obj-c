@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.CoreMediaIO.CMIOExtensionStreamCustomClockConfiguration
   , sourceIdentifier
   , numberOfEventsForRateSmoothing
   , numberOfAveragesForRateSmoothing
+  , clockNameSelector
   , initSelector
   , newSelector
-  , clockNameSelector
-  , sourceIdentifierSelector
-  , numberOfEventsForRateSmoothingSelector
   , numberOfAveragesForRateSmoothingSelector
+  , numberOfEventsForRateSmoothingSelector
+  , sourceIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMIOExtensionStreamCustomClockConfiguration cmioExtensionStreamCustomClockConfiguration => cmioExtensionStreamCustomClockConfiguration -> IO (Id CMIOExtensionStreamCustomClockConfiguration)
-init_ cmioExtensionStreamCustomClockConfiguration  =
-    sendMsg cmioExtensionStreamCustomClockConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionStreamCustomClockConfiguration =
+  sendOwnedMessage cmioExtensionStreamCustomClockConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionStreamCustomClockConfiguration)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionStreamCustomClockConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | clockName
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- clockName@
 clockName :: IsCMIOExtensionStreamCustomClockConfiguration cmioExtensionStreamCustomClockConfiguration => cmioExtensionStreamCustomClockConfiguration -> IO (Id NSString)
-clockName cmioExtensionStreamCustomClockConfiguration  =
-    sendMsg cmioExtensionStreamCustomClockConfiguration (mkSelector "clockName") (retPtr retVoid) [] >>= retainedObject . castPtr
+clockName cmioExtensionStreamCustomClockConfiguration =
+  sendMessage cmioExtensionStreamCustomClockConfiguration clockNameSelector
 
 -- | sourceIdentifier
 --
@@ -70,8 +67,8 @@ clockName cmioExtensionStreamCustomClockConfiguration  =
 --
 -- ObjC selector: @- sourceIdentifier@
 sourceIdentifier :: IsCMIOExtensionStreamCustomClockConfiguration cmioExtensionStreamCustomClockConfiguration => cmioExtensionStreamCustomClockConfiguration -> IO (Id NSUUID)
-sourceIdentifier cmioExtensionStreamCustomClockConfiguration  =
-    sendMsg cmioExtensionStreamCustomClockConfiguration (mkSelector "sourceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceIdentifier cmioExtensionStreamCustomClockConfiguration =
+  sendMessage cmioExtensionStreamCustomClockConfiguration sourceIdentifierSelector
 
 -- | numberOfEventsForRateSmoothing
 --
@@ -79,8 +76,8 @@ sourceIdentifier cmioExtensionStreamCustomClockConfiguration  =
 --
 -- ObjC selector: @- numberOfEventsForRateSmoothing@
 numberOfEventsForRateSmoothing :: IsCMIOExtensionStreamCustomClockConfiguration cmioExtensionStreamCustomClockConfiguration => cmioExtensionStreamCustomClockConfiguration -> IO CUInt
-numberOfEventsForRateSmoothing cmioExtensionStreamCustomClockConfiguration  =
-    sendMsg cmioExtensionStreamCustomClockConfiguration (mkSelector "numberOfEventsForRateSmoothing") retCUInt []
+numberOfEventsForRateSmoothing cmioExtensionStreamCustomClockConfiguration =
+  sendMessage cmioExtensionStreamCustomClockConfiguration numberOfEventsForRateSmoothingSelector
 
 -- | numberOfAveragesForRateSmoothing
 --
@@ -88,34 +85,34 @@ numberOfEventsForRateSmoothing cmioExtensionStreamCustomClockConfiguration  =
 --
 -- ObjC selector: @- numberOfAveragesForRateSmoothing@
 numberOfAveragesForRateSmoothing :: IsCMIOExtensionStreamCustomClockConfiguration cmioExtensionStreamCustomClockConfiguration => cmioExtensionStreamCustomClockConfiguration -> IO CUInt
-numberOfAveragesForRateSmoothing cmioExtensionStreamCustomClockConfiguration  =
-    sendMsg cmioExtensionStreamCustomClockConfiguration (mkSelector "numberOfAveragesForRateSmoothing") retCUInt []
+numberOfAveragesForRateSmoothing cmioExtensionStreamCustomClockConfiguration =
+  sendMessage cmioExtensionStreamCustomClockConfiguration numberOfAveragesForRateSmoothingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionStreamCustomClockConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionStreamCustomClockConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @clockName@
-clockNameSelector :: Selector
+clockNameSelector :: Selector '[] (Id NSString)
 clockNameSelector = mkSelector "clockName"
 
 -- | @Selector@ for @sourceIdentifier@
-sourceIdentifierSelector :: Selector
+sourceIdentifierSelector :: Selector '[] (Id NSUUID)
 sourceIdentifierSelector = mkSelector "sourceIdentifier"
 
 -- | @Selector@ for @numberOfEventsForRateSmoothing@
-numberOfEventsForRateSmoothingSelector :: Selector
+numberOfEventsForRateSmoothingSelector :: Selector '[] CUInt
 numberOfEventsForRateSmoothingSelector = mkSelector "numberOfEventsForRateSmoothing"
 
 -- | @Selector@ for @numberOfAveragesForRateSmoothing@
-numberOfAveragesForRateSmoothingSelector :: Selector
+numberOfAveragesForRateSmoothingSelector :: Selector '[] CUInt
 numberOfAveragesForRateSmoothingSelector = mkSelector "numberOfAveragesForRateSmoothing"
 

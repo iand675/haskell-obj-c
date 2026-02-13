@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,35 +37,35 @@ module ObjC.AppKit.NSProgressIndicator
   , setBezeled
   , controlTint
   , setControlTint
+  , animateSelector
+  , animationDelaySelector
+  , bezeledSelector
+  , controlSizeSelector
+  , controlTintSelector
+  , displayedWhenStoppedSelector
+  , doubleValueSelector
   , incrementBySelector
+  , indeterminateSelector
+  , maxValueSelector
+  , minValueSelector
+  , observedProgressSelector
+  , setAnimationDelaySelector
+  , setBezeledSelector
+  , setControlSizeSelector
+  , setControlTintSelector
+  , setDisplayedWhenStoppedSelector
+  , setDoubleValueSelector
+  , setIndeterminateSelector
+  , setMaxValueSelector
+  , setMinValueSelector
+  , setObservedProgressSelector
+  , setStyleSelector
+  , setUsesThreadedAnimationSelector
+  , sizeToFitSelector
   , startAnimationSelector
   , stopAnimationSelector
-  , sizeToFitSelector
-  , animationDelaySelector
-  , setAnimationDelaySelector
-  , animateSelector
-  , indeterminateSelector
-  , setIndeterminateSelector
-  , controlSizeSelector
-  , setControlSizeSelector
-  , doubleValueSelector
-  , setDoubleValueSelector
-  , minValueSelector
-  , setMinValueSelector
-  , maxValueSelector
-  , setMaxValueSelector
-  , observedProgressSelector
-  , setObservedProgressSelector
-  , usesThreadedAnimationSelector
-  , setUsesThreadedAnimationSelector
   , styleSelector
-  , setStyleSelector
-  , displayedWhenStoppedSelector
-  , setDisplayedWhenStoppedSelector
-  , bezeledSelector
-  , setBezeledSelector
-  , controlTintSelector
-  , setControlTintSelector
+  , usesThreadedAnimationSelector
 
   -- * Enum types
   , NSControlSize(NSControlSize)
@@ -84,15 +85,11 @@ module ObjC.AppKit.NSProgressIndicator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,267 +99,266 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- incrementBy:@
 incrementBy :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> CDouble -> IO ()
-incrementBy nsProgressIndicator  delta =
-    sendMsg nsProgressIndicator (mkSelector "incrementBy:") retVoid [argCDouble delta]
+incrementBy nsProgressIndicator delta =
+  sendMessage nsProgressIndicator incrementBySelector delta
 
 -- | @- startAnimation:@
 startAnimation :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> RawId -> IO ()
-startAnimation nsProgressIndicator  sender =
-    sendMsg nsProgressIndicator (mkSelector "startAnimation:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+startAnimation nsProgressIndicator sender =
+  sendMessage nsProgressIndicator startAnimationSelector sender
 
 -- | @- stopAnimation:@
 stopAnimation :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> RawId -> IO ()
-stopAnimation nsProgressIndicator  sender =
-    sendMsg nsProgressIndicator (mkSelector "stopAnimation:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stopAnimation nsProgressIndicator sender =
+  sendMessage nsProgressIndicator stopAnimationSelector sender
 
 -- | @- sizeToFit@
 sizeToFit :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO ()
-sizeToFit nsProgressIndicator  =
-    sendMsg nsProgressIndicator (mkSelector "sizeToFit") retVoid []
+sizeToFit nsProgressIndicator =
+  sendMessage nsProgressIndicator sizeToFitSelector
 
 -- | @- animationDelay@
 animationDelay :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO CDouble
-animationDelay nsProgressIndicator  =
-    sendMsg nsProgressIndicator (mkSelector "animationDelay") retCDouble []
+animationDelay nsProgressIndicator =
+  sendMessage nsProgressIndicator animationDelaySelector
 
 -- | @- setAnimationDelay:@
 setAnimationDelay :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> CDouble -> IO ()
-setAnimationDelay nsProgressIndicator  delay =
-    sendMsg nsProgressIndicator (mkSelector "setAnimationDelay:") retVoid [argCDouble delay]
+setAnimationDelay nsProgressIndicator delay =
+  sendMessage nsProgressIndicator setAnimationDelaySelector delay
 
 -- | @- animate:@
 animate :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> RawId -> IO ()
-animate nsProgressIndicator  sender =
-    sendMsg nsProgressIndicator (mkSelector "animate:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+animate nsProgressIndicator sender =
+  sendMessage nsProgressIndicator animateSelector sender
 
 -- | @- indeterminate@
 indeterminate :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO Bool
-indeterminate nsProgressIndicator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgressIndicator (mkSelector "indeterminate") retCULong []
+indeterminate nsProgressIndicator =
+  sendMessage nsProgressIndicator indeterminateSelector
 
 -- | @- setIndeterminate:@
 setIndeterminate :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> Bool -> IO ()
-setIndeterminate nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setIndeterminate:") retVoid [argCULong (if value then 1 else 0)]
+setIndeterminate nsProgressIndicator value =
+  sendMessage nsProgressIndicator setIndeterminateSelector value
 
 -- | @- controlSize@
 controlSize :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO NSControlSize
-controlSize nsProgressIndicator  =
-    fmap (coerce :: CULong -> NSControlSize) $ sendMsg nsProgressIndicator (mkSelector "controlSize") retCULong []
+controlSize nsProgressIndicator =
+  sendMessage nsProgressIndicator controlSizeSelector
 
 -- | @- setControlSize:@
 setControlSize :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> NSControlSize -> IO ()
-setControlSize nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setControlSize:") retVoid [argCULong (coerce value)]
+setControlSize nsProgressIndicator value =
+  sendMessage nsProgressIndicator setControlSizeSelector value
 
 -- | @- doubleValue@
 doubleValue :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO CDouble
-doubleValue nsProgressIndicator  =
-    sendMsg nsProgressIndicator (mkSelector "doubleValue") retCDouble []
+doubleValue nsProgressIndicator =
+  sendMessage nsProgressIndicator doubleValueSelector
 
 -- | @- setDoubleValue:@
 setDoubleValue :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> CDouble -> IO ()
-setDoubleValue nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setDoubleValue:") retVoid [argCDouble value]
+setDoubleValue nsProgressIndicator value =
+  sendMessage nsProgressIndicator setDoubleValueSelector value
 
 -- | @- minValue@
 minValue :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO CDouble
-minValue nsProgressIndicator  =
-    sendMsg nsProgressIndicator (mkSelector "minValue") retCDouble []
+minValue nsProgressIndicator =
+  sendMessage nsProgressIndicator minValueSelector
 
 -- | @- setMinValue:@
 setMinValue :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> CDouble -> IO ()
-setMinValue nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setMinValue:") retVoid [argCDouble value]
+setMinValue nsProgressIndicator value =
+  sendMessage nsProgressIndicator setMinValueSelector value
 
 -- | @- maxValue@
 maxValue :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO CDouble
-maxValue nsProgressIndicator  =
-    sendMsg nsProgressIndicator (mkSelector "maxValue") retCDouble []
+maxValue nsProgressIndicator =
+  sendMessage nsProgressIndicator maxValueSelector
 
 -- | @- setMaxValue:@
 setMaxValue :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> CDouble -> IO ()
-setMaxValue nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setMaxValue:") retVoid [argCDouble value]
+setMaxValue nsProgressIndicator value =
+  sendMessage nsProgressIndicator setMaxValueSelector value
 
 -- | @- observedProgress@
 observedProgress :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO (Id NSProgress)
-observedProgress nsProgressIndicator  =
-    sendMsg nsProgressIndicator (mkSelector "observedProgress") (retPtr retVoid) [] >>= retainedObject . castPtr
+observedProgress nsProgressIndicator =
+  sendMessage nsProgressIndicator observedProgressSelector
 
 -- | @- setObservedProgress:@
 setObservedProgress :: (IsNSProgressIndicator nsProgressIndicator, IsNSProgress value) => nsProgressIndicator -> value -> IO ()
-setObservedProgress nsProgressIndicator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgressIndicator (mkSelector "setObservedProgress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setObservedProgress nsProgressIndicator value =
+  sendMessage nsProgressIndicator setObservedProgressSelector (toNSProgress value)
 
 -- | @- usesThreadedAnimation@
 usesThreadedAnimation :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO Bool
-usesThreadedAnimation nsProgressIndicator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgressIndicator (mkSelector "usesThreadedAnimation") retCULong []
+usesThreadedAnimation nsProgressIndicator =
+  sendMessage nsProgressIndicator usesThreadedAnimationSelector
 
 -- | @- setUsesThreadedAnimation:@
 setUsesThreadedAnimation :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> Bool -> IO ()
-setUsesThreadedAnimation nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setUsesThreadedAnimation:") retVoid [argCULong (if value then 1 else 0)]
+setUsesThreadedAnimation nsProgressIndicator value =
+  sendMessage nsProgressIndicator setUsesThreadedAnimationSelector value
 
 -- | @- style@
 style :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO NSProgressIndicatorStyle
-style nsProgressIndicator  =
-    fmap (coerce :: CULong -> NSProgressIndicatorStyle) $ sendMsg nsProgressIndicator (mkSelector "style") retCULong []
+style nsProgressIndicator =
+  sendMessage nsProgressIndicator styleSelector
 
 -- | @- setStyle:@
 setStyle :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> NSProgressIndicatorStyle -> IO ()
-setStyle nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setStyle:") retVoid [argCULong (coerce value)]
+setStyle nsProgressIndicator value =
+  sendMessage nsProgressIndicator setStyleSelector value
 
 -- | @- displayedWhenStopped@
 displayedWhenStopped :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO Bool
-displayedWhenStopped nsProgressIndicator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgressIndicator (mkSelector "displayedWhenStopped") retCULong []
+displayedWhenStopped nsProgressIndicator =
+  sendMessage nsProgressIndicator displayedWhenStoppedSelector
 
 -- | @- setDisplayedWhenStopped:@
 setDisplayedWhenStopped :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> Bool -> IO ()
-setDisplayedWhenStopped nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setDisplayedWhenStopped:") retVoid [argCULong (if value then 1 else 0)]
+setDisplayedWhenStopped nsProgressIndicator value =
+  sendMessage nsProgressIndicator setDisplayedWhenStoppedSelector value
 
 -- | @- bezeled@
 bezeled :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO Bool
-bezeled nsProgressIndicator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgressIndicator (mkSelector "bezeled") retCULong []
+bezeled nsProgressIndicator =
+  sendMessage nsProgressIndicator bezeledSelector
 
 -- | @- setBezeled:@
 setBezeled :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> Bool -> IO ()
-setBezeled nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setBezeled:") retVoid [argCULong (if value then 1 else 0)]
+setBezeled nsProgressIndicator value =
+  sendMessage nsProgressIndicator setBezeledSelector value
 
 -- | @- controlTint@
 controlTint :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> IO NSControlTint
-controlTint nsProgressIndicator  =
-    fmap (coerce :: CULong -> NSControlTint) $ sendMsg nsProgressIndicator (mkSelector "controlTint") retCULong []
+controlTint nsProgressIndicator =
+  sendMessage nsProgressIndicator controlTintSelector
 
 -- | @- setControlTint:@
 setControlTint :: IsNSProgressIndicator nsProgressIndicator => nsProgressIndicator -> NSControlTint -> IO ()
-setControlTint nsProgressIndicator  value =
-    sendMsg nsProgressIndicator (mkSelector "setControlTint:") retVoid [argCULong (coerce value)]
+setControlTint nsProgressIndicator value =
+  sendMessage nsProgressIndicator setControlTintSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @incrementBy:@
-incrementBySelector :: Selector
+incrementBySelector :: Selector '[CDouble] ()
 incrementBySelector = mkSelector "incrementBy:"
 
 -- | @Selector@ for @startAnimation:@
-startAnimationSelector :: Selector
+startAnimationSelector :: Selector '[RawId] ()
 startAnimationSelector = mkSelector "startAnimation:"
 
 -- | @Selector@ for @stopAnimation:@
-stopAnimationSelector :: Selector
+stopAnimationSelector :: Selector '[RawId] ()
 stopAnimationSelector = mkSelector "stopAnimation:"
 
 -- | @Selector@ for @sizeToFit@
-sizeToFitSelector :: Selector
+sizeToFitSelector :: Selector '[] ()
 sizeToFitSelector = mkSelector "sizeToFit"
 
 -- | @Selector@ for @animationDelay@
-animationDelaySelector :: Selector
+animationDelaySelector :: Selector '[] CDouble
 animationDelaySelector = mkSelector "animationDelay"
 
 -- | @Selector@ for @setAnimationDelay:@
-setAnimationDelaySelector :: Selector
+setAnimationDelaySelector :: Selector '[CDouble] ()
 setAnimationDelaySelector = mkSelector "setAnimationDelay:"
 
 -- | @Selector@ for @animate:@
-animateSelector :: Selector
+animateSelector :: Selector '[RawId] ()
 animateSelector = mkSelector "animate:"
 
 -- | @Selector@ for @indeterminate@
-indeterminateSelector :: Selector
+indeterminateSelector :: Selector '[] Bool
 indeterminateSelector = mkSelector "indeterminate"
 
 -- | @Selector@ for @setIndeterminate:@
-setIndeterminateSelector :: Selector
+setIndeterminateSelector :: Selector '[Bool] ()
 setIndeterminateSelector = mkSelector "setIndeterminate:"
 
 -- | @Selector@ for @controlSize@
-controlSizeSelector :: Selector
+controlSizeSelector :: Selector '[] NSControlSize
 controlSizeSelector = mkSelector "controlSize"
 
 -- | @Selector@ for @setControlSize:@
-setControlSizeSelector :: Selector
+setControlSizeSelector :: Selector '[NSControlSize] ()
 setControlSizeSelector = mkSelector "setControlSize:"
 
 -- | @Selector@ for @doubleValue@
-doubleValueSelector :: Selector
+doubleValueSelector :: Selector '[] CDouble
 doubleValueSelector = mkSelector "doubleValue"
 
 -- | @Selector@ for @setDoubleValue:@
-setDoubleValueSelector :: Selector
+setDoubleValueSelector :: Selector '[CDouble] ()
 setDoubleValueSelector = mkSelector "setDoubleValue:"
 
 -- | @Selector@ for @minValue@
-minValueSelector :: Selector
+minValueSelector :: Selector '[] CDouble
 minValueSelector = mkSelector "minValue"
 
 -- | @Selector@ for @setMinValue:@
-setMinValueSelector :: Selector
+setMinValueSelector :: Selector '[CDouble] ()
 setMinValueSelector = mkSelector "setMinValue:"
 
 -- | @Selector@ for @maxValue@
-maxValueSelector :: Selector
+maxValueSelector :: Selector '[] CDouble
 maxValueSelector = mkSelector "maxValue"
 
 -- | @Selector@ for @setMaxValue:@
-setMaxValueSelector :: Selector
+setMaxValueSelector :: Selector '[CDouble] ()
 setMaxValueSelector = mkSelector "setMaxValue:"
 
 -- | @Selector@ for @observedProgress@
-observedProgressSelector :: Selector
+observedProgressSelector :: Selector '[] (Id NSProgress)
 observedProgressSelector = mkSelector "observedProgress"
 
 -- | @Selector@ for @setObservedProgress:@
-setObservedProgressSelector :: Selector
+setObservedProgressSelector :: Selector '[Id NSProgress] ()
 setObservedProgressSelector = mkSelector "setObservedProgress:"
 
 -- | @Selector@ for @usesThreadedAnimation@
-usesThreadedAnimationSelector :: Selector
+usesThreadedAnimationSelector :: Selector '[] Bool
 usesThreadedAnimationSelector = mkSelector "usesThreadedAnimation"
 
 -- | @Selector@ for @setUsesThreadedAnimation:@
-setUsesThreadedAnimationSelector :: Selector
+setUsesThreadedAnimationSelector :: Selector '[Bool] ()
 setUsesThreadedAnimationSelector = mkSelector "setUsesThreadedAnimation:"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] NSProgressIndicatorStyle
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @setStyle:@
-setStyleSelector :: Selector
+setStyleSelector :: Selector '[NSProgressIndicatorStyle] ()
 setStyleSelector = mkSelector "setStyle:"
 
 -- | @Selector@ for @displayedWhenStopped@
-displayedWhenStoppedSelector :: Selector
+displayedWhenStoppedSelector :: Selector '[] Bool
 displayedWhenStoppedSelector = mkSelector "displayedWhenStopped"
 
 -- | @Selector@ for @setDisplayedWhenStopped:@
-setDisplayedWhenStoppedSelector :: Selector
+setDisplayedWhenStoppedSelector :: Selector '[Bool] ()
 setDisplayedWhenStoppedSelector = mkSelector "setDisplayedWhenStopped:"
 
 -- | @Selector@ for @bezeled@
-bezeledSelector :: Selector
+bezeledSelector :: Selector '[] Bool
 bezeledSelector = mkSelector "bezeled"
 
 -- | @Selector@ for @setBezeled:@
-setBezeledSelector :: Selector
+setBezeledSelector :: Selector '[Bool] ()
 setBezeledSelector = mkSelector "setBezeled:"
 
 -- | @Selector@ for @controlTint@
-controlTintSelector :: Selector
+controlTintSelector :: Selector '[] NSControlTint
 controlTintSelector = mkSelector "controlTint"
 
 -- | @Selector@ for @setControlTint:@
-setControlTintSelector :: Selector
+setControlTintSelector :: Selector '[NSControlTint] ()
 setControlTintSelector = mkSelector "setControlTint:"
 

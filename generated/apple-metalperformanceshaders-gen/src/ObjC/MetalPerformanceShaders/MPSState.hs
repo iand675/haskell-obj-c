@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -45,28 +46,28 @@ module ObjC.MetalPerformanceShaders.MPSState
   , isTemporary
   , label
   , setLabel
-  , temporaryStateWithCommandBuffer_bufferSizeSelector
-  , temporaryStateWithCommandBuffer_textureDescriptorSelector
-  , temporaryStateWithCommandBufferSelector
+  , bufferSizeAtIndexSelector
+  , destinationImageDescriptorForSourceImages_sourceStates_forKernel_suggestedDescriptorSelector
+  , initSelector
   , initWithDevice_bufferSizeSelector
+  , initWithDevice_resourceListSelector
   , initWithDevice_textureDescriptorSelector
   , initWithResourceSelector
-  , initSelector
-  , initWithDevice_resourceListSelector
-  , temporaryStateWithCommandBuffer_resourceListSelector
   , initWithResourcesSelector
-  , resourceAtIndex_allocateMemorySelector
-  , bufferSizeAtIndexSelector
-  , resourceTypeAtIndexSelector
-  , synchronizeOnCommandBufferSelector
-  , resourceSizeSelector
-  , destinationImageDescriptorForSourceImages_sourceStates_forKernel_suggestedDescriptorSelector
-  , resourceCountSelector
-  , readCountSelector
-  , setReadCountSelector
   , isTemporarySelector
   , labelSelector
+  , readCountSelector
+  , resourceAtIndex_allocateMemorySelector
+  , resourceCountSelector
+  , resourceSizeSelector
+  , resourceTypeAtIndexSelector
   , setLabelSelector
+  , setReadCountSelector
+  , synchronizeOnCommandBufferSelector
+  , temporaryStateWithCommandBufferSelector
+  , temporaryStateWithCommandBuffer_bufferSizeSelector
+  , temporaryStateWithCommandBuffer_resourceListSelector
+  , temporaryStateWithCommandBuffer_textureDescriptorSelector
 
   -- * Enum types
   , MPSStateResourceType(MPSStateResourceType)
@@ -76,15 +77,11 @@ module ObjC.MetalPerformanceShaders.MPSState
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -105,7 +102,7 @@ temporaryStateWithCommandBuffer_bufferSize :: RawId -> CULong -> IO (Id MPSState
 temporaryStateWithCommandBuffer_bufferSize cmdBuf bufferSize =
   do
     cls' <- getRequiredClass "MPSState"
-    sendClassMsg cls' (mkSelector "temporaryStateWithCommandBuffer:bufferSize:") (retPtr retVoid) [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argCULong bufferSize] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryStateWithCommandBuffer_bufferSizeSelector cmdBuf bufferSize
 
 -- | Create a MPSState holding a temporary MTLTexture
 --
@@ -118,8 +115,7 @@ temporaryStateWithCommandBuffer_textureDescriptor :: IsMTLTextureDescriptor desc
 temporaryStateWithCommandBuffer_textureDescriptor cmdBuf descriptor =
   do
     cls' <- getRequiredClass "MPSState"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      sendClassMsg cls' (mkSelector "temporaryStateWithCommandBuffer:textureDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryStateWithCommandBuffer_textureDescriptorSelector cmdBuf (toMTLTextureDescriptor descriptor)
 
 -- | Create a new autoreleased temporary state object without underlying resource
 --
@@ -130,18 +126,17 @@ temporaryStateWithCommandBuffer :: RawId -> IO (Id MPSState)
 temporaryStateWithCommandBuffer cmdBuf =
   do
     cls' <- getRequiredClass "MPSState"
-    sendClassMsg cls' (mkSelector "temporaryStateWithCommandBuffer:") (retPtr retVoid) [argPtr (castPtr (unRawId cmdBuf) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryStateWithCommandBufferSelector cmdBuf
 
 -- | @- initWithDevice:bufferSize:@
 initWithDevice_bufferSize :: IsMPSState mpsState => mpsState -> RawId -> CULong -> IO (Id MPSState)
-initWithDevice_bufferSize mpsState  device bufferSize =
-    sendMsg mpsState (mkSelector "initWithDevice:bufferSize:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong bufferSize] >>= ownedObject . castPtr
+initWithDevice_bufferSize mpsState device bufferSize =
+  sendOwnedMessage mpsState initWithDevice_bufferSizeSelector device bufferSize
 
 -- | @- initWithDevice:textureDescriptor:@
 initWithDevice_textureDescriptor :: (IsMPSState mpsState, IsMTLTextureDescriptor descriptor) => mpsState -> RawId -> descriptor -> IO (Id MPSState)
-initWithDevice_textureDescriptor mpsState  device descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsState (mkSelector "initWithDevice:textureDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_textureDescriptor mpsState device descriptor =
+  sendOwnedMessage mpsState initWithDevice_textureDescriptorSelector device (toMTLTextureDescriptor descriptor)
 
 -- | Create a MPSState with a non-temporary MTLResource
 --
@@ -149,13 +144,13 @@ initWithDevice_textureDescriptor mpsState  device descriptor =
 --
 -- ObjC selector: @- initWithResource:@
 initWithResource :: IsMPSState mpsState => mpsState -> RawId -> IO (Id MPSState)
-initWithResource mpsState  resource =
-    sendMsg mpsState (mkSelector "initWithResource:") (retPtr retVoid) [argPtr (castPtr (unRawId resource) :: Ptr ())] >>= ownedObject . castPtr
+initWithResource mpsState resource =
+  sendOwnedMessage mpsState initWithResourceSelector resource
 
 -- | @- init@
 init_ :: IsMPSState mpsState => mpsState -> IO (Id MPSState)
-init_ mpsState  =
-    sendMsg mpsState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsState =
+  sendOwnedMessage mpsState initSelector
 
 -- | Initialize a non-temporary state to hold a number of textures and buffers
 --
@@ -165,9 +160,8 @@ init_ mpsState  =
 --
 -- ObjC selector: @- initWithDevice:resourceList:@
 initWithDevice_resourceList :: (IsMPSState mpsState, IsMPSStateResourceList resourceList) => mpsState -> RawId -> resourceList -> IO (Id MPSState)
-initWithDevice_resourceList mpsState  device resourceList =
-  withObjCPtr resourceList $ \raw_resourceList ->
-      sendMsg mpsState (mkSelector "initWithDevice:resourceList:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_resourceList :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_resourceList mpsState device resourceList =
+  sendOwnedMessage mpsState initWithDevice_resourceListSelector device (toMPSStateResourceList resourceList)
 
 -- | Initialize a temporary state to hold a number of textures and buffers
 --
@@ -178,8 +172,7 @@ temporaryStateWithCommandBuffer_resourceList :: IsMPSStateResourceList resourceL
 temporaryStateWithCommandBuffer_resourceList commandBuffer resourceList =
   do
     cls' <- getRequiredClass "MPSState"
-    withObjCPtr resourceList $ \raw_resourceList ->
-      sendClassMsg cls' (mkSelector "temporaryStateWithCommandBuffer:resourceList:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_resourceList :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryStateWithCommandBuffer_resourceListSelector commandBuffer (toMPSStateResourceList resourceList)
 
 -- | Create a state object with a list of MTLResources
 --
@@ -187,9 +180,8 @@ temporaryStateWithCommandBuffer_resourceList commandBuffer resourceList =
 --
 -- ObjC selector: @- initWithResources:@
 initWithResources :: (IsMPSState mpsState, IsNSArray resources) => mpsState -> resources -> IO (Id MPSState)
-initWithResources mpsState  resources =
-  withObjCPtr resources $ \raw_resources ->
-      sendMsg mpsState (mkSelector "initWithResources:") (retPtr retVoid) [argPtr (castPtr raw_resources :: Ptr ())] >>= ownedObject . castPtr
+initWithResources mpsState resources =
+  sendOwnedMessage mpsState initWithResourcesSelector (toNSArray resources)
 
 -- | Get the MTLResource at the indicated index
 --
@@ -201,8 +193,8 @@ initWithResources mpsState  resources =
 --
 -- ObjC selector: @- resourceAtIndex:allocateMemory:@
 resourceAtIndex_allocateMemory :: IsMPSState mpsState => mpsState -> CULong -> Bool -> IO RawId
-resourceAtIndex_allocateMemory mpsState  index allocateMemory =
-    fmap (RawId . castPtr) $ sendMsg mpsState (mkSelector "resourceAtIndex:allocateMemory:") (retPtr retVoid) [argCULong index, argCULong (if allocateMemory then 1 else 0)]
+resourceAtIndex_allocateMemory mpsState index allocateMemory =
+  sendMessage mpsState resourceAtIndex_allocateMemorySelector index allocateMemory
 
 -- | Return the buffer size of the MTLBuffer at index or 0 if it is not a MTLBuffer
 --
@@ -210,8 +202,8 @@ resourceAtIndex_allocateMemory mpsState  index allocateMemory =
 --
 -- ObjC selector: @- bufferSizeAtIndex:@
 bufferSizeAtIndex :: IsMPSState mpsState => mpsState -> CULong -> IO CULong
-bufferSizeAtIndex mpsState  index =
-    sendMsg mpsState (mkSelector "bufferSizeAtIndex:") retCULong [argCULong index]
+bufferSizeAtIndex mpsState index =
+  sendMessage mpsState bufferSizeAtIndexSelector index
 
 -- | Return YES if the resource at index is a buffer
 --
@@ -219,8 +211,8 @@ bufferSizeAtIndex mpsState  index =
 --
 -- ObjC selector: @- resourceTypeAtIndex:@
 resourceTypeAtIndex :: IsMPSState mpsState => mpsState -> CULong -> IO MPSStateResourceType
-resourceTypeAtIndex mpsState  index =
-    fmap (coerce :: CULong -> MPSStateResourceType) $ sendMsg mpsState (mkSelector "resourceTypeAtIndex:") retCULong [argCULong index]
+resourceTypeAtIndex mpsState index =
+  sendMessage mpsState resourceTypeAtIndexSelector index
 
 -- | Flush any copy of MTLResources held by the state from the device's caches, and invalidate any CPU caches if needed.
 --
@@ -230,8 +222,8 @@ resourceTypeAtIndex mpsState  index =
 --
 -- ObjC selector: @- synchronizeOnCommandBuffer:@
 synchronizeOnCommandBuffer :: IsMPSState mpsState => mpsState -> RawId -> IO ()
-synchronizeOnCommandBuffer mpsState  commandBuffer =
-    sendMsg mpsState (mkSelector "synchronizeOnCommandBuffer:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())]
+synchronizeOnCommandBuffer mpsState commandBuffer =
+  sendMessage mpsState synchronizeOnCommandBufferSelector commandBuffer
 
 -- | Get the number of bytes used to allocate underyling MTLResources
 --
@@ -243,8 +235,8 @@ synchronizeOnCommandBuffer mpsState  commandBuffer =
 --
 -- ObjC selector: @- resourceSize@
 resourceSize :: IsMPSState mpsState => mpsState -> IO CULong
-resourceSize mpsState  =
-    sendMsg mpsState (mkSelector "resourceSize") retCULong []
+resourceSize mpsState =
+  sendMessage mpsState resourceSizeSelector
 
 -- | Determine padding and sizing of result images
 --
@@ -315,34 +307,30 @@ resourceSize mpsState  =
 --
 -- ObjC selector: @- destinationImageDescriptorForSourceImages:sourceStates:forKernel:suggestedDescriptor:@
 destinationImageDescriptorForSourceImages_sourceStates_forKernel_suggestedDescriptor :: (IsMPSState mpsState, IsNSArray sourceImages, IsNSArray sourceStates, IsMPSKernel kernel, IsMPSImageDescriptor inDescriptor) => mpsState -> sourceImages -> sourceStates -> kernel -> inDescriptor -> IO (Id MPSImageDescriptor)
-destinationImageDescriptorForSourceImages_sourceStates_forKernel_suggestedDescriptor mpsState  sourceImages sourceStates kernel inDescriptor =
-  withObjCPtr sourceImages $ \raw_sourceImages ->
-    withObjCPtr sourceStates $ \raw_sourceStates ->
-      withObjCPtr kernel $ \raw_kernel ->
-        withObjCPtr inDescriptor $ \raw_inDescriptor ->
-            sendMsg mpsState (mkSelector "destinationImageDescriptorForSourceImages:sourceStates:forKernel:suggestedDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_kernel :: Ptr ()), argPtr (castPtr raw_inDescriptor :: Ptr ())] >>= retainedObject . castPtr
+destinationImageDescriptorForSourceImages_sourceStates_forKernel_suggestedDescriptor mpsState sourceImages sourceStates kernel inDescriptor =
+  sendMessage mpsState destinationImageDescriptorForSourceImages_sourceStates_forKernel_suggestedDescriptorSelector (toNSArray sourceImages) (toNSArray sourceStates) (toMPSKernel kernel) (toMPSImageDescriptor inDescriptor)
 
 -- | Return the number of MTLResource objects held by the state
 --
 -- ObjC selector: @- resourceCount@
 resourceCount :: IsMPSState mpsState => mpsState -> IO CULong
-resourceCount mpsState  =
-    sendMsg mpsState (mkSelector "resourceCount") retCULong []
+resourceCount mpsState =
+  sendMessage mpsState resourceCountSelector
 
 -- | @- readCount@
 readCount :: IsMPSState mpsState => mpsState -> IO CULong
-readCount mpsState  =
-    sendMsg mpsState (mkSelector "readCount") retCULong []
+readCount mpsState =
+  sendMessage mpsState readCountSelector
 
 -- | @- setReadCount:@
 setReadCount :: IsMPSState mpsState => mpsState -> CULong -> IO ()
-setReadCount mpsState  value =
-    sendMsg mpsState (mkSelector "setReadCount:") retVoid [argCULong value]
+setReadCount mpsState value =
+  sendMessage mpsState setReadCountSelector value
 
 -- | @- isTemporary@
 isTemporary :: IsMPSState mpsState => mpsState -> IO Bool
-isTemporary mpsState  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsState (mkSelector "isTemporary") retCULong []
+isTemporary mpsState =
+  sendMessage mpsState isTemporarySelector
 
 -- | label
 --
@@ -350,8 +338,8 @@ isTemporary mpsState  =
 --
 -- ObjC selector: @- label@
 label :: IsMPSState mpsState => mpsState -> IO (Id NSString)
-label mpsState  =
-    sendMsg mpsState (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mpsState =
+  sendMessage mpsState labelSelector
 
 -- | label
 --
@@ -359,99 +347,98 @@ label mpsState  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMPSState mpsState, IsNSString value) => mpsState -> value -> IO ()
-setLabel mpsState  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsState (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mpsState value =
+  sendMessage mpsState setLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @temporaryStateWithCommandBuffer:bufferSize:@
-temporaryStateWithCommandBuffer_bufferSizeSelector :: Selector
+temporaryStateWithCommandBuffer_bufferSizeSelector :: Selector '[RawId, CULong] (Id MPSState)
 temporaryStateWithCommandBuffer_bufferSizeSelector = mkSelector "temporaryStateWithCommandBuffer:bufferSize:"
 
 -- | @Selector@ for @temporaryStateWithCommandBuffer:textureDescriptor:@
-temporaryStateWithCommandBuffer_textureDescriptorSelector :: Selector
+temporaryStateWithCommandBuffer_textureDescriptorSelector :: Selector '[RawId, Id MTLTextureDescriptor] (Id MPSState)
 temporaryStateWithCommandBuffer_textureDescriptorSelector = mkSelector "temporaryStateWithCommandBuffer:textureDescriptor:"
 
 -- | @Selector@ for @temporaryStateWithCommandBuffer:@
-temporaryStateWithCommandBufferSelector :: Selector
+temporaryStateWithCommandBufferSelector :: Selector '[RawId] (Id MPSState)
 temporaryStateWithCommandBufferSelector = mkSelector "temporaryStateWithCommandBuffer:"
 
 -- | @Selector@ for @initWithDevice:bufferSize:@
-initWithDevice_bufferSizeSelector :: Selector
+initWithDevice_bufferSizeSelector :: Selector '[RawId, CULong] (Id MPSState)
 initWithDevice_bufferSizeSelector = mkSelector "initWithDevice:bufferSize:"
 
 -- | @Selector@ for @initWithDevice:textureDescriptor:@
-initWithDevice_textureDescriptorSelector :: Selector
+initWithDevice_textureDescriptorSelector :: Selector '[RawId, Id MTLTextureDescriptor] (Id MPSState)
 initWithDevice_textureDescriptorSelector = mkSelector "initWithDevice:textureDescriptor:"
 
 -- | @Selector@ for @initWithResource:@
-initWithResourceSelector :: Selector
+initWithResourceSelector :: Selector '[RawId] (Id MPSState)
 initWithResourceSelector = mkSelector "initWithResource:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDevice:resourceList:@
-initWithDevice_resourceListSelector :: Selector
+initWithDevice_resourceListSelector :: Selector '[RawId, Id MPSStateResourceList] (Id MPSState)
 initWithDevice_resourceListSelector = mkSelector "initWithDevice:resourceList:"
 
 -- | @Selector@ for @temporaryStateWithCommandBuffer:resourceList:@
-temporaryStateWithCommandBuffer_resourceListSelector :: Selector
+temporaryStateWithCommandBuffer_resourceListSelector :: Selector '[RawId, Id MPSStateResourceList] (Id MPSState)
 temporaryStateWithCommandBuffer_resourceListSelector = mkSelector "temporaryStateWithCommandBuffer:resourceList:"
 
 -- | @Selector@ for @initWithResources:@
-initWithResourcesSelector :: Selector
+initWithResourcesSelector :: Selector '[Id NSArray] (Id MPSState)
 initWithResourcesSelector = mkSelector "initWithResources:"
 
 -- | @Selector@ for @resourceAtIndex:allocateMemory:@
-resourceAtIndex_allocateMemorySelector :: Selector
+resourceAtIndex_allocateMemorySelector :: Selector '[CULong, Bool] RawId
 resourceAtIndex_allocateMemorySelector = mkSelector "resourceAtIndex:allocateMemory:"
 
 -- | @Selector@ for @bufferSizeAtIndex:@
-bufferSizeAtIndexSelector :: Selector
+bufferSizeAtIndexSelector :: Selector '[CULong] CULong
 bufferSizeAtIndexSelector = mkSelector "bufferSizeAtIndex:"
 
 -- | @Selector@ for @resourceTypeAtIndex:@
-resourceTypeAtIndexSelector :: Selector
+resourceTypeAtIndexSelector :: Selector '[CULong] MPSStateResourceType
 resourceTypeAtIndexSelector = mkSelector "resourceTypeAtIndex:"
 
 -- | @Selector@ for @synchronizeOnCommandBuffer:@
-synchronizeOnCommandBufferSelector :: Selector
+synchronizeOnCommandBufferSelector :: Selector '[RawId] ()
 synchronizeOnCommandBufferSelector = mkSelector "synchronizeOnCommandBuffer:"
 
 -- | @Selector@ for @resourceSize@
-resourceSizeSelector :: Selector
+resourceSizeSelector :: Selector '[] CULong
 resourceSizeSelector = mkSelector "resourceSize"
 
 -- | @Selector@ for @destinationImageDescriptorForSourceImages:sourceStates:forKernel:suggestedDescriptor:@
-destinationImageDescriptorForSourceImages_sourceStates_forKernel_suggestedDescriptorSelector :: Selector
+destinationImageDescriptorForSourceImages_sourceStates_forKernel_suggestedDescriptorSelector :: Selector '[Id NSArray, Id NSArray, Id MPSKernel, Id MPSImageDescriptor] (Id MPSImageDescriptor)
 destinationImageDescriptorForSourceImages_sourceStates_forKernel_suggestedDescriptorSelector = mkSelector "destinationImageDescriptorForSourceImages:sourceStates:forKernel:suggestedDescriptor:"
 
 -- | @Selector@ for @resourceCount@
-resourceCountSelector :: Selector
+resourceCountSelector :: Selector '[] CULong
 resourceCountSelector = mkSelector "resourceCount"
 
 -- | @Selector@ for @readCount@
-readCountSelector :: Selector
+readCountSelector :: Selector '[] CULong
 readCountSelector = mkSelector "readCount"
 
 -- | @Selector@ for @setReadCount:@
-setReadCountSelector :: Selector
+setReadCountSelector :: Selector '[CULong] ()
 setReadCountSelector = mkSelector "setReadCount:"
 
 -- | @Selector@ for @isTemporary@
-isTemporarySelector :: Selector
+isTemporarySelector :: Selector '[] Bool
 isTemporarySelector = mkSelector "isTemporary"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 

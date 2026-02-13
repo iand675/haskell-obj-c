@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRWebRTCTransportProviderClusterSFrameStruct
   , setBaseKey
   , kid
   , setKid
-  , cipherSuiteSelector
-  , setCipherSuiteSelector
   , baseKeySelector
-  , setBaseKeySelector
+  , cipherSuiteSelector
   , kidSelector
+  , setBaseKeySelector
+  , setCipherSuiteSelector
   , setKidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cipherSuite@
 cipherSuite :: IsMTRWebRTCTransportProviderClusterSFrameStruct mtrWebRTCTransportProviderClusterSFrameStruct => mtrWebRTCTransportProviderClusterSFrameStruct -> IO (Id NSNumber)
-cipherSuite mtrWebRTCTransportProviderClusterSFrameStruct  =
-    sendMsg mtrWebRTCTransportProviderClusterSFrameStruct (mkSelector "cipherSuite") (retPtr retVoid) [] >>= retainedObject . castPtr
+cipherSuite mtrWebRTCTransportProviderClusterSFrameStruct =
+  sendMessage mtrWebRTCTransportProviderClusterSFrameStruct cipherSuiteSelector
 
 -- | @- setCipherSuite:@
 setCipherSuite :: (IsMTRWebRTCTransportProviderClusterSFrameStruct mtrWebRTCTransportProviderClusterSFrameStruct, IsNSNumber value) => mtrWebRTCTransportProviderClusterSFrameStruct -> value -> IO ()
-setCipherSuite mtrWebRTCTransportProviderClusterSFrameStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterSFrameStruct (mkSelector "setCipherSuite:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCipherSuite mtrWebRTCTransportProviderClusterSFrameStruct value =
+  sendMessage mtrWebRTCTransportProviderClusterSFrameStruct setCipherSuiteSelector (toNSNumber value)
 
 -- | @- baseKey@
 baseKey :: IsMTRWebRTCTransportProviderClusterSFrameStruct mtrWebRTCTransportProviderClusterSFrameStruct => mtrWebRTCTransportProviderClusterSFrameStruct -> IO (Id NSData)
-baseKey mtrWebRTCTransportProviderClusterSFrameStruct  =
-    sendMsg mtrWebRTCTransportProviderClusterSFrameStruct (mkSelector "baseKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseKey mtrWebRTCTransportProviderClusterSFrameStruct =
+  sendMessage mtrWebRTCTransportProviderClusterSFrameStruct baseKeySelector
 
 -- | @- setBaseKey:@
 setBaseKey :: (IsMTRWebRTCTransportProviderClusterSFrameStruct mtrWebRTCTransportProviderClusterSFrameStruct, IsNSData value) => mtrWebRTCTransportProviderClusterSFrameStruct -> value -> IO ()
-setBaseKey mtrWebRTCTransportProviderClusterSFrameStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterSFrameStruct (mkSelector "setBaseKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBaseKey mtrWebRTCTransportProviderClusterSFrameStruct value =
+  sendMessage mtrWebRTCTransportProviderClusterSFrameStruct setBaseKeySelector (toNSData value)
 
 -- | @- kid@
 kid :: IsMTRWebRTCTransportProviderClusterSFrameStruct mtrWebRTCTransportProviderClusterSFrameStruct => mtrWebRTCTransportProviderClusterSFrameStruct -> IO (Id NSData)
-kid mtrWebRTCTransportProviderClusterSFrameStruct  =
-    sendMsg mtrWebRTCTransportProviderClusterSFrameStruct (mkSelector "kid") (retPtr retVoid) [] >>= retainedObject . castPtr
+kid mtrWebRTCTransportProviderClusterSFrameStruct =
+  sendMessage mtrWebRTCTransportProviderClusterSFrameStruct kidSelector
 
 -- | @- setKid:@
 setKid :: (IsMTRWebRTCTransportProviderClusterSFrameStruct mtrWebRTCTransportProviderClusterSFrameStruct, IsNSData value) => mtrWebRTCTransportProviderClusterSFrameStruct -> value -> IO ()
-setKid mtrWebRTCTransportProviderClusterSFrameStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterSFrameStruct (mkSelector "setKid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKid mtrWebRTCTransportProviderClusterSFrameStruct value =
+  sendMessage mtrWebRTCTransportProviderClusterSFrameStruct setKidSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cipherSuite@
-cipherSuiteSelector :: Selector
+cipherSuiteSelector :: Selector '[] (Id NSNumber)
 cipherSuiteSelector = mkSelector "cipherSuite"
 
 -- | @Selector@ for @setCipherSuite:@
-setCipherSuiteSelector :: Selector
+setCipherSuiteSelector :: Selector '[Id NSNumber] ()
 setCipherSuiteSelector = mkSelector "setCipherSuite:"
 
 -- | @Selector@ for @baseKey@
-baseKeySelector :: Selector
+baseKeySelector :: Selector '[] (Id NSData)
 baseKeySelector = mkSelector "baseKey"
 
 -- | @Selector@ for @setBaseKey:@
-setBaseKeySelector :: Selector
+setBaseKeySelector :: Selector '[Id NSData] ()
 setBaseKeySelector = mkSelector "setBaseKey:"
 
 -- | @Selector@ for @kid@
-kidSelector :: Selector
+kidSelector :: Selector '[] (Id NSData)
 kidSelector = mkSelector "kid"
 
 -- | @Selector@ for @setKid:@
-setKidSelector :: Selector
+setKidSelector :: Selector '[Id NSData] ()
 setKidSelector = mkSelector "setKid:"
 

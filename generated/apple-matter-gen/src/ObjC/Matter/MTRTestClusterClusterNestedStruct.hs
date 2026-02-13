@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRTestClusterClusterNestedStruct
   , c
   , setC
   , aSelector
-  , setASelector
   , bSelector
-  , setBSelector
   , cSelector
+  , setASelector
+  , setBSelector
   , setCSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- a@
 a :: IsMTRTestClusterClusterNestedStruct mtrTestClusterClusterNestedStruct => mtrTestClusterClusterNestedStruct -> IO (Id NSNumber)
-a mtrTestClusterClusterNestedStruct  =
-    sendMsg mtrTestClusterClusterNestedStruct (mkSelector "a") (retPtr retVoid) [] >>= retainedObject . castPtr
+a mtrTestClusterClusterNestedStruct =
+  sendMessage mtrTestClusterClusterNestedStruct aSelector
 
 -- | @- setA:@
 setA :: (IsMTRTestClusterClusterNestedStruct mtrTestClusterClusterNestedStruct, IsNSNumber value) => mtrTestClusterClusterNestedStruct -> value -> IO ()
-setA mtrTestClusterClusterNestedStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNestedStruct (mkSelector "setA:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setA mtrTestClusterClusterNestedStruct value =
+  sendMessage mtrTestClusterClusterNestedStruct setASelector (toNSNumber value)
 
 -- | @- b@
 b :: IsMTRTestClusterClusterNestedStruct mtrTestClusterClusterNestedStruct => mtrTestClusterClusterNestedStruct -> IO (Id NSNumber)
-b mtrTestClusterClusterNestedStruct  =
-    sendMsg mtrTestClusterClusterNestedStruct (mkSelector "b") (retPtr retVoid) [] >>= retainedObject . castPtr
+b mtrTestClusterClusterNestedStruct =
+  sendMessage mtrTestClusterClusterNestedStruct bSelector
 
 -- | @- setB:@
 setB :: (IsMTRTestClusterClusterNestedStruct mtrTestClusterClusterNestedStruct, IsNSNumber value) => mtrTestClusterClusterNestedStruct -> value -> IO ()
-setB mtrTestClusterClusterNestedStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNestedStruct (mkSelector "setB:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setB mtrTestClusterClusterNestedStruct value =
+  sendMessage mtrTestClusterClusterNestedStruct setBSelector (toNSNumber value)
 
 -- | @- c@
 c :: IsMTRTestClusterClusterNestedStruct mtrTestClusterClusterNestedStruct => mtrTestClusterClusterNestedStruct -> IO (Id MTRTestClusterClusterSimpleStruct)
-c mtrTestClusterClusterNestedStruct  =
-    sendMsg mtrTestClusterClusterNestedStruct (mkSelector "c") (retPtr retVoid) [] >>= retainedObject . castPtr
+c mtrTestClusterClusterNestedStruct =
+  sendMessage mtrTestClusterClusterNestedStruct cSelector
 
 -- | @- setC:@
 setC :: (IsMTRTestClusterClusterNestedStruct mtrTestClusterClusterNestedStruct, IsMTRTestClusterClusterSimpleStruct value) => mtrTestClusterClusterNestedStruct -> value -> IO ()
-setC mtrTestClusterClusterNestedStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterNestedStruct (mkSelector "setC:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setC mtrTestClusterClusterNestedStruct value =
+  sendMessage mtrTestClusterClusterNestedStruct setCSelector (toMTRTestClusterClusterSimpleStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @a@
-aSelector :: Selector
+aSelector :: Selector '[] (Id NSNumber)
 aSelector = mkSelector "a"
 
 -- | @Selector@ for @setA:@
-setASelector :: Selector
+setASelector :: Selector '[Id NSNumber] ()
 setASelector = mkSelector "setA:"
 
 -- | @Selector@ for @b@
-bSelector :: Selector
+bSelector :: Selector '[] (Id NSNumber)
 bSelector = mkSelector "b"
 
 -- | @Selector@ for @setB:@
-setBSelector :: Selector
+setBSelector :: Selector '[Id NSNumber] ()
 setBSelector = mkSelector "setB:"
 
 -- | @Selector@ for @c@
-cSelector :: Selector
+cSelector :: Selector '[] (Id MTRTestClusterClusterSimpleStruct)
 cSelector = mkSelector "c"
 
 -- | @Selector@ for @setC:@
-setCSelector :: Selector
+setCSelector :: Selector '[Id MTRTestClusterClusterSimpleStruct] ()
 setCSelector = mkSelector "setC:"
 

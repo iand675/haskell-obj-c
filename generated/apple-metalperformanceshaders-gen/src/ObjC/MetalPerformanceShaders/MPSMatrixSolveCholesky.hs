@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,21 +21,17 @@ module ObjC.MetalPerformanceShaders.MPSMatrixSolveCholesky
   , IsMPSMatrixSolveCholesky(..)
   , initWithDevice_upper_order_numberOfRightHandSides
   , encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrix
-  , initWithDevice_upper_order_numberOfRightHandSidesSelector
   , encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector
+  , initWithDevice_upper_order_numberOfRightHandSidesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:upper:order:numberOfRightHandSides:@
 initWithDevice_upper_order_numberOfRightHandSides :: IsMPSMatrixSolveCholesky mpsMatrixSolveCholesky => mpsMatrixSolveCholesky -> RawId -> Bool -> CULong -> CULong -> IO (Id MPSMatrixSolveCholesky)
-initWithDevice_upper_order_numberOfRightHandSides mpsMatrixSolveCholesky  device upper order numberOfRightHandSides =
-    sendMsg mpsMatrixSolveCholesky (mkSelector "initWithDevice:upper:order:numberOfRightHandSides:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong (if upper then 1 else 0), argCULong order, argCULong numberOfRightHandSides] >>= ownedObject . castPtr
+initWithDevice_upper_order_numberOfRightHandSides mpsMatrixSolveCholesky device upper order numberOfRightHandSides =
+  sendOwnedMessage mpsMatrixSolveCholesky initWithDevice_upper_order_numberOfRightHandSidesSelector device upper order numberOfRightHandSides
 
 -- | Encode a MPSMatrixSolveCholesky kernel into a command Buffer.
 --
@@ -76,21 +73,18 @@ initWithDevice_upper_order_numberOfRightHandSides mpsMatrixSolveCholesky  device
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:solutionMatrix:@
 encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrix :: (IsMPSMatrixSolveCholesky mpsMatrixSolveCholesky, IsMPSMatrix sourceMatrix, IsMPSMatrix rightHandSideMatrix, IsMPSMatrix solutionMatrix) => mpsMatrixSolveCholesky -> RawId -> sourceMatrix -> rightHandSideMatrix -> solutionMatrix -> IO ()
-encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrix mpsMatrixSolveCholesky  commandBuffer sourceMatrix rightHandSideMatrix solutionMatrix =
-  withObjCPtr sourceMatrix $ \raw_sourceMatrix ->
-    withObjCPtr rightHandSideMatrix $ \raw_rightHandSideMatrix ->
-      withObjCPtr solutionMatrix $ \raw_solutionMatrix ->
-          sendMsg mpsMatrixSolveCholesky (mkSelector "encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:solutionMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrix :: Ptr ()), argPtr (castPtr raw_rightHandSideMatrix :: Ptr ()), argPtr (castPtr raw_solutionMatrix :: Ptr ())]
+encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrix mpsMatrixSolveCholesky commandBuffer sourceMatrix rightHandSideMatrix solutionMatrix =
+  sendMessage mpsMatrixSolveCholesky encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector commandBuffer (toMPSMatrix sourceMatrix) (toMPSMatrix rightHandSideMatrix) (toMPSMatrix solutionMatrix)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:upper:order:numberOfRightHandSides:@
-initWithDevice_upper_order_numberOfRightHandSidesSelector :: Selector
+initWithDevice_upper_order_numberOfRightHandSidesSelector :: Selector '[RawId, Bool, CULong, CULong] (Id MPSMatrixSolveCholesky)
 initWithDevice_upper_order_numberOfRightHandSidesSelector = mkSelector "initWithDevice:upper:order:numberOfRightHandSides:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:solutionMatrix:@
-encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector :: Selector
+encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix] ()
 encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector = mkSelector "encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:solutionMatrix:"
 

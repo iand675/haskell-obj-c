@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.AVFAudio.AVAudioPCMBuffer
   , frameLength
   , setFrameLength
   , stride
-  , initWithPCMFormat_frameCapacitySelector
-  , initWithPCMFormat_bufferListNoCopy_deallocatorSelector
   , frameCapacitySelector
   , frameLengthSelector
+  , initWithPCMFormat_bufferListNoCopy_deallocatorSelector
+  , initWithPCMFormat_frameCapacitySelector
   , setFrameLengthSelector
   , strideSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,9 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPCMFormat:frameCapacity:@
 initWithPCMFormat_frameCapacity :: (IsAVAudioPCMBuffer avAudioPCMBuffer, IsAVAudioFormat format) => avAudioPCMBuffer -> format -> CUInt -> IO (Id AVAudioPCMBuffer)
-initWithPCMFormat_frameCapacity avAudioPCMBuffer  format frameCapacity =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avAudioPCMBuffer (mkSelector "initWithPCMFormat:frameCapacity:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argCUInt frameCapacity] >>= ownedObject . castPtr
+initWithPCMFormat_frameCapacity avAudioPCMBuffer format frameCapacity =
+  sendOwnedMessage avAudioPCMBuffer initWithPCMFormat_frameCapacitySelector (toAVAudioFormat format) frameCapacity
 
 -- | initWithPCMFormat:bufferListNoCopy:deallocator:
 --
@@ -81,9 +77,8 @@ initWithPCMFormat_frameCapacity avAudioPCMBuffer  format frameCapacity =
 --
 -- ObjC selector: @- initWithPCMFormat:bufferListNoCopy:deallocator:@
 initWithPCMFormat_bufferListNoCopy_deallocator :: (IsAVAudioPCMBuffer avAudioPCMBuffer, IsAVAudioFormat format) => avAudioPCMBuffer -> format -> Const RawId -> Ptr () -> IO (Id AVAudioPCMBuffer)
-initWithPCMFormat_bufferListNoCopy_deallocator avAudioPCMBuffer  format bufferList deallocator =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avAudioPCMBuffer (mkSelector "initWithPCMFormat:bufferListNoCopy:deallocator:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr (unRawId (unConst bufferList)) :: Ptr ()), argPtr (castPtr deallocator :: Ptr ())] >>= ownedObject . castPtr
+initWithPCMFormat_bufferListNoCopy_deallocator avAudioPCMBuffer format bufferList deallocator =
+  sendOwnedMessage avAudioPCMBuffer initWithPCMFormat_bufferListNoCopy_deallocatorSelector (toAVAudioFormat format) bufferList deallocator
 
 -- | frameCapacity
 --
@@ -91,8 +86,8 @@ initWithPCMFormat_bufferListNoCopy_deallocator avAudioPCMBuffer  format bufferLi
 --
 -- ObjC selector: @- frameCapacity@
 frameCapacity :: IsAVAudioPCMBuffer avAudioPCMBuffer => avAudioPCMBuffer -> IO CUInt
-frameCapacity avAudioPCMBuffer  =
-    sendMsg avAudioPCMBuffer (mkSelector "frameCapacity") retCUInt []
+frameCapacity avAudioPCMBuffer =
+  sendMessage avAudioPCMBuffer frameCapacitySelector
 
 -- | frameLength
 --
@@ -102,8 +97,8 @@ frameCapacity avAudioPCMBuffer  =
 --
 -- ObjC selector: @- frameLength@
 frameLength :: IsAVAudioPCMBuffer avAudioPCMBuffer => avAudioPCMBuffer -> IO CUInt
-frameLength avAudioPCMBuffer  =
-    sendMsg avAudioPCMBuffer (mkSelector "frameLength") retCUInt []
+frameLength avAudioPCMBuffer =
+  sendMessage avAudioPCMBuffer frameLengthSelector
 
 -- | frameLength
 --
@@ -113,8 +108,8 @@ frameLength avAudioPCMBuffer  =
 --
 -- ObjC selector: @- setFrameLength:@
 setFrameLength :: IsAVAudioPCMBuffer avAudioPCMBuffer => avAudioPCMBuffer -> CUInt -> IO ()
-setFrameLength avAudioPCMBuffer  value =
-    sendMsg avAudioPCMBuffer (mkSelector "setFrameLength:") retVoid [argCUInt value]
+setFrameLength avAudioPCMBuffer value =
+  sendMessage avAudioPCMBuffer setFrameLengthSelector value
 
 -- | stride
 --
@@ -124,34 +119,34 @@ setFrameLength avAudioPCMBuffer  value =
 --
 -- ObjC selector: @- stride@
 stride :: IsAVAudioPCMBuffer avAudioPCMBuffer => avAudioPCMBuffer -> IO CULong
-stride avAudioPCMBuffer  =
-    sendMsg avAudioPCMBuffer (mkSelector "stride") retCULong []
+stride avAudioPCMBuffer =
+  sendMessage avAudioPCMBuffer strideSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPCMFormat:frameCapacity:@
-initWithPCMFormat_frameCapacitySelector :: Selector
+initWithPCMFormat_frameCapacitySelector :: Selector '[Id AVAudioFormat, CUInt] (Id AVAudioPCMBuffer)
 initWithPCMFormat_frameCapacitySelector = mkSelector "initWithPCMFormat:frameCapacity:"
 
 -- | @Selector@ for @initWithPCMFormat:bufferListNoCopy:deallocator:@
-initWithPCMFormat_bufferListNoCopy_deallocatorSelector :: Selector
+initWithPCMFormat_bufferListNoCopy_deallocatorSelector :: Selector '[Id AVAudioFormat, Const RawId, Ptr ()] (Id AVAudioPCMBuffer)
 initWithPCMFormat_bufferListNoCopy_deallocatorSelector = mkSelector "initWithPCMFormat:bufferListNoCopy:deallocator:"
 
 -- | @Selector@ for @frameCapacity@
-frameCapacitySelector :: Selector
+frameCapacitySelector :: Selector '[] CUInt
 frameCapacitySelector = mkSelector "frameCapacity"
 
 -- | @Selector@ for @frameLength@
-frameLengthSelector :: Selector
+frameLengthSelector :: Selector '[] CUInt
 frameLengthSelector = mkSelector "frameLength"
 
 -- | @Selector@ for @setFrameLength:@
-setFrameLengthSelector :: Selector
+setFrameLengthSelector :: Selector '[CUInt] ()
 setFrameLengthSelector = mkSelector "setFrameLength:"
 
 -- | @Selector@ for @stride@
-strideSelector :: Selector
+strideSelector :: Selector '[] CULong
 strideSelector = mkSelector "stride"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.AVFAudio.AVAudioSessionCapability
   , IsAVAudioSessionCapability(..)
   , supported
   , enabled
-  , supportedSelector
   , enabledSelector
+  , supportedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,25 +32,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supported@
 supported :: IsAVAudioSessionCapability avAudioSessionCapability => avAudioSessionCapability -> IO Bool
-supported avAudioSessionCapability  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSessionCapability (mkSelector "supported") retCULong []
+supported avAudioSessionCapability =
+  sendMessage avAudioSessionCapability supportedSelector
 
 -- | A Boolean value that indicates whether the capability is enabled.
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAVAudioSessionCapability avAudioSessionCapability => avAudioSessionCapability -> IO Bool
-enabled avAudioSessionCapability  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioSessionCapability (mkSelector "enabled") retCULong []
+enabled avAudioSessionCapability =
+  sendMessage avAudioSessionCapability enabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 

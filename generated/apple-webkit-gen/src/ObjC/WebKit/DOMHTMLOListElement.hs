@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.WebKit.DOMHTMLOListElement
   , setType
   , compactSelector
   , setCompactSelector
-  , startSelector
   , setStartSelector
-  , typeSelector
   , setTypeSelector
+  , startSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,60 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- compact@
 compact :: IsDOMHTMLOListElement domhtmloListElement => domhtmloListElement -> IO Bool
-compact domhtmloListElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmloListElement (mkSelector "compact") retCULong []
+compact domhtmloListElement =
+  sendMessage domhtmloListElement compactSelector
 
 -- | @- setCompact:@
 setCompact :: IsDOMHTMLOListElement domhtmloListElement => domhtmloListElement -> Bool -> IO ()
-setCompact domhtmloListElement  value =
-    sendMsg domhtmloListElement (mkSelector "setCompact:") retVoid [argCULong (if value then 1 else 0)]
+setCompact domhtmloListElement value =
+  sendMessage domhtmloListElement setCompactSelector value
 
 -- | @- start@
 start :: IsDOMHTMLOListElement domhtmloListElement => domhtmloListElement -> IO CInt
-start domhtmloListElement  =
-    sendMsg domhtmloListElement (mkSelector "start") retCInt []
+start domhtmloListElement =
+  sendMessage domhtmloListElement startSelector
 
 -- | @- setStart:@
 setStart :: IsDOMHTMLOListElement domhtmloListElement => domhtmloListElement -> CInt -> IO ()
-setStart domhtmloListElement  value =
-    sendMsg domhtmloListElement (mkSelector "setStart:") retVoid [argCInt value]
+setStart domhtmloListElement value =
+  sendMessage domhtmloListElement setStartSelector value
 
 -- | @- type@
 type_ :: IsDOMHTMLOListElement domhtmloListElement => domhtmloListElement -> IO (Id NSString)
-type_ domhtmloListElement  =
-    sendMsg domhtmloListElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmloListElement =
+  sendMessage domhtmloListElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLOListElement domhtmloListElement, IsNSString value) => domhtmloListElement -> value -> IO ()
-setType domhtmloListElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmloListElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmloListElement value =
+  sendMessage domhtmloListElement setTypeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @compact@
-compactSelector :: Selector
+compactSelector :: Selector '[] Bool
 compactSelector = mkSelector "compact"
 
 -- | @Selector@ for @setCompact:@
-setCompactSelector :: Selector
+setCompactSelector :: Selector '[Bool] ()
 setCompactSelector = mkSelector "setCompact:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] CInt
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @setStart:@
-setStartSelector :: Selector
+setStartSelector :: Selector '[CInt] ()
 setStartSelector = mkSelector "setStart:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 

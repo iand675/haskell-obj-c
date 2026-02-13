@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.HealthKit.HKAttachmentStore
   , removeAttachment_fromObject_completion
   , getDataForAttachment_completion
   , streamDataForAttachment_dataHandler
-  , initWithHealthStoreSelector
   , addAttachmentToObject_name_contentType_URL_metadata_completionSelector
-  , removeAttachment_fromObject_completionSelector
   , getDataForAttachment_completionSelector
+  , initWithHealthStoreSelector
+  , removeAttachment_fromObject_completionSelector
   , streamDataForAttachment_dataHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,9 +45,8 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 --
 -- ObjC selector: @- initWithHealthStore:@
 initWithHealthStore :: (IsHKAttachmentStore hkAttachmentStore, IsHKHealthStore healthStore) => hkAttachmentStore -> healthStore -> IO (Id HKAttachmentStore)
-initWithHealthStore hkAttachmentStore  healthStore =
-  withObjCPtr healthStore $ \raw_healthStore ->
-      sendMsg hkAttachmentStore (mkSelector "initWithHealthStore:") (retPtr retVoid) [argPtr (castPtr raw_healthStore :: Ptr ())] >>= ownedObject . castPtr
+initWithHealthStore hkAttachmentStore healthStore =
+  sendOwnedMessage hkAttachmentStore initWithHealthStoreSelector (toHKHealthStore healthStore)
 
 -- | addAttachmentToObject:name:contentType:URL:metadata:completion:
 --
@@ -70,13 +66,8 @@ initWithHealthStore hkAttachmentStore  healthStore =
 --
 -- ObjC selector: @- addAttachmentToObject:name:contentType:URL:metadata:completion:@
 addAttachmentToObject_name_contentType_URL_metadata_completion :: (IsHKAttachmentStore hkAttachmentStore, IsHKObject object, IsNSString name, IsUTType contentType, IsNSURL url, IsNSDictionary metadata) => hkAttachmentStore -> object -> name -> contentType -> url -> metadata -> Ptr () -> IO ()
-addAttachmentToObject_name_contentType_URL_metadata_completion hkAttachmentStore  object name contentType url metadata completion =
-  withObjCPtr object $ \raw_object ->
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr contentType $ \raw_contentType ->
-        withObjCPtr url $ \raw_url ->
-          withObjCPtr metadata $ \raw_metadata ->
-              sendMsg hkAttachmentStore (mkSelector "addAttachmentToObject:name:contentType:URL:metadata:completion:") retVoid [argPtr (castPtr raw_object :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_contentType :: Ptr ()), argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addAttachmentToObject_name_contentType_URL_metadata_completion hkAttachmentStore object name contentType url metadata completion =
+  sendMessage hkAttachmentStore addAttachmentToObject_name_contentType_URL_metadata_completionSelector (toHKObject object) (toNSString name) (toUTType contentType) (toNSURL url) (toNSDictionary metadata) completion
 
 -- | removeAttachment:fromObject:completion:
 --
@@ -90,10 +81,8 @@ addAttachmentToObject_name_contentType_URL_metadata_completion hkAttachmentStore
 --
 -- ObjC selector: @- removeAttachment:fromObject:completion:@
 removeAttachment_fromObject_completion :: (IsHKAttachmentStore hkAttachmentStore, IsHKAttachment attachment, IsHKObject object) => hkAttachmentStore -> attachment -> object -> Ptr () -> IO ()
-removeAttachment_fromObject_completion hkAttachmentStore  attachment object completion =
-  withObjCPtr attachment $ \raw_attachment ->
-    withObjCPtr object $ \raw_object ->
-        sendMsg hkAttachmentStore (mkSelector "removeAttachment:fromObject:completion:") retVoid [argPtr (castPtr raw_attachment :: Ptr ()), argPtr (castPtr raw_object :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeAttachment_fromObject_completion hkAttachmentStore attachment object completion =
+  sendMessage hkAttachmentStore removeAttachment_fromObject_completionSelector (toHKAttachment attachment) (toHKObject object) completion
 
 -- | getDataForAttachment:completion:
 --
@@ -109,9 +98,8 @@ removeAttachment_fromObject_completion hkAttachmentStore  attachment object comp
 --
 -- ObjC selector: @- getDataForAttachment:completion:@
 getDataForAttachment_completion :: (IsHKAttachmentStore hkAttachmentStore, IsHKAttachment attachment) => hkAttachmentStore -> attachment -> Ptr () -> IO (Id NSProgress)
-getDataForAttachment_completion hkAttachmentStore  attachment completion =
-  withObjCPtr attachment $ \raw_attachment ->
-      sendMsg hkAttachmentStore (mkSelector "getDataForAttachment:completion:") (retPtr retVoid) [argPtr (castPtr raw_attachment :: Ptr ()), argPtr (castPtr completion :: Ptr ())] >>= retainedObject . castPtr
+getDataForAttachment_completion hkAttachmentStore attachment completion =
+  sendMessage hkAttachmentStore getDataForAttachment_completionSelector (toHKAttachment attachment) completion
 
 -- | streamDataForAttachment:dataHandler:
 --
@@ -127,31 +115,30 @@ getDataForAttachment_completion hkAttachmentStore  attachment completion =
 --
 -- ObjC selector: @- streamDataForAttachment:dataHandler:@
 streamDataForAttachment_dataHandler :: (IsHKAttachmentStore hkAttachmentStore, IsHKAttachment attachment) => hkAttachmentStore -> attachment -> Ptr () -> IO (Id NSProgress)
-streamDataForAttachment_dataHandler hkAttachmentStore  attachment dataHandler =
-  withObjCPtr attachment $ \raw_attachment ->
-      sendMsg hkAttachmentStore (mkSelector "streamDataForAttachment:dataHandler:") (retPtr retVoid) [argPtr (castPtr raw_attachment :: Ptr ()), argPtr (castPtr dataHandler :: Ptr ())] >>= retainedObject . castPtr
+streamDataForAttachment_dataHandler hkAttachmentStore attachment dataHandler =
+  sendMessage hkAttachmentStore streamDataForAttachment_dataHandlerSelector (toHKAttachment attachment) dataHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHealthStore:@
-initWithHealthStoreSelector :: Selector
+initWithHealthStoreSelector :: Selector '[Id HKHealthStore] (Id HKAttachmentStore)
 initWithHealthStoreSelector = mkSelector "initWithHealthStore:"
 
 -- | @Selector@ for @addAttachmentToObject:name:contentType:URL:metadata:completion:@
-addAttachmentToObject_name_contentType_URL_metadata_completionSelector :: Selector
+addAttachmentToObject_name_contentType_URL_metadata_completionSelector :: Selector '[Id HKObject, Id NSString, Id UTType, Id NSURL, Id NSDictionary, Ptr ()] ()
 addAttachmentToObject_name_contentType_URL_metadata_completionSelector = mkSelector "addAttachmentToObject:name:contentType:URL:metadata:completion:"
 
 -- | @Selector@ for @removeAttachment:fromObject:completion:@
-removeAttachment_fromObject_completionSelector :: Selector
+removeAttachment_fromObject_completionSelector :: Selector '[Id HKAttachment, Id HKObject, Ptr ()] ()
 removeAttachment_fromObject_completionSelector = mkSelector "removeAttachment:fromObject:completion:"
 
 -- | @Selector@ for @getDataForAttachment:completion:@
-getDataForAttachment_completionSelector :: Selector
+getDataForAttachment_completionSelector :: Selector '[Id HKAttachment, Ptr ()] (Id NSProgress)
 getDataForAttachment_completionSelector = mkSelector "getDataForAttachment:completion:"
 
 -- | @Selector@ for @streamDataForAttachment:dataHandler:@
-streamDataForAttachment_dataHandlerSelector :: Selector
+streamDataForAttachment_dataHandlerSelector :: Selector '[Id HKAttachment, Ptr ()] (Id NSProgress)
 streamDataForAttachment_dataHandlerSelector = mkSelector "streamDataForAttachment:dataHandler:"
 

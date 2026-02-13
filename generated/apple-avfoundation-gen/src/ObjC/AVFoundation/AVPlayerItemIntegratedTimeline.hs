@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.AVFoundation.AVPlayerItemIntegratedTimeline
   , seekToDate_completionHandler
   , currentSnapshot
   , currentDate
+  , addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlockSelector
+  , currentDateSelector
+  , currentSnapshotSelector
   , initSelector
   , newSelector
-  , addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlockSelector
   , removeTimeObserverSelector
   , seekToDate_completionHandlerSelector
-  , currentSnapshotSelector
-  , currentDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerItemIntegratedTimeline avPlayerItemIntegratedTimeline => avPlayerItemIntegratedTimeline -> IO (Id AVPlayerItemIntegratedTimeline)
-init_ avPlayerItemIntegratedTimeline  =
-    sendMsg avPlayerItemIntegratedTimeline (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerItemIntegratedTimeline =
+  sendOwnedMessage avPlayerItemIntegratedTimeline initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerItemIntegratedTimeline)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerItemIntegratedTimeline"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | addBoundaryTimeObserverForSegment
 --
@@ -73,11 +70,8 @@ new  =
 --
 -- ObjC selector: @- addBoundaryTimeObserverForSegment:offsetsIntoSegment:queue:usingBlock:@
 addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlock :: (IsAVPlayerItemIntegratedTimeline avPlayerItemIntegratedTimeline, IsAVPlayerItemSegment segment, IsNSArray offsetsIntoSegment, IsNSObject queue) => avPlayerItemIntegratedTimeline -> segment -> offsetsIntoSegment -> queue -> Ptr () -> IO RawId
-addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlock avPlayerItemIntegratedTimeline  segment offsetsIntoSegment queue block =
-  withObjCPtr segment $ \raw_segment ->
-    withObjCPtr offsetsIntoSegment $ \raw_offsetsIntoSegment ->
-      withObjCPtr queue $ \raw_queue ->
-          fmap (RawId . castPtr) $ sendMsg avPlayerItemIntegratedTimeline (mkSelector "addBoundaryTimeObserverForSegment:offsetsIntoSegment:queue:usingBlock:") (retPtr retVoid) [argPtr (castPtr raw_segment :: Ptr ()), argPtr (castPtr raw_offsetsIntoSegment :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlock avPlayerItemIntegratedTimeline segment offsetsIntoSegment queue block =
+  sendMessage avPlayerItemIntegratedTimeline addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlockSelector (toAVPlayerItemSegment segment) (toNSArray offsetsIntoSegment) (toNSObject queue) block
 
 -- | removeTimeObserver:
 --
@@ -87,8 +81,8 @@ addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlock avPlayerIt
 --
 -- ObjC selector: @- removeTimeObserver:@
 removeTimeObserver :: IsAVPlayerItemIntegratedTimeline avPlayerItemIntegratedTimeline => avPlayerItemIntegratedTimeline -> RawId -> IO ()
-removeTimeObserver avPlayerItemIntegratedTimeline  observer =
-    sendMsg avPlayerItemIntegratedTimeline (mkSelector "removeTimeObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+removeTimeObserver avPlayerItemIntegratedTimeline observer =
+  sendMessage avPlayerItemIntegratedTimeline removeTimeObserverSelector observer
 
 -- | seekToDate
 --
@@ -102,9 +96,8 @@ removeTimeObserver avPlayerItemIntegratedTimeline  observer =
 --
 -- ObjC selector: @- seekToDate:completionHandler:@
 seekToDate_completionHandler :: (IsAVPlayerItemIntegratedTimeline avPlayerItemIntegratedTimeline, IsNSDate date) => avPlayerItemIntegratedTimeline -> date -> Ptr () -> IO ()
-seekToDate_completionHandler avPlayerItemIntegratedTimeline  date completionHandler =
-  withObjCPtr date $ \raw_date ->
-      sendMsg avPlayerItemIntegratedTimeline (mkSelector "seekToDate:completionHandler:") retVoid [argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+seekToDate_completionHandler avPlayerItemIntegratedTimeline date completionHandler =
+  sendMessage avPlayerItemIntegratedTimeline seekToDate_completionHandlerSelector (toNSDate date) completionHandler
 
 -- | currentSnapshot
 --
@@ -114,8 +107,8 @@ seekToDate_completionHandler avPlayerItemIntegratedTimeline  date completionHand
 --
 -- ObjC selector: @- currentSnapshot@
 currentSnapshot :: IsAVPlayerItemIntegratedTimeline avPlayerItemIntegratedTimeline => avPlayerItemIntegratedTimeline -> IO (Id AVPlayerItemIntegratedTimelineSnapshot)
-currentSnapshot avPlayerItemIntegratedTimeline  =
-    sendMsg avPlayerItemIntegratedTimeline (mkSelector "currentSnapshot") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentSnapshot avPlayerItemIntegratedTimeline =
+  sendMessage avPlayerItemIntegratedTimeline currentSnapshotSelector
 
 -- | currentDate
 --
@@ -123,38 +116,38 @@ currentSnapshot avPlayerItemIntegratedTimeline  =
 --
 -- ObjC selector: @- currentDate@
 currentDate :: IsAVPlayerItemIntegratedTimeline avPlayerItemIntegratedTimeline => avPlayerItemIntegratedTimeline -> IO (Id NSDate)
-currentDate avPlayerItemIntegratedTimeline  =
-    sendMsg avPlayerItemIntegratedTimeline (mkSelector "currentDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentDate avPlayerItemIntegratedTimeline =
+  sendMessage avPlayerItemIntegratedTimeline currentDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerItemIntegratedTimeline)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerItemIntegratedTimeline)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @addBoundaryTimeObserverForSegment:offsetsIntoSegment:queue:usingBlock:@
-addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlockSelector :: Selector
+addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlockSelector :: Selector '[Id AVPlayerItemSegment, Id NSArray, Id NSObject, Ptr ()] RawId
 addBoundaryTimeObserverForSegment_offsetsIntoSegment_queue_usingBlockSelector = mkSelector "addBoundaryTimeObserverForSegment:offsetsIntoSegment:queue:usingBlock:"
 
 -- | @Selector@ for @removeTimeObserver:@
-removeTimeObserverSelector :: Selector
+removeTimeObserverSelector :: Selector '[RawId] ()
 removeTimeObserverSelector = mkSelector "removeTimeObserver:"
 
 -- | @Selector@ for @seekToDate:completionHandler:@
-seekToDate_completionHandlerSelector :: Selector
+seekToDate_completionHandlerSelector :: Selector '[Id NSDate, Ptr ()] ()
 seekToDate_completionHandlerSelector = mkSelector "seekToDate:completionHandler:"
 
 -- | @Selector@ for @currentSnapshot@
-currentSnapshotSelector :: Selector
+currentSnapshotSelector :: Selector '[] (Id AVPlayerItemIntegratedTimelineSnapshot)
 currentSnapshotSelector = mkSelector "currentSnapshot"
 
 -- | @Selector@ for @currentDate@
-currentDateSelector :: Selector
+currentDateSelector :: Selector '[] (Id NSDate)
 currentDateSelector = mkSelector "currentDate"
 

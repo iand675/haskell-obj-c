@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,50 +38,46 @@ module ObjC.WebKit.DOMHTMLAnchorElement
   , pathname
   , search
   , hashName
-  , charsetSelector
-  , setCharsetSelector
-  , coordsSelector
-  , setCoordsSelector
-  , hreflangSelector
-  , setHreflangSelector
-  , nameSelector
-  , setNameSelector
-  , relSelector
-  , setRelSelector
-  , revSelector
-  , setRevSelector
-  , shapeSelector
-  , setShapeSelector
-  , targetSelector
-  , setTargetSelector
-  , typeSelector
-  , setTypeSelector
-  , accessKeySelector
-  , setAccessKeySelector
-  , textSelector
   , absoluteLinkURLSelector
-  , hrefSelector
-  , setHrefSelector
-  , protocolSelector
+  , accessKeySelector
+  , charsetSelector
+  , coordsSelector
+  , hashNameSelector
   , hostSelector
   , hostnameSelector
-  , portSelector
+  , hrefSelector
+  , hreflangSelector
+  , nameSelector
   , pathnameSelector
+  , portSelector
+  , protocolSelector
+  , relSelector
+  , revSelector
   , searchSelector
-  , hashNameSelector
+  , setAccessKeySelector
+  , setCharsetSelector
+  , setCoordsSelector
+  , setHrefSelector
+  , setHreflangSelector
+  , setNameSelector
+  , setRelSelector
+  , setRevSelector
+  , setShapeSelector
+  , setTargetSelector
+  , setTypeSelector
+  , shapeSelector
+  , targetSelector
+  , textSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,295 +86,284 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- charset@
 charset :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-charset domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "charset") (retPtr retVoid) [] >>= retainedObject . castPtr
+charset domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement charsetSelector
 
 -- | @- setCharset:@
 setCharset :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setCharset domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setCharset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCharset domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setCharsetSelector (toNSString value)
 
 -- | @- coords@
 coords :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-coords domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "coords") (retPtr retVoid) [] >>= retainedObject . castPtr
+coords domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement coordsSelector
 
 -- | @- setCoords:@
 setCoords :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setCoords domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setCoords:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCoords domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setCoordsSelector (toNSString value)
 
 -- | @- hreflang@
 hreflang :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-hreflang domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "hreflang") (retPtr retVoid) [] >>= retainedObject . castPtr
+hreflang domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement hreflangSelector
 
 -- | @- setHreflang:@
 setHreflang :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setHreflang domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setHreflang:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHreflang domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setHreflangSelector (toNSString value)
 
 -- | @- name@
 name :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-name domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setName domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setNameSelector (toNSString value)
 
 -- | @- rel@
 rel :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-rel domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "rel") (retPtr retVoid) [] >>= retainedObject . castPtr
+rel domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement relSelector
 
 -- | @- setRel:@
 setRel :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setRel domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setRel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRel domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setRelSelector (toNSString value)
 
 -- | @- rev@
 rev :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-rev domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "rev") (retPtr retVoid) [] >>= retainedObject . castPtr
+rev domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement revSelector
 
 -- | @- setRev:@
 setRev :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setRev domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setRev:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRev domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setRevSelector (toNSString value)
 
 -- | @- shape@
 shape :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-shape domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+shape domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement shapeSelector
 
 -- | @- setShape:@
 setShape :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setShape domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setShape:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShape domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setShapeSelector (toNSString value)
 
 -- | @- target@
 target :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-target domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement targetSelector
 
 -- | @- setTarget:@
 setTarget :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setTarget domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTarget domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setTargetSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-type_ domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setType domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setTypeSelector (toNSString value)
 
 -- | @- accessKey@
 accessKey :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-accessKey domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "accessKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessKey domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement accessKeySelector
 
 -- | @- setAccessKey:@
 setAccessKey :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setAccessKey domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setAccessKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessKey domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setAccessKeySelector (toNSString value)
 
 -- | @- text@
 text :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-text domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement textSelector
 
 -- | @- absoluteLinkURL@
 absoluteLinkURL :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSURL)
-absoluteLinkURL domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "absoluteLinkURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+absoluteLinkURL domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement absoluteLinkURLSelector
 
 -- | @- href@
 href :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-href domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "href") (retPtr retVoid) [] >>= retainedObject . castPtr
+href domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement hrefSelector
 
 -- | @- setHref:@
 setHref :: (IsDOMHTMLAnchorElement domhtmlAnchorElement, IsNSString value) => domhtmlAnchorElement -> value -> IO ()
-setHref domhtmlAnchorElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAnchorElement (mkSelector "setHref:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHref domhtmlAnchorElement value =
+  sendMessage domhtmlAnchorElement setHrefSelector (toNSString value)
 
 -- | @- protocol@
 protocol :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-protocol domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "protocol") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocol domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement protocolSelector
 
 -- | @- host@
 host :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-host domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "host") (retPtr retVoid) [] >>= retainedObject . castPtr
+host domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement hostSelector
 
 -- | @- hostname@
 hostname :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-hostname domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "hostname") (retPtr retVoid) [] >>= retainedObject . castPtr
+hostname domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement hostnameSelector
 
 -- | @- port@
 port :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-port domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "port") (retPtr retVoid) [] >>= retainedObject . castPtr
+port domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement portSelector
 
 -- | @- pathname@
 pathname :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-pathname domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "pathname") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathname domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement pathnameSelector
 
 -- | @- search@
 search :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-search domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "search") (retPtr retVoid) [] >>= retainedObject . castPtr
+search domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement searchSelector
 
 -- | @- hashName@
 hashName :: IsDOMHTMLAnchorElement domhtmlAnchorElement => domhtmlAnchorElement -> IO (Id NSString)
-hashName domhtmlAnchorElement  =
-    sendMsg domhtmlAnchorElement (mkSelector "hashName") (retPtr retVoid) [] >>= retainedObject . castPtr
+hashName domhtmlAnchorElement =
+  sendMessage domhtmlAnchorElement hashNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @charset@
-charsetSelector :: Selector
+charsetSelector :: Selector '[] (Id NSString)
 charsetSelector = mkSelector "charset"
 
 -- | @Selector@ for @setCharset:@
-setCharsetSelector :: Selector
+setCharsetSelector :: Selector '[Id NSString] ()
 setCharsetSelector = mkSelector "setCharset:"
 
 -- | @Selector@ for @coords@
-coordsSelector :: Selector
+coordsSelector :: Selector '[] (Id NSString)
 coordsSelector = mkSelector "coords"
 
 -- | @Selector@ for @setCoords:@
-setCoordsSelector :: Selector
+setCoordsSelector :: Selector '[Id NSString] ()
 setCoordsSelector = mkSelector "setCoords:"
 
 -- | @Selector@ for @hreflang@
-hreflangSelector :: Selector
+hreflangSelector :: Selector '[] (Id NSString)
 hreflangSelector = mkSelector "hreflang"
 
 -- | @Selector@ for @setHreflang:@
-setHreflangSelector :: Selector
+setHreflangSelector :: Selector '[Id NSString] ()
 setHreflangSelector = mkSelector "setHreflang:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @rel@
-relSelector :: Selector
+relSelector :: Selector '[] (Id NSString)
 relSelector = mkSelector "rel"
 
 -- | @Selector@ for @setRel:@
-setRelSelector :: Selector
+setRelSelector :: Selector '[Id NSString] ()
 setRelSelector = mkSelector "setRel:"
 
 -- | @Selector@ for @rev@
-revSelector :: Selector
+revSelector :: Selector '[] (Id NSString)
 revSelector = mkSelector "rev"
 
 -- | @Selector@ for @setRev:@
-setRevSelector :: Selector
+setRevSelector :: Selector '[Id NSString] ()
 setRevSelector = mkSelector "setRev:"
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] (Id NSString)
 shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @setShape:@
-setShapeSelector :: Selector
+setShapeSelector :: Selector '[Id NSString] ()
 setShapeSelector = mkSelector "setShape:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id NSString)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id NSString] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @accessKey@
-accessKeySelector :: Selector
+accessKeySelector :: Selector '[] (Id NSString)
 accessKeySelector = mkSelector "accessKey"
 
 -- | @Selector@ for @setAccessKey:@
-setAccessKeySelector :: Selector
+setAccessKeySelector :: Selector '[Id NSString] ()
 setAccessKeySelector = mkSelector "setAccessKey:"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @absoluteLinkURL@
-absoluteLinkURLSelector :: Selector
+absoluteLinkURLSelector :: Selector '[] (Id NSURL)
 absoluteLinkURLSelector = mkSelector "absoluteLinkURL"
 
 -- | @Selector@ for @href@
-hrefSelector :: Selector
+hrefSelector :: Selector '[] (Id NSString)
 hrefSelector = mkSelector "href"
 
 -- | @Selector@ for @setHref:@
-setHrefSelector :: Selector
+setHrefSelector :: Selector '[Id NSString] ()
 setHrefSelector = mkSelector "setHref:"
 
 -- | @Selector@ for @protocol@
-protocolSelector :: Selector
+protocolSelector :: Selector '[] (Id NSString)
 protocolSelector = mkSelector "protocol"
 
 -- | @Selector@ for @host@
-hostSelector :: Selector
+hostSelector :: Selector '[] (Id NSString)
 hostSelector = mkSelector "host"
 
 -- | @Selector@ for @hostname@
-hostnameSelector :: Selector
+hostnameSelector :: Selector '[] (Id NSString)
 hostnameSelector = mkSelector "hostname"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] (Id NSString)
 portSelector = mkSelector "port"
 
 -- | @Selector@ for @pathname@
-pathnameSelector :: Selector
+pathnameSelector :: Selector '[] (Id NSString)
 pathnameSelector = mkSelector "pathname"
 
 -- | @Selector@ for @search@
-searchSelector :: Selector
+searchSelector :: Selector '[] (Id NSString)
 searchSelector = mkSelector "search"
 
 -- | @Selector@ for @hashName@
-hashNameSelector :: Selector
+hashNameSelector :: Selector '[] (Id NSString)
 hashNameSelector = mkSelector "hashName"
 

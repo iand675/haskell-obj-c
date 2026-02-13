@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRRVCCleanModeClusterChangeToModeParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , newModeSelector
-  , setNewModeSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setNewModeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- newMode@
 newMode :: IsMTRRVCCleanModeClusterChangeToModeParams mtrrvcCleanModeClusterChangeToModeParams => mtrrvcCleanModeClusterChangeToModeParams -> IO (Id NSNumber)
-newMode mtrrvcCleanModeClusterChangeToModeParams  =
-    sendMsg mtrrvcCleanModeClusterChangeToModeParams (mkSelector "newMode") (retPtr retVoid) [] >>= ownedObject . castPtr
+newMode mtrrvcCleanModeClusterChangeToModeParams =
+  sendOwnedMessage mtrrvcCleanModeClusterChangeToModeParams newModeSelector
 
 -- | @- setNewMode:@
 setNewMode :: (IsMTRRVCCleanModeClusterChangeToModeParams mtrrvcCleanModeClusterChangeToModeParams, IsNSNumber value) => mtrrvcCleanModeClusterChangeToModeParams -> value -> IO ()
-setNewMode mtrrvcCleanModeClusterChangeToModeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrrvcCleanModeClusterChangeToModeParams (mkSelector "setNewMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNewMode mtrrvcCleanModeClusterChangeToModeParams value =
+  sendMessage mtrrvcCleanModeClusterChangeToModeParams setNewModeSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setNewMode mtrrvcCleanModeClusterChangeToModeParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRRVCCleanModeClusterChangeToModeParams mtrrvcCleanModeClusterChangeToModeParams => mtrrvcCleanModeClusterChangeToModeParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrrvcCleanModeClusterChangeToModeParams  =
-    sendMsg mtrrvcCleanModeClusterChangeToModeParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrrvcCleanModeClusterChangeToModeParams =
+  sendMessage mtrrvcCleanModeClusterChangeToModeParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrrvcCleanModeClusterChangeToModeParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRRVCCleanModeClusterChangeToModeParams mtrrvcCleanModeClusterChangeToModeParams, IsNSNumber value) => mtrrvcCleanModeClusterChangeToModeParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrrvcCleanModeClusterChangeToModeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrrvcCleanModeClusterChangeToModeParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrrvcCleanModeClusterChangeToModeParams value =
+  sendMessage mtrrvcCleanModeClusterChangeToModeParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrrvcCleanModeClusterChangeToModeParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRRVCCleanModeClusterChangeToModeParams mtrrvcCleanModeClusterChangeToModeParams => mtrrvcCleanModeClusterChangeToModeParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrrvcCleanModeClusterChangeToModeParams  =
-    sendMsg mtrrvcCleanModeClusterChangeToModeParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrrvcCleanModeClusterChangeToModeParams =
+  sendMessage mtrrvcCleanModeClusterChangeToModeParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrrvcCleanModeClusterChangeToModeParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRRVCCleanModeClusterChangeToModeParams mtrrvcCleanModeClusterChangeToModeParams, IsNSNumber value) => mtrrvcCleanModeClusterChangeToModeParams -> value -> IO ()
-setServerSideProcessingTimeout mtrrvcCleanModeClusterChangeToModeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrrvcCleanModeClusterChangeToModeParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrrvcCleanModeClusterChangeToModeParams value =
+  sendMessage mtrrvcCleanModeClusterChangeToModeParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newMode@
-newModeSelector :: Selector
+newModeSelector :: Selector '[] (Id NSNumber)
 newModeSelector = mkSelector "newMode"
 
 -- | @Selector@ for @setNewMode:@
-setNewModeSelector :: Selector
+setNewModeSelector :: Selector '[Id NSNumber] ()
 setNewModeSelector = mkSelector "setNewMode:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,30 +26,26 @@ module ObjC.ModelIO.MDLVertexDescriptor
   , setAttributes
   , layouts
   , setLayouts
-  , initWithVertexDescriptorSelector
-  , attributeNamedSelector
   , addOrReplaceAttributeSelector
+  , attributeNamedSelector
+  , attributesSelector
+  , initWithVertexDescriptorSelector
+  , layoutsSelector
   , removeAttributeNamedSelector
   , resetSelector
-  , setPackedStridesSelector
-  , setPackedOffsetsSelector
-  , attributesSelector
   , setAttributesSelector
-  , layoutsSelector
   , setLayoutsSelector
+  , setPackedOffsetsSelector
+  , setPackedStridesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,9 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithVertexDescriptor:@
 initWithVertexDescriptor :: (IsMDLVertexDescriptor mdlVertexDescriptor, IsMDLVertexDescriptor vertexDescriptor) => mdlVertexDescriptor -> vertexDescriptor -> IO (Id MDLVertexDescriptor)
-initWithVertexDescriptor mdlVertexDescriptor  vertexDescriptor =
-  withObjCPtr vertexDescriptor $ \raw_vertexDescriptor ->
-      sendMsg mdlVertexDescriptor (mkSelector "initWithVertexDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_vertexDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithVertexDescriptor mdlVertexDescriptor vertexDescriptor =
+  sendOwnedMessage mdlVertexDescriptor initWithVertexDescriptorSelector (toMDLVertexDescriptor vertexDescriptor)
 
 -- | attributeNamed:
 --
@@ -75,9 +71,8 @@ initWithVertexDescriptor mdlVertexDescriptor  vertexDescriptor =
 --
 -- ObjC selector: @- attributeNamed:@
 attributeNamed :: (IsMDLVertexDescriptor mdlVertexDescriptor, IsNSString name) => mdlVertexDescriptor -> name -> IO (Id MDLVertexAttribute)
-attributeNamed mdlVertexDescriptor  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlVertexDescriptor (mkSelector "attributeNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+attributeNamed mdlVertexDescriptor name =
+  sendMessage mdlVertexDescriptor attributeNamedSelector (toNSString name)
 
 -- | addOrReplaceAttribute:
 --
@@ -85,9 +80,8 @@ attributeNamed mdlVertexDescriptor  name =
 --
 -- ObjC selector: @- addOrReplaceAttribute:@
 addOrReplaceAttribute :: (IsMDLVertexDescriptor mdlVertexDescriptor, IsMDLVertexAttribute attribute) => mdlVertexDescriptor -> attribute -> IO ()
-addOrReplaceAttribute mdlVertexDescriptor  attribute =
-  withObjCPtr attribute $ \raw_attribute ->
-      sendMsg mdlVertexDescriptor (mkSelector "addOrReplaceAttribute:") retVoid [argPtr (castPtr raw_attribute :: Ptr ())]
+addOrReplaceAttribute mdlVertexDescriptor attribute =
+  sendMessage mdlVertexDescriptor addOrReplaceAttributeSelector (toMDLVertexAttribute attribute)
 
 -- | removeAttributeNamed:
 --
@@ -95,9 +89,8 @@ addOrReplaceAttribute mdlVertexDescriptor  attribute =
 --
 -- ObjC selector: @- removeAttributeNamed:@
 removeAttributeNamed :: (IsMDLVertexDescriptor mdlVertexDescriptor, IsNSString name) => mdlVertexDescriptor -> name -> IO ()
-removeAttributeNamed mdlVertexDescriptor  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlVertexDescriptor (mkSelector "removeAttributeNamed:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+removeAttributeNamed mdlVertexDescriptor name =
+  sendMessage mdlVertexDescriptor removeAttributeNamedSelector (toNSString name)
 
 -- | reset
 --
@@ -105,8 +98,8 @@ removeAttributeNamed mdlVertexDescriptor  name =
 --
 -- ObjC selector: @- reset@
 reset :: IsMDLVertexDescriptor mdlVertexDescriptor => mdlVertexDescriptor -> IO ()
-reset mdlVertexDescriptor  =
-    sendMsg mdlVertexDescriptor (mkSelector "reset") retVoid []
+reset mdlVertexDescriptor =
+  sendMessage mdlVertexDescriptor resetSelector
 
 -- | setPackedStrides
 --
@@ -114,8 +107,8 @@ reset mdlVertexDescriptor  =
 --
 -- ObjC selector: @- setPackedStrides@
 setPackedStrides :: IsMDLVertexDescriptor mdlVertexDescriptor => mdlVertexDescriptor -> IO ()
-setPackedStrides mdlVertexDescriptor  =
-    sendMsg mdlVertexDescriptor (mkSelector "setPackedStrides") retVoid []
+setPackedStrides mdlVertexDescriptor =
+  sendMessage mdlVertexDescriptor setPackedStridesSelector
 
 -- | setPackedOffsets
 --
@@ -123,8 +116,8 @@ setPackedStrides mdlVertexDescriptor  =
 --
 -- ObjC selector: @- setPackedOffsets@
 setPackedOffsets :: IsMDLVertexDescriptor mdlVertexDescriptor => mdlVertexDescriptor -> IO ()
-setPackedOffsets mdlVertexDescriptor  =
-    sendMsg mdlVertexDescriptor (mkSelector "setPackedOffsets") retVoid []
+setPackedOffsets mdlVertexDescriptor =
+  sendMessage mdlVertexDescriptor setPackedOffsetsSelector
 
 -- | attributes
 --
@@ -134,8 +127,8 @@ setPackedOffsets mdlVertexDescriptor  =
 --
 -- ObjC selector: @- attributes@
 attributes :: IsMDLVertexDescriptor mdlVertexDescriptor => mdlVertexDescriptor -> IO (Id NSMutableArray)
-attributes mdlVertexDescriptor  =
-    sendMsg mdlVertexDescriptor (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes mdlVertexDescriptor =
+  sendMessage mdlVertexDescriptor attributesSelector
 
 -- | attributes
 --
@@ -145,9 +138,8 @@ attributes mdlVertexDescriptor  =
 --
 -- ObjC selector: @- setAttributes:@
 setAttributes :: (IsMDLVertexDescriptor mdlVertexDescriptor, IsNSMutableArray value) => mdlVertexDescriptor -> value -> IO ()
-setAttributes mdlVertexDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlVertexDescriptor (mkSelector "setAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributes mdlVertexDescriptor value =
+  sendMessage mdlVertexDescriptor setAttributesSelector (toNSMutableArray value)
 
 -- | layouts
 --
@@ -157,8 +149,8 @@ setAttributes mdlVertexDescriptor  value =
 --
 -- ObjC selector: @- layouts@
 layouts :: IsMDLVertexDescriptor mdlVertexDescriptor => mdlVertexDescriptor -> IO (Id NSMutableArray)
-layouts mdlVertexDescriptor  =
-    sendMsg mdlVertexDescriptor (mkSelector "layouts") (retPtr retVoid) [] >>= retainedObject . castPtr
+layouts mdlVertexDescriptor =
+  sendMessage mdlVertexDescriptor layoutsSelector
 
 -- | layouts
 --
@@ -168,55 +160,54 @@ layouts mdlVertexDescriptor  =
 --
 -- ObjC selector: @- setLayouts:@
 setLayouts :: (IsMDLVertexDescriptor mdlVertexDescriptor, IsNSMutableArray value) => mdlVertexDescriptor -> value -> IO ()
-setLayouts mdlVertexDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlVertexDescriptor (mkSelector "setLayouts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLayouts mdlVertexDescriptor value =
+  sendMessage mdlVertexDescriptor setLayoutsSelector (toNSMutableArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithVertexDescriptor:@
-initWithVertexDescriptorSelector :: Selector
+initWithVertexDescriptorSelector :: Selector '[Id MDLVertexDescriptor] (Id MDLVertexDescriptor)
 initWithVertexDescriptorSelector = mkSelector "initWithVertexDescriptor:"
 
 -- | @Selector@ for @attributeNamed:@
-attributeNamedSelector :: Selector
+attributeNamedSelector :: Selector '[Id NSString] (Id MDLVertexAttribute)
 attributeNamedSelector = mkSelector "attributeNamed:"
 
 -- | @Selector@ for @addOrReplaceAttribute:@
-addOrReplaceAttributeSelector :: Selector
+addOrReplaceAttributeSelector :: Selector '[Id MDLVertexAttribute] ()
 addOrReplaceAttributeSelector = mkSelector "addOrReplaceAttribute:"
 
 -- | @Selector@ for @removeAttributeNamed:@
-removeAttributeNamedSelector :: Selector
+removeAttributeNamedSelector :: Selector '[Id NSString] ()
 removeAttributeNamedSelector = mkSelector "removeAttributeNamed:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @setPackedStrides@
-setPackedStridesSelector :: Selector
+setPackedStridesSelector :: Selector '[] ()
 setPackedStridesSelector = mkSelector "setPackedStrides"
 
 -- | @Selector@ for @setPackedOffsets@
-setPackedOffsetsSelector :: Selector
+setPackedOffsetsSelector :: Selector '[] ()
 setPackedOffsetsSelector = mkSelector "setPackedOffsets"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSMutableArray)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @setAttributes:@
-setAttributesSelector :: Selector
+setAttributesSelector :: Selector '[Id NSMutableArray] ()
 setAttributesSelector = mkSelector "setAttributes:"
 
 -- | @Selector@ for @layouts@
-layoutsSelector :: Selector
+layoutsSelector :: Selector '[] (Id NSMutableArray)
 layoutsSelector = mkSelector "layouts"
 
 -- | @Selector@ for @setLayouts:@
-setLayoutsSelector :: Selector
+setLayoutsSelector :: Selector '[Id NSMutableArray] ()
 setLayoutsSelector = mkSelector "setLayouts:"
 

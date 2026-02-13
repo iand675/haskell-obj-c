@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.CoreLocation.CLMonitoringRecord
   , new
   , condition
   , lastEvent
-  , initSelector
-  , newSelector
   , conditionSelector
+  , initSelector
   , lastEventSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCLMonitoringRecord clMonitoringRecord => clMonitoringRecord -> IO (Id CLMonitoringRecord)
-init_ clMonitoringRecord  =
-    sendMsg clMonitoringRecord (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ clMonitoringRecord =
+  sendOwnedMessage clMonitoringRecord initSelector
 
 -- | @+ new@
 new :: IO (Id CLMonitoringRecord)
 new  =
   do
     cls' <- getRequiredClass "CLMonitoringRecord"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- condition@
 condition :: IsCLMonitoringRecord clMonitoringRecord => clMonitoringRecord -> IO (Id CLCondition)
-condition clMonitoringRecord  =
-    sendMsg clMonitoringRecord (mkSelector "condition") (retPtr retVoid) [] >>= retainedObject . castPtr
+condition clMonitoringRecord =
+  sendMessage clMonitoringRecord conditionSelector
 
 -- | @- lastEvent@
 lastEvent :: IsCLMonitoringRecord clMonitoringRecord => clMonitoringRecord -> IO (Id CLMonitoringEvent)
-lastEvent clMonitoringRecord  =
-    sendMsg clMonitoringRecord (mkSelector "lastEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastEvent clMonitoringRecord =
+  sendMessage clMonitoringRecord lastEventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CLMonitoringRecord)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CLMonitoringRecord)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @condition@
-conditionSelector :: Selector
+conditionSelector :: Selector '[] (Id CLCondition)
 conditionSelector = mkSelector "condition"
 
 -- | @Selector@ for @lastEvent@
-lastEventSelector :: Selector
+lastEventSelector :: Selector '[] (Id CLMonitoringEvent)
 lastEventSelector = mkSelector "lastEvent"
 

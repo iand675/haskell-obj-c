@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.CloudKit.CKAcceptSharesOperation
   , setPerShareCompletionBlock
   , acceptSharesCompletionBlock
   , setAcceptSharesCompletionBlock
+  , acceptSharesCompletionBlockSelector
   , initSelector
   , initWithShareMetadatasSelector
-  , shareMetadatasSelector
-  , setShareMetadatasSelector
   , perShareCompletionBlockSelector
-  , setPerShareCompletionBlockSelector
-  , acceptSharesCompletionBlockSelector
   , setAcceptSharesCompletionBlockSelector
+  , setPerShareCompletionBlockSelector
+  , setShareMetadatasSelector
+  , shareMetadatasSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKAcceptSharesOperation ckAcceptSharesOperation => ckAcceptSharesOperation -> IO (Id CKAcceptSharesOperation)
-init_ ckAcceptSharesOperation  =
-    sendMsg ckAcceptSharesOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckAcceptSharesOperation =
+  sendOwnedMessage ckAcceptSharesOperation initSelector
 
 -- | @- initWithShareMetadatas:@
 initWithShareMetadatas :: (IsCKAcceptSharesOperation ckAcceptSharesOperation, IsNSArray shareMetadatas) => ckAcceptSharesOperation -> shareMetadatas -> IO (Id CKAcceptSharesOperation)
-initWithShareMetadatas ckAcceptSharesOperation  shareMetadatas =
-  withObjCPtr shareMetadatas $ \raw_shareMetadatas ->
-      sendMsg ckAcceptSharesOperation (mkSelector "initWithShareMetadatas:") (retPtr retVoid) [argPtr (castPtr raw_shareMetadatas :: Ptr ())] >>= ownedObject . castPtr
+initWithShareMetadatas ckAcceptSharesOperation shareMetadatas =
+  sendOwnedMessage ckAcceptSharesOperation initWithShareMetadatasSelector (toNSArray shareMetadatas)
 
 -- | @- shareMetadatas@
 shareMetadatas :: IsCKAcceptSharesOperation ckAcceptSharesOperation => ckAcceptSharesOperation -> IO (Id NSArray)
-shareMetadatas ckAcceptSharesOperation  =
-    sendMsg ckAcceptSharesOperation (mkSelector "shareMetadatas") (retPtr retVoid) [] >>= retainedObject . castPtr
+shareMetadatas ckAcceptSharesOperation =
+  sendMessage ckAcceptSharesOperation shareMetadatasSelector
 
 -- | @- setShareMetadatas:@
 setShareMetadatas :: (IsCKAcceptSharesOperation ckAcceptSharesOperation, IsNSArray value) => ckAcceptSharesOperation -> value -> IO ()
-setShareMetadatas ckAcceptSharesOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckAcceptSharesOperation (mkSelector "setShareMetadatas:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShareMetadatas ckAcceptSharesOperation value =
+  sendMessage ckAcceptSharesOperation setShareMetadatasSelector (toNSArray value)
 
 -- | Called once for each share metadata that the server processed
 --
@@ -69,8 +64,8 @@ setShareMetadatas ckAcceptSharesOperation  value =
 --
 -- ObjC selector: @- perShareCompletionBlock@
 perShareCompletionBlock :: IsCKAcceptSharesOperation ckAcceptSharesOperation => ckAcceptSharesOperation -> IO (Ptr ())
-perShareCompletionBlock ckAcceptSharesOperation  =
-    fmap castPtr $ sendMsg ckAcceptSharesOperation (mkSelector "perShareCompletionBlock") (retPtr retVoid) []
+perShareCompletionBlock ckAcceptSharesOperation =
+  sendMessage ckAcceptSharesOperation perShareCompletionBlockSelector
 
 -- | Called once for each share metadata that the server processed
 --
@@ -78,8 +73,8 @@ perShareCompletionBlock ckAcceptSharesOperation  =
 --
 -- ObjC selector: @- setPerShareCompletionBlock:@
 setPerShareCompletionBlock :: IsCKAcceptSharesOperation ckAcceptSharesOperation => ckAcceptSharesOperation -> Ptr () -> IO ()
-setPerShareCompletionBlock ckAcceptSharesOperation  value =
-    sendMsg ckAcceptSharesOperation (mkSelector "setPerShareCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerShareCompletionBlock ckAcceptSharesOperation value =
+  sendMessage ckAcceptSharesOperation setPerShareCompletionBlockSelector value
 
 -- | This block is called when the operation completes.
 --
@@ -91,8 +86,8 @@ setPerShareCompletionBlock ckAcceptSharesOperation  value =
 --
 -- ObjC selector: @- acceptSharesCompletionBlock@
 acceptSharesCompletionBlock :: IsCKAcceptSharesOperation ckAcceptSharesOperation => ckAcceptSharesOperation -> IO (Ptr ())
-acceptSharesCompletionBlock ckAcceptSharesOperation  =
-    fmap castPtr $ sendMsg ckAcceptSharesOperation (mkSelector "acceptSharesCompletionBlock") (retPtr retVoid) []
+acceptSharesCompletionBlock ckAcceptSharesOperation =
+  sendMessage ckAcceptSharesOperation acceptSharesCompletionBlockSelector
 
 -- | This block is called when the operation completes.
 --
@@ -104,42 +99,42 @@ acceptSharesCompletionBlock ckAcceptSharesOperation  =
 --
 -- ObjC selector: @- setAcceptSharesCompletionBlock:@
 setAcceptSharesCompletionBlock :: IsCKAcceptSharesOperation ckAcceptSharesOperation => ckAcceptSharesOperation -> Ptr () -> IO ()
-setAcceptSharesCompletionBlock ckAcceptSharesOperation  value =
-    sendMsg ckAcceptSharesOperation (mkSelector "setAcceptSharesCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setAcceptSharesCompletionBlock ckAcceptSharesOperation value =
+  sendMessage ckAcceptSharesOperation setAcceptSharesCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKAcceptSharesOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithShareMetadatas:@
-initWithShareMetadatasSelector :: Selector
+initWithShareMetadatasSelector :: Selector '[Id NSArray] (Id CKAcceptSharesOperation)
 initWithShareMetadatasSelector = mkSelector "initWithShareMetadatas:"
 
 -- | @Selector@ for @shareMetadatas@
-shareMetadatasSelector :: Selector
+shareMetadatasSelector :: Selector '[] (Id NSArray)
 shareMetadatasSelector = mkSelector "shareMetadatas"
 
 -- | @Selector@ for @setShareMetadatas:@
-setShareMetadatasSelector :: Selector
+setShareMetadatasSelector :: Selector '[Id NSArray] ()
 setShareMetadatasSelector = mkSelector "setShareMetadatas:"
 
 -- | @Selector@ for @perShareCompletionBlock@
-perShareCompletionBlockSelector :: Selector
+perShareCompletionBlockSelector :: Selector '[] (Ptr ())
 perShareCompletionBlockSelector = mkSelector "perShareCompletionBlock"
 
 -- | @Selector@ for @setPerShareCompletionBlock:@
-setPerShareCompletionBlockSelector :: Selector
+setPerShareCompletionBlockSelector :: Selector '[Ptr ()] ()
 setPerShareCompletionBlockSelector = mkSelector "setPerShareCompletionBlock:"
 
 -- | @Selector@ for @acceptSharesCompletionBlock@
-acceptSharesCompletionBlockSelector :: Selector
+acceptSharesCompletionBlockSelector :: Selector '[] (Ptr ())
 acceptSharesCompletionBlockSelector = mkSelector "acceptSharesCompletionBlock"
 
 -- | @Selector@ for @setAcceptSharesCompletionBlock:@
-setAcceptSharesCompletionBlockSelector :: Selector
+setAcceptSharesCompletionBlockSelector :: Selector '[Ptr ()] ()
 setAcceptSharesCompletionBlockSelector = mkSelector "setAcceptSharesCompletionBlock:"
 

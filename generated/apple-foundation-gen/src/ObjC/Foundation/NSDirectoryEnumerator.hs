@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Foundation.NSDirectoryEnumerator
   , directoryAttributes
   , isEnumeratingDirectoryPostOrder
   , level
-  , skipDescendentsSelector
-  , skipDescendantsSelector
-  , fileAttributesSelector
   , directoryAttributesSelector
+  , fileAttributesSelector
   , isEnumeratingDirectoryPostOrderSelector
   , levelSelector
+  , skipDescendantsSelector
+  , skipDescendentsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,59 +35,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- skipDescendents@
 skipDescendents :: IsNSDirectoryEnumerator nsDirectoryEnumerator => nsDirectoryEnumerator -> IO ()
-skipDescendents nsDirectoryEnumerator  =
-    sendMsg nsDirectoryEnumerator (mkSelector "skipDescendents") retVoid []
+skipDescendents nsDirectoryEnumerator =
+  sendMessage nsDirectoryEnumerator skipDescendentsSelector
 
 -- | @- skipDescendants@
 skipDescendants :: IsNSDirectoryEnumerator nsDirectoryEnumerator => nsDirectoryEnumerator -> IO ()
-skipDescendants nsDirectoryEnumerator  =
-    sendMsg nsDirectoryEnumerator (mkSelector "skipDescendants") retVoid []
+skipDescendants nsDirectoryEnumerator =
+  sendMessage nsDirectoryEnumerator skipDescendantsSelector
 
 -- | @- fileAttributes@
 fileAttributes :: IsNSDirectoryEnumerator nsDirectoryEnumerator => nsDirectoryEnumerator -> IO (Id NSDictionary)
-fileAttributes nsDirectoryEnumerator  =
-    sendMsg nsDirectoryEnumerator (mkSelector "fileAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileAttributes nsDirectoryEnumerator =
+  sendMessage nsDirectoryEnumerator fileAttributesSelector
 
 -- | @- directoryAttributes@
 directoryAttributes :: IsNSDirectoryEnumerator nsDirectoryEnumerator => nsDirectoryEnumerator -> IO (Id NSDictionary)
-directoryAttributes nsDirectoryEnumerator  =
-    sendMsg nsDirectoryEnumerator (mkSelector "directoryAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+directoryAttributes nsDirectoryEnumerator =
+  sendMessage nsDirectoryEnumerator directoryAttributesSelector
 
 -- | @- isEnumeratingDirectoryPostOrder@
 isEnumeratingDirectoryPostOrder :: IsNSDirectoryEnumerator nsDirectoryEnumerator => nsDirectoryEnumerator -> IO Bool
-isEnumeratingDirectoryPostOrder nsDirectoryEnumerator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDirectoryEnumerator (mkSelector "isEnumeratingDirectoryPostOrder") retCULong []
+isEnumeratingDirectoryPostOrder nsDirectoryEnumerator =
+  sendMessage nsDirectoryEnumerator isEnumeratingDirectoryPostOrderSelector
 
 -- | @- level@
 level :: IsNSDirectoryEnumerator nsDirectoryEnumerator => nsDirectoryEnumerator -> IO CULong
-level nsDirectoryEnumerator  =
-    sendMsg nsDirectoryEnumerator (mkSelector "level") retCULong []
+level nsDirectoryEnumerator =
+  sendMessage nsDirectoryEnumerator levelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @skipDescendents@
-skipDescendentsSelector :: Selector
+skipDescendentsSelector :: Selector '[] ()
 skipDescendentsSelector = mkSelector "skipDescendents"
 
 -- | @Selector@ for @skipDescendants@
-skipDescendantsSelector :: Selector
+skipDescendantsSelector :: Selector '[] ()
 skipDescendantsSelector = mkSelector "skipDescendants"
 
 -- | @Selector@ for @fileAttributes@
-fileAttributesSelector :: Selector
+fileAttributesSelector :: Selector '[] (Id NSDictionary)
 fileAttributesSelector = mkSelector "fileAttributes"
 
 -- | @Selector@ for @directoryAttributes@
-directoryAttributesSelector :: Selector
+directoryAttributesSelector :: Selector '[] (Id NSDictionary)
 directoryAttributesSelector = mkSelector "directoryAttributes"
 
 -- | @Selector@ for @isEnumeratingDirectoryPostOrder@
-isEnumeratingDirectoryPostOrderSelector :: Selector
+isEnumeratingDirectoryPostOrderSelector :: Selector '[] Bool
 isEnumeratingDirectoryPostOrderSelector = mkSelector "isEnumeratingDirectoryPostOrder"
 
 -- | @Selector@ for @level@
-levelSelector :: Selector
+levelSelector :: Selector '[] CULong
 levelSelector = mkSelector "level"
 

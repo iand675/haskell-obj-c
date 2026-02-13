@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRTemperatureControlClusterSetTemperatureParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , targetTemperatureSelector
-  , setTargetTemperatureSelector
-  , targetTemperatureLevelSelector
-  , setTargetTemperatureLevelSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTargetTemperatureLevelSelector
+  , setTargetTemperatureSelector
+  , setTimedInvokeTimeoutMsSelector
+  , targetTemperatureLevelSelector
+  , targetTemperatureSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- targetTemperature@
 targetTemperature :: IsMTRTemperatureControlClusterSetTemperatureParams mtrTemperatureControlClusterSetTemperatureParams => mtrTemperatureControlClusterSetTemperatureParams -> IO (Id NSNumber)
-targetTemperature mtrTemperatureControlClusterSetTemperatureParams  =
-    sendMsg mtrTemperatureControlClusterSetTemperatureParams (mkSelector "targetTemperature") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetTemperature mtrTemperatureControlClusterSetTemperatureParams =
+  sendMessage mtrTemperatureControlClusterSetTemperatureParams targetTemperatureSelector
 
 -- | @- setTargetTemperature:@
 setTargetTemperature :: (IsMTRTemperatureControlClusterSetTemperatureParams mtrTemperatureControlClusterSetTemperatureParams, IsNSNumber value) => mtrTemperatureControlClusterSetTemperatureParams -> value -> IO ()
-setTargetTemperature mtrTemperatureControlClusterSetTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTemperatureControlClusterSetTemperatureParams (mkSelector "setTargetTemperature:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTargetTemperature mtrTemperatureControlClusterSetTemperatureParams value =
+  sendMessage mtrTemperatureControlClusterSetTemperatureParams setTargetTemperatureSelector (toNSNumber value)
 
 -- | @- targetTemperatureLevel@
 targetTemperatureLevel :: IsMTRTemperatureControlClusterSetTemperatureParams mtrTemperatureControlClusterSetTemperatureParams => mtrTemperatureControlClusterSetTemperatureParams -> IO (Id NSNumber)
-targetTemperatureLevel mtrTemperatureControlClusterSetTemperatureParams  =
-    sendMsg mtrTemperatureControlClusterSetTemperatureParams (mkSelector "targetTemperatureLevel") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetTemperatureLevel mtrTemperatureControlClusterSetTemperatureParams =
+  sendMessage mtrTemperatureControlClusterSetTemperatureParams targetTemperatureLevelSelector
 
 -- | @- setTargetTemperatureLevel:@
 setTargetTemperatureLevel :: (IsMTRTemperatureControlClusterSetTemperatureParams mtrTemperatureControlClusterSetTemperatureParams, IsNSNumber value) => mtrTemperatureControlClusterSetTemperatureParams -> value -> IO ()
-setTargetTemperatureLevel mtrTemperatureControlClusterSetTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTemperatureControlClusterSetTemperatureParams (mkSelector "setTargetTemperatureLevel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTargetTemperatureLevel mtrTemperatureControlClusterSetTemperatureParams value =
+  sendMessage mtrTemperatureControlClusterSetTemperatureParams setTargetTemperatureLevelSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setTargetTemperatureLevel mtrTemperatureControlClusterSetTemperatureParams  valu
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTemperatureControlClusterSetTemperatureParams mtrTemperatureControlClusterSetTemperatureParams => mtrTemperatureControlClusterSetTemperatureParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTemperatureControlClusterSetTemperatureParams  =
-    sendMsg mtrTemperatureControlClusterSetTemperatureParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrTemperatureControlClusterSetTemperatureParams =
+  sendMessage mtrTemperatureControlClusterSetTemperatureParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrTemperatureControlClusterSetTemperatureParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTemperatureControlClusterSetTemperatureParams mtrTemperatureControlClusterSetTemperatureParams, IsNSNumber value) => mtrTemperatureControlClusterSetTemperatureParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTemperatureControlClusterSetTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTemperatureControlClusterSetTemperatureParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrTemperatureControlClusterSetTemperatureParams value =
+  sendMessage mtrTemperatureControlClusterSetTemperatureParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrTemperatureControlClusterSetTemperatureParams  value 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRTemperatureControlClusterSetTemperatureParams mtrTemperatureControlClusterSetTemperatureParams => mtrTemperatureControlClusterSetTemperatureParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrTemperatureControlClusterSetTemperatureParams  =
-    sendMsg mtrTemperatureControlClusterSetTemperatureParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrTemperatureControlClusterSetTemperatureParams =
+  sendMessage mtrTemperatureControlClusterSetTemperatureParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrTemperatureControlClusterSetTemperatureParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRTemperatureControlClusterSetTemperatureParams mtrTemperatureControlClusterSetTemperatureParams, IsNSNumber value) => mtrTemperatureControlClusterSetTemperatureParams -> value -> IO ()
-setServerSideProcessingTimeout mtrTemperatureControlClusterSetTemperatureParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTemperatureControlClusterSetTemperatureParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrTemperatureControlClusterSetTemperatureParams value =
+  sendMessage mtrTemperatureControlClusterSetTemperatureParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @targetTemperature@
-targetTemperatureSelector :: Selector
+targetTemperatureSelector :: Selector '[] (Id NSNumber)
 targetTemperatureSelector = mkSelector "targetTemperature"
 
 -- | @Selector@ for @setTargetTemperature:@
-setTargetTemperatureSelector :: Selector
+setTargetTemperatureSelector :: Selector '[Id NSNumber] ()
 setTargetTemperatureSelector = mkSelector "setTargetTemperature:"
 
 -- | @Selector@ for @targetTemperatureLevel@
-targetTemperatureLevelSelector :: Selector
+targetTemperatureLevelSelector :: Selector '[] (Id NSNumber)
 targetTemperatureLevelSelector = mkSelector "targetTemperatureLevel"
 
 -- | @Selector@ for @setTargetTemperatureLevel:@
-setTargetTemperatureLevelSelector :: Selector
+setTargetTemperatureLevelSelector :: Selector '[Id NSNumber] ()
 setTargetTemperatureLevelSelector = mkSelector "setTargetTemperatureLevel:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

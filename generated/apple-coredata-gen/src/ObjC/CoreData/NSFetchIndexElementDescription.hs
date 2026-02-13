@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.CoreData.NSFetchIndexElementDescription
   , ascending
   , setAscending
   , indexDescription
-  , initWithProperty_collationTypeSelector
-  , propertySelector
-  , propertyNameSelector
-  , collationTypeSelector
-  , setCollationTypeSelector
   , ascendingSelector
-  , setAscendingSelector
+  , collationTypeSelector
   , indexDescriptionSelector
+  , initWithProperty_collationTypeSelector
+  , propertyNameSelector
+  , propertySelector
+  , setAscendingSelector
+  , setCollationTypeSelector
 
   -- * Enum types
   , NSFetchIndexElementType(NSFetchIndexElementType)
@@ -31,15 +32,11 @@ module ObjC.CoreData.NSFetchIndexElementDescription
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,78 +46,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithProperty:collationType:@
 initWithProperty_collationType :: (IsNSFetchIndexElementDescription nsFetchIndexElementDescription, IsNSPropertyDescription property) => nsFetchIndexElementDescription -> property -> NSFetchIndexElementType -> IO (Id NSFetchIndexElementDescription)
-initWithProperty_collationType nsFetchIndexElementDescription  property collationType =
-  withObjCPtr property $ \raw_property ->
-      sendMsg nsFetchIndexElementDescription (mkSelector "initWithProperty:collationType:") (retPtr retVoid) [argPtr (castPtr raw_property :: Ptr ()), argCULong (coerce collationType)] >>= ownedObject . castPtr
+initWithProperty_collationType nsFetchIndexElementDescription property collationType =
+  sendOwnedMessage nsFetchIndexElementDescription initWithProperty_collationTypeSelector (toNSPropertyDescription property) collationType
 
 -- | @- property@
 property :: IsNSFetchIndexElementDescription nsFetchIndexElementDescription => nsFetchIndexElementDescription -> IO (Id NSPropertyDescription)
-property nsFetchIndexElementDescription  =
-    sendMsg nsFetchIndexElementDescription (mkSelector "property") (retPtr retVoid) [] >>= retainedObject . castPtr
+property nsFetchIndexElementDescription =
+  sendMessage nsFetchIndexElementDescription propertySelector
 
 -- | @- propertyName@
 propertyName :: IsNSFetchIndexElementDescription nsFetchIndexElementDescription => nsFetchIndexElementDescription -> IO (Id NSString)
-propertyName nsFetchIndexElementDescription  =
-    sendMsg nsFetchIndexElementDescription (mkSelector "propertyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+propertyName nsFetchIndexElementDescription =
+  sendMessage nsFetchIndexElementDescription propertyNameSelector
 
 -- | @- collationType@
 collationType :: IsNSFetchIndexElementDescription nsFetchIndexElementDescription => nsFetchIndexElementDescription -> IO NSFetchIndexElementType
-collationType nsFetchIndexElementDescription  =
-    fmap (coerce :: CULong -> NSFetchIndexElementType) $ sendMsg nsFetchIndexElementDescription (mkSelector "collationType") retCULong []
+collationType nsFetchIndexElementDescription =
+  sendMessage nsFetchIndexElementDescription collationTypeSelector
 
 -- | @- setCollationType:@
 setCollationType :: IsNSFetchIndexElementDescription nsFetchIndexElementDescription => nsFetchIndexElementDescription -> NSFetchIndexElementType -> IO ()
-setCollationType nsFetchIndexElementDescription  value =
-    sendMsg nsFetchIndexElementDescription (mkSelector "setCollationType:") retVoid [argCULong (coerce value)]
+setCollationType nsFetchIndexElementDescription value =
+  sendMessage nsFetchIndexElementDescription setCollationTypeSelector value
 
 -- | @- ascending@
 ascending :: IsNSFetchIndexElementDescription nsFetchIndexElementDescription => nsFetchIndexElementDescription -> IO Bool
-ascending nsFetchIndexElementDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFetchIndexElementDescription (mkSelector "ascending") retCULong []
+ascending nsFetchIndexElementDescription =
+  sendMessage nsFetchIndexElementDescription ascendingSelector
 
 -- | @- setAscending:@
 setAscending :: IsNSFetchIndexElementDescription nsFetchIndexElementDescription => nsFetchIndexElementDescription -> Bool -> IO ()
-setAscending nsFetchIndexElementDescription  value =
-    sendMsg nsFetchIndexElementDescription (mkSelector "setAscending:") retVoid [argCULong (if value then 1 else 0)]
+setAscending nsFetchIndexElementDescription value =
+  sendMessage nsFetchIndexElementDescription setAscendingSelector value
 
 -- | @- indexDescription@
 indexDescription :: IsNSFetchIndexElementDescription nsFetchIndexElementDescription => nsFetchIndexElementDescription -> IO (Id NSFetchIndexDescription)
-indexDescription nsFetchIndexElementDescription  =
-    sendMsg nsFetchIndexElementDescription (mkSelector "indexDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+indexDescription nsFetchIndexElementDescription =
+  sendMessage nsFetchIndexElementDescription indexDescriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithProperty:collationType:@
-initWithProperty_collationTypeSelector :: Selector
+initWithProperty_collationTypeSelector :: Selector '[Id NSPropertyDescription, NSFetchIndexElementType] (Id NSFetchIndexElementDescription)
 initWithProperty_collationTypeSelector = mkSelector "initWithProperty:collationType:"
 
 -- | @Selector@ for @property@
-propertySelector :: Selector
+propertySelector :: Selector '[] (Id NSPropertyDescription)
 propertySelector = mkSelector "property"
 
 -- | @Selector@ for @propertyName@
-propertyNameSelector :: Selector
+propertyNameSelector :: Selector '[] (Id NSString)
 propertyNameSelector = mkSelector "propertyName"
 
 -- | @Selector@ for @collationType@
-collationTypeSelector :: Selector
+collationTypeSelector :: Selector '[] NSFetchIndexElementType
 collationTypeSelector = mkSelector "collationType"
 
 -- | @Selector@ for @setCollationType:@
-setCollationTypeSelector :: Selector
+setCollationTypeSelector :: Selector '[NSFetchIndexElementType] ()
 setCollationTypeSelector = mkSelector "setCollationType:"
 
 -- | @Selector@ for @ascending@
-ascendingSelector :: Selector
+ascendingSelector :: Selector '[] Bool
 ascendingSelector = mkSelector "ascending"
 
 -- | @Selector@ for @setAscending:@
-setAscendingSelector :: Selector
+setAscendingSelector :: Selector '[Bool] ()
 setAscendingSelector = mkSelector "setAscending:"
 
 -- | @Selector@ for @indexDescription@
-indexDescriptionSelector :: Selector
+indexDescriptionSelector :: Selector '[] (Id NSFetchIndexDescription)
 indexDescriptionSelector = mkSelector "indexDescription"
 

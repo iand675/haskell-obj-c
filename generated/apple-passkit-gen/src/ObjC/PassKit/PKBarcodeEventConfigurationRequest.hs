@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.PassKit.PKBarcodeEventConfigurationRequest
   , deviceAccountIdentifier
   , configurationData
   , configurationDataType
-  , deviceAccountIdentifierSelector
   , configurationDataSelector
   , configurationDataTypeSelector
+  , deviceAccountIdentifierSelector
 
   -- * Enum types
   , PKBarcodeEventConfigurationDataType(PKBarcodeEventConfigurationDataType)
@@ -22,15 +23,11 @@ module ObjC.PassKit.PKBarcodeEventConfigurationRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,32 +37,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- deviceAccountIdentifier@
 deviceAccountIdentifier :: IsPKBarcodeEventConfigurationRequest pkBarcodeEventConfigurationRequest => pkBarcodeEventConfigurationRequest -> IO (Id NSString)
-deviceAccountIdentifier pkBarcodeEventConfigurationRequest  =
-    sendMsg pkBarcodeEventConfigurationRequest (mkSelector "deviceAccountIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceAccountIdentifier pkBarcodeEventConfigurationRequest =
+  sendMessage pkBarcodeEventConfigurationRequest deviceAccountIdentifierSelector
 
 -- | @- configurationData@
 configurationData :: IsPKBarcodeEventConfigurationRequest pkBarcodeEventConfigurationRequest => pkBarcodeEventConfigurationRequest -> IO (Id NSData)
-configurationData pkBarcodeEventConfigurationRequest  =
-    sendMsg pkBarcodeEventConfigurationRequest (mkSelector "configurationData") (retPtr retVoid) [] >>= retainedObject . castPtr
+configurationData pkBarcodeEventConfigurationRequest =
+  sendMessage pkBarcodeEventConfigurationRequest configurationDataSelector
 
 -- | @- configurationDataType@
 configurationDataType :: IsPKBarcodeEventConfigurationRequest pkBarcodeEventConfigurationRequest => pkBarcodeEventConfigurationRequest -> IO PKBarcodeEventConfigurationDataType
-configurationDataType pkBarcodeEventConfigurationRequest  =
-    fmap (coerce :: CLong -> PKBarcodeEventConfigurationDataType) $ sendMsg pkBarcodeEventConfigurationRequest (mkSelector "configurationDataType") retCLong []
+configurationDataType pkBarcodeEventConfigurationRequest =
+  sendMessage pkBarcodeEventConfigurationRequest configurationDataTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @deviceAccountIdentifier@
-deviceAccountIdentifierSelector :: Selector
+deviceAccountIdentifierSelector :: Selector '[] (Id NSString)
 deviceAccountIdentifierSelector = mkSelector "deviceAccountIdentifier"
 
 -- | @Selector@ for @configurationData@
-configurationDataSelector :: Selector
+configurationDataSelector :: Selector '[] (Id NSData)
 configurationDataSelector = mkSelector "configurationData"
 
 -- | @Selector@ for @configurationDataType@
-configurationDataTypeSelector :: Selector
+configurationDataTypeSelector :: Selector '[] PKBarcodeEventConfigurationDataType
 configurationDataTypeSelector = mkSelector "configurationDataType"
 

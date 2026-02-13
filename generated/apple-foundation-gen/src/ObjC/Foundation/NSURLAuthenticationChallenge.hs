@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.Foundation.NSURLAuthenticationChallenge
   , failureResponse
   , error_
   , sender
-  , initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_senderSelector
-  , initWithAuthenticationChallenge_senderSelector
-  , protectionSpaceSelector
-  , proposedCredentialSelector
-  , previousFailureCountSelector
-  , failureResponseSelector
   , errorSelector
+  , failureResponseSelector
+  , initWithAuthenticationChallenge_senderSelector
+  , initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_senderSelector
+  , previousFailureCountSelector
+  , proposedCredentialSelector
+  , protectionSpaceSelector
   , senderSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,12 +59,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:@
 initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_sender :: (IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge, IsNSURLProtectionSpace space, IsNSURLCredential credential, IsNSURLResponse response, IsNSError error_) => nsurlAuthenticationChallenge -> space -> credential -> CLong -> response -> error_ -> RawId -> IO (Id NSURLAuthenticationChallenge)
-initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_sender nsurlAuthenticationChallenge  space credential previousFailureCount response error_ sender =
-  withObjCPtr space $ \raw_space ->
-    withObjCPtr credential $ \raw_credential ->
-      withObjCPtr response $ \raw_response ->
-        withObjCPtr error_ $ \raw_error_ ->
-            sendMsg nsurlAuthenticationChallenge (mkSelector "initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:") (retPtr retVoid) [argPtr (castPtr raw_space :: Ptr ()), argPtr (castPtr raw_credential :: Ptr ()), argCLong previousFailureCount, argPtr (castPtr raw_response :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr (unRawId sender) :: Ptr ())] >>= ownedObject . castPtr
+initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_sender nsurlAuthenticationChallenge space credential previousFailureCount response error_ sender =
+  sendOwnedMessage nsurlAuthenticationChallenge initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_senderSelector (toNSURLProtectionSpace space) (toNSURLCredential credential) previousFailureCount (toNSURLResponse response) (toNSError error_) sender
 
 -- | initWithAuthenticationChallenge:
 --
@@ -79,9 +72,8 @@ initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_
 --
 -- ObjC selector: @- initWithAuthenticationChallenge:sender:@
 initWithAuthenticationChallenge_sender :: (IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge, IsNSURLAuthenticationChallenge challenge) => nsurlAuthenticationChallenge -> challenge -> RawId -> IO (Id NSURLAuthenticationChallenge)
-initWithAuthenticationChallenge_sender nsurlAuthenticationChallenge  challenge sender =
-  withObjCPtr challenge $ \raw_challenge ->
-      sendMsg nsurlAuthenticationChallenge (mkSelector "initWithAuthenticationChallenge:sender:") (retPtr retVoid) [argPtr (castPtr raw_challenge :: Ptr ()), argPtr (castPtr (unRawId sender) :: Ptr ())] >>= ownedObject . castPtr
+initWithAuthenticationChallenge_sender nsurlAuthenticationChallenge challenge sender =
+  sendOwnedMessage nsurlAuthenticationChallenge initWithAuthenticationChallenge_senderSelector (toNSURLAuthenticationChallenge challenge) sender
 
 -- | Get a description of the protection space that requires authentication
 --
@@ -89,8 +81,8 @@ initWithAuthenticationChallenge_sender nsurlAuthenticationChallenge  challenge s
 --
 -- ObjC selector: @- protectionSpace@
 protectionSpace :: IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge => nsurlAuthenticationChallenge -> IO (Id NSURLProtectionSpace)
-protectionSpace nsurlAuthenticationChallenge  =
-    sendMsg nsurlAuthenticationChallenge (mkSelector "protectionSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+protectionSpace nsurlAuthenticationChallenge =
+  sendMessage nsurlAuthenticationChallenge protectionSpaceSelector
 
 -- | Get the proposed credential for this challenge
 --
@@ -100,8 +92,8 @@ protectionSpace nsurlAuthenticationChallenge  =
 --
 -- ObjC selector: @- proposedCredential@
 proposedCredential :: IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge => nsurlAuthenticationChallenge -> IO (Id NSURLCredential)
-proposedCredential nsurlAuthenticationChallenge  =
-    sendMsg nsurlAuthenticationChallenge (mkSelector "proposedCredential") (retPtr retVoid) [] >>= retainedObject . castPtr
+proposedCredential nsurlAuthenticationChallenge =
+  sendMessage nsurlAuthenticationChallenge proposedCredentialSelector
 
 -- | Get count of previous failed authentication attempts
 --
@@ -109,8 +101,8 @@ proposedCredential nsurlAuthenticationChallenge  =
 --
 -- ObjC selector: @- previousFailureCount@
 previousFailureCount :: IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge => nsurlAuthenticationChallenge -> IO CLong
-previousFailureCount nsurlAuthenticationChallenge  =
-    sendMsg nsurlAuthenticationChallenge (mkSelector "previousFailureCount") retCLong []
+previousFailureCount nsurlAuthenticationChallenge =
+  sendMessage nsurlAuthenticationChallenge previousFailureCountSelector
 
 -- | Get the response representing authentication failure.
 --
@@ -120,8 +112,8 @@ previousFailureCount nsurlAuthenticationChallenge  =
 --
 -- ObjC selector: @- failureResponse@
 failureResponse :: IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge => nsurlAuthenticationChallenge -> IO (Id NSURLResponse)
-failureResponse nsurlAuthenticationChallenge  =
-    sendMsg nsurlAuthenticationChallenge (mkSelector "failureResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+failureResponse nsurlAuthenticationChallenge =
+  sendMessage nsurlAuthenticationChallenge failureResponseSelector
 
 -- | Get the error representing authentication failure.
 --
@@ -129,8 +121,8 @@ failureResponse nsurlAuthenticationChallenge  =
 --
 -- ObjC selector: @- error@
 error_ :: IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge => nsurlAuthenticationChallenge -> IO (Id NSError)
-error_ nsurlAuthenticationChallenge  =
-    sendMsg nsurlAuthenticationChallenge (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ nsurlAuthenticationChallenge =
+  sendMessage nsurlAuthenticationChallenge errorSelector
 
 -- | Get the sender of this challenge
 --
@@ -140,42 +132,42 @@ error_ nsurlAuthenticationChallenge  =
 --
 -- ObjC selector: @- sender@
 sender :: IsNSURLAuthenticationChallenge nsurlAuthenticationChallenge => nsurlAuthenticationChallenge -> IO RawId
-sender nsurlAuthenticationChallenge  =
-    fmap (RawId . castPtr) $ sendMsg nsurlAuthenticationChallenge (mkSelector "sender") (retPtr retVoid) []
+sender nsurlAuthenticationChallenge =
+  sendMessage nsurlAuthenticationChallenge senderSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:@
-initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_senderSelector :: Selector
+initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_senderSelector :: Selector '[Id NSURLProtectionSpace, Id NSURLCredential, CLong, Id NSURLResponse, Id NSError, RawId] (Id NSURLAuthenticationChallenge)
 initWithProtectionSpace_proposedCredential_previousFailureCount_failureResponse_error_senderSelector = mkSelector "initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:"
 
 -- | @Selector@ for @initWithAuthenticationChallenge:sender:@
-initWithAuthenticationChallenge_senderSelector :: Selector
+initWithAuthenticationChallenge_senderSelector :: Selector '[Id NSURLAuthenticationChallenge, RawId] (Id NSURLAuthenticationChallenge)
 initWithAuthenticationChallenge_senderSelector = mkSelector "initWithAuthenticationChallenge:sender:"
 
 -- | @Selector@ for @protectionSpace@
-protectionSpaceSelector :: Selector
+protectionSpaceSelector :: Selector '[] (Id NSURLProtectionSpace)
 protectionSpaceSelector = mkSelector "protectionSpace"
 
 -- | @Selector@ for @proposedCredential@
-proposedCredentialSelector :: Selector
+proposedCredentialSelector :: Selector '[] (Id NSURLCredential)
 proposedCredentialSelector = mkSelector "proposedCredential"
 
 -- | @Selector@ for @previousFailureCount@
-previousFailureCountSelector :: Selector
+previousFailureCountSelector :: Selector '[] CLong
 previousFailureCountSelector = mkSelector "previousFailureCount"
 
 -- | @Selector@ for @failureResponse@
-failureResponseSelector :: Selector
+failureResponseSelector :: Selector '[] (Id NSURLResponse)
 failureResponseSelector = mkSelector "failureResponse"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @sender@
-senderSelector :: Selector
+senderSelector :: Selector '[] RawId
 senderSelector = mkSelector "sender"
 

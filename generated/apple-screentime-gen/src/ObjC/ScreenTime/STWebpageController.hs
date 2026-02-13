@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.ScreenTime.STWebpageController
   , urlIsBlocked
   , profileIdentifier
   , setProfileIdentifier
-  , setBundleIdentifier_errorSelector
-  , initWithNibName_bundleSelector
   , initWithCoderSelector
-  , suppressUsageRecordingSelector
-  , setSuppressUsageRecordingSelector
-  , urlSelector
-  , setURLSelector
-  , urlIsPlayingVideoSelector
-  , setURLIsPlayingVideoSelector
-  , urlIsPictureInPictureSelector
-  , setURLIsPictureInPictureSelector
-  , urlIsBlockedSelector
+  , initWithNibName_bundleSelector
   , profileIdentifierSelector
+  , setBundleIdentifier_errorSelector
   , setProfileIdentifierSelector
+  , setSuppressUsageRecordingSelector
+  , setURLIsPictureInPictureSelector
+  , setURLIsPlayingVideoSelector
+  , setURLSelector
+  , suppressUsageRecordingSelector
+  , urlIsBlockedSelector
+  , urlIsPictureInPictureSelector
+  , urlIsPlayingVideoSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,23 +59,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setBundleIdentifier:error:@
 setBundleIdentifier_error :: (IsSTWebpageController stWebpageController, IsNSString bundleIdentifier, IsNSError error_) => stWebpageController -> bundleIdentifier -> error_ -> IO Bool
-setBundleIdentifier_error stWebpageController  bundleIdentifier error_ =
-  withObjCPtr bundleIdentifier $ \raw_bundleIdentifier ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg stWebpageController (mkSelector "setBundleIdentifier:error:") retCULong [argPtr (castPtr raw_bundleIdentifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setBundleIdentifier_error stWebpageController bundleIdentifier error_ =
+  sendMessage stWebpageController setBundleIdentifier_errorSelector (toNSString bundleIdentifier) (toNSError error_)
 
 -- | @- initWithNibName:bundle:@
 initWithNibName_bundle :: (IsSTWebpageController stWebpageController, IsNSString nibNameOrNil, IsNSBundle nibBundleOrNil) => stWebpageController -> nibNameOrNil -> nibBundleOrNil -> IO (Id STWebpageController)
-initWithNibName_bundle stWebpageController  nibNameOrNil nibBundleOrNil =
-  withObjCPtr nibNameOrNil $ \raw_nibNameOrNil ->
-    withObjCPtr nibBundleOrNil $ \raw_nibBundleOrNil ->
-        sendMsg stWebpageController (mkSelector "initWithNibName:bundle:") (retPtr retVoid) [argPtr (castPtr raw_nibNameOrNil :: Ptr ()), argPtr (castPtr raw_nibBundleOrNil :: Ptr ())] >>= ownedObject . castPtr
+initWithNibName_bundle stWebpageController nibNameOrNil nibBundleOrNil =
+  sendOwnedMessage stWebpageController initWithNibName_bundleSelector (toNSString nibNameOrNil) (toNSBundle nibBundleOrNil)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsSTWebpageController stWebpageController, IsNSCoder aDecoder) => stWebpageController -> aDecoder -> IO (Id STWebpageController)
-initWithCoder stWebpageController  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg stWebpageController (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder stWebpageController aDecoder =
+  sendOwnedMessage stWebpageController initWithCoderSelector (toNSCoder aDecoder)
 
 -- | A Boolean that indicates whether the webpage controller is not recording web usage.
 --
@@ -86,8 +78,8 @@ initWithCoder stWebpageController  aDecoder =
 --
 -- ObjC selector: @- suppressUsageRecording@
 suppressUsageRecording :: IsSTWebpageController stWebpageController => stWebpageController -> IO Bool
-suppressUsageRecording stWebpageController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg stWebpageController (mkSelector "suppressUsageRecording") retCULong []
+suppressUsageRecording stWebpageController =
+  sendMessage stWebpageController suppressUsageRecordingSelector
 
 -- | A Boolean that indicates whether the webpage controller is not recording web usage.
 --
@@ -95,8 +87,8 @@ suppressUsageRecording stWebpageController  =
 --
 -- ObjC selector: @- setSuppressUsageRecording:@
 setSuppressUsageRecording :: IsSTWebpageController stWebpageController => stWebpageController -> Bool -> IO ()
-setSuppressUsageRecording stWebpageController  value =
-    sendMsg stWebpageController (mkSelector "setSuppressUsageRecording:") retVoid [argCULong (if value then 1 else 0)]
+setSuppressUsageRecording stWebpageController value =
+  sendMessage stWebpageController setSuppressUsageRecordingSelector value
 
 -- | The URL for the webpage.
 --
@@ -104,8 +96,8 @@ setSuppressUsageRecording stWebpageController  value =
 --
 -- ObjC selector: @- URL@
 url :: IsSTWebpageController stWebpageController => stWebpageController -> IO (Id NSURL)
-url stWebpageController  =
-    sendMsg stWebpageController (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url stWebpageController =
+  sendMessage stWebpageController urlSelector
 
 -- | The URL for the webpage.
 --
@@ -113,9 +105,8 @@ url stWebpageController  =
 --
 -- ObjC selector: @- setURL:@
 setURL :: (IsSTWebpageController stWebpageController, IsNSURL value) => stWebpageController -> value -> IO ()
-setURL stWebpageController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg stWebpageController (mkSelector "setURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURL stWebpageController value =
+  sendMessage stWebpageController setURLSelector (toNSURL value)
 
 -- | A Boolean that indicates whether there are one or more videos currently playing in the webpage.
 --
@@ -125,8 +116,8 @@ setURL stWebpageController  value =
 --
 -- ObjC selector: @- URLIsPlayingVideo@
 urlIsPlayingVideo :: IsSTWebpageController stWebpageController => stWebpageController -> IO Bool
-urlIsPlayingVideo stWebpageController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg stWebpageController (mkSelector "URLIsPlayingVideo") retCULong []
+urlIsPlayingVideo stWebpageController =
+  sendMessage stWebpageController urlIsPlayingVideoSelector
 
 -- | A Boolean that indicates whether there are one or more videos currently playing in the webpage.
 --
@@ -136,8 +127,8 @@ urlIsPlayingVideo stWebpageController  =
 --
 -- ObjC selector: @- setURLIsPlayingVideo:@
 setURLIsPlayingVideo :: IsSTWebpageController stWebpageController => stWebpageController -> Bool -> IO ()
-setURLIsPlayingVideo stWebpageController  value =
-    sendMsg stWebpageController (mkSelector "setURLIsPlayingVideo:") retVoid [argCULong (if value then 1 else 0)]
+setURLIsPlayingVideo stWebpageController value =
+  sendMessage stWebpageController setURLIsPlayingVideoSelector value
 
 -- | A Boolean that indicates whether the webpage is currently displaying a floating picture in picture window.
 --
@@ -147,8 +138,8 @@ setURLIsPlayingVideo stWebpageController  value =
 --
 -- ObjC selector: @- URLIsPictureInPicture@
 urlIsPictureInPicture :: IsSTWebpageController stWebpageController => stWebpageController -> IO Bool
-urlIsPictureInPicture stWebpageController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg stWebpageController (mkSelector "URLIsPictureInPicture") retCULong []
+urlIsPictureInPicture stWebpageController =
+  sendMessage stWebpageController urlIsPictureInPictureSelector
 
 -- | A Boolean that indicates whether the webpage is currently displaying a floating picture in picture window.
 --
@@ -158,8 +149,8 @@ urlIsPictureInPicture stWebpageController  =
 --
 -- ObjC selector: @- setURLIsPictureInPicture:@
 setURLIsPictureInPicture :: IsSTWebpageController stWebpageController => stWebpageController -> Bool -> IO ()
-setURLIsPictureInPicture stWebpageController  value =
-    sendMsg stWebpageController (mkSelector "setURLIsPictureInPicture:") retVoid [argCULong (if value then 1 else 0)]
+setURLIsPictureInPicture stWebpageController value =
+  sendMessage stWebpageController setURLIsPictureInPictureSelector value
 
 -- | A Boolean that indicates whether a parent or guardian has blocked the URL.
 --
@@ -167,8 +158,8 @@ setURLIsPictureInPicture stWebpageController  value =
 --
 -- ObjC selector: @- URLIsBlocked@
 urlIsBlocked :: IsSTWebpageController stWebpageController => stWebpageController -> IO Bool
-urlIsBlocked stWebpageController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg stWebpageController (mkSelector "URLIsBlocked") retCULong []
+urlIsBlocked stWebpageController =
+  sendMessage stWebpageController urlIsBlockedSelector
 
 -- | An optional identifier for the current browsing profile.
 --
@@ -176,8 +167,8 @@ urlIsBlocked stWebpageController  =
 --
 -- ObjC selector: @- profileIdentifier@
 profileIdentifier :: IsSTWebpageController stWebpageController => stWebpageController -> IO (Id NSString)
-profileIdentifier stWebpageController  =
-    sendMsg stWebpageController (mkSelector "profileIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+profileIdentifier stWebpageController =
+  sendMessage stWebpageController profileIdentifierSelector
 
 -- | An optional identifier for the current browsing profile.
 --
@@ -185,67 +176,66 @@ profileIdentifier stWebpageController  =
 --
 -- ObjC selector: @- setProfileIdentifier:@
 setProfileIdentifier :: (IsSTWebpageController stWebpageController, IsNSString value) => stWebpageController -> value -> IO ()
-setProfileIdentifier stWebpageController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg stWebpageController (mkSelector "setProfileIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProfileIdentifier stWebpageController value =
+  sendMessage stWebpageController setProfileIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setBundleIdentifier:error:@
-setBundleIdentifier_errorSelector :: Selector
+setBundleIdentifier_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 setBundleIdentifier_errorSelector = mkSelector "setBundleIdentifier:error:"
 
 -- | @Selector@ for @initWithNibName:bundle:@
-initWithNibName_bundleSelector :: Selector
+initWithNibName_bundleSelector :: Selector '[Id NSString, Id NSBundle] (Id STWebpageController)
 initWithNibName_bundleSelector = mkSelector "initWithNibName:bundle:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id STWebpageController)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @suppressUsageRecording@
-suppressUsageRecordingSelector :: Selector
+suppressUsageRecordingSelector :: Selector '[] Bool
 suppressUsageRecordingSelector = mkSelector "suppressUsageRecording"
 
 -- | @Selector@ for @setSuppressUsageRecording:@
-setSuppressUsageRecordingSelector :: Selector
+setSuppressUsageRecordingSelector :: Selector '[Bool] ()
 setSuppressUsageRecordingSelector = mkSelector "setSuppressUsageRecording:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @setURL:@
-setURLSelector :: Selector
+setURLSelector :: Selector '[Id NSURL] ()
 setURLSelector = mkSelector "setURL:"
 
 -- | @Selector@ for @URLIsPlayingVideo@
-urlIsPlayingVideoSelector :: Selector
+urlIsPlayingVideoSelector :: Selector '[] Bool
 urlIsPlayingVideoSelector = mkSelector "URLIsPlayingVideo"
 
 -- | @Selector@ for @setURLIsPlayingVideo:@
-setURLIsPlayingVideoSelector :: Selector
+setURLIsPlayingVideoSelector :: Selector '[Bool] ()
 setURLIsPlayingVideoSelector = mkSelector "setURLIsPlayingVideo:"
 
 -- | @Selector@ for @URLIsPictureInPicture@
-urlIsPictureInPictureSelector :: Selector
+urlIsPictureInPictureSelector :: Selector '[] Bool
 urlIsPictureInPictureSelector = mkSelector "URLIsPictureInPicture"
 
 -- | @Selector@ for @setURLIsPictureInPicture:@
-setURLIsPictureInPictureSelector :: Selector
+setURLIsPictureInPictureSelector :: Selector '[Bool] ()
 setURLIsPictureInPictureSelector = mkSelector "setURLIsPictureInPicture:"
 
 -- | @Selector@ for @URLIsBlocked@
-urlIsBlockedSelector :: Selector
+urlIsBlockedSelector :: Selector '[] Bool
 urlIsBlockedSelector = mkSelector "URLIsBlocked"
 
 -- | @Selector@ for @profileIdentifier@
-profileIdentifierSelector :: Selector
+profileIdentifierSelector :: Selector '[] (Id NSString)
 profileIdentifierSelector = mkSelector "profileIdentifier"
 
 -- | @Selector@ for @setProfileIdentifier:@
-setProfileIdentifierSelector :: Selector
+setProfileIdentifierSelector :: Selector '[Id NSString] ()
 setProfileIdentifierSelector = mkSelector "setProfileIdentifier:"
 

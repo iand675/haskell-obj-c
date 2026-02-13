@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,42 +30,38 @@ module ObjC.Intents.INRestaurantReservationBooking
   , setRequiresName
   , requiresPhoneNumber
   , setRequiresPhoneNumber
-  , initWithRestaurant_bookingDate_partySize_bookingIdentifierSelector
-  , restaurantSelector
-  , setRestaurantSelector
-  , bookingDescriptionSelector
-  , setBookingDescriptionSelector
-  , bookingDateSelector
-  , setBookingDateSelector
-  , partySizeSelector
-  , setPartySizeSelector
-  , bookingIdentifierSelector
-  , setBookingIdentifierSelector
   , bookingAvailableSelector
-  , setBookingAvailableSelector
+  , bookingDateSelector
+  , bookingDescriptionSelector
+  , bookingIdentifierSelector
+  , initWithRestaurant_bookingDate_partySize_bookingIdentifierSelector
   , offersSelector
-  , setOffersSelector
-  , requiresManualRequestSelector
-  , setRequiresManualRequestSelector
+  , partySizeSelector
   , requiresEmailAddressSelector
-  , setRequiresEmailAddressSelector
+  , requiresManualRequestSelector
   , requiresNameSelector
-  , setRequiresNameSelector
   , requiresPhoneNumberSelector
+  , restaurantSelector
+  , setBookingAvailableSelector
+  , setBookingDateSelector
+  , setBookingDescriptionSelector
+  , setBookingIdentifierSelector
+  , setOffersSelector
+  , setPartySizeSelector
+  , setRequiresEmailAddressSelector
+  , setRequiresManualRequestSelector
+  , setRequiresNameSelector
   , setRequiresPhoneNumberSelector
+  , setRestaurantSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,220 +70,212 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRestaurant:bookingDate:partySize:bookingIdentifier:@
 initWithRestaurant_bookingDate_partySize_bookingIdentifier :: (IsINRestaurantReservationBooking inRestaurantReservationBooking, IsINRestaurant restaurant, IsNSDate bookingDate, IsNSString bookingIdentifier) => inRestaurantReservationBooking -> restaurant -> bookingDate -> CULong -> bookingIdentifier -> IO (Id INRestaurantReservationBooking)
-initWithRestaurant_bookingDate_partySize_bookingIdentifier inRestaurantReservationBooking  restaurant bookingDate partySize bookingIdentifier =
-  withObjCPtr restaurant $ \raw_restaurant ->
-    withObjCPtr bookingDate $ \raw_bookingDate ->
-      withObjCPtr bookingIdentifier $ \raw_bookingIdentifier ->
-          sendMsg inRestaurantReservationBooking (mkSelector "initWithRestaurant:bookingDate:partySize:bookingIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_restaurant :: Ptr ()), argPtr (castPtr raw_bookingDate :: Ptr ()), argCULong partySize, argPtr (castPtr raw_bookingIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithRestaurant_bookingDate_partySize_bookingIdentifier inRestaurantReservationBooking restaurant bookingDate partySize bookingIdentifier =
+  sendOwnedMessage inRestaurantReservationBooking initWithRestaurant_bookingDate_partySize_bookingIdentifierSelector (toINRestaurant restaurant) (toNSDate bookingDate) partySize (toNSString bookingIdentifier)
 
 -- | @- restaurant@
 restaurant :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO (Id INRestaurant)
-restaurant inRestaurantReservationBooking  =
-    sendMsg inRestaurantReservationBooking (mkSelector "restaurant") (retPtr retVoid) [] >>= retainedObject . castPtr
+restaurant inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking restaurantSelector
 
 -- | @- setRestaurant:@
 setRestaurant :: (IsINRestaurantReservationBooking inRestaurantReservationBooking, IsINRestaurant value) => inRestaurantReservationBooking -> value -> IO ()
-setRestaurant inRestaurantReservationBooking  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRestaurantReservationBooking (mkSelector "setRestaurant:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRestaurant inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setRestaurantSelector (toINRestaurant value)
 
 -- | @- bookingDescription@
 bookingDescription :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO (Id NSString)
-bookingDescription inRestaurantReservationBooking  =
-    sendMsg inRestaurantReservationBooking (mkSelector "bookingDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+bookingDescription inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking bookingDescriptionSelector
 
 -- | @- setBookingDescription:@
 setBookingDescription :: (IsINRestaurantReservationBooking inRestaurantReservationBooking, IsNSString value) => inRestaurantReservationBooking -> value -> IO ()
-setBookingDescription inRestaurantReservationBooking  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRestaurantReservationBooking (mkSelector "setBookingDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBookingDescription inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setBookingDescriptionSelector (toNSString value)
 
 -- | @- bookingDate@
 bookingDate :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO (Id NSDate)
-bookingDate inRestaurantReservationBooking  =
-    sendMsg inRestaurantReservationBooking (mkSelector "bookingDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+bookingDate inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking bookingDateSelector
 
 -- | @- setBookingDate:@
 setBookingDate :: (IsINRestaurantReservationBooking inRestaurantReservationBooking, IsNSDate value) => inRestaurantReservationBooking -> value -> IO ()
-setBookingDate inRestaurantReservationBooking  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRestaurantReservationBooking (mkSelector "setBookingDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBookingDate inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setBookingDateSelector (toNSDate value)
 
 -- | @- partySize@
 partySize :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO CULong
-partySize inRestaurantReservationBooking  =
-    sendMsg inRestaurantReservationBooking (mkSelector "partySize") retCULong []
+partySize inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking partySizeSelector
 
 -- | @- setPartySize:@
 setPartySize :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> CULong -> IO ()
-setPartySize inRestaurantReservationBooking  value =
-    sendMsg inRestaurantReservationBooking (mkSelector "setPartySize:") retVoid [argCULong value]
+setPartySize inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setPartySizeSelector value
 
 -- | @- bookingIdentifier@
 bookingIdentifier :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO (Id NSString)
-bookingIdentifier inRestaurantReservationBooking  =
-    sendMsg inRestaurantReservationBooking (mkSelector "bookingIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bookingIdentifier inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking bookingIdentifierSelector
 
 -- | @- setBookingIdentifier:@
 setBookingIdentifier :: (IsINRestaurantReservationBooking inRestaurantReservationBooking, IsNSString value) => inRestaurantReservationBooking -> value -> IO ()
-setBookingIdentifier inRestaurantReservationBooking  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRestaurantReservationBooking (mkSelector "setBookingIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBookingIdentifier inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setBookingIdentifierSelector (toNSString value)
 
 -- | @- bookingAvailable@
 bookingAvailable :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO Bool
-bookingAvailable inRestaurantReservationBooking  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantReservationBooking (mkSelector "bookingAvailable") retCULong []
+bookingAvailable inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking bookingAvailableSelector
 
 -- | @- setBookingAvailable:@
 setBookingAvailable :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> Bool -> IO ()
-setBookingAvailable inRestaurantReservationBooking  value =
-    sendMsg inRestaurantReservationBooking (mkSelector "setBookingAvailable:") retVoid [argCULong (if value then 1 else 0)]
+setBookingAvailable inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setBookingAvailableSelector value
 
 -- | @- offers@
 offers :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO (Id NSArray)
-offers inRestaurantReservationBooking  =
-    sendMsg inRestaurantReservationBooking (mkSelector "offers") (retPtr retVoid) [] >>= retainedObject . castPtr
+offers inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking offersSelector
 
 -- | @- setOffers:@
 setOffers :: (IsINRestaurantReservationBooking inRestaurantReservationBooking, IsNSArray value) => inRestaurantReservationBooking -> value -> IO ()
-setOffers inRestaurantReservationBooking  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRestaurantReservationBooking (mkSelector "setOffers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOffers inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setOffersSelector (toNSArray value)
 
 -- | @- requiresManualRequest@
 requiresManualRequest :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO Bool
-requiresManualRequest inRestaurantReservationBooking  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantReservationBooking (mkSelector "requiresManualRequest") retCULong []
+requiresManualRequest inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking requiresManualRequestSelector
 
 -- | @- setRequiresManualRequest:@
 setRequiresManualRequest :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> Bool -> IO ()
-setRequiresManualRequest inRestaurantReservationBooking  value =
-    sendMsg inRestaurantReservationBooking (mkSelector "setRequiresManualRequest:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresManualRequest inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setRequiresManualRequestSelector value
 
 -- | @- requiresEmailAddress@
 requiresEmailAddress :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO Bool
-requiresEmailAddress inRestaurantReservationBooking  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantReservationBooking (mkSelector "requiresEmailAddress") retCULong []
+requiresEmailAddress inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking requiresEmailAddressSelector
 
 -- | @- setRequiresEmailAddress:@
 setRequiresEmailAddress :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> Bool -> IO ()
-setRequiresEmailAddress inRestaurantReservationBooking  value =
-    sendMsg inRestaurantReservationBooking (mkSelector "setRequiresEmailAddress:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresEmailAddress inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setRequiresEmailAddressSelector value
 
 -- | @- requiresName@
 requiresName :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO Bool
-requiresName inRestaurantReservationBooking  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantReservationBooking (mkSelector "requiresName") retCULong []
+requiresName inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking requiresNameSelector
 
 -- | @- setRequiresName:@
 setRequiresName :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> Bool -> IO ()
-setRequiresName inRestaurantReservationBooking  value =
-    sendMsg inRestaurantReservationBooking (mkSelector "setRequiresName:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresName inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setRequiresNameSelector value
 
 -- | @- requiresPhoneNumber@
 requiresPhoneNumber :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> IO Bool
-requiresPhoneNumber inRestaurantReservationBooking  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantReservationBooking (mkSelector "requiresPhoneNumber") retCULong []
+requiresPhoneNumber inRestaurantReservationBooking =
+  sendMessage inRestaurantReservationBooking requiresPhoneNumberSelector
 
 -- | @- setRequiresPhoneNumber:@
 setRequiresPhoneNumber :: IsINRestaurantReservationBooking inRestaurantReservationBooking => inRestaurantReservationBooking -> Bool -> IO ()
-setRequiresPhoneNumber inRestaurantReservationBooking  value =
-    sendMsg inRestaurantReservationBooking (mkSelector "setRequiresPhoneNumber:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresPhoneNumber inRestaurantReservationBooking value =
+  sendMessage inRestaurantReservationBooking setRequiresPhoneNumberSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRestaurant:bookingDate:partySize:bookingIdentifier:@
-initWithRestaurant_bookingDate_partySize_bookingIdentifierSelector :: Selector
+initWithRestaurant_bookingDate_partySize_bookingIdentifierSelector :: Selector '[Id INRestaurant, Id NSDate, CULong, Id NSString] (Id INRestaurantReservationBooking)
 initWithRestaurant_bookingDate_partySize_bookingIdentifierSelector = mkSelector "initWithRestaurant:bookingDate:partySize:bookingIdentifier:"
 
 -- | @Selector@ for @restaurant@
-restaurantSelector :: Selector
+restaurantSelector :: Selector '[] (Id INRestaurant)
 restaurantSelector = mkSelector "restaurant"
 
 -- | @Selector@ for @setRestaurant:@
-setRestaurantSelector :: Selector
+setRestaurantSelector :: Selector '[Id INRestaurant] ()
 setRestaurantSelector = mkSelector "setRestaurant:"
 
 -- | @Selector@ for @bookingDescription@
-bookingDescriptionSelector :: Selector
+bookingDescriptionSelector :: Selector '[] (Id NSString)
 bookingDescriptionSelector = mkSelector "bookingDescription"
 
 -- | @Selector@ for @setBookingDescription:@
-setBookingDescriptionSelector :: Selector
+setBookingDescriptionSelector :: Selector '[Id NSString] ()
 setBookingDescriptionSelector = mkSelector "setBookingDescription:"
 
 -- | @Selector@ for @bookingDate@
-bookingDateSelector :: Selector
+bookingDateSelector :: Selector '[] (Id NSDate)
 bookingDateSelector = mkSelector "bookingDate"
 
 -- | @Selector@ for @setBookingDate:@
-setBookingDateSelector :: Selector
+setBookingDateSelector :: Selector '[Id NSDate] ()
 setBookingDateSelector = mkSelector "setBookingDate:"
 
 -- | @Selector@ for @partySize@
-partySizeSelector :: Selector
+partySizeSelector :: Selector '[] CULong
 partySizeSelector = mkSelector "partySize"
 
 -- | @Selector@ for @setPartySize:@
-setPartySizeSelector :: Selector
+setPartySizeSelector :: Selector '[CULong] ()
 setPartySizeSelector = mkSelector "setPartySize:"
 
 -- | @Selector@ for @bookingIdentifier@
-bookingIdentifierSelector :: Selector
+bookingIdentifierSelector :: Selector '[] (Id NSString)
 bookingIdentifierSelector = mkSelector "bookingIdentifier"
 
 -- | @Selector@ for @setBookingIdentifier:@
-setBookingIdentifierSelector :: Selector
+setBookingIdentifierSelector :: Selector '[Id NSString] ()
 setBookingIdentifierSelector = mkSelector "setBookingIdentifier:"
 
 -- | @Selector@ for @bookingAvailable@
-bookingAvailableSelector :: Selector
+bookingAvailableSelector :: Selector '[] Bool
 bookingAvailableSelector = mkSelector "bookingAvailable"
 
 -- | @Selector@ for @setBookingAvailable:@
-setBookingAvailableSelector :: Selector
+setBookingAvailableSelector :: Selector '[Bool] ()
 setBookingAvailableSelector = mkSelector "setBookingAvailable:"
 
 -- | @Selector@ for @offers@
-offersSelector :: Selector
+offersSelector :: Selector '[] (Id NSArray)
 offersSelector = mkSelector "offers"
 
 -- | @Selector@ for @setOffers:@
-setOffersSelector :: Selector
+setOffersSelector :: Selector '[Id NSArray] ()
 setOffersSelector = mkSelector "setOffers:"
 
 -- | @Selector@ for @requiresManualRequest@
-requiresManualRequestSelector :: Selector
+requiresManualRequestSelector :: Selector '[] Bool
 requiresManualRequestSelector = mkSelector "requiresManualRequest"
 
 -- | @Selector@ for @setRequiresManualRequest:@
-setRequiresManualRequestSelector :: Selector
+setRequiresManualRequestSelector :: Selector '[Bool] ()
 setRequiresManualRequestSelector = mkSelector "setRequiresManualRequest:"
 
 -- | @Selector@ for @requiresEmailAddress@
-requiresEmailAddressSelector :: Selector
+requiresEmailAddressSelector :: Selector '[] Bool
 requiresEmailAddressSelector = mkSelector "requiresEmailAddress"
 
 -- | @Selector@ for @setRequiresEmailAddress:@
-setRequiresEmailAddressSelector :: Selector
+setRequiresEmailAddressSelector :: Selector '[Bool] ()
 setRequiresEmailAddressSelector = mkSelector "setRequiresEmailAddress:"
 
 -- | @Selector@ for @requiresName@
-requiresNameSelector :: Selector
+requiresNameSelector :: Selector '[] Bool
 requiresNameSelector = mkSelector "requiresName"
 
 -- | @Selector@ for @setRequiresName:@
-setRequiresNameSelector :: Selector
+setRequiresNameSelector :: Selector '[Bool] ()
 setRequiresNameSelector = mkSelector "setRequiresName:"
 
 -- | @Selector@ for @requiresPhoneNumber@
-requiresPhoneNumberSelector :: Selector
+requiresPhoneNumberSelector :: Selector '[] Bool
 requiresPhoneNumberSelector = mkSelector "requiresPhoneNumber"
 
 -- | @Selector@ for @setRequiresPhoneNumber:@
-setRequiresPhoneNumberSelector :: Selector
+setRequiresPhoneNumberSelector :: Selector '[Bool] ()
 setRequiresPhoneNumberSelector = mkSelector "setRequiresPhoneNumber:"
 

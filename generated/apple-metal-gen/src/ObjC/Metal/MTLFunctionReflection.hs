@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Metal.MTLFunctionReflection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,25 +32,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bindings@
 bindings :: IsMTLFunctionReflection mtlFunctionReflection => mtlFunctionReflection -> IO (Id NSArray)
-bindings mtlFunctionReflection  =
-    sendMsg mtlFunctionReflection (mkSelector "bindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+bindings mtlFunctionReflection =
+  sendMessage mtlFunctionReflection bindingsSelector
 
 -- | The string passed to the user annotation attribute for this function. Null if no user annotation is present for this function.
 --
 -- ObjC selector: @- userAnnotation@
 userAnnotation :: IsMTLFunctionReflection mtlFunctionReflection => mtlFunctionReflection -> IO (Id NSString)
-userAnnotation mtlFunctionReflection  =
-    sendMsg mtlFunctionReflection (mkSelector "userAnnotation") (retPtr retVoid) [] >>= retainedObject . castPtr
+userAnnotation mtlFunctionReflection =
+  sendMessage mtlFunctionReflection userAnnotationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bindings@
-bindingsSelector :: Selector
+bindingsSelector :: Selector '[] (Id NSArray)
 bindingsSelector = mkSelector "bindings"
 
 -- | @Selector@ for @userAnnotation@
-userAnnotationSelector :: Selector
+userAnnotationSelector :: Selector '[] (Id NSString)
 userAnnotationSelector = mkSelector "userAnnotation"
 

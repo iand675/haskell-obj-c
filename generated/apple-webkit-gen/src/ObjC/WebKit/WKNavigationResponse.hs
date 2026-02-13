@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.WebKit.WKNavigationResponse
   , forMainFrame
   , response
   , canShowMIMEType
+  , canShowMIMETypeSelector
   , forMainFrameSelector
   , responseSelector
-  , canShowMIMETypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,15 +34,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- forMainFrame@
 forMainFrame :: IsWKNavigationResponse wkNavigationResponse => wkNavigationResponse -> IO Bool
-forMainFrame wkNavigationResponse  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkNavigationResponse (mkSelector "forMainFrame") retCULong []
+forMainFrame wkNavigationResponse =
+  sendMessage wkNavigationResponse forMainFrameSelector
 
 -- | The frame's response.
 --
 -- ObjC selector: @- response@
 response :: IsWKNavigationResponse wkNavigationResponse => wkNavigationResponse -> IO (Id NSURLResponse)
-response wkNavigationResponse  =
-    sendMsg wkNavigationResponse (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+response wkNavigationResponse =
+  sendMessage wkNavigationResponse responseSelector
 
 -- | A Boolean value indicating whether WebKit can display the response's MIME type natively.
 --
@@ -53,22 +50,22 @@ response wkNavigationResponse  =
 --
 -- ObjC selector: @- canShowMIMEType@
 canShowMIMEType :: IsWKNavigationResponse wkNavigationResponse => wkNavigationResponse -> IO Bool
-canShowMIMEType wkNavigationResponse  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkNavigationResponse (mkSelector "canShowMIMEType") retCULong []
+canShowMIMEType wkNavigationResponse =
+  sendMessage wkNavigationResponse canShowMIMETypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @forMainFrame@
-forMainFrameSelector :: Selector
+forMainFrameSelector :: Selector '[] Bool
 forMainFrameSelector = mkSelector "forMainFrame"
 
 -- | @Selector@ for @response@
-responseSelector :: Selector
+responseSelector :: Selector '[] (Id NSURLResponse)
 responseSelector = mkSelector "response"
 
 -- | @Selector@ for @canShowMIMEType@
-canShowMIMETypeSelector :: Selector
+canShowMIMETypeSelector :: Selector '[] Bool
 canShowMIMETypeSelector = mkSelector "canShowMIMEType"
 

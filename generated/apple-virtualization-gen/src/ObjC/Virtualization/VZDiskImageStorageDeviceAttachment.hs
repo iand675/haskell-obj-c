@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,12 +28,12 @@ module ObjC.Virtualization.VZDiskImageStorageDeviceAttachment
   , readOnly
   , cachingMode
   , synchronizationMode
-  , initWithURL_readOnly_errorSelector
-  , initWithURL_readOnly_cachingMode_synchronizationMode_errorSelector
-  , urlSelector
-  , readOnlySelector
   , cachingModeSelector
+  , initWithURL_readOnly_cachingMode_synchronizationMode_errorSelector
+  , initWithURL_readOnly_errorSelector
+  , readOnlySelector
   , synchronizationModeSelector
+  , urlSelector
 
   -- * Enum types
   , VZDiskImageCachingMode(VZDiskImageCachingMode)
@@ -46,15 +47,11 @@ module ObjC.Virtualization.VZDiskImageStorageDeviceAttachment
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,10 +71,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:readOnly:error:@
 initWithURL_readOnly_error :: (IsVZDiskImageStorageDeviceAttachment vzDiskImageStorageDeviceAttachment, IsNSURL url, IsNSError error_) => vzDiskImageStorageDeviceAttachment -> url -> Bool -> error_ -> IO (Id VZDiskImageStorageDeviceAttachment)
-initWithURL_readOnly_error vzDiskImageStorageDeviceAttachment  url readOnly error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vzDiskImageStorageDeviceAttachment (mkSelector "initWithURL:readOnly:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (if readOnly then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_readOnly_error vzDiskImageStorageDeviceAttachment url readOnly error_ =
+  sendOwnedMessage vzDiskImageStorageDeviceAttachment initWithURL_readOnly_errorSelector (toNSURL url) readOnly (toNSError error_)
 
 -- | Initialize the attachment from a local file url.
 --
@@ -95,64 +90,62 @@ initWithURL_readOnly_error vzDiskImageStorageDeviceAttachment  url readOnly erro
 --
 -- ObjC selector: @- initWithURL:readOnly:cachingMode:synchronizationMode:error:@
 initWithURL_readOnly_cachingMode_synchronizationMode_error :: (IsVZDiskImageStorageDeviceAttachment vzDiskImageStorageDeviceAttachment, IsNSURL url, IsNSError error_) => vzDiskImageStorageDeviceAttachment -> url -> Bool -> VZDiskImageCachingMode -> VZDiskImageSynchronizationMode -> error_ -> IO (Id VZDiskImageStorageDeviceAttachment)
-initWithURL_readOnly_cachingMode_synchronizationMode_error vzDiskImageStorageDeviceAttachment  url readOnly cachingMode synchronizationMode error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vzDiskImageStorageDeviceAttachment (mkSelector "initWithURL:readOnly:cachingMode:synchronizationMode:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (if readOnly then 1 else 0), argCLong (coerce cachingMode), argCLong (coerce synchronizationMode), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_readOnly_cachingMode_synchronizationMode_error vzDiskImageStorageDeviceAttachment url readOnly cachingMode synchronizationMode error_ =
+  sendOwnedMessage vzDiskImageStorageDeviceAttachment initWithURL_readOnly_cachingMode_synchronizationMode_errorSelector (toNSURL url) readOnly cachingMode synchronizationMode (toNSError error_)
 
 -- | URL of the underlying disk image.
 --
 -- ObjC selector: @- URL@
 url :: IsVZDiskImageStorageDeviceAttachment vzDiskImageStorageDeviceAttachment => vzDiskImageStorageDeviceAttachment -> IO (Id NSURL)
-url vzDiskImageStorageDeviceAttachment  =
-    sendMsg vzDiskImageStorageDeviceAttachment (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url vzDiskImageStorageDeviceAttachment =
+  sendMessage vzDiskImageStorageDeviceAttachment urlSelector
 
 -- | Whether the underlying disk image is read-only.
 --
 -- ObjC selector: @- readOnly@
 readOnly :: IsVZDiskImageStorageDeviceAttachment vzDiskImageStorageDeviceAttachment => vzDiskImageStorageDeviceAttachment -> IO Bool
-readOnly vzDiskImageStorageDeviceAttachment  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzDiskImageStorageDeviceAttachment (mkSelector "readOnly") retCULong []
+readOnly vzDiskImageStorageDeviceAttachment =
+  sendMessage vzDiskImageStorageDeviceAttachment readOnlySelector
 
 -- | How disk image data is cached by the host.
 --
 -- ObjC selector: @- cachingMode@
 cachingMode :: IsVZDiskImageStorageDeviceAttachment vzDiskImageStorageDeviceAttachment => vzDiskImageStorageDeviceAttachment -> IO VZDiskImageCachingMode
-cachingMode vzDiskImageStorageDeviceAttachment  =
-    fmap (coerce :: CLong -> VZDiskImageCachingMode) $ sendMsg vzDiskImageStorageDeviceAttachment (mkSelector "cachingMode") retCLong []
+cachingMode vzDiskImageStorageDeviceAttachment =
+  sendMessage vzDiskImageStorageDeviceAttachment cachingModeSelector
 
 -- | The mode in which the disk image synchronizes data with the underlying storage device.
 --
 -- ObjC selector: @- synchronizationMode@
 synchronizationMode :: IsVZDiskImageStorageDeviceAttachment vzDiskImageStorageDeviceAttachment => vzDiskImageStorageDeviceAttachment -> IO VZDiskImageSynchronizationMode
-synchronizationMode vzDiskImageStorageDeviceAttachment  =
-    fmap (coerce :: CLong -> VZDiskImageSynchronizationMode) $ sendMsg vzDiskImageStorageDeviceAttachment (mkSelector "synchronizationMode") retCLong []
+synchronizationMode vzDiskImageStorageDeviceAttachment =
+  sendMessage vzDiskImageStorageDeviceAttachment synchronizationModeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:readOnly:error:@
-initWithURL_readOnly_errorSelector :: Selector
+initWithURL_readOnly_errorSelector :: Selector '[Id NSURL, Bool, Id NSError] (Id VZDiskImageStorageDeviceAttachment)
 initWithURL_readOnly_errorSelector = mkSelector "initWithURL:readOnly:error:"
 
 -- | @Selector@ for @initWithURL:readOnly:cachingMode:synchronizationMode:error:@
-initWithURL_readOnly_cachingMode_synchronizationMode_errorSelector :: Selector
+initWithURL_readOnly_cachingMode_synchronizationMode_errorSelector :: Selector '[Id NSURL, Bool, VZDiskImageCachingMode, VZDiskImageSynchronizationMode, Id NSError] (Id VZDiskImageStorageDeviceAttachment)
 initWithURL_readOnly_cachingMode_synchronizationMode_errorSelector = mkSelector "initWithURL:readOnly:cachingMode:synchronizationMode:error:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @readOnly@
-readOnlySelector :: Selector
+readOnlySelector :: Selector '[] Bool
 readOnlySelector = mkSelector "readOnly"
 
 -- | @Selector@ for @cachingMode@
-cachingModeSelector :: Selector
+cachingModeSelector :: Selector '[] VZDiskImageCachingMode
 cachingModeSelector = mkSelector "cachingMode"
 
 -- | @Selector@ for @synchronizationMode@
-synchronizationModeSelector :: Selector
+synchronizationModeSelector :: Selector '[] VZDiskImageSynchronizationMode
 synchronizationModeSelector = mkSelector "synchronizationMode"
 

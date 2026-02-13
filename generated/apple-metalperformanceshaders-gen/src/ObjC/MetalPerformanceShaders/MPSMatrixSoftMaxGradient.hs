@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,27 +27,23 @@ module ObjC.MetalPerformanceShaders.MPSMatrixSoftMaxGradient
   , setSourceRows
   , sourceColumns
   , setSourceColumns
-  , initWithDeviceSelector
+  , copyWithZone_deviceSelector
   , encodeToCommandBuffer_gradientMatrix_forwardOutputMatrix_resultMatrixSelector
   , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
-  , sourceRowsSelector
+  , initWithDeviceSelector
+  , setSourceColumnsSelector
   , setSourceRowsSelector
   , sourceColumnsSelector
-  , setSourceColumnsSelector
+  , sourceRowsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSMatrixSoftMaxGradient mpsMatrixSoftMaxGradient => mpsMatrixSoftMaxGradient -> RawId -> IO (Id MPSMatrixSoftMaxGradient)
-initWithDevice mpsMatrixSoftMaxGradient  device =
-    sendMsg mpsMatrixSoftMaxGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixSoftMaxGradient device =
+  sendOwnedMessage mpsMatrixSoftMaxGradient initWithDeviceSelector device
 
 -- | Encode a MPSMatrixSoftMaxGradient object to a command buffer.
 --
@@ -76,11 +73,8 @@ initWithDevice mpsMatrixSoftMaxGradient  device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:gradientMatrix:forwardOutputMatrix:resultMatrix:@
 encodeToCommandBuffer_gradientMatrix_forwardOutputMatrix_resultMatrix :: (IsMPSMatrixSoftMaxGradient mpsMatrixSoftMaxGradient, IsMPSMatrix gradientMatrix, IsMPSMatrix forwardOutputMatrix, IsMPSMatrix resultMatrix) => mpsMatrixSoftMaxGradient -> RawId -> gradientMatrix -> forwardOutputMatrix -> resultMatrix -> IO ()
-encodeToCommandBuffer_gradientMatrix_forwardOutputMatrix_resultMatrix mpsMatrixSoftMaxGradient  commandBuffer gradientMatrix forwardOutputMatrix resultMatrix =
-  withObjCPtr gradientMatrix $ \raw_gradientMatrix ->
-    withObjCPtr forwardOutputMatrix $ \raw_forwardOutputMatrix ->
-      withObjCPtr resultMatrix $ \raw_resultMatrix ->
-          sendMsg mpsMatrixSoftMaxGradient (mkSelector "encodeToCommandBuffer:gradientMatrix:forwardOutputMatrix:resultMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_gradientMatrix :: Ptr ()), argPtr (castPtr raw_forwardOutputMatrix :: Ptr ()), argPtr (castPtr raw_resultMatrix :: Ptr ())]
+encodeToCommandBuffer_gradientMatrix_forwardOutputMatrix_resultMatrix mpsMatrixSoftMaxGradient commandBuffer gradientMatrix forwardOutputMatrix resultMatrix =
+  sendMessage mpsMatrixSoftMaxGradient encodeToCommandBuffer_gradientMatrix_forwardOutputMatrix_resultMatrixSelector commandBuffer (toMPSMatrix gradientMatrix) (toMPSMatrix forwardOutputMatrix) (toMPSMatrix resultMatrix)
 
 -- | NSSecureCoding compatability
 --
@@ -94,9 +88,8 @@ encodeToCommandBuffer_gradientMatrix_forwardOutputMatrix_resultMatrix mpsMatrixS
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixSoftMaxGradient mpsMatrixSoftMaxGradient, IsNSCoder aDecoder) => mpsMatrixSoftMaxGradient -> aDecoder -> RawId -> IO (Id MPSMatrixSoftMaxGradient)
-initWithCoder_device mpsMatrixSoftMaxGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixSoftMaxGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixSoftMaxGradient aDecoder device =
+  sendOwnedMessage mpsMatrixSoftMaxGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Make a copy of this kernel for a new device -
 --
@@ -110,8 +103,8 @@ initWithCoder_device mpsMatrixSoftMaxGradient  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSMatrixSoftMaxGradient mpsMatrixSoftMaxGradient => mpsMatrixSoftMaxGradient -> Ptr () -> RawId -> IO (Id MPSMatrixSoftMaxGradient)
-copyWithZone_device mpsMatrixSoftMaxGradient  zone device =
-    sendMsg mpsMatrixSoftMaxGradient (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsMatrixSoftMaxGradient zone device =
+  sendOwnedMessage mpsMatrixSoftMaxGradient copyWithZone_deviceSelector zone device
 
 -- | sourceRows
 --
@@ -119,8 +112,8 @@ copyWithZone_device mpsMatrixSoftMaxGradient  zone device =
 --
 -- ObjC selector: @- sourceRows@
 sourceRows :: IsMPSMatrixSoftMaxGradient mpsMatrixSoftMaxGradient => mpsMatrixSoftMaxGradient -> IO CULong
-sourceRows mpsMatrixSoftMaxGradient  =
-    sendMsg mpsMatrixSoftMaxGradient (mkSelector "sourceRows") retCULong []
+sourceRows mpsMatrixSoftMaxGradient =
+  sendMessage mpsMatrixSoftMaxGradient sourceRowsSelector
 
 -- | sourceRows
 --
@@ -128,8 +121,8 @@ sourceRows mpsMatrixSoftMaxGradient  =
 --
 -- ObjC selector: @- setSourceRows:@
 setSourceRows :: IsMPSMatrixSoftMaxGradient mpsMatrixSoftMaxGradient => mpsMatrixSoftMaxGradient -> CULong -> IO ()
-setSourceRows mpsMatrixSoftMaxGradient  value =
-    sendMsg mpsMatrixSoftMaxGradient (mkSelector "setSourceRows:") retVoid [argCULong value]
+setSourceRows mpsMatrixSoftMaxGradient value =
+  sendMessage mpsMatrixSoftMaxGradient setSourceRowsSelector value
 
 -- | sourceColumns
 --
@@ -137,8 +130,8 @@ setSourceRows mpsMatrixSoftMaxGradient  value =
 --
 -- ObjC selector: @- sourceColumns@
 sourceColumns :: IsMPSMatrixSoftMaxGradient mpsMatrixSoftMaxGradient => mpsMatrixSoftMaxGradient -> IO CULong
-sourceColumns mpsMatrixSoftMaxGradient  =
-    sendMsg mpsMatrixSoftMaxGradient (mkSelector "sourceColumns") retCULong []
+sourceColumns mpsMatrixSoftMaxGradient =
+  sendMessage mpsMatrixSoftMaxGradient sourceColumnsSelector
 
 -- | sourceColumns
 --
@@ -146,42 +139,42 @@ sourceColumns mpsMatrixSoftMaxGradient  =
 --
 -- ObjC selector: @- setSourceColumns:@
 setSourceColumns :: IsMPSMatrixSoftMaxGradient mpsMatrixSoftMaxGradient => mpsMatrixSoftMaxGradient -> CULong -> IO ()
-setSourceColumns mpsMatrixSoftMaxGradient  value =
-    sendMsg mpsMatrixSoftMaxGradient (mkSelector "setSourceColumns:") retVoid [argCULong value]
+setSourceColumns mpsMatrixSoftMaxGradient value =
+  sendMessage mpsMatrixSoftMaxGradient setSourceColumnsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixSoftMaxGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeToCommandBuffer:gradientMatrix:forwardOutputMatrix:resultMatrix:@
-encodeToCommandBuffer_gradientMatrix_forwardOutputMatrix_resultMatrixSelector :: Selector
+encodeToCommandBuffer_gradientMatrix_forwardOutputMatrix_resultMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix] ()
 encodeToCommandBuffer_gradientMatrix_forwardOutputMatrix_resultMatrixSelector = mkSelector "encodeToCommandBuffer:gradientMatrix:forwardOutputMatrix:resultMatrix:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixSoftMaxGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSMatrixSoftMaxGradient)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @sourceRows@
-sourceRowsSelector :: Selector
+sourceRowsSelector :: Selector '[] CULong
 sourceRowsSelector = mkSelector "sourceRows"
 
 -- | @Selector@ for @setSourceRows:@
-setSourceRowsSelector :: Selector
+setSourceRowsSelector :: Selector '[CULong] ()
 setSourceRowsSelector = mkSelector "setSourceRows:"
 
 -- | @Selector@ for @sourceColumns@
-sourceColumnsSelector :: Selector
+sourceColumnsSelector :: Selector '[] CULong
 sourceColumnsSelector = mkSelector "sourceColumns"
 
 -- | @Selector@ for @setSourceColumns:@
-setSourceColumnsSelector :: Selector
+setSourceColumnsSelector :: Selector '[CULong] ()
 setSourceColumnsSelector = mkSelector "setSourceColumns:"
 

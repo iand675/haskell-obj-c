@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.NetworkExtension.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | NEAppProxyFlowError
 --
@@ -49,6 +52,16 @@ pattern NEAppProxyFlowErrorDatagramTooLarge = NEAppProxyFlowError 9
 pattern NEAppProxyFlowErrorReadAlreadyPending :: NEAppProxyFlowError
 pattern NEAppProxyFlowErrorReadAlreadyPending = NEAppProxyFlowError 10
 
+instance ObjCArgument NEAppProxyFlowError where
+  withObjCArg (NEAppProxyFlowError x) k = k (argCLong x)
+
+instance ObjCReturn NEAppProxyFlowError where
+  type RawReturn NEAppProxyFlowError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEAppProxyFlowError x)
+  fromOwned x = pure (NEAppProxyFlowError x)
+
 -- | NEAppPushManagerError
 --
 -- App Push Manager error codes
@@ -69,6 +82,16 @@ pattern NEAppPushManagerErrorInternalError = NEAppPushManagerError 3
 pattern NEAppPushManagerErrorInactiveSession :: NEAppPushManagerError
 pattern NEAppPushManagerErrorInactiveSession = NEAppPushManagerError 4
 
+instance ObjCArgument NEAppPushManagerError where
+  withObjCArg (NEAppPushManagerError x) k = k (argCLong x)
+
+instance ObjCReturn NEAppPushManagerError where
+  type RawReturn NEAppPushManagerError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEAppPushManagerError x)
+  fromOwned x = pure (NEAppPushManagerError x)
+
 -- | NEDNSProtocol
 --
 -- DNS protocol variants
@@ -85,6 +108,16 @@ pattern NEDNSProtocolTLS = NEDNSProtocol 2
 
 pattern NEDNSProtocolHTTPS :: NEDNSProtocol
 pattern NEDNSProtocolHTTPS = NEDNSProtocol 3
+
+instance ObjCArgument NEDNSProtocol where
+  withObjCArg (NEDNSProtocol x) k = k (argCLong x)
+
+instance ObjCReturn NEDNSProtocol where
+  type RawReturn NEDNSProtocol = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEDNSProtocol x)
+  fromOwned x = pure (NEDNSProtocol x)
 
 -- | NEDNSProxyError
 --
@@ -106,6 +139,16 @@ pattern NEDNSProxyManagerErrorConfigurationStale = NEDNSProxyManagerError 3
 pattern NEDNSProxyManagerErrorConfigurationCannotBeRemoved :: NEDNSProxyManagerError
 pattern NEDNSProxyManagerErrorConfigurationCannotBeRemoved = NEDNSProxyManagerError 4
 
+instance ObjCArgument NEDNSProxyManagerError where
+  withObjCArg (NEDNSProxyManagerError x) k = k (argCLong x)
+
+instance ObjCReturn NEDNSProxyManagerError where
+  type RawReturn NEDNSProxyManagerError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEDNSProxyManagerError x)
+  fromOwned x = pure (NEDNSProxyManagerError x)
+
 -- | NEDNSSettingsManagerError
 --
 -- DNS Settings Manager error codes
@@ -126,6 +169,16 @@ pattern NEDNSSettingsManagerErrorConfigurationStale = NEDNSSettingsManagerError 
 pattern NEDNSSettingsManagerErrorConfigurationCannotBeRemoved :: NEDNSSettingsManagerError
 pattern NEDNSSettingsManagerErrorConfigurationCannotBeRemoved = NEDNSSettingsManagerError 4
 
+instance ObjCArgument NEDNSSettingsManagerError where
+  withObjCArg (NEDNSSettingsManagerError x) k = k (argCLong x)
+
+instance ObjCReturn NEDNSSettingsManagerError where
+  type RawReturn NEDNSSettingsManagerError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEDNSSettingsManagerError x)
+  fromOwned x = pure (NEDNSSettingsManagerError x)
+
 -- | NEEvaluateConnectionRuleAction
 --
 -- Evaluate Connection rule actions
@@ -139,6 +192,16 @@ pattern NEEvaluateConnectionRuleActionConnectIfNeeded = NEEvaluateConnectionRule
 
 pattern NEEvaluateConnectionRuleActionNeverConnect :: NEEvaluateConnectionRuleAction
 pattern NEEvaluateConnectionRuleActionNeverConnect = NEEvaluateConnectionRuleAction 2
+
+instance ObjCArgument NEEvaluateConnectionRuleAction where
+  withObjCArg (NEEvaluateConnectionRuleAction x) k = k (argCLong x)
+
+instance ObjCReturn NEEvaluateConnectionRuleAction where
+  type RawReturn NEEvaluateConnectionRuleAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEEvaluateConnectionRuleAction x)
+  fromOwned x = pure (NEEvaluateConnectionRuleAction x)
 
 -- | NEFilterAction
 --
@@ -163,6 +226,16 @@ pattern NEFilterActionRemediate = NEFilterAction 3
 pattern NEFilterActionFilterData :: NEFilterAction
 pattern NEFilterActionFilterData = NEFilterAction 4
 
+instance ObjCArgument NEFilterAction where
+  withObjCArg (NEFilterAction x) k = k (argCLong x)
+
+instance ObjCReturn NEFilterAction where
+  type RawReturn NEFilterAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEFilterAction x)
+  fromOwned x = pure (NEFilterAction x)
+
 -- | NEFilterDataAttribute
 --
 -- Attribute flags describing data
@@ -173,6 +246,16 @@ newtype NEFilterDataAttribute = NEFilterDataAttribute CLong
 
 pattern NEFilterDataAttributeHasIPHeader :: NEFilterDataAttribute
 pattern NEFilterDataAttributeHasIPHeader = NEFilterDataAttribute 1
+
+instance ObjCArgument NEFilterDataAttribute where
+  withObjCArg (NEFilterDataAttribute x) k = k (argCLong x)
+
+instance ObjCReturn NEFilterDataAttribute where
+  type RawReturn NEFilterDataAttribute = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEFilterDataAttribute x)
+  fromOwned x = pure (NEFilterDataAttribute x)
 
 -- | NEFilterManagerError
 --
@@ -200,6 +283,16 @@ pattern NEFilterManagerErrorConfigurationPermissionDenied = NEFilterManagerError
 pattern NEFilterManagerErrorConfigurationInternalError :: NEFilterManagerError
 pattern NEFilterManagerErrorConfigurationInternalError = NEFilterManagerError 6
 
+instance ObjCArgument NEFilterManagerError where
+  withObjCArg (NEFilterManagerError x) k = k (argCLong x)
+
+instance ObjCReturn NEFilterManagerError where
+  type RawReturn NEFilterManagerError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEFilterManagerError x)
+  fromOwned x = pure (NEFilterManagerError x)
+
 -- | NEFilterManagerGrade
 --
 -- Filter grade
@@ -213,6 +306,16 @@ pattern NEFilterManagerGradeFirewall = NEFilterManagerGrade 1
 
 pattern NEFilterManagerGradeInspector :: NEFilterManagerGrade
 pattern NEFilterManagerGradeInspector = NEFilterManagerGrade 2
+
+instance ObjCArgument NEFilterManagerGrade where
+  withObjCArg (NEFilterManagerGrade x) k = k (argCLong x)
+
+instance ObjCReturn NEFilterManagerGrade where
+  type RawReturn NEFilterManagerGrade = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEFilterManagerGrade x)
+  fromOwned x = pure (NEFilterManagerGrade x)
 
 -- | NEFilterPacketProviderVerdict
 --
@@ -230,6 +333,16 @@ pattern NEFilterPacketProviderVerdictDrop = NEFilterPacketProviderVerdict 1
 
 pattern NEFilterPacketProviderVerdictDelay :: NEFilterPacketProviderVerdict
 pattern NEFilterPacketProviderVerdictDelay = NEFilterPacketProviderVerdict 2
+
+instance ObjCArgument NEFilterPacketProviderVerdict where
+  withObjCArg (NEFilterPacketProviderVerdict x) k = k (argCLong x)
+
+instance ObjCReturn NEFilterPacketProviderVerdict where
+  type RawReturn NEFilterPacketProviderVerdict = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEFilterPacketProviderVerdict x)
+  fromOwned x = pure (NEFilterPacketProviderVerdict x)
 
 -- | NEFilterReportEvent
 --
@@ -251,6 +364,16 @@ pattern NEFilterReportEventFlowClosed = NEFilterReportEvent 3
 pattern NEFilterReportEventStatistics :: NEFilterReportEvent
 pattern NEFilterReportEventStatistics = NEFilterReportEvent 4
 
+instance ObjCArgument NEFilterReportEvent where
+  withObjCArg (NEFilterReportEvent x) k = k (argCLong x)
+
+instance ObjCReturn NEFilterReportEvent where
+  type RawReturn NEFilterReportEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEFilterReportEvent x)
+  fromOwned x = pure (NEFilterReportEvent x)
+
 -- | NEFilterReportFrequency
 --
 -- A NEFilterReportFrequency controls the frequency of periodic reports.
@@ -270,6 +393,16 @@ pattern NEFilterReportFrequencyMedium = NEFilterReportFrequency 2
 
 pattern NEFilterReportFrequencyHigh :: NEFilterReportFrequency
 pattern NEFilterReportFrequencyHigh = NEFilterReportFrequency 3
+
+instance ObjCArgument NEFilterReportFrequency where
+  withObjCArg (NEFilterReportFrequency x) k = k (argCLong x)
+
+instance ObjCReturn NEFilterReportFrequency where
+  type RawReturn NEFilterReportFrequency = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEFilterReportFrequency x)
+  fromOwned x = pure (NEFilterReportFrequency x)
 
 -- | NEHotspotConfigurationEAPTLSVersion
 --
@@ -293,6 +426,16 @@ pattern NEHotspotConfigurationEAPTLSVersion_1_1 = NEHotspotConfigurationEAPTLSVe
 
 pattern NEHotspotConfigurationEAPTLSVersion_1_2 :: NEHotspotConfigurationEAPTLSVersion
 pattern NEHotspotConfigurationEAPTLSVersion_1_2 = NEHotspotConfigurationEAPTLSVersion 2
+
+instance ObjCArgument NEHotspotConfigurationEAPTLSVersion where
+  withObjCArg (NEHotspotConfigurationEAPTLSVersion x) k = k (argCLong x)
+
+instance ObjCReturn NEHotspotConfigurationEAPTLSVersion where
+  type RawReturn NEHotspotConfigurationEAPTLSVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEHotspotConfigurationEAPTLSVersion x)
+  fromOwned x = pure (NEHotspotConfigurationEAPTLSVersion x)
 
 -- | NEHotspotConfigurationEAPType
 --
@@ -321,6 +464,16 @@ pattern NEHotspotConfigurationEAPTypeEAPPEAP = NEHotspotConfigurationEAPType 25
 
 pattern NEHotspotConfigurationEAPTypeEAPFAST :: NEHotspotConfigurationEAPType
 pattern NEHotspotConfigurationEAPTypeEAPFAST = NEHotspotConfigurationEAPType 43
+
+instance ObjCArgument NEHotspotConfigurationEAPType where
+  withObjCArg (NEHotspotConfigurationEAPType x) k = k (argCLong x)
+
+instance ObjCReturn NEHotspotConfigurationEAPType where
+  type RawReturn NEHotspotConfigurationEAPType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEHotspotConfigurationEAPType x)
+  fromOwned x = pure (NEHotspotConfigurationEAPType x)
 
 -- | NEHotspotConfigurationError
 --
@@ -420,6 +573,16 @@ pattern NEHotspotConfigurationErrorUserUnauthorized = NEHotspotConfigurationErro
 pattern NEHotspotConfigurationErrorSystemDenied :: NEHotspotConfigurationError
 pattern NEHotspotConfigurationErrorSystemDenied = NEHotspotConfigurationError 17
 
+instance ObjCArgument NEHotspotConfigurationError where
+  withObjCArg (NEHotspotConfigurationError x) k = k (argCLong x)
+
+instance ObjCReturn NEHotspotConfigurationError where
+  type RawReturn NEHotspotConfigurationError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEHotspotConfigurationError x)
+  fromOwned x = pure (NEHotspotConfigurationError x)
+
 -- | NEHotspotConfigurationEAPTTLSInnerAuthenticationType
 --
 -- TTLS Inner Authentication Type.
@@ -452,6 +615,16 @@ pattern NEHotspotConfigurationEAPTTLSInnerAuthenticationMSCHAPv2 = NEHotspotConf
 
 pattern NEHotspotConfigurationEAPTTLSInnerAuthenticationEAP :: NEHotspotConfigurationTTLSInnerAuthenticationType
 pattern NEHotspotConfigurationEAPTTLSInnerAuthenticationEAP = NEHotspotConfigurationTTLSInnerAuthenticationType 4
+
+instance ObjCArgument NEHotspotConfigurationTTLSInnerAuthenticationType where
+  withObjCArg (NEHotspotConfigurationTTLSInnerAuthenticationType x) k = k (argCLong x)
+
+instance ObjCReturn NEHotspotConfigurationTTLSInnerAuthenticationType where
+  type RawReturn NEHotspotConfigurationTTLSInnerAuthenticationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEHotspotConfigurationTTLSInnerAuthenticationType x)
+  fromOwned x = pure (NEHotspotConfigurationTTLSInnerAuthenticationType x)
 
 -- | NEHotspotHelperCommandType
 --
@@ -496,6 +669,16 @@ pattern KNEHotspotHelperCommandTypeMaintain = NEHotspotHelperCommandType 5
 pattern KNEHotspotHelperCommandTypeLogoff :: NEHotspotHelperCommandType
 pattern KNEHotspotHelperCommandTypeLogoff = NEHotspotHelperCommandType 6
 
+instance ObjCArgument NEHotspotHelperCommandType where
+  withObjCArg (NEHotspotHelperCommandType x) k = k (argCLong x)
+
+instance ObjCReturn NEHotspotHelperCommandType where
+  type RawReturn NEHotspotHelperCommandType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEHotspotHelperCommandType x)
+  fromOwned x = pure (NEHotspotHelperCommandType x)
+
 -- | NEHotspotHelperConfidence
 --
 -- The HotspotHelper's confidence in its ability to handle the network.
@@ -526,6 +709,16 @@ pattern KNEHotspotHelperConfidenceLow = NEHotspotHelperConfidence 1
 
 pattern KNEHotspotHelperConfidenceHigh :: NEHotspotHelperConfidence
 pattern KNEHotspotHelperConfidenceHigh = NEHotspotHelperConfidence 2
+
+instance ObjCArgument NEHotspotHelperConfidence where
+  withObjCArg (NEHotspotHelperConfidence x) k = k (argCLong x)
+
+instance ObjCReturn NEHotspotHelperConfidence where
+  type RawReturn NEHotspotHelperConfidence = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEHotspotHelperConfidence x)
+  fromOwned x = pure (NEHotspotHelperConfidence x)
 
 -- | NEHotspotHelperResult
 --
@@ -582,6 +775,16 @@ pattern KNEHotspotHelperResultUnsupportedNetwork = NEHotspotHelperResult 5
 pattern KNEHotspotHelperResultTemporaryFailure :: NEHotspotHelperResult
 pattern KNEHotspotHelperResultTemporaryFailure = NEHotspotHelperResult 6
 
+instance ObjCArgument NEHotspotHelperResult where
+  withObjCArg (NEHotspotHelperResult x) k = k (argCLong x)
+
+instance ObjCReturn NEHotspotHelperResult where
+  type RawReturn NEHotspotHelperResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEHotspotHelperResult x)
+  fromOwned x = pure (NEHotspotHelperResult x)
+
 -- | NEHotspotNetworkSecurityType
 --
 -- Wi-Fi network security type
@@ -605,6 +808,16 @@ pattern NEHotspotNetworkSecurityTypeEnterprise = NEHotspotNetworkSecurityType 3
 pattern NEHotspotNetworkSecurityTypeUnknown :: NEHotspotNetworkSecurityType
 pattern NEHotspotNetworkSecurityTypeUnknown = NEHotspotNetworkSecurityType 4
 
+instance ObjCArgument NEHotspotNetworkSecurityType where
+  withObjCArg (NEHotspotNetworkSecurityType x) k = k (argCLong x)
+
+instance ObjCReturn NEHotspotNetworkSecurityType where
+  type RawReturn NEHotspotNetworkSecurityType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEHotspotNetworkSecurityType x)
+  fromOwned x = pure (NEHotspotNetworkSecurityType x)
+
 -- | NENetworkRuleProtocol
 --
 -- IP protocols
@@ -621,6 +834,16 @@ pattern NENetworkRuleProtocolTCP = NENetworkRuleProtocol 1
 
 pattern NENetworkRuleProtocolUDP :: NENetworkRuleProtocol
 pattern NENetworkRuleProtocolUDP = NENetworkRuleProtocol 2
+
+instance ObjCArgument NENetworkRuleProtocol where
+  withObjCArg (NENetworkRuleProtocol x) k = k (argCLong x)
+
+instance ObjCReturn NENetworkRuleProtocol where
+  type RawReturn NENetworkRuleProtocol = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NENetworkRuleProtocol x)
+  fromOwned x = pure (NENetworkRuleProtocol x)
 
 -- | NEOnDemandRuleAction
 --
@@ -642,6 +865,16 @@ pattern NEOnDemandRuleActionEvaluateConnection = NEOnDemandRuleAction 3
 pattern NEOnDemandRuleActionIgnore :: NEOnDemandRuleAction
 pattern NEOnDemandRuleActionIgnore = NEOnDemandRuleAction 4
 
+instance ObjCArgument NEOnDemandRuleAction where
+  withObjCArg (NEOnDemandRuleAction x) k = k (argCLong x)
+
+instance ObjCReturn NEOnDemandRuleAction where
+  type RawReturn NEOnDemandRuleAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEOnDemandRuleAction x)
+  fromOwned x = pure (NEOnDemandRuleAction x)
+
 -- | NEOnDemandRuleInterfaceType
 --
 -- On Demand rule network interface types
@@ -661,6 +894,16 @@ pattern NEOnDemandRuleInterfaceTypeWiFi = NEOnDemandRuleInterfaceType 2
 
 pattern NEOnDemandRuleInterfaceTypeCellular :: NEOnDemandRuleInterfaceType
 pattern NEOnDemandRuleInterfaceTypeCellular = NEOnDemandRuleInterfaceType 3
+
+instance ObjCArgument NEOnDemandRuleInterfaceType where
+  withObjCArg (NEOnDemandRuleInterfaceType x) k = k (argCLong x)
+
+instance ObjCReturn NEOnDemandRuleInterfaceType where
+  type RawReturn NEOnDemandRuleInterfaceType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEOnDemandRuleInterfaceType x)
+  fromOwned x = pure (NEOnDemandRuleInterfaceType x)
 
 -- | NEProviderStopReason
 --
@@ -724,6 +967,16 @@ pattern NEProviderStopReasonAppUpdate = NEProviderStopReason 16
 pattern NEProviderStopReasonInternalError :: NEProviderStopReason
 pattern NEProviderStopReasonInternalError = NEProviderStopReason 17
 
+instance ObjCArgument NEProviderStopReason where
+  withObjCArg (NEProviderStopReason x) k = k (argCLong x)
+
+instance ObjCReturn NEProviderStopReason where
+  type RawReturn NEProviderStopReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEProviderStopReason x)
+  fromOwned x = pure (NEProviderStopReason x)
+
 -- | NERelayManagerClientError
 --
 -- NERelay Manager error codes detected by the client while trying to use this relay
@@ -762,6 +1015,16 @@ pattern NERelayManagerClientErrorServerCertificateExpired = NERelayManagerClient
 pattern NERelayManagerClientErrorOther :: NERelayManagerClientError
 pattern NERelayManagerClientErrorOther = NERelayManagerClientError 10
 
+instance ObjCArgument NERelayManagerClientError where
+  withObjCArg (NERelayManagerClientError x) k = k (argCLong x)
+
+instance ObjCReturn NERelayManagerClientError where
+  type RawReturn NERelayManagerClientError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NERelayManagerClientError x)
+  fromOwned x = pure (NERelayManagerClientError x)
+
 -- | NERelayManagerError
 --
 -- NERelay Manager error codes
@@ -782,6 +1045,16 @@ pattern NERelayManagerErrorConfigurationStale = NERelayManagerError 3
 pattern NERelayManagerErrorConfigurationCannotBeRemoved :: NERelayManagerError
 pattern NERelayManagerErrorConfigurationCannotBeRemoved = NERelayManagerError 4
 
+instance ObjCArgument NERelayManagerError where
+  withObjCArg (NERelayManagerError x) k = k (argCLong x)
+
+instance ObjCReturn NERelayManagerError where
+  type RawReturn NERelayManagerError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NERelayManagerError x)
+  fromOwned x = pure (NERelayManagerError x)
+
 -- | NETrafficDirection
 --
 -- The direction of network traffic
@@ -798,6 +1071,16 @@ pattern NETrafficDirectionInbound = NETrafficDirection 1
 
 pattern NETrafficDirectionOutbound :: NETrafficDirection
 pattern NETrafficDirectionOutbound = NETrafficDirection 2
+
+instance ObjCArgument NETrafficDirection where
+  withObjCArg (NETrafficDirection x) k = k (argCLong x)
+
+instance ObjCReturn NETrafficDirection where
+  type RawReturn NETrafficDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NETrafficDirection x)
+  fromOwned x = pure (NETrafficDirection x)
 
 -- | NETunnelProviderError
 --
@@ -816,6 +1099,16 @@ pattern NETunnelProviderErrorNetworkSettingsCanceled = NETunnelProviderError 2
 pattern NETunnelProviderErrorNetworkSettingsFailed :: NETunnelProviderError
 pattern NETunnelProviderErrorNetworkSettingsFailed = NETunnelProviderError 3
 
+instance ObjCArgument NETunnelProviderError where
+  withObjCArg (NETunnelProviderError x) k = k (argCLong x)
+
+instance ObjCReturn NETunnelProviderError where
+  type RawReturn NETunnelProviderError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NETunnelProviderError x)
+  fromOwned x = pure (NETunnelProviderError x)
+
 -- | NETunnelProviderRoutingMethod
 --
 -- Network traffic routing methods.
@@ -833,6 +1126,16 @@ pattern NETunnelProviderRoutingMethodSourceApplication = NETunnelProviderRouting
 pattern NETunnelProviderRoutingMethodNetworkRule :: NETunnelProviderRoutingMethod
 pattern NETunnelProviderRoutingMethodNetworkRule = NETunnelProviderRoutingMethod 3
 
+instance ObjCArgument NETunnelProviderRoutingMethod where
+  withObjCArg (NETunnelProviderRoutingMethod x) k = k (argCLong x)
+
+instance ObjCReturn NETunnelProviderRoutingMethod where
+  type RawReturn NETunnelProviderRoutingMethod = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NETunnelProviderRoutingMethod x)
+  fromOwned x = pure (NETunnelProviderRoutingMethod x)
+
 -- | URL Filter Verdicts
 -- | @NEURLFilterVerdict@
 newtype NEURLFilterVerdict = NEURLFilterVerdict CLong
@@ -847,6 +1150,16 @@ pattern NEURLFilterVerdictAllow = NEURLFilterVerdict 2
 
 pattern NEURLFilterVerdictDeny :: NEURLFilterVerdict
 pattern NEURLFilterVerdictDeny = NEURLFilterVerdict 3
+
+instance ObjCArgument NEURLFilterVerdict where
+  withObjCArg (NEURLFilterVerdict x) k = k (argCLong x)
+
+instance ObjCReturn NEURLFilterVerdict where
+  type RawReturn NEURLFilterVerdict = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEURLFilterVerdict x)
+  fromOwned x = pure (NEURLFilterVerdict x)
 
 -- | NEVPNConnectionError
 --
@@ -913,6 +1226,16 @@ pattern NEVPNConnectionErrorServerCertificateNotYetValid = NEVPNConnectionError 
 pattern NEVPNConnectionErrorServerCertificateExpired :: NEVPNConnectionError
 pattern NEVPNConnectionErrorServerCertificateExpired = NEVPNConnectionError 19
 
+instance ObjCArgument NEVPNConnectionError where
+  withObjCArg (NEVPNConnectionError x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNConnectionError where
+  type RawReturn NEVPNConnectionError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNConnectionError x)
+  fromOwned x = pure (NEVPNConnectionError x)
+
 -- | NEVPNError
 --
 -- VPN error codes
@@ -939,6 +1262,16 @@ pattern NEVPNErrorConfigurationReadWriteFailed = NEVPNError 5
 pattern NEVPNErrorConfigurationUnknown :: NEVPNError
 pattern NEVPNErrorConfigurationUnknown = NEVPNError 6
 
+instance ObjCArgument NEVPNError where
+  withObjCArg (NEVPNError x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNError where
+  type RawReturn NEVPNError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNError x)
+  fromOwned x = pure (NEVPNError x)
+
 -- | NEVPNIKEAuthenticationMethod
 --
 -- Internet Key Exchange (IKE) authentication methods used to authenticate with the IPSec server.
@@ -955,6 +1288,16 @@ pattern NEVPNIKEAuthenticationMethodCertificate = NEVPNIKEAuthenticationMethod 1
 
 pattern NEVPNIKEAuthenticationMethodSharedSecret :: NEVPNIKEAuthenticationMethod
 pattern NEVPNIKEAuthenticationMethodSharedSecret = NEVPNIKEAuthenticationMethod 2
+
+instance ObjCArgument NEVPNIKEAuthenticationMethod where
+  withObjCArg (NEVPNIKEAuthenticationMethod x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNIKEAuthenticationMethod where
+  type RawReturn NEVPNIKEAuthenticationMethod = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNIKEAuthenticationMethod x)
+  fromOwned x = pure (NEVPNIKEAuthenticationMethod x)
 
 -- | NEVPNIKEv2CertificateType
 --
@@ -982,6 +1325,16 @@ pattern NEVPNIKEv2CertificateTypeEd25519 = NEVPNIKEv2CertificateType 5
 pattern NEVPNIKEv2CertificateTypeRSAPSS :: NEVPNIKEv2CertificateType
 pattern NEVPNIKEv2CertificateTypeRSAPSS = NEVPNIKEv2CertificateType 6
 
+instance ObjCArgument NEVPNIKEv2CertificateType where
+  withObjCArg (NEVPNIKEv2CertificateType x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNIKEv2CertificateType where
+  type RawReturn NEVPNIKEv2CertificateType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNIKEv2CertificateType x)
+  fromOwned x = pure (NEVPNIKEv2CertificateType x)
+
 -- | NEVPNIKEv2DeadPeerDetectionRate
 --
 -- IKEv2 Dead Peer Detection Rates
@@ -1001,6 +1354,16 @@ pattern NEVPNIKEv2DeadPeerDetectionRateMedium = NEVPNIKEv2DeadPeerDetectionRate 
 
 pattern NEVPNIKEv2DeadPeerDetectionRateHigh :: NEVPNIKEv2DeadPeerDetectionRate
 pattern NEVPNIKEv2DeadPeerDetectionRateHigh = NEVPNIKEv2DeadPeerDetectionRate 3
+
+instance ObjCArgument NEVPNIKEv2DeadPeerDetectionRate where
+  withObjCArg (NEVPNIKEv2DeadPeerDetectionRate x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNIKEv2DeadPeerDetectionRate where
+  type RawReturn NEVPNIKEv2DeadPeerDetectionRate = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNIKEv2DeadPeerDetectionRate x)
+  fromOwned x = pure (NEVPNIKEv2DeadPeerDetectionRate x)
 
 -- | NEVPNIKEv2DiffieHellmanGroup
 --
@@ -1052,6 +1415,16 @@ pattern NEVPNIKEv2DiffieHellmanGroup31 = NEVPNIKEv2DiffieHellmanGroup 31
 pattern NEVPNIKEv2DiffieHellmanGroup32 :: NEVPNIKEv2DiffieHellmanGroup
 pattern NEVPNIKEv2DiffieHellmanGroup32 = NEVPNIKEv2DiffieHellmanGroup 32
 
+instance ObjCArgument NEVPNIKEv2DiffieHellmanGroup where
+  withObjCArg (NEVPNIKEv2DiffieHellmanGroup x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNIKEv2DiffieHellmanGroup where
+  type RawReturn NEVPNIKEv2DiffieHellmanGroup = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNIKEv2DiffieHellmanGroup x)
+  fromOwned x = pure (NEVPNIKEv2DiffieHellmanGroup x)
+
 -- | NEVPNIKEv2EncryptionAlgorithm
 --
 -- IKEv2 Encryption Algorithms
@@ -1081,6 +1454,16 @@ pattern NEVPNIKEv2EncryptionAlgorithmAES256GCM = NEVPNIKEv2EncryptionAlgorithm 6
 pattern NEVPNIKEv2EncryptionAlgorithmChaCha20Poly1305 :: NEVPNIKEv2EncryptionAlgorithm
 pattern NEVPNIKEv2EncryptionAlgorithmChaCha20Poly1305 = NEVPNIKEv2EncryptionAlgorithm 7
 
+instance ObjCArgument NEVPNIKEv2EncryptionAlgorithm where
+  withObjCArg (NEVPNIKEv2EncryptionAlgorithm x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNIKEv2EncryptionAlgorithm where
+  type RawReturn NEVPNIKEv2EncryptionAlgorithm = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNIKEv2EncryptionAlgorithm x)
+  fromOwned x = pure (NEVPNIKEv2EncryptionAlgorithm x)
+
 -- | NEVPNIKEv2IntegrityAlgorithm
 --
 -- IKEv2 Integrity Algorithms
@@ -1104,6 +1487,16 @@ pattern NEVPNIKEv2IntegrityAlgorithmSHA384 = NEVPNIKEv2IntegrityAlgorithm 4
 pattern NEVPNIKEv2IntegrityAlgorithmSHA512 :: NEVPNIKEv2IntegrityAlgorithm
 pattern NEVPNIKEv2IntegrityAlgorithmSHA512 = NEVPNIKEv2IntegrityAlgorithm 5
 
+instance ObjCArgument NEVPNIKEv2IntegrityAlgorithm where
+  withObjCArg (NEVPNIKEv2IntegrityAlgorithm x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNIKEv2IntegrityAlgorithm where
+  type RawReturn NEVPNIKEv2IntegrityAlgorithm = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNIKEv2IntegrityAlgorithm x)
+  fromOwned x = pure (NEVPNIKEv2IntegrityAlgorithm x)
+
 -- | NEVPNIKEv2PostQuantumKeyExchangeMethod
 --
 -- IKEv2 post-quantum key exchange methods
@@ -1120,6 +1513,16 @@ pattern NEVPNIKEv2PostQuantumKeyExchangeMethod36 = NEVPNIKEv2PostQuantumKeyExcha
 
 pattern NEVPNIKEv2PostQuantumKeyExchangeMethod37 :: NEVPNIKEv2PostQuantumKeyExchangeMethod
 pattern NEVPNIKEv2PostQuantumKeyExchangeMethod37 = NEVPNIKEv2PostQuantumKeyExchangeMethod 37
+
+instance ObjCArgument NEVPNIKEv2PostQuantumKeyExchangeMethod where
+  withObjCArg (NEVPNIKEv2PostQuantumKeyExchangeMethod x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNIKEv2PostQuantumKeyExchangeMethod where
+  type RawReturn NEVPNIKEv2PostQuantumKeyExchangeMethod = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNIKEv2PostQuantumKeyExchangeMethod x)
+  fromOwned x = pure (NEVPNIKEv2PostQuantumKeyExchangeMethod x)
 
 -- | NEVPNIKEv2TLSVersion
 --
@@ -1140,6 +1543,16 @@ pattern NEVPNIKEv2TLSVersion1_1 = NEVPNIKEv2TLSVersion 2
 
 pattern NEVPNIKEv2TLSVersion1_2 :: NEVPNIKEv2TLSVersion
 pattern NEVPNIKEv2TLSVersion1_2 = NEVPNIKEv2TLSVersion 3
+
+instance ObjCArgument NEVPNIKEv2TLSVersion where
+  withObjCArg (NEVPNIKEv2TLSVersion x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNIKEv2TLSVersion where
+  type RawReturn NEVPNIKEv2TLSVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNIKEv2TLSVersion x)
+  fromOwned x = pure (NEVPNIKEv2TLSVersion x)
 
 -- | NEVPNStatus
 --
@@ -1167,6 +1580,16 @@ pattern NEVPNStatusReasserting = NEVPNStatus 4
 pattern NEVPNStatusDisconnecting :: NEVPNStatus
 pattern NEVPNStatusDisconnecting = NEVPNStatus 5
 
+instance ObjCArgument NEVPNStatus where
+  withObjCArg (NEVPNStatus x) k = k (argCLong x)
+
+instance ObjCReturn NEVPNStatus where
+  type RawReturn NEVPNStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NEVPNStatus x)
+  fromOwned x = pure (NEVPNStatus x)
+
 -- | NWPathStatus
 --
 -- Path status values
@@ -1186,6 +1609,16 @@ pattern NWPathStatusUnsatisfied = NWPathStatus 2
 
 pattern NWPathStatusSatisfiable :: NWPathStatus
 pattern NWPathStatusSatisfiable = NWPathStatus 3
+
+instance ObjCArgument NWPathStatus where
+  withObjCArg (NWPathStatus x) k = k (argCLong x)
+
+instance ObjCReturn NWPathStatus where
+  type RawReturn NWPathStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NWPathStatus x)
+  fromOwned x = pure (NWPathStatus x)
 
 -- | NWTCPConnectionState
 --
@@ -1213,6 +1646,16 @@ pattern NWTCPConnectionStateDisconnected = NWTCPConnectionState 4
 pattern NWTCPConnectionStateCancelled :: NWTCPConnectionState
 pattern NWTCPConnectionStateCancelled = NWTCPConnectionState 5
 
+instance ObjCArgument NWTCPConnectionState where
+  withObjCArg (NWTCPConnectionState x) k = k (argCLong x)
+
+instance ObjCReturn NWTCPConnectionState where
+  type RawReturn NWTCPConnectionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NWTCPConnectionState x)
+  fromOwned x = pure (NWTCPConnectionState x)
+
 -- | NWUDPSessionState
 --
 -- UDP session state values
@@ -1238,3 +1681,13 @@ pattern NWUDPSessionStateFailed = NWUDPSessionState 4
 
 pattern NWUDPSessionStateCancelled :: NWUDPSessionState
 pattern NWUDPSessionStateCancelled = NWUDPSessionState 5
+
+instance ObjCArgument NWUDPSessionState where
+  withObjCArg (NWUDPSessionState x) k = k (argCLong x)
+
+instance ObjCReturn NWUDPSessionState where
+  type RawReturn NWUDPSessionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NWUDPSessionState x)
+  fromOwned x = pure (NWUDPSessionState x)

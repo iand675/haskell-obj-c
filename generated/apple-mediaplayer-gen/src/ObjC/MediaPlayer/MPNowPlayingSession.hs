@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.MediaPlayer.MPNowPlayingSession
   , remoteCommandCenter
   , canBecomeActive
   , active
+  , activeSelector
+  , addPlayerSelector
+  , automaticallyPublishesNowPlayingInfoSelector
+  , becomeActiveIfPossibleWithCompletionSelector
+  , canBecomeActiveSelector
+  , delegateSelector
+  , initSelector
   , initWithPlayersSelector
   , newSelector
-  , initSelector
-  , becomeActiveIfPossibleWithCompletionSelector
-  , addPlayerSelector
-  , removePlayerSelector
-  , playersSelector
-  , delegateSelector
-  , setDelegateSelector
-  , automaticallyPublishesNowPlayingInfoSelector
-  , setAutomaticallyPublishesNowPlayingInfoSelector
   , nowPlayingInfoCenterSelector
+  , playersSelector
   , remoteCommandCenterSelector
-  , canBecomeActiveSelector
-  , activeSelector
+  , removePlayerSelector
+  , setAutomaticallyPublishesNowPlayingInfoSelector
+  , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,165 +57,162 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPlayers:@
 initWithPlayers :: (IsMPNowPlayingSession mpNowPlayingSession, IsNSArray players) => mpNowPlayingSession -> players -> IO (Id MPNowPlayingSession)
-initWithPlayers mpNowPlayingSession  players =
-  withObjCPtr players $ \raw_players ->
-      sendMsg mpNowPlayingSession (mkSelector "initWithPlayers:") (retPtr retVoid) [argPtr (castPtr raw_players :: Ptr ())] >>= ownedObject . castPtr
+initWithPlayers mpNowPlayingSession players =
+  sendOwnedMessage mpNowPlayingSession initWithPlayersSelector (toNSArray players)
 
 -- | @+ new@
 new :: IO (Id MPNowPlayingSession)
 new  =
   do
     cls' <- getRequiredClass "MPNowPlayingSession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> IO (Id MPNowPlayingSession)
-init_ mpNowPlayingSession  =
-    sendMsg mpNowPlayingSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpNowPlayingSession =
+  sendOwnedMessage mpNowPlayingSession initSelector
 
 -- | Asks the system to make this session the active now playing sessin for the App.
 --
 -- ObjC selector: @- becomeActiveIfPossibleWithCompletion:@
 becomeActiveIfPossibleWithCompletion :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> Ptr () -> IO ()
-becomeActiveIfPossibleWithCompletion mpNowPlayingSession  completion =
-    sendMsg mpNowPlayingSession (mkSelector "becomeActiveIfPossibleWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+becomeActiveIfPossibleWithCompletion mpNowPlayingSession completion =
+  sendMessage mpNowPlayingSession becomeActiveIfPossibleWithCompletionSelector completion
 
 -- | Add AVPlayer instance to this session.
 --
 -- ObjC selector: @- addPlayer:@
 addPlayer :: (IsMPNowPlayingSession mpNowPlayingSession, IsAVPlayer player) => mpNowPlayingSession -> player -> IO ()
-addPlayer mpNowPlayingSession  player =
-  withObjCPtr player $ \raw_player ->
-      sendMsg mpNowPlayingSession (mkSelector "addPlayer:") retVoid [argPtr (castPtr raw_player :: Ptr ())]
+addPlayer mpNowPlayingSession player =
+  sendMessage mpNowPlayingSession addPlayerSelector (toAVPlayer player)
 
 -- | Remove AVPlayer instance from this session.
 --
 -- ObjC selector: @- removePlayer:@
 removePlayer :: (IsMPNowPlayingSession mpNowPlayingSession, IsAVPlayer player) => mpNowPlayingSession -> player -> IO ()
-removePlayer mpNowPlayingSession  player =
-  withObjCPtr player $ \raw_player ->
-      sendMsg mpNowPlayingSession (mkSelector "removePlayer:") retVoid [argPtr (castPtr raw_player :: Ptr ())]
+removePlayer mpNowPlayingSession player =
+  sendMessage mpNowPlayingSession removePlayerSelector (toAVPlayer player)
 
 -- | AVPlayer instances associated with this session.
 --
 -- ObjC selector: @- players@
 players :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> IO (Id NSArray)
-players mpNowPlayingSession  =
-    sendMsg mpNowPlayingSession (mkSelector "players") (retPtr retVoid) [] >>= retainedObject . castPtr
+players mpNowPlayingSession =
+  sendMessage mpNowPlayingSession playersSelector
 
 -- | @- delegate@
 delegate :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> IO RawId
-delegate mpNowPlayingSession  =
-    fmap (RawId . castPtr) $ sendMsg mpNowPlayingSession (mkSelector "delegate") (retPtr retVoid) []
+delegate mpNowPlayingSession =
+  sendMessage mpNowPlayingSession delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> RawId -> IO ()
-setDelegate mpNowPlayingSession  value =
-    sendMsg mpNowPlayingSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate mpNowPlayingSession value =
+  sendMessage mpNowPlayingSession setDelegateSelector value
 
 -- | When YES, now playing info will be automatically published, and nowPlayingInfoCenter must not be used.  Now playing info keys to be incorporated by automatic publishing can be set on the AVPlayerItem's nowPlayingInfo property.
 --
 -- ObjC selector: @- automaticallyPublishesNowPlayingInfo@
 automaticallyPublishesNowPlayingInfo :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> IO Bool
-automaticallyPublishesNowPlayingInfo mpNowPlayingSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpNowPlayingSession (mkSelector "automaticallyPublishesNowPlayingInfo") retCULong []
+automaticallyPublishesNowPlayingInfo mpNowPlayingSession =
+  sendMessage mpNowPlayingSession automaticallyPublishesNowPlayingInfoSelector
 
 -- | When YES, now playing info will be automatically published, and nowPlayingInfoCenter must not be used.  Now playing info keys to be incorporated by automatic publishing can be set on the AVPlayerItem's nowPlayingInfo property.
 --
 -- ObjC selector: @- setAutomaticallyPublishesNowPlayingInfo:@
 setAutomaticallyPublishesNowPlayingInfo :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> Bool -> IO ()
-setAutomaticallyPublishesNowPlayingInfo mpNowPlayingSession  value =
-    sendMsg mpNowPlayingSession (mkSelector "setAutomaticallyPublishesNowPlayingInfo:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyPublishesNowPlayingInfo mpNowPlayingSession value =
+  sendMessage mpNowPlayingSession setAutomaticallyPublishesNowPlayingInfoSelector value
 
 -- | The now playing info center that is associated with this session.
 --
 -- ObjC selector: @- nowPlayingInfoCenter@
 nowPlayingInfoCenter :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> IO (Id MPNowPlayingInfoCenter)
-nowPlayingInfoCenter mpNowPlayingSession  =
-    sendMsg mpNowPlayingSession (mkSelector "nowPlayingInfoCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+nowPlayingInfoCenter mpNowPlayingSession =
+  sendMessage mpNowPlayingSession nowPlayingInfoCenterSelector
 
 -- | The remote command center that is associated with this session.
 --
 -- ObjC selector: @- remoteCommandCenter@
 remoteCommandCenter :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> IO (Id MPRemoteCommandCenter)
-remoteCommandCenter mpNowPlayingSession  =
-    sendMsg mpNowPlayingSession (mkSelector "remoteCommandCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteCommandCenter mpNowPlayingSession =
+  sendMessage mpNowPlayingSession remoteCommandCenterSelector
 
 -- | Returns a Boolean value indicating whether this session can become the App's active now playing session.
 --
 -- ObjC selector: @- canBecomeActive@
 canBecomeActive :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> IO Bool
-canBecomeActive mpNowPlayingSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpNowPlayingSession (mkSelector "canBecomeActive") retCULong []
+canBecomeActive mpNowPlayingSession =
+  sendMessage mpNowPlayingSession canBecomeActiveSelector
 
 -- | Returns a Boolean value indicating whether this session is the App's active now playing session.
 --
 -- ObjC selector: @- active@
 active :: IsMPNowPlayingSession mpNowPlayingSession => mpNowPlayingSession -> IO Bool
-active mpNowPlayingSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpNowPlayingSession (mkSelector "active") retCULong []
+active mpNowPlayingSession =
+  sendMessage mpNowPlayingSession activeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPlayers:@
-initWithPlayersSelector :: Selector
+initWithPlayersSelector :: Selector '[Id NSArray] (Id MPNowPlayingSession)
 initWithPlayersSelector = mkSelector "initWithPlayers:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MPNowPlayingSession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPNowPlayingSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @becomeActiveIfPossibleWithCompletion:@
-becomeActiveIfPossibleWithCompletionSelector :: Selector
+becomeActiveIfPossibleWithCompletionSelector :: Selector '[Ptr ()] ()
 becomeActiveIfPossibleWithCompletionSelector = mkSelector "becomeActiveIfPossibleWithCompletion:"
 
 -- | @Selector@ for @addPlayer:@
-addPlayerSelector :: Selector
+addPlayerSelector :: Selector '[Id AVPlayer] ()
 addPlayerSelector = mkSelector "addPlayer:"
 
 -- | @Selector@ for @removePlayer:@
-removePlayerSelector :: Selector
+removePlayerSelector :: Selector '[Id AVPlayer] ()
 removePlayerSelector = mkSelector "removePlayer:"
 
 -- | @Selector@ for @players@
-playersSelector :: Selector
+playersSelector :: Selector '[] (Id NSArray)
 playersSelector = mkSelector "players"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @automaticallyPublishesNowPlayingInfo@
-automaticallyPublishesNowPlayingInfoSelector :: Selector
+automaticallyPublishesNowPlayingInfoSelector :: Selector '[] Bool
 automaticallyPublishesNowPlayingInfoSelector = mkSelector "automaticallyPublishesNowPlayingInfo"
 
 -- | @Selector@ for @setAutomaticallyPublishesNowPlayingInfo:@
-setAutomaticallyPublishesNowPlayingInfoSelector :: Selector
+setAutomaticallyPublishesNowPlayingInfoSelector :: Selector '[Bool] ()
 setAutomaticallyPublishesNowPlayingInfoSelector = mkSelector "setAutomaticallyPublishesNowPlayingInfo:"
 
 -- | @Selector@ for @nowPlayingInfoCenter@
-nowPlayingInfoCenterSelector :: Selector
+nowPlayingInfoCenterSelector :: Selector '[] (Id MPNowPlayingInfoCenter)
 nowPlayingInfoCenterSelector = mkSelector "nowPlayingInfoCenter"
 
 -- | @Selector@ for @remoteCommandCenter@
-remoteCommandCenterSelector :: Selector
+remoteCommandCenterSelector :: Selector '[] (Id MPRemoteCommandCenter)
 remoteCommandCenterSelector = mkSelector "remoteCommandCenter"
 
 -- | @Selector@ for @canBecomeActive@
-canBecomeActiveSelector :: Selector
+canBecomeActiveSelector :: Selector '[] Bool
 canBecomeActiveSelector = mkSelector "canBecomeActive"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,27 +27,23 @@ module ObjC.NetworkExtension.NEAppRule
   , setMatchTools
   , initWithSigningIdentifierSelector
   , initWithSigningIdentifier_designatedRequirementSelector
-  , matchSigningIdentifierSelector
   , matchDesignatedRequirementSelector
-  , matchPathSelector
-  , setMatchPathSelector
   , matchDomainsSelector
-  , setMatchDomainsSelector
+  , matchPathSelector
+  , matchSigningIdentifierSelector
   , matchToolsSelector
+  , setMatchDomainsSelector
+  , setMatchPathSelector
   , setMatchToolsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,9 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSigningIdentifier:@
 initWithSigningIdentifier :: (IsNEAppRule neAppRule, IsNSString signingIdentifier) => neAppRule -> signingIdentifier -> IO (Id NEAppRule)
-initWithSigningIdentifier neAppRule  signingIdentifier =
-  withObjCPtr signingIdentifier $ \raw_signingIdentifier ->
-      sendMsg neAppRule (mkSelector "initWithSigningIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_signingIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithSigningIdentifier neAppRule signingIdentifier =
+  sendOwnedMessage neAppRule initWithSigningIdentifierSelector (toNSString signingIdentifier)
 
 -- | initWithSigningIdentifier:designatedRequirement:
 --
@@ -75,10 +71,8 @@ initWithSigningIdentifier neAppRule  signingIdentifier =
 --
 -- ObjC selector: @- initWithSigningIdentifier:designatedRequirement:@
 initWithSigningIdentifier_designatedRequirement :: (IsNEAppRule neAppRule, IsNSString signingIdentifier, IsNSString designatedRequirement) => neAppRule -> signingIdentifier -> designatedRequirement -> IO (Id NEAppRule)
-initWithSigningIdentifier_designatedRequirement neAppRule  signingIdentifier designatedRequirement =
-  withObjCPtr signingIdentifier $ \raw_signingIdentifier ->
-    withObjCPtr designatedRequirement $ \raw_designatedRequirement ->
-        sendMsg neAppRule (mkSelector "initWithSigningIdentifier:designatedRequirement:") (retPtr retVoid) [argPtr (castPtr raw_signingIdentifier :: Ptr ()), argPtr (castPtr raw_designatedRequirement :: Ptr ())] >>= ownedObject . castPtr
+initWithSigningIdentifier_designatedRequirement neAppRule signingIdentifier designatedRequirement =
+  sendOwnedMessage neAppRule initWithSigningIdentifier_designatedRequirementSelector (toNSString signingIdentifier) (toNSString designatedRequirement)
 
 -- | matchSigningIdentifier
 --
@@ -86,8 +80,8 @@ initWithSigningIdentifier_designatedRequirement neAppRule  signingIdentifier des
 --
 -- ObjC selector: @- matchSigningIdentifier@
 matchSigningIdentifier :: IsNEAppRule neAppRule => neAppRule -> IO (Id NSString)
-matchSigningIdentifier neAppRule  =
-    sendMsg neAppRule (mkSelector "matchSigningIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchSigningIdentifier neAppRule =
+  sendMessage neAppRule matchSigningIdentifierSelector
 
 -- | matchDesignatedRequirement
 --
@@ -95,8 +89,8 @@ matchSigningIdentifier neAppRule  =
 --
 -- ObjC selector: @- matchDesignatedRequirement@
 matchDesignatedRequirement :: IsNEAppRule neAppRule => neAppRule -> IO (Id NSString)
-matchDesignatedRequirement neAppRule  =
-    sendMsg neAppRule (mkSelector "matchDesignatedRequirement") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchDesignatedRequirement neAppRule =
+  sendMessage neAppRule matchDesignatedRequirementSelector
 
 -- | matchPath
 --
@@ -104,8 +98,8 @@ matchDesignatedRequirement neAppRule  =
 --
 -- ObjC selector: @- matchPath@
 matchPath :: IsNEAppRule neAppRule => neAppRule -> IO (Id NSString)
-matchPath neAppRule  =
-    sendMsg neAppRule (mkSelector "matchPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchPath neAppRule =
+  sendMessage neAppRule matchPathSelector
 
 -- | matchPath
 --
@@ -113,9 +107,8 @@ matchPath neAppRule  =
 --
 -- ObjC selector: @- setMatchPath:@
 setMatchPath :: (IsNEAppRule neAppRule, IsNSString value) => neAppRule -> value -> IO ()
-setMatchPath neAppRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neAppRule (mkSelector "setMatchPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatchPath neAppRule value =
+  sendMessage neAppRule setMatchPathSelector (toNSString value)
 
 -- | matchDomains
 --
@@ -123,8 +116,8 @@ setMatchPath neAppRule  value =
 --
 -- ObjC selector: @- matchDomains@
 matchDomains :: IsNEAppRule neAppRule => neAppRule -> IO (Id NSArray)
-matchDomains neAppRule  =
-    sendMsg neAppRule (mkSelector "matchDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchDomains neAppRule =
+  sendMessage neAppRule matchDomainsSelector
 
 -- | matchDomains
 --
@@ -132,9 +125,8 @@ matchDomains neAppRule  =
 --
 -- ObjC selector: @- setMatchDomains:@
 setMatchDomains :: (IsNEAppRule neAppRule, IsNSArray value) => neAppRule -> value -> IO ()
-setMatchDomains neAppRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neAppRule (mkSelector "setMatchDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatchDomains neAppRule value =
+  sendMessage neAppRule setMatchDomainsSelector (toNSArray value)
 
 -- | matchTools
 --
@@ -142,8 +134,8 @@ setMatchDomains neAppRule  value =
 --
 -- ObjC selector: @- matchTools@
 matchTools :: IsNEAppRule neAppRule => neAppRule -> IO (Id NSArray)
-matchTools neAppRule  =
-    sendMsg neAppRule (mkSelector "matchTools") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchTools neAppRule =
+  sendMessage neAppRule matchToolsSelector
 
 -- | matchTools
 --
@@ -151,51 +143,50 @@ matchTools neAppRule  =
 --
 -- ObjC selector: @- setMatchTools:@
 setMatchTools :: (IsNEAppRule neAppRule, IsNSArray value) => neAppRule -> value -> IO ()
-setMatchTools neAppRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neAppRule (mkSelector "setMatchTools:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatchTools neAppRule value =
+  sendMessage neAppRule setMatchToolsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSigningIdentifier:@
-initWithSigningIdentifierSelector :: Selector
+initWithSigningIdentifierSelector :: Selector '[Id NSString] (Id NEAppRule)
 initWithSigningIdentifierSelector = mkSelector "initWithSigningIdentifier:"
 
 -- | @Selector@ for @initWithSigningIdentifier:designatedRequirement:@
-initWithSigningIdentifier_designatedRequirementSelector :: Selector
+initWithSigningIdentifier_designatedRequirementSelector :: Selector '[Id NSString, Id NSString] (Id NEAppRule)
 initWithSigningIdentifier_designatedRequirementSelector = mkSelector "initWithSigningIdentifier:designatedRequirement:"
 
 -- | @Selector@ for @matchSigningIdentifier@
-matchSigningIdentifierSelector :: Selector
+matchSigningIdentifierSelector :: Selector '[] (Id NSString)
 matchSigningIdentifierSelector = mkSelector "matchSigningIdentifier"
 
 -- | @Selector@ for @matchDesignatedRequirement@
-matchDesignatedRequirementSelector :: Selector
+matchDesignatedRequirementSelector :: Selector '[] (Id NSString)
 matchDesignatedRequirementSelector = mkSelector "matchDesignatedRequirement"
 
 -- | @Selector@ for @matchPath@
-matchPathSelector :: Selector
+matchPathSelector :: Selector '[] (Id NSString)
 matchPathSelector = mkSelector "matchPath"
 
 -- | @Selector@ for @setMatchPath:@
-setMatchPathSelector :: Selector
+setMatchPathSelector :: Selector '[Id NSString] ()
 setMatchPathSelector = mkSelector "setMatchPath:"
 
 -- | @Selector@ for @matchDomains@
-matchDomainsSelector :: Selector
+matchDomainsSelector :: Selector '[] (Id NSArray)
 matchDomainsSelector = mkSelector "matchDomains"
 
 -- | @Selector@ for @setMatchDomains:@
-setMatchDomainsSelector :: Selector
+setMatchDomainsSelector :: Selector '[Id NSArray] ()
 setMatchDomainsSelector = mkSelector "setMatchDomains:"
 
 -- | @Selector@ for @matchTools@
-matchToolsSelector :: Selector
+matchToolsSelector :: Selector '[] (Id NSArray)
 matchToolsSelector = mkSelector "matchTools"
 
 -- | @Selector@ for @setMatchTools:@
-setMatchToolsSelector :: Selector
+setMatchToolsSelector :: Selector '[Id NSArray] ()
 setMatchToolsSelector = mkSelector "setMatchTools:"
 

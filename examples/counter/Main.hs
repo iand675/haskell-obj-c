@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PatternSynonyms #-}
@@ -12,7 +13,6 @@ import Data.String (fromString)
 import Foreign.Ptr (nullPtr)
 
 import ObjC.Runtime
-import ObjC.Runtime.ActionTarget (newActionTarget)
 
 -- Generated AppKit bindings
 import ObjC.AppKit.NSApplication
@@ -53,6 +53,16 @@ updateLabel :: Id NSTextField -> Int -> IO ()
 updateLabel label n = Ctrl.setStringValue label (fromString (show n) :: Id NSString)
 
 -- ---------------------------------------------------------------------------
+-- Action selectors
+-- ---------------------------------------------------------------------------
+
+incrementSel :: Sel
+incrementSel = mkSelector "increment:"
+
+decrementSel :: Sel
+decrementSel = mkSelector "decrement:"
+
+-- ---------------------------------------------------------------------------
 -- Main
 -- ---------------------------------------------------------------------------
 
@@ -89,22 +99,22 @@ main = withAutoreleasePool $ do
   -- Create the target with per-instance state
   ref <- newIORef (0 :: Int)
   target <- newActionTarget
-    [ ("increment:", \_ -> do
+    [ incrementSel := do
           modifyIORef' ref (+ 1)
-          readIORef ref >>= updateLabel label)
-    , ("decrement:", \_ -> do
+          readIORef ref >>= updateLabel label
+    , decrementSel := do
           modifyIORef' ref (subtract 1)
-          readIORef ref >>= updateLabel label)
+          readIORef ref >>= updateLabel label
     ]
 
   -- Buttons
   plusBtn <- Btn.buttonWithTitle_target_action
-    ("+" :: Id NSString) target (mkSelector "increment:")
+    ("+" :: Id NSString) target (asSel incrementSel)
   View.setFrame plusBtn (NSRect (NSPoint 190 20) (NSSize 60 40))
   View.addSubview cv (toNSView plusBtn)
 
   minusBtn <- Btn.buttonWithTitle_target_action
-    ("-" :: Id NSString) target (mkSelector "decrement:")
+    ("-" :: Id NSString) target (asSel decrementSel)
   View.setFrame minusBtn (NSRect (NSPoint 70 20) (NSSize 60 40))
   View.addSubview cv (toNSView minusBtn)
 
@@ -122,7 +132,7 @@ setupMenuBar app = do
   Menu.addItem menuBar appMenuItem
   appMenu <- alloc @NSMenu >>= \m -> Menu.initWithTitle m ("App" :: Id NSString)
   quitItem <- alloc @NSMenuItem >>=
-    \mi -> MI.initWithTitle_action_keyEquivalent mi ("Quit" :: Id NSString) App.terminateSelector ("q" :: Id NSString)
+    \mi -> MI.initWithTitle_action_keyEquivalent mi ("Quit" :: Id NSString) (asSel App.terminateSelector) ("q" :: Id NSString)
   Menu.addItem appMenu quitItem
   Menu.setSubmenu_forItem menuBar appMenu appMenuItem
   App.setMainMenu app menuBar

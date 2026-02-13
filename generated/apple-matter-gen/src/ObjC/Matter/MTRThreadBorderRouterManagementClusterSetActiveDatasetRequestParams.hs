@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRThreadBorderRouterManagementClusterSetActiveDatasetRequest
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , activeDatasetSelector
-  , setActiveDatasetSelector
   , breadcrumbSelector
-  , setBreadcrumbSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setActiveDatasetSelector
+  , setBreadcrumbSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- activeDataset@
 activeDataset :: IsMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams => mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams -> IO (Id NSData)
-activeDataset mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams  =
-    sendMsg mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams (mkSelector "activeDataset") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeDataset mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams =
+  sendMessage mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams activeDatasetSelector
 
 -- | @- setActiveDataset:@
 setActiveDataset :: (IsMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams, IsNSData value) => mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams -> value -> IO ()
-setActiveDataset mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams (mkSelector "setActiveDataset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActiveDataset mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams value =
+  sendMessage mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams setActiveDatasetSelector (toNSData value)
 
 -- | @- breadcrumb@
 breadcrumb :: IsMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams => mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams -> IO (Id NSNumber)
-breadcrumb mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams  =
-    sendMsg mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams (mkSelector "breadcrumb") (retPtr retVoid) [] >>= retainedObject . castPtr
+breadcrumb mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams =
+  sendMessage mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams breadcrumbSelector
 
 -- | @- setBreadcrumb:@
 setBreadcrumb :: (IsMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams, IsNSNumber value) => mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams -> value -> IO ()
-setBreadcrumb mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams (mkSelector "setBreadcrumb:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBreadcrumb mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams value =
+  sendMessage mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams setBreadcrumbSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setBreadcrumb mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParam
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams => mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams  =
-    sendMsg mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams =
+  sendMessage mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetActiveDatasetReque
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams, IsNSNumber value) => mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams value =
+  sendMessage mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetActiveDatasetRe
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams => mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams  =
-    sendMsg mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams =
+  sendMessage mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetActiveDatas
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams, IsNSNumber value) => mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams value =
+  sendMessage mtrThreadBorderRouterManagementClusterSetActiveDatasetRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @activeDataset@
-activeDatasetSelector :: Selector
+activeDatasetSelector :: Selector '[] (Id NSData)
 activeDatasetSelector = mkSelector "activeDataset"
 
 -- | @Selector@ for @setActiveDataset:@
-setActiveDatasetSelector :: Selector
+setActiveDatasetSelector :: Selector '[Id NSData] ()
 setActiveDatasetSelector = mkSelector "setActiveDataset:"
 
 -- | @Selector@ for @breadcrumb@
-breadcrumbSelector :: Selector
+breadcrumbSelector :: Selector '[] (Id NSNumber)
 breadcrumbSelector = mkSelector "breadcrumb"
 
 -- | @Selector@ for @setBreadcrumb:@
-setBreadcrumbSelector :: Selector
+setBreadcrumbSelector :: Selector '[Id NSNumber] ()
 setBreadcrumbSelector = mkSelector "setBreadcrumb:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

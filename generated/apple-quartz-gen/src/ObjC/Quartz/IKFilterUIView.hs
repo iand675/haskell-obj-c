@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Quartz.IKFilterUIView
   , initWithFrame_filter
   , filter_
   , objectController
-  , viewWithFrame_filterSelector
-  , initWithFrame_filterSelector
   , filterSelector
+  , initWithFrame_filterSelector
   , objectControllerSelector
+  , viewWithFrame_filterSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,7 @@ viewWithFrame_filter :: IsCIFilter inFilter => NSRect -> inFilter -> IO RawId
 viewWithFrame_filter frameRect inFilter =
   do
     cls' <- getRequiredClass "IKFilterUIView"
-    withObjCPtr inFilter $ \raw_inFilter ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "viewWithFrame:filter:") (retPtr retVoid) [argNSRect frameRect, argPtr (castPtr raw_inFilter :: Ptr ())]
+    sendClassMessage cls' viewWithFrame_filterSelector frameRect (toCIFilter inFilter)
 
 -- | initWithFrame:filter:
 --
@@ -54,9 +50,8 @@ viewWithFrame_filter frameRect inFilter =
 --
 -- ObjC selector: @- initWithFrame:filter:@
 initWithFrame_filter :: (IsIKFilterUIView ikFilterUIView, IsCIFilter inFilter) => ikFilterUIView -> NSRect -> inFilter -> IO RawId
-initWithFrame_filter ikFilterUIView  frameRect inFilter =
-  withObjCPtr inFilter $ \raw_inFilter ->
-      fmap (RawId . castPtr) $ sendMsg ikFilterUIView (mkSelector "initWithFrame:filter:") (retPtr retVoid) [argNSRect frameRect, argPtr (castPtr raw_inFilter :: Ptr ())]
+initWithFrame_filter ikFilterUIView frameRect inFilter =
+  sendOwnedMessage ikFilterUIView initWithFrame_filterSelector frameRect (toCIFilter inFilter)
 
 -- | filter
 --
@@ -64,8 +59,8 @@ initWithFrame_filter ikFilterUIView  frameRect inFilter =
 --
 -- ObjC selector: @- filter@
 filter_ :: IsIKFilterUIView ikFilterUIView => ikFilterUIView -> IO (Id CIFilter)
-filter_ ikFilterUIView  =
-    sendMsg ikFilterUIView (mkSelector "filter") (retPtr retVoid) [] >>= retainedObject . castPtr
+filter_ ikFilterUIView =
+  sendMessage ikFilterUIView filterSelector
 
 -- | objectController
 --
@@ -73,26 +68,26 @@ filter_ ikFilterUIView  =
 --
 -- ObjC selector: @- objectController@
 objectController :: IsIKFilterUIView ikFilterUIView => ikFilterUIView -> IO (Id NSObjectController)
-objectController ikFilterUIView  =
-    sendMsg ikFilterUIView (mkSelector "objectController") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectController ikFilterUIView =
+  sendMessage ikFilterUIView objectControllerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @viewWithFrame:filter:@
-viewWithFrame_filterSelector :: Selector
+viewWithFrame_filterSelector :: Selector '[NSRect, Id CIFilter] RawId
 viewWithFrame_filterSelector = mkSelector "viewWithFrame:filter:"
 
 -- | @Selector@ for @initWithFrame:filter:@
-initWithFrame_filterSelector :: Selector
+initWithFrame_filterSelector :: Selector '[NSRect, Id CIFilter] RawId
 initWithFrame_filterSelector = mkSelector "initWithFrame:filter:"
 
 -- | @Selector@ for @filter@
-filterSelector :: Selector
+filterSelector :: Selector '[] (Id CIFilter)
 filterSelector = mkSelector "filter"
 
 -- | @Selector@ for @objectController@
-objectControllerSelector :: Selector
+objectControllerSelector :: Selector '[] (Id NSObjectController)
 objectControllerSelector = mkSelector "objectController"
 

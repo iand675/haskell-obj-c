@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Intents.INPauseWorkoutIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithWorkoutName:@
 initWithWorkoutName :: (IsINPauseWorkoutIntent inPauseWorkoutIntent, IsINSpeakableString workoutName) => inPauseWorkoutIntent -> workoutName -> IO (Id INPauseWorkoutIntent)
-initWithWorkoutName inPauseWorkoutIntent  workoutName =
-  withObjCPtr workoutName $ \raw_workoutName ->
-      sendMsg inPauseWorkoutIntent (mkSelector "initWithWorkoutName:") (retPtr retVoid) [argPtr (castPtr raw_workoutName :: Ptr ())] >>= ownedObject . castPtr
+initWithWorkoutName inPauseWorkoutIntent workoutName =
+  sendOwnedMessage inPauseWorkoutIntent initWithWorkoutNameSelector (toINSpeakableString workoutName)
 
 -- | @- workoutName@
 workoutName :: IsINPauseWorkoutIntent inPauseWorkoutIntent => inPauseWorkoutIntent -> IO (Id INSpeakableString)
-workoutName inPauseWorkoutIntent  =
-    sendMsg inPauseWorkoutIntent (mkSelector "workoutName") (retPtr retVoid) [] >>= retainedObject . castPtr
+workoutName inPauseWorkoutIntent =
+  sendMessage inPauseWorkoutIntent workoutNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithWorkoutName:@
-initWithWorkoutNameSelector :: Selector
+initWithWorkoutNameSelector :: Selector '[Id INSpeakableString] (Id INPauseWorkoutIntent)
 initWithWorkoutNameSelector = mkSelector "initWithWorkoutName:"
 
 -- | @Selector@ for @workoutName@
-workoutNameSelector :: Selector
+workoutNameSelector :: Selector '[] (Id INSpeakableString)
 workoutNameSelector = mkSelector "workoutName"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.SceneKit.SCNTransformConstraint
   , transformConstraintInWorldSpace_withBlock
   , positionConstraintInWorldSpace_withBlock
   , orientationConstraintInWorldSpace_withBlock
-  , transformConstraintInWorldSpace_withBlockSelector
-  , positionConstraintInWorldSpace_withBlockSelector
   , orientationConstraintInWorldSpace_withBlockSelector
+  , positionConstraintInWorldSpace_withBlockSelector
+  , transformConstraintInWorldSpace_withBlockSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,7 +47,7 @@ transformConstraintInWorldSpace_withBlock :: Bool -> Ptr () -> IO (Id SCNTransfo
 transformConstraintInWorldSpace_withBlock world block =
   do
     cls' <- getRequiredClass "SCNTransformConstraint"
-    sendClassMsg cls' (mkSelector "transformConstraintInWorldSpace:withBlock:") (retPtr retVoid) [argCULong (if world then 1 else 0), argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' transformConstraintInWorldSpace_withBlockSelector world block
 
 -- | positionConstraintInWorldSpace:withBlock:
 --
@@ -67,7 +64,7 @@ positionConstraintInWorldSpace_withBlock :: Bool -> Ptr () -> IO (Id SCNTransfor
 positionConstraintInWorldSpace_withBlock world block =
   do
     cls' <- getRequiredClass "SCNTransformConstraint"
-    sendClassMsg cls' (mkSelector "positionConstraintInWorldSpace:withBlock:") (retPtr retVoid) [argCULong (if world then 1 else 0), argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' positionConstraintInWorldSpace_withBlockSelector world block
 
 -- | orientationConstraintInWorldSpace:withBlock:
 --
@@ -84,21 +81,21 @@ orientationConstraintInWorldSpace_withBlock :: Bool -> Ptr () -> IO (Id SCNTrans
 orientationConstraintInWorldSpace_withBlock world block =
   do
     cls' <- getRequiredClass "SCNTransformConstraint"
-    sendClassMsg cls' (mkSelector "orientationConstraintInWorldSpace:withBlock:") (retPtr retVoid) [argCULong (if world then 1 else 0), argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' orientationConstraintInWorldSpace_withBlockSelector world block
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @transformConstraintInWorldSpace:withBlock:@
-transformConstraintInWorldSpace_withBlockSelector :: Selector
+transformConstraintInWorldSpace_withBlockSelector :: Selector '[Bool, Ptr ()] (Id SCNTransformConstraint)
 transformConstraintInWorldSpace_withBlockSelector = mkSelector "transformConstraintInWorldSpace:withBlock:"
 
 -- | @Selector@ for @positionConstraintInWorldSpace:withBlock:@
-positionConstraintInWorldSpace_withBlockSelector :: Selector
+positionConstraintInWorldSpace_withBlockSelector :: Selector '[Bool, Ptr ()] (Id SCNTransformConstraint)
 positionConstraintInWorldSpace_withBlockSelector = mkSelector "positionConstraintInWorldSpace:withBlock:"
 
 -- | @Selector@ for @orientationConstraintInWorldSpace:withBlock:@
-orientationConstraintInWorldSpace_withBlockSelector :: Selector
+orientationConstraintInWorldSpace_withBlockSelector :: Selector '[Bool, Ptr ()] (Id SCNTransformConstraint)
 orientationConstraintInWorldSpace_withBlockSelector = mkSelector "orientationConstraintInWorldSpace:withBlock:"
 

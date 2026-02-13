@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Matter.MTRTLSClientManagementClusterTLSEndpointStruct
   , setReferenceCount
   , fabricIndex
   , setFabricIndex
-  , endpointIDSelector
-  , setEndpointIDSelector
-  , hostnameSelector
-  , setHostnameSelector
-  , portSelector
-  , setPortSelector
   , caidSelector
-  , setCaidSelector
   , ccdidSelector
-  , setCcdidSelector
-  , referenceCountSelector
-  , setReferenceCountSelector
+  , endpointIDSelector
   , fabricIndexSelector
+  , hostnameSelector
+  , portSelector
+  , referenceCountSelector
+  , setCaidSelector
+  , setCcdidSelector
+  , setEndpointIDSelector
   , setFabricIndexSelector
+  , setHostnameSelector
+  , setPortSelector
+  , setReferenceCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,138 +52,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- endpointID@
 endpointID :: IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct => mtrtlsClientManagementClusterTLSEndpointStruct -> IO (Id NSNumber)
-endpointID mtrtlsClientManagementClusterTLSEndpointStruct  =
-    sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointID mtrtlsClientManagementClusterTLSEndpointStruct =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct endpointIDSelector
 
 -- | @- setEndpointID:@
 setEndpointID :: (IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct, IsNSNumber value) => mtrtlsClientManagementClusterTLSEndpointStruct -> value -> IO ()
-setEndpointID mtrtlsClientManagementClusterTLSEndpointStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "setEndpointID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpointID mtrtlsClientManagementClusterTLSEndpointStruct value =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct setEndpointIDSelector (toNSNumber value)
 
 -- | @- hostname@
 hostname :: IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct => mtrtlsClientManagementClusterTLSEndpointStruct -> IO (Id NSData)
-hostname mtrtlsClientManagementClusterTLSEndpointStruct  =
-    sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "hostname") (retPtr retVoid) [] >>= retainedObject . castPtr
+hostname mtrtlsClientManagementClusterTLSEndpointStruct =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct hostnameSelector
 
 -- | @- setHostname:@
 setHostname :: (IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct, IsNSData value) => mtrtlsClientManagementClusterTLSEndpointStruct -> value -> IO ()
-setHostname mtrtlsClientManagementClusterTLSEndpointStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "setHostname:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHostname mtrtlsClientManagementClusterTLSEndpointStruct value =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct setHostnameSelector (toNSData value)
 
 -- | @- port@
 port :: IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct => mtrtlsClientManagementClusterTLSEndpointStruct -> IO (Id NSNumber)
-port mtrtlsClientManagementClusterTLSEndpointStruct  =
-    sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "port") (retPtr retVoid) [] >>= retainedObject . castPtr
+port mtrtlsClientManagementClusterTLSEndpointStruct =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct portSelector
 
 -- | @- setPort:@
 setPort :: (IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct, IsNSNumber value) => mtrtlsClientManagementClusterTLSEndpointStruct -> value -> IO ()
-setPort mtrtlsClientManagementClusterTLSEndpointStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "setPort:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPort mtrtlsClientManagementClusterTLSEndpointStruct value =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct setPortSelector (toNSNumber value)
 
 -- | @- caid@
 caid :: IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct => mtrtlsClientManagementClusterTLSEndpointStruct -> IO (Id NSNumber)
-caid mtrtlsClientManagementClusterTLSEndpointStruct  =
-    sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "caid") (retPtr retVoid) [] >>= retainedObject . castPtr
+caid mtrtlsClientManagementClusterTLSEndpointStruct =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct caidSelector
 
 -- | @- setCaid:@
 setCaid :: (IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct, IsNSNumber value) => mtrtlsClientManagementClusterTLSEndpointStruct -> value -> IO ()
-setCaid mtrtlsClientManagementClusterTLSEndpointStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "setCaid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaid mtrtlsClientManagementClusterTLSEndpointStruct value =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct setCaidSelector (toNSNumber value)
 
 -- | @- ccdid@
 ccdid :: IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct => mtrtlsClientManagementClusterTLSEndpointStruct -> IO (Id NSNumber)
-ccdid mtrtlsClientManagementClusterTLSEndpointStruct  =
-    sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "ccdid") (retPtr retVoid) [] >>= retainedObject . castPtr
+ccdid mtrtlsClientManagementClusterTLSEndpointStruct =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct ccdidSelector
 
 -- | @- setCcdid:@
 setCcdid :: (IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct, IsNSNumber value) => mtrtlsClientManagementClusterTLSEndpointStruct -> value -> IO ()
-setCcdid mtrtlsClientManagementClusterTLSEndpointStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "setCcdid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCcdid mtrtlsClientManagementClusterTLSEndpointStruct value =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct setCcdidSelector (toNSNumber value)
 
 -- | @- referenceCount@
 referenceCount :: IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct => mtrtlsClientManagementClusterTLSEndpointStruct -> IO (Id NSNumber)
-referenceCount mtrtlsClientManagementClusterTLSEndpointStruct  =
-    sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "referenceCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+referenceCount mtrtlsClientManagementClusterTLSEndpointStruct =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct referenceCountSelector
 
 -- | @- setReferenceCount:@
 setReferenceCount :: (IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct, IsNSNumber value) => mtrtlsClientManagementClusterTLSEndpointStruct -> value -> IO ()
-setReferenceCount mtrtlsClientManagementClusterTLSEndpointStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "setReferenceCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReferenceCount mtrtlsClientManagementClusterTLSEndpointStruct value =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct setReferenceCountSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct => mtrtlsClientManagementClusterTLSEndpointStruct -> IO (Id NSNumber)
-fabricIndex mtrtlsClientManagementClusterTLSEndpointStruct  =
-    sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrtlsClientManagementClusterTLSEndpointStruct =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRTLSClientManagementClusterTLSEndpointStruct mtrtlsClientManagementClusterTLSEndpointStruct, IsNSNumber value) => mtrtlsClientManagementClusterTLSEndpointStruct -> value -> IO ()
-setFabricIndex mtrtlsClientManagementClusterTLSEndpointStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsClientManagementClusterTLSEndpointStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrtlsClientManagementClusterTLSEndpointStruct value =
+  sendMessage mtrtlsClientManagementClusterTLSEndpointStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @endpointID@
-endpointIDSelector :: Selector
+endpointIDSelector :: Selector '[] (Id NSNumber)
 endpointIDSelector = mkSelector "endpointID"
 
 -- | @Selector@ for @setEndpointID:@
-setEndpointIDSelector :: Selector
+setEndpointIDSelector :: Selector '[Id NSNumber] ()
 setEndpointIDSelector = mkSelector "setEndpointID:"
 
 -- | @Selector@ for @hostname@
-hostnameSelector :: Selector
+hostnameSelector :: Selector '[] (Id NSData)
 hostnameSelector = mkSelector "hostname"
 
 -- | @Selector@ for @setHostname:@
-setHostnameSelector :: Selector
+setHostnameSelector :: Selector '[Id NSData] ()
 setHostnameSelector = mkSelector "setHostname:"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] (Id NSNumber)
 portSelector = mkSelector "port"
 
 -- | @Selector@ for @setPort:@
-setPortSelector :: Selector
+setPortSelector :: Selector '[Id NSNumber] ()
 setPortSelector = mkSelector "setPort:"
 
 -- | @Selector@ for @caid@
-caidSelector :: Selector
+caidSelector :: Selector '[] (Id NSNumber)
 caidSelector = mkSelector "caid"
 
 -- | @Selector@ for @setCaid:@
-setCaidSelector :: Selector
+setCaidSelector :: Selector '[Id NSNumber] ()
 setCaidSelector = mkSelector "setCaid:"
 
 -- | @Selector@ for @ccdid@
-ccdidSelector :: Selector
+ccdidSelector :: Selector '[] (Id NSNumber)
 ccdidSelector = mkSelector "ccdid"
 
 -- | @Selector@ for @setCcdid:@
-setCcdidSelector :: Selector
+setCcdidSelector :: Selector '[Id NSNumber] ()
 setCcdidSelector = mkSelector "setCcdid:"
 
 -- | @Selector@ for @referenceCount@
-referenceCountSelector :: Selector
+referenceCountSelector :: Selector '[] (Id NSNumber)
 referenceCountSelector = mkSelector "referenceCount"
 
 -- | @Selector@ for @setReferenceCount:@
-setReferenceCountSelector :: Selector
+setReferenceCountSelector :: Selector '[Id NSNumber] ()
 setReferenceCountSelector = mkSelector "setReferenceCount:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Metal.MTLAccelerationStructurePassSampleBufferAttachmentDescriptor
   , setStartOfEncoderSampleIndex
   , endOfEncoderSampleIndex
   , setEndOfEncoderSampleIndex
-  , sampleBufferSelector
-  , setSampleBufferSelector
-  , startOfEncoderSampleIndexSelector
-  , setStartOfEncoderSampleIndexSelector
   , endOfEncoderSampleIndexSelector
+  , sampleBufferSelector
   , setEndOfEncoderSampleIndexSelector
+  , setSampleBufferSelector
+  , setStartOfEncoderSampleIndexSelector
+  , startOfEncoderSampleIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- sampleBuffer@
 sampleBuffer :: IsMTLAccelerationStructurePassSampleBufferAttachmentDescriptor mtlAccelerationStructurePassSampleBufferAttachmentDescriptor => mtlAccelerationStructurePassSampleBufferAttachmentDescriptor -> IO RawId
-sampleBuffer mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructurePassSampleBufferAttachmentDescriptor (mkSelector "sampleBuffer") (retPtr retVoid) []
+sampleBuffer mtlAccelerationStructurePassSampleBufferAttachmentDescriptor =
+  sendMessage mtlAccelerationStructurePassSampleBufferAttachmentDescriptor sampleBufferSelector
 
 -- | sampleBuffer
 --
@@ -52,8 +49,8 @@ sampleBuffer mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  =
 --
 -- ObjC selector: @- setSampleBuffer:@
 setSampleBuffer :: IsMTLAccelerationStructurePassSampleBufferAttachmentDescriptor mtlAccelerationStructurePassSampleBufferAttachmentDescriptor => mtlAccelerationStructurePassSampleBufferAttachmentDescriptor -> RawId -> IO ()
-setSampleBuffer mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  value =
-    sendMsg mtlAccelerationStructurePassSampleBufferAttachmentDescriptor (mkSelector "setSampleBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSampleBuffer mtlAccelerationStructurePassSampleBufferAttachmentDescriptor value =
+  sendMessage mtlAccelerationStructurePassSampleBufferAttachmentDescriptor setSampleBufferSelector value
 
 -- | startOfEncoderSampleIndex
 --
@@ -63,8 +60,8 @@ setSampleBuffer mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  va
 --
 -- ObjC selector: @- startOfEncoderSampleIndex@
 startOfEncoderSampleIndex :: IsMTLAccelerationStructurePassSampleBufferAttachmentDescriptor mtlAccelerationStructurePassSampleBufferAttachmentDescriptor => mtlAccelerationStructurePassSampleBufferAttachmentDescriptor -> IO CULong
-startOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  =
-    sendMsg mtlAccelerationStructurePassSampleBufferAttachmentDescriptor (mkSelector "startOfEncoderSampleIndex") retCULong []
+startOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDescriptor =
+  sendMessage mtlAccelerationStructurePassSampleBufferAttachmentDescriptor startOfEncoderSampleIndexSelector
 
 -- | startOfEncoderSampleIndex
 --
@@ -74,8 +71,8 @@ startOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDesc
 --
 -- ObjC selector: @- setStartOfEncoderSampleIndex:@
 setStartOfEncoderSampleIndex :: IsMTLAccelerationStructurePassSampleBufferAttachmentDescriptor mtlAccelerationStructurePassSampleBufferAttachmentDescriptor => mtlAccelerationStructurePassSampleBufferAttachmentDescriptor -> CULong -> IO ()
-setStartOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  value =
-    sendMsg mtlAccelerationStructurePassSampleBufferAttachmentDescriptor (mkSelector "setStartOfEncoderSampleIndex:") retVoid [argCULong value]
+setStartOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDescriptor value =
+  sendMessage mtlAccelerationStructurePassSampleBufferAttachmentDescriptor setStartOfEncoderSampleIndexSelector value
 
 -- | endOfEncoderSampleIndex
 --
@@ -85,8 +82,8 @@ setStartOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentD
 --
 -- ObjC selector: @- endOfEncoderSampleIndex@
 endOfEncoderSampleIndex :: IsMTLAccelerationStructurePassSampleBufferAttachmentDescriptor mtlAccelerationStructurePassSampleBufferAttachmentDescriptor => mtlAccelerationStructurePassSampleBufferAttachmentDescriptor -> IO CULong
-endOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  =
-    sendMsg mtlAccelerationStructurePassSampleBufferAttachmentDescriptor (mkSelector "endOfEncoderSampleIndex") retCULong []
+endOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDescriptor =
+  sendMessage mtlAccelerationStructurePassSampleBufferAttachmentDescriptor endOfEncoderSampleIndexSelector
 
 -- | endOfEncoderSampleIndex
 --
@@ -96,34 +93,34 @@ endOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDescri
 --
 -- ObjC selector: @- setEndOfEncoderSampleIndex:@
 setEndOfEncoderSampleIndex :: IsMTLAccelerationStructurePassSampleBufferAttachmentDescriptor mtlAccelerationStructurePassSampleBufferAttachmentDescriptor => mtlAccelerationStructurePassSampleBufferAttachmentDescriptor -> CULong -> IO ()
-setEndOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDescriptor  value =
-    sendMsg mtlAccelerationStructurePassSampleBufferAttachmentDescriptor (mkSelector "setEndOfEncoderSampleIndex:") retVoid [argCULong value]
+setEndOfEncoderSampleIndex mtlAccelerationStructurePassSampleBufferAttachmentDescriptor value =
+  sendMessage mtlAccelerationStructurePassSampleBufferAttachmentDescriptor setEndOfEncoderSampleIndexSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sampleBuffer@
-sampleBufferSelector :: Selector
+sampleBufferSelector :: Selector '[] RawId
 sampleBufferSelector = mkSelector "sampleBuffer"
 
 -- | @Selector@ for @setSampleBuffer:@
-setSampleBufferSelector :: Selector
+setSampleBufferSelector :: Selector '[RawId] ()
 setSampleBufferSelector = mkSelector "setSampleBuffer:"
 
 -- | @Selector@ for @startOfEncoderSampleIndex@
-startOfEncoderSampleIndexSelector :: Selector
+startOfEncoderSampleIndexSelector :: Selector '[] CULong
 startOfEncoderSampleIndexSelector = mkSelector "startOfEncoderSampleIndex"
 
 -- | @Selector@ for @setStartOfEncoderSampleIndex:@
-setStartOfEncoderSampleIndexSelector :: Selector
+setStartOfEncoderSampleIndexSelector :: Selector '[CULong] ()
 setStartOfEncoderSampleIndexSelector = mkSelector "setStartOfEncoderSampleIndex:"
 
 -- | @Selector@ for @endOfEncoderSampleIndex@
-endOfEncoderSampleIndexSelector :: Selector
+endOfEncoderSampleIndexSelector :: Selector '[] CULong
 endOfEncoderSampleIndexSelector = mkSelector "endOfEncoderSampleIndex"
 
 -- | @Selector@ for @setEndOfEncoderSampleIndex:@
-setEndOfEncoderSampleIndexSelector :: Selector
+setEndOfEncoderSampleIndexSelector :: Selector '[CULong] ()
 setEndOfEncoderSampleIndexSelector = mkSelector "setEndOfEncoderSampleIndex:"
 

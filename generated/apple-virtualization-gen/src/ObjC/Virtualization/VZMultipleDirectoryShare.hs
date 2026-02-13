@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.Virtualization.VZMultipleDirectoryShare
   , validateName_error
   , canonicalizedNameFromName
   , directories
+  , canonicalizedNameFromNameSelector
+  , directoriesSelector
   , initSelector
   , initWithDirectoriesSelector
   , validateName_errorSelector
-  , canonicalizedNameFromNameSelector
-  , directoriesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVZMultipleDirectoryShare vzMultipleDirectoryShare => vzMultipleDirectoryShare -> IO (Id VZMultipleDirectoryShare)
-init_ vzMultipleDirectoryShare  =
-    sendMsg vzMultipleDirectoryShare (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzMultipleDirectoryShare =
+  sendOwnedMessage vzMultipleDirectoryShare initSelector
 
 -- | Initialize the directory share with a set of directories on the host.
 --
@@ -60,9 +57,8 @@ init_ vzMultipleDirectoryShare  =
 --
 -- ObjC selector: @- initWithDirectories:@
 initWithDirectories :: (IsVZMultipleDirectoryShare vzMultipleDirectoryShare, IsNSDictionary directories) => vzMultipleDirectoryShare -> directories -> IO (Id VZMultipleDirectoryShare)
-initWithDirectories vzMultipleDirectoryShare  directories =
-  withObjCPtr directories $ \raw_directories ->
-      sendMsg vzMultipleDirectoryShare (mkSelector "initWithDirectories:") (retPtr retVoid) [argPtr (castPtr raw_directories :: Ptr ())] >>= ownedObject . castPtr
+initWithDirectories vzMultipleDirectoryShare directories =
+  sendOwnedMessage vzMultipleDirectoryShare initWithDirectoriesSelector (toNSDictionary directories)
 
 -- | Check if a name is a valid directory name.
 --
@@ -79,9 +75,7 @@ validateName_error :: (IsNSString name, IsNSError error_) => name -> error_ -> I
 validateName_error name error_ =
   do
     cls' <- getRequiredClass "VZMultipleDirectoryShare"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "validateName:error:") retCULong [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' validateName_errorSelector (toNSString name) (toNSError error_)
 
 -- | Canonicalize a string to be a valid directory name.
 --
@@ -96,8 +90,7 @@ canonicalizedNameFromName :: IsNSString name => name -> IO (Id NSString)
 canonicalizedNameFromName name =
   do
     cls' <- getRequiredClass "VZMultipleDirectoryShare"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "canonicalizedNameFromName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' canonicalizedNameFromNameSelector (toNSString name)
 
 -- | The directories on the host to expose to the guest.
 --
@@ -107,30 +100,30 @@ canonicalizedNameFromName name =
 --
 -- ObjC selector: @- directories@
 directories :: IsVZMultipleDirectoryShare vzMultipleDirectoryShare => vzMultipleDirectoryShare -> IO (Id NSDictionary)
-directories vzMultipleDirectoryShare  =
-    sendMsg vzMultipleDirectoryShare (mkSelector "directories") (retPtr retVoid) [] >>= retainedObject . castPtr
+directories vzMultipleDirectoryShare =
+  sendMessage vzMultipleDirectoryShare directoriesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMultipleDirectoryShare)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDirectories:@
-initWithDirectoriesSelector :: Selector
+initWithDirectoriesSelector :: Selector '[Id NSDictionary] (Id VZMultipleDirectoryShare)
 initWithDirectoriesSelector = mkSelector "initWithDirectories:"
 
 -- | @Selector@ for @validateName:error:@
-validateName_errorSelector :: Selector
+validateName_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 validateName_errorSelector = mkSelector "validateName:error:"
 
 -- | @Selector@ for @canonicalizedNameFromName:@
-canonicalizedNameFromNameSelector :: Selector
+canonicalizedNameFromNameSelector :: Selector '[Id NSString] (Id NSString)
 canonicalizedNameFromNameSelector = mkSelector "canonicalizedNameFromName:"
 
 -- | @Selector@ for @directories@
-directoriesSelector :: Selector
+directoriesSelector :: Selector '[] (Id NSDictionary)
 directoriesSelector = mkSelector "directories"
 

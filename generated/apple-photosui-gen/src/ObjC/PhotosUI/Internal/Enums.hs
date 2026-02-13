@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.PhotosUI.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @PHLivePhotoViewContentMode@
 newtype PHLivePhotoViewContentMode = PHLivePhotoViewContentMode CLong
@@ -21,6 +24,16 @@ pattern PHLivePhotoViewContentModeAspectFit = PHLivePhotoViewContentMode 0
 
 pattern PHLivePhotoViewContentModeAspectFill :: PHLivePhotoViewContentMode
 pattern PHLivePhotoViewContentModeAspectFill = PHLivePhotoViewContentMode 1
+
+instance ObjCArgument PHLivePhotoViewContentMode where
+  withObjCArg (PHLivePhotoViewContentMode x) k = k (argCLong x)
+
+instance ObjCReturn PHLivePhotoViewContentMode where
+  type RawReturn PHLivePhotoViewContentMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHLivePhotoViewContentMode x)
+  fromOwned x = pure (PHLivePhotoViewContentMode x)
 
 -- | @PHLivePhotoViewPlaybackStyle@
 newtype PHLivePhotoViewPlaybackStyle = PHLivePhotoViewPlaybackStyle CLong
@@ -35,6 +48,16 @@ pattern PHLivePhotoViewPlaybackStyleFull = PHLivePhotoViewPlaybackStyle 1
 
 pattern PHLivePhotoViewPlaybackStyleHint :: PHLivePhotoViewPlaybackStyle
 pattern PHLivePhotoViewPlaybackStyleHint = PHLivePhotoViewPlaybackStyle 2
+
+instance ObjCArgument PHLivePhotoViewPlaybackStyle where
+  withObjCArg (PHLivePhotoViewPlaybackStyle x) k = k (argCLong x)
+
+instance ObjCReturn PHLivePhotoViewPlaybackStyle where
+  type RawReturn PHLivePhotoViewPlaybackStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHLivePhotoViewPlaybackStyle x)
+  fromOwned x = pure (PHLivePhotoViewPlaybackStyle x)
 
 -- | Constants that specify one or a set of @PHPickerViewController@ capabilities.
 -- | @PHPickerCapabilities@ (bitmask)
@@ -66,6 +89,16 @@ pattern PHPickerCapabilitiesSelectionActions = PHPickerCapabilities 8
 pattern PHPickerCapabilitiesSensitivityAnalysisIntervention :: PHPickerCapabilities
 pattern PHPickerCapabilitiesSensitivityAnalysisIntervention = PHPickerCapabilities 16
 
+instance ObjCArgument PHPickerCapabilities where
+  withObjCArg (PHPickerCapabilities x) k = k (argCULong x)
+
+instance ObjCReturn PHPickerCapabilities where
+  type RawReturn PHPickerCapabilities = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHPickerCapabilities x)
+  fromOwned x = pure (PHPickerCapabilities x)
+
 -- | A mode that determines which representation @PHPickerViewController@ should provide for an asset given a type identifier, if multiple representations are available.
 -- | @PHPickerConfigurationAssetRepresentationMode@
 newtype PHPickerConfigurationAssetRepresentationMode = PHPickerConfigurationAssetRepresentationMode CLong
@@ -80,6 +113,16 @@ pattern PHPickerConfigurationAssetRepresentationModeCurrent = PHPickerConfigurat
 
 pattern PHPickerConfigurationAssetRepresentationModeCompatible :: PHPickerConfigurationAssetRepresentationMode
 pattern PHPickerConfigurationAssetRepresentationModeCompatible = PHPickerConfigurationAssetRepresentationMode 2
+
+instance ObjCArgument PHPickerConfigurationAssetRepresentationMode where
+  withObjCArg (PHPickerConfigurationAssetRepresentationMode x) k = k (argCLong x)
+
+instance ObjCReturn PHPickerConfigurationAssetRepresentationMode where
+  type RawReturn PHPickerConfigurationAssetRepresentationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHPickerConfigurationAssetRepresentationMode x)
+  fromOwned x = pure (PHPickerConfigurationAssetRepresentationMode x)
 
 -- | An enum that determines how @PHPickerViewController@ handles user selection.
 -- | @PHPickerConfigurationSelection@
@@ -99,6 +142,16 @@ pattern PHPickerConfigurationSelectionContinuous = PHPickerConfigurationSelectio
 pattern PHPickerConfigurationSelectionContinuousAndOrdered :: PHPickerConfigurationSelection
 pattern PHPickerConfigurationSelectionContinuousAndOrdered = PHPickerConfigurationSelection 3
 
+instance ObjCArgument PHPickerConfigurationSelection where
+  withObjCArg (PHPickerConfigurationSelection x) k = k (argCLong x)
+
+instance ObjCReturn PHPickerConfigurationSelection where
+  type RawReturn PHPickerConfigurationSelection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHPickerConfigurationSelection x)
+  fromOwned x = pure (PHPickerConfigurationSelection x)
+
 -- | An enum that determines the mode of @PHPickerViewController.@
 -- | @PHPickerMode@
 newtype PHPickerMode = PHPickerMode CLong
@@ -110,6 +163,16 @@ pattern PHPickerModeDefault = PHPickerMode 0
 
 pattern PHPickerModeCompact :: PHPickerMode
 pattern PHPickerModeCompact = PHPickerMode 1
+
+instance ObjCArgument PHPickerMode where
+  withObjCArg (PHPickerMode x) k = k (argCLong x)
+
+instance ObjCReturn PHPickerMode where
+  type RawReturn PHPickerMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHPickerMode x)
+  fromOwned x = pure (PHPickerMode x)
 
 -- | PHProjectCreationSource is provided as a hint to project extensions of the user context at the time of project creation. For example, if a user is viewing a Memory in the Photos app and from that chooses the 'Create Project' option, the creationSource provided in PHProjectInfo will be PHProjectCreationSourceMemory.
 -- | @PHProjectCreationSource@
@@ -153,6 +216,16 @@ pattern PHProjectCreationSourceProjectSlideshow = PHProjectCreationSource 25
 pattern PHProjectCreationSourceProjectExtension :: PHProjectCreationSource
 pattern PHProjectCreationSourceProjectExtension = PHProjectCreationSource 26
 
+instance ObjCArgument PHProjectCreationSource where
+  withObjCArg (PHProjectCreationSource x) k = k (argCLong x)
+
+instance ObjCReturn PHProjectCreationSource where
+  type RawReturn PHProjectCreationSource = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHProjectCreationSource x)
+  fromOwned x = pure (PHProjectCreationSource x)
+
 -- | Options for the sectionType property in PHProjectSection which provides a hint to a section's intended usage.
 --
 -- - PHProjectSectionTypeUndefined: used when there is only one section and no suggested pagination or project construction - PHProjectSectionTypeCover: represents the cover or title section of a project - PHProjectSectionTypeContent: any section representing general content in a project - PHProjectSectionTypeAuxiliary: auxiliary content (for example, cover flap in a book)
@@ -173,6 +246,16 @@ pattern PHProjectSectionTypeContent = PHProjectSectionType 2
 pattern PHProjectSectionTypeAuxiliary :: PHProjectSectionType
 pattern PHProjectSectionTypeAuxiliary = PHProjectSectionType 3
 
+instance ObjCArgument PHProjectSectionType where
+  withObjCArg (PHProjectSectionType x) k = k (argCLong x)
+
+instance ObjCReturn PHProjectSectionType where
+  type RawReturn PHProjectSectionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHProjectSectionType x)
+  fromOwned x = pure (PHProjectSectionType x)
+
 -- | Options for PHProjectTextElementType
 -- | @PHProjectTextElementType@
 newtype PHProjectTextElementType = PHProjectTextElementType CLong
@@ -187,3 +270,13 @@ pattern PHProjectTextElementTypeTitle = PHProjectTextElementType 1
 
 pattern PHProjectTextElementTypeSubtitle :: PHProjectTextElementType
 pattern PHProjectTextElementTypeSubtitle = PHProjectTextElementType 2
+
+instance ObjCArgument PHProjectTextElementType where
+  withObjCArg (PHProjectTextElementType x) k = k (argCLong x)
+
+instance ObjCReturn PHProjectTextElementType where
+  type RawReturn PHProjectTextElementType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PHProjectTextElementType x)
+  fromOwned x = pure (PHProjectTextElementType x)

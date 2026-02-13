@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.IOKit.Internal.Structs
 import ObjC.IOUSBHost.Internal.Enums
 
@@ -46,6 +48,16 @@ argIOUSBHostCIMessage = mkStorableArg iousbHostCIMessageStructType
 
 retIOUSBHostCIMessage :: RetType IOUSBHostCIMessage
 retIOUSBHostCIMessage = mkStorableRetType iousbHostCIMessageStructType
+
+instance ObjCArgument IOUSBHostCIMessage where
+  withObjCArg x k = k (argIOUSBHostCIMessage x)
+
+instance ObjCReturn IOUSBHostCIMessage where
+  type RawReturn IOUSBHostCIMessage = IOUSBHostCIMessage
+  objcRetType = retIOUSBHostCIMessage
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBHostIsochronousFrame
 --
@@ -86,6 +98,16 @@ argIOUSBHostIsochronousFrame = mkStorableArg iousbHostIsochronousFrameStructType
 
 retIOUSBHostIsochronousFrame :: RetType IOUSBHostIsochronousFrame
 retIOUSBHostIsochronousFrame = mkStorableRetType iousbHostIsochronousFrameStructType
+
+instance ObjCArgument IOUSBHostIsochronousFrame where
+  withObjCArg x k = k (argIOUSBHostIsochronousFrame x)
+
+instance ObjCReturn IOUSBHostIsochronousFrame where
+  type RawReturn IOUSBHostIsochronousFrame = IOUSBHostIsochronousFrame
+  objcRetType = retIOUSBHostIsochronousFrame
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | IOUSBHostIsochronousTransaction
 --
@@ -130,6 +152,16 @@ argIOUSBHostIsochronousTransaction = mkStorableArg iousbHostIsochronousTransacti
 retIOUSBHostIsochronousTransaction :: RetType IOUSBHostIsochronousTransaction
 retIOUSBHostIsochronousTransaction = mkStorableRetType iousbHostIsochronousTransactionStructType
 
+instance ObjCArgument IOUSBHostIsochronousTransaction where
+  withObjCArg x k = k (argIOUSBHostIsochronousTransaction x)
+
+instance ObjCReturn IOUSBHostIsochronousTransaction where
+  type RawReturn IOUSBHostIsochronousTransaction = IOUSBHostIsochronousTransaction
+  objcRetType = retIOUSBHostIsochronousTransaction
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | IOUSBHostIOSourceDescriptors
 --
 -- Encapsulates descriptors for a single endpoint
@@ -164,3 +196,13 @@ argIOUSBHostIOSourceDescriptors = mkStorableArg iousbHostIOSourceDescriptorsStru
 
 retIOUSBHostIOSourceDescriptors :: RetType IOUSBHostIOSourceDescriptors
 retIOUSBHostIOSourceDescriptors = mkStorableRetType iousbHostIOSourceDescriptorsStructType
+
+instance ObjCArgument IOUSBHostIOSourceDescriptors where
+  withObjCArg x k = k (argIOUSBHostIOSourceDescriptors x)
+
+instance ObjCReturn IOUSBHostIOSourceDescriptors where
+  type RawReturn IOUSBHostIOSourceDescriptors = IOUSBHostIOSourceDescriptors
+  objcRetType = retIOUSBHostIOSourceDescriptors
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

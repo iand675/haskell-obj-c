@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.AppKit.NSScrubberSelectionStyle
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,55 +38,54 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSScrubberSelectionStyle nsScrubberSelectionStyle => nsScrubberSelectionStyle -> IO (Id NSScrubberSelectionStyle)
-init_ nsScrubberSelectionStyle  =
-    sendMsg nsScrubberSelectionStyle (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsScrubberSelectionStyle =
+  sendOwnedMessage nsScrubberSelectionStyle initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSScrubberSelectionStyle nsScrubberSelectionStyle, IsNSCoder coder) => nsScrubberSelectionStyle -> coder -> IO (Id NSScrubberSelectionStyle)
-initWithCoder nsScrubberSelectionStyle  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsScrubberSelectionStyle (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsScrubberSelectionStyle coder =
+  sendOwnedMessage nsScrubberSelectionStyle initWithCoderSelector (toNSCoder coder)
 
 -- | @- makeSelectionView@
 makeSelectionView :: IsNSScrubberSelectionStyle nsScrubberSelectionStyle => nsScrubberSelectionStyle -> IO (Id NSScrubberSelectionView)
-makeSelectionView nsScrubberSelectionStyle  =
-    sendMsg nsScrubberSelectionStyle (mkSelector "makeSelectionView") (retPtr retVoid) [] >>= retainedObject . castPtr
+makeSelectionView nsScrubberSelectionStyle =
+  sendMessage nsScrubberSelectionStyle makeSelectionViewSelector
 
 -- | @+ outlineOverlayStyle@
 outlineOverlayStyle :: IO (Id NSScrubberSelectionStyle)
 outlineOverlayStyle  =
   do
     cls' <- getRequiredClass "NSScrubberSelectionStyle"
-    sendClassMsg cls' (mkSelector "outlineOverlayStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' outlineOverlayStyleSelector
 
 -- | @+ roundedBackgroundStyle@
 roundedBackgroundStyle :: IO (Id NSScrubberSelectionStyle)
 roundedBackgroundStyle  =
   do
     cls' <- getRequiredClass "NSScrubberSelectionStyle"
-    sendClassMsg cls' (mkSelector "roundedBackgroundStyle") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' roundedBackgroundStyleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSScrubberSelectionStyle)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSScrubberSelectionStyle)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @makeSelectionView@
-makeSelectionViewSelector :: Selector
+makeSelectionViewSelector :: Selector '[] (Id NSScrubberSelectionView)
 makeSelectionViewSelector = mkSelector "makeSelectionView"
 
 -- | @Selector@ for @outlineOverlayStyle@
-outlineOverlayStyleSelector :: Selector
+outlineOverlayStyleSelector :: Selector '[] (Id NSScrubberSelectionStyle)
 outlineOverlayStyleSelector = mkSelector "outlineOverlayStyle"
 
 -- | @Selector@ for @roundedBackgroundStyle@
-roundedBackgroundStyleSelector :: Selector
+roundedBackgroundStyleSelector :: Selector '[] (Id NSScrubberSelectionStyle)
 roundedBackgroundStyleSelector = mkSelector "roundedBackgroundStyle"
 

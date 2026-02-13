@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,39 +27,35 @@ module ObjC.WebKit.DOMHTMLLinkElement
   , setType
   , sheet
   , absoluteLinkURL
-  , disabledSelector
-  , setDisabledSelector
+  , absoluteLinkURLSelector
   , charsetSelector
-  , setCharsetSelector
+  , disabledSelector
   , hrefSelector
-  , setHrefSelector
   , hreflangSelector
-  , setHreflangSelector
   , mediaSelector
-  , setMediaSelector
   , relSelector
-  , setRelSelector
   , revSelector
+  , setCharsetSelector
+  , setDisabledSelector
+  , setHrefSelector
+  , setHreflangSelector
+  , setMediaSelector
+  , setRelSelector
   , setRevSelector
-  , targetSelector
   , setTargetSelector
-  , typeSelector
   , setTypeSelector
   , sheetSelector
-  , absoluteLinkURLSelector
+  , targetSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,193 +64,185 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- disabled@
 disabled :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO Bool
-disabled domhtmlLinkElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlLinkElement (mkSelector "disabled") retCULong []
+disabled domhtmlLinkElement =
+  sendMessage domhtmlLinkElement disabledSelector
 
 -- | @- setDisabled:@
 setDisabled :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> Bool -> IO ()
-setDisabled domhtmlLinkElement  value =
-    sendMsg domhtmlLinkElement (mkSelector "setDisabled:") retVoid [argCULong (if value then 1 else 0)]
+setDisabled domhtmlLinkElement value =
+  sendMessage domhtmlLinkElement setDisabledSelector value
 
 -- | @- charset@
 charset :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id NSString)
-charset domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "charset") (retPtr retVoid) [] >>= retainedObject . castPtr
+charset domhtmlLinkElement =
+  sendMessage domhtmlLinkElement charsetSelector
 
 -- | @- setCharset:@
 setCharset :: (IsDOMHTMLLinkElement domhtmlLinkElement, IsNSString value) => domhtmlLinkElement -> value -> IO ()
-setCharset domhtmlLinkElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLinkElement (mkSelector "setCharset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCharset domhtmlLinkElement value =
+  sendMessage domhtmlLinkElement setCharsetSelector (toNSString value)
 
 -- | @- href@
 href :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id NSString)
-href domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "href") (retPtr retVoid) [] >>= retainedObject . castPtr
+href domhtmlLinkElement =
+  sendMessage domhtmlLinkElement hrefSelector
 
 -- | @- setHref:@
 setHref :: (IsDOMHTMLLinkElement domhtmlLinkElement, IsNSString value) => domhtmlLinkElement -> value -> IO ()
-setHref domhtmlLinkElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLinkElement (mkSelector "setHref:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHref domhtmlLinkElement value =
+  sendMessage domhtmlLinkElement setHrefSelector (toNSString value)
 
 -- | @- hreflang@
 hreflang :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id NSString)
-hreflang domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "hreflang") (retPtr retVoid) [] >>= retainedObject . castPtr
+hreflang domhtmlLinkElement =
+  sendMessage domhtmlLinkElement hreflangSelector
 
 -- | @- setHreflang:@
 setHreflang :: (IsDOMHTMLLinkElement domhtmlLinkElement, IsNSString value) => domhtmlLinkElement -> value -> IO ()
-setHreflang domhtmlLinkElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLinkElement (mkSelector "setHreflang:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHreflang domhtmlLinkElement value =
+  sendMessage domhtmlLinkElement setHreflangSelector (toNSString value)
 
 -- | @- media@
 media :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id NSString)
-media domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "media") (retPtr retVoid) [] >>= retainedObject . castPtr
+media domhtmlLinkElement =
+  sendMessage domhtmlLinkElement mediaSelector
 
 -- | @- setMedia:@
 setMedia :: (IsDOMHTMLLinkElement domhtmlLinkElement, IsNSString value) => domhtmlLinkElement -> value -> IO ()
-setMedia domhtmlLinkElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLinkElement (mkSelector "setMedia:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMedia domhtmlLinkElement value =
+  sendMessage domhtmlLinkElement setMediaSelector (toNSString value)
 
 -- | @- rel@
 rel :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id NSString)
-rel domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "rel") (retPtr retVoid) [] >>= retainedObject . castPtr
+rel domhtmlLinkElement =
+  sendMessage domhtmlLinkElement relSelector
 
 -- | @- setRel:@
 setRel :: (IsDOMHTMLLinkElement domhtmlLinkElement, IsNSString value) => domhtmlLinkElement -> value -> IO ()
-setRel domhtmlLinkElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLinkElement (mkSelector "setRel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRel domhtmlLinkElement value =
+  sendMessage domhtmlLinkElement setRelSelector (toNSString value)
 
 -- | @- rev@
 rev :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id NSString)
-rev domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "rev") (retPtr retVoid) [] >>= retainedObject . castPtr
+rev domhtmlLinkElement =
+  sendMessage domhtmlLinkElement revSelector
 
 -- | @- setRev:@
 setRev :: (IsDOMHTMLLinkElement domhtmlLinkElement, IsNSString value) => domhtmlLinkElement -> value -> IO ()
-setRev domhtmlLinkElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLinkElement (mkSelector "setRev:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRev domhtmlLinkElement value =
+  sendMessage domhtmlLinkElement setRevSelector (toNSString value)
 
 -- | @- target@
 target :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id NSString)
-target domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target domhtmlLinkElement =
+  sendMessage domhtmlLinkElement targetSelector
 
 -- | @- setTarget:@
 setTarget :: (IsDOMHTMLLinkElement domhtmlLinkElement, IsNSString value) => domhtmlLinkElement -> value -> IO ()
-setTarget domhtmlLinkElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLinkElement (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTarget domhtmlLinkElement value =
+  sendMessage domhtmlLinkElement setTargetSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id NSString)
-type_ domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmlLinkElement =
+  sendMessage domhtmlLinkElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLLinkElement domhtmlLinkElement, IsNSString value) => domhtmlLinkElement -> value -> IO ()
-setType domhtmlLinkElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLinkElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmlLinkElement value =
+  sendMessage domhtmlLinkElement setTypeSelector (toNSString value)
 
 -- | @- sheet@
 sheet :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id DOMStyleSheet)
-sheet domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "sheet") (retPtr retVoid) [] >>= retainedObject . castPtr
+sheet domhtmlLinkElement =
+  sendMessage domhtmlLinkElement sheetSelector
 
 -- | @- absoluteLinkURL@
 absoluteLinkURL :: IsDOMHTMLLinkElement domhtmlLinkElement => domhtmlLinkElement -> IO (Id NSURL)
-absoluteLinkURL domhtmlLinkElement  =
-    sendMsg domhtmlLinkElement (mkSelector "absoluteLinkURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+absoluteLinkURL domhtmlLinkElement =
+  sendMessage domhtmlLinkElement absoluteLinkURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @disabled@
-disabledSelector :: Selector
+disabledSelector :: Selector '[] Bool
 disabledSelector = mkSelector "disabled"
 
 -- | @Selector@ for @setDisabled:@
-setDisabledSelector :: Selector
+setDisabledSelector :: Selector '[Bool] ()
 setDisabledSelector = mkSelector "setDisabled:"
 
 -- | @Selector@ for @charset@
-charsetSelector :: Selector
+charsetSelector :: Selector '[] (Id NSString)
 charsetSelector = mkSelector "charset"
 
 -- | @Selector@ for @setCharset:@
-setCharsetSelector :: Selector
+setCharsetSelector :: Selector '[Id NSString] ()
 setCharsetSelector = mkSelector "setCharset:"
 
 -- | @Selector@ for @href@
-hrefSelector :: Selector
+hrefSelector :: Selector '[] (Id NSString)
 hrefSelector = mkSelector "href"
 
 -- | @Selector@ for @setHref:@
-setHrefSelector :: Selector
+setHrefSelector :: Selector '[Id NSString] ()
 setHrefSelector = mkSelector "setHref:"
 
 -- | @Selector@ for @hreflang@
-hreflangSelector :: Selector
+hreflangSelector :: Selector '[] (Id NSString)
 hreflangSelector = mkSelector "hreflang"
 
 -- | @Selector@ for @setHreflang:@
-setHreflangSelector :: Selector
+setHreflangSelector :: Selector '[Id NSString] ()
 setHreflangSelector = mkSelector "setHreflang:"
 
 -- | @Selector@ for @media@
-mediaSelector :: Selector
+mediaSelector :: Selector '[] (Id NSString)
 mediaSelector = mkSelector "media"
 
 -- | @Selector@ for @setMedia:@
-setMediaSelector :: Selector
+setMediaSelector :: Selector '[Id NSString] ()
 setMediaSelector = mkSelector "setMedia:"
 
 -- | @Selector@ for @rel@
-relSelector :: Selector
+relSelector :: Selector '[] (Id NSString)
 relSelector = mkSelector "rel"
 
 -- | @Selector@ for @setRel:@
-setRelSelector :: Selector
+setRelSelector :: Selector '[Id NSString] ()
 setRelSelector = mkSelector "setRel:"
 
 -- | @Selector@ for @rev@
-revSelector :: Selector
+revSelector :: Selector '[] (Id NSString)
 revSelector = mkSelector "rev"
 
 -- | @Selector@ for @setRev:@
-setRevSelector :: Selector
+setRevSelector :: Selector '[Id NSString] ()
 setRevSelector = mkSelector "setRev:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id NSString)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id NSString] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @sheet@
-sheetSelector :: Selector
+sheetSelector :: Selector '[] (Id DOMStyleSheet)
 sheetSelector = mkSelector "sheet"
 
 -- | @Selector@ for @absoluteLinkURL@
-absoluteLinkURLSelector :: Selector
+absoluteLinkURLSelector :: Selector '[] (Id NSURL)
 absoluteLinkURLSelector = mkSelector "absoluteLinkURL"
 

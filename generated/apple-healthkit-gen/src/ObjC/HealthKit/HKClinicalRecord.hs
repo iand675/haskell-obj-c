@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.HealthKit.HKClinicalRecord
   , clinicalType
   , displayName
   , fhirResource
-  , initSelector
-  , newSelector
   , clinicalTypeSelector
   , displayNameSelector
   , fhirResourceSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,20 +40,20 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKClinicalRecord hkClinicalRecord => hkClinicalRecord -> IO (Id HKClinicalRecord)
-init_ hkClinicalRecord  =
-    sendMsg hkClinicalRecord (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkClinicalRecord =
+  sendOwnedMessage hkClinicalRecord initSelector
 
 -- | @+ new@
 new :: IO (Id HKClinicalRecord)
 new  =
   do
     cls' <- getRequiredClass "HKClinicalRecord"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- clinicalType@
 clinicalType :: IsHKClinicalRecord hkClinicalRecord => hkClinicalRecord -> IO (Id HKClinicalType)
-clinicalType hkClinicalRecord  =
-    sendMsg hkClinicalRecord (mkSelector "clinicalType") (retPtr retVoid) [] >>= retainedObject . castPtr
+clinicalType hkClinicalRecord =
+  sendMessage hkClinicalRecord clinicalTypeSelector
 
 -- | displayName
 --
@@ -66,8 +63,8 @@ clinicalType hkClinicalRecord  =
 --
 -- ObjC selector: @- displayName@
 displayName :: IsHKClinicalRecord hkClinicalRecord => hkClinicalRecord -> IO (Id NSString)
-displayName hkClinicalRecord  =
-    sendMsg hkClinicalRecord (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName hkClinicalRecord =
+  sendMessage hkClinicalRecord displayNameSelector
 
 -- | FHIRResource
 --
@@ -75,30 +72,30 @@ displayName hkClinicalRecord  =
 --
 -- ObjC selector: @- FHIRResource@
 fhirResource :: IsHKClinicalRecord hkClinicalRecord => hkClinicalRecord -> IO (Id HKFHIRResource)
-fhirResource hkClinicalRecord  =
-    sendMsg hkClinicalRecord (mkSelector "FHIRResource") (retPtr retVoid) [] >>= retainedObject . castPtr
+fhirResource hkClinicalRecord =
+  sendMessage hkClinicalRecord fhirResourceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKClinicalRecord)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKClinicalRecord)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @clinicalType@
-clinicalTypeSelector :: Selector
+clinicalTypeSelector :: Selector '[] (Id HKClinicalType)
 clinicalTypeSelector = mkSelector "clinicalType"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @FHIRResource@
-fhirResourceSelector :: Selector
+fhirResourceSelector :: Selector '[] (Id HKFHIRResource)
 fhirResourceSelector = mkSelector "FHIRResource"
 

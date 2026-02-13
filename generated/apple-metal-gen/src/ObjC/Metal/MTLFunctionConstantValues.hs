@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Metal.MTLFunctionConstantValues
   , setConstantValues_type_withRange
   , setConstantValue_type_withName
   , reset
-  , setConstantValue_type_atIndexSelector
-  , setConstantValues_type_withRangeSelector
-  , setConstantValue_type_withNameSelector
   , resetSelector
+  , setConstantValue_type_atIndexSelector
+  , setConstantValue_type_withNameSelector
+  , setConstantValues_type_withRangeSelector
 
   -- * Enum types
   , MTLDataType(MTLDataType)
@@ -118,15 +119,11 @@ module ObjC.Metal.MTLFunctionConstantValues
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -137,42 +134,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setConstantValue:type:atIndex:@
 setConstantValue_type_atIndex :: IsMTLFunctionConstantValues mtlFunctionConstantValues => mtlFunctionConstantValues -> Const (Ptr ()) -> MTLDataType -> CULong -> IO ()
-setConstantValue_type_atIndex mtlFunctionConstantValues  value type_ index =
-    sendMsg mtlFunctionConstantValues (mkSelector "setConstantValue:type:atIndex:") retVoid [argPtr (unConst value), argCULong (coerce type_), argCULong index]
+setConstantValue_type_atIndex mtlFunctionConstantValues value type_ index =
+  sendMessage mtlFunctionConstantValues setConstantValue_type_atIndexSelector value type_ index
 
 -- | @- setConstantValues:type:withRange:@
 setConstantValues_type_withRange :: IsMTLFunctionConstantValues mtlFunctionConstantValues => mtlFunctionConstantValues -> Const (Ptr ()) -> MTLDataType -> NSRange -> IO ()
-setConstantValues_type_withRange mtlFunctionConstantValues  values type_ range =
-    sendMsg mtlFunctionConstantValues (mkSelector "setConstantValues:type:withRange:") retVoid [argPtr (unConst values), argCULong (coerce type_), argNSRange range]
+setConstantValues_type_withRange mtlFunctionConstantValues values type_ range =
+  sendMessage mtlFunctionConstantValues setConstantValues_type_withRangeSelector values type_ range
 
 -- | @- setConstantValue:type:withName:@
 setConstantValue_type_withName :: (IsMTLFunctionConstantValues mtlFunctionConstantValues, IsNSString name) => mtlFunctionConstantValues -> Const (Ptr ()) -> MTLDataType -> name -> IO ()
-setConstantValue_type_withName mtlFunctionConstantValues  value type_ name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mtlFunctionConstantValues (mkSelector "setConstantValue:type:withName:") retVoid [argPtr (unConst value), argCULong (coerce type_), argPtr (castPtr raw_name :: Ptr ())]
+setConstantValue_type_withName mtlFunctionConstantValues value type_ name =
+  sendMessage mtlFunctionConstantValues setConstantValue_type_withNameSelector value type_ (toNSString name)
 
 -- | @- reset@
 reset :: IsMTLFunctionConstantValues mtlFunctionConstantValues => mtlFunctionConstantValues -> IO ()
-reset mtlFunctionConstantValues  =
-    sendMsg mtlFunctionConstantValues (mkSelector "reset") retVoid []
+reset mtlFunctionConstantValues =
+  sendMessage mtlFunctionConstantValues resetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setConstantValue:type:atIndex:@
-setConstantValue_type_atIndexSelector :: Selector
+setConstantValue_type_atIndexSelector :: Selector '[Const (Ptr ()), MTLDataType, CULong] ()
 setConstantValue_type_atIndexSelector = mkSelector "setConstantValue:type:atIndex:"
 
 -- | @Selector@ for @setConstantValues:type:withRange:@
-setConstantValues_type_withRangeSelector :: Selector
+setConstantValues_type_withRangeSelector :: Selector '[Const (Ptr ()), MTLDataType, NSRange] ()
 setConstantValues_type_withRangeSelector = mkSelector "setConstantValues:type:withRange:"
 
 -- | @Selector@ for @setConstantValue:type:withName:@
-setConstantValue_type_withNameSelector :: Selector
+setConstantValue_type_withNameSelector :: Selector '[Const (Ptr ()), MTLDataType, Id NSString] ()
 setConstantValue_type_withNameSelector = mkSelector "setConstantValue:type:withName:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 

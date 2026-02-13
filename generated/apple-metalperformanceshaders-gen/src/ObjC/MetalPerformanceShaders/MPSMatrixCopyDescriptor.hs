@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.MetalPerformanceShaders.MPSMatrixCopyDescriptor
   , initWithDevice_count
   , initWithSourceMatrices_destinationMatrices_offsetVector_offset
   , init_
+  , initSelector
   , initWithDevice_countSelector
   , initWithSourceMatrices_destinationMatrices_offsetVector_offsetSelector
-  , initSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:count:@
 initWithDevice_count :: IsMPSMatrixCopyDescriptor mpsMatrixCopyDescriptor => mpsMatrixCopyDescriptor -> RawId -> CULong -> IO (Id MPSMatrixCopyDescriptor)
-initWithDevice_count mpsMatrixCopyDescriptor  device count =
-    sendMsg mpsMatrixCopyDescriptor (mkSelector "initWithDevice:count:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong count] >>= ownedObject . castPtr
+initWithDevice_count mpsMatrixCopyDescriptor device count =
+  sendOwnedMessage mpsMatrixCopyDescriptor initWithDevice_countSelector device count
 
 -- | Initialize a MPSMatrixCopyDescriptor using offsets generated on the GPU
 --
@@ -66,30 +63,27 @@ initWithDevice_count mpsMatrixCopyDescriptor  device count =
 --
 -- ObjC selector: @- initWithSourceMatrices:destinationMatrices:offsetVector:offset:@
 initWithSourceMatrices_destinationMatrices_offsetVector_offset :: (IsMPSMatrixCopyDescriptor mpsMatrixCopyDescriptor, IsNSArray sourceMatrices, IsNSArray destinationMatrices, IsMPSVector offsets) => mpsMatrixCopyDescriptor -> sourceMatrices -> destinationMatrices -> offsets -> CULong -> IO (Id MPSMatrixCopyDescriptor)
-initWithSourceMatrices_destinationMatrices_offsetVector_offset mpsMatrixCopyDescriptor  sourceMatrices destinationMatrices offsets byteOffset =
-  withObjCPtr sourceMatrices $ \raw_sourceMatrices ->
-    withObjCPtr destinationMatrices $ \raw_destinationMatrices ->
-      withObjCPtr offsets $ \raw_offsets ->
-          sendMsg mpsMatrixCopyDescriptor (mkSelector "initWithSourceMatrices:destinationMatrices:offsetVector:offset:") (retPtr retVoid) [argPtr (castPtr raw_sourceMatrices :: Ptr ()), argPtr (castPtr raw_destinationMatrices :: Ptr ()), argPtr (castPtr raw_offsets :: Ptr ()), argCULong byteOffset] >>= ownedObject . castPtr
+initWithSourceMatrices_destinationMatrices_offsetVector_offset mpsMatrixCopyDescriptor sourceMatrices destinationMatrices offsets byteOffset =
+  sendOwnedMessage mpsMatrixCopyDescriptor initWithSourceMatrices_destinationMatrices_offsetVector_offsetSelector (toNSArray sourceMatrices) (toNSArray destinationMatrices) (toMPSVector offsets) byteOffset
 
 -- | @- init@
 init_ :: IsMPSMatrixCopyDescriptor mpsMatrixCopyDescriptor => mpsMatrixCopyDescriptor -> IO (Id MPSMatrixCopyDescriptor)
-init_ mpsMatrixCopyDescriptor  =
-    sendMsg mpsMatrixCopyDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsMatrixCopyDescriptor =
+  sendOwnedMessage mpsMatrixCopyDescriptor initSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:count:@
-initWithDevice_countSelector :: Selector
+initWithDevice_countSelector :: Selector '[RawId, CULong] (Id MPSMatrixCopyDescriptor)
 initWithDevice_countSelector = mkSelector "initWithDevice:count:"
 
 -- | @Selector@ for @initWithSourceMatrices:destinationMatrices:offsetVector:offset:@
-initWithSourceMatrices_destinationMatrices_offsetVector_offsetSelector :: Selector
+initWithSourceMatrices_destinationMatrices_offsetVector_offsetSelector :: Selector '[Id NSArray, Id NSArray, Id MPSVector, CULong] (Id MPSMatrixCopyDescriptor)
 initWithSourceMatrices_destinationMatrices_offsetVector_offsetSelector = mkSelector "initWithSourceMatrices:destinationMatrices:offsetVector:offset:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSMatrixCopyDescriptor)
 initSelector = mkSelector "init"
 

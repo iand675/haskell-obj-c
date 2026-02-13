@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.PHASE.PHASEEnvelopeDistanceModelParameters
   , new
   , initWithEnvelope
   , envelope
-  , initSelector
-  , newSelector
-  , initWithEnvelopeSelector
   , envelopeSelector
+  , initSelector
+  , initWithEnvelopeSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEEnvelopeDistanceModelParameters phaseEnvelopeDistanceModelParameters => phaseEnvelopeDistanceModelParameters -> IO (Id PHASEEnvelopeDistanceModelParameters)
-init_ phaseEnvelopeDistanceModelParameters  =
-    sendMsg phaseEnvelopeDistanceModelParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseEnvelopeDistanceModelParameters =
+  sendOwnedMessage phaseEnvelopeDistanceModelParameters initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEEnvelopeDistanceModelParameters)
 new  =
   do
     cls' <- getRequiredClass "PHASEEnvelopeDistanceModelParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithEnvelope
 --
@@ -63,9 +60,8 @@ new  =
 --
 -- ObjC selector: @- initWithEnvelope:@
 initWithEnvelope :: (IsPHASEEnvelopeDistanceModelParameters phaseEnvelopeDistanceModelParameters, IsPHASEEnvelope envelope) => phaseEnvelopeDistanceModelParameters -> envelope -> IO (Id PHASEEnvelopeDistanceModelParameters)
-initWithEnvelope phaseEnvelopeDistanceModelParameters  envelope =
-  withObjCPtr envelope $ \raw_envelope ->
-      sendMsg phaseEnvelopeDistanceModelParameters (mkSelector "initWithEnvelope:") (retPtr retVoid) [argPtr (castPtr raw_envelope :: Ptr ())] >>= ownedObject . castPtr
+initWithEnvelope phaseEnvelopeDistanceModelParameters envelope =
+  sendOwnedMessage phaseEnvelopeDistanceModelParameters initWithEnvelopeSelector (toPHASEEnvelope envelope)
 
 -- | envelope
 --
@@ -75,26 +71,26 @@ initWithEnvelope phaseEnvelopeDistanceModelParameters  envelope =
 --
 -- ObjC selector: @- envelope@
 envelope :: IsPHASEEnvelopeDistanceModelParameters phaseEnvelopeDistanceModelParameters => phaseEnvelopeDistanceModelParameters -> IO (Id PHASEEnvelope)
-envelope phaseEnvelopeDistanceModelParameters  =
-    sendMsg phaseEnvelopeDistanceModelParameters (mkSelector "envelope") (retPtr retVoid) [] >>= retainedObject . castPtr
+envelope phaseEnvelopeDistanceModelParameters =
+  sendMessage phaseEnvelopeDistanceModelParameters envelopeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEEnvelopeDistanceModelParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEEnvelopeDistanceModelParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithEnvelope:@
-initWithEnvelopeSelector :: Selector
+initWithEnvelopeSelector :: Selector '[Id PHASEEnvelope] (Id PHASEEnvelopeDistanceModelParameters)
 initWithEnvelopeSelector = mkSelector "initWithEnvelope:"
 
 -- | @Selector@ for @envelope@
-envelopeSelector :: Selector
+envelopeSelector :: Selector '[] (Id PHASEEnvelope)
 envelopeSelector = mkSelector "envelope"
 

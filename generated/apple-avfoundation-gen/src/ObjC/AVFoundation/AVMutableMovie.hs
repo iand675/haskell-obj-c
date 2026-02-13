@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,51 +45,47 @@ module ObjC.AVFoundation.AVMutableMovie
   , setModified
   , defaultMediaDataStorage
   , setDefaultMediaDataStorage
-  , movieWithURL_options_errorSelector
-  , initWithURL_options_errorSelector
-  , movieWithData_options_errorSelector
-  , initWithData_options_errorSelector
-  , movieWithSettingsFromMovie_options_errorSelector
-  , initWithSettingsFromMovie_options_errorSelector
-  , metadataForFormatSelector
-  , chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector
-  , chapterMetadataGroupsBestMatchingPreferredLanguagesSelector
-  , mediaSelectionGroupForMediaCharacteristicSelector
-  , unusedTrackIDSelector
-  , trackWithTrackIDSelector
-  , loadTrackWithTrackID_completionHandlerSelector
-  , tracksWithMediaTypeSelector
-  , tracksWithMediaCharacteristicSelector
-  , mutableTrackCompatibleWithTrackSelector
   , addMutableTrackWithMediaType_copySettingsFromTrack_optionsSelector
   , addMutableTracksCopyingSettingsFromTracks_optionsSelector
-  , removeTrackSelector
-  , preferredRateSelector
-  , setPreferredRateSelector
-  , preferredVolumeSelector
-  , setPreferredVolumeSelector
-  , timescaleSelector
-  , setTimescaleSelector
-  , tracksSelector
-  , metadataSelector
-  , setMetadataSelector
-  , modifiedSelector
-  , setModifiedSelector
+  , chapterMetadataGroupsBestMatchingPreferredLanguagesSelector
+  , chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector
   , defaultMediaDataStorageSelector
+  , initWithData_options_errorSelector
+  , initWithSettingsFromMovie_options_errorSelector
+  , initWithURL_options_errorSelector
+  , loadTrackWithTrackID_completionHandlerSelector
+  , mediaSelectionGroupForMediaCharacteristicSelector
+  , metadataForFormatSelector
+  , metadataSelector
+  , modifiedSelector
+  , movieWithData_options_errorSelector
+  , movieWithSettingsFromMovie_options_errorSelector
+  , movieWithURL_options_errorSelector
+  , mutableTrackCompatibleWithTrackSelector
+  , preferredRateSelector
+  , preferredVolumeSelector
+  , removeTrackSelector
   , setDefaultMediaDataStorageSelector
+  , setMetadataSelector
+  , setModifiedSelector
+  , setPreferredRateSelector
+  , setPreferredVolumeSelector
+  , setTimescaleSelector
+  , timescaleSelector
+  , trackWithTrackIDSelector
+  , tracksSelector
+  , tracksWithMediaCharacteristicSelector
+  , tracksWithMediaTypeSelector
+  , unusedTrackIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -114,10 +111,7 @@ movieWithURL_options_error :: (IsNSURL url, IsNSDictionary options, IsNSError ou
 movieWithURL_options_error url options outError =
   do
     cls' <- getRequiredClass "AVMutableMovie"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr outError $ \raw_outError ->
-          sendClassMsg cls' (mkSelector "movieWithURL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' movieWithURL_options_errorSelector (toNSURL url) (toNSDictionary options) (toNSError outError)
 
 -- | initWithURL:options:error:
 --
@@ -135,11 +129,8 @@ movieWithURL_options_error url options outError =
 --
 -- ObjC selector: @- initWithURL:options:error:@
 initWithURL_options_error :: (IsAVMutableMovie avMutableMovie, IsNSURL url, IsNSDictionary options, IsNSError outError) => avMutableMovie -> url -> options -> outError -> IO (Id AVMutableMovie)
-initWithURL_options_error avMutableMovie  url options outError =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avMutableMovie (mkSelector "initWithURL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_options_error avMutableMovie url options outError =
+  sendOwnedMessage avMutableMovie initWithURL_options_errorSelector (toNSURL url) (toNSDictionary options) (toNSError outError)
 
 -- | movieWithData:options:error:
 --
@@ -162,10 +153,7 @@ movieWithData_options_error :: (IsNSData data_, IsNSDictionary options, IsNSErro
 movieWithData_options_error data_ options outError =
   do
     cls' <- getRequiredClass "AVMutableMovie"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr outError $ \raw_outError ->
-          sendClassMsg cls' (mkSelector "movieWithData:options:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' movieWithData_options_errorSelector (toNSData data_) (toNSDictionary options) (toNSError outError)
 
 -- | initWithData:options:error:
 --
@@ -185,11 +173,8 @@ movieWithData_options_error data_ options outError =
 --
 -- ObjC selector: @- initWithData:options:error:@
 initWithData_options_error :: (IsAVMutableMovie avMutableMovie, IsNSData data_, IsNSDictionary options, IsNSError outError) => avMutableMovie -> data_ -> options -> outError -> IO (Id AVMutableMovie)
-initWithData_options_error avMutableMovie  data_ options outError =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avMutableMovie (mkSelector "initWithData:options:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithData_options_error avMutableMovie data_ options outError =
+  sendOwnedMessage avMutableMovie initWithData_options_errorSelector (toNSData data_) (toNSDictionary options) (toNSError outError)
 
 -- | movieWithSettingsFromMovie:options:error:
 --
@@ -210,10 +195,7 @@ movieWithSettingsFromMovie_options_error :: (IsAVMovie movie, IsNSDictionary opt
 movieWithSettingsFromMovie_options_error movie options outError =
   do
     cls' <- getRequiredClass "AVMutableMovie"
-    withObjCPtr movie $ \raw_movie ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr outError $ \raw_outError ->
-          sendClassMsg cls' (mkSelector "movieWithSettingsFromMovie:options:error:") (retPtr retVoid) [argPtr (castPtr raw_movie :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' movieWithSettingsFromMovie_options_errorSelector (toAVMovie movie) (toNSDictionary options) (toNSError outError)
 
 -- | initWithSettingsFromMovie:options:error:
 --
@@ -231,41 +213,33 @@ movieWithSettingsFromMovie_options_error movie options outError =
 --
 -- ObjC selector: @- initWithSettingsFromMovie:options:error:@
 initWithSettingsFromMovie_options_error :: (IsAVMutableMovie avMutableMovie, IsAVMovie movie, IsNSDictionary options, IsNSError outError) => avMutableMovie -> movie -> options -> outError -> IO (Id AVMutableMovie)
-initWithSettingsFromMovie_options_error avMutableMovie  movie options outError =
-  withObjCPtr movie $ \raw_movie ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avMutableMovie (mkSelector "initWithSettingsFromMovie:options:error:") (retPtr retVoid) [argPtr (castPtr raw_movie :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithSettingsFromMovie_options_error avMutableMovie movie options outError =
+  sendOwnedMessage avMutableMovie initWithSettingsFromMovie_options_errorSelector (toAVMovie movie) (toNSDictionary options) (toNSError outError)
 
 -- | @- metadataForFormat:@
 metadataForFormat :: (IsAVMutableMovie avMutableMovie, IsNSString format) => avMutableMovie -> format -> IO (Id NSArray)
-metadataForFormat avMutableMovie  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avMutableMovie (mkSelector "metadataForFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= retainedObject . castPtr
+metadataForFormat avMutableMovie format =
+  sendMessage avMutableMovie metadataForFormatSelector (toNSString format)
 
 -- | @- chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:@
 chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys :: (IsAVMutableMovie avMutableMovie, IsNSLocale locale, IsNSArray commonKeys) => avMutableMovie -> locale -> commonKeys -> IO (Id NSArray)
-chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys avMutableMovie  locale commonKeys =
-  withObjCPtr locale $ \raw_locale ->
-    withObjCPtr commonKeys $ \raw_commonKeys ->
-        sendMsg avMutableMovie (mkSelector "chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:") (retPtr retVoid) [argPtr (castPtr raw_locale :: Ptr ()), argPtr (castPtr raw_commonKeys :: Ptr ())] >>= retainedObject . castPtr
+chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys avMutableMovie locale commonKeys =
+  sendMessage avMutableMovie chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector (toNSLocale locale) (toNSArray commonKeys)
 
 -- | @- chapterMetadataGroupsBestMatchingPreferredLanguages:@
 chapterMetadataGroupsBestMatchingPreferredLanguages :: (IsAVMutableMovie avMutableMovie, IsNSArray preferredLanguages) => avMutableMovie -> preferredLanguages -> IO (Id NSArray)
-chapterMetadataGroupsBestMatchingPreferredLanguages avMutableMovie  preferredLanguages =
-  withObjCPtr preferredLanguages $ \raw_preferredLanguages ->
-      sendMsg avMutableMovie (mkSelector "chapterMetadataGroupsBestMatchingPreferredLanguages:") (retPtr retVoid) [argPtr (castPtr raw_preferredLanguages :: Ptr ())] >>= retainedObject . castPtr
+chapterMetadataGroupsBestMatchingPreferredLanguages avMutableMovie preferredLanguages =
+  sendMessage avMutableMovie chapterMetadataGroupsBestMatchingPreferredLanguagesSelector (toNSArray preferredLanguages)
 
 -- | @- mediaSelectionGroupForMediaCharacteristic:@
 mediaSelectionGroupForMediaCharacteristic :: (IsAVMutableMovie avMutableMovie, IsNSString mediaCharacteristic) => avMutableMovie -> mediaCharacteristic -> IO (Id AVMediaSelectionGroup)
-mediaSelectionGroupForMediaCharacteristic avMutableMovie  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avMutableMovie (mkSelector "mediaSelectionGroupForMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+mediaSelectionGroupForMediaCharacteristic avMutableMovie mediaCharacteristic =
+  sendMessage avMutableMovie mediaSelectionGroupForMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | @- unusedTrackID@
 unusedTrackID :: IsAVMutableMovie avMutableMovie => avMutableMovie -> IO CInt
-unusedTrackID avMutableMovie  =
-    sendMsg avMutableMovie (mkSelector "unusedTrackID") retCInt []
+unusedTrackID avMutableMovie =
+  sendMessage avMutableMovie unusedTrackIDSelector
 
 -- | trackWithTrackID:
 --
@@ -279,8 +253,8 @@ unusedTrackID avMutableMovie  =
 --
 -- ObjC selector: @- trackWithTrackID:@
 trackWithTrackID :: IsAVMutableMovie avMutableMovie => avMutableMovie -> CInt -> IO (Id AVMutableMovieTrack)
-trackWithTrackID avMutableMovie  trackID =
-    sendMsg avMutableMovie (mkSelector "trackWithTrackID:") (retPtr retVoid) [argCInt trackID] >>= retainedObject . castPtr
+trackWithTrackID avMutableMovie trackID =
+  sendMessage avMutableMovie trackWithTrackIDSelector trackID
 
 -- | loadTrackWithTrackID:completionHandler:
 --
@@ -292,8 +266,8 @@ trackWithTrackID avMutableMovie  trackID =
 --
 -- ObjC selector: @- loadTrackWithTrackID:completionHandler:@
 loadTrackWithTrackID_completionHandler :: IsAVMutableMovie avMutableMovie => avMutableMovie -> CInt -> Ptr () -> IO ()
-loadTrackWithTrackID_completionHandler avMutableMovie  trackID completionHandler =
-    sendMsg avMutableMovie (mkSelector "loadTrackWithTrackID:completionHandler:") retVoid [argCInt trackID, argPtr (castPtr completionHandler :: Ptr ())]
+loadTrackWithTrackID_completionHandler avMutableMovie trackID completionHandler =
+  sendMessage avMutableMovie loadTrackWithTrackID_completionHandlerSelector trackID completionHandler
 
 -- | tracksWithMediaType:
 --
@@ -307,9 +281,8 @@ loadTrackWithTrackID_completionHandler avMutableMovie  trackID completionHandler
 --
 -- ObjC selector: @- tracksWithMediaType:@
 tracksWithMediaType :: (IsAVMutableMovie avMutableMovie, IsNSString mediaType) => avMutableMovie -> mediaType -> IO (Id NSArray)
-tracksWithMediaType avMutableMovie  mediaType =
-  withObjCPtr mediaType $ \raw_mediaType ->
-      sendMsg avMutableMovie (mkSelector "tracksWithMediaType:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaType avMutableMovie mediaType =
+  sendMessage avMutableMovie tracksWithMediaTypeSelector (toNSString mediaType)
 
 -- | tracksWithMediaCharacteristic:
 --
@@ -323,9 +296,8 @@ tracksWithMediaType avMutableMovie  mediaType =
 --
 -- ObjC selector: @- tracksWithMediaCharacteristic:@
 tracksWithMediaCharacteristic :: (IsAVMutableMovie avMutableMovie, IsNSString mediaCharacteristic) => avMutableMovie -> mediaCharacteristic -> IO (Id NSArray)
-tracksWithMediaCharacteristic avMutableMovie  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avMutableMovie (mkSelector "tracksWithMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaCharacteristic avMutableMovie mediaCharacteristic =
+  sendMessage avMutableMovie tracksWithMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | mutableTrackCompatibleWithTrack:
 --
@@ -339,9 +311,8 @@ tracksWithMediaCharacteristic avMutableMovie  mediaCharacteristic =
 --
 -- ObjC selector: @- mutableTrackCompatibleWithTrack:@
 mutableTrackCompatibleWithTrack :: (IsAVMutableMovie avMutableMovie, IsAVAssetTrack track) => avMutableMovie -> track -> IO (Id AVMutableMovieTrack)
-mutableTrackCompatibleWithTrack avMutableMovie  track =
-  withObjCPtr track $ \raw_track ->
-      sendMsg avMutableMovie (mkSelector "mutableTrackCompatibleWithTrack:") (retPtr retVoid) [argPtr (castPtr raw_track :: Ptr ())] >>= retainedObject . castPtr
+mutableTrackCompatibleWithTrack avMutableMovie track =
+  sendMessage avMutableMovie mutableTrackCompatibleWithTrackSelector (toAVAssetTrack track)
 
 -- | addMutableTrackWithMediaType:copySettingsFromTrack:options:
 --
@@ -359,11 +330,8 @@ mutableTrackCompatibleWithTrack avMutableMovie  track =
 --
 -- ObjC selector: @- addMutableTrackWithMediaType:copySettingsFromTrack:options:@
 addMutableTrackWithMediaType_copySettingsFromTrack_options :: (IsAVMutableMovie avMutableMovie, IsNSString mediaType, IsAVAssetTrack track, IsNSDictionary options) => avMutableMovie -> mediaType -> track -> options -> IO (Id AVMutableMovieTrack)
-addMutableTrackWithMediaType_copySettingsFromTrack_options avMutableMovie  mediaType track options =
-  withObjCPtr mediaType $ \raw_mediaType ->
-    withObjCPtr track $ \raw_track ->
-      withObjCPtr options $ \raw_options ->
-          sendMsg avMutableMovie (mkSelector "addMutableTrackWithMediaType:copySettingsFromTrack:options:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ()), argPtr (castPtr raw_track :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+addMutableTrackWithMediaType_copySettingsFromTrack_options avMutableMovie mediaType track options =
+  sendMessage avMutableMovie addMutableTrackWithMediaType_copySettingsFromTrack_optionsSelector (toNSString mediaType) (toAVAssetTrack track) (toNSDictionary options)
 
 -- | addMutableTracksCopyingSettingsFromTracks:options:
 --
@@ -379,10 +347,8 @@ addMutableTrackWithMediaType_copySettingsFromTrack_options avMutableMovie  media
 --
 -- ObjC selector: @- addMutableTracksCopyingSettingsFromTracks:options:@
 addMutableTracksCopyingSettingsFromTracks_options :: (IsAVMutableMovie avMutableMovie, IsNSArray existingTracks, IsNSDictionary options) => avMutableMovie -> existingTracks -> options -> IO (Id NSArray)
-addMutableTracksCopyingSettingsFromTracks_options avMutableMovie  existingTracks options =
-  withObjCPtr existingTracks $ \raw_existingTracks ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg avMutableMovie (mkSelector "addMutableTracksCopyingSettingsFromTracks:options:") (retPtr retVoid) [argPtr (castPtr raw_existingTracks :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+addMutableTracksCopyingSettingsFromTracks_options avMutableMovie existingTracks options =
+  sendMessage avMutableMovie addMutableTracksCopyingSettingsFromTracks_optionsSelector (toNSArray existingTracks) (toNSDictionary options)
 
 -- | removeTrack:
 --
@@ -392,9 +358,8 @@ addMutableTracksCopyingSettingsFromTracks_options avMutableMovie  existingTracks
 --
 -- ObjC selector: @- removeTrack:@
 removeTrack :: (IsAVMutableMovie avMutableMovie, IsAVMovieTrack track) => avMutableMovie -> track -> IO ()
-removeTrack avMutableMovie  track =
-  withObjCPtr track $ \raw_track ->
-      sendMsg avMutableMovie (mkSelector "removeTrack:") retVoid [argPtr (castPtr raw_track :: Ptr ())]
+removeTrack avMutableMovie track =
+  sendMessage avMutableMovie removeTrackSelector (toAVMovieTrack track)
 
 -- | preferredRate
 --
@@ -402,8 +367,8 @@ removeTrack avMutableMovie  track =
 --
 -- ObjC selector: @- preferredRate@
 preferredRate :: IsAVMutableMovie avMutableMovie => avMutableMovie -> IO CFloat
-preferredRate avMutableMovie  =
-    sendMsg avMutableMovie (mkSelector "preferredRate") retCFloat []
+preferredRate avMutableMovie =
+  sendMessage avMutableMovie preferredRateSelector
 
 -- | preferredRate
 --
@@ -411,8 +376,8 @@ preferredRate avMutableMovie  =
 --
 -- ObjC selector: @- setPreferredRate:@
 setPreferredRate :: IsAVMutableMovie avMutableMovie => avMutableMovie -> CFloat -> IO ()
-setPreferredRate avMutableMovie  value =
-    sendMsg avMutableMovie (mkSelector "setPreferredRate:") retVoid [argCFloat value]
+setPreferredRate avMutableMovie value =
+  sendMessage avMutableMovie setPreferredRateSelector value
 
 -- | preferredVolume
 --
@@ -420,8 +385,8 @@ setPreferredRate avMutableMovie  value =
 --
 -- ObjC selector: @- preferredVolume@
 preferredVolume :: IsAVMutableMovie avMutableMovie => avMutableMovie -> IO CFloat
-preferredVolume avMutableMovie  =
-    sendMsg avMutableMovie (mkSelector "preferredVolume") retCFloat []
+preferredVolume avMutableMovie =
+  sendMessage avMutableMovie preferredVolumeSelector
 
 -- | preferredVolume
 --
@@ -429,8 +394,8 @@ preferredVolume avMutableMovie  =
 --
 -- ObjC selector: @- setPreferredVolume:@
 setPreferredVolume :: IsAVMutableMovie avMutableMovie => avMutableMovie -> CFloat -> IO ()
-setPreferredVolume avMutableMovie  value =
-    sendMsg avMutableMovie (mkSelector "setPreferredVolume:") retVoid [argCFloat value]
+setPreferredVolume avMutableMovie value =
+  sendMessage avMutableMovie setPreferredVolumeSelector value
 
 -- | timescale
 --
@@ -442,8 +407,8 @@ setPreferredVolume avMutableMovie  value =
 --
 -- ObjC selector: @- timescale@
 timescale :: IsAVMutableMovie avMutableMovie => avMutableMovie -> IO CInt
-timescale avMutableMovie  =
-    sendMsg avMutableMovie (mkSelector "timescale") retCInt []
+timescale avMutableMovie =
+  sendMessage avMutableMovie timescaleSelector
 
 -- | timescale
 --
@@ -455,8 +420,8 @@ timescale avMutableMovie  =
 --
 -- ObjC selector: @- setTimescale:@
 setTimescale :: IsAVMutableMovie avMutableMovie => avMutableMovie -> CInt -> IO ()
-setTimescale avMutableMovie  value =
-    sendMsg avMutableMovie (mkSelector "setTimescale:") retVoid [argCInt value]
+setTimescale avMutableMovie value =
+  sendMessage avMutableMovie setTimescaleSelector value
 
 -- | tracks
 --
@@ -466,8 +431,8 @@ setTimescale avMutableMovie  value =
 --
 -- ObjC selector: @- tracks@
 tracks :: IsAVMutableMovie avMutableMovie => avMutableMovie -> IO (Id NSArray)
-tracks avMutableMovie  =
-    sendMsg avMutableMovie (mkSelector "tracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tracks avMutableMovie =
+  sendMessage avMutableMovie tracksSelector
 
 -- | metadata
 --
@@ -477,8 +442,8 @@ tracks avMutableMovie  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsAVMutableMovie avMutableMovie => avMutableMovie -> IO (Id NSArray)
-metadata avMutableMovie  =
-    sendMsg avMutableMovie (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avMutableMovie =
+  sendMessage avMutableMovie metadataSelector
 
 -- | metadata
 --
@@ -488,9 +453,8 @@ metadata avMutableMovie  =
 --
 -- ObjC selector: @- setMetadata:@
 setMetadata :: (IsAVMutableMovie avMutableMovie, IsNSArray value) => avMutableMovie -> value -> IO ()
-setMetadata avMutableMovie  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMovie (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadata avMutableMovie value =
+  sendMessage avMutableMovie setMetadataSelector (toNSArray value)
 
 -- | modified
 --
@@ -500,8 +464,8 @@ setMetadata avMutableMovie  value =
 --
 -- ObjC selector: @- modified@
 modified :: IsAVMutableMovie avMutableMovie => avMutableMovie -> IO Bool
-modified avMutableMovie  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMutableMovie (mkSelector "modified") retCULong []
+modified avMutableMovie =
+  sendMessage avMutableMovie modifiedSelector
 
 -- | modified
 --
@@ -511,8 +475,8 @@ modified avMutableMovie  =
 --
 -- ObjC selector: @- setModified:@
 setModified :: IsAVMutableMovie avMutableMovie => avMutableMovie -> Bool -> IO ()
-setModified avMutableMovie  value =
-    sendMsg avMutableMovie (mkSelector "setModified:") retVoid [argCULong (if value then 1 else 0)]
+setModified avMutableMovie value =
+  sendMessage avMutableMovie setModifiedSelector value
 
 -- | defaultMediaDataStorage
 --
@@ -522,8 +486,8 @@ setModified avMutableMovie  value =
 --
 -- ObjC selector: @- defaultMediaDataStorage@
 defaultMediaDataStorage :: IsAVMutableMovie avMutableMovie => avMutableMovie -> IO (Id AVMediaDataStorage)
-defaultMediaDataStorage avMutableMovie  =
-    sendMsg avMutableMovie (mkSelector "defaultMediaDataStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultMediaDataStorage avMutableMovie =
+  sendMessage avMutableMovie defaultMediaDataStorageSelector
 
 -- | defaultMediaDataStorage
 --
@@ -533,139 +497,138 @@ defaultMediaDataStorage avMutableMovie  =
 --
 -- ObjC selector: @- setDefaultMediaDataStorage:@
 setDefaultMediaDataStorage :: (IsAVMutableMovie avMutableMovie, IsAVMediaDataStorage value) => avMutableMovie -> value -> IO ()
-setDefaultMediaDataStorage avMutableMovie  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableMovie (mkSelector "setDefaultMediaDataStorage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultMediaDataStorage avMutableMovie value =
+  sendMessage avMutableMovie setDefaultMediaDataStorageSelector (toAVMediaDataStorage value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @movieWithURL:options:error:@
-movieWithURL_options_errorSelector :: Selector
+movieWithURL_options_errorSelector :: Selector '[Id NSURL, Id NSDictionary, Id NSError] (Id AVMutableMovie)
 movieWithURL_options_errorSelector = mkSelector "movieWithURL:options:error:"
 
 -- | @Selector@ for @initWithURL:options:error:@
-initWithURL_options_errorSelector :: Selector
+initWithURL_options_errorSelector :: Selector '[Id NSURL, Id NSDictionary, Id NSError] (Id AVMutableMovie)
 initWithURL_options_errorSelector = mkSelector "initWithURL:options:error:"
 
 -- | @Selector@ for @movieWithData:options:error:@
-movieWithData_options_errorSelector :: Selector
+movieWithData_options_errorSelector :: Selector '[Id NSData, Id NSDictionary, Id NSError] (Id AVMutableMovie)
 movieWithData_options_errorSelector = mkSelector "movieWithData:options:error:"
 
 -- | @Selector@ for @initWithData:options:error:@
-initWithData_options_errorSelector :: Selector
+initWithData_options_errorSelector :: Selector '[Id NSData, Id NSDictionary, Id NSError] (Id AVMutableMovie)
 initWithData_options_errorSelector = mkSelector "initWithData:options:error:"
 
 -- | @Selector@ for @movieWithSettingsFromMovie:options:error:@
-movieWithSettingsFromMovie_options_errorSelector :: Selector
+movieWithSettingsFromMovie_options_errorSelector :: Selector '[Id AVMovie, Id NSDictionary, Id NSError] (Id AVMutableMovie)
 movieWithSettingsFromMovie_options_errorSelector = mkSelector "movieWithSettingsFromMovie:options:error:"
 
 -- | @Selector@ for @initWithSettingsFromMovie:options:error:@
-initWithSettingsFromMovie_options_errorSelector :: Selector
+initWithSettingsFromMovie_options_errorSelector :: Selector '[Id AVMovie, Id NSDictionary, Id NSError] (Id AVMutableMovie)
 initWithSettingsFromMovie_options_errorSelector = mkSelector "initWithSettingsFromMovie:options:error:"
 
 -- | @Selector@ for @metadataForFormat:@
-metadataForFormatSelector :: Selector
+metadataForFormatSelector :: Selector '[Id NSString] (Id NSArray)
 metadataForFormatSelector = mkSelector "metadataForFormat:"
 
 -- | @Selector@ for @chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:@
-chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector :: Selector
+chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector :: Selector '[Id NSLocale, Id NSArray] (Id NSArray)
 chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector = mkSelector "chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:"
 
 -- | @Selector@ for @chapterMetadataGroupsBestMatchingPreferredLanguages:@
-chapterMetadataGroupsBestMatchingPreferredLanguagesSelector :: Selector
+chapterMetadataGroupsBestMatchingPreferredLanguagesSelector :: Selector '[Id NSArray] (Id NSArray)
 chapterMetadataGroupsBestMatchingPreferredLanguagesSelector = mkSelector "chapterMetadataGroupsBestMatchingPreferredLanguages:"
 
 -- | @Selector@ for @mediaSelectionGroupForMediaCharacteristic:@
-mediaSelectionGroupForMediaCharacteristicSelector :: Selector
+mediaSelectionGroupForMediaCharacteristicSelector :: Selector '[Id NSString] (Id AVMediaSelectionGroup)
 mediaSelectionGroupForMediaCharacteristicSelector = mkSelector "mediaSelectionGroupForMediaCharacteristic:"
 
 -- | @Selector@ for @unusedTrackID@
-unusedTrackIDSelector :: Selector
+unusedTrackIDSelector :: Selector '[] CInt
 unusedTrackIDSelector = mkSelector "unusedTrackID"
 
 -- | @Selector@ for @trackWithTrackID:@
-trackWithTrackIDSelector :: Selector
+trackWithTrackIDSelector :: Selector '[CInt] (Id AVMutableMovieTrack)
 trackWithTrackIDSelector = mkSelector "trackWithTrackID:"
 
 -- | @Selector@ for @loadTrackWithTrackID:completionHandler:@
-loadTrackWithTrackID_completionHandlerSelector :: Selector
+loadTrackWithTrackID_completionHandlerSelector :: Selector '[CInt, Ptr ()] ()
 loadTrackWithTrackID_completionHandlerSelector = mkSelector "loadTrackWithTrackID:completionHandler:"
 
 -- | @Selector@ for @tracksWithMediaType:@
-tracksWithMediaTypeSelector :: Selector
+tracksWithMediaTypeSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaTypeSelector = mkSelector "tracksWithMediaType:"
 
 -- | @Selector@ for @tracksWithMediaCharacteristic:@
-tracksWithMediaCharacteristicSelector :: Selector
+tracksWithMediaCharacteristicSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaCharacteristicSelector = mkSelector "tracksWithMediaCharacteristic:"
 
 -- | @Selector@ for @mutableTrackCompatibleWithTrack:@
-mutableTrackCompatibleWithTrackSelector :: Selector
+mutableTrackCompatibleWithTrackSelector :: Selector '[Id AVAssetTrack] (Id AVMutableMovieTrack)
 mutableTrackCompatibleWithTrackSelector = mkSelector "mutableTrackCompatibleWithTrack:"
 
 -- | @Selector@ for @addMutableTrackWithMediaType:copySettingsFromTrack:options:@
-addMutableTrackWithMediaType_copySettingsFromTrack_optionsSelector :: Selector
+addMutableTrackWithMediaType_copySettingsFromTrack_optionsSelector :: Selector '[Id NSString, Id AVAssetTrack, Id NSDictionary] (Id AVMutableMovieTrack)
 addMutableTrackWithMediaType_copySettingsFromTrack_optionsSelector = mkSelector "addMutableTrackWithMediaType:copySettingsFromTrack:options:"
 
 -- | @Selector@ for @addMutableTracksCopyingSettingsFromTracks:options:@
-addMutableTracksCopyingSettingsFromTracks_optionsSelector :: Selector
+addMutableTracksCopyingSettingsFromTracks_optionsSelector :: Selector '[Id NSArray, Id NSDictionary] (Id NSArray)
 addMutableTracksCopyingSettingsFromTracks_optionsSelector = mkSelector "addMutableTracksCopyingSettingsFromTracks:options:"
 
 -- | @Selector@ for @removeTrack:@
-removeTrackSelector :: Selector
+removeTrackSelector :: Selector '[Id AVMovieTrack] ()
 removeTrackSelector = mkSelector "removeTrack:"
 
 -- | @Selector@ for @preferredRate@
-preferredRateSelector :: Selector
+preferredRateSelector :: Selector '[] CFloat
 preferredRateSelector = mkSelector "preferredRate"
 
 -- | @Selector@ for @setPreferredRate:@
-setPreferredRateSelector :: Selector
+setPreferredRateSelector :: Selector '[CFloat] ()
 setPreferredRateSelector = mkSelector "setPreferredRate:"
 
 -- | @Selector@ for @preferredVolume@
-preferredVolumeSelector :: Selector
+preferredVolumeSelector :: Selector '[] CFloat
 preferredVolumeSelector = mkSelector "preferredVolume"
 
 -- | @Selector@ for @setPreferredVolume:@
-setPreferredVolumeSelector :: Selector
+setPreferredVolumeSelector :: Selector '[CFloat] ()
 setPreferredVolumeSelector = mkSelector "setPreferredVolume:"
 
 -- | @Selector@ for @timescale@
-timescaleSelector :: Selector
+timescaleSelector :: Selector '[] CInt
 timescaleSelector = mkSelector "timescale"
 
 -- | @Selector@ for @setTimescale:@
-setTimescaleSelector :: Selector
+setTimescaleSelector :: Selector '[CInt] ()
 setTimescaleSelector = mkSelector "setTimescale:"
 
 -- | @Selector@ for @tracks@
-tracksSelector :: Selector
+tracksSelector :: Selector '[] (Id NSArray)
 tracksSelector = mkSelector "tracks"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSArray)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @setMetadata:@
-setMetadataSelector :: Selector
+setMetadataSelector :: Selector '[Id NSArray] ()
 setMetadataSelector = mkSelector "setMetadata:"
 
 -- | @Selector@ for @modified@
-modifiedSelector :: Selector
+modifiedSelector :: Selector '[] Bool
 modifiedSelector = mkSelector "modified"
 
 -- | @Selector@ for @setModified:@
-setModifiedSelector :: Selector
+setModifiedSelector :: Selector '[Bool] ()
 setModifiedSelector = mkSelector "setModified:"
 
 -- | @Selector@ for @defaultMediaDataStorage@
-defaultMediaDataStorageSelector :: Selector
+defaultMediaDataStorageSelector :: Selector '[] (Id AVMediaDataStorage)
 defaultMediaDataStorageSelector = mkSelector "defaultMediaDataStorage"
 
 -- | @Selector@ for @setDefaultMediaDataStorage:@
-setDefaultMediaDataStorageSelector :: Selector
+setDefaultMediaDataStorageSelector :: Selector '[Id AVMediaDataStorage] ()
 setDefaultMediaDataStorageSelector = mkSelector "setDefaultMediaDataStorage:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,32 +32,28 @@ module ObjC.AuthenticationServices.ASWebAuthenticationSession
   , additionalHeaderFields
   , setAdditionalHeaderFields
   , canStart
+  , additionalHeaderFieldsSelector
+  , canStartSelector
+  , cancelSelector
+  , initSelector
   , initWithURL_callbackURLScheme_completionHandlerSelector
   , initWithURL_callback_completionHandlerSelector
-  , startSelector
-  , cancelSelector
   , newSelector
-  , initSelector
-  , presentationContextProviderSelector
-  , setPresentationContextProviderSelector
   , prefersEphemeralWebBrowserSessionSelector
-  , setPrefersEphemeralWebBrowserSessionSelector
-  , additionalHeaderFieldsSelector
+  , presentationContextProviderSelector
   , setAdditionalHeaderFieldsSelector
-  , canStartSelector
+  , setPrefersEphemeralWebBrowserSessionSelector
+  , setPresentationContextProviderSelector
+  , startSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,17 +70,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:callbackURLScheme:completionHandler:@
 initWithURL_callbackURLScheme_completionHandler :: (IsASWebAuthenticationSession asWebAuthenticationSession, IsNSURL url, IsNSString callbackURLScheme) => asWebAuthenticationSession -> url -> callbackURLScheme -> Ptr () -> IO (Id ASWebAuthenticationSession)
-initWithURL_callbackURLScheme_completionHandler asWebAuthenticationSession  url callbackURLScheme completionHandler =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr callbackURLScheme $ \raw_callbackURLScheme ->
-        sendMsg asWebAuthenticationSession (mkSelector "initWithURL:callbackURLScheme:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_callbackURLScheme :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_callbackURLScheme_completionHandler asWebAuthenticationSession url callbackURLScheme completionHandler =
+  sendOwnedMessage asWebAuthenticationSession initWithURL_callbackURLScheme_completionHandlerSelector (toNSURL url) (toNSString callbackURLScheme) completionHandler
 
 -- | @- initWithURL:callback:completionHandler:@
 initWithURL_callback_completionHandler :: (IsASWebAuthenticationSession asWebAuthenticationSession, IsNSURL url, IsASWebAuthenticationSessionCallback callback) => asWebAuthenticationSession -> url -> callback -> Ptr () -> IO (Id ASWebAuthenticationSession)
-initWithURL_callback_completionHandler asWebAuthenticationSession  url callback completionHandler =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr callback $ \raw_callback ->
-        sendMsg asWebAuthenticationSession (mkSelector "initWithURL:callback:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_callback :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_callback_completionHandler asWebAuthenticationSession url callback completionHandler =
+  sendOwnedMessage asWebAuthenticationSession initWithURL_callback_completionHandlerSelector (toNSURL url) (toASWebAuthenticationSessionCallback callback) completionHandler
 
 -- | Starts the ASWebAuthenticationSession instance after it is instantiated.
 --
@@ -93,41 +86,41 @@ initWithURL_callback_completionHandler asWebAuthenticationSession  url callback 
 --
 -- ObjC selector: @- start@
 start :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> IO Bool
-start asWebAuthenticationSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asWebAuthenticationSession (mkSelector "start") retCULong []
+start asWebAuthenticationSession =
+  sendMessage asWebAuthenticationSession startSelector
 
 -- | Cancel an ASWebAuthenticationSession. If the view controller is already presented to load the webpage for authentication, it will be dismissed. Calling cancel on an already canceled session will have no effect.
 --
 -- ObjC selector: @- cancel@
 cancel :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> IO ()
-cancel asWebAuthenticationSession  =
-    sendMsg asWebAuthenticationSession (mkSelector "cancel") retVoid []
+cancel asWebAuthenticationSession =
+  sendMessage asWebAuthenticationSession cancelSelector
 
 -- | @+ new@
 new :: IO (Id ASWebAuthenticationSession)
 new  =
   do
     cls' <- getRequiredClass "ASWebAuthenticationSession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> IO (Id ASWebAuthenticationSession)
-init_ asWebAuthenticationSession  =
-    sendMsg asWebAuthenticationSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asWebAuthenticationSession =
+  sendOwnedMessage asWebAuthenticationSession initSelector
 
 -- | Provides context to target where in an application's UI the authorization view should be shown. A provider must be set prior to calling -start, otherwise the authorization view cannot be displayed. If deploying to iOS prior to 13.0, the desired window is inferred by the application's key window.
 --
 -- ObjC selector: @- presentationContextProvider@
 presentationContextProvider :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> IO RawId
-presentationContextProvider asWebAuthenticationSession  =
-    fmap (RawId . castPtr) $ sendMsg asWebAuthenticationSession (mkSelector "presentationContextProvider") (retPtr retVoid) []
+presentationContextProvider asWebAuthenticationSession =
+  sendMessage asWebAuthenticationSession presentationContextProviderSelector
 
 -- | Provides context to target where in an application's UI the authorization view should be shown. A provider must be set prior to calling -start, otherwise the authorization view cannot be displayed. If deploying to iOS prior to 13.0, the desired window is inferred by the application's key window.
 --
 -- ObjC selector: @- setPresentationContextProvider:@
 setPresentationContextProvider :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> RawId -> IO ()
-setPresentationContextProvider asWebAuthenticationSession  value =
-    sendMsg asWebAuthenticationSession (mkSelector "setPresentationContextProvider:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPresentationContextProvider asWebAuthenticationSession value =
+  sendMessage asWebAuthenticationSession setPresentationContextProviderSelector value
 
 -- | Indicates whether this session should ask the browser for an ephemeral session.
 --
@@ -135,8 +128,8 @@ setPresentationContextProvider asWebAuthenticationSession  value =
 --
 -- ObjC selector: @- prefersEphemeralWebBrowserSession@
 prefersEphemeralWebBrowserSession :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> IO Bool
-prefersEphemeralWebBrowserSession asWebAuthenticationSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asWebAuthenticationSession (mkSelector "prefersEphemeralWebBrowserSession") retCULong []
+prefersEphemeralWebBrowserSession asWebAuthenticationSession =
+  sendMessage asWebAuthenticationSession prefersEphemeralWebBrowserSessionSelector
 
 -- | Indicates whether this session should ask the browser for an ephemeral session.
 --
@@ -144,84 +137,83 @@ prefersEphemeralWebBrowserSession asWebAuthenticationSession  =
 --
 -- ObjC selector: @- setPrefersEphemeralWebBrowserSession:@
 setPrefersEphemeralWebBrowserSession :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> Bool -> IO ()
-setPrefersEphemeralWebBrowserSession asWebAuthenticationSession  value =
-    sendMsg asWebAuthenticationSession (mkSelector "setPrefersEphemeralWebBrowserSession:") retVoid [argCULong (if value then 1 else 0)]
+setPrefersEphemeralWebBrowserSession asWebAuthenticationSession value =
+  sendMessage asWebAuthenticationSession setPrefersEphemeralWebBrowserSessionSelector value
 
 -- | Any additional header fields to be set when loading the initial URL. All header field names must start with the "X-" prefix.
 --
 -- ObjC selector: @- additionalHeaderFields@
 additionalHeaderFields :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> IO (Id NSDictionary)
-additionalHeaderFields asWebAuthenticationSession  =
-    sendMsg asWebAuthenticationSession (mkSelector "additionalHeaderFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+additionalHeaderFields asWebAuthenticationSession =
+  sendMessage asWebAuthenticationSession additionalHeaderFieldsSelector
 
 -- | Any additional header fields to be set when loading the initial URL. All header field names must start with the "X-" prefix.
 --
 -- ObjC selector: @- setAdditionalHeaderFields:@
 setAdditionalHeaderFields :: (IsASWebAuthenticationSession asWebAuthenticationSession, IsNSDictionary value) => asWebAuthenticationSession -> value -> IO ()
-setAdditionalHeaderFields asWebAuthenticationSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asWebAuthenticationSession (mkSelector "setAdditionalHeaderFields:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdditionalHeaderFields asWebAuthenticationSession value =
+  sendMessage asWebAuthenticationSession setAdditionalHeaderFieldsSelector (toNSDictionary value)
 
 -- | Returns whether the session can be successfully started. This property returns the same value as calling -start, but without the side effect of actually starting the session.
 --
 -- ObjC selector: @- canStart@
 canStart :: IsASWebAuthenticationSession asWebAuthenticationSession => asWebAuthenticationSession -> IO Bool
-canStart asWebAuthenticationSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asWebAuthenticationSession (mkSelector "canStart") retCULong []
+canStart asWebAuthenticationSession =
+  sendMessage asWebAuthenticationSession canStartSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:callbackURLScheme:completionHandler:@
-initWithURL_callbackURLScheme_completionHandlerSelector :: Selector
+initWithURL_callbackURLScheme_completionHandlerSelector :: Selector '[Id NSURL, Id NSString, Ptr ()] (Id ASWebAuthenticationSession)
 initWithURL_callbackURLScheme_completionHandlerSelector = mkSelector "initWithURL:callbackURLScheme:completionHandler:"
 
 -- | @Selector@ for @initWithURL:callback:completionHandler:@
-initWithURL_callback_completionHandlerSelector :: Selector
+initWithURL_callback_completionHandlerSelector :: Selector '[Id NSURL, Id ASWebAuthenticationSessionCallback, Ptr ()] (Id ASWebAuthenticationSession)
 initWithURL_callback_completionHandlerSelector = mkSelector "initWithURL:callback:completionHandler:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] Bool
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASWebAuthenticationSession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASWebAuthenticationSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @presentationContextProvider@
-presentationContextProviderSelector :: Selector
+presentationContextProviderSelector :: Selector '[] RawId
 presentationContextProviderSelector = mkSelector "presentationContextProvider"
 
 -- | @Selector@ for @setPresentationContextProvider:@
-setPresentationContextProviderSelector :: Selector
+setPresentationContextProviderSelector :: Selector '[RawId] ()
 setPresentationContextProviderSelector = mkSelector "setPresentationContextProvider:"
 
 -- | @Selector@ for @prefersEphemeralWebBrowserSession@
-prefersEphemeralWebBrowserSessionSelector :: Selector
+prefersEphemeralWebBrowserSessionSelector :: Selector '[] Bool
 prefersEphemeralWebBrowserSessionSelector = mkSelector "prefersEphemeralWebBrowserSession"
 
 -- | @Selector@ for @setPrefersEphemeralWebBrowserSession:@
-setPrefersEphemeralWebBrowserSessionSelector :: Selector
+setPrefersEphemeralWebBrowserSessionSelector :: Selector '[Bool] ()
 setPrefersEphemeralWebBrowserSessionSelector = mkSelector "setPrefersEphemeralWebBrowserSession:"
 
 -- | @Selector@ for @additionalHeaderFields@
-additionalHeaderFieldsSelector :: Selector
+additionalHeaderFieldsSelector :: Selector '[] (Id NSDictionary)
 additionalHeaderFieldsSelector = mkSelector "additionalHeaderFields"
 
 -- | @Selector@ for @setAdditionalHeaderFields:@
-setAdditionalHeaderFieldsSelector :: Selector
+setAdditionalHeaderFieldsSelector :: Selector '[Id NSDictionary] ()
 setAdditionalHeaderFieldsSelector = mkSelector "setAdditionalHeaderFields:"
 
 -- | @Selector@ for @canStart@
-canStartSelector :: Selector
+canStartSelector :: Selector '[] Bool
 canStartSelector = mkSelector "canStart"
 

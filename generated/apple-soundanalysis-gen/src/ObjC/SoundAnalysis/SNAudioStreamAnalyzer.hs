@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.SoundAnalysis.SNAudioStreamAnalyzer
   , removeAllRequests
   , analyzeAudioBuffer_atAudioFramePosition
   , completeAnalysis
-  , initWithFormatSelector
-  , initSelector
   , addRequest_withObserver_errorSelector
-  , removeRequestSelector
-  , removeAllRequestsSelector
   , analyzeAudioBuffer_atAudioFramePositionSelector
   , completeAnalysisSelector
+  , initSelector
+  , initWithFormatSelector
+  , removeAllRequestsSelector
+  , removeRequestSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,14 +47,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFormat:@
 initWithFormat :: (IsSNAudioStreamAnalyzer snAudioStreamAnalyzer, IsAVAudioFormat format) => snAudioStreamAnalyzer -> format -> IO (Id SNAudioStreamAnalyzer)
-initWithFormat snAudioStreamAnalyzer  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg snAudioStreamAnalyzer (mkSelector "initWithFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= ownedObject . castPtr
+initWithFormat snAudioStreamAnalyzer format =
+  sendOwnedMessage snAudioStreamAnalyzer initWithFormatSelector (toAVAudioFormat format)
 
 -- | @- init@
 init_ :: IsSNAudioStreamAnalyzer snAudioStreamAnalyzer => snAudioStreamAnalyzer -> IO (Id SNAudioStreamAnalyzer)
-init_ snAudioStreamAnalyzer  =
-    sendMsg snAudioStreamAnalyzer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ snAudioStreamAnalyzer =
+  sendOwnedMessage snAudioStreamAnalyzer initSelector
 
 -- | Adds a new analysis request to the analyzer
 --
@@ -75,23 +71,22 @@ init_ snAudioStreamAnalyzer  =
 --
 -- ObjC selector: @- addRequest:withObserver:error:@
 addRequest_withObserver_error :: (IsSNAudioStreamAnalyzer snAudioStreamAnalyzer, IsNSError error_) => snAudioStreamAnalyzer -> RawId -> RawId -> error_ -> IO Bool
-addRequest_withObserver_error snAudioStreamAnalyzer  request observer error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg snAudioStreamAnalyzer (mkSelector "addRequest:withObserver:error:") retCULong [argPtr (castPtr (unRawId request) :: Ptr ()), argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addRequest_withObserver_error snAudioStreamAnalyzer request observer error_ =
+  sendMessage snAudioStreamAnalyzer addRequest_withObserver_errorSelector request observer (toNSError error_)
 
 -- | Removes an existing analysis request from the analyzer - Parameter request: An audio analysis request to be removed Requests can be removed while analysis is in progress. Once the removeRequest method returns, the previously registered observer will not receive any more callbacks.
 --
 -- ObjC selector: @- removeRequest:@
 removeRequest :: IsSNAudioStreamAnalyzer snAudioStreamAnalyzer => snAudioStreamAnalyzer -> RawId -> IO ()
-removeRequest snAudioStreamAnalyzer  request =
-    sendMsg snAudioStreamAnalyzer (mkSelector "removeRequest:") retVoid [argPtr (castPtr (unRawId request) :: Ptr ())]
+removeRequest snAudioStreamAnalyzer request =
+  sendMessage snAudioStreamAnalyzer removeRequestSelector request
 
 -- | Removes all requests from the analyzer
 --
 -- ObjC selector: @- removeAllRequests@
 removeAllRequests :: IsSNAudioStreamAnalyzer snAudioStreamAnalyzer => snAudioStreamAnalyzer -> IO ()
-removeAllRequests snAudioStreamAnalyzer  =
-    sendMsg snAudioStreamAnalyzer (mkSelector "removeAllRequests") retVoid []
+removeAllRequests snAudioStreamAnalyzer =
+  sendMessage snAudioStreamAnalyzer removeAllRequestsSelector
 
 -- | Provides the next buffer for analysis
 --
@@ -105,9 +100,8 @@ removeAllRequests snAudioStreamAnalyzer  =
 --
 -- ObjC selector: @- analyzeAudioBuffer:atAudioFramePosition:@
 analyzeAudioBuffer_atAudioFramePosition :: (IsSNAudioStreamAnalyzer snAudioStreamAnalyzer, IsAVAudioBuffer audioBuffer) => snAudioStreamAnalyzer -> audioBuffer -> CLong -> IO ()
-analyzeAudioBuffer_atAudioFramePosition snAudioStreamAnalyzer  audioBuffer audioFramePosition =
-  withObjCPtr audioBuffer $ \raw_audioBuffer ->
-      sendMsg snAudioStreamAnalyzer (mkSelector "analyzeAudioBuffer:atAudioFramePosition:") retVoid [argPtr (castPtr raw_audioBuffer :: Ptr ()), argCLong audioFramePosition]
+analyzeAudioBuffer_atAudioFramePosition snAudioStreamAnalyzer audioBuffer audioFramePosition =
+  sendMessage snAudioStreamAnalyzer analyzeAudioBuffer_atAudioFramePositionSelector (toAVAudioBuffer audioBuffer) audioFramePosition
 
 -- | Indicates that the audio stream has ended, and no more audio buffers will be analyzed
 --
@@ -115,38 +109,38 @@ analyzeAudioBuffer_atAudioFramePosition snAudioStreamAnalyzer  audioBuffer audio
 --
 -- ObjC selector: @- completeAnalysis@
 completeAnalysis :: IsSNAudioStreamAnalyzer snAudioStreamAnalyzer => snAudioStreamAnalyzer -> IO ()
-completeAnalysis snAudioStreamAnalyzer  =
-    sendMsg snAudioStreamAnalyzer (mkSelector "completeAnalysis") retVoid []
+completeAnalysis snAudioStreamAnalyzer =
+  sendMessage snAudioStreamAnalyzer completeAnalysisSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFormat:@
-initWithFormatSelector :: Selector
+initWithFormatSelector :: Selector '[Id AVAudioFormat] (Id SNAudioStreamAnalyzer)
 initWithFormatSelector = mkSelector "initWithFormat:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SNAudioStreamAnalyzer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @addRequest:withObserver:error:@
-addRequest_withObserver_errorSelector :: Selector
+addRequest_withObserver_errorSelector :: Selector '[RawId, RawId, Id NSError] Bool
 addRequest_withObserver_errorSelector = mkSelector "addRequest:withObserver:error:"
 
 -- | @Selector@ for @removeRequest:@
-removeRequestSelector :: Selector
+removeRequestSelector :: Selector '[RawId] ()
 removeRequestSelector = mkSelector "removeRequest:"
 
 -- | @Selector@ for @removeAllRequests@
-removeAllRequestsSelector :: Selector
+removeAllRequestsSelector :: Selector '[] ()
 removeAllRequestsSelector = mkSelector "removeAllRequests"
 
 -- | @Selector@ for @analyzeAudioBuffer:atAudioFramePosition:@
-analyzeAudioBuffer_atAudioFramePositionSelector :: Selector
+analyzeAudioBuffer_atAudioFramePositionSelector :: Selector '[Id AVAudioBuffer, CLong] ()
 analyzeAudioBuffer_atAudioFramePositionSelector = mkSelector "analyzeAudioBuffer:atAudioFramePosition:"
 
 -- | @Selector@ for @completeAnalysis@
-completeAnalysisSelector :: Selector
+completeAnalysisSelector :: Selector '[] ()
 completeAnalysisSelector = mkSelector "completeAnalysis"
 

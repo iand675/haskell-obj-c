@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,30 +26,26 @@ module ObjC.AVFoundation.AVOutputSettingsAssistant
   , setSourceAudioFormat
   , sourceVideoFormat
   , setSourceVideoFormat
+  , audioSettingsSelector
+  , availableOutputSettingsPresetsSelector
   , initSelector
   , newSelector
-  , availableOutputSettingsPresetsSelector
-  , outputSettingsAssistantWithPresetSelector
-  , audioSettingsSelector
-  , videoSettingsSelector
   , outputFileTypeSelector
-  , sourceAudioFormatSelector
+  , outputSettingsAssistantWithPresetSelector
   , setSourceAudioFormatSelector
-  , sourceVideoFormatSelector
   , setSourceVideoFormatSelector
+  , sourceAudioFormatSelector
+  , sourceVideoFormatSelector
+  , videoSettingsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,15 +54,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVOutputSettingsAssistant avOutputSettingsAssistant => avOutputSettingsAssistant -> IO (Id AVOutputSettingsAssistant)
-init_ avOutputSettingsAssistant  =
-    sendMsg avOutputSettingsAssistant (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avOutputSettingsAssistant =
+  sendOwnedMessage avOutputSettingsAssistant initSelector
 
 -- | @+ new@
 new :: IO (Id AVOutputSettingsAssistant)
 new  =
   do
     cls' <- getRequiredClass "AVOutputSettingsAssistant"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | availableOutputSettingsPresets
 --
@@ -82,7 +79,7 @@ availableOutputSettingsPresets :: IO (Id NSArray)
 availableOutputSettingsPresets  =
   do
     cls' <- getRequiredClass "AVOutputSettingsAssistant"
-    sendClassMsg cls' (mkSelector "availableOutputSettingsPresets") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' availableOutputSettingsPresetsSelector
 
 -- | outputSettingsAssistantWithPreset:
 --
@@ -101,8 +98,7 @@ outputSettingsAssistantWithPreset :: IsNSString presetIdentifier => presetIdenti
 outputSettingsAssistantWithPreset presetIdentifier =
   do
     cls' <- getRequiredClass "AVOutputSettingsAssistant"
-    withObjCPtr presetIdentifier $ \raw_presetIdentifier ->
-      sendClassMsg cls' (mkSelector "outputSettingsAssistantWithPreset:") (retPtr retVoid) [argPtr (castPtr raw_presetIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' outputSettingsAssistantWithPresetSelector (toNSString presetIdentifier)
 
 -- | audioSettings
 --
@@ -112,8 +108,8 @@ outputSettingsAssistantWithPreset presetIdentifier =
 --
 -- ObjC selector: @- audioSettings@
 audioSettings :: IsAVOutputSettingsAssistant avOutputSettingsAssistant => avOutputSettingsAssistant -> IO (Id NSDictionary)
-audioSettings avOutputSettingsAssistant  =
-    sendMsg avOutputSettingsAssistant (mkSelector "audioSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioSettings avOutputSettingsAssistant =
+  sendMessage avOutputSettingsAssistant audioSettingsSelector
 
 -- | videoSettings
 --
@@ -123,8 +119,8 @@ audioSettings avOutputSettingsAssistant  =
 --
 -- ObjC selector: @- videoSettings@
 videoSettings :: IsAVOutputSettingsAssistant avOutputSettingsAssistant => avOutputSettingsAssistant -> IO (Id NSDictionary)
-videoSettings avOutputSettingsAssistant  =
-    sendMsg avOutputSettingsAssistant (mkSelector "videoSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoSettings avOutputSettingsAssistant =
+  sendMessage avOutputSettingsAssistant videoSettingsSelector
 
 -- | outputFileType
 --
@@ -134,8 +130,8 @@ videoSettings avOutputSettingsAssistant  =
 --
 -- ObjC selector: @- outputFileType@
 outputFileType :: IsAVOutputSettingsAssistant avOutputSettingsAssistant => avOutputSettingsAssistant -> IO (Id NSString)
-outputFileType avOutputSettingsAssistant  =
-    sendMsg avOutputSettingsAssistant (mkSelector "outputFileType") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputFileType avOutputSettingsAssistant =
+  sendMessage avOutputSettingsAssistant outputFileTypeSelector
 
 -- | sourceAudioFormat
 --
@@ -147,8 +143,8 @@ outputFileType avOutputSettingsAssistant  =
 --
 -- ObjC selector: @- sourceAudioFormat@
 sourceAudioFormat :: IsAVOutputSettingsAssistant avOutputSettingsAssistant => avOutputSettingsAssistant -> IO RawId
-sourceAudioFormat avOutputSettingsAssistant  =
-    fmap (RawId . castPtr) $ sendMsg avOutputSettingsAssistant (mkSelector "sourceAudioFormat") (retPtr retVoid) []
+sourceAudioFormat avOutputSettingsAssistant =
+  sendMessage avOutputSettingsAssistant sourceAudioFormatSelector
 
 -- | sourceAudioFormat
 --
@@ -160,8 +156,8 @@ sourceAudioFormat avOutputSettingsAssistant  =
 --
 -- ObjC selector: @- setSourceAudioFormat:@
 setSourceAudioFormat :: IsAVOutputSettingsAssistant avOutputSettingsAssistant => avOutputSettingsAssistant -> RawId -> IO ()
-setSourceAudioFormat avOutputSettingsAssistant  value =
-    sendMsg avOutputSettingsAssistant (mkSelector "setSourceAudioFormat:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSourceAudioFormat avOutputSettingsAssistant value =
+  sendMessage avOutputSettingsAssistant setSourceAudioFormatSelector value
 
 -- | sourceVideoFormat
 --
@@ -173,8 +169,8 @@ setSourceAudioFormat avOutputSettingsAssistant  value =
 --
 -- ObjC selector: @- sourceVideoFormat@
 sourceVideoFormat :: IsAVOutputSettingsAssistant avOutputSettingsAssistant => avOutputSettingsAssistant -> IO RawId
-sourceVideoFormat avOutputSettingsAssistant  =
-    fmap (RawId . castPtr) $ sendMsg avOutputSettingsAssistant (mkSelector "sourceVideoFormat") (retPtr retVoid) []
+sourceVideoFormat avOutputSettingsAssistant =
+  sendMessage avOutputSettingsAssistant sourceVideoFormatSelector
 
 -- | sourceVideoFormat
 --
@@ -186,54 +182,54 @@ sourceVideoFormat avOutputSettingsAssistant  =
 --
 -- ObjC selector: @- setSourceVideoFormat:@
 setSourceVideoFormat :: IsAVOutputSettingsAssistant avOutputSettingsAssistant => avOutputSettingsAssistant -> RawId -> IO ()
-setSourceVideoFormat avOutputSettingsAssistant  value =
-    sendMsg avOutputSettingsAssistant (mkSelector "setSourceVideoFormat:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSourceVideoFormat avOutputSettingsAssistant value =
+  sendMessage avOutputSettingsAssistant setSourceVideoFormatSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVOutputSettingsAssistant)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVOutputSettingsAssistant)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @availableOutputSettingsPresets@
-availableOutputSettingsPresetsSelector :: Selector
+availableOutputSettingsPresetsSelector :: Selector '[] (Id NSArray)
 availableOutputSettingsPresetsSelector = mkSelector "availableOutputSettingsPresets"
 
 -- | @Selector@ for @outputSettingsAssistantWithPreset:@
-outputSettingsAssistantWithPresetSelector :: Selector
+outputSettingsAssistantWithPresetSelector :: Selector '[Id NSString] (Id AVOutputSettingsAssistant)
 outputSettingsAssistantWithPresetSelector = mkSelector "outputSettingsAssistantWithPreset:"
 
 -- | @Selector@ for @audioSettings@
-audioSettingsSelector :: Selector
+audioSettingsSelector :: Selector '[] (Id NSDictionary)
 audioSettingsSelector = mkSelector "audioSettings"
 
 -- | @Selector@ for @videoSettings@
-videoSettingsSelector :: Selector
+videoSettingsSelector :: Selector '[] (Id NSDictionary)
 videoSettingsSelector = mkSelector "videoSettings"
 
 -- | @Selector@ for @outputFileType@
-outputFileTypeSelector :: Selector
+outputFileTypeSelector :: Selector '[] (Id NSString)
 outputFileTypeSelector = mkSelector "outputFileType"
 
 -- | @Selector@ for @sourceAudioFormat@
-sourceAudioFormatSelector :: Selector
+sourceAudioFormatSelector :: Selector '[] RawId
 sourceAudioFormatSelector = mkSelector "sourceAudioFormat"
 
 -- | @Selector@ for @setSourceAudioFormat:@
-setSourceAudioFormatSelector :: Selector
+setSourceAudioFormatSelector :: Selector '[RawId] ()
 setSourceAudioFormatSelector = mkSelector "setSourceAudioFormat:"
 
 -- | @Selector@ for @sourceVideoFormat@
-sourceVideoFormatSelector :: Selector
+sourceVideoFormatSelector :: Selector '[] RawId
 sourceVideoFormatSelector = mkSelector "sourceVideoFormat"
 
 -- | @Selector@ for @setSourceVideoFormat:@
-setSourceVideoFormatSelector :: Selector
+setSourceVideoFormatSelector :: Selector '[RawId] ()
 setSourceVideoFormatSelector = mkSelector "setSourceVideoFormat:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.AddressBook.ABMultiValue
   , valueForIdentifier
   , labelForIdentifier
   , countSelector
-  , valueAtIndexSelector
-  , labelAtIndexSelector
   , identifierAtIndexSelector
   , indexForIdentifierSelector
+  , labelAtIndexSelector
+  , labelForIdentifierSelector
   , primaryIdentifierSelector
   , propertyTypeSelector
+  , valueAtIndexSelector
   , valueForIdentifierSelector
-  , labelForIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,89 +42,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- count@
 count :: IsABMultiValue abMultiValue => abMultiValue -> IO CULong
-count abMultiValue  =
-    sendMsg abMultiValue (mkSelector "count") retCULong []
+count abMultiValue =
+  sendMessage abMultiValue countSelector
 
 -- | @- valueAtIndex:@
 valueAtIndex :: IsABMultiValue abMultiValue => abMultiValue -> CULong -> IO RawId
-valueAtIndex abMultiValue  index =
-    fmap (RawId . castPtr) $ sendMsg abMultiValue (mkSelector "valueAtIndex:") (retPtr retVoid) [argCULong index]
+valueAtIndex abMultiValue index =
+  sendMessage abMultiValue valueAtIndexSelector index
 
 -- | @- labelAtIndex:@
 labelAtIndex :: IsABMultiValue abMultiValue => abMultiValue -> CULong -> IO (Id NSString)
-labelAtIndex abMultiValue  index =
-    sendMsg abMultiValue (mkSelector "labelAtIndex:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+labelAtIndex abMultiValue index =
+  sendMessage abMultiValue labelAtIndexSelector index
 
 -- | @- identifierAtIndex:@
 identifierAtIndex :: IsABMultiValue abMultiValue => abMultiValue -> CULong -> IO (Id NSString)
-identifierAtIndex abMultiValue  index =
-    sendMsg abMultiValue (mkSelector "identifierAtIndex:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+identifierAtIndex abMultiValue index =
+  sendMessage abMultiValue identifierAtIndexSelector index
 
 -- | @- indexForIdentifier:@
 indexForIdentifier :: (IsABMultiValue abMultiValue, IsNSString identifier) => abMultiValue -> identifier -> IO CULong
-indexForIdentifier abMultiValue  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg abMultiValue (mkSelector "indexForIdentifier:") retCULong [argPtr (castPtr raw_identifier :: Ptr ())]
+indexForIdentifier abMultiValue identifier =
+  sendMessage abMultiValue indexForIdentifierSelector (toNSString identifier)
 
 -- | @- primaryIdentifier@
 primaryIdentifier :: IsABMultiValue abMultiValue => abMultiValue -> IO (Id NSString)
-primaryIdentifier abMultiValue  =
-    sendMsg abMultiValue (mkSelector "primaryIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryIdentifier abMultiValue =
+  sendMessage abMultiValue primaryIdentifierSelector
 
 -- | @- propertyType@
 propertyType :: IsABMultiValue abMultiValue => abMultiValue -> IO CLong
-propertyType abMultiValue  =
-    sendMsg abMultiValue (mkSelector "propertyType") retCLong []
+propertyType abMultiValue =
+  sendMessage abMultiValue propertyTypeSelector
 
 -- | @- valueForIdentifier:@
 valueForIdentifier :: (IsABMultiValue abMultiValue, IsNSString identifier) => abMultiValue -> identifier -> IO RawId
-valueForIdentifier abMultiValue  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      fmap (RawId . castPtr) $ sendMsg abMultiValue (mkSelector "valueForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())]
+valueForIdentifier abMultiValue identifier =
+  sendMessage abMultiValue valueForIdentifierSelector (toNSString identifier)
 
 -- | @- labelForIdentifier:@
 labelForIdentifier :: (IsABMultiValue abMultiValue, IsNSString identifier) => abMultiValue -> identifier -> IO RawId
-labelForIdentifier abMultiValue  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      fmap (RawId . castPtr) $ sendMsg abMultiValue (mkSelector "labelForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())]
+labelForIdentifier abMultiValue identifier =
+  sendMessage abMultiValue labelForIdentifierSelector (toNSString identifier)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @valueAtIndex:@
-valueAtIndexSelector :: Selector
+valueAtIndexSelector :: Selector '[CULong] RawId
 valueAtIndexSelector = mkSelector "valueAtIndex:"
 
 -- | @Selector@ for @labelAtIndex:@
-labelAtIndexSelector :: Selector
+labelAtIndexSelector :: Selector '[CULong] (Id NSString)
 labelAtIndexSelector = mkSelector "labelAtIndex:"
 
 -- | @Selector@ for @identifierAtIndex:@
-identifierAtIndexSelector :: Selector
+identifierAtIndexSelector :: Selector '[CULong] (Id NSString)
 identifierAtIndexSelector = mkSelector "identifierAtIndex:"
 
 -- | @Selector@ for @indexForIdentifier:@
-indexForIdentifierSelector :: Selector
+indexForIdentifierSelector :: Selector '[Id NSString] CULong
 indexForIdentifierSelector = mkSelector "indexForIdentifier:"
 
 -- | @Selector@ for @primaryIdentifier@
-primaryIdentifierSelector :: Selector
+primaryIdentifierSelector :: Selector '[] (Id NSString)
 primaryIdentifierSelector = mkSelector "primaryIdentifier"
 
 -- | @Selector@ for @propertyType@
-propertyTypeSelector :: Selector
+propertyTypeSelector :: Selector '[] CLong
 propertyTypeSelector = mkSelector "propertyType"
 
 -- | @Selector@ for @valueForIdentifier:@
-valueForIdentifierSelector :: Selector
+valueForIdentifierSelector :: Selector '[Id NSString] RawId
 valueForIdentifierSelector = mkSelector "valueForIdentifier:"
 
 -- | @Selector@ for @labelForIdentifier:@
-labelForIdentifierSelector :: Selector
+labelForIdentifierSelector :: Selector '[Id NSString] RawId
 labelForIdentifierSelector = mkSelector "labelForIdentifier:"
 

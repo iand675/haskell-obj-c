@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.SoundAnalysis.SNAudioFileAnalyzer
   , analyze
   , analyzeWithCompletionHandler
   , cancelAnalysis
-  , initWithURL_errorSelector
-  , initSelector
   , addRequest_withObserver_errorSelector
-  , removeRequestSelector
-  , removeAllRequestsSelector
   , analyzeSelector
   , analyzeWithCompletionHandlerSelector
   , cancelAnalysisSelector
+  , initSelector
+  , initWithURL_errorSelector
+  , removeAllRequestsSelector
+  , removeRequestSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:error:@
 initWithURL_error :: (IsSNAudioFileAnalyzer snAudioFileAnalyzer, IsNSURL url, IsNSError error_) => snAudioFileAnalyzer -> url -> error_ -> IO (Id SNAudioFileAnalyzer)
-initWithURL_error snAudioFileAnalyzer  url error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg snAudioFileAnalyzer (mkSelector "initWithURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_error snAudioFileAnalyzer url error_ =
+  sendOwnedMessage snAudioFileAnalyzer initWithURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | @- init@
 init_ :: IsSNAudioFileAnalyzer snAudioFileAnalyzer => snAudioFileAnalyzer -> IO (Id SNAudioFileAnalyzer)
-init_ snAudioFileAnalyzer  =
-    sendMsg snAudioFileAnalyzer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ snAudioFileAnalyzer =
+  sendOwnedMessage snAudioFileAnalyzer initSelector
 
 -- | Adds a new analysis request to the analyzer
 --
@@ -79,9 +74,8 @@ init_ snAudioFileAnalyzer  =
 --
 -- ObjC selector: @- addRequest:withObserver:error:@
 addRequest_withObserver_error :: (IsSNAudioFileAnalyzer snAudioFileAnalyzer, IsNSError error_) => snAudioFileAnalyzer -> RawId -> RawId -> error_ -> IO Bool
-addRequest_withObserver_error snAudioFileAnalyzer  request observer error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg snAudioFileAnalyzer (mkSelector "addRequest:withObserver:error:") retCULong [argPtr (castPtr (unRawId request) :: Ptr ()), argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addRequest_withObserver_error snAudioFileAnalyzer request observer error_ =
+  sendMessage snAudioFileAnalyzer addRequest_withObserver_errorSelector request observer (toNSError error_)
 
 -- | Removes an existing analysis request from the analyzer
 --
@@ -91,15 +85,15 @@ addRequest_withObserver_error snAudioFileAnalyzer  request observer error_ =
 --
 -- ObjC selector: @- removeRequest:@
 removeRequest :: IsSNAudioFileAnalyzer snAudioFileAnalyzer => snAudioFileAnalyzer -> RawId -> IO ()
-removeRequest snAudioFileAnalyzer  request =
-    sendMsg snAudioFileAnalyzer (mkSelector "removeRequest:") retVoid [argPtr (castPtr (unRawId request) :: Ptr ())]
+removeRequest snAudioFileAnalyzer request =
+  sendMessage snAudioFileAnalyzer removeRequestSelector request
 
 -- | Removes all requests from the analyzer
 --
 -- ObjC selector: @- removeAllRequests@
 removeAllRequests :: IsSNAudioFileAnalyzer snAudioFileAnalyzer => snAudioFileAnalyzer -> IO ()
-removeAllRequests snAudioFileAnalyzer  =
-    sendMsg snAudioFileAnalyzer (mkSelector "removeAllRequests") retVoid []
+removeAllRequests snAudioFileAnalyzer =
+  sendMessage snAudioFileAnalyzer removeAllRequestsSelector
 
 -- | Analyzes the audio file synchronously
 --
@@ -107,8 +101,8 @@ removeAllRequests snAudioFileAnalyzer  =
 --
 -- ObjC selector: @- analyze@
 analyze :: IsSNAudioFileAnalyzer snAudioFileAnalyzer => snAudioFileAnalyzer -> IO ()
-analyze snAudioFileAnalyzer  =
-    sendMsg snAudioFileAnalyzer (mkSelector "analyze") retVoid []
+analyze snAudioFileAnalyzer =
+  sendMessage snAudioFileAnalyzer analyzeSelector
 
 -- | Analyzes the audio file asynchronously
 --
@@ -116,8 +110,8 @@ analyze snAudioFileAnalyzer  =
 --
 -- ObjC selector: @- analyzeWithCompletionHandler:@
 analyzeWithCompletionHandler :: IsSNAudioFileAnalyzer snAudioFileAnalyzer => snAudioFileAnalyzer -> Ptr () -> IO ()
-analyzeWithCompletionHandler snAudioFileAnalyzer  completionHandler =
-    sendMsg snAudioFileAnalyzer (mkSelector "analyzeWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+analyzeWithCompletionHandler snAudioFileAnalyzer completionHandler =
+  sendMessage snAudioFileAnalyzer analyzeWithCompletionHandlerSelector completionHandler
 
 -- | Cancels any in-progress analysis of the audio file
 --
@@ -125,42 +119,42 @@ analyzeWithCompletionHandler snAudioFileAnalyzer  completionHandler =
 --
 -- ObjC selector: @- cancelAnalysis@
 cancelAnalysis :: IsSNAudioFileAnalyzer snAudioFileAnalyzer => snAudioFileAnalyzer -> IO ()
-cancelAnalysis snAudioFileAnalyzer  =
-    sendMsg snAudioFileAnalyzer (mkSelector "cancelAnalysis") retVoid []
+cancelAnalysis snAudioFileAnalyzer =
+  sendMessage snAudioFileAnalyzer cancelAnalysisSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:error:@
-initWithURL_errorSelector :: Selector
+initWithURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id SNAudioFileAnalyzer)
 initWithURL_errorSelector = mkSelector "initWithURL:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SNAudioFileAnalyzer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @addRequest:withObserver:error:@
-addRequest_withObserver_errorSelector :: Selector
+addRequest_withObserver_errorSelector :: Selector '[RawId, RawId, Id NSError] Bool
 addRequest_withObserver_errorSelector = mkSelector "addRequest:withObserver:error:"
 
 -- | @Selector@ for @removeRequest:@
-removeRequestSelector :: Selector
+removeRequestSelector :: Selector '[RawId] ()
 removeRequestSelector = mkSelector "removeRequest:"
 
 -- | @Selector@ for @removeAllRequests@
-removeAllRequestsSelector :: Selector
+removeAllRequestsSelector :: Selector '[] ()
 removeAllRequestsSelector = mkSelector "removeAllRequests"
 
 -- | @Selector@ for @analyze@
-analyzeSelector :: Selector
+analyzeSelector :: Selector '[] ()
 analyzeSelector = mkSelector "analyze"
 
 -- | @Selector@ for @analyzeWithCompletionHandler:@
-analyzeWithCompletionHandlerSelector :: Selector
+analyzeWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 analyzeWithCompletionHandlerSelector = mkSelector "analyzeWithCompletionHandler:"
 
 -- | @Selector@ for @cancelAnalysis@
-cancelAnalysisSelector :: Selector
+cancelAnalysisSelector :: Selector '[] ()
 cancelAnalysisSelector = mkSelector "cancelAnalysis"
 

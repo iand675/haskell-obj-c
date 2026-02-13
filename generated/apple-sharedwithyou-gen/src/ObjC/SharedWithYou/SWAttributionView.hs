@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,23 +25,23 @@ module ObjC.SharedWithYou.SWAttributionView
   , setSupplementalMenu
   , enablesMarquee
   , setEnablesMarquee
-  , highlightSelector
-  , setHighlightSelector
-  , displayContextSelector
-  , setDisplayContextSelector
-  , horizontalAlignmentSelector
-  , setHorizontalAlignmentSelector
   , backgroundStyleSelector
-  , setBackgroundStyleSelector
-  , preferredMaxLayoutWidthSelector
-  , setPreferredMaxLayoutWidthSelector
-  , highlightMenuSelector
-  , menuTitleForHideActionSelector
-  , setMenuTitleForHideActionSelector
-  , supplementalMenuSelector
-  , setSupplementalMenuSelector
+  , displayContextSelector
   , enablesMarqueeSelector
+  , highlightMenuSelector
+  , highlightSelector
+  , horizontalAlignmentSelector
+  , menuTitleForHideActionSelector
+  , preferredMaxLayoutWidthSelector
+  , setBackgroundStyleSelector
+  , setDisplayContextSelector
   , setEnablesMarqueeSelector
+  , setHighlightSelector
+  , setHorizontalAlignmentSelector
+  , setMenuTitleForHideActionSelector
+  , setPreferredMaxLayoutWidthSelector
+  , setSupplementalMenuSelector
+  , supplementalMenuSelector
 
   -- * Enum types
   , SWAttributionViewBackgroundStyle(SWAttributionViewBackgroundStyle)
@@ -58,15 +59,11 @@ module ObjC.SharedWithYou.SWAttributionView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,30 +76,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- highlight@
 highlight :: IsSWAttributionView swAttributionView => swAttributionView -> IO (Id SWHighlight)
-highlight swAttributionView  =
-    sendMsg swAttributionView (mkSelector "highlight") (retPtr retVoid) [] >>= retainedObject . castPtr
+highlight swAttributionView =
+  sendMessage swAttributionView highlightSelector
 
 -- | The SWHighlight to use for displaying this attribution. When this property is set to a new highlight, the contents of the view will be reloaded.
 --
 -- ObjC selector: @- setHighlight:@
 setHighlight :: (IsSWAttributionView swAttributionView, IsSWHighlight value) => swAttributionView -> value -> IO ()
-setHighlight swAttributionView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swAttributionView (mkSelector "setHighlight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHighlight swAttributionView value =
+  sendMessage swAttributionView setHighlightSelector (toSWHighlight value)
 
 -- | The context for the content being displayed with this view. Set this prior to adding this view to your view hierarchy.
 --
 -- ObjC selector: @- displayContext@
 displayContext :: IsSWAttributionView swAttributionView => swAttributionView -> IO SWAttributionViewDisplayContext
-displayContext swAttributionView  =
-    fmap (coerce :: CLong -> SWAttributionViewDisplayContext) $ sendMsg swAttributionView (mkSelector "displayContext") retCLong []
+displayContext swAttributionView =
+  sendMessage swAttributionView displayContextSelector
 
 -- | The context for the content being displayed with this view. Set this prior to adding this view to your view hierarchy.
 --
 -- ObjC selector: @- setDisplayContext:@
 setDisplayContext :: IsSWAttributionView swAttributionView => swAttributionView -> SWAttributionViewDisplayContext -> IO ()
-setDisplayContext swAttributionView  value =
-    sendMsg swAttributionView (mkSelector "setDisplayContext:") retVoid [argCLong (coerce value)]
+setDisplayContext swAttributionView value =
+  sendMessage swAttributionView setDisplayContextSelector value
 
 -- | The horizontal alignment of the view. You should specify a value, in case the internal default ever changes.
 --
@@ -110,8 +106,8 @@ setDisplayContext swAttributionView  value =
 --
 -- ObjC selector: @- horizontalAlignment@
 horizontalAlignment :: IsSWAttributionView swAttributionView => swAttributionView -> IO SWAttributionViewHorizontalAlignment
-horizontalAlignment swAttributionView  =
-    fmap (coerce :: CLong -> SWAttributionViewHorizontalAlignment) $ sendMsg swAttributionView (mkSelector "horizontalAlignment") retCLong []
+horizontalAlignment swAttributionView =
+  sendMessage swAttributionView horizontalAlignmentSelector
 
 -- | The horizontal alignment of the view. You should specify a value, in case the internal default ever changes.
 --
@@ -119,8 +115,8 @@ horizontalAlignment swAttributionView  =
 --
 -- ObjC selector: @- setHorizontalAlignment:@
 setHorizontalAlignment :: IsSWAttributionView swAttributionView => swAttributionView -> SWAttributionViewHorizontalAlignment -> IO ()
-setHorizontalAlignment swAttributionView  value =
-    sendMsg swAttributionView (mkSelector "setHorizontalAlignment:") retVoid [argCLong (coerce value)]
+setHorizontalAlignment swAttributionView value =
+  sendMessage swAttributionView setHorizontalAlignmentSelector value
 
 -- | The background style of the inner view containing names and avatars.
 --
@@ -128,8 +124,8 @@ setHorizontalAlignment swAttributionView  value =
 --
 -- ObjC selector: @- backgroundStyle@
 backgroundStyle :: IsSWAttributionView swAttributionView => swAttributionView -> IO SWAttributionViewBackgroundStyle
-backgroundStyle swAttributionView  =
-    fmap (coerce :: CLong -> SWAttributionViewBackgroundStyle) $ sendMsg swAttributionView (mkSelector "backgroundStyle") retCLong []
+backgroundStyle swAttributionView =
+  sendMessage swAttributionView backgroundStyleSelector
 
 -- | The background style of the inner view containing names and avatars.
 --
@@ -137,8 +133,8 @@ backgroundStyle swAttributionView  =
 --
 -- ObjC selector: @- setBackgroundStyle:@
 setBackgroundStyle :: IsSWAttributionView swAttributionView => swAttributionView -> SWAttributionViewBackgroundStyle -> IO ()
-setBackgroundStyle swAttributionView  value =
-    sendMsg swAttributionView (mkSelector "setBackgroundStyle:") retVoid [argCLong (coerce value)]
+setBackgroundStyle swAttributionView value =
+  sendMessage swAttributionView setBackgroundStyleSelector value
 
 -- | For use when embedding this view in a SwiftUI view representable.
 --
@@ -146,8 +142,8 @@ setBackgroundStyle swAttributionView  value =
 --
 -- ObjC selector: @- preferredMaxLayoutWidth@
 preferredMaxLayoutWidth :: IsSWAttributionView swAttributionView => swAttributionView -> IO CDouble
-preferredMaxLayoutWidth swAttributionView  =
-    sendMsg swAttributionView (mkSelector "preferredMaxLayoutWidth") retCDouble []
+preferredMaxLayoutWidth swAttributionView =
+  sendMessage swAttributionView preferredMaxLayoutWidthSelector
 
 -- | For use when embedding this view in a SwiftUI view representable.
 --
@@ -155,13 +151,13 @@ preferredMaxLayoutWidth swAttributionView  =
 --
 -- ObjC selector: @- setPreferredMaxLayoutWidth:@
 setPreferredMaxLayoutWidth :: IsSWAttributionView swAttributionView => swAttributionView -> CDouble -> IO ()
-setPreferredMaxLayoutWidth swAttributionView  value =
-    sendMsg swAttributionView (mkSelector "setPreferredMaxLayoutWidth:") retVoid [argCDouble value]
+setPreferredMaxLayoutWidth swAttributionView value =
+  sendMessage swAttributionView setPreferredMaxLayoutWidthSelector value
 
 -- | @- highlightMenu@
 highlightMenu :: IsSWAttributionView swAttributionView => swAttributionView -> IO (Id NSMenu)
-highlightMenu swAttributionView  =
-    sendMsg swAttributionView (mkSelector "highlightMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+highlightMenu swAttributionView =
+  sendMessage swAttributionView highlightMenuSelector
 
 -- | A custom localized string to be used as the title for the "Hide" menu item title. A nil value will result in the default title.
 --
@@ -169,8 +165,8 @@ highlightMenu swAttributionView  =
 --
 -- ObjC selector: @- menuTitleForHideAction@
 menuTitleForHideAction :: IsSWAttributionView swAttributionView => swAttributionView -> IO (Id NSString)
-menuTitleForHideAction swAttributionView  =
-    sendMsg swAttributionView (mkSelector "menuTitleForHideAction") (retPtr retVoid) [] >>= retainedObject . castPtr
+menuTitleForHideAction swAttributionView =
+  sendMessage swAttributionView menuTitleForHideActionSelector
 
 -- | A custom localized string to be used as the title for the "Hide" menu item title. A nil value will result in the default title.
 --
@@ -178,104 +174,102 @@ menuTitleForHideAction swAttributionView  =
 --
 -- ObjC selector: @- setMenuTitleForHideAction:@
 setMenuTitleForHideAction :: (IsSWAttributionView swAttributionView, IsNSString value) => swAttributionView -> value -> IO ()
-setMenuTitleForHideAction swAttributionView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swAttributionView (mkSelector "setMenuTitleForHideAction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMenuTitleForHideAction swAttributionView value =
+  sendMessage swAttributionView setMenuTitleForHideActionSelector (toNSString value)
 
 -- | @- supplementalMenu@
 supplementalMenu :: IsSWAttributionView swAttributionView => swAttributionView -> IO (Id NSMenuItem)
-supplementalMenu swAttributionView  =
-    sendMsg swAttributionView (mkSelector "supplementalMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+supplementalMenu swAttributionView =
+  sendMessage swAttributionView supplementalMenuSelector
 
 -- | @- setSupplementalMenu:@
 setSupplementalMenu :: (IsSWAttributionView swAttributionView, IsNSMenuItem value) => swAttributionView -> value -> IO ()
-setSupplementalMenu swAttributionView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg swAttributionView (mkSelector "setSupplementalMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupplementalMenu swAttributionView value =
+  sendMessage swAttributionView setSupplementalMenuSelector (toNSMenuItem value)
 
 -- | Automatically enables a marquee effect if the text contents extend past the bounds of the view (tvOS only)
 --
 -- ObjC selector: @- enablesMarquee@
 enablesMarquee :: IsSWAttributionView swAttributionView => swAttributionView -> IO Bool
-enablesMarquee swAttributionView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg swAttributionView (mkSelector "enablesMarquee") retCULong []
+enablesMarquee swAttributionView =
+  sendMessage swAttributionView enablesMarqueeSelector
 
 -- | Automatically enables a marquee effect if the text contents extend past the bounds of the view (tvOS only)
 --
 -- ObjC selector: @- setEnablesMarquee:@
 setEnablesMarquee :: IsSWAttributionView swAttributionView => swAttributionView -> Bool -> IO ()
-setEnablesMarquee swAttributionView  value =
-    sendMsg swAttributionView (mkSelector "setEnablesMarquee:") retVoid [argCULong (if value then 1 else 0)]
+setEnablesMarquee swAttributionView value =
+  sendMessage swAttributionView setEnablesMarqueeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @highlight@
-highlightSelector :: Selector
+highlightSelector :: Selector '[] (Id SWHighlight)
 highlightSelector = mkSelector "highlight"
 
 -- | @Selector@ for @setHighlight:@
-setHighlightSelector :: Selector
+setHighlightSelector :: Selector '[Id SWHighlight] ()
 setHighlightSelector = mkSelector "setHighlight:"
 
 -- | @Selector@ for @displayContext@
-displayContextSelector :: Selector
+displayContextSelector :: Selector '[] SWAttributionViewDisplayContext
 displayContextSelector = mkSelector "displayContext"
 
 -- | @Selector@ for @setDisplayContext:@
-setDisplayContextSelector :: Selector
+setDisplayContextSelector :: Selector '[SWAttributionViewDisplayContext] ()
 setDisplayContextSelector = mkSelector "setDisplayContext:"
 
 -- | @Selector@ for @horizontalAlignment@
-horizontalAlignmentSelector :: Selector
+horizontalAlignmentSelector :: Selector '[] SWAttributionViewHorizontalAlignment
 horizontalAlignmentSelector = mkSelector "horizontalAlignment"
 
 -- | @Selector@ for @setHorizontalAlignment:@
-setHorizontalAlignmentSelector :: Selector
+setHorizontalAlignmentSelector :: Selector '[SWAttributionViewHorizontalAlignment] ()
 setHorizontalAlignmentSelector = mkSelector "setHorizontalAlignment:"
 
 -- | @Selector@ for @backgroundStyle@
-backgroundStyleSelector :: Selector
+backgroundStyleSelector :: Selector '[] SWAttributionViewBackgroundStyle
 backgroundStyleSelector = mkSelector "backgroundStyle"
 
 -- | @Selector@ for @setBackgroundStyle:@
-setBackgroundStyleSelector :: Selector
+setBackgroundStyleSelector :: Selector '[SWAttributionViewBackgroundStyle] ()
 setBackgroundStyleSelector = mkSelector "setBackgroundStyle:"
 
 -- | @Selector@ for @preferredMaxLayoutWidth@
-preferredMaxLayoutWidthSelector :: Selector
+preferredMaxLayoutWidthSelector :: Selector '[] CDouble
 preferredMaxLayoutWidthSelector = mkSelector "preferredMaxLayoutWidth"
 
 -- | @Selector@ for @setPreferredMaxLayoutWidth:@
-setPreferredMaxLayoutWidthSelector :: Selector
+setPreferredMaxLayoutWidthSelector :: Selector '[CDouble] ()
 setPreferredMaxLayoutWidthSelector = mkSelector "setPreferredMaxLayoutWidth:"
 
 -- | @Selector@ for @highlightMenu@
-highlightMenuSelector :: Selector
+highlightMenuSelector :: Selector '[] (Id NSMenu)
 highlightMenuSelector = mkSelector "highlightMenu"
 
 -- | @Selector@ for @menuTitleForHideAction@
-menuTitleForHideActionSelector :: Selector
+menuTitleForHideActionSelector :: Selector '[] (Id NSString)
 menuTitleForHideActionSelector = mkSelector "menuTitleForHideAction"
 
 -- | @Selector@ for @setMenuTitleForHideAction:@
-setMenuTitleForHideActionSelector :: Selector
+setMenuTitleForHideActionSelector :: Selector '[Id NSString] ()
 setMenuTitleForHideActionSelector = mkSelector "setMenuTitleForHideAction:"
 
 -- | @Selector@ for @supplementalMenu@
-supplementalMenuSelector :: Selector
+supplementalMenuSelector :: Selector '[] (Id NSMenuItem)
 supplementalMenuSelector = mkSelector "supplementalMenu"
 
 -- | @Selector@ for @setSupplementalMenu:@
-setSupplementalMenuSelector :: Selector
+setSupplementalMenuSelector :: Selector '[Id NSMenuItem] ()
 setSupplementalMenuSelector = mkSelector "setSupplementalMenu:"
 
 -- | @Selector@ for @enablesMarquee@
-enablesMarqueeSelector :: Selector
+enablesMarqueeSelector :: Selector '[] Bool
 enablesMarqueeSelector = mkSelector "enablesMarquee"
 
 -- | @Selector@ for @setEnablesMarquee:@
-setEnablesMarqueeSelector :: Selector
+setEnablesMarqueeSelector :: Selector '[Bool] ()
 setEnablesMarqueeSelector = mkSelector "setEnablesMarquee:"
 

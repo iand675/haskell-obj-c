@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,20 +26,20 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphTensorData
   , shape
   , dataType
   , device
+  , dataTypeSelector
+  , deviceSelector
   , initWithDevice_data_shape_dataTypeSelector
-  , initWithMTLBuffer_shape_dataTypeSelector
-  , initWithMTLBuffer_shape_dataType_rowBytesSelector
+  , initWithMPSImageBatchSelector
   , initWithMPSMatrixSelector
   , initWithMPSMatrix_rankSelector
+  , initWithMPSNDArraySelector
   , initWithMPSVectorSelector
   , initWithMPSVector_rankSelector
-  , initWithMPSNDArraySelector
-  , initWithMPSImageBatchSelector
+  , initWithMTLBuffer_shape_dataTypeSelector
+  , initWithMTLBuffer_shape_dataType_rowBytesSelector
   , initWithMTLTensorSelector
   , mpsndarraySelector
   , shapeSelector
-  , dataTypeSelector
-  , deviceSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -72,15 +73,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphTensorData
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -95,10 +92,8 @@ import ObjC.MetalPerformanceShaders.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:data:shape:dataType:@
 initWithDevice_data_shape_dataType :: (IsMPSGraphTensorData mpsGraphTensorData, IsMPSGraphDevice device, IsNSData data_) => mpsGraphTensorData -> device -> data_ -> RawId -> MPSDataType -> IO (Id MPSGraphTensorData)
-initWithDevice_data_shape_dataType mpsGraphTensorData  device data_ shape dataType =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr data_ $ \raw_data_ ->
-        sendMsg mpsGraphTensorData (mkSelector "initWithDevice:data:shape:dataType:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType)] >>= ownedObject . castPtr
+initWithDevice_data_shape_dataType mpsGraphTensorData device data_ shape dataType =
+  sendOwnedMessage mpsGraphTensorData initWithDevice_data_shape_dataTypeSelector (toMPSGraphDevice device) (toNSData data_) shape dataType
 
 -- | Initializes an tensor data with a metal buffer.
 --
@@ -108,8 +103,8 @@ initWithDevice_data_shape_dataType mpsGraphTensorData  device data_ shape dataTy
 --
 -- ObjC selector: @- initWithMTLBuffer:shape:dataType:@
 initWithMTLBuffer_shape_dataType :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> RawId -> RawId -> MPSDataType -> IO (Id MPSGraphTensorData)
-initWithMTLBuffer_shape_dataType mpsGraphTensorData  buffer shape dataType =
-    sendMsg mpsGraphTensorData (mkSelector "initWithMTLBuffer:shape:dataType:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType)] >>= ownedObject . castPtr
+initWithMTLBuffer_shape_dataType mpsGraphTensorData buffer shape dataType =
+  sendOwnedMessage mpsGraphTensorData initWithMTLBuffer_shape_dataTypeSelector buffer shape dataType
 
 -- | Initializes an tensor data with a metal buffer.
 --
@@ -119,8 +114,8 @@ initWithMTLBuffer_shape_dataType mpsGraphTensorData  buffer shape dataType =
 --
 -- ObjC selector: @- initWithMTLBuffer:shape:dataType:rowBytes:@
 initWithMTLBuffer_shape_dataType_rowBytes :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> RawId -> RawId -> MPSDataType -> CULong -> IO (Id MPSGraphTensorData)
-initWithMTLBuffer_shape_dataType_rowBytes mpsGraphTensorData  buffer shape dataType rowBytes =
-    sendMsg mpsGraphTensorData (mkSelector "initWithMTLBuffer:shape:dataType:rowBytes:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argPtr (castPtr (unRawId shape) :: Ptr ()), argCUInt (coerce dataType), argCULong rowBytes] >>= ownedObject . castPtr
+initWithMTLBuffer_shape_dataType_rowBytes mpsGraphTensorData buffer shape dataType rowBytes =
+  sendOwnedMessage mpsGraphTensorData initWithMTLBuffer_shape_dataType_rowBytesSelector buffer shape dataType rowBytes
 
 -- | Initializes a tensor data with an MPS matrix.
 --
@@ -130,9 +125,8 @@ initWithMTLBuffer_shape_dataType_rowBytes mpsGraphTensorData  buffer shape dataT
 --
 -- ObjC selector: @- initWithMPSMatrix:@
 initWithMPSMatrix :: (IsMPSGraphTensorData mpsGraphTensorData, IsMPSMatrix matrix) => mpsGraphTensorData -> matrix -> IO (Id MPSGraphTensorData)
-initWithMPSMatrix mpsGraphTensorData  matrix =
-  withObjCPtr matrix $ \raw_matrix ->
-      sendMsg mpsGraphTensorData (mkSelector "initWithMPSMatrix:") (retPtr retVoid) [argPtr (castPtr raw_matrix :: Ptr ())] >>= ownedObject . castPtr
+initWithMPSMatrix mpsGraphTensorData matrix =
+  sendOwnedMessage mpsGraphTensorData initWithMPSMatrixSelector (toMPSMatrix matrix)
 
 -- | Initializes a tensor data with an MPS matrix enforcing rank of the result.
 --
@@ -142,9 +136,8 @@ initWithMPSMatrix mpsGraphTensorData  matrix =
 --
 -- ObjC selector: @- initWithMPSMatrix:rank:@
 initWithMPSMatrix_rank :: (IsMPSGraphTensorData mpsGraphTensorData, IsMPSMatrix matrix) => mpsGraphTensorData -> matrix -> CULong -> IO (Id MPSGraphTensorData)
-initWithMPSMatrix_rank mpsGraphTensorData  matrix rank =
-  withObjCPtr matrix $ \raw_matrix ->
-      sendMsg mpsGraphTensorData (mkSelector "initWithMPSMatrix:rank:") (retPtr retVoid) [argPtr (castPtr raw_matrix :: Ptr ()), argCULong rank] >>= ownedObject . castPtr
+initWithMPSMatrix_rank mpsGraphTensorData matrix rank =
+  sendOwnedMessage mpsGraphTensorData initWithMPSMatrix_rankSelector (toMPSMatrix matrix) rank
 
 -- | Initializes a tensor data with an MPS vector.
 --
@@ -154,9 +147,8 @@ initWithMPSMatrix_rank mpsGraphTensorData  matrix rank =
 --
 -- ObjC selector: @- initWithMPSVector:@
 initWithMPSVector :: (IsMPSGraphTensorData mpsGraphTensorData, IsMPSVector vector) => mpsGraphTensorData -> vector -> IO (Id MPSGraphTensorData)
-initWithMPSVector mpsGraphTensorData  vector =
-  withObjCPtr vector $ \raw_vector ->
-      sendMsg mpsGraphTensorData (mkSelector "initWithMPSVector:") (retPtr retVoid) [argPtr (castPtr raw_vector :: Ptr ())] >>= ownedObject . castPtr
+initWithMPSVector mpsGraphTensorData vector =
+  sendOwnedMessage mpsGraphTensorData initWithMPSVectorSelector (toMPSVector vector)
 
 -- | Initializes a tensor data with an MPS vector enforcing rank of the result.
 --
@@ -166,9 +158,8 @@ initWithMPSVector mpsGraphTensorData  vector =
 --
 -- ObjC selector: @- initWithMPSVector:rank:@
 initWithMPSVector_rank :: (IsMPSGraphTensorData mpsGraphTensorData, IsMPSVector vector) => mpsGraphTensorData -> vector -> CULong -> IO (Id MPSGraphTensorData)
-initWithMPSVector_rank mpsGraphTensorData  vector rank =
-  withObjCPtr vector $ \raw_vector ->
-      sendMsg mpsGraphTensorData (mkSelector "initWithMPSVector:rank:") (retPtr retVoid) [argPtr (castPtr raw_vector :: Ptr ()), argCULong rank] >>= ownedObject . castPtr
+initWithMPSVector_rank mpsGraphTensorData vector rank =
+  sendOwnedMessage mpsGraphTensorData initWithMPSVector_rankSelector (toMPSVector vector) rank
 
 -- | Initializes an MPSGraphTensorData with an MPS ndarray.
 --
@@ -178,9 +169,8 @@ initWithMPSVector_rank mpsGraphTensorData  vector rank =
 --
 -- ObjC selector: @- initWithMPSNDArray:@
 initWithMPSNDArray :: (IsMPSGraphTensorData mpsGraphTensorData, IsMPSNDArray ndarray) => mpsGraphTensorData -> ndarray -> IO (Id MPSGraphTensorData)
-initWithMPSNDArray mpsGraphTensorData  ndarray =
-  withObjCPtr ndarray $ \raw_ndarray ->
-      sendMsg mpsGraphTensorData (mkSelector "initWithMPSNDArray:") (retPtr retVoid) [argPtr (castPtr raw_ndarray :: Ptr ())] >>= ownedObject . castPtr
+initWithMPSNDArray mpsGraphTensorData ndarray =
+  sendOwnedMessage mpsGraphTensorData initWithMPSNDArraySelector (toMPSNDArray ndarray)
 
 -- | Initializes a tensor data with an MPS image batch.
 --
@@ -190,8 +180,8 @@ initWithMPSNDArray mpsGraphTensorData  ndarray =
 --
 -- ObjC selector: @- initWithMPSImageBatch:@
 initWithMPSImageBatch :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> RawId -> IO (Id MPSGraphTensorData)
-initWithMPSImageBatch mpsGraphTensorData  imageBatch =
-    sendMsg mpsGraphTensorData (mkSelector "initWithMPSImageBatch:") (retPtr retVoid) [argPtr (castPtr (unRawId imageBatch) :: Ptr ())] >>= ownedObject . castPtr
+initWithMPSImageBatch mpsGraphTensorData imageBatch =
+  sendOwnedMessage mpsGraphTensorData initWithMPSImageBatchSelector imageBatch
 
 -- | Initializes an MPSGraphTensorData with an MTLTensor.
 --
@@ -201,8 +191,8 @@ initWithMPSImageBatch mpsGraphTensorData  imageBatch =
 --
 -- ObjC selector: @- initWithMTLTensor:@
 initWithMTLTensor :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> RawId -> IO (Id MPSGraphTensorData)
-initWithMTLTensor mpsGraphTensorData  tensor =
-    sendMsg mpsGraphTensorData (mkSelector "initWithMTLTensor:") (retPtr retVoid) [argPtr (castPtr (unRawId tensor) :: Ptr ())] >>= ownedObject . castPtr
+initWithMTLTensor mpsGraphTensorData tensor =
+  sendOwnedMessage mpsGraphTensorData initWithMTLTensorSelector tensor
 
 -- | Return an mpsndarray object will copy contents if the contents are not stored in an MPS ndarray.
 --
@@ -210,87 +200,87 @@ initWithMTLTensor mpsGraphTensorData  tensor =
 --
 -- ObjC selector: @- mpsndarray@
 mpsndarray :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> IO (Id MPSNDArray)
-mpsndarray mpsGraphTensorData  =
-    sendMsg mpsGraphTensorData (mkSelector "mpsndarray") (retPtr retVoid) [] >>= retainedObject . castPtr
+mpsndarray mpsGraphTensorData =
+  sendMessage mpsGraphTensorData mpsndarraySelector
 
 -- | The shape of the tensor data.
 --
 -- ObjC selector: @- shape@
 shape :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> IO RawId
-shape mpsGraphTensorData  =
-    fmap (RawId . castPtr) $ sendMsg mpsGraphTensorData (mkSelector "shape") (retPtr retVoid) []
+shape mpsGraphTensorData =
+  sendMessage mpsGraphTensorData shapeSelector
 
 -- | The data type of the tensor data.
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> IO MPSDataType
-dataType mpsGraphTensorData  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsGraphTensorData (mkSelector "dataType") retCUInt []
+dataType mpsGraphTensorData =
+  sendMessage mpsGraphTensorData dataTypeSelector
 
 -- | The device of the tensor data.
 --
 -- ObjC selector: @- device@
 device :: IsMPSGraphTensorData mpsGraphTensorData => mpsGraphTensorData -> IO (Id MPSGraphDevice)
-device mpsGraphTensorData  =
-    sendMsg mpsGraphTensorData (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device mpsGraphTensorData =
+  sendMessage mpsGraphTensorData deviceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:data:shape:dataType:@
-initWithDevice_data_shape_dataTypeSelector :: Selector
+initWithDevice_data_shape_dataTypeSelector :: Selector '[Id MPSGraphDevice, Id NSData, RawId, MPSDataType] (Id MPSGraphTensorData)
 initWithDevice_data_shape_dataTypeSelector = mkSelector "initWithDevice:data:shape:dataType:"
 
 -- | @Selector@ for @initWithMTLBuffer:shape:dataType:@
-initWithMTLBuffer_shape_dataTypeSelector :: Selector
+initWithMTLBuffer_shape_dataTypeSelector :: Selector '[RawId, RawId, MPSDataType] (Id MPSGraphTensorData)
 initWithMTLBuffer_shape_dataTypeSelector = mkSelector "initWithMTLBuffer:shape:dataType:"
 
 -- | @Selector@ for @initWithMTLBuffer:shape:dataType:rowBytes:@
-initWithMTLBuffer_shape_dataType_rowBytesSelector :: Selector
+initWithMTLBuffer_shape_dataType_rowBytesSelector :: Selector '[RawId, RawId, MPSDataType, CULong] (Id MPSGraphTensorData)
 initWithMTLBuffer_shape_dataType_rowBytesSelector = mkSelector "initWithMTLBuffer:shape:dataType:rowBytes:"
 
 -- | @Selector@ for @initWithMPSMatrix:@
-initWithMPSMatrixSelector :: Selector
+initWithMPSMatrixSelector :: Selector '[Id MPSMatrix] (Id MPSGraphTensorData)
 initWithMPSMatrixSelector = mkSelector "initWithMPSMatrix:"
 
 -- | @Selector@ for @initWithMPSMatrix:rank:@
-initWithMPSMatrix_rankSelector :: Selector
+initWithMPSMatrix_rankSelector :: Selector '[Id MPSMatrix, CULong] (Id MPSGraphTensorData)
 initWithMPSMatrix_rankSelector = mkSelector "initWithMPSMatrix:rank:"
 
 -- | @Selector@ for @initWithMPSVector:@
-initWithMPSVectorSelector :: Selector
+initWithMPSVectorSelector :: Selector '[Id MPSVector] (Id MPSGraphTensorData)
 initWithMPSVectorSelector = mkSelector "initWithMPSVector:"
 
 -- | @Selector@ for @initWithMPSVector:rank:@
-initWithMPSVector_rankSelector :: Selector
+initWithMPSVector_rankSelector :: Selector '[Id MPSVector, CULong] (Id MPSGraphTensorData)
 initWithMPSVector_rankSelector = mkSelector "initWithMPSVector:rank:"
 
 -- | @Selector@ for @initWithMPSNDArray:@
-initWithMPSNDArraySelector :: Selector
+initWithMPSNDArraySelector :: Selector '[Id MPSNDArray] (Id MPSGraphTensorData)
 initWithMPSNDArraySelector = mkSelector "initWithMPSNDArray:"
 
 -- | @Selector@ for @initWithMPSImageBatch:@
-initWithMPSImageBatchSelector :: Selector
+initWithMPSImageBatchSelector :: Selector '[RawId] (Id MPSGraphTensorData)
 initWithMPSImageBatchSelector = mkSelector "initWithMPSImageBatch:"
 
 -- | @Selector@ for @initWithMTLTensor:@
-initWithMTLTensorSelector :: Selector
+initWithMTLTensorSelector :: Selector '[RawId] (Id MPSGraphTensorData)
 initWithMTLTensorSelector = mkSelector "initWithMTLTensor:"
 
 -- | @Selector@ for @mpsndarray@
-mpsndarraySelector :: Selector
+mpsndarraySelector :: Selector '[] (Id MPSNDArray)
 mpsndarraySelector = mkSelector "mpsndarray"
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] RawId
 shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id MPSGraphDevice)
 deviceSelector = mkSelector "device"
 

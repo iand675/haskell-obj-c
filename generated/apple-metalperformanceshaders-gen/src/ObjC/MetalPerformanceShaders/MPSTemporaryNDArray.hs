@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.MetalPerformanceShaders.MPSTemporaryNDArray
   , readCount
   , setReadCount
   , defaultAllocatorSelector
-  , temporaryNDArrayWithCommandBuffer_descriptorSelector
   , initWithDevice_descriptorSelector
   , readCountSelector
   , setReadCountSelector
+  , temporaryNDArrayWithCommandBuffer_descriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,7 +45,7 @@ defaultAllocator :: IO RawId
 defaultAllocator  =
   do
     cls' <- getRequiredClass "MPSTemporaryNDArray"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultAllocator") (retPtr retVoid) []
+    sendClassMessage cls' defaultAllocatorSelector
 
 -- | Initialize a MPSTemporaryNDArray for use on a MTLCommandBuffer
 --
@@ -63,16 +60,14 @@ temporaryNDArrayWithCommandBuffer_descriptor :: IsMPSNDArrayDescriptor descripto
 temporaryNDArrayWithCommandBuffer_descriptor commandBuffer descriptor =
   do
     cls' <- getRequiredClass "MPSTemporaryNDArray"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      sendClassMsg cls' (mkSelector "temporaryNDArrayWithCommandBuffer:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryNDArrayWithCommandBuffer_descriptorSelector commandBuffer (toMPSNDArrayDescriptor descriptor)
 
 -- | Please use temporaryNDArrayWithCommandBuffer:descriptor: instead
 --
 -- ObjC selector: @- initWithDevice:descriptor:@
 initWithDevice_descriptor :: (IsMPSTemporaryNDArray mpsTemporaryNDArray, IsMPSNDArrayDescriptor descriptor) => mpsTemporaryNDArray -> RawId -> descriptor -> IO (Id MPSTemporaryNDArray)
-initWithDevice_descriptor mpsTemporaryNDArray  device descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsTemporaryNDArray (mkSelector "initWithDevice:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_descriptor mpsTemporaryNDArray device descriptor =
+  sendOwnedMessage mpsTemporaryNDArray initWithDevice_descriptorSelector device (toMPSNDArrayDescriptor descriptor)
 
 -- | The number of times a temporary MPSNDArray may be read by a MPSNDArray... kernel                  before its contents become undefined.
 --
@@ -86,8 +81,8 @@ initWithDevice_descriptor mpsTemporaryNDArray  device descriptor =
 --
 -- ObjC selector: @- readCount@
 readCount :: IsMPSTemporaryNDArray mpsTemporaryNDArray => mpsTemporaryNDArray -> IO CULong
-readCount mpsTemporaryNDArray  =
-    sendMsg mpsTemporaryNDArray (mkSelector "readCount") retCULong []
+readCount mpsTemporaryNDArray =
+  sendMessage mpsTemporaryNDArray readCountSelector
 
 -- | The number of times a temporary MPSNDArray may be read by a MPSNDArray... kernel                  before its contents become undefined.
 --
@@ -101,30 +96,30 @@ readCount mpsTemporaryNDArray  =
 --
 -- ObjC selector: @- setReadCount:@
 setReadCount :: IsMPSTemporaryNDArray mpsTemporaryNDArray => mpsTemporaryNDArray -> CULong -> IO ()
-setReadCount mpsTemporaryNDArray  value =
-    sendMsg mpsTemporaryNDArray (mkSelector "setReadCount:") retVoid [argCULong value]
+setReadCount mpsTemporaryNDArray value =
+  sendMessage mpsTemporaryNDArray setReadCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultAllocator@
-defaultAllocatorSelector :: Selector
+defaultAllocatorSelector :: Selector '[] RawId
 defaultAllocatorSelector = mkSelector "defaultAllocator"
 
 -- | @Selector@ for @temporaryNDArrayWithCommandBuffer:descriptor:@
-temporaryNDArrayWithCommandBuffer_descriptorSelector :: Selector
+temporaryNDArrayWithCommandBuffer_descriptorSelector :: Selector '[RawId, Id MPSNDArrayDescriptor] (Id MPSTemporaryNDArray)
 temporaryNDArrayWithCommandBuffer_descriptorSelector = mkSelector "temporaryNDArrayWithCommandBuffer:descriptor:"
 
 -- | @Selector@ for @initWithDevice:descriptor:@
-initWithDevice_descriptorSelector :: Selector
+initWithDevice_descriptorSelector :: Selector '[RawId, Id MPSNDArrayDescriptor] (Id MPSTemporaryNDArray)
 initWithDevice_descriptorSelector = mkSelector "initWithDevice:descriptor:"
 
 -- | @Selector@ for @readCount@
-readCountSelector :: Selector
+readCountSelector :: Selector '[] CULong
 readCountSelector = mkSelector "readCount"
 
 -- | @Selector@ for @setReadCount:@
-setReadCountSelector :: Selector
+setReadCountSelector :: Selector '[CULong] ()
 setReadCountSelector = mkSelector "setReadCount:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.WebKit.DOMHTMLFormElement
   , setTarget
   , elements
   , length_
-  , submitSelector
-  , resetSelector
   , acceptCharsetSelector
-  , setAcceptCharsetSelector
   , actionSelector
-  , setActionSelector
-  , enctypeSelector
-  , setEnctypeSelector
-  , encodingSelector
-  , setEncodingSelector
-  , methodSelector
-  , setMethodSelector
-  , nameSelector
-  , setNameSelector
-  , targetSelector
-  , setTargetSelector
   , elementsSelector
+  , encodingSelector
+  , enctypeSelector
   , lengthSelector
+  , methodSelector
+  , nameSelector
+  , resetSelector
+  , setAcceptCharsetSelector
+  , setActionSelector
+  , setEncodingSelector
+  , setEnctypeSelector
+  , setMethodSelector
+  , setNameSelector
+  , setTargetSelector
+  , submitSelector
+  , targetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,174 +60,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- submit@
 submit :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO ()
-submit domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "submit") retVoid []
+submit domhtmlFormElement =
+  sendMessage domhtmlFormElement submitSelector
 
 -- | @- reset@
 reset :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO ()
-reset domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "reset") retVoid []
+reset domhtmlFormElement =
+  sendMessage domhtmlFormElement resetSelector
 
 -- | @- acceptCharset@
 acceptCharset :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO (Id NSString)
-acceptCharset domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "acceptCharset") (retPtr retVoid) [] >>= retainedObject . castPtr
+acceptCharset domhtmlFormElement =
+  sendMessage domhtmlFormElement acceptCharsetSelector
 
 -- | @- setAcceptCharset:@
 setAcceptCharset :: (IsDOMHTMLFormElement domhtmlFormElement, IsNSString value) => domhtmlFormElement -> value -> IO ()
-setAcceptCharset domhtmlFormElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlFormElement (mkSelector "setAcceptCharset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAcceptCharset domhtmlFormElement value =
+  sendMessage domhtmlFormElement setAcceptCharsetSelector (toNSString value)
 
 -- | @- action@
 action :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO (Id NSString)
-action domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "action") (retPtr retVoid) [] >>= retainedObject . castPtr
+action domhtmlFormElement =
+  sendMessage domhtmlFormElement actionSelector
 
 -- | @- setAction:@
 setAction :: (IsDOMHTMLFormElement domhtmlFormElement, IsNSString value) => domhtmlFormElement -> value -> IO ()
-setAction domhtmlFormElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlFormElement (mkSelector "setAction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAction domhtmlFormElement value =
+  sendMessage domhtmlFormElement setActionSelector (toNSString value)
 
 -- | @- enctype@
 enctype :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO (Id NSString)
-enctype domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "enctype") (retPtr retVoid) [] >>= retainedObject . castPtr
+enctype domhtmlFormElement =
+  sendMessage domhtmlFormElement enctypeSelector
 
 -- | @- setEnctype:@
 setEnctype :: (IsDOMHTMLFormElement domhtmlFormElement, IsNSString value) => domhtmlFormElement -> value -> IO ()
-setEnctype domhtmlFormElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlFormElement (mkSelector "setEnctype:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEnctype domhtmlFormElement value =
+  sendMessage domhtmlFormElement setEnctypeSelector (toNSString value)
 
 -- | @- encoding@
 encoding :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO (Id NSString)
-encoding domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "encoding") (retPtr retVoid) [] >>= retainedObject . castPtr
+encoding domhtmlFormElement =
+  sendMessage domhtmlFormElement encodingSelector
 
 -- | @- setEncoding:@
 setEncoding :: (IsDOMHTMLFormElement domhtmlFormElement, IsNSString value) => domhtmlFormElement -> value -> IO ()
-setEncoding domhtmlFormElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlFormElement (mkSelector "setEncoding:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEncoding domhtmlFormElement value =
+  sendMessage domhtmlFormElement setEncodingSelector (toNSString value)
 
 -- | @- method@
 method :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO (Id NSString)
-method domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "method") (retPtr retVoid) [] >>= retainedObject . castPtr
+method domhtmlFormElement =
+  sendMessage domhtmlFormElement methodSelector
 
 -- | @- setMethod:@
 setMethod :: (IsDOMHTMLFormElement domhtmlFormElement, IsNSString value) => domhtmlFormElement -> value -> IO ()
-setMethod domhtmlFormElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlFormElement (mkSelector "setMethod:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMethod domhtmlFormElement value =
+  sendMessage domhtmlFormElement setMethodSelector (toNSString value)
 
 -- | @- name@
 name :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO (Id NSString)
-name domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlFormElement =
+  sendMessage domhtmlFormElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLFormElement domhtmlFormElement, IsNSString value) => domhtmlFormElement -> value -> IO ()
-setName domhtmlFormElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlFormElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlFormElement value =
+  sendMessage domhtmlFormElement setNameSelector (toNSString value)
 
 -- | @- target@
 target :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO (Id NSString)
-target domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target domhtmlFormElement =
+  sendMessage domhtmlFormElement targetSelector
 
 -- | @- setTarget:@
 setTarget :: (IsDOMHTMLFormElement domhtmlFormElement, IsNSString value) => domhtmlFormElement -> value -> IO ()
-setTarget domhtmlFormElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlFormElement (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTarget domhtmlFormElement value =
+  sendMessage domhtmlFormElement setTargetSelector (toNSString value)
 
 -- | @- elements@
 elements :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO (Id DOMHTMLCollection)
-elements domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "elements") (retPtr retVoid) [] >>= retainedObject . castPtr
+elements domhtmlFormElement =
+  sendMessage domhtmlFormElement elementsSelector
 
 -- | @- length@
 length_ :: IsDOMHTMLFormElement domhtmlFormElement => domhtmlFormElement -> IO CInt
-length_ domhtmlFormElement  =
-    sendMsg domhtmlFormElement (mkSelector "length") retCInt []
+length_ domhtmlFormElement =
+  sendMessage domhtmlFormElement lengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @submit@
-submitSelector :: Selector
+submitSelector :: Selector '[] ()
 submitSelector = mkSelector "submit"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @acceptCharset@
-acceptCharsetSelector :: Selector
+acceptCharsetSelector :: Selector '[] (Id NSString)
 acceptCharsetSelector = mkSelector "acceptCharset"
 
 -- | @Selector@ for @setAcceptCharset:@
-setAcceptCharsetSelector :: Selector
+setAcceptCharsetSelector :: Selector '[Id NSString] ()
 setAcceptCharsetSelector = mkSelector "setAcceptCharset:"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] (Id NSString)
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[Id NSString] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @enctype@
-enctypeSelector :: Selector
+enctypeSelector :: Selector '[] (Id NSString)
 enctypeSelector = mkSelector "enctype"
 
 -- | @Selector@ for @setEnctype:@
-setEnctypeSelector :: Selector
+setEnctypeSelector :: Selector '[Id NSString] ()
 setEnctypeSelector = mkSelector "setEnctype:"
 
 -- | @Selector@ for @encoding@
-encodingSelector :: Selector
+encodingSelector :: Selector '[] (Id NSString)
 encodingSelector = mkSelector "encoding"
 
 -- | @Selector@ for @setEncoding:@
-setEncodingSelector :: Selector
+setEncodingSelector :: Selector '[Id NSString] ()
 setEncodingSelector = mkSelector "setEncoding:"
 
 -- | @Selector@ for @method@
-methodSelector :: Selector
+methodSelector :: Selector '[] (Id NSString)
 methodSelector = mkSelector "method"
 
 -- | @Selector@ for @setMethod:@
-setMethodSelector :: Selector
+setMethodSelector :: Selector '[Id NSString] ()
 setMethodSelector = mkSelector "setMethod:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id NSString)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id NSString] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @elements@
-elementsSelector :: Selector
+elementsSelector :: Selector '[] (Id DOMHTMLCollection)
 elementsSelector = mkSelector "elements"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CInt
 lengthSelector = mkSelector "length"
 

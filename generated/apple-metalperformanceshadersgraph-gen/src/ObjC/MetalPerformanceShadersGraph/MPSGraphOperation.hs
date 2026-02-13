@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphOperation
   , controlDependencies
   , graph
   , name
-  , initSelector
-  , inputTensorsSelector
-  , outputTensorsSelector
   , controlDependenciesSelector
   , graphSelector
+  , initSelector
+  , inputTensorsSelector
   , nameSelector
+  , outputTensorsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,69 +42,69 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsMPSGraphOperation mpsGraphOperation => mpsGraphOperation -> IO (Id MPSGraphOperation)
-init_ mpsGraphOperation  =
-    sendMsg mpsGraphOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsGraphOperation =
+  sendOwnedMessage mpsGraphOperation initSelector
 
 -- | The input tensors of the operation.
 --
 -- ObjC selector: @- inputTensors@
 inputTensors :: IsMPSGraphOperation mpsGraphOperation => mpsGraphOperation -> IO (Id NSArray)
-inputTensors mpsGraphOperation  =
-    sendMsg mpsGraphOperation (mkSelector "inputTensors") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputTensors mpsGraphOperation =
+  sendMessage mpsGraphOperation inputTensorsSelector
 
 -- | The output tensors of the operation.
 --
 -- ObjC selector: @- outputTensors@
 outputTensors :: IsMPSGraphOperation mpsGraphOperation => mpsGraphOperation -> IO (Id NSArray)
-outputTensors mpsGraphOperation  =
-    sendMsg mpsGraphOperation (mkSelector "outputTensors") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputTensors mpsGraphOperation =
+  sendMessage mpsGraphOperation outputTensorsSelector
 
 -- | The set of operations guaranteed to execute before this operation.
 --
 -- ObjC selector: @- controlDependencies@
 controlDependencies :: IsMPSGraphOperation mpsGraphOperation => mpsGraphOperation -> IO (Id NSArray)
-controlDependencies mpsGraphOperation  =
-    sendMsg mpsGraphOperation (mkSelector "controlDependencies") (retPtr retVoid) [] >>= retainedObject . castPtr
+controlDependencies mpsGraphOperation =
+  sendMessage mpsGraphOperation controlDependenciesSelector
 
 -- | The graph on which the operation is defined.
 --
 -- ObjC selector: @- graph@
 graph :: IsMPSGraphOperation mpsGraphOperation => mpsGraphOperation -> IO (Id MPSGraph)
-graph mpsGraphOperation  =
-    sendMsg mpsGraphOperation (mkSelector "graph") (retPtr retVoid) [] >>= retainedObject . castPtr
+graph mpsGraphOperation =
+  sendMessage mpsGraphOperation graphSelector
 
 -- | Name of the operation.
 --
 -- ObjC selector: @- name@
 name :: IsMPSGraphOperation mpsGraphOperation => mpsGraphOperation -> IO (Id NSString)
-name mpsGraphOperation  =
-    sendMsg mpsGraphOperation (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mpsGraphOperation =
+  sendMessage mpsGraphOperation nameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSGraphOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @inputTensors@
-inputTensorsSelector :: Selector
+inputTensorsSelector :: Selector '[] (Id NSArray)
 inputTensorsSelector = mkSelector "inputTensors"
 
 -- | @Selector@ for @outputTensors@
-outputTensorsSelector :: Selector
+outputTensorsSelector :: Selector '[] (Id NSArray)
 outputTensorsSelector = mkSelector "outputTensors"
 
 -- | @Selector@ for @controlDependencies@
-controlDependenciesSelector :: Selector
+controlDependenciesSelector :: Selector '[] (Id NSArray)
 controlDependenciesSelector = mkSelector "controlDependencies"
 
 -- | @Selector@ for @graph@
-graphSelector :: Selector
+graphSelector :: Selector '[] (Id MPSGraph)
 graphSelector = mkSelector "graph"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 

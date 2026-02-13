@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRMessagesClusterCancelMessagesRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , messageIDsSelector
-  , setMessageIDsSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setMessageIDsSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- messageIDs@
 messageIDs :: IsMTRMessagesClusterCancelMessagesRequestParams mtrMessagesClusterCancelMessagesRequestParams => mtrMessagesClusterCancelMessagesRequestParams -> IO (Id NSArray)
-messageIDs mtrMessagesClusterCancelMessagesRequestParams  =
-    sendMsg mtrMessagesClusterCancelMessagesRequestParams (mkSelector "messageIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageIDs mtrMessagesClusterCancelMessagesRequestParams =
+  sendMessage mtrMessagesClusterCancelMessagesRequestParams messageIDsSelector
 
 -- | @- setMessageIDs:@
 setMessageIDs :: (IsMTRMessagesClusterCancelMessagesRequestParams mtrMessagesClusterCancelMessagesRequestParams, IsNSArray value) => mtrMessagesClusterCancelMessagesRequestParams -> value -> IO ()
-setMessageIDs mtrMessagesClusterCancelMessagesRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterCancelMessagesRequestParams (mkSelector "setMessageIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMessageIDs mtrMessagesClusterCancelMessagesRequestParams value =
+  sendMessage mtrMessagesClusterCancelMessagesRequestParams setMessageIDsSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setMessageIDs mtrMessagesClusterCancelMessagesRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRMessagesClusterCancelMessagesRequestParams mtrMessagesClusterCancelMessagesRequestParams => mtrMessagesClusterCancelMessagesRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrMessagesClusterCancelMessagesRequestParams  =
-    sendMsg mtrMessagesClusterCancelMessagesRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrMessagesClusterCancelMessagesRequestParams =
+  sendMessage mtrMessagesClusterCancelMessagesRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrMessagesClusterCancelMessagesRequestParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRMessagesClusterCancelMessagesRequestParams mtrMessagesClusterCancelMessagesRequestParams, IsNSNumber value) => mtrMessagesClusterCancelMessagesRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrMessagesClusterCancelMessagesRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterCancelMessagesRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrMessagesClusterCancelMessagesRequestParams value =
+  sendMessage mtrMessagesClusterCancelMessagesRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrMessagesClusterCancelMessagesRequestParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRMessagesClusterCancelMessagesRequestParams mtrMessagesClusterCancelMessagesRequestParams => mtrMessagesClusterCancelMessagesRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrMessagesClusterCancelMessagesRequestParams  =
-    sendMsg mtrMessagesClusterCancelMessagesRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrMessagesClusterCancelMessagesRequestParams =
+  sendMessage mtrMessagesClusterCancelMessagesRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrMessagesClusterCancelMessagesRequestParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRMessagesClusterCancelMessagesRequestParams mtrMessagesClusterCancelMessagesRequestParams, IsNSNumber value) => mtrMessagesClusterCancelMessagesRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrMessagesClusterCancelMessagesRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterCancelMessagesRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrMessagesClusterCancelMessagesRequestParams value =
+  sendMessage mtrMessagesClusterCancelMessagesRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @messageIDs@
-messageIDsSelector :: Selector
+messageIDsSelector :: Selector '[] (Id NSArray)
 messageIDsSelector = mkSelector "messageIDs"
 
 -- | @Selector@ for @setMessageIDs:@
-setMessageIDsSelector :: Selector
+setMessageIDsSelector :: Selector '[Id NSArray] ()
 setMessageIDsSelector = mkSelector "setMessageIDs:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

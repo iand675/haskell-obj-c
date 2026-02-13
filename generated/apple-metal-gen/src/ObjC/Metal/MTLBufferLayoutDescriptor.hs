@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.Metal.MTLBufferLayoutDescriptor
   , setStepFunction
   , stepRate
   , setStepRate
-  , strideSelector
+  , setStepFunctionSelector
+  , setStepRateSelector
   , setStrideSelector
   , stepFunctionSelector
-  , setStepFunctionSelector
   , stepRateSelector
-  , setStepRateSelector
+  , strideSelector
 
   -- * Enum types
   , MTLStepFunction(MTLStepFunction)
@@ -34,15 +35,11 @@ module ObjC.Metal.MTLBufferLayoutDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,59 +49,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- stride@
 stride :: IsMTLBufferLayoutDescriptor mtlBufferLayoutDescriptor => mtlBufferLayoutDescriptor -> IO CULong
-stride mtlBufferLayoutDescriptor  =
-    sendMsg mtlBufferLayoutDescriptor (mkSelector "stride") retCULong []
+stride mtlBufferLayoutDescriptor =
+  sendMessage mtlBufferLayoutDescriptor strideSelector
 
 -- | @- setStride:@
 setStride :: IsMTLBufferLayoutDescriptor mtlBufferLayoutDescriptor => mtlBufferLayoutDescriptor -> CULong -> IO ()
-setStride mtlBufferLayoutDescriptor  value =
-    sendMsg mtlBufferLayoutDescriptor (mkSelector "setStride:") retVoid [argCULong value]
+setStride mtlBufferLayoutDescriptor value =
+  sendMessage mtlBufferLayoutDescriptor setStrideSelector value
 
 -- | @- stepFunction@
 stepFunction :: IsMTLBufferLayoutDescriptor mtlBufferLayoutDescriptor => mtlBufferLayoutDescriptor -> IO MTLStepFunction
-stepFunction mtlBufferLayoutDescriptor  =
-    fmap (coerce :: CULong -> MTLStepFunction) $ sendMsg mtlBufferLayoutDescriptor (mkSelector "stepFunction") retCULong []
+stepFunction mtlBufferLayoutDescriptor =
+  sendMessage mtlBufferLayoutDescriptor stepFunctionSelector
 
 -- | @- setStepFunction:@
 setStepFunction :: IsMTLBufferLayoutDescriptor mtlBufferLayoutDescriptor => mtlBufferLayoutDescriptor -> MTLStepFunction -> IO ()
-setStepFunction mtlBufferLayoutDescriptor  value =
-    sendMsg mtlBufferLayoutDescriptor (mkSelector "setStepFunction:") retVoid [argCULong (coerce value)]
+setStepFunction mtlBufferLayoutDescriptor value =
+  sendMessage mtlBufferLayoutDescriptor setStepFunctionSelector value
 
 -- | @- stepRate@
 stepRate :: IsMTLBufferLayoutDescriptor mtlBufferLayoutDescriptor => mtlBufferLayoutDescriptor -> IO CULong
-stepRate mtlBufferLayoutDescriptor  =
-    sendMsg mtlBufferLayoutDescriptor (mkSelector "stepRate") retCULong []
+stepRate mtlBufferLayoutDescriptor =
+  sendMessage mtlBufferLayoutDescriptor stepRateSelector
 
 -- | @- setStepRate:@
 setStepRate :: IsMTLBufferLayoutDescriptor mtlBufferLayoutDescriptor => mtlBufferLayoutDescriptor -> CULong -> IO ()
-setStepRate mtlBufferLayoutDescriptor  value =
-    sendMsg mtlBufferLayoutDescriptor (mkSelector "setStepRate:") retVoid [argCULong value]
+setStepRate mtlBufferLayoutDescriptor value =
+  sendMessage mtlBufferLayoutDescriptor setStepRateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stride@
-strideSelector :: Selector
+strideSelector :: Selector '[] CULong
 strideSelector = mkSelector "stride"
 
 -- | @Selector@ for @setStride:@
-setStrideSelector :: Selector
+setStrideSelector :: Selector '[CULong] ()
 setStrideSelector = mkSelector "setStride:"
 
 -- | @Selector@ for @stepFunction@
-stepFunctionSelector :: Selector
+stepFunctionSelector :: Selector '[] MTLStepFunction
 stepFunctionSelector = mkSelector "stepFunction"
 
 -- | @Selector@ for @setStepFunction:@
-setStepFunctionSelector :: Selector
+setStepFunctionSelector :: Selector '[MTLStepFunction] ()
 setStepFunctionSelector = mkSelector "setStepFunction:"
 
 -- | @Selector@ for @stepRate@
-stepRateSelector :: Selector
+stepRateSelector :: Selector '[] CULong
 stepRateSelector = mkSelector "stepRate"
 
 -- | @Selector@ for @setStepRate:@
-setStepRateSelector :: Selector
+setStepRateSelector :: Selector '[CULong] ()
 setStepRateSelector = mkSelector "setStepRate:"
 

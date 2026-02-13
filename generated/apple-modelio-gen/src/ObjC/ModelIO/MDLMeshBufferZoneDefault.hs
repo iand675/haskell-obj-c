@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.ModelIO.MDLMeshBufferZoneDefault
   , IsMDLMeshBufferZoneDefault(..)
   , capacity
   , allocator
-  , capacitySelector
   , allocatorSelector
+  , capacitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,23 +30,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- capacity@
 capacity :: IsMDLMeshBufferZoneDefault mdlMeshBufferZoneDefault => mdlMeshBufferZoneDefault -> IO CULong
-capacity mdlMeshBufferZoneDefault  =
-    sendMsg mdlMeshBufferZoneDefault (mkSelector "capacity") retCULong []
+capacity mdlMeshBufferZoneDefault =
+  sendMessage mdlMeshBufferZoneDefault capacitySelector
 
 -- | @- allocator@
 allocator :: IsMDLMeshBufferZoneDefault mdlMeshBufferZoneDefault => mdlMeshBufferZoneDefault -> IO RawId
-allocator mdlMeshBufferZoneDefault  =
-    fmap (RawId . castPtr) $ sendMsg mdlMeshBufferZoneDefault (mkSelector "allocator") (retPtr retVoid) []
+allocator mdlMeshBufferZoneDefault =
+  sendOwnedMessage mdlMeshBufferZoneDefault allocatorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @capacity@
-capacitySelector :: Selector
+capacitySelector :: Selector '[] CULong
 capacitySelector = mkSelector "capacity"
 
 -- | @Selector@ for @allocator@
-allocatorSelector :: Selector
+allocatorSelector :: Selector '[] RawId
 allocatorSelector = mkSelector "allocator"
 

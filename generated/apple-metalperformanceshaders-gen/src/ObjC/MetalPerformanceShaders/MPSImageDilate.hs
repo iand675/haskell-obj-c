@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,24 +27,20 @@ module ObjC.MetalPerformanceShaders.MPSImageDilate
   , initWithCoder_device
   , kernelHeight
   , kernelWidth
-  , initWithDevice_kernelWidth_kernelHeight_valuesSelector
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_kernelWidth_kernelHeight_valuesSelector
   , kernelHeightSelector
   , kernelWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,13 +61,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:values:@
 initWithDevice_kernelWidth_kernelHeight_values :: IsMPSImageDilate mpsImageDilate => mpsImageDilate -> RawId -> CULong -> CULong -> Const (Ptr CFloat) -> IO (Id MPSImageDilate)
-initWithDevice_kernelWidth_kernelHeight_values mpsImageDilate  device kernelWidth kernelHeight values =
-    sendMsg mpsImageDilate (mkSelector "initWithDevice:kernelWidth:kernelHeight:values:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight, argPtr (unConst values)] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight_values mpsImageDilate device kernelWidth kernelHeight values =
+  sendOwnedMessage mpsImageDilate initWithDevice_kernelWidth_kernelHeight_valuesSelector device kernelWidth kernelHeight values
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageDilate mpsImageDilate => mpsImageDilate -> RawId -> IO (Id MPSImageDilate)
-initWithDevice mpsImageDilate  device =
-    sendMsg mpsImageDilate (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageDilate device =
+  sendOwnedMessage mpsImageDilate initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -84,9 +81,8 @@ initWithDevice mpsImageDilate  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageDilate mpsImageDilate, IsNSCoder aDecoder) => mpsImageDilate -> aDecoder -> RawId -> IO (Id MPSImageDilate)
-initWithCoder_device mpsImageDilate  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageDilate (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageDilate aDecoder device =
+  sendOwnedMessage mpsImageDilate initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | kernelHeight
 --
@@ -94,8 +90,8 @@ initWithCoder_device mpsImageDilate  aDecoder device =
 --
 -- ObjC selector: @- kernelHeight@
 kernelHeight :: IsMPSImageDilate mpsImageDilate => mpsImageDilate -> IO CULong
-kernelHeight mpsImageDilate  =
-    sendMsg mpsImageDilate (mkSelector "kernelHeight") retCULong []
+kernelHeight mpsImageDilate =
+  sendMessage mpsImageDilate kernelHeightSelector
 
 -- | kernelWidth
 --
@@ -103,30 +99,30 @@ kernelHeight mpsImageDilate  =
 --
 -- ObjC selector: @- kernelWidth@
 kernelWidth :: IsMPSImageDilate mpsImageDilate => mpsImageDilate -> IO CULong
-kernelWidth mpsImageDilate  =
-    sendMsg mpsImageDilate (mkSelector "kernelWidth") retCULong []
+kernelWidth mpsImageDilate =
+  sendMessage mpsImageDilate kernelWidthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:values:@
-initWithDevice_kernelWidth_kernelHeight_valuesSelector :: Selector
+initWithDevice_kernelWidth_kernelHeight_valuesSelector :: Selector '[RawId, CULong, CULong, Const (Ptr CFloat)] (Id MPSImageDilate)
 initWithDevice_kernelWidth_kernelHeight_valuesSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:values:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageDilate)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageDilate)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 

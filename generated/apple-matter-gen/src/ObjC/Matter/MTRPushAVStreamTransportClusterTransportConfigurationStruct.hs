@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterTransportConfigurationStruct
   , fabricIndex
   , setFabricIndex
   , connectionIDSelector
+  , fabricIndexSelector
   , setConnectionIDSelector
-  , transportStatusSelector
+  , setFabricIndexSelector
+  , setTransportOptionsSelector
   , setTransportStatusSelector
   , transportOptionsSelector
-  , setTransportOptionsSelector
-  , fabricIndexSelector
-  , setFabricIndexSelector
+  , transportStatusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- connectionID@
 connectionID :: IsMTRPushAVStreamTransportClusterTransportConfigurationStruct mtrPushAVStreamTransportClusterTransportConfigurationStruct => mtrPushAVStreamTransportClusterTransportConfigurationStruct -> IO (Id NSNumber)
-connectionID mtrPushAVStreamTransportClusterTransportConfigurationStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportConfigurationStruct (mkSelector "connectionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectionID mtrPushAVStreamTransportClusterTransportConfigurationStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportConfigurationStruct connectionIDSelector
 
 -- | @- setConnectionID:@
 setConnectionID :: (IsMTRPushAVStreamTransportClusterTransportConfigurationStruct mtrPushAVStreamTransportClusterTransportConfigurationStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportConfigurationStruct -> value -> IO ()
-setConnectionID mtrPushAVStreamTransportClusterTransportConfigurationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportConfigurationStruct (mkSelector "setConnectionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConnectionID mtrPushAVStreamTransportClusterTransportConfigurationStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportConfigurationStruct setConnectionIDSelector (toNSNumber value)
 
 -- | @- transportStatus@
 transportStatus :: IsMTRPushAVStreamTransportClusterTransportConfigurationStruct mtrPushAVStreamTransportClusterTransportConfigurationStruct => mtrPushAVStreamTransportClusterTransportConfigurationStruct -> IO (Id NSNumber)
-transportStatus mtrPushAVStreamTransportClusterTransportConfigurationStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportConfigurationStruct (mkSelector "transportStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+transportStatus mtrPushAVStreamTransportClusterTransportConfigurationStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportConfigurationStruct transportStatusSelector
 
 -- | @- setTransportStatus:@
 setTransportStatus :: (IsMTRPushAVStreamTransportClusterTransportConfigurationStruct mtrPushAVStreamTransportClusterTransportConfigurationStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportConfigurationStruct -> value -> IO ()
-setTransportStatus mtrPushAVStreamTransportClusterTransportConfigurationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportConfigurationStruct (mkSelector "setTransportStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransportStatus mtrPushAVStreamTransportClusterTransportConfigurationStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportConfigurationStruct setTransportStatusSelector (toNSNumber value)
 
 -- | @- transportOptions@
 transportOptions :: IsMTRPushAVStreamTransportClusterTransportConfigurationStruct mtrPushAVStreamTransportClusterTransportConfigurationStruct => mtrPushAVStreamTransportClusterTransportConfigurationStruct -> IO (Id MTRPushAVStreamTransportClusterTransportOptionsStruct)
-transportOptions mtrPushAVStreamTransportClusterTransportConfigurationStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportConfigurationStruct (mkSelector "transportOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+transportOptions mtrPushAVStreamTransportClusterTransportConfigurationStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportConfigurationStruct transportOptionsSelector
 
 -- | @- setTransportOptions:@
 setTransportOptions :: (IsMTRPushAVStreamTransportClusterTransportConfigurationStruct mtrPushAVStreamTransportClusterTransportConfigurationStruct, IsMTRPushAVStreamTransportClusterTransportOptionsStruct value) => mtrPushAVStreamTransportClusterTransportConfigurationStruct -> value -> IO ()
-setTransportOptions mtrPushAVStreamTransportClusterTransportConfigurationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportConfigurationStruct (mkSelector "setTransportOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransportOptions mtrPushAVStreamTransportClusterTransportConfigurationStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportConfigurationStruct setTransportOptionsSelector (toMTRPushAVStreamTransportClusterTransportOptionsStruct value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRPushAVStreamTransportClusterTransportConfigurationStruct mtrPushAVStreamTransportClusterTransportConfigurationStruct => mtrPushAVStreamTransportClusterTransportConfigurationStruct -> IO (Id NSNumber)
-fabricIndex mtrPushAVStreamTransportClusterTransportConfigurationStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportConfigurationStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrPushAVStreamTransportClusterTransportConfigurationStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportConfigurationStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRPushAVStreamTransportClusterTransportConfigurationStruct mtrPushAVStreamTransportClusterTransportConfigurationStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportConfigurationStruct -> value -> IO ()
-setFabricIndex mtrPushAVStreamTransportClusterTransportConfigurationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportConfigurationStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrPushAVStreamTransportClusterTransportConfigurationStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportConfigurationStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @connectionID@
-connectionIDSelector :: Selector
+connectionIDSelector :: Selector '[] (Id NSNumber)
 connectionIDSelector = mkSelector "connectionID"
 
 -- | @Selector@ for @setConnectionID:@
-setConnectionIDSelector :: Selector
+setConnectionIDSelector :: Selector '[Id NSNumber] ()
 setConnectionIDSelector = mkSelector "setConnectionID:"
 
 -- | @Selector@ for @transportStatus@
-transportStatusSelector :: Selector
+transportStatusSelector :: Selector '[] (Id NSNumber)
 transportStatusSelector = mkSelector "transportStatus"
 
 -- | @Selector@ for @setTransportStatus:@
-setTransportStatusSelector :: Selector
+setTransportStatusSelector :: Selector '[Id NSNumber] ()
 setTransportStatusSelector = mkSelector "setTransportStatus:"
 
 -- | @Selector@ for @transportOptions@
-transportOptionsSelector :: Selector
+transportOptionsSelector :: Selector '[] (Id MTRPushAVStreamTransportClusterTransportOptionsStruct)
 transportOptionsSelector = mkSelector "transportOptions"
 
 -- | @Selector@ for @setTransportOptions:@
-setTransportOptionsSelector :: Selector
+setTransportOptionsSelector :: Selector '[Id MTRPushAVStreamTransportClusterTransportOptionsStruct] ()
 setTransportOptionsSelector = mkSelector "setTransportOptions:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

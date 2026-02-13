@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,15 @@ module ObjC.Metal.MTLIOCommandQueueDescriptor
   , scratchBufferAllocator
   , setScratchBufferAllocator
   , maxCommandBufferCountSelector
-  , setMaxCommandBufferCountSelector
-  , prioritySelector
-  , setPrioritySelector
-  , typeSelector
-  , setTypeSelector
   , maxCommandsInFlightSelector
-  , setMaxCommandsInFlightSelector
+  , prioritySelector
   , scratchBufferAllocatorSelector
+  , setMaxCommandBufferCountSelector
+  , setMaxCommandsInFlightSelector
+  , setPrioritySelector
   , setScratchBufferAllocatorSelector
+  , setTypeSelector
+  , typeSelector
 
   -- * Enum types
   , MTLIOCommandQueueType(MTLIOCommandQueueType)
@@ -43,15 +44,11 @@ module ObjC.Metal.MTLIOCommandQueueDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- maxCommandBufferCount@
 maxCommandBufferCount :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> IO CULong
-maxCommandBufferCount mtlioCommandQueueDescriptor  =
-    sendMsg mtlioCommandQueueDescriptor (mkSelector "maxCommandBufferCount") retCULong []
+maxCommandBufferCount mtlioCommandQueueDescriptor =
+  sendMessage mtlioCommandQueueDescriptor maxCommandBufferCountSelector
 
 -- | maxCommandBufferCount
 --
@@ -74,8 +71,8 @@ maxCommandBufferCount mtlioCommandQueueDescriptor  =
 --
 -- ObjC selector: @- setMaxCommandBufferCount:@
 setMaxCommandBufferCount :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> CULong -> IO ()
-setMaxCommandBufferCount mtlioCommandQueueDescriptor  value =
-    sendMsg mtlioCommandQueueDescriptor (mkSelector "setMaxCommandBufferCount:") retVoid [argCULong value]
+setMaxCommandBufferCount mtlioCommandQueueDescriptor value =
+  sendMessage mtlioCommandQueueDescriptor setMaxCommandBufferCountSelector value
 
 -- | priority
 --
@@ -83,8 +80,8 @@ setMaxCommandBufferCount mtlioCommandQueueDescriptor  value =
 --
 -- ObjC selector: @- priority@
 priority :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> IO MTLIOPriority
-priority mtlioCommandQueueDescriptor  =
-    fmap (coerce :: CLong -> MTLIOPriority) $ sendMsg mtlioCommandQueueDescriptor (mkSelector "priority") retCLong []
+priority mtlioCommandQueueDescriptor =
+  sendMessage mtlioCommandQueueDescriptor prioritySelector
 
 -- | priority
 --
@@ -92,8 +89,8 @@ priority mtlioCommandQueueDescriptor  =
 --
 -- ObjC selector: @- setPriority:@
 setPriority :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> MTLIOPriority -> IO ()
-setPriority mtlioCommandQueueDescriptor  value =
-    sendMsg mtlioCommandQueueDescriptor (mkSelector "setPriority:") retVoid [argCLong (coerce value)]
+setPriority mtlioCommandQueueDescriptor value =
+  sendMessage mtlioCommandQueueDescriptor setPrioritySelector value
 
 -- | type
 --
@@ -101,8 +98,8 @@ setPriority mtlioCommandQueueDescriptor  value =
 --
 -- ObjC selector: @- type@
 type_ :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> IO MTLIOCommandQueueType
-type_ mtlioCommandQueueDescriptor  =
-    fmap (coerce :: CLong -> MTLIOCommandQueueType) $ sendMsg mtlioCommandQueueDescriptor (mkSelector "type") retCLong []
+type_ mtlioCommandQueueDescriptor =
+  sendMessage mtlioCommandQueueDescriptor typeSelector
 
 -- | type
 --
@@ -110,8 +107,8 @@ type_ mtlioCommandQueueDescriptor  =
 --
 -- ObjC selector: @- setType:@
 setType :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> MTLIOCommandQueueType -> IO ()
-setType mtlioCommandQueueDescriptor  value =
-    sendMsg mtlioCommandQueueDescriptor (mkSelector "setType:") retVoid [argCLong (coerce value)]
+setType mtlioCommandQueueDescriptor value =
+  sendMessage mtlioCommandQueueDescriptor setTypeSelector value
 
 -- | maxCommandsInFlight
 --
@@ -121,8 +118,8 @@ setType mtlioCommandQueueDescriptor  value =
 --
 -- ObjC selector: @- maxCommandsInFlight@
 maxCommandsInFlight :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> IO CULong
-maxCommandsInFlight mtlioCommandQueueDescriptor  =
-    sendMsg mtlioCommandQueueDescriptor (mkSelector "maxCommandsInFlight") retCULong []
+maxCommandsInFlight mtlioCommandQueueDescriptor =
+  sendMessage mtlioCommandQueueDescriptor maxCommandsInFlightSelector
 
 -- | maxCommandsInFlight
 --
@@ -132,8 +129,8 @@ maxCommandsInFlight mtlioCommandQueueDescriptor  =
 --
 -- ObjC selector: @- setMaxCommandsInFlight:@
 setMaxCommandsInFlight :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> CULong -> IO ()
-setMaxCommandsInFlight mtlioCommandQueueDescriptor  value =
-    sendMsg mtlioCommandQueueDescriptor (mkSelector "setMaxCommandsInFlight:") retVoid [argCULong value]
+setMaxCommandsInFlight mtlioCommandQueueDescriptor value =
+  sendMessage mtlioCommandQueueDescriptor setMaxCommandsInFlightSelector value
 
 -- | scratchBufferAllocator
 --
@@ -143,8 +140,8 @@ setMaxCommandsInFlight mtlioCommandQueueDescriptor  value =
 --
 -- ObjC selector: @- scratchBufferAllocator@
 scratchBufferAllocator :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> IO RawId
-scratchBufferAllocator mtlioCommandQueueDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlioCommandQueueDescriptor (mkSelector "scratchBufferAllocator") (retPtr retVoid) []
+scratchBufferAllocator mtlioCommandQueueDescriptor =
+  sendMessage mtlioCommandQueueDescriptor scratchBufferAllocatorSelector
 
 -- | scratchBufferAllocator
 --
@@ -154,50 +151,50 @@ scratchBufferAllocator mtlioCommandQueueDescriptor  =
 --
 -- ObjC selector: @- setScratchBufferAllocator:@
 setScratchBufferAllocator :: IsMTLIOCommandQueueDescriptor mtlioCommandQueueDescriptor => mtlioCommandQueueDescriptor -> RawId -> IO ()
-setScratchBufferAllocator mtlioCommandQueueDescriptor  value =
-    sendMsg mtlioCommandQueueDescriptor (mkSelector "setScratchBufferAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setScratchBufferAllocator mtlioCommandQueueDescriptor value =
+  sendMessage mtlioCommandQueueDescriptor setScratchBufferAllocatorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @maxCommandBufferCount@
-maxCommandBufferCountSelector :: Selector
+maxCommandBufferCountSelector :: Selector '[] CULong
 maxCommandBufferCountSelector = mkSelector "maxCommandBufferCount"
 
 -- | @Selector@ for @setMaxCommandBufferCount:@
-setMaxCommandBufferCountSelector :: Selector
+setMaxCommandBufferCountSelector :: Selector '[CULong] ()
 setMaxCommandBufferCountSelector = mkSelector "setMaxCommandBufferCount:"
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] MTLIOPriority
 prioritySelector = mkSelector "priority"
 
 -- | @Selector@ for @setPriority:@
-setPrioritySelector :: Selector
+setPrioritySelector :: Selector '[MTLIOPriority] ()
 setPrioritySelector = mkSelector "setPriority:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MTLIOCommandQueueType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[MTLIOCommandQueueType] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @maxCommandsInFlight@
-maxCommandsInFlightSelector :: Selector
+maxCommandsInFlightSelector :: Selector '[] CULong
 maxCommandsInFlightSelector = mkSelector "maxCommandsInFlight"
 
 -- | @Selector@ for @setMaxCommandsInFlight:@
-setMaxCommandsInFlightSelector :: Selector
+setMaxCommandsInFlightSelector :: Selector '[CULong] ()
 setMaxCommandsInFlightSelector = mkSelector "setMaxCommandsInFlight:"
 
 -- | @Selector@ for @scratchBufferAllocator@
-scratchBufferAllocatorSelector :: Selector
+scratchBufferAllocatorSelector :: Selector '[] RawId
 scratchBufferAllocatorSelector = mkSelector "scratchBufferAllocator"
 
 -- | @Selector@ for @setScratchBufferAllocator:@
-setScratchBufferAllocatorSelector :: Selector
+setScratchBufferAllocatorSelector :: Selector '[RawId] ()
 setScratchBufferAllocatorSelector = mkSelector "setScratchBufferAllocator:"
 

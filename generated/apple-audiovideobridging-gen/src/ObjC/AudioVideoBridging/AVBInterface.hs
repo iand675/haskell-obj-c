@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.AudioVideoBridging.AVBInterface
   , entityDiscovery
   , aecp
   , acmp
-  , macAddressForInterfaceNamedSelector
-  , supportedInterfacesSelector
-  , isAVBEnabledOnInterfaceNamedSelector
-  , isAVBCapableInterfaceNamedSelector
+  , acmpSelector
+  , aecpSelector
+  , entityDiscoverySelector
   , initSelector
   , initWithInterfaceNameSelector
-  , myEntityIDSelector
   , interfaceNameSelector
-  , entityDiscoverySelector
-  , aecpSelector
-  , acmpSelector
+  , isAVBCapableInterfaceNamedSelector
+  , isAVBEnabledOnInterfaceNamedSelector
+  , macAddressForInterfaceNamedSelector
+  , myEntityIDSelector
+  , supportedInterfacesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,8 +63,7 @@ macAddressForInterfaceNamed :: IsNSString anInterfaceName => anInterfaceName -> 
 macAddressForInterfaceNamed anInterfaceName =
   do
     cls' <- getRequiredClass "AVBInterface"
-    withObjCPtr anInterfaceName $ \raw_anInterfaceName ->
-      sendClassMsg cls' (mkSelector "macAddressForInterfaceNamed:") (retPtr retVoid) [argPtr (castPtr raw_anInterfaceName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' macAddressForInterfaceNamedSelector (toNSString anInterfaceName)
 
 -- | supportedInterfaces
 --
@@ -80,7 +76,7 @@ supportedInterfaces :: IO (Id NSArray)
 supportedInterfaces  =
   do
     cls' <- getRequiredClass "AVBInterface"
-    sendClassMsg cls' (mkSelector "supportedInterfaces") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedInterfacesSelector
 
 -- | isAVBEnabledOnInterfaceNamed:
 --
@@ -95,8 +91,7 @@ isAVBEnabledOnInterfaceNamed :: IsNSString anInterfaceName => anInterfaceName ->
 isAVBEnabledOnInterfaceNamed anInterfaceName =
   do
     cls' <- getRequiredClass "AVBInterface"
-    withObjCPtr anInterfaceName $ \raw_anInterfaceName ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isAVBEnabledOnInterfaceNamed:") retCULong [argPtr (castPtr raw_anInterfaceName :: Ptr ())]
+    sendClassMessage cls' isAVBEnabledOnInterfaceNamedSelector (toNSString anInterfaceName)
 
 -- | isAVBCapableInterfaceNamed:
 --
@@ -111,13 +106,12 @@ isAVBCapableInterfaceNamed :: IsNSString anInterfaceName => anInterfaceName -> I
 isAVBCapableInterfaceNamed anInterfaceName =
   do
     cls' <- getRequiredClass "AVBInterface"
-    withObjCPtr anInterfaceName $ \raw_anInterfaceName ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isAVBCapableInterfaceNamed:") retCULong [argPtr (castPtr raw_anInterfaceName :: Ptr ())]
+    sendClassMessage cls' isAVBCapableInterfaceNamedSelector (toNSString anInterfaceName)
 
 -- | @- init@
 init_ :: IsAVBInterface avbInterface => avbInterface -> IO (Id AVBInterface)
-init_ avbInterface  =
-    sendMsg avbInterface (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avbInterface =
+  sendOwnedMessage avbInterface initSelector
 
 -- | initWithInterfaceName:
 --
@@ -129,9 +123,8 @@ init_ avbInterface  =
 --
 -- ObjC selector: @- initWithInterfaceName:@
 initWithInterfaceName :: (IsAVBInterface avbInterface, IsNSString anInterfaceName) => avbInterface -> anInterfaceName -> IO (Id AVBInterface)
-initWithInterfaceName avbInterface  anInterfaceName =
-  withObjCPtr anInterfaceName $ \raw_anInterfaceName ->
-      sendMsg avbInterface (mkSelector "initWithInterfaceName:") (retPtr retVoid) [argPtr (castPtr raw_anInterfaceName :: Ptr ())] >>= ownedObject . castPtr
+initWithInterfaceName avbInterface anInterfaceName =
+  sendOwnedMessage avbInterface initWithInterfaceNameSelector (toNSString anInterfaceName)
 
 -- | myEntityID
 --
@@ -144,7 +137,7 @@ myEntityID :: IO CULong
 myEntityID  =
   do
     cls' <- getRequiredClass "AVBInterface"
-    sendClassMsg cls' (mkSelector "myEntityID") retCULong []
+    sendClassMessage cls' myEntityIDSelector
 
 -- | interfaceName
 --
@@ -152,8 +145,8 @@ myEntityID  =
 --
 -- ObjC selector: @- interfaceName@
 interfaceName :: IsAVBInterface avbInterface => avbInterface -> IO (Id NSString)
-interfaceName avbInterface  =
-    sendMsg avbInterface (mkSelector "interfaceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+interfaceName avbInterface =
+  sendMessage avbInterface interfaceNameSelector
 
 -- | entityDiscovery
 --
@@ -161,8 +154,8 @@ interfaceName avbInterface  =
 --
 -- ObjC selector: @- entityDiscovery@
 entityDiscovery :: IsAVBInterface avbInterface => avbInterface -> IO (Id AVB17221EntityDiscovery)
-entityDiscovery avbInterface  =
-    sendMsg avbInterface (mkSelector "entityDiscovery") (retPtr retVoid) [] >>= retainedObject . castPtr
+entityDiscovery avbInterface =
+  sendMessage avbInterface entityDiscoverySelector
 
 -- | aecp
 --
@@ -170,8 +163,8 @@ entityDiscovery avbInterface  =
 --
 -- ObjC selector: @- aecp@
 aecp :: IsAVBInterface avbInterface => avbInterface -> IO (Id AVB17221AECPInterface)
-aecp avbInterface  =
-    sendMsg avbInterface (mkSelector "aecp") (retPtr retVoid) [] >>= retainedObject . castPtr
+aecp avbInterface =
+  sendMessage avbInterface aecpSelector
 
 -- | acmp
 --
@@ -179,54 +172,54 @@ aecp avbInterface  =
 --
 -- ObjC selector: @- acmp@
 acmp :: IsAVBInterface avbInterface => avbInterface -> IO (Id AVB17221ACMPInterface)
-acmp avbInterface  =
-    sendMsg avbInterface (mkSelector "acmp") (retPtr retVoid) [] >>= retainedObject . castPtr
+acmp avbInterface =
+  sendMessage avbInterface acmpSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @macAddressForInterfaceNamed:@
-macAddressForInterfaceNamedSelector :: Selector
+macAddressForInterfaceNamedSelector :: Selector '[Id NSString] (Id AVBMACAddress)
 macAddressForInterfaceNamedSelector = mkSelector "macAddressForInterfaceNamed:"
 
 -- | @Selector@ for @supportedInterfaces@
-supportedInterfacesSelector :: Selector
+supportedInterfacesSelector :: Selector '[] (Id NSArray)
 supportedInterfacesSelector = mkSelector "supportedInterfaces"
 
 -- | @Selector@ for @isAVBEnabledOnInterfaceNamed:@
-isAVBEnabledOnInterfaceNamedSelector :: Selector
+isAVBEnabledOnInterfaceNamedSelector :: Selector '[Id NSString] Bool
 isAVBEnabledOnInterfaceNamedSelector = mkSelector "isAVBEnabledOnInterfaceNamed:"
 
 -- | @Selector@ for @isAVBCapableInterfaceNamed:@
-isAVBCapableInterfaceNamedSelector :: Selector
+isAVBCapableInterfaceNamedSelector :: Selector '[Id NSString] Bool
 isAVBCapableInterfaceNamedSelector = mkSelector "isAVBCapableInterfaceNamed:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVBInterface)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithInterfaceName:@
-initWithInterfaceNameSelector :: Selector
+initWithInterfaceNameSelector :: Selector '[Id NSString] (Id AVBInterface)
 initWithInterfaceNameSelector = mkSelector "initWithInterfaceName:"
 
 -- | @Selector@ for @myEntityID@
-myEntityIDSelector :: Selector
+myEntityIDSelector :: Selector '[] CULong
 myEntityIDSelector = mkSelector "myEntityID"
 
 -- | @Selector@ for @interfaceName@
-interfaceNameSelector :: Selector
+interfaceNameSelector :: Selector '[] (Id NSString)
 interfaceNameSelector = mkSelector "interfaceName"
 
 -- | @Selector@ for @entityDiscovery@
-entityDiscoverySelector :: Selector
+entityDiscoverySelector :: Selector '[] (Id AVB17221EntityDiscovery)
 entityDiscoverySelector = mkSelector "entityDiscovery"
 
 -- | @Selector@ for @aecp@
-aecpSelector :: Selector
+aecpSelector :: Selector '[] (Id AVB17221AECPInterface)
 aecpSelector = mkSelector "aecp"
 
 -- | @Selector@ for @acmp@
-acmpSelector :: Selector
+acmpSelector :: Selector '[] (Id AVB17221ACMPInterface)
 acmpSelector = mkSelector "acmp"
 

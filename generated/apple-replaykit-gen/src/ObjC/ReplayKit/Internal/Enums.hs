@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ReplayKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @RPCameraPosition@
 newtype RPCameraPosition = RPCameraPosition CLong
@@ -21,6 +24,16 @@ pattern RPCameraPositionFront = RPCameraPosition 1
 
 pattern RPCameraPositionBack :: RPCameraPosition
 pattern RPCameraPositionBack = RPCameraPosition 2
+
+instance ObjCArgument RPCameraPosition where
+  withObjCArg (RPCameraPosition x) k = k (argCLong x)
+
+instance ObjCReturn RPCameraPosition where
+  type RawReturn RPCameraPosition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (RPCameraPosition x)
+  fromOwned x = pure (RPCameraPosition x)
 
 -- | @RPRecordingErrorCode@
 newtype RPRecordingErrorCode = RPRecordingErrorCode CLong
@@ -141,6 +154,16 @@ pattern RPRecordingErrorExportClipToURLInProgress = RPRecordingErrorCode (-5836)
 pattern RPRecordingErrorCodeSuccessful :: RPRecordingErrorCode
 pattern RPRecordingErrorCodeSuccessful = RPRecordingErrorCode 0
 
+instance ObjCArgument RPRecordingErrorCode where
+  withObjCArg (RPRecordingErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn RPRecordingErrorCode where
+  type RawReturn RPRecordingErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (RPRecordingErrorCode x)
+  fromOwned x = pure (RPRecordingErrorCode x)
+
 -- | @RPSampleBufferType@
 newtype RPSampleBufferType = RPSampleBufferType CLong
   deriving stock (Eq, Ord, Show)
@@ -154,3 +177,13 @@ pattern RPSampleBufferTypeAudioApp = RPSampleBufferType 2
 
 pattern RPSampleBufferTypeAudioMic :: RPSampleBufferType
 pattern RPSampleBufferTypeAudioMic = RPSampleBufferType 3
+
+instance ObjCArgument RPSampleBufferType where
+  withObjCArg (RPSampleBufferType x) k = k (argCLong x)
+
+instance ObjCReturn RPSampleBufferType where
+  type RawReturn RPSampleBufferType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (RPSampleBufferType x)
+  fromOwned x = pure (RPSampleBufferType x)

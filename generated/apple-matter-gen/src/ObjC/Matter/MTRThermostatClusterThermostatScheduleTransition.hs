@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRThermostatClusterThermostatScheduleTransition
   , setHeatSetpoint
   , coolSetpoint
   , setCoolSetpoint
-  , transitionTimeSelector
-  , setTransitionTimeSelector
-  , heatSetpointSelector
-  , setHeatSetpointSelector
   , coolSetpointSelector
+  , heatSetpointSelector
   , setCoolSetpointSelector
+  , setHeatSetpointSelector
+  , setTransitionTimeSelector
+  , transitionTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- transitionTime@
 transitionTime :: IsMTRThermostatClusterThermostatScheduleTransition mtrThermostatClusterThermostatScheduleTransition => mtrThermostatClusterThermostatScheduleTransition -> IO (Id NSNumber)
-transitionTime mtrThermostatClusterThermostatScheduleTransition  =
-    sendMsg mtrThermostatClusterThermostatScheduleTransition (mkSelector "transitionTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitionTime mtrThermostatClusterThermostatScheduleTransition =
+  sendMessage mtrThermostatClusterThermostatScheduleTransition transitionTimeSelector
 
 -- | @- setTransitionTime:@
 setTransitionTime :: (IsMTRThermostatClusterThermostatScheduleTransition mtrThermostatClusterThermostatScheduleTransition, IsNSNumber value) => mtrThermostatClusterThermostatScheduleTransition -> value -> IO ()
-setTransitionTime mtrThermostatClusterThermostatScheduleTransition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterThermostatScheduleTransition (mkSelector "setTransitionTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransitionTime mtrThermostatClusterThermostatScheduleTransition value =
+  sendMessage mtrThermostatClusterThermostatScheduleTransition setTransitionTimeSelector (toNSNumber value)
 
 -- | @- heatSetpoint@
 heatSetpoint :: IsMTRThermostatClusterThermostatScheduleTransition mtrThermostatClusterThermostatScheduleTransition => mtrThermostatClusterThermostatScheduleTransition -> IO (Id NSNumber)
-heatSetpoint mtrThermostatClusterThermostatScheduleTransition  =
-    sendMsg mtrThermostatClusterThermostatScheduleTransition (mkSelector "heatSetpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+heatSetpoint mtrThermostatClusterThermostatScheduleTransition =
+  sendMessage mtrThermostatClusterThermostatScheduleTransition heatSetpointSelector
 
 -- | @- setHeatSetpoint:@
 setHeatSetpoint :: (IsMTRThermostatClusterThermostatScheduleTransition mtrThermostatClusterThermostatScheduleTransition, IsNSNumber value) => mtrThermostatClusterThermostatScheduleTransition -> value -> IO ()
-setHeatSetpoint mtrThermostatClusterThermostatScheduleTransition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterThermostatScheduleTransition (mkSelector "setHeatSetpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeatSetpoint mtrThermostatClusterThermostatScheduleTransition value =
+  sendMessage mtrThermostatClusterThermostatScheduleTransition setHeatSetpointSelector (toNSNumber value)
 
 -- | @- coolSetpoint@
 coolSetpoint :: IsMTRThermostatClusterThermostatScheduleTransition mtrThermostatClusterThermostatScheduleTransition => mtrThermostatClusterThermostatScheduleTransition -> IO (Id NSNumber)
-coolSetpoint mtrThermostatClusterThermostatScheduleTransition  =
-    sendMsg mtrThermostatClusterThermostatScheduleTransition (mkSelector "coolSetpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+coolSetpoint mtrThermostatClusterThermostatScheduleTransition =
+  sendMessage mtrThermostatClusterThermostatScheduleTransition coolSetpointSelector
 
 -- | @- setCoolSetpoint:@
 setCoolSetpoint :: (IsMTRThermostatClusterThermostatScheduleTransition mtrThermostatClusterThermostatScheduleTransition, IsNSNumber value) => mtrThermostatClusterThermostatScheduleTransition -> value -> IO ()
-setCoolSetpoint mtrThermostatClusterThermostatScheduleTransition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterThermostatScheduleTransition (mkSelector "setCoolSetpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCoolSetpoint mtrThermostatClusterThermostatScheduleTransition value =
+  sendMessage mtrThermostatClusterThermostatScheduleTransition setCoolSetpointSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @transitionTime@
-transitionTimeSelector :: Selector
+transitionTimeSelector :: Selector '[] (Id NSNumber)
 transitionTimeSelector = mkSelector "transitionTime"
 
 -- | @Selector@ for @setTransitionTime:@
-setTransitionTimeSelector :: Selector
+setTransitionTimeSelector :: Selector '[Id NSNumber] ()
 setTransitionTimeSelector = mkSelector "setTransitionTime:"
 
 -- | @Selector@ for @heatSetpoint@
-heatSetpointSelector :: Selector
+heatSetpointSelector :: Selector '[] (Id NSNumber)
 heatSetpointSelector = mkSelector "heatSetpoint"
 
 -- | @Selector@ for @setHeatSetpoint:@
-setHeatSetpointSelector :: Selector
+setHeatSetpointSelector :: Selector '[Id NSNumber] ()
 setHeatSetpointSelector = mkSelector "setHeatSetpoint:"
 
 -- | @Selector@ for @coolSetpoint@
-coolSetpointSelector :: Selector
+coolSetpointSelector :: Selector '[] (Id NSNumber)
 coolSetpointSelector = mkSelector "coolSetpoint"
 
 -- | @Selector@ for @setCoolSetpoint:@
-setCoolSetpointSelector :: Selector
+setCoolSetpointSelector :: Selector '[Id NSNumber] ()
 setCoolSetpointSelector = mkSelector "setCoolSetpoint:"
 

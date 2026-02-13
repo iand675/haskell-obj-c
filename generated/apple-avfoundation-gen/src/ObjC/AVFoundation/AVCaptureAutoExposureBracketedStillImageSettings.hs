@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AVFoundation.AVCaptureAutoExposureBracketedStillImageSettings
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,7 +45,7 @@ autoExposureSettingsWithExposureTargetBias :: CFloat -> IO (Id AVCaptureAutoExpo
 autoExposureSettingsWithExposureTargetBias exposureTargetBias =
   do
     cls' <- getRequiredClass "AVCaptureAutoExposureBracketedStillImageSettings"
-    sendClassMsg cls' (mkSelector "autoExposureSettingsWithExposureTargetBias:") (retPtr retVoid) [argCFloat exposureTargetBias] >>= retainedObject . castPtr
+    sendClassMessage cls' autoExposureSettingsWithExposureTargetBiasSelector exposureTargetBias
 
 -- | exposureTargetBias
 --
@@ -56,18 +53,18 @@ autoExposureSettingsWithExposureTargetBias exposureTargetBias =
 --
 -- ObjC selector: @- exposureTargetBias@
 exposureTargetBias :: IsAVCaptureAutoExposureBracketedStillImageSettings avCaptureAutoExposureBracketedStillImageSettings => avCaptureAutoExposureBracketedStillImageSettings -> IO CFloat
-exposureTargetBias avCaptureAutoExposureBracketedStillImageSettings  =
-    sendMsg avCaptureAutoExposureBracketedStillImageSettings (mkSelector "exposureTargetBias") retCFloat []
+exposureTargetBias avCaptureAutoExposureBracketedStillImageSettings =
+  sendMessage avCaptureAutoExposureBracketedStillImageSettings exposureTargetBiasSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @autoExposureSettingsWithExposureTargetBias:@
-autoExposureSettingsWithExposureTargetBiasSelector :: Selector
+autoExposureSettingsWithExposureTargetBiasSelector :: Selector '[CFloat] (Id AVCaptureAutoExposureBracketedStillImageSettings)
 autoExposureSettingsWithExposureTargetBiasSelector = mkSelector "autoExposureSettingsWithExposureTargetBias:"
 
 -- | @Selector@ for @exposureTargetBias@
-exposureTargetBiasSelector :: Selector
+exposureTargetBiasSelector :: Selector '[] CFloat
 exposureTargetBiasSelector = mkSelector "exposureTargetBias"
 

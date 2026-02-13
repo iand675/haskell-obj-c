@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.NetworkExtension.NETunnelProviderSession
   , startTunnelWithOptions_andReturnError
   , stopTunnel
   , sendProviderMessage_returnError_responseHandler
+  , sendProviderMessage_returnError_responseHandlerSelector
   , startTunnelWithOptions_andReturnErrorSelector
   , stopTunnelSelector
-  , sendProviderMessage_returnError_responseHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,10 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startTunnelWithOptions:andReturnError:@
 startTunnelWithOptions_andReturnError :: (IsNETunnelProviderSession neTunnelProviderSession, IsNSDictionary options, IsNSError error_) => neTunnelProviderSession -> options -> error_ -> IO Bool
-startTunnelWithOptions_andReturnError neTunnelProviderSession  options error_ =
-  withObjCPtr options $ \raw_options ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg neTunnelProviderSession (mkSelector "startTunnelWithOptions:andReturnError:") retCULong [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+startTunnelWithOptions_andReturnError neTunnelProviderSession options error_ =
+  sendMessage neTunnelProviderSession startTunnelWithOptions_andReturnErrorSelector (toNSDictionary options) (toNSError error_)
 
 -- | stopTunnel
 --
@@ -60,8 +55,8 @@ startTunnelWithOptions_andReturnError neTunnelProviderSession  options error_ =
 --
 -- ObjC selector: @- stopTunnel@
 stopTunnel :: IsNETunnelProviderSession neTunnelProviderSession => neTunnelProviderSession -> IO ()
-stopTunnel neTunnelProviderSession  =
-    sendMsg neTunnelProviderSession (mkSelector "stopTunnel") retVoid []
+stopTunnel neTunnelProviderSession =
+  sendMessage neTunnelProviderSession stopTunnelSelector
 
 -- | sendProviderMessage:responseHandler:
 --
@@ -77,24 +72,22 @@ stopTunnel neTunnelProviderSession  =
 --
 -- ObjC selector: @- sendProviderMessage:returnError:responseHandler:@
 sendProviderMessage_returnError_responseHandler :: (IsNETunnelProviderSession neTunnelProviderSession, IsNSData messageData, IsNSError error_) => neTunnelProviderSession -> messageData -> error_ -> Ptr () -> IO Bool
-sendProviderMessage_returnError_responseHandler neTunnelProviderSession  messageData error_ responseHandler =
-  withObjCPtr messageData $ \raw_messageData ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg neTunnelProviderSession (mkSelector "sendProviderMessage:returnError:responseHandler:") retCULong [argPtr (castPtr raw_messageData :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr responseHandler :: Ptr ())]
+sendProviderMessage_returnError_responseHandler neTunnelProviderSession messageData error_ responseHandler =
+  sendMessage neTunnelProviderSession sendProviderMessage_returnError_responseHandlerSelector (toNSData messageData) (toNSError error_) responseHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startTunnelWithOptions:andReturnError:@
-startTunnelWithOptions_andReturnErrorSelector :: Selector
+startTunnelWithOptions_andReturnErrorSelector :: Selector '[Id NSDictionary, Id NSError] Bool
 startTunnelWithOptions_andReturnErrorSelector = mkSelector "startTunnelWithOptions:andReturnError:"
 
 -- | @Selector@ for @stopTunnel@
-stopTunnelSelector :: Selector
+stopTunnelSelector :: Selector '[] ()
 stopTunnelSelector = mkSelector "stopTunnel"
 
 -- | @Selector@ for @sendProviderMessage:returnError:responseHandler:@
-sendProviderMessage_returnError_responseHandlerSelector :: Selector
+sendProviderMessage_returnError_responseHandlerSelector :: Selector '[Id NSData, Id NSError, Ptr ()] Bool
 sendProviderMessage_returnError_responseHandlerSelector = mkSelector "sendProviderMessage:returnError:responseHandler:"
 

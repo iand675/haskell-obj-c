@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,20 +26,20 @@ module ObjC.MLCompute.MLCInferenceGraph
   , executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandler
   , executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandler
   , deviceMemorySize
-  , newSelector
-  , initSelector
-  , graphWithGraphObjectsSelector
   , addInputsSelector
   , addInputs_lossLabels_lossLabelWeightsSelector
   , addOutputsSelector
   , compileWithOptions_deviceSelector
   , compileWithOptions_device_inputTensors_inputTensorsDataSelector
-  , linkWithGraphsSelector
+  , deviceMemorySizeSelector
   , executeWithInputsData_batchSize_options_completionHandlerSelector
-  , executeWithInputsData_outputsData_batchSize_options_completionHandlerSelector
   , executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector
   , executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector
-  , deviceMemorySizeSelector
+  , executeWithInputsData_outputsData_batchSize_options_completionHandlerSelector
+  , graphWithGraphObjectsSelector
+  , initSelector
+  , linkWithGraphsSelector
+  , newSelector
 
   -- * Enum types
   , MLCExecutionOptions(MLCExecutionOptions)
@@ -57,15 +58,11 @@ module ObjC.MLCompute.MLCInferenceGraph
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,12 +75,12 @@ new :: IO (Id MLCInferenceGraph)
 new  =
   do
     cls' <- getRequiredClass "MLCInferenceGraph"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCInferenceGraph mlcInferenceGraph => mlcInferenceGraph -> IO (Id MLCInferenceGraph)
-init_ mlcInferenceGraph  =
-    sendMsg mlcInferenceGraph (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcInferenceGraph =
+  sendOwnedMessage mlcInferenceGraph initSelector
 
 -- | Create an inference graph
 --
@@ -96,8 +93,7 @@ graphWithGraphObjects :: IsNSArray graphObjects => graphObjects -> IO (Id MLCInf
 graphWithGraphObjects graphObjects =
   do
     cls' <- getRequiredClass "MLCInferenceGraph"
-    withObjCPtr graphObjects $ \raw_graphObjects ->
-      sendClassMsg cls' (mkSelector "graphWithGraphObjects:") (retPtr retVoid) [argPtr (castPtr raw_graphObjects :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' graphWithGraphObjectsSelector (toNSArray graphObjects)
 
 -- | Add the list of inputs to the inference graph
 --
@@ -107,9 +103,8 @@ graphWithGraphObjects graphObjects =
 --
 -- ObjC selector: @- addInputs:@
 addInputs :: (IsMLCInferenceGraph mlcInferenceGraph, IsNSDictionary inputs) => mlcInferenceGraph -> inputs -> IO Bool
-addInputs mlcInferenceGraph  inputs =
-  withObjCPtr inputs $ \raw_inputs ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "addInputs:") retCULong [argPtr (castPtr raw_inputs :: Ptr ())]
+addInputs mlcInferenceGraph inputs =
+  sendMessage mlcInferenceGraph addInputsSelector (toNSDictionary inputs)
 
 -- | Add the list of inputs to the inference graph
 --
@@ -125,11 +120,8 @@ addInputs mlcInferenceGraph  inputs =
 --
 -- ObjC selector: @- addInputs:lossLabels:lossLabelWeights:@
 addInputs_lossLabels_lossLabelWeights :: (IsMLCInferenceGraph mlcInferenceGraph, IsNSDictionary inputs, IsNSDictionary lossLabels, IsNSDictionary lossLabelWeights) => mlcInferenceGraph -> inputs -> lossLabels -> lossLabelWeights -> IO Bool
-addInputs_lossLabels_lossLabelWeights mlcInferenceGraph  inputs lossLabels lossLabelWeights =
-  withObjCPtr inputs $ \raw_inputs ->
-    withObjCPtr lossLabels $ \raw_lossLabels ->
-      withObjCPtr lossLabelWeights $ \raw_lossLabelWeights ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "addInputs:lossLabels:lossLabelWeights:") retCULong [argPtr (castPtr raw_inputs :: Ptr ()), argPtr (castPtr raw_lossLabels :: Ptr ()), argPtr (castPtr raw_lossLabelWeights :: Ptr ())]
+addInputs_lossLabels_lossLabelWeights mlcInferenceGraph inputs lossLabels lossLabelWeights =
+  sendMessage mlcInferenceGraph addInputs_lossLabels_lossLabelWeightsSelector (toNSDictionary inputs) (toNSDictionary lossLabels) (toNSDictionary lossLabelWeights)
 
 -- | Add the list of outputs to the inference graph
 --
@@ -139,9 +131,8 @@ addInputs_lossLabels_lossLabelWeights mlcInferenceGraph  inputs lossLabels lossL
 --
 -- ObjC selector: @- addOutputs:@
 addOutputs :: (IsMLCInferenceGraph mlcInferenceGraph, IsNSDictionary outputs) => mlcInferenceGraph -> outputs -> IO Bool
-addOutputs mlcInferenceGraph  outputs =
-  withObjCPtr outputs $ \raw_outputs ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "addOutputs:") retCULong [argPtr (castPtr raw_outputs :: Ptr ())]
+addOutputs mlcInferenceGraph outputs =
+  sendMessage mlcInferenceGraph addOutputsSelector (toNSDictionary outputs)
 
 -- | Compile the training graph for a device.
 --
@@ -153,9 +144,8 @@ addOutputs mlcInferenceGraph  outputs =
 --
 -- ObjC selector: @- compileWithOptions:device:@
 compileWithOptions_device :: (IsMLCInferenceGraph mlcInferenceGraph, IsMLCDevice device) => mlcInferenceGraph -> MLCGraphCompilationOptions -> device -> IO Bool
-compileWithOptions_device mlcInferenceGraph  options device =
-  withObjCPtr device $ \raw_device ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "compileWithOptions:device:") retCULong [argCULong (coerce options), argPtr (castPtr raw_device :: Ptr ())]
+compileWithOptions_device mlcInferenceGraph options device =
+  sendMessage mlcInferenceGraph compileWithOptions_deviceSelector options (toMLCDevice device)
 
 -- | Compile the inference graph for a device.
 --
@@ -173,11 +163,8 @@ compileWithOptions_device mlcInferenceGraph  options device =
 --
 -- ObjC selector: @- compileWithOptions:device:inputTensors:inputTensorsData:@
 compileWithOptions_device_inputTensors_inputTensorsData :: (IsMLCInferenceGraph mlcInferenceGraph, IsMLCDevice device, IsNSDictionary inputTensors, IsNSDictionary inputTensorsData) => mlcInferenceGraph -> MLCGraphCompilationOptions -> device -> inputTensors -> inputTensorsData -> IO Bool
-compileWithOptions_device_inputTensors_inputTensorsData mlcInferenceGraph  options device inputTensors inputTensorsData =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr inputTensors $ \raw_inputTensors ->
-      withObjCPtr inputTensorsData $ \raw_inputTensorsData ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "compileWithOptions:device:inputTensors:inputTensorsData:") retCULong [argCULong (coerce options), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_inputTensors :: Ptr ()), argPtr (castPtr raw_inputTensorsData :: Ptr ())]
+compileWithOptions_device_inputTensors_inputTensorsData mlcInferenceGraph options device inputTensors inputTensorsData =
+  sendMessage mlcInferenceGraph compileWithOptions_device_inputTensors_inputTensorsDataSelector options (toMLCDevice device) (toNSDictionary inputTensors) (toNSDictionary inputTensorsData)
 
 -- | Link mutiple inference graphs
 --
@@ -189,9 +176,8 @@ compileWithOptions_device_inputTensors_inputTensorsData mlcInferenceGraph  optio
 --
 -- ObjC selector: @- linkWithGraphs:@
 linkWithGraphs :: (IsMLCInferenceGraph mlcInferenceGraph, IsNSArray graphs) => mlcInferenceGraph -> graphs -> IO Bool
-linkWithGraphs mlcInferenceGraph  graphs =
-  withObjCPtr graphs $ \raw_graphs ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "linkWithGraphs:") retCULong [argPtr (castPtr raw_graphs :: Ptr ())]
+linkWithGraphs mlcInferenceGraph graphs =
+  sendMessage mlcInferenceGraph linkWithGraphsSelector (toNSArray graphs)
 
 -- | Execute the inference graph with given input data
 --
@@ -209,9 +195,8 @@ linkWithGraphs mlcInferenceGraph  graphs =
 --
 -- ObjC selector: @- executeWithInputsData:batchSize:options:completionHandler:@
 executeWithInputsData_batchSize_options_completionHandler :: (IsMLCInferenceGraph mlcInferenceGraph, IsNSDictionary inputsData) => mlcInferenceGraph -> inputsData -> CULong -> MLCExecutionOptions -> Ptr () -> IO Bool
-executeWithInputsData_batchSize_options_completionHandler mlcInferenceGraph  inputsData batchSize options completionHandler =
-  withObjCPtr inputsData $ \raw_inputsData ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "executeWithInputsData:batchSize:options:completionHandler:") retCULong [argPtr (castPtr raw_inputsData :: Ptr ()), argCULong batchSize, argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+executeWithInputsData_batchSize_options_completionHandler mlcInferenceGraph inputsData batchSize options completionHandler =
+  sendMessage mlcInferenceGraph executeWithInputsData_batchSize_options_completionHandlerSelector (toNSDictionary inputsData) batchSize options completionHandler
 
 -- | Execute the inference graph with given input data
 --
@@ -231,10 +216,8 @@ executeWithInputsData_batchSize_options_completionHandler mlcInferenceGraph  inp
 --
 -- ObjC selector: @- executeWithInputsData:outputsData:batchSize:options:completionHandler:@
 executeWithInputsData_outputsData_batchSize_options_completionHandler :: (IsMLCInferenceGraph mlcInferenceGraph, IsNSDictionary inputsData, IsNSDictionary outputsData) => mlcInferenceGraph -> inputsData -> outputsData -> CULong -> MLCExecutionOptions -> Ptr () -> IO Bool
-executeWithInputsData_outputsData_batchSize_options_completionHandler mlcInferenceGraph  inputsData outputsData batchSize options completionHandler =
-  withObjCPtr inputsData $ \raw_inputsData ->
-    withObjCPtr outputsData $ \raw_outputsData ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "executeWithInputsData:outputsData:batchSize:options:completionHandler:") retCULong [argPtr (castPtr raw_inputsData :: Ptr ()), argPtr (castPtr raw_outputsData :: Ptr ()), argCULong batchSize, argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+executeWithInputsData_outputsData_batchSize_options_completionHandler mlcInferenceGraph inputsData outputsData batchSize options completionHandler =
+  sendMessage mlcInferenceGraph executeWithInputsData_outputsData_batchSize_options_completionHandlerSelector (toNSDictionary inputsData) (toNSDictionary outputsData) batchSize options completionHandler
 
 -- | Execute the inference graph with given input data
 --
@@ -256,11 +239,8 @@ executeWithInputsData_outputsData_batchSize_options_completionHandler mlcInferen
 --
 -- ObjC selector: @- executeWithInputsData:lossLabelsData:lossLabelWeightsData:batchSize:options:completionHandler:@
 executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandler :: (IsMLCInferenceGraph mlcInferenceGraph, IsNSDictionary inputsData, IsNSDictionary lossLabelsData, IsNSDictionary lossLabelWeightsData) => mlcInferenceGraph -> inputsData -> lossLabelsData -> lossLabelWeightsData -> CULong -> MLCExecutionOptions -> Ptr () -> IO Bool
-executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandler mlcInferenceGraph  inputsData lossLabelsData lossLabelWeightsData batchSize options completionHandler =
-  withObjCPtr inputsData $ \raw_inputsData ->
-    withObjCPtr lossLabelsData $ \raw_lossLabelsData ->
-      withObjCPtr lossLabelWeightsData $ \raw_lossLabelWeightsData ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "executeWithInputsData:lossLabelsData:lossLabelWeightsData:batchSize:options:completionHandler:") retCULong [argPtr (castPtr raw_inputsData :: Ptr ()), argPtr (castPtr raw_lossLabelsData :: Ptr ()), argPtr (castPtr raw_lossLabelWeightsData :: Ptr ()), argCULong batchSize, argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandler mlcInferenceGraph inputsData lossLabelsData lossLabelWeightsData batchSize options completionHandler =
+  sendMessage mlcInferenceGraph executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector (toNSDictionary inputsData) (toNSDictionary lossLabelsData) (toNSDictionary lossLabelWeightsData) batchSize options completionHandler
 
 -- | Execute the inference graph with given input data
 --
@@ -284,12 +264,8 @@ executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_comp
 --
 -- ObjC selector: @- executeWithInputsData:lossLabelsData:lossLabelWeightsData:outputsData:batchSize:options:completionHandler:@
 executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandler :: (IsMLCInferenceGraph mlcInferenceGraph, IsNSDictionary inputsData, IsNSDictionary lossLabelsData, IsNSDictionary lossLabelWeightsData, IsNSDictionary outputsData) => mlcInferenceGraph -> inputsData -> lossLabelsData -> lossLabelWeightsData -> outputsData -> CULong -> MLCExecutionOptions -> Ptr () -> IO Bool
-executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandler mlcInferenceGraph  inputsData lossLabelsData lossLabelWeightsData outputsData batchSize options completionHandler =
-  withObjCPtr inputsData $ \raw_inputsData ->
-    withObjCPtr lossLabelsData $ \raw_lossLabelsData ->
-      withObjCPtr lossLabelWeightsData $ \raw_lossLabelWeightsData ->
-        withObjCPtr outputsData $ \raw_outputsData ->
-            fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcInferenceGraph (mkSelector "executeWithInputsData:lossLabelsData:lossLabelWeightsData:outputsData:batchSize:options:completionHandler:") retCULong [argPtr (castPtr raw_inputsData :: Ptr ()), argPtr (castPtr raw_lossLabelsData :: Ptr ()), argPtr (castPtr raw_lossLabelWeightsData :: Ptr ()), argPtr (castPtr raw_outputsData :: Ptr ()), argCULong batchSize, argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandler mlcInferenceGraph inputsData lossLabelsData lossLabelWeightsData outputsData batchSize options completionHandler =
+  sendMessage mlcInferenceGraph executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector (toNSDictionary inputsData) (toNSDictionary lossLabelsData) (toNSDictionary lossLabelWeightsData) (toNSDictionary outputsData) batchSize options completionHandler
 
 -- | The device memory size used by the inference graph
 --
@@ -299,66 +275,66 @@ executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_
 --
 -- ObjC selector: @- deviceMemorySize@
 deviceMemorySize :: IsMLCInferenceGraph mlcInferenceGraph => mlcInferenceGraph -> IO CULong
-deviceMemorySize mlcInferenceGraph  =
-    sendMsg mlcInferenceGraph (mkSelector "deviceMemorySize") retCULong []
+deviceMemorySize mlcInferenceGraph =
+  sendMessage mlcInferenceGraph deviceMemorySizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCInferenceGraph)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCInferenceGraph)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @graphWithGraphObjects:@
-graphWithGraphObjectsSelector :: Selector
+graphWithGraphObjectsSelector :: Selector '[Id NSArray] (Id MLCInferenceGraph)
 graphWithGraphObjectsSelector = mkSelector "graphWithGraphObjects:"
 
 -- | @Selector@ for @addInputs:@
-addInputsSelector :: Selector
+addInputsSelector :: Selector '[Id NSDictionary] Bool
 addInputsSelector = mkSelector "addInputs:"
 
 -- | @Selector@ for @addInputs:lossLabels:lossLabelWeights:@
-addInputs_lossLabels_lossLabelWeightsSelector :: Selector
+addInputs_lossLabels_lossLabelWeightsSelector :: Selector '[Id NSDictionary, Id NSDictionary, Id NSDictionary] Bool
 addInputs_lossLabels_lossLabelWeightsSelector = mkSelector "addInputs:lossLabels:lossLabelWeights:"
 
 -- | @Selector@ for @addOutputs:@
-addOutputsSelector :: Selector
+addOutputsSelector :: Selector '[Id NSDictionary] Bool
 addOutputsSelector = mkSelector "addOutputs:"
 
 -- | @Selector@ for @compileWithOptions:device:@
-compileWithOptions_deviceSelector :: Selector
+compileWithOptions_deviceSelector :: Selector '[MLCGraphCompilationOptions, Id MLCDevice] Bool
 compileWithOptions_deviceSelector = mkSelector "compileWithOptions:device:"
 
 -- | @Selector@ for @compileWithOptions:device:inputTensors:inputTensorsData:@
-compileWithOptions_device_inputTensors_inputTensorsDataSelector :: Selector
+compileWithOptions_device_inputTensors_inputTensorsDataSelector :: Selector '[MLCGraphCompilationOptions, Id MLCDevice, Id NSDictionary, Id NSDictionary] Bool
 compileWithOptions_device_inputTensors_inputTensorsDataSelector = mkSelector "compileWithOptions:device:inputTensors:inputTensorsData:"
 
 -- | @Selector@ for @linkWithGraphs:@
-linkWithGraphsSelector :: Selector
+linkWithGraphsSelector :: Selector '[Id NSArray] Bool
 linkWithGraphsSelector = mkSelector "linkWithGraphs:"
 
 -- | @Selector@ for @executeWithInputsData:batchSize:options:completionHandler:@
-executeWithInputsData_batchSize_options_completionHandlerSelector :: Selector
+executeWithInputsData_batchSize_options_completionHandlerSelector :: Selector '[Id NSDictionary, CULong, MLCExecutionOptions, Ptr ()] Bool
 executeWithInputsData_batchSize_options_completionHandlerSelector = mkSelector "executeWithInputsData:batchSize:options:completionHandler:"
 
 -- | @Selector@ for @executeWithInputsData:outputsData:batchSize:options:completionHandler:@
-executeWithInputsData_outputsData_batchSize_options_completionHandlerSelector :: Selector
+executeWithInputsData_outputsData_batchSize_options_completionHandlerSelector :: Selector '[Id NSDictionary, Id NSDictionary, CULong, MLCExecutionOptions, Ptr ()] Bool
 executeWithInputsData_outputsData_batchSize_options_completionHandlerSelector = mkSelector "executeWithInputsData:outputsData:batchSize:options:completionHandler:"
 
 -- | @Selector@ for @executeWithInputsData:lossLabelsData:lossLabelWeightsData:batchSize:options:completionHandler:@
-executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector :: Selector
+executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector :: Selector '[Id NSDictionary, Id NSDictionary, Id NSDictionary, CULong, MLCExecutionOptions, Ptr ()] Bool
 executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector = mkSelector "executeWithInputsData:lossLabelsData:lossLabelWeightsData:batchSize:options:completionHandler:"
 
 -- | @Selector@ for @executeWithInputsData:lossLabelsData:lossLabelWeightsData:outputsData:batchSize:options:completionHandler:@
-executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector :: Selector
+executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector :: Selector '[Id NSDictionary, Id NSDictionary, Id NSDictionary, Id NSDictionary, CULong, MLCExecutionOptions, Ptr ()] Bool
 executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector = mkSelector "executeWithInputsData:lossLabelsData:lossLabelWeightsData:outputsData:batchSize:options:completionHandler:"
 
 -- | @Selector@ for @deviceMemorySize@
-deviceMemorySizeSelector :: Selector
+deviceMemorySizeSelector :: Selector '[] CULong
 deviceMemorySizeSelector = mkSelector "deviceMemorySize"
 

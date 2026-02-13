@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,31 +25,27 @@ module ObjC.CoreImage.CIFaceFeature
   , hasSmile
   , leftEyeClosed
   , rightEyeClosed
-  , hasLeftEyePositionSelector
-  , hasRightEyePositionSelector
-  , hasMouthPositionSelector
-  , hasTrackingIDSelector
-  , trackingIDSelector
-  , hasTrackingFrameCountSelector
-  , trackingFrameCountSelector
-  , hasFaceAngleSelector
   , faceAngleSelector
+  , hasFaceAngleSelector
+  , hasLeftEyePositionSelector
+  , hasMouthPositionSelector
+  , hasRightEyePositionSelector
   , hasSmileSelector
+  , hasTrackingFrameCountSelector
+  , hasTrackingIDSelector
   , leftEyeClosedSelector
   , rightEyeClosedSelector
+  , trackingFrameCountSelector
+  , trackingIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,29 +56,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- hasLeftEyePosition@
 hasLeftEyePosition :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO Bool
-hasLeftEyePosition ciFaceFeature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFaceFeature (mkSelector "hasLeftEyePosition") retCULong []
+hasLeftEyePosition ciFaceFeature =
+  sendMessage ciFaceFeature hasLeftEyePositionSelector
 
 -- | A Boolean value that indicates whether the detector found the face’s right eye.
 --
 -- ObjC selector: @- hasRightEyePosition@
 hasRightEyePosition :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO Bool
-hasRightEyePosition ciFaceFeature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFaceFeature (mkSelector "hasRightEyePosition") retCULong []
+hasRightEyePosition ciFaceFeature =
+  sendMessage ciFaceFeature hasRightEyePositionSelector
 
 -- | A Boolean value that indicates whether the detector found the face’s mouth.
 --
 -- ObjC selector: @- hasMouthPosition@
 hasMouthPosition :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO Bool
-hasMouthPosition ciFaceFeature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFaceFeature (mkSelector "hasMouthPosition") retCULong []
+hasMouthPosition ciFaceFeature =
+  sendMessage ciFaceFeature hasMouthPositionSelector
 
 -- | A Boolean value that indicates whether the face object has a tracking ID.
 --
 -- ObjC selector: @- hasTrackingID@
 hasTrackingID :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO Bool
-hasTrackingID ciFaceFeature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFaceFeature (mkSelector "hasTrackingID") retCULong []
+hasTrackingID ciFaceFeature =
+  sendMessage ciFaceFeature hasTrackingIDSelector
 
 -- | The tracking identifier of the face object.
 --
@@ -91,29 +88,29 @@ hasTrackingID ciFaceFeature  =
 --
 -- ObjC selector: @- trackingID@
 trackingID :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO CInt
-trackingID ciFaceFeature  =
-    sendMsg ciFaceFeature (mkSelector "trackingID") retCInt []
+trackingID ciFaceFeature =
+  sendMessage ciFaceFeature trackingIDSelector
 
 -- | A Boolean value that indicates the face object has a tracking frame count.
 --
 -- ObjC selector: @- hasTrackingFrameCount@
 hasTrackingFrameCount :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO Bool
-hasTrackingFrameCount ciFaceFeature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFaceFeature (mkSelector "hasTrackingFrameCount") retCULong []
+hasTrackingFrameCount ciFaceFeature =
+  sendMessage ciFaceFeature hasTrackingFrameCountSelector
 
 -- | The tracking frame count of the face.
 --
 -- ObjC selector: @- trackingFrameCount@
 trackingFrameCount :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO CInt
-trackingFrameCount ciFaceFeature  =
-    sendMsg ciFaceFeature (mkSelector "trackingFrameCount") retCInt []
+trackingFrameCount ciFaceFeature =
+  sendMessage ciFaceFeature trackingFrameCountSelector
 
 -- | A Boolean value that indicates whether information about face rotation is available.
 --
 -- ObjC selector: @- hasFaceAngle@
 hasFaceAngle :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO Bool
-hasFaceAngle ciFaceFeature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFaceFeature (mkSelector "hasFaceAngle") retCULong []
+hasFaceAngle ciFaceFeature =
+  sendMessage ciFaceFeature hasFaceAngleSelector
 
 -- | The rotation of the face.
 --
@@ -121,8 +118,8 @@ hasFaceAngle ciFaceFeature  =
 --
 -- ObjC selector: @- faceAngle@
 faceAngle :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO CFloat
-faceAngle ciFaceFeature  =
-    sendMsg ciFaceFeature (mkSelector "faceAngle") retCFloat []
+faceAngle ciFaceFeature =
+  sendMessage ciFaceFeature faceAngleSelector
 
 -- | A Boolean value that indicates whether a smile is detected in the face.
 --
@@ -130,8 +127,8 @@ faceAngle ciFaceFeature  =
 --
 -- ObjC selector: @- hasSmile@
 hasSmile :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO Bool
-hasSmile ciFaceFeature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFaceFeature (mkSelector "hasSmile") retCULong []
+hasSmile ciFaceFeature =
+  sendMessage ciFaceFeature hasSmileSelector
 
 -- | A Boolean value that indicates whether a closed left eye is detected in the face.
 --
@@ -139,8 +136,8 @@ hasSmile ciFaceFeature  =
 --
 -- ObjC selector: @- leftEyeClosed@
 leftEyeClosed :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO Bool
-leftEyeClosed ciFaceFeature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFaceFeature (mkSelector "leftEyeClosed") retCULong []
+leftEyeClosed ciFaceFeature =
+  sendMessage ciFaceFeature leftEyeClosedSelector
 
 -- | A Boolean value that indicates whether a closed right eye is detected in the face.
 --
@@ -148,58 +145,58 @@ leftEyeClosed ciFaceFeature  =
 --
 -- ObjC selector: @- rightEyeClosed@
 rightEyeClosed :: IsCIFaceFeature ciFaceFeature => ciFaceFeature -> IO Bool
-rightEyeClosed ciFaceFeature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFaceFeature (mkSelector "rightEyeClosed") retCULong []
+rightEyeClosed ciFaceFeature =
+  sendMessage ciFaceFeature rightEyeClosedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @hasLeftEyePosition@
-hasLeftEyePositionSelector :: Selector
+hasLeftEyePositionSelector :: Selector '[] Bool
 hasLeftEyePositionSelector = mkSelector "hasLeftEyePosition"
 
 -- | @Selector@ for @hasRightEyePosition@
-hasRightEyePositionSelector :: Selector
+hasRightEyePositionSelector :: Selector '[] Bool
 hasRightEyePositionSelector = mkSelector "hasRightEyePosition"
 
 -- | @Selector@ for @hasMouthPosition@
-hasMouthPositionSelector :: Selector
+hasMouthPositionSelector :: Selector '[] Bool
 hasMouthPositionSelector = mkSelector "hasMouthPosition"
 
 -- | @Selector@ for @hasTrackingID@
-hasTrackingIDSelector :: Selector
+hasTrackingIDSelector :: Selector '[] Bool
 hasTrackingIDSelector = mkSelector "hasTrackingID"
 
 -- | @Selector@ for @trackingID@
-trackingIDSelector :: Selector
+trackingIDSelector :: Selector '[] CInt
 trackingIDSelector = mkSelector "trackingID"
 
 -- | @Selector@ for @hasTrackingFrameCount@
-hasTrackingFrameCountSelector :: Selector
+hasTrackingFrameCountSelector :: Selector '[] Bool
 hasTrackingFrameCountSelector = mkSelector "hasTrackingFrameCount"
 
 -- | @Selector@ for @trackingFrameCount@
-trackingFrameCountSelector :: Selector
+trackingFrameCountSelector :: Selector '[] CInt
 trackingFrameCountSelector = mkSelector "trackingFrameCount"
 
 -- | @Selector@ for @hasFaceAngle@
-hasFaceAngleSelector :: Selector
+hasFaceAngleSelector :: Selector '[] Bool
 hasFaceAngleSelector = mkSelector "hasFaceAngle"
 
 -- | @Selector@ for @faceAngle@
-faceAngleSelector :: Selector
+faceAngleSelector :: Selector '[] CFloat
 faceAngleSelector = mkSelector "faceAngle"
 
 -- | @Selector@ for @hasSmile@
-hasSmileSelector :: Selector
+hasSmileSelector :: Selector '[] Bool
 hasSmileSelector = mkSelector "hasSmile"
 
 -- | @Selector@ for @leftEyeClosed@
-leftEyeClosedSelector :: Selector
+leftEyeClosedSelector :: Selector '[] Bool
 leftEyeClosedSelector = mkSelector "leftEyeClosed"
 
 -- | @Selector@ for @rightEyeClosed@
-rightEyeClosedSelector :: Selector
+rightEyeClosedSelector :: Selector '[] Bool
 rightEyeClosedSelector = mkSelector "rightEyeClosed"
 

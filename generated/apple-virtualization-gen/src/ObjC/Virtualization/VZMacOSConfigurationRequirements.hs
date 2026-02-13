@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.Virtualization.VZMacOSConfigurationRequirements
   , hardwareModel
   , minimumSupportedCPUCount
   , minimumSupportedMemorySize
-  , newSelector
-  , initSelector
   , hardwareModelSelector
+  , initSelector
   , minimumSupportedCPUCountSelector
   , minimumSupportedMemorySizeSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,12 +45,12 @@ new :: IO (Id VZMacOSConfigurationRequirements)
 new  =
   do
     cls' <- getRequiredClass "VZMacOSConfigurationRequirements"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZMacOSConfigurationRequirements vzMacOSConfigurationRequirements => vzMacOSConfigurationRequirements -> IO (Id VZMacOSConfigurationRequirements)
-init_ vzMacOSConfigurationRequirements  =
-    sendMsg vzMacOSConfigurationRequirements (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzMacOSConfigurationRequirements =
+  sendOwnedMessage vzMacOSConfigurationRequirements initSelector
 
 -- | The hardware model for this configuration.
 --
@@ -65,8 +62,8 @@ init_ vzMacOSConfigurationRequirements  =
 --
 -- ObjC selector: @- hardwareModel@
 hardwareModel :: IsVZMacOSConfigurationRequirements vzMacOSConfigurationRequirements => vzMacOSConfigurationRequirements -> IO (Id VZMacHardwareModel)
-hardwareModel vzMacOSConfigurationRequirements  =
-    sendMsg vzMacOSConfigurationRequirements (mkSelector "hardwareModel") (retPtr retVoid) [] >>= retainedObject . castPtr
+hardwareModel vzMacOSConfigurationRequirements =
+  sendMessage vzMacOSConfigurationRequirements hardwareModelSelector
 
 -- | The minimum supported number of CPUs for this configuration.
 --
@@ -74,8 +71,8 @@ hardwareModel vzMacOSConfigurationRequirements  =
 --
 -- ObjC selector: @- minimumSupportedCPUCount@
 minimumSupportedCPUCount :: IsVZMacOSConfigurationRequirements vzMacOSConfigurationRequirements => vzMacOSConfigurationRequirements -> IO CULong
-minimumSupportedCPUCount vzMacOSConfigurationRequirements  =
-    sendMsg vzMacOSConfigurationRequirements (mkSelector "minimumSupportedCPUCount") retCULong []
+minimumSupportedCPUCount vzMacOSConfigurationRequirements =
+  sendMessage vzMacOSConfigurationRequirements minimumSupportedCPUCountSelector
 
 -- | The minimum supported memory size for this configuration.
 --
@@ -83,30 +80,30 @@ minimumSupportedCPUCount vzMacOSConfigurationRequirements  =
 --
 -- ObjC selector: @- minimumSupportedMemorySize@
 minimumSupportedMemorySize :: IsVZMacOSConfigurationRequirements vzMacOSConfigurationRequirements => vzMacOSConfigurationRequirements -> IO CULong
-minimumSupportedMemorySize vzMacOSConfigurationRequirements  =
-    sendMsg vzMacOSConfigurationRequirements (mkSelector "minimumSupportedMemorySize") retCULong []
+minimumSupportedMemorySize vzMacOSConfigurationRequirements =
+  sendMessage vzMacOSConfigurationRequirements minimumSupportedMemorySizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZMacOSConfigurationRequirements)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMacOSConfigurationRequirements)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @hardwareModel@
-hardwareModelSelector :: Selector
+hardwareModelSelector :: Selector '[] (Id VZMacHardwareModel)
 hardwareModelSelector = mkSelector "hardwareModel"
 
 -- | @Selector@ for @minimumSupportedCPUCount@
-minimumSupportedCPUCountSelector :: Selector
+minimumSupportedCPUCountSelector :: Selector '[] CULong
 minimumSupportedCPUCountSelector = mkSelector "minimumSupportedCPUCount"
 
 -- | @Selector@ for @minimumSupportedMemorySize@
-minimumSupportedMemorySizeSelector :: Selector
+minimumSupportedMemorySizeSelector :: Selector '[] CULong
 minimumSupportedMemorySizeSelector = mkSelector "minimumSupportedMemorySize"
 

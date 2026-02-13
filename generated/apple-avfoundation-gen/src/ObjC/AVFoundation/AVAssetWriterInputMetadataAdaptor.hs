@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AVFoundation.AVAssetWriterInputMetadataAdaptor
   , initWithAssetWriterInput
   , appendTimedMetadataGroup
   , assetWriterInput
-  , initSelector
-  , newSelector
-  , assetWriterInputMetadataAdaptorWithAssetWriterInputSelector
-  , initWithAssetWriterInputSelector
   , appendTimedMetadataGroupSelector
+  , assetWriterInputMetadataAdaptorWithAssetWriterInputSelector
   , assetWriterInputSelector
+  , initSelector
+  , initWithAssetWriterInputSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetWriterInputMetadataAdaptor avAssetWriterInputMetadataAdaptor => avAssetWriterInputMetadataAdaptor -> IO (Id AVAssetWriterInputMetadataAdaptor)
-init_ avAssetWriterInputMetadataAdaptor  =
-    sendMsg avAssetWriterInputMetadataAdaptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetWriterInputMetadataAdaptor =
+  sendOwnedMessage avAssetWriterInputMetadataAdaptor initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetWriterInputMetadataAdaptor)
 new  =
   do
     cls' <- getRequiredClass "AVAssetWriterInputMetadataAdaptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates a new timed metadata group adaptor to receive instances of AVTimedMetadataGroup for writing to the output file.
 --
@@ -64,8 +61,7 @@ assetWriterInputMetadataAdaptorWithAssetWriterInput :: IsAVAssetWriterInput inpu
 assetWriterInputMetadataAdaptorWithAssetWriterInput input =
   do
     cls' <- getRequiredClass "AVAssetWriterInputMetadataAdaptor"
-    withObjCPtr input $ \raw_input ->
-      sendClassMsg cls' (mkSelector "assetWriterInputMetadataAdaptorWithAssetWriterInput:") (retPtr retVoid) [argPtr (castPtr raw_input :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetWriterInputMetadataAdaptorWithAssetWriterInputSelector (toAVAssetWriterInput input)
 
 -- | Creates a new timed metadator group adaptor to receive instances of AVTimedMetadataGroup for writing to the output file.
 --
@@ -79,9 +75,8 @@ assetWriterInputMetadataAdaptorWithAssetWriterInput input =
 --
 -- ObjC selector: @- initWithAssetWriterInput:@
 initWithAssetWriterInput :: (IsAVAssetWriterInputMetadataAdaptor avAssetWriterInputMetadataAdaptor, IsAVAssetWriterInput input) => avAssetWriterInputMetadataAdaptor -> input -> IO (Id AVAssetWriterInputMetadataAdaptor)
-initWithAssetWriterInput avAssetWriterInputMetadataAdaptor  input =
-  withObjCPtr input $ \raw_input ->
-      sendMsg avAssetWriterInputMetadataAdaptor (mkSelector "initWithAssetWriterInput:") (retPtr retVoid) [argPtr (castPtr raw_input :: Ptr ())] >>= ownedObject . castPtr
+initWithAssetWriterInput avAssetWriterInputMetadataAdaptor input =
+  sendOwnedMessage avAssetWriterInputMetadataAdaptor initWithAssetWriterInputSelector (toAVAssetWriterInput input)
 
 -- | Appends a timed metadata group to the receiver.
 --
@@ -99,42 +94,41 @@ initWithAssetWriterInput avAssetWriterInputMetadataAdaptor  input =
 --
 -- ObjC selector: @- appendTimedMetadataGroup:@
 appendTimedMetadataGroup :: (IsAVAssetWriterInputMetadataAdaptor avAssetWriterInputMetadataAdaptor, IsAVTimedMetadataGroup timedMetadataGroup) => avAssetWriterInputMetadataAdaptor -> timedMetadataGroup -> IO Bool
-appendTimedMetadataGroup avAssetWriterInputMetadataAdaptor  timedMetadataGroup =
-  withObjCPtr timedMetadataGroup $ \raw_timedMetadataGroup ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInputMetadataAdaptor (mkSelector "appendTimedMetadataGroup:") retCULong [argPtr (castPtr raw_timedMetadataGroup :: Ptr ())]
+appendTimedMetadataGroup avAssetWriterInputMetadataAdaptor timedMetadataGroup =
+  sendMessage avAssetWriterInputMetadataAdaptor appendTimedMetadataGroupSelector (toAVTimedMetadataGroup timedMetadataGroup)
 
 -- | The asset writer input to which the receiver should append timed metadata groups.
 --
 -- ObjC selector: @- assetWriterInput@
 assetWriterInput :: IsAVAssetWriterInputMetadataAdaptor avAssetWriterInputMetadataAdaptor => avAssetWriterInputMetadataAdaptor -> IO (Id AVAssetWriterInput)
-assetWriterInput avAssetWriterInputMetadataAdaptor  =
-    sendMsg avAssetWriterInputMetadataAdaptor (mkSelector "assetWriterInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetWriterInput avAssetWriterInputMetadataAdaptor =
+  sendMessage avAssetWriterInputMetadataAdaptor assetWriterInputSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetWriterInputMetadataAdaptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetWriterInputMetadataAdaptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetWriterInputMetadataAdaptorWithAssetWriterInput:@
-assetWriterInputMetadataAdaptorWithAssetWriterInputSelector :: Selector
+assetWriterInputMetadataAdaptorWithAssetWriterInputSelector :: Selector '[Id AVAssetWriterInput] (Id AVAssetWriterInputMetadataAdaptor)
 assetWriterInputMetadataAdaptorWithAssetWriterInputSelector = mkSelector "assetWriterInputMetadataAdaptorWithAssetWriterInput:"
 
 -- | @Selector@ for @initWithAssetWriterInput:@
-initWithAssetWriterInputSelector :: Selector
+initWithAssetWriterInputSelector :: Selector '[Id AVAssetWriterInput] (Id AVAssetWriterInputMetadataAdaptor)
 initWithAssetWriterInputSelector = mkSelector "initWithAssetWriterInput:"
 
 -- | @Selector@ for @appendTimedMetadataGroup:@
-appendTimedMetadataGroupSelector :: Selector
+appendTimedMetadataGroupSelector :: Selector '[Id AVTimedMetadataGroup] Bool
 appendTimedMetadataGroupSelector = mkSelector "appendTimedMetadataGroup:"
 
 -- | @Selector@ for @assetWriterInput@
-assetWriterInputSelector :: Selector
+assetWriterInputSelector :: Selector '[] (Id AVAssetWriterInput)
 assetWriterInputSelector = mkSelector "assetWriterInput"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Intents.INFocusStatus
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,33 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINFocusStatus inFocusStatus => inFocusStatus -> IO (Id INFocusStatus)
-init_ inFocusStatus  =
-    sendMsg inFocusStatus (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inFocusStatus =
+  sendOwnedMessage inFocusStatus initSelector
 
 -- | @- initWithIsFocused:@
 initWithIsFocused :: (IsINFocusStatus inFocusStatus, IsNSNumber isFocused) => inFocusStatus -> isFocused -> IO (Id INFocusStatus)
-initWithIsFocused inFocusStatus  isFocused =
-  withObjCPtr isFocused $ \raw_isFocused ->
-      sendMsg inFocusStatus (mkSelector "initWithIsFocused:") (retPtr retVoid) [argPtr (castPtr raw_isFocused :: Ptr ())] >>= ownedObject . castPtr
+initWithIsFocused inFocusStatus isFocused =
+  sendOwnedMessage inFocusStatus initWithIsFocusedSelector (toNSNumber isFocused)
 
 -- | @- isFocused@
 isFocused :: IsINFocusStatus inFocusStatus => inFocusStatus -> IO (Id NSNumber)
-isFocused inFocusStatus  =
-    sendMsg inFocusStatus (mkSelector "isFocused") (retPtr retVoid) [] >>= retainedObject . castPtr
+isFocused inFocusStatus =
+  sendMessage inFocusStatus isFocusedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INFocusStatus)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithIsFocused:@
-initWithIsFocusedSelector :: Selector
+initWithIsFocusedSelector :: Selector '[Id NSNumber] (Id INFocusStatus)
 initWithIsFocusedSelector = mkSelector "initWithIsFocused:"
 
 -- | @Selector@ for @isFocused@
-isFocusedSelector :: Selector
+isFocusedSelector :: Selector '[] (Id NSNumber)
 isFocusedSelector = mkSelector "isFocused"
 

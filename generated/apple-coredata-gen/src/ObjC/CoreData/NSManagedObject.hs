@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,49 +52,50 @@ module ObjC.CoreData.NSManagedObject
   , hasPersistentChangedValues
   , fault
   , faultingState
-  , entitySelector
-  , fetchRequestSelector
-  , initWithEntity_insertIntoManagedObjectContextSelector
-  , initWithContextSelector
-  , hasFaultForRelationshipNamedSelector
-  , objectIDsForRelationshipNamedSelector
-  , willAccessValueForKeySelector
-  , didAccessValueForKeySelector
-  , willChangeValueForKeySelector
-  , didChangeValueForKeySelector
-  , willChangeValueForKey_withSetMutation_usingObjectsSelector
-  , didChangeValueForKey_withSetMutation_usingObjectsSelector
   , awakeFromFetchSelector
   , awakeFromInsertSelector
   , awakeFromSnapshotEventsSelector
-  , prepareForDeletionSelector
-  , willSaveSelector
-  , didSaveSelector
-  , willTurnIntoFaultSelector
-  , didTurnIntoFaultSelector
-  , valueForKeySelector
-  , setValue_forKeySelector
-  , primitiveValueForKeySelector
-  , setPrimitiveValue_forKeySelector
-  , committedValuesForKeysSelector
-  , changedValuesSelector
   , changedValuesForCurrentEventSelector
-  , validateValue_forKey_errorSelector
+  , changedValuesSelector
+  , committedValuesForKeysSelector
+  , contextShouldIgnoreUnmodeledPropertyChangesSelector
+  , deletedSelector
+  , didAccessValueForKeySelector
+  , didChangeValueForKeySelector
+  , didChangeValueForKey_withSetMutation_usingObjectsSelector
+  , didSaveSelector
+  , didTurnIntoFaultSelector
+  , entitySelector
+  , faultSelector
+  , faultingStateSelector
+  , fetchRequestSelector
+  , hasChangesSelector
+  , hasFaultForRelationshipNamedSelector
+  , hasPersistentChangedValuesSelector
+  , initWithContextSelector
+  , initWithEntity_insertIntoManagedObjectContextSelector
+  , insertedSelector
+  , managedObjectContextSelector
+  , nsManagedObjectEntitySelector
+  , objectIDSelector
+  , objectIDsForRelationshipNamedSelector
+  , observationInfoSelector
+  , prepareForDeletionSelector
+  , primitiveValueForKeySelector
+  , setObservationInfoSelector
+  , setPrimitiveValue_forKeySelector
+  , setValue_forKeySelector
+  , updatedSelector
   , validateForDeleteSelector
   , validateForInsertSelector
   , validateForUpdateSelector
-  , setObservationInfoSelector
-  , observationInfoSelector
-  , contextShouldIgnoreUnmodeledPropertyChangesSelector
-  , managedObjectContextSelector
-  , objectIDSelector
-  , insertedSelector
-  , updatedSelector
-  , deletedSelector
-  , hasChangesSelector
-  , hasPersistentChangedValuesSelector
-  , faultSelector
-  , faultingStateSelector
+  , validateValue_forKey_errorSelector
+  , valueForKeySelector
+  , willAccessValueForKeySelector
+  , willChangeValueForKeySelector
+  , willChangeValueForKey_withSetMutation_usingObjectsSelector
+  , willSaveSelector
+  , willTurnIntoFaultSelector
 
   -- * Enum types
   , NSKeyValueSetMutationKind(NSKeyValueSetMutationKind)
@@ -111,15 +113,11 @@ module ObjC.CoreData.NSManagedObject
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -133,423 +131,404 @@ nsManagedObjectEntity :: IO (Id NSEntityDescription)
 nsManagedObjectEntity  =
   do
     cls' <- getRequiredClass "NSManagedObject"
-    sendClassMsg cls' (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nsManagedObjectEntitySelector
 
 -- | @+ fetchRequest@
 fetchRequest :: IO (Id NSFetchRequest)
 fetchRequest  =
   do
     cls' <- getRequiredClass "NSManagedObject"
-    sendClassMsg cls' (mkSelector "fetchRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchRequestSelector
 
 -- | @- initWithEntity:insertIntoManagedObjectContext:@
 initWithEntity_insertIntoManagedObjectContext :: (IsNSManagedObject nsManagedObject, IsNSEntityDescription entity, IsNSManagedObjectContext context) => nsManagedObject -> entity -> context -> IO (Id NSManagedObject)
-initWithEntity_insertIntoManagedObjectContext nsManagedObject  entity context =
-  withObjCPtr entity $ \raw_entity ->
-    withObjCPtr context $ \raw_context ->
-        sendMsg nsManagedObject (mkSelector "initWithEntity:insertIntoManagedObjectContext:") (retPtr retVoid) [argPtr (castPtr raw_entity :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= ownedObject . castPtr
+initWithEntity_insertIntoManagedObjectContext nsManagedObject entity context =
+  sendOwnedMessage nsManagedObject initWithEntity_insertIntoManagedObjectContextSelector (toNSEntityDescription entity) (toNSManagedObjectContext context)
 
 -- | @- initWithContext:@
 initWithContext :: (IsNSManagedObject nsManagedObject, IsNSManagedObjectContext moc) => nsManagedObject -> moc -> IO (Id NSManagedObject)
-initWithContext nsManagedObject  moc =
-  withObjCPtr moc $ \raw_moc ->
-      sendMsg nsManagedObject (mkSelector "initWithContext:") (retPtr retVoid) [argPtr (castPtr raw_moc :: Ptr ())] >>= ownedObject . castPtr
+initWithContext nsManagedObject moc =
+  sendOwnedMessage nsManagedObject initWithContextSelector (toNSManagedObjectContext moc)
 
 -- | @- hasFaultForRelationshipNamed:@
 hasFaultForRelationshipNamed :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> key -> IO Bool
-hasFaultForRelationshipNamed nsManagedObject  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "hasFaultForRelationshipNamed:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+hasFaultForRelationshipNamed nsManagedObject key =
+  sendMessage nsManagedObject hasFaultForRelationshipNamedSelector (toNSString key)
 
 -- | @- objectIDsForRelationshipNamed:@
 objectIDsForRelationshipNamed :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> key -> IO (Id NSArray)
-objectIDsForRelationshipNamed nsManagedObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsManagedObject (mkSelector "objectIDsForRelationshipNamed:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+objectIDsForRelationshipNamed nsManagedObject key =
+  sendMessage nsManagedObject objectIDsForRelationshipNamedSelector (toNSString key)
 
 -- | @- willAccessValueForKey:@
 willAccessValueForKey :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> key -> IO ()
-willAccessValueForKey nsManagedObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsManagedObject (mkSelector "willAccessValueForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+willAccessValueForKey nsManagedObject key =
+  sendMessage nsManagedObject willAccessValueForKeySelector (toNSString key)
 
 -- | @- didAccessValueForKey:@
 didAccessValueForKey :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> key -> IO ()
-didAccessValueForKey nsManagedObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsManagedObject (mkSelector "didAccessValueForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+didAccessValueForKey nsManagedObject key =
+  sendMessage nsManagedObject didAccessValueForKeySelector (toNSString key)
 
 -- | @- willChangeValueForKey:@
 willChangeValueForKey :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> key -> IO ()
-willChangeValueForKey nsManagedObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsManagedObject (mkSelector "willChangeValueForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+willChangeValueForKey nsManagedObject key =
+  sendMessage nsManagedObject willChangeValueForKeySelector (toNSString key)
 
 -- | @- didChangeValueForKey:@
 didChangeValueForKey :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> key -> IO ()
-didChangeValueForKey nsManagedObject  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsManagedObject (mkSelector "didChangeValueForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+didChangeValueForKey nsManagedObject key =
+  sendMessage nsManagedObject didChangeValueForKeySelector (toNSString key)
 
 -- | @- willChangeValueForKey:withSetMutation:usingObjects:@
 willChangeValueForKey_withSetMutation_usingObjects :: (IsNSManagedObject nsManagedObject, IsNSString inKey, IsNSSet inObjects) => nsManagedObject -> inKey -> NSKeyValueSetMutationKind -> inObjects -> IO ()
-willChangeValueForKey_withSetMutation_usingObjects nsManagedObject  inKey inMutationKind inObjects =
-  withObjCPtr inKey $ \raw_inKey ->
-    withObjCPtr inObjects $ \raw_inObjects ->
-        sendMsg nsManagedObject (mkSelector "willChangeValueForKey:withSetMutation:usingObjects:") retVoid [argPtr (castPtr raw_inKey :: Ptr ()), argCULong (coerce inMutationKind), argPtr (castPtr raw_inObjects :: Ptr ())]
+willChangeValueForKey_withSetMutation_usingObjects nsManagedObject inKey inMutationKind inObjects =
+  sendMessage nsManagedObject willChangeValueForKey_withSetMutation_usingObjectsSelector (toNSString inKey) inMutationKind (toNSSet inObjects)
 
 -- | @- didChangeValueForKey:withSetMutation:usingObjects:@
 didChangeValueForKey_withSetMutation_usingObjects :: (IsNSManagedObject nsManagedObject, IsNSString inKey, IsNSSet inObjects) => nsManagedObject -> inKey -> NSKeyValueSetMutationKind -> inObjects -> IO ()
-didChangeValueForKey_withSetMutation_usingObjects nsManagedObject  inKey inMutationKind inObjects =
-  withObjCPtr inKey $ \raw_inKey ->
-    withObjCPtr inObjects $ \raw_inObjects ->
-        sendMsg nsManagedObject (mkSelector "didChangeValueForKey:withSetMutation:usingObjects:") retVoid [argPtr (castPtr raw_inKey :: Ptr ()), argCULong (coerce inMutationKind), argPtr (castPtr raw_inObjects :: Ptr ())]
+didChangeValueForKey_withSetMutation_usingObjects nsManagedObject inKey inMutationKind inObjects =
+  sendMessage nsManagedObject didChangeValueForKey_withSetMutation_usingObjectsSelector (toNSString inKey) inMutationKind (toNSSet inObjects)
 
 -- | @- awakeFromFetch@
 awakeFromFetch :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO ()
-awakeFromFetch nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "awakeFromFetch") retVoid []
+awakeFromFetch nsManagedObject =
+  sendMessage nsManagedObject awakeFromFetchSelector
 
 -- | @- awakeFromInsert@
 awakeFromInsert :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO ()
-awakeFromInsert nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "awakeFromInsert") retVoid []
+awakeFromInsert nsManagedObject =
+  sendMessage nsManagedObject awakeFromInsertSelector
 
 -- | @- awakeFromSnapshotEvents:@
 awakeFromSnapshotEvents :: IsNSManagedObject nsManagedObject => nsManagedObject -> NSSnapshotEventType -> IO ()
-awakeFromSnapshotEvents nsManagedObject  flags =
-    sendMsg nsManagedObject (mkSelector "awakeFromSnapshotEvents:") retVoid [argCULong (coerce flags)]
+awakeFromSnapshotEvents nsManagedObject flags =
+  sendMessage nsManagedObject awakeFromSnapshotEventsSelector flags
 
 -- | @- prepareForDeletion@
 prepareForDeletion :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO ()
-prepareForDeletion nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "prepareForDeletion") retVoid []
+prepareForDeletion nsManagedObject =
+  sendMessage nsManagedObject prepareForDeletionSelector
 
 -- | @- willSave@
 willSave :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO ()
-willSave nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "willSave") retVoid []
+willSave nsManagedObject =
+  sendMessage nsManagedObject willSaveSelector
 
 -- | @- didSave@
 didSave :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO ()
-didSave nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "didSave") retVoid []
+didSave nsManagedObject =
+  sendMessage nsManagedObject didSaveSelector
 
 -- | @- willTurnIntoFault@
 willTurnIntoFault :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO ()
-willTurnIntoFault nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "willTurnIntoFault") retVoid []
+willTurnIntoFault nsManagedObject =
+  sendMessage nsManagedObject willTurnIntoFaultSelector
 
 -- | @- didTurnIntoFault@
 didTurnIntoFault :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO ()
-didTurnIntoFault nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "didTurnIntoFault") retVoid []
+didTurnIntoFault nsManagedObject =
+  sendMessage nsManagedObject didTurnIntoFaultSelector
 
 -- | @- valueForKey:@
 valueForKey :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> key -> IO RawId
-valueForKey nsManagedObject  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsManagedObject (mkSelector "valueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+valueForKey nsManagedObject key =
+  sendMessage nsManagedObject valueForKeySelector (toNSString key)
 
 -- | @- setValue:forKey:@
 setValue_forKey :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> RawId -> key -> IO ()
-setValue_forKey nsManagedObject  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsManagedObject (mkSelector "setValue:forKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forKey nsManagedObject value key =
+  sendMessage nsManagedObject setValue_forKeySelector value (toNSString key)
 
 -- | @- primitiveValueForKey:@
 primitiveValueForKey :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> key -> IO RawId
-primitiveValueForKey nsManagedObject  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsManagedObject (mkSelector "primitiveValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+primitiveValueForKey nsManagedObject key =
+  sendMessage nsManagedObject primitiveValueForKeySelector (toNSString key)
 
 -- | @- setPrimitiveValue:forKey:@
 setPrimitiveValue_forKey :: (IsNSManagedObject nsManagedObject, IsNSString key) => nsManagedObject -> RawId -> key -> IO ()
-setPrimitiveValue_forKey nsManagedObject  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsManagedObject (mkSelector "setPrimitiveValue:forKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setPrimitiveValue_forKey nsManagedObject value key =
+  sendMessage nsManagedObject setPrimitiveValue_forKeySelector value (toNSString key)
 
 -- | @- committedValuesForKeys:@
 committedValuesForKeys :: (IsNSManagedObject nsManagedObject, IsNSArray keys) => nsManagedObject -> keys -> IO (Id NSDictionary)
-committedValuesForKeys nsManagedObject  keys =
-  withObjCPtr keys $ \raw_keys ->
-      sendMsg nsManagedObject (mkSelector "committedValuesForKeys:") (retPtr retVoid) [argPtr (castPtr raw_keys :: Ptr ())] >>= retainedObject . castPtr
+committedValuesForKeys nsManagedObject keys =
+  sendMessage nsManagedObject committedValuesForKeysSelector (toNSArray keys)
 
 -- | @- changedValues@
 changedValues :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO (Id NSDictionary)
-changedValues nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "changedValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+changedValues nsManagedObject =
+  sendMessage nsManagedObject changedValuesSelector
 
 -- | @- changedValuesForCurrentEvent@
 changedValuesForCurrentEvent :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO (Id NSDictionary)
-changedValuesForCurrentEvent nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "changedValuesForCurrentEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+changedValuesForCurrentEvent nsManagedObject =
+  sendMessage nsManagedObject changedValuesForCurrentEventSelector
 
 -- | @- validateValue:forKey:error:@
 validateValue_forKey_error :: (IsNSManagedObject nsManagedObject, IsNSString key, IsNSError error_) => nsManagedObject -> Ptr RawId -> key -> error_ -> IO Bool
-validateValue_forKey_error nsManagedObject  value key error_ =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "validateValue:forKey:error:") retCULong [argPtr value, argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+validateValue_forKey_error nsManagedObject value key error_ =
+  sendMessage nsManagedObject validateValue_forKey_errorSelector value (toNSString key) (toNSError error_)
 
 -- | @- validateForDelete:@
 validateForDelete :: (IsNSManagedObject nsManagedObject, IsNSError error_) => nsManagedObject -> error_ -> IO Bool
-validateForDelete nsManagedObject  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "validateForDelete:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+validateForDelete nsManagedObject error_ =
+  sendMessage nsManagedObject validateForDeleteSelector (toNSError error_)
 
 -- | @- validateForInsert:@
 validateForInsert :: (IsNSManagedObject nsManagedObject, IsNSError error_) => nsManagedObject -> error_ -> IO Bool
-validateForInsert nsManagedObject  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "validateForInsert:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+validateForInsert nsManagedObject error_ =
+  sendMessage nsManagedObject validateForInsertSelector (toNSError error_)
 
 -- | @- validateForUpdate:@
 validateForUpdate :: (IsNSManagedObject nsManagedObject, IsNSError error_) => nsManagedObject -> error_ -> IO Bool
-validateForUpdate nsManagedObject  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "validateForUpdate:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+validateForUpdate nsManagedObject error_ =
+  sendMessage nsManagedObject validateForUpdateSelector (toNSError error_)
 
 -- | @- setObservationInfo:@
 setObservationInfo :: IsNSManagedObject nsManagedObject => nsManagedObject -> Ptr () -> IO ()
-setObservationInfo nsManagedObject  inObservationInfo =
-    sendMsg nsManagedObject (mkSelector "setObservationInfo:") retVoid [argPtr inObservationInfo]
+setObservationInfo nsManagedObject inObservationInfo =
+  sendMessage nsManagedObject setObservationInfoSelector inObservationInfo
 
 -- | @- observationInfo@
 observationInfo :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO (Ptr ())
-observationInfo nsManagedObject  =
-    fmap castPtr $ sendMsg nsManagedObject (mkSelector "observationInfo") (retPtr retVoid) []
+observationInfo nsManagedObject =
+  sendMessage nsManagedObject observationInfoSelector
 
 -- | @+ contextShouldIgnoreUnmodeledPropertyChanges@
 contextShouldIgnoreUnmodeledPropertyChanges :: IO Bool
 contextShouldIgnoreUnmodeledPropertyChanges  =
   do
     cls' <- getRequiredClass "NSManagedObject"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "contextShouldIgnoreUnmodeledPropertyChanges") retCULong []
+    sendClassMessage cls' contextShouldIgnoreUnmodeledPropertyChangesSelector
 
 -- | @- managedObjectContext@
 managedObjectContext :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO (Id NSManagedObjectContext)
-managedObjectContext nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "managedObjectContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+managedObjectContext nsManagedObject =
+  sendMessage nsManagedObject managedObjectContextSelector
 
 -- | @- entity@
 entity :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO (Id NSEntityDescription)
-entity nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+entity nsManagedObject =
+  sendMessage nsManagedObject entitySelector
 
 -- | @- objectID@
 objectID :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO (Id NSManagedObjectID)
-objectID nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "objectID") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectID nsManagedObject =
+  sendMessage nsManagedObject objectIDSelector
 
 -- | @- inserted@
 inserted :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO Bool
-inserted nsManagedObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "inserted") retCULong []
+inserted nsManagedObject =
+  sendMessage nsManagedObject insertedSelector
 
 -- | @- updated@
 updated :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO Bool
-updated nsManagedObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "updated") retCULong []
+updated nsManagedObject =
+  sendMessage nsManagedObject updatedSelector
 
 -- | @- deleted@
 deleted :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO Bool
-deleted nsManagedObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "deleted") retCULong []
+deleted nsManagedObject =
+  sendMessage nsManagedObject deletedSelector
 
 -- | @- hasChanges@
 hasChanges :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO Bool
-hasChanges nsManagedObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "hasChanges") retCULong []
+hasChanges nsManagedObject =
+  sendMessage nsManagedObject hasChangesSelector
 
 -- | @- hasPersistentChangedValues@
 hasPersistentChangedValues :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO Bool
-hasPersistentChangedValues nsManagedObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "hasPersistentChangedValues") retCULong []
+hasPersistentChangedValues nsManagedObject =
+  sendMessage nsManagedObject hasPersistentChangedValuesSelector
 
 -- | @- fault@
 fault :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO Bool
-fault nsManagedObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsManagedObject (mkSelector "fault") retCULong []
+fault nsManagedObject =
+  sendMessage nsManagedObject faultSelector
 
 -- | @- faultingState@
 faultingState :: IsNSManagedObject nsManagedObject => nsManagedObject -> IO CULong
-faultingState nsManagedObject  =
-    sendMsg nsManagedObject (mkSelector "faultingState") retCULong []
+faultingState nsManagedObject =
+  sendMessage nsManagedObject faultingStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
-entitySelector = mkSelector "entity"
+nsManagedObjectEntitySelector :: Selector '[] (Id NSEntityDescription)
+nsManagedObjectEntitySelector = mkSelector "entity"
 
 -- | @Selector@ for @fetchRequest@
-fetchRequestSelector :: Selector
+fetchRequestSelector :: Selector '[] (Id NSFetchRequest)
 fetchRequestSelector = mkSelector "fetchRequest"
 
 -- | @Selector@ for @initWithEntity:insertIntoManagedObjectContext:@
-initWithEntity_insertIntoManagedObjectContextSelector :: Selector
+initWithEntity_insertIntoManagedObjectContextSelector :: Selector '[Id NSEntityDescription, Id NSManagedObjectContext] (Id NSManagedObject)
 initWithEntity_insertIntoManagedObjectContextSelector = mkSelector "initWithEntity:insertIntoManagedObjectContext:"
 
 -- | @Selector@ for @initWithContext:@
-initWithContextSelector :: Selector
+initWithContextSelector :: Selector '[Id NSManagedObjectContext] (Id NSManagedObject)
 initWithContextSelector = mkSelector "initWithContext:"
 
 -- | @Selector@ for @hasFaultForRelationshipNamed:@
-hasFaultForRelationshipNamedSelector :: Selector
+hasFaultForRelationshipNamedSelector :: Selector '[Id NSString] Bool
 hasFaultForRelationshipNamedSelector = mkSelector "hasFaultForRelationshipNamed:"
 
 -- | @Selector@ for @objectIDsForRelationshipNamed:@
-objectIDsForRelationshipNamedSelector :: Selector
+objectIDsForRelationshipNamedSelector :: Selector '[Id NSString] (Id NSArray)
 objectIDsForRelationshipNamedSelector = mkSelector "objectIDsForRelationshipNamed:"
 
 -- | @Selector@ for @willAccessValueForKey:@
-willAccessValueForKeySelector :: Selector
+willAccessValueForKeySelector :: Selector '[Id NSString] ()
 willAccessValueForKeySelector = mkSelector "willAccessValueForKey:"
 
 -- | @Selector@ for @didAccessValueForKey:@
-didAccessValueForKeySelector :: Selector
+didAccessValueForKeySelector :: Selector '[Id NSString] ()
 didAccessValueForKeySelector = mkSelector "didAccessValueForKey:"
 
 -- | @Selector@ for @willChangeValueForKey:@
-willChangeValueForKeySelector :: Selector
+willChangeValueForKeySelector :: Selector '[Id NSString] ()
 willChangeValueForKeySelector = mkSelector "willChangeValueForKey:"
 
 -- | @Selector@ for @didChangeValueForKey:@
-didChangeValueForKeySelector :: Selector
+didChangeValueForKeySelector :: Selector '[Id NSString] ()
 didChangeValueForKeySelector = mkSelector "didChangeValueForKey:"
 
 -- | @Selector@ for @willChangeValueForKey:withSetMutation:usingObjects:@
-willChangeValueForKey_withSetMutation_usingObjectsSelector :: Selector
+willChangeValueForKey_withSetMutation_usingObjectsSelector :: Selector '[Id NSString, NSKeyValueSetMutationKind, Id NSSet] ()
 willChangeValueForKey_withSetMutation_usingObjectsSelector = mkSelector "willChangeValueForKey:withSetMutation:usingObjects:"
 
 -- | @Selector@ for @didChangeValueForKey:withSetMutation:usingObjects:@
-didChangeValueForKey_withSetMutation_usingObjectsSelector :: Selector
+didChangeValueForKey_withSetMutation_usingObjectsSelector :: Selector '[Id NSString, NSKeyValueSetMutationKind, Id NSSet] ()
 didChangeValueForKey_withSetMutation_usingObjectsSelector = mkSelector "didChangeValueForKey:withSetMutation:usingObjects:"
 
 -- | @Selector@ for @awakeFromFetch@
-awakeFromFetchSelector :: Selector
+awakeFromFetchSelector :: Selector '[] ()
 awakeFromFetchSelector = mkSelector "awakeFromFetch"
 
 -- | @Selector@ for @awakeFromInsert@
-awakeFromInsertSelector :: Selector
+awakeFromInsertSelector :: Selector '[] ()
 awakeFromInsertSelector = mkSelector "awakeFromInsert"
 
 -- | @Selector@ for @awakeFromSnapshotEvents:@
-awakeFromSnapshotEventsSelector :: Selector
+awakeFromSnapshotEventsSelector :: Selector '[NSSnapshotEventType] ()
 awakeFromSnapshotEventsSelector = mkSelector "awakeFromSnapshotEvents:"
 
 -- | @Selector@ for @prepareForDeletion@
-prepareForDeletionSelector :: Selector
+prepareForDeletionSelector :: Selector '[] ()
 prepareForDeletionSelector = mkSelector "prepareForDeletion"
 
 -- | @Selector@ for @willSave@
-willSaveSelector :: Selector
+willSaveSelector :: Selector '[] ()
 willSaveSelector = mkSelector "willSave"
 
 -- | @Selector@ for @didSave@
-didSaveSelector :: Selector
+didSaveSelector :: Selector '[] ()
 didSaveSelector = mkSelector "didSave"
 
 -- | @Selector@ for @willTurnIntoFault@
-willTurnIntoFaultSelector :: Selector
+willTurnIntoFaultSelector :: Selector '[] ()
 willTurnIntoFaultSelector = mkSelector "willTurnIntoFault"
 
 -- | @Selector@ for @didTurnIntoFault@
-didTurnIntoFaultSelector :: Selector
+didTurnIntoFaultSelector :: Selector '[] ()
 didTurnIntoFaultSelector = mkSelector "didTurnIntoFault"
 
 -- | @Selector@ for @valueForKey:@
-valueForKeySelector :: Selector
+valueForKeySelector :: Selector '[Id NSString] RawId
 valueForKeySelector = mkSelector "valueForKey:"
 
 -- | @Selector@ for @setValue:forKey:@
-setValue_forKeySelector :: Selector
+setValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 setValue_forKeySelector = mkSelector "setValue:forKey:"
 
 -- | @Selector@ for @primitiveValueForKey:@
-primitiveValueForKeySelector :: Selector
+primitiveValueForKeySelector :: Selector '[Id NSString] RawId
 primitiveValueForKeySelector = mkSelector "primitiveValueForKey:"
 
 -- | @Selector@ for @setPrimitiveValue:forKey:@
-setPrimitiveValue_forKeySelector :: Selector
+setPrimitiveValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 setPrimitiveValue_forKeySelector = mkSelector "setPrimitiveValue:forKey:"
 
 -- | @Selector@ for @committedValuesForKeys:@
-committedValuesForKeysSelector :: Selector
+committedValuesForKeysSelector :: Selector '[Id NSArray] (Id NSDictionary)
 committedValuesForKeysSelector = mkSelector "committedValuesForKeys:"
 
 -- | @Selector@ for @changedValues@
-changedValuesSelector :: Selector
+changedValuesSelector :: Selector '[] (Id NSDictionary)
 changedValuesSelector = mkSelector "changedValues"
 
 -- | @Selector@ for @changedValuesForCurrentEvent@
-changedValuesForCurrentEventSelector :: Selector
+changedValuesForCurrentEventSelector :: Selector '[] (Id NSDictionary)
 changedValuesForCurrentEventSelector = mkSelector "changedValuesForCurrentEvent"
 
 -- | @Selector@ for @validateValue:forKey:error:@
-validateValue_forKey_errorSelector :: Selector
+validateValue_forKey_errorSelector :: Selector '[Ptr RawId, Id NSString, Id NSError] Bool
 validateValue_forKey_errorSelector = mkSelector "validateValue:forKey:error:"
 
 -- | @Selector@ for @validateForDelete:@
-validateForDeleteSelector :: Selector
+validateForDeleteSelector :: Selector '[Id NSError] Bool
 validateForDeleteSelector = mkSelector "validateForDelete:"
 
 -- | @Selector@ for @validateForInsert:@
-validateForInsertSelector :: Selector
+validateForInsertSelector :: Selector '[Id NSError] Bool
 validateForInsertSelector = mkSelector "validateForInsert:"
 
 -- | @Selector@ for @validateForUpdate:@
-validateForUpdateSelector :: Selector
+validateForUpdateSelector :: Selector '[Id NSError] Bool
 validateForUpdateSelector = mkSelector "validateForUpdate:"
 
 -- | @Selector@ for @setObservationInfo:@
-setObservationInfoSelector :: Selector
+setObservationInfoSelector :: Selector '[Ptr ()] ()
 setObservationInfoSelector = mkSelector "setObservationInfo:"
 
 -- | @Selector@ for @observationInfo@
-observationInfoSelector :: Selector
+observationInfoSelector :: Selector '[] (Ptr ())
 observationInfoSelector = mkSelector "observationInfo"
 
 -- | @Selector@ for @contextShouldIgnoreUnmodeledPropertyChanges@
-contextShouldIgnoreUnmodeledPropertyChangesSelector :: Selector
+contextShouldIgnoreUnmodeledPropertyChangesSelector :: Selector '[] Bool
 contextShouldIgnoreUnmodeledPropertyChangesSelector = mkSelector "contextShouldIgnoreUnmodeledPropertyChanges"
 
 -- | @Selector@ for @managedObjectContext@
-managedObjectContextSelector :: Selector
+managedObjectContextSelector :: Selector '[] (Id NSManagedObjectContext)
 managedObjectContextSelector = mkSelector "managedObjectContext"
 
+-- | @Selector@ for @entity@
+entitySelector :: Selector '[] (Id NSEntityDescription)
+entitySelector = mkSelector "entity"
+
 -- | @Selector@ for @objectID@
-objectIDSelector :: Selector
+objectIDSelector :: Selector '[] (Id NSManagedObjectID)
 objectIDSelector = mkSelector "objectID"
 
 -- | @Selector@ for @inserted@
-insertedSelector :: Selector
+insertedSelector :: Selector '[] Bool
 insertedSelector = mkSelector "inserted"
 
 -- | @Selector@ for @updated@
-updatedSelector :: Selector
+updatedSelector :: Selector '[] Bool
 updatedSelector = mkSelector "updated"
 
 -- | @Selector@ for @deleted@
-deletedSelector :: Selector
+deletedSelector :: Selector '[] Bool
 deletedSelector = mkSelector "deleted"
 
 -- | @Selector@ for @hasChanges@
-hasChangesSelector :: Selector
+hasChangesSelector :: Selector '[] Bool
 hasChangesSelector = mkSelector "hasChanges"
 
 -- | @Selector@ for @hasPersistentChangedValues@
-hasPersistentChangedValuesSelector :: Selector
+hasPersistentChangedValuesSelector :: Selector '[] Bool
 hasPersistentChangedValuesSelector = mkSelector "hasPersistentChangedValues"
 
 -- | @Selector@ for @fault@
-faultSelector :: Selector
+faultSelector :: Selector '[] Bool
 faultSelector = mkSelector "fault"
 
 -- | @Selector@ for @faultingState@
-faultingStateSelector :: Selector
+faultingStateSelector :: Selector '[] CULong
 faultingStateSelector = mkSelector "faultingState"
 

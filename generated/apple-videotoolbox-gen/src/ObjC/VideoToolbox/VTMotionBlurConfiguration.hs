@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,21 +27,21 @@ module ObjC.VideoToolbox.VTMotionBlurConfiguration
   , destinationPixelBufferAttributes
   , supported
   , processorSupported
-  , initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector
-  , initSelector
-  , newSelector
-  , frameWidthSelector
+  , defaultRevisionSelector
+  , destinationPixelBufferAttributesSelector
   , frameHeightSelector
-  , usePrecomputedFlowSelector
+  , frameSupportedPixelFormatsSelector
+  , frameWidthSelector
+  , initSelector
+  , initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector
+  , newSelector
+  , processorSupportedSelector
   , qualityPrioritizationSelector
   , revisionSelector
-  , supportedRevisionsSelector
-  , defaultRevisionSelector
-  , frameSupportedPixelFormatsSelector
   , sourcePixelBufferAttributesSelector
-  , destinationPixelBufferAttributesSelector
+  , supportedRevisionsSelector
   , supportedSelector
-  , processorSupportedSelector
+  , usePrecomputedFlowSelector
 
   -- * Enum types
   , VTMotionBlurConfigurationQualityPrioritization(VTMotionBlurConfigurationQualityPrioritization)
@@ -51,15 +52,11 @@ module ObjC.VideoToolbox.VTMotionBlurConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,41 +72,41 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFrameWidth:frameHeight:usePrecomputedFlow:qualityPrioritization:revision:@
 initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revision :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> CLong -> CLong -> Bool -> VTMotionBlurConfigurationQualityPrioritization -> VTMotionBlurConfigurationRevision -> IO (Id VTMotionBlurConfiguration)
-initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revision vtMotionBlurConfiguration  frameWidth frameHeight usePrecomputedFlow qualityPrioritization revision =
-    sendMsg vtMotionBlurConfiguration (mkSelector "initWithFrameWidth:frameHeight:usePrecomputedFlow:qualityPrioritization:revision:") (retPtr retVoid) [argCLong frameWidth, argCLong frameHeight, argCULong (if usePrecomputedFlow then 1 else 0), argCLong (coerce qualityPrioritization), argCLong (coerce revision)] >>= ownedObject . castPtr
+initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revision vtMotionBlurConfiguration frameWidth frameHeight usePrecomputedFlow qualityPrioritization revision =
+  sendOwnedMessage vtMotionBlurConfiguration initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector frameWidth frameHeight usePrecomputedFlow qualityPrioritization revision
 
 -- | @- init@
 init_ :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO (Id VTMotionBlurConfiguration)
-init_ vtMotionBlurConfiguration  =
-    sendMsg vtMotionBlurConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtMotionBlurConfiguration =
+  sendOwnedMessage vtMotionBlurConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id VTMotionBlurConfiguration)
 new  =
   do
     cls' <- getRequiredClass "VTMotionBlurConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Width of source frame in pixels.
 --
 -- ObjC selector: @- frameWidth@
 frameWidth :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO CLong
-frameWidth vtMotionBlurConfiguration  =
-    sendMsg vtMotionBlurConfiguration (mkSelector "frameWidth") retCLong []
+frameWidth vtMotionBlurConfiguration =
+  sendMessage vtMotionBlurConfiguration frameWidthSelector
 
 -- | Height of source frame in pixels.
 --
 -- ObjC selector: @- frameHeight@
 frameHeight :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO CLong
-frameHeight vtMotionBlurConfiguration  =
-    sendMsg vtMotionBlurConfiguration (mkSelector "frameHeight") retCLong []
+frameHeight vtMotionBlurConfiguration =
+  sendMessage vtMotionBlurConfiguration frameHeightSelector
 
 -- | Indicates that you provide optical flow.
 --
 -- ObjC selector: @- usePrecomputedFlow@
 usePrecomputedFlow :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO Bool
-usePrecomputedFlow vtMotionBlurConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vtMotionBlurConfiguration (mkSelector "usePrecomputedFlow") retCULong []
+usePrecomputedFlow vtMotionBlurConfiguration =
+  sendMessage vtMotionBlurConfiguration usePrecomputedFlowSelector
 
 -- | A parameter you use to control quality and performance levels.
 --
@@ -117,15 +114,15 @@ usePrecomputedFlow vtMotionBlurConfiguration  =
 --
 -- ObjC selector: @- qualityPrioritization@
 qualityPrioritization :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO VTMotionBlurConfigurationQualityPrioritization
-qualityPrioritization vtMotionBlurConfiguration  =
-    fmap (coerce :: CLong -> VTMotionBlurConfigurationQualityPrioritization) $ sendMsg vtMotionBlurConfiguration (mkSelector "qualityPrioritization") retCLong []
+qualityPrioritization vtMotionBlurConfiguration =
+  sendMessage vtMotionBlurConfiguration qualityPrioritizationSelector
 
 -- | The specific algorithm or configuration revision you use to perform the request.
 --
 -- ObjC selector: @- revision@
 revision :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO VTMotionBlurConfigurationRevision
-revision vtMotionBlurConfiguration  =
-    fmap (coerce :: CLong -> VTMotionBlurConfigurationRevision) $ sendMsg vtMotionBlurConfiguration (mkSelector "revision") retCLong []
+revision vtMotionBlurConfiguration =
+  sendMessage vtMotionBlurConfiguration revisionSelector
 
 -- | Provides the collection of currently supported algorithms or configuration revisions for the class of configuration.
 --
@@ -136,7 +133,7 @@ supportedRevisions :: IO (Id NSIndexSet)
 supportedRevisions  =
   do
     cls' <- getRequiredClass "VTMotionBlurConfiguration"
-    sendClassMsg cls' (mkSelector "supportedRevisions") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedRevisionsSelector
 
 -- | Provides the default revision of a specific algorithm or configuration.
 --
@@ -145,14 +142,14 @@ defaultRevision :: IO VTMotionBlurConfigurationRevision
 defaultRevision  =
   do
     cls' <- getRequiredClass "VTMotionBlurConfiguration"
-    fmap (coerce :: CLong -> VTMotionBlurConfigurationRevision) $ sendClassMsg cls' (mkSelector "defaultRevision") retCLong []
+    sendClassMessage cls' defaultRevisionSelector
 
 -- | Available supported pixel formats for source frames for current configuration.
 --
 -- ObjC selector: @- frameSupportedPixelFormats@
 frameSupportedPixelFormats :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO (Id NSArray)
-frameSupportedPixelFormats vtMotionBlurConfiguration  =
-    sendMsg vtMotionBlurConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameSupportedPixelFormats vtMotionBlurConfiguration =
+  sendMessage vtMotionBlurConfiguration frameSupportedPixelFormatsSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
@@ -160,8 +157,8 @@ frameSupportedPixelFormats vtMotionBlurConfiguration  =
 --
 -- ObjC selector: @- sourcePixelBufferAttributes@
 sourcePixelBufferAttributes :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO (Id NSDictionary)
-sourcePixelBufferAttributes vtMotionBlurConfiguration  =
-    sendMsg vtMotionBlurConfiguration (mkSelector "sourcePixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourcePixelBufferAttributes vtMotionBlurConfiguration =
+  sendMessage vtMotionBlurConfiguration sourcePixelBufferAttributesSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent destination frames.
 --
@@ -169,8 +166,8 @@ sourcePixelBufferAttributes vtMotionBlurConfiguration  =
 --
 -- ObjC selector: @- destinationPixelBufferAttributes@
 destinationPixelBufferAttributes :: IsVTMotionBlurConfiguration vtMotionBlurConfiguration => vtMotionBlurConfiguration -> IO (Id NSDictionary)
-destinationPixelBufferAttributes vtMotionBlurConfiguration  =
-    sendMsg vtMotionBlurConfiguration (mkSelector "destinationPixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationPixelBufferAttributes vtMotionBlurConfiguration =
+  sendMessage vtMotionBlurConfiguration destinationPixelBufferAttributesSelector
 
 -- | Reports whether the system supports this processor.
 --
@@ -179,76 +176,76 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "VTMotionBlurConfiguration"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- | @+ processorSupported@
 processorSupported :: IO CUChar
 processorSupported  =
   do
     cls' <- getRequiredClass "VTMotionBlurConfiguration"
-    sendClassMsg cls' (mkSelector "processorSupported") retCUChar []
+    sendClassMessage cls' processorSupportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrameWidth:frameHeight:usePrecomputedFlow:qualityPrioritization:revision:@
-initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector :: Selector
+initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector :: Selector '[CLong, CLong, Bool, VTMotionBlurConfigurationQualityPrioritization, VTMotionBlurConfigurationRevision] (Id VTMotionBlurConfiguration)
 initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector = mkSelector "initWithFrameWidth:frameHeight:usePrecomputedFlow:qualityPrioritization:revision:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTMotionBlurConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTMotionBlurConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @frameWidth@
-frameWidthSelector :: Selector
+frameWidthSelector :: Selector '[] CLong
 frameWidthSelector = mkSelector "frameWidth"
 
 -- | @Selector@ for @frameHeight@
-frameHeightSelector :: Selector
+frameHeightSelector :: Selector '[] CLong
 frameHeightSelector = mkSelector "frameHeight"
 
 -- | @Selector@ for @usePrecomputedFlow@
-usePrecomputedFlowSelector :: Selector
+usePrecomputedFlowSelector :: Selector '[] Bool
 usePrecomputedFlowSelector = mkSelector "usePrecomputedFlow"
 
 -- | @Selector@ for @qualityPrioritization@
-qualityPrioritizationSelector :: Selector
+qualityPrioritizationSelector :: Selector '[] VTMotionBlurConfigurationQualityPrioritization
 qualityPrioritizationSelector = mkSelector "qualityPrioritization"
 
 -- | @Selector@ for @revision@
-revisionSelector :: Selector
+revisionSelector :: Selector '[] VTMotionBlurConfigurationRevision
 revisionSelector = mkSelector "revision"
 
 -- | @Selector@ for @supportedRevisions@
-supportedRevisionsSelector :: Selector
+supportedRevisionsSelector :: Selector '[] (Id NSIndexSet)
 supportedRevisionsSelector = mkSelector "supportedRevisions"
 
 -- | @Selector@ for @defaultRevision@
-defaultRevisionSelector :: Selector
+defaultRevisionSelector :: Selector '[] VTMotionBlurConfigurationRevision
 defaultRevisionSelector = mkSelector "defaultRevision"
 
 -- | @Selector@ for @frameSupportedPixelFormats@
-frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector :: Selector '[] (Id NSArray)
 frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
-sourcePixelBufferAttributesSelector :: Selector
+sourcePixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 sourcePixelBufferAttributesSelector = mkSelector "sourcePixelBufferAttributes"
 
 -- | @Selector@ for @destinationPixelBufferAttributes@
-destinationPixelBufferAttributesSelector :: Selector
+destinationPixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 destinationPixelBufferAttributesSelector = mkSelector "destinationPixelBufferAttributes"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 
 -- | @Selector@ for @processorSupported@
-processorSupportedSelector :: Selector
+processorSupportedSelector :: Selector '[] CUChar
 processorSupportedSelector = mkSelector "processorSupported"
 

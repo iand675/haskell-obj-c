@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRDataTypeSemanticTagStruct
   , setTag
   , label
   , setLabel
-  , mfgCodeSelector
-  , setMfgCodeSelector
-  , namespaceIDSelector
-  , setNamespaceIDSelector
-  , tagSelector
-  , setTagSelector
   , labelSelector
+  , mfgCodeSelector
+  , namespaceIDSelector
   , setLabelSelector
+  , setMfgCodeSelector
+  , setNamespaceIDSelector
+  , setTagSelector
+  , tagSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- mfgCode@
 mfgCode :: IsMTRDataTypeSemanticTagStruct mtrDataTypeSemanticTagStruct => mtrDataTypeSemanticTagStruct -> IO (Id NSNumber)
-mfgCode mtrDataTypeSemanticTagStruct  =
-    sendMsg mtrDataTypeSemanticTagStruct (mkSelector "mfgCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+mfgCode mtrDataTypeSemanticTagStruct =
+  sendMessage mtrDataTypeSemanticTagStruct mfgCodeSelector
 
 -- | @- setMfgCode:@
 setMfgCode :: (IsMTRDataTypeSemanticTagStruct mtrDataTypeSemanticTagStruct, IsNSNumber value) => mtrDataTypeSemanticTagStruct -> value -> IO ()
-setMfgCode mtrDataTypeSemanticTagStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeSemanticTagStruct (mkSelector "setMfgCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMfgCode mtrDataTypeSemanticTagStruct value =
+  sendMessage mtrDataTypeSemanticTagStruct setMfgCodeSelector (toNSNumber value)
 
 -- | @- namespaceID@
 namespaceID :: IsMTRDataTypeSemanticTagStruct mtrDataTypeSemanticTagStruct => mtrDataTypeSemanticTagStruct -> IO (Id NSNumber)
-namespaceID mtrDataTypeSemanticTagStruct  =
-    sendMsg mtrDataTypeSemanticTagStruct (mkSelector "namespaceID") (retPtr retVoid) [] >>= retainedObject . castPtr
+namespaceID mtrDataTypeSemanticTagStruct =
+  sendMessage mtrDataTypeSemanticTagStruct namespaceIDSelector
 
 -- | @- setNamespaceID:@
 setNamespaceID :: (IsMTRDataTypeSemanticTagStruct mtrDataTypeSemanticTagStruct, IsNSNumber value) => mtrDataTypeSemanticTagStruct -> value -> IO ()
-setNamespaceID mtrDataTypeSemanticTagStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeSemanticTagStruct (mkSelector "setNamespaceID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNamespaceID mtrDataTypeSemanticTagStruct value =
+  sendMessage mtrDataTypeSemanticTagStruct setNamespaceIDSelector (toNSNumber value)
 
 -- | @- tag@
 tag :: IsMTRDataTypeSemanticTagStruct mtrDataTypeSemanticTagStruct => mtrDataTypeSemanticTagStruct -> IO (Id NSNumber)
-tag mtrDataTypeSemanticTagStruct  =
-    sendMsg mtrDataTypeSemanticTagStruct (mkSelector "tag") (retPtr retVoid) [] >>= retainedObject . castPtr
+tag mtrDataTypeSemanticTagStruct =
+  sendMessage mtrDataTypeSemanticTagStruct tagSelector
 
 -- | @- setTag:@
 setTag :: (IsMTRDataTypeSemanticTagStruct mtrDataTypeSemanticTagStruct, IsNSNumber value) => mtrDataTypeSemanticTagStruct -> value -> IO ()
-setTag mtrDataTypeSemanticTagStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeSemanticTagStruct (mkSelector "setTag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTag mtrDataTypeSemanticTagStruct value =
+  sendMessage mtrDataTypeSemanticTagStruct setTagSelector (toNSNumber value)
 
 -- | @- label@
 label :: IsMTRDataTypeSemanticTagStruct mtrDataTypeSemanticTagStruct => mtrDataTypeSemanticTagStruct -> IO (Id NSString)
-label mtrDataTypeSemanticTagStruct  =
-    sendMsg mtrDataTypeSemanticTagStruct (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtrDataTypeSemanticTagStruct =
+  sendMessage mtrDataTypeSemanticTagStruct labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsMTRDataTypeSemanticTagStruct mtrDataTypeSemanticTagStruct, IsNSString value) => mtrDataTypeSemanticTagStruct -> value -> IO ()
-setLabel mtrDataTypeSemanticTagStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeSemanticTagStruct (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtrDataTypeSemanticTagStruct value =
+  sendMessage mtrDataTypeSemanticTagStruct setLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mfgCode@
-mfgCodeSelector :: Selector
+mfgCodeSelector :: Selector '[] (Id NSNumber)
 mfgCodeSelector = mkSelector "mfgCode"
 
 -- | @Selector@ for @setMfgCode:@
-setMfgCodeSelector :: Selector
+setMfgCodeSelector :: Selector '[Id NSNumber] ()
 setMfgCodeSelector = mkSelector "setMfgCode:"
 
 -- | @Selector@ for @namespaceID@
-namespaceIDSelector :: Selector
+namespaceIDSelector :: Selector '[] (Id NSNumber)
 namespaceIDSelector = mkSelector "namespaceID"
 
 -- | @Selector@ for @setNamespaceID:@
-setNamespaceIDSelector :: Selector
+setNamespaceIDSelector :: Selector '[Id NSNumber] ()
 setNamespaceIDSelector = mkSelector "setNamespaceID:"
 
 -- | @Selector@ for @tag@
-tagSelector :: Selector
+tagSelector :: Selector '[] (Id NSNumber)
 tagSelector = mkSelector "tag"
 
 -- | @Selector@ for @setTag:@
-setTagSelector :: Selector
+setTagSelector :: Selector '[Id NSNumber] ()
 setTagSelector = mkSelector "setTag:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 

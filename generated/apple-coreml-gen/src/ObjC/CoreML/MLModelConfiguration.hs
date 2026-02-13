@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,19 +24,19 @@ module ObjC.CoreML.MLModelConfiguration
   , setAllowLowPrecisionAccumulationOnGPU
   , preferredMetalDevice
   , setPreferredMetalDevice
-  , modelDisplayNameSelector
-  , setModelDisplayNameSelector
-  , computeUnitsSelector
-  , setComputeUnitsSelector
-  , optimizationHintsSelector
-  , setOptimizationHintsSelector
-  , functionNameSelector
-  , setFunctionNameSelector
-  , parametersSelector
-  , setParametersSelector
   , allowLowPrecisionAccumulationOnGPUSelector
-  , setAllowLowPrecisionAccumulationOnGPUSelector
+  , computeUnitsSelector
+  , functionNameSelector
+  , modelDisplayNameSelector
+  , optimizationHintsSelector
+  , parametersSelector
   , preferredMetalDeviceSelector
+  , setAllowLowPrecisionAccumulationOnGPUSelector
+  , setComputeUnitsSelector
+  , setFunctionNameSelector
+  , setModelDisplayNameSelector
+  , setOptimizationHintsSelector
+  , setParametersSelector
   , setPreferredMetalDeviceSelector
 
   -- * Enum types
@@ -47,15 +48,11 @@ module ObjC.CoreML.MLModelConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,8 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- modelDisplayName@
 modelDisplayName :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> IO (Id NSString)
-modelDisplayName mlModelConfiguration  =
-    sendMsg mlModelConfiguration (mkSelector "modelDisplayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+modelDisplayName mlModelConfiguration =
+  sendMessage mlModelConfiguration modelDisplayNameSelector
 
 -- | A human readable name of a MLModel instance for display purposes.
 --
@@ -86,34 +83,32 @@ modelDisplayName mlModelConfiguration  =
 --
 -- ObjC selector: @- setModelDisplayName:@
 setModelDisplayName :: (IsMLModelConfiguration mlModelConfiguration, IsNSString value) => mlModelConfiguration -> value -> IO ()
-setModelDisplayName mlModelConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mlModelConfiguration (mkSelector "setModelDisplayName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setModelDisplayName mlModelConfiguration value =
+  sendMessage mlModelConfiguration setModelDisplayNameSelector (toNSString value)
 
 -- | @- computeUnits@
 computeUnits :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> IO MLComputeUnits
-computeUnits mlModelConfiguration  =
-    fmap (coerce :: CLong -> MLComputeUnits) $ sendMsg mlModelConfiguration (mkSelector "computeUnits") retCLong []
+computeUnits mlModelConfiguration =
+  sendMessage mlModelConfiguration computeUnitsSelector
 
 -- | @- setComputeUnits:@
 setComputeUnits :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> MLComputeUnits -> IO ()
-setComputeUnits mlModelConfiguration  value =
-    sendMsg mlModelConfiguration (mkSelector "setComputeUnits:") retVoid [argCLong (coerce value)]
+setComputeUnits mlModelConfiguration value =
+  sendMessage mlModelConfiguration setComputeUnitsSelector value
 
 -- | A group of hints for CoreML to optimize
 --
 -- ObjC selector: @- optimizationHints@
 optimizationHints :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> IO (Id MLOptimizationHints)
-optimizationHints mlModelConfiguration  =
-    sendMsg mlModelConfiguration (mkSelector "optimizationHints") (retPtr retVoid) [] >>= retainedObject . castPtr
+optimizationHints mlModelConfiguration =
+  sendMessage mlModelConfiguration optimizationHintsSelector
 
 -- | A group of hints for CoreML to optimize
 --
 -- ObjC selector: @- setOptimizationHints:@
 setOptimizationHints :: (IsMLModelConfiguration mlModelConfiguration, IsMLOptimizationHints value) => mlModelConfiguration -> value -> IO ()
-setOptimizationHints mlModelConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mlModelConfiguration (mkSelector "setOptimizationHints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptimizationHints mlModelConfiguration value =
+  sendMessage mlModelConfiguration setOptimizationHintsSelector (toMLOptimizationHints value)
 
 -- | Function name that @MLModel@ will use.
 --
@@ -125,8 +120,8 @@ setOptimizationHints mlModelConfiguration  value =
 --
 -- ObjC selector: @- functionName@
 functionName :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> IO (Id NSString)
-functionName mlModelConfiguration  =
-    sendMsg mlModelConfiguration (mkSelector "functionName") (retPtr retVoid) [] >>= retainedObject . castPtr
+functionName mlModelConfiguration =
+  sendMessage mlModelConfiguration functionNameSelector
 
 -- | Function name that @MLModel@ will use.
 --
@@ -138,106 +133,104 @@ functionName mlModelConfiguration  =
 --
 -- ObjC selector: @- setFunctionName:@
 setFunctionName :: (IsMLModelConfiguration mlModelConfiguration, IsNSString value) => mlModelConfiguration -> value -> IO ()
-setFunctionName mlModelConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mlModelConfiguration (mkSelector "setFunctionName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFunctionName mlModelConfiguration value =
+  sendMessage mlModelConfiguration setFunctionNameSelector (toNSString value)
 
 -- | @- parameters@
 parameters :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> IO (Id NSDictionary)
-parameters mlModelConfiguration  =
-    sendMsg mlModelConfiguration (mkSelector "parameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+parameters mlModelConfiguration =
+  sendMessage mlModelConfiguration parametersSelector
 
 -- | @- setParameters:@
 setParameters :: (IsMLModelConfiguration mlModelConfiguration, IsNSDictionary value) => mlModelConfiguration -> value -> IO ()
-setParameters mlModelConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mlModelConfiguration (mkSelector "setParameters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setParameters mlModelConfiguration value =
+  sendMessage mlModelConfiguration setParametersSelector (toNSDictionary value)
 
 -- | Set to YES to allow low precision accumulation on GPU when available. Defaults to NO
 --
 -- ObjC selector: @- allowLowPrecisionAccumulationOnGPU@
 allowLowPrecisionAccumulationOnGPU :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> IO Bool
-allowLowPrecisionAccumulationOnGPU mlModelConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlModelConfiguration (mkSelector "allowLowPrecisionAccumulationOnGPU") retCULong []
+allowLowPrecisionAccumulationOnGPU mlModelConfiguration =
+  sendMessage mlModelConfiguration allowLowPrecisionAccumulationOnGPUSelector
 
 -- | Set to YES to allow low precision accumulation on GPU when available. Defaults to NO
 --
 -- ObjC selector: @- setAllowLowPrecisionAccumulationOnGPU:@
 setAllowLowPrecisionAccumulationOnGPU :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> Bool -> IO ()
-setAllowLowPrecisionAccumulationOnGPU mlModelConfiguration  value =
-    sendMsg mlModelConfiguration (mkSelector "setAllowLowPrecisionAccumulationOnGPU:") retVoid [argCULong (if value then 1 else 0)]
+setAllowLowPrecisionAccumulationOnGPU mlModelConfiguration value =
+  sendMessage mlModelConfiguration setAllowLowPrecisionAccumulationOnGPUSelector value
 
 -- | Set to specify a preferred Metal device. Defaults to nil which indicates automatic selection
 --
 -- ObjC selector: @- preferredMetalDevice@
 preferredMetalDevice :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> IO RawId
-preferredMetalDevice mlModelConfiguration  =
-    fmap (RawId . castPtr) $ sendMsg mlModelConfiguration (mkSelector "preferredMetalDevice") (retPtr retVoid) []
+preferredMetalDevice mlModelConfiguration =
+  sendMessage mlModelConfiguration preferredMetalDeviceSelector
 
 -- | Set to specify a preferred Metal device. Defaults to nil which indicates automatic selection
 --
 -- ObjC selector: @- setPreferredMetalDevice:@
 setPreferredMetalDevice :: IsMLModelConfiguration mlModelConfiguration => mlModelConfiguration -> RawId -> IO ()
-setPreferredMetalDevice mlModelConfiguration  value =
-    sendMsg mlModelConfiguration (mkSelector "setPreferredMetalDevice:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPreferredMetalDevice mlModelConfiguration value =
+  sendMessage mlModelConfiguration setPreferredMetalDeviceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @modelDisplayName@
-modelDisplayNameSelector :: Selector
+modelDisplayNameSelector :: Selector '[] (Id NSString)
 modelDisplayNameSelector = mkSelector "modelDisplayName"
 
 -- | @Selector@ for @setModelDisplayName:@
-setModelDisplayNameSelector :: Selector
+setModelDisplayNameSelector :: Selector '[Id NSString] ()
 setModelDisplayNameSelector = mkSelector "setModelDisplayName:"
 
 -- | @Selector@ for @computeUnits@
-computeUnitsSelector :: Selector
+computeUnitsSelector :: Selector '[] MLComputeUnits
 computeUnitsSelector = mkSelector "computeUnits"
 
 -- | @Selector@ for @setComputeUnits:@
-setComputeUnitsSelector :: Selector
+setComputeUnitsSelector :: Selector '[MLComputeUnits] ()
 setComputeUnitsSelector = mkSelector "setComputeUnits:"
 
 -- | @Selector@ for @optimizationHints@
-optimizationHintsSelector :: Selector
+optimizationHintsSelector :: Selector '[] (Id MLOptimizationHints)
 optimizationHintsSelector = mkSelector "optimizationHints"
 
 -- | @Selector@ for @setOptimizationHints:@
-setOptimizationHintsSelector :: Selector
+setOptimizationHintsSelector :: Selector '[Id MLOptimizationHints] ()
 setOptimizationHintsSelector = mkSelector "setOptimizationHints:"
 
 -- | @Selector@ for @functionName@
-functionNameSelector :: Selector
+functionNameSelector :: Selector '[] (Id NSString)
 functionNameSelector = mkSelector "functionName"
 
 -- | @Selector@ for @setFunctionName:@
-setFunctionNameSelector :: Selector
+setFunctionNameSelector :: Selector '[Id NSString] ()
 setFunctionNameSelector = mkSelector "setFunctionName:"
 
 -- | @Selector@ for @parameters@
-parametersSelector :: Selector
+parametersSelector :: Selector '[] (Id NSDictionary)
 parametersSelector = mkSelector "parameters"
 
 -- | @Selector@ for @setParameters:@
-setParametersSelector :: Selector
+setParametersSelector :: Selector '[Id NSDictionary] ()
 setParametersSelector = mkSelector "setParameters:"
 
 -- | @Selector@ for @allowLowPrecisionAccumulationOnGPU@
-allowLowPrecisionAccumulationOnGPUSelector :: Selector
+allowLowPrecisionAccumulationOnGPUSelector :: Selector '[] Bool
 allowLowPrecisionAccumulationOnGPUSelector = mkSelector "allowLowPrecisionAccumulationOnGPU"
 
 -- | @Selector@ for @setAllowLowPrecisionAccumulationOnGPU:@
-setAllowLowPrecisionAccumulationOnGPUSelector :: Selector
+setAllowLowPrecisionAccumulationOnGPUSelector :: Selector '[Bool] ()
 setAllowLowPrecisionAccumulationOnGPUSelector = mkSelector "setAllowLowPrecisionAccumulationOnGPU:"
 
 -- | @Selector@ for @preferredMetalDevice@
-preferredMetalDeviceSelector :: Selector
+preferredMetalDeviceSelector :: Selector '[] RawId
 preferredMetalDeviceSelector = mkSelector "preferredMetalDevice"
 
 -- | @Selector@ for @setPreferredMetalDevice:@
-setPreferredMetalDeviceSelector :: Selector
+setPreferredMetalDeviceSelector :: Selector '[RawId] ()
 setPreferredMetalDeviceSelector = mkSelector "setPreferredMetalDevice:"
 

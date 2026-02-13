@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,22 +32,22 @@ module ObjC.MetalPerformanceShaders.MPSNNImageNode
   , setSynchronizeResource
   , stopGradient
   , setStopGradient
+  , exportFromGraphSelector
+  , exportedNodeWithHandleSelector
+  , formatSelector
+  , handleSelector
+  , imageAllocatorSelector
+  , initSelector
   , initWithHandleSelector
   , nodeWithHandleSelector
-  , exportedNodeWithHandleSelector
-  , initSelector
-  , handleSelector
-  , setHandleSelector
-  , formatSelector
-  , setFormatSelector
-  , imageAllocatorSelector
-  , setImageAllocatorSelector
-  , exportFromGraphSelector
   , setExportFromGraphSelector
-  , synchronizeResourceSelector
+  , setFormatSelector
+  , setHandleSelector
+  , setImageAllocatorSelector
+  , setStopGradientSelector
   , setSynchronizeResourceSelector
   , stopGradientSelector
-  , setStopGradientSelector
+  , synchronizeResourceSelector
 
   -- * Enum types
   , MPSImageFeatureChannelFormat(MPSImageFeatureChannelFormat)
@@ -60,15 +61,11 @@ module ObjC.MetalPerformanceShaders.MPSNNImageNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,17 +75,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithHandle:@
 initWithHandle :: (IsMPSNNImageNode mpsnnImageNode, IsNSObject handle) => mpsnnImageNode -> handle -> IO (Id MPSNNImageNode)
-initWithHandle mpsnnImageNode  handle =
-  withObjCPtr handle $ \raw_handle ->
-      sendMsg mpsnnImageNode (mkSelector "initWithHandle:") (retPtr retVoid) [argPtr (castPtr raw_handle :: Ptr ())] >>= ownedObject . castPtr
+initWithHandle mpsnnImageNode handle =
+  sendOwnedMessage mpsnnImageNode initWithHandleSelector (toNSObject handle)
 
 -- | @+ nodeWithHandle:@
 nodeWithHandle :: IsNSObject handle => handle -> IO (Id MPSNNImageNode)
 nodeWithHandle handle =
   do
     cls' <- getRequiredClass "MPSNNImageNode"
-    withObjCPtr handle $ \raw_handle ->
-      sendClassMsg cls' (mkSelector "nodeWithHandle:") (retPtr retVoid) [argPtr (castPtr raw_handle :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithHandleSelector (toNSObject handle)
 
 -- | Create a autoreleased MPSNNImageNode with exportFromGraph = YES.
 --
@@ -99,13 +94,12 @@ exportedNodeWithHandle :: IsNSObject handle => handle -> IO (Id MPSNNImageNode)
 exportedNodeWithHandle handle =
   do
     cls' <- getRequiredClass "MPSNNImageNode"
-    withObjCPtr handle $ \raw_handle ->
-      sendClassMsg cls' (mkSelector "exportedNodeWithHandle:") (retPtr retVoid) [argPtr (castPtr raw_handle :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' exportedNodeWithHandleSelector (toNSObject handle)
 
 -- | @- init@
 init_ :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO (Id MPSNNImageNode)
-init_ mpsnnImageNode  =
-    sendMsg mpsnnImageNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsnnImageNode =
+  sendOwnedMessage mpsnnImageNode initSelector
 
 -- | MPS resource identifier
 --
@@ -113,8 +107,8 @@ init_ mpsnnImageNode  =
 --
 -- ObjC selector: @- handle@
 handle :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO RawId
-handle mpsnnImageNode  =
-    fmap (RawId . castPtr) $ sendMsg mpsnnImageNode (mkSelector "handle") (retPtr retVoid) []
+handle mpsnnImageNode =
+  sendMessage mpsnnImageNode handleSelector
 
 -- | MPS resource identifier
 --
@@ -122,8 +116,8 @@ handle mpsnnImageNode  =
 --
 -- ObjC selector: @- setHandle:@
 setHandle :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> RawId -> IO ()
-setHandle mpsnnImageNode  value =
-    sendMsg mpsnnImageNode (mkSelector "setHandle:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setHandle mpsnnImageNode value =
+  sendMessage mpsnnImageNode setHandleSelector value
 
 -- | The preferred precision for the image
 --
@@ -131,8 +125,8 @@ setHandle mpsnnImageNode  value =
 --
 -- ObjC selector: @- format@
 format :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO MPSImageFeatureChannelFormat
-format mpsnnImageNode  =
-    fmap (coerce :: CULong -> MPSImageFeatureChannelFormat) $ sendMsg mpsnnImageNode (mkSelector "format") retCULong []
+format mpsnnImageNode =
+  sendMessage mpsnnImageNode formatSelector
 
 -- | The preferred precision for the image
 --
@@ -140,8 +134,8 @@ format mpsnnImageNode  =
 --
 -- ObjC selector: @- setFormat:@
 setFormat :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> MPSImageFeatureChannelFormat -> IO ()
-setFormat mpsnnImageNode  value =
-    sendMsg mpsnnImageNode (mkSelector "setFormat:") retVoid [argCULong (coerce value)]
+setFormat mpsnnImageNode value =
+  sendMessage mpsnnImageNode setFormatSelector value
 
 -- | Configurability for image allocation
 --
@@ -149,8 +143,8 @@ setFormat mpsnnImageNode  value =
 --
 -- ObjC selector: @- imageAllocator@
 imageAllocator :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO RawId
-imageAllocator mpsnnImageNode  =
-    fmap (RawId . castPtr) $ sendMsg mpsnnImageNode (mkSelector "imageAllocator") (retPtr retVoid) []
+imageAllocator mpsnnImageNode =
+  sendMessage mpsnnImageNode imageAllocatorSelector
 
 -- | Configurability for image allocation
 --
@@ -158,8 +152,8 @@ imageAllocator mpsnnImageNode  =
 --
 -- ObjC selector: @- setImageAllocator:@
 setImageAllocator :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> RawId -> IO ()
-setImageAllocator mpsnnImageNode  value =
-    sendMsg mpsnnImageNode (mkSelector "setImageAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setImageAllocator mpsnnImageNode value =
+  sendMessage mpsnnImageNode setImageAllocatorSelector value
 
 -- | Tag a image node for view later
 --
@@ -171,8 +165,8 @@ setImageAllocator mpsnnImageNode  value =
 --
 -- ObjC selector: @- exportFromGraph@
 exportFromGraph :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO Bool
-exportFromGraph mpsnnImageNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnImageNode (mkSelector "exportFromGraph") retCULong []
+exportFromGraph mpsnnImageNode =
+  sendMessage mpsnnImageNode exportFromGraphSelector
 
 -- | Tag a image node for view later
 --
@@ -184,8 +178,8 @@ exportFromGraph mpsnnImageNode  =
 --
 -- ObjC selector: @- setExportFromGraph:@
 setExportFromGraph :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> Bool -> IO ()
-setExportFromGraph mpsnnImageNode  value =
-    sendMsg mpsnnImageNode (mkSelector "setExportFromGraph:") retVoid [argCULong (if value then 1 else 0)]
+setExportFromGraph mpsnnImageNode value =
+  sendMessage mpsnnImageNode setExportFromGraphSelector value
 
 -- | Set to true to cause the resource to be synchronized with the CPU
 --
@@ -193,8 +187,8 @@ setExportFromGraph mpsnnImageNode  value =
 --
 -- ObjC selector: @- synchronizeResource@
 synchronizeResource :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO Bool
-synchronizeResource mpsnnImageNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnImageNode (mkSelector "synchronizeResource") retCULong []
+synchronizeResource mpsnnImageNode =
+  sendMessage mpsnnImageNode synchronizeResourceSelector
 
 -- | Set to true to cause the resource to be synchronized with the CPU
 --
@@ -202,8 +196,8 @@ synchronizeResource mpsnnImageNode  =
 --
 -- ObjC selector: @- setSynchronizeResource:@
 setSynchronizeResource :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> Bool -> IO ()
-setSynchronizeResource mpsnnImageNode  value =
-    sendMsg mpsnnImageNode (mkSelector "setSynchronizeResource:") retVoid [argCULong (if value then 1 else 0)]
+setSynchronizeResource mpsnnImageNode value =
+  sendMessage mpsnnImageNode setSynchronizeResourceSelector value
 
 -- | Stop training graph automatic creation at this node.
 --
@@ -211,8 +205,8 @@ setSynchronizeResource mpsnnImageNode  value =
 --
 -- ObjC selector: @- stopGradient@
 stopGradient :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> IO Bool
-stopGradient mpsnnImageNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnImageNode (mkSelector "stopGradient") retCULong []
+stopGradient mpsnnImageNode =
+  sendMessage mpsnnImageNode stopGradientSelector
 
 -- | Stop training graph automatic creation at this node.
 --
@@ -220,74 +214,74 @@ stopGradient mpsnnImageNode  =
 --
 -- ObjC selector: @- setStopGradient:@
 setStopGradient :: IsMPSNNImageNode mpsnnImageNode => mpsnnImageNode -> Bool -> IO ()
-setStopGradient mpsnnImageNode  value =
-    sendMsg mpsnnImageNode (mkSelector "setStopGradient:") retVoid [argCULong (if value then 1 else 0)]
+setStopGradient mpsnnImageNode value =
+  sendMessage mpsnnImageNode setStopGradientSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHandle:@
-initWithHandleSelector :: Selector
+initWithHandleSelector :: Selector '[Id NSObject] (Id MPSNNImageNode)
 initWithHandleSelector = mkSelector "initWithHandle:"
 
 -- | @Selector@ for @nodeWithHandle:@
-nodeWithHandleSelector :: Selector
+nodeWithHandleSelector :: Selector '[Id NSObject] (Id MPSNNImageNode)
 nodeWithHandleSelector = mkSelector "nodeWithHandle:"
 
 -- | @Selector@ for @exportedNodeWithHandle:@
-exportedNodeWithHandleSelector :: Selector
+exportedNodeWithHandleSelector :: Selector '[Id NSObject] (Id MPSNNImageNode)
 exportedNodeWithHandleSelector = mkSelector "exportedNodeWithHandle:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSNNImageNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @handle@
-handleSelector :: Selector
+handleSelector :: Selector '[] RawId
 handleSelector = mkSelector "handle"
 
 -- | @Selector@ for @setHandle:@
-setHandleSelector :: Selector
+setHandleSelector :: Selector '[RawId] ()
 setHandleSelector = mkSelector "setHandle:"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] MPSImageFeatureChannelFormat
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @setFormat:@
-setFormatSelector :: Selector
+setFormatSelector :: Selector '[MPSImageFeatureChannelFormat] ()
 setFormatSelector = mkSelector "setFormat:"
 
 -- | @Selector@ for @imageAllocator@
-imageAllocatorSelector :: Selector
+imageAllocatorSelector :: Selector '[] RawId
 imageAllocatorSelector = mkSelector "imageAllocator"
 
 -- | @Selector@ for @setImageAllocator:@
-setImageAllocatorSelector :: Selector
+setImageAllocatorSelector :: Selector '[RawId] ()
 setImageAllocatorSelector = mkSelector "setImageAllocator:"
 
 -- | @Selector@ for @exportFromGraph@
-exportFromGraphSelector :: Selector
+exportFromGraphSelector :: Selector '[] Bool
 exportFromGraphSelector = mkSelector "exportFromGraph"
 
 -- | @Selector@ for @setExportFromGraph:@
-setExportFromGraphSelector :: Selector
+setExportFromGraphSelector :: Selector '[Bool] ()
 setExportFromGraphSelector = mkSelector "setExportFromGraph:"
 
 -- | @Selector@ for @synchronizeResource@
-synchronizeResourceSelector :: Selector
+synchronizeResourceSelector :: Selector '[] Bool
 synchronizeResourceSelector = mkSelector "synchronizeResource"
 
 -- | @Selector@ for @setSynchronizeResource:@
-setSynchronizeResourceSelector :: Selector
+setSynchronizeResourceSelector :: Selector '[Bool] ()
 setSynchronizeResourceSelector = mkSelector "setSynchronizeResource:"
 
 -- | @Selector@ for @stopGradient@
-stopGradientSelector :: Selector
+stopGradientSelector :: Selector '[] Bool
 stopGradientSelector = mkSelector "stopGradient"
 
 -- | @Selector@ for @setStopGradient:@
-setStopGradientSelector :: Selector
+setStopGradientSelector :: Selector '[Bool] ()
 setStopGradientSelector = mkSelector "setStopGradient:"
 

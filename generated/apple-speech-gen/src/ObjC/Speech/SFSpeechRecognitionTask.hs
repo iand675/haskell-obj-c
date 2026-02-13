@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,12 +20,12 @@ module ObjC.Speech.SFSpeechRecognitionTask
   , finishing
   , cancelled
   , error_
-  , finishSelector
   , cancelSelector
-  , stateSelector
-  , finishingSelector
   , cancelledSelector
   , errorSelector
+  , finishSelector
+  , finishingSelector
+  , stateSelector
 
   -- * Enum types
   , SFSpeechRecognitionTaskState(SFSpeechRecognitionTaskState)
@@ -36,15 +37,11 @@ module ObjC.Speech.SFSpeechRecognitionTask
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- finish@
 finish :: IsSFSpeechRecognitionTask sfSpeechRecognitionTask => sfSpeechRecognitionTask -> IO ()
-finish sfSpeechRecognitionTask  =
-    sendMsg sfSpeechRecognitionTask (mkSelector "finish") retVoid []
+finish sfSpeechRecognitionTask =
+  sendMessage sfSpeechRecognitionTask finishSelector
 
 -- | Cancels the current speech recognition task.
 --
@@ -69,8 +66,8 @@ finish sfSpeechRecognitionTask  =
 --
 -- ObjC selector: @- cancel@
 cancel :: IsSFSpeechRecognitionTask sfSpeechRecognitionTask => sfSpeechRecognitionTask -> IO ()
-cancel sfSpeechRecognitionTask  =
-    sendMsg sfSpeechRecognitionTask (mkSelector "cancel") retVoid []
+cancel sfSpeechRecognitionTask =
+  sendMessage sfSpeechRecognitionTask cancelSelector
 
 -- | The current state of the speech recognition task.
 --
@@ -78,8 +75,8 @@ cancel sfSpeechRecognitionTask  =
 --
 -- ObjC selector: @- state@
 state :: IsSFSpeechRecognitionTask sfSpeechRecognitionTask => sfSpeechRecognitionTask -> IO SFSpeechRecognitionTaskState
-state sfSpeechRecognitionTask  =
-    fmap (coerce :: CLong -> SFSpeechRecognitionTaskState) $ sendMsg sfSpeechRecognitionTask (mkSelector "state") retCLong []
+state sfSpeechRecognitionTask =
+  sendMessage sfSpeechRecognitionTask stateSelector
 
 -- | A Boolean value that indicates whether audio input has stopped.
 --
@@ -87,8 +84,8 @@ state sfSpeechRecognitionTask  =
 --
 -- ObjC selector: @- finishing@
 finishing :: IsSFSpeechRecognitionTask sfSpeechRecognitionTask => sfSpeechRecognitionTask -> IO Bool
-finishing sfSpeechRecognitionTask  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSpeechRecognitionTask (mkSelector "finishing") retCULong []
+finishing sfSpeechRecognitionTask =
+  sendMessage sfSpeechRecognitionTask finishingSelector
 
 -- | A Boolean value that indicates whether the speech recognition task was canceled.
 --
@@ -96,8 +93,8 @@ finishing sfSpeechRecognitionTask  =
 --
 -- ObjC selector: @- cancelled@
 cancelled :: IsSFSpeechRecognitionTask sfSpeechRecognitionTask => sfSpeechRecognitionTask -> IO Bool
-cancelled sfSpeechRecognitionTask  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSpeechRecognitionTask (mkSelector "cancelled") retCULong []
+cancelled sfSpeechRecognitionTask =
+  sendMessage sfSpeechRecognitionTask cancelledSelector
 
 -- | An error object that specifies the error that occurred during a speech recognition task.
 --
@@ -107,34 +104,34 @@ cancelled sfSpeechRecognitionTask  =
 --
 -- ObjC selector: @- error@
 error_ :: IsSFSpeechRecognitionTask sfSpeechRecognitionTask => sfSpeechRecognitionTask -> IO (Id NSError)
-error_ sfSpeechRecognitionTask  =
-    sendMsg sfSpeechRecognitionTask (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ sfSpeechRecognitionTask =
+  sendMessage sfSpeechRecognitionTask errorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @finish@
-finishSelector :: Selector
+finishSelector :: Selector '[] ()
 finishSelector = mkSelector "finish"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] SFSpeechRecognitionTaskState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @finishing@
-finishingSelector :: Selector
+finishingSelector :: Selector '[] Bool
 finishingSelector = mkSelector "finishing"
 
 -- | @Selector@ for @cancelled@
-cancelledSelector :: Selector
+cancelledSelector :: Selector '[] Bool
 cancelledSelector = mkSelector "cancelled"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,17 +25,17 @@ module ObjC.AVFAudio.AVAudioUnitEQFilterParameters
   , setGain
   , bypass
   , setBypass
-  , initSelector
-  , filterTypeSelector
-  , setFilterTypeSelector
-  , frequencySelector
-  , setFrequencySelector
   , bandwidthSelector
-  , setBandwidthSelector
-  , gainSelector
-  , setGainSelector
   , bypassSelector
+  , filterTypeSelector
+  , frequencySelector
+  , gainSelector
+  , initSelector
+  , setBandwidthSelector
   , setBypassSelector
+  , setFilterTypeSelector
+  , setFrequencySelector
+  , setGainSelector
 
   -- * Enum types
   , AVAudioUnitEQFilterType(AVAudioUnitEQFilterType)
@@ -52,15 +53,11 @@ module ObjC.AVFAudio.AVAudioUnitEQFilterParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,8 +67,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> IO (Id AVAudioUnitEQFilterParameters)
-init_ avAudioUnitEQFilterParameters  =
-    sendMsg avAudioUnitEQFilterParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioUnitEQFilterParameters =
+  sendOwnedMessage avAudioUnitEQFilterParameters initSelector
 
 -- | filterType
 --
@@ -81,8 +78,8 @@ init_ avAudioUnitEQFilterParameters  =
 --
 -- ObjC selector: @- filterType@
 filterType :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> IO AVAudioUnitEQFilterType
-filterType avAudioUnitEQFilterParameters  =
-    fmap (coerce :: CLong -> AVAudioUnitEQFilterType) $ sendMsg avAudioUnitEQFilterParameters (mkSelector "filterType") retCLong []
+filterType avAudioUnitEQFilterParameters =
+  sendMessage avAudioUnitEQFilterParameters filterTypeSelector
 
 -- | filterType
 --
@@ -92,8 +89,8 @@ filterType avAudioUnitEQFilterParameters  =
 --
 -- ObjC selector: @- setFilterType:@
 setFilterType :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> AVAudioUnitEQFilterType -> IO ()
-setFilterType avAudioUnitEQFilterParameters  value =
-    sendMsg avAudioUnitEQFilterParameters (mkSelector "setFilterType:") retVoid [argCLong (coerce value)]
+setFilterType avAudioUnitEQFilterParameters value =
+  sendMessage avAudioUnitEQFilterParameters setFilterTypeSelector value
 
 -- | frequency
 --
@@ -103,8 +100,8 @@ setFilterType avAudioUnitEQFilterParameters  value =
 --
 -- ObjC selector: @- frequency@
 frequency :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> IO CFloat
-frequency avAudioUnitEQFilterParameters  =
-    sendMsg avAudioUnitEQFilterParameters (mkSelector "frequency") retCFloat []
+frequency avAudioUnitEQFilterParameters =
+  sendMessage avAudioUnitEQFilterParameters frequencySelector
 
 -- | frequency
 --
@@ -114,8 +111,8 @@ frequency avAudioUnitEQFilterParameters  =
 --
 -- ObjC selector: @- setFrequency:@
 setFrequency :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> CFloat -> IO ()
-setFrequency avAudioUnitEQFilterParameters  value =
-    sendMsg avAudioUnitEQFilterParameters (mkSelector "setFrequency:") retVoid [argCFloat value]
+setFrequency avAudioUnitEQFilterParameters value =
+  sendMessage avAudioUnitEQFilterParameters setFrequencySelector value
 
 -- | bandwidth
 --
@@ -125,8 +122,8 @@ setFrequency avAudioUnitEQFilterParameters  value =
 --
 -- ObjC selector: @- bandwidth@
 bandwidth :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> IO CFloat
-bandwidth avAudioUnitEQFilterParameters  =
-    sendMsg avAudioUnitEQFilterParameters (mkSelector "bandwidth") retCFloat []
+bandwidth avAudioUnitEQFilterParameters =
+  sendMessage avAudioUnitEQFilterParameters bandwidthSelector
 
 -- | bandwidth
 --
@@ -136,8 +133,8 @@ bandwidth avAudioUnitEQFilterParameters  =
 --
 -- ObjC selector: @- setBandwidth:@
 setBandwidth :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> CFloat -> IO ()
-setBandwidth avAudioUnitEQFilterParameters  value =
-    sendMsg avAudioUnitEQFilterParameters (mkSelector "setBandwidth:") retVoid [argCFloat value]
+setBandwidth avAudioUnitEQFilterParameters value =
+  sendMessage avAudioUnitEQFilterParameters setBandwidthSelector value
 
 -- | gain
 --
@@ -147,8 +144,8 @@ setBandwidth avAudioUnitEQFilterParameters  value =
 --
 -- ObjC selector: @- gain@
 gain :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> IO CFloat
-gain avAudioUnitEQFilterParameters  =
-    sendMsg avAudioUnitEQFilterParameters (mkSelector "gain") retCFloat []
+gain avAudioUnitEQFilterParameters =
+  sendMessage avAudioUnitEQFilterParameters gainSelector
 
 -- | gain
 --
@@ -158,8 +155,8 @@ gain avAudioUnitEQFilterParameters  =
 --
 -- ObjC selector: @- setGain:@
 setGain :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> CFloat -> IO ()
-setGain avAudioUnitEQFilterParameters  value =
-    sendMsg avAudioUnitEQFilterParameters (mkSelector "setGain:") retVoid [argCFloat value]
+setGain avAudioUnitEQFilterParameters value =
+  sendMessage avAudioUnitEQFilterParameters setGainSelector value
 
 -- | bypass
 --
@@ -169,8 +166,8 @@ setGain avAudioUnitEQFilterParameters  value =
 --
 -- ObjC selector: @- bypass@
 bypass :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> IO Bool
-bypass avAudioUnitEQFilterParameters  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitEQFilterParameters (mkSelector "bypass") retCULong []
+bypass avAudioUnitEQFilterParameters =
+  sendMessage avAudioUnitEQFilterParameters bypassSelector
 
 -- | bypass
 --
@@ -180,54 +177,54 @@ bypass avAudioUnitEQFilterParameters  =
 --
 -- ObjC selector: @- setBypass:@
 setBypass :: IsAVAudioUnitEQFilterParameters avAudioUnitEQFilterParameters => avAudioUnitEQFilterParameters -> Bool -> IO ()
-setBypass avAudioUnitEQFilterParameters  value =
-    sendMsg avAudioUnitEQFilterParameters (mkSelector "setBypass:") retVoid [argCULong (if value then 1 else 0)]
+setBypass avAudioUnitEQFilterParameters value =
+  sendMessage avAudioUnitEQFilterParameters setBypassSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioUnitEQFilterParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @filterType@
-filterTypeSelector :: Selector
+filterTypeSelector :: Selector '[] AVAudioUnitEQFilterType
 filterTypeSelector = mkSelector "filterType"
 
 -- | @Selector@ for @setFilterType:@
-setFilterTypeSelector :: Selector
+setFilterTypeSelector :: Selector '[AVAudioUnitEQFilterType] ()
 setFilterTypeSelector = mkSelector "setFilterType:"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] CFloat
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @setFrequency:@
-setFrequencySelector :: Selector
+setFrequencySelector :: Selector '[CFloat] ()
 setFrequencySelector = mkSelector "setFrequency:"
 
 -- | @Selector@ for @bandwidth@
-bandwidthSelector :: Selector
+bandwidthSelector :: Selector '[] CFloat
 bandwidthSelector = mkSelector "bandwidth"
 
 -- | @Selector@ for @setBandwidth:@
-setBandwidthSelector :: Selector
+setBandwidthSelector :: Selector '[CFloat] ()
 setBandwidthSelector = mkSelector "setBandwidth:"
 
 -- | @Selector@ for @gain@
-gainSelector :: Selector
+gainSelector :: Selector '[] CFloat
 gainSelector = mkSelector "gain"
 
 -- | @Selector@ for @setGain:@
-setGainSelector :: Selector
+setGainSelector :: Selector '[CFloat] ()
 setGainSelector = mkSelector "setGain:"
 
 -- | @Selector@ for @bypass@
-bypassSelector :: Selector
+bypassSelector :: Selector '[] Bool
 bypassSelector = mkSelector "bypass"
 
 -- | @Selector@ for @setBypass:@
-setBypassSelector :: Selector
+setBypassSelector :: Selector '[Bool] ()
 setBypassSelector = mkSelector "setBypass:"
 

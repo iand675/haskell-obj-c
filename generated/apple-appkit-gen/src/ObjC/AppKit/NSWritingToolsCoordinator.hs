@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,26 +38,26 @@ module ObjC.AppKit.NSWritingToolsCoordinator
   , resultOptions
   , includesTextListMarkers
   , setIncludesTextListMarkers
-  , initWithDelegateSelector
-  , stopWritingToolsSelector
-  , updateRange_withText_reason_forContextWithIdentifierSelector
-  , updateForReflowedTextInContextWithIdentifierSelector
-  , isWritingToolsAvailableSelector
-  , delegateSelector
-  , viewSelector
-  , effectContainerViewSelector
-  , setEffectContainerViewSelector
-  , decorationContainerViewSelector
-  , setDecorationContainerViewSelector
-  , stateSelector
-  , preferredBehaviorSelector
-  , setPreferredBehaviorSelector
   , behaviorSelector
-  , preferredResultOptionsSelector
-  , setPreferredResultOptionsSelector
-  , resultOptionsSelector
+  , decorationContainerViewSelector
+  , delegateSelector
+  , effectContainerViewSelector
   , includesTextListMarkersSelector
+  , initWithDelegateSelector
+  , isWritingToolsAvailableSelector
+  , preferredBehaviorSelector
+  , preferredResultOptionsSelector
+  , resultOptionsSelector
+  , setDecorationContainerViewSelector
+  , setEffectContainerViewSelector
   , setIncludesTextListMarkersSelector
+  , setPreferredBehaviorSelector
+  , setPreferredResultOptionsSelector
+  , stateSelector
+  , stopWritingToolsSelector
+  , updateForReflowedTextInContextWithIdentifierSelector
+  , updateRange_withText_reason_forContextWithIdentifierSelector
+  , viewSelector
 
   -- * Enum types
   , NSWritingToolsBehavior(NSWritingToolsBehavior)
@@ -82,15 +83,11 @@ module ObjC.AppKit.NSWritingToolsCoordinator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -107,8 +104,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDelegate:@
 initWithDelegate :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> RawId -> IO (Id NSWritingToolsCoordinator)
-initWithDelegate nsWritingToolsCoordinator  delegate =
-    sendMsg nsWritingToolsCoordinator (mkSelector "initWithDelegate:") (retPtr retVoid) [argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithDelegate nsWritingToolsCoordinator delegate =
+  sendOwnedMessage nsWritingToolsCoordinator initWithDelegateSelector delegate
 
 -- | Stops the current Writing Tools operation and dismisses the system UI.
 --
@@ -116,8 +113,8 @@ initWithDelegate nsWritingToolsCoordinator  delegate =
 --
 -- ObjC selector: @- stopWritingTools@
 stopWritingTools :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO ()
-stopWritingTools nsWritingToolsCoordinator  =
-    sendMsg nsWritingToolsCoordinator (mkSelector "stopWritingTools") retVoid []
+stopWritingTools nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator stopWritingToolsSelector
 
 -- | Informs the coordinator about changes your app made to the text in the specified context object.
 --
@@ -131,10 +128,8 @@ stopWritingTools nsWritingToolsCoordinator  =
 --
 -- ObjC selector: @- updateRange:withText:reason:forContextWithIdentifier:@
 updateRange_withText_reason_forContextWithIdentifier :: (IsNSWritingToolsCoordinator nsWritingToolsCoordinator, IsNSAttributedString replacementText, IsNSUUID contextID) => nsWritingToolsCoordinator -> NSRange -> replacementText -> NSWritingToolsCoordinatorTextUpdateReason -> contextID -> IO ()
-updateRange_withText_reason_forContextWithIdentifier nsWritingToolsCoordinator  range replacementText reason contextID =
-  withObjCPtr replacementText $ \raw_replacementText ->
-    withObjCPtr contextID $ \raw_contextID ->
-        sendMsg nsWritingToolsCoordinator (mkSelector "updateRange:withText:reason:forContextWithIdentifier:") retVoid [argNSRange range, argPtr (castPtr raw_replacementText :: Ptr ()), argCLong (coerce reason), argPtr (castPtr raw_contextID :: Ptr ())]
+updateRange_withText_reason_forContextWithIdentifier nsWritingToolsCoordinator range replacementText reason contextID =
+  sendMessage nsWritingToolsCoordinator updateRange_withText_reason_forContextWithIdentifierSelector range (toNSAttributedString replacementText) reason (toNSUUID contextID)
 
 -- | Informs the coordinator that a change occurred to the view or its text that requires a layout update.
 --
@@ -146,9 +141,8 @@ updateRange_withText_reason_forContextWithIdentifier nsWritingToolsCoordinator  
 --
 -- ObjC selector: @- updateForReflowedTextInContextWithIdentifier:@
 updateForReflowedTextInContextWithIdentifier :: (IsNSWritingToolsCoordinator nsWritingToolsCoordinator, IsNSUUID contextID) => nsWritingToolsCoordinator -> contextID -> IO ()
-updateForReflowedTextInContextWithIdentifier nsWritingToolsCoordinator  contextID =
-  withObjCPtr contextID $ \raw_contextID ->
-      sendMsg nsWritingToolsCoordinator (mkSelector "updateForReflowedTextInContextWithIdentifier:") retVoid [argPtr (castPtr raw_contextID :: Ptr ())]
+updateForReflowedTextInContextWithIdentifier nsWritingToolsCoordinator contextID =
+  sendMessage nsWritingToolsCoordinator updateForReflowedTextInContextWithIdentifierSelector (toNSUUID contextID)
 
 -- | A Boolean value that indicates whether Writing Tools features are currently available.
 --
@@ -159,7 +153,7 @@ isWritingToolsAvailable :: IO Bool
 isWritingToolsAvailable  =
   do
     cls' <- getRequiredClass "NSWritingToolsCoordinator"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isWritingToolsAvailable") retCULong []
+    sendClassMessage cls' isWritingToolsAvailableSelector
 
 -- | The object that handles Writing Tools interactions for your view.
 --
@@ -167,8 +161,8 @@ isWritingToolsAvailable  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO RawId
-delegate nsWritingToolsCoordinator  =
-    fmap (RawId . castPtr) $ sendMsg nsWritingToolsCoordinator (mkSelector "delegate") (retPtr retVoid) []
+delegate nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator delegateSelector
 
 -- | The view that currently uses the writing tools coordinator.
 --
@@ -176,8 +170,8 @@ delegate nsWritingToolsCoordinator  =
 --
 -- ObjC selector: @- view@
 view :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO (Id NSView)
-view nsWritingToolsCoordinator  =
-    sendMsg nsWritingToolsCoordinator (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+view nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator viewSelector
 
 -- | The view that Writing Tools uses to display visual effects during the text-rewriting process.
 --
@@ -187,8 +181,8 @@ view nsWritingToolsCoordinator  =
 --
 -- ObjC selector: @- effectContainerView@
 effectContainerView :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO (Id NSView)
-effectContainerView nsWritingToolsCoordinator  =
-    sendMsg nsWritingToolsCoordinator (mkSelector "effectContainerView") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectContainerView nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator effectContainerViewSelector
 
 -- | The view that Writing Tools uses to display visual effects during the text-rewriting process.
 --
@@ -198,9 +192,8 @@ effectContainerView nsWritingToolsCoordinator  =
 --
 -- ObjC selector: @- setEffectContainerView:@
 setEffectContainerView :: (IsNSWritingToolsCoordinator nsWritingToolsCoordinator, IsNSView value) => nsWritingToolsCoordinator -> value -> IO ()
-setEffectContainerView nsWritingToolsCoordinator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWritingToolsCoordinator (mkSelector "setEffectContainerView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEffectContainerView nsWritingToolsCoordinator value =
+  sendMessage nsWritingToolsCoordinator setEffectContainerViewSelector (toNSView value)
 
 -- | The view that Writing Tools uses to display background decorations such as proofreading marks.
 --
@@ -210,8 +203,8 @@ setEffectContainerView nsWritingToolsCoordinator  value =
 --
 -- ObjC selector: @- decorationContainerView@
 decorationContainerView :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO (Id NSView)
-decorationContainerView nsWritingToolsCoordinator  =
-    sendMsg nsWritingToolsCoordinator (mkSelector "decorationContainerView") (retPtr retVoid) [] >>= retainedObject . castPtr
+decorationContainerView nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator decorationContainerViewSelector
 
 -- | The view that Writing Tools uses to display background decorations such as proofreading marks.
 --
@@ -221,9 +214,8 @@ decorationContainerView nsWritingToolsCoordinator  =
 --
 -- ObjC selector: @- setDecorationContainerView:@
 setDecorationContainerView :: (IsNSWritingToolsCoordinator nsWritingToolsCoordinator, IsNSView value) => nsWritingToolsCoordinator -> value -> IO ()
-setDecorationContainerView nsWritingToolsCoordinator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWritingToolsCoordinator (mkSelector "setDecorationContainerView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDecorationContainerView nsWritingToolsCoordinator value =
+  sendMessage nsWritingToolsCoordinator setDecorationContainerViewSelector (toNSView value)
 
 -- | The current level of Writing Tools activity in your view.
 --
@@ -231,8 +223,8 @@ setDecorationContainerView nsWritingToolsCoordinator  value =
 --
 -- ObjC selector: @- state@
 state :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO NSWritingToolsCoordinatorState
-state nsWritingToolsCoordinator  =
-    fmap (coerce :: CLong -> NSWritingToolsCoordinatorState) $ sendMsg nsWritingToolsCoordinator (mkSelector "state") retCLong []
+state nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator stateSelector
 
 -- | The level of Writing Tools support you want the system to provide for your view.
 --
@@ -240,8 +232,8 @@ state nsWritingToolsCoordinator  =
 --
 -- ObjC selector: @- preferredBehavior@
 preferredBehavior :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO NSWritingToolsBehavior
-preferredBehavior nsWritingToolsCoordinator  =
-    fmap (coerce :: CLong -> NSWritingToolsBehavior) $ sendMsg nsWritingToolsCoordinator (mkSelector "preferredBehavior") retCLong []
+preferredBehavior nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator preferredBehaviorSelector
 
 -- | The level of Writing Tools support you want the system to provide for your view.
 --
@@ -249,8 +241,8 @@ preferredBehavior nsWritingToolsCoordinator  =
 --
 -- ObjC selector: @- setPreferredBehavior:@
 setPreferredBehavior :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> NSWritingToolsBehavior -> IO ()
-setPreferredBehavior nsWritingToolsCoordinator  value =
-    sendMsg nsWritingToolsCoordinator (mkSelector "setPreferredBehavior:") retVoid [argCLong (coerce value)]
+setPreferredBehavior nsWritingToolsCoordinator value =
+  sendMessage nsWritingToolsCoordinator setPreferredBehaviorSelector value
 
 -- | The actual level of Writing Tools support the system provides for your view.
 --
@@ -258,8 +250,8 @@ setPreferredBehavior nsWritingToolsCoordinator  value =
 --
 -- ObjC selector: @- behavior@
 behavior :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO NSWritingToolsBehavior
-behavior nsWritingToolsCoordinator  =
-    fmap (coerce :: CLong -> NSWritingToolsBehavior) $ sendMsg nsWritingToolsCoordinator (mkSelector "behavior") retCLong []
+behavior nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator behaviorSelector
 
 -- | The type of content you allow Writing Tools to generate for your custom text view.
 --
@@ -267,8 +259,8 @@ behavior nsWritingToolsCoordinator  =
 --
 -- ObjC selector: @- preferredResultOptions@
 preferredResultOptions :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO NSWritingToolsResultOptions
-preferredResultOptions nsWritingToolsCoordinator  =
-    fmap (coerce :: CULong -> NSWritingToolsResultOptions) $ sendMsg nsWritingToolsCoordinator (mkSelector "preferredResultOptions") retCULong []
+preferredResultOptions nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator preferredResultOptionsSelector
 
 -- | The type of content you allow Writing Tools to generate for your custom text view.
 --
@@ -276,8 +268,8 @@ preferredResultOptions nsWritingToolsCoordinator  =
 --
 -- ObjC selector: @- setPreferredResultOptions:@
 setPreferredResultOptions :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> NSWritingToolsResultOptions -> IO ()
-setPreferredResultOptions nsWritingToolsCoordinator  value =
-    sendMsg nsWritingToolsCoordinator (mkSelector "setPreferredResultOptions:") retVoid [argCULong (coerce value)]
+setPreferredResultOptions nsWritingToolsCoordinator value =
+  sendMessage nsWritingToolsCoordinator setPreferredResultOptionsSelector value
 
 -- | The type of content the system generates for your custom text view.
 --
@@ -285,100 +277,100 @@ setPreferredResultOptions nsWritingToolsCoordinator  value =
 --
 -- ObjC selector: @- resultOptions@
 resultOptions :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO NSWritingToolsResultOptions
-resultOptions nsWritingToolsCoordinator  =
-    fmap (coerce :: CULong -> NSWritingToolsResultOptions) $ sendMsg nsWritingToolsCoordinator (mkSelector "resultOptions") retCULong []
+resultOptions nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator resultOptionsSelector
 
 -- | @- includesTextListMarkers@
 includesTextListMarkers :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> IO Bool
-includesTextListMarkers nsWritingToolsCoordinator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWritingToolsCoordinator (mkSelector "includesTextListMarkers") retCULong []
+includesTextListMarkers nsWritingToolsCoordinator =
+  sendMessage nsWritingToolsCoordinator includesTextListMarkersSelector
 
 -- | @- setIncludesTextListMarkers:@
 setIncludesTextListMarkers :: IsNSWritingToolsCoordinator nsWritingToolsCoordinator => nsWritingToolsCoordinator -> Bool -> IO ()
-setIncludesTextListMarkers nsWritingToolsCoordinator  value =
-    sendMsg nsWritingToolsCoordinator (mkSelector "setIncludesTextListMarkers:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesTextListMarkers nsWritingToolsCoordinator value =
+  sendMessage nsWritingToolsCoordinator setIncludesTextListMarkersSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDelegate:@
-initWithDelegateSelector :: Selector
+initWithDelegateSelector :: Selector '[RawId] (Id NSWritingToolsCoordinator)
 initWithDelegateSelector = mkSelector "initWithDelegate:"
 
 -- | @Selector@ for @stopWritingTools@
-stopWritingToolsSelector :: Selector
+stopWritingToolsSelector :: Selector '[] ()
 stopWritingToolsSelector = mkSelector "stopWritingTools"
 
 -- | @Selector@ for @updateRange:withText:reason:forContextWithIdentifier:@
-updateRange_withText_reason_forContextWithIdentifierSelector :: Selector
+updateRange_withText_reason_forContextWithIdentifierSelector :: Selector '[NSRange, Id NSAttributedString, NSWritingToolsCoordinatorTextUpdateReason, Id NSUUID] ()
 updateRange_withText_reason_forContextWithIdentifierSelector = mkSelector "updateRange:withText:reason:forContextWithIdentifier:"
 
 -- | @Selector@ for @updateForReflowedTextInContextWithIdentifier:@
-updateForReflowedTextInContextWithIdentifierSelector :: Selector
+updateForReflowedTextInContextWithIdentifierSelector :: Selector '[Id NSUUID] ()
 updateForReflowedTextInContextWithIdentifierSelector = mkSelector "updateForReflowedTextInContextWithIdentifier:"
 
 -- | @Selector@ for @isWritingToolsAvailable@
-isWritingToolsAvailableSelector :: Selector
+isWritingToolsAvailableSelector :: Selector '[] Bool
 isWritingToolsAvailableSelector = mkSelector "isWritingToolsAvailable"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @view@
-viewSelector :: Selector
+viewSelector :: Selector '[] (Id NSView)
 viewSelector = mkSelector "view"
 
 -- | @Selector@ for @effectContainerView@
-effectContainerViewSelector :: Selector
+effectContainerViewSelector :: Selector '[] (Id NSView)
 effectContainerViewSelector = mkSelector "effectContainerView"
 
 -- | @Selector@ for @setEffectContainerView:@
-setEffectContainerViewSelector :: Selector
+setEffectContainerViewSelector :: Selector '[Id NSView] ()
 setEffectContainerViewSelector = mkSelector "setEffectContainerView:"
 
 -- | @Selector@ for @decorationContainerView@
-decorationContainerViewSelector :: Selector
+decorationContainerViewSelector :: Selector '[] (Id NSView)
 decorationContainerViewSelector = mkSelector "decorationContainerView"
 
 -- | @Selector@ for @setDecorationContainerView:@
-setDecorationContainerViewSelector :: Selector
+setDecorationContainerViewSelector :: Selector '[Id NSView] ()
 setDecorationContainerViewSelector = mkSelector "setDecorationContainerView:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] NSWritingToolsCoordinatorState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @preferredBehavior@
-preferredBehaviorSelector :: Selector
+preferredBehaviorSelector :: Selector '[] NSWritingToolsBehavior
 preferredBehaviorSelector = mkSelector "preferredBehavior"
 
 -- | @Selector@ for @setPreferredBehavior:@
-setPreferredBehaviorSelector :: Selector
+setPreferredBehaviorSelector :: Selector '[NSWritingToolsBehavior] ()
 setPreferredBehaviorSelector = mkSelector "setPreferredBehavior:"
 
 -- | @Selector@ for @behavior@
-behaviorSelector :: Selector
+behaviorSelector :: Selector '[] NSWritingToolsBehavior
 behaviorSelector = mkSelector "behavior"
 
 -- | @Selector@ for @preferredResultOptions@
-preferredResultOptionsSelector :: Selector
+preferredResultOptionsSelector :: Selector '[] NSWritingToolsResultOptions
 preferredResultOptionsSelector = mkSelector "preferredResultOptions"
 
 -- | @Selector@ for @setPreferredResultOptions:@
-setPreferredResultOptionsSelector :: Selector
+setPreferredResultOptionsSelector :: Selector '[NSWritingToolsResultOptions] ()
 setPreferredResultOptionsSelector = mkSelector "setPreferredResultOptions:"
 
 -- | @Selector@ for @resultOptions@
-resultOptionsSelector :: Selector
+resultOptionsSelector :: Selector '[] NSWritingToolsResultOptions
 resultOptionsSelector = mkSelector "resultOptions"
 
 -- | @Selector@ for @includesTextListMarkers@
-includesTextListMarkersSelector :: Selector
+includesTextListMarkersSelector :: Selector '[] Bool
 includesTextListMarkersSelector = mkSelector "includesTextListMarkers"
 
 -- | @Selector@ for @setIncludesTextListMarkers:@
-setIncludesTextListMarkersSelector :: Selector
+setIncludesTextListMarkersSelector :: Selector '[Bool] ()
 setIncludesTextListMarkersSelector = mkSelector "setIncludesTextListMarkers:"
 

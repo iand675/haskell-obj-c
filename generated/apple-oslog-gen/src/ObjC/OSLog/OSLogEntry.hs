@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,15 +33,11 @@ module ObjC.OSLog.OSLogEntry
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- composedMessage@
 composedMessage :: IsOSLogEntry osLogEntry => osLogEntry -> IO (Id NSString)
-composedMessage osLogEntry  =
-    sendMsg osLogEntry (mkSelector "composedMessage") (retPtr retVoid) [] >>= retainedObject . castPtr
+composedMessage osLogEntry =
+  sendMessage osLogEntry composedMessageSelector
 
 -- | date
 --
@@ -63,8 +60,8 @@ composedMessage osLogEntry  =
 --
 -- ObjC selector: @- date@
 date :: IsOSLogEntry osLogEntry => osLogEntry -> IO (Id NSDate)
-date osLogEntry  =
-    sendMsg osLogEntry (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date osLogEntry =
+  sendMessage osLogEntry dateSelector
 
 -- | storeCategory
 --
@@ -72,22 +69,22 @@ date osLogEntry  =
 --
 -- ObjC selector: @- storeCategory@
 storeCategory :: IsOSLogEntry osLogEntry => osLogEntry -> IO OSLogEntryStoreCategory
-storeCategory osLogEntry  =
-    fmap (coerce :: CLong -> OSLogEntryStoreCategory) $ sendMsg osLogEntry (mkSelector "storeCategory") retCLong []
+storeCategory osLogEntry =
+  sendMessage osLogEntry storeCategorySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @composedMessage@
-composedMessageSelector :: Selector
+composedMessageSelector :: Selector '[] (Id NSString)
 composedMessageSelector = mkSelector "composedMessage"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @storeCategory@
-storeCategorySelector :: Selector
+storeCategorySelector :: Selector '[] OSLogEntryStoreCategory
 storeCategorySelector = mkSelector "storeCategory"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.SpriteKit.SKReachConstraints
   , initWithLowerAngleLimit_upperAngleLimitSelector
   , lowerAngleLimitSelector
   , setLowerAngleLimitSelector
-  , upperAngleLimitSelector
   , setUpperAngleLimitSelector
+  , upperAngleLimitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,58 +34,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithLowerAngleLimit:upperAngleLimit:@
 initWithLowerAngleLimit_upperAngleLimit :: IsSKReachConstraints skReachConstraints => skReachConstraints -> CDouble -> CDouble -> IO (Id SKReachConstraints)
-initWithLowerAngleLimit_upperAngleLimit skReachConstraints  lowerAngleLimit upperAngleLimit =
-    sendMsg skReachConstraints (mkSelector "initWithLowerAngleLimit:upperAngleLimit:") (retPtr retVoid) [argCDouble lowerAngleLimit, argCDouble upperAngleLimit] >>= ownedObject . castPtr
+initWithLowerAngleLimit_upperAngleLimit skReachConstraints lowerAngleLimit upperAngleLimit =
+  sendOwnedMessage skReachConstraints initWithLowerAngleLimit_upperAngleLimitSelector lowerAngleLimit upperAngleLimit
 
 -- | Lower angle limit in radians
 --
 -- ObjC selector: @- lowerAngleLimit@
 lowerAngleLimit :: IsSKReachConstraints skReachConstraints => skReachConstraints -> IO CDouble
-lowerAngleLimit skReachConstraints  =
-    sendMsg skReachConstraints (mkSelector "lowerAngleLimit") retCDouble []
+lowerAngleLimit skReachConstraints =
+  sendMessage skReachConstraints lowerAngleLimitSelector
 
 -- | Lower angle limit in radians
 --
 -- ObjC selector: @- setLowerAngleLimit:@
 setLowerAngleLimit :: IsSKReachConstraints skReachConstraints => skReachConstraints -> CDouble -> IO ()
-setLowerAngleLimit skReachConstraints  value =
-    sendMsg skReachConstraints (mkSelector "setLowerAngleLimit:") retVoid [argCDouble value]
+setLowerAngleLimit skReachConstraints value =
+  sendMessage skReachConstraints setLowerAngleLimitSelector value
 
 -- | Upper angle limit in radians
 --
 -- ObjC selector: @- upperAngleLimit@
 upperAngleLimit :: IsSKReachConstraints skReachConstraints => skReachConstraints -> IO CDouble
-upperAngleLimit skReachConstraints  =
-    sendMsg skReachConstraints (mkSelector "upperAngleLimit") retCDouble []
+upperAngleLimit skReachConstraints =
+  sendMessage skReachConstraints upperAngleLimitSelector
 
 -- | Upper angle limit in radians
 --
 -- ObjC selector: @- setUpperAngleLimit:@
 setUpperAngleLimit :: IsSKReachConstraints skReachConstraints => skReachConstraints -> CDouble -> IO ()
-setUpperAngleLimit skReachConstraints  value =
-    sendMsg skReachConstraints (mkSelector "setUpperAngleLimit:") retVoid [argCDouble value]
+setUpperAngleLimit skReachConstraints value =
+  sendMessage skReachConstraints setUpperAngleLimitSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLowerAngleLimit:upperAngleLimit:@
-initWithLowerAngleLimit_upperAngleLimitSelector :: Selector
+initWithLowerAngleLimit_upperAngleLimitSelector :: Selector '[CDouble, CDouble] (Id SKReachConstraints)
 initWithLowerAngleLimit_upperAngleLimitSelector = mkSelector "initWithLowerAngleLimit:upperAngleLimit:"
 
 -- | @Selector@ for @lowerAngleLimit@
-lowerAngleLimitSelector :: Selector
+lowerAngleLimitSelector :: Selector '[] CDouble
 lowerAngleLimitSelector = mkSelector "lowerAngleLimit"
 
 -- | @Selector@ for @setLowerAngleLimit:@
-setLowerAngleLimitSelector :: Selector
+setLowerAngleLimitSelector :: Selector '[CDouble] ()
 setLowerAngleLimitSelector = mkSelector "setLowerAngleLimit:"
 
 -- | @Selector@ for @upperAngleLimit@
-upperAngleLimitSelector :: Selector
+upperAngleLimitSelector :: Selector '[] CDouble
 upperAngleLimitSelector = mkSelector "upperAngleLimit"
 
 -- | @Selector@ for @setUpperAngleLimit:@
-setUpperAngleLimitSelector :: Selector
+setUpperAngleLimitSelector :: Selector '[CDouble] ()
 setUpperAngleLimitSelector = mkSelector "setUpperAngleLimit:"
 

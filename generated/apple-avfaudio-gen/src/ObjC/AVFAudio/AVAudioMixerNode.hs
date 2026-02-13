@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,22 +20,18 @@ module ObjC.AVFAudio.AVAudioMixerNode
   , setOutputVolume
   , nextAvailableInputBus
   , initSelector
+  , nextAvailableInputBusSelector
   , outputVolumeSelector
   , setOutputVolumeSelector
-  , nextAvailableInputBusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioMixerNode avAudioMixerNode => avAudioMixerNode -> IO (Id AVAudioMixerNode)
-init_ avAudioMixerNode  =
-    sendMsg avAudioMixerNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioMixerNode =
+  sendOwnedMessage avAudioMixerNode initSelector
 
 -- | outputVolume
 --
@@ -54,8 +51,8 @@ init_ avAudioMixerNode  =
 --
 -- ObjC selector: @- outputVolume@
 outputVolume :: IsAVAudioMixerNode avAudioMixerNode => avAudioMixerNode -> IO CFloat
-outputVolume avAudioMixerNode  =
-    sendMsg avAudioMixerNode (mkSelector "outputVolume") retCFloat []
+outputVolume avAudioMixerNode =
+  sendMessage avAudioMixerNode outputVolumeSelector
 
 -- | outputVolume
 --
@@ -65,8 +62,8 @@ outputVolume avAudioMixerNode  =
 --
 -- ObjC selector: @- setOutputVolume:@
 setOutputVolume :: IsAVAudioMixerNode avAudioMixerNode => avAudioMixerNode -> CFloat -> IO ()
-setOutputVolume avAudioMixerNode  value =
-    sendMsg avAudioMixerNode (mkSelector "setOutputVolume:") retVoid [argCFloat value]
+setOutputVolume avAudioMixerNode value =
+  sendMessage avAudioMixerNode setOutputVolumeSelector value
 
 -- | nextAvailableInputBus
 --
@@ -76,26 +73,26 @@ setOutputVolume avAudioMixerNode  value =
 --
 -- ObjC selector: @- nextAvailableInputBus@
 nextAvailableInputBus :: IsAVAudioMixerNode avAudioMixerNode => avAudioMixerNode -> IO CULong
-nextAvailableInputBus avAudioMixerNode  =
-    sendMsg avAudioMixerNode (mkSelector "nextAvailableInputBus") retCULong []
+nextAvailableInputBus avAudioMixerNode =
+  sendMessage avAudioMixerNode nextAvailableInputBusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioMixerNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @outputVolume@
-outputVolumeSelector :: Selector
+outputVolumeSelector :: Selector '[] CFloat
 outputVolumeSelector = mkSelector "outputVolume"
 
 -- | @Selector@ for @setOutputVolume:@
-setOutputVolumeSelector :: Selector
+setOutputVolumeSelector :: Selector '[CFloat] ()
 setOutputVolumeSelector = mkSelector "setOutputVolume:"
 
 -- | @Selector@ for @nextAvailableInputBus@
-nextAvailableInputBusSelector :: Selector
+nextAvailableInputBusSelector :: Selector '[] CULong
 nextAvailableInputBusSelector = mkSelector "nextAvailableInputBus"
 

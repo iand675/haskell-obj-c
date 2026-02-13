@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodePara
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , nodeIDSelector
-  , setNodeIDSelector
   , endpointIDSelector
-  , setEndpointIDSelector
   , groupIDSelector
-  , setGroupIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , nodeIDSelector
   , serverSideProcessingTimeoutSelector
+  , setEndpointIDSelector
+  , setGroupIDSelector
+  , setNodeIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nodeID@
 nodeID :: IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> IO (Id NSNumber)
-nodeID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams nodeIDSelector
 
 -- | @- setNodeID:@
 setNodeID :: (IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> value -> IO ()
-setNodeID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "setNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams setNodeIDSelector (toNSNumber value)
 
 -- | @- endpointID@
 endpointID :: IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> IO (Id NSNumber)
-endpointID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams endpointIDSelector
 
 -- | @- setEndpointID:@
 setEndpointID :: (IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> value -> IO ()
-setEndpointID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "setEndpointID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpointID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams setEndpointIDSelector (toNSNumber value)
 
 -- | @- groupID@
 groupID :: IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> IO (Id NSNumber)
-groupID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> value -> IO ()
-setGroupID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams setGroupIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setGroupID mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  valu
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodePa
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNod
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrJointFabricDatastoreClusterAddGroupIDToEndpointFo
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterAddGroupIDToEndpointForNodeParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @setNodeID:@
-setNodeIDSelector :: Selector
+setNodeIDSelector :: Selector '[Id NSNumber] ()
 setNodeIDSelector = mkSelector "setNodeID:"
 
 -- | @Selector@ for @endpointID@
-endpointIDSelector :: Selector
+endpointIDSelector :: Selector '[] (Id NSNumber)
 endpointIDSelector = mkSelector "endpointID"
 
 -- | @Selector@ for @setEndpointID:@
-setEndpointIDSelector :: Selector
+setEndpointIDSelector :: Selector '[Id NSNumber] ()
 setEndpointIDSelector = mkSelector "setEndpointID:"
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

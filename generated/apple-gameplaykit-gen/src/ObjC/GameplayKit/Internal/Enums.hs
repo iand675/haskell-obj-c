@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.GameplayKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Adjusts how graph nodes are created when you triangulate a GKMeshGrapk
 --
@@ -38,6 +41,16 @@ pattern GKMeshGraphTriangulationModeCenters = GKMeshGraphTriangulationMode 2
 pattern GKMeshGraphTriangulationModeEdgeMidpoints :: GKMeshGraphTriangulationMode
 pattern GKMeshGraphTriangulationModeEdgeMidpoints = GKMeshGraphTriangulationMode 4
 
+instance ObjCArgument GKMeshGraphTriangulationMode where
+  withObjCArg (GKMeshGraphTriangulationMode x) k = k (argCULong x)
+
+instance ObjCReturn GKMeshGraphTriangulationMode where
+  type RawReturn GKMeshGraphTriangulationMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKMeshGraphTriangulationMode x)
+  fromOwned x = pure (GKMeshGraphTriangulationMode x)
+
 -- | Used to adjust the way in which RTree nodes are split when they grow too large.
 --
 -- GKRTreeSplitStrategyHalve Specifies that nodes should be split in half based on insert order.
@@ -63,3 +76,13 @@ pattern GKRTreeSplitStrategyQuadratic = GKRTreeSplitStrategy 2
 
 pattern GKRTreeSplitStrategyReduceOverlap :: GKRTreeSplitStrategy
 pattern GKRTreeSplitStrategyReduceOverlap = GKRTreeSplitStrategy 3
+
+instance ObjCArgument GKRTreeSplitStrategy where
+  withObjCArg (GKRTreeSplitStrategy x) k = k (argCLong x)
+
+instance ObjCReturn GKRTreeSplitStrategy where
+  type RawReturn GKRTreeSplitStrategy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKRTreeSplitStrategy x)
+  fromOwned x = pure (GKRTreeSplitStrategy x)

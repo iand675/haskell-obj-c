@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.LocalAuthentication.LAEnvironmentState
   , userPassword
   , companions
   , allMechanisms
+  , allMechanismsSelector
+  , biometrySelector
+  , companionsSelector
   , initSelector
   , newSelector
-  , biometrySelector
   , userPasswordSelector
-  , companionsSelector
-  , allMechanismsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsLAEnvironmentState laEnvironmentState => laEnvironmentState -> IO (Id LAEnvironmentState)
-init_ laEnvironmentState  =
-    sendMsg laEnvironmentState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laEnvironmentState =
+  sendOwnedMessage laEnvironmentState initSelector
 
 -- | Clients shall not create environment state.
 --
@@ -51,7 +48,7 @@ new :: IO (Id LAEnvironmentState)
 new  =
   do
     cls' <- getRequiredClass "LAEnvironmentState"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Information about biometric authentication (Touch ID, Face ID or Optic ID).
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- biometry@
 biometry :: IsLAEnvironmentState laEnvironmentState => laEnvironmentState -> IO (Id LAEnvironmentMechanismBiometry)
-biometry laEnvironmentState  =
-    sendMsg laEnvironmentState (mkSelector "biometry") (retPtr retVoid) [] >>= retainedObject . castPtr
+biometry laEnvironmentState =
+  sendMessage laEnvironmentState biometrySelector
 
 -- | Information about local user password (on macOS) or passcode (on embedded platforms).
 --
@@ -68,8 +65,8 @@ biometry laEnvironmentState  =
 --
 -- ObjC selector: @- userPassword@
 userPassword :: IsLAEnvironmentState laEnvironmentState => laEnvironmentState -> IO (Id LAEnvironmentMechanismUserPassword)
-userPassword laEnvironmentState  =
-    sendMsg laEnvironmentState (mkSelector "userPassword") (retPtr retVoid) [] >>= retainedObject . castPtr
+userPassword laEnvironmentState =
+  sendMessage laEnvironmentState userPasswordSelector
 
 -- | Companion authentication mechanisms.
 --
@@ -77,8 +74,8 @@ userPassword laEnvironmentState  =
 --
 -- ObjC selector: @- companions@
 companions :: IsLAEnvironmentState laEnvironmentState => laEnvironmentState -> IO (Id NSArray)
-companions laEnvironmentState  =
-    sendMsg laEnvironmentState (mkSelector "companions") (retPtr retVoid) [] >>= retainedObject . castPtr
+companions laEnvironmentState =
+  sendMessage laEnvironmentState companionsSelector
 
 -- | Information about all authentication mechanisms.
 --
@@ -86,34 +83,34 @@ companions laEnvironmentState  =
 --
 -- ObjC selector: @- allMechanisms@
 allMechanisms :: IsLAEnvironmentState laEnvironmentState => laEnvironmentState -> IO (Id NSArray)
-allMechanisms laEnvironmentState  =
-    sendMsg laEnvironmentState (mkSelector "allMechanisms") (retPtr retVoid) [] >>= retainedObject . castPtr
+allMechanisms laEnvironmentState =
+  sendMessage laEnvironmentState allMechanismsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LAEnvironmentState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LAEnvironmentState)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @biometry@
-biometrySelector :: Selector
+biometrySelector :: Selector '[] (Id LAEnvironmentMechanismBiometry)
 biometrySelector = mkSelector "biometry"
 
 -- | @Selector@ for @userPassword@
-userPasswordSelector :: Selector
+userPasswordSelector :: Selector '[] (Id LAEnvironmentMechanismUserPassword)
 userPasswordSelector = mkSelector "userPassword"
 
 -- | @Selector@ for @companions@
-companionsSelector :: Selector
+companionsSelector :: Selector '[] (Id NSArray)
 companionsSelector = mkSelector "companions"
 
 -- | @Selector@ for @allMechanisms@
-allMechanismsSelector :: Selector
+allMechanismsSelector :: Selector '[] (Id NSArray)
 allMechanismsSelector = mkSelector "allMechanisms"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,40 +32,36 @@ module ObjC.SceneKit.SCNText
   , setChamferProfile
   , flatness
   , setFlatness
-  , textWithString_extrusionDepthSelector
-  , extrusionDepthSelector
-  , setExtrusionDepthSelector
-  , stringSelector
-  , setStringSelector
-  , fontSelector
-  , setFontSelector
-  , wrappedSelector
-  , setWrappedSelector
-  , truncationModeSelector
-  , setTruncationModeSelector
   , alignmentModeSelector
-  , setAlignmentModeSelector
-  , chamferRadiusSelector
-  , setChamferRadiusSelector
-  , chamferSegmentCountSelector
-  , setChamferSegmentCountSelector
   , chamferProfileSelector
-  , setChamferProfileSelector
+  , chamferRadiusSelector
+  , chamferSegmentCountSelector
+  , extrusionDepthSelector
   , flatnessSelector
+  , fontSelector
+  , setAlignmentModeSelector
+  , setChamferProfileSelector
+  , setChamferRadiusSelector
+  , setChamferSegmentCountSelector
+  , setExtrusionDepthSelector
   , setFlatnessSelector
+  , setFontSelector
+  , setStringSelector
+  , setTruncationModeSelector
+  , setWrappedSelector
+  , stringSelector
+  , textWithString_extrusionDepthSelector
+  , truncationModeSelector
+  , wrappedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,7 +82,7 @@ textWithString_extrusionDepth :: RawId -> CDouble -> IO (Id SCNText)
 textWithString_extrusionDepth string extrusionDepth =
   do
     cls' <- getRequiredClass "SCNText"
-    sendClassMsg cls' (mkSelector "textWithString:extrusionDepth:") (retPtr retVoid) [argPtr (castPtr (unRawId string) :: Ptr ()), argCDouble extrusionDepth] >>= retainedObject . castPtr
+    sendClassMessage cls' textWithString_extrusionDepthSelector string extrusionDepth
 
 -- | extrusionDepth
 --
@@ -95,8 +92,8 @@ textWithString_extrusionDepth string extrusionDepth =
 --
 -- ObjC selector: @- extrusionDepth@
 extrusionDepth :: IsSCNText scnText => scnText -> IO CDouble
-extrusionDepth scnText  =
-    sendMsg scnText (mkSelector "extrusionDepth") retCDouble []
+extrusionDepth scnText =
+  sendMessage scnText extrusionDepthSelector
 
 -- | extrusionDepth
 --
@@ -106,8 +103,8 @@ extrusionDepth scnText  =
 --
 -- ObjC selector: @- setExtrusionDepth:@
 setExtrusionDepth :: IsSCNText scnText => scnText -> CDouble -> IO ()
-setExtrusionDepth scnText  value =
-    sendMsg scnText (mkSelector "setExtrusionDepth:") retVoid [argCDouble value]
+setExtrusionDepth scnText value =
+  sendMessage scnText setExtrusionDepthSelector value
 
 -- | string
 --
@@ -117,8 +114,8 @@ setExtrusionDepth scnText  value =
 --
 -- ObjC selector: @- string@
 string :: IsSCNText scnText => scnText -> IO RawId
-string scnText  =
-    fmap (RawId . castPtr) $ sendMsg scnText (mkSelector "string") (retPtr retVoid) []
+string scnText =
+  sendMessage scnText stringSelector
 
 -- | string
 --
@@ -128,8 +125,8 @@ string scnText  =
 --
 -- ObjC selector: @- setString:@
 setString :: IsSCNText scnText => scnText -> RawId -> IO ()
-setString scnText  value =
-    sendMsg scnText (mkSelector "setString:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setString scnText value =
+  sendMessage scnText setStringSelector value
 
 -- | font
 --
@@ -139,8 +136,8 @@ setString scnText  value =
 --
 -- ObjC selector: @- font@
 font :: IsSCNText scnText => scnText -> IO (Id NSFont)
-font scnText  =
-    sendMsg scnText (mkSelector "font") (retPtr retVoid) [] >>= retainedObject . castPtr
+font scnText =
+  sendMessage scnText fontSelector
 
 -- | font
 --
@@ -150,9 +147,8 @@ font scnText  =
 --
 -- ObjC selector: @- setFont:@
 setFont :: (IsSCNText scnText, IsNSFont value) => scnText -> value -> IO ()
-setFont scnText  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnText (mkSelector "setFont:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFont scnText value =
+  sendMessage scnText setFontSelector (toNSFont value)
 
 -- | wrapped
 --
@@ -162,8 +158,8 @@ setFont scnText  value =
 --
 -- ObjC selector: @- wrapped@
 wrapped :: IsSCNText scnText => scnText -> IO Bool
-wrapped scnText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnText (mkSelector "wrapped") retCULong []
+wrapped scnText =
+  sendMessage scnText wrappedSelector
 
 -- | wrapped
 --
@@ -173,8 +169,8 @@ wrapped scnText  =
 --
 -- ObjC selector: @- setWrapped:@
 setWrapped :: IsSCNText scnText => scnText -> Bool -> IO ()
-setWrapped scnText  value =
-    sendMsg scnText (mkSelector "setWrapped:") retVoid [argCULong (if value then 1 else 0)]
+setWrapped scnText value =
+  sendMessage scnText setWrappedSelector value
 
 -- | truncationMode
 --
@@ -184,8 +180,8 @@ setWrapped scnText  value =
 --
 -- ObjC selector: @- truncationMode@
 truncationMode :: IsSCNText scnText => scnText -> IO (Id NSString)
-truncationMode scnText  =
-    sendMsg scnText (mkSelector "truncationMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+truncationMode scnText =
+  sendMessage scnText truncationModeSelector
 
 -- | truncationMode
 --
@@ -195,9 +191,8 @@ truncationMode scnText  =
 --
 -- ObjC selector: @- setTruncationMode:@
 setTruncationMode :: (IsSCNText scnText, IsNSString value) => scnText -> value -> IO ()
-setTruncationMode scnText  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnText (mkSelector "setTruncationMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTruncationMode scnText value =
+  sendMessage scnText setTruncationModeSelector (toNSString value)
 
 -- | alignmentMode
 --
@@ -207,8 +202,8 @@ setTruncationMode scnText  value =
 --
 -- ObjC selector: @- alignmentMode@
 alignmentMode :: IsSCNText scnText => scnText -> IO (Id NSString)
-alignmentMode scnText  =
-    sendMsg scnText (mkSelector "alignmentMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+alignmentMode scnText =
+  sendMessage scnText alignmentModeSelector
 
 -- | alignmentMode
 --
@@ -218,9 +213,8 @@ alignmentMode scnText  =
 --
 -- ObjC selector: @- setAlignmentMode:@
 setAlignmentMode :: (IsSCNText scnText, IsNSString value) => scnText -> value -> IO ()
-setAlignmentMode scnText  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnText (mkSelector "setAlignmentMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlignmentMode scnText value =
+  sendMessage scnText setAlignmentModeSelector (toNSString value)
 
 -- | chamferRadius
 --
@@ -230,8 +224,8 @@ setAlignmentMode scnText  value =
 --
 -- ObjC selector: @- chamferRadius@
 chamferRadius :: IsSCNText scnText => scnText -> IO CDouble
-chamferRadius scnText  =
-    sendMsg scnText (mkSelector "chamferRadius") retCDouble []
+chamferRadius scnText =
+  sendMessage scnText chamferRadiusSelector
 
 -- | chamferRadius
 --
@@ -241,8 +235,8 @@ chamferRadius scnText  =
 --
 -- ObjC selector: @- setChamferRadius:@
 setChamferRadius :: IsSCNText scnText => scnText -> CDouble -> IO ()
-setChamferRadius scnText  value =
-    sendMsg scnText (mkSelector "setChamferRadius:") retVoid [argCDouble value]
+setChamferRadius scnText value =
+  sendMessage scnText setChamferRadiusSelector value
 
 -- | chamferSegmentCount
 --
@@ -252,8 +246,8 @@ setChamferRadius scnText  value =
 --
 -- ObjC selector: @- chamferSegmentCount@
 chamferSegmentCount :: IsSCNText scnText => scnText -> IO CLong
-chamferSegmentCount scnText  =
-    sendMsg scnText (mkSelector "chamferSegmentCount") retCLong []
+chamferSegmentCount scnText =
+  sendMessage scnText chamferSegmentCountSelector
 
 -- | chamferSegmentCount
 --
@@ -263,8 +257,8 @@ chamferSegmentCount scnText  =
 --
 -- ObjC selector: @- setChamferSegmentCount:@
 setChamferSegmentCount :: IsSCNText scnText => scnText -> CLong -> IO ()
-setChamferSegmentCount scnText  value =
-    sendMsg scnText (mkSelector "setChamferSegmentCount:") retVoid [argCLong value]
+setChamferSegmentCount scnText value =
+  sendMessage scnText setChamferSegmentCountSelector value
 
 -- | chamferProfile
 --
@@ -274,8 +268,8 @@ setChamferSegmentCount scnText  value =
 --
 -- ObjC selector: @- chamferProfile@
 chamferProfile :: IsSCNText scnText => scnText -> IO (Id NSBezierPath)
-chamferProfile scnText  =
-    sendMsg scnText (mkSelector "chamferProfile") (retPtr retVoid) [] >>= retainedObject . castPtr
+chamferProfile scnText =
+  sendMessage scnText chamferProfileSelector
 
 -- | chamferProfile
 --
@@ -285,9 +279,8 @@ chamferProfile scnText  =
 --
 -- ObjC selector: @- setChamferProfile:@
 setChamferProfile :: (IsSCNText scnText, IsNSBezierPath value) => scnText -> value -> IO ()
-setChamferProfile scnText  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnText (mkSelector "setChamferProfile:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChamferProfile scnText value =
+  sendMessage scnText setChamferProfileSelector (toNSBezierPath value)
 
 -- | flatness
 --
@@ -297,8 +290,8 @@ setChamferProfile scnText  value =
 --
 -- ObjC selector: @- flatness@
 flatness :: IsSCNText scnText => scnText -> IO CDouble
-flatness scnText  =
-    sendMsg scnText (mkSelector "flatness") retCDouble []
+flatness scnText =
+  sendMessage scnText flatnessSelector
 
 -- | flatness
 --
@@ -308,94 +301,94 @@ flatness scnText  =
 --
 -- ObjC selector: @- setFlatness:@
 setFlatness :: IsSCNText scnText => scnText -> CDouble -> IO ()
-setFlatness scnText  value =
-    sendMsg scnText (mkSelector "setFlatness:") retVoid [argCDouble value]
+setFlatness scnText value =
+  sendMessage scnText setFlatnessSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @textWithString:extrusionDepth:@
-textWithString_extrusionDepthSelector :: Selector
+textWithString_extrusionDepthSelector :: Selector '[RawId, CDouble] (Id SCNText)
 textWithString_extrusionDepthSelector = mkSelector "textWithString:extrusionDepth:"
 
 -- | @Selector@ for @extrusionDepth@
-extrusionDepthSelector :: Selector
+extrusionDepthSelector :: Selector '[] CDouble
 extrusionDepthSelector = mkSelector "extrusionDepth"
 
 -- | @Selector@ for @setExtrusionDepth:@
-setExtrusionDepthSelector :: Selector
+setExtrusionDepthSelector :: Selector '[CDouble] ()
 setExtrusionDepthSelector = mkSelector "setExtrusionDepth:"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] RawId
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @setString:@
-setStringSelector :: Selector
+setStringSelector :: Selector '[RawId] ()
 setStringSelector = mkSelector "setString:"
 
 -- | @Selector@ for @font@
-fontSelector :: Selector
+fontSelector :: Selector '[] (Id NSFont)
 fontSelector = mkSelector "font"
 
 -- | @Selector@ for @setFont:@
-setFontSelector :: Selector
+setFontSelector :: Selector '[Id NSFont] ()
 setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @wrapped@
-wrappedSelector :: Selector
+wrappedSelector :: Selector '[] Bool
 wrappedSelector = mkSelector "wrapped"
 
 -- | @Selector@ for @setWrapped:@
-setWrappedSelector :: Selector
+setWrappedSelector :: Selector '[Bool] ()
 setWrappedSelector = mkSelector "setWrapped:"
 
 -- | @Selector@ for @truncationMode@
-truncationModeSelector :: Selector
+truncationModeSelector :: Selector '[] (Id NSString)
 truncationModeSelector = mkSelector "truncationMode"
 
 -- | @Selector@ for @setTruncationMode:@
-setTruncationModeSelector :: Selector
+setTruncationModeSelector :: Selector '[Id NSString] ()
 setTruncationModeSelector = mkSelector "setTruncationMode:"
 
 -- | @Selector@ for @alignmentMode@
-alignmentModeSelector :: Selector
+alignmentModeSelector :: Selector '[] (Id NSString)
 alignmentModeSelector = mkSelector "alignmentMode"
 
 -- | @Selector@ for @setAlignmentMode:@
-setAlignmentModeSelector :: Selector
+setAlignmentModeSelector :: Selector '[Id NSString] ()
 setAlignmentModeSelector = mkSelector "setAlignmentMode:"
 
 -- | @Selector@ for @chamferRadius@
-chamferRadiusSelector :: Selector
+chamferRadiusSelector :: Selector '[] CDouble
 chamferRadiusSelector = mkSelector "chamferRadius"
 
 -- | @Selector@ for @setChamferRadius:@
-setChamferRadiusSelector :: Selector
+setChamferRadiusSelector :: Selector '[CDouble] ()
 setChamferRadiusSelector = mkSelector "setChamferRadius:"
 
 -- | @Selector@ for @chamferSegmentCount@
-chamferSegmentCountSelector :: Selector
+chamferSegmentCountSelector :: Selector '[] CLong
 chamferSegmentCountSelector = mkSelector "chamferSegmentCount"
 
 -- | @Selector@ for @setChamferSegmentCount:@
-setChamferSegmentCountSelector :: Selector
+setChamferSegmentCountSelector :: Selector '[CLong] ()
 setChamferSegmentCountSelector = mkSelector "setChamferSegmentCount:"
 
 -- | @Selector@ for @chamferProfile@
-chamferProfileSelector :: Selector
+chamferProfileSelector :: Selector '[] (Id NSBezierPath)
 chamferProfileSelector = mkSelector "chamferProfile"
 
 -- | @Selector@ for @setChamferProfile:@
-setChamferProfileSelector :: Selector
+setChamferProfileSelector :: Selector '[Id NSBezierPath] ()
 setChamferProfileSelector = mkSelector "setChamferProfile:"
 
 -- | @Selector@ for @flatness@
-flatnessSelector :: Selector
+flatnessSelector :: Selector '[] CDouble
 flatnessSelector = mkSelector "flatness"
 
 -- | @Selector@ for @setFlatness:@
-setFlatnessSelector :: Selector
+setFlatnessSelector :: Selector '[CDouble] ()
 setFlatnessSelector = mkSelector "setFlatness:"
 

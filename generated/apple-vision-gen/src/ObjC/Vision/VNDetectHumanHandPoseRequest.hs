@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.Vision.VNDetectHumanHandPoseRequest
   , maximumHandCount
   , setMaximumHandCount
   , results
-  , supportedJointNamesForRevision_errorSelector
-  , supportedJointNamesAndReturnErrorSelector
-  , supportedJointsGroupNamesForRevision_errorSelector
-  , supportedJointsGroupNamesAndReturnErrorSelector
   , maximumHandCountSelector
-  , setMaximumHandCountSelector
   , resultsSelector
+  , setMaximumHandCountSelector
+  , supportedJointNamesAndReturnErrorSelector
+  , supportedJointNamesForRevision_errorSelector
+  , supportedJointsGroupNamesAndReturnErrorSelector
+  , supportedJointsGroupNamesForRevision_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,8 +53,7 @@ supportedJointNamesForRevision_error :: IsNSError error_ => CULong -> error_ -> 
 supportedJointNamesForRevision_error revision error_ =
   do
     cls' <- getRequiredClass "VNDetectHumanHandPoseRequest"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "supportedJointNamesForRevision:error:") (retPtr retVoid) [argCULong revision, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedJointNamesForRevision_errorSelector revision (toNSError error_)
 
 -- | Obtain the collection of human hand joint names that are supported by a given request object configured with a specific revision.
 --
@@ -67,9 +63,8 @@ supportedJointNamesForRevision_error revision error_ =
 --
 -- ObjC selector: @- supportedJointNamesAndReturnError:@
 supportedJointNamesAndReturnError :: (IsVNDetectHumanHandPoseRequest vnDetectHumanHandPoseRequest, IsNSError error_) => vnDetectHumanHandPoseRequest -> error_ -> IO (Id NSArray)
-supportedJointNamesAndReturnError vnDetectHumanHandPoseRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnDetectHumanHandPoseRequest (mkSelector "supportedJointNamesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedJointNamesAndReturnError vnDetectHumanHandPoseRequest error_ =
+  sendMessage vnDetectHumanHandPoseRequest supportedJointNamesAndReturnErrorSelector (toNSError error_)
 
 -- | Obtain the collection of human hand joints group names that are supported by a given request revision.
 --
@@ -84,8 +79,7 @@ supportedJointsGroupNamesForRevision_error :: IsNSError error_ => CULong -> erro
 supportedJointsGroupNamesForRevision_error revision error_ =
   do
     cls' <- getRequiredClass "VNDetectHumanHandPoseRequest"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "supportedJointsGroupNamesForRevision:error:") (retPtr retVoid) [argCULong revision, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedJointsGroupNamesForRevision_errorSelector revision (toNSError error_)
 
 -- | Obtain the collection of human hand joints group names that are supported by a given request object configured with a specific revision.
 --
@@ -95,9 +89,8 @@ supportedJointsGroupNamesForRevision_error revision error_ =
 --
 -- ObjC selector: @- supportedJointsGroupNamesAndReturnError:@
 supportedJointsGroupNamesAndReturnError :: (IsVNDetectHumanHandPoseRequest vnDetectHumanHandPoseRequest, IsNSError error_) => vnDetectHumanHandPoseRequest -> error_ -> IO (Id NSArray)
-supportedJointsGroupNamesAndReturnError vnDetectHumanHandPoseRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnDetectHumanHandPoseRequest (mkSelector "supportedJointsGroupNamesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedJointsGroupNamesAndReturnError vnDetectHumanHandPoseRequest error_ =
+  sendMessage vnDetectHumanHandPoseRequest supportedJointsGroupNamesAndReturnErrorSelector (toNSError error_)
 
 -- | Defines an upper bounds to the maximum number of hands that will be processed for key points in an image.
 --
@@ -105,8 +98,8 @@ supportedJointsGroupNamesAndReturnError vnDetectHumanHandPoseRequest  error_ =
 --
 -- ObjC selector: @- maximumHandCount@
 maximumHandCount :: IsVNDetectHumanHandPoseRequest vnDetectHumanHandPoseRequest => vnDetectHumanHandPoseRequest -> IO CULong
-maximumHandCount vnDetectHumanHandPoseRequest  =
-    sendMsg vnDetectHumanHandPoseRequest (mkSelector "maximumHandCount") retCULong []
+maximumHandCount vnDetectHumanHandPoseRequest =
+  sendMessage vnDetectHumanHandPoseRequest maximumHandCountSelector
 
 -- | Defines an upper bounds to the maximum number of hands that will be processed for key points in an image.
 --
@@ -114,45 +107,45 @@ maximumHandCount vnDetectHumanHandPoseRequest  =
 --
 -- ObjC selector: @- setMaximumHandCount:@
 setMaximumHandCount :: IsVNDetectHumanHandPoseRequest vnDetectHumanHandPoseRequest => vnDetectHumanHandPoseRequest -> CULong -> IO ()
-setMaximumHandCount vnDetectHumanHandPoseRequest  value =
-    sendMsg vnDetectHumanHandPoseRequest (mkSelector "setMaximumHandCount:") retVoid [argCULong value]
+setMaximumHandCount vnDetectHumanHandPoseRequest value =
+  sendMessage vnDetectHumanHandPoseRequest setMaximumHandCountSelector value
 
 -- | VNHumanHandPoseObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNDetectHumanHandPoseRequest vnDetectHumanHandPoseRequest => vnDetectHumanHandPoseRequest -> IO (Id NSArray)
-results vnDetectHumanHandPoseRequest  =
-    sendMsg vnDetectHumanHandPoseRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnDetectHumanHandPoseRequest =
+  sendMessage vnDetectHumanHandPoseRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedJointNamesForRevision:error:@
-supportedJointNamesForRevision_errorSelector :: Selector
+supportedJointNamesForRevision_errorSelector :: Selector '[CULong, Id NSError] (Id NSArray)
 supportedJointNamesForRevision_errorSelector = mkSelector "supportedJointNamesForRevision:error:"
 
 -- | @Selector@ for @supportedJointNamesAndReturnError:@
-supportedJointNamesAndReturnErrorSelector :: Selector
+supportedJointNamesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSArray)
 supportedJointNamesAndReturnErrorSelector = mkSelector "supportedJointNamesAndReturnError:"
 
 -- | @Selector@ for @supportedJointsGroupNamesForRevision:error:@
-supportedJointsGroupNamesForRevision_errorSelector :: Selector
+supportedJointsGroupNamesForRevision_errorSelector :: Selector '[CULong, Id NSError] (Id NSArray)
 supportedJointsGroupNamesForRevision_errorSelector = mkSelector "supportedJointsGroupNamesForRevision:error:"
 
 -- | @Selector@ for @supportedJointsGroupNamesAndReturnError:@
-supportedJointsGroupNamesAndReturnErrorSelector :: Selector
+supportedJointsGroupNamesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSArray)
 supportedJointsGroupNamesAndReturnErrorSelector = mkSelector "supportedJointsGroupNamesAndReturnError:"
 
 -- | @Selector@ for @maximumHandCount@
-maximumHandCountSelector :: Selector
+maximumHandCountSelector :: Selector '[] CULong
 maximumHandCountSelector = mkSelector "maximumHandCount"
 
 -- | @Selector@ for @setMaximumHandCount:@
-setMaximumHandCountSelector :: Selector
+setMaximumHandCountSelector :: Selector '[CULong] ()
 setMaximumHandCountSelector = mkSelector "setMaximumHandCount:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,28 +24,24 @@ module ObjC.HealthKit.HKFHIRVersion
   , patchVersion
   , fhirRelease
   , stringRepresentation
+  , fhirReleaseSelector
   , initSelector
-  , versionFromVersionString_errorSelector
-  , primaryDSTU2VersionSelector
-  , primaryR4VersionSelector
   , majorVersionSelector
   , minorVersionSelector
   , patchVersionSelector
-  , fhirReleaseSelector
+  , primaryDSTU2VersionSelector
+  , primaryR4VersionSelector
   , stringRepresentationSelector
+  , versionFromVersionString_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,51 +50,49 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKFHIRVersion hkfhirVersion => hkfhirVersion -> IO (Id HKFHIRVersion)
-init_ hkfhirVersion  =
-    sendMsg hkfhirVersion (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkfhirVersion =
+  sendOwnedMessage hkfhirVersion initSelector
 
 -- | @+ versionFromVersionString:error:@
 versionFromVersionString_error :: (IsNSString versionString, IsNSError errorOut) => versionString -> errorOut -> IO (Id HKFHIRVersion)
 versionFromVersionString_error versionString errorOut =
   do
     cls' <- getRequiredClass "HKFHIRVersion"
-    withObjCPtr versionString $ \raw_versionString ->
-      withObjCPtr errorOut $ \raw_errorOut ->
-        sendClassMsg cls' (mkSelector "versionFromVersionString:error:") (retPtr retVoid) [argPtr (castPtr raw_versionString :: Ptr ()), argPtr (castPtr raw_errorOut :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' versionFromVersionString_errorSelector (toNSString versionString) (toNSError errorOut)
 
 -- | @+ primaryDSTU2Version@
 primaryDSTU2Version :: IO (Id HKFHIRVersion)
 primaryDSTU2Version  =
   do
     cls' <- getRequiredClass "HKFHIRVersion"
-    sendClassMsg cls' (mkSelector "primaryDSTU2Version") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' primaryDSTU2VersionSelector
 
 -- | @+ primaryR4Version@
 primaryR4Version :: IO (Id HKFHIRVersion)
 primaryR4Version  =
   do
     cls' <- getRequiredClass "HKFHIRVersion"
-    sendClassMsg cls' (mkSelector "primaryR4Version") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' primaryR4VersionSelector
 
 -- | @- majorVersion@
 majorVersion :: IsHKFHIRVersion hkfhirVersion => hkfhirVersion -> IO CLong
-majorVersion hkfhirVersion  =
-    sendMsg hkfhirVersion (mkSelector "majorVersion") retCLong []
+majorVersion hkfhirVersion =
+  sendMessage hkfhirVersion majorVersionSelector
 
 -- | @- minorVersion@
 minorVersion :: IsHKFHIRVersion hkfhirVersion => hkfhirVersion -> IO CLong
-minorVersion hkfhirVersion  =
-    sendMsg hkfhirVersion (mkSelector "minorVersion") retCLong []
+minorVersion hkfhirVersion =
+  sendMessage hkfhirVersion minorVersionSelector
 
 -- | @- patchVersion@
 patchVersion :: IsHKFHIRVersion hkfhirVersion => hkfhirVersion -> IO CLong
-patchVersion hkfhirVersion  =
-    sendMsg hkfhirVersion (mkSelector "patchVersion") retCLong []
+patchVersion hkfhirVersion =
+  sendMessage hkfhirVersion patchVersionSelector
 
 -- | @- FHIRRelease@
 fhirRelease :: IsHKFHIRVersion hkfhirVersion => hkfhirVersion -> IO (Id NSString)
-fhirRelease hkfhirVersion  =
-    sendMsg hkfhirVersion (mkSelector "FHIRRelease") (retPtr retVoid) [] >>= retainedObject . castPtr
+fhirRelease hkfhirVersion =
+  sendMessage hkfhirVersion fhirReleaseSelector
 
 -- | stringRepresentation
 --
@@ -105,46 +100,46 @@ fhirRelease hkfhirVersion  =
 --
 -- ObjC selector: @- stringRepresentation@
 stringRepresentation :: IsHKFHIRVersion hkfhirVersion => hkfhirVersion -> IO (Id NSString)
-stringRepresentation hkfhirVersion  =
-    sendMsg hkfhirVersion (mkSelector "stringRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringRepresentation hkfhirVersion =
+  sendMessage hkfhirVersion stringRepresentationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKFHIRVersion)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @versionFromVersionString:error:@
-versionFromVersionString_errorSelector :: Selector
+versionFromVersionString_errorSelector :: Selector '[Id NSString, Id NSError] (Id HKFHIRVersion)
 versionFromVersionString_errorSelector = mkSelector "versionFromVersionString:error:"
 
 -- | @Selector@ for @primaryDSTU2Version@
-primaryDSTU2VersionSelector :: Selector
+primaryDSTU2VersionSelector :: Selector '[] (Id HKFHIRVersion)
 primaryDSTU2VersionSelector = mkSelector "primaryDSTU2Version"
 
 -- | @Selector@ for @primaryR4Version@
-primaryR4VersionSelector :: Selector
+primaryR4VersionSelector :: Selector '[] (Id HKFHIRVersion)
 primaryR4VersionSelector = mkSelector "primaryR4Version"
 
 -- | @Selector@ for @majorVersion@
-majorVersionSelector :: Selector
+majorVersionSelector :: Selector '[] CLong
 majorVersionSelector = mkSelector "majorVersion"
 
 -- | @Selector@ for @minorVersion@
-minorVersionSelector :: Selector
+minorVersionSelector :: Selector '[] CLong
 minorVersionSelector = mkSelector "minorVersion"
 
 -- | @Selector@ for @patchVersion@
-patchVersionSelector :: Selector
+patchVersionSelector :: Selector '[] CLong
 patchVersionSelector = mkSelector "patchVersion"
 
 -- | @Selector@ for @FHIRRelease@
-fhirReleaseSelector :: Selector
+fhirReleaseSelector :: Selector '[] (Id NSString)
 fhirReleaseSelector = mkSelector "FHIRRelease"
 
 -- | @Selector@ for @stringRepresentation@
-stringRepresentationSelector :: Selector
+stringRepresentationSelector :: Selector '[] (Id NSString)
 stringRepresentationSelector = mkSelector "stringRepresentation"
 

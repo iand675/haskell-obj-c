@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,11 +17,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixRandomMTGP32
   , synchronizeStateOnCommandBuffer
   , initWithDevice_destinationDataType_seed
   , initWithCoder_device
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
+  , initWithDevice_destinationDataType_seedSelector
   , initWithDevice_destinationDataType_seed_distributionDescriptorSelector
   , synchronizeStateOnCommandBufferSelector
-  , initWithDevice_destinationDataType_seedSelector
-  , initWithCoder_deviceSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -54,15 +55,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixRandomMTGP32
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,8 +73,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSMatrixRandomMTGP32 mpsMatrixRandomMTGP32 => mpsMatrixRandomMTGP32 -> RawId -> IO (Id MPSMatrixRandomMTGP32)
-initWithDevice mpsMatrixRandomMTGP32  device =
-    sendMsg mpsMatrixRandomMTGP32 (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixRandomMTGP32 device =
+  sendOwnedMessage mpsMatrixRandomMTGP32 initWithDeviceSelector device
 
 -- | initialize a MPSMatrixRandomMTGP32 filter
 --
@@ -91,9 +88,8 @@ initWithDevice mpsMatrixRandomMTGP32  device =
 --
 -- ObjC selector: @- initWithDevice:destinationDataType:seed:distributionDescriptor:@
 initWithDevice_destinationDataType_seed_distributionDescriptor :: (IsMPSMatrixRandomMTGP32 mpsMatrixRandomMTGP32, IsMPSMatrixRandomDistributionDescriptor distributionDescriptor) => mpsMatrixRandomMTGP32 -> RawId -> MPSDataType -> CULong -> distributionDescriptor -> IO (Id MPSMatrixRandomMTGP32)
-initWithDevice_destinationDataType_seed_distributionDescriptor mpsMatrixRandomMTGP32  device destinationDataType seed distributionDescriptor =
-  withObjCPtr distributionDescriptor $ \raw_distributionDescriptor ->
-      sendMsg mpsMatrixRandomMTGP32 (mkSelector "initWithDevice:destinationDataType:seed:distributionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCUInt (coerce destinationDataType), argCULong seed, argPtr (castPtr raw_distributionDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_destinationDataType_seed_distributionDescriptor mpsMatrixRandomMTGP32 device destinationDataType seed distributionDescriptor =
+  sendOwnedMessage mpsMatrixRandomMTGP32 initWithDevice_destinationDataType_seed_distributionDescriptorSelector device destinationDataType seed (toMPSMatrixRandomDistributionDescriptor distributionDescriptor)
 
 -- | Synchronize internal MTGP32 state between GPU and CPU.
 --
@@ -101,8 +97,8 @@ initWithDevice_destinationDataType_seed_distributionDescriptor mpsMatrixRandomMT
 --
 -- ObjC selector: @- synchronizeStateOnCommandBuffer:@
 synchronizeStateOnCommandBuffer :: IsMPSMatrixRandomMTGP32 mpsMatrixRandomMTGP32 => mpsMatrixRandomMTGP32 -> RawId -> IO ()
-synchronizeStateOnCommandBuffer mpsMatrixRandomMTGP32  commandBuffer =
-    sendMsg mpsMatrixRandomMTGP32 (mkSelector "synchronizeStateOnCommandBuffer:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())]
+synchronizeStateOnCommandBuffer mpsMatrixRandomMTGP32 commandBuffer =
+  sendMessage mpsMatrixRandomMTGP32 synchronizeStateOnCommandBufferSelector commandBuffer
 
 -- | initialize a MPSMatrixRandomMTGP32 filter using a default distribution.
 --
@@ -114,36 +110,35 @@ synchronizeStateOnCommandBuffer mpsMatrixRandomMTGP32  commandBuffer =
 --
 -- ObjC selector: @- initWithDevice:destinationDataType:seed:@
 initWithDevice_destinationDataType_seed :: IsMPSMatrixRandomMTGP32 mpsMatrixRandomMTGP32 => mpsMatrixRandomMTGP32 -> RawId -> MPSDataType -> CULong -> IO (Id MPSMatrixRandomMTGP32)
-initWithDevice_destinationDataType_seed mpsMatrixRandomMTGP32  device destinationDataType seed =
-    sendMsg mpsMatrixRandomMTGP32 (mkSelector "initWithDevice:destinationDataType:seed:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCUInt (coerce destinationDataType), argCULong seed] >>= ownedObject . castPtr
+initWithDevice_destinationDataType_seed mpsMatrixRandomMTGP32 device destinationDataType seed =
+  sendOwnedMessage mpsMatrixRandomMTGP32 initWithDevice_destinationDataType_seedSelector device destinationDataType seed
 
 -- | @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixRandomMTGP32 mpsMatrixRandomMTGP32, IsNSCoder aDecoder) => mpsMatrixRandomMTGP32 -> aDecoder -> RawId -> IO (Id MPSMatrixRandomMTGP32)
-initWithCoder_device mpsMatrixRandomMTGP32  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixRandomMTGP32 (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixRandomMTGP32 aDecoder device =
+  sendOwnedMessage mpsMatrixRandomMTGP32 initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixRandomMTGP32)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:destinationDataType:seed:distributionDescriptor:@
-initWithDevice_destinationDataType_seed_distributionDescriptorSelector :: Selector
+initWithDevice_destinationDataType_seed_distributionDescriptorSelector :: Selector '[RawId, MPSDataType, CULong, Id MPSMatrixRandomDistributionDescriptor] (Id MPSMatrixRandomMTGP32)
 initWithDevice_destinationDataType_seed_distributionDescriptorSelector = mkSelector "initWithDevice:destinationDataType:seed:distributionDescriptor:"
 
 -- | @Selector@ for @synchronizeStateOnCommandBuffer:@
-synchronizeStateOnCommandBufferSelector :: Selector
+synchronizeStateOnCommandBufferSelector :: Selector '[RawId] ()
 synchronizeStateOnCommandBufferSelector = mkSelector "synchronizeStateOnCommandBuffer:"
 
 -- | @Selector@ for @initWithDevice:destinationDataType:seed:@
-initWithDevice_destinationDataType_seedSelector :: Selector
+initWithDevice_destinationDataType_seedSelector :: Selector '[RawId, MPSDataType, CULong] (Id MPSMatrixRandomMTGP32)
 initWithDevice_destinationDataType_seedSelector = mkSelector "initWithDevice:destinationDataType:seed:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixRandomMTGP32)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 

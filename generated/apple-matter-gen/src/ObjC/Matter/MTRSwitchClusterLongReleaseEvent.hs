@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Matter.MTRSwitchClusterLongReleaseEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- previousPosition@
 previousPosition :: IsMTRSwitchClusterLongReleaseEvent mtrSwitchClusterLongReleaseEvent => mtrSwitchClusterLongReleaseEvent -> IO (Id NSNumber)
-previousPosition mtrSwitchClusterLongReleaseEvent  =
-    sendMsg mtrSwitchClusterLongReleaseEvent (mkSelector "previousPosition") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousPosition mtrSwitchClusterLongReleaseEvent =
+  sendMessage mtrSwitchClusterLongReleaseEvent previousPositionSelector
 
 -- | @- setPreviousPosition:@
 setPreviousPosition :: (IsMTRSwitchClusterLongReleaseEvent mtrSwitchClusterLongReleaseEvent, IsNSNumber value) => mtrSwitchClusterLongReleaseEvent -> value -> IO ()
-setPreviousPosition mtrSwitchClusterLongReleaseEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSwitchClusterLongReleaseEvent (mkSelector "setPreviousPosition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreviousPosition mtrSwitchClusterLongReleaseEvent value =
+  sendMessage mtrSwitchClusterLongReleaseEvent setPreviousPositionSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @previousPosition@
-previousPositionSelector :: Selector
+previousPositionSelector :: Selector '[] (Id NSNumber)
 previousPositionSelector = mkSelector "previousPosition"
 
 -- | @Selector@ for @setPreviousPosition:@
-setPreviousPositionSelector :: Selector
+setPreviousPositionSelector :: Selector '[Id NSNumber] ()
 setPreviousPositionSelector = mkSelector "setPreviousPosition:"
 

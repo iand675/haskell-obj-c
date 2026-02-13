@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,28 +20,24 @@ module ObjC.AVFoundation.AVCaptureSmartFramingMonitor
   , setEnabledFramings
   , recommendedFraming
   , monitoring
+  , enabledFramingsSelector
   , initSelector
+  , monitoringSelector
   , newSelector
+  , recommendedFramingSelector
+  , setEnabledFramingsSelector
   , startMonitoringWithErrorSelector
   , stopMonitoringSelector
   , supportedFramingsSelector
-  , enabledFramingsSelector
-  , setEnabledFramingsSelector
-  , recommendedFramingSelector
-  , monitoringSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureSmartFramingMonitor avCaptureSmartFramingMonitor => avCaptureSmartFramingMonitor -> IO (Id AVCaptureSmartFramingMonitor)
-init_ avCaptureSmartFramingMonitor  =
-    sendMsg avCaptureSmartFramingMonitor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureSmartFramingMonitor =
+  sendOwnedMessage avCaptureSmartFramingMonitor initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureSmartFramingMonitor)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureSmartFramingMonitor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Begins monitoring the device's active scene and making framing recommendations.
 --
@@ -67,9 +64,8 @@ new  =
 --
 -- ObjC selector: @- startMonitoringWithError:@
 startMonitoringWithError :: (IsAVCaptureSmartFramingMonitor avCaptureSmartFramingMonitor, IsNSError outError) => avCaptureSmartFramingMonitor -> outError -> IO Bool
-startMonitoringWithError avCaptureSmartFramingMonitor  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSmartFramingMonitor (mkSelector "startMonitoringWithError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+startMonitoringWithError avCaptureSmartFramingMonitor outError =
+  sendMessage avCaptureSmartFramingMonitor startMonitoringWithErrorSelector (toNSError outError)
 
 -- | Stops monitoring the device's active scene and making framing recommendations.
 --
@@ -77,8 +73,8 @@ startMonitoringWithError avCaptureSmartFramingMonitor  outError =
 --
 -- ObjC selector: @- stopMonitoring@
 stopMonitoring :: IsAVCaptureSmartFramingMonitor avCaptureSmartFramingMonitor => avCaptureSmartFramingMonitor -> IO ()
-stopMonitoring avCaptureSmartFramingMonitor  =
-    sendMsg avCaptureSmartFramingMonitor (mkSelector "stopMonitoring") retVoid []
+stopMonitoring avCaptureSmartFramingMonitor =
+  sendMessage avCaptureSmartFramingMonitor stopMonitoringSelector
 
 -- | An array of framings supported by the monitor in its current configuration.
 --
@@ -86,8 +82,8 @@ stopMonitoring avCaptureSmartFramingMonitor  =
 --
 -- ObjC selector: @- supportedFramings@
 supportedFramings :: IsAVCaptureSmartFramingMonitor avCaptureSmartFramingMonitor => avCaptureSmartFramingMonitor -> IO (Id NSArray)
-supportedFramings avCaptureSmartFramingMonitor  =
-    sendMsg avCaptureSmartFramingMonitor (mkSelector "supportedFramings") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedFramings avCaptureSmartFramingMonitor =
+  sendMessage avCaptureSmartFramingMonitor supportedFramingsSelector
 
 -- | An array of framings that the monitor is allowed to suggest.
 --
@@ -95,8 +91,8 @@ supportedFramings avCaptureSmartFramingMonitor  =
 --
 -- ObjC selector: @- enabledFramings@
 enabledFramings :: IsAVCaptureSmartFramingMonitor avCaptureSmartFramingMonitor => avCaptureSmartFramingMonitor -> IO (Id NSArray)
-enabledFramings avCaptureSmartFramingMonitor  =
-    sendMsg avCaptureSmartFramingMonitor (mkSelector "enabledFramings") (retPtr retVoid) [] >>= retainedObject . castPtr
+enabledFramings avCaptureSmartFramingMonitor =
+  sendMessage avCaptureSmartFramingMonitor enabledFramingsSelector
 
 -- | An array of framings that the monitor is allowed to suggest.
 --
@@ -104,9 +100,8 @@ enabledFramings avCaptureSmartFramingMonitor  =
 --
 -- ObjC selector: @- setEnabledFramings:@
 setEnabledFramings :: (IsAVCaptureSmartFramingMonitor avCaptureSmartFramingMonitor, IsNSArray value) => avCaptureSmartFramingMonitor -> value -> IO ()
-setEnabledFramings avCaptureSmartFramingMonitor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureSmartFramingMonitor (mkSelector "setEnabledFramings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEnabledFramings avCaptureSmartFramingMonitor value =
+  sendMessage avCaptureSmartFramingMonitor setEnabledFramingsSelector (toNSArray value)
 
 -- | The latest recommended framing from the monitor.
 --
@@ -114,8 +109,8 @@ setEnabledFramings avCaptureSmartFramingMonitor  value =
 --
 -- ObjC selector: @- recommendedFraming@
 recommendedFraming :: IsAVCaptureSmartFramingMonitor avCaptureSmartFramingMonitor => avCaptureSmartFramingMonitor -> IO (Id AVCaptureFraming)
-recommendedFraming avCaptureSmartFramingMonitor  =
-    sendMsg avCaptureSmartFramingMonitor (mkSelector "recommendedFraming") (retPtr retVoid) [] >>= retainedObject . castPtr
+recommendedFraming avCaptureSmartFramingMonitor =
+  sendMessage avCaptureSmartFramingMonitor recommendedFramingSelector
 
 -- | Yes when the receiver is actively monitoring.
 --
@@ -123,46 +118,46 @@ recommendedFraming avCaptureSmartFramingMonitor  =
 --
 -- ObjC selector: @- monitoring@
 monitoring :: IsAVCaptureSmartFramingMonitor avCaptureSmartFramingMonitor => avCaptureSmartFramingMonitor -> IO Bool
-monitoring avCaptureSmartFramingMonitor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSmartFramingMonitor (mkSelector "monitoring") retCULong []
+monitoring avCaptureSmartFramingMonitor =
+  sendMessage avCaptureSmartFramingMonitor monitoringSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureSmartFramingMonitor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureSmartFramingMonitor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @startMonitoringWithError:@
-startMonitoringWithErrorSelector :: Selector
+startMonitoringWithErrorSelector :: Selector '[Id NSError] Bool
 startMonitoringWithErrorSelector = mkSelector "startMonitoringWithError:"
 
 -- | @Selector@ for @stopMonitoring@
-stopMonitoringSelector :: Selector
+stopMonitoringSelector :: Selector '[] ()
 stopMonitoringSelector = mkSelector "stopMonitoring"
 
 -- | @Selector@ for @supportedFramings@
-supportedFramingsSelector :: Selector
+supportedFramingsSelector :: Selector '[] (Id NSArray)
 supportedFramingsSelector = mkSelector "supportedFramings"
 
 -- | @Selector@ for @enabledFramings@
-enabledFramingsSelector :: Selector
+enabledFramingsSelector :: Selector '[] (Id NSArray)
 enabledFramingsSelector = mkSelector "enabledFramings"
 
 -- | @Selector@ for @setEnabledFramings:@
-setEnabledFramingsSelector :: Selector
+setEnabledFramingsSelector :: Selector '[Id NSArray] ()
 setEnabledFramingsSelector = mkSelector "setEnabledFramings:"
 
 -- | @Selector@ for @recommendedFraming@
-recommendedFramingSelector :: Selector
+recommendedFramingSelector :: Selector '[] (Id AVCaptureFraming)
 recommendedFramingSelector = mkSelector "recommendedFraming"
 
 -- | @Selector@ for @monitoring@
-monitoringSelector :: Selector
+monitoringSelector :: Selector '[] Bool
 monitoringSelector = mkSelector "monitoring"
 

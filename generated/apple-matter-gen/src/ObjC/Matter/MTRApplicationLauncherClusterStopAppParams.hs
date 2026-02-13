@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRApplicationLauncherClusterStopAppParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , applicationSelector
-  , setApplicationSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setApplicationSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- application@
 application :: IsMTRApplicationLauncherClusterStopAppParams mtrApplicationLauncherClusterStopAppParams => mtrApplicationLauncherClusterStopAppParams -> IO (Id MTRApplicationLauncherClusterApplicationStruct)
-application mtrApplicationLauncherClusterStopAppParams  =
-    sendMsg mtrApplicationLauncherClusterStopAppParams (mkSelector "application") (retPtr retVoid) [] >>= retainedObject . castPtr
+application mtrApplicationLauncherClusterStopAppParams =
+  sendMessage mtrApplicationLauncherClusterStopAppParams applicationSelector
 
 -- | @- setApplication:@
 setApplication :: (IsMTRApplicationLauncherClusterStopAppParams mtrApplicationLauncherClusterStopAppParams, IsMTRApplicationLauncherClusterApplicationStruct value) => mtrApplicationLauncherClusterStopAppParams -> value -> IO ()
-setApplication mtrApplicationLauncherClusterStopAppParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterStopAppParams (mkSelector "setApplication:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplication mtrApplicationLauncherClusterStopAppParams value =
+  sendMessage mtrApplicationLauncherClusterStopAppParams setApplicationSelector (toMTRApplicationLauncherClusterApplicationStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setApplication mtrApplicationLauncherClusterStopAppParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRApplicationLauncherClusterStopAppParams mtrApplicationLauncherClusterStopAppParams => mtrApplicationLauncherClusterStopAppParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrApplicationLauncherClusterStopAppParams  =
-    sendMsg mtrApplicationLauncherClusterStopAppParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrApplicationLauncherClusterStopAppParams =
+  sendMessage mtrApplicationLauncherClusterStopAppParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrApplicationLauncherClusterStopAppParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRApplicationLauncherClusterStopAppParams mtrApplicationLauncherClusterStopAppParams, IsNSNumber value) => mtrApplicationLauncherClusterStopAppParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrApplicationLauncherClusterStopAppParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterStopAppParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrApplicationLauncherClusterStopAppParams value =
+  sendMessage mtrApplicationLauncherClusterStopAppParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrApplicationLauncherClusterStopAppParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRApplicationLauncherClusterStopAppParams mtrApplicationLauncherClusterStopAppParams => mtrApplicationLauncherClusterStopAppParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrApplicationLauncherClusterStopAppParams  =
-    sendMsg mtrApplicationLauncherClusterStopAppParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrApplicationLauncherClusterStopAppParams =
+  sendMessage mtrApplicationLauncherClusterStopAppParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrApplicationLauncherClusterStopAppParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRApplicationLauncherClusterStopAppParams mtrApplicationLauncherClusterStopAppParams, IsNSNumber value) => mtrApplicationLauncherClusterStopAppParams -> value -> IO ()
-setServerSideProcessingTimeout mtrApplicationLauncherClusterStopAppParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterStopAppParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrApplicationLauncherClusterStopAppParams value =
+  sendMessage mtrApplicationLauncherClusterStopAppParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @application@
-applicationSelector :: Selector
+applicationSelector :: Selector '[] (Id MTRApplicationLauncherClusterApplicationStruct)
 applicationSelector = mkSelector "application"
 
 -- | @Selector@ for @setApplication:@
-setApplicationSelector :: Selector
+setApplicationSelector :: Selector '[Id MTRApplicationLauncherClusterApplicationStruct] ()
 setApplicationSelector = mkSelector "setApplication:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

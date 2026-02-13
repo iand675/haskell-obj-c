@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,52 +40,48 @@ module ObjC.WebKit.DOMHTMLImageElement
   , y
   , altDisplayString
   , absoluteImageURL
-  , nameSelector
-  , setNameSelector
+  , absoluteImageURLSelector
   , alignSelector
-  , setAlignSelector
+  , altDisplayStringSelector
   , altSelector
-  , setAltSelector
   , borderSelector
-  , setBorderSelector
-  , heightSelector
-  , setHeightSelector
-  , hspaceSelector
-  , setHspaceSelector
-  , isMapSelector
-  , setIsMapSelector
-  , longDescSelector
-  , setLongDescSelector
-  , srcSelector
-  , setSrcSelector
-  , useMapSelector
-  , setUseMapSelector
-  , vspaceSelector
-  , setVspaceSelector
-  , widthSelector
-  , setWidthSelector
   , completeSelector
+  , heightSelector
+  , hspaceSelector
+  , isMapSelector
+  , longDescSelector
   , lowsrcSelector
-  , setLowsrcSelector
+  , nameSelector
   , naturalHeightSelector
   , naturalWidthSelector
+  , setAlignSelector
+  , setAltSelector
+  , setBorderSelector
+  , setHeightSelector
+  , setHspaceSelector
+  , setIsMapSelector
+  , setLongDescSelector
+  , setLowsrcSelector
+  , setNameSelector
+  , setSrcSelector
+  , setUseMapSelector
+  , setVspaceSelector
+  , setWidthSelector
+  , srcSelector
+  , useMapSelector
+  , vspaceSelector
+  , widthSelector
   , xSelector
   , ySelector
-  , altDisplayStringSelector
-  , absoluteImageURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,310 +90,302 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSString)
-name domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlImageElement =
+  sendMessage domhtmlImageElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLImageElement domhtmlImageElement, IsNSString value) => domhtmlImageElement -> value -> IO ()
-setName domhtmlImageElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlImageElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlImageElement value =
+  sendMessage domhtmlImageElement setNameSelector (toNSString value)
 
 -- | @- align@
 align :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSString)
-align domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "align") (retPtr retVoid) [] >>= retainedObject . castPtr
+align domhtmlImageElement =
+  sendMessage domhtmlImageElement alignSelector
 
 -- | @- setAlign:@
 setAlign :: (IsDOMHTMLImageElement domhtmlImageElement, IsNSString value) => domhtmlImageElement -> value -> IO ()
-setAlign domhtmlImageElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlImageElement (mkSelector "setAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlign domhtmlImageElement value =
+  sendMessage domhtmlImageElement setAlignSelector (toNSString value)
 
 -- | @- alt@
 alt :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSString)
-alt domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "alt") (retPtr retVoid) [] >>= retainedObject . castPtr
+alt domhtmlImageElement =
+  sendMessage domhtmlImageElement altSelector
 
 -- | @- setAlt:@
 setAlt :: (IsDOMHTMLImageElement domhtmlImageElement, IsNSString value) => domhtmlImageElement -> value -> IO ()
-setAlt domhtmlImageElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlImageElement (mkSelector "setAlt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlt domhtmlImageElement value =
+  sendMessage domhtmlImageElement setAltSelector (toNSString value)
 
 -- | @- border@
 border :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSString)
-border domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "border") (retPtr retVoid) [] >>= retainedObject . castPtr
+border domhtmlImageElement =
+  sendMessage domhtmlImageElement borderSelector
 
 -- | @- setBorder:@
 setBorder :: (IsDOMHTMLImageElement domhtmlImageElement, IsNSString value) => domhtmlImageElement -> value -> IO ()
-setBorder domhtmlImageElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlImageElement (mkSelector "setBorder:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBorder domhtmlImageElement value =
+  sendMessage domhtmlImageElement setBorderSelector (toNSString value)
 
 -- | @- height@
 height :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO CInt
-height domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "height") retCInt []
+height domhtmlImageElement =
+  sendMessage domhtmlImageElement heightSelector
 
 -- | @- setHeight:@
 setHeight :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> CInt -> IO ()
-setHeight domhtmlImageElement  value =
-    sendMsg domhtmlImageElement (mkSelector "setHeight:") retVoid [argCInt value]
+setHeight domhtmlImageElement value =
+  sendMessage domhtmlImageElement setHeightSelector value
 
 -- | @- hspace@
 hspace :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO CInt
-hspace domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "hspace") retCInt []
+hspace domhtmlImageElement =
+  sendMessage domhtmlImageElement hspaceSelector
 
 -- | @- setHspace:@
 setHspace :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> CInt -> IO ()
-setHspace domhtmlImageElement  value =
-    sendMsg domhtmlImageElement (mkSelector "setHspace:") retVoid [argCInt value]
+setHspace domhtmlImageElement value =
+  sendMessage domhtmlImageElement setHspaceSelector value
 
 -- | @- isMap@
 isMap :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO Bool
-isMap domhtmlImageElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlImageElement (mkSelector "isMap") retCULong []
+isMap domhtmlImageElement =
+  sendMessage domhtmlImageElement isMapSelector
 
 -- | @- setIsMap:@
 setIsMap :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> Bool -> IO ()
-setIsMap domhtmlImageElement  value =
-    sendMsg domhtmlImageElement (mkSelector "setIsMap:") retVoid [argCULong (if value then 1 else 0)]
+setIsMap domhtmlImageElement value =
+  sendMessage domhtmlImageElement setIsMapSelector value
 
 -- | @- longDesc@
 longDesc :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSString)
-longDesc domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "longDesc") (retPtr retVoid) [] >>= retainedObject . castPtr
+longDesc domhtmlImageElement =
+  sendMessage domhtmlImageElement longDescSelector
 
 -- | @- setLongDesc:@
 setLongDesc :: (IsDOMHTMLImageElement domhtmlImageElement, IsNSString value) => domhtmlImageElement -> value -> IO ()
-setLongDesc domhtmlImageElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlImageElement (mkSelector "setLongDesc:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLongDesc domhtmlImageElement value =
+  sendMessage domhtmlImageElement setLongDescSelector (toNSString value)
 
 -- | @- src@
 src :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSString)
-src domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "src") (retPtr retVoid) [] >>= retainedObject . castPtr
+src domhtmlImageElement =
+  sendMessage domhtmlImageElement srcSelector
 
 -- | @- setSrc:@
 setSrc :: (IsDOMHTMLImageElement domhtmlImageElement, IsNSString value) => domhtmlImageElement -> value -> IO ()
-setSrc domhtmlImageElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlImageElement (mkSelector "setSrc:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSrc domhtmlImageElement value =
+  sendMessage domhtmlImageElement setSrcSelector (toNSString value)
 
 -- | @- useMap@
 useMap :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSString)
-useMap domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "useMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+useMap domhtmlImageElement =
+  sendMessage domhtmlImageElement useMapSelector
 
 -- | @- setUseMap:@
 setUseMap :: (IsDOMHTMLImageElement domhtmlImageElement, IsNSString value) => domhtmlImageElement -> value -> IO ()
-setUseMap domhtmlImageElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlImageElement (mkSelector "setUseMap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUseMap domhtmlImageElement value =
+  sendMessage domhtmlImageElement setUseMapSelector (toNSString value)
 
 -- | @- vspace@
 vspace :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO CInt
-vspace domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "vspace") retCInt []
+vspace domhtmlImageElement =
+  sendMessage domhtmlImageElement vspaceSelector
 
 -- | @- setVspace:@
 setVspace :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> CInt -> IO ()
-setVspace domhtmlImageElement  value =
-    sendMsg domhtmlImageElement (mkSelector "setVspace:") retVoid [argCInt value]
+setVspace domhtmlImageElement value =
+  sendMessage domhtmlImageElement setVspaceSelector value
 
 -- | @- width@
 width :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO CInt
-width domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "width") retCInt []
+width domhtmlImageElement =
+  sendMessage domhtmlImageElement widthSelector
 
 -- | @- setWidth:@
 setWidth :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> CInt -> IO ()
-setWidth domhtmlImageElement  value =
-    sendMsg domhtmlImageElement (mkSelector "setWidth:") retVoid [argCInt value]
+setWidth domhtmlImageElement value =
+  sendMessage domhtmlImageElement setWidthSelector value
 
 -- | @- complete@
 complete :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO Bool
-complete domhtmlImageElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlImageElement (mkSelector "complete") retCULong []
+complete domhtmlImageElement =
+  sendMessage domhtmlImageElement completeSelector
 
 -- | @- lowsrc@
 lowsrc :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSString)
-lowsrc domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "lowsrc") (retPtr retVoid) [] >>= retainedObject . castPtr
+lowsrc domhtmlImageElement =
+  sendMessage domhtmlImageElement lowsrcSelector
 
 -- | @- setLowsrc:@
 setLowsrc :: (IsDOMHTMLImageElement domhtmlImageElement, IsNSString value) => domhtmlImageElement -> value -> IO ()
-setLowsrc domhtmlImageElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlImageElement (mkSelector "setLowsrc:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLowsrc domhtmlImageElement value =
+  sendMessage domhtmlImageElement setLowsrcSelector (toNSString value)
 
 -- | @- naturalHeight@
 naturalHeight :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO CInt
-naturalHeight domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "naturalHeight") retCInt []
+naturalHeight domhtmlImageElement =
+  sendMessage domhtmlImageElement naturalHeightSelector
 
 -- | @- naturalWidth@
 naturalWidth :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO CInt
-naturalWidth domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "naturalWidth") retCInt []
+naturalWidth domhtmlImageElement =
+  sendMessage domhtmlImageElement naturalWidthSelector
 
 -- | @- x@
 x :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO CInt
-x domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "x") retCInt []
+x domhtmlImageElement =
+  sendMessage domhtmlImageElement xSelector
 
 -- | @- y@
 y :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO CInt
-y domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "y") retCInt []
+y domhtmlImageElement =
+  sendMessage domhtmlImageElement ySelector
 
 -- | @- altDisplayString@
 altDisplayString :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSString)
-altDisplayString domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "altDisplayString") (retPtr retVoid) [] >>= retainedObject . castPtr
+altDisplayString domhtmlImageElement =
+  sendMessage domhtmlImageElement altDisplayStringSelector
 
 -- | @- absoluteImageURL@
 absoluteImageURL :: IsDOMHTMLImageElement domhtmlImageElement => domhtmlImageElement -> IO (Id NSURL)
-absoluteImageURL domhtmlImageElement  =
-    sendMsg domhtmlImageElement (mkSelector "absoluteImageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+absoluteImageURL domhtmlImageElement =
+  sendMessage domhtmlImageElement absoluteImageURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @align@
-alignSelector :: Selector
+alignSelector :: Selector '[] (Id NSString)
 alignSelector = mkSelector "align"
 
 -- | @Selector@ for @setAlign:@
-setAlignSelector :: Selector
+setAlignSelector :: Selector '[Id NSString] ()
 setAlignSelector = mkSelector "setAlign:"
 
 -- | @Selector@ for @alt@
-altSelector :: Selector
+altSelector :: Selector '[] (Id NSString)
 altSelector = mkSelector "alt"
 
 -- | @Selector@ for @setAlt:@
-setAltSelector :: Selector
+setAltSelector :: Selector '[Id NSString] ()
 setAltSelector = mkSelector "setAlt:"
 
 -- | @Selector@ for @border@
-borderSelector :: Selector
+borderSelector :: Selector '[] (Id NSString)
 borderSelector = mkSelector "border"
 
 -- | @Selector@ for @setBorder:@
-setBorderSelector :: Selector
+setBorderSelector :: Selector '[Id NSString] ()
 setBorderSelector = mkSelector "setBorder:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CInt
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CInt] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @hspace@
-hspaceSelector :: Selector
+hspaceSelector :: Selector '[] CInt
 hspaceSelector = mkSelector "hspace"
 
 -- | @Selector@ for @setHspace:@
-setHspaceSelector :: Selector
+setHspaceSelector :: Selector '[CInt] ()
 setHspaceSelector = mkSelector "setHspace:"
 
 -- | @Selector@ for @isMap@
-isMapSelector :: Selector
+isMapSelector :: Selector '[] Bool
 isMapSelector = mkSelector "isMap"
 
 -- | @Selector@ for @setIsMap:@
-setIsMapSelector :: Selector
+setIsMapSelector :: Selector '[Bool] ()
 setIsMapSelector = mkSelector "setIsMap:"
 
 -- | @Selector@ for @longDesc@
-longDescSelector :: Selector
+longDescSelector :: Selector '[] (Id NSString)
 longDescSelector = mkSelector "longDesc"
 
 -- | @Selector@ for @setLongDesc:@
-setLongDescSelector :: Selector
+setLongDescSelector :: Selector '[Id NSString] ()
 setLongDescSelector = mkSelector "setLongDesc:"
 
 -- | @Selector@ for @src@
-srcSelector :: Selector
+srcSelector :: Selector '[] (Id NSString)
 srcSelector = mkSelector "src"
 
 -- | @Selector@ for @setSrc:@
-setSrcSelector :: Selector
+setSrcSelector :: Selector '[Id NSString] ()
 setSrcSelector = mkSelector "setSrc:"
 
 -- | @Selector@ for @useMap@
-useMapSelector :: Selector
+useMapSelector :: Selector '[] (Id NSString)
 useMapSelector = mkSelector "useMap"
 
 -- | @Selector@ for @setUseMap:@
-setUseMapSelector :: Selector
+setUseMapSelector :: Selector '[Id NSString] ()
 setUseMapSelector = mkSelector "setUseMap:"
 
 -- | @Selector@ for @vspace@
-vspaceSelector :: Selector
+vspaceSelector :: Selector '[] CInt
 vspaceSelector = mkSelector "vspace"
 
 -- | @Selector@ for @setVspace:@
-setVspaceSelector :: Selector
+setVspaceSelector :: Selector '[CInt] ()
 setVspaceSelector = mkSelector "setVspace:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CInt
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CInt] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @complete@
-completeSelector :: Selector
+completeSelector :: Selector '[] Bool
 completeSelector = mkSelector "complete"
 
 -- | @Selector@ for @lowsrc@
-lowsrcSelector :: Selector
+lowsrcSelector :: Selector '[] (Id NSString)
 lowsrcSelector = mkSelector "lowsrc"
 
 -- | @Selector@ for @setLowsrc:@
-setLowsrcSelector :: Selector
+setLowsrcSelector :: Selector '[Id NSString] ()
 setLowsrcSelector = mkSelector "setLowsrc:"
 
 -- | @Selector@ for @naturalHeight@
-naturalHeightSelector :: Selector
+naturalHeightSelector :: Selector '[] CInt
 naturalHeightSelector = mkSelector "naturalHeight"
 
 -- | @Selector@ for @naturalWidth@
-naturalWidthSelector :: Selector
+naturalWidthSelector :: Selector '[] CInt
 naturalWidthSelector = mkSelector "naturalWidth"
 
 -- | @Selector@ for @x@
-xSelector :: Selector
+xSelector :: Selector '[] CInt
 xSelector = mkSelector "x"
 
 -- | @Selector@ for @y@
-ySelector :: Selector
+ySelector :: Selector '[] CInt
 ySelector = mkSelector "y"
 
 -- | @Selector@ for @altDisplayString@
-altDisplayStringSelector :: Selector
+altDisplayStringSelector :: Selector '[] (Id NSString)
 altDisplayStringSelector = mkSelector "altDisplayString"
 
 -- | @Selector@ for @absoluteImageURL@
-absoluteImageURLSelector :: Selector
+absoluteImageURLSelector :: Selector '[] (Id NSURL)
 absoluteImageURLSelector = mkSelector "absoluteImageURL"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INStartCallCallRecordToCallBackResolutionResult
   , IsINStartCallCallRecordToCallBackResolutionResult(..)
   , unsupportedForReason
   , initWithCallRecordResolutionResult
-  , unsupportedForReasonSelector
   , initWithCallRecordResolutionResultSelector
+  , unsupportedForReasonSelector
 
   -- * Enum types
   , INStartCallCallRecordToCallBackUnsupportedReason(INStartCallCallRecordToCallBackUnsupportedReason)
@@ -18,15 +19,11 @@ module ObjC.Intents.INStartCallCallRecordToCallBackResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,23 +36,22 @@ unsupportedForReason :: INStartCallCallRecordToCallBackUnsupportedReason -> IO (
 unsupportedForReason reason =
   do
     cls' <- getRequiredClass "INStartCallCallRecordToCallBackResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupportedForReason:") (retPtr retVoid) [argCLong (coerce reason)] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedForReasonSelector reason
 
 -- | @- initWithCallRecordResolutionResult:@
 initWithCallRecordResolutionResult :: (IsINStartCallCallRecordToCallBackResolutionResult inStartCallCallRecordToCallBackResolutionResult, IsINCallRecordResolutionResult callRecordResolutionResult) => inStartCallCallRecordToCallBackResolutionResult -> callRecordResolutionResult -> IO (Id INStartCallCallRecordToCallBackResolutionResult)
-initWithCallRecordResolutionResult inStartCallCallRecordToCallBackResolutionResult  callRecordResolutionResult =
-  withObjCPtr callRecordResolutionResult $ \raw_callRecordResolutionResult ->
-      sendMsg inStartCallCallRecordToCallBackResolutionResult (mkSelector "initWithCallRecordResolutionResult:") (retPtr retVoid) [argPtr (castPtr raw_callRecordResolutionResult :: Ptr ())] >>= ownedObject . castPtr
+initWithCallRecordResolutionResult inStartCallCallRecordToCallBackResolutionResult callRecordResolutionResult =
+  sendOwnedMessage inStartCallCallRecordToCallBackResolutionResult initWithCallRecordResolutionResultSelector (toINCallRecordResolutionResult callRecordResolutionResult)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @unsupportedForReason:@
-unsupportedForReasonSelector :: Selector
+unsupportedForReasonSelector :: Selector '[INStartCallCallRecordToCallBackUnsupportedReason] (Id INStartCallCallRecordToCallBackResolutionResult)
 unsupportedForReasonSelector = mkSelector "unsupportedForReason:"
 
 -- | @Selector@ for @initWithCallRecordResolutionResult:@
-initWithCallRecordResolutionResultSelector :: Selector
+initWithCallRecordResolutionResultSelector :: Selector '[Id INCallRecordResolutionResult] (Id INStartCallCallRecordToCallBackResolutionResult)
 initWithCallRecordResolutionResultSelector = mkSelector "initWithCallRecordResolutionResult:"
 

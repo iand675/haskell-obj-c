@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,18 +35,18 @@ module ObjC.CloudKit.CKOperationConfiguration
   , setTimeoutIntervalForRequest
   , timeoutIntervalForResource
   , setTimeoutIntervalForResource
-  , containerSelector
-  , setContainerSelector
-  , qualityOfServiceSelector
-  , setQualityOfServiceSelector
   , allowsCellularAccessSelector
-  , setAllowsCellularAccessSelector
+  , containerSelector
   , longLivedSelector
+  , qualityOfServiceSelector
+  , setAllowsCellularAccessSelector
+  , setContainerSelector
   , setLongLivedSelector
-  , timeoutIntervalForRequestSelector
+  , setQualityOfServiceSelector
   , setTimeoutIntervalForRequestSelector
-  , timeoutIntervalForResourceSelector
   , setTimeoutIntervalForResourceSelector
+  , timeoutIntervalForRequestSelector
+  , timeoutIntervalForResourceSelector
 
   -- * Enum types
   , NSQualityOfService(NSQualityOfService)
@@ -57,15 +58,11 @@ module ObjC.CloudKit.CKOperationConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,16 +74,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- container@
 container :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> IO (Id CKContainer)
-container ckOperationConfiguration  =
-    sendMsg ckOperationConfiguration (mkSelector "container") (retPtr retVoid) [] >>= retainedObject . castPtr
+container ckOperationConfiguration =
+  sendMessage ckOperationConfiguration containerSelector
 
 -- | If no container is set, [CKContainer defaultContainer] is used
 --
 -- ObjC selector: @- setContainer:@
 setContainer :: (IsCKOperationConfiguration ckOperationConfiguration, IsCKContainer value) => ckOperationConfiguration -> value -> IO ()
-setContainer ckOperationConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckOperationConfiguration (mkSelector "setContainer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContainer ckOperationConfiguration value =
+  sendMessage ckOperationConfiguration setContainerSelector (toCKContainer value)
 
 -- | CKOperations behave differently depending on how you set qualityOfService.
 --
@@ -108,8 +104,8 @@ setContainer ckOperationConfiguration  value =
 --
 -- ObjC selector: @- qualityOfService@
 qualityOfService :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> IO NSQualityOfService
-qualityOfService ckOperationConfiguration  =
-    fmap (coerce :: CLong -> NSQualityOfService) $ sendMsg ckOperationConfiguration (mkSelector "qualityOfService") retCLong []
+qualityOfService ckOperationConfiguration =
+  sendMessage ckOperationConfiguration qualityOfServiceSelector
 
 -- | CKOperations behave differently depending on how you set qualityOfService.
 --
@@ -131,22 +127,22 @@ qualityOfService ckOperationConfiguration  =
 --
 -- ObjC selector: @- setQualityOfService:@
 setQualityOfService :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> NSQualityOfService -> IO ()
-setQualityOfService ckOperationConfiguration  value =
-    sendMsg ckOperationConfiguration (mkSelector "setQualityOfService:") retVoid [argCLong (coerce value)]
+setQualityOfService ckOperationConfiguration value =
+  sendMessage ckOperationConfiguration setQualityOfServiceSelector value
 
 -- | Defaults to @YES@
 --
 -- ObjC selector: @- allowsCellularAccess@
 allowsCellularAccess :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> IO Bool
-allowsCellularAccess ckOperationConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckOperationConfiguration (mkSelector "allowsCellularAccess") retCULong []
+allowsCellularAccess ckOperationConfiguration =
+  sendMessage ckOperationConfiguration allowsCellularAccessSelector
 
 -- | Defaults to @YES@
 --
 -- ObjC selector: @- setAllowsCellularAccess:@
 setAllowsCellularAccess :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> Bool -> IO ()
-setAllowsCellularAccess ckOperationConfiguration  value =
-    sendMsg ckOperationConfiguration (mkSelector "setAllowsCellularAccess:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsCellularAccess ckOperationConfiguration value =
+  sendMessage ckOperationConfiguration setAllowsCellularAccessSelector value
 
 -- | Long lived operations will continue running even if your process exits. If your process remains alive for the lifetime of the long lived operation its behavior is the same as a regular operation.
 --
@@ -158,8 +154,8 @@ setAllowsCellularAccess ckOperationConfiguration  value =
 --
 -- ObjC selector: @- longLived@
 longLived :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> IO Bool
-longLived ckOperationConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckOperationConfiguration (mkSelector "longLived") retCULong []
+longLived ckOperationConfiguration =
+  sendMessage ckOperationConfiguration longLivedSelector
 
 -- | Long lived operations will continue running even if your process exits. If your process remains alive for the lifetime of the long lived operation its behavior is the same as a regular operation.
 --
@@ -171,8 +167,8 @@ longLived ckOperationConfiguration  =
 --
 -- ObjC selector: @- setLongLived:@
 setLongLived :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> Bool -> IO ()
-setLongLived ckOperationConfiguration  value =
-    sendMsg ckOperationConfiguration (mkSelector "setLongLived:") retVoid [argCULong (if value then 1 else 0)]
+setLongLived ckOperationConfiguration value =
+  sendMessage ckOperationConfiguration setLongLivedSelector value
 
 -- | If non-zero, overrides the timeout interval for any network requests issued by this operation.  The default value is 60.
 --
@@ -180,8 +176,8 @@ setLongLived ckOperationConfiguration  value =
 --
 -- ObjC selector: @- timeoutIntervalForRequest@
 timeoutIntervalForRequest :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> IO CDouble
-timeoutIntervalForRequest ckOperationConfiguration  =
-    sendMsg ckOperationConfiguration (mkSelector "timeoutIntervalForRequest") retCDouble []
+timeoutIntervalForRequest ckOperationConfiguration =
+  sendMessage ckOperationConfiguration timeoutIntervalForRequestSelector
 
 -- | If non-zero, overrides the timeout interval for any network requests issued by this operation.  The default value is 60.
 --
@@ -189,8 +185,8 @@ timeoutIntervalForRequest ckOperationConfiguration  =
 --
 -- ObjC selector: @- setTimeoutIntervalForRequest:@
 setTimeoutIntervalForRequest :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> CDouble -> IO ()
-setTimeoutIntervalForRequest ckOperationConfiguration  value =
-    sendMsg ckOperationConfiguration (mkSelector "setTimeoutIntervalForRequest:") retVoid [argCDouble value]
+setTimeoutIntervalForRequest ckOperationConfiguration value =
+  sendMessage ckOperationConfiguration setTimeoutIntervalForRequestSelector value
 
 -- | If set, overrides the timeout interval for any network resources retrieved by this operation.  If not explicitly set, defaults to a value based on the operation's @qualityOfService@
 --
@@ -198,8 +194,8 @@ setTimeoutIntervalForRequest ckOperationConfiguration  value =
 --
 -- ObjC selector: @- timeoutIntervalForResource@
 timeoutIntervalForResource :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> IO CDouble
-timeoutIntervalForResource ckOperationConfiguration  =
-    sendMsg ckOperationConfiguration (mkSelector "timeoutIntervalForResource") retCDouble []
+timeoutIntervalForResource ckOperationConfiguration =
+  sendMessage ckOperationConfiguration timeoutIntervalForResourceSelector
 
 -- | If set, overrides the timeout interval for any network resources retrieved by this operation.  If not explicitly set, defaults to a value based on the operation's @qualityOfService@
 --
@@ -207,58 +203,58 @@ timeoutIntervalForResource ckOperationConfiguration  =
 --
 -- ObjC selector: @- setTimeoutIntervalForResource:@
 setTimeoutIntervalForResource :: IsCKOperationConfiguration ckOperationConfiguration => ckOperationConfiguration -> CDouble -> IO ()
-setTimeoutIntervalForResource ckOperationConfiguration  value =
-    sendMsg ckOperationConfiguration (mkSelector "setTimeoutIntervalForResource:") retVoid [argCDouble value]
+setTimeoutIntervalForResource ckOperationConfiguration value =
+  sendMessage ckOperationConfiguration setTimeoutIntervalForResourceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @container@
-containerSelector :: Selector
+containerSelector :: Selector '[] (Id CKContainer)
 containerSelector = mkSelector "container"
 
 -- | @Selector@ for @setContainer:@
-setContainerSelector :: Selector
+setContainerSelector :: Selector '[Id CKContainer] ()
 setContainerSelector = mkSelector "setContainer:"
 
 -- | @Selector@ for @qualityOfService@
-qualityOfServiceSelector :: Selector
+qualityOfServiceSelector :: Selector '[] NSQualityOfService
 qualityOfServiceSelector = mkSelector "qualityOfService"
 
 -- | @Selector@ for @setQualityOfService:@
-setQualityOfServiceSelector :: Selector
+setQualityOfServiceSelector :: Selector '[NSQualityOfService] ()
 setQualityOfServiceSelector = mkSelector "setQualityOfService:"
 
 -- | @Selector@ for @allowsCellularAccess@
-allowsCellularAccessSelector :: Selector
+allowsCellularAccessSelector :: Selector '[] Bool
 allowsCellularAccessSelector = mkSelector "allowsCellularAccess"
 
 -- | @Selector@ for @setAllowsCellularAccess:@
-setAllowsCellularAccessSelector :: Selector
+setAllowsCellularAccessSelector :: Selector '[Bool] ()
 setAllowsCellularAccessSelector = mkSelector "setAllowsCellularAccess:"
 
 -- | @Selector@ for @longLived@
-longLivedSelector :: Selector
+longLivedSelector :: Selector '[] Bool
 longLivedSelector = mkSelector "longLived"
 
 -- | @Selector@ for @setLongLived:@
-setLongLivedSelector :: Selector
+setLongLivedSelector :: Selector '[Bool] ()
 setLongLivedSelector = mkSelector "setLongLived:"
 
 -- | @Selector@ for @timeoutIntervalForRequest@
-timeoutIntervalForRequestSelector :: Selector
+timeoutIntervalForRequestSelector :: Selector '[] CDouble
 timeoutIntervalForRequestSelector = mkSelector "timeoutIntervalForRequest"
 
 -- | @Selector@ for @setTimeoutIntervalForRequest:@
-setTimeoutIntervalForRequestSelector :: Selector
+setTimeoutIntervalForRequestSelector :: Selector '[CDouble] ()
 setTimeoutIntervalForRequestSelector = mkSelector "setTimeoutIntervalForRequest:"
 
 -- | @Selector@ for @timeoutIntervalForResource@
-timeoutIntervalForResourceSelector :: Selector
+timeoutIntervalForResourceSelector :: Selector '[] CDouble
 timeoutIntervalForResourceSelector = mkSelector "timeoutIntervalForResource"
 
 -- | @Selector@ for @setTimeoutIntervalForResource:@
-setTimeoutIntervalForResourceSelector :: Selector
+setTimeoutIntervalForResourceSelector :: Selector '[CDouble] ()
 setTimeoutIntervalForResourceSelector = mkSelector "setTimeoutIntervalForResource:"
 

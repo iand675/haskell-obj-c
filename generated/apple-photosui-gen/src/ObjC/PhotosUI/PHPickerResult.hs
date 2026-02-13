@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.PhotosUI.PHPickerResult
   , init_
   , itemProvider
   , assetIdentifier
-  , newSelector
+  , assetIdentifierSelector
   , initSelector
   , itemProviderSelector
-  , assetIdentifierSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,44 +37,44 @@ new :: IO (Id PHPickerResult)
 new  =
   do
     cls' <- getRequiredClass "PHPickerResult"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsPHPickerResult phPickerResult => phPickerResult -> IO (Id PHPickerResult)
-init_ phPickerResult  =
-    sendMsg phPickerResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phPickerResult =
+  sendOwnedMessage phPickerResult initSelector
 
 -- | Representations of the selected asset.
 --
 -- ObjC selector: @- itemProvider@
 itemProvider :: IsPHPickerResult phPickerResult => phPickerResult -> IO (Id NSItemProvider)
-itemProvider phPickerResult  =
-    sendMsg phPickerResult (mkSelector "itemProvider") (retPtr retVoid) [] >>= retainedObject . castPtr
+itemProvider phPickerResult =
+  sendMessage phPickerResult itemProviderSelector
 
 -- | The local identifier of the selected asset.
 --
 -- ObjC selector: @- assetIdentifier@
 assetIdentifier :: IsPHPickerResult phPickerResult => phPickerResult -> IO (Id NSString)
-assetIdentifier phPickerResult  =
-    sendMsg phPickerResult (mkSelector "assetIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetIdentifier phPickerResult =
+  sendMessage phPickerResult assetIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHPickerResult)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHPickerResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @itemProvider@
-itemProviderSelector :: Selector
+itemProviderSelector :: Selector '[] (Id NSItemProvider)
 itemProviderSelector = mkSelector "itemProvider"
 
 -- | @Selector@ for @assetIdentifier@
-assetIdentifierSelector :: Selector
+assetIdentifierSelector :: Selector '[] (Id NSString)
 assetIdentifierSelector = mkSelector "assetIdentifier"
 

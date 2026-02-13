@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,27 +29,27 @@ module ObjC.Intents.INSearchForMessagesIntent
   , conversationIdentifiersOperator
   , groupNames
   , groupNamesOperator
-  , initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames_conversationIdentifiersSelector
+  , attributesSelector
+  , conversationIdentifiersOperatorSelector
+  , conversationIdentifiersSelector
+  , dateTimeRangeSelector
+  , groupNamesOperatorSelector
+  , groupNamesSelector
+  , identifiersOperatorSelector
+  , identifiersSelector
   , initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_groupNamesSelector
   , initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNamesSelector
-  , recipientsSelector
-  , recipientsOperatorSelector
-  , sendersSelector
-  , sendersOperatorSelector
-  , searchTermsSelector
-  , searchTermsOperatorSelector
-  , attributesSelector
-  , dateTimeRangeSelector
-  , identifiersSelector
-  , identifiersOperatorSelector
-  , notificationIdentifiersSelector
+  , initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames_conversationIdentifiersSelector
   , notificationIdentifiersOperatorSelector
-  , speakableGroupNamesSelector
+  , notificationIdentifiersSelector
+  , recipientsOperatorSelector
+  , recipientsSelector
+  , searchTermsOperatorSelector
+  , searchTermsSelector
+  , sendersOperatorSelector
+  , sendersSelector
   , speakableGroupNamesOperatorSelector
-  , conversationIdentifiersSelector
-  , conversationIdentifiersOperatorSelector
-  , groupNamesSelector
-  , groupNamesOperatorSelector
+  , speakableGroupNamesSelector
 
   -- * Enum types
   , INConditionalOperator(INConditionalOperator)
@@ -64,15 +65,11 @@ module ObjC.Intents.INSearchForMessagesIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,216 +79,194 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:speakableGroupNames:conversationIdentifiers:@
 initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames_conversationIdentifiers :: (IsINSearchForMessagesIntent inSearchForMessagesIntent, IsNSArray recipients, IsNSArray senders, IsNSArray searchTerms, IsINDateComponentsRange dateTimeRange, IsNSArray identifiers, IsNSArray notificationIdentifiers, IsNSArray speakableGroupNames, IsNSArray conversationIdentifiers) => inSearchForMessagesIntent -> recipients -> senders -> searchTerms -> INMessageAttributeOptions -> dateTimeRange -> identifiers -> notificationIdentifiers -> speakableGroupNames -> conversationIdentifiers -> IO (Id INSearchForMessagesIntent)
-initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames_conversationIdentifiers inSearchForMessagesIntent  recipients senders searchTerms attributes dateTimeRange identifiers notificationIdentifiers speakableGroupNames conversationIdentifiers =
-  withObjCPtr recipients $ \raw_recipients ->
-    withObjCPtr senders $ \raw_senders ->
-      withObjCPtr searchTerms $ \raw_searchTerms ->
-        withObjCPtr dateTimeRange $ \raw_dateTimeRange ->
-          withObjCPtr identifiers $ \raw_identifiers ->
-            withObjCPtr notificationIdentifiers $ \raw_notificationIdentifiers ->
-              withObjCPtr speakableGroupNames $ \raw_speakableGroupNames ->
-                withObjCPtr conversationIdentifiers $ \raw_conversationIdentifiers ->
-                    sendMsg inSearchForMessagesIntent (mkSelector "initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:speakableGroupNames:conversationIdentifiers:") (retPtr retVoid) [argPtr (castPtr raw_recipients :: Ptr ()), argPtr (castPtr raw_senders :: Ptr ()), argPtr (castPtr raw_searchTerms :: Ptr ()), argCULong (coerce attributes), argPtr (castPtr raw_dateTimeRange :: Ptr ()), argPtr (castPtr raw_identifiers :: Ptr ()), argPtr (castPtr raw_notificationIdentifiers :: Ptr ()), argPtr (castPtr raw_speakableGroupNames :: Ptr ()), argPtr (castPtr raw_conversationIdentifiers :: Ptr ())] >>= ownedObject . castPtr
+initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames_conversationIdentifiers inSearchForMessagesIntent recipients senders searchTerms attributes dateTimeRange identifiers notificationIdentifiers speakableGroupNames conversationIdentifiers =
+  sendOwnedMessage inSearchForMessagesIntent initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames_conversationIdentifiersSelector (toNSArray recipients) (toNSArray senders) (toNSArray searchTerms) attributes (toINDateComponentsRange dateTimeRange) (toNSArray identifiers) (toNSArray notificationIdentifiers) (toNSArray speakableGroupNames) (toNSArray conversationIdentifiers)
 
 -- | @- initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:groupNames:@
 initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_groupNames :: (IsINSearchForMessagesIntent inSearchForMessagesIntent, IsNSArray recipients, IsNSArray senders, IsNSArray searchTerms, IsINDateComponentsRange dateTimeRange, IsNSArray identifiers, IsNSArray notificationIdentifiers, IsNSArray groupNames) => inSearchForMessagesIntent -> recipients -> senders -> searchTerms -> INMessageAttributeOptions -> dateTimeRange -> identifiers -> notificationIdentifiers -> groupNames -> IO (Id INSearchForMessagesIntent)
-initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_groupNames inSearchForMessagesIntent  recipients senders searchTerms attributes dateTimeRange identifiers notificationIdentifiers groupNames =
-  withObjCPtr recipients $ \raw_recipients ->
-    withObjCPtr senders $ \raw_senders ->
-      withObjCPtr searchTerms $ \raw_searchTerms ->
-        withObjCPtr dateTimeRange $ \raw_dateTimeRange ->
-          withObjCPtr identifiers $ \raw_identifiers ->
-            withObjCPtr notificationIdentifiers $ \raw_notificationIdentifiers ->
-              withObjCPtr groupNames $ \raw_groupNames ->
-                  sendMsg inSearchForMessagesIntent (mkSelector "initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:groupNames:") (retPtr retVoid) [argPtr (castPtr raw_recipients :: Ptr ()), argPtr (castPtr raw_senders :: Ptr ()), argPtr (castPtr raw_searchTerms :: Ptr ()), argCULong (coerce attributes), argPtr (castPtr raw_dateTimeRange :: Ptr ()), argPtr (castPtr raw_identifiers :: Ptr ()), argPtr (castPtr raw_notificationIdentifiers :: Ptr ()), argPtr (castPtr raw_groupNames :: Ptr ())] >>= ownedObject . castPtr
+initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_groupNames inSearchForMessagesIntent recipients senders searchTerms attributes dateTimeRange identifiers notificationIdentifiers groupNames =
+  sendOwnedMessage inSearchForMessagesIntent initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_groupNamesSelector (toNSArray recipients) (toNSArray senders) (toNSArray searchTerms) attributes (toINDateComponentsRange dateTimeRange) (toNSArray identifiers) (toNSArray notificationIdentifiers) (toNSArray groupNames)
 
 -- | @- initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:speakableGroupNames:@
 initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames :: (IsINSearchForMessagesIntent inSearchForMessagesIntent, IsNSArray recipients, IsNSArray senders, IsNSArray searchTerms, IsINDateComponentsRange dateTimeRange, IsNSArray identifiers, IsNSArray notificationIdentifiers, IsNSArray speakableGroupNames) => inSearchForMessagesIntent -> recipients -> senders -> searchTerms -> INMessageAttributeOptions -> dateTimeRange -> identifiers -> notificationIdentifiers -> speakableGroupNames -> IO (Id INSearchForMessagesIntent)
-initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames inSearchForMessagesIntent  recipients senders searchTerms attributes dateTimeRange identifiers notificationIdentifiers speakableGroupNames =
-  withObjCPtr recipients $ \raw_recipients ->
-    withObjCPtr senders $ \raw_senders ->
-      withObjCPtr searchTerms $ \raw_searchTerms ->
-        withObjCPtr dateTimeRange $ \raw_dateTimeRange ->
-          withObjCPtr identifiers $ \raw_identifiers ->
-            withObjCPtr notificationIdentifiers $ \raw_notificationIdentifiers ->
-              withObjCPtr speakableGroupNames $ \raw_speakableGroupNames ->
-                  sendMsg inSearchForMessagesIntent (mkSelector "initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:speakableGroupNames:") (retPtr retVoid) [argPtr (castPtr raw_recipients :: Ptr ()), argPtr (castPtr raw_senders :: Ptr ()), argPtr (castPtr raw_searchTerms :: Ptr ()), argCULong (coerce attributes), argPtr (castPtr raw_dateTimeRange :: Ptr ()), argPtr (castPtr raw_identifiers :: Ptr ()), argPtr (castPtr raw_notificationIdentifiers :: Ptr ()), argPtr (castPtr raw_speakableGroupNames :: Ptr ())] >>= ownedObject . castPtr
+initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames inSearchForMessagesIntent recipients senders searchTerms attributes dateTimeRange identifiers notificationIdentifiers speakableGroupNames =
+  sendOwnedMessage inSearchForMessagesIntent initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNamesSelector (toNSArray recipients) (toNSArray senders) (toNSArray searchTerms) attributes (toINDateComponentsRange dateTimeRange) (toNSArray identifiers) (toNSArray notificationIdentifiers) (toNSArray speakableGroupNames)
 
 -- | @- recipients@
 recipients :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
-recipients inSearchForMessagesIntent  =
-    sendMsg inSearchForMessagesIntent (mkSelector "recipients") (retPtr retVoid) [] >>= retainedObject . castPtr
+recipients inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent recipientsSelector
 
 -- | @- recipientsOperator@
 recipientsOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
-recipientsOperator inSearchForMessagesIntent  =
-    fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "recipientsOperator") retCLong []
+recipientsOperator inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent recipientsOperatorSelector
 
 -- | @- senders@
 senders :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
-senders inSearchForMessagesIntent  =
-    sendMsg inSearchForMessagesIntent (mkSelector "senders") (retPtr retVoid) [] >>= retainedObject . castPtr
+senders inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent sendersSelector
 
 -- | @- sendersOperator@
 sendersOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
-sendersOperator inSearchForMessagesIntent  =
-    fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "sendersOperator") retCLong []
+sendersOperator inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent sendersOperatorSelector
 
 -- | @- searchTerms@
 searchTerms :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
-searchTerms inSearchForMessagesIntent  =
-    sendMsg inSearchForMessagesIntent (mkSelector "searchTerms") (retPtr retVoid) [] >>= retainedObject . castPtr
+searchTerms inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent searchTermsSelector
 
 -- | @- searchTermsOperator@
 searchTermsOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
-searchTermsOperator inSearchForMessagesIntent  =
-    fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "searchTermsOperator") retCLong []
+searchTermsOperator inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent searchTermsOperatorSelector
 
 -- | @- attributes@
 attributes :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INMessageAttributeOptions
-attributes inSearchForMessagesIntent  =
-    fmap (coerce :: CULong -> INMessageAttributeOptions) $ sendMsg inSearchForMessagesIntent (mkSelector "attributes") retCULong []
+attributes inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent attributesSelector
 
 -- | @- dateTimeRange@
 dateTimeRange :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id INDateComponentsRange)
-dateTimeRange inSearchForMessagesIntent  =
-    sendMsg inSearchForMessagesIntent (mkSelector "dateTimeRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateTimeRange inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent dateTimeRangeSelector
 
 -- | @- identifiers@
 identifiers :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
-identifiers inSearchForMessagesIntent  =
-    sendMsg inSearchForMessagesIntent (mkSelector "identifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifiers inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent identifiersSelector
 
 -- | @- identifiersOperator@
 identifiersOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
-identifiersOperator inSearchForMessagesIntent  =
-    fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "identifiersOperator") retCLong []
+identifiersOperator inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent identifiersOperatorSelector
 
 -- | @- notificationIdentifiers@
 notificationIdentifiers :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
-notificationIdentifiers inSearchForMessagesIntent  =
-    sendMsg inSearchForMessagesIntent (mkSelector "notificationIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+notificationIdentifiers inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent notificationIdentifiersSelector
 
 -- | @- notificationIdentifiersOperator@
 notificationIdentifiersOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
-notificationIdentifiersOperator inSearchForMessagesIntent  =
-    fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "notificationIdentifiersOperator") retCLong []
+notificationIdentifiersOperator inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent notificationIdentifiersOperatorSelector
 
 -- | @- speakableGroupNames@
 speakableGroupNames :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
-speakableGroupNames inSearchForMessagesIntent  =
-    sendMsg inSearchForMessagesIntent (mkSelector "speakableGroupNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+speakableGroupNames inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent speakableGroupNamesSelector
 
 -- | @- speakableGroupNamesOperator@
 speakableGroupNamesOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
-speakableGroupNamesOperator inSearchForMessagesIntent  =
-    fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "speakableGroupNamesOperator") retCLong []
+speakableGroupNamesOperator inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent speakableGroupNamesOperatorSelector
 
 -- | @- conversationIdentifiers@
 conversationIdentifiers :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
-conversationIdentifiers inSearchForMessagesIntent  =
-    sendMsg inSearchForMessagesIntent (mkSelector "conversationIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+conversationIdentifiers inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent conversationIdentifiersSelector
 
 -- | @- conversationIdentifiersOperator@
 conversationIdentifiersOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
-conversationIdentifiersOperator inSearchForMessagesIntent  =
-    fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "conversationIdentifiersOperator") retCLong []
+conversationIdentifiersOperator inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent conversationIdentifiersOperatorSelector
 
 -- | @- groupNames@
 groupNames :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO (Id NSArray)
-groupNames inSearchForMessagesIntent  =
-    sendMsg inSearchForMessagesIntent (mkSelector "groupNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupNames inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent groupNamesSelector
 
 -- | @- groupNamesOperator@
 groupNamesOperator :: IsINSearchForMessagesIntent inSearchForMessagesIntent => inSearchForMessagesIntent -> IO INConditionalOperator
-groupNamesOperator inSearchForMessagesIntent  =
-    fmap (coerce :: CLong -> INConditionalOperator) $ sendMsg inSearchForMessagesIntent (mkSelector "groupNamesOperator") retCLong []
+groupNamesOperator inSearchForMessagesIntent =
+  sendMessage inSearchForMessagesIntent groupNamesOperatorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:speakableGroupNames:conversationIdentifiers:@
-initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames_conversationIdentifiersSelector :: Selector
+initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames_conversationIdentifiersSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray, INMessageAttributeOptions, Id INDateComponentsRange, Id NSArray, Id NSArray, Id NSArray, Id NSArray] (Id INSearchForMessagesIntent)
 initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNames_conversationIdentifiersSelector = mkSelector "initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:speakableGroupNames:conversationIdentifiers:"
 
 -- | @Selector@ for @initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:groupNames:@
-initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_groupNamesSelector :: Selector
+initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_groupNamesSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray, INMessageAttributeOptions, Id INDateComponentsRange, Id NSArray, Id NSArray, Id NSArray] (Id INSearchForMessagesIntent)
 initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_groupNamesSelector = mkSelector "initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:groupNames:"
 
 -- | @Selector@ for @initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:speakableGroupNames:@
-initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNamesSelector :: Selector
+initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNamesSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray, INMessageAttributeOptions, Id INDateComponentsRange, Id NSArray, Id NSArray, Id NSArray] (Id INSearchForMessagesIntent)
 initWithRecipients_senders_searchTerms_attributes_dateTimeRange_identifiers_notificationIdentifiers_speakableGroupNamesSelector = mkSelector "initWithRecipients:senders:searchTerms:attributes:dateTimeRange:identifiers:notificationIdentifiers:speakableGroupNames:"
 
 -- | @Selector@ for @recipients@
-recipientsSelector :: Selector
+recipientsSelector :: Selector '[] (Id NSArray)
 recipientsSelector = mkSelector "recipients"
 
 -- | @Selector@ for @recipientsOperator@
-recipientsOperatorSelector :: Selector
+recipientsOperatorSelector :: Selector '[] INConditionalOperator
 recipientsOperatorSelector = mkSelector "recipientsOperator"
 
 -- | @Selector@ for @senders@
-sendersSelector :: Selector
+sendersSelector :: Selector '[] (Id NSArray)
 sendersSelector = mkSelector "senders"
 
 -- | @Selector@ for @sendersOperator@
-sendersOperatorSelector :: Selector
+sendersOperatorSelector :: Selector '[] INConditionalOperator
 sendersOperatorSelector = mkSelector "sendersOperator"
 
 -- | @Selector@ for @searchTerms@
-searchTermsSelector :: Selector
+searchTermsSelector :: Selector '[] (Id NSArray)
 searchTermsSelector = mkSelector "searchTerms"
 
 -- | @Selector@ for @searchTermsOperator@
-searchTermsOperatorSelector :: Selector
+searchTermsOperatorSelector :: Selector '[] INConditionalOperator
 searchTermsOperatorSelector = mkSelector "searchTermsOperator"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] INMessageAttributeOptions
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @dateTimeRange@
-dateTimeRangeSelector :: Selector
+dateTimeRangeSelector :: Selector '[] (Id INDateComponentsRange)
 dateTimeRangeSelector = mkSelector "dateTimeRange"
 
 -- | @Selector@ for @identifiers@
-identifiersSelector :: Selector
+identifiersSelector :: Selector '[] (Id NSArray)
 identifiersSelector = mkSelector "identifiers"
 
 -- | @Selector@ for @identifiersOperator@
-identifiersOperatorSelector :: Selector
+identifiersOperatorSelector :: Selector '[] INConditionalOperator
 identifiersOperatorSelector = mkSelector "identifiersOperator"
 
 -- | @Selector@ for @notificationIdentifiers@
-notificationIdentifiersSelector :: Selector
+notificationIdentifiersSelector :: Selector '[] (Id NSArray)
 notificationIdentifiersSelector = mkSelector "notificationIdentifiers"
 
 -- | @Selector@ for @notificationIdentifiersOperator@
-notificationIdentifiersOperatorSelector :: Selector
+notificationIdentifiersOperatorSelector :: Selector '[] INConditionalOperator
 notificationIdentifiersOperatorSelector = mkSelector "notificationIdentifiersOperator"
 
 -- | @Selector@ for @speakableGroupNames@
-speakableGroupNamesSelector :: Selector
+speakableGroupNamesSelector :: Selector '[] (Id NSArray)
 speakableGroupNamesSelector = mkSelector "speakableGroupNames"
 
 -- | @Selector@ for @speakableGroupNamesOperator@
-speakableGroupNamesOperatorSelector :: Selector
+speakableGroupNamesOperatorSelector :: Selector '[] INConditionalOperator
 speakableGroupNamesOperatorSelector = mkSelector "speakableGroupNamesOperator"
 
 -- | @Selector@ for @conversationIdentifiers@
-conversationIdentifiersSelector :: Selector
+conversationIdentifiersSelector :: Selector '[] (Id NSArray)
 conversationIdentifiersSelector = mkSelector "conversationIdentifiers"
 
 -- | @Selector@ for @conversationIdentifiersOperator@
-conversationIdentifiersOperatorSelector :: Selector
+conversationIdentifiersOperatorSelector :: Selector '[] INConditionalOperator
 conversationIdentifiersOperatorSelector = mkSelector "conversationIdentifiersOperator"
 
 -- | @Selector@ for @groupNames@
-groupNamesSelector :: Selector
+groupNamesSelector :: Selector '[] (Id NSArray)
 groupNamesSelector = mkSelector "groupNames"
 
 -- | @Selector@ for @groupNamesOperator@
-groupNamesOperatorSelector :: Selector
+groupNamesOperatorSelector :: Selector '[] INConditionalOperator
 groupNamesOperatorSelector = mkSelector "groupNamesOperator"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MetalPerformanceShaders.MPSNNReduceFeatureChannelsSum
   , initWithCoder_device
   , weight
   , setWeight
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
-  , weightSelector
+  , initWithDeviceSelector
   , setWeightSelector
+  , weightSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNReduceFeatureChannelsSum mpsnnReduceFeatureChannelsSum => mpsnnReduceFeatureChannelsSum -> RawId -> IO (Id MPSNNReduceFeatureChannelsSum)
-initWithDevice mpsnnReduceFeatureChannelsSum  device =
-    sendMsg mpsnnReduceFeatureChannelsSum (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnReduceFeatureChannelsSum device =
+  sendOwnedMessage mpsnnReduceFeatureChannelsSum initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -60,9 +57,8 @@ initWithDevice mpsnnReduceFeatureChannelsSum  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNReduceFeatureChannelsSum mpsnnReduceFeatureChannelsSum, IsNSCoder aDecoder) => mpsnnReduceFeatureChannelsSum -> aDecoder -> RawId -> IO (Id MPSNNReduceFeatureChannelsSum)
-initWithCoder_device mpsnnReduceFeatureChannelsSum  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnReduceFeatureChannelsSum (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnReduceFeatureChannelsSum aDecoder device =
+  sendOwnedMessage mpsnnReduceFeatureChannelsSum initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | weight
 --
@@ -72,8 +68,8 @@ initWithCoder_device mpsnnReduceFeatureChannelsSum  aDecoder device =
 --
 -- ObjC selector: @- weight@
 weight :: IsMPSNNReduceFeatureChannelsSum mpsnnReduceFeatureChannelsSum => mpsnnReduceFeatureChannelsSum -> IO CFloat
-weight mpsnnReduceFeatureChannelsSum  =
-    sendMsg mpsnnReduceFeatureChannelsSum (mkSelector "weight") retCFloat []
+weight mpsnnReduceFeatureChannelsSum =
+  sendMessage mpsnnReduceFeatureChannelsSum weightSelector
 
 -- | weight
 --
@@ -83,26 +79,26 @@ weight mpsnnReduceFeatureChannelsSum  =
 --
 -- ObjC selector: @- setWeight:@
 setWeight :: IsMPSNNReduceFeatureChannelsSum mpsnnReduceFeatureChannelsSum => mpsnnReduceFeatureChannelsSum -> CFloat -> IO ()
-setWeight mpsnnReduceFeatureChannelsSum  value =
-    sendMsg mpsnnReduceFeatureChannelsSum (mkSelector "setWeight:") retVoid [argCFloat value]
+setWeight mpsnnReduceFeatureChannelsSum value =
+  sendMessage mpsnnReduceFeatureChannelsSum setWeightSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNReduceFeatureChannelsSum)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNReduceFeatureChannelsSum)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @weight@
-weightSelector :: Selector
+weightSelector :: Selector '[] CFloat
 weightSelector = mkSelector "weight"
 
 -- | @Selector@ for @setWeight:@
-setWeightSelector :: Selector
+setWeightSelector :: Selector '[CFloat] ()
 setWeightSelector = mkSelector "setWeight:"
 

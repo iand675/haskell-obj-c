@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.CoreBluetooth.CBMutableService
   , setIncludedServices
   , characteristics
   , setCharacteristics
-  , initWithType_primarySelector
-  , includedServicesSelector
-  , setIncludedServicesSelector
   , characteristicsSelector
+  , includedServicesSelector
+  , initWithType_primarySelector
   , setCharacteristicsSelector
+  , setIncludedServicesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,53 +50,50 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithType:primary:@
 initWithType_primary :: (IsCBMutableService cbMutableService, IsCBUUID uuid) => cbMutableService -> uuid -> Bool -> IO (Id CBMutableService)
-initWithType_primary cbMutableService  uuid isPrimary =
-  withObjCPtr uuid $ \raw_uuid ->
-      sendMsg cbMutableService (mkSelector "initWithType:primary:") (retPtr retVoid) [argPtr (castPtr raw_uuid :: Ptr ()), argCULong (if isPrimary then 1 else 0)] >>= ownedObject . castPtr
+initWithType_primary cbMutableService uuid isPrimary =
+  sendOwnedMessage cbMutableService initWithType_primarySelector (toCBUUID uuid) isPrimary
 
 -- | @- includedServices@
 includedServices :: IsCBMutableService cbMutableService => cbMutableService -> IO (Id NSArray)
-includedServices cbMutableService  =
-    sendMsg cbMutableService (mkSelector "includedServices") (retPtr retVoid) [] >>= retainedObject . castPtr
+includedServices cbMutableService =
+  sendMessage cbMutableService includedServicesSelector
 
 -- | @- setIncludedServices:@
 setIncludedServices :: (IsCBMutableService cbMutableService, IsNSArray value) => cbMutableService -> value -> IO ()
-setIncludedServices cbMutableService  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cbMutableService (mkSelector "setIncludedServices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIncludedServices cbMutableService value =
+  sendMessage cbMutableService setIncludedServicesSelector (toNSArray value)
 
 -- | @- characteristics@
 characteristics :: IsCBMutableService cbMutableService => cbMutableService -> IO (Id NSArray)
-characteristics cbMutableService  =
-    sendMsg cbMutableService (mkSelector "characteristics") (retPtr retVoid) [] >>= retainedObject . castPtr
+characteristics cbMutableService =
+  sendMessage cbMutableService characteristicsSelector
 
 -- | @- setCharacteristics:@
 setCharacteristics :: (IsCBMutableService cbMutableService, IsNSArray value) => cbMutableService -> value -> IO ()
-setCharacteristics cbMutableService  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cbMutableService (mkSelector "setCharacteristics:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCharacteristics cbMutableService value =
+  sendMessage cbMutableService setCharacteristicsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithType:primary:@
-initWithType_primarySelector :: Selector
+initWithType_primarySelector :: Selector '[Id CBUUID, Bool] (Id CBMutableService)
 initWithType_primarySelector = mkSelector "initWithType:primary:"
 
 -- | @Selector@ for @includedServices@
-includedServicesSelector :: Selector
+includedServicesSelector :: Selector '[] (Id NSArray)
 includedServicesSelector = mkSelector "includedServices"
 
 -- | @Selector@ for @setIncludedServices:@
-setIncludedServicesSelector :: Selector
+setIncludedServicesSelector :: Selector '[Id NSArray] ()
 setIncludedServicesSelector = mkSelector "setIncludedServices:"
 
 -- | @Selector@ for @characteristics@
-characteristicsSelector :: Selector
+characteristicsSelector :: Selector '[] (Id NSArray)
 characteristicsSelector = mkSelector "characteristics"
 
 -- | @Selector@ for @setCharacteristics:@
-setCharacteristicsSelector :: Selector
+setCharacteristicsSelector :: Selector '[Id NSArray] ()
 setCharacteristicsSelector = mkSelector "setCharacteristics:"
 

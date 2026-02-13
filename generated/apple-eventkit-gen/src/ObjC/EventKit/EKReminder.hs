@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.EventKit.EKReminder
   , setCompletionDate
   , priority
   , setPriority
-  , reminderWithEventStoreSelector
-  , startDateComponentsSelector
-  , setStartDateComponentsSelector
-  , dueDateComponentsSelector
-  , setDueDateComponentsSelector
   , completedSelector
-  , setCompletedSelector
   , completionDateSelector
-  , setCompletionDateSelector
+  , dueDateComponentsSelector
   , prioritySelector
+  , reminderWithEventStoreSelector
+  , setCompletedSelector
+  , setCompletionDateSelector
+  , setDueDateComponentsSelector
   , setPrioritySelector
+  , setStartDateComponentsSelector
+  , startDateComponentsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,7 @@ reminderWithEventStore :: IsEKEventStore eventStore => eventStore -> IO (Id EKRe
 reminderWithEventStore eventStore =
   do
     cls' <- getRequiredClass "EKReminder"
-    withObjCPtr eventStore $ \raw_eventStore ->
-      sendClassMsg cls' (mkSelector "reminderWithEventStore:") (retPtr retVoid) [argPtr (castPtr raw_eventStore :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' reminderWithEventStoreSelector (toEKEventStore eventStore)
 
 -- | startDateComponents
 --
@@ -71,8 +67,8 @@ reminderWithEventStore eventStore =
 --
 -- ObjC selector: @- startDateComponents@
 startDateComponents :: IsEKReminder ekReminder => ekReminder -> IO (Id NSDateComponents)
-startDateComponents ekReminder  =
-    sendMsg ekReminder (mkSelector "startDateComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDateComponents ekReminder =
+  sendMessage ekReminder startDateComponentsSelector
 
 -- | startDateComponents
 --
@@ -82,9 +78,8 @@ startDateComponents ekReminder  =
 --
 -- ObjC selector: @- setStartDateComponents:@
 setStartDateComponents :: (IsEKReminder ekReminder, IsNSDateComponents value) => ekReminder -> value -> IO ()
-setStartDateComponents ekReminder  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekReminder (mkSelector "setStartDateComponents:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartDateComponents ekReminder value =
+  sendMessage ekReminder setStartDateComponentsSelector (toNSDateComponents value)
 
 -- | dueDateComponents
 --
@@ -96,8 +91,8 @@ setStartDateComponents ekReminder  value =
 --
 -- ObjC selector: @- dueDateComponents@
 dueDateComponents :: IsEKReminder ekReminder => ekReminder -> IO (Id NSDateComponents)
-dueDateComponents ekReminder  =
-    sendMsg ekReminder (mkSelector "dueDateComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+dueDateComponents ekReminder =
+  sendMessage ekReminder dueDateComponentsSelector
 
 -- | dueDateComponents
 --
@@ -109,9 +104,8 @@ dueDateComponents ekReminder  =
 --
 -- ObjC selector: @- setDueDateComponents:@
 setDueDateComponents :: (IsEKReminder ekReminder, IsNSDateComponents value) => ekReminder -> value -> IO ()
-setDueDateComponents ekReminder  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekReminder (mkSelector "setDueDateComponents:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDueDateComponents ekReminder value =
+  sendMessage ekReminder setDueDateComponentsSelector (toNSDateComponents value)
 
 -- | completed
 --
@@ -121,8 +115,8 @@ setDueDateComponents ekReminder  value =
 --
 -- ObjC selector: @- completed@
 completed :: IsEKReminder ekReminder => ekReminder -> IO Bool
-completed ekReminder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekReminder (mkSelector "completed") retCULong []
+completed ekReminder =
+  sendMessage ekReminder completedSelector
 
 -- | completed
 --
@@ -132,8 +126,8 @@ completed ekReminder  =
 --
 -- ObjC selector: @- setCompleted:@
 setCompleted :: IsEKReminder ekReminder => ekReminder -> Bool -> IO ()
-setCompleted ekReminder  value =
-    sendMsg ekReminder (mkSelector "setCompleted:") retVoid [argCULong (if value then 1 else 0)]
+setCompleted ekReminder value =
+  sendMessage ekReminder setCompletedSelector value
 
 -- | completionDate
 --
@@ -141,8 +135,8 @@ setCompleted ekReminder  value =
 --
 -- ObjC selector: @- completionDate@
 completionDate :: IsEKReminder ekReminder => ekReminder -> IO (Id NSDate)
-completionDate ekReminder  =
-    sendMsg ekReminder (mkSelector "completionDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+completionDate ekReminder =
+  sendMessage ekReminder completionDateSelector
 
 -- | completionDate
 --
@@ -150,9 +144,8 @@ completionDate ekReminder  =
 --
 -- ObjC selector: @- setCompletionDate:@
 setCompletionDate :: (IsEKReminder ekReminder, IsNSDate value) => ekReminder -> value -> IO ()
-setCompletionDate ekReminder  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekReminder (mkSelector "setCompletionDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCompletionDate ekReminder value =
+  sendMessage ekReminder setCompletionDateSelector (toNSDate value)
 
 -- | priority
 --
@@ -162,8 +155,8 @@ setCompletionDate ekReminder  value =
 --
 -- ObjC selector: @- priority@
 priority :: IsEKReminder ekReminder => ekReminder -> IO CULong
-priority ekReminder  =
-    sendMsg ekReminder (mkSelector "priority") retCULong []
+priority ekReminder =
+  sendMessage ekReminder prioritySelector
 
 -- | priority
 --
@@ -173,54 +166,54 @@ priority ekReminder  =
 --
 -- ObjC selector: @- setPriority:@
 setPriority :: IsEKReminder ekReminder => ekReminder -> CULong -> IO ()
-setPriority ekReminder  value =
-    sendMsg ekReminder (mkSelector "setPriority:") retVoid [argCULong value]
+setPriority ekReminder value =
+  sendMessage ekReminder setPrioritySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reminderWithEventStore:@
-reminderWithEventStoreSelector :: Selector
+reminderWithEventStoreSelector :: Selector '[Id EKEventStore] (Id EKReminder)
 reminderWithEventStoreSelector = mkSelector "reminderWithEventStore:"
 
 -- | @Selector@ for @startDateComponents@
-startDateComponentsSelector :: Selector
+startDateComponentsSelector :: Selector '[] (Id NSDateComponents)
 startDateComponentsSelector = mkSelector "startDateComponents"
 
 -- | @Selector@ for @setStartDateComponents:@
-setStartDateComponentsSelector :: Selector
+setStartDateComponentsSelector :: Selector '[Id NSDateComponents] ()
 setStartDateComponentsSelector = mkSelector "setStartDateComponents:"
 
 -- | @Selector@ for @dueDateComponents@
-dueDateComponentsSelector :: Selector
+dueDateComponentsSelector :: Selector '[] (Id NSDateComponents)
 dueDateComponentsSelector = mkSelector "dueDateComponents"
 
 -- | @Selector@ for @setDueDateComponents:@
-setDueDateComponentsSelector :: Selector
+setDueDateComponentsSelector :: Selector '[Id NSDateComponents] ()
 setDueDateComponentsSelector = mkSelector "setDueDateComponents:"
 
 -- | @Selector@ for @completed@
-completedSelector :: Selector
+completedSelector :: Selector '[] Bool
 completedSelector = mkSelector "completed"
 
 -- | @Selector@ for @setCompleted:@
-setCompletedSelector :: Selector
+setCompletedSelector :: Selector '[Bool] ()
 setCompletedSelector = mkSelector "setCompleted:"
 
 -- | @Selector@ for @completionDate@
-completionDateSelector :: Selector
+completionDateSelector :: Selector '[] (Id NSDate)
 completionDateSelector = mkSelector "completionDate"
 
 -- | @Selector@ for @setCompletionDate:@
-setCompletionDateSelector :: Selector
+setCompletionDateSelector :: Selector '[Id NSDate] ()
 setCompletionDateSelector = mkSelector "setCompletionDate:"
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] CULong
 prioritySelector = mkSelector "priority"
 
 -- | @Selector@ for @setPriority:@
-setPrioritySelector :: Selector
+setPrioritySelector :: Selector '[CULong] ()
 setPrioritySelector = mkSelector "setPriority:"
 

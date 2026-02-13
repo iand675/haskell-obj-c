@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,20 +26,20 @@ module ObjC.VideoToolbox.VTOpticalFlowConfiguration
   , destinationPixelBufferAttributes
   , supported
   , processorSupported
-  , initWithFrameWidth_frameHeight_qualityPrioritization_revisionSelector
-  , initSelector
-  , newSelector
-  , frameWidthSelector
+  , defaultRevisionSelector
+  , destinationPixelBufferAttributesSelector
   , frameHeightSelector
+  , frameSupportedPixelFormatsSelector
+  , frameWidthSelector
+  , initSelector
+  , initWithFrameWidth_frameHeight_qualityPrioritization_revisionSelector
+  , newSelector
+  , processorSupportedSelector
   , qualityPrioritizationSelector
   , revisionSelector
-  , supportedRevisionsSelector
-  , defaultRevisionSelector
-  , frameSupportedPixelFormatsSelector
   , sourcePixelBufferAttributesSelector
-  , destinationPixelBufferAttributesSelector
+  , supportedRevisionsSelector
   , supportedSelector
-  , processorSupportedSelector
 
   -- * Enum types
   , VTOpticalFlowConfigurationQualityPrioritization(VTOpticalFlowConfigurationQualityPrioritization)
@@ -49,15 +50,11 @@ module ObjC.VideoToolbox.VTOpticalFlowConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,34 +70,34 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFrameWidth:frameHeight:qualityPrioritization:revision:@
 initWithFrameWidth_frameHeight_qualityPrioritization_revision :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> CLong -> CLong -> VTOpticalFlowConfigurationQualityPrioritization -> VTOpticalFlowConfigurationRevision -> IO (Id VTOpticalFlowConfiguration)
-initWithFrameWidth_frameHeight_qualityPrioritization_revision vtOpticalFlowConfiguration  frameWidth frameHeight qualityPrioritization revision =
-    sendMsg vtOpticalFlowConfiguration (mkSelector "initWithFrameWidth:frameHeight:qualityPrioritization:revision:") (retPtr retVoid) [argCLong frameWidth, argCLong frameHeight, argCLong (coerce qualityPrioritization), argCLong (coerce revision)] >>= ownedObject . castPtr
+initWithFrameWidth_frameHeight_qualityPrioritization_revision vtOpticalFlowConfiguration frameWidth frameHeight qualityPrioritization revision =
+  sendOwnedMessage vtOpticalFlowConfiguration initWithFrameWidth_frameHeight_qualityPrioritization_revisionSelector frameWidth frameHeight qualityPrioritization revision
 
 -- | @- init@
 init_ :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> IO (Id VTOpticalFlowConfiguration)
-init_ vtOpticalFlowConfiguration  =
-    sendMsg vtOpticalFlowConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtOpticalFlowConfiguration =
+  sendOwnedMessage vtOpticalFlowConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id VTOpticalFlowConfiguration)
 new  =
   do
     cls' <- getRequiredClass "VTOpticalFlowConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Width of source frame in pixels.
 --
 -- ObjC selector: @- frameWidth@
 frameWidth :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> IO CLong
-frameWidth vtOpticalFlowConfiguration  =
-    sendMsg vtOpticalFlowConfiguration (mkSelector "frameWidth") retCLong []
+frameWidth vtOpticalFlowConfiguration =
+  sendMessage vtOpticalFlowConfiguration frameWidthSelector
 
 -- | Height of source frame in pixels.
 --
 -- ObjC selector: @- frameHeight@
 frameHeight :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> IO CLong
-frameHeight vtOpticalFlowConfiguration  =
-    sendMsg vtOpticalFlowConfiguration (mkSelector "frameHeight") retCLong []
+frameHeight vtOpticalFlowConfiguration =
+  sendMessage vtOpticalFlowConfiguration frameHeightSelector
 
 -- | A parameter you use to control quality and performance levels.
 --
@@ -108,15 +105,15 @@ frameHeight vtOpticalFlowConfiguration  =
 --
 -- ObjC selector: @- qualityPrioritization@
 qualityPrioritization :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> IO VTOpticalFlowConfigurationQualityPrioritization
-qualityPrioritization vtOpticalFlowConfiguration  =
-    fmap (coerce :: CLong -> VTOpticalFlowConfigurationQualityPrioritization) $ sendMsg vtOpticalFlowConfiguration (mkSelector "qualityPrioritization") retCLong []
+qualityPrioritization vtOpticalFlowConfiguration =
+  sendMessage vtOpticalFlowConfiguration qualityPrioritizationSelector
 
 -- | The specific algorithm or configuration revision you use to perform the request.
 --
 -- ObjC selector: @- revision@
 revision :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> IO VTOpticalFlowConfigurationRevision
-revision vtOpticalFlowConfiguration  =
-    fmap (coerce :: CLong -> VTOpticalFlowConfigurationRevision) $ sendMsg vtOpticalFlowConfiguration (mkSelector "revision") retCLong []
+revision vtOpticalFlowConfiguration =
+  sendMessage vtOpticalFlowConfiguration revisionSelector
 
 -- | Provides the collection of currently supported algorithms or configuration revisions for the class of configuration.
 --
@@ -127,7 +124,7 @@ supportedRevisions :: IO (Id NSIndexSet)
 supportedRevisions  =
   do
     cls' <- getRequiredClass "VTOpticalFlowConfiguration"
-    sendClassMsg cls' (mkSelector "supportedRevisions") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedRevisionsSelector
 
 -- | Provides the default revision of a specific algorithm or configuration.
 --
@@ -136,14 +133,14 @@ defaultRevision :: IO VTOpticalFlowConfigurationRevision
 defaultRevision  =
   do
     cls' <- getRequiredClass "VTOpticalFlowConfiguration"
-    fmap (coerce :: CLong -> VTOpticalFlowConfigurationRevision) $ sendClassMsg cls' (mkSelector "defaultRevision") retCLong []
+    sendClassMessage cls' defaultRevisionSelector
 
 -- | Supported pixel formats for source frames for current configuration.
 --
 -- ObjC selector: @- frameSupportedPixelFormats@
 frameSupportedPixelFormats :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> IO (Id NSArray)
-frameSupportedPixelFormats vtOpticalFlowConfiguration  =
-    sendMsg vtOpticalFlowConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameSupportedPixelFormats vtOpticalFlowConfiguration =
+  sendMessage vtOpticalFlowConfiguration frameSupportedPixelFormatsSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
@@ -151,8 +148,8 @@ frameSupportedPixelFormats vtOpticalFlowConfiguration  =
 --
 -- ObjC selector: @- sourcePixelBufferAttributes@
 sourcePixelBufferAttributes :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> IO (Id NSDictionary)
-sourcePixelBufferAttributes vtOpticalFlowConfiguration  =
-    sendMsg vtOpticalFlowConfiguration (mkSelector "sourcePixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourcePixelBufferAttributes vtOpticalFlowConfiguration =
+  sendMessage vtOpticalFlowConfiguration sourcePixelBufferAttributesSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent destination frames.
 --
@@ -160,8 +157,8 @@ sourcePixelBufferAttributes vtOpticalFlowConfiguration  =
 --
 -- ObjC selector: @- destinationPixelBufferAttributes@
 destinationPixelBufferAttributes :: IsVTOpticalFlowConfiguration vtOpticalFlowConfiguration => vtOpticalFlowConfiguration -> IO (Id NSDictionary)
-destinationPixelBufferAttributes vtOpticalFlowConfiguration  =
-    sendMsg vtOpticalFlowConfiguration (mkSelector "destinationPixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationPixelBufferAttributes vtOpticalFlowConfiguration =
+  sendMessage vtOpticalFlowConfiguration destinationPixelBufferAttributesSelector
 
 -- | Reports whether the system supports this processor.
 --
@@ -170,72 +167,72 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "VTOpticalFlowConfiguration"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- | @+ processorSupported@
 processorSupported :: IO CUChar
 processorSupported  =
   do
     cls' <- getRequiredClass "VTOpticalFlowConfiguration"
-    sendClassMsg cls' (mkSelector "processorSupported") retCUChar []
+    sendClassMessage cls' processorSupportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrameWidth:frameHeight:qualityPrioritization:revision:@
-initWithFrameWidth_frameHeight_qualityPrioritization_revisionSelector :: Selector
+initWithFrameWidth_frameHeight_qualityPrioritization_revisionSelector :: Selector '[CLong, CLong, VTOpticalFlowConfigurationQualityPrioritization, VTOpticalFlowConfigurationRevision] (Id VTOpticalFlowConfiguration)
 initWithFrameWidth_frameHeight_qualityPrioritization_revisionSelector = mkSelector "initWithFrameWidth:frameHeight:qualityPrioritization:revision:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTOpticalFlowConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTOpticalFlowConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @frameWidth@
-frameWidthSelector :: Selector
+frameWidthSelector :: Selector '[] CLong
 frameWidthSelector = mkSelector "frameWidth"
 
 -- | @Selector@ for @frameHeight@
-frameHeightSelector :: Selector
+frameHeightSelector :: Selector '[] CLong
 frameHeightSelector = mkSelector "frameHeight"
 
 -- | @Selector@ for @qualityPrioritization@
-qualityPrioritizationSelector :: Selector
+qualityPrioritizationSelector :: Selector '[] VTOpticalFlowConfigurationQualityPrioritization
 qualityPrioritizationSelector = mkSelector "qualityPrioritization"
 
 -- | @Selector@ for @revision@
-revisionSelector :: Selector
+revisionSelector :: Selector '[] VTOpticalFlowConfigurationRevision
 revisionSelector = mkSelector "revision"
 
 -- | @Selector@ for @supportedRevisions@
-supportedRevisionsSelector :: Selector
+supportedRevisionsSelector :: Selector '[] (Id NSIndexSet)
 supportedRevisionsSelector = mkSelector "supportedRevisions"
 
 -- | @Selector@ for @defaultRevision@
-defaultRevisionSelector :: Selector
+defaultRevisionSelector :: Selector '[] VTOpticalFlowConfigurationRevision
 defaultRevisionSelector = mkSelector "defaultRevision"
 
 -- | @Selector@ for @frameSupportedPixelFormats@
-frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector :: Selector '[] (Id NSArray)
 frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
-sourcePixelBufferAttributesSelector :: Selector
+sourcePixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 sourcePixelBufferAttributesSelector = mkSelector "sourcePixelBufferAttributes"
 
 -- | @Selector@ for @destinationPixelBufferAttributes@
-destinationPixelBufferAttributesSelector :: Selector
+destinationPixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 destinationPixelBufferAttributesSelector = mkSelector "destinationPixelBufferAttributes"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 
 -- | @Selector@ for @processorSupported@
-processorSupportedSelector :: Selector
+processorSupportedSelector :: Selector '[] CUChar
 processorSupportedSelector = mkSelector "processorSupported"
 

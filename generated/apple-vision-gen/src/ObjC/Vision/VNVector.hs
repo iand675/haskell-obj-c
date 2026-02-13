@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,34 +26,30 @@ module ObjC.Vision.VNVector
   , theta
   , length_
   , squaredLength
-  , unitVectorForVectorSelector
-  , vectorByMultiplyingVector_byScalarSelector
-  , vectorByAddingVector_toVectorSelector
-  , vectorBySubtractingVector_fromVectorSelector
   , dotProductOfVector_vectorSelector
-  , initWithXComponent_yComponentSelector
   , initWithR_thetaSelector
   , initWithVectorHead_tailSelector
-  , zeroVectorSelector
+  , initWithXComponent_yComponentSelector
+  , lengthSelector
+  , rSelector
+  , squaredLengthSelector
+  , thetaSelector
+  , unitVectorForVectorSelector
+  , vectorByAddingVector_toVectorSelector
+  , vectorByMultiplyingVector_byScalarSelector
+  , vectorBySubtractingVector_fromVectorSelector
   , xSelector
   , ySelector
-  , rSelector
-  , thetaSelector
-  , lengthSelector
-  , squaredLengthSelector
+  , zeroVectorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,8 +63,7 @@ unitVectorForVector :: IsVNVector vector => vector -> IO (Id VNVector)
 unitVectorForVector vector =
   do
     cls' <- getRequiredClass "VNVector"
-    withObjCPtr vector $ \raw_vector ->
-      sendClassMsg cls' (mkSelector "unitVectorForVector:") (retPtr retVoid) [argPtr (castPtr raw_vector :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' unitVectorForVectorSelector (toVNVector vector)
 
 -- | Returns a vector that whose X and Y projections multiplied by a scalar value.
 --
@@ -76,8 +72,7 @@ vectorByMultiplyingVector_byScalar :: IsVNVector vector => vector -> CDouble -> 
 vectorByMultiplyingVector_byScalar vector scalar =
   do
     cls' <- getRequiredClass "VNVector"
-    withObjCPtr vector $ \raw_vector ->
-      sendClassMsg cls' (mkSelector "vectorByMultiplyingVector:byScalar:") (retPtr retVoid) [argPtr (castPtr raw_vector :: Ptr ()), argCDouble scalar] >>= retainedObject . castPtr
+    sendClassMessage cls' vectorByMultiplyingVector_byScalarSelector (toVNVector vector) scalar
 
 -- | Adds two vectors v1 and v2 and returns a resulting vector v, such as v = v1 + v2.
 --
@@ -86,9 +81,7 @@ vectorByAddingVector_toVector :: (IsVNVector v1, IsVNVector v2) => v1 -> v2 -> I
 vectorByAddingVector_toVector v1 v2 =
   do
     cls' <- getRequiredClass "VNVector"
-    withObjCPtr v1 $ \raw_v1 ->
-      withObjCPtr v2 $ \raw_v2 ->
-        sendClassMsg cls' (mkSelector "vectorByAddingVector:toVector:") (retPtr retVoid) [argPtr (castPtr raw_v1 :: Ptr ()), argPtr (castPtr raw_v2 :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' vectorByAddingVector_toVectorSelector (toVNVector v1) (toVNVector v2)
 
 -- | Substructs vector v1 from v2 and returns a resulting vector v, such as v = v2 - v1.
 --
@@ -97,9 +90,7 @@ vectorBySubtractingVector_fromVector :: (IsVNVector v1, IsVNVector v2) => v1 -> 
 vectorBySubtractingVector_fromVector v1 v2 =
   do
     cls' <- getRequiredClass "VNVector"
-    withObjCPtr v1 $ \raw_v1 ->
-      withObjCPtr v2 $ \raw_v2 ->
-        sendClassMsg cls' (mkSelector "vectorBySubtractingVector:fromVector:") (retPtr retVoid) [argPtr (castPtr raw_v1 :: Ptr ()), argPtr (castPtr raw_v2 :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' vectorBySubtractingVector_fromVectorSelector (toVNVector v1) (toVNVector v2)
 
 -- | Caclulates a dot product (aka 'scalar product' or 'inner product') of two vectors v1 and v2 and returns dot product value.
 --
@@ -108,32 +99,28 @@ dotProductOfVector_vector :: (IsVNVector v1, IsVNVector v2) => v1 -> v2 -> IO CD
 dotProductOfVector_vector v1 v2 =
   do
     cls' <- getRequiredClass "VNVector"
-    withObjCPtr v1 $ \raw_v1 ->
-      withObjCPtr v2 $ \raw_v2 ->
-        sendClassMsg cls' (mkSelector "dotProductOfVector:vector:") retCDouble [argPtr (castPtr raw_v1 :: Ptr ()), argPtr (castPtr raw_v2 :: Ptr ())]
+    sendClassMessage cls' dotProductOfVector_vectorSelector (toVNVector v1) (toVNVector v2)
 
 -- | Initializes a vector in Cartesian Coordinate space, using its X and Y axis projections.
 --
 -- ObjC selector: @- initWithXComponent:yComponent:@
 initWithXComponent_yComponent :: IsVNVector vnVector => vnVector -> CDouble -> CDouble -> IO (Id VNVector)
-initWithXComponent_yComponent vnVector  x y =
-    sendMsg vnVector (mkSelector "initWithXComponent:yComponent:") (retPtr retVoid) [argCDouble x, argCDouble y] >>= ownedObject . castPtr
+initWithXComponent_yComponent vnVector x y =
+  sendOwnedMessage vnVector initWithXComponent_yComponentSelector x y
 
 -- | Initializes a vector in polar coordinate space, using R and Theta (radians), where R is the length of the vector and       Theta is the ange that the vector forms with the positive direction of X axis.
 --
 -- ObjC selector: @- initWithR:theta:@
 initWithR_theta :: IsVNVector vnVector => vnVector -> CDouble -> CDouble -> IO (Id VNVector)
-initWithR_theta vnVector  r theta =
-    sendMsg vnVector (mkSelector "initWithR:theta:") (retPtr retVoid) [argCDouble r, argCDouble theta] >>= ownedObject . castPtr
+initWithR_theta vnVector r theta =
+  sendOwnedMessage vnVector initWithR_thetaSelector r theta
 
 -- | Initializes a vector in Cartesian Coordinate space, using two VNPoints - the head and the tail of the vector.
 --
 -- ObjC selector: @- initWithVectorHead:tail:@
 initWithVectorHead_tail :: (IsVNVector vnVector, IsVNPoint head_, IsVNPoint tail_) => vnVector -> head_ -> tail_ -> IO (Id VNVector)
-initWithVectorHead_tail vnVector  head_ tail_ =
-  withObjCPtr head_ $ \raw_head_ ->
-    withObjCPtr tail_ $ \raw_tail_ ->
-        sendMsg vnVector (mkSelector "initWithVectorHead:tail:") (retPtr retVoid) [argPtr (castPtr raw_head_ :: Ptr ()), argPtr (castPtr raw_tail_ :: Ptr ())] >>= ownedObject . castPtr
+initWithVectorHead_tail vnVector head_ tail_ =
+  sendOwnedMessage vnVector initWithVectorHead_tailSelector (toVNPoint head_) (toVNPoint tail_)
 
 -- | Returns a VNVector object with zero length. The theta for zeroVector is not defined (NaN).
 --
@@ -142,111 +129,111 @@ zeroVector :: IO (Id VNVector)
 zeroVector  =
   do
     cls' <- getRequiredClass "VNVector"
-    sendClassMsg cls' (mkSelector "zeroVector") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' zeroVectorSelector
 
 -- | Signed projection on X-axis, or X component of the vector. Sign determines direction the vector is facing in X direction.
 --
 -- ObjC selector: @- x@
 x :: IsVNVector vnVector => vnVector -> IO CDouble
-x vnVector  =
-    sendMsg vnVector (mkSelector "x") retCDouble []
+x vnVector =
+  sendMessage vnVector xSelector
 
 -- | Signed projection on Y-axis, or Y component of the vector. Sign determines direction the vector is facing in Y direction.
 --
 -- ObjC selector: @- y@
 y :: IsVNVector vnVector => vnVector -> IO CDouble
-y vnVector  =
-    sendMsg vnVector (mkSelector "y") retCDouble []
+y vnVector =
+  sendMessage vnVector ySelector
 
 -- | Radius, or absolute value, or length of the vector.
 --
 -- ObjC selector: @- r@
 r :: IsVNVector vnVector => vnVector -> IO CDouble
-r vnVector  =
-    sendMsg vnVector (mkSelector "r") retCDouble []
+r vnVector =
+  sendMessage vnVector rSelector
 
 -- | Angle between the vector direction and positive direction of X axis.
 --
 -- ObjC selector: @- theta@
 theta :: IsVNVector vnVector => vnVector -> IO CDouble
-theta vnVector  =
-    sendMsg vnVector (mkSelector "theta") retCDouble []
+theta vnVector =
+  sendMessage vnVector thetaSelector
 
 -- | Returns a length, or absolute value, of the vector.
 --
 -- ObjC selector: @- length@
 length_ :: IsVNVector vnVector => vnVector -> IO CDouble
-length_ vnVector  =
-    sendMsg vnVector (mkSelector "length") retCDouble []
+length_ vnVector =
+  sendMessage vnVector lengthSelector
 
 -- | Returns a length ^ 2 of a vector.
 --
 -- ObjC selector: @- squaredLength@
 squaredLength :: IsVNVector vnVector => vnVector -> IO CDouble
-squaredLength vnVector  =
-    sendMsg vnVector (mkSelector "squaredLength") retCDouble []
+squaredLength vnVector =
+  sendMessage vnVector squaredLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @unitVectorForVector:@
-unitVectorForVectorSelector :: Selector
+unitVectorForVectorSelector :: Selector '[Id VNVector] (Id VNVector)
 unitVectorForVectorSelector = mkSelector "unitVectorForVector:"
 
 -- | @Selector@ for @vectorByMultiplyingVector:byScalar:@
-vectorByMultiplyingVector_byScalarSelector :: Selector
+vectorByMultiplyingVector_byScalarSelector :: Selector '[Id VNVector, CDouble] (Id VNVector)
 vectorByMultiplyingVector_byScalarSelector = mkSelector "vectorByMultiplyingVector:byScalar:"
 
 -- | @Selector@ for @vectorByAddingVector:toVector:@
-vectorByAddingVector_toVectorSelector :: Selector
+vectorByAddingVector_toVectorSelector :: Selector '[Id VNVector, Id VNVector] (Id VNVector)
 vectorByAddingVector_toVectorSelector = mkSelector "vectorByAddingVector:toVector:"
 
 -- | @Selector@ for @vectorBySubtractingVector:fromVector:@
-vectorBySubtractingVector_fromVectorSelector :: Selector
+vectorBySubtractingVector_fromVectorSelector :: Selector '[Id VNVector, Id VNVector] (Id VNVector)
 vectorBySubtractingVector_fromVectorSelector = mkSelector "vectorBySubtractingVector:fromVector:"
 
 -- | @Selector@ for @dotProductOfVector:vector:@
-dotProductOfVector_vectorSelector :: Selector
+dotProductOfVector_vectorSelector :: Selector '[Id VNVector, Id VNVector] CDouble
 dotProductOfVector_vectorSelector = mkSelector "dotProductOfVector:vector:"
 
 -- | @Selector@ for @initWithXComponent:yComponent:@
-initWithXComponent_yComponentSelector :: Selector
+initWithXComponent_yComponentSelector :: Selector '[CDouble, CDouble] (Id VNVector)
 initWithXComponent_yComponentSelector = mkSelector "initWithXComponent:yComponent:"
 
 -- | @Selector@ for @initWithR:theta:@
-initWithR_thetaSelector :: Selector
+initWithR_thetaSelector :: Selector '[CDouble, CDouble] (Id VNVector)
 initWithR_thetaSelector = mkSelector "initWithR:theta:"
 
 -- | @Selector@ for @initWithVectorHead:tail:@
-initWithVectorHead_tailSelector :: Selector
+initWithVectorHead_tailSelector :: Selector '[Id VNPoint, Id VNPoint] (Id VNVector)
 initWithVectorHead_tailSelector = mkSelector "initWithVectorHead:tail:"
 
 -- | @Selector@ for @zeroVector@
-zeroVectorSelector :: Selector
+zeroVectorSelector :: Selector '[] (Id VNVector)
 zeroVectorSelector = mkSelector "zeroVector"
 
 -- | @Selector@ for @x@
-xSelector :: Selector
+xSelector :: Selector '[] CDouble
 xSelector = mkSelector "x"
 
 -- | @Selector@ for @y@
-ySelector :: Selector
+ySelector :: Selector '[] CDouble
 ySelector = mkSelector "y"
 
 -- | @Selector@ for @r@
-rSelector :: Selector
+rSelector :: Selector '[] CDouble
 rSelector = mkSelector "r"
 
 -- | @Selector@ for @theta@
-thetaSelector :: Selector
+thetaSelector :: Selector '[] CDouble
 thetaSelector = mkSelector "theta"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CDouble
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @squaredLength@
-squaredLengthSelector :: Selector
+squaredLengthSelector :: Selector '[] CDouble
 squaredLengthSelector = mkSelector "squaredLength"
 

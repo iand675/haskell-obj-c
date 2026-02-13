@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | CMIODeviceSMPTETimeCallback
 --
@@ -39,6 +41,16 @@ argCMIODeviceSMPTETimeCallback = mkStorableArg cmioDeviceSMPTETimeCallbackStruct
 
 retCMIODeviceSMPTETimeCallback :: RetType CMIODeviceSMPTETimeCallback
 retCMIODeviceSMPTETimeCallback = mkStorableRetType cmioDeviceSMPTETimeCallbackStructType
+
+instance ObjCArgument CMIODeviceSMPTETimeCallback where
+  withObjCArg x k = k (argCMIODeviceSMPTETimeCallback x)
+
+instance ObjCReturn CMIODeviceSMPTETimeCallback where
+  type RawReturn CMIODeviceSMPTETimeCallback = CMIODeviceSMPTETimeCallback
+  objcRetType = retCMIODeviceSMPTETimeCallback
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | CMIOObjectPropertyAddress
 --
@@ -70,6 +82,16 @@ argCMIOObjectPropertyAddress = mkStorableArg cmioObjectPropertyAddressStructType
 retCMIOObjectPropertyAddress :: RetType CMIOObjectPropertyAddress
 retCMIOObjectPropertyAddress = mkStorableRetType cmioObjectPropertyAddressStructType
 
+instance ObjCArgument CMIOObjectPropertyAddress where
+  withObjCArg x k = k (argCMIOObjectPropertyAddress x)
+
+instance ObjCReturn CMIOObjectPropertyAddress where
+  type RawReturn CMIOObjectPropertyAddress = CMIOObjectPropertyAddress
+  objcRetType = retCMIOObjectPropertyAddress
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | CMIOStreamDeck
 --
 -- This structure is returned in response to the kCMIOStreamPropertyDeck property queries.               mStatus                        The CMIO Deck Status constant that changed.              mState                        If kCMIODeckStatusOpcode == mStatus, this can be used to determine more specific status. The values are CMIO Deck State constants.              mState2                        if kCMIODeckStatusOpcode == mStatus, this can be used to determine more specific status. The values are device specific.
@@ -100,6 +122,16 @@ argCMIOStreamDeck = mkStorableArg cmioStreamDeckStructType
 retCMIOStreamDeck :: RetType CMIOStreamDeck
 retCMIOStreamDeck = mkStorableRetType cmioStreamDeckStructType
 
+instance ObjCArgument CMIOStreamDeck where
+  withObjCArg x k = k (argCMIOStreamDeck x)
+
+instance ObjCReturn CMIOStreamDeck where
+  type RawReturn CMIOStreamDeck = CMIOStreamDeck
+  objcRetType = retCMIOStreamDeck
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | CMIOStreamScheduledOutputNotificationProcAndRefCon
 --
 -- The payload for kCMIOStreamPropertyScheduledOutputNotificationProc.          scheduledOutputNotificationProc                    The procedure to call when a buffer was output          scheduledOutputNotificationRefCon                    A pointer to client data that will be passed to the scheduledOutputNotificationProc
@@ -126,3 +158,13 @@ argCMIOStreamScheduledOutputNotificationProcAndRefCon = mkStorableArg cmioStream
 
 retCMIOStreamScheduledOutputNotificationProcAndRefCon :: RetType CMIOStreamScheduledOutputNotificationProcAndRefCon
 retCMIOStreamScheduledOutputNotificationProcAndRefCon = mkStorableRetType cmioStreamScheduledOutputNotificationProcAndRefConStructType
+
+instance ObjCArgument CMIOStreamScheduledOutputNotificationProcAndRefCon where
+  withObjCArg x k = k (argCMIOStreamScheduledOutputNotificationProcAndRefCon x)
+
+instance ObjCReturn CMIOStreamScheduledOutputNotificationProcAndRefCon where
+  type RawReturn CMIOStreamScheduledOutputNotificationProcAndRefCon = CMIOStreamScheduledOutputNotificationProcAndRefCon
+  objcRetType = retCMIOStreamScheduledOutputNotificationProcAndRefCon
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

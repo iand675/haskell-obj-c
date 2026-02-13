@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.HealthKit.HKWorkoutRouteBuilder
   , insertRouteData_completion
   , addMetadata_completion
   , finishRouteWithWorkout_metadata_completion
-  , initWithHealthStore_deviceSelector
-  , insertRouteData_completionSelector
   , addMetadata_completionSelector
   , finishRouteWithWorkout_metadata_completionSelector
+  , initWithHealthStore_deviceSelector
+  , insertRouteData_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,10 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithHealthStore:device:@
 initWithHealthStore_device :: (IsHKWorkoutRouteBuilder hkWorkoutRouteBuilder, IsHKHealthStore healthStore, IsHKDevice device) => hkWorkoutRouteBuilder -> healthStore -> device -> IO (Id HKWorkoutRouteBuilder)
-initWithHealthStore_device hkWorkoutRouteBuilder  healthStore device =
-  withObjCPtr healthStore $ \raw_healthStore ->
-    withObjCPtr device $ \raw_device ->
-        sendMsg hkWorkoutRouteBuilder (mkSelector "initWithHealthStore:device:") (retPtr retVoid) [argPtr (castPtr raw_healthStore :: Ptr ()), argPtr (castPtr raw_device :: Ptr ())] >>= ownedObject . castPtr
+initWithHealthStore_device hkWorkoutRouteBuilder healthStore device =
+  sendOwnedMessage hkWorkoutRouteBuilder initWithHealthStore_deviceSelector (toHKHealthStore healthStore) (toHKDevice device)
 
 -- | insertRouteData:completion:
 --
@@ -68,9 +63,8 @@ initWithHealthStore_device hkWorkoutRouteBuilder  healthStore device =
 --
 -- ObjC selector: @- insertRouteData:completion:@
 insertRouteData_completion :: (IsHKWorkoutRouteBuilder hkWorkoutRouteBuilder, IsNSArray routeData) => hkWorkoutRouteBuilder -> routeData -> Ptr () -> IO ()
-insertRouteData_completion hkWorkoutRouteBuilder  routeData completion =
-  withObjCPtr routeData $ \raw_routeData ->
-      sendMsg hkWorkoutRouteBuilder (mkSelector "insertRouteData:completion:") retVoid [argPtr (castPtr raw_routeData :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+insertRouteData_completion hkWorkoutRouteBuilder routeData completion =
+  sendMessage hkWorkoutRouteBuilder insertRouteData_completionSelector (toNSArray routeData) completion
 
 -- | addMetadata:completion:
 --
@@ -82,9 +76,8 @@ insertRouteData_completion hkWorkoutRouteBuilder  routeData completion =
 --
 -- ObjC selector: @- addMetadata:completion:@
 addMetadata_completion :: (IsHKWorkoutRouteBuilder hkWorkoutRouteBuilder, IsNSDictionary metadata) => hkWorkoutRouteBuilder -> metadata -> Ptr () -> IO ()
-addMetadata_completion hkWorkoutRouteBuilder  metadata completion =
-  withObjCPtr metadata $ \raw_metadata ->
-      sendMsg hkWorkoutRouteBuilder (mkSelector "addMetadata:completion:") retVoid [argPtr (castPtr raw_metadata :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addMetadata_completion hkWorkoutRouteBuilder metadata completion =
+  sendMessage hkWorkoutRouteBuilder addMetadata_completionSelector (toNSDictionary metadata) completion
 
 -- | finishRouteWithWorkout:Metadata:completion:
 --
@@ -100,28 +93,26 @@ addMetadata_completion hkWorkoutRouteBuilder  metadata completion =
 --
 -- ObjC selector: @- finishRouteWithWorkout:metadata:completion:@
 finishRouteWithWorkout_metadata_completion :: (IsHKWorkoutRouteBuilder hkWorkoutRouteBuilder, IsHKWorkout workout, IsNSDictionary metadata) => hkWorkoutRouteBuilder -> workout -> metadata -> Ptr () -> IO ()
-finishRouteWithWorkout_metadata_completion hkWorkoutRouteBuilder  workout metadata completion =
-  withObjCPtr workout $ \raw_workout ->
-    withObjCPtr metadata $ \raw_metadata ->
-        sendMsg hkWorkoutRouteBuilder (mkSelector "finishRouteWithWorkout:metadata:completion:") retVoid [argPtr (castPtr raw_workout :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+finishRouteWithWorkout_metadata_completion hkWorkoutRouteBuilder workout metadata completion =
+  sendMessage hkWorkoutRouteBuilder finishRouteWithWorkout_metadata_completionSelector (toHKWorkout workout) (toNSDictionary metadata) completion
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHealthStore:device:@
-initWithHealthStore_deviceSelector :: Selector
+initWithHealthStore_deviceSelector :: Selector '[Id HKHealthStore, Id HKDevice] (Id HKWorkoutRouteBuilder)
 initWithHealthStore_deviceSelector = mkSelector "initWithHealthStore:device:"
 
 -- | @Selector@ for @insertRouteData:completion:@
-insertRouteData_completionSelector :: Selector
+insertRouteData_completionSelector :: Selector '[Id NSArray, Ptr ()] ()
 insertRouteData_completionSelector = mkSelector "insertRouteData:completion:"
 
 -- | @Selector@ for @addMetadata:completion:@
-addMetadata_completionSelector :: Selector
+addMetadata_completionSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 addMetadata_completionSelector = mkSelector "addMetadata:completion:"
 
 -- | @Selector@ for @finishRouteWithWorkout:metadata:completion:@
-finishRouteWithWorkout_metadata_completionSelector :: Selector
+finishRouteWithWorkout_metadata_completionSelector :: Selector '[Id HKWorkout, Id NSDictionary, Ptr ()] ()
 finishRouteWithWorkout_metadata_completionSelector = mkSelector "finishRouteWithWorkout:metadata:completion:"
 

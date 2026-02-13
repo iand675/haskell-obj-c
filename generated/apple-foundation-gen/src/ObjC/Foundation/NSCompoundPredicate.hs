@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,12 +15,12 @@ module ObjC.Foundation.NSCompoundPredicate
   , notPredicateWithSubpredicate
   , compoundPredicateType
   , subpredicates
-  , initWithType_subpredicatesSelector
-  , initWithCoderSelector
   , andPredicateWithSubpredicatesSelector
-  , orPredicateWithSubpredicatesSelector
-  , notPredicateWithSubpredicateSelector
   , compoundPredicateTypeSelector
+  , initWithCoderSelector
+  , initWithType_subpredicatesSelector
+  , notPredicateWithSubpredicateSelector
+  , orPredicateWithSubpredicatesSelector
   , subpredicatesSelector
 
   -- * Enum types
@@ -30,15 +31,11 @@ module ObjC.Foundation.NSCompoundPredicate
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,13 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithType:subpredicates:@
 initWithType_subpredicates :: (IsNSCompoundPredicate nsCompoundPredicate, IsNSArray subpredicates) => nsCompoundPredicate -> NSCompoundPredicateType -> subpredicates -> IO (Id NSCompoundPredicate)
-initWithType_subpredicates nsCompoundPredicate  type_ subpredicates =
-  withObjCPtr subpredicates $ \raw_subpredicates ->
-      sendMsg nsCompoundPredicate (mkSelector "initWithType:subpredicates:") (retPtr retVoid) [argCULong (coerce type_), argPtr (castPtr raw_subpredicates :: Ptr ())] >>= ownedObject . castPtr
+initWithType_subpredicates nsCompoundPredicate type_ subpredicates =
+  sendOwnedMessage nsCompoundPredicate initWithType_subpredicatesSelector type_ (toNSArray subpredicates)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSCompoundPredicate nsCompoundPredicate, IsNSCoder coder) => nsCompoundPredicate -> coder -> IO (Id NSCompoundPredicate)
-initWithCoder nsCompoundPredicate  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsCompoundPredicate (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsCompoundPredicate coder =
+  sendOwnedMessage nsCompoundPredicate initWithCoderSelector (toNSCoder coder)
 
 -- | * Convenience Methods **
 --
@@ -64,64 +59,61 @@ andPredicateWithSubpredicates :: IsNSArray subpredicates => subpredicates -> IO 
 andPredicateWithSubpredicates subpredicates =
   do
     cls' <- getRequiredClass "NSCompoundPredicate"
-    withObjCPtr subpredicates $ \raw_subpredicates ->
-      sendClassMsg cls' (mkSelector "andPredicateWithSubpredicates:") (retPtr retVoid) [argPtr (castPtr raw_subpredicates :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' andPredicateWithSubpredicatesSelector (toNSArray subpredicates)
 
 -- | @+ orPredicateWithSubpredicates:@
 orPredicateWithSubpredicates :: IsNSArray subpredicates => subpredicates -> IO (Id NSCompoundPredicate)
 orPredicateWithSubpredicates subpredicates =
   do
     cls' <- getRequiredClass "NSCompoundPredicate"
-    withObjCPtr subpredicates $ \raw_subpredicates ->
-      sendClassMsg cls' (mkSelector "orPredicateWithSubpredicates:") (retPtr retVoid) [argPtr (castPtr raw_subpredicates :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' orPredicateWithSubpredicatesSelector (toNSArray subpredicates)
 
 -- | @+ notPredicateWithSubpredicate:@
 notPredicateWithSubpredicate :: IsNSPredicate predicate => predicate -> IO (Id NSCompoundPredicate)
 notPredicateWithSubpredicate predicate =
   do
     cls' <- getRequiredClass "NSCompoundPredicate"
-    withObjCPtr predicate $ \raw_predicate ->
-      sendClassMsg cls' (mkSelector "notPredicateWithSubpredicate:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' notPredicateWithSubpredicateSelector (toNSPredicate predicate)
 
 -- | @- compoundPredicateType@
 compoundPredicateType :: IsNSCompoundPredicate nsCompoundPredicate => nsCompoundPredicate -> IO NSCompoundPredicateType
-compoundPredicateType nsCompoundPredicate  =
-    fmap (coerce :: CULong -> NSCompoundPredicateType) $ sendMsg nsCompoundPredicate (mkSelector "compoundPredicateType") retCULong []
+compoundPredicateType nsCompoundPredicate =
+  sendMessage nsCompoundPredicate compoundPredicateTypeSelector
 
 -- | @- subpredicates@
 subpredicates :: IsNSCompoundPredicate nsCompoundPredicate => nsCompoundPredicate -> IO (Id NSArray)
-subpredicates nsCompoundPredicate  =
-    sendMsg nsCompoundPredicate (mkSelector "subpredicates") (retPtr retVoid) [] >>= retainedObject . castPtr
+subpredicates nsCompoundPredicate =
+  sendMessage nsCompoundPredicate subpredicatesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithType:subpredicates:@
-initWithType_subpredicatesSelector :: Selector
+initWithType_subpredicatesSelector :: Selector '[NSCompoundPredicateType, Id NSArray] (Id NSCompoundPredicate)
 initWithType_subpredicatesSelector = mkSelector "initWithType:subpredicates:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSCompoundPredicate)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @andPredicateWithSubpredicates:@
-andPredicateWithSubpredicatesSelector :: Selector
+andPredicateWithSubpredicatesSelector :: Selector '[Id NSArray] (Id NSCompoundPredicate)
 andPredicateWithSubpredicatesSelector = mkSelector "andPredicateWithSubpredicates:"
 
 -- | @Selector@ for @orPredicateWithSubpredicates:@
-orPredicateWithSubpredicatesSelector :: Selector
+orPredicateWithSubpredicatesSelector :: Selector '[Id NSArray] (Id NSCompoundPredicate)
 orPredicateWithSubpredicatesSelector = mkSelector "orPredicateWithSubpredicates:"
 
 -- | @Selector@ for @notPredicateWithSubpredicate:@
-notPredicateWithSubpredicateSelector :: Selector
+notPredicateWithSubpredicateSelector :: Selector '[Id NSPredicate] (Id NSCompoundPredicate)
 notPredicateWithSubpredicateSelector = mkSelector "notPredicateWithSubpredicate:"
 
 -- | @Selector@ for @compoundPredicateType@
-compoundPredicateTypeSelector :: Selector
+compoundPredicateTypeSelector :: Selector '[] NSCompoundPredicateType
 compoundPredicateTypeSelector = mkSelector "compoundPredicateType"
 
 -- | @Selector@ for @subpredicates@
-subpredicatesSelector :: Selector
+subpredicatesSelector :: Selector '[] (Id NSArray)
 subpredicatesSelector = mkSelector "subpredicates"
 

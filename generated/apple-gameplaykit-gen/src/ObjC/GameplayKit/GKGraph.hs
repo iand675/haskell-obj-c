@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.GameplayKit.GKGraph
   , addNodes
   , findPathFromNode_toNode
   , nodes
+  , addNodesSelector
+  , connectNodeToLowestCostNode_bidirectionalSelector
+  , findPathFromNode_toNodeSelector
   , graphWithNodesSelector
   , initWithNodesSelector
-  , connectNodeToLowestCostNode_bidirectionalSelector
-  , removeNodesSelector
-  , addNodesSelector
-  , findPathFromNode_toNodeSelector
   , nodesSelector
+  , removeNodesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,14 +47,12 @@ graphWithNodes :: IsNSArray nodes => nodes -> IO (Id GKGraph)
 graphWithNodes nodes =
   do
     cls' <- getRequiredClass "GKGraph"
-    withObjCPtr nodes $ \raw_nodes ->
-      sendClassMsg cls' (mkSelector "graphWithNodes:") (retPtr retVoid) [argPtr (castPtr raw_nodes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' graphWithNodesSelector (toNSArray nodes)
 
 -- | @- initWithNodes:@
 initWithNodes :: (IsGKGraph gkGraph, IsNSArray nodes) => gkGraph -> nodes -> IO (Id GKGraph)
-initWithNodes gkGraph  nodes =
-  withObjCPtr nodes $ \raw_nodes ->
-      sendMsg gkGraph (mkSelector "initWithNodes:") (retPtr retVoid) [argPtr (castPtr raw_nodes :: Ptr ())] >>= ownedObject . castPtr
+initWithNodes gkGraph nodes =
+  sendOwnedMessage gkGraph initWithNodesSelector (toNSArray nodes)
 
 -- | Connects the node to this graph via the lowest cost node to reach in this graph
 --
@@ -67,9 +62,8 @@ initWithNodes gkGraph  nodes =
 --
 -- ObjC selector: @- connectNodeToLowestCostNode:bidirectional:@
 connectNodeToLowestCostNode_bidirectional :: (IsGKGraph gkGraph, IsGKGraphNode node) => gkGraph -> node -> Bool -> IO ()
-connectNodeToLowestCostNode_bidirectional gkGraph  node bidirectional =
-  withObjCPtr node $ \raw_node ->
-      sendMsg gkGraph (mkSelector "connectNodeToLowestCostNode:bidirectional:") retVoid [argPtr (castPtr raw_node :: Ptr ()), argCULong (if bidirectional then 1 else 0)]
+connectNodeToLowestCostNode_bidirectional gkGraph node bidirectional =
+  sendMessage gkGraph connectNodeToLowestCostNode_bidirectionalSelector (toGKGraphNode node) bidirectional
 
 -- | Removes nodes from this graph.   All connections starting and/or ending with this node are removed.
 --
@@ -77,9 +71,8 @@ connectNodeToLowestCostNode_bidirectional gkGraph  node bidirectional =
 --
 -- ObjC selector: @- removeNodes:@
 removeNodes :: (IsGKGraph gkGraph, IsNSArray nodes) => gkGraph -> nodes -> IO ()
-removeNodes gkGraph  nodes =
-  withObjCPtr nodes $ \raw_nodes ->
-      sendMsg gkGraph (mkSelector "removeNodes:") retVoid [argPtr (castPtr raw_nodes :: Ptr ())]
+removeNodes gkGraph nodes =
+  sendMessage gkGraph removeNodesSelector (toNSArray nodes)
 
 -- | Adds nodes to this graph.  No new connections are added. If the node already exists in this graph this does nothing.
 --
@@ -87,9 +80,8 @@ removeNodes gkGraph  nodes =
 --
 -- ObjC selector: @- addNodes:@
 addNodes :: (IsGKGraph gkGraph, IsNSArray nodes) => gkGraph -> nodes -> IO ()
-addNodes gkGraph  nodes =
-  withObjCPtr nodes $ \raw_nodes ->
-      sendMsg gkGraph (mkSelector "addNodes:") retVoid [argPtr (castPtr raw_nodes :: Ptr ())]
+addNodes gkGraph nodes =
+  sendMessage gkGraph addNodesSelector (toNSArray nodes)
 
 -- | Attempts to find the optimal path between the two nodes indicated. If such a path exists, it is returned in start to end order. If it doesn't exist, the array returned will be empty. Asserts if neither of these nodes are in this graph.  Use [GKGraphNode findPathFromNode:] instead.
 --
@@ -99,47 +91,45 @@ addNodes gkGraph  nodes =
 --
 -- ObjC selector: @- findPathFromNode:toNode:@
 findPathFromNode_toNode :: (IsGKGraph gkGraph, IsGKGraphNode startNode, IsGKGraphNode endNode) => gkGraph -> startNode -> endNode -> IO (Id NSArray)
-findPathFromNode_toNode gkGraph  startNode endNode =
-  withObjCPtr startNode $ \raw_startNode ->
-    withObjCPtr endNode $ \raw_endNode ->
-        sendMsg gkGraph (mkSelector "findPathFromNode:toNode:") (retPtr retVoid) [argPtr (castPtr raw_startNode :: Ptr ()), argPtr (castPtr raw_endNode :: Ptr ())] >>= retainedObject . castPtr
+findPathFromNode_toNode gkGraph startNode endNode =
+  sendMessage gkGraph findPathFromNode_toNodeSelector (toGKGraphNode startNode) (toGKGraphNode endNode)
 
 -- | The list of nodes in this graph
 --
 -- ObjC selector: @- nodes@
 nodes :: IsGKGraph gkGraph => gkGraph -> IO (Id NSArray)
-nodes gkGraph  =
-    sendMsg gkGraph (mkSelector "nodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodes gkGraph =
+  sendMessage gkGraph nodesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @graphWithNodes:@
-graphWithNodesSelector :: Selector
+graphWithNodesSelector :: Selector '[Id NSArray] (Id GKGraph)
 graphWithNodesSelector = mkSelector "graphWithNodes:"
 
 -- | @Selector@ for @initWithNodes:@
-initWithNodesSelector :: Selector
+initWithNodesSelector :: Selector '[Id NSArray] (Id GKGraph)
 initWithNodesSelector = mkSelector "initWithNodes:"
 
 -- | @Selector@ for @connectNodeToLowestCostNode:bidirectional:@
-connectNodeToLowestCostNode_bidirectionalSelector :: Selector
+connectNodeToLowestCostNode_bidirectionalSelector :: Selector '[Id GKGraphNode, Bool] ()
 connectNodeToLowestCostNode_bidirectionalSelector = mkSelector "connectNodeToLowestCostNode:bidirectional:"
 
 -- | @Selector@ for @removeNodes:@
-removeNodesSelector :: Selector
+removeNodesSelector :: Selector '[Id NSArray] ()
 removeNodesSelector = mkSelector "removeNodes:"
 
 -- | @Selector@ for @addNodes:@
-addNodesSelector :: Selector
+addNodesSelector :: Selector '[Id NSArray] ()
 addNodesSelector = mkSelector "addNodes:"
 
 -- | @Selector@ for @findPathFromNode:toNode:@
-findPathFromNode_toNodeSelector :: Selector
+findPathFromNode_toNodeSelector :: Selector '[Id GKGraphNode, Id GKGraphNode] (Id NSArray)
 findPathFromNode_toNodeSelector = mkSelector "findPathFromNode:toNode:"
 
 -- | @Selector@ for @nodes@
-nodesSelector :: Selector
+nodesSelector :: Selector '[] (Id NSArray)
 nodesSelector = mkSelector "nodes"
 

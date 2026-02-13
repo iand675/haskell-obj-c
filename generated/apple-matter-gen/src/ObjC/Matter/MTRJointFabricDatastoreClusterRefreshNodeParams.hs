@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterRefreshNodeParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , nodeIDSelector
-  , setNodeIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setNodeIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nodeID@
 nodeID :: IsMTRJointFabricDatastoreClusterRefreshNodeParams mtrJointFabricDatastoreClusterRefreshNodeParams => mtrJointFabricDatastoreClusterRefreshNodeParams -> IO (Id NSNumber)
-nodeID mtrJointFabricDatastoreClusterRefreshNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterRefreshNodeParams (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrJointFabricDatastoreClusterRefreshNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterRefreshNodeParams nodeIDSelector
 
 -- | @- setNodeID:@
 setNodeID :: (IsMTRJointFabricDatastoreClusterRefreshNodeParams mtrJointFabricDatastoreClusterRefreshNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRefreshNodeParams -> value -> IO ()
-setNodeID mtrJointFabricDatastoreClusterRefreshNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRefreshNodeParams (mkSelector "setNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeID mtrJointFabricDatastoreClusterRefreshNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterRefreshNodeParams setNodeIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setNodeID mtrJointFabricDatastoreClusterRefreshNodeParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricDatastoreClusterRefreshNodeParams mtrJointFabricDatastoreClusterRefreshNodeParams => mtrJointFabricDatastoreClusterRefreshNodeParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricDatastoreClusterRefreshNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterRefreshNodeParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricDatastoreClusterRefreshNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterRefreshNodeParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrJointFabricDatastoreClusterRefreshNodeParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricDatastoreClusterRefreshNodeParams mtrJointFabricDatastoreClusterRefreshNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRefreshNodeParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterRefreshNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRefreshNodeParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterRefreshNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterRefreshNodeParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterRefreshNodeParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricDatastoreClusterRefreshNodeParams mtrJointFabricDatastoreClusterRefreshNodeParams => mtrJointFabricDatastoreClusterRefreshNodeParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricDatastoreClusterRefreshNodeParams  =
-    sendMsg mtrJointFabricDatastoreClusterRefreshNodeParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricDatastoreClusterRefreshNodeParams =
+  sendMessage mtrJointFabricDatastoreClusterRefreshNodeParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrJointFabricDatastoreClusterRefreshNodeParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricDatastoreClusterRefreshNodeParams mtrJointFabricDatastoreClusterRefreshNodeParams, IsNSNumber value) => mtrJointFabricDatastoreClusterRefreshNodeParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricDatastoreClusterRefreshNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterRefreshNodeParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricDatastoreClusterRefreshNodeParams value =
+  sendMessage mtrJointFabricDatastoreClusterRefreshNodeParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @setNodeID:@
-setNodeIDSelector :: Selector
+setNodeIDSelector :: Selector '[Id NSNumber] ()
 setNodeIDSelector = mkSelector "setNodeID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

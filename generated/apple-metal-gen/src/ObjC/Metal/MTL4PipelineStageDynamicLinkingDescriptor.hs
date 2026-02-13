@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.Metal.MTL4PipelineStageDynamicLinkingDescriptor
   , setBinaryLinkedFunctions
   , preloadedLibraries
   , setPreloadedLibraries
-  , maxCallStackDepthSelector
-  , setMaxCallStackDepthSelector
   , binaryLinkedFunctionsSelector
-  , setBinaryLinkedFunctionsSelector
+  , maxCallStackDepthSelector
   , preloadedLibrariesSelector
+  , setBinaryLinkedFunctionsSelector
+  , setMaxCallStackDepthSelector
   , setPreloadedLibrariesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- maxCallStackDepth@
 maxCallStackDepth :: IsMTL4PipelineStageDynamicLinkingDescriptor mtL4PipelineStageDynamicLinkingDescriptor => mtL4PipelineStageDynamicLinkingDescriptor -> IO CULong
-maxCallStackDepth mtL4PipelineStageDynamicLinkingDescriptor  =
-    sendMsg mtL4PipelineStageDynamicLinkingDescriptor (mkSelector "maxCallStackDepth") retCULong []
+maxCallStackDepth mtL4PipelineStageDynamicLinkingDescriptor =
+  sendMessage mtL4PipelineStageDynamicLinkingDescriptor maxCallStackDepthSelector
 
 -- | Limits the maximum depth of the call stack for indirect function calls in the pipeline stage function.
 --
 -- ObjC selector: @- setMaxCallStackDepth:@
 setMaxCallStackDepth :: IsMTL4PipelineStageDynamicLinkingDescriptor mtL4PipelineStageDynamicLinkingDescriptor => mtL4PipelineStageDynamicLinkingDescriptor -> CULong -> IO ()
-setMaxCallStackDepth mtL4PipelineStageDynamicLinkingDescriptor  value =
-    sendMsg mtL4PipelineStageDynamicLinkingDescriptor (mkSelector "setMaxCallStackDepth:") retVoid [argCULong value]
+setMaxCallStackDepth mtL4PipelineStageDynamicLinkingDescriptor value =
+  sendMessage mtL4PipelineStageDynamicLinkingDescriptor setMaxCallStackDepthSelector value
 
 -- | Provides the array of binary functions to link.
 --
@@ -59,8 +56,8 @@ setMaxCallStackDepth mtL4PipelineStageDynamicLinkingDescriptor  value =
 --
 -- ObjC selector: @- binaryLinkedFunctions@
 binaryLinkedFunctions :: IsMTL4PipelineStageDynamicLinkingDescriptor mtL4PipelineStageDynamicLinkingDescriptor => mtL4PipelineStageDynamicLinkingDescriptor -> IO (Id NSArray)
-binaryLinkedFunctions mtL4PipelineStageDynamicLinkingDescriptor  =
-    sendMsg mtL4PipelineStageDynamicLinkingDescriptor (mkSelector "binaryLinkedFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+binaryLinkedFunctions mtL4PipelineStageDynamicLinkingDescriptor =
+  sendMessage mtL4PipelineStageDynamicLinkingDescriptor binaryLinkedFunctionsSelector
 
 -- | Provides the array of binary functions to link.
 --
@@ -68,50 +65,48 @@ binaryLinkedFunctions mtL4PipelineStageDynamicLinkingDescriptor  =
 --
 -- ObjC selector: @- setBinaryLinkedFunctions:@
 setBinaryLinkedFunctions :: (IsMTL4PipelineStageDynamicLinkingDescriptor mtL4PipelineStageDynamicLinkingDescriptor, IsNSArray value) => mtL4PipelineStageDynamicLinkingDescriptor -> value -> IO ()
-setBinaryLinkedFunctions mtL4PipelineStageDynamicLinkingDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4PipelineStageDynamicLinkingDescriptor (mkSelector "setBinaryLinkedFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBinaryLinkedFunctions mtL4PipelineStageDynamicLinkingDescriptor value =
+  sendMessage mtL4PipelineStageDynamicLinkingDescriptor setBinaryLinkedFunctionsSelector (toNSArray value)
 
 -- | Provides an array of dynamic libraries the compiler loads when it builds the pipeline.
 --
 -- ObjC selector: @- preloadedLibraries@
 preloadedLibraries :: IsMTL4PipelineStageDynamicLinkingDescriptor mtL4PipelineStageDynamicLinkingDescriptor => mtL4PipelineStageDynamicLinkingDescriptor -> IO (Id NSArray)
-preloadedLibraries mtL4PipelineStageDynamicLinkingDescriptor  =
-    sendMsg mtL4PipelineStageDynamicLinkingDescriptor (mkSelector "preloadedLibraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+preloadedLibraries mtL4PipelineStageDynamicLinkingDescriptor =
+  sendMessage mtL4PipelineStageDynamicLinkingDescriptor preloadedLibrariesSelector
 
 -- | Provides an array of dynamic libraries the compiler loads when it builds the pipeline.
 --
 -- ObjC selector: @- setPreloadedLibraries:@
 setPreloadedLibraries :: (IsMTL4PipelineStageDynamicLinkingDescriptor mtL4PipelineStageDynamicLinkingDescriptor, IsNSArray value) => mtL4PipelineStageDynamicLinkingDescriptor -> value -> IO ()
-setPreloadedLibraries mtL4PipelineStageDynamicLinkingDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4PipelineStageDynamicLinkingDescriptor (mkSelector "setPreloadedLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreloadedLibraries mtL4PipelineStageDynamicLinkingDescriptor value =
+  sendMessage mtL4PipelineStageDynamicLinkingDescriptor setPreloadedLibrariesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @maxCallStackDepth@
-maxCallStackDepthSelector :: Selector
+maxCallStackDepthSelector :: Selector '[] CULong
 maxCallStackDepthSelector = mkSelector "maxCallStackDepth"
 
 -- | @Selector@ for @setMaxCallStackDepth:@
-setMaxCallStackDepthSelector :: Selector
+setMaxCallStackDepthSelector :: Selector '[CULong] ()
 setMaxCallStackDepthSelector = mkSelector "setMaxCallStackDepth:"
 
 -- | @Selector@ for @binaryLinkedFunctions@
-binaryLinkedFunctionsSelector :: Selector
+binaryLinkedFunctionsSelector :: Selector '[] (Id NSArray)
 binaryLinkedFunctionsSelector = mkSelector "binaryLinkedFunctions"
 
 -- | @Selector@ for @setBinaryLinkedFunctions:@
-setBinaryLinkedFunctionsSelector :: Selector
+setBinaryLinkedFunctionsSelector :: Selector '[Id NSArray] ()
 setBinaryLinkedFunctionsSelector = mkSelector "setBinaryLinkedFunctions:"
 
 -- | @Selector@ for @preloadedLibraries@
-preloadedLibrariesSelector :: Selector
+preloadedLibrariesSelector :: Selector '[] (Id NSArray)
 preloadedLibrariesSelector = mkSelector "preloadedLibraries"
 
 -- | @Selector@ for @setPreloadedLibraries:@
-setPreloadedLibrariesSelector :: Selector
+setPreloadedLibrariesSelector :: Selector '[Id NSArray] ()
 setPreloadedLibrariesSelector = mkSelector "setPreloadedLibraries:"
 

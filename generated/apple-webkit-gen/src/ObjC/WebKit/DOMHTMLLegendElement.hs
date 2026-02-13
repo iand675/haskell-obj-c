@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.WebKit.DOMHTMLLegendElement
   , setAlign
   , accessKey
   , setAccessKey
-  , formSelector
-  , alignSelector
-  , setAlignSelector
   , accessKeySelector
+  , alignSelector
+  , formSelector
   , setAccessKeySelector
+  , setAlignSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,52 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- form@
 form :: IsDOMHTMLLegendElement domhtmlLegendElement => domhtmlLegendElement -> IO (Id DOMHTMLFormElement)
-form domhtmlLegendElement  =
-    sendMsg domhtmlLegendElement (mkSelector "form") (retPtr retVoid) [] >>= retainedObject . castPtr
+form domhtmlLegendElement =
+  sendMessage domhtmlLegendElement formSelector
 
 -- | @- align@
 align :: IsDOMHTMLLegendElement domhtmlLegendElement => domhtmlLegendElement -> IO (Id NSString)
-align domhtmlLegendElement  =
-    sendMsg domhtmlLegendElement (mkSelector "align") (retPtr retVoid) [] >>= retainedObject . castPtr
+align domhtmlLegendElement =
+  sendMessage domhtmlLegendElement alignSelector
 
 -- | @- setAlign:@
 setAlign :: (IsDOMHTMLLegendElement domhtmlLegendElement, IsNSString value) => domhtmlLegendElement -> value -> IO ()
-setAlign domhtmlLegendElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLegendElement (mkSelector "setAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlign domhtmlLegendElement value =
+  sendMessage domhtmlLegendElement setAlignSelector (toNSString value)
 
 -- | @- accessKey@
 accessKey :: IsDOMHTMLLegendElement domhtmlLegendElement => domhtmlLegendElement -> IO (Id NSString)
-accessKey domhtmlLegendElement  =
-    sendMsg domhtmlLegendElement (mkSelector "accessKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessKey domhtmlLegendElement =
+  sendMessage domhtmlLegendElement accessKeySelector
 
 -- | @- setAccessKey:@
 setAccessKey :: (IsDOMHTMLLegendElement domhtmlLegendElement, IsNSString value) => domhtmlLegendElement -> value -> IO ()
-setAccessKey domhtmlLegendElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlLegendElement (mkSelector "setAccessKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessKey domhtmlLegendElement value =
+  sendMessage domhtmlLegendElement setAccessKeySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @form@
-formSelector :: Selector
+formSelector :: Selector '[] (Id DOMHTMLFormElement)
 formSelector = mkSelector "form"
 
 -- | @Selector@ for @align@
-alignSelector :: Selector
+alignSelector :: Selector '[] (Id NSString)
 alignSelector = mkSelector "align"
 
 -- | @Selector@ for @setAlign:@
-setAlignSelector :: Selector
+setAlignSelector :: Selector '[Id NSString] ()
 setAlignSelector = mkSelector "setAlign:"
 
 -- | @Selector@ for @accessKey@
-accessKeySelector :: Selector
+accessKeySelector :: Selector '[] (Id NSString)
 accessKeySelector = mkSelector "accessKey"
 
 -- | @Selector@ for @setAccessKey:@
-setAccessKeySelector :: Selector
+setAccessKeySelector :: Selector '[Id NSString] ()
 setAccessKeySelector = mkSelector "setAccessKey:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.Foundation.NSPersonNameComponentsFormatter
   , setPhonetic
   , locale
   , setLocale
-  , localizedStringFromPersonNameComponents_style_optionsSelector
-  , stringFromPersonNameComponentsSelector
   , annotatedStringFromPersonNameComponentsSelector
-  , personNameComponentsFromStringSelector
   , getObjectValue_forString_errorDescriptionSelector
-  , styleSelector
-  , setStyleSelector
-  , phoneticSelector
-  , setPhoneticSelector
   , localeSelector
+  , localizedStringFromPersonNameComponents_style_optionsSelector
+  , personNameComponentsFromStringSelector
+  , phoneticSelector
   , setLocaleSelector
+  , setPhoneticSelector
+  , setStyleSelector
+  , stringFromPersonNameComponentsSelector
+  , styleSelector
 
   -- * Enum types
   , NSPersonNameComponentsFormatterOptions(NSPersonNameComponentsFormatterOptions)
@@ -42,15 +43,11 @@ module ObjC.Foundation.NSPersonNameComponentsFormatter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,110 +59,103 @@ localizedStringFromPersonNameComponents_style_options :: IsNSPersonNameComponent
 localizedStringFromPersonNameComponents_style_options components nameFormatStyle nameOptions =
   do
     cls' <- getRequiredClass "NSPersonNameComponentsFormatter"
-    withObjCPtr components $ \raw_components ->
-      sendClassMsg cls' (mkSelector "localizedStringFromPersonNameComponents:style:options:") (retPtr retVoid) [argPtr (castPtr raw_components :: Ptr ()), argCLong (coerce nameFormatStyle), argCULong (coerce nameOptions)] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedStringFromPersonNameComponents_style_optionsSelector (toNSPersonNameComponents components) nameFormatStyle nameOptions
 
 -- | @- stringFromPersonNameComponents:@
 stringFromPersonNameComponents :: (IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter, IsNSPersonNameComponents components) => nsPersonNameComponentsFormatter -> components -> IO (Id NSString)
-stringFromPersonNameComponents nsPersonNameComponentsFormatter  components =
-  withObjCPtr components $ \raw_components ->
-      sendMsg nsPersonNameComponentsFormatter (mkSelector "stringFromPersonNameComponents:") (retPtr retVoid) [argPtr (castPtr raw_components :: Ptr ())] >>= retainedObject . castPtr
+stringFromPersonNameComponents nsPersonNameComponentsFormatter components =
+  sendMessage nsPersonNameComponentsFormatter stringFromPersonNameComponentsSelector (toNSPersonNameComponents components)
 
 -- | @- annotatedStringFromPersonNameComponents:@
 annotatedStringFromPersonNameComponents :: (IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter, IsNSPersonNameComponents components) => nsPersonNameComponentsFormatter -> components -> IO (Id NSAttributedString)
-annotatedStringFromPersonNameComponents nsPersonNameComponentsFormatter  components =
-  withObjCPtr components $ \raw_components ->
-      sendMsg nsPersonNameComponentsFormatter (mkSelector "annotatedStringFromPersonNameComponents:") (retPtr retVoid) [argPtr (castPtr raw_components :: Ptr ())] >>= retainedObject . castPtr
+annotatedStringFromPersonNameComponents nsPersonNameComponentsFormatter components =
+  sendMessage nsPersonNameComponentsFormatter annotatedStringFromPersonNameComponentsSelector (toNSPersonNameComponents components)
 
 -- | @- personNameComponentsFromString:@
 personNameComponentsFromString :: (IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter, IsNSString string) => nsPersonNameComponentsFormatter -> string -> IO (Id NSPersonNameComponents)
-personNameComponentsFromString nsPersonNameComponentsFormatter  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsPersonNameComponentsFormatter (mkSelector "personNameComponentsFromString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+personNameComponentsFromString nsPersonNameComponentsFormatter string =
+  sendMessage nsPersonNameComponentsFormatter personNameComponentsFromStringSelector (toNSString string)
 
 -- | @- getObjectValue:forString:errorDescription:@
 getObjectValue_forString_errorDescription :: (IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter, IsNSString string, IsNSString error_) => nsPersonNameComponentsFormatter -> Ptr RawId -> string -> error_ -> IO Bool
-getObjectValue_forString_errorDescription nsPersonNameComponentsFormatter  obj_ string error_ =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersonNameComponentsFormatter (mkSelector "getObjectValue:forString:errorDescription:") retCULong [argPtr obj_, argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+getObjectValue_forString_errorDescription nsPersonNameComponentsFormatter obj_ string error_ =
+  sendMessage nsPersonNameComponentsFormatter getObjectValue_forString_errorDescriptionSelector obj_ (toNSString string) (toNSString error_)
 
 -- | @- style@
 style :: IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter => nsPersonNameComponentsFormatter -> IO NSPersonNameComponentsFormatterStyle
-style nsPersonNameComponentsFormatter  =
-    fmap (coerce :: CLong -> NSPersonNameComponentsFormatterStyle) $ sendMsg nsPersonNameComponentsFormatter (mkSelector "style") retCLong []
+style nsPersonNameComponentsFormatter =
+  sendMessage nsPersonNameComponentsFormatter styleSelector
 
 -- | @- setStyle:@
 setStyle :: IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter => nsPersonNameComponentsFormatter -> NSPersonNameComponentsFormatterStyle -> IO ()
-setStyle nsPersonNameComponentsFormatter  value =
-    sendMsg nsPersonNameComponentsFormatter (mkSelector "setStyle:") retVoid [argCLong (coerce value)]
+setStyle nsPersonNameComponentsFormatter value =
+  sendMessage nsPersonNameComponentsFormatter setStyleSelector value
 
 -- | @- phonetic@
 phonetic :: IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter => nsPersonNameComponentsFormatter -> IO Bool
-phonetic nsPersonNameComponentsFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersonNameComponentsFormatter (mkSelector "phonetic") retCULong []
+phonetic nsPersonNameComponentsFormatter =
+  sendMessage nsPersonNameComponentsFormatter phoneticSelector
 
 -- | @- setPhonetic:@
 setPhonetic :: IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter => nsPersonNameComponentsFormatter -> Bool -> IO ()
-setPhonetic nsPersonNameComponentsFormatter  value =
-    sendMsg nsPersonNameComponentsFormatter (mkSelector "setPhonetic:") retVoid [argCULong (if value then 1 else 0)]
+setPhonetic nsPersonNameComponentsFormatter value =
+  sendMessage nsPersonNameComponentsFormatter setPhoneticSelector value
 
 -- | @- locale@
 locale :: IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter => nsPersonNameComponentsFormatter -> IO (Id NSLocale)
-locale nsPersonNameComponentsFormatter  =
-    sendMsg nsPersonNameComponentsFormatter (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale nsPersonNameComponentsFormatter =
+  sendMessage nsPersonNameComponentsFormatter localeSelector
 
 -- | @- setLocale:@
 setLocale :: (IsNSPersonNameComponentsFormatter nsPersonNameComponentsFormatter, IsNSLocale value) => nsPersonNameComponentsFormatter -> value -> IO ()
-setLocale nsPersonNameComponentsFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersonNameComponentsFormatter (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale nsPersonNameComponentsFormatter value =
+  sendMessage nsPersonNameComponentsFormatter setLocaleSelector (toNSLocale value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @localizedStringFromPersonNameComponents:style:options:@
-localizedStringFromPersonNameComponents_style_optionsSelector :: Selector
+localizedStringFromPersonNameComponents_style_optionsSelector :: Selector '[Id NSPersonNameComponents, NSPersonNameComponentsFormatterStyle, NSPersonNameComponentsFormatterOptions] (Id NSString)
 localizedStringFromPersonNameComponents_style_optionsSelector = mkSelector "localizedStringFromPersonNameComponents:style:options:"
 
 -- | @Selector@ for @stringFromPersonNameComponents:@
-stringFromPersonNameComponentsSelector :: Selector
+stringFromPersonNameComponentsSelector :: Selector '[Id NSPersonNameComponents] (Id NSString)
 stringFromPersonNameComponentsSelector = mkSelector "stringFromPersonNameComponents:"
 
 -- | @Selector@ for @annotatedStringFromPersonNameComponents:@
-annotatedStringFromPersonNameComponentsSelector :: Selector
+annotatedStringFromPersonNameComponentsSelector :: Selector '[Id NSPersonNameComponents] (Id NSAttributedString)
 annotatedStringFromPersonNameComponentsSelector = mkSelector "annotatedStringFromPersonNameComponents:"
 
 -- | @Selector@ for @personNameComponentsFromString:@
-personNameComponentsFromStringSelector :: Selector
+personNameComponentsFromStringSelector :: Selector '[Id NSString] (Id NSPersonNameComponents)
 personNameComponentsFromStringSelector = mkSelector "personNameComponentsFromString:"
 
 -- | @Selector@ for @getObjectValue:forString:errorDescription:@
-getObjectValue_forString_errorDescriptionSelector :: Selector
+getObjectValue_forString_errorDescriptionSelector :: Selector '[Ptr RawId, Id NSString, Id NSString] Bool
 getObjectValue_forString_errorDescriptionSelector = mkSelector "getObjectValue:forString:errorDescription:"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] NSPersonNameComponentsFormatterStyle
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @setStyle:@
-setStyleSelector :: Selector
+setStyleSelector :: Selector '[NSPersonNameComponentsFormatterStyle] ()
 setStyleSelector = mkSelector "setStyle:"
 
 -- | @Selector@ for @phonetic@
-phoneticSelector :: Selector
+phoneticSelector :: Selector '[] Bool
 phoneticSelector = mkSelector "phonetic"
 
 -- | @Selector@ for @setPhonetic:@
-setPhoneticSelector :: Selector
+setPhoneticSelector :: Selector '[Bool] ()
 setPhoneticSelector = mkSelector "setPhonetic:"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 

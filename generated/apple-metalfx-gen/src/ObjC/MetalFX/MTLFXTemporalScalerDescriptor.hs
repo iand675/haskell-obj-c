@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,55 +43,51 @@ module ObjC.MetalFX.MTLFXTemporalScalerDescriptor
   , setReactiveMaskTextureEnabled
   , reactiveMaskTextureFormat
   , setReactiveMaskTextureFormat
+  , autoExposureEnabledSelector
+  , colorTextureFormatSelector
+  , depthTextureFormatSelector
+  , inputContentMaxScaleSelector
+  , inputContentMinScaleSelector
+  , inputContentPropertiesEnabledSelector
+  , inputHeightSelector
+  , inputWidthSelector
+  , motionTextureFormatSelector
   , newTemporalScalerWithDeviceSelector
   , newTemporalScalerWithDevice_compilerSelector
-  , supportedInputContentMinScaleForDeviceSelector
+  , outputHeightSelector
+  , outputTextureFormatSelector
+  , outputWidthSelector
+  , reactiveMaskTextureEnabledSelector
+  , reactiveMaskTextureFormatSelector
+  , requiresSynchronousInitializationSelector
+  , setAutoExposureEnabledSelector
+  , setColorTextureFormatSelector
+  , setDepthTextureFormatSelector
+  , setInputContentMaxScaleSelector
+  , setInputContentMinScaleSelector
+  , setInputContentPropertiesEnabledSelector
+  , setInputHeightSelector
+  , setInputWidthSelector
+  , setMotionTextureFormatSelector
+  , setOutputHeightSelector
+  , setOutputTextureFormatSelector
+  , setOutputWidthSelector
+  , setReactiveMaskTextureEnabledSelector
+  , setReactiveMaskTextureFormatSelector
+  , setRequiresSynchronousInitializationSelector
   , supportedInputContentMaxScaleForDeviceSelector
+  , supportedInputContentMinScaleForDeviceSelector
   , supportsDeviceSelector
   , supportsMetal4FXSelector
-  , colorTextureFormatSelector
-  , setColorTextureFormatSelector
-  , depthTextureFormatSelector
-  , setDepthTextureFormatSelector
-  , motionTextureFormatSelector
-  , setMotionTextureFormatSelector
-  , outputTextureFormatSelector
-  , setOutputTextureFormatSelector
-  , inputWidthSelector
-  , setInputWidthSelector
-  , inputHeightSelector
-  , setInputHeightSelector
-  , outputWidthSelector
-  , setOutputWidthSelector
-  , outputHeightSelector
-  , setOutputHeightSelector
-  , autoExposureEnabledSelector
-  , setAutoExposureEnabledSelector
-  , requiresSynchronousInitializationSelector
-  , setRequiresSynchronousInitializationSelector
-  , inputContentPropertiesEnabledSelector
-  , setInputContentPropertiesEnabledSelector
-  , inputContentMinScaleSelector
-  , setInputContentMinScaleSelector
-  , inputContentMaxScaleSelector
-  , setInputContentMaxScaleSelector
-  , reactiveMaskTextureEnabledSelector
-  , setReactiveMaskTextureEnabledSelector
-  , reactiveMaskTextureFormatSelector
-  , setReactiveMaskTextureFormatSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -103,8 +100,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- newTemporalScalerWithDevice:@
 newTemporalScalerWithDevice :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> RawId -> IO RawId
-newTemporalScalerWithDevice mtlfxTemporalScalerDescriptor  device =
-    fmap (RawId . castPtr) $ sendMsg mtlfxTemporalScalerDescriptor (mkSelector "newTemporalScalerWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())]
+newTemporalScalerWithDevice mtlfxTemporalScalerDescriptor device =
+  sendOwnedMessage mtlfxTemporalScalerDescriptor newTemporalScalerWithDeviceSelector device
 
 -- | Creates a temporal scaler instance for a Metal device.
 --
@@ -112,8 +109,8 @@ newTemporalScalerWithDevice mtlfxTemporalScalerDescriptor  device =
 --
 -- ObjC selector: @- newTemporalScalerWithDevice:compiler:@
 newTemporalScalerWithDevice_compiler :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> RawId -> RawId -> IO RawId
-newTemporalScalerWithDevice_compiler mtlfxTemporalScalerDescriptor  device compiler =
-    fmap (RawId . castPtr) $ sendMsg mtlfxTemporalScalerDescriptor (mkSelector "newTemporalScalerWithDevice:compiler:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId compiler) :: Ptr ())]
+newTemporalScalerWithDevice_compiler mtlfxTemporalScalerDescriptor device compiler =
+  sendOwnedMessage mtlfxTemporalScalerDescriptor newTemporalScalerWithDevice_compilerSelector device compiler
 
 -- | Returns the smallest temporal scaling factor the device supports as a floating-point value.
 --
@@ -126,7 +123,7 @@ supportedInputContentMinScaleForDevice :: RawId -> IO CFloat
 supportedInputContentMinScaleForDevice device =
   do
     cls' <- getRequiredClass "MTLFXTemporalScalerDescriptor"
-    sendClassMsg cls' (mkSelector "supportedInputContentMinScaleForDevice:") retCFloat [argPtr (castPtr (unRawId device) :: Ptr ())]
+    sendClassMessage cls' supportedInputContentMinScaleForDeviceSelector device
 
 -- | Returns the largest temporal scaling factor the device supports as a floating-point value.
 --
@@ -139,7 +136,7 @@ supportedInputContentMaxScaleForDevice :: RawId -> IO CFloat
 supportedInputContentMaxScaleForDevice device =
   do
     cls' <- getRequiredClass "MTLFXTemporalScalerDescriptor"
-    sendClassMsg cls' (mkSelector "supportedInputContentMaxScaleForDevice:") retCFloat [argPtr (castPtr (unRawId device) :: Ptr ())]
+    sendClassMessage cls' supportedInputContentMaxScaleForDeviceSelector device
 
 -- | Returns a Boolean value that indicates whether the temporal scaler works with a GPU.
 --
@@ -152,7 +149,7 @@ supportsDevice :: RawId -> IO Bool
 supportsDevice device =
   do
     cls' <- getRequiredClass "MTLFXTemporalScalerDescriptor"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsDevice:") retCULong [argPtr (castPtr (unRawId device) :: Ptr ())]
+    sendClassMessage cls' supportsDeviceSelector device
 
 -- | Queries whether a Metal device supports temporal scaling compatible with Metal 4.
 --
@@ -165,119 +162,119 @@ supportsMetal4FX :: RawId -> IO Bool
 supportsMetal4FX device =
   do
     cls' <- getRequiredClass "MTLFXTemporalScalerDescriptor"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsMetal4FX:") retCULong [argPtr (castPtr (unRawId device) :: Ptr ())]
+    sendClassMessage cls' supportsMetal4FXSelector device
 
 -- | The pixel format of the input color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- colorTextureFormat@
 colorTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CInt
-colorTextureFormat mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "colorTextureFormat") retCInt []
+colorTextureFormat mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor colorTextureFormatSelector
 
 -- | The pixel format of the input color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- setColorTextureFormat:@
 setColorTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CInt -> IO ()
-setColorTextureFormat mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setColorTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setColorTextureFormat mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setColorTextureFormatSelector value
 
 -- | The pixel format of the input depth texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- depthTextureFormat@
 depthTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CInt
-depthTextureFormat mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "depthTextureFormat") retCInt []
+depthTextureFormat mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor depthTextureFormatSelector
 
 -- | The pixel format of the input depth texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- setDepthTextureFormat:@
 setDepthTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CInt -> IO ()
-setDepthTextureFormat mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setDepthTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setDepthTextureFormat mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setDepthTextureFormatSelector value
 
 -- | The pixel format of the input motion texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- motionTextureFormat@
 motionTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CInt
-motionTextureFormat mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "motionTextureFormat") retCInt []
+motionTextureFormat mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor motionTextureFormatSelector
 
 -- | The pixel format of the input motion texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- setMotionTextureFormat:@
 setMotionTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CInt -> IO ()
-setMotionTextureFormat mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setMotionTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setMotionTextureFormat mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setMotionTextureFormatSelector value
 
 -- | The pixel format of the output texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- outputTextureFormat@
 outputTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CInt
-outputTextureFormat mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "outputTextureFormat") retCInt []
+outputTextureFormat mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor outputTextureFormatSelector
 
 -- | The pixel format of the output texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- setOutputTextureFormat:@
 setOutputTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CInt -> IO ()
-setOutputTextureFormat mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setOutputTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setOutputTextureFormat mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setOutputTextureFormatSelector value
 
 -- | The width of the input color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- inputWidth@
 inputWidth :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CULong
-inputWidth mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "inputWidth") retCULong []
+inputWidth mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor inputWidthSelector
 
 -- | The width of the input color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- setInputWidth:@
 setInputWidth :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CULong -> IO ()
-setInputWidth mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setInputWidth:") retVoid [argCULong value]
+setInputWidth mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setInputWidthSelector value
 
 -- | The height of the input color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- inputHeight@
 inputHeight :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CULong
-inputHeight mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "inputHeight") retCULong []
+inputHeight mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor inputHeightSelector
 
 -- | The height of the input color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- setInputHeight:@
 setInputHeight :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CULong -> IO ()
-setInputHeight mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setInputHeight:") retVoid [argCULong value]
+setInputHeight mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setInputHeightSelector value
 
 -- | The width of the output color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- outputWidth@
 outputWidth :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CULong
-outputWidth mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "outputWidth") retCULong []
+outputWidth mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor outputWidthSelector
 
 -- | The width of the output color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- setOutputWidth:@
 setOutputWidth :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CULong -> IO ()
-setOutputWidth mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setOutputWidth:") retVoid [argCULong value]
+setOutputWidth mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setOutputWidthSelector value
 
 -- | The height of the output color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- outputHeight@
 outputHeight :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CULong
-outputHeight mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "outputHeight") retCULong []
+outputHeight mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor outputHeightSelector
 
 -- | The height of the output color texture for the temporal scaler you create with this descriptor.
 --
 -- ObjC selector: @- setOutputHeight:@
 setOutputHeight :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CULong -> IO ()
-setOutputHeight mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setOutputHeight:") retVoid [argCULong value]
+setOutputHeight mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setOutputHeightSelector value
 
 -- | A Boolean value that indicates whether MetalFX calculates the exposure for each frame.
 --
@@ -289,8 +286,8 @@ setOutputHeight mtlfxTemporalScalerDescriptor  value =
 --
 -- ObjC selector: @- autoExposureEnabled@
 autoExposureEnabled :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO Bool
-autoExposureEnabled mtlfxTemporalScalerDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlfxTemporalScalerDescriptor (mkSelector "autoExposureEnabled") retCULong []
+autoExposureEnabled mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor autoExposureEnabledSelector
 
 -- | A Boolean value that indicates whether MetalFX calculates the exposure for each frame.
 --
@@ -302,8 +299,8 @@ autoExposureEnabled mtlfxTemporalScalerDescriptor  =
 --
 -- ObjC selector: @- setAutoExposureEnabled:@
 setAutoExposureEnabled :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> Bool -> IO ()
-setAutoExposureEnabled mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setAutoExposureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutoExposureEnabled mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setAutoExposureEnabledSelector value
 
 -- | A Boolean value that indicates whether MetalFX compiles a temporal scaling effect’s underlying upscaler as it creates the instance.
 --
@@ -319,8 +316,8 @@ setAutoExposureEnabled mtlfxTemporalScalerDescriptor  value =
 --
 -- ObjC selector: @- requiresSynchronousInitialization@
 requiresSynchronousInitialization :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO Bool
-requiresSynchronousInitialization mtlfxTemporalScalerDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlfxTemporalScalerDescriptor (mkSelector "requiresSynchronousInitialization") retCULong []
+requiresSynchronousInitialization mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor requiresSynchronousInitializationSelector
 
 -- | A Boolean value that indicates whether MetalFX compiles a temporal scaling effect’s underlying upscaler as it creates the instance.
 --
@@ -336,8 +333,8 @@ requiresSynchronousInitialization mtlfxTemporalScalerDescriptor  =
 --
 -- ObjC selector: @- setRequiresSynchronousInitialization:@
 setRequiresSynchronousInitialization :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> Bool -> IO ()
-setRequiresSynchronousInitialization mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setRequiresSynchronousInitialization:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresSynchronousInitialization mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setRequiresSynchronousInitializationSelector value
 
 -- | A Boolean value that indicates whether the temporal scaler you create with this descriptor uses dynamic resolution.
 --
@@ -347,8 +344,8 @@ setRequiresSynchronousInitialization mtlfxTemporalScalerDescriptor  value =
 --
 -- ObjC selector: @- inputContentPropertiesEnabled@
 inputContentPropertiesEnabled :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO Bool
-inputContentPropertiesEnabled mtlfxTemporalScalerDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlfxTemporalScalerDescriptor (mkSelector "inputContentPropertiesEnabled") retCULong []
+inputContentPropertiesEnabled mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor inputContentPropertiesEnabledSelector
 
 -- | A Boolean value that indicates whether the temporal scaler you create with this descriptor uses dynamic resolution.
 --
@@ -358,210 +355,210 @@ inputContentPropertiesEnabled mtlfxTemporalScalerDescriptor  =
 --
 -- ObjC selector: @- setInputContentPropertiesEnabled:@
 setInputContentPropertiesEnabled :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> Bool -> IO ()
-setInputContentPropertiesEnabled mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setInputContentPropertiesEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setInputContentPropertiesEnabled mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setInputContentPropertiesEnabledSelector value
 
 -- | The smallest scale factor the temporal scaler you create with this descriptor can use to generate output textures.
 --
 -- ObjC selector: @- inputContentMinScale@
 inputContentMinScale :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CFloat
-inputContentMinScale mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "inputContentMinScale") retCFloat []
+inputContentMinScale mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor inputContentMinScaleSelector
 
 -- | The smallest scale factor the temporal scaler you create with this descriptor can use to generate output textures.
 --
 -- ObjC selector: @- setInputContentMinScale:@
 setInputContentMinScale :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CFloat -> IO ()
-setInputContentMinScale mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setInputContentMinScale:") retVoid [argCFloat value]
+setInputContentMinScale mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setInputContentMinScaleSelector value
 
 -- | The largest scale factor the temporal scaler you create with this descriptor can use to generate output textures.
 --
 -- ObjC selector: @- inputContentMaxScale@
 inputContentMaxScale :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CFloat
-inputContentMaxScale mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "inputContentMaxScale") retCFloat []
+inputContentMaxScale mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor inputContentMaxScaleSelector
 
 -- | The largest scale factor the temporal scaler you create with this descriptor can use to generate output textures.
 --
 -- ObjC selector: @- setInputContentMaxScale:@
 setInputContentMaxScale :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CFloat -> IO ()
-setInputContentMaxScale mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setInputContentMaxScale:") retVoid [argCFloat value]
+setInputContentMaxScale mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setInputContentMaxScaleSelector value
 
 -- | A Boolean value that indicates whether a temporal scaler you create with the descriptor applies a reactive mask.
 --
 -- ObjC selector: @- reactiveMaskTextureEnabled@
 reactiveMaskTextureEnabled :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO Bool
-reactiveMaskTextureEnabled mtlfxTemporalScalerDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlfxTemporalScalerDescriptor (mkSelector "reactiveMaskTextureEnabled") retCULong []
+reactiveMaskTextureEnabled mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor reactiveMaskTextureEnabledSelector
 
 -- | A Boolean value that indicates whether a temporal scaler you create with the descriptor applies a reactive mask.
 --
 -- ObjC selector: @- setReactiveMaskTextureEnabled:@
 setReactiveMaskTextureEnabled :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> Bool -> IO ()
-setReactiveMaskTextureEnabled mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setReactiveMaskTextureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setReactiveMaskTextureEnabled mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setReactiveMaskTextureEnabledSelector value
 
 -- | The pixel format of the reactive mask input texture for a temporal scaler you create with the descriptor.
 --
 -- ObjC selector: @- reactiveMaskTextureFormat@
 reactiveMaskTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> IO CInt
-reactiveMaskTextureFormat mtlfxTemporalScalerDescriptor  =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "reactiveMaskTextureFormat") retCInt []
+reactiveMaskTextureFormat mtlfxTemporalScalerDescriptor =
+  sendMessage mtlfxTemporalScalerDescriptor reactiveMaskTextureFormatSelector
 
 -- | The pixel format of the reactive mask input texture for a temporal scaler you create with the descriptor.
 --
 -- ObjC selector: @- setReactiveMaskTextureFormat:@
 setReactiveMaskTextureFormat :: IsMTLFXTemporalScalerDescriptor mtlfxTemporalScalerDescriptor => mtlfxTemporalScalerDescriptor -> CInt -> IO ()
-setReactiveMaskTextureFormat mtlfxTemporalScalerDescriptor  value =
-    sendMsg mtlfxTemporalScalerDescriptor (mkSelector "setReactiveMaskTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setReactiveMaskTextureFormat mtlfxTemporalScalerDescriptor value =
+  sendMessage mtlfxTemporalScalerDescriptor setReactiveMaskTextureFormatSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newTemporalScalerWithDevice:@
-newTemporalScalerWithDeviceSelector :: Selector
+newTemporalScalerWithDeviceSelector :: Selector '[RawId] RawId
 newTemporalScalerWithDeviceSelector = mkSelector "newTemporalScalerWithDevice:"
 
 -- | @Selector@ for @newTemporalScalerWithDevice:compiler:@
-newTemporalScalerWithDevice_compilerSelector :: Selector
+newTemporalScalerWithDevice_compilerSelector :: Selector '[RawId, RawId] RawId
 newTemporalScalerWithDevice_compilerSelector = mkSelector "newTemporalScalerWithDevice:compiler:"
 
 -- | @Selector@ for @supportedInputContentMinScaleForDevice:@
-supportedInputContentMinScaleForDeviceSelector :: Selector
+supportedInputContentMinScaleForDeviceSelector :: Selector '[RawId] CFloat
 supportedInputContentMinScaleForDeviceSelector = mkSelector "supportedInputContentMinScaleForDevice:"
 
 -- | @Selector@ for @supportedInputContentMaxScaleForDevice:@
-supportedInputContentMaxScaleForDeviceSelector :: Selector
+supportedInputContentMaxScaleForDeviceSelector :: Selector '[RawId] CFloat
 supportedInputContentMaxScaleForDeviceSelector = mkSelector "supportedInputContentMaxScaleForDevice:"
 
 -- | @Selector@ for @supportsDevice:@
-supportsDeviceSelector :: Selector
+supportsDeviceSelector :: Selector '[RawId] Bool
 supportsDeviceSelector = mkSelector "supportsDevice:"
 
 -- | @Selector@ for @supportsMetal4FX:@
-supportsMetal4FXSelector :: Selector
+supportsMetal4FXSelector :: Selector '[RawId] Bool
 supportsMetal4FXSelector = mkSelector "supportsMetal4FX:"
 
 -- | @Selector@ for @colorTextureFormat@
-colorTextureFormatSelector :: Selector
+colorTextureFormatSelector :: Selector '[] CInt
 colorTextureFormatSelector = mkSelector "colorTextureFormat"
 
 -- | @Selector@ for @setColorTextureFormat:@
-setColorTextureFormatSelector :: Selector
+setColorTextureFormatSelector :: Selector '[CInt] ()
 setColorTextureFormatSelector = mkSelector "setColorTextureFormat:"
 
 -- | @Selector@ for @depthTextureFormat@
-depthTextureFormatSelector :: Selector
+depthTextureFormatSelector :: Selector '[] CInt
 depthTextureFormatSelector = mkSelector "depthTextureFormat"
 
 -- | @Selector@ for @setDepthTextureFormat:@
-setDepthTextureFormatSelector :: Selector
+setDepthTextureFormatSelector :: Selector '[CInt] ()
 setDepthTextureFormatSelector = mkSelector "setDepthTextureFormat:"
 
 -- | @Selector@ for @motionTextureFormat@
-motionTextureFormatSelector :: Selector
+motionTextureFormatSelector :: Selector '[] CInt
 motionTextureFormatSelector = mkSelector "motionTextureFormat"
 
 -- | @Selector@ for @setMotionTextureFormat:@
-setMotionTextureFormatSelector :: Selector
+setMotionTextureFormatSelector :: Selector '[CInt] ()
 setMotionTextureFormatSelector = mkSelector "setMotionTextureFormat:"
 
 -- | @Selector@ for @outputTextureFormat@
-outputTextureFormatSelector :: Selector
+outputTextureFormatSelector :: Selector '[] CInt
 outputTextureFormatSelector = mkSelector "outputTextureFormat"
 
 -- | @Selector@ for @setOutputTextureFormat:@
-setOutputTextureFormatSelector :: Selector
+setOutputTextureFormatSelector :: Selector '[CInt] ()
 setOutputTextureFormatSelector = mkSelector "setOutputTextureFormat:"
 
 -- | @Selector@ for @inputWidth@
-inputWidthSelector :: Selector
+inputWidthSelector :: Selector '[] CULong
 inputWidthSelector = mkSelector "inputWidth"
 
 -- | @Selector@ for @setInputWidth:@
-setInputWidthSelector :: Selector
+setInputWidthSelector :: Selector '[CULong] ()
 setInputWidthSelector = mkSelector "setInputWidth:"
 
 -- | @Selector@ for @inputHeight@
-inputHeightSelector :: Selector
+inputHeightSelector :: Selector '[] CULong
 inputHeightSelector = mkSelector "inputHeight"
 
 -- | @Selector@ for @setInputHeight:@
-setInputHeightSelector :: Selector
+setInputHeightSelector :: Selector '[CULong] ()
 setInputHeightSelector = mkSelector "setInputHeight:"
 
 -- | @Selector@ for @outputWidth@
-outputWidthSelector :: Selector
+outputWidthSelector :: Selector '[] CULong
 outputWidthSelector = mkSelector "outputWidth"
 
 -- | @Selector@ for @setOutputWidth:@
-setOutputWidthSelector :: Selector
+setOutputWidthSelector :: Selector '[CULong] ()
 setOutputWidthSelector = mkSelector "setOutputWidth:"
 
 -- | @Selector@ for @outputHeight@
-outputHeightSelector :: Selector
+outputHeightSelector :: Selector '[] CULong
 outputHeightSelector = mkSelector "outputHeight"
 
 -- | @Selector@ for @setOutputHeight:@
-setOutputHeightSelector :: Selector
+setOutputHeightSelector :: Selector '[CULong] ()
 setOutputHeightSelector = mkSelector "setOutputHeight:"
 
 -- | @Selector@ for @autoExposureEnabled@
-autoExposureEnabledSelector :: Selector
+autoExposureEnabledSelector :: Selector '[] Bool
 autoExposureEnabledSelector = mkSelector "autoExposureEnabled"
 
 -- | @Selector@ for @setAutoExposureEnabled:@
-setAutoExposureEnabledSelector :: Selector
+setAutoExposureEnabledSelector :: Selector '[Bool] ()
 setAutoExposureEnabledSelector = mkSelector "setAutoExposureEnabled:"
 
 -- | @Selector@ for @requiresSynchronousInitialization@
-requiresSynchronousInitializationSelector :: Selector
+requiresSynchronousInitializationSelector :: Selector '[] Bool
 requiresSynchronousInitializationSelector = mkSelector "requiresSynchronousInitialization"
 
 -- | @Selector@ for @setRequiresSynchronousInitialization:@
-setRequiresSynchronousInitializationSelector :: Selector
+setRequiresSynchronousInitializationSelector :: Selector '[Bool] ()
 setRequiresSynchronousInitializationSelector = mkSelector "setRequiresSynchronousInitialization:"
 
 -- | @Selector@ for @inputContentPropertiesEnabled@
-inputContentPropertiesEnabledSelector :: Selector
+inputContentPropertiesEnabledSelector :: Selector '[] Bool
 inputContentPropertiesEnabledSelector = mkSelector "inputContentPropertiesEnabled"
 
 -- | @Selector@ for @setInputContentPropertiesEnabled:@
-setInputContentPropertiesEnabledSelector :: Selector
+setInputContentPropertiesEnabledSelector :: Selector '[Bool] ()
 setInputContentPropertiesEnabledSelector = mkSelector "setInputContentPropertiesEnabled:"
 
 -- | @Selector@ for @inputContentMinScale@
-inputContentMinScaleSelector :: Selector
+inputContentMinScaleSelector :: Selector '[] CFloat
 inputContentMinScaleSelector = mkSelector "inputContentMinScale"
 
 -- | @Selector@ for @setInputContentMinScale:@
-setInputContentMinScaleSelector :: Selector
+setInputContentMinScaleSelector :: Selector '[CFloat] ()
 setInputContentMinScaleSelector = mkSelector "setInputContentMinScale:"
 
 -- | @Selector@ for @inputContentMaxScale@
-inputContentMaxScaleSelector :: Selector
+inputContentMaxScaleSelector :: Selector '[] CFloat
 inputContentMaxScaleSelector = mkSelector "inputContentMaxScale"
 
 -- | @Selector@ for @setInputContentMaxScale:@
-setInputContentMaxScaleSelector :: Selector
+setInputContentMaxScaleSelector :: Selector '[CFloat] ()
 setInputContentMaxScaleSelector = mkSelector "setInputContentMaxScale:"
 
 -- | @Selector@ for @reactiveMaskTextureEnabled@
-reactiveMaskTextureEnabledSelector :: Selector
+reactiveMaskTextureEnabledSelector :: Selector '[] Bool
 reactiveMaskTextureEnabledSelector = mkSelector "reactiveMaskTextureEnabled"
 
 -- | @Selector@ for @setReactiveMaskTextureEnabled:@
-setReactiveMaskTextureEnabledSelector :: Selector
+setReactiveMaskTextureEnabledSelector :: Selector '[Bool] ()
 setReactiveMaskTextureEnabledSelector = mkSelector "setReactiveMaskTextureEnabled:"
 
 -- | @Selector@ for @reactiveMaskTextureFormat@
-reactiveMaskTextureFormatSelector :: Selector
+reactiveMaskTextureFormatSelector :: Selector '[] CInt
 reactiveMaskTextureFormatSelector = mkSelector "reactiveMaskTextureFormat"
 
 -- | @Selector@ for @setReactiveMaskTextureFormat:@
-setReactiveMaskTextureFormatSelector :: Selector
+setReactiveMaskTextureFormatSelector :: Selector '[CInt] ()
 setReactiveMaskTextureFormatSelector = mkSelector "setReactiveMaskTextureFormat:"
 

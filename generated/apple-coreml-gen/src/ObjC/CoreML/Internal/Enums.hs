@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreML.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @MLComputeUnits@
 newtype MLComputeUnits = MLComputeUnits CLong
@@ -27,6 +30,16 @@ pattern MLComputeUnitsAll = MLComputeUnits 2
 
 pattern MLComputeUnitsCPUAndNeuralEngine :: MLComputeUnits
 pattern MLComputeUnitsCPUAndNeuralEngine = MLComputeUnits 3
+
+instance ObjCArgument MLComputeUnits where
+  withObjCArg (MLComputeUnits x) k = k (argCLong x)
+
+instance ObjCReturn MLComputeUnits where
+  type RawReturn MLComputeUnits = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLComputeUnits x)
+  fromOwned x = pure (MLComputeUnits x)
 
 -- | Supported data type enumeration
 -- | @MLFeatureType@
@@ -61,6 +74,16 @@ pattern MLFeatureTypeSequence = MLFeatureType 7
 pattern MLFeatureTypeState :: MLFeatureType
 pattern MLFeatureTypeState = MLFeatureType 8
 
+instance ObjCArgument MLFeatureType where
+  withObjCArg (MLFeatureType x) k = k (argCLong x)
+
+instance ObjCReturn MLFeatureType where
+  type RawReturn MLFeatureType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLFeatureType x)
+  fromOwned x = pure (MLFeatureType x)
+
 -- | @MLImageSizeConstraintType@
 newtype MLImageSizeConstraintType = MLImageSizeConstraintType CLong
   deriving stock (Eq, Ord, Show)
@@ -74,6 +97,16 @@ pattern MLImageSizeConstraintTypeEnumerated = MLImageSizeConstraintType 2
 
 pattern MLImageSizeConstraintTypeRange :: MLImageSizeConstraintType
 pattern MLImageSizeConstraintTypeRange = MLImageSizeConstraintType 3
+
+instance ObjCArgument MLImageSizeConstraintType where
+  withObjCArg (MLImageSizeConstraintType x) k = k (argCLong x)
+
+instance ObjCReturn MLImageSizeConstraintType where
+  type RawReturn MLImageSizeConstraintType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLImageSizeConstraintType x)
+  fromOwned x = pure (MLImageSizeConstraintType x)
 
 -- | MLModelError defines the set of MLModel related error codes.
 --
@@ -118,6 +151,16 @@ pattern MLModelErrorModelCollection = MLModelError 10
 pattern MLModelErrorPredictionCancelled :: MLModelError
 pattern MLModelErrorPredictionCancelled = MLModelError 11
 
+instance ObjCArgument MLModelError where
+  withObjCArg (MLModelError x) k = k (argCLong x)
+
+instance ObjCReturn MLModelError where
+  type RawReturn MLModelError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLModelError x)
+  fromOwned x = pure (MLModelError x)
+
 -- | The data type of scalars in the multi-array.
 -- | @MLMultiArrayDataType@
 newtype MLMultiArrayDataType = MLMultiArrayDataType CLong
@@ -145,6 +188,16 @@ pattern MLMultiArrayDataTypeInt32 = MLMultiArrayDataType 131104
 pattern MLMultiArrayDataTypeInt8 :: MLMultiArrayDataType
 pattern MLMultiArrayDataTypeInt8 = MLMultiArrayDataType 131080
 
+instance ObjCArgument MLMultiArrayDataType where
+  withObjCArg (MLMultiArrayDataType x) k = k (argCLong x)
+
+instance ObjCReturn MLMultiArrayDataType where
+  type RawReturn MLMultiArrayDataType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLMultiArrayDataType x)
+  fromOwned x = pure (MLMultiArrayDataType x)
+
 -- | @MLMultiArrayShapeConstraintType@
 newtype MLMultiArrayShapeConstraintType = MLMultiArrayShapeConstraintType CLong
   deriving stock (Eq, Ord, Show)
@@ -159,6 +212,16 @@ pattern MLMultiArrayShapeConstraintTypeEnumerated = MLMultiArrayShapeConstraintT
 pattern MLMultiArrayShapeConstraintTypeRange :: MLMultiArrayShapeConstraintType
 pattern MLMultiArrayShapeConstraintTypeRange = MLMultiArrayShapeConstraintType 3
 
+instance ObjCArgument MLMultiArrayShapeConstraintType where
+  withObjCArg (MLMultiArrayShapeConstraintType x) k = k (argCLong x)
+
+instance ObjCReturn MLMultiArrayShapeConstraintType where
+  type RawReturn MLMultiArrayShapeConstraintType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLMultiArrayShapeConstraintType x)
+  fromOwned x = pure (MLMultiArrayShapeConstraintType x)
+
 -- | The anticipated frequency of changing input shapes
 -- | @MLReshapeFrequencyHint@
 newtype MLReshapeFrequencyHint = MLReshapeFrequencyHint CLong
@@ -171,6 +234,16 @@ pattern MLReshapeFrequencyHintFrequent = MLReshapeFrequencyHint 0
 pattern MLReshapeFrequencyHintInfrequent :: MLReshapeFrequencyHint
 pattern MLReshapeFrequencyHintInfrequent = MLReshapeFrequencyHint 1
 
+instance ObjCArgument MLReshapeFrequencyHint where
+  withObjCArg (MLReshapeFrequencyHint x) k = k (argCLong x)
+
+instance ObjCReturn MLReshapeFrequencyHint where
+  type RawReturn MLReshapeFrequencyHint = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLReshapeFrequencyHint x)
+  fromOwned x = pure (MLReshapeFrequencyHint x)
+
 -- | The optimization strategy for the model specialization.
 -- | @MLSpecializationStrategy@
 newtype MLSpecializationStrategy = MLSpecializationStrategy CLong
@@ -182,6 +255,16 @@ pattern MLSpecializationStrategyDefault = MLSpecializationStrategy 0
 
 pattern MLSpecializationStrategyFastPrediction :: MLSpecializationStrategy
 pattern MLSpecializationStrategyFastPrediction = MLSpecializationStrategy 1
+
+instance ObjCArgument MLSpecializationStrategy where
+  withObjCArg (MLSpecializationStrategy x) k = k (argCLong x)
+
+instance ObjCReturn MLSpecializationStrategy where
+  type RawReturn MLSpecializationStrategy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLSpecializationStrategy x)
+  fromOwned x = pure (MLSpecializationStrategy x)
 
 -- | All possible states an MLTask can be in.
 -- | @MLTaskState@
@@ -203,6 +286,16 @@ pattern MLTaskStateCompleted = MLTaskState 4
 
 pattern MLTaskStateFailed :: MLTaskState
 pattern MLTaskStateFailed = MLTaskState 5
+
+instance ObjCArgument MLTaskState where
+  withObjCArg (MLTaskState x) k = k (argCLong x)
+
+instance ObjCReturn MLTaskState where
+  type RawReturn MLTaskState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLTaskState x)
+  fromOwned x = pure (MLTaskState x)
 
 -- | Events on which update task is capable of invoking progress handler.
 --
@@ -226,3 +319,13 @@ pattern MLUpdateProgressEventEpochEnd = MLUpdateProgressEvent 2
 
 pattern MLUpdateProgressEventMiniBatchEnd :: MLUpdateProgressEvent
 pattern MLUpdateProgressEventMiniBatchEnd = MLUpdateProgressEvent 4
+
+instance ObjCArgument MLUpdateProgressEvent where
+  withObjCArg (MLUpdateProgressEvent x) k = k (argCLong x)
+
+instance ObjCReturn MLUpdateProgressEvent where
+  type RawReturn MLUpdateProgressEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MLUpdateProgressEvent x)
+  fromOwned x = pure (MLUpdateProgressEvent x)

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.AppKit.NSPageController
   , setArrangedObjects
   , selectedIndex
   , setSelectedIndex
-  , navigateForwardToObjectSelector
+  , arrangedObjectsSelector
   , completeTransitionSelector
+  , delegateSelector
   , navigateBackSelector
   , navigateForwardSelector
-  , takeSelectedIndexFromSelector
-  , delegateSelector
-  , setDelegateSelector
-  , selectedViewControllerSelector
-  , transitionStyleSelector
-  , setTransitionStyleSelector
-  , arrangedObjectsSelector
-  , setArrangedObjectsSelector
+  , navigateForwardToObjectSelector
   , selectedIndexSelector
+  , selectedViewControllerSelector
+  , setArrangedObjectsSelector
+  , setDelegateSelector
   , setSelectedIndexSelector
+  , setTransitionStyleSelector
+  , takeSelectedIndexFromSelector
+  , transitionStyleSelector
 
   -- * Enum types
   , NSPageControllerTransitionStyle(NSPageControllerTransitionStyle)
@@ -44,15 +45,11 @@ module ObjC.AppKit.NSPageController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,132 +59,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- navigateForwardToObject:@
 navigateForwardToObject :: IsNSPageController nsPageController => nsPageController -> RawId -> IO ()
-navigateForwardToObject nsPageController  object =
-    sendMsg nsPageController (mkSelector "navigateForwardToObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+navigateForwardToObject nsPageController object =
+  sendMessage nsPageController navigateForwardToObjectSelector object
 
 -- | @- completeTransition@
 completeTransition :: IsNSPageController nsPageController => nsPageController -> IO ()
-completeTransition nsPageController  =
-    sendMsg nsPageController (mkSelector "completeTransition") retVoid []
+completeTransition nsPageController =
+  sendMessage nsPageController completeTransitionSelector
 
 -- | @- navigateBack:@
 navigateBack :: IsNSPageController nsPageController => nsPageController -> RawId -> IO ()
-navigateBack nsPageController  sender =
-    sendMsg nsPageController (mkSelector "navigateBack:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+navigateBack nsPageController sender =
+  sendMessage nsPageController navigateBackSelector sender
 
 -- | @- navigateForward:@
 navigateForward :: IsNSPageController nsPageController => nsPageController -> RawId -> IO ()
-navigateForward nsPageController  sender =
-    sendMsg nsPageController (mkSelector "navigateForward:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+navigateForward nsPageController sender =
+  sendMessage nsPageController navigateForwardSelector sender
 
 -- | @- takeSelectedIndexFrom:@
 takeSelectedIndexFrom :: IsNSPageController nsPageController => nsPageController -> RawId -> IO ()
-takeSelectedIndexFrom nsPageController  sender =
-    sendMsg nsPageController (mkSelector "takeSelectedIndexFrom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+takeSelectedIndexFrom nsPageController sender =
+  sendMessage nsPageController takeSelectedIndexFromSelector sender
 
 -- | @- delegate@
 delegate :: IsNSPageController nsPageController => nsPageController -> IO RawId
-delegate nsPageController  =
-    fmap (RawId . castPtr) $ sendMsg nsPageController (mkSelector "delegate") (retPtr retVoid) []
+delegate nsPageController =
+  sendMessage nsPageController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSPageController nsPageController => nsPageController -> RawId -> IO ()
-setDelegate nsPageController  value =
-    sendMsg nsPageController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsPageController value =
+  sendMessage nsPageController setDelegateSelector value
 
 -- | @- selectedViewController@
 selectedViewController :: IsNSPageController nsPageController => nsPageController -> IO (Id NSViewController)
-selectedViewController nsPageController  =
-    sendMsg nsPageController (mkSelector "selectedViewController") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedViewController nsPageController =
+  sendMessage nsPageController selectedViewControllerSelector
 
 -- | @- transitionStyle@
 transitionStyle :: IsNSPageController nsPageController => nsPageController -> IO NSPageControllerTransitionStyle
-transitionStyle nsPageController  =
-    fmap (coerce :: CLong -> NSPageControllerTransitionStyle) $ sendMsg nsPageController (mkSelector "transitionStyle") retCLong []
+transitionStyle nsPageController =
+  sendMessage nsPageController transitionStyleSelector
 
 -- | @- setTransitionStyle:@
 setTransitionStyle :: IsNSPageController nsPageController => nsPageController -> NSPageControllerTransitionStyle -> IO ()
-setTransitionStyle nsPageController  value =
-    sendMsg nsPageController (mkSelector "setTransitionStyle:") retVoid [argCLong (coerce value)]
+setTransitionStyle nsPageController value =
+  sendMessage nsPageController setTransitionStyleSelector value
 
 -- | @- arrangedObjects@
 arrangedObjects :: IsNSPageController nsPageController => nsPageController -> IO (Id NSArray)
-arrangedObjects nsPageController  =
-    sendMsg nsPageController (mkSelector "arrangedObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+arrangedObjects nsPageController =
+  sendMessage nsPageController arrangedObjectsSelector
 
 -- | @- setArrangedObjects:@
 setArrangedObjects :: (IsNSPageController nsPageController, IsNSArray value) => nsPageController -> value -> IO ()
-setArrangedObjects nsPageController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPageController (mkSelector "setArrangedObjects:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArrangedObjects nsPageController value =
+  sendMessage nsPageController setArrangedObjectsSelector (toNSArray value)
 
 -- | @- selectedIndex@
 selectedIndex :: IsNSPageController nsPageController => nsPageController -> IO CLong
-selectedIndex nsPageController  =
-    sendMsg nsPageController (mkSelector "selectedIndex") retCLong []
+selectedIndex nsPageController =
+  sendMessage nsPageController selectedIndexSelector
 
 -- | @- setSelectedIndex:@
 setSelectedIndex :: IsNSPageController nsPageController => nsPageController -> CLong -> IO ()
-setSelectedIndex nsPageController  value =
-    sendMsg nsPageController (mkSelector "setSelectedIndex:") retVoid [argCLong value]
+setSelectedIndex nsPageController value =
+  sendMessage nsPageController setSelectedIndexSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @navigateForwardToObject:@
-navigateForwardToObjectSelector :: Selector
+navigateForwardToObjectSelector :: Selector '[RawId] ()
 navigateForwardToObjectSelector = mkSelector "navigateForwardToObject:"
 
 -- | @Selector@ for @completeTransition@
-completeTransitionSelector :: Selector
+completeTransitionSelector :: Selector '[] ()
 completeTransitionSelector = mkSelector "completeTransition"
 
 -- | @Selector@ for @navigateBack:@
-navigateBackSelector :: Selector
+navigateBackSelector :: Selector '[RawId] ()
 navigateBackSelector = mkSelector "navigateBack:"
 
 -- | @Selector@ for @navigateForward:@
-navigateForwardSelector :: Selector
+navigateForwardSelector :: Selector '[RawId] ()
 navigateForwardSelector = mkSelector "navigateForward:"
 
 -- | @Selector@ for @takeSelectedIndexFrom:@
-takeSelectedIndexFromSelector :: Selector
+takeSelectedIndexFromSelector :: Selector '[RawId] ()
 takeSelectedIndexFromSelector = mkSelector "takeSelectedIndexFrom:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @selectedViewController@
-selectedViewControllerSelector :: Selector
+selectedViewControllerSelector :: Selector '[] (Id NSViewController)
 selectedViewControllerSelector = mkSelector "selectedViewController"
 
 -- | @Selector@ for @transitionStyle@
-transitionStyleSelector :: Selector
+transitionStyleSelector :: Selector '[] NSPageControllerTransitionStyle
 transitionStyleSelector = mkSelector "transitionStyle"
 
 -- | @Selector@ for @setTransitionStyle:@
-setTransitionStyleSelector :: Selector
+setTransitionStyleSelector :: Selector '[NSPageControllerTransitionStyle] ()
 setTransitionStyleSelector = mkSelector "setTransitionStyle:"
 
 -- | @Selector@ for @arrangedObjects@
-arrangedObjectsSelector :: Selector
+arrangedObjectsSelector :: Selector '[] (Id NSArray)
 arrangedObjectsSelector = mkSelector "arrangedObjects"
 
 -- | @Selector@ for @setArrangedObjects:@
-setArrangedObjectsSelector :: Selector
+setArrangedObjectsSelector :: Selector '[Id NSArray] ()
 setArrangedObjectsSelector = mkSelector "setArrangedObjects:"
 
 -- | @Selector@ for @selectedIndex@
-selectedIndexSelector :: Selector
+selectedIndexSelector :: Selector '[] CLong
 selectedIndexSelector = mkSelector "selectedIndex"
 
 -- | @Selector@ for @setSelectedIndex:@
-setSelectedIndexSelector :: Selector
+setSelectedIndexSelector :: Selector '[CLong] ()
 setSelectedIndexSelector = mkSelector "setSelectedIndex:"
 

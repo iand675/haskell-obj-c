@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.Matter.MTREventReport
   , value
   , error_
   , timestamp
+  , errorSelector
+  , eventNumberSelector
+  , eventTimeTypeSelector
   , initWithResponseValue_errorSelector
   , pathSelector
-  , eventNumberSelector
   , prioritySelector
-  , eventTimeTypeSelector
   , systemUpTimeSelector
   , timestampDateSelector
-  , valueSelector
-  , errorSelector
   , timestampSelector
+  , valueSelector
 
   -- * Enum types
   , MTREventTimeType(MTREventTimeType)
@@ -35,15 +36,11 @@ module ObjC.Matter.MTREventReport
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,107 +60,105 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTREventReport mtrEventReport, IsNSDictionary responseValue, IsNSError error_) => mtrEventReport -> responseValue -> error_ -> IO (Id MTREventReport)
-initWithResponseValue_error mtrEventReport  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrEventReport (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrEventReport responseValue error_ =
+  sendOwnedMessage mtrEventReport initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- path@
 path :: IsMTREventReport mtrEventReport => mtrEventReport -> IO (Id MTREventPath)
-path mtrEventReport  =
-    sendMsg mtrEventReport (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path mtrEventReport =
+  sendMessage mtrEventReport pathSelector
 
 -- | eventNumber will only have a useful value if "error" is nil.
 --
 -- ObjC selector: @- eventNumber@
 eventNumber :: IsMTREventReport mtrEventReport => mtrEventReport -> IO (Id NSNumber)
-eventNumber mtrEventReport  =
-    sendMsg mtrEventReport (mkSelector "eventNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+eventNumber mtrEventReport =
+  sendMessage mtrEventReport eventNumberSelector
 
 -- | priority will only have a useful value if "error" is nil.
 --
 -- ObjC selector: @- priority@
 priority :: IsMTREventReport mtrEventReport => mtrEventReport -> IO (Id NSNumber)
-priority mtrEventReport  =
-    sendMsg mtrEventReport (mkSelector "priority") (retPtr retVoid) [] >>= retainedObject . castPtr
+priority mtrEventReport =
+  sendMessage mtrEventReport prioritySelector
 
 -- | Either systemUpTime or timestampDate will be valid depending on eventTimeType, if "error" is nil.  If "error" is not nil, none of eventTimeType, systemUpTime, timestampDate should be expected to have useful values.
 --
 -- ObjC selector: @- eventTimeType@
 eventTimeType :: IsMTREventReport mtrEventReport => mtrEventReport -> IO MTREventTimeType
-eventTimeType mtrEventReport  =
-    fmap (coerce :: CULong -> MTREventTimeType) $ sendMsg mtrEventReport (mkSelector "eventTimeType") retCULong []
+eventTimeType mtrEventReport =
+  sendMessage mtrEventReport eventTimeTypeSelector
 
 -- | @- systemUpTime@
 systemUpTime :: IsMTREventReport mtrEventReport => mtrEventReport -> IO CDouble
-systemUpTime mtrEventReport  =
-    sendMsg mtrEventReport (mkSelector "systemUpTime") retCDouble []
+systemUpTime mtrEventReport =
+  sendMessage mtrEventReport systemUpTimeSelector
 
 -- | @- timestampDate@
 timestampDate :: IsMTREventReport mtrEventReport => mtrEventReport -> IO (Id NSDate)
-timestampDate mtrEventReport  =
-    sendMsg mtrEventReport (mkSelector "timestampDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+timestampDate mtrEventReport =
+  sendMessage mtrEventReport timestampDateSelector
 
 -- | An instance of the event payload interface that corresponds to the report's path (e.g. MTRBasicInformationClusterStartUpEvent if the path's cluster 0x0028 "Basic Information" and the path's event is 0x00 "StartUp"), or nil if error is not nil (in which case there is no payload available).
 --
 -- ObjC selector: @- value@
 value :: IsMTREventReport mtrEventReport => mtrEventReport -> IO RawId
-value mtrEventReport  =
-    fmap (RawId . castPtr) $ sendMsg mtrEventReport (mkSelector "value") (retPtr retVoid) []
+value mtrEventReport =
+  sendMessage mtrEventReport valueSelector
 
 -- | If this specific path resulted in an error, the error (in the MTRInteractionErrorDomain or MTRErrorDomain) that corresponds to this path.
 --
 -- ObjC selector: @- error@
 error_ :: IsMTREventReport mtrEventReport => mtrEventReport -> IO (Id NSError)
-error_ mtrEventReport  =
-    sendMsg mtrEventReport (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ mtrEventReport =
+  sendMessage mtrEventReport errorSelector
 
 -- | @- timestamp@
 timestamp :: IsMTREventReport mtrEventReport => mtrEventReport -> IO (Id NSNumber)
-timestamp mtrEventReport  =
-    sendMsg mtrEventReport (mkSelector "timestamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+timestamp mtrEventReport =
+  sendMessage mtrEventReport timestampSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTREventReport)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id MTREventPath)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @eventNumber@
-eventNumberSelector :: Selector
+eventNumberSelector :: Selector '[] (Id NSNumber)
 eventNumberSelector = mkSelector "eventNumber"
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] (Id NSNumber)
 prioritySelector = mkSelector "priority"
 
 -- | @Selector@ for @eventTimeType@
-eventTimeTypeSelector :: Selector
+eventTimeTypeSelector :: Selector '[] MTREventTimeType
 eventTimeTypeSelector = mkSelector "eventTimeType"
 
 -- | @Selector@ for @systemUpTime@
-systemUpTimeSelector :: Selector
+systemUpTimeSelector :: Selector '[] CDouble
 systemUpTimeSelector = mkSelector "systemUpTime"
 
 -- | @Selector@ for @timestampDate@
-timestampDateSelector :: Selector
+timestampDateSelector :: Selector '[] (Id NSDate)
 timestampDateSelector = mkSelector "timestampDate"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] RawId
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @timestamp@
-timestampSelector :: Selector
+timestampSelector :: Selector '[] (Id NSNumber)
 timestampSelector = mkSelector "timestamp"
 

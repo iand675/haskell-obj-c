@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.CryptoTokenKit.TKTokenKeyExchangeParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,25 +32,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requestedSize@
 requestedSize :: IsTKTokenKeyExchangeParameters tkTokenKeyExchangeParameters => tkTokenKeyExchangeParameters -> IO CLong
-requestedSize tkTokenKeyExchangeParameters  =
-    sendMsg tkTokenKeyExchangeParameters (mkSelector "requestedSize") retCLong []
+requestedSize tkTokenKeyExchangeParameters =
+  sendMessage tkTokenKeyExchangeParameters requestedSizeSelector
 
 -- | Additional shared information input, typically used for key derivation (KDF) step of key exchange algorithm.  Should be ignored if shared info is not used for specified key exchange algorithm.
 --
 -- ObjC selector: @- sharedInfo@
 sharedInfo :: IsTKTokenKeyExchangeParameters tkTokenKeyExchangeParameters => tkTokenKeyExchangeParameters -> IO (Id NSData)
-sharedInfo tkTokenKeyExchangeParameters  =
-    sendMsg tkTokenKeyExchangeParameters (mkSelector "sharedInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+sharedInfo tkTokenKeyExchangeParameters =
+  sendMessage tkTokenKeyExchangeParameters sharedInfoSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestedSize@
-requestedSizeSelector :: Selector
+requestedSizeSelector :: Selector '[] CLong
 requestedSizeSelector = mkSelector "requestedSize"
 
 -- | @Selector@ for @sharedInfo@
-sharedInfoSelector :: Selector
+sharedInfoSelector :: Selector '[] (Id NSData)
 sharedInfoSelector = mkSelector "sharedInfo"
 

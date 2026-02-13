@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,40 +34,36 @@ module ObjC.NetworkExtension.NEFilterProviderConfiguration
   , filterPacketProviderBundleIdentifier
   , setFilterPacketProviderBundleIdentifier
   , filterBrowsersSelector
-  , setFilterBrowsersSelector
-  , filterSocketsSelector
-  , setFilterSocketsSelector
-  , filterPacketsSelector
-  , setFilterPacketsSelector
-  , vendorConfigurationSelector
-  , setVendorConfigurationSelector
-  , serverAddressSelector
-  , setServerAddressSelector
-  , usernameSelector
-  , setUsernameSelector
-  , organizationSelector
-  , setOrganizationSelector
-  , passwordReferenceSelector
-  , setPasswordReferenceSelector
-  , identityReferenceSelector
-  , setIdentityReferenceSelector
   , filterDataProviderBundleIdentifierSelector
-  , setFilterDataProviderBundleIdentifierSelector
   , filterPacketProviderBundleIdentifierSelector
+  , filterPacketsSelector
+  , filterSocketsSelector
+  , identityReferenceSelector
+  , organizationSelector
+  , passwordReferenceSelector
+  , serverAddressSelector
+  , setFilterBrowsersSelector
+  , setFilterDataProviderBundleIdentifierSelector
   , setFilterPacketProviderBundleIdentifierSelector
+  , setFilterPacketsSelector
+  , setFilterSocketsSelector
+  , setIdentityReferenceSelector
+  , setOrganizationSelector
+  , setPasswordReferenceSelector
+  , setServerAddressSelector
+  , setUsernameSelector
+  , setVendorConfigurationSelector
+  , usernameSelector
+  , vendorConfigurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,8 +76,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- filterBrowsers@
 filterBrowsers :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO Bool
-filterBrowsers neFilterProviderConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neFilterProviderConfiguration (mkSelector "filterBrowsers") retCULong []
+filterBrowsers neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration filterBrowsersSelector
 
 -- | filterBrowsers
 --
@@ -88,8 +85,8 @@ filterBrowsers neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setFilterBrowsers:@
 setFilterBrowsers :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> Bool -> IO ()
-setFilterBrowsers neFilterProviderConfiguration  value =
-    sendMsg neFilterProviderConfiguration (mkSelector "setFilterBrowsers:") retVoid [argCULong (if value then 1 else 0)]
+setFilterBrowsers neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setFilterBrowsersSelector value
 
 -- | filterSockets
 --
@@ -97,8 +94,8 @@ setFilterBrowsers neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- filterSockets@
 filterSockets :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO Bool
-filterSockets neFilterProviderConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neFilterProviderConfiguration (mkSelector "filterSockets") retCULong []
+filterSockets neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration filterSocketsSelector
 
 -- | filterSockets
 --
@@ -106,8 +103,8 @@ filterSockets neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setFilterSockets:@
 setFilterSockets :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> Bool -> IO ()
-setFilterSockets neFilterProviderConfiguration  value =
-    sendMsg neFilterProviderConfiguration (mkSelector "setFilterSockets:") retVoid [argCULong (if value then 1 else 0)]
+setFilterSockets neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setFilterSocketsSelector value
 
 -- | filterPackets
 --
@@ -115,8 +112,8 @@ setFilterSockets neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- filterPackets@
 filterPackets :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO Bool
-filterPackets neFilterProviderConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neFilterProviderConfiguration (mkSelector "filterPackets") retCULong []
+filterPackets neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration filterPacketsSelector
 
 -- | filterPackets
 --
@@ -124,8 +121,8 @@ filterPackets neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setFilterPackets:@
 setFilterPackets :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> Bool -> IO ()
-setFilterPackets neFilterProviderConfiguration  value =
-    sendMsg neFilterProviderConfiguration (mkSelector "setFilterPackets:") retVoid [argCULong (if value then 1 else 0)]
+setFilterPackets neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setFilterPacketsSelector value
 
 -- | vendorConfiguration
 --
@@ -133,8 +130,8 @@ setFilterPackets neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- vendorConfiguration@
 vendorConfiguration :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSDictionary)
-vendorConfiguration neFilterProviderConfiguration  =
-    sendMsg neFilterProviderConfiguration (mkSelector "vendorConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorConfiguration neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration vendorConfigurationSelector
 
 -- | vendorConfiguration
 --
@@ -142,9 +139,8 @@ vendorConfiguration neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setVendorConfiguration:@
 setVendorConfiguration :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSDictionary value) => neFilterProviderConfiguration -> value -> IO ()
-setVendorConfiguration neFilterProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterProviderConfiguration (mkSelector "setVendorConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVendorConfiguration neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setVendorConfigurationSelector (toNSDictionary value)
 
 -- | serverAddress
 --
@@ -152,8 +148,8 @@ setVendorConfiguration neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- serverAddress@
 serverAddress :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSString)
-serverAddress neFilterProviderConfiguration  =
-    sendMsg neFilterProviderConfiguration (mkSelector "serverAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverAddress neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration serverAddressSelector
 
 -- | serverAddress
 --
@@ -161,9 +157,8 @@ serverAddress neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setServerAddress:@
 setServerAddress :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSString value) => neFilterProviderConfiguration -> value -> IO ()
-setServerAddress neFilterProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterProviderConfiguration (mkSelector "setServerAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerAddress neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setServerAddressSelector (toNSString value)
 
 -- | username
 --
@@ -171,8 +166,8 @@ setServerAddress neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- username@
 username :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSString)
-username neFilterProviderConfiguration  =
-    sendMsg neFilterProviderConfiguration (mkSelector "username") (retPtr retVoid) [] >>= retainedObject . castPtr
+username neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration usernameSelector
 
 -- | username
 --
@@ -180,9 +175,8 @@ username neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setUsername:@
 setUsername :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSString value) => neFilterProviderConfiguration -> value -> IO ()
-setUsername neFilterProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterProviderConfiguration (mkSelector "setUsername:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUsername neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setUsernameSelector (toNSString value)
 
 -- | organization
 --
@@ -190,8 +184,8 @@ setUsername neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- organization@
 organization :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSString)
-organization neFilterProviderConfiguration  =
-    sendMsg neFilterProviderConfiguration (mkSelector "organization") (retPtr retVoid) [] >>= retainedObject . castPtr
+organization neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration organizationSelector
 
 -- | organization
 --
@@ -199,9 +193,8 @@ organization neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setOrganization:@
 setOrganization :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSString value) => neFilterProviderConfiguration -> value -> IO ()
-setOrganization neFilterProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterProviderConfiguration (mkSelector "setOrganization:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOrganization neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setOrganizationSelector (toNSString value)
 
 -- | passwordReference
 --
@@ -209,8 +202,8 @@ setOrganization neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- passwordReference@
 passwordReference :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSData)
-passwordReference neFilterProviderConfiguration  =
-    sendMsg neFilterProviderConfiguration (mkSelector "passwordReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+passwordReference neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration passwordReferenceSelector
 
 -- | passwordReference
 --
@@ -218,9 +211,8 @@ passwordReference neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setPasswordReference:@
 setPasswordReference :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSData value) => neFilterProviderConfiguration -> value -> IO ()
-setPasswordReference neFilterProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterProviderConfiguration (mkSelector "setPasswordReference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPasswordReference neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setPasswordReferenceSelector (toNSData value)
 
 -- | identityReference
 --
@@ -228,8 +220,8 @@ setPasswordReference neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- identityReference@
 identityReference :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSData)
-identityReference neFilterProviderConfiguration  =
-    sendMsg neFilterProviderConfiguration (mkSelector "identityReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+identityReference neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration identityReferenceSelector
 
 -- | identityReference
 --
@@ -237,9 +229,8 @@ identityReference neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setIdentityReference:@
 setIdentityReference :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSData value) => neFilterProviderConfiguration -> value -> IO ()
-setIdentityReference neFilterProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterProviderConfiguration (mkSelector "setIdentityReference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentityReference neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setIdentityReferenceSelector (toNSData value)
 
 -- | filterDataProviderBundleIdentifier
 --
@@ -247,8 +238,8 @@ setIdentityReference neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- filterDataProviderBundleIdentifier@
 filterDataProviderBundleIdentifier :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSString)
-filterDataProviderBundleIdentifier neFilterProviderConfiguration  =
-    sendMsg neFilterProviderConfiguration (mkSelector "filterDataProviderBundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterDataProviderBundleIdentifier neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration filterDataProviderBundleIdentifierSelector
 
 -- | filterDataProviderBundleIdentifier
 --
@@ -256,9 +247,8 @@ filterDataProviderBundleIdentifier neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setFilterDataProviderBundleIdentifier:@
 setFilterDataProviderBundleIdentifier :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSString value) => neFilterProviderConfiguration -> value -> IO ()
-setFilterDataProviderBundleIdentifier neFilterProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterProviderConfiguration (mkSelector "setFilterDataProviderBundleIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFilterDataProviderBundleIdentifier neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setFilterDataProviderBundleIdentifierSelector (toNSString value)
 
 -- | filterPacketProviderBundleIdentifier
 --
@@ -266,8 +256,8 @@ setFilterDataProviderBundleIdentifier neFilterProviderConfiguration  value =
 --
 -- ObjC selector: @- filterPacketProviderBundleIdentifier@
 filterPacketProviderBundleIdentifier :: IsNEFilterProviderConfiguration neFilterProviderConfiguration => neFilterProviderConfiguration -> IO (Id NSString)
-filterPacketProviderBundleIdentifier neFilterProviderConfiguration  =
-    sendMsg neFilterProviderConfiguration (mkSelector "filterPacketProviderBundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterPacketProviderBundleIdentifier neFilterProviderConfiguration =
+  sendMessage neFilterProviderConfiguration filterPacketProviderBundleIdentifierSelector
 
 -- | filterPacketProviderBundleIdentifier
 --
@@ -275,99 +265,98 @@ filterPacketProviderBundleIdentifier neFilterProviderConfiguration  =
 --
 -- ObjC selector: @- setFilterPacketProviderBundleIdentifier:@
 setFilterPacketProviderBundleIdentifier :: (IsNEFilterProviderConfiguration neFilterProviderConfiguration, IsNSString value) => neFilterProviderConfiguration -> value -> IO ()
-setFilterPacketProviderBundleIdentifier neFilterProviderConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterProviderConfiguration (mkSelector "setFilterPacketProviderBundleIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFilterPacketProviderBundleIdentifier neFilterProviderConfiguration value =
+  sendMessage neFilterProviderConfiguration setFilterPacketProviderBundleIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @filterBrowsers@
-filterBrowsersSelector :: Selector
+filterBrowsersSelector :: Selector '[] Bool
 filterBrowsersSelector = mkSelector "filterBrowsers"
 
 -- | @Selector@ for @setFilterBrowsers:@
-setFilterBrowsersSelector :: Selector
+setFilterBrowsersSelector :: Selector '[Bool] ()
 setFilterBrowsersSelector = mkSelector "setFilterBrowsers:"
 
 -- | @Selector@ for @filterSockets@
-filterSocketsSelector :: Selector
+filterSocketsSelector :: Selector '[] Bool
 filterSocketsSelector = mkSelector "filterSockets"
 
 -- | @Selector@ for @setFilterSockets:@
-setFilterSocketsSelector :: Selector
+setFilterSocketsSelector :: Selector '[Bool] ()
 setFilterSocketsSelector = mkSelector "setFilterSockets:"
 
 -- | @Selector@ for @filterPackets@
-filterPacketsSelector :: Selector
+filterPacketsSelector :: Selector '[] Bool
 filterPacketsSelector = mkSelector "filterPackets"
 
 -- | @Selector@ for @setFilterPackets:@
-setFilterPacketsSelector :: Selector
+setFilterPacketsSelector :: Selector '[Bool] ()
 setFilterPacketsSelector = mkSelector "setFilterPackets:"
 
 -- | @Selector@ for @vendorConfiguration@
-vendorConfigurationSelector :: Selector
+vendorConfigurationSelector :: Selector '[] (Id NSDictionary)
 vendorConfigurationSelector = mkSelector "vendorConfiguration"
 
 -- | @Selector@ for @setVendorConfiguration:@
-setVendorConfigurationSelector :: Selector
+setVendorConfigurationSelector :: Selector '[Id NSDictionary] ()
 setVendorConfigurationSelector = mkSelector "setVendorConfiguration:"
 
 -- | @Selector@ for @serverAddress@
-serverAddressSelector :: Selector
+serverAddressSelector :: Selector '[] (Id NSString)
 serverAddressSelector = mkSelector "serverAddress"
 
 -- | @Selector@ for @setServerAddress:@
-setServerAddressSelector :: Selector
+setServerAddressSelector :: Selector '[Id NSString] ()
 setServerAddressSelector = mkSelector "setServerAddress:"
 
 -- | @Selector@ for @username@
-usernameSelector :: Selector
+usernameSelector :: Selector '[] (Id NSString)
 usernameSelector = mkSelector "username"
 
 -- | @Selector@ for @setUsername:@
-setUsernameSelector :: Selector
+setUsernameSelector :: Selector '[Id NSString] ()
 setUsernameSelector = mkSelector "setUsername:"
 
 -- | @Selector@ for @organization@
-organizationSelector :: Selector
+organizationSelector :: Selector '[] (Id NSString)
 organizationSelector = mkSelector "organization"
 
 -- | @Selector@ for @setOrganization:@
-setOrganizationSelector :: Selector
+setOrganizationSelector :: Selector '[Id NSString] ()
 setOrganizationSelector = mkSelector "setOrganization:"
 
 -- | @Selector@ for @passwordReference@
-passwordReferenceSelector :: Selector
+passwordReferenceSelector :: Selector '[] (Id NSData)
 passwordReferenceSelector = mkSelector "passwordReference"
 
 -- | @Selector@ for @setPasswordReference:@
-setPasswordReferenceSelector :: Selector
+setPasswordReferenceSelector :: Selector '[Id NSData] ()
 setPasswordReferenceSelector = mkSelector "setPasswordReference:"
 
 -- | @Selector@ for @identityReference@
-identityReferenceSelector :: Selector
+identityReferenceSelector :: Selector '[] (Id NSData)
 identityReferenceSelector = mkSelector "identityReference"
 
 -- | @Selector@ for @setIdentityReference:@
-setIdentityReferenceSelector :: Selector
+setIdentityReferenceSelector :: Selector '[Id NSData] ()
 setIdentityReferenceSelector = mkSelector "setIdentityReference:"
 
 -- | @Selector@ for @filterDataProviderBundleIdentifier@
-filterDataProviderBundleIdentifierSelector :: Selector
+filterDataProviderBundleIdentifierSelector :: Selector '[] (Id NSString)
 filterDataProviderBundleIdentifierSelector = mkSelector "filterDataProviderBundleIdentifier"
 
 -- | @Selector@ for @setFilterDataProviderBundleIdentifier:@
-setFilterDataProviderBundleIdentifierSelector :: Selector
+setFilterDataProviderBundleIdentifierSelector :: Selector '[Id NSString] ()
 setFilterDataProviderBundleIdentifierSelector = mkSelector "setFilterDataProviderBundleIdentifier:"
 
 -- | @Selector@ for @filterPacketProviderBundleIdentifier@
-filterPacketProviderBundleIdentifierSelector :: Selector
+filterPacketProviderBundleIdentifierSelector :: Selector '[] (Id NSString)
 filterPacketProviderBundleIdentifierSelector = mkSelector "filterPacketProviderBundleIdentifier"
 
 -- | @Selector@ for @setFilterPacketProviderBundleIdentifier:@
-setFilterPacketProviderBundleIdentifierSelector :: Selector
+setFilterPacketProviderBundleIdentifierSelector :: Selector '[Id NSString] ()
 setFilterPacketProviderBundleIdentifierSelector = mkSelector "setFilterPacketProviderBundleIdentifier:"
 

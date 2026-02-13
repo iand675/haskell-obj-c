@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.SystemExtensions.OSSystemExtensionInfo
   , bundleVersion
   , bundleShortVersion
   , bundleIdentifierSelector
-  , bundleVersionSelector
   , bundleShortVersionSelector
+  , bundleVersionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bundleIdentifier@
 bundleIdentifier :: IsOSSystemExtensionInfo osSystemExtensionInfo => osSystemExtensionInfo -> IO (Id NSString)
-bundleIdentifier osSystemExtensionInfo  =
-    sendMsg osSystemExtensionInfo (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleIdentifier osSystemExtensionInfo =
+  sendMessage osSystemExtensionInfo bundleIdentifierSelector
 
 -- | The bundle version of the extension (CFBundleVersion)
 --
 -- ObjC selector: @- bundleVersion@
 bundleVersion :: IsOSSystemExtensionInfo osSystemExtensionInfo => osSystemExtensionInfo -> IO (Id NSString)
-bundleVersion osSystemExtensionInfo  =
-    sendMsg osSystemExtensionInfo (mkSelector "bundleVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleVersion osSystemExtensionInfo =
+  sendMessage osSystemExtensionInfo bundleVersionSelector
 
 -- | The bundle short version string of the extension (CFBundleShortVersionString)
 --
 -- ObjC selector: @- bundleShortVersion@
 bundleShortVersion :: IsOSSystemExtensionInfo osSystemExtensionInfo => osSystemExtensionInfo -> IO (Id NSString)
-bundleShortVersion osSystemExtensionInfo  =
-    sendMsg osSystemExtensionInfo (mkSelector "bundleShortVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleShortVersion osSystemExtensionInfo =
+  sendMessage osSystemExtensionInfo bundleShortVersionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bundleIdentifier@
-bundleIdentifierSelector :: Selector
+bundleIdentifierSelector :: Selector '[] (Id NSString)
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
 
 -- | @Selector@ for @bundleVersion@
-bundleVersionSelector :: Selector
+bundleVersionSelector :: Selector '[] (Id NSString)
 bundleVersionSelector = mkSelector "bundleVersion"
 
 -- | @Selector@ for @bundleShortVersion@
-bundleShortVersionSelector :: Selector
+bundleShortVersionSelector :: Selector '[] (Id NSString)
 bundleShortVersionSelector = mkSelector "bundleShortVersion"
 

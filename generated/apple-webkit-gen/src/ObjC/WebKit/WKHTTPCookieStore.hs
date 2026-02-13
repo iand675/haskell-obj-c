@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,14 +18,14 @@ module ObjC.WebKit.WKHTTPCookieStore
   , removeObserver
   , setCookiePolicy_completionHandler
   , getCookiePolicy
-  , initSelector
-  , setCookie_completionHandlerSelector
-  , setCookies_completionHandlerSelector
-  , deleteCookie_completionHandlerSelector
   , addObserverSelector
+  , deleteCookie_completionHandlerSelector
+  , getCookiePolicySelector
+  , initSelector
   , removeObserverSelector
   , setCookiePolicy_completionHandlerSelector
-  , getCookiePolicySelector
+  , setCookie_completionHandlerSelector
+  , setCookies_completionHandlerSelector
 
   -- * Enum types
   , WKCookiePolicy(WKCookiePolicy)
@@ -33,15 +34,11 @@ module ObjC.WebKit.WKHTTPCookieStore
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsWKHTTPCookieStore wkhttpCookieStore => wkhttpCookieStore -> IO (Id WKHTTPCookieStore)
-init_ wkhttpCookieStore  =
-    sendMsg wkhttpCookieStore (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkhttpCookieStore =
+  sendOwnedMessage wkhttpCookieStore initSelector
 
 -- | Set a cookie.
 --
@@ -62,9 +59,8 @@ init_ wkhttpCookieStore  =
 --
 -- ObjC selector: @- setCookie:completionHandler:@
 setCookie_completionHandler :: (IsWKHTTPCookieStore wkhttpCookieStore, IsNSHTTPCookie cookie) => wkhttpCookieStore -> cookie -> Ptr () -> IO ()
-setCookie_completionHandler wkhttpCookieStore  cookie completionHandler =
-  withObjCPtr cookie $ \raw_cookie ->
-      sendMsg wkhttpCookieStore (mkSelector "setCookie:completionHandler:") retVoid [argPtr (castPtr raw_cookie :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setCookie_completionHandler wkhttpCookieStore cookie completionHandler =
+  sendMessage wkhttpCookieStore setCookie_completionHandlerSelector (toNSHTTPCookie cookie) completionHandler
 
 -- | Set multiple cookies.
 --
@@ -74,9 +70,8 @@ setCookie_completionHandler wkhttpCookieStore  cookie completionHandler =
 --
 -- ObjC selector: @- setCookies:completionHandler:@
 setCookies_completionHandler :: (IsWKHTTPCookieStore wkhttpCookieStore, IsNSArray cookies) => wkhttpCookieStore -> cookies -> Ptr () -> IO ()
-setCookies_completionHandler wkhttpCookieStore  cookies completionHandler =
-  withObjCPtr cookies $ \raw_cookies ->
-      sendMsg wkhttpCookieStore (mkSelector "setCookies:completionHandler:") retVoid [argPtr (castPtr raw_cookies :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setCookies_completionHandler wkhttpCookieStore cookies completionHandler =
+  sendMessage wkhttpCookieStore setCookies_completionHandlerSelector (toNSArray cookies) completionHandler
 
 -- | Delete the specified cookie.
 --
@@ -84,9 +79,8 @@ setCookies_completionHandler wkhttpCookieStore  cookies completionHandler =
 --
 -- ObjC selector: @- deleteCookie:completionHandler:@
 deleteCookie_completionHandler :: (IsWKHTTPCookieStore wkhttpCookieStore, IsNSHTTPCookie cookie) => wkhttpCookieStore -> cookie -> Ptr () -> IO ()
-deleteCookie_completionHandler wkhttpCookieStore  cookie completionHandler =
-  withObjCPtr cookie $ \raw_cookie ->
-      sendMsg wkhttpCookieStore (mkSelector "deleteCookie:completionHandler:") retVoid [argPtr (castPtr raw_cookie :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+deleteCookie_completionHandler wkhttpCookieStore cookie completionHandler =
+  sendMessage wkhttpCookieStore deleteCookie_completionHandlerSelector (toNSHTTPCookie cookie) completionHandler
 
 -- | Adds a WKHTTPCookieStoreObserver object with the cookie store.
 --
@@ -96,8 +90,8 @@ deleteCookie_completionHandler wkhttpCookieStore  cookie completionHandler =
 --
 -- ObjC selector: @- addObserver:@
 addObserver :: IsWKHTTPCookieStore wkhttpCookieStore => wkhttpCookieStore -> RawId -> IO ()
-addObserver wkhttpCookieStore  observer =
-    sendMsg wkhttpCookieStore (mkSelector "addObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+addObserver wkhttpCookieStore observer =
+  sendMessage wkhttpCookieStore addObserverSelector observer
 
 -- | Removes a WKHTTPCookieStoreObserver object from the cookie store.
 --
@@ -105,8 +99,8 @@ addObserver wkhttpCookieStore  observer =
 --
 -- ObjC selector: @- removeObserver:@
 removeObserver :: IsWKHTTPCookieStore wkhttpCookieStore => wkhttpCookieStore -> RawId -> IO ()
-removeObserver wkhttpCookieStore  observer =
-    sendMsg wkhttpCookieStore (mkSelector "removeObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+removeObserver wkhttpCookieStore observer =
+  sendMessage wkhttpCookieStore removeObserverSelector observer
 
 -- | Set whether cookies are allowed.
 --
@@ -116,8 +110,8 @@ removeObserver wkhttpCookieStore  observer =
 --
 -- ObjC selector: @- setCookiePolicy:completionHandler:@
 setCookiePolicy_completionHandler :: IsWKHTTPCookieStore wkhttpCookieStore => wkhttpCookieStore -> WKCookiePolicy -> Ptr () -> IO ()
-setCookiePolicy_completionHandler wkhttpCookieStore  policy completionHandler =
-    sendMsg wkhttpCookieStore (mkSelector "setCookiePolicy:completionHandler:") retVoid [argCLong (coerce policy), argPtr (castPtr completionHandler :: Ptr ())]
+setCookiePolicy_completionHandler wkhttpCookieStore policy completionHandler =
+  sendMessage wkhttpCookieStore setCookiePolicy_completionHandlerSelector policy completionHandler
 
 -- | Get whether cookies are allowed.
 --
@@ -125,42 +119,42 @@ setCookiePolicy_completionHandler wkhttpCookieStore  policy completionHandler =
 --
 -- ObjC selector: @- getCookiePolicy:@
 getCookiePolicy :: IsWKHTTPCookieStore wkhttpCookieStore => wkhttpCookieStore -> Ptr () -> IO ()
-getCookiePolicy wkhttpCookieStore  completionHandler =
-    sendMsg wkhttpCookieStore (mkSelector "getCookiePolicy:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+getCookiePolicy wkhttpCookieStore completionHandler =
+  sendMessage wkhttpCookieStore getCookiePolicySelector completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKHTTPCookieStore)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setCookie:completionHandler:@
-setCookie_completionHandlerSelector :: Selector
+setCookie_completionHandlerSelector :: Selector '[Id NSHTTPCookie, Ptr ()] ()
 setCookie_completionHandlerSelector = mkSelector "setCookie:completionHandler:"
 
 -- | @Selector@ for @setCookies:completionHandler:@
-setCookies_completionHandlerSelector :: Selector
+setCookies_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 setCookies_completionHandlerSelector = mkSelector "setCookies:completionHandler:"
 
 -- | @Selector@ for @deleteCookie:completionHandler:@
-deleteCookie_completionHandlerSelector :: Selector
+deleteCookie_completionHandlerSelector :: Selector '[Id NSHTTPCookie, Ptr ()] ()
 deleteCookie_completionHandlerSelector = mkSelector "deleteCookie:completionHandler:"
 
 -- | @Selector@ for @addObserver:@
-addObserverSelector :: Selector
+addObserverSelector :: Selector '[RawId] ()
 addObserverSelector = mkSelector "addObserver:"
 
 -- | @Selector@ for @removeObserver:@
-removeObserverSelector :: Selector
+removeObserverSelector :: Selector '[RawId] ()
 removeObserverSelector = mkSelector "removeObserver:"
 
 -- | @Selector@ for @setCookiePolicy:completionHandler:@
-setCookiePolicy_completionHandlerSelector :: Selector
+setCookiePolicy_completionHandlerSelector :: Selector '[WKCookiePolicy, Ptr ()] ()
 setCookiePolicy_completionHandlerSelector = mkSelector "setCookiePolicy:completionHandler:"
 
 -- | @Selector@ for @getCookiePolicy:@
-getCookiePolicySelector :: Selector
+getCookiePolicySelector :: Selector '[Ptr ()] ()
 getCookiePolicySelector = mkSelector "getCookiePolicy:"
 

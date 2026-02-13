@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.GameplayKit.GKBillowNoiseSource
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,40 +37,40 @@ billowNoiseSourceWithFrequency_octaveCount_persistence_lacunarity_seed :: CDoubl
 billowNoiseSourceWithFrequency_octaveCount_persistence_lacunarity_seed frequency octaveCount persistence lacunarity seed =
   do
     cls' <- getRequiredClass "GKBillowNoiseSource"
-    sendClassMsg cls' (mkSelector "billowNoiseSourceWithFrequency:octaveCount:persistence:lacunarity:seed:") (retPtr retVoid) [argCDouble frequency, argCLong octaveCount, argCDouble persistence, argCDouble lacunarity, argCInt seed] >>= retainedObject . castPtr
+    sendClassMessage cls' billowNoiseSourceWithFrequency_octaveCount_persistence_lacunarity_seedSelector frequency octaveCount persistence lacunarity seed
 
 -- | @- initWithFrequency:octaveCount:persistence:lacunarity:seed:@
 initWithFrequency_octaveCount_persistence_lacunarity_seed :: IsGKBillowNoiseSource gkBillowNoiseSource => gkBillowNoiseSource -> CDouble -> CLong -> CDouble -> CDouble -> CInt -> IO (Id GKBillowNoiseSource)
-initWithFrequency_octaveCount_persistence_lacunarity_seed gkBillowNoiseSource  frequency octaveCount persistence lacunarity seed =
-    sendMsg gkBillowNoiseSource (mkSelector "initWithFrequency:octaveCount:persistence:lacunarity:seed:") (retPtr retVoid) [argCDouble frequency, argCLong octaveCount, argCDouble persistence, argCDouble lacunarity, argCInt seed] >>= ownedObject . castPtr
+initWithFrequency_octaveCount_persistence_lacunarity_seed gkBillowNoiseSource frequency octaveCount persistence lacunarity seed =
+  sendOwnedMessage gkBillowNoiseSource initWithFrequency_octaveCount_persistence_lacunarity_seedSelector frequency octaveCount persistence lacunarity seed
 
 -- | @- persistence@
 persistence :: IsGKBillowNoiseSource gkBillowNoiseSource => gkBillowNoiseSource -> IO CDouble
-persistence gkBillowNoiseSource  =
-    sendMsg gkBillowNoiseSource (mkSelector "persistence") retCDouble []
+persistence gkBillowNoiseSource =
+  sendMessage gkBillowNoiseSource persistenceSelector
 
 -- | @- setPersistence:@
 setPersistence :: IsGKBillowNoiseSource gkBillowNoiseSource => gkBillowNoiseSource -> CDouble -> IO ()
-setPersistence gkBillowNoiseSource  value =
-    sendMsg gkBillowNoiseSource (mkSelector "setPersistence:") retVoid [argCDouble value]
+setPersistence gkBillowNoiseSource value =
+  sendMessage gkBillowNoiseSource setPersistenceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @billowNoiseSourceWithFrequency:octaveCount:persistence:lacunarity:seed:@
-billowNoiseSourceWithFrequency_octaveCount_persistence_lacunarity_seedSelector :: Selector
+billowNoiseSourceWithFrequency_octaveCount_persistence_lacunarity_seedSelector :: Selector '[CDouble, CLong, CDouble, CDouble, CInt] (Id GKBillowNoiseSource)
 billowNoiseSourceWithFrequency_octaveCount_persistence_lacunarity_seedSelector = mkSelector "billowNoiseSourceWithFrequency:octaveCount:persistence:lacunarity:seed:"
 
 -- | @Selector@ for @initWithFrequency:octaveCount:persistence:lacunarity:seed:@
-initWithFrequency_octaveCount_persistence_lacunarity_seedSelector :: Selector
+initWithFrequency_octaveCount_persistence_lacunarity_seedSelector :: Selector '[CDouble, CLong, CDouble, CDouble, CInt] (Id GKBillowNoiseSource)
 initWithFrequency_octaveCount_persistence_lacunarity_seedSelector = mkSelector "initWithFrequency:octaveCount:persistence:lacunarity:seed:"
 
 -- | @Selector@ for @persistence@
-persistenceSelector :: Selector
+persistenceSelector :: Selector '[] CDouble
 persistenceSelector = mkSelector "persistence"
 
 -- | @Selector@ for @setPersistence:@
-setPersistenceSelector :: Selector
+setPersistenceSelector :: Selector '[CDouble] ()
 setPersistenceSelector = mkSelector "setPersistence:"
 

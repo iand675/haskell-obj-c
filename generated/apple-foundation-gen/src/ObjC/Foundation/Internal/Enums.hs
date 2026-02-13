@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Foundation.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @NSActivityOptions@ (bitmask)
 newtype NSActivityOptions = NSActivityOptions CULong
@@ -54,6 +57,16 @@ pattern NSActivityLatencyCritical = NSActivityOptions 1095216660480
 
 pattern NSActivityUserInteractive :: NSActivityOptions
 pattern NSActivityUserInteractive = NSActivityOptions 1095233437695
+
+instance ObjCArgument NSActivityOptions where
+  withObjCArg (NSActivityOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSActivityOptions where
+  type RawReturn NSActivityOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSActivityOptions x)
+  fromOwned x = pure (NSActivityOptions x)
 
 -- | @NSAlignmentOptions@ (bitmask)
 newtype NSAlignmentOptions = NSAlignmentOptions CULong
@@ -132,6 +145,16 @@ pattern NSAlignAllEdgesOutward = NSAlignmentOptions 3840
 pattern NSAlignAllEdgesNearest :: NSAlignmentOptions
 pattern NSAlignAllEdgesNearest = NSAlignmentOptions 983040
 
+instance ObjCArgument NSAlignmentOptions where
+  withObjCArg (NSAlignmentOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSAlignmentOptions where
+  type RawReturn NSAlignmentOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSAlignmentOptions x)
+  fromOwned x = pure (NSAlignmentOptions x)
+
 -- | @NSAppleEventSendOptions@ (bitmask)
 newtype NSAppleEventSendOptions = NSAppleEventSendOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -176,6 +199,16 @@ pattern NSAppleEventSendDontAnnotate = NSAppleEventSendOptions 65536
 pattern NSAppleEventSendDefaultOptions :: NSAppleEventSendOptions
 pattern NSAppleEventSendDefaultOptions = NSAppleEventSendOptions 35
 
+instance ObjCArgument NSAppleEventSendOptions where
+  withObjCArg (NSAppleEventSendOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSAppleEventSendOptions where
+  type RawReturn NSAppleEventSendOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSAppleEventSendOptions x)
+  fromOwned x = pure (NSAppleEventSendOptions x)
+
 -- | @NSAttributedStringEnumerationOptions@ (bitmask)
 newtype NSAttributedStringEnumerationOptions = NSAttributedStringEnumerationOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -192,6 +225,16 @@ pattern NSAttributedStringEnumerationReverse = NSAttributedStringEnumerationOpti
 
 pattern NSAttributedStringEnumerationLongestEffectiveRangeNotRequired :: NSAttributedStringEnumerationOptions
 pattern NSAttributedStringEnumerationLongestEffectiveRangeNotRequired = NSAttributedStringEnumerationOptions 1048576
+
+instance ObjCArgument NSAttributedStringEnumerationOptions where
+  withObjCArg (NSAttributedStringEnumerationOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSAttributedStringEnumerationOptions where
+  type RawReturn NSAttributedStringEnumerationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSAttributedStringEnumerationOptions x)
+  fromOwned x = pure (NSAttributedStringEnumerationOptions x)
 
 -- | @NSAttributedStringFormattingOptions@ (bitmask)
 newtype NSAttributedStringFormattingOptions = NSAttributedStringFormattingOptions CULong
@@ -210,6 +253,16 @@ pattern NSAttributedStringFormattingInsertArgumentAttributesWithoutMerging = NSA
 pattern NSAttributedStringFormattingApplyReplacementIndexAttribute :: NSAttributedStringFormattingOptions
 pattern NSAttributedStringFormattingApplyReplacementIndexAttribute = NSAttributedStringFormattingOptions 2
 
+instance ObjCArgument NSAttributedStringFormattingOptions where
+  withObjCArg (NSAttributedStringFormattingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSAttributedStringFormattingOptions where
+  type RawReturn NSAttributedStringFormattingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSAttributedStringFormattingOptions x)
+  fromOwned x = pure (NSAttributedStringFormattingOptions x)
+
 -- | @NSAttributedStringMarkdownInterpretedSyntax@
 newtype NSAttributedStringMarkdownInterpretedSyntax = NSAttributedStringMarkdownInterpretedSyntax CLong
   deriving stock (Eq, Ord, Show)
@@ -224,6 +277,16 @@ pattern NSAttributedStringMarkdownInterpretedSyntaxInlineOnly = NSAttributedStri
 pattern NSAttributedStringMarkdownInterpretedSyntaxInlineOnlyPreservingWhitespace :: NSAttributedStringMarkdownInterpretedSyntax
 pattern NSAttributedStringMarkdownInterpretedSyntaxInlineOnlyPreservingWhitespace = NSAttributedStringMarkdownInterpretedSyntax 2
 
+instance ObjCArgument NSAttributedStringMarkdownInterpretedSyntax where
+  withObjCArg (NSAttributedStringMarkdownInterpretedSyntax x) k = k (argCLong x)
+
+instance ObjCReturn NSAttributedStringMarkdownInterpretedSyntax where
+  type RawReturn NSAttributedStringMarkdownInterpretedSyntax = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSAttributedStringMarkdownInterpretedSyntax x)
+  fromOwned x = pure (NSAttributedStringMarkdownInterpretedSyntax x)
+
 -- | @NSAttributedStringMarkdownParsingFailurePolicy@
 newtype NSAttributedStringMarkdownParsingFailurePolicy = NSAttributedStringMarkdownParsingFailurePolicy CLong
   deriving stock (Eq, Ord, Show)
@@ -235,6 +298,16 @@ pattern NSAttributedStringMarkdownParsingFailureReturnError = NSAttributedString
 pattern NSAttributedStringMarkdownParsingFailureReturnPartiallyParsedIfPossible :: NSAttributedStringMarkdownParsingFailurePolicy
 pattern NSAttributedStringMarkdownParsingFailureReturnPartiallyParsedIfPossible = NSAttributedStringMarkdownParsingFailurePolicy 1
 
+instance ObjCArgument NSAttributedStringMarkdownParsingFailurePolicy where
+  withObjCArg (NSAttributedStringMarkdownParsingFailurePolicy x) k = k (argCLong x)
+
+instance ObjCReturn NSAttributedStringMarkdownParsingFailurePolicy where
+  type RawReturn NSAttributedStringMarkdownParsingFailurePolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSAttributedStringMarkdownParsingFailurePolicy x)
+  fromOwned x = pure (NSAttributedStringMarkdownParsingFailurePolicy x)
+
 -- | @NSBackgroundActivityResult@
 newtype NSBackgroundActivityResult = NSBackgroundActivityResult CLong
   deriving stock (Eq, Ord, Show)
@@ -245,6 +318,16 @@ pattern NSBackgroundActivityResultFinished = NSBackgroundActivityResult 1
 
 pattern NSBackgroundActivityResultDeferred :: NSBackgroundActivityResult
 pattern NSBackgroundActivityResultDeferred = NSBackgroundActivityResult 2
+
+instance ObjCArgument NSBackgroundActivityResult where
+  withObjCArg (NSBackgroundActivityResult x) k = k (argCLong x)
+
+instance ObjCReturn NSBackgroundActivityResult where
+  type RawReturn NSBackgroundActivityResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSBackgroundActivityResult x)
+  fromOwned x = pure (NSBackgroundActivityResult x)
 
 -- | @NSBinarySearchingOptions@ (bitmask)
 newtype NSBinarySearchingOptions = NSBinarySearchingOptions CULong
@@ -266,6 +349,16 @@ pattern NSBinarySearchingLastEqual = NSBinarySearchingOptions 512
 pattern NSBinarySearchingInsertionIndex :: NSBinarySearchingOptions
 pattern NSBinarySearchingInsertionIndex = NSBinarySearchingOptions 1024
 
+instance ObjCArgument NSBinarySearchingOptions where
+  withObjCArg (NSBinarySearchingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSBinarySearchingOptions where
+  type RawReturn NSBinarySearchingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSBinarySearchingOptions x)
+  fromOwned x = pure (NSBinarySearchingOptions x)
+
 -- | @NSByteCountFormatterCountStyle@
 newtype NSByteCountFormatterCountStyle = NSByteCountFormatterCountStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -282,6 +375,16 @@ pattern NSByteCountFormatterCountStyleDecimal = NSByteCountFormatterCountStyle 2
 
 pattern NSByteCountFormatterCountStyleBinary :: NSByteCountFormatterCountStyle
 pattern NSByteCountFormatterCountStyleBinary = NSByteCountFormatterCountStyle 3
+
+instance ObjCArgument NSByteCountFormatterCountStyle where
+  withObjCArg (NSByteCountFormatterCountStyle x) k = k (argCLong x)
+
+instance ObjCReturn NSByteCountFormatterCountStyle where
+  type RawReturn NSByteCountFormatterCountStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSByteCountFormatterCountStyle x)
+  fromOwned x = pure (NSByteCountFormatterCountStyle x)
 
 -- | @NSByteCountFormatterUnits@ (bitmask)
 newtype NSByteCountFormatterUnits = NSByteCountFormatterUnits CULong
@@ -327,6 +430,16 @@ pattern NSByteCountFormatterUseYBOrHigher = NSByteCountFormatterUnits 65280
 pattern NSByteCountFormatterUseAll :: NSByteCountFormatterUnits
 pattern NSByteCountFormatterUseAll = NSByteCountFormatterUnits 65535
 
+instance ObjCArgument NSByteCountFormatterUnits where
+  withObjCArg (NSByteCountFormatterUnits x) k = k (argCULong x)
+
+instance ObjCReturn NSByteCountFormatterUnits where
+  type RawReturn NSByteCountFormatterUnits = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSByteCountFormatterUnits x)
+  fromOwned x = pure (NSByteCountFormatterUnits x)
+
 -- | @NSCalculationError@
 newtype NSCalculationError = NSCalculationError CULong
   deriving stock (Eq, Ord, Show)
@@ -346,6 +459,16 @@ pattern NSCalculationOverflow = NSCalculationError 3
 
 pattern NSCalculationDivideByZero :: NSCalculationError
 pattern NSCalculationDivideByZero = NSCalculationError 4
+
+instance ObjCArgument NSCalculationError where
+  withObjCArg (NSCalculationError x) k = k (argCULong x)
+
+instance ObjCReturn NSCalculationError where
+  type RawReturn NSCalculationError = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSCalculationError x)
+  fromOwned x = pure (NSCalculationError x)
 
 -- | @NSCalendarOptions@ (bitmask)
 newtype NSCalendarOptions = NSCalendarOptions CULong
@@ -381,6 +504,16 @@ pattern NSCalendarMatchFirst = NSCalendarOptions 4096
 
 pattern NSCalendarMatchLast :: NSCalendarOptions
 pattern NSCalendarMatchLast = NSCalendarOptions 8192
+
+instance ObjCArgument NSCalendarOptions where
+  withObjCArg (NSCalendarOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSCalendarOptions where
+  type RawReturn NSCalendarOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSCalendarOptions x)
+  fromOwned x = pure (NSCalendarOptions x)
 
 -- | @NSCalendarUnit@ (bitmask)
 newtype NSCalendarUnit = NSCalendarUnit CULong
@@ -498,6 +631,16 @@ pattern NSCalendarCalendarUnit = NSCalendarUnit 1048576
 pattern NSTimeZoneCalendarUnit :: NSCalendarUnit
 pattern NSTimeZoneCalendarUnit = NSCalendarUnit 2097152
 
+instance ObjCArgument NSCalendarUnit where
+  withObjCArg (NSCalendarUnit x) k = k (argCULong x)
+
+instance ObjCReturn NSCalendarUnit where
+  type RawReturn NSCalendarUnit = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSCalendarUnit x)
+  fromOwned x = pure (NSCalendarUnit x)
+
 -- | @NSCollectionChangeType@
 newtype NSCollectionChangeType = NSCollectionChangeType CLong
   deriving stock (Eq, Ord, Show)
@@ -508,6 +651,16 @@ pattern NSCollectionChangeInsert = NSCollectionChangeType 0
 
 pattern NSCollectionChangeRemove :: NSCollectionChangeType
 pattern NSCollectionChangeRemove = NSCollectionChangeType 1
+
+instance ObjCArgument NSCollectionChangeType where
+  withObjCArg (NSCollectionChangeType x) k = k (argCLong x)
+
+instance ObjCReturn NSCollectionChangeType where
+  type RawReturn NSCollectionChangeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSCollectionChangeType x)
+  fromOwned x = pure (NSCollectionChangeType x)
 
 -- | @NSComparisonPredicateModifier@
 newtype NSComparisonPredicateModifier = NSComparisonPredicateModifier CULong
@@ -522,6 +675,16 @@ pattern NSAllPredicateModifier = NSComparisonPredicateModifier 1
 
 pattern NSAnyPredicateModifier :: NSComparisonPredicateModifier
 pattern NSAnyPredicateModifier = NSComparisonPredicateModifier 2
+
+instance ObjCArgument NSComparisonPredicateModifier where
+  withObjCArg (NSComparisonPredicateModifier x) k = k (argCULong x)
+
+instance ObjCReturn NSComparisonPredicateModifier where
+  type RawReturn NSComparisonPredicateModifier = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSComparisonPredicateModifier x)
+  fromOwned x = pure (NSComparisonPredicateModifier x)
 
 -- | @NSComparisonPredicateOptions@ (bitmask)
 newtype NSComparisonPredicateOptions = NSComparisonPredicateOptions CULong
@@ -543,6 +706,16 @@ pattern NSDiacriticInsensitivePredicateOption = NSComparisonPredicateOptions 2
 pattern NSNormalizedPredicateOption :: NSComparisonPredicateOptions
 pattern NSNormalizedPredicateOption = NSComparisonPredicateOptions 4
 
+instance ObjCArgument NSComparisonPredicateOptions where
+  withObjCArg (NSComparisonPredicateOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSComparisonPredicateOptions where
+  type RawReturn NSComparisonPredicateOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSComparisonPredicateOptions x)
+  fromOwned x = pure (NSComparisonPredicateOptions x)
+
 -- | @NSComparisonResult@
 newtype NSComparisonResult = NSComparisonResult CLong
   deriving stock (Eq, Ord, Show)
@@ -556,6 +729,16 @@ pattern NSOrderedSame = NSComparisonResult 0
 
 pattern NSOrderedDescending :: NSComparisonResult
 pattern NSOrderedDescending = NSComparisonResult 1
+
+instance ObjCArgument NSComparisonResult where
+  withObjCArg (NSComparisonResult x) k = k (argCLong x)
+
+instance ObjCReturn NSComparisonResult where
+  type RawReturn NSComparisonResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSComparisonResult x)
+  fromOwned x = pure (NSComparisonResult x)
 
 -- | @NSCompoundPredicateType@
 newtype NSCompoundPredicateType = NSCompoundPredicateType CULong
@@ -571,6 +754,16 @@ pattern NSAndPredicateType = NSCompoundPredicateType 1
 pattern NSOrPredicateType :: NSCompoundPredicateType
 pattern NSOrPredicateType = NSCompoundPredicateType 2
 
+instance ObjCArgument NSCompoundPredicateType where
+  withObjCArg (NSCompoundPredicateType x) k = k (argCULong x)
+
+instance ObjCReturn NSCompoundPredicateType where
+  type RawReturn NSCompoundPredicateType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSCompoundPredicateType x)
+  fromOwned x = pure (NSCompoundPredicateType x)
+
 -- | @NSDataBase64DecodingOptions@ (bitmask)
 newtype NSDataBase64DecodingOptions = NSDataBase64DecodingOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -584,6 +777,16 @@ instance Monoid NSDataBase64DecodingOptions where
 
 pattern NSDataBase64DecodingIgnoreUnknownCharacters :: NSDataBase64DecodingOptions
 pattern NSDataBase64DecodingIgnoreUnknownCharacters = NSDataBase64DecodingOptions 1
+
+instance ObjCArgument NSDataBase64DecodingOptions where
+  withObjCArg (NSDataBase64DecodingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSDataBase64DecodingOptions where
+  type RawReturn NSDataBase64DecodingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDataBase64DecodingOptions x)
+  fromOwned x = pure (NSDataBase64DecodingOptions x)
 
 -- | **************        Base 64 Options	***************
 -- | @NSDataBase64EncodingOptions@ (bitmask)
@@ -609,6 +812,16 @@ pattern NSDataBase64EncodingEndLineWithCarriageReturn = NSDataBase64EncodingOpti
 pattern NSDataBase64EncodingEndLineWithLineFeed :: NSDataBase64EncodingOptions
 pattern NSDataBase64EncodingEndLineWithLineFeed = NSDataBase64EncodingOptions 32
 
+instance ObjCArgument NSDataBase64EncodingOptions where
+  withObjCArg (NSDataBase64EncodingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSDataBase64EncodingOptions where
+  type RawReturn NSDataBase64EncodingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDataBase64EncodingOptions x)
+  fromOwned x = pure (NSDataBase64EncodingOptions x)
+
 -- | @NSDataCompressionAlgorithm@
 newtype NSDataCompressionAlgorithm = NSDataCompressionAlgorithm CLong
   deriving stock (Eq, Ord, Show)
@@ -625,6 +838,16 @@ pattern NSDataCompressionAlgorithmLZMA = NSDataCompressionAlgorithm 2
 
 pattern NSDataCompressionAlgorithmZlib :: NSDataCompressionAlgorithm
 pattern NSDataCompressionAlgorithmZlib = NSDataCompressionAlgorithm 3
+
+instance ObjCArgument NSDataCompressionAlgorithm where
+  withObjCArg (NSDataCompressionAlgorithm x) k = k (argCLong x)
+
+instance ObjCReturn NSDataCompressionAlgorithm where
+  type RawReturn NSDataCompressionAlgorithm = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDataCompressionAlgorithm x)
+  fromOwned x = pure (NSDataCompressionAlgorithm x)
 
 -- | **************	Read/Write Options	***************
 -- | @NSDataReadingOptions@ (bitmask)
@@ -656,6 +879,16 @@ pattern NSMappedRead = NSDataReadingOptions 1
 pattern NSUncachedRead :: NSDataReadingOptions
 pattern NSUncachedRead = NSDataReadingOptions 2
 
+instance ObjCArgument NSDataReadingOptions where
+  withObjCArg (NSDataReadingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSDataReadingOptions where
+  type RawReturn NSDataReadingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDataReadingOptions x)
+  fromOwned x = pure (NSDataReadingOptions x)
+
 -- | **************	Data Search Options	***************
 -- | @NSDataSearchOptions@ (bitmask)
 newtype NSDataSearchOptions = NSDataSearchOptions CULong
@@ -673,6 +906,16 @@ pattern NSDataSearchBackwards = NSDataSearchOptions 1
 
 pattern NSDataSearchAnchored :: NSDataSearchOptions
 pattern NSDataSearchAnchored = NSDataSearchOptions 2
+
+instance ObjCArgument NSDataSearchOptions where
+  withObjCArg (NSDataSearchOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSDataSearchOptions where
+  type RawReturn NSDataSearchOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDataSearchOptions x)
+  fromOwned x = pure (NSDataSearchOptions x)
 
 -- | @NSDataWritingOptions@ (bitmask)
 newtype NSDataWritingOptions = NSDataWritingOptions CULong
@@ -712,6 +955,16 @@ pattern NSDataWritingFileProtectionMask = NSDataWritingOptions 4026531840
 pattern NSAtomicWrite :: NSDataWritingOptions
 pattern NSAtomicWrite = NSDataWritingOptions 1
 
+instance ObjCArgument NSDataWritingOptions where
+  withObjCArg (NSDataWritingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSDataWritingOptions where
+  type RawReturn NSDataWritingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDataWritingOptions x)
+  fromOwned x = pure (NSDataWritingOptions x)
+
 -- | @NSDateComponentsFormatterUnitsStyle@
 newtype NSDateComponentsFormatterUnitsStyle = NSDateComponentsFormatterUnitsStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -734,6 +987,16 @@ pattern NSDateComponentsFormatterUnitsStyleSpellOut = NSDateComponentsFormatterU
 
 pattern NSDateComponentsFormatterUnitsStyleBrief :: NSDateComponentsFormatterUnitsStyle
 pattern NSDateComponentsFormatterUnitsStyleBrief = NSDateComponentsFormatterUnitsStyle 5
+
+instance ObjCArgument NSDateComponentsFormatterUnitsStyle where
+  withObjCArg (NSDateComponentsFormatterUnitsStyle x) k = k (argCLong x)
+
+instance ObjCReturn NSDateComponentsFormatterUnitsStyle where
+  type RawReturn NSDateComponentsFormatterUnitsStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDateComponentsFormatterUnitsStyle x)
+  fromOwned x = pure (NSDateComponentsFormatterUnitsStyle x)
 
 -- | @NSDateComponentsFormatterZeroFormattingBehavior@ (bitmask)
 newtype NSDateComponentsFormatterZeroFormattingBehavior = NSDateComponentsFormatterZeroFormattingBehavior CULong
@@ -767,6 +1030,16 @@ pattern NSDateComponentsFormatterZeroFormattingBehaviorDropAll = NSDateComponent
 pattern NSDateComponentsFormatterZeroFormattingBehaviorPad :: NSDateComponentsFormatterZeroFormattingBehavior
 pattern NSDateComponentsFormatterZeroFormattingBehaviorPad = NSDateComponentsFormatterZeroFormattingBehavior 65536
 
+instance ObjCArgument NSDateComponentsFormatterZeroFormattingBehavior where
+  withObjCArg (NSDateComponentsFormatterZeroFormattingBehavior x) k = k (argCULong x)
+
+instance ObjCReturn NSDateComponentsFormatterZeroFormattingBehavior where
+  type RawReturn NSDateComponentsFormatterZeroFormattingBehavior = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDateComponentsFormatterZeroFormattingBehavior x)
+  fromOwned x = pure (NSDateComponentsFormatterZeroFormattingBehavior x)
+
 -- | @NSDateFormatterBehavior@
 newtype NSDateFormatterBehavior = NSDateFormatterBehavior CULong
   deriving stock (Eq, Ord, Show)
@@ -780,6 +1053,16 @@ pattern NSDateFormatterBehavior10_0 = NSDateFormatterBehavior 1000
 
 pattern NSDateFormatterBehavior10_4 :: NSDateFormatterBehavior
 pattern NSDateFormatterBehavior10_4 = NSDateFormatterBehavior 1040
+
+instance ObjCArgument NSDateFormatterBehavior where
+  withObjCArg (NSDateFormatterBehavior x) k = k (argCULong x)
+
+instance ObjCReturn NSDateFormatterBehavior where
+  type RawReturn NSDateFormatterBehavior = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDateFormatterBehavior x)
+  fromOwned x = pure (NSDateFormatterBehavior x)
 
 -- | @NSDateFormatterStyle@
 newtype NSDateFormatterStyle = NSDateFormatterStyle CULong
@@ -801,6 +1084,16 @@ pattern NSDateFormatterLongStyle = NSDateFormatterStyle 3
 pattern NSDateFormatterFullStyle :: NSDateFormatterStyle
 pattern NSDateFormatterFullStyle = NSDateFormatterStyle 4
 
+instance ObjCArgument NSDateFormatterStyle where
+  withObjCArg (NSDateFormatterStyle x) k = k (argCULong x)
+
+instance ObjCReturn NSDateFormatterStyle where
+  type RawReturn NSDateFormatterStyle = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDateFormatterStyle x)
+  fromOwned x = pure (NSDateFormatterStyle x)
+
 -- | @NSDateIntervalFormatterStyle@
 newtype NSDateIntervalFormatterStyle = NSDateIntervalFormatterStyle CULong
   deriving stock (Eq, Ord, Show)
@@ -821,6 +1114,16 @@ pattern NSDateIntervalFormatterLongStyle = NSDateIntervalFormatterStyle 3
 pattern NSDateIntervalFormatterFullStyle :: NSDateIntervalFormatterStyle
 pattern NSDateIntervalFormatterFullStyle = NSDateIntervalFormatterStyle 4
 
+instance ObjCArgument NSDateIntervalFormatterStyle where
+  withObjCArg (NSDateIntervalFormatterStyle x) k = k (argCULong x)
+
+instance ObjCReturn NSDateIntervalFormatterStyle where
+  type RawReturn NSDateIntervalFormatterStyle = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDateIntervalFormatterStyle x)
+  fromOwned x = pure (NSDateIntervalFormatterStyle x)
+
 -- | Describes the action an NSCoder should take when it encounters decode failures (e.g. corrupt data) for non-TopLevel decodes.
 -- | @NSDecodingFailurePolicy@
 newtype NSDecodingFailurePolicy = NSDecodingFailurePolicy CLong
@@ -832,6 +1135,16 @@ pattern NSDecodingFailurePolicyRaiseException = NSDecodingFailurePolicy 0
 
 pattern NSDecodingFailurePolicySetErrorAndReturn :: NSDecodingFailurePolicy
 pattern NSDecodingFailurePolicySetErrorAndReturn = NSDecodingFailurePolicy 1
+
+instance ObjCArgument NSDecodingFailurePolicy where
+  withObjCArg (NSDecodingFailurePolicy x) k = k (argCLong x)
+
+instance ObjCReturn NSDecodingFailurePolicy where
+  type RawReturn NSDecodingFailurePolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDecodingFailurePolicy x)
+  fromOwned x = pure (NSDecodingFailurePolicy x)
 
 -- | @NSDirectoryEnumerationOptions@ (bitmask)
 newtype NSDirectoryEnumerationOptions = NSDirectoryEnumerationOptions CULong
@@ -859,6 +1172,16 @@ pattern NSDirectoryEnumerationIncludesDirectoriesPostOrder = NSDirectoryEnumerat
 pattern NSDirectoryEnumerationProducesRelativePathURLs :: NSDirectoryEnumerationOptions
 pattern NSDirectoryEnumerationProducesRelativePathURLs = NSDirectoryEnumerationOptions 16
 
+instance ObjCArgument NSDirectoryEnumerationOptions where
+  withObjCArg (NSDirectoryEnumerationOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSDirectoryEnumerationOptions where
+  type RawReturn NSDirectoryEnumerationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDirectoryEnumerationOptions x)
+  fromOwned x = pure (NSDirectoryEnumerationOptions x)
+
 -- | @NSDistributedNotificationOptions@ (bitmask)
 newtype NSDistributedNotificationOptions = NSDistributedNotificationOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -875,6 +1198,16 @@ pattern NSDistributedNotificationDeliverImmediately = NSDistributedNotificationO
 
 pattern NSDistributedNotificationPostToAllSessions :: NSDistributedNotificationOptions
 pattern NSDistributedNotificationPostToAllSessions = NSDistributedNotificationOptions 2
+
+instance ObjCArgument NSDistributedNotificationOptions where
+  withObjCArg (NSDistributedNotificationOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSDistributedNotificationOptions where
+  type RawReturn NSDistributedNotificationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDistributedNotificationOptions x)
+  fromOwned x = pure (NSDistributedNotificationOptions x)
 
 -- | @NSEnergyFormatterUnit@
 newtype NSEnergyFormatterUnit = NSEnergyFormatterUnit CLong
@@ -893,6 +1226,16 @@ pattern NSEnergyFormatterUnitCalorie = NSEnergyFormatterUnit 1793
 pattern NSEnergyFormatterUnitKilocalorie :: NSEnergyFormatterUnit
 pattern NSEnergyFormatterUnitKilocalorie = NSEnergyFormatterUnit 1794
 
+instance ObjCArgument NSEnergyFormatterUnit where
+  withObjCArg (NSEnergyFormatterUnit x) k = k (argCLong x)
+
+instance ObjCReturn NSEnergyFormatterUnit where
+  type RawReturn NSEnergyFormatterUnit = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSEnergyFormatterUnit x)
+  fromOwned x = pure (NSEnergyFormatterUnit x)
+
 -- | @NSEnumerationOptions@ (bitmask)
 newtype NSEnumerationOptions = NSEnumerationOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -909,6 +1252,16 @@ pattern NSEnumerationConcurrent = NSEnumerationOptions 1
 
 pattern NSEnumerationReverse :: NSEnumerationOptions
 pattern NSEnumerationReverse = NSEnumerationOptions 2
+
+instance ObjCArgument NSEnumerationOptions where
+  withObjCArg (NSEnumerationOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSEnumerationOptions where
+  type RawReturn NSEnumerationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSEnumerationOptions x)
+  fromOwned x = pure (NSEnumerationOptions x)
 
 -- | @NSExpressionType@
 newtype NSExpressionType = NSExpressionType CULong
@@ -954,6 +1307,16 @@ pattern NSBlockExpressionType = NSExpressionType 19
 pattern NSConditionalExpressionType :: NSExpressionType
 pattern NSConditionalExpressionType = NSExpressionType 20
 
+instance ObjCArgument NSExpressionType where
+  withObjCArg (NSExpressionType x) k = k (argCULong x)
+
+instance ObjCReturn NSExpressionType where
+  type RawReturn NSExpressionType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSExpressionType x)
+  fromOwned x = pure (NSExpressionType x)
+
 -- | @NSFileCoordinatorReadingOptions@ (bitmask)
 newtype NSFileCoordinatorReadingOptions = NSFileCoordinatorReadingOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -976,6 +1339,16 @@ pattern NSFileCoordinatorReadingImmediatelyAvailableMetadataOnly = NSFileCoordin
 
 pattern NSFileCoordinatorReadingForUploading :: NSFileCoordinatorReadingOptions
 pattern NSFileCoordinatorReadingForUploading = NSFileCoordinatorReadingOptions 8
+
+instance ObjCArgument NSFileCoordinatorReadingOptions where
+  withObjCArg (NSFileCoordinatorReadingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileCoordinatorReadingOptions where
+  type RawReturn NSFileCoordinatorReadingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileCoordinatorReadingOptions x)
+  fromOwned x = pure (NSFileCoordinatorReadingOptions x)
 
 -- | @NSFileCoordinatorWritingOptions@ (bitmask)
 newtype NSFileCoordinatorWritingOptions = NSFileCoordinatorWritingOptions CULong
@@ -1003,6 +1376,16 @@ pattern NSFileCoordinatorWritingForReplacing = NSFileCoordinatorWritingOptions 8
 pattern NSFileCoordinatorWritingContentIndependentMetadataOnly :: NSFileCoordinatorWritingOptions
 pattern NSFileCoordinatorWritingContentIndependentMetadataOnly = NSFileCoordinatorWritingOptions 16
 
+instance ObjCArgument NSFileCoordinatorWritingOptions where
+  withObjCArg (NSFileCoordinatorWritingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileCoordinatorWritingOptions where
+  type RawReturn NSFileCoordinatorWritingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileCoordinatorWritingOptions x)
+  fromOwned x = pure (NSFileCoordinatorWritingOptions x)
+
 -- | @NSFileManagerItemReplacementOptions@ (bitmask)
 newtype NSFileManagerItemReplacementOptions = NSFileManagerItemReplacementOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1020,6 +1403,16 @@ pattern NSFileManagerItemReplacementUsingNewMetadataOnly = NSFileManagerItemRepl
 pattern NSFileManagerItemReplacementWithoutDeletingBackupItem :: NSFileManagerItemReplacementOptions
 pattern NSFileManagerItemReplacementWithoutDeletingBackupItem = NSFileManagerItemReplacementOptions 2
 
+instance ObjCArgument NSFileManagerItemReplacementOptions where
+  withObjCArg (NSFileManagerItemReplacementOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileManagerItemReplacementOptions where
+  type RawReturn NSFileManagerItemReplacementOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileManagerItemReplacementOptions x)
+  fromOwned x = pure (NSFileManagerItemReplacementOptions x)
+
 -- | The behaviors the file manager can apply to resolve conflicts when resuming a sync.
 --
 -- You use this type when calling ``FileManager/resumeSyncForUbiquitousItem(at:with:completionHandler:)`` to resume synchronizing. In most situations, the ``NSFileManagerResumeSyncBehavior/preserveLocalChanges`` behavior is the best choice to avoid risk of data loss.
@@ -1036,6 +1429,16 @@ pattern NSFileManagerResumeSyncBehaviorAfterUploadWithFailOnConflict = NSFileMan
 
 pattern NSFileManagerResumeSyncBehaviorDropLocalChanges :: NSFileManagerResumeSyncBehavior
 pattern NSFileManagerResumeSyncBehaviorDropLocalChanges = NSFileManagerResumeSyncBehavior 2
+
+instance ObjCArgument NSFileManagerResumeSyncBehavior where
+  withObjCArg (NSFileManagerResumeSyncBehavior x) k = k (argCLong x)
+
+instance ObjCReturn NSFileManagerResumeSyncBehavior where
+  type RawReturn NSFileManagerResumeSyncBehavior = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileManagerResumeSyncBehavior x)
+  fromOwned x = pure (NSFileManagerResumeSyncBehavior x)
 
 -- | An option set of the sync controls available for an item.
 --
@@ -1057,6 +1460,16 @@ pattern NSFileManagerSupportedSyncControlsPauseSync = NSFileManagerSupportedSync
 pattern NSFileManagerSupportedSyncControlsFailUploadOnConflict :: NSFileManagerSupportedSyncControls
 pattern NSFileManagerSupportedSyncControlsFailUploadOnConflict = NSFileManagerSupportedSyncControls 2
 
+instance ObjCArgument NSFileManagerSupportedSyncControls where
+  withObjCArg (NSFileManagerSupportedSyncControls x) k = k (argCULong x)
+
+instance ObjCReturn NSFileManagerSupportedSyncControls where
+  type RawReturn NSFileManagerSupportedSyncControls = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileManagerSupportedSyncControls x)
+  fromOwned x = pure (NSFileManagerSupportedSyncControls x)
+
 -- | @NSFileManagerUnmountOptions@ (bitmask)
 newtype NSFileManagerUnmountOptions = NSFileManagerUnmountOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1074,6 +1487,16 @@ pattern NSFileManagerUnmountAllPartitionsAndEjectDisk = NSFileManagerUnmountOpti
 pattern NSFileManagerUnmountWithoutUI :: NSFileManagerUnmountOptions
 pattern NSFileManagerUnmountWithoutUI = NSFileManagerUnmountOptions 2
 
+instance ObjCArgument NSFileManagerUnmountOptions where
+  withObjCArg (NSFileManagerUnmountOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileManagerUnmountOptions where
+  type RawReturn NSFileManagerUnmountOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileManagerUnmountOptions x)
+  fromOwned x = pure (NSFileManagerUnmountOptions x)
+
 -- | The policies the file manager can apply to resolve conflicts when uploading a local version of a file.
 -- | @NSFileManagerUploadLocalVersionConflictPolicy@
 newtype NSFileManagerUploadLocalVersionConflictPolicy = NSFileManagerUploadLocalVersionConflictPolicy CLong
@@ -1085,6 +1508,16 @@ pattern NSFileManagerUploadConflictPolicyDefault = NSFileManagerUploadLocalVersi
 
 pattern NSFileManagerUploadConflictPolicyFailOnConflict :: NSFileManagerUploadLocalVersionConflictPolicy
 pattern NSFileManagerUploadConflictPolicyFailOnConflict = NSFileManagerUploadLocalVersionConflictPolicy 1
+
+instance ObjCArgument NSFileManagerUploadLocalVersionConflictPolicy where
+  withObjCArg (NSFileManagerUploadLocalVersionConflictPolicy x) k = k (argCLong x)
+
+instance ObjCReturn NSFileManagerUploadLocalVersionConflictPolicy where
+  type RawReturn NSFileManagerUploadLocalVersionConflictPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileManagerUploadLocalVersionConflictPolicy x)
+  fromOwned x = pure (NSFileManagerUploadLocalVersionConflictPolicy x)
 
 -- | @NSFileVersionAddingOptions@ (bitmask)
 newtype NSFileVersionAddingOptions = NSFileVersionAddingOptions CULong
@@ -1100,6 +1533,16 @@ instance Monoid NSFileVersionAddingOptions where
 pattern NSFileVersionAddingByMoving :: NSFileVersionAddingOptions
 pattern NSFileVersionAddingByMoving = NSFileVersionAddingOptions 1
 
+instance ObjCArgument NSFileVersionAddingOptions where
+  withObjCArg (NSFileVersionAddingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileVersionAddingOptions where
+  type RawReturn NSFileVersionAddingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileVersionAddingOptions x)
+  fromOwned x = pure (NSFileVersionAddingOptions x)
+
 -- | @NSFileVersionReplacingOptions@ (bitmask)
 newtype NSFileVersionReplacingOptions = NSFileVersionReplacingOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1113,6 +1556,16 @@ instance Monoid NSFileVersionReplacingOptions where
 
 pattern NSFileVersionReplacingByMoving :: NSFileVersionReplacingOptions
 pattern NSFileVersionReplacingByMoving = NSFileVersionReplacingOptions 1
+
+instance ObjCArgument NSFileVersionReplacingOptions where
+  withObjCArg (NSFileVersionReplacingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileVersionReplacingOptions where
+  type RawReturn NSFileVersionReplacingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileVersionReplacingOptions x)
+  fromOwned x = pure (NSFileVersionReplacingOptions x)
 
 -- | @NSFileWrapperReadingOptions@ (bitmask)
 newtype NSFileWrapperReadingOptions = NSFileWrapperReadingOptions CULong
@@ -1131,6 +1584,16 @@ pattern NSFileWrapperReadingImmediate = NSFileWrapperReadingOptions 1
 pattern NSFileWrapperReadingWithoutMapping :: NSFileWrapperReadingOptions
 pattern NSFileWrapperReadingWithoutMapping = NSFileWrapperReadingOptions 2
 
+instance ObjCArgument NSFileWrapperReadingOptions where
+  withObjCArg (NSFileWrapperReadingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileWrapperReadingOptions where
+  type RawReturn NSFileWrapperReadingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileWrapperReadingOptions x)
+  fromOwned x = pure (NSFileWrapperReadingOptions x)
+
 -- | @NSFileWrapperWritingOptions@ (bitmask)
 newtype NSFileWrapperWritingOptions = NSFileWrapperWritingOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1147,6 +1610,16 @@ pattern NSFileWrapperWritingAtomic = NSFileWrapperWritingOptions 1
 
 pattern NSFileWrapperWritingWithNameUpdating :: NSFileWrapperWritingOptions
 pattern NSFileWrapperWritingWithNameUpdating = NSFileWrapperWritingOptions 2
+
+instance ObjCArgument NSFileWrapperWritingOptions where
+  withObjCArg (NSFileWrapperWritingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSFileWrapperWritingOptions where
+  type RawReturn NSFileWrapperWritingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFileWrapperWritingOptions x)
+  fromOwned x = pure (NSFileWrapperWritingOptions x)
 
 -- | @NSFormattingContext@
 newtype NSFormattingContext = NSFormattingContext CLong
@@ -1171,6 +1644,16 @@ pattern NSFormattingContextBeginningOfSentence = NSFormattingContext 4
 pattern NSFormattingContextMiddleOfSentence :: NSFormattingContext
 pattern NSFormattingContextMiddleOfSentence = NSFormattingContext 5
 
+instance ObjCArgument NSFormattingContext where
+  withObjCArg (NSFormattingContext x) k = k (argCLong x)
+
+instance ObjCReturn NSFormattingContext where
+  type RawReturn NSFormattingContext = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFormattingContext x)
+  fromOwned x = pure (NSFormattingContext x)
+
 -- | @NSFormattingUnitStyle@
 newtype NSFormattingUnitStyle = NSFormattingUnitStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -1184,6 +1667,16 @@ pattern NSFormattingUnitStyleMedium = NSFormattingUnitStyle 2
 
 pattern NSFormattingUnitStyleLong :: NSFormattingUnitStyle
 pattern NSFormattingUnitStyleLong = NSFormattingUnitStyle 3
+
+instance ObjCArgument NSFormattingUnitStyle where
+  withObjCArg (NSFormattingUnitStyle x) k = k (argCLong x)
+
+instance ObjCReturn NSFormattingUnitStyle where
+  type RawReturn NSFormattingUnitStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFormattingUnitStyle x)
+  fromOwned x = pure (NSFormattingUnitStyle x)
 
 -- | @NSGrammaticalCase@
 newtype NSGrammaticalCase = NSGrammaticalCase CLong
@@ -1235,6 +1728,16 @@ pattern NSGrammaticalCaseLocative = NSGrammaticalCase 13
 pattern NSGrammaticalCaseTranslative :: NSGrammaticalCase
 pattern NSGrammaticalCaseTranslative = NSGrammaticalCase 14
 
+instance ObjCArgument NSGrammaticalCase where
+  withObjCArg (NSGrammaticalCase x) k = k (argCLong x)
+
+instance ObjCReturn NSGrammaticalCase where
+  type RawReturn NSGrammaticalCase = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSGrammaticalCase x)
+  fromOwned x = pure (NSGrammaticalCase x)
+
 -- | @NSGrammaticalDefiniteness@
 newtype NSGrammaticalDefiniteness = NSGrammaticalDefiniteness CLong
   deriving stock (Eq, Ord, Show)
@@ -1249,6 +1752,16 @@ pattern NSGrammaticalDefinitenessIndefinite = NSGrammaticalDefiniteness 1
 pattern NSGrammaticalDefinitenessDefinite :: NSGrammaticalDefiniteness
 pattern NSGrammaticalDefinitenessDefinite = NSGrammaticalDefiniteness 2
 
+instance ObjCArgument NSGrammaticalDefiniteness where
+  withObjCArg (NSGrammaticalDefiniteness x) k = k (argCLong x)
+
+instance ObjCReturn NSGrammaticalDefiniteness where
+  type RawReturn NSGrammaticalDefiniteness = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSGrammaticalDefiniteness x)
+  fromOwned x = pure (NSGrammaticalDefiniteness x)
+
 -- | @NSGrammaticalDetermination@
 newtype NSGrammaticalDetermination = NSGrammaticalDetermination CLong
   deriving stock (Eq, Ord, Show)
@@ -1262,6 +1775,16 @@ pattern NSGrammaticalDeterminationIndependent = NSGrammaticalDetermination 1
 
 pattern NSGrammaticalDeterminationDependent :: NSGrammaticalDetermination
 pattern NSGrammaticalDeterminationDependent = NSGrammaticalDetermination 2
+
+instance ObjCArgument NSGrammaticalDetermination where
+  withObjCArg (NSGrammaticalDetermination x) k = k (argCLong x)
+
+instance ObjCReturn NSGrammaticalDetermination where
+  type RawReturn NSGrammaticalDetermination = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSGrammaticalDetermination x)
+  fromOwned x = pure (NSGrammaticalDetermination x)
 
 -- | @NSGrammaticalGender@
 newtype NSGrammaticalGender = NSGrammaticalGender CLong
@@ -1279,6 +1802,16 @@ pattern NSGrammaticalGenderMasculine = NSGrammaticalGender 2
 
 pattern NSGrammaticalGenderNeuter :: NSGrammaticalGender
 pattern NSGrammaticalGenderNeuter = NSGrammaticalGender 3
+
+instance ObjCArgument NSGrammaticalGender where
+  withObjCArg (NSGrammaticalGender x) k = k (argCLong x)
+
+instance ObjCReturn NSGrammaticalGender where
+  type RawReturn NSGrammaticalGender = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSGrammaticalGender x)
+  fromOwned x = pure (NSGrammaticalGender x)
 
 -- | @NSGrammaticalNumber@
 newtype NSGrammaticalNumber = NSGrammaticalNumber CLong
@@ -1305,6 +1838,16 @@ pattern NSGrammaticalNumberPluralFew = NSGrammaticalNumber 5
 
 pattern NSGrammaticalNumberPluralMany :: NSGrammaticalNumber
 pattern NSGrammaticalNumberPluralMany = NSGrammaticalNumber 6
+
+instance ObjCArgument NSGrammaticalNumber where
+  withObjCArg (NSGrammaticalNumber x) k = k (argCLong x)
+
+instance ObjCReturn NSGrammaticalNumber where
+  type RawReturn NSGrammaticalNumber = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSGrammaticalNumber x)
+  fromOwned x = pure (NSGrammaticalNumber x)
 
 -- | @NSGrammaticalPartOfSpeech@
 newtype NSGrammaticalPartOfSpeech = NSGrammaticalPartOfSpeech CLong
@@ -1356,6 +1899,16 @@ pattern NSGrammaticalPartOfSpeechPreposition = NSGrammaticalPartOfSpeech 13
 pattern NSGrammaticalPartOfSpeechAbbreviation :: NSGrammaticalPartOfSpeech
 pattern NSGrammaticalPartOfSpeechAbbreviation = NSGrammaticalPartOfSpeech 14
 
+instance ObjCArgument NSGrammaticalPartOfSpeech where
+  withObjCArg (NSGrammaticalPartOfSpeech x) k = k (argCLong x)
+
+instance ObjCReturn NSGrammaticalPartOfSpeech where
+  type RawReturn NSGrammaticalPartOfSpeech = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSGrammaticalPartOfSpeech x)
+  fromOwned x = pure (NSGrammaticalPartOfSpeech x)
+
 -- | @NSGrammaticalPerson@
 newtype NSGrammaticalPerson = NSGrammaticalPerson CLong
   deriving stock (Eq, Ord, Show)
@@ -1373,6 +1926,16 @@ pattern NSGrammaticalPersonSecond = NSGrammaticalPerson 2
 pattern NSGrammaticalPersonThird :: NSGrammaticalPerson
 pattern NSGrammaticalPersonThird = NSGrammaticalPerson 3
 
+instance ObjCArgument NSGrammaticalPerson where
+  withObjCArg (NSGrammaticalPerson x) k = k (argCLong x)
+
+instance ObjCReturn NSGrammaticalPerson where
+  type RawReturn NSGrammaticalPerson = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSGrammaticalPerson x)
+  fromOwned x = pure (NSGrammaticalPerson x)
+
 -- | @NSGrammaticalPronounType@
 newtype NSGrammaticalPronounType = NSGrammaticalPronounType CLong
   deriving stock (Eq, Ord, Show)
@@ -1389,6 +1952,16 @@ pattern NSGrammaticalPronounTypeReflexive = NSGrammaticalPronounType 2
 
 pattern NSGrammaticalPronounTypePossessive :: NSGrammaticalPronounType
 pattern NSGrammaticalPronounTypePossessive = NSGrammaticalPronounType 3
+
+instance ObjCArgument NSGrammaticalPronounType where
+  withObjCArg (NSGrammaticalPronounType x) k = k (argCLong x)
+
+instance ObjCReturn NSGrammaticalPronounType where
+  type RawReturn NSGrammaticalPronounType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSGrammaticalPronounType x)
+  fromOwned x = pure (NSGrammaticalPronounType x)
 
 -- | NSHTTPCookieAcceptPolicy
 --
@@ -1414,6 +1987,16 @@ pattern NSHTTPCookieAcceptPolicyNever = NSHTTPCookieAcceptPolicy 1
 
 pattern NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain :: NSHTTPCookieAcceptPolicy
 pattern NSHTTPCookieAcceptPolicyOnlyFromMainDocumentDomain = NSHTTPCookieAcceptPolicy 2
+
+instance ObjCArgument NSHTTPCookieAcceptPolicy where
+  withObjCArg (NSHTTPCookieAcceptPolicy x) k = k (argCULong x)
+
+instance ObjCReturn NSHTTPCookieAcceptPolicy where
+  type RawReturn NSHTTPCookieAcceptPolicy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSHTTPCookieAcceptPolicy x)
+  fromOwned x = pure (NSHTTPCookieAcceptPolicy x)
 
 -- | @NSISO8601DateFormatOptions@ (bitmask)
 newtype NSISO8601DateFormatOptions = NSISO8601DateFormatOptions CULong
@@ -1468,6 +2051,16 @@ pattern NSISO8601DateFormatWithFullTime = NSISO8601DateFormatOptions 1632
 pattern NSISO8601DateFormatWithInternetDateTime :: NSISO8601DateFormatOptions
 pattern NSISO8601DateFormatWithInternetDateTime = NSISO8601DateFormatOptions 1907
 
+instance ObjCArgument NSISO8601DateFormatOptions where
+  withObjCArg (NSISO8601DateFormatOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSISO8601DateFormatOptions where
+  type RawReturn NSISO8601DateFormatOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSISO8601DateFormatOptions x)
+  fromOwned x = pure (NSISO8601DateFormatOptions x)
+
 -- | @NSInlinePresentationIntent@ (bitmask)
 newtype NSInlinePresentationIntent = NSInlinePresentationIntent CULong
   deriving stock (Eq, Ord, Show)
@@ -1503,6 +2096,16 @@ pattern NSInlinePresentationIntentInlineHTML = NSInlinePresentationIntent 256
 pattern NSInlinePresentationIntentBlockHTML :: NSInlinePresentationIntent
 pattern NSInlinePresentationIntentBlockHTML = NSInlinePresentationIntent 512
 
+instance ObjCArgument NSInlinePresentationIntent where
+  withObjCArg (NSInlinePresentationIntent x) k = k (argCULong x)
+
+instance ObjCReturn NSInlinePresentationIntent where
+  type RawReturn NSInlinePresentationIntent = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSInlinePresentationIntent x)
+  fromOwned x = pure (NSInlinePresentationIntent x)
+
 -- | @NSInsertionPosition@
 newtype NSInsertionPosition = NSInsertionPosition CULong
   deriving stock (Eq, Ord, Show)
@@ -1523,6 +2126,16 @@ pattern NSPositionEnd = NSInsertionPosition 3
 pattern NSPositionReplace :: NSInsertionPosition
 pattern NSPositionReplace = NSInsertionPosition 4
 
+instance ObjCArgument NSInsertionPosition where
+  withObjCArg (NSInsertionPosition x) k = k (argCULong x)
+
+instance ObjCReturn NSInsertionPosition where
+  type RawReturn NSInsertionPosition = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSInsertionPosition x)
+  fromOwned x = pure (NSInsertionPosition x)
+
 -- | @NSItemProviderErrorCode@
 newtype NSItemProviderErrorCode = NSItemProviderErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -1540,6 +2153,16 @@ pattern NSItemProviderUnexpectedValueClassError = NSItemProviderErrorCode (-1100
 pattern NSItemProviderUnavailableCoercionError :: NSItemProviderErrorCode
 pattern NSItemProviderUnavailableCoercionError = NSItemProviderErrorCode (-1200)
 
+instance ObjCArgument NSItemProviderErrorCode where
+  withObjCArg (NSItemProviderErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn NSItemProviderErrorCode where
+  type RawReturn NSItemProviderErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSItemProviderErrorCode x)
+  fromOwned x = pure (NSItemProviderErrorCode x)
+
 -- | @NSItemProviderFileOptions@ (bitmask)
 newtype NSItemProviderFileOptions = NSItemProviderFileOptions CLong
   deriving stock (Eq, Ord, Show)
@@ -1553,6 +2176,16 @@ instance Monoid NSItemProviderFileOptions where
 
 pattern NSItemProviderFileOptionOpenInPlace :: NSItemProviderFileOptions
 pattern NSItemProviderFileOptionOpenInPlace = NSItemProviderFileOptions 1
+
+instance ObjCArgument NSItemProviderFileOptions where
+  withObjCArg (NSItemProviderFileOptions x) k = k (argCLong x)
+
+instance ObjCReturn NSItemProviderFileOptions where
+  type RawReturn NSItemProviderFileOptions = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSItemProviderFileOptions x)
+  fromOwned x = pure (NSItemProviderFileOptions x)
 
 -- | @NSItemProviderRepresentationVisibility@
 newtype NSItemProviderRepresentationVisibility = NSItemProviderRepresentationVisibility CLong
@@ -1570,6 +2203,16 @@ pattern NSItemProviderRepresentationVisibilityGroup = NSItemProviderRepresentati
 
 pattern NSItemProviderRepresentationVisibilityOwnProcess :: NSItemProviderRepresentationVisibility
 pattern NSItemProviderRepresentationVisibilityOwnProcess = NSItemProviderRepresentationVisibility 3
+
+instance ObjCArgument NSItemProviderRepresentationVisibility where
+  withObjCArg (NSItemProviderRepresentationVisibility x) k = k (argCLong x)
+
+instance ObjCReturn NSItemProviderRepresentationVisibility where
+  type RawReturn NSItemProviderRepresentationVisibility = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSItemProviderRepresentationVisibility x)
+  fromOwned x = pure (NSItemProviderRepresentationVisibility x)
 
 -- | @NSJSONReadingOptions@ (bitmask)
 newtype NSJSONReadingOptions = NSJSONReadingOptions CULong
@@ -1600,6 +2243,16 @@ pattern NSJSONReadingTopLevelDictionaryAssumed = NSJSONReadingOptions 16
 pattern NSJSONReadingAllowFragments :: NSJSONReadingOptions
 pattern NSJSONReadingAllowFragments = NSJSONReadingOptions 4
 
+instance ObjCArgument NSJSONReadingOptions where
+  withObjCArg (NSJSONReadingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSJSONReadingOptions where
+  type RawReturn NSJSONReadingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSJSONReadingOptions x)
+  fromOwned x = pure (NSJSONReadingOptions x)
+
 -- | @NSJSONWritingOptions@ (bitmask)
 newtype NSJSONWritingOptions = NSJSONWritingOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1623,6 +2276,16 @@ pattern NSJSONWritingFragmentsAllowed = NSJSONWritingOptions 4
 pattern NSJSONWritingWithoutEscapingSlashes :: NSJSONWritingOptions
 pattern NSJSONWritingWithoutEscapingSlashes = NSJSONWritingOptions 8
 
+instance ObjCArgument NSJSONWritingOptions where
+  withObjCArg (NSJSONWritingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSJSONWritingOptions where
+  type RawReturn NSJSONWritingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSJSONWritingOptions x)
+  fromOwned x = pure (NSJSONWritingOptions x)
+
 -- | @NSKeyValueChange@
 newtype NSKeyValueChange = NSKeyValueChange CULong
   deriving stock (Eq, Ord, Show)
@@ -1639,6 +2302,16 @@ pattern NSKeyValueChangeRemoval = NSKeyValueChange 3
 
 pattern NSKeyValueChangeReplacement :: NSKeyValueChange
 pattern NSKeyValueChangeReplacement = NSKeyValueChange 4
+
+instance ObjCArgument NSKeyValueChange where
+  withObjCArg (NSKeyValueChange x) k = k (argCULong x)
+
+instance ObjCReturn NSKeyValueChange where
+  type RawReturn NSKeyValueChange = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSKeyValueChange x)
+  fromOwned x = pure (NSKeyValueChange x)
 
 -- | @NSKeyValueObservingOptions@ (bitmask)
 newtype NSKeyValueObservingOptions = NSKeyValueObservingOptions CULong
@@ -1663,6 +2336,16 @@ pattern NSKeyValueObservingOptionInitial = NSKeyValueObservingOptions 4
 pattern NSKeyValueObservingOptionPrior :: NSKeyValueObservingOptions
 pattern NSKeyValueObservingOptionPrior = NSKeyValueObservingOptions 8
 
+instance ObjCArgument NSKeyValueObservingOptions where
+  withObjCArg (NSKeyValueObservingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSKeyValueObservingOptions where
+  type RawReturn NSKeyValueObservingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSKeyValueObservingOptions x)
+  fromOwned x = pure (NSKeyValueObservingOptions x)
+
 -- | @NSKeyValueSetMutationKind@
 newtype NSKeyValueSetMutationKind = NSKeyValueSetMutationKind CULong
   deriving stock (Eq, Ord, Show)
@@ -1679,6 +2362,16 @@ pattern NSKeyValueIntersectSetMutation = NSKeyValueSetMutationKind 3
 
 pattern NSKeyValueSetSetMutation :: NSKeyValueSetMutationKind
 pattern NSKeyValueSetSetMutation = NSKeyValueSetMutationKind 4
+
+instance ObjCArgument NSKeyValueSetMutationKind where
+  withObjCArg (NSKeyValueSetMutationKind x) k = k (argCULong x)
+
+instance ObjCReturn NSKeyValueSetMutationKind where
+  type RawReturn NSKeyValueSetMutationKind = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSKeyValueSetMutationKind x)
+  fromOwned x = pure (NSKeyValueSetMutationKind x)
 
 -- | @NSLengthFormatterUnit@
 newtype NSLengthFormatterUnit = NSLengthFormatterUnit CLong
@@ -1709,6 +2402,16 @@ pattern NSLengthFormatterUnitYard = NSLengthFormatterUnit 1283
 pattern NSLengthFormatterUnitMile :: NSLengthFormatterUnit
 pattern NSLengthFormatterUnitMile = NSLengthFormatterUnit 1284
 
+instance ObjCArgument NSLengthFormatterUnit where
+  withObjCArg (NSLengthFormatterUnit x) k = k (argCLong x)
+
+instance ObjCReturn NSLengthFormatterUnit where
+  type RawReturn NSLengthFormatterUnit = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSLengthFormatterUnit x)
+  fromOwned x = pure (NSLengthFormatterUnit x)
+
 -- | @NSLinguisticTaggerOptions@ (bitmask)
 newtype NSLinguisticTaggerOptions = NSLinguisticTaggerOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1735,6 +2438,16 @@ pattern NSLinguisticTaggerOmitOther = NSLinguisticTaggerOptions 8
 pattern NSLinguisticTaggerJoinNames :: NSLinguisticTaggerOptions
 pattern NSLinguisticTaggerJoinNames = NSLinguisticTaggerOptions 16
 
+instance ObjCArgument NSLinguisticTaggerOptions where
+  withObjCArg (NSLinguisticTaggerOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSLinguisticTaggerOptions where
+  type RawReturn NSLinguisticTaggerOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSLinguisticTaggerOptions x)
+  fromOwned x = pure (NSLinguisticTaggerOptions x)
+
 -- | @NSLinguisticTaggerUnit@
 newtype NSLinguisticTaggerUnit = NSLinguisticTaggerUnit CLong
   deriving stock (Eq, Ord, Show)
@@ -1751,6 +2464,16 @@ pattern NSLinguisticTaggerUnitParagraph = NSLinguisticTaggerUnit 2
 
 pattern NSLinguisticTaggerUnitDocument :: NSLinguisticTaggerUnit
 pattern NSLinguisticTaggerUnitDocument = NSLinguisticTaggerUnit 3
+
+instance ObjCArgument NSLinguisticTaggerUnit where
+  withObjCArg (NSLinguisticTaggerUnit x) k = k (argCLong x)
+
+instance ObjCReturn NSLinguisticTaggerUnit where
+  type RawReturn NSLinguisticTaggerUnit = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSLinguisticTaggerUnit x)
+  fromOwned x = pure (NSLinguisticTaggerUnit x)
 
 -- | @NSLocaleLanguageDirection@
 newtype NSLocaleLanguageDirection = NSLocaleLanguageDirection CULong
@@ -1772,6 +2495,16 @@ pattern NSLocaleLanguageDirectionTopToBottom = NSLocaleLanguageDirection 3
 pattern NSLocaleLanguageDirectionBottomToTop :: NSLocaleLanguageDirection
 pattern NSLocaleLanguageDirectionBottomToTop = NSLocaleLanguageDirection 4
 
+instance ObjCArgument NSLocaleLanguageDirection where
+  withObjCArg (NSLocaleLanguageDirection x) k = k (argCULong x)
+
+instance ObjCReturn NSLocaleLanguageDirection where
+  type RawReturn NSLocaleLanguageDirection = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSLocaleLanguageDirection x)
+  fromOwned x = pure (NSLocaleLanguageDirection x)
+
 -- | @NSMachPortOptions@ (bitmask)
 newtype NSMachPortOptions = NSMachPortOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1792,6 +2525,16 @@ pattern NSMachPortDeallocateSendRight = NSMachPortOptions 1
 pattern NSMachPortDeallocateReceiveRight :: NSMachPortOptions
 pattern NSMachPortDeallocateReceiveRight = NSMachPortOptions 2
 
+instance ObjCArgument NSMachPortOptions where
+  withObjCArg (NSMachPortOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSMachPortOptions where
+  type RawReturn NSMachPortOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSMachPortOptions x)
+  fromOwned x = pure (NSMachPortOptions x)
+
 -- | @NSMassFormatterUnit@
 newtype NSMassFormatterUnit = NSMassFormatterUnit CLong
   deriving stock (Eq, Ord, Show)
@@ -1811,6 +2554,16 @@ pattern NSMassFormatterUnitPound = NSMassFormatterUnit 1538
 
 pattern NSMassFormatterUnitStone :: NSMassFormatterUnit
 pattern NSMassFormatterUnitStone = NSMassFormatterUnit 1539
+
+instance ObjCArgument NSMassFormatterUnit where
+  withObjCArg (NSMassFormatterUnit x) k = k (argCLong x)
+
+instance ObjCReturn NSMassFormatterUnit where
+  type RawReturn NSMassFormatterUnit = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSMassFormatterUnit x)
+  fromOwned x = pure (NSMassFormatterUnit x)
 
 -- | @NSMatchingFlags@ (bitmask)
 newtype NSMatchingFlags = NSMatchingFlags CULong
@@ -1838,6 +2591,16 @@ pattern NSMatchingRequiredEnd = NSMatchingFlags 8
 pattern NSMatchingInternalError :: NSMatchingFlags
 pattern NSMatchingInternalError = NSMatchingFlags 16
 
+instance ObjCArgument NSMatchingFlags where
+  withObjCArg (NSMatchingFlags x) k = k (argCULong x)
+
+instance ObjCReturn NSMatchingFlags where
+  type RawReturn NSMatchingFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSMatchingFlags x)
+  fromOwned x = pure (NSMatchingFlags x)
+
 -- | @NSMatchingOptions@ (bitmask)
 newtype NSMatchingOptions = NSMatchingOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1864,6 +2627,16 @@ pattern NSMatchingWithTransparentBounds = NSMatchingOptions 8
 pattern NSMatchingWithoutAnchoringBounds :: NSMatchingOptions
 pattern NSMatchingWithoutAnchoringBounds = NSMatchingOptions 16
 
+instance ObjCArgument NSMatchingOptions where
+  withObjCArg (NSMatchingOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSMatchingOptions where
+  type RawReturn NSMatchingOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSMatchingOptions x)
+  fromOwned x = pure (NSMatchingOptions x)
+
 -- | @NSMeasurementFormatterUnitOptions@ (bitmask)
 newtype NSMeasurementFormatterUnitOptions = NSMeasurementFormatterUnitOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1884,6 +2657,16 @@ pattern NSMeasurementFormatterUnitOptionsNaturalScale = NSMeasurementFormatterUn
 pattern NSMeasurementFormatterUnitOptionsTemperatureWithoutUnit :: NSMeasurementFormatterUnitOptions
 pattern NSMeasurementFormatterUnitOptionsTemperatureWithoutUnit = NSMeasurementFormatterUnitOptions 4
 
+instance ObjCArgument NSMeasurementFormatterUnitOptions where
+  withObjCArg (NSMeasurementFormatterUnitOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSMeasurementFormatterUnitOptions where
+  type RawReturn NSMeasurementFormatterUnitOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSMeasurementFormatterUnitOptions x)
+  fromOwned x = pure (NSMeasurementFormatterUnitOptions x)
+
 -- | @NSNetServiceOptions@ (bitmask)
 newtype NSNetServiceOptions = NSNetServiceOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -1900,6 +2683,16 @@ pattern NSNetServiceNoAutoRename = NSNetServiceOptions 1
 
 pattern NSNetServiceListenForConnections :: NSNetServiceOptions
 pattern NSNetServiceListenForConnections = NSNetServiceOptions 2
+
+instance ObjCArgument NSNetServiceOptions where
+  withObjCArg (NSNetServiceOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSNetServiceOptions where
+  type RawReturn NSNetServiceOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSNetServiceOptions x)
+  fromOwned x = pure (NSNetServiceOptions x)
 
 -- | @NSNetServicesError@
 newtype NSNetServicesError = NSNetServicesError CLong
@@ -1933,6 +2726,16 @@ pattern NSNetServicesTimeoutError = NSNetServicesError (-72007)
 pattern NSNetServicesMissingRequiredConfigurationError :: NSNetServicesError
 pattern NSNetServicesMissingRequiredConfigurationError = NSNetServicesError (-72008)
 
+instance ObjCArgument NSNetServicesError where
+  withObjCArg (NSNetServicesError x) k = k (argCLong x)
+
+instance ObjCReturn NSNetServicesError where
+  type RawReturn NSNetServicesError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSNetServicesError x)
+  fromOwned x = pure (NSNetServicesError x)
+
 -- | @NSNotificationCoalescing@ (bitmask)
 newtype NSNotificationCoalescing = NSNotificationCoalescing CULong
   deriving stock (Eq, Ord, Show)
@@ -1953,6 +2756,16 @@ pattern NSNotificationCoalescingOnName = NSNotificationCoalescing 1
 pattern NSNotificationCoalescingOnSender :: NSNotificationCoalescing
 pattern NSNotificationCoalescingOnSender = NSNotificationCoalescing 2
 
+instance ObjCArgument NSNotificationCoalescing where
+  withObjCArg (NSNotificationCoalescing x) k = k (argCULong x)
+
+instance ObjCReturn NSNotificationCoalescing where
+  type RawReturn NSNotificationCoalescing = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSNotificationCoalescing x)
+  fromOwned x = pure (NSNotificationCoalescing x)
+
 -- | @NSNotificationSuspensionBehavior@
 newtype NSNotificationSuspensionBehavior = NSNotificationSuspensionBehavior CULong
   deriving stock (Eq, Ord, Show)
@@ -1970,6 +2783,16 @@ pattern NSNotificationSuspensionBehaviorHold = NSNotificationSuspensionBehavior 
 pattern NSNotificationSuspensionBehaviorDeliverImmediately :: NSNotificationSuspensionBehavior
 pattern NSNotificationSuspensionBehaviorDeliverImmediately = NSNotificationSuspensionBehavior 4
 
+instance ObjCArgument NSNotificationSuspensionBehavior where
+  withObjCArg (NSNotificationSuspensionBehavior x) k = k (argCULong x)
+
+instance ObjCReturn NSNotificationSuspensionBehavior where
+  type RawReturn NSNotificationSuspensionBehavior = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSNotificationSuspensionBehavior x)
+  fromOwned x = pure (NSNotificationSuspensionBehavior x)
+
 -- | @NSNumberFormatterBehavior@
 newtype NSNumberFormatterBehavior = NSNumberFormatterBehavior CULong
   deriving stock (Eq, Ord, Show)
@@ -1983,6 +2806,16 @@ pattern NSNumberFormatterBehavior10_0 = NSNumberFormatterBehavior 1000
 
 pattern NSNumberFormatterBehavior10_4 :: NSNumberFormatterBehavior
 pattern NSNumberFormatterBehavior10_4 = NSNumberFormatterBehavior 1040
+
+instance ObjCArgument NSNumberFormatterBehavior where
+  withObjCArg (NSNumberFormatterBehavior x) k = k (argCULong x)
+
+instance ObjCReturn NSNumberFormatterBehavior where
+  type RawReturn NSNumberFormatterBehavior = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSNumberFormatterBehavior x)
+  fromOwned x = pure (NSNumberFormatterBehavior x)
 
 -- | @NSNumberFormatterPadPosition@
 newtype NSNumberFormatterPadPosition = NSNumberFormatterPadPosition CULong
@@ -2000,6 +2833,16 @@ pattern NSNumberFormatterPadBeforeSuffix = NSNumberFormatterPadPosition 2
 
 pattern NSNumberFormatterPadAfterSuffix :: NSNumberFormatterPadPosition
 pattern NSNumberFormatterPadAfterSuffix = NSNumberFormatterPadPosition 3
+
+instance ObjCArgument NSNumberFormatterPadPosition where
+  withObjCArg (NSNumberFormatterPadPosition x) k = k (argCULong x)
+
+instance ObjCReturn NSNumberFormatterPadPosition where
+  type RawReturn NSNumberFormatterPadPosition = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSNumberFormatterPadPosition x)
+  fromOwned x = pure (NSNumberFormatterPadPosition x)
 
 -- | @NSNumberFormatterRoundingMode@
 newtype NSNumberFormatterRoundingMode = NSNumberFormatterRoundingMode CULong
@@ -2026,6 +2869,16 @@ pattern NSNumberFormatterRoundHalfDown = NSNumberFormatterRoundingMode 5
 
 pattern NSNumberFormatterRoundHalfUp :: NSNumberFormatterRoundingMode
 pattern NSNumberFormatterRoundHalfUp = NSNumberFormatterRoundingMode 6
+
+instance ObjCArgument NSNumberFormatterRoundingMode where
+  withObjCArg (NSNumberFormatterRoundingMode x) k = k (argCULong x)
+
+instance ObjCReturn NSNumberFormatterRoundingMode where
+  type RawReturn NSNumberFormatterRoundingMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSNumberFormatterRoundingMode x)
+  fromOwned x = pure (NSNumberFormatterRoundingMode x)
 
 -- | @NSNumberFormatterStyle@
 newtype NSNumberFormatterStyle = NSNumberFormatterStyle CULong
@@ -2062,6 +2915,16 @@ pattern NSNumberFormatterCurrencyPluralStyle = NSNumberFormatterStyle 9
 pattern NSNumberFormatterCurrencyAccountingStyle :: NSNumberFormatterStyle
 pattern NSNumberFormatterCurrencyAccountingStyle = NSNumberFormatterStyle 10
 
+instance ObjCArgument NSNumberFormatterStyle where
+  withObjCArg (NSNumberFormatterStyle x) k = k (argCULong x)
+
+instance ObjCReturn NSNumberFormatterStyle where
+  type RawReturn NSNumberFormatterStyle = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSNumberFormatterStyle x)
+  fromOwned x = pure (NSNumberFormatterStyle x)
+
 -- | @NSOperationQueuePriority@
 newtype NSOperationQueuePriority = NSOperationQueuePriority CLong
   deriving stock (Eq, Ord, Show)
@@ -2081,6 +2944,16 @@ pattern NSOperationQueuePriorityHigh = NSOperationQueuePriority 4
 
 pattern NSOperationQueuePriorityVeryHigh :: NSOperationQueuePriority
 pattern NSOperationQueuePriorityVeryHigh = NSOperationQueuePriority 8
+
+instance ObjCArgument NSOperationQueuePriority where
+  withObjCArg (NSOperationQueuePriority x) k = k (argCLong x)
+
+instance ObjCReturn NSOperationQueuePriority where
+  type RawReturn NSOperationQueuePriority = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSOperationQueuePriority x)
+  fromOwned x = pure (NSOperationQueuePriority x)
 
 -- | Options supported by methods that produce difference objects.
 -- | @NSOrderedCollectionDifferenceCalculationOptions@ (bitmask)
@@ -2103,6 +2976,16 @@ pattern NSOrderedCollectionDifferenceCalculationOmitRemovedObjects = NSOrderedCo
 pattern NSOrderedCollectionDifferenceCalculationInferMoves :: NSOrderedCollectionDifferenceCalculationOptions
 pattern NSOrderedCollectionDifferenceCalculationInferMoves = NSOrderedCollectionDifferenceCalculationOptions 4
 
+instance ObjCArgument NSOrderedCollectionDifferenceCalculationOptions where
+  withObjCArg (NSOrderedCollectionDifferenceCalculationOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSOrderedCollectionDifferenceCalculationOptions where
+  type RawReturn NSOrderedCollectionDifferenceCalculationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSOrderedCollectionDifferenceCalculationOptions x)
+  fromOwned x = pure (NSOrderedCollectionDifferenceCalculationOptions x)
+
 -- | @NSPersonNameComponentsFormatterOptions@ (bitmask)
 newtype NSPersonNameComponentsFormatterOptions = NSPersonNameComponentsFormatterOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -2116,6 +2999,16 @@ instance Monoid NSPersonNameComponentsFormatterOptions where
 
 pattern NSPersonNameComponentsFormatterPhonetic :: NSPersonNameComponentsFormatterOptions
 pattern NSPersonNameComponentsFormatterPhonetic = NSPersonNameComponentsFormatterOptions 2
+
+instance ObjCArgument NSPersonNameComponentsFormatterOptions where
+  withObjCArg (NSPersonNameComponentsFormatterOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSPersonNameComponentsFormatterOptions where
+  type RawReturn NSPersonNameComponentsFormatterOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPersonNameComponentsFormatterOptions x)
+  fromOwned x = pure (NSPersonNameComponentsFormatterOptions x)
 
 -- | @NSPersonNameComponentsFormatterStyle@
 newtype NSPersonNameComponentsFormatterStyle = NSPersonNameComponentsFormatterStyle CLong
@@ -2136,6 +3029,16 @@ pattern NSPersonNameComponentsFormatterStyleLong = NSPersonNameComponentsFormatt
 
 pattern NSPersonNameComponentsFormatterStyleAbbreviated :: NSPersonNameComponentsFormatterStyle
 pattern NSPersonNameComponentsFormatterStyleAbbreviated = NSPersonNameComponentsFormatterStyle 4
+
+instance ObjCArgument NSPersonNameComponentsFormatterStyle where
+  withObjCArg (NSPersonNameComponentsFormatterStyle x) k = k (argCLong x)
+
+instance ObjCReturn NSPersonNameComponentsFormatterStyle where
+  type RawReturn NSPersonNameComponentsFormatterStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPersonNameComponentsFormatterStyle x)
+  fromOwned x = pure (NSPersonNameComponentsFormatterStyle x)
 
 -- | @NSPointerFunctionsOptions@ (bitmask)
 newtype NSPointerFunctionsOptions = NSPointerFunctionsOptions CULong
@@ -2187,6 +3090,16 @@ pattern NSPointerFunctionsIntegerPersonality = NSPointerFunctionsOptions 1280
 pattern NSPointerFunctionsCopyIn :: NSPointerFunctionsOptions
 pattern NSPointerFunctionsCopyIn = NSPointerFunctionsOptions 65536
 
+instance ObjCArgument NSPointerFunctionsOptions where
+  withObjCArg (NSPointerFunctionsOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSPointerFunctionsOptions where
+  type RawReturn NSPointerFunctionsOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPointerFunctionsOptions x)
+  fromOwned x = pure (NSPointerFunctionsOptions x)
+
 -- | @NSPostingStyle@
 newtype NSPostingStyle = NSPostingStyle CULong
   deriving stock (Eq, Ord, Show)
@@ -2200,6 +3113,16 @@ pattern NSPostASAP = NSPostingStyle 2
 
 pattern NSPostNow :: NSPostingStyle
 pattern NSPostNow = NSPostingStyle 3
+
+instance ObjCArgument NSPostingStyle where
+  withObjCArg (NSPostingStyle x) k = k (argCULong x)
+
+instance ObjCReturn NSPostingStyle where
+  type RawReturn NSPostingStyle = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPostingStyle x)
+  fromOwned x = pure (NSPostingStyle x)
 
 -- | @NSPredicateOperatorType@
 newtype NSPredicateOperatorType = NSPredicateOperatorType CULong
@@ -2248,6 +3171,16 @@ pattern NSContainsPredicateOperatorType = NSPredicateOperatorType 99
 pattern NSBetweenPredicateOperatorType :: NSPredicateOperatorType
 pattern NSBetweenPredicateOperatorType = NSPredicateOperatorType 100
 
+instance ObjCArgument NSPredicateOperatorType where
+  withObjCArg (NSPredicateOperatorType x) k = k (argCULong x)
+
+instance ObjCReturn NSPredicateOperatorType where
+  type RawReturn NSPredicateOperatorType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPredicateOperatorType x)
+  fromOwned x = pure (NSPredicateOperatorType x)
+
 -- | @NSPresentationIntentKind@
 newtype NSPresentationIntentKind = NSPresentationIntentKind CLong
   deriving stock (Eq, Ord, Show)
@@ -2289,6 +3222,16 @@ pattern NSPresentationIntentKindTableRow = NSPresentationIntentKind 10
 pattern NSPresentationIntentKindTableCell :: NSPresentationIntentKind
 pattern NSPresentationIntentKindTableCell = NSPresentationIntentKind 11
 
+instance ObjCArgument NSPresentationIntentKind where
+  withObjCArg (NSPresentationIntentKind x) k = k (argCLong x)
+
+instance ObjCReturn NSPresentationIntentKind where
+  type RawReturn NSPresentationIntentKind = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPresentationIntentKind x)
+  fromOwned x = pure (NSPresentationIntentKind x)
+
 -- | @NSPresentationIntentTableColumnAlignment@
 newtype NSPresentationIntentTableColumnAlignment = NSPresentationIntentTableColumnAlignment CLong
   deriving stock (Eq, Ord, Show)
@@ -2302,6 +3245,16 @@ pattern NSPresentationIntentTableColumnAlignmentCenter = NSPresentationIntentTab
 
 pattern NSPresentationIntentTableColumnAlignmentRight :: NSPresentationIntentTableColumnAlignment
 pattern NSPresentationIntentTableColumnAlignmentRight = NSPresentationIntentTableColumnAlignment 2
+
+instance ObjCArgument NSPresentationIntentTableColumnAlignment where
+  withObjCArg (NSPresentationIntentTableColumnAlignment x) k = k (argCLong x)
+
+instance ObjCReturn NSPresentationIntentTableColumnAlignment where
+  type RawReturn NSPresentationIntentTableColumnAlignment = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPresentationIntentTableColumnAlignment x)
+  fromOwned x = pure (NSPresentationIntentTableColumnAlignment x)
 
 -- | @NSProcessInfoThermalState@
 newtype NSProcessInfoThermalState = NSProcessInfoThermalState CLong
@@ -2320,6 +3273,16 @@ pattern NSProcessInfoThermalStateSerious = NSProcessInfoThermalState 2
 pattern NSProcessInfoThermalStateCritical :: NSProcessInfoThermalState
 pattern NSProcessInfoThermalStateCritical = NSProcessInfoThermalState 3
 
+instance ObjCArgument NSProcessInfoThermalState where
+  withObjCArg (NSProcessInfoThermalState x) k = k (argCLong x)
+
+instance ObjCReturn NSProcessInfoThermalState where
+  type RawReturn NSProcessInfoThermalState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSProcessInfoThermalState x)
+  fromOwned x = pure (NSProcessInfoThermalState x)
+
 -- | @NSPropertyListFormat@
 newtype NSPropertyListFormat = NSPropertyListFormat CULong
   deriving stock (Eq, Ord, Show)
@@ -2333,6 +3296,16 @@ pattern NSPropertyListXMLFormat_v1_0 = NSPropertyListFormat 100
 
 pattern NSPropertyListBinaryFormat_v1_0 :: NSPropertyListFormat
 pattern NSPropertyListBinaryFormat_v1_0 = NSPropertyListFormat 200
+
+instance ObjCArgument NSPropertyListFormat where
+  withObjCArg (NSPropertyListFormat x) k = k (argCULong x)
+
+instance ObjCReturn NSPropertyListFormat where
+  type RawReturn NSPropertyListFormat = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPropertyListFormat x)
+  fromOwned x = pure (NSPropertyListFormat x)
 
 -- | @NSPropertyListMutabilityOptions@ (bitmask)
 newtype NSPropertyListMutabilityOptions = NSPropertyListMutabilityOptions CULong
@@ -2354,6 +3327,16 @@ pattern NSPropertyListMutableContainers = NSPropertyListMutabilityOptions 1
 pattern NSPropertyListMutableContainersAndLeaves :: NSPropertyListMutabilityOptions
 pattern NSPropertyListMutableContainersAndLeaves = NSPropertyListMutabilityOptions 2
 
+instance ObjCArgument NSPropertyListMutabilityOptions where
+  withObjCArg (NSPropertyListMutabilityOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSPropertyListMutabilityOptions where
+  type RawReturn NSPropertyListMutabilityOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPropertyListMutabilityOptions x)
+  fromOwned x = pure (NSPropertyListMutabilityOptions x)
+
 -- | @NSQualityOfService@
 newtype NSQualityOfService = NSQualityOfService CLong
   deriving stock (Eq, Ord, Show)
@@ -2373,6 +3356,16 @@ pattern NSQualityOfServiceBackground = NSQualityOfService 9
 
 pattern NSQualityOfServiceDefault :: NSQualityOfService
 pattern NSQualityOfServiceDefault = NSQualityOfService (-1)
+
+instance ObjCArgument NSQualityOfService where
+  withObjCArg (NSQualityOfService x) k = k (argCLong x)
+
+instance ObjCReturn NSQualityOfService where
+  type RawReturn NSQualityOfService = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSQualityOfService x)
+  fromOwned x = pure (NSQualityOfService x)
 
 -- | @NSRectEdge@
 newtype NSRectEdge = NSRectEdge CULong
@@ -2402,6 +3395,16 @@ pattern NSMaxXEdge = NSRectEdge 2
 
 pattern NSMaxYEdge :: NSRectEdge
 pattern NSMaxYEdge = NSRectEdge 3
+
+instance ObjCArgument NSRectEdge where
+  withObjCArg (NSRectEdge x) k = k (argCULong x)
+
+instance ObjCReturn NSRectEdge where
+  type RawReturn NSRectEdge = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSRectEdge x)
+  fromOwned x = pure (NSRectEdge x)
 
 -- | @NSRegularExpressionOptions@ (bitmask)
 newtype NSRegularExpressionOptions = NSRegularExpressionOptions CULong
@@ -2435,6 +3438,16 @@ pattern NSRegularExpressionUseUnixLineSeparators = NSRegularExpressionOptions 32
 pattern NSRegularExpressionUseUnicodeWordBoundaries :: NSRegularExpressionOptions
 pattern NSRegularExpressionUseUnicodeWordBoundaries = NSRegularExpressionOptions 64
 
+instance ObjCArgument NSRegularExpressionOptions where
+  withObjCArg (NSRegularExpressionOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSRegularExpressionOptions where
+  type RawReturn NSRegularExpressionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSRegularExpressionOptions x)
+  fromOwned x = pure (NSRegularExpressionOptions x)
+
 -- | @NSRelativeDateTimeFormatterStyle@
 newtype NSRelativeDateTimeFormatterStyle = NSRelativeDateTimeFormatterStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -2445,6 +3458,16 @@ pattern NSRelativeDateTimeFormatterStyleNumeric = NSRelativeDateTimeFormatterSty
 
 pattern NSRelativeDateTimeFormatterStyleNamed :: NSRelativeDateTimeFormatterStyle
 pattern NSRelativeDateTimeFormatterStyleNamed = NSRelativeDateTimeFormatterStyle 1
+
+instance ObjCArgument NSRelativeDateTimeFormatterStyle where
+  withObjCArg (NSRelativeDateTimeFormatterStyle x) k = k (argCLong x)
+
+instance ObjCReturn NSRelativeDateTimeFormatterStyle where
+  type RawReturn NSRelativeDateTimeFormatterStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSRelativeDateTimeFormatterStyle x)
+  fromOwned x = pure (NSRelativeDateTimeFormatterStyle x)
 
 -- | @NSRelativeDateTimeFormatterUnitsStyle@
 newtype NSRelativeDateTimeFormatterUnitsStyle = NSRelativeDateTimeFormatterUnitsStyle CLong
@@ -2463,6 +3486,16 @@ pattern NSRelativeDateTimeFormatterUnitsStyleShort = NSRelativeDateTimeFormatter
 pattern NSRelativeDateTimeFormatterUnitsStyleAbbreviated :: NSRelativeDateTimeFormatterUnitsStyle
 pattern NSRelativeDateTimeFormatterUnitsStyleAbbreviated = NSRelativeDateTimeFormatterUnitsStyle 3
 
+instance ObjCArgument NSRelativeDateTimeFormatterUnitsStyle where
+  withObjCArg (NSRelativeDateTimeFormatterUnitsStyle x) k = k (argCLong x)
+
+instance ObjCReturn NSRelativeDateTimeFormatterUnitsStyle where
+  type RawReturn NSRelativeDateTimeFormatterUnitsStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSRelativeDateTimeFormatterUnitsStyle x)
+  fromOwned x = pure (NSRelativeDateTimeFormatterUnitsStyle x)
+
 -- | @NSRelativePosition@
 newtype NSRelativePosition = NSRelativePosition CULong
   deriving stock (Eq, Ord, Show)
@@ -2473,6 +3506,16 @@ pattern NSRelativeAfter = NSRelativePosition 0
 
 pattern NSRelativeBefore :: NSRelativePosition
 pattern NSRelativeBefore = NSRelativePosition 1
+
+instance ObjCArgument NSRelativePosition where
+  withObjCArg (NSRelativePosition x) k = k (argCULong x)
+
+instance ObjCReturn NSRelativePosition where
+  type RawReturn NSRelativePosition = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSRelativePosition x)
+  fromOwned x = pure (NSRelativePosition x)
 
 -- | *************	Type definitions		**********
 -- | @NSRoundingMode@
@@ -2492,6 +3535,16 @@ pattern NSRoundUp = NSRoundingMode 2
 pattern NSRoundBankers :: NSRoundingMode
 pattern NSRoundBankers = NSRoundingMode 3
 
+instance ObjCArgument NSRoundingMode where
+  withObjCArg (NSRoundingMode x) k = k (argCULong x)
+
+instance ObjCReturn NSRoundingMode where
+  type RawReturn NSRoundingMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSRoundingMode x)
+  fromOwned x = pure (NSRoundingMode x)
+
 -- | @NSSaveOptions@
 newtype NSSaveOptions = NSSaveOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -2505,6 +3558,16 @@ pattern NSSaveOptionsNo = NSSaveOptions 1
 
 pattern NSSaveOptionsAsk :: NSSaveOptions
 pattern NSSaveOptionsAsk = NSSaveOptions 2
+
+instance ObjCArgument NSSaveOptions where
+  withObjCArg (NSSaveOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSSaveOptions where
+  type RawReturn NSSaveOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSSaveOptions x)
+  fromOwned x = pure (NSSaveOptions x)
 
 -- | @NSSearchPathDirectory@
 newtype NSSearchPathDirectory = NSSearchPathDirectory CULong
@@ -2592,6 +3655,16 @@ pattern NSAllLibrariesDirectory = NSSearchPathDirectory 101
 pattern NSTrashDirectory :: NSSearchPathDirectory
 pattern NSTrashDirectory = NSSearchPathDirectory 102
 
+instance ObjCArgument NSSearchPathDirectory where
+  withObjCArg (NSSearchPathDirectory x) k = k (argCULong x)
+
+instance ObjCReturn NSSearchPathDirectory where
+  type RawReturn NSSearchPathDirectory = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSSearchPathDirectory x)
+  fromOwned x = pure (NSSearchPathDirectory x)
+
 -- | @NSSearchPathDomainMask@ (bitmask)
 newtype NSSearchPathDomainMask = NSSearchPathDomainMask CULong
   deriving stock (Eq, Ord, Show)
@@ -2618,6 +3691,16 @@ pattern NSSystemDomainMask = NSSearchPathDomainMask 8
 pattern NSAllDomainsMask :: NSSearchPathDomainMask
 pattern NSAllDomainsMask = NSSearchPathDomainMask 65535
 
+instance ObjCArgument NSSearchPathDomainMask where
+  withObjCArg (NSSearchPathDomainMask x) k = k (argCULong x)
+
+instance ObjCReturn NSSearchPathDomainMask where
+  type RawReturn NSSearchPathDomainMask = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSSearchPathDomainMask x)
+  fromOwned x = pure (NSSearchPathDomainMask x)
+
 -- | @NSSortOptions@ (bitmask)
 newtype NSSortOptions = NSSortOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -2634,6 +3717,16 @@ pattern NSSortConcurrent = NSSortOptions 1
 
 pattern NSSortStable :: NSSortOptions
 pattern NSSortStable = NSSortOptions 16
+
+instance ObjCArgument NSSortOptions where
+  withObjCArg (NSSortOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSSortOptions where
+  type RawReturn NSSortOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSSortOptions x)
+  fromOwned x = pure (NSSortOptions x)
 
 -- | @NSStreamEvent@ (bitmask)
 newtype NSStreamEvent = NSStreamEvent CULong
@@ -2664,6 +3757,16 @@ pattern NSStreamEventErrorOccurred = NSStreamEvent 8
 pattern NSStreamEventEndEncountered :: NSStreamEvent
 pattern NSStreamEventEndEncountered = NSStreamEvent 16
 
+instance ObjCArgument NSStreamEvent where
+  withObjCArg (NSStreamEvent x) k = k (argCULong x)
+
+instance ObjCReturn NSStreamEvent where
+  type RawReturn NSStreamEvent = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSStreamEvent x)
+  fromOwned x = pure (NSStreamEvent x)
+
 -- | @NSStreamStatus@
 newtype NSStreamStatus = NSStreamStatus CULong
   deriving stock (Eq, Ord, Show)
@@ -2692,6 +3795,16 @@ pattern NSStreamStatusClosed = NSStreamStatus 6
 
 pattern NSStreamStatusError :: NSStreamStatus
 pattern NSStreamStatusError = NSStreamStatus 7
+
+instance ObjCArgument NSStreamStatus where
+  withObjCArg (NSStreamStatus x) k = k (argCULong x)
+
+instance ObjCReturn NSStreamStatus where
+  type RawReturn NSStreamStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSStreamStatus x)
+  fromOwned x = pure (NSStreamStatus x)
 
 -- | @NSStringCompareOptions@ (bitmask)
 newtype NSStringCompareOptions = NSStringCompareOptions CULong
@@ -2731,6 +3844,16 @@ pattern NSForcedOrderingSearch = NSStringCompareOptions 512
 pattern NSRegularExpressionSearch :: NSStringCompareOptions
 pattern NSRegularExpressionSearch = NSStringCompareOptions 1024
 
+instance ObjCArgument NSStringCompareOptions where
+  withObjCArg (NSStringCompareOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSStringCompareOptions where
+  type RawReturn NSStringCompareOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSStringCompareOptions x)
+  fromOwned x = pure (NSStringCompareOptions x)
+
 -- | @NSStringEncodingConversionOptions@ (bitmask)
 newtype NSStringEncodingConversionOptions = NSStringEncodingConversionOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -2747,6 +3870,16 @@ pattern NSStringEncodingConversionAllowLossy = NSStringEncodingConversionOptions
 
 pattern NSStringEncodingConversionExternalRepresentation :: NSStringEncodingConversionOptions
 pattern NSStringEncodingConversionExternalRepresentation = NSStringEncodingConversionOptions 2
+
+instance ObjCArgument NSStringEncodingConversionOptions where
+  withObjCArg (NSStringEncodingConversionOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSStringEncodingConversionOptions where
+  type RawReturn NSStringEncodingConversionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSStringEncodingConversionOptions x)
+  fromOwned x = pure (NSStringEncodingConversionOptions x)
 
 -- | @NSStringEnumerationOptions@ (bitmask)
 newtype NSStringEnumerationOptions = NSStringEnumerationOptions CULong
@@ -2789,6 +3922,16 @@ pattern NSStringEnumerationSubstringNotRequired = NSStringEnumerationOptions 512
 pattern NSStringEnumerationLocalized :: NSStringEnumerationOptions
 pattern NSStringEnumerationLocalized = NSStringEnumerationOptions 1024
 
+instance ObjCArgument NSStringEnumerationOptions where
+  withObjCArg (NSStringEnumerationOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSStringEnumerationOptions where
+  type RawReturn NSStringEnumerationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSStringEnumerationOptions x)
+  fromOwned x = pure (NSStringEnumerationOptions x)
+
 -- | @NSTaskTerminationReason@
 newtype NSTaskTerminationReason = NSTaskTerminationReason CLong
   deriving stock (Eq, Ord, Show)
@@ -2799,6 +3942,16 @@ pattern NSTaskTerminationReasonExit = NSTaskTerminationReason 1
 
 pattern NSTaskTerminationReasonUncaughtSignal :: NSTaskTerminationReason
 pattern NSTaskTerminationReasonUncaughtSignal = NSTaskTerminationReason 2
+
+instance ObjCArgument NSTaskTerminationReason where
+  withObjCArg (NSTaskTerminationReason x) k = k (argCLong x)
+
+instance ObjCReturn NSTaskTerminationReason where
+  type RawReturn NSTaskTerminationReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSTaskTerminationReason x)
+  fromOwned x = pure (NSTaskTerminationReason x)
 
 -- | @NSTestComparisonOperation@
 newtype NSTestComparisonOperation = NSTestComparisonOperation CULong
@@ -2828,6 +3981,16 @@ pattern NSEndsWithComparison = NSTestComparisonOperation 6
 
 pattern NSContainsComparison :: NSTestComparisonOperation
 pattern NSContainsComparison = NSTestComparisonOperation 7
+
+instance ObjCArgument NSTestComparisonOperation where
+  withObjCArg (NSTestComparisonOperation x) k = k (argCULong x)
+
+instance ObjCReturn NSTestComparisonOperation where
+  type RawReturn NSTestComparisonOperation = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSTestComparisonOperation x)
+  fromOwned x = pure (NSTestComparisonOperation x)
 
 -- | @NSTextCheckingType@ (bitmask)
 newtype NSTextCheckingType = NSTextCheckingType CULong
@@ -2879,6 +4042,16 @@ pattern NSTextCheckingTypePhoneNumber = NSTextCheckingType 2048
 pattern NSTextCheckingTypeTransitInformation :: NSTextCheckingType
 pattern NSTextCheckingTypeTransitInformation = NSTextCheckingType 4096
 
+instance ObjCArgument NSTextCheckingType where
+  withObjCArg (NSTextCheckingType x) k = k (argCULong x)
+
+instance ObjCReturn NSTextCheckingType where
+  type RawReturn NSTextCheckingType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSTextCheckingType x)
+  fromOwned x = pure (NSTextCheckingType x)
+
 -- | @NSTimeZoneNameStyle@
 newtype NSTimeZoneNameStyle = NSTimeZoneNameStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -2901,6 +4074,16 @@ pattern NSTimeZoneNameStyleGeneric = NSTimeZoneNameStyle 4
 
 pattern NSTimeZoneNameStyleShortGeneric :: NSTimeZoneNameStyle
 pattern NSTimeZoneNameStyleShortGeneric = NSTimeZoneNameStyle 5
+
+instance ObjCArgument NSTimeZoneNameStyle where
+  withObjCArg (NSTimeZoneNameStyle x) k = k (argCLong x)
+
+instance ObjCReturn NSTimeZoneNameStyle where
+  type RawReturn NSTimeZoneNameStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSTimeZoneNameStyle x)
+  fromOwned x = pure (NSTimeZoneNameStyle x)
 
 -- | @NSURLBookmarkCreationOptions@ (bitmask)
 newtype NSURLBookmarkCreationOptions = NSURLBookmarkCreationOptions CULong
@@ -2931,6 +4114,16 @@ pattern NSURLBookmarkCreationSecurityScopeAllowOnlyReadAccess = NSURLBookmarkCre
 pattern NSURLBookmarkCreationWithoutImplicitSecurityScope :: NSURLBookmarkCreationOptions
 pattern NSURLBookmarkCreationWithoutImplicitSecurityScope = NSURLBookmarkCreationOptions 536870912
 
+instance ObjCArgument NSURLBookmarkCreationOptions where
+  withObjCArg (NSURLBookmarkCreationOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSURLBookmarkCreationOptions where
+  type RawReturn NSURLBookmarkCreationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLBookmarkCreationOptions x)
+  fromOwned x = pure (NSURLBookmarkCreationOptions x)
+
 -- | @NSURLBookmarkResolutionOptions@ (bitmask)
 newtype NSURLBookmarkResolutionOptions = NSURLBookmarkResolutionOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -2953,6 +4146,16 @@ pattern NSURLBookmarkResolutionWithSecurityScope = NSURLBookmarkResolutionOption
 
 pattern NSURLBookmarkResolutionWithoutImplicitStartAccessing :: NSURLBookmarkResolutionOptions
 pattern NSURLBookmarkResolutionWithoutImplicitStartAccessing = NSURLBookmarkResolutionOptions 32768
+
+instance ObjCArgument NSURLBookmarkResolutionOptions where
+  withObjCArg (NSURLBookmarkResolutionOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSURLBookmarkResolutionOptions where
+  type RawReturn NSURLBookmarkResolutionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLBookmarkResolutionOptions x)
+  fromOwned x = pure (NSURLBookmarkResolutionOptions x)
 
 -- | NSURLCacheStoragePolicy
 --
@@ -2982,6 +4185,16 @@ pattern NSURLCacheStorageAllowedInMemoryOnly = NSURLCacheStoragePolicy 1
 
 pattern NSURLCacheStorageNotAllowed :: NSURLCacheStoragePolicy
 pattern NSURLCacheStorageNotAllowed = NSURLCacheStoragePolicy 2
+
+instance ObjCArgument NSURLCacheStoragePolicy where
+  withObjCArg (NSURLCacheStoragePolicy x) k = k (argCULong x)
+
+instance ObjCReturn NSURLCacheStoragePolicy where
+  type RawReturn NSURLCacheStoragePolicy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLCacheStoragePolicy x)
+  fromOwned x = pure (NSURLCacheStoragePolicy x)
 
 -- | NSURLCredentialPersistence
 --
@@ -3013,6 +4226,16 @@ pattern NSURLCredentialPersistencePermanent = NSURLCredentialPersistence 2
 pattern NSURLCredentialPersistenceSynchronizable :: NSURLCredentialPersistence
 pattern NSURLCredentialPersistenceSynchronizable = NSURLCredentialPersistence 3
 
+instance ObjCArgument NSURLCredentialPersistence where
+  withObjCArg (NSURLCredentialPersistence x) k = k (argCULong x)
+
+instance ObjCReturn NSURLCredentialPersistence where
+  type RawReturn NSURLCredentialPersistence = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLCredentialPersistence x)
+  fromOwned x = pure (NSURLCredentialPersistence x)
+
 -- | Codes associated with NSURLErrorNetworkUnavailableReasonKey
 --
 -- Constants used by NSError to indicate that a URLSessionTask failed because of unsatisfiable network constraints.
@@ -3035,6 +4258,16 @@ pattern NSURLErrorNetworkUnavailableReasonConstrained = NSURLErrorNetworkUnavail
 pattern NSURLErrorNetworkUnavailableReasonUltraConstrained :: NSURLErrorNetworkUnavailableReason
 pattern NSURLErrorNetworkUnavailableReasonUltraConstrained = NSURLErrorNetworkUnavailableReason 3
 
+instance ObjCArgument NSURLErrorNetworkUnavailableReason where
+  withObjCArg (NSURLErrorNetworkUnavailableReason x) k = k (argCLong x)
+
+instance ObjCReturn NSURLErrorNetworkUnavailableReason where
+  type RawReturn NSURLErrorNetworkUnavailableReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLErrorNetworkUnavailableReason x)
+  fromOwned x = pure (NSURLErrorNetworkUnavailableReason x)
+
 -- | @NSURLHandleStatus@
 newtype NSURLHandleStatus = NSURLHandleStatus CULong
   deriving stock (Eq, Ord, Show)
@@ -3052,6 +4285,16 @@ pattern NSURLHandleLoadInProgress = NSURLHandleStatus 2
 pattern NSURLHandleLoadFailed :: NSURLHandleStatus
 pattern NSURLHandleLoadFailed = NSURLHandleStatus 3
 
+instance ObjCArgument NSURLHandleStatus where
+  withObjCArg (NSURLHandleStatus x) k = k (argCULong x)
+
+instance ObjCReturn NSURLHandleStatus where
+  type RawReturn NSURLHandleStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLHandleStatus x)
+  fromOwned x = pure (NSURLHandleStatus x)
+
 -- | @NSURLRelationship@
 newtype NSURLRelationship = NSURLRelationship CLong
   deriving stock (Eq, Ord, Show)
@@ -3065,6 +4308,16 @@ pattern NSURLRelationshipSame = NSURLRelationship 1
 
 pattern NSURLRelationshipOther :: NSURLRelationship
 pattern NSURLRelationshipOther = NSURLRelationship 2
+
+instance ObjCArgument NSURLRelationship where
+  withObjCArg (NSURLRelationship x) k = k (argCLong x)
+
+instance ObjCReturn NSURLRelationship where
+  type RawReturn NSURLRelationship = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLRelationship x)
+  fromOwned x = pure (NSURLRelationship x)
 
 -- | NSURLRequestAttribution
 --
@@ -3087,6 +4340,16 @@ pattern NSURLRequestAttributionDeveloper = NSURLRequestAttribution 0
 
 pattern NSURLRequestAttributionUser :: NSURLRequestAttribution
 pattern NSURLRequestAttributionUser = NSURLRequestAttribution 1
+
+instance ObjCArgument NSURLRequestAttribution where
+  withObjCArg (NSURLRequestAttribution x) k = k (argCULong x)
+
+instance ObjCReturn NSURLRequestAttribution where
+  type RawReturn NSURLRequestAttribution = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLRequestAttribution x)
+  fromOwned x = pure (NSURLRequestAttribution x)
 
 -- | NSURLRequestCachePolicy
 --
@@ -3144,6 +4407,16 @@ pattern NSURLRequestReturnCacheDataDontLoad = NSURLRequestCachePolicy 3
 
 pattern NSURLRequestReloadRevalidatingCacheData :: NSURLRequestCachePolicy
 pattern NSURLRequestReloadRevalidatingCacheData = NSURLRequestCachePolicy 5
+
+instance ObjCArgument NSURLRequestCachePolicy where
+  withObjCArg (NSURLRequestCachePolicy x) k = k (argCULong x)
+
+instance ObjCReturn NSURLRequestCachePolicy where
+  type RawReturn NSURLRequestCachePolicy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLRequestCachePolicy x)
+  fromOwned x = pure (NSURLRequestCachePolicy x)
 
 -- | NSURLRequestNetworkServiceType
 --
@@ -3206,6 +4479,16 @@ pattern NSURLNetworkServiceTypeResponsiveAV = NSURLRequestNetworkServiceType 9
 pattern NSURLNetworkServiceTypeCallSignaling :: NSURLRequestNetworkServiceType
 pattern NSURLNetworkServiceTypeCallSignaling = NSURLRequestNetworkServiceType 11
 
+instance ObjCArgument NSURLRequestNetworkServiceType where
+  withObjCArg (NSURLRequestNetworkServiceType x) k = k (argCULong x)
+
+instance ObjCReturn NSURLRequestNetworkServiceType where
+  type RawReturn NSURLRequestNetworkServiceType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLRequestNetworkServiceType x)
+  fromOwned x = pure (NSURLRequestNetworkServiceType x)
+
 -- | @NSURLSessionAuthChallengeDisposition@
 newtype NSURLSessionAuthChallengeDisposition = NSURLSessionAuthChallengeDisposition CLong
   deriving stock (Eq, Ord, Show)
@@ -3223,6 +4506,16 @@ pattern NSURLSessionAuthChallengeCancelAuthenticationChallenge = NSURLSessionAut
 pattern NSURLSessionAuthChallengeRejectProtectionSpace :: NSURLSessionAuthChallengeDisposition
 pattern NSURLSessionAuthChallengeRejectProtectionSpace = NSURLSessionAuthChallengeDisposition 3
 
+instance ObjCArgument NSURLSessionAuthChallengeDisposition where
+  withObjCArg (NSURLSessionAuthChallengeDisposition x) k = k (argCLong x)
+
+instance ObjCReturn NSURLSessionAuthChallengeDisposition where
+  type RawReturn NSURLSessionAuthChallengeDisposition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLSessionAuthChallengeDisposition x)
+  fromOwned x = pure (NSURLSessionAuthChallengeDisposition x)
+
 -- | @NSURLSessionDelayedRequestDisposition@
 newtype NSURLSessionDelayedRequestDisposition = NSURLSessionDelayedRequestDisposition CLong
   deriving stock (Eq, Ord, Show)
@@ -3236,6 +4529,16 @@ pattern NSURLSessionDelayedRequestUseNewRequest = NSURLSessionDelayedRequestDisp
 
 pattern NSURLSessionDelayedRequestCancel :: NSURLSessionDelayedRequestDisposition
 pattern NSURLSessionDelayedRequestCancel = NSURLSessionDelayedRequestDisposition 2
+
+instance ObjCArgument NSURLSessionDelayedRequestDisposition where
+  withObjCArg (NSURLSessionDelayedRequestDisposition x) k = k (argCLong x)
+
+instance ObjCReturn NSURLSessionDelayedRequestDisposition where
+  type RawReturn NSURLSessionDelayedRequestDisposition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLSessionDelayedRequestDisposition x)
+  fromOwned x = pure (NSURLSessionDelayedRequestDisposition x)
 
 -- | NSURLSessionMultipathServiceType
 --
@@ -3273,6 +4576,16 @@ pattern NSURLSessionMultipathServiceTypeInteractive = NSURLSessionMultipathServi
 pattern NSURLSessionMultipathServiceTypeAggregate :: NSURLSessionMultipathServiceType
 pattern NSURLSessionMultipathServiceTypeAggregate = NSURLSessionMultipathServiceType 3
 
+instance ObjCArgument NSURLSessionMultipathServiceType where
+  withObjCArg (NSURLSessionMultipathServiceType x) k = k (argCLong x)
+
+instance ObjCReturn NSURLSessionMultipathServiceType where
+  type RawReturn NSURLSessionMultipathServiceType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLSessionMultipathServiceType x)
+  fromOwned x = pure (NSURLSessionMultipathServiceType x)
+
 -- | @NSURLSessionResponseDisposition@
 newtype NSURLSessionResponseDisposition = NSURLSessionResponseDisposition CLong
   deriving stock (Eq, Ord, Show)
@@ -3289,6 +4602,16 @@ pattern NSURLSessionResponseBecomeDownload = NSURLSessionResponseDisposition 2
 
 pattern NSURLSessionResponseBecomeStream :: NSURLSessionResponseDisposition
 pattern NSURLSessionResponseBecomeStream = NSURLSessionResponseDisposition 3
+
+instance ObjCArgument NSURLSessionResponseDisposition where
+  withObjCArg (NSURLSessionResponseDisposition x) k = k (argCLong x)
+
+instance ObjCReturn NSURLSessionResponseDisposition where
+  type RawReturn NSURLSessionResponseDisposition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLSessionResponseDisposition x)
+  fromOwned x = pure (NSURLSessionResponseDisposition x)
 
 -- | @NSURLSessionTaskMetricsDomainResolutionProtocol@
 newtype NSURLSessionTaskMetricsDomainResolutionProtocol = NSURLSessionTaskMetricsDomainResolutionProtocol CLong
@@ -3310,6 +4633,16 @@ pattern NSURLSessionTaskMetricsDomainResolutionProtocolTLS = NSURLSessionTaskMet
 pattern NSURLSessionTaskMetricsDomainResolutionProtocolHTTPS :: NSURLSessionTaskMetricsDomainResolutionProtocol
 pattern NSURLSessionTaskMetricsDomainResolutionProtocolHTTPS = NSURLSessionTaskMetricsDomainResolutionProtocol 4
 
+instance ObjCArgument NSURLSessionTaskMetricsDomainResolutionProtocol where
+  withObjCArg (NSURLSessionTaskMetricsDomainResolutionProtocol x) k = k (argCLong x)
+
+instance ObjCReturn NSURLSessionTaskMetricsDomainResolutionProtocol where
+  type RawReturn NSURLSessionTaskMetricsDomainResolutionProtocol = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLSessionTaskMetricsDomainResolutionProtocol x)
+  fromOwned x = pure (NSURLSessionTaskMetricsDomainResolutionProtocol x)
+
 -- | @NSURLSessionTaskMetricsResourceFetchType@
 newtype NSURLSessionTaskMetricsResourceFetchType = NSURLSessionTaskMetricsResourceFetchType CLong
   deriving stock (Eq, Ord, Show)
@@ -3327,6 +4660,16 @@ pattern NSURLSessionTaskMetricsResourceFetchTypeServerPush = NSURLSessionTaskMet
 pattern NSURLSessionTaskMetricsResourceFetchTypeLocalCache :: NSURLSessionTaskMetricsResourceFetchType
 pattern NSURLSessionTaskMetricsResourceFetchTypeLocalCache = NSURLSessionTaskMetricsResourceFetchType 3
 
+instance ObjCArgument NSURLSessionTaskMetricsResourceFetchType where
+  withObjCArg (NSURLSessionTaskMetricsResourceFetchType x) k = k (argCLong x)
+
+instance ObjCReturn NSURLSessionTaskMetricsResourceFetchType where
+  type RawReturn NSURLSessionTaskMetricsResourceFetchType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLSessionTaskMetricsResourceFetchType x)
+  fromOwned x = pure (NSURLSessionTaskMetricsResourceFetchType x)
+
 -- | @NSURLSessionTaskState@
 newtype NSURLSessionTaskState = NSURLSessionTaskState CLong
   deriving stock (Eq, Ord, Show)
@@ -3343,6 +4686,16 @@ pattern NSURLSessionTaskStateCanceling = NSURLSessionTaskState 2
 
 pattern NSURLSessionTaskStateCompleted :: NSURLSessionTaskState
 pattern NSURLSessionTaskStateCompleted = NSURLSessionTaskState 3
+
+instance ObjCArgument NSURLSessionTaskState where
+  withObjCArg (NSURLSessionTaskState x) k = k (argCLong x)
+
+instance ObjCReturn NSURLSessionTaskState where
+  type RawReturn NSURLSessionTaskState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLSessionTaskState x)
+  fromOwned x = pure (NSURLSessionTaskState x)
 
 -- | @NSURLSessionWebSocketCloseCode@
 newtype NSURLSessionWebSocketCloseCode = NSURLSessionWebSocketCloseCode CLong
@@ -3388,6 +4741,16 @@ pattern NSURLSessionWebSocketCloseCodeInternalServerError = NSURLSessionWebSocke
 pattern NSURLSessionWebSocketCloseCodeTLSHandshakeFailure :: NSURLSessionWebSocketCloseCode
 pattern NSURLSessionWebSocketCloseCodeTLSHandshakeFailure = NSURLSessionWebSocketCloseCode 1015
 
+instance ObjCArgument NSURLSessionWebSocketCloseCode where
+  withObjCArg (NSURLSessionWebSocketCloseCode x) k = k (argCLong x)
+
+instance ObjCReturn NSURLSessionWebSocketCloseCode where
+  type RawReturn NSURLSessionWebSocketCloseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLSessionWebSocketCloseCode x)
+  fromOwned x = pure (NSURLSessionWebSocketCloseCode x)
+
 -- | @NSURLSessionWebSocketMessageType@
 newtype NSURLSessionWebSocketMessageType = NSURLSessionWebSocketMessageType CLong
   deriving stock (Eq, Ord, Show)
@@ -3398,6 +4761,16 @@ pattern NSURLSessionWebSocketMessageTypeData = NSURLSessionWebSocketMessageType 
 
 pattern NSURLSessionWebSocketMessageTypeString :: NSURLSessionWebSocketMessageType
 pattern NSURLSessionWebSocketMessageTypeString = NSURLSessionWebSocketMessageType 1
+
+instance ObjCArgument NSURLSessionWebSocketMessageType where
+  withObjCArg (NSURLSessionWebSocketMessageType x) k = k (argCLong x)
+
+instance ObjCReturn NSURLSessionWebSocketMessageType where
+  type RawReturn NSURLSessionWebSocketMessageType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSURLSessionWebSocketMessageType x)
+  fromOwned x = pure (NSURLSessionWebSocketMessageType x)
 
 -- | @NSUserNotificationActivationType@
 newtype NSUserNotificationActivationType = NSUserNotificationActivationType CLong
@@ -3419,6 +4792,16 @@ pattern NSUserNotificationActivationTypeReplied = NSUserNotificationActivationTy
 pattern NSUserNotificationActivationTypeAdditionalActionClicked :: NSUserNotificationActivationType
 pattern NSUserNotificationActivationTypeAdditionalActionClicked = NSUserNotificationActivationType 4
 
+instance ObjCArgument NSUserNotificationActivationType where
+  withObjCArg (NSUserNotificationActivationType x) k = k (argCLong x)
+
+instance ObjCReturn NSUserNotificationActivationType where
+  type RawReturn NSUserNotificationActivationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSUserNotificationActivationType x)
+  fromOwned x = pure (NSUserNotificationActivationType x)
+
 -- | @NSVolumeEnumerationOptions@ (bitmask)
 newtype NSVolumeEnumerationOptions = NSVolumeEnumerationOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -3435,6 +4818,16 @@ pattern NSVolumeEnumerationSkipHiddenVolumes = NSVolumeEnumerationOptions 2
 
 pattern NSVolumeEnumerationProduceFileReferenceURLs :: NSVolumeEnumerationOptions
 pattern NSVolumeEnumerationProduceFileReferenceURLs = NSVolumeEnumerationOptions 4
+
+instance ObjCArgument NSVolumeEnumerationOptions where
+  withObjCArg (NSVolumeEnumerationOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSVolumeEnumerationOptions where
+  type RawReturn NSVolumeEnumerationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSVolumeEnumerationOptions x)
+  fromOwned x = pure (NSVolumeEnumerationOptions x)
 
 -- | @NSWhoseSubelementIdentifier@
 newtype NSWhoseSubelementIdentifier = NSWhoseSubelementIdentifier CULong
@@ -3455,6 +4848,16 @@ pattern NSRandomSubelement = NSWhoseSubelementIdentifier 3
 
 pattern NSNoSubelement :: NSWhoseSubelementIdentifier
 pattern NSNoSubelement = NSWhoseSubelementIdentifier 4
+
+instance ObjCArgument NSWhoseSubelementIdentifier where
+  withObjCArg (NSWhoseSubelementIdentifier x) k = k (argCULong x)
+
+instance ObjCReturn NSWhoseSubelementIdentifier where
+  type RawReturn NSWhoseSubelementIdentifier = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSWhoseSubelementIdentifier x)
+  fromOwned x = pure (NSWhoseSubelementIdentifier x)
 
 -- | NSXMLDTDNodeKind
 --
@@ -3524,6 +4927,16 @@ pattern NSXMLElementDeclarationMixedKind = NSXMLDTDNodeKind 19
 pattern NSXMLElementDeclarationElementKind :: NSXMLDTDNodeKind
 pattern NSXMLElementDeclarationElementKind = NSXMLDTDNodeKind 20
 
+instance ObjCArgument NSXMLDTDNodeKind where
+  withObjCArg (NSXMLDTDNodeKind x) k = k (argCULong x)
+
+instance ObjCReturn NSXMLDTDNodeKind where
+  type RawReturn NSXMLDTDNodeKind = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSXMLDTDNodeKind x)
+  fromOwned x = pure (NSXMLDTDNodeKind x)
+
 -- | NSXMLDocumentContentKind
 --
 -- Define what type of document this is.
@@ -3551,6 +4964,16 @@ pattern NSXMLDocumentHTMLKind = NSXMLDocumentContentKind 2
 
 pattern NSXMLDocumentTextKind :: NSXMLDocumentContentKind
 pattern NSXMLDocumentTextKind = NSXMLDocumentContentKind 3
+
+instance ObjCArgument NSXMLDocumentContentKind where
+  withObjCArg (NSXMLDocumentContentKind x) k = k (argCULong x)
+
+instance ObjCReturn NSXMLDocumentContentKind where
+  type RawReturn NSXMLDocumentContentKind = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSXMLDocumentContentKind x)
+  fromOwned x = pure (NSXMLDocumentContentKind x)
 
 -- | NSXMLNodeKind
 -- | @NSXMLNodeKind@
@@ -3596,6 +5019,16 @@ pattern NSXMLElementDeclarationKind = NSXMLNodeKind 11
 
 pattern NSXMLNotationDeclarationKind :: NSXMLNodeKind
 pattern NSXMLNotationDeclarationKind = NSXMLNodeKind 12
+
+instance ObjCArgument NSXMLNodeKind where
+  withObjCArg (NSXMLNodeKind x) k = k (argCULong x)
+
+instance ObjCReturn NSXMLNodeKind where
+  type RawReturn NSXMLNodeKind = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSXMLNodeKind x)
+  fromOwned x = pure (NSXMLNodeKind x)
 
 -- | Init, input, and output options
 --
@@ -3744,6 +5177,16 @@ pattern NSXMLNodePreserveQuotes = NSXMLNodeOptions 24
 
 pattern NSXMLNodePreserveAll :: NSXMLNodeOptions
 pattern NSXMLNodePreserveAll = NSXMLNodeOptions 4293918750
+
+instance ObjCArgument NSXMLNodeOptions where
+  withObjCArg (NSXMLNodeOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSXMLNodeOptions where
+  type RawReturn NSXMLNodeOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSXMLNodeOptions x)
+  fromOwned x = pure (NSXMLNodeOptions x)
 
 -- | @NSXMLParserError@
 newtype NSXMLParserError = NSXMLParserError CLong
@@ -4029,6 +5472,16 @@ pattern NSXMLParserNoDTDError = NSXMLParserError 94
 pattern NSXMLParserDelegateAbortedParseError :: NSXMLParserError
 pattern NSXMLParserDelegateAbortedParseError = NSXMLParserError 512
 
+instance ObjCArgument NSXMLParserError where
+  withObjCArg (NSXMLParserError x) k = k (argCLong x)
+
+instance ObjCReturn NSXMLParserError where
+  type RawReturn NSXMLParserError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSXMLParserError x)
+  fromOwned x = pure (NSXMLParserError x)
+
 -- | @NSXMLParserExternalEntityResolvingPolicy@
 newtype NSXMLParserExternalEntityResolvingPolicy = NSXMLParserExternalEntityResolvingPolicy CULong
   deriving stock (Eq, Ord, Show)
@@ -4046,6 +5499,16 @@ pattern NSXMLParserResolveExternalEntitiesSameOriginOnly = NSXMLParserExternalEn
 pattern NSXMLParserResolveExternalEntitiesAlways :: NSXMLParserExternalEntityResolvingPolicy
 pattern NSXMLParserResolveExternalEntitiesAlways = NSXMLParserExternalEntityResolvingPolicy 3
 
+instance ObjCArgument NSXMLParserExternalEntityResolvingPolicy where
+  withObjCArg (NSXMLParserExternalEntityResolvingPolicy x) k = k (argCULong x)
+
+instance ObjCReturn NSXMLParserExternalEntityResolvingPolicy where
+  type RawReturn NSXMLParserExternalEntityResolvingPolicy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSXMLParserExternalEntityResolvingPolicy x)
+  fromOwned x = pure (NSXMLParserExternalEntityResolvingPolicy x)
+
 -- | @NSXPCConnectionOptions@ (bitmask)
 newtype NSXPCConnectionOptions = NSXPCConnectionOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -4060,6 +5523,16 @@ instance Monoid NSXPCConnectionOptions where
 pattern NSXPCConnectionPrivileged :: NSXPCConnectionOptions
 pattern NSXPCConnectionPrivileged = NSXPCConnectionOptions 4096
 
+instance ObjCArgument NSXPCConnectionOptions where
+  withObjCArg (NSXPCConnectionOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSXPCConnectionOptions where
+  type RawReturn NSXPCConnectionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSXPCConnectionOptions x)
+  fromOwned x = pure (NSXPCConnectionOptions x)
+
 -- | @NXByteOrder@
 newtype NXByteOrder = NXByteOrder CInt
   deriving stock (Eq, Ord, Show)
@@ -4073,3 +5546,13 @@ pattern NX_LittleEndian = NXByteOrder 1
 
 pattern NX_BigEndian :: NXByteOrder
 pattern NX_BigEndian = NXByteOrder 2
+
+instance ObjCArgument NXByteOrder where
+  withObjCArg (NXByteOrder x) k = k (argCInt x)
+
+instance ObjCReturn NXByteOrder where
+  type RawReturn NXByteOrder = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NXByteOrder x)
+  fromOwned x = pure (NXByteOrder x)

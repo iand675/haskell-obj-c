@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Matter.MTRFanControlClusterStepParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , directionSelector
-  , setDirectionSelector
-  , wrapSelector
-  , setWrapSelector
   , lowestOffSelector
-  , setLowestOffSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setDirectionSelector
+  , setLowestOffSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setWrapSelector
+  , timedInvokeTimeoutMsSelector
+  , wrapSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- direction@
 direction :: IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams => mtrFanControlClusterStepParams -> IO (Id NSNumber)
-direction mtrFanControlClusterStepParams  =
-    sendMsg mtrFanControlClusterStepParams (mkSelector "direction") (retPtr retVoid) [] >>= retainedObject . castPtr
+direction mtrFanControlClusterStepParams =
+  sendMessage mtrFanControlClusterStepParams directionSelector
 
 -- | @- setDirection:@
 setDirection :: (IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams, IsNSNumber value) => mtrFanControlClusterStepParams -> value -> IO ()
-setDirection mtrFanControlClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrFanControlClusterStepParams (mkSelector "setDirection:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDirection mtrFanControlClusterStepParams value =
+  sendMessage mtrFanControlClusterStepParams setDirectionSelector (toNSNumber value)
 
 -- | @- wrap@
 wrap :: IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams => mtrFanControlClusterStepParams -> IO (Id NSNumber)
-wrap mtrFanControlClusterStepParams  =
-    sendMsg mtrFanControlClusterStepParams (mkSelector "wrap") (retPtr retVoid) [] >>= retainedObject . castPtr
+wrap mtrFanControlClusterStepParams =
+  sendMessage mtrFanControlClusterStepParams wrapSelector
 
 -- | @- setWrap:@
 setWrap :: (IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams, IsNSNumber value) => mtrFanControlClusterStepParams -> value -> IO ()
-setWrap mtrFanControlClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrFanControlClusterStepParams (mkSelector "setWrap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWrap mtrFanControlClusterStepParams value =
+  sendMessage mtrFanControlClusterStepParams setWrapSelector (toNSNumber value)
 
 -- | @- lowestOff@
 lowestOff :: IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams => mtrFanControlClusterStepParams -> IO (Id NSNumber)
-lowestOff mtrFanControlClusterStepParams  =
-    sendMsg mtrFanControlClusterStepParams (mkSelector "lowestOff") (retPtr retVoid) [] >>= retainedObject . castPtr
+lowestOff mtrFanControlClusterStepParams =
+  sendMessage mtrFanControlClusterStepParams lowestOffSelector
 
 -- | @- setLowestOff:@
 setLowestOff :: (IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams, IsNSNumber value) => mtrFanControlClusterStepParams -> value -> IO ()
-setLowestOff mtrFanControlClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrFanControlClusterStepParams (mkSelector "setLowestOff:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLowestOff mtrFanControlClusterStepParams value =
+  sendMessage mtrFanControlClusterStepParams setLowestOffSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setLowestOff mtrFanControlClusterStepParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams => mtrFanControlClusterStepParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrFanControlClusterStepParams  =
-    sendMsg mtrFanControlClusterStepParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrFanControlClusterStepParams =
+  sendMessage mtrFanControlClusterStepParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrFanControlClusterStepParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams, IsNSNumber value) => mtrFanControlClusterStepParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrFanControlClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrFanControlClusterStepParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrFanControlClusterStepParams value =
+  sendMessage mtrFanControlClusterStepParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrFanControlClusterStepParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams => mtrFanControlClusterStepParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrFanControlClusterStepParams  =
-    sendMsg mtrFanControlClusterStepParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrFanControlClusterStepParams =
+  sendMessage mtrFanControlClusterStepParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrFanControlClusterStepParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRFanControlClusterStepParams mtrFanControlClusterStepParams, IsNSNumber value) => mtrFanControlClusterStepParams -> value -> IO ()
-setServerSideProcessingTimeout mtrFanControlClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrFanControlClusterStepParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrFanControlClusterStepParams value =
+  sendMessage mtrFanControlClusterStepParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @direction@
-directionSelector :: Selector
+directionSelector :: Selector '[] (Id NSNumber)
 directionSelector = mkSelector "direction"
 
 -- | @Selector@ for @setDirection:@
-setDirectionSelector :: Selector
+setDirectionSelector :: Selector '[Id NSNumber] ()
 setDirectionSelector = mkSelector "setDirection:"
 
 -- | @Selector@ for @wrap@
-wrapSelector :: Selector
+wrapSelector :: Selector '[] (Id NSNumber)
 wrapSelector = mkSelector "wrap"
 
 -- | @Selector@ for @setWrap:@
-setWrapSelector :: Selector
+setWrapSelector :: Selector '[Id NSNumber] ()
 setWrapSelector = mkSelector "setWrap:"
 
 -- | @Selector@ for @lowestOff@
-lowestOffSelector :: Selector
+lowestOffSelector :: Selector '[] (Id NSNumber)
 lowestOffSelector = mkSelector "lowestOff"
 
 -- | @Selector@ for @setLowestOff:@
-setLowestOffSelector :: Selector
+setLowestOffSelector :: Selector '[Id NSNumber] ()
 setLowestOffSelector = mkSelector "setLowestOff:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

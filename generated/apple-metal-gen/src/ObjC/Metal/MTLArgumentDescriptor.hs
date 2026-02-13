@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,19 +25,19 @@ module ObjC.Metal.MTLArgumentDescriptor
   , setTextureType
   , constantBlockAlignment
   , setConstantBlockAlignment
-  , argumentDescriptorSelector
-  , dataTypeSelector
-  , setDataTypeSelector
-  , indexSelector
-  , setIndexSelector
-  , arrayLengthSelector
-  , setArrayLengthSelector
   , accessSelector
-  , setAccessSelector
-  , textureTypeSelector
-  , setTextureTypeSelector
+  , argumentDescriptorSelector
+  , arrayLengthSelector
   , constantBlockAlignmentSelector
+  , dataTypeSelector
+  , indexSelector
+  , setAccessSelector
+  , setArrayLengthSelector
   , setConstantBlockAlignmentSelector
+  , setDataTypeSelector
+  , setIndexSelector
+  , setTextureTypeSelector
+  , textureTypeSelector
 
   -- * Enum types
   , MTLBindingAccess(MTLBindingAccess)
@@ -158,15 +159,11 @@ module ObjC.Metal.MTLArgumentDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -183,7 +180,7 @@ argumentDescriptor :: IO (Id MTLArgumentDescriptor)
 argumentDescriptor  =
   do
     cls' <- getRequiredClass "MTLArgumentDescriptor"
-    sendClassMsg cls' (mkSelector "argumentDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' argumentDescriptorSelector
 
 -- | dataType
 --
@@ -191,8 +188,8 @@ argumentDescriptor  =
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> IO MTLDataType
-dataType mtlArgumentDescriptor  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlArgumentDescriptor (mkSelector "dataType") retCULong []
+dataType mtlArgumentDescriptor =
+  sendMessage mtlArgumentDescriptor dataTypeSelector
 
 -- | dataType
 --
@@ -200,8 +197,8 @@ dataType mtlArgumentDescriptor  =
 --
 -- ObjC selector: @- setDataType:@
 setDataType :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> MTLDataType -> IO ()
-setDataType mtlArgumentDescriptor  value =
-    sendMsg mtlArgumentDescriptor (mkSelector "setDataType:") retVoid [argCULong (coerce value)]
+setDataType mtlArgumentDescriptor value =
+  sendMessage mtlArgumentDescriptor setDataTypeSelector value
 
 -- | index
 --
@@ -209,8 +206,8 @@ setDataType mtlArgumentDescriptor  value =
 --
 -- ObjC selector: @- index@
 index :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> IO CULong
-index mtlArgumentDescriptor  =
-    sendMsg mtlArgumentDescriptor (mkSelector "index") retCULong []
+index mtlArgumentDescriptor =
+  sendMessage mtlArgumentDescriptor indexSelector
 
 -- | index
 --
@@ -218,8 +215,8 @@ index mtlArgumentDescriptor  =
 --
 -- ObjC selector: @- setIndex:@
 setIndex :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> CULong -> IO ()
-setIndex mtlArgumentDescriptor  value =
-    sendMsg mtlArgumentDescriptor (mkSelector "setIndex:") retVoid [argCULong value]
+setIndex mtlArgumentDescriptor value =
+  sendMessage mtlArgumentDescriptor setIndexSelector value
 
 -- | arrayLength
 --
@@ -227,8 +224,8 @@ setIndex mtlArgumentDescriptor  value =
 --
 -- ObjC selector: @- arrayLength@
 arrayLength :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> IO CULong
-arrayLength mtlArgumentDescriptor  =
-    sendMsg mtlArgumentDescriptor (mkSelector "arrayLength") retCULong []
+arrayLength mtlArgumentDescriptor =
+  sendMessage mtlArgumentDescriptor arrayLengthSelector
 
 -- | arrayLength
 --
@@ -236,8 +233,8 @@ arrayLength mtlArgumentDescriptor  =
 --
 -- ObjC selector: @- setArrayLength:@
 setArrayLength :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> CULong -> IO ()
-setArrayLength mtlArgumentDescriptor  value =
-    sendMsg mtlArgumentDescriptor (mkSelector "setArrayLength:") retVoid [argCULong value]
+setArrayLength mtlArgumentDescriptor value =
+  sendMessage mtlArgumentDescriptor setArrayLengthSelector value
 
 -- | access
 --
@@ -245,8 +242,8 @@ setArrayLength mtlArgumentDescriptor  value =
 --
 -- ObjC selector: @- access@
 access :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> IO MTLBindingAccess
-access mtlArgumentDescriptor  =
-    fmap (coerce :: CULong -> MTLBindingAccess) $ sendMsg mtlArgumentDescriptor (mkSelector "access") retCULong []
+access mtlArgumentDescriptor =
+  sendMessage mtlArgumentDescriptor accessSelector
 
 -- | access
 --
@@ -254,8 +251,8 @@ access mtlArgumentDescriptor  =
 --
 -- ObjC selector: @- setAccess:@
 setAccess :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> MTLBindingAccess -> IO ()
-setAccess mtlArgumentDescriptor  value =
-    sendMsg mtlArgumentDescriptor (mkSelector "setAccess:") retVoid [argCULong (coerce value)]
+setAccess mtlArgumentDescriptor value =
+  sendMessage mtlArgumentDescriptor setAccessSelector value
 
 -- | textureType
 --
@@ -263,8 +260,8 @@ setAccess mtlArgumentDescriptor  value =
 --
 -- ObjC selector: @- textureType@
 textureType :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> IO MTLTextureType
-textureType mtlArgumentDescriptor  =
-    fmap (coerce :: CULong -> MTLTextureType) $ sendMsg mtlArgumentDescriptor (mkSelector "textureType") retCULong []
+textureType mtlArgumentDescriptor =
+  sendMessage mtlArgumentDescriptor textureTypeSelector
 
 -- | textureType
 --
@@ -272,8 +269,8 @@ textureType mtlArgumentDescriptor  =
 --
 -- ObjC selector: @- setTextureType:@
 setTextureType :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> MTLTextureType -> IO ()
-setTextureType mtlArgumentDescriptor  value =
-    sendMsg mtlArgumentDescriptor (mkSelector "setTextureType:") retVoid [argCULong (coerce value)]
+setTextureType mtlArgumentDescriptor value =
+  sendMessage mtlArgumentDescriptor setTextureTypeSelector value
 
 -- | constantBlockAlignment
 --
@@ -283,8 +280,8 @@ setTextureType mtlArgumentDescriptor  value =
 --
 -- ObjC selector: @- constantBlockAlignment@
 constantBlockAlignment :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> IO CULong
-constantBlockAlignment mtlArgumentDescriptor  =
-    sendMsg mtlArgumentDescriptor (mkSelector "constantBlockAlignment") retCULong []
+constantBlockAlignment mtlArgumentDescriptor =
+  sendMessage mtlArgumentDescriptor constantBlockAlignmentSelector
 
 -- | constantBlockAlignment
 --
@@ -294,62 +291,62 @@ constantBlockAlignment mtlArgumentDescriptor  =
 --
 -- ObjC selector: @- setConstantBlockAlignment:@
 setConstantBlockAlignment :: IsMTLArgumentDescriptor mtlArgumentDescriptor => mtlArgumentDescriptor -> CULong -> IO ()
-setConstantBlockAlignment mtlArgumentDescriptor  value =
-    sendMsg mtlArgumentDescriptor (mkSelector "setConstantBlockAlignment:") retVoid [argCULong value]
+setConstantBlockAlignment mtlArgumentDescriptor value =
+  sendMessage mtlArgumentDescriptor setConstantBlockAlignmentSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @argumentDescriptor@
-argumentDescriptorSelector :: Selector
+argumentDescriptorSelector :: Selector '[] (Id MTLArgumentDescriptor)
 argumentDescriptorSelector = mkSelector "argumentDescriptor"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MTLDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @setDataType:@
-setDataTypeSelector :: Selector
+setDataTypeSelector :: Selector '[MTLDataType] ()
 setDataTypeSelector = mkSelector "setDataType:"
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] CULong
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @setIndex:@
-setIndexSelector :: Selector
+setIndexSelector :: Selector '[CULong] ()
 setIndexSelector = mkSelector "setIndex:"
 
 -- | @Selector@ for @arrayLength@
-arrayLengthSelector :: Selector
+arrayLengthSelector :: Selector '[] CULong
 arrayLengthSelector = mkSelector "arrayLength"
 
 -- | @Selector@ for @setArrayLength:@
-setArrayLengthSelector :: Selector
+setArrayLengthSelector :: Selector '[CULong] ()
 setArrayLengthSelector = mkSelector "setArrayLength:"
 
 -- | @Selector@ for @access@
-accessSelector :: Selector
+accessSelector :: Selector '[] MTLBindingAccess
 accessSelector = mkSelector "access"
 
 -- | @Selector@ for @setAccess:@
-setAccessSelector :: Selector
+setAccessSelector :: Selector '[MTLBindingAccess] ()
 setAccessSelector = mkSelector "setAccess:"
 
 -- | @Selector@ for @textureType@
-textureTypeSelector :: Selector
+textureTypeSelector :: Selector '[] MTLTextureType
 textureTypeSelector = mkSelector "textureType"
 
 -- | @Selector@ for @setTextureType:@
-setTextureTypeSelector :: Selector
+setTextureTypeSelector :: Selector '[MTLTextureType] ()
 setTextureTypeSelector = mkSelector "setTextureType:"
 
 -- | @Selector@ for @constantBlockAlignment@
-constantBlockAlignmentSelector :: Selector
+constantBlockAlignmentSelector :: Selector '[] CULong
 constantBlockAlignmentSelector = mkSelector "constantBlockAlignment"
 
 -- | @Selector@ for @setConstantBlockAlignment:@
-setConstantBlockAlignmentSelector :: Selector
+setConstantBlockAlignmentSelector :: Selector '[CULong] ()
 setConstantBlockAlignmentSelector = mkSelector "setConstantBlockAlignment:"
 

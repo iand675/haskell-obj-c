@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.SensorKit.SRSleepSession
   , startDate
   , duration
   , identifier
+  , durationSelector
+  , identifierSelector
   , initSelector
   , newSelector
   , startDateSelector
-  , durationSelector
-  , identifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,15 +34,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSRSleepSession srSleepSession => srSleepSession -> IO (Id SRSleepSession)
-init_ srSleepSession  =
-    sendMsg srSleepSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srSleepSession =
+  sendOwnedMessage srSleepSession initSelector
 
 -- | @+ new@
 new :: IO (Id SRSleepSession)
 new  =
   do
     cls' <- getRequiredClass "SRSleepSession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | startDate
 --
@@ -53,8 +50,8 @@ new  =
 --
 -- ObjC selector: @- startDate@
 startDate :: IsSRSleepSession srSleepSession => srSleepSession -> IO (Id NSDate)
-startDate srSleepSession  =
-    sendMsg srSleepSession (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate srSleepSession =
+  sendMessage srSleepSession startDateSelector
 
 -- | duration
 --
@@ -64,8 +61,8 @@ startDate srSleepSession  =
 --
 -- ObjC selector: @- duration@
 duration :: IsSRSleepSession srSleepSession => srSleepSession -> IO CDouble
-duration srSleepSession  =
-    sendMsg srSleepSession (mkSelector "duration") retCDouble []
+duration srSleepSession =
+  sendMessage srSleepSession durationSelector
 
 -- | identifier
 --
@@ -73,30 +70,30 @@ duration srSleepSession  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsSRSleepSession srSleepSession => srSleepSession -> IO (Id NSString)
-identifier srSleepSession  =
-    sendMsg srSleepSession (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier srSleepSession =
+  sendMessage srSleepSession identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRSleepSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRSleepSession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 

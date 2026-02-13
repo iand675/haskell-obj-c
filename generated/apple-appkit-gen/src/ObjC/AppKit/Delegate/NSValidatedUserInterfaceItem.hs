@@ -36,7 +36,7 @@ import ObjC.Runtime.StableIvar
 -- method is not implemented (the object will not respond to that
 -- selector).  'Just' provides the Haskell implementation.
 data NSValidatedUserInterfaceItemOverrides = NSValidatedUserInterfaceItemOverrides
-  { _action :: !(Maybe (IO Selector))
+  { _action :: !(Maybe (IO Sel))
   , _tag :: !(Maybe (IO Int))
   }
 

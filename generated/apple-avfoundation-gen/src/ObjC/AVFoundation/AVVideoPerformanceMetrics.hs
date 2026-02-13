@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,30 +28,26 @@ module ObjC.AVFoundation.AVVideoPerformanceMetrics
   , totalFrameDelay
   , initSelector
   , newSelector
-  , totalNumberOfFramesSelector
-  , numberOfDroppedFramesSelector
   , numberOfCorruptedFramesSelector
-  , numberOfFramesDisplayedUsingOptimizedCompositingSelector
-  , totalAccumulatedFrameDelaySelector
-  , totalNumberOfVideoFramesSelector
-  , numberOfDroppedVideoFramesSelector
   , numberOfCorruptedVideoFramesSelector
   , numberOfDisplayCompositedVideoFramesSelector
+  , numberOfDroppedFramesSelector
+  , numberOfDroppedVideoFramesSelector
+  , numberOfFramesDisplayedUsingOptimizedCompositingSelector
   , numberOfNonDisplayCompositedVideoFramesSelector
+  , totalAccumulatedFrameDelaySelector
   , totalFrameDelaySelector
+  , totalNumberOfFramesSelector
+  , totalNumberOfVideoFramesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,15 +56,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO (Id AVVideoPerformanceMetrics)
-init_ avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avVideoPerformanceMetrics =
+  sendOwnedMessage avVideoPerformanceMetrics initSelector
 
 -- | @+ new@
 new :: IO (Id AVVideoPerformanceMetrics)
 new  =
   do
     cls' <- getRequiredClass "AVVideoPerformanceMetrics"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | totalNumberOfFrames
 --
@@ -75,8 +72,8 @@ new  =
 --
 -- ObjC selector: @- totalNumberOfFrames@
 totalNumberOfFrames :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CLong
-totalNumberOfFrames avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "totalNumberOfFrames") retCLong []
+totalNumberOfFrames avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics totalNumberOfFramesSelector
 
 -- | numberOfDroppedFrames
 --
@@ -84,8 +81,8 @@ totalNumberOfFrames avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- numberOfDroppedFrames@
 numberOfDroppedFrames :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CLong
-numberOfDroppedFrames avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "numberOfDroppedFrames") retCLong []
+numberOfDroppedFrames avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics numberOfDroppedFramesSelector
 
 -- | numberOfCorruptedFrames
 --
@@ -93,8 +90,8 @@ numberOfDroppedFrames avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- numberOfCorruptedFrames@
 numberOfCorruptedFrames :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CLong
-numberOfCorruptedFrames avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "numberOfCorruptedFrames") retCLong []
+numberOfCorruptedFrames avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics numberOfCorruptedFramesSelector
 
 -- | numberOfFramesDisplayedUsingOptimizedCompositing
 --
@@ -102,8 +99,8 @@ numberOfCorruptedFrames avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- numberOfFramesDisplayedUsingOptimizedCompositing@
 numberOfFramesDisplayedUsingOptimizedCompositing :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CLong
-numberOfFramesDisplayedUsingOptimizedCompositing avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "numberOfFramesDisplayedUsingOptimizedCompositing") retCLong []
+numberOfFramesDisplayedUsingOptimizedCompositing avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics numberOfFramesDisplayedUsingOptimizedCompositingSelector
 
 -- | totalAccumulatedFrameDelay
 --
@@ -113,8 +110,8 @@ numberOfFramesDisplayedUsingOptimizedCompositing avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- totalAccumulatedFrameDelay@
 totalAccumulatedFrameDelay :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CDouble
-totalAccumulatedFrameDelay avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "totalAccumulatedFrameDelay") retCDouble []
+totalAccumulatedFrameDelay avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics totalAccumulatedFrameDelaySelector
 
 -- | totalNumberOfVideoFrames
 --
@@ -122,8 +119,8 @@ totalAccumulatedFrameDelay avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- totalNumberOfVideoFrames@
 totalNumberOfVideoFrames :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CULong
-totalNumberOfVideoFrames avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "totalNumberOfVideoFrames") retCULong []
+totalNumberOfVideoFrames avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics totalNumberOfVideoFramesSelector
 
 -- | numberOfDroppedVideoFrames
 --
@@ -131,8 +128,8 @@ totalNumberOfVideoFrames avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- numberOfDroppedVideoFrames@
 numberOfDroppedVideoFrames :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CULong
-numberOfDroppedVideoFrames avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "numberOfDroppedVideoFrames") retCULong []
+numberOfDroppedVideoFrames avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics numberOfDroppedVideoFramesSelector
 
 -- | numberOfCorruptedVideoFrames
 --
@@ -140,8 +137,8 @@ numberOfDroppedVideoFrames avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- numberOfCorruptedVideoFrames@
 numberOfCorruptedVideoFrames :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CULong
-numberOfCorruptedVideoFrames avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "numberOfCorruptedVideoFrames") retCULong []
+numberOfCorruptedVideoFrames avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics numberOfCorruptedVideoFramesSelector
 
 -- | numberOfDisplayCompositedFrames
 --
@@ -149,8 +146,8 @@ numberOfCorruptedVideoFrames avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- numberOfDisplayCompositedVideoFrames@
 numberOfDisplayCompositedVideoFrames :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CULong
-numberOfDisplayCompositedVideoFrames avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "numberOfDisplayCompositedVideoFrames") retCULong []
+numberOfDisplayCompositedVideoFrames avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics numberOfDisplayCompositedVideoFramesSelector
 
 -- | numberOfNonDisplayCompositedFrames
 --
@@ -158,8 +155,8 @@ numberOfDisplayCompositedVideoFrames avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- numberOfNonDisplayCompositedVideoFrames@
 numberOfNonDisplayCompositedVideoFrames :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CULong
-numberOfNonDisplayCompositedVideoFrames avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "numberOfNonDisplayCompositedVideoFrames") retCULong []
+numberOfNonDisplayCompositedVideoFrames avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics numberOfNonDisplayCompositedVideoFramesSelector
 
 -- | totalFrameDelay
 --
@@ -169,62 +166,62 @@ numberOfNonDisplayCompositedVideoFrames avVideoPerformanceMetrics  =
 --
 -- ObjC selector: @- totalFrameDelay@
 totalFrameDelay :: IsAVVideoPerformanceMetrics avVideoPerformanceMetrics => avVideoPerformanceMetrics -> IO CDouble
-totalFrameDelay avVideoPerformanceMetrics  =
-    sendMsg avVideoPerformanceMetrics (mkSelector "totalFrameDelay") retCDouble []
+totalFrameDelay avVideoPerformanceMetrics =
+  sendMessage avVideoPerformanceMetrics totalFrameDelaySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVVideoPerformanceMetrics)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVVideoPerformanceMetrics)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @totalNumberOfFrames@
-totalNumberOfFramesSelector :: Selector
+totalNumberOfFramesSelector :: Selector '[] CLong
 totalNumberOfFramesSelector = mkSelector "totalNumberOfFrames"
 
 -- | @Selector@ for @numberOfDroppedFrames@
-numberOfDroppedFramesSelector :: Selector
+numberOfDroppedFramesSelector :: Selector '[] CLong
 numberOfDroppedFramesSelector = mkSelector "numberOfDroppedFrames"
 
 -- | @Selector@ for @numberOfCorruptedFrames@
-numberOfCorruptedFramesSelector :: Selector
+numberOfCorruptedFramesSelector :: Selector '[] CLong
 numberOfCorruptedFramesSelector = mkSelector "numberOfCorruptedFrames"
 
 -- | @Selector@ for @numberOfFramesDisplayedUsingOptimizedCompositing@
-numberOfFramesDisplayedUsingOptimizedCompositingSelector :: Selector
+numberOfFramesDisplayedUsingOptimizedCompositingSelector :: Selector '[] CLong
 numberOfFramesDisplayedUsingOptimizedCompositingSelector = mkSelector "numberOfFramesDisplayedUsingOptimizedCompositing"
 
 -- | @Selector@ for @totalAccumulatedFrameDelay@
-totalAccumulatedFrameDelaySelector :: Selector
+totalAccumulatedFrameDelaySelector :: Selector '[] CDouble
 totalAccumulatedFrameDelaySelector = mkSelector "totalAccumulatedFrameDelay"
 
 -- | @Selector@ for @totalNumberOfVideoFrames@
-totalNumberOfVideoFramesSelector :: Selector
+totalNumberOfVideoFramesSelector :: Selector '[] CULong
 totalNumberOfVideoFramesSelector = mkSelector "totalNumberOfVideoFrames"
 
 -- | @Selector@ for @numberOfDroppedVideoFrames@
-numberOfDroppedVideoFramesSelector :: Selector
+numberOfDroppedVideoFramesSelector :: Selector '[] CULong
 numberOfDroppedVideoFramesSelector = mkSelector "numberOfDroppedVideoFrames"
 
 -- | @Selector@ for @numberOfCorruptedVideoFrames@
-numberOfCorruptedVideoFramesSelector :: Selector
+numberOfCorruptedVideoFramesSelector :: Selector '[] CULong
 numberOfCorruptedVideoFramesSelector = mkSelector "numberOfCorruptedVideoFrames"
 
 -- | @Selector@ for @numberOfDisplayCompositedVideoFrames@
-numberOfDisplayCompositedVideoFramesSelector :: Selector
+numberOfDisplayCompositedVideoFramesSelector :: Selector '[] CULong
 numberOfDisplayCompositedVideoFramesSelector = mkSelector "numberOfDisplayCompositedVideoFrames"
 
 -- | @Selector@ for @numberOfNonDisplayCompositedVideoFrames@
-numberOfNonDisplayCompositedVideoFramesSelector :: Selector
+numberOfNonDisplayCompositedVideoFramesSelector :: Selector '[] CULong
 numberOfNonDisplayCompositedVideoFramesSelector = mkSelector "numberOfNonDisplayCompositedVideoFrames"
 
 -- | @Selector@ for @totalFrameDelay@
-totalFrameDelaySelector :: Selector
+totalFrameDelaySelector :: Selector '[] CDouble
 totalFrameDelaySelector = mkSelector "totalFrameDelay"
 

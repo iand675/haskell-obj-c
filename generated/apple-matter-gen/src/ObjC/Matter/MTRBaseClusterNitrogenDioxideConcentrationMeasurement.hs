@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -61,70 +62,66 @@ module ObjC.Matter.MTRBaseClusterNitrogenDioxideConcentrationMeasurement
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , readAttributeMeasuredValueWithCompletionSelector
-  , subscribeAttributeMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMinMeasuredValueWithCompletionSelector
-  , subscribeAttributeMinMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMinMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMaxMeasuredValueWithCompletionSelector
-  , subscribeAttributeMaxMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMaxMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributePeakMeasuredValueWithCompletionSelector
-  , subscribeAttributePeakMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributePeakMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributePeakMeasuredValueWindowWithCompletionSelector
-  , subscribeAttributePeakMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributePeakMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAverageMeasuredValueWithCompletionSelector
-  , subscribeAttributeAverageMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAverageMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAverageMeasuredValueWindowWithCompletionSelector
-  , subscribeAttributeAverageMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAverageMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeUncertaintyWithCompletionSelector
-  , subscribeAttributeUncertaintyWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeUncertaintyWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMeasurementUnitWithCompletionSelector
-  , subscribeAttributeMeasurementUnitWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMeasurementUnitWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMeasurementMediumWithCompletionSelector
-  , subscribeAttributeMeasurementMediumWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMeasurementMediumWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeLevelValueWithCompletionSelector
-  , subscribeAttributeLevelValueWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeLevelValueWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
-  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
-  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
-  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
   , initSelector
-  , newSelector
   , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
+  , readAttributeAverageMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAverageMeasuredValueWindowWithCompletionSelector
+  , readAttributeAverageMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAverageMeasuredValueWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
+  , readAttributeLevelValueWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeLevelValueWithCompletionSelector
+  , readAttributeMaxMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMaxMeasuredValueWithCompletionSelector
+  , readAttributeMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMeasuredValueWithCompletionSelector
+  , readAttributeMeasurementMediumWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMeasurementMediumWithCompletionSelector
+  , readAttributeMeasurementUnitWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMeasurementUnitWithCompletionSelector
+  , readAttributeMinMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMinMeasuredValueWithCompletionSelector
+  , readAttributePeakMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributePeakMeasuredValueWindowWithCompletionSelector
+  , readAttributePeakMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributePeakMeasuredValueWithCompletionSelector
+  , readAttributeUncertaintyWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeUncertaintyWithCompletionSelector
+  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAverageMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAverageMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeLevelValueWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMaxMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMeasurementMediumWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMeasurementUnitWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMinMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributePeakMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributePeakMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeUncertaintyWithParams_subscriptionEstablished_reportHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -133,567 +130,500 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeMeasuredValueWithCompletion:@
 readAttributeMeasuredValueWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeMeasuredValueWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeMeasuredValueWithCompletionSelector completion
 
 -- | @- subscribeAttributeMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMeasuredValueWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeMeasuredValueWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMeasuredValueWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMeasuredValueWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMeasuredValueWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMinMeasuredValueWithCompletion:@
 readAttributeMinMeasuredValueWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeMinMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeMinMeasuredValueWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMinMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeMinMeasuredValueWithCompletionSelector completion
 
 -- | @- subscribeAttributeMinMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMinMeasuredValueWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMinMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeMinMeasuredValueWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMinMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeMinMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMinMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMinMeasuredValueWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMinMeasuredValueWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMinMeasuredValueWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMinMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMaxMeasuredValueWithCompletion:@
 readAttributeMaxMeasuredValueWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeMaxMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeMaxMeasuredValueWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMaxMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeMaxMeasuredValueWithCompletionSelector completion
 
 -- | @- subscribeAttributeMaxMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMaxMeasuredValueWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMaxMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeMaxMeasuredValueWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMaxMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeMaxMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMaxMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMaxMeasuredValueWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMaxMeasuredValueWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMaxMeasuredValueWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMaxMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributePeakMeasuredValueWithCompletion:@
 readAttributePeakMeasuredValueWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributePeakMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributePeakMeasuredValueWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributePeakMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributePeakMeasuredValueWithCompletionSelector completion
 
 -- | @- subscribeAttributePeakMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributePeakMeasuredValueWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributePeakMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributePeakMeasuredValueWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributePeakMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributePeakMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributePeakMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
 readAttributePeakMeasuredValueWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributePeakMeasuredValueWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributePeakMeasuredValueWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributePeakMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributePeakMeasuredValueWindowWithCompletion:@
 readAttributePeakMeasuredValueWindowWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributePeakMeasuredValueWindowWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributePeakMeasuredValueWindowWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributePeakMeasuredValueWindowWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributePeakMeasuredValueWindowWithCompletionSelector completion
 
 -- | @- subscribeAttributePeakMeasuredValueWindowWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributePeakMeasuredValueWindowWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributePeakMeasuredValueWindowWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributePeakMeasuredValueWindowWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributePeakMeasuredValueWindowWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributePeakMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributePeakMeasuredValueWindowWithClusterStateCache:endpoint:queue:completion:@
 readAttributePeakMeasuredValueWindowWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributePeakMeasuredValueWindowWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributePeakMeasuredValueWindowWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributePeakMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAverageMeasuredValueWithCompletion:@
 readAttributeAverageMeasuredValueWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeAverageMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeAverageMeasuredValueWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAverageMeasuredValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeAverageMeasuredValueWithCompletionSelector completion
 
 -- | @- subscribeAttributeAverageMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAverageMeasuredValueWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAverageMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeAverageMeasuredValueWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAverageMeasuredValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeAverageMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAverageMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAverageMeasuredValueWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAverageMeasuredValueWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAverageMeasuredValueWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAverageMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAverageMeasuredValueWindowWithCompletion:@
 readAttributeAverageMeasuredValueWindowWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeAverageMeasuredValueWindowWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeAverageMeasuredValueWindowWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAverageMeasuredValueWindowWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeAverageMeasuredValueWindowWithCompletionSelector completion
 
 -- | @- subscribeAttributeAverageMeasuredValueWindowWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAverageMeasuredValueWindowWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAverageMeasuredValueWindowWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeAverageMeasuredValueWindowWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAverageMeasuredValueWindowWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeAverageMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAverageMeasuredValueWindowWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAverageMeasuredValueWindowWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAverageMeasuredValueWindowWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAverageMeasuredValueWindowWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAverageMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeUncertaintyWithCompletion:@
 readAttributeUncertaintyWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeUncertaintyWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeUncertaintyWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeUncertaintyWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeUncertaintyWithCompletionSelector completion
 
 -- | @- subscribeAttributeUncertaintyWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeUncertaintyWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeUncertaintyWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeUncertaintyWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeUncertaintyWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeUncertaintyWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeUncertaintyWithClusterStateCache:endpoint:queue:completion:@
 readAttributeUncertaintyWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeUncertaintyWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeUncertaintyWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeUncertaintyWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMeasurementUnitWithCompletion:@
 readAttributeMeasurementUnitWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeMeasurementUnitWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeMeasurementUnitWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMeasurementUnitWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeMeasurementUnitWithCompletionSelector completion
 
 -- | @- subscribeAttributeMeasurementUnitWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMeasurementUnitWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMeasurementUnitWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeMeasurementUnitWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMeasurementUnitWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeMeasurementUnitWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMeasurementUnitWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMeasurementUnitWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMeasurementUnitWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMeasurementUnitWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMeasurementUnitWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMeasurementMediumWithCompletion:@
 readAttributeMeasurementMediumWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeMeasurementMediumWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeMeasurementMediumWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMeasurementMediumWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeMeasurementMediumWithCompletionSelector completion
 
 -- | @- subscribeAttributeMeasurementMediumWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMeasurementMediumWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMeasurementMediumWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeMeasurementMediumWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMeasurementMediumWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeMeasurementMediumWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMeasurementMediumWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMeasurementMediumWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMeasurementMediumWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMeasurementMediumWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMeasurementMediumWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeLevelValueWithCompletion:@
 readAttributeLevelValueWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeLevelValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeLevelValueWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeLevelValueWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeLevelValueWithCompletionSelector completion
 
 -- | @- subscribeAttributeLevelValueWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeLevelValueWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeLevelValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeLevelValueWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeLevelValueWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeLevelValueWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeLevelValueWithClusterStateCache:endpoint:queue:completion:@
 readAttributeLevelValueWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeLevelValueWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeLevelValueWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeLevelValueWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement  completion =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterNitrogenDioxideConcentrationMeasurement completion =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRSubscribeParams params) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterNitrogenDioxideConcentrationMeasurement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> IO (Id MTRBaseClusterNitrogenDioxideConcentrationMeasurement)
-init_ mtrBaseClusterNitrogenDioxideConcentrationMeasurement  =
-    sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterNitrogenDioxideConcentrationMeasurement =
+  sendOwnedMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterNitrogenDioxideConcentrationMeasurement)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterNitrogenDioxideConcentrationMeasurement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterNitrogenDioxideConcentrationMeasurement mtrBaseClusterNitrogenDioxideConcentrationMeasurement, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterNitrogenDioxideConcentrationMeasurement -> device -> endpointID -> queue -> IO (Id MTRBaseClusterNitrogenDioxideConcentrationMeasurement)
-initWithDevice_endpointID_queue mtrBaseClusterNitrogenDioxideConcentrationMeasurement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterNitrogenDioxideConcentrationMeasurement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterNitrogenDioxideConcentrationMeasurement device endpointID queue =
+  sendOwnedMessage mtrBaseClusterNitrogenDioxideConcentrationMeasurement initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeMeasuredValueWithCompletion:@
-readAttributeMeasuredValueWithCompletionSelector :: Selector
+readAttributeMeasuredValueWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMeasuredValueWithCompletionSelector = mkSelector "readAttributeMeasuredValueWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMeasuredValueWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMeasuredValueWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMinMeasuredValueWithCompletion:@
-readAttributeMinMeasuredValueWithCompletionSelector :: Selector
+readAttributeMinMeasuredValueWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMinMeasuredValueWithCompletionSelector = mkSelector "readAttributeMinMeasuredValueWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMinMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMinMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMinMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMinMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMinMeasuredValueWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMinMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMinMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMinMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMinMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMinMeasuredValueWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMaxMeasuredValueWithCompletion:@
-readAttributeMaxMeasuredValueWithCompletionSelector :: Selector
+readAttributeMaxMeasuredValueWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMaxMeasuredValueWithCompletionSelector = mkSelector "readAttributeMaxMeasuredValueWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMaxMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMaxMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMaxMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMaxMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMaxMeasuredValueWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMaxMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMaxMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMaxMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMaxMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMaxMeasuredValueWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributePeakMeasuredValueWithCompletion:@
-readAttributePeakMeasuredValueWithCompletionSelector :: Selector
+readAttributePeakMeasuredValueWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributePeakMeasuredValueWithCompletionSelector = mkSelector "readAttributePeakMeasuredValueWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributePeakMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributePeakMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributePeakMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributePeakMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributePeakMeasuredValueWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributePeakMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
-readAttributePeakMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributePeakMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributePeakMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributePeakMeasuredValueWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributePeakMeasuredValueWindowWithCompletion:@
-readAttributePeakMeasuredValueWindowWithCompletionSelector :: Selector
+readAttributePeakMeasuredValueWindowWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributePeakMeasuredValueWindowWithCompletionSelector = mkSelector "readAttributePeakMeasuredValueWindowWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributePeakMeasuredValueWindowWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributePeakMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributePeakMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributePeakMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributePeakMeasuredValueWindowWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributePeakMeasuredValueWindowWithClusterStateCache:endpoint:queue:completion:@
-readAttributePeakMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributePeakMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributePeakMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributePeakMeasuredValueWindowWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAverageMeasuredValueWithCompletion:@
-readAttributeAverageMeasuredValueWithCompletionSelector :: Selector
+readAttributeAverageMeasuredValueWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAverageMeasuredValueWithCompletionSelector = mkSelector "readAttributeAverageMeasuredValueWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAverageMeasuredValueWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAverageMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAverageMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAverageMeasuredValueWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAverageMeasuredValueWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAverageMeasuredValueWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAverageMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAverageMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAverageMeasuredValueWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAverageMeasuredValueWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAverageMeasuredValueWindowWithCompletion:@
-readAttributeAverageMeasuredValueWindowWithCompletionSelector :: Selector
+readAttributeAverageMeasuredValueWindowWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAverageMeasuredValueWindowWithCompletionSelector = mkSelector "readAttributeAverageMeasuredValueWindowWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAverageMeasuredValueWindowWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAverageMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAverageMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAverageMeasuredValueWindowWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAverageMeasuredValueWindowWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAverageMeasuredValueWindowWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAverageMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAverageMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAverageMeasuredValueWindowWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAverageMeasuredValueWindowWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeUncertaintyWithCompletion:@
-readAttributeUncertaintyWithCompletionSelector :: Selector
+readAttributeUncertaintyWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeUncertaintyWithCompletionSelector = mkSelector "readAttributeUncertaintyWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeUncertaintyWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeUncertaintyWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeUncertaintyWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeUncertaintyWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeUncertaintyWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeUncertaintyWithClusterStateCache:endpoint:queue:completion:@
-readAttributeUncertaintyWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeUncertaintyWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeUncertaintyWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeUncertaintyWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMeasurementUnitWithCompletion:@
-readAttributeMeasurementUnitWithCompletionSelector :: Selector
+readAttributeMeasurementUnitWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMeasurementUnitWithCompletionSelector = mkSelector "readAttributeMeasurementUnitWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMeasurementUnitWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMeasurementUnitWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMeasurementUnitWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMeasurementUnitWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMeasurementUnitWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMeasurementUnitWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMeasurementUnitWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMeasurementUnitWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMeasurementUnitWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMeasurementUnitWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMeasurementMediumWithCompletion:@
-readAttributeMeasurementMediumWithCompletionSelector :: Selector
+readAttributeMeasurementMediumWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMeasurementMediumWithCompletionSelector = mkSelector "readAttributeMeasurementMediumWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMeasurementMediumWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMeasurementMediumWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMeasurementMediumWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMeasurementMediumWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMeasurementMediumWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMeasurementMediumWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMeasurementMediumWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMeasurementMediumWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMeasurementMediumWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMeasurementMediumWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeLevelValueWithCompletion:@
-readAttributeLevelValueWithCompletionSelector :: Selector
+readAttributeLevelValueWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeLevelValueWithCompletionSelector = mkSelector "readAttributeLevelValueWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeLevelValueWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeLevelValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeLevelValueWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeLevelValueWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeLevelValueWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeLevelValueWithClusterStateCache:endpoint:queue:completion:@
-readAttributeLevelValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeLevelValueWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeLevelValueWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeLevelValueWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterNitrogenDioxideConcentrationMeasurement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterNitrogenDioxideConcentrationMeasurement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterNitrogenDioxideConcentrationMeasurement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

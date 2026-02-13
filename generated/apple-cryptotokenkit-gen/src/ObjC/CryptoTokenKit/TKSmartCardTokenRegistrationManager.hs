@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.CryptoTokenKit.TKSmartCardTokenRegistrationManager
   , unregisterSmartCardWithTokenID_error
   , defaultManager
   , registeredSmartCardTokens
+  , defaultManagerSelector
   , initSelector
   , registerSmartCardWithTokenID_promptMessage_errorSelector
-  , unregisterSmartCardWithTokenID_errorSelector
-  , defaultManagerSelector
   , registeredSmartCardTokensSelector
+  , unregisterSmartCardWithTokenID_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsTKSmartCardTokenRegistrationManager tkSmartCardTokenRegistrationManager => tkSmartCardTokenRegistrationManager -> IO (Id TKSmartCardTokenRegistrationManager)
-init_ tkSmartCardTokenRegistrationManager  =
-    sendMsg tkSmartCardTokenRegistrationManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkSmartCardTokenRegistrationManager =
+  sendOwnedMessage tkSmartCardTokenRegistrationManager initSelector
 
 -- | Registers a smartcard with a specific token ID.
 --
@@ -56,11 +53,8 @@ init_ tkSmartCardTokenRegistrationManager  =
 --
 -- ObjC selector: @- registerSmartCardWithTokenID:promptMessage:error:@
 registerSmartCardWithTokenID_promptMessage_error :: (IsTKSmartCardTokenRegistrationManager tkSmartCardTokenRegistrationManager, IsNSString tokenID, IsNSString promptMessage, IsNSError error_) => tkSmartCardTokenRegistrationManager -> tokenID -> promptMessage -> error_ -> IO Bool
-registerSmartCardWithTokenID_promptMessage_error tkSmartCardTokenRegistrationManager  tokenID promptMessage error_ =
-  withObjCPtr tokenID $ \raw_tokenID ->
-    withObjCPtr promptMessage $ \raw_promptMessage ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkSmartCardTokenRegistrationManager (mkSelector "registerSmartCardWithTokenID:promptMessage:error:") retCULong [argPtr (castPtr raw_tokenID :: Ptr ()), argPtr (castPtr raw_promptMessage :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+registerSmartCardWithTokenID_promptMessage_error tkSmartCardTokenRegistrationManager tokenID promptMessage error_ =
+  sendMessage tkSmartCardTokenRegistrationManager registerSmartCardWithTokenID_promptMessage_errorSelector (toNSString tokenID) (toNSString promptMessage) (toNSError error_)
 
 -- | Unregisters a smartcard for the provided token ID.
 --
@@ -72,10 +66,8 @@ registerSmartCardWithTokenID_promptMessage_error tkSmartCardTokenRegistrationMan
 --
 -- ObjC selector: @- unregisterSmartCardWithTokenID:error:@
 unregisterSmartCardWithTokenID_error :: (IsTKSmartCardTokenRegistrationManager tkSmartCardTokenRegistrationManager, IsNSString tokenID, IsNSError error_) => tkSmartCardTokenRegistrationManager -> tokenID -> error_ -> IO Bool
-unregisterSmartCardWithTokenID_error tkSmartCardTokenRegistrationManager  tokenID error_ =
-  withObjCPtr tokenID $ \raw_tokenID ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkSmartCardTokenRegistrationManager (mkSelector "unregisterSmartCardWithTokenID:error:") retCULong [argPtr (castPtr raw_tokenID :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+unregisterSmartCardWithTokenID_error tkSmartCardTokenRegistrationManager tokenID error_ =
+  sendMessage tkSmartCardTokenRegistrationManager unregisterSmartCardWithTokenID_errorSelector (toNSString tokenID) (toNSError error_)
 
 -- | Default instance of registration manager
 --
@@ -84,36 +76,36 @@ defaultManager :: IO (Id TKSmartCardTokenRegistrationManager)
 defaultManager  =
   do
     cls' <- getRequiredClass "TKSmartCardTokenRegistrationManager"
-    sendClassMsg cls' (mkSelector "defaultManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultManagerSelector
 
 -- | Returns the tokenIDs of all currently registered smart card tokens
 --
 -- ObjC selector: @- registeredSmartCardTokens@
 registeredSmartCardTokens :: IsTKSmartCardTokenRegistrationManager tkSmartCardTokenRegistrationManager => tkSmartCardTokenRegistrationManager -> IO (Id NSArray)
-registeredSmartCardTokens tkSmartCardTokenRegistrationManager  =
-    sendMsg tkSmartCardTokenRegistrationManager (mkSelector "registeredSmartCardTokens") (retPtr retVoid) [] >>= retainedObject . castPtr
+registeredSmartCardTokens tkSmartCardTokenRegistrationManager =
+  sendMessage tkSmartCardTokenRegistrationManager registeredSmartCardTokensSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKSmartCardTokenRegistrationManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @registerSmartCardWithTokenID:promptMessage:error:@
-registerSmartCardWithTokenID_promptMessage_errorSelector :: Selector
+registerSmartCardWithTokenID_promptMessage_errorSelector :: Selector '[Id NSString, Id NSString, Id NSError] Bool
 registerSmartCardWithTokenID_promptMessage_errorSelector = mkSelector "registerSmartCardWithTokenID:promptMessage:error:"
 
 -- | @Selector@ for @unregisterSmartCardWithTokenID:error:@
-unregisterSmartCardWithTokenID_errorSelector :: Selector
+unregisterSmartCardWithTokenID_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 unregisterSmartCardWithTokenID_errorSelector = mkSelector "unregisterSmartCardWithTokenID:error:"
 
 -- | @Selector@ for @defaultManager@
-defaultManagerSelector :: Selector
+defaultManagerSelector :: Selector '[] (Id TKSmartCardTokenRegistrationManager)
 defaultManagerSelector = mkSelector "defaultManager"
 
 -- | @Selector@ for @registeredSmartCardTokens@
-registeredSmartCardTokensSelector :: Selector
+registeredSmartCardTokensSelector :: Selector '[] (Id NSArray)
 registeredSmartCardTokensSelector = mkSelector "registeredSmartCardTokens"
 

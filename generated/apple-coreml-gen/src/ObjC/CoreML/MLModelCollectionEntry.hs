@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.CoreML.MLModelCollectionEntry
   , new
   , modelIdentifier
   , modelURL
-  , isEqualToModelCollectionEntrySelector
   , initSelector
-  , newSelector
+  , isEqualToModelCollectionEntrySelector
   , modelIdentifierSelector
   , modelURLSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,53 +36,52 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- isEqualToModelCollectionEntry:@
 isEqualToModelCollectionEntry :: (IsMLModelCollectionEntry mlModelCollectionEntry, IsMLModelCollectionEntry entry) => mlModelCollectionEntry -> entry -> IO Bool
-isEqualToModelCollectionEntry mlModelCollectionEntry  entry =
-  withObjCPtr entry $ \raw_entry ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlModelCollectionEntry (mkSelector "isEqualToModelCollectionEntry:") retCULong [argPtr (castPtr raw_entry :: Ptr ())]
+isEqualToModelCollectionEntry mlModelCollectionEntry entry =
+  sendMessage mlModelCollectionEntry isEqualToModelCollectionEntrySelector (toMLModelCollectionEntry entry)
 
 -- | @- init@
 init_ :: IsMLModelCollectionEntry mlModelCollectionEntry => mlModelCollectionEntry -> IO (Id MLModelCollectionEntry)
-init_ mlModelCollectionEntry  =
-    sendMsg mlModelCollectionEntry (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlModelCollectionEntry =
+  sendOwnedMessage mlModelCollectionEntry initSelector
 
 -- | @+ new@
 new :: IO RawId
 new  =
   do
     cls' <- getRequiredClass "MLModelCollectionEntry"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- modelIdentifier@
 modelIdentifier :: IsMLModelCollectionEntry mlModelCollectionEntry => mlModelCollectionEntry -> IO RawId
-modelIdentifier mlModelCollectionEntry  =
-    fmap (RawId . castPtr) $ sendMsg mlModelCollectionEntry (mkSelector "modelIdentifier") (retPtr retVoid) []
+modelIdentifier mlModelCollectionEntry =
+  sendMessage mlModelCollectionEntry modelIdentifierSelector
 
 -- | @- modelURL@
 modelURL :: IsMLModelCollectionEntry mlModelCollectionEntry => mlModelCollectionEntry -> IO RawId
-modelURL mlModelCollectionEntry  =
-    fmap (RawId . castPtr) $ sendMsg mlModelCollectionEntry (mkSelector "modelURL") (retPtr retVoid) []
+modelURL mlModelCollectionEntry =
+  sendMessage mlModelCollectionEntry modelURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isEqualToModelCollectionEntry:@
-isEqualToModelCollectionEntrySelector :: Selector
+isEqualToModelCollectionEntrySelector :: Selector '[Id MLModelCollectionEntry] Bool
 isEqualToModelCollectionEntrySelector = mkSelector "isEqualToModelCollectionEntry:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLModelCollectionEntry)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] RawId
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @modelIdentifier@
-modelIdentifierSelector :: Selector
+modelIdentifierSelector :: Selector '[] RawId
 modelIdentifierSelector = mkSelector "modelIdentifier"
 
 -- | @Selector@ for @modelURL@
-modelURLSelector :: Selector
+modelURLSelector :: Selector '[] RawId
 modelURLSelector = mkSelector "modelURL"
 

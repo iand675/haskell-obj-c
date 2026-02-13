@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTROperationalCredentialsClusterCertificateChainRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , certificateTypeSelector
-  , setCertificateTypeSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setCertificateTypeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- certificateType@
 certificateType :: IsMTROperationalCredentialsClusterCertificateChainRequestParams mtrOperationalCredentialsClusterCertificateChainRequestParams => mtrOperationalCredentialsClusterCertificateChainRequestParams -> IO (Id NSNumber)
-certificateType mtrOperationalCredentialsClusterCertificateChainRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterCertificateChainRequestParams (mkSelector "certificateType") (retPtr retVoid) [] >>= retainedObject . castPtr
+certificateType mtrOperationalCredentialsClusterCertificateChainRequestParams =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainRequestParams certificateTypeSelector
 
 -- | @- setCertificateType:@
 setCertificateType :: (IsMTROperationalCredentialsClusterCertificateChainRequestParams mtrOperationalCredentialsClusterCertificateChainRequestParams, IsNSNumber value) => mtrOperationalCredentialsClusterCertificateChainRequestParams -> value -> IO ()
-setCertificateType mtrOperationalCredentialsClusterCertificateChainRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCertificateChainRequestParams (mkSelector "setCertificateType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCertificateType mtrOperationalCredentialsClusterCertificateChainRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainRequestParams setCertificateTypeSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setCertificateType mtrOperationalCredentialsClusterCertificateChainRequestParams
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterCertificateChainRequestParams mtrOperationalCredentialsClusterCertificateChainRequestParams => mtrOperationalCredentialsClusterCertificateChainRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterCertificateChainRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainRequestParams =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainRequestPara
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterCertificateChainRequestParams mtrOperationalCredentialsClusterCertificateChainRequestParams, IsNSNumber value) => mtrOperationalCredentialsClusterCertificateChainRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCertificateChainRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCertificateChainRequestP
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTROperationalCredentialsClusterCertificateChainRequestParams mtrOperationalCredentialsClusterCertificateChainRequestParams => mtrOperationalCredentialsClusterCertificateChainRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrOperationalCredentialsClusterCertificateChainRequestParams  =
-    sendMsg mtrOperationalCredentialsClusterCertificateChainRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrOperationalCredentialsClusterCertificateChainRequestParams =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrOperationalCredentialsClusterCertificateChainRequ
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTROperationalCredentialsClusterCertificateChainRequestParams mtrOperationalCredentialsClusterCertificateChainRequestParams, IsNSNumber value) => mtrOperationalCredentialsClusterCertificateChainRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrOperationalCredentialsClusterCertificateChainRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCertificateChainRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrOperationalCredentialsClusterCertificateChainRequestParams value =
+  sendMessage mtrOperationalCredentialsClusterCertificateChainRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @certificateType@
-certificateTypeSelector :: Selector
+certificateTypeSelector :: Selector '[] (Id NSNumber)
 certificateTypeSelector = mkSelector "certificateType"
 
 -- | @Selector@ for @setCertificateType:@
-setCertificateTypeSelector :: Selector
+setCertificateTypeSelector :: Selector '[Id NSNumber] ()
 setCertificateTypeSelector = mkSelector "setCertificateType:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -72,34 +73,34 @@ module ObjC.MetalPerformanceShaders.MPSImage
   , label
   , setLabel
   , parent
+  , batchRepresentationSelector
+  , batchRepresentationWithSubRangeSelector
   , defaultAllocatorSelector
+  , deviceSelector
+  , featureChannelFormatSelector
+  , featureChannelsSelector
+  , heightSelector
+  , initSelector
   , initWithDevice_imageDescriptorSelector
   , initWithParentImage_sliceRange_featureChannelsSelector
   , initWithTexture_featureChannelsSelector
-  , initSelector
-  , batchRepresentationWithSubRangeSelector
-  , batchRepresentationSelector
-  , subImageWithFeatureChannelRangeSelector
-  , resourceSizeSelector
-  , setPurgeableStateSelector
-  , readBytes_dataLayout_imageIndexSelector
-  , writeBytes_dataLayout_imageIndexSelector
-  , synchronizeOnCommandBufferSelector
-  , deviceSelector
-  , widthSelector
-  , heightSelector
-  , featureChannelsSelector
-  , numberOfImagesSelector
-  , textureTypeSelector
-  , pixelFormatSelector
-  , precisionSelector
-  , usageSelector
-  , featureChannelFormatSelector
-  , pixelSizeSelector
-  , textureSelector
   , labelSelector
-  , setLabelSelector
+  , numberOfImagesSelector
   , parentSelector
+  , pixelFormatSelector
+  , pixelSizeSelector
+  , precisionSelector
+  , readBytes_dataLayout_imageIndexSelector
+  , resourceSizeSelector
+  , setLabelSelector
+  , setPurgeableStateSelector
+  , subImageWithFeatureChannelRangeSelector
+  , synchronizeOnCommandBufferSelector
+  , textureSelector
+  , textureTypeSelector
+  , usageSelector
+  , widthSelector
+  , writeBytes_dataLayout_imageIndexSelector
 
   -- * Enum types
   , MPSDataLayout(MPSDataLayout)
@@ -281,15 +282,11 @@ module ObjC.MetalPerformanceShaders.MPSImage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -306,7 +303,7 @@ defaultAllocator :: IO RawId
 defaultAllocator  =
   do
     cls' <- getRequiredClass "MPSImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultAllocator") (retPtr retVoid) []
+    sendClassMessage cls' defaultAllocatorSelector
 
 -- | Initialize an empty image object
 --
@@ -320,9 +317,8 @@ defaultAllocator  =
 --
 -- ObjC selector: @- initWithDevice:imageDescriptor:@
 initWithDevice_imageDescriptor :: IsMPSImage mpsImage => mpsImage -> RawId -> Const (Id MPSImageDescriptor) -> IO (Id MPSImage)
-initWithDevice_imageDescriptor mpsImage  device imageDescriptor =
-  withObjCPtr imageDescriptor $ \raw_imageDescriptor ->
-      sendMsg mpsImage (mkSelector "initWithDevice:imageDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_imageDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_imageDescriptor mpsImage device imageDescriptor =
+  sendOwnedMessage mpsImage initWithDevice_imageDescriptorSelector device imageDescriptor
 
 -- | Use -batchRepresentation or -subImageWithFeatureChannelRange instead
 --
@@ -338,9 +334,8 @@ initWithDevice_imageDescriptor mpsImage  device imageDescriptor =
 --
 -- ObjC selector: @- initWithParentImage:sliceRange:featureChannels:@
 initWithParentImage_sliceRange_featureChannels :: (IsMPSImage mpsImage, IsMPSImage parent) => mpsImage -> parent -> NSRange -> CULong -> IO (Id MPSImage)
-initWithParentImage_sliceRange_featureChannels mpsImage  parent sliceRange featureChannels =
-  withObjCPtr parent $ \raw_parent ->
-      sendMsg mpsImage (mkSelector "initWithParentImage:sliceRange:featureChannels:") (retPtr retVoid) [argPtr (castPtr raw_parent :: Ptr ()), argNSRange sliceRange, argCULong featureChannels] >>= ownedObject . castPtr
+initWithParentImage_sliceRange_featureChannels mpsImage parent sliceRange featureChannels =
+  sendOwnedMessage mpsImage initWithParentImage_sliceRange_featureChannelsSelector (toMPSImage parent) sliceRange featureChannels
 
 -- | Initialize an MPSImage object using Metal texture. Metal texture has been created by              user for specific number of feature channels and number of images.
 --
@@ -358,13 +353,13 @@ initWithParentImage_sliceRange_featureChannels mpsImage  parent sliceRange featu
 --
 -- ObjC selector: @- initWithTexture:featureChannels:@
 initWithTexture_featureChannels :: IsMPSImage mpsImage => mpsImage -> RawId -> CULong -> IO (Id MPSImage)
-initWithTexture_featureChannels mpsImage  texture featureChannels =
-    sendMsg mpsImage (mkSelector "initWithTexture:featureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId texture) :: Ptr ()), argCULong featureChannels] >>= ownedObject . castPtr
+initWithTexture_featureChannels mpsImage texture featureChannels =
+  sendOwnedMessage mpsImage initWithTexture_featureChannelsSelector texture featureChannels
 
 -- | @- init@
 init_ :: IsMPSImage mpsImage => mpsImage -> IO (Id MPSImage)
-init_ mpsImage  =
-    sendMsg mpsImage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsImage =
+  sendOwnedMessage mpsImage initSelector
 
 -- | Make a representation of a MPSImage (batch) as a MPSImageBatch
 --
@@ -384,8 +379,8 @@ init_ mpsImage  =
 --
 -- ObjC selector: @- batchRepresentationWithSubRange:@
 batchRepresentationWithSubRange :: IsMPSImage mpsImage => mpsImage -> NSRange -> IO RawId
-batchRepresentationWithSubRange mpsImage  subRange =
-    fmap (RawId . castPtr) $ sendMsg mpsImage (mkSelector "batchRepresentationWithSubRange:") (retPtr retVoid) [argNSRange subRange]
+batchRepresentationWithSubRange mpsImage subRange =
+  sendMessage mpsImage batchRepresentationWithSubRangeSelector subRange
 
 -- | Make a MPSImageBatch that points to the individual images in the MPSImage
 --
@@ -395,13 +390,13 @@ batchRepresentationWithSubRange mpsImage  subRange =
 --
 -- ObjC selector: @- batchRepresentation@
 batchRepresentation :: IsMPSImage mpsImage => mpsImage -> IO RawId
-batchRepresentation mpsImage  =
-    fmap (RawId . castPtr) $ sendMsg mpsImage (mkSelector "batchRepresentation") (retPtr retVoid) []
+batchRepresentation mpsImage =
+  sendMessage mpsImage batchRepresentationSelector
 
 -- | @- subImageWithFeatureChannelRange:@
 subImageWithFeatureChannelRange :: IsMPSImage mpsImage => mpsImage -> NSRange -> IO (Id MPSImage)
-subImageWithFeatureChannelRange mpsImage  range =
-    sendMsg mpsImage (mkSelector "subImageWithFeatureChannelRange:") (retPtr retVoid) [argNSRange range] >>= retainedObject . castPtr
+subImageWithFeatureChannelRange mpsImage range =
+  sendMessage mpsImage subImageWithFeatureChannelRangeSelector range
 
 -- | Get the number of bytes used to allocate underyling MTLResources
 --
@@ -413,8 +408,8 @@ subImageWithFeatureChannelRange mpsImage  range =
 --
 -- ObjC selector: @- resourceSize@
 resourceSize :: IsMPSImage mpsImage => mpsImage -> IO CULong
-resourceSize mpsImage  =
-    sendMsg mpsImage (mkSelector "resourceSize") retCULong []
+resourceSize mpsImage =
+  sendMessage mpsImage resourceSizeSelector
 
 -- | Set (or query) the purgeability state of a MPSImage
 --
@@ -422,8 +417,8 @@ resourceSize mpsImage  =
 --
 -- ObjC selector: @- setPurgeableState:@
 setPurgeableState :: IsMPSImage mpsImage => mpsImage -> MPSPurgeableState -> IO MPSPurgeableState
-setPurgeableState mpsImage  state =
-    fmap (coerce :: CULong -> MPSPurgeableState) $ sendMsg mpsImage (mkSelector "setPurgeableState:") retCULong [argCULong (coerce state)]
+setPurgeableState mpsImage state =
+  sendMessage mpsImage setPurgeableStateSelector state
 
 -- | readBytes
 --
@@ -439,8 +434,8 @@ setPurgeableState mpsImage  state =
 --
 -- ObjC selector: @- readBytes:dataLayout:imageIndex:@
 readBytes_dataLayout_imageIndex :: IsMPSImage mpsImage => mpsImage -> Ptr () -> MPSDataLayout -> CULong -> IO ()
-readBytes_dataLayout_imageIndex mpsImage  dataBytes dataLayout imageIndex =
-    sendMsg mpsImage (mkSelector "readBytes:dataLayout:imageIndex:") retVoid [argPtr dataBytes, argCULong (coerce dataLayout), argCULong imageIndex]
+readBytes_dataLayout_imageIndex mpsImage dataBytes dataLayout imageIndex =
+  sendMessage mpsImage readBytes_dataLayout_imageIndexSelector dataBytes dataLayout imageIndex
 
 -- | writeBytes
 --
@@ -456,8 +451,8 @@ readBytes_dataLayout_imageIndex mpsImage  dataBytes dataLayout imageIndex =
 --
 -- ObjC selector: @- writeBytes:dataLayout:imageIndex:@
 writeBytes_dataLayout_imageIndex :: IsMPSImage mpsImage => mpsImage -> Const (Ptr ()) -> MPSDataLayout -> CULong -> IO ()
-writeBytes_dataLayout_imageIndex mpsImage  dataBytes dataLayout imageIndex =
-    sendMsg mpsImage (mkSelector "writeBytes:dataLayout:imageIndex:") retVoid [argPtr (unConst dataBytes), argCULong (coerce dataLayout), argCULong imageIndex]
+writeBytes_dataLayout_imageIndex mpsImage dataBytes dataLayout imageIndex =
+  sendMessage mpsImage writeBytes_dataLayout_imageIndexSelector dataBytes dataLayout imageIndex
 
 -- | Flush the underlying MTLTexture from the device's caches, and invalidate any CPU caches if needed.
 --
@@ -467,8 +462,8 @@ writeBytes_dataLayout_imageIndex mpsImage  dataBytes dataLayout imageIndex =
 --
 -- ObjC selector: @- synchronizeOnCommandBuffer:@
 synchronizeOnCommandBuffer :: IsMPSImage mpsImage => mpsImage -> RawId -> IO ()
-synchronizeOnCommandBuffer mpsImage  commandBuffer =
-    sendMsg mpsImage (mkSelector "synchronizeOnCommandBuffer:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())]
+synchronizeOnCommandBuffer mpsImage commandBuffer =
+  sendMessage mpsImage synchronizeOnCommandBufferSelector commandBuffer
 
 -- | device
 --
@@ -476,8 +471,8 @@ synchronizeOnCommandBuffer mpsImage  commandBuffer =
 --
 -- ObjC selector: @- device@
 device :: IsMPSImage mpsImage => mpsImage -> IO RawId
-device mpsImage  =
-    fmap (RawId . castPtr) $ sendMsg mpsImage (mkSelector "device") (retPtr retVoid) []
+device mpsImage =
+  sendMessage mpsImage deviceSelector
 
 -- | width
 --
@@ -485,8 +480,8 @@ device mpsImage  =
 --
 -- ObjC selector: @- width@
 width :: IsMPSImage mpsImage => mpsImage -> IO CULong
-width mpsImage  =
-    sendMsg mpsImage (mkSelector "width") retCULong []
+width mpsImage =
+  sendMessage mpsImage widthSelector
 
 -- | height
 --
@@ -494,8 +489,8 @@ width mpsImage  =
 --
 -- ObjC selector: @- height@
 height :: IsMPSImage mpsImage => mpsImage -> IO CULong
-height mpsImage  =
-    sendMsg mpsImage (mkSelector "height") retCULong []
+height mpsImage =
+  sendMessage mpsImage heightSelector
 
 -- | featureChannels
 --
@@ -503,8 +498,8 @@ height mpsImage  =
 --
 -- ObjC selector: @- featureChannels@
 featureChannels :: IsMPSImage mpsImage => mpsImage -> IO CULong
-featureChannels mpsImage  =
-    sendMsg mpsImage (mkSelector "featureChannels") retCULong []
+featureChannels mpsImage =
+  sendMessage mpsImage featureChannelsSelector
 
 -- | numberOfImages
 --
@@ -512,8 +507,8 @@ featureChannels mpsImage  =
 --
 -- ObjC selector: @- numberOfImages@
 numberOfImages :: IsMPSImage mpsImage => mpsImage -> IO CULong
-numberOfImages mpsImage  =
-    sendMsg mpsImage (mkSelector "numberOfImages") retCULong []
+numberOfImages mpsImage =
+  sendMessage mpsImage numberOfImagesSelector
 
 -- | textureType
 --
@@ -521,8 +516,8 @@ numberOfImages mpsImage  =
 --
 -- ObjC selector: @- textureType@
 textureType :: IsMPSImage mpsImage => mpsImage -> IO MTLTextureType
-textureType mpsImage  =
-    fmap (coerce :: CULong -> MTLTextureType) $ sendMsg mpsImage (mkSelector "textureType") retCULong []
+textureType mpsImage =
+  sendMessage mpsImage textureTypeSelector
 
 -- | pixelFormat
 --
@@ -532,8 +527,8 @@ textureType mpsImage  =
 --
 -- ObjC selector: @- pixelFormat@
 pixelFormat :: IsMPSImage mpsImage => mpsImage -> IO MTLPixelFormat
-pixelFormat mpsImage  =
-    fmap (coerce :: CULong -> MTLPixelFormat) $ sendMsg mpsImage (mkSelector "pixelFormat") retCULong []
+pixelFormat mpsImage =
+  sendMessage mpsImage pixelFormatSelector
 
 -- | precision
 --
@@ -543,8 +538,8 @@ pixelFormat mpsImage  =
 --
 -- ObjC selector: @- precision@
 precision :: IsMPSImage mpsImage => mpsImage -> IO CULong
-precision mpsImage  =
-    sendMsg mpsImage (mkSelector "precision") retCULong []
+precision mpsImage =
+  sendMessage mpsImage precisionSelector
 
 -- | usage
 --
@@ -552,8 +547,8 @@ precision mpsImage  =
 --
 -- ObjC selector: @- usage@
 usage :: IsMPSImage mpsImage => mpsImage -> IO MTLTextureUsage
-usage mpsImage  =
-    fmap (coerce :: CULong -> MTLTextureUsage) $ sendMsg mpsImage (mkSelector "usage") retCULong []
+usage mpsImage =
+  sendMessage mpsImage usageSelector
 
 -- | featureChannelFormat
 --
@@ -561,8 +556,8 @@ usage mpsImage  =
 --
 -- ObjC selector: @- featureChannelFormat@
 featureChannelFormat :: IsMPSImage mpsImage => mpsImage -> IO MPSImageFeatureChannelFormat
-featureChannelFormat mpsImage  =
-    fmap (coerce :: CULong -> MPSImageFeatureChannelFormat) $ sendMsg mpsImage (mkSelector "featureChannelFormat") retCULong []
+featureChannelFormat mpsImage =
+  sendMessage mpsImage featureChannelFormatSelector
 
 -- | pixelSize
 --
@@ -570,8 +565,8 @@ featureChannelFormat mpsImage  =
 --
 -- ObjC selector: @- pixelSize@
 pixelSize :: IsMPSImage mpsImage => mpsImage -> IO CULong
-pixelSize mpsImage  =
-    sendMsg mpsImage (mkSelector "pixelSize") retCULong []
+pixelSize mpsImage =
+  sendMessage mpsImage pixelSizeSelector
 
 -- | texture
 --
@@ -581,8 +576,8 @@ pixelSize mpsImage  =
 --
 -- ObjC selector: @- texture@
 texture :: IsMPSImage mpsImage => mpsImage -> IO RawId
-texture mpsImage  =
-    fmap (RawId . castPtr) $ sendMsg mpsImage (mkSelector "texture") (retPtr retVoid) []
+texture mpsImage =
+  sendMessage mpsImage textureSelector
 
 -- | label
 --
@@ -590,8 +585,8 @@ texture mpsImage  =
 --
 -- ObjC selector: @- label@
 label :: IsMPSImage mpsImage => mpsImage -> IO (Id NSString)
-label mpsImage  =
-    sendMsg mpsImage (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mpsImage =
+  sendMessage mpsImage labelSelector
 
 -- | label
 --
@@ -599,9 +594,8 @@ label mpsImage  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMPSImage mpsImage, IsNSString value) => mpsImage -> value -> IO ()
-setLabel mpsImage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsImage (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mpsImage value =
+  sendMessage mpsImage setLabelSelector (toNSString value)
 
 -- | The MPSImage from which this MPSImage was derived. Otherwise nil.
 --
@@ -609,122 +603,122 @@ setLabel mpsImage  value =
 --
 -- ObjC selector: @- parent@
 parent :: IsMPSImage mpsImage => mpsImage -> IO (Id MPSImage)
-parent mpsImage  =
-    sendMsg mpsImage (mkSelector "parent") (retPtr retVoid) [] >>= retainedObject . castPtr
+parent mpsImage =
+  sendMessage mpsImage parentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultAllocator@
-defaultAllocatorSelector :: Selector
+defaultAllocatorSelector :: Selector '[] RawId
 defaultAllocatorSelector = mkSelector "defaultAllocator"
 
 -- | @Selector@ for @initWithDevice:imageDescriptor:@
-initWithDevice_imageDescriptorSelector :: Selector
+initWithDevice_imageDescriptorSelector :: Selector '[RawId, Const (Id MPSImageDescriptor)] (Id MPSImage)
 initWithDevice_imageDescriptorSelector = mkSelector "initWithDevice:imageDescriptor:"
 
 -- | @Selector@ for @initWithParentImage:sliceRange:featureChannels:@
-initWithParentImage_sliceRange_featureChannelsSelector :: Selector
+initWithParentImage_sliceRange_featureChannelsSelector :: Selector '[Id MPSImage, NSRange, CULong] (Id MPSImage)
 initWithParentImage_sliceRange_featureChannelsSelector = mkSelector "initWithParentImage:sliceRange:featureChannels:"
 
 -- | @Selector@ for @initWithTexture:featureChannels:@
-initWithTexture_featureChannelsSelector :: Selector
+initWithTexture_featureChannelsSelector :: Selector '[RawId, CULong] (Id MPSImage)
 initWithTexture_featureChannelsSelector = mkSelector "initWithTexture:featureChannels:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSImage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @batchRepresentationWithSubRange:@
-batchRepresentationWithSubRangeSelector :: Selector
+batchRepresentationWithSubRangeSelector :: Selector '[NSRange] RawId
 batchRepresentationWithSubRangeSelector = mkSelector "batchRepresentationWithSubRange:"
 
 -- | @Selector@ for @batchRepresentation@
-batchRepresentationSelector :: Selector
+batchRepresentationSelector :: Selector '[] RawId
 batchRepresentationSelector = mkSelector "batchRepresentation"
 
 -- | @Selector@ for @subImageWithFeatureChannelRange:@
-subImageWithFeatureChannelRangeSelector :: Selector
+subImageWithFeatureChannelRangeSelector :: Selector '[NSRange] (Id MPSImage)
 subImageWithFeatureChannelRangeSelector = mkSelector "subImageWithFeatureChannelRange:"
 
 -- | @Selector@ for @resourceSize@
-resourceSizeSelector :: Selector
+resourceSizeSelector :: Selector '[] CULong
 resourceSizeSelector = mkSelector "resourceSize"
 
 -- | @Selector@ for @setPurgeableState:@
-setPurgeableStateSelector :: Selector
+setPurgeableStateSelector :: Selector '[MPSPurgeableState] MPSPurgeableState
 setPurgeableStateSelector = mkSelector "setPurgeableState:"
 
 -- | @Selector@ for @readBytes:dataLayout:imageIndex:@
-readBytes_dataLayout_imageIndexSelector :: Selector
+readBytes_dataLayout_imageIndexSelector :: Selector '[Ptr (), MPSDataLayout, CULong] ()
 readBytes_dataLayout_imageIndexSelector = mkSelector "readBytes:dataLayout:imageIndex:"
 
 -- | @Selector@ for @writeBytes:dataLayout:imageIndex:@
-writeBytes_dataLayout_imageIndexSelector :: Selector
+writeBytes_dataLayout_imageIndexSelector :: Selector '[Const (Ptr ()), MPSDataLayout, CULong] ()
 writeBytes_dataLayout_imageIndexSelector = mkSelector "writeBytes:dataLayout:imageIndex:"
 
 -- | @Selector@ for @synchronizeOnCommandBuffer:@
-synchronizeOnCommandBufferSelector :: Selector
+synchronizeOnCommandBufferSelector :: Selector '[RawId] ()
 synchronizeOnCommandBufferSelector = mkSelector "synchronizeOnCommandBuffer:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CULong
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CULong
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @featureChannels@
-featureChannelsSelector :: Selector
+featureChannelsSelector :: Selector '[] CULong
 featureChannelsSelector = mkSelector "featureChannels"
 
 -- | @Selector@ for @numberOfImages@
-numberOfImagesSelector :: Selector
+numberOfImagesSelector :: Selector '[] CULong
 numberOfImagesSelector = mkSelector "numberOfImages"
 
 -- | @Selector@ for @textureType@
-textureTypeSelector :: Selector
+textureTypeSelector :: Selector '[] MTLTextureType
 textureTypeSelector = mkSelector "textureType"
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] MTLPixelFormat
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @precision@
-precisionSelector :: Selector
+precisionSelector :: Selector '[] CULong
 precisionSelector = mkSelector "precision"
 
 -- | @Selector@ for @usage@
-usageSelector :: Selector
+usageSelector :: Selector '[] MTLTextureUsage
 usageSelector = mkSelector "usage"
 
 -- | @Selector@ for @featureChannelFormat@
-featureChannelFormatSelector :: Selector
+featureChannelFormatSelector :: Selector '[] MPSImageFeatureChannelFormat
 featureChannelFormatSelector = mkSelector "featureChannelFormat"
 
 -- | @Selector@ for @pixelSize@
-pixelSizeSelector :: Selector
+pixelSizeSelector :: Selector '[] CULong
 pixelSizeSelector = mkSelector "pixelSize"
 
 -- | @Selector@ for @texture@
-textureSelector :: Selector
+textureSelector :: Selector '[] RawId
 textureSelector = mkSelector "texture"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] (Id MPSImage)
 parentSelector = mkSelector "parent"
 

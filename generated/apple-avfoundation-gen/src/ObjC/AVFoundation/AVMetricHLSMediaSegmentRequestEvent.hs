@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,28 +20,24 @@ module ObjC.AVFoundation.AVMetricHLSMediaSegmentRequestEvent
   , indexFileURL
   , segmentDuration
   , mediaResourceRequestEvent
-  , initSelector
-  , newSelector
-  , urlSelector
-  , isMapSegmentSelector
-  , mediaTypeSelector
   , byteRangeSelector
   , indexFileURLSelector
-  , segmentDurationSelector
+  , initSelector
+  , isMapSegmentSelector
   , mediaResourceRequestEventSelector
+  , mediaTypeSelector
+  , newSelector
+  , segmentDurationSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,102 +47,102 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetricHLSMediaSegmentRequestEvent avMetricHLSMediaSegmentRequestEvent => avMetricHLSMediaSegmentRequestEvent -> IO (Id AVMetricHLSMediaSegmentRequestEvent)
-init_ avMetricHLSMediaSegmentRequestEvent  =
-    sendMsg avMetricHLSMediaSegmentRequestEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetricHLSMediaSegmentRequestEvent =
+  sendOwnedMessage avMetricHLSMediaSegmentRequestEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetricHLSMediaSegmentRequestEvent)
 new  =
   do
     cls' <- getRequiredClass "AVMetricHLSMediaSegmentRequestEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns the URL of the media segment. If no value is available, returns nil.
 --
 -- ObjC selector: @- url@
 url :: IsAVMetricHLSMediaSegmentRequestEvent avMetricHLSMediaSegmentRequestEvent => avMetricHLSMediaSegmentRequestEvent -> IO (Id NSURL)
-url avMetricHLSMediaSegmentRequestEvent  =
-    sendMsg avMetricHLSMediaSegmentRequestEvent (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url avMetricHLSMediaSegmentRequestEvent =
+  sendMessage avMetricHLSMediaSegmentRequestEvent urlSelector
 
 -- | Returns true if the media segment request is for a map segment.
 --
 -- ObjC selector: @- isMapSegment@
 isMapSegment :: IsAVMetricHLSMediaSegmentRequestEvent avMetricHLSMediaSegmentRequestEvent => avMetricHLSMediaSegmentRequestEvent -> IO Bool
-isMapSegment avMetricHLSMediaSegmentRequestEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetricHLSMediaSegmentRequestEvent (mkSelector "isMapSegment") retCULong []
+isMapSegment avMetricHLSMediaSegmentRequestEvent =
+  sendMessage avMetricHLSMediaSegmentRequestEvent isMapSegmentSelector
 
 -- | Returns the media type. If the value cannot be determined, returns AVMediaTypeMuxed.
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVMetricHLSMediaSegmentRequestEvent avMetricHLSMediaSegmentRequestEvent => avMetricHLSMediaSegmentRequestEvent -> IO (Id NSString)
-mediaType avMetricHLSMediaSegmentRequestEvent  =
-    sendMsg avMetricHLSMediaSegmentRequestEvent (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avMetricHLSMediaSegmentRequestEvent =
+  sendMessage avMetricHLSMediaSegmentRequestEvent mediaTypeSelector
 
 -- | Returns the byte range for the media segment. If not available, the range start and end will be 0.
 --
 -- ObjC selector: @- byteRange@
 byteRange :: IsAVMetricHLSMediaSegmentRequestEvent avMetricHLSMediaSegmentRequestEvent => avMetricHLSMediaSegmentRequestEvent -> IO NSRange
-byteRange avMetricHLSMediaSegmentRequestEvent  =
-    sendMsgStret avMetricHLSMediaSegmentRequestEvent (mkSelector "byteRange") retNSRange []
+byteRange avMetricHLSMediaSegmentRequestEvent =
+  sendMessage avMetricHLSMediaSegmentRequestEvent byteRangeSelector
 
 -- | Returns the URL of the index file in which this segment was declared. If not available, returns nil.
 --
 -- ObjC selector: @- indexFileURL@
 indexFileURL :: IsAVMetricHLSMediaSegmentRequestEvent avMetricHLSMediaSegmentRequestEvent => avMetricHLSMediaSegmentRequestEvent -> IO (Id NSURL)
-indexFileURL avMetricHLSMediaSegmentRequestEvent  =
-    sendMsg avMetricHLSMediaSegmentRequestEvent (mkSelector "indexFileURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+indexFileURL avMetricHLSMediaSegmentRequestEvent =
+  sendMessage avMetricHLSMediaSegmentRequestEvent indexFileURLSelector
 
 -- | Returns the duration of segment in seconds.
 --
 -- ObjC selector: @- segmentDuration@
 segmentDuration :: IsAVMetricHLSMediaSegmentRequestEvent avMetricHLSMediaSegmentRequestEvent => avMetricHLSMediaSegmentRequestEvent -> IO CDouble
-segmentDuration avMetricHLSMediaSegmentRequestEvent  =
-    sendMsg avMetricHLSMediaSegmentRequestEvent (mkSelector "segmentDuration") retCDouble []
+segmentDuration avMetricHLSMediaSegmentRequestEvent =
+  sendMessage avMetricHLSMediaSegmentRequestEvent segmentDurationSelector
 
 -- | Returns the media resource request event which was used to satisfy the media segment.
 --
 -- ObjC selector: @- mediaResourceRequestEvent@
 mediaResourceRequestEvent :: IsAVMetricHLSMediaSegmentRequestEvent avMetricHLSMediaSegmentRequestEvent => avMetricHLSMediaSegmentRequestEvent -> IO (Id AVMetricMediaResourceRequestEvent)
-mediaResourceRequestEvent avMetricHLSMediaSegmentRequestEvent  =
-    sendMsg avMetricHLSMediaSegmentRequestEvent (mkSelector "mediaResourceRequestEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaResourceRequestEvent avMetricHLSMediaSegmentRequestEvent =
+  sendMessage avMetricHLSMediaSegmentRequestEvent mediaResourceRequestEventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetricHLSMediaSegmentRequestEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetricHLSMediaSegmentRequestEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @isMapSegment@
-isMapSegmentSelector :: Selector
+isMapSegmentSelector :: Selector '[] Bool
 isMapSegmentSelector = mkSelector "isMapSegment"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @byteRange@
-byteRangeSelector :: Selector
+byteRangeSelector :: Selector '[] NSRange
 byteRangeSelector = mkSelector "byteRange"
 
 -- | @Selector@ for @indexFileURL@
-indexFileURLSelector :: Selector
+indexFileURLSelector :: Selector '[] (Id NSURL)
 indexFileURLSelector = mkSelector "indexFileURL"
 
 -- | @Selector@ for @segmentDuration@
-segmentDurationSelector :: Selector
+segmentDurationSelector :: Selector '[] CDouble
 segmentDurationSelector = mkSelector "segmentDuration"
 
 -- | @Selector@ for @mediaResourceRequestEvent@
-mediaResourceRequestEventSelector :: Selector
+mediaResourceRequestEventSelector :: Selector '[] (Id AVMetricMediaResourceRequestEvent)
 mediaResourceRequestEventSelector = mkSelector "mediaResourceRequestEvent"
 

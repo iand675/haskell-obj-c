@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.WebKit.DOMEntity
   , publicId
   , systemId
   , notationName
+  , notationNameSelector
   , publicIdSelector
   , systemIdSelector
-  , notationNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- publicId@
 publicId :: IsDOMEntity domEntity => domEntity -> IO (Id NSString)
-publicId domEntity  =
-    sendMsg domEntity (mkSelector "publicId") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicId domEntity =
+  sendMessage domEntity publicIdSelector
 
 -- | @- systemId@
 systemId :: IsDOMEntity domEntity => domEntity -> IO (Id NSString)
-systemId domEntity  =
-    sendMsg domEntity (mkSelector "systemId") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemId domEntity =
+  sendMessage domEntity systemIdSelector
 
 -- | @- notationName@
 notationName :: IsDOMEntity domEntity => domEntity -> IO (Id NSString)
-notationName domEntity  =
-    sendMsg domEntity (mkSelector "notationName") (retPtr retVoid) [] >>= retainedObject . castPtr
+notationName domEntity =
+  sendMessage domEntity notationNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @publicId@
-publicIdSelector :: Selector
+publicIdSelector :: Selector '[] (Id NSString)
 publicIdSelector = mkSelector "publicId"
 
 -- | @Selector@ for @systemId@
-systemIdSelector :: Selector
+systemIdSelector :: Selector '[] (Id NSString)
 systemIdSelector = mkSelector "systemId"
 
 -- | @Selector@ for @notationName@
-notationNameSelector :: Selector
+notationNameSelector :: Selector '[] (Id NSString)
 notationNameSelector = mkSelector "notationName"
 

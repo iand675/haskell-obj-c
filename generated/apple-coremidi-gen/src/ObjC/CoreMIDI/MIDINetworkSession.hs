@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,22 +24,22 @@ module ObjC.CoreMIDI.MIDINetworkSession
   , localName
   , connectionPolicy
   , setConnectionPolicy
-  , defaultSessionSelector
-  , contactsSelector
-  , addContactSelector
-  , removeContactSelector
-  , connectionsSelector
   , addConnectionSelector
-  , removeConnectionSelector
-  , sourceEndpointSelector
+  , addContactSelector
+  , connectionPolicySelector
+  , connectionsSelector
+  , contactsSelector
+  , defaultSessionSelector
   , destinationEndpointSelector
   , enabledSelector
-  , setEnabledSelector
-  , networkPortSelector
-  , networkNameSelector
   , localNameSelector
-  , connectionPolicySelector
+  , networkNameSelector
+  , networkPortSelector
+  , removeConnectionSelector
+  , removeContactSelector
   , setConnectionPolicySelector
+  , setEnabledSelector
+  , sourceEndpointSelector
 
   -- * Enum types
   , MIDINetworkConnectionPolicy(MIDINetworkConnectionPolicy)
@@ -48,15 +49,11 @@ module ObjC.CoreMIDI.MIDINetworkSession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,152 +66,148 @@ defaultSession :: IO (Id MIDINetworkSession)
 defaultSession  =
   do
     cls' <- getRequiredClass "MIDINetworkSession"
-    sendClassMsg cls' (mkSelector "defaultSession") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultSessionSelector
 
 -- | @- contacts@
 contacts :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> IO (Id NSSet)
-contacts midiNetworkSession  =
-    sendMsg midiNetworkSession (mkSelector "contacts") (retPtr retVoid) [] >>= retainedObject . castPtr
+contacts midiNetworkSession =
+  sendMessage midiNetworkSession contactsSelector
 
 -- | @- addContact:@
 addContact :: (IsMIDINetworkSession midiNetworkSession, IsMIDINetworkHost contact) => midiNetworkSession -> contact -> IO Bool
-addContact midiNetworkSession  contact =
-  withObjCPtr contact $ \raw_contact ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiNetworkSession (mkSelector "addContact:") retCULong [argPtr (castPtr raw_contact :: Ptr ())]
+addContact midiNetworkSession contact =
+  sendMessage midiNetworkSession addContactSelector (toMIDINetworkHost contact)
 
 -- | @- removeContact:@
 removeContact :: (IsMIDINetworkSession midiNetworkSession, IsMIDINetworkHost contact) => midiNetworkSession -> contact -> IO Bool
-removeContact midiNetworkSession  contact =
-  withObjCPtr contact $ \raw_contact ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiNetworkSession (mkSelector "removeContact:") retCULong [argPtr (castPtr raw_contact :: Ptr ())]
+removeContact midiNetworkSession contact =
+  sendMessage midiNetworkSession removeContactSelector (toMIDINetworkHost contact)
 
 -- | @- connections@
 connections :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> IO (Id NSSet)
-connections midiNetworkSession  =
-    sendMsg midiNetworkSession (mkSelector "connections") (retPtr retVoid) [] >>= retainedObject . castPtr
+connections midiNetworkSession =
+  sendMessage midiNetworkSession connectionsSelector
 
 -- | @- addConnection:@
 addConnection :: (IsMIDINetworkSession midiNetworkSession, IsMIDINetworkConnection connection) => midiNetworkSession -> connection -> IO Bool
-addConnection midiNetworkSession  connection =
-  withObjCPtr connection $ \raw_connection ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiNetworkSession (mkSelector "addConnection:") retCULong [argPtr (castPtr raw_connection :: Ptr ())]
+addConnection midiNetworkSession connection =
+  sendMessage midiNetworkSession addConnectionSelector (toMIDINetworkConnection connection)
 
 -- | @- removeConnection:@
 removeConnection :: (IsMIDINetworkSession midiNetworkSession, IsMIDINetworkConnection connection) => midiNetworkSession -> connection -> IO Bool
-removeConnection midiNetworkSession  connection =
-  withObjCPtr connection $ \raw_connection ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiNetworkSession (mkSelector "removeConnection:") retCULong [argPtr (castPtr raw_connection :: Ptr ())]
+removeConnection midiNetworkSession connection =
+  sendMessage midiNetworkSession removeConnectionSelector (toMIDINetworkConnection connection)
 
 -- | @- sourceEndpoint@
 sourceEndpoint :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> IO CUInt
-sourceEndpoint midiNetworkSession  =
-    sendMsg midiNetworkSession (mkSelector "sourceEndpoint") retCUInt []
+sourceEndpoint midiNetworkSession =
+  sendMessage midiNetworkSession sourceEndpointSelector
 
 -- | @- destinationEndpoint@
 destinationEndpoint :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> IO CUInt
-destinationEndpoint midiNetworkSession  =
-    sendMsg midiNetworkSession (mkSelector "destinationEndpoint") retCUInt []
+destinationEndpoint midiNetworkSession =
+  sendMessage midiNetworkSession destinationEndpointSelector
 
 -- | @- enabled@
 enabled :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> IO Bool
-enabled midiNetworkSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiNetworkSession (mkSelector "enabled") retCULong []
+enabled midiNetworkSession =
+  sendMessage midiNetworkSession enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> Bool -> IO ()
-setEnabled midiNetworkSession  value =
-    sendMsg midiNetworkSession (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled midiNetworkSession value =
+  sendMessage midiNetworkSession setEnabledSelector value
 
 -- | @- networkPort@
 networkPort :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> IO CULong
-networkPort midiNetworkSession  =
-    sendMsg midiNetworkSession (mkSelector "networkPort") retCULong []
+networkPort midiNetworkSession =
+  sendMessage midiNetworkSession networkPortSelector
 
 -- | @- networkName@
 networkName :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> IO (Id NSString)
-networkName midiNetworkSession  =
-    sendMsg midiNetworkSession (mkSelector "networkName") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkName midiNetworkSession =
+  sendMessage midiNetworkSession networkNameSelector
 
 -- | @- localName@
 localName :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> IO (Id NSString)
-localName midiNetworkSession  =
-    sendMsg midiNetworkSession (mkSelector "localName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localName midiNetworkSession =
+  sendMessage midiNetworkSession localNameSelector
 
 -- | @- connectionPolicy@
 connectionPolicy :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> IO MIDINetworkConnectionPolicy
-connectionPolicy midiNetworkSession  =
-    fmap (coerce :: CULong -> MIDINetworkConnectionPolicy) $ sendMsg midiNetworkSession (mkSelector "connectionPolicy") retCULong []
+connectionPolicy midiNetworkSession =
+  sendMessage midiNetworkSession connectionPolicySelector
 
 -- | @- setConnectionPolicy:@
 setConnectionPolicy :: IsMIDINetworkSession midiNetworkSession => midiNetworkSession -> MIDINetworkConnectionPolicy -> IO ()
-setConnectionPolicy midiNetworkSession  value =
-    sendMsg midiNetworkSession (mkSelector "setConnectionPolicy:") retVoid [argCULong (coerce value)]
+setConnectionPolicy midiNetworkSession value =
+  sendMessage midiNetworkSession setConnectionPolicySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultSession@
-defaultSessionSelector :: Selector
+defaultSessionSelector :: Selector '[] (Id MIDINetworkSession)
 defaultSessionSelector = mkSelector "defaultSession"
 
 -- | @Selector@ for @contacts@
-contactsSelector :: Selector
+contactsSelector :: Selector '[] (Id NSSet)
 contactsSelector = mkSelector "contacts"
 
 -- | @Selector@ for @addContact:@
-addContactSelector :: Selector
+addContactSelector :: Selector '[Id MIDINetworkHost] Bool
 addContactSelector = mkSelector "addContact:"
 
 -- | @Selector@ for @removeContact:@
-removeContactSelector :: Selector
+removeContactSelector :: Selector '[Id MIDINetworkHost] Bool
 removeContactSelector = mkSelector "removeContact:"
 
 -- | @Selector@ for @connections@
-connectionsSelector :: Selector
+connectionsSelector :: Selector '[] (Id NSSet)
 connectionsSelector = mkSelector "connections"
 
 -- | @Selector@ for @addConnection:@
-addConnectionSelector :: Selector
+addConnectionSelector :: Selector '[Id MIDINetworkConnection] Bool
 addConnectionSelector = mkSelector "addConnection:"
 
 -- | @Selector@ for @removeConnection:@
-removeConnectionSelector :: Selector
+removeConnectionSelector :: Selector '[Id MIDINetworkConnection] Bool
 removeConnectionSelector = mkSelector "removeConnection:"
 
 -- | @Selector@ for @sourceEndpoint@
-sourceEndpointSelector :: Selector
+sourceEndpointSelector :: Selector '[] CUInt
 sourceEndpointSelector = mkSelector "sourceEndpoint"
 
 -- | @Selector@ for @destinationEndpoint@
-destinationEndpointSelector :: Selector
+destinationEndpointSelector :: Selector '[] CUInt
 destinationEndpointSelector = mkSelector "destinationEndpoint"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @networkPort@
-networkPortSelector :: Selector
+networkPortSelector :: Selector '[] CULong
 networkPortSelector = mkSelector "networkPort"
 
 -- | @Selector@ for @networkName@
-networkNameSelector :: Selector
+networkNameSelector :: Selector '[] (Id NSString)
 networkNameSelector = mkSelector "networkName"
 
 -- | @Selector@ for @localName@
-localNameSelector :: Selector
+localNameSelector :: Selector '[] (Id NSString)
 localNameSelector = mkSelector "localName"
 
 -- | @Selector@ for @connectionPolicy@
-connectionPolicySelector :: Selector
+connectionPolicySelector :: Selector '[] MIDINetworkConnectionPolicy
 connectionPolicySelector = mkSelector "connectionPolicy"
 
 -- | @Selector@ for @setConnectionPolicy:@
-setConnectionPolicySelector :: Selector
+setConnectionPolicySelector :: Selector '[MIDINetworkConnectionPolicy] ()
 setConnectionPolicySelector = mkSelector "setConnectionPolicy:"
 

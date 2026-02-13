@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,31 +25,27 @@ module ObjC.ClassKit.CLSActivity
   , setPrimaryActivityItem
   , additionalActivityItems
   , started
-  , addProgressRangeFromStart_toEndSelector
   , addAdditionalActivityItemSelector
-  , startSelector
-  , stopSelector
-  , removeAllActivityItemsSelector
-  , progressSelector
-  , setProgressSelector
+  , addProgressRangeFromStart_toEndSelector
+  , additionalActivityItemsSelector
   , durationSelector
   , primaryActivityItemSelector
+  , progressSelector
+  , removeAllActivityItemsSelector
   , setPrimaryActivityItemSelector
-  , additionalActivityItemsSelector
+  , setProgressSelector
+  , startSelector
   , startedSelector
+  , stopSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,16 +62,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addProgressRangeFromStart:toEnd:@
 addProgressRangeFromStart_toEnd :: IsCLSActivity clsActivity => clsActivity -> CDouble -> CDouble -> IO ()
-addProgressRangeFromStart_toEnd clsActivity  start end =
-    sendMsg clsActivity (mkSelector "addProgressRangeFromStart:toEnd:") retVoid [argCDouble start, argCDouble end]
+addProgressRangeFromStart_toEnd clsActivity start end =
+  sendMessage clsActivity addProgressRangeFromStart_toEndSelector start end
 
 -- | Add an activity item to this CLSActivity.
 --
 -- ObjC selector: @- addAdditionalActivityItem:@
 addAdditionalActivityItem :: (IsCLSActivity clsActivity, IsCLSActivityItem activityItem) => clsActivity -> activityItem -> IO ()
-addAdditionalActivityItem clsActivity  activityItem =
-  withObjCPtr activityItem $ \raw_activityItem ->
-      sendMsg clsActivity (mkSelector "addAdditionalActivityItem:") retVoid [argPtr (castPtr raw_activityItem :: Ptr ())]
+addAdditionalActivityItem clsActivity activityItem =
+  sendMessage clsActivity addAdditionalActivityItemSelector (toCLSActivityItem activityItem)
 
 -- | Start Activity.
 --
@@ -82,8 +78,8 @@ addAdditionalActivityItem clsActivity  activityItem =
 --
 -- ObjC selector: @- start@
 start :: IsCLSActivity clsActivity => clsActivity -> IO ()
-start clsActivity  =
-    sendMsg clsActivity (mkSelector "start") retVoid []
+start clsActivity =
+  sendMessage clsActivity startSelector
 
 -- | Stop Activity.
 --
@@ -91,8 +87,8 @@ start clsActivity  =
 --
 -- ObjC selector: @- stop@
 stop :: IsCLSActivity clsActivity => clsActivity -> IO ()
-stop clsActivity  =
-    sendMsg clsActivity (mkSelector "stop") retVoid []
+stop clsActivity =
+  sendMessage clsActivity stopSelector
 
 -- | Deletes all activity items.
 --
@@ -100,8 +96,8 @@ stop clsActivity  =
 --
 -- ObjC selector: @- removeAllActivityItems@
 removeAllActivityItems :: IsCLSActivity clsActivity => clsActivity -> IO ()
-removeAllActivityItems clsActivity  =
-    sendMsg clsActivity (mkSelector "removeAllActivityItems") retVoid []
+removeAllActivityItems clsActivity =
+  sendMessage clsActivity removeAllActivityItemsSelector
 
 -- | Current progress as a decimal representation of a percentage.
 --
@@ -109,8 +105,8 @@ removeAllActivityItems clsActivity  =
 --
 -- ObjC selector: @- progress@
 progress :: IsCLSActivity clsActivity => clsActivity -> IO CDouble
-progress clsActivity  =
-    sendMsg clsActivity (mkSelector "progress") retCDouble []
+progress clsActivity =
+  sendMessage clsActivity progressSelector
 
 -- | Current progress as a decimal representation of a percentage.
 --
@@ -118,8 +114,8 @@ progress clsActivity  =
 --
 -- ObjC selector: @- setProgress:@
 setProgress :: IsCLSActivity clsActivity => clsActivity -> CDouble -> IO ()
-setProgress clsActivity  value =
-    sendMsg clsActivity (mkSelector "setProgress:") retVoid [argCDouble value]
+setProgress clsActivity value =
+  sendMessage clsActivity setProgressSelector value
 
 -- | Returns the total time tracked in this activity (excluding any previous activities).
 --
@@ -127,8 +123,8 @@ setProgress clsActivity  value =
 --
 -- ObjC selector: @- duration@
 duration :: IsCLSActivity clsActivity => clsActivity -> IO CDouble
-duration clsActivity  =
-    sendMsg clsActivity (mkSelector "duration") retCDouble []
+duration clsActivity =
+  sendMessage clsActivity durationSelector
 
 -- | The primary activityItem to be reported on.
 --
@@ -136,8 +132,8 @@ duration clsActivity  =
 --
 -- ObjC selector: @- primaryActivityItem@
 primaryActivityItem :: IsCLSActivity clsActivity => clsActivity -> IO (Id CLSActivityItem)
-primaryActivityItem clsActivity  =
-    sendMsg clsActivity (mkSelector "primaryActivityItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryActivityItem clsActivity =
+  sendMessage clsActivity primaryActivityItemSelector
 
 -- | The primary activityItem to be reported on.
 --
@@ -145,73 +141,72 @@ primaryActivityItem clsActivity  =
 --
 -- ObjC selector: @- setPrimaryActivityItem:@
 setPrimaryActivityItem :: (IsCLSActivity clsActivity, IsCLSActivityItem value) => clsActivity -> value -> IO ()
-setPrimaryActivityItem clsActivity  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg clsActivity (mkSelector "setPrimaryActivityItem:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrimaryActivityItem clsActivity value =
+  sendMessage clsActivity setPrimaryActivityItemSelector (toCLSActivityItem value)
 
 -- | Array of all additional activity items on this CLSActivity.
 --
 -- ObjC selector: @- additionalActivityItems@
 additionalActivityItems :: IsCLSActivity clsActivity => clsActivity -> IO (Id NSArray)
-additionalActivityItems clsActivity  =
-    sendMsg clsActivity (mkSelector "additionalActivityItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+additionalActivityItems clsActivity =
+  sendMessage clsActivity additionalActivityItemsSelector
 
 -- | Returns whether this Activity has been started or not.
 --
 -- ObjC selector: @- started@
 started :: IsCLSActivity clsActivity => clsActivity -> IO Bool
-started clsActivity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clsActivity (mkSelector "started") retCULong []
+started clsActivity =
+  sendMessage clsActivity startedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addProgressRangeFromStart:toEnd:@
-addProgressRangeFromStart_toEndSelector :: Selector
+addProgressRangeFromStart_toEndSelector :: Selector '[CDouble, CDouble] ()
 addProgressRangeFromStart_toEndSelector = mkSelector "addProgressRangeFromStart:toEnd:"
 
 -- | @Selector@ for @addAdditionalActivityItem:@
-addAdditionalActivityItemSelector :: Selector
+addAdditionalActivityItemSelector :: Selector '[Id CLSActivityItem] ()
 addAdditionalActivityItemSelector = mkSelector "addAdditionalActivityItem:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @removeAllActivityItems@
-removeAllActivityItemsSelector :: Selector
+removeAllActivityItemsSelector :: Selector '[] ()
 removeAllActivityItemsSelector = mkSelector "removeAllActivityItems"
 
 -- | @Selector@ for @progress@
-progressSelector :: Selector
+progressSelector :: Selector '[] CDouble
 progressSelector = mkSelector "progress"
 
 -- | @Selector@ for @setProgress:@
-setProgressSelector :: Selector
+setProgressSelector :: Selector '[CDouble] ()
 setProgressSelector = mkSelector "setProgress:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @primaryActivityItem@
-primaryActivityItemSelector :: Selector
+primaryActivityItemSelector :: Selector '[] (Id CLSActivityItem)
 primaryActivityItemSelector = mkSelector "primaryActivityItem"
 
 -- | @Selector@ for @setPrimaryActivityItem:@
-setPrimaryActivityItemSelector :: Selector
+setPrimaryActivityItemSelector :: Selector '[Id CLSActivityItem] ()
 setPrimaryActivityItemSelector = mkSelector "setPrimaryActivityItem:"
 
 -- | @Selector@ for @additionalActivityItems@
-additionalActivityItemsSelector :: Selector
+additionalActivityItemsSelector :: Selector '[] (Id NSArray)
 additionalActivityItemsSelector = mkSelector "additionalActivityItems"
 
 -- | @Selector@ for @started@
-startedSelector :: Selector
+startedSelector :: Selector '[] Bool
 startedSelector = mkSelector "started"
 

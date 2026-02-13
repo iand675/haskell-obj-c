@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.AppKit.NSScrubberTextItemView
   , textField
   , title
   , setTitle
+  , setTitleSelector
   , textFieldSelector
   , titleSelector
-  , setTitleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,33 +34,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- textField@
 textField :: IsNSScrubberTextItemView nsScrubberTextItemView => nsScrubberTextItemView -> IO (Id NSTextField)
-textField nsScrubberTextItemView  =
-    sendMsg nsScrubberTextItemView (mkSelector "textField") (retPtr retVoid) [] >>= retainedObject . castPtr
+textField nsScrubberTextItemView =
+  sendMessage nsScrubberTextItemView textFieldSelector
 
 -- | @- title@
 title :: IsNSScrubberTextItemView nsScrubberTextItemView => nsScrubberTextItemView -> IO (Id NSString)
-title nsScrubberTextItemView  =
-    sendMsg nsScrubberTextItemView (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsScrubberTextItemView =
+  sendMessage nsScrubberTextItemView titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSScrubberTextItemView nsScrubberTextItemView, IsNSString value) => nsScrubberTextItemView -> value -> IO ()
-setTitle nsScrubberTextItemView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsScrubberTextItemView (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsScrubberTextItemView value =
+  sendMessage nsScrubberTextItemView setTitleSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @textField@
-textFieldSelector :: Selector
+textFieldSelector :: Selector '[] (Id NSTextField)
 textFieldSelector = mkSelector "textField"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 

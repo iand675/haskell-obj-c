@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,9 +15,9 @@ module ObjC.NetworkExtension.NEFilterRule
   , initWithNetworkRule_action
   , networkRule
   , action
+  , actionSelector
   , initWithNetworkRule_actionSelector
   , networkRuleSelector
-  , actionSelector
 
   -- * Enum types
   , NEFilterAction(NEFilterAction)
@@ -28,15 +29,11 @@ module ObjC.NetworkExtension.NEFilterRule
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,9 +51,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithNetworkRule:action:@
 initWithNetworkRule_action :: (IsNEFilterRule neFilterRule, IsNENetworkRule networkRule) => neFilterRule -> networkRule -> NEFilterAction -> IO (Id NEFilterRule)
-initWithNetworkRule_action neFilterRule  networkRule action =
-  withObjCPtr networkRule $ \raw_networkRule ->
-      sendMsg neFilterRule (mkSelector "initWithNetworkRule:action:") (retPtr retVoid) [argPtr (castPtr raw_networkRule :: Ptr ()), argCLong (coerce action)] >>= ownedObject . castPtr
+initWithNetworkRule_action neFilterRule networkRule action =
+  sendOwnedMessage neFilterRule initWithNetworkRule_actionSelector (toNENetworkRule networkRule) action
 
 -- | matchNetworkRule
 --
@@ -64,8 +60,8 @@ initWithNetworkRule_action neFilterRule  networkRule action =
 --
 -- ObjC selector: @- networkRule@
 networkRule :: IsNEFilterRule neFilterRule => neFilterRule -> IO (Id NENetworkRule)
-networkRule neFilterRule  =
-    sendMsg neFilterRule (mkSelector "networkRule") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkRule neFilterRule =
+  sendMessage neFilterRule networkRuleSelector
 
 -- | action
 --
@@ -73,22 +69,22 @@ networkRule neFilterRule  =
 --
 -- ObjC selector: @- action@
 action :: IsNEFilterRule neFilterRule => neFilterRule -> IO NEFilterAction
-action neFilterRule  =
-    fmap (coerce :: CLong -> NEFilterAction) $ sendMsg neFilterRule (mkSelector "action") retCLong []
+action neFilterRule =
+  sendMessage neFilterRule actionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithNetworkRule:action:@
-initWithNetworkRule_actionSelector :: Selector
+initWithNetworkRule_actionSelector :: Selector '[Id NENetworkRule, NEFilterAction] (Id NEFilterRule)
 initWithNetworkRule_actionSelector = mkSelector "initWithNetworkRule:action:"
 
 -- | @Selector@ for @networkRule@
-networkRuleSelector :: Selector
+networkRuleSelector :: Selector '[] (Id NENetworkRule)
 networkRuleSelector = mkSelector "networkRule"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] NEFilterAction
 actionSelector = mkSelector "action"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Foundation.NSUserNotificationAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,33 +32,31 @@ actionWithIdentifier_title :: (IsNSString identifier, IsNSString title) => ident
 actionWithIdentifier_title identifier title =
   do
     cls' <- getRequiredClass "NSUserNotificationAction"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr title $ \raw_title ->
-        sendClassMsg cls' (mkSelector "actionWithIdentifier:title:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' actionWithIdentifier_titleSelector (toNSString identifier) (toNSString title)
 
 -- | @- identifier@
 identifier :: IsNSUserNotificationAction nsUserNotificationAction => nsUserNotificationAction -> IO (Id NSString)
-identifier nsUserNotificationAction  =
-    sendMsg nsUserNotificationAction (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsUserNotificationAction =
+  sendMessage nsUserNotificationAction identifierSelector
 
 -- | @- title@
 title :: IsNSUserNotificationAction nsUserNotificationAction => nsUserNotificationAction -> IO (Id NSString)
-title nsUserNotificationAction  =
-    sendMsg nsUserNotificationAction (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsUserNotificationAction =
+  sendMessage nsUserNotificationAction titleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @actionWithIdentifier:title:@
-actionWithIdentifier_titleSelector :: Selector
+actionWithIdentifier_titleSelector :: Selector '[Id NSString, Id NSString] (Id NSUserNotificationAction)
 actionWithIdentifier_titleSelector = mkSelector "actionWithIdentifier:title:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 

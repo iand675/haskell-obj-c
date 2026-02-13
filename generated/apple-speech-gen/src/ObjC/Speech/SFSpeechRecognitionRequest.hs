@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,20 +26,20 @@ module ObjC.Speech.SFSpeechRecognitionRequest
   , setAddsPunctuation
   , customizedLanguageModel
   , setCustomizedLanguageModel
-  , taskHintSelector
+  , addsPunctuationSelector
+  , contextualStringsSelector
+  , customizedLanguageModelSelector
+  , interactionIdentifierSelector
+  , requiresOnDeviceRecognitionSelector
+  , setAddsPunctuationSelector
+  , setContextualStringsSelector
+  , setCustomizedLanguageModelSelector
+  , setInteractionIdentifierSelector
+  , setRequiresOnDeviceRecognitionSelector
+  , setShouldReportPartialResultsSelector
   , setTaskHintSelector
   , shouldReportPartialResultsSelector
-  , setShouldReportPartialResultsSelector
-  , contextualStringsSelector
-  , setContextualStringsSelector
-  , interactionIdentifierSelector
-  , setInteractionIdentifierSelector
-  , requiresOnDeviceRecognitionSelector
-  , setRequiresOnDeviceRecognitionSelector
-  , addsPunctuationSelector
-  , setAddsPunctuationSelector
-  , customizedLanguageModelSelector
-  , setCustomizedLanguageModelSelector
+  , taskHintSelector
 
   -- * Enum types
   , SFSpeechRecognitionTaskHint(SFSpeechRecognitionTaskHint)
@@ -49,15 +50,11 @@ module ObjC.Speech.SFSpeechRecognitionRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,8 +68,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- taskHint@
 taskHint :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> IO SFSpeechRecognitionTaskHint
-taskHint sfSpeechRecognitionRequest  =
-    fmap (coerce :: CLong -> SFSpeechRecognitionTaskHint) $ sendMsg sfSpeechRecognitionRequest (mkSelector "taskHint") retCLong []
+taskHint sfSpeechRecognitionRequest =
+  sendMessage sfSpeechRecognitionRequest taskHintSelector
 
 -- | A value that indicates the type of speech recognition being performed.
 --
@@ -80,8 +77,8 @@ taskHint sfSpeechRecognitionRequest  =
 --
 -- ObjC selector: @- setTaskHint:@
 setTaskHint :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> SFSpeechRecognitionTaskHint -> IO ()
-setTaskHint sfSpeechRecognitionRequest  value =
-    sendMsg sfSpeechRecognitionRequest (mkSelector "setTaskHint:") retVoid [argCLong (coerce value)]
+setTaskHint sfSpeechRecognitionRequest value =
+  sendMessage sfSpeechRecognitionRequest setTaskHintSelector value
 
 -- | A Boolean value that indicates whether you want intermediate results returned for each utterance.
 --
@@ -89,8 +86,8 @@ setTaskHint sfSpeechRecognitionRequest  value =
 --
 -- ObjC selector: @- shouldReportPartialResults@
 shouldReportPartialResults :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> IO Bool
-shouldReportPartialResults sfSpeechRecognitionRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSpeechRecognitionRequest (mkSelector "shouldReportPartialResults") retCULong []
+shouldReportPartialResults sfSpeechRecognitionRequest =
+  sendMessage sfSpeechRecognitionRequest shouldReportPartialResultsSelector
 
 -- | A Boolean value that indicates whether you want intermediate results returned for each utterance.
 --
@@ -98,8 +95,8 @@ shouldReportPartialResults sfSpeechRecognitionRequest  =
 --
 -- ObjC selector: @- setShouldReportPartialResults:@
 setShouldReportPartialResults :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> Bool -> IO ()
-setShouldReportPartialResults sfSpeechRecognitionRequest  value =
-    sendMsg sfSpeechRecognitionRequest (mkSelector "setShouldReportPartialResults:") retVoid [argCULong (if value then 1 else 0)]
+setShouldReportPartialResults sfSpeechRecognitionRequest value =
+  sendMessage sfSpeechRecognitionRequest setShouldReportPartialResultsSelector value
 
 -- | An array of phrases that should be recognized, even if they are not in the system vocabulary.
 --
@@ -111,8 +108,8 @@ setShouldReportPartialResults sfSpeechRecognitionRequest  value =
 --
 -- ObjC selector: @- contextualStrings@
 contextualStrings :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> IO (Id NSArray)
-contextualStrings sfSpeechRecognitionRequest  =
-    sendMsg sfSpeechRecognitionRequest (mkSelector "contextualStrings") (retPtr retVoid) [] >>= retainedObject . castPtr
+contextualStrings sfSpeechRecognitionRequest =
+  sendMessage sfSpeechRecognitionRequest contextualStringsSelector
 
 -- | An array of phrases that should be recognized, even if they are not in the system vocabulary.
 --
@@ -124,9 +121,8 @@ contextualStrings sfSpeechRecognitionRequest  =
 --
 -- ObjC selector: @- setContextualStrings:@
 setContextualStrings :: (IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest, IsNSArray value) => sfSpeechRecognitionRequest -> value -> IO ()
-setContextualStrings sfSpeechRecognitionRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg sfSpeechRecognitionRequest (mkSelector "setContextualStrings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContextualStrings sfSpeechRecognitionRequest value =
+  sendMessage sfSpeechRecognitionRequest setContextualStringsSelector (toNSArray value)
 
 -- | An identifier string that you use to describe the type of interaction associated with the speech recognition request.
 --
@@ -134,8 +130,8 @@ setContextualStrings sfSpeechRecognitionRequest  value =
 --
 -- ObjC selector: @- interactionIdentifier@
 interactionIdentifier :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> IO RawId
-interactionIdentifier sfSpeechRecognitionRequest  =
-    fmap (RawId . castPtr) $ sendMsg sfSpeechRecognitionRequest (mkSelector "interactionIdentifier") (retPtr retVoid) []
+interactionIdentifier sfSpeechRecognitionRequest =
+  sendMessage sfSpeechRecognitionRequest interactionIdentifierSelector
 
 -- | An identifier string that you use to describe the type of interaction associated with the speech recognition request.
 --
@@ -143,8 +139,8 @@ interactionIdentifier sfSpeechRecognitionRequest  =
 --
 -- ObjC selector: @- setInteractionIdentifier:@
 setInteractionIdentifier :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> RawId -> IO ()
-setInteractionIdentifier sfSpeechRecognitionRequest  value =
-    sendMsg sfSpeechRecognitionRequest (mkSelector "setInteractionIdentifier:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setInteractionIdentifier sfSpeechRecognitionRequest value =
+  sendMessage sfSpeechRecognitionRequest setInteractionIdentifierSelector value
 
 -- | A Boolean value that determines whether a request must keep its audio data on the device.
 --
@@ -154,8 +150,8 @@ setInteractionIdentifier sfSpeechRecognitionRequest  value =
 --
 -- ObjC selector: @- requiresOnDeviceRecognition@
 requiresOnDeviceRecognition :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> IO Bool
-requiresOnDeviceRecognition sfSpeechRecognitionRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSpeechRecognitionRequest (mkSelector "requiresOnDeviceRecognition") retCULong []
+requiresOnDeviceRecognition sfSpeechRecognitionRequest =
+  sendMessage sfSpeechRecognitionRequest requiresOnDeviceRecognitionSelector
 
 -- | A Boolean value that determines whether a request must keep its audio data on the device.
 --
@@ -165,8 +161,8 @@ requiresOnDeviceRecognition sfSpeechRecognitionRequest  =
 --
 -- ObjC selector: @- setRequiresOnDeviceRecognition:@
 setRequiresOnDeviceRecognition :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> Bool -> IO ()
-setRequiresOnDeviceRecognition sfSpeechRecognitionRequest  value =
-    sendMsg sfSpeechRecognitionRequest (mkSelector "setRequiresOnDeviceRecognition:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresOnDeviceRecognition sfSpeechRecognitionRequest value =
+  sendMessage sfSpeechRecognitionRequest setRequiresOnDeviceRecognitionSelector value
 
 -- | A Boolean value that indicates whether to add punctuation to speech recognition results.
 --
@@ -174,8 +170,8 @@ setRequiresOnDeviceRecognition sfSpeechRecognitionRequest  value =
 --
 -- ObjC selector: @- addsPunctuation@
 addsPunctuation :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> IO Bool
-addsPunctuation sfSpeechRecognitionRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSpeechRecognitionRequest (mkSelector "addsPunctuation") retCULong []
+addsPunctuation sfSpeechRecognitionRequest =
+  sendMessage sfSpeechRecognitionRequest addsPunctuationSelector
 
 -- | A Boolean value that indicates whether to add punctuation to speech recognition results.
 --
@@ -183,77 +179,76 @@ addsPunctuation sfSpeechRecognitionRequest  =
 --
 -- ObjC selector: @- setAddsPunctuation:@
 setAddsPunctuation :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> Bool -> IO ()
-setAddsPunctuation sfSpeechRecognitionRequest  value =
-    sendMsg sfSpeechRecognitionRequest (mkSelector "setAddsPunctuation:") retVoid [argCULong (if value then 1 else 0)]
+setAddsPunctuation sfSpeechRecognitionRequest value =
+  sendMessage sfSpeechRecognitionRequest setAddsPunctuationSelector value
 
 -- | @- customizedLanguageModel@
 customizedLanguageModel :: IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest => sfSpeechRecognitionRequest -> IO (Id SFSpeechLanguageModelConfiguration)
-customizedLanguageModel sfSpeechRecognitionRequest  =
-    sendMsg sfSpeechRecognitionRequest (mkSelector "customizedLanguageModel") (retPtr retVoid) [] >>= retainedObject . castPtr
+customizedLanguageModel sfSpeechRecognitionRequest =
+  sendMessage sfSpeechRecognitionRequest customizedLanguageModelSelector
 
 -- | @- setCustomizedLanguageModel:@
 setCustomizedLanguageModel :: (IsSFSpeechRecognitionRequest sfSpeechRecognitionRequest, IsSFSpeechLanguageModelConfiguration value) => sfSpeechRecognitionRequest -> value -> IO ()
-setCustomizedLanguageModel sfSpeechRecognitionRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg sfSpeechRecognitionRequest (mkSelector "setCustomizedLanguageModel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomizedLanguageModel sfSpeechRecognitionRequest value =
+  sendMessage sfSpeechRecognitionRequest setCustomizedLanguageModelSelector (toSFSpeechLanguageModelConfiguration value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @taskHint@
-taskHintSelector :: Selector
+taskHintSelector :: Selector '[] SFSpeechRecognitionTaskHint
 taskHintSelector = mkSelector "taskHint"
 
 -- | @Selector@ for @setTaskHint:@
-setTaskHintSelector :: Selector
+setTaskHintSelector :: Selector '[SFSpeechRecognitionTaskHint] ()
 setTaskHintSelector = mkSelector "setTaskHint:"
 
 -- | @Selector@ for @shouldReportPartialResults@
-shouldReportPartialResultsSelector :: Selector
+shouldReportPartialResultsSelector :: Selector '[] Bool
 shouldReportPartialResultsSelector = mkSelector "shouldReportPartialResults"
 
 -- | @Selector@ for @setShouldReportPartialResults:@
-setShouldReportPartialResultsSelector :: Selector
+setShouldReportPartialResultsSelector :: Selector '[Bool] ()
 setShouldReportPartialResultsSelector = mkSelector "setShouldReportPartialResults:"
 
 -- | @Selector@ for @contextualStrings@
-contextualStringsSelector :: Selector
+contextualStringsSelector :: Selector '[] (Id NSArray)
 contextualStringsSelector = mkSelector "contextualStrings"
 
 -- | @Selector@ for @setContextualStrings:@
-setContextualStringsSelector :: Selector
+setContextualStringsSelector :: Selector '[Id NSArray] ()
 setContextualStringsSelector = mkSelector "setContextualStrings:"
 
 -- | @Selector@ for @interactionIdentifier@
-interactionIdentifierSelector :: Selector
+interactionIdentifierSelector :: Selector '[] RawId
 interactionIdentifierSelector = mkSelector "interactionIdentifier"
 
 -- | @Selector@ for @setInteractionIdentifier:@
-setInteractionIdentifierSelector :: Selector
+setInteractionIdentifierSelector :: Selector '[RawId] ()
 setInteractionIdentifierSelector = mkSelector "setInteractionIdentifier:"
 
 -- | @Selector@ for @requiresOnDeviceRecognition@
-requiresOnDeviceRecognitionSelector :: Selector
+requiresOnDeviceRecognitionSelector :: Selector '[] Bool
 requiresOnDeviceRecognitionSelector = mkSelector "requiresOnDeviceRecognition"
 
 -- | @Selector@ for @setRequiresOnDeviceRecognition:@
-setRequiresOnDeviceRecognitionSelector :: Selector
+setRequiresOnDeviceRecognitionSelector :: Selector '[Bool] ()
 setRequiresOnDeviceRecognitionSelector = mkSelector "setRequiresOnDeviceRecognition:"
 
 -- | @Selector@ for @addsPunctuation@
-addsPunctuationSelector :: Selector
+addsPunctuationSelector :: Selector '[] Bool
 addsPunctuationSelector = mkSelector "addsPunctuation"
 
 -- | @Selector@ for @setAddsPunctuation:@
-setAddsPunctuationSelector :: Selector
+setAddsPunctuationSelector :: Selector '[Bool] ()
 setAddsPunctuationSelector = mkSelector "setAddsPunctuation:"
 
 -- | @Selector@ for @customizedLanguageModel@
-customizedLanguageModelSelector :: Selector
+customizedLanguageModelSelector :: Selector '[] (Id SFSpeechLanguageModelConfiguration)
 customizedLanguageModelSelector = mkSelector "customizedLanguageModel"
 
 -- | @Selector@ for @setCustomizedLanguageModel:@
-setCustomizedLanguageModelSelector :: Selector
+setCustomizedLanguageModelSelector :: Selector '[Id SFSpeechLanguageModelConfiguration] ()
 setCustomizedLanguageModelSelector = mkSelector "setCustomizedLanguageModel:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Cinematic.CNCustomDetectionTrack
   , IsCNCustomDetectionTrack(..)
   , initWithDetections_smooth
   , allDetections
-  , initWithDetections_smoothSelector
   , allDetectionsSelector
+  , initWithDetections_smoothSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,24 +34,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDetections:smooth:@
 initWithDetections_smooth :: (IsCNCustomDetectionTrack cnCustomDetectionTrack, IsNSArray detections) => cnCustomDetectionTrack -> detections -> Bool -> IO (Id CNCustomDetectionTrack)
-initWithDetections_smooth cnCustomDetectionTrack  detections applySmoothing =
-  withObjCPtr detections $ \raw_detections ->
-      sendMsg cnCustomDetectionTrack (mkSelector "initWithDetections:smooth:") (retPtr retVoid) [argPtr (castPtr raw_detections :: Ptr ()), argCULong (if applySmoothing then 1 else 0)] >>= ownedObject . castPtr
+initWithDetections_smooth cnCustomDetectionTrack detections applySmoothing =
+  sendOwnedMessage cnCustomDetectionTrack initWithDetections_smoothSelector (toNSArray detections) applySmoothing
 
 -- | @- allDetections@
 allDetections :: IsCNCustomDetectionTrack cnCustomDetectionTrack => cnCustomDetectionTrack -> IO (Id NSArray)
-allDetections cnCustomDetectionTrack  =
-    sendMsg cnCustomDetectionTrack (mkSelector "allDetections") (retPtr retVoid) [] >>= retainedObject . castPtr
+allDetections cnCustomDetectionTrack =
+  sendMessage cnCustomDetectionTrack allDetectionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDetections:smooth:@
-initWithDetections_smoothSelector :: Selector
+initWithDetections_smoothSelector :: Selector '[Id NSArray, Bool] (Id CNCustomDetectionTrack)
 initWithDetections_smoothSelector = mkSelector "initWithDetections:smooth:"
 
 -- | @Selector@ for @allDetections@
-allDetectionsSelector :: Selector
+allDetectionsSelector :: Selector '[] (Id NSArray)
 allDetectionsSelector = mkSelector "allDetections"
 

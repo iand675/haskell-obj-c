@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRDoorLockClusterAppleClearAliroCredentialParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , credentialSelector
-  , setCredentialSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setCredentialSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- credential@
 credential :: IsMTRDoorLockClusterAppleClearAliroCredentialParams mtrDoorLockClusterAppleClearAliroCredentialParams => mtrDoorLockClusterAppleClearAliroCredentialParams -> IO (Id MTRDoorLockClusterAppleAliroCredentialStruct)
-credential mtrDoorLockClusterAppleClearAliroCredentialParams  =
-    sendMsg mtrDoorLockClusterAppleClearAliroCredentialParams (mkSelector "credential") (retPtr retVoid) [] >>= retainedObject . castPtr
+credential mtrDoorLockClusterAppleClearAliroCredentialParams =
+  sendMessage mtrDoorLockClusterAppleClearAliroCredentialParams credentialSelector
 
 -- | @- setCredential:@
 setCredential :: (IsMTRDoorLockClusterAppleClearAliroCredentialParams mtrDoorLockClusterAppleClearAliroCredentialParams, IsMTRDoorLockClusterAppleAliroCredentialStruct value) => mtrDoorLockClusterAppleClearAliroCredentialParams -> value -> IO ()
-setCredential mtrDoorLockClusterAppleClearAliroCredentialParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleClearAliroCredentialParams (mkSelector "setCredential:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredential mtrDoorLockClusterAppleClearAliroCredentialParams value =
+  sendMessage mtrDoorLockClusterAppleClearAliroCredentialParams setCredentialSelector (toMTRDoorLockClusterAppleAliroCredentialStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setCredential mtrDoorLockClusterAppleClearAliroCredentialParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDoorLockClusterAppleClearAliroCredentialParams mtrDoorLockClusterAppleClearAliroCredentialParams => mtrDoorLockClusterAppleClearAliroCredentialParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDoorLockClusterAppleClearAliroCredentialParams  =
-    sendMsg mtrDoorLockClusterAppleClearAliroCredentialParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDoorLockClusterAppleClearAliroCredentialParams =
+  sendMessage mtrDoorLockClusterAppleClearAliroCredentialParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrDoorLockClusterAppleClearAliroCredentialParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDoorLockClusterAppleClearAliroCredentialParams mtrDoorLockClusterAppleClearAliroCredentialParams, IsNSNumber value) => mtrDoorLockClusterAppleClearAliroCredentialParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDoorLockClusterAppleClearAliroCredentialParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleClearAliroCredentialParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDoorLockClusterAppleClearAliroCredentialParams value =
+  sendMessage mtrDoorLockClusterAppleClearAliroCredentialParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrDoorLockClusterAppleClearAliroCredentialParams  value
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDoorLockClusterAppleClearAliroCredentialParams mtrDoorLockClusterAppleClearAliroCredentialParams => mtrDoorLockClusterAppleClearAliroCredentialParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDoorLockClusterAppleClearAliroCredentialParams  =
-    sendMsg mtrDoorLockClusterAppleClearAliroCredentialParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDoorLockClusterAppleClearAliroCredentialParams =
+  sendMessage mtrDoorLockClusterAppleClearAliroCredentialParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrDoorLockClusterAppleClearAliroCredentialParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDoorLockClusterAppleClearAliroCredentialParams mtrDoorLockClusterAppleClearAliroCredentialParams, IsNSNumber value) => mtrDoorLockClusterAppleClearAliroCredentialParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDoorLockClusterAppleClearAliroCredentialParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleClearAliroCredentialParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDoorLockClusterAppleClearAliroCredentialParams value =
+  sendMessage mtrDoorLockClusterAppleClearAliroCredentialParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @credential@
-credentialSelector :: Selector
+credentialSelector :: Selector '[] (Id MTRDoorLockClusterAppleAliroCredentialStruct)
 credentialSelector = mkSelector "credential"
 
 -- | @Selector@ for @setCredential:@
-setCredentialSelector :: Selector
+setCredentialSelector :: Selector '[Id MTRDoorLockClusterAppleAliroCredentialStruct] ()
 setCredentialSelector = mkSelector "setCredential:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

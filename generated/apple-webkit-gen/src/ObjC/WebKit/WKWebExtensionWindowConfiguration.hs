@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,14 +20,14 @@ module ObjC.WebKit.WKWebExtensionWindowConfiguration
   , tabs
   , shouldBeFocused
   , shouldBePrivate
-  , newSelector
   , initSelector
-  , windowTypeSelector
-  , windowStateSelector
-  , tabURLsSelector
-  , tabsSelector
+  , newSelector
   , shouldBeFocusedSelector
   , shouldBePrivateSelector
+  , tabURLsSelector
+  , tabsSelector
+  , windowStateSelector
+  , windowTypeSelector
 
   -- * Enum types
   , WKWebExtensionWindowState(WKWebExtensionWindowState)
@@ -40,15 +41,11 @@ module ObjC.WebKit.WKWebExtensionWindowConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,26 +58,26 @@ new :: IO (Id WKWebExtensionWindowConfiguration)
 new  =
   do
     cls' <- getRequiredClass "WKWebExtensionWindowConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsWKWebExtensionWindowConfiguration wkWebExtensionWindowConfiguration => wkWebExtensionWindowConfiguration -> IO (Id WKWebExtensionWindowConfiguration)
-init_ wkWebExtensionWindowConfiguration  =
-    sendMsg wkWebExtensionWindowConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkWebExtensionWindowConfiguration =
+  sendOwnedMessage wkWebExtensionWindowConfiguration initSelector
 
 -- | Indicates the window type for the window.
 --
 -- ObjC selector: @- windowType@
 windowType :: IsWKWebExtensionWindowConfiguration wkWebExtensionWindowConfiguration => wkWebExtensionWindowConfiguration -> IO WKWebExtensionWindowType
-windowType wkWebExtensionWindowConfiguration  =
-    fmap (coerce :: CLong -> WKWebExtensionWindowType) $ sendMsg wkWebExtensionWindowConfiguration (mkSelector "windowType") retCLong []
+windowType wkWebExtensionWindowConfiguration =
+  sendMessage wkWebExtensionWindowConfiguration windowTypeSelector
 
 -- | Indicates the window state for the window.
 --
 -- ObjC selector: @- windowState@
 windowState :: IsWKWebExtensionWindowConfiguration wkWebExtensionWindowConfiguration => wkWebExtensionWindowConfiguration -> IO WKWebExtensionWindowState
-windowState wkWebExtensionWindowConfiguration  =
-    fmap (coerce :: CLong -> WKWebExtensionWindowState) $ sendMsg wkWebExtensionWindowConfiguration (mkSelector "windowState") retCLong []
+windowState wkWebExtensionWindowConfiguration =
+  sendMessage wkWebExtensionWindowConfiguration windowStateSelector
 
 -- | Indicates the URLs that the window should initially load as tabs.
 --
@@ -90,8 +87,8 @@ windowState wkWebExtensionWindowConfiguration  =
 --
 -- ObjC selector: @- tabURLs@
 tabURLs :: IsWKWebExtensionWindowConfiguration wkWebExtensionWindowConfiguration => wkWebExtensionWindowConfiguration -> IO (Id NSArray)
-tabURLs wkWebExtensionWindowConfiguration  =
-    sendMsg wkWebExtensionWindowConfiguration (mkSelector "tabURLs") (retPtr retVoid) [] >>= retainedObject . castPtr
+tabURLs wkWebExtensionWindowConfiguration =
+  sendMessage wkWebExtensionWindowConfiguration tabURLsSelector
 
 -- | Indicates the existing tabs that should be moved to the window.
 --
@@ -101,15 +98,15 @@ tabURLs wkWebExtensionWindowConfiguration  =
 --
 -- ObjC selector: @- tabs@
 tabs :: IsWKWebExtensionWindowConfiguration wkWebExtensionWindowConfiguration => wkWebExtensionWindowConfiguration -> IO (Id NSArray)
-tabs wkWebExtensionWindowConfiguration  =
-    sendMsg wkWebExtensionWindowConfiguration (mkSelector "tabs") (retPtr retVoid) [] >>= retainedObject . castPtr
+tabs wkWebExtensionWindowConfiguration =
+  sendMessage wkWebExtensionWindowConfiguration tabsSelector
 
 -- | Indicates whether the window should be focused.
 --
 -- ObjC selector: @- shouldBeFocused@
 shouldBeFocused :: IsWKWebExtensionWindowConfiguration wkWebExtensionWindowConfiguration => wkWebExtensionWindowConfiguration -> IO Bool
-shouldBeFocused wkWebExtensionWindowConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionWindowConfiguration (mkSelector "shouldBeFocused") retCULong []
+shouldBeFocused wkWebExtensionWindowConfiguration =
+  sendMessage wkWebExtensionWindowConfiguration shouldBeFocusedSelector
 
 -- | Indicates whether the window should be private.
 --
@@ -117,42 +114,42 @@ shouldBeFocused wkWebExtensionWindowConfiguration  =
 --
 -- ObjC selector: @- shouldBePrivate@
 shouldBePrivate :: IsWKWebExtensionWindowConfiguration wkWebExtensionWindowConfiguration => wkWebExtensionWindowConfiguration -> IO Bool
-shouldBePrivate wkWebExtensionWindowConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionWindowConfiguration (mkSelector "shouldBePrivate") retCULong []
+shouldBePrivate wkWebExtensionWindowConfiguration =
+  sendMessage wkWebExtensionWindowConfiguration shouldBePrivateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id WKWebExtensionWindowConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKWebExtensionWindowConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @windowType@
-windowTypeSelector :: Selector
+windowTypeSelector :: Selector '[] WKWebExtensionWindowType
 windowTypeSelector = mkSelector "windowType"
 
 -- | @Selector@ for @windowState@
-windowStateSelector :: Selector
+windowStateSelector :: Selector '[] WKWebExtensionWindowState
 windowStateSelector = mkSelector "windowState"
 
 -- | @Selector@ for @tabURLs@
-tabURLsSelector :: Selector
+tabURLsSelector :: Selector '[] (Id NSArray)
 tabURLsSelector = mkSelector "tabURLs"
 
 -- | @Selector@ for @tabs@
-tabsSelector :: Selector
+tabsSelector :: Selector '[] (Id NSArray)
 tabsSelector = mkSelector "tabs"
 
 -- | @Selector@ for @shouldBeFocused@
-shouldBeFocusedSelector :: Selector
+shouldBeFocusedSelector :: Selector '[] Bool
 shouldBeFocusedSelector = mkSelector "shouldBeFocused"
 
 -- | @Selector@ for @shouldBePrivate@
-shouldBePrivateSelector :: Selector
+shouldBePrivateSelector :: Selector '[] Bool
 shouldBePrivateSelector = mkSelector "shouldBePrivate"
 

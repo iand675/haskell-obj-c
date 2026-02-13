@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.CoreMotion.CMBatchedSensorManager
   , deviceMotionDataFrequency
   , deviceMotionActive
   , deviceMotionBatch
-  , startAccelerometerUpdatesSelector
-  , stopAccelerometerUpdatesSelector
-  , startDeviceMotionUpdatesSelector
-  , stopDeviceMotionUpdatesSelector
-  , authorizationStatusSelector
-  , accelerometerSupportedSelector
   , accelerometerActiveSelector
-  , accelerometerDataFrequencySelector
   , accelerometerBatchSelector
-  , deviceMotionSupportedSelector
-  , deviceMotionDataFrequencySelector
+  , accelerometerDataFrequencySelector
+  , accelerometerSupportedSelector
+  , authorizationStatusSelector
   , deviceMotionActiveSelector
   , deviceMotionBatchSelector
+  , deviceMotionDataFrequencySelector
+  , deviceMotionSupportedSelector
+  , startAccelerometerUpdatesSelector
+  , startDeviceMotionUpdatesSelector
+  , stopAccelerometerUpdatesSelector
+  , stopDeviceMotionUpdatesSelector
 
   -- * Enum types
   , CMAuthorizationStatus(CMAuthorizationStatus)
@@ -43,15 +44,11 @@ module ObjC.CoreMotion.CMBatchedSensorManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,128 +58,128 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- startAccelerometerUpdates@
 startAccelerometerUpdates :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO ()
-startAccelerometerUpdates cmBatchedSensorManager  =
-    sendMsg cmBatchedSensorManager (mkSelector "startAccelerometerUpdates") retVoid []
+startAccelerometerUpdates cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager startAccelerometerUpdatesSelector
 
 -- | @- stopAccelerometerUpdates@
 stopAccelerometerUpdates :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO ()
-stopAccelerometerUpdates cmBatchedSensorManager  =
-    sendMsg cmBatchedSensorManager (mkSelector "stopAccelerometerUpdates") retVoid []
+stopAccelerometerUpdates cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager stopAccelerometerUpdatesSelector
 
 -- | @- startDeviceMotionUpdates@
 startDeviceMotionUpdates :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO ()
-startDeviceMotionUpdates cmBatchedSensorManager  =
-    sendMsg cmBatchedSensorManager (mkSelector "startDeviceMotionUpdates") retVoid []
+startDeviceMotionUpdates cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager startDeviceMotionUpdatesSelector
 
 -- | @- stopDeviceMotionUpdates@
 stopDeviceMotionUpdates :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO ()
-stopDeviceMotionUpdates cmBatchedSensorManager  =
-    sendMsg cmBatchedSensorManager (mkSelector "stopDeviceMotionUpdates") retVoid []
+stopDeviceMotionUpdates cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager stopDeviceMotionUpdatesSelector
 
 -- | @+ authorizationStatus@
 authorizationStatus :: IO CMAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "CMBatchedSensorManager"
-    fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | @+ accelerometerSupported@
 accelerometerSupported :: IO Bool
 accelerometerSupported  =
   do
     cls' <- getRequiredClass "CMBatchedSensorManager"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "accelerometerSupported") retCULong []
+    sendClassMessage cls' accelerometerSupportedSelector
 
 -- | @- accelerometerActive@
 accelerometerActive :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO Bool
-accelerometerActive cmBatchedSensorManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmBatchedSensorManager (mkSelector "accelerometerActive") retCULong []
+accelerometerActive cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager accelerometerActiveSelector
 
 -- | @- accelerometerDataFrequency@
 accelerometerDataFrequency :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO CLong
-accelerometerDataFrequency cmBatchedSensorManager  =
-    sendMsg cmBatchedSensorManager (mkSelector "accelerometerDataFrequency") retCLong []
+accelerometerDataFrequency cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager accelerometerDataFrequencySelector
 
 -- | @- accelerometerBatch@
 accelerometerBatch :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO (Id NSArray)
-accelerometerBatch cmBatchedSensorManager  =
-    sendMsg cmBatchedSensorManager (mkSelector "accelerometerBatch") (retPtr retVoid) [] >>= retainedObject . castPtr
+accelerometerBatch cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager accelerometerBatchSelector
 
 -- | @+ deviceMotionSupported@
 deviceMotionSupported :: IO Bool
 deviceMotionSupported  =
   do
     cls' <- getRequiredClass "CMBatchedSensorManager"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "deviceMotionSupported") retCULong []
+    sendClassMessage cls' deviceMotionSupportedSelector
 
 -- | @- deviceMotionDataFrequency@
 deviceMotionDataFrequency :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO CLong
-deviceMotionDataFrequency cmBatchedSensorManager  =
-    sendMsg cmBatchedSensorManager (mkSelector "deviceMotionDataFrequency") retCLong []
+deviceMotionDataFrequency cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager deviceMotionDataFrequencySelector
 
 -- | @- deviceMotionActive@
 deviceMotionActive :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO Bool
-deviceMotionActive cmBatchedSensorManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmBatchedSensorManager (mkSelector "deviceMotionActive") retCULong []
+deviceMotionActive cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager deviceMotionActiveSelector
 
 -- | @- deviceMotionBatch@
 deviceMotionBatch :: IsCMBatchedSensorManager cmBatchedSensorManager => cmBatchedSensorManager -> IO (Id NSArray)
-deviceMotionBatch cmBatchedSensorManager  =
-    sendMsg cmBatchedSensorManager (mkSelector "deviceMotionBatch") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceMotionBatch cmBatchedSensorManager =
+  sendMessage cmBatchedSensorManager deviceMotionBatchSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startAccelerometerUpdates@
-startAccelerometerUpdatesSelector :: Selector
+startAccelerometerUpdatesSelector :: Selector '[] ()
 startAccelerometerUpdatesSelector = mkSelector "startAccelerometerUpdates"
 
 -- | @Selector@ for @stopAccelerometerUpdates@
-stopAccelerometerUpdatesSelector :: Selector
+stopAccelerometerUpdatesSelector :: Selector '[] ()
 stopAccelerometerUpdatesSelector = mkSelector "stopAccelerometerUpdates"
 
 -- | @Selector@ for @startDeviceMotionUpdates@
-startDeviceMotionUpdatesSelector :: Selector
+startDeviceMotionUpdatesSelector :: Selector '[] ()
 startDeviceMotionUpdatesSelector = mkSelector "startDeviceMotionUpdates"
 
 -- | @Selector@ for @stopDeviceMotionUpdates@
-stopDeviceMotionUpdatesSelector :: Selector
+stopDeviceMotionUpdatesSelector :: Selector '[] ()
 stopDeviceMotionUpdatesSelector = mkSelector "stopDeviceMotionUpdates"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CMAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @accelerometerSupported@
-accelerometerSupportedSelector :: Selector
+accelerometerSupportedSelector :: Selector '[] Bool
 accelerometerSupportedSelector = mkSelector "accelerometerSupported"
 
 -- | @Selector@ for @accelerometerActive@
-accelerometerActiveSelector :: Selector
+accelerometerActiveSelector :: Selector '[] Bool
 accelerometerActiveSelector = mkSelector "accelerometerActive"
 
 -- | @Selector@ for @accelerometerDataFrequency@
-accelerometerDataFrequencySelector :: Selector
+accelerometerDataFrequencySelector :: Selector '[] CLong
 accelerometerDataFrequencySelector = mkSelector "accelerometerDataFrequency"
 
 -- | @Selector@ for @accelerometerBatch@
-accelerometerBatchSelector :: Selector
+accelerometerBatchSelector :: Selector '[] (Id NSArray)
 accelerometerBatchSelector = mkSelector "accelerometerBatch"
 
 -- | @Selector@ for @deviceMotionSupported@
-deviceMotionSupportedSelector :: Selector
+deviceMotionSupportedSelector :: Selector '[] Bool
 deviceMotionSupportedSelector = mkSelector "deviceMotionSupported"
 
 -- | @Selector@ for @deviceMotionDataFrequency@
-deviceMotionDataFrequencySelector :: Selector
+deviceMotionDataFrequencySelector :: Selector '[] CLong
 deviceMotionDataFrequencySelector = mkSelector "deviceMotionDataFrequency"
 
 -- | @Selector@ for @deviceMotionActive@
-deviceMotionActiveSelector :: Selector
+deviceMotionActiveSelector :: Selector '[] Bool
 deviceMotionActiveSelector = mkSelector "deviceMotionActive"
 
 -- | @Selector@ for @deviceMotionBatch@
-deviceMotionBatchSelector :: Selector
+deviceMotionBatchSelector :: Selector '[] (Id NSArray)
 deviceMotionBatchSelector = mkSelector "deviceMotionBatch"
 

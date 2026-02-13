@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,18 +22,18 @@ module ObjC.QuickLookUI.QLPreviewView
   , setShouldCloseWithWindow
   , autostarts
   , setAutostarts
-  , initWithFrame_styleSelector
-  , initWithFrameSelector
-  , refreshPreviewItemSelector
-  , closeSelector
-  , previewItemSelector
-  , setPreviewItemSelector
-  , displayStateSelector
-  , setDisplayStateSelector
-  , shouldCloseWithWindowSelector
-  , setShouldCloseWithWindowSelector
   , autostartsSelector
+  , closeSelector
+  , displayStateSelector
+  , initWithFrameSelector
+  , initWithFrame_styleSelector
+  , previewItemSelector
+  , refreshPreviewItemSelector
   , setAutostartsSelector
+  , setDisplayStateSelector
+  , setPreviewItemSelector
+  , setShouldCloseWithWindowSelector
+  , shouldCloseWithWindowSelector
 
   -- * Enum types
   , QLPreviewViewStyle(QLPreviewViewStyle)
@@ -41,15 +42,11 @@ module ObjC.QuickLookUI.QLPreviewView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,8 +66,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFrame:style:@
 initWithFrame_style :: IsQLPreviewView qlPreviewView => qlPreviewView -> NSRect -> QLPreviewViewStyle -> IO RawId
-initWithFrame_style qlPreviewView  frame style =
-    fmap (RawId . castPtr) $ sendMsg qlPreviewView (mkSelector "initWithFrame:style:") (retPtr retVoid) [argNSRect frame, argCULong (coerce style)]
+initWithFrame_style qlPreviewView frame style =
+  sendOwnedMessage qlPreviewView initWithFrame_styleSelector frame style
 
 -- | Creates a preview view with the provided frame.
 --
@@ -82,8 +79,8 @@ initWithFrame_style qlPreviewView  frame style =
 --
 -- ObjC selector: @- initWithFrame:@
 initWithFrame :: IsQLPreviewView qlPreviewView => qlPreviewView -> NSRect -> IO RawId
-initWithFrame qlPreviewView  frame =
-    fmap (RawId . castPtr) $ sendMsg qlPreviewView (mkSelector "initWithFrame:") (retPtr retVoid) [argNSRect frame]
+initWithFrame qlPreviewView frame =
+  sendOwnedMessage qlPreviewView initWithFrameSelector frame
 
 -- | Updates the preview to display the currently previewed item.
 --
@@ -91,8 +88,8 @@ initWithFrame qlPreviewView  frame =
 --
 -- ObjC selector: @- refreshPreviewItem@
 refreshPreviewItem :: IsQLPreviewView qlPreviewView => qlPreviewView -> IO ()
-refreshPreviewItem qlPreviewView  =
-    sendMsg qlPreviewView (mkSelector "refreshPreviewItem") retVoid []
+refreshPreviewItem qlPreviewView =
+  sendMessage qlPreviewView refreshPreviewItemSelector
 
 -- | Closes the view, releasing the current preview item.
 --
@@ -100,8 +97,8 @@ refreshPreviewItem qlPreviewView  =
 --
 -- ObjC selector: @- close@
 close :: IsQLPreviewView qlPreviewView => qlPreviewView -> IO ()
-close qlPreviewView  =
-    sendMsg qlPreviewView (mkSelector "close") retVoid []
+close qlPreviewView =
+  sendMessage qlPreviewView closeSelector
 
 -- | The item to preview.
 --
@@ -109,8 +106,8 @@ close qlPreviewView  =
 --
 -- ObjC selector: @- previewItem@
 previewItem :: IsQLPreviewView qlPreviewView => qlPreviewView -> IO RawId
-previewItem qlPreviewView  =
-    fmap (RawId . castPtr) $ sendMsg qlPreviewView (mkSelector "previewItem") (retPtr retVoid) []
+previewItem qlPreviewView =
+  sendMessage qlPreviewView previewItemSelector
 
 -- | The item to preview.
 --
@@ -118,8 +115,8 @@ previewItem qlPreviewView  =
 --
 -- ObjC selector: @- setPreviewItem:@
 setPreviewItem :: IsQLPreviewView qlPreviewView => qlPreviewView -> RawId -> IO ()
-setPreviewItem qlPreviewView  value =
-    sendMsg qlPreviewView (mkSelector "setPreviewItem:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPreviewItem qlPreviewView value =
+  sendMessage qlPreviewView setPreviewItemSelector value
 
 -- | The current display state of the <doc://com.apple.documentation/documentation/quicklookui/qlpreviewview/1504747-previewitem>.
 --
@@ -129,8 +126,8 @@ setPreviewItem qlPreviewView  value =
 --
 -- ObjC selector: @- displayState@
 displayState :: IsQLPreviewView qlPreviewView => qlPreviewView -> IO RawId
-displayState qlPreviewView  =
-    fmap (RawId . castPtr) $ sendMsg qlPreviewView (mkSelector "displayState") (retPtr retVoid) []
+displayState qlPreviewView =
+  sendMessage qlPreviewView displayStateSelector
 
 -- | The current display state of the <doc://com.apple.documentation/documentation/quicklookui/qlpreviewview/1504747-previewitem>.
 --
@@ -140,8 +137,8 @@ displayState qlPreviewView  =
 --
 -- ObjC selector: @- setDisplayState:@
 setDisplayState :: IsQLPreviewView qlPreviewView => qlPreviewView -> RawId -> IO ()
-setDisplayState qlPreviewView  value =
-    sendMsg qlPreviewView (mkSelector "setDisplayState:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDisplayState qlPreviewView value =
+  sendMessage qlPreviewView setDisplayStateSelector value
 
 -- | A Boolean value that determines whether the preview should close when its window closes.
 --
@@ -149,8 +146,8 @@ setDisplayState qlPreviewView  value =
 --
 -- ObjC selector: @- shouldCloseWithWindow@
 shouldCloseWithWindow :: IsQLPreviewView qlPreviewView => qlPreviewView -> IO Bool
-shouldCloseWithWindow qlPreviewView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qlPreviewView (mkSelector "shouldCloseWithWindow") retCULong []
+shouldCloseWithWindow qlPreviewView =
+  sendMessage qlPreviewView shouldCloseWithWindowSelector
 
 -- | A Boolean value that determines whether the preview should close when its window closes.
 --
@@ -158,8 +155,8 @@ shouldCloseWithWindow qlPreviewView  =
 --
 -- ObjC selector: @- setShouldCloseWithWindow:@
 setShouldCloseWithWindow :: IsQLPreviewView qlPreviewView => qlPreviewView -> Bool -> IO ()
-setShouldCloseWithWindow qlPreviewView  value =
-    sendMsg qlPreviewView (mkSelector "setShouldCloseWithWindow:") retVoid [argCULong (if value then 1 else 0)]
+setShouldCloseWithWindow qlPreviewView value =
+  sendMessage qlPreviewView setShouldCloseWithWindowSelector value
 
 -- | A Boolean value that determines whether the preview starts automatically.
 --
@@ -167,8 +164,8 @@ setShouldCloseWithWindow qlPreviewView  value =
 --
 -- ObjC selector: @- autostarts@
 autostarts :: IsQLPreviewView qlPreviewView => qlPreviewView -> IO Bool
-autostarts qlPreviewView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qlPreviewView (mkSelector "autostarts") retCULong []
+autostarts qlPreviewView =
+  sendMessage qlPreviewView autostartsSelector
 
 -- | A Boolean value that determines whether the preview starts automatically.
 --
@@ -176,58 +173,58 @@ autostarts qlPreviewView  =
 --
 -- ObjC selector: @- setAutostarts:@
 setAutostarts :: IsQLPreviewView qlPreviewView => qlPreviewView -> Bool -> IO ()
-setAutostarts qlPreviewView  value =
-    sendMsg qlPreviewView (mkSelector "setAutostarts:") retVoid [argCULong (if value then 1 else 0)]
+setAutostarts qlPreviewView value =
+  sendMessage qlPreviewView setAutostartsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrame:style:@
-initWithFrame_styleSelector :: Selector
+initWithFrame_styleSelector :: Selector '[NSRect, QLPreviewViewStyle] RawId
 initWithFrame_styleSelector = mkSelector "initWithFrame:style:"
 
 -- | @Selector@ for @initWithFrame:@
-initWithFrameSelector :: Selector
+initWithFrameSelector :: Selector '[NSRect] RawId
 initWithFrameSelector = mkSelector "initWithFrame:"
 
 -- | @Selector@ for @refreshPreviewItem@
-refreshPreviewItemSelector :: Selector
+refreshPreviewItemSelector :: Selector '[] ()
 refreshPreviewItemSelector = mkSelector "refreshPreviewItem"
 
 -- | @Selector@ for @close@
-closeSelector :: Selector
+closeSelector :: Selector '[] ()
 closeSelector = mkSelector "close"
 
 -- | @Selector@ for @previewItem@
-previewItemSelector :: Selector
+previewItemSelector :: Selector '[] RawId
 previewItemSelector = mkSelector "previewItem"
 
 -- | @Selector@ for @setPreviewItem:@
-setPreviewItemSelector :: Selector
+setPreviewItemSelector :: Selector '[RawId] ()
 setPreviewItemSelector = mkSelector "setPreviewItem:"
 
 -- | @Selector@ for @displayState@
-displayStateSelector :: Selector
+displayStateSelector :: Selector '[] RawId
 displayStateSelector = mkSelector "displayState"
 
 -- | @Selector@ for @setDisplayState:@
-setDisplayStateSelector :: Selector
+setDisplayStateSelector :: Selector '[RawId] ()
 setDisplayStateSelector = mkSelector "setDisplayState:"
 
 -- | @Selector@ for @shouldCloseWithWindow@
-shouldCloseWithWindowSelector :: Selector
+shouldCloseWithWindowSelector :: Selector '[] Bool
 shouldCloseWithWindowSelector = mkSelector "shouldCloseWithWindow"
 
 -- | @Selector@ for @setShouldCloseWithWindow:@
-setShouldCloseWithWindowSelector :: Selector
+setShouldCloseWithWindowSelector :: Selector '[Bool] ()
 setShouldCloseWithWindowSelector = mkSelector "setShouldCloseWithWindow:"
 
 -- | @Selector@ for @autostarts@
-autostartsSelector :: Selector
+autostartsSelector :: Selector '[] Bool
 autostartsSelector = mkSelector "autostarts"
 
 -- | @Selector@ for @setAutostarts:@
-setAutostartsSelector :: Selector
+setAutostartsSelector :: Selector '[Bool] ()
 setAutostartsSelector = mkSelector "setAutostarts:"
 

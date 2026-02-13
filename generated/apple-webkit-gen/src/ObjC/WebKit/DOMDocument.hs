@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -98,111 +99,107 @@ module ObjC.WebKit.DOMDocument
   , setSelectedStylesheetSet
   , activeElement
   , webFrame
-  , createElementSelector
-  , createDocumentFragmentSelector
-  , createTextNodeSelector
-  , createCommentSelector
-  , createCDATASectionSelector
-  , createProcessingInstruction_dataSelector
-  , createAttributeSelector
-  , createEntityReferenceSelector
-  , getElementsByTagNameSelector
-  , importNode_deepSelector
-  , createElementNS_qualifiedNameSelector
-  , createAttributeNS_qualifiedNameSelector
-  , getElementsByTagNameNS_localNameSelector
+  , activeElementSelector
   , adoptNodeSelector
+  , anchorsSelector
+  , appletsSelector
+  , bodySelector
+  , characterSetSelector
+  , charsetSelector
+  , cookieSelector
+  , createAttributeNSSelector
+  , createAttributeNS_qualifiedNameSelector
+  , createAttributeSelector
+  , createCDATASectionSelector
+  , createCSSStyleDeclarationSelector
+  , createCommentSelector
+  , createDocumentFragmentSelector
+  , createElementNSSelector
+  , createElementNS_qualifiedNameSelector
+  , createElementSelector
+  , createEntityReferenceSelector
   , createEventSelector
-  , createRangeSelector
-  , createNodeIterator_whatToShow_filter_expandEntityReferencesSelector
-  , createTreeWalker_whatToShow_filter_expandEntityReferencesSelector
-  , getOverrideStyle_pseudoElementSelector
+  , createExpressionSelector
   , createExpression_resolverSelector
   , createNSResolverSelector
+  , createNodeIteratorSelector
+  , createNodeIterator_whatToShow_filter_expandEntityReferencesSelector
+  , createProcessingInstructionSelector
+  , createProcessingInstruction_dataSelector
+  , createRangeSelector
+  , createTextNodeSelector
+  , createTreeWalkerSelector
+  , createTreeWalker_whatToShow_filter_expandEntityReferencesSelector
+  , defaultCharsetSelector
+  , defaultViewSelector
+  , doctypeSelector
+  , documentElementSelector
+  , documentURISelector
+  , domainSelector
+  , elementFromPoint_ySelector
+  , evaluateSelector
   , evaluate_contextNode_resolver_type_inResultSelector
-  , execCommand_userInterface_valueSelector
-  , execCommand_userInterfaceSelector
   , execCommandSelector
+  , execCommand_userInterfaceSelector
+  , execCommand_userInterface_valueSelector
+  , formsSelector
+  , getComputedStyleSelector
+  , getComputedStyle_pseudoElementSelector
+  , getElementByIdSelector
+  , getElementsByClassNameSelector
+  , getElementsByNameSelector
+  , getElementsByTagNameNSSelector
+  , getElementsByTagNameNS_localNameSelector
+  , getElementsByTagNameSelector
+  , getMatchedCSSRules_pseudoElementSelector
+  , getMatchedCSSRules_pseudoElement_authorOnlySelector
+  , getOverrideStyleSelector
+  , getOverrideStyle_pseudoElementSelector
+  , hasFocusSelector
+  , imagesSelector
+  , implementationSelector
+  , importNodeSelector
+  , importNode_deepSelector
+  , inputEncodingSelector
+  , lastModifiedSelector
+  , linksSelector
+  , preferredStylesheetSetSelector
   , queryCommandEnabledSelector
   , queryCommandIndetermSelector
   , queryCommandStateSelector
   , queryCommandSupportedSelector
   , queryCommandValueSelector
-  , getElementsByNameSelector
-  , elementFromPoint_ySelector
-  , createCSSStyleDeclarationSelector
-  , getComputedStyle_pseudoElementSelector
-  , getMatchedCSSRules_pseudoElementSelector
-  , getMatchedCSSRules_pseudoElement_authorOnlySelector
-  , getElementsByClassNameSelector
-  , hasFocusSelector
-  , webkitCancelFullScreenSelector
-  , getElementByIdSelector
-  , querySelectorSelector
   , querySelectorAllSelector
-  , urlWithAttributeStringSelector
-  , createProcessingInstructionSelector
-  , importNodeSelector
-  , createElementNSSelector
-  , createAttributeNSSelector
-  , getElementsByTagNameNSSelector
-  , createNodeIteratorSelector
-  , createTreeWalkerSelector
-  , getOverrideStyleSelector
-  , createExpressionSelector
-  , evaluateSelector
-  , getComputedStyleSelector
-  , doctypeSelector
-  , implementationSelector
-  , documentElementSelector
-  , inputEncodingSelector
-  , xmlEncodingSelector
-  , xmlVersionSelector
-  , setXmlVersionSelector
-  , xmlStandaloneSelector
-  , setXmlStandaloneSelector
-  , documentURISelector
+  , querySelectorSelector
+  , readyStateSelector
+  , referrerSelector
+  , selectedStylesheetSetSelector
+  , setBodySelector
+  , setCharsetSelector
+  , setCookieSelector
   , setDocumentURISelector
-  , defaultViewSelector
+  , setSelectedStylesheetSetSelector
+  , setTitleSelector
+  , setXmlStandaloneSelector
+  , setXmlVersionSelector
   , styleSheetsSelector
   , titleSelector
-  , setTitleSelector
-  , referrerSelector
-  , domainSelector
   , urlSelector
-  , cookieSelector
-  , setCookieSelector
-  , bodySelector
-  , setBodySelector
-  , imagesSelector
-  , appletsSelector
-  , linksSelector
-  , formsSelector
-  , anchorsSelector
-  , lastModifiedSelector
-  , charsetSelector
-  , setCharsetSelector
-  , defaultCharsetSelector
-  , readyStateSelector
-  , characterSetSelector
-  , preferredStylesheetSetSelector
-  , selectedStylesheetSetSelector
-  , setSelectedStylesheetSetSelector
-  , activeElementSelector
+  , urlWithAttributeStringSelector
   , webFrameSelector
+  , webkitCancelFullScreenSelector
+  , xmlEncodingSelector
+  , xmlStandaloneSelector
+  , xmlVersionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -211,260 +208,213 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- createElement:@
 createElement :: (IsDOMDocument domDocument, IsNSString tagName) => domDocument -> tagName -> IO (Id DOMElement)
-createElement domDocument  tagName =
-  withObjCPtr tagName $ \raw_tagName ->
-      sendMsg domDocument (mkSelector "createElement:") (retPtr retVoid) [argPtr (castPtr raw_tagName :: Ptr ())] >>= retainedObject . castPtr
+createElement domDocument tagName =
+  sendMessage domDocument createElementSelector (toNSString tagName)
 
 -- | @- createDocumentFragment@
 createDocumentFragment :: IsDOMDocument domDocument => domDocument -> IO (Id DOMDocumentFragment)
-createDocumentFragment domDocument  =
-    sendMsg domDocument (mkSelector "createDocumentFragment") (retPtr retVoid) [] >>= retainedObject . castPtr
+createDocumentFragment domDocument =
+  sendMessage domDocument createDocumentFragmentSelector
 
 -- | @- createTextNode:@
 createTextNode :: (IsDOMDocument domDocument, IsNSString data_) => domDocument -> data_ -> IO (Id DOMText)
-createTextNode domDocument  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg domDocument (mkSelector "createTextNode:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+createTextNode domDocument data_ =
+  sendMessage domDocument createTextNodeSelector (toNSString data_)
 
 -- | @- createComment:@
 createComment :: (IsDOMDocument domDocument, IsNSString data_) => domDocument -> data_ -> IO (Id DOMComment)
-createComment domDocument  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg domDocument (mkSelector "createComment:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+createComment domDocument data_ =
+  sendMessage domDocument createCommentSelector (toNSString data_)
 
 -- | @- createCDATASection:@
 createCDATASection :: (IsDOMDocument domDocument, IsNSString data_) => domDocument -> data_ -> IO (Id DOMCDATASection)
-createCDATASection domDocument  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg domDocument (mkSelector "createCDATASection:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+createCDATASection domDocument data_ =
+  sendMessage domDocument createCDATASectionSelector (toNSString data_)
 
 -- | @- createProcessingInstruction:data:@
 createProcessingInstruction_data :: (IsDOMDocument domDocument, IsNSString target, IsNSString data_) => domDocument -> target -> data_ -> IO (Id DOMProcessingInstruction)
-createProcessingInstruction_data domDocument  target data_ =
-  withObjCPtr target $ \raw_target ->
-    withObjCPtr data_ $ \raw_data_ ->
-        sendMsg domDocument (mkSelector "createProcessingInstruction:data:") (retPtr retVoid) [argPtr (castPtr raw_target :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+createProcessingInstruction_data domDocument target data_ =
+  sendMessage domDocument createProcessingInstruction_dataSelector (toNSString target) (toNSString data_)
 
 -- | @- createAttribute:@
 createAttribute :: (IsDOMDocument domDocument, IsNSString name) => domDocument -> name -> IO (Id DOMAttr)
-createAttribute domDocument  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domDocument (mkSelector "createAttribute:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+createAttribute domDocument name =
+  sendMessage domDocument createAttributeSelector (toNSString name)
 
 -- | @- createEntityReference:@
 createEntityReference :: (IsDOMDocument domDocument, IsNSString name) => domDocument -> name -> IO (Id DOMEntityReference)
-createEntityReference domDocument  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domDocument (mkSelector "createEntityReference:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+createEntityReference domDocument name =
+  sendMessage domDocument createEntityReferenceSelector (toNSString name)
 
 -- | @- getElementsByTagName:@
 getElementsByTagName :: (IsDOMDocument domDocument, IsNSString tagname) => domDocument -> tagname -> IO (Id DOMNodeList)
-getElementsByTagName domDocument  tagname =
-  withObjCPtr tagname $ \raw_tagname ->
-      sendMsg domDocument (mkSelector "getElementsByTagName:") (retPtr retVoid) [argPtr (castPtr raw_tagname :: Ptr ())] >>= retainedObject . castPtr
+getElementsByTagName domDocument tagname =
+  sendMessage domDocument getElementsByTagNameSelector (toNSString tagname)
 
 -- | @- importNode:deep:@
 importNode_deep :: (IsDOMDocument domDocument, IsDOMNode importedNode) => domDocument -> importedNode -> Bool -> IO (Id DOMNode)
-importNode_deep domDocument  importedNode deep =
-  withObjCPtr importedNode $ \raw_importedNode ->
-      sendMsg domDocument (mkSelector "importNode:deep:") (retPtr retVoid) [argPtr (castPtr raw_importedNode :: Ptr ()), argCULong (if deep then 1 else 0)] >>= retainedObject . castPtr
+importNode_deep domDocument importedNode deep =
+  sendMessage domDocument importNode_deepSelector (toDOMNode importedNode) deep
 
 -- | @- createElementNS:qualifiedName:@
 createElementNS_qualifiedName :: (IsDOMDocument domDocument, IsNSString namespaceURI, IsNSString qualifiedName) => domDocument -> namespaceURI -> qualifiedName -> IO (Id DOMElement)
-createElementNS_qualifiedName domDocument  namespaceURI qualifiedName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr qualifiedName $ \raw_qualifiedName ->
-        sendMsg domDocument (mkSelector "createElementNS:qualifiedName:") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_qualifiedName :: Ptr ())] >>= retainedObject . castPtr
+createElementNS_qualifiedName domDocument namespaceURI qualifiedName =
+  sendMessage domDocument createElementNS_qualifiedNameSelector (toNSString namespaceURI) (toNSString qualifiedName)
 
 -- | @- createAttributeNS:qualifiedName:@
 createAttributeNS_qualifiedName :: (IsDOMDocument domDocument, IsNSString namespaceURI, IsNSString qualifiedName) => domDocument -> namespaceURI -> qualifiedName -> IO (Id DOMAttr)
-createAttributeNS_qualifiedName domDocument  namespaceURI qualifiedName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr qualifiedName $ \raw_qualifiedName ->
-        sendMsg domDocument (mkSelector "createAttributeNS:qualifiedName:") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_qualifiedName :: Ptr ())] >>= retainedObject . castPtr
+createAttributeNS_qualifiedName domDocument namespaceURI qualifiedName =
+  sendMessage domDocument createAttributeNS_qualifiedNameSelector (toNSString namespaceURI) (toNSString qualifiedName)
 
 -- | @- getElementsByTagNameNS:localName:@
 getElementsByTagNameNS_localName :: (IsDOMDocument domDocument, IsNSString namespaceURI, IsNSString localName) => domDocument -> namespaceURI -> localName -> IO (Id DOMNodeList)
-getElementsByTagNameNS_localName domDocument  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domDocument (mkSelector "getElementsByTagNameNS:localName:") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())] >>= retainedObject . castPtr
+getElementsByTagNameNS_localName domDocument namespaceURI localName =
+  sendMessage domDocument getElementsByTagNameNS_localNameSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- adoptNode:@
 adoptNode :: (IsDOMDocument domDocument, IsDOMNode source) => domDocument -> source -> IO (Id DOMNode)
-adoptNode domDocument  source =
-  withObjCPtr source $ \raw_source ->
-      sendMsg domDocument (mkSelector "adoptNode:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ())] >>= retainedObject . castPtr
+adoptNode domDocument source =
+  sendMessage domDocument adoptNodeSelector (toDOMNode source)
 
 -- | @- createEvent:@
 createEvent :: (IsDOMDocument domDocument, IsNSString eventType) => domDocument -> eventType -> IO (Id DOMEvent)
-createEvent domDocument  eventType =
-  withObjCPtr eventType $ \raw_eventType ->
-      sendMsg domDocument (mkSelector "createEvent:") (retPtr retVoid) [argPtr (castPtr raw_eventType :: Ptr ())] >>= retainedObject . castPtr
+createEvent domDocument eventType =
+  sendMessage domDocument createEventSelector (toNSString eventType)
 
 -- | @- createRange@
 createRange :: IsDOMDocument domDocument => domDocument -> IO (Id DOMRange)
-createRange domDocument  =
-    sendMsg domDocument (mkSelector "createRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+createRange domDocument =
+  sendMessage domDocument createRangeSelector
 
 -- | @- createNodeIterator:whatToShow:filter:expandEntityReferences:@
 createNodeIterator_whatToShow_filter_expandEntityReferences :: (IsDOMDocument domDocument, IsDOMNode root) => domDocument -> root -> CUInt -> RawId -> Bool -> IO (Id DOMNodeIterator)
-createNodeIterator_whatToShow_filter_expandEntityReferences domDocument  root whatToShow filter_ expandEntityReferences =
-  withObjCPtr root $ \raw_root ->
-      sendMsg domDocument (mkSelector "createNodeIterator:whatToShow:filter:expandEntityReferences:") (retPtr retVoid) [argPtr (castPtr raw_root :: Ptr ()), argCUInt whatToShow, argPtr (castPtr (unRawId filter_) :: Ptr ()), argCULong (if expandEntityReferences then 1 else 0)] >>= retainedObject . castPtr
+createNodeIterator_whatToShow_filter_expandEntityReferences domDocument root whatToShow filter_ expandEntityReferences =
+  sendMessage domDocument createNodeIterator_whatToShow_filter_expandEntityReferencesSelector (toDOMNode root) whatToShow filter_ expandEntityReferences
 
 -- | @- createTreeWalker:whatToShow:filter:expandEntityReferences:@
 createTreeWalker_whatToShow_filter_expandEntityReferences :: (IsDOMDocument domDocument, IsDOMNode root) => domDocument -> root -> CUInt -> RawId -> Bool -> IO (Id DOMTreeWalker)
-createTreeWalker_whatToShow_filter_expandEntityReferences domDocument  root whatToShow filter_ expandEntityReferences =
-  withObjCPtr root $ \raw_root ->
-      sendMsg domDocument (mkSelector "createTreeWalker:whatToShow:filter:expandEntityReferences:") (retPtr retVoid) [argPtr (castPtr raw_root :: Ptr ()), argCUInt whatToShow, argPtr (castPtr (unRawId filter_) :: Ptr ()), argCULong (if expandEntityReferences then 1 else 0)] >>= retainedObject . castPtr
+createTreeWalker_whatToShow_filter_expandEntityReferences domDocument root whatToShow filter_ expandEntityReferences =
+  sendMessage domDocument createTreeWalker_whatToShow_filter_expandEntityReferencesSelector (toDOMNode root) whatToShow filter_ expandEntityReferences
 
 -- | @- getOverrideStyle:pseudoElement:@
 getOverrideStyle_pseudoElement :: (IsDOMDocument domDocument, IsDOMElement element, IsNSString pseudoElement) => domDocument -> element -> pseudoElement -> IO (Id DOMCSSStyleDeclaration)
-getOverrideStyle_pseudoElement domDocument  element pseudoElement =
-  withObjCPtr element $ \raw_element ->
-    withObjCPtr pseudoElement $ \raw_pseudoElement ->
-        sendMsg domDocument (mkSelector "getOverrideStyle:pseudoElement:") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ()), argPtr (castPtr raw_pseudoElement :: Ptr ())] >>= retainedObject . castPtr
+getOverrideStyle_pseudoElement domDocument element pseudoElement =
+  sendMessage domDocument getOverrideStyle_pseudoElementSelector (toDOMElement element) (toNSString pseudoElement)
 
 -- | @- createExpression:resolver:@
 createExpression_resolver :: (IsDOMDocument domDocument, IsNSString expression) => domDocument -> expression -> RawId -> IO (Id DOMXPathExpression)
-createExpression_resolver domDocument  expression resolver =
-  withObjCPtr expression $ \raw_expression ->
-      sendMsg domDocument (mkSelector "createExpression:resolver:") (retPtr retVoid) [argPtr (castPtr raw_expression :: Ptr ()), argPtr (castPtr (unRawId resolver) :: Ptr ())] >>= retainedObject . castPtr
+createExpression_resolver domDocument expression resolver =
+  sendMessage domDocument createExpression_resolverSelector (toNSString expression) resolver
 
 -- | @- createNSResolver:@
 createNSResolver :: (IsDOMDocument domDocument, IsDOMNode nodeResolver) => domDocument -> nodeResolver -> IO RawId
-createNSResolver domDocument  nodeResolver =
-  withObjCPtr nodeResolver $ \raw_nodeResolver ->
-      fmap (RawId . castPtr) $ sendMsg domDocument (mkSelector "createNSResolver:") (retPtr retVoid) [argPtr (castPtr raw_nodeResolver :: Ptr ())]
+createNSResolver domDocument nodeResolver =
+  sendMessage domDocument createNSResolverSelector (toDOMNode nodeResolver)
 
 -- | @- evaluate:contextNode:resolver:type:inResult:@
 evaluate_contextNode_resolver_type_inResult :: (IsDOMDocument domDocument, IsNSString expression, IsDOMNode contextNode, IsDOMXPathResult inResult) => domDocument -> expression -> contextNode -> RawId -> CUShort -> inResult -> IO (Id DOMXPathResult)
-evaluate_contextNode_resolver_type_inResult domDocument  expression contextNode resolver type_ inResult =
-  withObjCPtr expression $ \raw_expression ->
-    withObjCPtr contextNode $ \raw_contextNode ->
-      withObjCPtr inResult $ \raw_inResult ->
-          sendMsg domDocument (mkSelector "evaluate:contextNode:resolver:type:inResult:") (retPtr retVoid) [argPtr (castPtr raw_expression :: Ptr ()), argPtr (castPtr raw_contextNode :: Ptr ()), argPtr (castPtr (unRawId resolver) :: Ptr ()), argCUInt (fromIntegral type_), argPtr (castPtr raw_inResult :: Ptr ())] >>= retainedObject . castPtr
+evaluate_contextNode_resolver_type_inResult domDocument expression contextNode resolver type_ inResult =
+  sendMessage domDocument evaluate_contextNode_resolver_type_inResultSelector (toNSString expression) (toDOMNode contextNode) resolver type_ (toDOMXPathResult inResult)
 
 -- | @- execCommand:userInterface:value:@
 execCommand_userInterface_value :: (IsDOMDocument domDocument, IsNSString command, IsNSString value) => domDocument -> command -> Bool -> value -> IO Bool
-execCommand_userInterface_value domDocument  command userInterface value =
-  withObjCPtr command $ \raw_command ->
-    withObjCPtr value $ \raw_value ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg domDocument (mkSelector "execCommand:userInterface:value:") retCULong [argPtr (castPtr raw_command :: Ptr ()), argCULong (if userInterface then 1 else 0), argPtr (castPtr raw_value :: Ptr ())]
+execCommand_userInterface_value domDocument command userInterface value =
+  sendMessage domDocument execCommand_userInterface_valueSelector (toNSString command) userInterface (toNSString value)
 
 -- | @- execCommand:userInterface:@
 execCommand_userInterface :: (IsDOMDocument domDocument, IsNSString command) => domDocument -> command -> Bool -> IO Bool
-execCommand_userInterface domDocument  command userInterface =
-  withObjCPtr command $ \raw_command ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domDocument (mkSelector "execCommand:userInterface:") retCULong [argPtr (castPtr raw_command :: Ptr ()), argCULong (if userInterface then 1 else 0)]
+execCommand_userInterface domDocument command userInterface =
+  sendMessage domDocument execCommand_userInterfaceSelector (toNSString command) userInterface
 
 -- | @- execCommand:@
 execCommand :: (IsDOMDocument domDocument, IsNSString command) => domDocument -> command -> IO Bool
-execCommand domDocument  command =
-  withObjCPtr command $ \raw_command ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domDocument (mkSelector "execCommand:") retCULong [argPtr (castPtr raw_command :: Ptr ())]
+execCommand domDocument command =
+  sendMessage domDocument execCommandSelector (toNSString command)
 
 -- | @- queryCommandEnabled:@
 queryCommandEnabled :: (IsDOMDocument domDocument, IsNSString command) => domDocument -> command -> IO Bool
-queryCommandEnabled domDocument  command =
-  withObjCPtr command $ \raw_command ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domDocument (mkSelector "queryCommandEnabled:") retCULong [argPtr (castPtr raw_command :: Ptr ())]
+queryCommandEnabled domDocument command =
+  sendMessage domDocument queryCommandEnabledSelector (toNSString command)
 
 -- | @- queryCommandIndeterm:@
 queryCommandIndeterm :: (IsDOMDocument domDocument, IsNSString command) => domDocument -> command -> IO Bool
-queryCommandIndeterm domDocument  command =
-  withObjCPtr command $ \raw_command ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domDocument (mkSelector "queryCommandIndeterm:") retCULong [argPtr (castPtr raw_command :: Ptr ())]
+queryCommandIndeterm domDocument command =
+  sendMessage domDocument queryCommandIndetermSelector (toNSString command)
 
 -- | @- queryCommandState:@
 queryCommandState :: (IsDOMDocument domDocument, IsNSString command) => domDocument -> command -> IO Bool
-queryCommandState domDocument  command =
-  withObjCPtr command $ \raw_command ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domDocument (mkSelector "queryCommandState:") retCULong [argPtr (castPtr raw_command :: Ptr ())]
+queryCommandState domDocument command =
+  sendMessage domDocument queryCommandStateSelector (toNSString command)
 
 -- | @- queryCommandSupported:@
 queryCommandSupported :: (IsDOMDocument domDocument, IsNSString command) => domDocument -> command -> IO Bool
-queryCommandSupported domDocument  command =
-  withObjCPtr command $ \raw_command ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg domDocument (mkSelector "queryCommandSupported:") retCULong [argPtr (castPtr raw_command :: Ptr ())]
+queryCommandSupported domDocument command =
+  sendMessage domDocument queryCommandSupportedSelector (toNSString command)
 
 -- | @- queryCommandValue:@
 queryCommandValue :: (IsDOMDocument domDocument, IsNSString command) => domDocument -> command -> IO (Id NSString)
-queryCommandValue domDocument  command =
-  withObjCPtr command $ \raw_command ->
-      sendMsg domDocument (mkSelector "queryCommandValue:") (retPtr retVoid) [argPtr (castPtr raw_command :: Ptr ())] >>= retainedObject . castPtr
+queryCommandValue domDocument command =
+  sendMessage domDocument queryCommandValueSelector (toNSString command)
 
 -- | @- getElementsByName:@
 getElementsByName :: (IsDOMDocument domDocument, IsNSString elementName) => domDocument -> elementName -> IO (Id DOMNodeList)
-getElementsByName domDocument  elementName =
-  withObjCPtr elementName $ \raw_elementName ->
-      sendMsg domDocument (mkSelector "getElementsByName:") (retPtr retVoid) [argPtr (castPtr raw_elementName :: Ptr ())] >>= retainedObject . castPtr
+getElementsByName domDocument elementName =
+  sendMessage domDocument getElementsByNameSelector (toNSString elementName)
 
 -- | @- elementFromPoint:y:@
 elementFromPoint_y :: IsDOMDocument domDocument => domDocument -> CInt -> CInt -> IO (Id DOMElement)
-elementFromPoint_y domDocument  x y =
-    sendMsg domDocument (mkSelector "elementFromPoint:y:") (retPtr retVoid) [argCInt x, argCInt y] >>= retainedObject . castPtr
+elementFromPoint_y domDocument x y =
+  sendMessage domDocument elementFromPoint_ySelector x y
 
 -- | @- createCSSStyleDeclaration@
 createCSSStyleDeclaration :: IsDOMDocument domDocument => domDocument -> IO (Id DOMCSSStyleDeclaration)
-createCSSStyleDeclaration domDocument  =
-    sendMsg domDocument (mkSelector "createCSSStyleDeclaration") (retPtr retVoid) [] >>= retainedObject . castPtr
+createCSSStyleDeclaration domDocument =
+  sendMessage domDocument createCSSStyleDeclarationSelector
 
 -- | @- getComputedStyle:pseudoElement:@
 getComputedStyle_pseudoElement :: (IsDOMDocument domDocument, IsDOMElement element, IsNSString pseudoElement) => domDocument -> element -> pseudoElement -> IO (Id DOMCSSStyleDeclaration)
-getComputedStyle_pseudoElement domDocument  element pseudoElement =
-  withObjCPtr element $ \raw_element ->
-    withObjCPtr pseudoElement $ \raw_pseudoElement ->
-        sendMsg domDocument (mkSelector "getComputedStyle:pseudoElement:") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ()), argPtr (castPtr raw_pseudoElement :: Ptr ())] >>= retainedObject . castPtr
+getComputedStyle_pseudoElement domDocument element pseudoElement =
+  sendMessage domDocument getComputedStyle_pseudoElementSelector (toDOMElement element) (toNSString pseudoElement)
 
 -- | @- getMatchedCSSRules:pseudoElement:@
 getMatchedCSSRules_pseudoElement :: (IsDOMDocument domDocument, IsDOMElement element, IsNSString pseudoElement) => domDocument -> element -> pseudoElement -> IO (Id DOMCSSRuleList)
-getMatchedCSSRules_pseudoElement domDocument  element pseudoElement =
-  withObjCPtr element $ \raw_element ->
-    withObjCPtr pseudoElement $ \raw_pseudoElement ->
-        sendMsg domDocument (mkSelector "getMatchedCSSRules:pseudoElement:") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ()), argPtr (castPtr raw_pseudoElement :: Ptr ())] >>= retainedObject . castPtr
+getMatchedCSSRules_pseudoElement domDocument element pseudoElement =
+  sendMessage domDocument getMatchedCSSRules_pseudoElementSelector (toDOMElement element) (toNSString pseudoElement)
 
 -- | @- getMatchedCSSRules:pseudoElement:authorOnly:@
 getMatchedCSSRules_pseudoElement_authorOnly :: (IsDOMDocument domDocument, IsDOMElement element, IsNSString pseudoElement) => domDocument -> element -> pseudoElement -> Bool -> IO (Id DOMCSSRuleList)
-getMatchedCSSRules_pseudoElement_authorOnly domDocument  element pseudoElement authorOnly =
-  withObjCPtr element $ \raw_element ->
-    withObjCPtr pseudoElement $ \raw_pseudoElement ->
-        sendMsg domDocument (mkSelector "getMatchedCSSRules:pseudoElement:authorOnly:") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ()), argPtr (castPtr raw_pseudoElement :: Ptr ()), argCULong (if authorOnly then 1 else 0)] >>= retainedObject . castPtr
+getMatchedCSSRules_pseudoElement_authorOnly domDocument element pseudoElement authorOnly =
+  sendMessage domDocument getMatchedCSSRules_pseudoElement_authorOnlySelector (toDOMElement element) (toNSString pseudoElement) authorOnly
 
 -- | @- getElementsByClassName:@
 getElementsByClassName :: (IsDOMDocument domDocument, IsNSString classNames) => domDocument -> classNames -> IO (Id DOMNodeList)
-getElementsByClassName domDocument  classNames =
-  withObjCPtr classNames $ \raw_classNames ->
-      sendMsg domDocument (mkSelector "getElementsByClassName:") (retPtr retVoid) [argPtr (castPtr raw_classNames :: Ptr ())] >>= retainedObject . castPtr
+getElementsByClassName domDocument classNames =
+  sendMessage domDocument getElementsByClassNameSelector (toNSString classNames)
 
 -- | @- hasFocus@
 hasFocus :: IsDOMDocument domDocument => domDocument -> IO Bool
-hasFocus domDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domDocument (mkSelector "hasFocus") retCULong []
+hasFocus domDocument =
+  sendMessage domDocument hasFocusSelector
 
 -- | @- webkitCancelFullScreen@
 webkitCancelFullScreen :: IsDOMDocument domDocument => domDocument -> IO ()
-webkitCancelFullScreen domDocument  =
-    sendMsg domDocument (mkSelector "webkitCancelFullScreen") retVoid []
+webkitCancelFullScreen domDocument =
+  sendMessage domDocument webkitCancelFullScreenSelector
 
 -- | @- getElementById:@
 getElementById :: (IsDOMDocument domDocument, IsNSString elementId) => domDocument -> elementId -> IO (Id DOMElement)
-getElementById domDocument  elementId =
-  withObjCPtr elementId $ \raw_elementId ->
-      sendMsg domDocument (mkSelector "getElementById:") (retPtr retVoid) [argPtr (castPtr raw_elementId :: Ptr ())] >>= retainedObject . castPtr
+getElementById domDocument elementId =
+  sendMessage domDocument getElementByIdSelector (toNSString elementId)
 
 -- | @- querySelector:@
 querySelector :: (IsDOMDocument domDocument, IsNSString selectors) => domDocument -> selectors -> IO (Id DOMElement)
-querySelector domDocument  selectors =
-  withObjCPtr selectors $ \raw_selectors ->
-      sendMsg domDocument (mkSelector "querySelector:") (retPtr retVoid) [argPtr (castPtr raw_selectors :: Ptr ())] >>= retainedObject . castPtr
+querySelector domDocument selectors =
+  sendMessage domDocument querySelectorSelector (toNSString selectors)
 
 -- | @- querySelectorAll:@
 querySelectorAll :: (IsDOMDocument domDocument, IsNSString selectors) => domDocument -> selectors -> IO (Id DOMNodeList)
-querySelectorAll domDocument  selectors =
-  withObjCPtr selectors $ \raw_selectors ->
-      sendMsg domDocument (mkSelector "querySelectorAll:") (retPtr retVoid) [argPtr (castPtr raw_selectors :: Ptr ())] >>= retainedObject . castPtr
+querySelectorAll domDocument selectors =
+  sendMessage domDocument querySelectorAllSelector (toNSString selectors)
 
 -- | URLWithAttributeString:
 --
@@ -474,275 +424,248 @@ querySelectorAll domDocument  selectors =
 --
 -- ObjC selector: @- URLWithAttributeString:@
 urlWithAttributeString :: (IsDOMDocument domDocument, IsNSString string) => domDocument -> string -> IO (Id NSURL)
-urlWithAttributeString domDocument  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg domDocument (mkSelector "URLWithAttributeString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+urlWithAttributeString domDocument string =
+  sendMessage domDocument urlWithAttributeStringSelector (toNSString string)
 
 -- | @- createProcessingInstruction::@
 createProcessingInstruction :: (IsDOMDocument domDocument, IsNSString target, IsNSString data_) => domDocument -> target -> data_ -> IO (Id DOMProcessingInstruction)
-createProcessingInstruction domDocument  target data_ =
-  withObjCPtr target $ \raw_target ->
-    withObjCPtr data_ $ \raw_data_ ->
-        sendMsg domDocument (mkSelector "createProcessingInstruction::") (retPtr retVoid) [argPtr (castPtr raw_target :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+createProcessingInstruction domDocument target data_ =
+  sendMessage domDocument createProcessingInstructionSelector (toNSString target) (toNSString data_)
 
 -- | @- importNode::@
 importNode :: (IsDOMDocument domDocument, IsDOMNode importedNode) => domDocument -> importedNode -> Bool -> IO (Id DOMNode)
-importNode domDocument  importedNode deep =
-  withObjCPtr importedNode $ \raw_importedNode ->
-      sendMsg domDocument (mkSelector "importNode::") (retPtr retVoid) [argPtr (castPtr raw_importedNode :: Ptr ()), argCULong (if deep then 1 else 0)] >>= retainedObject . castPtr
+importNode domDocument importedNode deep =
+  sendMessage domDocument importNodeSelector (toDOMNode importedNode) deep
 
 -- | @- createElementNS::@
 createElementNS :: (IsDOMDocument domDocument, IsNSString namespaceURI, IsNSString qualifiedName) => domDocument -> namespaceURI -> qualifiedName -> IO (Id DOMElement)
-createElementNS domDocument  namespaceURI qualifiedName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr qualifiedName $ \raw_qualifiedName ->
-        sendMsg domDocument (mkSelector "createElementNS::") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_qualifiedName :: Ptr ())] >>= retainedObject . castPtr
+createElementNS domDocument namespaceURI qualifiedName =
+  sendMessage domDocument createElementNSSelector (toNSString namespaceURI) (toNSString qualifiedName)
 
 -- | @- createAttributeNS::@
 createAttributeNS :: (IsDOMDocument domDocument, IsNSString namespaceURI, IsNSString qualifiedName) => domDocument -> namespaceURI -> qualifiedName -> IO (Id DOMAttr)
-createAttributeNS domDocument  namespaceURI qualifiedName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr qualifiedName $ \raw_qualifiedName ->
-        sendMsg domDocument (mkSelector "createAttributeNS::") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_qualifiedName :: Ptr ())] >>= retainedObject . castPtr
+createAttributeNS domDocument namespaceURI qualifiedName =
+  sendMessage domDocument createAttributeNSSelector (toNSString namespaceURI) (toNSString qualifiedName)
 
 -- | @- getElementsByTagNameNS::@
 getElementsByTagNameNS :: (IsDOMDocument domDocument, IsNSString namespaceURI, IsNSString localName) => domDocument -> namespaceURI -> localName -> IO (Id DOMNodeList)
-getElementsByTagNameNS domDocument  namespaceURI localName =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-    withObjCPtr localName $ \raw_localName ->
-        sendMsg domDocument (mkSelector "getElementsByTagNameNS::") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ()), argPtr (castPtr raw_localName :: Ptr ())] >>= retainedObject . castPtr
+getElementsByTagNameNS domDocument namespaceURI localName =
+  sendMessage domDocument getElementsByTagNameNSSelector (toNSString namespaceURI) (toNSString localName)
 
 -- | @- createNodeIterator::::@
 createNodeIterator :: (IsDOMDocument domDocument, IsDOMNode root) => domDocument -> root -> CUInt -> RawId -> Bool -> IO (Id DOMNodeIterator)
-createNodeIterator domDocument  root whatToShow filter_ expandEntityReferences =
-  withObjCPtr root $ \raw_root ->
-      sendMsg domDocument (mkSelector "createNodeIterator::::") (retPtr retVoid) [argPtr (castPtr raw_root :: Ptr ()), argCUInt whatToShow, argPtr (castPtr (unRawId filter_) :: Ptr ()), argCULong (if expandEntityReferences then 1 else 0)] >>= retainedObject . castPtr
+createNodeIterator domDocument root whatToShow filter_ expandEntityReferences =
+  sendMessage domDocument createNodeIteratorSelector (toDOMNode root) whatToShow filter_ expandEntityReferences
 
 -- | @- createTreeWalker::::@
 createTreeWalker :: (IsDOMDocument domDocument, IsDOMNode root) => domDocument -> root -> CUInt -> RawId -> Bool -> IO (Id DOMTreeWalker)
-createTreeWalker domDocument  root whatToShow filter_ expandEntityReferences =
-  withObjCPtr root $ \raw_root ->
-      sendMsg domDocument (mkSelector "createTreeWalker::::") (retPtr retVoid) [argPtr (castPtr raw_root :: Ptr ()), argCUInt whatToShow, argPtr (castPtr (unRawId filter_) :: Ptr ()), argCULong (if expandEntityReferences then 1 else 0)] >>= retainedObject . castPtr
+createTreeWalker domDocument root whatToShow filter_ expandEntityReferences =
+  sendMessage domDocument createTreeWalkerSelector (toDOMNode root) whatToShow filter_ expandEntityReferences
 
 -- | @- getOverrideStyle::@
 getOverrideStyle :: (IsDOMDocument domDocument, IsDOMElement element, IsNSString pseudoElement) => domDocument -> element -> pseudoElement -> IO (Id DOMCSSStyleDeclaration)
-getOverrideStyle domDocument  element pseudoElement =
-  withObjCPtr element $ \raw_element ->
-    withObjCPtr pseudoElement $ \raw_pseudoElement ->
-        sendMsg domDocument (mkSelector "getOverrideStyle::") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ()), argPtr (castPtr raw_pseudoElement :: Ptr ())] >>= retainedObject . castPtr
+getOverrideStyle domDocument element pseudoElement =
+  sendMessage domDocument getOverrideStyleSelector (toDOMElement element) (toNSString pseudoElement)
 
 -- | @- createExpression::@
 createExpression :: (IsDOMDocument domDocument, IsNSString expression) => domDocument -> expression -> RawId -> IO (Id DOMXPathExpression)
-createExpression domDocument  expression resolver =
-  withObjCPtr expression $ \raw_expression ->
-      sendMsg domDocument (mkSelector "createExpression::") (retPtr retVoid) [argPtr (castPtr raw_expression :: Ptr ()), argPtr (castPtr (unRawId resolver) :: Ptr ())] >>= retainedObject . castPtr
+createExpression domDocument expression resolver =
+  sendMessage domDocument createExpressionSelector (toNSString expression) resolver
 
 -- | @- evaluate:::::@
 evaluate :: (IsDOMDocument domDocument, IsNSString expression, IsDOMNode contextNode, IsDOMXPathResult inResult) => domDocument -> expression -> contextNode -> RawId -> CUShort -> inResult -> IO (Id DOMXPathResult)
-evaluate domDocument  expression contextNode resolver type_ inResult =
-  withObjCPtr expression $ \raw_expression ->
-    withObjCPtr contextNode $ \raw_contextNode ->
-      withObjCPtr inResult $ \raw_inResult ->
-          sendMsg domDocument (mkSelector "evaluate:::::") (retPtr retVoid) [argPtr (castPtr raw_expression :: Ptr ()), argPtr (castPtr raw_contextNode :: Ptr ()), argPtr (castPtr (unRawId resolver) :: Ptr ()), argCUInt (fromIntegral type_), argPtr (castPtr raw_inResult :: Ptr ())] >>= retainedObject . castPtr
+evaluate domDocument expression contextNode resolver type_ inResult =
+  sendMessage domDocument evaluateSelector (toNSString expression) (toDOMNode contextNode) resolver type_ (toDOMXPathResult inResult)
 
 -- | @- getComputedStyle::@
 getComputedStyle :: (IsDOMDocument domDocument, IsDOMElement element, IsNSString pseudoElement) => domDocument -> element -> pseudoElement -> IO (Id DOMCSSStyleDeclaration)
-getComputedStyle domDocument  element pseudoElement =
-  withObjCPtr element $ \raw_element ->
-    withObjCPtr pseudoElement $ \raw_pseudoElement ->
-        sendMsg domDocument (mkSelector "getComputedStyle::") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ()), argPtr (castPtr raw_pseudoElement :: Ptr ())] >>= retainedObject . castPtr
+getComputedStyle domDocument element pseudoElement =
+  sendMessage domDocument getComputedStyleSelector (toDOMElement element) (toNSString pseudoElement)
 
 -- | @- doctype@
 doctype :: IsDOMDocument domDocument => domDocument -> IO (Id DOMDocumentType)
-doctype domDocument  =
-    sendMsg domDocument (mkSelector "doctype") (retPtr retVoid) [] >>= retainedObject . castPtr
+doctype domDocument =
+  sendMessage domDocument doctypeSelector
 
 -- | @- implementation@
 implementation :: IsDOMDocument domDocument => domDocument -> IO (Id DOMImplementation)
-implementation domDocument  =
-    sendMsg domDocument (mkSelector "implementation") (retPtr retVoid) [] >>= retainedObject . castPtr
+implementation domDocument =
+  sendMessage domDocument implementationSelector
 
 -- | @- documentElement@
 documentElement :: IsDOMDocument domDocument => domDocument -> IO (Id DOMElement)
-documentElement domDocument  =
-    sendMsg domDocument (mkSelector "documentElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentElement domDocument =
+  sendMessage domDocument documentElementSelector
 
 -- | @- inputEncoding@
 inputEncoding :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-inputEncoding domDocument  =
-    sendMsg domDocument (mkSelector "inputEncoding") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputEncoding domDocument =
+  sendMessage domDocument inputEncodingSelector
 
 -- | @- xmlEncoding@
 xmlEncoding :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-xmlEncoding domDocument  =
-    sendMsg domDocument (mkSelector "xmlEncoding") (retPtr retVoid) [] >>= retainedObject . castPtr
+xmlEncoding domDocument =
+  sendMessage domDocument xmlEncodingSelector
 
 -- | @- xmlVersion@
 xmlVersion :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-xmlVersion domDocument  =
-    sendMsg domDocument (mkSelector "xmlVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+xmlVersion domDocument =
+  sendMessage domDocument xmlVersionSelector
 
 -- | @- setXmlVersion:@
 setXmlVersion :: (IsDOMDocument domDocument, IsNSString value) => domDocument -> value -> IO ()
-setXmlVersion domDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domDocument (mkSelector "setXmlVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setXmlVersion domDocument value =
+  sendMessage domDocument setXmlVersionSelector (toNSString value)
 
 -- | @- xmlStandalone@
 xmlStandalone :: IsDOMDocument domDocument => domDocument -> IO Bool
-xmlStandalone domDocument  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domDocument (mkSelector "xmlStandalone") retCULong []
+xmlStandalone domDocument =
+  sendMessage domDocument xmlStandaloneSelector
 
 -- | @- setXmlStandalone:@
 setXmlStandalone :: IsDOMDocument domDocument => domDocument -> Bool -> IO ()
-setXmlStandalone domDocument  value =
-    sendMsg domDocument (mkSelector "setXmlStandalone:") retVoid [argCULong (if value then 1 else 0)]
+setXmlStandalone domDocument value =
+  sendMessage domDocument setXmlStandaloneSelector value
 
 -- | @- documentURI@
 documentURI :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-documentURI domDocument  =
-    sendMsg domDocument (mkSelector "documentURI") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentURI domDocument =
+  sendMessage domDocument documentURISelector
 
 -- | @- setDocumentURI:@
 setDocumentURI :: (IsDOMDocument domDocument, IsNSString value) => domDocument -> value -> IO ()
-setDocumentURI domDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domDocument (mkSelector "setDocumentURI:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDocumentURI domDocument value =
+  sendMessage domDocument setDocumentURISelector (toNSString value)
 
 -- | @- defaultView@
 defaultView :: IsDOMDocument domDocument => domDocument -> IO (Id DOMAbstractView)
-defaultView domDocument  =
-    sendMsg domDocument (mkSelector "defaultView") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultView domDocument =
+  sendMessage domDocument defaultViewSelector
 
 -- | @- styleSheets@
 styleSheets :: IsDOMDocument domDocument => domDocument -> IO (Id DOMStyleSheetList)
-styleSheets domDocument  =
-    sendMsg domDocument (mkSelector "styleSheets") (retPtr retVoid) [] >>= retainedObject . castPtr
+styleSheets domDocument =
+  sendMessage domDocument styleSheetsSelector
 
 -- | @- title@
 title :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-title domDocument  =
-    sendMsg domDocument (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title domDocument =
+  sendMessage domDocument titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsDOMDocument domDocument, IsNSString value) => domDocument -> value -> IO ()
-setTitle domDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domDocument (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle domDocument value =
+  sendMessage domDocument setTitleSelector (toNSString value)
 
 -- | @- referrer@
 referrer :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-referrer domDocument  =
-    sendMsg domDocument (mkSelector "referrer") (retPtr retVoid) [] >>= retainedObject . castPtr
+referrer domDocument =
+  sendMessage domDocument referrerSelector
 
 -- | @- domain@
 domain :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-domain domDocument  =
-    sendMsg domDocument (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain domDocument =
+  sendMessage domDocument domainSelector
 
 -- | @- URL@
 url :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-url domDocument  =
-    sendMsg domDocument (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url domDocument =
+  sendMessage domDocument urlSelector
 
 -- | @- cookie@
 cookie :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-cookie domDocument  =
-    sendMsg domDocument (mkSelector "cookie") (retPtr retVoid) [] >>= retainedObject . castPtr
+cookie domDocument =
+  sendMessage domDocument cookieSelector
 
 -- | @- setCookie:@
 setCookie :: (IsDOMDocument domDocument, IsNSString value) => domDocument -> value -> IO ()
-setCookie domDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domDocument (mkSelector "setCookie:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCookie domDocument value =
+  sendMessage domDocument setCookieSelector (toNSString value)
 
 -- | @- body@
 body :: IsDOMDocument domDocument => domDocument -> IO (Id DOMHTMLElement)
-body domDocument  =
-    sendMsg domDocument (mkSelector "body") (retPtr retVoid) [] >>= retainedObject . castPtr
+body domDocument =
+  sendMessage domDocument bodySelector
 
 -- | @- setBody:@
 setBody :: (IsDOMDocument domDocument, IsDOMHTMLElement value) => domDocument -> value -> IO ()
-setBody domDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domDocument (mkSelector "setBody:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBody domDocument value =
+  sendMessage domDocument setBodySelector (toDOMHTMLElement value)
 
 -- | @- images@
 images :: IsDOMDocument domDocument => domDocument -> IO (Id DOMHTMLCollection)
-images domDocument  =
-    sendMsg domDocument (mkSelector "images") (retPtr retVoid) [] >>= retainedObject . castPtr
+images domDocument =
+  sendMessage domDocument imagesSelector
 
 -- | @- applets@
 applets :: IsDOMDocument domDocument => domDocument -> IO (Id DOMHTMLCollection)
-applets domDocument  =
-    sendMsg domDocument (mkSelector "applets") (retPtr retVoid) [] >>= retainedObject . castPtr
+applets domDocument =
+  sendMessage domDocument appletsSelector
 
 -- | @- links@
 links :: IsDOMDocument domDocument => domDocument -> IO (Id DOMHTMLCollection)
-links domDocument  =
-    sendMsg domDocument (mkSelector "links") (retPtr retVoid) [] >>= retainedObject . castPtr
+links domDocument =
+  sendMessage domDocument linksSelector
 
 -- | @- forms@
 forms :: IsDOMDocument domDocument => domDocument -> IO (Id DOMHTMLCollection)
-forms domDocument  =
-    sendMsg domDocument (mkSelector "forms") (retPtr retVoid) [] >>= retainedObject . castPtr
+forms domDocument =
+  sendMessage domDocument formsSelector
 
 -- | @- anchors@
 anchors :: IsDOMDocument domDocument => domDocument -> IO (Id DOMHTMLCollection)
-anchors domDocument  =
-    sendMsg domDocument (mkSelector "anchors") (retPtr retVoid) [] >>= retainedObject . castPtr
+anchors domDocument =
+  sendMessage domDocument anchorsSelector
 
 -- | @- lastModified@
 lastModified :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-lastModified domDocument  =
-    sendMsg domDocument (mkSelector "lastModified") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastModified domDocument =
+  sendMessage domDocument lastModifiedSelector
 
 -- | @- charset@
 charset :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-charset domDocument  =
-    sendMsg domDocument (mkSelector "charset") (retPtr retVoid) [] >>= retainedObject . castPtr
+charset domDocument =
+  sendMessage domDocument charsetSelector
 
 -- | @- setCharset:@
 setCharset :: (IsDOMDocument domDocument, IsNSString value) => domDocument -> value -> IO ()
-setCharset domDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domDocument (mkSelector "setCharset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCharset domDocument value =
+  sendMessage domDocument setCharsetSelector (toNSString value)
 
 -- | @- defaultCharset@
 defaultCharset :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-defaultCharset domDocument  =
-    sendMsg domDocument (mkSelector "defaultCharset") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultCharset domDocument =
+  sendMessage domDocument defaultCharsetSelector
 
 -- | @- readyState@
 readyState :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-readyState domDocument  =
-    sendMsg domDocument (mkSelector "readyState") (retPtr retVoid) [] >>= retainedObject . castPtr
+readyState domDocument =
+  sendMessage domDocument readyStateSelector
 
 -- | @- characterSet@
 characterSet :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-characterSet domDocument  =
-    sendMsg domDocument (mkSelector "characterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+characterSet domDocument =
+  sendMessage domDocument characterSetSelector
 
 -- | @- preferredStylesheetSet@
 preferredStylesheetSet :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-preferredStylesheetSet domDocument  =
-    sendMsg domDocument (mkSelector "preferredStylesheetSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredStylesheetSet domDocument =
+  sendMessage domDocument preferredStylesheetSetSelector
 
 -- | @- selectedStylesheetSet@
 selectedStylesheetSet :: IsDOMDocument domDocument => domDocument -> IO (Id NSString)
-selectedStylesheetSet domDocument  =
-    sendMsg domDocument (mkSelector "selectedStylesheetSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedStylesheetSet domDocument =
+  sendMessage domDocument selectedStylesheetSetSelector
 
 -- | @- setSelectedStylesheetSet:@
 setSelectedStylesheetSet :: (IsDOMDocument domDocument, IsNSString value) => domDocument -> value -> IO ()
-setSelectedStylesheetSet domDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domDocument (mkSelector "setSelectedStylesheetSet:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSelectedStylesheetSet domDocument value =
+  sendMessage domDocument setSelectedStylesheetSetSelector (toNSString value)
 
 -- | @- activeElement@
 activeElement :: IsDOMDocument domDocument => domDocument -> IO (Id DOMElement)
-activeElement domDocument  =
-    sendMsg domDocument (mkSelector "activeElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeElement domDocument =
+  sendMessage domDocument activeElementSelector
 
 -- | webFrame
 --
@@ -750,378 +673,378 @@ activeElement domDocument  =
 --
 -- ObjC selector: @- webFrame@
 webFrame :: IsDOMDocument domDocument => domDocument -> IO (Id WebFrame)
-webFrame domDocument  =
-    sendMsg domDocument (mkSelector "webFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+webFrame domDocument =
+  sendMessage domDocument webFrameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createElement:@
-createElementSelector :: Selector
+createElementSelector :: Selector '[Id NSString] (Id DOMElement)
 createElementSelector = mkSelector "createElement:"
 
 -- | @Selector@ for @createDocumentFragment@
-createDocumentFragmentSelector :: Selector
+createDocumentFragmentSelector :: Selector '[] (Id DOMDocumentFragment)
 createDocumentFragmentSelector = mkSelector "createDocumentFragment"
 
 -- | @Selector@ for @createTextNode:@
-createTextNodeSelector :: Selector
+createTextNodeSelector :: Selector '[Id NSString] (Id DOMText)
 createTextNodeSelector = mkSelector "createTextNode:"
 
 -- | @Selector@ for @createComment:@
-createCommentSelector :: Selector
+createCommentSelector :: Selector '[Id NSString] (Id DOMComment)
 createCommentSelector = mkSelector "createComment:"
 
 -- | @Selector@ for @createCDATASection:@
-createCDATASectionSelector :: Selector
+createCDATASectionSelector :: Selector '[Id NSString] (Id DOMCDATASection)
 createCDATASectionSelector = mkSelector "createCDATASection:"
 
 -- | @Selector@ for @createProcessingInstruction:data:@
-createProcessingInstruction_dataSelector :: Selector
+createProcessingInstruction_dataSelector :: Selector '[Id NSString, Id NSString] (Id DOMProcessingInstruction)
 createProcessingInstruction_dataSelector = mkSelector "createProcessingInstruction:data:"
 
 -- | @Selector@ for @createAttribute:@
-createAttributeSelector :: Selector
+createAttributeSelector :: Selector '[Id NSString] (Id DOMAttr)
 createAttributeSelector = mkSelector "createAttribute:"
 
 -- | @Selector@ for @createEntityReference:@
-createEntityReferenceSelector :: Selector
+createEntityReferenceSelector :: Selector '[Id NSString] (Id DOMEntityReference)
 createEntityReferenceSelector = mkSelector "createEntityReference:"
 
 -- | @Selector@ for @getElementsByTagName:@
-getElementsByTagNameSelector :: Selector
+getElementsByTagNameSelector :: Selector '[Id NSString] (Id DOMNodeList)
 getElementsByTagNameSelector = mkSelector "getElementsByTagName:"
 
 -- | @Selector@ for @importNode:deep:@
-importNode_deepSelector :: Selector
+importNode_deepSelector :: Selector '[Id DOMNode, Bool] (Id DOMNode)
 importNode_deepSelector = mkSelector "importNode:deep:"
 
 -- | @Selector@ for @createElementNS:qualifiedName:@
-createElementNS_qualifiedNameSelector :: Selector
+createElementNS_qualifiedNameSelector :: Selector '[Id NSString, Id NSString] (Id DOMElement)
 createElementNS_qualifiedNameSelector = mkSelector "createElementNS:qualifiedName:"
 
 -- | @Selector@ for @createAttributeNS:qualifiedName:@
-createAttributeNS_qualifiedNameSelector :: Selector
+createAttributeNS_qualifiedNameSelector :: Selector '[Id NSString, Id NSString] (Id DOMAttr)
 createAttributeNS_qualifiedNameSelector = mkSelector "createAttributeNS:qualifiedName:"
 
 -- | @Selector@ for @getElementsByTagNameNS:localName:@
-getElementsByTagNameNS_localNameSelector :: Selector
+getElementsByTagNameNS_localNameSelector :: Selector '[Id NSString, Id NSString] (Id DOMNodeList)
 getElementsByTagNameNS_localNameSelector = mkSelector "getElementsByTagNameNS:localName:"
 
 -- | @Selector@ for @adoptNode:@
-adoptNodeSelector :: Selector
+adoptNodeSelector :: Selector '[Id DOMNode] (Id DOMNode)
 adoptNodeSelector = mkSelector "adoptNode:"
 
 -- | @Selector@ for @createEvent:@
-createEventSelector :: Selector
+createEventSelector :: Selector '[Id NSString] (Id DOMEvent)
 createEventSelector = mkSelector "createEvent:"
 
 -- | @Selector@ for @createRange@
-createRangeSelector :: Selector
+createRangeSelector :: Selector '[] (Id DOMRange)
 createRangeSelector = mkSelector "createRange"
 
 -- | @Selector@ for @createNodeIterator:whatToShow:filter:expandEntityReferences:@
-createNodeIterator_whatToShow_filter_expandEntityReferencesSelector :: Selector
+createNodeIterator_whatToShow_filter_expandEntityReferencesSelector :: Selector '[Id DOMNode, CUInt, RawId, Bool] (Id DOMNodeIterator)
 createNodeIterator_whatToShow_filter_expandEntityReferencesSelector = mkSelector "createNodeIterator:whatToShow:filter:expandEntityReferences:"
 
 -- | @Selector@ for @createTreeWalker:whatToShow:filter:expandEntityReferences:@
-createTreeWalker_whatToShow_filter_expandEntityReferencesSelector :: Selector
+createTreeWalker_whatToShow_filter_expandEntityReferencesSelector :: Selector '[Id DOMNode, CUInt, RawId, Bool] (Id DOMTreeWalker)
 createTreeWalker_whatToShow_filter_expandEntityReferencesSelector = mkSelector "createTreeWalker:whatToShow:filter:expandEntityReferences:"
 
 -- | @Selector@ for @getOverrideStyle:pseudoElement:@
-getOverrideStyle_pseudoElementSelector :: Selector
+getOverrideStyle_pseudoElementSelector :: Selector '[Id DOMElement, Id NSString] (Id DOMCSSStyleDeclaration)
 getOverrideStyle_pseudoElementSelector = mkSelector "getOverrideStyle:pseudoElement:"
 
 -- | @Selector@ for @createExpression:resolver:@
-createExpression_resolverSelector :: Selector
+createExpression_resolverSelector :: Selector '[Id NSString, RawId] (Id DOMXPathExpression)
 createExpression_resolverSelector = mkSelector "createExpression:resolver:"
 
 -- | @Selector@ for @createNSResolver:@
-createNSResolverSelector :: Selector
+createNSResolverSelector :: Selector '[Id DOMNode] RawId
 createNSResolverSelector = mkSelector "createNSResolver:"
 
 -- | @Selector@ for @evaluate:contextNode:resolver:type:inResult:@
-evaluate_contextNode_resolver_type_inResultSelector :: Selector
+evaluate_contextNode_resolver_type_inResultSelector :: Selector '[Id NSString, Id DOMNode, RawId, CUShort, Id DOMXPathResult] (Id DOMXPathResult)
 evaluate_contextNode_resolver_type_inResultSelector = mkSelector "evaluate:contextNode:resolver:type:inResult:"
 
 -- | @Selector@ for @execCommand:userInterface:value:@
-execCommand_userInterface_valueSelector :: Selector
+execCommand_userInterface_valueSelector :: Selector '[Id NSString, Bool, Id NSString] Bool
 execCommand_userInterface_valueSelector = mkSelector "execCommand:userInterface:value:"
 
 -- | @Selector@ for @execCommand:userInterface:@
-execCommand_userInterfaceSelector :: Selector
+execCommand_userInterfaceSelector :: Selector '[Id NSString, Bool] Bool
 execCommand_userInterfaceSelector = mkSelector "execCommand:userInterface:"
 
 -- | @Selector@ for @execCommand:@
-execCommandSelector :: Selector
+execCommandSelector :: Selector '[Id NSString] Bool
 execCommandSelector = mkSelector "execCommand:"
 
 -- | @Selector@ for @queryCommandEnabled:@
-queryCommandEnabledSelector :: Selector
+queryCommandEnabledSelector :: Selector '[Id NSString] Bool
 queryCommandEnabledSelector = mkSelector "queryCommandEnabled:"
 
 -- | @Selector@ for @queryCommandIndeterm:@
-queryCommandIndetermSelector :: Selector
+queryCommandIndetermSelector :: Selector '[Id NSString] Bool
 queryCommandIndetermSelector = mkSelector "queryCommandIndeterm:"
 
 -- | @Selector@ for @queryCommandState:@
-queryCommandStateSelector :: Selector
+queryCommandStateSelector :: Selector '[Id NSString] Bool
 queryCommandStateSelector = mkSelector "queryCommandState:"
 
 -- | @Selector@ for @queryCommandSupported:@
-queryCommandSupportedSelector :: Selector
+queryCommandSupportedSelector :: Selector '[Id NSString] Bool
 queryCommandSupportedSelector = mkSelector "queryCommandSupported:"
 
 -- | @Selector@ for @queryCommandValue:@
-queryCommandValueSelector :: Selector
+queryCommandValueSelector :: Selector '[Id NSString] (Id NSString)
 queryCommandValueSelector = mkSelector "queryCommandValue:"
 
 -- | @Selector@ for @getElementsByName:@
-getElementsByNameSelector :: Selector
+getElementsByNameSelector :: Selector '[Id NSString] (Id DOMNodeList)
 getElementsByNameSelector = mkSelector "getElementsByName:"
 
 -- | @Selector@ for @elementFromPoint:y:@
-elementFromPoint_ySelector :: Selector
+elementFromPoint_ySelector :: Selector '[CInt, CInt] (Id DOMElement)
 elementFromPoint_ySelector = mkSelector "elementFromPoint:y:"
 
 -- | @Selector@ for @createCSSStyleDeclaration@
-createCSSStyleDeclarationSelector :: Selector
+createCSSStyleDeclarationSelector :: Selector '[] (Id DOMCSSStyleDeclaration)
 createCSSStyleDeclarationSelector = mkSelector "createCSSStyleDeclaration"
 
 -- | @Selector@ for @getComputedStyle:pseudoElement:@
-getComputedStyle_pseudoElementSelector :: Selector
+getComputedStyle_pseudoElementSelector :: Selector '[Id DOMElement, Id NSString] (Id DOMCSSStyleDeclaration)
 getComputedStyle_pseudoElementSelector = mkSelector "getComputedStyle:pseudoElement:"
 
 -- | @Selector@ for @getMatchedCSSRules:pseudoElement:@
-getMatchedCSSRules_pseudoElementSelector :: Selector
+getMatchedCSSRules_pseudoElementSelector :: Selector '[Id DOMElement, Id NSString] (Id DOMCSSRuleList)
 getMatchedCSSRules_pseudoElementSelector = mkSelector "getMatchedCSSRules:pseudoElement:"
 
 -- | @Selector@ for @getMatchedCSSRules:pseudoElement:authorOnly:@
-getMatchedCSSRules_pseudoElement_authorOnlySelector :: Selector
+getMatchedCSSRules_pseudoElement_authorOnlySelector :: Selector '[Id DOMElement, Id NSString, Bool] (Id DOMCSSRuleList)
 getMatchedCSSRules_pseudoElement_authorOnlySelector = mkSelector "getMatchedCSSRules:pseudoElement:authorOnly:"
 
 -- | @Selector@ for @getElementsByClassName:@
-getElementsByClassNameSelector :: Selector
+getElementsByClassNameSelector :: Selector '[Id NSString] (Id DOMNodeList)
 getElementsByClassNameSelector = mkSelector "getElementsByClassName:"
 
 -- | @Selector@ for @hasFocus@
-hasFocusSelector :: Selector
+hasFocusSelector :: Selector '[] Bool
 hasFocusSelector = mkSelector "hasFocus"
 
 -- | @Selector@ for @webkitCancelFullScreen@
-webkitCancelFullScreenSelector :: Selector
+webkitCancelFullScreenSelector :: Selector '[] ()
 webkitCancelFullScreenSelector = mkSelector "webkitCancelFullScreen"
 
 -- | @Selector@ for @getElementById:@
-getElementByIdSelector :: Selector
+getElementByIdSelector :: Selector '[Id NSString] (Id DOMElement)
 getElementByIdSelector = mkSelector "getElementById:"
 
 -- | @Selector@ for @querySelector:@
-querySelectorSelector :: Selector
+querySelectorSelector :: Selector '[Id NSString] (Id DOMElement)
 querySelectorSelector = mkSelector "querySelector:"
 
 -- | @Selector@ for @querySelectorAll:@
-querySelectorAllSelector :: Selector
+querySelectorAllSelector :: Selector '[Id NSString] (Id DOMNodeList)
 querySelectorAllSelector = mkSelector "querySelectorAll:"
 
 -- | @Selector@ for @URLWithAttributeString:@
-urlWithAttributeStringSelector :: Selector
+urlWithAttributeStringSelector :: Selector '[Id NSString] (Id NSURL)
 urlWithAttributeStringSelector = mkSelector "URLWithAttributeString:"
 
 -- | @Selector@ for @createProcessingInstruction::@
-createProcessingInstructionSelector :: Selector
+createProcessingInstructionSelector :: Selector '[Id NSString, Id NSString] (Id DOMProcessingInstruction)
 createProcessingInstructionSelector = mkSelector "createProcessingInstruction::"
 
 -- | @Selector@ for @importNode::@
-importNodeSelector :: Selector
+importNodeSelector :: Selector '[Id DOMNode, Bool] (Id DOMNode)
 importNodeSelector = mkSelector "importNode::"
 
 -- | @Selector@ for @createElementNS::@
-createElementNSSelector :: Selector
+createElementNSSelector :: Selector '[Id NSString, Id NSString] (Id DOMElement)
 createElementNSSelector = mkSelector "createElementNS::"
 
 -- | @Selector@ for @createAttributeNS::@
-createAttributeNSSelector :: Selector
+createAttributeNSSelector :: Selector '[Id NSString, Id NSString] (Id DOMAttr)
 createAttributeNSSelector = mkSelector "createAttributeNS::"
 
 -- | @Selector@ for @getElementsByTagNameNS::@
-getElementsByTagNameNSSelector :: Selector
+getElementsByTagNameNSSelector :: Selector '[Id NSString, Id NSString] (Id DOMNodeList)
 getElementsByTagNameNSSelector = mkSelector "getElementsByTagNameNS::"
 
 -- | @Selector@ for @createNodeIterator::::@
-createNodeIteratorSelector :: Selector
+createNodeIteratorSelector :: Selector '[Id DOMNode, CUInt, RawId, Bool] (Id DOMNodeIterator)
 createNodeIteratorSelector = mkSelector "createNodeIterator::::"
 
 -- | @Selector@ for @createTreeWalker::::@
-createTreeWalkerSelector :: Selector
+createTreeWalkerSelector :: Selector '[Id DOMNode, CUInt, RawId, Bool] (Id DOMTreeWalker)
 createTreeWalkerSelector = mkSelector "createTreeWalker::::"
 
 -- | @Selector@ for @getOverrideStyle::@
-getOverrideStyleSelector :: Selector
+getOverrideStyleSelector :: Selector '[Id DOMElement, Id NSString] (Id DOMCSSStyleDeclaration)
 getOverrideStyleSelector = mkSelector "getOverrideStyle::"
 
 -- | @Selector@ for @createExpression::@
-createExpressionSelector :: Selector
+createExpressionSelector :: Selector '[Id NSString, RawId] (Id DOMXPathExpression)
 createExpressionSelector = mkSelector "createExpression::"
 
 -- | @Selector@ for @evaluate:::::@
-evaluateSelector :: Selector
+evaluateSelector :: Selector '[Id NSString, Id DOMNode, RawId, CUShort, Id DOMXPathResult] (Id DOMXPathResult)
 evaluateSelector = mkSelector "evaluate:::::"
 
 -- | @Selector@ for @getComputedStyle::@
-getComputedStyleSelector :: Selector
+getComputedStyleSelector :: Selector '[Id DOMElement, Id NSString] (Id DOMCSSStyleDeclaration)
 getComputedStyleSelector = mkSelector "getComputedStyle::"
 
 -- | @Selector@ for @doctype@
-doctypeSelector :: Selector
+doctypeSelector :: Selector '[] (Id DOMDocumentType)
 doctypeSelector = mkSelector "doctype"
 
 -- | @Selector@ for @implementation@
-implementationSelector :: Selector
+implementationSelector :: Selector '[] (Id DOMImplementation)
 implementationSelector = mkSelector "implementation"
 
 -- | @Selector@ for @documentElement@
-documentElementSelector :: Selector
+documentElementSelector :: Selector '[] (Id DOMElement)
 documentElementSelector = mkSelector "documentElement"
 
 -- | @Selector@ for @inputEncoding@
-inputEncodingSelector :: Selector
+inputEncodingSelector :: Selector '[] (Id NSString)
 inputEncodingSelector = mkSelector "inputEncoding"
 
 -- | @Selector@ for @xmlEncoding@
-xmlEncodingSelector :: Selector
+xmlEncodingSelector :: Selector '[] (Id NSString)
 xmlEncodingSelector = mkSelector "xmlEncoding"
 
 -- | @Selector@ for @xmlVersion@
-xmlVersionSelector :: Selector
+xmlVersionSelector :: Selector '[] (Id NSString)
 xmlVersionSelector = mkSelector "xmlVersion"
 
 -- | @Selector@ for @setXmlVersion:@
-setXmlVersionSelector :: Selector
+setXmlVersionSelector :: Selector '[Id NSString] ()
 setXmlVersionSelector = mkSelector "setXmlVersion:"
 
 -- | @Selector@ for @xmlStandalone@
-xmlStandaloneSelector :: Selector
+xmlStandaloneSelector :: Selector '[] Bool
 xmlStandaloneSelector = mkSelector "xmlStandalone"
 
 -- | @Selector@ for @setXmlStandalone:@
-setXmlStandaloneSelector :: Selector
+setXmlStandaloneSelector :: Selector '[Bool] ()
 setXmlStandaloneSelector = mkSelector "setXmlStandalone:"
 
 -- | @Selector@ for @documentURI@
-documentURISelector :: Selector
+documentURISelector :: Selector '[] (Id NSString)
 documentURISelector = mkSelector "documentURI"
 
 -- | @Selector@ for @setDocumentURI:@
-setDocumentURISelector :: Selector
+setDocumentURISelector :: Selector '[Id NSString] ()
 setDocumentURISelector = mkSelector "setDocumentURI:"
 
 -- | @Selector@ for @defaultView@
-defaultViewSelector :: Selector
+defaultViewSelector :: Selector '[] (Id DOMAbstractView)
 defaultViewSelector = mkSelector "defaultView"
 
 -- | @Selector@ for @styleSheets@
-styleSheetsSelector :: Selector
+styleSheetsSelector :: Selector '[] (Id DOMStyleSheetList)
 styleSheetsSelector = mkSelector "styleSheets"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @referrer@
-referrerSelector :: Selector
+referrerSelector :: Selector '[] (Id NSString)
 referrerSelector = mkSelector "referrer"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id NSString)
 domainSelector = mkSelector "domain"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSString)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @cookie@
-cookieSelector :: Selector
+cookieSelector :: Selector '[] (Id NSString)
 cookieSelector = mkSelector "cookie"
 
 -- | @Selector@ for @setCookie:@
-setCookieSelector :: Selector
+setCookieSelector :: Selector '[Id NSString] ()
 setCookieSelector = mkSelector "setCookie:"
 
 -- | @Selector@ for @body@
-bodySelector :: Selector
+bodySelector :: Selector '[] (Id DOMHTMLElement)
 bodySelector = mkSelector "body"
 
 -- | @Selector@ for @setBody:@
-setBodySelector :: Selector
+setBodySelector :: Selector '[Id DOMHTMLElement] ()
 setBodySelector = mkSelector "setBody:"
 
 -- | @Selector@ for @images@
-imagesSelector :: Selector
+imagesSelector :: Selector '[] (Id DOMHTMLCollection)
 imagesSelector = mkSelector "images"
 
 -- | @Selector@ for @applets@
-appletsSelector :: Selector
+appletsSelector :: Selector '[] (Id DOMHTMLCollection)
 appletsSelector = mkSelector "applets"
 
 -- | @Selector@ for @links@
-linksSelector :: Selector
+linksSelector :: Selector '[] (Id DOMHTMLCollection)
 linksSelector = mkSelector "links"
 
 -- | @Selector@ for @forms@
-formsSelector :: Selector
+formsSelector :: Selector '[] (Id DOMHTMLCollection)
 formsSelector = mkSelector "forms"
 
 -- | @Selector@ for @anchors@
-anchorsSelector :: Selector
+anchorsSelector :: Selector '[] (Id DOMHTMLCollection)
 anchorsSelector = mkSelector "anchors"
 
 -- | @Selector@ for @lastModified@
-lastModifiedSelector :: Selector
+lastModifiedSelector :: Selector '[] (Id NSString)
 lastModifiedSelector = mkSelector "lastModified"
 
 -- | @Selector@ for @charset@
-charsetSelector :: Selector
+charsetSelector :: Selector '[] (Id NSString)
 charsetSelector = mkSelector "charset"
 
 -- | @Selector@ for @setCharset:@
-setCharsetSelector :: Selector
+setCharsetSelector :: Selector '[Id NSString] ()
 setCharsetSelector = mkSelector "setCharset:"
 
 -- | @Selector@ for @defaultCharset@
-defaultCharsetSelector :: Selector
+defaultCharsetSelector :: Selector '[] (Id NSString)
 defaultCharsetSelector = mkSelector "defaultCharset"
 
 -- | @Selector@ for @readyState@
-readyStateSelector :: Selector
+readyStateSelector :: Selector '[] (Id NSString)
 readyStateSelector = mkSelector "readyState"
 
 -- | @Selector@ for @characterSet@
-characterSetSelector :: Selector
+characterSetSelector :: Selector '[] (Id NSString)
 characterSetSelector = mkSelector "characterSet"
 
 -- | @Selector@ for @preferredStylesheetSet@
-preferredStylesheetSetSelector :: Selector
+preferredStylesheetSetSelector :: Selector '[] (Id NSString)
 preferredStylesheetSetSelector = mkSelector "preferredStylesheetSet"
 
 -- | @Selector@ for @selectedStylesheetSet@
-selectedStylesheetSetSelector :: Selector
+selectedStylesheetSetSelector :: Selector '[] (Id NSString)
 selectedStylesheetSetSelector = mkSelector "selectedStylesheetSet"
 
 -- | @Selector@ for @setSelectedStylesheetSet:@
-setSelectedStylesheetSetSelector :: Selector
+setSelectedStylesheetSetSelector :: Selector '[Id NSString] ()
 setSelectedStylesheetSetSelector = mkSelector "setSelectedStylesheetSet:"
 
 -- | @Selector@ for @activeElement@
-activeElementSelector :: Selector
+activeElementSelector :: Selector '[] (Id DOMElement)
 activeElementSelector = mkSelector "activeElement"
 
 -- | @Selector@ for @webFrame@
-webFrameSelector :: Selector
+webFrameSelector :: Selector '[] (Id WebFrame)
 webFrameSelector = mkSelector "webFrame"
 

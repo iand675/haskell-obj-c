@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.NetworkExtension.NWPath
   , status
   , expensive
   , constrained
+  , constrainedSelector
+  , expensiveSelector
   , isEqualToPathSelector
   , statusSelector
-  , expensiveSelector
-  , constrainedSelector
 
   -- * Enum types
   , NWPathStatus(NWPathStatus)
@@ -29,15 +30,11 @@ module ObjC.NetworkExtension.NWPath
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isEqualToPath:@
 isEqualToPath :: (IsNWPath nwPath, IsNWPath path) => nwPath -> path -> IO Bool
-isEqualToPath nwPath  path =
-  withObjCPtr path $ \raw_path ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nwPath (mkSelector "isEqualToPath:") retCULong [argPtr (castPtr raw_path :: Ptr ())]
+isEqualToPath nwPath path =
+  sendMessage nwPath isEqualToPathSelector (toNWPath path)
 
 -- | status
 --
@@ -63,8 +59,8 @@ isEqualToPath nwPath  path =
 --
 -- ObjC selector: @- status@
 status :: IsNWPath nwPath => nwPath -> IO NWPathStatus
-status nwPath  =
-    fmap (coerce :: CLong -> NWPathStatus) $ sendMsg nwPath (mkSelector "status") retCLong []
+status nwPath =
+  sendMessage nwPath statusSelector
 
 -- | expensive
 --
@@ -72,8 +68,8 @@ status nwPath  =
 --
 -- ObjC selector: @- expensive@
 expensive :: IsNWPath nwPath => nwPath -> IO Bool
-expensive nwPath  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nwPath (mkSelector "expensive") retCULong []
+expensive nwPath =
+  sendMessage nwPath expensiveSelector
 
 -- | constrained
 --
@@ -81,26 +77,26 @@ expensive nwPath  =
 --
 -- ObjC selector: @- constrained@
 constrained :: IsNWPath nwPath => nwPath -> IO Bool
-constrained nwPath  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nwPath (mkSelector "constrained") retCULong []
+constrained nwPath =
+  sendMessage nwPath constrainedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isEqualToPath:@
-isEqualToPathSelector :: Selector
+isEqualToPathSelector :: Selector '[Id NWPath] Bool
 isEqualToPathSelector = mkSelector "isEqualToPath:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] NWPathStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @expensive@
-expensiveSelector :: Selector
+expensiveSelector :: Selector '[] Bool
 expensiveSelector = mkSelector "expensive"
 
 -- | @Selector@ for @constrained@
-constrainedSelector :: Selector
+constrainedSelector :: Selector '[] Bool
 constrainedSelector = mkSelector "constrained"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.StoreKit.SKPaymentTransaction
   , transactionIdentifier
   , transactionReceipt
   , transactionState
+  , downloadsSelector
   , errorSelector
   , originalTransactionSelector
   , paymentSelector
-  , downloadsSelector
   , transactionDateSelector
   , transactionIdentifierSelector
   , transactionReceiptSelector
@@ -34,15 +35,11 @@ module ObjC.StoreKit.SKPaymentTransaction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,77 +49,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- error@
 error_ :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id NSError)
-error_ skPaymentTransaction  =
-    sendMsg skPaymentTransaction (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ skPaymentTransaction =
+  sendMessage skPaymentTransaction errorSelector
 
 -- | @- originalTransaction@
 originalTransaction :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id SKPaymentTransaction)
-originalTransaction skPaymentTransaction  =
-    sendMsg skPaymentTransaction (mkSelector "originalTransaction") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalTransaction skPaymentTransaction =
+  sendMessage skPaymentTransaction originalTransactionSelector
 
 -- | @- payment@
 payment :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id SKPayment)
-payment skPaymentTransaction  =
-    sendMsg skPaymentTransaction (mkSelector "payment") (retPtr retVoid) [] >>= retainedObject . castPtr
+payment skPaymentTransaction =
+  sendMessage skPaymentTransaction paymentSelector
 
 -- | @- downloads@
 downloads :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id NSArray)
-downloads skPaymentTransaction  =
-    sendMsg skPaymentTransaction (mkSelector "downloads") (retPtr retVoid) [] >>= retainedObject . castPtr
+downloads skPaymentTransaction =
+  sendMessage skPaymentTransaction downloadsSelector
 
 -- | @- transactionDate@
 transactionDate :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id NSDate)
-transactionDate skPaymentTransaction  =
-    sendMsg skPaymentTransaction (mkSelector "transactionDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionDate skPaymentTransaction =
+  sendMessage skPaymentTransaction transactionDateSelector
 
 -- | @- transactionIdentifier@
 transactionIdentifier :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id NSString)
-transactionIdentifier skPaymentTransaction  =
-    sendMsg skPaymentTransaction (mkSelector "transactionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionIdentifier skPaymentTransaction =
+  sendMessage skPaymentTransaction transactionIdentifierSelector
 
 -- | @- transactionReceipt@
 transactionReceipt :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO (Id NSData)
-transactionReceipt skPaymentTransaction  =
-    sendMsg skPaymentTransaction (mkSelector "transactionReceipt") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionReceipt skPaymentTransaction =
+  sendMessage skPaymentTransaction transactionReceiptSelector
 
 -- | @- transactionState@
 transactionState :: IsSKPaymentTransaction skPaymentTransaction => skPaymentTransaction -> IO SKPaymentTransactionState
-transactionState skPaymentTransaction  =
-    fmap (coerce :: CLong -> SKPaymentTransactionState) $ sendMsg skPaymentTransaction (mkSelector "transactionState") retCLong []
+transactionState skPaymentTransaction =
+  sendMessage skPaymentTransaction transactionStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @originalTransaction@
-originalTransactionSelector :: Selector
+originalTransactionSelector :: Selector '[] (Id SKPaymentTransaction)
 originalTransactionSelector = mkSelector "originalTransaction"
 
 -- | @Selector@ for @payment@
-paymentSelector :: Selector
+paymentSelector :: Selector '[] (Id SKPayment)
 paymentSelector = mkSelector "payment"
 
 -- | @Selector@ for @downloads@
-downloadsSelector :: Selector
+downloadsSelector :: Selector '[] (Id NSArray)
 downloadsSelector = mkSelector "downloads"
 
 -- | @Selector@ for @transactionDate@
-transactionDateSelector :: Selector
+transactionDateSelector :: Selector '[] (Id NSDate)
 transactionDateSelector = mkSelector "transactionDate"
 
 -- | @Selector@ for @transactionIdentifier@
-transactionIdentifierSelector :: Selector
+transactionIdentifierSelector :: Selector '[] (Id NSString)
 transactionIdentifierSelector = mkSelector "transactionIdentifier"
 
 -- | @Selector@ for @transactionReceipt@
-transactionReceiptSelector :: Selector
+transactionReceiptSelector :: Selector '[] (Id NSData)
 transactionReceiptSelector = mkSelector "transactionReceipt"
 
 -- | @Selector@ for @transactionState@
-transactionStateSelector :: Selector
+transactionStateSelector :: Selector '[] SKPaymentTransactionState
 transactionStateSelector = mkSelector "transactionState"
 

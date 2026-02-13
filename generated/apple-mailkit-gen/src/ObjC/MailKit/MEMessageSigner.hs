@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.MailKit.MEMessageSigner
   , emailAddresses
   , label
   , context
-  , newSelector
+  , contextSelector
+  , emailAddressesSelector
   , initSelector
   , initWithEmailAddresses_signatureLabel_contextSelector
-  , emailAddressesSelector
   , labelSelector
-  , contextSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,67 +41,64 @@ new :: IO (Id MEMessageSigner)
 new  =
   do
     cls' <- getRequiredClass "MEMessageSigner"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMEMessageSigner meMessageSigner => meMessageSigner -> IO (Id MEMessageSigner)
-init_ meMessageSigner  =
-    sendMsg meMessageSigner (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meMessageSigner =
+  sendOwnedMessage meMessageSigner initSelector
 
 -- | @- initWithEmailAddresses:signatureLabel:context:@
 initWithEmailAddresses_signatureLabel_context :: (IsMEMessageSigner meMessageSigner, IsNSArray emailAddresses, IsNSString label, IsNSData context) => meMessageSigner -> emailAddresses -> label -> context -> IO (Id MEMessageSigner)
-initWithEmailAddresses_signatureLabel_context meMessageSigner  emailAddresses label context =
-  withObjCPtr emailAddresses $ \raw_emailAddresses ->
-    withObjCPtr label $ \raw_label ->
-      withObjCPtr context $ \raw_context ->
-          sendMsg meMessageSigner (mkSelector "initWithEmailAddresses:signatureLabel:context:") (retPtr retVoid) [argPtr (castPtr raw_emailAddresses :: Ptr ()), argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())] >>= ownedObject . castPtr
+initWithEmailAddresses_signatureLabel_context meMessageSigner emailAddresses label context =
+  sendOwnedMessage meMessageSigner initWithEmailAddresses_signatureLabel_contextSelector (toNSArray emailAddresses) (toNSString label) (toNSData context)
 
 -- | Email addresses associated with the signature.
 --
 -- ObjC selector: @- emailAddresses@
 emailAddresses :: IsMEMessageSigner meMessageSigner => meMessageSigner -> IO (Id NSArray)
-emailAddresses meMessageSigner  =
-    sendMsg meMessageSigner (mkSelector "emailAddresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+emailAddresses meMessageSigner =
+  sendMessage meMessageSigner emailAddressesSelector
 
 -- | The message signers label. Shown in the message header view. For instance, "John Smith".
 --
 -- ObjC selector: @- label@
 label :: IsMEMessageSigner meMessageSigner => meMessageSigner -> IO (Id NSString)
-label meMessageSigner  =
-    sendMsg meMessageSigner (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label meMessageSigner =
+  sendMessage meMessageSigner labelSelector
 
 -- | The context for the message signature. This might include the signing certificate. This will be passed back to the extension for either verifying the signature or if the user wishes to view signature information.
 --
 -- ObjC selector: @- context@
 context :: IsMEMessageSigner meMessageSigner => meMessageSigner -> IO (Id NSData)
-context meMessageSigner  =
-    sendMsg meMessageSigner (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
+context meMessageSigner =
+  sendMessage meMessageSigner contextSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEMessageSigner)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEMessageSigner)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithEmailAddresses:signatureLabel:context:@
-initWithEmailAddresses_signatureLabel_contextSelector :: Selector
+initWithEmailAddresses_signatureLabel_contextSelector :: Selector '[Id NSArray, Id NSString, Id NSData] (Id MEMessageSigner)
 initWithEmailAddresses_signatureLabel_contextSelector = mkSelector "initWithEmailAddresses:signatureLabel:context:"
 
 -- | @Selector@ for @emailAddresses@
-emailAddressesSelector :: Selector
+emailAddressesSelector :: Selector '[] (Id NSArray)
 emailAddressesSelector = mkSelector "emailAddresses"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @context@
-contextSelector :: Selector
+contextSelector :: Selector '[] (Id NSData)
 contextSelector = mkSelector "context"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.PDFKit.PDFAnnotationChoiceWidget
   , setIsListChoice
   , choices
   , setChoices
-  , stringValueSelector
-  , setStringValueSelector
   , backgroundColorSelector
-  , setBackgroundColorSelector
-  , fontSelector
-  , setFontSelector
-  , fontColorSelector
-  , setFontColorSelector
-  , fieldNameSelector
-  , setFieldNameSelector
-  , isListChoiceSelector
-  , setIsListChoiceSelector
   , choicesSelector
+  , fieldNameSelector
+  , fontColorSelector
+  , fontSelector
+  , isListChoiceSelector
+  , setBackgroundColorSelector
   , setChoicesSelector
+  , setFieldNameSelector
+  , setFontColorSelector
+  , setFontSelector
+  , setIsListChoiceSelector
+  , setStringValueSelector
+  , stringValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,137 +53,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- stringValue@
 stringValue :: IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget => pdfAnnotationChoiceWidget -> IO (Id NSString)
-stringValue pdfAnnotationChoiceWidget  =
-    sendMsg pdfAnnotationChoiceWidget (mkSelector "stringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringValue pdfAnnotationChoiceWidget =
+  sendMessage pdfAnnotationChoiceWidget stringValueSelector
 
 -- | @- setStringValue:@
 setStringValue :: (IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget, IsNSString value) => pdfAnnotationChoiceWidget -> value -> IO ()
-setStringValue pdfAnnotationChoiceWidget  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfAnnotationChoiceWidget (mkSelector "setStringValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStringValue pdfAnnotationChoiceWidget value =
+  sendMessage pdfAnnotationChoiceWidget setStringValueSelector (toNSString value)
 
 -- | @- backgroundColor@
 backgroundColor :: IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget => pdfAnnotationChoiceWidget -> IO (Id NSColor)
-backgroundColor pdfAnnotationChoiceWidget  =
-    sendMsg pdfAnnotationChoiceWidget (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor pdfAnnotationChoiceWidget =
+  sendMessage pdfAnnotationChoiceWidget backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget, IsNSColor color) => pdfAnnotationChoiceWidget -> color -> IO ()
-setBackgroundColor pdfAnnotationChoiceWidget  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg pdfAnnotationChoiceWidget (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setBackgroundColor pdfAnnotationChoiceWidget color =
+  sendMessage pdfAnnotationChoiceWidget setBackgroundColorSelector (toNSColor color)
 
 -- | @- font@
 font :: IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget => pdfAnnotationChoiceWidget -> IO (Id NSFont)
-font pdfAnnotationChoiceWidget  =
-    sendMsg pdfAnnotationChoiceWidget (mkSelector "font") (retPtr retVoid) [] >>= retainedObject . castPtr
+font pdfAnnotationChoiceWidget =
+  sendMessage pdfAnnotationChoiceWidget fontSelector
 
 -- | @- setFont:@
 setFont :: (IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget, IsNSFont font) => pdfAnnotationChoiceWidget -> font -> IO ()
-setFont pdfAnnotationChoiceWidget  font =
-  withObjCPtr font $ \raw_font ->
-      sendMsg pdfAnnotationChoiceWidget (mkSelector "setFont:") retVoid [argPtr (castPtr raw_font :: Ptr ())]
+setFont pdfAnnotationChoiceWidget font =
+  sendMessage pdfAnnotationChoiceWidget setFontSelector (toNSFont font)
 
 -- | @- fontColor@
 fontColor :: IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget => pdfAnnotationChoiceWidget -> IO (Id NSColor)
-fontColor pdfAnnotationChoiceWidget  =
-    sendMsg pdfAnnotationChoiceWidget (mkSelector "fontColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fontColor pdfAnnotationChoiceWidget =
+  sendMessage pdfAnnotationChoiceWidget fontColorSelector
 
 -- | @- setFontColor:@
 setFontColor :: (IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget, IsNSColor color) => pdfAnnotationChoiceWidget -> color -> IO ()
-setFontColor pdfAnnotationChoiceWidget  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg pdfAnnotationChoiceWidget (mkSelector "setFontColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setFontColor pdfAnnotationChoiceWidget color =
+  sendMessage pdfAnnotationChoiceWidget setFontColorSelector (toNSColor color)
 
 -- | @- fieldName@
 fieldName :: IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget => pdfAnnotationChoiceWidget -> IO (Id NSString)
-fieldName pdfAnnotationChoiceWidget  =
-    sendMsg pdfAnnotationChoiceWidget (mkSelector "fieldName") (retPtr retVoid) [] >>= retainedObject . castPtr
+fieldName pdfAnnotationChoiceWidget =
+  sendMessage pdfAnnotationChoiceWidget fieldNameSelector
 
 -- | @- setFieldName:@
 setFieldName :: (IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget, IsNSString name) => pdfAnnotationChoiceWidget -> name -> IO ()
-setFieldName pdfAnnotationChoiceWidget  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg pdfAnnotationChoiceWidget (mkSelector "setFieldName:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+setFieldName pdfAnnotationChoiceWidget name =
+  sendMessage pdfAnnotationChoiceWidget setFieldNameSelector (toNSString name)
 
 -- | @- isListChoice@
 isListChoice :: IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget => pdfAnnotationChoiceWidget -> IO Bool
-isListChoice pdfAnnotationChoiceWidget  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pdfAnnotationChoiceWidget (mkSelector "isListChoice") retCULong []
+isListChoice pdfAnnotationChoiceWidget =
+  sendMessage pdfAnnotationChoiceWidget isListChoiceSelector
 
 -- | @- setIsListChoice:@
 setIsListChoice :: IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget => pdfAnnotationChoiceWidget -> Bool -> IO ()
-setIsListChoice pdfAnnotationChoiceWidget  isList =
-    sendMsg pdfAnnotationChoiceWidget (mkSelector "setIsListChoice:") retVoid [argCULong (if isList then 1 else 0)]
+setIsListChoice pdfAnnotationChoiceWidget isList =
+  sendMessage pdfAnnotationChoiceWidget setIsListChoiceSelector isList
 
 -- | @- choices@
 choices :: IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget => pdfAnnotationChoiceWidget -> IO (Id NSArray)
-choices pdfAnnotationChoiceWidget  =
-    sendMsg pdfAnnotationChoiceWidget (mkSelector "choices") (retPtr retVoid) [] >>= retainedObject . castPtr
+choices pdfAnnotationChoiceWidget =
+  sendMessage pdfAnnotationChoiceWidget choicesSelector
 
 -- | @- setChoices:@
 setChoices :: (IsPDFAnnotationChoiceWidget pdfAnnotationChoiceWidget, IsNSArray options) => pdfAnnotationChoiceWidget -> options -> IO ()
-setChoices pdfAnnotationChoiceWidget  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg pdfAnnotationChoiceWidget (mkSelector "setChoices:") retVoid [argPtr (castPtr raw_options :: Ptr ())]
+setChoices pdfAnnotationChoiceWidget options =
+  sendMessage pdfAnnotationChoiceWidget setChoicesSelector (toNSArray options)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stringValue@
-stringValueSelector :: Selector
+stringValueSelector :: Selector '[] (Id NSString)
 stringValueSelector = mkSelector "stringValue"
 
 -- | @Selector@ for @setStringValue:@
-setStringValueSelector :: Selector
+setStringValueSelector :: Selector '[Id NSString] ()
 setStringValueSelector = mkSelector "setStringValue:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @font@
-fontSelector :: Selector
+fontSelector :: Selector '[] (Id NSFont)
 fontSelector = mkSelector "font"
 
 -- | @Selector@ for @setFont:@
-setFontSelector :: Selector
+setFontSelector :: Selector '[Id NSFont] ()
 setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @fontColor@
-fontColorSelector :: Selector
+fontColorSelector :: Selector '[] (Id NSColor)
 fontColorSelector = mkSelector "fontColor"
 
 -- | @Selector@ for @setFontColor:@
-setFontColorSelector :: Selector
+setFontColorSelector :: Selector '[Id NSColor] ()
 setFontColorSelector = mkSelector "setFontColor:"
 
 -- | @Selector@ for @fieldName@
-fieldNameSelector :: Selector
+fieldNameSelector :: Selector '[] (Id NSString)
 fieldNameSelector = mkSelector "fieldName"
 
 -- | @Selector@ for @setFieldName:@
-setFieldNameSelector :: Selector
+setFieldNameSelector :: Selector '[Id NSString] ()
 setFieldNameSelector = mkSelector "setFieldName:"
 
 -- | @Selector@ for @isListChoice@
-isListChoiceSelector :: Selector
+isListChoiceSelector :: Selector '[] Bool
 isListChoiceSelector = mkSelector "isListChoice"
 
 -- | @Selector@ for @setIsListChoice:@
-setIsListChoiceSelector :: Selector
+setIsListChoiceSelector :: Selector '[Bool] ()
 setIsListChoiceSelector = mkSelector "setIsListChoice:"
 
 -- | @Selector@ for @choices@
-choicesSelector :: Selector
+choicesSelector :: Selector '[] (Id NSArray)
 choicesSelector = mkSelector "choices"
 
 -- | @Selector@ for @setChoices:@
-setChoicesSelector :: Selector
+setChoicesSelector :: Selector '[Id NSArray] ()
 setChoicesSelector = mkSelector "setChoices:"
 

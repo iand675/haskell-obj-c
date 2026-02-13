@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,23 +29,23 @@ module ObjC.HealthKit.HKWorkout
   , totalSwimmingStrokeCount
   , totalFlightsClimbed
   , allStatistics
+  , allStatisticsSelector
+  , durationSelector
   , statisticsForTypeSelector
-  , workoutWithActivityType_startDate_endDateSelector
-  , workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_metadataSelector
-  , workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_device_metadataSelector
-  , workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_metadataSelector
-  , workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_device_metadataSelector
-  , workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalSwimmingStrokeCount_device_metadataSelector
-  , workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalFlightsClimbed_device_metadataSelector
+  , totalDistanceSelector
+  , totalEnergyBurnedSelector
+  , totalFlightsClimbedSelector
+  , totalSwimmingStrokeCountSelector
+  , workoutActivitiesSelector
   , workoutActivityTypeSelector
   , workoutEventsSelector
-  , workoutActivitiesSelector
-  , durationSelector
-  , totalEnergyBurnedSelector
-  , totalDistanceSelector
-  , totalSwimmingStrokeCountSelector
-  , totalFlightsClimbedSelector
-  , allStatisticsSelector
+  , workoutWithActivityType_startDate_endDateSelector
+  , workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_device_metadataSelector
+  , workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_metadataSelector
+  , workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_device_metadataSelector
+  , workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_metadataSelector
+  , workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalFlightsClimbed_device_metadataSelector
+  , workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalSwimmingStrokeCount_device_metadataSelector
 
   -- * Enum types
   , HKWorkoutActivityType(HKWorkoutActivityType)
@@ -135,15 +136,11 @@ module ObjC.HealthKit.HKWorkout
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -159,9 +156,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- statisticsForType:@
 statisticsForType :: (IsHKWorkout hkWorkout, IsHKQuantityType quantityType) => hkWorkout -> quantityType -> IO (Id HKStatistics)
-statisticsForType hkWorkout  quantityType =
-  withObjCPtr quantityType $ \raw_quantityType ->
-      sendMsg hkWorkout (mkSelector "statisticsForType:") (retPtr retVoid) [argPtr (castPtr raw_quantityType :: Ptr ())] >>= retainedObject . castPtr
+statisticsForType hkWorkout quantityType =
+  sendMessage hkWorkout statisticsForTypeSelector (toHKQuantityType quantityType)
 
 -- | workoutWithActivityType:startDate:endDate:
 --
@@ -176,9 +172,7 @@ workoutWithActivityType_startDate_endDate :: (IsNSDate startDate, IsNSDate endDa
 workoutWithActivityType_startDate_endDate workoutActivityType startDate endDate =
   do
     cls' <- getRequiredClass "HKWorkout"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        sendClassMsg cls' (mkSelector "workoutWithActivityType:startDate:endDate:") (retPtr retVoid) [argCULong (coerce workoutActivityType), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutWithActivityType_startDate_endDateSelector workoutActivityType (toNSDate startDate) (toNSDate endDate)
 
 -- | workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:metadata
 --
@@ -203,13 +197,7 @@ workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalD
 workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_metadata workoutActivityType startDate endDate workoutEvents totalEnergyBurned totalDistance metadata =
   do
     cls' <- getRequiredClass "HKWorkout"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        withObjCPtr workoutEvents $ \raw_workoutEvents ->
-          withObjCPtr totalEnergyBurned $ \raw_totalEnergyBurned ->
-            withObjCPtr totalDistance $ \raw_totalDistance ->
-              withObjCPtr metadata $ \raw_metadata ->
-                sendClassMsg cls' (mkSelector "workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:metadata:") (retPtr retVoid) [argCULong (coerce workoutActivityType), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_workoutEvents :: Ptr ()), argPtr (castPtr raw_totalEnergyBurned :: Ptr ()), argPtr (castPtr raw_totalDistance :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_metadataSelector workoutActivityType (toNSDate startDate) (toNSDate endDate) (toNSArray workoutEvents) (toHKQuantity totalEnergyBurned) (toHKQuantity totalDistance) (toNSDictionary metadata)
 
 -- | workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:metadata
 --
@@ -236,14 +224,7 @@ workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalD
 workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_device_metadata workoutActivityType startDate endDate workoutEvents totalEnergyBurned totalDistance device metadata =
   do
     cls' <- getRequiredClass "HKWorkout"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        withObjCPtr workoutEvents $ \raw_workoutEvents ->
-          withObjCPtr totalEnergyBurned $ \raw_totalEnergyBurned ->
-            withObjCPtr totalDistance $ \raw_totalDistance ->
-              withObjCPtr device $ \raw_device ->
-                withObjCPtr metadata $ \raw_metadata ->
-                  sendClassMsg cls' (mkSelector "workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:device:metadata:") (retPtr retVoid) [argCULong (coerce workoutActivityType), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_workoutEvents :: Ptr ()), argPtr (castPtr raw_totalEnergyBurned :: Ptr ()), argPtr (castPtr raw_totalDistance :: Ptr ()), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_device_metadataSelector workoutActivityType (toNSDate startDate) (toNSDate endDate) (toNSArray workoutEvents) (toHKQuantity totalEnergyBurned) (toHKQuantity totalDistance) (toHKDevice device) (toNSDictionary metadata)
 
 -- | workoutWithActivityType:startDate:endDate:duration:totalEnergyBurned:totalDistance:metadata:
 --
@@ -268,12 +249,7 @@ workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistan
 workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_metadata workoutActivityType startDate endDate duration totalEnergyBurned totalDistance metadata =
   do
     cls' <- getRequiredClass "HKWorkout"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        withObjCPtr totalEnergyBurned $ \raw_totalEnergyBurned ->
-          withObjCPtr totalDistance $ \raw_totalDistance ->
-            withObjCPtr metadata $ \raw_metadata ->
-              sendClassMsg cls' (mkSelector "workoutWithActivityType:startDate:endDate:duration:totalEnergyBurned:totalDistance:metadata:") (retPtr retVoid) [argCULong (coerce workoutActivityType), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argCDouble duration, argPtr (castPtr raw_totalEnergyBurned :: Ptr ()), argPtr (castPtr raw_totalDistance :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_metadataSelector workoutActivityType (toNSDate startDate) (toNSDate endDate) duration (toHKQuantity totalEnergyBurned) (toHKQuantity totalDistance) (toNSDictionary metadata)
 
 -- | workoutWithActivityType:startDate:endDate:duration:totalEnergyBurned:totalDistance:device:metadata:
 --
@@ -300,13 +276,7 @@ workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistan
 workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_device_metadata workoutActivityType startDate endDate duration totalEnergyBurned totalDistance device metadata =
   do
     cls' <- getRequiredClass "HKWorkout"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        withObjCPtr totalEnergyBurned $ \raw_totalEnergyBurned ->
-          withObjCPtr totalDistance $ \raw_totalDistance ->
-            withObjCPtr device $ \raw_device ->
-              withObjCPtr metadata $ \raw_metadata ->
-                sendClassMsg cls' (mkSelector "workoutWithActivityType:startDate:endDate:duration:totalEnergyBurned:totalDistance:device:metadata:") (retPtr retVoid) [argCULong (coerce workoutActivityType), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argCDouble duration, argPtr (castPtr raw_totalEnergyBurned :: Ptr ()), argPtr (castPtr raw_totalDistance :: Ptr ()), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_device_metadataSelector workoutActivityType (toNSDate startDate) (toNSDate endDate) duration (toHKQuantity totalEnergyBurned) (toHKQuantity totalDistance) (toHKDevice device) (toNSDictionary metadata)
 
 -- | workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:totalSwimmingStrokeCount:device:metadata:
 --
@@ -335,15 +305,7 @@ workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalD
 workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalSwimmingStrokeCount_device_metadata workoutActivityType startDate endDate workoutEvents totalEnergyBurned totalDistance totalSwimmingStrokeCount device metadata =
   do
     cls' <- getRequiredClass "HKWorkout"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        withObjCPtr workoutEvents $ \raw_workoutEvents ->
-          withObjCPtr totalEnergyBurned $ \raw_totalEnergyBurned ->
-            withObjCPtr totalDistance $ \raw_totalDistance ->
-              withObjCPtr totalSwimmingStrokeCount $ \raw_totalSwimmingStrokeCount ->
-                withObjCPtr device $ \raw_device ->
-                  withObjCPtr metadata $ \raw_metadata ->
-                    sendClassMsg cls' (mkSelector "workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:totalSwimmingStrokeCount:device:metadata:") (retPtr retVoid) [argCULong (coerce workoutActivityType), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_workoutEvents :: Ptr ()), argPtr (castPtr raw_totalEnergyBurned :: Ptr ()), argPtr (castPtr raw_totalDistance :: Ptr ()), argPtr (castPtr raw_totalSwimmingStrokeCount :: Ptr ()), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalSwimmingStrokeCount_device_metadataSelector workoutActivityType (toNSDate startDate) (toNSDate endDate) (toNSArray workoutEvents) (toHKQuantity totalEnergyBurned) (toHKQuantity totalDistance) (toHKQuantity totalSwimmingStrokeCount) (toHKDevice device) (toNSDictionary metadata)
 
 -- | workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:totalFlightsClimbed:device:metadata:
 --
@@ -372,15 +334,7 @@ workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalD
 workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalFlightsClimbed_device_metadata workoutActivityType startDate endDate workoutEvents totalEnergyBurned totalDistance totalFlightsClimbed device metadata =
   do
     cls' <- getRequiredClass "HKWorkout"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        withObjCPtr workoutEvents $ \raw_workoutEvents ->
-          withObjCPtr totalEnergyBurned $ \raw_totalEnergyBurned ->
-            withObjCPtr totalDistance $ \raw_totalDistance ->
-              withObjCPtr totalFlightsClimbed $ \raw_totalFlightsClimbed ->
-                withObjCPtr device $ \raw_device ->
-                  withObjCPtr metadata $ \raw_metadata ->
-                    sendClassMsg cls' (mkSelector "workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:totalFlightsClimbed:device:metadata:") (retPtr retVoid) [argCULong (coerce workoutActivityType), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_workoutEvents :: Ptr ()), argPtr (castPtr raw_totalEnergyBurned :: Ptr ()), argPtr (castPtr raw_totalDistance :: Ptr ()), argPtr (castPtr raw_totalFlightsClimbed :: Ptr ()), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalFlightsClimbed_device_metadataSelector workoutActivityType (toNSDate startDate) (toNSDate endDate) (toNSArray workoutEvents) (toHKQuantity totalEnergyBurned) (toHKQuantity totalDistance) (toHKQuantity totalFlightsClimbed) (toHKDevice device) (toNSDictionary metadata)
 
 -- | workoutActivityType
 --
@@ -388,8 +342,8 @@ workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalD
 --
 -- ObjC selector: @- workoutActivityType@
 workoutActivityType :: IsHKWorkout hkWorkout => hkWorkout -> IO HKWorkoutActivityType
-workoutActivityType hkWorkout  =
-    fmap (coerce :: CULong -> HKWorkoutActivityType) $ sendMsg hkWorkout (mkSelector "workoutActivityType") retCULong []
+workoutActivityType hkWorkout =
+  sendMessage hkWorkout workoutActivityTypeSelector
 
 -- | workoutEvents
 --
@@ -399,8 +353,8 @@ workoutActivityType hkWorkout  =
 --
 -- ObjC selector: @- workoutEvents@
 workoutEvents :: IsHKWorkout hkWorkout => hkWorkout -> IO (Id NSArray)
-workoutEvents hkWorkout  =
-    sendMsg hkWorkout (mkSelector "workoutEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+workoutEvents hkWorkout =
+  sendMessage hkWorkout workoutEventsSelector
 
 -- | workoutActivities
 --
@@ -410,8 +364,8 @@ workoutEvents hkWorkout  =
 --
 -- ObjC selector: @- workoutActivities@
 workoutActivities :: IsHKWorkout hkWorkout => hkWorkout -> IO (Id NSArray)
-workoutActivities hkWorkout  =
-    sendMsg hkWorkout (mkSelector "workoutActivities") (retPtr retVoid) [] >>= retainedObject . castPtr
+workoutActivities hkWorkout =
+  sendMessage hkWorkout workoutActivitiesSelector
 
 -- | duration
 --
@@ -421,8 +375,8 @@ workoutActivities hkWorkout  =
 --
 -- ObjC selector: @- duration@
 duration :: IsHKWorkout hkWorkout => hkWorkout -> IO CDouble
-duration hkWorkout  =
-    sendMsg hkWorkout (mkSelector "duration") retCDouble []
+duration hkWorkout =
+  sendMessage hkWorkout durationSelector
 
 -- | totalEnergyBurned
 --
@@ -432,8 +386,8 @@ duration hkWorkout  =
 --
 -- ObjC selector: @- totalEnergyBurned@
 totalEnergyBurned :: IsHKWorkout hkWorkout => hkWorkout -> IO (Id HKQuantity)
-totalEnergyBurned hkWorkout  =
-    sendMsg hkWorkout (mkSelector "totalEnergyBurned") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalEnergyBurned hkWorkout =
+  sendMessage hkWorkout totalEnergyBurnedSelector
 
 -- | totalDistance
 --
@@ -443,8 +397,8 @@ totalEnergyBurned hkWorkout  =
 --
 -- ObjC selector: @- totalDistance@
 totalDistance :: IsHKWorkout hkWorkout => hkWorkout -> IO (Id HKQuantity)
-totalDistance hkWorkout  =
-    sendMsg hkWorkout (mkSelector "totalDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalDistance hkWorkout =
+  sendMessage hkWorkout totalDistanceSelector
 
 -- | totalSwimmingStrokeCount
 --
@@ -454,8 +408,8 @@ totalDistance hkWorkout  =
 --
 -- ObjC selector: @- totalSwimmingStrokeCount@
 totalSwimmingStrokeCount :: IsHKWorkout hkWorkout => hkWorkout -> IO (Id HKQuantity)
-totalSwimmingStrokeCount hkWorkout  =
-    sendMsg hkWorkout (mkSelector "totalSwimmingStrokeCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalSwimmingStrokeCount hkWorkout =
+  sendMessage hkWorkout totalSwimmingStrokeCountSelector
 
 -- | totalFlightsClimbed
 --
@@ -465,8 +419,8 @@ totalSwimmingStrokeCount hkWorkout  =
 --
 -- ObjC selector: @- totalFlightsClimbed@
 totalFlightsClimbed :: IsHKWorkout hkWorkout => hkWorkout -> IO (Id HKQuantity)
-totalFlightsClimbed hkWorkout  =
-    sendMsg hkWorkout (mkSelector "totalFlightsClimbed") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalFlightsClimbed hkWorkout =
+  sendMessage hkWorkout totalFlightsClimbedSelector
 
 -- | allStatistics
 --
@@ -476,78 +430,78 @@ totalFlightsClimbed hkWorkout  =
 --
 -- ObjC selector: @- allStatistics@
 allStatistics :: IsHKWorkout hkWorkout => hkWorkout -> IO (Id NSDictionary)
-allStatistics hkWorkout  =
-    sendMsg hkWorkout (mkSelector "allStatistics") (retPtr retVoid) [] >>= retainedObject . castPtr
+allStatistics hkWorkout =
+  sendMessage hkWorkout allStatisticsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @statisticsForType:@
-statisticsForTypeSelector :: Selector
+statisticsForTypeSelector :: Selector '[Id HKQuantityType] (Id HKStatistics)
 statisticsForTypeSelector = mkSelector "statisticsForType:"
 
 -- | @Selector@ for @workoutWithActivityType:startDate:endDate:@
-workoutWithActivityType_startDate_endDateSelector :: Selector
+workoutWithActivityType_startDate_endDateSelector :: Selector '[HKWorkoutActivityType, Id NSDate, Id NSDate] (Id HKWorkout)
 workoutWithActivityType_startDate_endDateSelector = mkSelector "workoutWithActivityType:startDate:endDate:"
 
 -- | @Selector@ for @workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:metadata:@
-workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_metadataSelector :: Selector
+workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_metadataSelector :: Selector '[HKWorkoutActivityType, Id NSDate, Id NSDate, Id NSArray, Id HKQuantity, Id HKQuantity, Id NSDictionary] (Id HKWorkout)
 workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_metadataSelector = mkSelector "workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:metadata:"
 
 -- | @Selector@ for @workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:device:metadata:@
-workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_device_metadataSelector :: Selector
+workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_device_metadataSelector :: Selector '[HKWorkoutActivityType, Id NSDate, Id NSDate, Id NSArray, Id HKQuantity, Id HKQuantity, Id HKDevice, Id NSDictionary] (Id HKWorkout)
 workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_device_metadataSelector = mkSelector "workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:device:metadata:"
 
 -- | @Selector@ for @workoutWithActivityType:startDate:endDate:duration:totalEnergyBurned:totalDistance:metadata:@
-workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_metadataSelector :: Selector
+workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_metadataSelector :: Selector '[HKWorkoutActivityType, Id NSDate, Id NSDate, CDouble, Id HKQuantity, Id HKQuantity, Id NSDictionary] (Id HKWorkout)
 workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_metadataSelector = mkSelector "workoutWithActivityType:startDate:endDate:duration:totalEnergyBurned:totalDistance:metadata:"
 
 -- | @Selector@ for @workoutWithActivityType:startDate:endDate:duration:totalEnergyBurned:totalDistance:device:metadata:@
-workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_device_metadataSelector :: Selector
+workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_device_metadataSelector :: Selector '[HKWorkoutActivityType, Id NSDate, Id NSDate, CDouble, Id HKQuantity, Id HKQuantity, Id HKDevice, Id NSDictionary] (Id HKWorkout)
 workoutWithActivityType_startDate_endDate_duration_totalEnergyBurned_totalDistance_device_metadataSelector = mkSelector "workoutWithActivityType:startDate:endDate:duration:totalEnergyBurned:totalDistance:device:metadata:"
 
 -- | @Selector@ for @workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:totalSwimmingStrokeCount:device:metadata:@
-workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalSwimmingStrokeCount_device_metadataSelector :: Selector
+workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalSwimmingStrokeCount_device_metadataSelector :: Selector '[HKWorkoutActivityType, Id NSDate, Id NSDate, Id NSArray, Id HKQuantity, Id HKQuantity, Id HKQuantity, Id HKDevice, Id NSDictionary] (Id HKWorkout)
 workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalSwimmingStrokeCount_device_metadataSelector = mkSelector "workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:totalSwimmingStrokeCount:device:metadata:"
 
 -- | @Selector@ for @workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:totalFlightsClimbed:device:metadata:@
-workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalFlightsClimbed_device_metadataSelector :: Selector
+workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalFlightsClimbed_device_metadataSelector :: Selector '[HKWorkoutActivityType, Id NSDate, Id NSDate, Id NSArray, Id HKQuantity, Id HKQuantity, Id HKQuantity, Id HKDevice, Id NSDictionary] (Id HKWorkout)
 workoutWithActivityType_startDate_endDate_workoutEvents_totalEnergyBurned_totalDistance_totalFlightsClimbed_device_metadataSelector = mkSelector "workoutWithActivityType:startDate:endDate:workoutEvents:totalEnergyBurned:totalDistance:totalFlightsClimbed:device:metadata:"
 
 -- | @Selector@ for @workoutActivityType@
-workoutActivityTypeSelector :: Selector
+workoutActivityTypeSelector :: Selector '[] HKWorkoutActivityType
 workoutActivityTypeSelector = mkSelector "workoutActivityType"
 
 -- | @Selector@ for @workoutEvents@
-workoutEventsSelector :: Selector
+workoutEventsSelector :: Selector '[] (Id NSArray)
 workoutEventsSelector = mkSelector "workoutEvents"
 
 -- | @Selector@ for @workoutActivities@
-workoutActivitiesSelector :: Selector
+workoutActivitiesSelector :: Selector '[] (Id NSArray)
 workoutActivitiesSelector = mkSelector "workoutActivities"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @totalEnergyBurned@
-totalEnergyBurnedSelector :: Selector
+totalEnergyBurnedSelector :: Selector '[] (Id HKQuantity)
 totalEnergyBurnedSelector = mkSelector "totalEnergyBurned"
 
 -- | @Selector@ for @totalDistance@
-totalDistanceSelector :: Selector
+totalDistanceSelector :: Selector '[] (Id HKQuantity)
 totalDistanceSelector = mkSelector "totalDistance"
 
 -- | @Selector@ for @totalSwimmingStrokeCount@
-totalSwimmingStrokeCountSelector :: Selector
+totalSwimmingStrokeCountSelector :: Selector '[] (Id HKQuantity)
 totalSwimmingStrokeCountSelector = mkSelector "totalSwimmingStrokeCount"
 
 -- | @Selector@ for @totalFlightsClimbed@
-totalFlightsClimbedSelector :: Selector
+totalFlightsClimbedSelector :: Selector '[] (Id HKQuantity)
 totalFlightsClimbedSelector = mkSelector "totalFlightsClimbed"
 
 -- | @Selector@ for @allStatistics@
-allStatisticsSelector :: Selector
+allStatisticsSelector :: Selector '[] (Id NSDictionary)
 allStatisticsSelector = mkSelector "allStatistics"
 

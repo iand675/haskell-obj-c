@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.ITunesLibrary.ITLibMediaEntity
   , enumerateValuesForProperties_usingBlock
   , enumerateValuesExceptForProperties_usingBlock
   , persistentID
-  , valueForPropertySelector
-  , enumerateValuesForProperties_usingBlockSelector
   , enumerateValuesExceptForProperties_usingBlockSelector
+  , enumerateValuesForProperties_usingBlockSelector
   , persistentIDSelector
+  , valueForPropertySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,9 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- valueForProperty:@
 valueForProperty :: (IsITLibMediaEntity itLibMediaEntity, IsNSString property) => itLibMediaEntity -> property -> IO RawId
-valueForProperty itLibMediaEntity  property =
-  withObjCPtr property $ \raw_property ->
-      fmap (RawId . castPtr) $ sendMsg itLibMediaEntity (mkSelector "valueForProperty:") (retPtr retVoid) [argPtr (castPtr raw_property :: Ptr ())]
+valueForProperty itLibMediaEntity property =
+  sendMessage itLibMediaEntity valueForPropertySelector (toNSString property)
 
 -- | Executes a provided block with the fetched values for the given item properties.
 --
@@ -59,9 +55,8 @@ valueForProperty itLibMediaEntity  property =
 --
 -- ObjC selector: @- enumerateValuesForProperties:usingBlock:@
 enumerateValuesForProperties_usingBlock :: (IsITLibMediaEntity itLibMediaEntity, IsNSSet properties) => itLibMediaEntity -> properties -> Ptr () -> IO ()
-enumerateValuesForProperties_usingBlock itLibMediaEntity  properties block =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg itLibMediaEntity (mkSelector "enumerateValuesForProperties:usingBlock:") retVoid [argPtr (castPtr raw_properties :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+enumerateValuesForProperties_usingBlock itLibMediaEntity properties block =
+  sendMessage itLibMediaEntity enumerateValuesForProperties_usingBlockSelector (toNSSet properties) block
 
 -- | Executes a provided block with the fetched values for all properties in the entity except for the provided set.
 --
@@ -73,34 +68,33 @@ enumerateValuesForProperties_usingBlock itLibMediaEntity  properties block =
 --
 -- ObjC selector: @- enumerateValuesExceptForProperties:usingBlock:@
 enumerateValuesExceptForProperties_usingBlock :: (IsITLibMediaEntity itLibMediaEntity, IsNSSet properties) => itLibMediaEntity -> properties -> Ptr () -> IO ()
-enumerateValuesExceptForProperties_usingBlock itLibMediaEntity  properties block =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg itLibMediaEntity (mkSelector "enumerateValuesExceptForProperties:usingBlock:") retVoid [argPtr (castPtr raw_properties :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+enumerateValuesExceptForProperties_usingBlock itLibMediaEntity properties block =
+  sendMessage itLibMediaEntity enumerateValuesExceptForProperties_usingBlockSelector (toNSSet properties) block
 
 -- | The unique identifier of this media entity.
 --
 -- ObjC selector: @- persistentID@
 persistentID :: IsITLibMediaEntity itLibMediaEntity => itLibMediaEntity -> IO (Id NSNumber)
-persistentID itLibMediaEntity  =
-    sendMsg itLibMediaEntity (mkSelector "persistentID") (retPtr retVoid) [] >>= retainedObject . castPtr
+persistentID itLibMediaEntity =
+  sendMessage itLibMediaEntity persistentIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @valueForProperty:@
-valueForPropertySelector :: Selector
+valueForPropertySelector :: Selector '[Id NSString] RawId
 valueForPropertySelector = mkSelector "valueForProperty:"
 
 -- | @Selector@ for @enumerateValuesForProperties:usingBlock:@
-enumerateValuesForProperties_usingBlockSelector :: Selector
+enumerateValuesForProperties_usingBlockSelector :: Selector '[Id NSSet, Ptr ()] ()
 enumerateValuesForProperties_usingBlockSelector = mkSelector "enumerateValuesForProperties:usingBlock:"
 
 -- | @Selector@ for @enumerateValuesExceptForProperties:usingBlock:@
-enumerateValuesExceptForProperties_usingBlockSelector :: Selector
+enumerateValuesExceptForProperties_usingBlockSelector :: Selector '[Id NSSet, Ptr ()] ()
 enumerateValuesExceptForProperties_usingBlockSelector = mkSelector "enumerateValuesExceptForProperties:usingBlock:"
 
 -- | @Selector@ for @persistentID@
-persistentIDSelector :: Selector
+persistentIDSelector :: Selector '[] (Id NSNumber)
 persistentIDSelector = mkSelector "persistentID"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.GameplayKit.GKCoherentNoiseSource
   , seed
   , setSeed
   , frequencySelector
-  , setFrequencySelector
-  , octaveCountSelector
-  , setOctaveCountSelector
   , lacunaritySelector
-  , setLacunaritySelector
+  , octaveCountSelector
   , seedSelector
+  , setFrequencySelector
+  , setLacunaritySelector
+  , setOctaveCountSelector
   , setSeedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,77 +42,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- frequency@
 frequency :: IsGKCoherentNoiseSource gkCoherentNoiseSource => gkCoherentNoiseSource -> IO CDouble
-frequency gkCoherentNoiseSource  =
-    sendMsg gkCoherentNoiseSource (mkSelector "frequency") retCDouble []
+frequency gkCoherentNoiseSource =
+  sendMessage gkCoherentNoiseSource frequencySelector
 
 -- | @- setFrequency:@
 setFrequency :: IsGKCoherentNoiseSource gkCoherentNoiseSource => gkCoherentNoiseSource -> CDouble -> IO ()
-setFrequency gkCoherentNoiseSource  value =
-    sendMsg gkCoherentNoiseSource (mkSelector "setFrequency:") retVoid [argCDouble value]
+setFrequency gkCoherentNoiseSource value =
+  sendMessage gkCoherentNoiseSource setFrequencySelector value
 
 -- | @- octaveCount@
 octaveCount :: IsGKCoherentNoiseSource gkCoherentNoiseSource => gkCoherentNoiseSource -> IO CLong
-octaveCount gkCoherentNoiseSource  =
-    sendMsg gkCoherentNoiseSource (mkSelector "octaveCount") retCLong []
+octaveCount gkCoherentNoiseSource =
+  sendMessage gkCoherentNoiseSource octaveCountSelector
 
 -- | @- setOctaveCount:@
 setOctaveCount :: IsGKCoherentNoiseSource gkCoherentNoiseSource => gkCoherentNoiseSource -> CLong -> IO ()
-setOctaveCount gkCoherentNoiseSource  value =
-    sendMsg gkCoherentNoiseSource (mkSelector "setOctaveCount:") retVoid [argCLong value]
+setOctaveCount gkCoherentNoiseSource value =
+  sendMessage gkCoherentNoiseSource setOctaveCountSelector value
 
 -- | @- lacunarity@
 lacunarity :: IsGKCoherentNoiseSource gkCoherentNoiseSource => gkCoherentNoiseSource -> IO CDouble
-lacunarity gkCoherentNoiseSource  =
-    sendMsg gkCoherentNoiseSource (mkSelector "lacunarity") retCDouble []
+lacunarity gkCoherentNoiseSource =
+  sendMessage gkCoherentNoiseSource lacunaritySelector
 
 -- | @- setLacunarity:@
 setLacunarity :: IsGKCoherentNoiseSource gkCoherentNoiseSource => gkCoherentNoiseSource -> CDouble -> IO ()
-setLacunarity gkCoherentNoiseSource  value =
-    sendMsg gkCoherentNoiseSource (mkSelector "setLacunarity:") retVoid [argCDouble value]
+setLacunarity gkCoherentNoiseSource value =
+  sendMessage gkCoherentNoiseSource setLacunaritySelector value
 
 -- | @- seed@
 seed :: IsGKCoherentNoiseSource gkCoherentNoiseSource => gkCoherentNoiseSource -> IO CInt
-seed gkCoherentNoiseSource  =
-    sendMsg gkCoherentNoiseSource (mkSelector "seed") retCInt []
+seed gkCoherentNoiseSource =
+  sendMessage gkCoherentNoiseSource seedSelector
 
 -- | @- setSeed:@
 setSeed :: IsGKCoherentNoiseSource gkCoherentNoiseSource => gkCoherentNoiseSource -> CInt -> IO ()
-setSeed gkCoherentNoiseSource  value =
-    sendMsg gkCoherentNoiseSource (mkSelector "setSeed:") retVoid [argCInt value]
+setSeed gkCoherentNoiseSource value =
+  sendMessage gkCoherentNoiseSource setSeedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] CDouble
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @setFrequency:@
-setFrequencySelector :: Selector
+setFrequencySelector :: Selector '[CDouble] ()
 setFrequencySelector = mkSelector "setFrequency:"
 
 -- | @Selector@ for @octaveCount@
-octaveCountSelector :: Selector
+octaveCountSelector :: Selector '[] CLong
 octaveCountSelector = mkSelector "octaveCount"
 
 -- | @Selector@ for @setOctaveCount:@
-setOctaveCountSelector :: Selector
+setOctaveCountSelector :: Selector '[CLong] ()
 setOctaveCountSelector = mkSelector "setOctaveCount:"
 
 -- | @Selector@ for @lacunarity@
-lacunaritySelector :: Selector
+lacunaritySelector :: Selector '[] CDouble
 lacunaritySelector = mkSelector "lacunarity"
 
 -- | @Selector@ for @setLacunarity:@
-setLacunaritySelector :: Selector
+setLacunaritySelector :: Selector '[CDouble] ()
 setLacunaritySelector = mkSelector "setLacunarity:"
 
 -- | @Selector@ for @seed@
-seedSelector :: Selector
+seedSelector :: Selector '[] CInt
 seedSelector = mkSelector "seed"
 
 -- | @Selector@ for @setSeed:@
-setSeedSelector :: Selector
+setSeedSelector :: Selector '[CInt] ()
 setSeedSelector = mkSelector "setSeed:"
 

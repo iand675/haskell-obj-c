@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.MetalPerformanceShaders.MPSCNNNormalizationNode
   , setBeta
   , delta
   , setDelta
-  , nodeWithSourceSelector
-  , initWithSourceSelector
   , alphaSelector
-  , setAlphaSelector
   , betaSelector
-  , setBetaSelector
   , deltaSelector
+  , initWithSourceSelector
+  , nodeWithSourceSelector
+  , setAlphaSelector
+  , setBetaSelector
   , setDeltaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,14 +45,12 @@ nodeWithSource :: IsMPSNNImageNode sourceNode => sourceNode -> IO (Id MPSCNNNorm
 nodeWithSource sourceNode =
   do
     cls' <- getRequiredClass "MPSCNNNormalizationNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- | @- initWithSource:@
 initWithSource :: (IsMPSCNNNormalizationNode mpscnnNormalizationNode, IsMPSNNImageNode sourceNode) => mpscnnNormalizationNode -> sourceNode -> IO (Id MPSCNNNormalizationNode)
-initWithSource mpscnnNormalizationNode  sourceNode =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnNormalizationNode (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= ownedObject . castPtr
+initWithSource mpscnnNormalizationNode sourceNode =
+  sendOwnedMessage mpscnnNormalizationNode initWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- | alpha
 --
@@ -63,8 +58,8 @@ initWithSource mpscnnNormalizationNode  sourceNode =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSCNNNormalizationNode mpscnnNormalizationNode => mpscnnNormalizationNode -> IO CFloat
-alpha mpscnnNormalizationNode  =
-    sendMsg mpscnnNormalizationNode (mkSelector "alpha") retCFloat []
+alpha mpscnnNormalizationNode =
+  sendMessage mpscnnNormalizationNode alphaSelector
 
 -- | alpha
 --
@@ -72,8 +67,8 @@ alpha mpscnnNormalizationNode  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSCNNNormalizationNode mpscnnNormalizationNode => mpscnnNormalizationNode -> CFloat -> IO ()
-setAlpha mpscnnNormalizationNode  value =
-    sendMsg mpscnnNormalizationNode (mkSelector "setAlpha:") retVoid [argCFloat value]
+setAlpha mpscnnNormalizationNode value =
+  sendMessage mpscnnNormalizationNode setAlphaSelector value
 
 -- | beta
 --
@@ -81,8 +76,8 @@ setAlpha mpscnnNormalizationNode  value =
 --
 -- ObjC selector: @- beta@
 beta :: IsMPSCNNNormalizationNode mpscnnNormalizationNode => mpscnnNormalizationNode -> IO CFloat
-beta mpscnnNormalizationNode  =
-    sendMsg mpscnnNormalizationNode (mkSelector "beta") retCFloat []
+beta mpscnnNormalizationNode =
+  sendMessage mpscnnNormalizationNode betaSelector
 
 -- | beta
 --
@@ -90,8 +85,8 @@ beta mpscnnNormalizationNode  =
 --
 -- ObjC selector: @- setBeta:@
 setBeta :: IsMPSCNNNormalizationNode mpscnnNormalizationNode => mpscnnNormalizationNode -> CFloat -> IO ()
-setBeta mpscnnNormalizationNode  value =
-    sendMsg mpscnnNormalizationNode (mkSelector "setBeta:") retVoid [argCFloat value]
+setBeta mpscnnNormalizationNode value =
+  sendMessage mpscnnNormalizationNode setBetaSelector value
 
 -- | delta
 --
@@ -99,8 +94,8 @@ setBeta mpscnnNormalizationNode  value =
 --
 -- ObjC selector: @- delta@
 delta :: IsMPSCNNNormalizationNode mpscnnNormalizationNode => mpscnnNormalizationNode -> IO CFloat
-delta mpscnnNormalizationNode  =
-    sendMsg mpscnnNormalizationNode (mkSelector "delta") retCFloat []
+delta mpscnnNormalizationNode =
+  sendMessage mpscnnNormalizationNode deltaSelector
 
 -- | delta
 --
@@ -108,42 +103,42 @@ delta mpscnnNormalizationNode  =
 --
 -- ObjC selector: @- setDelta:@
 setDelta :: IsMPSCNNNormalizationNode mpscnnNormalizationNode => mpscnnNormalizationNode -> CFloat -> IO ()
-setDelta mpscnnNormalizationNode  value =
-    sendMsg mpscnnNormalizationNode (mkSelector "setDelta:") retVoid [argCFloat value]
+setDelta mpscnnNormalizationNode value =
+  sendMessage mpscnnNormalizationNode setDeltaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:@
-nodeWithSourceSelector :: Selector
+nodeWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSCNNNormalizationNode)
 nodeWithSourceSelector = mkSelector "nodeWithSource:"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSCNNNormalizationNode)
 initWithSourceSelector = mkSelector "initWithSource:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CFloat] ()
 setAlphaSelector = mkSelector "setAlpha:"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] CFloat
 betaSelector = mkSelector "beta"
 
 -- | @Selector@ for @setBeta:@
-setBetaSelector :: Selector
+setBetaSelector :: Selector '[CFloat] ()
 setBetaSelector = mkSelector "setBeta:"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 
 -- | @Selector@ for @setDelta:@
-setDeltaSelector :: Selector
+setDeltaSelector :: Selector '[CFloat] ()
 setDeltaSelector = mkSelector "setDelta:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,38 +40,38 @@ module ObjC.SceneKit.SCNCameraController
   , setMinimumHorizontalAngle
   , maximumHorizontalAngle
   , setMaximumHorizontalAngle
-  , translateInCameraSpaceByX_Y_ZSelector
-  , frameNodesSelector
-  , rotateByX_YSelector
-  , rollAroundTargetSelector
-  , dollyToTargetSelector
-  , clearRollSelector
-  , stopInertiaSelector
-  , delegateSelector
-  , setDelegateSelector
-  , pointOfViewSelector
-  , setPointOfViewSelector
-  , interactionModeSelector
-  , setInteractionModeSelector
-  , targetSelector
-  , setTargetSelector
   , automaticTargetSelector
-  , setAutomaticTargetSelector
-  , worldUpSelector
-  , setWorldUpSelector
+  , clearRollSelector
+  , delegateSelector
+  , dollyToTargetSelector
+  , frameNodesSelector
   , inertiaEnabledSelector
-  , setInertiaEnabledSelector
   , inertiaFrictionSelector
-  , setInertiaFrictionSelector
   , inertiaRunningSelector
-  , minimumVerticalAngleSelector
-  , setMinimumVerticalAngleSelector
-  , maximumVerticalAngleSelector
-  , setMaximumVerticalAngleSelector
-  , minimumHorizontalAngleSelector
-  , setMinimumHorizontalAngleSelector
+  , interactionModeSelector
   , maximumHorizontalAngleSelector
+  , maximumVerticalAngleSelector
+  , minimumHorizontalAngleSelector
+  , minimumVerticalAngleSelector
+  , pointOfViewSelector
+  , rollAroundTargetSelector
+  , rotateByX_YSelector
+  , setAutomaticTargetSelector
+  , setDelegateSelector
+  , setInertiaEnabledSelector
+  , setInertiaFrictionSelector
+  , setInteractionModeSelector
   , setMaximumHorizontalAngleSelector
+  , setMaximumVerticalAngleSelector
+  , setMinimumHorizontalAngleSelector
+  , setMinimumVerticalAngleSelector
+  , setPointOfViewSelector
+  , setTargetSelector
+  , setWorldUpSelector
+  , stopInertiaSelector
+  , targetSelector
+  , translateInCameraSpaceByX_Y_ZSelector
+  , worldUpSelector
 
   -- * Enum types
   , SCNInteractionMode(SCNInteractionMode)
@@ -84,15 +85,11 @@ module ObjC.SceneKit.SCNCameraController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -103,295 +100,293 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- translateInCameraSpaceByX:Y:Z:@
 translateInCameraSpaceByX_Y_Z :: IsSCNCameraController scnCameraController => scnCameraController -> CFloat -> CFloat -> CFloat -> IO ()
-translateInCameraSpaceByX_Y_Z scnCameraController  deltaX deltaY deltaZ =
-    sendMsg scnCameraController (mkSelector "translateInCameraSpaceByX:Y:Z:") retVoid [argCFloat deltaX, argCFloat deltaY, argCFloat deltaZ]
+translateInCameraSpaceByX_Y_Z scnCameraController deltaX deltaY deltaZ =
+  sendMessage scnCameraController translateInCameraSpaceByX_Y_ZSelector deltaX deltaY deltaZ
 
 -- | @- frameNodes:@
 frameNodes :: (IsSCNCameraController scnCameraController, IsNSArray nodes) => scnCameraController -> nodes -> IO ()
-frameNodes scnCameraController  nodes =
-  withObjCPtr nodes $ \raw_nodes ->
-      sendMsg scnCameraController (mkSelector "frameNodes:") retVoid [argPtr (castPtr raw_nodes :: Ptr ())]
+frameNodes scnCameraController nodes =
+  sendMessage scnCameraController frameNodesSelector (toNSArray nodes)
 
 -- | @- rotateByX:Y:@
 rotateByX_Y :: IsSCNCameraController scnCameraController => scnCameraController -> CFloat -> CFloat -> IO ()
-rotateByX_Y scnCameraController  deltaX deltaY =
-    sendMsg scnCameraController (mkSelector "rotateByX:Y:") retVoid [argCFloat deltaX, argCFloat deltaY]
+rotateByX_Y scnCameraController deltaX deltaY =
+  sendMessage scnCameraController rotateByX_YSelector deltaX deltaY
 
 -- | @- rollAroundTarget:@
 rollAroundTarget :: IsSCNCameraController scnCameraController => scnCameraController -> CFloat -> IO ()
-rollAroundTarget scnCameraController  delta =
-    sendMsg scnCameraController (mkSelector "rollAroundTarget:") retVoid [argCFloat delta]
+rollAroundTarget scnCameraController delta =
+  sendMessage scnCameraController rollAroundTargetSelector delta
 
 -- | @- dollyToTarget:@
 dollyToTarget :: IsSCNCameraController scnCameraController => scnCameraController -> CFloat -> IO ()
-dollyToTarget scnCameraController  delta =
-    sendMsg scnCameraController (mkSelector "dollyToTarget:") retVoid [argCFloat delta]
+dollyToTarget scnCameraController delta =
+  sendMessage scnCameraController dollyToTargetSelector delta
 
 -- | @- clearRoll@
 clearRoll :: IsSCNCameraController scnCameraController => scnCameraController -> IO ()
-clearRoll scnCameraController  =
-    sendMsg scnCameraController (mkSelector "clearRoll") retVoid []
+clearRoll scnCameraController =
+  sendMessage scnCameraController clearRollSelector
 
 -- | @- stopInertia@
 stopInertia :: IsSCNCameraController scnCameraController => scnCameraController -> IO ()
-stopInertia scnCameraController  =
-    sendMsg scnCameraController (mkSelector "stopInertia") retVoid []
+stopInertia scnCameraController =
+  sendMessage scnCameraController stopInertiaSelector
 
 -- | @- delegate@
 delegate :: IsSCNCameraController scnCameraController => scnCameraController -> IO RawId
-delegate scnCameraController  =
-    fmap (RawId . castPtr) $ sendMsg scnCameraController (mkSelector "delegate") (retPtr retVoid) []
+delegate scnCameraController =
+  sendMessage scnCameraController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsSCNCameraController scnCameraController => scnCameraController -> RawId -> IO ()
-setDelegate scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate scnCameraController value =
+  sendMessage scnCameraController setDelegateSelector value
 
 -- | @- pointOfView@
 pointOfView :: IsSCNCameraController scnCameraController => scnCameraController -> IO (Id SCNNode)
-pointOfView scnCameraController  =
-    sendMsg scnCameraController (mkSelector "pointOfView") (retPtr retVoid) [] >>= retainedObject . castPtr
+pointOfView scnCameraController =
+  sendMessage scnCameraController pointOfViewSelector
 
 -- | @- setPointOfView:@
 setPointOfView :: (IsSCNCameraController scnCameraController, IsSCNNode value) => scnCameraController -> value -> IO ()
-setPointOfView scnCameraController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnCameraController (mkSelector "setPointOfView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPointOfView scnCameraController value =
+  sendMessage scnCameraController setPointOfViewSelector (toSCNNode value)
 
 -- | @- interactionMode@
 interactionMode :: IsSCNCameraController scnCameraController => scnCameraController -> IO SCNInteractionMode
-interactionMode scnCameraController  =
-    fmap (coerce :: CLong -> SCNInteractionMode) $ sendMsg scnCameraController (mkSelector "interactionMode") retCLong []
+interactionMode scnCameraController =
+  sendMessage scnCameraController interactionModeSelector
 
 -- | @- setInteractionMode:@
 setInteractionMode :: IsSCNCameraController scnCameraController => scnCameraController -> SCNInteractionMode -> IO ()
-setInteractionMode scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setInteractionMode:") retVoid [argCLong (coerce value)]
+setInteractionMode scnCameraController value =
+  sendMessage scnCameraController setInteractionModeSelector value
 
 -- | @- target@
 target :: IsSCNCameraController scnCameraController => scnCameraController -> IO SCNVector3
-target scnCameraController  =
-    sendMsgStret scnCameraController (mkSelector "target") retSCNVector3 []
+target scnCameraController =
+  sendMessage scnCameraController targetSelector
 
 -- | @- setTarget:@
 setTarget :: IsSCNCameraController scnCameraController => scnCameraController -> SCNVector3 -> IO ()
-setTarget scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setTarget:") retVoid [argSCNVector3 value]
+setTarget scnCameraController value =
+  sendMessage scnCameraController setTargetSelector value
 
 -- | @- automaticTarget@
 automaticTarget :: IsSCNCameraController scnCameraController => scnCameraController -> IO Bool
-automaticTarget scnCameraController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnCameraController (mkSelector "automaticTarget") retCULong []
+automaticTarget scnCameraController =
+  sendMessage scnCameraController automaticTargetSelector
 
 -- | @- setAutomaticTarget:@
 setAutomaticTarget :: IsSCNCameraController scnCameraController => scnCameraController -> Bool -> IO ()
-setAutomaticTarget scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setAutomaticTarget:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticTarget scnCameraController value =
+  sendMessage scnCameraController setAutomaticTargetSelector value
 
 -- | @- worldUp@
 worldUp :: IsSCNCameraController scnCameraController => scnCameraController -> IO SCNVector3
-worldUp scnCameraController  =
-    sendMsgStret scnCameraController (mkSelector "worldUp") retSCNVector3 []
+worldUp scnCameraController =
+  sendMessage scnCameraController worldUpSelector
 
 -- | @- setWorldUp:@
 setWorldUp :: IsSCNCameraController scnCameraController => scnCameraController -> SCNVector3 -> IO ()
-setWorldUp scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setWorldUp:") retVoid [argSCNVector3 value]
+setWorldUp scnCameraController value =
+  sendMessage scnCameraController setWorldUpSelector value
 
 -- | @- inertiaEnabled@
 inertiaEnabled :: IsSCNCameraController scnCameraController => scnCameraController -> IO Bool
-inertiaEnabled scnCameraController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnCameraController (mkSelector "inertiaEnabled") retCULong []
+inertiaEnabled scnCameraController =
+  sendMessage scnCameraController inertiaEnabledSelector
 
 -- | @- setInertiaEnabled:@
 setInertiaEnabled :: IsSCNCameraController scnCameraController => scnCameraController -> Bool -> IO ()
-setInertiaEnabled scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setInertiaEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setInertiaEnabled scnCameraController value =
+  sendMessage scnCameraController setInertiaEnabledSelector value
 
 -- | @- inertiaFriction@
 inertiaFriction :: IsSCNCameraController scnCameraController => scnCameraController -> IO CFloat
-inertiaFriction scnCameraController  =
-    sendMsg scnCameraController (mkSelector "inertiaFriction") retCFloat []
+inertiaFriction scnCameraController =
+  sendMessage scnCameraController inertiaFrictionSelector
 
 -- | @- setInertiaFriction:@
 setInertiaFriction :: IsSCNCameraController scnCameraController => scnCameraController -> CFloat -> IO ()
-setInertiaFriction scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setInertiaFriction:") retVoid [argCFloat value]
+setInertiaFriction scnCameraController value =
+  sendMessage scnCameraController setInertiaFrictionSelector value
 
 -- | @- inertiaRunning@
 inertiaRunning :: IsSCNCameraController scnCameraController => scnCameraController -> IO Bool
-inertiaRunning scnCameraController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnCameraController (mkSelector "inertiaRunning") retCULong []
+inertiaRunning scnCameraController =
+  sendMessage scnCameraController inertiaRunningSelector
 
 -- | @- minimumVerticalAngle@
 minimumVerticalAngle :: IsSCNCameraController scnCameraController => scnCameraController -> IO CFloat
-minimumVerticalAngle scnCameraController  =
-    sendMsg scnCameraController (mkSelector "minimumVerticalAngle") retCFloat []
+minimumVerticalAngle scnCameraController =
+  sendMessage scnCameraController minimumVerticalAngleSelector
 
 -- | @- setMinimumVerticalAngle:@
 setMinimumVerticalAngle :: IsSCNCameraController scnCameraController => scnCameraController -> CFloat -> IO ()
-setMinimumVerticalAngle scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setMinimumVerticalAngle:") retVoid [argCFloat value]
+setMinimumVerticalAngle scnCameraController value =
+  sendMessage scnCameraController setMinimumVerticalAngleSelector value
 
 -- | @- maximumVerticalAngle@
 maximumVerticalAngle :: IsSCNCameraController scnCameraController => scnCameraController -> IO CFloat
-maximumVerticalAngle scnCameraController  =
-    sendMsg scnCameraController (mkSelector "maximumVerticalAngle") retCFloat []
+maximumVerticalAngle scnCameraController =
+  sendMessage scnCameraController maximumVerticalAngleSelector
 
 -- | @- setMaximumVerticalAngle:@
 setMaximumVerticalAngle :: IsSCNCameraController scnCameraController => scnCameraController -> CFloat -> IO ()
-setMaximumVerticalAngle scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setMaximumVerticalAngle:") retVoid [argCFloat value]
+setMaximumVerticalAngle scnCameraController value =
+  sendMessage scnCameraController setMaximumVerticalAngleSelector value
 
 -- | @- minimumHorizontalAngle@
 minimumHorizontalAngle :: IsSCNCameraController scnCameraController => scnCameraController -> IO CFloat
-minimumHorizontalAngle scnCameraController  =
-    sendMsg scnCameraController (mkSelector "minimumHorizontalAngle") retCFloat []
+minimumHorizontalAngle scnCameraController =
+  sendMessage scnCameraController minimumHorizontalAngleSelector
 
 -- | @- setMinimumHorizontalAngle:@
 setMinimumHorizontalAngle :: IsSCNCameraController scnCameraController => scnCameraController -> CFloat -> IO ()
-setMinimumHorizontalAngle scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setMinimumHorizontalAngle:") retVoid [argCFloat value]
+setMinimumHorizontalAngle scnCameraController value =
+  sendMessage scnCameraController setMinimumHorizontalAngleSelector value
 
 -- | @- maximumHorizontalAngle@
 maximumHorizontalAngle :: IsSCNCameraController scnCameraController => scnCameraController -> IO CFloat
-maximumHorizontalAngle scnCameraController  =
-    sendMsg scnCameraController (mkSelector "maximumHorizontalAngle") retCFloat []
+maximumHorizontalAngle scnCameraController =
+  sendMessage scnCameraController maximumHorizontalAngleSelector
 
 -- | @- setMaximumHorizontalAngle:@
 setMaximumHorizontalAngle :: IsSCNCameraController scnCameraController => scnCameraController -> CFloat -> IO ()
-setMaximumHorizontalAngle scnCameraController  value =
-    sendMsg scnCameraController (mkSelector "setMaximumHorizontalAngle:") retVoid [argCFloat value]
+setMaximumHorizontalAngle scnCameraController value =
+  sendMessage scnCameraController setMaximumHorizontalAngleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @translateInCameraSpaceByX:Y:Z:@
-translateInCameraSpaceByX_Y_ZSelector :: Selector
+translateInCameraSpaceByX_Y_ZSelector :: Selector '[CFloat, CFloat, CFloat] ()
 translateInCameraSpaceByX_Y_ZSelector = mkSelector "translateInCameraSpaceByX:Y:Z:"
 
 -- | @Selector@ for @frameNodes:@
-frameNodesSelector :: Selector
+frameNodesSelector :: Selector '[Id NSArray] ()
 frameNodesSelector = mkSelector "frameNodes:"
 
 -- | @Selector@ for @rotateByX:Y:@
-rotateByX_YSelector :: Selector
+rotateByX_YSelector :: Selector '[CFloat, CFloat] ()
 rotateByX_YSelector = mkSelector "rotateByX:Y:"
 
 -- | @Selector@ for @rollAroundTarget:@
-rollAroundTargetSelector :: Selector
+rollAroundTargetSelector :: Selector '[CFloat] ()
 rollAroundTargetSelector = mkSelector "rollAroundTarget:"
 
 -- | @Selector@ for @dollyToTarget:@
-dollyToTargetSelector :: Selector
+dollyToTargetSelector :: Selector '[CFloat] ()
 dollyToTargetSelector = mkSelector "dollyToTarget:"
 
 -- | @Selector@ for @clearRoll@
-clearRollSelector :: Selector
+clearRollSelector :: Selector '[] ()
 clearRollSelector = mkSelector "clearRoll"
 
 -- | @Selector@ for @stopInertia@
-stopInertiaSelector :: Selector
+stopInertiaSelector :: Selector '[] ()
 stopInertiaSelector = mkSelector "stopInertia"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @pointOfView@
-pointOfViewSelector :: Selector
+pointOfViewSelector :: Selector '[] (Id SCNNode)
 pointOfViewSelector = mkSelector "pointOfView"
 
 -- | @Selector@ for @setPointOfView:@
-setPointOfViewSelector :: Selector
+setPointOfViewSelector :: Selector '[Id SCNNode] ()
 setPointOfViewSelector = mkSelector "setPointOfView:"
 
 -- | @Selector@ for @interactionMode@
-interactionModeSelector :: Selector
+interactionModeSelector :: Selector '[] SCNInteractionMode
 interactionModeSelector = mkSelector "interactionMode"
 
 -- | @Selector@ for @setInteractionMode:@
-setInteractionModeSelector :: Selector
+setInteractionModeSelector :: Selector '[SCNInteractionMode] ()
 setInteractionModeSelector = mkSelector "setInteractionMode:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] SCNVector3
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[SCNVector3] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @automaticTarget@
-automaticTargetSelector :: Selector
+automaticTargetSelector :: Selector '[] Bool
 automaticTargetSelector = mkSelector "automaticTarget"
 
 -- | @Selector@ for @setAutomaticTarget:@
-setAutomaticTargetSelector :: Selector
+setAutomaticTargetSelector :: Selector '[Bool] ()
 setAutomaticTargetSelector = mkSelector "setAutomaticTarget:"
 
 -- | @Selector@ for @worldUp@
-worldUpSelector :: Selector
+worldUpSelector :: Selector '[] SCNVector3
 worldUpSelector = mkSelector "worldUp"
 
 -- | @Selector@ for @setWorldUp:@
-setWorldUpSelector :: Selector
+setWorldUpSelector :: Selector '[SCNVector3] ()
 setWorldUpSelector = mkSelector "setWorldUp:"
 
 -- | @Selector@ for @inertiaEnabled@
-inertiaEnabledSelector :: Selector
+inertiaEnabledSelector :: Selector '[] Bool
 inertiaEnabledSelector = mkSelector "inertiaEnabled"
 
 -- | @Selector@ for @setInertiaEnabled:@
-setInertiaEnabledSelector :: Selector
+setInertiaEnabledSelector :: Selector '[Bool] ()
 setInertiaEnabledSelector = mkSelector "setInertiaEnabled:"
 
 -- | @Selector@ for @inertiaFriction@
-inertiaFrictionSelector :: Selector
+inertiaFrictionSelector :: Selector '[] CFloat
 inertiaFrictionSelector = mkSelector "inertiaFriction"
 
 -- | @Selector@ for @setInertiaFriction:@
-setInertiaFrictionSelector :: Selector
+setInertiaFrictionSelector :: Selector '[CFloat] ()
 setInertiaFrictionSelector = mkSelector "setInertiaFriction:"
 
 -- | @Selector@ for @inertiaRunning@
-inertiaRunningSelector :: Selector
+inertiaRunningSelector :: Selector '[] Bool
 inertiaRunningSelector = mkSelector "inertiaRunning"
 
 -- | @Selector@ for @minimumVerticalAngle@
-minimumVerticalAngleSelector :: Selector
+minimumVerticalAngleSelector :: Selector '[] CFloat
 minimumVerticalAngleSelector = mkSelector "minimumVerticalAngle"
 
 -- | @Selector@ for @setMinimumVerticalAngle:@
-setMinimumVerticalAngleSelector :: Selector
+setMinimumVerticalAngleSelector :: Selector '[CFloat] ()
 setMinimumVerticalAngleSelector = mkSelector "setMinimumVerticalAngle:"
 
 -- | @Selector@ for @maximumVerticalAngle@
-maximumVerticalAngleSelector :: Selector
+maximumVerticalAngleSelector :: Selector '[] CFloat
 maximumVerticalAngleSelector = mkSelector "maximumVerticalAngle"
 
 -- | @Selector@ for @setMaximumVerticalAngle:@
-setMaximumVerticalAngleSelector :: Selector
+setMaximumVerticalAngleSelector :: Selector '[CFloat] ()
 setMaximumVerticalAngleSelector = mkSelector "setMaximumVerticalAngle:"
 
 -- | @Selector@ for @minimumHorizontalAngle@
-minimumHorizontalAngleSelector :: Selector
+minimumHorizontalAngleSelector :: Selector '[] CFloat
 minimumHorizontalAngleSelector = mkSelector "minimumHorizontalAngle"
 
 -- | @Selector@ for @setMinimumHorizontalAngle:@
-setMinimumHorizontalAngleSelector :: Selector
+setMinimumHorizontalAngleSelector :: Selector '[CFloat] ()
 setMinimumHorizontalAngleSelector = mkSelector "setMinimumHorizontalAngle:"
 
 -- | @Selector@ for @maximumHorizontalAngle@
-maximumHorizontalAngleSelector :: Selector
+maximumHorizontalAngleSelector :: Selector '[] CFloat
 maximumHorizontalAngleSelector = mkSelector "maximumHorizontalAngle"
 
 -- | @Selector@ for @setMaximumHorizontalAngle:@
-setMaximumHorizontalAngleSelector :: Selector
+setMaximumHorizontalAngleSelector :: Selector '[CFloat] ()
 setMaximumHorizontalAngleSelector = mkSelector "setMaximumHorizontalAngle:"
 

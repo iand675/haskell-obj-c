@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.GameplayKit.GKMinmaxStrategist
   , maxLookAheadDepth
   , setMaxLookAheadDepth
   , bestMoveForPlayerSelector
-  , randomMoveForPlayer_fromNumberOfBestMovesSelector
   , maxLookAheadDepthSelector
+  , randomMoveForPlayer_fromNumberOfBestMovesSelector
   , setMaxLookAheadDepthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,47 +36,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bestMoveForPlayer:@
 bestMoveForPlayer :: IsGKMinmaxStrategist gkMinmaxStrategist => gkMinmaxStrategist -> RawId -> IO RawId
-bestMoveForPlayer gkMinmaxStrategist  player =
-    fmap (RawId . castPtr) $ sendMsg gkMinmaxStrategist (mkSelector "bestMoveForPlayer:") (retPtr retVoid) [argPtr (castPtr (unRawId player) :: Ptr ())]
+bestMoveForPlayer gkMinmaxStrategist player =
+  sendMessage gkMinmaxStrategist bestMoveForPlayerSelector player
 
 -- | Selects one move from the set of N best moves for the specified player, where N is equal to  numMovesToConsider. If randomSource is nil, it will not randomly select, but will behave like  bestMoveForPlayer and return the first best move. Returns nil if the player is invalid, the  player is not a part of the game model, or the player has no valid moves available.
 --
 -- ObjC selector: @- randomMoveForPlayer:fromNumberOfBestMoves:@
 randomMoveForPlayer_fromNumberOfBestMoves :: IsGKMinmaxStrategist gkMinmaxStrategist => gkMinmaxStrategist -> RawId -> CLong -> IO RawId
-randomMoveForPlayer_fromNumberOfBestMoves gkMinmaxStrategist  player numMovesToConsider =
-    fmap (RawId . castPtr) $ sendMsg gkMinmaxStrategist (mkSelector "randomMoveForPlayer:fromNumberOfBestMoves:") (retPtr retVoid) [argPtr (castPtr (unRawId player) :: Ptr ()), argCLong numMovesToConsider]
+randomMoveForPlayer_fromNumberOfBestMoves gkMinmaxStrategist player numMovesToConsider =
+  sendMessage gkMinmaxStrategist randomMoveForPlayer_fromNumberOfBestMovesSelector player numMovesToConsider
 
 -- | The maximum number of future turns that will be processed when searching for a move.
 --
 -- ObjC selector: @- maxLookAheadDepth@
 maxLookAheadDepth :: IsGKMinmaxStrategist gkMinmaxStrategist => gkMinmaxStrategist -> IO CLong
-maxLookAheadDepth gkMinmaxStrategist  =
-    sendMsg gkMinmaxStrategist (mkSelector "maxLookAheadDepth") retCLong []
+maxLookAheadDepth gkMinmaxStrategist =
+  sendMessage gkMinmaxStrategist maxLookAheadDepthSelector
 
 -- | The maximum number of future turns that will be processed when searching for a move.
 --
 -- ObjC selector: @- setMaxLookAheadDepth:@
 setMaxLookAheadDepth :: IsGKMinmaxStrategist gkMinmaxStrategist => gkMinmaxStrategist -> CLong -> IO ()
-setMaxLookAheadDepth gkMinmaxStrategist  value =
-    sendMsg gkMinmaxStrategist (mkSelector "setMaxLookAheadDepth:") retVoid [argCLong value]
+setMaxLookAheadDepth gkMinmaxStrategist value =
+  sendMessage gkMinmaxStrategist setMaxLookAheadDepthSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bestMoveForPlayer:@
-bestMoveForPlayerSelector :: Selector
+bestMoveForPlayerSelector :: Selector '[RawId] RawId
 bestMoveForPlayerSelector = mkSelector "bestMoveForPlayer:"
 
 -- | @Selector@ for @randomMoveForPlayer:fromNumberOfBestMoves:@
-randomMoveForPlayer_fromNumberOfBestMovesSelector :: Selector
+randomMoveForPlayer_fromNumberOfBestMovesSelector :: Selector '[RawId, CLong] RawId
 randomMoveForPlayer_fromNumberOfBestMovesSelector = mkSelector "randomMoveForPlayer:fromNumberOfBestMoves:"
 
 -- | @Selector@ for @maxLookAheadDepth@
-maxLookAheadDepthSelector :: Selector
+maxLookAheadDepthSelector :: Selector '[] CLong
 maxLookAheadDepthSelector = mkSelector "maxLookAheadDepth"
 
 -- | @Selector@ for @setMaxLookAheadDepth:@
-setMaxLookAheadDepthSelector :: Selector
+setMaxLookAheadDepthSelector :: Selector '[CLong] ()
 setMaxLookAheadDepthSelector = mkSelector "setMaxLookAheadDepth:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.CloudKit.CKSyncEngineSendChangesOptions
   , operationGroup
   , setOperationGroup
   , initWithScopeSelector
-  , scopeSelector
-  , setScopeSelector
   , operationGroupSelector
+  , scopeSelector
   , setOperationGroupSelector
+  , setScopeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,24 +38,22 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithScope:@
 initWithScope :: (IsCKSyncEngineSendChangesOptions ckSyncEngineSendChangesOptions, IsCKSyncEngineSendChangesScope scope) => ckSyncEngineSendChangesOptions -> scope -> IO (Id CKSyncEngineSendChangesOptions)
-initWithScope ckSyncEngineSendChangesOptions  scope =
-  withObjCPtr scope $ \raw_scope ->
-      sendMsg ckSyncEngineSendChangesOptions (mkSelector "initWithScope:") (retPtr retVoid) [argPtr (castPtr raw_scope :: Ptr ())] >>= ownedObject . castPtr
+initWithScope ckSyncEngineSendChangesOptions scope =
+  sendOwnedMessage ckSyncEngineSendChangesOptions initWithScopeSelector (toCKSyncEngineSendChangesScope scope)
 
 -- | The scope in which to send changes to the server.
 --
 -- ObjC selector: @- scope@
 scope :: IsCKSyncEngineSendChangesOptions ckSyncEngineSendChangesOptions => ckSyncEngineSendChangesOptions -> IO (Id CKSyncEngineSendChangesScope)
-scope ckSyncEngineSendChangesOptions  =
-    sendMsg ckSyncEngineSendChangesOptions (mkSelector "scope") (retPtr retVoid) [] >>= retainedObject . castPtr
+scope ckSyncEngineSendChangesOptions =
+  sendMessage ckSyncEngineSendChangesOptions scopeSelector
 
 -- | The scope in which to send changes to the server.
 --
 -- ObjC selector: @- setScope:@
 setScope :: (IsCKSyncEngineSendChangesOptions ckSyncEngineSendChangesOptions, IsCKSyncEngineSendChangesScope value) => ckSyncEngineSendChangesOptions -> value -> IO ()
-setScope ckSyncEngineSendChangesOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckSyncEngineSendChangesOptions (mkSelector "setScope:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScope ckSyncEngineSendChangesOptions value =
+  sendMessage ckSyncEngineSendChangesOptions setScopeSelector (toCKSyncEngineSendChangesScope value)
 
 -- | The operation group to use for the underlying operations when sending changes.
 --
@@ -66,8 +61,8 @@ setScope ckSyncEngineSendChangesOptions  value =
 --
 -- ObjC selector: @- operationGroup@
 operationGroup :: IsCKSyncEngineSendChangesOptions ckSyncEngineSendChangesOptions => ckSyncEngineSendChangesOptions -> IO (Id CKOperationGroup)
-operationGroup ckSyncEngineSendChangesOptions  =
-    sendMsg ckSyncEngineSendChangesOptions (mkSelector "operationGroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationGroup ckSyncEngineSendChangesOptions =
+  sendMessage ckSyncEngineSendChangesOptions operationGroupSelector
 
 -- | The operation group to use for the underlying operations when sending changes.
 --
@@ -75,31 +70,30 @@ operationGroup ckSyncEngineSendChangesOptions  =
 --
 -- ObjC selector: @- setOperationGroup:@
 setOperationGroup :: (IsCKSyncEngineSendChangesOptions ckSyncEngineSendChangesOptions, IsCKOperationGroup value) => ckSyncEngineSendChangesOptions -> value -> IO ()
-setOperationGroup ckSyncEngineSendChangesOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckSyncEngineSendChangesOptions (mkSelector "setOperationGroup:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperationGroup ckSyncEngineSendChangesOptions value =
+  sendMessage ckSyncEngineSendChangesOptions setOperationGroupSelector (toCKOperationGroup value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithScope:@
-initWithScopeSelector :: Selector
+initWithScopeSelector :: Selector '[Id CKSyncEngineSendChangesScope] (Id CKSyncEngineSendChangesOptions)
 initWithScopeSelector = mkSelector "initWithScope:"
 
 -- | @Selector@ for @scope@
-scopeSelector :: Selector
+scopeSelector :: Selector '[] (Id CKSyncEngineSendChangesScope)
 scopeSelector = mkSelector "scope"
 
 -- | @Selector@ for @setScope:@
-setScopeSelector :: Selector
+setScopeSelector :: Selector '[Id CKSyncEngineSendChangesScope] ()
 setScopeSelector = mkSelector "setScope:"
 
 -- | @Selector@ for @operationGroup@
-operationGroupSelector :: Selector
+operationGroupSelector :: Selector '[] (Id CKOperationGroup)
 operationGroupSelector = mkSelector "operationGroup"
 
 -- | @Selector@ for @setOperationGroup:@
-setOperationGroupSelector :: Selector
+setOperationGroupSelector :: Selector '[Id CKOperationGroup] ()
 setOperationGroupSelector = mkSelector "setOperationGroup:"
 

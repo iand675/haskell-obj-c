@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.AVFoundation.AVAssetSegmentReportSampleInformation
   , length_
   , isSyncSample
   , initSelector
+  , isSyncSampleSelector
+  , lengthSelector
   , newSelector
   , offsetSelector
-  , lengthSelector
-  , isSyncSampleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetSegmentReportSampleInformation avAssetSegmentReportSampleInformation => avAssetSegmentReportSampleInformation -> IO (Id AVAssetSegmentReportSampleInformation)
-init_ avAssetSegmentReportSampleInformation  =
-    sendMsg avAssetSegmentReportSampleInformation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetSegmentReportSampleInformation =
+  sendOwnedMessage avAssetSegmentReportSampleInformation initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetSegmentReportSampleInformation)
 new  =
   do
     cls' <- getRequiredClass "AVAssetSegmentReportSampleInformation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | offset
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- offset@
 offset :: IsAVAssetSegmentReportSampleInformation avAssetSegmentReportSampleInformation => avAssetSegmentReportSampleInformation -> IO CLong
-offset avAssetSegmentReportSampleInformation  =
-    sendMsg avAssetSegmentReportSampleInformation (mkSelector "offset") retCLong []
+offset avAssetSegmentReportSampleInformation =
+  sendMessage avAssetSegmentReportSampleInformation offsetSelector
 
 -- | length
 --
@@ -68,8 +65,8 @@ offset avAssetSegmentReportSampleInformation  =
 --
 -- ObjC selector: @- length@
 length_ :: IsAVAssetSegmentReportSampleInformation avAssetSegmentReportSampleInformation => avAssetSegmentReportSampleInformation -> IO CLong
-length_ avAssetSegmentReportSampleInformation  =
-    sendMsg avAssetSegmentReportSampleInformation (mkSelector "length") retCLong []
+length_ avAssetSegmentReportSampleInformation =
+  sendMessage avAssetSegmentReportSampleInformation lengthSelector
 
 -- | isSyncSample
 --
@@ -77,30 +74,30 @@ length_ avAssetSegmentReportSampleInformation  =
 --
 -- ObjC selector: @- isSyncSample@
 isSyncSample :: IsAVAssetSegmentReportSampleInformation avAssetSegmentReportSampleInformation => avAssetSegmentReportSampleInformation -> IO Bool
-isSyncSample avAssetSegmentReportSampleInformation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetSegmentReportSampleInformation (mkSelector "isSyncSample") retCULong []
+isSyncSample avAssetSegmentReportSampleInformation =
+  sendMessage avAssetSegmentReportSampleInformation isSyncSampleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetSegmentReportSampleInformation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetSegmentReportSampleInformation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] CLong
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CLong
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @isSyncSample@
-isSyncSampleSelector :: Selector
+isSyncSampleSelector :: Selector '[] Bool
 isSyncSampleSelector = mkSelector "isSyncSample"
 

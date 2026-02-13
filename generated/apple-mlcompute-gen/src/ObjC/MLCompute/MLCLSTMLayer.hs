@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,33 +27,29 @@ module ObjC.MLCompute.MLCLSTMLayer
   , hiddenWeightsParameters
   , peepholeWeightsParameters
   , biasesParameters
+  , biasesParametersSelector
+  , biasesSelector
+  , descriptorSelector
+  , gateActivationsSelector
+  , hiddenWeightsParametersSelector
+  , hiddenWeightsSelector
+  , inputWeightsParametersSelector
+  , inputWeightsSelector
   , layerWithDescriptor_inputWeights_hiddenWeights_biasesSelector
   , layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biasesSelector
   , layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases_gateActivations_outputResultActivationSelector
-  , descriptorSelector
-  , gateActivationsSelector
   , outputResultActivationSelector
-  , inputWeightsSelector
-  , hiddenWeightsSelector
-  , peepholeWeightsSelector
-  , biasesSelector
-  , inputWeightsParametersSelector
-  , hiddenWeightsParametersSelector
   , peepholeWeightsParametersSelector
-  , biasesParametersSelector
+  , peepholeWeightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,11 +71,7 @@ layerWithDescriptor_inputWeights_hiddenWeights_biases :: (IsMLCLSTMDescriptor de
 layerWithDescriptor_inputWeights_hiddenWeights_biases descriptor inputWeights hiddenWeights biases =
   do
     cls' <- getRequiredClass "MLCLSTMLayer"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      withObjCPtr inputWeights $ \raw_inputWeights ->
-        withObjCPtr hiddenWeights $ \raw_hiddenWeights ->
-          withObjCPtr biases $ \raw_biases ->
-            sendClassMsg cls' (mkSelector "layerWithDescriptor:inputWeights:hiddenWeights:biases:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_inputWeights :: Ptr ()), argPtr (castPtr raw_hiddenWeights :: Ptr ()), argPtr (castPtr raw_biases :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptor_inputWeights_hiddenWeights_biasesSelector (toMLCLSTMDescriptor descriptor) (toNSArray inputWeights) (toNSArray hiddenWeights) (toNSArray biases)
 
 -- | Create a LSTM layer
 --
@@ -97,12 +90,7 @@ layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases :: (IsMLCL
 layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases descriptor inputWeights hiddenWeights peepholeWeights biases =
   do
     cls' <- getRequiredClass "MLCLSTMLayer"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      withObjCPtr inputWeights $ \raw_inputWeights ->
-        withObjCPtr hiddenWeights $ \raw_hiddenWeights ->
-          withObjCPtr peepholeWeights $ \raw_peepholeWeights ->
-            withObjCPtr biases $ \raw_biases ->
-              sendClassMsg cls' (mkSelector "layerWithDescriptor:inputWeights:hiddenWeights:peepholeWeights:biases:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_inputWeights :: Ptr ()), argPtr (castPtr raw_hiddenWeights :: Ptr ()), argPtr (castPtr raw_peepholeWeights :: Ptr ()), argPtr (castPtr raw_biases :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biasesSelector (toMLCLSTMDescriptor descriptor) (toNSArray inputWeights) (toNSArray hiddenWeights) (toNSArray peepholeWeights) (toNSArray biases)
 
 -- | Create a LSTM layer
 --
@@ -127,14 +115,7 @@ layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases_gateActiva
 layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases_gateActivations_outputResultActivation descriptor inputWeights hiddenWeights peepholeWeights biases gateActivations outputResultActivation =
   do
     cls' <- getRequiredClass "MLCLSTMLayer"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      withObjCPtr inputWeights $ \raw_inputWeights ->
-        withObjCPtr hiddenWeights $ \raw_hiddenWeights ->
-          withObjCPtr peepholeWeights $ \raw_peepholeWeights ->
-            withObjCPtr biases $ \raw_biases ->
-              withObjCPtr gateActivations $ \raw_gateActivations ->
-                withObjCPtr outputResultActivation $ \raw_outputResultActivation ->
-                  sendClassMsg cls' (mkSelector "layerWithDescriptor:inputWeights:hiddenWeights:peepholeWeights:biases:gateActivations:outputResultActivation:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_inputWeights :: Ptr ()), argPtr (castPtr raw_hiddenWeights :: Ptr ()), argPtr (castPtr raw_peepholeWeights :: Ptr ()), argPtr (castPtr raw_biases :: Ptr ()), argPtr (castPtr raw_gateActivations :: Ptr ()), argPtr (castPtr raw_outputResultActivation :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases_gateActivations_outputResultActivationSelector (toMLCLSTMDescriptor descriptor) (toNSArray inputWeights) (toNSArray hiddenWeights) (toNSArray peepholeWeights) (toNSArray biases) (toNSArray gateActivations) (toMLCActivationDescriptor outputResultActivation)
 
 -- | descriptor
 --
@@ -142,8 +123,8 @@ layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases_gateActiva
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id MLCLSTMDescriptor)
-descriptor mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mlclstmLayer =
+  sendMessage mlclstmLayer descriptorSelector
 
 -- | gateActivations
 --
@@ -153,8 +134,8 @@ descriptor mlclstmLayer  =
 --
 -- ObjC selector: @- gateActivations@
 gateActivations :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id NSArray)
-gateActivations mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "gateActivations") (retPtr retVoid) [] >>= retainedObject . castPtr
+gateActivations mlclstmLayer =
+  sendMessage mlclstmLayer gateActivationsSelector
 
 -- | outputResultActivation
 --
@@ -162,8 +143,8 @@ gateActivations mlclstmLayer  =
 --
 -- ObjC selector: @- outputResultActivation@
 outputResultActivation :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id MLCActivationDescriptor)
-outputResultActivation mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "outputResultActivation") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputResultActivation mlclstmLayer =
+  sendMessage mlclstmLayer outputResultActivationSelector
 
 -- | inputWeights
 --
@@ -171,8 +152,8 @@ outputResultActivation mlclstmLayer  =
 --
 -- ObjC selector: @- inputWeights@
 inputWeights :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id NSArray)
-inputWeights mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "inputWeights") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputWeights mlclstmLayer =
+  sendMessage mlclstmLayer inputWeightsSelector
 
 -- | hiddenWeights
 --
@@ -180,8 +161,8 @@ inputWeights mlclstmLayer  =
 --
 -- ObjC selector: @- hiddenWeights@
 hiddenWeights :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id NSArray)
-hiddenWeights mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "hiddenWeights") (retPtr retVoid) [] >>= retainedObject . castPtr
+hiddenWeights mlclstmLayer =
+  sendMessage mlclstmLayer hiddenWeightsSelector
 
 -- | peepholeWeights
 --
@@ -189,8 +170,8 @@ hiddenWeights mlclstmLayer  =
 --
 -- ObjC selector: @- peepholeWeights@
 peepholeWeights :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id NSArray)
-peepholeWeights mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "peepholeWeights") (retPtr retVoid) [] >>= retainedObject . castPtr
+peepholeWeights mlclstmLayer =
+  sendMessage mlclstmLayer peepholeWeightsSelector
 
 -- | biases
 --
@@ -198,8 +179,8 @@ peepholeWeights mlclstmLayer  =
 --
 -- ObjC selector: @- biases@
 biases :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id NSArray)
-biases mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "biases") (retPtr retVoid) [] >>= retainedObject . castPtr
+biases mlclstmLayer =
+  sendMessage mlclstmLayer biasesSelector
 
 -- | inputWeightsParameters
 --
@@ -207,8 +188,8 @@ biases mlclstmLayer  =
 --
 -- ObjC selector: @- inputWeightsParameters@
 inputWeightsParameters :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id NSArray)
-inputWeightsParameters mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "inputWeightsParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputWeightsParameters mlclstmLayer =
+  sendMessage mlclstmLayer inputWeightsParametersSelector
 
 -- | hiddenWeightsParameters
 --
@@ -216,8 +197,8 @@ inputWeightsParameters mlclstmLayer  =
 --
 -- ObjC selector: @- hiddenWeightsParameters@
 hiddenWeightsParameters :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id NSArray)
-hiddenWeightsParameters mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "hiddenWeightsParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+hiddenWeightsParameters mlclstmLayer =
+  sendMessage mlclstmLayer hiddenWeightsParametersSelector
 
 -- | peepholeWeightsParameters
 --
@@ -225,8 +206,8 @@ hiddenWeightsParameters mlclstmLayer  =
 --
 -- ObjC selector: @- peepholeWeightsParameters@
 peepholeWeightsParameters :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id NSArray)
-peepholeWeightsParameters mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "peepholeWeightsParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+peepholeWeightsParameters mlclstmLayer =
+  sendMessage mlclstmLayer peepholeWeightsParametersSelector
 
 -- | biasesParameters
 --
@@ -234,66 +215,66 @@ peepholeWeightsParameters mlclstmLayer  =
 --
 -- ObjC selector: @- biasesParameters@
 biasesParameters :: IsMLCLSTMLayer mlclstmLayer => mlclstmLayer -> IO (Id NSArray)
-biasesParameters mlclstmLayer  =
-    sendMsg mlclstmLayer (mkSelector "biasesParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+biasesParameters mlclstmLayer =
+  sendMessage mlclstmLayer biasesParametersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDescriptor:inputWeights:hiddenWeights:biases:@
-layerWithDescriptor_inputWeights_hiddenWeights_biasesSelector :: Selector
+layerWithDescriptor_inputWeights_hiddenWeights_biasesSelector :: Selector '[Id MLCLSTMDescriptor, Id NSArray, Id NSArray, Id NSArray] (Id MLCLSTMLayer)
 layerWithDescriptor_inputWeights_hiddenWeights_biasesSelector = mkSelector "layerWithDescriptor:inputWeights:hiddenWeights:biases:"
 
 -- | @Selector@ for @layerWithDescriptor:inputWeights:hiddenWeights:peepholeWeights:biases:@
-layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biasesSelector :: Selector
+layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biasesSelector :: Selector '[Id MLCLSTMDescriptor, Id NSArray, Id NSArray, Id NSArray, Id NSArray] (Id MLCLSTMLayer)
 layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biasesSelector = mkSelector "layerWithDescriptor:inputWeights:hiddenWeights:peepholeWeights:biases:"
 
 -- | @Selector@ for @layerWithDescriptor:inputWeights:hiddenWeights:peepholeWeights:biases:gateActivations:outputResultActivation:@
-layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases_gateActivations_outputResultActivationSelector :: Selector
+layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases_gateActivations_outputResultActivationSelector :: Selector '[Id MLCLSTMDescriptor, Id NSArray, Id NSArray, Id NSArray, Id NSArray, Id NSArray, Id MLCActivationDescriptor] (Id MLCLSTMLayer)
 layerWithDescriptor_inputWeights_hiddenWeights_peepholeWeights_biases_gateActivations_outputResultActivationSelector = mkSelector "layerWithDescriptor:inputWeights:hiddenWeights:peepholeWeights:biases:gateActivations:outputResultActivation:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MLCLSTMDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @gateActivations@
-gateActivationsSelector :: Selector
+gateActivationsSelector :: Selector '[] (Id NSArray)
 gateActivationsSelector = mkSelector "gateActivations"
 
 -- | @Selector@ for @outputResultActivation@
-outputResultActivationSelector :: Selector
+outputResultActivationSelector :: Selector '[] (Id MLCActivationDescriptor)
 outputResultActivationSelector = mkSelector "outputResultActivation"
 
 -- | @Selector@ for @inputWeights@
-inputWeightsSelector :: Selector
+inputWeightsSelector :: Selector '[] (Id NSArray)
 inputWeightsSelector = mkSelector "inputWeights"
 
 -- | @Selector@ for @hiddenWeights@
-hiddenWeightsSelector :: Selector
+hiddenWeightsSelector :: Selector '[] (Id NSArray)
 hiddenWeightsSelector = mkSelector "hiddenWeights"
 
 -- | @Selector@ for @peepholeWeights@
-peepholeWeightsSelector :: Selector
+peepholeWeightsSelector :: Selector '[] (Id NSArray)
 peepholeWeightsSelector = mkSelector "peepholeWeights"
 
 -- | @Selector@ for @biases@
-biasesSelector :: Selector
+biasesSelector :: Selector '[] (Id NSArray)
 biasesSelector = mkSelector "biases"
 
 -- | @Selector@ for @inputWeightsParameters@
-inputWeightsParametersSelector :: Selector
+inputWeightsParametersSelector :: Selector '[] (Id NSArray)
 inputWeightsParametersSelector = mkSelector "inputWeightsParameters"
 
 -- | @Selector@ for @hiddenWeightsParameters@
-hiddenWeightsParametersSelector :: Selector
+hiddenWeightsParametersSelector :: Selector '[] (Id NSArray)
 hiddenWeightsParametersSelector = mkSelector "hiddenWeightsParameters"
 
 -- | @Selector@ for @peepholeWeightsParameters@
-peepholeWeightsParametersSelector :: Selector
+peepholeWeightsParametersSelector :: Selector '[] (Id NSArray)
 peepholeWeightsParametersSelector = mkSelector "peepholeWeightsParameters"
 
 -- | @Selector@ for @biasesParameters@
-biasesParametersSelector :: Selector
+biasesParametersSelector :: Selector '[] (Id NSArray)
 biasesParametersSelector = mkSelector "biasesParameters"
 

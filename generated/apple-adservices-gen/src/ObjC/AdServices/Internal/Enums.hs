@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AdServices.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | The error codes that may be returned by AAAttribution.
 -- | @AAAttributionErrorCode@
@@ -25,3 +28,13 @@ pattern AAAttributionErrorCodeInternalError = AAAttributionErrorCode 2
 
 pattern AAAttributionErrorCodePlatformNotSupported :: AAAttributionErrorCode
 pattern AAAttributionErrorCodePlatformNotSupported = AAAttributionErrorCode 3
+
+instance ObjCArgument AAAttributionErrorCode where
+  withObjCArg (AAAttributionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn AAAttributionErrorCode where
+  type RawReturn AAAttributionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AAAttributionErrorCode x)
+  fromOwned x = pure (AAAttributionErrorCode x)

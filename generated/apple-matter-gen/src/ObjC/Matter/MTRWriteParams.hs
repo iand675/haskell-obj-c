@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Matter.MTRWriteParams
   , setTimedWriteTimeout
   , dataVersion
   , setDataVersion
-  , timedWriteTimeoutSelector
-  , setTimedWriteTimeoutSelector
   , dataVersionSelector
   , setDataVersionSelector
+  , setTimedWriteTimeoutSelector
+  , timedWriteTimeoutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- timedWriteTimeout@
 timedWriteTimeout :: IsMTRWriteParams mtrWriteParams => mtrWriteParams -> IO (Id NSNumber)
-timedWriteTimeout mtrWriteParams  =
-    sendMsg mtrWriteParams (mkSelector "timedWriteTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedWriteTimeout mtrWriteParams =
+  sendMessage mtrWriteParams timedWriteTimeoutSelector
 
 -- | Controls whether the write is a timed write.
 --
@@ -58,9 +55,8 @@ timedWriteTimeout mtrWriteParams  =
 --
 -- ObjC selector: @- setTimedWriteTimeout:@
 setTimedWriteTimeout :: (IsMTRWriteParams mtrWriteParams, IsNSNumber value) => mtrWriteParams -> value -> IO ()
-setTimedWriteTimeout mtrWriteParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWriteParams (mkSelector "setTimedWriteTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedWriteTimeout mtrWriteParams value =
+  sendMessage mtrWriteParams setTimedWriteTimeoutSelector (toNSNumber value)
 
 -- | Sets the data version for the Write Request for the interaction.
 --
@@ -68,8 +64,8 @@ setTimedWriteTimeout mtrWriteParams  value =
 --
 -- ObjC selector: @- dataVersion@
 dataVersion :: IsMTRWriteParams mtrWriteParams => mtrWriteParams -> IO (Id NSNumber)
-dataVersion mtrWriteParams  =
-    sendMsg mtrWriteParams (mkSelector "dataVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataVersion mtrWriteParams =
+  sendMessage mtrWriteParams dataVersionSelector
 
 -- | Sets the data version for the Write Request for the interaction.
 --
@@ -77,27 +73,26 @@ dataVersion mtrWriteParams  =
 --
 -- ObjC selector: @- setDataVersion:@
 setDataVersion :: (IsMTRWriteParams mtrWriteParams, IsNSNumber value) => mtrWriteParams -> value -> IO ()
-setDataVersion mtrWriteParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWriteParams (mkSelector "setDataVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDataVersion mtrWriteParams value =
+  sendMessage mtrWriteParams setDataVersionSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timedWriteTimeout@
-timedWriteTimeoutSelector :: Selector
+timedWriteTimeoutSelector :: Selector '[] (Id NSNumber)
 timedWriteTimeoutSelector = mkSelector "timedWriteTimeout"
 
 -- | @Selector@ for @setTimedWriteTimeout:@
-setTimedWriteTimeoutSelector :: Selector
+setTimedWriteTimeoutSelector :: Selector '[Id NSNumber] ()
 setTimedWriteTimeoutSelector = mkSelector "setTimedWriteTimeout:"
 
 -- | @Selector@ for @dataVersion@
-dataVersionSelector :: Selector
+dataVersionSelector :: Selector '[] (Id NSNumber)
 dataVersionSelector = mkSelector "dataVersion"
 
 -- | @Selector@ for @setDataVersion:@
-setDataVersionSelector :: Selector
+setDataVersionSelector :: Selector '[Id NSNumber] ()
 setDataVersionSelector = mkSelector "setDataVersion:"
 

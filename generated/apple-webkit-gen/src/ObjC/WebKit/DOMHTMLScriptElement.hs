@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.WebKit.DOMHTMLScriptElement
   , setSrc
   , type_
   , setType
-  , textSelector
-  , setTextSelector
-  , htmlForSelector
-  , setHtmlForSelector
-  , eventSelector
-  , setEventSelector
   , charsetSelector
-  , setCharsetSelector
   , deferSelector
+  , eventSelector
+  , htmlForSelector
+  , setCharsetSelector
   , setDeferSelector
-  , srcSelector
+  , setEventSelector
+  , setHtmlForSelector
   , setSrcSelector
-  , typeSelector
+  , setTextSelector
   , setTypeSelector
+  , srcSelector
+  , textSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,137 +52,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- text@
 text :: IsDOMHTMLScriptElement domhtmlScriptElement => domhtmlScriptElement -> IO (Id NSString)
-text domhtmlScriptElement  =
-    sendMsg domhtmlScriptElement (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text domhtmlScriptElement =
+  sendMessage domhtmlScriptElement textSelector
 
 -- | @- setText:@
 setText :: (IsDOMHTMLScriptElement domhtmlScriptElement, IsNSString value) => domhtmlScriptElement -> value -> IO ()
-setText domhtmlScriptElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlScriptElement (mkSelector "setText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setText domhtmlScriptElement value =
+  sendMessage domhtmlScriptElement setTextSelector (toNSString value)
 
 -- | @- htmlFor@
 htmlFor :: IsDOMHTMLScriptElement domhtmlScriptElement => domhtmlScriptElement -> IO (Id NSString)
-htmlFor domhtmlScriptElement  =
-    sendMsg domhtmlScriptElement (mkSelector "htmlFor") (retPtr retVoid) [] >>= retainedObject . castPtr
+htmlFor domhtmlScriptElement =
+  sendMessage domhtmlScriptElement htmlForSelector
 
 -- | @- setHtmlFor:@
 setHtmlFor :: (IsDOMHTMLScriptElement domhtmlScriptElement, IsNSString value) => domhtmlScriptElement -> value -> IO ()
-setHtmlFor domhtmlScriptElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlScriptElement (mkSelector "setHtmlFor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHtmlFor domhtmlScriptElement value =
+  sendMessage domhtmlScriptElement setHtmlForSelector (toNSString value)
 
 -- | @- event@
 event :: IsDOMHTMLScriptElement domhtmlScriptElement => domhtmlScriptElement -> IO (Id NSString)
-event domhtmlScriptElement  =
-    sendMsg domhtmlScriptElement (mkSelector "event") (retPtr retVoid) [] >>= retainedObject . castPtr
+event domhtmlScriptElement =
+  sendMessage domhtmlScriptElement eventSelector
 
 -- | @- setEvent:@
 setEvent :: (IsDOMHTMLScriptElement domhtmlScriptElement, IsNSString value) => domhtmlScriptElement -> value -> IO ()
-setEvent domhtmlScriptElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlScriptElement (mkSelector "setEvent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEvent domhtmlScriptElement value =
+  sendMessage domhtmlScriptElement setEventSelector (toNSString value)
 
 -- | @- charset@
 charset :: IsDOMHTMLScriptElement domhtmlScriptElement => domhtmlScriptElement -> IO (Id NSString)
-charset domhtmlScriptElement  =
-    sendMsg domhtmlScriptElement (mkSelector "charset") (retPtr retVoid) [] >>= retainedObject . castPtr
+charset domhtmlScriptElement =
+  sendMessage domhtmlScriptElement charsetSelector
 
 -- | @- setCharset:@
 setCharset :: (IsDOMHTMLScriptElement domhtmlScriptElement, IsNSString value) => domhtmlScriptElement -> value -> IO ()
-setCharset domhtmlScriptElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlScriptElement (mkSelector "setCharset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCharset domhtmlScriptElement value =
+  sendMessage domhtmlScriptElement setCharsetSelector (toNSString value)
 
 -- | @- defer@
 defer :: IsDOMHTMLScriptElement domhtmlScriptElement => domhtmlScriptElement -> IO Bool
-defer domhtmlScriptElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlScriptElement (mkSelector "defer") retCULong []
+defer domhtmlScriptElement =
+  sendMessage domhtmlScriptElement deferSelector
 
 -- | @- setDefer:@
 setDefer :: IsDOMHTMLScriptElement domhtmlScriptElement => domhtmlScriptElement -> Bool -> IO ()
-setDefer domhtmlScriptElement  value =
-    sendMsg domhtmlScriptElement (mkSelector "setDefer:") retVoid [argCULong (if value then 1 else 0)]
+setDefer domhtmlScriptElement value =
+  sendMessage domhtmlScriptElement setDeferSelector value
 
 -- | @- src@
 src :: IsDOMHTMLScriptElement domhtmlScriptElement => domhtmlScriptElement -> IO (Id NSString)
-src domhtmlScriptElement  =
-    sendMsg domhtmlScriptElement (mkSelector "src") (retPtr retVoid) [] >>= retainedObject . castPtr
+src domhtmlScriptElement =
+  sendMessage domhtmlScriptElement srcSelector
 
 -- | @- setSrc:@
 setSrc :: (IsDOMHTMLScriptElement domhtmlScriptElement, IsNSString value) => domhtmlScriptElement -> value -> IO ()
-setSrc domhtmlScriptElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlScriptElement (mkSelector "setSrc:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSrc domhtmlScriptElement value =
+  sendMessage domhtmlScriptElement setSrcSelector (toNSString value)
 
 -- | @- type@
 type_ :: IsDOMHTMLScriptElement domhtmlScriptElement => domhtmlScriptElement -> IO (Id NSString)
-type_ domhtmlScriptElement  =
-    sendMsg domhtmlScriptElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmlScriptElement =
+  sendMessage domhtmlScriptElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLScriptElement domhtmlScriptElement, IsNSString value) => domhtmlScriptElement -> value -> IO ()
-setType domhtmlScriptElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlScriptElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmlScriptElement value =
+  sendMessage domhtmlScriptElement setTypeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @setText:@
-setTextSelector :: Selector
+setTextSelector :: Selector '[Id NSString] ()
 setTextSelector = mkSelector "setText:"
 
 -- | @Selector@ for @htmlFor@
-htmlForSelector :: Selector
+htmlForSelector :: Selector '[] (Id NSString)
 htmlForSelector = mkSelector "htmlFor"
 
 -- | @Selector@ for @setHtmlFor:@
-setHtmlForSelector :: Selector
+setHtmlForSelector :: Selector '[Id NSString] ()
 setHtmlForSelector = mkSelector "setHtmlFor:"
 
 -- | @Selector@ for @event@
-eventSelector :: Selector
+eventSelector :: Selector '[] (Id NSString)
 eventSelector = mkSelector "event"
 
 -- | @Selector@ for @setEvent:@
-setEventSelector :: Selector
+setEventSelector :: Selector '[Id NSString] ()
 setEventSelector = mkSelector "setEvent:"
 
 -- | @Selector@ for @charset@
-charsetSelector :: Selector
+charsetSelector :: Selector '[] (Id NSString)
 charsetSelector = mkSelector "charset"
 
 -- | @Selector@ for @setCharset:@
-setCharsetSelector :: Selector
+setCharsetSelector :: Selector '[Id NSString] ()
 setCharsetSelector = mkSelector "setCharset:"
 
 -- | @Selector@ for @defer@
-deferSelector :: Selector
+deferSelector :: Selector '[] Bool
 deferSelector = mkSelector "defer"
 
 -- | @Selector@ for @setDefer:@
-setDeferSelector :: Selector
+setDeferSelector :: Selector '[Bool] ()
 setDeferSelector = mkSelector "setDefer:"
 
 -- | @Selector@ for @src@
-srcSelector :: Selector
+srcSelector :: Selector '[] (Id NSString)
 srcSelector = mkSelector "src"
 
 -- | @Selector@ for @setSrc:@
-setSrcSelector :: Selector
+setSrcSelector :: Selector '[Id NSString] ()
 setSrcSelector = mkSelector "setSrc:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 

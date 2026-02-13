@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,23 +25,23 @@ module ObjC.PDFKit.PDFSelection
   , setColor
   , string
   , attributedString
-  , initWithDocumentSelector
-  , boundsForPageSelector
-  , numberOfTextRangesOnPageSelector
-  , rangeAtIndex_onPageSelector
-  , selectionsByLineSelector
   , addSelectionSelector
   , addSelectionsSelector
+  , attributedStringSelector
+  , boundsForPageSelector
+  , colorSelector
+  , drawForPage_activeSelector
+  , drawForPage_withBox_activeSelector
   , extendSelectionAtEndSelector
   , extendSelectionAtStartSelector
   , extendSelectionForLineBoundariesSelector
-  , drawForPage_activeSelector
-  , drawForPage_withBox_activeSelector
+  , initWithDocumentSelector
+  , numberOfTextRangesOnPageSelector
   , pagesSelector
-  , colorSelector
+  , rangeAtIndex_onPageSelector
+  , selectionsByLineSelector
   , setColorSelector
   , stringSelector
-  , attributedStringSelector
 
   -- * Enum types
   , PDFDisplayBox(PDFDisplayBox)
@@ -52,15 +53,11 @@ module ObjC.PDFKit.PDFSelection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,166 +68,158 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDocument:@
 initWithDocument :: (IsPDFSelection pdfSelection, IsPDFDocument document) => pdfSelection -> document -> IO (Id PDFSelection)
-initWithDocument pdfSelection  document =
-  withObjCPtr document $ \raw_document ->
-      sendMsg pdfSelection (mkSelector "initWithDocument:") (retPtr retVoid) [argPtr (castPtr raw_document :: Ptr ())] >>= ownedObject . castPtr
+initWithDocument pdfSelection document =
+  sendOwnedMessage pdfSelection initWithDocumentSelector (toPDFDocument document)
 
 -- | @- boundsForPage:@
 boundsForPage :: (IsPDFSelection pdfSelection, IsPDFPage page) => pdfSelection -> page -> IO NSRect
-boundsForPage pdfSelection  page =
-  withObjCPtr page $ \raw_page ->
-      sendMsgStret pdfSelection (mkSelector "boundsForPage:") retNSRect [argPtr (castPtr raw_page :: Ptr ())]
+boundsForPage pdfSelection page =
+  sendMessage pdfSelection boundsForPageSelector (toPDFPage page)
 
 -- | @- numberOfTextRangesOnPage:@
 numberOfTextRangesOnPage :: (IsPDFSelection pdfSelection, IsPDFPage page) => pdfSelection -> page -> IO CULong
-numberOfTextRangesOnPage pdfSelection  page =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfSelection (mkSelector "numberOfTextRangesOnPage:") retCULong [argPtr (castPtr raw_page :: Ptr ())]
+numberOfTextRangesOnPage pdfSelection page =
+  sendMessage pdfSelection numberOfTextRangesOnPageSelector (toPDFPage page)
 
 -- | @- rangeAtIndex:onPage:@
 rangeAtIndex_onPage :: (IsPDFSelection pdfSelection, IsPDFPage page) => pdfSelection -> CULong -> page -> IO NSRange
-rangeAtIndex_onPage pdfSelection  index page =
-  withObjCPtr page $ \raw_page ->
-      sendMsgStret pdfSelection (mkSelector "rangeAtIndex:onPage:") retNSRange [argCULong index, argPtr (castPtr raw_page :: Ptr ())]
+rangeAtIndex_onPage pdfSelection index page =
+  sendMessage pdfSelection rangeAtIndex_onPageSelector index (toPDFPage page)
 
 -- | @- selectionsByLine@
 selectionsByLine :: IsPDFSelection pdfSelection => pdfSelection -> IO (Id NSArray)
-selectionsByLine pdfSelection  =
-    sendMsg pdfSelection (mkSelector "selectionsByLine") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectionsByLine pdfSelection =
+  sendMessage pdfSelection selectionsByLineSelector
 
 -- | @- addSelection:@
 addSelection :: (IsPDFSelection pdfSelection, IsPDFSelection selection) => pdfSelection -> selection -> IO ()
-addSelection pdfSelection  selection =
-  withObjCPtr selection $ \raw_selection ->
-      sendMsg pdfSelection (mkSelector "addSelection:") retVoid [argPtr (castPtr raw_selection :: Ptr ())]
+addSelection pdfSelection selection =
+  sendMessage pdfSelection addSelectionSelector (toPDFSelection selection)
 
 -- | @- addSelections:@
 addSelections :: (IsPDFSelection pdfSelection, IsNSArray selections) => pdfSelection -> selections -> IO ()
-addSelections pdfSelection  selections =
-  withObjCPtr selections $ \raw_selections ->
-      sendMsg pdfSelection (mkSelector "addSelections:") retVoid [argPtr (castPtr raw_selections :: Ptr ())]
+addSelections pdfSelection selections =
+  sendMessage pdfSelection addSelectionsSelector (toNSArray selections)
 
 -- | @- extendSelectionAtEnd:@
 extendSelectionAtEnd :: IsPDFSelection pdfSelection => pdfSelection -> CLong -> IO ()
-extendSelectionAtEnd pdfSelection  succeed =
-    sendMsg pdfSelection (mkSelector "extendSelectionAtEnd:") retVoid [argCLong succeed]
+extendSelectionAtEnd pdfSelection succeed =
+  sendMessage pdfSelection extendSelectionAtEndSelector succeed
 
 -- | @- extendSelectionAtStart:@
 extendSelectionAtStart :: IsPDFSelection pdfSelection => pdfSelection -> CLong -> IO ()
-extendSelectionAtStart pdfSelection  precede =
-    sendMsg pdfSelection (mkSelector "extendSelectionAtStart:") retVoid [argCLong precede]
+extendSelectionAtStart pdfSelection precede =
+  sendMessage pdfSelection extendSelectionAtStartSelector precede
 
 -- | @- extendSelectionForLineBoundaries@
 extendSelectionForLineBoundaries :: IsPDFSelection pdfSelection => pdfSelection -> IO ()
-extendSelectionForLineBoundaries pdfSelection  =
-    sendMsg pdfSelection (mkSelector "extendSelectionForLineBoundaries") retVoid []
+extendSelectionForLineBoundaries pdfSelection =
+  sendMessage pdfSelection extendSelectionForLineBoundariesSelector
 
 -- | @- drawForPage:active:@
 drawForPage_active :: (IsPDFSelection pdfSelection, IsPDFPage page) => pdfSelection -> page -> Bool -> IO ()
-drawForPage_active pdfSelection  page active =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfSelection (mkSelector "drawForPage:active:") retVoid [argPtr (castPtr raw_page :: Ptr ()), argCULong (if active then 1 else 0)]
+drawForPage_active pdfSelection page active =
+  sendMessage pdfSelection drawForPage_activeSelector (toPDFPage page) active
 
 -- | @- drawForPage:withBox:active:@
 drawForPage_withBox_active :: (IsPDFSelection pdfSelection, IsPDFPage page) => pdfSelection -> page -> PDFDisplayBox -> Bool -> IO ()
-drawForPage_withBox_active pdfSelection  page box active =
-  withObjCPtr page $ \raw_page ->
-      sendMsg pdfSelection (mkSelector "drawForPage:withBox:active:") retVoid [argPtr (castPtr raw_page :: Ptr ()), argCLong (coerce box), argCULong (if active then 1 else 0)]
+drawForPage_withBox_active pdfSelection page box active =
+  sendMessage pdfSelection drawForPage_withBox_activeSelector (toPDFPage page) box active
 
 -- | @- pages@
 pages :: IsPDFSelection pdfSelection => pdfSelection -> IO (Id NSArray)
-pages pdfSelection  =
-    sendMsg pdfSelection (mkSelector "pages") (retPtr retVoid) [] >>= retainedObject . castPtr
+pages pdfSelection =
+  sendMessage pdfSelection pagesSelector
 
 -- | @- color@
 color :: IsPDFSelection pdfSelection => pdfSelection -> IO RawId
-color pdfSelection  =
-    fmap (RawId . castPtr) $ sendMsg pdfSelection (mkSelector "color") (retPtr retVoid) []
+color pdfSelection =
+  sendMessage pdfSelection colorSelector
 
 -- | @- setColor:@
 setColor :: IsPDFSelection pdfSelection => pdfSelection -> RawId -> IO ()
-setColor pdfSelection  value =
-    sendMsg pdfSelection (mkSelector "setColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setColor pdfSelection value =
+  sendMessage pdfSelection setColorSelector value
 
 -- | @- string@
 string :: IsPDFSelection pdfSelection => pdfSelection -> IO (Id NSString)
-string pdfSelection  =
-    sendMsg pdfSelection (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string pdfSelection =
+  sendMessage pdfSelection stringSelector
 
 -- | @- attributedString@
 attributedString :: IsPDFSelection pdfSelection => pdfSelection -> IO (Id NSAttributedString)
-attributedString pdfSelection  =
-    sendMsg pdfSelection (mkSelector "attributedString") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedString pdfSelection =
+  sendMessage pdfSelection attributedStringSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDocument:@
-initWithDocumentSelector :: Selector
+initWithDocumentSelector :: Selector '[Id PDFDocument] (Id PDFSelection)
 initWithDocumentSelector = mkSelector "initWithDocument:"
 
 -- | @Selector@ for @boundsForPage:@
-boundsForPageSelector :: Selector
+boundsForPageSelector :: Selector '[Id PDFPage] NSRect
 boundsForPageSelector = mkSelector "boundsForPage:"
 
 -- | @Selector@ for @numberOfTextRangesOnPage:@
-numberOfTextRangesOnPageSelector :: Selector
+numberOfTextRangesOnPageSelector :: Selector '[Id PDFPage] CULong
 numberOfTextRangesOnPageSelector = mkSelector "numberOfTextRangesOnPage:"
 
 -- | @Selector@ for @rangeAtIndex:onPage:@
-rangeAtIndex_onPageSelector :: Selector
+rangeAtIndex_onPageSelector :: Selector '[CULong, Id PDFPage] NSRange
 rangeAtIndex_onPageSelector = mkSelector "rangeAtIndex:onPage:"
 
 -- | @Selector@ for @selectionsByLine@
-selectionsByLineSelector :: Selector
+selectionsByLineSelector :: Selector '[] (Id NSArray)
 selectionsByLineSelector = mkSelector "selectionsByLine"
 
 -- | @Selector@ for @addSelection:@
-addSelectionSelector :: Selector
+addSelectionSelector :: Selector '[Id PDFSelection] ()
 addSelectionSelector = mkSelector "addSelection:"
 
 -- | @Selector@ for @addSelections:@
-addSelectionsSelector :: Selector
+addSelectionsSelector :: Selector '[Id NSArray] ()
 addSelectionsSelector = mkSelector "addSelections:"
 
 -- | @Selector@ for @extendSelectionAtEnd:@
-extendSelectionAtEndSelector :: Selector
+extendSelectionAtEndSelector :: Selector '[CLong] ()
 extendSelectionAtEndSelector = mkSelector "extendSelectionAtEnd:"
 
 -- | @Selector@ for @extendSelectionAtStart:@
-extendSelectionAtStartSelector :: Selector
+extendSelectionAtStartSelector :: Selector '[CLong] ()
 extendSelectionAtStartSelector = mkSelector "extendSelectionAtStart:"
 
 -- | @Selector@ for @extendSelectionForLineBoundaries@
-extendSelectionForLineBoundariesSelector :: Selector
+extendSelectionForLineBoundariesSelector :: Selector '[] ()
 extendSelectionForLineBoundariesSelector = mkSelector "extendSelectionForLineBoundaries"
 
 -- | @Selector@ for @drawForPage:active:@
-drawForPage_activeSelector :: Selector
+drawForPage_activeSelector :: Selector '[Id PDFPage, Bool] ()
 drawForPage_activeSelector = mkSelector "drawForPage:active:"
 
 -- | @Selector@ for @drawForPage:withBox:active:@
-drawForPage_withBox_activeSelector :: Selector
+drawForPage_withBox_activeSelector :: Selector '[Id PDFPage, PDFDisplayBox, Bool] ()
 drawForPage_withBox_activeSelector = mkSelector "drawForPage:withBox:active:"
 
 -- | @Selector@ for @pages@
-pagesSelector :: Selector
+pagesSelector :: Selector '[] (Id NSArray)
 pagesSelector = mkSelector "pages"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] RawId
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[RawId] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @attributedString@
-attributedStringSelector :: Selector
+attributedStringSelector :: Selector '[] (Id NSAttributedString)
 attributedStringSelector = mkSelector "attributedString"
 

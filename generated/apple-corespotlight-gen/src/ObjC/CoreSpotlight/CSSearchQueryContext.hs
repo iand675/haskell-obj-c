@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,13 +17,13 @@ module ObjC.CoreSpotlight.CSSearchQueryContext
   , sourceOptions
   , setSourceOptions
   , fetchAttributesSelector
-  , setFetchAttributesSelector
   , filterQueriesSelector
-  , setFilterQueriesSelector
   , keyboardLanguageSelector
+  , setFetchAttributesSelector
+  , setFilterQueriesSelector
   , setKeyboardLanguageSelector
-  , sourceOptionsSelector
   , setSourceOptionsSelector
+  , sourceOptionsSelector
 
   -- * Enum types
   , CSSearchQuerySourceOptions(CSSearchQuerySourceOptions)
@@ -31,15 +32,11 @@ module ObjC.CoreSpotlight.CSSearchQueryContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,80 +46,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- fetchAttributes@
 fetchAttributes :: IsCSSearchQueryContext csSearchQueryContext => csSearchQueryContext -> IO (Id NSArray)
-fetchAttributes csSearchQueryContext  =
-    sendMsg csSearchQueryContext (mkSelector "fetchAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchAttributes csSearchQueryContext =
+  sendMessage csSearchQueryContext fetchAttributesSelector
 
 -- | @- setFetchAttributes:@
 setFetchAttributes :: (IsCSSearchQueryContext csSearchQueryContext, IsNSArray value) => csSearchQueryContext -> value -> IO ()
-setFetchAttributes csSearchQueryContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchQueryContext (mkSelector "setFetchAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFetchAttributes csSearchQueryContext value =
+  sendMessage csSearchQueryContext setFetchAttributesSelector (toNSArray value)
 
 -- | @- filterQueries@
 filterQueries :: IsCSSearchQueryContext csSearchQueryContext => csSearchQueryContext -> IO (Id NSArray)
-filterQueries csSearchQueryContext  =
-    sendMsg csSearchQueryContext (mkSelector "filterQueries") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterQueries csSearchQueryContext =
+  sendMessage csSearchQueryContext filterQueriesSelector
 
 -- | @- setFilterQueries:@
 setFilterQueries :: (IsCSSearchQueryContext csSearchQueryContext, IsNSArray value) => csSearchQueryContext -> value -> IO ()
-setFilterQueries csSearchQueryContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchQueryContext (mkSelector "setFilterQueries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFilterQueries csSearchQueryContext value =
+  sendMessage csSearchQueryContext setFilterQueriesSelector (toNSArray value)
 
 -- | @- keyboardLanguage@
 keyboardLanguage :: IsCSSearchQueryContext csSearchQueryContext => csSearchQueryContext -> IO (Id NSString)
-keyboardLanguage csSearchQueryContext  =
-    sendMsg csSearchQueryContext (mkSelector "keyboardLanguage") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyboardLanguage csSearchQueryContext =
+  sendMessage csSearchQueryContext keyboardLanguageSelector
 
 -- | @- setKeyboardLanguage:@
 setKeyboardLanguage :: (IsCSSearchQueryContext csSearchQueryContext, IsNSString value) => csSearchQueryContext -> value -> IO ()
-setKeyboardLanguage csSearchQueryContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchQueryContext (mkSelector "setKeyboardLanguage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyboardLanguage csSearchQueryContext value =
+  sendMessage csSearchQueryContext setKeyboardLanguageSelector (toNSString value)
 
 -- | @- sourceOptions@
 sourceOptions :: IsCSSearchQueryContext csSearchQueryContext => csSearchQueryContext -> IO CSSearchQuerySourceOptions
-sourceOptions csSearchQueryContext  =
-    fmap (coerce :: CULong -> CSSearchQuerySourceOptions) $ sendMsg csSearchQueryContext (mkSelector "sourceOptions") retCULong []
+sourceOptions csSearchQueryContext =
+  sendMessage csSearchQueryContext sourceOptionsSelector
 
 -- | @- setSourceOptions:@
 setSourceOptions :: IsCSSearchQueryContext csSearchQueryContext => csSearchQueryContext -> CSSearchQuerySourceOptions -> IO ()
-setSourceOptions csSearchQueryContext  value =
-    sendMsg csSearchQueryContext (mkSelector "setSourceOptions:") retVoid [argCULong (coerce value)]
+setSourceOptions csSearchQueryContext value =
+  sendMessage csSearchQueryContext setSourceOptionsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchAttributes@
-fetchAttributesSelector :: Selector
+fetchAttributesSelector :: Selector '[] (Id NSArray)
 fetchAttributesSelector = mkSelector "fetchAttributes"
 
 -- | @Selector@ for @setFetchAttributes:@
-setFetchAttributesSelector :: Selector
+setFetchAttributesSelector :: Selector '[Id NSArray] ()
 setFetchAttributesSelector = mkSelector "setFetchAttributes:"
 
 -- | @Selector@ for @filterQueries@
-filterQueriesSelector :: Selector
+filterQueriesSelector :: Selector '[] (Id NSArray)
 filterQueriesSelector = mkSelector "filterQueries"
 
 -- | @Selector@ for @setFilterQueries:@
-setFilterQueriesSelector :: Selector
+setFilterQueriesSelector :: Selector '[Id NSArray] ()
 setFilterQueriesSelector = mkSelector "setFilterQueries:"
 
 -- | @Selector@ for @keyboardLanguage@
-keyboardLanguageSelector :: Selector
+keyboardLanguageSelector :: Selector '[] (Id NSString)
 keyboardLanguageSelector = mkSelector "keyboardLanguage"
 
 -- | @Selector@ for @setKeyboardLanguage:@
-setKeyboardLanguageSelector :: Selector
+setKeyboardLanguageSelector :: Selector '[Id NSString] ()
 setKeyboardLanguageSelector = mkSelector "setKeyboardLanguage:"
 
 -- | @Selector@ for @sourceOptions@
-sourceOptionsSelector :: Selector
+sourceOptionsSelector :: Selector '[] CSSearchQuerySourceOptions
 sourceOptionsSelector = mkSelector "sourceOptions"
 
 -- | @Selector@ for @setSourceOptions:@
-setSourceOptionsSelector :: Selector
+setSourceOptionsSelector :: Selector '[CSSearchQuerySourceOptions] ()
 setSourceOptionsSelector = mkSelector "setSourceOptions:"
 

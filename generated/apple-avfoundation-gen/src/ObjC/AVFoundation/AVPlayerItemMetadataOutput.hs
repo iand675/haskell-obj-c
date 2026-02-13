@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,25 +21,21 @@ module ObjC.AVFoundation.AVPlayerItemMetadataOutput
   , delegateQueue
   , advanceIntervalForDelegateInvocation
   , setAdvanceIntervalForDelegateInvocation
-  , initWithIdentifiersSelector
-  , setDelegate_queueSelector
-  , delegateSelector
-  , delegateQueueSelector
   , advanceIntervalForDelegateInvocationSelector
+  , delegateQueueSelector
+  , delegateSelector
+  , initWithIdentifiersSelector
   , setAdvanceIntervalForDelegateInvocationSelector
+  , setDelegate_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,9 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifiers:@
 initWithIdentifiers :: (IsAVPlayerItemMetadataOutput avPlayerItemMetadataOutput, IsNSArray identifiers) => avPlayerItemMetadataOutput -> identifiers -> IO (Id AVPlayerItemMetadataOutput)
-initWithIdentifiers avPlayerItemMetadataOutput  identifiers =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg avPlayerItemMetadataOutput (mkSelector "initWithIdentifiers:") (retPtr retVoid) [argPtr (castPtr raw_identifiers :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifiers avPlayerItemMetadataOutput identifiers =
+  sendOwnedMessage avPlayerItemMetadataOutput initWithIdentifiersSelector (toNSArray identifiers)
 
 -- | setDelegate:queue:
 --
@@ -69,9 +65,8 @@ initWithIdentifiers avPlayerItemMetadataOutput  identifiers =
 --
 -- ObjC selector: @- setDelegate:queue:@
 setDelegate_queue :: (IsAVPlayerItemMetadataOutput avPlayerItemMetadataOutput, IsNSObject delegateQueue) => avPlayerItemMetadataOutput -> RawId -> delegateQueue -> IO ()
-setDelegate_queue avPlayerItemMetadataOutput  delegate delegateQueue =
-  withObjCPtr delegateQueue $ \raw_delegateQueue ->
-      sendMsg avPlayerItemMetadataOutput (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateQueue :: Ptr ())]
+setDelegate_queue avPlayerItemMetadataOutput delegate delegateQueue =
+  sendMessage avPlayerItemMetadataOutput setDelegate_queueSelector delegate (toNSObject delegateQueue)
 
 -- | delegate
 --
@@ -81,8 +76,8 @@ setDelegate_queue avPlayerItemMetadataOutput  delegate delegateQueue =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVPlayerItemMetadataOutput avPlayerItemMetadataOutput => avPlayerItemMetadataOutput -> IO RawId
-delegate avPlayerItemMetadataOutput  =
-    fmap (RawId . castPtr) $ sendMsg avPlayerItemMetadataOutput (mkSelector "delegate") (retPtr retVoid) []
+delegate avPlayerItemMetadataOutput =
+  sendMessage avPlayerItemMetadataOutput delegateSelector
 
 -- | delegateQueue
 --
@@ -92,8 +87,8 @@ delegate avPlayerItemMetadataOutput  =
 --
 -- ObjC selector: @- delegateQueue@
 delegateQueue :: IsAVPlayerItemMetadataOutput avPlayerItemMetadataOutput => avPlayerItemMetadataOutput -> IO (Id NSObject)
-delegateQueue avPlayerItemMetadataOutput  =
-    sendMsg avPlayerItemMetadataOutput (mkSelector "delegateQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateQueue avPlayerItemMetadataOutput =
+  sendMessage avPlayerItemMetadataOutput delegateQueueSelector
 
 -- | advanceIntervalForDelegateInvocation
 --
@@ -103,8 +98,8 @@ delegateQueue avPlayerItemMetadataOutput  =
 --
 -- ObjC selector: @- advanceIntervalForDelegateInvocation@
 advanceIntervalForDelegateInvocation :: IsAVPlayerItemMetadataOutput avPlayerItemMetadataOutput => avPlayerItemMetadataOutput -> IO CDouble
-advanceIntervalForDelegateInvocation avPlayerItemMetadataOutput  =
-    sendMsg avPlayerItemMetadataOutput (mkSelector "advanceIntervalForDelegateInvocation") retCDouble []
+advanceIntervalForDelegateInvocation avPlayerItemMetadataOutput =
+  sendMessage avPlayerItemMetadataOutput advanceIntervalForDelegateInvocationSelector
 
 -- | advanceIntervalForDelegateInvocation
 --
@@ -114,34 +109,34 @@ advanceIntervalForDelegateInvocation avPlayerItemMetadataOutput  =
 --
 -- ObjC selector: @- setAdvanceIntervalForDelegateInvocation:@
 setAdvanceIntervalForDelegateInvocation :: IsAVPlayerItemMetadataOutput avPlayerItemMetadataOutput => avPlayerItemMetadataOutput -> CDouble -> IO ()
-setAdvanceIntervalForDelegateInvocation avPlayerItemMetadataOutput  value =
-    sendMsg avPlayerItemMetadataOutput (mkSelector "setAdvanceIntervalForDelegateInvocation:") retVoid [argCDouble value]
+setAdvanceIntervalForDelegateInvocation avPlayerItemMetadataOutput value =
+  sendMessage avPlayerItemMetadataOutput setAdvanceIntervalForDelegateInvocationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifiers:@
-initWithIdentifiersSelector :: Selector
+initWithIdentifiersSelector :: Selector '[Id NSArray] (Id AVPlayerItemMetadataOutput)
 initWithIdentifiersSelector = mkSelector "initWithIdentifiers:"
 
 -- | @Selector@ for @setDelegate:queue:@
-setDelegate_queueSelector :: Selector
+setDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
-delegateQueueSelector :: Selector
+delegateQueueSelector :: Selector '[] (Id NSObject)
 delegateQueueSelector = mkSelector "delegateQueue"
 
 -- | @Selector@ for @advanceIntervalForDelegateInvocation@
-advanceIntervalForDelegateInvocationSelector :: Selector
+advanceIntervalForDelegateInvocationSelector :: Selector '[] CDouble
 advanceIntervalForDelegateInvocationSelector = mkSelector "advanceIntervalForDelegateInvocation"
 
 -- | @Selector@ for @setAdvanceIntervalForDelegateInvocation:@
-setAdvanceIntervalForDelegateInvocationSelector :: Selector
+setAdvanceIntervalForDelegateInvocationSelector :: Selector '[CDouble] ()
 setAdvanceIntervalForDelegateInvocationSelector = mkSelector "setAdvanceIntervalForDelegateInvocation:"
 

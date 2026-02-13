@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.Matter.MTRSampleMEIClusterAddArgumentsResponseParams
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRSampleMEIClusterAddArgumentsResponseParams mtrSampleMEIClusterAddArgumentsResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrSampleMEIClusterAddArgumentsResponseParams -> responseValue -> error_ -> IO (Id MTRSampleMEIClusterAddArgumentsResponseParams)
-initWithResponseValue_error mtrSampleMEIClusterAddArgumentsResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrSampleMEIClusterAddArgumentsResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrSampleMEIClusterAddArgumentsResponseParams responseValue error_ =
+  sendOwnedMessage mtrSampleMEIClusterAddArgumentsResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- returnValue@
 returnValue :: IsMTRSampleMEIClusterAddArgumentsResponseParams mtrSampleMEIClusterAddArgumentsResponseParams => mtrSampleMEIClusterAddArgumentsResponseParams -> IO (Id NSNumber)
-returnValue mtrSampleMEIClusterAddArgumentsResponseParams  =
-    sendMsg mtrSampleMEIClusterAddArgumentsResponseParams (mkSelector "returnValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+returnValue mtrSampleMEIClusterAddArgumentsResponseParams =
+  sendMessage mtrSampleMEIClusterAddArgumentsResponseParams returnValueSelector
 
 -- | @- setReturnValue:@
 setReturnValue :: (IsMTRSampleMEIClusterAddArgumentsResponseParams mtrSampleMEIClusterAddArgumentsResponseParams, IsNSNumber value) => mtrSampleMEIClusterAddArgumentsResponseParams -> value -> IO ()
-setReturnValue mtrSampleMEIClusterAddArgumentsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSampleMEIClusterAddArgumentsResponseParams (mkSelector "setReturnValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReturnValue mtrSampleMEIClusterAddArgumentsResponseParams value =
+  sendMessage mtrSampleMEIClusterAddArgumentsResponseParams setReturnValueSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRSampleMEIClusterAddArgumentsResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @returnValue@
-returnValueSelector :: Selector
+returnValueSelector :: Selector '[] (Id NSNumber)
 returnValueSelector = mkSelector "returnValue"
 
 -- | @Selector@ for @setReturnValue:@
-setReturnValueSelector :: Selector
+setReturnValueSelector :: Selector '[Id NSNumber] ()
 setReturnValueSelector = mkSelector "setReturnValue:"
 

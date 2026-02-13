@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.PHASE.PHASEMixer
   , identifier
   , gain
   , gainMetaParameter
+  , gainMetaParameterSelector
+  , gainSelector
+  , identifierSelector
   , initSelector
   , newSelector
-  , identifierSelector
-  , gainSelector
-  , gainMetaParameterSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEMixer phaseMixer => phaseMixer -> IO (Id PHASEMixer)
-init_ phaseMixer  =
-    sendMsg phaseMixer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseMixer =
+  sendOwnedMessage phaseMixer initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEMixer)
 new  =
   do
     cls' <- getRequiredClass "PHASEMixer"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | identifier
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsPHASEMixer phaseMixer => phaseMixer -> IO (Id NSString)
-identifier phaseMixer  =
-    sendMsg phaseMixer (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier phaseMixer =
+  sendMessage phaseMixer identifierSelector
 
 -- | gain
 --
@@ -70,8 +67,8 @@ identifier phaseMixer  =
 --
 -- ObjC selector: @- gain@
 gain :: IsPHASEMixer phaseMixer => phaseMixer -> IO CDouble
-gain phaseMixer  =
-    sendMsg phaseMixer (mkSelector "gain") retCDouble []
+gain phaseMixer =
+  sendMessage phaseMixer gainSelector
 
 -- | gainMetaParameter
 --
@@ -79,30 +76,30 @@ gain phaseMixer  =
 --
 -- ObjC selector: @- gainMetaParameter@
 gainMetaParameter :: IsPHASEMixer phaseMixer => phaseMixer -> IO (Id PHASEMetaParameter)
-gainMetaParameter phaseMixer  =
-    sendMsg phaseMixer (mkSelector "gainMetaParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+gainMetaParameter phaseMixer =
+  sendMessage phaseMixer gainMetaParameterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEMixer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEMixer)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @gain@
-gainSelector :: Selector
+gainSelector :: Selector '[] CDouble
 gainSelector = mkSelector "gain"
 
 -- | @Selector@ for @gainMetaParameter@
-gainMetaParameterSelector :: Selector
+gainMetaParameterSelector :: Selector '[] (Id PHASEMetaParameter)
 gainMetaParameterSelector = mkSelector "gainMetaParameter"
 

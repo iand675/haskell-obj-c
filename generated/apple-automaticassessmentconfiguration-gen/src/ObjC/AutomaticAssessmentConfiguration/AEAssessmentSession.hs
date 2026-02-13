@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.AutomaticAssessmentConfiguration.AEAssessmentSession
   , setDelegate
   , configuration
   , active
-  , initWithConfigurationSelector
-  , initSelector
-  , newSelector
-  , beginSelector
-  , endSelector
-  , updateToConfigurationSelector
-  , supportsMultipleParticipantsSelector
-  , supportsConfigurationUpdatesSelector
-  , delegateSelector
-  , setDelegateSelector
-  , configurationSelector
   , activeSelector
+  , beginSelector
+  , configurationSelector
+  , delegateSelector
+  , endSelector
+  , initSelector
+  , initWithConfigurationSelector
+  , newSelector
+  , setDelegateSelector
+  , supportsConfigurationUpdatesSelector
+  , supportsMultipleParticipantsSelector
+  , updateToConfigurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,121 +48,119 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithConfiguration:@
 initWithConfiguration :: (IsAEAssessmentSession aeAssessmentSession, IsAEAssessmentConfiguration configuration) => aeAssessmentSession -> configuration -> IO (Id AEAssessmentSession)
-initWithConfiguration aeAssessmentSession  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg aeAssessmentSession (mkSelector "initWithConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration aeAssessmentSession configuration =
+  sendOwnedMessage aeAssessmentSession initWithConfigurationSelector (toAEAssessmentConfiguration configuration)
 
 -- | @- init@
 init_ :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> IO (Id AEAssessmentSession)
-init_ aeAssessmentSession  =
-    sendMsg aeAssessmentSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ aeAssessmentSession =
+  sendOwnedMessage aeAssessmentSession initSelector
 
 -- | @+ new@
 new :: IO (Id AEAssessmentSession)
 new  =
   do
     cls' <- getRequiredClass "AEAssessmentSession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- begin@
 begin :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> IO ()
-begin aeAssessmentSession  =
-    sendMsg aeAssessmentSession (mkSelector "begin") retVoid []
+begin aeAssessmentSession =
+  sendMessage aeAssessmentSession beginSelector
 
 -- | @- end@
 end :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> IO ()
-end aeAssessmentSession  =
-    sendMsg aeAssessmentSession (mkSelector "end") retVoid []
+end aeAssessmentSession =
+  sendMessage aeAssessmentSession endSelector
 
 -- | @- updateToConfiguration:@
 updateToConfiguration :: (IsAEAssessmentSession aeAssessmentSession, IsAEAssessmentConfiguration configuration) => aeAssessmentSession -> configuration -> IO ()
-updateToConfiguration aeAssessmentSession  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg aeAssessmentSession (mkSelector "updateToConfiguration:") retVoid [argPtr (castPtr raw_configuration :: Ptr ())]
+updateToConfiguration aeAssessmentSession configuration =
+  sendMessage aeAssessmentSession updateToConfigurationSelector (toAEAssessmentConfiguration configuration)
 
 -- | @+ supportsMultipleParticipants@
 supportsMultipleParticipants :: IO Bool
 supportsMultipleParticipants  =
   do
     cls' <- getRequiredClass "AEAssessmentSession"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsMultipleParticipants") retCULong []
+    sendClassMessage cls' supportsMultipleParticipantsSelector
 
 -- | @+ supportsConfigurationUpdates@
 supportsConfigurationUpdates :: IO Bool
 supportsConfigurationUpdates  =
   do
     cls' <- getRequiredClass "AEAssessmentSession"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsConfigurationUpdates") retCULong []
+    sendClassMessage cls' supportsConfigurationUpdatesSelector
 
 -- | @- delegate@
 delegate :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> IO RawId
-delegate aeAssessmentSession  =
-    fmap (RawId . castPtr) $ sendMsg aeAssessmentSession (mkSelector "delegate") (retPtr retVoid) []
+delegate aeAssessmentSession =
+  sendMessage aeAssessmentSession delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> RawId -> IO ()
-setDelegate aeAssessmentSession  value =
-    sendMsg aeAssessmentSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate aeAssessmentSession value =
+  sendMessage aeAssessmentSession setDelegateSelector value
 
 -- | @- configuration@
 configuration :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> IO (Id AEAssessmentConfiguration)
-configuration aeAssessmentSession  =
-    sendMsg aeAssessmentSession (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration aeAssessmentSession =
+  sendMessage aeAssessmentSession configurationSelector
 
 -- | @- active@
 active :: IsAEAssessmentSession aeAssessmentSession => aeAssessmentSession -> IO Bool
-active aeAssessmentSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentSession (mkSelector "active") retCULong []
+active aeAssessmentSession =
+  sendMessage aeAssessmentSession activeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithConfiguration:@
-initWithConfigurationSelector :: Selector
+initWithConfigurationSelector :: Selector '[Id AEAssessmentConfiguration] (Id AEAssessmentSession)
 initWithConfigurationSelector = mkSelector "initWithConfiguration:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AEAssessmentSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AEAssessmentSession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @begin@
-beginSelector :: Selector
+beginSelector :: Selector '[] ()
 beginSelector = mkSelector "begin"
 
 -- | @Selector@ for @end@
-endSelector :: Selector
+endSelector :: Selector '[] ()
 endSelector = mkSelector "end"
 
 -- | @Selector@ for @updateToConfiguration:@
-updateToConfigurationSelector :: Selector
+updateToConfigurationSelector :: Selector '[Id AEAssessmentConfiguration] ()
 updateToConfigurationSelector = mkSelector "updateToConfiguration:"
 
 -- | @Selector@ for @supportsMultipleParticipants@
-supportsMultipleParticipantsSelector :: Selector
+supportsMultipleParticipantsSelector :: Selector '[] Bool
 supportsMultipleParticipantsSelector = mkSelector "supportsMultipleParticipants"
 
 -- | @Selector@ for @supportsConfigurationUpdates@
-supportsConfigurationUpdatesSelector :: Selector
+supportsConfigurationUpdatesSelector :: Selector '[] Bool
 supportsConfigurationUpdatesSelector = mkSelector "supportsConfigurationUpdates"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id AEAssessmentConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 

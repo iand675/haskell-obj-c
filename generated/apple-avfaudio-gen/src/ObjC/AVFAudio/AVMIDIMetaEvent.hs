@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,15 +44,11 @@ module ObjC.AVFAudio.AVMIDIMetaEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,9 +66,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithType:data:@
 initWithType_data :: (IsAVMIDIMetaEvent avmidiMetaEvent, IsNSData data_) => avmidiMetaEvent -> AVMIDIMetaEventType -> data_ -> IO (Id AVMIDIMetaEvent)
-initWithType_data avmidiMetaEvent  type_ data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg avmidiMetaEvent (mkSelector "initWithType:data:") (retPtr retVoid) [argCLong (coerce type_), argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithType_data avmidiMetaEvent type_ data_ =
+  sendOwnedMessage avmidiMetaEvent initWithType_dataSelector type_ (toNSData data_)
 
 -- | type
 --
@@ -79,18 +75,18 @@ initWithType_data avmidiMetaEvent  type_ data_ =
 --
 -- ObjC selector: @- type@
 type_ :: IsAVMIDIMetaEvent avmidiMetaEvent => avmidiMetaEvent -> IO AVMIDIMetaEventType
-type_ avmidiMetaEvent  =
-    fmap (coerce :: CLong -> AVMIDIMetaEventType) $ sendMsg avmidiMetaEvent (mkSelector "type") retCLong []
+type_ avmidiMetaEvent =
+  sendMessage avmidiMetaEvent typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithType:data:@
-initWithType_dataSelector :: Selector
+initWithType_dataSelector :: Selector '[AVMIDIMetaEventType, Id NSData] (Id AVMIDIMetaEvent)
 initWithType_dataSelector = mkSelector "initWithType:data:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] AVMIDIMetaEventType
 typeSelector = mkSelector "type"
 

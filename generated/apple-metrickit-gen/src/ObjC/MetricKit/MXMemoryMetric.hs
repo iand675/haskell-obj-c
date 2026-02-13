@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MetricKit.MXMemoryMetric
   , IsMXMemoryMetric(..)
   , peakMemoryUsage
   , averageSuspendedMemory
-  , peakMemoryUsageSelector
   , averageSuspendedMemorySelector
+  , peakMemoryUsageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- peakMemoryUsage@
 peakMemoryUsage :: IsMXMemoryMetric mxMemoryMetric => mxMemoryMetric -> IO (Id NSMeasurement)
-peakMemoryUsage mxMemoryMetric  =
-    sendMsg mxMemoryMetric (mkSelector "peakMemoryUsage") (retPtr retVoid) [] >>= retainedObject . castPtr
+peakMemoryUsage mxMemoryMetric =
+  sendMessage mxMemoryMetric peakMemoryUsageSelector
 
 -- | averageSuspendedMemory
 --
@@ -52,18 +49,18 @@ peakMemoryUsage mxMemoryMetric  =
 --
 -- ObjC selector: @- averageSuspendedMemory@
 averageSuspendedMemory :: IsMXMemoryMetric mxMemoryMetric => mxMemoryMetric -> IO (Id MXAverage)
-averageSuspendedMemory mxMemoryMetric  =
-    sendMsg mxMemoryMetric (mkSelector "averageSuspendedMemory") (retPtr retVoid) [] >>= retainedObject . castPtr
+averageSuspendedMemory mxMemoryMetric =
+  sendMessage mxMemoryMetric averageSuspendedMemorySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @peakMemoryUsage@
-peakMemoryUsageSelector :: Selector
+peakMemoryUsageSelector :: Selector '[] (Id NSMeasurement)
 peakMemoryUsageSelector = mkSelector "peakMemoryUsage"
 
 -- | @Selector@ for @averageSuspendedMemory@
-averageSuspendedMemorySelector :: Selector
+averageSuspendedMemorySelector :: Selector '[] (Id MXAverage)
 averageSuspendedMemorySelector = mkSelector "averageSuspendedMemory"
 

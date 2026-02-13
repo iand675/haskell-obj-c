@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,8 +12,8 @@ module ObjC.UserNotifications.UNTextInputNotificationAction
   , actionWithIdentifier_title_options_icon_textInputButtonTitle_textInputPlaceholder
   , textInputButtonTitle
   , textInputPlaceholder
-  , actionWithIdentifier_title_options_textInputButtonTitle_textInputPlaceholderSelector
   , actionWithIdentifier_title_options_icon_textInputButtonTitle_textInputPlaceholderSelector
+  , actionWithIdentifier_title_options_textInputButtonTitle_textInputPlaceholderSelector
   , textInputButtonTitleSelector
   , textInputPlaceholderSelector
 
@@ -24,15 +25,11 @@ module ObjC.UserNotifications.UNTextInputNotificationAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,51 +42,42 @@ actionWithIdentifier_title_options_textInputButtonTitle_textInputPlaceholder :: 
 actionWithIdentifier_title_options_textInputButtonTitle_textInputPlaceholder identifier title options textInputButtonTitle textInputPlaceholder =
   do
     cls' <- getRequiredClass "UNTextInputNotificationAction"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr title $ \raw_title ->
-        withObjCPtr textInputButtonTitle $ \raw_textInputButtonTitle ->
-          withObjCPtr textInputPlaceholder $ \raw_textInputPlaceholder ->
-            sendClassMsg cls' (mkSelector "actionWithIdentifier:title:options:textInputButtonTitle:textInputPlaceholder:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_textInputButtonTitle :: Ptr ()), argPtr (castPtr raw_textInputPlaceholder :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' actionWithIdentifier_title_options_textInputButtonTitle_textInputPlaceholderSelector (toNSString identifier) (toNSString title) options (toNSString textInputButtonTitle) (toNSString textInputPlaceholder)
 
 -- | @+ actionWithIdentifier:title:options:icon:textInputButtonTitle:textInputPlaceholder:@
 actionWithIdentifier_title_options_icon_textInputButtonTitle_textInputPlaceholder :: (IsNSString identifier, IsNSString title, IsUNNotificationActionIcon icon, IsNSString textInputButtonTitle, IsNSString textInputPlaceholder) => identifier -> title -> UNNotificationActionOptions -> icon -> textInputButtonTitle -> textInputPlaceholder -> IO (Id UNTextInputNotificationAction)
 actionWithIdentifier_title_options_icon_textInputButtonTitle_textInputPlaceholder identifier title options icon textInputButtonTitle textInputPlaceholder =
   do
     cls' <- getRequiredClass "UNTextInputNotificationAction"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr title $ \raw_title ->
-        withObjCPtr icon $ \raw_icon ->
-          withObjCPtr textInputButtonTitle $ \raw_textInputButtonTitle ->
-            withObjCPtr textInputPlaceholder $ \raw_textInputPlaceholder ->
-              sendClassMsg cls' (mkSelector "actionWithIdentifier:title:options:icon:textInputButtonTitle:textInputPlaceholder:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_icon :: Ptr ()), argPtr (castPtr raw_textInputButtonTitle :: Ptr ()), argPtr (castPtr raw_textInputPlaceholder :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' actionWithIdentifier_title_options_icon_textInputButtonTitle_textInputPlaceholderSelector (toNSString identifier) (toNSString title) options (toUNNotificationActionIcon icon) (toNSString textInputButtonTitle) (toNSString textInputPlaceholder)
 
 -- | @- textInputButtonTitle@
 textInputButtonTitle :: IsUNTextInputNotificationAction unTextInputNotificationAction => unTextInputNotificationAction -> IO (Id NSString)
-textInputButtonTitle unTextInputNotificationAction  =
-    sendMsg unTextInputNotificationAction (mkSelector "textInputButtonTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+textInputButtonTitle unTextInputNotificationAction =
+  sendMessage unTextInputNotificationAction textInputButtonTitleSelector
 
 -- | @- textInputPlaceholder@
 textInputPlaceholder :: IsUNTextInputNotificationAction unTextInputNotificationAction => unTextInputNotificationAction -> IO (Id NSString)
-textInputPlaceholder unTextInputNotificationAction  =
-    sendMsg unTextInputNotificationAction (mkSelector "textInputPlaceholder") (retPtr retVoid) [] >>= retainedObject . castPtr
+textInputPlaceholder unTextInputNotificationAction =
+  sendMessage unTextInputNotificationAction textInputPlaceholderSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @actionWithIdentifier:title:options:textInputButtonTitle:textInputPlaceholder:@
-actionWithIdentifier_title_options_textInputButtonTitle_textInputPlaceholderSelector :: Selector
+actionWithIdentifier_title_options_textInputButtonTitle_textInputPlaceholderSelector :: Selector '[Id NSString, Id NSString, UNNotificationActionOptions, Id NSString, Id NSString] (Id UNTextInputNotificationAction)
 actionWithIdentifier_title_options_textInputButtonTitle_textInputPlaceholderSelector = mkSelector "actionWithIdentifier:title:options:textInputButtonTitle:textInputPlaceholder:"
 
 -- | @Selector@ for @actionWithIdentifier:title:options:icon:textInputButtonTitle:textInputPlaceholder:@
-actionWithIdentifier_title_options_icon_textInputButtonTitle_textInputPlaceholderSelector :: Selector
+actionWithIdentifier_title_options_icon_textInputButtonTitle_textInputPlaceholderSelector :: Selector '[Id NSString, Id NSString, UNNotificationActionOptions, Id UNNotificationActionIcon, Id NSString, Id NSString] (Id UNTextInputNotificationAction)
 actionWithIdentifier_title_options_icon_textInputButtonTitle_textInputPlaceholderSelector = mkSelector "actionWithIdentifier:title:options:icon:textInputButtonTitle:textInputPlaceholder:"
 
 -- | @Selector@ for @textInputButtonTitle@
-textInputButtonTitleSelector :: Selector
+textInputButtonTitleSelector :: Selector '[] (Id NSString)
 textInputButtonTitleSelector = mkSelector "textInputButtonTitle"
 
 -- | @Selector@ for @textInputPlaceholder@
-textInputPlaceholderSelector :: Selector
+textInputPlaceholderSelector :: Selector '[] (Id NSString)
 textInputPlaceholderSelector = mkSelector "textInputPlaceholder"
 

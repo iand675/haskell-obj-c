@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.MapKit.MKMapCameraZoomRange
   , initWithMaxCenterCoordinateDistance
   , minCenterCoordinateDistance
   , maxCenterCoordinateDistance
-  , initWithMinCenterCoordinateDistance_maxCenterCoordinateDistanceSelector
-  , initWithMinCenterCoordinateDistanceSelector
   , initWithMaxCenterCoordinateDistanceSelector
-  , minCenterCoordinateDistanceSelector
+  , initWithMinCenterCoordinateDistanceSelector
+  , initWithMinCenterCoordinateDistance_maxCenterCoordinateDistanceSelector
   , maxCenterCoordinateDistanceSelector
+  , minCenterCoordinateDistanceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,50 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithMinCenterCoordinateDistance:maxCenterCoordinateDistance:@
 initWithMinCenterCoordinateDistance_maxCenterCoordinateDistance :: IsMKMapCameraZoomRange mkMapCameraZoomRange => mkMapCameraZoomRange -> CDouble -> CDouble -> IO (Id MKMapCameraZoomRange)
-initWithMinCenterCoordinateDistance_maxCenterCoordinateDistance mkMapCameraZoomRange  minDistance maxDistance =
-    sendMsg mkMapCameraZoomRange (mkSelector "initWithMinCenterCoordinateDistance:maxCenterCoordinateDistance:") (retPtr retVoid) [argCDouble minDistance, argCDouble maxDistance] >>= ownedObject . castPtr
+initWithMinCenterCoordinateDistance_maxCenterCoordinateDistance mkMapCameraZoomRange minDistance maxDistance =
+  sendOwnedMessage mkMapCameraZoomRange initWithMinCenterCoordinateDistance_maxCenterCoordinateDistanceSelector minDistance maxDistance
 
 -- | @- initWithMinCenterCoordinateDistance:@
 initWithMinCenterCoordinateDistance :: IsMKMapCameraZoomRange mkMapCameraZoomRange => mkMapCameraZoomRange -> CDouble -> IO (Id MKMapCameraZoomRange)
-initWithMinCenterCoordinateDistance mkMapCameraZoomRange  minDistance =
-    sendMsg mkMapCameraZoomRange (mkSelector "initWithMinCenterCoordinateDistance:") (retPtr retVoid) [argCDouble minDistance] >>= ownedObject . castPtr
+initWithMinCenterCoordinateDistance mkMapCameraZoomRange minDistance =
+  sendOwnedMessage mkMapCameraZoomRange initWithMinCenterCoordinateDistanceSelector minDistance
 
 -- | @- initWithMaxCenterCoordinateDistance:@
 initWithMaxCenterCoordinateDistance :: IsMKMapCameraZoomRange mkMapCameraZoomRange => mkMapCameraZoomRange -> CDouble -> IO (Id MKMapCameraZoomRange)
-initWithMaxCenterCoordinateDistance mkMapCameraZoomRange  maxDistance =
-    sendMsg mkMapCameraZoomRange (mkSelector "initWithMaxCenterCoordinateDistance:") (retPtr retVoid) [argCDouble maxDistance] >>= ownedObject . castPtr
+initWithMaxCenterCoordinateDistance mkMapCameraZoomRange maxDistance =
+  sendOwnedMessage mkMapCameraZoomRange initWithMaxCenterCoordinateDistanceSelector maxDistance
 
 -- | @- minCenterCoordinateDistance@
 minCenterCoordinateDistance :: IsMKMapCameraZoomRange mkMapCameraZoomRange => mkMapCameraZoomRange -> IO CDouble
-minCenterCoordinateDistance mkMapCameraZoomRange  =
-    sendMsg mkMapCameraZoomRange (mkSelector "minCenterCoordinateDistance") retCDouble []
+minCenterCoordinateDistance mkMapCameraZoomRange =
+  sendMessage mkMapCameraZoomRange minCenterCoordinateDistanceSelector
 
 -- | @- maxCenterCoordinateDistance@
 maxCenterCoordinateDistance :: IsMKMapCameraZoomRange mkMapCameraZoomRange => mkMapCameraZoomRange -> IO CDouble
-maxCenterCoordinateDistance mkMapCameraZoomRange  =
-    sendMsg mkMapCameraZoomRange (mkSelector "maxCenterCoordinateDistance") retCDouble []
+maxCenterCoordinateDistance mkMapCameraZoomRange =
+  sendMessage mkMapCameraZoomRange maxCenterCoordinateDistanceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMinCenterCoordinateDistance:maxCenterCoordinateDistance:@
-initWithMinCenterCoordinateDistance_maxCenterCoordinateDistanceSelector :: Selector
+initWithMinCenterCoordinateDistance_maxCenterCoordinateDistanceSelector :: Selector '[CDouble, CDouble] (Id MKMapCameraZoomRange)
 initWithMinCenterCoordinateDistance_maxCenterCoordinateDistanceSelector = mkSelector "initWithMinCenterCoordinateDistance:maxCenterCoordinateDistance:"
 
 -- | @Selector@ for @initWithMinCenterCoordinateDistance:@
-initWithMinCenterCoordinateDistanceSelector :: Selector
+initWithMinCenterCoordinateDistanceSelector :: Selector '[CDouble] (Id MKMapCameraZoomRange)
 initWithMinCenterCoordinateDistanceSelector = mkSelector "initWithMinCenterCoordinateDistance:"
 
 -- | @Selector@ for @initWithMaxCenterCoordinateDistance:@
-initWithMaxCenterCoordinateDistanceSelector :: Selector
+initWithMaxCenterCoordinateDistanceSelector :: Selector '[CDouble] (Id MKMapCameraZoomRange)
 initWithMaxCenterCoordinateDistanceSelector = mkSelector "initWithMaxCenterCoordinateDistance:"
 
 -- | @Selector@ for @minCenterCoordinateDistance@
-minCenterCoordinateDistanceSelector :: Selector
+minCenterCoordinateDistanceSelector :: Selector '[] CDouble
 minCenterCoordinateDistanceSelector = mkSelector "minCenterCoordinateDistance"
 
 -- | @Selector@ for @maxCenterCoordinateDistance@
-maxCenterCoordinateDistanceSelector :: Selector
+maxCenterCoordinateDistanceSelector :: Selector '[] CDouble
 maxCenterCoordinateDistanceSelector = mkSelector "maxCenterCoordinateDistance"
 

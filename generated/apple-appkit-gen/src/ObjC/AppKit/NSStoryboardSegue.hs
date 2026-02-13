@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AppKit.NSStoryboardSegue
   , identifier
   , sourceController
   , destinationController
-  , segueWithIdentifier_source_destination_performHandlerSelector
+  , destinationControllerSelector
+  , identifierSelector
   , initWithIdentifier_source_destinationSelector
   , performSelector
-  , identifierSelector
+  , segueWithIdentifier_source_destination_performHandlerSelector
   , sourceControllerSelector
-  , destinationControllerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,60 +39,58 @@ segueWithIdentifier_source_destination_performHandler :: IsNSString identifier =
 segueWithIdentifier_source_destination_performHandler identifier sourceController destinationController performHandler =
   do
     cls' <- getRequiredClass "NSStoryboardSegue"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "segueWithIdentifier:source:destination:performHandler:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr (unRawId sourceController) :: Ptr ()), argPtr (castPtr (unRawId destinationController) :: Ptr ()), argPtr (castPtr performHandler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' segueWithIdentifier_source_destination_performHandlerSelector (toNSString identifier) sourceController destinationController performHandler
 
 -- | @- initWithIdentifier:source:destination:@
 initWithIdentifier_source_destination :: (IsNSStoryboardSegue nsStoryboardSegue, IsNSString identifier) => nsStoryboardSegue -> identifier -> RawId -> RawId -> IO (Id NSStoryboardSegue)
-initWithIdentifier_source_destination nsStoryboardSegue  identifier sourceController destinationController =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg nsStoryboardSegue (mkSelector "initWithIdentifier:source:destination:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr (unRawId sourceController) :: Ptr ()), argPtr (castPtr (unRawId destinationController) :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_source_destination nsStoryboardSegue identifier sourceController destinationController =
+  sendOwnedMessage nsStoryboardSegue initWithIdentifier_source_destinationSelector (toNSString identifier) sourceController destinationController
 
 -- | @- perform@
 perform :: IsNSStoryboardSegue nsStoryboardSegue => nsStoryboardSegue -> IO ()
-perform nsStoryboardSegue  =
-    sendMsg nsStoryboardSegue (mkSelector "perform") retVoid []
+perform nsStoryboardSegue =
+  sendMessage nsStoryboardSegue performSelector
 
 -- | @- identifier@
 identifier :: IsNSStoryboardSegue nsStoryboardSegue => nsStoryboardSegue -> IO (Id NSString)
-identifier nsStoryboardSegue  =
-    sendMsg nsStoryboardSegue (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsStoryboardSegue =
+  sendMessage nsStoryboardSegue identifierSelector
 
 -- | @- sourceController@
 sourceController :: IsNSStoryboardSegue nsStoryboardSegue => nsStoryboardSegue -> IO RawId
-sourceController nsStoryboardSegue  =
-    fmap (RawId . castPtr) $ sendMsg nsStoryboardSegue (mkSelector "sourceController") (retPtr retVoid) []
+sourceController nsStoryboardSegue =
+  sendMessage nsStoryboardSegue sourceControllerSelector
 
 -- | @- destinationController@
 destinationController :: IsNSStoryboardSegue nsStoryboardSegue => nsStoryboardSegue -> IO RawId
-destinationController nsStoryboardSegue  =
-    fmap (RawId . castPtr) $ sendMsg nsStoryboardSegue (mkSelector "destinationController") (retPtr retVoid) []
+destinationController nsStoryboardSegue =
+  sendMessage nsStoryboardSegue destinationControllerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @segueWithIdentifier:source:destination:performHandler:@
-segueWithIdentifier_source_destination_performHandlerSelector :: Selector
+segueWithIdentifier_source_destination_performHandlerSelector :: Selector '[Id NSString, RawId, RawId, Ptr ()] (Id NSStoryboardSegue)
 segueWithIdentifier_source_destination_performHandlerSelector = mkSelector "segueWithIdentifier:source:destination:performHandler:"
 
 -- | @Selector@ for @initWithIdentifier:source:destination:@
-initWithIdentifier_source_destinationSelector :: Selector
+initWithIdentifier_source_destinationSelector :: Selector '[Id NSString, RawId, RawId] (Id NSStoryboardSegue)
 initWithIdentifier_source_destinationSelector = mkSelector "initWithIdentifier:source:destination:"
 
 -- | @Selector@ for @perform@
-performSelector :: Selector
+performSelector :: Selector '[] ()
 performSelector = mkSelector "perform"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @sourceController@
-sourceControllerSelector :: Selector
+sourceControllerSelector :: Selector '[] RawId
 sourceControllerSelector = mkSelector "sourceController"
 
 -- | @Selector@ for @destinationController@
-destinationControllerSelector :: Selector
+destinationControllerSelector :: Selector '[] RawId
 destinationControllerSelector = mkSelector "destinationController"
 

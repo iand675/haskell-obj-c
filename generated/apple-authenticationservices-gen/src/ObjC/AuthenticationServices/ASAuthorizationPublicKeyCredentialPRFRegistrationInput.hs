@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.AuthenticationServices.ASAuthorizationPublicKeyCredentialPRFRegistra
   , inputValues
   , checkForSupportSelector
   , initWithInputValuesSelector
-  , shouldCheckForSupportSelector
   , inputValuesSelector
+  , shouldCheckForSupportSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,41 +35,40 @@ checkForSupport :: IO (Id ASAuthorizationPublicKeyCredentialPRFRegistrationInput
 checkForSupport  =
   do
     cls' <- getRequiredClass "ASAuthorizationPublicKeyCredentialPRFRegistrationInput"
-    sendClassMsg cls' (mkSelector "checkForSupport") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' checkForSupportSelector
 
 -- | @- initWithInputValues:@
 initWithInputValues :: (IsASAuthorizationPublicKeyCredentialPRFRegistrationInput asAuthorizationPublicKeyCredentialPRFRegistrationInput, IsASAuthorizationPublicKeyCredentialPRFAssertionInputValues inputValues) => asAuthorizationPublicKeyCredentialPRFRegistrationInput -> inputValues -> IO (Id ASAuthorizationPublicKeyCredentialPRFRegistrationInput)
-initWithInputValues asAuthorizationPublicKeyCredentialPRFRegistrationInput  inputValues =
-  withObjCPtr inputValues $ \raw_inputValues ->
-      sendMsg asAuthorizationPublicKeyCredentialPRFRegistrationInput (mkSelector "initWithInputValues:") (retPtr retVoid) [argPtr (castPtr raw_inputValues :: Ptr ())] >>= ownedObject . castPtr
+initWithInputValues asAuthorizationPublicKeyCredentialPRFRegistrationInput inputValues =
+  sendOwnedMessage asAuthorizationPublicKeyCredentialPRFRegistrationInput initWithInputValuesSelector (toASAuthorizationPublicKeyCredentialPRFAssertionInputValues inputValues)
 
 -- | @- shouldCheckForSupport@
 shouldCheckForSupport :: IsASAuthorizationPublicKeyCredentialPRFRegistrationInput asAuthorizationPublicKeyCredentialPRFRegistrationInput => asAuthorizationPublicKeyCredentialPRFRegistrationInput -> IO Bool
-shouldCheckForSupport asAuthorizationPublicKeyCredentialPRFRegistrationInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationPublicKeyCredentialPRFRegistrationInput (mkSelector "shouldCheckForSupport") retCULong []
+shouldCheckForSupport asAuthorizationPublicKeyCredentialPRFRegistrationInput =
+  sendMessage asAuthorizationPublicKeyCredentialPRFRegistrationInput shouldCheckForSupportSelector
 
 -- | @- inputValues@
 inputValues :: IsASAuthorizationPublicKeyCredentialPRFRegistrationInput asAuthorizationPublicKeyCredentialPRFRegistrationInput => asAuthorizationPublicKeyCredentialPRFRegistrationInput -> IO (Id ASAuthorizationPublicKeyCredentialPRFAssertionInputValues)
-inputValues asAuthorizationPublicKeyCredentialPRFRegistrationInput  =
-    sendMsg asAuthorizationPublicKeyCredentialPRFRegistrationInput (mkSelector "inputValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputValues asAuthorizationPublicKeyCredentialPRFRegistrationInput =
+  sendMessage asAuthorizationPublicKeyCredentialPRFRegistrationInput inputValuesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @checkForSupport@
-checkForSupportSelector :: Selector
+checkForSupportSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialPRFRegistrationInput)
 checkForSupportSelector = mkSelector "checkForSupport"
 
 -- | @Selector@ for @initWithInputValues:@
-initWithInputValuesSelector :: Selector
+initWithInputValuesSelector :: Selector '[Id ASAuthorizationPublicKeyCredentialPRFAssertionInputValues] (Id ASAuthorizationPublicKeyCredentialPRFRegistrationInput)
 initWithInputValuesSelector = mkSelector "initWithInputValues:"
 
 -- | @Selector@ for @shouldCheckForSupport@
-shouldCheckForSupportSelector :: Selector
+shouldCheckForSupportSelector :: Selector '[] Bool
 shouldCheckForSupportSelector = mkSelector "shouldCheckForSupport"
 
 -- | @Selector@ for @inputValues@
-inputValuesSelector :: Selector
+inputValuesSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialPRFAssertionInputValues)
 inputValuesSelector = mkSelector "inputValues"
 

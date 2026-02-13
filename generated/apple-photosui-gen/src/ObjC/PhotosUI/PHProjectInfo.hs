@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,14 +19,14 @@ module ObjC.PhotosUI.PHProjectInfo
   , pageNumbersEnabled
   , productIdentifier
   , themeIdentifier
+  , brandingEnabledSelector
+  , creationSourceSelector
   , initSelector
   , newSelector
-  , creationSourceSelector
-  , projectTypeSelector
-  , sectionsSelector
-  , brandingEnabledSelector
   , pageNumbersEnabledSelector
   , productIdentifierSelector
+  , projectTypeSelector
+  , sectionsSelector
   , themeIdentifierSelector
 
   -- * Enum types
@@ -45,15 +46,11 @@ module ObjC.PhotosUI.PHProjectInfo
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,36 +60,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO (Id PHProjectInfo)
-init_ phProjectInfo  =
-    sendMsg phProjectInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phProjectInfo =
+  sendOwnedMessage phProjectInfo initSelector
 
 -- | @+ new@
 new :: IO (Id PHProjectInfo)
 new  =
   do
     cls' <- getRequiredClass "PHProjectInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Source from which the project was created.
 --
 -- ObjC selector: @- creationSource@
 creationSource :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO PHProjectCreationSource
-creationSource phProjectInfo  =
-    fmap (coerce :: CLong -> PHProjectCreationSource) $ sendMsg phProjectInfo (mkSelector "creationSource") retCLong []
+creationSource phProjectInfo =
+  sendMessage phProjectInfo creationSourceSelector
 
 -- | Selected projectType value from the extensions options as defined in -[PHProjectExtensionController supportedProjectTypes]. See PHProjectExtensionController.h for more information on configuring the options.
 --
 -- ObjC selector: @- projectType@
 projectType :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO (Id NSString)
-projectType phProjectInfo  =
-    sendMsg phProjectInfo (mkSelector "projectType") (retPtr retVoid) [] >>= retainedObject . castPtr
+projectType phProjectInfo =
+  sendMessage phProjectInfo projectTypeSelector
 
 -- | Array of project sections each containing one or more PHProjectSectionContent objects.
 --
 -- ObjC selector: @- sections@
 sections :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO (Id NSArray)
-sections phProjectInfo  =
-    sendMsg phProjectInfo (mkSelector "sections") (retPtr retVoid) [] >>= retainedObject . castPtr
+sections phProjectInfo =
+  sendMessage phProjectInfo sectionsSelector
 
 -- | The following properties are only used when the user creates a new project from an existing Apple Print Product.
 --
@@ -100,67 +97,67 @@ sections phProjectInfo  =
 --
 -- ObjC selector: @- brandingEnabled@
 brandingEnabled :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO Bool
-brandingEnabled phProjectInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phProjectInfo (mkSelector "brandingEnabled") retCULong []
+brandingEnabled phProjectInfo =
+  sendMessage phProjectInfo brandingEnabledSelector
 
 -- | YES if the source project had page numbers enabled.
 --
 -- ObjC selector: @- pageNumbersEnabled@
 pageNumbersEnabled :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO Bool
-pageNumbersEnabled phProjectInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phProjectInfo (mkSelector "pageNumbersEnabled") retCULong []
+pageNumbersEnabled phProjectInfo =
+  sendMessage phProjectInfo pageNumbersEnabledSelector
 
 -- | The product identifier of the originating Apple Print Product.
 --
 -- ObjC selector: @- productIdentifier@
 productIdentifier :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO (Id NSString)
-productIdentifier phProjectInfo  =
-    sendMsg phProjectInfo (mkSelector "productIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+productIdentifier phProjectInfo =
+  sendMessage phProjectInfo productIdentifierSelector
 
 -- | The product theme identifier of the originating Apple Print Product.
 --
 -- ObjC selector: @- themeIdentifier@
 themeIdentifier :: IsPHProjectInfo phProjectInfo => phProjectInfo -> IO (Id NSString)
-themeIdentifier phProjectInfo  =
-    sendMsg phProjectInfo (mkSelector "themeIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+themeIdentifier phProjectInfo =
+  sendMessage phProjectInfo themeIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHProjectInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHProjectInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @creationSource@
-creationSourceSelector :: Selector
+creationSourceSelector :: Selector '[] PHProjectCreationSource
 creationSourceSelector = mkSelector "creationSource"
 
 -- | @Selector@ for @projectType@
-projectTypeSelector :: Selector
+projectTypeSelector :: Selector '[] (Id NSString)
 projectTypeSelector = mkSelector "projectType"
 
 -- | @Selector@ for @sections@
-sectionsSelector :: Selector
+sectionsSelector :: Selector '[] (Id NSArray)
 sectionsSelector = mkSelector "sections"
 
 -- | @Selector@ for @brandingEnabled@
-brandingEnabledSelector :: Selector
+brandingEnabledSelector :: Selector '[] Bool
 brandingEnabledSelector = mkSelector "brandingEnabled"
 
 -- | @Selector@ for @pageNumbersEnabled@
-pageNumbersEnabledSelector :: Selector
+pageNumbersEnabledSelector :: Selector '[] Bool
 pageNumbersEnabledSelector = mkSelector "pageNumbersEnabled"
 
 -- | @Selector@ for @productIdentifier@
-productIdentifierSelector :: Selector
+productIdentifierSelector :: Selector '[] (Id NSString)
 productIdentifierSelector = mkSelector "productIdentifier"
 
 -- | @Selector@ for @themeIdentifier@
-themeIdentifierSelector :: Selector
+themeIdentifierSelector :: Selector '[] (Id NSString)
 themeIdentifierSelector = mkSelector "themeIdentifier"
 

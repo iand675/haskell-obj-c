@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.MetalPerformanceShaders.MPSImageThresholdBinary
   , thresholdValue
   , maximumValue
   , transform
-  , initWithDevice_thresholdValue_maximumValue_linearGrayColorTransformSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
-  , thresholdValueSelector
+  , initWithDevice_thresholdValue_maximumValue_linearGrayColorTransformSelector
   , maximumValueSelector
+  , thresholdValueSelector
   , transformSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:thresholdValue:maximumValue:linearGrayColorTransform:@
 initWithDevice_thresholdValue_maximumValue_linearGrayColorTransform :: IsMPSImageThresholdBinary mpsImageThresholdBinary => mpsImageThresholdBinary -> RawId -> CFloat -> CFloat -> Const (Ptr CFloat) -> IO (Id MPSImageThresholdBinary)
-initWithDevice_thresholdValue_maximumValue_linearGrayColorTransform mpsImageThresholdBinary  device thresholdValue maximumValue transform =
-    sendMsg mpsImageThresholdBinary (mkSelector "initWithDevice:thresholdValue:maximumValue:linearGrayColorTransform:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat thresholdValue, argCFloat maximumValue, argPtr (unConst transform)] >>= ownedObject . castPtr
+initWithDevice_thresholdValue_maximumValue_linearGrayColorTransform mpsImageThresholdBinary device thresholdValue maximumValue transform =
+  sendOwnedMessage mpsImageThresholdBinary initWithDevice_thresholdValue_maximumValue_linearGrayColorTransformSelector device thresholdValue maximumValue transform
 
 -- | NSSecureCoding compatability
 --
@@ -68,14 +65,13 @@ initWithDevice_thresholdValue_maximumValue_linearGrayColorTransform mpsImageThre
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageThresholdBinary mpsImageThresholdBinary, IsNSCoder aDecoder) => mpsImageThresholdBinary -> aDecoder -> RawId -> IO (Id MPSImageThresholdBinary)
-initWithCoder_device mpsImageThresholdBinary  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageThresholdBinary (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageThresholdBinary aDecoder device =
+  sendOwnedMessage mpsImageThresholdBinary initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageThresholdBinary mpsImageThresholdBinary => mpsImageThresholdBinary -> RawId -> IO (Id MPSImageThresholdBinary)
-initWithDevice mpsImageThresholdBinary  device =
-    sendMsg mpsImageThresholdBinary (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageThresholdBinary device =
+  sendOwnedMessage mpsImageThresholdBinary initWithDeviceSelector device
 
 -- | thresholdValue
 --
@@ -83,8 +79,8 @@ initWithDevice mpsImageThresholdBinary  device =
 --
 -- ObjC selector: @- thresholdValue@
 thresholdValue :: IsMPSImageThresholdBinary mpsImageThresholdBinary => mpsImageThresholdBinary -> IO CFloat
-thresholdValue mpsImageThresholdBinary  =
-    sendMsg mpsImageThresholdBinary (mkSelector "thresholdValue") retCFloat []
+thresholdValue mpsImageThresholdBinary =
+  sendMessage mpsImageThresholdBinary thresholdValueSelector
 
 -- | maximumValue
 --
@@ -92,8 +88,8 @@ thresholdValue mpsImageThresholdBinary  =
 --
 -- ObjC selector: @- maximumValue@
 maximumValue :: IsMPSImageThresholdBinary mpsImageThresholdBinary => mpsImageThresholdBinary -> IO CFloat
-maximumValue mpsImageThresholdBinary  =
-    sendMsg mpsImageThresholdBinary (mkSelector "maximumValue") retCFloat []
+maximumValue mpsImageThresholdBinary =
+  sendMessage mpsImageThresholdBinary maximumValueSelector
 
 -- | transform
 --
@@ -101,34 +97,34 @@ maximumValue mpsImageThresholdBinary  =
 --
 -- ObjC selector: @- transform@
 transform :: IsMPSImageThresholdBinary mpsImageThresholdBinary => mpsImageThresholdBinary -> IO (Const (Ptr CFloat))
-transform mpsImageThresholdBinary  =
-    fmap Const $ fmap castPtr $ sendMsg mpsImageThresholdBinary (mkSelector "transform") (retPtr retVoid) []
+transform mpsImageThresholdBinary =
+  sendMessage mpsImageThresholdBinary transformSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:thresholdValue:maximumValue:linearGrayColorTransform:@
-initWithDevice_thresholdValue_maximumValue_linearGrayColorTransformSelector :: Selector
+initWithDevice_thresholdValue_maximumValue_linearGrayColorTransformSelector :: Selector '[RawId, CFloat, CFloat, Const (Ptr CFloat)] (Id MPSImageThresholdBinary)
 initWithDevice_thresholdValue_maximumValue_linearGrayColorTransformSelector = mkSelector "initWithDevice:thresholdValue:maximumValue:linearGrayColorTransform:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageThresholdBinary)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageThresholdBinary)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @thresholdValue@
-thresholdValueSelector :: Selector
+thresholdValueSelector :: Selector '[] CFloat
 thresholdValueSelector = mkSelector "thresholdValue"
 
 -- | @Selector@ for @maximumValue@
-maximumValueSelector :: Selector
+maximumValueSelector :: Selector '[] CFloat
 maximumValueSelector = mkSelector "maximumValue"
 
 -- | @Selector@ for @transform@
-transformSelector :: Selector
+transformSelector :: Selector '[] (Const (Ptr CFloat))
 transformSelector = mkSelector "transform"
 

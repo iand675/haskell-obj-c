@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,53 +41,49 @@ module ObjC.WebKit.DOMHTMLTableElement
   , setSummary
   , width
   , setWidth
-  , createTHeadSelector
-  , deleteTHeadSelector
-  , createTFootSelector
-  , deleteTFootSelector
-  , createCaptionSelector
-  , deleteCaptionSelector
-  , insertRowSelector
-  , deleteRowSelector
-  , captionSelector
-  , setCaptionSelector
-  , tHeadSelector
-  , setTHeadSelector
-  , tFootSelector
-  , setTFootSelector
-  , rowsSelector
-  , tBodiesSelector
   , alignSelector
-  , setAlignSelector
   , bgColorSelector
-  , setBgColorSelector
   , borderSelector
-  , setBorderSelector
+  , captionSelector
   , cellPaddingSelector
-  , setCellPaddingSelector
   , cellSpacingSelector
-  , setCellSpacingSelector
+  , createCaptionSelector
+  , createTFootSelector
+  , createTHeadSelector
+  , deleteCaptionSelector
+  , deleteRowSelector
+  , deleteTFootSelector
+  , deleteTHeadSelector
   , frameBordersSelector
-  , setFrameBordersSelector
+  , insertRowSelector
+  , rowsSelector
   , rulesSelector
+  , setAlignSelector
+  , setBgColorSelector
+  , setBorderSelector
+  , setCaptionSelector
+  , setCellPaddingSelector
+  , setCellSpacingSelector
+  , setFrameBordersSelector
   , setRulesSelector
-  , summarySelector
   , setSummarySelector
-  , widthSelector
+  , setTFootSelector
+  , setTHeadSelector
   , setWidthSelector
+  , summarySelector
+  , tBodiesSelector
+  , tFootSelector
+  , tHeadSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -95,323 +92,311 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- createTHead@
 createTHead :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id DOMHTMLElement)
-createTHead domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "createTHead") (retPtr retVoid) [] >>= retainedObject . castPtr
+createTHead domhtmlTableElement =
+  sendMessage domhtmlTableElement createTHeadSelector
 
 -- | @- deleteTHead@
 deleteTHead :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO ()
-deleteTHead domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "deleteTHead") retVoid []
+deleteTHead domhtmlTableElement =
+  sendMessage domhtmlTableElement deleteTHeadSelector
 
 -- | @- createTFoot@
 createTFoot :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id DOMHTMLElement)
-createTFoot domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "createTFoot") (retPtr retVoid) [] >>= retainedObject . castPtr
+createTFoot domhtmlTableElement =
+  sendMessage domhtmlTableElement createTFootSelector
 
 -- | @- deleteTFoot@
 deleteTFoot :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO ()
-deleteTFoot domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "deleteTFoot") retVoid []
+deleteTFoot domhtmlTableElement =
+  sendMessage domhtmlTableElement deleteTFootSelector
 
 -- | @- createCaption@
 createCaption :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id DOMHTMLElement)
-createCaption domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "createCaption") (retPtr retVoid) [] >>= retainedObject . castPtr
+createCaption domhtmlTableElement =
+  sendMessage domhtmlTableElement createCaptionSelector
 
 -- | @- deleteCaption@
 deleteCaption :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO ()
-deleteCaption domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "deleteCaption") retVoid []
+deleteCaption domhtmlTableElement =
+  sendMessage domhtmlTableElement deleteCaptionSelector
 
 -- | @- insertRow:@
 insertRow :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> CInt -> IO (Id DOMHTMLElement)
-insertRow domhtmlTableElement  index =
-    sendMsg domhtmlTableElement (mkSelector "insertRow:") (retPtr retVoid) [argCInt index] >>= retainedObject . castPtr
+insertRow domhtmlTableElement index =
+  sendMessage domhtmlTableElement insertRowSelector index
 
 -- | @- deleteRow:@
 deleteRow :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> CInt -> IO ()
-deleteRow domhtmlTableElement  index =
-    sendMsg domhtmlTableElement (mkSelector "deleteRow:") retVoid [argCInt index]
+deleteRow domhtmlTableElement index =
+  sendMessage domhtmlTableElement deleteRowSelector index
 
 -- | @- caption@
 caption :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id DOMHTMLTableCaptionElement)
-caption domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "caption") (retPtr retVoid) [] >>= retainedObject . castPtr
+caption domhtmlTableElement =
+  sendMessage domhtmlTableElement captionSelector
 
 -- | @- setCaption:@
 setCaption :: (IsDOMHTMLTableElement domhtmlTableElement, IsDOMHTMLTableCaptionElement value) => domhtmlTableElement -> value -> IO ()
-setCaption domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setCaption:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaption domhtmlTableElement value =
+  sendMessage domhtmlTableElement setCaptionSelector (toDOMHTMLTableCaptionElement value)
 
 -- | @- tHead@
 tHead :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id DOMHTMLTableSectionElement)
-tHead domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "tHead") (retPtr retVoid) [] >>= retainedObject . castPtr
+tHead domhtmlTableElement =
+  sendMessage domhtmlTableElement tHeadSelector
 
 -- | @- setTHead:@
 setTHead :: (IsDOMHTMLTableElement domhtmlTableElement, IsDOMHTMLTableSectionElement value) => domhtmlTableElement -> value -> IO ()
-setTHead domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setTHead:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTHead domhtmlTableElement value =
+  sendMessage domhtmlTableElement setTHeadSelector (toDOMHTMLTableSectionElement value)
 
 -- | @- tFoot@
 tFoot :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id DOMHTMLTableSectionElement)
-tFoot domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "tFoot") (retPtr retVoid) [] >>= retainedObject . castPtr
+tFoot domhtmlTableElement =
+  sendMessage domhtmlTableElement tFootSelector
 
 -- | @- setTFoot:@
 setTFoot :: (IsDOMHTMLTableElement domhtmlTableElement, IsDOMHTMLTableSectionElement value) => domhtmlTableElement -> value -> IO ()
-setTFoot domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setTFoot:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTFoot domhtmlTableElement value =
+  sendMessage domhtmlTableElement setTFootSelector (toDOMHTMLTableSectionElement value)
 
 -- | @- rows@
 rows :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id DOMHTMLCollection)
-rows domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "rows") (retPtr retVoid) [] >>= retainedObject . castPtr
+rows domhtmlTableElement =
+  sendMessage domhtmlTableElement rowsSelector
 
 -- | @- tBodies@
 tBodies :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id DOMHTMLCollection)
-tBodies domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "tBodies") (retPtr retVoid) [] >>= retainedObject . castPtr
+tBodies domhtmlTableElement =
+  sendMessage domhtmlTableElement tBodiesSelector
 
 -- | @- align@
 align :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id NSString)
-align domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "align") (retPtr retVoid) [] >>= retainedObject . castPtr
+align domhtmlTableElement =
+  sendMessage domhtmlTableElement alignSelector
 
 -- | @- setAlign:@
 setAlign :: (IsDOMHTMLTableElement domhtmlTableElement, IsNSString value) => domhtmlTableElement -> value -> IO ()
-setAlign domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlign domhtmlTableElement value =
+  sendMessage domhtmlTableElement setAlignSelector (toNSString value)
 
 -- | @- bgColor@
 bgColor :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id NSString)
-bgColor domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "bgColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+bgColor domhtmlTableElement =
+  sendMessage domhtmlTableElement bgColorSelector
 
 -- | @- setBgColor:@
 setBgColor :: (IsDOMHTMLTableElement domhtmlTableElement, IsNSString value) => domhtmlTableElement -> value -> IO ()
-setBgColor domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setBgColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBgColor domhtmlTableElement value =
+  sendMessage domhtmlTableElement setBgColorSelector (toNSString value)
 
 -- | @- border@
 border :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id NSString)
-border domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "border") (retPtr retVoid) [] >>= retainedObject . castPtr
+border domhtmlTableElement =
+  sendMessage domhtmlTableElement borderSelector
 
 -- | @- setBorder:@
 setBorder :: (IsDOMHTMLTableElement domhtmlTableElement, IsNSString value) => domhtmlTableElement -> value -> IO ()
-setBorder domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setBorder:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBorder domhtmlTableElement value =
+  sendMessage domhtmlTableElement setBorderSelector (toNSString value)
 
 -- | @- cellPadding@
 cellPadding :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id NSString)
-cellPadding domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "cellPadding") (retPtr retVoid) [] >>= retainedObject . castPtr
+cellPadding domhtmlTableElement =
+  sendMessage domhtmlTableElement cellPaddingSelector
 
 -- | @- setCellPadding:@
 setCellPadding :: (IsDOMHTMLTableElement domhtmlTableElement, IsNSString value) => domhtmlTableElement -> value -> IO ()
-setCellPadding domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setCellPadding:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCellPadding domhtmlTableElement value =
+  sendMessage domhtmlTableElement setCellPaddingSelector (toNSString value)
 
 -- | @- cellSpacing@
 cellSpacing :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id NSString)
-cellSpacing domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "cellSpacing") (retPtr retVoid) [] >>= retainedObject . castPtr
+cellSpacing domhtmlTableElement =
+  sendMessage domhtmlTableElement cellSpacingSelector
 
 -- | @- setCellSpacing:@
 setCellSpacing :: (IsDOMHTMLTableElement domhtmlTableElement, IsNSString value) => domhtmlTableElement -> value -> IO ()
-setCellSpacing domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setCellSpacing:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCellSpacing domhtmlTableElement value =
+  sendMessage domhtmlTableElement setCellSpacingSelector (toNSString value)
 
 -- | @- frameBorders@
 frameBorders :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id NSString)
-frameBorders domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "frameBorders") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameBorders domhtmlTableElement =
+  sendMessage domhtmlTableElement frameBordersSelector
 
 -- | @- setFrameBorders:@
 setFrameBorders :: (IsDOMHTMLTableElement domhtmlTableElement, IsNSString value) => domhtmlTableElement -> value -> IO ()
-setFrameBorders domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setFrameBorders:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFrameBorders domhtmlTableElement value =
+  sendMessage domhtmlTableElement setFrameBordersSelector (toNSString value)
 
 -- | @- rules@
 rules :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id NSString)
-rules domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "rules") (retPtr retVoid) [] >>= retainedObject . castPtr
+rules domhtmlTableElement =
+  sendMessage domhtmlTableElement rulesSelector
 
 -- | @- setRules:@
 setRules :: (IsDOMHTMLTableElement domhtmlTableElement, IsNSString value) => domhtmlTableElement -> value -> IO ()
-setRules domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRules domhtmlTableElement value =
+  sendMessage domhtmlTableElement setRulesSelector (toNSString value)
 
 -- | @- summary@
 summary :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id NSString)
-summary domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "summary") (retPtr retVoid) [] >>= retainedObject . castPtr
+summary domhtmlTableElement =
+  sendMessage domhtmlTableElement summarySelector
 
 -- | @- setSummary:@
 setSummary :: (IsDOMHTMLTableElement domhtmlTableElement, IsNSString value) => domhtmlTableElement -> value -> IO ()
-setSummary domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setSummary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSummary domhtmlTableElement value =
+  sendMessage domhtmlTableElement setSummarySelector (toNSString value)
 
 -- | @- width@
 width :: IsDOMHTMLTableElement domhtmlTableElement => domhtmlTableElement -> IO (Id NSString)
-width domhtmlTableElement  =
-    sendMsg domhtmlTableElement (mkSelector "width") (retPtr retVoid) [] >>= retainedObject . castPtr
+width domhtmlTableElement =
+  sendMessage domhtmlTableElement widthSelector
 
 -- | @- setWidth:@
 setWidth :: (IsDOMHTMLTableElement domhtmlTableElement, IsNSString value) => domhtmlTableElement -> value -> IO ()
-setWidth domhtmlTableElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableElement (mkSelector "setWidth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWidth domhtmlTableElement value =
+  sendMessage domhtmlTableElement setWidthSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createTHead@
-createTHeadSelector :: Selector
+createTHeadSelector :: Selector '[] (Id DOMHTMLElement)
 createTHeadSelector = mkSelector "createTHead"
 
 -- | @Selector@ for @deleteTHead@
-deleteTHeadSelector :: Selector
+deleteTHeadSelector :: Selector '[] ()
 deleteTHeadSelector = mkSelector "deleteTHead"
 
 -- | @Selector@ for @createTFoot@
-createTFootSelector :: Selector
+createTFootSelector :: Selector '[] (Id DOMHTMLElement)
 createTFootSelector = mkSelector "createTFoot"
 
 -- | @Selector@ for @deleteTFoot@
-deleteTFootSelector :: Selector
+deleteTFootSelector :: Selector '[] ()
 deleteTFootSelector = mkSelector "deleteTFoot"
 
 -- | @Selector@ for @createCaption@
-createCaptionSelector :: Selector
+createCaptionSelector :: Selector '[] (Id DOMHTMLElement)
 createCaptionSelector = mkSelector "createCaption"
 
 -- | @Selector@ for @deleteCaption@
-deleteCaptionSelector :: Selector
+deleteCaptionSelector :: Selector '[] ()
 deleteCaptionSelector = mkSelector "deleteCaption"
 
 -- | @Selector@ for @insertRow:@
-insertRowSelector :: Selector
+insertRowSelector :: Selector '[CInt] (Id DOMHTMLElement)
 insertRowSelector = mkSelector "insertRow:"
 
 -- | @Selector@ for @deleteRow:@
-deleteRowSelector :: Selector
+deleteRowSelector :: Selector '[CInt] ()
 deleteRowSelector = mkSelector "deleteRow:"
 
 -- | @Selector@ for @caption@
-captionSelector :: Selector
+captionSelector :: Selector '[] (Id DOMHTMLTableCaptionElement)
 captionSelector = mkSelector "caption"
 
 -- | @Selector@ for @setCaption:@
-setCaptionSelector :: Selector
+setCaptionSelector :: Selector '[Id DOMHTMLTableCaptionElement] ()
 setCaptionSelector = mkSelector "setCaption:"
 
 -- | @Selector@ for @tHead@
-tHeadSelector :: Selector
+tHeadSelector :: Selector '[] (Id DOMHTMLTableSectionElement)
 tHeadSelector = mkSelector "tHead"
 
 -- | @Selector@ for @setTHead:@
-setTHeadSelector :: Selector
+setTHeadSelector :: Selector '[Id DOMHTMLTableSectionElement] ()
 setTHeadSelector = mkSelector "setTHead:"
 
 -- | @Selector@ for @tFoot@
-tFootSelector :: Selector
+tFootSelector :: Selector '[] (Id DOMHTMLTableSectionElement)
 tFootSelector = mkSelector "tFoot"
 
 -- | @Selector@ for @setTFoot:@
-setTFootSelector :: Selector
+setTFootSelector :: Selector '[Id DOMHTMLTableSectionElement] ()
 setTFootSelector = mkSelector "setTFoot:"
 
 -- | @Selector@ for @rows@
-rowsSelector :: Selector
+rowsSelector :: Selector '[] (Id DOMHTMLCollection)
 rowsSelector = mkSelector "rows"
 
 -- | @Selector@ for @tBodies@
-tBodiesSelector :: Selector
+tBodiesSelector :: Selector '[] (Id DOMHTMLCollection)
 tBodiesSelector = mkSelector "tBodies"
 
 -- | @Selector@ for @align@
-alignSelector :: Selector
+alignSelector :: Selector '[] (Id NSString)
 alignSelector = mkSelector "align"
 
 -- | @Selector@ for @setAlign:@
-setAlignSelector :: Selector
+setAlignSelector :: Selector '[Id NSString] ()
 setAlignSelector = mkSelector "setAlign:"
 
 -- | @Selector@ for @bgColor@
-bgColorSelector :: Selector
+bgColorSelector :: Selector '[] (Id NSString)
 bgColorSelector = mkSelector "bgColor"
 
 -- | @Selector@ for @setBgColor:@
-setBgColorSelector :: Selector
+setBgColorSelector :: Selector '[Id NSString] ()
 setBgColorSelector = mkSelector "setBgColor:"
 
 -- | @Selector@ for @border@
-borderSelector :: Selector
+borderSelector :: Selector '[] (Id NSString)
 borderSelector = mkSelector "border"
 
 -- | @Selector@ for @setBorder:@
-setBorderSelector :: Selector
+setBorderSelector :: Selector '[Id NSString] ()
 setBorderSelector = mkSelector "setBorder:"
 
 -- | @Selector@ for @cellPadding@
-cellPaddingSelector :: Selector
+cellPaddingSelector :: Selector '[] (Id NSString)
 cellPaddingSelector = mkSelector "cellPadding"
 
 -- | @Selector@ for @setCellPadding:@
-setCellPaddingSelector :: Selector
+setCellPaddingSelector :: Selector '[Id NSString] ()
 setCellPaddingSelector = mkSelector "setCellPadding:"
 
 -- | @Selector@ for @cellSpacing@
-cellSpacingSelector :: Selector
+cellSpacingSelector :: Selector '[] (Id NSString)
 cellSpacingSelector = mkSelector "cellSpacing"
 
 -- | @Selector@ for @setCellSpacing:@
-setCellSpacingSelector :: Selector
+setCellSpacingSelector :: Selector '[Id NSString] ()
 setCellSpacingSelector = mkSelector "setCellSpacing:"
 
 -- | @Selector@ for @frameBorders@
-frameBordersSelector :: Selector
+frameBordersSelector :: Selector '[] (Id NSString)
 frameBordersSelector = mkSelector "frameBorders"
 
 -- | @Selector@ for @setFrameBorders:@
-setFrameBordersSelector :: Selector
+setFrameBordersSelector :: Selector '[Id NSString] ()
 setFrameBordersSelector = mkSelector "setFrameBorders:"
 
 -- | @Selector@ for @rules@
-rulesSelector :: Selector
+rulesSelector :: Selector '[] (Id NSString)
 rulesSelector = mkSelector "rules"
 
 -- | @Selector@ for @setRules:@
-setRulesSelector :: Selector
+setRulesSelector :: Selector '[Id NSString] ()
 setRulesSelector = mkSelector "setRules:"
 
 -- | @Selector@ for @summary@
-summarySelector :: Selector
+summarySelector :: Selector '[] (Id NSString)
 summarySelector = mkSelector "summary"
 
 -- | @Selector@ for @setSummary:@
-setSummarySelector :: Selector
+setSummarySelector :: Selector '[Id NSString] ()
 setSummarySelector = mkSelector "setSummary:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] (Id NSString)
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[Id NSString] ()
 setWidthSelector = mkSelector "setWidth:"
 

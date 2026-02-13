@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,21 +19,17 @@ module ObjC.CoreHaptics.CHHapticEventParameter
   , initSelector
   , initWithParameterID_valueSelector
   , parameterIDSelector
-  , valueSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,14 +38,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCHHapticEventParameter chHapticEventParameter => chHapticEventParameter -> IO (Id CHHapticEventParameter)
-init_ chHapticEventParameter  =
-    sendMsg chHapticEventParameter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ chHapticEventParameter =
+  sendOwnedMessage chHapticEventParameter initSelector
 
 -- | @- initWithParameterID:value:@
 initWithParameterID_value :: (IsCHHapticEventParameter chHapticEventParameter, IsNSString parameterID) => chHapticEventParameter -> parameterID -> CFloat -> IO (Id CHHapticEventParameter)
-initWithParameterID_value chHapticEventParameter  parameterID value =
-  withObjCPtr parameterID $ \raw_parameterID ->
-      sendMsg chHapticEventParameter (mkSelector "initWithParameterID:value:") (retPtr retVoid) [argPtr (castPtr raw_parameterID :: Ptr ()), argCFloat value] >>= ownedObject . castPtr
+initWithParameterID_value chHapticEventParameter parameterID value =
+  sendOwnedMessage chHapticEventParameter initWithParameterID_valueSelector (toNSString parameterID) value
 
 -- | parameterID
 --
@@ -56,8 +52,8 @@ initWithParameterID_value chHapticEventParameter  parameterID value =
 --
 -- ObjC selector: @- parameterID@
 parameterID :: IsCHHapticEventParameter chHapticEventParameter => chHapticEventParameter -> IO (Id NSString)
-parameterID chHapticEventParameter  =
-    sendMsg chHapticEventParameter (mkSelector "parameterID") (retPtr retVoid) [] >>= retainedObject . castPtr
+parameterID chHapticEventParameter =
+  sendMessage chHapticEventParameter parameterIDSelector
 
 -- | value
 --
@@ -65,8 +61,8 @@ parameterID chHapticEventParameter  =
 --
 -- ObjC selector: @- value@
 value :: IsCHHapticEventParameter chHapticEventParameter => chHapticEventParameter -> IO CFloat
-value chHapticEventParameter  =
-    sendMsg chHapticEventParameter (mkSelector "value") retCFloat []
+value chHapticEventParameter =
+  sendMessage chHapticEventParameter valueSelector
 
 -- | value
 --
@@ -74,30 +70,30 @@ value chHapticEventParameter  =
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsCHHapticEventParameter chHapticEventParameter => chHapticEventParameter -> CFloat -> IO ()
-setValue chHapticEventParameter  value =
-    sendMsg chHapticEventParameter (mkSelector "setValue:") retVoid [argCFloat value]
+setValue chHapticEventParameter value =
+  sendMessage chHapticEventParameter setValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CHHapticEventParameter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithParameterID:value:@
-initWithParameterID_valueSelector :: Selector
+initWithParameterID_valueSelector :: Selector '[Id NSString, CFloat] (Id CHHapticEventParameter)
 initWithParameterID_valueSelector = mkSelector "initWithParameterID:value:"
 
 -- | @Selector@ for @parameterID@
-parameterIDSelector :: Selector
+parameterIDSelector :: Selector '[] (Id NSString)
 parameterIDSelector = mkSelector "parameterID"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CFloat
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[CFloat] ()
 setValueSelector = mkSelector "setValue:"
 

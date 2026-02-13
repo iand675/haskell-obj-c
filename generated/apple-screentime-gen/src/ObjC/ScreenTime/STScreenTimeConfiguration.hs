@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.ScreenTime.STScreenTimeConfiguration
   , init_
   , new
   , enforcesChildRestrictions
+  , enforcesChildRestrictionsSelector
   , initSelector
   , newSelector
-  , enforcesChildRestrictionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSTScreenTimeConfiguration stScreenTimeConfiguration => stScreenTimeConfiguration -> IO (Id STScreenTimeConfiguration)
-init_ stScreenTimeConfiguration  =
-    sendMsg stScreenTimeConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ stScreenTimeConfiguration =
+  sendOwnedMessage stScreenTimeConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id STScreenTimeConfiguration)
 new  =
   do
     cls' <- getRequiredClass "STScreenTimeConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | A Boolean that indicates whether the device is currently enforcing child restrictions.
 --
 -- ObjC selector: @- enforcesChildRestrictions@
 enforcesChildRestrictions :: IsSTScreenTimeConfiguration stScreenTimeConfiguration => stScreenTimeConfiguration -> IO Bool
-enforcesChildRestrictions stScreenTimeConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg stScreenTimeConfiguration (mkSelector "enforcesChildRestrictions") retCULong []
+enforcesChildRestrictions stScreenTimeConfiguration =
+  sendMessage stScreenTimeConfiguration enforcesChildRestrictionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id STScreenTimeConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id STScreenTimeConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @enforcesChildRestrictions@
-enforcesChildRestrictionsSelector :: Selector
+enforcesChildRestrictionsSelector :: Selector '[] Bool
 enforcesChildRestrictionsSelector = mkSelector "enforcesChildRestrictions"
 

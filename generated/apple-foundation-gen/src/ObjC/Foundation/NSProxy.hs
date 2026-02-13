@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.Foundation.NSProxy
   , debugDescription
   , allocSelector
   , allocWithZoneSelector
+  , allowsWeakReferenceSelector
   , classSelector
+  , deallocSelector
+  , debugDescriptionSelector
+  , descriptionSelector
+  , finalizeSelector
   , forwardInvocationSelector
   , methodSignatureForSelectorSelector
-  , deallocSelector
-  , finalizeSelector
   , respondsToSelectorSelector
-  , allowsWeakReferenceSelector
   , retainWeakReferenceSelector
-  , descriptionSelector
-  , debugDescriptionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,119 +50,118 @@ alloc :: IO RawId
 alloc  =
   do
     cls' <- getRequiredClass "NSProxy"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "alloc") (retPtr retVoid) []
+    sendOwnedClassMessage cls' allocSelector
 
 -- | @+ allocWithZone:@
 allocWithZone :: Ptr () -> IO RawId
 allocWithZone zone =
   do
     cls' <- getRequiredClass "NSProxy"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "allocWithZone:") (retPtr retVoid) [argPtr zone]
+    sendOwnedClassMessage cls' allocWithZoneSelector zone
 
 -- | @+ class@
 class_ :: IO Class
 class_  =
   do
     cls' <- getRequiredClass "NSProxy"
-    fmap (Class . castPtr) $ sendClassMsg cls' (mkSelector "class") (retPtr retVoid) []
+    sendClassMessage cls' classSelector
 
 -- | @- forwardInvocation:@
 forwardInvocation :: (IsNSProxy nsProxy, IsNSInvocation invocation) => nsProxy -> invocation -> IO ()
-forwardInvocation nsProxy  invocation =
-  withObjCPtr invocation $ \raw_invocation ->
-      sendMsg nsProxy (mkSelector "forwardInvocation:") retVoid [argPtr (castPtr raw_invocation :: Ptr ())]
+forwardInvocation nsProxy invocation =
+  sendMessage nsProxy forwardInvocationSelector (toNSInvocation invocation)
 
 -- | @- methodSignatureForSelector:@
-methodSignatureForSelector :: IsNSProxy nsProxy => nsProxy -> Selector -> IO (Id NSMethodSignature)
-methodSignatureForSelector nsProxy  sel =
-    sendMsg nsProxy (mkSelector "methodSignatureForSelector:") (retPtr retVoid) [argPtr (unSelector sel)] >>= retainedObject . castPtr
+methodSignatureForSelector :: IsNSProxy nsProxy => nsProxy -> Sel -> IO (Id NSMethodSignature)
+methodSignatureForSelector nsProxy sel =
+  sendMessage nsProxy methodSignatureForSelectorSelector sel
 
 -- | @- dealloc@
 dealloc :: IsNSProxy nsProxy => nsProxy -> IO ()
-dealloc nsProxy  =
-    sendMsg nsProxy (mkSelector "dealloc") retVoid []
+dealloc nsProxy =
+  sendMessage nsProxy deallocSelector
 
 -- | @- finalize@
 finalize :: IsNSProxy nsProxy => nsProxy -> IO ()
-finalize nsProxy  =
-    sendMsg nsProxy (mkSelector "finalize") retVoid []
+finalize nsProxy =
+  sendMessage nsProxy finalizeSelector
 
 -- | @+ respondsToSelector:@
-respondsToSelector :: Selector -> IO Bool
+respondsToSelector :: Sel -> IO Bool
 respondsToSelector aSelector =
   do
     cls' <- getRequiredClass "NSProxy"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "respondsToSelector:") retCULong [argPtr (unSelector aSelector)]
+    sendClassMessage cls' respondsToSelectorSelector aSelector
 
 -- | @- allowsWeakReference@
 allowsWeakReference :: IsNSProxy nsProxy => nsProxy -> IO Bool
-allowsWeakReference nsProxy  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProxy (mkSelector "allowsWeakReference") retCULong []
+allowsWeakReference nsProxy =
+  sendMessage nsProxy allowsWeakReferenceSelector
 
 -- | @- retainWeakReference@
 retainWeakReference :: IsNSProxy nsProxy => nsProxy -> IO Bool
-retainWeakReference nsProxy  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProxy (mkSelector "retainWeakReference") retCULong []
+retainWeakReference nsProxy =
+  sendMessage nsProxy retainWeakReferenceSelector
 
 -- | @- description@
 description :: IsNSProxy nsProxy => nsProxy -> IO (Id NSString)
-description nsProxy  =
-    sendMsg nsProxy (mkSelector "description") (retPtr retVoid) [] >>= retainedObject . castPtr
+description nsProxy =
+  sendMessage nsProxy descriptionSelector
 
 -- | @- debugDescription@
 debugDescription :: IsNSProxy nsProxy => nsProxy -> IO (Id NSString)
-debugDescription nsProxy  =
-    sendMsg nsProxy (mkSelector "debugDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+debugDescription nsProxy =
+  sendMessage nsProxy debugDescriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @alloc@
-allocSelector :: Selector
+allocSelector :: Selector '[] RawId
 allocSelector = mkSelector "alloc"
 
 -- | @Selector@ for @allocWithZone:@
-allocWithZoneSelector :: Selector
+allocWithZoneSelector :: Selector '[Ptr ()] RawId
 allocWithZoneSelector = mkSelector "allocWithZone:"
 
 -- | @Selector@ for @class@
-classSelector :: Selector
+classSelector :: Selector '[] Class
 classSelector = mkSelector "class"
 
 -- | @Selector@ for @forwardInvocation:@
-forwardInvocationSelector :: Selector
+forwardInvocationSelector :: Selector '[Id NSInvocation] ()
 forwardInvocationSelector = mkSelector "forwardInvocation:"
 
 -- | @Selector@ for @methodSignatureForSelector:@
-methodSignatureForSelectorSelector :: Selector
+methodSignatureForSelectorSelector :: Selector '[Sel] (Id NSMethodSignature)
 methodSignatureForSelectorSelector = mkSelector "methodSignatureForSelector:"
 
 -- | @Selector@ for @dealloc@
-deallocSelector :: Selector
+deallocSelector :: Selector '[] ()
 deallocSelector = mkSelector "dealloc"
 
 -- | @Selector@ for @finalize@
-finalizeSelector :: Selector
+finalizeSelector :: Selector '[] ()
 finalizeSelector = mkSelector "finalize"
 
 -- | @Selector@ for @respondsToSelector:@
-respondsToSelectorSelector :: Selector
+respondsToSelectorSelector :: Selector '[Sel] Bool
 respondsToSelectorSelector = mkSelector "respondsToSelector:"
 
 -- | @Selector@ for @allowsWeakReference@
-allowsWeakReferenceSelector :: Selector
+allowsWeakReferenceSelector :: Selector '[] Bool
 allowsWeakReferenceSelector = mkSelector "allowsWeakReference"
 
 -- | @Selector@ for @retainWeakReference@
-retainWeakReferenceSelector :: Selector
+retainWeakReferenceSelector :: Selector '[] Bool
 retainWeakReferenceSelector = mkSelector "retainWeakReference"
 
 -- | @Selector@ for @description@
-descriptionSelector :: Selector
+descriptionSelector :: Selector '[] (Id NSString)
 descriptionSelector = mkSelector "description"
 
 -- | @Selector@ for @debugDescription@
-debugDescriptionSelector :: Selector
+debugDescriptionSelector :: Selector '[] (Id NSString)
 debugDescriptionSelector = mkSelector "debugDescription"
 

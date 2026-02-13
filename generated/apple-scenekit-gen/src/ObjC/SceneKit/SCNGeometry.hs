@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,50 +42,46 @@ module ObjC.SceneKit.SCNGeometry
   , setEdgeCreasesElement
   , edgeCreasesSource
   , setEdgeCreasesSource
+  , edgeCreasesElementSelector
+  , edgeCreasesSourceSelector
+  , firstMaterialSelector
+  , geometryElementAtIndexSelector
+  , geometryElementCountSelector
+  , geometryElementsSelector
   , geometrySelector
-  , insertMaterial_atIndexSelector
-  , removeMaterialAtIndexSelector
-  , replaceMaterialAtIndex_withMaterialSelector
-  , materialWithNameSelector
+  , geometrySourceChannelsSelector
+  , geometrySourcesForSemanticSelector
+  , geometrySourcesSelector
   , geometryWithSources_elementsSelector
   , geometryWithSources_elements_sourceChannelsSelector
-  , geometrySourcesForSemanticSelector
-  , geometryElementAtIndexSelector
-  , nameSelector
-  , setNameSelector
-  , materialsSelector
-  , setMaterialsSelector
-  , firstMaterialSelector
-  , setFirstMaterialSelector
-  , geometrySourcesSelector
-  , geometryElementsSelector
-  , geometryElementCountSelector
-  , geometrySourceChannelsSelector
+  , insertMaterial_atIndexSelector
   , levelsOfDetailSelector
-  , setLevelsOfDetailSelector
-  , tessellatorSelector
-  , setTessellatorSelector
-  , subdivisionLevelSelector
-  , setSubdivisionLevelSelector
-  , wantsAdaptiveSubdivisionSelector
-  , setWantsAdaptiveSubdivisionSelector
-  , edgeCreasesElementSelector
+  , materialWithNameSelector
+  , materialsSelector
+  , nameSelector
+  , removeMaterialAtIndexSelector
+  , replaceMaterialAtIndex_withMaterialSelector
   , setEdgeCreasesElementSelector
-  , edgeCreasesSourceSelector
   , setEdgeCreasesSourceSelector
+  , setFirstMaterialSelector
+  , setLevelsOfDetailSelector
+  , setMaterialsSelector
+  , setNameSelector
+  , setSubdivisionLevelSelector
+  , setTessellatorSelector
+  , setWantsAdaptiveSubdivisionSelector
+  , subdivisionLevelSelector
+  , tessellatorSelector
+  , wantsAdaptiveSubdivisionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,7 +99,7 @@ geometry :: IO (Id SCNGeometry)
 geometry  =
   do
     cls' <- getRequiredClass "SCNGeometry"
-    sendClassMsg cls' (mkSelector "geometry") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' geometrySelector
 
 -- | insertMaterial:atIndex:
 --
@@ -114,9 +111,8 @@ geometry  =
 --
 -- ObjC selector: @- insertMaterial:atIndex:@
 insertMaterial_atIndex :: (IsSCNGeometry scnGeometry, IsSCNMaterial material) => scnGeometry -> material -> CULong -> IO ()
-insertMaterial_atIndex scnGeometry  material index =
-  withObjCPtr material $ \raw_material ->
-      sendMsg scnGeometry (mkSelector "insertMaterial:atIndex:") retVoid [argPtr (castPtr raw_material :: Ptr ()), argCULong index]
+insertMaterial_atIndex scnGeometry material index =
+  sendMessage scnGeometry insertMaterial_atIndexSelector (toSCNMaterial material) index
 
 -- | removeMaterialAtIndex:
 --
@@ -126,8 +122,8 @@ insertMaterial_atIndex scnGeometry  material index =
 --
 -- ObjC selector: @- removeMaterialAtIndex:@
 removeMaterialAtIndex :: IsSCNGeometry scnGeometry => scnGeometry -> CULong -> IO ()
-removeMaterialAtIndex scnGeometry  index =
-    sendMsg scnGeometry (mkSelector "removeMaterialAtIndex:") retVoid [argCULong index]
+removeMaterialAtIndex scnGeometry index =
+  sendMessage scnGeometry removeMaterialAtIndexSelector index
 
 -- | replaceMaterialAtIndex:withMaterial:
 --
@@ -139,9 +135,8 @@ removeMaterialAtIndex scnGeometry  index =
 --
 -- ObjC selector: @- replaceMaterialAtIndex:withMaterial:@
 replaceMaterialAtIndex_withMaterial :: (IsSCNGeometry scnGeometry, IsSCNMaterial material) => scnGeometry -> CULong -> material -> IO ()
-replaceMaterialAtIndex_withMaterial scnGeometry  index material =
-  withObjCPtr material $ \raw_material ->
-      sendMsg scnGeometry (mkSelector "replaceMaterialAtIndex:withMaterial:") retVoid [argCULong index, argPtr (castPtr raw_material :: Ptr ())]
+replaceMaterialAtIndex_withMaterial scnGeometry index material =
+  sendMessage scnGeometry replaceMaterialAtIndex_withMaterialSelector index (toSCNMaterial material)
 
 -- | materialWithName:
 --
@@ -151,9 +146,8 @@ replaceMaterialAtIndex_withMaterial scnGeometry  index material =
 --
 -- ObjC selector: @- materialWithName:@
 materialWithName :: (IsSCNGeometry scnGeometry, IsNSString name) => scnGeometry -> name -> IO (Id SCNMaterial)
-materialWithName scnGeometry  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg scnGeometry (mkSelector "materialWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+materialWithName scnGeometry name =
+  sendMessage scnGeometry materialWithNameSelector (toNSString name)
 
 -- | geometryWithSources:elements:
 --
@@ -170,9 +164,7 @@ geometryWithSources_elements :: (IsNSArray sources, IsNSArray elements) => sourc
 geometryWithSources_elements sources elements =
   do
     cls' <- getRequiredClass "SCNGeometry"
-    withObjCPtr sources $ \raw_sources ->
-      withObjCPtr elements $ \raw_elements ->
-        sendClassMsg cls' (mkSelector "geometryWithSources:elements:") (retPtr retVoid) [argPtr (castPtr raw_sources :: Ptr ()), argPtr (castPtr raw_elements :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' geometryWithSources_elementsSelector (toNSArray sources) (toNSArray elements)
 
 -- | geometryWithSources:elements:sourceChannels:
 --
@@ -197,10 +189,7 @@ geometryWithSources_elements_sourceChannels :: (IsNSArray sources, IsNSArray ele
 geometryWithSources_elements_sourceChannels sources elements sourceChannels =
   do
     cls' <- getRequiredClass "SCNGeometry"
-    withObjCPtr sources $ \raw_sources ->
-      withObjCPtr elements $ \raw_elements ->
-        withObjCPtr sourceChannels $ \raw_sourceChannels ->
-          sendClassMsg cls' (mkSelector "geometryWithSources:elements:sourceChannels:") (retPtr retVoid) [argPtr (castPtr raw_sources :: Ptr ()), argPtr (castPtr raw_elements :: Ptr ()), argPtr (castPtr raw_sourceChannels :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' geometryWithSources_elements_sourceChannelsSelector (toNSArray sources) (toNSArray elements) (toNSArray sourceChannels)
 
 -- | geometrySourcesForSemantic:
 --
@@ -212,9 +201,8 @@ geometryWithSources_elements_sourceChannels sources elements sourceChannels =
 --
 -- ObjC selector: @- geometrySourcesForSemantic:@
 geometrySourcesForSemantic :: (IsSCNGeometry scnGeometry, IsNSString semantic) => scnGeometry -> semantic -> IO (Id NSArray)
-geometrySourcesForSemantic scnGeometry  semantic =
-  withObjCPtr semantic $ \raw_semantic ->
-      sendMsg scnGeometry (mkSelector "geometrySourcesForSemantic:") (retPtr retVoid) [argPtr (castPtr raw_semantic :: Ptr ())] >>= retainedObject . castPtr
+geometrySourcesForSemantic scnGeometry semantic =
+  sendMessage scnGeometry geometrySourcesForSemanticSelector (toNSString semantic)
 
 -- | geometryElementAtIndex:
 --
@@ -224,8 +212,8 @@ geometrySourcesForSemantic scnGeometry  semantic =
 --
 -- ObjC selector: @- geometryElementAtIndex:@
 geometryElementAtIndex :: IsSCNGeometry scnGeometry => scnGeometry -> CLong -> IO (Id SCNGeometryElement)
-geometryElementAtIndex scnGeometry  elementIndex =
-    sendMsg scnGeometry (mkSelector "geometryElementAtIndex:") (retPtr retVoid) [argCLong elementIndex] >>= retainedObject . castPtr
+geometryElementAtIndex scnGeometry elementIndex =
+  sendMessage scnGeometry geometryElementAtIndexSelector elementIndex
 
 -- | name
 --
@@ -233,8 +221,8 @@ geometryElementAtIndex scnGeometry  elementIndex =
 --
 -- ObjC selector: @- name@
 name :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSString)
-name scnGeometry  =
-    sendMsg scnGeometry (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name scnGeometry =
+  sendMessage scnGeometry nameSelector
 
 -- | name
 --
@@ -242,9 +230,8 @@ name scnGeometry  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsSCNGeometry scnGeometry, IsNSString value) => scnGeometry -> value -> IO ()
-setName scnGeometry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnGeometry (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName scnGeometry value =
+  sendMessage scnGeometry setNameSelector (toNSString value)
 
 -- | materials
 --
@@ -254,8 +241,8 @@ setName scnGeometry  value =
 --
 -- ObjC selector: @- materials@
 materials :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSArray)
-materials scnGeometry  =
-    sendMsg scnGeometry (mkSelector "materials") (retPtr retVoid) [] >>= retainedObject . castPtr
+materials scnGeometry =
+  sendMessage scnGeometry materialsSelector
 
 -- | materials
 --
@@ -265,9 +252,8 @@ materials scnGeometry  =
 --
 -- ObjC selector: @- setMaterials:@
 setMaterials :: (IsSCNGeometry scnGeometry, IsNSArray value) => scnGeometry -> value -> IO ()
-setMaterials scnGeometry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnGeometry (mkSelector "setMaterials:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaterials scnGeometry value =
+  sendMessage scnGeometry setMaterialsSelector (toNSArray value)
 
 -- | firstMaterial
 --
@@ -277,8 +263,8 @@ setMaterials scnGeometry  value =
 --
 -- ObjC selector: @- firstMaterial@
 firstMaterial :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id SCNMaterial)
-firstMaterial scnGeometry  =
-    sendMsg scnGeometry (mkSelector "firstMaterial") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstMaterial scnGeometry =
+  sendMessage scnGeometry firstMaterialSelector
 
 -- | firstMaterial
 --
@@ -288,9 +274,8 @@ firstMaterial scnGeometry  =
 --
 -- ObjC selector: @- setFirstMaterial:@
 setFirstMaterial :: (IsSCNGeometry scnGeometry, IsSCNMaterial value) => scnGeometry -> value -> IO ()
-setFirstMaterial scnGeometry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnGeometry (mkSelector "setFirstMaterial:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFirstMaterial scnGeometry value =
+  sendMessage scnGeometry setFirstMaterialSelector (toSCNMaterial value)
 
 -- | geometrySources
 --
@@ -298,8 +283,8 @@ setFirstMaterial scnGeometry  value =
 --
 -- ObjC selector: @- geometrySources@
 geometrySources :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSArray)
-geometrySources scnGeometry  =
-    sendMsg scnGeometry (mkSelector "geometrySources") (retPtr retVoid) [] >>= retainedObject . castPtr
+geometrySources scnGeometry =
+  sendMessage scnGeometry geometrySourcesSelector
 
 -- | geometryElements
 --
@@ -307,8 +292,8 @@ geometrySources scnGeometry  =
 --
 -- ObjC selector: @- geometryElements@
 geometryElements :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSArray)
-geometryElements scnGeometry  =
-    sendMsg scnGeometry (mkSelector "geometryElements") (retPtr retVoid) [] >>= retainedObject . castPtr
+geometryElements scnGeometry =
+  sendMessage scnGeometry geometryElementsSelector
 
 -- | geometryElementCount
 --
@@ -316,8 +301,8 @@ geometryElements scnGeometry  =
 --
 -- ObjC selector: @- geometryElementCount@
 geometryElementCount :: IsSCNGeometry scnGeometry => scnGeometry -> IO CLong
-geometryElementCount scnGeometry  =
-    sendMsg scnGeometry (mkSelector "geometryElementCount") retCLong []
+geometryElementCount scnGeometry =
+  sendMessage scnGeometry geometryElementCountSelector
 
 -- | geometrySourceChannels
 --
@@ -325,8 +310,8 @@ geometryElementCount scnGeometry  =
 --
 -- ObjC selector: @- geometrySourceChannels@
 geometrySourceChannels :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSArray)
-geometrySourceChannels scnGeometry  =
-    sendMsg scnGeometry (mkSelector "geometrySourceChannels") (retPtr retVoid) [] >>= retainedObject . castPtr
+geometrySourceChannels scnGeometry =
+  sendMessage scnGeometry geometrySourceChannelsSelector
 
 -- | levelsOfDetail
 --
@@ -334,8 +319,8 @@ geometrySourceChannels scnGeometry  =
 --
 -- ObjC selector: @- levelsOfDetail@
 levelsOfDetail :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id NSArray)
-levelsOfDetail scnGeometry  =
-    sendMsg scnGeometry (mkSelector "levelsOfDetail") (retPtr retVoid) [] >>= retainedObject . castPtr
+levelsOfDetail scnGeometry =
+  sendMessage scnGeometry levelsOfDetailSelector
 
 -- | levelsOfDetail
 --
@@ -343,20 +328,18 @@ levelsOfDetail scnGeometry  =
 --
 -- ObjC selector: @- setLevelsOfDetail:@
 setLevelsOfDetail :: (IsSCNGeometry scnGeometry, IsNSArray value) => scnGeometry -> value -> IO ()
-setLevelsOfDetail scnGeometry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnGeometry (mkSelector "setLevelsOfDetail:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLevelsOfDetail scnGeometry value =
+  sendMessage scnGeometry setLevelsOfDetailSelector (toNSArray value)
 
 -- | @- tessellator@
 tessellator :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id SCNGeometryTessellator)
-tessellator scnGeometry  =
-    sendMsg scnGeometry (mkSelector "tessellator") (retPtr retVoid) [] >>= retainedObject . castPtr
+tessellator scnGeometry =
+  sendMessage scnGeometry tessellatorSelector
 
 -- | @- setTessellator:@
 setTessellator :: (IsSCNGeometry scnGeometry, IsSCNGeometryTessellator value) => scnGeometry -> value -> IO ()
-setTessellator scnGeometry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnGeometry (mkSelector "setTessellator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTessellator scnGeometry value =
+  sendMessage scnGeometry setTessellatorSelector (toSCNGeometryTessellator value)
 
 -- | subdivisionLevel
 --
@@ -366,8 +349,8 @@ setTessellator scnGeometry  value =
 --
 -- ObjC selector: @- subdivisionLevel@
 subdivisionLevel :: IsSCNGeometry scnGeometry => scnGeometry -> IO CULong
-subdivisionLevel scnGeometry  =
-    sendMsg scnGeometry (mkSelector "subdivisionLevel") retCULong []
+subdivisionLevel scnGeometry =
+  sendMessage scnGeometry subdivisionLevelSelector
 
 -- | subdivisionLevel
 --
@@ -377,8 +360,8 @@ subdivisionLevel scnGeometry  =
 --
 -- ObjC selector: @- setSubdivisionLevel:@
 setSubdivisionLevel :: IsSCNGeometry scnGeometry => scnGeometry -> CULong -> IO ()
-setSubdivisionLevel scnGeometry  value =
-    sendMsg scnGeometry (mkSelector "setSubdivisionLevel:") retVoid [argCULong value]
+setSubdivisionLevel scnGeometry value =
+  sendMessage scnGeometry setSubdivisionLevelSelector value
 
 -- | wantsAdaptiveSubdivision
 --
@@ -388,8 +371,8 @@ setSubdivisionLevel scnGeometry  value =
 --
 -- ObjC selector: @- wantsAdaptiveSubdivision@
 wantsAdaptiveSubdivision :: IsSCNGeometry scnGeometry => scnGeometry -> IO Bool
-wantsAdaptiveSubdivision scnGeometry  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnGeometry (mkSelector "wantsAdaptiveSubdivision") retCULong []
+wantsAdaptiveSubdivision scnGeometry =
+  sendMessage scnGeometry wantsAdaptiveSubdivisionSelector
 
 -- | wantsAdaptiveSubdivision
 --
@@ -399,8 +382,8 @@ wantsAdaptiveSubdivision scnGeometry  =
 --
 -- ObjC selector: @- setWantsAdaptiveSubdivision:@
 setWantsAdaptiveSubdivision :: IsSCNGeometry scnGeometry => scnGeometry -> Bool -> IO ()
-setWantsAdaptiveSubdivision scnGeometry  value =
-    sendMsg scnGeometry (mkSelector "setWantsAdaptiveSubdivision:") retVoid [argCULong (if value then 1 else 0)]
+setWantsAdaptiveSubdivision scnGeometry value =
+  sendMessage scnGeometry setWantsAdaptiveSubdivisionSelector value
 
 -- | edgeCreasesElement
 --
@@ -410,8 +393,8 @@ setWantsAdaptiveSubdivision scnGeometry  value =
 --
 -- ObjC selector: @- edgeCreasesElement@
 edgeCreasesElement :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id SCNGeometryElement)
-edgeCreasesElement scnGeometry  =
-    sendMsg scnGeometry (mkSelector "edgeCreasesElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+edgeCreasesElement scnGeometry =
+  sendMessage scnGeometry edgeCreasesElementSelector
 
 -- | edgeCreasesElement
 --
@@ -421,9 +404,8 @@ edgeCreasesElement scnGeometry  =
 --
 -- ObjC selector: @- setEdgeCreasesElement:@
 setEdgeCreasesElement :: (IsSCNGeometry scnGeometry, IsSCNGeometryElement value) => scnGeometry -> value -> IO ()
-setEdgeCreasesElement scnGeometry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnGeometry (mkSelector "setEdgeCreasesElement:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEdgeCreasesElement scnGeometry value =
+  sendMessage scnGeometry setEdgeCreasesElementSelector (toSCNGeometryElement value)
 
 -- | edgeCreasesSource
 --
@@ -433,8 +415,8 @@ setEdgeCreasesElement scnGeometry  value =
 --
 -- ObjC selector: @- edgeCreasesSource@
 edgeCreasesSource :: IsSCNGeometry scnGeometry => scnGeometry -> IO (Id SCNGeometrySource)
-edgeCreasesSource scnGeometry  =
-    sendMsg scnGeometry (mkSelector "edgeCreasesSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+edgeCreasesSource scnGeometry =
+  sendMessage scnGeometry edgeCreasesSourceSelector
 
 -- | edgeCreasesSource
 --
@@ -444,135 +426,134 @@ edgeCreasesSource scnGeometry  =
 --
 -- ObjC selector: @- setEdgeCreasesSource:@
 setEdgeCreasesSource :: (IsSCNGeometry scnGeometry, IsSCNGeometrySource value) => scnGeometry -> value -> IO ()
-setEdgeCreasesSource scnGeometry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnGeometry (mkSelector "setEdgeCreasesSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEdgeCreasesSource scnGeometry value =
+  sendMessage scnGeometry setEdgeCreasesSourceSelector (toSCNGeometrySource value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @geometry@
-geometrySelector :: Selector
+geometrySelector :: Selector '[] (Id SCNGeometry)
 geometrySelector = mkSelector "geometry"
 
 -- | @Selector@ for @insertMaterial:atIndex:@
-insertMaterial_atIndexSelector :: Selector
+insertMaterial_atIndexSelector :: Selector '[Id SCNMaterial, CULong] ()
 insertMaterial_atIndexSelector = mkSelector "insertMaterial:atIndex:"
 
 -- | @Selector@ for @removeMaterialAtIndex:@
-removeMaterialAtIndexSelector :: Selector
+removeMaterialAtIndexSelector :: Selector '[CULong] ()
 removeMaterialAtIndexSelector = mkSelector "removeMaterialAtIndex:"
 
 -- | @Selector@ for @replaceMaterialAtIndex:withMaterial:@
-replaceMaterialAtIndex_withMaterialSelector :: Selector
+replaceMaterialAtIndex_withMaterialSelector :: Selector '[CULong, Id SCNMaterial] ()
 replaceMaterialAtIndex_withMaterialSelector = mkSelector "replaceMaterialAtIndex:withMaterial:"
 
 -- | @Selector@ for @materialWithName:@
-materialWithNameSelector :: Selector
+materialWithNameSelector :: Selector '[Id NSString] (Id SCNMaterial)
 materialWithNameSelector = mkSelector "materialWithName:"
 
 -- | @Selector@ for @geometryWithSources:elements:@
-geometryWithSources_elementsSelector :: Selector
+geometryWithSources_elementsSelector :: Selector '[Id NSArray, Id NSArray] (Id SCNGeometry)
 geometryWithSources_elementsSelector = mkSelector "geometryWithSources:elements:"
 
 -- | @Selector@ for @geometryWithSources:elements:sourceChannels:@
-geometryWithSources_elements_sourceChannelsSelector :: Selector
+geometryWithSources_elements_sourceChannelsSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray] (Id SCNGeometry)
 geometryWithSources_elements_sourceChannelsSelector = mkSelector "geometryWithSources:elements:sourceChannels:"
 
 -- | @Selector@ for @geometrySourcesForSemantic:@
-geometrySourcesForSemanticSelector :: Selector
+geometrySourcesForSemanticSelector :: Selector '[Id NSString] (Id NSArray)
 geometrySourcesForSemanticSelector = mkSelector "geometrySourcesForSemantic:"
 
 -- | @Selector@ for @geometryElementAtIndex:@
-geometryElementAtIndexSelector :: Selector
+geometryElementAtIndexSelector :: Selector '[CLong] (Id SCNGeometryElement)
 geometryElementAtIndexSelector = mkSelector "geometryElementAtIndex:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @materials@
-materialsSelector :: Selector
+materialsSelector :: Selector '[] (Id NSArray)
 materialsSelector = mkSelector "materials"
 
 -- | @Selector@ for @setMaterials:@
-setMaterialsSelector :: Selector
+setMaterialsSelector :: Selector '[Id NSArray] ()
 setMaterialsSelector = mkSelector "setMaterials:"
 
 -- | @Selector@ for @firstMaterial@
-firstMaterialSelector :: Selector
+firstMaterialSelector :: Selector '[] (Id SCNMaterial)
 firstMaterialSelector = mkSelector "firstMaterial"
 
 -- | @Selector@ for @setFirstMaterial:@
-setFirstMaterialSelector :: Selector
+setFirstMaterialSelector :: Selector '[Id SCNMaterial] ()
 setFirstMaterialSelector = mkSelector "setFirstMaterial:"
 
 -- | @Selector@ for @geometrySources@
-geometrySourcesSelector :: Selector
+geometrySourcesSelector :: Selector '[] (Id NSArray)
 geometrySourcesSelector = mkSelector "geometrySources"
 
 -- | @Selector@ for @geometryElements@
-geometryElementsSelector :: Selector
+geometryElementsSelector :: Selector '[] (Id NSArray)
 geometryElementsSelector = mkSelector "geometryElements"
 
 -- | @Selector@ for @geometryElementCount@
-geometryElementCountSelector :: Selector
+geometryElementCountSelector :: Selector '[] CLong
 geometryElementCountSelector = mkSelector "geometryElementCount"
 
 -- | @Selector@ for @geometrySourceChannels@
-geometrySourceChannelsSelector :: Selector
+geometrySourceChannelsSelector :: Selector '[] (Id NSArray)
 geometrySourceChannelsSelector = mkSelector "geometrySourceChannels"
 
 -- | @Selector@ for @levelsOfDetail@
-levelsOfDetailSelector :: Selector
+levelsOfDetailSelector :: Selector '[] (Id NSArray)
 levelsOfDetailSelector = mkSelector "levelsOfDetail"
 
 -- | @Selector@ for @setLevelsOfDetail:@
-setLevelsOfDetailSelector :: Selector
+setLevelsOfDetailSelector :: Selector '[Id NSArray] ()
 setLevelsOfDetailSelector = mkSelector "setLevelsOfDetail:"
 
 -- | @Selector@ for @tessellator@
-tessellatorSelector :: Selector
+tessellatorSelector :: Selector '[] (Id SCNGeometryTessellator)
 tessellatorSelector = mkSelector "tessellator"
 
 -- | @Selector@ for @setTessellator:@
-setTessellatorSelector :: Selector
+setTessellatorSelector :: Selector '[Id SCNGeometryTessellator] ()
 setTessellatorSelector = mkSelector "setTessellator:"
 
 -- | @Selector@ for @subdivisionLevel@
-subdivisionLevelSelector :: Selector
+subdivisionLevelSelector :: Selector '[] CULong
 subdivisionLevelSelector = mkSelector "subdivisionLevel"
 
 -- | @Selector@ for @setSubdivisionLevel:@
-setSubdivisionLevelSelector :: Selector
+setSubdivisionLevelSelector :: Selector '[CULong] ()
 setSubdivisionLevelSelector = mkSelector "setSubdivisionLevel:"
 
 -- | @Selector@ for @wantsAdaptiveSubdivision@
-wantsAdaptiveSubdivisionSelector :: Selector
+wantsAdaptiveSubdivisionSelector :: Selector '[] Bool
 wantsAdaptiveSubdivisionSelector = mkSelector "wantsAdaptiveSubdivision"
 
 -- | @Selector@ for @setWantsAdaptiveSubdivision:@
-setWantsAdaptiveSubdivisionSelector :: Selector
+setWantsAdaptiveSubdivisionSelector :: Selector '[Bool] ()
 setWantsAdaptiveSubdivisionSelector = mkSelector "setWantsAdaptiveSubdivision:"
 
 -- | @Selector@ for @edgeCreasesElement@
-edgeCreasesElementSelector :: Selector
+edgeCreasesElementSelector :: Selector '[] (Id SCNGeometryElement)
 edgeCreasesElementSelector = mkSelector "edgeCreasesElement"
 
 -- | @Selector@ for @setEdgeCreasesElement:@
-setEdgeCreasesElementSelector :: Selector
+setEdgeCreasesElementSelector :: Selector '[Id SCNGeometryElement] ()
 setEdgeCreasesElementSelector = mkSelector "setEdgeCreasesElement:"
 
 -- | @Selector@ for @edgeCreasesSource@
-edgeCreasesSourceSelector :: Selector
+edgeCreasesSourceSelector :: Selector '[] (Id SCNGeometrySource)
 edgeCreasesSourceSelector = mkSelector "edgeCreasesSource"
 
 -- | @Selector@ for @setEdgeCreasesSource:@
-setEdgeCreasesSourceSelector :: Selector
+setEdgeCreasesSourceSelector :: Selector '[Id SCNGeometrySource] ()
 setEdgeCreasesSourceSelector = mkSelector "setEdgeCreasesSource:"
 

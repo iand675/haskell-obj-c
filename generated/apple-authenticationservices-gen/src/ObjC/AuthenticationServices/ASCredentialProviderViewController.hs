@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,38 +26,34 @@ module ObjC.AuthenticationServices.ASCredentialProviderViewController
   , performGeneratePasswordsRequestWithoutUserInteraction
   , prepareInterfaceForGeneratePasswordsRequest
   , extensionContext
+  , extensionContextSelector
+  , performGeneratePasswordsRequestWithoutUserInteractionSelector
+  , performPasskeyRegistrationWithoutUserInteractionIfPossibleSelector
+  , performSavePasswordRequestWithoutUserInteractionIfPossibleSelector
   , prepareCredentialListForServiceIdentifiersSelector
   , prepareCredentialListForServiceIdentifiers_requestParametersSelector
+  , prepareInterfaceForExtensionConfigurationSelector
+  , prepareInterfaceForGeneratePasswordsRequestSelector
+  , prepareInterfaceForPasskeyRegistrationSelector
+  , prepareInterfaceForSavePasswordRequestSelector
+  , prepareInterfaceToProvideCredentialForIdentitySelector
+  , prepareInterfaceToProvideCredentialForRequestSelector
   , prepareOneTimeCodeCredentialListForServiceIdentifiersSelector
   , provideCredentialWithoutUserInteractionForIdentitySelector
   , provideCredentialWithoutUserInteractionForRequestSelector
-  , prepareInterfaceToProvideCredentialForIdentitySelector
-  , prepareInterfaceToProvideCredentialForRequestSelector
-  , prepareInterfaceForExtensionConfigurationSelector
-  , prepareInterfaceForPasskeyRegistrationSelector
-  , performPasskeyRegistrationWithoutUserInteractionIfPossibleSelector
+  , reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredentialIDsSelector
   , reportPublicKeyCredentialUpdateForRelyingParty_userHandle_newNameSelector
   , reportUnknownPublicKeyCredentialForRelyingParty_credentialIDSelector
-  , reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredentialIDsSelector
   , reportUnusedPasswordCredentialForDomain_userNameSelector
-  , performSavePasswordRequestWithoutUserInteractionIfPossibleSelector
-  , prepareInterfaceForSavePasswordRequestSelector
-  , performGeneratePasswordsRequestWithoutUserInteractionSelector
-  , prepareInterfaceForGeneratePasswordsRequestSelector
-  , extensionContextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,9 +69,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- prepareCredentialListForServiceIdentifiers:@
 prepareCredentialListForServiceIdentifiers :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsNSArray serviceIdentifiers) => asCredentialProviderViewController -> serviceIdentifiers -> IO ()
-prepareCredentialListForServiceIdentifiers asCredentialProviderViewController  serviceIdentifiers =
-  withObjCPtr serviceIdentifiers $ \raw_serviceIdentifiers ->
-      sendMsg asCredentialProviderViewController (mkSelector "prepareCredentialListForServiceIdentifiers:") retVoid [argPtr (castPtr raw_serviceIdentifiers :: Ptr ())]
+prepareCredentialListForServiceIdentifiers asCredentialProviderViewController serviceIdentifiers =
+  sendMessage asCredentialProviderViewController prepareCredentialListForServiceIdentifiersSelector (toNSArray serviceIdentifiers)
 
 -- | Prepare the view controller to show a list of passkey and password credentials.
 --
@@ -86,10 +82,8 @@ prepareCredentialListForServiceIdentifiers asCredentialProviderViewController  s
 --
 -- ObjC selector: @- prepareCredentialListForServiceIdentifiers:requestParameters:@
 prepareCredentialListForServiceIdentifiers_requestParameters :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsNSArray serviceIdentifiers, IsASPasskeyCredentialRequestParameters requestParameters) => asCredentialProviderViewController -> serviceIdentifiers -> requestParameters -> IO ()
-prepareCredentialListForServiceIdentifiers_requestParameters asCredentialProviderViewController  serviceIdentifiers requestParameters =
-  withObjCPtr serviceIdentifiers $ \raw_serviceIdentifiers ->
-    withObjCPtr requestParameters $ \raw_requestParameters ->
-        sendMsg asCredentialProviderViewController (mkSelector "prepareCredentialListForServiceIdentifiers:requestParameters:") retVoid [argPtr (castPtr raw_serviceIdentifiers :: Ptr ()), argPtr (castPtr raw_requestParameters :: Ptr ())]
+prepareCredentialListForServiceIdentifiers_requestParameters asCredentialProviderViewController serviceIdentifiers requestParameters =
+  sendMessage asCredentialProviderViewController prepareCredentialListForServiceIdentifiers_requestParametersSelector (toNSArray serviceIdentifiers) (toASPasskeyCredentialRequestParameters requestParameters)
 
 -- | Prepare the view controller to show a list of one time code credentials.
 --
@@ -99,9 +93,8 @@ prepareCredentialListForServiceIdentifiers_requestParameters asCredentialProvide
 --
 -- ObjC selector: @- prepareOneTimeCodeCredentialListForServiceIdentifiers:@
 prepareOneTimeCodeCredentialListForServiceIdentifiers :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsNSArray serviceIdentifiers) => asCredentialProviderViewController -> serviceIdentifiers -> IO ()
-prepareOneTimeCodeCredentialListForServiceIdentifiers asCredentialProviderViewController  serviceIdentifiers =
-  withObjCPtr serviceIdentifiers $ \raw_serviceIdentifiers ->
-      sendMsg asCredentialProviderViewController (mkSelector "prepareOneTimeCodeCredentialListForServiceIdentifiers:") retVoid [argPtr (castPtr raw_serviceIdentifiers :: Ptr ())]
+prepareOneTimeCodeCredentialListForServiceIdentifiers asCredentialProviderViewController serviceIdentifiers =
+  sendMessage asCredentialProviderViewController prepareOneTimeCodeCredentialListForServiceIdentifiersSelector (toNSArray serviceIdentifiers)
 
 -- | Attempt to provide the user-requested credential without any user interaction.
 --
@@ -113,9 +106,8 @@ prepareOneTimeCodeCredentialListForServiceIdentifiers asCredentialProviderViewCo
 --
 -- ObjC selector: @- provideCredentialWithoutUserInteractionForIdentity:@
 provideCredentialWithoutUserInteractionForIdentity :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsASPasswordCredentialIdentity credentialIdentity) => asCredentialProviderViewController -> credentialIdentity -> IO ()
-provideCredentialWithoutUserInteractionForIdentity asCredentialProviderViewController  credentialIdentity =
-  withObjCPtr credentialIdentity $ \raw_credentialIdentity ->
-      sendMsg asCredentialProviderViewController (mkSelector "provideCredentialWithoutUserInteractionForIdentity:") retVoid [argPtr (castPtr raw_credentialIdentity :: Ptr ())]
+provideCredentialWithoutUserInteractionForIdentity asCredentialProviderViewController credentialIdentity =
+  sendMessage asCredentialProviderViewController provideCredentialWithoutUserInteractionForIdentitySelector (toASPasswordCredentialIdentity credentialIdentity)
 
 -- | Attempt to provide the user-requested credential without any user interaction.
 --
@@ -135,8 +127,8 @@ provideCredentialWithoutUserInteractionForIdentity asCredentialProviderViewContr
 --
 -- ObjC selector: @- provideCredentialWithoutUserInteractionForRequest:@
 provideCredentialWithoutUserInteractionForRequest :: IsASCredentialProviderViewController asCredentialProviderViewController => asCredentialProviderViewController -> RawId -> IO ()
-provideCredentialWithoutUserInteractionForRequest asCredentialProviderViewController  credentialRequest =
-    sendMsg asCredentialProviderViewController (mkSelector "provideCredentialWithoutUserInteractionForRequest:") retVoid [argPtr (castPtr (unRawId credentialRequest) :: Ptr ())]
+provideCredentialWithoutUserInteractionForRequest asCredentialProviderViewController credentialRequest =
+  sendMessage asCredentialProviderViewController provideCredentialWithoutUserInteractionForRequestSelector credentialRequest
 
 -- | Prepare the view controller to show user interface for providing the user-requested credential.
 --
@@ -146,9 +138,8 @@ provideCredentialWithoutUserInteractionForRequest asCredentialProviderViewContro
 --
 -- ObjC selector: @- prepareInterfaceToProvideCredentialForIdentity:@
 prepareInterfaceToProvideCredentialForIdentity :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsASPasswordCredentialIdentity credentialIdentity) => asCredentialProviderViewController -> credentialIdentity -> IO ()
-prepareInterfaceToProvideCredentialForIdentity asCredentialProviderViewController  credentialIdentity =
-  withObjCPtr credentialIdentity $ \raw_credentialIdentity ->
-      sendMsg asCredentialProviderViewController (mkSelector "prepareInterfaceToProvideCredentialForIdentity:") retVoid [argPtr (castPtr raw_credentialIdentity :: Ptr ())]
+prepareInterfaceToProvideCredentialForIdentity asCredentialProviderViewController credentialIdentity =
+  sendMessage asCredentialProviderViewController prepareInterfaceToProvideCredentialForIdentitySelector (toASPasswordCredentialIdentity credentialIdentity)
 
 -- | Prepare the view controller to show user interface for providing the user-requested credential.
 --
@@ -158,8 +149,8 @@ prepareInterfaceToProvideCredentialForIdentity asCredentialProviderViewControlle
 --
 -- ObjC selector: @- prepareInterfaceToProvideCredentialForRequest:@
 prepareInterfaceToProvideCredentialForRequest :: IsASCredentialProviderViewController asCredentialProviderViewController => asCredentialProviderViewController -> RawId -> IO ()
-prepareInterfaceToProvideCredentialForRequest asCredentialProviderViewController  credentialRequest =
-    sendMsg asCredentialProviderViewController (mkSelector "prepareInterfaceToProvideCredentialForRequest:") retVoid [argPtr (castPtr (unRawId credentialRequest) :: Ptr ())]
+prepareInterfaceToProvideCredentialForRequest asCredentialProviderViewController credentialRequest =
+  sendMessage asCredentialProviderViewController prepareInterfaceToProvideCredentialForRequestSelector credentialRequest
 
 -- | Prepare the view controller to show user interface when the user enables your extension.
 --
@@ -169,8 +160,8 @@ prepareInterfaceToProvideCredentialForRequest asCredentialProviderViewController
 --
 -- ObjC selector: @- prepareInterfaceForExtensionConfiguration@
 prepareInterfaceForExtensionConfiguration :: IsASCredentialProviderViewController asCredentialProviderViewController => asCredentialProviderViewController -> IO ()
-prepareInterfaceForExtensionConfiguration asCredentialProviderViewController  =
-    sendMsg asCredentialProviderViewController (mkSelector "prepareInterfaceForExtensionConfiguration") retVoid []
+prepareInterfaceForExtensionConfiguration asCredentialProviderViewController =
+  sendMessage asCredentialProviderViewController prepareInterfaceForExtensionConfigurationSelector
 
 -- | Prepare UI to register a passkey for the specified relying party.
 --
@@ -184,8 +175,8 @@ prepareInterfaceForExtensionConfiguration asCredentialProviderViewController  =
 --
 -- ObjC selector: @- prepareInterfaceForPasskeyRegistration:@
 prepareInterfaceForPasskeyRegistration :: IsASCredentialProviderViewController asCredentialProviderViewController => asCredentialProviderViewController -> RawId -> IO ()
-prepareInterfaceForPasskeyRegistration asCredentialProviderViewController  registrationRequest =
-    sendMsg asCredentialProviderViewController (mkSelector "prepareInterfaceForPasskeyRegistration:") retVoid [argPtr (castPtr (unRawId registrationRequest) :: Ptr ())]
+prepareInterfaceForPasskeyRegistration asCredentialProviderViewController registrationRequest =
+  sendMessage asCredentialProviderViewController prepareInterfaceForPasskeyRegistrationSelector registrationRequest
 
 -- | Perform a conditional passkey registration, if possible.
 --
@@ -201,9 +192,8 @@ prepareInterfaceForPasskeyRegistration asCredentialProviderViewController  regis
 --
 -- ObjC selector: @- performPasskeyRegistrationWithoutUserInteractionIfPossible:@
 performPasskeyRegistrationWithoutUserInteractionIfPossible :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsASPasskeyCredentialRequest registrationRequest) => asCredentialProviderViewController -> registrationRequest -> IO ()
-performPasskeyRegistrationWithoutUserInteractionIfPossible asCredentialProviderViewController  registrationRequest =
-  withObjCPtr registrationRequest $ \raw_registrationRequest ->
-      sendMsg asCredentialProviderViewController (mkSelector "performPasskeyRegistrationWithoutUserInteractionIfPossible:") retVoid [argPtr (castPtr raw_registrationRequest :: Ptr ())]
+performPasskeyRegistrationWithoutUserInteractionIfPossible asCredentialProviderViewController registrationRequest =
+  sendMessage asCredentialProviderViewController performPasskeyRegistrationWithoutUserInteractionIfPossibleSelector (toASPasskeyCredentialRequest registrationRequest)
 
 -- | Receive report when a relying party indicates that a passkey's user name was updated.
 --
@@ -217,11 +207,8 @@ performPasskeyRegistrationWithoutUserInteractionIfPossible asCredentialProviderV
 --
 -- ObjC selector: @- reportPublicKeyCredentialUpdateForRelyingParty:userHandle:newName:@
 reportPublicKeyCredentialUpdateForRelyingParty_userHandle_newName :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsNSString relyingParty, IsNSData userHandle, IsNSString newName) => asCredentialProviderViewController -> relyingParty -> userHandle -> newName -> IO ()
-reportPublicKeyCredentialUpdateForRelyingParty_userHandle_newName asCredentialProviderViewController  relyingParty userHandle newName =
-  withObjCPtr relyingParty $ \raw_relyingParty ->
-    withObjCPtr userHandle $ \raw_userHandle ->
-      withObjCPtr newName $ \raw_newName ->
-          sendMsg asCredentialProviderViewController (mkSelector "reportPublicKeyCredentialUpdateForRelyingParty:userHandle:newName:") retVoid [argPtr (castPtr raw_relyingParty :: Ptr ()), argPtr (castPtr raw_userHandle :: Ptr ()), argPtr (castPtr raw_newName :: Ptr ())]
+reportPublicKeyCredentialUpdateForRelyingParty_userHandle_newName asCredentialProviderViewController relyingParty userHandle newName =
+  sendMessage asCredentialProviderViewController reportPublicKeyCredentialUpdateForRelyingParty_userHandle_newNameSelector (toNSString relyingParty) (toNSData userHandle) (toNSString newName)
 
 -- | Receive report when a relying party indicates an invalid passkey credential.
 --
@@ -235,10 +222,8 @@ reportPublicKeyCredentialUpdateForRelyingParty_userHandle_newName asCredentialPr
 --
 -- ObjC selector: @- reportUnknownPublicKeyCredentialForRelyingParty:credentialID:@
 reportUnknownPublicKeyCredentialForRelyingParty_credentialID :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsNSString relyingParty, IsNSData credentialID) => asCredentialProviderViewController -> relyingParty -> credentialID -> IO ()
-reportUnknownPublicKeyCredentialForRelyingParty_credentialID asCredentialProviderViewController  relyingParty credentialID =
-  withObjCPtr relyingParty $ \raw_relyingParty ->
-    withObjCPtr credentialID $ \raw_credentialID ->
-        sendMsg asCredentialProviderViewController (mkSelector "reportUnknownPublicKeyCredentialForRelyingParty:credentialID:") retVoid [argPtr (castPtr raw_relyingParty :: Ptr ()), argPtr (castPtr raw_credentialID :: Ptr ())]
+reportUnknownPublicKeyCredentialForRelyingParty_credentialID asCredentialProviderViewController relyingParty credentialID =
+  sendMessage asCredentialProviderViewController reportUnknownPublicKeyCredentialForRelyingParty_credentialIDSelector (toNSString relyingParty) (toNSData credentialID)
 
 -- | Receive report when relying party sends a snapshot of all the accepted credentials for an account.
 --
@@ -252,11 +237,8 @@ reportUnknownPublicKeyCredentialForRelyingParty_credentialID asCredentialProvide
 --
 -- ObjC selector: @- reportAllAcceptedPublicKeyCredentialsForRelyingParty:userHandle:acceptedCredentialIDs:@
 reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredentialIDs :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsNSString relyingParty, IsNSData userHandle, IsNSArray acceptedCredentialIDs) => asCredentialProviderViewController -> relyingParty -> userHandle -> acceptedCredentialIDs -> IO ()
-reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredentialIDs asCredentialProviderViewController  relyingParty userHandle acceptedCredentialIDs =
-  withObjCPtr relyingParty $ \raw_relyingParty ->
-    withObjCPtr userHandle $ \raw_userHandle ->
-      withObjCPtr acceptedCredentialIDs $ \raw_acceptedCredentialIDs ->
-          sendMsg asCredentialProviderViewController (mkSelector "reportAllAcceptedPublicKeyCredentialsForRelyingParty:userHandle:acceptedCredentialIDs:") retVoid [argPtr (castPtr raw_relyingParty :: Ptr ()), argPtr (castPtr raw_userHandle :: Ptr ()), argPtr (castPtr raw_acceptedCredentialIDs :: Ptr ())]
+reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredentialIDs asCredentialProviderViewController relyingParty userHandle acceptedCredentialIDs =
+  sendMessage asCredentialProviderViewController reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredentialIDsSelector (toNSString relyingParty) (toNSData userHandle) (toNSArray acceptedCredentialIDs)
 
 -- | Receive report when relying party indicates a password credential is no longer needed for a given user name.
 --
@@ -270,10 +252,8 @@ reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredenti
 --
 -- ObjC selector: @- reportUnusedPasswordCredentialForDomain:userName:@
 reportUnusedPasswordCredentialForDomain_userName :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsNSString domain, IsNSString userName) => asCredentialProviderViewController -> domain -> userName -> IO ()
-reportUnusedPasswordCredentialForDomain_userName asCredentialProviderViewController  domain userName =
-  withObjCPtr domain $ \raw_domain ->
-    withObjCPtr userName $ \raw_userName ->
-        sendMsg asCredentialProviderViewController (mkSelector "reportUnusedPasswordCredentialForDomain:userName:") retVoid [argPtr (castPtr raw_domain :: Ptr ()), argPtr (castPtr raw_userName :: Ptr ())]
+reportUnusedPasswordCredentialForDomain_userName asCredentialProviderViewController domain userName =
+  sendMessage asCredentialProviderViewController reportUnusedPasswordCredentialForDomain_userNameSelector (toNSString domain) (toNSString userName)
 
 -- | Attempt to save a password credential.
 --
@@ -285,9 +265,8 @@ reportUnusedPasswordCredentialForDomain_userName asCredentialProviderViewControl
 --
 -- ObjC selector: @- performSavePasswordRequestWithoutUserInteractionIfPossible:@
 performSavePasswordRequestWithoutUserInteractionIfPossible :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsASSavePasswordRequest savePasswordRequest) => asCredentialProviderViewController -> savePasswordRequest -> IO ()
-performSavePasswordRequestWithoutUserInteractionIfPossible asCredentialProviderViewController  savePasswordRequest =
-  withObjCPtr savePasswordRequest $ \raw_savePasswordRequest ->
-      sendMsg asCredentialProviderViewController (mkSelector "performSavePasswordRequestWithoutUserInteractionIfPossible:") retVoid [argPtr (castPtr raw_savePasswordRequest :: Ptr ())]
+performSavePasswordRequestWithoutUserInteractionIfPossible asCredentialProviderViewController savePasswordRequest =
+  sendMessage asCredentialProviderViewController performSavePasswordRequestWithoutUserInteractionIfPossibleSelector (toASSavePasswordRequest savePasswordRequest)
 
 -- | Prepares the interface to display a prompt to save a password credential.
 --
@@ -299,9 +278,8 @@ performSavePasswordRequestWithoutUserInteractionIfPossible asCredentialProviderV
 --
 -- ObjC selector: @- prepareInterfaceForSavePasswordRequest:@
 prepareInterfaceForSavePasswordRequest :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsASSavePasswordRequest savePasswordRequest) => asCredentialProviderViewController -> savePasswordRequest -> IO ()
-prepareInterfaceForSavePasswordRequest asCredentialProviderViewController  savePasswordRequest =
-  withObjCPtr savePasswordRequest $ \raw_savePasswordRequest ->
-      sendMsg asCredentialProviderViewController (mkSelector "prepareInterfaceForSavePasswordRequest:") retVoid [argPtr (castPtr raw_savePasswordRequest :: Ptr ())]
+prepareInterfaceForSavePasswordRequest asCredentialProviderViewController savePasswordRequest =
+  sendMessage asCredentialProviderViewController prepareInterfaceForSavePasswordRequestSelector (toASSavePasswordRequest savePasswordRequest)
 
 -- | Attempt to generate passwords based on developer-specified rules.
 --
@@ -313,9 +291,8 @@ prepareInterfaceForSavePasswordRequest asCredentialProviderViewController  saveP
 --
 -- ObjC selector: @- performGeneratePasswordsRequestWithoutUserInteraction:@
 performGeneratePasswordsRequestWithoutUserInteraction :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsASGeneratePasswordsRequest generatePasswordsRequest) => asCredentialProviderViewController -> generatePasswordsRequest -> IO ()
-performGeneratePasswordsRequestWithoutUserInteraction asCredentialProviderViewController  generatePasswordsRequest =
-  withObjCPtr generatePasswordsRequest $ \raw_generatePasswordsRequest ->
-      sendMsg asCredentialProviderViewController (mkSelector "performGeneratePasswordsRequestWithoutUserInteraction:") retVoid [argPtr (castPtr raw_generatePasswordsRequest :: Ptr ())]
+performGeneratePasswordsRequestWithoutUserInteraction asCredentialProviderViewController generatePasswordsRequest =
+  sendMessage asCredentialProviderViewController performGeneratePasswordsRequestWithoutUserInteractionSelector (toASGeneratePasswordsRequest generatePasswordsRequest)
 
 -- | Prepares the interface to display a prompt to generate passwords based on developer-specified rules.
 --
@@ -331,92 +308,91 @@ performGeneratePasswordsRequestWithoutUserInteraction asCredentialProviderViewCo
 --
 -- ObjC selector: @- prepareInterfaceForGeneratePasswordsRequest:@
 prepareInterfaceForGeneratePasswordsRequest :: (IsASCredentialProviderViewController asCredentialProviderViewController, IsASGeneratePasswordsRequest generatePasswordsRequest) => asCredentialProviderViewController -> generatePasswordsRequest -> IO ()
-prepareInterfaceForGeneratePasswordsRequest asCredentialProviderViewController  generatePasswordsRequest =
-  withObjCPtr generatePasswordsRequest $ \raw_generatePasswordsRequest ->
-      sendMsg asCredentialProviderViewController (mkSelector "prepareInterfaceForGeneratePasswordsRequest:") retVoid [argPtr (castPtr raw_generatePasswordsRequest :: Ptr ())]
+prepareInterfaceForGeneratePasswordsRequest asCredentialProviderViewController generatePasswordsRequest =
+  sendMessage asCredentialProviderViewController prepareInterfaceForGeneratePasswordsRequestSelector (toASGeneratePasswordsRequest generatePasswordsRequest)
 
 -- | @- extensionContext@
 extensionContext :: IsASCredentialProviderViewController asCredentialProviderViewController => asCredentialProviderViewController -> IO (Id ASCredentialProviderExtensionContext)
-extensionContext asCredentialProviderViewController  =
-    sendMsg asCredentialProviderViewController (mkSelector "extensionContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensionContext asCredentialProviderViewController =
+  sendMessage asCredentialProviderViewController extensionContextSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @prepareCredentialListForServiceIdentifiers:@
-prepareCredentialListForServiceIdentifiersSelector :: Selector
+prepareCredentialListForServiceIdentifiersSelector :: Selector '[Id NSArray] ()
 prepareCredentialListForServiceIdentifiersSelector = mkSelector "prepareCredentialListForServiceIdentifiers:"
 
 -- | @Selector@ for @prepareCredentialListForServiceIdentifiers:requestParameters:@
-prepareCredentialListForServiceIdentifiers_requestParametersSelector :: Selector
+prepareCredentialListForServiceIdentifiers_requestParametersSelector :: Selector '[Id NSArray, Id ASPasskeyCredentialRequestParameters] ()
 prepareCredentialListForServiceIdentifiers_requestParametersSelector = mkSelector "prepareCredentialListForServiceIdentifiers:requestParameters:"
 
 -- | @Selector@ for @prepareOneTimeCodeCredentialListForServiceIdentifiers:@
-prepareOneTimeCodeCredentialListForServiceIdentifiersSelector :: Selector
+prepareOneTimeCodeCredentialListForServiceIdentifiersSelector :: Selector '[Id NSArray] ()
 prepareOneTimeCodeCredentialListForServiceIdentifiersSelector = mkSelector "prepareOneTimeCodeCredentialListForServiceIdentifiers:"
 
 -- | @Selector@ for @provideCredentialWithoutUserInteractionForIdentity:@
-provideCredentialWithoutUserInteractionForIdentitySelector :: Selector
+provideCredentialWithoutUserInteractionForIdentitySelector :: Selector '[Id ASPasswordCredentialIdentity] ()
 provideCredentialWithoutUserInteractionForIdentitySelector = mkSelector "provideCredentialWithoutUserInteractionForIdentity:"
 
 -- | @Selector@ for @provideCredentialWithoutUserInteractionForRequest:@
-provideCredentialWithoutUserInteractionForRequestSelector :: Selector
+provideCredentialWithoutUserInteractionForRequestSelector :: Selector '[RawId] ()
 provideCredentialWithoutUserInteractionForRequestSelector = mkSelector "provideCredentialWithoutUserInteractionForRequest:"
 
 -- | @Selector@ for @prepareInterfaceToProvideCredentialForIdentity:@
-prepareInterfaceToProvideCredentialForIdentitySelector :: Selector
+prepareInterfaceToProvideCredentialForIdentitySelector :: Selector '[Id ASPasswordCredentialIdentity] ()
 prepareInterfaceToProvideCredentialForIdentitySelector = mkSelector "prepareInterfaceToProvideCredentialForIdentity:"
 
 -- | @Selector@ for @prepareInterfaceToProvideCredentialForRequest:@
-prepareInterfaceToProvideCredentialForRequestSelector :: Selector
+prepareInterfaceToProvideCredentialForRequestSelector :: Selector '[RawId] ()
 prepareInterfaceToProvideCredentialForRequestSelector = mkSelector "prepareInterfaceToProvideCredentialForRequest:"
 
 -- | @Selector@ for @prepareInterfaceForExtensionConfiguration@
-prepareInterfaceForExtensionConfigurationSelector :: Selector
+prepareInterfaceForExtensionConfigurationSelector :: Selector '[] ()
 prepareInterfaceForExtensionConfigurationSelector = mkSelector "prepareInterfaceForExtensionConfiguration"
 
 -- | @Selector@ for @prepareInterfaceForPasskeyRegistration:@
-prepareInterfaceForPasskeyRegistrationSelector :: Selector
+prepareInterfaceForPasskeyRegistrationSelector :: Selector '[RawId] ()
 prepareInterfaceForPasskeyRegistrationSelector = mkSelector "prepareInterfaceForPasskeyRegistration:"
 
 -- | @Selector@ for @performPasskeyRegistrationWithoutUserInteractionIfPossible:@
-performPasskeyRegistrationWithoutUserInteractionIfPossibleSelector :: Selector
+performPasskeyRegistrationWithoutUserInteractionIfPossibleSelector :: Selector '[Id ASPasskeyCredentialRequest] ()
 performPasskeyRegistrationWithoutUserInteractionIfPossibleSelector = mkSelector "performPasskeyRegistrationWithoutUserInteractionIfPossible:"
 
 -- | @Selector@ for @reportPublicKeyCredentialUpdateForRelyingParty:userHandle:newName:@
-reportPublicKeyCredentialUpdateForRelyingParty_userHandle_newNameSelector :: Selector
+reportPublicKeyCredentialUpdateForRelyingParty_userHandle_newNameSelector :: Selector '[Id NSString, Id NSData, Id NSString] ()
 reportPublicKeyCredentialUpdateForRelyingParty_userHandle_newNameSelector = mkSelector "reportPublicKeyCredentialUpdateForRelyingParty:userHandle:newName:"
 
 -- | @Selector@ for @reportUnknownPublicKeyCredentialForRelyingParty:credentialID:@
-reportUnknownPublicKeyCredentialForRelyingParty_credentialIDSelector :: Selector
+reportUnknownPublicKeyCredentialForRelyingParty_credentialIDSelector :: Selector '[Id NSString, Id NSData] ()
 reportUnknownPublicKeyCredentialForRelyingParty_credentialIDSelector = mkSelector "reportUnknownPublicKeyCredentialForRelyingParty:credentialID:"
 
 -- | @Selector@ for @reportAllAcceptedPublicKeyCredentialsForRelyingParty:userHandle:acceptedCredentialIDs:@
-reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredentialIDsSelector :: Selector
+reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredentialIDsSelector :: Selector '[Id NSString, Id NSData, Id NSArray] ()
 reportAllAcceptedPublicKeyCredentialsForRelyingParty_userHandle_acceptedCredentialIDsSelector = mkSelector "reportAllAcceptedPublicKeyCredentialsForRelyingParty:userHandle:acceptedCredentialIDs:"
 
 -- | @Selector@ for @reportUnusedPasswordCredentialForDomain:userName:@
-reportUnusedPasswordCredentialForDomain_userNameSelector :: Selector
+reportUnusedPasswordCredentialForDomain_userNameSelector :: Selector '[Id NSString, Id NSString] ()
 reportUnusedPasswordCredentialForDomain_userNameSelector = mkSelector "reportUnusedPasswordCredentialForDomain:userName:"
 
 -- | @Selector@ for @performSavePasswordRequestWithoutUserInteractionIfPossible:@
-performSavePasswordRequestWithoutUserInteractionIfPossibleSelector :: Selector
+performSavePasswordRequestWithoutUserInteractionIfPossibleSelector :: Selector '[Id ASSavePasswordRequest] ()
 performSavePasswordRequestWithoutUserInteractionIfPossibleSelector = mkSelector "performSavePasswordRequestWithoutUserInteractionIfPossible:"
 
 -- | @Selector@ for @prepareInterfaceForSavePasswordRequest:@
-prepareInterfaceForSavePasswordRequestSelector :: Selector
+prepareInterfaceForSavePasswordRequestSelector :: Selector '[Id ASSavePasswordRequest] ()
 prepareInterfaceForSavePasswordRequestSelector = mkSelector "prepareInterfaceForSavePasswordRequest:"
 
 -- | @Selector@ for @performGeneratePasswordsRequestWithoutUserInteraction:@
-performGeneratePasswordsRequestWithoutUserInteractionSelector :: Selector
+performGeneratePasswordsRequestWithoutUserInteractionSelector :: Selector '[Id ASGeneratePasswordsRequest] ()
 performGeneratePasswordsRequestWithoutUserInteractionSelector = mkSelector "performGeneratePasswordsRequestWithoutUserInteraction:"
 
 -- | @Selector@ for @prepareInterfaceForGeneratePasswordsRequest:@
-prepareInterfaceForGeneratePasswordsRequestSelector :: Selector
+prepareInterfaceForGeneratePasswordsRequestSelector :: Selector '[Id ASGeneratePasswordsRequest] ()
 prepareInterfaceForGeneratePasswordsRequestSelector = mkSelector "prepareInterfaceForGeneratePasswordsRequest:"
 
 -- | @Selector@ for @extensionContext@
-extensionContextSelector :: Selector
+extensionContextSelector :: Selector '[] (Id ASCredentialProviderExtensionContext)
 extensionContextSelector = mkSelector "extensionContext"
 

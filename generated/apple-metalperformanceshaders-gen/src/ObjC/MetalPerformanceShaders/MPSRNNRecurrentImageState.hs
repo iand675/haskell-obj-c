@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.MetalPerformanceShaders.MPSRNNRecurrentImageState
   , IsMPSRNNRecurrentImageState(..)
   , getRecurrentOutputImageForLayerIndex
   , getMemoryCellImageForLayerIndex
-  , getRecurrentOutputImageForLayerIndexSelector
   , getMemoryCellImageForLayerIndexSelector
+  , getRecurrentOutputImageForLayerIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- getRecurrentOutputImageForLayerIndex:@
 getRecurrentOutputImageForLayerIndex :: IsMPSRNNRecurrentImageState mpsrnnRecurrentImageState => mpsrnnRecurrentImageState -> CULong -> IO (Id MPSImage)
-getRecurrentOutputImageForLayerIndex mpsrnnRecurrentImageState  layerIndex =
-    sendMsg mpsrnnRecurrentImageState (mkSelector "getRecurrentOutputImageForLayerIndex:") (retPtr retVoid) [argCULong layerIndex] >>= retainedObject . castPtr
+getRecurrentOutputImageForLayerIndex mpsrnnRecurrentImageState layerIndex =
+  sendMessage mpsrnnRecurrentImageState getRecurrentOutputImageForLayerIndexSelector layerIndex
 
 -- | Access the stored memory cell image data (if present).
 --
@@ -58,18 +55,18 @@ getRecurrentOutputImageForLayerIndex mpsrnnRecurrentImageState  layerIndex =
 --
 -- ObjC selector: @- getMemoryCellImageForLayerIndex:@
 getMemoryCellImageForLayerIndex :: IsMPSRNNRecurrentImageState mpsrnnRecurrentImageState => mpsrnnRecurrentImageState -> CULong -> IO (Id MPSImage)
-getMemoryCellImageForLayerIndex mpsrnnRecurrentImageState  layerIndex =
-    sendMsg mpsrnnRecurrentImageState (mkSelector "getMemoryCellImageForLayerIndex:") (retPtr retVoid) [argCULong layerIndex] >>= retainedObject . castPtr
+getMemoryCellImageForLayerIndex mpsrnnRecurrentImageState layerIndex =
+  sendMessage mpsrnnRecurrentImageState getMemoryCellImageForLayerIndexSelector layerIndex
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getRecurrentOutputImageForLayerIndex:@
-getRecurrentOutputImageForLayerIndexSelector :: Selector
+getRecurrentOutputImageForLayerIndexSelector :: Selector '[CULong] (Id MPSImage)
 getRecurrentOutputImageForLayerIndexSelector = mkSelector "getRecurrentOutputImageForLayerIndex:"
 
 -- | @Selector@ for @getMemoryCellImageForLayerIndex:@
-getMemoryCellImageForLayerIndexSelector :: Selector
+getMemoryCellImageForLayerIndexSelector :: Selector '[CULong] (Id MPSImage)
 getMemoryCellImageForLayerIndexSelector = mkSelector "getMemoryCellImageForLayerIndex:"
 

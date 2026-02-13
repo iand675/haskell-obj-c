@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,25 +33,25 @@ module ObjC.MetalPerformanceShaders.MPSNNLossGradient
   , setDelta
   , computeLabelGradients
   , setComputeLabelGradients
-  , initWithDeviceSelector
-  , initWithDevice_lossDescriptorSelector
-  , initWithCoder_deviceSelector
+  , computeLabelGradientsSelector
+  , deltaSelector
   , encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStatesSelector
   , encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradientsSelector
-  , lossTypeSelector
-  , reductionTypeSelector
-  , reduceAcrossBatchSelector
-  , numberOfClassesSelector
-  , weightSelector
-  , setWeightSelector
-  , labelSmoothingSelector
-  , setLabelSmoothingSelector
   , epsilonSelector
-  , setEpsilonSelector
-  , deltaSelector
-  , setDeltaSelector
-  , computeLabelGradientsSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_lossDescriptorSelector
+  , labelSmoothingSelector
+  , lossTypeSelector
+  , numberOfClassesSelector
+  , reduceAcrossBatchSelector
+  , reductionTypeSelector
   , setComputeLabelGradientsSelector
+  , setDeltaSelector
+  , setEpsilonSelector
+  , setLabelSmoothingSelector
+  , setWeightSelector
+  , weightSelector
 
   -- * Enum types
   , MPSCNNLossType(MPSCNNLossType)
@@ -74,15 +75,11 @@ module ObjC.MetalPerformanceShaders.MPSNNLossGradient
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,8 +89,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> RawId -> IO (Id MPSNNLossGradient)
-initWithDevice mpsnnLossGradient  device =
-    sendMsg mpsnnLossGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnLossGradient device =
+  sendOwnedMessage mpsnnLossGradient initWithDeviceSelector device
 
 -- | Initialize the loss gradient filter with a loss descriptor.
 --
@@ -105,17 +102,15 @@ initWithDevice mpsnnLossGradient  device =
 --
 -- ObjC selector: @- initWithDevice:lossDescriptor:@
 initWithDevice_lossDescriptor :: (IsMPSNNLossGradient mpsnnLossGradient, IsMPSCNNLossDescriptor lossDescriptor) => mpsnnLossGradient -> RawId -> lossDescriptor -> IO (Id MPSNNLossGradient)
-initWithDevice_lossDescriptor mpsnnLossGradient  device lossDescriptor =
-  withObjCPtr lossDescriptor $ \raw_lossDescriptor ->
-      sendMsg mpsnnLossGradient (mkSelector "initWithDevice:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_lossDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_lossDescriptor mpsnnLossGradient device lossDescriptor =
+  sendOwnedMessage mpsnnLossGradient initWithDevice_lossDescriptorSelector device (toMPSCNNLossDescriptor lossDescriptor)
 
 -- | <NSSecureCoding> support
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNLossGradient mpsnnLossGradient, IsNSCoder aDecoder) => mpsnnLossGradient -> aDecoder -> RawId -> IO (Id MPSNNLossGradient)
-initWithCoder_device mpsnnLossGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnLossGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnLossGradient aDecoder device =
+  sendOwnedMessage mpsnnLossGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode the loss gradient filter and return a gradient
 --
@@ -133,8 +128,8 @@ initWithCoder_device mpsnnLossGradient  aDecoder device =
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:@
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO RawId
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates mpsnnLossGradient  commandBuffer sourceGradients sourceImages labels weights sourceStates =
-    fmap (RawId . castPtr) $ sendMsg mpsnnLossGradient (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (castPtr (unRawId sourceStates) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates mpsnnLossGradient commandBuffer sourceGradients sourceImages labels weights sourceStates =
+  sendMessage mpsnnLossGradient encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStatesSelector commandBuffer sourceGradients sourceImages labels weights sourceStates
 
 -- | Encode the loss gradient filter and return a gradient
 --
@@ -154,70 +149,70 @@ encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceSta
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:destinationGradients:@
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradients :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradients mpsnnLossGradient  commandBuffer sourceGradients sourceImages labels weights sourceStates destinationGradients =
-    sendMsg mpsnnLossGradient (mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:destinationGradients:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceGradients) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (castPtr (unRawId sourceStates) :: Ptr ()), argPtr (castPtr (unRawId destinationGradients) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradients mpsnnLossGradient commandBuffer sourceGradients sourceImages labels weights sourceStates destinationGradients =
+  sendMessage mpsnnLossGradient encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradientsSelector commandBuffer sourceGradients sourceImages labels weights sourceStates destinationGradients
 
 -- | See MPSCNNLossDescriptor for information about the following properties.
 --
 -- ObjC selector: @- lossType@
 lossType :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> IO MPSCNNLossType
-lossType mpsnnLossGradient  =
-    fmap (coerce :: CUInt -> MPSCNNLossType) $ sendMsg mpsnnLossGradient (mkSelector "lossType") retCUInt []
+lossType mpsnnLossGradient =
+  sendMessage mpsnnLossGradient lossTypeSelector
 
 -- | @- reductionType@
 reductionType :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> IO MPSCNNReductionType
-reductionType mpsnnLossGradient  =
-    fmap (coerce :: CInt -> MPSCNNReductionType) $ sendMsg mpsnnLossGradient (mkSelector "reductionType") retCInt []
+reductionType mpsnnLossGradient =
+  sendMessage mpsnnLossGradient reductionTypeSelector
 
 -- | @- reduceAcrossBatch@
 reduceAcrossBatch :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> IO Bool
-reduceAcrossBatch mpsnnLossGradient  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnLossGradient (mkSelector "reduceAcrossBatch") retCULong []
+reduceAcrossBatch mpsnnLossGradient =
+  sendMessage mpsnnLossGradient reduceAcrossBatchSelector
 
 -- | @- numberOfClasses@
 numberOfClasses :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> IO CULong
-numberOfClasses mpsnnLossGradient  =
-    sendMsg mpsnnLossGradient (mkSelector "numberOfClasses") retCULong []
+numberOfClasses mpsnnLossGradient =
+  sendMessage mpsnnLossGradient numberOfClassesSelector
 
 -- | @- weight@
 weight :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> IO CFloat
-weight mpsnnLossGradient  =
-    sendMsg mpsnnLossGradient (mkSelector "weight") retCFloat []
+weight mpsnnLossGradient =
+  sendMessage mpsnnLossGradient weightSelector
 
 -- | @- setWeight:@
 setWeight :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> CFloat -> IO ()
-setWeight mpsnnLossGradient  value =
-    sendMsg mpsnnLossGradient (mkSelector "setWeight:") retVoid [argCFloat value]
+setWeight mpsnnLossGradient value =
+  sendMessage mpsnnLossGradient setWeightSelector value
 
 -- | @- labelSmoothing@
 labelSmoothing :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> IO CFloat
-labelSmoothing mpsnnLossGradient  =
-    sendMsg mpsnnLossGradient (mkSelector "labelSmoothing") retCFloat []
+labelSmoothing mpsnnLossGradient =
+  sendMessage mpsnnLossGradient labelSmoothingSelector
 
 -- | @- setLabelSmoothing:@
 setLabelSmoothing :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> CFloat -> IO ()
-setLabelSmoothing mpsnnLossGradient  value =
-    sendMsg mpsnnLossGradient (mkSelector "setLabelSmoothing:") retVoid [argCFloat value]
+setLabelSmoothing mpsnnLossGradient value =
+  sendMessage mpsnnLossGradient setLabelSmoothingSelector value
 
 -- | @- epsilon@
 epsilon :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> IO CFloat
-epsilon mpsnnLossGradient  =
-    sendMsg mpsnnLossGradient (mkSelector "epsilon") retCFloat []
+epsilon mpsnnLossGradient =
+  sendMessage mpsnnLossGradient epsilonSelector
 
 -- | @- setEpsilon:@
 setEpsilon :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> CFloat -> IO ()
-setEpsilon mpsnnLossGradient  value =
-    sendMsg mpsnnLossGradient (mkSelector "setEpsilon:") retVoid [argCFloat value]
+setEpsilon mpsnnLossGradient value =
+  sendMessage mpsnnLossGradient setEpsilonSelector value
 
 -- | @- delta@
 delta :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> IO CFloat
-delta mpsnnLossGradient  =
-    sendMsg mpsnnLossGradient (mkSelector "delta") retCFloat []
+delta mpsnnLossGradient =
+  sendMessage mpsnnLossGradient deltaSelector
 
 -- | @- setDelta:@
 setDelta :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> CFloat -> IO ()
-setDelta mpsnnLossGradient  value =
-    sendMsg mpsnnLossGradient (mkSelector "setDelta:") retVoid [argCFloat value]
+setDelta mpsnnLossGradient value =
+  sendMessage mpsnnLossGradient setDeltaSelector value
 
 -- | computeLabelGradients
 --
@@ -225,8 +220,8 @@ setDelta mpsnnLossGradient  value =
 --
 -- ObjC selector: @- computeLabelGradients@
 computeLabelGradients :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> IO Bool
-computeLabelGradients mpsnnLossGradient  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnLossGradient (mkSelector "computeLabelGradients") retCULong []
+computeLabelGradients mpsnnLossGradient =
+  sendMessage mpsnnLossGradient computeLabelGradientsSelector
 
 -- | computeLabelGradients
 --
@@ -234,86 +229,86 @@ computeLabelGradients mpsnnLossGradient  =
 --
 -- ObjC selector: @- setComputeLabelGradients:@
 setComputeLabelGradients :: IsMPSNNLossGradient mpsnnLossGradient => mpsnnLossGradient -> Bool -> IO ()
-setComputeLabelGradients mpsnnLossGradient  value =
-    sendMsg mpsnnLossGradient (mkSelector "setComputeLabelGradients:") retVoid [argCULong (if value then 1 else 0)]
+setComputeLabelGradients mpsnnLossGradient value =
+  sendMessage mpsnnLossGradient setComputeLabelGradientsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNLossGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:lossDescriptor:@
-initWithDevice_lossDescriptorSelector :: Selector
+initWithDevice_lossDescriptorSelector :: Selector '[RawId, Id MPSCNNLossDescriptor] (Id MPSNNLossGradient)
 initWithDevice_lossDescriptorSelector = mkSelector "initWithDevice:lossDescriptor:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNLossGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:@
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStatesSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStatesSelector :: Selector '[RawId, RawId, RawId, RawId, RawId, RawId] RawId
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStatesSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:destinationGradients:@
-encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradientsSelector :: Selector
+encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradientsSelector :: Selector '[RawId, RawId, RawId, RawId, RawId, RawId, RawId] ()
 encodeBatchToCommandBuffer_sourceGradients_sourceImages_labels_weights_sourceStates_destinationGradientsSelector = mkSelector "encodeBatchToCommandBuffer:sourceGradients:sourceImages:labels:weights:sourceStates:destinationGradients:"
 
 -- | @Selector@ for @lossType@
-lossTypeSelector :: Selector
+lossTypeSelector :: Selector '[] MPSCNNLossType
 lossTypeSelector = mkSelector "lossType"
 
 -- | @Selector@ for @reductionType@
-reductionTypeSelector :: Selector
+reductionTypeSelector :: Selector '[] MPSCNNReductionType
 reductionTypeSelector = mkSelector "reductionType"
 
 -- | @Selector@ for @reduceAcrossBatch@
-reduceAcrossBatchSelector :: Selector
+reduceAcrossBatchSelector :: Selector '[] Bool
 reduceAcrossBatchSelector = mkSelector "reduceAcrossBatch"
 
 -- | @Selector@ for @numberOfClasses@
-numberOfClassesSelector :: Selector
+numberOfClassesSelector :: Selector '[] CULong
 numberOfClassesSelector = mkSelector "numberOfClasses"
 
 -- | @Selector@ for @weight@
-weightSelector :: Selector
+weightSelector :: Selector '[] CFloat
 weightSelector = mkSelector "weight"
 
 -- | @Selector@ for @setWeight:@
-setWeightSelector :: Selector
+setWeightSelector :: Selector '[CFloat] ()
 setWeightSelector = mkSelector "setWeight:"
 
 -- | @Selector@ for @labelSmoothing@
-labelSmoothingSelector :: Selector
+labelSmoothingSelector :: Selector '[] CFloat
 labelSmoothingSelector = mkSelector "labelSmoothing"
 
 -- | @Selector@ for @setLabelSmoothing:@
-setLabelSmoothingSelector :: Selector
+setLabelSmoothingSelector :: Selector '[CFloat] ()
 setLabelSmoothingSelector = mkSelector "setLabelSmoothing:"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @setEpsilon:@
-setEpsilonSelector :: Selector
+setEpsilonSelector :: Selector '[CFloat] ()
 setEpsilonSelector = mkSelector "setEpsilon:"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 
 -- | @Selector@ for @setDelta:@
-setDeltaSelector :: Selector
+setDeltaSelector :: Selector '[CFloat] ()
 setDeltaSelector = mkSelector "setDelta:"
 
 -- | @Selector@ for @computeLabelGradients@
-computeLabelGradientsSelector :: Selector
+computeLabelGradientsSelector :: Selector '[] Bool
 computeLabelGradientsSelector = mkSelector "computeLabelGradients"
 
 -- | @Selector@ for @setComputeLabelGradients:@
-setComputeLabelGradientsSelector :: Selector
+setComputeLabelGradientsSelector :: Selector '[Bool] ()
 setComputeLabelGradientsSelector = mkSelector "setComputeLabelGradients:"
 

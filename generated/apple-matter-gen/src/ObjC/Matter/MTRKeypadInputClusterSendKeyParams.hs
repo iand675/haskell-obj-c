@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRKeypadInputClusterSendKeyParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , keyCodeSelector
-  , setKeyCodeSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setKeyCodeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- keyCode@
 keyCode :: IsMTRKeypadInputClusterSendKeyParams mtrKeypadInputClusterSendKeyParams => mtrKeypadInputClusterSendKeyParams -> IO (Id NSNumber)
-keyCode mtrKeypadInputClusterSendKeyParams  =
-    sendMsg mtrKeypadInputClusterSendKeyParams (mkSelector "keyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyCode mtrKeypadInputClusterSendKeyParams =
+  sendMessage mtrKeypadInputClusterSendKeyParams keyCodeSelector
 
 -- | @- setKeyCode:@
 setKeyCode :: (IsMTRKeypadInputClusterSendKeyParams mtrKeypadInputClusterSendKeyParams, IsNSNumber value) => mtrKeypadInputClusterSendKeyParams -> value -> IO ()
-setKeyCode mtrKeypadInputClusterSendKeyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrKeypadInputClusterSendKeyParams (mkSelector "setKeyCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyCode mtrKeypadInputClusterSendKeyParams value =
+  sendMessage mtrKeypadInputClusterSendKeyParams setKeyCodeSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setKeyCode mtrKeypadInputClusterSendKeyParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRKeypadInputClusterSendKeyParams mtrKeypadInputClusterSendKeyParams => mtrKeypadInputClusterSendKeyParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrKeypadInputClusterSendKeyParams  =
-    sendMsg mtrKeypadInputClusterSendKeyParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrKeypadInputClusterSendKeyParams =
+  sendMessage mtrKeypadInputClusterSendKeyParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrKeypadInputClusterSendKeyParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRKeypadInputClusterSendKeyParams mtrKeypadInputClusterSendKeyParams, IsNSNumber value) => mtrKeypadInputClusterSendKeyParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrKeypadInputClusterSendKeyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrKeypadInputClusterSendKeyParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrKeypadInputClusterSendKeyParams value =
+  sendMessage mtrKeypadInputClusterSendKeyParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrKeypadInputClusterSendKeyParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRKeypadInputClusterSendKeyParams mtrKeypadInputClusterSendKeyParams => mtrKeypadInputClusterSendKeyParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrKeypadInputClusterSendKeyParams  =
-    sendMsg mtrKeypadInputClusterSendKeyParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrKeypadInputClusterSendKeyParams =
+  sendMessage mtrKeypadInputClusterSendKeyParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrKeypadInputClusterSendKeyParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRKeypadInputClusterSendKeyParams mtrKeypadInputClusterSendKeyParams, IsNSNumber value) => mtrKeypadInputClusterSendKeyParams -> value -> IO ()
-setServerSideProcessingTimeout mtrKeypadInputClusterSendKeyParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrKeypadInputClusterSendKeyParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrKeypadInputClusterSendKeyParams value =
+  sendMessage mtrKeypadInputClusterSendKeyParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @keyCode@
-keyCodeSelector :: Selector
+keyCodeSelector :: Selector '[] (Id NSNumber)
 keyCodeSelector = mkSelector "keyCode"
 
 -- | @Selector@ for @setKeyCode:@
-setKeyCodeSelector :: Selector
+setKeyCodeSelector :: Selector '[Id NSNumber] ()
 setKeyCodeSelector = mkSelector "setKeyCode:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

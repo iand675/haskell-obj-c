@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INBillPayeeResolutionResult
   , successWithResolvedBillPayee
   , disambiguationWithBillPayeesToDisambiguate
   , confirmationRequiredWithBillPayeeToConfirm
-  , successWithResolvedBillPayeeSelector
-  , disambiguationWithBillPayeesToDisambiguateSelector
   , confirmationRequiredWithBillPayeeToConfirmSelector
+  , disambiguationWithBillPayeesToDisambiguateSelector
+  , successWithResolvedBillPayeeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedBillPayee :: IsINBillPayee resolvedBillPayee => resolvedBillP
 successWithResolvedBillPayee resolvedBillPayee =
   do
     cls' <- getRequiredClass "INBillPayeeResolutionResult"
-    withObjCPtr resolvedBillPayee $ \raw_resolvedBillPayee ->
-      sendClassMsg cls' (mkSelector "successWithResolvedBillPayee:") (retPtr retVoid) [argPtr (castPtr raw_resolvedBillPayee :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedBillPayeeSelector (toINBillPayee resolvedBillPayee)
 
 -- | @+ disambiguationWithBillPayeesToDisambiguate:@
 disambiguationWithBillPayeesToDisambiguate :: IsNSArray billPayeesToDisambiguate => billPayeesToDisambiguate -> IO (Id INBillPayeeResolutionResult)
 disambiguationWithBillPayeesToDisambiguate billPayeesToDisambiguate =
   do
     cls' <- getRequiredClass "INBillPayeeResolutionResult"
-    withObjCPtr billPayeesToDisambiguate $ \raw_billPayeesToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithBillPayeesToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_billPayeesToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithBillPayeesToDisambiguateSelector (toNSArray billPayeesToDisambiguate)
 
 -- | @+ confirmationRequiredWithBillPayeeToConfirm:@
 confirmationRequiredWithBillPayeeToConfirm :: IsINBillPayee billPayeeToConfirm => billPayeeToConfirm -> IO (Id INBillPayeeResolutionResult)
 confirmationRequiredWithBillPayeeToConfirm billPayeeToConfirm =
   do
     cls' <- getRequiredClass "INBillPayeeResolutionResult"
-    withObjCPtr billPayeeToConfirm $ \raw_billPayeeToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithBillPayeeToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_billPayeeToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithBillPayeeToConfirmSelector (toINBillPayee billPayeeToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedBillPayee:@
-successWithResolvedBillPayeeSelector :: Selector
+successWithResolvedBillPayeeSelector :: Selector '[Id INBillPayee] (Id INBillPayeeResolutionResult)
 successWithResolvedBillPayeeSelector = mkSelector "successWithResolvedBillPayee:"
 
 -- | @Selector@ for @disambiguationWithBillPayeesToDisambiguate:@
-disambiguationWithBillPayeesToDisambiguateSelector :: Selector
+disambiguationWithBillPayeesToDisambiguateSelector :: Selector '[Id NSArray] (Id INBillPayeeResolutionResult)
 disambiguationWithBillPayeesToDisambiguateSelector = mkSelector "disambiguationWithBillPayeesToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithBillPayeeToConfirm:@
-confirmationRequiredWithBillPayeeToConfirmSelector :: Selector
+confirmationRequiredWithBillPayeeToConfirmSelector :: Selector '[Id INBillPayee] (Id INBillPayeeResolutionResult)
 confirmationRequiredWithBillPayeeToConfirmSelector = mkSelector "confirmationRequiredWithBillPayeeToConfirm:"
 

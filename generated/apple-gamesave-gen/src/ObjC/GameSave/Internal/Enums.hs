@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.GameSave.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @GSSyncState@
 newtype GSSyncState = GSSyncState CLong
@@ -36,3 +39,13 @@ pattern GSSyncStateError = GSSyncState 5
 
 pattern GSSyncStateClosed :: GSSyncState
 pattern GSSyncStateClosed = GSSyncState 6
+
+instance ObjCArgument GSSyncState where
+  withObjCArg (GSSyncState x) k = k (argCLong x)
+
+instance ObjCReturn GSSyncState where
+  type RawReturn GSSyncState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GSSyncState x)
+  fromOwned x = pure (GSSyncState x)

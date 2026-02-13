@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.Vision.VNClassifyImageRequest
   , supportedIdentifiersAndReturnError
   , results
   , knownClassificationsForRevision_errorSelector
-  , supportedIdentifiersAndReturnErrorSelector
   , resultsSelector
+  , supportedIdentifiersAndReturnErrorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,8 +45,7 @@ knownClassificationsForRevision_error :: IsNSError error_ => CULong -> error_ ->
 knownClassificationsForRevision_error requestRevision error_ =
   do
     cls' <- getRequiredClass "VNClassifyImageRequest"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "knownClassificationsForRevision:error:") (retPtr retVoid) [argCULong requestRevision, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' knownClassificationsForRevision_errorSelector requestRevision (toNSError error_)
 
 -- | Obtain the collection of identifiers supported by the target request.
 --
@@ -61,30 +57,29 @@ knownClassificationsForRevision_error requestRevision error_ =
 --
 -- ObjC selector: @- supportedIdentifiersAndReturnError:@
 supportedIdentifiersAndReturnError :: (IsVNClassifyImageRequest vnClassifyImageRequest, IsNSError error_) => vnClassifyImageRequest -> error_ -> IO (Id NSArray)
-supportedIdentifiersAndReturnError vnClassifyImageRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnClassifyImageRequest (mkSelector "supportedIdentifiersAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedIdentifiersAndReturnError vnClassifyImageRequest error_ =
+  sendMessage vnClassifyImageRequest supportedIdentifiersAndReturnErrorSelector (toNSError error_)
 
 -- | VNClassificationObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNClassifyImageRequest vnClassifyImageRequest => vnClassifyImageRequest -> IO (Id NSArray)
-results vnClassifyImageRequest  =
-    sendMsg vnClassifyImageRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnClassifyImageRequest =
+  sendMessage vnClassifyImageRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @knownClassificationsForRevision:error:@
-knownClassificationsForRevision_errorSelector :: Selector
+knownClassificationsForRevision_errorSelector :: Selector '[CULong, Id NSError] (Id NSArray)
 knownClassificationsForRevision_errorSelector = mkSelector "knownClassificationsForRevision:error:"
 
 -- | @Selector@ for @supportedIdentifiersAndReturnError:@
-supportedIdentifiersAndReturnErrorSelector :: Selector
+supportedIdentifiersAndReturnErrorSelector :: Selector '[Id NSError] (Id NSArray)
 supportedIdentifiersAndReturnErrorSelector = mkSelector "supportedIdentifiersAndReturnError:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

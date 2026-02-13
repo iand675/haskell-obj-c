@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.GameController.GCKeyboardInput
   , keyChangedHandler
   , setKeyChangedHandler
   , anyKeyPressed
+  , anyKeyPressedSelector
   , buttonForKeyCodeSelector
   , keyChangedHandlerSelector
   , setKeyChangedHandlerSelector
-  , anyKeyPressedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,43 +44,43 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- buttonForKeyCode:@
 buttonForKeyCode :: IsGCKeyboardInput gcKeyboardInput => gcKeyboardInput -> CLong -> IO (Id GCControllerButtonInput)
-buttonForKeyCode gcKeyboardInput  code =
-    sendMsg gcKeyboardInput (mkSelector "buttonForKeyCode:") (retPtr retVoid) [argCLong code] >>= retainedObject . castPtr
+buttonForKeyCode gcKeyboardInput code =
+  sendMessage gcKeyboardInput buttonForKeyCodeSelector code
 
 -- | @- keyChangedHandler@
 keyChangedHandler :: IsGCKeyboardInput gcKeyboardInput => gcKeyboardInput -> IO (Ptr ())
-keyChangedHandler gcKeyboardInput  =
-    fmap castPtr $ sendMsg gcKeyboardInput (mkSelector "keyChangedHandler") (retPtr retVoid) []
+keyChangedHandler gcKeyboardInput =
+  sendMessage gcKeyboardInput keyChangedHandlerSelector
 
 -- | @- setKeyChangedHandler:@
 setKeyChangedHandler :: IsGCKeyboardInput gcKeyboardInput => gcKeyboardInput -> Ptr () -> IO ()
-setKeyChangedHandler gcKeyboardInput  value =
-    sendMsg gcKeyboardInput (mkSelector "setKeyChangedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setKeyChangedHandler gcKeyboardInput value =
+  sendMessage gcKeyboardInput setKeyChangedHandlerSelector value
 
 -- | Before querying any key for a value it might be useful to check if any key is actually pressed
 --
 -- ObjC selector: @- anyKeyPressed@
 anyKeyPressed :: IsGCKeyboardInput gcKeyboardInput => gcKeyboardInput -> IO Bool
-anyKeyPressed gcKeyboardInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcKeyboardInput (mkSelector "anyKeyPressed") retCULong []
+anyKeyPressed gcKeyboardInput =
+  sendMessage gcKeyboardInput anyKeyPressedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @buttonForKeyCode:@
-buttonForKeyCodeSelector :: Selector
+buttonForKeyCodeSelector :: Selector '[CLong] (Id GCControllerButtonInput)
 buttonForKeyCodeSelector = mkSelector "buttonForKeyCode:"
 
 -- | @Selector@ for @keyChangedHandler@
-keyChangedHandlerSelector :: Selector
+keyChangedHandlerSelector :: Selector '[] (Ptr ())
 keyChangedHandlerSelector = mkSelector "keyChangedHandler"
 
 -- | @Selector@ for @setKeyChangedHandler:@
-setKeyChangedHandlerSelector :: Selector
+setKeyChangedHandlerSelector :: Selector '[Ptr ()] ()
 setKeyChangedHandlerSelector = mkSelector "setKeyChangedHandler:"
 
 -- | @Selector@ for @anyKeyPressed@
-anyKeyPressedSelector :: Selector
+anyKeyPressedSelector :: Selector '[] Bool
 anyKeyPressedSelector = mkSelector "anyKeyPressed"
 

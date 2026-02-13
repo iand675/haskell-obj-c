@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,50 +38,46 @@ module ObjC.Matter.MTRDeviceControllerStartupParams
   , setVendorId
   , nodeId
   , setNodeId
+  , caseAuthenticatedTagsSelector
+  , fabricIDSelector
+  , fabricIdSelector
   , initSelector
-  , newSelector
   , initWithIPK_fabricID_nocSignerSelector
   , initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificateSelector
-  , initWithSigningKeypair_fabricId_ipkSelector
   , initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipkSelector
-  , nocSignerSelector
-  , fabricIDSelector
-  , ipkSelector
-  , vendorIDSelector
-  , setVendorIDSelector
-  , nodeIDSelector
-  , setNodeIDSelector
-  , caseAuthenticatedTagsSelector
-  , setCaseAuthenticatedTagsSelector
-  , rootCertificateSelector
-  , setRootCertificateSelector
+  , initWithSigningKeypair_fabricId_ipkSelector
   , intermediateCertificateSelector
-  , setIntermediateCertificateSelector
+  , ipkSelector
+  , newSelector
+  , nocSignerSelector
+  , nodeIDSelector
+  , nodeIdSelector
+  , operationalCertificateIssuerQueueSelector
+  , operationalCertificateIssuerSelector
   , operationalCertificateSelector
   , operationalKeypairSelector
-  , setOperationalKeypairSelector
-  , operationalCertificateIssuerSelector
-  , setOperationalCertificateIssuerSelector
-  , operationalCertificateIssuerQueueSelector
-  , setOperationalCertificateIssuerQueueSelector
-  , fabricIdSelector
-  , vendorIdSelector
-  , setVendorIdSelector
-  , nodeIdSelector
+  , rootCertificateSelector
+  , setCaseAuthenticatedTagsSelector
+  , setIntermediateCertificateSelector
+  , setNodeIDSelector
   , setNodeIdSelector
+  , setOperationalCertificateIssuerQueueSelector
+  , setOperationalCertificateIssuerSelector
+  , setOperationalKeypairSelector
+  , setRootCertificateSelector
+  , setVendorIDSelector
+  , setVendorIdSelector
+  , vendorIDSelector
+  , vendorIdSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,15 +86,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id MTRDeviceControllerStartupParams)
-init_ mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrDeviceControllerStartupParams =
+  sendOwnedMessage mtrDeviceControllerStartupParams initSelector
 
 -- | @+ new@
 new :: IO (Id MTRDeviceControllerStartupParams)
 new  =
   do
     cls' <- getRequiredClass "MTRDeviceControllerStartupParams"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Prepare to initialize a controller given a keypair to use for signing operational certificates.
 --
@@ -109,10 +106,8 @@ new  =
 --
 -- ObjC selector: @- initWithIPK:fabricID:nocSigner:@
 initWithIPK_fabricID_nocSigner :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSData ipk, IsNSNumber fabricID) => mtrDeviceControllerStartupParams -> ipk -> fabricID -> RawId -> IO (Id MTRDeviceControllerStartupParams)
-initWithIPK_fabricID_nocSigner mtrDeviceControllerStartupParams  ipk fabricID nocSigner =
-  withObjCPtr ipk $ \raw_ipk ->
-    withObjCPtr fabricID $ \raw_fabricID ->
-        sendMsg mtrDeviceControllerStartupParams (mkSelector "initWithIPK:fabricID:nocSigner:") (retPtr retVoid) [argPtr (castPtr raw_ipk :: Ptr ()), argPtr (castPtr raw_fabricID :: Ptr ()), argPtr (castPtr (unRawId nocSigner) :: Ptr ())] >>= ownedObject . castPtr
+initWithIPK_fabricID_nocSigner mtrDeviceControllerStartupParams ipk fabricID nocSigner =
+  sendOwnedMessage mtrDeviceControllerStartupParams initWithIPK_fabricID_nocSignerSelector (toNSData ipk) (toNSNumber fabricID) nocSigner
 
 -- | Prepare to initialize a controller that is not able to sign operational certificates itself, and therefore needs to be provided with a complete operational certificate chain.  This initialization method should be used when none of the certificate-signing private keys are available locally.
 --
@@ -126,27 +121,18 @@ initWithIPK_fabricID_nocSigner mtrDeviceControllerStartupParams  ipk fabricID no
 --
 -- ObjC selector: @- initWithIPK:operationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:@
 initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSData ipk, IsNSData operationalCertificate, IsNSData intermediateCertificate, IsNSData rootCertificate) => mtrDeviceControllerStartupParams -> ipk -> RawId -> operationalCertificate -> intermediateCertificate -> rootCertificate -> IO (Id MTRDeviceControllerStartupParams)
-initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate mtrDeviceControllerStartupParams  ipk operationalKeypair operationalCertificate intermediateCertificate rootCertificate =
-  withObjCPtr ipk $ \raw_ipk ->
-    withObjCPtr operationalCertificate $ \raw_operationalCertificate ->
-      withObjCPtr intermediateCertificate $ \raw_intermediateCertificate ->
-        withObjCPtr rootCertificate $ \raw_rootCertificate ->
-            sendMsg mtrDeviceControllerStartupParams (mkSelector "initWithIPK:operationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:") (retPtr retVoid) [argPtr (castPtr raw_ipk :: Ptr ()), argPtr (castPtr (unRawId operationalKeypair) :: Ptr ()), argPtr (castPtr raw_operationalCertificate :: Ptr ()), argPtr (castPtr raw_intermediateCertificate :: Ptr ()), argPtr (castPtr raw_rootCertificate :: Ptr ())] >>= ownedObject . castPtr
+initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate mtrDeviceControllerStartupParams ipk operationalKeypair operationalCertificate intermediateCertificate rootCertificate =
+  sendOwnedMessage mtrDeviceControllerStartupParams initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificateSelector (toNSData ipk) operationalKeypair (toNSData operationalCertificate) (toNSData intermediateCertificate) (toNSData rootCertificate)
 
 -- | @- initWithSigningKeypair:fabricId:ipk:@
 initWithSigningKeypair_fabricId_ipk :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSData ipk) => mtrDeviceControllerStartupParams -> RawId -> CULong -> ipk -> IO (Id MTRDeviceControllerStartupParams)
-initWithSigningKeypair_fabricId_ipk mtrDeviceControllerStartupParams  nocSigner fabricId ipk =
-  withObjCPtr ipk $ \raw_ipk ->
-      sendMsg mtrDeviceControllerStartupParams (mkSelector "initWithSigningKeypair:fabricId:ipk:") (retPtr retVoid) [argPtr (castPtr (unRawId nocSigner) :: Ptr ()), argCULong fabricId, argPtr (castPtr raw_ipk :: Ptr ())] >>= ownedObject . castPtr
+initWithSigningKeypair_fabricId_ipk mtrDeviceControllerStartupParams nocSigner fabricId ipk =
+  sendOwnedMessage mtrDeviceControllerStartupParams initWithSigningKeypair_fabricId_ipkSelector nocSigner fabricId (toNSData ipk)
 
 -- | @- initWithOperationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:ipk:@
 initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipk :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSData operationalCertificate, IsNSData intermediateCertificate, IsNSData rootCertificate, IsNSData ipk) => mtrDeviceControllerStartupParams -> RawId -> operationalCertificate -> intermediateCertificate -> rootCertificate -> ipk -> IO (Id MTRDeviceControllerStartupParams)
-initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipk mtrDeviceControllerStartupParams  operationalKeypair operationalCertificate intermediateCertificate rootCertificate ipk =
-  withObjCPtr operationalCertificate $ \raw_operationalCertificate ->
-    withObjCPtr intermediateCertificate $ \raw_intermediateCertificate ->
-      withObjCPtr rootCertificate $ \raw_rootCertificate ->
-        withObjCPtr ipk $ \raw_ipk ->
-            sendMsg mtrDeviceControllerStartupParams (mkSelector "initWithOperationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:ipk:") (retPtr retVoid) [argPtr (castPtr (unRawId operationalKeypair) :: Ptr ()), argPtr (castPtr raw_operationalCertificate :: Ptr ()), argPtr (castPtr raw_intermediateCertificate :: Ptr ()), argPtr (castPtr raw_rootCertificate :: Ptr ()), argPtr (castPtr raw_ipk :: Ptr ())] >>= ownedObject . castPtr
+initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipk mtrDeviceControllerStartupParams operationalKeypair operationalCertificate intermediateCertificate rootCertificate ipk =
+  sendOwnedMessage mtrDeviceControllerStartupParams initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipkSelector operationalKeypair (toNSData operationalCertificate) (toNSData intermediateCertificate) (toNSData rootCertificate) (toNSData ipk)
 
 -- | Keypair used to sign operational certificates.  This is the root CA keypair if not using an intermediate CA, the intermediate CA's keypair otherwise.
 --
@@ -154,8 +140,8 @@ initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCe
 --
 -- ObjC selector: @- nocSigner@
 nocSigner :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO RawId
-nocSigner mtrDeviceControllerStartupParams  =
-    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerStartupParams (mkSelector "nocSigner") (retPtr retVoid) []
+nocSigner mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams nocSignerSelector
 
 -- | Fabric id for the controller.  Must be set to a nonzero value.  This is scoped by the root public key, which is determined as follows:
 --
@@ -165,15 +151,15 @@ nocSigner mtrDeviceControllerStartupParams  =
 --
 -- ObjC selector: @- fabricID@
 fabricID :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSNumber)
-fabricID mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "fabricID") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricID mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams fabricIDSelector
 
 -- | IPK to use for the controller's fabric.  Allowed to change from the last time a controller was started on this fabric if a new IPK has been distributed to all the devices the controller wants to interact with.
 --
 -- ObjC selector: @- ipk@
 ipk :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSData)
-ipk mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "ipk") (retPtr retVoid) [] >>= retainedObject . castPtr
+ipk mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams ipkSelector
 
 -- | Vendor ID (allocated by the Connectivity Standards Alliance) for this controller.
 --
@@ -189,8 +175,8 @@ ipk mtrDeviceControllerStartupParams  =
 --
 -- ObjC selector: @- vendorID@
 vendorID :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSNumber)
-vendorID mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "vendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorID mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams vendorIDSelector
 
 -- | Vendor ID (allocated by the Connectivity Standards Alliance) for this controller.
 --
@@ -206,9 +192,8 @@ vendorID mtrDeviceControllerStartupParams  =
 --
 -- ObjC selector: @- setVendorID:@
 setVendorID :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSNumber value) => mtrDeviceControllerStartupParams -> value -> IO ()
-setVendorID mtrDeviceControllerStartupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerStartupParams (mkSelector "setVendorID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVendorID mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setVendorIDSelector (toNSNumber value)
 
 -- | Node id for this controller.
 --
@@ -230,8 +215,8 @@ setVendorID mtrDeviceControllerStartupParams  value =
 --
 -- ObjC selector: @- nodeID@
 nodeID :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSNumber)
-nodeID mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams nodeIDSelector
 
 -- | Node id for this controller.
 --
@@ -253,9 +238,8 @@ nodeID mtrDeviceControllerStartupParams  =
 --
 -- ObjC selector: @- setNodeID:@
 setNodeID :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSNumber value) => mtrDeviceControllerStartupParams -> value -> IO ()
-setNodeID mtrDeviceControllerStartupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerStartupParams (mkSelector "setNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeID mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setNodeIDSelector (toNSNumber value)
 
 -- | CASE authenticated tags to use for this controller's operational certificate.
 --
@@ -265,8 +249,8 @@ setNodeID mtrDeviceControllerStartupParams  value =
 --
 -- ObjC selector: @- caseAuthenticatedTags@
 caseAuthenticatedTags :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSSet)
-caseAuthenticatedTags mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "caseAuthenticatedTags") (retPtr retVoid) [] >>= retainedObject . castPtr
+caseAuthenticatedTags mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams caseAuthenticatedTagsSelector
 
 -- | CASE authenticated tags to use for this controller's operational certificate.
 --
@@ -276,9 +260,8 @@ caseAuthenticatedTags mtrDeviceControllerStartupParams  =
 --
 -- ObjC selector: @- setCaseAuthenticatedTags:@
 setCaseAuthenticatedTags :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSSet value) => mtrDeviceControllerStartupParams -> value -> IO ()
-setCaseAuthenticatedTags mtrDeviceControllerStartupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerStartupParams (mkSelector "setCaseAuthenticatedTags:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaseAuthenticatedTags mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setCaseAuthenticatedTagsSelector (toNSSet value)
 
 -- | Root certificate, in X.509 DER form, to use.
 --
@@ -300,8 +283,8 @@ setCaseAuthenticatedTags mtrDeviceControllerStartupParams  value =
 --
 -- ObjC selector: @- rootCertificate@
 rootCertificate :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSData)
-rootCertificate mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "rootCertificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootCertificate mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams rootCertificateSelector
 
 -- | Root certificate, in X.509 DER form, to use.
 --
@@ -323,9 +306,8 @@ rootCertificate mtrDeviceControllerStartupParams  =
 --
 -- ObjC selector: @- setRootCertificate:@
 setRootCertificate :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSData value) => mtrDeviceControllerStartupParams -> value -> IO ()
-setRootCertificate mtrDeviceControllerStartupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerStartupParams (mkSelector "setRootCertificate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRootCertificate mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setRootCertificateSelector (toNSData value)
 
 -- | Intermediate certificate, in X.509 DER form, to use.
 --
@@ -351,8 +333,8 @@ setRootCertificate mtrDeviceControllerStartupParams  value =
 --
 -- ObjC selector: @- intermediateCertificate@
 intermediateCertificate :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSData)
-intermediateCertificate mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "intermediateCertificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+intermediateCertificate mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams intermediateCertificateSelector
 
 -- | Intermediate certificate, in X.509 DER form, to use.
 --
@@ -378,9 +360,8 @@ intermediateCertificate mtrDeviceControllerStartupParams  =
 --
 -- ObjC selector: @- setIntermediateCertificate:@
 setIntermediateCertificate :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSData value) => mtrDeviceControllerStartupParams -> value -> IO ()
-setIntermediateCertificate mtrDeviceControllerStartupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerStartupParams (mkSelector "setIntermediateCertificate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIntermediateCertificate mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setIntermediateCertificateSelector (toNSData value)
 
 -- | Operational certificate, in X.509 DER form, to use.
 --
@@ -390,8 +371,8 @@ setIntermediateCertificate mtrDeviceControllerStartupParams  value =
 --
 -- ObjC selector: @- operationalCertificate@
 operationalCertificate :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSData)
-operationalCertificate mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "operationalCertificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationalCertificate mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams operationalCertificateSelector
 
 -- | Operational keypair to use.  If operationalCertificate is not nil, the public key must match operationalCertificate.
 --
@@ -399,8 +380,8 @@ operationalCertificate mtrDeviceControllerStartupParams  =
 --
 -- ObjC selector: @- operationalKeypair@
 operationalKeypair :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO RawId
-operationalKeypair mtrDeviceControllerStartupParams  =
-    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerStartupParams (mkSelector "operationalKeypair") (retPtr retVoid) []
+operationalKeypair mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams operationalKeypairSelector
 
 -- | Operational keypair to use.  If operationalCertificate is not nil, the public key must match operationalCertificate.
 --
@@ -408,190 +389,187 @@ operationalKeypair mtrDeviceControllerStartupParams  =
 --
 -- ObjC selector: @- setOperationalKeypair:@
 setOperationalKeypair :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> RawId -> IO ()
-setOperationalKeypair mtrDeviceControllerStartupParams  value =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "setOperationalKeypair:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOperationalKeypair mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setOperationalKeypairSelector value
 
 -- | The certificate issuer delegate to use for issuing operational certificates when commissioning devices.  Allowed to be nil if this controller either does not issue operational certificates at all or internally generates the certificates to be issued.  In the latter case, nocSigner must not be nil.
 --
 -- ObjC selector: @- operationalCertificateIssuer@
 operationalCertificateIssuer :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO RawId
-operationalCertificateIssuer mtrDeviceControllerStartupParams  =
-    fmap (RawId . castPtr) $ sendMsg mtrDeviceControllerStartupParams (mkSelector "operationalCertificateIssuer") (retPtr retVoid) []
+operationalCertificateIssuer mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams operationalCertificateIssuerSelector
 
 -- | The certificate issuer delegate to use for issuing operational certificates when commissioning devices.  Allowed to be nil if this controller either does not issue operational certificates at all or internally generates the certificates to be issued.  In the latter case, nocSigner must not be nil.
 --
 -- ObjC selector: @- setOperationalCertificateIssuer:@
 setOperationalCertificateIssuer :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> RawId -> IO ()
-setOperationalCertificateIssuer mtrDeviceControllerStartupParams  value =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "setOperationalCertificateIssuer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOperationalCertificateIssuer mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setOperationalCertificateIssuerSelector value
 
 -- | The dispatch queue on which operationalCertificateIssuer should be called. Allowed to be nil if and only if operationalCertificateIssuer is nil.
 --
 -- ObjC selector: @- operationalCertificateIssuerQueue@
 operationalCertificateIssuerQueue :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSObject)
-operationalCertificateIssuerQueue mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "operationalCertificateIssuerQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationalCertificateIssuerQueue mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams operationalCertificateIssuerQueueSelector
 
 -- | The dispatch queue on which operationalCertificateIssuer should be called. Allowed to be nil if and only if operationalCertificateIssuer is nil.
 --
 -- ObjC selector: @- setOperationalCertificateIssuerQueue:@
 setOperationalCertificateIssuerQueue :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSObject value) => mtrDeviceControllerStartupParams -> value -> IO ()
-setOperationalCertificateIssuerQueue mtrDeviceControllerStartupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerStartupParams (mkSelector "setOperationalCertificateIssuerQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperationalCertificateIssuerQueue mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setOperationalCertificateIssuerQueueSelector (toNSObject value)
 
 -- | @- fabricId@
 fabricId :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO CULong
-fabricId mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "fabricId") retCULong []
+fabricId mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams fabricIdSelector
 
 -- | @- vendorId@
 vendorId :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSNumber)
-vendorId mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "vendorId") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorId mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams vendorIdSelector
 
 -- | @- setVendorId:@
 setVendorId :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSNumber value) => mtrDeviceControllerStartupParams -> value -> IO ()
-setVendorId mtrDeviceControllerStartupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerStartupParams (mkSelector "setVendorId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVendorId mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setVendorIdSelector (toNSNumber value)
 
 -- | @- nodeId@
 nodeId :: IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams => mtrDeviceControllerStartupParams -> IO (Id NSNumber)
-nodeId mtrDeviceControllerStartupParams  =
-    sendMsg mtrDeviceControllerStartupParams (mkSelector "nodeId") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeId mtrDeviceControllerStartupParams =
+  sendMessage mtrDeviceControllerStartupParams nodeIdSelector
 
 -- | @- setNodeId:@
 setNodeId :: (IsMTRDeviceControllerStartupParams mtrDeviceControllerStartupParams, IsNSNumber value) => mtrDeviceControllerStartupParams -> value -> IO ()
-setNodeId mtrDeviceControllerStartupParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceControllerStartupParams (mkSelector "setNodeId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeId mtrDeviceControllerStartupParams value =
+  sendMessage mtrDeviceControllerStartupParams setNodeIdSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRDeviceControllerStartupParams)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRDeviceControllerStartupParams)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithIPK:fabricID:nocSigner:@
-initWithIPK_fabricID_nocSignerSelector :: Selector
+initWithIPK_fabricID_nocSignerSelector :: Selector '[Id NSData, Id NSNumber, RawId] (Id MTRDeviceControllerStartupParams)
 initWithIPK_fabricID_nocSignerSelector = mkSelector "initWithIPK:fabricID:nocSigner:"
 
 -- | @Selector@ for @initWithIPK:operationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:@
-initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificateSelector :: Selector
+initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificateSelector :: Selector '[Id NSData, RawId, Id NSData, Id NSData, Id NSData] (Id MTRDeviceControllerStartupParams)
 initWithIPK_operationalKeypair_operationalCertificate_intermediateCertificate_rootCertificateSelector = mkSelector "initWithIPK:operationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:"
 
 -- | @Selector@ for @initWithSigningKeypair:fabricId:ipk:@
-initWithSigningKeypair_fabricId_ipkSelector :: Selector
+initWithSigningKeypair_fabricId_ipkSelector :: Selector '[RawId, CULong, Id NSData] (Id MTRDeviceControllerStartupParams)
 initWithSigningKeypair_fabricId_ipkSelector = mkSelector "initWithSigningKeypair:fabricId:ipk:"
 
 -- | @Selector@ for @initWithOperationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:ipk:@
-initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipkSelector :: Selector
+initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipkSelector :: Selector '[RawId, Id NSData, Id NSData, Id NSData, Id NSData] (Id MTRDeviceControllerStartupParams)
 initWithOperationalKeypair_operationalCertificate_intermediateCertificate_rootCertificate_ipkSelector = mkSelector "initWithOperationalKeypair:operationalCertificate:intermediateCertificate:rootCertificate:ipk:"
 
 -- | @Selector@ for @nocSigner@
-nocSignerSelector :: Selector
+nocSignerSelector :: Selector '[] RawId
 nocSignerSelector = mkSelector "nocSigner"
 
 -- | @Selector@ for @fabricID@
-fabricIDSelector :: Selector
+fabricIDSelector :: Selector '[] (Id NSNumber)
 fabricIDSelector = mkSelector "fabricID"
 
 -- | @Selector@ for @ipk@
-ipkSelector :: Selector
+ipkSelector :: Selector '[] (Id NSData)
 ipkSelector = mkSelector "ipk"
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] (Id NSNumber)
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @setVendorID:@
-setVendorIDSelector :: Selector
+setVendorIDSelector :: Selector '[Id NSNumber] ()
 setVendorIDSelector = mkSelector "setVendorID:"
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @setNodeID:@
-setNodeIDSelector :: Selector
+setNodeIDSelector :: Selector '[Id NSNumber] ()
 setNodeIDSelector = mkSelector "setNodeID:"
 
 -- | @Selector@ for @caseAuthenticatedTags@
-caseAuthenticatedTagsSelector :: Selector
+caseAuthenticatedTagsSelector :: Selector '[] (Id NSSet)
 caseAuthenticatedTagsSelector = mkSelector "caseAuthenticatedTags"
 
 -- | @Selector@ for @setCaseAuthenticatedTags:@
-setCaseAuthenticatedTagsSelector :: Selector
+setCaseAuthenticatedTagsSelector :: Selector '[Id NSSet] ()
 setCaseAuthenticatedTagsSelector = mkSelector "setCaseAuthenticatedTags:"
 
 -- | @Selector@ for @rootCertificate@
-rootCertificateSelector :: Selector
+rootCertificateSelector :: Selector '[] (Id NSData)
 rootCertificateSelector = mkSelector "rootCertificate"
 
 -- | @Selector@ for @setRootCertificate:@
-setRootCertificateSelector :: Selector
+setRootCertificateSelector :: Selector '[Id NSData] ()
 setRootCertificateSelector = mkSelector "setRootCertificate:"
 
 -- | @Selector@ for @intermediateCertificate@
-intermediateCertificateSelector :: Selector
+intermediateCertificateSelector :: Selector '[] (Id NSData)
 intermediateCertificateSelector = mkSelector "intermediateCertificate"
 
 -- | @Selector@ for @setIntermediateCertificate:@
-setIntermediateCertificateSelector :: Selector
+setIntermediateCertificateSelector :: Selector '[Id NSData] ()
 setIntermediateCertificateSelector = mkSelector "setIntermediateCertificate:"
 
 -- | @Selector@ for @operationalCertificate@
-operationalCertificateSelector :: Selector
+operationalCertificateSelector :: Selector '[] (Id NSData)
 operationalCertificateSelector = mkSelector "operationalCertificate"
 
 -- | @Selector@ for @operationalKeypair@
-operationalKeypairSelector :: Selector
+operationalKeypairSelector :: Selector '[] RawId
 operationalKeypairSelector = mkSelector "operationalKeypair"
 
 -- | @Selector@ for @setOperationalKeypair:@
-setOperationalKeypairSelector :: Selector
+setOperationalKeypairSelector :: Selector '[RawId] ()
 setOperationalKeypairSelector = mkSelector "setOperationalKeypair:"
 
 -- | @Selector@ for @operationalCertificateIssuer@
-operationalCertificateIssuerSelector :: Selector
+operationalCertificateIssuerSelector :: Selector '[] RawId
 operationalCertificateIssuerSelector = mkSelector "operationalCertificateIssuer"
 
 -- | @Selector@ for @setOperationalCertificateIssuer:@
-setOperationalCertificateIssuerSelector :: Selector
+setOperationalCertificateIssuerSelector :: Selector '[RawId] ()
 setOperationalCertificateIssuerSelector = mkSelector "setOperationalCertificateIssuer:"
 
 -- | @Selector@ for @operationalCertificateIssuerQueue@
-operationalCertificateIssuerQueueSelector :: Selector
+operationalCertificateIssuerQueueSelector :: Selector '[] (Id NSObject)
 operationalCertificateIssuerQueueSelector = mkSelector "operationalCertificateIssuerQueue"
 
 -- | @Selector@ for @setOperationalCertificateIssuerQueue:@
-setOperationalCertificateIssuerQueueSelector :: Selector
+setOperationalCertificateIssuerQueueSelector :: Selector '[Id NSObject] ()
 setOperationalCertificateIssuerQueueSelector = mkSelector "setOperationalCertificateIssuerQueue:"
 
 -- | @Selector@ for @fabricId@
-fabricIdSelector :: Selector
+fabricIdSelector :: Selector '[] CULong
 fabricIdSelector = mkSelector "fabricId"
 
 -- | @Selector@ for @vendorId@
-vendorIdSelector :: Selector
+vendorIdSelector :: Selector '[] (Id NSNumber)
 vendorIdSelector = mkSelector "vendorId"
 
 -- | @Selector@ for @setVendorId:@
-setVendorIdSelector :: Selector
+setVendorIdSelector :: Selector '[Id NSNumber] ()
 setVendorIdSelector = mkSelector "setVendorId:"
 
 -- | @Selector@ for @nodeId@
-nodeIdSelector :: Selector
+nodeIdSelector :: Selector '[] (Id NSNumber)
 nodeIdSelector = mkSelector "nodeId"
 
 -- | @Selector@ for @setNodeId:@
-setNodeIdSelector :: Selector
+setNodeIdSelector :: Selector '[Id NSNumber] ()
 setNodeIdSelector = mkSelector "setNodeId:"
 

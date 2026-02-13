@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRThermostatClusterRemoveThermostatSuggestionParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , uniqueIDSelector
-  , setUniqueIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setUniqueIDSelector
+  , timedInvokeTimeoutMsSelector
+  , uniqueIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- uniqueID@
 uniqueID :: IsMTRThermostatClusterRemoveThermostatSuggestionParams mtrThermostatClusterRemoveThermostatSuggestionParams => mtrThermostatClusterRemoveThermostatSuggestionParams -> IO (Id NSNumber)
-uniqueID mtrThermostatClusterRemoveThermostatSuggestionParams  =
-    sendMsg mtrThermostatClusterRemoveThermostatSuggestionParams (mkSelector "uniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueID mtrThermostatClusterRemoveThermostatSuggestionParams =
+  sendMessage mtrThermostatClusterRemoveThermostatSuggestionParams uniqueIDSelector
 
 -- | @- setUniqueID:@
 setUniqueID :: (IsMTRThermostatClusterRemoveThermostatSuggestionParams mtrThermostatClusterRemoveThermostatSuggestionParams, IsNSNumber value) => mtrThermostatClusterRemoveThermostatSuggestionParams -> value -> IO ()
-setUniqueID mtrThermostatClusterRemoveThermostatSuggestionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterRemoveThermostatSuggestionParams (mkSelector "setUniqueID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUniqueID mtrThermostatClusterRemoveThermostatSuggestionParams value =
+  sendMessage mtrThermostatClusterRemoveThermostatSuggestionParams setUniqueIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setUniqueID mtrThermostatClusterRemoveThermostatSuggestionParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRThermostatClusterRemoveThermostatSuggestionParams mtrThermostatClusterRemoveThermostatSuggestionParams => mtrThermostatClusterRemoveThermostatSuggestionParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrThermostatClusterRemoveThermostatSuggestionParams  =
-    sendMsg mtrThermostatClusterRemoveThermostatSuggestionParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrThermostatClusterRemoveThermostatSuggestionParams =
+  sendMessage mtrThermostatClusterRemoveThermostatSuggestionParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrThermostatClusterRemoveThermostatSuggestionParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRThermostatClusterRemoveThermostatSuggestionParams mtrThermostatClusterRemoveThermostatSuggestionParams, IsNSNumber value) => mtrThermostatClusterRemoveThermostatSuggestionParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrThermostatClusterRemoveThermostatSuggestionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterRemoveThermostatSuggestionParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrThermostatClusterRemoveThermostatSuggestionParams value =
+  sendMessage mtrThermostatClusterRemoveThermostatSuggestionParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrThermostatClusterRemoveThermostatSuggestionParams  va
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRThermostatClusterRemoveThermostatSuggestionParams mtrThermostatClusterRemoveThermostatSuggestionParams => mtrThermostatClusterRemoveThermostatSuggestionParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrThermostatClusterRemoveThermostatSuggestionParams  =
-    sendMsg mtrThermostatClusterRemoveThermostatSuggestionParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrThermostatClusterRemoveThermostatSuggestionParams =
+  sendMessage mtrThermostatClusterRemoveThermostatSuggestionParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrThermostatClusterRemoveThermostatSuggestionParams
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRThermostatClusterRemoveThermostatSuggestionParams mtrThermostatClusterRemoveThermostatSuggestionParams, IsNSNumber value) => mtrThermostatClusterRemoveThermostatSuggestionParams -> value -> IO ()
-setServerSideProcessingTimeout mtrThermostatClusterRemoveThermostatSuggestionParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterRemoveThermostatSuggestionParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrThermostatClusterRemoveThermostatSuggestionParams value =
+  sendMessage mtrThermostatClusterRemoveThermostatSuggestionParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @uniqueID@
-uniqueIDSelector :: Selector
+uniqueIDSelector :: Selector '[] (Id NSNumber)
 uniqueIDSelector = mkSelector "uniqueID"
 
 -- | @Selector@ for @setUniqueID:@
-setUniqueIDSelector :: Selector
+setUniqueIDSelector :: Selector '[Id NSNumber] ()
 setUniqueIDSelector = mkSelector "setUniqueID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

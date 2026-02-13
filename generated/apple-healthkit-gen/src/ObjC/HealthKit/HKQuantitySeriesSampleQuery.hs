@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.HealthKit.HKQuantitySeriesSampleQuery
   , setIncludeSample
   , orderByQuantitySampleStartDate
   , setOrderByQuantitySampleStartDate
+  , includeSampleSelector
   , initWithQuantityType_predicate_quantityHandlerSelector
   , initWithSample_quantityHandlerSelector
-  , includeSampleSelector
-  , setIncludeSampleSelector
   , orderByQuantitySampleStartDateSelector
+  , setIncludeSampleSelector
   , setOrderByQuantitySampleStartDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,16 +46,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithQuantityType:predicate:quantityHandler:@
 initWithQuantityType_predicate_quantityHandler :: (IsHKQuantitySeriesSampleQuery hkQuantitySeriesSampleQuery, IsHKQuantityType quantityType, IsNSPredicate predicate) => hkQuantitySeriesSampleQuery -> quantityType -> predicate -> Ptr () -> IO (Id HKQuantitySeriesSampleQuery)
-initWithQuantityType_predicate_quantityHandler hkQuantitySeriesSampleQuery  quantityType predicate quantityHandler =
-  withObjCPtr quantityType $ \raw_quantityType ->
-    withObjCPtr predicate $ \raw_predicate ->
-        sendMsg hkQuantitySeriesSampleQuery (mkSelector "initWithQuantityType:predicate:quantityHandler:") (retPtr retVoid) [argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr quantityHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithQuantityType_predicate_quantityHandler hkQuantitySeriesSampleQuery quantityType predicate quantityHandler =
+  sendOwnedMessage hkQuantitySeriesSampleQuery initWithQuantityType_predicate_quantityHandlerSelector (toHKQuantityType quantityType) (toNSPredicate predicate) quantityHandler
 
 -- | @- initWithSample:quantityHandler:@
 initWithSample_quantityHandler :: (IsHKQuantitySeriesSampleQuery hkQuantitySeriesSampleQuery, IsHKQuantitySample quantitySample) => hkQuantitySeriesSampleQuery -> quantitySample -> Ptr () -> IO (Id HKQuantitySeriesSampleQuery)
-initWithSample_quantityHandler hkQuantitySeriesSampleQuery  quantitySample quantityHandler =
-  withObjCPtr quantitySample $ \raw_quantitySample ->
-      sendMsg hkQuantitySeriesSampleQuery (mkSelector "initWithSample:quantityHandler:") (retPtr retVoid) [argPtr (castPtr raw_quantitySample :: Ptr ()), argPtr (castPtr quantityHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithSample_quantityHandler hkQuantitySeriesSampleQuery quantitySample quantityHandler =
+  sendOwnedMessage hkQuantitySeriesSampleQuery initWithSample_quantityHandlerSelector (toHKQuantitySample quantitySample) quantityHandler
 
 -- | includeSample
 --
@@ -68,8 +62,8 @@ initWithSample_quantityHandler hkQuantitySeriesSampleQuery  quantitySample quant
 --
 -- ObjC selector: @- includeSample@
 includeSample :: IsHKQuantitySeriesSampleQuery hkQuantitySeriesSampleQuery => hkQuantitySeriesSampleQuery -> IO Bool
-includeSample hkQuantitySeriesSampleQuery  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkQuantitySeriesSampleQuery (mkSelector "includeSample") retCULong []
+includeSample hkQuantitySeriesSampleQuery =
+  sendMessage hkQuantitySeriesSampleQuery includeSampleSelector
 
 -- | includeSample
 --
@@ -79,8 +73,8 @@ includeSample hkQuantitySeriesSampleQuery  =
 --
 -- ObjC selector: @- setIncludeSample:@
 setIncludeSample :: IsHKQuantitySeriesSampleQuery hkQuantitySeriesSampleQuery => hkQuantitySeriesSampleQuery -> Bool -> IO ()
-setIncludeSample hkQuantitySeriesSampleQuery  value =
-    sendMsg hkQuantitySeriesSampleQuery (mkSelector "setIncludeSample:") retVoid [argCULong (if value then 1 else 0)]
+setIncludeSample hkQuantitySeriesSampleQuery value =
+  sendMessage hkQuantitySeriesSampleQuery setIncludeSampleSelector value
 
 -- | orderByQuantitySampleStartDate
 --
@@ -90,8 +84,8 @@ setIncludeSample hkQuantitySeriesSampleQuery  value =
 --
 -- ObjC selector: @- orderByQuantitySampleStartDate@
 orderByQuantitySampleStartDate :: IsHKQuantitySeriesSampleQuery hkQuantitySeriesSampleQuery => hkQuantitySeriesSampleQuery -> IO Bool
-orderByQuantitySampleStartDate hkQuantitySeriesSampleQuery  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkQuantitySeriesSampleQuery (mkSelector "orderByQuantitySampleStartDate") retCULong []
+orderByQuantitySampleStartDate hkQuantitySeriesSampleQuery =
+  sendMessage hkQuantitySeriesSampleQuery orderByQuantitySampleStartDateSelector
 
 -- | orderByQuantitySampleStartDate
 --
@@ -101,34 +95,34 @@ orderByQuantitySampleStartDate hkQuantitySeriesSampleQuery  =
 --
 -- ObjC selector: @- setOrderByQuantitySampleStartDate:@
 setOrderByQuantitySampleStartDate :: IsHKQuantitySeriesSampleQuery hkQuantitySeriesSampleQuery => hkQuantitySeriesSampleQuery -> Bool -> IO ()
-setOrderByQuantitySampleStartDate hkQuantitySeriesSampleQuery  value =
-    sendMsg hkQuantitySeriesSampleQuery (mkSelector "setOrderByQuantitySampleStartDate:") retVoid [argCULong (if value then 1 else 0)]
+setOrderByQuantitySampleStartDate hkQuantitySeriesSampleQuery value =
+  sendMessage hkQuantitySeriesSampleQuery setOrderByQuantitySampleStartDateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithQuantityType:predicate:quantityHandler:@
-initWithQuantityType_predicate_quantityHandlerSelector :: Selector
+initWithQuantityType_predicate_quantityHandlerSelector :: Selector '[Id HKQuantityType, Id NSPredicate, Ptr ()] (Id HKQuantitySeriesSampleQuery)
 initWithQuantityType_predicate_quantityHandlerSelector = mkSelector "initWithQuantityType:predicate:quantityHandler:"
 
 -- | @Selector@ for @initWithSample:quantityHandler:@
-initWithSample_quantityHandlerSelector :: Selector
+initWithSample_quantityHandlerSelector :: Selector '[Id HKQuantitySample, Ptr ()] (Id HKQuantitySeriesSampleQuery)
 initWithSample_quantityHandlerSelector = mkSelector "initWithSample:quantityHandler:"
 
 -- | @Selector@ for @includeSample@
-includeSampleSelector :: Selector
+includeSampleSelector :: Selector '[] Bool
 includeSampleSelector = mkSelector "includeSample"
 
 -- | @Selector@ for @setIncludeSample:@
-setIncludeSampleSelector :: Selector
+setIncludeSampleSelector :: Selector '[Bool] ()
 setIncludeSampleSelector = mkSelector "setIncludeSample:"
 
 -- | @Selector@ for @orderByQuantitySampleStartDate@
-orderByQuantitySampleStartDateSelector :: Selector
+orderByQuantitySampleStartDateSelector :: Selector '[] Bool
 orderByQuantitySampleStartDateSelector = mkSelector "orderByQuantitySampleStartDate"
 
 -- | @Selector@ for @setOrderByQuantitySampleStartDate:@
-setOrderByQuantitySampleStartDateSelector :: Selector
+setOrderByQuantitySampleStartDateSelector :: Selector '[Bool] ()
 setOrderByQuantitySampleStartDateSelector = mkSelector "setOrderByQuantitySampleStartDate:"
 

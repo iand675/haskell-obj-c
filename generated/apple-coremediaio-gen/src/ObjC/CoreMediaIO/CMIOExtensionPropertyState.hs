@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.CoreMediaIO.CMIOExtensionPropertyState
   , initWithValue_attributes
   , value
   , attributes
+  , attributesSelector
   , initSelector
+  , initWithValueSelector
+  , initWithValue_attributesSelector
   , newSelector
   , propertyStateWithValueSelector
   , propertyStateWithValue_attributesSelector
-  , initWithValueSelector
-  , initWithValue_attributesSelector
   , valueSelector
-  , attributesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMIOExtensionPropertyState cmioExtensionPropertyState => cmioExtensionPropertyState -> IO (Id CMIOExtensionPropertyState)
-init_ cmioExtensionPropertyState  =
-    sendMsg cmioExtensionPropertyState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionPropertyState =
+  sendOwnedMessage cmioExtensionPropertyState initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionPropertyState)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionPropertyState"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | propertyStateWithValue:
 --
@@ -70,7 +67,7 @@ propertyStateWithValue :: RawId -> IO (Id CMIOExtensionPropertyState)
 propertyStateWithValue value =
   do
     cls' <- getRequiredClass "CMIOExtensionPropertyState"
-    sendClassMsg cls' (mkSelector "propertyStateWithValue:") (retPtr retVoid) [argPtr (castPtr (unRawId value) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' propertyStateWithValueSelector value
 
 -- | propertyStateWithValue:attributes:
 --
@@ -89,8 +86,7 @@ propertyStateWithValue_attributes :: IsCMIOExtensionPropertyAttributes attribute
 propertyStateWithValue_attributes value attributes =
   do
     cls' <- getRequiredClass "CMIOExtensionPropertyState"
-    withObjCPtr attributes $ \raw_attributes ->
-      sendClassMsg cls' (mkSelector "propertyStateWithValue:attributes:") (retPtr retVoid) [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' propertyStateWithValue_attributesSelector value (toCMIOExtensionPropertyAttributes attributes)
 
 -- | initWithValue:
 --
@@ -104,8 +100,8 @@ propertyStateWithValue_attributes value attributes =
 --
 -- ObjC selector: @- initWithValue:@
 initWithValue :: IsCMIOExtensionPropertyState cmioExtensionPropertyState => cmioExtensionPropertyState -> RawId -> IO (Id CMIOExtensionPropertyState)
-initWithValue cmioExtensionPropertyState  value =
-    sendMsg cmioExtensionPropertyState (mkSelector "initWithValue:") (retPtr retVoid) [argPtr (castPtr (unRawId value) :: Ptr ())] >>= ownedObject . castPtr
+initWithValue cmioExtensionPropertyState value =
+  sendOwnedMessage cmioExtensionPropertyState initWithValueSelector value
 
 -- | initWithValue:attributes:
 --
@@ -121,9 +117,8 @@ initWithValue cmioExtensionPropertyState  value =
 --
 -- ObjC selector: @- initWithValue:attributes:@
 initWithValue_attributes :: (IsCMIOExtensionPropertyState cmioExtensionPropertyState, IsCMIOExtensionPropertyAttributes attributes) => cmioExtensionPropertyState -> RawId -> attributes -> IO (Id CMIOExtensionPropertyState)
-initWithValue_attributes cmioExtensionPropertyState  value attributes =
-  withObjCPtr attributes $ \raw_attributes ->
-      sendMsg cmioExtensionPropertyState (mkSelector "initWithValue:attributes:") (retPtr retVoid) [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())] >>= ownedObject . castPtr
+initWithValue_attributes cmioExtensionPropertyState value attributes =
+  sendOwnedMessage cmioExtensionPropertyState initWithValue_attributesSelector value (toCMIOExtensionPropertyAttributes attributes)
 
 -- | value
 --
@@ -131,8 +126,8 @@ initWithValue_attributes cmioExtensionPropertyState  value attributes =
 --
 -- ObjC selector: @- value@
 value :: IsCMIOExtensionPropertyState cmioExtensionPropertyState => cmioExtensionPropertyState -> IO RawId
-value cmioExtensionPropertyState  =
-    fmap (RawId . castPtr) $ sendMsg cmioExtensionPropertyState (mkSelector "value") (retPtr retVoid) []
+value cmioExtensionPropertyState =
+  sendMessage cmioExtensionPropertyState valueSelector
 
 -- | attributes
 --
@@ -140,42 +135,42 @@ value cmioExtensionPropertyState  =
 --
 -- ObjC selector: @- attributes@
 attributes :: IsCMIOExtensionPropertyState cmioExtensionPropertyState => cmioExtensionPropertyState -> IO (Id CMIOExtensionPropertyAttributes)
-attributes cmioExtensionPropertyState  =
-    sendMsg cmioExtensionPropertyState (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes cmioExtensionPropertyState =
+  sendMessage cmioExtensionPropertyState attributesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionPropertyState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionPropertyState)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @propertyStateWithValue:@
-propertyStateWithValueSelector :: Selector
+propertyStateWithValueSelector :: Selector '[RawId] (Id CMIOExtensionPropertyState)
 propertyStateWithValueSelector = mkSelector "propertyStateWithValue:"
 
 -- | @Selector@ for @propertyStateWithValue:attributes:@
-propertyStateWithValue_attributesSelector :: Selector
+propertyStateWithValue_attributesSelector :: Selector '[RawId, Id CMIOExtensionPropertyAttributes] (Id CMIOExtensionPropertyState)
 propertyStateWithValue_attributesSelector = mkSelector "propertyStateWithValue:attributes:"
 
 -- | @Selector@ for @initWithValue:@
-initWithValueSelector :: Selector
+initWithValueSelector :: Selector '[RawId] (Id CMIOExtensionPropertyState)
 initWithValueSelector = mkSelector "initWithValue:"
 
 -- | @Selector@ for @initWithValue:attributes:@
-initWithValue_attributesSelector :: Selector
+initWithValue_attributesSelector :: Selector '[RawId, Id CMIOExtensionPropertyAttributes] (Id CMIOExtensionPropertyState)
 initWithValue_attributesSelector = mkSelector "initWithValue:attributes:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] RawId
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id CMIOExtensionPropertyAttributes)
 attributesSelector = mkSelector "attributes"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.CoreData.NSPropertyMapping
   , setUserInfo
   , nameSelector
   , setNameSelector
-  , valueExpressionSelector
+  , setUserInfoSelector
   , setValueExpressionSelector
   , userInfoSelector
-  , setUserInfoSelector
+  , valueExpressionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsNSPropertyMapping nsPropertyMapping => nsPropertyMapping -> IO (Id NSString)
-name nsPropertyMapping  =
-    sendMsg nsPropertyMapping (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsPropertyMapping =
+  sendMessage nsPropertyMapping nameSelector
 
 -- | @- setName:@
 setName :: (IsNSPropertyMapping nsPropertyMapping, IsNSString value) => nsPropertyMapping -> value -> IO ()
-setName nsPropertyMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPropertyMapping (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsPropertyMapping value =
+  sendMessage nsPropertyMapping setNameSelector (toNSString value)
 
 -- | @- valueExpression@
 valueExpression :: IsNSPropertyMapping nsPropertyMapping => nsPropertyMapping -> IO (Id NSExpression)
-valueExpression nsPropertyMapping  =
-    sendMsg nsPropertyMapping (mkSelector "valueExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueExpression nsPropertyMapping =
+  sendMessage nsPropertyMapping valueExpressionSelector
 
 -- | @- setValueExpression:@
 setValueExpression :: (IsNSPropertyMapping nsPropertyMapping, IsNSExpression value) => nsPropertyMapping -> value -> IO ()
-setValueExpression nsPropertyMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPropertyMapping (mkSelector "setValueExpression:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueExpression nsPropertyMapping value =
+  sendMessage nsPropertyMapping setValueExpressionSelector (toNSExpression value)
 
 -- | @- userInfo@
 userInfo :: IsNSPropertyMapping nsPropertyMapping => nsPropertyMapping -> IO (Id NSDictionary)
-userInfo nsPropertyMapping  =
-    sendMsg nsPropertyMapping (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsPropertyMapping =
+  sendMessage nsPropertyMapping userInfoSelector
 
 -- | @- setUserInfo:@
 setUserInfo :: (IsNSPropertyMapping nsPropertyMapping, IsNSDictionary value) => nsPropertyMapping -> value -> IO ()
-setUserInfo nsPropertyMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPropertyMapping (mkSelector "setUserInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserInfo nsPropertyMapping value =
+  sendMessage nsPropertyMapping setUserInfoSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @valueExpression@
-valueExpressionSelector :: Selector
+valueExpressionSelector :: Selector '[] (Id NSExpression)
 valueExpressionSelector = mkSelector "valueExpression"
 
 -- | @Selector@ for @setValueExpression:@
-setValueExpressionSelector :: Selector
+setValueExpressionSelector :: Selector '[Id NSExpression] ()
 setValueExpressionSelector = mkSelector "setValueExpression:"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @setUserInfo:@
-setUserInfoSelector :: Selector
+setUserInfoSelector :: Selector '[Id NSDictionary] ()
 setUserInfoSelector = mkSelector "setUserInfo:"
 

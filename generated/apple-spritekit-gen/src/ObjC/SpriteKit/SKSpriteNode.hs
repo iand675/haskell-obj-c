@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,35 +41,35 @@ module ObjC.SpriteKit.SKSpriteNode
   , setShader
   , attributeValues
   , setAttributeValues
-  , spriteNodeWithTextureSelector
-  , spriteNodeWithTexture_normalMapSelector
+  , attributeValuesSelector
+  , blendModeSelector
+  , colorBlendFactorSelector
+  , colorSelector
+  , initWithCoderSelector
+  , initWithImageNamedSelector
+  , initWithTextureSelector
+  , lightingBitMaskSelector
+  , normalTextureSelector
+  , setAttributeValuesSelector
+  , setBlendModeSelector
+  , setColorBlendFactorSelector
+  , setColorSelector
+  , setLightingBitMaskSelector
+  , setNormalTextureSelector
+  , setShaderSelector
+  , setShadowCastBitMaskSelector
+  , setShadowedBitMaskSelector
+  , setTextureSelector
+  , setValue_forAttributeNamedSelector
+  , shaderSelector
+  , shadowCastBitMaskSelector
+  , shadowedBitMaskSelector
   , spriteNodeWithImageNamedSelector
   , spriteNodeWithImageNamed_normalMappedSelector
-  , initWithTextureSelector
-  , initWithImageNamedSelector
-  , initWithCoderSelector
-  , valueForAttributeNamedSelector
-  , setValue_forAttributeNamedSelector
+  , spriteNodeWithTextureSelector
+  , spriteNodeWithTexture_normalMapSelector
   , textureSelector
-  , setTextureSelector
-  , normalTextureSelector
-  , setNormalTextureSelector
-  , lightingBitMaskSelector
-  , setLightingBitMaskSelector
-  , shadowCastBitMaskSelector
-  , setShadowCastBitMaskSelector
-  , shadowedBitMaskSelector
-  , setShadowedBitMaskSelector
-  , colorBlendFactorSelector
-  , setColorBlendFactorSelector
-  , colorSelector
-  , setColorSelector
-  , blendModeSelector
-  , setBlendModeSelector
-  , shaderSelector
-  , setShaderSelector
-  , attributeValuesSelector
-  , setAttributeValuesSelector
+  , valueForAttributeNamedSelector
 
   -- * Enum types
   , SKBlendMode(SKBlendMode)
@@ -83,15 +84,11 @@ module ObjC.SpriteKit.SKSpriteNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -109,17 +106,14 @@ spriteNodeWithTexture :: IsSKTexture texture => texture -> IO (Id SKSpriteNode)
 spriteNodeWithTexture texture =
   do
     cls' <- getRequiredClass "SKSpriteNode"
-    withObjCPtr texture $ \raw_texture ->
-      sendClassMsg cls' (mkSelector "spriteNodeWithTexture:") (retPtr retVoid) [argPtr (castPtr raw_texture :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' spriteNodeWithTextureSelector (toSKTexture texture)
 
 -- | @+ spriteNodeWithTexture:normalMap:@
 spriteNodeWithTexture_normalMap :: (IsSKTexture texture, IsSKTexture normalMap) => texture -> normalMap -> IO (Id SKSpriteNode)
 spriteNodeWithTexture_normalMap texture normalMap =
   do
     cls' <- getRequiredClass "SKSpriteNode"
-    withObjCPtr texture $ \raw_texture ->
-      withObjCPtr normalMap $ \raw_normalMap ->
-        sendClassMsg cls' (mkSelector "spriteNodeWithTexture:normalMap:") (retPtr retVoid) [argPtr (castPtr raw_texture :: Ptr ()), argPtr (castPtr raw_normalMap :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' spriteNodeWithTexture_normalMapSelector (toSKTexture texture) (toSKTexture normalMap)
 
 -- | Create a sprite with an image from your app bundle (An SKTexture is created for the image and set on the sprite. Its size is set to the SKTexture's pixel width/height) The position of the sprite is (0, 0) and the texture anchored at (0.5, 0.5), so that it is offset by half the width and half the height. Thus the sprite has the texture centered about the position. If you wish to have the texture anchored at a different offset set the anchorPoint to another pair of values in the interval from 0.0 up to and including 1.0.
 --
@@ -130,16 +124,14 @@ spriteNodeWithImageNamed :: IsNSString name => name -> IO (Id SKSpriteNode)
 spriteNodeWithImageNamed name =
   do
     cls' <- getRequiredClass "SKSpriteNode"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "spriteNodeWithImageNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' spriteNodeWithImageNamedSelector (toNSString name)
 
 -- | @+ spriteNodeWithImageNamed:normalMapped:@
 spriteNodeWithImageNamed_normalMapped :: IsNSString name => name -> Bool -> IO (Id SKSpriteNode)
 spriteNodeWithImageNamed_normalMapped name generateNormalMap =
   do
     cls' <- getRequiredClass "SKSpriteNode"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "spriteNodeWithImageNamed:normalMapped:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (if generateNormalMap then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' spriteNodeWithImageNamed_normalMappedSelector (toNSString name) generateNormalMap
 
 -- | Initialize a sprite with an SKTexture and set its size to the SKTexture's width/height.
 --
@@ -147,9 +139,8 @@ spriteNodeWithImageNamed_normalMapped name generateNormalMap =
 --
 -- ObjC selector: @- initWithTexture:@
 initWithTexture :: (IsSKSpriteNode skSpriteNode, IsSKTexture texture) => skSpriteNode -> texture -> IO (Id SKSpriteNode)
-initWithTexture skSpriteNode  texture =
-  withObjCPtr texture $ \raw_texture ->
-      sendMsg skSpriteNode (mkSelector "initWithTexture:") (retPtr retVoid) [argPtr (castPtr raw_texture :: Ptr ())] >>= ownedObject . castPtr
+initWithTexture skSpriteNode texture =
+  sendOwnedMessage skSpriteNode initWithTextureSelector (toSKTexture texture)
 
 -- | Initialize a sprite with an image from your app bundle (An SKTexture is created for the image and set on the sprite. Its size is set to the SKTexture's pixel width/height) The position of the sprite is (0, 0) and the texture anchored at (0.5, 0.5), so that it is offset by half the width and half the height. Thus the sprite has the texture centered about the position. If you wish to have the texture anchored at a different offset set the anchorPoint to another pair of values in the interval from 0.0 up to and including 1.0.
 --
@@ -157,45 +148,39 @@ initWithTexture skSpriteNode  texture =
 --
 -- ObjC selector: @- initWithImageNamed:@
 initWithImageNamed :: (IsSKSpriteNode skSpriteNode, IsNSString name) => skSpriteNode -> name -> IO (Id SKSpriteNode)
-initWithImageNamed skSpriteNode  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skSpriteNode (mkSelector "initWithImageNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithImageNamed skSpriteNode name =
+  sendOwnedMessage skSpriteNode initWithImageNamedSelector (toNSString name)
 
 -- | Support coding and decoding via NSKeyedArchiver.
 --
 -- ObjC selector: @- initWithCoder:@
 initWithCoder :: (IsSKSpriteNode skSpriteNode, IsNSCoder aDecoder) => skSpriteNode -> aDecoder -> IO (Id SKSpriteNode)
-initWithCoder skSpriteNode  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg skSpriteNode (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder skSpriteNode aDecoder =
+  sendOwnedMessage skSpriteNode initWithCoderSelector (toNSCoder aDecoder)
 
 -- | @- valueForAttributeNamed:@
 valueForAttributeNamed :: (IsSKSpriteNode skSpriteNode, IsNSString key) => skSpriteNode -> key -> IO (Id SKAttributeValue)
-valueForAttributeNamed skSpriteNode  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg skSpriteNode (mkSelector "valueForAttributeNamed:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+valueForAttributeNamed skSpriteNode key =
+  sendMessage skSpriteNode valueForAttributeNamedSelector (toNSString key)
 
 -- | @- setValue:forAttributeNamed:@
 setValue_forAttributeNamed :: (IsSKSpriteNode skSpriteNode, IsSKAttributeValue value, IsNSString key) => skSpriteNode -> value -> key -> IO ()
-setValue_forAttributeNamed skSpriteNode  value key =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg skSpriteNode (mkSelector "setValue:forAttributeNamed:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forAttributeNamed skSpriteNode value key =
+  sendMessage skSpriteNode setValue_forAttributeNamedSelector (toSKAttributeValue value) (toNSString key)
 
 -- | Texture to be drawn (is stretched to fill the sprite)
 --
 -- ObjC selector: @- texture@
 texture :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO (Id SKTexture)
-texture skSpriteNode  =
-    sendMsg skSpriteNode (mkSelector "texture") (retPtr retVoid) [] >>= retainedObject . castPtr
+texture skSpriteNode =
+  sendMessage skSpriteNode textureSelector
 
 -- | Texture to be drawn (is stretched to fill the sprite)
 --
 -- ObjC selector: @- setTexture:@
 setTexture :: (IsSKSpriteNode skSpriteNode, IsSKTexture value) => skSpriteNode -> value -> IO ()
-setTexture skSpriteNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skSpriteNode (mkSelector "setTexture:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTexture skSpriteNode value =
+  sendMessage skSpriteNode setTextureSelector (toSKTexture value)
 
 -- | Texture to use for generating normals that lights use to light this sprite.
 --
@@ -207,8 +192,8 @@ setTexture skSpriteNode  value =
 --
 -- ObjC selector: @- normalTexture@
 normalTexture :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO (Id SKTexture)
-normalTexture skSpriteNode  =
-    sendMsg skSpriteNode (mkSelector "normalTexture") (retPtr retVoid) [] >>= retainedObject . castPtr
+normalTexture skSpriteNode =
+  sendMessage skSpriteNode normalTextureSelector
 
 -- | Texture to use for generating normals that lights use to light this sprite.
 --
@@ -220,9 +205,8 @@ normalTexture skSpriteNode  =
 --
 -- ObjC selector: @- setNormalTexture:@
 setNormalTexture :: (IsSKSpriteNode skSpriteNode, IsSKTexture value) => skSpriteNode -> value -> IO ()
-setNormalTexture skSpriteNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skSpriteNode (mkSelector "setNormalTexture:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNormalTexture skSpriteNode value =
+  sendMessage skSpriteNode setNormalTextureSelector (toSKTexture value)
 
 -- | Bitmask to indicate being lit by a set of lights using overlapping lighting categories.
 --
@@ -232,8 +216,8 @@ setNormalTexture skSpriteNode  value =
 --
 -- ObjC selector: @- lightingBitMask@
 lightingBitMask :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO CUInt
-lightingBitMask skSpriteNode  =
-    sendMsg skSpriteNode (mkSelector "lightingBitMask") retCUInt []
+lightingBitMask skSpriteNode =
+  sendMessage skSpriteNode lightingBitMaskSelector
 
 -- | Bitmask to indicate being lit by a set of lights using overlapping lighting categories.
 --
@@ -243,57 +227,56 @@ lightingBitMask skSpriteNode  =
 --
 -- ObjC selector: @- setLightingBitMask:@
 setLightingBitMask :: IsSKSpriteNode skSpriteNode => skSpriteNode -> CUInt -> IO ()
-setLightingBitMask skSpriteNode  value =
-    sendMsg skSpriteNode (mkSelector "setLightingBitMask:") retVoid [argCUInt value]
+setLightingBitMask skSpriteNode value =
+  sendMessage skSpriteNode setLightingBitMaskSelector value
 
 -- | @- shadowCastBitMask@
 shadowCastBitMask :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO CUInt
-shadowCastBitMask skSpriteNode  =
-    sendMsg skSpriteNode (mkSelector "shadowCastBitMask") retCUInt []
+shadowCastBitMask skSpriteNode =
+  sendMessage skSpriteNode shadowCastBitMaskSelector
 
 -- | @- setShadowCastBitMask:@
 setShadowCastBitMask :: IsSKSpriteNode skSpriteNode => skSpriteNode -> CUInt -> IO ()
-setShadowCastBitMask skSpriteNode  value =
-    sendMsg skSpriteNode (mkSelector "setShadowCastBitMask:") retVoid [argCUInt value]
+setShadowCastBitMask skSpriteNode value =
+  sendMessage skSpriteNode setShadowCastBitMaskSelector value
 
 -- | @- shadowedBitMask@
 shadowedBitMask :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO CUInt
-shadowedBitMask skSpriteNode  =
-    sendMsg skSpriteNode (mkSelector "shadowedBitMask") retCUInt []
+shadowedBitMask skSpriteNode =
+  sendMessage skSpriteNode shadowedBitMaskSelector
 
 -- | @- setShadowedBitMask:@
 setShadowedBitMask :: IsSKSpriteNode skSpriteNode => skSpriteNode -> CUInt -> IO ()
-setShadowedBitMask skSpriteNode  value =
-    sendMsg skSpriteNode (mkSelector "setShadowedBitMask:") retVoid [argCUInt value]
+setShadowedBitMask skSpriteNode value =
+  sendMessage skSpriteNode setShadowedBitMaskSelector value
 
 -- | Controls the blending between the texture and the sprite's color. The valid interval of values is from 0.0 up to and including 1.0. A value above or below that interval is clamped to the minimum (0.0) if below or the maximum (1.0) if above.
 --
 -- ObjC selector: @- colorBlendFactor@
 colorBlendFactor :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO CDouble
-colorBlendFactor skSpriteNode  =
-    sendMsg skSpriteNode (mkSelector "colorBlendFactor") retCDouble []
+colorBlendFactor skSpriteNode =
+  sendMessage skSpriteNode colorBlendFactorSelector
 
 -- | Controls the blending between the texture and the sprite's color. The valid interval of values is from 0.0 up to and including 1.0. A value above or below that interval is clamped to the minimum (0.0) if below or the maximum (1.0) if above.
 --
 -- ObjC selector: @- setColorBlendFactor:@
 setColorBlendFactor :: IsSKSpriteNode skSpriteNode => skSpriteNode -> CDouble -> IO ()
-setColorBlendFactor skSpriteNode  value =
-    sendMsg skSpriteNode (mkSelector "setColorBlendFactor:") retVoid [argCDouble value]
+setColorBlendFactor skSpriteNode value =
+  sendMessage skSpriteNode setColorBlendFactorSelector value
 
 -- | Base color for the sprite (If no texture is present, the color still is drawn)
 --
 -- ObjC selector: @- color@
 color :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO (Id NSColor)
-color skSpriteNode  =
-    sendMsg skSpriteNode (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color skSpriteNode =
+  sendMessage skSpriteNode colorSelector
 
 -- | Base color for the sprite (If no texture is present, the color still is drawn)
 --
 -- ObjC selector: @- setColor:@
 setColor :: (IsSKSpriteNode skSpriteNode, IsNSColor value) => skSpriteNode -> value -> IO ()
-setColor skSpriteNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skSpriteNode (mkSelector "setColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColor skSpriteNode value =
+  sendMessage skSpriteNode setColorSelector (toNSColor value)
 
 -- | Sets the blend mode to use when composing the sprite with the final framebuffer.
 --
@@ -301,8 +284,8 @@ setColor skSpriteNode  value =
 --
 -- ObjC selector: @- blendMode@
 blendMode :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO SKBlendMode
-blendMode skSpriteNode  =
-    fmap (coerce :: CLong -> SKBlendMode) $ sendMsg skSpriteNode (mkSelector "blendMode") retCLong []
+blendMode skSpriteNode =
+  sendMessage skSpriteNode blendModeSelector
 
 -- | Sets the blend mode to use when composing the sprite with the final framebuffer.
 --
@@ -310,152 +293,150 @@ blendMode skSpriteNode  =
 --
 -- ObjC selector: @- setBlendMode:@
 setBlendMode :: IsSKSpriteNode skSpriteNode => skSpriteNode -> SKBlendMode -> IO ()
-setBlendMode skSpriteNode  value =
-    sendMsg skSpriteNode (mkSelector "setBlendMode:") retVoid [argCLong (coerce value)]
+setBlendMode skSpriteNode value =
+  sendMessage skSpriteNode setBlendModeSelector value
 
 -- | @- shader@
 shader :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO (Id SKShader)
-shader skSpriteNode  =
-    sendMsg skSpriteNode (mkSelector "shader") (retPtr retVoid) [] >>= retainedObject . castPtr
+shader skSpriteNode =
+  sendMessage skSpriteNode shaderSelector
 
 -- | @- setShader:@
 setShader :: (IsSKSpriteNode skSpriteNode, IsSKShader value) => skSpriteNode -> value -> IO ()
-setShader skSpriteNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skSpriteNode (mkSelector "setShader:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShader skSpriteNode value =
+  sendMessage skSpriteNode setShaderSelector (toSKShader value)
 
 -- | Optional dictionary of SKAttributeValues Attributes can be used with custom SKShaders.
 --
 -- ObjC selector: @- attributeValues@
 attributeValues :: IsSKSpriteNode skSpriteNode => skSpriteNode -> IO (Id NSDictionary)
-attributeValues skSpriteNode  =
-    sendMsg skSpriteNode (mkSelector "attributeValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeValues skSpriteNode =
+  sendMessage skSpriteNode attributeValuesSelector
 
 -- | Optional dictionary of SKAttributeValues Attributes can be used with custom SKShaders.
 --
 -- ObjC selector: @- setAttributeValues:@
 setAttributeValues :: (IsSKSpriteNode skSpriteNode, IsNSDictionary value) => skSpriteNode -> value -> IO ()
-setAttributeValues skSpriteNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skSpriteNode (mkSelector "setAttributeValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributeValues skSpriteNode value =
+  sendMessage skSpriteNode setAttributeValuesSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @spriteNodeWithTexture:@
-spriteNodeWithTextureSelector :: Selector
+spriteNodeWithTextureSelector :: Selector '[Id SKTexture] (Id SKSpriteNode)
 spriteNodeWithTextureSelector = mkSelector "spriteNodeWithTexture:"
 
 -- | @Selector@ for @spriteNodeWithTexture:normalMap:@
-spriteNodeWithTexture_normalMapSelector :: Selector
+spriteNodeWithTexture_normalMapSelector :: Selector '[Id SKTexture, Id SKTexture] (Id SKSpriteNode)
 spriteNodeWithTexture_normalMapSelector = mkSelector "spriteNodeWithTexture:normalMap:"
 
 -- | @Selector@ for @spriteNodeWithImageNamed:@
-spriteNodeWithImageNamedSelector :: Selector
+spriteNodeWithImageNamedSelector :: Selector '[Id NSString] (Id SKSpriteNode)
 spriteNodeWithImageNamedSelector = mkSelector "spriteNodeWithImageNamed:"
 
 -- | @Selector@ for @spriteNodeWithImageNamed:normalMapped:@
-spriteNodeWithImageNamed_normalMappedSelector :: Selector
+spriteNodeWithImageNamed_normalMappedSelector :: Selector '[Id NSString, Bool] (Id SKSpriteNode)
 spriteNodeWithImageNamed_normalMappedSelector = mkSelector "spriteNodeWithImageNamed:normalMapped:"
 
 -- | @Selector@ for @initWithTexture:@
-initWithTextureSelector :: Selector
+initWithTextureSelector :: Selector '[Id SKTexture] (Id SKSpriteNode)
 initWithTextureSelector = mkSelector "initWithTexture:"
 
 -- | @Selector@ for @initWithImageNamed:@
-initWithImageNamedSelector :: Selector
+initWithImageNamedSelector :: Selector '[Id NSString] (Id SKSpriteNode)
 initWithImageNamedSelector = mkSelector "initWithImageNamed:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id SKSpriteNode)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @valueForAttributeNamed:@
-valueForAttributeNamedSelector :: Selector
+valueForAttributeNamedSelector :: Selector '[Id NSString] (Id SKAttributeValue)
 valueForAttributeNamedSelector = mkSelector "valueForAttributeNamed:"
 
 -- | @Selector@ for @setValue:forAttributeNamed:@
-setValue_forAttributeNamedSelector :: Selector
+setValue_forAttributeNamedSelector :: Selector '[Id SKAttributeValue, Id NSString] ()
 setValue_forAttributeNamedSelector = mkSelector "setValue:forAttributeNamed:"
 
 -- | @Selector@ for @texture@
-textureSelector :: Selector
+textureSelector :: Selector '[] (Id SKTexture)
 textureSelector = mkSelector "texture"
 
 -- | @Selector@ for @setTexture:@
-setTextureSelector :: Selector
+setTextureSelector :: Selector '[Id SKTexture] ()
 setTextureSelector = mkSelector "setTexture:"
 
 -- | @Selector@ for @normalTexture@
-normalTextureSelector :: Selector
+normalTextureSelector :: Selector '[] (Id SKTexture)
 normalTextureSelector = mkSelector "normalTexture"
 
 -- | @Selector@ for @setNormalTexture:@
-setNormalTextureSelector :: Selector
+setNormalTextureSelector :: Selector '[Id SKTexture] ()
 setNormalTextureSelector = mkSelector "setNormalTexture:"
 
 -- | @Selector@ for @lightingBitMask@
-lightingBitMaskSelector :: Selector
+lightingBitMaskSelector :: Selector '[] CUInt
 lightingBitMaskSelector = mkSelector "lightingBitMask"
 
 -- | @Selector@ for @setLightingBitMask:@
-setLightingBitMaskSelector :: Selector
+setLightingBitMaskSelector :: Selector '[CUInt] ()
 setLightingBitMaskSelector = mkSelector "setLightingBitMask:"
 
 -- | @Selector@ for @shadowCastBitMask@
-shadowCastBitMaskSelector :: Selector
+shadowCastBitMaskSelector :: Selector '[] CUInt
 shadowCastBitMaskSelector = mkSelector "shadowCastBitMask"
 
 -- | @Selector@ for @setShadowCastBitMask:@
-setShadowCastBitMaskSelector :: Selector
+setShadowCastBitMaskSelector :: Selector '[CUInt] ()
 setShadowCastBitMaskSelector = mkSelector "setShadowCastBitMask:"
 
 -- | @Selector@ for @shadowedBitMask@
-shadowedBitMaskSelector :: Selector
+shadowedBitMaskSelector :: Selector '[] CUInt
 shadowedBitMaskSelector = mkSelector "shadowedBitMask"
 
 -- | @Selector@ for @setShadowedBitMask:@
-setShadowedBitMaskSelector :: Selector
+setShadowedBitMaskSelector :: Selector '[CUInt] ()
 setShadowedBitMaskSelector = mkSelector "setShadowedBitMask:"
 
 -- | @Selector@ for @colorBlendFactor@
-colorBlendFactorSelector :: Selector
+colorBlendFactorSelector :: Selector '[] CDouble
 colorBlendFactorSelector = mkSelector "colorBlendFactor"
 
 -- | @Selector@ for @setColorBlendFactor:@
-setColorBlendFactorSelector :: Selector
+setColorBlendFactorSelector :: Selector '[CDouble] ()
 setColorBlendFactorSelector = mkSelector "setColorBlendFactor:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSColor)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Id NSColor] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @blendMode@
-blendModeSelector :: Selector
+blendModeSelector :: Selector '[] SKBlendMode
 blendModeSelector = mkSelector "blendMode"
 
 -- | @Selector@ for @setBlendMode:@
-setBlendModeSelector :: Selector
+setBlendModeSelector :: Selector '[SKBlendMode] ()
 setBlendModeSelector = mkSelector "setBlendMode:"
 
 -- | @Selector@ for @shader@
-shaderSelector :: Selector
+shaderSelector :: Selector '[] (Id SKShader)
 shaderSelector = mkSelector "shader"
 
 -- | @Selector@ for @setShader:@
-setShaderSelector :: Selector
+setShaderSelector :: Selector '[Id SKShader] ()
 setShaderSelector = mkSelector "setShader:"
 
 -- | @Selector@ for @attributeValues@
-attributeValuesSelector :: Selector
+attributeValuesSelector :: Selector '[] (Id NSDictionary)
 attributeValuesSelector = mkSelector "attributeValues"
 
 -- | @Selector@ for @setAttributeValues:@
-setAttributeValuesSelector :: Selector
+setAttributeValuesSelector :: Selector '[Id NSDictionary] ()
 setAttributeValuesSelector = mkSelector "setAttributeValues:"
 

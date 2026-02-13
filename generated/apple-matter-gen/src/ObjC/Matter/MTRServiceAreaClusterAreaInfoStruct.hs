@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRServiceAreaClusterAreaInfoStruct
   , setLocationInfo
   , landmarkInfo
   , setLandmarkInfo
-  , locationInfoSelector
-  , setLocationInfoSelector
   , landmarkInfoSelector
+  , locationInfoSelector
   , setLandmarkInfoSelector
+  , setLocationInfoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- locationInfo@
 locationInfo :: IsMTRServiceAreaClusterAreaInfoStruct mtrServiceAreaClusterAreaInfoStruct => mtrServiceAreaClusterAreaInfoStruct -> IO (Id MTRDataTypeLocationDescriptorStruct)
-locationInfo mtrServiceAreaClusterAreaInfoStruct  =
-    sendMsg mtrServiceAreaClusterAreaInfoStruct (mkSelector "locationInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+locationInfo mtrServiceAreaClusterAreaInfoStruct =
+  sendMessage mtrServiceAreaClusterAreaInfoStruct locationInfoSelector
 
 -- | @- setLocationInfo:@
 setLocationInfo :: (IsMTRServiceAreaClusterAreaInfoStruct mtrServiceAreaClusterAreaInfoStruct, IsMTRDataTypeLocationDescriptorStruct value) => mtrServiceAreaClusterAreaInfoStruct -> value -> IO ()
-setLocationInfo mtrServiceAreaClusterAreaInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterAreaInfoStruct (mkSelector "setLocationInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocationInfo mtrServiceAreaClusterAreaInfoStruct value =
+  sendMessage mtrServiceAreaClusterAreaInfoStruct setLocationInfoSelector (toMTRDataTypeLocationDescriptorStruct value)
 
 -- | @- landmarkInfo@
 landmarkInfo :: IsMTRServiceAreaClusterAreaInfoStruct mtrServiceAreaClusterAreaInfoStruct => mtrServiceAreaClusterAreaInfoStruct -> IO (Id MTRServiceAreaClusterLandmarkInfoStruct)
-landmarkInfo mtrServiceAreaClusterAreaInfoStruct  =
-    sendMsg mtrServiceAreaClusterAreaInfoStruct (mkSelector "landmarkInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+landmarkInfo mtrServiceAreaClusterAreaInfoStruct =
+  sendMessage mtrServiceAreaClusterAreaInfoStruct landmarkInfoSelector
 
 -- | @- setLandmarkInfo:@
 setLandmarkInfo :: (IsMTRServiceAreaClusterAreaInfoStruct mtrServiceAreaClusterAreaInfoStruct, IsMTRServiceAreaClusterLandmarkInfoStruct value) => mtrServiceAreaClusterAreaInfoStruct -> value -> IO ()
-setLandmarkInfo mtrServiceAreaClusterAreaInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterAreaInfoStruct (mkSelector "setLandmarkInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLandmarkInfo mtrServiceAreaClusterAreaInfoStruct value =
+  sendMessage mtrServiceAreaClusterAreaInfoStruct setLandmarkInfoSelector (toMTRServiceAreaClusterLandmarkInfoStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @locationInfo@
-locationInfoSelector :: Selector
+locationInfoSelector :: Selector '[] (Id MTRDataTypeLocationDescriptorStruct)
 locationInfoSelector = mkSelector "locationInfo"
 
 -- | @Selector@ for @setLocationInfo:@
-setLocationInfoSelector :: Selector
+setLocationInfoSelector :: Selector '[Id MTRDataTypeLocationDescriptorStruct] ()
 setLocationInfoSelector = mkSelector "setLocationInfo:"
 
 -- | @Selector@ for @landmarkInfo@
-landmarkInfoSelector :: Selector
+landmarkInfoSelector :: Selector '[] (Id MTRServiceAreaClusterLandmarkInfoStruct)
 landmarkInfoSelector = mkSelector "landmarkInfo"
 
 -- | @Selector@ for @setLandmarkInfo:@
-setLandmarkInfoSelector :: Selector
+setLandmarkInfoSelector :: Selector '[Id MTRServiceAreaClusterLandmarkInfoStruct] ()
 setLandmarkInfoSelector = mkSelector "setLandmarkInfo:"
 

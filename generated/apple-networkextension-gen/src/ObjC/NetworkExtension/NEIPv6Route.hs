@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.NetworkExtension.NEIPv6Route
   , destinationNetworkPrefixLength
   , gatewayAddress
   , setGatewayAddress
-  , initWithDestinationAddress_networkPrefixLengthSelector
   , destinationAddressSelector
   , destinationNetworkPrefixLengthSelector
   , gatewayAddressSelector
+  , initWithDestinationAddress_networkPrefixLengthSelector
   , setGatewayAddressSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,10 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDestinationAddress:networkPrefixLength:@
 initWithDestinationAddress_networkPrefixLength :: (IsNEIPv6Route neiPv6Route, IsNSString address, IsNSNumber networkPrefixLength) => neiPv6Route -> address -> networkPrefixLength -> IO (Id NEIPv6Route)
-initWithDestinationAddress_networkPrefixLength neiPv6Route  address networkPrefixLength =
-  withObjCPtr address $ \raw_address ->
-    withObjCPtr networkPrefixLength $ \raw_networkPrefixLength ->
-        sendMsg neiPv6Route (mkSelector "initWithDestinationAddress:networkPrefixLength:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ()), argPtr (castPtr raw_networkPrefixLength :: Ptr ())] >>= ownedObject . castPtr
+initWithDestinationAddress_networkPrefixLength neiPv6Route address networkPrefixLength =
+  sendOwnedMessage neiPv6Route initWithDestinationAddress_networkPrefixLengthSelector (toNSString address) (toNSNumber networkPrefixLength)
 
 -- | destinationAddress
 --
@@ -64,8 +59,8 @@ initWithDestinationAddress_networkPrefixLength neiPv6Route  address networkPrefi
 --
 -- ObjC selector: @- destinationAddress@
 destinationAddress :: IsNEIPv6Route neiPv6Route => neiPv6Route -> IO (Id NSString)
-destinationAddress neiPv6Route  =
-    sendMsg neiPv6Route (mkSelector "destinationAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationAddress neiPv6Route =
+  sendMessage neiPv6Route destinationAddressSelector
 
 -- | destinationNetworkPrefixLength
 --
@@ -73,8 +68,8 @@ destinationAddress neiPv6Route  =
 --
 -- ObjC selector: @- destinationNetworkPrefixLength@
 destinationNetworkPrefixLength :: IsNEIPv6Route neiPv6Route => neiPv6Route -> IO (Id NSNumber)
-destinationNetworkPrefixLength neiPv6Route  =
-    sendMsg neiPv6Route (mkSelector "destinationNetworkPrefixLength") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationNetworkPrefixLength neiPv6Route =
+  sendMessage neiPv6Route destinationNetworkPrefixLengthSelector
 
 -- | gatewayAddress
 --
@@ -82,8 +77,8 @@ destinationNetworkPrefixLength neiPv6Route  =
 --
 -- ObjC selector: @- gatewayAddress@
 gatewayAddress :: IsNEIPv6Route neiPv6Route => neiPv6Route -> IO (Id NSString)
-gatewayAddress neiPv6Route  =
-    sendMsg neiPv6Route (mkSelector "gatewayAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+gatewayAddress neiPv6Route =
+  sendMessage neiPv6Route gatewayAddressSelector
 
 -- | gatewayAddress
 --
@@ -91,31 +86,30 @@ gatewayAddress neiPv6Route  =
 --
 -- ObjC selector: @- setGatewayAddress:@
 setGatewayAddress :: (IsNEIPv6Route neiPv6Route, IsNSString value) => neiPv6Route -> value -> IO ()
-setGatewayAddress neiPv6Route  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neiPv6Route (mkSelector "setGatewayAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGatewayAddress neiPv6Route value =
+  sendMessage neiPv6Route setGatewayAddressSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDestinationAddress:networkPrefixLength:@
-initWithDestinationAddress_networkPrefixLengthSelector :: Selector
+initWithDestinationAddress_networkPrefixLengthSelector :: Selector '[Id NSString, Id NSNumber] (Id NEIPv6Route)
 initWithDestinationAddress_networkPrefixLengthSelector = mkSelector "initWithDestinationAddress:networkPrefixLength:"
 
 -- | @Selector@ for @destinationAddress@
-destinationAddressSelector :: Selector
+destinationAddressSelector :: Selector '[] (Id NSString)
 destinationAddressSelector = mkSelector "destinationAddress"
 
 -- | @Selector@ for @destinationNetworkPrefixLength@
-destinationNetworkPrefixLengthSelector :: Selector
+destinationNetworkPrefixLengthSelector :: Selector '[] (Id NSNumber)
 destinationNetworkPrefixLengthSelector = mkSelector "destinationNetworkPrefixLength"
 
 -- | @Selector@ for @gatewayAddress@
-gatewayAddressSelector :: Selector
+gatewayAddressSelector :: Selector '[] (Id NSString)
 gatewayAddressSelector = mkSelector "gatewayAddress"
 
 -- | @Selector@ for @setGatewayAddress:@
-setGatewayAddressSelector :: Selector
+setGatewayAddressSelector :: Selector '[Id NSString] ()
 setGatewayAddressSelector = mkSelector "setGatewayAddress:"
 

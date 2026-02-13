@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.AppKit.NSCollectionLayoutSize
   , new
   , widthDimension
   , heightDimension
-  , sizeWithWidthDimension_heightDimensionSelector
+  , heightDimensionSelector
   , initSelector
   , newSelector
+  , sizeWithWidthDimension_heightDimensionSelector
   , widthDimensionSelector
-  , heightDimensionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,53 +37,51 @@ sizeWithWidthDimension_heightDimension :: (IsNSCollectionLayoutDimension width, 
 sizeWithWidthDimension_heightDimension width height =
   do
     cls' <- getRequiredClass "NSCollectionLayoutSize"
-    withObjCPtr width $ \raw_width ->
-      withObjCPtr height $ \raw_height ->
-        sendClassMsg cls' (mkSelector "sizeWithWidthDimension:heightDimension:") (retPtr retVoid) [argPtr (castPtr raw_width :: Ptr ()), argPtr (castPtr raw_height :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sizeWithWidthDimension_heightDimensionSelector (toNSCollectionLayoutDimension width) (toNSCollectionLayoutDimension height)
 
 -- | @- init@
 init_ :: IsNSCollectionLayoutSize nsCollectionLayoutSize => nsCollectionLayoutSize -> IO (Id NSCollectionLayoutSize)
-init_ nsCollectionLayoutSize  =
-    sendMsg nsCollectionLayoutSize (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionLayoutSize =
+  sendOwnedMessage nsCollectionLayoutSize initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionLayoutSize)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionLayoutSize"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- widthDimension@
 widthDimension :: IsNSCollectionLayoutSize nsCollectionLayoutSize => nsCollectionLayoutSize -> IO (Id NSCollectionLayoutDimension)
-widthDimension nsCollectionLayoutSize  =
-    sendMsg nsCollectionLayoutSize (mkSelector "widthDimension") (retPtr retVoid) [] >>= retainedObject . castPtr
+widthDimension nsCollectionLayoutSize =
+  sendMessage nsCollectionLayoutSize widthDimensionSelector
 
 -- | @- heightDimension@
 heightDimension :: IsNSCollectionLayoutSize nsCollectionLayoutSize => nsCollectionLayoutSize -> IO (Id NSCollectionLayoutDimension)
-heightDimension nsCollectionLayoutSize  =
-    sendMsg nsCollectionLayoutSize (mkSelector "heightDimension") (retPtr retVoid) [] >>= retainedObject . castPtr
+heightDimension nsCollectionLayoutSize =
+  sendMessage nsCollectionLayoutSize heightDimensionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sizeWithWidthDimension:heightDimension:@
-sizeWithWidthDimension_heightDimensionSelector :: Selector
+sizeWithWidthDimension_heightDimensionSelector :: Selector '[Id NSCollectionLayoutDimension, Id NSCollectionLayoutDimension] (Id NSCollectionLayoutSize)
 sizeWithWidthDimension_heightDimensionSelector = mkSelector "sizeWithWidthDimension:heightDimension:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionLayoutSize)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionLayoutSize)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @widthDimension@
-widthDimensionSelector :: Selector
+widthDimensionSelector :: Selector '[] (Id NSCollectionLayoutDimension)
 widthDimensionSelector = mkSelector "widthDimension"
 
 -- | @Selector@ for @heightDimension@
-heightDimensionSelector :: Selector
+heightDimensionSelector :: Selector '[] (Id NSCollectionLayoutDimension)
 heightDimensionSelector = mkSelector "heightDimension"
 

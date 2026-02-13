@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,28 +26,24 @@ module ObjC.DiscRecording.DRFolder
   , removeChild
   , count
   , children
-  , folderWithPathSelector
-  , initWithPathSelector
-  , virtualFolderWithNameSelector
-  , initWithNameSelector
-  , makeVirtualSelector
   , addChildSelector
-  , removeChildSelector
-  , countSelector
   , childrenSelector
+  , countSelector
+  , folderWithPathSelector
+  , initWithNameSelector
+  , initWithPathSelector
+  , makeVirtualSelector
+  , removeChildSelector
+  , virtualFolderWithNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,8 +65,7 @@ folderWithPath :: IsNSString path => path -> IO (Id DRFolder)
 folderWithPath path =
   do
     cls' <- getRequiredClass "DRFolder"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "folderWithPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' folderWithPathSelector (toNSString path)
 
 -- | initWithPath:
 --
@@ -83,9 +79,8 @@ folderWithPath path =
 --
 -- ObjC selector: @- initWithPath:@
 initWithPath :: (IsDRFolder drFolder, IsNSString path) => drFolder -> path -> IO RawId
-initWithPath drFolder  path =
-  withObjCPtr path $ \raw_path ->
-      fmap (RawId . castPtr) $ sendMsg drFolder (mkSelector "initWithPath:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())]
+initWithPath drFolder path =
+  sendOwnedMessage drFolder initWithPathSelector (toNSString path)
 
 -- | virtualFolderWithName:
 --
@@ -106,8 +101,7 @@ virtualFolderWithName :: IsNSString name => name -> IO (Id DRFolder)
 virtualFolderWithName name =
   do
     cls' <- getRequiredClass "DRFolder"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "virtualFolderWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' virtualFolderWithNameSelector (toNSString name)
 
 -- | initWithName:
 --
@@ -125,9 +119,8 @@ virtualFolderWithName name =
 --
 -- ObjC selector: @- initWithName:@
 initWithName :: (IsDRFolder drFolder, IsNSString name) => drFolder -> name -> IO RawId
-initWithName drFolder  name =
-  withObjCPtr name $ \raw_name ->
-      fmap (RawId . castPtr) $ sendMsg drFolder (mkSelector "initWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())]
+initWithName drFolder name =
+  sendOwnedMessage drFolder initWithNameSelector (toNSString name)
 
 -- | makeVirtual
 --
@@ -139,8 +132,8 @@ initWithName drFolder  name =
 --
 -- ObjC selector: @- makeVirtual@
 makeVirtual :: IsDRFolder drFolder => drFolder -> IO ()
-makeVirtual drFolder  =
-    sendMsg drFolder (mkSelector "makeVirtual") retVoid []
+makeVirtual drFolder =
+  sendMessage drFolder makeVirtualSelector
 
 -- | addChild:
 --
@@ -152,9 +145,8 @@ makeVirtual drFolder  =
 --
 -- ObjC selector: @- addChild:@
 addChild :: (IsDRFolder drFolder, IsDRFSObject child) => drFolder -> child -> IO ()
-addChild drFolder  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg drFolder (mkSelector "addChild:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+addChild drFolder child =
+  sendMessage drFolder addChildSelector (toDRFSObject child)
 
 -- | removeChild:
 --
@@ -166,9 +158,8 @@ addChild drFolder  child =
 --
 -- ObjC selector: @- removeChild:@
 removeChild :: (IsDRFolder drFolder, IsDRFSObject child) => drFolder -> child -> IO ()
-removeChild drFolder  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg drFolder (mkSelector "removeChild:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+removeChild drFolder child =
+  sendMessage drFolder removeChildSelector (toDRFSObject child)
 
 -- | count
 --
@@ -182,8 +173,8 @@ removeChild drFolder  child =
 --
 -- ObjC selector: @- count@
 count :: IsDRFolder drFolder => drFolder -> IO CULong
-count drFolder  =
-    sendMsg drFolder (mkSelector "count") retCULong []
+count drFolder =
+  sendMessage drFolder countSelector
 
 -- | children
 --
@@ -201,46 +192,46 @@ count drFolder  =
 --
 -- ObjC selector: @- children@
 children :: IsDRFolder drFolder => drFolder -> IO (Id NSArray)
-children drFolder  =
-    sendMsg drFolder (mkSelector "children") (retPtr retVoid) [] >>= retainedObject . castPtr
+children drFolder =
+  sendMessage drFolder childrenSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @folderWithPath:@
-folderWithPathSelector :: Selector
+folderWithPathSelector :: Selector '[Id NSString] (Id DRFolder)
 folderWithPathSelector = mkSelector "folderWithPath:"
 
 -- | @Selector@ for @initWithPath:@
-initWithPathSelector :: Selector
+initWithPathSelector :: Selector '[Id NSString] RawId
 initWithPathSelector = mkSelector "initWithPath:"
 
 -- | @Selector@ for @virtualFolderWithName:@
-virtualFolderWithNameSelector :: Selector
+virtualFolderWithNameSelector :: Selector '[Id NSString] (Id DRFolder)
 virtualFolderWithNameSelector = mkSelector "virtualFolderWithName:"
 
 -- | @Selector@ for @initWithName:@
-initWithNameSelector :: Selector
+initWithNameSelector :: Selector '[Id NSString] RawId
 initWithNameSelector = mkSelector "initWithName:"
 
 -- | @Selector@ for @makeVirtual@
-makeVirtualSelector :: Selector
+makeVirtualSelector :: Selector '[] ()
 makeVirtualSelector = mkSelector "makeVirtual"
 
 -- | @Selector@ for @addChild:@
-addChildSelector :: Selector
+addChildSelector :: Selector '[Id DRFSObject] ()
 addChildSelector = mkSelector "addChild:"
 
 -- | @Selector@ for @removeChild:@
-removeChildSelector :: Selector
+removeChildSelector :: Selector '[Id DRFSObject] ()
 removeChildSelector = mkSelector "removeChild:"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @children@
-childrenSelector :: Selector
+childrenSelector :: Selector '[] (Id NSArray)
 childrenSelector = mkSelector "children"
 

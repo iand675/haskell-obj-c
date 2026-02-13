@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVCaptureFraming
   , new
   , aspectRatio
   , zoomFactor
+  , aspectRatioSelector
   , initSelector
   , newSelector
-  , aspectRatioSelector
   , zoomFactorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureFraming avCaptureFraming => avCaptureFraming -> IO (Id AVCaptureFraming)
-init_ avCaptureFraming  =
-    sendMsg avCaptureFraming (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureFraming =
+  sendOwnedMessage avCaptureFraming initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureFraming)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureFraming"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | An aspect ratio.
 --
@@ -55,8 +52,8 @@ new  =
 --
 -- ObjC selector: @- aspectRatio@
 aspectRatio :: IsAVCaptureFraming avCaptureFraming => avCaptureFraming -> IO (Id NSString)
-aspectRatio avCaptureFraming  =
-    sendMsg avCaptureFraming (mkSelector "aspectRatio") (retPtr retVoid) [] >>= retainedObject . castPtr
+aspectRatio avCaptureFraming =
+  sendMessage avCaptureFraming aspectRatioSelector
 
 -- | A zoom factor.
 --
@@ -64,26 +61,26 @@ aspectRatio avCaptureFraming  =
 --
 -- ObjC selector: @- zoomFactor@
 zoomFactor :: IsAVCaptureFraming avCaptureFraming => avCaptureFraming -> IO CFloat
-zoomFactor avCaptureFraming  =
-    sendMsg avCaptureFraming (mkSelector "zoomFactor") retCFloat []
+zoomFactor avCaptureFraming =
+  sendMessage avCaptureFraming zoomFactorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureFraming)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureFraming)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @aspectRatio@
-aspectRatioSelector :: Selector
+aspectRatioSelector :: Selector '[] (Id NSString)
 aspectRatioSelector = mkSelector "aspectRatio"
 
 -- | @Selector@ for @zoomFactor@
-zoomFactorSelector :: Selector
+zoomFactorSelector :: Selector '[] CFloat
 zoomFactorSelector = mkSelector "zoomFactor"
 

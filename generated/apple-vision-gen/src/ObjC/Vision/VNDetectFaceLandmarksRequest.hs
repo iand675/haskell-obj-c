@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.Vision.VNDetectFaceLandmarksRequest
   , constellation
   , setConstellation
   , results
-  , revision_supportsConstellationSelector
   , constellationSelector
-  , setConstellationSelector
   , resultsSelector
+  , revision_supportsConstellationSelector
+  , setConstellationSelector
 
   -- * Enum types
   , VNRequestFaceLandmarksConstellation(VNRequestFaceLandmarksConstellation)
@@ -28,15 +29,11 @@ module ObjC.Vision.VNDetectFaceLandmarksRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,7 +46,7 @@ revision_supportsConstellation :: CULong -> VNRequestFaceLandmarksConstellation 
 revision_supportsConstellation requestRevision constellation =
   do
     cls' <- getRequiredClass "VNDetectFaceLandmarksRequest"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "revision:supportsConstellation:") retCULong [argCULong requestRevision, argCULong (coerce constellation)]
+    sendClassMessage cls' revision_supportsConstellationSelector requestRevision constellation
 
 -- | property constellation
 --
@@ -57,8 +54,8 @@ revision_supportsConstellation requestRevision constellation =
 --
 -- ObjC selector: @- constellation@
 constellation :: IsVNDetectFaceLandmarksRequest vnDetectFaceLandmarksRequest => vnDetectFaceLandmarksRequest -> IO VNRequestFaceLandmarksConstellation
-constellation vnDetectFaceLandmarksRequest  =
-    fmap (coerce :: CULong -> VNRequestFaceLandmarksConstellation) $ sendMsg vnDetectFaceLandmarksRequest (mkSelector "constellation") retCULong []
+constellation vnDetectFaceLandmarksRequest =
+  sendMessage vnDetectFaceLandmarksRequest constellationSelector
 
 -- | property constellation
 --
@@ -66,33 +63,33 @@ constellation vnDetectFaceLandmarksRequest  =
 --
 -- ObjC selector: @- setConstellation:@
 setConstellation :: IsVNDetectFaceLandmarksRequest vnDetectFaceLandmarksRequest => vnDetectFaceLandmarksRequest -> VNRequestFaceLandmarksConstellation -> IO ()
-setConstellation vnDetectFaceLandmarksRequest  value =
-    sendMsg vnDetectFaceLandmarksRequest (mkSelector "setConstellation:") retVoid [argCULong (coerce value)]
+setConstellation vnDetectFaceLandmarksRequest value =
+  sendMessage vnDetectFaceLandmarksRequest setConstellationSelector value
 
 -- | VNFaceObservation with populated landmarks-related properties results.
 --
 -- ObjC selector: @- results@
 results :: IsVNDetectFaceLandmarksRequest vnDetectFaceLandmarksRequest => vnDetectFaceLandmarksRequest -> IO (Id NSArray)
-results vnDetectFaceLandmarksRequest  =
-    sendMsg vnDetectFaceLandmarksRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnDetectFaceLandmarksRequest =
+  sendMessage vnDetectFaceLandmarksRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @revision:supportsConstellation:@
-revision_supportsConstellationSelector :: Selector
+revision_supportsConstellationSelector :: Selector '[CULong, VNRequestFaceLandmarksConstellation] Bool
 revision_supportsConstellationSelector = mkSelector "revision:supportsConstellation:"
 
 -- | @Selector@ for @constellation@
-constellationSelector :: Selector
+constellationSelector :: Selector '[] VNRequestFaceLandmarksConstellation
 constellationSelector = mkSelector "constellation"
 
 -- | @Selector@ for @setConstellation:@
-setConstellationSelector :: Selector
+setConstellationSelector :: Selector '[VNRequestFaceLandmarksConstellation] ()
 setConstellationSelector = mkSelector "setConstellation:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

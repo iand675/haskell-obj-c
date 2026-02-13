@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.AVFAudio.AVAudioCompressedBuffer
   , setByteLength
   , packetDescriptions
   , packetDependencies
-  , initWithFormat_packetCapacity_maximumPacketSizeSelector
-  , initWithFormat_packetCapacitySelector
-  , packetCapacitySelector
-  , packetCountSelector
-  , setPacketCountSelector
-  , maximumPacketSizeSelector
-  , dataSelector
   , byteCapacitySelector
   , byteLengthSelector
-  , setByteLengthSelector
-  , packetDescriptionsSelector
+  , dataSelector
+  , initWithFormat_packetCapacitySelector
+  , initWithFormat_packetCapacity_maximumPacketSizeSelector
+  , maximumPacketSizeSelector
+  , packetCapacitySelector
+  , packetCountSelector
   , packetDependenciesSelector
+  , packetDescriptionsSelector
+  , setByteLengthSelector
+  , setPacketCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,9 +64,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFormat:packetCapacity:maximumPacketSize:@
 initWithFormat_packetCapacity_maximumPacketSize :: (IsAVAudioCompressedBuffer avAudioCompressedBuffer, IsAVAudioFormat format) => avAudioCompressedBuffer -> format -> CUInt -> CLong -> IO (Id AVAudioCompressedBuffer)
-initWithFormat_packetCapacity_maximumPacketSize avAudioCompressedBuffer  format packetCapacity maximumPacketSize =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avAudioCompressedBuffer (mkSelector "initWithFormat:packetCapacity:maximumPacketSize:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argCUInt packetCapacity, argCLong maximumPacketSize] >>= ownedObject . castPtr
+initWithFormat_packetCapacity_maximumPacketSize avAudioCompressedBuffer format packetCapacity maximumPacketSize =
+  sendOwnedMessage avAudioCompressedBuffer initWithFormat_packetCapacity_maximumPacketSizeSelector (toAVAudioFormat format) packetCapacity maximumPacketSize
 
 -- | initWithFormat:packetCapacity:
 --
@@ -83,9 +79,8 @@ initWithFormat_packetCapacity_maximumPacketSize avAudioCompressedBuffer  format 
 --
 -- ObjC selector: @- initWithFormat:packetCapacity:@
 initWithFormat_packetCapacity :: (IsAVAudioCompressedBuffer avAudioCompressedBuffer, IsAVAudioFormat format) => avAudioCompressedBuffer -> format -> CUInt -> IO (Id AVAudioCompressedBuffer)
-initWithFormat_packetCapacity avAudioCompressedBuffer  format packetCapacity =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avAudioCompressedBuffer (mkSelector "initWithFormat:packetCapacity:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argCUInt packetCapacity] >>= ownedObject . castPtr
+initWithFormat_packetCapacity avAudioCompressedBuffer format packetCapacity =
+  sendOwnedMessage avAudioCompressedBuffer initWithFormat_packetCapacitySelector (toAVAudioFormat format) packetCapacity
 
 -- | packetCapacity
 --
@@ -93,8 +88,8 @@ initWithFormat_packetCapacity avAudioCompressedBuffer  format packetCapacity =
 --
 -- ObjC selector: @- packetCapacity@
 packetCapacity :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO CUInt
-packetCapacity avAudioCompressedBuffer  =
-    sendMsg avAudioCompressedBuffer (mkSelector "packetCapacity") retCUInt []
+packetCapacity avAudioCompressedBuffer =
+  sendMessage avAudioCompressedBuffer packetCapacitySelector
 
 -- | packetCount
 --
@@ -104,8 +99,8 @@ packetCapacity avAudioCompressedBuffer  =
 --
 -- ObjC selector: @- packetCount@
 packetCount :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO CUInt
-packetCount avAudioCompressedBuffer  =
-    sendMsg avAudioCompressedBuffer (mkSelector "packetCount") retCUInt []
+packetCount avAudioCompressedBuffer =
+  sendMessage avAudioCompressedBuffer packetCountSelector
 
 -- | packetCount
 --
@@ -115,8 +110,8 @@ packetCount avAudioCompressedBuffer  =
 --
 -- ObjC selector: @- setPacketCount:@
 setPacketCount :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> CUInt -> IO ()
-setPacketCount avAudioCompressedBuffer  value =
-    sendMsg avAudioCompressedBuffer (mkSelector "setPacketCount:") retVoid [argCUInt value]
+setPacketCount avAudioCompressedBuffer value =
+  sendMessage avAudioCompressedBuffer setPacketCountSelector value
 
 -- | maximumPacketSize
 --
@@ -124,8 +119,8 @@ setPacketCount avAudioCompressedBuffer  value =
 --
 -- ObjC selector: @- maximumPacketSize@
 maximumPacketSize :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO CLong
-maximumPacketSize avAudioCompressedBuffer  =
-    sendMsg avAudioCompressedBuffer (mkSelector "maximumPacketSize") retCLong []
+maximumPacketSize avAudioCompressedBuffer =
+  sendMessage avAudioCompressedBuffer maximumPacketSizeSelector
 
 -- | data
 --
@@ -133,8 +128,8 @@ maximumPacketSize avAudioCompressedBuffer  =
 --
 -- ObjC selector: @- data@
 data_ :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO (Ptr ())
-data_ avAudioCompressedBuffer  =
-    fmap castPtr $ sendMsg avAudioCompressedBuffer (mkSelector "data") (retPtr retVoid) []
+data_ avAudioCompressedBuffer =
+  sendMessage avAudioCompressedBuffer dataSelector
 
 -- | byteCapacity
 --
@@ -142,8 +137,8 @@ data_ avAudioCompressedBuffer  =
 --
 -- ObjC selector: @- byteCapacity@
 byteCapacity :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO CUInt
-byteCapacity avAudioCompressedBuffer  =
-    sendMsg avAudioCompressedBuffer (mkSelector "byteCapacity") retCUInt []
+byteCapacity avAudioCompressedBuffer =
+  sendMessage avAudioCompressedBuffer byteCapacitySelector
 
 -- | byteLength
 --
@@ -153,8 +148,8 @@ byteCapacity avAudioCompressedBuffer  =
 --
 -- ObjC selector: @- byteLength@
 byteLength :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO CUInt
-byteLength avAudioCompressedBuffer  =
-    sendMsg avAudioCompressedBuffer (mkSelector "byteLength") retCUInt []
+byteLength avAudioCompressedBuffer =
+  sendMessage avAudioCompressedBuffer byteLengthSelector
 
 -- | byteLength
 --
@@ -164,8 +159,8 @@ byteLength avAudioCompressedBuffer  =
 --
 -- ObjC selector: @- setByteLength:@
 setByteLength :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> CUInt -> IO ()
-setByteLength avAudioCompressedBuffer  value =
-    sendMsg avAudioCompressedBuffer (mkSelector "setByteLength:") retVoid [argCUInt value]
+setByteLength avAudioCompressedBuffer value =
+  sendMessage avAudioCompressedBuffer setByteLengthSelector value
 
 -- | packetDescriptions
 --
@@ -175,8 +170,8 @@ setByteLength avAudioCompressedBuffer  value =
 --
 -- ObjC selector: @- packetDescriptions@
 packetDescriptions :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO RawId
-packetDescriptions avAudioCompressedBuffer  =
-    fmap (RawId . castPtr) $ sendMsg avAudioCompressedBuffer (mkSelector "packetDescriptions") (retPtr retVoid) []
+packetDescriptions avAudioCompressedBuffer =
+  sendMessage avAudioCompressedBuffer packetDescriptionsSelector
 
 -- | packetDependencies
 --
@@ -186,58 +181,58 @@ packetDescriptions avAudioCompressedBuffer  =
 --
 -- ObjC selector: @- packetDependencies@
 packetDependencies :: IsAVAudioCompressedBuffer avAudioCompressedBuffer => avAudioCompressedBuffer -> IO RawId
-packetDependencies avAudioCompressedBuffer  =
-    fmap (RawId . castPtr) $ sendMsg avAudioCompressedBuffer (mkSelector "packetDependencies") (retPtr retVoid) []
+packetDependencies avAudioCompressedBuffer =
+  sendMessage avAudioCompressedBuffer packetDependenciesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFormat:packetCapacity:maximumPacketSize:@
-initWithFormat_packetCapacity_maximumPacketSizeSelector :: Selector
+initWithFormat_packetCapacity_maximumPacketSizeSelector :: Selector '[Id AVAudioFormat, CUInt, CLong] (Id AVAudioCompressedBuffer)
 initWithFormat_packetCapacity_maximumPacketSizeSelector = mkSelector "initWithFormat:packetCapacity:maximumPacketSize:"
 
 -- | @Selector@ for @initWithFormat:packetCapacity:@
-initWithFormat_packetCapacitySelector :: Selector
+initWithFormat_packetCapacitySelector :: Selector '[Id AVAudioFormat, CUInt] (Id AVAudioCompressedBuffer)
 initWithFormat_packetCapacitySelector = mkSelector "initWithFormat:packetCapacity:"
 
 -- | @Selector@ for @packetCapacity@
-packetCapacitySelector :: Selector
+packetCapacitySelector :: Selector '[] CUInt
 packetCapacitySelector = mkSelector "packetCapacity"
 
 -- | @Selector@ for @packetCount@
-packetCountSelector :: Selector
+packetCountSelector :: Selector '[] CUInt
 packetCountSelector = mkSelector "packetCount"
 
 -- | @Selector@ for @setPacketCount:@
-setPacketCountSelector :: Selector
+setPacketCountSelector :: Selector '[CUInt] ()
 setPacketCountSelector = mkSelector "setPacketCount:"
 
 -- | @Selector@ for @maximumPacketSize@
-maximumPacketSizeSelector :: Selector
+maximumPacketSizeSelector :: Selector '[] CLong
 maximumPacketSizeSelector = mkSelector "maximumPacketSize"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Ptr ())
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @byteCapacity@
-byteCapacitySelector :: Selector
+byteCapacitySelector :: Selector '[] CUInt
 byteCapacitySelector = mkSelector "byteCapacity"
 
 -- | @Selector@ for @byteLength@
-byteLengthSelector :: Selector
+byteLengthSelector :: Selector '[] CUInt
 byteLengthSelector = mkSelector "byteLength"
 
 -- | @Selector@ for @setByteLength:@
-setByteLengthSelector :: Selector
+setByteLengthSelector :: Selector '[CUInt] ()
 setByteLengthSelector = mkSelector "setByteLength:"
 
 -- | @Selector@ for @packetDescriptions@
-packetDescriptionsSelector :: Selector
+packetDescriptionsSelector :: Selector '[] RawId
 packetDescriptionsSelector = mkSelector "packetDescriptions"
 
 -- | @Selector@ for @packetDependencies@
-packetDependenciesSelector :: Selector
+packetDependenciesSelector :: Selector '[] RawId
 packetDependenciesSelector = mkSelector "packetDependencies"
 

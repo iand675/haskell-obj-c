@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,22 +28,18 @@ module ObjC.MetalPerformanceShaders.MPSImageLaplacianPyramid
   , laplacianScale
   , setLaplacianScale
   , laplacianBiasSelector
-  , setLaplacianBiasSelector
   , laplacianScaleSelector
+  , setLaplacianBiasSelector
   , setLaplacianScaleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,41 +48,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- laplacianBias@
 laplacianBias :: IsMPSImageLaplacianPyramid mpsImageLaplacianPyramid => mpsImageLaplacianPyramid -> IO CFloat
-laplacianBias mpsImageLaplacianPyramid  =
-    sendMsg mpsImageLaplacianPyramid (mkSelector "laplacianBias") retCFloat []
+laplacianBias mpsImageLaplacianPyramid =
+  sendMessage mpsImageLaplacianPyramid laplacianBiasSelector
 
 -- | @- setLaplacianBias:@
 setLaplacianBias :: IsMPSImageLaplacianPyramid mpsImageLaplacianPyramid => mpsImageLaplacianPyramid -> CFloat -> IO ()
-setLaplacianBias mpsImageLaplacianPyramid  value =
-    sendMsg mpsImageLaplacianPyramid (mkSelector "setLaplacianBias:") retVoid [argCFloat value]
+setLaplacianBias mpsImageLaplacianPyramid value =
+  sendMessage mpsImageLaplacianPyramid setLaplacianBiasSelector value
 
 -- | @- laplacianScale@
 laplacianScale :: IsMPSImageLaplacianPyramid mpsImageLaplacianPyramid => mpsImageLaplacianPyramid -> IO CFloat
-laplacianScale mpsImageLaplacianPyramid  =
-    sendMsg mpsImageLaplacianPyramid (mkSelector "laplacianScale") retCFloat []
+laplacianScale mpsImageLaplacianPyramid =
+  sendMessage mpsImageLaplacianPyramid laplacianScaleSelector
 
 -- | @- setLaplacianScale:@
 setLaplacianScale :: IsMPSImageLaplacianPyramid mpsImageLaplacianPyramid => mpsImageLaplacianPyramid -> CFloat -> IO ()
-setLaplacianScale mpsImageLaplacianPyramid  value =
-    sendMsg mpsImageLaplacianPyramid (mkSelector "setLaplacianScale:") retVoid [argCFloat value]
+setLaplacianScale mpsImageLaplacianPyramid value =
+  sendMessage mpsImageLaplacianPyramid setLaplacianScaleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @laplacianBias@
-laplacianBiasSelector :: Selector
+laplacianBiasSelector :: Selector '[] CFloat
 laplacianBiasSelector = mkSelector "laplacianBias"
 
 -- | @Selector@ for @setLaplacianBias:@
-setLaplacianBiasSelector :: Selector
+setLaplacianBiasSelector :: Selector '[CFloat] ()
 setLaplacianBiasSelector = mkSelector "setLaplacianBias:"
 
 -- | @Selector@ for @laplacianScale@
-laplacianScaleSelector :: Selector
+laplacianScaleSelector :: Selector '[] CFloat
 laplacianScaleSelector = mkSelector "laplacianScale"
 
 -- | @Selector@ for @setLaplacianScale:@
-setLaplacianScaleSelector :: Selector
+setLaplacianScaleSelector :: Selector '[CFloat] ()
 setLaplacianScaleSelector = mkSelector "setLaplacianScale:"
 

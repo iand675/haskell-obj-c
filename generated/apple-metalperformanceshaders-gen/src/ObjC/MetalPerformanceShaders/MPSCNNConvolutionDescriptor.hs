@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -46,38 +47,38 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionDescriptor
   , neuron
   , setNeuron
   , supportsSecureCoding
-  , encodeWithCoderSelector
-  , initWithCoderSelector
-  , cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannels_neuronFilterSelector
   , cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannelsSelector
-  , setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilonSelector
-  , setNeuronType_parameterA_parameterBSelector
-  , neuronTypeSelector
+  , cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannels_neuronFilterSelector
+  , dilationRateXSelector
+  , dilationRateYSelector
+  , encodeWithCoderSelector
+  , fusedNeuronDescriptorSelector
+  , groupsSelector
+  , initWithCoderSelector
+  , inputFeatureChannelsSelector
+  , kernelHeightSelector
+  , kernelWidthSelector
   , neuronParameterASelector
   , neuronParameterBSelector
-  , setNeuronToPReLUWithParametersASelector
-  , kernelWidthSelector
-  , setKernelWidthSelector
-  , kernelHeightSelector
-  , setKernelHeightSelector
-  , inputFeatureChannelsSelector
-  , setInputFeatureChannelsSelector
-  , outputFeatureChannelsSelector
-  , setOutputFeatureChannelsSelector
-  , strideInPixelsXSelector
-  , setStrideInPixelsXSelector
-  , strideInPixelsYSelector
-  , setStrideInPixelsYSelector
-  , groupsSelector
-  , setGroupsSelector
-  , dilationRateXSelector
-  , setDilationRateXSelector
-  , dilationRateYSelector
-  , setDilationRateYSelector
-  , fusedNeuronDescriptorSelector
-  , setFusedNeuronDescriptorSelector
   , neuronSelector
+  , neuronTypeSelector
+  , outputFeatureChannelsSelector
+  , setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilonSelector
+  , setDilationRateXSelector
+  , setDilationRateYSelector
+  , setFusedNeuronDescriptorSelector
+  , setGroupsSelector
+  , setInputFeatureChannelsSelector
+  , setKernelHeightSelector
+  , setKernelWidthSelector
   , setNeuronSelector
+  , setNeuronToPReLUWithParametersASelector
+  , setNeuronType_parameterA_parameterBSelector
+  , setOutputFeatureChannelsSelector
+  , setStrideInPixelsXSelector
+  , setStrideInPixelsYSelector
+  , strideInPixelsXSelector
+  , strideInPixelsYSelector
   , supportsSecureCodingSelector
 
   -- * Enum types
@@ -102,15 +103,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -122,17 +119,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- encodeWithCoder:@
 encodeWithCoder :: (IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor, IsNSCoder aCoder) => mpscnnConvolutionDescriptor -> aCoder -> IO ()
-encodeWithCoder mpscnnConvolutionDescriptor  aCoder =
-  withObjCPtr aCoder $ \raw_aCoder ->
-      sendMsg mpscnnConvolutionDescriptor (mkSelector "encodeWithCoder:") retVoid [argPtr (castPtr raw_aCoder :: Ptr ())]
+encodeWithCoder mpscnnConvolutionDescriptor aCoder =
+  sendMessage mpscnnConvolutionDescriptor encodeWithCoderSelector (toNSCoder aCoder)
 
 -- | <NSSecureCoding> support
 --
 -- ObjC selector: @- initWithCoder:@
 initWithCoder :: (IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor, IsNSCoder aDecoder) => mpscnnConvolutionDescriptor -> aDecoder -> IO (Id MPSCNNConvolutionDescriptor)
-initWithCoder mpscnnConvolutionDescriptor  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnConvolutionDescriptor (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder mpscnnConvolutionDescriptor aDecoder =
+  sendOwnedMessage mpscnnConvolutionDescriptor initWithCoderSelector (toNSCoder aDecoder)
 
 -- | This method is deprecated. Please use neuronType, neuronParameterA and neuronParameterB properites to fuse              neuron with convolution.
 --
@@ -153,8 +148,7 @@ cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_output
 cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannels_neuronFilter kernelWidth kernelHeight inputFeatureChannels outputFeatureChannels neuronFilter =
   do
     cls' <- getRequiredClass "MPSCNNConvolutionDescriptor"
-    withObjCPtr neuronFilter $ \raw_neuronFilter ->
-      sendClassMsg cls' (mkSelector "cnnConvolutionDescriptorWithKernelWidth:kernelHeight:inputFeatureChannels:outputFeatureChannels:neuronFilter:") (retPtr retVoid) [argCULong kernelWidth, argCULong kernelHeight, argCULong inputFeatureChannels, argCULong outputFeatureChannels, argPtr (castPtr raw_neuronFilter :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannels_neuronFilterSelector kernelWidth kernelHeight inputFeatureChannels outputFeatureChannels neuronFilter
 
 -- | Creates a convolution descriptor.
 --
@@ -173,7 +167,7 @@ cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_output
 cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannels kernelWidth kernelHeight inputFeatureChannels outputFeatureChannels =
   do
     cls' <- getRequiredClass "MPSCNNConvolutionDescriptor"
-    sendClassMsg cls' (mkSelector "cnnConvolutionDescriptorWithKernelWidth:kernelHeight:inputFeatureChannels:outputFeatureChannels:") (retPtr retVoid) [argCULong kernelWidth, argCULong kernelHeight, argCULong inputFeatureChannels, argCULong outputFeatureChannels] >>= retainedObject . castPtr
+    sendClassMessage cls' cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannelsSelector kernelWidth kernelHeight inputFeatureChannels outputFeatureChannels
 
 -- | Adds batch normalization for inference, it copies all the float arrays provided, expecting               outputFeatureChannels elements in each.
 --
@@ -213,8 +207,8 @@ cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_output
 --
 -- ObjC selector: @- setBatchNormalizationParametersForInferenceWithMean:variance:gamma:beta:epsilon:@
 setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilon :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> Const (Ptr CFloat) -> Const CFloat -> IO ()
-setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilon mpscnnConvolutionDescriptor  mean variance gamma beta epsilon =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setBatchNormalizationParametersForInferenceWithMean:variance:gamma:beta:epsilon:") retVoid [argPtr (unConst mean), argPtr (unConst variance), argPtr (unConst gamma), argPtr (unConst beta), argCFloat (unConst epsilon)]
+setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilon mpscnnConvolutionDescriptor mean variance gamma beta epsilon =
+  sendMessage mpscnnConvolutionDescriptor setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilonSelector mean variance gamma beta epsilon
 
 -- | Adds a neuron activation function to convolution descriptor.
 --
@@ -230,29 +224,29 @@ setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilon 
 --
 -- ObjC selector: @- setNeuronType:parameterA:parameterB:@
 setNeuronType_parameterA_parameterB :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> MPSCNNNeuronType -> CFloat -> CFloat -> IO ()
-setNeuronType_parameterA_parameterB mpscnnConvolutionDescriptor  neuronType parameterA parameterB =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setNeuronType:parameterA:parameterB:") retVoid [argCInt (coerce neuronType), argCFloat parameterA, argCFloat parameterB]
+setNeuronType_parameterA_parameterB mpscnnConvolutionDescriptor neuronType parameterA parameterB =
+  sendMessage mpscnnConvolutionDescriptor setNeuronType_parameterA_parameterBSelector neuronType parameterA parameterB
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB method
 --
 -- ObjC selector: @- neuronType@
 neuronType :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO MPSCNNNeuronType
-neuronType mpscnnConvolutionDescriptor  =
-    fmap (coerce :: CInt -> MPSCNNNeuronType) $ sendMsg mpscnnConvolutionDescriptor (mkSelector "neuronType") retCInt []
+neuronType mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor neuronTypeSelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB method
 --
 -- ObjC selector: @- neuronParameterA@
 neuronParameterA :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CFloat
-neuronParameterA mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "neuronParameterA") retCFloat []
+neuronParameterA mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor neuronParameterASelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB method
 --
 -- ObjC selector: @- neuronParameterB@
 neuronParameterB :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CFloat
-neuronParameterB mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "neuronParameterB") retCFloat []
+neuronParameterB mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor neuronParameterBSelector
 
 -- | Add per-channel neuron parameters A for PReLu neuron activation functions.
 --
@@ -274,9 +268,8 @@ neuronParameterB mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setNeuronToPReLUWithParametersA:@
 setNeuronToPReLUWithParametersA :: (IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor, IsNSData a) => mpscnnConvolutionDescriptor -> a -> IO ()
-setNeuronToPReLUWithParametersA mpscnnConvolutionDescriptor  a =
-  withObjCPtr a $ \raw_a ->
-      sendMsg mpscnnConvolutionDescriptor (mkSelector "setNeuronToPReLUWithParametersA:") retVoid [argPtr (castPtr raw_a :: Ptr ())]
+setNeuronToPReLUWithParametersA mpscnnConvolutionDescriptor a =
+  sendMessage mpscnnConvolutionDescriptor setNeuronToPReLUWithParametersASelector (toNSData a)
 
 -- | kernelWidth
 --
@@ -284,8 +277,8 @@ setNeuronToPReLUWithParametersA mpscnnConvolutionDescriptor  a =
 --
 -- ObjC selector: @- kernelWidth@
 kernelWidth :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CULong
-kernelWidth mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "kernelWidth") retCULong []
+kernelWidth mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor kernelWidthSelector
 
 -- | kernelWidth
 --
@@ -293,8 +286,8 @@ kernelWidth mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setKernelWidth:@
 setKernelWidth :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> CULong -> IO ()
-setKernelWidth mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setKernelWidth:") retVoid [argCULong value]
+setKernelWidth mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setKernelWidthSelector value
 
 -- | kernelHeight
 --
@@ -302,8 +295,8 @@ setKernelWidth mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- kernelHeight@
 kernelHeight :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CULong
-kernelHeight mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "kernelHeight") retCULong []
+kernelHeight mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor kernelHeightSelector
 
 -- | kernelHeight
 --
@@ -311,8 +304,8 @@ kernelHeight mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setKernelHeight:@
 setKernelHeight :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> CULong -> IO ()
-setKernelHeight mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setKernelHeight:") retVoid [argCULong value]
+setKernelHeight mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setKernelHeightSelector value
 
 -- | inputFeatureChannels
 --
@@ -320,8 +313,8 @@ setKernelHeight mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- inputFeatureChannels@
 inputFeatureChannels :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CULong
-inputFeatureChannels mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "inputFeatureChannels") retCULong []
+inputFeatureChannels mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor inputFeatureChannelsSelector
 
 -- | inputFeatureChannels
 --
@@ -329,8 +322,8 @@ inputFeatureChannels mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setInputFeatureChannels:@
 setInputFeatureChannels :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> CULong -> IO ()
-setInputFeatureChannels mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setInputFeatureChannels:") retVoid [argCULong value]
+setInputFeatureChannels mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setInputFeatureChannelsSelector value
 
 -- | outputFeatureChannels
 --
@@ -338,8 +331,8 @@ setInputFeatureChannels mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- outputFeatureChannels@
 outputFeatureChannels :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CULong
-outputFeatureChannels mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "outputFeatureChannels") retCULong []
+outputFeatureChannels mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor outputFeatureChannelsSelector
 
 -- | outputFeatureChannels
 --
@@ -347,8 +340,8 @@ outputFeatureChannels mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setOutputFeatureChannels:@
 setOutputFeatureChannels :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> CULong -> IO ()
-setOutputFeatureChannels mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setOutputFeatureChannels:") retVoid [argCULong value]
+setOutputFeatureChannels mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setOutputFeatureChannelsSelector value
 
 -- | strideInPixelsX
 --
@@ -356,8 +349,8 @@ setOutputFeatureChannels mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- strideInPixelsX@
 strideInPixelsX :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CULong
-strideInPixelsX mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "strideInPixelsX") retCULong []
+strideInPixelsX mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor strideInPixelsXSelector
 
 -- | strideInPixelsX
 --
@@ -365,8 +358,8 @@ strideInPixelsX mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setStrideInPixelsX:@
 setStrideInPixelsX :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> CULong -> IO ()
-setStrideInPixelsX mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setStrideInPixelsX:") retVoid [argCULong value]
+setStrideInPixelsX mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setStrideInPixelsXSelector value
 
 -- | strideInPixelsY
 --
@@ -374,8 +367,8 @@ setStrideInPixelsX mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- strideInPixelsY@
 strideInPixelsY :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CULong
-strideInPixelsY mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "strideInPixelsY") retCULong []
+strideInPixelsY mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor strideInPixelsYSelector
 
 -- | strideInPixelsY
 --
@@ -383,8 +376,8 @@ strideInPixelsY mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setStrideInPixelsY:@
 setStrideInPixelsY :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> CULong -> IO ()
-setStrideInPixelsY mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setStrideInPixelsY:") retVoid [argCULong value]
+setStrideInPixelsY mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setStrideInPixelsYSelector value
 
 -- | groups
 --
@@ -392,8 +385,8 @@ setStrideInPixelsY mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- groups@
 groups :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CULong
-groups mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "groups") retCULong []
+groups mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor groupsSelector
 
 -- | groups
 --
@@ -401,8 +394,8 @@ groups mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setGroups:@
 setGroups :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> CULong -> IO ()
-setGroups mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setGroups:") retVoid [argCULong value]
+setGroups mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setGroupsSelector value
 
 -- | dilationRateX
 --
@@ -414,8 +407,8 @@ setGroups mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- dilationRateX@
 dilationRateX :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CULong
-dilationRateX mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "dilationRateX") retCULong []
+dilationRateX mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor dilationRateXSelector
 
 -- | dilationRateX
 --
@@ -427,8 +420,8 @@ dilationRateX mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setDilationRateX:@
 setDilationRateX :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> CULong -> IO ()
-setDilationRateX mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setDilationRateX:") retVoid [argCULong value]
+setDilationRateX mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setDilationRateXSelector value
 
 -- | dilationRateY
 --
@@ -440,8 +433,8 @@ setDilationRateX mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- dilationRateY@
 dilationRateY :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO CULong
-dilationRateY mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "dilationRateY") retCULong []
+dilationRateY mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor dilationRateYSelector
 
 -- | dilationRateY
 --
@@ -453,8 +446,8 @@ dilationRateY mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setDilationRateY:@
 setDilationRateY :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> CULong -> IO ()
-setDilationRateY mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setDilationRateY:") retVoid [argCULong value]
+setDilationRateY mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setDilationRateYSelector value
 
 -- | fusedNeuronDescriptor
 --
@@ -464,8 +457,8 @@ setDilationRateY mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- fusedNeuronDescriptor@
 fusedNeuronDescriptor :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO (Id MPSNNNeuronDescriptor)
-fusedNeuronDescriptor mpscnnConvolutionDescriptor  =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "fusedNeuronDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fusedNeuronDescriptor mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor fusedNeuronDescriptorSelector
 
 -- | fusedNeuronDescriptor
 --
@@ -475,9 +468,8 @@ fusedNeuronDescriptor mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setFusedNeuronDescriptor:@
 setFusedNeuronDescriptor :: (IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor, IsMPSNNNeuronDescriptor value) => mpscnnConvolutionDescriptor -> value -> IO ()
-setFusedNeuronDescriptor mpscnnConvolutionDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpscnnConvolutionDescriptor (mkSelector "setFusedNeuronDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFusedNeuronDescriptor mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setFusedNeuronDescriptorSelector (toMPSNNNeuronDescriptor value)
 
 -- | neuron
 --
@@ -485,8 +477,8 @@ setFusedNeuronDescriptor mpscnnConvolutionDescriptor  value =
 --
 -- ObjC selector: @- neuron@
 neuron :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> IO RawId
-neuron mpscnnConvolutionDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionDescriptor (mkSelector "neuron") (retPtr retVoid) []
+neuron mpscnnConvolutionDescriptor =
+  sendMessage mpscnnConvolutionDescriptor neuronSelector
 
 -- | neuron
 --
@@ -494,8 +486,8 @@ neuron mpscnnConvolutionDescriptor  =
 --
 -- ObjC selector: @- setNeuron:@
 setNeuron :: IsMPSCNNConvolutionDescriptor mpscnnConvolutionDescriptor => mpscnnConvolutionDescriptor -> RawId -> IO ()
-setNeuron mpscnnConvolutionDescriptor  value =
-    sendMsg mpscnnConvolutionDescriptor (mkSelector "setNeuron:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setNeuron mpscnnConvolutionDescriptor value =
+  sendMessage mpscnnConvolutionDescriptor setNeuronSelector value
 
 -- | <NSSecureCoding> support
 --
@@ -504,141 +496,141 @@ supportsSecureCoding :: IO Bool
 supportsSecureCoding  =
   do
     cls' <- getRequiredClass "MPSCNNConvolutionDescriptor"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsSecureCoding") retCULong []
+    sendClassMessage cls' supportsSecureCodingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @encodeWithCoder:@
-encodeWithCoderSelector :: Selector
+encodeWithCoderSelector :: Selector '[Id NSCoder] ()
 encodeWithCoderSelector = mkSelector "encodeWithCoder:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id MPSCNNConvolutionDescriptor)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @cnnConvolutionDescriptorWithKernelWidth:kernelHeight:inputFeatureChannels:outputFeatureChannels:neuronFilter:@
-cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannels_neuronFilterSelector :: Selector
+cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannels_neuronFilterSelector :: Selector '[CULong, CULong, CULong, CULong, Const (Id MPSCNNNeuron)] (Id MPSCNNConvolutionDescriptor)
 cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannels_neuronFilterSelector = mkSelector "cnnConvolutionDescriptorWithKernelWidth:kernelHeight:inputFeatureChannels:outputFeatureChannels:neuronFilter:"
 
 -- | @Selector@ for @cnnConvolutionDescriptorWithKernelWidth:kernelHeight:inputFeatureChannels:outputFeatureChannels:@
-cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannelsSelector :: Selector
+cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannelsSelector :: Selector '[CULong, CULong, CULong, CULong] (Id MPSCNNConvolutionDescriptor)
 cnnConvolutionDescriptorWithKernelWidth_kernelHeight_inputFeatureChannels_outputFeatureChannelsSelector = mkSelector "cnnConvolutionDescriptorWithKernelWidth:kernelHeight:inputFeatureChannels:outputFeatureChannels:"
 
 -- | @Selector@ for @setBatchNormalizationParametersForInferenceWithMean:variance:gamma:beta:epsilon:@
-setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilonSelector :: Selector
+setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilonSelector :: Selector '[Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), Const (Ptr CFloat), Const CFloat] ()
 setBatchNormalizationParametersForInferenceWithMean_variance_gamma_beta_epsilonSelector = mkSelector "setBatchNormalizationParametersForInferenceWithMean:variance:gamma:beta:epsilon:"
 
 -- | @Selector@ for @setNeuronType:parameterA:parameterB:@
-setNeuronType_parameterA_parameterBSelector :: Selector
+setNeuronType_parameterA_parameterBSelector :: Selector '[MPSCNNNeuronType, CFloat, CFloat] ()
 setNeuronType_parameterA_parameterBSelector = mkSelector "setNeuronType:parameterA:parameterB:"
 
 -- | @Selector@ for @neuronType@
-neuronTypeSelector :: Selector
+neuronTypeSelector :: Selector '[] MPSCNNNeuronType
 neuronTypeSelector = mkSelector "neuronType"
 
 -- | @Selector@ for @neuronParameterA@
-neuronParameterASelector :: Selector
+neuronParameterASelector :: Selector '[] CFloat
 neuronParameterASelector = mkSelector "neuronParameterA"
 
 -- | @Selector@ for @neuronParameterB@
-neuronParameterBSelector :: Selector
+neuronParameterBSelector :: Selector '[] CFloat
 neuronParameterBSelector = mkSelector "neuronParameterB"
 
 -- | @Selector@ for @setNeuronToPReLUWithParametersA:@
-setNeuronToPReLUWithParametersASelector :: Selector
+setNeuronToPReLUWithParametersASelector :: Selector '[Id NSData] ()
 setNeuronToPReLUWithParametersASelector = mkSelector "setNeuronToPReLUWithParametersA:"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 
 -- | @Selector@ for @setKernelWidth:@
-setKernelWidthSelector :: Selector
+setKernelWidthSelector :: Selector '[CULong] ()
 setKernelWidthSelector = mkSelector "setKernelWidth:"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @setKernelHeight:@
-setKernelHeightSelector :: Selector
+setKernelHeightSelector :: Selector '[CULong] ()
 setKernelHeightSelector = mkSelector "setKernelHeight:"
 
 -- | @Selector@ for @inputFeatureChannels@
-inputFeatureChannelsSelector :: Selector
+inputFeatureChannelsSelector :: Selector '[] CULong
 inputFeatureChannelsSelector = mkSelector "inputFeatureChannels"
 
 -- | @Selector@ for @setInputFeatureChannels:@
-setInputFeatureChannelsSelector :: Selector
+setInputFeatureChannelsSelector :: Selector '[CULong] ()
 setInputFeatureChannelsSelector = mkSelector "setInputFeatureChannels:"
 
 -- | @Selector@ for @outputFeatureChannels@
-outputFeatureChannelsSelector :: Selector
+outputFeatureChannelsSelector :: Selector '[] CULong
 outputFeatureChannelsSelector = mkSelector "outputFeatureChannels"
 
 -- | @Selector@ for @setOutputFeatureChannels:@
-setOutputFeatureChannelsSelector :: Selector
+setOutputFeatureChannelsSelector :: Selector '[CULong] ()
 setOutputFeatureChannelsSelector = mkSelector "setOutputFeatureChannels:"
 
 -- | @Selector@ for @strideInPixelsX@
-strideInPixelsXSelector :: Selector
+strideInPixelsXSelector :: Selector '[] CULong
 strideInPixelsXSelector = mkSelector "strideInPixelsX"
 
 -- | @Selector@ for @setStrideInPixelsX:@
-setStrideInPixelsXSelector :: Selector
+setStrideInPixelsXSelector :: Selector '[CULong] ()
 setStrideInPixelsXSelector = mkSelector "setStrideInPixelsX:"
 
 -- | @Selector@ for @strideInPixelsY@
-strideInPixelsYSelector :: Selector
+strideInPixelsYSelector :: Selector '[] CULong
 strideInPixelsYSelector = mkSelector "strideInPixelsY"
 
 -- | @Selector@ for @setStrideInPixelsY:@
-setStrideInPixelsYSelector :: Selector
+setStrideInPixelsYSelector :: Selector '[CULong] ()
 setStrideInPixelsYSelector = mkSelector "setStrideInPixelsY:"
 
 -- | @Selector@ for @groups@
-groupsSelector :: Selector
+groupsSelector :: Selector '[] CULong
 groupsSelector = mkSelector "groups"
 
 -- | @Selector@ for @setGroups:@
-setGroupsSelector :: Selector
+setGroupsSelector :: Selector '[CULong] ()
 setGroupsSelector = mkSelector "setGroups:"
 
 -- | @Selector@ for @dilationRateX@
-dilationRateXSelector :: Selector
+dilationRateXSelector :: Selector '[] CULong
 dilationRateXSelector = mkSelector "dilationRateX"
 
 -- | @Selector@ for @setDilationRateX:@
-setDilationRateXSelector :: Selector
+setDilationRateXSelector :: Selector '[CULong] ()
 setDilationRateXSelector = mkSelector "setDilationRateX:"
 
 -- | @Selector@ for @dilationRateY@
-dilationRateYSelector :: Selector
+dilationRateYSelector :: Selector '[] CULong
 dilationRateYSelector = mkSelector "dilationRateY"
 
 -- | @Selector@ for @setDilationRateY:@
-setDilationRateYSelector :: Selector
+setDilationRateYSelector :: Selector '[CULong] ()
 setDilationRateYSelector = mkSelector "setDilationRateY:"
 
 -- | @Selector@ for @fusedNeuronDescriptor@
-fusedNeuronDescriptorSelector :: Selector
+fusedNeuronDescriptorSelector :: Selector '[] (Id MPSNNNeuronDescriptor)
 fusedNeuronDescriptorSelector = mkSelector "fusedNeuronDescriptor"
 
 -- | @Selector@ for @setFusedNeuronDescriptor:@
-setFusedNeuronDescriptorSelector :: Selector
+setFusedNeuronDescriptorSelector :: Selector '[Id MPSNNNeuronDescriptor] ()
 setFusedNeuronDescriptorSelector = mkSelector "setFusedNeuronDescriptor:"
 
 -- | @Selector@ for @neuron@
-neuronSelector :: Selector
+neuronSelector :: Selector '[] RawId
 neuronSelector = mkSelector "neuron"
 
 -- | @Selector@ for @setNeuron:@
-setNeuronSelector :: Selector
+setNeuronSelector :: Selector '[RawId] ()
 setNeuronSelector = mkSelector "setNeuron:"
 
 -- | @Selector@ for @supportsSecureCoding@
-supportsSecureCodingSelector :: Selector
+supportsSecureCodingSelector :: Selector '[] Bool
 supportsSecureCodingSelector = mkSelector "supportsSecureCoding"
 

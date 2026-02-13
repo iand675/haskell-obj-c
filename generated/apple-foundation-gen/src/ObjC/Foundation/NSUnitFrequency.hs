@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Foundation.NSUnitFrequency
   , microhertz
   , nanohertz
   , framesPerSecond
-  , terahertzSelector
-  , gigahertzSelector
-  , megahertzSelector
-  , kilohertzSelector
-  , hertzSelector
-  , millihertzSelector
-  , microhertzSelector
-  , nanohertzSelector
   , framesPerSecondSelector
+  , gigahertzSelector
+  , hertzSelector
+  , kilohertzSelector
+  , megahertzSelector
+  , microhertzSelector
+  , millihertzSelector
+  , nanohertzSelector
+  , terahertzSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,101 +44,101 @@ terahertz :: IO (Id NSUnitFrequency)
 terahertz  =
   do
     cls' <- getRequiredClass "NSUnitFrequency"
-    sendClassMsg cls' (mkSelector "terahertz") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' terahertzSelector
 
 -- | @+ gigahertz@
 gigahertz :: IO (Id NSUnitFrequency)
 gigahertz  =
   do
     cls' <- getRequiredClass "NSUnitFrequency"
-    sendClassMsg cls' (mkSelector "gigahertz") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gigahertzSelector
 
 -- | @+ megahertz@
 megahertz :: IO (Id NSUnitFrequency)
 megahertz  =
   do
     cls' <- getRequiredClass "NSUnitFrequency"
-    sendClassMsg cls' (mkSelector "megahertz") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' megahertzSelector
 
 -- | @+ kilohertz@
 kilohertz :: IO (Id NSUnitFrequency)
 kilohertz  =
   do
     cls' <- getRequiredClass "NSUnitFrequency"
-    sendClassMsg cls' (mkSelector "kilohertz") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilohertzSelector
 
 -- | @+ hertz@
 hertz :: IO (Id NSUnitFrequency)
 hertz  =
   do
     cls' <- getRequiredClass "NSUnitFrequency"
-    sendClassMsg cls' (mkSelector "hertz") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hertzSelector
 
 -- | @+ millihertz@
 millihertz :: IO (Id NSUnitFrequency)
 millihertz  =
   do
     cls' <- getRequiredClass "NSUnitFrequency"
-    sendClassMsg cls' (mkSelector "millihertz") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' millihertzSelector
 
 -- | @+ microhertz@
 microhertz :: IO (Id NSUnitFrequency)
 microhertz  =
   do
     cls' <- getRequiredClass "NSUnitFrequency"
-    sendClassMsg cls' (mkSelector "microhertz") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' microhertzSelector
 
 -- | @+ nanohertz@
 nanohertz :: IO (Id NSUnitFrequency)
 nanohertz  =
   do
     cls' <- getRequiredClass "NSUnitFrequency"
-    sendClassMsg cls' (mkSelector "nanohertz") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nanohertzSelector
 
 -- | @+ framesPerSecond@
 framesPerSecond :: IO (Id NSUnitFrequency)
 framesPerSecond  =
   do
     cls' <- getRequiredClass "NSUnitFrequency"
-    sendClassMsg cls' (mkSelector "framesPerSecond") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' framesPerSecondSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @terahertz@
-terahertzSelector :: Selector
+terahertzSelector :: Selector '[] (Id NSUnitFrequency)
 terahertzSelector = mkSelector "terahertz"
 
 -- | @Selector@ for @gigahertz@
-gigahertzSelector :: Selector
+gigahertzSelector :: Selector '[] (Id NSUnitFrequency)
 gigahertzSelector = mkSelector "gigahertz"
 
 -- | @Selector@ for @megahertz@
-megahertzSelector :: Selector
+megahertzSelector :: Selector '[] (Id NSUnitFrequency)
 megahertzSelector = mkSelector "megahertz"
 
 -- | @Selector@ for @kilohertz@
-kilohertzSelector :: Selector
+kilohertzSelector :: Selector '[] (Id NSUnitFrequency)
 kilohertzSelector = mkSelector "kilohertz"
 
 -- | @Selector@ for @hertz@
-hertzSelector :: Selector
+hertzSelector :: Selector '[] (Id NSUnitFrequency)
 hertzSelector = mkSelector "hertz"
 
 -- | @Selector@ for @millihertz@
-millihertzSelector :: Selector
+millihertzSelector :: Selector '[] (Id NSUnitFrequency)
 millihertzSelector = mkSelector "millihertz"
 
 -- | @Selector@ for @microhertz@
-microhertzSelector :: Selector
+microhertzSelector :: Selector '[] (Id NSUnitFrequency)
 microhertzSelector = mkSelector "microhertz"
 
 -- | @Selector@ for @nanohertz@
-nanohertzSelector :: Selector
+nanohertzSelector :: Selector '[] (Id NSUnitFrequency)
 nanohertzSelector = mkSelector "nanohertz"
 
 -- | @Selector@ for @framesPerSecond@
-framesPerSecondSelector :: Selector
+framesPerSecondSelector :: Selector '[] (Id NSUnitFrequency)
 framesPerSecondSelector = mkSelector "framesPerSecond"
 

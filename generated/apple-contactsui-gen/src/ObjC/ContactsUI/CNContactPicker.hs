@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,12 +16,12 @@ module ObjC.ContactsUI.CNContactPicker
   , setDisplayedKeys
   , delegate
   , setDelegate
-  , showRelativeToRect_ofView_preferredEdgeSelector
   , closeSelector
-  , displayedKeysSelector
-  , setDisplayedKeysSelector
   , delegateSelector
+  , displayedKeysSelector
   , setDelegateSelector
+  , setDisplayedKeysSelector
+  , showRelativeToRect_ofView_preferredEdgeSelector
 
   -- * Enum types
   , NSRectEdge(NSRectEdge)
@@ -35,15 +36,11 @@ module ObjC.ContactsUI.CNContactPicker
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,16 +54,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- showRelativeToRect:ofView:preferredEdge:@
 showRelativeToRect_ofView_preferredEdge :: (IsCNContactPicker cnContactPicker, IsNSView positioningView) => cnContactPicker -> NSRect -> positioningView -> NSRectEdge -> IO ()
-showRelativeToRect_ofView_preferredEdge cnContactPicker  positioningRect positioningView preferredEdge =
-  withObjCPtr positioningView $ \raw_positioningView ->
-      sendMsg cnContactPicker (mkSelector "showRelativeToRect:ofView:preferredEdge:") retVoid [argNSRect positioningRect, argPtr (castPtr raw_positioningView :: Ptr ()), argCULong (coerce preferredEdge)]
+showRelativeToRect_ofView_preferredEdge cnContactPicker positioningRect positioningView preferredEdge =
+  sendMessage cnContactPicker showRelativeToRect_ofView_preferredEdgeSelector positioningRect (toNSView positioningView) preferredEdge
 
 -- | Closes the popover.
 --
 -- ObjC selector: @- close@
 close :: IsCNContactPicker cnContactPicker => cnContactPicker -> IO ()
-close cnContactPicker  =
-    sendMsg cnContactPicker (mkSelector "close") retVoid []
+close cnContactPicker =
+  sendMessage cnContactPicker closeSelector
 
 -- | The CNContact keys to display when a contact is expanded.
 --
@@ -74,8 +70,8 @@ close cnContactPicker  =
 --
 -- ObjC selector: @- displayedKeys@
 displayedKeys :: IsCNContactPicker cnContactPicker => cnContactPicker -> IO (Id NSArray)
-displayedKeys cnContactPicker  =
-    sendMsg cnContactPicker (mkSelector "displayedKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayedKeys cnContactPicker =
+  sendMessage cnContactPicker displayedKeysSelector
 
 -- | The CNContact keys to display when a contact is expanded.
 --
@@ -83,49 +79,48 @@ displayedKeys cnContactPicker  =
 --
 -- ObjC selector: @- setDisplayedKeys:@
 setDisplayedKeys :: (IsCNContactPicker cnContactPicker, IsNSArray value) => cnContactPicker -> value -> IO ()
-setDisplayedKeys cnContactPicker  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnContactPicker (mkSelector "setDisplayedKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDisplayedKeys cnContactPicker value =
+  sendMessage cnContactPicker setDisplayedKeysSelector (toNSArray value)
 
 -- | The picker delegate to be notified when the user chooses a contact or value.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsCNContactPicker cnContactPicker => cnContactPicker -> IO RawId
-delegate cnContactPicker  =
-    fmap (RawId . castPtr) $ sendMsg cnContactPicker (mkSelector "delegate") (retPtr retVoid) []
+delegate cnContactPicker =
+  sendMessage cnContactPicker delegateSelector
 
 -- | The picker delegate to be notified when the user chooses a contact or value.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsCNContactPicker cnContactPicker => cnContactPicker -> RawId -> IO ()
-setDelegate cnContactPicker  value =
-    sendMsg cnContactPicker (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate cnContactPicker value =
+  sendMessage cnContactPicker setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @showRelativeToRect:ofView:preferredEdge:@
-showRelativeToRect_ofView_preferredEdgeSelector :: Selector
+showRelativeToRect_ofView_preferredEdgeSelector :: Selector '[NSRect, Id NSView, NSRectEdge] ()
 showRelativeToRect_ofView_preferredEdgeSelector = mkSelector "showRelativeToRect:ofView:preferredEdge:"
 
 -- | @Selector@ for @close@
-closeSelector :: Selector
+closeSelector :: Selector '[] ()
 closeSelector = mkSelector "close"
 
 -- | @Selector@ for @displayedKeys@
-displayedKeysSelector :: Selector
+displayedKeysSelector :: Selector '[] (Id NSArray)
 displayedKeysSelector = mkSelector "displayedKeys"
 
 -- | @Selector@ for @setDisplayedKeys:@
-setDisplayedKeysSelector :: Selector
+setDisplayedKeysSelector :: Selector '[Id NSArray] ()
 setDisplayedKeysSelector = mkSelector "setDisplayedKeys:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.Foundation.NSPointerArray
   , count
   , setCount
   , allObjects
+  , addPointerSelector
+  , allObjectsSelector
+  , compactSelector
+  , countSelector
   , initWithOptionsSelector
   , initWithPointerFunctionsSelector
+  , insertPointer_atIndexSelector
   , pointerArrayWithOptionsSelector
   , pointerArrayWithPointerFunctionsSelector
-  , pointerAtIndexSelector
-  , addPointerSelector
-  , removePointerAtIndexSelector
-  , insertPointer_atIndexSelector
-  , replacePointerAtIndex_withPointerSelector
-  , compactSelector
   , pointerArrayWithStrongObjectsSelector
   , pointerArrayWithWeakObjectsSelector
+  , pointerAtIndexSelector
+  , pointerFunctionsSelector
+  , removePointerAtIndexSelector
+  , replacePointerAtIndex_withPointerSelector
+  , setCountSelector
   , strongObjectsPointerArraySelector
   , weakObjectsPointerArraySelector
-  , pointerFunctionsSelector
-  , countSelector
-  , setCountSelector
-  , allObjectsSelector
 
   -- * Enum types
   , NSPointerFunctionsOptions(NSPointerFunctionsOptions)
@@ -62,15 +63,11 @@ module ObjC.Foundation.NSPointerArray
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,181 +76,179 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithOptions:@
 initWithOptions :: IsNSPointerArray nsPointerArray => nsPointerArray -> NSPointerFunctionsOptions -> IO (Id NSPointerArray)
-initWithOptions nsPointerArray  options =
-    sendMsg nsPointerArray (mkSelector "initWithOptions:") (retPtr retVoid) [argCULong (coerce options)] >>= ownedObject . castPtr
+initWithOptions nsPointerArray options =
+  sendOwnedMessage nsPointerArray initWithOptionsSelector options
 
 -- | @- initWithPointerFunctions:@
 initWithPointerFunctions :: (IsNSPointerArray nsPointerArray, IsNSPointerFunctions functions) => nsPointerArray -> functions -> IO (Id NSPointerArray)
-initWithPointerFunctions nsPointerArray  functions =
-  withObjCPtr functions $ \raw_functions ->
-      sendMsg nsPointerArray (mkSelector "initWithPointerFunctions:") (retPtr retVoid) [argPtr (castPtr raw_functions :: Ptr ())] >>= ownedObject . castPtr
+initWithPointerFunctions nsPointerArray functions =
+  sendOwnedMessage nsPointerArray initWithPointerFunctionsSelector (toNSPointerFunctions functions)
 
 -- | @+ pointerArrayWithOptions:@
 pointerArrayWithOptions :: NSPointerFunctionsOptions -> IO (Id NSPointerArray)
 pointerArrayWithOptions options =
   do
     cls' <- getRequiredClass "NSPointerArray"
-    sendClassMsg cls' (mkSelector "pointerArrayWithOptions:") (retPtr retVoid) [argCULong (coerce options)] >>= retainedObject . castPtr
+    sendClassMessage cls' pointerArrayWithOptionsSelector options
 
 -- | @+ pointerArrayWithPointerFunctions:@
 pointerArrayWithPointerFunctions :: IsNSPointerFunctions functions => functions -> IO (Id NSPointerArray)
 pointerArrayWithPointerFunctions functions =
   do
     cls' <- getRequiredClass "NSPointerArray"
-    withObjCPtr functions $ \raw_functions ->
-      sendClassMsg cls' (mkSelector "pointerArrayWithPointerFunctions:") (retPtr retVoid) [argPtr (castPtr raw_functions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pointerArrayWithPointerFunctionsSelector (toNSPointerFunctions functions)
 
 -- | @- pointerAtIndex:@
 pointerAtIndex :: IsNSPointerArray nsPointerArray => nsPointerArray -> CULong -> IO (Ptr ())
-pointerAtIndex nsPointerArray  index =
-    fmap castPtr $ sendMsg nsPointerArray (mkSelector "pointerAtIndex:") (retPtr retVoid) [argCULong index]
+pointerAtIndex nsPointerArray index =
+  sendMessage nsPointerArray pointerAtIndexSelector index
 
 -- | @- addPointer:@
 addPointer :: IsNSPointerArray nsPointerArray => nsPointerArray -> Ptr () -> IO ()
-addPointer nsPointerArray  pointer =
-    sendMsg nsPointerArray (mkSelector "addPointer:") retVoid [argPtr pointer]
+addPointer nsPointerArray pointer =
+  sendMessage nsPointerArray addPointerSelector pointer
 
 -- | @- removePointerAtIndex:@
 removePointerAtIndex :: IsNSPointerArray nsPointerArray => nsPointerArray -> CULong -> IO ()
-removePointerAtIndex nsPointerArray  index =
-    sendMsg nsPointerArray (mkSelector "removePointerAtIndex:") retVoid [argCULong index]
+removePointerAtIndex nsPointerArray index =
+  sendMessage nsPointerArray removePointerAtIndexSelector index
 
 -- | @- insertPointer:atIndex:@
 insertPointer_atIndex :: IsNSPointerArray nsPointerArray => nsPointerArray -> Ptr () -> CULong -> IO ()
-insertPointer_atIndex nsPointerArray  item index =
-    sendMsg nsPointerArray (mkSelector "insertPointer:atIndex:") retVoid [argPtr item, argCULong index]
+insertPointer_atIndex nsPointerArray item index =
+  sendMessage nsPointerArray insertPointer_atIndexSelector item index
 
 -- | @- replacePointerAtIndex:withPointer:@
 replacePointerAtIndex_withPointer :: IsNSPointerArray nsPointerArray => nsPointerArray -> CULong -> Ptr () -> IO ()
-replacePointerAtIndex_withPointer nsPointerArray  index item =
-    sendMsg nsPointerArray (mkSelector "replacePointerAtIndex:withPointer:") retVoid [argCULong index, argPtr item]
+replacePointerAtIndex_withPointer nsPointerArray index item =
+  sendMessage nsPointerArray replacePointerAtIndex_withPointerSelector index item
 
 -- | @- compact@
 compact :: IsNSPointerArray nsPointerArray => nsPointerArray -> IO ()
-compact nsPointerArray  =
-    sendMsg nsPointerArray (mkSelector "compact") retVoid []
+compact nsPointerArray =
+  sendMessage nsPointerArray compactSelector
 
 -- | @+ pointerArrayWithStrongObjects@
 pointerArrayWithStrongObjects :: IO RawId
 pointerArrayWithStrongObjects  =
   do
     cls' <- getRequiredClass "NSPointerArray"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "pointerArrayWithStrongObjects") (retPtr retVoid) []
+    sendClassMessage cls' pointerArrayWithStrongObjectsSelector
 
 -- | @+ pointerArrayWithWeakObjects@
 pointerArrayWithWeakObjects :: IO RawId
 pointerArrayWithWeakObjects  =
   do
     cls' <- getRequiredClass "NSPointerArray"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "pointerArrayWithWeakObjects") (retPtr retVoid) []
+    sendClassMessage cls' pointerArrayWithWeakObjectsSelector
 
 -- | @+ strongObjectsPointerArray@
 strongObjectsPointerArray :: IO (Id NSPointerArray)
 strongObjectsPointerArray  =
   do
     cls' <- getRequiredClass "NSPointerArray"
-    sendClassMsg cls' (mkSelector "strongObjectsPointerArray") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' strongObjectsPointerArraySelector
 
 -- | @+ weakObjectsPointerArray@
 weakObjectsPointerArray :: IO (Id NSPointerArray)
 weakObjectsPointerArray  =
   do
     cls' <- getRequiredClass "NSPointerArray"
-    sendClassMsg cls' (mkSelector "weakObjectsPointerArray") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' weakObjectsPointerArraySelector
 
 -- | @- pointerFunctions@
 pointerFunctions :: IsNSPointerArray nsPointerArray => nsPointerArray -> IO (Id NSPointerFunctions)
-pointerFunctions nsPointerArray  =
-    sendMsg nsPointerArray (mkSelector "pointerFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+pointerFunctions nsPointerArray =
+  sendMessage nsPointerArray pointerFunctionsSelector
 
 -- | @- count@
 count :: IsNSPointerArray nsPointerArray => nsPointerArray -> IO CULong
-count nsPointerArray  =
-    sendMsg nsPointerArray (mkSelector "count") retCULong []
+count nsPointerArray =
+  sendMessage nsPointerArray countSelector
 
 -- | @- setCount:@
 setCount :: IsNSPointerArray nsPointerArray => nsPointerArray -> CULong -> IO ()
-setCount nsPointerArray  value =
-    sendMsg nsPointerArray (mkSelector "setCount:") retVoid [argCULong value]
+setCount nsPointerArray value =
+  sendMessage nsPointerArray setCountSelector value
 
 -- | @- allObjects@
 allObjects :: IsNSPointerArray nsPointerArray => nsPointerArray -> IO (Id NSArray)
-allObjects nsPointerArray  =
-    sendMsg nsPointerArray (mkSelector "allObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+allObjects nsPointerArray =
+  sendMessage nsPointerArray allObjectsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithOptions:@
-initWithOptionsSelector :: Selector
+initWithOptionsSelector :: Selector '[NSPointerFunctionsOptions] (Id NSPointerArray)
 initWithOptionsSelector = mkSelector "initWithOptions:"
 
 -- | @Selector@ for @initWithPointerFunctions:@
-initWithPointerFunctionsSelector :: Selector
+initWithPointerFunctionsSelector :: Selector '[Id NSPointerFunctions] (Id NSPointerArray)
 initWithPointerFunctionsSelector = mkSelector "initWithPointerFunctions:"
 
 -- | @Selector@ for @pointerArrayWithOptions:@
-pointerArrayWithOptionsSelector :: Selector
+pointerArrayWithOptionsSelector :: Selector '[NSPointerFunctionsOptions] (Id NSPointerArray)
 pointerArrayWithOptionsSelector = mkSelector "pointerArrayWithOptions:"
 
 -- | @Selector@ for @pointerArrayWithPointerFunctions:@
-pointerArrayWithPointerFunctionsSelector :: Selector
+pointerArrayWithPointerFunctionsSelector :: Selector '[Id NSPointerFunctions] (Id NSPointerArray)
 pointerArrayWithPointerFunctionsSelector = mkSelector "pointerArrayWithPointerFunctions:"
 
 -- | @Selector@ for @pointerAtIndex:@
-pointerAtIndexSelector :: Selector
+pointerAtIndexSelector :: Selector '[CULong] (Ptr ())
 pointerAtIndexSelector = mkSelector "pointerAtIndex:"
 
 -- | @Selector@ for @addPointer:@
-addPointerSelector :: Selector
+addPointerSelector :: Selector '[Ptr ()] ()
 addPointerSelector = mkSelector "addPointer:"
 
 -- | @Selector@ for @removePointerAtIndex:@
-removePointerAtIndexSelector :: Selector
+removePointerAtIndexSelector :: Selector '[CULong] ()
 removePointerAtIndexSelector = mkSelector "removePointerAtIndex:"
 
 -- | @Selector@ for @insertPointer:atIndex:@
-insertPointer_atIndexSelector :: Selector
+insertPointer_atIndexSelector :: Selector '[Ptr (), CULong] ()
 insertPointer_atIndexSelector = mkSelector "insertPointer:atIndex:"
 
 -- | @Selector@ for @replacePointerAtIndex:withPointer:@
-replacePointerAtIndex_withPointerSelector :: Selector
+replacePointerAtIndex_withPointerSelector :: Selector '[CULong, Ptr ()] ()
 replacePointerAtIndex_withPointerSelector = mkSelector "replacePointerAtIndex:withPointer:"
 
 -- | @Selector@ for @compact@
-compactSelector :: Selector
+compactSelector :: Selector '[] ()
 compactSelector = mkSelector "compact"
 
 -- | @Selector@ for @pointerArrayWithStrongObjects@
-pointerArrayWithStrongObjectsSelector :: Selector
+pointerArrayWithStrongObjectsSelector :: Selector '[] RawId
 pointerArrayWithStrongObjectsSelector = mkSelector "pointerArrayWithStrongObjects"
 
 -- | @Selector@ for @pointerArrayWithWeakObjects@
-pointerArrayWithWeakObjectsSelector :: Selector
+pointerArrayWithWeakObjectsSelector :: Selector '[] RawId
 pointerArrayWithWeakObjectsSelector = mkSelector "pointerArrayWithWeakObjects"
 
 -- | @Selector@ for @strongObjectsPointerArray@
-strongObjectsPointerArraySelector :: Selector
+strongObjectsPointerArraySelector :: Selector '[] (Id NSPointerArray)
 strongObjectsPointerArraySelector = mkSelector "strongObjectsPointerArray"
 
 -- | @Selector@ for @weakObjectsPointerArray@
-weakObjectsPointerArraySelector :: Selector
+weakObjectsPointerArraySelector :: Selector '[] (Id NSPointerArray)
 weakObjectsPointerArraySelector = mkSelector "weakObjectsPointerArray"
 
 -- | @Selector@ for @pointerFunctions@
-pointerFunctionsSelector :: Selector
+pointerFunctionsSelector :: Selector '[] (Id NSPointerFunctions)
 pointerFunctionsSelector = mkSelector "pointerFunctions"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @setCount:@
-setCountSelector :: Selector
+setCountSelector :: Selector '[CULong] ()
 setCountSelector = mkSelector "setCount:"
 
 -- | @Selector@ for @allObjects@
-allObjectsSelector :: Selector
+allObjectsSelector :: Selector '[] (Id NSArray)
 allObjectsSelector = mkSelector "allObjects"
 

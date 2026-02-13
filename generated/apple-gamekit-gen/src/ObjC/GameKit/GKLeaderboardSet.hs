@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.GameKit.GKLeaderboardSet
   , groupIdentifier
   , identifier
   , setIdentifier
-  , loadImageWithCompletionHandlerSelector
-  , titleSelector
   , groupIdentifierSelector
   , identifierSelector
+  , loadImageWithCompletionHandlerSelector
   , setIdentifierSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,59 +38,58 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- loadImageWithCompletionHandler:@
 loadImageWithCompletionHandler :: IsGKLeaderboardSet gkLeaderboardSet => gkLeaderboardSet -> Ptr () -> IO ()
-loadImageWithCompletionHandler gkLeaderboardSet  completionHandler =
-    sendMsg gkLeaderboardSet (mkSelector "loadImageWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadImageWithCompletionHandler gkLeaderboardSet completionHandler =
+  sendMessage gkLeaderboardSet loadImageWithCompletionHandlerSelector completionHandler
 
 -- | Localized set title.
 --
 -- ObjC selector: @- title@
 title :: IsGKLeaderboardSet gkLeaderboardSet => gkLeaderboardSet -> IO (Id NSString)
-title gkLeaderboardSet  =
-    sendMsg gkLeaderboardSet (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title gkLeaderboardSet =
+  sendMessage gkLeaderboardSet titleSelector
 
 -- | set when leaderboardSets have been designated a game group; set when loadLeaderboardSetsWithCompletionHandler has been called for leaderboards that support game groups
 --
 -- ObjC selector: @- groupIdentifier@
 groupIdentifier :: IsGKLeaderboardSet gkLeaderboardSet => gkLeaderboardSet -> IO (Id NSString)
-groupIdentifier gkLeaderboardSet  =
-    sendMsg gkLeaderboardSet (mkSelector "groupIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupIdentifier gkLeaderboardSet =
+  sendMessage gkLeaderboardSet groupIdentifierSelector
 
 -- | leaderboard set.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsGKLeaderboardSet gkLeaderboardSet => gkLeaderboardSet -> IO (Id NSString)
-identifier gkLeaderboardSet  =
-    sendMsg gkLeaderboardSet (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier gkLeaderboardSet =
+  sendMessage gkLeaderboardSet identifierSelector
 
 -- | leaderboard set.
 --
 -- ObjC selector: @- setIdentifier:@
 setIdentifier :: (IsGKLeaderboardSet gkLeaderboardSet, IsNSString value) => gkLeaderboardSet -> value -> IO ()
-setIdentifier gkLeaderboardSet  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkLeaderboardSet (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier gkLeaderboardSet value =
+  sendMessage gkLeaderboardSet setIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadImageWithCompletionHandler:@
-loadImageWithCompletionHandlerSelector :: Selector
+loadImageWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadImageWithCompletionHandlerSelector = mkSelector "loadImageWithCompletionHandler:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @groupIdentifier@
-groupIdentifierSelector :: Selector
+groupIdentifierSelector :: Selector '[] (Id NSString)
 groupIdentifierSelector = mkSelector "groupIdentifier"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 

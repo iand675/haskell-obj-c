@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.WebKit.DOMHTMLCollection
   , tags
   , length_
   , itemSelector
+  , lengthSelector
   , namedItemSelector
   , tagsSelector
-  , lengthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- item:@
 item :: IsDOMHTMLCollection domhtmlCollection => domhtmlCollection -> CUInt -> IO (Id DOMNode)
-item domhtmlCollection  index =
-    sendMsg domhtmlCollection (mkSelector "item:") (retPtr retVoid) [argCUInt index] >>= retainedObject . castPtr
+item domhtmlCollection index =
+  sendMessage domhtmlCollection itemSelector index
 
 -- | @- namedItem:@
 namedItem :: (IsDOMHTMLCollection domhtmlCollection, IsNSString name) => domhtmlCollection -> name -> IO (Id DOMNode)
-namedItem domhtmlCollection  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domhtmlCollection (mkSelector "namedItem:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+namedItem domhtmlCollection name =
+  sendMessage domhtmlCollection namedItemSelector (toNSString name)
 
 -- | @- tags:@
 tags :: (IsDOMHTMLCollection domhtmlCollection, IsNSString name) => domhtmlCollection -> name -> IO (Id DOMNodeList)
-tags domhtmlCollection  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg domhtmlCollection (mkSelector "tags:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+tags domhtmlCollection name =
+  sendMessage domhtmlCollection tagsSelector (toNSString name)
 
 -- | @- length@
 length_ :: IsDOMHTMLCollection domhtmlCollection => domhtmlCollection -> IO CUInt
-length_ domhtmlCollection  =
-    sendMsg domhtmlCollection (mkSelector "length") retCUInt []
+length_ domhtmlCollection =
+  sendMessage domhtmlCollection lengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @item:@
-itemSelector :: Selector
+itemSelector :: Selector '[CUInt] (Id DOMNode)
 itemSelector = mkSelector "item:"
 
 -- | @Selector@ for @namedItem:@
-namedItemSelector :: Selector
+namedItemSelector :: Selector '[Id NSString] (Id DOMNode)
 namedItemSelector = mkSelector "namedItem:"
 
 -- | @Selector@ for @tags:@
-tagsSelector :: Selector
+tagsSelector :: Selector '[Id NSString] (Id DOMNodeList)
 tagsSelector = mkSelector "tags:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CUInt
 lengthSelector = mkSelector "length"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,18 +22,18 @@ module ObjC.CoreData.NSBatchUpdateRequest
   , propertiesToUpdate
   , setPropertiesToUpdate
   , batchUpdateRequestWithEntityNameSelector
-  , initWithEntityNameSelector
-  , initWithEntitySelector
   , entityNameSelector
   , entitySelector
-  , predicateSelector
-  , setPredicateSelector
   , includesSubentitiesSelector
-  , setIncludesSubentitiesSelector
-  , resultTypeSelector
-  , setResultTypeSelector
+  , initWithEntityNameSelector
+  , initWithEntitySelector
+  , predicateSelector
   , propertiesToUpdateSelector
+  , resultTypeSelector
+  , setIncludesSubentitiesSelector
+  , setPredicateSelector
   , setPropertiesToUpdateSelector
+  , setResultTypeSelector
 
   -- * Enum types
   , NSBatchUpdateRequestResultType(NSBatchUpdateRequestResultType)
@@ -42,15 +43,11 @@ module ObjC.CoreData.NSBatchUpdateRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,126 +60,121 @@ batchUpdateRequestWithEntityName :: IsNSString entityName => entityName -> IO (I
 batchUpdateRequestWithEntityName entityName =
   do
     cls' <- getRequiredClass "NSBatchUpdateRequest"
-    withObjCPtr entityName $ \raw_entityName ->
-      sendClassMsg cls' (mkSelector "batchUpdateRequestWithEntityName:") (retPtr retVoid) [argPtr (castPtr raw_entityName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' batchUpdateRequestWithEntityNameSelector (toNSString entityName)
 
 -- | @- initWithEntityName:@
 initWithEntityName :: (IsNSBatchUpdateRequest nsBatchUpdateRequest, IsNSString entityName) => nsBatchUpdateRequest -> entityName -> IO (Id NSBatchUpdateRequest)
-initWithEntityName nsBatchUpdateRequest  entityName =
-  withObjCPtr entityName $ \raw_entityName ->
-      sendMsg nsBatchUpdateRequest (mkSelector "initWithEntityName:") (retPtr retVoid) [argPtr (castPtr raw_entityName :: Ptr ())] >>= ownedObject . castPtr
+initWithEntityName nsBatchUpdateRequest entityName =
+  sendOwnedMessage nsBatchUpdateRequest initWithEntityNameSelector (toNSString entityName)
 
 -- | @- initWithEntity:@
 initWithEntity :: (IsNSBatchUpdateRequest nsBatchUpdateRequest, IsNSEntityDescription entity) => nsBatchUpdateRequest -> entity -> IO (Id NSBatchUpdateRequest)
-initWithEntity nsBatchUpdateRequest  entity =
-  withObjCPtr entity $ \raw_entity ->
-      sendMsg nsBatchUpdateRequest (mkSelector "initWithEntity:") (retPtr retVoid) [argPtr (castPtr raw_entity :: Ptr ())] >>= ownedObject . castPtr
+initWithEntity nsBatchUpdateRequest entity =
+  sendOwnedMessage nsBatchUpdateRequest initWithEntitySelector (toNSEntityDescription entity)
 
 -- | @- entityName@
 entityName :: IsNSBatchUpdateRequest nsBatchUpdateRequest => nsBatchUpdateRequest -> IO (Id NSString)
-entityName nsBatchUpdateRequest  =
-    sendMsg nsBatchUpdateRequest (mkSelector "entityName") (retPtr retVoid) [] >>= retainedObject . castPtr
+entityName nsBatchUpdateRequest =
+  sendMessage nsBatchUpdateRequest entityNameSelector
 
 -- | @- entity@
 entity :: IsNSBatchUpdateRequest nsBatchUpdateRequest => nsBatchUpdateRequest -> IO (Id NSEntityDescription)
-entity nsBatchUpdateRequest  =
-    sendMsg nsBatchUpdateRequest (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+entity nsBatchUpdateRequest =
+  sendMessage nsBatchUpdateRequest entitySelector
 
 -- | @- predicate@
 predicate :: IsNSBatchUpdateRequest nsBatchUpdateRequest => nsBatchUpdateRequest -> IO (Id NSPredicate)
-predicate nsBatchUpdateRequest  =
-    sendMsg nsBatchUpdateRequest (mkSelector "predicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicate nsBatchUpdateRequest =
+  sendMessage nsBatchUpdateRequest predicateSelector
 
 -- | @- setPredicate:@
 setPredicate :: (IsNSBatchUpdateRequest nsBatchUpdateRequest, IsNSPredicate value) => nsBatchUpdateRequest -> value -> IO ()
-setPredicate nsBatchUpdateRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBatchUpdateRequest (mkSelector "setPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPredicate nsBatchUpdateRequest value =
+  sendMessage nsBatchUpdateRequest setPredicateSelector (toNSPredicate value)
 
 -- | @- includesSubentities@
 includesSubentities :: IsNSBatchUpdateRequest nsBatchUpdateRequest => nsBatchUpdateRequest -> IO Bool
-includesSubentities nsBatchUpdateRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsBatchUpdateRequest (mkSelector "includesSubentities") retCULong []
+includesSubentities nsBatchUpdateRequest =
+  sendMessage nsBatchUpdateRequest includesSubentitiesSelector
 
 -- | @- setIncludesSubentities:@
 setIncludesSubentities :: IsNSBatchUpdateRequest nsBatchUpdateRequest => nsBatchUpdateRequest -> Bool -> IO ()
-setIncludesSubentities nsBatchUpdateRequest  value =
-    sendMsg nsBatchUpdateRequest (mkSelector "setIncludesSubentities:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesSubentities nsBatchUpdateRequest value =
+  sendMessage nsBatchUpdateRequest setIncludesSubentitiesSelector value
 
 -- | @- resultType@
 resultType :: IsNSBatchUpdateRequest nsBatchUpdateRequest => nsBatchUpdateRequest -> IO NSBatchUpdateRequestResultType
-resultType nsBatchUpdateRequest  =
-    fmap (coerce :: CULong -> NSBatchUpdateRequestResultType) $ sendMsg nsBatchUpdateRequest (mkSelector "resultType") retCULong []
+resultType nsBatchUpdateRequest =
+  sendMessage nsBatchUpdateRequest resultTypeSelector
 
 -- | @- setResultType:@
 setResultType :: IsNSBatchUpdateRequest nsBatchUpdateRequest => nsBatchUpdateRequest -> NSBatchUpdateRequestResultType -> IO ()
-setResultType nsBatchUpdateRequest  value =
-    sendMsg nsBatchUpdateRequest (mkSelector "setResultType:") retVoid [argCULong (coerce value)]
+setResultType nsBatchUpdateRequest value =
+  sendMessage nsBatchUpdateRequest setResultTypeSelector value
 
 -- | @- propertiesToUpdate@
 propertiesToUpdate :: IsNSBatchUpdateRequest nsBatchUpdateRequest => nsBatchUpdateRequest -> IO (Id NSDictionary)
-propertiesToUpdate nsBatchUpdateRequest  =
-    sendMsg nsBatchUpdateRequest (mkSelector "propertiesToUpdate") (retPtr retVoid) [] >>= retainedObject . castPtr
+propertiesToUpdate nsBatchUpdateRequest =
+  sendMessage nsBatchUpdateRequest propertiesToUpdateSelector
 
 -- | @- setPropertiesToUpdate:@
 setPropertiesToUpdate :: (IsNSBatchUpdateRequest nsBatchUpdateRequest, IsNSDictionary value) => nsBatchUpdateRequest -> value -> IO ()
-setPropertiesToUpdate nsBatchUpdateRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBatchUpdateRequest (mkSelector "setPropertiesToUpdate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPropertiesToUpdate nsBatchUpdateRequest value =
+  sendMessage nsBatchUpdateRequest setPropertiesToUpdateSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @batchUpdateRequestWithEntityName:@
-batchUpdateRequestWithEntityNameSelector :: Selector
+batchUpdateRequestWithEntityNameSelector :: Selector '[Id NSString] (Id NSBatchUpdateRequest)
 batchUpdateRequestWithEntityNameSelector = mkSelector "batchUpdateRequestWithEntityName:"
 
 -- | @Selector@ for @initWithEntityName:@
-initWithEntityNameSelector :: Selector
+initWithEntityNameSelector :: Selector '[Id NSString] (Id NSBatchUpdateRequest)
 initWithEntityNameSelector = mkSelector "initWithEntityName:"
 
 -- | @Selector@ for @initWithEntity:@
-initWithEntitySelector :: Selector
+initWithEntitySelector :: Selector '[Id NSEntityDescription] (Id NSBatchUpdateRequest)
 initWithEntitySelector = mkSelector "initWithEntity:"
 
 -- | @Selector@ for @entityName@
-entityNameSelector :: Selector
+entityNameSelector :: Selector '[] (Id NSString)
 entityNameSelector = mkSelector "entityName"
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] (Id NSEntityDescription)
 entitySelector = mkSelector "entity"
 
 -- | @Selector@ for @predicate@
-predicateSelector :: Selector
+predicateSelector :: Selector '[] (Id NSPredicate)
 predicateSelector = mkSelector "predicate"
 
 -- | @Selector@ for @setPredicate:@
-setPredicateSelector :: Selector
+setPredicateSelector :: Selector '[Id NSPredicate] ()
 setPredicateSelector = mkSelector "setPredicate:"
 
 -- | @Selector@ for @includesSubentities@
-includesSubentitiesSelector :: Selector
+includesSubentitiesSelector :: Selector '[] Bool
 includesSubentitiesSelector = mkSelector "includesSubentities"
 
 -- | @Selector@ for @setIncludesSubentities:@
-setIncludesSubentitiesSelector :: Selector
+setIncludesSubentitiesSelector :: Selector '[Bool] ()
 setIncludesSubentitiesSelector = mkSelector "setIncludesSubentities:"
 
 -- | @Selector@ for @resultType@
-resultTypeSelector :: Selector
+resultTypeSelector :: Selector '[] NSBatchUpdateRequestResultType
 resultTypeSelector = mkSelector "resultType"
 
 -- | @Selector@ for @setResultType:@
-setResultTypeSelector :: Selector
+setResultTypeSelector :: Selector '[NSBatchUpdateRequestResultType] ()
 setResultTypeSelector = mkSelector "setResultType:"
 
 -- | @Selector@ for @propertiesToUpdate@
-propertiesToUpdateSelector :: Selector
+propertiesToUpdateSelector :: Selector '[] (Id NSDictionary)
 propertiesToUpdateSelector = mkSelector "propertiesToUpdate"
 
 -- | @Selector@ for @setPropertiesToUpdate:@
-setPropertiesToUpdateSelector :: Selector
+setPropertiesToUpdateSelector :: Selector '[Id NSDictionary] ()
 setPropertiesToUpdateSelector = mkSelector "setPropertiesToUpdate:"
 

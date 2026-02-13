@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRLevelControlClusterStopWithOnOffParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , optionsMaskSelector
-  , setOptionsMaskSelector
   , optionsOverrideSelector
-  , setOptionsOverrideSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setOptionsMaskSelector
+  , setOptionsOverrideSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- optionsMask@
 optionsMask :: IsMTRLevelControlClusterStopWithOnOffParams mtrLevelControlClusterStopWithOnOffParams => mtrLevelControlClusterStopWithOnOffParams -> IO (Id NSNumber)
-optionsMask mtrLevelControlClusterStopWithOnOffParams  =
-    sendMsg mtrLevelControlClusterStopWithOnOffParams (mkSelector "optionsMask") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsMask mtrLevelControlClusterStopWithOnOffParams =
+  sendMessage mtrLevelControlClusterStopWithOnOffParams optionsMaskSelector
 
 -- | @- setOptionsMask:@
 setOptionsMask :: (IsMTRLevelControlClusterStopWithOnOffParams mtrLevelControlClusterStopWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterStopWithOnOffParams -> value -> IO ()
-setOptionsMask mtrLevelControlClusterStopWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterStopWithOnOffParams (mkSelector "setOptionsMask:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsMask mtrLevelControlClusterStopWithOnOffParams value =
+  sendMessage mtrLevelControlClusterStopWithOnOffParams setOptionsMaskSelector (toNSNumber value)
 
 -- | @- optionsOverride@
 optionsOverride :: IsMTRLevelControlClusterStopWithOnOffParams mtrLevelControlClusterStopWithOnOffParams => mtrLevelControlClusterStopWithOnOffParams -> IO (Id NSNumber)
-optionsOverride mtrLevelControlClusterStopWithOnOffParams  =
-    sendMsg mtrLevelControlClusterStopWithOnOffParams (mkSelector "optionsOverride") (retPtr retVoid) [] >>= retainedObject . castPtr
+optionsOverride mtrLevelControlClusterStopWithOnOffParams =
+  sendMessage mtrLevelControlClusterStopWithOnOffParams optionsOverrideSelector
 
 -- | @- setOptionsOverride:@
 setOptionsOverride :: (IsMTRLevelControlClusterStopWithOnOffParams mtrLevelControlClusterStopWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterStopWithOnOffParams -> value -> IO ()
-setOptionsOverride mtrLevelControlClusterStopWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterStopWithOnOffParams (mkSelector "setOptionsOverride:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOptionsOverride mtrLevelControlClusterStopWithOnOffParams value =
+  sendMessage mtrLevelControlClusterStopWithOnOffParams setOptionsOverrideSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setOptionsOverride mtrLevelControlClusterStopWithOnOffParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRLevelControlClusterStopWithOnOffParams mtrLevelControlClusterStopWithOnOffParams => mtrLevelControlClusterStopWithOnOffParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrLevelControlClusterStopWithOnOffParams  =
-    sendMsg mtrLevelControlClusterStopWithOnOffParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrLevelControlClusterStopWithOnOffParams =
+  sendMessage mtrLevelControlClusterStopWithOnOffParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrLevelControlClusterStopWithOnOffParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRLevelControlClusterStopWithOnOffParams mtrLevelControlClusterStopWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterStopWithOnOffParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrLevelControlClusterStopWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterStopWithOnOffParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrLevelControlClusterStopWithOnOffParams value =
+  sendMessage mtrLevelControlClusterStopWithOnOffParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrLevelControlClusterStopWithOnOffParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRLevelControlClusterStopWithOnOffParams mtrLevelControlClusterStopWithOnOffParams => mtrLevelControlClusterStopWithOnOffParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrLevelControlClusterStopWithOnOffParams  =
-    sendMsg mtrLevelControlClusterStopWithOnOffParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrLevelControlClusterStopWithOnOffParams =
+  sendMessage mtrLevelControlClusterStopWithOnOffParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrLevelControlClusterStopWithOnOffParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRLevelControlClusterStopWithOnOffParams mtrLevelControlClusterStopWithOnOffParams, IsNSNumber value) => mtrLevelControlClusterStopWithOnOffParams -> value -> IO ()
-setServerSideProcessingTimeout mtrLevelControlClusterStopWithOnOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLevelControlClusterStopWithOnOffParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrLevelControlClusterStopWithOnOffParams value =
+  sendMessage mtrLevelControlClusterStopWithOnOffParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @optionsMask@
-optionsMaskSelector :: Selector
+optionsMaskSelector :: Selector '[] (Id NSNumber)
 optionsMaskSelector = mkSelector "optionsMask"
 
 -- | @Selector@ for @setOptionsMask:@
-setOptionsMaskSelector :: Selector
+setOptionsMaskSelector :: Selector '[Id NSNumber] ()
 setOptionsMaskSelector = mkSelector "setOptionsMask:"
 
 -- | @Selector@ for @optionsOverride@
-optionsOverrideSelector :: Selector
+optionsOverrideSelector :: Selector '[] (Id NSNumber)
 optionsOverrideSelector = mkSelector "optionsOverride"
 
 -- | @Selector@ for @setOptionsOverride:@
-setOptionsOverrideSelector :: Selector
+setOptionsOverrideSelector :: Selector '[Id NSNumber] ()
 setOptionsOverrideSelector = mkSelector "setOptionsOverride:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

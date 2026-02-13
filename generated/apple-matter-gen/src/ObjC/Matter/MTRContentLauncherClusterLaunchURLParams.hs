@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRContentLauncherClusterLaunchURLParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , contentURLSelector
-  , setContentURLSelector
-  , displayStringSelector
-  , setDisplayStringSelector
   , brandingInformationSelector
-  , setBrandingInformationSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , contentURLSelector
+  , displayStringSelector
   , serverSideProcessingTimeoutSelector
+  , setBrandingInformationSelector
+  , setContentURLSelector
+  , setDisplayStringSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- contentURL@
 contentURL :: IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams => mtrContentLauncherClusterLaunchURLParams -> IO (Id NSString)
-contentURL mtrContentLauncherClusterLaunchURLParams  =
-    sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "contentURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentURL mtrContentLauncherClusterLaunchURLParams =
+  sendMessage mtrContentLauncherClusterLaunchURLParams contentURLSelector
 
 -- | @- setContentURL:@
 setContentURL :: (IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams, IsNSString value) => mtrContentLauncherClusterLaunchURLParams -> value -> IO ()
-setContentURL mtrContentLauncherClusterLaunchURLParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "setContentURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentURL mtrContentLauncherClusterLaunchURLParams value =
+  sendMessage mtrContentLauncherClusterLaunchURLParams setContentURLSelector (toNSString value)
 
 -- | @- displayString@
 displayString :: IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams => mtrContentLauncherClusterLaunchURLParams -> IO (Id NSString)
-displayString mtrContentLauncherClusterLaunchURLParams  =
-    sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "displayString") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayString mtrContentLauncherClusterLaunchURLParams =
+  sendMessage mtrContentLauncherClusterLaunchURLParams displayStringSelector
 
 -- | @- setDisplayString:@
 setDisplayString :: (IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams, IsNSString value) => mtrContentLauncherClusterLaunchURLParams -> value -> IO ()
-setDisplayString mtrContentLauncherClusterLaunchURLParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "setDisplayString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDisplayString mtrContentLauncherClusterLaunchURLParams value =
+  sendMessage mtrContentLauncherClusterLaunchURLParams setDisplayStringSelector (toNSString value)
 
 -- | @- brandingInformation@
 brandingInformation :: IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams => mtrContentLauncherClusterLaunchURLParams -> IO (Id MTRContentLauncherClusterBrandingInformationStruct)
-brandingInformation mtrContentLauncherClusterLaunchURLParams  =
-    sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "brandingInformation") (retPtr retVoid) [] >>= retainedObject . castPtr
+brandingInformation mtrContentLauncherClusterLaunchURLParams =
+  sendMessage mtrContentLauncherClusterLaunchURLParams brandingInformationSelector
 
 -- | @- setBrandingInformation:@
 setBrandingInformation :: (IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams, IsMTRContentLauncherClusterBrandingInformationStruct value) => mtrContentLauncherClusterLaunchURLParams -> value -> IO ()
-setBrandingInformation mtrContentLauncherClusterLaunchURLParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "setBrandingInformation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBrandingInformation mtrContentLauncherClusterLaunchURLParams value =
+  sendMessage mtrContentLauncherClusterLaunchURLParams setBrandingInformationSelector (toMTRContentLauncherClusterBrandingInformationStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setBrandingInformation mtrContentLauncherClusterLaunchURLParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams => mtrContentLauncherClusterLaunchURLParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrContentLauncherClusterLaunchURLParams  =
-    sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrContentLauncherClusterLaunchURLParams =
+  sendMessage mtrContentLauncherClusterLaunchURLParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrContentLauncherClusterLaunchURLParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams, IsNSNumber value) => mtrContentLauncherClusterLaunchURLParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrContentLauncherClusterLaunchURLParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrContentLauncherClusterLaunchURLParams value =
+  sendMessage mtrContentLauncherClusterLaunchURLParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrContentLauncherClusterLaunchURLParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams => mtrContentLauncherClusterLaunchURLParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrContentLauncherClusterLaunchURLParams  =
-    sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrContentLauncherClusterLaunchURLParams =
+  sendMessage mtrContentLauncherClusterLaunchURLParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrContentLauncherClusterLaunchURLParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRContentLauncherClusterLaunchURLParams mtrContentLauncherClusterLaunchURLParams, IsNSNumber value) => mtrContentLauncherClusterLaunchURLParams -> value -> IO ()
-setServerSideProcessingTimeout mtrContentLauncherClusterLaunchURLParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentLauncherClusterLaunchURLParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrContentLauncherClusterLaunchURLParams value =
+  sendMessage mtrContentLauncherClusterLaunchURLParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contentURL@
-contentURLSelector :: Selector
+contentURLSelector :: Selector '[] (Id NSString)
 contentURLSelector = mkSelector "contentURL"
 
 -- | @Selector@ for @setContentURL:@
-setContentURLSelector :: Selector
+setContentURLSelector :: Selector '[Id NSString] ()
 setContentURLSelector = mkSelector "setContentURL:"
 
 -- | @Selector@ for @displayString@
-displayStringSelector :: Selector
+displayStringSelector :: Selector '[] (Id NSString)
 displayStringSelector = mkSelector "displayString"
 
 -- | @Selector@ for @setDisplayString:@
-setDisplayStringSelector :: Selector
+setDisplayStringSelector :: Selector '[Id NSString] ()
 setDisplayStringSelector = mkSelector "setDisplayString:"
 
 -- | @Selector@ for @brandingInformation@
-brandingInformationSelector :: Selector
+brandingInformationSelector :: Selector '[] (Id MTRContentLauncherClusterBrandingInformationStruct)
 brandingInformationSelector = mkSelector "brandingInformation"
 
 -- | @Selector@ for @setBrandingInformation:@
-setBrandingInformationSelector :: Selector
+setBrandingInformationSelector :: Selector '[Id MTRContentLauncherClusterBrandingInformationStruct] ()
 setBrandingInformationSelector = mkSelector "setBrandingInformation:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.AVFoundation.AVPlayerLayer
   , readyForDisplay
   , pixelBufferAttributes
   , setPixelBufferAttributes
-  , playerLayerWithPlayerSelector
   , copyDisplayedPixelBufferSelector
-  , playerSelector
-  , setPlayerSelector
-  , videoGravitySelector
-  , setVideoGravitySelector
-  , readyForDisplaySelector
   , pixelBufferAttributesSelector
+  , playerLayerWithPlayerSelector
+  , playerSelector
+  , readyForDisplaySelector
   , setPixelBufferAttributesSelector
+  , setPlayerSelector
+  , setVideoGravitySelector
+  , videoGravitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,7 @@ playerLayerWithPlayer :: IsAVPlayer player => player -> IO (Id AVPlayerLayer)
 playerLayerWithPlayer player =
   do
     cls' <- getRequiredClass "AVPlayerLayer"
-    withObjCPtr player $ \raw_player ->
-      sendClassMsg cls' (mkSelector "playerLayerWithPlayer:") (retPtr retVoid) [argPtr (castPtr raw_player :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' playerLayerWithPlayerSelector (toAVPlayer player)
 
 -- | copyDisplayedPixelBuffer
 --
@@ -68,8 +64,8 @@ playerLayerWithPlayer player =
 --
 -- ObjC selector: @- copyDisplayedPixelBuffer@
 copyDisplayedPixelBuffer :: IsAVPlayerLayer avPlayerLayer => avPlayerLayer -> IO (Ptr ())
-copyDisplayedPixelBuffer avPlayerLayer  =
-    fmap castPtr $ sendMsg avPlayerLayer (mkSelector "copyDisplayedPixelBuffer") (retPtr retVoid) []
+copyDisplayedPixelBuffer avPlayerLayer =
+  sendOwnedMessage avPlayerLayer copyDisplayedPixelBufferSelector
 
 -- | player
 --
@@ -77,8 +73,8 @@ copyDisplayedPixelBuffer avPlayerLayer  =
 --
 -- ObjC selector: @- player@
 player :: IsAVPlayerLayer avPlayerLayer => avPlayerLayer -> IO (Id AVPlayer)
-player avPlayerLayer  =
-    sendMsg avPlayerLayer (mkSelector "player") (retPtr retVoid) [] >>= retainedObject . castPtr
+player avPlayerLayer =
+  sendMessage avPlayerLayer playerSelector
 
 -- | player
 --
@@ -86,9 +82,8 @@ player avPlayerLayer  =
 --
 -- ObjC selector: @- setPlayer:@
 setPlayer :: (IsAVPlayerLayer avPlayerLayer, IsAVPlayer value) => avPlayerLayer -> value -> IO ()
-setPlayer avPlayerLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerLayer (mkSelector "setPlayer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlayer avPlayerLayer value =
+  sendMessage avPlayerLayer setPlayerSelector (toAVPlayer value)
 
 -- | videoGravity
 --
@@ -98,8 +93,8 @@ setPlayer avPlayerLayer  value =
 --
 -- ObjC selector: @- videoGravity@
 videoGravity :: IsAVPlayerLayer avPlayerLayer => avPlayerLayer -> IO (Id NSString)
-videoGravity avPlayerLayer  =
-    sendMsg avPlayerLayer (mkSelector "videoGravity") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoGravity avPlayerLayer =
+  sendMessage avPlayerLayer videoGravitySelector
 
 -- | videoGravity
 --
@@ -109,9 +104,8 @@ videoGravity avPlayerLayer  =
 --
 -- ObjC selector: @- setVideoGravity:@
 setVideoGravity :: (IsAVPlayerLayer avPlayerLayer, IsNSString value) => avPlayerLayer -> value -> IO ()
-setVideoGravity avPlayerLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerLayer (mkSelector "setVideoGravity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoGravity avPlayerLayer value =
+  sendMessage avPlayerLayer setVideoGravitySelector (toNSString value)
 
 -- | readyForDisplay
 --
@@ -121,8 +115,8 @@ setVideoGravity avPlayerLayer  value =
 --
 -- ObjC selector: @- readyForDisplay@
 readyForDisplay :: IsAVPlayerLayer avPlayerLayer => avPlayerLayer -> IO Bool
-readyForDisplay avPlayerLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerLayer (mkSelector "readyForDisplay") retCULong []
+readyForDisplay avPlayerLayer =
+  sendMessage avPlayerLayer readyForDisplaySelector
 
 -- | pixelBufferAttributes
 --
@@ -132,8 +126,8 @@ readyForDisplay avPlayerLayer  =
 --
 -- ObjC selector: @- pixelBufferAttributes@
 pixelBufferAttributes :: IsAVPlayerLayer avPlayerLayer => avPlayerLayer -> IO (Id NSDictionary)
-pixelBufferAttributes avPlayerLayer  =
-    sendMsg avPlayerLayer (mkSelector "pixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+pixelBufferAttributes avPlayerLayer =
+  sendMessage avPlayerLayer pixelBufferAttributesSelector
 
 -- | pixelBufferAttributes
 --
@@ -143,47 +137,46 @@ pixelBufferAttributes avPlayerLayer  =
 --
 -- ObjC selector: @- setPixelBufferAttributes:@
 setPixelBufferAttributes :: (IsAVPlayerLayer avPlayerLayer, IsNSDictionary value) => avPlayerLayer -> value -> IO ()
-setPixelBufferAttributes avPlayerLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerLayer (mkSelector "setPixelBufferAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPixelBufferAttributes avPlayerLayer value =
+  sendMessage avPlayerLayer setPixelBufferAttributesSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @playerLayerWithPlayer:@
-playerLayerWithPlayerSelector :: Selector
+playerLayerWithPlayerSelector :: Selector '[Id AVPlayer] (Id AVPlayerLayer)
 playerLayerWithPlayerSelector = mkSelector "playerLayerWithPlayer:"
 
 -- | @Selector@ for @copyDisplayedPixelBuffer@
-copyDisplayedPixelBufferSelector :: Selector
+copyDisplayedPixelBufferSelector :: Selector '[] (Ptr ())
 copyDisplayedPixelBufferSelector = mkSelector "copyDisplayedPixelBuffer"
 
 -- | @Selector@ for @player@
-playerSelector :: Selector
+playerSelector :: Selector '[] (Id AVPlayer)
 playerSelector = mkSelector "player"
 
 -- | @Selector@ for @setPlayer:@
-setPlayerSelector :: Selector
+setPlayerSelector :: Selector '[Id AVPlayer] ()
 setPlayerSelector = mkSelector "setPlayer:"
 
 -- | @Selector@ for @videoGravity@
-videoGravitySelector :: Selector
+videoGravitySelector :: Selector '[] (Id NSString)
 videoGravitySelector = mkSelector "videoGravity"
 
 -- | @Selector@ for @setVideoGravity:@
-setVideoGravitySelector :: Selector
+setVideoGravitySelector :: Selector '[Id NSString] ()
 setVideoGravitySelector = mkSelector "setVideoGravity:"
 
 -- | @Selector@ for @readyForDisplay@
-readyForDisplaySelector :: Selector
+readyForDisplaySelector :: Selector '[] Bool
 readyForDisplaySelector = mkSelector "readyForDisplay"
 
 -- | @Selector@ for @pixelBufferAttributes@
-pixelBufferAttributesSelector :: Selector
+pixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 pixelBufferAttributesSelector = mkSelector "pixelBufferAttributes"
 
 -- | @Selector@ for @setPixelBufferAttributes:@
-setPixelBufferAttributesSelector :: Selector
+setPixelBufferAttributesSelector :: Selector '[Id NSDictionary] ()
 setPixelBufferAttributesSelector = mkSelector "setPixelBufferAttributes:"
 

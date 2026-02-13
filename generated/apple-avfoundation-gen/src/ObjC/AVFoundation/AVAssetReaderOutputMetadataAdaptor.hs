@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AVFoundation.AVAssetReaderOutputMetadataAdaptor
   , initWithAssetReaderTrackOutput
   , nextTimedMetadataGroup
   , assetReaderTrackOutput
-  , initSelector
-  , newSelector
   , assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutputSelector
-  , initWithAssetReaderTrackOutputSelector
-  , nextTimedMetadataGroupSelector
   , assetReaderTrackOutputSelector
+  , initSelector
+  , initWithAssetReaderTrackOutputSelector
+  , newSelector
+  , nextTimedMetadataGroupSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetReaderOutputMetadataAdaptor avAssetReaderOutputMetadataAdaptor => avAssetReaderOutputMetadataAdaptor -> IO (Id AVAssetReaderOutputMetadataAdaptor)
-init_ avAssetReaderOutputMetadataAdaptor  =
-    sendMsg avAssetReaderOutputMetadataAdaptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetReaderOutputMetadataAdaptor =
+  sendOwnedMessage avAssetReaderOutputMetadataAdaptor initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetReaderOutputMetadataAdaptor)
 new  =
   do
     cls' <- getRequiredClass "AVAssetReaderOutputMetadataAdaptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutput:
 --
@@ -66,8 +63,7 @@ assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutput :: IsAVAssetReaderTra
 assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutput trackOutput =
   do
     cls' <- getRequiredClass "AVAssetReaderOutputMetadataAdaptor"
-    withObjCPtr trackOutput $ \raw_trackOutput ->
-      sendClassMsg cls' (mkSelector "assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutput:") (retPtr retVoid) [argPtr (castPtr raw_trackOutput :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutputSelector (toAVAssetReaderTrackOutput trackOutput)
 
 -- | initWithAssetReaderTrackOutput:
 --
@@ -85,9 +81,8 @@ assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutput trackOutput =
 --
 -- ObjC selector: @- initWithAssetReaderTrackOutput:@
 initWithAssetReaderTrackOutput :: (IsAVAssetReaderOutputMetadataAdaptor avAssetReaderOutputMetadataAdaptor, IsAVAssetReaderTrackOutput trackOutput) => avAssetReaderOutputMetadataAdaptor -> trackOutput -> IO (Id AVAssetReaderOutputMetadataAdaptor)
-initWithAssetReaderTrackOutput avAssetReaderOutputMetadataAdaptor  trackOutput =
-  withObjCPtr trackOutput $ \raw_trackOutput ->
-      sendMsg avAssetReaderOutputMetadataAdaptor (mkSelector "initWithAssetReaderTrackOutput:") (retPtr retVoid) [argPtr (castPtr raw_trackOutput :: Ptr ())] >>= ownedObject . castPtr
+initWithAssetReaderTrackOutput avAssetReaderOutputMetadataAdaptor trackOutput =
+  sendOwnedMessage avAssetReaderOutputMetadataAdaptor initWithAssetReaderTrackOutputSelector (toAVAssetReaderTrackOutput trackOutput)
 
 -- | nextTimedMetadataGroup
 --
@@ -105,8 +100,8 @@ initWithAssetReaderTrackOutput avAssetReaderOutputMetadataAdaptor  trackOutput =
 --
 -- ObjC selector: @- nextTimedMetadataGroup@
 nextTimedMetadataGroup :: IsAVAssetReaderOutputMetadataAdaptor avAssetReaderOutputMetadataAdaptor => avAssetReaderOutputMetadataAdaptor -> IO (Id AVTimedMetadataGroup)
-nextTimedMetadataGroup avAssetReaderOutputMetadataAdaptor  =
-    sendMsg avAssetReaderOutputMetadataAdaptor (mkSelector "nextTimedMetadataGroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextTimedMetadataGroup avAssetReaderOutputMetadataAdaptor =
+  sendMessage avAssetReaderOutputMetadataAdaptor nextTimedMetadataGroupSelector
 
 -- | assetReaderTrackOutput
 --
@@ -114,34 +109,34 @@ nextTimedMetadataGroup avAssetReaderOutputMetadataAdaptor  =
 --
 -- ObjC selector: @- assetReaderTrackOutput@
 assetReaderTrackOutput :: IsAVAssetReaderOutputMetadataAdaptor avAssetReaderOutputMetadataAdaptor => avAssetReaderOutputMetadataAdaptor -> IO (Id AVAssetReaderTrackOutput)
-assetReaderTrackOutput avAssetReaderOutputMetadataAdaptor  =
-    sendMsg avAssetReaderOutputMetadataAdaptor (mkSelector "assetReaderTrackOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetReaderTrackOutput avAssetReaderOutputMetadataAdaptor =
+  sendMessage avAssetReaderOutputMetadataAdaptor assetReaderTrackOutputSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetReaderOutputMetadataAdaptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetReaderOutputMetadataAdaptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutput:@
-assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutputSelector :: Selector
+assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutputSelector :: Selector '[Id AVAssetReaderTrackOutput] (Id AVAssetReaderOutputMetadataAdaptor)
 assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutputSelector = mkSelector "assetReaderOutputMetadataAdaptorWithAssetReaderTrackOutput:"
 
 -- | @Selector@ for @initWithAssetReaderTrackOutput:@
-initWithAssetReaderTrackOutputSelector :: Selector
+initWithAssetReaderTrackOutputSelector :: Selector '[Id AVAssetReaderTrackOutput] (Id AVAssetReaderOutputMetadataAdaptor)
 initWithAssetReaderTrackOutputSelector = mkSelector "initWithAssetReaderTrackOutput:"
 
 -- | @Selector@ for @nextTimedMetadataGroup@
-nextTimedMetadataGroupSelector :: Selector
+nextTimedMetadataGroupSelector :: Selector '[] (Id AVTimedMetadataGroup)
 nextTimedMetadataGroupSelector = mkSelector "nextTimedMetadataGroup"
 
 -- | @Selector@ for @assetReaderTrackOutput@
-assetReaderTrackOutputSelector :: Selector
+assetReaderTrackOutputSelector :: Selector '[] (Id AVAssetReaderTrackOutput)
 assetReaderTrackOutputSelector = mkSelector "assetReaderTrackOutput"
 

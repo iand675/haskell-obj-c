@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.OpenDirectory.ODMappings
   , setFunction
   , functionAttributes
   , setFunctionAttributes
+  , commentSelector
+  , functionAttributesSelector
+  , functionSelector
+  , identifierSelector
   , mappingsSelector
   , recordMapForStandardRecordTypeSelector
-  , setRecordMap_forStandardRecordTypeSelector
-  , commentSelector
-  , setCommentSelector
-  , templateNameSelector
-  , setTemplateNameSelector
-  , identifierSelector
-  , setIdentifierSelector
   , recordTypesSelector
-  , functionSelector
-  , setFunctionSelector
-  , functionAttributesSelector
+  , setCommentSelector
   , setFunctionAttributesSelector
+  , setFunctionSelector
+  , setIdentifierSelector
+  , setRecordMap_forStandardRecordTypeSelector
+  , setTemplateNameSelector
+  , templateNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,7 +61,7 @@ mappings :: IO (Id ODMappings)
 mappings  =
   do
     cls' <- getRequiredClass "ODMappings"
-    sendClassMsg cls' (mkSelector "mappings") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mappingsSelector
 
 -- | recordType:
 --
@@ -74,9 +71,8 @@ mappings  =
 --
 -- ObjC selector: @- recordMapForStandardRecordType:@
 recordMapForStandardRecordType :: (IsODMappings odMappings, IsNSString stdType) => odMappings -> stdType -> IO (Id ODRecordMap)
-recordMapForStandardRecordType odMappings  stdType =
-  withObjCPtr stdType $ \raw_stdType ->
-      sendMsg odMappings (mkSelector "recordMapForStandardRecordType:") (retPtr retVoid) [argPtr (castPtr raw_stdType :: Ptr ())] >>= retainedObject . castPtr
+recordMapForStandardRecordType odMappings stdType =
+  sendMessage odMappings recordMapForStandardRecordTypeSelector (toNSString stdType)
 
 -- | setRecordMap:forRecordType:
 --
@@ -86,128 +82,121 @@ recordMapForStandardRecordType odMappings  stdType =
 --
 -- ObjC selector: @- setRecordMap:forStandardRecordType:@
 setRecordMap_forStandardRecordType :: (IsODMappings odMappings, IsODRecordMap map_, IsNSString stdType) => odMappings -> map_ -> stdType -> IO ()
-setRecordMap_forStandardRecordType odMappings  map_ stdType =
-  withObjCPtr map_ $ \raw_map_ ->
-    withObjCPtr stdType $ \raw_stdType ->
-        sendMsg odMappings (mkSelector "setRecordMap:forStandardRecordType:") retVoid [argPtr (castPtr raw_map_ :: Ptr ()), argPtr (castPtr raw_stdType :: Ptr ())]
+setRecordMap_forStandardRecordType odMappings map_ stdType =
+  sendMessage odMappings setRecordMap_forStandardRecordTypeSelector (toODRecordMap map_) (toNSString stdType)
 
 -- | @- comment@
 comment :: IsODMappings odMappings => odMappings -> IO (Id NSString)
-comment odMappings  =
-    sendMsg odMappings (mkSelector "comment") (retPtr retVoid) [] >>= retainedObject . castPtr
+comment odMappings =
+  sendMessage odMappings commentSelector
 
 -- | @- setComment:@
 setComment :: (IsODMappings odMappings, IsNSString value) => odMappings -> value -> IO ()
-setComment odMappings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odMappings (mkSelector "setComment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setComment odMappings value =
+  sendMessage odMappings setCommentSelector (toNSString value)
 
 -- | @- templateName@
 templateName :: IsODMappings odMappings => odMappings -> IO (Id NSString)
-templateName odMappings  =
-    sendMsg odMappings (mkSelector "templateName") (retPtr retVoid) [] >>= retainedObject . castPtr
+templateName odMappings =
+  sendMessage odMappings templateNameSelector
 
 -- | @- setTemplateName:@
 setTemplateName :: (IsODMappings odMappings, IsNSString value) => odMappings -> value -> IO ()
-setTemplateName odMappings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odMappings (mkSelector "setTemplateName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTemplateName odMappings value =
+  sendMessage odMappings setTemplateNameSelector (toNSString value)
 
 -- | @- identifier@
 identifier :: IsODMappings odMappings => odMappings -> IO (Id NSString)
-identifier odMappings  =
-    sendMsg odMappings (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier odMappings =
+  sendMessage odMappings identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsODMappings odMappings, IsNSString value) => odMappings -> value -> IO ()
-setIdentifier odMappings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odMappings (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier odMappings value =
+  sendMessage odMappings setIdentifierSelector (toNSString value)
 
 -- | @- recordTypes@
 recordTypes :: IsODMappings odMappings => odMappings -> IO (Id NSArray)
-recordTypes odMappings  =
-    sendMsg odMappings (mkSelector "recordTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordTypes odMappings =
+  sendMessage odMappings recordTypesSelector
 
 -- | @- function@
 function :: IsODMappings odMappings => odMappings -> IO (Id NSString)
-function odMappings  =
-    sendMsg odMappings (mkSelector "function") (retPtr retVoid) [] >>= retainedObject . castPtr
+function odMappings =
+  sendMessage odMappings functionSelector
 
 -- | @- setFunction:@
 setFunction :: (IsODMappings odMappings, IsNSString value) => odMappings -> value -> IO ()
-setFunction odMappings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odMappings (mkSelector "setFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFunction odMappings value =
+  sendMessage odMappings setFunctionSelector (toNSString value)
 
 -- | @- functionAttributes@
 functionAttributes :: IsODMappings odMappings => odMappings -> IO (Id NSArray)
-functionAttributes odMappings  =
-    sendMsg odMappings (mkSelector "functionAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+functionAttributes odMappings =
+  sendMessage odMappings functionAttributesSelector
 
 -- | @- setFunctionAttributes:@
 setFunctionAttributes :: (IsODMappings odMappings, IsNSArray value) => odMappings -> value -> IO ()
-setFunctionAttributes odMappings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odMappings (mkSelector "setFunctionAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFunctionAttributes odMappings value =
+  sendMessage odMappings setFunctionAttributesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mappings@
-mappingsSelector :: Selector
+mappingsSelector :: Selector '[] (Id ODMappings)
 mappingsSelector = mkSelector "mappings"
 
 -- | @Selector@ for @recordMapForStandardRecordType:@
-recordMapForStandardRecordTypeSelector :: Selector
+recordMapForStandardRecordTypeSelector :: Selector '[Id NSString] (Id ODRecordMap)
 recordMapForStandardRecordTypeSelector = mkSelector "recordMapForStandardRecordType:"
 
 -- | @Selector@ for @setRecordMap:forStandardRecordType:@
-setRecordMap_forStandardRecordTypeSelector :: Selector
+setRecordMap_forStandardRecordTypeSelector :: Selector '[Id ODRecordMap, Id NSString] ()
 setRecordMap_forStandardRecordTypeSelector = mkSelector "setRecordMap:forStandardRecordType:"
 
 -- | @Selector@ for @comment@
-commentSelector :: Selector
+commentSelector :: Selector '[] (Id NSString)
 commentSelector = mkSelector "comment"
 
 -- | @Selector@ for @setComment:@
-setCommentSelector :: Selector
+setCommentSelector :: Selector '[Id NSString] ()
 setCommentSelector = mkSelector "setComment:"
 
 -- | @Selector@ for @templateName@
-templateNameSelector :: Selector
+templateNameSelector :: Selector '[] (Id NSString)
 templateNameSelector = mkSelector "templateName"
 
 -- | @Selector@ for @setTemplateName:@
-setTemplateNameSelector :: Selector
+setTemplateNameSelector :: Selector '[Id NSString] ()
 setTemplateNameSelector = mkSelector "setTemplateName:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @recordTypes@
-recordTypesSelector :: Selector
+recordTypesSelector :: Selector '[] (Id NSArray)
 recordTypesSelector = mkSelector "recordTypes"
 
 -- | @Selector@ for @function@
-functionSelector :: Selector
+functionSelector :: Selector '[] (Id NSString)
 functionSelector = mkSelector "function"
 
 -- | @Selector@ for @setFunction:@
-setFunctionSelector :: Selector
+setFunctionSelector :: Selector '[Id NSString] ()
 setFunctionSelector = mkSelector "setFunction:"
 
 -- | @Selector@ for @functionAttributes@
-functionAttributesSelector :: Selector
+functionAttributesSelector :: Selector '[] (Id NSArray)
 functionAttributesSelector = mkSelector "functionAttributes"
 
 -- | @Selector@ for @setFunctionAttributes:@
-setFunctionAttributesSelector :: Selector
+setFunctionAttributesSelector :: Selector '[Id NSArray] ()
 setFunctionAttributesSelector = mkSelector "setFunctionAttributes:"
 

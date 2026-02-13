@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,23 +26,23 @@ module ObjC.Intents.INBillDetails
   , setBillType
   , paymentStatus
   , setPaymentStatus
+  , amountDueSelector
+  , billPayeeSelector
+  , billTypeSelector
+  , dueDateSelector
   , initSelector
   , initWithBillType_paymentStatus_billPayee_amountDue_minimumDue_lateFee_dueDate_paymentDateSelector
-  , billPayeeSelector
-  , setBillPayeeSelector
-  , amountDueSelector
-  , setAmountDueSelector
-  , minimumDueSelector
-  , setMinimumDueSelector
   , lateFeeSelector
-  , setLateFeeSelector
-  , dueDateSelector
-  , setDueDateSelector
+  , minimumDueSelector
   , paymentDateSelector
-  , setPaymentDateSelector
-  , billTypeSelector
-  , setBillTypeSelector
   , paymentStatusSelector
+  , setAmountDueSelector
+  , setBillPayeeSelector
+  , setBillTypeSelector
+  , setDueDateSelector
+  , setLateFeeSelector
+  , setMinimumDueSelector
+  , setPaymentDateSelector
   , setPaymentStatusSelector
 
   -- * Enum types
@@ -79,15 +80,11 @@ module ObjC.Intents.INBillDetails
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -97,179 +94,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINBillDetails inBillDetails => inBillDetails -> IO (Id INBillDetails)
-init_ inBillDetails  =
-    sendMsg inBillDetails (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inBillDetails =
+  sendOwnedMessage inBillDetails initSelector
 
 -- | @- initWithBillType:paymentStatus:billPayee:amountDue:minimumDue:lateFee:dueDate:paymentDate:@
 initWithBillType_paymentStatus_billPayee_amountDue_minimumDue_lateFee_dueDate_paymentDate :: (IsINBillDetails inBillDetails, IsINBillPayee billPayee, IsINCurrencyAmount amountDue, IsINCurrencyAmount minimumDue, IsINCurrencyAmount lateFee, IsNSDateComponents dueDate, IsNSDateComponents paymentDate) => inBillDetails -> INBillType -> INPaymentStatus -> billPayee -> amountDue -> minimumDue -> lateFee -> dueDate -> paymentDate -> IO (Id INBillDetails)
-initWithBillType_paymentStatus_billPayee_amountDue_minimumDue_lateFee_dueDate_paymentDate inBillDetails  billType paymentStatus billPayee amountDue minimumDue lateFee dueDate paymentDate =
-  withObjCPtr billPayee $ \raw_billPayee ->
-    withObjCPtr amountDue $ \raw_amountDue ->
-      withObjCPtr minimumDue $ \raw_minimumDue ->
-        withObjCPtr lateFee $ \raw_lateFee ->
-          withObjCPtr dueDate $ \raw_dueDate ->
-            withObjCPtr paymentDate $ \raw_paymentDate ->
-                sendMsg inBillDetails (mkSelector "initWithBillType:paymentStatus:billPayee:amountDue:minimumDue:lateFee:dueDate:paymentDate:") (retPtr retVoid) [argCLong (coerce billType), argCLong (coerce paymentStatus), argPtr (castPtr raw_billPayee :: Ptr ()), argPtr (castPtr raw_amountDue :: Ptr ()), argPtr (castPtr raw_minimumDue :: Ptr ()), argPtr (castPtr raw_lateFee :: Ptr ()), argPtr (castPtr raw_dueDate :: Ptr ()), argPtr (castPtr raw_paymentDate :: Ptr ())] >>= ownedObject . castPtr
+initWithBillType_paymentStatus_billPayee_amountDue_minimumDue_lateFee_dueDate_paymentDate inBillDetails billType paymentStatus billPayee amountDue minimumDue lateFee dueDate paymentDate =
+  sendOwnedMessage inBillDetails initWithBillType_paymentStatus_billPayee_amountDue_minimumDue_lateFee_dueDate_paymentDateSelector billType paymentStatus (toINBillPayee billPayee) (toINCurrencyAmount amountDue) (toINCurrencyAmount minimumDue) (toINCurrencyAmount lateFee) (toNSDateComponents dueDate) (toNSDateComponents paymentDate)
 
 -- | @- billPayee@
 billPayee :: IsINBillDetails inBillDetails => inBillDetails -> IO (Id INBillPayee)
-billPayee inBillDetails  =
-    sendMsg inBillDetails (mkSelector "billPayee") (retPtr retVoid) [] >>= retainedObject . castPtr
+billPayee inBillDetails =
+  sendMessage inBillDetails billPayeeSelector
 
 -- | @- setBillPayee:@
 setBillPayee :: (IsINBillDetails inBillDetails, IsINBillPayee value) => inBillDetails -> value -> IO ()
-setBillPayee inBillDetails  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBillDetails (mkSelector "setBillPayee:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBillPayee inBillDetails value =
+  sendMessage inBillDetails setBillPayeeSelector (toINBillPayee value)
 
 -- | @- amountDue@
 amountDue :: IsINBillDetails inBillDetails => inBillDetails -> IO (Id INCurrencyAmount)
-amountDue inBillDetails  =
-    sendMsg inBillDetails (mkSelector "amountDue") (retPtr retVoid) [] >>= retainedObject . castPtr
+amountDue inBillDetails =
+  sendMessage inBillDetails amountDueSelector
 
 -- | @- setAmountDue:@
 setAmountDue :: (IsINBillDetails inBillDetails, IsINCurrencyAmount value) => inBillDetails -> value -> IO ()
-setAmountDue inBillDetails  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBillDetails (mkSelector "setAmountDue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAmountDue inBillDetails value =
+  sendMessage inBillDetails setAmountDueSelector (toINCurrencyAmount value)
 
 -- | @- minimumDue@
 minimumDue :: IsINBillDetails inBillDetails => inBillDetails -> IO (Id INCurrencyAmount)
-minimumDue inBillDetails  =
-    sendMsg inBillDetails (mkSelector "minimumDue") (retPtr retVoid) [] >>= retainedObject . castPtr
+minimumDue inBillDetails =
+  sendMessage inBillDetails minimumDueSelector
 
 -- | @- setMinimumDue:@
 setMinimumDue :: (IsINBillDetails inBillDetails, IsINCurrencyAmount value) => inBillDetails -> value -> IO ()
-setMinimumDue inBillDetails  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBillDetails (mkSelector "setMinimumDue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinimumDue inBillDetails value =
+  sendMessage inBillDetails setMinimumDueSelector (toINCurrencyAmount value)
 
 -- | @- lateFee@
 lateFee :: IsINBillDetails inBillDetails => inBillDetails -> IO (Id INCurrencyAmount)
-lateFee inBillDetails  =
-    sendMsg inBillDetails (mkSelector "lateFee") (retPtr retVoid) [] >>= retainedObject . castPtr
+lateFee inBillDetails =
+  sendMessage inBillDetails lateFeeSelector
 
 -- | @- setLateFee:@
 setLateFee :: (IsINBillDetails inBillDetails, IsINCurrencyAmount value) => inBillDetails -> value -> IO ()
-setLateFee inBillDetails  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBillDetails (mkSelector "setLateFee:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLateFee inBillDetails value =
+  sendMessage inBillDetails setLateFeeSelector (toINCurrencyAmount value)
 
 -- | @- dueDate@
 dueDate :: IsINBillDetails inBillDetails => inBillDetails -> IO (Id NSDateComponents)
-dueDate inBillDetails  =
-    sendMsg inBillDetails (mkSelector "dueDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+dueDate inBillDetails =
+  sendMessage inBillDetails dueDateSelector
 
 -- | @- setDueDate:@
 setDueDate :: (IsINBillDetails inBillDetails, IsNSDateComponents value) => inBillDetails -> value -> IO ()
-setDueDate inBillDetails  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBillDetails (mkSelector "setDueDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDueDate inBillDetails value =
+  sendMessage inBillDetails setDueDateSelector (toNSDateComponents value)
 
 -- | @- paymentDate@
 paymentDate :: IsINBillDetails inBillDetails => inBillDetails -> IO (Id NSDateComponents)
-paymentDate inBillDetails  =
-    sendMsg inBillDetails (mkSelector "paymentDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentDate inBillDetails =
+  sendMessage inBillDetails paymentDateSelector
 
 -- | @- setPaymentDate:@
 setPaymentDate :: (IsINBillDetails inBillDetails, IsNSDateComponents value) => inBillDetails -> value -> IO ()
-setPaymentDate inBillDetails  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inBillDetails (mkSelector "setPaymentDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaymentDate inBillDetails value =
+  sendMessage inBillDetails setPaymentDateSelector (toNSDateComponents value)
 
 -- | @- billType@
 billType :: IsINBillDetails inBillDetails => inBillDetails -> IO INBillType
-billType inBillDetails  =
-    fmap (coerce :: CLong -> INBillType) $ sendMsg inBillDetails (mkSelector "billType") retCLong []
+billType inBillDetails =
+  sendMessage inBillDetails billTypeSelector
 
 -- | @- setBillType:@
 setBillType :: IsINBillDetails inBillDetails => inBillDetails -> INBillType -> IO ()
-setBillType inBillDetails  value =
-    sendMsg inBillDetails (mkSelector "setBillType:") retVoid [argCLong (coerce value)]
+setBillType inBillDetails value =
+  sendMessage inBillDetails setBillTypeSelector value
 
 -- | @- paymentStatus@
 paymentStatus :: IsINBillDetails inBillDetails => inBillDetails -> IO INPaymentStatus
-paymentStatus inBillDetails  =
-    fmap (coerce :: CLong -> INPaymentStatus) $ sendMsg inBillDetails (mkSelector "paymentStatus") retCLong []
+paymentStatus inBillDetails =
+  sendMessage inBillDetails paymentStatusSelector
 
 -- | @- setPaymentStatus:@
 setPaymentStatus :: IsINBillDetails inBillDetails => inBillDetails -> INPaymentStatus -> IO ()
-setPaymentStatus inBillDetails  value =
-    sendMsg inBillDetails (mkSelector "setPaymentStatus:") retVoid [argCLong (coerce value)]
+setPaymentStatus inBillDetails value =
+  sendMessage inBillDetails setPaymentStatusSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INBillDetails)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithBillType:paymentStatus:billPayee:amountDue:minimumDue:lateFee:dueDate:paymentDate:@
-initWithBillType_paymentStatus_billPayee_amountDue_minimumDue_lateFee_dueDate_paymentDateSelector :: Selector
+initWithBillType_paymentStatus_billPayee_amountDue_minimumDue_lateFee_dueDate_paymentDateSelector :: Selector '[INBillType, INPaymentStatus, Id INBillPayee, Id INCurrencyAmount, Id INCurrencyAmount, Id INCurrencyAmount, Id NSDateComponents, Id NSDateComponents] (Id INBillDetails)
 initWithBillType_paymentStatus_billPayee_amountDue_minimumDue_lateFee_dueDate_paymentDateSelector = mkSelector "initWithBillType:paymentStatus:billPayee:amountDue:minimumDue:lateFee:dueDate:paymentDate:"
 
 -- | @Selector@ for @billPayee@
-billPayeeSelector :: Selector
+billPayeeSelector :: Selector '[] (Id INBillPayee)
 billPayeeSelector = mkSelector "billPayee"
 
 -- | @Selector@ for @setBillPayee:@
-setBillPayeeSelector :: Selector
+setBillPayeeSelector :: Selector '[Id INBillPayee] ()
 setBillPayeeSelector = mkSelector "setBillPayee:"
 
 -- | @Selector@ for @amountDue@
-amountDueSelector :: Selector
+amountDueSelector :: Selector '[] (Id INCurrencyAmount)
 amountDueSelector = mkSelector "amountDue"
 
 -- | @Selector@ for @setAmountDue:@
-setAmountDueSelector :: Selector
+setAmountDueSelector :: Selector '[Id INCurrencyAmount] ()
 setAmountDueSelector = mkSelector "setAmountDue:"
 
 -- | @Selector@ for @minimumDue@
-minimumDueSelector :: Selector
+minimumDueSelector :: Selector '[] (Id INCurrencyAmount)
 minimumDueSelector = mkSelector "minimumDue"
 
 -- | @Selector@ for @setMinimumDue:@
-setMinimumDueSelector :: Selector
+setMinimumDueSelector :: Selector '[Id INCurrencyAmount] ()
 setMinimumDueSelector = mkSelector "setMinimumDue:"
 
 -- | @Selector@ for @lateFee@
-lateFeeSelector :: Selector
+lateFeeSelector :: Selector '[] (Id INCurrencyAmount)
 lateFeeSelector = mkSelector "lateFee"
 
 -- | @Selector@ for @setLateFee:@
-setLateFeeSelector :: Selector
+setLateFeeSelector :: Selector '[Id INCurrencyAmount] ()
 setLateFeeSelector = mkSelector "setLateFee:"
 
 -- | @Selector@ for @dueDate@
-dueDateSelector :: Selector
+dueDateSelector :: Selector '[] (Id NSDateComponents)
 dueDateSelector = mkSelector "dueDate"
 
 -- | @Selector@ for @setDueDate:@
-setDueDateSelector :: Selector
+setDueDateSelector :: Selector '[Id NSDateComponents] ()
 setDueDateSelector = mkSelector "setDueDate:"
 
 -- | @Selector@ for @paymentDate@
-paymentDateSelector :: Selector
+paymentDateSelector :: Selector '[] (Id NSDateComponents)
 paymentDateSelector = mkSelector "paymentDate"
 
 -- | @Selector@ for @setPaymentDate:@
-setPaymentDateSelector :: Selector
+setPaymentDateSelector :: Selector '[Id NSDateComponents] ()
 setPaymentDateSelector = mkSelector "setPaymentDate:"
 
 -- | @Selector@ for @billType@
-billTypeSelector :: Selector
+billTypeSelector :: Selector '[] INBillType
 billTypeSelector = mkSelector "billType"
 
 -- | @Selector@ for @setBillType:@
-setBillTypeSelector :: Selector
+setBillTypeSelector :: Selector '[INBillType] ()
 setBillTypeSelector = mkSelector "setBillType:"
 
 -- | @Selector@ for @paymentStatus@
-paymentStatusSelector :: Selector
+paymentStatusSelector :: Selector '[] INPaymentStatus
 paymentStatusSelector = mkSelector "paymentStatus"
 
 -- | @Selector@ for @setPaymentStatus:@
-setPaymentStatusSelector :: Selector
+setPaymentStatusSelector :: Selector '[INPaymentStatus] ()
 setPaymentStatusSelector = mkSelector "setPaymentStatus:"
 

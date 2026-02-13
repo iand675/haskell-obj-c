@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Symbols.NSSymbolBreatheEffect
   , breathePlainEffect
   , effectWithByLayer
   , effectWithWholeSymbol
-  , effectSelector
-  , breathePulseEffectSelector
   , breathePlainEffectSelector
+  , breathePulseEffectSelector
+  , effectSelector
   , effectWithByLayerSelector
   , effectWithWholeSymbolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,7 +43,7 @@ effect :: IO (Id NSSymbolBreatheEffect)
 effect  =
   do
     cls' <- getRequiredClass "NSSymbolBreatheEffect"
-    sendClassMsg cls' (mkSelector "effect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' effectSelector
 
 -- | Convenience initializer for a breathe effect that pulses layers as they breathe.
 --
@@ -55,7 +52,7 @@ breathePulseEffect :: IO (Id NSSymbolBreatheEffect)
 breathePulseEffect  =
   do
     cls' <- getRequiredClass "NSSymbolBreatheEffect"
-    sendClassMsg cls' (mkSelector "breathePulseEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' breathePulseEffectSelector
 
 -- | Convenience initializer for a breathe effect that makes the symbol breathe with no other styling.
 --
@@ -64,43 +61,43 @@ breathePlainEffect :: IO (Id NSSymbolBreatheEffect)
 breathePlainEffect  =
   do
     cls' <- getRequiredClass "NSSymbolBreatheEffect"
-    sendClassMsg cls' (mkSelector "breathePlainEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' breathePlainEffectSelector
 
 -- | Returns a copy of the effect that animates incrementally, by layer.
 --
 -- ObjC selector: @- effectWithByLayer@
 effectWithByLayer :: IsNSSymbolBreatheEffect nsSymbolBreatheEffect => nsSymbolBreatheEffect -> IO (Id NSSymbolBreatheEffect)
-effectWithByLayer nsSymbolBreatheEffect  =
-    sendMsg nsSymbolBreatheEffect (mkSelector "effectWithByLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithByLayer nsSymbolBreatheEffect =
+  sendMessage nsSymbolBreatheEffect effectWithByLayerSelector
 
 -- | Returns a copy of the effect that animates all layers of the symbol simultaneously.
 --
 -- ObjC selector: @- effectWithWholeSymbol@
 effectWithWholeSymbol :: IsNSSymbolBreatheEffect nsSymbolBreatheEffect => nsSymbolBreatheEffect -> IO (Id NSSymbolBreatheEffect)
-effectWithWholeSymbol nsSymbolBreatheEffect  =
-    sendMsg nsSymbolBreatheEffect (mkSelector "effectWithWholeSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithWholeSymbol nsSymbolBreatheEffect =
+  sendMessage nsSymbolBreatheEffect effectWithWholeSymbolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effect@
-effectSelector :: Selector
+effectSelector :: Selector '[] (Id NSSymbolBreatheEffect)
 effectSelector = mkSelector "effect"
 
 -- | @Selector@ for @breathePulseEffect@
-breathePulseEffectSelector :: Selector
+breathePulseEffectSelector :: Selector '[] (Id NSSymbolBreatheEffect)
 breathePulseEffectSelector = mkSelector "breathePulseEffect"
 
 -- | @Selector@ for @breathePlainEffect@
-breathePlainEffectSelector :: Selector
+breathePlainEffectSelector :: Selector '[] (Id NSSymbolBreatheEffect)
 breathePlainEffectSelector = mkSelector "breathePlainEffect"
 
 -- | @Selector@ for @effectWithByLayer@
-effectWithByLayerSelector :: Selector
+effectWithByLayerSelector :: Selector '[] (Id NSSymbolBreatheEffect)
 effectWithByLayerSelector = mkSelector "effectWithByLayer"
 
 -- | @Selector@ for @effectWithWholeSymbol@
-effectWithWholeSymbolSelector :: Selector
+effectWithWholeSymbolSelector :: Selector '[] (Id NSSymbolBreatheEffect)
 effectWithWholeSymbolSelector = mkSelector "effectWithWholeSymbol"
 

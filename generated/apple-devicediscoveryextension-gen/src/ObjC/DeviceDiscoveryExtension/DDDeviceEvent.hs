@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.DeviceDiscoveryExtension.DDDeviceEvent
   , initWithEventType_device
   , device
   , eventType
-  , initWithEventType_deviceSelector
   , deviceSelector
   , eventTypeSelector
+  , initWithEventType_deviceSelector
 
   -- * Enum types
   , DDEventType(DDEventType)
@@ -25,15 +26,11 @@ module ObjC.DeviceDiscoveryExtension.DDDeviceEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,37 +42,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithEventType:device:@
 initWithEventType_device :: (IsDDDeviceEvent ddDeviceEvent, IsDDDevice device) => ddDeviceEvent -> DDEventType -> device -> IO (Id DDDeviceEvent)
-initWithEventType_device ddDeviceEvent  type_ device =
-  withObjCPtr device $ \raw_device ->
-      sendMsg ddDeviceEvent (mkSelector "initWithEventType:device:") (retPtr retVoid) [argCLong (coerce type_), argPtr (castPtr raw_device :: Ptr ())] >>= ownedObject . castPtr
+initWithEventType_device ddDeviceEvent type_ device =
+  sendOwnedMessage ddDeviceEvent initWithEventType_deviceSelector type_ (toDDDevice device)
 
 -- | Device found or lost.
 --
 -- ObjC selector: @- device@
 device :: IsDDDeviceEvent ddDeviceEvent => ddDeviceEvent -> IO (Id DDDevice)
-device ddDeviceEvent  =
-    sendMsg ddDeviceEvent (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device ddDeviceEvent =
+  sendMessage ddDeviceEvent deviceSelector
 
 -- | Type of event.
 --
 -- ObjC selector: @- eventType@
 eventType :: IsDDDeviceEvent ddDeviceEvent => ddDeviceEvent -> IO DDEventType
-eventType ddDeviceEvent  =
-    fmap (coerce :: CLong -> DDEventType) $ sendMsg ddDeviceEvent (mkSelector "eventType") retCLong []
+eventType ddDeviceEvent =
+  sendMessage ddDeviceEvent eventTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithEventType:device:@
-initWithEventType_deviceSelector :: Selector
+initWithEventType_deviceSelector :: Selector '[DDEventType, Id DDDevice] (Id DDDeviceEvent)
 initWithEventType_deviceSelector = mkSelector "initWithEventType:device:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id DDDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @eventType@
-eventTypeSelector :: Selector
+eventTypeSelector :: Selector '[] DDEventType
 eventTypeSelector = mkSelector "eventType"
 

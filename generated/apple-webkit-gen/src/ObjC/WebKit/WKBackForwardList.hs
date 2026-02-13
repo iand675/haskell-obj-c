@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.WebKit.WKBackForwardList
   , forwardItem
   , backList
   , forwardList
-  , itemAtIndexSelector
-  , currentItemSelector
   , backItemSelector
-  , forwardItemSelector
   , backListSelector
+  , currentItemSelector
+  , forwardItemSelector
   , forwardListSelector
+  , itemAtIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,29 +44,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- itemAtIndex:@
 itemAtIndex :: IsWKBackForwardList wkBackForwardList => wkBackForwardList -> CLong -> IO (Id WKBackForwardListItem)
-itemAtIndex wkBackForwardList  index =
-    sendMsg wkBackForwardList (mkSelector "itemAtIndex:") (retPtr retVoid) [argCLong index] >>= retainedObject . castPtr
+itemAtIndex wkBackForwardList index =
+  sendMessage wkBackForwardList itemAtIndexSelector index
 
 -- | The current item.
 --
 -- ObjC selector: @- currentItem@
 currentItem :: IsWKBackForwardList wkBackForwardList => wkBackForwardList -> IO (Id WKBackForwardListItem)
-currentItem wkBackForwardList  =
-    sendMsg wkBackForwardList (mkSelector "currentItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentItem wkBackForwardList =
+  sendMessage wkBackForwardList currentItemSelector
 
 -- | The item immediately preceding the current item, or nilif there isn't one.
 --
 -- ObjC selector: @- backItem@
 backItem :: IsWKBackForwardList wkBackForwardList => wkBackForwardList -> IO (Id WKBackForwardListItem)
-backItem wkBackForwardList  =
-    sendMsg wkBackForwardList (mkSelector "backItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+backItem wkBackForwardList =
+  sendMessage wkBackForwardList backItemSelector
 
 -- | The item immediately following the current item, or nilif there isn't one.
 --
 -- ObjC selector: @- forwardItem@
 forwardItem :: IsWKBackForwardList wkBackForwardList => wkBackForwardList -> IO (Id WKBackForwardListItem)
-forwardItem wkBackForwardList  =
-    sendMsg wkBackForwardList (mkSelector "forwardItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+forwardItem wkBackForwardList =
+  sendMessage wkBackForwardList forwardItemSelector
 
 -- | The portion of the list preceding the current item.
 --
@@ -77,8 +74,8 @@ forwardItem wkBackForwardList  =
 --
 -- ObjC selector: @- backList@
 backList :: IsWKBackForwardList wkBackForwardList => wkBackForwardList -> IO (Id NSArray)
-backList wkBackForwardList  =
-    sendMsg wkBackForwardList (mkSelector "backList") (retPtr retVoid) [] >>= retainedObject . castPtr
+backList wkBackForwardList =
+  sendMessage wkBackForwardList backListSelector
 
 -- | The portion of the list following the current item.
 --
@@ -86,34 +83,34 @@ backList wkBackForwardList  =
 --
 -- ObjC selector: @- forwardList@
 forwardList :: IsWKBackForwardList wkBackForwardList => wkBackForwardList -> IO (Id NSArray)
-forwardList wkBackForwardList  =
-    sendMsg wkBackForwardList (mkSelector "forwardList") (retPtr retVoid) [] >>= retainedObject . castPtr
+forwardList wkBackForwardList =
+  sendMessage wkBackForwardList forwardListSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @itemAtIndex:@
-itemAtIndexSelector :: Selector
+itemAtIndexSelector :: Selector '[CLong] (Id WKBackForwardListItem)
 itemAtIndexSelector = mkSelector "itemAtIndex:"
 
 -- | @Selector@ for @currentItem@
-currentItemSelector :: Selector
+currentItemSelector :: Selector '[] (Id WKBackForwardListItem)
 currentItemSelector = mkSelector "currentItem"
 
 -- | @Selector@ for @backItem@
-backItemSelector :: Selector
+backItemSelector :: Selector '[] (Id WKBackForwardListItem)
 backItemSelector = mkSelector "backItem"
 
 -- | @Selector@ for @forwardItem@
-forwardItemSelector :: Selector
+forwardItemSelector :: Selector '[] (Id WKBackForwardListItem)
 forwardItemSelector = mkSelector "forwardItem"
 
 -- | @Selector@ for @backList@
-backListSelector :: Selector
+backListSelector :: Selector '[] (Id NSArray)
 backListSelector = mkSelector "backList"
 
 -- | @Selector@ for @forwardList@
-forwardListSelector :: Selector
+forwardListSelector :: Selector '[] (Id NSArray)
 forwardListSelector = mkSelector "forwardList"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,28 +26,24 @@ module ObjC.IOBluetooth.IOBluetoothDevicePair
   , replyUserConfirmation
   , delegate
   , setDelegate
-  , pairWithDeviceSelector
-  , startSelector
-  , stopSelector
+  , delegateSelector
   , deviceSelector
-  , setDeviceSelector
+  , pairWithDeviceSelector
   , replyPINCode_PINCodeSelector
   , replyUserConfirmationSelector
-  , delegateSelector
   , setDelegateSelector
+  , setDeviceSelector
+  , startSelector
+  , stopSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,8 +63,7 @@ pairWithDevice :: IsIOBluetoothDevice device => device -> IO (Id IOBluetoothDevi
 pairWithDevice device =
   do
     cls' <- getRequiredClass "IOBluetoothDevicePair"
-    withObjCPtr device $ \raw_device ->
-      sendClassMsg cls' (mkSelector "pairWithDevice:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pairWithDeviceSelector (toIOBluetoothDevice device)
 
 -- | start
 --
@@ -77,8 +73,8 @@ pairWithDevice device =
 --
 -- ObjC selector: @- start@
 start :: IsIOBluetoothDevicePair ioBluetoothDevicePair => ioBluetoothDevicePair -> IO CInt
-start ioBluetoothDevicePair  =
-    sendMsg ioBluetoothDevicePair (mkSelector "start") retCInt []
+start ioBluetoothDevicePair =
+  sendMessage ioBluetoothDevicePair startSelector
 
 -- | stop
 --
@@ -86,8 +82,8 @@ start ioBluetoothDevicePair  =
 --
 -- ObjC selector: @- stop@
 stop :: IsIOBluetoothDevicePair ioBluetoothDevicePair => ioBluetoothDevicePair -> IO ()
-stop ioBluetoothDevicePair  =
-    sendMsg ioBluetoothDevicePair (mkSelector "stop") retVoid []
+stop ioBluetoothDevicePair =
+  sendMessage ioBluetoothDevicePair stopSelector
 
 -- | device
 --
@@ -97,8 +93,8 @@ stop ioBluetoothDevicePair  =
 --
 -- ObjC selector: @- device@
 device :: IsIOBluetoothDevicePair ioBluetoothDevicePair => ioBluetoothDevicePair -> IO (Id IOBluetoothDevice)
-device ioBluetoothDevicePair  =
-    sendMsg ioBluetoothDevicePair (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device ioBluetoothDevicePair =
+  sendMessage ioBluetoothDevicePair deviceSelector
 
 -- | setDevice:
 --
@@ -108,9 +104,8 @@ device ioBluetoothDevicePair  =
 --
 -- ObjC selector: @- setDevice:@
 setDevice :: (IsIOBluetoothDevicePair ioBluetoothDevicePair, IsIOBluetoothDevice inDevice) => ioBluetoothDevicePair -> inDevice -> IO ()
-setDevice ioBluetoothDevicePair  inDevice =
-  withObjCPtr inDevice $ \raw_inDevice ->
-      sendMsg ioBluetoothDevicePair (mkSelector "setDevice:") retVoid [argPtr (castPtr raw_inDevice :: Ptr ())]
+setDevice ioBluetoothDevicePair inDevice =
+  sendMessage ioBluetoothDevicePair setDeviceSelector (toIOBluetoothDevice inDevice)
 
 -- | replyPINCode:
 --
@@ -122,8 +117,8 @@ setDevice ioBluetoothDevicePair  inDevice =
 --
 -- ObjC selector: @- replyPINCode:PINCode:@
 replyPINCode_PINCode :: IsIOBluetoothDevicePair ioBluetoothDevicePair => ioBluetoothDevicePair -> CULong -> RawId -> IO ()
-replyPINCode_PINCode ioBluetoothDevicePair  pinCodeSize pinCode =
-    sendMsg ioBluetoothDevicePair (mkSelector "replyPINCode:PINCode:") retVoid [argCULong pinCodeSize, argPtr (castPtr (unRawId pinCode) :: Ptr ())]
+replyPINCode_PINCode ioBluetoothDevicePair pinCodeSize pinCode =
+  sendMessage ioBluetoothDevicePair replyPINCode_PINCodeSelector pinCodeSize pinCode
 
 -- | replyUserConfirmation:
 --
@@ -133,56 +128,56 @@ replyPINCode_PINCode ioBluetoothDevicePair  pinCodeSize pinCode =
 --
 -- ObjC selector: @- replyUserConfirmation:@
 replyUserConfirmation :: IsIOBluetoothDevicePair ioBluetoothDevicePair => ioBluetoothDevicePair -> Bool -> IO ()
-replyUserConfirmation ioBluetoothDevicePair  reply =
-    sendMsg ioBluetoothDevicePair (mkSelector "replyUserConfirmation:") retVoid [argCULong (if reply then 1 else 0)]
+replyUserConfirmation ioBluetoothDevicePair reply =
+  sendMessage ioBluetoothDevicePair replyUserConfirmationSelector reply
 
 -- | @- delegate@
 delegate :: IsIOBluetoothDevicePair ioBluetoothDevicePair => ioBluetoothDevicePair -> IO RawId
-delegate ioBluetoothDevicePair  =
-    fmap (RawId . castPtr) $ sendMsg ioBluetoothDevicePair (mkSelector "delegate") (retPtr retVoid) []
+delegate ioBluetoothDevicePair =
+  sendMessage ioBluetoothDevicePair delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsIOBluetoothDevicePair ioBluetoothDevicePair => ioBluetoothDevicePair -> RawId -> IO ()
-setDelegate ioBluetoothDevicePair  value =
-    sendMsg ioBluetoothDevicePair (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ioBluetoothDevicePair value =
+  sendMessage ioBluetoothDevicePair setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pairWithDevice:@
-pairWithDeviceSelector :: Selector
+pairWithDeviceSelector :: Selector '[Id IOBluetoothDevice] (Id IOBluetoothDevicePair)
 pairWithDeviceSelector = mkSelector "pairWithDevice:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] CInt
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id IOBluetoothDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @setDevice:@
-setDeviceSelector :: Selector
+setDeviceSelector :: Selector '[Id IOBluetoothDevice] ()
 setDeviceSelector = mkSelector "setDevice:"
 
 -- | @Selector@ for @replyPINCode:PINCode:@
-replyPINCode_PINCodeSelector :: Selector
+replyPINCode_PINCodeSelector :: Selector '[CULong, RawId] ()
 replyPINCode_PINCodeSelector = mkSelector "replyPINCode:PINCode:"
 
 -- | @Selector@ for @replyUserConfirmation:@
-replyUserConfirmationSelector :: Selector
+replyUserConfirmationSelector :: Selector '[Bool] ()
 replyUserConfirmationSelector = mkSelector "replyUserConfirmation:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

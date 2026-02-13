@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,9 +14,9 @@ module ObjC.AppKit.NSTrackingArea
   , owner
   , userInfo
   , initWithRect_options_owner_userInfoSelector
-  , rectSelector
   , optionsSelector
   , ownerSelector
+  , rectSelector
   , userInfoSelector
 
   -- * Enum types
@@ -33,15 +34,11 @@ module ObjC.AppKit.NSTrackingArea
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,51 +49,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRect:options:owner:userInfo:@
 initWithRect_options_owner_userInfo :: (IsNSTrackingArea nsTrackingArea, IsNSDictionary userInfo) => nsTrackingArea -> NSRect -> NSTrackingAreaOptions -> RawId -> userInfo -> IO (Id NSTrackingArea)
-initWithRect_options_owner_userInfo nsTrackingArea  rect options owner userInfo =
-  withObjCPtr userInfo $ \raw_userInfo ->
-      sendMsg nsTrackingArea (mkSelector "initWithRect:options:owner:userInfo:") (retPtr retVoid) [argNSRect rect, argCULong (coerce options), argPtr (castPtr (unRawId owner) :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ())] >>= ownedObject . castPtr
+initWithRect_options_owner_userInfo nsTrackingArea rect options owner userInfo =
+  sendOwnedMessage nsTrackingArea initWithRect_options_owner_userInfoSelector rect options owner (toNSDictionary userInfo)
 
 -- | @- rect@
 rect :: IsNSTrackingArea nsTrackingArea => nsTrackingArea -> IO NSRect
-rect nsTrackingArea  =
-    sendMsgStret nsTrackingArea (mkSelector "rect") retNSRect []
+rect nsTrackingArea =
+  sendMessage nsTrackingArea rectSelector
 
 -- | @- options@
 options :: IsNSTrackingArea nsTrackingArea => nsTrackingArea -> IO NSTrackingAreaOptions
-options nsTrackingArea  =
-    fmap (coerce :: CULong -> NSTrackingAreaOptions) $ sendMsg nsTrackingArea (mkSelector "options") retCULong []
+options nsTrackingArea =
+  sendMessage nsTrackingArea optionsSelector
 
 -- | @- owner@
 owner :: IsNSTrackingArea nsTrackingArea => nsTrackingArea -> IO RawId
-owner nsTrackingArea  =
-    fmap (RawId . castPtr) $ sendMsg nsTrackingArea (mkSelector "owner") (retPtr retVoid) []
+owner nsTrackingArea =
+  sendMessage nsTrackingArea ownerSelector
 
 -- | @- userInfo@
 userInfo :: IsNSTrackingArea nsTrackingArea => nsTrackingArea -> IO (Id NSDictionary)
-userInfo nsTrackingArea  =
-    sendMsg nsTrackingArea (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsTrackingArea =
+  sendMessage nsTrackingArea userInfoSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRect:options:owner:userInfo:@
-initWithRect_options_owner_userInfoSelector :: Selector
+initWithRect_options_owner_userInfoSelector :: Selector '[NSRect, NSTrackingAreaOptions, RawId, Id NSDictionary] (Id NSTrackingArea)
 initWithRect_options_owner_userInfoSelector = mkSelector "initWithRect:options:owner:userInfo:"
 
 -- | @Selector@ for @rect@
-rectSelector :: Selector
+rectSelector :: Selector '[] NSRect
 rectSelector = mkSelector "rect"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] NSTrackingAreaOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @owner@
-ownerSelector :: Selector
+ownerSelector :: Selector '[] RawId
 ownerSelector = mkSelector "owner"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 

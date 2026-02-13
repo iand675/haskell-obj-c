@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,16 +22,16 @@ module ObjC.MLCompute.MLCPaddingLayer
   , paddingTop
   , paddingBottom
   , constantValue
+  , constantValueSelector
+  , layerWithConstantPadding_constantValueSelector
   , layerWithReflectionPaddingSelector
   , layerWithSymmetricPaddingSelector
   , layerWithZeroPaddingSelector
-  , layerWithConstantPadding_constantValueSelector
-  , paddingTypeSelector
+  , paddingBottomSelector
   , paddingLeftSelector
   , paddingRightSelector
   , paddingTopSelector
-  , paddingBottomSelector
-  , constantValueSelector
+  , paddingTypeSelector
 
   -- * Enum types
   , MLCPaddingType(MLCPaddingType)
@@ -41,15 +42,11 @@ module ObjC.MLCompute.MLCPaddingLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,8 +65,7 @@ layerWithReflectionPadding :: IsNSArray padding => padding -> IO (Id MLCPaddingL
 layerWithReflectionPadding padding =
   do
     cls' <- getRequiredClass "MLCPaddingLayer"
-    withObjCPtr padding $ \raw_padding ->
-      sendClassMsg cls' (mkSelector "layerWithReflectionPadding:") (retPtr retVoid) [argPtr (castPtr raw_padding :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithReflectionPaddingSelector (toNSArray padding)
 
 -- | Create a padding layer with symmetric padding
 --
@@ -82,8 +78,7 @@ layerWithSymmetricPadding :: IsNSArray padding => padding -> IO (Id MLCPaddingLa
 layerWithSymmetricPadding padding =
   do
     cls' <- getRequiredClass "MLCPaddingLayer"
-    withObjCPtr padding $ \raw_padding ->
-      sendClassMsg cls' (mkSelector "layerWithSymmetricPadding:") (retPtr retVoid) [argPtr (castPtr raw_padding :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithSymmetricPaddingSelector (toNSArray padding)
 
 -- | Create a padding layer with zero padding
 --
@@ -96,8 +91,7 @@ layerWithZeroPadding :: IsNSArray padding => padding -> IO (Id MLCPaddingLayer)
 layerWithZeroPadding padding =
   do
     cls' <- getRequiredClass "MLCPaddingLayer"
-    withObjCPtr padding $ \raw_padding ->
-      sendClassMsg cls' (mkSelector "layerWithZeroPadding:") (retPtr retVoid) [argPtr (castPtr raw_padding :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithZeroPaddingSelector (toNSArray padding)
 
 -- | Create a padding layer with constant padding
 --
@@ -112,8 +106,7 @@ layerWithConstantPadding_constantValue :: IsNSArray padding => padding -> CFloat
 layerWithConstantPadding_constantValue padding constantValue =
   do
     cls' <- getRequiredClass "MLCPaddingLayer"
-    withObjCPtr padding $ \raw_padding ->
-      sendClassMsg cls' (mkSelector "layerWithConstantPadding:constantValue:") (retPtr retVoid) [argPtr (castPtr raw_padding :: Ptr ()), argCFloat constantValue] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithConstantPadding_constantValueSelector (toNSArray padding) constantValue
 
 -- | paddingType
 --
@@ -121,8 +114,8 @@ layerWithConstantPadding_constantValue padding constantValue =
 --
 -- ObjC selector: @- paddingType@
 paddingType :: IsMLCPaddingLayer mlcPaddingLayer => mlcPaddingLayer -> IO MLCPaddingType
-paddingType mlcPaddingLayer  =
-    fmap (coerce :: CInt -> MLCPaddingType) $ sendMsg mlcPaddingLayer (mkSelector "paddingType") retCInt []
+paddingType mlcPaddingLayer =
+  sendMessage mlcPaddingLayer paddingTypeSelector
 
 -- | paddingLeft
 --
@@ -130,8 +123,8 @@ paddingType mlcPaddingLayer  =
 --
 -- ObjC selector: @- paddingLeft@
 paddingLeft :: IsMLCPaddingLayer mlcPaddingLayer => mlcPaddingLayer -> IO CULong
-paddingLeft mlcPaddingLayer  =
-    sendMsg mlcPaddingLayer (mkSelector "paddingLeft") retCULong []
+paddingLeft mlcPaddingLayer =
+  sendMessage mlcPaddingLayer paddingLeftSelector
 
 -- | paddingRight
 --
@@ -139,8 +132,8 @@ paddingLeft mlcPaddingLayer  =
 --
 -- ObjC selector: @- paddingRight@
 paddingRight :: IsMLCPaddingLayer mlcPaddingLayer => mlcPaddingLayer -> IO CULong
-paddingRight mlcPaddingLayer  =
-    sendMsg mlcPaddingLayer (mkSelector "paddingRight") retCULong []
+paddingRight mlcPaddingLayer =
+  sendMessage mlcPaddingLayer paddingRightSelector
 
 -- | paddingTop
 --
@@ -148,8 +141,8 @@ paddingRight mlcPaddingLayer  =
 --
 -- ObjC selector: @- paddingTop@
 paddingTop :: IsMLCPaddingLayer mlcPaddingLayer => mlcPaddingLayer -> IO CULong
-paddingTop mlcPaddingLayer  =
-    sendMsg mlcPaddingLayer (mkSelector "paddingTop") retCULong []
+paddingTop mlcPaddingLayer =
+  sendMessage mlcPaddingLayer paddingTopSelector
 
 -- | paddingBottom
 --
@@ -157,8 +150,8 @@ paddingTop mlcPaddingLayer  =
 --
 -- ObjC selector: @- paddingBottom@
 paddingBottom :: IsMLCPaddingLayer mlcPaddingLayer => mlcPaddingLayer -> IO CULong
-paddingBottom mlcPaddingLayer  =
-    sendMsg mlcPaddingLayer (mkSelector "paddingBottom") retCULong []
+paddingBottom mlcPaddingLayer =
+  sendMessage mlcPaddingLayer paddingBottomSelector
 
 -- | constantValue
 --
@@ -166,50 +159,50 @@ paddingBottom mlcPaddingLayer  =
 --
 -- ObjC selector: @- constantValue@
 constantValue :: IsMLCPaddingLayer mlcPaddingLayer => mlcPaddingLayer -> IO CFloat
-constantValue mlcPaddingLayer  =
-    sendMsg mlcPaddingLayer (mkSelector "constantValue") retCFloat []
+constantValue mlcPaddingLayer =
+  sendMessage mlcPaddingLayer constantValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithReflectionPadding:@
-layerWithReflectionPaddingSelector :: Selector
+layerWithReflectionPaddingSelector :: Selector '[Id NSArray] (Id MLCPaddingLayer)
 layerWithReflectionPaddingSelector = mkSelector "layerWithReflectionPadding:"
 
 -- | @Selector@ for @layerWithSymmetricPadding:@
-layerWithSymmetricPaddingSelector :: Selector
+layerWithSymmetricPaddingSelector :: Selector '[Id NSArray] (Id MLCPaddingLayer)
 layerWithSymmetricPaddingSelector = mkSelector "layerWithSymmetricPadding:"
 
 -- | @Selector@ for @layerWithZeroPadding:@
-layerWithZeroPaddingSelector :: Selector
+layerWithZeroPaddingSelector :: Selector '[Id NSArray] (Id MLCPaddingLayer)
 layerWithZeroPaddingSelector = mkSelector "layerWithZeroPadding:"
 
 -- | @Selector@ for @layerWithConstantPadding:constantValue:@
-layerWithConstantPadding_constantValueSelector :: Selector
+layerWithConstantPadding_constantValueSelector :: Selector '[Id NSArray, CFloat] (Id MLCPaddingLayer)
 layerWithConstantPadding_constantValueSelector = mkSelector "layerWithConstantPadding:constantValue:"
 
 -- | @Selector@ for @paddingType@
-paddingTypeSelector :: Selector
+paddingTypeSelector :: Selector '[] MLCPaddingType
 paddingTypeSelector = mkSelector "paddingType"
 
 -- | @Selector@ for @paddingLeft@
-paddingLeftSelector :: Selector
+paddingLeftSelector :: Selector '[] CULong
 paddingLeftSelector = mkSelector "paddingLeft"
 
 -- | @Selector@ for @paddingRight@
-paddingRightSelector :: Selector
+paddingRightSelector :: Selector '[] CULong
 paddingRightSelector = mkSelector "paddingRight"
 
 -- | @Selector@ for @paddingTop@
-paddingTopSelector :: Selector
+paddingTopSelector :: Selector '[] CULong
 paddingTopSelector = mkSelector "paddingTop"
 
 -- | @Selector@ for @paddingBottom@
-paddingBottomSelector :: Selector
+paddingBottomSelector :: Selector '[] CULong
 paddingBottomSelector = mkSelector "paddingBottom"
 
 -- | @Selector@ for @constantValue@
-constantValueSelector :: Selector
+constantValueSelector :: Selector '[] CFloat
 constantValueSelector = mkSelector "constantValue"
 

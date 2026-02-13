@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,10 +15,10 @@ module ObjC.PassKit.PKPaymentButton
   , cornerRadius
   , setCornerRadius
   , buttonWithType_styleSelector
-  , initWithPaymentButtonType_paymentButtonStyleSelector
   , buttonWithType_style_disableCardArtSelector
-  , initWithPaymentButtonType_paymentButtonStyle_disableCardArtSelector
   , cornerRadiusSelector
+  , initWithPaymentButtonType_paymentButtonStyleSelector
+  , initWithPaymentButtonType_paymentButtonStyle_disableCardArtSelector
   , setCornerRadiusSelector
 
   -- * Enum types
@@ -47,15 +48,11 @@ module ObjC.PassKit.PKPaymentButton
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,60 +66,60 @@ buttonWithType_style :: PKPaymentButtonType -> PKPaymentButtonStyle -> IO (Id PK
 buttonWithType_style buttonType buttonStyle =
   do
     cls' <- getRequiredClass "PKPaymentButton"
-    sendClassMsg cls' (mkSelector "buttonWithType:style:") (retPtr retVoid) [argCLong (coerce buttonType), argCLong (coerce buttonStyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' buttonWithType_styleSelector buttonType buttonStyle
 
 -- | @- initWithPaymentButtonType:paymentButtonStyle:@
 initWithPaymentButtonType_paymentButtonStyle :: IsPKPaymentButton pkPaymentButton => pkPaymentButton -> PKPaymentButtonType -> PKPaymentButtonStyle -> IO (Id PKPaymentButton)
-initWithPaymentButtonType_paymentButtonStyle pkPaymentButton  type_ style =
-    sendMsg pkPaymentButton (mkSelector "initWithPaymentButtonType:paymentButtonStyle:") (retPtr retVoid) [argCLong (coerce type_), argCLong (coerce style)] >>= ownedObject . castPtr
+initWithPaymentButtonType_paymentButtonStyle pkPaymentButton type_ style =
+  sendOwnedMessage pkPaymentButton initWithPaymentButtonType_paymentButtonStyleSelector type_ style
 
 -- | @+ buttonWithType:style:disableCardArt:@
 buttonWithType_style_disableCardArt :: PKPaymentButtonType -> PKPaymentButtonStyle -> Bool -> IO (Id PKPaymentButton)
 buttonWithType_style_disableCardArt buttonType buttonStyle disableCardArt =
   do
     cls' <- getRequiredClass "PKPaymentButton"
-    sendClassMsg cls' (mkSelector "buttonWithType:style:disableCardArt:") (retPtr retVoid) [argCLong (coerce buttonType), argCLong (coerce buttonStyle), argCULong (if disableCardArt then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' buttonWithType_style_disableCardArtSelector buttonType buttonStyle disableCardArt
 
 -- | @- initWithPaymentButtonType:paymentButtonStyle:disableCardArt:@
 initWithPaymentButtonType_paymentButtonStyle_disableCardArt :: IsPKPaymentButton pkPaymentButton => pkPaymentButton -> PKPaymentButtonType -> PKPaymentButtonStyle -> Bool -> IO (Id PKPaymentButton)
-initWithPaymentButtonType_paymentButtonStyle_disableCardArt pkPaymentButton  type_ style disableCardArt =
-    sendMsg pkPaymentButton (mkSelector "initWithPaymentButtonType:paymentButtonStyle:disableCardArt:") (retPtr retVoid) [argCLong (coerce type_), argCLong (coerce style), argCULong (if disableCardArt then 1 else 0)] >>= ownedObject . castPtr
+initWithPaymentButtonType_paymentButtonStyle_disableCardArt pkPaymentButton type_ style disableCardArt =
+  sendOwnedMessage pkPaymentButton initWithPaymentButtonType_paymentButtonStyle_disableCardArtSelector type_ style disableCardArt
 
 -- | @- cornerRadius@
 cornerRadius :: IsPKPaymentButton pkPaymentButton => pkPaymentButton -> IO CDouble
-cornerRadius pkPaymentButton  =
-    sendMsg pkPaymentButton (mkSelector "cornerRadius") retCDouble []
+cornerRadius pkPaymentButton =
+  sendMessage pkPaymentButton cornerRadiusSelector
 
 -- | @- setCornerRadius:@
 setCornerRadius :: IsPKPaymentButton pkPaymentButton => pkPaymentButton -> CDouble -> IO ()
-setCornerRadius pkPaymentButton  value =
-    sendMsg pkPaymentButton (mkSelector "setCornerRadius:") retVoid [argCDouble value]
+setCornerRadius pkPaymentButton value =
+  sendMessage pkPaymentButton setCornerRadiusSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @buttonWithType:style:@
-buttonWithType_styleSelector :: Selector
+buttonWithType_styleSelector :: Selector '[PKPaymentButtonType, PKPaymentButtonStyle] (Id PKPaymentButton)
 buttonWithType_styleSelector = mkSelector "buttonWithType:style:"
 
 -- | @Selector@ for @initWithPaymentButtonType:paymentButtonStyle:@
-initWithPaymentButtonType_paymentButtonStyleSelector :: Selector
+initWithPaymentButtonType_paymentButtonStyleSelector :: Selector '[PKPaymentButtonType, PKPaymentButtonStyle] (Id PKPaymentButton)
 initWithPaymentButtonType_paymentButtonStyleSelector = mkSelector "initWithPaymentButtonType:paymentButtonStyle:"
 
 -- | @Selector@ for @buttonWithType:style:disableCardArt:@
-buttonWithType_style_disableCardArtSelector :: Selector
+buttonWithType_style_disableCardArtSelector :: Selector '[PKPaymentButtonType, PKPaymentButtonStyle, Bool] (Id PKPaymentButton)
 buttonWithType_style_disableCardArtSelector = mkSelector "buttonWithType:style:disableCardArt:"
 
 -- | @Selector@ for @initWithPaymentButtonType:paymentButtonStyle:disableCardArt:@
-initWithPaymentButtonType_paymentButtonStyle_disableCardArtSelector :: Selector
+initWithPaymentButtonType_paymentButtonStyle_disableCardArtSelector :: Selector '[PKPaymentButtonType, PKPaymentButtonStyle, Bool] (Id PKPaymentButton)
 initWithPaymentButtonType_paymentButtonStyle_disableCardArtSelector = mkSelector "initWithPaymentButtonType:paymentButtonStyle:disableCardArt:"
 
 -- | @Selector@ for @cornerRadius@
-cornerRadiusSelector :: Selector
+cornerRadiusSelector :: Selector '[] CDouble
 cornerRadiusSelector = mkSelector "cornerRadius"
 
 -- | @Selector@ for @setCornerRadius:@
-setCornerRadiusSelector :: Selector
+setCornerRadiusSelector :: Selector '[CDouble] ()
 setCornerRadiusSelector = mkSelector "setCornerRadius:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,28 +20,24 @@ module ObjC.AVFoundation.AVAssetDownloadTask
   , originalRequest
   , currentRequest
   , response
-  , initSelector
-  , newSelector
-  , urlAssetSelector
-  , destinationURLSelector
-  , optionsSelector
-  , loadedTimeRangesSelector
-  , originalRequestSelector
   , currentRequestSelector
+  , destinationURLSelector
+  , initSelector
+  , loadedTimeRangesSelector
+  , newSelector
+  , optionsSelector
+  , originalRequestSelector
   , responseSelector
+  , urlAssetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,22 +46,22 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO (Id AVAssetDownloadTask)
-init_ avAssetDownloadTask  =
-    sendMsg avAssetDownloadTask (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetDownloadTask =
+  sendOwnedMessage avAssetDownloadTask initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetDownloadTask)
 new  =
   do
     cls' <- getRequiredClass "AVAssetDownloadTask"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The asset supplied to the download task upon initialization.
 --
 -- ObjC selector: @- URLAsset@
 urlAsset :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO (Id AVURLAsset)
-urlAsset avAssetDownloadTask  =
-    sendMsg avAssetDownloadTask (mkSelector "URLAsset") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlAsset avAssetDownloadTask =
+  sendMessage avAssetDownloadTask urlAssetSelector
 
 -- | The file URL supplied to the download task upon initialization.
 --
@@ -72,15 +69,15 @@ urlAsset avAssetDownloadTask  =
 --
 -- ObjC selector: @- destinationURL@
 destinationURL :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO (Id NSURL)
-destinationURL avAssetDownloadTask  =
-    sendMsg avAssetDownloadTask (mkSelector "destinationURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationURL avAssetDownloadTask =
+  sendMessage avAssetDownloadTask destinationURLSelector
 
 -- | The options supplied to the download task upon initialization.
 --
 -- ObjC selector: @- options@
 options :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO (Id NSDictionary)
-options avAssetDownloadTask  =
-    sendMsg avAssetDownloadTask (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+options avAssetDownloadTask =
+  sendMessage avAssetDownloadTask optionsSelector
 
 -- | This property provides a collection of time ranges for which the download task has media data already downloaded and playable. The ranges provided might be discontinuous.
 --
@@ -88,61 +85,61 @@ options avAssetDownloadTask  =
 --
 -- ObjC selector: @- loadedTimeRanges@
 loadedTimeRanges :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO (Id NSArray)
-loadedTimeRanges avAssetDownloadTask  =
-    sendMsg avAssetDownloadTask (mkSelector "loadedTimeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+loadedTimeRanges avAssetDownloadTask =
+  sendMessage avAssetDownloadTask loadedTimeRangesSelector
 
 -- | @- originalRequest@
 originalRequest :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO RawId
-originalRequest avAssetDownloadTask  =
-    fmap (RawId . castPtr) $ sendMsg avAssetDownloadTask (mkSelector "originalRequest") (retPtr retVoid) []
+originalRequest avAssetDownloadTask =
+  sendMessage avAssetDownloadTask originalRequestSelector
 
 -- | @- currentRequest@
 currentRequest :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO RawId
-currentRequest avAssetDownloadTask  =
-    fmap (RawId . castPtr) $ sendMsg avAssetDownloadTask (mkSelector "currentRequest") (retPtr retVoid) []
+currentRequest avAssetDownloadTask =
+  sendMessage avAssetDownloadTask currentRequestSelector
 
 -- | @- response@
 response :: IsAVAssetDownloadTask avAssetDownloadTask => avAssetDownloadTask -> IO RawId
-response avAssetDownloadTask  =
-    fmap (RawId . castPtr) $ sendMsg avAssetDownloadTask (mkSelector "response") (retPtr retVoid) []
+response avAssetDownloadTask =
+  sendMessage avAssetDownloadTask responseSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetDownloadTask)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetDownloadTask)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @URLAsset@
-urlAssetSelector :: Selector
+urlAssetSelector :: Selector '[] (Id AVURLAsset)
 urlAssetSelector = mkSelector "URLAsset"
 
 -- | @Selector@ for @destinationURL@
-destinationURLSelector :: Selector
+destinationURLSelector :: Selector '[] (Id NSURL)
 destinationURLSelector = mkSelector "destinationURL"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] (Id NSDictionary)
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @loadedTimeRanges@
-loadedTimeRangesSelector :: Selector
+loadedTimeRangesSelector :: Selector '[] (Id NSArray)
 loadedTimeRangesSelector = mkSelector "loadedTimeRanges"
 
 -- | @Selector@ for @originalRequest@
-originalRequestSelector :: Selector
+originalRequestSelector :: Selector '[] RawId
 originalRequestSelector = mkSelector "originalRequest"
 
 -- | @Selector@ for @currentRequest@
-currentRequestSelector :: Selector
+currentRequestSelector :: Selector '[] RawId
 currentRequestSelector = mkSelector "currentRequest"
 
 -- | @Selector@ for @response@
-responseSelector :: Selector
+responseSelector :: Selector '[] RawId
 responseSelector = mkSelector "response"
 

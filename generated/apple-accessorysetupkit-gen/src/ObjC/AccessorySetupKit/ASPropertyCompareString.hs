@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.AccessorySetupKit.ASPropertyCompareString
   , new
   , string
   , compareOptions
-  , initWithString_compareOptionsSelector
+  , compareOptionsSelector
   , initSelector
+  , initWithString_compareOptionsSelector
   , newSelector
   , stringSelector
-  , compareOptionsSelector
 
   -- * Enum types
   , NSStringCompareOptions(NSStringCompareOptions)
@@ -34,15 +35,11 @@ module ObjC.AccessorySetupKit.ASPropertyCompareString
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,55 +51,54 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithString:compareOptions:@
 initWithString_compareOptions :: (IsASPropertyCompareString asPropertyCompareString, IsNSString string) => asPropertyCompareString -> string -> NSStringCompareOptions -> IO (Id ASPropertyCompareString)
-initWithString_compareOptions asPropertyCompareString  string compareOptions =
-  withObjCPtr string $ \raw_string ->
-      sendMsg asPropertyCompareString (mkSelector "initWithString:compareOptions:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argCULong (coerce compareOptions)] >>= ownedObject . castPtr
+initWithString_compareOptions asPropertyCompareString string compareOptions =
+  sendOwnedMessage asPropertyCompareString initWithString_compareOptionsSelector (toNSString string) compareOptions
 
 -- | @- init@
 init_ :: IsASPropertyCompareString asPropertyCompareString => asPropertyCompareString -> IO (Id ASPropertyCompareString)
-init_ asPropertyCompareString  =
-    sendMsg asPropertyCompareString (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asPropertyCompareString =
+  sendOwnedMessage asPropertyCompareString initSelector
 
 -- | @- new@
 new :: IsASPropertyCompareString asPropertyCompareString => asPropertyCompareString -> IO (Id ASPropertyCompareString)
-new asPropertyCompareString  =
-    sendMsg asPropertyCompareString (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+new asPropertyCompareString =
+  sendOwnedMessage asPropertyCompareString newSelector
 
 -- | The string to compare against.
 --
 -- ObjC selector: @- string@
 string :: IsASPropertyCompareString asPropertyCompareString => asPropertyCompareString -> IO (Id NSString)
-string asPropertyCompareString  =
-    sendMsg asPropertyCompareString (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string asPropertyCompareString =
+  sendMessage asPropertyCompareString stringSelector
 
 -- | Comparison options to apply when comparing strings.
 --
 -- ObjC selector: @- compareOptions@
 compareOptions :: IsASPropertyCompareString asPropertyCompareString => asPropertyCompareString -> IO NSStringCompareOptions
-compareOptions asPropertyCompareString  =
-    fmap (coerce :: CULong -> NSStringCompareOptions) $ sendMsg asPropertyCompareString (mkSelector "compareOptions") retCULong []
+compareOptions asPropertyCompareString =
+  sendMessage asPropertyCompareString compareOptionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithString:compareOptions:@
-initWithString_compareOptionsSelector :: Selector
+initWithString_compareOptionsSelector :: Selector '[Id NSString, NSStringCompareOptions] (Id ASPropertyCompareString)
 initWithString_compareOptionsSelector = mkSelector "initWithString:compareOptions:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASPropertyCompareString)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASPropertyCompareString)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @compareOptions@
-compareOptionsSelector :: Selector
+compareOptionsSelector :: Selector '[] NSStringCompareOptions
 compareOptionsSelector = mkSelector "compareOptions"
 

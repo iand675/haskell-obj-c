@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,42 +30,38 @@ module ObjC.FileProvider.NSFileProviderExtension
   , domain
   , providerIdentifier
   , documentStorageURL
-  , urlForItemWithPersistentIdentifierSelector
-  , persistentIdentifierForItemAtURLSelector
-  , providePlaceholderAtURL_completionHandlerSelector
-  , startProvidingItemAtURL_completionHandlerSelector
-  , stopProvidingItemAtURLSelector
-  , itemChangedAtURLSelector
-  , supportedServiceSourcesForItemIdentifier_errorSelector
-  , importDocumentAtURL_toParentItemIdentifier_completionHandlerSelector
   , createDirectoryWithName_inParentItemIdentifier_completionHandlerSelector
+  , deleteItemWithIdentifier_completionHandlerSelector
+  , documentStorageURLSelector
+  , domainSelector
+  , enumeratorForContainerItemIdentifier_errorSelector
+  , importDocumentAtURL_toParentItemIdentifier_completionHandlerSelector
+  , itemChangedAtURLSelector
+  , persistentIdentifierForItemAtURLSelector
+  , placeholderURLForURLSelector
+  , providePlaceholderAtURL_completionHandlerSelector
+  , providerIdentifierSelector
   , renameItemWithIdentifier_toName_completionHandlerSelector
   , reparentItemWithIdentifier_toParentItemWithIdentifier_newName_completionHandlerSelector
-  , trashItemWithIdentifier_completionHandlerSelector
-  , untrashItemWithIdentifier_toParentItemIdentifier_completionHandlerSelector
-  , deleteItemWithIdentifier_completionHandlerSelector
+  , setFavoriteRank_forItemIdentifier_completionHandlerSelector
   , setLastUsedDate_forItemIdentifier_completionHandlerSelector
   , setTagData_forItemIdentifier_completionHandlerSelector
-  , setFavoriteRank_forItemIdentifier_completionHandlerSelector
-  , enumeratorForContainerItemIdentifier_errorSelector
+  , startProvidingItemAtURL_completionHandlerSelector
+  , stopProvidingItemAtURLSelector
+  , supportedServiceSourcesForItemIdentifier_errorSelector
+  , trashItemWithIdentifier_completionHandlerSelector
+  , untrashItemWithIdentifier_toParentItemIdentifier_completionHandlerSelector
+  , urlForItemWithPersistentIdentifierSelector
   , writePlaceholderAtURL_withMetadata_errorSelector
-  , placeholderURLForURLSelector
-  , domainSelector
-  , providerIdentifierSelector
-  , documentStorageURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,15 +74,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- URLForItemWithPersistentIdentifier:@
 urlForItemWithPersistentIdentifier :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSString identifier) => nsFileProviderExtension -> identifier -> IO (Id NSURL)
-urlForItemWithPersistentIdentifier nsFileProviderExtension  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg nsFileProviderExtension (mkSelector "URLForItemWithPersistentIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+urlForItemWithPersistentIdentifier nsFileProviderExtension identifier =
+  sendMessage nsFileProviderExtension urlForItemWithPersistentIdentifierSelector (toNSString identifier)
 
 -- | @- persistentIdentifierForItemAtURL:@
 persistentIdentifierForItemAtURL :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSURL url) => nsFileProviderExtension -> url -> IO (Id NSString)
-persistentIdentifierForItemAtURL nsFileProviderExtension  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsFileProviderExtension (mkSelector "persistentIdentifierForItemAtURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+persistentIdentifierForItemAtURL nsFileProviderExtension url =
+  sendMessage nsFileProviderExtension persistentIdentifierForItemAtURLSelector (toNSURL url)
 
 -- | This method is called when a placeholder URL should be provided for the item at the given URL.
 --
@@ -93,17 +88,15 @@ persistentIdentifierForItemAtURL nsFileProviderExtension  url =
 --
 -- ObjC selector: @- providePlaceholderAtURL:completionHandler:@
 providePlaceholderAtURL_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSURL url) => nsFileProviderExtension -> url -> Ptr () -> IO ()
-providePlaceholderAtURL_completionHandler nsFileProviderExtension  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsFileProviderExtension (mkSelector "providePlaceholderAtURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+providePlaceholderAtURL_completionHandler nsFileProviderExtension url completionHandler =
+  sendMessage nsFileProviderExtension providePlaceholderAtURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | Should ensure that the actual file is in the position returned by URLForItemWithPersistentIdentifier:, then call the completion handler.
 --
 -- ObjC selector: @- startProvidingItemAtURL:completionHandler:@
 startProvidingItemAtURL_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSURL url) => nsFileProviderExtension -> url -> Ptr () -> IO ()
-startProvidingItemAtURL_completionHandler nsFileProviderExtension  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsFileProviderExtension (mkSelector "startProvidingItemAtURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+startProvidingItemAtURL_completionHandler nsFileProviderExtension url completionHandler =
+  sendMessage nsFileProviderExtension startProvidingItemAtURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | Called after the last claim to the file has been released. At this point, it is safe for the file provider to remove the content file.
 --
@@ -111,24 +104,20 @@ startProvidingItemAtURL_completionHandler nsFileProviderExtension  url completio
 --
 -- ObjC selector: @- stopProvidingItemAtURL:@
 stopProvidingItemAtURL :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSURL url) => nsFileProviderExtension -> url -> IO ()
-stopProvidingItemAtURL nsFileProviderExtension  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsFileProviderExtension (mkSelector "stopProvidingItemAtURL:") retVoid [argPtr (castPtr raw_url :: Ptr ())]
+stopProvidingItemAtURL nsFileProviderExtension url =
+  sendMessage nsFileProviderExtension stopProvidingItemAtURLSelector (toNSURL url)
 
 -- | Called at some point after the file has changed; the provider may then trigger an upload.
 --
 -- ObjC selector: @- itemChangedAtURL:@
 itemChangedAtURL :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSURL url) => nsFileProviderExtension -> url -> IO ()
-itemChangedAtURL nsFileProviderExtension  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsFileProviderExtension (mkSelector "itemChangedAtURL:") retVoid [argPtr (castPtr raw_url :: Ptr ())]
+itemChangedAtURL nsFileProviderExtension url =
+  sendMessage nsFileProviderExtension itemChangedAtURLSelector (toNSURL url)
 
 -- | @- supportedServiceSourcesForItemIdentifier:error:@
 supportedServiceSourcesForItemIdentifier_error :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSString itemIdentifier, IsNSError error_) => nsFileProviderExtension -> itemIdentifier -> error_ -> IO (Id NSArray)
-supportedServiceSourcesForItemIdentifier_error nsFileProviderExtension  itemIdentifier error_ =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsFileProviderExtension (mkSelector "supportedServiceSourcesForItemIdentifier:error:") (retPtr retVoid) [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedServiceSourcesForItemIdentifier_error nsFileProviderExtension itemIdentifier error_ =
+  sendMessage nsFileProviderExtension supportedServiceSourcesForItemIdentifier_errorSelector (toNSString itemIdentifier) (toNSError error_)
 
 -- | Import a document.
 --
@@ -156,10 +145,8 @@ supportedServiceSourcesForItemIdentifier_error nsFileProviderExtension  itemIden
 --
 -- ObjC selector: @- importDocumentAtURL:toParentItemIdentifier:completionHandler:@
 importDocumentAtURL_toParentItemIdentifier_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSURL fileURL, IsNSString parentItemIdentifier) => nsFileProviderExtension -> fileURL -> parentItemIdentifier -> Ptr () -> IO ()
-importDocumentAtURL_toParentItemIdentifier_completionHandler nsFileProviderExtension  fileURL parentItemIdentifier completionHandler =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr parentItemIdentifier $ \raw_parentItemIdentifier ->
-        sendMsg nsFileProviderExtension (mkSelector "importDocumentAtURL:toParentItemIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_parentItemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+importDocumentAtURL_toParentItemIdentifier_completionHandler nsFileProviderExtension fileURL parentItemIdentifier completionHandler =
+  sendMessage nsFileProviderExtension importDocumentAtURL_toParentItemIdentifier_completionHandlerSelector (toNSURL fileURL) (toNSString parentItemIdentifier) completionHandler
 
 -- | Create a directory.
 --
@@ -171,10 +158,8 @@ importDocumentAtURL_toParentItemIdentifier_completionHandler nsFileProviderExten
 --
 -- ObjC selector: @- createDirectoryWithName:inParentItemIdentifier:completionHandler:@
 createDirectoryWithName_inParentItemIdentifier_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSString directoryName, IsNSString parentItemIdentifier) => nsFileProviderExtension -> directoryName -> parentItemIdentifier -> Ptr () -> IO ()
-createDirectoryWithName_inParentItemIdentifier_completionHandler nsFileProviderExtension  directoryName parentItemIdentifier completionHandler =
-  withObjCPtr directoryName $ \raw_directoryName ->
-    withObjCPtr parentItemIdentifier $ \raw_parentItemIdentifier ->
-        sendMsg nsFileProviderExtension (mkSelector "createDirectoryWithName:inParentItemIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_directoryName :: Ptr ()), argPtr (castPtr raw_parentItemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+createDirectoryWithName_inParentItemIdentifier_completionHandler nsFileProviderExtension directoryName parentItemIdentifier completionHandler =
+  sendMessage nsFileProviderExtension createDirectoryWithName_inParentItemIdentifier_completionHandlerSelector (toNSString directoryName) (toNSString parentItemIdentifier) completionHandler
 
 -- | Rename a document or a directory.
 --
@@ -186,10 +171,8 @@ createDirectoryWithName_inParentItemIdentifier_completionHandler nsFileProviderE
 --
 -- ObjC selector: @- renameItemWithIdentifier:toName:completionHandler:@
 renameItemWithIdentifier_toName_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSString itemIdentifier, IsNSString itemName) => nsFileProviderExtension -> itemIdentifier -> itemName -> Ptr () -> IO ()
-renameItemWithIdentifier_toName_completionHandler nsFileProviderExtension  itemIdentifier itemName completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-    withObjCPtr itemName $ \raw_itemName ->
-        sendMsg nsFileProviderExtension (mkSelector "renameItemWithIdentifier:toName:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr raw_itemName :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+renameItemWithIdentifier_toName_completionHandler nsFileProviderExtension itemIdentifier itemName completionHandler =
+  sendMessage nsFileProviderExtension renameItemWithIdentifier_toName_completionHandlerSelector (toNSString itemIdentifier) (toNSString itemName) completionHandler
 
 -- | Move an item to a new directory.
 --
@@ -201,11 +184,8 @@ renameItemWithIdentifier_toName_completionHandler nsFileProviderExtension  itemI
 --
 -- ObjC selector: @- reparentItemWithIdentifier:toParentItemWithIdentifier:newName:completionHandler:@
 reparentItemWithIdentifier_toParentItemWithIdentifier_newName_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSString itemIdentifier, IsNSString parentItemIdentifier, IsNSString newName) => nsFileProviderExtension -> itemIdentifier -> parentItemIdentifier -> newName -> Ptr () -> IO ()
-reparentItemWithIdentifier_toParentItemWithIdentifier_newName_completionHandler nsFileProviderExtension  itemIdentifier parentItemIdentifier newName completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-    withObjCPtr parentItemIdentifier $ \raw_parentItemIdentifier ->
-      withObjCPtr newName $ \raw_newName ->
-          sendMsg nsFileProviderExtension (mkSelector "reparentItemWithIdentifier:toParentItemWithIdentifier:newName:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr raw_parentItemIdentifier :: Ptr ()), argPtr (castPtr raw_newName :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+reparentItemWithIdentifier_toParentItemWithIdentifier_newName_completionHandler nsFileProviderExtension itemIdentifier parentItemIdentifier newName completionHandler =
+  sendMessage nsFileProviderExtension reparentItemWithIdentifier_toParentItemWithIdentifier_newName_completionHandlerSelector (toNSString itemIdentifier) (toNSString parentItemIdentifier) (toNSString newName) completionHandler
 
 -- | Move an item to the trash.
 --
@@ -219,9 +199,8 @@ reparentItemWithIdentifier_toParentItemWithIdentifier_newName_completionHandler 
 --
 -- ObjC selector: @- trashItemWithIdentifier:completionHandler:@
 trashItemWithIdentifier_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSString itemIdentifier) => nsFileProviderExtension -> itemIdentifier -> Ptr () -> IO ()
-trashItemWithIdentifier_completionHandler nsFileProviderExtension  itemIdentifier completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendMsg nsFileProviderExtension (mkSelector "trashItemWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+trashItemWithIdentifier_completionHandler nsFileProviderExtension itemIdentifier completionHandler =
+  sendMessage nsFileProviderExtension trashItemWithIdentifier_completionHandlerSelector (toNSString itemIdentifier) completionHandler
 
 -- | Move an item out of the trash.
 --
@@ -233,10 +212,8 @@ trashItemWithIdentifier_completionHandler nsFileProviderExtension  itemIdentifie
 --
 -- ObjC selector: @- untrashItemWithIdentifier:toParentItemIdentifier:completionHandler:@
 untrashItemWithIdentifier_toParentItemIdentifier_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSString itemIdentifier, IsNSString parentItemIdentifier) => nsFileProviderExtension -> itemIdentifier -> parentItemIdentifier -> Ptr () -> IO ()
-untrashItemWithIdentifier_toParentItemIdentifier_completionHandler nsFileProviderExtension  itemIdentifier parentItemIdentifier completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-    withObjCPtr parentItemIdentifier $ \raw_parentItemIdentifier ->
-        sendMsg nsFileProviderExtension (mkSelector "untrashItemWithIdentifier:toParentItemIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr raw_parentItemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+untrashItemWithIdentifier_toParentItemIdentifier_completionHandler nsFileProviderExtension itemIdentifier parentItemIdentifier completionHandler =
+  sendMessage nsFileProviderExtension untrashItemWithIdentifier_toParentItemIdentifier_completionHandlerSelector (toNSString itemIdentifier) (toNSString parentItemIdentifier) completionHandler
 
 -- | Delete an item forever.
 --
@@ -246,9 +223,8 @@ untrashItemWithIdentifier_toParentItemIdentifier_completionHandler nsFileProvide
 --
 -- ObjC selector: @- deleteItemWithIdentifier:completionHandler:@
 deleteItemWithIdentifier_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSString itemIdentifier) => nsFileProviderExtension -> itemIdentifier -> Ptr () -> IO ()
-deleteItemWithIdentifier_completionHandler nsFileProviderExtension  itemIdentifier completionHandler =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendMsg nsFileProviderExtension (mkSelector "deleteItemWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+deleteItemWithIdentifier_completionHandler nsFileProviderExtension itemIdentifier completionHandler =
+  sendMessage nsFileProviderExtension deleteItemWithIdentifier_completionHandlerSelector (toNSString itemIdentifier) completionHandler
 
 -- | Mark an item as recently used, or clear its lastUsedDate if nil.
 --
@@ -260,10 +236,8 @@ deleteItemWithIdentifier_completionHandler nsFileProviderExtension  itemIdentifi
 --
 -- ObjC selector: @- setLastUsedDate:forItemIdentifier:completionHandler:@
 setLastUsedDate_forItemIdentifier_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSDate lastUsedDate, IsNSString itemIdentifier) => nsFileProviderExtension -> lastUsedDate -> itemIdentifier -> Ptr () -> IO ()
-setLastUsedDate_forItemIdentifier_completionHandler nsFileProviderExtension  lastUsedDate itemIdentifier completionHandler =
-  withObjCPtr lastUsedDate $ \raw_lastUsedDate ->
-    withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-        sendMsg nsFileProviderExtension (mkSelector "setLastUsedDate:forItemIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_lastUsedDate :: Ptr ()), argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setLastUsedDate_forItemIdentifier_completionHandler nsFileProviderExtension lastUsedDate itemIdentifier completionHandler =
+  sendMessage nsFileProviderExtension setLastUsedDate_forItemIdentifier_completionHandlerSelector (toNSDate lastUsedDate) (toNSString itemIdentifier) completionHandler
 
 -- | Tag an item, or untag it if tagData is nil.
 --
@@ -277,10 +251,8 @@ setLastUsedDate_forItemIdentifier_completionHandler nsFileProviderExtension  las
 --
 -- ObjC selector: @- setTagData:forItemIdentifier:completionHandler:@
 setTagData_forItemIdentifier_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSData tagData, IsNSString itemIdentifier) => nsFileProviderExtension -> tagData -> itemIdentifier -> Ptr () -> IO ()
-setTagData_forItemIdentifier_completionHandler nsFileProviderExtension  tagData itemIdentifier completionHandler =
-  withObjCPtr tagData $ \raw_tagData ->
-    withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-        sendMsg nsFileProviderExtension (mkSelector "setTagData:forItemIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_tagData :: Ptr ()), argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setTagData_forItemIdentifier_completionHandler nsFileProviderExtension tagData itemIdentifier completionHandler =
+  sendMessage nsFileProviderExtension setTagData_forItemIdentifier_completionHandlerSelector (toNSData tagData) (toNSString itemIdentifier) completionHandler
 
 -- | Mark a directory as favorite (or no longer favorite if favoriteRank is nil.)
 --
@@ -292,10 +264,8 @@ setTagData_forItemIdentifier_completionHandler nsFileProviderExtension  tagData 
 --
 -- ObjC selector: @- setFavoriteRank:forItemIdentifier:completionHandler:@
 setFavoriteRank_forItemIdentifier_completionHandler :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSNumber favoriteRank, IsNSString itemIdentifier) => nsFileProviderExtension -> favoriteRank -> itemIdentifier -> Ptr () -> IO ()
-setFavoriteRank_forItemIdentifier_completionHandler nsFileProviderExtension  favoriteRank itemIdentifier completionHandler =
-  withObjCPtr favoriteRank $ \raw_favoriteRank ->
-    withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-        sendMsg nsFileProviderExtension (mkSelector "setFavoriteRank:forItemIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_favoriteRank :: Ptr ()), argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+setFavoriteRank_forItemIdentifier_completionHandler nsFileProviderExtension favoriteRank itemIdentifier completionHandler =
+  sendMessage nsFileProviderExtension setFavoriteRank_forItemIdentifier_completionHandlerSelector (toNSNumber favoriteRank) (toNSString itemIdentifier) completionHandler
 
 -- | Create an enumerator for an item.
 --
@@ -311,10 +281,8 @@ setFavoriteRank_forItemIdentifier_completionHandler nsFileProviderExtension  fav
 --
 -- ObjC selector: @- enumeratorForContainerItemIdentifier:error:@
 enumeratorForContainerItemIdentifier_error :: (IsNSFileProviderExtension nsFileProviderExtension, IsNSString containerItemIdentifier, IsNSError error_) => nsFileProviderExtension -> containerItemIdentifier -> error_ -> IO RawId
-enumeratorForContainerItemIdentifier_error nsFileProviderExtension  containerItemIdentifier error_ =
-  withObjCPtr containerItemIdentifier $ \raw_containerItemIdentifier ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendMsg nsFileProviderExtension (mkSelector "enumeratorForContainerItemIdentifier:error:") (retPtr retVoid) [argPtr (castPtr raw_containerItemIdentifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+enumeratorForContainerItemIdentifier_error nsFileProviderExtension containerItemIdentifier error_ =
+  sendMessage nsFileProviderExtension enumeratorForContainerItemIdentifier_errorSelector (toNSString containerItemIdentifier) (toNSError error_)
 
 -- | Writes out a placeholder at the specified URL. The URL should be one returned by placeholderURLForURL:; if URL resource values are requested, the system will consult the placeholder before consulting your app extension.
 --
@@ -325,10 +293,7 @@ writePlaceholderAtURL_withMetadata_error :: (IsNSURL placeholderURL, IsNSDiction
 writePlaceholderAtURL_withMetadata_error placeholderURL metadata error_ =
   do
     cls' <- getRequiredClass "NSFileProviderExtension"
-    withObjCPtr placeholderURL $ \raw_placeholderURL ->
-      withObjCPtr metadata $ \raw_metadata ->
-        withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "writePlaceholderAtURL:withMetadata:error:") retCULong [argPtr (castPtr raw_placeholderURL :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' writePlaceholderAtURL_withMetadata_errorSelector (toNSURL placeholderURL) (toNSDictionary metadata) (toNSError error_)
 
 -- | Returns the designated placeholder URL for a given URL. This placeholder will be consulted before falling back to your app extension to enhance performance. To write out a placeholder, use the writePlaceHolderAtURL: method above.
 --
@@ -337,13 +302,12 @@ placeholderURLForURL :: IsNSURL url => url -> IO (Id NSURL)
 placeholderURLForURL url =
   do
     cls' <- getRequiredClass "NSFileProviderExtension"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "placeholderURLForURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' placeholderURLForURLSelector (toNSURL url)
 
 -- | @- domain@
 domain :: IsNSFileProviderExtension nsFileProviderExtension => nsFileProviderExtension -> IO (Id NSFileProviderDomain)
-domain nsFileProviderExtension  =
-    sendMsg nsFileProviderExtension (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain nsFileProviderExtension =
+  sendMessage nsFileProviderExtension domainSelector
 
 -- | An identifier unique to this provider.
 --
@@ -351,109 +315,109 @@ domain nsFileProviderExtension  =
 --
 -- ObjC selector: @- providerIdentifier@
 providerIdentifier :: IsNSFileProviderExtension nsFileProviderExtension => nsFileProviderExtension -> IO (Id NSString)
-providerIdentifier nsFileProviderExtension  =
-    sendMsg nsFileProviderExtension (mkSelector "providerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerIdentifier nsFileProviderExtension =
+  sendMessage nsFileProviderExtension providerIdentifierSelector
 
 -- | The root URL for provided documents. This URL is derived by consulting the NSExtensionFileProviderDocumentGroup property on your extension. The document storage URL is the folder "File Provider Storage" in the corresponding container.
 --
 -- ObjC selector: @- documentStorageURL@
 documentStorageURL :: IsNSFileProviderExtension nsFileProviderExtension => nsFileProviderExtension -> IO (Id NSURL)
-documentStorageURL nsFileProviderExtension  =
-    sendMsg nsFileProviderExtension (mkSelector "documentStorageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+documentStorageURL nsFileProviderExtension =
+  sendMessage nsFileProviderExtension documentStorageURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @URLForItemWithPersistentIdentifier:@
-urlForItemWithPersistentIdentifierSelector :: Selector
+urlForItemWithPersistentIdentifierSelector :: Selector '[Id NSString] (Id NSURL)
 urlForItemWithPersistentIdentifierSelector = mkSelector "URLForItemWithPersistentIdentifier:"
 
 -- | @Selector@ for @persistentIdentifierForItemAtURL:@
-persistentIdentifierForItemAtURLSelector :: Selector
+persistentIdentifierForItemAtURLSelector :: Selector '[Id NSURL] (Id NSString)
 persistentIdentifierForItemAtURLSelector = mkSelector "persistentIdentifierForItemAtURL:"
 
 -- | @Selector@ for @providePlaceholderAtURL:completionHandler:@
-providePlaceholderAtURL_completionHandlerSelector :: Selector
+providePlaceholderAtURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 providePlaceholderAtURL_completionHandlerSelector = mkSelector "providePlaceholderAtURL:completionHandler:"
 
 -- | @Selector@ for @startProvidingItemAtURL:completionHandler:@
-startProvidingItemAtURL_completionHandlerSelector :: Selector
+startProvidingItemAtURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 startProvidingItemAtURL_completionHandlerSelector = mkSelector "startProvidingItemAtURL:completionHandler:"
 
 -- | @Selector@ for @stopProvidingItemAtURL:@
-stopProvidingItemAtURLSelector :: Selector
+stopProvidingItemAtURLSelector :: Selector '[Id NSURL] ()
 stopProvidingItemAtURLSelector = mkSelector "stopProvidingItemAtURL:"
 
 -- | @Selector@ for @itemChangedAtURL:@
-itemChangedAtURLSelector :: Selector
+itemChangedAtURLSelector :: Selector '[Id NSURL] ()
 itemChangedAtURLSelector = mkSelector "itemChangedAtURL:"
 
 -- | @Selector@ for @supportedServiceSourcesForItemIdentifier:error:@
-supportedServiceSourcesForItemIdentifier_errorSelector :: Selector
+supportedServiceSourcesForItemIdentifier_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSArray)
 supportedServiceSourcesForItemIdentifier_errorSelector = mkSelector "supportedServiceSourcesForItemIdentifier:error:"
 
 -- | @Selector@ for @importDocumentAtURL:toParentItemIdentifier:completionHandler:@
-importDocumentAtURL_toParentItemIdentifier_completionHandlerSelector :: Selector
+importDocumentAtURL_toParentItemIdentifier_completionHandlerSelector :: Selector '[Id NSURL, Id NSString, Ptr ()] ()
 importDocumentAtURL_toParentItemIdentifier_completionHandlerSelector = mkSelector "importDocumentAtURL:toParentItemIdentifier:completionHandler:"
 
 -- | @Selector@ for @createDirectoryWithName:inParentItemIdentifier:completionHandler:@
-createDirectoryWithName_inParentItemIdentifier_completionHandlerSelector :: Selector
+createDirectoryWithName_inParentItemIdentifier_completionHandlerSelector :: Selector '[Id NSString, Id NSString, Ptr ()] ()
 createDirectoryWithName_inParentItemIdentifier_completionHandlerSelector = mkSelector "createDirectoryWithName:inParentItemIdentifier:completionHandler:"
 
 -- | @Selector@ for @renameItemWithIdentifier:toName:completionHandler:@
-renameItemWithIdentifier_toName_completionHandlerSelector :: Selector
+renameItemWithIdentifier_toName_completionHandlerSelector :: Selector '[Id NSString, Id NSString, Ptr ()] ()
 renameItemWithIdentifier_toName_completionHandlerSelector = mkSelector "renameItemWithIdentifier:toName:completionHandler:"
 
 -- | @Selector@ for @reparentItemWithIdentifier:toParentItemWithIdentifier:newName:completionHandler:@
-reparentItemWithIdentifier_toParentItemWithIdentifier_newName_completionHandlerSelector :: Selector
+reparentItemWithIdentifier_toParentItemWithIdentifier_newName_completionHandlerSelector :: Selector '[Id NSString, Id NSString, Id NSString, Ptr ()] ()
 reparentItemWithIdentifier_toParentItemWithIdentifier_newName_completionHandlerSelector = mkSelector "reparentItemWithIdentifier:toParentItemWithIdentifier:newName:completionHandler:"
 
 -- | @Selector@ for @trashItemWithIdentifier:completionHandler:@
-trashItemWithIdentifier_completionHandlerSelector :: Selector
+trashItemWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 trashItemWithIdentifier_completionHandlerSelector = mkSelector "trashItemWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @untrashItemWithIdentifier:toParentItemIdentifier:completionHandler:@
-untrashItemWithIdentifier_toParentItemIdentifier_completionHandlerSelector :: Selector
+untrashItemWithIdentifier_toParentItemIdentifier_completionHandlerSelector :: Selector '[Id NSString, Id NSString, Ptr ()] ()
 untrashItemWithIdentifier_toParentItemIdentifier_completionHandlerSelector = mkSelector "untrashItemWithIdentifier:toParentItemIdentifier:completionHandler:"
 
 -- | @Selector@ for @deleteItemWithIdentifier:completionHandler:@
-deleteItemWithIdentifier_completionHandlerSelector :: Selector
+deleteItemWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 deleteItemWithIdentifier_completionHandlerSelector = mkSelector "deleteItemWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @setLastUsedDate:forItemIdentifier:completionHandler:@
-setLastUsedDate_forItemIdentifier_completionHandlerSelector :: Selector
+setLastUsedDate_forItemIdentifier_completionHandlerSelector :: Selector '[Id NSDate, Id NSString, Ptr ()] ()
 setLastUsedDate_forItemIdentifier_completionHandlerSelector = mkSelector "setLastUsedDate:forItemIdentifier:completionHandler:"
 
 -- | @Selector@ for @setTagData:forItemIdentifier:completionHandler:@
-setTagData_forItemIdentifier_completionHandlerSelector :: Selector
+setTagData_forItemIdentifier_completionHandlerSelector :: Selector '[Id NSData, Id NSString, Ptr ()] ()
 setTagData_forItemIdentifier_completionHandlerSelector = mkSelector "setTagData:forItemIdentifier:completionHandler:"
 
 -- | @Selector@ for @setFavoriteRank:forItemIdentifier:completionHandler:@
-setFavoriteRank_forItemIdentifier_completionHandlerSelector :: Selector
+setFavoriteRank_forItemIdentifier_completionHandlerSelector :: Selector '[Id NSNumber, Id NSString, Ptr ()] ()
 setFavoriteRank_forItemIdentifier_completionHandlerSelector = mkSelector "setFavoriteRank:forItemIdentifier:completionHandler:"
 
 -- | @Selector@ for @enumeratorForContainerItemIdentifier:error:@
-enumeratorForContainerItemIdentifier_errorSelector :: Selector
+enumeratorForContainerItemIdentifier_errorSelector :: Selector '[Id NSString, Id NSError] RawId
 enumeratorForContainerItemIdentifier_errorSelector = mkSelector "enumeratorForContainerItemIdentifier:error:"
 
 -- | @Selector@ for @writePlaceholderAtURL:withMetadata:error:@
-writePlaceholderAtURL_withMetadata_errorSelector :: Selector
+writePlaceholderAtURL_withMetadata_errorSelector :: Selector '[Id NSURL, Id NSDictionary, Id NSError] Bool
 writePlaceholderAtURL_withMetadata_errorSelector = mkSelector "writePlaceholderAtURL:withMetadata:error:"
 
 -- | @Selector@ for @placeholderURLForURL:@
-placeholderURLForURLSelector :: Selector
+placeholderURLForURLSelector :: Selector '[Id NSURL] (Id NSURL)
 placeholderURLForURLSelector = mkSelector "placeholderURLForURL:"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id NSFileProviderDomain)
 domainSelector = mkSelector "domain"
 
 -- | @Selector@ for @providerIdentifier@
-providerIdentifierSelector :: Selector
+providerIdentifierSelector :: Selector '[] (Id NSString)
 providerIdentifierSelector = mkSelector "providerIdentifier"
 
 -- | @Selector@ for @documentStorageURL@
-documentStorageURLSelector :: Selector
+documentStorageURLSelector :: Selector '[] (Id NSURL)
 documentStorageURLSelector = mkSelector "documentStorageURL"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.Intents.INBalanceAmount
   , amount
   , balanceType
   , currencyCode
-  , initSelector
-  , initWithAmount_balanceTypeSelector
-  , initWithAmount_currencyCodeSelector
   , amountSelector
   , balanceTypeSelector
   , currencyCodeSelector
+  , initSelector
+  , initWithAmount_balanceTypeSelector
+  , initWithAmount_currencyCodeSelector
 
   -- * Enum types
   , INBalanceType(INBalanceType)
@@ -29,15 +30,11 @@ module ObjC.Intents.INBalanceAmount
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,62 +44,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINBalanceAmount inBalanceAmount => inBalanceAmount -> IO RawId
-init_ inBalanceAmount  =
-    fmap (RawId . castPtr) $ sendMsg inBalanceAmount (mkSelector "init") (retPtr retVoid) []
+init_ inBalanceAmount =
+  sendOwnedMessage inBalanceAmount initSelector
 
 -- | @- initWithAmount:balanceType:@
 initWithAmount_balanceType :: (IsINBalanceAmount inBalanceAmount, IsNSDecimalNumber amount) => inBalanceAmount -> amount -> INBalanceType -> IO (Id INBalanceAmount)
-initWithAmount_balanceType inBalanceAmount  amount balanceType =
-  withObjCPtr amount $ \raw_amount ->
-      sendMsg inBalanceAmount (mkSelector "initWithAmount:balanceType:") (retPtr retVoid) [argPtr (castPtr raw_amount :: Ptr ()), argCLong (coerce balanceType)] >>= ownedObject . castPtr
+initWithAmount_balanceType inBalanceAmount amount balanceType =
+  sendOwnedMessage inBalanceAmount initWithAmount_balanceTypeSelector (toNSDecimalNumber amount) balanceType
 
 -- | @- initWithAmount:currencyCode:@
 initWithAmount_currencyCode :: (IsINBalanceAmount inBalanceAmount, IsNSDecimalNumber amount, IsNSString currencyCode) => inBalanceAmount -> amount -> currencyCode -> IO (Id INBalanceAmount)
-initWithAmount_currencyCode inBalanceAmount  amount currencyCode =
-  withObjCPtr amount $ \raw_amount ->
-    withObjCPtr currencyCode $ \raw_currencyCode ->
-        sendMsg inBalanceAmount (mkSelector "initWithAmount:currencyCode:") (retPtr retVoid) [argPtr (castPtr raw_amount :: Ptr ()), argPtr (castPtr raw_currencyCode :: Ptr ())] >>= ownedObject . castPtr
+initWithAmount_currencyCode inBalanceAmount amount currencyCode =
+  sendOwnedMessage inBalanceAmount initWithAmount_currencyCodeSelector (toNSDecimalNumber amount) (toNSString currencyCode)
 
 -- | @- amount@
 amount :: IsINBalanceAmount inBalanceAmount => inBalanceAmount -> IO (Id NSDecimalNumber)
-amount inBalanceAmount  =
-    sendMsg inBalanceAmount (mkSelector "amount") (retPtr retVoid) [] >>= retainedObject . castPtr
+amount inBalanceAmount =
+  sendMessage inBalanceAmount amountSelector
 
 -- | @- balanceType@
 balanceType :: IsINBalanceAmount inBalanceAmount => inBalanceAmount -> IO INBalanceType
-balanceType inBalanceAmount  =
-    fmap (coerce :: CLong -> INBalanceType) $ sendMsg inBalanceAmount (mkSelector "balanceType") retCLong []
+balanceType inBalanceAmount =
+  sendMessage inBalanceAmount balanceTypeSelector
 
 -- | @- currencyCode@
 currencyCode :: IsINBalanceAmount inBalanceAmount => inBalanceAmount -> IO (Id NSString)
-currencyCode inBalanceAmount  =
-    sendMsg inBalanceAmount (mkSelector "currencyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyCode inBalanceAmount =
+  sendMessage inBalanceAmount currencyCodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithAmount:balanceType:@
-initWithAmount_balanceTypeSelector :: Selector
+initWithAmount_balanceTypeSelector :: Selector '[Id NSDecimalNumber, INBalanceType] (Id INBalanceAmount)
 initWithAmount_balanceTypeSelector = mkSelector "initWithAmount:balanceType:"
 
 -- | @Selector@ for @initWithAmount:currencyCode:@
-initWithAmount_currencyCodeSelector :: Selector
+initWithAmount_currencyCodeSelector :: Selector '[Id NSDecimalNumber, Id NSString] (Id INBalanceAmount)
 initWithAmount_currencyCodeSelector = mkSelector "initWithAmount:currencyCode:"
 
 -- | @Selector@ for @amount@
-amountSelector :: Selector
+amountSelector :: Selector '[] (Id NSDecimalNumber)
 amountSelector = mkSelector "amount"
 
 -- | @Selector@ for @balanceType@
-balanceTypeSelector :: Selector
+balanceTypeSelector :: Selector '[] INBalanceType
 balanceTypeSelector = mkSelector "balanceType"
 
 -- | @Selector@ for @currencyCode@
-currencyCodeSelector :: Selector
+currencyCodeSelector :: Selector '[] (Id NSString)
 currencyCodeSelector = mkSelector "currencyCode"
 

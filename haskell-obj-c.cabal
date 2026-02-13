@@ -40,6 +40,7 @@ library
       ObjC.Runtime.Association
       ObjC.Runtime.ClassBuilder
       ObjC.Runtime.MsgSend
+      ObjC.Runtime.Message
       ObjC.Runtime.AutoreleasePool
       ObjC.Runtime.Framework
       ObjC.Runtime.NSString
@@ -70,6 +71,7 @@ library
     , libffi
     , template-haskell
     , unordered-containers
+    , varargs
   default-language: Haskell2010
 
 test-suite haskell-obj-c-test
@@ -92,4 +94,5 @@ test-suite haskell-obj-c-test
     , libffi
     , template-haskell
     , unordered-containers
+    , varargs
   default-language: Haskell2010

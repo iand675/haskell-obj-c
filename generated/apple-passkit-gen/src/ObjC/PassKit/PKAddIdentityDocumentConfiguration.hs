@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.PassKit.PKAddIdentityDocumentConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,25 +33,24 @@ configurationForMetadata_completion :: IsPKIdentityDocumentMetadata metadata => 
 configurationForMetadata_completion metadata completion =
   do
     cls' <- getRequiredClass "PKAddIdentityDocumentConfiguration"
-    withObjCPtr metadata $ \raw_metadata ->
-      sendClassMsg cls' (mkSelector "configurationForMetadata:completion:") retVoid [argPtr (castPtr raw_metadata :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' configurationForMetadata_completionSelector (toPKIdentityDocumentMetadata metadata) completion
 
 -- | metadata: Set of configured metadata defining the required information to add the corresponding pass to Wallet.
 --
 -- ObjC selector: @- metadata@
 metadata :: IsPKAddIdentityDocumentConfiguration pkAddIdentityDocumentConfiguration => pkAddIdentityDocumentConfiguration -> IO (Id PKIdentityDocumentMetadata)
-metadata pkAddIdentityDocumentConfiguration  =
-    sendMsg pkAddIdentityDocumentConfiguration (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata pkAddIdentityDocumentConfiguration =
+  sendMessage pkAddIdentityDocumentConfiguration metadataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @configurationForMetadata:completion:@
-configurationForMetadata_completionSelector :: Selector
+configurationForMetadata_completionSelector :: Selector '[Id PKIdentityDocumentMetadata, Ptr ()] ()
 configurationForMetadata_completionSelector = mkSelector "configurationForMetadata:completion:"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id PKIdentityDocumentMetadata)
 metadataSelector = mkSelector "metadata"
 

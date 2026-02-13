@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVExposureBiasRange
   , containsExposureBias
   , minExposureBias
   , maxExposureBias
-  , initSelector
-  , newSelector
   , containsExposureBiasSelector
-  , minExposureBiasSelector
+  , initSelector
   , maxExposureBiasSelector
+  , minExposureBiasSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVExposureBiasRange avExposureBiasRange => avExposureBiasRange -> IO (Id AVExposureBiasRange)
-init_ avExposureBiasRange  =
-    sendMsg avExposureBiasRange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avExposureBiasRange =
+  sendOwnedMessage avExposureBiasRange initSelector
 
 -- | @+ new@
 new :: IO (Id AVExposureBiasRange)
 new  =
   do
     cls' <- getRequiredClass "AVExposureBiasRange"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | containsExposureBias:
 --
@@ -65,8 +62,8 @@ new  =
 --
 -- ObjC selector: @- containsExposureBias:@
 containsExposureBias :: IsAVExposureBiasRange avExposureBiasRange => avExposureBiasRange -> CFloat -> IO Bool
-containsExposureBias avExposureBiasRange  exposureBias =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avExposureBiasRange (mkSelector "containsExposureBias:") retCULong [argCFloat exposureBias]
+containsExposureBias avExposureBiasRange exposureBias =
+  sendMessage avExposureBiasRange containsExposureBiasSelector exposureBias
 
 -- | minExposureBias
 --
@@ -74,8 +71,8 @@ containsExposureBias avExposureBiasRange  exposureBias =
 --
 -- ObjC selector: @- minExposureBias@
 minExposureBias :: IsAVExposureBiasRange avExposureBiasRange => avExposureBiasRange -> IO CFloat
-minExposureBias avExposureBiasRange  =
-    sendMsg avExposureBiasRange (mkSelector "minExposureBias") retCFloat []
+minExposureBias avExposureBiasRange =
+  sendMessage avExposureBiasRange minExposureBiasSelector
 
 -- | maxExposureBias
 --
@@ -83,30 +80,30 @@ minExposureBias avExposureBiasRange  =
 --
 -- ObjC selector: @- maxExposureBias@
 maxExposureBias :: IsAVExposureBiasRange avExposureBiasRange => avExposureBiasRange -> IO CFloat
-maxExposureBias avExposureBiasRange  =
-    sendMsg avExposureBiasRange (mkSelector "maxExposureBias") retCFloat []
+maxExposureBias avExposureBiasRange =
+  sendMessage avExposureBiasRange maxExposureBiasSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVExposureBiasRange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVExposureBiasRange)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @containsExposureBias:@
-containsExposureBiasSelector :: Selector
+containsExposureBiasSelector :: Selector '[CFloat] Bool
 containsExposureBiasSelector = mkSelector "containsExposureBias:"
 
 -- | @Selector@ for @minExposureBias@
-minExposureBiasSelector :: Selector
+minExposureBiasSelector :: Selector '[] CFloat
 minExposureBiasSelector = mkSelector "minExposureBias"
 
 -- | @Selector@ for @maxExposureBias@
-maxExposureBiasSelector :: Selector
+maxExposureBiasSelector :: Selector '[] CFloat
 maxExposureBiasSelector = mkSelector "maxExposureBias"
 

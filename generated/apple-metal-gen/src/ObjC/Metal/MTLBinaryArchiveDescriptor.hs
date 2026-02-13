@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Metal.MTLBinaryArchiveDescriptor
   , IsMTLBinaryArchiveDescriptor(..)
   , url
   , setUrl
-  , urlSelector
   , setUrlSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- url@
 url :: IsMTLBinaryArchiveDescriptor mtlBinaryArchiveDescriptor => mtlBinaryArchiveDescriptor -> IO (Id NSURL)
-url mtlBinaryArchiveDescriptor  =
-    sendMsg mtlBinaryArchiveDescriptor (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url mtlBinaryArchiveDescriptor =
+  sendMessage mtlBinaryArchiveDescriptor urlSelector
 
 -- | url
 --
@@ -48,19 +45,18 @@ url mtlBinaryArchiveDescriptor  =
 --
 -- ObjC selector: @- setUrl:@
 setUrl :: (IsMTLBinaryArchiveDescriptor mtlBinaryArchiveDescriptor, IsNSURL value) => mtlBinaryArchiveDescriptor -> value -> IO ()
-setUrl mtlBinaryArchiveDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlBinaryArchiveDescriptor (mkSelector "setUrl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUrl mtlBinaryArchiveDescriptor value =
+  sendMessage mtlBinaryArchiveDescriptor setUrlSelector (toNSURL value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @setUrl:@
-setUrlSelector :: Selector
+setUrlSelector :: Selector '[Id NSURL] ()
 setUrlSelector = mkSelector "setUrl:"
 

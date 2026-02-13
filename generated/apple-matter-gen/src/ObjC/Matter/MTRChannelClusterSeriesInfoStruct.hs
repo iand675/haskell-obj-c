@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRChannelClusterSeriesInfoStruct
   , setSeason
   , episode
   , setEpisode
-  , seasonSelector
-  , setSeasonSelector
   , episodeSelector
+  , seasonSelector
   , setEpisodeSelector
+  , setSeasonSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- season@
 season :: IsMTRChannelClusterSeriesInfoStruct mtrChannelClusterSeriesInfoStruct => mtrChannelClusterSeriesInfoStruct -> IO (Id NSString)
-season mtrChannelClusterSeriesInfoStruct  =
-    sendMsg mtrChannelClusterSeriesInfoStruct (mkSelector "season") (retPtr retVoid) [] >>= retainedObject . castPtr
+season mtrChannelClusterSeriesInfoStruct =
+  sendMessage mtrChannelClusterSeriesInfoStruct seasonSelector
 
 -- | @- setSeason:@
 setSeason :: (IsMTRChannelClusterSeriesInfoStruct mtrChannelClusterSeriesInfoStruct, IsNSString value) => mtrChannelClusterSeriesInfoStruct -> value -> IO ()
-setSeason mtrChannelClusterSeriesInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterSeriesInfoStruct (mkSelector "setSeason:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSeason mtrChannelClusterSeriesInfoStruct value =
+  sendMessage mtrChannelClusterSeriesInfoStruct setSeasonSelector (toNSString value)
 
 -- | @- episode@
 episode :: IsMTRChannelClusterSeriesInfoStruct mtrChannelClusterSeriesInfoStruct => mtrChannelClusterSeriesInfoStruct -> IO (Id NSString)
-episode mtrChannelClusterSeriesInfoStruct  =
-    sendMsg mtrChannelClusterSeriesInfoStruct (mkSelector "episode") (retPtr retVoid) [] >>= retainedObject . castPtr
+episode mtrChannelClusterSeriesInfoStruct =
+  sendMessage mtrChannelClusterSeriesInfoStruct episodeSelector
 
 -- | @- setEpisode:@
 setEpisode :: (IsMTRChannelClusterSeriesInfoStruct mtrChannelClusterSeriesInfoStruct, IsNSString value) => mtrChannelClusterSeriesInfoStruct -> value -> IO ()
-setEpisode mtrChannelClusterSeriesInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterSeriesInfoStruct (mkSelector "setEpisode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEpisode mtrChannelClusterSeriesInfoStruct value =
+  sendMessage mtrChannelClusterSeriesInfoStruct setEpisodeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @season@
-seasonSelector :: Selector
+seasonSelector :: Selector '[] (Id NSString)
 seasonSelector = mkSelector "season"
 
 -- | @Selector@ for @setSeason:@
-setSeasonSelector :: Selector
+setSeasonSelector :: Selector '[Id NSString] ()
 setSeasonSelector = mkSelector "setSeason:"
 
 -- | @Selector@ for @episode@
-episodeSelector :: Selector
+episodeSelector :: Selector '[] (Id NSString)
 episodeSelector = mkSelector "episode"
 
 -- | @Selector@ for @setEpisode:@
-setEpisodeSelector :: Selector
+setEpisodeSelector :: Selector '[Id NSString] ()
 setEpisodeSelector = mkSelector "setEpisode:"
 

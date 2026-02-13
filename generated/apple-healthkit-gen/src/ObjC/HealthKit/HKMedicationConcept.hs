@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.HealthKit.HKMedicationConcept
   , displayText
   , generalForm
   , relatedCodings
-  , initSelector
-  , identifierSelector
   , displayTextSelector
   , generalFormSelector
+  , identifierSelector
+  , initSelector
   , relatedCodingsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKMedicationConcept hkMedicationConcept => hkMedicationConcept -> IO (Id HKMedicationConcept)
-init_ hkMedicationConcept  =
-    sendMsg hkMedicationConcept (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkMedicationConcept =
+  sendOwnedMessage hkMedicationConcept initSelector
 
 -- | The unique identifier for the specific medication concept.
 --
@@ -50,8 +47,8 @@ init_ hkMedicationConcept  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsHKMedicationConcept hkMedicationConcept => hkMedicationConcept -> IO (Id HKHealthConceptIdentifier)
-identifier hkMedicationConcept  =
-    sendMsg hkMedicationConcept (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier hkMedicationConcept =
+  sendMessage hkMedicationConcept identifierSelector
 
 -- | The display name for this medication.
 --
@@ -59,8 +56,8 @@ identifier hkMedicationConcept  =
 --
 -- ObjC selector: @- displayText@
 displayText :: IsHKMedicationConcept hkMedicationConcept => hkMedicationConcept -> IO (Id NSString)
-displayText hkMedicationConcept  =
-    sendMsg hkMedicationConcept (mkSelector "displayText") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayText hkMedicationConcept =
+  sendMessage hkMedicationConcept displayTextSelector
 
 -- | The general form the medication is manufactured in.
 --
@@ -68,8 +65,8 @@ displayText hkMedicationConcept  =
 --
 -- ObjC selector: @- generalForm@
 generalForm :: IsHKMedicationConcept hkMedicationConcept => hkMedicationConcept -> IO (Id NSString)
-generalForm hkMedicationConcept  =
-    sendMsg hkMedicationConcept (mkSelector "generalForm") (retPtr retVoid) [] >>= retainedObject . castPtr
+generalForm hkMedicationConcept =
+  sendMessage hkMedicationConcept generalFormSelector
 
 -- | The set of related clinical codings for the medication.
 --
@@ -77,30 +74,30 @@ generalForm hkMedicationConcept  =
 --
 -- ObjC selector: @- relatedCodings@
 relatedCodings :: IsHKMedicationConcept hkMedicationConcept => hkMedicationConcept -> IO (Id NSSet)
-relatedCodings hkMedicationConcept  =
-    sendMsg hkMedicationConcept (mkSelector "relatedCodings") (retPtr retVoid) [] >>= retainedObject . castPtr
+relatedCodings hkMedicationConcept =
+  sendMessage hkMedicationConcept relatedCodingsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKMedicationConcept)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id HKHealthConceptIdentifier)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @displayText@
-displayTextSelector :: Selector
+displayTextSelector :: Selector '[] (Id NSString)
 displayTextSelector = mkSelector "displayText"
 
 -- | @Selector@ for @generalForm@
-generalFormSelector :: Selector
+generalFormSelector :: Selector '[] (Id NSString)
 generalFormSelector = mkSelector "generalForm"
 
 -- | @Selector@ for @relatedCodings@
-relatedCodingsSelector :: Selector
+relatedCodingsSelector :: Selector '[] (Id NSSet)
 relatedCodingsSelector = mkSelector "relatedCodings"
 

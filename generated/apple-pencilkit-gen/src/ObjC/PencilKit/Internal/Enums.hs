@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.PencilKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | A version specifying which PencilKit features are used/allowed.
 -- | @PKContentVersion@
@@ -32,6 +35,16 @@ pattern PKContentVersion4 = PKContentVersion 4
 pattern PKContentVersionLatest :: PKContentVersion
 pattern PKContentVersionLatest = PKContentVersion 4
 
+instance ObjCArgument PKContentVersion where
+  withObjCArg (PKContentVersion x) k = k (argCLong x)
+
+instance ObjCReturn PKContentVersion where
+  type RawReturn PKContentVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKContentVersion x)
+  fromOwned x = pure (PKContentVersion x)
+
 -- | @PKEraserType@
 newtype PKEraserType = PKEraserType CLong
   deriving stock (Eq, Ord, Show)
@@ -45,3 +58,13 @@ pattern PKEraserTypeBitmap = PKEraserType 1
 
 pattern PKEraserTypeFixedWidthBitmap :: PKEraserType
 pattern PKEraserTypeFixedWidthBitmap = PKEraserType 2
+
+instance ObjCArgument PKEraserType where
+  withObjCArg (PKEraserType x) k = k (argCLong x)
+
+instance ObjCReturn PKEraserType where
+  type RawReturn PKEraserType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PKEraserType x)
+  fromOwned x = pure (PKEraserType x)

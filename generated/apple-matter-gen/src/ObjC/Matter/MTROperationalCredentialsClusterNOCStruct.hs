@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTROperationalCredentialsClusterNOCStruct
   , setVvsc
   , fabricIndex
   , setFabricIndex
-  , nocSelector
-  , setNocSelector
-  , icacSelector
-  , setIcacSelector
-  , vvscSelector
-  , setVvscSelector
   , fabricIndexSelector
+  , icacSelector
+  , nocSelector
   , setFabricIndexSelector
+  , setIcacSelector
+  , setNocSelector
+  , setVvscSelector
+  , vvscSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- noc@
 noc :: IsMTROperationalCredentialsClusterNOCStruct mtrOperationalCredentialsClusterNOCStruct => mtrOperationalCredentialsClusterNOCStruct -> IO (Id NSData)
-noc mtrOperationalCredentialsClusterNOCStruct  =
-    sendMsg mtrOperationalCredentialsClusterNOCStruct (mkSelector "noc") (retPtr retVoid) [] >>= retainedObject . castPtr
+noc mtrOperationalCredentialsClusterNOCStruct =
+  sendMessage mtrOperationalCredentialsClusterNOCStruct nocSelector
 
 -- | @- setNoc:@
 setNoc :: (IsMTROperationalCredentialsClusterNOCStruct mtrOperationalCredentialsClusterNOCStruct, IsNSData value) => mtrOperationalCredentialsClusterNOCStruct -> value -> IO ()
-setNoc mtrOperationalCredentialsClusterNOCStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterNOCStruct (mkSelector "setNoc:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNoc mtrOperationalCredentialsClusterNOCStruct value =
+  sendMessage mtrOperationalCredentialsClusterNOCStruct setNocSelector (toNSData value)
 
 -- | @- icac@
 icac :: IsMTROperationalCredentialsClusterNOCStruct mtrOperationalCredentialsClusterNOCStruct => mtrOperationalCredentialsClusterNOCStruct -> IO (Id NSData)
-icac mtrOperationalCredentialsClusterNOCStruct  =
-    sendMsg mtrOperationalCredentialsClusterNOCStruct (mkSelector "icac") (retPtr retVoid) [] >>= retainedObject . castPtr
+icac mtrOperationalCredentialsClusterNOCStruct =
+  sendMessage mtrOperationalCredentialsClusterNOCStruct icacSelector
 
 -- | @- setIcac:@
 setIcac :: (IsMTROperationalCredentialsClusterNOCStruct mtrOperationalCredentialsClusterNOCStruct, IsNSData value) => mtrOperationalCredentialsClusterNOCStruct -> value -> IO ()
-setIcac mtrOperationalCredentialsClusterNOCStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterNOCStruct (mkSelector "setIcac:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIcac mtrOperationalCredentialsClusterNOCStruct value =
+  sendMessage mtrOperationalCredentialsClusterNOCStruct setIcacSelector (toNSData value)
 
 -- | @- vvsc@
 vvsc :: IsMTROperationalCredentialsClusterNOCStruct mtrOperationalCredentialsClusterNOCStruct => mtrOperationalCredentialsClusterNOCStruct -> IO (Id NSData)
-vvsc mtrOperationalCredentialsClusterNOCStruct  =
-    sendMsg mtrOperationalCredentialsClusterNOCStruct (mkSelector "vvsc") (retPtr retVoid) [] >>= retainedObject . castPtr
+vvsc mtrOperationalCredentialsClusterNOCStruct =
+  sendMessage mtrOperationalCredentialsClusterNOCStruct vvscSelector
 
 -- | @- setVvsc:@
 setVvsc :: (IsMTROperationalCredentialsClusterNOCStruct mtrOperationalCredentialsClusterNOCStruct, IsNSData value) => mtrOperationalCredentialsClusterNOCStruct -> value -> IO ()
-setVvsc mtrOperationalCredentialsClusterNOCStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterNOCStruct (mkSelector "setVvsc:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVvsc mtrOperationalCredentialsClusterNOCStruct value =
+  sendMessage mtrOperationalCredentialsClusterNOCStruct setVvscSelector (toNSData value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTROperationalCredentialsClusterNOCStruct mtrOperationalCredentialsClusterNOCStruct => mtrOperationalCredentialsClusterNOCStruct -> IO (Id NSNumber)
-fabricIndex mtrOperationalCredentialsClusterNOCStruct  =
-    sendMsg mtrOperationalCredentialsClusterNOCStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrOperationalCredentialsClusterNOCStruct =
+  sendMessage mtrOperationalCredentialsClusterNOCStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTROperationalCredentialsClusterNOCStruct mtrOperationalCredentialsClusterNOCStruct, IsNSNumber value) => mtrOperationalCredentialsClusterNOCStruct -> value -> IO ()
-setFabricIndex mtrOperationalCredentialsClusterNOCStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterNOCStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrOperationalCredentialsClusterNOCStruct value =
+  sendMessage mtrOperationalCredentialsClusterNOCStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @noc@
-nocSelector :: Selector
+nocSelector :: Selector '[] (Id NSData)
 nocSelector = mkSelector "noc"
 
 -- | @Selector@ for @setNoc:@
-setNocSelector :: Selector
+setNocSelector :: Selector '[Id NSData] ()
 setNocSelector = mkSelector "setNoc:"
 
 -- | @Selector@ for @icac@
-icacSelector :: Selector
+icacSelector :: Selector '[] (Id NSData)
 icacSelector = mkSelector "icac"
 
 -- | @Selector@ for @setIcac:@
-setIcacSelector :: Selector
+setIcacSelector :: Selector '[Id NSData] ()
 setIcacSelector = mkSelector "setIcac:"
 
 -- | @Selector@ for @vvsc@
-vvscSelector :: Selector
+vvscSelector :: Selector '[] (Id NSData)
 vvscSelector = mkSelector "vvsc"
 
 -- | @Selector@ for @setVvsc:@
-setVvscSelector :: Selector
+setVvscSelector :: Selector '[Id NSData] ()
 setVvscSelector = mkSelector "setVvsc:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

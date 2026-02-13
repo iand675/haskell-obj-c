@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRSwitchClusterMultiPressOngoingEvent
   , setNewPosition
   , currentNumberOfPressesCounted
   , setCurrentNumberOfPressesCounted
-  , newPositionSelector
-  , setNewPositionSelector
   , currentNumberOfPressesCountedSelector
+  , newPositionSelector
   , setCurrentNumberOfPressesCountedSelector
+  , setNewPositionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- newPosition@
 newPosition :: IsMTRSwitchClusterMultiPressOngoingEvent mtrSwitchClusterMultiPressOngoingEvent => mtrSwitchClusterMultiPressOngoingEvent -> IO (Id NSNumber)
-newPosition mtrSwitchClusterMultiPressOngoingEvent  =
-    sendMsg mtrSwitchClusterMultiPressOngoingEvent (mkSelector "newPosition") (retPtr retVoid) [] >>= ownedObject . castPtr
+newPosition mtrSwitchClusterMultiPressOngoingEvent =
+  sendOwnedMessage mtrSwitchClusterMultiPressOngoingEvent newPositionSelector
 
 -- | @- setNewPosition:@
 setNewPosition :: (IsMTRSwitchClusterMultiPressOngoingEvent mtrSwitchClusterMultiPressOngoingEvent, IsNSNumber value) => mtrSwitchClusterMultiPressOngoingEvent -> value -> IO ()
-setNewPosition mtrSwitchClusterMultiPressOngoingEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSwitchClusterMultiPressOngoingEvent (mkSelector "setNewPosition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNewPosition mtrSwitchClusterMultiPressOngoingEvent value =
+  sendMessage mtrSwitchClusterMultiPressOngoingEvent setNewPositionSelector (toNSNumber value)
 
 -- | @- currentNumberOfPressesCounted@
 currentNumberOfPressesCounted :: IsMTRSwitchClusterMultiPressOngoingEvent mtrSwitchClusterMultiPressOngoingEvent => mtrSwitchClusterMultiPressOngoingEvent -> IO (Id NSNumber)
-currentNumberOfPressesCounted mtrSwitchClusterMultiPressOngoingEvent  =
-    sendMsg mtrSwitchClusterMultiPressOngoingEvent (mkSelector "currentNumberOfPressesCounted") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentNumberOfPressesCounted mtrSwitchClusterMultiPressOngoingEvent =
+  sendMessage mtrSwitchClusterMultiPressOngoingEvent currentNumberOfPressesCountedSelector
 
 -- | @- setCurrentNumberOfPressesCounted:@
 setCurrentNumberOfPressesCounted :: (IsMTRSwitchClusterMultiPressOngoingEvent mtrSwitchClusterMultiPressOngoingEvent, IsNSNumber value) => mtrSwitchClusterMultiPressOngoingEvent -> value -> IO ()
-setCurrentNumberOfPressesCounted mtrSwitchClusterMultiPressOngoingEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSwitchClusterMultiPressOngoingEvent (mkSelector "setCurrentNumberOfPressesCounted:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentNumberOfPressesCounted mtrSwitchClusterMultiPressOngoingEvent value =
+  sendMessage mtrSwitchClusterMultiPressOngoingEvent setCurrentNumberOfPressesCountedSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newPosition@
-newPositionSelector :: Selector
+newPositionSelector :: Selector '[] (Id NSNumber)
 newPositionSelector = mkSelector "newPosition"
 
 -- | @Selector@ for @setNewPosition:@
-setNewPositionSelector :: Selector
+setNewPositionSelector :: Selector '[Id NSNumber] ()
 setNewPositionSelector = mkSelector "setNewPosition:"
 
 -- | @Selector@ for @currentNumberOfPressesCounted@
-currentNumberOfPressesCountedSelector :: Selector
+currentNumberOfPressesCountedSelector :: Selector '[] (Id NSNumber)
 currentNumberOfPressesCountedSelector = mkSelector "currentNumberOfPressesCounted"
 
 -- | @Selector@ for @setCurrentNumberOfPressesCounted:@
-setCurrentNumberOfPressesCountedSelector :: Selector
+setCurrentNumberOfPressesCountedSelector :: Selector '[Id NSNumber] ()
 setCurrentNumberOfPressesCountedSelector = mkSelector "setCurrentNumberOfPressesCounted:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.MediaPlayer.MPMediaItemCollection
   , count
   , mediaTypes
   , collectionWithItemsSelector
+  , countSelector
   , initWithItemsSelector
   , itemsSelector
-  , representativeItemSelector
-  , countSelector
   , mediaTypesSelector
+  , representativeItemSelector
 
   -- * Enum types
   , MPMediaType(MPMediaType)
@@ -38,15 +39,11 @@ module ObjC.MediaPlayer.MPMediaItemCollection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,60 +56,58 @@ collectionWithItems :: IsNSArray items => items -> IO (Id MPMediaItemCollection)
 collectionWithItems items =
   do
     cls' <- getRequiredClass "MPMediaItemCollection"
-    withObjCPtr items $ \raw_items ->
-      sendClassMsg cls' (mkSelector "collectionWithItems:") (retPtr retVoid) [argPtr (castPtr raw_items :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' collectionWithItemsSelector (toNSArray items)
 
 -- | @- initWithItems:@
 initWithItems :: (IsMPMediaItemCollection mpMediaItemCollection, IsNSArray items) => mpMediaItemCollection -> items -> IO (Id MPMediaItemCollection)
-initWithItems mpMediaItemCollection  items =
-  withObjCPtr items $ \raw_items ->
-      sendMsg mpMediaItemCollection (mkSelector "initWithItems:") (retPtr retVoid) [argPtr (castPtr raw_items :: Ptr ())] >>= ownedObject . castPtr
+initWithItems mpMediaItemCollection items =
+  sendOwnedMessage mpMediaItemCollection initWithItemsSelector (toNSArray items)
 
 -- | @- items@
 items :: IsMPMediaItemCollection mpMediaItemCollection => mpMediaItemCollection -> IO (Id NSArray)
-items mpMediaItemCollection  =
-    sendMsg mpMediaItemCollection (mkSelector "items") (retPtr retVoid) [] >>= retainedObject . castPtr
+items mpMediaItemCollection =
+  sendMessage mpMediaItemCollection itemsSelector
 
 -- | @- representativeItem@
 representativeItem :: IsMPMediaItemCollection mpMediaItemCollection => mpMediaItemCollection -> IO (Id MPMediaItem)
-representativeItem mpMediaItemCollection  =
-    sendMsg mpMediaItemCollection (mkSelector "representativeItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+representativeItem mpMediaItemCollection =
+  sendMessage mpMediaItemCollection representativeItemSelector
 
 -- | @- count@
 count :: IsMPMediaItemCollection mpMediaItemCollection => mpMediaItemCollection -> IO CULong
-count mpMediaItemCollection  =
-    sendMsg mpMediaItemCollection (mkSelector "count") retCULong []
+count mpMediaItemCollection =
+  sendMessage mpMediaItemCollection countSelector
 
 -- | @- mediaTypes@
 mediaTypes :: IsMPMediaItemCollection mpMediaItemCollection => mpMediaItemCollection -> IO MPMediaType
-mediaTypes mpMediaItemCollection  =
-    fmap (coerce :: CULong -> MPMediaType) $ sendMsg mpMediaItemCollection (mkSelector "mediaTypes") retCULong []
+mediaTypes mpMediaItemCollection =
+  sendMessage mpMediaItemCollection mediaTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @collectionWithItems:@
-collectionWithItemsSelector :: Selector
+collectionWithItemsSelector :: Selector '[Id NSArray] (Id MPMediaItemCollection)
 collectionWithItemsSelector = mkSelector "collectionWithItems:"
 
 -- | @Selector@ for @initWithItems:@
-initWithItemsSelector :: Selector
+initWithItemsSelector :: Selector '[Id NSArray] (Id MPMediaItemCollection)
 initWithItemsSelector = mkSelector "initWithItems:"
 
 -- | @Selector@ for @items@
-itemsSelector :: Selector
+itemsSelector :: Selector '[] (Id NSArray)
 itemsSelector = mkSelector "items"
 
 -- | @Selector@ for @representativeItem@
-representativeItemSelector :: Selector
+representativeItemSelector :: Selector '[] (Id MPMediaItem)
 representativeItemSelector = mkSelector "representativeItem"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @mediaTypes@
-mediaTypesSelector :: Selector
+mediaTypesSelector :: Selector '[] MPMediaType
 mediaTypesSelector = mkSelector "mediaTypes"
 

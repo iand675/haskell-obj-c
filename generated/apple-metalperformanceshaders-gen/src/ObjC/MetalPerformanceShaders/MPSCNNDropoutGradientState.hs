@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNDropoutGradientState
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMPSCNNDropoutGradientState mpscnnDropoutGradientState => mpscnnDropoutGradientState -> IO (Id MPSCNNDropoutGradientState)
-init_ mpscnnDropoutGradientState  =
-    sendMsg mpscnnDropoutGradientState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpscnnDropoutGradientState =
+  sendOwnedMessage mpscnnDropoutGradientState initSelector
 
 -- | Mask data accessor method.
 --
@@ -50,18 +47,18 @@ init_ mpscnnDropoutGradientState  =
 --
 -- ObjC selector: @- maskData@
 maskData :: IsMPSCNNDropoutGradientState mpscnnDropoutGradientState => mpscnnDropoutGradientState -> IO (Id NSData)
-maskData mpscnnDropoutGradientState  =
-    sendMsg mpscnnDropoutGradientState (mkSelector "maskData") (retPtr retVoid) [] >>= retainedObject . castPtr
+maskData mpscnnDropoutGradientState =
+  sendMessage mpscnnDropoutGradientState maskDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSCNNDropoutGradientState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @maskData@
-maskDataSelector :: Selector
+maskDataSelector :: Selector '[] (Id NSData)
 maskDataSelector = mkSelector "maskData"
 

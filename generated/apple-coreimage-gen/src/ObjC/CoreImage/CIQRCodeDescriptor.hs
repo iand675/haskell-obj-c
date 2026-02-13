@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.CoreImage.CIQRCodeDescriptor
   , symbolVersion
   , maskPattern
   , errorCorrectionLevel
-  , initWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector
   , descriptorWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector
   , errorCorrectedPayloadSelector
-  , symbolVersionSelector
-  , maskPatternSelector
   , errorCorrectionLevelSelector
+  , initWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector
+  , maskPatternSelector
+  , symbolVersionSelector
 
   -- * Enum types
   , CIQRCodeErrorCorrectionLevel(CIQRCodeErrorCorrectionLevel)
@@ -33,15 +34,11 @@ module ObjC.CoreImage.CIQRCodeDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,9 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPayload:symbolVersion:maskPattern:errorCorrectionLevel:@
 initWithPayload_symbolVersion_maskPattern_errorCorrectionLevel :: (IsCIQRCodeDescriptor ciqrCodeDescriptor, IsNSData errorCorrectedPayload) => ciqrCodeDescriptor -> errorCorrectedPayload -> CLong -> CUChar -> CIQRCodeErrorCorrectionLevel -> IO (Id CIQRCodeDescriptor)
-initWithPayload_symbolVersion_maskPattern_errorCorrectionLevel ciqrCodeDescriptor  errorCorrectedPayload symbolVersion maskPattern errorCorrectionLevel =
-  withObjCPtr errorCorrectedPayload $ \raw_errorCorrectedPayload ->
-      sendMsg ciqrCodeDescriptor (mkSelector "initWithPayload:symbolVersion:maskPattern:errorCorrectionLevel:") (retPtr retVoid) [argPtr (castPtr raw_errorCorrectedPayload :: Ptr ()), argCLong symbolVersion, argCUChar maskPattern, argCLong (coerce errorCorrectionLevel)] >>= ownedObject . castPtr
+initWithPayload_symbolVersion_maskPattern_errorCorrectionLevel ciqrCodeDescriptor errorCorrectedPayload symbolVersion maskPattern errorCorrectionLevel =
+  sendOwnedMessage ciqrCodeDescriptor initWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector (toNSData errorCorrectedPayload) symbolVersion maskPattern errorCorrectionLevel
 
 -- | Creates a QR code descriptor for the given payload and parameters.
 --
@@ -68,8 +64,7 @@ descriptorWithPayload_symbolVersion_maskPattern_errorCorrectionLevel :: IsNSData
 descriptorWithPayload_symbolVersion_maskPattern_errorCorrectionLevel errorCorrectedPayload symbolVersion maskPattern errorCorrectionLevel =
   do
     cls' <- getRequiredClass "CIQRCodeDescriptor"
-    withObjCPtr errorCorrectedPayload $ \raw_errorCorrectedPayload ->
-      sendClassMsg cls' (mkSelector "descriptorWithPayload:symbolVersion:maskPattern:errorCorrectionLevel:") (retPtr retVoid) [argPtr (castPtr raw_errorCorrectedPayload :: Ptr ()), argCLong symbolVersion, argCUChar maskPattern, argCLong (coerce errorCorrectionLevel)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector (toNSData errorCorrectedPayload) symbolVersion maskPattern errorCorrectionLevel
 
 -- | The error-corrected codeword payload that comprises the QR code symbol.
 --
@@ -81,8 +76,8 @@ descriptorWithPayload_symbolVersion_maskPattern_errorCorrectionLevel errorCorrec
 --
 -- ObjC selector: @- errorCorrectedPayload@
 errorCorrectedPayload :: IsCIQRCodeDescriptor ciqrCodeDescriptor => ciqrCodeDescriptor -> IO (Id NSData)
-errorCorrectedPayload ciqrCodeDescriptor  =
-    sendMsg ciqrCodeDescriptor (mkSelector "errorCorrectedPayload") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorCorrectedPayload ciqrCodeDescriptor =
+  sendMessage ciqrCodeDescriptor errorCorrectedPayloadSelector
 
 -- | The version of the QR code which corresponds to the size of the QR code symbol.
 --
@@ -90,8 +85,8 @@ errorCorrectedPayload ciqrCodeDescriptor  =
 --
 -- ObjC selector: @- symbolVersion@
 symbolVersion :: IsCIQRCodeDescriptor ciqrCodeDescriptor => ciqrCodeDescriptor -> IO CLong
-symbolVersion ciqrCodeDescriptor  =
-    sendMsg ciqrCodeDescriptor (mkSelector "symbolVersion") retCLong []
+symbolVersion ciqrCodeDescriptor =
+  sendMessage ciqrCodeDescriptor symbolVersionSelector
 
 -- | The data mask pattern for the QR code symbol.
 --
@@ -99,8 +94,8 @@ symbolVersion ciqrCodeDescriptor  =
 --
 -- ObjC selector: @- maskPattern@
 maskPattern :: IsCIQRCodeDescriptor ciqrCodeDescriptor => ciqrCodeDescriptor -> IO CUChar
-maskPattern ciqrCodeDescriptor  =
-    sendMsg ciqrCodeDescriptor (mkSelector "maskPattern") retCUChar []
+maskPattern ciqrCodeDescriptor =
+  sendMessage ciqrCodeDescriptor maskPatternSelector
 
 -- | The error correction level of the QR code symbol.
 --
@@ -110,34 +105,34 @@ maskPattern ciqrCodeDescriptor  =
 --
 -- ObjC selector: @- errorCorrectionLevel@
 errorCorrectionLevel :: IsCIQRCodeDescriptor ciqrCodeDescriptor => ciqrCodeDescriptor -> IO CIQRCodeErrorCorrectionLevel
-errorCorrectionLevel ciqrCodeDescriptor  =
-    fmap (coerce :: CLong -> CIQRCodeErrorCorrectionLevel) $ sendMsg ciqrCodeDescriptor (mkSelector "errorCorrectionLevel") retCLong []
+errorCorrectionLevel ciqrCodeDescriptor =
+  sendMessage ciqrCodeDescriptor errorCorrectionLevelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPayload:symbolVersion:maskPattern:errorCorrectionLevel:@
-initWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector :: Selector
+initWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector :: Selector '[Id NSData, CLong, CUChar, CIQRCodeErrorCorrectionLevel] (Id CIQRCodeDescriptor)
 initWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector = mkSelector "initWithPayload:symbolVersion:maskPattern:errorCorrectionLevel:"
 
 -- | @Selector@ for @descriptorWithPayload:symbolVersion:maskPattern:errorCorrectionLevel:@
-descriptorWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector :: Selector
+descriptorWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector :: Selector '[Id NSData, CLong, CUChar, CIQRCodeErrorCorrectionLevel] (Id CIQRCodeDescriptor)
 descriptorWithPayload_symbolVersion_maskPattern_errorCorrectionLevelSelector = mkSelector "descriptorWithPayload:symbolVersion:maskPattern:errorCorrectionLevel:"
 
 -- | @Selector@ for @errorCorrectedPayload@
-errorCorrectedPayloadSelector :: Selector
+errorCorrectedPayloadSelector :: Selector '[] (Id NSData)
 errorCorrectedPayloadSelector = mkSelector "errorCorrectedPayload"
 
 -- | @Selector@ for @symbolVersion@
-symbolVersionSelector :: Selector
+symbolVersionSelector :: Selector '[] CLong
 symbolVersionSelector = mkSelector "symbolVersion"
 
 -- | @Selector@ for @maskPattern@
-maskPatternSelector :: Selector
+maskPatternSelector :: Selector '[] CUChar
 maskPatternSelector = mkSelector "maskPattern"
 
 -- | @Selector@ for @errorCorrectionLevel@
-errorCorrectionLevelSelector :: Selector
+errorCorrectionLevelSelector :: Selector '[] CIQRCodeErrorCorrectionLevel
 errorCorrectionLevelSelector = mkSelector "errorCorrectionLevel"
 

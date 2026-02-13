@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNDropoutGradientNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- keepProbability@
 keepProbability :: IsMPSCNNDropoutGradientNode mpscnnDropoutGradientNode => mpscnnDropoutGradientNode -> IO CFloat
-keepProbability mpscnnDropoutGradientNode  =
-    sendMsg mpscnnDropoutGradientNode (mkSelector "keepProbability") retCFloat []
+keepProbability mpscnnDropoutGradientNode =
+  sendMessage mpscnnDropoutGradientNode keepProbabilitySelector
 
 -- | @- seed@
 seed :: IsMPSCNNDropoutGradientNode mpscnnDropoutGradientNode => mpscnnDropoutGradientNode -> IO CULong
-seed mpscnnDropoutGradientNode  =
-    sendMsg mpscnnDropoutGradientNode (mkSelector "seed") retCULong []
+seed mpscnnDropoutGradientNode =
+  sendMessage mpscnnDropoutGradientNode seedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @keepProbability@
-keepProbabilitySelector :: Selector
+keepProbabilitySelector :: Selector '[] CFloat
 keepProbabilitySelector = mkSelector "keepProbability"
 
 -- | @Selector@ for @seed@
-seedSelector :: Selector
+seedSelector :: Selector '[] CULong
 seedSelector = mkSelector "seed"
 

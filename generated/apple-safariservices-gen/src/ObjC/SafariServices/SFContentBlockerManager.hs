@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.SafariServices.SFContentBlockerManager
   , IsSFContentBlockerManager(..)
   , reloadContentBlockerWithIdentifier_completionHandler
   , getStateOfContentBlockerWithIdentifier_completionHandler
-  , reloadContentBlockerWithIdentifier_completionHandlerSelector
   , getStateOfContentBlockerWithIdentifier_completionHandlerSelector
+  , reloadContentBlockerWithIdentifier_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,26 +31,24 @@ reloadContentBlockerWithIdentifier_completionHandler :: IsNSString identifier =>
 reloadContentBlockerWithIdentifier_completionHandler identifier completionHandler =
   do
     cls' <- getRequiredClass "SFContentBlockerManager"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "reloadContentBlockerWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' reloadContentBlockerWithIdentifier_completionHandlerSelector (toNSString identifier) completionHandler
 
 -- | @+ getStateOfContentBlockerWithIdentifier:completionHandler:@
 getStateOfContentBlockerWithIdentifier_completionHandler :: IsNSString identifier => identifier -> Ptr () -> IO ()
 getStateOfContentBlockerWithIdentifier_completionHandler identifier completionHandler =
   do
     cls' <- getRequiredClass "SFContentBlockerManager"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "getStateOfContentBlockerWithIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' getStateOfContentBlockerWithIdentifier_completionHandlerSelector (toNSString identifier) completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reloadContentBlockerWithIdentifier:completionHandler:@
-reloadContentBlockerWithIdentifier_completionHandlerSelector :: Selector
+reloadContentBlockerWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 reloadContentBlockerWithIdentifier_completionHandlerSelector = mkSelector "reloadContentBlockerWithIdentifier:completionHandler:"
 
 -- | @Selector@ for @getStateOfContentBlockerWithIdentifier:completionHandler:@
-getStateOfContentBlockerWithIdentifier_completionHandlerSelector :: Selector
+getStateOfContentBlockerWithIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 getStateOfContentBlockerWithIdentifier_completionHandlerSelector = mkSelector "getStateOfContentBlockerWithIdentifier:completionHandler:"
 

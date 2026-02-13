@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,8 @@ module ObjC.EventKit.EKVirtualConferenceURLDescriptor
   , new
   , title
   , url
-  , initWithTitle_URLSelector
   , initSelector
+  , initWithTitle_URLSelector
   , newSelector
   , titleSelector
   , urlSelector
@@ -24,15 +25,11 @@ module ObjC.EventKit.EKVirtualConferenceURLDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,54 +46,52 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithTitle:URL:@
 initWithTitle_URL :: (IsEKVirtualConferenceURLDescriptor ekVirtualConferenceURLDescriptor, IsNSString title, IsNSURL url) => ekVirtualConferenceURLDescriptor -> title -> url -> IO (Id EKVirtualConferenceURLDescriptor)
-initWithTitle_URL ekVirtualConferenceURLDescriptor  title url =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr url $ \raw_url ->
-        sendMsg ekVirtualConferenceURLDescriptor (mkSelector "initWithTitle:URL:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_URL ekVirtualConferenceURLDescriptor title url =
+  sendOwnedMessage ekVirtualConferenceURLDescriptor initWithTitle_URLSelector (toNSString title) (toNSURL url)
 
 -- | @- init@
 init_ :: IsEKVirtualConferenceURLDescriptor ekVirtualConferenceURLDescriptor => ekVirtualConferenceURLDescriptor -> IO (Id EKVirtualConferenceURLDescriptor)
-init_ ekVirtualConferenceURLDescriptor  =
-    sendMsg ekVirtualConferenceURLDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ekVirtualConferenceURLDescriptor =
+  sendOwnedMessage ekVirtualConferenceURLDescriptor initSelector
 
 -- | @+ new@
 new :: IO (Id EKVirtualConferenceURLDescriptor)
 new  =
   do
     cls' <- getRequiredClass "EKVirtualConferenceURLDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- title@
 title :: IsEKVirtualConferenceURLDescriptor ekVirtualConferenceURLDescriptor => ekVirtualConferenceURLDescriptor -> IO (Id NSString)
-title ekVirtualConferenceURLDescriptor  =
-    sendMsg ekVirtualConferenceURLDescriptor (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title ekVirtualConferenceURLDescriptor =
+  sendMessage ekVirtualConferenceURLDescriptor titleSelector
 
 -- | @- URL@
 url :: IsEKVirtualConferenceURLDescriptor ekVirtualConferenceURLDescriptor => ekVirtualConferenceURLDescriptor -> IO (Id NSURL)
-url ekVirtualConferenceURLDescriptor  =
-    sendMsg ekVirtualConferenceURLDescriptor (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url ekVirtualConferenceURLDescriptor =
+  sendMessage ekVirtualConferenceURLDescriptor urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTitle:URL:@
-initWithTitle_URLSelector :: Selector
+initWithTitle_URLSelector :: Selector '[Id NSString, Id NSURL] (Id EKVirtualConferenceURLDescriptor)
 initWithTitle_URLSelector = mkSelector "initWithTitle:URL:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id EKVirtualConferenceURLDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id EKVirtualConferenceURLDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

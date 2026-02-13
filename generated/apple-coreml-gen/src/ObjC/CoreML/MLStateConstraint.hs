@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,15 +27,11 @@ module ObjC.CoreML.MLStateConstraint
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,25 +43,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bufferShape@
 bufferShape :: IsMLStateConstraint mlStateConstraint => mlStateConstraint -> IO (Id NSArray)
-bufferShape mlStateConstraint  =
-    sendMsg mlStateConstraint (mkSelector "bufferShape") (retPtr retVoid) [] >>= retainedObject . castPtr
+bufferShape mlStateConstraint =
+  sendMessage mlStateConstraint bufferShapeSelector
 
 -- | The data type of scalars in the state buffer.
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMLStateConstraint mlStateConstraint => mlStateConstraint -> IO MLMultiArrayDataType
-dataType mlStateConstraint  =
-    fmap (coerce :: CLong -> MLMultiArrayDataType) $ sendMsg mlStateConstraint (mkSelector "dataType") retCLong []
+dataType mlStateConstraint =
+  sendMessage mlStateConstraint dataTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bufferShape@
-bufferShapeSelector :: Selector
+bufferShapeSelector :: Selector '[] (Id NSArray)
 bufferShapeSelector = mkSelector "bufferShape"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MLMultiArrayDataType
 dataTypeSelector = mkSelector "dataType"
 

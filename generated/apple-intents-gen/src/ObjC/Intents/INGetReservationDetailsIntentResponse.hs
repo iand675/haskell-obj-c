@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.Intents.INGetReservationDetailsIntentResponse
   , code
   , reservations
   , setReservations
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
   , reservationsSelector
   , setReservationsSelector
 
@@ -29,15 +30,11 @@ module ObjC.Intents.INGetReservationDetailsIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,52 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINGetReservationDetailsIntentResponse inGetReservationDetailsIntentResponse => inGetReservationDetailsIntentResponse -> IO RawId
-init_ inGetReservationDetailsIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inGetReservationDetailsIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inGetReservationDetailsIntentResponse =
+  sendOwnedMessage inGetReservationDetailsIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINGetReservationDetailsIntentResponse inGetReservationDetailsIntentResponse, IsNSUserActivity userActivity) => inGetReservationDetailsIntentResponse -> INGetReservationDetailsIntentResponseCode -> userActivity -> IO (Id INGetReservationDetailsIntentResponse)
-initWithCode_userActivity inGetReservationDetailsIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inGetReservationDetailsIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inGetReservationDetailsIntentResponse code userActivity =
+  sendOwnedMessage inGetReservationDetailsIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINGetReservationDetailsIntentResponse inGetReservationDetailsIntentResponse => inGetReservationDetailsIntentResponse -> IO INGetReservationDetailsIntentResponseCode
-code inGetReservationDetailsIntentResponse  =
-    fmap (coerce :: CLong -> INGetReservationDetailsIntentResponseCode) $ sendMsg inGetReservationDetailsIntentResponse (mkSelector "code") retCLong []
+code inGetReservationDetailsIntentResponse =
+  sendMessage inGetReservationDetailsIntentResponse codeSelector
 
 -- | @- reservations@
 reservations :: IsINGetReservationDetailsIntentResponse inGetReservationDetailsIntentResponse => inGetReservationDetailsIntentResponse -> IO (Id NSArray)
-reservations inGetReservationDetailsIntentResponse  =
-    sendMsg inGetReservationDetailsIntentResponse (mkSelector "reservations") (retPtr retVoid) [] >>= retainedObject . castPtr
+reservations inGetReservationDetailsIntentResponse =
+  sendMessage inGetReservationDetailsIntentResponse reservationsSelector
 
 -- | @- setReservations:@
 setReservations :: (IsINGetReservationDetailsIntentResponse inGetReservationDetailsIntentResponse, IsNSArray value) => inGetReservationDetailsIntentResponse -> value -> IO ()
-setReservations inGetReservationDetailsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetReservationDetailsIntentResponse (mkSelector "setReservations:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReservations inGetReservationDetailsIntentResponse value =
+  sendMessage inGetReservationDetailsIntentResponse setReservationsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INGetReservationDetailsIntentResponseCode, Id NSUserActivity] (Id INGetReservationDetailsIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INGetReservationDetailsIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @reservations@
-reservationsSelector :: Selector
+reservationsSelector :: Selector '[] (Id NSArray)
 reservationsSelector = mkSelector "reservations"
 
 -- | @Selector@ for @setReservations:@
-setReservationsSelector :: Selector
+setReservationsSelector :: Selector '[Id NSArray] ()
 setReservationsSelector = mkSelector "setReservations:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,14 +24,14 @@ module ObjC.MetalPerformanceShaders.MPSCNNNeuron
   , b
   , c
   , data_
-  , initWithDeviceSelector
-  , initWithDevice_neuronDescriptorSelector
-  , initWithCoder_deviceSelector
-  , neuronTypeSelector
   , aSelector
   , bSelector
   , cSelector
   , dataSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_neuronDescriptorSelector
+  , neuronTypeSelector
 
   -- * Enum types
   , MPSCNNNeuronType(MPSCNNNeuronType)
@@ -54,15 +55,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNNeuron
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,8 +69,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNNeuron mpscnnNeuron => mpscnnNeuron -> RawId -> IO (Id MPSCNNNeuron)
-initWithDevice mpscnnNeuron  device =
-    sendMsg mpscnnNeuron (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnNeuron device =
+  sendOwnedMessage mpscnnNeuron initWithDeviceSelector device
 
 -- | Initialize the neuron filter with a neuron descriptor.
 --
@@ -85,9 +82,8 @@ initWithDevice mpscnnNeuron  device =
 --
 -- ObjC selector: @- initWithDevice:neuronDescriptor:@
 initWithDevice_neuronDescriptor :: (IsMPSCNNNeuron mpscnnNeuron, IsMPSNNNeuronDescriptor neuronDescriptor) => mpscnnNeuron -> RawId -> neuronDescriptor -> IO (Id MPSCNNNeuron)
-initWithDevice_neuronDescriptor mpscnnNeuron  device neuronDescriptor =
-  withObjCPtr neuronDescriptor $ \raw_neuronDescriptor ->
-      sendMsg mpscnnNeuron (mkSelector "initWithDevice:neuronDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_neuronDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_neuronDescriptor mpscnnNeuron device neuronDescriptor =
+  sendOwnedMessage mpscnnNeuron initWithDevice_neuronDescriptorSelector device (toMPSNNNeuronDescriptor neuronDescriptor)
 
 -- | NSSecureCoding compatability
 --
@@ -101,68 +97,67 @@ initWithDevice_neuronDescriptor mpscnnNeuron  device neuronDescriptor =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNNeuron mpscnnNeuron, IsNSCoder aDecoder) => mpscnnNeuron -> aDecoder -> RawId -> IO (Id MPSCNNNeuron)
-initWithCoder_device mpscnnNeuron  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnNeuron (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnNeuron aDecoder device =
+  sendOwnedMessage mpscnnNeuron initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- neuronType@
 neuronType :: IsMPSCNNNeuron mpscnnNeuron => mpscnnNeuron -> IO MPSCNNNeuronType
-neuronType mpscnnNeuron  =
-    fmap (coerce :: CInt -> MPSCNNNeuronType) $ sendMsg mpscnnNeuron (mkSelector "neuronType") retCInt []
+neuronType mpscnnNeuron =
+  sendMessage mpscnnNeuron neuronTypeSelector
 
 -- | @- a@
 a :: IsMPSCNNNeuron mpscnnNeuron => mpscnnNeuron -> IO CFloat
-a mpscnnNeuron  =
-    sendMsg mpscnnNeuron (mkSelector "a") retCFloat []
+a mpscnnNeuron =
+  sendMessage mpscnnNeuron aSelector
 
 -- | @- b@
 b :: IsMPSCNNNeuron mpscnnNeuron => mpscnnNeuron -> IO CFloat
-b mpscnnNeuron  =
-    sendMsg mpscnnNeuron (mkSelector "b") retCFloat []
+b mpscnnNeuron =
+  sendMessage mpscnnNeuron bSelector
 
 -- | @- c@
 c :: IsMPSCNNNeuron mpscnnNeuron => mpscnnNeuron -> IO CFloat
-c mpscnnNeuron  =
-    sendMsg mpscnnNeuron (mkSelector "c") retCFloat []
+c mpscnnNeuron =
+  sendMessage mpscnnNeuron cSelector
 
 -- | @- data@
 data_ :: IsMPSCNNNeuron mpscnnNeuron => mpscnnNeuron -> IO (Id NSData)
-data_ mpscnnNeuron  =
-    sendMsg mpscnnNeuron (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mpscnnNeuron =
+  sendMessage mpscnnNeuron dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNNeuron)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:neuronDescriptor:@
-initWithDevice_neuronDescriptorSelector :: Selector
+initWithDevice_neuronDescriptorSelector :: Selector '[RawId, Id MPSNNNeuronDescriptor] (Id MPSCNNNeuron)
 initWithDevice_neuronDescriptorSelector = mkSelector "initWithDevice:neuronDescriptor:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNNeuron)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @neuronType@
-neuronTypeSelector :: Selector
+neuronTypeSelector :: Selector '[] MPSCNNNeuronType
 neuronTypeSelector = mkSelector "neuronType"
 
 -- | @Selector@ for @a@
-aSelector :: Selector
+aSelector :: Selector '[] CFloat
 aSelector = mkSelector "a"
 
 -- | @Selector@ for @b@
-bSelector :: Selector
+bSelector :: Selector '[] CFloat
 bSelector = mkSelector "b"
 
 -- | @Selector@ for @c@
-cSelector :: Selector
+cSelector :: Selector '[] CFloat
 cSelector = mkSelector "c"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 

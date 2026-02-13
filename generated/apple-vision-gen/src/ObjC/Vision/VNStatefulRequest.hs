@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.Vision.VNStatefulRequest
   , init_
   , initWithCompletionHandler
   , minimumLatencyFrameCount
-  , newSelector
   , initSelector
   , initWithCompletionHandlerSelector
   , minimumLatencyFrameCountSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,17 +39,17 @@ new :: IO (Id VNStatefulRequest)
 new  =
   do
     cls' <- getRequiredClass "VNStatefulRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVNStatefulRequest vnStatefulRequest => vnStatefulRequest -> IO (Id VNStatefulRequest)
-init_ vnStatefulRequest  =
-    sendMsg vnStatefulRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnStatefulRequest =
+  sendOwnedMessage vnStatefulRequest initSelector
 
 -- | @- initWithCompletionHandler:@
 initWithCompletionHandler :: IsVNStatefulRequest vnStatefulRequest => vnStatefulRequest -> Ptr () -> IO (Id VNStatefulRequest)
-initWithCompletionHandler vnStatefulRequest  completionHandler =
-    sendMsg vnStatefulRequest (mkSelector "initWithCompletionHandler:") (retPtr retVoid) [argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithCompletionHandler vnStatefulRequest completionHandler =
+  sendOwnedMessage vnStatefulRequest initWithCompletionHandlerSelector completionHandler
 
 -- | The minimum number of frames that the request has to process on before reporting back any observation. This information is provided by the request once initialized with its required paramters.
 --
@@ -60,26 +57,26 @@ initWithCompletionHandler vnStatefulRequest  completionHandler =
 --
 -- ObjC selector: @- minimumLatencyFrameCount@
 minimumLatencyFrameCount :: IsVNStatefulRequest vnStatefulRequest => vnStatefulRequest -> IO CLong
-minimumLatencyFrameCount vnStatefulRequest  =
-    sendMsg vnStatefulRequest (mkSelector "minimumLatencyFrameCount") retCLong []
+minimumLatencyFrameCount vnStatefulRequest =
+  sendMessage vnStatefulRequest minimumLatencyFrameCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VNStatefulRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNStatefulRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCompletionHandler:@
-initWithCompletionHandlerSelector :: Selector
+initWithCompletionHandlerSelector :: Selector '[Ptr ()] (Id VNStatefulRequest)
 initWithCompletionHandlerSelector = mkSelector "initWithCompletionHandler:"
 
 -- | @Selector@ for @minimumLatencyFrameCount@
-minimumLatencyFrameCountSelector :: Selector
+minimumLatencyFrameCountSelector :: Selector '[] CLong
 minimumLatencyFrameCountSelector = mkSelector "minimumLatencyFrameCount"
 

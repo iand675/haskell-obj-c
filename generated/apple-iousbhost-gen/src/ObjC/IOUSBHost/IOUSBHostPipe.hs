@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,29 +37,29 @@ module ObjC.IOUSBHost.IOUSBHostPipe
   , originalDescriptors
   , descriptors
   , idleTimeout
+  , abortWithErrorSelector
+  , abortWithOption_errorSelector
   , adjustPipeWithDescriptors_errorSelector
-  , setIdleTimeout_errorSelector
   , clearStallWithErrorSelector
-  , sendControlRequest_data_bytesTransferred_completionTimeout_errorSelector
-  , sendControlRequest_data_bytesTransferred_errorSelector
-  , sendControlRequest_errorSelector
+  , copyStreamWithStreamID_errorSelector
+  , descriptorsSelector
+  , disableStreamsWithErrorSelector
+  , enableStreamsWithErrorSelector
   , enqueueControlRequest_data_completionTimeout_error_completionHandlerSelector
   , enqueueControlRequest_data_error_completionHandlerSelector
   , enqueueControlRequest_error_completionHandlerSelector
-  , abortWithOption_errorSelector
-  , abortWithErrorSelector
-  , sendIORequestWithData_bytesTransferred_completionTimeout_errorSelector
   , enqueueIORequestWithData_completionTimeout_error_completionHandlerSelector
-  , sendIORequestWithData_frameList_frameListCount_firstFrameNumber_errorSelector
   , enqueueIORequestWithData_frameList_frameListCount_firstFrameNumber_error_completionHandlerSelector
-  , sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_errorSelector
   , enqueueIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error_completionHandlerSelector
-  , enableStreamsWithErrorSelector
-  , disableStreamsWithErrorSelector
-  , copyStreamWithStreamID_errorSelector
-  , originalDescriptorsSelector
-  , descriptorsSelector
   , idleTimeoutSelector
+  , originalDescriptorsSelector
+  , sendControlRequest_data_bytesTransferred_completionTimeout_errorSelector
+  , sendControlRequest_data_bytesTransferred_errorSelector
+  , sendControlRequest_errorSelector
+  , sendIORequestWithData_bytesTransferred_completionTimeout_errorSelector
+  , sendIORequestWithData_frameList_frameListCount_firstFrameNumber_errorSelector
+  , sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_errorSelector
+  , setIdleTimeout_errorSelector
 
   -- * Enum types
   , IOUSBHostAbortOption(IOUSBHostAbortOption)
@@ -69,15 +70,11 @@ module ObjC.IOUSBHost.IOUSBHostPipe
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -97,9 +94,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- adjustPipeWithDescriptors:error:@
 adjustPipeWithDescriptors_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> Const (Ptr IOUSBHostIOSourceDescriptors) -> error_ -> IO Bool
-adjustPipeWithDescriptors_error iousbHostPipe  descriptors error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "adjustPipeWithDescriptors:error:") retCULong [argPtr (unConst descriptors), argPtr (castPtr raw_error_ :: Ptr ())]
+adjustPipeWithDescriptors_error iousbHostPipe descriptors error_ =
+  sendMessage iousbHostPipe adjustPipeWithDescriptors_errorSelector descriptors (toNSError error_)
 
 -- | Sets the desired idle suspend timeout for the interface
 --
@@ -111,9 +107,8 @@ adjustPipeWithDescriptors_error iousbHostPipe  descriptors error_ =
 --
 -- ObjC selector: @- setIdleTimeout:error:@
 setIdleTimeout_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> CDouble -> error_ -> IO Bool
-setIdleTimeout_error iousbHostPipe  idleTimeout error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "setIdleTimeout:error:") retCULong [argCDouble idleTimeout, argPtr (castPtr raw_error_ :: Ptr ())]
+setIdleTimeout_error iousbHostPipe idleTimeout error_ =
+  sendMessage iousbHostPipe setIdleTimeout_errorSelector idleTimeout (toNSError error_)
 
 -- | Clear the halt condition of the pipe.
 --
@@ -123,9 +118,8 @@ setIdleTimeout_error iousbHostPipe  idleTimeout error_ =
 --
 -- ObjC selector: @- clearStallWithError:@
 clearStallWithError :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> error_ -> IO Bool
-clearStallWithError iousbHostPipe  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "clearStallWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+clearStallWithError iousbHostPipe error_ =
+  sendMessage iousbHostPipe clearStallWithErrorSelector (toNSError error_)
 
 -- | Send a request on a control endpoint
 --
@@ -143,10 +137,8 @@ clearStallWithError iousbHostPipe  error_ =
 --
 -- ObjC selector: @- sendControlRequest:data:bytesTransferred:completionTimeout:error:@
 sendControlRequest_data_bytesTransferred_completionTimeout_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> IOUSBDeviceRequest -> data_ -> Ptr CULong -> CDouble -> error_ -> IO Bool
-sendControlRequest_data_bytesTransferred_completionTimeout_error iousbHostPipe  request data_ bytesTransferred completionTimeout error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "sendControlRequest:data:bytesTransferred:completionTimeout:error:") retCULong [argIOUSBDeviceRequest request, argPtr (castPtr raw_data_ :: Ptr ()), argPtr bytesTransferred, argCDouble completionTimeout, argPtr (castPtr raw_error_ :: Ptr ())]
+sendControlRequest_data_bytesTransferred_completionTimeout_error iousbHostPipe request data_ bytesTransferred completionTimeout error_ =
+  sendMessage iousbHostPipe sendControlRequest_data_bytesTransferred_completionTimeout_errorSelector request (toNSMutableData data_) bytesTransferred completionTimeout (toNSError error_)
 
 -- | Send a request on a control endpoint
 --
@@ -162,10 +154,8 @@ sendControlRequest_data_bytesTransferred_completionTimeout_error iousbHostPipe  
 --
 -- ObjC selector: @- sendControlRequest:data:bytesTransferred:error:@
 sendControlRequest_data_bytesTransferred_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> IOUSBDeviceRequest -> data_ -> Ptr CULong -> error_ -> IO Bool
-sendControlRequest_data_bytesTransferred_error iousbHostPipe  request data_ bytesTransferred error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "sendControlRequest:data:bytesTransferred:error:") retCULong [argIOUSBDeviceRequest request, argPtr (castPtr raw_data_ :: Ptr ()), argPtr bytesTransferred, argPtr (castPtr raw_error_ :: Ptr ())]
+sendControlRequest_data_bytesTransferred_error iousbHostPipe request data_ bytesTransferred error_ =
+  sendMessage iousbHostPipe sendControlRequest_data_bytesTransferred_errorSelector request (toNSMutableData data_) bytesTransferred (toNSError error_)
 
 -- | Send a request on a control endpoint
 --
@@ -177,9 +167,8 @@ sendControlRequest_data_bytesTransferred_error iousbHostPipe  request data_ byte
 --
 -- ObjC selector: @- sendControlRequest:error:@
 sendControlRequest_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> IOUSBDeviceRequest -> error_ -> IO Bool
-sendControlRequest_error iousbHostPipe  request error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "sendControlRequest:error:") retCULong [argIOUSBDeviceRequest request, argPtr (castPtr raw_error_ :: Ptr ())]
+sendControlRequest_error iousbHostPipe request error_ =
+  sendMessage iousbHostPipe sendControlRequest_errorSelector request (toNSError error_)
 
 -- | Enqueue a request on a control endpoint
 --
@@ -197,10 +186,8 @@ sendControlRequest_error iousbHostPipe  request error_ =
 --
 -- ObjC selector: @- enqueueControlRequest:data:completionTimeout:error:completionHandler:@
 enqueueControlRequest_data_completionTimeout_error_completionHandler :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> IOUSBDeviceRequest -> data_ -> CDouble -> error_ -> Ptr () -> IO Bool
-enqueueControlRequest_data_completionTimeout_error_completionHandler iousbHostPipe  request data_ completionTimeout error_ completionHandler =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "enqueueControlRequest:data:completionTimeout:error:completionHandler:") retCULong [argIOUSBDeviceRequest request, argPtr (castPtr raw_data_ :: Ptr ()), argCDouble completionTimeout, argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enqueueControlRequest_data_completionTimeout_error_completionHandler iousbHostPipe request data_ completionTimeout error_ completionHandler =
+  sendMessage iousbHostPipe enqueueControlRequest_data_completionTimeout_error_completionHandlerSelector request (toNSMutableData data_) completionTimeout (toNSError error_) completionHandler
 
 -- | Enqueue a request on a control endpoint
 --
@@ -216,10 +203,8 @@ enqueueControlRequest_data_completionTimeout_error_completionHandler iousbHostPi
 --
 -- ObjC selector: @- enqueueControlRequest:data:error:completionHandler:@
 enqueueControlRequest_data_error_completionHandler :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> IOUSBDeviceRequest -> data_ -> error_ -> Ptr () -> IO Bool
-enqueueControlRequest_data_error_completionHandler iousbHostPipe  request data_ error_ completionHandler =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "enqueueControlRequest:data:error:completionHandler:") retCULong [argIOUSBDeviceRequest request, argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enqueueControlRequest_data_error_completionHandler iousbHostPipe request data_ error_ completionHandler =
+  sendMessage iousbHostPipe enqueueControlRequest_data_error_completionHandlerSelector request (toNSMutableData data_) (toNSError error_) completionHandler
 
 -- | Enqueue a request on a control endpoint
 --
@@ -233,9 +218,8 @@ enqueueControlRequest_data_error_completionHandler iousbHostPipe  request data_ 
 --
 -- ObjC selector: @- enqueueControlRequest:error:completionHandler:@
 enqueueControlRequest_error_completionHandler :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> IOUSBDeviceRequest -> error_ -> Ptr () -> IO Bool
-enqueueControlRequest_error_completionHandler iousbHostPipe  request error_ completionHandler =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "enqueueControlRequest:error:completionHandler:") retCULong [argIOUSBDeviceRequest request, argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enqueueControlRequest_error_completionHandler iousbHostPipe request error_ completionHandler =
+  sendMessage iousbHostPipe enqueueControlRequest_error_completionHandlerSelector request (toNSError error_) completionHandler
 
 -- | Abort pending I/O requests.
 --
@@ -247,9 +231,8 @@ enqueueControlRequest_error_completionHandler iousbHostPipe  request error_ comp
 --
 -- ObjC selector: @- abortWithOption:error:@
 abortWithOption_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> IOUSBHostAbortOption -> error_ -> IO Bool
-abortWithOption_error iousbHostPipe  option error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "abortWithOption:error:") retCULong [argCULong (coerce option), argPtr (castPtr raw_error_ :: Ptr ())]
+abortWithOption_error iousbHostPipe option error_ =
+  sendMessage iousbHostPipe abortWithOption_errorSelector option (toNSError error_)
 
 -- | Abort pending I/O requests.
 --
@@ -259,9 +242,8 @@ abortWithOption_error iousbHostPipe  option error_ =
 --
 -- ObjC selector: @- abortWithError:@
 abortWithError :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> error_ -> IO Bool
-abortWithError iousbHostPipe  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "abortWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+abortWithError iousbHostPipe error_ =
+  sendMessage iousbHostPipe abortWithErrorSelector (toNSError error_)
 
 -- | Send an IO request on the source
 --
@@ -277,10 +259,8 @@ abortWithError iousbHostPipe  error_ =
 --
 -- ObjC selector: @- sendIORequestWithData:bytesTransferred:completionTimeout:error:@
 sendIORequestWithData_bytesTransferred_completionTimeout_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> data_ -> Ptr CULong -> CDouble -> error_ -> IO Bool
-sendIORequestWithData_bytesTransferred_completionTimeout_error iousbHostPipe  data_ bytesTransferred completionTimeout error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "sendIORequestWithData:bytesTransferred:completionTimeout:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr bytesTransferred, argCDouble completionTimeout, argPtr (castPtr raw_error_ :: Ptr ())]
+sendIORequestWithData_bytesTransferred_completionTimeout_error iousbHostPipe data_ bytesTransferred completionTimeout error_ =
+  sendMessage iousbHostPipe sendIORequestWithData_bytesTransferred_completionTimeout_errorSelector (toNSMutableData data_) bytesTransferred completionTimeout (toNSError error_)
 
 -- | Enqueue an IO request on the source
 --
@@ -296,10 +276,8 @@ sendIORequestWithData_bytesTransferred_completionTimeout_error iousbHostPipe  da
 --
 -- ObjC selector: @- enqueueIORequestWithData:completionTimeout:error:completionHandler:@
 enqueueIORequestWithData_completionTimeout_error_completionHandler :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> data_ -> CDouble -> error_ -> Ptr () -> IO Bool
-enqueueIORequestWithData_completionTimeout_error_completionHandler iousbHostPipe  data_ completionTimeout error_ completionHandler =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "enqueueIORequestWithData:completionTimeout:error:completionHandler:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argCDouble completionTimeout, argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enqueueIORequestWithData_completionTimeout_error_completionHandler iousbHostPipe data_ completionTimeout error_ completionHandler =
+  sendMessage iousbHostPipe enqueueIORequestWithData_completionTimeout_error_completionHandlerSelector (toNSMutableData data_) completionTimeout (toNSError error_) completionHandler
 
 -- | Send a request on an isochronous endpoint
 --
@@ -321,10 +299,8 @@ enqueueIORequestWithData_completionTimeout_error_completionHandler iousbHostPipe
 --
 -- ObjC selector: @- sendIORequestWithData:frameList:frameListCount:firstFrameNumber:error:@
 sendIORequestWithData_frameList_frameListCount_firstFrameNumber_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> data_ -> Ptr IOUSBHostIsochronousFrame -> CULong -> CULong -> error_ -> IO Bool
-sendIORequestWithData_frameList_frameListCount_firstFrameNumber_error iousbHostPipe  data_ frameList frameListCount firstFrameNumber error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "sendIORequestWithData:frameList:frameListCount:firstFrameNumber:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr frameList, argCULong frameListCount, argCULong firstFrameNumber, argPtr (castPtr raw_error_ :: Ptr ())]
+sendIORequestWithData_frameList_frameListCount_firstFrameNumber_error iousbHostPipe data_ frameList frameListCount firstFrameNumber error_ =
+  sendMessage iousbHostPipe sendIORequestWithData_frameList_frameListCount_firstFrameNumber_errorSelector (toNSMutableData data_) frameList frameListCount firstFrameNumber (toNSError error_)
 
 -- | Send a request on an isochronous endpoint
 --
@@ -348,10 +324,8 @@ sendIORequestWithData_frameList_frameListCount_firstFrameNumber_error iousbHostP
 --
 -- ObjC selector: @- enqueueIORequestWithData:frameList:frameListCount:firstFrameNumber:error:completionHandler:@
 enqueueIORequestWithData_frameList_frameListCount_firstFrameNumber_error_completionHandler :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> data_ -> Ptr IOUSBHostIsochronousFrame -> CULong -> CULong -> error_ -> Ptr () -> IO Bool
-enqueueIORequestWithData_frameList_frameListCount_firstFrameNumber_error_completionHandler iousbHostPipe  data_ frameList frameListCount firstFrameNumber error_ completionHandler =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "enqueueIORequestWithData:frameList:frameListCount:firstFrameNumber:error:completionHandler:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr frameList, argCULong frameListCount, argCULong firstFrameNumber, argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enqueueIORequestWithData_frameList_frameListCount_firstFrameNumber_error_completionHandler iousbHostPipe data_ frameList frameListCount firstFrameNumber error_ completionHandler =
+  sendMessage iousbHostPipe enqueueIORequestWithData_frameList_frameListCount_firstFrameNumber_error_completionHandlerSelector (toNSMutableData data_) frameList frameListCount firstFrameNumber (toNSError error_) completionHandler
 
 -- | Send a request on an isochronous endpoint
 --
@@ -379,10 +353,8 @@ enqueueIORequestWithData_frameList_frameListCount_firstFrameNumber_error_complet
 --
 -- ObjC selector: @- sendIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error:@
 sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> data_ -> Ptr IOUSBHostIsochronousTransaction -> CULong -> CULong -> IOUSBHostIsochronousTransferOptions -> error_ -> IO Bool
-sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error iousbHostPipe  data_ transactionList transactionListCount firstFrameNumber options error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "sendIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr transactionList, argCULong transactionListCount, argCULong firstFrameNumber, argCUInt (coerce options), argPtr (castPtr raw_error_ :: Ptr ())]
+sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error iousbHostPipe data_ transactionList transactionListCount firstFrameNumber options error_ =
+  sendMessage iousbHostPipe sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_errorSelector (toNSMutableData data_) transactionList transactionListCount firstFrameNumber options (toNSError error_)
 
 -- | Send a request on an isochronous endpoint
 --
@@ -408,10 +380,8 @@ sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_opti
 --
 -- ObjC selector: @- enqueueIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error:completionHandler:@
 enqueueIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error_completionHandler :: (IsIOUSBHostPipe iousbHostPipe, IsNSMutableData data_, IsNSError error_) => iousbHostPipe -> data_ -> Ptr IOUSBHostIsochronousTransaction -> CULong -> CULong -> IOUSBHostIsochronousTransferOptions -> error_ -> Ptr () -> IO Bool
-enqueueIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error_completionHandler iousbHostPipe  data_ transactionList transactionListCount firstFrameNumber options error_ completionHandler =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "enqueueIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error:completionHandler:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr transactionList, argCULong transactionListCount, argCULong firstFrameNumber, argCUInt (coerce options), argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+enqueueIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error_completionHandler iousbHostPipe data_ transactionList transactionListCount firstFrameNumber options error_ completionHandler =
+  sendMessage iousbHostPipe enqueueIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error_completionHandlerSelector (toNSMutableData data_) transactionList transactionListCount firstFrameNumber options (toNSError error_) completionHandler
 
 -- | Enable streams for the IOUSBHostPipe
 --
@@ -421,9 +391,8 @@ enqueueIORequestWithData_transactionList_transactionListCount_firstFrameNumber_o
 --
 -- ObjC selector: @- enableStreamsWithError:@
 enableStreamsWithError :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> error_ -> IO Bool
-enableStreamsWithError iousbHostPipe  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "enableStreamsWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+enableStreamsWithError iousbHostPipe error_ =
+  sendMessage iousbHostPipe enableStreamsWithErrorSelector (toNSError error_)
 
 -- | Disable streams for the IOUSBHostPipe
 --
@@ -433,9 +402,8 @@ enableStreamsWithError iousbHostPipe  error_ =
 --
 -- ObjC selector: @- disableStreamsWithError:@
 disableStreamsWithError :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> error_ -> IO Bool
-disableStreamsWithError iousbHostPipe  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostPipe (mkSelector "disableStreamsWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+disableStreamsWithError iousbHostPipe error_ =
+  sendMessage iousbHostPipe disableStreamsWithErrorSelector (toNSError error_)
 
 -- | Return the stream associated with streamID
 --
@@ -447,9 +415,8 @@ disableStreamsWithError iousbHostPipe  error_ =
 --
 -- ObjC selector: @- copyStreamWithStreamID:error:@
 copyStreamWithStreamID_error :: (IsIOUSBHostPipe iousbHostPipe, IsNSError error_) => iousbHostPipe -> CULong -> error_ -> IO (Id IOUSBHostStream)
-copyStreamWithStreamID_error iousbHostPipe  streamID error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg iousbHostPipe (mkSelector "copyStreamWithStreamID:error:") (retPtr retVoid) [argCULong streamID, argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+copyStreamWithStreamID_error iousbHostPipe streamID error_ =
+  sendOwnedMessage iousbHostPipe copyStreamWithStreamID_errorSelector streamID (toNSError error_)
 
 -- | Retrieve the Original descriptor used when creating the pipe.
 --
@@ -457,8 +424,8 @@ copyStreamWithStreamID_error iousbHostPipe  streamID error_ =
 --
 -- ObjC selector: @- originalDescriptors@
 originalDescriptors :: IsIOUSBHostPipe iousbHostPipe => iousbHostPipe -> IO (Const (Ptr IOUSBHostIOSourceDescriptors))
-originalDescriptors iousbHostPipe  =
-    fmap Const $ fmap castPtr $ sendMsg iousbHostPipe (mkSelector "originalDescriptors") (retPtr retVoid) []
+originalDescriptors iousbHostPipe =
+  sendMessage iousbHostPipe originalDescriptorsSelector
 
 -- | Retrieve the current descriptor controlling the endpoint.
 --
@@ -466,8 +433,8 @@ originalDescriptors iousbHostPipe  =
 --
 -- ObjC selector: @- descriptors@
 descriptors :: IsIOUSBHostPipe iousbHostPipe => iousbHostPipe -> IO (Const (Ptr IOUSBHostIOSourceDescriptors))
-descriptors iousbHostPipe  =
-    fmap Const $ fmap castPtr $ sendMsg iousbHostPipe (mkSelector "descriptors") (retPtr retVoid) []
+descriptors iousbHostPipe =
+  sendMessage iousbHostPipe descriptorsSelector
 
 -- | Retrieve the current idle suspend timeout.              See
 --
@@ -477,102 +444,102 @@ descriptors iousbHostPipe  =
 --
 -- ObjC selector: @- idleTimeout@
 idleTimeout :: IsIOUSBHostPipe iousbHostPipe => iousbHostPipe -> IO CDouble
-idleTimeout iousbHostPipe  =
-    sendMsg iousbHostPipe (mkSelector "idleTimeout") retCDouble []
+idleTimeout iousbHostPipe =
+  sendMessage iousbHostPipe idleTimeoutSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @adjustPipeWithDescriptors:error:@
-adjustPipeWithDescriptors_errorSelector :: Selector
+adjustPipeWithDescriptors_errorSelector :: Selector '[Const (Ptr IOUSBHostIOSourceDescriptors), Id NSError] Bool
 adjustPipeWithDescriptors_errorSelector = mkSelector "adjustPipeWithDescriptors:error:"
 
 -- | @Selector@ for @setIdleTimeout:error:@
-setIdleTimeout_errorSelector :: Selector
+setIdleTimeout_errorSelector :: Selector '[CDouble, Id NSError] Bool
 setIdleTimeout_errorSelector = mkSelector "setIdleTimeout:error:"
 
 -- | @Selector@ for @clearStallWithError:@
-clearStallWithErrorSelector :: Selector
+clearStallWithErrorSelector :: Selector '[Id NSError] Bool
 clearStallWithErrorSelector = mkSelector "clearStallWithError:"
 
 -- | @Selector@ for @sendControlRequest:data:bytesTransferred:completionTimeout:error:@
-sendControlRequest_data_bytesTransferred_completionTimeout_errorSelector :: Selector
+sendControlRequest_data_bytesTransferred_completionTimeout_errorSelector :: Selector '[IOUSBDeviceRequest, Id NSMutableData, Ptr CULong, CDouble, Id NSError] Bool
 sendControlRequest_data_bytesTransferred_completionTimeout_errorSelector = mkSelector "sendControlRequest:data:bytesTransferred:completionTimeout:error:"
 
 -- | @Selector@ for @sendControlRequest:data:bytesTransferred:error:@
-sendControlRequest_data_bytesTransferred_errorSelector :: Selector
+sendControlRequest_data_bytesTransferred_errorSelector :: Selector '[IOUSBDeviceRequest, Id NSMutableData, Ptr CULong, Id NSError] Bool
 sendControlRequest_data_bytesTransferred_errorSelector = mkSelector "sendControlRequest:data:bytesTransferred:error:"
 
 -- | @Selector@ for @sendControlRequest:error:@
-sendControlRequest_errorSelector :: Selector
+sendControlRequest_errorSelector :: Selector '[IOUSBDeviceRequest, Id NSError] Bool
 sendControlRequest_errorSelector = mkSelector "sendControlRequest:error:"
 
 -- | @Selector@ for @enqueueControlRequest:data:completionTimeout:error:completionHandler:@
-enqueueControlRequest_data_completionTimeout_error_completionHandlerSelector :: Selector
+enqueueControlRequest_data_completionTimeout_error_completionHandlerSelector :: Selector '[IOUSBDeviceRequest, Id NSMutableData, CDouble, Id NSError, Ptr ()] Bool
 enqueueControlRequest_data_completionTimeout_error_completionHandlerSelector = mkSelector "enqueueControlRequest:data:completionTimeout:error:completionHandler:"
 
 -- | @Selector@ for @enqueueControlRequest:data:error:completionHandler:@
-enqueueControlRequest_data_error_completionHandlerSelector :: Selector
+enqueueControlRequest_data_error_completionHandlerSelector :: Selector '[IOUSBDeviceRequest, Id NSMutableData, Id NSError, Ptr ()] Bool
 enqueueControlRequest_data_error_completionHandlerSelector = mkSelector "enqueueControlRequest:data:error:completionHandler:"
 
 -- | @Selector@ for @enqueueControlRequest:error:completionHandler:@
-enqueueControlRequest_error_completionHandlerSelector :: Selector
+enqueueControlRequest_error_completionHandlerSelector :: Selector '[IOUSBDeviceRequest, Id NSError, Ptr ()] Bool
 enqueueControlRequest_error_completionHandlerSelector = mkSelector "enqueueControlRequest:error:completionHandler:"
 
 -- | @Selector@ for @abortWithOption:error:@
-abortWithOption_errorSelector :: Selector
+abortWithOption_errorSelector :: Selector '[IOUSBHostAbortOption, Id NSError] Bool
 abortWithOption_errorSelector = mkSelector "abortWithOption:error:"
 
 -- | @Selector@ for @abortWithError:@
-abortWithErrorSelector :: Selector
+abortWithErrorSelector :: Selector '[Id NSError] Bool
 abortWithErrorSelector = mkSelector "abortWithError:"
 
 -- | @Selector@ for @sendIORequestWithData:bytesTransferred:completionTimeout:error:@
-sendIORequestWithData_bytesTransferred_completionTimeout_errorSelector :: Selector
+sendIORequestWithData_bytesTransferred_completionTimeout_errorSelector :: Selector '[Id NSMutableData, Ptr CULong, CDouble, Id NSError] Bool
 sendIORequestWithData_bytesTransferred_completionTimeout_errorSelector = mkSelector "sendIORequestWithData:bytesTransferred:completionTimeout:error:"
 
 -- | @Selector@ for @enqueueIORequestWithData:completionTimeout:error:completionHandler:@
-enqueueIORequestWithData_completionTimeout_error_completionHandlerSelector :: Selector
+enqueueIORequestWithData_completionTimeout_error_completionHandlerSelector :: Selector '[Id NSMutableData, CDouble, Id NSError, Ptr ()] Bool
 enqueueIORequestWithData_completionTimeout_error_completionHandlerSelector = mkSelector "enqueueIORequestWithData:completionTimeout:error:completionHandler:"
 
 -- | @Selector@ for @sendIORequestWithData:frameList:frameListCount:firstFrameNumber:error:@
-sendIORequestWithData_frameList_frameListCount_firstFrameNumber_errorSelector :: Selector
+sendIORequestWithData_frameList_frameListCount_firstFrameNumber_errorSelector :: Selector '[Id NSMutableData, Ptr IOUSBHostIsochronousFrame, CULong, CULong, Id NSError] Bool
 sendIORequestWithData_frameList_frameListCount_firstFrameNumber_errorSelector = mkSelector "sendIORequestWithData:frameList:frameListCount:firstFrameNumber:error:"
 
 -- | @Selector@ for @enqueueIORequestWithData:frameList:frameListCount:firstFrameNumber:error:completionHandler:@
-enqueueIORequestWithData_frameList_frameListCount_firstFrameNumber_error_completionHandlerSelector :: Selector
+enqueueIORequestWithData_frameList_frameListCount_firstFrameNumber_error_completionHandlerSelector :: Selector '[Id NSMutableData, Ptr IOUSBHostIsochronousFrame, CULong, CULong, Id NSError, Ptr ()] Bool
 enqueueIORequestWithData_frameList_frameListCount_firstFrameNumber_error_completionHandlerSelector = mkSelector "enqueueIORequestWithData:frameList:frameListCount:firstFrameNumber:error:completionHandler:"
 
 -- | @Selector@ for @sendIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error:@
-sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_errorSelector :: Selector
+sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_errorSelector :: Selector '[Id NSMutableData, Ptr IOUSBHostIsochronousTransaction, CULong, CULong, IOUSBHostIsochronousTransferOptions, Id NSError] Bool
 sendIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_errorSelector = mkSelector "sendIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error:"
 
 -- | @Selector@ for @enqueueIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error:completionHandler:@
-enqueueIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error_completionHandlerSelector :: Selector
+enqueueIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error_completionHandlerSelector :: Selector '[Id NSMutableData, Ptr IOUSBHostIsochronousTransaction, CULong, CULong, IOUSBHostIsochronousTransferOptions, Id NSError, Ptr ()] Bool
 enqueueIORequestWithData_transactionList_transactionListCount_firstFrameNumber_options_error_completionHandlerSelector = mkSelector "enqueueIORequestWithData:transactionList:transactionListCount:firstFrameNumber:options:error:completionHandler:"
 
 -- | @Selector@ for @enableStreamsWithError:@
-enableStreamsWithErrorSelector :: Selector
+enableStreamsWithErrorSelector :: Selector '[Id NSError] Bool
 enableStreamsWithErrorSelector = mkSelector "enableStreamsWithError:"
 
 -- | @Selector@ for @disableStreamsWithError:@
-disableStreamsWithErrorSelector :: Selector
+disableStreamsWithErrorSelector :: Selector '[Id NSError] Bool
 disableStreamsWithErrorSelector = mkSelector "disableStreamsWithError:"
 
 -- | @Selector@ for @copyStreamWithStreamID:error:@
-copyStreamWithStreamID_errorSelector :: Selector
+copyStreamWithStreamID_errorSelector :: Selector '[CULong, Id NSError] (Id IOUSBHostStream)
 copyStreamWithStreamID_errorSelector = mkSelector "copyStreamWithStreamID:error:"
 
 -- | @Selector@ for @originalDescriptors@
-originalDescriptorsSelector :: Selector
+originalDescriptorsSelector :: Selector '[] (Const (Ptr IOUSBHostIOSourceDescriptors))
 originalDescriptorsSelector = mkSelector "originalDescriptors"
 
 -- | @Selector@ for @descriptors@
-descriptorsSelector :: Selector
+descriptorsSelector :: Selector '[] (Const (Ptr IOUSBHostIOSourceDescriptors))
 descriptorsSelector = mkSelector "descriptors"
 
 -- | @Selector@ for @idleTimeout@
-idleTimeoutSelector :: Selector
+idleTimeoutSelector :: Selector '[] CDouble
 idleTimeoutSelector = mkSelector "idleTimeout"
 

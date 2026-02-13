@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,8 +13,8 @@ module ObjC.Metal.MTLRenderPassDepthAttachmentDescriptor
   , depthResolveFilter
   , setDepthResolveFilter
   , clearDepthSelector
-  , setClearDepthSelector
   , depthResolveFilterSelector
+  , setClearDepthSelector
   , setDepthResolveFilterSelector
 
   -- * Enum types
@@ -24,15 +25,11 @@ module ObjC.Metal.MTLRenderPassDepthAttachmentDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,8 +43,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- clearDepth@
 clearDepth :: IsMTLRenderPassDepthAttachmentDescriptor mtlRenderPassDepthAttachmentDescriptor => mtlRenderPassDepthAttachmentDescriptor -> IO CDouble
-clearDepth mtlRenderPassDepthAttachmentDescriptor  =
-    sendMsg mtlRenderPassDepthAttachmentDescriptor (mkSelector "clearDepth") retCDouble []
+clearDepth mtlRenderPassDepthAttachmentDescriptor =
+  sendMessage mtlRenderPassDepthAttachmentDescriptor clearDepthSelector
 
 -- | clearDepth
 --
@@ -55,8 +52,8 @@ clearDepth mtlRenderPassDepthAttachmentDescriptor  =
 --
 -- ObjC selector: @- setClearDepth:@
 setClearDepth :: IsMTLRenderPassDepthAttachmentDescriptor mtlRenderPassDepthAttachmentDescriptor => mtlRenderPassDepthAttachmentDescriptor -> CDouble -> IO ()
-setClearDepth mtlRenderPassDepthAttachmentDescriptor  value =
-    sendMsg mtlRenderPassDepthAttachmentDescriptor (mkSelector "setClearDepth:") retVoid [argCDouble value]
+setClearDepth mtlRenderPassDepthAttachmentDescriptor value =
+  sendMessage mtlRenderPassDepthAttachmentDescriptor setClearDepthSelector value
 
 -- | resolveFilter
 --
@@ -64,8 +61,8 @@ setClearDepth mtlRenderPassDepthAttachmentDescriptor  value =
 --
 -- ObjC selector: @- depthResolveFilter@
 depthResolveFilter :: IsMTLRenderPassDepthAttachmentDescriptor mtlRenderPassDepthAttachmentDescriptor => mtlRenderPassDepthAttachmentDescriptor -> IO MTLMultisampleDepthResolveFilter
-depthResolveFilter mtlRenderPassDepthAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLMultisampleDepthResolveFilter) $ sendMsg mtlRenderPassDepthAttachmentDescriptor (mkSelector "depthResolveFilter") retCULong []
+depthResolveFilter mtlRenderPassDepthAttachmentDescriptor =
+  sendMessage mtlRenderPassDepthAttachmentDescriptor depthResolveFilterSelector
 
 -- | resolveFilter
 --
@@ -73,26 +70,26 @@ depthResolveFilter mtlRenderPassDepthAttachmentDescriptor  =
 --
 -- ObjC selector: @- setDepthResolveFilter:@
 setDepthResolveFilter :: IsMTLRenderPassDepthAttachmentDescriptor mtlRenderPassDepthAttachmentDescriptor => mtlRenderPassDepthAttachmentDescriptor -> MTLMultisampleDepthResolveFilter -> IO ()
-setDepthResolveFilter mtlRenderPassDepthAttachmentDescriptor  value =
-    sendMsg mtlRenderPassDepthAttachmentDescriptor (mkSelector "setDepthResolveFilter:") retVoid [argCULong (coerce value)]
+setDepthResolveFilter mtlRenderPassDepthAttachmentDescriptor value =
+  sendMessage mtlRenderPassDepthAttachmentDescriptor setDepthResolveFilterSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @clearDepth@
-clearDepthSelector :: Selector
+clearDepthSelector :: Selector '[] CDouble
 clearDepthSelector = mkSelector "clearDepth"
 
 -- | @Selector@ for @setClearDepth:@
-setClearDepthSelector :: Selector
+setClearDepthSelector :: Selector '[CDouble] ()
 setClearDepthSelector = mkSelector "setClearDepth:"
 
 -- | @Selector@ for @depthResolveFilter@
-depthResolveFilterSelector :: Selector
+depthResolveFilterSelector :: Selector '[] MTLMultisampleDepthResolveFilter
 depthResolveFilterSelector = mkSelector "depthResolveFilter"
 
 -- | @Selector@ for @setDepthResolveFilter:@
-setDepthResolveFilterSelector :: Selector
+setDepthResolveFilterSelector :: Selector '[MTLMultisampleDepthResolveFilter] ()
 setDepthResolveFilterSelector = mkSelector "setDepthResolveFilter:"
 

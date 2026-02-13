@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.InstallerPlugins.InstallerSection
   , shouldLoad
   , installerState
   , activePane
-  , willLoadMainNibSelector
-  , didLoadMainNibSelector
-  , sharedDictionarySelector
-  , gotoPaneSelector
-  , bundleSelector
-  , titleSelector
-  , firstPaneSelector
-  , shouldLoadSelector
-  , installerStateSelector
   , activePaneSelector
+  , bundleSelector
+  , didLoadMainNibSelector
+  , firstPaneSelector
+  , gotoPaneSelector
+  , installerStateSelector
+  , sharedDictionarySelector
+  , shouldLoadSelector
+  , titleSelector
+  , willLoadMainNibSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- willLoadMainNib@
 willLoadMainNib :: IsInstallerSection installerSection => installerSection -> IO ()
-willLoadMainNib installerSection  =
-    sendMsg installerSection (mkSelector "willLoadMainNib") retVoid []
+willLoadMainNib installerSection =
+  sendMessage installerSection willLoadMainNibSelector
 
 -- | didLoadMainNib
 --
@@ -66,8 +63,8 @@ willLoadMainNib installerSection  =
 --
 -- ObjC selector: @- didLoadMainNib@
 didLoadMainNib :: IsInstallerSection installerSection => installerSection -> IO ()
-didLoadMainNib installerSection  =
-    sendMsg installerSection (mkSelector "didLoadMainNib") retVoid []
+didLoadMainNib installerSection =
+  sendMessage installerSection didLoadMainNibSelector
 
 -- | sharedDictionary
 --
@@ -77,8 +74,8 @@ didLoadMainNib installerSection  =
 --
 -- ObjC selector: @- sharedDictionary@
 sharedDictionary :: IsInstallerSection installerSection => installerSection -> IO (Id NSMutableDictionary)
-sharedDictionary installerSection  =
-    sendMsg installerSection (mkSelector "sharedDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+sharedDictionary installerSection =
+  sendMessage installerSection sharedDictionarySelector
 
 -- | gotoPane:
 --
@@ -90,9 +87,8 @@ sharedDictionary installerSection  =
 --
 -- ObjC selector: @- gotoPane:@
 gotoPane :: (IsInstallerSection installerSection, IsInstallerPane pane) => installerSection -> pane -> IO Bool
-gotoPane installerSection  pane =
-  withObjCPtr pane $ \raw_pane ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerSection (mkSelector "gotoPane:") retCULong [argPtr (castPtr raw_pane :: Ptr ())]
+gotoPane installerSection pane =
+  sendMessage installerSection gotoPaneSelector (toInstallerPane pane)
 
 -- | bundle
 --
@@ -102,8 +98,8 @@ gotoPane installerSection  pane =
 --
 -- ObjC selector: @- bundle@
 bundle :: IsInstallerSection installerSection => installerSection -> IO (Id NSBundle)
-bundle installerSection  =
-    sendMsg installerSection (mkSelector "bundle") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundle installerSection =
+  sendMessage installerSection bundleSelector
 
 -- | title
 --
@@ -113,8 +109,8 @@ bundle installerSection  =
 --
 -- ObjC selector: @- title@
 title :: IsInstallerSection installerSection => installerSection -> IO (Id NSString)
-title installerSection  =
-    sendMsg installerSection (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title installerSection =
+  sendMessage installerSection titleSelector
 
 -- | firstPane
 --
@@ -122,8 +118,8 @@ title installerSection  =
 --
 -- ObjC selector: @- firstPane@
 firstPane :: IsInstallerSection installerSection => installerSection -> IO (Id InstallerPane)
-firstPane installerSection  =
-    sendMsg installerSection (mkSelector "firstPane") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstPane installerSection =
+  sendMessage installerSection firstPaneSelector
 
 -- | shouldLoad
 --
@@ -131,8 +127,8 @@ firstPane installerSection  =
 --
 -- ObjC selector: @- shouldLoad@
 shouldLoad :: IsInstallerSection installerSection => installerSection -> IO Bool
-shouldLoad installerSection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg installerSection (mkSelector "shouldLoad") retCULong []
+shouldLoad installerSection =
+  sendMessage installerSection shouldLoadSelector
 
 -- | installerState
 --
@@ -142,8 +138,8 @@ shouldLoad installerSection  =
 --
 -- ObjC selector: @- installerState@
 installerState :: IsInstallerSection installerSection => installerSection -> IO (Id InstallerState)
-installerState installerSection  =
-    sendMsg installerSection (mkSelector "installerState") (retPtr retVoid) [] >>= retainedObject . castPtr
+installerState installerSection =
+  sendMessage installerSection installerStateSelector
 
 -- | activePane
 --
@@ -153,50 +149,50 @@ installerState installerSection  =
 --
 -- ObjC selector: @- activePane@
 activePane :: IsInstallerSection installerSection => installerSection -> IO (Id InstallerPane)
-activePane installerSection  =
-    sendMsg installerSection (mkSelector "activePane") (retPtr retVoid) [] >>= retainedObject . castPtr
+activePane installerSection =
+  sendMessage installerSection activePaneSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @willLoadMainNib@
-willLoadMainNibSelector :: Selector
+willLoadMainNibSelector :: Selector '[] ()
 willLoadMainNibSelector = mkSelector "willLoadMainNib"
 
 -- | @Selector@ for @didLoadMainNib@
-didLoadMainNibSelector :: Selector
+didLoadMainNibSelector :: Selector '[] ()
 didLoadMainNibSelector = mkSelector "didLoadMainNib"
 
 -- | @Selector@ for @sharedDictionary@
-sharedDictionarySelector :: Selector
+sharedDictionarySelector :: Selector '[] (Id NSMutableDictionary)
 sharedDictionarySelector = mkSelector "sharedDictionary"
 
 -- | @Selector@ for @gotoPane:@
-gotoPaneSelector :: Selector
+gotoPaneSelector :: Selector '[Id InstallerPane] Bool
 gotoPaneSelector = mkSelector "gotoPane:"
 
 -- | @Selector@ for @bundle@
-bundleSelector :: Selector
+bundleSelector :: Selector '[] (Id NSBundle)
 bundleSelector = mkSelector "bundle"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @firstPane@
-firstPaneSelector :: Selector
+firstPaneSelector :: Selector '[] (Id InstallerPane)
 firstPaneSelector = mkSelector "firstPane"
 
 -- | @Selector@ for @shouldLoad@
-shouldLoadSelector :: Selector
+shouldLoadSelector :: Selector '[] Bool
 shouldLoadSelector = mkSelector "shouldLoad"
 
 -- | @Selector@ for @installerState@
-installerStateSelector :: Selector
+installerStateSelector :: Selector '[] (Id InstallerState)
 installerStateSelector = mkSelector "installerState"
 
 -- | @Selector@ for @activePane@
-activePaneSelector :: Selector
+activePaneSelector :: Selector '[] (Id InstallerPane)
 activePaneSelector = mkSelector "activePane"
 

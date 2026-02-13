@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,14 +18,14 @@ module ObjC.SpriteKit.SKTileGroupRule
   , setTileDefinitions
   , name
   , setName
-  , tileGroupRuleWithAdjacency_tileDefinitionsSelector
-  , initWithAdjacency_tileDefinitionsSelector
   , adjacencySelector
-  , setAdjacencySelector
-  , tileDefinitionsSelector
-  , setTileDefinitionsSelector
+  , initWithAdjacency_tileDefinitionsSelector
   , nameSelector
+  , setAdjacencySelector
   , setNameSelector
+  , setTileDefinitionsSelector
+  , tileDefinitionsSelector
+  , tileGroupRuleWithAdjacency_tileDefinitionsSelector
 
   -- * Enum types
   , SKTileAdjacencyMask(SKTileAdjacencyMask)
@@ -66,15 +67,11 @@ module ObjC.SpriteKit.SKTileGroupRule
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,8 +90,7 @@ tileGroupRuleWithAdjacency_tileDefinitions :: IsNSArray tileDefinitions => SKTil
 tileGroupRuleWithAdjacency_tileDefinitions adjacency tileDefinitions =
   do
     cls' <- getRequiredClass "SKTileGroupRule"
-    withObjCPtr tileDefinitions $ \raw_tileDefinitions ->
-      sendClassMsg cls' (mkSelector "tileGroupRuleWithAdjacency:tileDefinitions:") (retPtr retVoid) [argCULong (coerce adjacency), argPtr (castPtr raw_tileDefinitions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' tileGroupRuleWithAdjacency_tileDefinitionsSelector adjacency (toNSArray tileDefinitions)
 
 -- | Initilize a tile group rule with the specified adjacency and tile definitions.
 --
@@ -104,87 +100,84 @@ tileGroupRuleWithAdjacency_tileDefinitions adjacency tileDefinitions =
 --
 -- ObjC selector: @- initWithAdjacency:tileDefinitions:@
 initWithAdjacency_tileDefinitions :: (IsSKTileGroupRule skTileGroupRule, IsNSArray tileDefinitions) => skTileGroupRule -> SKTileAdjacencyMask -> tileDefinitions -> IO (Id SKTileGroupRule)
-initWithAdjacency_tileDefinitions skTileGroupRule  adjacency tileDefinitions =
-  withObjCPtr tileDefinitions $ \raw_tileDefinitions ->
-      sendMsg skTileGroupRule (mkSelector "initWithAdjacency:tileDefinitions:") (retPtr retVoid) [argCULong (coerce adjacency), argPtr (castPtr raw_tileDefinitions :: Ptr ())] >>= ownedObject . castPtr
+initWithAdjacency_tileDefinitions skTileGroupRule adjacency tileDefinitions =
+  sendOwnedMessage skTileGroupRule initWithAdjacency_tileDefinitionsSelector adjacency (toNSArray tileDefinitions)
 
 -- | The adjacency mask used by this rule. Set this to the mask that covers the adjacent spaces that must be filled with tiles belonging to the same group for this rule met.
 --
 -- ObjC selector: @- adjacency@
 adjacency :: IsSKTileGroupRule skTileGroupRule => skTileGroupRule -> IO SKTileAdjacencyMask
-adjacency skTileGroupRule  =
-    fmap (coerce :: CULong -> SKTileAdjacencyMask) $ sendMsg skTileGroupRule (mkSelector "adjacency") retCULong []
+adjacency skTileGroupRule =
+  sendMessage skTileGroupRule adjacencySelector
 
 -- | The adjacency mask used by this rule. Set this to the mask that covers the adjacent spaces that must be filled with tiles belonging to the same group for this rule met.
 --
 -- ObjC selector: @- setAdjacency:@
 setAdjacency :: IsSKTileGroupRule skTileGroupRule => skTileGroupRule -> SKTileAdjacencyMask -> IO ()
-setAdjacency skTileGroupRule  value =
-    sendMsg skTileGroupRule (mkSelector "setAdjacency:") retVoid [argCULong (coerce value)]
+setAdjacency skTileGroupRule value =
+  sendMessage skTileGroupRule setAdjacencySelector value
 
 -- | The tile definitions used by this rule. If the rule is evaluated and its conditions are met, one of the tile definitions within this array will be randomly selected for placement within the tile map. Each tile definitions' placement weight is taken into consideration to determine how likely each is to be selected; tile definitions with higher placement weights will be selected more frequently than those with lower placement weights.
 --
 -- ObjC selector: @- tileDefinitions@
 tileDefinitions :: IsSKTileGroupRule skTileGroupRule => skTileGroupRule -> IO (Id NSArray)
-tileDefinitions skTileGroupRule  =
-    sendMsg skTileGroupRule (mkSelector "tileDefinitions") (retPtr retVoid) [] >>= retainedObject . castPtr
+tileDefinitions skTileGroupRule =
+  sendMessage skTileGroupRule tileDefinitionsSelector
 
 -- | The tile definitions used by this rule. If the rule is evaluated and its conditions are met, one of the tile definitions within this array will be randomly selected for placement within the tile map. Each tile definitions' placement weight is taken into consideration to determine how likely each is to be selected; tile definitions with higher placement weights will be selected more frequently than those with lower placement weights.
 --
 -- ObjC selector: @- setTileDefinitions:@
 setTileDefinitions :: (IsSKTileGroupRule skTileGroupRule, IsNSArray value) => skTileGroupRule -> value -> IO ()
-setTileDefinitions skTileGroupRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skTileGroupRule (mkSelector "setTileDefinitions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTileDefinitions skTileGroupRule value =
+  sendMessage skTileGroupRule setTileDefinitionsSelector (toNSArray value)
 
 -- | Client-assignable name for the tile group rule. Defaults to nil.
 --
 -- ObjC selector: @- name@
 name :: IsSKTileGroupRule skTileGroupRule => skTileGroupRule -> IO (Id NSString)
-name skTileGroupRule  =
-    sendMsg skTileGroupRule (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name skTileGroupRule =
+  sendMessage skTileGroupRule nameSelector
 
 -- | Client-assignable name for the tile group rule. Defaults to nil.
 --
 -- ObjC selector: @- setName:@
 setName :: (IsSKTileGroupRule skTileGroupRule, IsNSString value) => skTileGroupRule -> value -> IO ()
-setName skTileGroupRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skTileGroupRule (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName skTileGroupRule value =
+  sendMessage skTileGroupRule setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tileGroupRuleWithAdjacency:tileDefinitions:@
-tileGroupRuleWithAdjacency_tileDefinitionsSelector :: Selector
+tileGroupRuleWithAdjacency_tileDefinitionsSelector :: Selector '[SKTileAdjacencyMask, Id NSArray] (Id SKTileGroupRule)
 tileGroupRuleWithAdjacency_tileDefinitionsSelector = mkSelector "tileGroupRuleWithAdjacency:tileDefinitions:"
 
 -- | @Selector@ for @initWithAdjacency:tileDefinitions:@
-initWithAdjacency_tileDefinitionsSelector :: Selector
+initWithAdjacency_tileDefinitionsSelector :: Selector '[SKTileAdjacencyMask, Id NSArray] (Id SKTileGroupRule)
 initWithAdjacency_tileDefinitionsSelector = mkSelector "initWithAdjacency:tileDefinitions:"
 
 -- | @Selector@ for @adjacency@
-adjacencySelector :: Selector
+adjacencySelector :: Selector '[] SKTileAdjacencyMask
 adjacencySelector = mkSelector "adjacency"
 
 -- | @Selector@ for @setAdjacency:@
-setAdjacencySelector :: Selector
+setAdjacencySelector :: Selector '[SKTileAdjacencyMask] ()
 setAdjacencySelector = mkSelector "setAdjacency:"
 
 -- | @Selector@ for @tileDefinitions@
-tileDefinitionsSelector :: Selector
+tileDefinitionsSelector :: Selector '[] (Id NSArray)
 tileDefinitionsSelector = mkSelector "tileDefinitions"
 
 -- | @Selector@ for @setTileDefinitions:@
-setTileDefinitionsSelector :: Selector
+setTileDefinitionsSelector :: Selector '[Id NSArray] ()
 setTileDefinitionsSelector = mkSelector "setTileDefinitions:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

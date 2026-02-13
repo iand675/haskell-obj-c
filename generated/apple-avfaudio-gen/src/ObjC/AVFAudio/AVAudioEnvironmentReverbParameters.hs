@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,13 +25,13 @@ module ObjC.AVFAudio.AVAudioEnvironmentReverbParameters
   , level
   , setLevel
   , filterParameters
-  , initSelector
-  , loadFactoryReverbPresetSelector
   , enableSelector
-  , setEnableSelector
-  , levelSelector
-  , setLevelSelector
   , filterParametersSelector
+  , initSelector
+  , levelSelector
+  , loadFactoryReverbPresetSelector
+  , setEnableSelector
+  , setLevelSelector
 
   -- * Enum types
   , AVAudioUnitReverbPreset(AVAudioUnitReverbPreset)
@@ -50,15 +51,11 @@ module ObjC.AVFAudio.AVAudioEnvironmentReverbParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,8 +65,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioEnvironmentReverbParameters avAudioEnvironmentReverbParameters => avAudioEnvironmentReverbParameters -> IO (Id AVAudioEnvironmentReverbParameters)
-init_ avAudioEnvironmentReverbParameters  =
-    sendMsg avAudioEnvironmentReverbParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioEnvironmentReverbParameters =
+  sendOwnedMessage avAudioEnvironmentReverbParameters initSelector
 
 -- | loadFactoryReverbPreset:
 --
@@ -81,8 +78,8 @@ init_ avAudioEnvironmentReverbParameters  =
 --
 -- ObjC selector: @- loadFactoryReverbPreset:@
 loadFactoryReverbPreset :: IsAVAudioEnvironmentReverbParameters avAudioEnvironmentReverbParameters => avAudioEnvironmentReverbParameters -> AVAudioUnitReverbPreset -> IO ()
-loadFactoryReverbPreset avAudioEnvironmentReverbParameters  preset =
-    sendMsg avAudioEnvironmentReverbParameters (mkSelector "loadFactoryReverbPreset:") retVoid [argCLong (coerce preset)]
+loadFactoryReverbPreset avAudioEnvironmentReverbParameters preset =
+  sendMessage avAudioEnvironmentReverbParameters loadFactoryReverbPresetSelector preset
 
 -- | enable
 --
@@ -92,8 +89,8 @@ loadFactoryReverbPreset avAudioEnvironmentReverbParameters  preset =
 --
 -- ObjC selector: @- enable@
 enable :: IsAVAudioEnvironmentReverbParameters avAudioEnvironmentReverbParameters => avAudioEnvironmentReverbParameters -> IO Bool
-enable avAudioEnvironmentReverbParameters  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioEnvironmentReverbParameters (mkSelector "enable") retCULong []
+enable avAudioEnvironmentReverbParameters =
+  sendMessage avAudioEnvironmentReverbParameters enableSelector
 
 -- | enable
 --
@@ -103,8 +100,8 @@ enable avAudioEnvironmentReverbParameters  =
 --
 -- ObjC selector: @- setEnable:@
 setEnable :: IsAVAudioEnvironmentReverbParameters avAudioEnvironmentReverbParameters => avAudioEnvironmentReverbParameters -> Bool -> IO ()
-setEnable avAudioEnvironmentReverbParameters  value =
-    sendMsg avAudioEnvironmentReverbParameters (mkSelector "setEnable:") retVoid [argCULong (if value then 1 else 0)]
+setEnable avAudioEnvironmentReverbParameters value =
+  sendMessage avAudioEnvironmentReverbParameters setEnableSelector value
 
 -- | level
 --
@@ -114,8 +111,8 @@ setEnable avAudioEnvironmentReverbParameters  value =
 --
 -- ObjC selector: @- level@
 level :: IsAVAudioEnvironmentReverbParameters avAudioEnvironmentReverbParameters => avAudioEnvironmentReverbParameters -> IO CFloat
-level avAudioEnvironmentReverbParameters  =
-    sendMsg avAudioEnvironmentReverbParameters (mkSelector "level") retCFloat []
+level avAudioEnvironmentReverbParameters =
+  sendMessage avAudioEnvironmentReverbParameters levelSelector
 
 -- | level
 --
@@ -125,8 +122,8 @@ level avAudioEnvironmentReverbParameters  =
 --
 -- ObjC selector: @- setLevel:@
 setLevel :: IsAVAudioEnvironmentReverbParameters avAudioEnvironmentReverbParameters => avAudioEnvironmentReverbParameters -> CFloat -> IO ()
-setLevel avAudioEnvironmentReverbParameters  value =
-    sendMsg avAudioEnvironmentReverbParameters (mkSelector "setLevel:") retVoid [argCFloat value]
+setLevel avAudioEnvironmentReverbParameters value =
+  sendMessage avAudioEnvironmentReverbParameters setLevelSelector value
 
 -- | filterParameters
 --
@@ -134,38 +131,38 @@ setLevel avAudioEnvironmentReverbParameters  value =
 --
 -- ObjC selector: @- filterParameters@
 filterParameters :: IsAVAudioEnvironmentReverbParameters avAudioEnvironmentReverbParameters => avAudioEnvironmentReverbParameters -> IO (Id AVAudioUnitEQFilterParameters)
-filterParameters avAudioEnvironmentReverbParameters  =
-    sendMsg avAudioEnvironmentReverbParameters (mkSelector "filterParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterParameters avAudioEnvironmentReverbParameters =
+  sendMessage avAudioEnvironmentReverbParameters filterParametersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioEnvironmentReverbParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @loadFactoryReverbPreset:@
-loadFactoryReverbPresetSelector :: Selector
+loadFactoryReverbPresetSelector :: Selector '[AVAudioUnitReverbPreset] ()
 loadFactoryReverbPresetSelector = mkSelector "loadFactoryReverbPreset:"
 
 -- | @Selector@ for @enable@
-enableSelector :: Selector
+enableSelector :: Selector '[] Bool
 enableSelector = mkSelector "enable"
 
 -- | @Selector@ for @setEnable:@
-setEnableSelector :: Selector
+setEnableSelector :: Selector '[Bool] ()
 setEnableSelector = mkSelector "setEnable:"
 
 -- | @Selector@ for @level@
-levelSelector :: Selector
+levelSelector :: Selector '[] CFloat
 levelSelector = mkSelector "level"
 
 -- | @Selector@ for @setLevel:@
-setLevelSelector :: Selector
+setLevelSelector :: Selector '[CFloat] ()
 setLevelSelector = mkSelector "setLevel:"
 
 -- | @Selector@ for @filterParameters@
-filterParametersSelector :: Selector
+filterParametersSelector :: Selector '[] (Id AVAudioUnitEQFilterParameters)
 filterParametersSelector = mkSelector "filterParameters"
 

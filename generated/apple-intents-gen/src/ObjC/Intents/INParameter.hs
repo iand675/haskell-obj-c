@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Intents.INParameter
   , indexForSubKeyPath
   , parameterClass
   , parameterKeyPath
-  , parameterForClass_keyPathSelector
-  , isEqualToParameterSelector
-  , setIndex_forSubKeyPathSelector
   , indexForSubKeyPathSelector
+  , isEqualToParameterSelector
   , parameterClassSelector
+  , parameterForClass_keyPathSelector
   , parameterKeyPathSelector
+  , setIndex_forSubKeyPathSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,62 +39,58 @@ parameterForClass_keyPath :: IsNSString keyPath => Class -> keyPath -> IO (Id IN
 parameterForClass_keyPath aClass keyPath =
   do
     cls' <- getRequiredClass "INParameter"
-    withObjCPtr keyPath $ \raw_keyPath ->
-      sendClassMsg cls' (mkSelector "parameterForClass:keyPath:") (retPtr retVoid) [argPtr (unClass aClass), argPtr (castPtr raw_keyPath :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' parameterForClass_keyPathSelector aClass (toNSString keyPath)
 
 -- | @- isEqualToParameter:@
 isEqualToParameter :: (IsINParameter inParameter, IsINParameter parameter) => inParameter -> parameter -> IO Bool
-isEqualToParameter inParameter  parameter =
-  withObjCPtr parameter $ \raw_parameter ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg inParameter (mkSelector "isEqualToParameter:") retCULong [argPtr (castPtr raw_parameter :: Ptr ())]
+isEqualToParameter inParameter parameter =
+  sendMessage inParameter isEqualToParameterSelector (toINParameter parameter)
 
 -- | @- setIndex:forSubKeyPath:@
 setIndex_forSubKeyPath :: (IsINParameter inParameter, IsNSString subKeyPath) => inParameter -> CULong -> subKeyPath -> IO ()
-setIndex_forSubKeyPath inParameter  index subKeyPath =
-  withObjCPtr subKeyPath $ \raw_subKeyPath ->
-      sendMsg inParameter (mkSelector "setIndex:forSubKeyPath:") retVoid [argCULong index, argPtr (castPtr raw_subKeyPath :: Ptr ())]
+setIndex_forSubKeyPath inParameter index subKeyPath =
+  sendMessage inParameter setIndex_forSubKeyPathSelector index (toNSString subKeyPath)
 
 -- | @- indexForSubKeyPath:@
 indexForSubKeyPath :: (IsINParameter inParameter, IsNSString subKeyPath) => inParameter -> subKeyPath -> IO CULong
-indexForSubKeyPath inParameter  subKeyPath =
-  withObjCPtr subKeyPath $ \raw_subKeyPath ->
-      sendMsg inParameter (mkSelector "indexForSubKeyPath:") retCULong [argPtr (castPtr raw_subKeyPath :: Ptr ())]
+indexForSubKeyPath inParameter subKeyPath =
+  sendMessage inParameter indexForSubKeyPathSelector (toNSString subKeyPath)
 
 -- | @- parameterClass@
 parameterClass :: IsINParameter inParameter => inParameter -> IO Class
-parameterClass inParameter  =
-    fmap (Class . castPtr) $ sendMsg inParameter (mkSelector "parameterClass") (retPtr retVoid) []
+parameterClass inParameter =
+  sendMessage inParameter parameterClassSelector
 
 -- | @- parameterKeyPath@
 parameterKeyPath :: IsINParameter inParameter => inParameter -> IO (Id NSString)
-parameterKeyPath inParameter  =
-    sendMsg inParameter (mkSelector "parameterKeyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+parameterKeyPath inParameter =
+  sendMessage inParameter parameterKeyPathSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @parameterForClass:keyPath:@
-parameterForClass_keyPathSelector :: Selector
+parameterForClass_keyPathSelector :: Selector '[Class, Id NSString] (Id INParameter)
 parameterForClass_keyPathSelector = mkSelector "parameterForClass:keyPath:"
 
 -- | @Selector@ for @isEqualToParameter:@
-isEqualToParameterSelector :: Selector
+isEqualToParameterSelector :: Selector '[Id INParameter] Bool
 isEqualToParameterSelector = mkSelector "isEqualToParameter:"
 
 -- | @Selector@ for @setIndex:forSubKeyPath:@
-setIndex_forSubKeyPathSelector :: Selector
+setIndex_forSubKeyPathSelector :: Selector '[CULong, Id NSString] ()
 setIndex_forSubKeyPathSelector = mkSelector "setIndex:forSubKeyPath:"
 
 -- | @Selector@ for @indexForSubKeyPath:@
-indexForSubKeyPathSelector :: Selector
+indexForSubKeyPathSelector :: Selector '[Id NSString] CULong
 indexForSubKeyPathSelector = mkSelector "indexForSubKeyPath:"
 
 -- | @Selector@ for @parameterClass@
-parameterClassSelector :: Selector
+parameterClassSelector :: Selector '[] Class
 parameterClassSelector = mkSelector "parameterClass"
 
 -- | @Selector@ for @parameterKeyPath@
-parameterKeyPathSelector :: Selector
+parameterKeyPathSelector :: Selector '[] (Id NSString)
 parameterKeyPathSelector = mkSelector "parameterKeyPath"
 

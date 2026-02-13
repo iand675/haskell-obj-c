@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.Metal.MTLRasterizationRateLayerArray
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsMTLRasterizationRateLayerArray mtlRasterizationRateLayerArray => mtlRasterizationRateLayerArray -> CULong -> IO (Id MTLRasterizationRateLayerDescriptor)
-objectAtIndexedSubscript mtlRasterizationRateLayerArray  layerIndex =
-    sendMsg mtlRasterizationRateLayerArray (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong layerIndex] >>= retainedObject . castPtr
+objectAtIndexedSubscript mtlRasterizationRateLayerArray layerIndex =
+  sendMessage mtlRasterizationRateLayerArray objectAtIndexedSubscriptSelector layerIndex
 
 -- | setObject:atIndexedSubscript:
 --
@@ -52,19 +49,18 @@ objectAtIndexedSubscript mtlRasterizationRateLayerArray  layerIndex =
 --
 -- ObjC selector: @- setObject:atIndexedSubscript:@
 setObject_atIndexedSubscript :: (IsMTLRasterizationRateLayerArray mtlRasterizationRateLayerArray, IsMTLRasterizationRateLayerDescriptor layer) => mtlRasterizationRateLayerArray -> layer -> CULong -> IO ()
-setObject_atIndexedSubscript mtlRasterizationRateLayerArray  layer layerIndex =
-  withObjCPtr layer $ \raw_layer ->
-      sendMsg mtlRasterizationRateLayerArray (mkSelector "setObject:atIndexedSubscript:") retVoid [argPtr (castPtr raw_layer :: Ptr ()), argCULong layerIndex]
+setObject_atIndexedSubscript mtlRasterizationRateLayerArray layer layerIndex =
+  sendMessage mtlRasterizationRateLayerArray setObject_atIndexedSubscriptSelector (toMTLRasterizationRateLayerDescriptor layer) layerIndex
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id MTLRasterizationRateLayerDescriptor)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @setObject:atIndexedSubscript:@
-setObject_atIndexedSubscriptSelector :: Selector
+setObject_atIndexedSubscriptSelector :: Selector '[Id MTLRasterizationRateLayerDescriptor, CULong] ()
 setObject_atIndexedSubscriptSelector = mkSelector "setObject:atIndexedSubscript:"
 

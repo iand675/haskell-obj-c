@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AVFoundation.AVMutableVideoCompositionLayerInstruction
   , videoCompositionLayerInstruction
   , trackID
   , setTrackID
-  , videoCompositionLayerInstructionWithAssetTrackSelector
-  , videoCompositionLayerInstructionSelector
-  , trackIDSelector
   , setTrackIDSelector
+  , trackIDSelector
+  , videoCompositionLayerInstructionSelector
+  , videoCompositionLayerInstructionWithAssetTrackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,8 +39,7 @@ videoCompositionLayerInstructionWithAssetTrack :: IsAVAssetTrack track => track 
 videoCompositionLayerInstructionWithAssetTrack track =
   do
     cls' <- getRequiredClass "AVMutableVideoCompositionLayerInstruction"
-    withObjCPtr track $ \raw_track ->
-      sendClassMsg cls' (mkSelector "videoCompositionLayerInstructionWithAssetTrack:") (retPtr retVoid) [argPtr (castPtr raw_track :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' videoCompositionLayerInstructionWithAssetTrackSelector (toAVAssetTrack track)
 
 -- | Returns a new instance of AVMutableVideoCompositionLayerInstruction with no transform or opacity ramps and a trackID initialized to kCMPersistentTrackID_Invalid.
 --
@@ -52,39 +48,39 @@ videoCompositionLayerInstruction :: IO (Id AVMutableVideoCompositionLayerInstruc
 videoCompositionLayerInstruction  =
   do
     cls' <- getRequiredClass "AVMutableVideoCompositionLayerInstruction"
-    sendClassMsg cls' (mkSelector "videoCompositionLayerInstruction") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' videoCompositionLayerInstructionSelector
 
 -- | Indicates the trackID of the source track to which the compositor will apply the instruction.
 --
 -- ObjC selector: @- trackID@
 trackID :: IsAVMutableVideoCompositionLayerInstruction avMutableVideoCompositionLayerInstruction => avMutableVideoCompositionLayerInstruction -> IO CInt
-trackID avMutableVideoCompositionLayerInstruction  =
-    sendMsg avMutableVideoCompositionLayerInstruction (mkSelector "trackID") retCInt []
+trackID avMutableVideoCompositionLayerInstruction =
+  sendMessage avMutableVideoCompositionLayerInstruction trackIDSelector
 
 -- | Indicates the trackID of the source track to which the compositor will apply the instruction.
 --
 -- ObjC selector: @- setTrackID:@
 setTrackID :: IsAVMutableVideoCompositionLayerInstruction avMutableVideoCompositionLayerInstruction => avMutableVideoCompositionLayerInstruction -> CInt -> IO ()
-setTrackID avMutableVideoCompositionLayerInstruction  value =
-    sendMsg avMutableVideoCompositionLayerInstruction (mkSelector "setTrackID:") retVoid [argCInt value]
+setTrackID avMutableVideoCompositionLayerInstruction value =
+  sendMessage avMutableVideoCompositionLayerInstruction setTrackIDSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @videoCompositionLayerInstructionWithAssetTrack:@
-videoCompositionLayerInstructionWithAssetTrackSelector :: Selector
+videoCompositionLayerInstructionWithAssetTrackSelector :: Selector '[Id AVAssetTrack] (Id AVMutableVideoCompositionLayerInstruction)
 videoCompositionLayerInstructionWithAssetTrackSelector = mkSelector "videoCompositionLayerInstructionWithAssetTrack:"
 
 -- | @Selector@ for @videoCompositionLayerInstruction@
-videoCompositionLayerInstructionSelector :: Selector
+videoCompositionLayerInstructionSelector :: Selector '[] (Id AVMutableVideoCompositionLayerInstruction)
 videoCompositionLayerInstructionSelector = mkSelector "videoCompositionLayerInstruction"
 
 -- | @Selector@ for @trackID@
-trackIDSelector :: Selector
+trackIDSelector :: Selector '[] CInt
 trackIDSelector = mkSelector "trackID"
 
 -- | @Selector@ for @setTrackID:@
-setTrackIDSelector :: Selector
+setTrackIDSelector :: Selector '[CInt] ()
 setTrackIDSelector = mkSelector "setTrackID:"
 

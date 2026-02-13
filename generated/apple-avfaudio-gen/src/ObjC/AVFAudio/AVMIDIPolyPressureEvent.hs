@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,22 +18,18 @@ module ObjC.AVFAudio.AVMIDIPolyPressureEvent
   , setPressure
   , initWithChannel_key_pressureSelector
   , keySelector
-  , setKeySelector
   , pressureSelector
+  , setKeySelector
   , setPressureSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithChannel:key:pressure:@
 initWithChannel_key_pressure :: IsAVMIDIPolyPressureEvent avmidiPolyPressureEvent => avmidiPolyPressureEvent -> CUInt -> CUInt -> CUInt -> IO (Id AVMIDIPolyPressureEvent)
-initWithChannel_key_pressure avmidiPolyPressureEvent  channel key pressure =
-    sendMsg avmidiPolyPressureEvent (mkSelector "initWithChannel:key:pressure:") (retPtr retVoid) [argCUInt channel, argCUInt key, argCUInt pressure] >>= ownedObject . castPtr
+initWithChannel_key_pressure avmidiPolyPressureEvent channel key pressure =
+  sendOwnedMessage avmidiPolyPressureEvent initWithChannel_key_pressureSelector channel key pressure
 
 -- | key
 --
@@ -60,8 +57,8 @@ initWithChannel_key_pressure avmidiPolyPressureEvent  channel key pressure =
 --
 -- ObjC selector: @- key@
 key :: IsAVMIDIPolyPressureEvent avmidiPolyPressureEvent => avmidiPolyPressureEvent -> IO CUInt
-key avmidiPolyPressureEvent  =
-    sendMsg avmidiPolyPressureEvent (mkSelector "key") retCUInt []
+key avmidiPolyPressureEvent =
+  sendMessage avmidiPolyPressureEvent keySelector
 
 -- | key
 --
@@ -69,8 +66,8 @@ key avmidiPolyPressureEvent  =
 --
 -- ObjC selector: @- setKey:@
 setKey :: IsAVMIDIPolyPressureEvent avmidiPolyPressureEvent => avmidiPolyPressureEvent -> CUInt -> IO ()
-setKey avmidiPolyPressureEvent  value =
-    sendMsg avmidiPolyPressureEvent (mkSelector "setKey:") retVoid [argCUInt value]
+setKey avmidiPolyPressureEvent value =
+  sendMessage avmidiPolyPressureEvent setKeySelector value
 
 -- | pressure
 --
@@ -78,8 +75,8 @@ setKey avmidiPolyPressureEvent  value =
 --
 -- ObjC selector: @- pressure@
 pressure :: IsAVMIDIPolyPressureEvent avmidiPolyPressureEvent => avmidiPolyPressureEvent -> IO CUInt
-pressure avmidiPolyPressureEvent  =
-    sendMsg avmidiPolyPressureEvent (mkSelector "pressure") retCUInt []
+pressure avmidiPolyPressureEvent =
+  sendMessage avmidiPolyPressureEvent pressureSelector
 
 -- | pressure
 --
@@ -87,30 +84,30 @@ pressure avmidiPolyPressureEvent  =
 --
 -- ObjC selector: @- setPressure:@
 setPressure :: IsAVMIDIPolyPressureEvent avmidiPolyPressureEvent => avmidiPolyPressureEvent -> CUInt -> IO ()
-setPressure avmidiPolyPressureEvent  value =
-    sendMsg avmidiPolyPressureEvent (mkSelector "setPressure:") retVoid [argCUInt value]
+setPressure avmidiPolyPressureEvent value =
+  sendMessage avmidiPolyPressureEvent setPressureSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithChannel:key:pressure:@
-initWithChannel_key_pressureSelector :: Selector
+initWithChannel_key_pressureSelector :: Selector '[CUInt, CUInt, CUInt] (Id AVMIDIPolyPressureEvent)
 initWithChannel_key_pressureSelector = mkSelector "initWithChannel:key:pressure:"
 
 -- | @Selector@ for @key@
-keySelector :: Selector
+keySelector :: Selector '[] CUInt
 keySelector = mkSelector "key"
 
 -- | @Selector@ for @setKey:@
-setKeySelector :: Selector
+setKeySelector :: Selector '[CUInt] ()
 setKeySelector = mkSelector "setKey:"
 
 -- | @Selector@ for @pressure@
-pressureSelector :: Selector
+pressureSelector :: Selector '[] CUInt
 pressureSelector = mkSelector "pressure"
 
 -- | @Selector@ for @setPressure:@
-setPressureSelector :: Selector
+setPressureSelector :: Selector '[CUInt] ()
 setPressureSelector = mkSelector "setPressure:"
 

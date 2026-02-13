@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNNeuronPowerNode
   , initWithSource_a_b_c
   , nodeWithSource
   , initWithSource
-  , nodeWithSource_a_b_cSelector
+  , initWithSourceSelector
   , initWithSource_a_b_cSelector
   , nodeWithSourceSelector
-  , initWithSourceSelector
+  , nodeWithSource_a_b_cSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,7 @@ nodeWithSource_a_b_c :: IsMPSNNImageNode sourceNode => sourceNode -> CFloat -> C
 nodeWithSource_a_b_c sourceNode a b c =
   do
     cls' <- getRequiredClass "MPSCNNNeuronPowerNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:a:b:c:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCFloat a, argCFloat b, argCFloat c] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_a_b_cSelector (toMPSNNImageNode sourceNode) a b c
 
 -- | Init a node representing a MPSCNNNeuronPower kernel
 --
@@ -65,9 +61,8 @@ nodeWithSource_a_b_c sourceNode a b c =
 --
 -- ObjC selector: @- initWithSource:a:b:c:@
 initWithSource_a_b_c :: (IsMPSCNNNeuronPowerNode mpscnnNeuronPowerNode, IsMPSNNImageNode sourceNode) => mpscnnNeuronPowerNode -> sourceNode -> CFloat -> CFloat -> CFloat -> IO (Id MPSCNNNeuronPowerNode)
-initWithSource_a_b_c mpscnnNeuronPowerNode  sourceNode a b c =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnNeuronPowerNode (mkSelector "initWithSource:a:b:c:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCFloat a, argCFloat b, argCFloat c] >>= ownedObject . castPtr
+initWithSource_a_b_c mpscnnNeuronPowerNode sourceNode a b c =
+  sendOwnedMessage mpscnnNeuronPowerNode initWithSource_a_b_cSelector (toMPSNNImageNode sourceNode) a b c
 
 -- | Create an autoreleased node with default values for parameters a, b, and c
 --
@@ -76,34 +71,32 @@ nodeWithSource :: IsMPSNNImageNode sourceNode => sourceNode -> IO (Id MPSCNNNeur
 nodeWithSource sourceNode =
   do
     cls' <- getRequiredClass "MPSCNNNeuronPowerNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- | Init a node with default values for parameters a, b, and c
 --
 -- ObjC selector: @- initWithSource:@
 initWithSource :: (IsMPSCNNNeuronPowerNode mpscnnNeuronPowerNode, IsMPSNNImageNode sourceNode) => mpscnnNeuronPowerNode -> sourceNode -> IO (Id MPSCNNNeuronPowerNode)
-initWithSource mpscnnNeuronPowerNode  sourceNode =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnNeuronPowerNode (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= ownedObject . castPtr
+initWithSource mpscnnNeuronPowerNode sourceNode =
+  sendOwnedMessage mpscnnNeuronPowerNode initWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:a:b:c:@
-nodeWithSource_a_b_cSelector :: Selector
+nodeWithSource_a_b_cSelector :: Selector '[Id MPSNNImageNode, CFloat, CFloat, CFloat] (Id MPSCNNNeuronPowerNode)
 nodeWithSource_a_b_cSelector = mkSelector "nodeWithSource:a:b:c:"
 
 -- | @Selector@ for @initWithSource:a:b:c:@
-initWithSource_a_b_cSelector :: Selector
+initWithSource_a_b_cSelector :: Selector '[Id MPSNNImageNode, CFloat, CFloat, CFloat] (Id MPSCNNNeuronPowerNode)
 initWithSource_a_b_cSelector = mkSelector "initWithSource:a:b:c:"
 
 -- | @Selector@ for @nodeWithSource:@
-nodeWithSourceSelector :: Selector
+nodeWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSCNNNeuronPowerNode)
 nodeWithSourceSelector = mkSelector "nodeWithSource:"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSCNNNeuronPowerNode)
 initWithSourceSelector = mkSelector "initWithSource:"
 

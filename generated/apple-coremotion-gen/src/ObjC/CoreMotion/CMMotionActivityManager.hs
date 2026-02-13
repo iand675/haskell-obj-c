@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,8 +13,8 @@ module ObjC.CoreMotion.CMMotionActivityManager
   , queryActivityStartingFromDate_toDate_toQueue_withHandler
   , startActivityUpdatesToQueue_withHandler
   , stopActivityUpdates
-  , isActivityAvailableSelector
   , authorizationStatusSelector
+  , isActivityAvailableSelector
   , queryActivityStartingFromDate_toDate_toQueue_withHandlerSelector
   , startActivityUpdatesToQueue_withHandlerSelector
   , stopActivityUpdatesSelector
@@ -27,15 +28,11 @@ module ObjC.CoreMotion.CMMotionActivityManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,55 +45,51 @@ isActivityAvailable :: IO Bool
 isActivityAvailable  =
   do
     cls' <- getRequiredClass "CMMotionActivityManager"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isActivityAvailable") retCULong []
+    sendClassMessage cls' isActivityAvailableSelector
 
 -- | @+ authorizationStatus@
 authorizationStatus :: IO CMAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "CMMotionActivityManager"
-    fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | @- queryActivityStartingFromDate:toDate:toQueue:withHandler:@
 queryActivityStartingFromDate_toDate_toQueue_withHandler :: (IsCMMotionActivityManager cmMotionActivityManager, IsNSDate start, IsNSDate end, IsNSOperationQueue queue) => cmMotionActivityManager -> start -> end -> queue -> Ptr () -> IO ()
-queryActivityStartingFromDate_toDate_toQueue_withHandler cmMotionActivityManager  start end queue handler =
-  withObjCPtr start $ \raw_start ->
-    withObjCPtr end $ \raw_end ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg cmMotionActivityManager (mkSelector "queryActivityStartingFromDate:toDate:toQueue:withHandler:") retVoid [argPtr (castPtr raw_start :: Ptr ()), argPtr (castPtr raw_end :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+queryActivityStartingFromDate_toDate_toQueue_withHandler cmMotionActivityManager start end queue handler =
+  sendMessage cmMotionActivityManager queryActivityStartingFromDate_toDate_toQueue_withHandlerSelector (toNSDate start) (toNSDate end) (toNSOperationQueue queue) handler
 
 -- | @- startActivityUpdatesToQueue:withHandler:@
 startActivityUpdatesToQueue_withHandler :: (IsCMMotionActivityManager cmMotionActivityManager, IsNSOperationQueue queue) => cmMotionActivityManager -> queue -> Ptr () -> IO ()
-startActivityUpdatesToQueue_withHandler cmMotionActivityManager  queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmMotionActivityManager (mkSelector "startActivityUpdatesToQueue:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startActivityUpdatesToQueue_withHandler cmMotionActivityManager queue handler =
+  sendMessage cmMotionActivityManager startActivityUpdatesToQueue_withHandlerSelector (toNSOperationQueue queue) handler
 
 -- | @- stopActivityUpdates@
 stopActivityUpdates :: IsCMMotionActivityManager cmMotionActivityManager => cmMotionActivityManager -> IO ()
-stopActivityUpdates cmMotionActivityManager  =
-    sendMsg cmMotionActivityManager (mkSelector "stopActivityUpdates") retVoid []
+stopActivityUpdates cmMotionActivityManager =
+  sendMessage cmMotionActivityManager stopActivityUpdatesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isActivityAvailable@
-isActivityAvailableSelector :: Selector
+isActivityAvailableSelector :: Selector '[] Bool
 isActivityAvailableSelector = mkSelector "isActivityAvailable"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CMAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @queryActivityStartingFromDate:toDate:toQueue:withHandler:@
-queryActivityStartingFromDate_toDate_toQueue_withHandlerSelector :: Selector
+queryActivityStartingFromDate_toDate_toQueue_withHandlerSelector :: Selector '[Id NSDate, Id NSDate, Id NSOperationQueue, Ptr ()] ()
 queryActivityStartingFromDate_toDate_toQueue_withHandlerSelector = mkSelector "queryActivityStartingFromDate:toDate:toQueue:withHandler:"
 
 -- | @Selector@ for @startActivityUpdatesToQueue:withHandler:@
-startActivityUpdatesToQueue_withHandlerSelector :: Selector
+startActivityUpdatesToQueue_withHandlerSelector :: Selector '[Id NSOperationQueue, Ptr ()] ()
 startActivityUpdatesToQueue_withHandlerSelector = mkSelector "startActivityUpdatesToQueue:withHandler:"
 
 -- | @Selector@ for @stopActivityUpdates@
-stopActivityUpdatesSelector :: Selector
+stopActivityUpdatesSelector :: Selector '[] ()
 stopActivityUpdatesSelector = mkSelector "stopActivityUpdates"
 

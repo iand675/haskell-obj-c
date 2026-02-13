@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.NearbyInteraction.NINearbyPeerConfiguration
   , setCameraAssistanceEnabled
   , extendedDistanceMeasurementEnabled
   , setExtendedDistanceMeasurementEnabled
-  , initWithPeerTokenSelector
+  , cameraAssistanceEnabledSelector
+  , extendedDistanceMeasurementEnabledSelector
   , initSelector
+  , initWithPeerTokenSelector
   , newSelector
   , peerDiscoveryTokenSelector
-  , cameraAssistanceEnabledSelector
   , setCameraAssistanceEnabledSelector
-  , extendedDistanceMeasurementEnabledSelector
   , setExtendedDistanceMeasurementEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,30 +48,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPeerToken:@
 initWithPeerToken :: (IsNINearbyPeerConfiguration niNearbyPeerConfiguration, IsNIDiscoveryToken peerToken) => niNearbyPeerConfiguration -> peerToken -> IO (Id NINearbyPeerConfiguration)
-initWithPeerToken niNearbyPeerConfiguration  peerToken =
-  withObjCPtr peerToken $ \raw_peerToken ->
-      sendMsg niNearbyPeerConfiguration (mkSelector "initWithPeerToken:") (retPtr retVoid) [argPtr (castPtr raw_peerToken :: Ptr ())] >>= ownedObject . castPtr
+initWithPeerToken niNearbyPeerConfiguration peerToken =
+  sendOwnedMessage niNearbyPeerConfiguration initWithPeerTokenSelector (toNIDiscoveryToken peerToken)
 
 -- | Unavailable
 --
 -- ObjC selector: @- init@
 init_ :: IsNINearbyPeerConfiguration niNearbyPeerConfiguration => niNearbyPeerConfiguration -> IO (Id NINearbyPeerConfiguration)
-init_ niNearbyPeerConfiguration  =
-    sendMsg niNearbyPeerConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ niNearbyPeerConfiguration =
+  sendOwnedMessage niNearbyPeerConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id NINearbyPeerConfiguration)
 new  =
   do
     cls' <- getRequiredClass "NINearbyPeerConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The discovery token identifying the peer device for this session configuration.
 --
 -- ObjC selector: @- peerDiscoveryToken@
 peerDiscoveryToken :: IsNINearbyPeerConfiguration niNearbyPeerConfiguration => niNearbyPeerConfiguration -> IO (Id NIDiscoveryToken)
-peerDiscoveryToken niNearbyPeerConfiguration  =
-    sendMsg niNearbyPeerConfiguration (mkSelector "peerDiscoveryToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+peerDiscoveryToken niNearbyPeerConfiguration =
+  sendMessage niNearbyPeerConfiguration peerDiscoveryTokenSelector
 
 -- | Enables camera assistance during the NISession run with this configuration
 --
@@ -84,8 +80,8 @@ peerDiscoveryToken niNearbyPeerConfiguration  =
 --
 -- ObjC selector: @- cameraAssistanceEnabled@
 cameraAssistanceEnabled :: IsNINearbyPeerConfiguration niNearbyPeerConfiguration => niNearbyPeerConfiguration -> IO Bool
-cameraAssistanceEnabled niNearbyPeerConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg niNearbyPeerConfiguration (mkSelector "cameraAssistanceEnabled") retCULong []
+cameraAssistanceEnabled niNearbyPeerConfiguration =
+  sendMessage niNearbyPeerConfiguration cameraAssistanceEnabledSelector
 
 -- | Enables camera assistance during the NISession run with this configuration
 --
@@ -95,8 +91,8 @@ cameraAssistanceEnabled niNearbyPeerConfiguration  =
 --
 -- ObjC selector: @- setCameraAssistanceEnabled:@
 setCameraAssistanceEnabled :: IsNINearbyPeerConfiguration niNearbyPeerConfiguration => niNearbyPeerConfiguration -> Bool -> IO ()
-setCameraAssistanceEnabled niNearbyPeerConfiguration  value =
-    sendMsg niNearbyPeerConfiguration (mkSelector "setCameraAssistanceEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setCameraAssistanceEnabled niNearbyPeerConfiguration value =
+  sendMessage niNearbyPeerConfiguration setCameraAssistanceEnabledSelector value
 
 -- | If both peers are capable, enables extended distance measurement for the NISession that runs with this configuration
 --
@@ -106,8 +102,8 @@ setCameraAssistanceEnabled niNearbyPeerConfiguration  value =
 --
 -- ObjC selector: @- extendedDistanceMeasurementEnabled@
 extendedDistanceMeasurementEnabled :: IsNINearbyPeerConfiguration niNearbyPeerConfiguration => niNearbyPeerConfiguration -> IO Bool
-extendedDistanceMeasurementEnabled niNearbyPeerConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg niNearbyPeerConfiguration (mkSelector "extendedDistanceMeasurementEnabled") retCULong []
+extendedDistanceMeasurementEnabled niNearbyPeerConfiguration =
+  sendMessage niNearbyPeerConfiguration extendedDistanceMeasurementEnabledSelector
 
 -- | If both peers are capable, enables extended distance measurement for the NISession that runs with this configuration
 --
@@ -117,42 +113,42 @@ extendedDistanceMeasurementEnabled niNearbyPeerConfiguration  =
 --
 -- ObjC selector: @- setExtendedDistanceMeasurementEnabled:@
 setExtendedDistanceMeasurementEnabled :: IsNINearbyPeerConfiguration niNearbyPeerConfiguration => niNearbyPeerConfiguration -> Bool -> IO ()
-setExtendedDistanceMeasurementEnabled niNearbyPeerConfiguration  value =
-    sendMsg niNearbyPeerConfiguration (mkSelector "setExtendedDistanceMeasurementEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setExtendedDistanceMeasurementEnabled niNearbyPeerConfiguration value =
+  sendMessage niNearbyPeerConfiguration setExtendedDistanceMeasurementEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPeerToken:@
-initWithPeerTokenSelector :: Selector
+initWithPeerTokenSelector :: Selector '[Id NIDiscoveryToken] (Id NINearbyPeerConfiguration)
 initWithPeerTokenSelector = mkSelector "initWithPeerToken:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NINearbyPeerConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NINearbyPeerConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @peerDiscoveryToken@
-peerDiscoveryTokenSelector :: Selector
+peerDiscoveryTokenSelector :: Selector '[] (Id NIDiscoveryToken)
 peerDiscoveryTokenSelector = mkSelector "peerDiscoveryToken"
 
 -- | @Selector@ for @cameraAssistanceEnabled@
-cameraAssistanceEnabledSelector :: Selector
+cameraAssistanceEnabledSelector :: Selector '[] Bool
 cameraAssistanceEnabledSelector = mkSelector "cameraAssistanceEnabled"
 
 -- | @Selector@ for @setCameraAssistanceEnabled:@
-setCameraAssistanceEnabledSelector :: Selector
+setCameraAssistanceEnabledSelector :: Selector '[Bool] ()
 setCameraAssistanceEnabledSelector = mkSelector "setCameraAssistanceEnabled:"
 
 -- | @Selector@ for @extendedDistanceMeasurementEnabled@
-extendedDistanceMeasurementEnabledSelector :: Selector
+extendedDistanceMeasurementEnabledSelector :: Selector '[] Bool
 extendedDistanceMeasurementEnabledSelector = mkSelector "extendedDistanceMeasurementEnabled"
 
 -- | @Selector@ for @setExtendedDistanceMeasurementEnabled:@
-setExtendedDistanceMeasurementEnabledSelector :: Selector
+setExtendedDistanceMeasurementEnabledSelector :: Selector '[Bool] ()
 setExtendedDistanceMeasurementEnabledSelector = mkSelector "setExtendedDistanceMeasurementEnabled:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,23 +31,23 @@ module ObjC.MetalPerformanceShaders.MPSNNForwardLoss
   , setEpsilon
   , delta
   , setDelta
-  , initWithDeviceSelector
-  , initWithDevice_lossDescriptorSelector
-  , initWithCoder_deviceSelector
+  , deltaSelector
   , encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImagesSelector
   , encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporarySelector
-  , lossTypeSelector
-  , reductionTypeSelector
-  , reduceAcrossBatchSelector
-  , numberOfClassesSelector
-  , weightSelector
-  , setWeightSelector
-  , labelSmoothingSelector
-  , setLabelSmoothingSelector
   , epsilonSelector
-  , setEpsilonSelector
-  , deltaSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_lossDescriptorSelector
+  , labelSmoothingSelector
+  , lossTypeSelector
+  , numberOfClassesSelector
+  , reduceAcrossBatchSelector
+  , reductionTypeSelector
   , setDeltaSelector
+  , setEpsilonSelector
+  , setLabelSmoothingSelector
+  , setWeightSelector
+  , weightSelector
 
   -- * Enum types
   , MPSCNNLossType(MPSCNNLossType)
@@ -70,15 +71,11 @@ module ObjC.MetalPerformanceShaders.MPSNNForwardLoss
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -88,8 +85,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> RawId -> IO (Id MPSNNForwardLoss)
-initWithDevice mpsnnForwardLoss  device =
-    sendMsg mpsnnForwardLoss (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnForwardLoss device =
+  sendOwnedMessage mpsnnForwardLoss initWithDeviceSelector device
 
 -- | Initialize the loss forward pass filter with a loss descriptor.
 --
@@ -101,17 +98,15 @@ initWithDevice mpsnnForwardLoss  device =
 --
 -- ObjC selector: @- initWithDevice:lossDescriptor:@
 initWithDevice_lossDescriptor :: (IsMPSNNForwardLoss mpsnnForwardLoss, IsMPSCNNLossDescriptor lossDescriptor) => mpsnnForwardLoss -> RawId -> lossDescriptor -> IO (Id MPSNNForwardLoss)
-initWithDevice_lossDescriptor mpsnnForwardLoss  device lossDescriptor =
-  withObjCPtr lossDescriptor $ \raw_lossDescriptor ->
-      sendMsg mpsnnForwardLoss (mkSelector "initWithDevice:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_lossDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_lossDescriptor mpsnnForwardLoss device lossDescriptor =
+  sendOwnedMessage mpsnnForwardLoss initWithDevice_lossDescriptorSelector device (toMPSCNNLossDescriptor lossDescriptor)
 
 -- | <NSSecureCoding> support
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNForwardLoss mpsnnForwardLoss, IsNSCoder aDecoder) => mpsnnForwardLoss -> aDecoder -> RawId -> IO (Id MPSNNForwardLoss)
-initWithCoder_device mpsnnForwardLoss  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnForwardLoss (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnForwardLoss aDecoder device =
+  sendOwnedMessage mpsnnForwardLoss initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode a MPSNNForwardLoss filter and return the result in the destinationImage.
 --
@@ -129,8 +124,8 @@ initWithCoder_device mpsnnForwardLoss  aDecoder device =
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationImages:@
 encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImages :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImages mpsnnForwardLoss  commandBuffer sourceImages labels weights destinationStates destinationImages =
-    sendMsg mpsnnForwardLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (castPtr (unRawId destinationStates) :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImages mpsnnForwardLoss commandBuffer sourceImages labels weights destinationStates destinationImages =
+  sendMessage mpsnnForwardLoss encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImagesSelector commandBuffer sourceImages labels weights destinationStates destinationImages
 
 -- | Encode a MPSNNForwardLoss filter and return the loss result image(s).
 --
@@ -152,140 +147,140 @@ encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destina
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationStateIsTemporary:@
 encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporary :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> RawId -> RawId -> RawId -> RawId -> RawId -> Bool -> IO RawId
-encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporary mpsnnForwardLoss  commandBuffer sourceImages labels weights outStates isTemporary =
-    fmap (RawId . castPtr) $ sendMsg mpsnnForwardLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationStateIsTemporary:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ()), argPtr (castPtr (unRawId outStates) :: Ptr ()), argCULong (if isTemporary then 1 else 0)]
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporary mpsnnForwardLoss commandBuffer sourceImages labels weights outStates isTemporary =
+  sendMessage mpsnnForwardLoss encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporarySelector commandBuffer sourceImages labels weights outStates isTemporary
 
 -- | See MPSCNNLossDescriptor for information about the following properties.
 --
 -- ObjC selector: @- lossType@
 lossType :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> IO MPSCNNLossType
-lossType mpsnnForwardLoss  =
-    fmap (coerce :: CUInt -> MPSCNNLossType) $ sendMsg mpsnnForwardLoss (mkSelector "lossType") retCUInt []
+lossType mpsnnForwardLoss =
+  sendMessage mpsnnForwardLoss lossTypeSelector
 
 -- | @- reductionType@
 reductionType :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> IO MPSCNNReductionType
-reductionType mpsnnForwardLoss  =
-    fmap (coerce :: CInt -> MPSCNNReductionType) $ sendMsg mpsnnForwardLoss (mkSelector "reductionType") retCInt []
+reductionType mpsnnForwardLoss =
+  sendMessage mpsnnForwardLoss reductionTypeSelector
 
 -- | @- reduceAcrossBatch@
 reduceAcrossBatch :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> IO Bool
-reduceAcrossBatch mpsnnForwardLoss  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnForwardLoss (mkSelector "reduceAcrossBatch") retCULong []
+reduceAcrossBatch mpsnnForwardLoss =
+  sendMessage mpsnnForwardLoss reduceAcrossBatchSelector
 
 -- | @- numberOfClasses@
 numberOfClasses :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> IO CULong
-numberOfClasses mpsnnForwardLoss  =
-    sendMsg mpsnnForwardLoss (mkSelector "numberOfClasses") retCULong []
+numberOfClasses mpsnnForwardLoss =
+  sendMessage mpsnnForwardLoss numberOfClassesSelector
 
 -- | @- weight@
 weight :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> IO CFloat
-weight mpsnnForwardLoss  =
-    sendMsg mpsnnForwardLoss (mkSelector "weight") retCFloat []
+weight mpsnnForwardLoss =
+  sendMessage mpsnnForwardLoss weightSelector
 
 -- | @- setWeight:@
 setWeight :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> CFloat -> IO ()
-setWeight mpsnnForwardLoss  value =
-    sendMsg mpsnnForwardLoss (mkSelector "setWeight:") retVoid [argCFloat value]
+setWeight mpsnnForwardLoss value =
+  sendMessage mpsnnForwardLoss setWeightSelector value
 
 -- | @- labelSmoothing@
 labelSmoothing :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> IO CFloat
-labelSmoothing mpsnnForwardLoss  =
-    sendMsg mpsnnForwardLoss (mkSelector "labelSmoothing") retCFloat []
+labelSmoothing mpsnnForwardLoss =
+  sendMessage mpsnnForwardLoss labelSmoothingSelector
 
 -- | @- setLabelSmoothing:@
 setLabelSmoothing :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> CFloat -> IO ()
-setLabelSmoothing mpsnnForwardLoss  value =
-    sendMsg mpsnnForwardLoss (mkSelector "setLabelSmoothing:") retVoid [argCFloat value]
+setLabelSmoothing mpsnnForwardLoss value =
+  sendMessage mpsnnForwardLoss setLabelSmoothingSelector value
 
 -- | @- epsilon@
 epsilon :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> IO CFloat
-epsilon mpsnnForwardLoss  =
-    sendMsg mpsnnForwardLoss (mkSelector "epsilon") retCFloat []
+epsilon mpsnnForwardLoss =
+  sendMessage mpsnnForwardLoss epsilonSelector
 
 -- | @- setEpsilon:@
 setEpsilon :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> CFloat -> IO ()
-setEpsilon mpsnnForwardLoss  value =
-    sendMsg mpsnnForwardLoss (mkSelector "setEpsilon:") retVoid [argCFloat value]
+setEpsilon mpsnnForwardLoss value =
+  sendMessage mpsnnForwardLoss setEpsilonSelector value
 
 -- | @- delta@
 delta :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> IO CFloat
-delta mpsnnForwardLoss  =
-    sendMsg mpsnnForwardLoss (mkSelector "delta") retCFloat []
+delta mpsnnForwardLoss =
+  sendMessage mpsnnForwardLoss deltaSelector
 
 -- | @- setDelta:@
 setDelta :: IsMPSNNForwardLoss mpsnnForwardLoss => mpsnnForwardLoss -> CFloat -> IO ()
-setDelta mpsnnForwardLoss  value =
-    sendMsg mpsnnForwardLoss (mkSelector "setDelta:") retVoid [argCFloat value]
+setDelta mpsnnForwardLoss value =
+  sendMessage mpsnnForwardLoss setDeltaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNForwardLoss)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:lossDescriptor:@
-initWithDevice_lossDescriptorSelector :: Selector
+initWithDevice_lossDescriptorSelector :: Selector '[RawId, Id MPSCNNLossDescriptor] (Id MPSNNForwardLoss)
 initWithDevice_lossDescriptorSelector = mkSelector "initWithDevice:lossDescriptor:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNForwardLoss)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationImages:@
-encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImagesSelector :: Selector '[RawId, RawId, RawId, RawId, RawId, RawId] ()
 encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationImages:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationStateIsTemporary:@
-encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporarySelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporarySelector :: Selector '[RawId, RawId, RawId, RawId, RawId, Bool] RawId
 encodeBatchToCommandBuffer_sourceImages_labels_weights_destinationStates_destinationStateIsTemporarySelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:weights:destinationStates:destinationStateIsTemporary:"
 
 -- | @Selector@ for @lossType@
-lossTypeSelector :: Selector
+lossTypeSelector :: Selector '[] MPSCNNLossType
 lossTypeSelector = mkSelector "lossType"
 
 -- | @Selector@ for @reductionType@
-reductionTypeSelector :: Selector
+reductionTypeSelector :: Selector '[] MPSCNNReductionType
 reductionTypeSelector = mkSelector "reductionType"
 
 -- | @Selector@ for @reduceAcrossBatch@
-reduceAcrossBatchSelector :: Selector
+reduceAcrossBatchSelector :: Selector '[] Bool
 reduceAcrossBatchSelector = mkSelector "reduceAcrossBatch"
 
 -- | @Selector@ for @numberOfClasses@
-numberOfClassesSelector :: Selector
+numberOfClassesSelector :: Selector '[] CULong
 numberOfClassesSelector = mkSelector "numberOfClasses"
 
 -- | @Selector@ for @weight@
-weightSelector :: Selector
+weightSelector :: Selector '[] CFloat
 weightSelector = mkSelector "weight"
 
 -- | @Selector@ for @setWeight:@
-setWeightSelector :: Selector
+setWeightSelector :: Selector '[CFloat] ()
 setWeightSelector = mkSelector "setWeight:"
 
 -- | @Selector@ for @labelSmoothing@
-labelSmoothingSelector :: Selector
+labelSmoothingSelector :: Selector '[] CFloat
 labelSmoothingSelector = mkSelector "labelSmoothing"
 
 -- | @Selector@ for @setLabelSmoothing:@
-setLabelSmoothingSelector :: Selector
+setLabelSmoothingSelector :: Selector '[CFloat] ()
 setLabelSmoothingSelector = mkSelector "setLabelSmoothing:"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @setEpsilon:@
-setEpsilonSelector :: Selector
+setEpsilonSelector :: Selector '[CFloat] ()
 setEpsilonSelector = mkSelector "setEpsilon:"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 
 -- | @Selector@ for @setDelta:@
-setDeltaSelector :: Selector
+setDeltaSelector :: Selector '[CFloat] ()
 setDeltaSelector = mkSelector "setDelta:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.Symbols.NSSymbolScaleEffect
   , effectWithByLayer
   , effectWithWholeSymbol
   , effectSelector
-  , scaleUpEffectSelector
-  , scaleDownEffectSelector
   , effectWithByLayerSelector
   , effectWithWholeSymbolSelector
+  , scaleDownEffectSelector
+  , scaleUpEffectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,7 +41,7 @@ effect :: IO (Id NSSymbolScaleEffect)
 effect  =
   do
     cls' <- getRequiredClass "NSSymbolScaleEffect"
-    sendClassMsg cls' (mkSelector "effect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' effectSelector
 
 -- | Convenience initializer to create a scale effect with a scale up level.
 --
@@ -53,7 +50,7 @@ scaleUpEffect :: IO (Id NSSymbolScaleEffect)
 scaleUpEffect  =
   do
     cls' <- getRequiredClass "NSSymbolScaleEffect"
-    sendClassMsg cls' (mkSelector "scaleUpEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleUpEffectSelector
 
 -- | Convenience initializer to create a scale effect with a scale down level.
 --
@@ -62,43 +59,43 @@ scaleDownEffect :: IO (Id NSSymbolScaleEffect)
 scaleDownEffect  =
   do
     cls' <- getRequiredClass "NSSymbolScaleEffect"
-    sendClassMsg cls' (mkSelector "scaleDownEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleDownEffectSelector
 
 -- | Returns a copy of the effect that animates incrementally, by layer.
 --
 -- ObjC selector: @- effectWithByLayer@
 effectWithByLayer :: IsNSSymbolScaleEffect nsSymbolScaleEffect => nsSymbolScaleEffect -> IO (Id NSSymbolScaleEffect)
-effectWithByLayer nsSymbolScaleEffect  =
-    sendMsg nsSymbolScaleEffect (mkSelector "effectWithByLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithByLayer nsSymbolScaleEffect =
+  sendMessage nsSymbolScaleEffect effectWithByLayerSelector
 
 -- | Returns a copy of the effect that animates all layers of the symbol simultaneously.
 --
 -- ObjC selector: @- effectWithWholeSymbol@
 effectWithWholeSymbol :: IsNSSymbolScaleEffect nsSymbolScaleEffect => nsSymbolScaleEffect -> IO (Id NSSymbolScaleEffect)
-effectWithWholeSymbol nsSymbolScaleEffect  =
-    sendMsg nsSymbolScaleEffect (mkSelector "effectWithWholeSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithWholeSymbol nsSymbolScaleEffect =
+  sendMessage nsSymbolScaleEffect effectWithWholeSymbolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effect@
-effectSelector :: Selector
+effectSelector :: Selector '[] (Id NSSymbolScaleEffect)
 effectSelector = mkSelector "effect"
 
 -- | @Selector@ for @scaleUpEffect@
-scaleUpEffectSelector :: Selector
+scaleUpEffectSelector :: Selector '[] (Id NSSymbolScaleEffect)
 scaleUpEffectSelector = mkSelector "scaleUpEffect"
 
 -- | @Selector@ for @scaleDownEffect@
-scaleDownEffectSelector :: Selector
+scaleDownEffectSelector :: Selector '[] (Id NSSymbolScaleEffect)
 scaleDownEffectSelector = mkSelector "scaleDownEffect"
 
 -- | @Selector@ for @effectWithByLayer@
-effectWithByLayerSelector :: Selector
+effectWithByLayerSelector :: Selector '[] (Id NSSymbolScaleEffect)
 effectWithByLayerSelector = mkSelector "effectWithByLayer"
 
 -- | @Selector@ for @effectWithWholeSymbol@
-effectWithWholeSymbolSelector :: Selector
+effectWithWholeSymbolSelector :: Selector '[] (Id NSSymbolScaleEffect)
 effectWithWholeSymbolSelector = mkSelector "effectWithWholeSymbol"
 

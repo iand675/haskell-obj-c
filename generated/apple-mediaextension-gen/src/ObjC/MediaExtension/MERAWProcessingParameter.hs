@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.MediaExtension.MERAWProcessingParameter
   , longDescription
   , enabled
   , setEnabled
-  , nameSelector
+  , enabledSelector
   , keySelector
   , longDescriptionSelector
-  , enabledSelector
+  , nameSelector
   , setEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- name@
 name :: IsMERAWProcessingParameter merawProcessingParameter => merawProcessingParameter -> IO (Id NSString)
-name merawProcessingParameter  =
-    sendMsg merawProcessingParameter (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name merawProcessingParameter =
+  sendMessage merawProcessingParameter nameSelector
 
 -- | key
 --
@@ -56,8 +53,8 @@ name merawProcessingParameter  =
 --
 -- ObjC selector: @- key@
 key :: IsMERAWProcessingParameter merawProcessingParameter => merawProcessingParameter -> IO (Id NSString)
-key merawProcessingParameter  =
-    sendMsg merawProcessingParameter (mkSelector "key") (retPtr retVoid) [] >>= retainedObject . castPtr
+key merawProcessingParameter =
+  sendMessage merawProcessingParameter keySelector
 
 -- | longDescription
 --
@@ -65,8 +62,8 @@ key merawProcessingParameter  =
 --
 -- ObjC selector: @- longDescription@
 longDescription :: IsMERAWProcessingParameter merawProcessingParameter => merawProcessingParameter -> IO (Id NSString)
-longDescription merawProcessingParameter  =
-    sendMsg merawProcessingParameter (mkSelector "longDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+longDescription merawProcessingParameter =
+  sendMessage merawProcessingParameter longDescriptionSelector
 
 -- | enabled
 --
@@ -76,8 +73,8 @@ longDescription merawProcessingParameter  =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsMERAWProcessingParameter merawProcessingParameter => merawProcessingParameter -> IO Bool
-enabled merawProcessingParameter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg merawProcessingParameter (mkSelector "enabled") retCULong []
+enabled merawProcessingParameter =
+  sendMessage merawProcessingParameter enabledSelector
 
 -- | enabled
 --
@@ -87,30 +84,30 @@ enabled merawProcessingParameter  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsMERAWProcessingParameter merawProcessingParameter => merawProcessingParameter -> Bool -> IO ()
-setEnabled merawProcessingParameter  value =
-    sendMsg merawProcessingParameter (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled merawProcessingParameter value =
+  sendMessage merawProcessingParameter setEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @key@
-keySelector :: Selector
+keySelector :: Selector '[] (Id NSString)
 keySelector = mkSelector "key"
 
 -- | @Selector@ for @longDescription@
-longDescriptionSelector :: Selector
+longDescriptionSelector :: Selector '[] (Id NSString)
 longDescriptionSelector = mkSelector "longDescription"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 

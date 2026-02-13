@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,29 +33,25 @@ module ObjC.WebKit.WebScriptObject
   , setWebScriptValueAtIndex_value
   , setException
   , jsValue
-  , throwExceptionSelector
-  , jsObjectSelector
   , callWebScriptMethod_withArgumentsSelector
   , evaluateWebScriptSelector
-  , removeWebScriptKeySelector
-  , stringRepresentationSelector
-  , webScriptValueAtIndexSelector
-  , setWebScriptValueAtIndex_valueSelector
-  , setExceptionSelector
+  , jsObjectSelector
   , jsValueSelector
+  , removeWebScriptKeySelector
+  , setExceptionSelector
+  , setWebScriptValueAtIndex_valueSelector
+  , stringRepresentationSelector
+  , throwExceptionSelector
+  , webScriptValueAtIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,8 +70,7 @@ throwException :: IsNSString exceptionMessage => exceptionMessage -> IO Bool
 throwException exceptionMessage =
   do
     cls' <- getRequiredClass "WebScriptObject"
-    withObjCPtr exceptionMessage $ \raw_exceptionMessage ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "throwException:") retCULong [argPtr (castPtr raw_exceptionMessage :: Ptr ())]
+    sendClassMessage cls' throwExceptionSelector (toNSString exceptionMessage)
 
 -- | JSObject
 --
@@ -84,8 +80,8 @@ throwException exceptionMessage =
 --
 -- ObjC selector: @- JSObject@
 jsObject :: IsWebScriptObject webScriptObject => webScriptObject -> IO (Ptr ())
-jsObject webScriptObject  =
-    fmap castPtr $ sendMsg webScriptObject (mkSelector "JSObject") (retPtr retVoid) []
+jsObject webScriptObject =
+  sendMessage webScriptObject jsObjectSelector
 
 -- | callWebScriptMethod:withArguments:
 --
@@ -99,10 +95,8 @@ jsObject webScriptObject  =
 --
 -- ObjC selector: @- callWebScriptMethod:withArguments:@
 callWebScriptMethod_withArguments :: (IsWebScriptObject webScriptObject, IsNSString name, IsNSArray arguments) => webScriptObject -> name -> arguments -> IO RawId
-callWebScriptMethod_withArguments webScriptObject  name arguments =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr arguments $ \raw_arguments ->
-        fmap (RawId . castPtr) $ sendMsg webScriptObject (mkSelector "callWebScriptMethod:withArguments:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ())]
+callWebScriptMethod_withArguments webScriptObject name arguments =
+  sendMessage webScriptObject callWebScriptMethod_withArgumentsSelector (toNSString name) (toNSArray arguments)
 
 -- | evaluateWebScript:
 --
@@ -114,9 +108,8 @@ callWebScriptMethod_withArguments webScriptObject  name arguments =
 --
 -- ObjC selector: @- evaluateWebScript:@
 evaluateWebScript :: (IsWebScriptObject webScriptObject, IsNSString script) => webScriptObject -> script -> IO RawId
-evaluateWebScript webScriptObject  script =
-  withObjCPtr script $ \raw_script ->
-      fmap (RawId . castPtr) $ sendMsg webScriptObject (mkSelector "evaluateWebScript:") (retPtr retVoid) [argPtr (castPtr raw_script :: Ptr ())]
+evaluateWebScript webScriptObject script =
+  sendMessage webScriptObject evaluateWebScriptSelector (toNSString script)
 
 -- | removeWebScriptKey:
 --
@@ -126,9 +119,8 @@ evaluateWebScript webScriptObject  script =
 --
 -- ObjC selector: @- removeWebScriptKey:@
 removeWebScriptKey :: (IsWebScriptObject webScriptObject, IsNSString name) => webScriptObject -> name -> IO ()
-removeWebScriptKey webScriptObject  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg webScriptObject (mkSelector "removeWebScriptKey:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+removeWebScriptKey webScriptObject name =
+  sendMessage webScriptObject removeWebScriptKeySelector (toNSString name)
 
 -- | stringRepresentation
 --
@@ -138,8 +130,8 @@ removeWebScriptKey webScriptObject  name =
 --
 -- ObjC selector: @- stringRepresentation@
 stringRepresentation :: IsWebScriptObject webScriptObject => webScriptObject -> IO (Id NSString)
-stringRepresentation webScriptObject  =
-    sendMsg webScriptObject (mkSelector "stringRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringRepresentation webScriptObject =
+  sendMessage webScriptObject stringRepresentationSelector
 
 -- | webScriptValueAtIndex:
 --
@@ -151,8 +143,8 @@ stringRepresentation webScriptObject  =
 --
 -- ObjC selector: @- webScriptValueAtIndex:@
 webScriptValueAtIndex :: IsWebScriptObject webScriptObject => webScriptObject -> CUInt -> IO RawId
-webScriptValueAtIndex webScriptObject  index =
-    fmap (RawId . castPtr) $ sendMsg webScriptObject (mkSelector "webScriptValueAtIndex:") (retPtr retVoid) [argCUInt index]
+webScriptValueAtIndex webScriptObject index =
+  sendMessage webScriptObject webScriptValueAtIndexSelector index
 
 -- | setWebScriptValueAtIndex:value:
 --
@@ -164,8 +156,8 @@ webScriptValueAtIndex webScriptObject  index =
 --
 -- ObjC selector: @- setWebScriptValueAtIndex:value:@
 setWebScriptValueAtIndex_value :: IsWebScriptObject webScriptObject => webScriptObject -> CUInt -> RawId -> IO ()
-setWebScriptValueAtIndex_value webScriptObject  index value =
-    sendMsg webScriptObject (mkSelector "setWebScriptValueAtIndex:value:") retVoid [argCUInt index, argPtr (castPtr (unRawId value) :: Ptr ())]
+setWebScriptValueAtIndex_value webScriptObject index value =
+  sendMessage webScriptObject setWebScriptValueAtIndex_valueSelector index value
 
 -- | setException:
 --
@@ -175,9 +167,8 @@ setWebScriptValueAtIndex_value webScriptObject  index value =
 --
 -- ObjC selector: @- setException:@
 setException :: (IsWebScriptObject webScriptObject, IsNSString description) => webScriptObject -> description -> IO ()
-setException webScriptObject  description =
-  withObjCPtr description $ \raw_description ->
-      sendMsg webScriptObject (mkSelector "setException:") retVoid [argPtr (castPtr raw_description :: Ptr ())]
+setException webScriptObject description =
+  sendMessage webScriptObject setExceptionSelector (toNSString description)
 
 -- | JSValue
 --
@@ -187,50 +178,50 @@ setException webScriptObject  description =
 --
 -- ObjC selector: @- JSValue@
 jsValue :: IsWebScriptObject webScriptObject => webScriptObject -> IO (Id JSValue)
-jsValue webScriptObject  =
-    sendMsg webScriptObject (mkSelector "JSValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+jsValue webScriptObject =
+  sendMessage webScriptObject jsValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @throwException:@
-throwExceptionSelector :: Selector
+throwExceptionSelector :: Selector '[Id NSString] Bool
 throwExceptionSelector = mkSelector "throwException:"
 
 -- | @Selector@ for @JSObject@
-jsObjectSelector :: Selector
+jsObjectSelector :: Selector '[] (Ptr ())
 jsObjectSelector = mkSelector "JSObject"
 
 -- | @Selector@ for @callWebScriptMethod:withArguments:@
-callWebScriptMethod_withArgumentsSelector :: Selector
+callWebScriptMethod_withArgumentsSelector :: Selector '[Id NSString, Id NSArray] RawId
 callWebScriptMethod_withArgumentsSelector = mkSelector "callWebScriptMethod:withArguments:"
 
 -- | @Selector@ for @evaluateWebScript:@
-evaluateWebScriptSelector :: Selector
+evaluateWebScriptSelector :: Selector '[Id NSString] RawId
 evaluateWebScriptSelector = mkSelector "evaluateWebScript:"
 
 -- | @Selector@ for @removeWebScriptKey:@
-removeWebScriptKeySelector :: Selector
+removeWebScriptKeySelector :: Selector '[Id NSString] ()
 removeWebScriptKeySelector = mkSelector "removeWebScriptKey:"
 
 -- | @Selector@ for @stringRepresentation@
-stringRepresentationSelector :: Selector
+stringRepresentationSelector :: Selector '[] (Id NSString)
 stringRepresentationSelector = mkSelector "stringRepresentation"
 
 -- | @Selector@ for @webScriptValueAtIndex:@
-webScriptValueAtIndexSelector :: Selector
+webScriptValueAtIndexSelector :: Selector '[CUInt] RawId
 webScriptValueAtIndexSelector = mkSelector "webScriptValueAtIndex:"
 
 -- | @Selector@ for @setWebScriptValueAtIndex:value:@
-setWebScriptValueAtIndex_valueSelector :: Selector
+setWebScriptValueAtIndex_valueSelector :: Selector '[CUInt, RawId] ()
 setWebScriptValueAtIndex_valueSelector = mkSelector "setWebScriptValueAtIndex:value:"
 
 -- | @Selector@ for @setException:@
-setExceptionSelector :: Selector
+setExceptionSelector :: Selector '[Id NSString] ()
 setExceptionSelector = mkSelector "setException:"
 
 -- | @Selector@ for @JSValue@
-jsValueSelector :: Selector
+jsValueSelector :: Selector '[] (Id JSValue)
 jsValueSelector = mkSelector "JSValue"
 

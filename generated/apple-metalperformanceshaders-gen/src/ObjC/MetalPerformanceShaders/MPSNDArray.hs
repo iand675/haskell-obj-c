@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,33 +45,33 @@ module ObjC.MetalPerformanceShaders.MPSNDArray
   , numberOfDimensions
   , device
   , parent
-  , defaultAllocatorSelector
-  , lengthOfDimensionSelector
-  , descriptorSelector
-  , initSelector
-  , initWithDevice_descriptorSelector
-  , initWithDevice_scalarSelector
-  , initWithBuffer_offset_descriptorSelector
-  , userBufferSelector
-  , resourceSizeSelector
   , arrayViewWithCommandBuffer_descriptor_aliasingSelector
   , arrayViewWithDescriptorSelector
-  , arrayViewWithShape_stridesSelector
   , arrayViewWithDimensionCount_dimensionSizes_stridesSelector
-  , exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStridesSelector
-  , importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStridesSelector
-  , exportDataWithCommandBuffer_toImages_offsetSelector
-  , importDataWithCommandBuffer_fromImages_offsetSelector
-  , readBytes_strideBytesSelector
-  , writeBytes_strideBytesSelector
-  , synchronizeOnCommandBufferSelector
-  , labelSelector
-  , setLabelSelector
+  , arrayViewWithShape_stridesSelector
   , dataTypeSelector
   , dataTypeSizeSelector
-  , numberOfDimensionsSelector
+  , defaultAllocatorSelector
+  , descriptorSelector
   , deviceSelector
+  , exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStridesSelector
+  , exportDataWithCommandBuffer_toImages_offsetSelector
+  , importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStridesSelector
+  , importDataWithCommandBuffer_fromImages_offsetSelector
+  , initSelector
+  , initWithBuffer_offset_descriptorSelector
+  , initWithDevice_descriptorSelector
+  , initWithDevice_scalarSelector
+  , labelSelector
+  , lengthOfDimensionSelector
+  , numberOfDimensionsSelector
   , parentSelector
+  , readBytes_strideBytesSelector
+  , resourceSizeSelector
+  , setLabelSelector
+  , synchronizeOnCommandBufferSelector
+  , userBufferSelector
+  , writeBytes_strideBytesSelector
 
   -- * Enum types
   , MPSAliasingStrategy(MPSAliasingStrategy)
@@ -112,15 +113,11 @@ module ObjC.MetalPerformanceShaders.MPSNDArray
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -136,7 +133,7 @@ defaultAllocator :: IO RawId
 defaultAllocator  =
   do
     cls' <- getRequiredClass "MPSNDArray"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultAllocator") (retPtr retVoid) []
+    sendClassMessage cls' defaultAllocatorSelector
 
 -- | The number of elements in the dimension at dimensionIndex
 --
@@ -144,8 +141,8 @@ defaultAllocator  =
 --
 -- ObjC selector: @- lengthOfDimension:@
 lengthOfDimension :: IsMPSNDArray mpsndArray => mpsndArray -> CULong -> IO CULong
-lengthOfDimension mpsndArray  dimensionIndex =
-    sendMsg mpsndArray (mkSelector "lengthOfDimension:") retCULong [argCULong dimensionIndex]
+lengthOfDimension mpsndArray dimensionIndex =
+  sendMessage mpsndArray lengthOfDimensionSelector dimensionIndex
 
 -- | Create a MPSNDArrayDescriptor that describes this MPSNDArray
 --
@@ -155,13 +152,13 @@ lengthOfDimension mpsndArray  dimensionIndex =
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsMPSNDArray mpsndArray => mpsndArray -> IO (Id MPSNDArrayDescriptor)
-descriptor mpsndArray  =
-    sendMsg mpsndArray (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mpsndArray =
+  sendMessage mpsndArray descriptorSelector
 
 -- | @- init@
 init_ :: IsMPSNDArray mpsndArray => mpsndArray -> IO (Id MPSNDArray)
-init_ mpsndArray  =
-    sendMsg mpsndArray (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsndArray =
+  sendOwnedMessage mpsndArray initSelector
 
 -- | Initialize an MPSNDArrayDescriptor object on a device              for given dimension sizes in descriptor.
 --
@@ -173,16 +170,15 @@ init_ mpsndArray  =
 --
 -- ObjC selector: @- initWithDevice:descriptor:@
 initWithDevice_descriptor :: (IsMPSNDArray mpsndArray, IsMPSNDArrayDescriptor descriptor) => mpsndArray -> RawId -> descriptor -> IO (Id MPSNDArray)
-initWithDevice_descriptor mpsndArray  device descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsndArray (mkSelector "initWithDevice:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_descriptor mpsndArray device descriptor =
+  sendOwnedMessage mpsndArray initWithDevice_descriptorSelector device (toMPSNDArrayDescriptor descriptor)
 
 -- | Create a 1-Dimensional length=1 NDArray to hold a scalar
 --
 -- ObjC selector: @- initWithDevice:scalar:@
 initWithDevice_scalar :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> CDouble -> IO (Id MPSNDArray)
-initWithDevice_scalar mpsndArray  device value =
-    sendMsg mpsndArray (mkSelector "initWithDevice:scalar:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCDouble value] >>= ownedObject . castPtr
+initWithDevice_scalar mpsndArray device value =
+  sendOwnedMessage mpsndArray initWithDevice_scalarSelector device value
 
 -- | Initialize an MPSNDArray object from a Metal Buffer with a given descriptor and offset in bytes.
 --
@@ -196,9 +192,8 @@ initWithDevice_scalar mpsndArray  device value =
 --
 -- ObjC selector: @- initWithBuffer:offset:descriptor:@
 initWithBuffer_offset_descriptor :: (IsMPSNDArray mpsndArray, IsMPSNDArrayDescriptor descriptor) => mpsndArray -> RawId -> CULong -> descriptor -> IO (Id MPSNDArray)
-initWithBuffer_offset_descriptor mpsndArray  buffer offset descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsndArray (mkSelector "initWithBuffer:offset:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argCULong offset, argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithBuffer_offset_descriptor mpsndArray buffer offset descriptor =
+  sendOwnedMessage mpsndArray initWithBuffer_offset_descriptorSelector buffer offset (toMPSNDArrayDescriptor descriptor)
 
 -- | Returns the user buffer in case the NDArray was initialized with an MTLBuffer.
 --
@@ -206,8 +201,8 @@ initWithBuffer_offset_descriptor mpsndArray  buffer offset descriptor =
 --
 -- ObjC selector: @- userBuffer@
 userBuffer :: IsMPSNDArray mpsndArray => mpsndArray -> IO RawId
-userBuffer mpsndArray  =
-    fmap (RawId . castPtr) $ sendMsg mpsndArray (mkSelector "userBuffer") (retPtr retVoid) []
+userBuffer mpsndArray =
+  sendMessage mpsndArray userBufferSelector
 
 -- | Get the number of bytes used to allocate underyling MTLResources
 --
@@ -217,8 +212,8 @@ userBuffer mpsndArray  =
 --
 -- ObjC selector: @- resourceSize@
 resourceSize :: IsMPSNDArray mpsndArray => mpsndArray -> IO CULong
-resourceSize mpsndArray  =
-    sendMsg mpsndArray (mkSelector "resourceSize") retCULong []
+resourceSize mpsndArray =
+  sendMessage mpsndArray resourceSizeSelector
 
 -- | Make a new representation of a MPSNDArray with a slice, transpose or other change in property
 --
@@ -234,9 +229,8 @@ resourceSize mpsndArray  =
 --
 -- ObjC selector: @- arrayViewWithCommandBuffer:descriptor:aliasing:@
 arrayViewWithCommandBuffer_descriptor_aliasing :: (IsMPSNDArray mpsndArray, IsMPSNDArrayDescriptor descriptor) => mpsndArray -> RawId -> descriptor -> MPSAliasingStrategy -> IO (Id MPSNDArray)
-arrayViewWithCommandBuffer_descriptor_aliasing mpsndArray  cmdBuf descriptor aliasing =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsndArray (mkSelector "arrayViewWithCommandBuffer:descriptor:aliasing:") (retPtr retVoid) [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ()), argCULong (coerce aliasing)] >>= retainedObject . castPtr
+arrayViewWithCommandBuffer_descriptor_aliasing mpsndArray cmdBuf descriptor aliasing =
+  sendMessage mpsndArray arrayViewWithCommandBuffer_descriptor_aliasingSelector cmdBuf (toMPSNDArrayDescriptor descriptor) aliasing
 
 -- | Make a new representation of a MPSNDArray with a slice, transpose or other change in property, trying to alias to result.
 --
@@ -248,9 +242,8 @@ arrayViewWithCommandBuffer_descriptor_aliasing mpsndArray  cmdBuf descriptor ali
 --
 -- ObjC selector: @- arrayViewWithDescriptor:@
 arrayViewWithDescriptor :: (IsMPSNDArray mpsndArray, IsMPSNDArrayDescriptor descriptor) => mpsndArray -> descriptor -> IO (Id MPSNDArray)
-arrayViewWithDescriptor mpsndArray  descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsndArray (mkSelector "arrayViewWithDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+arrayViewWithDescriptor mpsndArray descriptor =
+  sendMessage mpsndArray arrayViewWithDescriptorSelector (toMPSNDArrayDescriptor descriptor)
 
 -- | Make a new representation of a MPSNDArray with given strides and a new shape.
 --
@@ -264,8 +257,8 @@ arrayViewWithDescriptor mpsndArray  descriptor =
 --
 -- ObjC selector: @- arrayViewWithShape:strides:@
 arrayViewWithShape_strides :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> RawId -> IO (Id MPSNDArray)
-arrayViewWithShape_strides mpsndArray  shape strides =
-    sendMsg mpsndArray (mkSelector "arrayViewWithShape:strides:") (retPtr retVoid) [argPtr (castPtr (unRawId shape) :: Ptr ()), argPtr (castPtr (unRawId strides) :: Ptr ())] >>= retainedObject . castPtr
+arrayViewWithShape_strides mpsndArray shape strides =
+  sendMessage mpsndArray arrayViewWithShape_stridesSelector shape strides
 
 -- | Make a new representation of a MPSNDArray with given strides and a new shape.
 --
@@ -281,8 +274,8 @@ arrayViewWithShape_strides mpsndArray  shape strides =
 --
 -- ObjC selector: @- arrayViewWithDimensionCount:dimensionSizes:strides:@
 arrayViewWithDimensionCount_dimensionSizes_strides :: IsMPSNDArray mpsndArray => mpsndArray -> CULong -> Const (Ptr CULong) -> Const (Ptr CULong) -> IO (Id MPSNDArray)
-arrayViewWithDimensionCount_dimensionSizes_strides mpsndArray  numberOfDimensions dimensionSizes dimStrides =
-    sendMsg mpsndArray (mkSelector "arrayViewWithDimensionCount:dimensionSizes:strides:") (retPtr retVoid) [argCULong numberOfDimensions, argPtr (unConst dimensionSizes), argPtr (unConst dimStrides)] >>= retainedObject . castPtr
+arrayViewWithDimensionCount_dimensionSizes_strides mpsndArray numberOfDimensions dimensionSizes dimStrides =
+  sendMessage mpsndArray arrayViewWithDimensionCount_dimensionSizes_stridesSelector numberOfDimensions dimensionSizes dimStrides
 
 -- | Do a GPU side copy of the contents of a MPSNDArray to a MTLBuffer
 --
@@ -300,8 +293,8 @@ arrayViewWithDimensionCount_dimensionSizes_strides mpsndArray  numberOfDimension
 --
 -- ObjC selector: @- exportDataWithCommandBuffer:toBuffer:destinationDataType:offset:rowStrides:@
 exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStrides :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> RawId -> MPSDataType -> CULong -> Ptr CLong -> IO ()
-exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStrides mpsndArray  cmdBuf buffer destinationDataType offset rowStrides =
-    sendMsg mpsndArray (mkSelector "exportDataWithCommandBuffer:toBuffer:destinationDataType:offset:rowStrides:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr (unRawId buffer) :: Ptr ()), argCUInt (coerce destinationDataType), argCULong offset, argPtr rowStrides]
+exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStrides mpsndArray cmdBuf buffer destinationDataType offset rowStrides =
+  sendMessage mpsndArray exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStridesSelector cmdBuf buffer destinationDataType offset rowStrides
 
 -- | Do a GPU side copy of the contents of a MTLBuffer into a MPSNDArray
 --
@@ -319,8 +312,8 @@ exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStrides mpsnd
 --
 -- ObjC selector: @- importDataWithCommandBuffer:fromBuffer:sourceDataType:offset:rowStrides:@
 importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStrides :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> RawId -> MPSDataType -> CULong -> Ptr CLong -> IO ()
-importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStrides mpsndArray  cmdBuf buffer sourceDataType offset rowStrides =
-    sendMsg mpsndArray (mkSelector "importDataWithCommandBuffer:fromBuffer:sourceDataType:offset:rowStrides:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr (unRawId buffer) :: Ptr ()), argCUInt (coerce sourceDataType), argCULong offset, argPtr rowStrides]
+importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStrides mpsndArray cmdBuf buffer sourceDataType offset rowStrides =
+  sendMessage mpsndArray importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStridesSelector cmdBuf buffer sourceDataType offset rowStrides
 
 -- | Do a GPU side copy of the contents of a MPSNDArray to a MPSImageBatch.
 --
@@ -334,8 +327,8 @@ importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStrides mpsndArr
 --
 -- ObjC selector: @- exportDataWithCommandBuffer:toImages:offset:@
 exportDataWithCommandBuffer_toImages_offset :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> RawId -> MPSImageCoordinate -> IO ()
-exportDataWithCommandBuffer_toImages_offset mpsndArray  cmdBuf images offset =
-    sendMsg mpsndArray (mkSelector "exportDataWithCommandBuffer:toImages:offset:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr (unRawId images) :: Ptr ()), argMPSImageCoordinate offset]
+exportDataWithCommandBuffer_toImages_offset mpsndArray cmdBuf images offset =
+  sendMessage mpsndArray exportDataWithCommandBuffer_toImages_offsetSelector cmdBuf images offset
 
 -- | Do a GPU side copy of the contents of a MPSImageBatch into a MPSNDArray.
 --
@@ -349,8 +342,8 @@ exportDataWithCommandBuffer_toImages_offset mpsndArray  cmdBuf images offset =
 --
 -- ObjC selector: @- importDataWithCommandBuffer:fromImages:offset:@
 importDataWithCommandBuffer_fromImages_offset :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> RawId -> MPSImageCoordinate -> IO ()
-importDataWithCommandBuffer_fromImages_offset mpsndArray  cmdBuf images offset =
-    sendMsg mpsndArray (mkSelector "importDataWithCommandBuffer:fromImages:offset:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr (unRawId images) :: Ptr ()), argMPSImageCoordinate offset]
+importDataWithCommandBuffer_fromImages_offset mpsndArray cmdBuf images offset =
+  sendMessage mpsndArray importDataWithCommandBuffer_fromImages_offsetSelector cmdBuf images offset
 
 -- | Copy bytes from MPSNDArray into buffer
 --
@@ -362,8 +355,8 @@ importDataWithCommandBuffer_fromImages_offset mpsndArray  cmdBuf images offset =
 --
 -- ObjC selector: @- readBytes:strideBytes:@
 readBytes_strideBytes :: IsMPSNDArray mpsndArray => mpsndArray -> Ptr () -> Ptr CLong -> IO ()
-readBytes_strideBytes mpsndArray  buffer strideBytesPerDimension =
-    sendMsg mpsndArray (mkSelector "readBytes:strideBytes:") retVoid [argPtr buffer, argPtr strideBytesPerDimension]
+readBytes_strideBytes mpsndArray buffer strideBytesPerDimension =
+  sendMessage mpsndArray readBytes_strideBytesSelector buffer strideBytesPerDimension
 
 -- | Copy bytes from a buffer into the MPSNDArray
 --
@@ -375,8 +368,8 @@ readBytes_strideBytes mpsndArray  buffer strideBytesPerDimension =
 --
 -- ObjC selector: @- writeBytes:strideBytes:@
 writeBytes_strideBytes :: IsMPSNDArray mpsndArray => mpsndArray -> Ptr () -> Ptr CLong -> IO ()
-writeBytes_strideBytes mpsndArray  buffer strideBytesPerDimension =
-    sendMsg mpsndArray (mkSelector "writeBytes:strideBytes:") retVoid [argPtr buffer, argPtr strideBytesPerDimension]
+writeBytes_strideBytes mpsndArray buffer strideBytesPerDimension =
+  sendMessage mpsndArray writeBytes_strideBytesSelector buffer strideBytesPerDimension
 
 -- | Use a blit encoder if a discrete device to update CPU contents of underlying buffer with latest GPU value
 --
@@ -384,8 +377,8 @@ writeBytes_strideBytes mpsndArray  buffer strideBytesPerDimension =
 --
 -- ObjC selector: @- synchronizeOnCommandBuffer:@
 synchronizeOnCommandBuffer :: IsMPSNDArray mpsndArray => mpsndArray -> RawId -> IO ()
-synchronizeOnCommandBuffer mpsndArray  commandBuffer =
-    sendMsg mpsndArray (mkSelector "synchronizeOnCommandBuffer:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())]
+synchronizeOnCommandBuffer mpsndArray commandBuffer =
+  sendMessage mpsndArray synchronizeOnCommandBufferSelector commandBuffer
 
 -- | A used specified string to help identify the array during debugging.
 --
@@ -393,8 +386,8 @@ synchronizeOnCommandBuffer mpsndArray  commandBuffer =
 --
 -- ObjC selector: @- label@
 label :: IsMPSNDArray mpsndArray => mpsndArray -> IO (Id NSString)
-label mpsndArray  =
-    sendMsg mpsndArray (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mpsndArray =
+  sendMessage mpsndArray labelSelector
 
 -- | A used specified string to help identify the array during debugging.
 --
@@ -402,30 +395,29 @@ label mpsndArray  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMPSNDArray mpsndArray, IsNSString value) => mpsndArray -> value -> IO ()
-setLabel mpsndArray  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsndArray (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mpsndArray value =
+  sendMessage mpsndArray setLabelSelector (toNSString value)
 
 -- | The type of data stored by each element in the array
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSNDArray mpsndArray => mpsndArray -> IO MPSDataType
-dataType mpsndArray  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsndArray (mkSelector "dataType") retCUInt []
+dataType mpsndArray =
+  sendMessage mpsndArray dataTypeSelector
 
 -- | The size of one element in the MPSNDArray
 --
 -- ObjC selector: @- dataTypeSize@
 dataTypeSize :: IsMPSNDArray mpsndArray => mpsndArray -> IO CULong
-dataTypeSize mpsndArray  =
-    sendMsg mpsndArray (mkSelector "dataTypeSize") retCULong []
+dataTypeSize mpsndArray =
+  sendMessage mpsndArray dataTypeSizeSelector
 
 -- | Number of dimensions in the NDArray
 --
 -- ObjC selector: @- numberOfDimensions@
 numberOfDimensions :: IsMPSNDArray mpsndArray => mpsndArray -> IO CULong
-numberOfDimensions mpsndArray  =
-    sendMsg mpsndArray (mkSelector "numberOfDimensions") retCULong []
+numberOfDimensions mpsndArray =
+  sendMessage mpsndArray numberOfDimensionsSelector
 
 -- | device
 --
@@ -433,8 +425,8 @@ numberOfDimensions mpsndArray  =
 --
 -- ObjC selector: @- device@
 device :: IsMPSNDArray mpsndArray => mpsndArray -> IO RawId
-device mpsndArray  =
-    fmap (RawId . castPtr) $ sendMsg mpsndArray (mkSelector "device") (retPtr retVoid) []
+device mpsndArray =
+  sendMessage mpsndArray deviceSelector
 
 -- | The parent MPSNDArray that this object aliases
 --
@@ -442,118 +434,118 @@ device mpsndArray  =
 --
 -- ObjC selector: @- parent@
 parent :: IsMPSNDArray mpsndArray => mpsndArray -> IO (Id MPSNDArray)
-parent mpsndArray  =
-    sendMsg mpsndArray (mkSelector "parent") (retPtr retVoid) [] >>= retainedObject . castPtr
+parent mpsndArray =
+  sendMessage mpsndArray parentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultAllocator@
-defaultAllocatorSelector :: Selector
+defaultAllocatorSelector :: Selector '[] RawId
 defaultAllocatorSelector = mkSelector "defaultAllocator"
 
 -- | @Selector@ for @lengthOfDimension:@
-lengthOfDimensionSelector :: Selector
+lengthOfDimensionSelector :: Selector '[CULong] CULong
 lengthOfDimensionSelector = mkSelector "lengthOfDimension:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MPSNDArrayDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSNDArray)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDevice:descriptor:@
-initWithDevice_descriptorSelector :: Selector
+initWithDevice_descriptorSelector :: Selector '[RawId, Id MPSNDArrayDescriptor] (Id MPSNDArray)
 initWithDevice_descriptorSelector = mkSelector "initWithDevice:descriptor:"
 
 -- | @Selector@ for @initWithDevice:scalar:@
-initWithDevice_scalarSelector :: Selector
+initWithDevice_scalarSelector :: Selector '[RawId, CDouble] (Id MPSNDArray)
 initWithDevice_scalarSelector = mkSelector "initWithDevice:scalar:"
 
 -- | @Selector@ for @initWithBuffer:offset:descriptor:@
-initWithBuffer_offset_descriptorSelector :: Selector
+initWithBuffer_offset_descriptorSelector :: Selector '[RawId, CULong, Id MPSNDArrayDescriptor] (Id MPSNDArray)
 initWithBuffer_offset_descriptorSelector = mkSelector "initWithBuffer:offset:descriptor:"
 
 -- | @Selector@ for @userBuffer@
-userBufferSelector :: Selector
+userBufferSelector :: Selector '[] RawId
 userBufferSelector = mkSelector "userBuffer"
 
 -- | @Selector@ for @resourceSize@
-resourceSizeSelector :: Selector
+resourceSizeSelector :: Selector '[] CULong
 resourceSizeSelector = mkSelector "resourceSize"
 
 -- | @Selector@ for @arrayViewWithCommandBuffer:descriptor:aliasing:@
-arrayViewWithCommandBuffer_descriptor_aliasingSelector :: Selector
+arrayViewWithCommandBuffer_descriptor_aliasingSelector :: Selector '[RawId, Id MPSNDArrayDescriptor, MPSAliasingStrategy] (Id MPSNDArray)
 arrayViewWithCommandBuffer_descriptor_aliasingSelector = mkSelector "arrayViewWithCommandBuffer:descriptor:aliasing:"
 
 -- | @Selector@ for @arrayViewWithDescriptor:@
-arrayViewWithDescriptorSelector :: Selector
+arrayViewWithDescriptorSelector :: Selector '[Id MPSNDArrayDescriptor] (Id MPSNDArray)
 arrayViewWithDescriptorSelector = mkSelector "arrayViewWithDescriptor:"
 
 -- | @Selector@ for @arrayViewWithShape:strides:@
-arrayViewWithShape_stridesSelector :: Selector
+arrayViewWithShape_stridesSelector :: Selector '[RawId, RawId] (Id MPSNDArray)
 arrayViewWithShape_stridesSelector = mkSelector "arrayViewWithShape:strides:"
 
 -- | @Selector@ for @arrayViewWithDimensionCount:dimensionSizes:strides:@
-arrayViewWithDimensionCount_dimensionSizes_stridesSelector :: Selector
+arrayViewWithDimensionCount_dimensionSizes_stridesSelector :: Selector '[CULong, Const (Ptr CULong), Const (Ptr CULong)] (Id MPSNDArray)
 arrayViewWithDimensionCount_dimensionSizes_stridesSelector = mkSelector "arrayViewWithDimensionCount:dimensionSizes:strides:"
 
 -- | @Selector@ for @exportDataWithCommandBuffer:toBuffer:destinationDataType:offset:rowStrides:@
-exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStridesSelector :: Selector
+exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStridesSelector :: Selector '[RawId, RawId, MPSDataType, CULong, Ptr CLong] ()
 exportDataWithCommandBuffer_toBuffer_destinationDataType_offset_rowStridesSelector = mkSelector "exportDataWithCommandBuffer:toBuffer:destinationDataType:offset:rowStrides:"
 
 -- | @Selector@ for @importDataWithCommandBuffer:fromBuffer:sourceDataType:offset:rowStrides:@
-importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStridesSelector :: Selector
+importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStridesSelector :: Selector '[RawId, RawId, MPSDataType, CULong, Ptr CLong] ()
 importDataWithCommandBuffer_fromBuffer_sourceDataType_offset_rowStridesSelector = mkSelector "importDataWithCommandBuffer:fromBuffer:sourceDataType:offset:rowStrides:"
 
 -- | @Selector@ for @exportDataWithCommandBuffer:toImages:offset:@
-exportDataWithCommandBuffer_toImages_offsetSelector :: Selector
+exportDataWithCommandBuffer_toImages_offsetSelector :: Selector '[RawId, RawId, MPSImageCoordinate] ()
 exportDataWithCommandBuffer_toImages_offsetSelector = mkSelector "exportDataWithCommandBuffer:toImages:offset:"
 
 -- | @Selector@ for @importDataWithCommandBuffer:fromImages:offset:@
-importDataWithCommandBuffer_fromImages_offsetSelector :: Selector
+importDataWithCommandBuffer_fromImages_offsetSelector :: Selector '[RawId, RawId, MPSImageCoordinate] ()
 importDataWithCommandBuffer_fromImages_offsetSelector = mkSelector "importDataWithCommandBuffer:fromImages:offset:"
 
 -- | @Selector@ for @readBytes:strideBytes:@
-readBytes_strideBytesSelector :: Selector
+readBytes_strideBytesSelector :: Selector '[Ptr (), Ptr CLong] ()
 readBytes_strideBytesSelector = mkSelector "readBytes:strideBytes:"
 
 -- | @Selector@ for @writeBytes:strideBytes:@
-writeBytes_strideBytesSelector :: Selector
+writeBytes_strideBytesSelector :: Selector '[Ptr (), Ptr CLong] ()
 writeBytes_strideBytesSelector = mkSelector "writeBytes:strideBytes:"
 
 -- | @Selector@ for @synchronizeOnCommandBuffer:@
-synchronizeOnCommandBufferSelector :: Selector
+synchronizeOnCommandBufferSelector :: Selector '[RawId] ()
 synchronizeOnCommandBufferSelector = mkSelector "synchronizeOnCommandBuffer:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @dataTypeSize@
-dataTypeSizeSelector :: Selector
+dataTypeSizeSelector :: Selector '[] CULong
 dataTypeSizeSelector = mkSelector "dataTypeSize"
 
 -- | @Selector@ for @numberOfDimensions@
-numberOfDimensionsSelector :: Selector
+numberOfDimensionsSelector :: Selector '[] CULong
 numberOfDimensionsSelector = mkSelector "numberOfDimensions"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] (Id MPSNDArray)
 parentSelector = mkSelector "parent"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,35 +25,31 @@ module ObjC.Matter.MTRClusterServiceArea
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , selectAreasWithParams_expectedValues_expectedValueInterval_completionSelector
-  , skipAreaWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeSupportedAreasWithParamsSelector
-  , readAttributeSupportedMapsWithParamsSelector
-  , readAttributeSelectedAreasWithParamsSelector
-  , readAttributeCurrentAreaWithParamsSelector
-  , readAttributeEstimatedEndTimeWithParamsSelector
-  , readAttributeProgressWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeCurrentAreaWithParamsSelector
+  , readAttributeEstimatedEndTimeWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeProgressWithParamsSelector
+  , readAttributeSelectedAreasWithParamsSelector
+  , readAttributeSupportedAreasWithParamsSelector
+  , readAttributeSupportedMapsWithParamsSelector
+  , selectAreasWithParams_expectedValues_expectedValueInterval_completionSelector
+  , skipAreaWithParams_expectedValues_expectedValueInterval_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,173 +58,153 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- selectAreasWithParams:expectedValues:expectedValueInterval:completion:@
 selectAreasWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRServiceAreaClusterSelectAreasParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterServiceArea -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-selectAreasWithParams_expectedValues_expectedValueInterval_completion mtrClusterServiceArea  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterServiceArea (mkSelector "selectAreasWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+selectAreasWithParams_expectedValues_expectedValueInterval_completion mtrClusterServiceArea params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterServiceArea selectAreasWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRServiceAreaClusterSelectAreasParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- skipAreaWithParams:expectedValues:expectedValueInterval:completion:@
 skipAreaWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRServiceAreaClusterSkipAreaParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterServiceArea -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-skipAreaWithParams_expectedValues_expectedValueInterval_completion mtrClusterServiceArea  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterServiceArea (mkSelector "skipAreaWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+skipAreaWithParams_expectedValues_expectedValueInterval_completion mtrClusterServiceArea params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterServiceArea skipAreaWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRServiceAreaClusterSkipAreaParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeSupportedAreasWithParams:@
 readAttributeSupportedAreasWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeSupportedAreasWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeSupportedAreasWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupportedAreasWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeSupportedAreasWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSupportedMapsWithParams:@
 readAttributeSupportedMapsWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeSupportedMapsWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeSupportedMapsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupportedMapsWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeSupportedMapsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSelectedAreasWithParams:@
 readAttributeSelectedAreasWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeSelectedAreasWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeSelectedAreasWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSelectedAreasWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeSelectedAreasWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentAreaWithParams:@
 readAttributeCurrentAreaWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeCurrentAreaWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeCurrentAreaWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentAreaWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeCurrentAreaWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeEstimatedEndTimeWithParams:@
 readAttributeEstimatedEndTimeWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeEstimatedEndTimeWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeEstimatedEndTimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEstimatedEndTimeWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeEstimatedEndTimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeProgressWithParams:@
 readAttributeProgressWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeProgressWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeProgressWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeProgressWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeProgressWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRReadParams params) => mtrClusterServiceArea -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterServiceArea  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterServiceArea (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterServiceArea params =
+  sendMessage mtrClusterServiceArea readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterServiceArea mtrClusterServiceArea => mtrClusterServiceArea -> IO (Id MTRClusterServiceArea)
-init_ mtrClusterServiceArea  =
-    sendMsg mtrClusterServiceArea (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterServiceArea =
+  sendOwnedMessage mtrClusterServiceArea initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterServiceArea)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterServiceArea"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterServiceArea mtrClusterServiceArea, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterServiceArea -> device -> endpointID -> queue -> IO (Id MTRClusterServiceArea)
-initWithDevice_endpointID_queue mtrClusterServiceArea  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterServiceArea (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterServiceArea device endpointID queue =
+  sendOwnedMessage mtrClusterServiceArea initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectAreasWithParams:expectedValues:expectedValueInterval:completion:@
-selectAreasWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+selectAreasWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRServiceAreaClusterSelectAreasParams, Id NSArray, Id NSNumber, Ptr ()] ()
 selectAreasWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "selectAreasWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @skipAreaWithParams:expectedValues:expectedValueInterval:completion:@
-skipAreaWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+skipAreaWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRServiceAreaClusterSkipAreaParams, Id NSArray, Id NSNumber, Ptr ()] ()
 skipAreaWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "skipAreaWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeSupportedAreasWithParams:@
-readAttributeSupportedAreasWithParamsSelector :: Selector
+readAttributeSupportedAreasWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupportedAreasWithParamsSelector = mkSelector "readAttributeSupportedAreasWithParams:"
 
 -- | @Selector@ for @readAttributeSupportedMapsWithParams:@
-readAttributeSupportedMapsWithParamsSelector :: Selector
+readAttributeSupportedMapsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupportedMapsWithParamsSelector = mkSelector "readAttributeSupportedMapsWithParams:"
 
 -- | @Selector@ for @readAttributeSelectedAreasWithParams:@
-readAttributeSelectedAreasWithParamsSelector :: Selector
+readAttributeSelectedAreasWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSelectedAreasWithParamsSelector = mkSelector "readAttributeSelectedAreasWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentAreaWithParams:@
-readAttributeCurrentAreaWithParamsSelector :: Selector
+readAttributeCurrentAreaWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentAreaWithParamsSelector = mkSelector "readAttributeCurrentAreaWithParams:"
 
 -- | @Selector@ for @readAttributeEstimatedEndTimeWithParams:@
-readAttributeEstimatedEndTimeWithParamsSelector :: Selector
+readAttributeEstimatedEndTimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEstimatedEndTimeWithParamsSelector = mkSelector "readAttributeEstimatedEndTimeWithParams:"
 
 -- | @Selector@ for @readAttributeProgressWithParams:@
-readAttributeProgressWithParamsSelector :: Selector
+readAttributeProgressWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeProgressWithParamsSelector = mkSelector "readAttributeProgressWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterServiceArea)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterServiceArea)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterServiceArea)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

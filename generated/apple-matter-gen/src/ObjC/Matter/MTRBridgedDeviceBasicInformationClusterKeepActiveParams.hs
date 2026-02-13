@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRBridgedDeviceBasicInformationClusterKeepActiveParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , stayActiveDurationSelector
-  , setStayActiveDurationSelector
-  , timeoutMsSelector
-  , setTimeoutMsSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setStayActiveDurationSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setTimeoutMsSelector
+  , stayActiveDurationSelector
+  , timedInvokeTimeoutMsSelector
+  , timeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- stayActiveDuration@
 stayActiveDuration :: IsMTRBridgedDeviceBasicInformationClusterKeepActiveParams mtrBridgedDeviceBasicInformationClusterKeepActiveParams => mtrBridgedDeviceBasicInformationClusterKeepActiveParams -> IO (Id NSNumber)
-stayActiveDuration mtrBridgedDeviceBasicInformationClusterKeepActiveParams  =
-    sendMsg mtrBridgedDeviceBasicInformationClusterKeepActiveParams (mkSelector "stayActiveDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+stayActiveDuration mtrBridgedDeviceBasicInformationClusterKeepActiveParams =
+  sendMessage mtrBridgedDeviceBasicInformationClusterKeepActiveParams stayActiveDurationSelector
 
 -- | @- setStayActiveDuration:@
 setStayActiveDuration :: (IsMTRBridgedDeviceBasicInformationClusterKeepActiveParams mtrBridgedDeviceBasicInformationClusterKeepActiveParams, IsNSNumber value) => mtrBridgedDeviceBasicInformationClusterKeepActiveParams -> value -> IO ()
-setStayActiveDuration mtrBridgedDeviceBasicInformationClusterKeepActiveParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBridgedDeviceBasicInformationClusterKeepActiveParams (mkSelector "setStayActiveDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStayActiveDuration mtrBridgedDeviceBasicInformationClusterKeepActiveParams value =
+  sendMessage mtrBridgedDeviceBasicInformationClusterKeepActiveParams setStayActiveDurationSelector (toNSNumber value)
 
 -- | @- timeoutMs@
 timeoutMs :: IsMTRBridgedDeviceBasicInformationClusterKeepActiveParams mtrBridgedDeviceBasicInformationClusterKeepActiveParams => mtrBridgedDeviceBasicInformationClusterKeepActiveParams -> IO (Id NSNumber)
-timeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams  =
-    sendMsg mtrBridgedDeviceBasicInformationClusterKeepActiveParams (mkSelector "timeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams =
+  sendMessage mtrBridgedDeviceBasicInformationClusterKeepActiveParams timeoutMsSelector
 
 -- | @- setTimeoutMs:@
 setTimeoutMs :: (IsMTRBridgedDeviceBasicInformationClusterKeepActiveParams mtrBridgedDeviceBasicInformationClusterKeepActiveParams, IsNSNumber value) => mtrBridgedDeviceBasicInformationClusterKeepActiveParams -> value -> IO ()
-setTimeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBridgedDeviceBasicInformationClusterKeepActiveParams (mkSelector "setTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams value =
+  sendMessage mtrBridgedDeviceBasicInformationClusterKeepActiveParams setTimeoutMsSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setTimeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRBridgedDeviceBasicInformationClusterKeepActiveParams mtrBridgedDeviceBasicInformationClusterKeepActiveParams => mtrBridgedDeviceBasicInformationClusterKeepActiveParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams  =
-    sendMsg mtrBridgedDeviceBasicInformationClusterKeepActiveParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams =
+  sendMessage mtrBridgedDeviceBasicInformationClusterKeepActiveParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRBridgedDeviceBasicInformationClusterKeepActiveParams mtrBridgedDeviceBasicInformationClusterKeepActiveParams, IsNSNumber value) => mtrBridgedDeviceBasicInformationClusterKeepActiveParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBridgedDeviceBasicInformationClusterKeepActiveParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams value =
+  sendMessage mtrBridgedDeviceBasicInformationClusterKeepActiveParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrBridgedDeviceBasicInformationClusterKeepActiveParams 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRBridgedDeviceBasicInformationClusterKeepActiveParams mtrBridgedDeviceBasicInformationClusterKeepActiveParams => mtrBridgedDeviceBasicInformationClusterKeepActiveParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrBridgedDeviceBasicInformationClusterKeepActiveParams  =
-    sendMsg mtrBridgedDeviceBasicInformationClusterKeepActiveParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrBridgedDeviceBasicInformationClusterKeepActiveParams =
+  sendMessage mtrBridgedDeviceBasicInformationClusterKeepActiveParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrBridgedDeviceBasicInformationClusterKeepActivePar
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRBridgedDeviceBasicInformationClusterKeepActiveParams mtrBridgedDeviceBasicInformationClusterKeepActiveParams, IsNSNumber value) => mtrBridgedDeviceBasicInformationClusterKeepActiveParams -> value -> IO ()
-setServerSideProcessingTimeout mtrBridgedDeviceBasicInformationClusterKeepActiveParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBridgedDeviceBasicInformationClusterKeepActiveParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrBridgedDeviceBasicInformationClusterKeepActiveParams value =
+  sendMessage mtrBridgedDeviceBasicInformationClusterKeepActiveParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stayActiveDuration@
-stayActiveDurationSelector :: Selector
+stayActiveDurationSelector :: Selector '[] (Id NSNumber)
 stayActiveDurationSelector = mkSelector "stayActiveDuration"
 
 -- | @Selector@ for @setStayActiveDuration:@
-setStayActiveDurationSelector :: Selector
+setStayActiveDurationSelector :: Selector '[Id NSNumber] ()
 setStayActiveDurationSelector = mkSelector "setStayActiveDuration:"
 
 -- | @Selector@ for @timeoutMs@
-timeoutMsSelector :: Selector
+timeoutMsSelector :: Selector '[] (Id NSNumber)
 timeoutMsSelector = mkSelector "timeoutMs"
 
 -- | @Selector@ for @setTimeoutMs:@
-setTimeoutMsSelector :: Selector
+setTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimeoutMsSelector = mkSelector "setTimeoutMs:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

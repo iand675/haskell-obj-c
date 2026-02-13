@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,42 +44,42 @@ module ObjC.Foundation.NSURLSessionTaskTransactionMetrics
   , constrained
   , multipath
   , domainResolutionProtocol
-  , initSelector
-  , newSelector
-  , requestSelector
-  , responseSelector
-  , fetchStartDateSelector
-  , domainLookupStartDateSelector
-  , domainLookupEndDateSelector
-  , connectStartDateSelector
-  , secureConnectionStartDateSelector
-  , secureConnectionEndDateSelector
+  , cellularSelector
   , connectEndDateSelector
-  , requestStartDateSelector
-  , requestEndDateSelector
-  , responseStartDateSelector
-  , responseEndDateSelector
-  , networkProtocolNameSelector
-  , proxyConnectionSelector
-  , reusedConnectionSelector
-  , resourceFetchTypeSelector
-  , countOfRequestHeaderBytesSentSelector
-  , countOfRequestBodyBytesSentSelector
+  , connectStartDateSelector
+  , constrainedSelector
   , countOfRequestBodyBytesBeforeEncodingSelector
-  , countOfResponseHeaderBytesReceivedSelector
-  , countOfResponseBodyBytesReceivedSelector
+  , countOfRequestBodyBytesSentSelector
+  , countOfRequestHeaderBytesSentSelector
   , countOfResponseBodyBytesAfterDecodingSelector
+  , countOfResponseBodyBytesReceivedSelector
+  , countOfResponseHeaderBytesReceivedSelector
+  , domainLookupEndDateSelector
+  , domainLookupStartDateSelector
+  , domainResolutionProtocolSelector
+  , expensiveSelector
+  , fetchStartDateSelector
+  , initSelector
   , localAddressSelector
   , localPortSelector
+  , multipathSelector
+  , negotiatedTLSCipherSuiteSelector
+  , negotiatedTLSProtocolVersionSelector
+  , networkProtocolNameSelector
+  , newSelector
+  , proxyConnectionSelector
   , remoteAddressSelector
   , remotePortSelector
-  , negotiatedTLSProtocolVersionSelector
-  , negotiatedTLSCipherSuiteSelector
-  , cellularSelector
-  , expensiveSelector
-  , constrainedSelector
-  , multipathSelector
-  , domainResolutionProtocolSelector
+  , requestEndDateSelector
+  , requestSelector
+  , requestStartDateSelector
+  , resourceFetchTypeSelector
+  , responseEndDateSelector
+  , responseSelector
+  , responseStartDateSelector
+  , reusedConnectionSelector
+  , secureConnectionEndDateSelector
+  , secureConnectionStartDateSelector
 
   -- * Enum types
   , NSURLSessionTaskMetricsDomainResolutionProtocol(NSURLSessionTaskMetricsDomainResolutionProtocol)
@@ -95,15 +96,11 @@ module ObjC.Foundation.NSURLSessionTaskTransactionMetrics
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -112,331 +109,331 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- init@
 init_ :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSURLSessionTaskTransactionMetrics)
-init_ nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsurlSessionTaskTransactionMetrics =
+  sendOwnedMessage nsurlSessionTaskTransactionMetrics initSelector
 
 -- | @+ new@
 new :: IO (Id NSURLSessionTaskTransactionMetrics)
 new  =
   do
     cls' <- getRequiredClass "NSURLSessionTaskTransactionMetrics"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- request@
 request :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSURLRequest)
-request nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "request") (retPtr retVoid) [] >>= retainedObject . castPtr
+request nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics requestSelector
 
 -- | @- response@
 response :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSURLResponse)
-response nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+response nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics responseSelector
 
 -- | @- fetchStartDate@
 fetchStartDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-fetchStartDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "fetchStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchStartDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics fetchStartDateSelector
 
 -- | @- domainLookupStartDate@
 domainLookupStartDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-domainLookupStartDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "domainLookupStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+domainLookupStartDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics domainLookupStartDateSelector
 
 -- | @- domainLookupEndDate@
 domainLookupEndDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-domainLookupEndDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "domainLookupEndDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+domainLookupEndDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics domainLookupEndDateSelector
 
 -- | @- connectStartDate@
 connectStartDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-connectStartDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "connectStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectStartDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics connectStartDateSelector
 
 -- | @- secureConnectionStartDate@
 secureConnectionStartDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-secureConnectionStartDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "secureConnectionStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+secureConnectionStartDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics secureConnectionStartDateSelector
 
 -- | @- secureConnectionEndDate@
 secureConnectionEndDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-secureConnectionEndDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "secureConnectionEndDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+secureConnectionEndDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics secureConnectionEndDateSelector
 
 -- | @- connectEndDate@
 connectEndDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-connectEndDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "connectEndDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectEndDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics connectEndDateSelector
 
 -- | @- requestStartDate@
 requestStartDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-requestStartDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "requestStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestStartDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics requestStartDateSelector
 
 -- | @- requestEndDate@
 requestEndDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-requestEndDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "requestEndDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestEndDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics requestEndDateSelector
 
 -- | @- responseStartDate@
 responseStartDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-responseStartDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "responseStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+responseStartDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics responseStartDateSelector
 
 -- | @- responseEndDate@
 responseEndDate :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSDate)
-responseEndDate nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "responseEndDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+responseEndDate nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics responseEndDateSelector
 
 -- | @- networkProtocolName@
 networkProtocolName :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSString)
-networkProtocolName nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "networkProtocolName") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkProtocolName nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics networkProtocolNameSelector
 
 -- | @- proxyConnection@
 proxyConnection :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO Bool
-proxyConnection nsurlSessionTaskTransactionMetrics  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "proxyConnection") retCULong []
+proxyConnection nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics proxyConnectionSelector
 
 -- | @- reusedConnection@
 reusedConnection :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO Bool
-reusedConnection nsurlSessionTaskTransactionMetrics  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "reusedConnection") retCULong []
+reusedConnection nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics reusedConnectionSelector
 
 -- | @- resourceFetchType@
 resourceFetchType :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO NSURLSessionTaskMetricsResourceFetchType
-resourceFetchType nsurlSessionTaskTransactionMetrics  =
-    fmap (coerce :: CLong -> NSURLSessionTaskMetricsResourceFetchType) $ sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "resourceFetchType") retCLong []
+resourceFetchType nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics resourceFetchTypeSelector
 
 -- | @- countOfRequestHeaderBytesSent@
 countOfRequestHeaderBytesSent :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO CLong
-countOfRequestHeaderBytesSent nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "countOfRequestHeaderBytesSent") retCLong []
+countOfRequestHeaderBytesSent nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics countOfRequestHeaderBytesSentSelector
 
 -- | @- countOfRequestBodyBytesSent@
 countOfRequestBodyBytesSent :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO CLong
-countOfRequestBodyBytesSent nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "countOfRequestBodyBytesSent") retCLong []
+countOfRequestBodyBytesSent nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics countOfRequestBodyBytesSentSelector
 
 -- | @- countOfRequestBodyBytesBeforeEncoding@
 countOfRequestBodyBytesBeforeEncoding :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO CLong
-countOfRequestBodyBytesBeforeEncoding nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "countOfRequestBodyBytesBeforeEncoding") retCLong []
+countOfRequestBodyBytesBeforeEncoding nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics countOfRequestBodyBytesBeforeEncodingSelector
 
 -- | @- countOfResponseHeaderBytesReceived@
 countOfResponseHeaderBytesReceived :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO CLong
-countOfResponseHeaderBytesReceived nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "countOfResponseHeaderBytesReceived") retCLong []
+countOfResponseHeaderBytesReceived nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics countOfResponseHeaderBytesReceivedSelector
 
 -- | @- countOfResponseBodyBytesReceived@
 countOfResponseBodyBytesReceived :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO CLong
-countOfResponseBodyBytesReceived nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "countOfResponseBodyBytesReceived") retCLong []
+countOfResponseBodyBytesReceived nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics countOfResponseBodyBytesReceivedSelector
 
 -- | @- countOfResponseBodyBytesAfterDecoding@
 countOfResponseBodyBytesAfterDecoding :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO CLong
-countOfResponseBodyBytesAfterDecoding nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "countOfResponseBodyBytesAfterDecoding") retCLong []
+countOfResponseBodyBytesAfterDecoding nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics countOfResponseBodyBytesAfterDecodingSelector
 
 -- | @- localAddress@
 localAddress :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSString)
-localAddress nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "localAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+localAddress nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics localAddressSelector
 
 -- | @- localPort@
 localPort :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSNumber)
-localPort nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "localPort") (retPtr retVoid) [] >>= retainedObject . castPtr
+localPort nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics localPortSelector
 
 -- | @- remoteAddress@
 remoteAddress :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSString)
-remoteAddress nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "remoteAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteAddress nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics remoteAddressSelector
 
 -- | @- remotePort@
 remotePort :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSNumber)
-remotePort nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "remotePort") (retPtr retVoid) [] >>= retainedObject . castPtr
+remotePort nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics remotePortSelector
 
 -- | @- negotiatedTLSProtocolVersion@
 negotiatedTLSProtocolVersion :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSNumber)
-negotiatedTLSProtocolVersion nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "negotiatedTLSProtocolVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+negotiatedTLSProtocolVersion nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics negotiatedTLSProtocolVersionSelector
 
 -- | @- negotiatedTLSCipherSuite@
 negotiatedTLSCipherSuite :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO (Id NSNumber)
-negotiatedTLSCipherSuite nsurlSessionTaskTransactionMetrics  =
-    sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "negotiatedTLSCipherSuite") (retPtr retVoid) [] >>= retainedObject . castPtr
+negotiatedTLSCipherSuite nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics negotiatedTLSCipherSuiteSelector
 
 -- | @- cellular@
 cellular :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO Bool
-cellular nsurlSessionTaskTransactionMetrics  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "cellular") retCULong []
+cellular nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics cellularSelector
 
 -- | @- expensive@
 expensive :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO Bool
-expensive nsurlSessionTaskTransactionMetrics  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "expensive") retCULong []
+expensive nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics expensiveSelector
 
 -- | @- constrained@
 constrained :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO Bool
-constrained nsurlSessionTaskTransactionMetrics  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "constrained") retCULong []
+constrained nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics constrainedSelector
 
 -- | @- multipath@
 multipath :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO Bool
-multipath nsurlSessionTaskTransactionMetrics  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "multipath") retCULong []
+multipath nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics multipathSelector
 
 -- | @- domainResolutionProtocol@
 domainResolutionProtocol :: IsNSURLSessionTaskTransactionMetrics nsurlSessionTaskTransactionMetrics => nsurlSessionTaskTransactionMetrics -> IO NSURLSessionTaskMetricsDomainResolutionProtocol
-domainResolutionProtocol nsurlSessionTaskTransactionMetrics  =
-    fmap (coerce :: CLong -> NSURLSessionTaskMetricsDomainResolutionProtocol) $ sendMsg nsurlSessionTaskTransactionMetrics (mkSelector "domainResolutionProtocol") retCLong []
+domainResolutionProtocol nsurlSessionTaskTransactionMetrics =
+  sendMessage nsurlSessionTaskTransactionMetrics domainResolutionProtocolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSURLSessionTaskTransactionMetrics)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSURLSessionTaskTransactionMetrics)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @request@
-requestSelector :: Selector
+requestSelector :: Selector '[] (Id NSURLRequest)
 requestSelector = mkSelector "request"
 
 -- | @Selector@ for @response@
-responseSelector :: Selector
+responseSelector :: Selector '[] (Id NSURLResponse)
 responseSelector = mkSelector "response"
 
 -- | @Selector@ for @fetchStartDate@
-fetchStartDateSelector :: Selector
+fetchStartDateSelector :: Selector '[] (Id NSDate)
 fetchStartDateSelector = mkSelector "fetchStartDate"
 
 -- | @Selector@ for @domainLookupStartDate@
-domainLookupStartDateSelector :: Selector
+domainLookupStartDateSelector :: Selector '[] (Id NSDate)
 domainLookupStartDateSelector = mkSelector "domainLookupStartDate"
 
 -- | @Selector@ for @domainLookupEndDate@
-domainLookupEndDateSelector :: Selector
+domainLookupEndDateSelector :: Selector '[] (Id NSDate)
 domainLookupEndDateSelector = mkSelector "domainLookupEndDate"
 
 -- | @Selector@ for @connectStartDate@
-connectStartDateSelector :: Selector
+connectStartDateSelector :: Selector '[] (Id NSDate)
 connectStartDateSelector = mkSelector "connectStartDate"
 
 -- | @Selector@ for @secureConnectionStartDate@
-secureConnectionStartDateSelector :: Selector
+secureConnectionStartDateSelector :: Selector '[] (Id NSDate)
 secureConnectionStartDateSelector = mkSelector "secureConnectionStartDate"
 
 -- | @Selector@ for @secureConnectionEndDate@
-secureConnectionEndDateSelector :: Selector
+secureConnectionEndDateSelector :: Selector '[] (Id NSDate)
 secureConnectionEndDateSelector = mkSelector "secureConnectionEndDate"
 
 -- | @Selector@ for @connectEndDate@
-connectEndDateSelector :: Selector
+connectEndDateSelector :: Selector '[] (Id NSDate)
 connectEndDateSelector = mkSelector "connectEndDate"
 
 -- | @Selector@ for @requestStartDate@
-requestStartDateSelector :: Selector
+requestStartDateSelector :: Selector '[] (Id NSDate)
 requestStartDateSelector = mkSelector "requestStartDate"
 
 -- | @Selector@ for @requestEndDate@
-requestEndDateSelector :: Selector
+requestEndDateSelector :: Selector '[] (Id NSDate)
 requestEndDateSelector = mkSelector "requestEndDate"
 
 -- | @Selector@ for @responseStartDate@
-responseStartDateSelector :: Selector
+responseStartDateSelector :: Selector '[] (Id NSDate)
 responseStartDateSelector = mkSelector "responseStartDate"
 
 -- | @Selector@ for @responseEndDate@
-responseEndDateSelector :: Selector
+responseEndDateSelector :: Selector '[] (Id NSDate)
 responseEndDateSelector = mkSelector "responseEndDate"
 
 -- | @Selector@ for @networkProtocolName@
-networkProtocolNameSelector :: Selector
+networkProtocolNameSelector :: Selector '[] (Id NSString)
 networkProtocolNameSelector = mkSelector "networkProtocolName"
 
 -- | @Selector@ for @proxyConnection@
-proxyConnectionSelector :: Selector
+proxyConnectionSelector :: Selector '[] Bool
 proxyConnectionSelector = mkSelector "proxyConnection"
 
 -- | @Selector@ for @reusedConnection@
-reusedConnectionSelector :: Selector
+reusedConnectionSelector :: Selector '[] Bool
 reusedConnectionSelector = mkSelector "reusedConnection"
 
 -- | @Selector@ for @resourceFetchType@
-resourceFetchTypeSelector :: Selector
+resourceFetchTypeSelector :: Selector '[] NSURLSessionTaskMetricsResourceFetchType
 resourceFetchTypeSelector = mkSelector "resourceFetchType"
 
 -- | @Selector@ for @countOfRequestHeaderBytesSent@
-countOfRequestHeaderBytesSentSelector :: Selector
+countOfRequestHeaderBytesSentSelector :: Selector '[] CLong
 countOfRequestHeaderBytesSentSelector = mkSelector "countOfRequestHeaderBytesSent"
 
 -- | @Selector@ for @countOfRequestBodyBytesSent@
-countOfRequestBodyBytesSentSelector :: Selector
+countOfRequestBodyBytesSentSelector :: Selector '[] CLong
 countOfRequestBodyBytesSentSelector = mkSelector "countOfRequestBodyBytesSent"
 
 -- | @Selector@ for @countOfRequestBodyBytesBeforeEncoding@
-countOfRequestBodyBytesBeforeEncodingSelector :: Selector
+countOfRequestBodyBytesBeforeEncodingSelector :: Selector '[] CLong
 countOfRequestBodyBytesBeforeEncodingSelector = mkSelector "countOfRequestBodyBytesBeforeEncoding"
 
 -- | @Selector@ for @countOfResponseHeaderBytesReceived@
-countOfResponseHeaderBytesReceivedSelector :: Selector
+countOfResponseHeaderBytesReceivedSelector :: Selector '[] CLong
 countOfResponseHeaderBytesReceivedSelector = mkSelector "countOfResponseHeaderBytesReceived"
 
 -- | @Selector@ for @countOfResponseBodyBytesReceived@
-countOfResponseBodyBytesReceivedSelector :: Selector
+countOfResponseBodyBytesReceivedSelector :: Selector '[] CLong
 countOfResponseBodyBytesReceivedSelector = mkSelector "countOfResponseBodyBytesReceived"
 
 -- | @Selector@ for @countOfResponseBodyBytesAfterDecoding@
-countOfResponseBodyBytesAfterDecodingSelector :: Selector
+countOfResponseBodyBytesAfterDecodingSelector :: Selector '[] CLong
 countOfResponseBodyBytesAfterDecodingSelector = mkSelector "countOfResponseBodyBytesAfterDecoding"
 
 -- | @Selector@ for @localAddress@
-localAddressSelector :: Selector
+localAddressSelector :: Selector '[] (Id NSString)
 localAddressSelector = mkSelector "localAddress"
 
 -- | @Selector@ for @localPort@
-localPortSelector :: Selector
+localPortSelector :: Selector '[] (Id NSNumber)
 localPortSelector = mkSelector "localPort"
 
 -- | @Selector@ for @remoteAddress@
-remoteAddressSelector :: Selector
+remoteAddressSelector :: Selector '[] (Id NSString)
 remoteAddressSelector = mkSelector "remoteAddress"
 
 -- | @Selector@ for @remotePort@
-remotePortSelector :: Selector
+remotePortSelector :: Selector '[] (Id NSNumber)
 remotePortSelector = mkSelector "remotePort"
 
 -- | @Selector@ for @negotiatedTLSProtocolVersion@
-negotiatedTLSProtocolVersionSelector :: Selector
+negotiatedTLSProtocolVersionSelector :: Selector '[] (Id NSNumber)
 negotiatedTLSProtocolVersionSelector = mkSelector "negotiatedTLSProtocolVersion"
 
 -- | @Selector@ for @negotiatedTLSCipherSuite@
-negotiatedTLSCipherSuiteSelector :: Selector
+negotiatedTLSCipherSuiteSelector :: Selector '[] (Id NSNumber)
 negotiatedTLSCipherSuiteSelector = mkSelector "negotiatedTLSCipherSuite"
 
 -- | @Selector@ for @cellular@
-cellularSelector :: Selector
+cellularSelector :: Selector '[] Bool
 cellularSelector = mkSelector "cellular"
 
 -- | @Selector@ for @expensive@
-expensiveSelector :: Selector
+expensiveSelector :: Selector '[] Bool
 expensiveSelector = mkSelector "expensive"
 
 -- | @Selector@ for @constrained@
-constrainedSelector :: Selector
+constrainedSelector :: Selector '[] Bool
 constrainedSelector = mkSelector "constrained"
 
 -- | @Selector@ for @multipath@
-multipathSelector :: Selector
+multipathSelector :: Selector '[] Bool
 multipathSelector = mkSelector "multipath"
 
 -- | @Selector@ for @domainResolutionProtocol@
-domainResolutionProtocolSelector :: Selector
+domainResolutionProtocolSelector :: Selector '[] NSURLSessionTaskMetricsDomainResolutionProtocol
 domainResolutionProtocolSelector = mkSelector "domainResolutionProtocol"
 

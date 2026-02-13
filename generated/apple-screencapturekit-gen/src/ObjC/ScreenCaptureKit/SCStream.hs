@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.ScreenCaptureKit.SCStream
   , addRecordingOutput_error
   , removeRecordingOutput_error
   , synchronizationClock
-  , initSelector
-  , newSelector
-  , initWithFilter_configuration_delegateSelector
+  , addRecordingOutput_errorSelector
   , addStreamOutput_type_sampleHandlerQueue_errorSelector
+  , initSelector
+  , initWithFilter_configuration_delegateSelector
+  , newSelector
+  , removeRecordingOutput_errorSelector
   , removeStreamOutput_type_errorSelector
-  , updateContentFilter_completionHandlerSelector
-  , updateConfiguration_completionHandlerSelector
   , startCaptureWithCompletionHandlerSelector
   , stopCaptureWithCompletionHandlerSelector
-  , addRecordingOutput_errorSelector
-  , removeRecordingOutput_errorSelector
   , synchronizationClockSelector
+  , updateConfiguration_completionHandlerSelector
+  , updateContentFilter_completionHandlerSelector
 
   -- * Enum types
   , SCStreamOutputType(SCStreamOutputType)
@@ -40,15 +41,11 @@ module ObjC.ScreenCaptureKit.SCStream
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,15 +55,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSCStream scStream => scStream -> IO (Id SCStream)
-init_ scStream  =
-    sendMsg scStream (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ scStream =
+  sendOwnedMessage scStream initSelector
 
 -- | @+ new@
 new :: IO (Id SCStream)
 new  =
   do
     cls' <- getRequiredClass "SCStream"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithFilter:configuration:delegate:
 --
@@ -80,10 +77,8 @@ new  =
 --
 -- ObjC selector: @- initWithFilter:configuration:delegate:@
 initWithFilter_configuration_delegate :: (IsSCStream scStream, IsSCContentFilter contentFilter, IsSCStreamConfiguration streamConfig) => scStream -> contentFilter -> streamConfig -> RawId -> IO (Id SCStream)
-initWithFilter_configuration_delegate scStream  contentFilter streamConfig delegate =
-  withObjCPtr contentFilter $ \raw_contentFilter ->
-    withObjCPtr streamConfig $ \raw_streamConfig ->
-        sendMsg scStream (mkSelector "initWithFilter:configuration:delegate:") (retPtr retVoid) [argPtr (castPtr raw_contentFilter :: Ptr ()), argPtr (castPtr raw_streamConfig :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithFilter_configuration_delegate scStream contentFilter streamConfig delegate =
+  sendOwnedMessage scStream initWithFilter_configuration_delegateSelector (toSCContentFilter contentFilter) (toSCStreamConfiguration streamConfig) delegate
 
 -- | addStreamOutput:type:sampleHandlerQueue:error:
 --
@@ -99,10 +94,8 @@ initWithFilter_configuration_delegate scStream  contentFilter streamConfig deleg
 --
 -- ObjC selector: @- addStreamOutput:type:sampleHandlerQueue:error:@
 addStreamOutput_type_sampleHandlerQueue_error :: (IsSCStream scStream, IsNSObject sampleHandlerQueue, IsNSError error_) => scStream -> RawId -> SCStreamOutputType -> sampleHandlerQueue -> error_ -> IO Bool
-addStreamOutput_type_sampleHandlerQueue_error scStream  output type_ sampleHandlerQueue error_ =
-  withObjCPtr sampleHandlerQueue $ \raw_sampleHandlerQueue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg scStream (mkSelector "addStreamOutput:type:sampleHandlerQueue:error:") retCULong [argPtr (castPtr (unRawId output) :: Ptr ()), argCLong (coerce type_), argPtr (castPtr raw_sampleHandlerQueue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addStreamOutput_type_sampleHandlerQueue_error scStream output type_ sampleHandlerQueue error_ =
+  sendMessage scStream addStreamOutput_type_sampleHandlerQueue_errorSelector output type_ (toNSObject sampleHandlerQueue) (toNSError error_)
 
 -- | removeStreamOutput:type:error:
 --
@@ -116,9 +109,8 @@ addStreamOutput_type_sampleHandlerQueue_error scStream  output type_ sampleHandl
 --
 -- ObjC selector: @- removeStreamOutput:type:error:@
 removeStreamOutput_type_error :: (IsSCStream scStream, IsNSError error_) => scStream -> RawId -> SCStreamOutputType -> error_ -> IO Bool
-removeStreamOutput_type_error scStream  output type_ error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg scStream (mkSelector "removeStreamOutput:type:error:") retCULong [argPtr (castPtr (unRawId output) :: Ptr ()), argCLong (coerce type_), argPtr (castPtr raw_error_ :: Ptr ())]
+removeStreamOutput_type_error scStream output type_ error_ =
+  sendMessage scStream removeStreamOutput_type_errorSelector output type_ (toNSError error_)
 
 -- | updateContentFilter:completionHandler:
 --
@@ -130,9 +122,8 @@ removeStreamOutput_type_error scStream  output type_ error_ =
 --
 -- ObjC selector: @- updateContentFilter:completionHandler:@
 updateContentFilter_completionHandler :: (IsSCStream scStream, IsSCContentFilter contentFilter) => scStream -> contentFilter -> Ptr () -> IO ()
-updateContentFilter_completionHandler scStream  contentFilter completionHandler =
-  withObjCPtr contentFilter $ \raw_contentFilter ->
-      sendMsg scStream (mkSelector "updateContentFilter:completionHandler:") retVoid [argPtr (castPtr raw_contentFilter :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+updateContentFilter_completionHandler scStream contentFilter completionHandler =
+  sendMessage scStream updateContentFilter_completionHandlerSelector (toSCContentFilter contentFilter) completionHandler
 
 -- | updateConfiguration:completionHandler:
 --
@@ -144,9 +135,8 @@ updateContentFilter_completionHandler scStream  contentFilter completionHandler 
 --
 -- ObjC selector: @- updateConfiguration:completionHandler:@
 updateConfiguration_completionHandler :: (IsSCStream scStream, IsSCStreamConfiguration streamConfig) => scStream -> streamConfig -> Ptr () -> IO ()
-updateConfiguration_completionHandler scStream  streamConfig completionHandler =
-  withObjCPtr streamConfig $ \raw_streamConfig ->
-      sendMsg scStream (mkSelector "updateConfiguration:completionHandler:") retVoid [argPtr (castPtr raw_streamConfig :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+updateConfiguration_completionHandler scStream streamConfig completionHandler =
+  sendMessage scStream updateConfiguration_completionHandlerSelector (toSCStreamConfiguration streamConfig) completionHandler
 
 -- | startCaptureWithCompletionHandler:
 --
@@ -156,8 +146,8 @@ updateConfiguration_completionHandler scStream  streamConfig completionHandler =
 --
 -- ObjC selector: @- startCaptureWithCompletionHandler:@
 startCaptureWithCompletionHandler :: IsSCStream scStream => scStream -> Ptr () -> IO ()
-startCaptureWithCompletionHandler scStream  completionHandler =
-    sendMsg scStream (mkSelector "startCaptureWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+startCaptureWithCompletionHandler scStream completionHandler =
+  sendMessage scStream startCaptureWithCompletionHandlerSelector completionHandler
 
 -- | stopCaptureWithCompletionHandler:
 --
@@ -167,8 +157,8 @@ startCaptureWithCompletionHandler scStream  completionHandler =
 --
 -- ObjC selector: @- stopCaptureWithCompletionHandler:@
 stopCaptureWithCompletionHandler :: IsSCStream scStream => scStream -> Ptr () -> IO ()
-stopCaptureWithCompletionHandler scStream  completionHandler =
-    sendMsg scStream (mkSelector "stopCaptureWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+stopCaptureWithCompletionHandler scStream completionHandler =
+  sendMessage scStream stopCaptureWithCompletionHandlerSelector completionHandler
 
 -- | addRecordingOutput
 --
@@ -182,10 +172,8 @@ stopCaptureWithCompletionHandler scStream  completionHandler =
 --
 -- ObjC selector: @- addRecordingOutput:error:@
 addRecordingOutput_error :: (IsSCStream scStream, IsSCRecordingOutput recordingOutput, IsNSError error_) => scStream -> recordingOutput -> error_ -> IO Bool
-addRecordingOutput_error scStream  recordingOutput error_ =
-  withObjCPtr recordingOutput $ \raw_recordingOutput ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg scStream (mkSelector "addRecordingOutput:error:") retCULong [argPtr (castPtr raw_recordingOutput :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addRecordingOutput_error scStream recordingOutput error_ =
+  sendMessage scStream addRecordingOutput_errorSelector (toSCRecordingOutput recordingOutput) (toNSError error_)
 
 -- | removeRecordingOutput
 --
@@ -199,67 +187,65 @@ addRecordingOutput_error scStream  recordingOutput error_ =
 --
 -- ObjC selector: @- removeRecordingOutput:error:@
 removeRecordingOutput_error :: (IsSCStream scStream, IsSCRecordingOutput recordingOutput, IsNSError error_) => scStream -> recordingOutput -> error_ -> IO Bool
-removeRecordingOutput_error scStream  recordingOutput error_ =
-  withObjCPtr recordingOutput $ \raw_recordingOutput ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg scStream (mkSelector "removeRecordingOutput:error:") retCULong [argPtr (castPtr raw_recordingOutput :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+removeRecordingOutput_error scStream recordingOutput error_ =
+  sendMessage scStream removeRecordingOutput_errorSelector (toSCRecordingOutput recordingOutput) (toNSError error_)
 
 -- | Synchronization clock used for media capture.
 --
 -- ObjC selector: @- synchronizationClock@
 synchronizationClock :: IsSCStream scStream => scStream -> IO (Ptr ())
-synchronizationClock scStream  =
-    fmap castPtr $ sendMsg scStream (mkSelector "synchronizationClock") (retPtr retVoid) []
+synchronizationClock scStream =
+  sendMessage scStream synchronizationClockSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SCStream)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SCStream)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithFilter:configuration:delegate:@
-initWithFilter_configuration_delegateSelector :: Selector
+initWithFilter_configuration_delegateSelector :: Selector '[Id SCContentFilter, Id SCStreamConfiguration, RawId] (Id SCStream)
 initWithFilter_configuration_delegateSelector = mkSelector "initWithFilter:configuration:delegate:"
 
 -- | @Selector@ for @addStreamOutput:type:sampleHandlerQueue:error:@
-addStreamOutput_type_sampleHandlerQueue_errorSelector :: Selector
+addStreamOutput_type_sampleHandlerQueue_errorSelector :: Selector '[RawId, SCStreamOutputType, Id NSObject, Id NSError] Bool
 addStreamOutput_type_sampleHandlerQueue_errorSelector = mkSelector "addStreamOutput:type:sampleHandlerQueue:error:"
 
 -- | @Selector@ for @removeStreamOutput:type:error:@
-removeStreamOutput_type_errorSelector :: Selector
+removeStreamOutput_type_errorSelector :: Selector '[RawId, SCStreamOutputType, Id NSError] Bool
 removeStreamOutput_type_errorSelector = mkSelector "removeStreamOutput:type:error:"
 
 -- | @Selector@ for @updateContentFilter:completionHandler:@
-updateContentFilter_completionHandlerSelector :: Selector
+updateContentFilter_completionHandlerSelector :: Selector '[Id SCContentFilter, Ptr ()] ()
 updateContentFilter_completionHandlerSelector = mkSelector "updateContentFilter:completionHandler:"
 
 -- | @Selector@ for @updateConfiguration:completionHandler:@
-updateConfiguration_completionHandlerSelector :: Selector
+updateConfiguration_completionHandlerSelector :: Selector '[Id SCStreamConfiguration, Ptr ()] ()
 updateConfiguration_completionHandlerSelector = mkSelector "updateConfiguration:completionHandler:"
 
 -- | @Selector@ for @startCaptureWithCompletionHandler:@
-startCaptureWithCompletionHandlerSelector :: Selector
+startCaptureWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 startCaptureWithCompletionHandlerSelector = mkSelector "startCaptureWithCompletionHandler:"
 
 -- | @Selector@ for @stopCaptureWithCompletionHandler:@
-stopCaptureWithCompletionHandlerSelector :: Selector
+stopCaptureWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 stopCaptureWithCompletionHandlerSelector = mkSelector "stopCaptureWithCompletionHandler:"
 
 -- | @Selector@ for @addRecordingOutput:error:@
-addRecordingOutput_errorSelector :: Selector
+addRecordingOutput_errorSelector :: Selector '[Id SCRecordingOutput, Id NSError] Bool
 addRecordingOutput_errorSelector = mkSelector "addRecordingOutput:error:"
 
 -- | @Selector@ for @removeRecordingOutput:error:@
-removeRecordingOutput_errorSelector :: Selector
+removeRecordingOutput_errorSelector :: Selector '[Id SCRecordingOutput, Id NSError] Bool
 removeRecordingOutput_errorSelector = mkSelector "removeRecordingOutput:error:"
 
 -- | @Selector@ for @synchronizationClock@
-synchronizationClockSelector :: Selector
+synchronizationClockSelector :: Selector '[] (Ptr ())
 synchronizationClockSelector = mkSelector "synchronizationClock"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.CryptoTokenKit.TKTokenDriver
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,23 +30,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- delegate@
 delegate :: IsTKTokenDriver tkTokenDriver => tkTokenDriver -> IO RawId
-delegate tkTokenDriver  =
-    fmap (RawId . castPtr) $ sendMsg tkTokenDriver (mkSelector "delegate") (retPtr retVoid) []
+delegate tkTokenDriver =
+  sendMessage tkTokenDriver delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsTKTokenDriver tkTokenDriver => tkTokenDriver -> RawId -> IO ()
-setDelegate tkTokenDriver  value =
-    sendMsg tkTokenDriver (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate tkTokenDriver value =
+  sendMessage tkTokenDriver setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

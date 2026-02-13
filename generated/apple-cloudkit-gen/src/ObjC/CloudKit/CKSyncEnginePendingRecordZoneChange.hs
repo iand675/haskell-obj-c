@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,8 +15,8 @@ module ObjC.CloudKit.CKSyncEnginePendingRecordZoneChange
   , new
   , recordID
   , type_
-  , initWithRecordID_typeSelector
   , initSelector
+  , initWithRecordID_typeSelector
   , newSelector
   , recordIDSelector
   , typeSelector
@@ -27,15 +28,11 @@ module ObjC.CloudKit.CKSyncEnginePendingRecordZoneChange
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,53 +42,52 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRecordID:type:@
 initWithRecordID_type :: (IsCKSyncEnginePendingRecordZoneChange ckSyncEnginePendingRecordZoneChange, IsCKRecordID recordID) => ckSyncEnginePendingRecordZoneChange -> recordID -> CKSyncEnginePendingRecordZoneChangeType -> IO (Id CKSyncEnginePendingRecordZoneChange)
-initWithRecordID_type ckSyncEnginePendingRecordZoneChange  recordID type_ =
-  withObjCPtr recordID $ \raw_recordID ->
-      sendMsg ckSyncEnginePendingRecordZoneChange (mkSelector "initWithRecordID:type:") (retPtr retVoid) [argPtr (castPtr raw_recordID :: Ptr ()), argCLong (coerce type_)] >>= ownedObject . castPtr
+initWithRecordID_type ckSyncEnginePendingRecordZoneChange recordID type_ =
+  sendOwnedMessage ckSyncEnginePendingRecordZoneChange initWithRecordID_typeSelector (toCKRecordID recordID) type_
 
 -- | @- init@
 init_ :: IsCKSyncEnginePendingRecordZoneChange ckSyncEnginePendingRecordZoneChange => ckSyncEnginePendingRecordZoneChange -> IO (Id CKSyncEnginePendingRecordZoneChange)
-init_ ckSyncEnginePendingRecordZoneChange  =
-    sendMsg ckSyncEnginePendingRecordZoneChange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEnginePendingRecordZoneChange =
+  sendOwnedMessage ckSyncEnginePendingRecordZoneChange initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEnginePendingRecordZoneChange)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEnginePendingRecordZoneChange"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- recordID@
 recordID :: IsCKSyncEnginePendingRecordZoneChange ckSyncEnginePendingRecordZoneChange => ckSyncEnginePendingRecordZoneChange -> IO (Id CKRecordID)
-recordID ckSyncEnginePendingRecordZoneChange  =
-    sendMsg ckSyncEnginePendingRecordZoneChange (mkSelector "recordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordID ckSyncEnginePendingRecordZoneChange =
+  sendMessage ckSyncEnginePendingRecordZoneChange recordIDSelector
 
 -- | @- type@
 type_ :: IsCKSyncEnginePendingRecordZoneChange ckSyncEnginePendingRecordZoneChange => ckSyncEnginePendingRecordZoneChange -> IO CKSyncEnginePendingRecordZoneChangeType
-type_ ckSyncEnginePendingRecordZoneChange  =
-    fmap (coerce :: CLong -> CKSyncEnginePendingRecordZoneChangeType) $ sendMsg ckSyncEnginePendingRecordZoneChange (mkSelector "type") retCLong []
+type_ ckSyncEnginePendingRecordZoneChange =
+  sendMessage ckSyncEnginePendingRecordZoneChange typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRecordID:type:@
-initWithRecordID_typeSelector :: Selector
+initWithRecordID_typeSelector :: Selector '[Id CKRecordID, CKSyncEnginePendingRecordZoneChangeType] (Id CKSyncEnginePendingRecordZoneChange)
 initWithRecordID_typeSelector = mkSelector "initWithRecordID:type:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEnginePendingRecordZoneChange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEnginePendingRecordZoneChange)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @recordID@
-recordIDSelector :: Selector
+recordIDSelector :: Selector '[] (Id CKRecordID)
 recordIDSelector = mkSelector "recordID"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CKSyncEnginePendingRecordZoneChangeType
 typeSelector = mkSelector "type"
 

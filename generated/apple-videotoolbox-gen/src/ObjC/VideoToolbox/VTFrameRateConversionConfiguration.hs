@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,21 +27,21 @@ module ObjC.VideoToolbox.VTFrameRateConversionConfiguration
   , destinationPixelBufferAttributes
   , supported
   , processorSupported
-  , initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector
-  , initSelector
-  , newSelector
-  , frameWidthSelector
+  , defaultRevisionSelector
+  , destinationPixelBufferAttributesSelector
   , frameHeightSelector
-  , usePrecomputedFlowSelector
+  , frameSupportedPixelFormatsSelector
+  , frameWidthSelector
+  , initSelector
+  , initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector
+  , newSelector
+  , processorSupportedSelector
   , qualityPrioritizationSelector
   , revisionSelector
-  , supportedRevisionsSelector
-  , defaultRevisionSelector
-  , frameSupportedPixelFormatsSelector
   , sourcePixelBufferAttributesSelector
-  , destinationPixelBufferAttributesSelector
+  , supportedRevisionsSelector
   , supportedSelector
-  , processorSupportedSelector
+  , usePrecomputedFlowSelector
 
   -- * Enum types
   , VTFrameRateConversionConfigurationQualityPrioritization(VTFrameRateConversionConfigurationQualityPrioritization)
@@ -51,15 +52,11 @@ module ObjC.VideoToolbox.VTFrameRateConversionConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,41 +72,41 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFrameWidth:frameHeight:usePrecomputedFlow:qualityPrioritization:revision:@
 initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revision :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> CLong -> CLong -> Bool -> VTFrameRateConversionConfigurationQualityPrioritization -> VTFrameRateConversionConfigurationRevision -> IO (Id VTFrameRateConversionConfiguration)
-initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revision vtFrameRateConversionConfiguration  frameWidth frameHeight usePrecomputedFlow qualityPrioritization revision =
-    sendMsg vtFrameRateConversionConfiguration (mkSelector "initWithFrameWidth:frameHeight:usePrecomputedFlow:qualityPrioritization:revision:") (retPtr retVoid) [argCLong frameWidth, argCLong frameHeight, argCULong (if usePrecomputedFlow then 1 else 0), argCLong (coerce qualityPrioritization), argCLong (coerce revision)] >>= ownedObject . castPtr
+initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revision vtFrameRateConversionConfiguration frameWidth frameHeight usePrecomputedFlow qualityPrioritization revision =
+  sendOwnedMessage vtFrameRateConversionConfiguration initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector frameWidth frameHeight usePrecomputedFlow qualityPrioritization revision
 
 -- | @- init@
 init_ :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> IO (Id VTFrameRateConversionConfiguration)
-init_ vtFrameRateConversionConfiguration  =
-    sendMsg vtFrameRateConversionConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtFrameRateConversionConfiguration =
+  sendOwnedMessage vtFrameRateConversionConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id VTFrameRateConversionConfiguration)
 new  =
   do
     cls' <- getRequiredClass "VTFrameRateConversionConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Width of source frame in pixels.
 --
 -- ObjC selector: @- frameWidth@
 frameWidth :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> IO CLong
-frameWidth vtFrameRateConversionConfiguration  =
-    sendMsg vtFrameRateConversionConfiguration (mkSelector "frameWidth") retCLong []
+frameWidth vtFrameRateConversionConfiguration =
+  sendMessage vtFrameRateConversionConfiguration frameWidthSelector
 
 -- | Height of source frame in pixels.
 --
 -- ObjC selector: @- frameHeight@
 frameHeight :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> IO CLong
-frameHeight vtFrameRateConversionConfiguration  =
-    sendMsg vtFrameRateConversionConfiguration (mkSelector "frameHeight") retCLong []
+frameHeight vtFrameRateConversionConfiguration =
+  sendMessage vtFrameRateConversionConfiguration frameHeightSelector
 
 -- | Indicates that caller provides optical flow.
 --
 -- ObjC selector: @- usePrecomputedFlow@
 usePrecomputedFlow :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> IO Bool
-usePrecomputedFlow vtFrameRateConversionConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vtFrameRateConversionConfiguration (mkSelector "usePrecomputedFlow") retCULong []
+usePrecomputedFlow vtFrameRateConversionConfiguration =
+  sendMessage vtFrameRateConversionConfiguration usePrecomputedFlowSelector
 
 -- | A parameter you use to control quality and performance levels.
 --
@@ -117,15 +114,15 @@ usePrecomputedFlow vtFrameRateConversionConfiguration  =
 --
 -- ObjC selector: @- qualityPrioritization@
 qualityPrioritization :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> IO VTFrameRateConversionConfigurationQualityPrioritization
-qualityPrioritization vtFrameRateConversionConfiguration  =
-    fmap (coerce :: CLong -> VTFrameRateConversionConfigurationQualityPrioritization) $ sendMsg vtFrameRateConversionConfiguration (mkSelector "qualityPrioritization") retCLong []
+qualityPrioritization vtFrameRateConversionConfiguration =
+  sendMessage vtFrameRateConversionConfiguration qualityPrioritizationSelector
 
 -- | The specific algorithm or configuration revision you use to perform the request.
 --
 -- ObjC selector: @- revision@
 revision :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> IO VTFrameRateConversionConfigurationRevision
-revision vtFrameRateConversionConfiguration  =
-    fmap (coerce :: CLong -> VTFrameRateConversionConfigurationRevision) $ sendMsg vtFrameRateConversionConfiguration (mkSelector "revision") retCLong []
+revision vtFrameRateConversionConfiguration =
+  sendMessage vtFrameRateConversionConfiguration revisionSelector
 
 -- | Provides the collection of currently supported algorithms or configuration revisions for the class of configuration.
 --
@@ -136,7 +133,7 @@ supportedRevisions :: IO (Id NSIndexSet)
 supportedRevisions  =
   do
     cls' <- getRequiredClass "VTFrameRateConversionConfiguration"
-    sendClassMsg cls' (mkSelector "supportedRevisions") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedRevisionsSelector
 
 -- | Provides the default revision of a specific algorithm or configuration.
 --
@@ -145,14 +142,14 @@ defaultRevision :: IO VTFrameRateConversionConfigurationRevision
 defaultRevision  =
   do
     cls' <- getRequiredClass "VTFrameRateConversionConfiguration"
-    fmap (coerce :: CLong -> VTFrameRateConversionConfigurationRevision) $ sendClassMsg cls' (mkSelector "defaultRevision") retCLong []
+    sendClassMessage cls' defaultRevisionSelector
 
 -- | Supported pixel formats available for source frames for current configuration.
 --
 -- ObjC selector: @- frameSupportedPixelFormats@
 frameSupportedPixelFormats :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> IO (Id NSArray)
-frameSupportedPixelFormats vtFrameRateConversionConfiguration  =
-    sendMsg vtFrameRateConversionConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameSupportedPixelFormats vtFrameRateConversionConfiguration =
+  sendMessage vtFrameRateConversionConfiguration frameSupportedPixelFormatsSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
@@ -160,8 +157,8 @@ frameSupportedPixelFormats vtFrameRateConversionConfiguration  =
 --
 -- ObjC selector: @- sourcePixelBufferAttributes@
 sourcePixelBufferAttributes :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> IO (Id NSDictionary)
-sourcePixelBufferAttributes vtFrameRateConversionConfiguration  =
-    sendMsg vtFrameRateConversionConfiguration (mkSelector "sourcePixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourcePixelBufferAttributes vtFrameRateConversionConfiguration =
+  sendMessage vtFrameRateConversionConfiguration sourcePixelBufferAttributesSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent destination frames.
 --
@@ -169,8 +166,8 @@ sourcePixelBufferAttributes vtFrameRateConversionConfiguration  =
 --
 -- ObjC selector: @- destinationPixelBufferAttributes@
 destinationPixelBufferAttributes :: IsVTFrameRateConversionConfiguration vtFrameRateConversionConfiguration => vtFrameRateConversionConfiguration -> IO (Id NSDictionary)
-destinationPixelBufferAttributes vtFrameRateConversionConfiguration  =
-    sendMsg vtFrameRateConversionConfiguration (mkSelector "destinationPixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationPixelBufferAttributes vtFrameRateConversionConfiguration =
+  sendMessage vtFrameRateConversionConfiguration destinationPixelBufferAttributesSelector
 
 -- | Reports whether the system supports this processor.
 --
@@ -179,76 +176,76 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "VTFrameRateConversionConfiguration"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- | @+ processorSupported@
 processorSupported :: IO CUChar
 processorSupported  =
   do
     cls' <- getRequiredClass "VTFrameRateConversionConfiguration"
-    sendClassMsg cls' (mkSelector "processorSupported") retCUChar []
+    sendClassMessage cls' processorSupportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrameWidth:frameHeight:usePrecomputedFlow:qualityPrioritization:revision:@
-initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector :: Selector
+initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector :: Selector '[CLong, CLong, Bool, VTFrameRateConversionConfigurationQualityPrioritization, VTFrameRateConversionConfigurationRevision] (Id VTFrameRateConversionConfiguration)
 initWithFrameWidth_frameHeight_usePrecomputedFlow_qualityPrioritization_revisionSelector = mkSelector "initWithFrameWidth:frameHeight:usePrecomputedFlow:qualityPrioritization:revision:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTFrameRateConversionConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTFrameRateConversionConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @frameWidth@
-frameWidthSelector :: Selector
+frameWidthSelector :: Selector '[] CLong
 frameWidthSelector = mkSelector "frameWidth"
 
 -- | @Selector@ for @frameHeight@
-frameHeightSelector :: Selector
+frameHeightSelector :: Selector '[] CLong
 frameHeightSelector = mkSelector "frameHeight"
 
 -- | @Selector@ for @usePrecomputedFlow@
-usePrecomputedFlowSelector :: Selector
+usePrecomputedFlowSelector :: Selector '[] Bool
 usePrecomputedFlowSelector = mkSelector "usePrecomputedFlow"
 
 -- | @Selector@ for @qualityPrioritization@
-qualityPrioritizationSelector :: Selector
+qualityPrioritizationSelector :: Selector '[] VTFrameRateConversionConfigurationQualityPrioritization
 qualityPrioritizationSelector = mkSelector "qualityPrioritization"
 
 -- | @Selector@ for @revision@
-revisionSelector :: Selector
+revisionSelector :: Selector '[] VTFrameRateConversionConfigurationRevision
 revisionSelector = mkSelector "revision"
 
 -- | @Selector@ for @supportedRevisions@
-supportedRevisionsSelector :: Selector
+supportedRevisionsSelector :: Selector '[] (Id NSIndexSet)
 supportedRevisionsSelector = mkSelector "supportedRevisions"
 
 -- | @Selector@ for @defaultRevision@
-defaultRevisionSelector :: Selector
+defaultRevisionSelector :: Selector '[] VTFrameRateConversionConfigurationRevision
 defaultRevisionSelector = mkSelector "defaultRevision"
 
 -- | @Selector@ for @frameSupportedPixelFormats@
-frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector :: Selector '[] (Id NSArray)
 frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
-sourcePixelBufferAttributesSelector :: Selector
+sourcePixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 sourcePixelBufferAttributesSelector = mkSelector "sourcePixelBufferAttributes"
 
 -- | @Selector@ for @destinationPixelBufferAttributes@
-destinationPixelBufferAttributesSelector :: Selector
+destinationPixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 destinationPixelBufferAttributesSelector = mkSelector "destinationPixelBufferAttributes"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 
 -- | @Selector@ for @processorSupported@
-processorSupportedSelector :: Selector
+processorSupportedSelector :: Selector '[] CUChar
 processorSupportedSelector = mkSelector "processorSupported"
 

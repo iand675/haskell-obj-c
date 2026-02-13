@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVPlayerItemIntegratedTimelineSnapshot
   , currentSegment
   , segments
   , currentDate
+  , currentDateSelector
+  , currentSegmentSelector
   , initSelector
   , newSelector
-  , currentSegmentSelector
   , segmentsSelector
-  , currentDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerItemIntegratedTimelineSnapshot avPlayerItemIntegratedTimelineSnapshot => avPlayerItemIntegratedTimelineSnapshot -> IO (Id AVPlayerItemIntegratedTimelineSnapshot)
-init_ avPlayerItemIntegratedTimelineSnapshot  =
-    sendMsg avPlayerItemIntegratedTimelineSnapshot (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerItemIntegratedTimelineSnapshot =
+  sendOwnedMessage avPlayerItemIntegratedTimelineSnapshot initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerItemIntegratedTimelineSnapshot)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerItemIntegratedTimelineSnapshot"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | currentSegment
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- currentSegment@
 currentSegment :: IsAVPlayerItemIntegratedTimelineSnapshot avPlayerItemIntegratedTimelineSnapshot => avPlayerItemIntegratedTimelineSnapshot -> IO (Id AVPlayerItemSegment)
-currentSegment avPlayerItemIntegratedTimelineSnapshot  =
-    sendMsg avPlayerItemIntegratedTimelineSnapshot (mkSelector "currentSegment") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentSegment avPlayerItemIntegratedTimelineSnapshot =
+  sendMessage avPlayerItemIntegratedTimelineSnapshot currentSegmentSelector
 
 -- | segments
 --
@@ -70,8 +67,8 @@ currentSegment avPlayerItemIntegratedTimelineSnapshot  =
 --
 -- ObjC selector: @- segments@
 segments :: IsAVPlayerItemIntegratedTimelineSnapshot avPlayerItemIntegratedTimelineSnapshot => avPlayerItemIntegratedTimelineSnapshot -> IO (Id NSArray)
-segments avPlayerItemIntegratedTimelineSnapshot  =
-    sendMsg avPlayerItemIntegratedTimelineSnapshot (mkSelector "segments") (retPtr retVoid) [] >>= retainedObject . castPtr
+segments avPlayerItemIntegratedTimelineSnapshot =
+  sendMessage avPlayerItemIntegratedTimelineSnapshot segmentsSelector
 
 -- | currentDate
 --
@@ -79,30 +76,30 @@ segments avPlayerItemIntegratedTimelineSnapshot  =
 --
 -- ObjC selector: @- currentDate@
 currentDate :: IsAVPlayerItemIntegratedTimelineSnapshot avPlayerItemIntegratedTimelineSnapshot => avPlayerItemIntegratedTimelineSnapshot -> IO (Id NSDate)
-currentDate avPlayerItemIntegratedTimelineSnapshot  =
-    sendMsg avPlayerItemIntegratedTimelineSnapshot (mkSelector "currentDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentDate avPlayerItemIntegratedTimelineSnapshot =
+  sendMessage avPlayerItemIntegratedTimelineSnapshot currentDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerItemIntegratedTimelineSnapshot)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerItemIntegratedTimelineSnapshot)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @currentSegment@
-currentSegmentSelector :: Selector
+currentSegmentSelector :: Selector '[] (Id AVPlayerItemSegment)
 currentSegmentSelector = mkSelector "currentSegment"
 
 -- | @Selector@ for @segments@
-segmentsSelector :: Selector
+segmentsSelector :: Selector '[] (Id NSArray)
 segmentsSelector = mkSelector "segments"
 
 -- | @Selector@ for @currentDate@
-currentDateSelector :: Selector
+currentDateSelector :: Selector '[] (Id NSDate)
 currentDateSelector = mkSelector "currentDate"
 

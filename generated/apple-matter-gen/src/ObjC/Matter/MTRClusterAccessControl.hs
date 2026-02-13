@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,43 +33,39 @@ module ObjC.Matter.MTRClusterAccessControl
   , writeAttributeAclWithValue_expectedValueInterval
   , writeAttributeAclWithValue_expectedValueInterval_params
   , initWithDevice_endpointID_queue
-  , reviewFabricRestrictionsWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeACLWithParamsSelector
-  , writeAttributeACLWithValue_expectedValueIntervalSelector
-  , writeAttributeACLWithValue_expectedValueInterval_paramsSelector
+  , readAttributeARLWithParamsSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
+  , readAttributeAccessControlEntriesPerFabricWithParamsSelector
+  , readAttributeAclWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeCommissioningARLWithParamsSelector
   , readAttributeExtensionWithParamsSelector
-  , writeAttributeExtensionWithValue_expectedValueIntervalSelector
-  , writeAttributeExtensionWithValue_expectedValueInterval_paramsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
   , readAttributeSubjectsPerAccessControlEntryWithParamsSelector
   , readAttributeTargetsPerAccessControlEntryWithParamsSelector
-  , readAttributeAccessControlEntriesPerFabricWithParamsSelector
-  , readAttributeCommissioningARLWithParamsSelector
-  , readAttributeARLWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , readAttributeAclWithParamsSelector
+  , reviewFabricRestrictionsWithParams_expectedValues_expectedValueInterval_completionSelector
+  , writeAttributeACLWithValue_expectedValueIntervalSelector
+  , writeAttributeACLWithValue_expectedValueInterval_paramsSelector
   , writeAttributeAclWithValue_expectedValueIntervalSelector
   , writeAttributeAclWithValue_expectedValueInterval_paramsSelector
-  , initWithDevice_endpointID_queueSelector
+  , writeAttributeExtensionWithValue_expectedValueIntervalSelector
+  , writeAttributeExtensionWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,261 +74,225 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- reviewFabricRestrictionsWithParams:expectedValues:expectedValueInterval:completion:@
 reviewFabricRestrictionsWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRAccessControlClusterReviewFabricRestrictionsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterAccessControl -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-reviewFabricRestrictionsWithParams_expectedValues_expectedValueInterval_completion mtrClusterAccessControl  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterAccessControl (mkSelector "reviewFabricRestrictionsWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+reviewFabricRestrictionsWithParams_expectedValues_expectedValueInterval_completion mtrClusterAccessControl params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterAccessControl reviewFabricRestrictionsWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRAccessControlClusterReviewFabricRestrictionsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeACLWithParams:@
 readAttributeACLWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeACLWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeACLWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeACLWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeACLWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeACLWithValue:expectedValueInterval:@
 writeAttributeACLWithValue_expectedValueInterval :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterAccessControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeACLWithValue_expectedValueInterval mtrClusterAccessControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterAccessControl (mkSelector "writeAttributeACLWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeACLWithValue_expectedValueInterval mtrClusterAccessControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterAccessControl writeAttributeACLWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeACLWithValue:expectedValueInterval:params:@
 writeAttributeACLWithValue_expectedValueInterval_params :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterAccessControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeACLWithValue_expectedValueInterval_params mtrClusterAccessControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterAccessControl (mkSelector "writeAttributeACLWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeACLWithValue_expectedValueInterval_params mtrClusterAccessControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterAccessControl writeAttributeACLWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeExtensionWithParams:@
 readAttributeExtensionWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeExtensionWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeExtensionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeExtensionWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeExtensionWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeExtensionWithValue:expectedValueInterval:@
 writeAttributeExtensionWithValue_expectedValueInterval :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterAccessControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeExtensionWithValue_expectedValueInterval mtrClusterAccessControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterAccessControl (mkSelector "writeAttributeExtensionWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeExtensionWithValue_expectedValueInterval mtrClusterAccessControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterAccessControl writeAttributeExtensionWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeExtensionWithValue:expectedValueInterval:params:@
 writeAttributeExtensionWithValue_expectedValueInterval_params :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterAccessControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeExtensionWithValue_expectedValueInterval_params mtrClusterAccessControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterAccessControl (mkSelector "writeAttributeExtensionWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeExtensionWithValue_expectedValueInterval_params mtrClusterAccessControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterAccessControl writeAttributeExtensionWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeSubjectsPerAccessControlEntryWithParams:@
 readAttributeSubjectsPerAccessControlEntryWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeSubjectsPerAccessControlEntryWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeSubjectsPerAccessControlEntryWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSubjectsPerAccessControlEntryWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeSubjectsPerAccessControlEntryWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTargetsPerAccessControlEntryWithParams:@
 readAttributeTargetsPerAccessControlEntryWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeTargetsPerAccessControlEntryWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeTargetsPerAccessControlEntryWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTargetsPerAccessControlEntryWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeTargetsPerAccessControlEntryWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAccessControlEntriesPerFabricWithParams:@
 readAttributeAccessControlEntriesPerFabricWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeAccessControlEntriesPerFabricWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeAccessControlEntriesPerFabricWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAccessControlEntriesPerFabricWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeAccessControlEntriesPerFabricWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCommissioningARLWithParams:@
 readAttributeCommissioningARLWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeCommissioningARLWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeCommissioningARLWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCommissioningARLWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeCommissioningARLWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeARLWithParams:@
 readAttributeARLWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeARLWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeARLWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeARLWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeARLWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterAccessControl mtrClusterAccessControl => mtrClusterAccessControl -> IO (Id MTRClusterAccessControl)
-init_ mtrClusterAccessControl  =
-    sendMsg mtrClusterAccessControl (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterAccessControl =
+  sendOwnedMessage mtrClusterAccessControl initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterAccessControl)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterAccessControl"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRDevice device, IsNSObject queue) => mtrClusterAccessControl -> device -> CUShort -> queue -> IO (Id MTRClusterAccessControl)
-initWithDevice_endpoint_queue mtrClusterAccessControl  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterAccessControl (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterAccessControl device endpoint queue =
+  sendOwnedMessage mtrClusterAccessControl initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- readAttributeAclWithParams:@
 readAttributeAclWithParams :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRReadParams params) => mtrClusterAccessControl -> params -> IO (Id NSDictionary)
-readAttributeAclWithParams mtrClusterAccessControl  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAccessControl (mkSelector "readAttributeAclWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAclWithParams mtrClusterAccessControl params =
+  sendMessage mtrClusterAccessControl readAttributeAclWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeAclWithValue:expectedValueInterval:@
 writeAttributeAclWithValue_expectedValueInterval :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterAccessControl -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeAclWithValue_expectedValueInterval mtrClusterAccessControl  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterAccessControl (mkSelector "writeAttributeAclWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeAclWithValue_expectedValueInterval mtrClusterAccessControl dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterAccessControl writeAttributeAclWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeAclWithValue:expectedValueInterval:params:@
 writeAttributeAclWithValue_expectedValueInterval_params :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterAccessControl -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeAclWithValue_expectedValueInterval_params mtrClusterAccessControl  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterAccessControl (mkSelector "writeAttributeAclWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeAclWithValue_expectedValueInterval_params mtrClusterAccessControl dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterAccessControl writeAttributeAclWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterAccessControl mtrClusterAccessControl, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterAccessControl -> device -> endpointID -> queue -> IO (Id MTRClusterAccessControl)
-initWithDevice_endpointID_queue mtrClusterAccessControl  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterAccessControl (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterAccessControl device endpointID queue =
+  sendOwnedMessage mtrClusterAccessControl initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reviewFabricRestrictionsWithParams:expectedValues:expectedValueInterval:completion:@
-reviewFabricRestrictionsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+reviewFabricRestrictionsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRAccessControlClusterReviewFabricRestrictionsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 reviewFabricRestrictionsWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "reviewFabricRestrictionsWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeACLWithParams:@
-readAttributeACLWithParamsSelector :: Selector
+readAttributeACLWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeACLWithParamsSelector = mkSelector "readAttributeACLWithParams:"
 
 -- | @Selector@ for @writeAttributeACLWithValue:expectedValueInterval:@
-writeAttributeACLWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeACLWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeACLWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeACLWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeACLWithValue:expectedValueInterval:params:@
-writeAttributeACLWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeACLWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeACLWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeACLWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeExtensionWithParams:@
-readAttributeExtensionWithParamsSelector :: Selector
+readAttributeExtensionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeExtensionWithParamsSelector = mkSelector "readAttributeExtensionWithParams:"
 
 -- | @Selector@ for @writeAttributeExtensionWithValue:expectedValueInterval:@
-writeAttributeExtensionWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeExtensionWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeExtensionWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeExtensionWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeExtensionWithValue:expectedValueInterval:params:@
-writeAttributeExtensionWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeExtensionWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeExtensionWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeExtensionWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeSubjectsPerAccessControlEntryWithParams:@
-readAttributeSubjectsPerAccessControlEntryWithParamsSelector :: Selector
+readAttributeSubjectsPerAccessControlEntryWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSubjectsPerAccessControlEntryWithParamsSelector = mkSelector "readAttributeSubjectsPerAccessControlEntryWithParams:"
 
 -- | @Selector@ for @readAttributeTargetsPerAccessControlEntryWithParams:@
-readAttributeTargetsPerAccessControlEntryWithParamsSelector :: Selector
+readAttributeTargetsPerAccessControlEntryWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTargetsPerAccessControlEntryWithParamsSelector = mkSelector "readAttributeTargetsPerAccessControlEntryWithParams:"
 
 -- | @Selector@ for @readAttributeAccessControlEntriesPerFabricWithParams:@
-readAttributeAccessControlEntriesPerFabricWithParamsSelector :: Selector
+readAttributeAccessControlEntriesPerFabricWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAccessControlEntriesPerFabricWithParamsSelector = mkSelector "readAttributeAccessControlEntriesPerFabricWithParams:"
 
 -- | @Selector@ for @readAttributeCommissioningARLWithParams:@
-readAttributeCommissioningARLWithParamsSelector :: Selector
+readAttributeCommissioningARLWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCommissioningARLWithParamsSelector = mkSelector "readAttributeCommissioningARLWithParams:"
 
 -- | @Selector@ for @readAttributeARLWithParams:@
-readAttributeARLWithParamsSelector :: Selector
+readAttributeARLWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeARLWithParamsSelector = mkSelector "readAttributeARLWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterAccessControl)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterAccessControl)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterAccessControl)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @readAttributeAclWithParams:@
-readAttributeAclWithParamsSelector :: Selector
+readAttributeAclWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAclWithParamsSelector = mkSelector "readAttributeAclWithParams:"
 
 -- | @Selector@ for @writeAttributeAclWithValue:expectedValueInterval:@
-writeAttributeAclWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeAclWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeAclWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeAclWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeAclWithValue:expectedValueInterval:params:@
-writeAttributeAclWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeAclWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeAclWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeAclWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterAccessControl)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

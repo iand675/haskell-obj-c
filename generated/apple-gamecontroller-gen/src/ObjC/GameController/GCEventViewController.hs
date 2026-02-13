@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.GameController.GCEventViewController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- controllerUserInteractionEnabled@
 controllerUserInteractionEnabled :: IsGCEventViewController gcEventViewController => gcEventViewController -> IO Bool
-controllerUserInteractionEnabled gcEventViewController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcEventViewController (mkSelector "controllerUserInteractionEnabled") retCULong []
+controllerUserInteractionEnabled gcEventViewController =
+  sendMessage gcEventViewController controllerUserInteractionEnabledSelector
 
 -- | Controllers can be used to control the general UIKit user interface and for many views that is the default behavior. By using a controller event view controller you get fine grained control over whether the controller events go trough the UIEvent & UIResponder chain, or if they are decoupled from the UI and all incoming data is served via GCController.
 --
@@ -59,18 +56,18 @@ controllerUserInteractionEnabled gcEventViewController  =
 --
 -- ObjC selector: @- setControllerUserInteractionEnabled:@
 setControllerUserInteractionEnabled :: IsGCEventViewController gcEventViewController => gcEventViewController -> Bool -> IO ()
-setControllerUserInteractionEnabled gcEventViewController  value =
-    sendMsg gcEventViewController (mkSelector "setControllerUserInteractionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setControllerUserInteractionEnabled gcEventViewController value =
+  sendMessage gcEventViewController setControllerUserInteractionEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @controllerUserInteractionEnabled@
-controllerUserInteractionEnabledSelector :: Selector
+controllerUserInteractionEnabledSelector :: Selector '[] Bool
 controllerUserInteractionEnabledSelector = mkSelector "controllerUserInteractionEnabled"
 
 -- | @Selector@ for @setControllerUserInteractionEnabled:@
-setControllerUserInteractionEnabledSelector :: Selector
+setControllerUserInteractionEnabledSelector :: Selector '[Bool] ()
 setControllerUserInteractionEnabledSelector = mkSelector "setControllerUserInteractionEnabled:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,11 +19,11 @@ module ObjC.PHASE.PHASESoundAsset
   , url
   , data_
   , type_
+  , dataSelector
   , initSelector
   , newSelector
-  , urlSelector
-  , dataSelector
   , typeSelector
+  , urlSelector
 
   -- * Enum types
   , PHASEAssetType(PHASEAssetType)
@@ -31,15 +32,11 @@ module ObjC.PHASE.PHASESoundAsset
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASESoundAsset phaseSoundAsset => phaseSoundAsset -> IO (Id PHASESoundAsset)
-init_ phaseSoundAsset  =
-    sendMsg phaseSoundAsset (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseSoundAsset =
+  sendOwnedMessage phaseSoundAsset initSelector
 
 -- | @+ new@
 new :: IO (Id PHASESoundAsset)
 new  =
   do
     cls' <- getRequiredClass "PHASESoundAsset"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | url
 --
@@ -65,8 +62,8 @@ new  =
 --
 -- ObjC selector: @- url@
 url :: IsPHASESoundAsset phaseSoundAsset => phaseSoundAsset -> IO (Id NSURL)
-url phaseSoundAsset  =
-    sendMsg phaseSoundAsset (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url phaseSoundAsset =
+  sendMessage phaseSoundAsset urlSelector
 
 -- | data
 --
@@ -74,8 +71,8 @@ url phaseSoundAsset  =
 --
 -- ObjC selector: @- data@
 data_ :: IsPHASESoundAsset phaseSoundAsset => phaseSoundAsset -> IO (Id NSData)
-data_ phaseSoundAsset  =
-    sendMsg phaseSoundAsset (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ phaseSoundAsset =
+  sendMessage phaseSoundAsset dataSelector
 
 -- | type
 --
@@ -83,30 +80,30 @@ data_ phaseSoundAsset  =
 --
 -- ObjC selector: @- type@
 type_ :: IsPHASESoundAsset phaseSoundAsset => phaseSoundAsset -> IO PHASEAssetType
-type_ phaseSoundAsset  =
-    fmap (coerce :: CLong -> PHASEAssetType) $ sendMsg phaseSoundAsset (mkSelector "type") retCLong []
+type_ phaseSoundAsset =
+  sendMessage phaseSoundAsset typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASESoundAsset)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASESoundAsset)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] PHASEAssetType
 typeSelector = mkSelector "type"
 

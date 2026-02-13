@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.AVFoundation.AVVideoCompositionRenderContext
   , renderScale
   , highQualityRendering
   , videoComposition
+  , highQualityRenderingSelector
   , newPixelBufferSelector
   , renderScaleSelector
-  , highQualityRenderingSelector
   , videoCompositionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,47 +42,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- newPixelBuffer@
 newPixelBuffer :: IsAVVideoCompositionRenderContext avVideoCompositionRenderContext => avVideoCompositionRenderContext -> IO (Ptr ())
-newPixelBuffer avVideoCompositionRenderContext  =
-    fmap castPtr $ sendMsg avVideoCompositionRenderContext (mkSelector "newPixelBuffer") (retPtr retVoid) []
+newPixelBuffer avVideoCompositionRenderContext =
+  sendOwnedMessage avVideoCompositionRenderContext newPixelBufferSelector
 
 -- | Indicates a scaling ratio that should be applied when rendering frames.
 --
 -- ObjC selector: @- renderScale@
 renderScale :: IsAVVideoCompositionRenderContext avVideoCompositionRenderContext => avVideoCompositionRenderContext -> IO CFloat
-renderScale avVideoCompositionRenderContext  =
-    sendMsg avVideoCompositionRenderContext (mkSelector "renderScale") retCFloat []
+renderScale avVideoCompositionRenderContext =
+  sendMessage avVideoCompositionRenderContext renderScaleSelector
 
 -- | Hints the custom compositor that it may use higher quality, potentially slower algorithms. Generally true for non real time use cases.
 --
 -- ObjC selector: @- highQualityRendering@
 highQualityRendering :: IsAVVideoCompositionRenderContext avVideoCompositionRenderContext => avVideoCompositionRenderContext -> IO Bool
-highQualityRendering avVideoCompositionRenderContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avVideoCompositionRenderContext (mkSelector "highQualityRendering") retCULong []
+highQualityRendering avVideoCompositionRenderContext =
+  sendMessage avVideoCompositionRenderContext highQualityRenderingSelector
 
 -- | The AVVideoComposition being rendered.
 --
 -- ObjC selector: @- videoComposition@
 videoComposition :: IsAVVideoCompositionRenderContext avVideoCompositionRenderContext => avVideoCompositionRenderContext -> IO (Id AVVideoComposition)
-videoComposition avVideoCompositionRenderContext  =
-    sendMsg avVideoCompositionRenderContext (mkSelector "videoComposition") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoComposition avVideoCompositionRenderContext =
+  sendMessage avVideoCompositionRenderContext videoCompositionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newPixelBuffer@
-newPixelBufferSelector :: Selector
+newPixelBufferSelector :: Selector '[] (Ptr ())
 newPixelBufferSelector = mkSelector "newPixelBuffer"
 
 -- | @Selector@ for @renderScale@
-renderScaleSelector :: Selector
+renderScaleSelector :: Selector '[] CFloat
 renderScaleSelector = mkSelector "renderScale"
 
 -- | @Selector@ for @highQualityRendering@
-highQualityRenderingSelector :: Selector
+highQualityRenderingSelector :: Selector '[] Bool
 highQualityRenderingSelector = mkSelector "highQualityRendering"
 
 -- | @Selector@ for @videoComposition@
-videoCompositionSelector :: Selector
+videoCompositionSelector :: Selector '[] (Id AVVideoComposition)
 videoCompositionSelector = mkSelector "videoComposition"
 

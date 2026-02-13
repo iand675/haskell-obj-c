@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.CoreHaptics.CHHapticParameterCurve
   , relativeTime
   , setRelativeTime
   , controlPoints
+  , controlPointsSelector
   , initSelector
   , initWithParameterID_controlPoints_relativeTimeSelector
   , parameterIDSelector
   , relativeTimeSelector
   , setRelativeTimeSelector
-  , controlPointsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCHHapticParameterCurve chHapticParameterCurve => chHapticParameterCurve -> IO (Id CHHapticParameterCurve)
-init_ chHapticParameterCurve  =
-    sendMsg chHapticParameterCurve (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ chHapticParameterCurve =
+  sendOwnedMessage chHapticParameterCurve initSelector
 
 -- | initWithParameterID:controlPoints:relativeTime
 --
@@ -60,56 +57,54 @@ init_ chHapticParameterCurve  =
 --
 -- ObjC selector: @- initWithParameterID:controlPoints:relativeTime:@
 initWithParameterID_controlPoints_relativeTime :: (IsCHHapticParameterCurve chHapticParameterCurve, IsNSString parameterID, IsNSArray controlPoints) => chHapticParameterCurve -> parameterID -> controlPoints -> CDouble -> IO (Id CHHapticParameterCurve)
-initWithParameterID_controlPoints_relativeTime chHapticParameterCurve  parameterID controlPoints relativeTime =
-  withObjCPtr parameterID $ \raw_parameterID ->
-    withObjCPtr controlPoints $ \raw_controlPoints ->
-        sendMsg chHapticParameterCurve (mkSelector "initWithParameterID:controlPoints:relativeTime:") (retPtr retVoid) [argPtr (castPtr raw_parameterID :: Ptr ()), argPtr (castPtr raw_controlPoints :: Ptr ()), argCDouble relativeTime] >>= ownedObject . castPtr
+initWithParameterID_controlPoints_relativeTime chHapticParameterCurve parameterID controlPoints relativeTime =
+  sendOwnedMessage chHapticParameterCurve initWithParameterID_controlPoints_relativeTimeSelector (toNSString parameterID) (toNSArray controlPoints) relativeTime
 
 -- | @- parameterID@
 parameterID :: IsCHHapticParameterCurve chHapticParameterCurve => chHapticParameterCurve -> IO (Id NSString)
-parameterID chHapticParameterCurve  =
-    sendMsg chHapticParameterCurve (mkSelector "parameterID") (retPtr retVoid) [] >>= retainedObject . castPtr
+parameterID chHapticParameterCurve =
+  sendMessage chHapticParameterCurve parameterIDSelector
 
 -- | @- relativeTime@
 relativeTime :: IsCHHapticParameterCurve chHapticParameterCurve => chHapticParameterCurve -> IO CDouble
-relativeTime chHapticParameterCurve  =
-    sendMsg chHapticParameterCurve (mkSelector "relativeTime") retCDouble []
+relativeTime chHapticParameterCurve =
+  sendMessage chHapticParameterCurve relativeTimeSelector
 
 -- | @- setRelativeTime:@
 setRelativeTime :: IsCHHapticParameterCurve chHapticParameterCurve => chHapticParameterCurve -> CDouble -> IO ()
-setRelativeTime chHapticParameterCurve  value =
-    sendMsg chHapticParameterCurve (mkSelector "setRelativeTime:") retVoid [argCDouble value]
+setRelativeTime chHapticParameterCurve value =
+  sendMessage chHapticParameterCurve setRelativeTimeSelector value
 
 -- | @- controlPoints@
 controlPoints :: IsCHHapticParameterCurve chHapticParameterCurve => chHapticParameterCurve -> IO (Id NSArray)
-controlPoints chHapticParameterCurve  =
-    sendMsg chHapticParameterCurve (mkSelector "controlPoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+controlPoints chHapticParameterCurve =
+  sendMessage chHapticParameterCurve controlPointsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CHHapticParameterCurve)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithParameterID:controlPoints:relativeTime:@
-initWithParameterID_controlPoints_relativeTimeSelector :: Selector
+initWithParameterID_controlPoints_relativeTimeSelector :: Selector '[Id NSString, Id NSArray, CDouble] (Id CHHapticParameterCurve)
 initWithParameterID_controlPoints_relativeTimeSelector = mkSelector "initWithParameterID:controlPoints:relativeTime:"
 
 -- | @Selector@ for @parameterID@
-parameterIDSelector :: Selector
+parameterIDSelector :: Selector '[] (Id NSString)
 parameterIDSelector = mkSelector "parameterID"
 
 -- | @Selector@ for @relativeTime@
-relativeTimeSelector :: Selector
+relativeTimeSelector :: Selector '[] CDouble
 relativeTimeSelector = mkSelector "relativeTime"
 
 -- | @Selector@ for @setRelativeTime:@
-setRelativeTimeSelector :: Selector
+setRelativeTimeSelector :: Selector '[CDouble] ()
 setRelativeTimeSelector = mkSelector "setRelativeTime:"
 
 -- | @Selector@ for @controlPoints@
-controlPointsSelector :: Selector
+controlPointsSelector :: Selector '[] (Id NSArray)
 controlPointsSelector = mkSelector "controlPoints"
 

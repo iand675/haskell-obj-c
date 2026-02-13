@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AppKit.NSAdaptiveImageGlyph
   , contentIdentifier
   , contentDescription
   , contentType
-  , initWithImageContentSelector
-  , initWithCoderSelector
-  , initSelector
-  , imageContentSelector
-  , contentIdentifierSelector
   , contentDescriptionSelector
+  , contentIdentifierSelector
   , contentTypeSelector
+  , imageContentSelector
+  , initSelector
+  , initWithCoderSelector
+  , initWithImageContentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,72 +39,70 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 
 -- | @- initWithImageContent:@
 initWithImageContent :: (IsNSAdaptiveImageGlyph nsAdaptiveImageGlyph, IsNSData imageContent) => nsAdaptiveImageGlyph -> imageContent -> IO (Id NSAdaptiveImageGlyph)
-initWithImageContent nsAdaptiveImageGlyph  imageContent =
-  withObjCPtr imageContent $ \raw_imageContent ->
-      sendMsg nsAdaptiveImageGlyph (mkSelector "initWithImageContent:") (retPtr retVoid) [argPtr (castPtr raw_imageContent :: Ptr ())] >>= ownedObject . castPtr
+initWithImageContent nsAdaptiveImageGlyph imageContent =
+  sendOwnedMessage nsAdaptiveImageGlyph initWithImageContentSelector (toNSData imageContent)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSAdaptiveImageGlyph nsAdaptiveImageGlyph, IsNSCoder coder) => nsAdaptiveImageGlyph -> coder -> IO (Id NSAdaptiveImageGlyph)
-initWithCoder nsAdaptiveImageGlyph  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsAdaptiveImageGlyph (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsAdaptiveImageGlyph coder =
+  sendOwnedMessage nsAdaptiveImageGlyph initWithCoderSelector (toNSCoder coder)
 
 -- | @- init@
 init_ :: IsNSAdaptiveImageGlyph nsAdaptiveImageGlyph => nsAdaptiveImageGlyph -> IO (Id NSAdaptiveImageGlyph)
-init_ nsAdaptiveImageGlyph  =
-    sendMsg nsAdaptiveImageGlyph (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsAdaptiveImageGlyph =
+  sendOwnedMessage nsAdaptiveImageGlyph initSelector
 
 -- | @- imageContent@
 imageContent :: IsNSAdaptiveImageGlyph nsAdaptiveImageGlyph => nsAdaptiveImageGlyph -> IO (Id NSData)
-imageContent nsAdaptiveImageGlyph  =
-    sendMsg nsAdaptiveImageGlyph (mkSelector "imageContent") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageContent nsAdaptiveImageGlyph =
+  sendMessage nsAdaptiveImageGlyph imageContentSelector
 
 -- | @- contentIdentifier@
 contentIdentifier :: IsNSAdaptiveImageGlyph nsAdaptiveImageGlyph => nsAdaptiveImageGlyph -> IO (Id NSString)
-contentIdentifier nsAdaptiveImageGlyph  =
-    sendMsg nsAdaptiveImageGlyph (mkSelector "contentIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentIdentifier nsAdaptiveImageGlyph =
+  sendMessage nsAdaptiveImageGlyph contentIdentifierSelector
 
 -- | @- contentDescription@
 contentDescription :: IsNSAdaptiveImageGlyph nsAdaptiveImageGlyph => nsAdaptiveImageGlyph -> IO (Id NSString)
-contentDescription nsAdaptiveImageGlyph  =
-    sendMsg nsAdaptiveImageGlyph (mkSelector "contentDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentDescription nsAdaptiveImageGlyph =
+  sendMessage nsAdaptiveImageGlyph contentDescriptionSelector
 
 -- | @+ contentType@
 contentType :: IO (Id UTType)
 contentType  =
   do
     cls' <- getRequiredClass "NSAdaptiveImageGlyph"
-    sendClassMsg cls' (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' contentTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithImageContent:@
-initWithImageContentSelector :: Selector
+initWithImageContentSelector :: Selector '[Id NSData] (Id NSAdaptiveImageGlyph)
 initWithImageContentSelector = mkSelector "initWithImageContent:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSAdaptiveImageGlyph)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSAdaptiveImageGlyph)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @imageContent@
-imageContentSelector :: Selector
+imageContentSelector :: Selector '[] (Id NSData)
 imageContentSelector = mkSelector "imageContent"
 
 -- | @Selector@ for @contentIdentifier@
-contentIdentifierSelector :: Selector
+contentIdentifierSelector :: Selector '[] (Id NSString)
 contentIdentifierSelector = mkSelector "contentIdentifier"
 
 -- | @Selector@ for @contentDescription@
-contentDescriptionSelector :: Selector
+contentDescriptionSelector :: Selector '[] (Id NSString)
 contentDescriptionSelector = mkSelector "contentDescription"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id UTType)
 contentTypeSelector = mkSelector "contentType"
 

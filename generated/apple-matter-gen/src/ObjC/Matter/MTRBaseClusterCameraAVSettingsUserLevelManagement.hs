@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -67,76 +68,72 @@ module ObjC.Matter.MTRBaseClusterCameraAVSettingsUserLevelManagement
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , mptzSetPositionWithParams_completionSelector
-  , mptzSetPositionWithCompletionSelector
-  , mptzRelativeMoveWithParams_completionSelector
-  , mptzRelativeMoveWithCompletionSelector
-  , mptzMoveToPresetWithParams_completionSelector
-  , mptzSavePresetWithParams_completionSelector
-  , mptzRemovePresetWithParams_completionSelector
-  , dptzSetViewportWithParams_completionSelector
   , dptzRelativeMoveWithParams_completionSelector
-  , readAttributeMPTZPositionWithCompletionSelector
-  , subscribeAttributeMPTZPositionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMPTZPositionWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMaxPresetsWithCompletionSelector
-  , subscribeAttributeMaxPresetsWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMaxPresetsWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMPTZPresetsWithCompletionSelector
-  , subscribeAttributeMPTZPresetsWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMPTZPresetsWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeDPTZStreamsWithCompletionSelector
-  , subscribeAttributeDPTZStreamsWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeDPTZStreamsWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeZoomMaxWithCompletionSelector
-  , subscribeAttributeZoomMaxWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeZoomMaxWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTiltMinWithCompletionSelector
-  , subscribeAttributeTiltMinWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTiltMinWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTiltMaxWithCompletionSelector
-  , subscribeAttributeTiltMaxWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTiltMaxWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributePanMinWithCompletionSelector
-  , subscribeAttributePanMinWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributePanMinWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributePanMaxWithCompletionSelector
-  , subscribeAttributePanMaxWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributePanMaxWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMovementStateWithCompletionSelector
-  , subscribeAttributeMovementStateWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMovementStateWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
-  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
-  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
-  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , dptzSetViewportWithParams_completionSelector
   , initSelector
-  , newSelector
   , initWithDevice_endpointID_queueSelector
+  , mptzMoveToPresetWithParams_completionSelector
+  , mptzRelativeMoveWithCompletionSelector
+  , mptzRelativeMoveWithParams_completionSelector
+  , mptzRemovePresetWithParams_completionSelector
+  , mptzSavePresetWithParams_completionSelector
+  , mptzSetPositionWithCompletionSelector
+  , mptzSetPositionWithParams_completionSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeDPTZStreamsWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeDPTZStreamsWithCompletionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
+  , readAttributeMPTZPositionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMPTZPositionWithCompletionSelector
+  , readAttributeMPTZPresetsWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMPTZPresetsWithCompletionSelector
+  , readAttributeMaxPresetsWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMaxPresetsWithCompletionSelector
+  , readAttributeMovementStateWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMovementStateWithCompletionSelector
+  , readAttributePanMaxWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributePanMaxWithCompletionSelector
+  , readAttributePanMinWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributePanMinWithCompletionSelector
+  , readAttributeTiltMaxWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTiltMaxWithCompletionSelector
+  , readAttributeTiltMinWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTiltMinWithCompletionSelector
+  , readAttributeZoomMaxWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeZoomMaxWithCompletionSelector
+  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeDPTZStreamsWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMPTZPositionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMPTZPresetsWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMaxPresetsWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMovementStateWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributePanMaxWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributePanMinWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTiltMaxWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTiltMinWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeZoomMaxWithParams_subscriptionEstablished_reportHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -149,14 +146,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- MPTZSetPositionWithParams:completion:@
 mptzSetPositionWithParams_completion :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRCameraAVSettingsUserLevelManagementClusterMPTZSetPositionParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> IO ()
-mptzSetPositionWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "MPTZSetPositionWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+mptzSetPositionWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement params completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement mptzSetPositionWithParams_completionSelector (toMTRCameraAVSettingsUserLevelManagementClusterMPTZSetPositionParams params) completion
 
 -- | @- MPTZSetPositionWithCompletion:@
 mptzSetPositionWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-mptzSetPositionWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "MPTZSetPositionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+mptzSetPositionWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement mptzSetPositionWithCompletionSelector completion
 
 -- | Command MPTZRelativeMove
 --
@@ -164,14 +160,13 @@ mptzSetPositionWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement 
 --
 -- ObjC selector: @- MPTZRelativeMoveWithParams:completion:@
 mptzRelativeMoveWithParams_completion :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> IO ()
-mptzRelativeMoveWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "MPTZRelativeMoveWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+mptzRelativeMoveWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement params completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement mptzRelativeMoveWithParams_completionSelector (toMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams params) completion
 
 -- | @- MPTZRelativeMoveWithCompletion:@
 mptzRelativeMoveWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-mptzRelativeMoveWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "MPTZRelativeMoveWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+mptzRelativeMoveWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement mptzRelativeMoveWithCompletionSelector completion
 
 -- | Command MPTZMoveToPreset
 --
@@ -179,9 +174,8 @@ mptzRelativeMoveWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement
 --
 -- ObjC selector: @- MPTZMoveToPresetWithParams:completion:@
 mptzMoveToPresetWithParams_completion :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> IO ()
-mptzMoveToPresetWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "MPTZMoveToPresetWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+mptzMoveToPresetWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement params completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement mptzMoveToPresetWithParams_completionSelector (toMTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams params) completion
 
 -- | Command MPTZSavePreset
 --
@@ -189,9 +183,8 @@ mptzMoveToPresetWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelMan
 --
 -- ObjC selector: @- MPTZSavePresetWithParams:completion:@
 mptzSavePresetWithParams_completion :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRCameraAVSettingsUserLevelManagementClusterMPTZSavePresetParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> IO ()
-mptzSavePresetWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "MPTZSavePresetWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+mptzSavePresetWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement params completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement mptzSavePresetWithParams_completionSelector (toMTRCameraAVSettingsUserLevelManagementClusterMPTZSavePresetParams params) completion
 
 -- | Command MPTZRemovePreset
 --
@@ -199,9 +192,8 @@ mptzSavePresetWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManag
 --
 -- ObjC selector: @- MPTZRemovePresetWithParams:completion:@
 mptzRemovePresetWithParams_completion :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRemovePresetParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> IO ()
-mptzRemovePresetWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "MPTZRemovePresetWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+mptzRemovePresetWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement params completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement mptzRemovePresetWithParams_completionSelector (toMTRCameraAVSettingsUserLevelManagementClusterMPTZRemovePresetParams params) completion
 
 -- | Command DPTZSetViewport
 --
@@ -209,9 +201,8 @@ mptzRemovePresetWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelMan
 --
 -- ObjC selector: @- DPTZSetViewportWithParams:completion:@
 dptzSetViewportWithParams_completion :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> IO ()
-dptzSetViewportWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "DPTZSetViewportWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+dptzSetViewportWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement params completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement dptzSetViewportWithParams_completionSelector (toMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams params) completion
 
 -- | Command DPTZRelativeMove
 --
@@ -219,576 +210,512 @@ dptzSetViewportWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelMana
 --
 -- ObjC selector: @- DPTZRelativeMoveWithParams:completion:@
 dptzRelativeMoveWithParams_completion :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRCameraAVSettingsUserLevelManagementClusterDPTZRelativeMoveParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> IO ()
-dptzRelativeMoveWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "DPTZRelativeMoveWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+dptzRelativeMoveWithParams_completion mtrBaseClusterCameraAVSettingsUserLevelManagement params completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement dptzRelativeMoveWithParams_completionSelector (toMTRCameraAVSettingsUserLevelManagementClusterDPTZRelativeMoveParams params) completion
 
 -- | @- readAttributeMPTZPositionWithCompletion:@
 readAttributeMPTZPositionWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeMPTZPositionWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeMPTZPositionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMPTZPositionWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeMPTZPositionWithCompletionSelector completion
 
 -- | @- subscribeAttributeMPTZPositionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMPTZPositionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMPTZPositionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeMPTZPositionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMPTZPositionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeMPTZPositionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMPTZPositionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMPTZPositionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMPTZPositionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMPTZPositionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMPTZPositionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMaxPresetsWithCompletion:@
 readAttributeMaxPresetsWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeMaxPresetsWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeMaxPresetsWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMaxPresetsWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeMaxPresetsWithCompletionSelector completion
 
 -- | @- subscribeAttributeMaxPresetsWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMaxPresetsWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMaxPresetsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeMaxPresetsWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMaxPresetsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeMaxPresetsWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMaxPresetsWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMaxPresetsWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMaxPresetsWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMaxPresetsWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMaxPresetsWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMPTZPresetsWithCompletion:@
 readAttributeMPTZPresetsWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeMPTZPresetsWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeMPTZPresetsWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMPTZPresetsWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeMPTZPresetsWithCompletionSelector completion
 
 -- | @- subscribeAttributeMPTZPresetsWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMPTZPresetsWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMPTZPresetsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeMPTZPresetsWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMPTZPresetsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeMPTZPresetsWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMPTZPresetsWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMPTZPresetsWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMPTZPresetsWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMPTZPresetsWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMPTZPresetsWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeDPTZStreamsWithCompletion:@
 readAttributeDPTZStreamsWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeDPTZStreamsWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeDPTZStreamsWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeDPTZStreamsWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeDPTZStreamsWithCompletionSelector completion
 
 -- | @- subscribeAttributeDPTZStreamsWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeDPTZStreamsWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeDPTZStreamsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeDPTZStreamsWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeDPTZStreamsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeDPTZStreamsWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeDPTZStreamsWithClusterStateCache:endpoint:queue:completion:@
 readAttributeDPTZStreamsWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeDPTZStreamsWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeDPTZStreamsWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeDPTZStreamsWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeZoomMaxWithCompletion:@
 readAttributeZoomMaxWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeZoomMaxWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeZoomMaxWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeZoomMaxWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeZoomMaxWithCompletionSelector completion
 
 -- | @- subscribeAttributeZoomMaxWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeZoomMaxWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeZoomMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeZoomMaxWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeZoomMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeZoomMaxWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeZoomMaxWithClusterStateCache:endpoint:queue:completion:@
 readAttributeZoomMaxWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeZoomMaxWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeZoomMaxWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeZoomMaxWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTiltMinWithCompletion:@
 readAttributeTiltMinWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeTiltMinWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeTiltMinWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTiltMinWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeTiltMinWithCompletionSelector completion
 
 -- | @- subscribeAttributeTiltMinWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTiltMinWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTiltMinWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeTiltMinWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTiltMinWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeTiltMinWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTiltMinWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTiltMinWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTiltMinWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTiltMinWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTiltMinWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTiltMaxWithCompletion:@
 readAttributeTiltMaxWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeTiltMaxWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeTiltMaxWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTiltMaxWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeTiltMaxWithCompletionSelector completion
 
 -- | @- subscribeAttributeTiltMaxWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTiltMaxWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTiltMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeTiltMaxWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTiltMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeTiltMaxWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTiltMaxWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTiltMaxWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTiltMaxWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTiltMaxWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTiltMaxWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributePanMinWithCompletion:@
 readAttributePanMinWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributePanMinWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributePanMinWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributePanMinWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributePanMinWithCompletionSelector completion
 
 -- | @- subscribeAttributePanMinWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributePanMinWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributePanMinWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributePanMinWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributePanMinWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributePanMinWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributePanMinWithClusterStateCache:endpoint:queue:completion:@
 readAttributePanMinWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributePanMinWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributePanMinWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributePanMinWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributePanMaxWithCompletion:@
 readAttributePanMaxWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributePanMaxWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributePanMaxWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributePanMaxWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributePanMaxWithCompletionSelector completion
 
 -- | @- subscribeAttributePanMaxWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributePanMaxWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributePanMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributePanMaxWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributePanMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributePanMaxWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributePanMaxWithClusterStateCache:endpoint:queue:completion:@
 readAttributePanMaxWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributePanMaxWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributePanMaxWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributePanMaxWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMovementStateWithCompletion:@
 readAttributeMovementStateWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeMovementStateWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeMovementStateWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMovementStateWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeMovementStateWithCompletionSelector completion
 
 -- | @- subscribeAttributeMovementStateWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMovementStateWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMovementStateWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeMovementStateWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMovementStateWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeMovementStateWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMovementStateWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMovementStateWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMovementStateWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMovementStateWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMovementStateWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement  completion =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterCameraAVSettingsUserLevelManagement completion =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRSubscribeParams params) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCameraAVSettingsUserLevelManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCameraAVSettingsUserLevelManagement subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement => mtrBaseClusterCameraAVSettingsUserLevelManagement -> IO (Id MTRBaseClusterCameraAVSettingsUserLevelManagement)
-init_ mtrBaseClusterCameraAVSettingsUserLevelManagement  =
-    sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterCameraAVSettingsUserLevelManagement =
+  sendOwnedMessage mtrBaseClusterCameraAVSettingsUserLevelManagement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterCameraAVSettingsUserLevelManagement)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterCameraAVSettingsUserLevelManagement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterCameraAVSettingsUserLevelManagement mtrBaseClusterCameraAVSettingsUserLevelManagement, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterCameraAVSettingsUserLevelManagement -> device -> endpointID -> queue -> IO (Id MTRBaseClusterCameraAVSettingsUserLevelManagement)
-initWithDevice_endpointID_queue mtrBaseClusterCameraAVSettingsUserLevelManagement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterCameraAVSettingsUserLevelManagement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterCameraAVSettingsUserLevelManagement device endpointID queue =
+  sendOwnedMessage mtrBaseClusterCameraAVSettingsUserLevelManagement initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @MPTZSetPositionWithParams:completion:@
-mptzSetPositionWithParams_completionSelector :: Selector
+mptzSetPositionWithParams_completionSelector :: Selector '[Id MTRCameraAVSettingsUserLevelManagementClusterMPTZSetPositionParams, Ptr ()] ()
 mptzSetPositionWithParams_completionSelector = mkSelector "MPTZSetPositionWithParams:completion:"
 
 -- | @Selector@ for @MPTZSetPositionWithCompletion:@
-mptzSetPositionWithCompletionSelector :: Selector
+mptzSetPositionWithCompletionSelector :: Selector '[Ptr ()] ()
 mptzSetPositionWithCompletionSelector = mkSelector "MPTZSetPositionWithCompletion:"
 
 -- | @Selector@ for @MPTZRelativeMoveWithParams:completion:@
-mptzRelativeMoveWithParams_completionSelector :: Selector
+mptzRelativeMoveWithParams_completionSelector :: Selector '[Id MTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams, Ptr ()] ()
 mptzRelativeMoveWithParams_completionSelector = mkSelector "MPTZRelativeMoveWithParams:completion:"
 
 -- | @Selector@ for @MPTZRelativeMoveWithCompletion:@
-mptzRelativeMoveWithCompletionSelector :: Selector
+mptzRelativeMoveWithCompletionSelector :: Selector '[Ptr ()] ()
 mptzRelativeMoveWithCompletionSelector = mkSelector "MPTZRelativeMoveWithCompletion:"
 
 -- | @Selector@ for @MPTZMoveToPresetWithParams:completion:@
-mptzMoveToPresetWithParams_completionSelector :: Selector
+mptzMoveToPresetWithParams_completionSelector :: Selector '[Id MTRCameraAVSettingsUserLevelManagementClusterMPTZMoveToPresetParams, Ptr ()] ()
 mptzMoveToPresetWithParams_completionSelector = mkSelector "MPTZMoveToPresetWithParams:completion:"
 
 -- | @Selector@ for @MPTZSavePresetWithParams:completion:@
-mptzSavePresetWithParams_completionSelector :: Selector
+mptzSavePresetWithParams_completionSelector :: Selector '[Id MTRCameraAVSettingsUserLevelManagementClusterMPTZSavePresetParams, Ptr ()] ()
 mptzSavePresetWithParams_completionSelector = mkSelector "MPTZSavePresetWithParams:completion:"
 
 -- | @Selector@ for @MPTZRemovePresetWithParams:completion:@
-mptzRemovePresetWithParams_completionSelector :: Selector
+mptzRemovePresetWithParams_completionSelector :: Selector '[Id MTRCameraAVSettingsUserLevelManagementClusterMPTZRemovePresetParams, Ptr ()] ()
 mptzRemovePresetWithParams_completionSelector = mkSelector "MPTZRemovePresetWithParams:completion:"
 
 -- | @Selector@ for @DPTZSetViewportWithParams:completion:@
-dptzSetViewportWithParams_completionSelector :: Selector
+dptzSetViewportWithParams_completionSelector :: Selector '[Id MTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams, Ptr ()] ()
 dptzSetViewportWithParams_completionSelector = mkSelector "DPTZSetViewportWithParams:completion:"
 
 -- | @Selector@ for @DPTZRelativeMoveWithParams:completion:@
-dptzRelativeMoveWithParams_completionSelector :: Selector
+dptzRelativeMoveWithParams_completionSelector :: Selector '[Id MTRCameraAVSettingsUserLevelManagementClusterDPTZRelativeMoveParams, Ptr ()] ()
 dptzRelativeMoveWithParams_completionSelector = mkSelector "DPTZRelativeMoveWithParams:completion:"
 
 -- | @Selector@ for @readAttributeMPTZPositionWithCompletion:@
-readAttributeMPTZPositionWithCompletionSelector :: Selector
+readAttributeMPTZPositionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMPTZPositionWithCompletionSelector = mkSelector "readAttributeMPTZPositionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMPTZPositionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMPTZPositionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMPTZPositionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMPTZPositionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMPTZPositionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMPTZPositionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMPTZPositionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMPTZPositionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMPTZPositionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMPTZPositionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMaxPresetsWithCompletion:@
-readAttributeMaxPresetsWithCompletionSelector :: Selector
+readAttributeMaxPresetsWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMaxPresetsWithCompletionSelector = mkSelector "readAttributeMaxPresetsWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMaxPresetsWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMaxPresetsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMaxPresetsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMaxPresetsWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMaxPresetsWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMaxPresetsWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMaxPresetsWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMaxPresetsWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMaxPresetsWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMaxPresetsWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMPTZPresetsWithCompletion:@
-readAttributeMPTZPresetsWithCompletionSelector :: Selector
+readAttributeMPTZPresetsWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMPTZPresetsWithCompletionSelector = mkSelector "readAttributeMPTZPresetsWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMPTZPresetsWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMPTZPresetsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMPTZPresetsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMPTZPresetsWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMPTZPresetsWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMPTZPresetsWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMPTZPresetsWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMPTZPresetsWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMPTZPresetsWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMPTZPresetsWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeDPTZStreamsWithCompletion:@
-readAttributeDPTZStreamsWithCompletionSelector :: Selector
+readAttributeDPTZStreamsWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeDPTZStreamsWithCompletionSelector = mkSelector "readAttributeDPTZStreamsWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeDPTZStreamsWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeDPTZStreamsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeDPTZStreamsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeDPTZStreamsWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeDPTZStreamsWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeDPTZStreamsWithClusterStateCache:endpoint:queue:completion:@
-readAttributeDPTZStreamsWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeDPTZStreamsWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeDPTZStreamsWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeDPTZStreamsWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeZoomMaxWithCompletion:@
-readAttributeZoomMaxWithCompletionSelector :: Selector
+readAttributeZoomMaxWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeZoomMaxWithCompletionSelector = mkSelector "readAttributeZoomMaxWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeZoomMaxWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeZoomMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeZoomMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeZoomMaxWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeZoomMaxWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeZoomMaxWithClusterStateCache:endpoint:queue:completion:@
-readAttributeZoomMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeZoomMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeZoomMaxWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeZoomMaxWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTiltMinWithCompletion:@
-readAttributeTiltMinWithCompletionSelector :: Selector
+readAttributeTiltMinWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTiltMinWithCompletionSelector = mkSelector "readAttributeTiltMinWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTiltMinWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTiltMinWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTiltMinWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTiltMinWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTiltMinWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTiltMinWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTiltMinWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTiltMinWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTiltMinWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTiltMinWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTiltMaxWithCompletion:@
-readAttributeTiltMaxWithCompletionSelector :: Selector
+readAttributeTiltMaxWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTiltMaxWithCompletionSelector = mkSelector "readAttributeTiltMaxWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTiltMaxWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTiltMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTiltMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTiltMaxWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTiltMaxWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTiltMaxWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTiltMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTiltMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTiltMaxWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTiltMaxWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributePanMinWithCompletion:@
-readAttributePanMinWithCompletionSelector :: Selector
+readAttributePanMinWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributePanMinWithCompletionSelector = mkSelector "readAttributePanMinWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributePanMinWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributePanMinWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributePanMinWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributePanMinWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributePanMinWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributePanMinWithClusterStateCache:endpoint:queue:completion:@
-readAttributePanMinWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributePanMinWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributePanMinWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributePanMinWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributePanMaxWithCompletion:@
-readAttributePanMaxWithCompletionSelector :: Selector
+readAttributePanMaxWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributePanMaxWithCompletionSelector = mkSelector "readAttributePanMaxWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributePanMaxWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributePanMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributePanMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributePanMaxWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributePanMaxWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributePanMaxWithClusterStateCache:endpoint:queue:completion:@
-readAttributePanMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributePanMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributePanMaxWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributePanMaxWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMovementStateWithCompletion:@
-readAttributeMovementStateWithCompletionSelector :: Selector
+readAttributeMovementStateWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMovementStateWithCompletionSelector = mkSelector "readAttributeMovementStateWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMovementStateWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMovementStateWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMovementStateWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMovementStateWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMovementStateWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMovementStateWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMovementStateWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMovementStateWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMovementStateWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMovementStateWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterCameraAVSettingsUserLevelManagement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterCameraAVSettingsUserLevelManagement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterCameraAVSettingsUserLevelManagement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

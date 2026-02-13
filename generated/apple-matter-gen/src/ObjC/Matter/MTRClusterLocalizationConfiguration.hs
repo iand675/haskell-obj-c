@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.Matter.MTRClusterLocalizationConfiguration
   , new
   , initWithDevice_endpoint_queue
   , initWithDevice_endpointID_queue
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeActiveLocaleWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeSupportedLocalesWithParamsSelector
   , writeAttributeActiveLocaleWithValue_expectedValueIntervalSelector
   , writeAttributeActiveLocaleWithValue_expectedValueInterval_paramsSelector
-  , readAttributeSupportedLocalesWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , initWithDevice_endpointID_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,143 +52,126 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeActiveLocaleWithParams:@
 readAttributeActiveLocaleWithParams :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsMTRReadParams params) => mtrClusterLocalizationConfiguration -> params -> IO (Id NSDictionary)
-readAttributeActiveLocaleWithParams mtrClusterLocalizationConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterLocalizationConfiguration (mkSelector "readAttributeActiveLocaleWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveLocaleWithParams mtrClusterLocalizationConfiguration params =
+  sendMessage mtrClusterLocalizationConfiguration readAttributeActiveLocaleWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeActiveLocaleWithValue:expectedValueInterval:@
 writeAttributeActiveLocaleWithValue_expectedValueInterval :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterLocalizationConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeActiveLocaleWithValue_expectedValueInterval mtrClusterLocalizationConfiguration  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterLocalizationConfiguration (mkSelector "writeAttributeActiveLocaleWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeActiveLocaleWithValue_expectedValueInterval mtrClusterLocalizationConfiguration dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterLocalizationConfiguration writeAttributeActiveLocaleWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeActiveLocaleWithValue:expectedValueInterval:params:@
 writeAttributeActiveLocaleWithValue_expectedValueInterval_params :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterLocalizationConfiguration -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeActiveLocaleWithValue_expectedValueInterval_params mtrClusterLocalizationConfiguration  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterLocalizationConfiguration (mkSelector "writeAttributeActiveLocaleWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeActiveLocaleWithValue_expectedValueInterval_params mtrClusterLocalizationConfiguration dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterLocalizationConfiguration writeAttributeActiveLocaleWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeSupportedLocalesWithParams:@
 readAttributeSupportedLocalesWithParams :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsMTRReadParams params) => mtrClusterLocalizationConfiguration -> params -> IO (Id NSDictionary)
-readAttributeSupportedLocalesWithParams mtrClusterLocalizationConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterLocalizationConfiguration (mkSelector "readAttributeSupportedLocalesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupportedLocalesWithParams mtrClusterLocalizationConfiguration params =
+  sendMessage mtrClusterLocalizationConfiguration readAttributeSupportedLocalesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsMTRReadParams params) => mtrClusterLocalizationConfiguration -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterLocalizationConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterLocalizationConfiguration (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterLocalizationConfiguration params =
+  sendMessage mtrClusterLocalizationConfiguration readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsMTRReadParams params) => mtrClusterLocalizationConfiguration -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterLocalizationConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterLocalizationConfiguration (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterLocalizationConfiguration params =
+  sendMessage mtrClusterLocalizationConfiguration readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsMTRReadParams params) => mtrClusterLocalizationConfiguration -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterLocalizationConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterLocalizationConfiguration (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterLocalizationConfiguration params =
+  sendMessage mtrClusterLocalizationConfiguration readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsMTRReadParams params) => mtrClusterLocalizationConfiguration -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterLocalizationConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterLocalizationConfiguration (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterLocalizationConfiguration params =
+  sendMessage mtrClusterLocalizationConfiguration readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsMTRReadParams params) => mtrClusterLocalizationConfiguration -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterLocalizationConfiguration  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterLocalizationConfiguration (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterLocalizationConfiguration params =
+  sendMessage mtrClusterLocalizationConfiguration readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration => mtrClusterLocalizationConfiguration -> IO (Id MTRClusterLocalizationConfiguration)
-init_ mtrClusterLocalizationConfiguration  =
-    sendMsg mtrClusterLocalizationConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterLocalizationConfiguration =
+  sendOwnedMessage mtrClusterLocalizationConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterLocalizationConfiguration)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterLocalizationConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsMTRDevice device, IsNSObject queue) => mtrClusterLocalizationConfiguration -> device -> CUShort -> queue -> IO (Id MTRClusterLocalizationConfiguration)
-initWithDevice_endpoint_queue mtrClusterLocalizationConfiguration  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterLocalizationConfiguration (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterLocalizationConfiguration device endpoint queue =
+  sendOwnedMessage mtrClusterLocalizationConfiguration initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterLocalizationConfiguration mtrClusterLocalizationConfiguration, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterLocalizationConfiguration -> device -> endpointID -> queue -> IO (Id MTRClusterLocalizationConfiguration)
-initWithDevice_endpointID_queue mtrClusterLocalizationConfiguration  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterLocalizationConfiguration (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterLocalizationConfiguration device endpointID queue =
+  sendOwnedMessage mtrClusterLocalizationConfiguration initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeActiveLocaleWithParams:@
-readAttributeActiveLocaleWithParamsSelector :: Selector
+readAttributeActiveLocaleWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveLocaleWithParamsSelector = mkSelector "readAttributeActiveLocaleWithParams:"
 
 -- | @Selector@ for @writeAttributeActiveLocaleWithValue:expectedValueInterval:@
-writeAttributeActiveLocaleWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeActiveLocaleWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeActiveLocaleWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeActiveLocaleWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeActiveLocaleWithValue:expectedValueInterval:params:@
-writeAttributeActiveLocaleWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeActiveLocaleWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeActiveLocaleWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeActiveLocaleWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeSupportedLocalesWithParams:@
-readAttributeSupportedLocalesWithParamsSelector :: Selector
+readAttributeSupportedLocalesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupportedLocalesWithParamsSelector = mkSelector "readAttributeSupportedLocalesWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterLocalizationConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterLocalizationConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterLocalizationConfiguration)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterLocalizationConfiguration)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

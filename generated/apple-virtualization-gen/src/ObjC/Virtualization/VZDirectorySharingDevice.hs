@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,21 +21,17 @@ module ObjC.Virtualization.VZDirectorySharingDevice
   , IsVZDirectorySharingDevice(..)
   , new
   , init_
-  , newSelector
   , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,22 +43,22 @@ new :: IO (Id VZDirectorySharingDevice)
 new  =
   do
     cls' <- getRequiredClass "VZDirectorySharingDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZDirectorySharingDevice vzDirectorySharingDevice => vzDirectorySharingDevice -> IO (Id VZDirectorySharingDevice)
-init_ vzDirectorySharingDevice  =
-    sendMsg vzDirectorySharingDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzDirectorySharingDevice =
+  sendOwnedMessage vzDirectorySharingDevice initSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZDirectorySharingDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZDirectorySharingDevice)
 initSelector = mkSelector "init"
 

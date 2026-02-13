@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.AuthenticationServices.ASWebAuthenticationSessionRequest
   , setDelegate
   , additionalHeaderFields
   , callback
-  , newSelector
-  , initSelector
-  , cancelWithErrorSelector
-  , completeWithCallbackURLSelector
-  , uuidSelector
-  , urlSelector
-  , callbackURLSchemeSelector
-  , shouldUseEphemeralSessionSelector
-  , delegateSelector
-  , setDelegateSelector
   , additionalHeaderFieldsSelector
   , callbackSelector
+  , callbackURLSchemeSelector
+  , cancelWithErrorSelector
+  , completeWithCallbackURLSelector
+  , delegateSelector
+  , initSelector
+  , newSelector
+  , setDelegateSelector
+  , shouldUseEphemeralSessionSelector
+  , urlSelector
+  , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,118 +51,116 @@ new :: IO (Id ASWebAuthenticationSessionRequest)
 new  =
   do
     cls' <- getRequiredClass "ASWebAuthenticationSessionRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> IO (Id ASWebAuthenticationSessionRequest)
-init_ asWebAuthenticationSessionRequest  =
-    sendMsg asWebAuthenticationSessionRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asWebAuthenticationSessionRequest =
+  sendOwnedMessage asWebAuthenticationSessionRequest initSelector
 
 -- | @- cancelWithError:@
 cancelWithError :: (IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest, IsNSError error_) => asWebAuthenticationSessionRequest -> error_ -> IO ()
-cancelWithError asWebAuthenticationSessionRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg asWebAuthenticationSessionRequest (mkSelector "cancelWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+cancelWithError asWebAuthenticationSessionRequest error_ =
+  sendMessage asWebAuthenticationSessionRequest cancelWithErrorSelector (toNSError error_)
 
 -- | @- completeWithCallbackURL:@
 completeWithCallbackURL :: (IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest, IsNSURL url) => asWebAuthenticationSessionRequest -> url -> IO ()
-completeWithCallbackURL asWebAuthenticationSessionRequest  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg asWebAuthenticationSessionRequest (mkSelector "completeWithCallbackURL:") retVoid [argPtr (castPtr raw_url :: Ptr ())]
+completeWithCallbackURL asWebAuthenticationSessionRequest url =
+  sendMessage asWebAuthenticationSessionRequest completeWithCallbackURLSelector (toNSURL url)
 
 -- | @- UUID@
 uuid :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> IO (Id NSUUID)
-uuid asWebAuthenticationSessionRequest  =
-    sendMsg asWebAuthenticationSessionRequest (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid asWebAuthenticationSessionRequest =
+  sendMessage asWebAuthenticationSessionRequest uuidSelector
 
 -- | @- URL@
 url :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> IO (Id NSURL)
-url asWebAuthenticationSessionRequest  =
-    sendMsg asWebAuthenticationSessionRequest (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url asWebAuthenticationSessionRequest =
+  sendMessage asWebAuthenticationSessionRequest urlSelector
 
 -- | @- callbackURLScheme@
 callbackURLScheme :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> IO (Id NSString)
-callbackURLScheme asWebAuthenticationSessionRequest  =
-    sendMsg asWebAuthenticationSessionRequest (mkSelector "callbackURLScheme") (retPtr retVoid) [] >>= retainedObject . castPtr
+callbackURLScheme asWebAuthenticationSessionRequest =
+  sendMessage asWebAuthenticationSessionRequest callbackURLSchemeSelector
 
 -- | @- shouldUseEphemeralSession@
 shouldUseEphemeralSession :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> IO Bool
-shouldUseEphemeralSession asWebAuthenticationSessionRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asWebAuthenticationSessionRequest (mkSelector "shouldUseEphemeralSession") retCULong []
+shouldUseEphemeralSession asWebAuthenticationSessionRequest =
+  sendMessage asWebAuthenticationSessionRequest shouldUseEphemeralSessionSelector
 
 -- | @- delegate@
 delegate :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> IO RawId
-delegate asWebAuthenticationSessionRequest  =
-    fmap (RawId . castPtr) $ sendMsg asWebAuthenticationSessionRequest (mkSelector "delegate") (retPtr retVoid) []
+delegate asWebAuthenticationSessionRequest =
+  sendMessage asWebAuthenticationSessionRequest delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> RawId -> IO ()
-setDelegate asWebAuthenticationSessionRequest  value =
-    sendMsg asWebAuthenticationSessionRequest (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate asWebAuthenticationSessionRequest value =
+  sendMessage asWebAuthenticationSessionRequest setDelegateSelector value
 
 -- | Additional headers to be sent when loading the initial URL. These should _only_ apply to the initial page, and should not overwrite any headers normally sent by the browser. Add @AdditionalHeaderFieldsAreSupported: true@ to @ASWebAuthenticationSessionWebBrowserSupportCapabilities@ in your browser's Info.plist file to indicate support for this.
 --
 -- ObjC selector: @- additionalHeaderFields@
 additionalHeaderFields :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> IO (Id NSDictionary)
-additionalHeaderFields asWebAuthenticationSessionRequest  =
-    sendMsg asWebAuthenticationSessionRequest (mkSelector "additionalHeaderFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+additionalHeaderFields asWebAuthenticationSessionRequest =
+  sendMessage asWebAuthenticationSessionRequest additionalHeaderFieldsSelector
 
 -- | The callback to listen for to complete this request. Check all main-frame navigations loaded during the request with this callback. It is used to handle all callback types, including custom schemes and HTTPS navigations. When a match is found, invoke @-completeWithCallbackURL:@ with that URL. Add @CallbackURLMatchingIsSupported: true@ to @ASWebAuthenticationSessionWebBrowserSupportCapabilities@ in your browser's Info.plist file to indicate support for this.
 --
 -- ObjC selector: @- callback@
 callback :: IsASWebAuthenticationSessionRequest asWebAuthenticationSessionRequest => asWebAuthenticationSessionRequest -> IO (Id ASWebAuthenticationSessionCallback)
-callback asWebAuthenticationSessionRequest  =
-    sendMsg asWebAuthenticationSessionRequest (mkSelector "callback") (retPtr retVoid) [] >>= retainedObject . castPtr
+callback asWebAuthenticationSessionRequest =
+  sendMessage asWebAuthenticationSessionRequest callbackSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASWebAuthenticationSessionRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASWebAuthenticationSessionRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @cancelWithError:@
-cancelWithErrorSelector :: Selector
+cancelWithErrorSelector :: Selector '[Id NSError] ()
 cancelWithErrorSelector = mkSelector "cancelWithError:"
 
 -- | @Selector@ for @completeWithCallbackURL:@
-completeWithCallbackURLSelector :: Selector
+completeWithCallbackURLSelector :: Selector '[Id NSURL] ()
 completeWithCallbackURLSelector = mkSelector "completeWithCallbackURL:"
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "UUID"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @callbackURLScheme@
-callbackURLSchemeSelector :: Selector
+callbackURLSchemeSelector :: Selector '[] (Id NSString)
 callbackURLSchemeSelector = mkSelector "callbackURLScheme"
 
 -- | @Selector@ for @shouldUseEphemeralSession@
-shouldUseEphemeralSessionSelector :: Selector
+shouldUseEphemeralSessionSelector :: Selector '[] Bool
 shouldUseEphemeralSessionSelector = mkSelector "shouldUseEphemeralSession"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @additionalHeaderFields@
-additionalHeaderFieldsSelector :: Selector
+additionalHeaderFieldsSelector :: Selector '[] (Id NSDictionary)
 additionalHeaderFieldsSelector = mkSelector "additionalHeaderFields"
 
 -- | @Selector@ for @callback@
-callbackSelector :: Selector
+callbackSelector :: Selector '[] (Id ASWebAuthenticationSessionCallback)
 callbackSelector = mkSelector "callback"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.Matter.MTRThermostatClusterGetWeeklyScheduleResponseParams
   , setTransitions
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
-  , numberOfTransitionsForSequenceSelector
-  , setNumberOfTransitionsForSequenceSelector
   , dayOfWeekForSequenceSelector
-  , setDayOfWeekForSequenceSelector
+  , initWithResponseValue_errorSelector
   , modeForSequenceSelector
+  , numberOfTransitionsForSequenceSelector
+  , setDayOfWeekForSequenceSelector
   , setModeForSequenceSelector
-  , transitionsSelector
+  , setNumberOfTransitionsForSequenceSelector
+  , setTimedInvokeTimeoutMsSelector
   , setTransitionsSelector
   , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , transitionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,54 +52,48 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrThermostatClusterGetWeeklyScheduleResponseParams -> responseValue -> error_ -> IO (Id MTRThermostatClusterGetWeeklyScheduleResponseParams)
-initWithResponseValue_error mtrThermostatClusterGetWeeklyScheduleResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrThermostatClusterGetWeeklyScheduleResponseParams responseValue error_ =
+  sendOwnedMessage mtrThermostatClusterGetWeeklyScheduleResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- numberOfTransitionsForSequence@
 numberOfTransitionsForSequence :: IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams => mtrThermostatClusterGetWeeklyScheduleResponseParams -> IO (Id NSNumber)
-numberOfTransitionsForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams  =
-    sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "numberOfTransitionsForSequence") (retPtr retVoid) [] >>= retainedObject . castPtr
+numberOfTransitionsForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams numberOfTransitionsForSequenceSelector
 
 -- | @- setNumberOfTransitionsForSequence:@
 setNumberOfTransitionsForSequence :: (IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams, IsNSNumber value) => mtrThermostatClusterGetWeeklyScheduleResponseParams -> value -> IO ()
-setNumberOfTransitionsForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "setNumberOfTransitionsForSequence:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNumberOfTransitionsForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams value =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams setNumberOfTransitionsForSequenceSelector (toNSNumber value)
 
 -- | @- dayOfWeekForSequence@
 dayOfWeekForSequence :: IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams => mtrThermostatClusterGetWeeklyScheduleResponseParams -> IO (Id NSNumber)
-dayOfWeekForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams  =
-    sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "dayOfWeekForSequence") (retPtr retVoid) [] >>= retainedObject . castPtr
+dayOfWeekForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams dayOfWeekForSequenceSelector
 
 -- | @- setDayOfWeekForSequence:@
 setDayOfWeekForSequence :: (IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams, IsNSNumber value) => mtrThermostatClusterGetWeeklyScheduleResponseParams -> value -> IO ()
-setDayOfWeekForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "setDayOfWeekForSequence:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDayOfWeekForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams value =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams setDayOfWeekForSequenceSelector (toNSNumber value)
 
 -- | @- modeForSequence@
 modeForSequence :: IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams => mtrThermostatClusterGetWeeklyScheduleResponseParams -> IO (Id NSNumber)
-modeForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams  =
-    sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "modeForSequence") (retPtr retVoid) [] >>= retainedObject . castPtr
+modeForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams modeForSequenceSelector
 
 -- | @- setModeForSequence:@
 setModeForSequence :: (IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams, IsNSNumber value) => mtrThermostatClusterGetWeeklyScheduleResponseParams -> value -> IO ()
-setModeForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "setModeForSequence:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setModeForSequence mtrThermostatClusterGetWeeklyScheduleResponseParams value =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams setModeForSequenceSelector (toNSNumber value)
 
 -- | @- transitions@
 transitions :: IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams => mtrThermostatClusterGetWeeklyScheduleResponseParams -> IO (Id NSArray)
-transitions mtrThermostatClusterGetWeeklyScheduleResponseParams  =
-    sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "transitions") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitions mtrThermostatClusterGetWeeklyScheduleResponseParams =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams transitionsSelector
 
 -- | @- setTransitions:@
 setTransitions :: (IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams, IsNSArray value) => mtrThermostatClusterGetWeeklyScheduleResponseParams -> value -> IO ()
-setTransitions mtrThermostatClusterGetWeeklyScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "setTransitions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransitions mtrThermostatClusterGetWeeklyScheduleResponseParams value =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams setTransitionsSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -112,8 +103,8 @@ setTransitions mtrThermostatClusterGetWeeklyScheduleResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams => mtrThermostatClusterGetWeeklyScheduleResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrThermostatClusterGetWeeklyScheduleResponseParams  =
-    sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrThermostatClusterGetWeeklyScheduleResponseParams =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -123,55 +114,54 @@ timedInvokeTimeoutMs mtrThermostatClusterGetWeeklyScheduleResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRThermostatClusterGetWeeklyScheduleResponseParams mtrThermostatClusterGetWeeklyScheduleResponseParams, IsNSNumber value) => mtrThermostatClusterGetWeeklyScheduleResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrThermostatClusterGetWeeklyScheduleResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterGetWeeklyScheduleResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrThermostatClusterGetWeeklyScheduleResponseParams value =
+  sendMessage mtrThermostatClusterGetWeeklyScheduleResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRThermostatClusterGetWeeklyScheduleResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @numberOfTransitionsForSequence@
-numberOfTransitionsForSequenceSelector :: Selector
+numberOfTransitionsForSequenceSelector :: Selector '[] (Id NSNumber)
 numberOfTransitionsForSequenceSelector = mkSelector "numberOfTransitionsForSequence"
 
 -- | @Selector@ for @setNumberOfTransitionsForSequence:@
-setNumberOfTransitionsForSequenceSelector :: Selector
+setNumberOfTransitionsForSequenceSelector :: Selector '[Id NSNumber] ()
 setNumberOfTransitionsForSequenceSelector = mkSelector "setNumberOfTransitionsForSequence:"
 
 -- | @Selector@ for @dayOfWeekForSequence@
-dayOfWeekForSequenceSelector :: Selector
+dayOfWeekForSequenceSelector :: Selector '[] (Id NSNumber)
 dayOfWeekForSequenceSelector = mkSelector "dayOfWeekForSequence"
 
 -- | @Selector@ for @setDayOfWeekForSequence:@
-setDayOfWeekForSequenceSelector :: Selector
+setDayOfWeekForSequenceSelector :: Selector '[Id NSNumber] ()
 setDayOfWeekForSequenceSelector = mkSelector "setDayOfWeekForSequence:"
 
 -- | @Selector@ for @modeForSequence@
-modeForSequenceSelector :: Selector
+modeForSequenceSelector :: Selector '[] (Id NSNumber)
 modeForSequenceSelector = mkSelector "modeForSequence"
 
 -- | @Selector@ for @setModeForSequence:@
-setModeForSequenceSelector :: Selector
+setModeForSequenceSelector :: Selector '[Id NSNumber] ()
 setModeForSequenceSelector = mkSelector "setModeForSequence:"
 
 -- | @Selector@ for @transitions@
-transitionsSelector :: Selector
+transitionsSelector :: Selector '[] (Id NSArray)
 transitionsSelector = mkSelector "transitions"
 
 -- | @Selector@ for @setTransitions:@
-setTransitionsSelector :: Selector
+setTransitionsSelector :: Selector '[Id NSArray] ()
 setTransitionsSelector = mkSelector "setTransitions:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

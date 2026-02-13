@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,15 @@ module ObjC.FSKit.FSContainerStatus
   , status
   , active
   , ready
-  , initSelector
+  , activeSelector
   , activeWithStatusSelector
   , blockedWithStatusSelector
+  , initSelector
   , notReadyWithStatusSelector
+  , readySelector
   , readyWithStatusSelector
   , stateSelector
   , statusSelector
-  , activeSelector
-  , readySelector
 
   -- * Enum types
   , FSContainerState(FSContainerState)
@@ -43,15 +44,11 @@ module ObjC.FSKit.FSContainerStatus
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSContainerStatus fsContainerStatus => fsContainerStatus -> IO (Id FSContainerStatus)
-init_ fsContainerStatus  =
-    sendMsg fsContainerStatus (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsContainerStatus =
+  sendOwnedMessage fsContainerStatus initSelector
 
 -- | Returns a active container status instance with the provided error status.
 --
@@ -73,8 +70,7 @@ activeWithStatus :: IsNSError errorStatus => errorStatus -> IO (Id FSContainerSt
 activeWithStatus errorStatus =
   do
     cls' <- getRequiredClass "FSContainerStatus"
-    withObjCPtr errorStatus $ \raw_errorStatus ->
-      sendClassMsg cls' (mkSelector "activeWithStatus:") (retPtr retVoid) [argPtr (castPtr raw_errorStatus :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' activeWithStatusSelector (toNSError errorStatus)
 
 -- | Returns a blocked container status instance with the provided error status.
 --
@@ -85,8 +81,7 @@ blockedWithStatus :: IsNSError errorStatus => errorStatus -> IO (Id FSContainerS
 blockedWithStatus errorStatus =
   do
     cls' <- getRequiredClass "FSContainerStatus"
-    withObjCPtr errorStatus $ \raw_errorStatus ->
-      sendClassMsg cls' (mkSelector "blockedWithStatus:") (retPtr retVoid) [argPtr (castPtr raw_errorStatus :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' blockedWithStatusSelector (toNSError errorStatus)
 
 -- | Returns a not-ready container status instance with the provided error status.
 --
@@ -97,8 +92,7 @@ notReadyWithStatus :: IsNSError errorStatus => errorStatus -> IO (Id FSContainer
 notReadyWithStatus errorStatus =
   do
     cls' <- getRequiredClass "FSContainerStatus"
-    withObjCPtr errorStatus $ \raw_errorStatus ->
-      sendClassMsg cls' (mkSelector "notReadyWithStatus:") (retPtr retVoid) [argPtr (castPtr raw_errorStatus :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' notReadyWithStatusSelector (toNSError errorStatus)
 
 -- | Returns a ready container status instance with the provided error status.
 --
@@ -109,22 +103,21 @@ readyWithStatus :: IsNSError errorStatus => errorStatus -> IO (Id FSContainerSta
 readyWithStatus errorStatus =
   do
     cls' <- getRequiredClass "FSContainerStatus"
-    withObjCPtr errorStatus $ \raw_errorStatus ->
-      sendClassMsg cls' (mkSelector "readyWithStatus:") (retPtr retVoid) [argPtr (castPtr raw_errorStatus :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' readyWithStatusSelector (toNSError errorStatus)
 
 -- | A value that represents the container state, such as ready, active, or blocked.
 --
 -- ObjC selector: @- state@
 state :: IsFSContainerStatus fsContainerStatus => fsContainerStatus -> IO FSContainerState
-state fsContainerStatus  =
-    fmap (coerce :: CLong -> FSContainerState) $ sendMsg fsContainerStatus (mkSelector "state") retCLong []
+state fsContainerStatus =
+  sendMessage fsContainerStatus stateSelector
 
 -- | An optional error that provides further information about the state.
 --
 -- ObjC selector: @- status@
 status :: IsFSContainerStatus fsContainerStatus => fsContainerStatus -> IO (Id NSError)
-status fsContainerStatus  =
-    sendMsg fsContainerStatus (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status fsContainerStatus =
+  sendMessage fsContainerStatus statusSelector
 
 -- | A status that represents an active container with no error.
 --
@@ -135,7 +128,7 @@ active :: IO (Id FSContainerStatus)
 active  =
   do
     cls' <- getRequiredClass "FSContainerStatus"
-    sendClassMsg cls' (mkSelector "active") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' activeSelector
 
 -- | A status that represents a ready container with no error.
 --
@@ -146,45 +139,45 @@ ready :: IO (Id FSContainerStatus)
 ready  =
   do
     cls' <- getRequiredClass "FSContainerStatus"
-    sendClassMsg cls' (mkSelector "ready") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' readySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSContainerStatus)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @activeWithStatus:@
-activeWithStatusSelector :: Selector
+activeWithStatusSelector :: Selector '[Id NSError] (Id FSContainerStatus)
 activeWithStatusSelector = mkSelector "activeWithStatus:"
 
 -- | @Selector@ for @blockedWithStatus:@
-blockedWithStatusSelector :: Selector
+blockedWithStatusSelector :: Selector '[Id NSError] (Id FSContainerStatus)
 blockedWithStatusSelector = mkSelector "blockedWithStatus:"
 
 -- | @Selector@ for @notReadyWithStatus:@
-notReadyWithStatusSelector :: Selector
+notReadyWithStatusSelector :: Selector '[Id NSError] (Id FSContainerStatus)
 notReadyWithStatusSelector = mkSelector "notReadyWithStatus:"
 
 -- | @Selector@ for @readyWithStatus:@
-readyWithStatusSelector :: Selector
+readyWithStatusSelector :: Selector '[Id NSError] (Id FSContainerStatus)
 readyWithStatusSelector = mkSelector "readyWithStatus:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] FSContainerState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSError)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] (Id FSContainerStatus)
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @ready@
-readySelector :: Selector
+readySelector :: Selector '[] (Id FSContainerStatus)
 readySelector = mkSelector "ready"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Foundation.NSMorphologyPronoun
   , pronoun
   , morphology
   , dependentMorphology
-  , newSelector
+  , dependentMorphologySelector
   , initSelector
   , initWithPronoun_morphology_dependentMorphologySelector
-  , pronounSelector
   , morphologySelector
-  , dependentMorphologySelector
+  , newSelector
+  , pronounSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,61 +38,58 @@ new :: IO (Id NSMorphologyPronoun)
 new  =
   do
     cls' <- getRequiredClass "NSMorphologyPronoun"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSMorphologyPronoun nsMorphologyPronoun => nsMorphologyPronoun -> IO (Id NSMorphologyPronoun)
-init_ nsMorphologyPronoun  =
-    sendMsg nsMorphologyPronoun (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsMorphologyPronoun =
+  sendOwnedMessage nsMorphologyPronoun initSelector
 
 -- | @- initWithPronoun:morphology:dependentMorphology:@
 initWithPronoun_morphology_dependentMorphology :: (IsNSMorphologyPronoun nsMorphologyPronoun, IsNSString pronoun, IsNSMorphology morphology, IsNSMorphology dependentMorphology) => nsMorphologyPronoun -> pronoun -> morphology -> dependentMorphology -> IO (Id NSMorphologyPronoun)
-initWithPronoun_morphology_dependentMorphology nsMorphologyPronoun  pronoun morphology dependentMorphology =
-  withObjCPtr pronoun $ \raw_pronoun ->
-    withObjCPtr morphology $ \raw_morphology ->
-      withObjCPtr dependentMorphology $ \raw_dependentMorphology ->
-          sendMsg nsMorphologyPronoun (mkSelector "initWithPronoun:morphology:dependentMorphology:") (retPtr retVoid) [argPtr (castPtr raw_pronoun :: Ptr ()), argPtr (castPtr raw_morphology :: Ptr ()), argPtr (castPtr raw_dependentMorphology :: Ptr ())] >>= ownedObject . castPtr
+initWithPronoun_morphology_dependentMorphology nsMorphologyPronoun pronoun morphology dependentMorphology =
+  sendOwnedMessage nsMorphologyPronoun initWithPronoun_morphology_dependentMorphologySelector (toNSString pronoun) (toNSMorphology morphology) (toNSMorphology dependentMorphology)
 
 -- | @- pronoun@
 pronoun :: IsNSMorphologyPronoun nsMorphologyPronoun => nsMorphologyPronoun -> IO (Id NSString)
-pronoun nsMorphologyPronoun  =
-    sendMsg nsMorphologyPronoun (mkSelector "pronoun") (retPtr retVoid) [] >>= retainedObject . castPtr
+pronoun nsMorphologyPronoun =
+  sendMessage nsMorphologyPronoun pronounSelector
 
 -- | @- morphology@
 morphology :: IsNSMorphologyPronoun nsMorphologyPronoun => nsMorphologyPronoun -> IO (Id NSMorphology)
-morphology nsMorphologyPronoun  =
-    sendMsg nsMorphologyPronoun (mkSelector "morphology") (retPtr retVoid) [] >>= retainedObject . castPtr
+morphology nsMorphologyPronoun =
+  sendMessage nsMorphologyPronoun morphologySelector
 
 -- | @- dependentMorphology@
 dependentMorphology :: IsNSMorphologyPronoun nsMorphologyPronoun => nsMorphologyPronoun -> IO (Id NSMorphology)
-dependentMorphology nsMorphologyPronoun  =
-    sendMsg nsMorphologyPronoun (mkSelector "dependentMorphology") (retPtr retVoid) [] >>= retainedObject . castPtr
+dependentMorphology nsMorphologyPronoun =
+  sendMessage nsMorphologyPronoun dependentMorphologySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSMorphologyPronoun)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSMorphologyPronoun)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithPronoun:morphology:dependentMorphology:@
-initWithPronoun_morphology_dependentMorphologySelector :: Selector
+initWithPronoun_morphology_dependentMorphologySelector :: Selector '[Id NSString, Id NSMorphology, Id NSMorphology] (Id NSMorphologyPronoun)
 initWithPronoun_morphology_dependentMorphologySelector = mkSelector "initWithPronoun:morphology:dependentMorphology:"
 
 -- | @Selector@ for @pronoun@
-pronounSelector :: Selector
+pronounSelector :: Selector '[] (Id NSString)
 pronounSelector = mkSelector "pronoun"
 
 -- | @Selector@ for @morphology@
-morphologySelector :: Selector
+morphologySelector :: Selector '[] (Id NSMorphology)
 morphologySelector = mkSelector "morphology"
 
 -- | @Selector@ for @dependentMorphology@
-dependentMorphologySelector :: Selector
+dependentMorphologySelector :: Selector '[] (Id NSMorphology)
 dependentMorphologySelector = mkSelector "dependentMorphology"
 

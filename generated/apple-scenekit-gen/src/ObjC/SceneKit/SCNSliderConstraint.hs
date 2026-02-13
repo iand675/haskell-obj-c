@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.SceneKit.SCNSliderConstraint
   , setRadius
   , offset
   , setOffset
-  , sliderConstraintSelector
   , collisionCategoryBitMaskSelector
-  , setCollisionCategoryBitMaskSelector
-  , radiusSelector
-  , setRadiusSelector
   , offsetSelector
+  , radiusSelector
+  , setCollisionCategoryBitMaskSelector
   , setOffsetSelector
+  , setRadiusSelector
+  , sliderConstraintSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,7 +50,7 @@ sliderConstraint :: IO (Id SCNSliderConstraint)
 sliderConstraint  =
   do
     cls' <- getRequiredClass "SCNSliderConstraint"
-    sendClassMsg cls' (mkSelector "sliderConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sliderConstraintSelector
 
 -- | collisionCategoryBitMask
 --
@@ -61,8 +58,8 @@ sliderConstraint  =
 --
 -- ObjC selector: @- collisionCategoryBitMask@
 collisionCategoryBitMask :: IsSCNSliderConstraint scnSliderConstraint => scnSliderConstraint -> IO CULong
-collisionCategoryBitMask scnSliderConstraint  =
-    sendMsg scnSliderConstraint (mkSelector "collisionCategoryBitMask") retCULong []
+collisionCategoryBitMask scnSliderConstraint =
+  sendMessage scnSliderConstraint collisionCategoryBitMaskSelector
 
 -- | collisionCategoryBitMask
 --
@@ -70,8 +67,8 @@ collisionCategoryBitMask scnSliderConstraint  =
 --
 -- ObjC selector: @- setCollisionCategoryBitMask:@
 setCollisionCategoryBitMask :: IsSCNSliderConstraint scnSliderConstraint => scnSliderConstraint -> CULong -> IO ()
-setCollisionCategoryBitMask scnSliderConstraint  value =
-    sendMsg scnSliderConstraint (mkSelector "setCollisionCategoryBitMask:") retVoid [argCULong value]
+setCollisionCategoryBitMask scnSliderConstraint value =
+  sendMessage scnSliderConstraint setCollisionCategoryBitMaskSelector value
 
 -- | radius
 --
@@ -79,8 +76,8 @@ setCollisionCategoryBitMask scnSliderConstraint  value =
 --
 -- ObjC selector: @- radius@
 radius :: IsSCNSliderConstraint scnSliderConstraint => scnSliderConstraint -> IO CDouble
-radius scnSliderConstraint  =
-    sendMsg scnSliderConstraint (mkSelector "radius") retCDouble []
+radius scnSliderConstraint =
+  sendMessage scnSliderConstraint radiusSelector
 
 -- | radius
 --
@@ -88,8 +85,8 @@ radius scnSliderConstraint  =
 --
 -- ObjC selector: @- setRadius:@
 setRadius :: IsSCNSliderConstraint scnSliderConstraint => scnSliderConstraint -> CDouble -> IO ()
-setRadius scnSliderConstraint  value =
-    sendMsg scnSliderConstraint (mkSelector "setRadius:") retVoid [argCDouble value]
+setRadius scnSliderConstraint value =
+  sendMessage scnSliderConstraint setRadiusSelector value
 
 -- | offset
 --
@@ -97,8 +94,8 @@ setRadius scnSliderConstraint  value =
 --
 -- ObjC selector: @- offset@
 offset :: IsSCNSliderConstraint scnSliderConstraint => scnSliderConstraint -> IO SCNVector3
-offset scnSliderConstraint  =
-    sendMsgStret scnSliderConstraint (mkSelector "offset") retSCNVector3 []
+offset scnSliderConstraint =
+  sendMessage scnSliderConstraint offsetSelector
 
 -- | offset
 --
@@ -106,38 +103,38 @@ offset scnSliderConstraint  =
 --
 -- ObjC selector: @- setOffset:@
 setOffset :: IsSCNSliderConstraint scnSliderConstraint => scnSliderConstraint -> SCNVector3 -> IO ()
-setOffset scnSliderConstraint  value =
-    sendMsg scnSliderConstraint (mkSelector "setOffset:") retVoid [argSCNVector3 value]
+setOffset scnSliderConstraint value =
+  sendMessage scnSliderConstraint setOffsetSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sliderConstraint@
-sliderConstraintSelector :: Selector
+sliderConstraintSelector :: Selector '[] (Id SCNSliderConstraint)
 sliderConstraintSelector = mkSelector "sliderConstraint"
 
 -- | @Selector@ for @collisionCategoryBitMask@
-collisionCategoryBitMaskSelector :: Selector
+collisionCategoryBitMaskSelector :: Selector '[] CULong
 collisionCategoryBitMaskSelector = mkSelector "collisionCategoryBitMask"
 
 -- | @Selector@ for @setCollisionCategoryBitMask:@
-setCollisionCategoryBitMaskSelector :: Selector
+setCollisionCategoryBitMaskSelector :: Selector '[CULong] ()
 setCollisionCategoryBitMaskSelector = mkSelector "setCollisionCategoryBitMask:"
 
 -- | @Selector@ for @radius@
-radiusSelector :: Selector
+radiusSelector :: Selector '[] CDouble
 radiusSelector = mkSelector "radius"
 
 -- | @Selector@ for @setRadius:@
-setRadiusSelector :: Selector
+setRadiusSelector :: Selector '[CDouble] ()
 setRadiusSelector = mkSelector "setRadius:"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] SCNVector3
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @setOffset:@
-setOffsetSelector :: Selector
+setOffsetSelector :: Selector '[SCNVector3] ()
 setOffsetSelector = mkSelector "setOffset:"
 

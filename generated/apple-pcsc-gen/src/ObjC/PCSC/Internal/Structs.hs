@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Protocol Control Information (PCI)
 data SCARD_IO_REQUEST = SCARD_IO_REQUEST
@@ -37,3 +39,13 @@ argSCARD_IO_REQUEST = mkStorableArg scarD_IO_REQUESTStructType
 
 retSCARD_IO_REQUEST :: RetType SCARD_IO_REQUEST
 retSCARD_IO_REQUEST = mkStorableRetType scarD_IO_REQUESTStructType
+
+instance ObjCArgument SCARD_IO_REQUEST where
+  withObjCArg x k = k (argSCARD_IO_REQUEST x)
+
+instance ObjCReturn SCARD_IO_REQUEST where
+  type RawReturn SCARD_IO_REQUEST = SCARD_IO_REQUEST
+  objcRetType = retSCARD_IO_REQUEST
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

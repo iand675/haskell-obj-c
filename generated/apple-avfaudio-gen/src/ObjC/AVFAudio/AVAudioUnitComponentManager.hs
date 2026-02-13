@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,25 +25,21 @@ module ObjC.AVFAudio.AVAudioUnitComponentManager
   , componentsMatchingDescription
   , tagNames
   , standardLocalizedTagNames
-  , sharedAudioUnitComponentManagerSelector
+  , componentsMatchingDescriptionSelector
   , componentsMatchingPredicateSelector
   , componentsPassingTestSelector
-  , componentsMatchingDescriptionSelector
-  , tagNamesSelector
+  , sharedAudioUnitComponentManagerSelector
   , standardLocalizedTagNamesSelector
+  , tagNamesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,7 +52,7 @@ sharedAudioUnitComponentManager :: IO (Id AVAudioUnitComponentManager)
 sharedAudioUnitComponentManager  =
   do
     cls' <- getRequiredClass "AVAudioUnitComponentManager"
-    sendClassMsg cls' (mkSelector "sharedAudioUnitComponentManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedAudioUnitComponentManagerSelector
 
 -- | componentsMatchingPredicate:
 --
@@ -65,9 +62,8 @@ sharedAudioUnitComponentManager  =
 --
 -- ObjC selector: @- componentsMatchingPredicate:@
 componentsMatchingPredicate :: (IsAVAudioUnitComponentManager avAudioUnitComponentManager, IsNSPredicate predicate) => avAudioUnitComponentManager -> predicate -> IO (Id NSArray)
-componentsMatchingPredicate avAudioUnitComponentManager  predicate =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg avAudioUnitComponentManager (mkSelector "componentsMatchingPredicate:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ())] >>= retainedObject . castPtr
+componentsMatchingPredicate avAudioUnitComponentManager predicate =
+  sendMessage avAudioUnitComponentManager componentsMatchingPredicateSelector (toNSPredicate predicate)
 
 -- | componentsPassingTest:
 --
@@ -77,8 +73,8 @@ componentsMatchingPredicate avAudioUnitComponentManager  predicate =
 --
 -- ObjC selector: @- componentsPassingTest:@
 componentsPassingTest :: IsAVAudioUnitComponentManager avAudioUnitComponentManager => avAudioUnitComponentManager -> Ptr () -> IO (Id NSArray)
-componentsPassingTest avAudioUnitComponentManager  testHandler =
-    sendMsg avAudioUnitComponentManager (mkSelector "componentsPassingTest:") (retPtr retVoid) [argPtr (castPtr testHandler :: Ptr ())] >>= retainedObject . castPtr
+componentsPassingTest avAudioUnitComponentManager testHandler =
+  sendMessage avAudioUnitComponentManager componentsPassingTestSelector testHandler
 
 -- | componentsMatchingDescription:
 --
@@ -88,48 +84,48 @@ componentsPassingTest avAudioUnitComponentManager  testHandler =
 --
 -- ObjC selector: @- componentsMatchingDescription:@
 componentsMatchingDescription :: IsAVAudioUnitComponentManager avAudioUnitComponentManager => avAudioUnitComponentManager -> AudioComponentDescription -> IO (Id NSArray)
-componentsMatchingDescription avAudioUnitComponentManager  desc =
-    sendMsg avAudioUnitComponentManager (mkSelector "componentsMatchingDescription:") (retPtr retVoid) [argAudioComponentDescription desc] >>= retainedObject . castPtr
+componentsMatchingDescription avAudioUnitComponentManager desc =
+  sendMessage avAudioUnitComponentManager componentsMatchingDescriptionSelector desc
 
 -- | returns all tags associated with the current user as well as all system tags defined by 		the audio unit(s).
 --
 -- ObjC selector: @- tagNames@
 tagNames :: IsAVAudioUnitComponentManager avAudioUnitComponentManager => avAudioUnitComponentManager -> IO (Id NSArray)
-tagNames avAudioUnitComponentManager  =
-    sendMsg avAudioUnitComponentManager (mkSelector "tagNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+tagNames avAudioUnitComponentManager =
+  sendMessage avAudioUnitComponentManager tagNamesSelector
 
 -- | returns the localized standard system tags defined by the audio unit(s).
 --
 -- ObjC selector: @- standardLocalizedTagNames@
 standardLocalizedTagNames :: IsAVAudioUnitComponentManager avAudioUnitComponentManager => avAudioUnitComponentManager -> IO (Id NSArray)
-standardLocalizedTagNames avAudioUnitComponentManager  =
-    sendMsg avAudioUnitComponentManager (mkSelector "standardLocalizedTagNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+standardLocalizedTagNames avAudioUnitComponentManager =
+  sendMessage avAudioUnitComponentManager standardLocalizedTagNamesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedAudioUnitComponentManager@
-sharedAudioUnitComponentManagerSelector :: Selector
+sharedAudioUnitComponentManagerSelector :: Selector '[] (Id AVAudioUnitComponentManager)
 sharedAudioUnitComponentManagerSelector = mkSelector "sharedAudioUnitComponentManager"
 
 -- | @Selector@ for @componentsMatchingPredicate:@
-componentsMatchingPredicateSelector :: Selector
+componentsMatchingPredicateSelector :: Selector '[Id NSPredicate] (Id NSArray)
 componentsMatchingPredicateSelector = mkSelector "componentsMatchingPredicate:"
 
 -- | @Selector@ for @componentsPassingTest:@
-componentsPassingTestSelector :: Selector
+componentsPassingTestSelector :: Selector '[Ptr ()] (Id NSArray)
 componentsPassingTestSelector = mkSelector "componentsPassingTest:"
 
 -- | @Selector@ for @componentsMatchingDescription:@
-componentsMatchingDescriptionSelector :: Selector
+componentsMatchingDescriptionSelector :: Selector '[AudioComponentDescription] (Id NSArray)
 componentsMatchingDescriptionSelector = mkSelector "componentsMatchingDescription:"
 
 -- | @Selector@ for @tagNames@
-tagNamesSelector :: Selector
+tagNamesSelector :: Selector '[] (Id NSArray)
 tagNamesSelector = mkSelector "tagNames"
 
 -- | @Selector@ for @standardLocalizedTagNames@
-standardLocalizedTagNamesSelector :: Selector
+standardLocalizedTagNamesSelector :: Selector '[] (Id NSArray)
 standardLocalizedTagNamesSelector = mkSelector "standardLocalizedTagNames"
 

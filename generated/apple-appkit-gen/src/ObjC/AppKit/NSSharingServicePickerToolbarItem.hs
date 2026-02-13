@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AppKit.NSSharingServicePickerToolbarItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- delegate@
 delegate :: IsNSSharingServicePickerToolbarItem nsSharingServicePickerToolbarItem => nsSharingServicePickerToolbarItem -> IO RawId
-delegate nsSharingServicePickerToolbarItem  =
-    fmap (RawId . castPtr) $ sendMsg nsSharingServicePickerToolbarItem (mkSelector "delegate") (retPtr retVoid) []
+delegate nsSharingServicePickerToolbarItem =
+  sendMessage nsSharingServicePickerToolbarItem delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSSharingServicePickerToolbarItem nsSharingServicePickerToolbarItem => nsSharingServicePickerToolbarItem -> RawId -> IO ()
-setDelegate nsSharingServicePickerToolbarItem  value =
-    sendMsg nsSharingServicePickerToolbarItem (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsSharingServicePickerToolbarItem value =
+  sendMessage nsSharingServicePickerToolbarItem setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

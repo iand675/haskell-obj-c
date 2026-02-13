@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,36 +50,32 @@ module ObjC.IOBluetooth.IOBluetoothSDPDataElement
   , getValue
   , containsDataElement
   , containsValue
-  , withElementValueSelector
-  , withType_sizeDescriptor_size_valueSelector
-  , withSDPDataElementRefSelector
-  , initWithElementValueSelector
-  , initWithType_sizeDescriptor_size_valueSelector
-  , getSDPDataElementRefSelector
-  , getTypeDescriptorSelector
-  , getSizeDescriptorSelector
-  , getSizeSelector
-  , getNumberValueSelector
-  , getDataValueSelector
-  , getStringValueSelector
-  , getArrayValueSelector
-  , getUUIDValueSelector
-  , getValueSelector
   , containsDataElementSelector
   , containsValueSelector
+  , getArrayValueSelector
+  , getDataValueSelector
+  , getNumberValueSelector
+  , getSDPDataElementRefSelector
+  , getSizeDescriptorSelector
+  , getSizeSelector
+  , getStringValueSelector
+  , getTypeDescriptorSelector
+  , getUUIDValueSelector
+  , getValueSelector
+  , initWithElementValueSelector
+  , initWithType_sizeDescriptor_size_valueSelector
+  , withElementValueSelector
+  , withSDPDataElementRefSelector
+  , withType_sizeDescriptor_size_valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -100,8 +97,7 @@ withElementValue :: IsNSObject element => element -> IO (Id IOBluetoothSDPDataEl
 withElementValue element =
   do
     cls' <- getRequiredClass "IOBluetoothSDPDataElement"
-    withObjCPtr element $ \raw_element ->
-      sendClassMsg cls' (mkSelector "withElementValue:") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' withElementValueSelector (toNSObject element)
 
 -- | withType:sizeDescriptor:size:value:
 --
@@ -124,8 +120,7 @@ withType_sizeDescriptor_size_value :: IsNSObject newValue => CUChar -> CUChar ->
 withType_sizeDescriptor_size_value type_ newSizeDescriptor newSize newValue =
   do
     cls' <- getRequiredClass "IOBluetoothSDPDataElement"
-    withObjCPtr newValue $ \raw_newValue ->
-      sendClassMsg cls' (mkSelector "withType:sizeDescriptor:size:value:") (retPtr retVoid) [argCUChar type_, argCUChar newSizeDescriptor, argCUInt newSize, argPtr (castPtr raw_newValue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' withType_sizeDescriptor_size_valueSelector type_ newSizeDescriptor newSize (toNSObject newValue)
 
 -- | withSDPDataElementRef:
 --
@@ -140,7 +135,7 @@ withSDPDataElementRef :: Ptr () -> IO (Id IOBluetoothSDPDataElement)
 withSDPDataElementRef sdpDataElementRef =
   do
     cls' <- getRequiredClass "IOBluetoothSDPDataElement"
-    sendClassMsg cls' (mkSelector "withSDPDataElementRef:") (retPtr retVoid) [argPtr sdpDataElementRef] >>= retainedObject . castPtr
+    sendClassMessage cls' withSDPDataElementRefSelector sdpDataElementRef
 
 -- | initWithElementValue:
 --
@@ -154,9 +149,8 @@ withSDPDataElementRef sdpDataElementRef =
 --
 -- ObjC selector: @- initWithElementValue:@
 initWithElementValue :: (IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement, IsNSObject element) => ioBluetoothSDPDataElement -> element -> IO (Id IOBluetoothSDPDataElement)
-initWithElementValue ioBluetoothSDPDataElement  element =
-  withObjCPtr element $ \raw_element ->
-      sendMsg ioBluetoothSDPDataElement (mkSelector "initWithElementValue:") (retPtr retVoid) [argPtr (castPtr raw_element :: Ptr ())] >>= ownedObject . castPtr
+initWithElementValue ioBluetoothSDPDataElement element =
+  sendOwnedMessage ioBluetoothSDPDataElement initWithElementValueSelector (toNSObject element)
 
 -- | initWithType:sizeDescriptor:size:value:
 --
@@ -176,9 +170,8 @@ initWithElementValue ioBluetoothSDPDataElement  element =
 --
 -- ObjC selector: @- initWithType:sizeDescriptor:size:value:@
 initWithType_sizeDescriptor_size_value :: (IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement, IsNSObject newValue) => ioBluetoothSDPDataElement -> CUChar -> CUChar -> CUInt -> newValue -> IO (Id IOBluetoothSDPDataElement)
-initWithType_sizeDescriptor_size_value ioBluetoothSDPDataElement  newType newSizeDescriptor newSize newValue =
-  withObjCPtr newValue $ \raw_newValue ->
-      sendMsg ioBluetoothSDPDataElement (mkSelector "initWithType:sizeDescriptor:size:value:") (retPtr retVoid) [argCUChar newType, argCUChar newSizeDescriptor, argCUInt newSize, argPtr (castPtr raw_newValue :: Ptr ())] >>= ownedObject . castPtr
+initWithType_sizeDescriptor_size_value ioBluetoothSDPDataElement newType newSizeDescriptor newSize newValue =
+  sendOwnedMessage ioBluetoothSDPDataElement initWithType_sizeDescriptor_size_valueSelector newType newSizeDescriptor newSize (toNSObject newValue)
 
 -- | getSDPDataElementRef
 --
@@ -188,8 +181,8 @@ initWithType_sizeDescriptor_size_value ioBluetoothSDPDataElement  newType newSiz
 --
 -- ObjC selector: @- getSDPDataElementRef@
 getSDPDataElementRef :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO (Ptr ())
-getSDPDataElementRef ioBluetoothSDPDataElement  =
-    fmap castPtr $ sendMsg ioBluetoothSDPDataElement (mkSelector "getSDPDataElementRef") (retPtr retVoid) []
+getSDPDataElementRef ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getSDPDataElementRefSelector
 
 -- | getTypeDescriptor
 --
@@ -199,8 +192,8 @@ getSDPDataElementRef ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- getTypeDescriptor@
 getTypeDescriptor :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO CUChar
-getTypeDescriptor ioBluetoothSDPDataElement  =
-    sendMsg ioBluetoothSDPDataElement (mkSelector "getTypeDescriptor") retCUChar []
+getTypeDescriptor ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getTypeDescriptorSelector
 
 -- | getSizeDescriptor
 --
@@ -210,8 +203,8 @@ getTypeDescriptor ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- getSizeDescriptor@
 getSizeDescriptor :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO CUChar
-getSizeDescriptor ioBluetoothSDPDataElement  =
-    sendMsg ioBluetoothSDPDataElement (mkSelector "getSizeDescriptor") retCUChar []
+getSizeDescriptor ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getSizeDescriptorSelector
 
 -- | getSize
 --
@@ -223,8 +216,8 @@ getSizeDescriptor ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- getSize@
 getSize :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO CUInt
-getSize ioBluetoothSDPDataElement  =
-    sendMsg ioBluetoothSDPDataElement (mkSelector "getSize") retCUInt []
+getSize ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getSizeSelector
 
 -- | getNumberValue
 --
@@ -236,8 +229,8 @@ getSize ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- getNumberValue@
 getNumberValue :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO (Id NSNumber)
-getNumberValue ioBluetoothSDPDataElement  =
-    sendMsg ioBluetoothSDPDataElement (mkSelector "getNumberValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getNumberValue ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getNumberValueSelector
 
 -- | getDataValue
 --
@@ -249,8 +242,8 @@ getNumberValue ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- getDataValue@
 getDataValue :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO (Id NSData)
-getDataValue ioBluetoothSDPDataElement  =
-    sendMsg ioBluetoothSDPDataElement (mkSelector "getDataValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getDataValue ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getDataValueSelector
 
 -- | getStringValue
 --
@@ -262,8 +255,8 @@ getDataValue ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- getStringValue@
 getStringValue :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO (Id NSString)
-getStringValue ioBluetoothSDPDataElement  =
-    sendMsg ioBluetoothSDPDataElement (mkSelector "getStringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getStringValue ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getStringValueSelector
 
 -- | getArrayValue
 --
@@ -275,8 +268,8 @@ getStringValue ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- getArrayValue@
 getArrayValue :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO (Id NSArray)
-getArrayValue ioBluetoothSDPDataElement  =
-    sendMsg ioBluetoothSDPDataElement (mkSelector "getArrayValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getArrayValue ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getArrayValueSelector
 
 -- | getUUIDValue
 --
@@ -286,8 +279,8 @@ getArrayValue ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- getUUIDValue@
 getUUIDValue :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO (Id IOBluetoothSDPUUID)
-getUUIDValue ioBluetoothSDPDataElement  =
-    sendMsg ioBluetoothSDPDataElement (mkSelector "getUUIDValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getUUIDValue ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getUUIDValueSelector
 
 -- | getValue
 --
@@ -299,8 +292,8 @@ getUUIDValue ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- getValue@
 getValue :: IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement => ioBluetoothSDPDataElement -> IO (Id NSObject)
-getValue ioBluetoothSDPDataElement  =
-    sendMsg ioBluetoothSDPDataElement (mkSelector "getValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+getValue ioBluetoothSDPDataElement =
+  sendMessage ioBluetoothSDPDataElement getValueSelector
 
 -- | containsDataElement:
 --
@@ -314,9 +307,8 @@ getValue ioBluetoothSDPDataElement  =
 --
 -- ObjC selector: @- containsDataElement:@
 containsDataElement :: (IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement, IsIOBluetoothSDPDataElement dataElement) => ioBluetoothSDPDataElement -> dataElement -> IO Bool
-containsDataElement ioBluetoothSDPDataElement  dataElement =
-  withObjCPtr dataElement $ \raw_dataElement ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothSDPDataElement (mkSelector "containsDataElement:") retCULong [argPtr (castPtr raw_dataElement :: Ptr ())]
+containsDataElement ioBluetoothSDPDataElement dataElement =
+  sendMessage ioBluetoothSDPDataElement containsDataElementSelector (toIOBluetoothSDPDataElement dataElement)
 
 -- | containsValue:
 --
@@ -330,79 +322,78 @@ containsDataElement ioBluetoothSDPDataElement  dataElement =
 --
 -- ObjC selector: @- containsValue:@
 containsValue :: (IsIOBluetoothSDPDataElement ioBluetoothSDPDataElement, IsNSObject cmpValue) => ioBluetoothSDPDataElement -> cmpValue -> IO Bool
-containsValue ioBluetoothSDPDataElement  cmpValue =
-  withObjCPtr cmpValue $ \raw_cmpValue ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothSDPDataElement (mkSelector "containsValue:") retCULong [argPtr (castPtr raw_cmpValue :: Ptr ())]
+containsValue ioBluetoothSDPDataElement cmpValue =
+  sendMessage ioBluetoothSDPDataElement containsValueSelector (toNSObject cmpValue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @withElementValue:@
-withElementValueSelector :: Selector
+withElementValueSelector :: Selector '[Id NSObject] (Id IOBluetoothSDPDataElement)
 withElementValueSelector = mkSelector "withElementValue:"
 
 -- | @Selector@ for @withType:sizeDescriptor:size:value:@
-withType_sizeDescriptor_size_valueSelector :: Selector
+withType_sizeDescriptor_size_valueSelector :: Selector '[CUChar, CUChar, CUInt, Id NSObject] (Id IOBluetoothSDPDataElement)
 withType_sizeDescriptor_size_valueSelector = mkSelector "withType:sizeDescriptor:size:value:"
 
 -- | @Selector@ for @withSDPDataElementRef:@
-withSDPDataElementRefSelector :: Selector
+withSDPDataElementRefSelector :: Selector '[Ptr ()] (Id IOBluetoothSDPDataElement)
 withSDPDataElementRefSelector = mkSelector "withSDPDataElementRef:"
 
 -- | @Selector@ for @initWithElementValue:@
-initWithElementValueSelector :: Selector
+initWithElementValueSelector :: Selector '[Id NSObject] (Id IOBluetoothSDPDataElement)
 initWithElementValueSelector = mkSelector "initWithElementValue:"
 
 -- | @Selector@ for @initWithType:sizeDescriptor:size:value:@
-initWithType_sizeDescriptor_size_valueSelector :: Selector
+initWithType_sizeDescriptor_size_valueSelector :: Selector '[CUChar, CUChar, CUInt, Id NSObject] (Id IOBluetoothSDPDataElement)
 initWithType_sizeDescriptor_size_valueSelector = mkSelector "initWithType:sizeDescriptor:size:value:"
 
 -- | @Selector@ for @getSDPDataElementRef@
-getSDPDataElementRefSelector :: Selector
+getSDPDataElementRefSelector :: Selector '[] (Ptr ())
 getSDPDataElementRefSelector = mkSelector "getSDPDataElementRef"
 
 -- | @Selector@ for @getTypeDescriptor@
-getTypeDescriptorSelector :: Selector
+getTypeDescriptorSelector :: Selector '[] CUChar
 getTypeDescriptorSelector = mkSelector "getTypeDescriptor"
 
 -- | @Selector@ for @getSizeDescriptor@
-getSizeDescriptorSelector :: Selector
+getSizeDescriptorSelector :: Selector '[] CUChar
 getSizeDescriptorSelector = mkSelector "getSizeDescriptor"
 
 -- | @Selector@ for @getSize@
-getSizeSelector :: Selector
+getSizeSelector :: Selector '[] CUInt
 getSizeSelector = mkSelector "getSize"
 
 -- | @Selector@ for @getNumberValue@
-getNumberValueSelector :: Selector
+getNumberValueSelector :: Selector '[] (Id NSNumber)
 getNumberValueSelector = mkSelector "getNumberValue"
 
 -- | @Selector@ for @getDataValue@
-getDataValueSelector :: Selector
+getDataValueSelector :: Selector '[] (Id NSData)
 getDataValueSelector = mkSelector "getDataValue"
 
 -- | @Selector@ for @getStringValue@
-getStringValueSelector :: Selector
+getStringValueSelector :: Selector '[] (Id NSString)
 getStringValueSelector = mkSelector "getStringValue"
 
 -- | @Selector@ for @getArrayValue@
-getArrayValueSelector :: Selector
+getArrayValueSelector :: Selector '[] (Id NSArray)
 getArrayValueSelector = mkSelector "getArrayValue"
 
 -- | @Selector@ for @getUUIDValue@
-getUUIDValueSelector :: Selector
+getUUIDValueSelector :: Selector '[] (Id IOBluetoothSDPUUID)
 getUUIDValueSelector = mkSelector "getUUIDValue"
 
 -- | @Selector@ for @getValue@
-getValueSelector :: Selector
+getValueSelector :: Selector '[] (Id NSObject)
 getValueSelector = mkSelector "getValue"
 
 -- | @Selector@ for @containsDataElement:@
-containsDataElementSelector :: Selector
+containsDataElementSelector :: Selector '[Id IOBluetoothSDPDataElement] Bool
 containsDataElementSelector = mkSelector "containsDataElement:"
 
 -- | @Selector@ for @containsValue:@
-containsValueSelector :: Selector
+containsValueSelector :: Selector '[Id NSObject] Bool
 containsValueSelector = mkSelector "containsValue:"
 

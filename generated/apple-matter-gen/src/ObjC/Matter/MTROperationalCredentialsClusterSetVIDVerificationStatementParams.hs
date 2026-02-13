@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTROperationalCredentialsClusterSetVIDVerificationStatementPa
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , vendorIDSelector
-  , setVendorIDSelector
-  , vidVerificationStatementSelector
-  , setVidVerificationStatementSelector
-  , vvscSelector
-  , setVvscSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setVendorIDSelector
+  , setVidVerificationStatementSelector
+  , setVvscSelector
+  , timedInvokeTimeoutMsSelector
+  , vendorIDSelector
+  , vidVerificationStatementSelector
+  , vvscSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- vendorID@
 vendorID :: IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> IO (Id NSNumber)
-vendorID mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  =
-    sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "vendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorID mtrOperationalCredentialsClusterSetVIDVerificationStatementParams =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams vendorIDSelector
 
 -- | @- setVendorID:@
 setVendorID :: (IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams, IsNSNumber value) => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> value -> IO ()
-setVendorID mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "setVendorID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVendorID mtrOperationalCredentialsClusterSetVIDVerificationStatementParams value =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams setVendorIDSelector (toNSNumber value)
 
 -- | @- vidVerificationStatement@
 vidVerificationStatement :: IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> IO (Id NSData)
-vidVerificationStatement mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  =
-    sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "vidVerificationStatement") (retPtr retVoid) [] >>= retainedObject . castPtr
+vidVerificationStatement mtrOperationalCredentialsClusterSetVIDVerificationStatementParams =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams vidVerificationStatementSelector
 
 -- | @- setVidVerificationStatement:@
 setVidVerificationStatement :: (IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams, IsNSData value) => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> value -> IO ()
-setVidVerificationStatement mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "setVidVerificationStatement:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVidVerificationStatement mtrOperationalCredentialsClusterSetVIDVerificationStatementParams value =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams setVidVerificationStatementSelector (toNSData value)
 
 -- | @- vvsc@
 vvsc :: IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> IO (Id NSData)
-vvsc mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  =
-    sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "vvsc") (retPtr retVoid) [] >>= retainedObject . castPtr
+vvsc mtrOperationalCredentialsClusterSetVIDVerificationStatementParams =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams vvscSelector
 
 -- | @- setVvsc:@
 setVvsc :: (IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams, IsNSData value) => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> value -> IO ()
-setVvsc mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "setVvsc:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVvsc mtrOperationalCredentialsClusterSetVIDVerificationStatementParams value =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams setVvscSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setVvsc mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  value
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  =
-    sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterSetVIDVerificationStatementParams =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterSetVIDVerificationStatement
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams, IsNSNumber value) => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterSetVIDVerificationStatementParams value =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterSetVIDVerificationStatem
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  =
-    sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrOperationalCredentialsClusterSetVIDVerificationStatementParams =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrOperationalCredentialsClusterSetVIDVerificationSt
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTROperationalCredentialsClusterSetVIDVerificationStatementParams mtrOperationalCredentialsClusterSetVIDVerificationStatementParams, IsNSNumber value) => mtrOperationalCredentialsClusterSetVIDVerificationStatementParams -> value -> IO ()
-setServerSideProcessingTimeout mtrOperationalCredentialsClusterSetVIDVerificationStatementParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSetVIDVerificationStatementParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrOperationalCredentialsClusterSetVIDVerificationStatementParams value =
+  sendMessage mtrOperationalCredentialsClusterSetVIDVerificationStatementParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] (Id NSNumber)
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @setVendorID:@
-setVendorIDSelector :: Selector
+setVendorIDSelector :: Selector '[Id NSNumber] ()
 setVendorIDSelector = mkSelector "setVendorID:"
 
 -- | @Selector@ for @vidVerificationStatement@
-vidVerificationStatementSelector :: Selector
+vidVerificationStatementSelector :: Selector '[] (Id NSData)
 vidVerificationStatementSelector = mkSelector "vidVerificationStatement"
 
 -- | @Selector@ for @setVidVerificationStatement:@
-setVidVerificationStatementSelector :: Selector
+setVidVerificationStatementSelector :: Selector '[Id NSData] ()
 setVidVerificationStatementSelector = mkSelector "setVidVerificationStatement:"
 
 -- | @Selector@ for @vvsc@
-vvscSelector :: Selector
+vvscSelector :: Selector '[] (Id NSData)
 vvscSelector = mkSelector "vvsc"
 
 -- | @Selector@ for @setVvsc:@
-setVvscSelector :: Selector
+setVvscSelector :: Selector '[Id NSData] ()
 setVvscSelector = mkSelector "setVvsc:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

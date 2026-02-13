@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -56,65 +57,61 @@ module ObjC.Matter.MTRBaseClusterZoneManagement
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , createTwoDCartesianZoneWithParams_completionSelector
-  , updateTwoDCartesianZoneWithParams_completionSelector
-  , removeZoneWithParams_completionSelector
   , createOrUpdateTriggerWithParams_completionSelector
-  , removeTriggerWithParams_completionSelector
-  , readAttributeMaxUserDefinedZonesWithCompletionSelector
-  , subscribeAttributeMaxUserDefinedZonesWithParams_subscriptionEstablished_reportHandlerSelector
+  , createTwoDCartesianZoneWithParams_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
   , readAttributeMaxUserDefinedZonesWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMaxZonesWithCompletionSelector
-  , subscribeAttributeMaxZonesWithParams_subscriptionEstablished_reportHandlerSelector
+  , readAttributeMaxUserDefinedZonesWithCompletionSelector
   , readAttributeMaxZonesWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeZonesWithCompletionSelector
-  , subscribeAttributeZonesWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeZonesWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTriggersWithCompletionSelector
-  , subscribeAttributeTriggersWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTriggersWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeSensitivityMaxWithCompletionSelector
-  , subscribeAttributeSensitivityMaxWithParams_subscriptionEstablished_reportHandlerSelector
+  , readAttributeMaxZonesWithCompletionSelector
   , readAttributeSensitivityMaxWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeSensitivityMaxWithCompletionSelector
+  , readAttributeSensitivityWithClusterStateCache_endpoint_queue_completionSelector
   , readAttributeSensitivityWithCompletionSelector
+  , readAttributeTriggersWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTriggersWithCompletionSelector
+  , readAttributeTwoDCartesianMaxWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTwoDCartesianMaxWithCompletionSelector
+  , readAttributeZonesWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeZonesWithCompletionSelector
+  , removeTriggerWithParams_completionSelector
+  , removeZoneWithParams_completionSelector
+  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMaxUserDefinedZonesWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMaxZonesWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeSensitivityMaxWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeSensitivityWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTriggersWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTwoDCartesianMaxWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeZonesWithParams_subscriptionEstablished_reportHandlerSelector
+  , updateTwoDCartesianZoneWithParams_completionSelector
   , writeAttributeSensitivityWithValue_completionSelector
   , writeAttributeSensitivityWithValue_params_completionSelector
-  , subscribeAttributeSensitivityWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeSensitivityWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTwoDCartesianMaxWithCompletionSelector
-  , subscribeAttributeTwoDCartesianMaxWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTwoDCartesianMaxWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
-  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
-  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
-  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -127,9 +124,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- createTwoDCartesianZoneWithParams:completion:@
 createTwoDCartesianZoneWithParams_completion :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRZoneManagementClusterCreateTwoDCartesianZoneParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> IO ()
-createTwoDCartesianZoneWithParams_completion mtrBaseClusterZoneManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "createTwoDCartesianZoneWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+createTwoDCartesianZoneWithParams_completion mtrBaseClusterZoneManagement params completion =
+  sendMessage mtrBaseClusterZoneManagement createTwoDCartesianZoneWithParams_completionSelector (toMTRZoneManagementClusterCreateTwoDCartesianZoneParams params) completion
 
 -- | Command UpdateTwoDCartesianZone
 --
@@ -137,9 +133,8 @@ createTwoDCartesianZoneWithParams_completion mtrBaseClusterZoneManagement  param
 --
 -- ObjC selector: @- updateTwoDCartesianZoneWithParams:completion:@
 updateTwoDCartesianZoneWithParams_completion :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRZoneManagementClusterUpdateTwoDCartesianZoneParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> IO ()
-updateTwoDCartesianZoneWithParams_completion mtrBaseClusterZoneManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "updateTwoDCartesianZoneWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+updateTwoDCartesianZoneWithParams_completion mtrBaseClusterZoneManagement params completion =
+  sendMessage mtrBaseClusterZoneManagement updateTwoDCartesianZoneWithParams_completionSelector (toMTRZoneManagementClusterUpdateTwoDCartesianZoneParams params) completion
 
 -- | Command RemoveZone
 --
@@ -147,9 +142,8 @@ updateTwoDCartesianZoneWithParams_completion mtrBaseClusterZoneManagement  param
 --
 -- ObjC selector: @- removeZoneWithParams:completion:@
 removeZoneWithParams_completion :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRZoneManagementClusterRemoveZoneParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> IO ()
-removeZoneWithParams_completion mtrBaseClusterZoneManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "removeZoneWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeZoneWithParams_completion mtrBaseClusterZoneManagement params completion =
+  sendMessage mtrBaseClusterZoneManagement removeZoneWithParams_completionSelector (toMTRZoneManagementClusterRemoveZoneParams params) completion
 
 -- | Command CreateOrUpdateTrigger
 --
@@ -157,9 +151,8 @@ removeZoneWithParams_completion mtrBaseClusterZoneManagement  params completion 
 --
 -- ObjC selector: @- createOrUpdateTriggerWithParams:completion:@
 createOrUpdateTriggerWithParams_completion :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRZoneManagementClusterCreateOrUpdateTriggerParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> IO ()
-createOrUpdateTriggerWithParams_completion mtrBaseClusterZoneManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "createOrUpdateTriggerWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+createOrUpdateTriggerWithParams_completion mtrBaseClusterZoneManagement params completion =
+  sendMessage mtrBaseClusterZoneManagement createOrUpdateTriggerWithParams_completionSelector (toMTRZoneManagementClusterCreateOrUpdateTriggerParams params) completion
 
 -- | Command RemoveTrigger
 --
@@ -167,482 +160,427 @@ createOrUpdateTriggerWithParams_completion mtrBaseClusterZoneManagement  params 
 --
 -- ObjC selector: @- removeTriggerWithParams:completion:@
 removeTriggerWithParams_completion :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRZoneManagementClusterRemoveTriggerParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> IO ()
-removeTriggerWithParams_completion mtrBaseClusterZoneManagement  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "removeTriggerWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeTriggerWithParams_completion mtrBaseClusterZoneManagement params completion =
+  sendMessage mtrBaseClusterZoneManagement removeTriggerWithParams_completionSelector (toMTRZoneManagementClusterRemoveTriggerParams params) completion
 
 -- | @- readAttributeMaxUserDefinedZonesWithCompletion:@
 readAttributeMaxUserDefinedZonesWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeMaxUserDefinedZonesWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeMaxUserDefinedZonesWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMaxUserDefinedZonesWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeMaxUserDefinedZonesWithCompletionSelector completion
 
 -- | @- subscribeAttributeMaxUserDefinedZonesWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMaxUserDefinedZonesWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMaxUserDefinedZonesWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeMaxUserDefinedZonesWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMaxUserDefinedZonesWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeMaxUserDefinedZonesWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMaxUserDefinedZonesWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMaxUserDefinedZonesWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMaxUserDefinedZonesWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMaxUserDefinedZonesWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMaxUserDefinedZonesWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMaxZonesWithCompletion:@
 readAttributeMaxZonesWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeMaxZonesWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeMaxZonesWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMaxZonesWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeMaxZonesWithCompletionSelector completion
 
 -- | @- subscribeAttributeMaxZonesWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMaxZonesWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMaxZonesWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeMaxZonesWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMaxZonesWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeMaxZonesWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMaxZonesWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMaxZonesWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMaxZonesWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMaxZonesWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMaxZonesWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeZonesWithCompletion:@
 readAttributeZonesWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeZonesWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeZonesWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeZonesWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeZonesWithCompletionSelector completion
 
 -- | @- subscribeAttributeZonesWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeZonesWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeZonesWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeZonesWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeZonesWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeZonesWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeZonesWithClusterStateCache:endpoint:queue:completion:@
 readAttributeZonesWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeZonesWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeZonesWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeZonesWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTriggersWithCompletion:@
 readAttributeTriggersWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeTriggersWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeTriggersWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTriggersWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeTriggersWithCompletionSelector completion
 
 -- | @- subscribeAttributeTriggersWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTriggersWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTriggersWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeTriggersWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTriggersWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeTriggersWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTriggersWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTriggersWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTriggersWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTriggersWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTriggersWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeSensitivityMaxWithCompletion:@
 readAttributeSensitivityMaxWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeSensitivityMaxWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeSensitivityMaxWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeSensitivityMaxWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeSensitivityMaxWithCompletionSelector completion
 
 -- | @- subscribeAttributeSensitivityMaxWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeSensitivityMaxWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeSensitivityMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeSensitivityMaxWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeSensitivityMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeSensitivityMaxWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeSensitivityMaxWithClusterStateCache:endpoint:queue:completion:@
 readAttributeSensitivityMaxWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeSensitivityMaxWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeSensitivityMaxWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeSensitivityMaxWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeSensitivityWithCompletion:@
 readAttributeSensitivityWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeSensitivityWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeSensitivityWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeSensitivityWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeSensitivityWithCompletionSelector completion
 
 -- | @- writeAttributeSensitivityWithValue:completion:@
 writeAttributeSensitivityWithValue_completion :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsNSNumber value) => mtrBaseClusterZoneManagement -> value -> Ptr () -> IO ()
-writeAttributeSensitivityWithValue_completion mtrBaseClusterZoneManagement  value completion =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "writeAttributeSensitivityWithValue:completion:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+writeAttributeSensitivityWithValue_completion mtrBaseClusterZoneManagement value completion =
+  sendMessage mtrBaseClusterZoneManagement writeAttributeSensitivityWithValue_completionSelector (toNSNumber value) completion
 
 -- | @- writeAttributeSensitivityWithValue:params:completion:@
 writeAttributeSensitivityWithValue_params_completion :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsNSNumber value, IsMTRWriteParams params) => mtrBaseClusterZoneManagement -> value -> params -> Ptr () -> IO ()
-writeAttributeSensitivityWithValue_params_completion mtrBaseClusterZoneManagement  value params completion =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr params $ \raw_params ->
-        sendMsg mtrBaseClusterZoneManagement (mkSelector "writeAttributeSensitivityWithValue:params:completion:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+writeAttributeSensitivityWithValue_params_completion mtrBaseClusterZoneManagement value params completion =
+  sendMessage mtrBaseClusterZoneManagement writeAttributeSensitivityWithValue_params_completionSelector (toNSNumber value) (toMTRWriteParams params) completion
 
 -- | @- subscribeAttributeSensitivityWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeSensitivityWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeSensitivityWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeSensitivityWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeSensitivityWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeSensitivityWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeSensitivityWithClusterStateCache:endpoint:queue:completion:@
 readAttributeSensitivityWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeSensitivityWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeSensitivityWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeSensitivityWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTwoDCartesianMaxWithCompletion:@
 readAttributeTwoDCartesianMaxWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeTwoDCartesianMaxWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeTwoDCartesianMaxWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTwoDCartesianMaxWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeTwoDCartesianMaxWithCompletionSelector completion
 
 -- | @- subscribeAttributeTwoDCartesianMaxWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTwoDCartesianMaxWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTwoDCartesianMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeTwoDCartesianMaxWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTwoDCartesianMaxWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeTwoDCartesianMaxWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTwoDCartesianMaxWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTwoDCartesianMaxWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTwoDCartesianMaxWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTwoDCartesianMaxWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTwoDCartesianMaxWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterZoneManagement  completion =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterZoneManagement completion =
+  sendMessage mtrBaseClusterZoneManagement readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRSubscribeParams params) => mtrBaseClusterZoneManagement -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterZoneManagement (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterZoneManagement params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterZoneManagement subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement => mtrBaseClusterZoneManagement -> IO (Id MTRBaseClusterZoneManagement)
-init_ mtrBaseClusterZoneManagement  =
-    sendMsg mtrBaseClusterZoneManagement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterZoneManagement =
+  sendOwnedMessage mtrBaseClusterZoneManagement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterZoneManagement)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterZoneManagement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterZoneManagement mtrBaseClusterZoneManagement, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterZoneManagement -> device -> endpointID -> queue -> IO (Id MTRBaseClusterZoneManagement)
-initWithDevice_endpointID_queue mtrBaseClusterZoneManagement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterZoneManagement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterZoneManagement device endpointID queue =
+  sendOwnedMessage mtrBaseClusterZoneManagement initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createTwoDCartesianZoneWithParams:completion:@
-createTwoDCartesianZoneWithParams_completionSelector :: Selector
+createTwoDCartesianZoneWithParams_completionSelector :: Selector '[Id MTRZoneManagementClusterCreateTwoDCartesianZoneParams, Ptr ()] ()
 createTwoDCartesianZoneWithParams_completionSelector = mkSelector "createTwoDCartesianZoneWithParams:completion:"
 
 -- | @Selector@ for @updateTwoDCartesianZoneWithParams:completion:@
-updateTwoDCartesianZoneWithParams_completionSelector :: Selector
+updateTwoDCartesianZoneWithParams_completionSelector :: Selector '[Id MTRZoneManagementClusterUpdateTwoDCartesianZoneParams, Ptr ()] ()
 updateTwoDCartesianZoneWithParams_completionSelector = mkSelector "updateTwoDCartesianZoneWithParams:completion:"
 
 -- | @Selector@ for @removeZoneWithParams:completion:@
-removeZoneWithParams_completionSelector :: Selector
+removeZoneWithParams_completionSelector :: Selector '[Id MTRZoneManagementClusterRemoveZoneParams, Ptr ()] ()
 removeZoneWithParams_completionSelector = mkSelector "removeZoneWithParams:completion:"
 
 -- | @Selector@ for @createOrUpdateTriggerWithParams:completion:@
-createOrUpdateTriggerWithParams_completionSelector :: Selector
+createOrUpdateTriggerWithParams_completionSelector :: Selector '[Id MTRZoneManagementClusterCreateOrUpdateTriggerParams, Ptr ()] ()
 createOrUpdateTriggerWithParams_completionSelector = mkSelector "createOrUpdateTriggerWithParams:completion:"
 
 -- | @Selector@ for @removeTriggerWithParams:completion:@
-removeTriggerWithParams_completionSelector :: Selector
+removeTriggerWithParams_completionSelector :: Selector '[Id MTRZoneManagementClusterRemoveTriggerParams, Ptr ()] ()
 removeTriggerWithParams_completionSelector = mkSelector "removeTriggerWithParams:completion:"
 
 -- | @Selector@ for @readAttributeMaxUserDefinedZonesWithCompletion:@
-readAttributeMaxUserDefinedZonesWithCompletionSelector :: Selector
+readAttributeMaxUserDefinedZonesWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMaxUserDefinedZonesWithCompletionSelector = mkSelector "readAttributeMaxUserDefinedZonesWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMaxUserDefinedZonesWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMaxUserDefinedZonesWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMaxUserDefinedZonesWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMaxUserDefinedZonesWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMaxUserDefinedZonesWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMaxUserDefinedZonesWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMaxUserDefinedZonesWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMaxUserDefinedZonesWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMaxUserDefinedZonesWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMaxUserDefinedZonesWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMaxZonesWithCompletion:@
-readAttributeMaxZonesWithCompletionSelector :: Selector
+readAttributeMaxZonesWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMaxZonesWithCompletionSelector = mkSelector "readAttributeMaxZonesWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMaxZonesWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMaxZonesWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMaxZonesWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMaxZonesWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMaxZonesWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMaxZonesWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMaxZonesWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMaxZonesWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMaxZonesWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMaxZonesWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeZonesWithCompletion:@
-readAttributeZonesWithCompletionSelector :: Selector
+readAttributeZonesWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeZonesWithCompletionSelector = mkSelector "readAttributeZonesWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeZonesWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeZonesWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeZonesWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeZonesWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeZonesWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeZonesWithClusterStateCache:endpoint:queue:completion:@
-readAttributeZonesWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeZonesWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeZonesWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeZonesWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTriggersWithCompletion:@
-readAttributeTriggersWithCompletionSelector :: Selector
+readAttributeTriggersWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTriggersWithCompletionSelector = mkSelector "readAttributeTriggersWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTriggersWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTriggersWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTriggersWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTriggersWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTriggersWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTriggersWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTriggersWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTriggersWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTriggersWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTriggersWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeSensitivityMaxWithCompletion:@
-readAttributeSensitivityMaxWithCompletionSelector :: Selector
+readAttributeSensitivityMaxWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeSensitivityMaxWithCompletionSelector = mkSelector "readAttributeSensitivityMaxWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeSensitivityMaxWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeSensitivityMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeSensitivityMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeSensitivityMaxWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeSensitivityMaxWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeSensitivityMaxWithClusterStateCache:endpoint:queue:completion:@
-readAttributeSensitivityMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeSensitivityMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeSensitivityMaxWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeSensitivityMaxWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeSensitivityWithCompletion:@
-readAttributeSensitivityWithCompletionSelector :: Selector
+readAttributeSensitivityWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeSensitivityWithCompletionSelector = mkSelector "readAttributeSensitivityWithCompletion:"
 
 -- | @Selector@ for @writeAttributeSensitivityWithValue:completion:@
-writeAttributeSensitivityWithValue_completionSelector :: Selector
+writeAttributeSensitivityWithValue_completionSelector :: Selector '[Id NSNumber, Ptr ()] ()
 writeAttributeSensitivityWithValue_completionSelector = mkSelector "writeAttributeSensitivityWithValue:completion:"
 
 -- | @Selector@ for @writeAttributeSensitivityWithValue:params:completion:@
-writeAttributeSensitivityWithValue_params_completionSelector :: Selector
+writeAttributeSensitivityWithValue_params_completionSelector :: Selector '[Id NSNumber, Id MTRWriteParams, Ptr ()] ()
 writeAttributeSensitivityWithValue_params_completionSelector = mkSelector "writeAttributeSensitivityWithValue:params:completion:"
 
 -- | @Selector@ for @subscribeAttributeSensitivityWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeSensitivityWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeSensitivityWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeSensitivityWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeSensitivityWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeSensitivityWithClusterStateCache:endpoint:queue:completion:@
-readAttributeSensitivityWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeSensitivityWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeSensitivityWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeSensitivityWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTwoDCartesianMaxWithCompletion:@
-readAttributeTwoDCartesianMaxWithCompletionSelector :: Selector
+readAttributeTwoDCartesianMaxWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTwoDCartesianMaxWithCompletionSelector = mkSelector "readAttributeTwoDCartesianMaxWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTwoDCartesianMaxWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTwoDCartesianMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTwoDCartesianMaxWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTwoDCartesianMaxWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTwoDCartesianMaxWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTwoDCartesianMaxWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTwoDCartesianMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTwoDCartesianMaxWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTwoDCartesianMaxWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTwoDCartesianMaxWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterZoneManagement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterZoneManagement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterZoneManagement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Matter.MTRAccountLoginClusterGetSetupPINResponseParams
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
   , initWithResponseValue_errorSelector
-  , setupPINSelector
   , setSetupPINSelector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
+  , setupPINSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,21 +40,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRAccountLoginClusterGetSetupPINResponseParams mtrAccountLoginClusterGetSetupPINResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrAccountLoginClusterGetSetupPINResponseParams -> responseValue -> error_ -> IO (Id MTRAccountLoginClusterGetSetupPINResponseParams)
-initWithResponseValue_error mtrAccountLoginClusterGetSetupPINResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrAccountLoginClusterGetSetupPINResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrAccountLoginClusterGetSetupPINResponseParams responseValue error_ =
+  sendOwnedMessage mtrAccountLoginClusterGetSetupPINResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- setupPIN@
 setupPIN :: IsMTRAccountLoginClusterGetSetupPINResponseParams mtrAccountLoginClusterGetSetupPINResponseParams => mtrAccountLoginClusterGetSetupPINResponseParams -> IO (Id NSString)
-setupPIN mtrAccountLoginClusterGetSetupPINResponseParams  =
-    sendMsg mtrAccountLoginClusterGetSetupPINResponseParams (mkSelector "setupPIN") (retPtr retVoid) [] >>= retainedObject . castPtr
+setupPIN mtrAccountLoginClusterGetSetupPINResponseParams =
+  sendMessage mtrAccountLoginClusterGetSetupPINResponseParams setupPINSelector
 
 -- | @- setSetupPIN:@
 setSetupPIN :: (IsMTRAccountLoginClusterGetSetupPINResponseParams mtrAccountLoginClusterGetSetupPINResponseParams, IsNSString value) => mtrAccountLoginClusterGetSetupPINResponseParams -> value -> IO ()
-setSetupPIN mtrAccountLoginClusterGetSetupPINResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccountLoginClusterGetSetupPINResponseParams (mkSelector "setSetupPIN:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSetupPIN mtrAccountLoginClusterGetSetupPINResponseParams value =
+  sendMessage mtrAccountLoginClusterGetSetupPINResponseParams setSetupPINSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,8 +61,8 @@ setSetupPIN mtrAccountLoginClusterGetSetupPINResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRAccountLoginClusterGetSetupPINResponseParams mtrAccountLoginClusterGetSetupPINResponseParams => mtrAccountLoginClusterGetSetupPINResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINResponseParams  =
-    sendMsg mtrAccountLoginClusterGetSetupPINResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINResponseParams =
+  sendMessage mtrAccountLoginClusterGetSetupPINResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -78,31 +72,30 @@ timedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRAccountLoginClusterGetSetupPINResponseParams mtrAccountLoginClusterGetSetupPINResponseParams, IsNSNumber value) => mtrAccountLoginClusterGetSetupPINResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccountLoginClusterGetSetupPINResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINResponseParams value =
+  sendMessage mtrAccountLoginClusterGetSetupPINResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRAccountLoginClusterGetSetupPINResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @setupPIN@
-setupPINSelector :: Selector
+setupPINSelector :: Selector '[] (Id NSString)
 setupPINSelector = mkSelector "setupPIN"
 
 -- | @Selector@ for @setSetupPIN:@
-setSetupPINSelector :: Selector
+setSetupPINSelector :: Selector '[Id NSString] ()
 setSetupPINSelector = mkSelector "setSetupPIN:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

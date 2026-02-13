@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.PHASE.PHASEConeDirectivityModelParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,9 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithSubbandParameters:@
 initWithSubbandParameters :: (IsPHASEConeDirectivityModelParameters phaseConeDirectivityModelParameters, IsNSArray subbandParameters) => phaseConeDirectivityModelParameters -> subbandParameters -> IO (Id PHASEConeDirectivityModelParameters)
-initWithSubbandParameters phaseConeDirectivityModelParameters  subbandParameters =
-  withObjCPtr subbandParameters $ \raw_subbandParameters ->
-      sendMsg phaseConeDirectivityModelParameters (mkSelector "initWithSubbandParameters:") (retPtr retVoid) [argPtr (castPtr raw_subbandParameters :: Ptr ())] >>= ownedObject . castPtr
+initWithSubbandParameters phaseConeDirectivityModelParameters subbandParameters =
+  sendOwnedMessage phaseConeDirectivityModelParameters initWithSubbandParametersSelector (toNSArray subbandParameters)
 
 -- | subbandParameters
 --
@@ -47,18 +43,18 @@ initWithSubbandParameters phaseConeDirectivityModelParameters  subbandParameters
 --
 -- ObjC selector: @- subbandParameters@
 subbandParameters :: IsPHASEConeDirectivityModelParameters phaseConeDirectivityModelParameters => phaseConeDirectivityModelParameters -> IO (Id NSArray)
-subbandParameters phaseConeDirectivityModelParameters  =
-    sendMsg phaseConeDirectivityModelParameters (mkSelector "subbandParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+subbandParameters phaseConeDirectivityModelParameters =
+  sendMessage phaseConeDirectivityModelParameters subbandParametersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSubbandParameters:@
-initWithSubbandParametersSelector :: Selector
+initWithSubbandParametersSelector :: Selector '[Id NSArray] (Id PHASEConeDirectivityModelParameters)
 initWithSubbandParametersSelector = mkSelector "initWithSubbandParameters:"
 
 -- | @Selector@ for @subbandParameters@
-subbandParametersSelector :: Selector
+subbandParametersSelector :: Selector '[] (Id NSArray)
 subbandParametersSelector = mkSelector "subbandParameters"
 

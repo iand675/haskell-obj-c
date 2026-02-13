@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.ModelIO.MDLTextureFilter
   , setMagFilter
   , mipFilter
   , setMipFilter
-  , sWrapModeSelector
-  , setSWrapModeSelector
-  , tWrapModeSelector
-  , setTWrapModeSelector
-  , rWrapModeSelector
-  , setRWrapModeSelector
-  , minFilterSelector
-  , setMinFilterSelector
   , magFilterSelector
-  , setMagFilterSelector
+  , minFilterSelector
   , mipFilterSelector
+  , rWrapModeSelector
+  , sWrapModeSelector
+  , setMagFilterSelector
+  , setMinFilterSelector
   , setMipFilterSelector
+  , setRWrapModeSelector
+  , setSWrapModeSelector
+  , setTWrapModeSelector
+  , tWrapModeSelector
 
   -- * Enum types
   , MDLMaterialMipMapFilterMode(MDLMaterialMipMapFilterMode)
@@ -46,15 +47,11 @@ module ObjC.ModelIO.MDLTextureFilter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,113 +61,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sWrapMode@
 sWrapMode :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> IO MDLMaterialTextureWrapMode
-sWrapMode mdlTextureFilter  =
-    fmap (coerce :: CULong -> MDLMaterialTextureWrapMode) $ sendMsg mdlTextureFilter (mkSelector "sWrapMode") retCULong []
+sWrapMode mdlTextureFilter =
+  sendMessage mdlTextureFilter sWrapModeSelector
 
 -- | @- setSWrapMode:@
 setSWrapMode :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> MDLMaterialTextureWrapMode -> IO ()
-setSWrapMode mdlTextureFilter  value =
-    sendMsg mdlTextureFilter (mkSelector "setSWrapMode:") retVoid [argCULong (coerce value)]
+setSWrapMode mdlTextureFilter value =
+  sendMessage mdlTextureFilter setSWrapModeSelector value
 
 -- | @- tWrapMode@
 tWrapMode :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> IO MDLMaterialTextureWrapMode
-tWrapMode mdlTextureFilter  =
-    fmap (coerce :: CULong -> MDLMaterialTextureWrapMode) $ sendMsg mdlTextureFilter (mkSelector "tWrapMode") retCULong []
+tWrapMode mdlTextureFilter =
+  sendMessage mdlTextureFilter tWrapModeSelector
 
 -- | @- setTWrapMode:@
 setTWrapMode :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> MDLMaterialTextureWrapMode -> IO ()
-setTWrapMode mdlTextureFilter  value =
-    sendMsg mdlTextureFilter (mkSelector "setTWrapMode:") retVoid [argCULong (coerce value)]
+setTWrapMode mdlTextureFilter value =
+  sendMessage mdlTextureFilter setTWrapModeSelector value
 
 -- | @- rWrapMode@
 rWrapMode :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> IO MDLMaterialTextureWrapMode
-rWrapMode mdlTextureFilter  =
-    fmap (coerce :: CULong -> MDLMaterialTextureWrapMode) $ sendMsg mdlTextureFilter (mkSelector "rWrapMode") retCULong []
+rWrapMode mdlTextureFilter =
+  sendMessage mdlTextureFilter rWrapModeSelector
 
 -- | @- setRWrapMode:@
 setRWrapMode :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> MDLMaterialTextureWrapMode -> IO ()
-setRWrapMode mdlTextureFilter  value =
-    sendMsg mdlTextureFilter (mkSelector "setRWrapMode:") retVoid [argCULong (coerce value)]
+setRWrapMode mdlTextureFilter value =
+  sendMessage mdlTextureFilter setRWrapModeSelector value
 
 -- | @- minFilter@
 minFilter :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> IO MDLMaterialTextureFilterMode
-minFilter mdlTextureFilter  =
-    fmap (coerce :: CULong -> MDLMaterialTextureFilterMode) $ sendMsg mdlTextureFilter (mkSelector "minFilter") retCULong []
+minFilter mdlTextureFilter =
+  sendMessage mdlTextureFilter minFilterSelector
 
 -- | @- setMinFilter:@
 setMinFilter :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> MDLMaterialTextureFilterMode -> IO ()
-setMinFilter mdlTextureFilter  value =
-    sendMsg mdlTextureFilter (mkSelector "setMinFilter:") retVoid [argCULong (coerce value)]
+setMinFilter mdlTextureFilter value =
+  sendMessage mdlTextureFilter setMinFilterSelector value
 
 -- | @- magFilter@
 magFilter :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> IO MDLMaterialTextureFilterMode
-magFilter mdlTextureFilter  =
-    fmap (coerce :: CULong -> MDLMaterialTextureFilterMode) $ sendMsg mdlTextureFilter (mkSelector "magFilter") retCULong []
+magFilter mdlTextureFilter =
+  sendMessage mdlTextureFilter magFilterSelector
 
 -- | @- setMagFilter:@
 setMagFilter :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> MDLMaterialTextureFilterMode -> IO ()
-setMagFilter mdlTextureFilter  value =
-    sendMsg mdlTextureFilter (mkSelector "setMagFilter:") retVoid [argCULong (coerce value)]
+setMagFilter mdlTextureFilter value =
+  sendMessage mdlTextureFilter setMagFilterSelector value
 
 -- | @- mipFilter@
 mipFilter :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> IO MDLMaterialMipMapFilterMode
-mipFilter mdlTextureFilter  =
-    fmap (coerce :: CULong -> MDLMaterialMipMapFilterMode) $ sendMsg mdlTextureFilter (mkSelector "mipFilter") retCULong []
+mipFilter mdlTextureFilter =
+  sendMessage mdlTextureFilter mipFilterSelector
 
 -- | @- setMipFilter:@
 setMipFilter :: IsMDLTextureFilter mdlTextureFilter => mdlTextureFilter -> MDLMaterialMipMapFilterMode -> IO ()
-setMipFilter mdlTextureFilter  value =
-    sendMsg mdlTextureFilter (mkSelector "setMipFilter:") retVoid [argCULong (coerce value)]
+setMipFilter mdlTextureFilter value =
+  sendMessage mdlTextureFilter setMipFilterSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sWrapMode@
-sWrapModeSelector :: Selector
+sWrapModeSelector :: Selector '[] MDLMaterialTextureWrapMode
 sWrapModeSelector = mkSelector "sWrapMode"
 
 -- | @Selector@ for @setSWrapMode:@
-setSWrapModeSelector :: Selector
+setSWrapModeSelector :: Selector '[MDLMaterialTextureWrapMode] ()
 setSWrapModeSelector = mkSelector "setSWrapMode:"
 
 -- | @Selector@ for @tWrapMode@
-tWrapModeSelector :: Selector
+tWrapModeSelector :: Selector '[] MDLMaterialTextureWrapMode
 tWrapModeSelector = mkSelector "tWrapMode"
 
 -- | @Selector@ for @setTWrapMode:@
-setTWrapModeSelector :: Selector
+setTWrapModeSelector :: Selector '[MDLMaterialTextureWrapMode] ()
 setTWrapModeSelector = mkSelector "setTWrapMode:"
 
 -- | @Selector@ for @rWrapMode@
-rWrapModeSelector :: Selector
+rWrapModeSelector :: Selector '[] MDLMaterialTextureWrapMode
 rWrapModeSelector = mkSelector "rWrapMode"
 
 -- | @Selector@ for @setRWrapMode:@
-setRWrapModeSelector :: Selector
+setRWrapModeSelector :: Selector '[MDLMaterialTextureWrapMode] ()
 setRWrapModeSelector = mkSelector "setRWrapMode:"
 
 -- | @Selector@ for @minFilter@
-minFilterSelector :: Selector
+minFilterSelector :: Selector '[] MDLMaterialTextureFilterMode
 minFilterSelector = mkSelector "minFilter"
 
 -- | @Selector@ for @setMinFilter:@
-setMinFilterSelector :: Selector
+setMinFilterSelector :: Selector '[MDLMaterialTextureFilterMode] ()
 setMinFilterSelector = mkSelector "setMinFilter:"
 
 -- | @Selector@ for @magFilter@
-magFilterSelector :: Selector
+magFilterSelector :: Selector '[] MDLMaterialTextureFilterMode
 magFilterSelector = mkSelector "magFilter"
 
 -- | @Selector@ for @setMagFilter:@
-setMagFilterSelector :: Selector
+setMagFilterSelector :: Selector '[MDLMaterialTextureFilterMode] ()
 setMagFilterSelector = mkSelector "setMagFilter:"
 
 -- | @Selector@ for @mipFilter@
-mipFilterSelector :: Selector
+mipFilterSelector :: Selector '[] MDLMaterialMipMapFilterMode
 mipFilterSelector = mkSelector "mipFilter"
 
 -- | @Selector@ for @setMipFilter:@
-setMipFilterSelector :: Selector
+setMipFilterSelector :: Selector '[MDLMaterialMipMapFilterMode] ()
 setMipFilterSelector = mkSelector "setMipFilter:"
 

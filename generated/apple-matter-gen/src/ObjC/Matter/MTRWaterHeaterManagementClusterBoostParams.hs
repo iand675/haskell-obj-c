@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRWaterHeaterManagementClusterBoostParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , boostInfoSelector
-  , setBoostInfoSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setBoostInfoSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- boostInfo@
 boostInfo :: IsMTRWaterHeaterManagementClusterBoostParams mtrWaterHeaterManagementClusterBoostParams => mtrWaterHeaterManagementClusterBoostParams -> IO (Id MTRWaterHeaterManagementClusterWaterHeaterBoostInfoStruct)
-boostInfo mtrWaterHeaterManagementClusterBoostParams  =
-    sendMsg mtrWaterHeaterManagementClusterBoostParams (mkSelector "boostInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+boostInfo mtrWaterHeaterManagementClusterBoostParams =
+  sendMessage mtrWaterHeaterManagementClusterBoostParams boostInfoSelector
 
 -- | @- setBoostInfo:@
 setBoostInfo :: (IsMTRWaterHeaterManagementClusterBoostParams mtrWaterHeaterManagementClusterBoostParams, IsMTRWaterHeaterManagementClusterWaterHeaterBoostInfoStruct value) => mtrWaterHeaterManagementClusterBoostParams -> value -> IO ()
-setBoostInfo mtrWaterHeaterManagementClusterBoostParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWaterHeaterManagementClusterBoostParams (mkSelector "setBoostInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBoostInfo mtrWaterHeaterManagementClusterBoostParams value =
+  sendMessage mtrWaterHeaterManagementClusterBoostParams setBoostInfoSelector (toMTRWaterHeaterManagementClusterWaterHeaterBoostInfoStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setBoostInfo mtrWaterHeaterManagementClusterBoostParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRWaterHeaterManagementClusterBoostParams mtrWaterHeaterManagementClusterBoostParams => mtrWaterHeaterManagementClusterBoostParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrWaterHeaterManagementClusterBoostParams  =
-    sendMsg mtrWaterHeaterManagementClusterBoostParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrWaterHeaterManagementClusterBoostParams =
+  sendMessage mtrWaterHeaterManagementClusterBoostParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrWaterHeaterManagementClusterBoostParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRWaterHeaterManagementClusterBoostParams mtrWaterHeaterManagementClusterBoostParams, IsNSNumber value) => mtrWaterHeaterManagementClusterBoostParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrWaterHeaterManagementClusterBoostParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWaterHeaterManagementClusterBoostParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrWaterHeaterManagementClusterBoostParams value =
+  sendMessage mtrWaterHeaterManagementClusterBoostParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrWaterHeaterManagementClusterBoostParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRWaterHeaterManagementClusterBoostParams mtrWaterHeaterManagementClusterBoostParams => mtrWaterHeaterManagementClusterBoostParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrWaterHeaterManagementClusterBoostParams  =
-    sendMsg mtrWaterHeaterManagementClusterBoostParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrWaterHeaterManagementClusterBoostParams =
+  sendMessage mtrWaterHeaterManagementClusterBoostParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrWaterHeaterManagementClusterBoostParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRWaterHeaterManagementClusterBoostParams mtrWaterHeaterManagementClusterBoostParams, IsNSNumber value) => mtrWaterHeaterManagementClusterBoostParams -> value -> IO ()
-setServerSideProcessingTimeout mtrWaterHeaterManagementClusterBoostParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWaterHeaterManagementClusterBoostParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrWaterHeaterManagementClusterBoostParams value =
+  sendMessage mtrWaterHeaterManagementClusterBoostParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @boostInfo@
-boostInfoSelector :: Selector
+boostInfoSelector :: Selector '[] (Id MTRWaterHeaterManagementClusterWaterHeaterBoostInfoStruct)
 boostInfoSelector = mkSelector "boostInfo"
 
 -- | @Selector@ for @setBoostInfo:@
-setBoostInfoSelector :: Selector
+setBoostInfoSelector :: Selector '[Id MTRWaterHeaterManagementClusterWaterHeaterBoostInfoStruct] ()
 setBoostInfoSelector = mkSelector "setBoostInfo:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

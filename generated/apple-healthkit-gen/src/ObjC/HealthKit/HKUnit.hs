@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -83,82 +84,82 @@ module ObjC.HealthKit.HKUnit
   , moleUnitWithMetricPrefix_molarMass
   , moleUnitWithMolarMass
   , unitString
-  , initSelector
-  , unitFromStringSelector
-  , unitFromMassFormatterUnitSelector
-  , massFormatterUnitFromUnitSelector
-  , unitFromLengthFormatterUnitSelector
-  , lengthFormatterUnitFromUnitSelector
-  , unitFromEnergyFormatterUnitSelector
-  , energyFormatterUnitFromUnitSelector
-  , isNullSelector
   , appleEffortScoreUnitSelector
-  , luxUnitWithMetricPrefixSelector
-  , luxUnitSelector
-  , radianAngleUnitWithMetricPrefixSelector
-  , radianAngleUnitSelector
-  , degreeAngleUnitSelector
-  , diopterUnitSelector
-  , prismDiopterUnitSelector
-  , wattUnitWithMetricPrefixSelector
-  , wattUnitSelector
-  , voltUnitWithMetricPrefixSelector
-  , voltUnitSelector
-  , hertzUnitWithMetricPrefixSelector
-  , hertzUnitSelector
-  , unitMultipliedByUnitSelector
-  , unitDividedByUnitSelector
-  , unitRaisedToPowerSelector
-  , reciprocalUnitSelector
-  , decibelHearingLevelUnitSelector
+  , atmosphereUnitSelector
+  , calorieUnitSelector
+  , centimeterOfWaterUnitSelector
   , countUnitSelector
-  , percentUnitSelector
-  , internationalUnitSelector
-  , siemenUnitWithMetricPrefixSelector
-  , siemenUnitSelector
+  , cupImperialUnitSelector
+  , cupUSUnitSelector
+  , dayUnitSelector
+  , decibelAWeightedSoundPressureLevelUnitSelector
+  , decibelHearingLevelUnitSelector
+  , degreeAngleUnitSelector
   , degreeCelsiusUnitSelector
   , degreeFahrenheitUnitSelector
-  , kelvinUnitSelector
-  , jouleUnitWithMetricPrefixSelector
-  , jouleUnitSelector
-  , kilocalorieUnitSelector
-  , smallCalorieUnitSelector
-  , largeCalorieUnitSelector
-  , calorieUnitSelector
-  , secondUnitWithMetricPrefixSelector
-  , secondUnitSelector
-  , minuteUnitSelector
-  , hourUnitSelector
-  , dayUnitSelector
-  , pascalUnitWithMetricPrefixSelector
-  , pascalUnitSelector
-  , millimeterOfMercuryUnitSelector
-  , centimeterOfWaterUnitSelector
-  , atmosphereUnitSelector
-  , decibelAWeightedSoundPressureLevelUnitSelector
-  , inchesOfMercuryUnitSelector
-  , literUnitWithMetricPrefixSelector
-  , literUnitSelector
-  , fluidOunceUSUnitSelector
+  , diopterUnitSelector
+  , energyFormatterUnitFromUnitSelector
   , fluidOunceImperialUnitSelector
-  , pintUSUnitSelector
-  , pintImperialUnitSelector
-  , cupUSUnitSelector
-  , cupImperialUnitSelector
-  , meterUnitWithMetricPrefixSelector
-  , meterUnitSelector
-  , inchUnitSelector
+  , fluidOunceUSUnitSelector
   , footUnitSelector
-  , yardUnitSelector
-  , mileUnitSelector
-  , gramUnitWithMetricPrefixSelector
   , gramUnitSelector
-  , ounceUnitSelector
-  , poundUnitSelector
-  , stoneUnitSelector
+  , gramUnitWithMetricPrefixSelector
+  , hertzUnitSelector
+  , hertzUnitWithMetricPrefixSelector
+  , hourUnitSelector
+  , inchUnitSelector
+  , inchesOfMercuryUnitSelector
+  , initSelector
+  , internationalUnitSelector
+  , isNullSelector
+  , jouleUnitSelector
+  , jouleUnitWithMetricPrefixSelector
+  , kelvinUnitSelector
+  , kilocalorieUnitSelector
+  , largeCalorieUnitSelector
+  , lengthFormatterUnitFromUnitSelector
+  , literUnitSelector
+  , literUnitWithMetricPrefixSelector
+  , luxUnitSelector
+  , luxUnitWithMetricPrefixSelector
+  , massFormatterUnitFromUnitSelector
+  , meterUnitSelector
+  , meterUnitWithMetricPrefixSelector
+  , mileUnitSelector
+  , millimeterOfMercuryUnitSelector
+  , minuteUnitSelector
   , moleUnitWithMetricPrefix_molarMassSelector
   , moleUnitWithMolarMassSelector
+  , ounceUnitSelector
+  , pascalUnitSelector
+  , pascalUnitWithMetricPrefixSelector
+  , percentUnitSelector
+  , pintImperialUnitSelector
+  , pintUSUnitSelector
+  , poundUnitSelector
+  , prismDiopterUnitSelector
+  , radianAngleUnitSelector
+  , radianAngleUnitWithMetricPrefixSelector
+  , reciprocalUnitSelector
+  , secondUnitSelector
+  , secondUnitWithMetricPrefixSelector
+  , siemenUnitSelector
+  , siemenUnitWithMetricPrefixSelector
+  , smallCalorieUnitSelector
+  , stoneUnitSelector
+  , unitDividedByUnitSelector
+  , unitFromEnergyFormatterUnitSelector
+  , unitFromLengthFormatterUnitSelector
+  , unitFromMassFormatterUnitSelector
+  , unitFromStringSelector
+  , unitMultipliedByUnitSelector
+  , unitRaisedToPowerSelector
   , unitStringSelector
+  , voltUnitSelector
+  , voltUnitWithMetricPrefixSelector
+  , wattUnitSelector
+  , wattUnitWithMetricPrefixSelector
+  , yardUnitSelector
 
   -- * Enum types
   , HKMetricPrefix(HKMetricPrefix)
@@ -199,15 +200,11 @@ module ObjC.HealthKit.HKUnit
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -218,835 +215,829 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKUnit hkUnit => hkUnit -> IO (Id HKUnit)
-init_ hkUnit  =
-    sendMsg hkUnit (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkUnit =
+  sendOwnedMessage hkUnit initSelector
 
 -- | @+ unitFromString:@
 unitFromString :: IsNSString string => string -> IO (Id HKUnit)
 unitFromString string =
   do
     cls' <- getRequiredClass "HKUnit"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "unitFromString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' unitFromStringSelector (toNSString string)
 
 -- | @+ unitFromMassFormatterUnit:@
 unitFromMassFormatterUnit :: NSMassFormatterUnit -> IO (Id HKUnit)
 unitFromMassFormatterUnit massFormatterUnit =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "unitFromMassFormatterUnit:") (retPtr retVoid) [argCLong (coerce massFormatterUnit)] >>= retainedObject . castPtr
+    sendClassMessage cls' unitFromMassFormatterUnitSelector massFormatterUnit
 
 -- | @+ massFormatterUnitFromUnit:@
 massFormatterUnitFromUnit :: IsHKUnit unit => unit -> IO NSMassFormatterUnit
 massFormatterUnitFromUnit unit =
   do
     cls' <- getRequiredClass "HKUnit"
-    withObjCPtr unit $ \raw_unit ->
-      fmap (coerce :: CLong -> NSMassFormatterUnit) $ sendClassMsg cls' (mkSelector "massFormatterUnitFromUnit:") retCLong [argPtr (castPtr raw_unit :: Ptr ())]
+    sendClassMessage cls' massFormatterUnitFromUnitSelector (toHKUnit unit)
 
 -- | @+ unitFromLengthFormatterUnit:@
 unitFromLengthFormatterUnit :: NSLengthFormatterUnit -> IO (Id HKUnit)
 unitFromLengthFormatterUnit lengthFormatterUnit =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "unitFromLengthFormatterUnit:") (retPtr retVoid) [argCLong (coerce lengthFormatterUnit)] >>= retainedObject . castPtr
+    sendClassMessage cls' unitFromLengthFormatterUnitSelector lengthFormatterUnit
 
 -- | @+ lengthFormatterUnitFromUnit:@
 lengthFormatterUnitFromUnit :: IsHKUnit unit => unit -> IO NSLengthFormatterUnit
 lengthFormatterUnitFromUnit unit =
   do
     cls' <- getRequiredClass "HKUnit"
-    withObjCPtr unit $ \raw_unit ->
-      fmap (coerce :: CLong -> NSLengthFormatterUnit) $ sendClassMsg cls' (mkSelector "lengthFormatterUnitFromUnit:") retCLong [argPtr (castPtr raw_unit :: Ptr ())]
+    sendClassMessage cls' lengthFormatterUnitFromUnitSelector (toHKUnit unit)
 
 -- | @+ unitFromEnergyFormatterUnit:@
 unitFromEnergyFormatterUnit :: NSEnergyFormatterUnit -> IO (Id HKUnit)
 unitFromEnergyFormatterUnit energyFormatterUnit =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "unitFromEnergyFormatterUnit:") (retPtr retVoid) [argCLong (coerce energyFormatterUnit)] >>= retainedObject . castPtr
+    sendClassMessage cls' unitFromEnergyFormatterUnitSelector energyFormatterUnit
 
 -- | @+ energyFormatterUnitFromUnit:@
 energyFormatterUnitFromUnit :: IsHKUnit unit => unit -> IO NSEnergyFormatterUnit
 energyFormatterUnitFromUnit unit =
   do
     cls' <- getRequiredClass "HKUnit"
-    withObjCPtr unit $ \raw_unit ->
-      fmap (coerce :: CLong -> NSEnergyFormatterUnit) $ sendClassMsg cls' (mkSelector "energyFormatterUnitFromUnit:") retCLong [argPtr (castPtr raw_unit :: Ptr ())]
+    sendClassMessage cls' energyFormatterUnitFromUnitSelector (toHKUnit unit)
 
 -- | @- isNull@
 isNull :: IsHKUnit hkUnit => hkUnit -> IO Bool
-isNull hkUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkUnit (mkSelector "isNull") retCULong []
+isNull hkUnit =
+  sendMessage hkUnit isNullSelector
 
 -- | @+ appleEffortScoreUnit@
 appleEffortScoreUnit :: IO (Id HKUnit)
 appleEffortScoreUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "appleEffortScoreUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' appleEffortScoreUnitSelector
 
 -- | @+ luxUnitWithMetricPrefix:@
 luxUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 luxUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "luxUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' luxUnitWithMetricPrefixSelector prefix
 
 -- | @+ luxUnit@
 luxUnit :: IO (Id HKUnit)
 luxUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "luxUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' luxUnitSelector
 
 -- | @+ radianAngleUnitWithMetricPrefix:@
 radianAngleUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 radianAngleUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "radianAngleUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' radianAngleUnitWithMetricPrefixSelector prefix
 
 -- | @+ radianAngleUnit@
 radianAngleUnit :: IO (Id HKUnit)
 radianAngleUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "radianAngleUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' radianAngleUnitSelector
 
 -- | @+ degreeAngleUnit@
 degreeAngleUnit :: IO (Id HKUnit)
 degreeAngleUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "degreeAngleUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' degreeAngleUnitSelector
 
 -- | @+ diopterUnit@
 diopterUnit :: IO (Id HKUnit)
 diopterUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "diopterUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' diopterUnitSelector
 
 -- | @+ prismDiopterUnit@
 prismDiopterUnit :: IO (Id HKUnit)
 prismDiopterUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "prismDiopterUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' prismDiopterUnitSelector
 
 -- | @+ wattUnitWithMetricPrefix:@
 wattUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 wattUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "wattUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' wattUnitWithMetricPrefixSelector prefix
 
 -- | @+ wattUnit@
 wattUnit :: IO (Id HKUnit)
 wattUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "wattUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' wattUnitSelector
 
 -- | @+ voltUnitWithMetricPrefix:@
 voltUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 voltUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "voltUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' voltUnitWithMetricPrefixSelector prefix
 
 -- | @+ voltUnit@
 voltUnit :: IO (Id HKUnit)
 voltUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "voltUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' voltUnitSelector
 
 -- | @+ hertzUnitWithMetricPrefix:@
 hertzUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 hertzUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "hertzUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' hertzUnitWithMetricPrefixSelector prefix
 
 -- | @+ hertzUnit@
 hertzUnit :: IO (Id HKUnit)
 hertzUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "hertzUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hertzUnitSelector
 
 -- | @- unitMultipliedByUnit:@
 unitMultipliedByUnit :: (IsHKUnit hkUnit, IsHKUnit unit) => hkUnit -> unit -> IO (Id HKUnit)
-unitMultipliedByUnit hkUnit  unit =
-  withObjCPtr unit $ \raw_unit ->
-      sendMsg hkUnit (mkSelector "unitMultipliedByUnit:") (retPtr retVoid) [argPtr (castPtr raw_unit :: Ptr ())] >>= retainedObject . castPtr
+unitMultipliedByUnit hkUnit unit =
+  sendMessage hkUnit unitMultipliedByUnitSelector (toHKUnit unit)
 
 -- | @- unitDividedByUnit:@
 unitDividedByUnit :: (IsHKUnit hkUnit, IsHKUnit unit) => hkUnit -> unit -> IO (Id HKUnit)
-unitDividedByUnit hkUnit  unit =
-  withObjCPtr unit $ \raw_unit ->
-      sendMsg hkUnit (mkSelector "unitDividedByUnit:") (retPtr retVoid) [argPtr (castPtr raw_unit :: Ptr ())] >>= retainedObject . castPtr
+unitDividedByUnit hkUnit unit =
+  sendMessage hkUnit unitDividedByUnitSelector (toHKUnit unit)
 
 -- | @- unitRaisedToPower:@
 unitRaisedToPower :: IsHKUnit hkUnit => hkUnit -> CLong -> IO (Id HKUnit)
-unitRaisedToPower hkUnit  power =
-    sendMsg hkUnit (mkSelector "unitRaisedToPower:") (retPtr retVoid) [argCLong power] >>= retainedObject . castPtr
+unitRaisedToPower hkUnit power =
+  sendMessage hkUnit unitRaisedToPowerSelector power
 
 -- | @- reciprocalUnit@
 reciprocalUnit :: IsHKUnit hkUnit => hkUnit -> IO (Id HKUnit)
-reciprocalUnit hkUnit  =
-    sendMsg hkUnit (mkSelector "reciprocalUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+reciprocalUnit hkUnit =
+  sendMessage hkUnit reciprocalUnitSelector
 
 -- | @+ decibelHearingLevelUnit@
 decibelHearingLevelUnit :: IO (Id HKUnit)
 decibelHearingLevelUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "decibelHearingLevelUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' decibelHearingLevelUnitSelector
 
 -- | @+ countUnit@
 countUnit :: IO (Id HKUnit)
 countUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "countUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' countUnitSelector
 
 -- | @+ percentUnit@
 percentUnit :: IO (Id HKUnit)
 percentUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "percentUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' percentUnitSelector
 
 -- | @+ internationalUnit@
 internationalUnit :: IO (Id HKUnit)
 internationalUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "internationalUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' internationalUnitSelector
 
 -- | @+ siemenUnitWithMetricPrefix:@
 siemenUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 siemenUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "siemenUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' siemenUnitWithMetricPrefixSelector prefix
 
 -- | @+ siemenUnit@
 siemenUnit :: IO (Id HKUnit)
 siemenUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "siemenUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' siemenUnitSelector
 
 -- | @+ degreeCelsiusUnit@
 degreeCelsiusUnit :: IO (Id HKUnit)
 degreeCelsiusUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "degreeCelsiusUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' degreeCelsiusUnitSelector
 
 -- | @+ degreeFahrenheitUnit@
 degreeFahrenheitUnit :: IO (Id HKUnit)
 degreeFahrenheitUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "degreeFahrenheitUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' degreeFahrenheitUnitSelector
 
 -- | @+ kelvinUnit@
 kelvinUnit :: IO (Id HKUnit)
 kelvinUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "kelvinUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kelvinUnitSelector
 
 -- | @+ jouleUnitWithMetricPrefix:@
 jouleUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 jouleUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "jouleUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' jouleUnitWithMetricPrefixSelector prefix
 
 -- | @+ jouleUnit@
 jouleUnit :: IO (Id HKUnit)
 jouleUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "jouleUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' jouleUnitSelector
 
 -- | @+ kilocalorieUnit@
 kilocalorieUnit :: IO (Id HKUnit)
 kilocalorieUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "kilocalorieUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilocalorieUnitSelector
 
 -- | @+ smallCalorieUnit@
 smallCalorieUnit :: IO (Id HKUnit)
 smallCalorieUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "smallCalorieUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' smallCalorieUnitSelector
 
 -- | @+ largeCalorieUnit@
 largeCalorieUnit :: IO (Id HKUnit)
 largeCalorieUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "largeCalorieUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' largeCalorieUnitSelector
 
 -- | @+ calorieUnit@
 calorieUnit :: IO (Id HKUnit)
 calorieUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "calorieUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' calorieUnitSelector
 
 -- | @+ secondUnitWithMetricPrefix:@
 secondUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 secondUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "secondUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' secondUnitWithMetricPrefixSelector prefix
 
 -- | @+ secondUnit@
 secondUnit :: IO (Id HKUnit)
 secondUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "secondUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' secondUnitSelector
 
 -- | @+ minuteUnit@
 minuteUnit :: IO (Id HKUnit)
 minuteUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "minuteUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' minuteUnitSelector
 
 -- | @+ hourUnit@
 hourUnit :: IO (Id HKUnit)
 hourUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "hourUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hourUnitSelector
 
 -- | @+ dayUnit@
 dayUnit :: IO (Id HKUnit)
 dayUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "dayUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' dayUnitSelector
 
 -- | @+ pascalUnitWithMetricPrefix:@
 pascalUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 pascalUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "pascalUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' pascalUnitWithMetricPrefixSelector prefix
 
 -- | @+ pascalUnit@
 pascalUnit :: IO (Id HKUnit)
 pascalUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "pascalUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pascalUnitSelector
 
 -- | @+ millimeterOfMercuryUnit@
 millimeterOfMercuryUnit :: IO (Id HKUnit)
 millimeterOfMercuryUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "millimeterOfMercuryUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' millimeterOfMercuryUnitSelector
 
 -- | @+ centimeterOfWaterUnit@
 centimeterOfWaterUnit :: IO (Id HKUnit)
 centimeterOfWaterUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "centimeterOfWaterUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' centimeterOfWaterUnitSelector
 
 -- | @+ atmosphereUnit@
 atmosphereUnit :: IO (Id HKUnit)
 atmosphereUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "atmosphereUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' atmosphereUnitSelector
 
 -- | @+ decibelAWeightedSoundPressureLevelUnit@
 decibelAWeightedSoundPressureLevelUnit :: IO (Id HKUnit)
 decibelAWeightedSoundPressureLevelUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "decibelAWeightedSoundPressureLevelUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' decibelAWeightedSoundPressureLevelUnitSelector
 
 -- | @+ inchesOfMercuryUnit@
 inchesOfMercuryUnit :: IO (Id HKUnit)
 inchesOfMercuryUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "inchesOfMercuryUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' inchesOfMercuryUnitSelector
 
 -- | @+ literUnitWithMetricPrefix:@
 literUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 literUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "literUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' literUnitWithMetricPrefixSelector prefix
 
 -- | @+ literUnit@
 literUnit :: IO (Id HKUnit)
 literUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "literUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' literUnitSelector
 
 -- | @+ fluidOunceUSUnit@
 fluidOunceUSUnit :: IO (Id HKUnit)
 fluidOunceUSUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "fluidOunceUSUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fluidOunceUSUnitSelector
 
 -- | @+ fluidOunceImperialUnit@
 fluidOunceImperialUnit :: IO (Id HKUnit)
 fluidOunceImperialUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "fluidOunceImperialUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fluidOunceImperialUnitSelector
 
 -- | @+ pintUSUnit@
 pintUSUnit :: IO (Id HKUnit)
 pintUSUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "pintUSUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pintUSUnitSelector
 
 -- | @+ pintImperialUnit@
 pintImperialUnit :: IO (Id HKUnit)
 pintImperialUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "pintImperialUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pintImperialUnitSelector
 
 -- | @+ cupUSUnit@
 cupUSUnit :: IO (Id HKUnit)
 cupUSUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "cupUSUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cupUSUnitSelector
 
 -- | @+ cupImperialUnit@
 cupImperialUnit :: IO (Id HKUnit)
 cupImperialUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "cupImperialUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cupImperialUnitSelector
 
 -- | @+ meterUnitWithMetricPrefix:@
 meterUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 meterUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "meterUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' meterUnitWithMetricPrefixSelector prefix
 
 -- | @+ meterUnit@
 meterUnit :: IO (Id HKUnit)
 meterUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "meterUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' meterUnitSelector
 
 -- | @+ inchUnit@
 inchUnit :: IO (Id HKUnit)
 inchUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "inchUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' inchUnitSelector
 
 -- | @+ footUnit@
 footUnit :: IO (Id HKUnit)
 footUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "footUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' footUnitSelector
 
 -- | @+ yardUnit@
 yardUnit :: IO (Id HKUnit)
 yardUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "yardUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' yardUnitSelector
 
 -- | @+ mileUnit@
 mileUnit :: IO (Id HKUnit)
 mileUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "mileUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mileUnitSelector
 
 -- | @+ gramUnitWithMetricPrefix:@
 gramUnitWithMetricPrefix :: HKMetricPrefix -> IO (Id HKUnit)
 gramUnitWithMetricPrefix prefix =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "gramUnitWithMetricPrefix:") (retPtr retVoid) [argCLong (coerce prefix)] >>= retainedObject . castPtr
+    sendClassMessage cls' gramUnitWithMetricPrefixSelector prefix
 
 -- | @+ gramUnit@
 gramUnit :: IO (Id HKUnit)
 gramUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "gramUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gramUnitSelector
 
 -- | @+ ounceUnit@
 ounceUnit :: IO (Id HKUnit)
 ounceUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "ounceUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' ounceUnitSelector
 
 -- | @+ poundUnit@
 poundUnit :: IO (Id HKUnit)
 poundUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "poundUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' poundUnitSelector
 
 -- | @+ stoneUnit@
 stoneUnit :: IO (Id HKUnit)
 stoneUnit  =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "stoneUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' stoneUnitSelector
 
 -- | @+ moleUnitWithMetricPrefix:molarMass:@
 moleUnitWithMetricPrefix_molarMass :: HKMetricPrefix -> CDouble -> IO (Id HKUnit)
 moleUnitWithMetricPrefix_molarMass prefix gramsPerMole =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "moleUnitWithMetricPrefix:molarMass:") (retPtr retVoid) [argCLong (coerce prefix), argCDouble gramsPerMole] >>= retainedObject . castPtr
+    sendClassMessage cls' moleUnitWithMetricPrefix_molarMassSelector prefix gramsPerMole
 
 -- | @+ moleUnitWithMolarMass:@
 moleUnitWithMolarMass :: CDouble -> IO (Id HKUnit)
 moleUnitWithMolarMass gramsPerMole =
   do
     cls' <- getRequiredClass "HKUnit"
-    sendClassMsg cls' (mkSelector "moleUnitWithMolarMass:") (retPtr retVoid) [argCDouble gramsPerMole] >>= retainedObject . castPtr
+    sendClassMessage cls' moleUnitWithMolarMassSelector gramsPerMole
 
 -- | Returns a unique string representation for the unit that could be used with +unitFromString:
 --
 -- ObjC selector: @- unitString@
 unitString :: IsHKUnit hkUnit => hkUnit -> IO (Id NSString)
-unitString hkUnit  =
-    sendMsg hkUnit (mkSelector "unitString") (retPtr retVoid) [] >>= retainedObject . castPtr
+unitString hkUnit =
+  sendMessage hkUnit unitStringSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKUnit)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @unitFromString:@
-unitFromStringSelector :: Selector
+unitFromStringSelector :: Selector '[Id NSString] (Id HKUnit)
 unitFromStringSelector = mkSelector "unitFromString:"
 
 -- | @Selector@ for @unitFromMassFormatterUnit:@
-unitFromMassFormatterUnitSelector :: Selector
+unitFromMassFormatterUnitSelector :: Selector '[NSMassFormatterUnit] (Id HKUnit)
 unitFromMassFormatterUnitSelector = mkSelector "unitFromMassFormatterUnit:"
 
 -- | @Selector@ for @massFormatterUnitFromUnit:@
-massFormatterUnitFromUnitSelector :: Selector
+massFormatterUnitFromUnitSelector :: Selector '[Id HKUnit] NSMassFormatterUnit
 massFormatterUnitFromUnitSelector = mkSelector "massFormatterUnitFromUnit:"
 
 -- | @Selector@ for @unitFromLengthFormatterUnit:@
-unitFromLengthFormatterUnitSelector :: Selector
+unitFromLengthFormatterUnitSelector :: Selector '[NSLengthFormatterUnit] (Id HKUnit)
 unitFromLengthFormatterUnitSelector = mkSelector "unitFromLengthFormatterUnit:"
 
 -- | @Selector@ for @lengthFormatterUnitFromUnit:@
-lengthFormatterUnitFromUnitSelector :: Selector
+lengthFormatterUnitFromUnitSelector :: Selector '[Id HKUnit] NSLengthFormatterUnit
 lengthFormatterUnitFromUnitSelector = mkSelector "lengthFormatterUnitFromUnit:"
 
 -- | @Selector@ for @unitFromEnergyFormatterUnit:@
-unitFromEnergyFormatterUnitSelector :: Selector
+unitFromEnergyFormatterUnitSelector :: Selector '[NSEnergyFormatterUnit] (Id HKUnit)
 unitFromEnergyFormatterUnitSelector = mkSelector "unitFromEnergyFormatterUnit:"
 
 -- | @Selector@ for @energyFormatterUnitFromUnit:@
-energyFormatterUnitFromUnitSelector :: Selector
+energyFormatterUnitFromUnitSelector :: Selector '[Id HKUnit] NSEnergyFormatterUnit
 energyFormatterUnitFromUnitSelector = mkSelector "energyFormatterUnitFromUnit:"
 
 -- | @Selector@ for @isNull@
-isNullSelector :: Selector
+isNullSelector :: Selector '[] Bool
 isNullSelector = mkSelector "isNull"
 
 -- | @Selector@ for @appleEffortScoreUnit@
-appleEffortScoreUnitSelector :: Selector
+appleEffortScoreUnitSelector :: Selector '[] (Id HKUnit)
 appleEffortScoreUnitSelector = mkSelector "appleEffortScoreUnit"
 
 -- | @Selector@ for @luxUnitWithMetricPrefix:@
-luxUnitWithMetricPrefixSelector :: Selector
+luxUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 luxUnitWithMetricPrefixSelector = mkSelector "luxUnitWithMetricPrefix:"
 
 -- | @Selector@ for @luxUnit@
-luxUnitSelector :: Selector
+luxUnitSelector :: Selector '[] (Id HKUnit)
 luxUnitSelector = mkSelector "luxUnit"
 
 -- | @Selector@ for @radianAngleUnitWithMetricPrefix:@
-radianAngleUnitWithMetricPrefixSelector :: Selector
+radianAngleUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 radianAngleUnitWithMetricPrefixSelector = mkSelector "radianAngleUnitWithMetricPrefix:"
 
 -- | @Selector@ for @radianAngleUnit@
-radianAngleUnitSelector :: Selector
+radianAngleUnitSelector :: Selector '[] (Id HKUnit)
 radianAngleUnitSelector = mkSelector "radianAngleUnit"
 
 -- | @Selector@ for @degreeAngleUnit@
-degreeAngleUnitSelector :: Selector
+degreeAngleUnitSelector :: Selector '[] (Id HKUnit)
 degreeAngleUnitSelector = mkSelector "degreeAngleUnit"
 
 -- | @Selector@ for @diopterUnit@
-diopterUnitSelector :: Selector
+diopterUnitSelector :: Selector '[] (Id HKUnit)
 diopterUnitSelector = mkSelector "diopterUnit"
 
 -- | @Selector@ for @prismDiopterUnit@
-prismDiopterUnitSelector :: Selector
+prismDiopterUnitSelector :: Selector '[] (Id HKUnit)
 prismDiopterUnitSelector = mkSelector "prismDiopterUnit"
 
 -- | @Selector@ for @wattUnitWithMetricPrefix:@
-wattUnitWithMetricPrefixSelector :: Selector
+wattUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 wattUnitWithMetricPrefixSelector = mkSelector "wattUnitWithMetricPrefix:"
 
 -- | @Selector@ for @wattUnit@
-wattUnitSelector :: Selector
+wattUnitSelector :: Selector '[] (Id HKUnit)
 wattUnitSelector = mkSelector "wattUnit"
 
 -- | @Selector@ for @voltUnitWithMetricPrefix:@
-voltUnitWithMetricPrefixSelector :: Selector
+voltUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 voltUnitWithMetricPrefixSelector = mkSelector "voltUnitWithMetricPrefix:"
 
 -- | @Selector@ for @voltUnit@
-voltUnitSelector :: Selector
+voltUnitSelector :: Selector '[] (Id HKUnit)
 voltUnitSelector = mkSelector "voltUnit"
 
 -- | @Selector@ for @hertzUnitWithMetricPrefix:@
-hertzUnitWithMetricPrefixSelector :: Selector
+hertzUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 hertzUnitWithMetricPrefixSelector = mkSelector "hertzUnitWithMetricPrefix:"
 
 -- | @Selector@ for @hertzUnit@
-hertzUnitSelector :: Selector
+hertzUnitSelector :: Selector '[] (Id HKUnit)
 hertzUnitSelector = mkSelector "hertzUnit"
 
 -- | @Selector@ for @unitMultipliedByUnit:@
-unitMultipliedByUnitSelector :: Selector
+unitMultipliedByUnitSelector :: Selector '[Id HKUnit] (Id HKUnit)
 unitMultipliedByUnitSelector = mkSelector "unitMultipliedByUnit:"
 
 -- | @Selector@ for @unitDividedByUnit:@
-unitDividedByUnitSelector :: Selector
+unitDividedByUnitSelector :: Selector '[Id HKUnit] (Id HKUnit)
 unitDividedByUnitSelector = mkSelector "unitDividedByUnit:"
 
 -- | @Selector@ for @unitRaisedToPower:@
-unitRaisedToPowerSelector :: Selector
+unitRaisedToPowerSelector :: Selector '[CLong] (Id HKUnit)
 unitRaisedToPowerSelector = mkSelector "unitRaisedToPower:"
 
 -- | @Selector@ for @reciprocalUnit@
-reciprocalUnitSelector :: Selector
+reciprocalUnitSelector :: Selector '[] (Id HKUnit)
 reciprocalUnitSelector = mkSelector "reciprocalUnit"
 
 -- | @Selector@ for @decibelHearingLevelUnit@
-decibelHearingLevelUnitSelector :: Selector
+decibelHearingLevelUnitSelector :: Selector '[] (Id HKUnit)
 decibelHearingLevelUnitSelector = mkSelector "decibelHearingLevelUnit"
 
 -- | @Selector@ for @countUnit@
-countUnitSelector :: Selector
+countUnitSelector :: Selector '[] (Id HKUnit)
 countUnitSelector = mkSelector "countUnit"
 
 -- | @Selector@ for @percentUnit@
-percentUnitSelector :: Selector
+percentUnitSelector :: Selector '[] (Id HKUnit)
 percentUnitSelector = mkSelector "percentUnit"
 
 -- | @Selector@ for @internationalUnit@
-internationalUnitSelector :: Selector
+internationalUnitSelector :: Selector '[] (Id HKUnit)
 internationalUnitSelector = mkSelector "internationalUnit"
 
 -- | @Selector@ for @siemenUnitWithMetricPrefix:@
-siemenUnitWithMetricPrefixSelector :: Selector
+siemenUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 siemenUnitWithMetricPrefixSelector = mkSelector "siemenUnitWithMetricPrefix:"
 
 -- | @Selector@ for @siemenUnit@
-siemenUnitSelector :: Selector
+siemenUnitSelector :: Selector '[] (Id HKUnit)
 siemenUnitSelector = mkSelector "siemenUnit"
 
 -- | @Selector@ for @degreeCelsiusUnit@
-degreeCelsiusUnitSelector :: Selector
+degreeCelsiusUnitSelector :: Selector '[] (Id HKUnit)
 degreeCelsiusUnitSelector = mkSelector "degreeCelsiusUnit"
 
 -- | @Selector@ for @degreeFahrenheitUnit@
-degreeFahrenheitUnitSelector :: Selector
+degreeFahrenheitUnitSelector :: Selector '[] (Id HKUnit)
 degreeFahrenheitUnitSelector = mkSelector "degreeFahrenheitUnit"
 
 -- | @Selector@ for @kelvinUnit@
-kelvinUnitSelector :: Selector
+kelvinUnitSelector :: Selector '[] (Id HKUnit)
 kelvinUnitSelector = mkSelector "kelvinUnit"
 
 -- | @Selector@ for @jouleUnitWithMetricPrefix:@
-jouleUnitWithMetricPrefixSelector :: Selector
+jouleUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 jouleUnitWithMetricPrefixSelector = mkSelector "jouleUnitWithMetricPrefix:"
 
 -- | @Selector@ for @jouleUnit@
-jouleUnitSelector :: Selector
+jouleUnitSelector :: Selector '[] (Id HKUnit)
 jouleUnitSelector = mkSelector "jouleUnit"
 
 -- | @Selector@ for @kilocalorieUnit@
-kilocalorieUnitSelector :: Selector
+kilocalorieUnitSelector :: Selector '[] (Id HKUnit)
 kilocalorieUnitSelector = mkSelector "kilocalorieUnit"
 
 -- | @Selector@ for @smallCalorieUnit@
-smallCalorieUnitSelector :: Selector
+smallCalorieUnitSelector :: Selector '[] (Id HKUnit)
 smallCalorieUnitSelector = mkSelector "smallCalorieUnit"
 
 -- | @Selector@ for @largeCalorieUnit@
-largeCalorieUnitSelector :: Selector
+largeCalorieUnitSelector :: Selector '[] (Id HKUnit)
 largeCalorieUnitSelector = mkSelector "largeCalorieUnit"
 
 -- | @Selector@ for @calorieUnit@
-calorieUnitSelector :: Selector
+calorieUnitSelector :: Selector '[] (Id HKUnit)
 calorieUnitSelector = mkSelector "calorieUnit"
 
 -- | @Selector@ for @secondUnitWithMetricPrefix:@
-secondUnitWithMetricPrefixSelector :: Selector
+secondUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 secondUnitWithMetricPrefixSelector = mkSelector "secondUnitWithMetricPrefix:"
 
 -- | @Selector@ for @secondUnit@
-secondUnitSelector :: Selector
+secondUnitSelector :: Selector '[] (Id HKUnit)
 secondUnitSelector = mkSelector "secondUnit"
 
 -- | @Selector@ for @minuteUnit@
-minuteUnitSelector :: Selector
+minuteUnitSelector :: Selector '[] (Id HKUnit)
 minuteUnitSelector = mkSelector "minuteUnit"
 
 -- | @Selector@ for @hourUnit@
-hourUnitSelector :: Selector
+hourUnitSelector :: Selector '[] (Id HKUnit)
 hourUnitSelector = mkSelector "hourUnit"
 
 -- | @Selector@ for @dayUnit@
-dayUnitSelector :: Selector
+dayUnitSelector :: Selector '[] (Id HKUnit)
 dayUnitSelector = mkSelector "dayUnit"
 
 -- | @Selector@ for @pascalUnitWithMetricPrefix:@
-pascalUnitWithMetricPrefixSelector :: Selector
+pascalUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 pascalUnitWithMetricPrefixSelector = mkSelector "pascalUnitWithMetricPrefix:"
 
 -- | @Selector@ for @pascalUnit@
-pascalUnitSelector :: Selector
+pascalUnitSelector :: Selector '[] (Id HKUnit)
 pascalUnitSelector = mkSelector "pascalUnit"
 
 -- | @Selector@ for @millimeterOfMercuryUnit@
-millimeterOfMercuryUnitSelector :: Selector
+millimeterOfMercuryUnitSelector :: Selector '[] (Id HKUnit)
 millimeterOfMercuryUnitSelector = mkSelector "millimeterOfMercuryUnit"
 
 -- | @Selector@ for @centimeterOfWaterUnit@
-centimeterOfWaterUnitSelector :: Selector
+centimeterOfWaterUnitSelector :: Selector '[] (Id HKUnit)
 centimeterOfWaterUnitSelector = mkSelector "centimeterOfWaterUnit"
 
 -- | @Selector@ for @atmosphereUnit@
-atmosphereUnitSelector :: Selector
+atmosphereUnitSelector :: Selector '[] (Id HKUnit)
 atmosphereUnitSelector = mkSelector "atmosphereUnit"
 
 -- | @Selector@ for @decibelAWeightedSoundPressureLevelUnit@
-decibelAWeightedSoundPressureLevelUnitSelector :: Selector
+decibelAWeightedSoundPressureLevelUnitSelector :: Selector '[] (Id HKUnit)
 decibelAWeightedSoundPressureLevelUnitSelector = mkSelector "decibelAWeightedSoundPressureLevelUnit"
 
 -- | @Selector@ for @inchesOfMercuryUnit@
-inchesOfMercuryUnitSelector :: Selector
+inchesOfMercuryUnitSelector :: Selector '[] (Id HKUnit)
 inchesOfMercuryUnitSelector = mkSelector "inchesOfMercuryUnit"
 
 -- | @Selector@ for @literUnitWithMetricPrefix:@
-literUnitWithMetricPrefixSelector :: Selector
+literUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 literUnitWithMetricPrefixSelector = mkSelector "literUnitWithMetricPrefix:"
 
 -- | @Selector@ for @literUnit@
-literUnitSelector :: Selector
+literUnitSelector :: Selector '[] (Id HKUnit)
 literUnitSelector = mkSelector "literUnit"
 
 -- | @Selector@ for @fluidOunceUSUnit@
-fluidOunceUSUnitSelector :: Selector
+fluidOunceUSUnitSelector :: Selector '[] (Id HKUnit)
 fluidOunceUSUnitSelector = mkSelector "fluidOunceUSUnit"
 
 -- | @Selector@ for @fluidOunceImperialUnit@
-fluidOunceImperialUnitSelector :: Selector
+fluidOunceImperialUnitSelector :: Selector '[] (Id HKUnit)
 fluidOunceImperialUnitSelector = mkSelector "fluidOunceImperialUnit"
 
 -- | @Selector@ for @pintUSUnit@
-pintUSUnitSelector :: Selector
+pintUSUnitSelector :: Selector '[] (Id HKUnit)
 pintUSUnitSelector = mkSelector "pintUSUnit"
 
 -- | @Selector@ for @pintImperialUnit@
-pintImperialUnitSelector :: Selector
+pintImperialUnitSelector :: Selector '[] (Id HKUnit)
 pintImperialUnitSelector = mkSelector "pintImperialUnit"
 
 -- | @Selector@ for @cupUSUnit@
-cupUSUnitSelector :: Selector
+cupUSUnitSelector :: Selector '[] (Id HKUnit)
 cupUSUnitSelector = mkSelector "cupUSUnit"
 
 -- | @Selector@ for @cupImperialUnit@
-cupImperialUnitSelector :: Selector
+cupImperialUnitSelector :: Selector '[] (Id HKUnit)
 cupImperialUnitSelector = mkSelector "cupImperialUnit"
 
 -- | @Selector@ for @meterUnitWithMetricPrefix:@
-meterUnitWithMetricPrefixSelector :: Selector
+meterUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 meterUnitWithMetricPrefixSelector = mkSelector "meterUnitWithMetricPrefix:"
 
 -- | @Selector@ for @meterUnit@
-meterUnitSelector :: Selector
+meterUnitSelector :: Selector '[] (Id HKUnit)
 meterUnitSelector = mkSelector "meterUnit"
 
 -- | @Selector@ for @inchUnit@
-inchUnitSelector :: Selector
+inchUnitSelector :: Selector '[] (Id HKUnit)
 inchUnitSelector = mkSelector "inchUnit"
 
 -- | @Selector@ for @footUnit@
-footUnitSelector :: Selector
+footUnitSelector :: Selector '[] (Id HKUnit)
 footUnitSelector = mkSelector "footUnit"
 
 -- | @Selector@ for @yardUnit@
-yardUnitSelector :: Selector
+yardUnitSelector :: Selector '[] (Id HKUnit)
 yardUnitSelector = mkSelector "yardUnit"
 
 -- | @Selector@ for @mileUnit@
-mileUnitSelector :: Selector
+mileUnitSelector :: Selector '[] (Id HKUnit)
 mileUnitSelector = mkSelector "mileUnit"
 
 -- | @Selector@ for @gramUnitWithMetricPrefix:@
-gramUnitWithMetricPrefixSelector :: Selector
+gramUnitWithMetricPrefixSelector :: Selector '[HKMetricPrefix] (Id HKUnit)
 gramUnitWithMetricPrefixSelector = mkSelector "gramUnitWithMetricPrefix:"
 
 -- | @Selector@ for @gramUnit@
-gramUnitSelector :: Selector
+gramUnitSelector :: Selector '[] (Id HKUnit)
 gramUnitSelector = mkSelector "gramUnit"
 
 -- | @Selector@ for @ounceUnit@
-ounceUnitSelector :: Selector
+ounceUnitSelector :: Selector '[] (Id HKUnit)
 ounceUnitSelector = mkSelector "ounceUnit"
 
 -- | @Selector@ for @poundUnit@
-poundUnitSelector :: Selector
+poundUnitSelector :: Selector '[] (Id HKUnit)
 poundUnitSelector = mkSelector "poundUnit"
 
 -- | @Selector@ for @stoneUnit@
-stoneUnitSelector :: Selector
+stoneUnitSelector :: Selector '[] (Id HKUnit)
 stoneUnitSelector = mkSelector "stoneUnit"
 
 -- | @Selector@ for @moleUnitWithMetricPrefix:molarMass:@
-moleUnitWithMetricPrefix_molarMassSelector :: Selector
+moleUnitWithMetricPrefix_molarMassSelector :: Selector '[HKMetricPrefix, CDouble] (Id HKUnit)
 moleUnitWithMetricPrefix_molarMassSelector = mkSelector "moleUnitWithMetricPrefix:molarMass:"
 
 -- | @Selector@ for @moleUnitWithMolarMass:@
-moleUnitWithMolarMassSelector :: Selector
+moleUnitWithMolarMassSelector :: Selector '[CDouble] (Id HKUnit)
 moleUnitWithMolarMassSelector = mkSelector "moleUnitWithMolarMass:"
 
 -- | @Selector@ for @unitString@
-unitStringSelector :: Selector
+unitStringSelector :: Selector '[] (Id NSString)
 unitStringSelector = mkSelector "unitString"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.StoreKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @SKANError@
 newtype SKANError = SKANError CLong
@@ -52,6 +55,16 @@ pattern SKANErrorUnknown = SKANError 10
 pattern SKANErrorImpressionTooShort :: SKANError
 pattern SKANErrorImpressionTooShort = SKANError 11
 
+instance ObjCArgument SKANError where
+  withObjCArg (SKANError x) k = k (argCLong x)
+
+instance ObjCReturn SKANError where
+  type RawReturn SKANError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKANError x)
+  fromOwned x = pure (SKANError x)
+
 -- | @SKCloudServiceAuthorizationStatus@
 newtype SKCloudServiceAuthorizationStatus = SKCloudServiceAuthorizationStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -68,6 +81,16 @@ pattern SKCloudServiceAuthorizationStatusRestricted = SKCloudServiceAuthorizatio
 
 pattern SKCloudServiceAuthorizationStatusAuthorized :: SKCloudServiceAuthorizationStatus
 pattern SKCloudServiceAuthorizationStatusAuthorized = SKCloudServiceAuthorizationStatus 3
+
+instance ObjCArgument SKCloudServiceAuthorizationStatus where
+  withObjCArg (SKCloudServiceAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn SKCloudServiceAuthorizationStatus where
+  type RawReturn SKCloudServiceAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKCloudServiceAuthorizationStatus x)
+  fromOwned x = pure (SKCloudServiceAuthorizationStatus x)
 
 -- | @SKCloudServiceCapability@ (bitmask)
 newtype SKCloudServiceCapability = SKCloudServiceCapability CULong
@@ -92,6 +115,16 @@ pattern SKCloudServiceCapabilityMusicCatalogSubscriptionEligible = SKCloudServic
 pattern SKCloudServiceCapabilityAddToCloudMusicLibrary :: SKCloudServiceCapability
 pattern SKCloudServiceCapabilityAddToCloudMusicLibrary = SKCloudServiceCapability 256
 
+instance ObjCArgument SKCloudServiceCapability where
+  withObjCArg (SKCloudServiceCapability x) k = k (argCULong x)
+
+instance ObjCReturn SKCloudServiceCapability where
+  type RawReturn SKCloudServiceCapability = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKCloudServiceCapability x)
+  fromOwned x = pure (SKCloudServiceCapability x)
+
 -- | @SKDownloadState@
 newtype SKDownloadState = SKDownloadState CLong
   deriving stock (Eq, Ord, Show)
@@ -114,6 +147,16 @@ pattern SKDownloadStateFailed = SKDownloadState 4
 
 pattern SKDownloadStateCancelled :: SKDownloadState
 pattern SKDownloadStateCancelled = SKDownloadState 5
+
+instance ObjCArgument SKDownloadState where
+  withObjCArg (SKDownloadState x) k = k (argCLong x)
+
+instance ObjCReturn SKDownloadState where
+  type RawReturn SKDownloadState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKDownloadState x)
+  fromOwned x = pure (SKDownloadState x)
 
 -- | @SKErrorCode@
 newtype SKErrorCode = SKErrorCode CLong
@@ -183,6 +226,16 @@ pattern SKErrorUnsupportedPlatform = SKErrorCode 19
 pattern SKErrorOverlayPresentedInBackgroundScene :: SKErrorCode
 pattern SKErrorOverlayPresentedInBackgroundScene = SKErrorCode 20
 
+instance ObjCArgument SKErrorCode where
+  withObjCArg (SKErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn SKErrorCode where
+  type RawReturn SKErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKErrorCode x)
+  fromOwned x = pure (SKErrorCode x)
+
 -- | @SKOverlayPosition@
 newtype SKOverlayPosition = SKOverlayPosition CLong
   deriving stock (Eq, Ord, Show)
@@ -193,6 +246,16 @@ pattern SKOverlayPositionBottom = SKOverlayPosition 0
 
 pattern SKOverlayPositionBottomRaised :: SKOverlayPosition
 pattern SKOverlayPositionBottomRaised = SKOverlayPosition 1
+
+instance ObjCArgument SKOverlayPosition where
+  withObjCArg (SKOverlayPosition x) k = k (argCLong x)
+
+instance ObjCReturn SKOverlayPosition where
+  type RawReturn SKOverlayPosition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKOverlayPosition x)
+  fromOwned x = pure (SKOverlayPosition x)
 
 -- | @SKPaymentTransactionState@
 newtype SKPaymentTransactionState = SKPaymentTransactionState CLong
@@ -214,6 +277,16 @@ pattern SKPaymentTransactionStateRestored = SKPaymentTransactionState 3
 pattern SKPaymentTransactionStateDeferred :: SKPaymentTransactionState
 pattern SKPaymentTransactionStateDeferred = SKPaymentTransactionState 4
 
+instance ObjCArgument SKPaymentTransactionState where
+  withObjCArg (SKPaymentTransactionState x) k = k (argCLong x)
+
+instance ObjCReturn SKPaymentTransactionState where
+  type RawReturn SKPaymentTransactionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKPaymentTransactionState x)
+  fromOwned x = pure (SKPaymentTransactionState x)
+
 -- | @SKProductDiscountPaymentMode@
 newtype SKProductDiscountPaymentMode = SKProductDiscountPaymentMode CULong
   deriving stock (Eq, Ord, Show)
@@ -228,6 +301,16 @@ pattern SKProductDiscountPaymentModePayUpFront = SKProductDiscountPaymentMode 1
 pattern SKProductDiscountPaymentModeFreeTrial :: SKProductDiscountPaymentMode
 pattern SKProductDiscountPaymentModeFreeTrial = SKProductDiscountPaymentMode 2
 
+instance ObjCArgument SKProductDiscountPaymentMode where
+  withObjCArg (SKProductDiscountPaymentMode x) k = k (argCULong x)
+
+instance ObjCReturn SKProductDiscountPaymentMode where
+  type RawReturn SKProductDiscountPaymentMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKProductDiscountPaymentMode x)
+  fromOwned x = pure (SKProductDiscountPaymentMode x)
+
 -- | @SKProductDiscountType@
 newtype SKProductDiscountType = SKProductDiscountType CULong
   deriving stock (Eq, Ord, Show)
@@ -238,6 +321,16 @@ pattern SKProductDiscountTypeIntroductory = SKProductDiscountType 0
 
 pattern SKProductDiscountTypeSubscription :: SKProductDiscountType
 pattern SKProductDiscountTypeSubscription = SKProductDiscountType 1
+
+instance ObjCArgument SKProductDiscountType where
+  withObjCArg (SKProductDiscountType x) k = k (argCULong x)
+
+instance ObjCReturn SKProductDiscountType where
+  type RawReturn SKProductDiscountType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKProductDiscountType x)
+  fromOwned x = pure (SKProductDiscountType x)
 
 -- | @SKProductPeriodUnit@
 newtype SKProductPeriodUnit = SKProductPeriodUnit CULong
@@ -256,6 +349,16 @@ pattern SKProductPeriodUnitMonth = SKProductPeriodUnit 2
 pattern SKProductPeriodUnitYear :: SKProductPeriodUnit
 pattern SKProductPeriodUnitYear = SKProductPeriodUnit 3
 
+instance ObjCArgument SKProductPeriodUnit where
+  withObjCArg (SKProductPeriodUnit x) k = k (argCULong x)
+
+instance ObjCReturn SKProductPeriodUnit where
+  type RawReturn SKProductPeriodUnit = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKProductPeriodUnit x)
+  fromOwned x = pure (SKProductPeriodUnit x)
+
 -- | @SKProductStorePromotionVisibility@
 newtype SKProductStorePromotionVisibility = SKProductStorePromotionVisibility CLong
   deriving stock (Eq, Ord, Show)
@@ -269,3 +372,13 @@ pattern SKProductStorePromotionVisibilityShow = SKProductStorePromotionVisibilit
 
 pattern SKProductStorePromotionVisibilityHide :: SKProductStorePromotionVisibility
 pattern SKProductStorePromotionVisibilityHide = SKProductStorePromotionVisibility 2
+
+instance ObjCArgument SKProductStorePromotionVisibility where
+  withObjCArg (SKProductStorePromotionVisibility x) k = k (argCLong x)
+
+instance ObjCReturn SKProductStorePromotionVisibility where
+  type RawReturn SKProductStorePromotionVisibility = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKProductStorePromotionVisibility x)
+  fromOwned x = pure (SKProductStorePromotionVisibility x)

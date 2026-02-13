@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterAudioStreamStruct
   , setBitDepth
   , referenceCount
   , setReferenceCount
-  , audioStreamIDSelector
-  , setAudioStreamIDSelector
-  , streamUsageSelector
-  , setStreamUsageSelector
   , audioCodecSelector
-  , setAudioCodecSelector
-  , channelCountSelector
-  , setChannelCountSelector
-  , sampleRateSelector
-  , setSampleRateSelector
-  , bitRateSelector
-  , setBitRateSelector
+  , audioStreamIDSelector
   , bitDepthSelector
-  , setBitDepthSelector
+  , bitRateSelector
+  , channelCountSelector
   , referenceCountSelector
+  , sampleRateSelector
+  , setAudioCodecSelector
+  , setAudioStreamIDSelector
+  , setBitDepthSelector
+  , setBitRateSelector
+  , setChannelCountSelector
   , setReferenceCountSelector
+  , setSampleRateSelector
+  , setStreamUsageSelector
+  , streamUsageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,157 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- audioStreamID@
 audioStreamID :: IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct => mtrCameraAVStreamManagementClusterAudioStreamStruct -> IO (Id NSNumber)
-audioStreamID mtrCameraAVStreamManagementClusterAudioStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "audioStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioStreamID mtrCameraAVStreamManagementClusterAudioStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct audioStreamIDSelector
 
 -- | @- setAudioStreamID:@
 setAudioStreamID :: (IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterAudioStreamStruct -> value -> IO ()
-setAudioStreamID mtrCameraAVStreamManagementClusterAudioStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "setAudioStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioStreamID mtrCameraAVStreamManagementClusterAudioStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct setAudioStreamIDSelector (toNSNumber value)
 
 -- | @- streamUsage@
 streamUsage :: IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct => mtrCameraAVStreamManagementClusterAudioStreamStruct -> IO (Id NSNumber)
-streamUsage mtrCameraAVStreamManagementClusterAudioStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "streamUsage") (retPtr retVoid) [] >>= retainedObject . castPtr
+streamUsage mtrCameraAVStreamManagementClusterAudioStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct streamUsageSelector
 
 -- | @- setStreamUsage:@
 setStreamUsage :: (IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterAudioStreamStruct -> value -> IO ()
-setStreamUsage mtrCameraAVStreamManagementClusterAudioStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "setStreamUsage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStreamUsage mtrCameraAVStreamManagementClusterAudioStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct setStreamUsageSelector (toNSNumber value)
 
 -- | @- audioCodec@
 audioCodec :: IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct => mtrCameraAVStreamManagementClusterAudioStreamStruct -> IO (Id NSNumber)
-audioCodec mtrCameraAVStreamManagementClusterAudioStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "audioCodec") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioCodec mtrCameraAVStreamManagementClusterAudioStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct audioCodecSelector
 
 -- | @- setAudioCodec:@
 setAudioCodec :: (IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterAudioStreamStruct -> value -> IO ()
-setAudioCodec mtrCameraAVStreamManagementClusterAudioStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "setAudioCodec:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioCodec mtrCameraAVStreamManagementClusterAudioStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct setAudioCodecSelector (toNSNumber value)
 
 -- | @- channelCount@
 channelCount :: IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct => mtrCameraAVStreamManagementClusterAudioStreamStruct -> IO (Id NSNumber)
-channelCount mtrCameraAVStreamManagementClusterAudioStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "channelCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelCount mtrCameraAVStreamManagementClusterAudioStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct channelCountSelector
 
 -- | @- setChannelCount:@
 setChannelCount :: (IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterAudioStreamStruct -> value -> IO ()
-setChannelCount mtrCameraAVStreamManagementClusterAudioStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "setChannelCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannelCount mtrCameraAVStreamManagementClusterAudioStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct setChannelCountSelector (toNSNumber value)
 
 -- | @- sampleRate@
 sampleRate :: IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct => mtrCameraAVStreamManagementClusterAudioStreamStruct -> IO (Id NSNumber)
-sampleRate mtrCameraAVStreamManagementClusterAudioStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "sampleRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleRate mtrCameraAVStreamManagementClusterAudioStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct sampleRateSelector
 
 -- | @- setSampleRate:@
 setSampleRate :: (IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterAudioStreamStruct -> value -> IO ()
-setSampleRate mtrCameraAVStreamManagementClusterAudioStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "setSampleRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSampleRate mtrCameraAVStreamManagementClusterAudioStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct setSampleRateSelector (toNSNumber value)
 
 -- | @- bitRate@
 bitRate :: IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct => mtrCameraAVStreamManagementClusterAudioStreamStruct -> IO (Id NSNumber)
-bitRate mtrCameraAVStreamManagementClusterAudioStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "bitRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+bitRate mtrCameraAVStreamManagementClusterAudioStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct bitRateSelector
 
 -- | @- setBitRate:@
 setBitRate :: (IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterAudioStreamStruct -> value -> IO ()
-setBitRate mtrCameraAVStreamManagementClusterAudioStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "setBitRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBitRate mtrCameraAVStreamManagementClusterAudioStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct setBitRateSelector (toNSNumber value)
 
 -- | @- bitDepth@
 bitDepth :: IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct => mtrCameraAVStreamManagementClusterAudioStreamStruct -> IO (Id NSNumber)
-bitDepth mtrCameraAVStreamManagementClusterAudioStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "bitDepth") (retPtr retVoid) [] >>= retainedObject . castPtr
+bitDepth mtrCameraAVStreamManagementClusterAudioStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct bitDepthSelector
 
 -- | @- setBitDepth:@
 setBitDepth :: (IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterAudioStreamStruct -> value -> IO ()
-setBitDepth mtrCameraAVStreamManagementClusterAudioStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "setBitDepth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBitDepth mtrCameraAVStreamManagementClusterAudioStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct setBitDepthSelector (toNSNumber value)
 
 -- | @- referenceCount@
 referenceCount :: IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct => mtrCameraAVStreamManagementClusterAudioStreamStruct -> IO (Id NSNumber)
-referenceCount mtrCameraAVStreamManagementClusterAudioStreamStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "referenceCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+referenceCount mtrCameraAVStreamManagementClusterAudioStreamStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct referenceCountSelector
 
 -- | @- setReferenceCount:@
 setReferenceCount :: (IsMTRCameraAVStreamManagementClusterAudioStreamStruct mtrCameraAVStreamManagementClusterAudioStreamStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterAudioStreamStruct -> value -> IO ()
-setReferenceCount mtrCameraAVStreamManagementClusterAudioStreamStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioStreamStruct (mkSelector "setReferenceCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReferenceCount mtrCameraAVStreamManagementClusterAudioStreamStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioStreamStruct setReferenceCountSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @audioStreamID@
-audioStreamIDSelector :: Selector
+audioStreamIDSelector :: Selector '[] (Id NSNumber)
 audioStreamIDSelector = mkSelector "audioStreamID"
 
 -- | @Selector@ for @setAudioStreamID:@
-setAudioStreamIDSelector :: Selector
+setAudioStreamIDSelector :: Selector '[Id NSNumber] ()
 setAudioStreamIDSelector = mkSelector "setAudioStreamID:"
 
 -- | @Selector@ for @streamUsage@
-streamUsageSelector :: Selector
+streamUsageSelector :: Selector '[] (Id NSNumber)
 streamUsageSelector = mkSelector "streamUsage"
 
 -- | @Selector@ for @setStreamUsage:@
-setStreamUsageSelector :: Selector
+setStreamUsageSelector :: Selector '[Id NSNumber] ()
 setStreamUsageSelector = mkSelector "setStreamUsage:"
 
 -- | @Selector@ for @audioCodec@
-audioCodecSelector :: Selector
+audioCodecSelector :: Selector '[] (Id NSNumber)
 audioCodecSelector = mkSelector "audioCodec"
 
 -- | @Selector@ for @setAudioCodec:@
-setAudioCodecSelector :: Selector
+setAudioCodecSelector :: Selector '[Id NSNumber] ()
 setAudioCodecSelector = mkSelector "setAudioCodec:"
 
 -- | @Selector@ for @channelCount@
-channelCountSelector :: Selector
+channelCountSelector :: Selector '[] (Id NSNumber)
 channelCountSelector = mkSelector "channelCount"
 
 -- | @Selector@ for @setChannelCount:@
-setChannelCountSelector :: Selector
+setChannelCountSelector :: Selector '[Id NSNumber] ()
 setChannelCountSelector = mkSelector "setChannelCount:"
 
 -- | @Selector@ for @sampleRate@
-sampleRateSelector :: Selector
+sampleRateSelector :: Selector '[] (Id NSNumber)
 sampleRateSelector = mkSelector "sampleRate"
 
 -- | @Selector@ for @setSampleRate:@
-setSampleRateSelector :: Selector
+setSampleRateSelector :: Selector '[Id NSNumber] ()
 setSampleRateSelector = mkSelector "setSampleRate:"
 
 -- | @Selector@ for @bitRate@
-bitRateSelector :: Selector
+bitRateSelector :: Selector '[] (Id NSNumber)
 bitRateSelector = mkSelector "bitRate"
 
 -- | @Selector@ for @setBitRate:@
-setBitRateSelector :: Selector
+setBitRateSelector :: Selector '[Id NSNumber] ()
 setBitRateSelector = mkSelector "setBitRate:"
 
 -- | @Selector@ for @bitDepth@
-bitDepthSelector :: Selector
+bitDepthSelector :: Selector '[] (Id NSNumber)
 bitDepthSelector = mkSelector "bitDepth"
 
 -- | @Selector@ for @setBitDepth:@
-setBitDepthSelector :: Selector
+setBitDepthSelector :: Selector '[Id NSNumber] ()
 setBitDepthSelector = mkSelector "setBitDepth:"
 
 -- | @Selector@ for @referenceCount@
-referenceCountSelector :: Selector
+referenceCountSelector :: Selector '[] (Id NSNumber)
 referenceCountSelector = mkSelector "referenceCount"
 
 -- | @Selector@ for @setReferenceCount:@
-setReferenceCountSelector :: Selector
+setReferenceCountSelector :: Selector '[Id NSNumber] ()
 setReferenceCountSelector = mkSelector "setReferenceCount:"
 

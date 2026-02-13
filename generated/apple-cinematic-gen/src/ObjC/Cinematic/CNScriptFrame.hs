@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.Cinematic.CNScriptFrame
   , focusDisparity
   , focusDetection
   , allDetections
+  , allDetectionsSelector
+  , bestDetectionForGroupIDSelector
+  , detectionForIDSelector
+  , focusDetectionSelector
+  , focusDisparitySelector
   , initSelector
   , newSelector
-  , detectionForIDSelector
-  , bestDetectionForGroupIDSelector
-  , focusDisparitySelector
-  , focusDetectionSelector
-  , allDetectionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,29 +44,29 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCNScriptFrame cnScriptFrame => cnScriptFrame -> IO (Id CNScriptFrame)
-init_ cnScriptFrame  =
-    sendMsg cnScriptFrame (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnScriptFrame =
+  sendOwnedMessage cnScriptFrame initSelector
 
 -- | @+ new@
 new :: IO (Id CNScriptFrame)
 new  =
   do
     cls' <- getRequiredClass "CNScriptFrame"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The detection in this frame with the given detection ID, if any.
 --
 -- ObjC selector: @- detectionForID:@
 detectionForID :: IsCNScriptFrame cnScriptFrame => cnScriptFrame -> CLong -> IO (Id CNDetection)
-detectionForID cnScriptFrame  detectionID =
-    sendMsg cnScriptFrame (mkSelector "detectionForID:") (retPtr retVoid) [argCLong detectionID] >>= retainedObject . castPtr
+detectionForID cnScriptFrame detectionID =
+  sendMessage cnScriptFrame detectionForIDSelector detectionID
 
 -- | The best detection to focus on in this frame among those with the given detectionGroupID. For example, a face is preferred to the corresponding torso, even though both have the same detectionGroupID.
 --
 -- ObjC selector: @- bestDetectionForGroupID:@
 bestDetectionForGroupID :: IsCNScriptFrame cnScriptFrame => cnScriptFrame -> CLong -> IO (Id CNDetection)
-bestDetectionForGroupID cnScriptFrame  detectionGroupID =
-    sendMsg cnScriptFrame (mkSelector "bestDetectionForGroupID:") (retPtr retVoid) [argCLong detectionGroupID] >>= retainedObject . castPtr
+bestDetectionForGroupID cnScriptFrame detectionGroupID =
+  sendMessage cnScriptFrame bestDetectionForGroupIDSelector detectionGroupID
 
 -- | The disparity value representing the focus plane at which the script is focused in this frame.
 --
@@ -79,8 +76,8 @@ bestDetectionForGroupID cnScriptFrame  detectionGroupID =
 --
 -- ObjC selector: @- focusDisparity@
 focusDisparity :: IsCNScriptFrame cnScriptFrame => cnScriptFrame -> IO CFloat
-focusDisparity cnScriptFrame  =
-    sendMsg cnScriptFrame (mkSelector "focusDisparity") retCFloat []
+focusDisparity cnScriptFrame =
+  sendMessage cnScriptFrame focusDisparitySelector
 
 -- | The detection on which the script is focused in this frame.
 --
@@ -88,45 +85,45 @@ focusDisparity cnScriptFrame  =
 --
 -- ObjC selector: @- focusDetection@
 focusDetection :: IsCNScriptFrame cnScriptFrame => cnScriptFrame -> IO (Id CNDetection)
-focusDetection cnScriptFrame  =
-    sendMsg cnScriptFrame (mkSelector "focusDetection") (retPtr retVoid) [] >>= retainedObject . castPtr
+focusDetection cnScriptFrame =
+  sendMessage cnScriptFrame focusDetectionSelector
 
 -- | All detected objects in this frame.
 --
 -- ObjC selector: @- allDetections@
 allDetections :: IsCNScriptFrame cnScriptFrame => cnScriptFrame -> IO (Id NSArray)
-allDetections cnScriptFrame  =
-    sendMsg cnScriptFrame (mkSelector "allDetections") (retPtr retVoid) [] >>= retainedObject . castPtr
+allDetections cnScriptFrame =
+  sendMessage cnScriptFrame allDetectionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNScriptFrame)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNScriptFrame)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @detectionForID:@
-detectionForIDSelector :: Selector
+detectionForIDSelector :: Selector '[CLong] (Id CNDetection)
 detectionForIDSelector = mkSelector "detectionForID:"
 
 -- | @Selector@ for @bestDetectionForGroupID:@
-bestDetectionForGroupIDSelector :: Selector
+bestDetectionForGroupIDSelector :: Selector '[CLong] (Id CNDetection)
 bestDetectionForGroupIDSelector = mkSelector "bestDetectionForGroupID:"
 
 -- | @Selector@ for @focusDisparity@
-focusDisparitySelector :: Selector
+focusDisparitySelector :: Selector '[] CFloat
 focusDisparitySelector = mkSelector "focusDisparity"
 
 -- | @Selector@ for @focusDetection@
-focusDetectionSelector :: Selector
+focusDetectionSelector :: Selector '[] (Id CNDetection)
 focusDetectionSelector = mkSelector "focusDetection"
 
 -- | @Selector@ for @allDetections@
-allDetectionsSelector :: Selector
+allDetectionsSelector :: Selector '[] (Id NSArray)
 allDetectionsSelector = mkSelector "allDetections"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.MapKit.MKLocalSearchCompletion
   , titleHighlightRanges
   , subtitle
   , subtitleHighlightRanges
-  , titleSelector
-  , titleHighlightRangesSelector
-  , subtitleSelector
   , subtitleHighlightRangesSelector
+  , subtitleSelector
+  , titleHighlightRangesSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- title@
 title :: IsMKLocalSearchCompletion mkLocalSearchCompletion => mkLocalSearchCompletion -> IO (Id NSString)
-title mkLocalSearchCompletion  =
-    sendMsg mkLocalSearchCompletion (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title mkLocalSearchCompletion =
+  sendMessage mkLocalSearchCompletion titleSelector
 
 -- | @- titleHighlightRanges@
 titleHighlightRanges :: IsMKLocalSearchCompletion mkLocalSearchCompletion => mkLocalSearchCompletion -> IO (Id NSArray)
-titleHighlightRanges mkLocalSearchCompletion  =
-    sendMsg mkLocalSearchCompletion (mkSelector "titleHighlightRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+titleHighlightRanges mkLocalSearchCompletion =
+  sendMessage mkLocalSearchCompletion titleHighlightRangesSelector
 
 -- | @- subtitle@
 subtitle :: IsMKLocalSearchCompletion mkLocalSearchCompletion => mkLocalSearchCompletion -> IO (Id NSString)
-subtitle mkLocalSearchCompletion  =
-    sendMsg mkLocalSearchCompletion (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitle mkLocalSearchCompletion =
+  sendMessage mkLocalSearchCompletion subtitleSelector
 
 -- | @- subtitleHighlightRanges@
 subtitleHighlightRanges :: IsMKLocalSearchCompletion mkLocalSearchCompletion => mkLocalSearchCompletion -> IO (Id NSArray)
-subtitleHighlightRanges mkLocalSearchCompletion  =
-    sendMsg mkLocalSearchCompletion (mkSelector "subtitleHighlightRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitleHighlightRanges mkLocalSearchCompletion =
+  sendMessage mkLocalSearchCompletion subtitleHighlightRangesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @titleHighlightRanges@
-titleHighlightRangesSelector :: Selector
+titleHighlightRangesSelector :: Selector '[] (Id NSArray)
 titleHighlightRangesSelector = mkSelector "titleHighlightRanges"
 
 -- | @Selector@ for @subtitle@
-subtitleSelector :: Selector
+subtitleSelector :: Selector '[] (Id NSString)
 subtitleSelector = mkSelector "subtitle"
 
 -- | @Selector@ for @subtitleHighlightRanges@
-subtitleHighlightRangesSelector :: Selector
+subtitleHighlightRangesSelector :: Selector '[] (Id NSArray)
 subtitleHighlightRangesSelector = mkSelector "subtitleHighlightRanges"
 

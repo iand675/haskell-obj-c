@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,11 +13,11 @@ module ObjC.SensorKit.SRWristDetection
   , crownOrientation
   , onWristDate
   , offWristDate
+  , crownOrientationSelector
+  , offWristDateSelector
+  , onWristDateSelector
   , onWristSelector
   , wristLocationSelector
-  , crownOrientationSelector
-  , onWristDateSelector
-  , offWristDateSelector
 
   -- * Enum types
   , SRCrownOrientation(SRCrownOrientation)
@@ -28,15 +29,11 @@ module ObjC.SensorKit.SRWristDetection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,18 +43,18 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- onWrist@
 onWrist :: IsSRWristDetection srWristDetection => srWristDetection -> IO Bool
-onWrist srWristDetection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg srWristDetection (mkSelector "onWrist") retCULong []
+onWrist srWristDetection =
+  sendMessage srWristDetection onWristSelector
 
 -- | @- wristLocation@
 wristLocation :: IsSRWristDetection srWristDetection => srWristDetection -> IO SRWristLocation
-wristLocation srWristDetection  =
-    fmap (coerce :: CLong -> SRWristLocation) $ sendMsg srWristDetection (mkSelector "wristLocation") retCLong []
+wristLocation srWristDetection =
+  sendMessage srWristDetection wristLocationSelector
 
 -- | @- crownOrientation@
 crownOrientation :: IsSRWristDetection srWristDetection => srWristDetection -> IO SRCrownOrientation
-crownOrientation srWristDetection  =
-    fmap (coerce :: CLong -> SRCrownOrientation) $ sendMsg srWristDetection (mkSelector "crownOrientation") retCLong []
+crownOrientation srWristDetection =
+  sendMessage srWristDetection crownOrientationSelector
 
 -- | onWristDate
 --
@@ -67,8 +64,8 @@ crownOrientation srWristDetection  =
 --
 -- ObjC selector: @- onWristDate@
 onWristDate :: IsSRWristDetection srWristDetection => srWristDetection -> IO (Id NSDate)
-onWristDate srWristDetection  =
-    sendMsg srWristDetection (mkSelector "onWristDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+onWristDate srWristDetection =
+  sendMessage srWristDetection onWristDateSelector
 
 -- | offWristDate
 --
@@ -78,30 +75,30 @@ onWristDate srWristDetection  =
 --
 -- ObjC selector: @- offWristDate@
 offWristDate :: IsSRWristDetection srWristDetection => srWristDetection -> IO (Id NSDate)
-offWristDate srWristDetection  =
-    sendMsg srWristDetection (mkSelector "offWristDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+offWristDate srWristDetection =
+  sendMessage srWristDetection offWristDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @onWrist@
-onWristSelector :: Selector
+onWristSelector :: Selector '[] Bool
 onWristSelector = mkSelector "onWrist"
 
 -- | @Selector@ for @wristLocation@
-wristLocationSelector :: Selector
+wristLocationSelector :: Selector '[] SRWristLocation
 wristLocationSelector = mkSelector "wristLocation"
 
 -- | @Selector@ for @crownOrientation@
-crownOrientationSelector :: Selector
+crownOrientationSelector :: Selector '[] SRCrownOrientation
 crownOrientationSelector = mkSelector "crownOrientation"
 
 -- | @Selector@ for @onWristDate@
-onWristDateSelector :: Selector
+onWristDateSelector :: Selector '[] (Id NSDate)
 onWristDateSelector = mkSelector "onWristDate"
 
 -- | @Selector@ for @offWristDate@
-offWristDateSelector :: Selector
+offWristDateSelector :: Selector '[] (Id NSDate)
 offWristDateSelector = mkSelector "offWristDate"
 

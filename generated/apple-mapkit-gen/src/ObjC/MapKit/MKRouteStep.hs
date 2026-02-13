@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.MapKit.MKRouteStep
   , polyline
   , distance
   , transportType
+  , distanceSelector
   , instructionsSelector
   , noticeSelector
   , polylineSelector
-  , distanceSelector
   , transportTypeSelector
 
   -- * Enum types
@@ -28,15 +29,11 @@ module ObjC.MapKit.MKRouteStep
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,50 +43,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- instructions@
 instructions :: IsMKRouteStep mkRouteStep => mkRouteStep -> IO (Id NSString)
-instructions mkRouteStep  =
-    sendMsg mkRouteStep (mkSelector "instructions") (retPtr retVoid) [] >>= retainedObject . castPtr
+instructions mkRouteStep =
+  sendMessage mkRouteStep instructionsSelector
 
 -- | @- notice@
 notice :: IsMKRouteStep mkRouteStep => mkRouteStep -> IO (Id NSString)
-notice mkRouteStep  =
-    sendMsg mkRouteStep (mkSelector "notice") (retPtr retVoid) [] >>= retainedObject . castPtr
+notice mkRouteStep =
+  sendMessage mkRouteStep noticeSelector
 
 -- | @- polyline@
 polyline :: IsMKRouteStep mkRouteStep => mkRouteStep -> IO (Id MKPolyline)
-polyline mkRouteStep  =
-    sendMsg mkRouteStep (mkSelector "polyline") (retPtr retVoid) [] >>= retainedObject . castPtr
+polyline mkRouteStep =
+  sendMessage mkRouteStep polylineSelector
 
 -- | @- distance@
 distance :: IsMKRouteStep mkRouteStep => mkRouteStep -> IO CDouble
-distance mkRouteStep  =
-    sendMsg mkRouteStep (mkSelector "distance") retCDouble []
+distance mkRouteStep =
+  sendMessage mkRouteStep distanceSelector
 
 -- | @- transportType@
 transportType :: IsMKRouteStep mkRouteStep => mkRouteStep -> IO MKDirectionsTransportType
-transportType mkRouteStep  =
-    fmap (coerce :: CULong -> MKDirectionsTransportType) $ sendMsg mkRouteStep (mkSelector "transportType") retCULong []
+transportType mkRouteStep =
+  sendMessage mkRouteStep transportTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @instructions@
-instructionsSelector :: Selector
+instructionsSelector :: Selector '[] (Id NSString)
 instructionsSelector = mkSelector "instructions"
 
 -- | @Selector@ for @notice@
-noticeSelector :: Selector
+noticeSelector :: Selector '[] (Id NSString)
 noticeSelector = mkSelector "notice"
 
 -- | @Selector@ for @polyline@
-polylineSelector :: Selector
+polylineSelector :: Selector '[] (Id MKPolyline)
 polylineSelector = mkSelector "polyline"
 
 -- | @Selector@ for @distance@
-distanceSelector :: Selector
+distanceSelector :: Selector '[] CDouble
 distanceSelector = mkSelector "distance"
 
 -- | @Selector@ for @transportType@
-transportTypeSelector :: Selector
+transportTypeSelector :: Selector '[] MKDirectionsTransportType
 transportTypeSelector = mkSelector "transportType"
 

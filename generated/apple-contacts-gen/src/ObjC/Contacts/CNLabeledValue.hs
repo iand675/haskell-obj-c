@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Contacts.CNLabeledValue
   , localizedStringForLabel
   , identifier
   , label
-  , labeledValueBySettingLabelSelector
-  , localizedStringForLabelSelector
   , identifierSelector
   , labelSelector
+  , labeledValueBySettingLabelSelector
+  , localizedStringForLabelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,9 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- labeledValueBySettingLabel:@
 labeledValueBySettingLabel :: (IsCNLabeledValue cnLabeledValue, IsNSString label) => cnLabeledValue -> label -> IO (Id CNLabeledValue)
-labeledValueBySettingLabel cnLabeledValue  label =
-  withObjCPtr label $ \raw_label ->
-      sendMsg cnLabeledValue (mkSelector "labeledValueBySettingLabel:") (retPtr retVoid) [argPtr (castPtr raw_label :: Ptr ())] >>= retainedObject . castPtr
+labeledValueBySettingLabel cnLabeledValue label =
+  sendMessage cnLabeledValue labeledValueBySettingLabelSelector (toNSString label)
 
 -- | Get a localized label.
 --
@@ -56,38 +52,37 @@ localizedStringForLabel :: IsNSString label => label -> IO (Id NSString)
 localizedStringForLabel label =
   do
     cls' <- getRequiredClass "CNLabeledValue"
-    withObjCPtr label $ \raw_label ->
-      sendClassMsg cls' (mkSelector "localizedStringForLabel:") (retPtr retVoid) [argPtr (castPtr raw_label :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedStringForLabelSelector (toNSString label)
 
 -- | The identifier is unique among contacts on the device. It can be saved and used for finding labeled values next application launch.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsCNLabeledValue cnLabeledValue => cnLabeledValue -> IO (Id NSString)
-identifier cnLabeledValue  =
-    sendMsg cnLabeledValue (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier cnLabeledValue =
+  sendMessage cnLabeledValue identifierSelector
 
 -- | @- label@
 label :: IsCNLabeledValue cnLabeledValue => cnLabeledValue -> IO (Id NSString)
-label cnLabeledValue  =
-    sendMsg cnLabeledValue (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label cnLabeledValue =
+  sendMessage cnLabeledValue labelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @labeledValueBySettingLabel:@
-labeledValueBySettingLabelSelector :: Selector
+labeledValueBySettingLabelSelector :: Selector '[Id NSString] (Id CNLabeledValue)
 labeledValueBySettingLabelSelector = mkSelector "labeledValueBySettingLabel:"
 
 -- | @Selector@ for @localizedStringForLabel:@
-localizedStringForLabelSelector :: Selector
+localizedStringForLabelSelector :: Selector '[Id NSString] (Id NSString)
 localizedStringForLabelSelector = mkSelector "localizedStringForLabel:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 

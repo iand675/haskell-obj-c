@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,32 +36,32 @@ module ObjC.ModelIO.MDLMaterialProperty
   , setFloatValue
   , luminance
   , setLuminance
+  , colorSelector
+  , floatValueSelector
   , initSelector
   , initWithName_semanticSelector
-  , initWithName_semantic_floatSelector
   , initWithName_semantic_URLSelector
+  , initWithName_semantic_colorSelector
+  , initWithName_semantic_floatSelector
   , initWithName_semantic_stringSelector
   , initWithName_semantic_textureSamplerSelector
-  , initWithName_semantic_colorSelector
-  , setPropertiesSelector
-  , semanticSelector
-  , setSemanticSelector
-  , typeSelector
-  , setTypeSelector
-  , nameSelector
-  , setNameSelector
-  , stringValueSelector
-  , setStringValueSelector
-  , urlValueSelector
-  , setURLValueSelector
-  , textureSamplerValueSelector
-  , setTextureSamplerValueSelector
-  , colorSelector
-  , setColorSelector
-  , floatValueSelector
-  , setFloatValueSelector
   , luminanceSelector
+  , nameSelector
+  , semanticSelector
+  , setColorSelector
+  , setFloatValueSelector
   , setLuminanceSelector
+  , setNameSelector
+  , setPropertiesSelector
+  , setSemanticSelector
+  , setStringValueSelector
+  , setTextureSamplerValueSelector
+  , setTypeSelector
+  , setURLValueSelector
+  , stringValueSelector
+  , textureSamplerValueSelector
+  , typeSelector
+  , urlValueSelector
 
   -- * Enum types
   , MDLMaterialPropertyType(MDLMaterialPropertyType)
@@ -105,15 +106,11 @@ module ObjC.ModelIO.MDLMaterialProperty
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -123,257 +120,243 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO (Id MDLMaterialProperty)
-init_ mdlMaterialProperty  =
-    sendMsg mdlMaterialProperty (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mdlMaterialProperty =
+  sendOwnedMessage mdlMaterialProperty initSelector
 
 -- | @- initWithName:semantic:@
 initWithName_semantic :: (IsMDLMaterialProperty mdlMaterialProperty, IsNSString name) => mdlMaterialProperty -> name -> MDLMaterialSemantic -> IO (Id MDLMaterialProperty)
-initWithName_semantic mdlMaterialProperty  name semantic =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlMaterialProperty (mkSelector "initWithName:semantic:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce semantic)] >>= ownedObject . castPtr
+initWithName_semantic mdlMaterialProperty name semantic =
+  sendOwnedMessage mdlMaterialProperty initWithName_semanticSelector (toNSString name) semantic
 
 -- | @- initWithName:semantic:float:@
 initWithName_semantic_float :: (IsMDLMaterialProperty mdlMaterialProperty, IsNSString name) => mdlMaterialProperty -> name -> MDLMaterialSemantic -> CFloat -> IO (Id MDLMaterialProperty)
-initWithName_semantic_float mdlMaterialProperty  name semantic value =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlMaterialProperty (mkSelector "initWithName:semantic:float:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce semantic), argCFloat value] >>= ownedObject . castPtr
+initWithName_semantic_float mdlMaterialProperty name semantic value =
+  sendOwnedMessage mdlMaterialProperty initWithName_semantic_floatSelector (toNSString name) semantic value
 
 -- | @- initWithName:semantic:URL:@
 initWithName_semantic_URL :: (IsMDLMaterialProperty mdlMaterialProperty, IsNSString name, IsNSURL url) => mdlMaterialProperty -> name -> MDLMaterialSemantic -> url -> IO (Id MDLMaterialProperty)
-initWithName_semantic_URL mdlMaterialProperty  name semantic url =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr url $ \raw_url ->
-        sendMsg mdlMaterialProperty (mkSelector "initWithName:semantic:URL:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce semantic), argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithName_semantic_URL mdlMaterialProperty name semantic url =
+  sendOwnedMessage mdlMaterialProperty initWithName_semantic_URLSelector (toNSString name) semantic (toNSURL url)
 
 -- | @- initWithName:semantic:string:@
 initWithName_semantic_string :: (IsMDLMaterialProperty mdlMaterialProperty, IsNSString name, IsNSString string) => mdlMaterialProperty -> name -> MDLMaterialSemantic -> string -> IO (Id MDLMaterialProperty)
-initWithName_semantic_string mdlMaterialProperty  name semantic string =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr string $ \raw_string ->
-        sendMsg mdlMaterialProperty (mkSelector "initWithName:semantic:string:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce semantic), argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithName_semantic_string mdlMaterialProperty name semantic string =
+  sendOwnedMessage mdlMaterialProperty initWithName_semantic_stringSelector (toNSString name) semantic (toNSString string)
 
 -- | @- initWithName:semantic:textureSampler:@
 initWithName_semantic_textureSampler :: (IsMDLMaterialProperty mdlMaterialProperty, IsNSString name, IsMDLTextureSampler textureSampler) => mdlMaterialProperty -> name -> MDLMaterialSemantic -> textureSampler -> IO (Id MDLMaterialProperty)
-initWithName_semantic_textureSampler mdlMaterialProperty  name semantic textureSampler =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr textureSampler $ \raw_textureSampler ->
-        sendMsg mdlMaterialProperty (mkSelector "initWithName:semantic:textureSampler:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce semantic), argPtr (castPtr raw_textureSampler :: Ptr ())] >>= ownedObject . castPtr
+initWithName_semantic_textureSampler mdlMaterialProperty name semantic textureSampler =
+  sendOwnedMessage mdlMaterialProperty initWithName_semantic_textureSamplerSelector (toNSString name) semantic (toMDLTextureSampler textureSampler)
 
 -- | @- initWithName:semantic:color:@
 initWithName_semantic_color :: (IsMDLMaterialProperty mdlMaterialProperty, IsNSString name) => mdlMaterialProperty -> name -> MDLMaterialSemantic -> Ptr () -> IO (Id MDLMaterialProperty)
-initWithName_semantic_color mdlMaterialProperty  name semantic color =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlMaterialProperty (mkSelector "initWithName:semantic:color:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce semantic), argPtr color] >>= ownedObject . castPtr
+initWithName_semantic_color mdlMaterialProperty name semantic color =
+  sendOwnedMessage mdlMaterialProperty initWithName_semantic_colorSelector (toNSString name) semantic color
 
 -- | @- setProperties:@
 setProperties :: (IsMDLMaterialProperty mdlMaterialProperty, IsMDLMaterialProperty property) => mdlMaterialProperty -> property -> IO ()
-setProperties mdlMaterialProperty  property =
-  withObjCPtr property $ \raw_property ->
-      sendMsg mdlMaterialProperty (mkSelector "setProperties:") retVoid [argPtr (castPtr raw_property :: Ptr ())]
+setProperties mdlMaterialProperty property =
+  sendMessage mdlMaterialProperty setPropertiesSelector (toMDLMaterialProperty property)
 
 -- | @- semantic@
 semantic :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO MDLMaterialSemantic
-semantic mdlMaterialProperty  =
-    fmap (coerce :: CULong -> MDLMaterialSemantic) $ sendMsg mdlMaterialProperty (mkSelector "semantic") retCULong []
+semantic mdlMaterialProperty =
+  sendMessage mdlMaterialProperty semanticSelector
 
 -- | @- setSemantic:@
 setSemantic :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> MDLMaterialSemantic -> IO ()
-setSemantic mdlMaterialProperty  value =
-    sendMsg mdlMaterialProperty (mkSelector "setSemantic:") retVoid [argCULong (coerce value)]
+setSemantic mdlMaterialProperty value =
+  sendMessage mdlMaterialProperty setSemanticSelector value
 
 -- | @- type@
 type_ :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO MDLMaterialPropertyType
-type_ mdlMaterialProperty  =
-    fmap (coerce :: CULong -> MDLMaterialPropertyType) $ sendMsg mdlMaterialProperty (mkSelector "type") retCULong []
+type_ mdlMaterialProperty =
+  sendMessage mdlMaterialProperty typeSelector
 
 -- | @- setType:@
 setType :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> MDLMaterialPropertyType -> IO ()
-setType mdlMaterialProperty  value =
-    sendMsg mdlMaterialProperty (mkSelector "setType:") retVoid [argCULong (coerce value)]
+setType mdlMaterialProperty value =
+  sendMessage mdlMaterialProperty setTypeSelector value
 
 -- | See: MDLNamed
 --
 -- ObjC selector: @- name@
 name :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO (Id NSString)
-name mdlMaterialProperty  =
-    sendMsg mdlMaterialProperty (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mdlMaterialProperty =
+  sendMessage mdlMaterialProperty nameSelector
 
 -- | See: MDLNamed
 --
 -- ObjC selector: @- setName:@
 setName :: (IsMDLMaterialProperty mdlMaterialProperty, IsNSString value) => mdlMaterialProperty -> value -> IO ()
-setName mdlMaterialProperty  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlMaterialProperty (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mdlMaterialProperty value =
+  sendMessage mdlMaterialProperty setNameSelector (toNSString value)
 
 -- | @- stringValue@
 stringValue :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO (Id NSString)
-stringValue mdlMaterialProperty  =
-    sendMsg mdlMaterialProperty (mkSelector "stringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringValue mdlMaterialProperty =
+  sendMessage mdlMaterialProperty stringValueSelector
 
 -- | @- setStringValue:@
 setStringValue :: (IsMDLMaterialProperty mdlMaterialProperty, IsNSString value) => mdlMaterialProperty -> value -> IO ()
-setStringValue mdlMaterialProperty  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlMaterialProperty (mkSelector "setStringValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStringValue mdlMaterialProperty value =
+  sendMessage mdlMaterialProperty setStringValueSelector (toNSString value)
 
 -- | @- URLValue@
 urlValue :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO (Id NSURL)
-urlValue mdlMaterialProperty  =
-    sendMsg mdlMaterialProperty (mkSelector "URLValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlValue mdlMaterialProperty =
+  sendMessage mdlMaterialProperty urlValueSelector
 
 -- | @- setURLValue:@
 setURLValue :: (IsMDLMaterialProperty mdlMaterialProperty, IsNSURL value) => mdlMaterialProperty -> value -> IO ()
-setURLValue mdlMaterialProperty  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlMaterialProperty (mkSelector "setURLValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURLValue mdlMaterialProperty value =
+  sendMessage mdlMaterialProperty setURLValueSelector (toNSURL value)
 
 -- | @- textureSamplerValue@
 textureSamplerValue :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO (Id MDLTextureSampler)
-textureSamplerValue mdlMaterialProperty  =
-    sendMsg mdlMaterialProperty (mkSelector "textureSamplerValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+textureSamplerValue mdlMaterialProperty =
+  sendMessage mdlMaterialProperty textureSamplerValueSelector
 
 -- | @- setTextureSamplerValue:@
 setTextureSamplerValue :: (IsMDLMaterialProperty mdlMaterialProperty, IsMDLTextureSampler value) => mdlMaterialProperty -> value -> IO ()
-setTextureSamplerValue mdlMaterialProperty  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlMaterialProperty (mkSelector "setTextureSamplerValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextureSamplerValue mdlMaterialProperty value =
+  sendMessage mdlMaterialProperty setTextureSamplerValueSelector (toMDLTextureSampler value)
 
 -- | @- color@
 color :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO (Ptr ())
-color mdlMaterialProperty  =
-    fmap castPtr $ sendMsg mdlMaterialProperty (mkSelector "color") (retPtr retVoid) []
+color mdlMaterialProperty =
+  sendMessage mdlMaterialProperty colorSelector
 
 -- | @- setColor:@
 setColor :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> Ptr () -> IO ()
-setColor mdlMaterialProperty  value =
-    sendMsg mdlMaterialProperty (mkSelector "setColor:") retVoid [argPtr value]
+setColor mdlMaterialProperty value =
+  sendMessage mdlMaterialProperty setColorSelector value
 
 -- | @- floatValue@
 floatValue :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO CFloat
-floatValue mdlMaterialProperty  =
-    sendMsg mdlMaterialProperty (mkSelector "floatValue") retCFloat []
+floatValue mdlMaterialProperty =
+  sendMessage mdlMaterialProperty floatValueSelector
 
 -- | @- setFloatValue:@
 setFloatValue :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> CFloat -> IO ()
-setFloatValue mdlMaterialProperty  value =
-    sendMsg mdlMaterialProperty (mkSelector "setFloatValue:") retVoid [argCFloat value]
+setFloatValue mdlMaterialProperty value =
+  sendMessage mdlMaterialProperty setFloatValueSelector value
 
 -- | @- luminance@
 luminance :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> IO CFloat
-luminance mdlMaterialProperty  =
-    sendMsg mdlMaterialProperty (mkSelector "luminance") retCFloat []
+luminance mdlMaterialProperty =
+  sendMessage mdlMaterialProperty luminanceSelector
 
 -- | @- setLuminance:@
 setLuminance :: IsMDLMaterialProperty mdlMaterialProperty => mdlMaterialProperty -> CFloat -> IO ()
-setLuminance mdlMaterialProperty  value =
-    sendMsg mdlMaterialProperty (mkSelector "setLuminance:") retVoid [argCFloat value]
+setLuminance mdlMaterialProperty value =
+  sendMessage mdlMaterialProperty setLuminanceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MDLMaterialProperty)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithName:semantic:@
-initWithName_semanticSelector :: Selector
+initWithName_semanticSelector :: Selector '[Id NSString, MDLMaterialSemantic] (Id MDLMaterialProperty)
 initWithName_semanticSelector = mkSelector "initWithName:semantic:"
 
 -- | @Selector@ for @initWithName:semantic:float:@
-initWithName_semantic_floatSelector :: Selector
+initWithName_semantic_floatSelector :: Selector '[Id NSString, MDLMaterialSemantic, CFloat] (Id MDLMaterialProperty)
 initWithName_semantic_floatSelector = mkSelector "initWithName:semantic:float:"
 
 -- | @Selector@ for @initWithName:semantic:URL:@
-initWithName_semantic_URLSelector :: Selector
+initWithName_semantic_URLSelector :: Selector '[Id NSString, MDLMaterialSemantic, Id NSURL] (Id MDLMaterialProperty)
 initWithName_semantic_URLSelector = mkSelector "initWithName:semantic:URL:"
 
 -- | @Selector@ for @initWithName:semantic:string:@
-initWithName_semantic_stringSelector :: Selector
+initWithName_semantic_stringSelector :: Selector '[Id NSString, MDLMaterialSemantic, Id NSString] (Id MDLMaterialProperty)
 initWithName_semantic_stringSelector = mkSelector "initWithName:semantic:string:"
 
 -- | @Selector@ for @initWithName:semantic:textureSampler:@
-initWithName_semantic_textureSamplerSelector :: Selector
+initWithName_semantic_textureSamplerSelector :: Selector '[Id NSString, MDLMaterialSemantic, Id MDLTextureSampler] (Id MDLMaterialProperty)
 initWithName_semantic_textureSamplerSelector = mkSelector "initWithName:semantic:textureSampler:"
 
 -- | @Selector@ for @initWithName:semantic:color:@
-initWithName_semantic_colorSelector :: Selector
+initWithName_semantic_colorSelector :: Selector '[Id NSString, MDLMaterialSemantic, Ptr ()] (Id MDLMaterialProperty)
 initWithName_semantic_colorSelector = mkSelector "initWithName:semantic:color:"
 
 -- | @Selector@ for @setProperties:@
-setPropertiesSelector :: Selector
+setPropertiesSelector :: Selector '[Id MDLMaterialProperty] ()
 setPropertiesSelector = mkSelector "setProperties:"
 
 -- | @Selector@ for @semantic@
-semanticSelector :: Selector
+semanticSelector :: Selector '[] MDLMaterialSemantic
 semanticSelector = mkSelector "semantic"
 
 -- | @Selector@ for @setSemantic:@
-setSemanticSelector :: Selector
+setSemanticSelector :: Selector '[MDLMaterialSemantic] ()
 setSemanticSelector = mkSelector "setSemantic:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MDLMaterialPropertyType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[MDLMaterialPropertyType] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @stringValue@
-stringValueSelector :: Selector
+stringValueSelector :: Selector '[] (Id NSString)
 stringValueSelector = mkSelector "stringValue"
 
 -- | @Selector@ for @setStringValue:@
-setStringValueSelector :: Selector
+setStringValueSelector :: Selector '[Id NSString] ()
 setStringValueSelector = mkSelector "setStringValue:"
 
 -- | @Selector@ for @URLValue@
-urlValueSelector :: Selector
+urlValueSelector :: Selector '[] (Id NSURL)
 urlValueSelector = mkSelector "URLValue"
 
 -- | @Selector@ for @setURLValue:@
-setURLValueSelector :: Selector
+setURLValueSelector :: Selector '[Id NSURL] ()
 setURLValueSelector = mkSelector "setURLValue:"
 
 -- | @Selector@ for @textureSamplerValue@
-textureSamplerValueSelector :: Selector
+textureSamplerValueSelector :: Selector '[] (Id MDLTextureSampler)
 textureSamplerValueSelector = mkSelector "textureSamplerValue"
 
 -- | @Selector@ for @setTextureSamplerValue:@
-setTextureSamplerValueSelector :: Selector
+setTextureSamplerValueSelector :: Selector '[Id MDLTextureSampler] ()
 setTextureSamplerValueSelector = mkSelector "setTextureSamplerValue:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Ptr ())
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Ptr ()] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @floatValue@
-floatValueSelector :: Selector
+floatValueSelector :: Selector '[] CFloat
 floatValueSelector = mkSelector "floatValue"
 
 -- | @Selector@ for @setFloatValue:@
-setFloatValueSelector :: Selector
+setFloatValueSelector :: Selector '[CFloat] ()
 setFloatValueSelector = mkSelector "setFloatValue:"
 
 -- | @Selector@ for @luminance@
-luminanceSelector :: Selector
+luminanceSelector :: Selector '[] CFloat
 luminanceSelector = mkSelector "luminance"
 
 -- | @Selector@ for @setLuminance:@
-setLuminanceSelector :: Selector
+setLuminanceSelector :: Selector '[CFloat] ()
 setLuminanceSelector = mkSelector "setLuminance:"
 

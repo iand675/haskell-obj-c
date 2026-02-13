@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INFocusStatusCenter
   , defaultCenter
   , focusStatus
   , authorizationStatus
-  , requestAuthorizationWithCompletionHandlerSelector
+  , authorizationStatusSelector
   , defaultCenterSelector
   , focusStatusSelector
-  , authorizationStatusSelector
+  , requestAuthorizationWithCompletionHandlerSelector
 
   -- * Enum types
   , INFocusStatusAuthorizationStatus(INFocusStatusAuthorizationStatus)
@@ -25,15 +26,11 @@ module ObjC.Intents.INFocusStatusCenter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,43 +40,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- requestAuthorizationWithCompletionHandler:@
 requestAuthorizationWithCompletionHandler :: IsINFocusStatusCenter inFocusStatusCenter => inFocusStatusCenter -> Ptr () -> IO ()
-requestAuthorizationWithCompletionHandler inFocusStatusCenter  completionHandler =
-    sendMsg inFocusStatusCenter (mkSelector "requestAuthorizationWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+requestAuthorizationWithCompletionHandler inFocusStatusCenter completionHandler =
+  sendMessage inFocusStatusCenter requestAuthorizationWithCompletionHandlerSelector completionHandler
 
 -- | @+ defaultCenter@
 defaultCenter :: IO (Id INFocusStatusCenter)
 defaultCenter  =
   do
     cls' <- getRequiredClass "INFocusStatusCenter"
-    sendClassMsg cls' (mkSelector "defaultCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultCenterSelector
 
 -- | @- focusStatus@
 focusStatus :: IsINFocusStatusCenter inFocusStatusCenter => inFocusStatusCenter -> IO (Id INFocusStatus)
-focusStatus inFocusStatusCenter  =
-    sendMsg inFocusStatusCenter (mkSelector "focusStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+focusStatus inFocusStatusCenter =
+  sendMessage inFocusStatusCenter focusStatusSelector
 
 -- | @- authorizationStatus@
 authorizationStatus :: IsINFocusStatusCenter inFocusStatusCenter => inFocusStatusCenter -> IO INFocusStatusAuthorizationStatus
-authorizationStatus inFocusStatusCenter  =
-    fmap (coerce :: CLong -> INFocusStatusAuthorizationStatus) $ sendMsg inFocusStatusCenter (mkSelector "authorizationStatus") retCLong []
+authorizationStatus inFocusStatusCenter =
+  sendMessage inFocusStatusCenter authorizationStatusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestAuthorizationWithCompletionHandler:@
-requestAuthorizationWithCompletionHandlerSelector :: Selector
+requestAuthorizationWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestAuthorizationWithCompletionHandlerSelector = mkSelector "requestAuthorizationWithCompletionHandler:"
 
 -- | @Selector@ for @defaultCenter@
-defaultCenterSelector :: Selector
+defaultCenterSelector :: Selector '[] (Id INFocusStatusCenter)
 defaultCenterSelector = mkSelector "defaultCenter"
 
 -- | @Selector@ for @focusStatus@
-focusStatusSelector :: Selector
+focusStatusSelector :: Selector '[] (Id INFocusStatus)
 focusStatusSelector = mkSelector "focusStatus"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] INFocusStatusAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 

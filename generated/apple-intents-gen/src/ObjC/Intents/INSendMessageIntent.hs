@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.Intents.INSendMessageIntent
   , sender
   , attachments
   , groupName
-  , initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender_attachmentsSelector
+  , attachmentsSelector
+  , contentSelector
+  , conversationIdentifierSelector
+  , groupNameSelector
   , initWithRecipients_content_groupName_serviceName_senderSelector
   , initWithRecipients_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector
   , initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector
-  , recipientsSelector
+  , initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender_attachmentsSelector
   , outgoingMessageTypeSelector
-  , contentSelector
-  , speakableGroupNameSelector
-  , conversationIdentifierSelector
-  , serviceNameSelector
+  , recipientsSelector
   , senderSelector
-  , attachmentsSelector
-  , groupNameSelector
+  , serviceNameSelector
+  , speakableGroupNameSelector
 
   -- * Enum types
   , INOutgoingMessageType(INOutgoingMessageType)
@@ -42,15 +43,11 @@ module ObjC.Intents.INSendMessageIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,146 +57,122 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRecipients:outgoingMessageType:content:speakableGroupName:conversationIdentifier:serviceName:sender:attachments:@
 initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender_attachments :: (IsINSendMessageIntent inSendMessageIntent, IsNSArray recipients, IsNSString content, IsINSpeakableString speakableGroupName, IsNSString conversationIdentifier, IsNSString serviceName, IsINPerson sender, IsNSArray attachments) => inSendMessageIntent -> recipients -> INOutgoingMessageType -> content -> speakableGroupName -> conversationIdentifier -> serviceName -> sender -> attachments -> IO (Id INSendMessageIntent)
-initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender_attachments inSendMessageIntent  recipients outgoingMessageType content speakableGroupName conversationIdentifier serviceName sender attachments =
-  withObjCPtr recipients $ \raw_recipients ->
-    withObjCPtr content $ \raw_content ->
-      withObjCPtr speakableGroupName $ \raw_speakableGroupName ->
-        withObjCPtr conversationIdentifier $ \raw_conversationIdentifier ->
-          withObjCPtr serviceName $ \raw_serviceName ->
-            withObjCPtr sender $ \raw_sender ->
-              withObjCPtr attachments $ \raw_attachments ->
-                  sendMsg inSendMessageIntent (mkSelector "initWithRecipients:outgoingMessageType:content:speakableGroupName:conversationIdentifier:serviceName:sender:attachments:") (retPtr retVoid) [argPtr (castPtr raw_recipients :: Ptr ()), argCLong (coerce outgoingMessageType), argPtr (castPtr raw_content :: Ptr ()), argPtr (castPtr raw_speakableGroupName :: Ptr ()), argPtr (castPtr raw_conversationIdentifier :: Ptr ()), argPtr (castPtr raw_serviceName :: Ptr ()), argPtr (castPtr raw_sender :: Ptr ()), argPtr (castPtr raw_attachments :: Ptr ())] >>= ownedObject . castPtr
+initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender_attachments inSendMessageIntent recipients outgoingMessageType content speakableGroupName conversationIdentifier serviceName sender attachments =
+  sendOwnedMessage inSendMessageIntent initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender_attachmentsSelector (toNSArray recipients) outgoingMessageType (toNSString content) (toINSpeakableString speakableGroupName) (toNSString conversationIdentifier) (toNSString serviceName) (toINPerson sender) (toNSArray attachments)
 
 -- | @- initWithRecipients:content:groupName:serviceName:sender:@
 initWithRecipients_content_groupName_serviceName_sender :: (IsINSendMessageIntent inSendMessageIntent, IsNSArray recipients, IsNSString content, IsNSString groupName, IsNSString serviceName, IsINPerson sender) => inSendMessageIntent -> recipients -> content -> groupName -> serviceName -> sender -> IO (Id INSendMessageIntent)
-initWithRecipients_content_groupName_serviceName_sender inSendMessageIntent  recipients content groupName serviceName sender =
-  withObjCPtr recipients $ \raw_recipients ->
-    withObjCPtr content $ \raw_content ->
-      withObjCPtr groupName $ \raw_groupName ->
-        withObjCPtr serviceName $ \raw_serviceName ->
-          withObjCPtr sender $ \raw_sender ->
-              sendMsg inSendMessageIntent (mkSelector "initWithRecipients:content:groupName:serviceName:sender:") (retPtr retVoid) [argPtr (castPtr raw_recipients :: Ptr ()), argPtr (castPtr raw_content :: Ptr ()), argPtr (castPtr raw_groupName :: Ptr ()), argPtr (castPtr raw_serviceName :: Ptr ()), argPtr (castPtr raw_sender :: Ptr ())] >>= ownedObject . castPtr
+initWithRecipients_content_groupName_serviceName_sender inSendMessageIntent recipients content groupName serviceName sender =
+  sendOwnedMessage inSendMessageIntent initWithRecipients_content_groupName_serviceName_senderSelector (toNSArray recipients) (toNSString content) (toNSString groupName) (toNSString serviceName) (toINPerson sender)
 
 -- | @- initWithRecipients:content:speakableGroupName:conversationIdentifier:serviceName:sender:@
 initWithRecipients_content_speakableGroupName_conversationIdentifier_serviceName_sender :: (IsINSendMessageIntent inSendMessageIntent, IsNSArray recipients, IsNSString content, IsINSpeakableString speakableGroupName, IsNSString conversationIdentifier, IsNSString serviceName, IsINPerson sender) => inSendMessageIntent -> recipients -> content -> speakableGroupName -> conversationIdentifier -> serviceName -> sender -> IO (Id INSendMessageIntent)
-initWithRecipients_content_speakableGroupName_conversationIdentifier_serviceName_sender inSendMessageIntent  recipients content speakableGroupName conversationIdentifier serviceName sender =
-  withObjCPtr recipients $ \raw_recipients ->
-    withObjCPtr content $ \raw_content ->
-      withObjCPtr speakableGroupName $ \raw_speakableGroupName ->
-        withObjCPtr conversationIdentifier $ \raw_conversationIdentifier ->
-          withObjCPtr serviceName $ \raw_serviceName ->
-            withObjCPtr sender $ \raw_sender ->
-                sendMsg inSendMessageIntent (mkSelector "initWithRecipients:content:speakableGroupName:conversationIdentifier:serviceName:sender:") (retPtr retVoid) [argPtr (castPtr raw_recipients :: Ptr ()), argPtr (castPtr raw_content :: Ptr ()), argPtr (castPtr raw_speakableGroupName :: Ptr ()), argPtr (castPtr raw_conversationIdentifier :: Ptr ()), argPtr (castPtr raw_serviceName :: Ptr ()), argPtr (castPtr raw_sender :: Ptr ())] >>= ownedObject . castPtr
+initWithRecipients_content_speakableGroupName_conversationIdentifier_serviceName_sender inSendMessageIntent recipients content speakableGroupName conversationIdentifier serviceName sender =
+  sendOwnedMessage inSendMessageIntent initWithRecipients_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector (toNSArray recipients) (toNSString content) (toINSpeakableString speakableGroupName) (toNSString conversationIdentifier) (toNSString serviceName) (toINPerson sender)
 
 -- | @- initWithRecipients:outgoingMessageType:content:speakableGroupName:conversationIdentifier:serviceName:sender:@
 initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender :: (IsINSendMessageIntent inSendMessageIntent, IsNSArray recipients, IsNSString content, IsINSpeakableString speakableGroupName, IsNSString conversationIdentifier, IsNSString serviceName, IsINPerson sender) => inSendMessageIntent -> recipients -> INOutgoingMessageType -> content -> speakableGroupName -> conversationIdentifier -> serviceName -> sender -> IO (Id INSendMessageIntent)
-initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender inSendMessageIntent  recipients outgoingMessageType content speakableGroupName conversationIdentifier serviceName sender =
-  withObjCPtr recipients $ \raw_recipients ->
-    withObjCPtr content $ \raw_content ->
-      withObjCPtr speakableGroupName $ \raw_speakableGroupName ->
-        withObjCPtr conversationIdentifier $ \raw_conversationIdentifier ->
-          withObjCPtr serviceName $ \raw_serviceName ->
-            withObjCPtr sender $ \raw_sender ->
-                sendMsg inSendMessageIntent (mkSelector "initWithRecipients:outgoingMessageType:content:speakableGroupName:conversationIdentifier:serviceName:sender:") (retPtr retVoid) [argPtr (castPtr raw_recipients :: Ptr ()), argCLong (coerce outgoingMessageType), argPtr (castPtr raw_content :: Ptr ()), argPtr (castPtr raw_speakableGroupName :: Ptr ()), argPtr (castPtr raw_conversationIdentifier :: Ptr ()), argPtr (castPtr raw_serviceName :: Ptr ()), argPtr (castPtr raw_sender :: Ptr ())] >>= ownedObject . castPtr
+initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender inSendMessageIntent recipients outgoingMessageType content speakableGroupName conversationIdentifier serviceName sender =
+  sendOwnedMessage inSendMessageIntent initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector (toNSArray recipients) outgoingMessageType (toNSString content) (toINSpeakableString speakableGroupName) (toNSString conversationIdentifier) (toNSString serviceName) (toINPerson sender)
 
 -- | @- recipients@
 recipients :: IsINSendMessageIntent inSendMessageIntent => inSendMessageIntent -> IO (Id NSArray)
-recipients inSendMessageIntent  =
-    sendMsg inSendMessageIntent (mkSelector "recipients") (retPtr retVoid) [] >>= retainedObject . castPtr
+recipients inSendMessageIntent =
+  sendMessage inSendMessageIntent recipientsSelector
 
 -- | @- outgoingMessageType@
 outgoingMessageType :: IsINSendMessageIntent inSendMessageIntent => inSendMessageIntent -> IO INOutgoingMessageType
-outgoingMessageType inSendMessageIntent  =
-    fmap (coerce :: CLong -> INOutgoingMessageType) $ sendMsg inSendMessageIntent (mkSelector "outgoingMessageType") retCLong []
+outgoingMessageType inSendMessageIntent =
+  sendMessage inSendMessageIntent outgoingMessageTypeSelector
 
 -- | @- content@
 content :: IsINSendMessageIntent inSendMessageIntent => inSendMessageIntent -> IO (Id NSString)
-content inSendMessageIntent  =
-    sendMsg inSendMessageIntent (mkSelector "content") (retPtr retVoid) [] >>= retainedObject . castPtr
+content inSendMessageIntent =
+  sendMessage inSendMessageIntent contentSelector
 
 -- | @- speakableGroupName@
 speakableGroupName :: IsINSendMessageIntent inSendMessageIntent => inSendMessageIntent -> IO (Id INSpeakableString)
-speakableGroupName inSendMessageIntent  =
-    sendMsg inSendMessageIntent (mkSelector "speakableGroupName") (retPtr retVoid) [] >>= retainedObject . castPtr
+speakableGroupName inSendMessageIntent =
+  sendMessage inSendMessageIntent speakableGroupNameSelector
 
 -- | @- conversationIdentifier@
 conversationIdentifier :: IsINSendMessageIntent inSendMessageIntent => inSendMessageIntent -> IO (Id NSString)
-conversationIdentifier inSendMessageIntent  =
-    sendMsg inSendMessageIntent (mkSelector "conversationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+conversationIdentifier inSendMessageIntent =
+  sendMessage inSendMessageIntent conversationIdentifierSelector
 
 -- | @- serviceName@
 serviceName :: IsINSendMessageIntent inSendMessageIntent => inSendMessageIntent -> IO (Id NSString)
-serviceName inSendMessageIntent  =
-    sendMsg inSendMessageIntent (mkSelector "serviceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+serviceName inSendMessageIntent =
+  sendMessage inSendMessageIntent serviceNameSelector
 
 -- | @- sender@
 sender :: IsINSendMessageIntent inSendMessageIntent => inSendMessageIntent -> IO (Id INPerson)
-sender inSendMessageIntent  =
-    sendMsg inSendMessageIntent (mkSelector "sender") (retPtr retVoid) [] >>= retainedObject . castPtr
+sender inSendMessageIntent =
+  sendMessage inSendMessageIntent senderSelector
 
 -- | @- attachments@
 attachments :: IsINSendMessageIntent inSendMessageIntent => inSendMessageIntent -> IO (Id NSArray)
-attachments inSendMessageIntent  =
-    sendMsg inSendMessageIntent (mkSelector "attachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+attachments inSendMessageIntent =
+  sendMessage inSendMessageIntent attachmentsSelector
 
 -- | @- groupName@
 groupName :: IsINSendMessageIntent inSendMessageIntent => inSendMessageIntent -> IO (Id NSString)
-groupName inSendMessageIntent  =
-    sendMsg inSendMessageIntent (mkSelector "groupName") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupName inSendMessageIntent =
+  sendMessage inSendMessageIntent groupNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRecipients:outgoingMessageType:content:speakableGroupName:conversationIdentifier:serviceName:sender:attachments:@
-initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender_attachmentsSelector :: Selector
+initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender_attachmentsSelector :: Selector '[Id NSArray, INOutgoingMessageType, Id NSString, Id INSpeakableString, Id NSString, Id NSString, Id INPerson, Id NSArray] (Id INSendMessageIntent)
 initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_sender_attachmentsSelector = mkSelector "initWithRecipients:outgoingMessageType:content:speakableGroupName:conversationIdentifier:serviceName:sender:attachments:"
 
 -- | @Selector@ for @initWithRecipients:content:groupName:serviceName:sender:@
-initWithRecipients_content_groupName_serviceName_senderSelector :: Selector
+initWithRecipients_content_groupName_serviceName_senderSelector :: Selector '[Id NSArray, Id NSString, Id NSString, Id NSString, Id INPerson] (Id INSendMessageIntent)
 initWithRecipients_content_groupName_serviceName_senderSelector = mkSelector "initWithRecipients:content:groupName:serviceName:sender:"
 
 -- | @Selector@ for @initWithRecipients:content:speakableGroupName:conversationIdentifier:serviceName:sender:@
-initWithRecipients_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector :: Selector
+initWithRecipients_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector :: Selector '[Id NSArray, Id NSString, Id INSpeakableString, Id NSString, Id NSString, Id INPerson] (Id INSendMessageIntent)
 initWithRecipients_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector = mkSelector "initWithRecipients:content:speakableGroupName:conversationIdentifier:serviceName:sender:"
 
 -- | @Selector@ for @initWithRecipients:outgoingMessageType:content:speakableGroupName:conversationIdentifier:serviceName:sender:@
-initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector :: Selector
+initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector :: Selector '[Id NSArray, INOutgoingMessageType, Id NSString, Id INSpeakableString, Id NSString, Id NSString, Id INPerson] (Id INSendMessageIntent)
 initWithRecipients_outgoingMessageType_content_speakableGroupName_conversationIdentifier_serviceName_senderSelector = mkSelector "initWithRecipients:outgoingMessageType:content:speakableGroupName:conversationIdentifier:serviceName:sender:"
 
 -- | @Selector@ for @recipients@
-recipientsSelector :: Selector
+recipientsSelector :: Selector '[] (Id NSArray)
 recipientsSelector = mkSelector "recipients"
 
 -- | @Selector@ for @outgoingMessageType@
-outgoingMessageTypeSelector :: Selector
+outgoingMessageTypeSelector :: Selector '[] INOutgoingMessageType
 outgoingMessageTypeSelector = mkSelector "outgoingMessageType"
 
 -- | @Selector@ for @content@
-contentSelector :: Selector
+contentSelector :: Selector '[] (Id NSString)
 contentSelector = mkSelector "content"
 
 -- | @Selector@ for @speakableGroupName@
-speakableGroupNameSelector :: Selector
+speakableGroupNameSelector :: Selector '[] (Id INSpeakableString)
 speakableGroupNameSelector = mkSelector "speakableGroupName"
 
 -- | @Selector@ for @conversationIdentifier@
-conversationIdentifierSelector :: Selector
+conversationIdentifierSelector :: Selector '[] (Id NSString)
 conversationIdentifierSelector = mkSelector "conversationIdentifier"
 
 -- | @Selector@ for @serviceName@
-serviceNameSelector :: Selector
+serviceNameSelector :: Selector '[] (Id NSString)
 serviceNameSelector = mkSelector "serviceName"
 
 -- | @Selector@ for @sender@
-senderSelector :: Selector
+senderSelector :: Selector '[] (Id INPerson)
 senderSelector = mkSelector "sender"
 
 -- | @Selector@ for @attachments@
-attachmentsSelector :: Selector
+attachmentsSelector :: Selector '[] (Id NSArray)
 attachmentsSelector = mkSelector "attachments"
 
 -- | @Selector@ for @groupName@
-groupNameSelector :: Selector
+groupNameSelector :: Selector '[] (Id NSString)
 groupNameSelector = mkSelector "groupName"
 

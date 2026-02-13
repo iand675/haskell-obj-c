@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,32 +40,32 @@ module ObjC.PHASE.PHASEEngine
   , duckers
   , activeGroupPreset
   , lastRenderTime
+  , activeGroupPresetSelector
+  , assetRegistrySelector
+  , defaultMediumSelector
+  , defaultReverbPresetSelector
+  , duckersSelector
+  , groupsSelector
   , initSelector
-  , newSelector
   , initWithUpdateModeSelector
   , initWithUpdateMode_renderingModeSelector
-  , startAndReturnErrorSelector
-  , pauseSelector
-  , stopSelector
-  , updateSelector
+  , lastRenderTimeSelector
+  , newSelector
   , outputSpatializationModeSelector
-  , setOutputSpatializationModeSelector
+  , pauseSelector
   , renderingStateSelector
   , rootObjectSelector
-  , defaultMediumSelector
   , setDefaultMediumSelector
-  , defaultReverbPresetSelector
   , setDefaultReverbPresetSelector
-  , unitsPerSecondSelector
-  , setUnitsPerSecondSelector
-  , unitsPerMeterSelector
+  , setOutputSpatializationModeSelector
   , setUnitsPerMeterSelector
-  , assetRegistrySelector
+  , setUnitsPerSecondSelector
   , soundEventsSelector
-  , groupsSelector
-  , duckersSelector
-  , activeGroupPresetSelector
-  , lastRenderTimeSelector
+  , startAndReturnErrorSelector
+  , stopSelector
+  , unitsPerMeterSelector
+  , unitsPerSecondSelector
+  , updateSelector
 
   -- * Enum types
   , PHASERenderingMode(PHASERenderingMode)
@@ -98,15 +99,11 @@ module ObjC.PHASE.PHASEEngine
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -116,15 +113,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id PHASEEngine)
-init_ phaseEngine  =
-    sendMsg phaseEngine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseEngine =
+  sendOwnedMessage phaseEngine initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEEngine)
 new  =
   do
     cls' <- getRequiredClass "PHASEEngine"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithUpdateMode:
 --
@@ -134,8 +131,8 @@ new  =
 --
 -- ObjC selector: @- initWithUpdateMode:@
 initWithUpdateMode :: IsPHASEEngine phaseEngine => phaseEngine -> PHASEUpdateMode -> IO (Id PHASEEngine)
-initWithUpdateMode phaseEngine  updateMode =
-    sendMsg phaseEngine (mkSelector "initWithUpdateMode:") (retPtr retVoid) [argCLong (coerce updateMode)] >>= ownedObject . castPtr
+initWithUpdateMode phaseEngine updateMode =
+  sendOwnedMessage phaseEngine initWithUpdateModeSelector updateMode
 
 -- | initWithUpdateMode:
 --
@@ -147,8 +144,8 @@ initWithUpdateMode phaseEngine  updateMode =
 --
 -- ObjC selector: @- initWithUpdateMode:renderingMode:@
 initWithUpdateMode_renderingMode :: IsPHASEEngine phaseEngine => phaseEngine -> PHASEUpdateMode -> PHASERenderingMode -> IO (Id PHASEEngine)
-initWithUpdateMode_renderingMode phaseEngine  updateMode renderingMode =
-    sendMsg phaseEngine (mkSelector "initWithUpdateMode:renderingMode:") (retPtr retVoid) [argCLong (coerce updateMode), argCLong (coerce renderingMode)] >>= ownedObject . castPtr
+initWithUpdateMode_renderingMode phaseEngine updateMode renderingMode =
+  sendOwnedMessage phaseEngine initWithUpdateMode_renderingModeSelector updateMode renderingMode
 
 -- | startAndReturnError:
 --
@@ -158,9 +155,8 @@ initWithUpdateMode_renderingMode phaseEngine  updateMode renderingMode =
 --
 -- ObjC selector: @- startAndReturnError:@
 startAndReturnError :: (IsPHASEEngine phaseEngine, IsNSError error_) => phaseEngine -> error_ -> IO Bool
-startAndReturnError phaseEngine  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg phaseEngine (mkSelector "startAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+startAndReturnError phaseEngine error_ =
+  sendMessage phaseEngine startAndReturnErrorSelector (toNSError error_)
 
 -- | pause
 --
@@ -168,8 +164,8 @@ startAndReturnError phaseEngine  error_ =
 --
 -- ObjC selector: @- pause@
 pause :: IsPHASEEngine phaseEngine => phaseEngine -> IO ()
-pause phaseEngine  =
-    sendMsg phaseEngine (mkSelector "pause") retVoid []
+pause phaseEngine =
+  sendMessage phaseEngine pauseSelector
 
 -- | stop
 --
@@ -177,8 +173,8 @@ pause phaseEngine  =
 --
 -- ObjC selector: @- stop@
 stop :: IsPHASEEngine phaseEngine => phaseEngine -> IO ()
-stop phaseEngine  =
-    sendMsg phaseEngine (mkSelector "stop") retVoid []
+stop phaseEngine =
+  sendMessage phaseEngine stopSelector
 
 -- | update:
 --
@@ -190,8 +186,8 @@ stop phaseEngine  =
 --
 -- ObjC selector: @- update@
 update :: IsPHASEEngine phaseEngine => phaseEngine -> IO ()
-update phaseEngine  =
-    sendMsg phaseEngine (mkSelector "update") retVoid []
+update phaseEngine =
+  sendMessage phaseEngine updateSelector
 
 -- | outputSpatializationMode
 --
@@ -199,8 +195,8 @@ update phaseEngine  =
 --
 -- ObjC selector: @- outputSpatializationMode@
 outputSpatializationMode :: IsPHASEEngine phaseEngine => phaseEngine -> IO PHASESpatializationMode
-outputSpatializationMode phaseEngine  =
-    fmap (coerce :: CLong -> PHASESpatializationMode) $ sendMsg phaseEngine (mkSelector "outputSpatializationMode") retCLong []
+outputSpatializationMode phaseEngine =
+  sendMessage phaseEngine outputSpatializationModeSelector
 
 -- | outputSpatializationMode
 --
@@ -208,8 +204,8 @@ outputSpatializationMode phaseEngine  =
 --
 -- ObjC selector: @- setOutputSpatializationMode:@
 setOutputSpatializationMode :: IsPHASEEngine phaseEngine => phaseEngine -> PHASESpatializationMode -> IO ()
-setOutputSpatializationMode phaseEngine  value =
-    sendMsg phaseEngine (mkSelector "setOutputSpatializationMode:") retVoid [argCLong (coerce value)]
+setOutputSpatializationMode phaseEngine value =
+  sendMessage phaseEngine setOutputSpatializationModeSelector value
 
 -- | renderingState
 --
@@ -217,8 +213,8 @@ setOutputSpatializationMode phaseEngine  value =
 --
 -- ObjC selector: @- renderingState@
 renderingState :: IsPHASEEngine phaseEngine => phaseEngine -> IO PHASERenderingState
-renderingState phaseEngine  =
-    fmap (coerce :: CLong -> PHASERenderingState) $ sendMsg phaseEngine (mkSelector "renderingState") retCLong []
+renderingState phaseEngine =
+  sendMessage phaseEngine renderingStateSelector
 
 -- | rootObject
 --
@@ -230,8 +226,8 @@ renderingState phaseEngine  =
 --
 -- ObjC selector: @- rootObject@
 rootObject :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id PHASEObject)
-rootObject phaseEngine  =
-    sendMsg phaseEngine (mkSelector "rootObject") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootObject phaseEngine =
+  sendMessage phaseEngine rootObjectSelector
 
 -- | defaultMedium
 --
@@ -241,8 +237,8 @@ rootObject phaseEngine  =
 --
 -- ObjC selector: @- defaultMedium@
 defaultMedium :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id PHASEMedium)
-defaultMedium phaseEngine  =
-    sendMsg phaseEngine (mkSelector "defaultMedium") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultMedium phaseEngine =
+  sendMessage phaseEngine defaultMediumSelector
 
 -- | defaultMedium
 --
@@ -252,9 +248,8 @@ defaultMedium phaseEngine  =
 --
 -- ObjC selector: @- setDefaultMedium:@
 setDefaultMedium :: (IsPHASEEngine phaseEngine, IsPHASEMedium value) => phaseEngine -> value -> IO ()
-setDefaultMedium phaseEngine  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseEngine (mkSelector "setDefaultMedium:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultMedium phaseEngine value =
+  sendMessage phaseEngine setDefaultMediumSelector (toPHASEMedium value)
 
 -- | defaultReverbPreset
 --
@@ -264,8 +259,8 @@ setDefaultMedium phaseEngine  value =
 --
 -- ObjC selector: @- defaultReverbPreset@
 defaultReverbPreset :: IsPHASEEngine phaseEngine => phaseEngine -> IO PHASEReverbPreset
-defaultReverbPreset phaseEngine  =
-    fmap (coerce :: CLong -> PHASEReverbPreset) $ sendMsg phaseEngine (mkSelector "defaultReverbPreset") retCLong []
+defaultReverbPreset phaseEngine =
+  sendMessage phaseEngine defaultReverbPresetSelector
 
 -- | defaultReverbPreset
 --
@@ -275,8 +270,8 @@ defaultReverbPreset phaseEngine  =
 --
 -- ObjC selector: @- setDefaultReverbPreset:@
 setDefaultReverbPreset :: IsPHASEEngine phaseEngine => phaseEngine -> PHASEReverbPreset -> IO ()
-setDefaultReverbPreset phaseEngine  value =
-    sendMsg phaseEngine (mkSelector "setDefaultReverbPreset:") retVoid [argCLong (coerce value)]
+setDefaultReverbPreset phaseEngine value =
+  sendMessage phaseEngine setDefaultReverbPresetSelector value
 
 -- | unitsPerSecond
 --
@@ -288,8 +283,8 @@ setDefaultReverbPreset phaseEngine  value =
 --
 -- ObjC selector: @- unitsPerSecond@
 unitsPerSecond :: IsPHASEEngine phaseEngine => phaseEngine -> IO CDouble
-unitsPerSecond phaseEngine  =
-    sendMsg phaseEngine (mkSelector "unitsPerSecond") retCDouble []
+unitsPerSecond phaseEngine =
+  sendMessage phaseEngine unitsPerSecondSelector
 
 -- | unitsPerSecond
 --
@@ -301,8 +296,8 @@ unitsPerSecond phaseEngine  =
 --
 -- ObjC selector: @- setUnitsPerSecond:@
 setUnitsPerSecond :: IsPHASEEngine phaseEngine => phaseEngine -> CDouble -> IO ()
-setUnitsPerSecond phaseEngine  value =
-    sendMsg phaseEngine (mkSelector "setUnitsPerSecond:") retVoid [argCDouble value]
+setUnitsPerSecond phaseEngine value =
+  sendMessage phaseEngine setUnitsPerSecondSelector value
 
 -- | unitsPerMeter
 --
@@ -314,8 +309,8 @@ setUnitsPerSecond phaseEngine  value =
 --
 -- ObjC selector: @- unitsPerMeter@
 unitsPerMeter :: IsPHASEEngine phaseEngine => phaseEngine -> IO CDouble
-unitsPerMeter phaseEngine  =
-    sendMsg phaseEngine (mkSelector "unitsPerMeter") retCDouble []
+unitsPerMeter phaseEngine =
+  sendMessage phaseEngine unitsPerMeterSelector
 
 -- | unitsPerMeter
 --
@@ -327,8 +322,8 @@ unitsPerMeter phaseEngine  =
 --
 -- ObjC selector: @- setUnitsPerMeter:@
 setUnitsPerMeter :: IsPHASEEngine phaseEngine => phaseEngine -> CDouble -> IO ()
-setUnitsPerMeter phaseEngine  value =
-    sendMsg phaseEngine (mkSelector "setUnitsPerMeter:") retVoid [argCDouble value]
+setUnitsPerMeter phaseEngine value =
+  sendMessage phaseEngine setUnitsPerMeterSelector value
 
 -- | assetRegistry
 --
@@ -336,8 +331,8 @@ setUnitsPerMeter phaseEngine  value =
 --
 -- ObjC selector: @- assetRegistry@
 assetRegistry :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id PHASEAssetRegistry)
-assetRegistry phaseEngine  =
-    sendMsg phaseEngine (mkSelector "assetRegistry") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetRegistry phaseEngine =
+  sendMessage phaseEngine assetRegistrySelector
 
 -- | soundEvents
 --
@@ -347,8 +342,8 @@ assetRegistry phaseEngine  =
 --
 -- ObjC selector: @- soundEvents@
 soundEvents :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id NSArray)
-soundEvents phaseEngine  =
-    sendMsg phaseEngine (mkSelector "soundEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+soundEvents phaseEngine =
+  sendMessage phaseEngine soundEventsSelector
 
 -- | groups
 --
@@ -358,8 +353,8 @@ soundEvents phaseEngine  =
 --
 -- ObjC selector: @- groups@
 groups :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id NSDictionary)
-groups phaseEngine  =
-    sendMsg phaseEngine (mkSelector "groups") (retPtr retVoid) [] >>= retainedObject . castPtr
+groups phaseEngine =
+  sendMessage phaseEngine groupsSelector
 
 -- | duckers
 --
@@ -369,8 +364,8 @@ groups phaseEngine  =
 --
 -- ObjC selector: @- duckers@
 duckers :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id NSArray)
-duckers phaseEngine  =
-    sendMsg phaseEngine (mkSelector "duckers") (retPtr retVoid) [] >>= retainedObject . castPtr
+duckers phaseEngine =
+  sendMessage phaseEngine duckersSelector
 
 -- | activeGroupPreset
 --
@@ -380,8 +375,8 @@ duckers phaseEngine  =
 --
 -- ObjC selector: @- activeGroupPreset@
 activeGroupPreset :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id PHASEGroupPreset)
-activeGroupPreset phaseEngine  =
-    sendMsg phaseEngine (mkSelector "activeGroupPreset") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeGroupPreset phaseEngine =
+  sendMessage phaseEngine activeGroupPresetSelector
 
 -- | lastRenderTime
 --
@@ -391,114 +386,114 @@ activeGroupPreset phaseEngine  =
 --
 -- ObjC selector: @- lastRenderTime@
 lastRenderTime :: IsPHASEEngine phaseEngine => phaseEngine -> IO (Id AVAudioTime)
-lastRenderTime phaseEngine  =
-    sendMsg phaseEngine (mkSelector "lastRenderTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastRenderTime phaseEngine =
+  sendMessage phaseEngine lastRenderTimeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEEngine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEEngine)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithUpdateMode:@
-initWithUpdateModeSelector :: Selector
+initWithUpdateModeSelector :: Selector '[PHASEUpdateMode] (Id PHASEEngine)
 initWithUpdateModeSelector = mkSelector "initWithUpdateMode:"
 
 -- | @Selector@ for @initWithUpdateMode:renderingMode:@
-initWithUpdateMode_renderingModeSelector :: Selector
+initWithUpdateMode_renderingModeSelector :: Selector '[PHASEUpdateMode, PHASERenderingMode] (Id PHASEEngine)
 initWithUpdateMode_renderingModeSelector = mkSelector "initWithUpdateMode:renderingMode:"
 
 -- | @Selector@ for @startAndReturnError:@
-startAndReturnErrorSelector :: Selector
+startAndReturnErrorSelector :: Selector '[Id NSError] Bool
 startAndReturnErrorSelector = mkSelector "startAndReturnError:"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @update@
-updateSelector :: Selector
+updateSelector :: Selector '[] ()
 updateSelector = mkSelector "update"
 
 -- | @Selector@ for @outputSpatializationMode@
-outputSpatializationModeSelector :: Selector
+outputSpatializationModeSelector :: Selector '[] PHASESpatializationMode
 outputSpatializationModeSelector = mkSelector "outputSpatializationMode"
 
 -- | @Selector@ for @setOutputSpatializationMode:@
-setOutputSpatializationModeSelector :: Selector
+setOutputSpatializationModeSelector :: Selector '[PHASESpatializationMode] ()
 setOutputSpatializationModeSelector = mkSelector "setOutputSpatializationMode:"
 
 -- | @Selector@ for @renderingState@
-renderingStateSelector :: Selector
+renderingStateSelector :: Selector '[] PHASERenderingState
 renderingStateSelector = mkSelector "renderingState"
 
 -- | @Selector@ for @rootObject@
-rootObjectSelector :: Selector
+rootObjectSelector :: Selector '[] (Id PHASEObject)
 rootObjectSelector = mkSelector "rootObject"
 
 -- | @Selector@ for @defaultMedium@
-defaultMediumSelector :: Selector
+defaultMediumSelector :: Selector '[] (Id PHASEMedium)
 defaultMediumSelector = mkSelector "defaultMedium"
 
 -- | @Selector@ for @setDefaultMedium:@
-setDefaultMediumSelector :: Selector
+setDefaultMediumSelector :: Selector '[Id PHASEMedium] ()
 setDefaultMediumSelector = mkSelector "setDefaultMedium:"
 
 -- | @Selector@ for @defaultReverbPreset@
-defaultReverbPresetSelector :: Selector
+defaultReverbPresetSelector :: Selector '[] PHASEReverbPreset
 defaultReverbPresetSelector = mkSelector "defaultReverbPreset"
 
 -- | @Selector@ for @setDefaultReverbPreset:@
-setDefaultReverbPresetSelector :: Selector
+setDefaultReverbPresetSelector :: Selector '[PHASEReverbPreset] ()
 setDefaultReverbPresetSelector = mkSelector "setDefaultReverbPreset:"
 
 -- | @Selector@ for @unitsPerSecond@
-unitsPerSecondSelector :: Selector
+unitsPerSecondSelector :: Selector '[] CDouble
 unitsPerSecondSelector = mkSelector "unitsPerSecond"
 
 -- | @Selector@ for @setUnitsPerSecond:@
-setUnitsPerSecondSelector :: Selector
+setUnitsPerSecondSelector :: Selector '[CDouble] ()
 setUnitsPerSecondSelector = mkSelector "setUnitsPerSecond:"
 
 -- | @Selector@ for @unitsPerMeter@
-unitsPerMeterSelector :: Selector
+unitsPerMeterSelector :: Selector '[] CDouble
 unitsPerMeterSelector = mkSelector "unitsPerMeter"
 
 -- | @Selector@ for @setUnitsPerMeter:@
-setUnitsPerMeterSelector :: Selector
+setUnitsPerMeterSelector :: Selector '[CDouble] ()
 setUnitsPerMeterSelector = mkSelector "setUnitsPerMeter:"
 
 -- | @Selector@ for @assetRegistry@
-assetRegistrySelector :: Selector
+assetRegistrySelector :: Selector '[] (Id PHASEAssetRegistry)
 assetRegistrySelector = mkSelector "assetRegistry"
 
 -- | @Selector@ for @soundEvents@
-soundEventsSelector :: Selector
+soundEventsSelector :: Selector '[] (Id NSArray)
 soundEventsSelector = mkSelector "soundEvents"
 
 -- | @Selector@ for @groups@
-groupsSelector :: Selector
+groupsSelector :: Selector '[] (Id NSDictionary)
 groupsSelector = mkSelector "groups"
 
 -- | @Selector@ for @duckers@
-duckersSelector :: Selector
+duckersSelector :: Selector '[] (Id NSArray)
 duckersSelector = mkSelector "duckers"
 
 -- | @Selector@ for @activeGroupPreset@
-activeGroupPresetSelector :: Selector
+activeGroupPresetSelector :: Selector '[] (Id PHASEGroupPreset)
 activeGroupPresetSelector = mkSelector "activeGroupPreset"
 
 -- | @Selector@ for @lastRenderTime@
-lastRenderTimeSelector :: Selector
+lastRenderTimeSelector :: Selector '[] (Id AVAudioTime)
 lastRenderTimeSelector = mkSelector "lastRenderTime"
 

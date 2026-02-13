@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.PHASE.PHASEPullStreamNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEPullStreamNode phasePullStreamNode => phasePullStreamNode -> IO (Id PHASEPullStreamNode)
-init_ phasePullStreamNode  =
-    sendMsg phasePullStreamNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phasePullStreamNode =
+  sendOwnedMessage phasePullStreamNode initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEPullStreamNode)
 new  =
   do
     cls' <- getRequiredClass "PHASEPullStreamNode"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | renderBlock
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- renderBlock@
 renderBlock :: IsPHASEPullStreamNode phasePullStreamNode => phasePullStreamNode -> IO (Ptr ())
-renderBlock phasePullStreamNode  =
-    fmap castPtr $ sendMsg phasePullStreamNode (mkSelector "renderBlock") (retPtr retVoid) []
+renderBlock phasePullStreamNode =
+  sendMessage phasePullStreamNode renderBlockSelector
 
 -- | renderBlock
 --
@@ -70,26 +67,26 @@ renderBlock phasePullStreamNode  =
 --
 -- ObjC selector: @- setRenderBlock:@
 setRenderBlock :: IsPHASEPullStreamNode phasePullStreamNode => phasePullStreamNode -> Ptr () -> IO ()
-setRenderBlock phasePullStreamNode  value =
-    sendMsg phasePullStreamNode (mkSelector "setRenderBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRenderBlock phasePullStreamNode value =
+  sendMessage phasePullStreamNode setRenderBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEPullStreamNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEPullStreamNode)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @renderBlock@
-renderBlockSelector :: Selector
+renderBlockSelector :: Selector '[] (Ptr ())
 renderBlockSelector = mkSelector "renderBlock"
 
 -- | @Selector@ for @setRenderBlock:@
-setRenderBlockSelector :: Selector
+setRenderBlockSelector :: Selector '[Ptr ()] ()
 setRenderBlockSelector = mkSelector "setRenderBlock:"
 

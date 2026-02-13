@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,32 +38,32 @@ module ObjC.HealthKit.HKWorkoutSession
   , startDate
   , endDate
   , currentActivity
+  , activityTypeSelector
+  , associatedWorkoutBuilderSelector
+  , beginNewActivityWithConfiguration_date_metadataSelector
+  , currentActivitySelector
+  , delegateSelector
+  , endCurrentActivityOnDateSelector
+  , endDateSelector
+  , endSelector
+  , initSelector
   , initWithActivityType_locationTypeSelector
   , initWithConfiguration_errorSelector
   , initWithHealthStore_configuration_errorSelector
-  , initSelector
-  , prepareSelector
-  , startActivityWithDateSelector
-  , stopActivityWithDateSelector
-  , endSelector
-  , pauseSelector
-  , resumeSelector
-  , associatedWorkoutBuilderSelector
-  , beginNewActivityWithConfiguration_date_metadataSelector
-  , endCurrentActivityOnDateSelector
-  , startMirroringToCompanionDeviceWithCompletionSelector
-  , stopMirroringToCompanionDeviceWithCompletionSelector
-  , sendDataToRemoteWorkoutSession_completionSelector
-  , activityTypeSelector
   , locationTypeSelector
-  , workoutConfigurationSelector
-  , delegateSelector
+  , pauseSelector
+  , prepareSelector
+  , resumeSelector
+  , sendDataToRemoteWorkoutSession_completionSelector
   , setDelegateSelector
-  , stateSelector
-  , typeSelector
+  , startActivityWithDateSelector
   , startDateSelector
-  , endDateSelector
-  , currentActivitySelector
+  , startMirroringToCompanionDeviceWithCompletionSelector
+  , stateSelector
+  , stopActivityWithDateSelector
+  , stopMirroringToCompanionDeviceWithCompletionSelector
+  , typeSelector
+  , workoutConfigurationSelector
 
   -- * Enum types
   , HKWorkoutActivityType(HKWorkoutActivityType)
@@ -167,15 +168,11 @@ module ObjC.HealthKit.HKWorkoutSession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -191,8 +188,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithActivityType:locationType:@
 initWithActivityType_locationType :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> HKWorkoutActivityType -> HKWorkoutSessionLocationType -> IO (Id HKWorkoutSession)
-initWithActivityType_locationType hkWorkoutSession  activityType locationType =
-    sendMsg hkWorkoutSession (mkSelector "initWithActivityType:locationType:") (retPtr retVoid) [argCULong (coerce activityType), argCLong (coerce locationType)] >>= ownedObject . castPtr
+initWithActivityType_locationType hkWorkoutSession activityType locationType =
+  sendOwnedMessage hkWorkoutSession initWithActivityType_locationTypeSelector activityType locationType
 
 -- | initWithConfiguration:error:
 --
@@ -202,10 +199,8 @@ initWithActivityType_locationType hkWorkoutSession  activityType locationType =
 --
 -- ObjC selector: @- initWithConfiguration:error:@
 initWithConfiguration_error :: (IsHKWorkoutSession hkWorkoutSession, IsHKWorkoutConfiguration workoutConfiguration, IsNSError error_) => hkWorkoutSession -> workoutConfiguration -> error_ -> IO (Id HKWorkoutSession)
-initWithConfiguration_error hkWorkoutSession  workoutConfiguration error_ =
-  withObjCPtr workoutConfiguration $ \raw_workoutConfiguration ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg hkWorkoutSession (mkSelector "initWithConfiguration:error:") (retPtr retVoid) [argPtr (castPtr raw_workoutConfiguration :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration_error hkWorkoutSession workoutConfiguration error_ =
+  sendOwnedMessage hkWorkoutSession initWithConfiguration_errorSelector (toHKWorkoutConfiguration workoutConfiguration) (toNSError error_)
 
 -- | initWithHealthStore:configuration:error:
 --
@@ -217,16 +212,13 @@ initWithConfiguration_error hkWorkoutSession  workoutConfiguration error_ =
 --
 -- ObjC selector: @- initWithHealthStore:configuration:error:@
 initWithHealthStore_configuration_error :: (IsHKWorkoutSession hkWorkoutSession, IsHKHealthStore healthStore, IsHKWorkoutConfiguration workoutConfiguration, IsNSError error_) => hkWorkoutSession -> healthStore -> workoutConfiguration -> error_ -> IO (Id HKWorkoutSession)
-initWithHealthStore_configuration_error hkWorkoutSession  healthStore workoutConfiguration error_ =
-  withObjCPtr healthStore $ \raw_healthStore ->
-    withObjCPtr workoutConfiguration $ \raw_workoutConfiguration ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg hkWorkoutSession (mkSelector "initWithHealthStore:configuration:error:") (retPtr retVoid) [argPtr (castPtr raw_healthStore :: Ptr ()), argPtr (castPtr raw_workoutConfiguration :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithHealthStore_configuration_error hkWorkoutSession healthStore workoutConfiguration error_ =
+  sendOwnedMessage hkWorkoutSession initWithHealthStore_configuration_errorSelector (toHKHealthStore healthStore) (toHKWorkoutConfiguration workoutConfiguration) (toNSError error_)
 
 -- | @- init@
 init_ :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO (Id HKWorkoutSession)
-init_ hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkWorkoutSession =
+  sendOwnedMessage hkWorkoutSession initSelector
 
 -- | prepare
 --
@@ -236,8 +228,8 @@ init_ hkWorkoutSession  =
 --
 -- ObjC selector: @- prepare@
 prepare :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO ()
-prepare hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "prepare") retVoid []
+prepare hkWorkoutSession =
+  sendMessage hkWorkoutSession prepareSelector
 
 -- | startActivityWithDate:
 --
@@ -249,9 +241,8 @@ prepare hkWorkoutSession  =
 --
 -- ObjC selector: @- startActivityWithDate:@
 startActivityWithDate :: (IsHKWorkoutSession hkWorkoutSession, IsNSDate date) => hkWorkoutSession -> date -> IO ()
-startActivityWithDate hkWorkoutSession  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg hkWorkoutSession (mkSelector "startActivityWithDate:") retVoid [argPtr (castPtr raw_date :: Ptr ())]
+startActivityWithDate hkWorkoutSession date =
+  sendMessage hkWorkoutSession startActivityWithDateSelector (toNSDate date)
 
 -- | stopActivityWithDate:
 --
@@ -263,9 +254,8 @@ startActivityWithDate hkWorkoutSession  date =
 --
 -- ObjC selector: @- stopActivityWithDate:@
 stopActivityWithDate :: (IsHKWorkoutSession hkWorkoutSession, IsNSDate date) => hkWorkoutSession -> date -> IO ()
-stopActivityWithDate hkWorkoutSession  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg hkWorkoutSession (mkSelector "stopActivityWithDate:") retVoid [argPtr (castPtr raw_date :: Ptr ())]
+stopActivityWithDate hkWorkoutSession date =
+  sendMessage hkWorkoutSession stopActivityWithDateSelector (toNSDate date)
 
 -- | end
 --
@@ -275,8 +265,8 @@ stopActivityWithDate hkWorkoutSession  date =
 --
 -- ObjC selector: @- end@
 end :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO ()
-end hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "end") retVoid []
+end hkWorkoutSession =
+  sendMessage hkWorkoutSession endSelector
 
 -- | pause
 --
@@ -286,8 +276,8 @@ end hkWorkoutSession  =
 --
 -- ObjC selector: @- pause@
 pause :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO ()
-pause hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "pause") retVoid []
+pause hkWorkoutSession =
+  sendMessage hkWorkoutSession pauseSelector
 
 -- | resume
 --
@@ -297,8 +287,8 @@ pause hkWorkoutSession  =
 --
 -- ObjC selector: @- resume@
 resume :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO ()
-resume hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "resume") retVoid []
+resume hkWorkoutSession =
+  sendMessage hkWorkoutSession resumeSelector
 
 -- | associatedWorkoutBuilder
 --
@@ -308,8 +298,8 @@ resume hkWorkoutSession  =
 --
 -- ObjC selector: @- associatedWorkoutBuilder@
 associatedWorkoutBuilder :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO (Id HKLiveWorkoutBuilder)
-associatedWorkoutBuilder hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "associatedWorkoutBuilder") (retPtr retVoid) [] >>= retainedObject . castPtr
+associatedWorkoutBuilder hkWorkoutSession =
+  sendMessage hkWorkoutSession associatedWorkoutBuilderSelector
 
 -- | beginNewActivityWithConfiguration:date:metadata:
 --
@@ -319,11 +309,8 @@ associatedWorkoutBuilder hkWorkoutSession  =
 --
 -- ObjC selector: @- beginNewActivityWithConfiguration:date:metadata:@
 beginNewActivityWithConfiguration_date_metadata :: (IsHKWorkoutSession hkWorkoutSession, IsHKWorkoutConfiguration workoutConfiguration, IsNSDate date, IsNSDictionary metadata) => hkWorkoutSession -> workoutConfiguration -> date -> metadata -> IO ()
-beginNewActivityWithConfiguration_date_metadata hkWorkoutSession  workoutConfiguration date metadata =
-  withObjCPtr workoutConfiguration $ \raw_workoutConfiguration ->
-    withObjCPtr date $ \raw_date ->
-      withObjCPtr metadata $ \raw_metadata ->
-          sendMsg hkWorkoutSession (mkSelector "beginNewActivityWithConfiguration:date:metadata:") retVoid [argPtr (castPtr raw_workoutConfiguration :: Ptr ()), argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())]
+beginNewActivityWithConfiguration_date_metadata hkWorkoutSession workoutConfiguration date metadata =
+  sendMessage hkWorkoutSession beginNewActivityWithConfiguration_date_metadataSelector (toHKWorkoutConfiguration workoutConfiguration) (toNSDate date) (toNSDictionary metadata)
 
 -- | endCurrentActivityOnDate:
 --
@@ -333,9 +320,8 @@ beginNewActivityWithConfiguration_date_metadata hkWorkoutSession  workoutConfigu
 --
 -- ObjC selector: @- endCurrentActivityOnDate:@
 endCurrentActivityOnDate :: (IsHKWorkoutSession hkWorkoutSession, IsNSDate date) => hkWorkoutSession -> date -> IO ()
-endCurrentActivityOnDate hkWorkoutSession  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg hkWorkoutSession (mkSelector "endCurrentActivityOnDate:") retVoid [argPtr (castPtr raw_date :: Ptr ())]
+endCurrentActivityOnDate hkWorkoutSession date =
+  sendMessage hkWorkoutSession endCurrentActivityOnDateSelector (toNSDate date)
 
 -- | startMirroringToCompanionDeviceWithCompletion:
 --
@@ -345,8 +331,8 @@ endCurrentActivityOnDate hkWorkoutSession  date =
 --
 -- ObjC selector: @- startMirroringToCompanionDeviceWithCompletion:@
 startMirroringToCompanionDeviceWithCompletion :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> Ptr () -> IO ()
-startMirroringToCompanionDeviceWithCompletion hkWorkoutSession  completion =
-    sendMsg hkWorkoutSession (mkSelector "startMirroringToCompanionDeviceWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+startMirroringToCompanionDeviceWithCompletion hkWorkoutSession completion =
+  sendMessage hkWorkoutSession startMirroringToCompanionDeviceWithCompletionSelector completion
 
 -- | stopMirroringToCompanionDeviceWithCompletion:
 --
@@ -356,8 +342,8 @@ startMirroringToCompanionDeviceWithCompletion hkWorkoutSession  completion =
 --
 -- ObjC selector: @- stopMirroringToCompanionDeviceWithCompletion:@
 stopMirroringToCompanionDeviceWithCompletion :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> Ptr () -> IO ()
-stopMirroringToCompanionDeviceWithCompletion hkWorkoutSession  completion =
-    sendMsg hkWorkoutSession (mkSelector "stopMirroringToCompanionDeviceWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+stopMirroringToCompanionDeviceWithCompletion hkWorkoutSession completion =
+  sendMessage hkWorkoutSession stopMirroringToCompanionDeviceWithCompletionSelector completion
 
 -- | sendDataToRemoteWorkoutSession:completion:
 --
@@ -367,9 +353,8 @@ stopMirroringToCompanionDeviceWithCompletion hkWorkoutSession  completion =
 --
 -- ObjC selector: @- sendDataToRemoteWorkoutSession:completion:@
 sendDataToRemoteWorkoutSession_completion :: (IsHKWorkoutSession hkWorkoutSession, IsNSData data_) => hkWorkoutSession -> data_ -> Ptr () -> IO ()
-sendDataToRemoteWorkoutSession_completion hkWorkoutSession  data_ completion =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg hkWorkoutSession (mkSelector "sendDataToRemoteWorkoutSession:completion:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+sendDataToRemoteWorkoutSession_completion hkWorkoutSession data_ completion =
+  sendMessage hkWorkoutSession sendDataToRemoteWorkoutSession_completionSelector (toNSData data_) completion
 
 -- | activityType
 --
@@ -377,8 +362,8 @@ sendDataToRemoteWorkoutSession_completion hkWorkoutSession  data_ completion =
 --
 -- ObjC selector: @- activityType@
 activityType :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO HKWorkoutActivityType
-activityType hkWorkoutSession  =
-    fmap (coerce :: CULong -> HKWorkoutActivityType) $ sendMsg hkWorkoutSession (mkSelector "activityType") retCULong []
+activityType hkWorkoutSession =
+  sendMessage hkWorkoutSession activityTypeSelector
 
 -- | locationType
 --
@@ -388,8 +373,8 @@ activityType hkWorkoutSession  =
 --
 -- ObjC selector: @- locationType@
 locationType :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO HKWorkoutSessionLocationType
-locationType hkWorkoutSession  =
-    fmap (coerce :: CLong -> HKWorkoutSessionLocationType) $ sendMsg hkWorkoutSession (mkSelector "locationType") retCLong []
+locationType hkWorkoutSession =
+  sendMessage hkWorkoutSession locationTypeSelector
 
 -- | workoutConfiguration
 --
@@ -399,8 +384,8 @@ locationType hkWorkoutSession  =
 --
 -- ObjC selector: @- workoutConfiguration@
 workoutConfiguration :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO (Id HKWorkoutConfiguration)
-workoutConfiguration hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "workoutConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+workoutConfiguration hkWorkoutSession =
+  sendMessage hkWorkoutSession workoutConfigurationSelector
 
 -- | delegate
 --
@@ -410,8 +395,8 @@ workoutConfiguration hkWorkoutSession  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO RawId
-delegate hkWorkoutSession  =
-    fmap (RawId . castPtr) $ sendMsg hkWorkoutSession (mkSelector "delegate") (retPtr retVoid) []
+delegate hkWorkoutSession =
+  sendMessage hkWorkoutSession delegateSelector
 
 -- | delegate
 --
@@ -421,8 +406,8 @@ delegate hkWorkoutSession  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> RawId -> IO ()
-setDelegate hkWorkoutSession  value =
-    sendMsg hkWorkoutSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate hkWorkoutSession value =
+  sendMessage hkWorkoutSession setDelegateSelector value
 
 -- | state
 --
@@ -432,8 +417,8 @@ setDelegate hkWorkoutSession  value =
 --
 -- ObjC selector: @- state@
 state :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO HKWorkoutSessionState
-state hkWorkoutSession  =
-    fmap (coerce :: CLong -> HKWorkoutSessionState) $ sendMsg hkWorkoutSession (mkSelector "state") retCLong []
+state hkWorkoutSession =
+  sendMessage hkWorkoutSession stateSelector
 
 -- | type
 --
@@ -443,8 +428,8 @@ state hkWorkoutSession  =
 --
 -- ObjC selector: @- type@
 type_ :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO HKWorkoutSessionType
-type_ hkWorkoutSession  =
-    fmap (coerce :: CLong -> HKWorkoutSessionType) $ sendMsg hkWorkoutSession (mkSelector "type") retCLong []
+type_ hkWorkoutSession =
+  sendMessage hkWorkoutSession typeSelector
 
 -- | startDate
 --
@@ -454,8 +439,8 @@ type_ hkWorkoutSession  =
 --
 -- ObjC selector: @- startDate@
 startDate :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO (Id NSDate)
-startDate hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate hkWorkoutSession =
+  sendMessage hkWorkoutSession startDateSelector
 
 -- | endDate
 --
@@ -465,8 +450,8 @@ startDate hkWorkoutSession  =
 --
 -- ObjC selector: @- endDate@
 endDate :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO (Id NSDate)
-endDate hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate hkWorkoutSession =
+  sendMessage hkWorkoutSession endDateSelector
 
 -- | currentActivity
 --
@@ -476,114 +461,114 @@ endDate hkWorkoutSession  =
 --
 -- ObjC selector: @- currentActivity@
 currentActivity :: IsHKWorkoutSession hkWorkoutSession => hkWorkoutSession -> IO (Id HKWorkoutActivity)
-currentActivity hkWorkoutSession  =
-    sendMsg hkWorkoutSession (mkSelector "currentActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentActivity hkWorkoutSession =
+  sendMessage hkWorkoutSession currentActivitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithActivityType:locationType:@
-initWithActivityType_locationTypeSelector :: Selector
+initWithActivityType_locationTypeSelector :: Selector '[HKWorkoutActivityType, HKWorkoutSessionLocationType] (Id HKWorkoutSession)
 initWithActivityType_locationTypeSelector = mkSelector "initWithActivityType:locationType:"
 
 -- | @Selector@ for @initWithConfiguration:error:@
-initWithConfiguration_errorSelector :: Selector
+initWithConfiguration_errorSelector :: Selector '[Id HKWorkoutConfiguration, Id NSError] (Id HKWorkoutSession)
 initWithConfiguration_errorSelector = mkSelector "initWithConfiguration:error:"
 
 -- | @Selector@ for @initWithHealthStore:configuration:error:@
-initWithHealthStore_configuration_errorSelector :: Selector
+initWithHealthStore_configuration_errorSelector :: Selector '[Id HKHealthStore, Id HKWorkoutConfiguration, Id NSError] (Id HKWorkoutSession)
 initWithHealthStore_configuration_errorSelector = mkSelector "initWithHealthStore:configuration:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKWorkoutSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @prepare@
-prepareSelector :: Selector
+prepareSelector :: Selector '[] ()
 prepareSelector = mkSelector "prepare"
 
 -- | @Selector@ for @startActivityWithDate:@
-startActivityWithDateSelector :: Selector
+startActivityWithDateSelector :: Selector '[Id NSDate] ()
 startActivityWithDateSelector = mkSelector "startActivityWithDate:"
 
 -- | @Selector@ for @stopActivityWithDate:@
-stopActivityWithDateSelector :: Selector
+stopActivityWithDateSelector :: Selector '[Id NSDate] ()
 stopActivityWithDateSelector = mkSelector "stopActivityWithDate:"
 
 -- | @Selector@ for @end@
-endSelector :: Selector
+endSelector :: Selector '[] ()
 endSelector = mkSelector "end"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @resume@
-resumeSelector :: Selector
+resumeSelector :: Selector '[] ()
 resumeSelector = mkSelector "resume"
 
 -- | @Selector@ for @associatedWorkoutBuilder@
-associatedWorkoutBuilderSelector :: Selector
+associatedWorkoutBuilderSelector :: Selector '[] (Id HKLiveWorkoutBuilder)
 associatedWorkoutBuilderSelector = mkSelector "associatedWorkoutBuilder"
 
 -- | @Selector@ for @beginNewActivityWithConfiguration:date:metadata:@
-beginNewActivityWithConfiguration_date_metadataSelector :: Selector
+beginNewActivityWithConfiguration_date_metadataSelector :: Selector '[Id HKWorkoutConfiguration, Id NSDate, Id NSDictionary] ()
 beginNewActivityWithConfiguration_date_metadataSelector = mkSelector "beginNewActivityWithConfiguration:date:metadata:"
 
 -- | @Selector@ for @endCurrentActivityOnDate:@
-endCurrentActivityOnDateSelector :: Selector
+endCurrentActivityOnDateSelector :: Selector '[Id NSDate] ()
 endCurrentActivityOnDateSelector = mkSelector "endCurrentActivityOnDate:"
 
 -- | @Selector@ for @startMirroringToCompanionDeviceWithCompletion:@
-startMirroringToCompanionDeviceWithCompletionSelector :: Selector
+startMirroringToCompanionDeviceWithCompletionSelector :: Selector '[Ptr ()] ()
 startMirroringToCompanionDeviceWithCompletionSelector = mkSelector "startMirroringToCompanionDeviceWithCompletion:"
 
 -- | @Selector@ for @stopMirroringToCompanionDeviceWithCompletion:@
-stopMirroringToCompanionDeviceWithCompletionSelector :: Selector
+stopMirroringToCompanionDeviceWithCompletionSelector :: Selector '[Ptr ()] ()
 stopMirroringToCompanionDeviceWithCompletionSelector = mkSelector "stopMirroringToCompanionDeviceWithCompletion:"
 
 -- | @Selector@ for @sendDataToRemoteWorkoutSession:completion:@
-sendDataToRemoteWorkoutSession_completionSelector :: Selector
+sendDataToRemoteWorkoutSession_completionSelector :: Selector '[Id NSData, Ptr ()] ()
 sendDataToRemoteWorkoutSession_completionSelector = mkSelector "sendDataToRemoteWorkoutSession:completion:"
 
 -- | @Selector@ for @activityType@
-activityTypeSelector :: Selector
+activityTypeSelector :: Selector '[] HKWorkoutActivityType
 activityTypeSelector = mkSelector "activityType"
 
 -- | @Selector@ for @locationType@
-locationTypeSelector :: Selector
+locationTypeSelector :: Selector '[] HKWorkoutSessionLocationType
 locationTypeSelector = mkSelector "locationType"
 
 -- | @Selector@ for @workoutConfiguration@
-workoutConfigurationSelector :: Selector
+workoutConfigurationSelector :: Selector '[] (Id HKWorkoutConfiguration)
 workoutConfigurationSelector = mkSelector "workoutConfiguration"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] HKWorkoutSessionState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] HKWorkoutSessionType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @currentActivity@
-currentActivitySelector :: Selector
+currentActivitySelector :: Selector '[] (Id HKWorkoutActivity)
 currentActivitySelector = mkSelector "currentActivity"
 

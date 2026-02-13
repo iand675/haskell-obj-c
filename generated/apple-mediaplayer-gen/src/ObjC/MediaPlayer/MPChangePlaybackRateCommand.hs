@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.MediaPlayer.MPChangePlaybackRateCommand
   , IsMPChangePlaybackRateCommand(..)
   , supportedPlaybackRates
   , setSupportedPlaybackRates
-  , supportedPlaybackRatesSelector
   , setSupportedPlaybackRatesSelector
+  , supportedPlaybackRatesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,26 +30,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supportedPlaybackRates@
 supportedPlaybackRates :: IsMPChangePlaybackRateCommand mpChangePlaybackRateCommand => mpChangePlaybackRateCommand -> IO (Id NSArray)
-supportedPlaybackRates mpChangePlaybackRateCommand  =
-    sendMsg mpChangePlaybackRateCommand (mkSelector "supportedPlaybackRates") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedPlaybackRates mpChangePlaybackRateCommand =
+  sendMessage mpChangePlaybackRateCommand supportedPlaybackRatesSelector
 
 -- | An array of NSNumbers (floats) that contain supported playback rates that the command can send.
 --
 -- ObjC selector: @- setSupportedPlaybackRates:@
 setSupportedPlaybackRates :: (IsMPChangePlaybackRateCommand mpChangePlaybackRateCommand, IsNSArray value) => mpChangePlaybackRateCommand -> value -> IO ()
-setSupportedPlaybackRates mpChangePlaybackRateCommand  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpChangePlaybackRateCommand (mkSelector "setSupportedPlaybackRates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedPlaybackRates mpChangePlaybackRateCommand value =
+  sendMessage mpChangePlaybackRateCommand setSupportedPlaybackRatesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedPlaybackRates@
-supportedPlaybackRatesSelector :: Selector
+supportedPlaybackRatesSelector :: Selector '[] (Id NSArray)
 supportedPlaybackRatesSelector = mkSelector "supportedPlaybackRates"
 
 -- | @Selector@ for @setSupportedPlaybackRates:@
-setSupportedPlaybackRatesSelector :: Selector
+setSupportedPlaybackRatesSelector :: Selector '[Id NSArray] ()
 setSupportedPlaybackRatesSelector = mkSelector "setSupportedPlaybackRates:"
 

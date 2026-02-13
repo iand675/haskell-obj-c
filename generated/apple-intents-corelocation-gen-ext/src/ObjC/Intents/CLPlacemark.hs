@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.Intents.CLPlacemark
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,15 +31,13 @@ placemarkWithLocation_name_postalAddress :: (IsNSString name, IsCNPostalAddress 
 placemarkWithLocation_name_postalAddress location name postalAddress =
   do
     cls' <- getRequiredClass "CLPlacemark"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr postalAddress $ \raw_postalAddress ->
-        sendClassMsg cls' (mkSelector "placemarkWithLocation:name:postalAddress:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ()), argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_postalAddress :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' placemarkWithLocation_name_postalAddressSelector location (toNSString name) (toCNPostalAddress postalAddress)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @placemarkWithLocation:name:postalAddress:@
-placemarkWithLocation_name_postalAddressSelector :: Selector
+placemarkWithLocation_name_postalAddressSelector :: Selector '[RawId, Id NSString, Id CNPostalAddress] (Id CLPlacemark)
 placemarkWithLocation_name_postalAddressSelector = mkSelector "placemarkWithLocation:name:postalAddress:"
 

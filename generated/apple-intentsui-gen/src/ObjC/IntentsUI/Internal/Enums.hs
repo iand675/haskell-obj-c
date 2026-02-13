@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.IntentsUI.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @INUIAddVoiceShortcutButtonStyle@
 newtype INUIAddVoiceShortcutButtonStyle = INUIAddVoiceShortcutButtonStyle CULong
@@ -33,3 +36,13 @@ pattern INUIAddVoiceShortcutButtonStyleAutomatic = INUIAddVoiceShortcutButtonSty
 
 pattern INUIAddVoiceShortcutButtonStyleAutomaticOutline :: INUIAddVoiceShortcutButtonStyle
 pattern INUIAddVoiceShortcutButtonStyleAutomaticOutline = INUIAddVoiceShortcutButtonStyle 5
+
+instance ObjCArgument INUIAddVoiceShortcutButtonStyle where
+  withObjCArg (INUIAddVoiceShortcutButtonStyle x) k = k (argCULong x)
+
+instance ObjCReturn INUIAddVoiceShortcutButtonStyle where
+  type RawReturn INUIAddVoiceShortcutButtonStyle = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INUIAddVoiceShortcutButtonStyle x)
+  fromOwned x = pure (INUIAddVoiceShortcutButtonStyle x)

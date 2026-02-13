@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.Vision.VNVideoProcessorTimeIntervalCadence
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,32 +32,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVNVideoProcessorTimeIntervalCadence vnVideoProcessorTimeIntervalCadence => vnVideoProcessorTimeIntervalCadence -> IO (Id VNVideoProcessorTimeIntervalCadence)
-init_ vnVideoProcessorTimeIntervalCadence  =
-    sendMsg vnVideoProcessorTimeIntervalCadence (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnVideoProcessorTimeIntervalCadence =
+  sendOwnedMessage vnVideoProcessorTimeIntervalCadence initSelector
 
 -- | @- initWithTimeInterval:@
 initWithTimeInterval :: IsVNVideoProcessorTimeIntervalCadence vnVideoProcessorTimeIntervalCadence => vnVideoProcessorTimeIntervalCadence -> CDouble -> IO (Id VNVideoProcessorTimeIntervalCadence)
-initWithTimeInterval vnVideoProcessorTimeIntervalCadence  timeInterval =
-    sendMsg vnVideoProcessorTimeIntervalCadence (mkSelector "initWithTimeInterval:") (retPtr retVoid) [argCDouble timeInterval] >>= ownedObject . castPtr
+initWithTimeInterval vnVideoProcessorTimeIntervalCadence timeInterval =
+  sendOwnedMessage vnVideoProcessorTimeIntervalCadence initWithTimeIntervalSelector timeInterval
 
 -- | @- timeInterval@
 timeInterval :: IsVNVideoProcessorTimeIntervalCadence vnVideoProcessorTimeIntervalCadence => vnVideoProcessorTimeIntervalCadence -> IO CDouble
-timeInterval vnVideoProcessorTimeIntervalCadence  =
-    sendMsg vnVideoProcessorTimeIntervalCadence (mkSelector "timeInterval") retCDouble []
+timeInterval vnVideoProcessorTimeIntervalCadence =
+  sendMessage vnVideoProcessorTimeIntervalCadence timeIntervalSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNVideoProcessorTimeIntervalCadence)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithTimeInterval:@
-initWithTimeIntervalSelector :: Selector
+initWithTimeIntervalSelector :: Selector '[CDouble] (Id VNVideoProcessorTimeIntervalCadence)
 initWithTimeIntervalSelector = mkSelector "initWithTimeInterval:"
 
 -- | @Selector@ for @timeInterval@
-timeIntervalSelector :: Selector
+timeIntervalSelector :: Selector '[] CDouble
 timeIntervalSelector = mkSelector "timeInterval"
 

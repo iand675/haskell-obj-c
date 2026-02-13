@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.AudioVideoBridging.AVB17221ACMPInterface
   , sendACMPResponseMessage_error
   , sendACMPCommandMessage_completionHandler
   , multicastDestinationAddress
-  , acmpInterfaceWithInterfaceSelector
   , acmpInterfaceWithInterfaceNamedSelector
-  , setHandler_forEntityIDSelector
-  , removeHandlerForEntityIDSelector
-  , sendACMPResponseMessage_errorSelector
-  , sendACMPCommandMessage_completionHandlerSelector
+  , acmpInterfaceWithInterfaceSelector
   , multicastDestinationAddressSelector
+  , removeHandlerForEntityIDSelector
+  , sendACMPCommandMessage_completionHandlerSelector
+  , sendACMPResponseMessage_errorSelector
+  , setHandler_forEntityIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,7 @@ acmpInterfaceWithInterface :: IsAVBInterface anInterface => anInterface -> IO (I
 acmpInterfaceWithInterface anInterface =
   do
     cls' <- getRequiredClass "AVB17221ACMPInterface"
-    withObjCPtr anInterface $ \raw_anInterface ->
-      sendClassMsg cls' (mkSelector "ACMPInterfaceWithInterface:") (retPtr retVoid) [argPtr (castPtr raw_anInterface :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' acmpInterfaceWithInterfaceSelector (toAVBInterface anInterface)
 
 -- | AVB17221ACMPInterfaceWithInterfaceNamed:
 --
@@ -74,8 +70,7 @@ acmpInterfaceWithInterfaceNamed :: IsNSString anInterfaceName => anInterfaceName
 acmpInterfaceWithInterfaceNamed anInterfaceName =
   do
     cls' <- getRequiredClass "AVB17221ACMPInterface"
-    withObjCPtr anInterfaceName $ \raw_anInterfaceName ->
-      sendClassMsg cls' (mkSelector "ACMPInterfaceWithInterfaceNamed:") (retPtr retVoid) [argPtr (castPtr raw_anInterfaceName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' acmpInterfaceWithInterfaceNamedSelector (toNSString anInterfaceName)
 
 -- | setHandler:forEntityID:
 --
@@ -89,8 +84,8 @@ acmpInterfaceWithInterfaceNamed anInterfaceName =
 --
 -- ObjC selector: @- setHandler:forEntityID:@
 setHandler_forEntityID :: IsAVB17221ACMPInterface avB17221ACMPInterface => avB17221ACMPInterface -> RawId -> CULong -> IO Bool
-setHandler_forEntityID avB17221ACMPInterface  handler targetEntityID =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avB17221ACMPInterface (mkSelector "setHandler:forEntityID:") retCULong [argPtr (castPtr (unRawId handler) :: Ptr ()), argCULong targetEntityID]
+setHandler_forEntityID avB17221ACMPInterface handler targetEntityID =
+  sendMessage avB17221ACMPInterface setHandler_forEntityIDSelector handler targetEntityID
 
 -- | removeHandlerForEntityID:
 --
@@ -100,8 +95,8 @@ setHandler_forEntityID avB17221ACMPInterface  handler targetEntityID =
 --
 -- ObjC selector: @- removeHandlerForEntityID:@
 removeHandlerForEntityID :: IsAVB17221ACMPInterface avB17221ACMPInterface => avB17221ACMPInterface -> CULong -> IO ()
-removeHandlerForEntityID avB17221ACMPInterface  targetEntityID =
-    sendMsg avB17221ACMPInterface (mkSelector "removeHandlerForEntityID:") retVoid [argCULong targetEntityID]
+removeHandlerForEntityID avB17221ACMPInterface targetEntityID =
+  sendMessage avB17221ACMPInterface removeHandlerForEntityIDSelector targetEntityID
 
 -- | sendACMPResponseMessage:
 --
@@ -115,10 +110,8 @@ removeHandlerForEntityID avB17221ACMPInterface  targetEntityID =
 --
 -- ObjC selector: @- sendACMPResponseMessage:error:@
 sendACMPResponseMessage_error :: (IsAVB17221ACMPInterface avB17221ACMPInterface, IsAVB17221ACMPMessage message, IsNSError error_) => avB17221ACMPInterface -> message -> error_ -> IO Bool
-sendACMPResponseMessage_error avB17221ACMPInterface  message error_ =
-  withObjCPtr message $ \raw_message ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avB17221ACMPInterface (mkSelector "sendACMPResponseMessage:error:") retCULong [argPtr (castPtr raw_message :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+sendACMPResponseMessage_error avB17221ACMPInterface message error_ =
+  sendMessage avB17221ACMPInterface sendACMPResponseMessage_errorSelector (toAVB17221ACMPMessage message) (toNSError error_)
 
 -- | sendACMPCommandMessage:completionHandler:
 --
@@ -134,9 +127,8 @@ sendACMPResponseMessage_error avB17221ACMPInterface  message error_ =
 --
 -- ObjC selector: @- sendACMPCommandMessage:completionHandler:@
 sendACMPCommandMessage_completionHandler :: (IsAVB17221ACMPInterface avB17221ACMPInterface, IsAVB17221ACMPMessage message) => avB17221ACMPInterface -> message -> Ptr () -> IO Bool
-sendACMPCommandMessage_completionHandler avB17221ACMPInterface  message completionHandler =
-  withObjCPtr message $ \raw_message ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avB17221ACMPInterface (mkSelector "sendACMPCommandMessage:completionHandler:") retCULong [argPtr (castPtr raw_message :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+sendACMPCommandMessage_completionHandler avB17221ACMPInterface message completionHandler =
+  sendMessage avB17221ACMPInterface sendACMPCommandMessage_completionHandlerSelector (toAVB17221ACMPMessage message) completionHandler
 
 -- | multicastDestinationAddress
 --
@@ -146,38 +138,38 @@ sendACMPCommandMessage_completionHandler avB17221ACMPInterface  message completi
 --
 -- ObjC selector: @- multicastDestinationAddress@
 multicastDestinationAddress :: IsAVB17221ACMPInterface avB17221ACMPInterface => avB17221ACMPInterface -> IO (Id AVBMACAddress)
-multicastDestinationAddress avB17221ACMPInterface  =
-    sendMsg avB17221ACMPInterface (mkSelector "multicastDestinationAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+multicastDestinationAddress avB17221ACMPInterface =
+  sendMessage avB17221ACMPInterface multicastDestinationAddressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @ACMPInterfaceWithInterface:@
-acmpInterfaceWithInterfaceSelector :: Selector
+acmpInterfaceWithInterfaceSelector :: Selector '[Id AVBInterface] (Id AVB17221ACMPInterface)
 acmpInterfaceWithInterfaceSelector = mkSelector "ACMPInterfaceWithInterface:"
 
 -- | @Selector@ for @ACMPInterfaceWithInterfaceNamed:@
-acmpInterfaceWithInterfaceNamedSelector :: Selector
+acmpInterfaceWithInterfaceNamedSelector :: Selector '[Id NSString] (Id AVB17221ACMPInterface)
 acmpInterfaceWithInterfaceNamedSelector = mkSelector "ACMPInterfaceWithInterfaceNamed:"
 
 -- | @Selector@ for @setHandler:forEntityID:@
-setHandler_forEntityIDSelector :: Selector
+setHandler_forEntityIDSelector :: Selector '[RawId, CULong] Bool
 setHandler_forEntityIDSelector = mkSelector "setHandler:forEntityID:"
 
 -- | @Selector@ for @removeHandlerForEntityID:@
-removeHandlerForEntityIDSelector :: Selector
+removeHandlerForEntityIDSelector :: Selector '[CULong] ()
 removeHandlerForEntityIDSelector = mkSelector "removeHandlerForEntityID:"
 
 -- | @Selector@ for @sendACMPResponseMessage:error:@
-sendACMPResponseMessage_errorSelector :: Selector
+sendACMPResponseMessage_errorSelector :: Selector '[Id AVB17221ACMPMessage, Id NSError] Bool
 sendACMPResponseMessage_errorSelector = mkSelector "sendACMPResponseMessage:error:"
 
 -- | @Selector@ for @sendACMPCommandMessage:completionHandler:@
-sendACMPCommandMessage_completionHandlerSelector :: Selector
+sendACMPCommandMessage_completionHandlerSelector :: Selector '[Id AVB17221ACMPMessage, Ptr ()] Bool
 sendACMPCommandMessage_completionHandlerSelector = mkSelector "sendACMPCommandMessage:completionHandler:"
 
 -- | @Selector@ for @multicastDestinationAddress@
-multicastDestinationAddressSelector :: Selector
+multicastDestinationAddressSelector :: Selector '[] (Id AVBMACAddress)
 multicastDestinationAddressSelector = mkSelector "multicastDestinationAddress"
 

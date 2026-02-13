@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRGroupKeyManagementClusterGroupKeyMapStruct
   , setGroupKeySetID
   , fabricIndex
   , setFabricIndex
-  , groupIdSelector
-  , setGroupIdSelector
-  , groupKeySetIDSelector
-  , setGroupKeySetIDSelector
   , fabricIndexSelector
+  , groupIdSelector
+  , groupKeySetIDSelector
   , setFabricIndexSelector
+  , setGroupIdSelector
+  , setGroupKeySetIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupId@
 groupId :: IsMTRGroupKeyManagementClusterGroupKeyMapStruct mtrGroupKeyManagementClusterGroupKeyMapStruct => mtrGroupKeyManagementClusterGroupKeyMapStruct -> IO (Id NSNumber)
-groupId mtrGroupKeyManagementClusterGroupKeyMapStruct  =
-    sendMsg mtrGroupKeyManagementClusterGroupKeyMapStruct (mkSelector "groupId") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupId mtrGroupKeyManagementClusterGroupKeyMapStruct =
+  sendMessage mtrGroupKeyManagementClusterGroupKeyMapStruct groupIdSelector
 
 -- | @- setGroupId:@
 setGroupId :: (IsMTRGroupKeyManagementClusterGroupKeyMapStruct mtrGroupKeyManagementClusterGroupKeyMapStruct, IsNSNumber value) => mtrGroupKeyManagementClusterGroupKeyMapStruct -> value -> IO ()
-setGroupId mtrGroupKeyManagementClusterGroupKeyMapStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupKeyManagementClusterGroupKeyMapStruct (mkSelector "setGroupId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupId mtrGroupKeyManagementClusterGroupKeyMapStruct value =
+  sendMessage mtrGroupKeyManagementClusterGroupKeyMapStruct setGroupIdSelector (toNSNumber value)
 
 -- | @- groupKeySetID@
 groupKeySetID :: IsMTRGroupKeyManagementClusterGroupKeyMapStruct mtrGroupKeyManagementClusterGroupKeyMapStruct => mtrGroupKeyManagementClusterGroupKeyMapStruct -> IO (Id NSNumber)
-groupKeySetID mtrGroupKeyManagementClusterGroupKeyMapStruct  =
-    sendMsg mtrGroupKeyManagementClusterGroupKeyMapStruct (mkSelector "groupKeySetID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupKeySetID mtrGroupKeyManagementClusterGroupKeyMapStruct =
+  sendMessage mtrGroupKeyManagementClusterGroupKeyMapStruct groupKeySetIDSelector
 
 -- | @- setGroupKeySetID:@
 setGroupKeySetID :: (IsMTRGroupKeyManagementClusterGroupKeyMapStruct mtrGroupKeyManagementClusterGroupKeyMapStruct, IsNSNumber value) => mtrGroupKeyManagementClusterGroupKeyMapStruct -> value -> IO ()
-setGroupKeySetID mtrGroupKeyManagementClusterGroupKeyMapStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupKeyManagementClusterGroupKeyMapStruct (mkSelector "setGroupKeySetID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupKeySetID mtrGroupKeyManagementClusterGroupKeyMapStruct value =
+  sendMessage mtrGroupKeyManagementClusterGroupKeyMapStruct setGroupKeySetIDSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRGroupKeyManagementClusterGroupKeyMapStruct mtrGroupKeyManagementClusterGroupKeyMapStruct => mtrGroupKeyManagementClusterGroupKeyMapStruct -> IO (Id NSNumber)
-fabricIndex mtrGroupKeyManagementClusterGroupKeyMapStruct  =
-    sendMsg mtrGroupKeyManagementClusterGroupKeyMapStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrGroupKeyManagementClusterGroupKeyMapStruct =
+  sendMessage mtrGroupKeyManagementClusterGroupKeyMapStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRGroupKeyManagementClusterGroupKeyMapStruct mtrGroupKeyManagementClusterGroupKeyMapStruct, IsNSNumber value) => mtrGroupKeyManagementClusterGroupKeyMapStruct -> value -> IO ()
-setFabricIndex mtrGroupKeyManagementClusterGroupKeyMapStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupKeyManagementClusterGroupKeyMapStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrGroupKeyManagementClusterGroupKeyMapStruct value =
+  sendMessage mtrGroupKeyManagementClusterGroupKeyMapStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupId@
-groupIdSelector :: Selector
+groupIdSelector :: Selector '[] (Id NSNumber)
 groupIdSelector = mkSelector "groupId"
 
 -- | @Selector@ for @setGroupId:@
-setGroupIdSelector :: Selector
+setGroupIdSelector :: Selector '[Id NSNumber] ()
 setGroupIdSelector = mkSelector "setGroupId:"
 
 -- | @Selector@ for @groupKeySetID@
-groupKeySetIDSelector :: Selector
+groupKeySetIDSelector :: Selector '[] (Id NSNumber)
 groupKeySetIDSelector = mkSelector "groupKeySetID"
 
 -- | @Selector@ for @setGroupKeySetID:@
-setGroupKeySetIDSelector :: Selector
+setGroupKeySetIDSelector :: Selector '[Id NSNumber] ()
 setGroupKeySetIDSelector = mkSelector "setGroupKeySetID:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

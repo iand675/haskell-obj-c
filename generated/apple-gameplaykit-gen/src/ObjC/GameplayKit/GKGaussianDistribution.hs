@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.GameplayKit.GKGaussianDistribution
   , initWithRandomSource_mean_deviation
   , mean
   , deviation
+  , deviationSelector
   , initWithRandomSource_lowestValue_highestValueSelector
   , initWithRandomSource_mean_deviationSelector
   , meanSelector
-  , deviationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,47 +46,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRandomSource:lowestValue:highestValue:@
 initWithRandomSource_lowestValue_highestValue :: IsGKGaussianDistribution gkGaussianDistribution => gkGaussianDistribution -> RawId -> CLong -> CLong -> IO (Id GKGaussianDistribution)
-initWithRandomSource_lowestValue_highestValue gkGaussianDistribution  source lowestInclusive highestInclusive =
-    sendMsg gkGaussianDistribution (mkSelector "initWithRandomSource:lowestValue:highestValue:") (retPtr retVoid) [argPtr (castPtr (unRawId source) :: Ptr ()), argCLong lowestInclusive, argCLong highestInclusive] >>= ownedObject . castPtr
+initWithRandomSource_lowestValue_highestValue gkGaussianDistribution source lowestInclusive highestInclusive =
+  sendOwnedMessage gkGaussianDistribution initWithRandomSource_lowestValue_highestValueSelector source lowestInclusive highestInclusive
 
 -- | Initializes a Gaussian random distribution within the range [mean - 3 * deviation, mean + 3 * deviation] using a source to grab input values from.
 --
 -- ObjC selector: @- initWithRandomSource:mean:deviation:@
 initWithRandomSource_mean_deviation :: IsGKGaussianDistribution gkGaussianDistribution => gkGaussianDistribution -> RawId -> CFloat -> CFloat -> IO (Id GKGaussianDistribution)
-initWithRandomSource_mean_deviation gkGaussianDistribution  source mean deviation =
-    sendMsg gkGaussianDistribution (mkSelector "initWithRandomSource:mean:deviation:") (retPtr retVoid) [argPtr (castPtr (unRawId source) :: Ptr ()), argCFloat mean, argCFloat deviation] >>= ownedObject . castPtr
+initWithRandomSource_mean_deviation gkGaussianDistribution source mean deviation =
+  sendOwnedMessage gkGaussianDistribution initWithRandomSource_mean_deviationSelector source mean deviation
 
 -- | The mean, or expected, value of the distribution. Values are more probable the closer to the mean they are.
 --
 -- ObjC selector: @- mean@
 mean :: IsGKGaussianDistribution gkGaussianDistribution => gkGaussianDistribution -> IO CFloat
-mean gkGaussianDistribution  =
-    sendMsg gkGaussianDistribution (mkSelector "mean") retCFloat []
+mean gkGaussianDistribution =
+  sendMessage gkGaussianDistribution meanSelector
 
 -- | The deviation, often called 'sigma', is the deviation from the mean that would include roughly 68% of the distribution. The range of the distribution is [mean - 3 * deviation, mean + 3 * deviation]. Values beyond 3 deviations are considered so improbable that they are removed from the output set.
 --
 -- ObjC selector: @- deviation@
 deviation :: IsGKGaussianDistribution gkGaussianDistribution => gkGaussianDistribution -> IO CFloat
-deviation gkGaussianDistribution  =
-    sendMsg gkGaussianDistribution (mkSelector "deviation") retCFloat []
+deviation gkGaussianDistribution =
+  sendMessage gkGaussianDistribution deviationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRandomSource:lowestValue:highestValue:@
-initWithRandomSource_lowestValue_highestValueSelector :: Selector
+initWithRandomSource_lowestValue_highestValueSelector :: Selector '[RawId, CLong, CLong] (Id GKGaussianDistribution)
 initWithRandomSource_lowestValue_highestValueSelector = mkSelector "initWithRandomSource:lowestValue:highestValue:"
 
 -- | @Selector@ for @initWithRandomSource:mean:deviation:@
-initWithRandomSource_mean_deviationSelector :: Selector
+initWithRandomSource_mean_deviationSelector :: Selector '[RawId, CFloat, CFloat] (Id GKGaussianDistribution)
 initWithRandomSource_mean_deviationSelector = mkSelector "initWithRandomSource:mean:deviation:"
 
 -- | @Selector@ for @mean@
-meanSelector :: Selector
+meanSelector :: Selector '[] CFloat
 meanSelector = mkSelector "mean"
 
 -- | @Selector@ for @deviation@
-deviationSelector :: Selector
+deviationSelector :: Selector '[] CFloat
 deviationSelector = mkSelector "deviation"
 

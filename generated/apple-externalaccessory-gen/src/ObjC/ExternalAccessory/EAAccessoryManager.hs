@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.ExternalAccessory.EAAccessoryManager
   , showBluetoothAccessoryPickerWithNameFilter_completion
   , registerForLocalNotifications
   , unregisterForLocalNotifications
+  , registerForLocalNotificationsSelector
   , sharedAccessoryManagerSelector
   , showBluetoothAccessoryPickerWithNameFilter_completionSelector
-  , registerForLocalNotificationsSelector
   , unregisterForLocalNotificationsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,41 +35,40 @@ sharedAccessoryManager :: IO (Id EAAccessoryManager)
 sharedAccessoryManager  =
   do
     cls' <- getRequiredClass "EAAccessoryManager"
-    sendClassMsg cls' (mkSelector "sharedAccessoryManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedAccessoryManagerSelector
 
 -- | @- showBluetoothAccessoryPickerWithNameFilter:completion:@
 showBluetoothAccessoryPickerWithNameFilter_completion :: (IsEAAccessoryManager eaAccessoryManager, IsNSPredicate predicate) => eaAccessoryManager -> predicate -> Ptr () -> IO ()
-showBluetoothAccessoryPickerWithNameFilter_completion eaAccessoryManager  predicate completion =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg eaAccessoryManager (mkSelector "showBluetoothAccessoryPickerWithNameFilter:completion:") retVoid [argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+showBluetoothAccessoryPickerWithNameFilter_completion eaAccessoryManager predicate completion =
+  sendMessage eaAccessoryManager showBluetoothAccessoryPickerWithNameFilter_completionSelector (toNSPredicate predicate) completion
 
 -- | @- registerForLocalNotifications@
 registerForLocalNotifications :: IsEAAccessoryManager eaAccessoryManager => eaAccessoryManager -> IO ()
-registerForLocalNotifications eaAccessoryManager  =
-    sendMsg eaAccessoryManager (mkSelector "registerForLocalNotifications") retVoid []
+registerForLocalNotifications eaAccessoryManager =
+  sendMessage eaAccessoryManager registerForLocalNotificationsSelector
 
 -- | @- unregisterForLocalNotifications@
 unregisterForLocalNotifications :: IsEAAccessoryManager eaAccessoryManager => eaAccessoryManager -> IO ()
-unregisterForLocalNotifications eaAccessoryManager  =
-    sendMsg eaAccessoryManager (mkSelector "unregisterForLocalNotifications") retVoid []
+unregisterForLocalNotifications eaAccessoryManager =
+  sendMessage eaAccessoryManager unregisterForLocalNotificationsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedAccessoryManager@
-sharedAccessoryManagerSelector :: Selector
+sharedAccessoryManagerSelector :: Selector '[] (Id EAAccessoryManager)
 sharedAccessoryManagerSelector = mkSelector "sharedAccessoryManager"
 
 -- | @Selector@ for @showBluetoothAccessoryPickerWithNameFilter:completion:@
-showBluetoothAccessoryPickerWithNameFilter_completionSelector :: Selector
+showBluetoothAccessoryPickerWithNameFilter_completionSelector :: Selector '[Id NSPredicate, Ptr ()] ()
 showBluetoothAccessoryPickerWithNameFilter_completionSelector = mkSelector "showBluetoothAccessoryPickerWithNameFilter:completion:"
 
 -- | @Selector@ for @registerForLocalNotifications@
-registerForLocalNotificationsSelector :: Selector
+registerForLocalNotificationsSelector :: Selector '[] ()
 registerForLocalNotificationsSelector = mkSelector "registerForLocalNotifications"
 
 -- | @Selector@ for @unregisterForLocalNotifications@
-unregisterForLocalNotificationsSelector :: Selector
+unregisterForLocalNotificationsSelector :: Selector '[] ()
 unregisterForLocalNotificationsSelector = mkSelector "unregisterForLocalNotifications"
 

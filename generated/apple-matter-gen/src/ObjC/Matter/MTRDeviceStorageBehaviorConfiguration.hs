@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,37 +29,33 @@ module ObjC.Matter.MTRDeviceStorageBehaviorConfiguration
   , deviceReportingExcessivelyIntervalThreshold
   , setDeviceReportingExcessivelyIntervalThreshold
   , configurationWithDefaultStorageBehaviorSelector
-  , configurationWithStorageBehaviorOptimizationDisabledSelector
   , configurationWithReportToPersistenceDelayTime_reportToPersistenceDelayTimeMax_recentReportTimesMaxCount_timeBetweenReportsTooShortThreshold_timeBetweenReportsTooShortMinThreshold_reportToPersistenceDelayMaxMultiplier_deviceReportingExcessivelyIntervalThresholdSelector
+  , configurationWithStorageBehaviorOptimizationDisabledSelector
+  , deviceReportingExcessivelyIntervalThresholdSelector
   , disableStorageBehaviorOptimizationSelector
-  , setDisableStorageBehaviorOptimizationSelector
-  , reportToPersistenceDelayTimeSelector
-  , setReportToPersistenceDelayTimeSelector
-  , reportToPersistenceDelayTimeMaxSelector
-  , setReportToPersistenceDelayTimeMaxSelector
   , recentReportTimesMaxCountSelector
+  , reportToPersistenceDelayMaxMultiplierSelector
+  , reportToPersistenceDelayTimeMaxSelector
+  , reportToPersistenceDelayTimeSelector
+  , setDeviceReportingExcessivelyIntervalThresholdSelector
+  , setDisableStorageBehaviorOptimizationSelector
   , setRecentReportTimesMaxCountSelector
-  , timeBetweenReportsTooShortThresholdSelector
+  , setReportToPersistenceDelayMaxMultiplierSelector
+  , setReportToPersistenceDelayTimeMaxSelector
+  , setReportToPersistenceDelayTimeSelector
+  , setTimeBetweenReportsTooShortMinThresholdSelector
   , setTimeBetweenReportsTooShortThresholdSelector
   , timeBetweenReportsTooShortMinThresholdSelector
-  , setTimeBetweenReportsTooShortMinThresholdSelector
-  , reportToPersistenceDelayMaxMultiplierSelector
-  , setReportToPersistenceDelayMaxMultiplierSelector
-  , deviceReportingExcessivelyIntervalThresholdSelector
-  , setDeviceReportingExcessivelyIntervalThresholdSelector
+  , timeBetweenReportsTooShortThresholdSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,7 +69,7 @@ configurationWithDefaultStorageBehavior :: IO (Id MTRDeviceStorageBehaviorConfig
 configurationWithDefaultStorageBehavior  =
   do
     cls' <- getRequiredClass "MTRDeviceStorageBehaviorConfiguration"
-    sendClassMsg cls' (mkSelector "configurationWithDefaultStorageBehavior") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithDefaultStorageBehaviorSelector
 
 -- | Create configuration that disables storage behavior optimizations.
 --
@@ -81,7 +78,7 @@ configurationWithStorageBehaviorOptimizationDisabled :: IO (Id MTRDeviceStorageB
 configurationWithStorageBehaviorOptimizationDisabled  =
   do
     cls' <- getRequiredClass "MTRDeviceStorageBehaviorConfiguration"
-    sendClassMsg cls' (mkSelector "configurationWithStorageBehaviorOptimizationDisabled") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithStorageBehaviorOptimizationDisabledSelector
 
 -- | Create configuration with specified values. See description below for details, and the list of properties below for valid ranges of these values.
 --
@@ -90,21 +87,21 @@ configurationWithReportToPersistenceDelayTime_reportToPersistenceDelayTimeMax_re
 configurationWithReportToPersistenceDelayTime_reportToPersistenceDelayTimeMax_recentReportTimesMaxCount_timeBetweenReportsTooShortThreshold_timeBetweenReportsTooShortMinThreshold_reportToPersistenceDelayMaxMultiplier_deviceReportingExcessivelyIntervalThreshold reportToPersistenceDelayTime reportToPersistenceDelayTimeMax recentReportTimesMaxCount timeBetweenReportsTooShortThreshold timeBetweenReportsTooShortMinThreshold reportToPersistenceDelayMaxMultiplier deviceReportingExcessivelyIntervalThreshold =
   do
     cls' <- getRequiredClass "MTRDeviceStorageBehaviorConfiguration"
-    sendClassMsg cls' (mkSelector "configurationWithReportToPersistenceDelayTime:reportToPersistenceDelayTimeMax:recentReportTimesMaxCount:timeBetweenReportsTooShortThreshold:timeBetweenReportsTooShortMinThreshold:reportToPersistenceDelayMaxMultiplier:deviceReportingExcessivelyIntervalThreshold:") (retPtr retVoid) [argCDouble reportToPersistenceDelayTime, argCDouble reportToPersistenceDelayTimeMax, argCULong recentReportTimesMaxCount, argCDouble timeBetweenReportsTooShortThreshold, argCDouble timeBetweenReportsTooShortMinThreshold, argCDouble reportToPersistenceDelayMaxMultiplier, argCDouble deviceReportingExcessivelyIntervalThreshold] >>= retainedObject . castPtr
+    sendClassMessage cls' configurationWithReportToPersistenceDelayTime_reportToPersistenceDelayTimeMax_recentReportTimesMaxCount_timeBetweenReportsTooShortThreshold_timeBetweenReportsTooShortMinThreshold_reportToPersistenceDelayMaxMultiplier_deviceReportingExcessivelyIntervalThresholdSelector reportToPersistenceDelayTime reportToPersistenceDelayTimeMax recentReportTimesMaxCount timeBetweenReportsTooShortThreshold timeBetweenReportsTooShortMinThreshold reportToPersistenceDelayMaxMultiplier deviceReportingExcessivelyIntervalThreshold
 
 -- | If disableStorageBehaviorOptimization is set to YES, then all the waiting mechanism as described above is disabled.
 --
 -- ObjC selector: @- disableStorageBehaviorOptimization@
 disableStorageBehaviorOptimization :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> IO Bool
-disableStorageBehaviorOptimization mtrDeviceStorageBehaviorConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "disableStorageBehaviorOptimization") retCULong []
+disableStorageBehaviorOptimization mtrDeviceStorageBehaviorConfiguration =
+  sendMessage mtrDeviceStorageBehaviorConfiguration disableStorageBehaviorOptimizationSelector
 
 -- | If disableStorageBehaviorOptimization is set to YES, then all the waiting mechanism as described above is disabled.
 --
 -- ObjC selector: @- setDisableStorageBehaviorOptimization:@
 setDisableStorageBehaviorOptimization :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> Bool -> IO ()
-setDisableStorageBehaviorOptimization mtrDeviceStorageBehaviorConfiguration  value =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "setDisableStorageBehaviorOptimization:") retVoid [argCULong (if value then 1 else 0)]
+setDisableStorageBehaviorOptimization mtrDeviceStorageBehaviorConfiguration value =
+  sendMessage mtrDeviceStorageBehaviorConfiguration setDisableStorageBehaviorOptimizationSelector value
 
 -- | If any of these properties are set to be out of the documented limits, these default values will be used to replace all of them:
 --
@@ -112,8 +109,8 @@ setDisableStorageBehaviorOptimization mtrDeviceStorageBehaviorConfiguration  val
 --
 -- ObjC selector: @- reportToPersistenceDelayTime@
 reportToPersistenceDelayTime :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> IO CDouble
-reportToPersistenceDelayTime mtrDeviceStorageBehaviorConfiguration  =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "reportToPersistenceDelayTime") retCDouble []
+reportToPersistenceDelayTime mtrDeviceStorageBehaviorConfiguration =
+  sendMessage mtrDeviceStorageBehaviorConfiguration reportToPersistenceDelayTimeSelector
 
 -- | If any of these properties are set to be out of the documented limits, these default values will be used to replace all of them:
 --
@@ -121,146 +118,146 @@ reportToPersistenceDelayTime mtrDeviceStorageBehaviorConfiguration  =
 --
 -- ObjC selector: @- setReportToPersistenceDelayTime:@
 setReportToPersistenceDelayTime :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> CDouble -> IO ()
-setReportToPersistenceDelayTime mtrDeviceStorageBehaviorConfiguration  value =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "setReportToPersistenceDelayTime:") retVoid [argCDouble value]
+setReportToPersistenceDelayTime mtrDeviceStorageBehaviorConfiguration value =
+  sendMessage mtrDeviceStorageBehaviorConfiguration setReportToPersistenceDelayTimeSelector value
 
 -- | @- reportToPersistenceDelayTimeMax@
 reportToPersistenceDelayTimeMax :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> IO CDouble
-reportToPersistenceDelayTimeMax mtrDeviceStorageBehaviorConfiguration  =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "reportToPersistenceDelayTimeMax") retCDouble []
+reportToPersistenceDelayTimeMax mtrDeviceStorageBehaviorConfiguration =
+  sendMessage mtrDeviceStorageBehaviorConfiguration reportToPersistenceDelayTimeMaxSelector
 
 -- | @- setReportToPersistenceDelayTimeMax:@
 setReportToPersistenceDelayTimeMax :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> CDouble -> IO ()
-setReportToPersistenceDelayTimeMax mtrDeviceStorageBehaviorConfiguration  value =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "setReportToPersistenceDelayTimeMax:") retVoid [argCDouble value]
+setReportToPersistenceDelayTimeMax mtrDeviceStorageBehaviorConfiguration value =
+  sendMessage mtrDeviceStorageBehaviorConfiguration setReportToPersistenceDelayTimeMaxSelector value
 
 -- | @- recentReportTimesMaxCount@
 recentReportTimesMaxCount :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> IO CULong
-recentReportTimesMaxCount mtrDeviceStorageBehaviorConfiguration  =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "recentReportTimesMaxCount") retCULong []
+recentReportTimesMaxCount mtrDeviceStorageBehaviorConfiguration =
+  sendMessage mtrDeviceStorageBehaviorConfiguration recentReportTimesMaxCountSelector
 
 -- | @- setRecentReportTimesMaxCount:@
 setRecentReportTimesMaxCount :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> CULong -> IO ()
-setRecentReportTimesMaxCount mtrDeviceStorageBehaviorConfiguration  value =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "setRecentReportTimesMaxCount:") retVoid [argCULong value]
+setRecentReportTimesMaxCount mtrDeviceStorageBehaviorConfiguration value =
+  sendMessage mtrDeviceStorageBehaviorConfiguration setRecentReportTimesMaxCountSelector value
 
 -- | @- timeBetweenReportsTooShortThreshold@
 timeBetweenReportsTooShortThreshold :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> IO CDouble
-timeBetweenReportsTooShortThreshold mtrDeviceStorageBehaviorConfiguration  =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "timeBetweenReportsTooShortThreshold") retCDouble []
+timeBetweenReportsTooShortThreshold mtrDeviceStorageBehaviorConfiguration =
+  sendMessage mtrDeviceStorageBehaviorConfiguration timeBetweenReportsTooShortThresholdSelector
 
 -- | @- setTimeBetweenReportsTooShortThreshold:@
 setTimeBetweenReportsTooShortThreshold :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> CDouble -> IO ()
-setTimeBetweenReportsTooShortThreshold mtrDeviceStorageBehaviorConfiguration  value =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "setTimeBetweenReportsTooShortThreshold:") retVoid [argCDouble value]
+setTimeBetweenReportsTooShortThreshold mtrDeviceStorageBehaviorConfiguration value =
+  sendMessage mtrDeviceStorageBehaviorConfiguration setTimeBetweenReportsTooShortThresholdSelector value
 
 -- | @- timeBetweenReportsTooShortMinThreshold@
 timeBetweenReportsTooShortMinThreshold :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> IO CDouble
-timeBetweenReportsTooShortMinThreshold mtrDeviceStorageBehaviorConfiguration  =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "timeBetweenReportsTooShortMinThreshold") retCDouble []
+timeBetweenReportsTooShortMinThreshold mtrDeviceStorageBehaviorConfiguration =
+  sendMessage mtrDeviceStorageBehaviorConfiguration timeBetweenReportsTooShortMinThresholdSelector
 
 -- | @- setTimeBetweenReportsTooShortMinThreshold:@
 setTimeBetweenReportsTooShortMinThreshold :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> CDouble -> IO ()
-setTimeBetweenReportsTooShortMinThreshold mtrDeviceStorageBehaviorConfiguration  value =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "setTimeBetweenReportsTooShortMinThreshold:") retVoid [argCDouble value]
+setTimeBetweenReportsTooShortMinThreshold mtrDeviceStorageBehaviorConfiguration value =
+  sendMessage mtrDeviceStorageBehaviorConfiguration setTimeBetweenReportsTooShortMinThresholdSelector value
 
 -- | @- reportToPersistenceDelayMaxMultiplier@
 reportToPersistenceDelayMaxMultiplier :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> IO CDouble
-reportToPersistenceDelayMaxMultiplier mtrDeviceStorageBehaviorConfiguration  =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "reportToPersistenceDelayMaxMultiplier") retCDouble []
+reportToPersistenceDelayMaxMultiplier mtrDeviceStorageBehaviorConfiguration =
+  sendMessage mtrDeviceStorageBehaviorConfiguration reportToPersistenceDelayMaxMultiplierSelector
 
 -- | @- setReportToPersistenceDelayMaxMultiplier:@
 setReportToPersistenceDelayMaxMultiplier :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> CDouble -> IO ()
-setReportToPersistenceDelayMaxMultiplier mtrDeviceStorageBehaviorConfiguration  value =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "setReportToPersistenceDelayMaxMultiplier:") retVoid [argCDouble value]
+setReportToPersistenceDelayMaxMultiplier mtrDeviceStorageBehaviorConfiguration value =
+  sendMessage mtrDeviceStorageBehaviorConfiguration setReportToPersistenceDelayMaxMultiplierSelector value
 
 -- | @- deviceReportingExcessivelyIntervalThreshold@
 deviceReportingExcessivelyIntervalThreshold :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> IO CDouble
-deviceReportingExcessivelyIntervalThreshold mtrDeviceStorageBehaviorConfiguration  =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "deviceReportingExcessivelyIntervalThreshold") retCDouble []
+deviceReportingExcessivelyIntervalThreshold mtrDeviceStorageBehaviorConfiguration =
+  sendMessage mtrDeviceStorageBehaviorConfiguration deviceReportingExcessivelyIntervalThresholdSelector
 
 -- | @- setDeviceReportingExcessivelyIntervalThreshold:@
 setDeviceReportingExcessivelyIntervalThreshold :: IsMTRDeviceStorageBehaviorConfiguration mtrDeviceStorageBehaviorConfiguration => mtrDeviceStorageBehaviorConfiguration -> CDouble -> IO ()
-setDeviceReportingExcessivelyIntervalThreshold mtrDeviceStorageBehaviorConfiguration  value =
-    sendMsg mtrDeviceStorageBehaviorConfiguration (mkSelector "setDeviceReportingExcessivelyIntervalThreshold:") retVoid [argCDouble value]
+setDeviceReportingExcessivelyIntervalThreshold mtrDeviceStorageBehaviorConfiguration value =
+  sendMessage mtrDeviceStorageBehaviorConfiguration setDeviceReportingExcessivelyIntervalThresholdSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @configurationWithDefaultStorageBehavior@
-configurationWithDefaultStorageBehaviorSelector :: Selector
+configurationWithDefaultStorageBehaviorSelector :: Selector '[] (Id MTRDeviceStorageBehaviorConfiguration)
 configurationWithDefaultStorageBehaviorSelector = mkSelector "configurationWithDefaultStorageBehavior"
 
 -- | @Selector@ for @configurationWithStorageBehaviorOptimizationDisabled@
-configurationWithStorageBehaviorOptimizationDisabledSelector :: Selector
+configurationWithStorageBehaviorOptimizationDisabledSelector :: Selector '[] (Id MTRDeviceStorageBehaviorConfiguration)
 configurationWithStorageBehaviorOptimizationDisabledSelector = mkSelector "configurationWithStorageBehaviorOptimizationDisabled"
 
 -- | @Selector@ for @configurationWithReportToPersistenceDelayTime:reportToPersistenceDelayTimeMax:recentReportTimesMaxCount:timeBetweenReportsTooShortThreshold:timeBetweenReportsTooShortMinThreshold:reportToPersistenceDelayMaxMultiplier:deviceReportingExcessivelyIntervalThreshold:@
-configurationWithReportToPersistenceDelayTime_reportToPersistenceDelayTimeMax_recentReportTimesMaxCount_timeBetweenReportsTooShortThreshold_timeBetweenReportsTooShortMinThreshold_reportToPersistenceDelayMaxMultiplier_deviceReportingExcessivelyIntervalThresholdSelector :: Selector
+configurationWithReportToPersistenceDelayTime_reportToPersistenceDelayTimeMax_recentReportTimesMaxCount_timeBetweenReportsTooShortThreshold_timeBetweenReportsTooShortMinThreshold_reportToPersistenceDelayMaxMultiplier_deviceReportingExcessivelyIntervalThresholdSelector :: Selector '[CDouble, CDouble, CULong, CDouble, CDouble, CDouble, CDouble] (Id MTRDeviceStorageBehaviorConfiguration)
 configurationWithReportToPersistenceDelayTime_reportToPersistenceDelayTimeMax_recentReportTimesMaxCount_timeBetweenReportsTooShortThreshold_timeBetweenReportsTooShortMinThreshold_reportToPersistenceDelayMaxMultiplier_deviceReportingExcessivelyIntervalThresholdSelector = mkSelector "configurationWithReportToPersistenceDelayTime:reportToPersistenceDelayTimeMax:recentReportTimesMaxCount:timeBetweenReportsTooShortThreshold:timeBetweenReportsTooShortMinThreshold:reportToPersistenceDelayMaxMultiplier:deviceReportingExcessivelyIntervalThreshold:"
 
 -- | @Selector@ for @disableStorageBehaviorOptimization@
-disableStorageBehaviorOptimizationSelector :: Selector
+disableStorageBehaviorOptimizationSelector :: Selector '[] Bool
 disableStorageBehaviorOptimizationSelector = mkSelector "disableStorageBehaviorOptimization"
 
 -- | @Selector@ for @setDisableStorageBehaviorOptimization:@
-setDisableStorageBehaviorOptimizationSelector :: Selector
+setDisableStorageBehaviorOptimizationSelector :: Selector '[Bool] ()
 setDisableStorageBehaviorOptimizationSelector = mkSelector "setDisableStorageBehaviorOptimization:"
 
 -- | @Selector@ for @reportToPersistenceDelayTime@
-reportToPersistenceDelayTimeSelector :: Selector
+reportToPersistenceDelayTimeSelector :: Selector '[] CDouble
 reportToPersistenceDelayTimeSelector = mkSelector "reportToPersistenceDelayTime"
 
 -- | @Selector@ for @setReportToPersistenceDelayTime:@
-setReportToPersistenceDelayTimeSelector :: Selector
+setReportToPersistenceDelayTimeSelector :: Selector '[CDouble] ()
 setReportToPersistenceDelayTimeSelector = mkSelector "setReportToPersistenceDelayTime:"
 
 -- | @Selector@ for @reportToPersistenceDelayTimeMax@
-reportToPersistenceDelayTimeMaxSelector :: Selector
+reportToPersistenceDelayTimeMaxSelector :: Selector '[] CDouble
 reportToPersistenceDelayTimeMaxSelector = mkSelector "reportToPersistenceDelayTimeMax"
 
 -- | @Selector@ for @setReportToPersistenceDelayTimeMax:@
-setReportToPersistenceDelayTimeMaxSelector :: Selector
+setReportToPersistenceDelayTimeMaxSelector :: Selector '[CDouble] ()
 setReportToPersistenceDelayTimeMaxSelector = mkSelector "setReportToPersistenceDelayTimeMax:"
 
 -- | @Selector@ for @recentReportTimesMaxCount@
-recentReportTimesMaxCountSelector :: Selector
+recentReportTimesMaxCountSelector :: Selector '[] CULong
 recentReportTimesMaxCountSelector = mkSelector "recentReportTimesMaxCount"
 
 -- | @Selector@ for @setRecentReportTimesMaxCount:@
-setRecentReportTimesMaxCountSelector :: Selector
+setRecentReportTimesMaxCountSelector :: Selector '[CULong] ()
 setRecentReportTimesMaxCountSelector = mkSelector "setRecentReportTimesMaxCount:"
 
 -- | @Selector@ for @timeBetweenReportsTooShortThreshold@
-timeBetweenReportsTooShortThresholdSelector :: Selector
+timeBetweenReportsTooShortThresholdSelector :: Selector '[] CDouble
 timeBetweenReportsTooShortThresholdSelector = mkSelector "timeBetweenReportsTooShortThreshold"
 
 -- | @Selector@ for @setTimeBetweenReportsTooShortThreshold:@
-setTimeBetweenReportsTooShortThresholdSelector :: Selector
+setTimeBetweenReportsTooShortThresholdSelector :: Selector '[CDouble] ()
 setTimeBetweenReportsTooShortThresholdSelector = mkSelector "setTimeBetweenReportsTooShortThreshold:"
 
 -- | @Selector@ for @timeBetweenReportsTooShortMinThreshold@
-timeBetweenReportsTooShortMinThresholdSelector :: Selector
+timeBetweenReportsTooShortMinThresholdSelector :: Selector '[] CDouble
 timeBetweenReportsTooShortMinThresholdSelector = mkSelector "timeBetweenReportsTooShortMinThreshold"
 
 -- | @Selector@ for @setTimeBetweenReportsTooShortMinThreshold:@
-setTimeBetweenReportsTooShortMinThresholdSelector :: Selector
+setTimeBetweenReportsTooShortMinThresholdSelector :: Selector '[CDouble] ()
 setTimeBetweenReportsTooShortMinThresholdSelector = mkSelector "setTimeBetweenReportsTooShortMinThreshold:"
 
 -- | @Selector@ for @reportToPersistenceDelayMaxMultiplier@
-reportToPersistenceDelayMaxMultiplierSelector :: Selector
+reportToPersistenceDelayMaxMultiplierSelector :: Selector '[] CDouble
 reportToPersistenceDelayMaxMultiplierSelector = mkSelector "reportToPersistenceDelayMaxMultiplier"
 
 -- | @Selector@ for @setReportToPersistenceDelayMaxMultiplier:@
-setReportToPersistenceDelayMaxMultiplierSelector :: Selector
+setReportToPersistenceDelayMaxMultiplierSelector :: Selector '[CDouble] ()
 setReportToPersistenceDelayMaxMultiplierSelector = mkSelector "setReportToPersistenceDelayMaxMultiplier:"
 
 -- | @Selector@ for @deviceReportingExcessivelyIntervalThreshold@
-deviceReportingExcessivelyIntervalThresholdSelector :: Selector
+deviceReportingExcessivelyIntervalThresholdSelector :: Selector '[] CDouble
 deviceReportingExcessivelyIntervalThresholdSelector = mkSelector "deviceReportingExcessivelyIntervalThreshold"
 
 -- | @Selector@ for @setDeviceReportingExcessivelyIntervalThreshold:@
-setDeviceReportingExcessivelyIntervalThresholdSelector :: Selector
+setDeviceReportingExcessivelyIntervalThresholdSelector :: Selector '[CDouble] ()
 setDeviceReportingExcessivelyIntervalThresholdSelector = mkSelector "setDeviceReportingExcessivelyIntervalThreshold:"
 

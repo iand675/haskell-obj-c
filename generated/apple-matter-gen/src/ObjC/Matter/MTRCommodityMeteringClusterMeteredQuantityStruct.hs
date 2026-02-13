@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRCommodityMeteringClusterMeteredQuantityStruct
   , setTariffComponentIDs
   , quantity
   , setQuantity
-  , tariffComponentIDsSelector
-  , setTariffComponentIDsSelector
   , quantitySelector
   , setQuantitySelector
+  , setTariffComponentIDsSelector
+  , tariffComponentIDsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- tariffComponentIDs@
 tariffComponentIDs :: IsMTRCommodityMeteringClusterMeteredQuantityStruct mtrCommodityMeteringClusterMeteredQuantityStruct => mtrCommodityMeteringClusterMeteredQuantityStruct -> IO (Id NSArray)
-tariffComponentIDs mtrCommodityMeteringClusterMeteredQuantityStruct  =
-    sendMsg mtrCommodityMeteringClusterMeteredQuantityStruct (mkSelector "tariffComponentIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+tariffComponentIDs mtrCommodityMeteringClusterMeteredQuantityStruct =
+  sendMessage mtrCommodityMeteringClusterMeteredQuantityStruct tariffComponentIDsSelector
 
 -- | @- setTariffComponentIDs:@
 setTariffComponentIDs :: (IsMTRCommodityMeteringClusterMeteredQuantityStruct mtrCommodityMeteringClusterMeteredQuantityStruct, IsNSArray value) => mtrCommodityMeteringClusterMeteredQuantityStruct -> value -> IO ()
-setTariffComponentIDs mtrCommodityMeteringClusterMeteredQuantityStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityMeteringClusterMeteredQuantityStruct (mkSelector "setTariffComponentIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTariffComponentIDs mtrCommodityMeteringClusterMeteredQuantityStruct value =
+  sendMessage mtrCommodityMeteringClusterMeteredQuantityStruct setTariffComponentIDsSelector (toNSArray value)
 
 -- | @- quantity@
 quantity :: IsMTRCommodityMeteringClusterMeteredQuantityStruct mtrCommodityMeteringClusterMeteredQuantityStruct => mtrCommodityMeteringClusterMeteredQuantityStruct -> IO (Id NSNumber)
-quantity mtrCommodityMeteringClusterMeteredQuantityStruct  =
-    sendMsg mtrCommodityMeteringClusterMeteredQuantityStruct (mkSelector "quantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+quantity mtrCommodityMeteringClusterMeteredQuantityStruct =
+  sendMessage mtrCommodityMeteringClusterMeteredQuantityStruct quantitySelector
 
 -- | @- setQuantity:@
 setQuantity :: (IsMTRCommodityMeteringClusterMeteredQuantityStruct mtrCommodityMeteringClusterMeteredQuantityStruct, IsNSNumber value) => mtrCommodityMeteringClusterMeteredQuantityStruct -> value -> IO ()
-setQuantity mtrCommodityMeteringClusterMeteredQuantityStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityMeteringClusterMeteredQuantityStruct (mkSelector "setQuantity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setQuantity mtrCommodityMeteringClusterMeteredQuantityStruct value =
+  sendMessage mtrCommodityMeteringClusterMeteredQuantityStruct setQuantitySelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tariffComponentIDs@
-tariffComponentIDsSelector :: Selector
+tariffComponentIDsSelector :: Selector '[] (Id NSArray)
 tariffComponentIDsSelector = mkSelector "tariffComponentIDs"
 
 -- | @Selector@ for @setTariffComponentIDs:@
-setTariffComponentIDsSelector :: Selector
+setTariffComponentIDsSelector :: Selector '[Id NSArray] ()
 setTariffComponentIDsSelector = mkSelector "setTariffComponentIDs:"
 
 -- | @Selector@ for @quantity@
-quantitySelector :: Selector
+quantitySelector :: Selector '[] (Id NSNumber)
 quantitySelector = mkSelector "quantity"
 
 -- | @Selector@ for @setQuantity:@
-setQuantitySelector :: Selector
+setQuantitySelector :: Selector '[Id NSNumber] ()
 setQuantitySelector = mkSelector "setQuantity:"
 

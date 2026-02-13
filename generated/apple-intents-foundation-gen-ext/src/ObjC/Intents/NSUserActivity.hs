@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,10 +14,10 @@ module ObjC.Intents.NSUserActivity
   , shortcutAvailability
   , setShortcutAvailability
   , interactionSelector
-  , suggestedInvocationPhraseSelector
+  , setShortcutAvailabilitySelector
   , setSuggestedInvocationPhraseSelector
   , shortcutAvailabilitySelector
-  , setShortcutAvailabilitySelector
+  , suggestedInvocationPhraseSelector
 
   -- * Enum types
   , INShortcutAvailabilityOptions(INShortcutAvailabilityOptions)
@@ -30,15 +31,11 @@ module ObjC.Intents.NSUserActivity
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,51 +45,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- interaction@
 interaction :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO (Id INInteraction)
-interaction nsUserActivity  =
-    sendMsg nsUserActivity (mkSelector "interaction") (retPtr retVoid) [] >>= retainedObject . castPtr
+interaction nsUserActivity =
+  sendMessage nsUserActivity interactionSelector
 
 -- | @- suggestedInvocationPhrase@
 suggestedInvocationPhrase :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO (Id NSString)
-suggestedInvocationPhrase nsUserActivity  =
-    sendMsg nsUserActivity (mkSelector "suggestedInvocationPhrase") (retPtr retVoid) [] >>= retainedObject . castPtr
+suggestedInvocationPhrase nsUserActivity =
+  sendMessage nsUserActivity suggestedInvocationPhraseSelector
 
 -- | @- setSuggestedInvocationPhrase:@
 setSuggestedInvocationPhrase :: (IsNSUserActivity nsUserActivity, IsNSString value) => nsUserActivity -> value -> IO ()
-setSuggestedInvocationPhrase nsUserActivity  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsUserActivity (mkSelector "setSuggestedInvocationPhrase:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSuggestedInvocationPhrase nsUserActivity value =
+  sendMessage nsUserActivity setSuggestedInvocationPhraseSelector (toNSString value)
 
 -- | @- shortcutAvailability@
 shortcutAvailability :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO INShortcutAvailabilityOptions
-shortcutAvailability nsUserActivity  =
-    fmap (coerce :: CULong -> INShortcutAvailabilityOptions) $ sendMsg nsUserActivity (mkSelector "shortcutAvailability") retCULong []
+shortcutAvailability nsUserActivity =
+  sendMessage nsUserActivity shortcutAvailabilitySelector
 
 -- | @- setShortcutAvailability:@
 setShortcutAvailability :: IsNSUserActivity nsUserActivity => nsUserActivity -> INShortcutAvailabilityOptions -> IO ()
-setShortcutAvailability nsUserActivity  value =
-    sendMsg nsUserActivity (mkSelector "setShortcutAvailability:") retVoid [argCULong (coerce value)]
+setShortcutAvailability nsUserActivity value =
+  sendMessage nsUserActivity setShortcutAvailabilitySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @interaction@
-interactionSelector :: Selector
+interactionSelector :: Selector '[] (Id INInteraction)
 interactionSelector = mkSelector "interaction"
 
 -- | @Selector@ for @suggestedInvocationPhrase@
-suggestedInvocationPhraseSelector :: Selector
+suggestedInvocationPhraseSelector :: Selector '[] (Id NSString)
 suggestedInvocationPhraseSelector = mkSelector "suggestedInvocationPhrase"
 
 -- | @Selector@ for @setSuggestedInvocationPhrase:@
-setSuggestedInvocationPhraseSelector :: Selector
+setSuggestedInvocationPhraseSelector :: Selector '[Id NSString] ()
 setSuggestedInvocationPhraseSelector = mkSelector "setSuggestedInvocationPhrase:"
 
 -- | @Selector@ for @shortcutAvailability@
-shortcutAvailabilitySelector :: Selector
+shortcutAvailabilitySelector :: Selector '[] INShortcutAvailabilityOptions
 shortcutAvailabilitySelector = mkSelector "shortcutAvailability"
 
 -- | @Selector@ for @setShortcutAvailability:@
-setShortcutAvailabilitySelector :: Selector
+setShortcutAvailabilitySelector :: Selector '[INShortcutAvailabilityOptions] ()
 setShortcutAvailabilitySelector = mkSelector "setShortcutAvailability:"
 

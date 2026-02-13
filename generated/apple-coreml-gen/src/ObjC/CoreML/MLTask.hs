@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,13 +17,13 @@ module ObjC.CoreML.MLTask
   , taskIdentifier
   , state
   , error_
-  , resumeSelector
   , cancelSelector
+  , errorSelector
   , initSelector
   , newSelector
-  , taskIdentifierSelector
+  , resumeSelector
   , stateSelector
-  , errorSelector
+  , taskIdentifierSelector
 
   -- * Enum types
   , MLTaskState(MLTaskState)
@@ -34,15 +35,11 @@ module ObjC.CoreML.MLTask
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,70 +49,70 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- resume@
 resume :: IsMLTask mlTask => mlTask -> IO ()
-resume mlTask  =
-    sendMsg mlTask (mkSelector "resume") retVoid []
+resume mlTask =
+  sendMessage mlTask resumeSelector
 
 -- | @- cancel@
 cancel :: IsMLTask mlTask => mlTask -> IO ()
-cancel mlTask  =
-    sendMsg mlTask (mkSelector "cancel") retVoid []
+cancel mlTask =
+  sendMessage mlTask cancelSelector
 
 -- | @- init@
 init_ :: IsMLTask mlTask => mlTask -> IO (Id MLTask)
-init_ mlTask  =
-    sendMsg mlTask (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlTask =
+  sendOwnedMessage mlTask initSelector
 
 -- | @+ new@
 new :: IO RawId
 new  =
   do
     cls' <- getRequiredClass "MLTask"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- taskIdentifier@
 taskIdentifier :: IsMLTask mlTask => mlTask -> IO (Id NSString)
-taskIdentifier mlTask  =
-    sendMsg mlTask (mkSelector "taskIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+taskIdentifier mlTask =
+  sendMessage mlTask taskIdentifierSelector
 
 -- | @- state@
 state :: IsMLTask mlTask => mlTask -> IO MLTaskState
-state mlTask  =
-    fmap (coerce :: CLong -> MLTaskState) $ sendMsg mlTask (mkSelector "state") retCLong []
+state mlTask =
+  sendMessage mlTask stateSelector
 
 -- | @- error@
 error_ :: IsMLTask mlTask => mlTask -> IO (Id NSError)
-error_ mlTask  =
-    sendMsg mlTask (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ mlTask =
+  sendMessage mlTask errorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @resume@
-resumeSelector :: Selector
+resumeSelector :: Selector '[] ()
 resumeSelector = mkSelector "resume"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLTask)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] RawId
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @taskIdentifier@
-taskIdentifierSelector :: Selector
+taskIdentifierSelector :: Selector '[] (Id NSString)
 taskIdentifierSelector = mkSelector "taskIdentifier"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] MLTaskState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 

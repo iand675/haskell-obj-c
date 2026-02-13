@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.NetworkExtension.NEFilterPacketProvider
   , allowPacket
   , packetHandler
   , setPacketHandler
-  , delayCurrentPacketSelector
   , allowPacketSelector
+  , delayCurrentPacketSelector
   , packetHandlerSelector
   , setPacketHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,9 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- delayCurrentPacket:@
 delayCurrentPacket :: (IsNEFilterPacketProvider neFilterPacketProvider, IsNEFilterPacketContext context) => neFilterPacketProvider -> context -> IO (Id NEPacket)
-delayCurrentPacket neFilterPacketProvider  context =
-  withObjCPtr context $ \raw_context ->
-      sendMsg neFilterPacketProvider (mkSelector "delayCurrentPacket:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+delayCurrentPacket neFilterPacketProvider context =
+  sendMessage neFilterPacketProvider delayCurrentPacketSelector (toNEFilterPacketContext context)
 
 -- | allowPacket:
 --
@@ -57,9 +53,8 @@ delayCurrentPacket neFilterPacketProvider  context =
 --
 -- ObjC selector: @- allowPacket:@
 allowPacket :: (IsNEFilterPacketProvider neFilterPacketProvider, IsNEPacket packet) => neFilterPacketProvider -> packet -> IO ()
-allowPacket neFilterPacketProvider  packet =
-  withObjCPtr packet $ \raw_packet ->
-      sendMsg neFilterPacketProvider (mkSelector "allowPacket:") retVoid [argPtr (castPtr raw_packet :: Ptr ())]
+allowPacket neFilterPacketProvider packet =
+  sendMessage neFilterPacketProvider allowPacketSelector (toNEPacket packet)
 
 -- | packetHandler
 --
@@ -67,8 +62,8 @@ allowPacket neFilterPacketProvider  packet =
 --
 -- ObjC selector: @- packetHandler@
 packetHandler :: IsNEFilterPacketProvider neFilterPacketProvider => neFilterPacketProvider -> IO (Ptr ())
-packetHandler neFilterPacketProvider  =
-    fmap castPtr $ sendMsg neFilterPacketProvider (mkSelector "packetHandler") (retPtr retVoid) []
+packetHandler neFilterPacketProvider =
+  sendMessage neFilterPacketProvider packetHandlerSelector
 
 -- | packetHandler
 --
@@ -76,26 +71,26 @@ packetHandler neFilterPacketProvider  =
 --
 -- ObjC selector: @- setPacketHandler:@
 setPacketHandler :: IsNEFilterPacketProvider neFilterPacketProvider => neFilterPacketProvider -> Ptr () -> IO ()
-setPacketHandler neFilterPacketProvider  value =
-    sendMsg neFilterPacketProvider (mkSelector "setPacketHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPacketHandler neFilterPacketProvider value =
+  sendMessage neFilterPacketProvider setPacketHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delayCurrentPacket:@
-delayCurrentPacketSelector :: Selector
+delayCurrentPacketSelector :: Selector '[Id NEFilterPacketContext] (Id NEPacket)
 delayCurrentPacketSelector = mkSelector "delayCurrentPacket:"
 
 -- | @Selector@ for @allowPacket:@
-allowPacketSelector :: Selector
+allowPacketSelector :: Selector '[Id NEPacket] ()
 allowPacketSelector = mkSelector "allowPacket:"
 
 -- | @Selector@ for @packetHandler@
-packetHandlerSelector :: Selector
+packetHandlerSelector :: Selector '[] (Ptr ())
 packetHandlerSelector = mkSelector "packetHandler"
 
 -- | @Selector@ for @setPacketHandler:@
-setPacketHandlerSelector :: Selector
+setPacketHandlerSelector :: Selector '[Ptr ()] ()
 setPacketHandlerSelector = mkSelector "setPacketHandler:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.MapKit.MKLookAroundScene
   , IsMKLookAroundScene(..)
   , new
   , init_
-  , newSelector
   , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,22 +31,22 @@ new :: IO (Id MKLookAroundScene)
 new  =
   do
     cls' <- getRequiredClass "MKLookAroundScene"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMKLookAroundScene mkLookAroundScene => mkLookAroundScene -> IO (Id MKLookAroundScene)
-init_ mkLookAroundScene  =
-    sendMsg mkLookAroundScene (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mkLookAroundScene =
+  sendOwnedMessage mkLookAroundScene initSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MKLookAroundScene)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MKLookAroundScene)
 initSelector = mkSelector "init"
 

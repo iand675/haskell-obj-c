@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INSetTaskAttributeTemporalEventTriggerResolutionResult
   , IsINSetTaskAttributeTemporalEventTriggerResolutionResult(..)
   , unsupportedForReason
   , initWithTemporalEventTriggerResolutionResult
-  , unsupportedForReasonSelector
   , initWithTemporalEventTriggerResolutionResultSelector
+  , unsupportedForReasonSelector
 
   -- * Enum types
   , INSetTaskAttributeTemporalEventTriggerUnsupportedReason(INSetTaskAttributeTemporalEventTriggerUnsupportedReason)
@@ -19,15 +20,11 @@ module ObjC.Intents.INSetTaskAttributeTemporalEventTriggerResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,23 +37,22 @@ unsupportedForReason :: INSetTaskAttributeTemporalEventTriggerUnsupportedReason 
 unsupportedForReason reason =
   do
     cls' <- getRequiredClass "INSetTaskAttributeTemporalEventTriggerResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupportedForReason:") (retPtr retVoid) [argCLong (coerce reason)] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedForReasonSelector reason
 
 -- | @- initWithTemporalEventTriggerResolutionResult:@
 initWithTemporalEventTriggerResolutionResult :: (IsINSetTaskAttributeTemporalEventTriggerResolutionResult inSetTaskAttributeTemporalEventTriggerResolutionResult, IsINTemporalEventTriggerResolutionResult temporalEventTriggerResolutionResult) => inSetTaskAttributeTemporalEventTriggerResolutionResult -> temporalEventTriggerResolutionResult -> IO (Id INSetTaskAttributeTemporalEventTriggerResolutionResult)
-initWithTemporalEventTriggerResolutionResult inSetTaskAttributeTemporalEventTriggerResolutionResult  temporalEventTriggerResolutionResult =
-  withObjCPtr temporalEventTriggerResolutionResult $ \raw_temporalEventTriggerResolutionResult ->
-      sendMsg inSetTaskAttributeTemporalEventTriggerResolutionResult (mkSelector "initWithTemporalEventTriggerResolutionResult:") (retPtr retVoid) [argPtr (castPtr raw_temporalEventTriggerResolutionResult :: Ptr ())] >>= ownedObject . castPtr
+initWithTemporalEventTriggerResolutionResult inSetTaskAttributeTemporalEventTriggerResolutionResult temporalEventTriggerResolutionResult =
+  sendOwnedMessage inSetTaskAttributeTemporalEventTriggerResolutionResult initWithTemporalEventTriggerResolutionResultSelector (toINTemporalEventTriggerResolutionResult temporalEventTriggerResolutionResult)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @unsupportedForReason:@
-unsupportedForReasonSelector :: Selector
+unsupportedForReasonSelector :: Selector '[INSetTaskAttributeTemporalEventTriggerUnsupportedReason] (Id INSetTaskAttributeTemporalEventTriggerResolutionResult)
 unsupportedForReasonSelector = mkSelector "unsupportedForReason:"
 
 -- | @Selector@ for @initWithTemporalEventTriggerResolutionResult:@
-initWithTemporalEventTriggerResolutionResultSelector :: Selector
+initWithTemporalEventTriggerResolutionResultSelector :: Selector '[Id INTemporalEventTriggerResolutionResult] (Id INSetTaskAttributeTemporalEventTriggerResolutionResult)
 initWithTemporalEventTriggerResolutionResultSelector = mkSelector "initWithTemporalEventTriggerResolutionResult:"
 

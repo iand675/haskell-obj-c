@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.SceneKit.SCNPhysicsVehicle
   , speedInKilometersPerHour
   , wheels
   , chassisBody
-  , vehicleWithChassisBody_wheelsSelector
-  , applyEngineForce_forWheelAtIndexSelector
-  , setSteeringAngle_forWheelAtIndexSelector
   , applyBrakingForce_forWheelAtIndexSelector
-  , speedInKilometersPerHourSelector
-  , wheelsSelector
+  , applyEngineForce_forWheelAtIndexSelector
   , chassisBodySelector
+  , setSteeringAngle_forWheelAtIndexSelector
+  , speedInKilometersPerHourSelector
+  , vehicleWithChassisBody_wheelsSelector
+  , wheelsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,69 +45,67 @@ vehicleWithChassisBody_wheels :: (IsSCNPhysicsBody chassisBody, IsNSArray wheels
 vehicleWithChassisBody_wheels chassisBody wheels =
   do
     cls' <- getRequiredClass "SCNPhysicsVehicle"
-    withObjCPtr chassisBody $ \raw_chassisBody ->
-      withObjCPtr wheels $ \raw_wheels ->
-        sendClassMsg cls' (mkSelector "vehicleWithChassisBody:wheels:") (retPtr retVoid) [argPtr (castPtr raw_chassisBody :: Ptr ()), argPtr (castPtr raw_wheels :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' vehicleWithChassisBody_wheelsSelector (toSCNPhysicsBody chassisBody) (toNSArray wheels)
 
 -- | @- applyEngineForce:forWheelAtIndex:@
 applyEngineForce_forWheelAtIndex :: IsSCNPhysicsVehicle scnPhysicsVehicle => scnPhysicsVehicle -> CDouble -> CLong -> IO ()
-applyEngineForce_forWheelAtIndex scnPhysicsVehicle  value index =
-    sendMsg scnPhysicsVehicle (mkSelector "applyEngineForce:forWheelAtIndex:") retVoid [argCDouble value, argCLong index]
+applyEngineForce_forWheelAtIndex scnPhysicsVehicle value index =
+  sendMessage scnPhysicsVehicle applyEngineForce_forWheelAtIndexSelector value index
 
 -- | @- setSteeringAngle:forWheelAtIndex:@
 setSteeringAngle_forWheelAtIndex :: IsSCNPhysicsVehicle scnPhysicsVehicle => scnPhysicsVehicle -> CDouble -> CLong -> IO ()
-setSteeringAngle_forWheelAtIndex scnPhysicsVehicle  value index =
-    sendMsg scnPhysicsVehicle (mkSelector "setSteeringAngle:forWheelAtIndex:") retVoid [argCDouble value, argCLong index]
+setSteeringAngle_forWheelAtIndex scnPhysicsVehicle value index =
+  sendMessage scnPhysicsVehicle setSteeringAngle_forWheelAtIndexSelector value index
 
 -- | @- applyBrakingForce:forWheelAtIndex:@
 applyBrakingForce_forWheelAtIndex :: IsSCNPhysicsVehicle scnPhysicsVehicle => scnPhysicsVehicle -> CDouble -> CLong -> IO ()
-applyBrakingForce_forWheelAtIndex scnPhysicsVehicle  value index =
-    sendMsg scnPhysicsVehicle (mkSelector "applyBrakingForce:forWheelAtIndex:") retVoid [argCDouble value, argCLong index]
+applyBrakingForce_forWheelAtIndex scnPhysicsVehicle value index =
+  sendMessage scnPhysicsVehicle applyBrakingForce_forWheelAtIndexSelector value index
 
 -- | @- speedInKilometersPerHour@
 speedInKilometersPerHour :: IsSCNPhysicsVehicle scnPhysicsVehicle => scnPhysicsVehicle -> IO CDouble
-speedInKilometersPerHour scnPhysicsVehicle  =
-    sendMsg scnPhysicsVehicle (mkSelector "speedInKilometersPerHour") retCDouble []
+speedInKilometersPerHour scnPhysicsVehicle =
+  sendMessage scnPhysicsVehicle speedInKilometersPerHourSelector
 
 -- | @- wheels@
 wheels :: IsSCNPhysicsVehicle scnPhysicsVehicle => scnPhysicsVehicle -> IO (Id NSArray)
-wheels scnPhysicsVehicle  =
-    sendMsg scnPhysicsVehicle (mkSelector "wheels") (retPtr retVoid) [] >>= retainedObject . castPtr
+wheels scnPhysicsVehicle =
+  sendMessage scnPhysicsVehicle wheelsSelector
 
 -- | @- chassisBody@
 chassisBody :: IsSCNPhysicsVehicle scnPhysicsVehicle => scnPhysicsVehicle -> IO (Id SCNPhysicsBody)
-chassisBody scnPhysicsVehicle  =
-    sendMsg scnPhysicsVehicle (mkSelector "chassisBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+chassisBody scnPhysicsVehicle =
+  sendMessage scnPhysicsVehicle chassisBodySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @vehicleWithChassisBody:wheels:@
-vehicleWithChassisBody_wheelsSelector :: Selector
+vehicleWithChassisBody_wheelsSelector :: Selector '[Id SCNPhysicsBody, Id NSArray] (Id SCNPhysicsVehicle)
 vehicleWithChassisBody_wheelsSelector = mkSelector "vehicleWithChassisBody:wheels:"
 
 -- | @Selector@ for @applyEngineForce:forWheelAtIndex:@
-applyEngineForce_forWheelAtIndexSelector :: Selector
+applyEngineForce_forWheelAtIndexSelector :: Selector '[CDouble, CLong] ()
 applyEngineForce_forWheelAtIndexSelector = mkSelector "applyEngineForce:forWheelAtIndex:"
 
 -- | @Selector@ for @setSteeringAngle:forWheelAtIndex:@
-setSteeringAngle_forWheelAtIndexSelector :: Selector
+setSteeringAngle_forWheelAtIndexSelector :: Selector '[CDouble, CLong] ()
 setSteeringAngle_forWheelAtIndexSelector = mkSelector "setSteeringAngle:forWheelAtIndex:"
 
 -- | @Selector@ for @applyBrakingForce:forWheelAtIndex:@
-applyBrakingForce_forWheelAtIndexSelector :: Selector
+applyBrakingForce_forWheelAtIndexSelector :: Selector '[CDouble, CLong] ()
 applyBrakingForce_forWheelAtIndexSelector = mkSelector "applyBrakingForce:forWheelAtIndex:"
 
 -- | @Selector@ for @speedInKilometersPerHour@
-speedInKilometersPerHourSelector :: Selector
+speedInKilometersPerHourSelector :: Selector '[] CDouble
 speedInKilometersPerHourSelector = mkSelector "speedInKilometersPerHour"
 
 -- | @Selector@ for @wheels@
-wheelsSelector :: Selector
+wheelsSelector :: Selector '[] (Id NSArray)
 wheelsSelector = mkSelector "wheels"
 
 -- | @Selector@ for @chassisBody@
-chassisBodySelector :: Selector
+chassisBodySelector :: Selector '[] (Id SCNPhysicsBody)
 chassisBodySelector = mkSelector "chassisBody"
 

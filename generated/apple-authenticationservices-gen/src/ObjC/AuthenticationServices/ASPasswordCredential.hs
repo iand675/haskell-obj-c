@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AuthenticationServices.ASPasswordCredential
   , credentialWithUser_password
   , user
   , password
-  , initWithUser_passwordSelector
   , credentialWithUser_passwordSelector
-  , userSelector
+  , initWithUser_passwordSelector
   , passwordSelector
+  , userSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,10 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithUser:password:@
 initWithUser_password :: (IsASPasswordCredential asPasswordCredential, IsNSString user, IsNSString password) => asPasswordCredential -> user -> password -> IO (Id ASPasswordCredential)
-initWithUser_password asPasswordCredential  user password =
-  withObjCPtr user $ \raw_user ->
-    withObjCPtr password $ \raw_password ->
-        sendMsg asPasswordCredential (mkSelector "initWithUser:password:") (retPtr retVoid) [argPtr (castPtr raw_user :: Ptr ()), argPtr (castPtr raw_password :: Ptr ())] >>= ownedObject . castPtr
+initWithUser_password asPasswordCredential user password =
+  sendOwnedMessage asPasswordCredential initWithUser_passwordSelector (toNSString user) (toNSString password)
 
 -- | Creates and initializes a new ASPasswordCredential object.
 --
@@ -57,9 +52,7 @@ credentialWithUser_password :: (IsNSString user, IsNSString password) => user ->
 credentialWithUser_password user password =
   do
     cls' <- getRequiredClass "ASPasswordCredential"
-    withObjCPtr user $ \raw_user ->
-      withObjCPtr password $ \raw_password ->
-        sendClassMsg cls' (mkSelector "credentialWithUser:password:") (retPtr retVoid) [argPtr (castPtr raw_user :: Ptr ()), argPtr (castPtr raw_password :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' credentialWithUser_passwordSelector (toNSString user) (toNSString password)
 
 -- | The user name of this credential.
 --
@@ -67,8 +60,8 @@ credentialWithUser_password user password =
 --
 -- ObjC selector: @- user@
 user :: IsASPasswordCredential asPasswordCredential => asPasswordCredential -> IO (Id NSString)
-user asPasswordCredential  =
-    sendMsg asPasswordCredential (mkSelector "user") (retPtr retVoid) [] >>= retainedObject . castPtr
+user asPasswordCredential =
+  sendMessage asPasswordCredential userSelector
 
 -- | The password of this credential.
 --
@@ -76,26 +69,26 @@ user asPasswordCredential  =
 --
 -- ObjC selector: @- password@
 password :: IsASPasswordCredential asPasswordCredential => asPasswordCredential -> IO (Id NSString)
-password asPasswordCredential  =
-    sendMsg asPasswordCredential (mkSelector "password") (retPtr retVoid) [] >>= retainedObject . castPtr
+password asPasswordCredential =
+  sendMessage asPasswordCredential passwordSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUser:password:@
-initWithUser_passwordSelector :: Selector
+initWithUser_passwordSelector :: Selector '[Id NSString, Id NSString] (Id ASPasswordCredential)
 initWithUser_passwordSelector = mkSelector "initWithUser:password:"
 
 -- | @Selector@ for @credentialWithUser:password:@
-credentialWithUser_passwordSelector :: Selector
+credentialWithUser_passwordSelector :: Selector '[Id NSString, Id NSString] (Id ASPasswordCredential)
 credentialWithUser_passwordSelector = mkSelector "credentialWithUser:password:"
 
 -- | @Selector@ for @user@
-userSelector :: Selector
+userSelector :: Selector '[] (Id NSString)
 userSelector = mkSelector "user"
 
 -- | @Selector@ for @password@
-passwordSelector :: Selector
+passwordSelector :: Selector '[] (Id NSString)
 passwordSelector = mkSelector "password"
 

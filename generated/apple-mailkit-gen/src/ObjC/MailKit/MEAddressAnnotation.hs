@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.MailKit.MEAddressAnnotation
   , errorWithLocalizedDescription
   , warningWithLocalizedDescription
   , successWithLocalizedDescription
+  , errorWithLocalizedDescriptionSelector
   , initSelector
   , newSelector
-  , errorWithLocalizedDescriptionSelector
-  , warningWithLocalizedDescriptionSelector
   , successWithLocalizedDescriptionSelector
+  , warningWithLocalizedDescriptionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMEAddressAnnotation meAddressAnnotation => meAddressAnnotation -> IO (Id MEAddressAnnotation)
-init_ meAddressAnnotation  =
-    sendMsg meAddressAnnotation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meAddressAnnotation =
+  sendOwnedMessage meAddressAnnotation initSelector
 
 -- | @+ new@
 new :: IO (Id MEAddressAnnotation)
 new  =
   do
     cls' <- getRequiredClass "MEAddressAnnotation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | An annotation to denote a recipeint email address has an error when composing a mail message.
 --
@@ -58,8 +55,7 @@ errorWithLocalizedDescription :: IsNSString localizedDescription => localizedDes
 errorWithLocalizedDescription localizedDescription =
   do
     cls' <- getRequiredClass "MEAddressAnnotation"
-    withObjCPtr localizedDescription $ \raw_localizedDescription ->
-      sendClassMsg cls' (mkSelector "errorWithLocalizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' errorWithLocalizedDescriptionSelector (toNSString localizedDescription)
 
 -- | An annotation to warn about a recipeint email address when composing a mail message.
 --
@@ -70,8 +66,7 @@ warningWithLocalizedDescription :: IsNSString localizedDescription => localizedD
 warningWithLocalizedDescription localizedDescription =
   do
     cls' <- getRequiredClass "MEAddressAnnotation"
-    withObjCPtr localizedDescription $ \raw_localizedDescription ->
-      sendClassMsg cls' (mkSelector "warningWithLocalizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' warningWithLocalizedDescriptionSelector (toNSString localizedDescription)
 
 -- | An annotation to  denote a valid recipeint email address when composing a mail message.
 --
@@ -82,30 +77,29 @@ successWithLocalizedDescription :: IsNSString localizedDescription => localizedD
 successWithLocalizedDescription localizedDescription =
   do
     cls' <- getRequiredClass "MEAddressAnnotation"
-    withObjCPtr localizedDescription $ \raw_localizedDescription ->
-      sendClassMsg cls' (mkSelector "successWithLocalizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithLocalizedDescriptionSelector (toNSString localizedDescription)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEAddressAnnotation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEAddressAnnotation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @errorWithLocalizedDescription:@
-errorWithLocalizedDescriptionSelector :: Selector
+errorWithLocalizedDescriptionSelector :: Selector '[Id NSString] (Id MEAddressAnnotation)
 errorWithLocalizedDescriptionSelector = mkSelector "errorWithLocalizedDescription:"
 
 -- | @Selector@ for @warningWithLocalizedDescription:@
-warningWithLocalizedDescriptionSelector :: Selector
+warningWithLocalizedDescriptionSelector :: Selector '[Id NSString] (Id MEAddressAnnotation)
 warningWithLocalizedDescriptionSelector = mkSelector "warningWithLocalizedDescription:"
 
 -- | @Selector@ for @successWithLocalizedDescription:@
-successWithLocalizedDescriptionSelector :: Selector
+successWithLocalizedDescriptionSelector :: Selector '[Id NSString] (Id MEAddressAnnotation)
 successWithLocalizedDescriptionSelector = mkSelector "successWithLocalizedDescription:"
 

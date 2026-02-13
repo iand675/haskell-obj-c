@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,19 +12,16 @@ module ObjC.Foundation.NSAutoreleasePool
   , drain
   , addObjectSelector
   , drainSelector
+  , nsAutoreleasePoolAddObjectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,27 +32,31 @@ nsAutoreleasePoolAddObject :: RawId -> IO ()
 nsAutoreleasePoolAddObject anObject =
   do
     cls' <- getRequiredClass "NSAutoreleasePool"
-    sendClassMsg cls' (mkSelector "addObject:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+    sendClassMessage cls' nsAutoreleasePoolAddObjectSelector anObject
 
 -- | @- addObject:@
 addObject :: IsNSAutoreleasePool nsAutoreleasePool => nsAutoreleasePool -> RawId -> IO ()
-addObject nsAutoreleasePool  anObject =
-    sendMsg nsAutoreleasePool (mkSelector "addObject:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+addObject nsAutoreleasePool anObject =
+  sendMessage nsAutoreleasePool addObjectSelector anObject
 
 -- | @- drain@
 drain :: IsNSAutoreleasePool nsAutoreleasePool => nsAutoreleasePool -> IO ()
-drain nsAutoreleasePool  =
-    sendMsg nsAutoreleasePool (mkSelector "drain") retVoid []
+drain nsAutoreleasePool =
+  sendMessage nsAutoreleasePool drainSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addObject:@
-addObjectSelector :: Selector
+nsAutoreleasePoolAddObjectSelector :: Selector '[RawId] ()
+nsAutoreleasePoolAddObjectSelector = mkSelector "addObject:"
+
+-- | @Selector@ for @addObject:@
+addObjectSelector :: Selector '[RawId] ()
 addObjectSelector = mkSelector "addObject:"
 
 -- | @Selector@ for @drain@
-drainSelector :: Selector
+drainSelector :: Selector '[] ()
 drainSelector = mkSelector "drain"
 

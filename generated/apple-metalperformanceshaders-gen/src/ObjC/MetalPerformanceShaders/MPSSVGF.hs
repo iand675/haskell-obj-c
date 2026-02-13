@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -67,46 +68,46 @@ module ObjC.MetalPerformanceShaders.MPSSVGF
   , setChannelCount
   , channelCount2
   , setChannelCount2
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
+  , bilateralFilterRadiusSelector
+  , bilateralFilterSigmaSelector
+  , channelCount2Selector
+  , channelCountSelector
   , copyWithZone_deviceSelector
-  , encodeWithCoderSelector
+  , depthWeightSelector
+  , encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_depthNormalTextureSelector
+  , encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_depthNormalTextureSelector
   , encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector
   , encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_sourceTexture2_previousTexture2_destinationTexture2_previousLuminanceMomentsTexture2_destinationLuminanceMomentsTexture2_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector
   , encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_frameCountTexture_depthNormalTextureSelector
   , encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_sourceTexture2_luminanceMomentsTexture2_destinationTexture2_frameCountTexture_depthNormalTextureSelector
-  , encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_depthNormalTextureSelector
-  , encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_depthNormalTextureSelector
-  , depthWeightSelector
-  , setDepthWeightSelector
-  , normalWeightSelector
-  , setNormalWeightSelector
+  , encodeWithCoderSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , luminanceWeightSelector
-  , setLuminanceWeightSelector
-  , temporalWeightingSelector
-  , setTemporalWeightingSelector
-  , temporalReprojectionBlendFactorSelector
-  , setTemporalReprojectionBlendFactorSelector
-  , reprojectionThresholdSelector
-  , setReprojectionThresholdSelector
   , minimumFramesForVarianceEstimationSelector
-  , setMinimumFramesForVarianceEstimationSelector
-  , varianceEstimationRadiusSelector
-  , setVarianceEstimationRadiusSelector
-  , varianceEstimationSigmaSelector
-  , setVarianceEstimationSigmaSelector
-  , variancePrefilterSigmaSelector
-  , setVariancePrefilterSigmaSelector
-  , variancePrefilterRadiusSelector
-  , setVariancePrefilterRadiusSelector
-  , bilateralFilterSigmaSelector
-  , setBilateralFilterSigmaSelector
-  , bilateralFilterRadiusSelector
+  , normalWeightSelector
+  , reprojectionThresholdSelector
   , setBilateralFilterRadiusSelector
-  , channelCountSelector
-  , setChannelCountSelector
-  , channelCount2Selector
+  , setBilateralFilterSigmaSelector
   , setChannelCount2Selector
+  , setChannelCountSelector
+  , setDepthWeightSelector
+  , setLuminanceWeightSelector
+  , setMinimumFramesForVarianceEstimationSelector
+  , setNormalWeightSelector
+  , setReprojectionThresholdSelector
+  , setTemporalReprojectionBlendFactorSelector
+  , setTemporalWeightingSelector
+  , setVarianceEstimationRadiusSelector
+  , setVarianceEstimationSigmaSelector
+  , setVariancePrefilterRadiusSelector
+  , setVariancePrefilterSigmaSelector
+  , temporalReprojectionBlendFactorSelector
+  , temporalWeightingSelector
+  , varianceEstimationRadiusSelector
+  , varianceEstimationSigmaSelector
+  , variancePrefilterRadiusSelector
+  , variancePrefilterSigmaSelector
 
   -- * Enum types
   , MPSTemporalWeighting(MPSTemporalWeighting)
@@ -115,15 +116,11 @@ module ObjC.MetalPerformanceShaders.MPSSVGF
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -133,25 +130,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSSVGF mpssvgf => mpssvgf -> RawId -> IO (Id MPSSVGF)
-initWithDevice mpssvgf  device =
-    sendMsg mpssvgf (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpssvgf device =
+  sendOwnedMessage mpssvgf initWithDeviceSelector device
 
 -- | @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSSVGF mpssvgf, IsNSCoder aDecoder) => mpssvgf -> aDecoder -> RawId -> IO (Id MPSSVGF)
-initWithCoder_device mpssvgf  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpssvgf (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpssvgf aDecoder device =
+  sendOwnedMessage mpssvgf initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- copyWithZone:device:@
 copyWithZone_device :: IsMPSSVGF mpssvgf => mpssvgf -> Ptr () -> RawId -> IO (Id MPSSVGF)
-copyWithZone_device mpssvgf  zone device =
-    sendMsg mpssvgf (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpssvgf zone device =
+  sendOwnedMessage mpssvgf copyWithZone_deviceSelector zone device
 
 -- | @- encodeWithCoder:@
 encodeWithCoder :: (IsMPSSVGF mpssvgf, IsNSCoder coder) => mpssvgf -> coder -> IO ()
-encodeWithCoder mpssvgf  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg mpssvgf (mkSelector "encodeWithCoder:") retVoid [argPtr (castPtr raw_coder :: Ptr ())]
+encodeWithCoder mpssvgf coder =
+  sendMessage mpssvgf encodeWithCoderSelector (toNSCoder coder)
 
 -- | Encode reprojection into a command buffer
 --
@@ -195,8 +190,8 @@ encodeWithCoder mpssvgf  coder =
 --
 -- ObjC selector: @- encodeReprojectionToCommandBuffer:sourceTexture:previousTexture:destinationTexture:previousLuminanceMomentsTexture:destinationLuminanceMomentsTexture:previousFrameCountTexture:destinationFrameCountTexture:motionVectorTexture:depthNormalTexture:previousDepthNormalTexture:@
 encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTexture :: IsMPSSVGF mpssvgf => mpssvgf -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTexture mpssvgf  commandBuffer sourceTexture previousTexture destinationTexture previousLuminanceMomentsTexture destinationLuminanceMomentsTexture previousFrameCountTexture destinationFrameCountTexture motionVectorTexture depthNormalTexture previousDepthNormalTexture =
-    sendMsg mpssvgf (mkSelector "encodeReprojectionToCommandBuffer:sourceTexture:previousTexture:destinationTexture:previousLuminanceMomentsTexture:destinationLuminanceMomentsTexture:previousFrameCountTexture:destinationFrameCountTexture:motionVectorTexture:depthNormalTexture:previousDepthNormalTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId previousTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ()), argPtr (castPtr (unRawId previousLuminanceMomentsTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationLuminanceMomentsTexture) :: Ptr ()), argPtr (castPtr (unRawId previousFrameCountTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationFrameCountTexture) :: Ptr ()), argPtr (castPtr (unRawId motionVectorTexture) :: Ptr ()), argPtr (castPtr (unRawId depthNormalTexture) :: Ptr ()), argPtr (castPtr (unRawId previousDepthNormalTexture) :: Ptr ())]
+encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTexture mpssvgf commandBuffer sourceTexture previousTexture destinationTexture previousLuminanceMomentsTexture destinationLuminanceMomentsTexture previousFrameCountTexture destinationFrameCountTexture motionVectorTexture depthNormalTexture previousDepthNormalTexture =
+  sendMessage mpssvgf encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector commandBuffer sourceTexture previousTexture destinationTexture previousLuminanceMomentsTexture destinationLuminanceMomentsTexture previousFrameCountTexture destinationFrameCountTexture motionVectorTexture depthNormalTexture previousDepthNormalTexture
 
 -- | Encode reprojection into a command buffer
 --
@@ -250,8 +245,8 @@ encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTextu
 --
 -- ObjC selector: @- encodeReprojectionToCommandBuffer:sourceTexture:previousTexture:destinationTexture:previousLuminanceMomentsTexture:destinationLuminanceMomentsTexture:sourceTexture2:previousTexture2:destinationTexture2:previousLuminanceMomentsTexture2:destinationLuminanceMomentsTexture2:previousFrameCountTexture:destinationFrameCountTexture:motionVectorTexture:depthNormalTexture:previousDepthNormalTexture:@
 encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_sourceTexture2_previousTexture2_destinationTexture2_previousLuminanceMomentsTexture2_destinationLuminanceMomentsTexture2_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTexture :: IsMPSSVGF mpssvgf => mpssvgf -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_sourceTexture2_previousTexture2_destinationTexture2_previousLuminanceMomentsTexture2_destinationLuminanceMomentsTexture2_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTexture mpssvgf  commandBuffer sourceTexture previousTexture destinationTexture previousLuminanceMomentsTexture destinationLuminanceMomentsTexture sourceTexture2 previousTexture2 destinationTexture2 previousLuminanceMomentsTexture2 destinationLuminanceMomentsTexture2 previousFrameCountTexture destinationFrameCountTexture motionVectorTexture depthNormalTexture previousDepthNormalTexture =
-    sendMsg mpssvgf (mkSelector "encodeReprojectionToCommandBuffer:sourceTexture:previousTexture:destinationTexture:previousLuminanceMomentsTexture:destinationLuminanceMomentsTexture:sourceTexture2:previousTexture2:destinationTexture2:previousLuminanceMomentsTexture2:destinationLuminanceMomentsTexture2:previousFrameCountTexture:destinationFrameCountTexture:motionVectorTexture:depthNormalTexture:previousDepthNormalTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId previousTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ()), argPtr (castPtr (unRawId previousLuminanceMomentsTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationLuminanceMomentsTexture) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture2) :: Ptr ()), argPtr (castPtr (unRawId previousTexture2) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture2) :: Ptr ()), argPtr (castPtr (unRawId previousLuminanceMomentsTexture2) :: Ptr ()), argPtr (castPtr (unRawId destinationLuminanceMomentsTexture2) :: Ptr ()), argPtr (castPtr (unRawId previousFrameCountTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationFrameCountTexture) :: Ptr ()), argPtr (castPtr (unRawId motionVectorTexture) :: Ptr ()), argPtr (castPtr (unRawId depthNormalTexture) :: Ptr ()), argPtr (castPtr (unRawId previousDepthNormalTexture) :: Ptr ())]
+encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_sourceTexture2_previousTexture2_destinationTexture2_previousLuminanceMomentsTexture2_destinationLuminanceMomentsTexture2_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTexture mpssvgf commandBuffer sourceTexture previousTexture destinationTexture previousLuminanceMomentsTexture destinationLuminanceMomentsTexture sourceTexture2 previousTexture2 destinationTexture2 previousLuminanceMomentsTexture2 destinationLuminanceMomentsTexture2 previousFrameCountTexture destinationFrameCountTexture motionVectorTexture depthNormalTexture previousDepthNormalTexture =
+  sendMessage mpssvgf encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_sourceTexture2_previousTexture2_destinationTexture2_previousLuminanceMomentsTexture2_destinationLuminanceMomentsTexture2_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector commandBuffer sourceTexture previousTexture destinationTexture previousLuminanceMomentsTexture destinationLuminanceMomentsTexture sourceTexture2 previousTexture2 destinationTexture2 previousLuminanceMomentsTexture2 destinationLuminanceMomentsTexture2 previousFrameCountTexture destinationFrameCountTexture motionVectorTexture depthNormalTexture previousDepthNormalTexture
 
 -- | Encode variance estimation into a command buffer
 --
@@ -279,8 +274,8 @@ encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTextu
 --
 -- ObjC selector: @- encodeVarianceEstimationToCommandBuffer:sourceTexture:luminanceMomentsTexture:destinationTexture:frameCountTexture:depthNormalTexture:@
 encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_frameCountTexture_depthNormalTexture :: IsMPSSVGF mpssvgf => mpssvgf -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_frameCountTexture_depthNormalTexture mpssvgf  commandBuffer sourceTexture luminanceMomentsTexture destinationTexture frameCountTexture depthNormalTexture =
-    sendMsg mpssvgf (mkSelector "encodeVarianceEstimationToCommandBuffer:sourceTexture:luminanceMomentsTexture:destinationTexture:frameCountTexture:depthNormalTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId luminanceMomentsTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ()), argPtr (castPtr (unRawId frameCountTexture) :: Ptr ()), argPtr (castPtr (unRawId depthNormalTexture) :: Ptr ())]
+encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_frameCountTexture_depthNormalTexture mpssvgf commandBuffer sourceTexture luminanceMomentsTexture destinationTexture frameCountTexture depthNormalTexture =
+  sendMessage mpssvgf encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_frameCountTexture_depthNormalTextureSelector commandBuffer sourceTexture luminanceMomentsTexture destinationTexture frameCountTexture depthNormalTexture
 
 -- | Encode variance estimation into a command buffer
 --
@@ -314,8 +309,8 @@ encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_de
 --
 -- ObjC selector: @- encodeVarianceEstimationToCommandBuffer:sourceTexture:luminanceMomentsTexture:destinationTexture:sourceTexture2:luminanceMomentsTexture2:destinationTexture2:frameCountTexture:depthNormalTexture:@
 encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_sourceTexture2_luminanceMomentsTexture2_destinationTexture2_frameCountTexture_depthNormalTexture :: IsMPSSVGF mpssvgf => mpssvgf -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_sourceTexture2_luminanceMomentsTexture2_destinationTexture2_frameCountTexture_depthNormalTexture mpssvgf  commandBuffer sourceTexture luminanceMomentsTexture destinationTexture sourceTexture2 luminanceMomentsTexture2 destinationTexture2 frameCountTexture depthNormalTexture =
-    sendMsg mpssvgf (mkSelector "encodeVarianceEstimationToCommandBuffer:sourceTexture:luminanceMomentsTexture:destinationTexture:sourceTexture2:luminanceMomentsTexture2:destinationTexture2:frameCountTexture:depthNormalTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId luminanceMomentsTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture2) :: Ptr ()), argPtr (castPtr (unRawId luminanceMomentsTexture2) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture2) :: Ptr ()), argPtr (castPtr (unRawId frameCountTexture) :: Ptr ()), argPtr (castPtr (unRawId depthNormalTexture) :: Ptr ())]
+encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_sourceTexture2_luminanceMomentsTexture2_destinationTexture2_frameCountTexture_depthNormalTexture mpssvgf commandBuffer sourceTexture luminanceMomentsTexture destinationTexture sourceTexture2 luminanceMomentsTexture2 destinationTexture2 frameCountTexture depthNormalTexture =
+  sendMessage mpssvgf encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_sourceTexture2_luminanceMomentsTexture2_destinationTexture2_frameCountTexture_depthNormalTextureSelector commandBuffer sourceTexture luminanceMomentsTexture destinationTexture sourceTexture2 luminanceMomentsTexture2 destinationTexture2 frameCountTexture depthNormalTexture
 
 -- | Encode bilateral filter into a command buffer
 --
@@ -343,8 +338,8 @@ encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_de
 --
 -- ObjC selector: @- encodeBilateralFilterToCommandBuffer:stepDistance:sourceTexture:destinationTexture:depthNormalTexture:@
 encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_depthNormalTexture :: IsMPSSVGF mpssvgf => mpssvgf -> RawId -> CULong -> RawId -> RawId -> RawId -> IO ()
-encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_depthNormalTexture mpssvgf  commandBuffer stepDistance sourceTexture destinationTexture depthNormalTexture =
-    sendMsg mpssvgf (mkSelector "encodeBilateralFilterToCommandBuffer:stepDistance:sourceTexture:destinationTexture:depthNormalTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong stepDistance, argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ()), argPtr (castPtr (unRawId depthNormalTexture) :: Ptr ())]
+encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_depthNormalTexture mpssvgf commandBuffer stepDistance sourceTexture destinationTexture depthNormalTexture =
+  sendMessage mpssvgf encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_depthNormalTextureSelector commandBuffer stepDistance sourceTexture destinationTexture depthNormalTexture
 
 -- | Encode bilateral filter into a command buffer
 --
@@ -376,380 +371,380 @@ encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTextu
 --
 -- ObjC selector: @- encodeBilateralFilterToCommandBuffer:stepDistance:sourceTexture:destinationTexture:sourceTexture2:destinationTexture2:depthNormalTexture:@
 encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_depthNormalTexture :: IsMPSSVGF mpssvgf => mpssvgf -> RawId -> CULong -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_depthNormalTexture mpssvgf  commandBuffer stepDistance sourceTexture destinationTexture sourceTexture2 destinationTexture2 depthNormalTexture =
-    sendMsg mpssvgf (mkSelector "encodeBilateralFilterToCommandBuffer:stepDistance:sourceTexture:destinationTexture:sourceTexture2:destinationTexture2:depthNormalTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argCULong stepDistance, argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture2) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture2) :: Ptr ()), argPtr (castPtr (unRawId depthNormalTexture) :: Ptr ())]
+encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_depthNormalTexture mpssvgf commandBuffer stepDistance sourceTexture destinationTexture sourceTexture2 destinationTexture2 depthNormalTexture =
+  sendMessage mpssvgf encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_depthNormalTextureSelector commandBuffer stepDistance sourceTexture destinationTexture sourceTexture2 destinationTexture2 depthNormalTexture
 
 -- | Controls how samples' depths are compared during reprojection, variance estimation, and bilateral filtering. The final weight is given by exp(-abs(Z1 - Z2) / depthWeight). Must be greater than zero. Defaults to 1.0.
 --
 -- ObjC selector: @- depthWeight@
 depthWeight :: IsMPSSVGF mpssvgf => mpssvgf -> IO CFloat
-depthWeight mpssvgf  =
-    sendMsg mpssvgf (mkSelector "depthWeight") retCFloat []
+depthWeight mpssvgf =
+  sendMessage mpssvgf depthWeightSelector
 
 -- | Controls how samples' depths are compared during reprojection, variance estimation, and bilateral filtering. The final weight is given by exp(-abs(Z1 - Z2) / depthWeight). Must be greater than zero. Defaults to 1.0.
 --
 -- ObjC selector: @- setDepthWeight:@
 setDepthWeight :: IsMPSSVGF mpssvgf => mpssvgf -> CFloat -> IO ()
-setDepthWeight mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setDepthWeight:") retVoid [argCFloat value]
+setDepthWeight mpssvgf value =
+  sendMessage mpssvgf setDepthWeightSelector value
 
 -- | Controls how samples' normals are compared during reprojection, variance estimation, and bilateral filtering. The final weight is given by pow(max(dot(N1, N2)), normalWeight). Must be greater than or equal to zero. Defaults to 128.
 --
 -- ObjC selector: @- normalWeight@
 normalWeight :: IsMPSSVGF mpssvgf => mpssvgf -> IO CFloat
-normalWeight mpssvgf  =
-    sendMsg mpssvgf (mkSelector "normalWeight") retCFloat []
+normalWeight mpssvgf =
+  sendMessage mpssvgf normalWeightSelector
 
 -- | Controls how samples' normals are compared during reprojection, variance estimation, and bilateral filtering. The final weight is given by pow(max(dot(N1, N2)), normalWeight). Must be greater than or equal to zero. Defaults to 128.
 --
 -- ObjC selector: @- setNormalWeight:@
 setNormalWeight :: IsMPSSVGF mpssvgf => mpssvgf -> CFloat -> IO ()
-setNormalWeight mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setNormalWeight:") retVoid [argCFloat value]
+setNormalWeight mpssvgf value =
+  sendMessage mpssvgf setNormalWeightSelector value
 
 -- | Controls how samples' luminance values are compared during bilateral filtering. The final weight is given by exp(-abs(L1 - L2) / (luminanceWeight * luminanceVariance + EPSILON)). Must be greater than or equal to zero. Defaults to 4.
 --
 -- ObjC selector: @- luminanceWeight@
 luminanceWeight :: IsMPSSVGF mpssvgf => mpssvgf -> IO CFloat
-luminanceWeight mpssvgf  =
-    sendMsg mpssvgf (mkSelector "luminanceWeight") retCFloat []
+luminanceWeight mpssvgf =
+  sendMessage mpssvgf luminanceWeightSelector
 
 -- | Controls how samples' luminance values are compared during bilateral filtering. The final weight is given by exp(-abs(L1 - L2) / (luminanceWeight * luminanceVariance + EPSILON)). Must be greater than or equal to zero. Defaults to 4.
 --
 -- ObjC selector: @- setLuminanceWeight:@
 setLuminanceWeight :: IsMPSSVGF mpssvgf => mpssvgf -> CFloat -> IO ()
-setLuminanceWeight mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setLuminanceWeight:") retVoid [argCFloat value]
+setLuminanceWeight mpssvgf value =
+  sendMessage mpssvgf setLuminanceWeightSelector value
 
 -- | How to weight samples during temporal reprojection. Defaults to MPSTemporalWeightingAverage.
 --
 -- ObjC selector: @- temporalWeighting@
 temporalWeighting :: IsMPSSVGF mpssvgf => mpssvgf -> IO MPSTemporalWeighting
-temporalWeighting mpssvgf  =
-    fmap (coerce :: CULong -> MPSTemporalWeighting) $ sendMsg mpssvgf (mkSelector "temporalWeighting") retCULong []
+temporalWeighting mpssvgf =
+  sendMessage mpssvgf temporalWeightingSelector
 
 -- | How to weight samples during temporal reprojection. Defaults to MPSTemporalWeightingAverage.
 --
 -- ObjC selector: @- setTemporalWeighting:@
 setTemporalWeighting :: IsMPSSVGF mpssvgf => mpssvgf -> MPSTemporalWeighting -> IO ()
-setTemporalWeighting mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setTemporalWeighting:") retVoid [argCULong (coerce value)]
+setTemporalWeighting mpssvgf value =
+  sendMessage mpssvgf setTemporalWeightingSelector value
 
 -- | When using MPSTemporalWeightingExponentialMovingAverage, how much to blend the current frame with the previous frame during reprojection. The final value is given by current * temporalReprojectionBlendFactor + previous * (1 - temporalReprojectionBlendFactor). Must be between zero and one, inclusive. Defaults to 0.2.
 --
 -- ObjC selector: @- temporalReprojectionBlendFactor@
 temporalReprojectionBlendFactor :: IsMPSSVGF mpssvgf => mpssvgf -> IO CFloat
-temporalReprojectionBlendFactor mpssvgf  =
-    sendMsg mpssvgf (mkSelector "temporalReprojectionBlendFactor") retCFloat []
+temporalReprojectionBlendFactor mpssvgf =
+  sendMessage mpssvgf temporalReprojectionBlendFactorSelector
 
 -- | When using MPSTemporalWeightingExponentialMovingAverage, how much to blend the current frame with the previous frame during reprojection. The final value is given by current * temporalReprojectionBlendFactor + previous * (1 - temporalReprojectionBlendFactor). Must be between zero and one, inclusive. Defaults to 0.2.
 --
 -- ObjC selector: @- setTemporalReprojectionBlendFactor:@
 setTemporalReprojectionBlendFactor :: IsMPSSVGF mpssvgf => mpssvgf -> CFloat -> IO ()
-setTemporalReprojectionBlendFactor mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setTemporalReprojectionBlendFactor:") retVoid [argCFloat value]
+setTemporalReprojectionBlendFactor mpssvgf value =
+  sendMessage mpssvgf setTemporalReprojectionBlendFactorSelector value
 
 -- | During reprojection, minimum combined depth and normal weight needed to consider a pixel from the previous frame consistent with a pixel from the current frame. Must be greater than or equal to zero. Defaults to 0.01.
 --
 -- ObjC selector: @- reprojectionThreshold@
 reprojectionThreshold :: IsMPSSVGF mpssvgf => mpssvgf -> IO CFloat
-reprojectionThreshold mpssvgf  =
-    sendMsg mpssvgf (mkSelector "reprojectionThreshold") retCFloat []
+reprojectionThreshold mpssvgf =
+  sendMessage mpssvgf reprojectionThresholdSelector
 
 -- | During reprojection, minimum combined depth and normal weight needed to consider a pixel from the previous frame consistent with a pixel from the current frame. Must be greater than or equal to zero. Defaults to 0.01.
 --
 -- ObjC selector: @- setReprojectionThreshold:@
 setReprojectionThreshold :: IsMPSSVGF mpssvgf => mpssvgf -> CFloat -> IO ()
-setReprojectionThreshold mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setReprojectionThreshold:") retVoid [argCFloat value]
+setReprojectionThreshold mpssvgf value =
+  sendMessage mpssvgf setReprojectionThresholdSelector value
 
 -- | The minimum number of frames which must be accumulated before variance can be computed directly from the accumulated luminance moments. If enough frames have not been accumulated, variance will be estimated with a spatial filter instead. Defaults to 4.
 --
 -- ObjC selector: @- minimumFramesForVarianceEstimation@
 minimumFramesForVarianceEstimation :: IsMPSSVGF mpssvgf => mpssvgf -> IO CULong
-minimumFramesForVarianceEstimation mpssvgf  =
-    sendMsg mpssvgf (mkSelector "minimumFramesForVarianceEstimation") retCULong []
+minimumFramesForVarianceEstimation mpssvgf =
+  sendMessage mpssvgf minimumFramesForVarianceEstimationSelector
 
 -- | The minimum number of frames which must be accumulated before variance can be computed directly from the accumulated luminance moments. If enough frames have not been accumulated, variance will be estimated with a spatial filter instead. Defaults to 4.
 --
 -- ObjC selector: @- setMinimumFramesForVarianceEstimation:@
 setMinimumFramesForVarianceEstimation :: IsMPSSVGF mpssvgf => mpssvgf -> CULong -> IO ()
-setMinimumFramesForVarianceEstimation mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setMinimumFramesForVarianceEstimation:") retVoid [argCULong value]
+setMinimumFramesForVarianceEstimation mpssvgf value =
+  sendMessage mpssvgf setMinimumFramesForVarianceEstimationSelector value
 
 -- | The radius of the spatial filter used when not enough frames have been accumulated to compute variance from accumulated luminance moments. Defaults to 3 resulting in a 7x7 filter.
 --
 -- ObjC selector: @- varianceEstimationRadius@
 varianceEstimationRadius :: IsMPSSVGF mpssvgf => mpssvgf -> IO CULong
-varianceEstimationRadius mpssvgf  =
-    sendMsg mpssvgf (mkSelector "varianceEstimationRadius") retCULong []
+varianceEstimationRadius mpssvgf =
+  sendMessage mpssvgf varianceEstimationRadiusSelector
 
 -- | The radius of the spatial filter used when not enough frames have been accumulated to compute variance from accumulated luminance moments. Defaults to 3 resulting in a 7x7 filter.
 --
 -- ObjC selector: @- setVarianceEstimationRadius:@
 setVarianceEstimationRadius :: IsMPSSVGF mpssvgf => mpssvgf -> CULong -> IO ()
-setVarianceEstimationRadius mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setVarianceEstimationRadius:") retVoid [argCULong value]
+setVarianceEstimationRadius mpssvgf value =
+  sendMessage mpssvgf setVarianceEstimationRadiusSelector value
 
 -- | The sigma value of the Gaussian function used by the spatial filter used when not enough frames have been accumulated to compute variance from accumulated luminance moments. Must be greater than zero. Defaults to 2.0.
 --
 -- ObjC selector: @- varianceEstimationSigma@
 varianceEstimationSigma :: IsMPSSVGF mpssvgf => mpssvgf -> IO CFloat
-varianceEstimationSigma mpssvgf  =
-    sendMsg mpssvgf (mkSelector "varianceEstimationSigma") retCFloat []
+varianceEstimationSigma mpssvgf =
+  sendMessage mpssvgf varianceEstimationSigmaSelector
 
 -- | The sigma value of the Gaussian function used by the spatial filter used when not enough frames have been accumulated to compute variance from accumulated luminance moments. Must be greater than zero. Defaults to 2.0.
 --
 -- ObjC selector: @- setVarianceEstimationSigma:@
 setVarianceEstimationSigma :: IsMPSSVGF mpssvgf => mpssvgf -> CFloat -> IO ()
-setVarianceEstimationSigma mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setVarianceEstimationSigma:") retVoid [argCFloat value]
+setVarianceEstimationSigma mpssvgf value =
+  sendMessage mpssvgf setVarianceEstimationSigmaSelector value
 
 -- | The sigma value of the Gaussian function used by the variance pre-filter of the bilateral filter. Must be greater than zero. Defaults to 1.33.
 --
 -- ObjC selector: @- variancePrefilterSigma@
 variancePrefilterSigma :: IsMPSSVGF mpssvgf => mpssvgf -> IO CFloat
-variancePrefilterSigma mpssvgf  =
-    sendMsg mpssvgf (mkSelector "variancePrefilterSigma") retCFloat []
+variancePrefilterSigma mpssvgf =
+  sendMessage mpssvgf variancePrefilterSigmaSelector
 
 -- | The sigma value of the Gaussian function used by the variance pre-filter of the bilateral filter. Must be greater than zero. Defaults to 1.33.
 --
 -- ObjC selector: @- setVariancePrefilterSigma:@
 setVariancePrefilterSigma :: IsMPSSVGF mpssvgf => mpssvgf -> CFloat -> IO ()
-setVariancePrefilterSigma mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setVariancePrefilterSigma:") retVoid [argCFloat value]
+setVariancePrefilterSigma mpssvgf value =
+  sendMessage mpssvgf setVariancePrefilterSigmaSelector value
 
 -- | The radius of the variance pre-filter of the bilateral filter. Defaults to 1 resulting in a 3x3 filter.
 --
 -- ObjC selector: @- variancePrefilterRadius@
 variancePrefilterRadius :: IsMPSSVGF mpssvgf => mpssvgf -> IO CULong
-variancePrefilterRadius mpssvgf  =
-    sendMsg mpssvgf (mkSelector "variancePrefilterRadius") retCULong []
+variancePrefilterRadius mpssvgf =
+  sendMessage mpssvgf variancePrefilterRadiusSelector
 
 -- | The radius of the variance pre-filter of the bilateral filter. Defaults to 1 resulting in a 3x3 filter.
 --
 -- ObjC selector: @- setVariancePrefilterRadius:@
 setVariancePrefilterRadius :: IsMPSSVGF mpssvgf => mpssvgf -> CULong -> IO ()
-setVariancePrefilterRadius mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setVariancePrefilterRadius:") retVoid [argCULong value]
+setVariancePrefilterRadius mpssvgf value =
+  sendMessage mpssvgf setVariancePrefilterRadiusSelector value
 
 -- | The sigma value of the Gaussian function used by the bilateral filter. Must be greater than zero. Defaults to 1.2.
 --
 -- ObjC selector: @- bilateralFilterSigma@
 bilateralFilterSigma :: IsMPSSVGF mpssvgf => mpssvgf -> IO CFloat
-bilateralFilterSigma mpssvgf  =
-    sendMsg mpssvgf (mkSelector "bilateralFilterSigma") retCFloat []
+bilateralFilterSigma mpssvgf =
+  sendMessage mpssvgf bilateralFilterSigmaSelector
 
 -- | The sigma value of the Gaussian function used by the bilateral filter. Must be greater than zero. Defaults to 1.2.
 --
 -- ObjC selector: @- setBilateralFilterSigma:@
 setBilateralFilterSigma :: IsMPSSVGF mpssvgf => mpssvgf -> CFloat -> IO ()
-setBilateralFilterSigma mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setBilateralFilterSigma:") retVoid [argCFloat value]
+setBilateralFilterSigma mpssvgf value =
+  sendMessage mpssvgf setBilateralFilterSigmaSelector value
 
 -- | The radius of the bilateral filter. Defaults to 2 resulting in a 5x5 filter.
 --
 -- ObjC selector: @- bilateralFilterRadius@
 bilateralFilterRadius :: IsMPSSVGF mpssvgf => mpssvgf -> IO CULong
-bilateralFilterRadius mpssvgf  =
-    sendMsg mpssvgf (mkSelector "bilateralFilterRadius") retCULong []
+bilateralFilterRadius mpssvgf =
+  sendMessage mpssvgf bilateralFilterRadiusSelector
 
 -- | The radius of the bilateral filter. Defaults to 2 resulting in a 5x5 filter.
 --
 -- ObjC selector: @- setBilateralFilterRadius:@
 setBilateralFilterRadius :: IsMPSSVGF mpssvgf => mpssvgf -> CULong -> IO ()
-setBilateralFilterRadius mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setBilateralFilterRadius:") retVoid [argCULong value]
+setBilateralFilterRadius mpssvgf value =
+  sendMessage mpssvgf setBilateralFilterRadiusSelector value
 
 -- | The number of channels to filter in the source image. Must be at least one and at most three. Defaults to 3.
 --
 -- ObjC selector: @- channelCount@
 channelCount :: IsMPSSVGF mpssvgf => mpssvgf -> IO CULong
-channelCount mpssvgf  =
-    sendMsg mpssvgf (mkSelector "channelCount") retCULong []
+channelCount mpssvgf =
+  sendMessage mpssvgf channelCountSelector
 
 -- | The number of channels to filter in the source image. Must be at least one and at most three. Defaults to 3.
 --
 -- ObjC selector: @- setChannelCount:@
 setChannelCount :: IsMPSSVGF mpssvgf => mpssvgf -> CULong -> IO ()
-setChannelCount mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setChannelCount:") retVoid [argCULong value]
+setChannelCount mpssvgf value =
+  sendMessage mpssvgf setChannelCountSelector value
 
 -- | The number of channels to filter in the second source image. Must be at least one and at most three. Defaults to 3.
 --
 -- ObjC selector: @- channelCount2@
 channelCount2 :: IsMPSSVGF mpssvgf => mpssvgf -> IO CULong
-channelCount2 mpssvgf  =
-    sendMsg mpssvgf (mkSelector "channelCount2") retCULong []
+channelCount2 mpssvgf =
+  sendMessage mpssvgf channelCount2Selector
 
 -- | The number of channels to filter in the second source image. Must be at least one and at most three. Defaults to 3.
 --
 -- ObjC selector: @- setChannelCount2:@
 setChannelCount2 :: IsMPSSVGF mpssvgf => mpssvgf -> CULong -> IO ()
-setChannelCount2 mpssvgf  value =
-    sendMsg mpssvgf (mkSelector "setChannelCount2:") retVoid [argCULong value]
+setChannelCount2 mpssvgf value =
+  sendMessage mpssvgf setChannelCount2Selector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSSVGF)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSSVGF)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSSVGF)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @encodeWithCoder:@
-encodeWithCoderSelector :: Selector
+encodeWithCoderSelector :: Selector '[Id NSCoder] ()
 encodeWithCoderSelector = mkSelector "encodeWithCoder:"
 
 -- | @Selector@ for @encodeReprojectionToCommandBuffer:sourceTexture:previousTexture:destinationTexture:previousLuminanceMomentsTexture:destinationLuminanceMomentsTexture:previousFrameCountTexture:destinationFrameCountTexture:motionVectorTexture:depthNormalTexture:previousDepthNormalTexture:@
-encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector :: Selector
+encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector :: Selector '[RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId] ()
 encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector = mkSelector "encodeReprojectionToCommandBuffer:sourceTexture:previousTexture:destinationTexture:previousLuminanceMomentsTexture:destinationLuminanceMomentsTexture:previousFrameCountTexture:destinationFrameCountTexture:motionVectorTexture:depthNormalTexture:previousDepthNormalTexture:"
 
 -- | @Selector@ for @encodeReprojectionToCommandBuffer:sourceTexture:previousTexture:destinationTexture:previousLuminanceMomentsTexture:destinationLuminanceMomentsTexture:sourceTexture2:previousTexture2:destinationTexture2:previousLuminanceMomentsTexture2:destinationLuminanceMomentsTexture2:previousFrameCountTexture:destinationFrameCountTexture:motionVectorTexture:depthNormalTexture:previousDepthNormalTexture:@
-encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_sourceTexture2_previousTexture2_destinationTexture2_previousLuminanceMomentsTexture2_destinationLuminanceMomentsTexture2_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector :: Selector
+encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_sourceTexture2_previousTexture2_destinationTexture2_previousLuminanceMomentsTexture2_destinationLuminanceMomentsTexture2_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector :: Selector '[RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId] ()
 encodeReprojectionToCommandBuffer_sourceTexture_previousTexture_destinationTexture_previousLuminanceMomentsTexture_destinationLuminanceMomentsTexture_sourceTexture2_previousTexture2_destinationTexture2_previousLuminanceMomentsTexture2_destinationLuminanceMomentsTexture2_previousFrameCountTexture_destinationFrameCountTexture_motionVectorTexture_depthNormalTexture_previousDepthNormalTextureSelector = mkSelector "encodeReprojectionToCommandBuffer:sourceTexture:previousTexture:destinationTexture:previousLuminanceMomentsTexture:destinationLuminanceMomentsTexture:sourceTexture2:previousTexture2:destinationTexture2:previousLuminanceMomentsTexture2:destinationLuminanceMomentsTexture2:previousFrameCountTexture:destinationFrameCountTexture:motionVectorTexture:depthNormalTexture:previousDepthNormalTexture:"
 
 -- | @Selector@ for @encodeVarianceEstimationToCommandBuffer:sourceTexture:luminanceMomentsTexture:destinationTexture:frameCountTexture:depthNormalTexture:@
-encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_frameCountTexture_depthNormalTextureSelector :: Selector
+encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_frameCountTexture_depthNormalTextureSelector :: Selector '[RawId, RawId, RawId, RawId, RawId, RawId] ()
 encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_frameCountTexture_depthNormalTextureSelector = mkSelector "encodeVarianceEstimationToCommandBuffer:sourceTexture:luminanceMomentsTexture:destinationTexture:frameCountTexture:depthNormalTexture:"
 
 -- | @Selector@ for @encodeVarianceEstimationToCommandBuffer:sourceTexture:luminanceMomentsTexture:destinationTexture:sourceTexture2:luminanceMomentsTexture2:destinationTexture2:frameCountTexture:depthNormalTexture:@
-encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_sourceTexture2_luminanceMomentsTexture2_destinationTexture2_frameCountTexture_depthNormalTextureSelector :: Selector
+encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_sourceTexture2_luminanceMomentsTexture2_destinationTexture2_frameCountTexture_depthNormalTextureSelector :: Selector '[RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId, RawId] ()
 encodeVarianceEstimationToCommandBuffer_sourceTexture_luminanceMomentsTexture_destinationTexture_sourceTexture2_luminanceMomentsTexture2_destinationTexture2_frameCountTexture_depthNormalTextureSelector = mkSelector "encodeVarianceEstimationToCommandBuffer:sourceTexture:luminanceMomentsTexture:destinationTexture:sourceTexture2:luminanceMomentsTexture2:destinationTexture2:frameCountTexture:depthNormalTexture:"
 
 -- | @Selector@ for @encodeBilateralFilterToCommandBuffer:stepDistance:sourceTexture:destinationTexture:depthNormalTexture:@
-encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_depthNormalTextureSelector :: Selector
+encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_depthNormalTextureSelector :: Selector '[RawId, CULong, RawId, RawId, RawId] ()
 encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_depthNormalTextureSelector = mkSelector "encodeBilateralFilterToCommandBuffer:stepDistance:sourceTexture:destinationTexture:depthNormalTexture:"
 
 -- | @Selector@ for @encodeBilateralFilterToCommandBuffer:stepDistance:sourceTexture:destinationTexture:sourceTexture2:destinationTexture2:depthNormalTexture:@
-encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_depthNormalTextureSelector :: Selector
+encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_depthNormalTextureSelector :: Selector '[RawId, CULong, RawId, RawId, RawId, RawId, RawId] ()
 encodeBilateralFilterToCommandBuffer_stepDistance_sourceTexture_destinationTexture_sourceTexture2_destinationTexture2_depthNormalTextureSelector = mkSelector "encodeBilateralFilterToCommandBuffer:stepDistance:sourceTexture:destinationTexture:sourceTexture2:destinationTexture2:depthNormalTexture:"
 
 -- | @Selector@ for @depthWeight@
-depthWeightSelector :: Selector
+depthWeightSelector :: Selector '[] CFloat
 depthWeightSelector = mkSelector "depthWeight"
 
 -- | @Selector@ for @setDepthWeight:@
-setDepthWeightSelector :: Selector
+setDepthWeightSelector :: Selector '[CFloat] ()
 setDepthWeightSelector = mkSelector "setDepthWeight:"
 
 -- | @Selector@ for @normalWeight@
-normalWeightSelector :: Selector
+normalWeightSelector :: Selector '[] CFloat
 normalWeightSelector = mkSelector "normalWeight"
 
 -- | @Selector@ for @setNormalWeight:@
-setNormalWeightSelector :: Selector
+setNormalWeightSelector :: Selector '[CFloat] ()
 setNormalWeightSelector = mkSelector "setNormalWeight:"
 
 -- | @Selector@ for @luminanceWeight@
-luminanceWeightSelector :: Selector
+luminanceWeightSelector :: Selector '[] CFloat
 luminanceWeightSelector = mkSelector "luminanceWeight"
 
 -- | @Selector@ for @setLuminanceWeight:@
-setLuminanceWeightSelector :: Selector
+setLuminanceWeightSelector :: Selector '[CFloat] ()
 setLuminanceWeightSelector = mkSelector "setLuminanceWeight:"
 
 -- | @Selector@ for @temporalWeighting@
-temporalWeightingSelector :: Selector
+temporalWeightingSelector :: Selector '[] MPSTemporalWeighting
 temporalWeightingSelector = mkSelector "temporalWeighting"
 
 -- | @Selector@ for @setTemporalWeighting:@
-setTemporalWeightingSelector :: Selector
+setTemporalWeightingSelector :: Selector '[MPSTemporalWeighting] ()
 setTemporalWeightingSelector = mkSelector "setTemporalWeighting:"
 
 -- | @Selector@ for @temporalReprojectionBlendFactor@
-temporalReprojectionBlendFactorSelector :: Selector
+temporalReprojectionBlendFactorSelector :: Selector '[] CFloat
 temporalReprojectionBlendFactorSelector = mkSelector "temporalReprojectionBlendFactor"
 
 -- | @Selector@ for @setTemporalReprojectionBlendFactor:@
-setTemporalReprojectionBlendFactorSelector :: Selector
+setTemporalReprojectionBlendFactorSelector :: Selector '[CFloat] ()
 setTemporalReprojectionBlendFactorSelector = mkSelector "setTemporalReprojectionBlendFactor:"
 
 -- | @Selector@ for @reprojectionThreshold@
-reprojectionThresholdSelector :: Selector
+reprojectionThresholdSelector :: Selector '[] CFloat
 reprojectionThresholdSelector = mkSelector "reprojectionThreshold"
 
 -- | @Selector@ for @setReprojectionThreshold:@
-setReprojectionThresholdSelector :: Selector
+setReprojectionThresholdSelector :: Selector '[CFloat] ()
 setReprojectionThresholdSelector = mkSelector "setReprojectionThreshold:"
 
 -- | @Selector@ for @minimumFramesForVarianceEstimation@
-minimumFramesForVarianceEstimationSelector :: Selector
+minimumFramesForVarianceEstimationSelector :: Selector '[] CULong
 minimumFramesForVarianceEstimationSelector = mkSelector "minimumFramesForVarianceEstimation"
 
 -- | @Selector@ for @setMinimumFramesForVarianceEstimation:@
-setMinimumFramesForVarianceEstimationSelector :: Selector
+setMinimumFramesForVarianceEstimationSelector :: Selector '[CULong] ()
 setMinimumFramesForVarianceEstimationSelector = mkSelector "setMinimumFramesForVarianceEstimation:"
 
 -- | @Selector@ for @varianceEstimationRadius@
-varianceEstimationRadiusSelector :: Selector
+varianceEstimationRadiusSelector :: Selector '[] CULong
 varianceEstimationRadiusSelector = mkSelector "varianceEstimationRadius"
 
 -- | @Selector@ for @setVarianceEstimationRadius:@
-setVarianceEstimationRadiusSelector :: Selector
+setVarianceEstimationRadiusSelector :: Selector '[CULong] ()
 setVarianceEstimationRadiusSelector = mkSelector "setVarianceEstimationRadius:"
 
 -- | @Selector@ for @varianceEstimationSigma@
-varianceEstimationSigmaSelector :: Selector
+varianceEstimationSigmaSelector :: Selector '[] CFloat
 varianceEstimationSigmaSelector = mkSelector "varianceEstimationSigma"
 
 -- | @Selector@ for @setVarianceEstimationSigma:@
-setVarianceEstimationSigmaSelector :: Selector
+setVarianceEstimationSigmaSelector :: Selector '[CFloat] ()
 setVarianceEstimationSigmaSelector = mkSelector "setVarianceEstimationSigma:"
 
 -- | @Selector@ for @variancePrefilterSigma@
-variancePrefilterSigmaSelector :: Selector
+variancePrefilterSigmaSelector :: Selector '[] CFloat
 variancePrefilterSigmaSelector = mkSelector "variancePrefilterSigma"
 
 -- | @Selector@ for @setVariancePrefilterSigma:@
-setVariancePrefilterSigmaSelector :: Selector
+setVariancePrefilterSigmaSelector :: Selector '[CFloat] ()
 setVariancePrefilterSigmaSelector = mkSelector "setVariancePrefilterSigma:"
 
 -- | @Selector@ for @variancePrefilterRadius@
-variancePrefilterRadiusSelector :: Selector
+variancePrefilterRadiusSelector :: Selector '[] CULong
 variancePrefilterRadiusSelector = mkSelector "variancePrefilterRadius"
 
 -- | @Selector@ for @setVariancePrefilterRadius:@
-setVariancePrefilterRadiusSelector :: Selector
+setVariancePrefilterRadiusSelector :: Selector '[CULong] ()
 setVariancePrefilterRadiusSelector = mkSelector "setVariancePrefilterRadius:"
 
 -- | @Selector@ for @bilateralFilterSigma@
-bilateralFilterSigmaSelector :: Selector
+bilateralFilterSigmaSelector :: Selector '[] CFloat
 bilateralFilterSigmaSelector = mkSelector "bilateralFilterSigma"
 
 -- | @Selector@ for @setBilateralFilterSigma:@
-setBilateralFilterSigmaSelector :: Selector
+setBilateralFilterSigmaSelector :: Selector '[CFloat] ()
 setBilateralFilterSigmaSelector = mkSelector "setBilateralFilterSigma:"
 
 -- | @Selector@ for @bilateralFilterRadius@
-bilateralFilterRadiusSelector :: Selector
+bilateralFilterRadiusSelector :: Selector '[] CULong
 bilateralFilterRadiusSelector = mkSelector "bilateralFilterRadius"
 
 -- | @Selector@ for @setBilateralFilterRadius:@
-setBilateralFilterRadiusSelector :: Selector
+setBilateralFilterRadiusSelector :: Selector '[CULong] ()
 setBilateralFilterRadiusSelector = mkSelector "setBilateralFilterRadius:"
 
 -- | @Selector@ for @channelCount@
-channelCountSelector :: Selector
+channelCountSelector :: Selector '[] CULong
 channelCountSelector = mkSelector "channelCount"
 
 -- | @Selector@ for @setChannelCount:@
-setChannelCountSelector :: Selector
+setChannelCountSelector :: Selector '[CULong] ()
 setChannelCountSelector = mkSelector "setChannelCount:"
 
 -- | @Selector@ for @channelCount2@
-channelCount2Selector :: Selector
+channelCount2Selector :: Selector '[] CULong
 channelCount2Selector = mkSelector "channelCount2"
 
 -- | @Selector@ for @setChannelCount2:@
-setChannelCount2Selector :: Selector
+setChannelCount2Selector :: Selector '[CULong] ()
 setChannelCount2Selector = mkSelector "setChannelCount2:"
 

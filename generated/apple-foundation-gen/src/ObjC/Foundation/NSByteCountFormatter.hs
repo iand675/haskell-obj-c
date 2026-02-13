@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,29 +31,29 @@ module ObjC.Foundation.NSByteCountFormatter
   , setZeroPadsFractionDigits
   , formattingContext
   , setFormattingContext
-  , stringFromByteCount_countStyleSelector
-  , stringFromByteCountSelector
-  , stringFromMeasurement_countStyleSelector
-  , stringFromMeasurementSelector
-  , stringForObjectValueSelector
-  , allowedUnitsSelector
-  , setAllowedUnitsSelector
-  , countStyleSelector
-  , setCountStyleSelector
-  , allowsNonnumericFormattingSelector
-  , setAllowsNonnumericFormattingSelector
-  , includesUnitSelector
-  , setIncludesUnitSelector
-  , includesCountSelector
-  , setIncludesCountSelector
-  , includesActualByteCountSelector
-  , setIncludesActualByteCountSelector
   , adaptiveSelector
-  , setAdaptiveSelector
-  , zeroPadsFractionDigitsSelector
-  , setZeroPadsFractionDigitsSelector
+  , allowedUnitsSelector
+  , allowsNonnumericFormattingSelector
+  , countStyleSelector
   , formattingContextSelector
+  , includesActualByteCountSelector
+  , includesCountSelector
+  , includesUnitSelector
+  , setAdaptiveSelector
+  , setAllowedUnitsSelector
+  , setAllowsNonnumericFormattingSelector
+  , setCountStyleSelector
   , setFormattingContextSelector
+  , setIncludesActualByteCountSelector
+  , setIncludesCountSelector
+  , setIncludesUnitSelector
+  , setZeroPadsFractionDigitsSelector
+  , stringForObjectValueSelector
+  , stringFromByteCountSelector
+  , stringFromByteCount_countStyleSelector
+  , stringFromMeasurementSelector
+  , stringFromMeasurement_countStyleSelector
+  , zeroPadsFractionDigitsSelector
 
   -- * Enum types
   , NSByteCountFormatterCountStyle(NSByteCountFormatterCountStyle)
@@ -82,15 +83,11 @@ module ObjC.Foundation.NSByteCountFormatter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,215 +99,213 @@ stringFromByteCount_countStyle :: CLong -> NSByteCountFormatterCountStyle -> IO 
 stringFromByteCount_countStyle byteCount countStyle =
   do
     cls' <- getRequiredClass "NSByteCountFormatter"
-    sendClassMsg cls' (mkSelector "stringFromByteCount:countStyle:") (retPtr retVoid) [argCLong byteCount, argCLong (coerce countStyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' stringFromByteCount_countStyleSelector byteCount countStyle
 
 -- | @- stringFromByteCount:@
 stringFromByteCount :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> CLong -> IO (Id NSString)
-stringFromByteCount nsByteCountFormatter  byteCount =
-    sendMsg nsByteCountFormatter (mkSelector "stringFromByteCount:") (retPtr retVoid) [argCLong byteCount] >>= retainedObject . castPtr
+stringFromByteCount nsByteCountFormatter byteCount =
+  sendMessage nsByteCountFormatter stringFromByteCountSelector byteCount
 
 -- | @+ stringFromMeasurement:countStyle:@
 stringFromMeasurement_countStyle :: IsNSMeasurement measurement => measurement -> NSByteCountFormatterCountStyle -> IO (Id NSString)
 stringFromMeasurement_countStyle measurement countStyle =
   do
     cls' <- getRequiredClass "NSByteCountFormatter"
-    withObjCPtr measurement $ \raw_measurement ->
-      sendClassMsg cls' (mkSelector "stringFromMeasurement:countStyle:") (retPtr retVoid) [argPtr (castPtr raw_measurement :: Ptr ()), argCLong (coerce countStyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' stringFromMeasurement_countStyleSelector (toNSMeasurement measurement) countStyle
 
 -- | @- stringFromMeasurement:@
 stringFromMeasurement :: (IsNSByteCountFormatter nsByteCountFormatter, IsNSMeasurement measurement) => nsByteCountFormatter -> measurement -> IO (Id NSString)
-stringFromMeasurement nsByteCountFormatter  measurement =
-  withObjCPtr measurement $ \raw_measurement ->
-      sendMsg nsByteCountFormatter (mkSelector "stringFromMeasurement:") (retPtr retVoid) [argPtr (castPtr raw_measurement :: Ptr ())] >>= retainedObject . castPtr
+stringFromMeasurement nsByteCountFormatter measurement =
+  sendMessage nsByteCountFormatter stringFromMeasurementSelector (toNSMeasurement measurement)
 
 -- | @- stringForObjectValue:@
 stringForObjectValue :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> RawId -> IO (Id NSString)
-stringForObjectValue nsByteCountFormatter  obj_ =
-    sendMsg nsByteCountFormatter (mkSelector "stringForObjectValue:") (retPtr retVoid) [argPtr (castPtr (unRawId obj_) :: Ptr ())] >>= retainedObject . castPtr
+stringForObjectValue nsByteCountFormatter obj_ =
+  sendMessage nsByteCountFormatter stringForObjectValueSelector obj_
 
 -- | @- allowedUnits@
 allowedUnits :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> IO NSByteCountFormatterUnits
-allowedUnits nsByteCountFormatter  =
-    fmap (coerce :: CULong -> NSByteCountFormatterUnits) $ sendMsg nsByteCountFormatter (mkSelector "allowedUnits") retCULong []
+allowedUnits nsByteCountFormatter =
+  sendMessage nsByteCountFormatter allowedUnitsSelector
 
 -- | @- setAllowedUnits:@
 setAllowedUnits :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> NSByteCountFormatterUnits -> IO ()
-setAllowedUnits nsByteCountFormatter  value =
-    sendMsg nsByteCountFormatter (mkSelector "setAllowedUnits:") retVoid [argCULong (coerce value)]
+setAllowedUnits nsByteCountFormatter value =
+  sendMessage nsByteCountFormatter setAllowedUnitsSelector value
 
 -- | @- countStyle@
 countStyle :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> IO NSByteCountFormatterCountStyle
-countStyle nsByteCountFormatter  =
-    fmap (coerce :: CLong -> NSByteCountFormatterCountStyle) $ sendMsg nsByteCountFormatter (mkSelector "countStyle") retCLong []
+countStyle nsByteCountFormatter =
+  sendMessage nsByteCountFormatter countStyleSelector
 
 -- | @- setCountStyle:@
 setCountStyle :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> NSByteCountFormatterCountStyle -> IO ()
-setCountStyle nsByteCountFormatter  value =
-    sendMsg nsByteCountFormatter (mkSelector "setCountStyle:") retVoid [argCLong (coerce value)]
+setCountStyle nsByteCountFormatter value =
+  sendMessage nsByteCountFormatter setCountStyleSelector value
 
 -- | @- allowsNonnumericFormatting@
 allowsNonnumericFormatting :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> IO Bool
-allowsNonnumericFormatting nsByteCountFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsByteCountFormatter (mkSelector "allowsNonnumericFormatting") retCULong []
+allowsNonnumericFormatting nsByteCountFormatter =
+  sendMessage nsByteCountFormatter allowsNonnumericFormattingSelector
 
 -- | @- setAllowsNonnumericFormatting:@
 setAllowsNonnumericFormatting :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> Bool -> IO ()
-setAllowsNonnumericFormatting nsByteCountFormatter  value =
-    sendMsg nsByteCountFormatter (mkSelector "setAllowsNonnumericFormatting:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsNonnumericFormatting nsByteCountFormatter value =
+  sendMessage nsByteCountFormatter setAllowsNonnumericFormattingSelector value
 
 -- | @- includesUnit@
 includesUnit :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> IO Bool
-includesUnit nsByteCountFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsByteCountFormatter (mkSelector "includesUnit") retCULong []
+includesUnit nsByteCountFormatter =
+  sendMessage nsByteCountFormatter includesUnitSelector
 
 -- | @- setIncludesUnit:@
 setIncludesUnit :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> Bool -> IO ()
-setIncludesUnit nsByteCountFormatter  value =
-    sendMsg nsByteCountFormatter (mkSelector "setIncludesUnit:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesUnit nsByteCountFormatter value =
+  sendMessage nsByteCountFormatter setIncludesUnitSelector value
 
 -- | @- includesCount@
 includesCount :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> IO Bool
-includesCount nsByteCountFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsByteCountFormatter (mkSelector "includesCount") retCULong []
+includesCount nsByteCountFormatter =
+  sendMessage nsByteCountFormatter includesCountSelector
 
 -- | @- setIncludesCount:@
 setIncludesCount :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> Bool -> IO ()
-setIncludesCount nsByteCountFormatter  value =
-    sendMsg nsByteCountFormatter (mkSelector "setIncludesCount:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesCount nsByteCountFormatter value =
+  sendMessage nsByteCountFormatter setIncludesCountSelector value
 
 -- | @- includesActualByteCount@
 includesActualByteCount :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> IO Bool
-includesActualByteCount nsByteCountFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsByteCountFormatter (mkSelector "includesActualByteCount") retCULong []
+includesActualByteCount nsByteCountFormatter =
+  sendMessage nsByteCountFormatter includesActualByteCountSelector
 
 -- | @- setIncludesActualByteCount:@
 setIncludesActualByteCount :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> Bool -> IO ()
-setIncludesActualByteCount nsByteCountFormatter  value =
-    sendMsg nsByteCountFormatter (mkSelector "setIncludesActualByteCount:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesActualByteCount nsByteCountFormatter value =
+  sendMessage nsByteCountFormatter setIncludesActualByteCountSelector value
 
 -- | @- adaptive@
 adaptive :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> IO Bool
-adaptive nsByteCountFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsByteCountFormatter (mkSelector "adaptive") retCULong []
+adaptive nsByteCountFormatter =
+  sendMessage nsByteCountFormatter adaptiveSelector
 
 -- | @- setAdaptive:@
 setAdaptive :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> Bool -> IO ()
-setAdaptive nsByteCountFormatter  value =
-    sendMsg nsByteCountFormatter (mkSelector "setAdaptive:") retVoid [argCULong (if value then 1 else 0)]
+setAdaptive nsByteCountFormatter value =
+  sendMessage nsByteCountFormatter setAdaptiveSelector value
 
 -- | @- zeroPadsFractionDigits@
 zeroPadsFractionDigits :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> IO Bool
-zeroPadsFractionDigits nsByteCountFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsByteCountFormatter (mkSelector "zeroPadsFractionDigits") retCULong []
+zeroPadsFractionDigits nsByteCountFormatter =
+  sendMessage nsByteCountFormatter zeroPadsFractionDigitsSelector
 
 -- | @- setZeroPadsFractionDigits:@
 setZeroPadsFractionDigits :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> Bool -> IO ()
-setZeroPadsFractionDigits nsByteCountFormatter  value =
-    sendMsg nsByteCountFormatter (mkSelector "setZeroPadsFractionDigits:") retVoid [argCULong (if value then 1 else 0)]
+setZeroPadsFractionDigits nsByteCountFormatter value =
+  sendMessage nsByteCountFormatter setZeroPadsFractionDigitsSelector value
 
 -- | @- formattingContext@
 formattingContext :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> IO NSFormattingContext
-formattingContext nsByteCountFormatter  =
-    fmap (coerce :: CLong -> NSFormattingContext) $ sendMsg nsByteCountFormatter (mkSelector "formattingContext") retCLong []
+formattingContext nsByteCountFormatter =
+  sendMessage nsByteCountFormatter formattingContextSelector
 
 -- | @- setFormattingContext:@
 setFormattingContext :: IsNSByteCountFormatter nsByteCountFormatter => nsByteCountFormatter -> NSFormattingContext -> IO ()
-setFormattingContext nsByteCountFormatter  value =
-    sendMsg nsByteCountFormatter (mkSelector "setFormattingContext:") retVoid [argCLong (coerce value)]
+setFormattingContext nsByteCountFormatter value =
+  sendMessage nsByteCountFormatter setFormattingContextSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stringFromByteCount:countStyle:@
-stringFromByteCount_countStyleSelector :: Selector
+stringFromByteCount_countStyleSelector :: Selector '[CLong, NSByteCountFormatterCountStyle] (Id NSString)
 stringFromByteCount_countStyleSelector = mkSelector "stringFromByteCount:countStyle:"
 
 -- | @Selector@ for @stringFromByteCount:@
-stringFromByteCountSelector :: Selector
+stringFromByteCountSelector :: Selector '[CLong] (Id NSString)
 stringFromByteCountSelector = mkSelector "stringFromByteCount:"
 
 -- | @Selector@ for @stringFromMeasurement:countStyle:@
-stringFromMeasurement_countStyleSelector :: Selector
+stringFromMeasurement_countStyleSelector :: Selector '[Id NSMeasurement, NSByteCountFormatterCountStyle] (Id NSString)
 stringFromMeasurement_countStyleSelector = mkSelector "stringFromMeasurement:countStyle:"
 
 -- | @Selector@ for @stringFromMeasurement:@
-stringFromMeasurementSelector :: Selector
+stringFromMeasurementSelector :: Selector '[Id NSMeasurement] (Id NSString)
 stringFromMeasurementSelector = mkSelector "stringFromMeasurement:"
 
 -- | @Selector@ for @stringForObjectValue:@
-stringForObjectValueSelector :: Selector
+stringForObjectValueSelector :: Selector '[RawId] (Id NSString)
 stringForObjectValueSelector = mkSelector "stringForObjectValue:"
 
 -- | @Selector@ for @allowedUnits@
-allowedUnitsSelector :: Selector
+allowedUnitsSelector :: Selector '[] NSByteCountFormatterUnits
 allowedUnitsSelector = mkSelector "allowedUnits"
 
 -- | @Selector@ for @setAllowedUnits:@
-setAllowedUnitsSelector :: Selector
+setAllowedUnitsSelector :: Selector '[NSByteCountFormatterUnits] ()
 setAllowedUnitsSelector = mkSelector "setAllowedUnits:"
 
 -- | @Selector@ for @countStyle@
-countStyleSelector :: Selector
+countStyleSelector :: Selector '[] NSByteCountFormatterCountStyle
 countStyleSelector = mkSelector "countStyle"
 
 -- | @Selector@ for @setCountStyle:@
-setCountStyleSelector :: Selector
+setCountStyleSelector :: Selector '[NSByteCountFormatterCountStyle] ()
 setCountStyleSelector = mkSelector "setCountStyle:"
 
 -- | @Selector@ for @allowsNonnumericFormatting@
-allowsNonnumericFormattingSelector :: Selector
+allowsNonnumericFormattingSelector :: Selector '[] Bool
 allowsNonnumericFormattingSelector = mkSelector "allowsNonnumericFormatting"
 
 -- | @Selector@ for @setAllowsNonnumericFormatting:@
-setAllowsNonnumericFormattingSelector :: Selector
+setAllowsNonnumericFormattingSelector :: Selector '[Bool] ()
 setAllowsNonnumericFormattingSelector = mkSelector "setAllowsNonnumericFormatting:"
 
 -- | @Selector@ for @includesUnit@
-includesUnitSelector :: Selector
+includesUnitSelector :: Selector '[] Bool
 includesUnitSelector = mkSelector "includesUnit"
 
 -- | @Selector@ for @setIncludesUnit:@
-setIncludesUnitSelector :: Selector
+setIncludesUnitSelector :: Selector '[Bool] ()
 setIncludesUnitSelector = mkSelector "setIncludesUnit:"
 
 -- | @Selector@ for @includesCount@
-includesCountSelector :: Selector
+includesCountSelector :: Selector '[] Bool
 includesCountSelector = mkSelector "includesCount"
 
 -- | @Selector@ for @setIncludesCount:@
-setIncludesCountSelector :: Selector
+setIncludesCountSelector :: Selector '[Bool] ()
 setIncludesCountSelector = mkSelector "setIncludesCount:"
 
 -- | @Selector@ for @includesActualByteCount@
-includesActualByteCountSelector :: Selector
+includesActualByteCountSelector :: Selector '[] Bool
 includesActualByteCountSelector = mkSelector "includesActualByteCount"
 
 -- | @Selector@ for @setIncludesActualByteCount:@
-setIncludesActualByteCountSelector :: Selector
+setIncludesActualByteCountSelector :: Selector '[Bool] ()
 setIncludesActualByteCountSelector = mkSelector "setIncludesActualByteCount:"
 
 -- | @Selector@ for @adaptive@
-adaptiveSelector :: Selector
+adaptiveSelector :: Selector '[] Bool
 adaptiveSelector = mkSelector "adaptive"
 
 -- | @Selector@ for @setAdaptive:@
-setAdaptiveSelector :: Selector
+setAdaptiveSelector :: Selector '[Bool] ()
 setAdaptiveSelector = mkSelector "setAdaptive:"
 
 -- | @Selector@ for @zeroPadsFractionDigits@
-zeroPadsFractionDigitsSelector :: Selector
+zeroPadsFractionDigitsSelector :: Selector '[] Bool
 zeroPadsFractionDigitsSelector = mkSelector "zeroPadsFractionDigits"
 
 -- | @Selector@ for @setZeroPadsFractionDigits:@
-setZeroPadsFractionDigitsSelector :: Selector
+setZeroPadsFractionDigitsSelector :: Selector '[Bool] ()
 setZeroPadsFractionDigitsSelector = mkSelector "setZeroPadsFractionDigits:"
 
 -- | @Selector@ for @formattingContext@
-formattingContextSelector :: Selector
+formattingContextSelector :: Selector '[] NSFormattingContext
 formattingContextSelector = mkSelector "formattingContext"
 
 -- | @Selector@ for @setFormattingContext:@
-setFormattingContextSelector :: Selector
+setFormattingContextSelector :: Selector '[NSFormattingContext] ()
 setFormattingContextSelector = mkSelector "setFormattingContext:"
 

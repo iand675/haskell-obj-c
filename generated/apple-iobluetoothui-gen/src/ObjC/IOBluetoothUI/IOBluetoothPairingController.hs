@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,35 +29,31 @@ module ObjC.IOBluetoothUI.IOBluetoothPairingController
   , getDescriptionText
   , setPrompt
   , getPrompt
+  , addAllowedUUIDArraySelector
+  , addAllowedUUIDSelector
+  , clearAllowedUUIDsSelector
+  , getDescriptionTextSelector
+  , getOptionsSelector
+  , getPromptSelector
+  , getResultsSelector
+  , getSearchAttributesSelector
+  , getTitleSelector
   , pairingControllerSelector
   , runModalSelector
-  , getResultsSelector
-  , setOptionsSelector
-  , getOptionsSelector
-  , setSearchAttributesSelector
-  , getSearchAttributesSelector
-  , addAllowedUUIDSelector
-  , addAllowedUUIDArraySelector
-  , clearAllowedUUIDsSelector
-  , setTitleSelector
-  , getTitleSelector
   , setDescriptionTextSelector
-  , getDescriptionTextSelector
+  , setOptionsSelector
   , setPromptSelector
-  , getPromptSelector
+  , setSearchAttributesSelector
+  , setTitleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,7 +75,7 @@ pairingController :: IO (Id IOBluetoothPairingController)
 pairingController  =
   do
     cls' <- getRequiredClass "IOBluetoothPairingController"
-    sendClassMsg cls' (mkSelector "pairingController") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pairingControllerSelector
 
 -- | runModal
 --
@@ -92,8 +89,8 @@ pairingController  =
 --
 -- ObjC selector: @- runModal@
 runModal :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO CInt
-runModal ioBluetoothPairingController  =
-    sendMsg ioBluetoothPairingController (mkSelector "runModal") retCInt []
+runModal ioBluetoothPairingController =
+  sendMessage ioBluetoothPairingController runModalSelector
 
 -- | getResults
 --
@@ -107,8 +104,8 @@ runModal ioBluetoothPairingController  =
 --
 -- ObjC selector: @- getResults@
 getResults :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO (Id NSArray)
-getResults ioBluetoothPairingController  =
-    sendMsg ioBluetoothPairingController (mkSelector "getResults") (retPtr retVoid) [] >>= retainedObject . castPtr
+getResults ioBluetoothPairingController =
+  sendMessage ioBluetoothPairingController getResultsSelector
 
 -- | setOptions:
 --
@@ -122,8 +119,8 @@ getResults ioBluetoothPairingController  =
 --
 -- ObjC selector: @- setOptions:@
 setOptions :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> CUInt -> IO ()
-setOptions ioBluetoothPairingController  options =
-    sendMsg ioBluetoothPairingController (mkSelector "setOptions:") retVoid [argCUInt options]
+setOptions ioBluetoothPairingController options =
+  sendMessage ioBluetoothPairingController setOptionsSelector options
 
 -- | getOptions
 --
@@ -135,8 +132,8 @@ setOptions ioBluetoothPairingController  options =
 --
 -- ObjC selector: @- getOptions@
 getOptions :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO CUInt
-getOptions ioBluetoothPairingController  =
-    sendMsg ioBluetoothPairingController (mkSelector "getOptions") retCUInt []
+getOptions ioBluetoothPairingController =
+  sendMessage ioBluetoothPairingController getOptionsSelector
 
 -- | setSearchAttributes:
 --
@@ -150,8 +147,8 @@ getOptions ioBluetoothPairingController  =
 --
 -- ObjC selector: @- setSearchAttributes:@
 setSearchAttributes :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> Const RawId -> IO ()
-setSearchAttributes ioBluetoothPairingController  searchAttributes =
-    sendMsg ioBluetoothPairingController (mkSelector "setSearchAttributes:") retVoid [argPtr (castPtr (unRawId (unConst searchAttributes)) :: Ptr ())]
+setSearchAttributes ioBluetoothPairingController searchAttributes =
+  sendMessage ioBluetoothPairingController setSearchAttributesSelector searchAttributes
 
 -- | getSearchAttributes
 --
@@ -163,8 +160,8 @@ setSearchAttributes ioBluetoothPairingController  searchAttributes =
 --
 -- ObjC selector: @- getSearchAttributes@
 getSearchAttributes :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO (Const RawId)
-getSearchAttributes ioBluetoothPairingController  =
-    fmap Const $ fmap (RawId . castPtr) $ sendMsg ioBluetoothPairingController (mkSelector "getSearchAttributes") (retPtr retVoid) []
+getSearchAttributes ioBluetoothPairingController =
+  sendMessage ioBluetoothPairingController getSearchAttributesSelector
 
 -- | addAllowedUUID:
 --
@@ -178,9 +175,8 @@ getSearchAttributes ioBluetoothPairingController  =
 --
 -- ObjC selector: @- addAllowedUUID:@
 addAllowedUUID :: (IsIOBluetoothPairingController ioBluetoothPairingController, IsIOBluetoothSDPUUID allowedUUID) => ioBluetoothPairingController -> allowedUUID -> IO ()
-addAllowedUUID ioBluetoothPairingController  allowedUUID =
-  withObjCPtr allowedUUID $ \raw_allowedUUID ->
-      sendMsg ioBluetoothPairingController (mkSelector "addAllowedUUID:") retVoid [argPtr (castPtr raw_allowedUUID :: Ptr ())]
+addAllowedUUID ioBluetoothPairingController allowedUUID =
+  sendMessage ioBluetoothPairingController addAllowedUUIDSelector (toIOBluetoothSDPUUID allowedUUID)
 
 -- | addAllowedUUIDArray:
 --
@@ -194,9 +190,8 @@ addAllowedUUID ioBluetoothPairingController  allowedUUID =
 --
 -- ObjC selector: @- addAllowedUUIDArray:@
 addAllowedUUIDArray :: (IsIOBluetoothPairingController ioBluetoothPairingController, IsNSArray allowedUUIDArray) => ioBluetoothPairingController -> allowedUUIDArray -> IO ()
-addAllowedUUIDArray ioBluetoothPairingController  allowedUUIDArray =
-  withObjCPtr allowedUUIDArray $ \raw_allowedUUIDArray ->
-      sendMsg ioBluetoothPairingController (mkSelector "addAllowedUUIDArray:") retVoid [argPtr (castPtr raw_allowedUUIDArray :: Ptr ())]
+addAllowedUUIDArray ioBluetoothPairingController allowedUUIDArray =
+  sendMessage ioBluetoothPairingController addAllowedUUIDArraySelector (toNSArray allowedUUIDArray)
 
 -- | clearAllowedUUIDs
 --
@@ -206,8 +201,8 @@ addAllowedUUIDArray ioBluetoothPairingController  allowedUUIDArray =
 --
 -- ObjC selector: @- clearAllowedUUIDs@
 clearAllowedUUIDs :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO ()
-clearAllowedUUIDs ioBluetoothPairingController  =
-    sendMsg ioBluetoothPairingController (mkSelector "clearAllowedUUIDs") retVoid []
+clearAllowedUUIDs ioBluetoothPairingController =
+  sendMessage ioBluetoothPairingController clearAllowedUUIDsSelector
 
 -- | setTitle:
 --
@@ -221,9 +216,8 @@ clearAllowedUUIDs ioBluetoothPairingController  =
 --
 -- ObjC selector: @- setTitle:@
 setTitle :: (IsIOBluetoothPairingController ioBluetoothPairingController, IsNSString windowTitle) => ioBluetoothPairingController -> windowTitle -> IO ()
-setTitle ioBluetoothPairingController  windowTitle =
-  withObjCPtr windowTitle $ \raw_windowTitle ->
-      sendMsg ioBluetoothPairingController (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_windowTitle :: Ptr ())]
+setTitle ioBluetoothPairingController windowTitle =
+  sendMessage ioBluetoothPairingController setTitleSelector (toNSString windowTitle)
 
 -- | getTitle
 --
@@ -235,8 +229,8 @@ setTitle ioBluetoothPairingController  windowTitle =
 --
 -- ObjC selector: @- getTitle@
 getTitle :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO (Id NSString)
-getTitle ioBluetoothPairingController  =
-    sendMsg ioBluetoothPairingController (mkSelector "getTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+getTitle ioBluetoothPairingController =
+  sendMessage ioBluetoothPairingController getTitleSelector
 
 -- | setDescriptionText:
 --
@@ -250,9 +244,8 @@ getTitle ioBluetoothPairingController  =
 --
 -- ObjC selector: @- setDescriptionText:@
 setDescriptionText :: (IsIOBluetoothPairingController ioBluetoothPairingController, IsNSString descriptionText) => ioBluetoothPairingController -> descriptionText -> IO ()
-setDescriptionText ioBluetoothPairingController  descriptionText =
-  withObjCPtr descriptionText $ \raw_descriptionText ->
-      sendMsg ioBluetoothPairingController (mkSelector "setDescriptionText:") retVoid [argPtr (castPtr raw_descriptionText :: Ptr ())]
+setDescriptionText ioBluetoothPairingController descriptionText =
+  sendMessage ioBluetoothPairingController setDescriptionTextSelector (toNSString descriptionText)
 
 -- | getDescriptionText
 --
@@ -264,8 +257,8 @@ setDescriptionText ioBluetoothPairingController  descriptionText =
 --
 -- ObjC selector: @- getDescriptionText@
 getDescriptionText :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO (Id NSString)
-getDescriptionText ioBluetoothPairingController  =
-    sendMsg ioBluetoothPairingController (mkSelector "getDescriptionText") (retPtr retVoid) [] >>= retainedObject . castPtr
+getDescriptionText ioBluetoothPairingController =
+  sendMessage ioBluetoothPairingController getDescriptionTextSelector
 
 -- | setPrompt:
 --
@@ -279,9 +272,8 @@ getDescriptionText ioBluetoothPairingController  =
 --
 -- ObjC selector: @- setPrompt:@
 setPrompt :: (IsIOBluetoothPairingController ioBluetoothPairingController, IsNSString prompt) => ioBluetoothPairingController -> prompt -> IO ()
-setPrompt ioBluetoothPairingController  prompt =
-  withObjCPtr prompt $ \raw_prompt ->
-      sendMsg ioBluetoothPairingController (mkSelector "setPrompt:") retVoid [argPtr (castPtr raw_prompt :: Ptr ())]
+setPrompt ioBluetoothPairingController prompt =
+  sendMessage ioBluetoothPairingController setPromptSelector (toNSString prompt)
 
 -- | getPrompt
 --
@@ -293,74 +285,74 @@ setPrompt ioBluetoothPairingController  prompt =
 --
 -- ObjC selector: @- getPrompt@
 getPrompt :: IsIOBluetoothPairingController ioBluetoothPairingController => ioBluetoothPairingController -> IO (Id NSString)
-getPrompt ioBluetoothPairingController  =
-    sendMsg ioBluetoothPairingController (mkSelector "getPrompt") (retPtr retVoid) [] >>= retainedObject . castPtr
+getPrompt ioBluetoothPairingController =
+  sendMessage ioBluetoothPairingController getPromptSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pairingController@
-pairingControllerSelector :: Selector
+pairingControllerSelector :: Selector '[] (Id IOBluetoothPairingController)
 pairingControllerSelector = mkSelector "pairingController"
 
 -- | @Selector@ for @runModal@
-runModalSelector :: Selector
+runModalSelector :: Selector '[] CInt
 runModalSelector = mkSelector "runModal"
 
 -- | @Selector@ for @getResults@
-getResultsSelector :: Selector
+getResultsSelector :: Selector '[] (Id NSArray)
 getResultsSelector = mkSelector "getResults"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[CUInt] ()
 setOptionsSelector = mkSelector "setOptions:"
 
 -- | @Selector@ for @getOptions@
-getOptionsSelector :: Selector
+getOptionsSelector :: Selector '[] CUInt
 getOptionsSelector = mkSelector "getOptions"
 
 -- | @Selector@ for @setSearchAttributes:@
-setSearchAttributesSelector :: Selector
+setSearchAttributesSelector :: Selector '[Const RawId] ()
 setSearchAttributesSelector = mkSelector "setSearchAttributes:"
 
 -- | @Selector@ for @getSearchAttributes@
-getSearchAttributesSelector :: Selector
+getSearchAttributesSelector :: Selector '[] (Const RawId)
 getSearchAttributesSelector = mkSelector "getSearchAttributes"
 
 -- | @Selector@ for @addAllowedUUID:@
-addAllowedUUIDSelector :: Selector
+addAllowedUUIDSelector :: Selector '[Id IOBluetoothSDPUUID] ()
 addAllowedUUIDSelector = mkSelector "addAllowedUUID:"
 
 -- | @Selector@ for @addAllowedUUIDArray:@
-addAllowedUUIDArraySelector :: Selector
+addAllowedUUIDArraySelector :: Selector '[Id NSArray] ()
 addAllowedUUIDArraySelector = mkSelector "addAllowedUUIDArray:"
 
 -- | @Selector@ for @clearAllowedUUIDs@
-clearAllowedUUIDsSelector :: Selector
+clearAllowedUUIDsSelector :: Selector '[] ()
 clearAllowedUUIDsSelector = mkSelector "clearAllowedUUIDs"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @getTitle@
-getTitleSelector :: Selector
+getTitleSelector :: Selector '[] (Id NSString)
 getTitleSelector = mkSelector "getTitle"
 
 -- | @Selector@ for @setDescriptionText:@
-setDescriptionTextSelector :: Selector
+setDescriptionTextSelector :: Selector '[Id NSString] ()
 setDescriptionTextSelector = mkSelector "setDescriptionText:"
 
 -- | @Selector@ for @getDescriptionText@
-getDescriptionTextSelector :: Selector
+getDescriptionTextSelector :: Selector '[] (Id NSString)
 getDescriptionTextSelector = mkSelector "getDescriptionText"
 
 -- | @Selector@ for @setPrompt:@
-setPromptSelector :: Selector
+setPromptSelector :: Selector '[Id NSString] ()
 setPromptSelector = mkSelector "setPrompt:"
 
 -- | @Selector@ for @getPrompt@
-getPromptSelector :: Selector
+getPromptSelector :: Selector '[] (Id NSString)
 getPromptSelector = mkSelector "getPrompt"
 

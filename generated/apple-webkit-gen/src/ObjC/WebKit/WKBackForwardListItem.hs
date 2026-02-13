@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.WebKit.WKBackForwardListItem
   , title
   , initialURL
   , initSelector
-  , urlSelector
-  , titleSelector
   , initialURLSelector
+  , titleSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,47 +34,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsWKBackForwardListItem wkBackForwardListItem => wkBackForwardListItem -> IO (Id WKBackForwardListItem)
-init_ wkBackForwardListItem  =
-    sendMsg wkBackForwardListItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkBackForwardListItem =
+  sendOwnedMessage wkBackForwardListItem initSelector
 
 -- | The URL of the webpage represented by this item.
 --
 -- ObjC selector: @- URL@
 url :: IsWKBackForwardListItem wkBackForwardListItem => wkBackForwardListItem -> IO (Id NSURL)
-url wkBackForwardListItem  =
-    sendMsg wkBackForwardListItem (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url wkBackForwardListItem =
+  sendMessage wkBackForwardListItem urlSelector
 
 -- | The title of the webpage represented by this item.
 --
 -- ObjC selector: @- title@
 title :: IsWKBackForwardListItem wkBackForwardListItem => wkBackForwardListItem -> IO (Id NSString)
-title wkBackForwardListItem  =
-    sendMsg wkBackForwardListItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title wkBackForwardListItem =
+  sendMessage wkBackForwardListItem titleSelector
 
 -- | The URL of the initial request that created this item.
 --
 -- ObjC selector: @- initialURL@
 initialURL :: IsWKBackForwardListItem wkBackForwardListItem => wkBackForwardListItem -> IO (Id NSURL)
-initialURL wkBackForwardListItem  =
-    sendMsg wkBackForwardListItem (mkSelector "initialURL") (retPtr retVoid) [] >>= ownedObject . castPtr
+initialURL wkBackForwardListItem =
+  sendOwnedMessage wkBackForwardListItem initialURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKBackForwardListItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @initialURL@
-initialURLSelector :: Selector
+initialURLSelector :: Selector '[] (Id NSURL)
 initialURLSelector = mkSelector "initialURL"
 

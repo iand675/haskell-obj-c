@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INAppendToNoteIntent
   , initWithTargetNote_content
   , targetNote
   , content
+  , contentSelector
   , initWithTargetNote_contentSelector
   , targetNoteSelector
-  , contentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,34 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTargetNote:content:@
 initWithTargetNote_content :: (IsINAppendToNoteIntent inAppendToNoteIntent, IsINNote targetNote, IsINNoteContent content) => inAppendToNoteIntent -> targetNote -> content -> IO (Id INAppendToNoteIntent)
-initWithTargetNote_content inAppendToNoteIntent  targetNote content =
-  withObjCPtr targetNote $ \raw_targetNote ->
-    withObjCPtr content $ \raw_content ->
-        sendMsg inAppendToNoteIntent (mkSelector "initWithTargetNote:content:") (retPtr retVoid) [argPtr (castPtr raw_targetNote :: Ptr ()), argPtr (castPtr raw_content :: Ptr ())] >>= ownedObject . castPtr
+initWithTargetNote_content inAppendToNoteIntent targetNote content =
+  sendOwnedMessage inAppendToNoteIntent initWithTargetNote_contentSelector (toINNote targetNote) (toINNoteContent content)
 
 -- | @- targetNote@
 targetNote :: IsINAppendToNoteIntent inAppendToNoteIntent => inAppendToNoteIntent -> IO (Id INNote)
-targetNote inAppendToNoteIntent  =
-    sendMsg inAppendToNoteIntent (mkSelector "targetNote") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetNote inAppendToNoteIntent =
+  sendMessage inAppendToNoteIntent targetNoteSelector
 
 -- | @- content@
 content :: IsINAppendToNoteIntent inAppendToNoteIntent => inAppendToNoteIntent -> IO (Id INNoteContent)
-content inAppendToNoteIntent  =
-    sendMsg inAppendToNoteIntent (mkSelector "content") (retPtr retVoid) [] >>= retainedObject . castPtr
+content inAppendToNoteIntent =
+  sendMessage inAppendToNoteIntent contentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTargetNote:content:@
-initWithTargetNote_contentSelector :: Selector
+initWithTargetNote_contentSelector :: Selector '[Id INNote, Id INNoteContent] (Id INAppendToNoteIntent)
 initWithTargetNote_contentSelector = mkSelector "initWithTargetNote:content:"
 
 -- | @Selector@ for @targetNote@
-targetNoteSelector :: Selector
+targetNoteSelector :: Selector '[] (Id INNote)
 targetNoteSelector = mkSelector "targetNote"
 
 -- | @Selector@ for @content@
-contentSelector :: Selector
+contentSelector :: Selector '[] (Id INNoteContent)
 contentSelector = mkSelector "content"
 

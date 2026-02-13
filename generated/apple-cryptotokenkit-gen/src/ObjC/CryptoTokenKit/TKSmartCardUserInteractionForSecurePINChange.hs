@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.CryptoTokenKit.TKSmartCardUserInteractionForSecurePINChange
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,8 +43,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- PINConfirmation@
 pinConfirmation :: IsTKSmartCardUserInteractionForSecurePINChange tkSmartCardUserInteractionForSecurePINChange => tkSmartCardUserInteractionForSecurePINChange -> IO TKSmartCardPINConfirmation
-pinConfirmation tkSmartCardUserInteractionForSecurePINChange  =
-    fmap (coerce :: CULong -> TKSmartCardPINConfirmation) $ sendMsg tkSmartCardUserInteractionForSecurePINChange (mkSelector "PINConfirmation") retCULong []
+pinConfirmation tkSmartCardUserInteractionForSecurePINChange =
+  sendMessage tkSmartCardUserInteractionForSecurePINChange pinConfirmationSelector
 
 -- | Bitmask specifying whether PIN confirmation should be requested.
 --
@@ -55,18 +52,18 @@ pinConfirmation tkSmartCardUserInteractionForSecurePINChange  =
 --
 -- ObjC selector: @- setPINConfirmation:@
 setPINConfirmation :: IsTKSmartCardUserInteractionForSecurePINChange tkSmartCardUserInteractionForSecurePINChange => tkSmartCardUserInteractionForSecurePINChange -> TKSmartCardPINConfirmation -> IO ()
-setPINConfirmation tkSmartCardUserInteractionForSecurePINChange  value =
-    sendMsg tkSmartCardUserInteractionForSecurePINChange (mkSelector "setPINConfirmation:") retVoid [argCULong (coerce value)]
+setPINConfirmation tkSmartCardUserInteractionForSecurePINChange value =
+  sendMessage tkSmartCardUserInteractionForSecurePINChange setPINConfirmationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @PINConfirmation@
-pinConfirmationSelector :: Selector
+pinConfirmationSelector :: Selector '[] TKSmartCardPINConfirmation
 pinConfirmationSelector = mkSelector "PINConfirmation"
 
 -- | @Selector@ for @setPINConfirmation:@
-setPINConfirmationSelector :: Selector
+setPINConfirmationSelector :: Selector '[TKSmartCardPINConfirmation] ()
 setPINConfirmationSelector = mkSelector "setPINConfirmation:"
 

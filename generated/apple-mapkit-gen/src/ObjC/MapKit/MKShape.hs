@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.MapKit.MKShape
   , setTitle
   , subtitle
   , setSubtitle
-  , titleSelector
+  , setSubtitleSelector
   , setTitleSelector
   , subtitleSelector
-  , setSubtitleSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- title@
 title :: IsMKShape mkShape => mkShape -> IO (Id NSString)
-title mkShape  =
-    sendMsg mkShape (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title mkShape =
+  sendMessage mkShape titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsMKShape mkShape, IsNSString value) => mkShape -> value -> IO ()
-setTitle mkShape  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkShape (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle mkShape value =
+  sendMessage mkShape setTitleSelector (toNSString value)
 
 -- | @- subtitle@
 subtitle :: IsMKShape mkShape => mkShape -> IO (Id NSString)
-subtitle mkShape  =
-    sendMsg mkShape (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitle mkShape =
+  sendMessage mkShape subtitleSelector
 
 -- | @- setSubtitle:@
 setSubtitle :: (IsMKShape mkShape, IsNSString value) => mkShape -> value -> IO ()
-setSubtitle mkShape  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkShape (mkSelector "setSubtitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubtitle mkShape value =
+  sendMessage mkShape setSubtitleSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @subtitle@
-subtitleSelector :: Selector
+subtitleSelector :: Selector '[] (Id NSString)
 subtitleSelector = mkSelector "subtitle"
 
 -- | @Selector@ for @setSubtitle:@
-setSubtitleSelector :: Selector
+setSubtitleSelector :: Selector '[Id NSString] ()
 setSubtitleSelector = mkSelector "setSubtitle:"
 

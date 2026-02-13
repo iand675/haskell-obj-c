@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRThermostatClusterScheduleStruct
   , setTransitions
   , builtIn
   , setBuiltIn
-  , scheduleHandleSelector
-  , setScheduleHandleSelector
-  , systemModeSelector
-  , setSystemModeSelector
-  , nameSelector
-  , setNameSelector
-  , presetHandleSelector
-  , setPresetHandleSelector
-  , transitionsSelector
-  , setTransitionsSelector
   , builtInSelector
+  , nameSelector
+  , presetHandleSelector
+  , scheduleHandleSelector
   , setBuiltInSelector
+  , setNameSelector
+  , setPresetHandleSelector
+  , setScheduleHandleSelector
+  , setSystemModeSelector
+  , setTransitionsSelector
+  , systemModeSelector
+  , transitionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- scheduleHandle@
 scheduleHandle :: IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct => mtrThermostatClusterScheduleStruct -> IO (Id NSData)
-scheduleHandle mtrThermostatClusterScheduleStruct  =
-    sendMsg mtrThermostatClusterScheduleStruct (mkSelector "scheduleHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+scheduleHandle mtrThermostatClusterScheduleStruct =
+  sendMessage mtrThermostatClusterScheduleStruct scheduleHandleSelector
 
 -- | @- setScheduleHandle:@
 setScheduleHandle :: (IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct, IsNSData value) => mtrThermostatClusterScheduleStruct -> value -> IO ()
-setScheduleHandle mtrThermostatClusterScheduleStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleStruct (mkSelector "setScheduleHandle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScheduleHandle mtrThermostatClusterScheduleStruct value =
+  sendMessage mtrThermostatClusterScheduleStruct setScheduleHandleSelector (toNSData value)
 
 -- | @- systemMode@
 systemMode :: IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct => mtrThermostatClusterScheduleStruct -> IO (Id NSNumber)
-systemMode mtrThermostatClusterScheduleStruct  =
-    sendMsg mtrThermostatClusterScheduleStruct (mkSelector "systemMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemMode mtrThermostatClusterScheduleStruct =
+  sendMessage mtrThermostatClusterScheduleStruct systemModeSelector
 
 -- | @- setSystemMode:@
 setSystemMode :: (IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct, IsNSNumber value) => mtrThermostatClusterScheduleStruct -> value -> IO ()
-setSystemMode mtrThermostatClusterScheduleStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleStruct (mkSelector "setSystemMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSystemMode mtrThermostatClusterScheduleStruct value =
+  sendMessage mtrThermostatClusterScheduleStruct setSystemModeSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct => mtrThermostatClusterScheduleStruct -> IO (Id NSString)
-name mtrThermostatClusterScheduleStruct  =
-    sendMsg mtrThermostatClusterScheduleStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrThermostatClusterScheduleStruct =
+  sendMessage mtrThermostatClusterScheduleStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct, IsNSString value) => mtrThermostatClusterScheduleStruct -> value -> IO ()
-setName mtrThermostatClusterScheduleStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrThermostatClusterScheduleStruct value =
+  sendMessage mtrThermostatClusterScheduleStruct setNameSelector (toNSString value)
 
 -- | @- presetHandle@
 presetHandle :: IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct => mtrThermostatClusterScheduleStruct -> IO (Id NSData)
-presetHandle mtrThermostatClusterScheduleStruct  =
-    sendMsg mtrThermostatClusterScheduleStruct (mkSelector "presetHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetHandle mtrThermostatClusterScheduleStruct =
+  sendMessage mtrThermostatClusterScheduleStruct presetHandleSelector
 
 -- | @- setPresetHandle:@
 setPresetHandle :: (IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct, IsNSData value) => mtrThermostatClusterScheduleStruct -> value -> IO ()
-setPresetHandle mtrThermostatClusterScheduleStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleStruct (mkSelector "setPresetHandle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPresetHandle mtrThermostatClusterScheduleStruct value =
+  sendMessage mtrThermostatClusterScheduleStruct setPresetHandleSelector (toNSData value)
 
 -- | @- transitions@
 transitions :: IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct => mtrThermostatClusterScheduleStruct -> IO (Id NSArray)
-transitions mtrThermostatClusterScheduleStruct  =
-    sendMsg mtrThermostatClusterScheduleStruct (mkSelector "transitions") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitions mtrThermostatClusterScheduleStruct =
+  sendMessage mtrThermostatClusterScheduleStruct transitionsSelector
 
 -- | @- setTransitions:@
 setTransitions :: (IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct, IsNSArray value) => mtrThermostatClusterScheduleStruct -> value -> IO ()
-setTransitions mtrThermostatClusterScheduleStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleStruct (mkSelector "setTransitions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransitions mtrThermostatClusterScheduleStruct value =
+  sendMessage mtrThermostatClusterScheduleStruct setTransitionsSelector (toNSArray value)
 
 -- | @- builtIn@
 builtIn :: IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct => mtrThermostatClusterScheduleStruct -> IO (Id NSNumber)
-builtIn mtrThermostatClusterScheduleStruct  =
-    sendMsg mtrThermostatClusterScheduleStruct (mkSelector "builtIn") (retPtr retVoid) [] >>= retainedObject . castPtr
+builtIn mtrThermostatClusterScheduleStruct =
+  sendMessage mtrThermostatClusterScheduleStruct builtInSelector
 
 -- | @- setBuiltIn:@
 setBuiltIn :: (IsMTRThermostatClusterScheduleStruct mtrThermostatClusterScheduleStruct, IsNSNumber value) => mtrThermostatClusterScheduleStruct -> value -> IO ()
-setBuiltIn mtrThermostatClusterScheduleStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleStruct (mkSelector "setBuiltIn:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBuiltIn mtrThermostatClusterScheduleStruct value =
+  sendMessage mtrThermostatClusterScheduleStruct setBuiltInSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scheduleHandle@
-scheduleHandleSelector :: Selector
+scheduleHandleSelector :: Selector '[] (Id NSData)
 scheduleHandleSelector = mkSelector "scheduleHandle"
 
 -- | @Selector@ for @setScheduleHandle:@
-setScheduleHandleSelector :: Selector
+setScheduleHandleSelector :: Selector '[Id NSData] ()
 setScheduleHandleSelector = mkSelector "setScheduleHandle:"
 
 -- | @Selector@ for @systemMode@
-systemModeSelector :: Selector
+systemModeSelector :: Selector '[] (Id NSNumber)
 systemModeSelector = mkSelector "systemMode"
 
 -- | @Selector@ for @setSystemMode:@
-setSystemModeSelector :: Selector
+setSystemModeSelector :: Selector '[Id NSNumber] ()
 setSystemModeSelector = mkSelector "setSystemMode:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @presetHandle@
-presetHandleSelector :: Selector
+presetHandleSelector :: Selector '[] (Id NSData)
 presetHandleSelector = mkSelector "presetHandle"
 
 -- | @Selector@ for @setPresetHandle:@
-setPresetHandleSelector :: Selector
+setPresetHandleSelector :: Selector '[Id NSData] ()
 setPresetHandleSelector = mkSelector "setPresetHandle:"
 
 -- | @Selector@ for @transitions@
-transitionsSelector :: Selector
+transitionsSelector :: Selector '[] (Id NSArray)
 transitionsSelector = mkSelector "transitions"
 
 -- | @Selector@ for @setTransitions:@
-setTransitionsSelector :: Selector
+setTransitionsSelector :: Selector '[Id NSArray] ()
 setTransitionsSelector = mkSelector "setTransitions:"
 
 -- | @Selector@ for @builtIn@
-builtInSelector :: Selector
+builtInSelector :: Selector '[] (Id NSNumber)
 builtInSelector = mkSelector "builtIn"
 
 -- | @Selector@ for @setBuiltIn:@
-setBuiltInSelector :: Selector
+setBuiltInSelector :: Selector '[Id NSNumber] ()
 setBuiltInSelector = mkSelector "setBuiltIn:"
 

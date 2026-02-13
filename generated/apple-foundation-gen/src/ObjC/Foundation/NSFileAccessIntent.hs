@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,8 +12,8 @@ module ObjC.Foundation.NSFileAccessIntent
   , writingIntentWithURL_options
   , url
   , readingIntentWithURL_optionsSelector
-  , writingIntentWithURL_optionsSelector
   , urlSelector
+  , writingIntentWithURL_optionsSelector
 
   -- * Enum types
   , NSFileCoordinatorReadingOptions(NSFileCoordinatorReadingOptions)
@@ -29,15 +30,11 @@ module ObjC.Foundation.NSFileAccessIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,35 +46,33 @@ readingIntentWithURL_options :: IsNSURL url => url -> NSFileCoordinatorReadingOp
 readingIntentWithURL_options url options =
   do
     cls' <- getRequiredClass "NSFileAccessIntent"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "readingIntentWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce options)] >>= retainedObject . castPtr
+    sendClassMessage cls' readingIntentWithURL_optionsSelector (toNSURL url) options
 
 -- | @+ writingIntentWithURL:options:@
 writingIntentWithURL_options :: IsNSURL url => url -> NSFileCoordinatorWritingOptions -> IO (Id NSFileAccessIntent)
 writingIntentWithURL_options url options =
   do
     cls' <- getRequiredClass "NSFileAccessIntent"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "writingIntentWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (coerce options)] >>= retainedObject . castPtr
+    sendClassMessage cls' writingIntentWithURL_optionsSelector (toNSURL url) options
 
 -- | @- URL@
 url :: IsNSFileAccessIntent nsFileAccessIntent => nsFileAccessIntent -> IO (Id NSURL)
-url nsFileAccessIntent  =
-    sendMsg nsFileAccessIntent (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url nsFileAccessIntent =
+  sendMessage nsFileAccessIntent urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readingIntentWithURL:options:@
-readingIntentWithURL_optionsSelector :: Selector
+readingIntentWithURL_optionsSelector :: Selector '[Id NSURL, NSFileCoordinatorReadingOptions] (Id NSFileAccessIntent)
 readingIntentWithURL_optionsSelector = mkSelector "readingIntentWithURL:options:"
 
 -- | @Selector@ for @writingIntentWithURL:options:@
-writingIntentWithURL_optionsSelector :: Selector
+writingIntentWithURL_optionsSelector :: Selector '[Id NSURL, NSFileCoordinatorWritingOptions] (Id NSFileAccessIntent)
 writingIntentWithURL_optionsSelector = mkSelector "writingIntentWithURL:options:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

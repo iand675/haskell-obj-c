@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,25 +31,25 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphGRUDescriptor
   , setResetGateActivation
   , outputGateActivation
   , setOutputGateActivation
-  , descriptorSelector
-  , reverseSelector
-  , setReverseSelector
   , bidirectionalSelector
-  , setBidirectionalSelector
-  , trainingSelector
-  , setTrainingSelector
-  , resetGateFirstSelector
-  , setResetGateFirstSelector
-  , resetAfterSelector
-  , setResetAfterSelector
+  , descriptorSelector
   , flipZSelector
-  , setFlipZSelector
-  , updateGateActivationSelector
-  , setUpdateGateActivationSelector
-  , resetGateActivationSelector
-  , setResetGateActivationSelector
   , outputGateActivationSelector
+  , resetAfterSelector
+  , resetGateActivationSelector
+  , resetGateFirstSelector
+  , reverseSelector
+  , setBidirectionalSelector
+  , setFlipZSelector
   , setOutputGateActivationSelector
+  , setResetAfterSelector
+  , setResetGateActivationSelector
+  , setResetGateFirstSelector
+  , setReverseSelector
+  , setTrainingSelector
+  , setUpdateGateActivationSelector
+  , trainingSelector
+  , updateGateActivationSelector
 
   -- * Enum types
   , MPSGraphRNNActivation(MPSGraphRNNActivation)
@@ -60,15 +61,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphGRUDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,7 +80,7 @@ descriptor :: IO (Id MPSGraphGRUDescriptor)
 descriptor  =
   do
     cls' <- getRequiredClass "MPSGraphGRUDescriptor"
-    sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorSelector
 
 -- | A parameter that defines the time direction of the input sequence.
 --
@@ -91,8 +88,8 @@ descriptor  =
 --
 -- ObjC selector: @- reverse@
 reverse_ :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> IO Bool
-reverse_ mpsGraphGRUDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphGRUDescriptor (mkSelector "reverse") retCULong []
+reverse_ mpsGraphGRUDescriptor =
+  sendMessage mpsGraphGRUDescriptor reverseSelector
 
 -- | A parameter that defines the time direction of the input sequence.
 --
@@ -100,8 +97,8 @@ reverse_ mpsGraphGRUDescriptor  =
 --
 -- ObjC selector: @- setReverse:@
 setReverse :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> Bool -> IO ()
-setReverse mpsGraphGRUDescriptor  value =
-    sendMsg mpsGraphGRUDescriptor (mkSelector "setReverse:") retVoid [argCULong (if value then 1 else 0)]
+setReverse mpsGraphGRUDescriptor value =
+  sendMessage mpsGraphGRUDescriptor setReverseSelector value
 
 -- | A parameter that defines a bidirectional GRU layer.
 --
@@ -109,8 +106,8 @@ setReverse mpsGraphGRUDescriptor  value =
 --
 -- ObjC selector: @- bidirectional@
 bidirectional :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> IO Bool
-bidirectional mpsGraphGRUDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphGRUDescriptor (mkSelector "bidirectional") retCULong []
+bidirectional mpsGraphGRUDescriptor =
+  sendMessage mpsGraphGRUDescriptor bidirectionalSelector
 
 -- | A parameter that defines a bidirectional GRU layer.
 --
@@ -118,8 +115,8 @@ bidirectional mpsGraphGRUDescriptor  =
 --
 -- ObjC selector: @- setBidirectional:@
 setBidirectional :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> Bool -> IO ()
-setBidirectional mpsGraphGRUDescriptor  value =
-    sendMsg mpsGraphGRUDescriptor (mkSelector "setBidirectional:") retVoid [argCULong (if value then 1 else 0)]
+setBidirectional mpsGraphGRUDescriptor value =
+  sendMessage mpsGraphGRUDescriptor setBidirectionalSelector value
 
 -- | A parameter that enables the GRU layer to support training.
 --
@@ -127,8 +124,8 @@ setBidirectional mpsGraphGRUDescriptor  value =
 --
 -- ObjC selector: @- training@
 training :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> IO Bool
-training mpsGraphGRUDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphGRUDescriptor (mkSelector "training") retCULong []
+training mpsGraphGRUDescriptor =
+  sendMessage mpsGraphGRUDescriptor trainingSelector
 
 -- | A parameter that enables the GRU layer to support training.
 --
@@ -136,8 +133,8 @@ training mpsGraphGRUDescriptor  =
 --
 -- ObjC selector: @- setTraining:@
 setTraining :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> Bool -> IO ()
-setTraining mpsGraphGRUDescriptor  value =
-    sendMsg mpsGraphGRUDescriptor (mkSelector "setTraining:") retVoid [argCULong (if value then 1 else 0)]
+setTraining mpsGraphGRUDescriptor value =
+  sendMessage mpsGraphGRUDescriptor setTrainingSelector value
 
 -- | A parameter that controls the internal order of the GRU gates.
 --
@@ -145,8 +142,8 @@ setTraining mpsGraphGRUDescriptor  value =
 --
 -- ObjC selector: @- resetGateFirst@
 resetGateFirst :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> IO Bool
-resetGateFirst mpsGraphGRUDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphGRUDescriptor (mkSelector "resetGateFirst") retCULong []
+resetGateFirst mpsGraphGRUDescriptor =
+  sendMessage mpsGraphGRUDescriptor resetGateFirstSelector
 
 -- | A parameter that controls the internal order of the GRU gates.
 --
@@ -154,8 +151,8 @@ resetGateFirst mpsGraphGRUDescriptor  =
 --
 -- ObjC selector: @- setResetGateFirst:@
 setResetGateFirst :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> Bool -> IO ()
-setResetGateFirst mpsGraphGRUDescriptor  value =
-    sendMsg mpsGraphGRUDescriptor (mkSelector "setResetGateFirst:") retVoid [argCULong (if value then 1 else 0)]
+setResetGateFirst mpsGraphGRUDescriptor value =
+  sendMessage mpsGraphGRUDescriptor setResetGateFirstSelector value
 
 -- | A parameter that chooses between two variants for the reset gate computation.
 --
@@ -163,8 +160,8 @@ setResetGateFirst mpsGraphGRUDescriptor  value =
 --
 -- ObjC selector: @- resetAfter@
 resetAfter :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> IO Bool
-resetAfter mpsGraphGRUDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphGRUDescriptor (mkSelector "resetAfter") retCULong []
+resetAfter mpsGraphGRUDescriptor =
+  sendMessage mpsGraphGRUDescriptor resetAfterSelector
 
 -- | A parameter that chooses between two variants for the reset gate computation.
 --
@@ -172,8 +169,8 @@ resetAfter mpsGraphGRUDescriptor  =
 --
 -- ObjC selector: @- setResetAfter:@
 setResetAfter :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> Bool -> IO ()
-setResetAfter mpsGraphGRUDescriptor  value =
-    sendMsg mpsGraphGRUDescriptor (mkSelector "setResetAfter:") retVoid [argCULong (if value then 1 else 0)]
+setResetAfter mpsGraphGRUDescriptor value =
+  sendMessage mpsGraphGRUDescriptor setResetAfterSelector value
 
 -- | A parameter that chooses between two variants for the final output computation.
 --
@@ -181,8 +178,8 @@ setResetAfter mpsGraphGRUDescriptor  value =
 --
 -- ObjC selector: @- flipZ@
 flipZ :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> IO Bool
-flipZ mpsGraphGRUDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphGRUDescriptor (mkSelector "flipZ") retCULong []
+flipZ mpsGraphGRUDescriptor =
+  sendMessage mpsGraphGRUDescriptor flipZSelector
 
 -- | A parameter that chooses between two variants for the final output computation.
 --
@@ -190,8 +187,8 @@ flipZ mpsGraphGRUDescriptor  =
 --
 -- ObjC selector: @- setFlipZ:@
 setFlipZ :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> Bool -> IO ()
-setFlipZ mpsGraphGRUDescriptor  value =
-    sendMsg mpsGraphGRUDescriptor (mkSelector "setFlipZ:") retVoid [argCULong (if value then 1 else 0)]
+setFlipZ mpsGraphGRUDescriptor value =
+  sendMessage mpsGraphGRUDescriptor setFlipZSelector value
 
 -- | A parameter that defines the activation function to use with the update-gate of the GRU operation.
 --
@@ -199,8 +196,8 @@ setFlipZ mpsGraphGRUDescriptor  value =
 --
 -- ObjC selector: @- updateGateActivation@
 updateGateActivation :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> IO MPSGraphRNNActivation
-updateGateActivation mpsGraphGRUDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRNNActivation) $ sendMsg mpsGraphGRUDescriptor (mkSelector "updateGateActivation") retCULong []
+updateGateActivation mpsGraphGRUDescriptor =
+  sendMessage mpsGraphGRUDescriptor updateGateActivationSelector
 
 -- | A parameter that defines the activation function to use with the update-gate of the GRU operation.
 --
@@ -208,8 +205,8 @@ updateGateActivation mpsGraphGRUDescriptor  =
 --
 -- ObjC selector: @- setUpdateGateActivation:@
 setUpdateGateActivation :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> MPSGraphRNNActivation -> IO ()
-setUpdateGateActivation mpsGraphGRUDescriptor  value =
-    sendMsg mpsGraphGRUDescriptor (mkSelector "setUpdateGateActivation:") retVoid [argCULong (coerce value)]
+setUpdateGateActivation mpsGraphGRUDescriptor value =
+  sendMessage mpsGraphGRUDescriptor setUpdateGateActivationSelector value
 
 -- | A parameter that defines the activation function to use with the reset-gate of the GRU operation.
 --
@@ -217,8 +214,8 @@ setUpdateGateActivation mpsGraphGRUDescriptor  value =
 --
 -- ObjC selector: @- resetGateActivation@
 resetGateActivation :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> IO MPSGraphRNNActivation
-resetGateActivation mpsGraphGRUDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRNNActivation) $ sendMsg mpsGraphGRUDescriptor (mkSelector "resetGateActivation") retCULong []
+resetGateActivation mpsGraphGRUDescriptor =
+  sendMessage mpsGraphGRUDescriptor resetGateActivationSelector
 
 -- | A parameter that defines the activation function to use with the reset-gate of the GRU operation.
 --
@@ -226,8 +223,8 @@ resetGateActivation mpsGraphGRUDescriptor  =
 --
 -- ObjC selector: @- setResetGateActivation:@
 setResetGateActivation :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> MPSGraphRNNActivation -> IO ()
-setResetGateActivation mpsGraphGRUDescriptor  value =
-    sendMsg mpsGraphGRUDescriptor (mkSelector "setResetGateActivation:") retVoid [argCULong (coerce value)]
+setResetGateActivation mpsGraphGRUDescriptor value =
+  sendMessage mpsGraphGRUDescriptor setResetGateActivationSelector value
 
 -- | A parameter that defines the activation function to use with the output-gate of the GRU operation.
 --
@@ -235,8 +232,8 @@ setResetGateActivation mpsGraphGRUDescriptor  value =
 --
 -- ObjC selector: @- outputGateActivation@
 outputGateActivation :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> IO MPSGraphRNNActivation
-outputGateActivation mpsGraphGRUDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRNNActivation) $ sendMsg mpsGraphGRUDescriptor (mkSelector "outputGateActivation") retCULong []
+outputGateActivation mpsGraphGRUDescriptor =
+  sendMessage mpsGraphGRUDescriptor outputGateActivationSelector
 
 -- | A parameter that defines the activation function to use with the output-gate of the GRU operation.
 --
@@ -244,86 +241,86 @@ outputGateActivation mpsGraphGRUDescriptor  =
 --
 -- ObjC selector: @- setOutputGateActivation:@
 setOutputGateActivation :: IsMPSGraphGRUDescriptor mpsGraphGRUDescriptor => mpsGraphGRUDescriptor -> MPSGraphRNNActivation -> IO ()
-setOutputGateActivation mpsGraphGRUDescriptor  value =
-    sendMsg mpsGraphGRUDescriptor (mkSelector "setOutputGateActivation:") retVoid [argCULong (coerce value)]
+setOutputGateActivation mpsGraphGRUDescriptor value =
+  sendMessage mpsGraphGRUDescriptor setOutputGateActivationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MPSGraphGRUDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @reverse@
-reverseSelector :: Selector
+reverseSelector :: Selector '[] Bool
 reverseSelector = mkSelector "reverse"
 
 -- | @Selector@ for @setReverse:@
-setReverseSelector :: Selector
+setReverseSelector :: Selector '[Bool] ()
 setReverseSelector = mkSelector "setReverse:"
 
 -- | @Selector@ for @bidirectional@
-bidirectionalSelector :: Selector
+bidirectionalSelector :: Selector '[] Bool
 bidirectionalSelector = mkSelector "bidirectional"
 
 -- | @Selector@ for @setBidirectional:@
-setBidirectionalSelector :: Selector
+setBidirectionalSelector :: Selector '[Bool] ()
 setBidirectionalSelector = mkSelector "setBidirectional:"
 
 -- | @Selector@ for @training@
-trainingSelector :: Selector
+trainingSelector :: Selector '[] Bool
 trainingSelector = mkSelector "training"
 
 -- | @Selector@ for @setTraining:@
-setTrainingSelector :: Selector
+setTrainingSelector :: Selector '[Bool] ()
 setTrainingSelector = mkSelector "setTraining:"
 
 -- | @Selector@ for @resetGateFirst@
-resetGateFirstSelector :: Selector
+resetGateFirstSelector :: Selector '[] Bool
 resetGateFirstSelector = mkSelector "resetGateFirst"
 
 -- | @Selector@ for @setResetGateFirst:@
-setResetGateFirstSelector :: Selector
+setResetGateFirstSelector :: Selector '[Bool] ()
 setResetGateFirstSelector = mkSelector "setResetGateFirst:"
 
 -- | @Selector@ for @resetAfter@
-resetAfterSelector :: Selector
+resetAfterSelector :: Selector '[] Bool
 resetAfterSelector = mkSelector "resetAfter"
 
 -- | @Selector@ for @setResetAfter:@
-setResetAfterSelector :: Selector
+setResetAfterSelector :: Selector '[Bool] ()
 setResetAfterSelector = mkSelector "setResetAfter:"
 
 -- | @Selector@ for @flipZ@
-flipZSelector :: Selector
+flipZSelector :: Selector '[] Bool
 flipZSelector = mkSelector "flipZ"
 
 -- | @Selector@ for @setFlipZ:@
-setFlipZSelector :: Selector
+setFlipZSelector :: Selector '[Bool] ()
 setFlipZSelector = mkSelector "setFlipZ:"
 
 -- | @Selector@ for @updateGateActivation@
-updateGateActivationSelector :: Selector
+updateGateActivationSelector :: Selector '[] MPSGraphRNNActivation
 updateGateActivationSelector = mkSelector "updateGateActivation"
 
 -- | @Selector@ for @setUpdateGateActivation:@
-setUpdateGateActivationSelector :: Selector
+setUpdateGateActivationSelector :: Selector '[MPSGraphRNNActivation] ()
 setUpdateGateActivationSelector = mkSelector "setUpdateGateActivation:"
 
 -- | @Selector@ for @resetGateActivation@
-resetGateActivationSelector :: Selector
+resetGateActivationSelector :: Selector '[] MPSGraphRNNActivation
 resetGateActivationSelector = mkSelector "resetGateActivation"
 
 -- | @Selector@ for @setResetGateActivation:@
-setResetGateActivationSelector :: Selector
+setResetGateActivationSelector :: Selector '[MPSGraphRNNActivation] ()
 setResetGateActivationSelector = mkSelector "setResetGateActivation:"
 
 -- | @Selector@ for @outputGateActivation@
-outputGateActivationSelector :: Selector
+outputGateActivationSelector :: Selector '[] MPSGraphRNNActivation
 outputGateActivationSelector = mkSelector "outputGateActivation"
 
 -- | @Selector@ for @setOutputGateActivation:@
-setOutputGateActivationSelector :: Selector
+setOutputGateActivationSelector :: Selector '[MPSGraphRNNActivation] ()
 setOutputGateActivationSelector = mkSelector "setOutputGateActivation:"
 

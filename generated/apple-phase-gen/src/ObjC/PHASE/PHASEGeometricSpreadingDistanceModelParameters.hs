@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.PHASE.PHASEGeometricSpreadingDistanceModelParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEGeometricSpreadingDistanceModelParameters phaseGeometricSpreadingDistanceModelParameters => phaseGeometricSpreadingDistanceModelParameters -> IO (Id PHASEGeometricSpreadingDistanceModelParameters)
-init_ phaseGeometricSpreadingDistanceModelParameters  =
-    sendMsg phaseGeometricSpreadingDistanceModelParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseGeometricSpreadingDistanceModelParameters =
+  sendOwnedMessage phaseGeometricSpreadingDistanceModelParameters initSelector
 
 -- | rolloffFactor
 --
@@ -52,8 +49,8 @@ init_ phaseGeometricSpreadingDistanceModelParameters  =
 --
 -- ObjC selector: @- rolloffFactor@
 rolloffFactor :: IsPHASEGeometricSpreadingDistanceModelParameters phaseGeometricSpreadingDistanceModelParameters => phaseGeometricSpreadingDistanceModelParameters -> IO CDouble
-rolloffFactor phaseGeometricSpreadingDistanceModelParameters  =
-    sendMsg phaseGeometricSpreadingDistanceModelParameters (mkSelector "rolloffFactor") retCDouble []
+rolloffFactor phaseGeometricSpreadingDistanceModelParameters =
+  sendMessage phaseGeometricSpreadingDistanceModelParameters rolloffFactorSelector
 
 -- | rolloffFactor
 --
@@ -63,22 +60,22 @@ rolloffFactor phaseGeometricSpreadingDistanceModelParameters  =
 --
 -- ObjC selector: @- setRolloffFactor:@
 setRolloffFactor :: IsPHASEGeometricSpreadingDistanceModelParameters phaseGeometricSpreadingDistanceModelParameters => phaseGeometricSpreadingDistanceModelParameters -> CDouble -> IO ()
-setRolloffFactor phaseGeometricSpreadingDistanceModelParameters  value =
-    sendMsg phaseGeometricSpreadingDistanceModelParameters (mkSelector "setRolloffFactor:") retVoid [argCDouble value]
+setRolloffFactor phaseGeometricSpreadingDistanceModelParameters value =
+  sendMessage phaseGeometricSpreadingDistanceModelParameters setRolloffFactorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEGeometricSpreadingDistanceModelParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @rolloffFactor@
-rolloffFactorSelector :: Selector
+rolloffFactorSelector :: Selector '[] CDouble
 rolloffFactorSelector = mkSelector "rolloffFactor"
 
 -- | @Selector@ for @setRolloffFactor:@
-setRolloffFactorSelector :: Selector
+setRolloffFactorSelector :: Selector '[CDouble] ()
 setRolloffFactorSelector = mkSelector "setRolloffFactor:"
 

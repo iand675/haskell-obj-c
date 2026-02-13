@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,28 +30,28 @@ module ObjC.Foundation.NSHashTable
   , allObjects
   , anyObject
   , setRepresentation
-  , initWithOptions_capacitySelector
-  , initWithPointerFunctions_capacitySelector
+  , addObjectSelector
+  , allObjectsSelector
+  , anyObjectSelector
+  , containsObjectSelector
+  , countSelector
   , hashTableWithOptionsSelector
   , hashTableWithWeakObjectsSelector
-  , weakObjectsHashTableSelector
-  , memberSelector
-  , objectEnumeratorSelector
-  , addObjectSelector
-  , removeObjectSelector
-  , removeAllObjectsSelector
-  , containsObjectSelector
+  , initWithOptions_capacitySelector
+  , initWithPointerFunctions_capacitySelector
+  , intersectHashTableSelector
   , intersectsHashTableSelector
   , isEqualToHashTableSelector
   , isSubsetOfHashTableSelector
-  , intersectHashTableSelector
-  , unionHashTableSelector
+  , memberSelector
   , minusHashTableSelector
+  , objectEnumeratorSelector
   , pointerFunctionsSelector
-  , countSelector
-  , allObjectsSelector
-  , anyObjectSelector
+  , removeAllObjectsSelector
+  , removeObjectSelector
   , setRepresentationSelector
+  , unionHashTableSelector
+  , weakObjectsHashTableSelector
 
   -- * Enum types
   , NSPointerFunctionsOptions(NSPointerFunctionsOptions)
@@ -70,15 +71,11 @@ module ObjC.Foundation.NSHashTable
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -87,216 +84,209 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithOptions:capacity:@
 initWithOptions_capacity :: IsNSHashTable nsHashTable => nsHashTable -> NSPointerFunctionsOptions -> CULong -> IO (Id NSHashTable)
-initWithOptions_capacity nsHashTable  options initialCapacity =
-    sendMsg nsHashTable (mkSelector "initWithOptions:capacity:") (retPtr retVoid) [argCULong (coerce options), argCULong initialCapacity] >>= ownedObject . castPtr
+initWithOptions_capacity nsHashTable options initialCapacity =
+  sendOwnedMessage nsHashTable initWithOptions_capacitySelector options initialCapacity
 
 -- | @- initWithPointerFunctions:capacity:@
 initWithPointerFunctions_capacity :: (IsNSHashTable nsHashTable, IsNSPointerFunctions functions) => nsHashTable -> functions -> CULong -> IO (Id NSHashTable)
-initWithPointerFunctions_capacity nsHashTable  functions initialCapacity =
-  withObjCPtr functions $ \raw_functions ->
-      sendMsg nsHashTable (mkSelector "initWithPointerFunctions:capacity:") (retPtr retVoid) [argPtr (castPtr raw_functions :: Ptr ()), argCULong initialCapacity] >>= ownedObject . castPtr
+initWithPointerFunctions_capacity nsHashTable functions initialCapacity =
+  sendOwnedMessage nsHashTable initWithPointerFunctions_capacitySelector (toNSPointerFunctions functions) initialCapacity
 
 -- | @+ hashTableWithOptions:@
 hashTableWithOptions :: NSPointerFunctionsOptions -> IO (Id NSHashTable)
 hashTableWithOptions options =
   do
     cls' <- getRequiredClass "NSHashTable"
-    sendClassMsg cls' (mkSelector "hashTableWithOptions:") (retPtr retVoid) [argCULong (coerce options)] >>= retainedObject . castPtr
+    sendClassMessage cls' hashTableWithOptionsSelector options
 
 -- | @+ hashTableWithWeakObjects@
 hashTableWithWeakObjects :: IO RawId
 hashTableWithWeakObjects  =
   do
     cls' <- getRequiredClass "NSHashTable"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "hashTableWithWeakObjects") (retPtr retVoid) []
+    sendClassMessage cls' hashTableWithWeakObjectsSelector
 
 -- | @+ weakObjectsHashTable@
 weakObjectsHashTable :: IO (Id NSHashTable)
 weakObjectsHashTable  =
   do
     cls' <- getRequiredClass "NSHashTable"
-    sendClassMsg cls' (mkSelector "weakObjectsHashTable") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' weakObjectsHashTableSelector
 
 -- | @- member:@
 member :: IsNSHashTable nsHashTable => nsHashTable -> RawId -> IO RawId
-member nsHashTable  object =
-    fmap (RawId . castPtr) $ sendMsg nsHashTable (mkSelector "member:") (retPtr retVoid) [argPtr (castPtr (unRawId object) :: Ptr ())]
+member nsHashTable object =
+  sendMessage nsHashTable memberSelector object
 
 -- | @- objectEnumerator@
 objectEnumerator :: IsNSHashTable nsHashTable => nsHashTable -> IO (Id NSEnumerator)
-objectEnumerator nsHashTable  =
-    sendMsg nsHashTable (mkSelector "objectEnumerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectEnumerator nsHashTable =
+  sendMessage nsHashTable objectEnumeratorSelector
 
 -- | @- addObject:@
 addObject :: IsNSHashTable nsHashTable => nsHashTable -> RawId -> IO ()
-addObject nsHashTable  object =
-    sendMsg nsHashTable (mkSelector "addObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+addObject nsHashTable object =
+  sendMessage nsHashTable addObjectSelector object
 
 -- | @- removeObject:@
 removeObject :: IsNSHashTable nsHashTable => nsHashTable -> RawId -> IO ()
-removeObject nsHashTable  object =
-    sendMsg nsHashTable (mkSelector "removeObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+removeObject nsHashTable object =
+  sendMessage nsHashTable removeObjectSelector object
 
 -- | @- removeAllObjects@
 removeAllObjects :: IsNSHashTable nsHashTable => nsHashTable -> IO ()
-removeAllObjects nsHashTable  =
-    sendMsg nsHashTable (mkSelector "removeAllObjects") retVoid []
+removeAllObjects nsHashTable =
+  sendMessage nsHashTable removeAllObjectsSelector
 
 -- | @- containsObject:@
 containsObject :: IsNSHashTable nsHashTable => nsHashTable -> RawId -> IO Bool
-containsObject nsHashTable  anObject =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsHashTable (mkSelector "containsObject:") retCULong [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+containsObject nsHashTable anObject =
+  sendMessage nsHashTable containsObjectSelector anObject
 
 -- | @- intersectsHashTable:@
 intersectsHashTable :: (IsNSHashTable nsHashTable, IsNSHashTable other) => nsHashTable -> other -> IO Bool
-intersectsHashTable nsHashTable  other =
-  withObjCPtr other $ \raw_other ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsHashTable (mkSelector "intersectsHashTable:") retCULong [argPtr (castPtr raw_other :: Ptr ())]
+intersectsHashTable nsHashTable other =
+  sendMessage nsHashTable intersectsHashTableSelector (toNSHashTable other)
 
 -- | @- isEqualToHashTable:@
 isEqualToHashTable :: (IsNSHashTable nsHashTable, IsNSHashTable other) => nsHashTable -> other -> IO Bool
-isEqualToHashTable nsHashTable  other =
-  withObjCPtr other $ \raw_other ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsHashTable (mkSelector "isEqualToHashTable:") retCULong [argPtr (castPtr raw_other :: Ptr ())]
+isEqualToHashTable nsHashTable other =
+  sendMessage nsHashTable isEqualToHashTableSelector (toNSHashTable other)
 
 -- | @- isSubsetOfHashTable:@
 isSubsetOfHashTable :: (IsNSHashTable nsHashTable, IsNSHashTable other) => nsHashTable -> other -> IO Bool
-isSubsetOfHashTable nsHashTable  other =
-  withObjCPtr other $ \raw_other ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsHashTable (mkSelector "isSubsetOfHashTable:") retCULong [argPtr (castPtr raw_other :: Ptr ())]
+isSubsetOfHashTable nsHashTable other =
+  sendMessage nsHashTable isSubsetOfHashTableSelector (toNSHashTable other)
 
 -- | @- intersectHashTable:@
 intersectHashTable :: (IsNSHashTable nsHashTable, IsNSHashTable other) => nsHashTable -> other -> IO ()
-intersectHashTable nsHashTable  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsHashTable (mkSelector "intersectHashTable:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+intersectHashTable nsHashTable other =
+  sendMessage nsHashTable intersectHashTableSelector (toNSHashTable other)
 
 -- | @- unionHashTable:@
 unionHashTable :: (IsNSHashTable nsHashTable, IsNSHashTable other) => nsHashTable -> other -> IO ()
-unionHashTable nsHashTable  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsHashTable (mkSelector "unionHashTable:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+unionHashTable nsHashTable other =
+  sendMessage nsHashTable unionHashTableSelector (toNSHashTable other)
 
 -- | @- minusHashTable:@
 minusHashTable :: (IsNSHashTable nsHashTable, IsNSHashTable other) => nsHashTable -> other -> IO ()
-minusHashTable nsHashTable  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsHashTable (mkSelector "minusHashTable:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+minusHashTable nsHashTable other =
+  sendMessage nsHashTable minusHashTableSelector (toNSHashTable other)
 
 -- | @- pointerFunctions@
 pointerFunctions :: IsNSHashTable nsHashTable => nsHashTable -> IO (Id NSPointerFunctions)
-pointerFunctions nsHashTable  =
-    sendMsg nsHashTable (mkSelector "pointerFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+pointerFunctions nsHashTable =
+  sendMessage nsHashTable pointerFunctionsSelector
 
 -- | @- count@
 count :: IsNSHashTable nsHashTable => nsHashTable -> IO CULong
-count nsHashTable  =
-    sendMsg nsHashTable (mkSelector "count") retCULong []
+count nsHashTable =
+  sendMessage nsHashTable countSelector
 
 -- | @- allObjects@
 allObjects :: IsNSHashTable nsHashTable => nsHashTable -> IO (Id NSArray)
-allObjects nsHashTable  =
-    sendMsg nsHashTable (mkSelector "allObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+allObjects nsHashTable =
+  sendMessage nsHashTable allObjectsSelector
 
 -- | @- anyObject@
 anyObject :: IsNSHashTable nsHashTable => nsHashTable -> IO RawId
-anyObject nsHashTable  =
-    fmap (RawId . castPtr) $ sendMsg nsHashTable (mkSelector "anyObject") (retPtr retVoid) []
+anyObject nsHashTable =
+  sendMessage nsHashTable anyObjectSelector
 
 -- | @- setRepresentation@
 setRepresentation :: IsNSHashTable nsHashTable => nsHashTable -> IO (Id NSSet)
-setRepresentation nsHashTable  =
-    sendMsg nsHashTable (mkSelector "setRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+setRepresentation nsHashTable =
+  sendMessage nsHashTable setRepresentationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithOptions:capacity:@
-initWithOptions_capacitySelector :: Selector
+initWithOptions_capacitySelector :: Selector '[NSPointerFunctionsOptions, CULong] (Id NSHashTable)
 initWithOptions_capacitySelector = mkSelector "initWithOptions:capacity:"
 
 -- | @Selector@ for @initWithPointerFunctions:capacity:@
-initWithPointerFunctions_capacitySelector :: Selector
+initWithPointerFunctions_capacitySelector :: Selector '[Id NSPointerFunctions, CULong] (Id NSHashTable)
 initWithPointerFunctions_capacitySelector = mkSelector "initWithPointerFunctions:capacity:"
 
 -- | @Selector@ for @hashTableWithOptions:@
-hashTableWithOptionsSelector :: Selector
+hashTableWithOptionsSelector :: Selector '[NSPointerFunctionsOptions] (Id NSHashTable)
 hashTableWithOptionsSelector = mkSelector "hashTableWithOptions:"
 
 -- | @Selector@ for @hashTableWithWeakObjects@
-hashTableWithWeakObjectsSelector :: Selector
+hashTableWithWeakObjectsSelector :: Selector '[] RawId
 hashTableWithWeakObjectsSelector = mkSelector "hashTableWithWeakObjects"
 
 -- | @Selector@ for @weakObjectsHashTable@
-weakObjectsHashTableSelector :: Selector
+weakObjectsHashTableSelector :: Selector '[] (Id NSHashTable)
 weakObjectsHashTableSelector = mkSelector "weakObjectsHashTable"
 
 -- | @Selector@ for @member:@
-memberSelector :: Selector
+memberSelector :: Selector '[RawId] RawId
 memberSelector = mkSelector "member:"
 
 -- | @Selector@ for @objectEnumerator@
-objectEnumeratorSelector :: Selector
+objectEnumeratorSelector :: Selector '[] (Id NSEnumerator)
 objectEnumeratorSelector = mkSelector "objectEnumerator"
 
 -- | @Selector@ for @addObject:@
-addObjectSelector :: Selector
+addObjectSelector :: Selector '[RawId] ()
 addObjectSelector = mkSelector "addObject:"
 
 -- | @Selector@ for @removeObject:@
-removeObjectSelector :: Selector
+removeObjectSelector :: Selector '[RawId] ()
 removeObjectSelector = mkSelector "removeObject:"
 
 -- | @Selector@ for @removeAllObjects@
-removeAllObjectsSelector :: Selector
+removeAllObjectsSelector :: Selector '[] ()
 removeAllObjectsSelector = mkSelector "removeAllObjects"
 
 -- | @Selector@ for @containsObject:@
-containsObjectSelector :: Selector
+containsObjectSelector :: Selector '[RawId] Bool
 containsObjectSelector = mkSelector "containsObject:"
 
 -- | @Selector@ for @intersectsHashTable:@
-intersectsHashTableSelector :: Selector
+intersectsHashTableSelector :: Selector '[Id NSHashTable] Bool
 intersectsHashTableSelector = mkSelector "intersectsHashTable:"
 
 -- | @Selector@ for @isEqualToHashTable:@
-isEqualToHashTableSelector :: Selector
+isEqualToHashTableSelector :: Selector '[Id NSHashTable] Bool
 isEqualToHashTableSelector = mkSelector "isEqualToHashTable:"
 
 -- | @Selector@ for @isSubsetOfHashTable:@
-isSubsetOfHashTableSelector :: Selector
+isSubsetOfHashTableSelector :: Selector '[Id NSHashTable] Bool
 isSubsetOfHashTableSelector = mkSelector "isSubsetOfHashTable:"
 
 -- | @Selector@ for @intersectHashTable:@
-intersectHashTableSelector :: Selector
+intersectHashTableSelector :: Selector '[Id NSHashTable] ()
 intersectHashTableSelector = mkSelector "intersectHashTable:"
 
 -- | @Selector@ for @unionHashTable:@
-unionHashTableSelector :: Selector
+unionHashTableSelector :: Selector '[Id NSHashTable] ()
 unionHashTableSelector = mkSelector "unionHashTable:"
 
 -- | @Selector@ for @minusHashTable:@
-minusHashTableSelector :: Selector
+minusHashTableSelector :: Selector '[Id NSHashTable] ()
 minusHashTableSelector = mkSelector "minusHashTable:"
 
 -- | @Selector@ for @pointerFunctions@
-pointerFunctionsSelector :: Selector
+pointerFunctionsSelector :: Selector '[] (Id NSPointerFunctions)
 pointerFunctionsSelector = mkSelector "pointerFunctions"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @allObjects@
-allObjectsSelector :: Selector
+allObjectsSelector :: Selector '[] (Id NSArray)
 allObjectsSelector = mkSelector "allObjects"
 
 -- | @Selector@ for @anyObject@
-anyObjectSelector :: Selector
+anyObjectSelector :: Selector '[] RawId
 anyObjectSelector = mkSelector "anyObject"
 
 -- | @Selector@ for @setRepresentation@
-setRepresentationSelector :: Selector
+setRepresentationSelector :: Selector '[] (Id NSSet)
 setRepresentationSelector = mkSelector "setRepresentation"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRPowerSourceClusterWiredFaultChangeEvent
   , previous
   , setPrevious
   , currentSelector
-  , setCurrentSelector
   , previousSelector
+  , setCurrentSelector
   , setPreviousSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- current@
 current :: IsMTRPowerSourceClusterWiredFaultChangeEvent mtrPowerSourceClusterWiredFaultChangeEvent => mtrPowerSourceClusterWiredFaultChangeEvent -> IO (Id NSArray)
-current mtrPowerSourceClusterWiredFaultChangeEvent  =
-    sendMsg mtrPowerSourceClusterWiredFaultChangeEvent (mkSelector "current") (retPtr retVoid) [] >>= retainedObject . castPtr
+current mtrPowerSourceClusterWiredFaultChangeEvent =
+  sendMessage mtrPowerSourceClusterWiredFaultChangeEvent currentSelector
 
 -- | @- setCurrent:@
 setCurrent :: (IsMTRPowerSourceClusterWiredFaultChangeEvent mtrPowerSourceClusterWiredFaultChangeEvent, IsNSArray value) => mtrPowerSourceClusterWiredFaultChangeEvent -> value -> IO ()
-setCurrent mtrPowerSourceClusterWiredFaultChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPowerSourceClusterWiredFaultChangeEvent (mkSelector "setCurrent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrent mtrPowerSourceClusterWiredFaultChangeEvent value =
+  sendMessage mtrPowerSourceClusterWiredFaultChangeEvent setCurrentSelector (toNSArray value)
 
 -- | @- previous@
 previous :: IsMTRPowerSourceClusterWiredFaultChangeEvent mtrPowerSourceClusterWiredFaultChangeEvent => mtrPowerSourceClusterWiredFaultChangeEvent -> IO (Id NSArray)
-previous mtrPowerSourceClusterWiredFaultChangeEvent  =
-    sendMsg mtrPowerSourceClusterWiredFaultChangeEvent (mkSelector "previous") (retPtr retVoid) [] >>= retainedObject . castPtr
+previous mtrPowerSourceClusterWiredFaultChangeEvent =
+  sendMessage mtrPowerSourceClusterWiredFaultChangeEvent previousSelector
 
 -- | @- setPrevious:@
 setPrevious :: (IsMTRPowerSourceClusterWiredFaultChangeEvent mtrPowerSourceClusterWiredFaultChangeEvent, IsNSArray value) => mtrPowerSourceClusterWiredFaultChangeEvent -> value -> IO ()
-setPrevious mtrPowerSourceClusterWiredFaultChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPowerSourceClusterWiredFaultChangeEvent (mkSelector "setPrevious:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrevious mtrPowerSourceClusterWiredFaultChangeEvent value =
+  sendMessage mtrPowerSourceClusterWiredFaultChangeEvent setPreviousSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @current@
-currentSelector :: Selector
+currentSelector :: Selector '[] (Id NSArray)
 currentSelector = mkSelector "current"
 
 -- | @Selector@ for @setCurrent:@
-setCurrentSelector :: Selector
+setCurrentSelector :: Selector '[Id NSArray] ()
 setCurrentSelector = mkSelector "setCurrent:"
 
 -- | @Selector@ for @previous@
-previousSelector :: Selector
+previousSelector :: Selector '[] (Id NSArray)
 previousSelector = mkSelector "previous"
 
 -- | @Selector@ for @setPrevious:@
-setPreviousSelector :: Selector
+setPreviousSelector :: Selector '[Id NSArray] ()
 setPreviousSelector = mkSelector "setPrevious:"
 

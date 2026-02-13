@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,17 +25,17 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionTransposeGradient
   , dataSource
   , gradientOption
   , setGradientOption
-  , initWithDevice_weightsSelector
-  , initWithCoder_deviceSelector
-  , initWithDeviceSelector
-  , reloadWeightsAndBiasesFromDataSourceSelector
-  , reloadWeightsAndBiasesWithCommandBuffer_stateSelector
-  , sourceGradientFeatureChannelsSelector
-  , sourceImageFeatureChannelsSelector
-  , groupsSelector
   , dataSourceSelector
   , gradientOptionSelector
+  , groupsSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_weightsSelector
+  , reloadWeightsAndBiasesFromDataSourceSelector
+  , reloadWeightsAndBiasesWithCommandBuffer_stateSelector
   , setGradientOptionSelector
+  , sourceGradientFeatureChannelsSelector
+  , sourceImageFeatureChannelsSelector
 
   -- * Enum types
   , MPSCNNConvolutionGradientOption(MPSCNNConvolutionGradientOption)
@@ -44,15 +45,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionTransposeGradient
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,8 +67,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:weights:@
 initWithDevice_weights :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> RawId -> RawId -> IO (Id MPSCNNConvolutionTransposeGradient)
-initWithDevice_weights mpscnnConvolutionTransposeGradient  device weights =
-    sendMsg mpscnnConvolutionTransposeGradient (mkSelector "initWithDevice:weights:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_weights mpscnnConvolutionTransposeGradient device weights =
+  sendOwnedMessage mpscnnConvolutionTransposeGradient initWithDevice_weightsSelector device weights
 
 -- | NSSecureCoding compatability
 --
@@ -85,21 +82,20 @@ initWithDevice_weights mpscnnConvolutionTransposeGradient  device weights =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient, IsNSCoder aDecoder) => mpscnnConvolutionTransposeGradient -> aDecoder -> RawId -> IO (Id MPSCNNConvolutionTransposeGradient)
-initWithCoder_device mpscnnConvolutionTransposeGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnConvolutionTransposeGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnConvolutionTransposeGradient aDecoder device =
+  sendOwnedMessage mpscnnConvolutionTransposeGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> RawId -> IO (Id MPSCNNConvolutionTransposeGradient)
-initWithDevice mpscnnConvolutionTransposeGradient  device =
-    sendMsg mpscnnConvolutionTransposeGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnConvolutionTransposeGradient device =
+  sendOwnedMessage mpscnnConvolutionTransposeGradient initWithDeviceSelector device
 
 -- | CPU side reload. Reload the updated weights and biases from data provider into internal weights and bias buffers. Weights and biases              gradients needed for update are obtained from MPSCNNConvolutionGradientState object. Data provider passed in init call is used for this purpose.
 --
 -- ObjC selector: @- reloadWeightsAndBiasesFromDataSource@
 reloadWeightsAndBiasesFromDataSource :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> IO ()
-reloadWeightsAndBiasesFromDataSource mpscnnConvolutionTransposeGradient  =
-    sendMsg mpscnnConvolutionTransposeGradient (mkSelector "reloadWeightsAndBiasesFromDataSource") retVoid []
+reloadWeightsAndBiasesFromDataSource mpscnnConvolutionTransposeGradient =
+  sendMessage mpscnnConvolutionTransposeGradient reloadWeightsAndBiasesFromDataSourceSelector
 
 -- | GPU side reload. Reload the updated weights and biases from update buffer produced by application enqueued metal kernel into internal weights              and biases buffer. Weights and biases gradients needed for update are obtained from MPSCNNConvolutionGradientState object's gradientForWeights and gradientForBiases metal buffer.
 --
@@ -109,9 +105,8 @@ reloadWeightsAndBiasesFromDataSource mpscnnConvolutionTransposeGradient  =
 --
 -- ObjC selector: @- reloadWeightsAndBiasesWithCommandBuffer:state:@
 reloadWeightsAndBiasesWithCommandBuffer_state :: (IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient, IsMPSCNNConvolutionWeightsAndBiasesState state) => mpscnnConvolutionTransposeGradient -> RawId -> state -> IO ()
-reloadWeightsAndBiasesWithCommandBuffer_state mpscnnConvolutionTransposeGradient  commandBuffer state =
-  withObjCPtr state $ \raw_state ->
-      sendMsg mpscnnConvolutionTransposeGradient (mkSelector "reloadWeightsAndBiasesWithCommandBuffer:state:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_state :: Ptr ())]
+reloadWeightsAndBiasesWithCommandBuffer_state mpscnnConvolutionTransposeGradient commandBuffer state =
+  sendMessage mpscnnConvolutionTransposeGradient reloadWeightsAndBiasesWithCommandBuffer_stateSelector commandBuffer (toMPSCNNConvolutionWeightsAndBiasesState state)
 
 -- | sourceGradientFeatureChannels
 --
@@ -119,8 +114,8 @@ reloadWeightsAndBiasesWithCommandBuffer_state mpscnnConvolutionTransposeGradient
 --
 -- ObjC selector: @- sourceGradientFeatureChannels@
 sourceGradientFeatureChannels :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> IO CULong
-sourceGradientFeatureChannels mpscnnConvolutionTransposeGradient  =
-    sendMsg mpscnnConvolutionTransposeGradient (mkSelector "sourceGradientFeatureChannels") retCULong []
+sourceGradientFeatureChannels mpscnnConvolutionTransposeGradient =
+  sendMessage mpscnnConvolutionTransposeGradient sourceGradientFeatureChannelsSelector
 
 -- | sourceImageFeatureChannels
 --
@@ -128,8 +123,8 @@ sourceGradientFeatureChannels mpscnnConvolutionTransposeGradient  =
 --
 -- ObjC selector: @- sourceImageFeatureChannels@
 sourceImageFeatureChannels :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> IO CULong
-sourceImageFeatureChannels mpscnnConvolutionTransposeGradient  =
-    sendMsg mpscnnConvolutionTransposeGradient (mkSelector "sourceImageFeatureChannels") retCULong []
+sourceImageFeatureChannels mpscnnConvolutionTransposeGradient =
+  sendMessage mpscnnConvolutionTransposeGradient sourceImageFeatureChannelsSelector
 
 -- | groups
 --
@@ -137,8 +132,8 @@ sourceImageFeatureChannels mpscnnConvolutionTransposeGradient  =
 --
 -- ObjC selector: @- groups@
 groups :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> IO CULong
-groups mpscnnConvolutionTransposeGradient  =
-    sendMsg mpscnnConvolutionTransposeGradient (mkSelector "groups") retCULong []
+groups mpscnnConvolutionTransposeGradient =
+  sendMessage mpscnnConvolutionTransposeGradient groupsSelector
 
 -- | dataSource
 --
@@ -146,8 +141,8 @@ groups mpscnnConvolutionTransposeGradient  =
 --
 -- ObjC selector: @- dataSource@
 dataSource :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> IO RawId
-dataSource mpscnnConvolutionTransposeGradient  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionTransposeGradient (mkSelector "dataSource") (retPtr retVoid) []
+dataSource mpscnnConvolutionTransposeGradient =
+  sendMessage mpscnnConvolutionTransposeGradient dataSourceSelector
 
 -- | gradientOption
 --
@@ -155,8 +150,8 @@ dataSource mpscnnConvolutionTransposeGradient  =
 --
 -- ObjC selector: @- gradientOption@
 gradientOption :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> IO MPSCNNConvolutionGradientOption
-gradientOption mpscnnConvolutionTransposeGradient  =
-    fmap (coerce :: CULong -> MPSCNNConvolutionGradientOption) $ sendMsg mpscnnConvolutionTransposeGradient (mkSelector "gradientOption") retCULong []
+gradientOption mpscnnConvolutionTransposeGradient =
+  sendMessage mpscnnConvolutionTransposeGradient gradientOptionSelector
 
 -- | gradientOption
 --
@@ -164,54 +159,54 @@ gradientOption mpscnnConvolutionTransposeGradient  =
 --
 -- ObjC selector: @- setGradientOption:@
 setGradientOption :: IsMPSCNNConvolutionTransposeGradient mpscnnConvolutionTransposeGradient => mpscnnConvolutionTransposeGradient -> MPSCNNConvolutionGradientOption -> IO ()
-setGradientOption mpscnnConvolutionTransposeGradient  value =
-    sendMsg mpscnnConvolutionTransposeGradient (mkSelector "setGradientOption:") retVoid [argCULong (coerce value)]
+setGradientOption mpscnnConvolutionTransposeGradient value =
+  sendMessage mpscnnConvolutionTransposeGradient setGradientOptionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:weights:@
-initWithDevice_weightsSelector :: Selector
+initWithDevice_weightsSelector :: Selector '[RawId, RawId] (Id MPSCNNConvolutionTransposeGradient)
 initWithDevice_weightsSelector = mkSelector "initWithDevice:weights:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNConvolutionTransposeGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNConvolutionTransposeGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @reloadWeightsAndBiasesFromDataSource@
-reloadWeightsAndBiasesFromDataSourceSelector :: Selector
+reloadWeightsAndBiasesFromDataSourceSelector :: Selector '[] ()
 reloadWeightsAndBiasesFromDataSourceSelector = mkSelector "reloadWeightsAndBiasesFromDataSource"
 
 -- | @Selector@ for @reloadWeightsAndBiasesWithCommandBuffer:state:@
-reloadWeightsAndBiasesWithCommandBuffer_stateSelector :: Selector
+reloadWeightsAndBiasesWithCommandBuffer_stateSelector :: Selector '[RawId, Id MPSCNNConvolutionWeightsAndBiasesState] ()
 reloadWeightsAndBiasesWithCommandBuffer_stateSelector = mkSelector "reloadWeightsAndBiasesWithCommandBuffer:state:"
 
 -- | @Selector@ for @sourceGradientFeatureChannels@
-sourceGradientFeatureChannelsSelector :: Selector
+sourceGradientFeatureChannelsSelector :: Selector '[] CULong
 sourceGradientFeatureChannelsSelector = mkSelector "sourceGradientFeatureChannels"
 
 -- | @Selector@ for @sourceImageFeatureChannels@
-sourceImageFeatureChannelsSelector :: Selector
+sourceImageFeatureChannelsSelector :: Selector '[] CULong
 sourceImageFeatureChannelsSelector = mkSelector "sourceImageFeatureChannels"
 
 -- | @Selector@ for @groups@
-groupsSelector :: Selector
+groupsSelector :: Selector '[] CULong
 groupsSelector = mkSelector "groups"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] RawId
 dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @gradientOption@
-gradientOptionSelector :: Selector
+gradientOptionSelector :: Selector '[] MPSCNNConvolutionGradientOption
 gradientOptionSelector = mkSelector "gradientOption"
 
 -- | @Selector@ for @setGradientOption:@
-setGradientOptionSelector :: Selector
+setGradientOptionSelector :: Selector '[MPSCNNConvolutionGradientOption] ()
 setGradientOptionSelector = mkSelector "setGradientOption:"
 

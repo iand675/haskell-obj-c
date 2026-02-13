@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INListRideOptionsIntent
   , initWithPickupLocation_dropOffLocation
   , pickupLocation
   , dropOffLocation
+  , dropOffLocationSelector
   , initWithPickupLocation_dropOffLocationSelector
   , pickupLocationSelector
-  , dropOffLocationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,34 +31,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPickupLocation:dropOffLocation:@
 initWithPickupLocation_dropOffLocation :: (IsINListRideOptionsIntent inListRideOptionsIntent, IsCLPlacemark pickupLocation, IsCLPlacemark dropOffLocation) => inListRideOptionsIntent -> pickupLocation -> dropOffLocation -> IO (Id INListRideOptionsIntent)
-initWithPickupLocation_dropOffLocation inListRideOptionsIntent  pickupLocation dropOffLocation =
-  withObjCPtr pickupLocation $ \raw_pickupLocation ->
-    withObjCPtr dropOffLocation $ \raw_dropOffLocation ->
-        sendMsg inListRideOptionsIntent (mkSelector "initWithPickupLocation:dropOffLocation:") (retPtr retVoid) [argPtr (castPtr raw_pickupLocation :: Ptr ()), argPtr (castPtr raw_dropOffLocation :: Ptr ())] >>= ownedObject . castPtr
+initWithPickupLocation_dropOffLocation inListRideOptionsIntent pickupLocation dropOffLocation =
+  sendOwnedMessage inListRideOptionsIntent initWithPickupLocation_dropOffLocationSelector (toCLPlacemark pickupLocation) (toCLPlacemark dropOffLocation)
 
 -- | @- pickupLocation@
 pickupLocation :: IsINListRideOptionsIntent inListRideOptionsIntent => inListRideOptionsIntent -> IO (Id CLPlacemark)
-pickupLocation inListRideOptionsIntent  =
-    sendMsg inListRideOptionsIntent (mkSelector "pickupLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+pickupLocation inListRideOptionsIntent =
+  sendMessage inListRideOptionsIntent pickupLocationSelector
 
 -- | @- dropOffLocation@
 dropOffLocation :: IsINListRideOptionsIntent inListRideOptionsIntent => inListRideOptionsIntent -> IO (Id CLPlacemark)
-dropOffLocation inListRideOptionsIntent  =
-    sendMsg inListRideOptionsIntent (mkSelector "dropOffLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dropOffLocation inListRideOptionsIntent =
+  sendMessage inListRideOptionsIntent dropOffLocationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPickupLocation:dropOffLocation:@
-initWithPickupLocation_dropOffLocationSelector :: Selector
+initWithPickupLocation_dropOffLocationSelector :: Selector '[Id CLPlacemark, Id CLPlacemark] (Id INListRideOptionsIntent)
 initWithPickupLocation_dropOffLocationSelector = mkSelector "initWithPickupLocation:dropOffLocation:"
 
 -- | @Selector@ for @pickupLocation@
-pickupLocationSelector :: Selector
+pickupLocationSelector :: Selector '[] (Id CLPlacemark)
 pickupLocationSelector = mkSelector "pickupLocation"
 
 -- | @Selector@ for @dropOffLocation@
-dropOffLocationSelector :: Selector
+dropOffLocationSelector :: Selector '[] (Id CLPlacemark)
 dropOffLocationSelector = mkSelector "dropOffLocation"
 

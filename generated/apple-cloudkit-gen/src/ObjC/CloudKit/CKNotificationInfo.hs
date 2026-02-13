@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,29 +27,25 @@ module ObjC.CloudKit.CKNotificationInfo
   , setShouldSendMutableContent
   , collapseIDKey
   , setCollapseIDKey
-  , desiredKeysSelector
-  , setDesiredKeysSelector
-  , shouldBadgeSelector
-  , setShouldBadgeSelector
-  , shouldSendContentAvailableSelector
-  , setShouldSendContentAvailableSelector
-  , shouldSendMutableContentSelector
-  , setShouldSendMutableContentSelector
   , collapseIDKeySelector
+  , desiredKeysSelector
   , setCollapseIDKeySelector
+  , setDesiredKeysSelector
+  , setShouldBadgeSelector
+  , setShouldSendContentAvailableSelector
+  , setShouldSendMutableContentSelector
+  , shouldBadgeSelector
+  , shouldSendContentAvailableSelector
+  , shouldSendMutableContentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- desiredKeys@
 desiredKeys :: IsCKNotificationInfo ckNotificationInfo => ckNotificationInfo -> IO (Id NSArray)
-desiredKeys ckNotificationInfo  =
-    sendMsg ckNotificationInfo (mkSelector "desiredKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+desiredKeys ckNotificationInfo =
+  sendMessage ckNotificationInfo desiredKeysSelector
 
 -- | A list of keys from the matching record to include in the notification payload.
 --
@@ -70,23 +67,22 @@ desiredKeys ckNotificationInfo  =
 --
 -- ObjC selector: @- setDesiredKeys:@
 setDesiredKeys :: (IsCKNotificationInfo ckNotificationInfo, IsNSArray value) => ckNotificationInfo -> value -> IO ()
-setDesiredKeys ckNotificationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckNotificationInfo (mkSelector "setDesiredKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDesiredKeys ckNotificationInfo value =
+  sendMessage ckNotificationInfo setDesiredKeysSelector (toNSArray value)
 
 -- | Indicates that the notification should increment the app's badge count. Default value is @NO.@
 --
 -- ObjC selector: @- shouldBadge@
 shouldBadge :: IsCKNotificationInfo ckNotificationInfo => ckNotificationInfo -> IO Bool
-shouldBadge ckNotificationInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckNotificationInfo (mkSelector "shouldBadge") retCULong []
+shouldBadge ckNotificationInfo =
+  sendMessage ckNotificationInfo shouldBadgeSelector
 
 -- | Indicates that the notification should increment the app's badge count. Default value is @NO.@
 --
 -- ObjC selector: @- setShouldBadge:@
 setShouldBadge :: IsCKNotificationInfo ckNotificationInfo => ckNotificationInfo -> Bool -> IO ()
-setShouldBadge ckNotificationInfo  value =
-    sendMsg ckNotificationInfo (mkSelector "setShouldBadge:") retVoid [argCULong (if value then 1 else 0)]
+setShouldBadge ckNotificationInfo value =
+  sendMessage ckNotificationInfo setShouldBadgeSelector value
 
 -- | Indicates that the notification should be sent with the "content-available" flag to allow for background downloads in the application.
 --
@@ -94,8 +90,8 @@ setShouldBadge ckNotificationInfo  value =
 --
 -- ObjC selector: @- shouldSendContentAvailable@
 shouldSendContentAvailable :: IsCKNotificationInfo ckNotificationInfo => ckNotificationInfo -> IO Bool
-shouldSendContentAvailable ckNotificationInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckNotificationInfo (mkSelector "shouldSendContentAvailable") retCULong []
+shouldSendContentAvailable ckNotificationInfo =
+  sendMessage ckNotificationInfo shouldSendContentAvailableSelector
 
 -- | Indicates that the notification should be sent with the "content-available" flag to allow for background downloads in the application.
 --
@@ -103,8 +99,8 @@ shouldSendContentAvailable ckNotificationInfo  =
 --
 -- ObjC selector: @- setShouldSendContentAvailable:@
 setShouldSendContentAvailable :: IsCKNotificationInfo ckNotificationInfo => ckNotificationInfo -> Bool -> IO ()
-setShouldSendContentAvailable ckNotificationInfo  value =
-    sendMsg ckNotificationInfo (mkSelector "setShouldSendContentAvailable:") retVoid [argCULong (if value then 1 else 0)]
+setShouldSendContentAvailable ckNotificationInfo value =
+  sendMessage ckNotificationInfo setShouldSendContentAvailableSelector value
 
 -- | Indicates that the notification should be sent with the "mutable-content" flag to allow a Notification Service app extension to modify or replace the push payload.
 --
@@ -112,8 +108,8 @@ setShouldSendContentAvailable ckNotificationInfo  value =
 --
 -- ObjC selector: @- shouldSendMutableContent@
 shouldSendMutableContent :: IsCKNotificationInfo ckNotificationInfo => ckNotificationInfo -> IO Bool
-shouldSendMutableContent ckNotificationInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckNotificationInfo (mkSelector "shouldSendMutableContent") retCULong []
+shouldSendMutableContent ckNotificationInfo =
+  sendMessage ckNotificationInfo shouldSendMutableContentSelector
 
 -- | Indicates that the notification should be sent with the "mutable-content" flag to allow a Notification Service app extension to modify or replace the push payload.
 --
@@ -121,8 +117,8 @@ shouldSendMutableContent ckNotificationInfo  =
 --
 -- ObjC selector: @- setShouldSendMutableContent:@
 setShouldSendMutableContent :: IsCKNotificationInfo ckNotificationInfo => ckNotificationInfo -> Bool -> IO ()
-setShouldSendMutableContent ckNotificationInfo  value =
-    sendMsg ckNotificationInfo (mkSelector "setShouldSendMutableContent:") retVoid [argCULong (if value then 1 else 0)]
+setShouldSendMutableContent ckNotificationInfo value =
+  sendMessage ckNotificationInfo setShouldSendMutableContentSelector value
 
 -- | Optional property specifying a field name to take from the matching record whose value is used as the apns-collapse-id header.
 --
@@ -130,8 +126,8 @@ setShouldSendMutableContent ckNotificationInfo  value =
 --
 -- ObjC selector: @- collapseIDKey@
 collapseIDKey :: IsCKNotificationInfo ckNotificationInfo => ckNotificationInfo -> IO (Id NSString)
-collapseIDKey ckNotificationInfo  =
-    sendMsg ckNotificationInfo (mkSelector "collapseIDKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+collapseIDKey ckNotificationInfo =
+  sendMessage ckNotificationInfo collapseIDKeySelector
 
 -- | Optional property specifying a field name to take from the matching record whose value is used as the apns-collapse-id header.
 --
@@ -139,51 +135,50 @@ collapseIDKey ckNotificationInfo  =
 --
 -- ObjC selector: @- setCollapseIDKey:@
 setCollapseIDKey :: (IsCKNotificationInfo ckNotificationInfo, IsNSString value) => ckNotificationInfo -> value -> IO ()
-setCollapseIDKey ckNotificationInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckNotificationInfo (mkSelector "setCollapseIDKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCollapseIDKey ckNotificationInfo value =
+  sendMessage ckNotificationInfo setCollapseIDKeySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @desiredKeys@
-desiredKeysSelector :: Selector
+desiredKeysSelector :: Selector '[] (Id NSArray)
 desiredKeysSelector = mkSelector "desiredKeys"
 
 -- | @Selector@ for @setDesiredKeys:@
-setDesiredKeysSelector :: Selector
+setDesiredKeysSelector :: Selector '[Id NSArray] ()
 setDesiredKeysSelector = mkSelector "setDesiredKeys:"
 
 -- | @Selector@ for @shouldBadge@
-shouldBadgeSelector :: Selector
+shouldBadgeSelector :: Selector '[] Bool
 shouldBadgeSelector = mkSelector "shouldBadge"
 
 -- | @Selector@ for @setShouldBadge:@
-setShouldBadgeSelector :: Selector
+setShouldBadgeSelector :: Selector '[Bool] ()
 setShouldBadgeSelector = mkSelector "setShouldBadge:"
 
 -- | @Selector@ for @shouldSendContentAvailable@
-shouldSendContentAvailableSelector :: Selector
+shouldSendContentAvailableSelector :: Selector '[] Bool
 shouldSendContentAvailableSelector = mkSelector "shouldSendContentAvailable"
 
 -- | @Selector@ for @setShouldSendContentAvailable:@
-setShouldSendContentAvailableSelector :: Selector
+setShouldSendContentAvailableSelector :: Selector '[Bool] ()
 setShouldSendContentAvailableSelector = mkSelector "setShouldSendContentAvailable:"
 
 -- | @Selector@ for @shouldSendMutableContent@
-shouldSendMutableContentSelector :: Selector
+shouldSendMutableContentSelector :: Selector '[] Bool
 shouldSendMutableContentSelector = mkSelector "shouldSendMutableContent"
 
 -- | @Selector@ for @setShouldSendMutableContent:@
-setShouldSendMutableContentSelector :: Selector
+setShouldSendMutableContentSelector :: Selector '[Bool] ()
 setShouldSendMutableContentSelector = mkSelector "setShouldSendMutableContent:"
 
 -- | @Selector@ for @collapseIDKey@
-collapseIDKeySelector :: Selector
+collapseIDKeySelector :: Selector '[] (Id NSString)
 collapseIDKeySelector = mkSelector "collapseIDKey"
 
 -- | @Selector@ for @setCollapseIDKey:@
-setCollapseIDKeySelector :: Selector
+setCollapseIDKeySelector :: Selector '[Id NSString] ()
 setCollapseIDKeySelector = mkSelector "setCollapseIDKey:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct
   , requiredState
   , setRequiredState
   , numberSelector
-  , setNumberSelector
   , requiredStateSelector
+  , setNumberSelector
   , setRequiredStateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- number@
 number :: IsMTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct => mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct -> IO (Id NSNumber)
-number mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct  =
-    sendMsg mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct (mkSelector "number") (retPtr retVoid) [] >>= retainedObject . castPtr
+number mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct =
+  sendMessage mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct numberSelector
 
 -- | @- setNumber:@
 setNumber :: (IsMTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct, IsNSNumber value) => mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct -> value -> IO ()
-setNumber mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct (mkSelector "setNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNumber mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct value =
+  sendMessage mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct setNumberSelector (toNSNumber value)
 
 -- | @- requiredState@
 requiredState :: IsMTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct => mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct -> IO (Id NSNumber)
-requiredState mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct  =
-    sendMsg mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct (mkSelector "requiredState") (retPtr retVoid) [] >>= retainedObject . castPtr
+requiredState mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct =
+  sendMessage mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct requiredStateSelector
 
 -- | @- setRequiredState:@
 setRequiredState :: (IsMTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct, IsNSNumber value) => mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct -> value -> IO ()
-setRequiredState mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct (mkSelector "setRequiredState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequiredState mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct value =
+  sendMessage mtrCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct setRequiredStateSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @number@
-numberSelector :: Selector
+numberSelector :: Selector '[] (Id NSNumber)
 numberSelector = mkSelector "number"
 
 -- | @Selector@ for @setNumber:@
-setNumberSelector :: Selector
+setNumberSelector :: Selector '[Id NSNumber] ()
 setNumberSelector = mkSelector "setNumber:"
 
 -- | @Selector@ for @requiredState@
-requiredStateSelector :: Selector
+requiredStateSelector :: Selector '[] (Id NSNumber)
 requiredStateSelector = mkSelector "requiredState"
 
 -- | @Selector@ for @setRequiredState:@
-setRequiredStateSelector :: Selector
+setRequiredStateSelector :: Selector '[Id NSNumber] ()
 setRequiredStateSelector = mkSelector "setRequiredState:"
 

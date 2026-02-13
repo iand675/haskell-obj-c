@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRTLSCertificateManagementClusterTLSCertStruct
   , fabricIndex
   , setFabricIndex
   , caidSelector
-  , setCaidSelector
   , certificateSelector
-  , setCertificateSelector
   , fabricIndexSelector
+  , setCaidSelector
+  , setCertificateSelector
   , setFabricIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- caid@
 caid :: IsMTRTLSCertificateManagementClusterTLSCertStruct mtrtlsCertificateManagementClusterTLSCertStruct => mtrtlsCertificateManagementClusterTLSCertStruct -> IO (Id NSNumber)
-caid mtrtlsCertificateManagementClusterTLSCertStruct  =
-    sendMsg mtrtlsCertificateManagementClusterTLSCertStruct (mkSelector "caid") (retPtr retVoid) [] >>= retainedObject . castPtr
+caid mtrtlsCertificateManagementClusterTLSCertStruct =
+  sendMessage mtrtlsCertificateManagementClusterTLSCertStruct caidSelector
 
 -- | @- setCaid:@
 setCaid :: (IsMTRTLSCertificateManagementClusterTLSCertStruct mtrtlsCertificateManagementClusterTLSCertStruct, IsNSNumber value) => mtrtlsCertificateManagementClusterTLSCertStruct -> value -> IO ()
-setCaid mtrtlsCertificateManagementClusterTLSCertStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterTLSCertStruct (mkSelector "setCaid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaid mtrtlsCertificateManagementClusterTLSCertStruct value =
+  sendMessage mtrtlsCertificateManagementClusterTLSCertStruct setCaidSelector (toNSNumber value)
 
 -- | @- certificate@
 certificate :: IsMTRTLSCertificateManagementClusterTLSCertStruct mtrtlsCertificateManagementClusterTLSCertStruct => mtrtlsCertificateManagementClusterTLSCertStruct -> IO (Id NSData)
-certificate mtrtlsCertificateManagementClusterTLSCertStruct  =
-    sendMsg mtrtlsCertificateManagementClusterTLSCertStruct (mkSelector "certificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+certificate mtrtlsCertificateManagementClusterTLSCertStruct =
+  sendMessage mtrtlsCertificateManagementClusterTLSCertStruct certificateSelector
 
 -- | @- setCertificate:@
 setCertificate :: (IsMTRTLSCertificateManagementClusterTLSCertStruct mtrtlsCertificateManagementClusterTLSCertStruct, IsNSData value) => mtrtlsCertificateManagementClusterTLSCertStruct -> value -> IO ()
-setCertificate mtrtlsCertificateManagementClusterTLSCertStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterTLSCertStruct (mkSelector "setCertificate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCertificate mtrtlsCertificateManagementClusterTLSCertStruct value =
+  sendMessage mtrtlsCertificateManagementClusterTLSCertStruct setCertificateSelector (toNSData value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRTLSCertificateManagementClusterTLSCertStruct mtrtlsCertificateManagementClusterTLSCertStruct => mtrtlsCertificateManagementClusterTLSCertStruct -> IO (Id NSNumber)
-fabricIndex mtrtlsCertificateManagementClusterTLSCertStruct  =
-    sendMsg mtrtlsCertificateManagementClusterTLSCertStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrtlsCertificateManagementClusterTLSCertStruct =
+  sendMessage mtrtlsCertificateManagementClusterTLSCertStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRTLSCertificateManagementClusterTLSCertStruct mtrtlsCertificateManagementClusterTLSCertStruct, IsNSNumber value) => mtrtlsCertificateManagementClusterTLSCertStruct -> value -> IO ()
-setFabricIndex mtrtlsCertificateManagementClusterTLSCertStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrtlsCertificateManagementClusterTLSCertStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrtlsCertificateManagementClusterTLSCertStruct value =
+  sendMessage mtrtlsCertificateManagementClusterTLSCertStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @caid@
-caidSelector :: Selector
+caidSelector :: Selector '[] (Id NSNumber)
 caidSelector = mkSelector "caid"
 
 -- | @Selector@ for @setCaid:@
-setCaidSelector :: Selector
+setCaidSelector :: Selector '[Id NSNumber] ()
 setCaidSelector = mkSelector "setCaid:"
 
 -- | @Selector@ for @certificate@
-certificateSelector :: Selector
+certificateSelector :: Selector '[] (Id NSData)
 certificateSelector = mkSelector "certificate"
 
 -- | @Selector@ for @setCertificate:@
-setCertificateSelector :: Selector
+setCertificateSelector :: Selector '[Id NSData] ()
 setCertificateSelector = mkSelector "setCertificate:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

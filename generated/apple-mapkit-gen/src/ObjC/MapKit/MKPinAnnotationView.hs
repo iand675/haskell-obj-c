@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.MapKit.MKPinAnnotationView
   , setAnimatesDrop
   , pinColor
   , setPinColor
-  , redPinColorSelector
-  , greenPinColorSelector
-  , purplePinColorSelector
-  , pinTintColorSelector
-  , setPinTintColorSelector
   , animatesDropSelector
-  , setAnimatesDropSelector
+  , greenPinColorSelector
   , pinColorSelector
+  , pinTintColorSelector
+  , purplePinColorSelector
+  , redPinColorSelector
+  , setAnimatesDropSelector
   , setPinColorSelector
+  , setPinTintColorSelector
 
   -- * Enum types
   , MKPinAnnotationColor(MKPinAnnotationColor)
@@ -34,15 +35,11 @@ module ObjC.MapKit.MKPinAnnotationView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,89 +53,89 @@ redPinColor :: IO (Id NSColor)
 redPinColor  =
   do
     cls' <- getRequiredClass "MKPinAnnotationView"
-    sendClassMsg cls' (mkSelector "redPinColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' redPinColorSelector
 
 -- | @+ greenPinColor@
 greenPinColor :: IO (Id NSColor)
 greenPinColor  =
   do
     cls' <- getRequiredClass "MKPinAnnotationView"
-    sendClassMsg cls' (mkSelector "greenPinColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' greenPinColorSelector
 
 -- | @+ purplePinColor@
 purplePinColor :: IO (Id NSColor)
 purplePinColor  =
   do
     cls' <- getRequiredClass "MKPinAnnotationView"
-    sendClassMsg cls' (mkSelector "purplePinColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' purplePinColorSelector
 
 -- | @- pinTintColor@
 pinTintColor :: IsMKPinAnnotationView mkPinAnnotationView => mkPinAnnotationView -> IO RawId
-pinTintColor mkPinAnnotationView  =
-    fmap (RawId . castPtr) $ sendMsg mkPinAnnotationView (mkSelector "pinTintColor") (retPtr retVoid) []
+pinTintColor mkPinAnnotationView =
+  sendMessage mkPinAnnotationView pinTintColorSelector
 
 -- | @- setPinTintColor:@
 setPinTintColor :: IsMKPinAnnotationView mkPinAnnotationView => mkPinAnnotationView -> RawId -> IO ()
-setPinTintColor mkPinAnnotationView  value =
-    sendMsg mkPinAnnotationView (mkSelector "setPinTintColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPinTintColor mkPinAnnotationView value =
+  sendMessage mkPinAnnotationView setPinTintColorSelector value
 
 -- | @- animatesDrop@
 animatesDrop :: IsMKPinAnnotationView mkPinAnnotationView => mkPinAnnotationView -> IO Bool
-animatesDrop mkPinAnnotationView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkPinAnnotationView (mkSelector "animatesDrop") retCULong []
+animatesDrop mkPinAnnotationView =
+  sendMessage mkPinAnnotationView animatesDropSelector
 
 -- | @- setAnimatesDrop:@
 setAnimatesDrop :: IsMKPinAnnotationView mkPinAnnotationView => mkPinAnnotationView -> Bool -> IO ()
-setAnimatesDrop mkPinAnnotationView  value =
-    sendMsg mkPinAnnotationView (mkSelector "setAnimatesDrop:") retVoid [argCULong (if value then 1 else 0)]
+setAnimatesDrop mkPinAnnotationView value =
+  sendMessage mkPinAnnotationView setAnimatesDropSelector value
 
 -- | @- pinColor@
 pinColor :: IsMKPinAnnotationView mkPinAnnotationView => mkPinAnnotationView -> IO MKPinAnnotationColor
-pinColor mkPinAnnotationView  =
-    fmap (coerce :: CULong -> MKPinAnnotationColor) $ sendMsg mkPinAnnotationView (mkSelector "pinColor") retCULong []
+pinColor mkPinAnnotationView =
+  sendMessage mkPinAnnotationView pinColorSelector
 
 -- | @- setPinColor:@
 setPinColor :: IsMKPinAnnotationView mkPinAnnotationView => mkPinAnnotationView -> MKPinAnnotationColor -> IO ()
-setPinColor mkPinAnnotationView  value =
-    sendMsg mkPinAnnotationView (mkSelector "setPinColor:") retVoid [argCULong (coerce value)]
+setPinColor mkPinAnnotationView value =
+  sendMessage mkPinAnnotationView setPinColorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @redPinColor@
-redPinColorSelector :: Selector
+redPinColorSelector :: Selector '[] (Id NSColor)
 redPinColorSelector = mkSelector "redPinColor"
 
 -- | @Selector@ for @greenPinColor@
-greenPinColorSelector :: Selector
+greenPinColorSelector :: Selector '[] (Id NSColor)
 greenPinColorSelector = mkSelector "greenPinColor"
 
 -- | @Selector@ for @purplePinColor@
-purplePinColorSelector :: Selector
+purplePinColorSelector :: Selector '[] (Id NSColor)
 purplePinColorSelector = mkSelector "purplePinColor"
 
 -- | @Selector@ for @pinTintColor@
-pinTintColorSelector :: Selector
+pinTintColorSelector :: Selector '[] RawId
 pinTintColorSelector = mkSelector "pinTintColor"
 
 -- | @Selector@ for @setPinTintColor:@
-setPinTintColorSelector :: Selector
+setPinTintColorSelector :: Selector '[RawId] ()
 setPinTintColorSelector = mkSelector "setPinTintColor:"
 
 -- | @Selector@ for @animatesDrop@
-animatesDropSelector :: Selector
+animatesDropSelector :: Selector '[] Bool
 animatesDropSelector = mkSelector "animatesDrop"
 
 -- | @Selector@ for @setAnimatesDrop:@
-setAnimatesDropSelector :: Selector
+setAnimatesDropSelector :: Selector '[Bool] ()
 setAnimatesDropSelector = mkSelector "setAnimatesDrop:"
 
 -- | @Selector@ for @pinColor@
-pinColorSelector :: Selector
+pinColorSelector :: Selector '[] MKPinAnnotationColor
 pinColorSelector = mkSelector "pinColor"
 
 -- | @Selector@ for @setPinColor:@
-setPinColorSelector :: Selector
+setPinColorSelector :: Selector '[MKPinAnnotationColor] ()
 setPinColorSelector = mkSelector "setPinColor:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.SecurityInterface.SFCertificateTrustPanel
   , beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_message
   , setInformativeText
   , informativeText
-  , sharedCertificateTrustPanelSelector
-  , runModalForTrust_messageSelector
   , beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_messageSelector
-  , setInformativeTextSelector
   , informativeTextSelector
+  , runModalForTrust_messageSelector
+  , setInformativeTextSelector
+  , sharedCertificateTrustPanelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,7 +48,7 @@ sharedCertificateTrustPanel :: IO (Id SFCertificateTrustPanel)
 sharedCertificateTrustPanel  =
   do
     cls' <- getRequiredClass "SFCertificateTrustPanel"
-    sendClassMsg cls' (mkSelector "sharedCertificateTrustPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedCertificateTrustPanelSelector
 
 -- | runModalForTrust:message:
 --
@@ -63,9 +60,8 @@ sharedCertificateTrustPanel  =
 --
 -- ObjC selector: @- runModalForTrust:message:@
 runModalForTrust_message :: (IsSFCertificateTrustPanel sfCertificateTrustPanel, IsNSString message) => sfCertificateTrustPanel -> Ptr () -> message -> IO CLong
-runModalForTrust_message sfCertificateTrustPanel  trust message =
-  withObjCPtr message $ \raw_message ->
-      sendMsg sfCertificateTrustPanel (mkSelector "runModalForTrust:message:") retCLong [argPtr trust, argPtr (castPtr raw_message :: Ptr ())]
+runModalForTrust_message sfCertificateTrustPanel trust message =
+  sendMessage sfCertificateTrustPanel runModalForTrust_messageSelector trust (toNSString message)
 
 -- | beginSheetForWindow:trust:message:modalDelegate:didEndSelector:contextInfo:
 --
@@ -86,11 +82,9 @@ runModalForTrust_message sfCertificateTrustPanel  trust message =
 -- @message@ — Client-defined message string to display in the panel.
 --
 -- ObjC selector: @- beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:trust:message:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_message :: (IsSFCertificateTrustPanel sfCertificateTrustPanel, IsNSWindow docWindow, IsNSString message) => sfCertificateTrustPanel -> docWindow -> RawId -> Selector -> Ptr () -> Ptr () -> message -> IO ()
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_message sfCertificateTrustPanel  docWindow delegate didEndSelector contextInfo trust message =
-  withObjCPtr docWindow $ \raw_docWindow ->
-    withObjCPtr message $ \raw_message ->
-        sendMsg sfCertificateTrustPanel (mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:trust:message:") retVoid [argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo, argPtr trust, argPtr (castPtr raw_message :: Ptr ())]
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_message :: (IsSFCertificateTrustPanel sfCertificateTrustPanel, IsNSWindow docWindow, IsNSString message) => sfCertificateTrustPanel -> docWindow -> RawId -> Sel -> Ptr () -> Ptr () -> message -> IO ()
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_message sfCertificateTrustPanel docWindow delegate didEndSelector contextInfo trust message =
+  sendMessage sfCertificateTrustPanel beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_messageSelector (toNSWindow docWindow) delegate didEndSelector contextInfo trust (toNSString message)
 
 -- | setInformativeText:
 --
@@ -102,9 +96,8 @@ beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_message sfCer
 --
 -- ObjC selector: @- setInformativeText:@
 setInformativeText :: (IsSFCertificateTrustPanel sfCertificateTrustPanel, IsNSString informativeText) => sfCertificateTrustPanel -> informativeText -> IO ()
-setInformativeText sfCertificateTrustPanel  informativeText =
-  withObjCPtr informativeText $ \raw_informativeText ->
-      sendMsg sfCertificateTrustPanel (mkSelector "setInformativeText:") retVoid [argPtr (castPtr raw_informativeText :: Ptr ())]
+setInformativeText sfCertificateTrustPanel informativeText =
+  sendMessage sfCertificateTrustPanel setInformativeTextSelector (toNSString informativeText)
 
 -- | informativeText
 --
@@ -112,30 +105,30 @@ setInformativeText sfCertificateTrustPanel  informativeText =
 --
 -- ObjC selector: @- informativeText@
 informativeText :: IsSFCertificateTrustPanel sfCertificateTrustPanel => sfCertificateTrustPanel -> IO (Id NSString)
-informativeText sfCertificateTrustPanel  =
-    sendMsg sfCertificateTrustPanel (mkSelector "informativeText") (retPtr retVoid) [] >>= retainedObject . castPtr
+informativeText sfCertificateTrustPanel =
+  sendMessage sfCertificateTrustPanel informativeTextSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedCertificateTrustPanel@
-sharedCertificateTrustPanelSelector :: Selector
+sharedCertificateTrustPanelSelector :: Selector '[] (Id SFCertificateTrustPanel)
 sharedCertificateTrustPanelSelector = mkSelector "sharedCertificateTrustPanel"
 
 -- | @Selector@ for @runModalForTrust:message:@
-runModalForTrust_messageSelector :: Selector
+runModalForTrust_messageSelector :: Selector '[Ptr (), Id NSString] CLong
 runModalForTrust_messageSelector = mkSelector "runModalForTrust:message:"
 
 -- | @Selector@ for @beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:trust:message:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_messageSelector :: Selector
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_messageSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr (), Ptr (), Id NSString] ()
 beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_trust_messageSelector = mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:trust:message:"
 
 -- | @Selector@ for @setInformativeText:@
-setInformativeTextSelector :: Selector
+setInformativeTextSelector :: Selector '[Id NSString] ()
 setInformativeTextSelector = mkSelector "setInformativeText:"
 
 -- | @Selector@ for @informativeText@
-informativeTextSelector :: Selector
+informativeTextSelector :: Selector '[] (Id NSString)
 informativeTextSelector = mkSelector "informativeText"
 

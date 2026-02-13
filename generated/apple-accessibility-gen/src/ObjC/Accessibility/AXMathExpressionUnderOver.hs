@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Accessibility.AXMathExpressionUnderOver
   , baseExpression
   , underExpression
   , overExpression
-  , initWithBaseExpression_underExpression_overExpressionSelector
   , baseExpressionSelector
-  , underExpressionSelector
+  , initWithBaseExpression_underExpression_overExpressionSelector
   , overExpressionSelector
+  , underExpressionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,44 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithBaseExpression:underExpression:overExpression:@
 initWithBaseExpression_underExpression_overExpression :: (IsAXMathExpressionUnderOver axMathExpressionUnderOver, IsAXMathExpression baseExpression, IsAXMathExpression underExpression, IsAXMathExpression overExpression) => axMathExpressionUnderOver -> baseExpression -> underExpression -> overExpression -> IO (Id AXMathExpressionUnderOver)
-initWithBaseExpression_underExpression_overExpression axMathExpressionUnderOver  baseExpression underExpression overExpression =
-  withObjCPtr baseExpression $ \raw_baseExpression ->
-    withObjCPtr underExpression $ \raw_underExpression ->
-      withObjCPtr overExpression $ \raw_overExpression ->
-          sendMsg axMathExpressionUnderOver (mkSelector "initWithBaseExpression:underExpression:overExpression:") (retPtr retVoid) [argPtr (castPtr raw_baseExpression :: Ptr ()), argPtr (castPtr raw_underExpression :: Ptr ()), argPtr (castPtr raw_overExpression :: Ptr ())] >>= ownedObject . castPtr
+initWithBaseExpression_underExpression_overExpression axMathExpressionUnderOver baseExpression underExpression overExpression =
+  sendOwnedMessage axMathExpressionUnderOver initWithBaseExpression_underExpression_overExpressionSelector (toAXMathExpression baseExpression) (toAXMathExpression underExpression) (toAXMathExpression overExpression)
 
 -- | @- baseExpression@
 baseExpression :: IsAXMathExpressionUnderOver axMathExpressionUnderOver => axMathExpressionUnderOver -> IO (Id AXMathExpression)
-baseExpression axMathExpressionUnderOver  =
-    sendMsg axMathExpressionUnderOver (mkSelector "baseExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseExpression axMathExpressionUnderOver =
+  sendMessage axMathExpressionUnderOver baseExpressionSelector
 
 -- | @- underExpression@
 underExpression :: IsAXMathExpressionUnderOver axMathExpressionUnderOver => axMathExpressionUnderOver -> IO (Id AXMathExpression)
-underExpression axMathExpressionUnderOver  =
-    sendMsg axMathExpressionUnderOver (mkSelector "underExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+underExpression axMathExpressionUnderOver =
+  sendMessage axMathExpressionUnderOver underExpressionSelector
 
 -- | @- overExpression@
 overExpression :: IsAXMathExpressionUnderOver axMathExpressionUnderOver => axMathExpressionUnderOver -> IO (Id AXMathExpression)
-overExpression axMathExpressionUnderOver  =
-    sendMsg axMathExpressionUnderOver (mkSelector "overExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+overExpression axMathExpressionUnderOver =
+  sendMessage axMathExpressionUnderOver overExpressionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBaseExpression:underExpression:overExpression:@
-initWithBaseExpression_underExpression_overExpressionSelector :: Selector
+initWithBaseExpression_underExpression_overExpressionSelector :: Selector '[Id AXMathExpression, Id AXMathExpression, Id AXMathExpression] (Id AXMathExpressionUnderOver)
 initWithBaseExpression_underExpression_overExpressionSelector = mkSelector "initWithBaseExpression:underExpression:overExpression:"
 
 -- | @Selector@ for @baseExpression@
-baseExpressionSelector :: Selector
+baseExpressionSelector :: Selector '[] (Id AXMathExpression)
 baseExpressionSelector = mkSelector "baseExpression"
 
 -- | @Selector@ for @underExpression@
-underExpressionSelector :: Selector
+underExpressionSelector :: Selector '[] (Id AXMathExpression)
 underExpressionSelector = mkSelector "underExpression"
 
 -- | @Selector@ for @overExpression@
-overExpressionSelector :: Selector
+overExpressionSelector :: Selector '[] (Id AXMathExpression)
 overExpressionSelector = mkSelector "overExpression"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.MLCompute.MLCEmbeddingDescriptor
   , maximumNorm
   , pNorm
   , scalesGradientByFrequency
-  , newSelector
-  , initSelector
   , descriptorWithEmbeddingCount_embeddingDimensionSelector
   , descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequencySelector
   , embeddingCountSelector
   , embeddingDimensionSelector
-  , paddingIndexSelector
+  , initSelector
   , maximumNormSelector
+  , newSelector
   , pNormSelector
+  , paddingIndexSelector
   , scalesGradientByFrequencySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,33 +51,26 @@ new :: IO (Id MLCEmbeddingDescriptor)
 new  =
   do
     cls' <- getRequiredClass "MLCEmbeddingDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id MLCEmbeddingDescriptor)
-init_ mlcEmbeddingDescriptor  =
-    sendMsg mlcEmbeddingDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcEmbeddingDescriptor =
+  sendOwnedMessage mlcEmbeddingDescriptor initSelector
 
 -- | @+ descriptorWithEmbeddingCount:embeddingDimension:@
 descriptorWithEmbeddingCount_embeddingDimension :: (IsNSNumber embeddingCount, IsNSNumber embeddingDimension) => embeddingCount -> embeddingDimension -> IO (Id MLCEmbeddingDescriptor)
 descriptorWithEmbeddingCount_embeddingDimension embeddingCount embeddingDimension =
   do
     cls' <- getRequiredClass "MLCEmbeddingDescriptor"
-    withObjCPtr embeddingCount $ \raw_embeddingCount ->
-      withObjCPtr embeddingDimension $ \raw_embeddingDimension ->
-        sendClassMsg cls' (mkSelector "descriptorWithEmbeddingCount:embeddingDimension:") (retPtr retVoid) [argPtr (castPtr raw_embeddingCount :: Ptr ()), argPtr (castPtr raw_embeddingDimension :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithEmbeddingCount_embeddingDimensionSelector (toNSNumber embeddingCount) (toNSNumber embeddingDimension)
 
 -- | @+ descriptorWithEmbeddingCount:embeddingDimension:paddingIndex:maximumNorm:pNorm:scalesGradientByFrequency:@
 descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequency :: (IsNSNumber embeddingCount, IsNSNumber embeddingDimension, IsNSNumber paddingIndex, IsNSNumber maximumNorm, IsNSNumber pNorm) => embeddingCount -> embeddingDimension -> paddingIndex -> maximumNorm -> pNorm -> Bool -> IO (Id MLCEmbeddingDescriptor)
 descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequency embeddingCount embeddingDimension paddingIndex maximumNorm pNorm scalesGradientByFrequency =
   do
     cls' <- getRequiredClass "MLCEmbeddingDescriptor"
-    withObjCPtr embeddingCount $ \raw_embeddingCount ->
-      withObjCPtr embeddingDimension $ \raw_embeddingDimension ->
-        withObjCPtr paddingIndex $ \raw_paddingIndex ->
-          withObjCPtr maximumNorm $ \raw_maximumNorm ->
-            withObjCPtr pNorm $ \raw_pNorm ->
-              sendClassMsg cls' (mkSelector "descriptorWithEmbeddingCount:embeddingDimension:paddingIndex:maximumNorm:pNorm:scalesGradientByFrequency:") (retPtr retVoid) [argPtr (castPtr raw_embeddingCount :: Ptr ()), argPtr (castPtr raw_embeddingDimension :: Ptr ()), argPtr (castPtr raw_paddingIndex :: Ptr ()), argPtr (castPtr raw_maximumNorm :: Ptr ()), argPtr (castPtr raw_pNorm :: Ptr ()), argCULong (if scalesGradientByFrequency then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequencySelector (toNSNumber embeddingCount) (toNSNumber embeddingDimension) (toNSNumber paddingIndex) (toNSNumber maximumNorm) (toNSNumber pNorm) scalesGradientByFrequency
 
 -- | embeddingCount
 --
@@ -88,8 +78,8 @@ descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_s
 --
 -- ObjC selector: @- embeddingCount@
 embeddingCount :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
-embeddingCount mlcEmbeddingDescriptor  =
-    sendMsg mlcEmbeddingDescriptor (mkSelector "embeddingCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+embeddingCount mlcEmbeddingDescriptor =
+  sendMessage mlcEmbeddingDescriptor embeddingCountSelector
 
 -- | embeddingDimension
 --
@@ -97,8 +87,8 @@ embeddingCount mlcEmbeddingDescriptor  =
 --
 -- ObjC selector: @- embeddingDimension@
 embeddingDimension :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
-embeddingDimension mlcEmbeddingDescriptor  =
-    sendMsg mlcEmbeddingDescriptor (mkSelector "embeddingDimension") (retPtr retVoid) [] >>= retainedObject . castPtr
+embeddingDimension mlcEmbeddingDescriptor =
+  sendMessage mlcEmbeddingDescriptor embeddingDimensionSelector
 
 -- | paddingIndex
 --
@@ -106,8 +96,8 @@ embeddingDimension mlcEmbeddingDescriptor  =
 --
 -- ObjC selector: @- paddingIndex@
 paddingIndex :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
-paddingIndex mlcEmbeddingDescriptor  =
-    sendMsg mlcEmbeddingDescriptor (mkSelector "paddingIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+paddingIndex mlcEmbeddingDescriptor =
+  sendMessage mlcEmbeddingDescriptor paddingIndexSelector
 
 -- | maximumNorm
 --
@@ -115,8 +105,8 @@ paddingIndex mlcEmbeddingDescriptor  =
 --
 -- ObjC selector: @- maximumNorm@
 maximumNorm :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
-maximumNorm mlcEmbeddingDescriptor  =
-    sendMsg mlcEmbeddingDescriptor (mkSelector "maximumNorm") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumNorm mlcEmbeddingDescriptor =
+  sendMessage mlcEmbeddingDescriptor maximumNormSelector
 
 -- | pNorm
 --
@@ -124,8 +114,8 @@ maximumNorm mlcEmbeddingDescriptor  =
 --
 -- ObjC selector: @- pNorm@
 pNorm :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO (Id NSNumber)
-pNorm mlcEmbeddingDescriptor  =
-    sendMsg mlcEmbeddingDescriptor (mkSelector "pNorm") (retPtr retVoid) [] >>= retainedObject . castPtr
+pNorm mlcEmbeddingDescriptor =
+  sendMessage mlcEmbeddingDescriptor pNormSelector
 
 -- | scalesGradientByFrequency
 --
@@ -133,50 +123,50 @@ pNorm mlcEmbeddingDescriptor  =
 --
 -- ObjC selector: @- scalesGradientByFrequency@
 scalesGradientByFrequency :: IsMLCEmbeddingDescriptor mlcEmbeddingDescriptor => mlcEmbeddingDescriptor -> IO Bool
-scalesGradientByFrequency mlcEmbeddingDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcEmbeddingDescriptor (mkSelector "scalesGradientByFrequency") retCULong []
+scalesGradientByFrequency mlcEmbeddingDescriptor =
+  sendMessage mlcEmbeddingDescriptor scalesGradientByFrequencySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCEmbeddingDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCEmbeddingDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @descriptorWithEmbeddingCount:embeddingDimension:@
-descriptorWithEmbeddingCount_embeddingDimensionSelector :: Selector
+descriptorWithEmbeddingCount_embeddingDimensionSelector :: Selector '[Id NSNumber, Id NSNumber] (Id MLCEmbeddingDescriptor)
 descriptorWithEmbeddingCount_embeddingDimensionSelector = mkSelector "descriptorWithEmbeddingCount:embeddingDimension:"
 
 -- | @Selector@ for @descriptorWithEmbeddingCount:embeddingDimension:paddingIndex:maximumNorm:pNorm:scalesGradientByFrequency:@
-descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequencySelector :: Selector
+descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequencySelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber, Id NSNumber, Id NSNumber, Bool] (Id MLCEmbeddingDescriptor)
 descriptorWithEmbeddingCount_embeddingDimension_paddingIndex_maximumNorm_pNorm_scalesGradientByFrequencySelector = mkSelector "descriptorWithEmbeddingCount:embeddingDimension:paddingIndex:maximumNorm:pNorm:scalesGradientByFrequency:"
 
 -- | @Selector@ for @embeddingCount@
-embeddingCountSelector :: Selector
+embeddingCountSelector :: Selector '[] (Id NSNumber)
 embeddingCountSelector = mkSelector "embeddingCount"
 
 -- | @Selector@ for @embeddingDimension@
-embeddingDimensionSelector :: Selector
+embeddingDimensionSelector :: Selector '[] (Id NSNumber)
 embeddingDimensionSelector = mkSelector "embeddingDimension"
 
 -- | @Selector@ for @paddingIndex@
-paddingIndexSelector :: Selector
+paddingIndexSelector :: Selector '[] (Id NSNumber)
 paddingIndexSelector = mkSelector "paddingIndex"
 
 -- | @Selector@ for @maximumNorm@
-maximumNormSelector :: Selector
+maximumNormSelector :: Selector '[] (Id NSNumber)
 maximumNormSelector = mkSelector "maximumNorm"
 
 -- | @Selector@ for @pNorm@
-pNormSelector :: Selector
+pNormSelector :: Selector '[] (Id NSNumber)
 pNormSelector = mkSelector "pNorm"
 
 -- | @Selector@ for @scalesGradientByFrequency@
-scalesGradientByFrequencySelector :: Selector
+scalesGradientByFrequencySelector :: Selector '[] Bool
 scalesGradientByFrequencySelector = mkSelector "scalesGradientByFrequency"
 

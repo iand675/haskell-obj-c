@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,22 +20,18 @@ module ObjC.AVFoundation.AVCaptureMultiCamSession
   , multiCamSupported
   , hardwareCost
   , systemPressureCost
-  , multiCamSupportedSelector
   , hardwareCostSelector
+  , multiCamSupportedSelector
   , systemPressureCostSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,7 +49,7 @@ multiCamSupported :: IO Bool
 multiCamSupported  =
   do
     cls' <- getRequiredClass "AVCaptureMultiCamSession"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "multiCamSupported") retCULong []
+    sendClassMessage cls' multiCamSupportedSelector
 
 -- | hardwareCost
 --
@@ -64,8 +61,8 @@ multiCamSupported  =
 --
 -- ObjC selector: @- hardwareCost@
 hardwareCost :: IsAVCaptureMultiCamSession avCaptureMultiCamSession => avCaptureMultiCamSession -> IO CFloat
-hardwareCost avCaptureMultiCamSession  =
-    sendMsg avCaptureMultiCamSession (mkSelector "hardwareCost") retCFloat []
+hardwareCost avCaptureMultiCamSession =
+  sendMessage avCaptureMultiCamSession hardwareCostSelector
 
 -- | systemPressureCost
 --
@@ -75,22 +72,22 @@ hardwareCost avCaptureMultiCamSession  =
 --
 -- ObjC selector: @- systemPressureCost@
 systemPressureCost :: IsAVCaptureMultiCamSession avCaptureMultiCamSession => avCaptureMultiCamSession -> IO CFloat
-systemPressureCost avCaptureMultiCamSession  =
-    sendMsg avCaptureMultiCamSession (mkSelector "systemPressureCost") retCFloat []
+systemPressureCost avCaptureMultiCamSession =
+  sendMessage avCaptureMultiCamSession systemPressureCostSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @multiCamSupported@
-multiCamSupportedSelector :: Selector
+multiCamSupportedSelector :: Selector '[] Bool
 multiCamSupportedSelector = mkSelector "multiCamSupported"
 
 -- | @Selector@ for @hardwareCost@
-hardwareCostSelector :: Selector
+hardwareCostSelector :: Selector '[] CFloat
 hardwareCostSelector = mkSelector "hardwareCost"
 
 -- | @Selector@ for @systemPressureCost@
-systemPressureCostSelector :: Selector
+systemPressureCostSelector :: Selector '[] CFloat
 systemPressureCostSelector = mkSelector "systemPressureCost"
 

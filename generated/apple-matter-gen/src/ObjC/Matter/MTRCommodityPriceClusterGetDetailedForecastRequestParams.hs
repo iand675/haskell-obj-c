@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRCommodityPriceClusterGetDetailedForecastRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , detailsSelector
-  , setDetailsSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setDetailsSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- details@
 details :: IsMTRCommodityPriceClusterGetDetailedForecastRequestParams mtrCommodityPriceClusterGetDetailedForecastRequestParams => mtrCommodityPriceClusterGetDetailedForecastRequestParams -> IO (Id NSNumber)
-details mtrCommodityPriceClusterGetDetailedForecastRequestParams  =
-    sendMsg mtrCommodityPriceClusterGetDetailedForecastRequestParams (mkSelector "details") (retPtr retVoid) [] >>= retainedObject . castPtr
+details mtrCommodityPriceClusterGetDetailedForecastRequestParams =
+  sendMessage mtrCommodityPriceClusterGetDetailedForecastRequestParams detailsSelector
 
 -- | @- setDetails:@
 setDetails :: (IsMTRCommodityPriceClusterGetDetailedForecastRequestParams mtrCommodityPriceClusterGetDetailedForecastRequestParams, IsNSNumber value) => mtrCommodityPriceClusterGetDetailedForecastRequestParams -> value -> IO ()
-setDetails mtrCommodityPriceClusterGetDetailedForecastRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterGetDetailedForecastRequestParams (mkSelector "setDetails:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDetails mtrCommodityPriceClusterGetDetailedForecastRequestParams value =
+  sendMessage mtrCommodityPriceClusterGetDetailedForecastRequestParams setDetailsSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setDetails mtrCommodityPriceClusterGetDetailedForecastRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCommodityPriceClusterGetDetailedForecastRequestParams mtrCommodityPriceClusterGetDetailedForecastRequestParams => mtrCommodityPriceClusterGetDetailedForecastRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCommodityPriceClusterGetDetailedForecastRequestParams  =
-    sendMsg mtrCommodityPriceClusterGetDetailedForecastRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCommodityPriceClusterGetDetailedForecastRequestParams =
+  sendMessage mtrCommodityPriceClusterGetDetailedForecastRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrCommodityPriceClusterGetDetailedForecastRequestParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCommodityPriceClusterGetDetailedForecastRequestParams mtrCommodityPriceClusterGetDetailedForecastRequestParams, IsNSNumber value) => mtrCommodityPriceClusterGetDetailedForecastRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCommodityPriceClusterGetDetailedForecastRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterGetDetailedForecastRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCommodityPriceClusterGetDetailedForecastRequestParams value =
+  sendMessage mtrCommodityPriceClusterGetDetailedForecastRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrCommodityPriceClusterGetDetailedForecastRequestParams
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCommodityPriceClusterGetDetailedForecastRequestParams mtrCommodityPriceClusterGetDetailedForecastRequestParams => mtrCommodityPriceClusterGetDetailedForecastRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCommodityPriceClusterGetDetailedForecastRequestParams  =
-    sendMsg mtrCommodityPriceClusterGetDetailedForecastRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCommodityPriceClusterGetDetailedForecastRequestParams =
+  sendMessage mtrCommodityPriceClusterGetDetailedForecastRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrCommodityPriceClusterGetDetailedForecastRequestPa
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCommodityPriceClusterGetDetailedForecastRequestParams mtrCommodityPriceClusterGetDetailedForecastRequestParams, IsNSNumber value) => mtrCommodityPriceClusterGetDetailedForecastRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCommodityPriceClusterGetDetailedForecastRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterGetDetailedForecastRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCommodityPriceClusterGetDetailedForecastRequestParams value =
+  sendMessage mtrCommodityPriceClusterGetDetailedForecastRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @details@
-detailsSelector :: Selector
+detailsSelector :: Selector '[] (Id NSNumber)
 detailsSelector = mkSelector "details"
 
 -- | @Selector@ for @setDetails:@
-setDetailsSelector :: Selector
+setDetailsSelector :: Selector '[Id NSNumber] ()
 setDetailsSelector = mkSelector "setDetails:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

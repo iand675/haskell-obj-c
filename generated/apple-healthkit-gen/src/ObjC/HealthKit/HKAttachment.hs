@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.HealthKit.HKAttachment
   , size
   , creationDate
   , metadata
-  , initSelector
-  , newSelector
-  , identifierSelector
-  , nameSelector
   , contentTypeSelector
-  , sizeSelector
   , creationDateSelector
+  , identifierSelector
+  , initSelector
   , metadataSelector
+  , nameSelector
+  , newSelector
+  , sizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,8 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsHKAttachment hkAttachment => hkAttachment -> IO (Id HKAttachment)
-init_ hkAttachment  =
-    sendMsg hkAttachment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkAttachment =
+  sendOwnedMessage hkAttachment initSelector
 
 -- | new
 --
@@ -64,7 +61,7 @@ new :: IO (Id HKAttachment)
 new  =
   do
     cls' <- getRequiredClass "HKAttachment"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | identifier
 --
@@ -72,8 +69,8 @@ new  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsHKAttachment hkAttachment => hkAttachment -> IO (Id NSUUID)
-identifier hkAttachment  =
-    sendMsg hkAttachment (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier hkAttachment =
+  sendMessage hkAttachment identifierSelector
 
 -- | name
 --
@@ -81,8 +78,8 @@ identifier hkAttachment  =
 --
 -- ObjC selector: @- name@
 name :: IsHKAttachment hkAttachment => hkAttachment -> IO (Id NSString)
-name hkAttachment  =
-    sendMsg hkAttachment (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name hkAttachment =
+  sendMessage hkAttachment nameSelector
 
 -- | contentType
 --
@@ -90,8 +87,8 @@ name hkAttachment  =
 --
 -- ObjC selector: @- contentType@
 contentType :: IsHKAttachment hkAttachment => hkAttachment -> IO (Id UTType)
-contentType hkAttachment  =
-    sendMsg hkAttachment (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentType hkAttachment =
+  sendMessage hkAttachment contentTypeSelector
 
 -- | size
 --
@@ -99,8 +96,8 @@ contentType hkAttachment  =
 --
 -- ObjC selector: @- size@
 size :: IsHKAttachment hkAttachment => hkAttachment -> IO CLong
-size hkAttachment  =
-    sendMsg hkAttachment (mkSelector "size") retCLong []
+size hkAttachment =
+  sendMessage hkAttachment sizeSelector
 
 -- | creationDate
 --
@@ -108,8 +105,8 @@ size hkAttachment  =
 --
 -- ObjC selector: @- creationDate@
 creationDate :: IsHKAttachment hkAttachment => hkAttachment -> IO (Id NSDate)
-creationDate hkAttachment  =
-    sendMsg hkAttachment (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate hkAttachment =
+  sendMessage hkAttachment creationDateSelector
 
 -- | metadata
 --
@@ -119,42 +116,42 @@ creationDate hkAttachment  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsHKAttachment hkAttachment => hkAttachment -> IO (Id NSDictionary)
-metadata hkAttachment  =
-    sendMsg hkAttachment (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata hkAttachment =
+  sendMessage hkAttachment metadataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKAttachment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKAttachment)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSUUID)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id UTType)
 contentTypeSelector = mkSelector "contentType"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] CLong
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSDictionary)
 metadataSelector = mkSelector "metadata"
 

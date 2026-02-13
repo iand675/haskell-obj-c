@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,36 +24,32 @@ module ObjC.AppKit.NSButtonTouchBarItem
   , setEnabled
   , customizationLabel
   , setCustomizationLabel
-  , buttonTouchBarItemWithIdentifier_title_target_actionSelector
+  , actionSelector
+  , bezelColorSelector
   , buttonTouchBarItemWithIdentifier_image_target_actionSelector
   , buttonTouchBarItemWithIdentifier_title_image_target_actionSelector
-  , titleSelector
-  , setTitleSelector
-  , imageSelector
-  , setImageSelector
-  , bezelColorSelector
-  , setBezelColorSelector
-  , targetSelector
-  , setTargetSelector
-  , actionSelector
-  , setActionSelector
-  , enabledSelector
-  , setEnabledSelector
+  , buttonTouchBarItemWithIdentifier_title_target_actionSelector
   , customizationLabelSelector
+  , enabledSelector
+  , imageSelector
+  , setActionSelector
+  , setBezelColorSelector
   , setCustomizationLabelSelector
+  , setEnabledSelector
+  , setImageSelector
+  , setTargetSelector
+  , setTitleSelector
+  , targetSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,180 +57,169 @@ import ObjC.AppKit.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
 -- | @+ buttonTouchBarItemWithIdentifier:title:target:action:@
-buttonTouchBarItemWithIdentifier_title_target_action :: (IsNSString identifier, IsNSString title) => identifier -> title -> RawId -> Selector -> IO (Id NSButtonTouchBarItem)
+buttonTouchBarItemWithIdentifier_title_target_action :: (IsNSString identifier, IsNSString title) => identifier -> title -> RawId -> Sel -> IO (Id NSButtonTouchBarItem)
 buttonTouchBarItemWithIdentifier_title_target_action identifier title target action =
   do
     cls' <- getRequiredClass "NSButtonTouchBarItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr title $ \raw_title ->
-        sendClassMsg cls' (mkSelector "buttonTouchBarItemWithIdentifier:title:target:action:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector action)] >>= retainedObject . castPtr
+    sendClassMessage cls' buttonTouchBarItemWithIdentifier_title_target_actionSelector (toNSString identifier) (toNSString title) target action
 
 -- | @+ buttonTouchBarItemWithIdentifier:image:target:action:@
-buttonTouchBarItemWithIdentifier_image_target_action :: (IsNSString identifier, IsNSImage image) => identifier -> image -> RawId -> Selector -> IO (Id NSButtonTouchBarItem)
+buttonTouchBarItemWithIdentifier_image_target_action :: (IsNSString identifier, IsNSImage image) => identifier -> image -> RawId -> Sel -> IO (Id NSButtonTouchBarItem)
 buttonTouchBarItemWithIdentifier_image_target_action identifier image target action =
   do
     cls' <- getRequiredClass "NSButtonTouchBarItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr image $ \raw_image ->
-        sendClassMsg cls' (mkSelector "buttonTouchBarItemWithIdentifier:image:target:action:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector action)] >>= retainedObject . castPtr
+    sendClassMessage cls' buttonTouchBarItemWithIdentifier_image_target_actionSelector (toNSString identifier) (toNSImage image) target action
 
 -- | @+ buttonTouchBarItemWithIdentifier:title:image:target:action:@
-buttonTouchBarItemWithIdentifier_title_image_target_action :: (IsNSString identifier, IsNSString title, IsNSImage image) => identifier -> title -> image -> RawId -> Selector -> IO (Id NSButtonTouchBarItem)
+buttonTouchBarItemWithIdentifier_title_image_target_action :: (IsNSString identifier, IsNSString title, IsNSImage image) => identifier -> title -> image -> RawId -> Sel -> IO (Id NSButtonTouchBarItem)
 buttonTouchBarItemWithIdentifier_title_image_target_action identifier title image target action =
   do
     cls' <- getRequiredClass "NSButtonTouchBarItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr title $ \raw_title ->
-        withObjCPtr image $ \raw_image ->
-          sendClassMsg cls' (mkSelector "buttonTouchBarItemWithIdentifier:title:image:target:action:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector action)] >>= retainedObject . castPtr
+    sendClassMessage cls' buttonTouchBarItemWithIdentifier_title_image_target_actionSelector (toNSString identifier) (toNSString title) (toNSImage image) target action
 
 -- | @- title@
 title :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> IO (Id NSString)
-title nsButtonTouchBarItem  =
-    sendMsg nsButtonTouchBarItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsButtonTouchBarItem =
+  sendMessage nsButtonTouchBarItem titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSButtonTouchBarItem nsButtonTouchBarItem, IsNSString value) => nsButtonTouchBarItem -> value -> IO ()
-setTitle nsButtonTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonTouchBarItem (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsButtonTouchBarItem value =
+  sendMessage nsButtonTouchBarItem setTitleSelector (toNSString value)
 
 -- | @- image@
 image :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> IO (Id NSImage)
-image nsButtonTouchBarItem  =
-    sendMsg nsButtonTouchBarItem (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image nsButtonTouchBarItem =
+  sendMessage nsButtonTouchBarItem imageSelector
 
 -- | @- setImage:@
 setImage :: (IsNSButtonTouchBarItem nsButtonTouchBarItem, IsNSImage value) => nsButtonTouchBarItem -> value -> IO ()
-setImage nsButtonTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonTouchBarItem (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImage nsButtonTouchBarItem value =
+  sendMessage nsButtonTouchBarItem setImageSelector (toNSImage value)
 
 -- | @- bezelColor@
 bezelColor :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> IO (Id NSColor)
-bezelColor nsButtonTouchBarItem  =
-    sendMsg nsButtonTouchBarItem (mkSelector "bezelColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+bezelColor nsButtonTouchBarItem =
+  sendMessage nsButtonTouchBarItem bezelColorSelector
 
 -- | @- setBezelColor:@
 setBezelColor :: (IsNSButtonTouchBarItem nsButtonTouchBarItem, IsNSColor value) => nsButtonTouchBarItem -> value -> IO ()
-setBezelColor nsButtonTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonTouchBarItem (mkSelector "setBezelColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBezelColor nsButtonTouchBarItem value =
+  sendMessage nsButtonTouchBarItem setBezelColorSelector (toNSColor value)
 
 -- | @- target@
 target :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> IO RawId
-target nsButtonTouchBarItem  =
-    fmap (RawId . castPtr) $ sendMsg nsButtonTouchBarItem (mkSelector "target") (retPtr retVoid) []
+target nsButtonTouchBarItem =
+  sendMessage nsButtonTouchBarItem targetSelector
 
 -- | @- setTarget:@
 setTarget :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> RawId -> IO ()
-setTarget nsButtonTouchBarItem  value =
-    sendMsg nsButtonTouchBarItem (mkSelector "setTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTarget nsButtonTouchBarItem value =
+  sendMessage nsButtonTouchBarItem setTargetSelector value
 
 -- | @- action@
-action :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> IO Selector
-action nsButtonTouchBarItem  =
-    fmap (Selector . castPtr) $ sendMsg nsButtonTouchBarItem (mkSelector "action") (retPtr retVoid) []
+action :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> IO Sel
+action nsButtonTouchBarItem =
+  sendMessage nsButtonTouchBarItem actionSelector
 
 -- | @- setAction:@
-setAction :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> Selector -> IO ()
-setAction nsButtonTouchBarItem  value =
-    sendMsg nsButtonTouchBarItem (mkSelector "setAction:") retVoid [argPtr (unSelector value)]
+setAction :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> Sel -> IO ()
+setAction nsButtonTouchBarItem value =
+  sendMessage nsButtonTouchBarItem setActionSelector value
 
 -- | @- enabled@
 enabled :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> IO Bool
-enabled nsButtonTouchBarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsButtonTouchBarItem (mkSelector "enabled") retCULong []
+enabled nsButtonTouchBarItem =
+  sendMessage nsButtonTouchBarItem enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> Bool -> IO ()
-setEnabled nsButtonTouchBarItem  value =
-    sendMsg nsButtonTouchBarItem (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled nsButtonTouchBarItem value =
+  sendMessage nsButtonTouchBarItem setEnabledSelector value
 
 -- | The localized string labelling this item during user customization. The default value is empty string.
 --
 -- ObjC selector: @- customizationLabel@
 customizationLabel :: IsNSButtonTouchBarItem nsButtonTouchBarItem => nsButtonTouchBarItem -> IO (Id NSString)
-customizationLabel nsButtonTouchBarItem  =
-    sendMsg nsButtonTouchBarItem (mkSelector "customizationLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+customizationLabel nsButtonTouchBarItem =
+  sendMessage nsButtonTouchBarItem customizationLabelSelector
 
 -- | The localized string labelling this item during user customization. The default value is empty string.
 --
 -- ObjC selector: @- setCustomizationLabel:@
 setCustomizationLabel :: (IsNSButtonTouchBarItem nsButtonTouchBarItem, IsNSString value) => nsButtonTouchBarItem -> value -> IO ()
-setCustomizationLabel nsButtonTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsButtonTouchBarItem (mkSelector "setCustomizationLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomizationLabel nsButtonTouchBarItem value =
+  sendMessage nsButtonTouchBarItem setCustomizationLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @buttonTouchBarItemWithIdentifier:title:target:action:@
-buttonTouchBarItemWithIdentifier_title_target_actionSelector :: Selector
+buttonTouchBarItemWithIdentifier_title_target_actionSelector :: Selector '[Id NSString, Id NSString, RawId, Sel] (Id NSButtonTouchBarItem)
 buttonTouchBarItemWithIdentifier_title_target_actionSelector = mkSelector "buttonTouchBarItemWithIdentifier:title:target:action:"
 
 -- | @Selector@ for @buttonTouchBarItemWithIdentifier:image:target:action:@
-buttonTouchBarItemWithIdentifier_image_target_actionSelector :: Selector
+buttonTouchBarItemWithIdentifier_image_target_actionSelector :: Selector '[Id NSString, Id NSImage, RawId, Sel] (Id NSButtonTouchBarItem)
 buttonTouchBarItemWithIdentifier_image_target_actionSelector = mkSelector "buttonTouchBarItemWithIdentifier:image:target:action:"
 
 -- | @Selector@ for @buttonTouchBarItemWithIdentifier:title:image:target:action:@
-buttonTouchBarItemWithIdentifier_title_image_target_actionSelector :: Selector
+buttonTouchBarItemWithIdentifier_title_image_target_actionSelector :: Selector '[Id NSString, Id NSString, Id NSImage, RawId, Sel] (Id NSButtonTouchBarItem)
 buttonTouchBarItemWithIdentifier_title_image_target_actionSelector = mkSelector "buttonTouchBarItemWithIdentifier:title:image:target:action:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @bezelColor@
-bezelColorSelector :: Selector
+bezelColorSelector :: Selector '[] (Id NSColor)
 bezelColorSelector = mkSelector "bezelColor"
 
 -- | @Selector@ for @setBezelColor:@
-setBezelColorSelector :: Selector
+setBezelColorSelector :: Selector '[Id NSColor] ()
 setBezelColorSelector = mkSelector "setBezelColor:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] RawId
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[RawId] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] Sel
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[Sel] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @customizationLabel@
-customizationLabelSelector :: Selector
+customizationLabelSelector :: Selector '[] (Id NSString)
 customizationLabelSelector = mkSelector "customizationLabel"
 
 -- | @Selector@ for @setCustomizationLabel:@
-setCustomizationLabelSelector :: Selector
+setCustomizationLabelSelector :: Selector '[Id NSString] ()
 setCustomizationLabelSelector = mkSelector "setCustomizationLabel:"
 

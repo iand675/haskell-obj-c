@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,8 +14,8 @@ module ObjC.AVFAudio.AVSpeechSynthesisProviderRequest
   , new
   , ssmlRepresentation
   , voice
-  , initWithSSMLRepresentation_voiceSelector
   , initSelector
+  , initWithSSMLRepresentation_voiceSelector
   , newSelector
   , ssmlRepresentationSelector
   , voiceSelector
@@ -22,15 +23,11 @@ module ObjC.AVFAudio.AVSpeechSynthesisProviderRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,22 +36,20 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithSSMLRepresentation:voice:@
 initWithSSMLRepresentation_voice :: (IsAVSpeechSynthesisProviderRequest avSpeechSynthesisProviderRequest, IsNSString text, IsAVSpeechSynthesisProviderVoice voice) => avSpeechSynthesisProviderRequest -> text -> voice -> IO (Id AVSpeechSynthesisProviderRequest)
-initWithSSMLRepresentation_voice avSpeechSynthesisProviderRequest  text voice =
-  withObjCPtr text $ \raw_text ->
-    withObjCPtr voice $ \raw_voice ->
-        sendMsg avSpeechSynthesisProviderRequest (mkSelector "initWithSSMLRepresentation:voice:") (retPtr retVoid) [argPtr (castPtr raw_text :: Ptr ()), argPtr (castPtr raw_voice :: Ptr ())] >>= ownedObject . castPtr
+initWithSSMLRepresentation_voice avSpeechSynthesisProviderRequest text voice =
+  sendOwnedMessage avSpeechSynthesisProviderRequest initWithSSMLRepresentation_voiceSelector (toNSString text) (toAVSpeechSynthesisProviderVoice voice)
 
 -- | @- init@
 init_ :: IsAVSpeechSynthesisProviderRequest avSpeechSynthesisProviderRequest => avSpeechSynthesisProviderRequest -> IO (Id AVSpeechSynthesisProviderRequest)
-init_ avSpeechSynthesisProviderRequest  =
-    sendMsg avSpeechSynthesisProviderRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avSpeechSynthesisProviderRequest =
+  sendOwnedMessage avSpeechSynthesisProviderRequest initSelector
 
 -- | @+ new@
 new :: IO (Id AVSpeechSynthesisProviderRequest)
 new  =
   do
     cls' <- getRequiredClass "AVSpeechSynthesisProviderRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The SSML representation of the text to be synthesized with the corresponding speech synthesis attributes for customization of pitch, rate, intonation, and more.
 --
@@ -62,37 +57,37 @@ new  =
 --
 -- ObjC selector: @- ssmlRepresentation@
 ssmlRepresentation :: IsAVSpeechSynthesisProviderRequest avSpeechSynthesisProviderRequest => avSpeechSynthesisProviderRequest -> IO (Id NSString)
-ssmlRepresentation avSpeechSynthesisProviderRequest  =
-    sendMsg avSpeechSynthesisProviderRequest (mkSelector "ssmlRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssmlRepresentation avSpeechSynthesisProviderRequest =
+  sendMessage avSpeechSynthesisProviderRequest ssmlRepresentationSelector
 
 -- | The voice to be used in this speech request
 --
 -- ObjC selector: @- voice@
 voice :: IsAVSpeechSynthesisProviderRequest avSpeechSynthesisProviderRequest => avSpeechSynthesisProviderRequest -> IO (Id AVSpeechSynthesisProviderVoice)
-voice avSpeechSynthesisProviderRequest  =
-    sendMsg avSpeechSynthesisProviderRequest (mkSelector "voice") (retPtr retVoid) [] >>= retainedObject . castPtr
+voice avSpeechSynthesisProviderRequest =
+  sendMessage avSpeechSynthesisProviderRequest voiceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSSMLRepresentation:voice:@
-initWithSSMLRepresentation_voiceSelector :: Selector
+initWithSSMLRepresentation_voiceSelector :: Selector '[Id NSString, Id AVSpeechSynthesisProviderVoice] (Id AVSpeechSynthesisProviderRequest)
 initWithSSMLRepresentation_voiceSelector = mkSelector "initWithSSMLRepresentation:voice:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVSpeechSynthesisProviderRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVSpeechSynthesisProviderRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @ssmlRepresentation@
-ssmlRepresentationSelector :: Selector
+ssmlRepresentationSelector :: Selector '[] (Id NSString)
 ssmlRepresentationSelector = mkSelector "ssmlRepresentation"
 
 -- | @Selector@ for @voice@
-voiceSelector :: Selector
+voiceSelector :: Selector '[] (Id AVSpeechSynthesisProviderVoice)
 voiceSelector = mkSelector "voice"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.VideoSubscriberAccount.VSAccountProviderResponse
   , status
   , body
   , authenticationSchemeSelector
-  , statusSelector
   , bodySelector
+  , statusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,36 +34,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- authenticationScheme@
 authenticationScheme :: IsVSAccountProviderResponse vsAccountProviderResponse => vsAccountProviderResponse -> IO (Id NSString)
-authenticationScheme vsAccountProviderResponse  =
-    sendMsg vsAccountProviderResponse (mkSelector "authenticationScheme") (retPtr retVoid) [] >>= retainedObject . castPtr
+authenticationScheme vsAccountProviderResponse =
+  sendMessage vsAccountProviderResponse authenticationSchemeSelector
 
 -- | The status code for this response. May be nil if there is no meaningful value for this type of response.
 --
 -- ObjC selector: @- status@
 status :: IsVSAccountProviderResponse vsAccountProviderResponse => vsAccountProviderResponse -> IO (Id NSString)
-status vsAccountProviderResponse  =
-    sendMsg vsAccountProviderResponse (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status vsAccountProviderResponse =
+  sendMessage vsAccountProviderResponse statusSelector
 
 -- | The raw response from the provider. May be nil if the response contained security-sensitive information.
 --
 -- ObjC selector: @- body@
 body :: IsVSAccountProviderResponse vsAccountProviderResponse => vsAccountProviderResponse -> IO (Id NSString)
-body vsAccountProviderResponse  =
-    sendMsg vsAccountProviderResponse (mkSelector "body") (retPtr retVoid) [] >>= retainedObject . castPtr
+body vsAccountProviderResponse =
+  sendMessage vsAccountProviderResponse bodySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authenticationScheme@
-authenticationSchemeSelector :: Selector
+authenticationSchemeSelector :: Selector '[] (Id NSString)
 authenticationSchemeSelector = mkSelector "authenticationScheme"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSString)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @body@
-bodySelector :: Selector
+bodySelector :: Selector '[] (Id NSString)
 bodySelector = mkSelector "body"
 

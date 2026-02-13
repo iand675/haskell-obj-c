@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.MLCompute.MLCMultiheadAttentionDescriptor
   , hasBiases
   , hasAttentionBiases
   , addsZeroAttention
-  , newSelector
-  , initSelector
-  , descriptorWithModelDimension_keyDimension_valueDimension_headCount_dropout_hasBiases_hasAttentionBiases_addsZeroAttentionSelector
-  , descriptorWithModelDimension_headCountSelector
-  , modelDimensionSelector
-  , keyDimensionSelector
-  , valueDimensionSelector
-  , headCountSelector
-  , dropoutSelector
-  , hasBiasesSelector
-  , hasAttentionBiasesSelector
   , addsZeroAttentionSelector
+  , descriptorWithModelDimension_headCountSelector
+  , descriptorWithModelDimension_keyDimension_valueDimension_headCount_dropout_hasBiases_hasAttentionBiases_addsZeroAttentionSelector
+  , dropoutSelector
+  , hasAttentionBiasesSelector
+  , hasBiasesSelector
+  , headCountSelector
+  , initSelector
+  , keyDimensionSelector
+  , modelDimensionSelector
+  , newSelector
+  , valueDimensionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,12 +55,12 @@ new :: IO (Id MLCMultiheadAttentionDescriptor)
 new  =
   do
     cls' <- getRequiredClass "MLCMultiheadAttentionDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCMultiheadAttentionDescriptor mlcMultiheadAttentionDescriptor => mlcMultiheadAttentionDescriptor -> IO (Id MLCMultiheadAttentionDescriptor)
-init_ mlcMultiheadAttentionDescriptor  =
-    sendMsg mlcMultiheadAttentionDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcMultiheadAttentionDescriptor =
+  sendOwnedMessage mlcMultiheadAttentionDescriptor initSelector
 
 -- | A multi-head attention layer descriptor
 --
@@ -90,7 +87,7 @@ descriptorWithModelDimension_keyDimension_valueDimension_headCount_dropout_hasBi
 descriptorWithModelDimension_keyDimension_valueDimension_headCount_dropout_hasBiases_hasAttentionBiases_addsZeroAttention modelDimension keyDimension valueDimension headCount dropout hasBiases hasAttentionBiases addsZeroAttention =
   do
     cls' <- getRequiredClass "MLCMultiheadAttentionDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithModelDimension:keyDimension:valueDimension:headCount:dropout:hasBiases:hasAttentionBiases:addsZeroAttention:") (retPtr retVoid) [argCULong modelDimension, argCULong keyDimension, argCULong valueDimension, argCULong headCount, argCFloat dropout, argCULong (if hasBiases then 1 else 0), argCULong (if hasAttentionBiases then 1 else 0), argCULong (if addsZeroAttention then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithModelDimension_keyDimension_valueDimension_headCount_dropout_hasBiases_hasAttentionBiases_addsZeroAttentionSelector modelDimension keyDimension valueDimension headCount dropout hasBiases hasAttentionBiases addsZeroAttention
 
 -- | A multi-head attention layer descriptor
 --
@@ -105,113 +102,113 @@ descriptorWithModelDimension_headCount :: CULong -> CULong -> IO (Id MLCMultihea
 descriptorWithModelDimension_headCount modelDimension headCount =
   do
     cls' <- getRequiredClass "MLCMultiheadAttentionDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithModelDimension:headCount:") (retPtr retVoid) [argCULong modelDimension, argCULong headCount] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithModelDimension_headCountSelector modelDimension headCount
 
 -- | model or embedding dimension
 --
 -- ObjC selector: @- modelDimension@
 modelDimension :: IsMLCMultiheadAttentionDescriptor mlcMultiheadAttentionDescriptor => mlcMultiheadAttentionDescriptor -> IO CULong
-modelDimension mlcMultiheadAttentionDescriptor  =
-    sendMsg mlcMultiheadAttentionDescriptor (mkSelector "modelDimension") retCULong []
+modelDimension mlcMultiheadAttentionDescriptor =
+  sendMessage mlcMultiheadAttentionDescriptor modelDimensionSelector
 
 -- | total dimension of key space, Default = modelDimension
 --
 -- ObjC selector: @- keyDimension@
 keyDimension :: IsMLCMultiheadAttentionDescriptor mlcMultiheadAttentionDescriptor => mlcMultiheadAttentionDescriptor -> IO CULong
-keyDimension mlcMultiheadAttentionDescriptor  =
-    sendMsg mlcMultiheadAttentionDescriptor (mkSelector "keyDimension") retCULong []
+keyDimension mlcMultiheadAttentionDescriptor =
+  sendMessage mlcMultiheadAttentionDescriptor keyDimensionSelector
 
 -- | total dimension of value space, Default = modelDimension
 --
 -- ObjC selector: @- valueDimension@
 valueDimension :: IsMLCMultiheadAttentionDescriptor mlcMultiheadAttentionDescriptor => mlcMultiheadAttentionDescriptor -> IO CULong
-valueDimension mlcMultiheadAttentionDescriptor  =
-    sendMsg mlcMultiheadAttentionDescriptor (mkSelector "valueDimension") retCULong []
+valueDimension mlcMultiheadAttentionDescriptor =
+  sendMessage mlcMultiheadAttentionDescriptor valueDimensionSelector
 
 -- | number of parallel attention heads
 --
 -- ObjC selector: @- headCount@
 headCount :: IsMLCMultiheadAttentionDescriptor mlcMultiheadAttentionDescriptor => mlcMultiheadAttentionDescriptor -> IO CULong
-headCount mlcMultiheadAttentionDescriptor  =
-    sendMsg mlcMultiheadAttentionDescriptor (mkSelector "headCount") retCULong []
+headCount mlcMultiheadAttentionDescriptor =
+  sendMessage mlcMultiheadAttentionDescriptor headCountSelector
 
 -- | a droupout layer applied to the output projection weights. Default = 0.0
 --
 -- ObjC selector: @- dropout@
 dropout :: IsMLCMultiheadAttentionDescriptor mlcMultiheadAttentionDescriptor => mlcMultiheadAttentionDescriptor -> IO CFloat
-dropout mlcMultiheadAttentionDescriptor  =
-    sendMsg mlcMultiheadAttentionDescriptor (mkSelector "dropout") retCFloat []
+dropout mlcMultiheadAttentionDescriptor =
+  sendMessage mlcMultiheadAttentionDescriptor dropoutSelector
 
 -- | if true, bias is used for query/key/value/output projections. Default = true
 --
 -- ObjC selector: @- hasBiases@
 hasBiases :: IsMLCMultiheadAttentionDescriptor mlcMultiheadAttentionDescriptor => mlcMultiheadAttentionDescriptor -> IO Bool
-hasBiases mlcMultiheadAttentionDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcMultiheadAttentionDescriptor (mkSelector "hasBiases") retCULong []
+hasBiases mlcMultiheadAttentionDescriptor =
+  sendMessage mlcMultiheadAttentionDescriptor hasBiasesSelector
 
 -- | if true, an array of biases is added to key and value respectively. Default = false
 --
 -- ObjC selector: @- hasAttentionBiases@
 hasAttentionBiases :: IsMLCMultiheadAttentionDescriptor mlcMultiheadAttentionDescriptor => mlcMultiheadAttentionDescriptor -> IO Bool
-hasAttentionBiases mlcMultiheadAttentionDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcMultiheadAttentionDescriptor (mkSelector "hasAttentionBiases") retCULong []
+hasAttentionBiases mlcMultiheadAttentionDescriptor =
+  sendMessage mlcMultiheadAttentionDescriptor hasAttentionBiasesSelector
 
 -- | if true, a row of zeroes is added to projected key and value. Default = false
 --
 -- ObjC selector: @- addsZeroAttention@
 addsZeroAttention :: IsMLCMultiheadAttentionDescriptor mlcMultiheadAttentionDescriptor => mlcMultiheadAttentionDescriptor -> IO Bool
-addsZeroAttention mlcMultiheadAttentionDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcMultiheadAttentionDescriptor (mkSelector "addsZeroAttention") retCULong []
+addsZeroAttention mlcMultiheadAttentionDescriptor =
+  sendMessage mlcMultiheadAttentionDescriptor addsZeroAttentionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCMultiheadAttentionDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCMultiheadAttentionDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @descriptorWithModelDimension:keyDimension:valueDimension:headCount:dropout:hasBiases:hasAttentionBiases:addsZeroAttention:@
-descriptorWithModelDimension_keyDimension_valueDimension_headCount_dropout_hasBiases_hasAttentionBiases_addsZeroAttentionSelector :: Selector
+descriptorWithModelDimension_keyDimension_valueDimension_headCount_dropout_hasBiases_hasAttentionBiases_addsZeroAttentionSelector :: Selector '[CULong, CULong, CULong, CULong, CFloat, Bool, Bool, Bool] (Id MLCMultiheadAttentionDescriptor)
 descriptorWithModelDimension_keyDimension_valueDimension_headCount_dropout_hasBiases_hasAttentionBiases_addsZeroAttentionSelector = mkSelector "descriptorWithModelDimension:keyDimension:valueDimension:headCount:dropout:hasBiases:hasAttentionBiases:addsZeroAttention:"
 
 -- | @Selector@ for @descriptorWithModelDimension:headCount:@
-descriptorWithModelDimension_headCountSelector :: Selector
+descriptorWithModelDimension_headCountSelector :: Selector '[CULong, CULong] (Id MLCMultiheadAttentionDescriptor)
 descriptorWithModelDimension_headCountSelector = mkSelector "descriptorWithModelDimension:headCount:"
 
 -- | @Selector@ for @modelDimension@
-modelDimensionSelector :: Selector
+modelDimensionSelector :: Selector '[] CULong
 modelDimensionSelector = mkSelector "modelDimension"
 
 -- | @Selector@ for @keyDimension@
-keyDimensionSelector :: Selector
+keyDimensionSelector :: Selector '[] CULong
 keyDimensionSelector = mkSelector "keyDimension"
 
 -- | @Selector@ for @valueDimension@
-valueDimensionSelector :: Selector
+valueDimensionSelector :: Selector '[] CULong
 valueDimensionSelector = mkSelector "valueDimension"
 
 -- | @Selector@ for @headCount@
-headCountSelector :: Selector
+headCountSelector :: Selector '[] CULong
 headCountSelector = mkSelector "headCount"
 
 -- | @Selector@ for @dropout@
-dropoutSelector :: Selector
+dropoutSelector :: Selector '[] CFloat
 dropoutSelector = mkSelector "dropout"
 
 -- | @Selector@ for @hasBiases@
-hasBiasesSelector :: Selector
+hasBiasesSelector :: Selector '[] Bool
 hasBiasesSelector = mkSelector "hasBiases"
 
 -- | @Selector@ for @hasAttentionBiases@
-hasAttentionBiasesSelector :: Selector
+hasAttentionBiasesSelector :: Selector '[] Bool
 hasAttentionBiasesSelector = mkSelector "hasAttentionBiases"
 
 -- | @Selector@ for @addsZeroAttention@
-addsZeroAttentionSelector :: Selector
+addsZeroAttentionSelector :: Selector '[] Bool
 addsZeroAttentionSelector = mkSelector "addsZeroAttention"
 

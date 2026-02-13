@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -53,52 +54,52 @@ module ObjC.AppKit.NSPopUpButtonCell
   , titleOfSelectedItem
   , arrowPosition
   , setArrowPosition
-  , initTextCell_pullsDownSelector
-  , initWithCoderSelector
   , addItemWithTitleSelector
   , addItemsWithTitlesSelector
-  , insertItemWithTitle_atIndexSelector
-  , removeItemWithTitleSelector
-  , removeItemAtIndexSelector
-  , removeAllItemsSelector
-  , indexOfItemSelector
-  , indexOfItemWithTitleSelector
-  , indexOfItemWithTagSelector
-  , indexOfItemWithRepresentedObjectSelector
-  , indexOfItemWithTarget_andActionSelector
-  , itemAtIndexSelector
-  , itemWithTitleSelector
-  , selectItemSelector
-  , selectItemAtIndexSelector
-  , selectItemWithTitleSelector
-  , selectItemWithTagSelector
-  , setTitleSelector
-  , synchronizeTitleAndSelectedItemSelector
-  , itemTitleAtIndexSelector
-  , attachPopUpWithFrame_inViewSelector
-  , dismissPopUpSelector
-  , performClickWithFrame_inViewSelector
-  , menuSelector
-  , setMenuSelector
-  , pullsDownSelector
-  , setPullsDownSelector
-  , autoenablesItemsSelector
-  , setAutoenablesItemsSelector
-  , preferredEdgeSelector
-  , setPreferredEdgeSelector
-  , usesItemFromMenuSelector
-  , setUsesItemFromMenuSelector
   , altersStateOfSelectedItemSelector
-  , setAltersStateOfSelectedItemSelector
-  , itemArraySelector
-  , numberOfItemsSelector
-  , lastItemSelector
-  , selectedItemSelector
-  , indexOfSelectedItemSelector
-  , itemTitlesSelector
-  , titleOfSelectedItemSelector
   , arrowPositionSelector
+  , attachPopUpWithFrame_inViewSelector
+  , autoenablesItemsSelector
+  , dismissPopUpSelector
+  , indexOfItemSelector
+  , indexOfItemWithRepresentedObjectSelector
+  , indexOfItemWithTagSelector
+  , indexOfItemWithTarget_andActionSelector
+  , indexOfItemWithTitleSelector
+  , indexOfSelectedItemSelector
+  , initTextCell_pullsDownSelector
+  , initWithCoderSelector
+  , insertItemWithTitle_atIndexSelector
+  , itemArraySelector
+  , itemAtIndexSelector
+  , itemTitleAtIndexSelector
+  , itemTitlesSelector
+  , itemWithTitleSelector
+  , lastItemSelector
+  , menuSelector
+  , numberOfItemsSelector
+  , performClickWithFrame_inViewSelector
+  , preferredEdgeSelector
+  , pullsDownSelector
+  , removeAllItemsSelector
+  , removeItemAtIndexSelector
+  , removeItemWithTitleSelector
+  , selectItemAtIndexSelector
+  , selectItemSelector
+  , selectItemWithTagSelector
+  , selectItemWithTitleSelector
+  , selectedItemSelector
+  , setAltersStateOfSelectedItemSelector
   , setArrowPositionSelector
+  , setAutoenablesItemsSelector
+  , setMenuSelector
+  , setPreferredEdgeSelector
+  , setPullsDownSelector
+  , setTitleSelector
+  , setUsesItemFromMenuSelector
+  , synchronizeTitleAndSelectedItemSelector
+  , titleOfSelectedItemSelector
+  , usesItemFromMenuSelector
 
   -- * Enum types
   , NSPopUpArrowPosition(NSPopUpArrowPosition)
@@ -117,15 +118,11 @@ module ObjC.AppKit.NSPopUpButtonCell
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -137,434 +134,419 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initTextCell:pullsDown:@
 initTextCell_pullsDown :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSString stringValue) => nsPopUpButtonCell -> stringValue -> Bool -> IO (Id NSPopUpButtonCell)
-initTextCell_pullsDown nsPopUpButtonCell  stringValue pullDown =
-  withObjCPtr stringValue $ \raw_stringValue ->
-      sendMsg nsPopUpButtonCell (mkSelector "initTextCell:pullsDown:") (retPtr retVoid) [argPtr (castPtr raw_stringValue :: Ptr ()), argCULong (if pullDown then 1 else 0)] >>= ownedObject . castPtr
+initTextCell_pullsDown nsPopUpButtonCell stringValue pullDown =
+  sendOwnedMessage nsPopUpButtonCell initTextCell_pullsDownSelector (toNSString stringValue) pullDown
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSCoder coder) => nsPopUpButtonCell -> coder -> IO (Id NSPopUpButtonCell)
-initWithCoder nsPopUpButtonCell  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsPopUpButtonCell (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsPopUpButtonCell coder =
+  sendOwnedMessage nsPopUpButtonCell initWithCoderSelector (toNSCoder coder)
 
 -- | @- addItemWithTitle:@
 addItemWithTitle :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSString title) => nsPopUpButtonCell -> title -> IO ()
-addItemWithTitle nsPopUpButtonCell  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg nsPopUpButtonCell (mkSelector "addItemWithTitle:") retVoid [argPtr (castPtr raw_title :: Ptr ())]
+addItemWithTitle nsPopUpButtonCell title =
+  sendMessage nsPopUpButtonCell addItemWithTitleSelector (toNSString title)
 
 -- | @- addItemsWithTitles:@
 addItemsWithTitles :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSArray itemTitles) => nsPopUpButtonCell -> itemTitles -> IO ()
-addItemsWithTitles nsPopUpButtonCell  itemTitles =
-  withObjCPtr itemTitles $ \raw_itemTitles ->
-      sendMsg nsPopUpButtonCell (mkSelector "addItemsWithTitles:") retVoid [argPtr (castPtr raw_itemTitles :: Ptr ())]
+addItemsWithTitles nsPopUpButtonCell itemTitles =
+  sendMessage nsPopUpButtonCell addItemsWithTitlesSelector (toNSArray itemTitles)
 
 -- | @- insertItemWithTitle:atIndex:@
 insertItemWithTitle_atIndex :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSString title) => nsPopUpButtonCell -> title -> CLong -> IO ()
-insertItemWithTitle_atIndex nsPopUpButtonCell  title index =
-  withObjCPtr title $ \raw_title ->
-      sendMsg nsPopUpButtonCell (mkSelector "insertItemWithTitle:atIndex:") retVoid [argPtr (castPtr raw_title :: Ptr ()), argCLong index]
+insertItemWithTitle_atIndex nsPopUpButtonCell title index =
+  sendMessage nsPopUpButtonCell insertItemWithTitle_atIndexSelector (toNSString title) index
 
 -- | @- removeItemWithTitle:@
 removeItemWithTitle :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSString title) => nsPopUpButtonCell -> title -> IO ()
-removeItemWithTitle nsPopUpButtonCell  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg nsPopUpButtonCell (mkSelector "removeItemWithTitle:") retVoid [argPtr (castPtr raw_title :: Ptr ())]
+removeItemWithTitle nsPopUpButtonCell title =
+  sendMessage nsPopUpButtonCell removeItemWithTitleSelector (toNSString title)
 
 -- | @- removeItemAtIndex:@
 removeItemAtIndex :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> CLong -> IO ()
-removeItemAtIndex nsPopUpButtonCell  index =
-    sendMsg nsPopUpButtonCell (mkSelector "removeItemAtIndex:") retVoid [argCLong index]
+removeItemAtIndex nsPopUpButtonCell index =
+  sendMessage nsPopUpButtonCell removeItemAtIndexSelector index
 
 -- | @- removeAllItems@
 removeAllItems :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO ()
-removeAllItems nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "removeAllItems") retVoid []
+removeAllItems nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell removeAllItemsSelector
 
 -- | @- indexOfItem:@
 indexOfItem :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSMenuItem item) => nsPopUpButtonCell -> item -> IO CLong
-indexOfItem nsPopUpButtonCell  item =
-  withObjCPtr item $ \raw_item ->
-      sendMsg nsPopUpButtonCell (mkSelector "indexOfItem:") retCLong [argPtr (castPtr raw_item :: Ptr ())]
+indexOfItem nsPopUpButtonCell item =
+  sendMessage nsPopUpButtonCell indexOfItemSelector (toNSMenuItem item)
 
 -- | @- indexOfItemWithTitle:@
 indexOfItemWithTitle :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSString title) => nsPopUpButtonCell -> title -> IO CLong
-indexOfItemWithTitle nsPopUpButtonCell  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg nsPopUpButtonCell (mkSelector "indexOfItemWithTitle:") retCLong [argPtr (castPtr raw_title :: Ptr ())]
+indexOfItemWithTitle nsPopUpButtonCell title =
+  sendMessage nsPopUpButtonCell indexOfItemWithTitleSelector (toNSString title)
 
 -- | @- indexOfItemWithTag:@
 indexOfItemWithTag :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> CLong -> IO CLong
-indexOfItemWithTag nsPopUpButtonCell  tag =
-    sendMsg nsPopUpButtonCell (mkSelector "indexOfItemWithTag:") retCLong [argCLong tag]
+indexOfItemWithTag nsPopUpButtonCell tag =
+  sendMessage nsPopUpButtonCell indexOfItemWithTagSelector tag
 
 -- | @- indexOfItemWithRepresentedObject:@
 indexOfItemWithRepresentedObject :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> RawId -> IO CLong
-indexOfItemWithRepresentedObject nsPopUpButtonCell  obj_ =
-    sendMsg nsPopUpButtonCell (mkSelector "indexOfItemWithRepresentedObject:") retCLong [argPtr (castPtr (unRawId obj_) :: Ptr ())]
+indexOfItemWithRepresentedObject nsPopUpButtonCell obj_ =
+  sendMessage nsPopUpButtonCell indexOfItemWithRepresentedObjectSelector obj_
 
 -- | @- indexOfItemWithTarget:andAction:@
-indexOfItemWithTarget_andAction :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> RawId -> Selector -> IO CLong
-indexOfItemWithTarget_andAction nsPopUpButtonCell  target actionSelector =
-    sendMsg nsPopUpButtonCell (mkSelector "indexOfItemWithTarget:andAction:") retCLong [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector actionSelector)]
+indexOfItemWithTarget_andAction :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> RawId -> Sel -> IO CLong
+indexOfItemWithTarget_andAction nsPopUpButtonCell target actionSelector =
+  sendMessage nsPopUpButtonCell indexOfItemWithTarget_andActionSelector target actionSelector
 
 -- | @- itemAtIndex:@
 itemAtIndex :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> CLong -> IO (Id NSMenuItem)
-itemAtIndex nsPopUpButtonCell  index =
-    sendMsg nsPopUpButtonCell (mkSelector "itemAtIndex:") (retPtr retVoid) [argCLong index] >>= retainedObject . castPtr
+itemAtIndex nsPopUpButtonCell index =
+  sendMessage nsPopUpButtonCell itemAtIndexSelector index
 
 -- | @- itemWithTitle:@
 itemWithTitle :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSString title) => nsPopUpButtonCell -> title -> IO (Id NSMenuItem)
-itemWithTitle nsPopUpButtonCell  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg nsPopUpButtonCell (mkSelector "itemWithTitle:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ())] >>= retainedObject . castPtr
+itemWithTitle nsPopUpButtonCell title =
+  sendMessage nsPopUpButtonCell itemWithTitleSelector (toNSString title)
 
 -- | @- selectItem:@
 selectItem :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSMenuItem item) => nsPopUpButtonCell -> item -> IO ()
-selectItem nsPopUpButtonCell  item =
-  withObjCPtr item $ \raw_item ->
-      sendMsg nsPopUpButtonCell (mkSelector "selectItem:") retVoid [argPtr (castPtr raw_item :: Ptr ())]
+selectItem nsPopUpButtonCell item =
+  sendMessage nsPopUpButtonCell selectItemSelector (toNSMenuItem item)
 
 -- | @- selectItemAtIndex:@
 selectItemAtIndex :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> CLong -> IO ()
-selectItemAtIndex nsPopUpButtonCell  index =
-    sendMsg nsPopUpButtonCell (mkSelector "selectItemAtIndex:") retVoid [argCLong index]
+selectItemAtIndex nsPopUpButtonCell index =
+  sendMessage nsPopUpButtonCell selectItemAtIndexSelector index
 
 -- | @- selectItemWithTitle:@
 selectItemWithTitle :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSString title) => nsPopUpButtonCell -> title -> IO ()
-selectItemWithTitle nsPopUpButtonCell  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg nsPopUpButtonCell (mkSelector "selectItemWithTitle:") retVoid [argPtr (castPtr raw_title :: Ptr ())]
+selectItemWithTitle nsPopUpButtonCell title =
+  sendMessage nsPopUpButtonCell selectItemWithTitleSelector (toNSString title)
 
 -- | @- selectItemWithTag:@
 selectItemWithTag :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> CLong -> IO Bool
-selectItemWithTag nsPopUpButtonCell  tag =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPopUpButtonCell (mkSelector "selectItemWithTag:") retCULong [argCLong tag]
+selectItemWithTag nsPopUpButtonCell tag =
+  sendMessage nsPopUpButtonCell selectItemWithTagSelector tag
 
 -- | @- setTitle:@
 setTitle :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSString string) => nsPopUpButtonCell -> string -> IO ()
-setTitle nsPopUpButtonCell  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsPopUpButtonCell (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_string :: Ptr ())]
+setTitle nsPopUpButtonCell string =
+  sendMessage nsPopUpButtonCell setTitleSelector (toNSString string)
 
 -- | @- synchronizeTitleAndSelectedItem@
 synchronizeTitleAndSelectedItem :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO ()
-synchronizeTitleAndSelectedItem nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "synchronizeTitleAndSelectedItem") retVoid []
+synchronizeTitleAndSelectedItem nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell synchronizeTitleAndSelectedItemSelector
 
 -- | @- itemTitleAtIndex:@
 itemTitleAtIndex :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> CLong -> IO (Id NSString)
-itemTitleAtIndex nsPopUpButtonCell  index =
-    sendMsg nsPopUpButtonCell (mkSelector "itemTitleAtIndex:") (retPtr retVoid) [argCLong index] >>= retainedObject . castPtr
+itemTitleAtIndex nsPopUpButtonCell index =
+  sendMessage nsPopUpButtonCell itemTitleAtIndexSelector index
 
 -- | @- attachPopUpWithFrame:inView:@
 attachPopUpWithFrame_inView :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSView controlView) => nsPopUpButtonCell -> NSRect -> controlView -> IO ()
-attachPopUpWithFrame_inView nsPopUpButtonCell  cellFrame controlView =
-  withObjCPtr controlView $ \raw_controlView ->
-      sendMsg nsPopUpButtonCell (mkSelector "attachPopUpWithFrame:inView:") retVoid [argNSRect cellFrame, argPtr (castPtr raw_controlView :: Ptr ())]
+attachPopUpWithFrame_inView nsPopUpButtonCell cellFrame controlView =
+  sendMessage nsPopUpButtonCell attachPopUpWithFrame_inViewSelector cellFrame (toNSView controlView)
 
 -- | @- dismissPopUp@
 dismissPopUp :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO ()
-dismissPopUp nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "dismissPopUp") retVoid []
+dismissPopUp nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell dismissPopUpSelector
 
 -- | @- performClickWithFrame:inView:@
 performClickWithFrame_inView :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSView controlView) => nsPopUpButtonCell -> NSRect -> controlView -> IO ()
-performClickWithFrame_inView nsPopUpButtonCell  frame controlView =
-  withObjCPtr controlView $ \raw_controlView ->
-      sendMsg nsPopUpButtonCell (mkSelector "performClickWithFrame:inView:") retVoid [argNSRect frame, argPtr (castPtr raw_controlView :: Ptr ())]
+performClickWithFrame_inView nsPopUpButtonCell frame controlView =
+  sendMessage nsPopUpButtonCell performClickWithFrame_inViewSelector frame (toNSView controlView)
 
 -- | @- menu@
 menu :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO (Id NSMenu)
-menu nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "menu") (retPtr retVoid) [] >>= retainedObject . castPtr
+menu nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell menuSelector
 
 -- | @- setMenu:@
 setMenu :: (IsNSPopUpButtonCell nsPopUpButtonCell, IsNSMenu value) => nsPopUpButtonCell -> value -> IO ()
-setMenu nsPopUpButtonCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPopUpButtonCell (mkSelector "setMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMenu nsPopUpButtonCell value =
+  sendMessage nsPopUpButtonCell setMenuSelector (toNSMenu value)
 
 -- | @- pullsDown@
 pullsDown :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO Bool
-pullsDown nsPopUpButtonCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPopUpButtonCell (mkSelector "pullsDown") retCULong []
+pullsDown nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell pullsDownSelector
 
 -- | @- setPullsDown:@
 setPullsDown :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> Bool -> IO ()
-setPullsDown nsPopUpButtonCell  value =
-    sendMsg nsPopUpButtonCell (mkSelector "setPullsDown:") retVoid [argCULong (if value then 1 else 0)]
+setPullsDown nsPopUpButtonCell value =
+  sendMessage nsPopUpButtonCell setPullsDownSelector value
 
 -- | @- autoenablesItems@
 autoenablesItems :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO Bool
-autoenablesItems nsPopUpButtonCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPopUpButtonCell (mkSelector "autoenablesItems") retCULong []
+autoenablesItems nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell autoenablesItemsSelector
 
 -- | @- setAutoenablesItems:@
 setAutoenablesItems :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> Bool -> IO ()
-setAutoenablesItems nsPopUpButtonCell  value =
-    sendMsg nsPopUpButtonCell (mkSelector "setAutoenablesItems:") retVoid [argCULong (if value then 1 else 0)]
+setAutoenablesItems nsPopUpButtonCell value =
+  sendMessage nsPopUpButtonCell setAutoenablesItemsSelector value
 
 -- | @- preferredEdge@
 preferredEdge :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO NSRectEdge
-preferredEdge nsPopUpButtonCell  =
-    fmap (coerce :: CULong -> NSRectEdge) $ sendMsg nsPopUpButtonCell (mkSelector "preferredEdge") retCULong []
+preferredEdge nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell preferredEdgeSelector
 
 -- | @- setPreferredEdge:@
 setPreferredEdge :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> NSRectEdge -> IO ()
-setPreferredEdge nsPopUpButtonCell  value =
-    sendMsg nsPopUpButtonCell (mkSelector "setPreferredEdge:") retVoid [argCULong (coerce value)]
+setPreferredEdge nsPopUpButtonCell value =
+  sendMessage nsPopUpButtonCell setPreferredEdgeSelector value
 
 -- | @- usesItemFromMenu@
 usesItemFromMenu :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO Bool
-usesItemFromMenu nsPopUpButtonCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPopUpButtonCell (mkSelector "usesItemFromMenu") retCULong []
+usesItemFromMenu nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell usesItemFromMenuSelector
 
 -- | @- setUsesItemFromMenu:@
 setUsesItemFromMenu :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> Bool -> IO ()
-setUsesItemFromMenu nsPopUpButtonCell  value =
-    sendMsg nsPopUpButtonCell (mkSelector "setUsesItemFromMenu:") retVoid [argCULong (if value then 1 else 0)]
+setUsesItemFromMenu nsPopUpButtonCell value =
+  sendMessage nsPopUpButtonCell setUsesItemFromMenuSelector value
 
 -- | @- altersStateOfSelectedItem@
 altersStateOfSelectedItem :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO Bool
-altersStateOfSelectedItem nsPopUpButtonCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPopUpButtonCell (mkSelector "altersStateOfSelectedItem") retCULong []
+altersStateOfSelectedItem nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell altersStateOfSelectedItemSelector
 
 -- | @- setAltersStateOfSelectedItem:@
 setAltersStateOfSelectedItem :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> Bool -> IO ()
-setAltersStateOfSelectedItem nsPopUpButtonCell  value =
-    sendMsg nsPopUpButtonCell (mkSelector "setAltersStateOfSelectedItem:") retVoid [argCULong (if value then 1 else 0)]
+setAltersStateOfSelectedItem nsPopUpButtonCell value =
+  sendMessage nsPopUpButtonCell setAltersStateOfSelectedItemSelector value
 
 -- | @- itemArray@
 itemArray :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO (Id NSArray)
-itemArray nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "itemArray") (retPtr retVoid) [] >>= retainedObject . castPtr
+itemArray nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell itemArraySelector
 
 -- | @- numberOfItems@
 numberOfItems :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO CLong
-numberOfItems nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "numberOfItems") retCLong []
+numberOfItems nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell numberOfItemsSelector
 
 -- | @- lastItem@
 lastItem :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO (Id NSMenuItem)
-lastItem nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "lastItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastItem nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell lastItemSelector
 
 -- | @- selectedItem@
 selectedItem :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO (Id NSMenuItem)
-selectedItem nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "selectedItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedItem nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell selectedItemSelector
 
 -- | @- indexOfSelectedItem@
 indexOfSelectedItem :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO CLong
-indexOfSelectedItem nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "indexOfSelectedItem") retCLong []
+indexOfSelectedItem nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell indexOfSelectedItemSelector
 
 -- | @- itemTitles@
 itemTitles :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO (Id NSArray)
-itemTitles nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "itemTitles") (retPtr retVoid) [] >>= retainedObject . castPtr
+itemTitles nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell itemTitlesSelector
 
 -- | @- titleOfSelectedItem@
 titleOfSelectedItem :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO (Id NSString)
-titleOfSelectedItem nsPopUpButtonCell  =
-    sendMsg nsPopUpButtonCell (mkSelector "titleOfSelectedItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+titleOfSelectedItem nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell titleOfSelectedItemSelector
 
 -- | @- arrowPosition@
 arrowPosition :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> IO NSPopUpArrowPosition
-arrowPosition nsPopUpButtonCell  =
-    fmap (coerce :: CULong -> NSPopUpArrowPosition) $ sendMsg nsPopUpButtonCell (mkSelector "arrowPosition") retCULong []
+arrowPosition nsPopUpButtonCell =
+  sendMessage nsPopUpButtonCell arrowPositionSelector
 
 -- | @- setArrowPosition:@
 setArrowPosition :: IsNSPopUpButtonCell nsPopUpButtonCell => nsPopUpButtonCell -> NSPopUpArrowPosition -> IO ()
-setArrowPosition nsPopUpButtonCell  value =
-    sendMsg nsPopUpButtonCell (mkSelector "setArrowPosition:") retVoid [argCULong (coerce value)]
+setArrowPosition nsPopUpButtonCell value =
+  sendMessage nsPopUpButtonCell setArrowPositionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initTextCell:pullsDown:@
-initTextCell_pullsDownSelector :: Selector
+initTextCell_pullsDownSelector :: Selector '[Id NSString, Bool] (Id NSPopUpButtonCell)
 initTextCell_pullsDownSelector = mkSelector "initTextCell:pullsDown:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSPopUpButtonCell)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @addItemWithTitle:@
-addItemWithTitleSelector :: Selector
+addItemWithTitleSelector :: Selector '[Id NSString] ()
 addItemWithTitleSelector = mkSelector "addItemWithTitle:"
 
 -- | @Selector@ for @addItemsWithTitles:@
-addItemsWithTitlesSelector :: Selector
+addItemsWithTitlesSelector :: Selector '[Id NSArray] ()
 addItemsWithTitlesSelector = mkSelector "addItemsWithTitles:"
 
 -- | @Selector@ for @insertItemWithTitle:atIndex:@
-insertItemWithTitle_atIndexSelector :: Selector
+insertItemWithTitle_atIndexSelector :: Selector '[Id NSString, CLong] ()
 insertItemWithTitle_atIndexSelector = mkSelector "insertItemWithTitle:atIndex:"
 
 -- | @Selector@ for @removeItemWithTitle:@
-removeItemWithTitleSelector :: Selector
+removeItemWithTitleSelector :: Selector '[Id NSString] ()
 removeItemWithTitleSelector = mkSelector "removeItemWithTitle:"
 
 -- | @Selector@ for @removeItemAtIndex:@
-removeItemAtIndexSelector :: Selector
+removeItemAtIndexSelector :: Selector '[CLong] ()
 removeItemAtIndexSelector = mkSelector "removeItemAtIndex:"
 
 -- | @Selector@ for @removeAllItems@
-removeAllItemsSelector :: Selector
+removeAllItemsSelector :: Selector '[] ()
 removeAllItemsSelector = mkSelector "removeAllItems"
 
 -- | @Selector@ for @indexOfItem:@
-indexOfItemSelector :: Selector
+indexOfItemSelector :: Selector '[Id NSMenuItem] CLong
 indexOfItemSelector = mkSelector "indexOfItem:"
 
 -- | @Selector@ for @indexOfItemWithTitle:@
-indexOfItemWithTitleSelector :: Selector
+indexOfItemWithTitleSelector :: Selector '[Id NSString] CLong
 indexOfItemWithTitleSelector = mkSelector "indexOfItemWithTitle:"
 
 -- | @Selector@ for @indexOfItemWithTag:@
-indexOfItemWithTagSelector :: Selector
+indexOfItemWithTagSelector :: Selector '[CLong] CLong
 indexOfItemWithTagSelector = mkSelector "indexOfItemWithTag:"
 
 -- | @Selector@ for @indexOfItemWithRepresentedObject:@
-indexOfItemWithRepresentedObjectSelector :: Selector
+indexOfItemWithRepresentedObjectSelector :: Selector '[RawId] CLong
 indexOfItemWithRepresentedObjectSelector = mkSelector "indexOfItemWithRepresentedObject:"
 
 -- | @Selector@ for @indexOfItemWithTarget:andAction:@
-indexOfItemWithTarget_andActionSelector :: Selector
+indexOfItemWithTarget_andActionSelector :: Selector '[RawId, Sel] CLong
 indexOfItemWithTarget_andActionSelector = mkSelector "indexOfItemWithTarget:andAction:"
 
 -- | @Selector@ for @itemAtIndex:@
-itemAtIndexSelector :: Selector
+itemAtIndexSelector :: Selector '[CLong] (Id NSMenuItem)
 itemAtIndexSelector = mkSelector "itemAtIndex:"
 
 -- | @Selector@ for @itemWithTitle:@
-itemWithTitleSelector :: Selector
+itemWithTitleSelector :: Selector '[Id NSString] (Id NSMenuItem)
 itemWithTitleSelector = mkSelector "itemWithTitle:"
 
 -- | @Selector@ for @selectItem:@
-selectItemSelector :: Selector
+selectItemSelector :: Selector '[Id NSMenuItem] ()
 selectItemSelector = mkSelector "selectItem:"
 
 -- | @Selector@ for @selectItemAtIndex:@
-selectItemAtIndexSelector :: Selector
+selectItemAtIndexSelector :: Selector '[CLong] ()
 selectItemAtIndexSelector = mkSelector "selectItemAtIndex:"
 
 -- | @Selector@ for @selectItemWithTitle:@
-selectItemWithTitleSelector :: Selector
+selectItemWithTitleSelector :: Selector '[Id NSString] ()
 selectItemWithTitleSelector = mkSelector "selectItemWithTitle:"
 
 -- | @Selector@ for @selectItemWithTag:@
-selectItemWithTagSelector :: Selector
+selectItemWithTagSelector :: Selector '[CLong] Bool
 selectItemWithTagSelector = mkSelector "selectItemWithTag:"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @synchronizeTitleAndSelectedItem@
-synchronizeTitleAndSelectedItemSelector :: Selector
+synchronizeTitleAndSelectedItemSelector :: Selector '[] ()
 synchronizeTitleAndSelectedItemSelector = mkSelector "synchronizeTitleAndSelectedItem"
 
 -- | @Selector@ for @itemTitleAtIndex:@
-itemTitleAtIndexSelector :: Selector
+itemTitleAtIndexSelector :: Selector '[CLong] (Id NSString)
 itemTitleAtIndexSelector = mkSelector "itemTitleAtIndex:"
 
 -- | @Selector@ for @attachPopUpWithFrame:inView:@
-attachPopUpWithFrame_inViewSelector :: Selector
+attachPopUpWithFrame_inViewSelector :: Selector '[NSRect, Id NSView] ()
 attachPopUpWithFrame_inViewSelector = mkSelector "attachPopUpWithFrame:inView:"
 
 -- | @Selector@ for @dismissPopUp@
-dismissPopUpSelector :: Selector
+dismissPopUpSelector :: Selector '[] ()
 dismissPopUpSelector = mkSelector "dismissPopUp"
 
 -- | @Selector@ for @performClickWithFrame:inView:@
-performClickWithFrame_inViewSelector :: Selector
+performClickWithFrame_inViewSelector :: Selector '[NSRect, Id NSView] ()
 performClickWithFrame_inViewSelector = mkSelector "performClickWithFrame:inView:"
 
 -- | @Selector@ for @menu@
-menuSelector :: Selector
+menuSelector :: Selector '[] (Id NSMenu)
 menuSelector = mkSelector "menu"
 
 -- | @Selector@ for @setMenu:@
-setMenuSelector :: Selector
+setMenuSelector :: Selector '[Id NSMenu] ()
 setMenuSelector = mkSelector "setMenu:"
 
 -- | @Selector@ for @pullsDown@
-pullsDownSelector :: Selector
+pullsDownSelector :: Selector '[] Bool
 pullsDownSelector = mkSelector "pullsDown"
 
 -- | @Selector@ for @setPullsDown:@
-setPullsDownSelector :: Selector
+setPullsDownSelector :: Selector '[Bool] ()
 setPullsDownSelector = mkSelector "setPullsDown:"
 
 -- | @Selector@ for @autoenablesItems@
-autoenablesItemsSelector :: Selector
+autoenablesItemsSelector :: Selector '[] Bool
 autoenablesItemsSelector = mkSelector "autoenablesItems"
 
 -- | @Selector@ for @setAutoenablesItems:@
-setAutoenablesItemsSelector :: Selector
+setAutoenablesItemsSelector :: Selector '[Bool] ()
 setAutoenablesItemsSelector = mkSelector "setAutoenablesItems:"
 
 -- | @Selector@ for @preferredEdge@
-preferredEdgeSelector :: Selector
+preferredEdgeSelector :: Selector '[] NSRectEdge
 preferredEdgeSelector = mkSelector "preferredEdge"
 
 -- | @Selector@ for @setPreferredEdge:@
-setPreferredEdgeSelector :: Selector
+setPreferredEdgeSelector :: Selector '[NSRectEdge] ()
 setPreferredEdgeSelector = mkSelector "setPreferredEdge:"
 
 -- | @Selector@ for @usesItemFromMenu@
-usesItemFromMenuSelector :: Selector
+usesItemFromMenuSelector :: Selector '[] Bool
 usesItemFromMenuSelector = mkSelector "usesItemFromMenu"
 
 -- | @Selector@ for @setUsesItemFromMenu:@
-setUsesItemFromMenuSelector :: Selector
+setUsesItemFromMenuSelector :: Selector '[Bool] ()
 setUsesItemFromMenuSelector = mkSelector "setUsesItemFromMenu:"
 
 -- | @Selector@ for @altersStateOfSelectedItem@
-altersStateOfSelectedItemSelector :: Selector
+altersStateOfSelectedItemSelector :: Selector '[] Bool
 altersStateOfSelectedItemSelector = mkSelector "altersStateOfSelectedItem"
 
 -- | @Selector@ for @setAltersStateOfSelectedItem:@
-setAltersStateOfSelectedItemSelector :: Selector
+setAltersStateOfSelectedItemSelector :: Selector '[Bool] ()
 setAltersStateOfSelectedItemSelector = mkSelector "setAltersStateOfSelectedItem:"
 
 -- | @Selector@ for @itemArray@
-itemArraySelector :: Selector
+itemArraySelector :: Selector '[] (Id NSArray)
 itemArraySelector = mkSelector "itemArray"
 
 -- | @Selector@ for @numberOfItems@
-numberOfItemsSelector :: Selector
+numberOfItemsSelector :: Selector '[] CLong
 numberOfItemsSelector = mkSelector "numberOfItems"
 
 -- | @Selector@ for @lastItem@
-lastItemSelector :: Selector
+lastItemSelector :: Selector '[] (Id NSMenuItem)
 lastItemSelector = mkSelector "lastItem"
 
 -- | @Selector@ for @selectedItem@
-selectedItemSelector :: Selector
+selectedItemSelector :: Selector '[] (Id NSMenuItem)
 selectedItemSelector = mkSelector "selectedItem"
 
 -- | @Selector@ for @indexOfSelectedItem@
-indexOfSelectedItemSelector :: Selector
+indexOfSelectedItemSelector :: Selector '[] CLong
 indexOfSelectedItemSelector = mkSelector "indexOfSelectedItem"
 
 -- | @Selector@ for @itemTitles@
-itemTitlesSelector :: Selector
+itemTitlesSelector :: Selector '[] (Id NSArray)
 itemTitlesSelector = mkSelector "itemTitles"
 
 -- | @Selector@ for @titleOfSelectedItem@
-titleOfSelectedItemSelector :: Selector
+titleOfSelectedItemSelector :: Selector '[] (Id NSString)
 titleOfSelectedItemSelector = mkSelector "titleOfSelectedItem"
 
 -- | @Selector@ for @arrowPosition@
-arrowPositionSelector :: Selector
+arrowPositionSelector :: Selector '[] NSPopUpArrowPosition
 arrowPositionSelector = mkSelector "arrowPosition"
 
 -- | @Selector@ for @setArrowPosition:@
-setArrowPositionSelector :: Selector
+setArrowPositionSelector :: Selector '[NSPopUpArrowPosition] ()
 setArrowPositionSelector = mkSelector "setArrowPosition:"
 

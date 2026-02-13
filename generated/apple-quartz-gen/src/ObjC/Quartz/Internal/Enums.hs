@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Quartz.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @IKCameraDeviceViewDisplayMode@
 newtype IKCameraDeviceViewDisplayMode = IKCameraDeviceViewDisplayMode CLong
@@ -25,6 +28,16 @@ pattern IKCameraDeviceViewDisplayModeTable = IKCameraDeviceViewDisplayMode 0
 pattern IKCameraDeviceViewDisplayModeIcon :: IKCameraDeviceViewDisplayMode
 pattern IKCameraDeviceViewDisplayModeIcon = IKCameraDeviceViewDisplayMode 1
 
+instance ObjCArgument IKCameraDeviceViewDisplayMode where
+  withObjCArg (IKCameraDeviceViewDisplayMode x) k = k (argCLong x)
+
+instance ObjCReturn IKCameraDeviceViewDisplayMode where
+  type RawReturn IKCameraDeviceViewDisplayMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IKCameraDeviceViewDisplayMode x)
+  fromOwned x = pure (IKCameraDeviceViewDisplayMode x)
+
 -- | @IKCameraDeviceViewTransferMode@
 newtype IKCameraDeviceViewTransferMode = IKCameraDeviceViewTransferMode CLong
   deriving stock (Eq, Ord, Show)
@@ -35,6 +48,16 @@ pattern IKCameraDeviceViewTransferModeFileBased = IKCameraDeviceViewTransferMode
 
 pattern IKCameraDeviceViewTransferModeMemoryBased :: IKCameraDeviceViewTransferMode
 pattern IKCameraDeviceViewTransferModeMemoryBased = IKCameraDeviceViewTransferMode 1
+
+instance ObjCArgument IKCameraDeviceViewTransferMode where
+  withObjCArg (IKCameraDeviceViewTransferMode x) k = k (argCLong x)
+
+instance ObjCReturn IKCameraDeviceViewTransferMode where
+  type RawReturn IKCameraDeviceViewTransferMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IKCameraDeviceViewTransferMode x)
+  fromOwned x = pure (IKCameraDeviceViewTransferMode x)
 
 -- | @IKDeviceBrowserViewDisplayMode@
 newtype IKDeviceBrowserViewDisplayMode = IKDeviceBrowserViewDisplayMode CLong
@@ -50,6 +73,16 @@ pattern IKDeviceBrowserViewDisplayModeOutline = IKDeviceBrowserViewDisplayMode 1
 pattern IKDeviceBrowserViewDisplayModeIcon :: IKDeviceBrowserViewDisplayMode
 pattern IKDeviceBrowserViewDisplayModeIcon = IKDeviceBrowserViewDisplayMode 2
 
+instance ObjCArgument IKDeviceBrowserViewDisplayMode where
+  withObjCArg (IKDeviceBrowserViewDisplayMode x) k = k (argCLong x)
+
+instance ObjCReturn IKDeviceBrowserViewDisplayMode where
+  type RawReturn IKDeviceBrowserViewDisplayMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IKDeviceBrowserViewDisplayMode x)
+  fromOwned x = pure (IKDeviceBrowserViewDisplayMode x)
+
 -- | @IKScannerDeviceViewDisplayMode@
 newtype IKScannerDeviceViewDisplayMode = IKScannerDeviceViewDisplayMode CLong
   deriving stock (Eq, Ord, Show)
@@ -64,6 +97,16 @@ pattern IKScannerDeviceViewDisplayModeSimple = IKScannerDeviceViewDisplayMode 0
 pattern IKScannerDeviceViewDisplayModeAdvanced :: IKScannerDeviceViewDisplayMode
 pattern IKScannerDeviceViewDisplayModeAdvanced = IKScannerDeviceViewDisplayMode 1
 
+instance ObjCArgument IKScannerDeviceViewDisplayMode where
+  withObjCArg (IKScannerDeviceViewDisplayMode x) k = k (argCLong x)
+
+instance ObjCReturn IKScannerDeviceViewDisplayMode where
+  type RawReturn IKScannerDeviceViewDisplayMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IKScannerDeviceViewDisplayMode x)
+  fromOwned x = pure (IKScannerDeviceViewDisplayMode x)
+
 -- | @IKScannerDeviceViewTransferMode@
 newtype IKScannerDeviceViewTransferMode = IKScannerDeviceViewTransferMode CLong
   deriving stock (Eq, Ord, Show)
@@ -74,3 +117,13 @@ pattern IKScannerDeviceViewTransferModeFileBased = IKScannerDeviceViewTransferMo
 
 pattern IKScannerDeviceViewTransferModeMemoryBased :: IKScannerDeviceViewTransferMode
 pattern IKScannerDeviceViewTransferModeMemoryBased = IKScannerDeviceViewTransferMode 1
+
+instance ObjCArgument IKScannerDeviceViewTransferMode where
+  withObjCArg (IKScannerDeviceViewTransferMode x) k = k (argCLong x)
+
+instance ObjCReturn IKScannerDeviceViewTransferMode where
+  type RawReturn IKScannerDeviceViewTransferMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IKScannerDeviceViewTransferMode x)
+  fromOwned x = pure (IKScannerDeviceViewTransferMode x)

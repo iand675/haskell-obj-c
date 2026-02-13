@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.CoreAudioTypes.Internal.Enums
 
 -- | AudioBuffer
@@ -56,6 +58,16 @@ argAudioBuffer = mkStorableArg audioBufferStructType
 retAudioBuffer :: RetType AudioBuffer
 retAudioBuffer = mkStorableRetType audioBufferStructType
 
+instance ObjCArgument AudioBuffer where
+  withObjCArg x k = k (argAudioBuffer x)
+
+instance ObjCReturn AudioBuffer where
+  type RawReturn AudioBuffer = AudioBuffer
+  objcRetType = retAudioBuffer
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioClassDescription
 --
 -- This structure is used to describe codecs installed on the system.
@@ -97,6 +109,16 @@ argAudioClassDescription = mkStorableArg audioClassDescriptionStructType
 
 retAudioClassDescription :: RetType AudioClassDescription
 retAudioClassDescription = mkStorableRetType audioClassDescriptionStructType
+
+instance ObjCArgument AudioClassDescription where
+  withObjCArg x k = k (argAudioClassDescription x)
+
+instance ObjCReturn AudioClassDescription where
+  type RawReturn AudioClassDescription = AudioClassDescription
+  objcRetType = retAudioClassDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioStreamBasicDescription
 --
@@ -186,6 +208,16 @@ argAudioStreamBasicDescription = mkStorableArg audioStreamBasicDescriptionStruct
 retAudioStreamBasicDescription :: RetType AudioStreamBasicDescription
 retAudioStreamBasicDescription = mkStorableRetType audioStreamBasicDescriptionStructType
 
+instance ObjCArgument AudioStreamBasicDescription where
+  withObjCArg x k = k (argAudioStreamBasicDescription x)
+
+instance ObjCReturn AudioStreamBasicDescription where
+  type RawReturn AudioStreamBasicDescription = AudioStreamBasicDescription
+  objcRetType = retAudioStreamBasicDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioStreamPacketDependencyDescription
 --
 -- A structure to provide a description of the dependencies of one audio packet on other audio packets.
@@ -239,6 +271,16 @@ argAudioStreamPacketDependencyDescription = mkStorableArg audioStreamPacketDepen
 retAudioStreamPacketDependencyDescription :: RetType AudioStreamPacketDependencyDescription
 retAudioStreamPacketDependencyDescription = mkStorableRetType audioStreamPacketDependencyDescriptionStructType
 
+instance ObjCArgument AudioStreamPacketDependencyDescription where
+  withObjCArg x k = k (argAudioStreamPacketDependencyDescription x)
+
+instance ObjCReturn AudioStreamPacketDependencyDescription where
+  type RawReturn AudioStreamPacketDependencyDescription = AudioStreamPacketDependencyDescription
+  objcRetType = retAudioStreamPacketDependencyDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioStreamPacketDescription
 --
 -- This structure describes the packet layout of a buffer of data where the size of                    each packet may not be the same or where there is extraneous data between                    packets.
@@ -281,6 +323,16 @@ argAudioStreamPacketDescription = mkStorableArg audioStreamPacketDescriptionStru
 retAudioStreamPacketDescription :: RetType AudioStreamPacketDescription
 retAudioStreamPacketDescription = mkStorableRetType audioStreamPacketDescriptionStructType
 
+instance ObjCArgument AudioStreamPacketDescription where
+  withObjCArg x k = k (argAudioStreamPacketDescription x)
+
+instance ObjCReturn AudioStreamPacketDescription where
+  type RawReturn AudioStreamPacketDescription = AudioStreamPacketDescription
+  objcRetType = retAudioStreamPacketDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioValueRange
 --
 -- This structure holds a pair of numbers that represent a continuous range of                    values.
@@ -315,6 +367,16 @@ argAudioValueRange = mkStorableArg audioValueRangeStructType
 
 retAudioValueRange :: RetType AudioValueRange
 retAudioValueRange = mkStorableRetType audioValueRangeStructType
+
+instance ObjCArgument AudioValueRange where
+  withObjCArg x k = k (argAudioValueRange x)
+
+instance ObjCReturn AudioValueRange where
+  type RawReturn AudioValueRange = AudioValueRange
+  objcRetType = retAudioValueRange
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioValueTranslation
 --
@@ -364,6 +426,16 @@ argAudioValueTranslation = mkStorableArg audioValueTranslationStructType
 
 retAudioValueTranslation :: RetType AudioValueTranslation
 retAudioValueTranslation = mkStorableRetType audioValueTranslationStructType
+
+instance ObjCArgument AudioValueTranslation where
+  withObjCArg x k = k (argAudioValueTranslation x)
+
+instance ObjCReturn AudioValueTranslation where
+  type RawReturn AudioValueTranslation = AudioValueTranslation
+  objcRetType = retAudioValueTranslation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | SMPTETime
 --
@@ -449,6 +521,16 @@ argSMPTETime = mkStorableArg smpteTimeStructType
 retSMPTETime :: RetType SMPTETime
 retSMPTETime = mkStorableRetType smpteTimeStructType
 
+instance ObjCArgument SMPTETime where
+  withObjCArg x k = k (argSMPTETime x)
+
+instance ObjCReturn SMPTETime where
+  type RawReturn SMPTETime = SMPTETime
+  objcRetType = retSMPTETime
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioFormatListItem
 --
 -- this struct is used as output from the kAudioFormatProperty_FormatList property
@@ -483,6 +565,16 @@ argAudioFormatListItem = mkStorableArg audioFormatListItemStructType
 
 retAudioFormatListItem :: RetType AudioFormatListItem
 retAudioFormatListItem = mkStorableRetType audioFormatListItemStructType
+
+instance ObjCArgument AudioFormatListItem where
+  withObjCArg x k = k (argAudioFormatListItem x)
+
+instance ObjCReturn AudioFormatListItem where
+  type RawReturn AudioFormatListItem = AudioFormatListItem
+  objcRetType = retAudioFormatListItem
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AudioTimeStamp
 --
@@ -553,3 +645,13 @@ argAudioTimeStamp = mkStorableArg audioTimeStampStructType
 
 retAudioTimeStamp :: RetType AudioTimeStamp
 retAudioTimeStamp = mkStorableRetType audioTimeStampStructType
+
+instance ObjCArgument AudioTimeStamp where
+  withObjCArg x k = k (argAudioTimeStamp x)
+
+instance ObjCReturn AudioTimeStamp where
+  type RawReturn AudioTimeStamp = AudioTimeStamp
+  objcRetType = retAudioTimeStamp
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

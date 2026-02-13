@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -72,81 +73,77 @@ module ObjC.Matter.MTRBaseClusterTimeSynchronization
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , setUTCTimeWithParams_completionSelector
-  , setTrustedTimeSourceWithParams_completionSelector
-  , setTimeZoneWithParams_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeDSTOffsetListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeDSTOffsetListMaxSizeWithCompletionSelector
+  , readAttributeDSTOffsetWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeDSTOffsetWithCompletionSelector
+  , readAttributeDefaultNTPWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeDefaultNTPWithCompletionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
+  , readAttributeGranularityWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGranularityWithCompletionSelector
+  , readAttributeLocalTimeWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeLocalTimeWithCompletionSelector
+  , readAttributeNTPServerAvailableWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeNTPServerAvailableWithCompletionSelector
+  , readAttributeSupportsDNSResolveWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeSupportsDNSResolveWithCompletionSelector
+  , readAttributeTimeSourceWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTimeSourceWithCompletionSelector
+  , readAttributeTimeZoneDatabaseWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTimeZoneDatabaseWithCompletionSelector
+  , readAttributeTimeZoneListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTimeZoneListMaxSizeWithCompletionSelector
+  , readAttributeTimeZoneWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTimeZoneWithCompletionSelector
+  , readAttributeTrustedTimeSourceWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTrustedTimeSourceWithCompletionSelector
+  , readAttributeUTCTimeWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeUTCTimeWithCompletionSelector
   , setDSTOffsetWithParams_completionSelector
   , setDefaultNTPWithParams_completionSelector
-  , readAttributeUTCTimeWithCompletionSelector
-  , subscribeAttributeUTCTimeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeUTCTimeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGranularityWithCompletionSelector
-  , subscribeAttributeGranularityWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGranularityWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTimeSourceWithCompletionSelector
-  , subscribeAttributeTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTimeSourceWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTrustedTimeSourceWithCompletionSelector
-  , subscribeAttributeTrustedTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTrustedTimeSourceWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeDefaultNTPWithCompletionSelector
-  , subscribeAttributeDefaultNTPWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeDefaultNTPWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTimeZoneWithCompletionSelector
-  , subscribeAttributeTimeZoneWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTimeZoneWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeDSTOffsetWithCompletionSelector
-  , subscribeAttributeDSTOffsetWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeDSTOffsetWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeLocalTimeWithCompletionSelector
-  , subscribeAttributeLocalTimeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeLocalTimeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTimeZoneDatabaseWithCompletionSelector
-  , subscribeAttributeTimeZoneDatabaseWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTimeZoneDatabaseWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeNTPServerAvailableWithCompletionSelector
-  , subscribeAttributeNTPServerAvailableWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeNTPServerAvailableWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeTimeZoneListMaxSizeWithCompletionSelector
-  , subscribeAttributeTimeZoneListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTimeZoneListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeDSTOffsetListMaxSizeWithCompletionSelector
-  , subscribeAttributeDSTOffsetListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeDSTOffsetListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeSupportsDNSResolveWithCompletionSelector
-  , subscribeAttributeSupportsDNSResolveWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeSupportsDNSResolveWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
+  , setTimeZoneWithParams_completionSelector
+  , setTrustedTimeSourceWithParams_completionSelector
+  , setUTCTimeWithParams_completionSelector
   , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
   , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
   , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , subscribeAttributeDSTOffsetListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeDSTOffsetWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeDefaultNTPWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGranularityWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeLocalTimeWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeNTPServerAvailableWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeSupportsDNSResolveWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTimeZoneDatabaseWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTimeZoneListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTimeZoneWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTrustedTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeUTCTimeWithParams_subscriptionEstablished_reportHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -159,9 +156,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setUTCTimeWithParams:completion:@
 setUTCTimeWithParams_completion :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRTimeSynchronizationClusterSetUTCTimeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> IO ()
-setUTCTimeWithParams_completion mtrBaseClusterTimeSynchronization  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "setUTCTimeWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setUTCTimeWithParams_completion mtrBaseClusterTimeSynchronization params completion =
+  sendMessage mtrBaseClusterTimeSynchronization setUTCTimeWithParams_completionSelector (toMTRTimeSynchronizationClusterSetUTCTimeParams params) completion
 
 -- | Command SetTrustedTimeSource
 --
@@ -169,9 +165,8 @@ setUTCTimeWithParams_completion mtrBaseClusterTimeSynchronization  params comple
 --
 -- ObjC selector: @- setTrustedTimeSourceWithParams:completion:@
 setTrustedTimeSourceWithParams_completion :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRTimeSynchronizationClusterSetTrustedTimeSourceParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> IO ()
-setTrustedTimeSourceWithParams_completion mtrBaseClusterTimeSynchronization  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "setTrustedTimeSourceWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setTrustedTimeSourceWithParams_completion mtrBaseClusterTimeSynchronization params completion =
+  sendMessage mtrBaseClusterTimeSynchronization setTrustedTimeSourceWithParams_completionSelector (toMTRTimeSynchronizationClusterSetTrustedTimeSourceParams params) completion
 
 -- | Command SetTimeZone
 --
@@ -179,9 +174,8 @@ setTrustedTimeSourceWithParams_completion mtrBaseClusterTimeSynchronization  par
 --
 -- ObjC selector: @- setTimeZoneWithParams:completion:@
 setTimeZoneWithParams_completion :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRTimeSynchronizationClusterSetTimeZoneParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> IO ()
-setTimeZoneWithParams_completion mtrBaseClusterTimeSynchronization  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "setTimeZoneWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setTimeZoneWithParams_completion mtrBaseClusterTimeSynchronization params completion =
+  sendMessage mtrBaseClusterTimeSynchronization setTimeZoneWithParams_completionSelector (toMTRTimeSynchronizationClusterSetTimeZoneParams params) completion
 
 -- | Command SetDSTOffset
 --
@@ -189,9 +183,8 @@ setTimeZoneWithParams_completion mtrBaseClusterTimeSynchronization  params compl
 --
 -- ObjC selector: @- setDSTOffsetWithParams:completion:@
 setDSTOffsetWithParams_completion :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRTimeSynchronizationClusterSetDSTOffsetParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> IO ()
-setDSTOffsetWithParams_completion mtrBaseClusterTimeSynchronization  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "setDSTOffsetWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setDSTOffsetWithParams_completion mtrBaseClusterTimeSynchronization params completion =
+  sendMessage mtrBaseClusterTimeSynchronization setDSTOffsetWithParams_completionSelector (toMTRTimeSynchronizationClusterSetDSTOffsetParams params) completion
 
 -- | Command SetDefaultNTP
 --
@@ -199,659 +192,583 @@ setDSTOffsetWithParams_completion mtrBaseClusterTimeSynchronization  params comp
 --
 -- ObjC selector: @- setDefaultNTPWithParams:completion:@
 setDefaultNTPWithParams_completion :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRTimeSynchronizationClusterSetDefaultNTPParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> IO ()
-setDefaultNTPWithParams_completion mtrBaseClusterTimeSynchronization  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "setDefaultNTPWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setDefaultNTPWithParams_completion mtrBaseClusterTimeSynchronization params completion =
+  sendMessage mtrBaseClusterTimeSynchronization setDefaultNTPWithParams_completionSelector (toMTRTimeSynchronizationClusterSetDefaultNTPParams params) completion
 
 -- | @- readAttributeUTCTimeWithCompletion:@
 readAttributeUTCTimeWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeUTCTimeWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeUTCTimeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeUTCTimeWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeUTCTimeWithCompletionSelector completion
 
 -- | @- subscribeAttributeUTCTimeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeUTCTimeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeUTCTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeUTCTimeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeUTCTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeUTCTimeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeUTCTimeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeUTCTimeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeUTCTimeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeUTCTimeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeUTCTimeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGranularityWithCompletion:@
 readAttributeGranularityWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeGranularityWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeGranularityWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGranularityWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeGranularityWithCompletionSelector completion
 
 -- | @- subscribeAttributeGranularityWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGranularityWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGranularityWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeGranularityWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGranularityWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeGranularityWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGranularityWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGranularityWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGranularityWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGranularityWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGranularityWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTimeSourceWithCompletion:@
 readAttributeTimeSourceWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeTimeSourceWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeTimeSourceWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTimeSourceWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeTimeSourceWithCompletionSelector completion
 
 -- | @- subscribeAttributeTimeSourceWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTimeSourceWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTimeSourceWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeTimeSourceWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTimeSourceWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTimeSourceWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTimeSourceWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTimeSourceWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTimeSourceWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTimeSourceWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTrustedTimeSourceWithCompletion:@
 readAttributeTrustedTimeSourceWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeTrustedTimeSourceWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeTrustedTimeSourceWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTrustedTimeSourceWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeTrustedTimeSourceWithCompletionSelector completion
 
 -- | @- subscribeAttributeTrustedTimeSourceWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTrustedTimeSourceWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTrustedTimeSourceWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeTrustedTimeSourceWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTrustedTimeSourceWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeTrustedTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTrustedTimeSourceWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTrustedTimeSourceWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTrustedTimeSourceWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTrustedTimeSourceWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTrustedTimeSourceWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeDefaultNTPWithCompletion:@
 readAttributeDefaultNTPWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeDefaultNTPWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeDefaultNTPWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeDefaultNTPWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeDefaultNTPWithCompletionSelector completion
 
 -- | @- subscribeAttributeDefaultNTPWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeDefaultNTPWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeDefaultNTPWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeDefaultNTPWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeDefaultNTPWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeDefaultNTPWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeDefaultNTPWithClusterStateCache:endpoint:queue:completion:@
 readAttributeDefaultNTPWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeDefaultNTPWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeDefaultNTPWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeDefaultNTPWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTimeZoneWithCompletion:@
 readAttributeTimeZoneWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeTimeZoneWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeTimeZoneWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTimeZoneWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeTimeZoneWithCompletionSelector completion
 
 -- | @- subscribeAttributeTimeZoneWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTimeZoneWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTimeZoneWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeTimeZoneWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTimeZoneWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeTimeZoneWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTimeZoneWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTimeZoneWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTimeZoneWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTimeZoneWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTimeZoneWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeDSTOffsetWithCompletion:@
 readAttributeDSTOffsetWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeDSTOffsetWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeDSTOffsetWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeDSTOffsetWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeDSTOffsetWithCompletionSelector completion
 
 -- | @- subscribeAttributeDSTOffsetWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeDSTOffsetWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeDSTOffsetWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeDSTOffsetWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeDSTOffsetWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeDSTOffsetWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeDSTOffsetWithClusterStateCache:endpoint:queue:completion:@
 readAttributeDSTOffsetWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeDSTOffsetWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeDSTOffsetWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeDSTOffsetWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeLocalTimeWithCompletion:@
 readAttributeLocalTimeWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeLocalTimeWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeLocalTimeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeLocalTimeWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeLocalTimeWithCompletionSelector completion
 
 -- | @- subscribeAttributeLocalTimeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeLocalTimeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeLocalTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeLocalTimeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeLocalTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeLocalTimeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeLocalTimeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeLocalTimeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeLocalTimeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeLocalTimeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeLocalTimeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTimeZoneDatabaseWithCompletion:@
 readAttributeTimeZoneDatabaseWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeTimeZoneDatabaseWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeTimeZoneDatabaseWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTimeZoneDatabaseWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeTimeZoneDatabaseWithCompletionSelector completion
 
 -- | @- subscribeAttributeTimeZoneDatabaseWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTimeZoneDatabaseWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTimeZoneDatabaseWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeTimeZoneDatabaseWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTimeZoneDatabaseWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeTimeZoneDatabaseWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTimeZoneDatabaseWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTimeZoneDatabaseWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTimeZoneDatabaseWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTimeZoneDatabaseWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTimeZoneDatabaseWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeNTPServerAvailableWithCompletion:@
 readAttributeNTPServerAvailableWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeNTPServerAvailableWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeNTPServerAvailableWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeNTPServerAvailableWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeNTPServerAvailableWithCompletionSelector completion
 
 -- | @- subscribeAttributeNTPServerAvailableWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeNTPServerAvailableWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeNTPServerAvailableWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeNTPServerAvailableWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeNTPServerAvailableWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeNTPServerAvailableWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeNTPServerAvailableWithClusterStateCache:endpoint:queue:completion:@
 readAttributeNTPServerAvailableWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeNTPServerAvailableWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeNTPServerAvailableWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeNTPServerAvailableWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeTimeZoneListMaxSizeWithCompletion:@
 readAttributeTimeZoneListMaxSizeWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeTimeZoneListMaxSizeWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeTimeZoneListMaxSizeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTimeZoneListMaxSizeWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeTimeZoneListMaxSizeWithCompletionSelector completion
 
 -- | @- subscribeAttributeTimeZoneListMaxSizeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTimeZoneListMaxSizeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTimeZoneListMaxSizeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeTimeZoneListMaxSizeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTimeZoneListMaxSizeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeTimeZoneListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTimeZoneListMaxSizeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTimeZoneListMaxSizeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTimeZoneListMaxSizeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTimeZoneListMaxSizeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTimeZoneListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeDSTOffsetListMaxSizeWithCompletion:@
 readAttributeDSTOffsetListMaxSizeWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeDSTOffsetListMaxSizeWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeDSTOffsetListMaxSizeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeDSTOffsetListMaxSizeWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeDSTOffsetListMaxSizeWithCompletionSelector completion
 
 -- | @- subscribeAttributeDSTOffsetListMaxSizeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeDSTOffsetListMaxSizeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeDSTOffsetListMaxSizeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeDSTOffsetListMaxSizeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeDSTOffsetListMaxSizeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeDSTOffsetListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeDSTOffsetListMaxSizeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeDSTOffsetListMaxSizeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeDSTOffsetListMaxSizeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeDSTOffsetListMaxSizeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeDSTOffsetListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeSupportsDNSResolveWithCompletion:@
 readAttributeSupportsDNSResolveWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeSupportsDNSResolveWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeSupportsDNSResolveWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeSupportsDNSResolveWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeSupportsDNSResolveWithCompletionSelector completion
 
 -- | @- subscribeAttributeSupportsDNSResolveWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeSupportsDNSResolveWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeSupportsDNSResolveWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeSupportsDNSResolveWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeSupportsDNSResolveWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeSupportsDNSResolveWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeSupportsDNSResolveWithClusterStateCache:endpoint:queue:completion:@
 readAttributeSupportsDNSResolveWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeSupportsDNSResolveWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeSupportsDNSResolveWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeSupportsDNSResolveWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterTimeSynchronization  completion =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterTimeSynchronization completion =
+  sendMessage mtrBaseClusterTimeSynchronization readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRSubscribeParams params) => mtrBaseClusterTimeSynchronization -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterTimeSynchronization (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterTimeSynchronization params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterTimeSynchronization subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization => mtrBaseClusterTimeSynchronization -> IO (Id MTRBaseClusterTimeSynchronization)
-init_ mtrBaseClusterTimeSynchronization  =
-    sendMsg mtrBaseClusterTimeSynchronization (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterTimeSynchronization =
+  sendOwnedMessage mtrBaseClusterTimeSynchronization initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterTimeSynchronization)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterTimeSynchronization"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterTimeSynchronization mtrBaseClusterTimeSynchronization, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterTimeSynchronization -> device -> endpointID -> queue -> IO (Id MTRBaseClusterTimeSynchronization)
-initWithDevice_endpointID_queue mtrBaseClusterTimeSynchronization  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterTimeSynchronization (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterTimeSynchronization device endpointID queue =
+  sendOwnedMessage mtrBaseClusterTimeSynchronization initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setUTCTimeWithParams:completion:@
-setUTCTimeWithParams_completionSelector :: Selector
+setUTCTimeWithParams_completionSelector :: Selector '[Id MTRTimeSynchronizationClusterSetUTCTimeParams, Ptr ()] ()
 setUTCTimeWithParams_completionSelector = mkSelector "setUTCTimeWithParams:completion:"
 
 -- | @Selector@ for @setTrustedTimeSourceWithParams:completion:@
-setTrustedTimeSourceWithParams_completionSelector :: Selector
+setTrustedTimeSourceWithParams_completionSelector :: Selector '[Id MTRTimeSynchronizationClusterSetTrustedTimeSourceParams, Ptr ()] ()
 setTrustedTimeSourceWithParams_completionSelector = mkSelector "setTrustedTimeSourceWithParams:completion:"
 
 -- | @Selector@ for @setTimeZoneWithParams:completion:@
-setTimeZoneWithParams_completionSelector :: Selector
+setTimeZoneWithParams_completionSelector :: Selector '[Id MTRTimeSynchronizationClusterSetTimeZoneParams, Ptr ()] ()
 setTimeZoneWithParams_completionSelector = mkSelector "setTimeZoneWithParams:completion:"
 
 -- | @Selector@ for @setDSTOffsetWithParams:completion:@
-setDSTOffsetWithParams_completionSelector :: Selector
+setDSTOffsetWithParams_completionSelector :: Selector '[Id MTRTimeSynchronizationClusterSetDSTOffsetParams, Ptr ()] ()
 setDSTOffsetWithParams_completionSelector = mkSelector "setDSTOffsetWithParams:completion:"
 
 -- | @Selector@ for @setDefaultNTPWithParams:completion:@
-setDefaultNTPWithParams_completionSelector :: Selector
+setDefaultNTPWithParams_completionSelector :: Selector '[Id MTRTimeSynchronizationClusterSetDefaultNTPParams, Ptr ()] ()
 setDefaultNTPWithParams_completionSelector = mkSelector "setDefaultNTPWithParams:completion:"
 
 -- | @Selector@ for @readAttributeUTCTimeWithCompletion:@
-readAttributeUTCTimeWithCompletionSelector :: Selector
+readAttributeUTCTimeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeUTCTimeWithCompletionSelector = mkSelector "readAttributeUTCTimeWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeUTCTimeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeUTCTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeUTCTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeUTCTimeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeUTCTimeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeUTCTimeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeUTCTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeUTCTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeUTCTimeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeUTCTimeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGranularityWithCompletion:@
-readAttributeGranularityWithCompletionSelector :: Selector
+readAttributeGranularityWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGranularityWithCompletionSelector = mkSelector "readAttributeGranularityWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGranularityWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGranularityWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGranularityWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGranularityWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGranularityWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGranularityWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGranularityWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGranularityWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGranularityWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGranularityWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTimeSourceWithCompletion:@
-readAttributeTimeSourceWithCompletionSelector :: Selector
+readAttributeTimeSourceWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTimeSourceWithCompletionSelector = mkSelector "readAttributeTimeSourceWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTimeSourceWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTimeSourceWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTimeSourceWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTimeSourceWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTimeSourceWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTimeSourceWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTimeSourceWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTrustedTimeSourceWithCompletion:@
-readAttributeTrustedTimeSourceWithCompletionSelector :: Selector
+readAttributeTrustedTimeSourceWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTrustedTimeSourceWithCompletionSelector = mkSelector "readAttributeTrustedTimeSourceWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTrustedTimeSourceWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTrustedTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTrustedTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTrustedTimeSourceWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTrustedTimeSourceWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTrustedTimeSourceWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTrustedTimeSourceWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTrustedTimeSourceWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTrustedTimeSourceWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTrustedTimeSourceWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeDefaultNTPWithCompletion:@
-readAttributeDefaultNTPWithCompletionSelector :: Selector
+readAttributeDefaultNTPWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeDefaultNTPWithCompletionSelector = mkSelector "readAttributeDefaultNTPWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeDefaultNTPWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeDefaultNTPWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeDefaultNTPWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeDefaultNTPWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeDefaultNTPWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeDefaultNTPWithClusterStateCache:endpoint:queue:completion:@
-readAttributeDefaultNTPWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeDefaultNTPWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeDefaultNTPWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeDefaultNTPWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTimeZoneWithCompletion:@
-readAttributeTimeZoneWithCompletionSelector :: Selector
+readAttributeTimeZoneWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTimeZoneWithCompletionSelector = mkSelector "readAttributeTimeZoneWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTimeZoneWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTimeZoneWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTimeZoneWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTimeZoneWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTimeZoneWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTimeZoneWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTimeZoneWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTimeZoneWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTimeZoneWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTimeZoneWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeDSTOffsetWithCompletion:@
-readAttributeDSTOffsetWithCompletionSelector :: Selector
+readAttributeDSTOffsetWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeDSTOffsetWithCompletionSelector = mkSelector "readAttributeDSTOffsetWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeDSTOffsetWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeDSTOffsetWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeDSTOffsetWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeDSTOffsetWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeDSTOffsetWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeDSTOffsetWithClusterStateCache:endpoint:queue:completion:@
-readAttributeDSTOffsetWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeDSTOffsetWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeDSTOffsetWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeDSTOffsetWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeLocalTimeWithCompletion:@
-readAttributeLocalTimeWithCompletionSelector :: Selector
+readAttributeLocalTimeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeLocalTimeWithCompletionSelector = mkSelector "readAttributeLocalTimeWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeLocalTimeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeLocalTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeLocalTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeLocalTimeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeLocalTimeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeLocalTimeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeLocalTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeLocalTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeLocalTimeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeLocalTimeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTimeZoneDatabaseWithCompletion:@
-readAttributeTimeZoneDatabaseWithCompletionSelector :: Selector
+readAttributeTimeZoneDatabaseWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTimeZoneDatabaseWithCompletionSelector = mkSelector "readAttributeTimeZoneDatabaseWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTimeZoneDatabaseWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTimeZoneDatabaseWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTimeZoneDatabaseWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTimeZoneDatabaseWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTimeZoneDatabaseWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTimeZoneDatabaseWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTimeZoneDatabaseWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTimeZoneDatabaseWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTimeZoneDatabaseWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTimeZoneDatabaseWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeNTPServerAvailableWithCompletion:@
-readAttributeNTPServerAvailableWithCompletionSelector :: Selector
+readAttributeNTPServerAvailableWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeNTPServerAvailableWithCompletionSelector = mkSelector "readAttributeNTPServerAvailableWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeNTPServerAvailableWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeNTPServerAvailableWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeNTPServerAvailableWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeNTPServerAvailableWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeNTPServerAvailableWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeNTPServerAvailableWithClusterStateCache:endpoint:queue:completion:@
-readAttributeNTPServerAvailableWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeNTPServerAvailableWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeNTPServerAvailableWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeNTPServerAvailableWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeTimeZoneListMaxSizeWithCompletion:@
-readAttributeTimeZoneListMaxSizeWithCompletionSelector :: Selector
+readAttributeTimeZoneListMaxSizeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTimeZoneListMaxSizeWithCompletionSelector = mkSelector "readAttributeTimeZoneListMaxSizeWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTimeZoneListMaxSizeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTimeZoneListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTimeZoneListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTimeZoneListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTimeZoneListMaxSizeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTimeZoneListMaxSizeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTimeZoneListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTimeZoneListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTimeZoneListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTimeZoneListMaxSizeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeDSTOffsetListMaxSizeWithCompletion:@
-readAttributeDSTOffsetListMaxSizeWithCompletionSelector :: Selector
+readAttributeDSTOffsetListMaxSizeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeDSTOffsetListMaxSizeWithCompletionSelector = mkSelector "readAttributeDSTOffsetListMaxSizeWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeDSTOffsetListMaxSizeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeDSTOffsetListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeDSTOffsetListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeDSTOffsetListMaxSizeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeDSTOffsetListMaxSizeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeDSTOffsetListMaxSizeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeDSTOffsetListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeDSTOffsetListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeDSTOffsetListMaxSizeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeDSTOffsetListMaxSizeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeSupportsDNSResolveWithCompletion:@
-readAttributeSupportsDNSResolveWithCompletionSelector :: Selector
+readAttributeSupportsDNSResolveWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeSupportsDNSResolveWithCompletionSelector = mkSelector "readAttributeSupportsDNSResolveWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeSupportsDNSResolveWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeSupportsDNSResolveWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeSupportsDNSResolveWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeSupportsDNSResolveWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeSupportsDNSResolveWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeSupportsDNSResolveWithClusterStateCache:endpoint:queue:completion:@
-readAttributeSupportsDNSResolveWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeSupportsDNSResolveWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeSupportsDNSResolveWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeSupportsDNSResolveWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterTimeSynchronization)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterTimeSynchronization)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterTimeSynchronization)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

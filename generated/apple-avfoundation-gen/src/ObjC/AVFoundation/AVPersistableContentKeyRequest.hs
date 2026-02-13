@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AVFoundation.AVPersistableContentKeyRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,17 +36,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- persistableContentKeyFromKeyVendorResponse:options:error:@
 persistableContentKeyFromKeyVendorResponse_options_error :: (IsAVPersistableContentKeyRequest avPersistableContentKeyRequest, IsNSData keyVendorResponse, IsNSDictionary options, IsNSError outError) => avPersistableContentKeyRequest -> keyVendorResponse -> options -> outError -> IO (Id NSData)
-persistableContentKeyFromKeyVendorResponse_options_error avPersistableContentKeyRequest  keyVendorResponse options outError =
-  withObjCPtr keyVendorResponse $ \raw_keyVendorResponse ->
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr outError $ \raw_outError ->
-          sendMsg avPersistableContentKeyRequest (mkSelector "persistableContentKeyFromKeyVendorResponse:options:error:") (retPtr retVoid) [argPtr (castPtr raw_keyVendorResponse :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+persistableContentKeyFromKeyVendorResponse_options_error avPersistableContentKeyRequest keyVendorResponse options outError =
+  sendMessage avPersistableContentKeyRequest persistableContentKeyFromKeyVendorResponse_options_errorSelector (toNSData keyVendorResponse) (toNSDictionary options) (toNSError outError)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @persistableContentKeyFromKeyVendorResponse:options:error:@
-persistableContentKeyFromKeyVendorResponse_options_errorSelector :: Selector
+persistableContentKeyFromKeyVendorResponse_options_errorSelector :: Selector '[Id NSData, Id NSDictionary, Id NSError] (Id NSData)
 persistableContentKeyFromKeyVendorResponse_options_errorSelector = mkSelector "persistableContentKeyFromKeyVendorResponse:options:error:"
 

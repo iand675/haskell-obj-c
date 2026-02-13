@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.MediaPlayer.MPChangeRepeatModeCommandEvent
   , IsMPChangeRepeatModeCommandEvent(..)
   , repeatType
   , preservesRepeatMode
-  , repeatTypeSelector
   , preservesRepeatModeSelector
+  , repeatTypeSelector
 
   -- * Enum types
   , MPRepeatType(MPRepeatType)
@@ -20,15 +21,11 @@ module ObjC.MediaPlayer.MPChangeRepeatModeCommandEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,25 +37,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- repeatType@
 repeatType :: IsMPChangeRepeatModeCommandEvent mpChangeRepeatModeCommandEvent => mpChangeRepeatModeCommandEvent -> IO MPRepeatType
-repeatType mpChangeRepeatModeCommandEvent  =
-    fmap (coerce :: CLong -> MPRepeatType) $ sendMsg mpChangeRepeatModeCommandEvent (mkSelector "repeatType") retCLong []
+repeatType mpChangeRepeatModeCommandEvent =
+  sendMessage mpChangeRepeatModeCommandEvent repeatTypeSelector
 
 -- | Whether or not the selection should be preserved between playback sessions
 --
 -- ObjC selector: @- preservesRepeatMode@
 preservesRepeatMode :: IsMPChangeRepeatModeCommandEvent mpChangeRepeatModeCommandEvent => mpChangeRepeatModeCommandEvent -> IO Bool
-preservesRepeatMode mpChangeRepeatModeCommandEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpChangeRepeatModeCommandEvent (mkSelector "preservesRepeatMode") retCULong []
+preservesRepeatMode mpChangeRepeatModeCommandEvent =
+  sendMessage mpChangeRepeatModeCommandEvent preservesRepeatModeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @repeatType@
-repeatTypeSelector :: Selector
+repeatTypeSelector :: Selector '[] MPRepeatType
 repeatTypeSelector = mkSelector "repeatType"
 
 -- | @Selector@ for @preservesRepeatMode@
-preservesRepeatModeSelector :: Selector
+preservesRepeatModeSelector :: Selector '[] Bool
 preservesRepeatModeSelector = mkSelector "preservesRepeatMode"
 

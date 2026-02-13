@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.Intents.INSendMessageIntentDonationMetadata
   , setRecipientCount
   , initSelector
   , mentionsCurrentUserSelector
-  , setMentionsCurrentUserSelector
-  , replyToCurrentUserSelector
-  , setReplyToCurrentUserSelector
   , notifyRecipientAnywaySelector
-  , setNotifyRecipientAnywaySelector
   , recipientCountSelector
+  , replyToCurrentUserSelector
+  , setMentionsCurrentUserSelector
+  , setNotifyRecipientAnywaySelector
   , setRecipientCountSelector
+  , setReplyToCurrentUserSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,86 +42,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSendMessageIntentDonationMetadata inSendMessageIntentDonationMetadata => inSendMessageIntentDonationMetadata -> IO (Id INSendMessageIntentDonationMetadata)
-init_ inSendMessageIntentDonationMetadata  =
-    sendMsg inSendMessageIntentDonationMetadata (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inSendMessageIntentDonationMetadata =
+  sendOwnedMessage inSendMessageIntentDonationMetadata initSelector
 
 -- | @- mentionsCurrentUser@
 mentionsCurrentUser :: IsINSendMessageIntentDonationMetadata inSendMessageIntentDonationMetadata => inSendMessageIntentDonationMetadata -> IO Bool
-mentionsCurrentUser inSendMessageIntentDonationMetadata  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inSendMessageIntentDonationMetadata (mkSelector "mentionsCurrentUser") retCULong []
+mentionsCurrentUser inSendMessageIntentDonationMetadata =
+  sendMessage inSendMessageIntentDonationMetadata mentionsCurrentUserSelector
 
 -- | @- setMentionsCurrentUser:@
 setMentionsCurrentUser :: IsINSendMessageIntentDonationMetadata inSendMessageIntentDonationMetadata => inSendMessageIntentDonationMetadata -> Bool -> IO ()
-setMentionsCurrentUser inSendMessageIntentDonationMetadata  value =
-    sendMsg inSendMessageIntentDonationMetadata (mkSelector "setMentionsCurrentUser:") retVoid [argCULong (if value then 1 else 0)]
+setMentionsCurrentUser inSendMessageIntentDonationMetadata value =
+  sendMessage inSendMessageIntentDonationMetadata setMentionsCurrentUserSelector value
 
 -- | @- replyToCurrentUser@
 replyToCurrentUser :: IsINSendMessageIntentDonationMetadata inSendMessageIntentDonationMetadata => inSendMessageIntentDonationMetadata -> IO Bool
-replyToCurrentUser inSendMessageIntentDonationMetadata  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inSendMessageIntentDonationMetadata (mkSelector "replyToCurrentUser") retCULong []
+replyToCurrentUser inSendMessageIntentDonationMetadata =
+  sendMessage inSendMessageIntentDonationMetadata replyToCurrentUserSelector
 
 -- | @- setReplyToCurrentUser:@
 setReplyToCurrentUser :: IsINSendMessageIntentDonationMetadata inSendMessageIntentDonationMetadata => inSendMessageIntentDonationMetadata -> Bool -> IO ()
-setReplyToCurrentUser inSendMessageIntentDonationMetadata  value =
-    sendMsg inSendMessageIntentDonationMetadata (mkSelector "setReplyToCurrentUser:") retVoid [argCULong (if value then 1 else 0)]
+setReplyToCurrentUser inSendMessageIntentDonationMetadata value =
+  sendMessage inSendMessageIntentDonationMetadata setReplyToCurrentUserSelector value
 
 -- | @- notifyRecipientAnyway@
 notifyRecipientAnyway :: IsINSendMessageIntentDonationMetadata inSendMessageIntentDonationMetadata => inSendMessageIntentDonationMetadata -> IO Bool
-notifyRecipientAnyway inSendMessageIntentDonationMetadata  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inSendMessageIntentDonationMetadata (mkSelector "notifyRecipientAnyway") retCULong []
+notifyRecipientAnyway inSendMessageIntentDonationMetadata =
+  sendMessage inSendMessageIntentDonationMetadata notifyRecipientAnywaySelector
 
 -- | @- setNotifyRecipientAnyway:@
 setNotifyRecipientAnyway :: IsINSendMessageIntentDonationMetadata inSendMessageIntentDonationMetadata => inSendMessageIntentDonationMetadata -> Bool -> IO ()
-setNotifyRecipientAnyway inSendMessageIntentDonationMetadata  value =
-    sendMsg inSendMessageIntentDonationMetadata (mkSelector "setNotifyRecipientAnyway:") retVoid [argCULong (if value then 1 else 0)]
+setNotifyRecipientAnyway inSendMessageIntentDonationMetadata value =
+  sendMessage inSendMessageIntentDonationMetadata setNotifyRecipientAnywaySelector value
 
 -- | @- recipientCount@
 recipientCount :: IsINSendMessageIntentDonationMetadata inSendMessageIntentDonationMetadata => inSendMessageIntentDonationMetadata -> IO CULong
-recipientCount inSendMessageIntentDonationMetadata  =
-    sendMsg inSendMessageIntentDonationMetadata (mkSelector "recipientCount") retCULong []
+recipientCount inSendMessageIntentDonationMetadata =
+  sendMessage inSendMessageIntentDonationMetadata recipientCountSelector
 
 -- | @- setRecipientCount:@
 setRecipientCount :: IsINSendMessageIntentDonationMetadata inSendMessageIntentDonationMetadata => inSendMessageIntentDonationMetadata -> CULong -> IO ()
-setRecipientCount inSendMessageIntentDonationMetadata  value =
-    sendMsg inSendMessageIntentDonationMetadata (mkSelector "setRecipientCount:") retVoid [argCULong value]
+setRecipientCount inSendMessageIntentDonationMetadata value =
+  sendMessage inSendMessageIntentDonationMetadata setRecipientCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INSendMessageIntentDonationMetadata)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @mentionsCurrentUser@
-mentionsCurrentUserSelector :: Selector
+mentionsCurrentUserSelector :: Selector '[] Bool
 mentionsCurrentUserSelector = mkSelector "mentionsCurrentUser"
 
 -- | @Selector@ for @setMentionsCurrentUser:@
-setMentionsCurrentUserSelector :: Selector
+setMentionsCurrentUserSelector :: Selector '[Bool] ()
 setMentionsCurrentUserSelector = mkSelector "setMentionsCurrentUser:"
 
 -- | @Selector@ for @replyToCurrentUser@
-replyToCurrentUserSelector :: Selector
+replyToCurrentUserSelector :: Selector '[] Bool
 replyToCurrentUserSelector = mkSelector "replyToCurrentUser"
 
 -- | @Selector@ for @setReplyToCurrentUser:@
-setReplyToCurrentUserSelector :: Selector
+setReplyToCurrentUserSelector :: Selector '[Bool] ()
 setReplyToCurrentUserSelector = mkSelector "setReplyToCurrentUser:"
 
 -- | @Selector@ for @notifyRecipientAnyway@
-notifyRecipientAnywaySelector :: Selector
+notifyRecipientAnywaySelector :: Selector '[] Bool
 notifyRecipientAnywaySelector = mkSelector "notifyRecipientAnyway"
 
 -- | @Selector@ for @setNotifyRecipientAnyway:@
-setNotifyRecipientAnywaySelector :: Selector
+setNotifyRecipientAnywaySelector :: Selector '[Bool] ()
 setNotifyRecipientAnywaySelector = mkSelector "setNotifyRecipientAnyway:"
 
 -- | @Selector@ for @recipientCount@
-recipientCountSelector :: Selector
+recipientCountSelector :: Selector '[] CULong
 recipientCountSelector = mkSelector "recipientCount"
 
 -- | @Selector@ for @setRecipientCount:@
-setRecipientCountSelector :: Selector
+setRecipientCountSelector :: Selector '[CULong] ()
 setRecipientCountSelector = mkSelector "setRecipientCount:"
 

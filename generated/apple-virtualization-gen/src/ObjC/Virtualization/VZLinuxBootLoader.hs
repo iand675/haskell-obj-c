@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,26 +22,22 @@ module ObjC.Virtualization.VZLinuxBootLoader
   , setCommandLine
   , initialRamdiskURL
   , setInitialRamdiskURL
-  , initWithKernelURLSelector
-  , kernelURLSelector
-  , setKernelURLSelector
   , commandLineSelector
-  , setCommandLineSelector
+  , initWithKernelURLSelector
   , initialRamdiskURLSelector
+  , kernelURLSelector
+  , setCommandLineSelector
   , setInitialRamdiskURLSelector
+  , setKernelURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,24 +50,22 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithKernelURL:@
 initWithKernelURL :: (IsVZLinuxBootLoader vzLinuxBootLoader, IsNSURL kernelURL) => vzLinuxBootLoader -> kernelURL -> IO (Id VZLinuxBootLoader)
-initWithKernelURL vzLinuxBootLoader  kernelURL =
-  withObjCPtr kernelURL $ \raw_kernelURL ->
-      sendMsg vzLinuxBootLoader (mkSelector "initWithKernelURL:") (retPtr retVoid) [argPtr (castPtr raw_kernelURL :: Ptr ())] >>= ownedObject . castPtr
+initWithKernelURL vzLinuxBootLoader kernelURL =
+  sendOwnedMessage vzLinuxBootLoader initWithKernelURLSelector (toNSURL kernelURL)
 
 -- | URL of the Linux kernel.
 --
 -- ObjC selector: @- kernelURL@
 kernelURL :: IsVZLinuxBootLoader vzLinuxBootLoader => vzLinuxBootLoader -> IO (Id NSURL)
-kernelURL vzLinuxBootLoader  =
-    sendMsg vzLinuxBootLoader (mkSelector "kernelURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+kernelURL vzLinuxBootLoader =
+  sendMessage vzLinuxBootLoader kernelURLSelector
 
 -- | URL of the Linux kernel.
 --
 -- ObjC selector: @- setKernelURL:@
 setKernelURL :: (IsVZLinuxBootLoader vzLinuxBootLoader, IsNSURL value) => vzLinuxBootLoader -> value -> IO ()
-setKernelURL vzLinuxBootLoader  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzLinuxBootLoader (mkSelector "setKernelURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKernelURL vzLinuxBootLoader value =
+  sendMessage vzLinuxBootLoader setKernelURLSelector (toNSURL value)
 
 -- | Define the command-line parameters passed to the kernel on boot.
 --
@@ -78,8 +73,8 @@ setKernelURL vzLinuxBootLoader  value =
 --
 -- ObjC selector: @- commandLine@
 commandLine :: IsVZLinuxBootLoader vzLinuxBootLoader => vzLinuxBootLoader -> IO (Id NSString)
-commandLine vzLinuxBootLoader  =
-    sendMsg vzLinuxBootLoader (mkSelector "commandLine") (retPtr retVoid) [] >>= retainedObject . castPtr
+commandLine vzLinuxBootLoader =
+  sendMessage vzLinuxBootLoader commandLineSelector
 
 -- | Define the command-line parameters passed to the kernel on boot.
 --
@@ -87,54 +82,52 @@ commandLine vzLinuxBootLoader  =
 --
 -- ObjC selector: @- setCommandLine:@
 setCommandLine :: (IsVZLinuxBootLoader vzLinuxBootLoader, IsNSString value) => vzLinuxBootLoader -> value -> IO ()
-setCommandLine vzLinuxBootLoader  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzLinuxBootLoader (mkSelector "setCommandLine:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCommandLine vzLinuxBootLoader value =
+  sendMessage vzLinuxBootLoader setCommandLineSelector (toNSString value)
 
 -- | Set the optional initial RAM disk. The RAM disk is mapped into memory before booting the kernel.
 --
 -- ObjC selector: @- initialRamdiskURL@
 initialRamdiskURL :: IsVZLinuxBootLoader vzLinuxBootLoader => vzLinuxBootLoader -> IO (Id NSURL)
-initialRamdiskURL vzLinuxBootLoader  =
-    sendMsg vzLinuxBootLoader (mkSelector "initialRamdiskURL") (retPtr retVoid) [] >>= ownedObject . castPtr
+initialRamdiskURL vzLinuxBootLoader =
+  sendOwnedMessage vzLinuxBootLoader initialRamdiskURLSelector
 
 -- | Set the optional initial RAM disk. The RAM disk is mapped into memory before booting the kernel.
 --
 -- ObjC selector: @- setInitialRamdiskURL:@
 setInitialRamdiskURL :: (IsVZLinuxBootLoader vzLinuxBootLoader, IsNSURL value) => vzLinuxBootLoader -> value -> IO ()
-setInitialRamdiskURL vzLinuxBootLoader  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzLinuxBootLoader (mkSelector "setInitialRamdiskURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInitialRamdiskURL vzLinuxBootLoader value =
+  sendMessage vzLinuxBootLoader setInitialRamdiskURLSelector (toNSURL value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithKernelURL:@
-initWithKernelURLSelector :: Selector
+initWithKernelURLSelector :: Selector '[Id NSURL] (Id VZLinuxBootLoader)
 initWithKernelURLSelector = mkSelector "initWithKernelURL:"
 
 -- | @Selector@ for @kernelURL@
-kernelURLSelector :: Selector
+kernelURLSelector :: Selector '[] (Id NSURL)
 kernelURLSelector = mkSelector "kernelURL"
 
 -- | @Selector@ for @setKernelURL:@
-setKernelURLSelector :: Selector
+setKernelURLSelector :: Selector '[Id NSURL] ()
 setKernelURLSelector = mkSelector "setKernelURL:"
 
 -- | @Selector@ for @commandLine@
-commandLineSelector :: Selector
+commandLineSelector :: Selector '[] (Id NSString)
 commandLineSelector = mkSelector "commandLine"
 
 -- | @Selector@ for @setCommandLine:@
-setCommandLineSelector :: Selector
+setCommandLineSelector :: Selector '[Id NSString] ()
 setCommandLineSelector = mkSelector "setCommandLine:"
 
 -- | @Selector@ for @initialRamdiskURL@
-initialRamdiskURLSelector :: Selector
+initialRamdiskURLSelector :: Selector '[] (Id NSURL)
 initialRamdiskURLSelector = mkSelector "initialRamdiskURL"
 
 -- | @Selector@ for @setInitialRamdiskURL:@
-setInitialRamdiskURLSelector :: Selector
+setInitialRamdiskURLSelector :: Selector '[Id NSURL] ()
 setInitialRamdiskURLSelector = mkSelector "setInitialRamdiskURL:"
 

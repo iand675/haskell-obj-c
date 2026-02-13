@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRContentControlClusterBlockUnratedContentParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRContentControlClusterBlockUnratedContentParams mtrContentControlClusterBlockUnratedContentParams => mtrContentControlClusterBlockUnratedContentParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrContentControlClusterBlockUnratedContentParams  =
-    sendMsg mtrContentControlClusterBlockUnratedContentParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrContentControlClusterBlockUnratedContentParams =
+  sendMessage mtrContentControlClusterBlockUnratedContentParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -52,9 +49,8 @@ timedInvokeTimeoutMs mtrContentControlClusterBlockUnratedContentParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRContentControlClusterBlockUnratedContentParams mtrContentControlClusterBlockUnratedContentParams, IsNSNumber value) => mtrContentControlClusterBlockUnratedContentParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrContentControlClusterBlockUnratedContentParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterBlockUnratedContentParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrContentControlClusterBlockUnratedContentParams value =
+  sendMessage mtrContentControlClusterBlockUnratedContentParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -64,8 +60,8 @@ setTimedInvokeTimeoutMs mtrContentControlClusterBlockUnratedContentParams  value
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRContentControlClusterBlockUnratedContentParams mtrContentControlClusterBlockUnratedContentParams => mtrContentControlClusterBlockUnratedContentParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrContentControlClusterBlockUnratedContentParams  =
-    sendMsg mtrContentControlClusterBlockUnratedContentParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrContentControlClusterBlockUnratedContentParams =
+  sendMessage mtrContentControlClusterBlockUnratedContentParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -75,27 +71,26 @@ serverSideProcessingTimeout mtrContentControlClusterBlockUnratedContentParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRContentControlClusterBlockUnratedContentParams mtrContentControlClusterBlockUnratedContentParams, IsNSNumber value) => mtrContentControlClusterBlockUnratedContentParams -> value -> IO ()
-setServerSideProcessingTimeout mtrContentControlClusterBlockUnratedContentParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterBlockUnratedContentParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrContentControlClusterBlockUnratedContentParams value =
+  sendMessage mtrContentControlClusterBlockUnratedContentParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

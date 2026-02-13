@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Foundation.NSTermOfAddress
   , init_
   , languageIdentifier
   , pronouns
-  , neutralSelector
-  , feminineSelector
-  , masculineSelector
   , currentUserSelector
-  , localizedForLanguageIdentifier_withPronounsSelector
-  , newSelector
+  , feminineSelector
   , initSelector
   , languageIdentifierSelector
+  , localizedForLanguageIdentifier_withPronounsSelector
+  , masculineSelector
+  , neutralSelector
+  , newSelector
   , pronounsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,7 +46,7 @@ neutral :: IO (Id NSTermOfAddress)
 neutral  =
   do
     cls' <- getRequiredClass "NSTermOfAddress"
-    sendClassMsg cls' (mkSelector "neutral") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' neutralSelector
 
 -- | Term of address that uses feminine pronouns (e.g. she/her/hers in English), and a feminine grammatical gender when inflecting verbs and adjectives referring to the person
 --
@@ -58,7 +55,7 @@ feminine :: IO (Id NSTermOfAddress)
 feminine  =
   do
     cls' <- getRequiredClass "NSTermOfAddress"
-    sendClassMsg cls' (mkSelector "feminine") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' feminineSelector
 
 -- | Term of address that uses masculine pronouns (e.g. he/him/his in English), and a masculine grammatical gender when inflecting verbs and adjectives referring to the person
 --
@@ -67,7 +64,7 @@ masculine :: IO (Id NSTermOfAddress)
 masculine  =
   do
     cls' <- getRequiredClass "NSTermOfAddress"
-    sendClassMsg cls' (mkSelector "masculine") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' masculineSelector
 
 -- | The term of address that should be used for addressing the user
 --
@@ -78,7 +75,7 @@ currentUser :: IO (Id NSTermOfAddress)
 currentUser  =
   do
     cls' <- getRequiredClass "NSTermOfAddress"
-    sendClassMsg cls' (mkSelector "currentUser") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentUserSelector
 
 -- | A term of address restricted to a given language
 --
@@ -91,73 +88,71 @@ localizedForLanguageIdentifier_withPronouns :: (IsNSString language, IsNSArray p
 localizedForLanguageIdentifier_withPronouns language pronouns =
   do
     cls' <- getRequiredClass "NSTermOfAddress"
-    withObjCPtr language $ \raw_language ->
-      withObjCPtr pronouns $ \raw_pronouns ->
-        sendClassMsg cls' (mkSelector "localizedForLanguageIdentifier:withPronouns:") (retPtr retVoid) [argPtr (castPtr raw_language :: Ptr ()), argPtr (castPtr raw_pronouns :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedForLanguageIdentifier_withPronounsSelector (toNSString language) (toNSArray pronouns)
 
 -- | @+ new@
 new :: IO (Id NSTermOfAddress)
 new  =
   do
     cls' <- getRequiredClass "NSTermOfAddress"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSTermOfAddress nsTermOfAddress => nsTermOfAddress -> IO (Id NSTermOfAddress)
-init_ nsTermOfAddress  =
-    sendMsg nsTermOfAddress (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTermOfAddress =
+  sendOwnedMessage nsTermOfAddress initSelector
 
 -- | The ISO language code if this is a localized term of address
 --
 -- ObjC selector: @- languageIdentifier@
 languageIdentifier :: IsNSTermOfAddress nsTermOfAddress => nsTermOfAddress -> IO (Id NSString)
-languageIdentifier nsTermOfAddress  =
-    sendMsg nsTermOfAddress (mkSelector "languageIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageIdentifier nsTermOfAddress =
+  sendMessage nsTermOfAddress languageIdentifierSelector
 
 -- | A list of pronouns for a localized term of address
 --
 -- ObjC selector: @- pronouns@
 pronouns :: IsNSTermOfAddress nsTermOfAddress => nsTermOfAddress -> IO (Id NSArray)
-pronouns nsTermOfAddress  =
-    sendMsg nsTermOfAddress (mkSelector "pronouns") (retPtr retVoid) [] >>= retainedObject . castPtr
+pronouns nsTermOfAddress =
+  sendMessage nsTermOfAddress pronounsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @neutral@
-neutralSelector :: Selector
+neutralSelector :: Selector '[] (Id NSTermOfAddress)
 neutralSelector = mkSelector "neutral"
 
 -- | @Selector@ for @feminine@
-feminineSelector :: Selector
+feminineSelector :: Selector '[] (Id NSTermOfAddress)
 feminineSelector = mkSelector "feminine"
 
 -- | @Selector@ for @masculine@
-masculineSelector :: Selector
+masculineSelector :: Selector '[] (Id NSTermOfAddress)
 masculineSelector = mkSelector "masculine"
 
 -- | @Selector@ for @currentUser@
-currentUserSelector :: Selector
+currentUserSelector :: Selector '[] (Id NSTermOfAddress)
 currentUserSelector = mkSelector "currentUser"
 
 -- | @Selector@ for @localizedForLanguageIdentifier:withPronouns:@
-localizedForLanguageIdentifier_withPronounsSelector :: Selector
+localizedForLanguageIdentifier_withPronounsSelector :: Selector '[Id NSString, Id NSArray] (Id NSTermOfAddress)
 localizedForLanguageIdentifier_withPronounsSelector = mkSelector "localizedForLanguageIdentifier:withPronouns:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSTermOfAddress)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTermOfAddress)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @languageIdentifier@
-languageIdentifierSelector :: Selector
+languageIdentifierSelector :: Selector '[] (Id NSString)
 languageIdentifierSelector = mkSelector "languageIdentifier"
 
 -- | @Selector@ for @pronouns@
-pronounsSelector :: Selector
+pronounsSelector :: Selector '[] (Id NSArray)
 pronounsSelector = mkSelector "pronouns"
 

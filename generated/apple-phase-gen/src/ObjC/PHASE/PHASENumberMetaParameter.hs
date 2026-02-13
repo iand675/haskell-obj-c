@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.PHASE.PHASENumberMetaParameter
   , fadeToValue_duration
   , minimum_
   , maximum_
-  , initSelector
-  , newSelector
   , fadeToValue_durationSelector
-  , minimumSelector
+  , initSelector
   , maximumSelector
+  , minimumSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASENumberMetaParameter phaseNumberMetaParameter => phaseNumberMetaParameter -> IO (Id PHASENumberMetaParameter)
-init_ phaseNumberMetaParameter  =
-    sendMsg phaseNumberMetaParameter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseNumberMetaParameter =
+  sendOwnedMessage phaseNumberMetaParameter initSelector
 
 -- | @+ new@
 new :: IO (Id PHASENumberMetaParameter)
 new  =
   do
     cls' <- getRequiredClass "PHASENumberMetaParameter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | fadeToValue
 --
@@ -63,8 +60,8 @@ new  =
 --
 -- ObjC selector: @- fadeToValue:duration:@
 fadeToValue_duration :: IsPHASENumberMetaParameter phaseNumberMetaParameter => phaseNumberMetaParameter -> CDouble -> CDouble -> IO ()
-fadeToValue_duration phaseNumberMetaParameter  value duration =
-    sendMsg phaseNumberMetaParameter (mkSelector "fadeToValue:duration:") retVoid [argCDouble value, argCDouble duration]
+fadeToValue_duration phaseNumberMetaParameter value duration =
+  sendMessage phaseNumberMetaParameter fadeToValue_durationSelector value duration
 
 -- | minimum
 --
@@ -72,8 +69,8 @@ fadeToValue_duration phaseNumberMetaParameter  value duration =
 --
 -- ObjC selector: @- minimum@
 minimum_ :: IsPHASENumberMetaParameter phaseNumberMetaParameter => phaseNumberMetaParameter -> IO CDouble
-minimum_ phaseNumberMetaParameter  =
-    sendMsg phaseNumberMetaParameter (mkSelector "minimum") retCDouble []
+minimum_ phaseNumberMetaParameter =
+  sendMessage phaseNumberMetaParameter minimumSelector
 
 -- | maximum
 --
@@ -81,30 +78,30 @@ minimum_ phaseNumberMetaParameter  =
 --
 -- ObjC selector: @- maximum@
 maximum_ :: IsPHASENumberMetaParameter phaseNumberMetaParameter => phaseNumberMetaParameter -> IO CDouble
-maximum_ phaseNumberMetaParameter  =
-    sendMsg phaseNumberMetaParameter (mkSelector "maximum") retCDouble []
+maximum_ phaseNumberMetaParameter =
+  sendMessage phaseNumberMetaParameter maximumSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASENumberMetaParameter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASENumberMetaParameter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @fadeToValue:duration:@
-fadeToValue_durationSelector :: Selector
+fadeToValue_durationSelector :: Selector '[CDouble, CDouble] ()
 fadeToValue_durationSelector = mkSelector "fadeToValue:duration:"
 
 -- | @Selector@ for @minimum@
-minimumSelector :: Selector
+minimumSelector :: Selector '[] CDouble
 minimumSelector = mkSelector "minimum"
 
 -- | @Selector@ for @maximum@
-maximumSelector :: Selector
+maximumSelector :: Selector '[] CDouble
 maximumSelector = mkSelector "maximum"
 

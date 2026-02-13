@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRCommodityPriceClusterCommodityPriceStruct
   , setDescriptionString
   , components
   , setComponents
-  , periodStartSelector
-  , setPeriodStartSelector
-  , periodEndSelector
-  , setPeriodEndSelector
-  , priceSelector
-  , setPriceSelector
-  , priceLevelSelector
-  , setPriceLevelSelector
-  , descriptionStringSelector
-  , setDescriptionStringSelector
   , componentsSelector
+  , descriptionStringSelector
+  , periodEndSelector
+  , periodStartSelector
+  , priceLevelSelector
+  , priceSelector
   , setComponentsSelector
+  , setDescriptionStringSelector
+  , setPeriodEndSelector
+  , setPeriodStartSelector
+  , setPriceLevelSelector
+  , setPriceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- periodStart@
 periodStart :: IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct => mtrCommodityPriceClusterCommodityPriceStruct -> IO (Id NSNumber)
-periodStart mtrCommodityPriceClusterCommodityPriceStruct  =
-    sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "periodStart") (retPtr retVoid) [] >>= retainedObject . castPtr
+periodStart mtrCommodityPriceClusterCommodityPriceStruct =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct periodStartSelector
 
 -- | @- setPeriodStart:@
 setPeriodStart :: (IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct, IsNSNumber value) => mtrCommodityPriceClusterCommodityPriceStruct -> value -> IO ()
-setPeriodStart mtrCommodityPriceClusterCommodityPriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "setPeriodStart:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPeriodStart mtrCommodityPriceClusterCommodityPriceStruct value =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct setPeriodStartSelector (toNSNumber value)
 
 -- | @- periodEnd@
 periodEnd :: IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct => mtrCommodityPriceClusterCommodityPriceStruct -> IO (Id NSNumber)
-periodEnd mtrCommodityPriceClusterCommodityPriceStruct  =
-    sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "periodEnd") (retPtr retVoid) [] >>= retainedObject . castPtr
+periodEnd mtrCommodityPriceClusterCommodityPriceStruct =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct periodEndSelector
 
 -- | @- setPeriodEnd:@
 setPeriodEnd :: (IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct, IsNSNumber value) => mtrCommodityPriceClusterCommodityPriceStruct -> value -> IO ()
-setPeriodEnd mtrCommodityPriceClusterCommodityPriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "setPeriodEnd:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPeriodEnd mtrCommodityPriceClusterCommodityPriceStruct value =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct setPeriodEndSelector (toNSNumber value)
 
 -- | @- price@
 price :: IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct => mtrCommodityPriceClusterCommodityPriceStruct -> IO (Id NSNumber)
-price mtrCommodityPriceClusterCommodityPriceStruct  =
-    sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "price") (retPtr retVoid) [] >>= retainedObject . castPtr
+price mtrCommodityPriceClusterCommodityPriceStruct =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct priceSelector
 
 -- | @- setPrice:@
 setPrice :: (IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct, IsNSNumber value) => mtrCommodityPriceClusterCommodityPriceStruct -> value -> IO ()
-setPrice mtrCommodityPriceClusterCommodityPriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "setPrice:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrice mtrCommodityPriceClusterCommodityPriceStruct value =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct setPriceSelector (toNSNumber value)
 
 -- | @- priceLevel@
 priceLevel :: IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct => mtrCommodityPriceClusterCommodityPriceStruct -> IO (Id NSNumber)
-priceLevel mtrCommodityPriceClusterCommodityPriceStruct  =
-    sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "priceLevel") (retPtr retVoid) [] >>= retainedObject . castPtr
+priceLevel mtrCommodityPriceClusterCommodityPriceStruct =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct priceLevelSelector
 
 -- | @- setPriceLevel:@
 setPriceLevel :: (IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct, IsNSNumber value) => mtrCommodityPriceClusterCommodityPriceStruct -> value -> IO ()
-setPriceLevel mtrCommodityPriceClusterCommodityPriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "setPriceLevel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPriceLevel mtrCommodityPriceClusterCommodityPriceStruct value =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct setPriceLevelSelector (toNSNumber value)
 
 -- | @- descriptionString@
 descriptionString :: IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct => mtrCommodityPriceClusterCommodityPriceStruct -> IO (Id NSString)
-descriptionString mtrCommodityPriceClusterCommodityPriceStruct  =
-    sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "descriptionString") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptionString mtrCommodityPriceClusterCommodityPriceStruct =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct descriptionStringSelector
 
 -- | @- setDescriptionString:@
 setDescriptionString :: (IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct, IsNSString value) => mtrCommodityPriceClusterCommodityPriceStruct -> value -> IO ()
-setDescriptionString mtrCommodityPriceClusterCommodityPriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "setDescriptionString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDescriptionString mtrCommodityPriceClusterCommodityPriceStruct value =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct setDescriptionStringSelector (toNSString value)
 
 -- | @- components@
 components :: IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct => mtrCommodityPriceClusterCommodityPriceStruct -> IO (Id NSArray)
-components mtrCommodityPriceClusterCommodityPriceStruct  =
-    sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "components") (retPtr retVoid) [] >>= retainedObject . castPtr
+components mtrCommodityPriceClusterCommodityPriceStruct =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct componentsSelector
 
 -- | @- setComponents:@
 setComponents :: (IsMTRCommodityPriceClusterCommodityPriceStruct mtrCommodityPriceClusterCommodityPriceStruct, IsNSArray value) => mtrCommodityPriceClusterCommodityPriceStruct -> value -> IO ()
-setComponents mtrCommodityPriceClusterCommodityPriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityPriceClusterCommodityPriceStruct (mkSelector "setComponents:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setComponents mtrCommodityPriceClusterCommodityPriceStruct value =
+  sendMessage mtrCommodityPriceClusterCommodityPriceStruct setComponentsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @periodStart@
-periodStartSelector :: Selector
+periodStartSelector :: Selector '[] (Id NSNumber)
 periodStartSelector = mkSelector "periodStart"
 
 -- | @Selector@ for @setPeriodStart:@
-setPeriodStartSelector :: Selector
+setPeriodStartSelector :: Selector '[Id NSNumber] ()
 setPeriodStartSelector = mkSelector "setPeriodStart:"
 
 -- | @Selector@ for @periodEnd@
-periodEndSelector :: Selector
+periodEndSelector :: Selector '[] (Id NSNumber)
 periodEndSelector = mkSelector "periodEnd"
 
 -- | @Selector@ for @setPeriodEnd:@
-setPeriodEndSelector :: Selector
+setPeriodEndSelector :: Selector '[Id NSNumber] ()
 setPeriodEndSelector = mkSelector "setPeriodEnd:"
 
 -- | @Selector@ for @price@
-priceSelector :: Selector
+priceSelector :: Selector '[] (Id NSNumber)
 priceSelector = mkSelector "price"
 
 -- | @Selector@ for @setPrice:@
-setPriceSelector :: Selector
+setPriceSelector :: Selector '[Id NSNumber] ()
 setPriceSelector = mkSelector "setPrice:"
 
 -- | @Selector@ for @priceLevel@
-priceLevelSelector :: Selector
+priceLevelSelector :: Selector '[] (Id NSNumber)
 priceLevelSelector = mkSelector "priceLevel"
 
 -- | @Selector@ for @setPriceLevel:@
-setPriceLevelSelector :: Selector
+setPriceLevelSelector :: Selector '[Id NSNumber] ()
 setPriceLevelSelector = mkSelector "setPriceLevel:"
 
 -- | @Selector@ for @descriptionString@
-descriptionStringSelector :: Selector
+descriptionStringSelector :: Selector '[] (Id NSString)
 descriptionStringSelector = mkSelector "descriptionString"
 
 -- | @Selector@ for @setDescriptionString:@
-setDescriptionStringSelector :: Selector
+setDescriptionStringSelector :: Selector '[Id NSString] ()
 setDescriptionStringSelector = mkSelector "setDescriptionString:"
 
 -- | @Selector@ for @components@
-componentsSelector :: Selector
+componentsSelector :: Selector '[] (Id NSArray)
 componentsSelector = mkSelector "components"
 
 -- | @Selector@ for @setComponents:@
-setComponentsSelector :: Selector
+setComponentsSelector :: Selector '[Id NSArray] ()
 setComponentsSelector = mkSelector "setComponents:"
 

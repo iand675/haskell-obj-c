@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,25 +32,21 @@ module ObjC.MetalPerformanceShaders.MPSImagePyramid
   , initWithCoder_device
   , kernelHeight
   , kernelWidth
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , initWithDevice_centerWeightSelector
   , initWithDevice_kernelWidth_kernelHeight_weightsSelector
-  , initWithCoder_deviceSelector
   , kernelHeightSelector
   , kernelWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,8 +63,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSImagePyramid mpsImagePyramid => mpsImagePyramid -> RawId -> IO (Id MPSImagePyramid)
-initWithDevice mpsImagePyramid  device =
-    sendMsg mpsImagePyramid (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImagePyramid device =
+  sendOwnedMessage mpsImagePyramid initWithDeviceSelector device
 
 -- | Initialize a downwards 5-tap image pyramid with a central weight parameter and device
 --
@@ -79,8 +76,8 @@ initWithDevice mpsImagePyramid  device =
 --
 -- ObjC selector: @- initWithDevice:centerWeight:@
 initWithDevice_centerWeight :: IsMPSImagePyramid mpsImagePyramid => mpsImagePyramid -> RawId -> CFloat -> IO (Id MPSImagePyramid)
-initWithDevice_centerWeight mpsImagePyramid  device centerWeight =
-    sendMsg mpsImagePyramid (mkSelector "initWithDevice:centerWeight:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat centerWeight] >>= ownedObject . castPtr
+initWithDevice_centerWeight mpsImagePyramid device centerWeight =
+  sendOwnedMessage mpsImagePyramid initWithDevice_centerWeightSelector device centerWeight
 
 -- | Initialize a downwards n-tap pyramid with a custom filter kernel and device
 --
@@ -96,8 +93,8 @@ initWithDevice_centerWeight mpsImagePyramid  device centerWeight =
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:weights:@
 initWithDevice_kernelWidth_kernelHeight_weights :: IsMPSImagePyramid mpsImagePyramid => mpsImagePyramid -> RawId -> CULong -> CULong -> Const (Ptr CFloat) -> IO (Id MPSImagePyramid)
-initWithDevice_kernelWidth_kernelHeight_weights mpsImagePyramid  device kernelWidth kernelHeight kernelWeights =
-    sendMsg mpsImagePyramid (mkSelector "initWithDevice:kernelWidth:kernelHeight:weights:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight, argPtr (unConst kernelWeights)] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight_weights mpsImagePyramid device kernelWidth kernelHeight kernelWeights =
+  sendOwnedMessage mpsImagePyramid initWithDevice_kernelWidth_kernelHeight_weightsSelector device kernelWidth kernelHeight kernelWeights
 
 -- | NSSecureCoding compatability
 --
@@ -111,9 +108,8 @@ initWithDevice_kernelWidth_kernelHeight_weights mpsImagePyramid  device kernelWi
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImagePyramid mpsImagePyramid, IsNSCoder aDecoder) => mpsImagePyramid -> aDecoder -> RawId -> IO (Id MPSImagePyramid)
-initWithCoder_device mpsImagePyramid  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImagePyramid (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImagePyramid aDecoder device =
+  sendOwnedMessage mpsImagePyramid initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | kernelHeight
 --
@@ -121,8 +117,8 @@ initWithCoder_device mpsImagePyramid  aDecoder device =
 --
 -- ObjC selector: @- kernelHeight@
 kernelHeight :: IsMPSImagePyramid mpsImagePyramid => mpsImagePyramid -> IO CULong
-kernelHeight mpsImagePyramid  =
-    sendMsg mpsImagePyramid (mkSelector "kernelHeight") retCULong []
+kernelHeight mpsImagePyramid =
+  sendMessage mpsImagePyramid kernelHeightSelector
 
 -- | kernelWidth
 --
@@ -130,34 +126,34 @@ kernelHeight mpsImagePyramid  =
 --
 -- ObjC selector: @- kernelWidth@
 kernelWidth :: IsMPSImagePyramid mpsImagePyramid => mpsImagePyramid -> IO CULong
-kernelWidth mpsImagePyramid  =
-    sendMsg mpsImagePyramid (mkSelector "kernelWidth") retCULong []
+kernelWidth mpsImagePyramid =
+  sendMessage mpsImagePyramid kernelWidthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImagePyramid)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:centerWeight:@
-initWithDevice_centerWeightSelector :: Selector
+initWithDevice_centerWeightSelector :: Selector '[RawId, CFloat] (Id MPSImagePyramid)
 initWithDevice_centerWeightSelector = mkSelector "initWithDevice:centerWeight:"
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:weights:@
-initWithDevice_kernelWidth_kernelHeight_weightsSelector :: Selector
+initWithDevice_kernelWidth_kernelHeight_weightsSelector :: Selector '[RawId, CULong, CULong, Const (Ptr CFloat)] (Id MPSImagePyramid)
 initWithDevice_kernelWidth_kernelHeight_weightsSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:weights:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImagePyramid)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 

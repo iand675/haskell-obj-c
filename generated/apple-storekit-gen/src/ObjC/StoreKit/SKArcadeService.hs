@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.StoreKit.SKArcadeService
   , registerArcadeAppWithRandomFromLib_randomFromLibLength_resultHandler
   , arcadeSubscriptionStatusWithNonce_resultHandler
   , repairArcadeApp
-  , registerArcadeAppWithRandomFromLib_randomFromLibLength_resultHandlerSelector
   , arcadeSubscriptionStatusWithNonce_resultHandlerSelector
+  , registerArcadeAppWithRandomFromLib_randomFromLibLength_resultHandlerSelector
   , repairArcadeAppSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,36 +33,35 @@ registerArcadeAppWithRandomFromLib_randomFromLibLength_resultHandler :: IsNSData
 registerArcadeAppWithRandomFromLib_randomFromLibLength_resultHandler randomFromLib randomFromLibLength resultHandler =
   do
     cls' <- getRequiredClass "SKArcadeService"
-    withObjCPtr randomFromLib $ \raw_randomFromLib ->
-      sendClassMsg cls' (mkSelector "registerArcadeAppWithRandomFromLib:randomFromLibLength:resultHandler:") retVoid [argPtr (castPtr raw_randomFromLib :: Ptr ()), argCUInt randomFromLibLength, argPtr (castPtr resultHandler :: Ptr ())]
+    sendClassMessage cls' registerArcadeAppWithRandomFromLib_randomFromLibLength_resultHandlerSelector (toNSData randomFromLib) randomFromLibLength resultHandler
 
 -- | @+ arcadeSubscriptionStatusWithNonce:resultHandler:@
 arcadeSubscriptionStatusWithNonce_resultHandler :: CULong -> Ptr () -> IO ()
 arcadeSubscriptionStatusWithNonce_resultHandler nonce resultHandler =
   do
     cls' <- getRequiredClass "SKArcadeService"
-    sendClassMsg cls' (mkSelector "arcadeSubscriptionStatusWithNonce:resultHandler:") retVoid [argCULong nonce, argPtr (castPtr resultHandler :: Ptr ())]
+    sendClassMessage cls' arcadeSubscriptionStatusWithNonce_resultHandlerSelector nonce resultHandler
 
 -- | @+ repairArcadeApp@
 repairArcadeApp :: IO ()
 repairArcadeApp  =
   do
     cls' <- getRequiredClass "SKArcadeService"
-    sendClassMsg cls' (mkSelector "repairArcadeApp") retVoid []
+    sendClassMessage cls' repairArcadeAppSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registerArcadeAppWithRandomFromLib:randomFromLibLength:resultHandler:@
-registerArcadeAppWithRandomFromLib_randomFromLibLength_resultHandlerSelector :: Selector
+registerArcadeAppWithRandomFromLib_randomFromLibLength_resultHandlerSelector :: Selector '[Id NSData, CUInt, Ptr ()] ()
 registerArcadeAppWithRandomFromLib_randomFromLibLength_resultHandlerSelector = mkSelector "registerArcadeAppWithRandomFromLib:randomFromLibLength:resultHandler:"
 
 -- | @Selector@ for @arcadeSubscriptionStatusWithNonce:resultHandler:@
-arcadeSubscriptionStatusWithNonce_resultHandlerSelector :: Selector
+arcadeSubscriptionStatusWithNonce_resultHandlerSelector :: Selector '[CULong, Ptr ()] ()
 arcadeSubscriptionStatusWithNonce_resultHandlerSelector = mkSelector "arcadeSubscriptionStatusWithNonce:resultHandler:"
 
 -- | @Selector@ for @repairArcadeApp@
-repairArcadeAppSelector :: Selector
+repairArcadeAppSelector :: Selector '[] ()
 repairArcadeAppSelector = mkSelector "repairArcadeApp"
 

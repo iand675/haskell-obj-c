@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.AVFoundation.AVRouteDetector
   , multipleRoutesDetected
   , detectsCustomRoutes
   , setDetectsCustomRoutes
-  , routeDetectionEnabledSelector
-  , setRouteDetectionEnabledSelector
-  , multipleRoutesDetectedSelector
   , detectsCustomRoutesSelector
+  , multipleRoutesDetectedSelector
+  , routeDetectionEnabledSelector
   , setDetectsCustomRoutesSelector
+  , setRouteDetectionEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- routeDetectionEnabled@
 routeDetectionEnabled :: IsAVRouteDetector avRouteDetector => avRouteDetector -> IO Bool
-routeDetectionEnabled avRouteDetector  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avRouteDetector (mkSelector "routeDetectionEnabled") retCULong []
+routeDetectionEnabled avRouteDetector =
+  sendMessage avRouteDetector routeDetectionEnabledSelector
 
 -- | routeDetectionEnabled
 --
@@ -62,8 +59,8 @@ routeDetectionEnabled avRouteDetector  =
 --
 -- ObjC selector: @- setRouteDetectionEnabled:@
 setRouteDetectionEnabled :: IsAVRouteDetector avRouteDetector => avRouteDetector -> Bool -> IO ()
-setRouteDetectionEnabled avRouteDetector  value =
-    sendMsg avRouteDetector (mkSelector "setRouteDetectionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setRouteDetectionEnabled avRouteDetector value =
+  sendMessage avRouteDetector setRouteDetectionEnabledSelector value
 
 -- | multipleRoutesDetected
 --
@@ -73,8 +70,8 @@ setRouteDetectionEnabled avRouteDetector  value =
 --
 -- ObjC selector: @- multipleRoutesDetected@
 multipleRoutesDetected :: IsAVRouteDetector avRouteDetector => avRouteDetector -> IO Bool
-multipleRoutesDetected avRouteDetector  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avRouteDetector (mkSelector "multipleRoutesDetected") retCULong []
+multipleRoutesDetected avRouteDetector =
+  sendMessage avRouteDetector multipleRoutesDetectedSelector
 
 -- | detectsCustomRoutes
 --
@@ -84,8 +81,8 @@ multipleRoutesDetected avRouteDetector  =
 --
 -- ObjC selector: @- detectsCustomRoutes@
 detectsCustomRoutes :: IsAVRouteDetector avRouteDetector => avRouteDetector -> IO Bool
-detectsCustomRoutes avRouteDetector  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avRouteDetector (mkSelector "detectsCustomRoutes") retCULong []
+detectsCustomRoutes avRouteDetector =
+  sendMessage avRouteDetector detectsCustomRoutesSelector
 
 -- | detectsCustomRoutes
 --
@@ -95,30 +92,30 @@ detectsCustomRoutes avRouteDetector  =
 --
 -- ObjC selector: @- setDetectsCustomRoutes:@
 setDetectsCustomRoutes :: IsAVRouteDetector avRouteDetector => avRouteDetector -> Bool -> IO ()
-setDetectsCustomRoutes avRouteDetector  value =
-    sendMsg avRouteDetector (mkSelector "setDetectsCustomRoutes:") retVoid [argCULong (if value then 1 else 0)]
+setDetectsCustomRoutes avRouteDetector value =
+  sendMessage avRouteDetector setDetectsCustomRoutesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @routeDetectionEnabled@
-routeDetectionEnabledSelector :: Selector
+routeDetectionEnabledSelector :: Selector '[] Bool
 routeDetectionEnabledSelector = mkSelector "routeDetectionEnabled"
 
 -- | @Selector@ for @setRouteDetectionEnabled:@
-setRouteDetectionEnabledSelector :: Selector
+setRouteDetectionEnabledSelector :: Selector '[Bool] ()
 setRouteDetectionEnabledSelector = mkSelector "setRouteDetectionEnabled:"
 
 -- | @Selector@ for @multipleRoutesDetected@
-multipleRoutesDetectedSelector :: Selector
+multipleRoutesDetectedSelector :: Selector '[] Bool
 multipleRoutesDetectedSelector = mkSelector "multipleRoutesDetected"
 
 -- | @Selector@ for @detectsCustomRoutes@
-detectsCustomRoutesSelector :: Selector
+detectsCustomRoutesSelector :: Selector '[] Bool
 detectsCustomRoutesSelector = mkSelector "detectsCustomRoutes"
 
 -- | @Selector@ for @setDetectsCustomRoutes:@
-setDetectsCustomRoutesSelector :: Selector
+setDetectsCustomRoutesSelector :: Selector '[Bool] ()
 setDetectsCustomRoutesSelector = mkSelector "setDetectsCustomRoutes:"
 

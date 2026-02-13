@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Virtualization.VZSpiceAgentPortAttachment
   , setSharesClipboard
   , spiceAgentPortName
   , initSelector
-  , sharesClipboardSelector
   , setSharesClipboardSelector
+  , sharesClipboardSelector
   , spiceAgentPortNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,8 +32,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVZSpiceAgentPortAttachment vzSpiceAgentPortAttachment => vzSpiceAgentPortAttachment -> IO (Id VZSpiceAgentPortAttachment)
-init_ vzSpiceAgentPortAttachment  =
-    sendMsg vzSpiceAgentPortAttachment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzSpiceAgentPortAttachment =
+  sendOwnedMessage vzSpiceAgentPortAttachment initSelector
 
 -- | Enable the Spice agent clipboard sharing capability.
 --
@@ -46,8 +43,8 @@ init_ vzSpiceAgentPortAttachment  =
 --
 -- ObjC selector: @- sharesClipboard@
 sharesClipboard :: IsVZSpiceAgentPortAttachment vzSpiceAgentPortAttachment => vzSpiceAgentPortAttachment -> IO Bool
-sharesClipboard vzSpiceAgentPortAttachment  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzSpiceAgentPortAttachment (mkSelector "sharesClipboard") retCULong []
+sharesClipboard vzSpiceAgentPortAttachment =
+  sendMessage vzSpiceAgentPortAttachment sharesClipboardSelector
 
 -- | Enable the Spice agent clipboard sharing capability.
 --
@@ -57,8 +54,8 @@ sharesClipboard vzSpiceAgentPortAttachment  =
 --
 -- ObjC selector: @- setSharesClipboard:@
 setSharesClipboard :: IsVZSpiceAgentPortAttachment vzSpiceAgentPortAttachment => vzSpiceAgentPortAttachment -> Bool -> IO ()
-setSharesClipboard vzSpiceAgentPortAttachment  value =
-    sendMsg vzSpiceAgentPortAttachment (mkSelector "setSharesClipboard:") retVoid [argCULong (if value then 1 else 0)]
+setSharesClipboard vzSpiceAgentPortAttachment value =
+  sendMessage vzSpiceAgentPortAttachment setSharesClipboardSelector value
 
 -- | The Spice agent port name.
 --
@@ -71,25 +68,25 @@ spiceAgentPortName :: IO (Id NSString)
 spiceAgentPortName  =
   do
     cls' <- getRequiredClass "VZSpiceAgentPortAttachment"
-    sendClassMsg cls' (mkSelector "spiceAgentPortName") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' spiceAgentPortNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZSpiceAgentPortAttachment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @sharesClipboard@
-sharesClipboardSelector :: Selector
+sharesClipboardSelector :: Selector '[] Bool
 sharesClipboardSelector = mkSelector "sharesClipboard"
 
 -- | @Selector@ for @setSharesClipboard:@
-setSharesClipboardSelector :: Selector
+setSharesClipboardSelector :: Selector '[Bool] ()
 setSharesClipboardSelector = mkSelector "setSharesClipboard:"
 
 -- | @Selector@ for @spiceAgentPortName@
-spiceAgentPortNameSelector :: Selector
+spiceAgentPortNameSelector :: Selector '[] (Id NSString)
 spiceAgentPortNameSelector = mkSelector "spiceAgentPortName"
 

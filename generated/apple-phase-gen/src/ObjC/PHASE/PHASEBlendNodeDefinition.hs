@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,17 +28,17 @@ module ObjC.PHASE.PHASEBlendNodeDefinition
   , addRangeWithEnvelope_subtree
   , blendParameterDefinition
   , spatialMixerDefinitionForDistance
-  , initSelector
-  , newSelector
-  , initWithBlendMetaParameterDefinition_identifierSelector
-  , initWithBlendMetaParameterDefinitionSelector
-  , initDistanceBlendWithSpatialMixerDefinition_identifierSelector
-  , initDistanceBlendWithSpatialMixerDefinitionSelector
+  , addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtreeSelector
   , addRangeForInputValuesBelow_fullGainAtValue_fadeCurveType_subtreeSelector
   , addRangeForInputValuesBetween_highValue_fullGainAtLowValue_fullGainAtHighValue_lowFadeCurveType_highFadeCurveType_subtreeSelector
-  , addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtreeSelector
   , addRangeWithEnvelope_subtreeSelector
   , blendParameterDefinitionSelector
+  , initDistanceBlendWithSpatialMixerDefinitionSelector
+  , initDistanceBlendWithSpatialMixerDefinition_identifierSelector
+  , initSelector
+  , initWithBlendMetaParameterDefinitionSelector
+  , initWithBlendMetaParameterDefinition_identifierSelector
+  , newSelector
   , spatialMixerDefinitionForDistanceSelector
 
   -- * Enum types
@@ -56,15 +57,11 @@ module ObjC.PHASE.PHASEBlendNodeDefinition
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,15 +71,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEBlendNodeDefinition phaseBlendNodeDefinition => phaseBlendNodeDefinition -> IO (Id PHASEBlendNodeDefinition)
-init_ phaseBlendNodeDefinition  =
-    sendMsg phaseBlendNodeDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseBlendNodeDefinition =
+  sendOwnedMessage phaseBlendNodeDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEBlendNodeDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASEBlendNodeDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithBlendMetaParameterDefinition:identifier
 --
@@ -96,10 +93,8 @@ new  =
 --
 -- ObjC selector: @- initWithBlendMetaParameterDefinition:identifier:@
 initWithBlendMetaParameterDefinition_identifier :: (IsPHASEBlendNodeDefinition phaseBlendNodeDefinition, IsPHASENumberMetaParameterDefinition blendMetaParameterDefinition, IsNSString identifier) => phaseBlendNodeDefinition -> blendMetaParameterDefinition -> identifier -> IO (Id PHASEBlendNodeDefinition)
-initWithBlendMetaParameterDefinition_identifier phaseBlendNodeDefinition  blendMetaParameterDefinition identifier =
-  withObjCPtr blendMetaParameterDefinition $ \raw_blendMetaParameterDefinition ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg phaseBlendNodeDefinition (mkSelector "initWithBlendMetaParameterDefinition:identifier:") (retPtr retVoid) [argPtr (castPtr raw_blendMetaParameterDefinition :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithBlendMetaParameterDefinition_identifier phaseBlendNodeDefinition blendMetaParameterDefinition identifier =
+  sendOwnedMessage phaseBlendNodeDefinition initWithBlendMetaParameterDefinition_identifierSelector (toPHASENumberMetaParameterDefinition blendMetaParameterDefinition) (toNSString identifier)
 
 -- | initWithBlendMetaParameterDefinition
 --
@@ -111,9 +106,8 @@ initWithBlendMetaParameterDefinition_identifier phaseBlendNodeDefinition  blendM
 --
 -- ObjC selector: @- initWithBlendMetaParameterDefinition:@
 initWithBlendMetaParameterDefinition :: (IsPHASEBlendNodeDefinition phaseBlendNodeDefinition, IsPHASENumberMetaParameterDefinition blendMetaParameterDefinition) => phaseBlendNodeDefinition -> blendMetaParameterDefinition -> IO (Id PHASEBlendNodeDefinition)
-initWithBlendMetaParameterDefinition phaseBlendNodeDefinition  blendMetaParameterDefinition =
-  withObjCPtr blendMetaParameterDefinition $ \raw_blendMetaParameterDefinition ->
-      sendMsg phaseBlendNodeDefinition (mkSelector "initWithBlendMetaParameterDefinition:") (retPtr retVoid) [argPtr (castPtr raw_blendMetaParameterDefinition :: Ptr ())] >>= ownedObject . castPtr
+initWithBlendMetaParameterDefinition phaseBlendNodeDefinition blendMetaParameterDefinition =
+  sendOwnedMessage phaseBlendNodeDefinition initWithBlendMetaParameterDefinitionSelector (toPHASENumberMetaParameterDefinition blendMetaParameterDefinition)
 
 -- | initDistanceBlendWithSpatialMixerDefinition:identifier
 --
@@ -127,10 +121,8 @@ initWithBlendMetaParameterDefinition phaseBlendNodeDefinition  blendMetaParamete
 --
 -- ObjC selector: @- initDistanceBlendWithSpatialMixerDefinition:identifier:@
 initDistanceBlendWithSpatialMixerDefinition_identifier :: (IsPHASEBlendNodeDefinition phaseBlendNodeDefinition, IsPHASESpatialMixerDefinition spatialMixerDefinition, IsNSString identifier) => phaseBlendNodeDefinition -> spatialMixerDefinition -> identifier -> IO (Id PHASEBlendNodeDefinition)
-initDistanceBlendWithSpatialMixerDefinition_identifier phaseBlendNodeDefinition  spatialMixerDefinition identifier =
-  withObjCPtr spatialMixerDefinition $ \raw_spatialMixerDefinition ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg phaseBlendNodeDefinition (mkSelector "initDistanceBlendWithSpatialMixerDefinition:identifier:") (retPtr retVoid) [argPtr (castPtr raw_spatialMixerDefinition :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initDistanceBlendWithSpatialMixerDefinition_identifier phaseBlendNodeDefinition spatialMixerDefinition identifier =
+  sendOwnedMessage phaseBlendNodeDefinition initDistanceBlendWithSpatialMixerDefinition_identifierSelector (toPHASESpatialMixerDefinition spatialMixerDefinition) (toNSString identifier)
 
 -- | initDistanceBlendWithSpatialMixerDefinition
 --
@@ -142,9 +134,8 @@ initDistanceBlendWithSpatialMixerDefinition_identifier phaseBlendNodeDefinition 
 --
 -- ObjC selector: @- initDistanceBlendWithSpatialMixerDefinition:@
 initDistanceBlendWithSpatialMixerDefinition :: (IsPHASEBlendNodeDefinition phaseBlendNodeDefinition, IsPHASESpatialMixerDefinition spatialMixerDefinition) => phaseBlendNodeDefinition -> spatialMixerDefinition -> IO (Id PHASEBlendNodeDefinition)
-initDistanceBlendWithSpatialMixerDefinition phaseBlendNodeDefinition  spatialMixerDefinition =
-  withObjCPtr spatialMixerDefinition $ \raw_spatialMixerDefinition ->
-      sendMsg phaseBlendNodeDefinition (mkSelector "initDistanceBlendWithSpatialMixerDefinition:") (retPtr retVoid) [argPtr (castPtr raw_spatialMixerDefinition :: Ptr ())] >>= ownedObject . castPtr
+initDistanceBlendWithSpatialMixerDefinition phaseBlendNodeDefinition spatialMixerDefinition =
+  sendOwnedMessage phaseBlendNodeDefinition initDistanceBlendWithSpatialMixerDefinitionSelector (toPHASESpatialMixerDefinition spatialMixerDefinition)
 
 -- | addRangeForInputValuesBelow:fullGainAtValue:fadeCurveType:subtree
 --
@@ -160,9 +151,8 @@ initDistanceBlendWithSpatialMixerDefinition phaseBlendNodeDefinition  spatialMix
 --
 -- ObjC selector: @- addRangeForInputValuesBelow:fullGainAtValue:fadeCurveType:subtree:@
 addRangeForInputValuesBelow_fullGainAtValue_fadeCurveType_subtree :: (IsPHASEBlendNodeDefinition phaseBlendNodeDefinition, IsPHASESoundEventNodeDefinition subtree) => phaseBlendNodeDefinition -> CDouble -> CDouble -> PHASECurveType -> subtree -> IO ()
-addRangeForInputValuesBelow_fullGainAtValue_fadeCurveType_subtree phaseBlendNodeDefinition  value fullGainAtValue fadeCurveType subtree =
-  withObjCPtr subtree $ \raw_subtree ->
-      sendMsg phaseBlendNodeDefinition (mkSelector "addRangeForInputValuesBelow:fullGainAtValue:fadeCurveType:subtree:") retVoid [argCDouble value, argCDouble fullGainAtValue, argCLong (coerce fadeCurveType), argPtr (castPtr raw_subtree :: Ptr ())]
+addRangeForInputValuesBelow_fullGainAtValue_fadeCurveType_subtree phaseBlendNodeDefinition value fullGainAtValue fadeCurveType subtree =
+  sendMessage phaseBlendNodeDefinition addRangeForInputValuesBelow_fullGainAtValue_fadeCurveType_subtreeSelector value fullGainAtValue fadeCurveType (toPHASESoundEventNodeDefinition subtree)
 
 -- | addRangeForInputValuesBetween:highValue:fullGainAtLowValue:fullGainAtHighValue:lowFadeCurveType:highFadeCurveType:subtree
 --
@@ -184,9 +174,8 @@ addRangeForInputValuesBelow_fullGainAtValue_fadeCurveType_subtree phaseBlendNode
 --
 -- ObjC selector: @- addRangeForInputValuesBetween:highValue:fullGainAtLowValue:fullGainAtHighValue:lowFadeCurveType:highFadeCurveType:subtree:@
 addRangeForInputValuesBetween_highValue_fullGainAtLowValue_fullGainAtHighValue_lowFadeCurveType_highFadeCurveType_subtree :: (IsPHASEBlendNodeDefinition phaseBlendNodeDefinition, IsPHASESoundEventNodeDefinition subtree) => phaseBlendNodeDefinition -> CDouble -> CDouble -> CDouble -> CDouble -> PHASECurveType -> PHASECurveType -> subtree -> IO ()
-addRangeForInputValuesBetween_highValue_fullGainAtLowValue_fullGainAtHighValue_lowFadeCurveType_highFadeCurveType_subtree phaseBlendNodeDefinition  lowValue highValue fullGainAtLowValue fullGainAtHighValue lowFadeCurveType highFadeCurveType subtree =
-  withObjCPtr subtree $ \raw_subtree ->
-      sendMsg phaseBlendNodeDefinition (mkSelector "addRangeForInputValuesBetween:highValue:fullGainAtLowValue:fullGainAtHighValue:lowFadeCurveType:highFadeCurveType:subtree:") retVoid [argCDouble lowValue, argCDouble highValue, argCDouble fullGainAtLowValue, argCDouble fullGainAtHighValue, argCLong (coerce lowFadeCurveType), argCLong (coerce highFadeCurveType), argPtr (castPtr raw_subtree :: Ptr ())]
+addRangeForInputValuesBetween_highValue_fullGainAtLowValue_fullGainAtHighValue_lowFadeCurveType_highFadeCurveType_subtree phaseBlendNodeDefinition lowValue highValue fullGainAtLowValue fullGainAtHighValue lowFadeCurveType highFadeCurveType subtree =
+  sendMessage phaseBlendNodeDefinition addRangeForInputValuesBetween_highValue_fullGainAtLowValue_fullGainAtHighValue_lowFadeCurveType_highFadeCurveType_subtreeSelector lowValue highValue fullGainAtLowValue fullGainAtHighValue lowFadeCurveType highFadeCurveType (toPHASESoundEventNodeDefinition subtree)
 
 -- | addRangeForInputValuesAbove:fullGainAtValue:fadeCurveType:subtree
 --
@@ -202,9 +191,8 @@ addRangeForInputValuesBetween_highValue_fullGainAtLowValue_fullGainAtHighValue_l
 --
 -- ObjC selector: @- addRangeForInputValuesAbove:fullGainAtValue:fadeCurveType:subtree:@
 addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtree :: (IsPHASEBlendNodeDefinition phaseBlendNodeDefinition, IsPHASESoundEventNodeDefinition subtree) => phaseBlendNodeDefinition -> CDouble -> CDouble -> PHASECurveType -> subtree -> IO ()
-addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtree phaseBlendNodeDefinition  value fullGainAtValue fadeCurveType subtree =
-  withObjCPtr subtree $ \raw_subtree ->
-      sendMsg phaseBlendNodeDefinition (mkSelector "addRangeForInputValuesAbove:fullGainAtValue:fadeCurveType:subtree:") retVoid [argCDouble value, argCDouble fullGainAtValue, argCLong (coerce fadeCurveType), argPtr (castPtr raw_subtree :: Ptr ())]
+addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtree phaseBlendNodeDefinition value fullGainAtValue fadeCurveType subtree =
+  sendMessage phaseBlendNodeDefinition addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtreeSelector value fullGainAtValue fadeCurveType (toPHASESoundEventNodeDefinition subtree)
 
 -- | addRangeWithEnvelope:subtree
 --
@@ -216,10 +204,8 @@ addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtree phaseBlendNode
 --
 -- ObjC selector: @- addRangeWithEnvelope:subtree:@
 addRangeWithEnvelope_subtree :: (IsPHASEBlendNodeDefinition phaseBlendNodeDefinition, IsPHASEEnvelope envelope, IsPHASESoundEventNodeDefinition subtree) => phaseBlendNodeDefinition -> envelope -> subtree -> IO ()
-addRangeWithEnvelope_subtree phaseBlendNodeDefinition  envelope subtree =
-  withObjCPtr envelope $ \raw_envelope ->
-    withObjCPtr subtree $ \raw_subtree ->
-        sendMsg phaseBlendNodeDefinition (mkSelector "addRangeWithEnvelope:subtree:") retVoid [argPtr (castPtr raw_envelope :: Ptr ()), argPtr (castPtr raw_subtree :: Ptr ())]
+addRangeWithEnvelope_subtree phaseBlendNodeDefinition envelope subtree =
+  sendMessage phaseBlendNodeDefinition addRangeWithEnvelope_subtreeSelector (toPHASEEnvelope envelope) (toPHASESoundEventNodeDefinition subtree)
 
 -- | blendParameterDefinition
 --
@@ -227,8 +213,8 @@ addRangeWithEnvelope_subtree phaseBlendNodeDefinition  envelope subtree =
 --
 -- ObjC selector: @- blendParameterDefinition@
 blendParameterDefinition :: IsPHASEBlendNodeDefinition phaseBlendNodeDefinition => phaseBlendNodeDefinition -> IO (Id PHASENumberMetaParameterDefinition)
-blendParameterDefinition phaseBlendNodeDefinition  =
-    sendMsg phaseBlendNodeDefinition (mkSelector "blendParameterDefinition") (retPtr retVoid) [] >>= retainedObject . castPtr
+blendParameterDefinition phaseBlendNodeDefinition =
+  sendMessage phaseBlendNodeDefinition blendParameterDefinitionSelector
 
 -- | distanceSpatialMixerDefinition
 --
@@ -236,58 +222,58 @@ blendParameterDefinition phaseBlendNodeDefinition  =
 --
 -- ObjC selector: @- spatialMixerDefinitionForDistance@
 spatialMixerDefinitionForDistance :: IsPHASEBlendNodeDefinition phaseBlendNodeDefinition => phaseBlendNodeDefinition -> IO (Id PHASESpatialMixerDefinition)
-spatialMixerDefinitionForDistance phaseBlendNodeDefinition  =
-    sendMsg phaseBlendNodeDefinition (mkSelector "spatialMixerDefinitionForDistance") (retPtr retVoid) [] >>= retainedObject . castPtr
+spatialMixerDefinitionForDistance phaseBlendNodeDefinition =
+  sendMessage phaseBlendNodeDefinition spatialMixerDefinitionForDistanceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEBlendNodeDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEBlendNodeDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithBlendMetaParameterDefinition:identifier:@
-initWithBlendMetaParameterDefinition_identifierSelector :: Selector
+initWithBlendMetaParameterDefinition_identifierSelector :: Selector '[Id PHASENumberMetaParameterDefinition, Id NSString] (Id PHASEBlendNodeDefinition)
 initWithBlendMetaParameterDefinition_identifierSelector = mkSelector "initWithBlendMetaParameterDefinition:identifier:"
 
 -- | @Selector@ for @initWithBlendMetaParameterDefinition:@
-initWithBlendMetaParameterDefinitionSelector :: Selector
+initWithBlendMetaParameterDefinitionSelector :: Selector '[Id PHASENumberMetaParameterDefinition] (Id PHASEBlendNodeDefinition)
 initWithBlendMetaParameterDefinitionSelector = mkSelector "initWithBlendMetaParameterDefinition:"
 
 -- | @Selector@ for @initDistanceBlendWithSpatialMixerDefinition:identifier:@
-initDistanceBlendWithSpatialMixerDefinition_identifierSelector :: Selector
+initDistanceBlendWithSpatialMixerDefinition_identifierSelector :: Selector '[Id PHASESpatialMixerDefinition, Id NSString] (Id PHASEBlendNodeDefinition)
 initDistanceBlendWithSpatialMixerDefinition_identifierSelector = mkSelector "initDistanceBlendWithSpatialMixerDefinition:identifier:"
 
 -- | @Selector@ for @initDistanceBlendWithSpatialMixerDefinition:@
-initDistanceBlendWithSpatialMixerDefinitionSelector :: Selector
+initDistanceBlendWithSpatialMixerDefinitionSelector :: Selector '[Id PHASESpatialMixerDefinition] (Id PHASEBlendNodeDefinition)
 initDistanceBlendWithSpatialMixerDefinitionSelector = mkSelector "initDistanceBlendWithSpatialMixerDefinition:"
 
 -- | @Selector@ for @addRangeForInputValuesBelow:fullGainAtValue:fadeCurveType:subtree:@
-addRangeForInputValuesBelow_fullGainAtValue_fadeCurveType_subtreeSelector :: Selector
+addRangeForInputValuesBelow_fullGainAtValue_fadeCurveType_subtreeSelector :: Selector '[CDouble, CDouble, PHASECurveType, Id PHASESoundEventNodeDefinition] ()
 addRangeForInputValuesBelow_fullGainAtValue_fadeCurveType_subtreeSelector = mkSelector "addRangeForInputValuesBelow:fullGainAtValue:fadeCurveType:subtree:"
 
 -- | @Selector@ for @addRangeForInputValuesBetween:highValue:fullGainAtLowValue:fullGainAtHighValue:lowFadeCurveType:highFadeCurveType:subtree:@
-addRangeForInputValuesBetween_highValue_fullGainAtLowValue_fullGainAtHighValue_lowFadeCurveType_highFadeCurveType_subtreeSelector :: Selector
+addRangeForInputValuesBetween_highValue_fullGainAtLowValue_fullGainAtHighValue_lowFadeCurveType_highFadeCurveType_subtreeSelector :: Selector '[CDouble, CDouble, CDouble, CDouble, PHASECurveType, PHASECurveType, Id PHASESoundEventNodeDefinition] ()
 addRangeForInputValuesBetween_highValue_fullGainAtLowValue_fullGainAtHighValue_lowFadeCurveType_highFadeCurveType_subtreeSelector = mkSelector "addRangeForInputValuesBetween:highValue:fullGainAtLowValue:fullGainAtHighValue:lowFadeCurveType:highFadeCurveType:subtree:"
 
 -- | @Selector@ for @addRangeForInputValuesAbove:fullGainAtValue:fadeCurveType:subtree:@
-addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtreeSelector :: Selector
+addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtreeSelector :: Selector '[CDouble, CDouble, PHASECurveType, Id PHASESoundEventNodeDefinition] ()
 addRangeForInputValuesAbove_fullGainAtValue_fadeCurveType_subtreeSelector = mkSelector "addRangeForInputValuesAbove:fullGainAtValue:fadeCurveType:subtree:"
 
 -- | @Selector@ for @addRangeWithEnvelope:subtree:@
-addRangeWithEnvelope_subtreeSelector :: Selector
+addRangeWithEnvelope_subtreeSelector :: Selector '[Id PHASEEnvelope, Id PHASESoundEventNodeDefinition] ()
 addRangeWithEnvelope_subtreeSelector = mkSelector "addRangeWithEnvelope:subtree:"
 
 -- | @Selector@ for @blendParameterDefinition@
-blendParameterDefinitionSelector :: Selector
+blendParameterDefinitionSelector :: Selector '[] (Id PHASENumberMetaParameterDefinition)
 blendParameterDefinitionSelector = mkSelector "blendParameterDefinition"
 
 -- | @Selector@ for @spatialMixerDefinitionForDistance@
-spatialMixerDefinitionForDistanceSelector :: Selector
+spatialMixerDefinitionForDistanceSelector :: Selector '[] (Id PHASESpatialMixerDefinition)
 spatialMixerDefinitionForDistanceSelector = mkSelector "spatialMixerDefinitionForDistance"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,21 +23,17 @@ module ObjC.AVFoundation.AVCaptureAudioPreviewOutput
   , newSelector
   , outputDeviceUniqueIDSelector
   , setOutputDeviceUniqueIDSelector
-  , volumeSelector
   , setVolumeSelector
+  , volumeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureAudioPreviewOutput avCaptureAudioPreviewOutput => avCaptureAudioPreviewOutput -> IO (Id AVCaptureAudioPreviewOutput)
-init_ avCaptureAudioPreviewOutput  =
-    sendMsg avCaptureAudioPreviewOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureAudioPreviewOutput =
+  sendOwnedMessage avCaptureAudioPreviewOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureAudioPreviewOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureAudioPreviewOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | outputDeviceUniqueID
 --
@@ -63,8 +60,8 @@ new  =
 --
 -- ObjC selector: @- outputDeviceUniqueID@
 outputDeviceUniqueID :: IsAVCaptureAudioPreviewOutput avCaptureAudioPreviewOutput => avCaptureAudioPreviewOutput -> IO (Id NSString)
-outputDeviceUniqueID avCaptureAudioPreviewOutput  =
-    sendMsg avCaptureAudioPreviewOutput (mkSelector "outputDeviceUniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputDeviceUniqueID avCaptureAudioPreviewOutput =
+  sendMessage avCaptureAudioPreviewOutput outputDeviceUniqueIDSelector
 
 -- | outputDeviceUniqueID
 --
@@ -74,9 +71,8 @@ outputDeviceUniqueID avCaptureAudioPreviewOutput  =
 --
 -- ObjC selector: @- setOutputDeviceUniqueID:@
 setOutputDeviceUniqueID :: (IsAVCaptureAudioPreviewOutput avCaptureAudioPreviewOutput, IsNSString value) => avCaptureAudioPreviewOutput -> value -> IO ()
-setOutputDeviceUniqueID avCaptureAudioPreviewOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureAudioPreviewOutput (mkSelector "setOutputDeviceUniqueID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputDeviceUniqueID avCaptureAudioPreviewOutput value =
+  sendMessage avCaptureAudioPreviewOutput setOutputDeviceUniqueIDSelector (toNSString value)
 
 -- | volume
 --
@@ -86,8 +82,8 @@ setOutputDeviceUniqueID avCaptureAudioPreviewOutput  value =
 --
 -- ObjC selector: @- volume@
 volume :: IsAVCaptureAudioPreviewOutput avCaptureAudioPreviewOutput => avCaptureAudioPreviewOutput -> IO CFloat
-volume avCaptureAudioPreviewOutput  =
-    sendMsg avCaptureAudioPreviewOutput (mkSelector "volume") retCFloat []
+volume avCaptureAudioPreviewOutput =
+  sendMessage avCaptureAudioPreviewOutput volumeSelector
 
 -- | volume
 --
@@ -97,34 +93,34 @@ volume avCaptureAudioPreviewOutput  =
 --
 -- ObjC selector: @- setVolume:@
 setVolume :: IsAVCaptureAudioPreviewOutput avCaptureAudioPreviewOutput => avCaptureAudioPreviewOutput -> CFloat -> IO ()
-setVolume avCaptureAudioPreviewOutput  value =
-    sendMsg avCaptureAudioPreviewOutput (mkSelector "setVolume:") retVoid [argCFloat value]
+setVolume avCaptureAudioPreviewOutput value =
+  sendMessage avCaptureAudioPreviewOutput setVolumeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureAudioPreviewOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureAudioPreviewOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @outputDeviceUniqueID@
-outputDeviceUniqueIDSelector :: Selector
+outputDeviceUniqueIDSelector :: Selector '[] (Id NSString)
 outputDeviceUniqueIDSelector = mkSelector "outputDeviceUniqueID"
 
 -- | @Selector@ for @setOutputDeviceUniqueID:@
-setOutputDeviceUniqueIDSelector :: Selector
+setOutputDeviceUniqueIDSelector :: Selector '[Id NSString] ()
 setOutputDeviceUniqueIDSelector = mkSelector "setOutputDeviceUniqueID:"
 
 -- | @Selector@ for @volume@
-volumeSelector :: Selector
+volumeSelector :: Selector '[] CFloat
 volumeSelector = mkSelector "volume"
 
 -- | @Selector@ for @setVolume:@
-setVolumeSelector :: Selector
+setVolumeSelector :: Selector '[CFloat] ()
 setVolumeSelector = mkSelector "setVolume:"
 

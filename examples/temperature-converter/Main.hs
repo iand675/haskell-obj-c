@@ -138,7 +138,7 @@ setupMenuBar app = do
   Menu.addItem menuBar appMenuItem
   appMenu <- alloc @NSMenu >>= \m -> Menu.initWithTitle m ("App" :: Id NSString)
   quitItem <- alloc @NSMenuItem >>=
-    \mi -> MI.initWithTitle_action_keyEquivalent mi ("Quit" :: Id NSString) App.terminateSelector ("q" :: Id NSString)
+    \mi -> MI.initWithTitle_action_keyEquivalent mi ("Quit" :: Id NSString) (asSel App.terminateSelector) ("q" :: Id NSString)
   Menu.addItem appMenu quitItem
   Menu.setSubmenu_forItem menuBar appMenu appMenuItem
   App.setMainMenu app menuBar

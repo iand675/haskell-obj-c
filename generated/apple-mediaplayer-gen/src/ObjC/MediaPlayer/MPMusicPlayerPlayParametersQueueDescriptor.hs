@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.MediaPlayer.MPMusicPlayerPlayParametersQueueDescriptor
   , startItemPlayParameters
   , setStartItemPlayParameters
   , initWithPlayParametersQueueSelector
-  , setStartTime_forItemWithPlayParametersSelector
-  , setEndTime_forItemWithPlayParametersSelector
   , playParametersQueueSelector
+  , setEndTime_forItemWithPlayParametersSelector
   , setPlayParametersQueueSelector
-  , startItemPlayParametersSelector
   , setStartItemPlayParametersSelector
+  , setStartTime_forItemWithPlayParametersSelector
+  , startItemPlayParametersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,73 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPlayParametersQueue:@
 initWithPlayParametersQueue :: (IsMPMusicPlayerPlayParametersQueueDescriptor mpMusicPlayerPlayParametersQueueDescriptor, IsNSArray playParametersQueue) => mpMusicPlayerPlayParametersQueueDescriptor -> playParametersQueue -> IO (Id MPMusicPlayerPlayParametersQueueDescriptor)
-initWithPlayParametersQueue mpMusicPlayerPlayParametersQueueDescriptor  playParametersQueue =
-  withObjCPtr playParametersQueue $ \raw_playParametersQueue ->
-      sendMsg mpMusicPlayerPlayParametersQueueDescriptor (mkSelector "initWithPlayParametersQueue:") (retPtr retVoid) [argPtr (castPtr raw_playParametersQueue :: Ptr ())] >>= ownedObject . castPtr
+initWithPlayParametersQueue mpMusicPlayerPlayParametersQueueDescriptor playParametersQueue =
+  sendOwnedMessage mpMusicPlayerPlayParametersQueueDescriptor initWithPlayParametersQueueSelector (toNSArray playParametersQueue)
 
 -- | @- setStartTime:forItemWithPlayParameters:@
 setStartTime_forItemWithPlayParameters :: (IsMPMusicPlayerPlayParametersQueueDescriptor mpMusicPlayerPlayParametersQueueDescriptor, IsMPMusicPlayerPlayParameters playParameters) => mpMusicPlayerPlayParametersQueueDescriptor -> CDouble -> playParameters -> IO ()
-setStartTime_forItemWithPlayParameters mpMusicPlayerPlayParametersQueueDescriptor  startTime playParameters =
-  withObjCPtr playParameters $ \raw_playParameters ->
-      sendMsg mpMusicPlayerPlayParametersQueueDescriptor (mkSelector "setStartTime:forItemWithPlayParameters:") retVoid [argCDouble startTime, argPtr (castPtr raw_playParameters :: Ptr ())]
+setStartTime_forItemWithPlayParameters mpMusicPlayerPlayParametersQueueDescriptor startTime playParameters =
+  sendMessage mpMusicPlayerPlayParametersQueueDescriptor setStartTime_forItemWithPlayParametersSelector startTime (toMPMusicPlayerPlayParameters playParameters)
 
 -- | @- setEndTime:forItemWithPlayParameters:@
 setEndTime_forItemWithPlayParameters :: (IsMPMusicPlayerPlayParametersQueueDescriptor mpMusicPlayerPlayParametersQueueDescriptor, IsMPMusicPlayerPlayParameters playParameters) => mpMusicPlayerPlayParametersQueueDescriptor -> CDouble -> playParameters -> IO ()
-setEndTime_forItemWithPlayParameters mpMusicPlayerPlayParametersQueueDescriptor  endTime playParameters =
-  withObjCPtr playParameters $ \raw_playParameters ->
-      sendMsg mpMusicPlayerPlayParametersQueueDescriptor (mkSelector "setEndTime:forItemWithPlayParameters:") retVoid [argCDouble endTime, argPtr (castPtr raw_playParameters :: Ptr ())]
+setEndTime_forItemWithPlayParameters mpMusicPlayerPlayParametersQueueDescriptor endTime playParameters =
+  sendMessage mpMusicPlayerPlayParametersQueueDescriptor setEndTime_forItemWithPlayParametersSelector endTime (toMPMusicPlayerPlayParameters playParameters)
 
 -- | @- playParametersQueue@
 playParametersQueue :: IsMPMusicPlayerPlayParametersQueueDescriptor mpMusicPlayerPlayParametersQueueDescriptor => mpMusicPlayerPlayParametersQueueDescriptor -> IO (Id NSArray)
-playParametersQueue mpMusicPlayerPlayParametersQueueDescriptor  =
-    sendMsg mpMusicPlayerPlayParametersQueueDescriptor (mkSelector "playParametersQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+playParametersQueue mpMusicPlayerPlayParametersQueueDescriptor =
+  sendMessage mpMusicPlayerPlayParametersQueueDescriptor playParametersQueueSelector
 
 -- | @- setPlayParametersQueue:@
 setPlayParametersQueue :: (IsMPMusicPlayerPlayParametersQueueDescriptor mpMusicPlayerPlayParametersQueueDescriptor, IsNSArray value) => mpMusicPlayerPlayParametersQueueDescriptor -> value -> IO ()
-setPlayParametersQueue mpMusicPlayerPlayParametersQueueDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpMusicPlayerPlayParametersQueueDescriptor (mkSelector "setPlayParametersQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlayParametersQueue mpMusicPlayerPlayParametersQueueDescriptor value =
+  sendMessage mpMusicPlayerPlayParametersQueueDescriptor setPlayParametersQueueSelector (toNSArray value)
 
 -- | @- startItemPlayParameters@
 startItemPlayParameters :: IsMPMusicPlayerPlayParametersQueueDescriptor mpMusicPlayerPlayParametersQueueDescriptor => mpMusicPlayerPlayParametersQueueDescriptor -> IO (Id MPMusicPlayerPlayParameters)
-startItemPlayParameters mpMusicPlayerPlayParametersQueueDescriptor  =
-    sendMsg mpMusicPlayerPlayParametersQueueDescriptor (mkSelector "startItemPlayParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+startItemPlayParameters mpMusicPlayerPlayParametersQueueDescriptor =
+  sendMessage mpMusicPlayerPlayParametersQueueDescriptor startItemPlayParametersSelector
 
 -- | @- setStartItemPlayParameters:@
 setStartItemPlayParameters :: (IsMPMusicPlayerPlayParametersQueueDescriptor mpMusicPlayerPlayParametersQueueDescriptor, IsMPMusicPlayerPlayParameters value) => mpMusicPlayerPlayParametersQueueDescriptor -> value -> IO ()
-setStartItemPlayParameters mpMusicPlayerPlayParametersQueueDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpMusicPlayerPlayParametersQueueDescriptor (mkSelector "setStartItemPlayParameters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartItemPlayParameters mpMusicPlayerPlayParametersQueueDescriptor value =
+  sendMessage mpMusicPlayerPlayParametersQueueDescriptor setStartItemPlayParametersSelector (toMPMusicPlayerPlayParameters value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPlayParametersQueue:@
-initWithPlayParametersQueueSelector :: Selector
+initWithPlayParametersQueueSelector :: Selector '[Id NSArray] (Id MPMusicPlayerPlayParametersQueueDescriptor)
 initWithPlayParametersQueueSelector = mkSelector "initWithPlayParametersQueue:"
 
 -- | @Selector@ for @setStartTime:forItemWithPlayParameters:@
-setStartTime_forItemWithPlayParametersSelector :: Selector
+setStartTime_forItemWithPlayParametersSelector :: Selector '[CDouble, Id MPMusicPlayerPlayParameters] ()
 setStartTime_forItemWithPlayParametersSelector = mkSelector "setStartTime:forItemWithPlayParameters:"
 
 -- | @Selector@ for @setEndTime:forItemWithPlayParameters:@
-setEndTime_forItemWithPlayParametersSelector :: Selector
+setEndTime_forItemWithPlayParametersSelector :: Selector '[CDouble, Id MPMusicPlayerPlayParameters] ()
 setEndTime_forItemWithPlayParametersSelector = mkSelector "setEndTime:forItemWithPlayParameters:"
 
 -- | @Selector@ for @playParametersQueue@
-playParametersQueueSelector :: Selector
+playParametersQueueSelector :: Selector '[] (Id NSArray)
 playParametersQueueSelector = mkSelector "playParametersQueue"
 
 -- | @Selector@ for @setPlayParametersQueue:@
-setPlayParametersQueueSelector :: Selector
+setPlayParametersQueueSelector :: Selector '[Id NSArray] ()
 setPlayParametersQueueSelector = mkSelector "setPlayParametersQueue:"
 
 -- | @Selector@ for @startItemPlayParameters@
-startItemPlayParametersSelector :: Selector
+startItemPlayParametersSelector :: Selector '[] (Id MPMusicPlayerPlayParameters)
 startItemPlayParametersSelector = mkSelector "startItemPlayParameters"
 
 -- | @Selector@ for @setStartItemPlayParameters:@
-setStartItemPlayParametersSelector :: Selector
+setStartItemPlayParametersSelector :: Selector '[Id MPMusicPlayerPlayParameters] ()
 setStartItemPlayParametersSelector = mkSelector "setStartItemPlayParameters:"
 

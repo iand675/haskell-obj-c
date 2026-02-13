@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTREcosystemInformationClusterEcosystemLocationStruct
   , setLocationDescriptorLastEdit
   , fabricIndex
   , setFabricIndex
-  , uniqueLocationIDSelector
-  , setUniqueLocationIDSelector
-  , locationDescriptorSelector
-  , setLocationDescriptorSelector
-  , locationDescriptorLastEditSelector
-  , setLocationDescriptorLastEditSelector
   , fabricIndexSelector
+  , locationDescriptorLastEditSelector
+  , locationDescriptorSelector
   , setFabricIndexSelector
+  , setLocationDescriptorLastEditSelector
+  , setLocationDescriptorSelector
+  , setUniqueLocationIDSelector
+  , uniqueLocationIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- uniqueLocationID@
 uniqueLocationID :: IsMTREcosystemInformationClusterEcosystemLocationStruct mtrEcosystemInformationClusterEcosystemLocationStruct => mtrEcosystemInformationClusterEcosystemLocationStruct -> IO (Id NSString)
-uniqueLocationID mtrEcosystemInformationClusterEcosystemLocationStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemLocationStruct (mkSelector "uniqueLocationID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueLocationID mtrEcosystemInformationClusterEcosystemLocationStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemLocationStruct uniqueLocationIDSelector
 
 -- | @- setUniqueLocationID:@
 setUniqueLocationID :: (IsMTREcosystemInformationClusterEcosystemLocationStruct mtrEcosystemInformationClusterEcosystemLocationStruct, IsNSString value) => mtrEcosystemInformationClusterEcosystemLocationStruct -> value -> IO ()
-setUniqueLocationID mtrEcosystemInformationClusterEcosystemLocationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemLocationStruct (mkSelector "setUniqueLocationID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUniqueLocationID mtrEcosystemInformationClusterEcosystemLocationStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemLocationStruct setUniqueLocationIDSelector (toNSString value)
 
 -- | @- locationDescriptor@
 locationDescriptor :: IsMTREcosystemInformationClusterEcosystemLocationStruct mtrEcosystemInformationClusterEcosystemLocationStruct => mtrEcosystemInformationClusterEcosystemLocationStruct -> IO (Id MTRDataTypeLocationDescriptorStruct)
-locationDescriptor mtrEcosystemInformationClusterEcosystemLocationStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemLocationStruct (mkSelector "locationDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+locationDescriptor mtrEcosystemInformationClusterEcosystemLocationStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemLocationStruct locationDescriptorSelector
 
 -- | @- setLocationDescriptor:@
 setLocationDescriptor :: (IsMTREcosystemInformationClusterEcosystemLocationStruct mtrEcosystemInformationClusterEcosystemLocationStruct, IsMTRDataTypeLocationDescriptorStruct value) => mtrEcosystemInformationClusterEcosystemLocationStruct -> value -> IO ()
-setLocationDescriptor mtrEcosystemInformationClusterEcosystemLocationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemLocationStruct (mkSelector "setLocationDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocationDescriptor mtrEcosystemInformationClusterEcosystemLocationStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemLocationStruct setLocationDescriptorSelector (toMTRDataTypeLocationDescriptorStruct value)
 
 -- | @- locationDescriptorLastEdit@
 locationDescriptorLastEdit :: IsMTREcosystemInformationClusterEcosystemLocationStruct mtrEcosystemInformationClusterEcosystemLocationStruct => mtrEcosystemInformationClusterEcosystemLocationStruct -> IO (Id NSNumber)
-locationDescriptorLastEdit mtrEcosystemInformationClusterEcosystemLocationStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemLocationStruct (mkSelector "locationDescriptorLastEdit") (retPtr retVoid) [] >>= retainedObject . castPtr
+locationDescriptorLastEdit mtrEcosystemInformationClusterEcosystemLocationStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemLocationStruct locationDescriptorLastEditSelector
 
 -- | @- setLocationDescriptorLastEdit:@
 setLocationDescriptorLastEdit :: (IsMTREcosystemInformationClusterEcosystemLocationStruct mtrEcosystemInformationClusterEcosystemLocationStruct, IsNSNumber value) => mtrEcosystemInformationClusterEcosystemLocationStruct -> value -> IO ()
-setLocationDescriptorLastEdit mtrEcosystemInformationClusterEcosystemLocationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemLocationStruct (mkSelector "setLocationDescriptorLastEdit:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocationDescriptorLastEdit mtrEcosystemInformationClusterEcosystemLocationStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemLocationStruct setLocationDescriptorLastEditSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTREcosystemInformationClusterEcosystemLocationStruct mtrEcosystemInformationClusterEcosystemLocationStruct => mtrEcosystemInformationClusterEcosystemLocationStruct -> IO (Id NSNumber)
-fabricIndex mtrEcosystemInformationClusterEcosystemLocationStruct  =
-    sendMsg mtrEcosystemInformationClusterEcosystemLocationStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrEcosystemInformationClusterEcosystemLocationStruct =
+  sendMessage mtrEcosystemInformationClusterEcosystemLocationStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTREcosystemInformationClusterEcosystemLocationStruct mtrEcosystemInformationClusterEcosystemLocationStruct, IsNSNumber value) => mtrEcosystemInformationClusterEcosystemLocationStruct -> value -> IO ()
-setFabricIndex mtrEcosystemInformationClusterEcosystemLocationStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEcosystemInformationClusterEcosystemLocationStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrEcosystemInformationClusterEcosystemLocationStruct value =
+  sendMessage mtrEcosystemInformationClusterEcosystemLocationStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @uniqueLocationID@
-uniqueLocationIDSelector :: Selector
+uniqueLocationIDSelector :: Selector '[] (Id NSString)
 uniqueLocationIDSelector = mkSelector "uniqueLocationID"
 
 -- | @Selector@ for @setUniqueLocationID:@
-setUniqueLocationIDSelector :: Selector
+setUniqueLocationIDSelector :: Selector '[Id NSString] ()
 setUniqueLocationIDSelector = mkSelector "setUniqueLocationID:"
 
 -- | @Selector@ for @locationDescriptor@
-locationDescriptorSelector :: Selector
+locationDescriptorSelector :: Selector '[] (Id MTRDataTypeLocationDescriptorStruct)
 locationDescriptorSelector = mkSelector "locationDescriptor"
 
 -- | @Selector@ for @setLocationDescriptor:@
-setLocationDescriptorSelector :: Selector
+setLocationDescriptorSelector :: Selector '[Id MTRDataTypeLocationDescriptorStruct] ()
 setLocationDescriptorSelector = mkSelector "setLocationDescriptor:"
 
 -- | @Selector@ for @locationDescriptorLastEdit@
-locationDescriptorLastEditSelector :: Selector
+locationDescriptorLastEditSelector :: Selector '[] (Id NSNumber)
 locationDescriptorLastEditSelector = mkSelector "locationDescriptorLastEdit"
 
 -- | @Selector@ for @setLocationDescriptorLastEdit:@
-setLocationDescriptorLastEditSelector :: Selector
+setLocationDescriptorLastEditSelector :: Selector '[Id NSNumber] ()
 setLocationDescriptorLastEditSelector = mkSelector "setLocationDescriptorLastEdit:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

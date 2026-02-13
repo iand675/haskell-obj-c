@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.CoreMIDI.MIDI2DeviceInfo
   , init_
   , family_
   , modelNumber
-  , initSelector
   , familySelector
+  , initSelector
   , modelNumberSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMIDI2DeviceInfo midI2DeviceInfo => midI2DeviceInfo -> IO (Id MIDI2DeviceInfo)
-init_ midI2DeviceInfo  =
-    sendMsg midI2DeviceInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ midI2DeviceInfo =
+  sendOwnedMessage midI2DeviceInfo initSelector
 
 -- | family
 --
@@ -46,8 +43,8 @@ init_ midI2DeviceInfo  =
 --
 -- ObjC selector: @- family@
 family_ :: IsMIDI2DeviceInfo midI2DeviceInfo => midI2DeviceInfo -> IO CUShort
-family_ midI2DeviceInfo  =
-    fmap fromIntegral $ sendMsg midI2DeviceInfo (mkSelector "family") retCUInt []
+family_ midI2DeviceInfo =
+  sendMessage midI2DeviceInfo familySelector
 
 -- | modelNumber
 --
@@ -55,22 +52,22 @@ family_ midI2DeviceInfo  =
 --
 -- ObjC selector: @- modelNumber@
 modelNumber :: IsMIDI2DeviceInfo midI2DeviceInfo => midI2DeviceInfo -> IO CUShort
-modelNumber midI2DeviceInfo  =
-    fmap fromIntegral $ sendMsg midI2DeviceInfo (mkSelector "modelNumber") retCUInt []
+modelNumber midI2DeviceInfo =
+  sendMessage midI2DeviceInfo modelNumberSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MIDI2DeviceInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @family@
-familySelector :: Selector
+familySelector :: Selector '[] CUShort
 familySelector = mkSelector "family"
 
 -- | @Selector@ for @modelNumber@
-modelNumberSelector :: Selector
+modelNumberSelector :: Selector '[] CUShort
 modelNumberSelector = mkSelector "modelNumber"
 

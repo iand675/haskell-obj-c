@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRChannelClusterProgramCastStruct
   , role_
   , setRole
   , nameSelector
-  , setNameSelector
   , roleSelector
+  , setNameSelector
   , setRoleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMTRChannelClusterProgramCastStruct mtrChannelClusterProgramCastStruct => mtrChannelClusterProgramCastStruct -> IO (Id NSString)
-name mtrChannelClusterProgramCastStruct  =
-    sendMsg mtrChannelClusterProgramCastStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrChannelClusterProgramCastStruct =
+  sendMessage mtrChannelClusterProgramCastStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRChannelClusterProgramCastStruct mtrChannelClusterProgramCastStruct, IsNSString value) => mtrChannelClusterProgramCastStruct -> value -> IO ()
-setName mtrChannelClusterProgramCastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterProgramCastStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrChannelClusterProgramCastStruct value =
+  sendMessage mtrChannelClusterProgramCastStruct setNameSelector (toNSString value)
 
 -- | @- role@
 role_ :: IsMTRChannelClusterProgramCastStruct mtrChannelClusterProgramCastStruct => mtrChannelClusterProgramCastStruct -> IO (Id NSString)
-role_ mtrChannelClusterProgramCastStruct  =
-    sendMsg mtrChannelClusterProgramCastStruct (mkSelector "role") (retPtr retVoid) [] >>= retainedObject . castPtr
+role_ mtrChannelClusterProgramCastStruct =
+  sendMessage mtrChannelClusterProgramCastStruct roleSelector
 
 -- | @- setRole:@
 setRole :: (IsMTRChannelClusterProgramCastStruct mtrChannelClusterProgramCastStruct, IsNSString value) => mtrChannelClusterProgramCastStruct -> value -> IO ()
-setRole mtrChannelClusterProgramCastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterProgramCastStruct (mkSelector "setRole:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRole mtrChannelClusterProgramCastStruct value =
+  sendMessage mtrChannelClusterProgramCastStruct setRoleSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @role@
-roleSelector :: Selector
+roleSelector :: Selector '[] (Id NSString)
 roleSelector = mkSelector "role"
 
 -- | @Selector@ for @setRole:@
-setRoleSelector :: Selector
+setRoleSelector :: Selector '[Id NSString] ()
 setRoleSelector = mkSelector "setRole:"
 

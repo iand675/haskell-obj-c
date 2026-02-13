@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.BrowserEngineKit.BEMediaEnvironment
   , activateWithError
   , suspendWithError
   , makeCaptureSessionWithError
-  , initSelector
-  , newSelector
-  , initWithWebPageURLSelector
   , activateWithErrorSelector
-  , suspendWithErrorSelector
+  , initSelector
+  , initWithWebPageURLSelector
   , makeCaptureSessionWithErrorSelector
+  , newSelector
+  , suspendWithErrorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,15 +39,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBEMediaEnvironment beMediaEnvironment => beMediaEnvironment -> IO (Id BEMediaEnvironment)
-init_ beMediaEnvironment  =
-    sendMsg beMediaEnvironment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ beMediaEnvironment =
+  sendOwnedMessage beMediaEnvironment initSelector
 
 -- | @+ new@
 new :: IO (Id BEMediaEnvironment)
 new  =
   do
     cls' <- getRequiredClass "BEMediaEnvironment"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates a new media playback environment identified by the web page URL
 --
@@ -58,25 +55,22 @@ new  =
 --
 -- ObjC selector: @- initWithWebPageURL:@
 initWithWebPageURL :: (IsBEMediaEnvironment beMediaEnvironment, IsNSURL url) => beMediaEnvironment -> url -> IO (Id BEMediaEnvironment)
-initWithWebPageURL beMediaEnvironment  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg beMediaEnvironment (mkSelector "initWithWebPageURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithWebPageURL beMediaEnvironment url =
+  sendOwnedMessage beMediaEnvironment initWithWebPageURLSelector (toNSURL url)
 
 -- | Activates the media environment.
 --
 -- ObjC selector: @- activateWithError:@
 activateWithError :: (IsBEMediaEnvironment beMediaEnvironment, IsNSError error_) => beMediaEnvironment -> error_ -> IO Bool
-activateWithError beMediaEnvironment  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg beMediaEnvironment (mkSelector "activateWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+activateWithError beMediaEnvironment error_ =
+  sendMessage beMediaEnvironment activateWithErrorSelector (toNSError error_)
 
 -- | Suspends the media environment.
 --
 -- ObjC selector: @- suspendWithError:@
 suspendWithError :: (IsBEMediaEnvironment beMediaEnvironment, IsNSError error_) => beMediaEnvironment -> error_ -> IO Bool
-suspendWithError beMediaEnvironment  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg beMediaEnvironment (mkSelector "suspendWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+suspendWithError beMediaEnvironment error_ =
+  sendMessage beMediaEnvironment suspendWithErrorSelector (toNSError error_)
 
 -- | Creates a new capture session in this media environment.
 --
@@ -84,35 +78,34 @@ suspendWithError beMediaEnvironment  error_ =
 --
 -- ObjC selector: @- makeCaptureSessionWithError:@
 makeCaptureSessionWithError :: (IsBEMediaEnvironment beMediaEnvironment, IsNSError error_) => beMediaEnvironment -> error_ -> IO (Id AVCaptureSession)
-makeCaptureSessionWithError beMediaEnvironment  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg beMediaEnvironment (mkSelector "makeCaptureSessionWithError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+makeCaptureSessionWithError beMediaEnvironment error_ =
+  sendMessage beMediaEnvironment makeCaptureSessionWithErrorSelector (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BEMediaEnvironment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BEMediaEnvironment)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithWebPageURL:@
-initWithWebPageURLSelector :: Selector
+initWithWebPageURLSelector :: Selector '[Id NSURL] (Id BEMediaEnvironment)
 initWithWebPageURLSelector = mkSelector "initWithWebPageURL:"
 
 -- | @Selector@ for @activateWithError:@
-activateWithErrorSelector :: Selector
+activateWithErrorSelector :: Selector '[Id NSError] Bool
 activateWithErrorSelector = mkSelector "activateWithError:"
 
 -- | @Selector@ for @suspendWithError:@
-suspendWithErrorSelector :: Selector
+suspendWithErrorSelector :: Selector '[Id NSError] Bool
 suspendWithErrorSelector = mkSelector "suspendWithError:"
 
 -- | @Selector@ for @makeCaptureSessionWithError:@
-makeCaptureSessionWithErrorSelector :: Selector
+makeCaptureSessionWithErrorSelector :: Selector '[Id NSError] (Id AVCaptureSession)
 makeCaptureSessionWithErrorSelector = mkSelector "makeCaptureSessionWithError:"
 

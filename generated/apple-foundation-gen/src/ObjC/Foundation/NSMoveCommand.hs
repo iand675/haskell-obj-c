@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Foundation.NSMoveCommand
   , IsNSMoveCommand(..)
   , setReceiversSpecifier
   , keySpecifier
-  , setReceiversSpecifierSelector
   , keySpecifierSelector
+  , setReceiversSpecifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -30,24 +27,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setReceiversSpecifier:@
 setReceiversSpecifier :: (IsNSMoveCommand nsMoveCommand, IsNSScriptObjectSpecifier receiversRef) => nsMoveCommand -> receiversRef -> IO ()
-setReceiversSpecifier nsMoveCommand  receiversRef =
-  withObjCPtr receiversRef $ \raw_receiversRef ->
-      sendMsg nsMoveCommand (mkSelector "setReceiversSpecifier:") retVoid [argPtr (castPtr raw_receiversRef :: Ptr ())]
+setReceiversSpecifier nsMoveCommand receiversRef =
+  sendMessage nsMoveCommand setReceiversSpecifierSelector (toNSScriptObjectSpecifier receiversRef)
 
 -- | @- keySpecifier@
 keySpecifier :: IsNSMoveCommand nsMoveCommand => nsMoveCommand -> IO (Id NSScriptObjectSpecifier)
-keySpecifier nsMoveCommand  =
-    sendMsg nsMoveCommand (mkSelector "keySpecifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+keySpecifier nsMoveCommand =
+  sendMessage nsMoveCommand keySpecifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setReceiversSpecifier:@
-setReceiversSpecifierSelector :: Selector
+setReceiversSpecifierSelector :: Selector '[Id NSScriptObjectSpecifier] ()
 setReceiversSpecifierSelector = mkSelector "setReceiversSpecifier:"
 
 -- | @Selector@ for @keySpecifier@
-keySpecifierSelector :: Selector
+keySpecifierSelector :: Selector '[] (Id NSScriptObjectSpecifier)
 keySpecifierSelector = mkSelector "keySpecifier"
 

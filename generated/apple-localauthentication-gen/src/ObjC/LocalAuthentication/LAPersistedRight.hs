@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.LocalAuthentication.LAPersistedRight
   , init_
   , key
   , secret
-  , newSelector
   , initSelector
   , keySelector
+  , newSelector
   , secretSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,21 +39,21 @@ new :: IO (Id LAPersistedRight)
 new  =
   do
     cls' <- getRequiredClass "LAPersistedRight"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Clients cannot create @LAPersistedRight@ instances directly. They can only obtain them from the @LARightStore@ .
 --
 -- ObjC selector: @- init@
 init_ :: IsLAPersistedRight laPersistedRight => laPersistedRight -> IO (Id LAPersistedRight)
-init_ laPersistedRight  =
-    sendMsg laPersistedRight (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laPersistedRight =
+  sendOwnedMessage laPersistedRight initSelector
 
 -- | Managed private key
 --
 -- ObjC selector: @- key@
 key :: IsLAPersistedRight laPersistedRight => laPersistedRight -> IO (Id LAPrivateKey)
-key laPersistedRight  =
-    sendMsg laPersistedRight (mkSelector "key") (retPtr retVoid) [] >>= retainedObject . castPtr
+key laPersistedRight =
+  sendMessage laPersistedRight keySelector
 
 -- | Generic secret
 --
@@ -64,26 +61,26 @@ key laPersistedRight  =
 --
 -- ObjC selector: @- secret@
 secret :: IsLAPersistedRight laPersistedRight => laPersistedRight -> IO (Id LASecret)
-secret laPersistedRight  =
-    sendMsg laPersistedRight (mkSelector "secret") (retPtr retVoid) [] >>= retainedObject . castPtr
+secret laPersistedRight =
+  sendMessage laPersistedRight secretSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LAPersistedRight)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LAPersistedRight)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @key@
-keySelector :: Selector
+keySelector :: Selector '[] (Id LAPrivateKey)
 keySelector = mkSelector "key"
 
 -- | @Selector@ for @secret@
-secretSelector :: Selector
+secretSelector :: Selector '[] (Id LASecret)
 secretSelector = mkSelector "secret"
 

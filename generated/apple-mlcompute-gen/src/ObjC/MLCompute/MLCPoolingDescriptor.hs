@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,26 +32,26 @@ module ObjC.MLCompute.MLCPoolingDescriptor
   , paddingSizeInX
   , paddingSizeInY
   , countIncludesPadding
-  , newSelector
-  , initSelector
-  , poolingDescriptorWithType_kernelSize_strideSelector
-  , maxPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector
-  , maxPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector
-  , averagePoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes_countIncludesPaddingSelector
   , averagePoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizes_countIncludesPaddingSelector
-  , l2NormPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector
-  , l2NormPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector
-  , poolingTypeSelector
-  , kernelWidthSelector
-  , kernelHeightSelector
-  , strideInXSelector
-  , strideInYSelector
+  , averagePoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes_countIncludesPaddingSelector
+  , countIncludesPaddingSelector
   , dilationRateInXSelector
   , dilationRateInYSelector
+  , initSelector
+  , kernelHeightSelector
+  , kernelWidthSelector
+  , l2NormPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector
+  , l2NormPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector
+  , maxPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector
+  , maxPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector
+  , newSelector
   , paddingPolicySelector
   , paddingSizeInXSelector
   , paddingSizeInYSelector
-  , countIncludesPaddingSelector
+  , poolingDescriptorWithType_kernelSize_strideSelector
+  , poolingTypeSelector
+  , strideInXSelector
+  , strideInYSelector
 
   -- * Enum types
   , MLCPaddingPolicy(MLCPaddingPolicy)
@@ -65,15 +66,11 @@ module ObjC.MLCompute.MLCPoolingDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -86,12 +83,12 @@ new :: IO (Id MLCPoolingDescriptor)
 new  =
   do
     cls' <- getRequiredClass "MLCPoolingDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO (Id MLCPoolingDescriptor)
-init_ mlcPoolingDescriptor  =
-    sendMsg mlcPoolingDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcPoolingDescriptor =
+  sendOwnedMessage mlcPoolingDescriptor initSelector
 
 -- | Create a MLCPoolingDescriptor object
 --
@@ -108,7 +105,7 @@ poolingDescriptorWithType_kernelSize_stride :: MLCPoolingType -> CULong -> CULon
 poolingDescriptorWithType_kernelSize_stride poolingType kernelSize stride =
   do
     cls' <- getRequiredClass "MLCPoolingDescriptor"
-    sendClassMsg cls' (mkSelector "poolingDescriptorWithType:kernelSize:stride:") (retPtr retVoid) [argCInt (coerce poolingType), argCULong kernelSize, argCULong stride] >>= retainedObject . castPtr
+    sendClassMessage cls' poolingDescriptorWithType_kernelSize_strideSelector poolingType kernelSize stride
 
 -- | Create a MLCPoolingDescriptor object for a max pooling function
 --
@@ -127,10 +124,7 @@ maxPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes :: (IsNSA
 maxPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes kernelSizes strides paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCPoolingDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr paddingSizes $ \raw_paddingSizes ->
-          sendClassMsg cls' (mkSelector "maxPoolingDescriptorWithKernelSizes:strides:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argPtr (castPtr raw_strides :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' maxPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) (toNSArray strides) paddingPolicy (toNSArray paddingSizes)
 
 -- | Create a MLCPoolingDescriptor object for a max pooling function
 --
@@ -151,11 +145,7 @@ maxPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingS
 maxPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizes kernelSizes strides dilationRates paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCPoolingDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr dilationRates $ \raw_dilationRates ->
-          withObjCPtr paddingSizes $ \raw_paddingSizes ->
-            sendClassMsg cls' (mkSelector "maxPoolingDescriptorWithKernelSizes:strides:dilationRates:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr raw_dilationRates :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' maxPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) (toNSArray strides) (toNSArray dilationRates) paddingPolicy (toNSArray paddingSizes)
 
 -- | Create a MLCPoolingDescriptor object for an average pooling function
 --
@@ -176,10 +166,7 @@ averagePoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes_count
 averagePoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes_countIncludesPadding kernelSizes strides paddingPolicy paddingSizes countIncludesPadding =
   do
     cls' <- getRequiredClass "MLCPoolingDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr paddingSizes $ \raw_paddingSizes ->
-          sendClassMsg cls' (mkSelector "averagePoolingDescriptorWithKernelSizes:strides:paddingPolicy:paddingSizes:countIncludesPadding:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argPtr (castPtr raw_strides :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ()), argCULong (if countIncludesPadding then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' averagePoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes_countIncludesPaddingSelector (toNSArray kernelSizes) (toNSArray strides) paddingPolicy (toNSArray paddingSizes) countIncludesPadding
 
 -- | Create a MLCPoolingDescriptor object for an average pooling function
 --
@@ -202,11 +189,7 @@ averagePoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_padd
 averagePoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizes_countIncludesPadding kernelSizes strides dilationRates paddingPolicy paddingSizes countIncludesPadding =
   do
     cls' <- getRequiredClass "MLCPoolingDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr dilationRates $ \raw_dilationRates ->
-          withObjCPtr paddingSizes $ \raw_paddingSizes ->
-            sendClassMsg cls' (mkSelector "averagePoolingDescriptorWithKernelSizes:strides:dilationRates:paddingPolicy:paddingSizes:countIncludesPadding:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr raw_dilationRates :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ()), argCULong (if countIncludesPadding then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' averagePoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizes_countIncludesPaddingSelector (toNSArray kernelSizes) (toNSArray strides) (toNSArray dilationRates) paddingPolicy (toNSArray paddingSizes) countIncludesPadding
 
 -- | Create a MLCPoolingDescriptor object for a L2 norm pooling function
 --
@@ -225,10 +208,7 @@ l2NormPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes :: (Is
 l2NormPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes kernelSizes strides paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCPoolingDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr paddingSizes $ \raw_paddingSizes ->
-          sendClassMsg cls' (mkSelector "l2NormPoolingDescriptorWithKernelSizes:strides:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argPtr (castPtr raw_strides :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' l2NormPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) (toNSArray strides) paddingPolicy (toNSArray paddingSizes)
 
 -- | Create a MLCPoolingDescriptor object for a L2 norm pooling function
 --
@@ -249,11 +229,7 @@ l2NormPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddi
 l2NormPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizes kernelSizes strides dilationRates paddingPolicy paddingSizes =
   do
     cls' <- getRequiredClass "MLCPoolingDescriptor"
-    withObjCPtr kernelSizes $ \raw_kernelSizes ->
-      withObjCPtr strides $ \raw_strides ->
-        withObjCPtr dilationRates $ \raw_dilationRates ->
-          withObjCPtr paddingSizes $ \raw_paddingSizes ->
-            sendClassMsg cls' (mkSelector "l2NormPoolingDescriptorWithKernelSizes:strides:dilationRates:paddingPolicy:paddingSizes:") (retPtr retVoid) [argPtr (castPtr raw_kernelSizes :: Ptr ()), argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr raw_dilationRates :: Ptr ()), argCInt (coerce paddingPolicy), argPtr (castPtr raw_paddingSizes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' l2NormPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector (toNSArray kernelSizes) (toNSArray strides) (toNSArray dilationRates) paddingPolicy (toNSArray paddingSizes)
 
 -- | poolingType
 --
@@ -261,8 +237,8 @@ l2NormPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddi
 --
 -- ObjC selector: @- poolingType@
 poolingType :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO MLCPoolingType
-poolingType mlcPoolingDescriptor  =
-    fmap (coerce :: CInt -> MLCPoolingType) $ sendMsg mlcPoolingDescriptor (mkSelector "poolingType") retCInt []
+poolingType mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor poolingTypeSelector
 
 -- | kernelWidth
 --
@@ -270,8 +246,8 @@ poolingType mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- kernelWidth@
 kernelWidth :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO CULong
-kernelWidth mlcPoolingDescriptor  =
-    sendMsg mlcPoolingDescriptor (mkSelector "kernelWidth") retCULong []
+kernelWidth mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor kernelWidthSelector
 
 -- | kernelHeight
 --
@@ -279,8 +255,8 @@ kernelWidth mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- kernelHeight@
 kernelHeight :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO CULong
-kernelHeight mlcPoolingDescriptor  =
-    sendMsg mlcPoolingDescriptor (mkSelector "kernelHeight") retCULong []
+kernelHeight mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor kernelHeightSelector
 
 -- | strideInX
 --
@@ -288,8 +264,8 @@ kernelHeight mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- strideInX@
 strideInX :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO CULong
-strideInX mlcPoolingDescriptor  =
-    sendMsg mlcPoolingDescriptor (mkSelector "strideInX") retCULong []
+strideInX mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor strideInXSelector
 
 -- | strideInY
 --
@@ -297,8 +273,8 @@ strideInX mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- strideInY@
 strideInY :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO CULong
-strideInY mlcPoolingDescriptor  =
-    sendMsg mlcPoolingDescriptor (mkSelector "strideInY") retCULong []
+strideInY mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor strideInYSelector
 
 -- | dilationRateInX
 --
@@ -306,8 +282,8 @@ strideInY mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- dilationRateInX@
 dilationRateInX :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO CULong
-dilationRateInX mlcPoolingDescriptor  =
-    sendMsg mlcPoolingDescriptor (mkSelector "dilationRateInX") retCULong []
+dilationRateInX mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor dilationRateInXSelector
 
 -- | dilationRateInY
 --
@@ -315,8 +291,8 @@ dilationRateInX mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- dilationRateInY@
 dilationRateInY :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO CULong
-dilationRateInY mlcPoolingDescriptor  =
-    sendMsg mlcPoolingDescriptor (mkSelector "dilationRateInY") retCULong []
+dilationRateInY mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor dilationRateInYSelector
 
 -- | paddingPolicy
 --
@@ -324,8 +300,8 @@ dilationRateInY mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- paddingPolicy@
 paddingPolicy :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO MLCPaddingPolicy
-paddingPolicy mlcPoolingDescriptor  =
-    fmap (coerce :: CInt -> MLCPaddingPolicy) $ sendMsg mlcPoolingDescriptor (mkSelector "paddingPolicy") retCInt []
+paddingPolicy mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor paddingPolicySelector
 
 -- | paddingSizeInX
 --
@@ -333,8 +309,8 @@ paddingPolicy mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- paddingSizeInX@
 paddingSizeInX :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO CULong
-paddingSizeInX mlcPoolingDescriptor  =
-    sendMsg mlcPoolingDescriptor (mkSelector "paddingSizeInX") retCULong []
+paddingSizeInX mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor paddingSizeInXSelector
 
 -- | paddingSizeInY
 --
@@ -342,8 +318,8 @@ paddingSizeInX mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- paddingSizeInY@
 paddingSizeInY :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO CULong
-paddingSizeInY mlcPoolingDescriptor  =
-    sendMsg mlcPoolingDescriptor (mkSelector "paddingSizeInY") retCULong []
+paddingSizeInY mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor paddingSizeInYSelector
 
 -- | countIncludesPadding
 --
@@ -351,90 +327,90 @@ paddingSizeInY mlcPoolingDescriptor  =
 --
 -- ObjC selector: @- countIncludesPadding@
 countIncludesPadding :: IsMLCPoolingDescriptor mlcPoolingDescriptor => mlcPoolingDescriptor -> IO Bool
-countIncludesPadding mlcPoolingDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcPoolingDescriptor (mkSelector "countIncludesPadding") retCULong []
+countIncludesPadding mlcPoolingDescriptor =
+  sendMessage mlcPoolingDescriptor countIncludesPaddingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCPoolingDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCPoolingDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @poolingDescriptorWithType:kernelSize:stride:@
-poolingDescriptorWithType_kernelSize_strideSelector :: Selector
+poolingDescriptorWithType_kernelSize_strideSelector :: Selector '[MLCPoolingType, CULong, CULong] (Id MLCPoolingDescriptor)
 poolingDescriptorWithType_kernelSize_strideSelector = mkSelector "poolingDescriptorWithType:kernelSize:stride:"
 
 -- | @Selector@ for @maxPoolingDescriptorWithKernelSizes:strides:paddingPolicy:paddingSizes:@
-maxPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector :: Selector
+maxPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCPoolingDescriptor)
 maxPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector = mkSelector "maxPoolingDescriptorWithKernelSizes:strides:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @maxPoolingDescriptorWithKernelSizes:strides:dilationRates:paddingPolicy:paddingSizes:@
-maxPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector
+maxPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCPoolingDescriptor)
 maxPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector = mkSelector "maxPoolingDescriptorWithKernelSizes:strides:dilationRates:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @averagePoolingDescriptorWithKernelSizes:strides:paddingPolicy:paddingSizes:countIncludesPadding:@
-averagePoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes_countIncludesPaddingSelector :: Selector
+averagePoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes_countIncludesPaddingSelector :: Selector '[Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray, Bool] (Id MLCPoolingDescriptor)
 averagePoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizes_countIncludesPaddingSelector = mkSelector "averagePoolingDescriptorWithKernelSizes:strides:paddingPolicy:paddingSizes:countIncludesPadding:"
 
 -- | @Selector@ for @averagePoolingDescriptorWithKernelSizes:strides:dilationRates:paddingPolicy:paddingSizes:countIncludesPadding:@
-averagePoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizes_countIncludesPaddingSelector :: Selector
+averagePoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizes_countIncludesPaddingSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray, Bool] (Id MLCPoolingDescriptor)
 averagePoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizes_countIncludesPaddingSelector = mkSelector "averagePoolingDescriptorWithKernelSizes:strides:dilationRates:paddingPolicy:paddingSizes:countIncludesPadding:"
 
 -- | @Selector@ for @l2NormPoolingDescriptorWithKernelSizes:strides:paddingPolicy:paddingSizes:@
-l2NormPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector :: Selector
+l2NormPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCPoolingDescriptor)
 l2NormPoolingDescriptorWithKernelSizes_strides_paddingPolicy_paddingSizesSelector = mkSelector "l2NormPoolingDescriptorWithKernelSizes:strides:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @l2NormPoolingDescriptorWithKernelSizes:strides:dilationRates:paddingPolicy:paddingSizes:@
-l2NormPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector
+l2NormPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray, MLCPaddingPolicy, Id NSArray] (Id MLCPoolingDescriptor)
 l2NormPoolingDescriptorWithKernelSizes_strides_dilationRates_paddingPolicy_paddingSizesSelector = mkSelector "l2NormPoolingDescriptorWithKernelSizes:strides:dilationRates:paddingPolicy:paddingSizes:"
 
 -- | @Selector@ for @poolingType@
-poolingTypeSelector :: Selector
+poolingTypeSelector :: Selector '[] MLCPoolingType
 poolingTypeSelector = mkSelector "poolingType"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @strideInX@
-strideInXSelector :: Selector
+strideInXSelector :: Selector '[] CULong
 strideInXSelector = mkSelector "strideInX"
 
 -- | @Selector@ for @strideInY@
-strideInYSelector :: Selector
+strideInYSelector :: Selector '[] CULong
 strideInYSelector = mkSelector "strideInY"
 
 -- | @Selector@ for @dilationRateInX@
-dilationRateInXSelector :: Selector
+dilationRateInXSelector :: Selector '[] CULong
 dilationRateInXSelector = mkSelector "dilationRateInX"
 
 -- | @Selector@ for @dilationRateInY@
-dilationRateInYSelector :: Selector
+dilationRateInYSelector :: Selector '[] CULong
 dilationRateInYSelector = mkSelector "dilationRateInY"
 
 -- | @Selector@ for @paddingPolicy@
-paddingPolicySelector :: Selector
+paddingPolicySelector :: Selector '[] MLCPaddingPolicy
 paddingPolicySelector = mkSelector "paddingPolicy"
 
 -- | @Selector@ for @paddingSizeInX@
-paddingSizeInXSelector :: Selector
+paddingSizeInXSelector :: Selector '[] CULong
 paddingSizeInXSelector = mkSelector "paddingSizeInX"
 
 -- | @Selector@ for @paddingSizeInY@
-paddingSizeInYSelector :: Selector
+paddingSizeInYSelector :: Selector '[] CULong
 paddingSizeInYSelector = mkSelector "paddingSizeInY"
 
 -- | @Selector@ for @countIncludesPadding@
-countIncludesPaddingSelector :: Selector
+countIncludesPaddingSelector :: Selector '[] Bool
 countIncludesPaddingSelector = mkSelector "countIncludesPadding"
 

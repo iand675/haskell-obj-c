@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.PhotosUI.PHLivePhotoView
   , muted
   , setMuted
   , livePhotoBadgeView
-  , startPlaybackWithStyleSelector
-  , stopPlaybackSelector
-  , stopPlaybackAnimatedSelector
-  , delegateSelector
-  , setDelegateSelector
-  , livePhotoSelector
-  , setLivePhotoSelector
-  , contentModeSelector
-  , setContentModeSelector
   , audioVolumeSelector
-  , setAudioVolumeSelector
-  , mutedSelector
-  , setMutedSelector
+  , contentModeSelector
+  , delegateSelector
   , livePhotoBadgeViewSelector
+  , livePhotoSelector
+  , mutedSelector
+  , setAudioVolumeSelector
+  , setContentModeSelector
+  , setDelegateSelector
+  , setLivePhotoSelector
+  , setMutedSelector
+  , startPlaybackWithStyleSelector
+  , stopPlaybackAnimatedSelector
+  , stopPlaybackSelector
 
   -- * Enum types
   , PHLivePhotoViewContentMode(PHLivePhotoViewContentMode)
@@ -47,15 +48,11 @@ module ObjC.PhotosUI.PHLivePhotoView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,152 +66,151 @@ import ObjC.Photos.Internal.Classes
 --
 -- ObjC selector: @- startPlaybackWithStyle:@
 startPlaybackWithStyle :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> PHLivePhotoViewPlaybackStyle -> IO ()
-startPlaybackWithStyle phLivePhotoView  playbackStyle =
-    sendMsg phLivePhotoView (mkSelector "startPlaybackWithStyle:") retVoid [argCLong (coerce playbackStyle)]
+startPlaybackWithStyle phLivePhotoView playbackStyle =
+  sendMessage phLivePhotoView startPlaybackWithStyleSelector playbackStyle
 
 -- | @- stopPlayback@
 stopPlayback :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> IO ()
-stopPlayback phLivePhotoView  =
-    sendMsg phLivePhotoView (mkSelector "stopPlayback") retVoid []
+stopPlayback phLivePhotoView =
+  sendMessage phLivePhotoView stopPlaybackSelector
 
 -- | Stops live photo playback. If animated is NO, the photo is immediately displayed.
 --
 -- ObjC selector: @- stopPlaybackAnimated:@
 stopPlaybackAnimated :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> Bool -> IO ()
-stopPlaybackAnimated phLivePhotoView  animated =
-    sendMsg phLivePhotoView (mkSelector "stopPlaybackAnimated:") retVoid [argCULong (if animated then 1 else 0)]
+stopPlaybackAnimated phLivePhotoView animated =
+  sendMessage phLivePhotoView stopPlaybackAnimatedSelector animated
 
 -- | @- delegate@
 delegate :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> IO RawId
-delegate phLivePhotoView  =
-    fmap (RawId . castPtr) $ sendMsg phLivePhotoView (mkSelector "delegate") (retPtr retVoid) []
+delegate phLivePhotoView =
+  sendMessage phLivePhotoView delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> RawId -> IO ()
-setDelegate phLivePhotoView  value =
-    sendMsg phLivePhotoView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate phLivePhotoView value =
+  sendMessage phLivePhotoView setDelegateSelector value
 
 -- | Live photo displayed in the receiver.
 --
 -- ObjC selector: @- livePhoto@
 livePhoto :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> IO (Id PHLivePhoto)
-livePhoto phLivePhotoView  =
-    sendMsg phLivePhotoView (mkSelector "livePhoto") (retPtr retVoid) [] >>= retainedObject . castPtr
+livePhoto phLivePhotoView =
+  sendMessage phLivePhotoView livePhotoSelector
 
 -- | Live photo displayed in the receiver.
 --
 -- ObjC selector: @- setLivePhoto:@
 setLivePhoto :: (IsPHLivePhotoView phLivePhotoView, IsPHLivePhoto value) => phLivePhotoView -> value -> IO ()
-setLivePhoto phLivePhotoView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phLivePhotoView (mkSelector "setLivePhoto:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLivePhoto phLivePhotoView value =
+  sendMessage phLivePhotoView setLivePhotoSelector (toPHLivePhoto value)
 
 -- | The mode in which the receiver will display its content. Defaults to PHLivePhotoViewContentModeAspectFit.
 --
 -- ObjC selector: @- contentMode@
 contentMode :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> IO PHLivePhotoViewContentMode
-contentMode phLivePhotoView  =
-    fmap (coerce :: CLong -> PHLivePhotoViewContentMode) $ sendMsg phLivePhotoView (mkSelector "contentMode") retCLong []
+contentMode phLivePhotoView =
+  sendMessage phLivePhotoView contentModeSelector
 
 -- | The mode in which the receiver will display its content. Defaults to PHLivePhotoViewContentModeAspectFit.
 --
 -- ObjC selector: @- setContentMode:@
 setContentMode :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> PHLivePhotoViewContentMode -> IO ()
-setContentMode phLivePhotoView  value =
-    sendMsg phLivePhotoView (mkSelector "setContentMode:") retVoid [argCLong (coerce value)]
+setContentMode phLivePhotoView value =
+  sendMessage phLivePhotoView setContentModeSelector value
 
 -- | The audio volume during playback
 --
 -- ObjC selector: @- audioVolume@
 audioVolume :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> IO CFloat
-audioVolume phLivePhotoView  =
-    sendMsg phLivePhotoView (mkSelector "audioVolume") retCFloat []
+audioVolume phLivePhotoView =
+  sendMessage phLivePhotoView audioVolumeSelector
 
 -- | The audio volume during playback
 --
 -- ObjC selector: @- setAudioVolume:@
 setAudioVolume :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> CFloat -> IO ()
-setAudioVolume phLivePhotoView  value =
-    sendMsg phLivePhotoView (mkSelector "setAudioVolume:") retVoid [argCFloat value]
+setAudioVolume phLivePhotoView value =
+  sendMessage phLivePhotoView setAudioVolumeSelector value
 
 -- | Indicates whether the audio of the Live Photo is muted.
 --
 -- ObjC selector: @- muted@
 muted :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> IO Bool
-muted phLivePhotoView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phLivePhotoView (mkSelector "muted") retCULong []
+muted phLivePhotoView =
+  sendMessage phLivePhotoView mutedSelector
 
 -- | Indicates whether the audio of the Live Photo is muted.
 --
 -- ObjC selector: @- setMuted:@
 setMuted :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> Bool -> IO ()
-setMuted phLivePhotoView  value =
-    sendMsg phLivePhotoView (mkSelector "setMuted:") retVoid [argCULong (if value then 1 else 0)]
+setMuted phLivePhotoView value =
+  sendMessage phLivePhotoView setMutedSelector value
 
 -- | Directly access the livePhotoBadge in cases where it should be added to a different place in the view hierarchy and not the live photo view. This can be useful when the live photo view is added to a scroll view.
 --
 -- ObjC selector: @- livePhotoBadgeView@
 livePhotoBadgeView :: IsPHLivePhotoView phLivePhotoView => phLivePhotoView -> IO (Id NSView)
-livePhotoBadgeView phLivePhotoView  =
-    sendMsg phLivePhotoView (mkSelector "livePhotoBadgeView") (retPtr retVoid) [] >>= retainedObject . castPtr
+livePhotoBadgeView phLivePhotoView =
+  sendMessage phLivePhotoView livePhotoBadgeViewSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startPlaybackWithStyle:@
-startPlaybackWithStyleSelector :: Selector
+startPlaybackWithStyleSelector :: Selector '[PHLivePhotoViewPlaybackStyle] ()
 startPlaybackWithStyleSelector = mkSelector "startPlaybackWithStyle:"
 
 -- | @Selector@ for @stopPlayback@
-stopPlaybackSelector :: Selector
+stopPlaybackSelector :: Selector '[] ()
 stopPlaybackSelector = mkSelector "stopPlayback"
 
 -- | @Selector@ for @stopPlaybackAnimated:@
-stopPlaybackAnimatedSelector :: Selector
+stopPlaybackAnimatedSelector :: Selector '[Bool] ()
 stopPlaybackAnimatedSelector = mkSelector "stopPlaybackAnimated:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @livePhoto@
-livePhotoSelector :: Selector
+livePhotoSelector :: Selector '[] (Id PHLivePhoto)
 livePhotoSelector = mkSelector "livePhoto"
 
 -- | @Selector@ for @setLivePhoto:@
-setLivePhotoSelector :: Selector
+setLivePhotoSelector :: Selector '[Id PHLivePhoto] ()
 setLivePhotoSelector = mkSelector "setLivePhoto:"
 
 -- | @Selector@ for @contentMode@
-contentModeSelector :: Selector
+contentModeSelector :: Selector '[] PHLivePhotoViewContentMode
 contentModeSelector = mkSelector "contentMode"
 
 -- | @Selector@ for @setContentMode:@
-setContentModeSelector :: Selector
+setContentModeSelector :: Selector '[PHLivePhotoViewContentMode] ()
 setContentModeSelector = mkSelector "setContentMode:"
 
 -- | @Selector@ for @audioVolume@
-audioVolumeSelector :: Selector
+audioVolumeSelector :: Selector '[] CFloat
 audioVolumeSelector = mkSelector "audioVolume"
 
 -- | @Selector@ for @setAudioVolume:@
-setAudioVolumeSelector :: Selector
+setAudioVolumeSelector :: Selector '[CFloat] ()
 setAudioVolumeSelector = mkSelector "setAudioVolume:"
 
 -- | @Selector@ for @muted@
-mutedSelector :: Selector
+mutedSelector :: Selector '[] Bool
 mutedSelector = mkSelector "muted"
 
 -- | @Selector@ for @setMuted:@
-setMutedSelector :: Selector
+setMutedSelector :: Selector '[Bool] ()
 setMutedSelector = mkSelector "setMuted:"
 
 -- | @Selector@ for @livePhotoBadgeView@
-livePhotoBadgeViewSelector :: Selector
+livePhotoBadgeViewSelector :: Selector '[] (Id NSView)
 livePhotoBadgeViewSelector = mkSelector "livePhotoBadgeView"
 

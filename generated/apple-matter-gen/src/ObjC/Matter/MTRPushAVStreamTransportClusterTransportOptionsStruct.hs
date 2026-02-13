@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterTransportOptionsStruct
   , setContainerOptions
   , expiryTime
   , setExpiryTime
-  , streamUsageSelector
-  , setStreamUsageSelector
-  , videoStreamIDSelector
-  , setVideoStreamIDSelector
   , audioStreamIDSelector
-  , setAudioStreamIDSelector
-  , tlsEndpointIDSelector
-  , setTlsEndpointIDSelector
-  , urlSelector
-  , setUrlSelector
-  , triggerOptionsSelector
-  , setTriggerOptionsSelector
-  , ingestMethodSelector
-  , setIngestMethodSelector
   , containerOptionsSelector
-  , setContainerOptionsSelector
   , expiryTimeSelector
+  , ingestMethodSelector
+  , setAudioStreamIDSelector
+  , setContainerOptionsSelector
   , setExpiryTimeSelector
+  , setIngestMethodSelector
+  , setStreamUsageSelector
+  , setTlsEndpointIDSelector
+  , setTriggerOptionsSelector
+  , setUrlSelector
+  , setVideoStreamIDSelector
+  , streamUsageSelector
+  , tlsEndpointIDSelector
+  , triggerOptionsSelector
+  , urlSelector
+  , videoStreamIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,176 +60,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- streamUsage@
 streamUsage :: IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct => mtrPushAVStreamTransportClusterTransportOptionsStruct -> IO (Id NSNumber)
-streamUsage mtrPushAVStreamTransportClusterTransportOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "streamUsage") (retPtr retVoid) [] >>= retainedObject . castPtr
+streamUsage mtrPushAVStreamTransportClusterTransportOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct streamUsageSelector
 
 -- | @- setStreamUsage:@
 setStreamUsage :: (IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportOptionsStruct -> value -> IO ()
-setStreamUsage mtrPushAVStreamTransportClusterTransportOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "setStreamUsage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStreamUsage mtrPushAVStreamTransportClusterTransportOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct setStreamUsageSelector (toNSNumber value)
 
 -- | @- videoStreamID@
 videoStreamID :: IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct => mtrPushAVStreamTransportClusterTransportOptionsStruct -> IO (Id NSNumber)
-videoStreamID mtrPushAVStreamTransportClusterTransportOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "videoStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoStreamID mtrPushAVStreamTransportClusterTransportOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct videoStreamIDSelector
 
 -- | @- setVideoStreamID:@
 setVideoStreamID :: (IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportOptionsStruct -> value -> IO ()
-setVideoStreamID mtrPushAVStreamTransportClusterTransportOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "setVideoStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoStreamID mtrPushAVStreamTransportClusterTransportOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct setVideoStreamIDSelector (toNSNumber value)
 
 -- | @- audioStreamID@
 audioStreamID :: IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct => mtrPushAVStreamTransportClusterTransportOptionsStruct -> IO (Id NSNumber)
-audioStreamID mtrPushAVStreamTransportClusterTransportOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "audioStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioStreamID mtrPushAVStreamTransportClusterTransportOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct audioStreamIDSelector
 
 -- | @- setAudioStreamID:@
 setAudioStreamID :: (IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportOptionsStruct -> value -> IO ()
-setAudioStreamID mtrPushAVStreamTransportClusterTransportOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "setAudioStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioStreamID mtrPushAVStreamTransportClusterTransportOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct setAudioStreamIDSelector (toNSNumber value)
 
 -- | @- tlsEndpointID@
 tlsEndpointID :: IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct => mtrPushAVStreamTransportClusterTransportOptionsStruct -> IO (Id NSNumber)
-tlsEndpointID mtrPushAVStreamTransportClusterTransportOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "tlsEndpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+tlsEndpointID mtrPushAVStreamTransportClusterTransportOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct tlsEndpointIDSelector
 
 -- | @- setTlsEndpointID:@
 setTlsEndpointID :: (IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportOptionsStruct -> value -> IO ()
-setTlsEndpointID mtrPushAVStreamTransportClusterTransportOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "setTlsEndpointID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTlsEndpointID mtrPushAVStreamTransportClusterTransportOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct setTlsEndpointIDSelector (toNSNumber value)
 
 -- | @- url@
 url :: IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct => mtrPushAVStreamTransportClusterTransportOptionsStruct -> IO (Id NSString)
-url mtrPushAVStreamTransportClusterTransportOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url mtrPushAVStreamTransportClusterTransportOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct urlSelector
 
 -- | @- setUrl:@
 setUrl :: (IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct, IsNSString value) => mtrPushAVStreamTransportClusterTransportOptionsStruct -> value -> IO ()
-setUrl mtrPushAVStreamTransportClusterTransportOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "setUrl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUrl mtrPushAVStreamTransportClusterTransportOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct setUrlSelector (toNSString value)
 
 -- | @- triggerOptions@
 triggerOptions :: IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct => mtrPushAVStreamTransportClusterTransportOptionsStruct -> IO (Id MTRPushAVStreamTransportClusterTransportTriggerOptionsStruct)
-triggerOptions mtrPushAVStreamTransportClusterTransportOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "triggerOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+triggerOptions mtrPushAVStreamTransportClusterTransportOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct triggerOptionsSelector
 
 -- | @- setTriggerOptions:@
 setTriggerOptions :: (IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct, IsMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct value) => mtrPushAVStreamTransportClusterTransportOptionsStruct -> value -> IO ()
-setTriggerOptions mtrPushAVStreamTransportClusterTransportOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "setTriggerOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTriggerOptions mtrPushAVStreamTransportClusterTransportOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct setTriggerOptionsSelector (toMTRPushAVStreamTransportClusterTransportTriggerOptionsStruct value)
 
 -- | @- ingestMethod@
 ingestMethod :: IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct => mtrPushAVStreamTransportClusterTransportOptionsStruct -> IO (Id NSNumber)
-ingestMethod mtrPushAVStreamTransportClusterTransportOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "ingestMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
+ingestMethod mtrPushAVStreamTransportClusterTransportOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct ingestMethodSelector
 
 -- | @- setIngestMethod:@
 setIngestMethod :: (IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportOptionsStruct -> value -> IO ()
-setIngestMethod mtrPushAVStreamTransportClusterTransportOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "setIngestMethod:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIngestMethod mtrPushAVStreamTransportClusterTransportOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct setIngestMethodSelector (toNSNumber value)
 
 -- | @- containerOptions@
 containerOptions :: IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct => mtrPushAVStreamTransportClusterTransportOptionsStruct -> IO (Id MTRPushAVStreamTransportClusterContainerOptionsStruct)
-containerOptions mtrPushAVStreamTransportClusterTransportOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "containerOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerOptions mtrPushAVStreamTransportClusterTransportOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct containerOptionsSelector
 
 -- | @- setContainerOptions:@
 setContainerOptions :: (IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct, IsMTRPushAVStreamTransportClusterContainerOptionsStruct value) => mtrPushAVStreamTransportClusterTransportOptionsStruct -> value -> IO ()
-setContainerOptions mtrPushAVStreamTransportClusterTransportOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "setContainerOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContainerOptions mtrPushAVStreamTransportClusterTransportOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct setContainerOptionsSelector (toMTRPushAVStreamTransportClusterContainerOptionsStruct value)
 
 -- | @- expiryTime@
 expiryTime :: IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct => mtrPushAVStreamTransportClusterTransportOptionsStruct -> IO (Id NSNumber)
-expiryTime mtrPushAVStreamTransportClusterTransportOptionsStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "expiryTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+expiryTime mtrPushAVStreamTransportClusterTransportOptionsStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct expiryTimeSelector
 
 -- | @- setExpiryTime:@
 setExpiryTime :: (IsMTRPushAVStreamTransportClusterTransportOptionsStruct mtrPushAVStreamTransportClusterTransportOptionsStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportOptionsStruct -> value -> IO ()
-setExpiryTime mtrPushAVStreamTransportClusterTransportOptionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportOptionsStruct (mkSelector "setExpiryTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExpiryTime mtrPushAVStreamTransportClusterTransportOptionsStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportOptionsStruct setExpiryTimeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @streamUsage@
-streamUsageSelector :: Selector
+streamUsageSelector :: Selector '[] (Id NSNumber)
 streamUsageSelector = mkSelector "streamUsage"
 
 -- | @Selector@ for @setStreamUsage:@
-setStreamUsageSelector :: Selector
+setStreamUsageSelector :: Selector '[Id NSNumber] ()
 setStreamUsageSelector = mkSelector "setStreamUsage:"
 
 -- | @Selector@ for @videoStreamID@
-videoStreamIDSelector :: Selector
+videoStreamIDSelector :: Selector '[] (Id NSNumber)
 videoStreamIDSelector = mkSelector "videoStreamID"
 
 -- | @Selector@ for @setVideoStreamID:@
-setVideoStreamIDSelector :: Selector
+setVideoStreamIDSelector :: Selector '[Id NSNumber] ()
 setVideoStreamIDSelector = mkSelector "setVideoStreamID:"
 
 -- | @Selector@ for @audioStreamID@
-audioStreamIDSelector :: Selector
+audioStreamIDSelector :: Selector '[] (Id NSNumber)
 audioStreamIDSelector = mkSelector "audioStreamID"
 
 -- | @Selector@ for @setAudioStreamID:@
-setAudioStreamIDSelector :: Selector
+setAudioStreamIDSelector :: Selector '[Id NSNumber] ()
 setAudioStreamIDSelector = mkSelector "setAudioStreamID:"
 
 -- | @Selector@ for @tlsEndpointID@
-tlsEndpointIDSelector :: Selector
+tlsEndpointIDSelector :: Selector '[] (Id NSNumber)
 tlsEndpointIDSelector = mkSelector "tlsEndpointID"
 
 -- | @Selector@ for @setTlsEndpointID:@
-setTlsEndpointIDSelector :: Selector
+setTlsEndpointIDSelector :: Selector '[Id NSNumber] ()
 setTlsEndpointIDSelector = mkSelector "setTlsEndpointID:"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSString)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @setUrl:@
-setUrlSelector :: Selector
+setUrlSelector :: Selector '[Id NSString] ()
 setUrlSelector = mkSelector "setUrl:"
 
 -- | @Selector@ for @triggerOptions@
-triggerOptionsSelector :: Selector
+triggerOptionsSelector :: Selector '[] (Id MTRPushAVStreamTransportClusterTransportTriggerOptionsStruct)
 triggerOptionsSelector = mkSelector "triggerOptions"
 
 -- | @Selector@ for @setTriggerOptions:@
-setTriggerOptionsSelector :: Selector
+setTriggerOptionsSelector :: Selector '[Id MTRPushAVStreamTransportClusterTransportTriggerOptionsStruct] ()
 setTriggerOptionsSelector = mkSelector "setTriggerOptions:"
 
 -- | @Selector@ for @ingestMethod@
-ingestMethodSelector :: Selector
+ingestMethodSelector :: Selector '[] (Id NSNumber)
 ingestMethodSelector = mkSelector "ingestMethod"
 
 -- | @Selector@ for @setIngestMethod:@
-setIngestMethodSelector :: Selector
+setIngestMethodSelector :: Selector '[Id NSNumber] ()
 setIngestMethodSelector = mkSelector "setIngestMethod:"
 
 -- | @Selector@ for @containerOptions@
-containerOptionsSelector :: Selector
+containerOptionsSelector :: Selector '[] (Id MTRPushAVStreamTransportClusterContainerOptionsStruct)
 containerOptionsSelector = mkSelector "containerOptions"
 
 -- | @Selector@ for @setContainerOptions:@
-setContainerOptionsSelector :: Selector
+setContainerOptionsSelector :: Selector '[Id MTRPushAVStreamTransportClusterContainerOptionsStruct] ()
 setContainerOptionsSelector = mkSelector "setContainerOptions:"
 
 -- | @Selector@ for @expiryTime@
-expiryTimeSelector :: Selector
+expiryTimeSelector :: Selector '[] (Id NSNumber)
 expiryTimeSelector = mkSelector "expiryTime"
 
 -- | @Selector@ for @setExpiryTime:@
-setExpiryTimeSelector :: Selector
+setExpiryTimeSelector :: Selector '[Id NSNumber] ()
 setExpiryTimeSelector = mkSelector "setExpiryTime:"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.QuickLookThumbnailing.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @QLThumbnailError@
 newtype QLThumbnailError = QLThumbnailError CLong
@@ -34,6 +37,16 @@ pattern QLThumbnailErrorRequestInvalid = QLThumbnailError 4
 pattern QLThumbnailErrorRequestCancelled :: QLThumbnailError
 pattern QLThumbnailErrorRequestCancelled = QLThumbnailError 5
 
+instance ObjCArgument QLThumbnailError where
+  withObjCArg (QLThumbnailError x) k = k (argCLong x)
+
+instance ObjCReturn QLThumbnailError where
+  type RawReturn QLThumbnailError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (QLThumbnailError x)
+  fromOwned x = pure (QLThumbnailError x)
+
 -- | @QLThumbnailGenerationRequestRepresentationTypes@ (bitmask)
 newtype QLThumbnailGenerationRequestRepresentationTypes = QLThumbnailGenerationRequestRepresentationTypes CULong
   deriving stock (Eq, Ord, Show)
@@ -57,6 +70,16 @@ pattern QLThumbnailGenerationRequestRepresentationTypeThumbnail = QLThumbnailGen
 pattern QLThumbnailGenerationRequestRepresentationTypeAll :: QLThumbnailGenerationRequestRepresentationTypes
 pattern QLThumbnailGenerationRequestRepresentationTypeAll = QLThumbnailGenerationRequestRepresentationTypes 18446744073709551615
 
+instance ObjCArgument QLThumbnailGenerationRequestRepresentationTypes where
+  withObjCArg (QLThumbnailGenerationRequestRepresentationTypes x) k = k (argCULong x)
+
+instance ObjCReturn QLThumbnailGenerationRequestRepresentationTypes where
+  type RawReturn QLThumbnailGenerationRequestRepresentationTypes = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (QLThumbnailGenerationRequestRepresentationTypes x)
+  fromOwned x = pure (QLThumbnailGenerationRequestRepresentationTypes x)
+
 -- | @QLThumbnailRepresentationType@
 newtype QLThumbnailRepresentationType = QLThumbnailRepresentationType CLong
   deriving stock (Eq, Ord, Show)
@@ -70,3 +93,13 @@ pattern QLThumbnailRepresentationTypeLowQualityThumbnail = QLThumbnailRepresenta
 
 pattern QLThumbnailRepresentationTypeThumbnail :: QLThumbnailRepresentationType
 pattern QLThumbnailRepresentationTypeThumbnail = QLThumbnailRepresentationType 2
+
+instance ObjCArgument QLThumbnailRepresentationType where
+  withObjCArg (QLThumbnailRepresentationType x) k = k (argCLong x)
+
+instance ObjCReturn QLThumbnailRepresentationType where
+  type RawReturn QLThumbnailRepresentationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (QLThumbnailRepresentationType x)
+  fromOwned x = pure (QLThumbnailRepresentationType x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,38 +28,34 @@ module ObjC.Matter.MTRClusterRadonConcentrationMeasurement
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , readAttributeMeasuredValueWithParamsSelector
-  , readAttributeMinMeasuredValueWithParamsSelector
-  , readAttributeMaxMeasuredValueWithParamsSelector
-  , readAttributePeakMeasuredValueWithParamsSelector
-  , readAttributePeakMeasuredValueWindowWithParamsSelector
-  , readAttributeAverageMeasuredValueWithParamsSelector
-  , readAttributeAverageMeasuredValueWindowWithParamsSelector
-  , readAttributeUncertaintyWithParamsSelector
-  , readAttributeMeasurementUnitWithParamsSelector
-  , readAttributeMeasurementMediumWithParamsSelector
-  , readAttributeLevelValueWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeAverageMeasuredValueWindowWithParamsSelector
+  , readAttributeAverageMeasuredValueWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeLevelValueWithParamsSelector
+  , readAttributeMaxMeasuredValueWithParamsSelector
+  , readAttributeMeasuredValueWithParamsSelector
+  , readAttributeMeasurementMediumWithParamsSelector
+  , readAttributeMeasurementUnitWithParamsSelector
+  , readAttributeMinMeasuredValueWithParamsSelector
+  , readAttributePeakMeasuredValueWindowWithParamsSelector
+  , readAttributePeakMeasuredValueWithParamsSelector
+  , readAttributeUncertaintyWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,199 +64,180 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeMeasuredValueWithParams:@
 readAttributeMeasuredValueWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMinMeasuredValueWithParams:@
 readAttributeMinMeasuredValueWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMinMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeMinMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeMinMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaxMeasuredValueWithParams:@
 readAttributeMaxMeasuredValueWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMaxMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeMaxMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeMaxMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePeakMeasuredValueWithParams:@
 readAttributePeakMeasuredValueWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributePeakMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributePeakMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePeakMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributePeakMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePeakMeasuredValueWindowWithParams:@
 readAttributePeakMeasuredValueWindowWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributePeakMeasuredValueWindowWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributePeakMeasuredValueWindowWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePeakMeasuredValueWindowWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributePeakMeasuredValueWindowWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAverageMeasuredValueWithParams:@
 readAttributeAverageMeasuredValueWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAverageMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeAverageMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAverageMeasuredValueWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeAverageMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAverageMeasuredValueWindowWithParams:@
 readAttributeAverageMeasuredValueWindowWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAverageMeasuredValueWindowWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeAverageMeasuredValueWindowWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAverageMeasuredValueWindowWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeAverageMeasuredValueWindowWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeUncertaintyWithParams:@
 readAttributeUncertaintyWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeUncertaintyWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeUncertaintyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUncertaintyWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeUncertaintyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMeasurementUnitWithParams:@
 readAttributeMeasurementUnitWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMeasurementUnitWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeMeasurementUnitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMeasurementUnitWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeMeasurementUnitWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMeasurementMediumWithParams:@
 readAttributeMeasurementMediumWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMeasurementMediumWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeMeasurementMediumWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMeasurementMediumWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeMeasurementMediumWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLevelValueWithParams:@
 readAttributeLevelValueWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeLevelValueWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeLevelValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLevelValueWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeLevelValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRReadParams params) => mtrClusterRadonConcentrationMeasurement -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterRadonConcentrationMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterRadonConcentrationMeasurement params =
+  sendMessage mtrClusterRadonConcentrationMeasurement readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement => mtrClusterRadonConcentrationMeasurement -> IO (Id MTRClusterRadonConcentrationMeasurement)
-init_ mtrClusterRadonConcentrationMeasurement  =
-    sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterRadonConcentrationMeasurement =
+  sendOwnedMessage mtrClusterRadonConcentrationMeasurement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterRadonConcentrationMeasurement)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterRadonConcentrationMeasurement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterRadonConcentrationMeasurement mtrClusterRadonConcentrationMeasurement, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterRadonConcentrationMeasurement -> device -> endpointID -> queue -> IO (Id MTRClusterRadonConcentrationMeasurement)
-initWithDevice_endpointID_queue mtrClusterRadonConcentrationMeasurement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterRadonConcentrationMeasurement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterRadonConcentrationMeasurement device endpointID queue =
+  sendOwnedMessage mtrClusterRadonConcentrationMeasurement initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeMeasuredValueWithParams:@
-readAttributeMeasuredValueWithParamsSelector :: Selector
+readAttributeMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMeasuredValueWithParamsSelector = mkSelector "readAttributeMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeMinMeasuredValueWithParams:@
-readAttributeMinMeasuredValueWithParamsSelector :: Selector
+readAttributeMinMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinMeasuredValueWithParamsSelector = mkSelector "readAttributeMinMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeMaxMeasuredValueWithParams:@
-readAttributeMaxMeasuredValueWithParamsSelector :: Selector
+readAttributeMaxMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxMeasuredValueWithParamsSelector = mkSelector "readAttributeMaxMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributePeakMeasuredValueWithParams:@
-readAttributePeakMeasuredValueWithParamsSelector :: Selector
+readAttributePeakMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePeakMeasuredValueWithParamsSelector = mkSelector "readAttributePeakMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributePeakMeasuredValueWindowWithParams:@
-readAttributePeakMeasuredValueWindowWithParamsSelector :: Selector
+readAttributePeakMeasuredValueWindowWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePeakMeasuredValueWindowWithParamsSelector = mkSelector "readAttributePeakMeasuredValueWindowWithParams:"
 
 -- | @Selector@ for @readAttributeAverageMeasuredValueWithParams:@
-readAttributeAverageMeasuredValueWithParamsSelector :: Selector
+readAttributeAverageMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAverageMeasuredValueWithParamsSelector = mkSelector "readAttributeAverageMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeAverageMeasuredValueWindowWithParams:@
-readAttributeAverageMeasuredValueWindowWithParamsSelector :: Selector
+readAttributeAverageMeasuredValueWindowWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAverageMeasuredValueWindowWithParamsSelector = mkSelector "readAttributeAverageMeasuredValueWindowWithParams:"
 
 -- | @Selector@ for @readAttributeUncertaintyWithParams:@
-readAttributeUncertaintyWithParamsSelector :: Selector
+readAttributeUncertaintyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUncertaintyWithParamsSelector = mkSelector "readAttributeUncertaintyWithParams:"
 
 -- | @Selector@ for @readAttributeMeasurementUnitWithParams:@
-readAttributeMeasurementUnitWithParamsSelector :: Selector
+readAttributeMeasurementUnitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMeasurementUnitWithParamsSelector = mkSelector "readAttributeMeasurementUnitWithParams:"
 
 -- | @Selector@ for @readAttributeMeasurementMediumWithParams:@
-readAttributeMeasurementMediumWithParamsSelector :: Selector
+readAttributeMeasurementMediumWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMeasurementMediumWithParamsSelector = mkSelector "readAttributeMeasurementMediumWithParams:"
 
 -- | @Selector@ for @readAttributeLevelValueWithParams:@
-readAttributeLevelValueWithParamsSelector :: Selector
+readAttributeLevelValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLevelValueWithParamsSelector = mkSelector "readAttributeLevelValueWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterRadonConcentrationMeasurement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterRadonConcentrationMeasurement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterRadonConcentrationMeasurement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

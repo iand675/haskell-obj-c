@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.GameKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @GKAccessPointLocation@
 newtype GKAccessPointLocation = GKAccessPointLocation CLong
@@ -28,6 +31,16 @@ pattern GKAccessPointLocationBottomLeading = GKAccessPointLocation 2
 pattern GKAccessPointLocationBottomTrailing :: GKAccessPointLocation
 pattern GKAccessPointLocationBottomTrailing = GKAccessPointLocation 3
 
+instance ObjCArgument GKAccessPointLocation where
+  withObjCArg (GKAccessPointLocation x) k = k (argCLong x)
+
+instance ObjCReturn GKAccessPointLocation where
+  type RawReturn GKAccessPointLocation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKAccessPointLocation x)
+  fromOwned x = pure (GKAccessPointLocation x)
+
 -- | @GKChallengeState@
 newtype GKChallengeState = GKChallengeState CLong
   deriving stock (Eq, Ord, Show)
@@ -45,6 +58,16 @@ pattern GKChallengeStateCompleted = GKChallengeState 2
 pattern GKChallengeStateDeclined :: GKChallengeState
 pattern GKChallengeStateDeclined = GKChallengeState 3
 
+instance ObjCArgument GKChallengeState where
+  withObjCArg (GKChallengeState x) k = k (argCLong x)
+
+instance ObjCReturn GKChallengeState where
+  type RawReturn GKChallengeState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKChallengeState x)
+  fromOwned x = pure (GKChallengeState x)
+
 -- | @GKConnectionState@
 newtype GKConnectionState = GKConnectionState CLong
   deriving stock (Eq, Ord, Show)
@@ -55,6 +78,16 @@ pattern GKConnectionStateNotConnected = GKConnectionState 0
 
 pattern GKConnectionStateConnected :: GKConnectionState
 pattern GKConnectionStateConnected = GKConnectionState 1
+
+instance ObjCArgument GKConnectionState where
+  withObjCArg (GKConnectionState x) k = k (argCLong x)
+
+instance ObjCReturn GKConnectionState where
+  type RawReturn GKConnectionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKConnectionState x)
+  fromOwned x = pure (GKConnectionState x)
 
 -- | @GKErrorCode@
 newtype GKErrorCode = GKErrorCode CLong
@@ -187,6 +220,16 @@ pattern GKErrorFriendListDenied = GKErrorCode 102
 pattern GKErrorFriendRequestNotAvailable :: GKErrorCode
 pattern GKErrorFriendRequestNotAvailable = GKErrorCode 103
 
+instance ObjCArgument GKErrorCode where
+  withObjCArg (GKErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn GKErrorCode where
+  type RawReturn GKErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKErrorCode x)
+  fromOwned x = pure (GKErrorCode x)
+
 -- | @GKFriendsAuthorizationStatus@
 newtype GKFriendsAuthorizationStatus = GKFriendsAuthorizationStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -204,6 +247,16 @@ pattern GKFriendsAuthorizationStatusDenied = GKFriendsAuthorizationStatus 2
 pattern GKFriendsAuthorizationStatusAuthorized :: GKFriendsAuthorizationStatus
 pattern GKFriendsAuthorizationStatusAuthorized = GKFriendsAuthorizationStatus 3
 
+instance ObjCArgument GKFriendsAuthorizationStatus where
+  withObjCArg (GKFriendsAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn GKFriendsAuthorizationStatus where
+  type RawReturn GKFriendsAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKFriendsAuthorizationStatus x)
+  fromOwned x = pure (GKFriendsAuthorizationStatus x)
+
 -- | Play Style of the game activity. It can be either Asynchronous or Synchronous.
 -- | @GKGameActivityPlayStyle@
 newtype GKGameActivityPlayStyle = GKGameActivityPlayStyle CLong
@@ -218,6 +271,16 @@ pattern GKGameActivityPlayStyleSynchronous = GKGameActivityPlayStyle 1
 
 pattern GKGameActivityPlayStyleAsynchronous :: GKGameActivityPlayStyle
 pattern GKGameActivityPlayStyleAsynchronous = GKGameActivityPlayStyle 2
+
+instance ObjCArgument GKGameActivityPlayStyle where
+  withObjCArg (GKGameActivityPlayStyle x) k = k (argCLong x)
+
+instance ObjCReturn GKGameActivityPlayStyle where
+  type RawReturn GKGameActivityPlayStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKGameActivityPlayStyle x)
+  fromOwned x = pure (GKGameActivityPlayStyle x)
 
 -- | The state of a game activity.
 -- | @GKGameActivityState@
@@ -236,6 +299,16 @@ pattern GKGameActivityStatePaused = GKGameActivityState 2
 
 pattern GKGameActivityStateEnded :: GKGameActivityState
 pattern GKGameActivityStateEnded = GKGameActivityState 4
+
+instance ObjCArgument GKGameActivityState where
+  withObjCArg (GKGameActivityState x) k = k (argCULong x)
+
+instance ObjCReturn GKGameActivityState where
+  type RawReturn GKGameActivityState = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKGameActivityState x)
+  fromOwned x = pure (GKGameActivityState x)
 
 -- | @GKGameCenterViewControllerState@
 newtype GKGameCenterViewControllerState = GKGameCenterViewControllerState CLong
@@ -262,6 +335,16 @@ pattern GKGameCenterViewControllerStateDashboard = GKGameCenterViewControllerSta
 
 pattern GKGameCenterViewControllerStateLocalPlayerFriendsList :: GKGameCenterViewControllerState
 pattern GKGameCenterViewControllerStateLocalPlayerFriendsList = GKGameCenterViewControllerState 5
+
+instance ObjCArgument GKGameCenterViewControllerState where
+  withObjCArg (GKGameCenterViewControllerState x) k = k (argCLong x)
+
+instance ObjCReturn GKGameCenterViewControllerState where
+  type RawReturn GKGameCenterViewControllerState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKGameCenterViewControllerState x)
+  fromOwned x = pure (GKGameCenterViewControllerState x)
 
 -- | @GKGameSessionErrorCode@
 newtype GKGameSessionErrorCode = GKGameSessionErrorCode CLong
@@ -316,6 +399,16 @@ pattern GKGameSessionErrorCloudDriveDisabled = GKGameSessionErrorCode 15
 pattern GKGameSessionErrorInvalidSession :: GKGameSessionErrorCode
 pattern GKGameSessionErrorInvalidSession = GKGameSessionErrorCode 16
 
+instance ObjCArgument GKGameSessionErrorCode where
+  withObjCArg (GKGameSessionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn GKGameSessionErrorCode where
+  type RawReturn GKGameSessionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKGameSessionErrorCode x)
+  fromOwned x = pure (GKGameSessionErrorCode x)
+
 -- | Possible invitee responses
 -- | @GKInviteRecipientResponse@
 newtype GKInviteRecipientResponse = GKInviteRecipientResponse CLong
@@ -358,6 +451,16 @@ pattern GKInviteeResponseUnableToConnect = GKInviteRecipientResponse 4
 pattern GKInviteeResponseNoAnswer :: GKInviteRecipientResponse
 pattern GKInviteeResponseNoAnswer = GKInviteRecipientResponse 5
 
+instance ObjCArgument GKInviteRecipientResponse where
+  withObjCArg (GKInviteRecipientResponse x) k = k (argCLong x)
+
+instance ObjCReturn GKInviteRecipientResponse where
+  type RawReturn GKInviteRecipientResponse = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKInviteRecipientResponse x)
+  fromOwned x = pure (GKInviteRecipientResponse x)
+
 -- | @GKLeaderboardPlayerScope@
 newtype GKLeaderboardPlayerScope = GKLeaderboardPlayerScope CLong
   deriving stock (Eq, Ord, Show)
@@ -368,6 +471,16 @@ pattern GKLeaderboardPlayerScopeGlobal = GKLeaderboardPlayerScope 0
 
 pattern GKLeaderboardPlayerScopeFriendsOnly :: GKLeaderboardPlayerScope
 pattern GKLeaderboardPlayerScopeFriendsOnly = GKLeaderboardPlayerScope 1
+
+instance ObjCArgument GKLeaderboardPlayerScope where
+  withObjCArg (GKLeaderboardPlayerScope x) k = k (argCLong x)
+
+instance ObjCReturn GKLeaderboardPlayerScope where
+  type RawReturn GKLeaderboardPlayerScope = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKLeaderboardPlayerScope x)
+  fromOwned x = pure (GKLeaderboardPlayerScope x)
 
 -- | @GKLeaderboardTimeScope@
 newtype GKLeaderboardTimeScope = GKLeaderboardTimeScope CLong
@@ -383,6 +496,16 @@ pattern GKLeaderboardTimeScopeWeek = GKLeaderboardTimeScope 1
 pattern GKLeaderboardTimeScopeAllTime :: GKLeaderboardTimeScope
 pattern GKLeaderboardTimeScopeAllTime = GKLeaderboardTimeScope 2
 
+instance ObjCArgument GKLeaderboardTimeScope where
+  withObjCArg (GKLeaderboardTimeScope x) k = k (argCLong x)
+
+instance ObjCReturn GKLeaderboardTimeScope where
+  type RawReturn GKLeaderboardTimeScope = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKLeaderboardTimeScope x)
+  fromOwned x = pure (GKLeaderboardTimeScope x)
+
 -- | @GKLeaderboardType@
 newtype GKLeaderboardType = GKLeaderboardType CLong
   deriving stock (Eq, Ord, Show)
@@ -394,6 +517,16 @@ pattern GKLeaderboardTypeClassic = GKLeaderboardType 0
 pattern GKLeaderboardTypeRecurring :: GKLeaderboardType
 pattern GKLeaderboardTypeRecurring = GKLeaderboardType 1
 
+instance ObjCArgument GKLeaderboardType where
+  withObjCArg (GKLeaderboardType x) k = k (argCLong x)
+
+instance ObjCReturn GKLeaderboardType where
+  type RawReturn GKLeaderboardType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKLeaderboardType x)
+  fromOwned x = pure (GKLeaderboardType x)
+
 -- | @GKMatchSendDataMode@
 newtype GKMatchSendDataMode = GKMatchSendDataMode CLong
   deriving stock (Eq, Ord, Show)
@@ -404,6 +537,16 @@ pattern GKMatchSendDataReliable = GKMatchSendDataMode 0
 
 pattern GKMatchSendDataUnreliable :: GKMatchSendDataMode
 pattern GKMatchSendDataUnreliable = GKMatchSendDataMode 1
+
+instance ObjCArgument GKMatchSendDataMode where
+  withObjCArg (GKMatchSendDataMode x) k = k (argCLong x)
+
+instance ObjCReturn GKMatchSendDataMode where
+  type RawReturn GKMatchSendDataMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKMatchSendDataMode x)
+  fromOwned x = pure (GKMatchSendDataMode x)
 
 -- | @GKMatchType@
 newtype GKMatchType = GKMatchType CULong
@@ -418,6 +561,16 @@ pattern GKMatchTypeHosted = GKMatchType 1
 
 pattern GKMatchTypeTurnBased :: GKMatchType
 pattern GKMatchTypeTurnBased = GKMatchType 2
+
+instance ObjCArgument GKMatchType where
+  withObjCArg (GKMatchType x) k = k (argCULong x)
+
+instance ObjCReturn GKMatchType where
+  type RawReturn GKMatchType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKMatchType x)
+  fromOwned x = pure (GKMatchType x)
 
 -- | @GKMatchmakingMode@
 newtype GKMatchmakingMode = GKMatchmakingMode CLong
@@ -435,6 +588,16 @@ pattern GKMatchmakingModeAutomatchOnly = GKMatchmakingMode 2
 
 pattern GKMatchmakingModeInviteOnly :: GKMatchmakingMode
 pattern GKMatchmakingModeInviteOnly = GKMatchmakingMode 3
+
+instance ObjCArgument GKMatchmakingMode where
+  withObjCArg (GKMatchmakingMode x) k = k (argCLong x)
+
+instance ObjCReturn GKMatchmakingMode where
+  type RawReturn GKMatchmakingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKMatchmakingMode x)
+  fromOwned x = pure (GKMatchmakingMode x)
 
 -- | Specifies the type of peers to return in method -peersWithConnectionState:
 -- | @GKPeerConnectionState@
@@ -460,6 +623,16 @@ pattern GKPeerStateConnecting = GKPeerConnectionState 4
 pattern GKPeerStateConnectedRelay :: GKPeerConnectionState
 pattern GKPeerStateConnectedRelay = GKPeerConnectionState 5
 
+instance ObjCArgument GKPeerConnectionState where
+  withObjCArg (GKPeerConnectionState x) k = k (argCInt x)
+
+instance ObjCReturn GKPeerConnectionState where
+  type RawReturn GKPeerConnectionState = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKPeerConnectionState x)
+  fromOwned x = pure (GKPeerConnectionState x)
+
 -- | @GKPhotoSize@
 newtype GKPhotoSize = GKPhotoSize CLong
   deriving stock (Eq, Ord, Show)
@@ -470,6 +643,16 @@ pattern GKPhotoSizeSmall = GKPhotoSize 0
 
 pattern GKPhotoSizeNormal :: GKPhotoSize
 pattern GKPhotoSizeNormal = GKPhotoSize 1
+
+instance ObjCArgument GKPhotoSize where
+  withObjCArg (GKPhotoSize x) k = k (argCLong x)
+
+instance ObjCReturn GKPhotoSize where
+  type RawReturn GKPhotoSize = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKPhotoSize x)
+  fromOwned x = pure (GKPhotoSize x)
 
 -- | @GKPlayerConnectionState@
 newtype GKPlayerConnectionState = GKPlayerConnectionState CLong
@@ -484,6 +667,16 @@ pattern GKPlayerStateConnected = GKPlayerConnectionState 1
 
 pattern GKPlayerStateDisconnected :: GKPlayerConnectionState
 pattern GKPlayerStateDisconnected = GKPlayerConnectionState 2
+
+instance ObjCArgument GKPlayerConnectionState where
+  withObjCArg (GKPlayerConnectionState x) k = k (argCLong x)
+
+instance ObjCReturn GKPlayerConnectionState where
+  type RawReturn GKPlayerConnectionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKPlayerConnectionState x)
+  fromOwned x = pure (GKPlayerConnectionState x)
 
 -- | Describes the release state of an App Store Connect resource, such as an Achievement or Leaderboard.
 -- | @GKReleaseState@ (bitmask)
@@ -506,6 +699,16 @@ pattern GKReleaseStateReleased = GKReleaseState 1
 pattern GKReleaseStatePrereleased :: GKReleaseState
 pattern GKReleaseStatePrereleased = GKReleaseState 2
 
+instance ObjCArgument GKReleaseState where
+  withObjCArg (GKReleaseState x) k = k (argCULong x)
+
+instance ObjCReturn GKReleaseState where
+  type RawReturn GKReleaseState = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKReleaseState x)
+  fromOwned x = pure (GKReleaseState x)
+
 -- | Delivery options for GKSession's -(BOOL)sendData... methods.
 -- | @GKSendDataMode@
 newtype GKSendDataMode = GKSendDataMode CInt
@@ -517,6 +720,16 @@ pattern GKSendDataReliable = GKSendDataMode 0
 
 pattern GKSendDataUnreliable :: GKSendDataMode
 pattern GKSendDataUnreliable = GKSendDataMode 1
+
+instance ObjCArgument GKSendDataMode where
+  withObjCArg (GKSendDataMode x) k = k (argCInt x)
+
+instance ObjCReturn GKSendDataMode where
+  type RawReturn GKSendDataMode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKSendDataMode x)
+  fromOwned x = pure (GKSendDataMode x)
 
 -- | @GKSessionError@
 newtype GKSessionError = GKSessionError CInt
@@ -571,6 +784,16 @@ pattern GKSessionUnknownError = GKSessionError 30204
 pattern GKSessionSystemError :: GKSessionError
 pattern GKSessionSystemError = GKSessionError 30205
 
+instance ObjCArgument GKSessionError where
+  withObjCArg (GKSessionError x) k = k (argCInt x)
+
+instance ObjCReturn GKSessionError where
+  type RawReturn GKSessionError = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKSessionError x)
+  fromOwned x = pure (GKSessionError x)
+
 -- | @GKSessionMode@
 newtype GKSessionMode = GKSessionMode CInt
   deriving stock (Eq, Ord, Show)
@@ -585,6 +808,16 @@ pattern GKSessionModeClient = GKSessionMode 1
 pattern GKSessionModePeer :: GKSessionMode
 pattern GKSessionModePeer = GKSessionMode 2
 
+instance ObjCArgument GKSessionMode where
+  withObjCArg (GKSessionMode x) k = k (argCInt x)
+
+instance ObjCReturn GKSessionMode where
+  type RawReturn GKSessionMode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKSessionMode x)
+  fromOwned x = pure (GKSessionMode x)
+
 -- | @GKTransportType@
 newtype GKTransportType = GKTransportType CLong
   deriving stock (Eq, Ord, Show)
@@ -595,6 +828,16 @@ pattern GKTransportTypeUnreliable = GKTransportType 0
 
 pattern GKTransportTypeReliable :: GKTransportType
 pattern GKTransportTypeReliable = GKTransportType 1
+
+instance ObjCArgument GKTransportType where
+  withObjCArg (GKTransportType x) k = k (argCLong x)
+
+instance ObjCReturn GKTransportType where
+  type RawReturn GKTransportType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKTransportType x)
+  fromOwned x = pure (GKTransportType x)
 
 -- | @GKTurnBasedExchangeStatus@
 newtype GKTurnBasedExchangeStatus = GKTurnBasedExchangeStatus CSChar
@@ -615,6 +858,16 @@ pattern GKTurnBasedExchangeStatusResolved = GKTurnBasedExchangeStatus 3
 
 pattern GKTurnBasedExchangeStatusCanceled :: GKTurnBasedExchangeStatus
 pattern GKTurnBasedExchangeStatusCanceled = GKTurnBasedExchangeStatus 4
+
+instance ObjCArgument GKTurnBasedExchangeStatus where
+  withObjCArg (GKTurnBasedExchangeStatus x) k = k (argCChar (fromIntegral x))
+
+instance ObjCReturn GKTurnBasedExchangeStatus where
+  type RawReturn GKTurnBasedExchangeStatus = Int8
+  objcRetType = retInt8
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKTurnBasedExchangeStatus (fromIntegral x))
+  fromOwned x = pure (GKTurnBasedExchangeStatus (fromIntegral x))
 
 -- | Constants that describe the game result for a given participant who has reached the done state.  The developer is free to use these constants or add additional ones
 -- | @GKTurnBasedMatchOutcome@
@@ -655,6 +908,16 @@ pattern GKTurnBasedMatchOutcomeFourth = GKTurnBasedMatchOutcome 9
 pattern GKTurnBasedMatchOutcomeCustomRange :: GKTurnBasedMatchOutcome
 pattern GKTurnBasedMatchOutcomeCustomRange = GKTurnBasedMatchOutcome 16711680
 
+instance ObjCArgument GKTurnBasedMatchOutcome where
+  withObjCArg (GKTurnBasedMatchOutcome x) k = k (argCLong x)
+
+instance ObjCReturn GKTurnBasedMatchOutcome where
+  type RawReturn GKTurnBasedMatchOutcome = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKTurnBasedMatchOutcome x)
+  fromOwned x = pure (GKTurnBasedMatchOutcome x)
+
 -- | Constants that describe the state of the overall match
 -- | @GKTurnBasedMatchStatus@
 newtype GKTurnBasedMatchStatus = GKTurnBasedMatchStatus CLong
@@ -672,6 +935,16 @@ pattern GKTurnBasedMatchStatusEnded = GKTurnBasedMatchStatus 2
 
 pattern GKTurnBasedMatchStatusMatching :: GKTurnBasedMatchStatus
 pattern GKTurnBasedMatchStatusMatching = GKTurnBasedMatchStatus 3
+
+instance ObjCArgument GKTurnBasedMatchStatus where
+  withObjCArg (GKTurnBasedMatchStatus x) k = k (argCLong x)
+
+instance ObjCReturn GKTurnBasedMatchStatus where
+  type RawReturn GKTurnBasedMatchStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKTurnBasedMatchStatus x)
+  fromOwned x = pure (GKTurnBasedMatchStatus x)
 
 -- | Constants that describe the state of individual participants in the match
 -- | @GKTurnBasedParticipantStatus@
@@ -697,6 +970,16 @@ pattern GKTurnBasedParticipantStatusActive = GKTurnBasedParticipantStatus 4
 pattern GKTurnBasedParticipantStatusDone :: GKTurnBasedParticipantStatus
 pattern GKTurnBasedParticipantStatusDone = GKTurnBasedParticipantStatus 5
 
+instance ObjCArgument GKTurnBasedParticipantStatus where
+  withObjCArg (GKTurnBasedParticipantStatus x) k = k (argCLong x)
+
+instance ObjCReturn GKTurnBasedParticipantStatus where
+  type RawReturn GKTurnBasedParticipantStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKTurnBasedParticipantStatus x)
+  fromOwned x = pure (GKTurnBasedParticipantStatus x)
+
 -- | @GKVoiceChatPlayerState@
 newtype GKVoiceChatPlayerState = GKVoiceChatPlayerState CLong
   deriving stock (Eq, Ord, Show)
@@ -716,6 +999,16 @@ pattern GKVoiceChatPlayerSilent = GKVoiceChatPlayerState 3
 
 pattern GKVoiceChatPlayerConnecting :: GKVoiceChatPlayerState
 pattern GKVoiceChatPlayerConnecting = GKVoiceChatPlayerState 4
+
+instance ObjCArgument GKVoiceChatPlayerState where
+  withObjCArg (GKVoiceChatPlayerState x) k = k (argCLong x)
+
+instance ObjCReturn GKVoiceChatPlayerState where
+  type RawReturn GKVoiceChatPlayerState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKVoiceChatPlayerState x)
+  fromOwned x = pure (GKVoiceChatPlayerState x)
 
 -- | @GKVoiceChatServiceError@
 newtype GKVoiceChatServiceError = GKVoiceChatServiceError CInt
@@ -772,3 +1065,13 @@ pattern GKVoiceChatServiceOutOfMemoryError = GKVoiceChatServiceError 32015
 
 pattern GKVoiceChatServiceInvalidParameterError :: GKVoiceChatServiceError
 pattern GKVoiceChatServiceInvalidParameterError = GKVoiceChatServiceError 32016
+
+instance ObjCArgument GKVoiceChatServiceError where
+  withObjCArg (GKVoiceChatServiceError x) k = k (argCInt x)
+
+instance ObjCReturn GKVoiceChatServiceError where
+  type RawReturn GKVoiceChatServiceError = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GKVoiceChatServiceError x)
+  fromOwned x = pure (GKVoiceChatServiceError x)

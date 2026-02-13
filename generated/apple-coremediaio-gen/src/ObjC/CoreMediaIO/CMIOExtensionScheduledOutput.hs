@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.CoreMediaIO.CMIOExtensionScheduledOutput
   , initWithSequenceNumber_hostTimeInNanoseconds
   , sequenceNumber
   , hostTimeInNanoseconds
+  , hostTimeInNanosecondsSelector
   , initSelector
+  , initWithSequenceNumber_hostTimeInNanosecondsSelector
   , newSelector
   , scheduledOutputWithSequenceNumber_hostTimeInNanosecondsSelector
-  , initWithSequenceNumber_hostTimeInNanosecondsSelector
   , sequenceNumberSelector
-  , hostTimeInNanosecondsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMIOExtensionScheduledOutput cmioExtensionScheduledOutput => cmioExtensionScheduledOutput -> IO (Id CMIOExtensionScheduledOutput)
-init_ cmioExtensionScheduledOutput  =
-    sendMsg cmioExtensionScheduledOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionScheduledOutput =
+  sendOwnedMessage cmioExtensionScheduledOutput initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionScheduledOutput)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionScheduledOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | scheduledOutputWithSequenceNumber:hostTimeInNanoseconds:
 --
@@ -64,7 +61,7 @@ scheduledOutputWithSequenceNumber_hostTimeInNanoseconds :: CULong -> CULong -> I
 scheduledOutputWithSequenceNumber_hostTimeInNanoseconds sequenceNumber hostTimeInNanoseconds =
   do
     cls' <- getRequiredClass "CMIOExtensionScheduledOutput"
-    sendClassMsg cls' (mkSelector "scheduledOutputWithSequenceNumber:hostTimeInNanoseconds:") (retPtr retVoid) [argCULong sequenceNumber, argCULong hostTimeInNanoseconds] >>= retainedObject . castPtr
+    sendClassMessage cls' scheduledOutputWithSequenceNumber_hostTimeInNanosecondsSelector sequenceNumber hostTimeInNanoseconds
 
 -- | initWithSequenceNumber:hostTimeInNanoseconds:
 --
@@ -78,8 +75,8 @@ scheduledOutputWithSequenceNumber_hostTimeInNanoseconds sequenceNumber hostTimeI
 --
 -- ObjC selector: @- initWithSequenceNumber:hostTimeInNanoseconds:@
 initWithSequenceNumber_hostTimeInNanoseconds :: IsCMIOExtensionScheduledOutput cmioExtensionScheduledOutput => cmioExtensionScheduledOutput -> CULong -> CULong -> IO (Id CMIOExtensionScheduledOutput)
-initWithSequenceNumber_hostTimeInNanoseconds cmioExtensionScheduledOutput  sequenceNumber hostTimeInNanoseconds =
-    sendMsg cmioExtensionScheduledOutput (mkSelector "initWithSequenceNumber:hostTimeInNanoseconds:") (retPtr retVoid) [argCULong sequenceNumber, argCULong hostTimeInNanoseconds] >>= ownedObject . castPtr
+initWithSequenceNumber_hostTimeInNanoseconds cmioExtensionScheduledOutput sequenceNumber hostTimeInNanoseconds =
+  sendOwnedMessage cmioExtensionScheduledOutput initWithSequenceNumber_hostTimeInNanosecondsSelector sequenceNumber hostTimeInNanoseconds
 
 -- | sequenceNumber
 --
@@ -87,8 +84,8 @@ initWithSequenceNumber_hostTimeInNanoseconds cmioExtensionScheduledOutput  seque
 --
 -- ObjC selector: @- sequenceNumber@
 sequenceNumber :: IsCMIOExtensionScheduledOutput cmioExtensionScheduledOutput => cmioExtensionScheduledOutput -> IO CULong
-sequenceNumber cmioExtensionScheduledOutput  =
-    sendMsg cmioExtensionScheduledOutput (mkSelector "sequenceNumber") retCULong []
+sequenceNumber cmioExtensionScheduledOutput =
+  sendMessage cmioExtensionScheduledOutput sequenceNumberSelector
 
 -- | hostTimeInNanoseconds
 --
@@ -96,34 +93,34 @@ sequenceNumber cmioExtensionScheduledOutput  =
 --
 -- ObjC selector: @- hostTimeInNanoseconds@
 hostTimeInNanoseconds :: IsCMIOExtensionScheduledOutput cmioExtensionScheduledOutput => cmioExtensionScheduledOutput -> IO CULong
-hostTimeInNanoseconds cmioExtensionScheduledOutput  =
-    sendMsg cmioExtensionScheduledOutput (mkSelector "hostTimeInNanoseconds") retCULong []
+hostTimeInNanoseconds cmioExtensionScheduledOutput =
+  sendMessage cmioExtensionScheduledOutput hostTimeInNanosecondsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionScheduledOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionScheduledOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @scheduledOutputWithSequenceNumber:hostTimeInNanoseconds:@
-scheduledOutputWithSequenceNumber_hostTimeInNanosecondsSelector :: Selector
+scheduledOutputWithSequenceNumber_hostTimeInNanosecondsSelector :: Selector '[CULong, CULong] (Id CMIOExtensionScheduledOutput)
 scheduledOutputWithSequenceNumber_hostTimeInNanosecondsSelector = mkSelector "scheduledOutputWithSequenceNumber:hostTimeInNanoseconds:"
 
 -- | @Selector@ for @initWithSequenceNumber:hostTimeInNanoseconds:@
-initWithSequenceNumber_hostTimeInNanosecondsSelector :: Selector
+initWithSequenceNumber_hostTimeInNanosecondsSelector :: Selector '[CULong, CULong] (Id CMIOExtensionScheduledOutput)
 initWithSequenceNumber_hostTimeInNanosecondsSelector = mkSelector "initWithSequenceNumber:hostTimeInNanoseconds:"
 
 -- | @Selector@ for @sequenceNumber@
-sequenceNumberSelector :: Selector
+sequenceNumberSelector :: Selector '[] CULong
 sequenceNumberSelector = mkSelector "sequenceNumber"
 
 -- | @Selector@ for @hostTimeInNanoseconds@
-hostTimeInNanosecondsSelector :: Selector
+hostTimeInNanosecondsSelector :: Selector '[] CULong
 hostTimeInNanosecondsSelector = mkSelector "hostTimeInNanoseconds"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct
   , setGroupKeySetID
   , statusEntry
   , setStatusEntry
-  , nodeIDSelector
-  , setNodeIDSelector
   , groupKeySetIDSelector
+  , nodeIDSelector
   , setGroupKeySetIDSelector
-  , statusEntrySelector
+  , setNodeIDSelector
   , setStatusEntrySelector
+  , statusEntrySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nodeID@
 nodeID :: IsMTRJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct => mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct -> IO (Id NSNumber)
-nodeID mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct nodeIDSelector
 
 -- | @- setNodeID:@
 setNodeID :: (IsMTRJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct -> value -> IO ()
-setNodeID mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct (mkSelector "setNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeID mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct setNodeIDSelector (toNSNumber value)
 
 -- | @- groupKeySetID@
 groupKeySetID :: IsMTRJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct => mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct -> IO (Id NSNumber)
-groupKeySetID mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct (mkSelector "groupKeySetID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupKeySetID mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct groupKeySetIDSelector
 
 -- | @- setGroupKeySetID:@
 setGroupKeySetID :: (IsMTRJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct -> value -> IO ()
-setGroupKeySetID mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct (mkSelector "setGroupKeySetID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupKeySetID mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct setGroupKeySetIDSelector (toNSNumber value)
 
 -- | @- statusEntry@
 statusEntry :: IsMTRJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct => mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct -> IO (Id MTRJointFabricDatastoreClusterDatastoreStatusEntryStruct)
-statusEntry mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct (mkSelector "statusEntry") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusEntry mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct statusEntrySelector
 
 -- | @- setStatusEntry:@
 setStatusEntry :: (IsMTRJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct, IsMTRJointFabricDatastoreClusterDatastoreStatusEntryStruct value) => mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct -> value -> IO ()
-setStatusEntry mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct (mkSelector "setStatusEntry:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatusEntry mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreNodeKeySetEntryStruct setStatusEntrySelector (toMTRJointFabricDatastoreClusterDatastoreStatusEntryStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @setNodeID:@
-setNodeIDSelector :: Selector
+setNodeIDSelector :: Selector '[Id NSNumber] ()
 setNodeIDSelector = mkSelector "setNodeID:"
 
 -- | @Selector@ for @groupKeySetID@
-groupKeySetIDSelector :: Selector
+groupKeySetIDSelector :: Selector '[] (Id NSNumber)
 groupKeySetIDSelector = mkSelector "groupKeySetID"
 
 -- | @Selector@ for @setGroupKeySetID:@
-setGroupKeySetIDSelector :: Selector
+setGroupKeySetIDSelector :: Selector '[Id NSNumber] ()
 setGroupKeySetIDSelector = mkSelector "setGroupKeySetID:"
 
 -- | @Selector@ for @statusEntry@
-statusEntrySelector :: Selector
+statusEntrySelector :: Selector '[] (Id MTRJointFabricDatastoreClusterDatastoreStatusEntryStruct)
 statusEntrySelector = mkSelector "statusEntry"
 
 -- | @Selector@ for @setStatusEntry:@
-setStatusEntrySelector :: Selector
+setStatusEntrySelector :: Selector '[Id MTRJointFabricDatastoreClusterDatastoreStatusEntryStruct] ()
 setStatusEntrySelector = mkSelector "setStatusEntry:"
 

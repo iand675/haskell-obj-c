@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.Virtualization.VZSerialPortConfiguration
   , init_
   , attachment
   , setAttachment
-  , newSelector
-  , initSelector
   , attachmentSelector
+  , initSelector
+  , newSelector
   , setAttachmentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,12 +41,12 @@ new :: IO (Id VZSerialPortConfiguration)
 new  =
   do
     cls' <- getRequiredClass "VZSerialPortConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZSerialPortConfiguration vzSerialPortConfiguration => vzSerialPortConfiguration -> IO (Id VZSerialPortConfiguration)
-init_ vzSerialPortConfiguration  =
-    sendMsg vzSerialPortConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzSerialPortConfiguration =
+  sendOwnedMessage vzSerialPortConfiguration initSelector
 
 -- | Serial port attachment. Defines how the virtual machine's serial port interfaces with the host system. Default is nil.
 --
@@ -59,8 +56,8 @@ init_ vzSerialPortConfiguration  =
 --
 -- ObjC selector: @- attachment@
 attachment :: IsVZSerialPortConfiguration vzSerialPortConfiguration => vzSerialPortConfiguration -> IO (Id VZSerialPortAttachment)
-attachment vzSerialPortConfiguration  =
-    sendMsg vzSerialPortConfiguration (mkSelector "attachment") (retPtr retVoid) [] >>= retainedObject . castPtr
+attachment vzSerialPortConfiguration =
+  sendMessage vzSerialPortConfiguration attachmentSelector
 
 -- | Serial port attachment. Defines how the virtual machine's serial port interfaces with the host system. Default is nil.
 --
@@ -70,27 +67,26 @@ attachment vzSerialPortConfiguration  =
 --
 -- ObjC selector: @- setAttachment:@
 setAttachment :: (IsVZSerialPortConfiguration vzSerialPortConfiguration, IsVZSerialPortAttachment value) => vzSerialPortConfiguration -> value -> IO ()
-setAttachment vzSerialPortConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzSerialPortConfiguration (mkSelector "setAttachment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttachment vzSerialPortConfiguration value =
+  sendMessage vzSerialPortConfiguration setAttachmentSelector (toVZSerialPortAttachment value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZSerialPortConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZSerialPortConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @attachment@
-attachmentSelector :: Selector
+attachmentSelector :: Selector '[] (Id VZSerialPortAttachment)
 attachmentSelector = mkSelector "attachment"
 
 -- | @Selector@ for @setAttachment:@
-setAttachmentSelector :: Selector
+setAttachmentSelector :: Selector '[Id VZSerialPortAttachment] ()
 setAttachmentSelector = mkSelector "setAttachment:"
 

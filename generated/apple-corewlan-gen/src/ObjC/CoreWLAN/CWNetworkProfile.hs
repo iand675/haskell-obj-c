@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,14 +18,14 @@ module ObjC.CoreWLAN.CWNetworkProfile
   , ssid
   , ssidData
   , security
-  , networkProfileSelector
   , initSelector
   , initWithNetworkProfileSelector
-  , networkProfileWithNetworkProfileSelector
   , isEqualToNetworkProfileSelector
-  , ssidSelector
-  , ssidDataSelector
+  , networkProfileSelector
+  , networkProfileWithNetworkProfileSelector
   , securitySelector
+  , ssidDataSelector
+  , ssidSelector
 
   -- * Enum types
   , CWSecurity(CWSecurity)
@@ -48,15 +49,11 @@ module ObjC.CoreWLAN.CWNetworkProfile
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,14 +68,14 @@ networkProfile :: IO (Id CWNetworkProfile)
 networkProfile  =
   do
     cls' <- getRequiredClass "CWNetworkProfile"
-    sendClassMsg cls' (mkSelector "networkProfile") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' networkProfileSelector
 
 -- | Initializes a CWNetworkProfile object.
 --
 -- ObjC selector: @- init@
 init_ :: IsCWNetworkProfile cwNetworkProfile => cwNetworkProfile -> IO (Id CWNetworkProfile)
-init_ cwNetworkProfile  =
-    sendMsg cwNetworkProfile (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cwNetworkProfile =
+  sendOwnedMessage cwNetworkProfile initSelector
 
 -- | @networkProfile@ — A CWNetworkProfile object.
 --
@@ -88,9 +85,8 @@ init_ cwNetworkProfile  =
 --
 -- ObjC selector: @- initWithNetworkProfile:@
 initWithNetworkProfile :: (IsCWNetworkProfile cwNetworkProfile, IsCWNetworkProfile networkProfile) => cwNetworkProfile -> networkProfile -> IO (Id CWNetworkProfile)
-initWithNetworkProfile cwNetworkProfile  networkProfile =
-  withObjCPtr networkProfile $ \raw_networkProfile ->
-      sendMsg cwNetworkProfile (mkSelector "initWithNetworkProfile:") (retPtr retVoid) [argPtr (castPtr raw_networkProfile :: Ptr ())] >>= ownedObject . castPtr
+initWithNetworkProfile cwNetworkProfile networkProfile =
+  sendOwnedMessage cwNetworkProfile initWithNetworkProfileSelector (toCWNetworkProfile networkProfile)
 
 -- | @networkProfile@ — A CWNetworkProfile object.
 --
@@ -103,8 +99,7 @@ networkProfileWithNetworkProfile :: IsCWNetworkProfile networkProfile => network
 networkProfileWithNetworkProfile networkProfile =
   do
     cls' <- getRequiredClass "CWNetworkProfile"
-    withObjCPtr networkProfile $ \raw_networkProfile ->
-      sendClassMsg cls' (mkSelector "networkProfileWithNetworkProfile:") (retPtr retVoid) [argPtr (castPtr raw_networkProfile :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' networkProfileWithNetworkProfileSelector (toCWNetworkProfile networkProfile)
 
 -- | @network@ — A CWNetworkProfile object.
 --
@@ -116,9 +111,8 @@ networkProfileWithNetworkProfile networkProfile =
 --
 -- ObjC selector: @- isEqualToNetworkProfile:@
 isEqualToNetworkProfile :: (IsCWNetworkProfile cwNetworkProfile, IsCWNetworkProfile networkProfile) => cwNetworkProfile -> networkProfile -> IO Bool
-isEqualToNetworkProfile cwNetworkProfile  networkProfile =
-  withObjCPtr networkProfile $ \raw_networkProfile ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwNetworkProfile (mkSelector "isEqualToNetworkProfile:") retCULong [argPtr (castPtr raw_networkProfile :: Ptr ())]
+isEqualToNetworkProfile cwNetworkProfile networkProfile =
+  sendMessage cwNetworkProfile isEqualToNetworkProfileSelector (toCWNetworkProfile networkProfile)
 
 -- | Returns the service set identifier (SSID) for the Wi-Fi network profile, encoded as a string.
 --
@@ -126,8 +120,8 @@ isEqualToNetworkProfile cwNetworkProfile  networkProfile =
 --
 -- ObjC selector: @- ssid@
 ssid :: IsCWNetworkProfile cwNetworkProfile => cwNetworkProfile -> IO RawId
-ssid cwNetworkProfile  =
-    fmap (RawId . castPtr) $ sendMsg cwNetworkProfile (mkSelector "ssid") (retPtr retVoid) []
+ssid cwNetworkProfile =
+  sendMessage cwNetworkProfile ssidSelector
 
 -- | Returns the service set identifier (SSID) for the Wi-Fi network profile, encapsulated in an NSData object.
 --
@@ -135,49 +129,49 @@ ssid cwNetworkProfile  =
 --
 -- ObjC selector: @- ssidData@
 ssidData :: IsCWNetworkProfile cwNetworkProfile => cwNetworkProfile -> IO RawId
-ssidData cwNetworkProfile  =
-    fmap (RawId . castPtr) $ sendMsg cwNetworkProfile (mkSelector "ssidData") (retPtr retVoid) []
+ssidData cwNetworkProfile =
+  sendMessage cwNetworkProfile ssidDataSelector
 
 -- | Returns the security type of the Wi-Fi network profile.
 --
 -- ObjC selector: @- security@
 security :: IsCWNetworkProfile cwNetworkProfile => cwNetworkProfile -> IO CWSecurity
-security cwNetworkProfile  =
-    fmap (coerce :: CLong -> CWSecurity) $ sendMsg cwNetworkProfile (mkSelector "security") retCLong []
+security cwNetworkProfile =
+  sendMessage cwNetworkProfile securitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @networkProfile@
-networkProfileSelector :: Selector
+networkProfileSelector :: Selector '[] (Id CWNetworkProfile)
 networkProfileSelector = mkSelector "networkProfile"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CWNetworkProfile)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithNetworkProfile:@
-initWithNetworkProfileSelector :: Selector
+initWithNetworkProfileSelector :: Selector '[Id CWNetworkProfile] (Id CWNetworkProfile)
 initWithNetworkProfileSelector = mkSelector "initWithNetworkProfile:"
 
 -- | @Selector@ for @networkProfileWithNetworkProfile:@
-networkProfileWithNetworkProfileSelector :: Selector
+networkProfileWithNetworkProfileSelector :: Selector '[Id CWNetworkProfile] (Id CWNetworkProfile)
 networkProfileWithNetworkProfileSelector = mkSelector "networkProfileWithNetworkProfile:"
 
 -- | @Selector@ for @isEqualToNetworkProfile:@
-isEqualToNetworkProfileSelector :: Selector
+isEqualToNetworkProfileSelector :: Selector '[Id CWNetworkProfile] Bool
 isEqualToNetworkProfileSelector = mkSelector "isEqualToNetworkProfile:"
 
 -- | @Selector@ for @ssid@
-ssidSelector :: Selector
+ssidSelector :: Selector '[] RawId
 ssidSelector = mkSelector "ssid"
 
 -- | @Selector@ for @ssidData@
-ssidDataSelector :: Selector
+ssidDataSelector :: Selector '[] RawId
 ssidDataSelector = mkSelector "ssidData"
 
 -- | @Selector@ for @security@
-securitySelector :: Selector
+securitySelector :: Selector '[] CWSecurity
 securitySelector = mkSelector "security"
 

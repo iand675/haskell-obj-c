@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.AppKit.NSWritingToolsCoordinatorAnimationParameters
   , setProgressHandler
   , completionHandler
   , setCompletionHandler
-  , initSelector
-  , durationSelector
-  , delaySelector
-  , progressHandlerSelector
-  , setProgressHandlerSelector
   , completionHandlerSelector
+  , delaySelector
+  , durationSelector
+  , initSelector
+  , progressHandlerSelector
   , setCompletionHandlerSelector
+  , setProgressHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,22 +44,22 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSWritingToolsCoordinatorAnimationParameters nsWritingToolsCoordinatorAnimationParameters => nsWritingToolsCoordinatorAnimationParameters -> IO (Id NSWritingToolsCoordinatorAnimationParameters)
-init_ nsWritingToolsCoordinatorAnimationParameters  =
-    sendMsg nsWritingToolsCoordinatorAnimationParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsWritingToolsCoordinatorAnimationParameters =
+  sendOwnedMessage nsWritingToolsCoordinatorAnimationParameters initSelector
 
 -- | The number of seconds it takes the system animations to run.
 --
 -- ObjC selector: @- duration@
 duration :: IsNSWritingToolsCoordinatorAnimationParameters nsWritingToolsCoordinatorAnimationParameters => nsWritingToolsCoordinatorAnimationParameters -> IO CDouble
-duration nsWritingToolsCoordinatorAnimationParameters  =
-    sendMsg nsWritingToolsCoordinatorAnimationParameters (mkSelector "duration") retCDouble []
+duration nsWritingToolsCoordinatorAnimationParameters =
+  sendMessage nsWritingToolsCoordinatorAnimationParameters durationSelector
 
 -- | The number of seconds the system waits before starting its animations.
 --
 -- ObjC selector: @- delay@
 delay :: IsNSWritingToolsCoordinatorAnimationParameters nsWritingToolsCoordinatorAnimationParameters => nsWritingToolsCoordinatorAnimationParameters -> IO CDouble
-delay nsWritingToolsCoordinatorAnimationParameters  =
-    sendMsg nsWritingToolsCoordinatorAnimationParameters (mkSelector "delay") retCDouble []
+delay nsWritingToolsCoordinatorAnimationParameters =
+  sendMessage nsWritingToolsCoordinatorAnimationParameters delaySelector
 
 -- | A custom block that runs at the same time as the system animations.
 --
@@ -70,8 +67,8 @@ delay nsWritingToolsCoordinatorAnimationParameters  =
 --
 -- ObjC selector: @- progressHandler@
 progressHandler :: IsNSWritingToolsCoordinatorAnimationParameters nsWritingToolsCoordinatorAnimationParameters => nsWritingToolsCoordinatorAnimationParameters -> IO (Ptr ())
-progressHandler nsWritingToolsCoordinatorAnimationParameters  =
-    fmap castPtr $ sendMsg nsWritingToolsCoordinatorAnimationParameters (mkSelector "progressHandler") (retPtr retVoid) []
+progressHandler nsWritingToolsCoordinatorAnimationParameters =
+  sendMessage nsWritingToolsCoordinatorAnimationParameters progressHandlerSelector
 
 -- | A custom block that runs at the same time as the system animations.
 --
@@ -79,8 +76,8 @@ progressHandler nsWritingToolsCoordinatorAnimationParameters  =
 --
 -- ObjC selector: @- setProgressHandler:@
 setProgressHandler :: IsNSWritingToolsCoordinatorAnimationParameters nsWritingToolsCoordinatorAnimationParameters => nsWritingToolsCoordinatorAnimationParameters -> Ptr () -> IO ()
-setProgressHandler nsWritingToolsCoordinatorAnimationParameters  value =
-    sendMsg nsWritingToolsCoordinatorAnimationParameters (mkSelector "setProgressHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setProgressHandler nsWritingToolsCoordinatorAnimationParameters value =
+  sendMessage nsWritingToolsCoordinatorAnimationParameters setProgressHandlerSelector value
 
 -- | A custom block to run when the system animations finish.
 --
@@ -88,8 +85,8 @@ setProgressHandler nsWritingToolsCoordinatorAnimationParameters  value =
 --
 -- ObjC selector: @- completionHandler@
 completionHandler :: IsNSWritingToolsCoordinatorAnimationParameters nsWritingToolsCoordinatorAnimationParameters => nsWritingToolsCoordinatorAnimationParameters -> IO (Ptr ())
-completionHandler nsWritingToolsCoordinatorAnimationParameters  =
-    fmap castPtr $ sendMsg nsWritingToolsCoordinatorAnimationParameters (mkSelector "completionHandler") (retPtr retVoid) []
+completionHandler nsWritingToolsCoordinatorAnimationParameters =
+  sendMessage nsWritingToolsCoordinatorAnimationParameters completionHandlerSelector
 
 -- | A custom block to run when the system animations finish.
 --
@@ -97,38 +94,38 @@ completionHandler nsWritingToolsCoordinatorAnimationParameters  =
 --
 -- ObjC selector: @- setCompletionHandler:@
 setCompletionHandler :: IsNSWritingToolsCoordinatorAnimationParameters nsWritingToolsCoordinatorAnimationParameters => nsWritingToolsCoordinatorAnimationParameters -> Ptr () -> IO ()
-setCompletionHandler nsWritingToolsCoordinatorAnimationParameters  value =
-    sendMsg nsWritingToolsCoordinatorAnimationParameters (mkSelector "setCompletionHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCompletionHandler nsWritingToolsCoordinatorAnimationParameters value =
+  sendMessage nsWritingToolsCoordinatorAnimationParameters setCompletionHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSWritingToolsCoordinatorAnimationParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @delay@
-delaySelector :: Selector
+delaySelector :: Selector '[] CDouble
 delaySelector = mkSelector "delay"
 
 -- | @Selector@ for @progressHandler@
-progressHandlerSelector :: Selector
+progressHandlerSelector :: Selector '[] (Ptr ())
 progressHandlerSelector = mkSelector "progressHandler"
 
 -- | @Selector@ for @setProgressHandler:@
-setProgressHandlerSelector :: Selector
+setProgressHandlerSelector :: Selector '[Ptr ()] ()
 setProgressHandlerSelector = mkSelector "setProgressHandler:"
 
 -- | @Selector@ for @completionHandler@
-completionHandlerSelector :: Selector
+completionHandlerSelector :: Selector '[] (Ptr ())
 completionHandlerSelector = mkSelector "completionHandler"
 
 -- | @Selector@ for @setCompletionHandler:@
-setCompletionHandlerSelector :: Selector
+setCompletionHandlerSelector :: Selector '[Ptr ()] ()
 setCompletionHandlerSelector = mkSelector "setCompletionHandler:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.Intents.INSearchForAccountsIntentResponse
   , code
   , accounts
   , setAccounts
+  , accountsSelector
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
-  , accountsSelector
   , setAccountsSelector
 
   -- * Enum types
@@ -33,15 +34,11 @@ module ObjC.Intents.INSearchForAccountsIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,52 +48,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSearchForAccountsIntentResponse inSearchForAccountsIntentResponse => inSearchForAccountsIntentResponse -> IO RawId
-init_ inSearchForAccountsIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inSearchForAccountsIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inSearchForAccountsIntentResponse =
+  sendOwnedMessage inSearchForAccountsIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINSearchForAccountsIntentResponse inSearchForAccountsIntentResponse, IsNSUserActivity userActivity) => inSearchForAccountsIntentResponse -> INSearchForAccountsIntentResponseCode -> userActivity -> IO (Id INSearchForAccountsIntentResponse)
-initWithCode_userActivity inSearchForAccountsIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inSearchForAccountsIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inSearchForAccountsIntentResponse code userActivity =
+  sendOwnedMessage inSearchForAccountsIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINSearchForAccountsIntentResponse inSearchForAccountsIntentResponse => inSearchForAccountsIntentResponse -> IO INSearchForAccountsIntentResponseCode
-code inSearchForAccountsIntentResponse  =
-    fmap (coerce :: CLong -> INSearchForAccountsIntentResponseCode) $ sendMsg inSearchForAccountsIntentResponse (mkSelector "code") retCLong []
+code inSearchForAccountsIntentResponse =
+  sendMessage inSearchForAccountsIntentResponse codeSelector
 
 -- | @- accounts@
 accounts :: IsINSearchForAccountsIntentResponse inSearchForAccountsIntentResponse => inSearchForAccountsIntentResponse -> IO (Id NSArray)
-accounts inSearchForAccountsIntentResponse  =
-    sendMsg inSearchForAccountsIntentResponse (mkSelector "accounts") (retPtr retVoid) [] >>= retainedObject . castPtr
+accounts inSearchForAccountsIntentResponse =
+  sendMessage inSearchForAccountsIntentResponse accountsSelector
 
 -- | @- setAccounts:@
 setAccounts :: (IsINSearchForAccountsIntentResponse inSearchForAccountsIntentResponse, IsNSArray value) => inSearchForAccountsIntentResponse -> value -> IO ()
-setAccounts inSearchForAccountsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSearchForAccountsIntentResponse (mkSelector "setAccounts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccounts inSearchForAccountsIntentResponse value =
+  sendMessage inSearchForAccountsIntentResponse setAccountsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INSearchForAccountsIntentResponseCode, Id NSUserActivity] (Id INSearchForAccountsIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INSearchForAccountsIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @accounts@
-accountsSelector :: Selector
+accountsSelector :: Selector '[] (Id NSArray)
 accountsSelector = mkSelector "accounts"
 
 -- | @Selector@ for @setAccounts:@
-setAccountsSelector :: Selector
+setAccountsSelector :: Selector '[Id NSArray] ()
 setAccountsSelector = mkSelector "setAccounts:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.CoreBluetooth.CBUUID
   , uuidWithNSUUID
   , data_
   , uuidString
-  , uuidWithStringSelector
-  , uuidWithDataSelector
-  , uuidWithCFUUIDSelector
-  , uuidWithNSUUIDSelector
   , dataSelector
   , uuidStringSelector
+  , uuidWithCFUUIDSelector
+  , uuidWithDataSelector
+  , uuidWithNSUUIDSelector
+  , uuidWithStringSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,7 @@ uuidWithString :: IsNSString theString => theString -> IO (Id CBUUID)
 uuidWithString theString =
   do
     cls' <- getRequiredClass "CBUUID"
-    withObjCPtr theString $ \raw_theString ->
-      sendClassMsg cls' (mkSelector "UUIDWithString:") (retPtr retVoid) [argPtr (castPtr raw_theString :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' uuidWithStringSelector (toNSString theString)
 
 -- | UUIDWithData:
 --
@@ -62,8 +58,7 @@ uuidWithData :: IsNSData theData => theData -> IO (Id CBUUID)
 uuidWithData theData =
   do
     cls' <- getRequiredClass "CBUUID"
-    withObjCPtr theData $ \raw_theData ->
-      sendClassMsg cls' (mkSelector "UUIDWithData:") (retPtr retVoid) [argPtr (castPtr raw_theData :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' uuidWithDataSelector (toNSData theData)
 
 -- | UUIDWithCFUUID:
 --
@@ -74,7 +69,7 @@ uuidWithCFUUID :: RawId -> IO (Id CBUUID)
 uuidWithCFUUID theUUID =
   do
     cls' <- getRequiredClass "CBUUID"
-    sendClassMsg cls' (mkSelector "UUIDWithCFUUID:") (retPtr retVoid) [argPtr (castPtr (unRawId theUUID) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' uuidWithCFUUIDSelector theUUID
 
 -- | UUIDWithNSUUID:
 --
@@ -85,8 +80,7 @@ uuidWithNSUUID :: IsNSUUID theUUID => theUUID -> IO (Id CBUUID)
 uuidWithNSUUID theUUID =
   do
     cls' <- getRequiredClass "CBUUID"
-    withObjCPtr theUUID $ \raw_theUUID ->
-      sendClassMsg cls' (mkSelector "UUIDWithNSUUID:") (retPtr retVoid) [argPtr (castPtr raw_theUUID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' uuidWithNSUUIDSelector (toNSUUID theUUID)
 
 -- | data
 --
@@ -94,8 +88,8 @@ uuidWithNSUUID theUUID =
 --
 -- ObjC selector: @- data@
 data_ :: IsCBUUID cbuuid => cbuuid -> IO (Id NSData)
-data_ cbuuid  =
-    sendMsg cbuuid (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ cbuuid =
+  sendMessage cbuuid dataSelector
 
 -- | UUIDString
 --
@@ -103,34 +97,34 @@ data_ cbuuid  =
 --
 -- ObjC selector: @- UUIDString@
 uuidString :: IsCBUUID cbuuid => cbuuid -> IO RawId
-uuidString cbuuid  =
-    fmap (RawId . castPtr) $ sendMsg cbuuid (mkSelector "UUIDString") (retPtr retVoid) []
+uuidString cbuuid =
+  sendMessage cbuuid uuidStringSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @UUIDWithString:@
-uuidWithStringSelector :: Selector
+uuidWithStringSelector :: Selector '[Id NSString] (Id CBUUID)
 uuidWithStringSelector = mkSelector "UUIDWithString:"
 
 -- | @Selector@ for @UUIDWithData:@
-uuidWithDataSelector :: Selector
+uuidWithDataSelector :: Selector '[Id NSData] (Id CBUUID)
 uuidWithDataSelector = mkSelector "UUIDWithData:"
 
 -- | @Selector@ for @UUIDWithCFUUID:@
-uuidWithCFUUIDSelector :: Selector
+uuidWithCFUUIDSelector :: Selector '[RawId] (Id CBUUID)
 uuidWithCFUUIDSelector = mkSelector "UUIDWithCFUUID:"
 
 -- | @Selector@ for @UUIDWithNSUUID:@
-uuidWithNSUUIDSelector :: Selector
+uuidWithNSUUIDSelector :: Selector '[Id NSUUID] (Id CBUUID)
 uuidWithNSUUIDSelector = mkSelector "UUIDWithNSUUID:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @UUIDString@
-uuidStringSelector :: Selector
+uuidStringSelector :: Selector '[] RawId
 uuidStringSelector = mkSelector "UUIDString"
 

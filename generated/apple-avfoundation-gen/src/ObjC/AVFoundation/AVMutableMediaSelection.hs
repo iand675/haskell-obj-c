@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.AVFoundation.AVMutableMediaSelection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,16 +36,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- selectMediaOption:inMediaSelectionGroup:@
 selectMediaOption_inMediaSelectionGroup :: (IsAVMutableMediaSelection avMutableMediaSelection, IsAVMediaSelectionOption mediaSelectionOption, IsAVMediaSelectionGroup mediaSelectionGroup) => avMutableMediaSelection -> mediaSelectionOption -> mediaSelectionGroup -> IO ()
-selectMediaOption_inMediaSelectionGroup avMutableMediaSelection  mediaSelectionOption mediaSelectionGroup =
-  withObjCPtr mediaSelectionOption $ \raw_mediaSelectionOption ->
-    withObjCPtr mediaSelectionGroup $ \raw_mediaSelectionGroup ->
-        sendMsg avMutableMediaSelection (mkSelector "selectMediaOption:inMediaSelectionGroup:") retVoid [argPtr (castPtr raw_mediaSelectionOption :: Ptr ()), argPtr (castPtr raw_mediaSelectionGroup :: Ptr ())]
+selectMediaOption_inMediaSelectionGroup avMutableMediaSelection mediaSelectionOption mediaSelectionGroup =
+  sendMessage avMutableMediaSelection selectMediaOption_inMediaSelectionGroupSelector (toAVMediaSelectionOption mediaSelectionOption) (toAVMediaSelectionGroup mediaSelectionGroup)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectMediaOption:inMediaSelectionGroup:@
-selectMediaOption_inMediaSelectionGroupSelector :: Selector
+selectMediaOption_inMediaSelectionGroupSelector :: Selector '[Id AVMediaSelectionOption, Id AVMediaSelectionGroup] ()
 selectMediaOption_inMediaSelectionGroupSelector = mkSelector "selectMediaOption:inMediaSelectionGroup:"
 

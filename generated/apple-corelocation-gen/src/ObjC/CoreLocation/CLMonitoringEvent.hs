@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,22 +24,22 @@ module ObjC.CoreLocation.CLMonitoringEvent
   , persistenceUnavailable
   , serviceSessionRequired
   , authorizationRequestInProgress
-  , initSelector
-  , newSelector
-  , identifierSelector
-  , refinementSelector
-  , stateSelector
-  , dateSelector
-  , authorizationDeniedSelector
-  , authorizationDeniedGloballySelector
-  , authorizationRestrictedSelector
-  , insufficientlyInUseSelector
   , accuracyLimitedSelector
-  , conditionUnsupportedSelector
-  , conditionLimitExceededSelector
-  , persistenceUnavailableSelector
-  , serviceSessionRequiredSelector
+  , authorizationDeniedGloballySelector
+  , authorizationDeniedSelector
   , authorizationRequestInProgressSelector
+  , authorizationRestrictedSelector
+  , conditionLimitExceededSelector
+  , conditionUnsupportedSelector
+  , dateSelector
+  , identifierSelector
+  , initSelector
+  , insufficientlyInUseSelector
+  , newSelector
+  , persistenceUnavailableSelector
+  , refinementSelector
+  , serviceSessionRequiredSelector
+  , stateSelector
 
   -- * Enum types
   , CLMonitoringState(CLMonitoringState)
@@ -49,15 +50,11 @@ module ObjC.CoreLocation.CLMonitoringEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,151 +64,151 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO (Id CLMonitoringEvent)
-init_ clMonitoringEvent  =
-    sendMsg clMonitoringEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ clMonitoringEvent =
+  sendOwnedMessage clMonitoringEvent initSelector
 
 -- | @+ new@
 new :: IO (Id CLMonitoringEvent)
 new  =
   do
     cls' <- getRequiredClass "CLMonitoringEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- identifier@
 identifier :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO (Id NSString)
-identifier clMonitoringEvent  =
-    sendMsg clMonitoringEvent (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier clMonitoringEvent =
+  sendMessage clMonitoringEvent identifierSelector
 
 -- | @- refinement@
 refinement :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO (Id CLCondition)
-refinement clMonitoringEvent  =
-    sendMsg clMonitoringEvent (mkSelector "refinement") (retPtr retVoid) [] >>= retainedObject . castPtr
+refinement clMonitoringEvent =
+  sendMessage clMonitoringEvent refinementSelector
 
 -- | @- state@
 state :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO CLMonitoringState
-state clMonitoringEvent  =
-    fmap (coerce :: CULong -> CLMonitoringState) $ sendMsg clMonitoringEvent (mkSelector "state") retCULong []
+state clMonitoringEvent =
+  sendMessage clMonitoringEvent stateSelector
 
 -- | @- date@
 date :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO (Id NSDate)
-date clMonitoringEvent  =
-    sendMsg clMonitoringEvent (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date clMonitoringEvent =
+  sendMessage clMonitoringEvent dateSelector
 
 -- | @- authorizationDenied@
 authorizationDenied :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-authorizationDenied clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "authorizationDenied") retCULong []
+authorizationDenied clMonitoringEvent =
+  sendMessage clMonitoringEvent authorizationDeniedSelector
 
 -- | @- authorizationDeniedGlobally@
 authorizationDeniedGlobally :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-authorizationDeniedGlobally clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "authorizationDeniedGlobally") retCULong []
+authorizationDeniedGlobally clMonitoringEvent =
+  sendMessage clMonitoringEvent authorizationDeniedGloballySelector
 
 -- | @- authorizationRestricted@
 authorizationRestricted :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-authorizationRestricted clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "authorizationRestricted") retCULong []
+authorizationRestricted clMonitoringEvent =
+  sendMessage clMonitoringEvent authorizationRestrictedSelector
 
 -- | @- insufficientlyInUse@
 insufficientlyInUse :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-insufficientlyInUse clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "insufficientlyInUse") retCULong []
+insufficientlyInUse clMonitoringEvent =
+  sendMessage clMonitoringEvent insufficientlyInUseSelector
 
 -- | @- accuracyLimited@
 accuracyLimited :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-accuracyLimited clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "accuracyLimited") retCULong []
+accuracyLimited clMonitoringEvent =
+  sendMessage clMonitoringEvent accuracyLimitedSelector
 
 -- | @- conditionUnsupported@
 conditionUnsupported :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-conditionUnsupported clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "conditionUnsupported") retCULong []
+conditionUnsupported clMonitoringEvent =
+  sendMessage clMonitoringEvent conditionUnsupportedSelector
 
 -- | @- conditionLimitExceeded@
 conditionLimitExceeded :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-conditionLimitExceeded clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "conditionLimitExceeded") retCULong []
+conditionLimitExceeded clMonitoringEvent =
+  sendMessage clMonitoringEvent conditionLimitExceededSelector
 
 -- | @- persistenceUnavailable@
 persistenceUnavailable :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-persistenceUnavailable clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "persistenceUnavailable") retCULong []
+persistenceUnavailable clMonitoringEvent =
+  sendMessage clMonitoringEvent persistenceUnavailableSelector
 
 -- | @- serviceSessionRequired@
 serviceSessionRequired :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-serviceSessionRequired clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "serviceSessionRequired") retCULong []
+serviceSessionRequired clMonitoringEvent =
+  sendMessage clMonitoringEvent serviceSessionRequiredSelector
 
 -- | @- authorizationRequestInProgress@
 authorizationRequestInProgress :: IsCLMonitoringEvent clMonitoringEvent => clMonitoringEvent -> IO Bool
-authorizationRequestInProgress clMonitoringEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clMonitoringEvent (mkSelector "authorizationRequestInProgress") retCULong []
+authorizationRequestInProgress clMonitoringEvent =
+  sendMessage clMonitoringEvent authorizationRequestInProgressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CLMonitoringEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CLMonitoringEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @refinement@
-refinementSelector :: Selector
+refinementSelector :: Selector '[] (Id CLCondition)
 refinementSelector = mkSelector "refinement"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] CLMonitoringState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @authorizationDenied@
-authorizationDeniedSelector :: Selector
+authorizationDeniedSelector :: Selector '[] Bool
 authorizationDeniedSelector = mkSelector "authorizationDenied"
 
 -- | @Selector@ for @authorizationDeniedGlobally@
-authorizationDeniedGloballySelector :: Selector
+authorizationDeniedGloballySelector :: Selector '[] Bool
 authorizationDeniedGloballySelector = mkSelector "authorizationDeniedGlobally"
 
 -- | @Selector@ for @authorizationRestricted@
-authorizationRestrictedSelector :: Selector
+authorizationRestrictedSelector :: Selector '[] Bool
 authorizationRestrictedSelector = mkSelector "authorizationRestricted"
 
 -- | @Selector@ for @insufficientlyInUse@
-insufficientlyInUseSelector :: Selector
+insufficientlyInUseSelector :: Selector '[] Bool
 insufficientlyInUseSelector = mkSelector "insufficientlyInUse"
 
 -- | @Selector@ for @accuracyLimited@
-accuracyLimitedSelector :: Selector
+accuracyLimitedSelector :: Selector '[] Bool
 accuracyLimitedSelector = mkSelector "accuracyLimited"
 
 -- | @Selector@ for @conditionUnsupported@
-conditionUnsupportedSelector :: Selector
+conditionUnsupportedSelector :: Selector '[] Bool
 conditionUnsupportedSelector = mkSelector "conditionUnsupported"
 
 -- | @Selector@ for @conditionLimitExceeded@
-conditionLimitExceededSelector :: Selector
+conditionLimitExceededSelector :: Selector '[] Bool
 conditionLimitExceededSelector = mkSelector "conditionLimitExceeded"
 
 -- | @Selector@ for @persistenceUnavailable@
-persistenceUnavailableSelector :: Selector
+persistenceUnavailableSelector :: Selector '[] Bool
 persistenceUnavailableSelector = mkSelector "persistenceUnavailable"
 
 -- | @Selector@ for @serviceSessionRequired@
-serviceSessionRequiredSelector :: Selector
+serviceSessionRequiredSelector :: Selector '[] Bool
 serviceSessionRequiredSelector = mkSelector "serviceSessionRequired"
 
 -- | @Selector@ for @authorizationRequestInProgress@
-authorizationRequestInProgressSelector :: Selector
+authorizationRequestInProgressSelector :: Selector '[] Bool
 authorizationRequestInProgressSelector = mkSelector "authorizationRequestInProgress"
 

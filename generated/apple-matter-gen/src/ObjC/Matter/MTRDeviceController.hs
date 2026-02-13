@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -60,73 +61,69 @@ module ObjC.Matter.MTRDeviceController
   , devices
   , nodesWithStoredData
   , controllerNodeId
-  , initSelector
-  , newSelector
-  , initWithParameters_errorSelector
-  , setupCommissioningSessionWithPayload_newNodeID_errorSelector
-  , setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_errorSelector
-  , commissionNodeWithID_commissioningParams_errorSelector
-  , continueCommissioningDevice_ignoreAttestationFailure_errorSelector
-  , cancelCommissioningForNodeID_errorSelector
-  , deviceBeingCommissionedWithNodeID_errorSelector
-  , preWarmCommissioningSessionSelector
-  , setDeviceControllerDelegate_queueSelector
   , addDeviceControllerDelegate_queueSelector
+  , addServerEndpointSelector
+  , attestationChallengeForDeviceIDSelector
+  , cancelCommissioningForNodeID_errorSelector
+  , commissionDevice_commissioningParams_errorSelector
+  , commissionNodeWithID_commissioningParams_errorSelector
+  , computePASEVerifierForSetupPasscode_iterations_salt_errorSelector
+  , computePaseVerifier_iterations_saltSelector
+  , continueCommissioningDevice_ignoreAttestationFailure_errorSelector
+  , controllerNodeIDSelector
+  , controllerNodeIdSelector
+  , decodeXPCReadParamsSelector
+  , decodeXPCResponseValuesSelector
+  , decodeXPCSubscribeParamsSelector
+  , deviceBeingCommissionedWithNodeID_errorSelector
+  , devicesSelector
+  , encodeXPCReadParamsSelector
+  , encodeXPCResponseValuesSelector
+  , encodeXPCSubscribeParamsSelector
+  , fetchAttestationChallengeForDeviceIdSelector
+  , forgetDeviceWithNodeIDSelector
+  , getBaseDevice_queue_completionHandlerSelector
+  , getDeviceBeingCommissioned_errorSelector
+  , initSelector
+  , initWithParameters_errorSelector
+  , newSelector
+  , nodesWithStoredDataSelector
+  , openPairingWindowWithPIN_duration_discriminator_setupPIN_errorSelector
+  , openPairingWindow_duration_errorSelector
+  , pairDevice_address_port_setupPINCode_errorSelector
+  , pairDevice_discriminator_setupPINCode_errorSelector
+  , pairDevice_onboardingPayload_errorSelector
+  , preWarmCommissioningSessionSelector
   , removeDeviceControllerDelegateSelector
+  , removeServerEndpointSelector
+  , removeServerEndpoint_queue_completionSelector
+  , resumeSelector
+  , runningSelector
+  , setDeviceControllerDelegate_queueSelector
+  , setNocChainIssuer_queueSelector
+  , setPairingDelegate_queueSelector
+  , setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_errorSelector
+  , setupCommissioningSessionWithPayload_newNodeID_errorSelector
+  , sharedControllerWithID_xpcConnectBlockSelector
+  , sharedControllerWithId_xpcConnectBlockSelector
+  , shutdownSelector
   , startBrowseForCommissionables_queueSelector
   , stopBrowseForCommissionablesSelector
-  , attestationChallengeForDeviceIDSelector
-  , addServerEndpointSelector
-  , removeServerEndpoint_queue_completionSelector
-  , removeServerEndpointSelector
-  , forgetDeviceWithNodeIDSelector
-  , computePASEVerifierForSetupPasscode_iterations_salt_errorSelector
-  , suspendSelector
-  , resumeSelector
-  , shutdownSelector
-  , sharedControllerWithId_xpcConnectBlockSelector
-  , sharedControllerWithID_xpcConnectBlockSelector
-  , encodeXPCResponseValuesSelector
-  , decodeXPCResponseValuesSelector
-  , encodeXPCReadParamsSelector
-  , decodeXPCReadParamsSelector
-  , encodeXPCSubscribeParamsSelector
-  , decodeXPCSubscribeParamsSelector
-  , xpcInterfaceForServerProtocolSelector
-  , xpcInterfaceForClientProtocolSelector
-  , fetchAttestationChallengeForDeviceIdSelector
-  , getBaseDevice_queue_completionHandlerSelector
-  , pairDevice_discriminator_setupPINCode_errorSelector
-  , pairDevice_address_port_setupPINCode_errorSelector
-  , pairDevice_onboardingPayload_errorSelector
-  , commissionDevice_commissioningParams_errorSelector
   , stopDevicePairing_errorSelector
-  , getDeviceBeingCommissioned_errorSelector
-  , openPairingWindow_duration_errorSelector
-  , openPairingWindowWithPIN_duration_discriminator_setupPIN_errorSelector
-  , computePaseVerifier_iterations_saltSelector
-  , setPairingDelegate_queueSelector
-  , setNocChainIssuer_queueSelector
-  , runningSelector
+  , suspendSelector
   , suspendedSelector
   , uniqueIdentifierSelector
-  , controllerNodeIDSelector
-  , devicesSelector
-  , nodesWithStoredDataSelector
-  , controllerNodeIdSelector
+  , xpcInterfaceForClientProtocolSelector
+  , xpcInterfaceForServerProtocolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -137,15 +134,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO (Id MTRDeviceController)
-init_ mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrDeviceController =
+  sendOwnedMessage mtrDeviceController initSelector
 
 -- | @+ new@
 new :: IO (Id MTRDeviceController)
 new  =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Initialize a device controller with the provided parameters.  This will:
 --
@@ -155,10 +152,8 @@ new  =
 --
 -- ObjC selector: @- initWithParameters:error:@
 initWithParameters_error :: (IsMTRDeviceController mtrDeviceController, IsMTRDeviceControllerAbstractParameters parameters, IsNSError error_) => mtrDeviceController -> parameters -> error_ -> IO (Id MTRDeviceController)
-initWithParameters_error mtrDeviceController  parameters error_ =
-  withObjCPtr parameters $ \raw_parameters ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrDeviceController (mkSelector "initWithParameters:error:") (retPtr retVoid) [argPtr (castPtr raw_parameters :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithParameters_error mtrDeviceController parameters error_ =
+  sendOwnedMessage mtrDeviceController initWithParameters_errorSelector (toMTRDeviceControllerAbstractParameters parameters) (toNSError error_)
 
 -- | Set up a commissioning session for a device, using the provided setup payload to discover it and connect to it.
 --
@@ -180,11 +175,8 @@ initWithParameters_error mtrDeviceController  parameters error_ =
 --
 -- ObjC selector: @- setupCommissioningSessionWithPayload:newNodeID:error:@
 setupCommissioningSessionWithPayload_newNodeID_error :: (IsMTRDeviceController mtrDeviceController, IsMTRSetupPayload payload, IsNSNumber newNodeID, IsNSError error_) => mtrDeviceController -> payload -> newNodeID -> error_ -> IO Bool
-setupCommissioningSessionWithPayload_newNodeID_error mtrDeviceController  payload newNodeID error_ =
-  withObjCPtr payload $ \raw_payload ->
-    withObjCPtr newNodeID $ \raw_newNodeID ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "setupCommissioningSessionWithPayload:newNodeID:error:") retCULong [argPtr (castPtr raw_payload :: Ptr ()), argPtr (castPtr raw_newNodeID :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setupCommissioningSessionWithPayload_newNodeID_error mtrDeviceController payload newNodeID error_ =
+  sendMessage mtrDeviceController setupCommissioningSessionWithPayload_newNodeID_errorSelector (toMTRSetupPayload payload) (toNSNumber newNodeID) (toNSError error_)
 
 -- | Set up a commissioning session for a device, using the provided discovered result to connect to it.
 --
@@ -208,12 +200,8 @@ setupCommissioningSessionWithPayload_newNodeID_error mtrDeviceController  payloa
 --
 -- ObjC selector: @- setupCommissioningSessionWithDiscoveredDevice:payload:newNodeID:error:@
 setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_error :: (IsMTRDeviceController mtrDeviceController, IsMTRCommissionableBrowserResult discoveredDevice, IsMTRSetupPayload payload, IsNSNumber newNodeID, IsNSError error_) => mtrDeviceController -> discoveredDevice -> payload -> newNodeID -> error_ -> IO Bool
-setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_error mtrDeviceController  discoveredDevice payload newNodeID error_ =
-  withObjCPtr discoveredDevice $ \raw_discoveredDevice ->
-    withObjCPtr payload $ \raw_payload ->
-      withObjCPtr newNodeID $ \raw_newNodeID ->
-        withObjCPtr error_ $ \raw_error_ ->
-            fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "setupCommissioningSessionWithDiscoveredDevice:payload:newNodeID:error:") retCULong [argPtr (castPtr raw_discoveredDevice :: Ptr ()), argPtr (castPtr raw_payload :: Ptr ()), argPtr (castPtr raw_newNodeID :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_error mtrDeviceController discoveredDevice payload newNodeID error_ =
+  sendMessage mtrDeviceController setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_errorSelector (toMTRCommissionableBrowserResult discoveredDevice) (toMTRSetupPayload payload) (toNSNumber newNodeID) (toNSError error_)
 
 -- | Commission the node with the given node ID.  The node ID must match the node ID that was used to set up the commissioning session.
 --
@@ -221,42 +209,34 @@ setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_error mtrDeviceC
 --
 -- ObjC selector: @- commissionNodeWithID:commissioningParams:error:@
 commissionNodeWithID_commissioningParams_error :: (IsMTRDeviceController mtrDeviceController, IsNSNumber nodeID, IsMTRCommissioningParameters commissioningParams, IsNSError error_) => mtrDeviceController -> nodeID -> commissioningParams -> error_ -> IO Bool
-commissionNodeWithID_commissioningParams_error mtrDeviceController  nodeID commissioningParams error_ =
-  withObjCPtr nodeID $ \raw_nodeID ->
-    withObjCPtr commissioningParams $ \raw_commissioningParams ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "commissionNodeWithID:commissioningParams:error:") retCULong [argPtr (castPtr raw_nodeID :: Ptr ()), argPtr (castPtr raw_commissioningParams :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+commissionNodeWithID_commissioningParams_error mtrDeviceController nodeID commissioningParams error_ =
+  sendMessage mtrDeviceController commissionNodeWithID_commissioningParams_errorSelector (toNSNumber nodeID) (toMTRCommissioningParameters commissioningParams) (toNSError error_)
 
 -- | Call this method after MTRDeviceAttestationDelegate deviceAttestationFailedForController:opaqueDeviceHandle:error: or deviceAttestationCompletedForController:opaqueDeviceHandle:attestationDeviceInfo:error: is called to continue commissioning the device.
 --
 -- ObjC selector: @- continueCommissioningDevice:ignoreAttestationFailure:error:@
 continueCommissioningDevice_ignoreAttestationFailure_error :: (IsMTRDeviceController mtrDeviceController, IsNSError error_) => mtrDeviceController -> Ptr () -> Bool -> error_ -> IO Bool
-continueCommissioningDevice_ignoreAttestationFailure_error mtrDeviceController  opaqueDeviceHandle ignoreAttestationFailure error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "continueCommissioningDevice:ignoreAttestationFailure:error:") retCULong [argPtr opaqueDeviceHandle, argCULong (if ignoreAttestationFailure then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+continueCommissioningDevice_ignoreAttestationFailure_error mtrDeviceController opaqueDeviceHandle ignoreAttestationFailure error_ =
+  sendMessage mtrDeviceController continueCommissioningDevice_ignoreAttestationFailure_errorSelector opaqueDeviceHandle ignoreAttestationFailure (toNSError error_)
 
 -- | Cancel commissioning for the given node id.  This will shut down any existing commissioning session for that node id.
 --
 -- ObjC selector: @- cancelCommissioningForNodeID:error:@
 cancelCommissioningForNodeID_error :: (IsMTRDeviceController mtrDeviceController, IsNSNumber nodeID, IsNSError error_) => mtrDeviceController -> nodeID -> error_ -> IO Bool
-cancelCommissioningForNodeID_error mtrDeviceController  nodeID error_ =
-  withObjCPtr nodeID $ \raw_nodeID ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "cancelCommissioningForNodeID:error:") retCULong [argPtr (castPtr raw_nodeID :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+cancelCommissioningForNodeID_error mtrDeviceController nodeID error_ =
+  sendMessage mtrDeviceController cancelCommissioningForNodeID_errorSelector (toNSNumber nodeID) (toNSError error_)
 
 -- | Get an MTRBaseDevice for a commissioning session that was set up for the given node ID.  Returns nil if no such commissioning session is available.
 --
 -- ObjC selector: @- deviceBeingCommissionedWithNodeID:error:@
 deviceBeingCommissionedWithNodeID_error :: (IsMTRDeviceController mtrDeviceController, IsNSNumber nodeID, IsNSError error_) => mtrDeviceController -> nodeID -> error_ -> IO (Id MTRBaseDevice)
-deviceBeingCommissionedWithNodeID_error mtrDeviceController  nodeID error_ =
-  withObjCPtr nodeID $ \raw_nodeID ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrDeviceController (mkSelector "deviceBeingCommissionedWithNodeID:error:") (retPtr retVoid) [argPtr (castPtr raw_nodeID :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+deviceBeingCommissionedWithNodeID_error mtrDeviceController nodeID error_ =
+  sendMessage mtrDeviceController deviceBeingCommissionedWithNodeID_errorSelector (toNSNumber nodeID) (toNSError error_)
 
 -- | @- preWarmCommissioningSession@
 preWarmCommissioningSession :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO ()
-preWarmCommissioningSession mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "preWarmCommissioningSession") retVoid []
+preWarmCommissioningSession mtrDeviceController =
+  sendMessage mtrDeviceController preWarmCommissioningSessionSelector
 
 -- | Set the Delegate for the device controller as well as the Queue on which the Delegate callbacks will be triggered
 --
@@ -266,9 +246,8 @@ preWarmCommissioningSession mtrDeviceController  =
 --
 -- ObjC selector: @- setDeviceControllerDelegate:queue:@
 setDeviceControllerDelegate_queue :: (IsMTRDeviceController mtrDeviceController, IsNSObject queue) => mtrDeviceController -> RawId -> queue -> IO ()
-setDeviceControllerDelegate_queue mtrDeviceController  delegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrDeviceController (mkSelector "setDeviceControllerDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+setDeviceControllerDelegate_queue mtrDeviceController delegate queue =
+  sendMessage mtrDeviceController setDeviceControllerDelegate_queueSelector delegate (toNSObject queue)
 
 -- | Adds a Delegate to the device controller as well as the Queue on which the Delegate callbacks will be triggered
 --
@@ -284,9 +263,8 @@ setDeviceControllerDelegate_queue mtrDeviceController  delegate queue =
 --
 -- ObjC selector: @- addDeviceControllerDelegate:queue:@
 addDeviceControllerDelegate_queue :: (IsMTRDeviceController mtrDeviceController, IsNSObject queue) => mtrDeviceController -> RawId -> queue -> IO ()
-addDeviceControllerDelegate_queue mtrDeviceController  delegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrDeviceController (mkSelector "addDeviceControllerDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+addDeviceControllerDelegate_queue mtrDeviceController delegate queue =
+  sendMessage mtrDeviceController addDeviceControllerDelegate_queueSelector delegate (toNSObject queue)
 
 -- | Removes a Delegate from the device controller
 --
@@ -294,8 +272,8 @@ addDeviceControllerDelegate_queue mtrDeviceController  delegate queue =
 --
 -- ObjC selector: @- removeDeviceControllerDelegate:@
 removeDeviceControllerDelegate :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> RawId -> IO ()
-removeDeviceControllerDelegate mtrDeviceController  delegate =
-    sendMsg mtrDeviceController (mkSelector "removeDeviceControllerDelegate:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ())]
+removeDeviceControllerDelegate mtrDeviceController delegate =
+  sendMessage mtrDeviceController removeDeviceControllerDelegateSelector delegate
 
 -- | Start scanning for commissionable devices.
 --
@@ -303,9 +281,8 @@ removeDeviceControllerDelegate mtrDeviceController  delegate =
 --
 -- ObjC selector: @- startBrowseForCommissionables:queue:@
 startBrowseForCommissionables_queue :: (IsMTRDeviceController mtrDeviceController, IsNSObject queue) => mtrDeviceController -> RawId -> queue -> IO Bool
-startBrowseForCommissionables_queue mtrDeviceController  delegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "startBrowseForCommissionables:queue:") retCULong [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+startBrowseForCommissionables_queue mtrDeviceController delegate queue =
+  sendMessage mtrDeviceController startBrowseForCommissionables_queueSelector delegate (toNSObject queue)
 
 -- | Stop scanning for commissionable devices.
 --
@@ -313,8 +290,8 @@ startBrowseForCommissionables_queue mtrDeviceController  delegate queue =
 --
 -- ObjC selector: @- stopBrowseForCommissionables@
 stopBrowseForCommissionables :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO Bool
-stopBrowseForCommissionables mtrDeviceController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "stopBrowseForCommissionables") retCULong []
+stopBrowseForCommissionables mtrDeviceController =
+  sendMessage mtrDeviceController stopBrowseForCommissionablesSelector
 
 -- | Return the attestation challenge for the secure session of the device being commissioned.
 --
@@ -322,9 +299,8 @@ stopBrowseForCommissionables mtrDeviceController  =
 --
 -- ObjC selector: @- attestationChallengeForDeviceID:@
 attestationChallengeForDeviceID :: (IsMTRDeviceController mtrDeviceController, IsNSNumber deviceID) => mtrDeviceController -> deviceID -> IO (Id NSData)
-attestationChallengeForDeviceID mtrDeviceController  deviceID =
-  withObjCPtr deviceID $ \raw_deviceID ->
-      sendMsg mtrDeviceController (mkSelector "attestationChallengeForDeviceID:") (retPtr retVoid) [argPtr (castPtr raw_deviceID :: Ptr ())] >>= retainedObject . castPtr
+attestationChallengeForDeviceID mtrDeviceController deviceID =
+  sendMessage mtrDeviceController attestationChallengeForDeviceIDSelector (toNSNumber deviceID)
 
 -- | Add a server endpoint for this controller.  The endpoint starts off enabled.
 --
@@ -334,34 +310,29 @@ attestationChallengeForDeviceID mtrDeviceController  deviceID =
 --
 -- ObjC selector: @- addServerEndpoint:@
 addServerEndpoint :: (IsMTRDeviceController mtrDeviceController, IsMTRServerEndpoint endpoint) => mtrDeviceController -> endpoint -> IO Bool
-addServerEndpoint mtrDeviceController  endpoint =
-  withObjCPtr endpoint $ \raw_endpoint ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "addServerEndpoint:") retCULong [argPtr (castPtr raw_endpoint :: Ptr ())]
+addServerEndpoint mtrDeviceController endpoint =
+  sendMessage mtrDeviceController addServerEndpointSelector (toMTRServerEndpoint endpoint)
 
 -- | Remove the given server endpoint from this controller.  If the endpoint is not attached to this controller, will just call the completion and do nothing else.
 --
 -- ObjC selector: @- removeServerEndpoint:queue:completion:@
 removeServerEndpoint_queue_completion :: (IsMTRDeviceController mtrDeviceController, IsMTRServerEndpoint endpoint, IsNSObject queue) => mtrDeviceController -> endpoint -> queue -> Ptr () -> IO ()
-removeServerEndpoint_queue_completion mtrDeviceController  endpoint queue completion =
-  withObjCPtr endpoint $ \raw_endpoint ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrDeviceController (mkSelector "removeServerEndpoint:queue:completion:") retVoid [argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeServerEndpoint_queue_completion mtrDeviceController endpoint queue completion =
+  sendMessage mtrDeviceController removeServerEndpoint_queue_completionSelector (toMTRServerEndpoint endpoint) (toNSObject queue) completion
 
 -- | Remove the given server endpoint without being notified when the removal completes.
 --
 -- ObjC selector: @- removeServerEndpoint:@
 removeServerEndpoint :: (IsMTRDeviceController mtrDeviceController, IsMTRServerEndpoint endpoint) => mtrDeviceController -> endpoint -> IO ()
-removeServerEndpoint mtrDeviceController  endpoint =
-  withObjCPtr endpoint $ \raw_endpoint ->
-      sendMsg mtrDeviceController (mkSelector "removeServerEndpoint:") retVoid [argPtr (castPtr raw_endpoint :: Ptr ())]
+removeServerEndpoint mtrDeviceController endpoint =
+  sendMessage mtrDeviceController removeServerEndpointSelector (toMTRServerEndpoint endpoint)
 
 -- | Forget any information we have about the device with the given node ID.  That includes clearing any information we have stored about it.
 --
 -- ObjC selector: @- forgetDeviceWithNodeID:@
 forgetDeviceWithNodeID :: (IsMTRDeviceController mtrDeviceController, IsNSNumber nodeID) => mtrDeviceController -> nodeID -> IO ()
-forgetDeviceWithNodeID mtrDeviceController  nodeID =
-  withObjCPtr nodeID $ \raw_nodeID ->
-      sendMsg mtrDeviceController (mkSelector "forgetDeviceWithNodeID:") retVoid [argPtr (castPtr raw_nodeID :: Ptr ())]
+forgetDeviceWithNodeID mtrDeviceController nodeID =
+  sendMessage mtrDeviceController forgetDeviceWithNodeIDSelector (toNSNumber nodeID)
 
 -- | Compute a PASE verifier for the desired setup passcode.
 --
@@ -378,11 +349,7 @@ computePASEVerifierForSetupPasscode_iterations_salt_error :: (IsNSNumber setupPa
 computePASEVerifierForSetupPasscode_iterations_salt_error setupPasscode iterations salt error_ =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    withObjCPtr setupPasscode $ \raw_setupPasscode ->
-      withObjCPtr iterations $ \raw_iterations ->
-        withObjCPtr salt $ \raw_salt ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "computePASEVerifierForSetupPasscode:iterations:salt:error:") (retPtr retVoid) [argPtr (castPtr raw_setupPasscode :: Ptr ()), argPtr (castPtr raw_iterations :: Ptr ()), argPtr (castPtr raw_salt :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' computePASEVerifierForSetupPasscode_iterations_salt_errorSelector (toNSNumber setupPasscode) (toNSNumber iterations) (toNSData salt) (toNSError error_)
 
 -- | Suspend the controller.  This will attempt to stop all network traffic associated with the controller.  The controller will remain suspended until it is resumed.
 --
@@ -390,8 +357,8 @@ computePASEVerifierForSetupPasscode_iterations_salt_error setupPasscode iteratio
 --
 -- ObjC selector: @- suspend@
 suspend :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO ()
-suspend mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "suspend") retVoid []
+suspend mtrDeviceController =
+  sendMessage mtrDeviceController suspendSelector
 
 -- | Resume the controller.  This has no effect if the controller is not suspended.
 --
@@ -399,22 +366,22 @@ suspend mtrDeviceController  =
 --
 -- ObjC selector: @- resume@
 resume :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO ()
-resume mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "resume") retVoid []
+resume mtrDeviceController =
+  sendMessage mtrDeviceController resumeSelector
 
 -- | Shut down the controller. Calls to shutdown after the first one are NO-OPs. This must be called, either directly or via shutting down the MTRDeviceControllerFactory, to avoid leaking the controller.
 --
 -- ObjC selector: @- shutdown@
 shutdown :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO ()
-shutdown mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "shutdown") retVoid []
+shutdown mtrDeviceController =
+  sendMessage mtrDeviceController shutdownSelector
 
 -- | @+ sharedControllerWithId:xpcConnectBlock:@
 sharedControllerWithId_xpcConnectBlock :: RawId -> Ptr () -> IO (Id MTRDeviceController)
 sharedControllerWithId_xpcConnectBlock controllerID xpcConnectBlock =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    sendClassMsg cls' (mkSelector "sharedControllerWithId:xpcConnectBlock:") (retPtr retVoid) [argPtr (castPtr (unRawId controllerID) :: Ptr ()), argPtr (castPtr xpcConnectBlock :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedControllerWithId_xpcConnectBlockSelector controllerID xpcConnectBlock
 
 -- | Returns a shared device controller proxy for the controller object over XPC connection.
 --
@@ -427,7 +394,7 @@ sharedControllerWithID_xpcConnectBlock :: RawId -> Ptr () -> IO (Id MTRDeviceCon
 sharedControllerWithID_xpcConnectBlock controllerID xpcConnectBlock =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    sendClassMsg cls' (mkSelector "sharedControllerWithID:xpcConnectBlock:") (retPtr retVoid) [argPtr (castPtr (unRawId controllerID) :: Ptr ()), argPtr (castPtr xpcConnectBlock :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedControllerWithID_xpcConnectBlockSelector controllerID xpcConnectBlock
 
 -- | Returns an encoded values object to send over XPC for read, write and command interactions
 --
@@ -436,8 +403,7 @@ encodeXPCResponseValues :: IsNSArray values => values -> IO (Id NSArray)
 encodeXPCResponseValues values =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    withObjCPtr values $ \raw_values ->
-      sendClassMsg cls' (mkSelector "encodeXPCResponseValues:") (retPtr retVoid) [argPtr (castPtr raw_values :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' encodeXPCResponseValuesSelector (toNSArray values)
 
 -- | Returns a decoded values object from a values object received from XPC for read, write and command interactions
 --
@@ -446,8 +412,7 @@ decodeXPCResponseValues :: IsNSArray values => values -> IO (Id NSArray)
 decodeXPCResponseValues values =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    withObjCPtr values $ \raw_values ->
-      sendClassMsg cls' (mkSelector "decodeXPCResponseValues:") (retPtr retVoid) [argPtr (castPtr raw_values :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' decodeXPCResponseValuesSelector (toNSArray values)
 
 -- | Returns a serialized read parameter object to send over XPC
 --
@@ -456,8 +421,7 @@ encodeXPCReadParams :: IsMTRReadParams params => params -> IO (Id NSDictionary)
 encodeXPCReadParams params =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    withObjCPtr params $ \raw_params ->
-      sendClassMsg cls' (mkSelector "encodeXPCReadParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' encodeXPCReadParamsSelector (toMTRReadParams params)
 
 -- | Returns a deserialized read parameter object from an object received over XPC
 --
@@ -466,8 +430,7 @@ decodeXPCReadParams :: IsNSDictionary params => params -> IO (Id MTRReadParams)
 decodeXPCReadParams params =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    withObjCPtr params $ \raw_params ->
-      sendClassMsg cls' (mkSelector "decodeXPCReadParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' decodeXPCReadParamsSelector (toNSDictionary params)
 
 -- | Returns a serialized subscribe parameter object to send over XPC
 --
@@ -476,8 +439,7 @@ encodeXPCSubscribeParams :: IsMTRSubscribeParams params => params -> IO (Id NSDi
 encodeXPCSubscribeParams params =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    withObjCPtr params $ \raw_params ->
-      sendClassMsg cls' (mkSelector "encodeXPCSubscribeParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' encodeXPCSubscribeParamsSelector (toMTRSubscribeParams params)
 
 -- | Returns a deserialized subscribe parameter object from an object received over XPC
 --
@@ -486,8 +448,7 @@ decodeXPCSubscribeParams :: IsNSDictionary params => params -> IO (Id MTRSubscri
 decodeXPCSubscribeParams params =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    withObjCPtr params $ \raw_params ->
-      sendClassMsg cls' (mkSelector "decodeXPCSubscribeParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' decodeXPCSubscribeParamsSelector (toNSDictionary params)
 
 -- | Returns an NSXPCInterface configured for MTRDeviceControllerServerProtocol.
 --
@@ -496,7 +457,7 @@ xpcInterfaceForServerProtocol :: IO (Id NSXPCInterface)
 xpcInterfaceForServerProtocol  =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    sendClassMsg cls' (mkSelector "xpcInterfaceForServerProtocol") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' xpcInterfaceForServerProtocolSelector
 
 -- | Returns an NSXPCInterface configured for MTRDeviceControllerClientProtocol.
 --
@@ -505,352 +466,337 @@ xpcInterfaceForClientProtocol :: IO (Id NSXPCInterface)
 xpcInterfaceForClientProtocol  =
   do
     cls' <- getRequiredClass "MTRDeviceController"
-    sendClassMsg cls' (mkSelector "xpcInterfaceForClientProtocol") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' xpcInterfaceForClientProtocolSelector
 
 -- | @- fetchAttestationChallengeForDeviceId:@
 fetchAttestationChallengeForDeviceId :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> CULong -> IO (Id NSData)
-fetchAttestationChallengeForDeviceId mtrDeviceController  deviceId =
-    sendMsg mtrDeviceController (mkSelector "fetchAttestationChallengeForDeviceId:") (retPtr retVoid) [argCULong deviceId] >>= retainedObject . castPtr
+fetchAttestationChallengeForDeviceId mtrDeviceController deviceId =
+  sendMessage mtrDeviceController fetchAttestationChallengeForDeviceIdSelector deviceId
 
 -- | @- getBaseDevice:queue:completionHandler:@
 getBaseDevice_queue_completionHandler :: (IsMTRDeviceController mtrDeviceController, IsNSObject queue) => mtrDeviceController -> CULong -> queue -> Ptr () -> IO Bool
-getBaseDevice_queue_completionHandler mtrDeviceController  deviceID queue completionHandler =
-  withObjCPtr queue $ \raw_queue ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "getBaseDevice:queue:completionHandler:") retCULong [argCULong deviceID, argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+getBaseDevice_queue_completionHandler mtrDeviceController deviceID queue completionHandler =
+  sendMessage mtrDeviceController getBaseDevice_queue_completionHandlerSelector deviceID (toNSObject queue) completionHandler
 
 -- | @- pairDevice:discriminator:setupPINCode:error:@
 pairDevice_discriminator_setupPINCode_error :: (IsMTRDeviceController mtrDeviceController, IsNSError error_) => mtrDeviceController -> CULong -> CUShort -> CUInt -> error_ -> IO Bool
-pairDevice_discriminator_setupPINCode_error mtrDeviceController  deviceID discriminator setupPINCode error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "pairDevice:discriminator:setupPINCode:error:") retCULong [argCULong deviceID, argCUInt (fromIntegral discriminator), argCUInt setupPINCode, argPtr (castPtr raw_error_ :: Ptr ())]
+pairDevice_discriminator_setupPINCode_error mtrDeviceController deviceID discriminator setupPINCode error_ =
+  sendMessage mtrDeviceController pairDevice_discriminator_setupPINCode_errorSelector deviceID discriminator setupPINCode (toNSError error_)
 
 -- | @- pairDevice:address:port:setupPINCode:error:@
 pairDevice_address_port_setupPINCode_error :: (IsMTRDeviceController mtrDeviceController, IsNSString address, IsNSError error_) => mtrDeviceController -> CULong -> address -> CUShort -> CUInt -> error_ -> IO Bool
-pairDevice_address_port_setupPINCode_error mtrDeviceController  deviceID address port setupPINCode error_ =
-  withObjCPtr address $ \raw_address ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "pairDevice:address:port:setupPINCode:error:") retCULong [argCULong deviceID, argPtr (castPtr raw_address :: Ptr ()), argCUInt (fromIntegral port), argCUInt setupPINCode, argPtr (castPtr raw_error_ :: Ptr ())]
+pairDevice_address_port_setupPINCode_error mtrDeviceController deviceID address port setupPINCode error_ =
+  sendMessage mtrDeviceController pairDevice_address_port_setupPINCode_errorSelector deviceID (toNSString address) port setupPINCode (toNSError error_)
 
 -- | @- pairDevice:onboardingPayload:error:@
 pairDevice_onboardingPayload_error :: (IsMTRDeviceController mtrDeviceController, IsNSString onboardingPayload, IsNSError error_) => mtrDeviceController -> CULong -> onboardingPayload -> error_ -> IO Bool
-pairDevice_onboardingPayload_error mtrDeviceController  deviceID onboardingPayload error_ =
-  withObjCPtr onboardingPayload $ \raw_onboardingPayload ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "pairDevice:onboardingPayload:error:") retCULong [argCULong deviceID, argPtr (castPtr raw_onboardingPayload :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+pairDevice_onboardingPayload_error mtrDeviceController deviceID onboardingPayload error_ =
+  sendMessage mtrDeviceController pairDevice_onboardingPayload_errorSelector deviceID (toNSString onboardingPayload) (toNSError error_)
 
 -- | @- commissionDevice:commissioningParams:error:@
 commissionDevice_commissioningParams_error :: (IsMTRDeviceController mtrDeviceController, IsMTRCommissioningParameters commissioningParams, IsNSError error_) => mtrDeviceController -> CULong -> commissioningParams -> error_ -> IO Bool
-commissionDevice_commissioningParams_error mtrDeviceController  deviceId commissioningParams error_ =
-  withObjCPtr commissioningParams $ \raw_commissioningParams ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "commissionDevice:commissioningParams:error:") retCULong [argCULong deviceId, argPtr (castPtr raw_commissioningParams :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+commissionDevice_commissioningParams_error mtrDeviceController deviceId commissioningParams error_ =
+  sendMessage mtrDeviceController commissionDevice_commissioningParams_errorSelector deviceId (toMTRCommissioningParameters commissioningParams) (toNSError error_)
 
 -- | @- stopDevicePairing:error:@
 stopDevicePairing_error :: (IsMTRDeviceController mtrDeviceController, IsNSError error_) => mtrDeviceController -> CULong -> error_ -> IO Bool
-stopDevicePairing_error mtrDeviceController  deviceID error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "stopDevicePairing:error:") retCULong [argCULong deviceID, argPtr (castPtr raw_error_ :: Ptr ())]
+stopDevicePairing_error mtrDeviceController deviceID error_ =
+  sendMessage mtrDeviceController stopDevicePairing_errorSelector deviceID (toNSError error_)
 
 -- | @- getDeviceBeingCommissioned:error:@
 getDeviceBeingCommissioned_error :: (IsMTRDeviceController mtrDeviceController, IsNSError error_) => mtrDeviceController -> CULong -> error_ -> IO (Id MTRBaseDevice)
-getDeviceBeingCommissioned_error mtrDeviceController  deviceId error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg mtrDeviceController (mkSelector "getDeviceBeingCommissioned:error:") (retPtr retVoid) [argCULong deviceId, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+getDeviceBeingCommissioned_error mtrDeviceController deviceId error_ =
+  sendMessage mtrDeviceController getDeviceBeingCommissioned_errorSelector deviceId (toNSError error_)
 
 -- | @- openPairingWindow:duration:error:@
 openPairingWindow_duration_error :: (IsMTRDeviceController mtrDeviceController, IsNSError error_) => mtrDeviceController -> CULong -> CULong -> error_ -> IO Bool
-openPairingWindow_duration_error mtrDeviceController  deviceID duration error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "openPairingWindow:duration:error:") retCULong [argCULong deviceID, argCULong duration, argPtr (castPtr raw_error_ :: Ptr ())]
+openPairingWindow_duration_error mtrDeviceController deviceID duration error_ =
+  sendMessage mtrDeviceController openPairingWindow_duration_errorSelector deviceID duration (toNSError error_)
 
 -- | @- openPairingWindowWithPIN:duration:discriminator:setupPIN:error:@
 openPairingWindowWithPIN_duration_discriminator_setupPIN_error :: (IsMTRDeviceController mtrDeviceController, IsNSError error_) => mtrDeviceController -> CULong -> CULong -> CULong -> CULong -> error_ -> IO (Id NSString)
-openPairingWindowWithPIN_duration_discriminator_setupPIN_error mtrDeviceController  deviceID duration discriminator setupPIN error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg mtrDeviceController (mkSelector "openPairingWindowWithPIN:duration:discriminator:setupPIN:error:") (retPtr retVoid) [argCULong deviceID, argCULong duration, argCULong discriminator, argCULong setupPIN, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+openPairingWindowWithPIN_duration_discriminator_setupPIN_error mtrDeviceController deviceID duration discriminator setupPIN error_ =
+  sendMessage mtrDeviceController openPairingWindowWithPIN_duration_discriminator_setupPIN_errorSelector deviceID duration discriminator setupPIN (toNSError error_)
 
 -- | @- computePaseVerifier:iterations:salt:@
 computePaseVerifier_iterations_salt :: (IsMTRDeviceController mtrDeviceController, IsNSData salt) => mtrDeviceController -> CUInt -> CUInt -> salt -> IO (Id NSData)
-computePaseVerifier_iterations_salt mtrDeviceController  setupPincode iterations salt =
-  withObjCPtr salt $ \raw_salt ->
-      sendMsg mtrDeviceController (mkSelector "computePaseVerifier:iterations:salt:") (retPtr retVoid) [argCUInt setupPincode, argCUInt iterations, argPtr (castPtr raw_salt :: Ptr ())] >>= retainedObject . castPtr
+computePaseVerifier_iterations_salt mtrDeviceController setupPincode iterations salt =
+  sendMessage mtrDeviceController computePaseVerifier_iterations_saltSelector setupPincode iterations (toNSData salt)
 
 -- | @- setPairingDelegate:queue:@
 setPairingDelegate_queue :: (IsMTRDeviceController mtrDeviceController, IsNSObject queue) => mtrDeviceController -> RawId -> queue -> IO ()
-setPairingDelegate_queue mtrDeviceController  delegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrDeviceController (mkSelector "setPairingDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+setPairingDelegate_queue mtrDeviceController delegate queue =
+  sendMessage mtrDeviceController setPairingDelegate_queueSelector delegate (toNSObject queue)
 
 -- | @- setNocChainIssuer:queue:@
 setNocChainIssuer_queue :: (IsMTRDeviceController mtrDeviceController, IsNSObject queue) => mtrDeviceController -> RawId -> queue -> IO ()
-setNocChainIssuer_queue mtrDeviceController  nocChainIssuer queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg mtrDeviceController (mkSelector "setNocChainIssuer:queue:") retVoid [argPtr (castPtr (unRawId nocChainIssuer) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())]
+setNocChainIssuer_queue mtrDeviceController nocChainIssuer queue =
+  sendMessage mtrDeviceController setNocChainIssuer_queueSelector nocChainIssuer (toNSObject queue)
 
 -- | If true, the controller has not been shut down yet.
 --
 -- ObjC selector: @- running@
 running :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO Bool
-running mtrDeviceController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "running") retCULong []
+running mtrDeviceController =
+  sendMessage mtrDeviceController runningSelector
 
 -- | If true, the controller has been suspended via @suspend@ and not resumed yet.
 --
 -- ObjC selector: @- suspended@
 suspended :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO Bool
-suspended mtrDeviceController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceController (mkSelector "suspended") retCULong []
+suspended mtrDeviceController =
+  sendMessage mtrDeviceController suspendedSelector
 
 -- | The ID assigned to this controller at creation time.
 --
 -- ObjC selector: @- uniqueIdentifier@
 uniqueIdentifier :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO (Id NSUUID)
-uniqueIdentifier mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "uniqueIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueIdentifier mtrDeviceController =
+  sendMessage mtrDeviceController uniqueIdentifierSelector
 
 -- | Return the Node ID assigned to the controller.  Will return nil if the controller is not running (and hence does not know its node id).
 --
 -- ObjC selector: @- controllerNodeID@
 controllerNodeID :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO (Id NSNumber)
-controllerNodeID mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "controllerNodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+controllerNodeID mtrDeviceController =
+  sendMessage mtrDeviceController controllerNodeIDSelector
 
 -- | Returns the list of MTRDevice instances that this controller has loaded into memory. Returns an empty array if no devices are in memory.
 --
 -- ObjC selector: @- devices@
 devices :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO (Id NSArray)
-devices mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "devices") (retPtr retVoid) [] >>= retainedObject . castPtr
+devices mtrDeviceController =
+  sendMessage mtrDeviceController devicesSelector
 
 -- | Returns the list of node IDs for which this controller has stored information.  Returns empty list if the controller does not have any information stored.
 --
 -- ObjC selector: @- nodesWithStoredData@
 nodesWithStoredData :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO (Id NSArray)
-nodesWithStoredData mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "nodesWithStoredData") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodesWithStoredData mtrDeviceController =
+  sendMessage mtrDeviceController nodesWithStoredDataSelector
 
 -- | @- controllerNodeId@
 controllerNodeId :: IsMTRDeviceController mtrDeviceController => mtrDeviceController -> IO (Id NSNumber)
-controllerNodeId mtrDeviceController  =
-    sendMsg mtrDeviceController (mkSelector "controllerNodeId") (retPtr retVoid) [] >>= retainedObject . castPtr
+controllerNodeId mtrDeviceController =
+  sendMessage mtrDeviceController controllerNodeIdSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRDeviceController)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRDeviceController)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithParameters:error:@
-initWithParameters_errorSelector :: Selector
+initWithParameters_errorSelector :: Selector '[Id MTRDeviceControllerAbstractParameters, Id NSError] (Id MTRDeviceController)
 initWithParameters_errorSelector = mkSelector "initWithParameters:error:"
 
 -- | @Selector@ for @setupCommissioningSessionWithPayload:newNodeID:error:@
-setupCommissioningSessionWithPayload_newNodeID_errorSelector :: Selector
+setupCommissioningSessionWithPayload_newNodeID_errorSelector :: Selector '[Id MTRSetupPayload, Id NSNumber, Id NSError] Bool
 setupCommissioningSessionWithPayload_newNodeID_errorSelector = mkSelector "setupCommissioningSessionWithPayload:newNodeID:error:"
 
 -- | @Selector@ for @setupCommissioningSessionWithDiscoveredDevice:payload:newNodeID:error:@
-setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_errorSelector :: Selector
+setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_errorSelector :: Selector '[Id MTRCommissionableBrowserResult, Id MTRSetupPayload, Id NSNumber, Id NSError] Bool
 setupCommissioningSessionWithDiscoveredDevice_payload_newNodeID_errorSelector = mkSelector "setupCommissioningSessionWithDiscoveredDevice:payload:newNodeID:error:"
 
 -- | @Selector@ for @commissionNodeWithID:commissioningParams:error:@
-commissionNodeWithID_commissioningParams_errorSelector :: Selector
+commissionNodeWithID_commissioningParams_errorSelector :: Selector '[Id NSNumber, Id MTRCommissioningParameters, Id NSError] Bool
 commissionNodeWithID_commissioningParams_errorSelector = mkSelector "commissionNodeWithID:commissioningParams:error:"
 
 -- | @Selector@ for @continueCommissioningDevice:ignoreAttestationFailure:error:@
-continueCommissioningDevice_ignoreAttestationFailure_errorSelector :: Selector
+continueCommissioningDevice_ignoreAttestationFailure_errorSelector :: Selector '[Ptr (), Bool, Id NSError] Bool
 continueCommissioningDevice_ignoreAttestationFailure_errorSelector = mkSelector "continueCommissioningDevice:ignoreAttestationFailure:error:"
 
 -- | @Selector@ for @cancelCommissioningForNodeID:error:@
-cancelCommissioningForNodeID_errorSelector :: Selector
+cancelCommissioningForNodeID_errorSelector :: Selector '[Id NSNumber, Id NSError] Bool
 cancelCommissioningForNodeID_errorSelector = mkSelector "cancelCommissioningForNodeID:error:"
 
 -- | @Selector@ for @deviceBeingCommissionedWithNodeID:error:@
-deviceBeingCommissionedWithNodeID_errorSelector :: Selector
+deviceBeingCommissionedWithNodeID_errorSelector :: Selector '[Id NSNumber, Id NSError] (Id MTRBaseDevice)
 deviceBeingCommissionedWithNodeID_errorSelector = mkSelector "deviceBeingCommissionedWithNodeID:error:"
 
 -- | @Selector@ for @preWarmCommissioningSession@
-preWarmCommissioningSessionSelector :: Selector
+preWarmCommissioningSessionSelector :: Selector '[] ()
 preWarmCommissioningSessionSelector = mkSelector "preWarmCommissioningSession"
 
 -- | @Selector@ for @setDeviceControllerDelegate:queue:@
-setDeviceControllerDelegate_queueSelector :: Selector
+setDeviceControllerDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDeviceControllerDelegate_queueSelector = mkSelector "setDeviceControllerDelegate:queue:"
 
 -- | @Selector@ for @addDeviceControllerDelegate:queue:@
-addDeviceControllerDelegate_queueSelector :: Selector
+addDeviceControllerDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 addDeviceControllerDelegate_queueSelector = mkSelector "addDeviceControllerDelegate:queue:"
 
 -- | @Selector@ for @removeDeviceControllerDelegate:@
-removeDeviceControllerDelegateSelector :: Selector
+removeDeviceControllerDelegateSelector :: Selector '[RawId] ()
 removeDeviceControllerDelegateSelector = mkSelector "removeDeviceControllerDelegate:"
 
 -- | @Selector@ for @startBrowseForCommissionables:queue:@
-startBrowseForCommissionables_queueSelector :: Selector
+startBrowseForCommissionables_queueSelector :: Selector '[RawId, Id NSObject] Bool
 startBrowseForCommissionables_queueSelector = mkSelector "startBrowseForCommissionables:queue:"
 
 -- | @Selector@ for @stopBrowseForCommissionables@
-stopBrowseForCommissionablesSelector :: Selector
+stopBrowseForCommissionablesSelector :: Selector '[] Bool
 stopBrowseForCommissionablesSelector = mkSelector "stopBrowseForCommissionables"
 
 -- | @Selector@ for @attestationChallengeForDeviceID:@
-attestationChallengeForDeviceIDSelector :: Selector
+attestationChallengeForDeviceIDSelector :: Selector '[Id NSNumber] (Id NSData)
 attestationChallengeForDeviceIDSelector = mkSelector "attestationChallengeForDeviceID:"
 
 -- | @Selector@ for @addServerEndpoint:@
-addServerEndpointSelector :: Selector
+addServerEndpointSelector :: Selector '[Id MTRServerEndpoint] Bool
 addServerEndpointSelector = mkSelector "addServerEndpoint:"
 
 -- | @Selector@ for @removeServerEndpoint:queue:completion:@
-removeServerEndpoint_queue_completionSelector :: Selector
+removeServerEndpoint_queue_completionSelector :: Selector '[Id MTRServerEndpoint, Id NSObject, Ptr ()] ()
 removeServerEndpoint_queue_completionSelector = mkSelector "removeServerEndpoint:queue:completion:"
 
 -- | @Selector@ for @removeServerEndpoint:@
-removeServerEndpointSelector :: Selector
+removeServerEndpointSelector :: Selector '[Id MTRServerEndpoint] ()
 removeServerEndpointSelector = mkSelector "removeServerEndpoint:"
 
 -- | @Selector@ for @forgetDeviceWithNodeID:@
-forgetDeviceWithNodeIDSelector :: Selector
+forgetDeviceWithNodeIDSelector :: Selector '[Id NSNumber] ()
 forgetDeviceWithNodeIDSelector = mkSelector "forgetDeviceWithNodeID:"
 
 -- | @Selector@ for @computePASEVerifierForSetupPasscode:iterations:salt:error:@
-computePASEVerifierForSetupPasscode_iterations_salt_errorSelector :: Selector
+computePASEVerifierForSetupPasscode_iterations_salt_errorSelector :: Selector '[Id NSNumber, Id NSNumber, Id NSData, Id NSError] (Id NSData)
 computePASEVerifierForSetupPasscode_iterations_salt_errorSelector = mkSelector "computePASEVerifierForSetupPasscode:iterations:salt:error:"
 
 -- | @Selector@ for @suspend@
-suspendSelector :: Selector
+suspendSelector :: Selector '[] ()
 suspendSelector = mkSelector "suspend"
 
 -- | @Selector@ for @resume@
-resumeSelector :: Selector
+resumeSelector :: Selector '[] ()
 resumeSelector = mkSelector "resume"
 
 -- | @Selector@ for @shutdown@
-shutdownSelector :: Selector
+shutdownSelector :: Selector '[] ()
 shutdownSelector = mkSelector "shutdown"
 
 -- | @Selector@ for @sharedControllerWithId:xpcConnectBlock:@
-sharedControllerWithId_xpcConnectBlockSelector :: Selector
+sharedControllerWithId_xpcConnectBlockSelector :: Selector '[RawId, Ptr ()] (Id MTRDeviceController)
 sharedControllerWithId_xpcConnectBlockSelector = mkSelector "sharedControllerWithId:xpcConnectBlock:"
 
 -- | @Selector@ for @sharedControllerWithID:xpcConnectBlock:@
-sharedControllerWithID_xpcConnectBlockSelector :: Selector
+sharedControllerWithID_xpcConnectBlockSelector :: Selector '[RawId, Ptr ()] (Id MTRDeviceController)
 sharedControllerWithID_xpcConnectBlockSelector = mkSelector "sharedControllerWithID:xpcConnectBlock:"
 
 -- | @Selector@ for @encodeXPCResponseValues:@
-encodeXPCResponseValuesSelector :: Selector
+encodeXPCResponseValuesSelector :: Selector '[Id NSArray] (Id NSArray)
 encodeXPCResponseValuesSelector = mkSelector "encodeXPCResponseValues:"
 
 -- | @Selector@ for @decodeXPCResponseValues:@
-decodeXPCResponseValuesSelector :: Selector
+decodeXPCResponseValuesSelector :: Selector '[Id NSArray] (Id NSArray)
 decodeXPCResponseValuesSelector = mkSelector "decodeXPCResponseValues:"
 
 -- | @Selector@ for @encodeXPCReadParams:@
-encodeXPCReadParamsSelector :: Selector
+encodeXPCReadParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 encodeXPCReadParamsSelector = mkSelector "encodeXPCReadParams:"
 
 -- | @Selector@ for @decodeXPCReadParams:@
-decodeXPCReadParamsSelector :: Selector
+decodeXPCReadParamsSelector :: Selector '[Id NSDictionary] (Id MTRReadParams)
 decodeXPCReadParamsSelector = mkSelector "decodeXPCReadParams:"
 
 -- | @Selector@ for @encodeXPCSubscribeParams:@
-encodeXPCSubscribeParamsSelector :: Selector
+encodeXPCSubscribeParamsSelector :: Selector '[Id MTRSubscribeParams] (Id NSDictionary)
 encodeXPCSubscribeParamsSelector = mkSelector "encodeXPCSubscribeParams:"
 
 -- | @Selector@ for @decodeXPCSubscribeParams:@
-decodeXPCSubscribeParamsSelector :: Selector
+decodeXPCSubscribeParamsSelector :: Selector '[Id NSDictionary] (Id MTRSubscribeParams)
 decodeXPCSubscribeParamsSelector = mkSelector "decodeXPCSubscribeParams:"
 
 -- | @Selector@ for @xpcInterfaceForServerProtocol@
-xpcInterfaceForServerProtocolSelector :: Selector
+xpcInterfaceForServerProtocolSelector :: Selector '[] (Id NSXPCInterface)
 xpcInterfaceForServerProtocolSelector = mkSelector "xpcInterfaceForServerProtocol"
 
 -- | @Selector@ for @xpcInterfaceForClientProtocol@
-xpcInterfaceForClientProtocolSelector :: Selector
+xpcInterfaceForClientProtocolSelector :: Selector '[] (Id NSXPCInterface)
 xpcInterfaceForClientProtocolSelector = mkSelector "xpcInterfaceForClientProtocol"
 
 -- | @Selector@ for @fetchAttestationChallengeForDeviceId:@
-fetchAttestationChallengeForDeviceIdSelector :: Selector
+fetchAttestationChallengeForDeviceIdSelector :: Selector '[CULong] (Id NSData)
 fetchAttestationChallengeForDeviceIdSelector = mkSelector "fetchAttestationChallengeForDeviceId:"
 
 -- | @Selector@ for @getBaseDevice:queue:completionHandler:@
-getBaseDevice_queue_completionHandlerSelector :: Selector
+getBaseDevice_queue_completionHandlerSelector :: Selector '[CULong, Id NSObject, Ptr ()] Bool
 getBaseDevice_queue_completionHandlerSelector = mkSelector "getBaseDevice:queue:completionHandler:"
 
 -- | @Selector@ for @pairDevice:discriminator:setupPINCode:error:@
-pairDevice_discriminator_setupPINCode_errorSelector :: Selector
+pairDevice_discriminator_setupPINCode_errorSelector :: Selector '[CULong, CUShort, CUInt, Id NSError] Bool
 pairDevice_discriminator_setupPINCode_errorSelector = mkSelector "pairDevice:discriminator:setupPINCode:error:"
 
 -- | @Selector@ for @pairDevice:address:port:setupPINCode:error:@
-pairDevice_address_port_setupPINCode_errorSelector :: Selector
+pairDevice_address_port_setupPINCode_errorSelector :: Selector '[CULong, Id NSString, CUShort, CUInt, Id NSError] Bool
 pairDevice_address_port_setupPINCode_errorSelector = mkSelector "pairDevice:address:port:setupPINCode:error:"
 
 -- | @Selector@ for @pairDevice:onboardingPayload:error:@
-pairDevice_onboardingPayload_errorSelector :: Selector
+pairDevice_onboardingPayload_errorSelector :: Selector '[CULong, Id NSString, Id NSError] Bool
 pairDevice_onboardingPayload_errorSelector = mkSelector "pairDevice:onboardingPayload:error:"
 
 -- | @Selector@ for @commissionDevice:commissioningParams:error:@
-commissionDevice_commissioningParams_errorSelector :: Selector
+commissionDevice_commissioningParams_errorSelector :: Selector '[CULong, Id MTRCommissioningParameters, Id NSError] Bool
 commissionDevice_commissioningParams_errorSelector = mkSelector "commissionDevice:commissioningParams:error:"
 
 -- | @Selector@ for @stopDevicePairing:error:@
-stopDevicePairing_errorSelector :: Selector
+stopDevicePairing_errorSelector :: Selector '[CULong, Id NSError] Bool
 stopDevicePairing_errorSelector = mkSelector "stopDevicePairing:error:"
 
 -- | @Selector@ for @getDeviceBeingCommissioned:error:@
-getDeviceBeingCommissioned_errorSelector :: Selector
+getDeviceBeingCommissioned_errorSelector :: Selector '[CULong, Id NSError] (Id MTRBaseDevice)
 getDeviceBeingCommissioned_errorSelector = mkSelector "getDeviceBeingCommissioned:error:"
 
 -- | @Selector@ for @openPairingWindow:duration:error:@
-openPairingWindow_duration_errorSelector :: Selector
+openPairingWindow_duration_errorSelector :: Selector '[CULong, CULong, Id NSError] Bool
 openPairingWindow_duration_errorSelector = mkSelector "openPairingWindow:duration:error:"
 
 -- | @Selector@ for @openPairingWindowWithPIN:duration:discriminator:setupPIN:error:@
-openPairingWindowWithPIN_duration_discriminator_setupPIN_errorSelector :: Selector
+openPairingWindowWithPIN_duration_discriminator_setupPIN_errorSelector :: Selector '[CULong, CULong, CULong, CULong, Id NSError] (Id NSString)
 openPairingWindowWithPIN_duration_discriminator_setupPIN_errorSelector = mkSelector "openPairingWindowWithPIN:duration:discriminator:setupPIN:error:"
 
 -- | @Selector@ for @computePaseVerifier:iterations:salt:@
-computePaseVerifier_iterations_saltSelector :: Selector
+computePaseVerifier_iterations_saltSelector :: Selector '[CUInt, CUInt, Id NSData] (Id NSData)
 computePaseVerifier_iterations_saltSelector = mkSelector "computePaseVerifier:iterations:salt:"
 
 -- | @Selector@ for @setPairingDelegate:queue:@
-setPairingDelegate_queueSelector :: Selector
+setPairingDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setPairingDelegate_queueSelector = mkSelector "setPairingDelegate:queue:"
 
 -- | @Selector@ for @setNocChainIssuer:queue:@
-setNocChainIssuer_queueSelector :: Selector
+setNocChainIssuer_queueSelector :: Selector '[RawId, Id NSObject] ()
 setNocChainIssuer_queueSelector = mkSelector "setNocChainIssuer:queue:"
 
 -- | @Selector@ for @running@
-runningSelector :: Selector
+runningSelector :: Selector '[] Bool
 runningSelector = mkSelector "running"
 
 -- | @Selector@ for @suspended@
-suspendedSelector :: Selector
+suspendedSelector :: Selector '[] Bool
 suspendedSelector = mkSelector "suspended"
 
 -- | @Selector@ for @uniqueIdentifier@
-uniqueIdentifierSelector :: Selector
+uniqueIdentifierSelector :: Selector '[] (Id NSUUID)
 uniqueIdentifierSelector = mkSelector "uniqueIdentifier"
 
 -- | @Selector@ for @controllerNodeID@
-controllerNodeIDSelector :: Selector
+controllerNodeIDSelector :: Selector '[] (Id NSNumber)
 controllerNodeIDSelector = mkSelector "controllerNodeID"
 
 -- | @Selector@ for @devices@
-devicesSelector :: Selector
+devicesSelector :: Selector '[] (Id NSArray)
 devicesSelector = mkSelector "devices"
 
 -- | @Selector@ for @nodesWithStoredData@
-nodesWithStoredDataSelector :: Selector
+nodesWithStoredDataSelector :: Selector '[] (Id NSArray)
 nodesWithStoredDataSelector = mkSelector "nodesWithStoredData"
 
 -- | @Selector@ for @controllerNodeId@
-controllerNodeIdSelector :: Selector
+controllerNodeIdSelector :: Selector '[] (Id NSNumber)
 controllerNodeIdSelector = mkSelector "controllerNodeId"
 

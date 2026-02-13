@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,26 +22,22 @@ module ObjC.GameplayKit.GKState
   , updateWithDeltaTime
   , willExitWithNextState
   , stateMachine
-  , stateSelector
+  , didEnterWithPreviousStateSelector
   , initSelector
   , isValidNextStateSelector
-  , didEnterWithPreviousStateSelector
+  , stateMachineSelector
+  , stateSelector
   , updateWithDeltaTimeSelector
   , willExitWithNextStateSelector
-  , stateMachineSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,12 +53,12 @@ state :: IO (Id GKState)
 state  =
   do
     cls' <- getRequiredClass "GKState"
-    sendClassMsg cls' (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' stateSelector
 
 -- | @- init@
 init_ :: IsGKState gkState => gkState -> IO (Id GKState)
-init_ gkState  =
-    sendMsg gkState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkState =
+  sendOwnedMessage gkState initSelector
 
 -- | Returns YES if the given class is a valid next state to enter.
 --
@@ -77,8 +74,8 @@ init_ gkState  =
 --
 -- ObjC selector: @- isValidNextState:@
 isValidNextState :: IsGKState gkState => gkState -> Class -> IO Bool
-isValidNextState gkState  stateClass =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkState (mkSelector "isValidNextState:") retCULong [argPtr (unClass stateClass)]
+isValidNextState gkState stateClass =
+  sendMessage gkState isValidNextStateSelector stateClass
 
 -- | Called by GKStateMachine when this state is entered.
 --
@@ -88,9 +85,8 @@ isValidNextState gkState  stateClass =
 --
 -- ObjC selector: @- didEnterWithPreviousState:@
 didEnterWithPreviousState :: (IsGKState gkState, IsGKState previousState) => gkState -> previousState -> IO ()
-didEnterWithPreviousState gkState  previousState =
-  withObjCPtr previousState $ \raw_previousState ->
-      sendMsg gkState (mkSelector "didEnterWithPreviousState:") retVoid [argPtr (castPtr raw_previousState :: Ptr ())]
+didEnterWithPreviousState gkState previousState =
+  sendMessage gkState didEnterWithPreviousStateSelector (toGKState previousState)
 
 -- | Called by GKStateMachine when it is updated
 --
@@ -98,8 +94,8 @@ didEnterWithPreviousState gkState  previousState =
 --
 -- ObjC selector: @- updateWithDeltaTime:@
 updateWithDeltaTime :: IsGKState gkState => gkState -> CDouble -> IO ()
-updateWithDeltaTime gkState  seconds =
-    sendMsg gkState (mkSelector "updateWithDeltaTime:") retVoid [argCDouble seconds]
+updateWithDeltaTime gkState seconds =
+  sendMessage gkState updateWithDeltaTimeSelector seconds
 
 -- | Called by GKStateMachine when this state is exited
 --
@@ -107,46 +103,45 @@ updateWithDeltaTime gkState  seconds =
 --
 -- ObjC selector: @- willExitWithNextState:@
 willExitWithNextState :: (IsGKState gkState, IsGKState nextState) => gkState -> nextState -> IO ()
-willExitWithNextState gkState  nextState =
-  withObjCPtr nextState $ \raw_nextState ->
-      sendMsg gkState (mkSelector "willExitWithNextState:") retVoid [argPtr (castPtr raw_nextState :: Ptr ())]
+willExitWithNextState gkState nextState =
+  sendMessage gkState willExitWithNextStateSelector (toGKState nextState)
 
 -- | The state machine that this state is associated with. This is nil if this state hasn't been added to a state machine yet.
 --
 -- ObjC selector: @- stateMachine@
 stateMachine :: IsGKState gkState => gkState -> IO (Id GKStateMachine)
-stateMachine gkState  =
-    sendMsg gkState (mkSelector "stateMachine") (retPtr retVoid) [] >>= retainedObject . castPtr
+stateMachine gkState =
+  sendMessage gkState stateMachineSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id GKState)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @isValidNextState:@
-isValidNextStateSelector :: Selector
+isValidNextStateSelector :: Selector '[Class] Bool
 isValidNextStateSelector = mkSelector "isValidNextState:"
 
 -- | @Selector@ for @didEnterWithPreviousState:@
-didEnterWithPreviousStateSelector :: Selector
+didEnterWithPreviousStateSelector :: Selector '[Id GKState] ()
 didEnterWithPreviousStateSelector = mkSelector "didEnterWithPreviousState:"
 
 -- | @Selector@ for @updateWithDeltaTime:@
-updateWithDeltaTimeSelector :: Selector
+updateWithDeltaTimeSelector :: Selector '[CDouble] ()
 updateWithDeltaTimeSelector = mkSelector "updateWithDeltaTime:"
 
 -- | @Selector@ for @willExitWithNextState:@
-willExitWithNextStateSelector :: Selector
+willExitWithNextStateSelector :: Selector '[Id GKState] ()
 willExitWithNextStateSelector = mkSelector "willExitWithNextState:"
 
 -- | @Selector@ for @stateMachine@
-stateMachineSelector :: Selector
+stateMachineSelector :: Selector '[] (Id GKStateMachine)
 stateMachineSelector = mkSelector "stateMachine"
 

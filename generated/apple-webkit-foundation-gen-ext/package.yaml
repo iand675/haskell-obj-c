@@ -18,4 +18,3 @@ library:
   source-dirs: src
   exposed-modules:
   - ObjC.WebKit.NSAttributedString
-  - ObjC.WebKit.NSObject

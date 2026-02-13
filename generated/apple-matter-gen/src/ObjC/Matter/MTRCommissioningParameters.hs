@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,52 +42,48 @@ module ObjC.Matter.MTRCommissioningParameters
   , setCSRNonce
   , failSafeExpiryTimeoutSecs
   , setFailSafeExpiryTimeoutSecs
-  , csrNonceSelector
-  , setCsrNonceSelector
-  , attestationNonceSelector
-  , setAttestationNonceSelector
-  , wifiSSIDSelector
-  , setWifiSSIDSelector
-  , wifiCredentialsSelector
-  , setWifiCredentialsSelector
-  , threadOperationalDatasetSelector
-  , setThreadOperationalDatasetSelector
-  , deviceAttestationDelegateSelector
-  , setDeviceAttestationDelegateSelector
-  , failSafeTimeoutSelector
-  , setFailSafeTimeoutSelector
-  , skipCommissioningCompleteSelector
-  , setSkipCommissioningCompleteSelector
-  , countryCodeSelector
-  , setCountryCodeSelector
-  , readEndpointInformationSelector
-  , setReadEndpointInformationSelector
   , acceptedTermsAndConditionsSelector
-  , setAcceptedTermsAndConditionsSelector
   , acceptedTermsAndConditionsVersionSelector
-  , setAcceptedTermsAndConditionsVersionSelector
+  , attestationNonceSelector
+  , countryCodeSelector
+  , csrNonceSelector
+  , deviceAttestationDelegateSelector
   , extraAttributesToReadSelector
-  , setExtraAttributesToReadSelector
-  , forceWiFiScanSelector
-  , setForceWiFiScanSelector
-  , forceThreadScanSelector
-  , setForceThreadScanSelector
-  , setCSRNonceSelector
   , failSafeExpiryTimeoutSecsSelector
+  , failSafeTimeoutSelector
+  , forceThreadScanSelector
+  , forceWiFiScanSelector
+  , readEndpointInformationSelector
+  , setAcceptedTermsAndConditionsSelector
+  , setAcceptedTermsAndConditionsVersionSelector
+  , setAttestationNonceSelector
+  , setCSRNonceSelector
+  , setCountryCodeSelector
+  , setCsrNonceSelector
+  , setDeviceAttestationDelegateSelector
+  , setExtraAttributesToReadSelector
   , setFailSafeExpiryTimeoutSecsSelector
+  , setFailSafeTimeoutSelector
+  , setForceThreadScanSelector
+  , setForceWiFiScanSelector
+  , setReadEndpointInformationSelector
+  , setSkipCommissioningCompleteSelector
+  , setThreadOperationalDatasetSelector
+  , setWifiCredentialsSelector
+  , setWifiSSIDSelector
+  , skipCommissioningCompleteSelector
+  , threadOperationalDatasetSelector
+  , wifiCredentialsSelector
+  , wifiSSIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,8 +98,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- csrNonce@
 csrNonce :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSData)
-csrNonce mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "csrNonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+csrNonce mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters csrNonceSelector
 
 -- | The nonce to use when requesting a CSR for the node's operational certificate.
 --
@@ -112,9 +109,8 @@ csrNonce mtrCommissioningParameters  =
 --
 -- ObjC selector: @- setCsrNonce:@
 setCsrNonce :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSData value) => mtrCommissioningParameters -> value -> IO ()
-setCsrNonce mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setCsrNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCsrNonce mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setCsrNonceSelector (toNSData value)
 
 -- | The nonce to use when requesting attestation information from the device.
 --
@@ -124,8 +120,8 @@ setCsrNonce mtrCommissioningParameters  value =
 --
 -- ObjC selector: @- attestationNonce@
 attestationNonce :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSData)
-attestationNonce mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "attestationNonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+attestationNonce mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters attestationNonceSelector
 
 -- | The nonce to use when requesting attestation information from the device.
 --
@@ -135,54 +131,50 @@ attestationNonce mtrCommissioningParameters  =
 --
 -- ObjC selector: @- setAttestationNonce:@
 setAttestationNonce :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSData value) => mtrCommissioningParameters -> value -> IO ()
-setAttestationNonce mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setAttestationNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttestationNonce mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setAttestationNonceSelector (toNSData value)
 
 -- | The Wi-Fi SSID, if available.
 --
 -- ObjC selector: @- wifiSSID@
 wifiSSID :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSData)
-wifiSSID mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "wifiSSID") (retPtr retVoid) [] >>= retainedObject . castPtr
+wifiSSID mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters wifiSSIDSelector
 
 -- | The Wi-Fi SSID, if available.
 --
 -- ObjC selector: @- setWifiSSID:@
 setWifiSSID :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSData value) => mtrCommissioningParameters -> value -> IO ()
-setWifiSSID mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setWifiSSID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWifiSSID mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setWifiSSIDSelector (toNSData value)
 
 -- | The Wi-Fi Credentials.  Allowed to be nil or 0-length data for an open network, as long as wifiSSID is not nil.
 --
 -- ObjC selector: @- wifiCredentials@
 wifiCredentials :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSData)
-wifiCredentials mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "wifiCredentials") (retPtr retVoid) [] >>= retainedObject . castPtr
+wifiCredentials mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters wifiCredentialsSelector
 
 -- | The Wi-Fi Credentials.  Allowed to be nil or 0-length data for an open network, as long as wifiSSID is not nil.
 --
 -- ObjC selector: @- setWifiCredentials:@
 setWifiCredentials :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSData value) => mtrCommissioningParameters -> value -> IO ()
-setWifiCredentials mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setWifiCredentials:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWifiCredentials mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setWifiCredentialsSelector (toNSData value)
 
 -- | The Thread operational dataset, if available.
 --
 -- ObjC selector: @- threadOperationalDataset@
 threadOperationalDataset :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSData)
-threadOperationalDataset mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "threadOperationalDataset") (retPtr retVoid) [] >>= retainedObject . castPtr
+threadOperationalDataset mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters threadOperationalDatasetSelector
 
 -- | The Thread operational dataset, if available.
 --
 -- ObjC selector: @- setThreadOperationalDataset:@
 setThreadOperationalDataset :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSData value) => mtrCommissioningParameters -> value -> IO ()
-setThreadOperationalDataset mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setThreadOperationalDataset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setThreadOperationalDataset mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setThreadOperationalDatasetSelector (toNSData value)
 
 -- | An optional delegate that can be notified upon completion of device attestation.  See documentation for MTRDeviceAttestationDelegate for details.
 --
@@ -190,8 +182,8 @@ setThreadOperationalDataset mtrCommissioningParameters  value =
 --
 -- ObjC selector: @- deviceAttestationDelegate@
 deviceAttestationDelegate :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO RawId
-deviceAttestationDelegate mtrCommissioningParameters  =
-    fmap (RawId . castPtr) $ sendMsg mtrCommissioningParameters (mkSelector "deviceAttestationDelegate") (retPtr retVoid) []
+deviceAttestationDelegate mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters deviceAttestationDelegateSelector
 
 -- | An optional delegate that can be notified upon completion of device attestation.  See documentation for MTRDeviceAttestationDelegate for details.
 --
@@ -199,8 +191,8 @@ deviceAttestationDelegate mtrCommissioningParameters  =
 --
 -- ObjC selector: @- setDeviceAttestationDelegate:@
 setDeviceAttestationDelegate :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> RawId -> IO ()
-setDeviceAttestationDelegate mtrCommissioningParameters  value =
-    sendMsg mtrCommissioningParameters (mkSelector "setDeviceAttestationDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDeviceAttestationDelegate mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setDeviceAttestationDelegateSelector value
 
 -- | The timeout, in seconds, to set for the fail-safe when calling into the deviceAttestationDelegate and waiting for it to respond.
 --
@@ -208,8 +200,8 @@ setDeviceAttestationDelegate mtrCommissioningParameters  value =
 --
 -- ObjC selector: @- failSafeTimeout@
 failSafeTimeout :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSNumber)
-failSafeTimeout mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "failSafeTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+failSafeTimeout mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters failSafeTimeoutSelector
 
 -- | The timeout, in seconds, to set for the fail-safe when calling into the deviceAttestationDelegate and waiting for it to respond.
 --
@@ -217,9 +209,8 @@ failSafeTimeout mtrCommissioningParameters  =
 --
 -- ObjC selector: @- setFailSafeTimeout:@
 setFailSafeTimeout :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSNumber value) => mtrCommissioningParameters -> value -> IO ()
-setFailSafeTimeout mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setFailSafeTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFailSafeTimeout mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setFailSafeTimeoutSelector (toNSNumber value)
 
 -- | Only perform the PASE steps of commissioning. If set to YES, commissioning will be completed by another admin on the network.
 --
@@ -227,8 +218,8 @@ setFailSafeTimeout mtrCommissioningParameters  value =
 --
 -- ObjC selector: @- skipCommissioningComplete@
 skipCommissioningComplete :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO Bool
-skipCommissioningComplete mtrCommissioningParameters  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrCommissioningParameters (mkSelector "skipCommissioningComplete") retCULong []
+skipCommissioningComplete mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters skipCommissioningCompleteSelector
 
 -- | Only perform the PASE steps of commissioning. If set to YES, commissioning will be completed by another admin on the network.
 --
@@ -236,8 +227,8 @@ skipCommissioningComplete mtrCommissioningParameters  =
 --
 -- ObjC selector: @- setSkipCommissioningComplete:@
 setSkipCommissioningComplete :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> Bool -> IO ()
-setSkipCommissioningComplete mtrCommissioningParameters  value =
-    sendMsg mtrCommissioningParameters (mkSelector "setSkipCommissioningComplete:") retVoid [argCULong (if value then 1 else 0)]
+setSkipCommissioningComplete mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setSkipCommissioningCompleteSelector value
 
 -- | The country code to provide to the device during commissioning.
 --
@@ -245,8 +236,8 @@ setSkipCommissioningComplete mtrCommissioningParameters  value =
 --
 -- ObjC selector: @- countryCode@
 countryCode :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSString)
-countryCode mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "countryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+countryCode mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters countryCodeSelector
 
 -- | The country code to provide to the device during commissioning.
 --
@@ -254,53 +245,50 @@ countryCode mtrCommissioningParameters  =
 --
 -- ObjC selector: @- setCountryCode:@
 setCountryCode :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSString value) => mtrCommissioningParameters -> value -> IO ()
-setCountryCode mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setCountryCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCountryCode mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setCountryCodeSelector (toNSString value)
 
 -- | Read device type information from all endpoints during commissioning. Defaults to NO.
 --
 -- ObjC selector: @- readEndpointInformation@
 readEndpointInformation :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO Bool
-readEndpointInformation mtrCommissioningParameters  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrCommissioningParameters (mkSelector "readEndpointInformation") retCULong []
+readEndpointInformation mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters readEndpointInformationSelector
 
 -- | Read device type information from all endpoints during commissioning. Defaults to NO.
 --
 -- ObjC selector: @- setReadEndpointInformation:@
 setReadEndpointInformation :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> Bool -> IO ()
-setReadEndpointInformation mtrCommissioningParameters  value =
-    sendMsg mtrCommissioningParameters (mkSelector "setReadEndpointInformation:") retVoid [argCULong (if value then 1 else 0)]
+setReadEndpointInformation mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setReadEndpointInformationSelector value
 
 -- | A bitmask of the user’s responses to the presented terms and conditions. Each bit corresponds to a term’s acceptance (1) or non-acceptance (0) at the matching index.
 --
 -- ObjC selector: @- acceptedTermsAndConditions@
 acceptedTermsAndConditions :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSNumber)
-acceptedTermsAndConditions mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "acceptedTermsAndConditions") (retPtr retVoid) [] >>= retainedObject . castPtr
+acceptedTermsAndConditions mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters acceptedTermsAndConditionsSelector
 
 -- | A bitmask of the user’s responses to the presented terms and conditions. Each bit corresponds to a term’s acceptance (1) or non-acceptance (0) at the matching index.
 --
 -- ObjC selector: @- setAcceptedTermsAndConditions:@
 setAcceptedTermsAndConditions :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSNumber value) => mtrCommissioningParameters -> value -> IO ()
-setAcceptedTermsAndConditions mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setAcceptedTermsAndConditions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAcceptedTermsAndConditions mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setAcceptedTermsAndConditionsSelector (toNSNumber value)
 
 -- | The version of the terms and conditions that the user has accepted.
 --
 -- ObjC selector: @- acceptedTermsAndConditionsVersion@
 acceptedTermsAndConditionsVersion :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSNumber)
-acceptedTermsAndConditionsVersion mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "acceptedTermsAndConditionsVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+acceptedTermsAndConditionsVersion mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters acceptedTermsAndConditionsVersionSelector
 
 -- | The version of the terms and conditions that the user has accepted.
 --
 -- ObjC selector: @- setAcceptedTermsAndConditionsVersion:@
 setAcceptedTermsAndConditionsVersion :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSNumber value) => mtrCommissioningParameters -> value -> IO ()
-setAcceptedTermsAndConditionsVersion mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setAcceptedTermsAndConditionsVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAcceptedTermsAndConditionsVersion mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setAcceptedTermsAndConditionsVersionSelector (toNSNumber value)
 
 -- | List of attribute paths to read from the commissionee (in addition to whatever attributes are already read to handle readEndpointInformation being YES, or to handle other commissioning tasks).
 --
@@ -308,8 +296,8 @@ setAcceptedTermsAndConditionsVersion mtrCommissioningParameters  value =
 --
 -- ObjC selector: @- extraAttributesToRead@
 extraAttributesToRead :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSArray)
-extraAttributesToRead mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "extraAttributesToRead") (retPtr retVoid) [] >>= retainedObject . castPtr
+extraAttributesToRead mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters extraAttributesToReadSelector
 
 -- | List of attribute paths to read from the commissionee (in addition to whatever attributes are already read to handle readEndpointInformation being YES, or to handle other commissioning tasks).
 --
@@ -317,9 +305,8 @@ extraAttributesToRead mtrCommissioningParameters  =
 --
 -- ObjC selector: @- setExtraAttributesToRead:@
 setExtraAttributesToRead :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSArray value) => mtrCommissioningParameters -> value -> IO ()
-setExtraAttributesToRead mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setExtraAttributesToRead:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtraAttributesToRead mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setExtraAttributesToReadSelector (toNSArray value)
 
 -- | Whether to force a network scan before requesting Wi-Fi credentials. The default is NO.
 --
@@ -331,8 +318,8 @@ setExtraAttributesToRead mtrCommissioningParameters  value =
 --
 -- ObjC selector: @- forceWiFiScan@
 forceWiFiScan :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO Bool
-forceWiFiScan mtrCommissioningParameters  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrCommissioningParameters (mkSelector "forceWiFiScan") retCULong []
+forceWiFiScan mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters forceWiFiScanSelector
 
 -- | Whether to force a network scan before requesting Wi-Fi credentials. The default is NO.
 --
@@ -344,8 +331,8 @@ forceWiFiScan mtrCommissioningParameters  =
 --
 -- ObjC selector: @- setForceWiFiScan:@
 setForceWiFiScan :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> Bool -> IO ()
-setForceWiFiScan mtrCommissioningParameters  value =
-    sendMsg mtrCommissioningParameters (mkSelector "setForceWiFiScan:") retVoid [argCULong (if value then 1 else 0)]
+setForceWiFiScan mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setForceWiFiScanSelector value
 
 -- | Whether to force a network scan before requesting Thread credentials. The default is NO.
 --
@@ -357,8 +344,8 @@ setForceWiFiScan mtrCommissioningParameters  value =
 --
 -- ObjC selector: @- forceThreadScan@
 forceThreadScan :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO Bool
-forceThreadScan mtrCommissioningParameters  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrCommissioningParameters (mkSelector "forceThreadScan") retCULong []
+forceThreadScan mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters forceThreadScanSelector
 
 -- | Whether to force a network scan before requesting Thread credentials. The default is NO.
 --
@@ -370,159 +357,157 @@ forceThreadScan mtrCommissioningParameters  =
 --
 -- ObjC selector: @- setForceThreadScan:@
 setForceThreadScan :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> Bool -> IO ()
-setForceThreadScan mtrCommissioningParameters  value =
-    sendMsg mtrCommissioningParameters (mkSelector "setForceThreadScan:") retVoid [argCULong (if value then 1 else 0)]
+setForceThreadScan mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setForceThreadScanSelector value
 
 -- | @- setCSRNonce:@
 setCSRNonce :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSData value) => mtrCommissioningParameters -> value -> IO ()
-setCSRNonce mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setCSRNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCSRNonce mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setCSRNonceSelector (toNSData value)
 
 -- | @- failSafeExpiryTimeoutSecs@
 failSafeExpiryTimeoutSecs :: IsMTRCommissioningParameters mtrCommissioningParameters => mtrCommissioningParameters -> IO (Id NSNumber)
-failSafeExpiryTimeoutSecs mtrCommissioningParameters  =
-    sendMsg mtrCommissioningParameters (mkSelector "failSafeExpiryTimeoutSecs") (retPtr retVoid) [] >>= retainedObject . castPtr
+failSafeExpiryTimeoutSecs mtrCommissioningParameters =
+  sendMessage mtrCommissioningParameters failSafeExpiryTimeoutSecsSelector
 
 -- | @- setFailSafeExpiryTimeoutSecs:@
 setFailSafeExpiryTimeoutSecs :: (IsMTRCommissioningParameters mtrCommissioningParameters, IsNSNumber value) => mtrCommissioningParameters -> value -> IO ()
-setFailSafeExpiryTimeoutSecs mtrCommissioningParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissioningParameters (mkSelector "setFailSafeExpiryTimeoutSecs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFailSafeExpiryTimeoutSecs mtrCommissioningParameters value =
+  sendMessage mtrCommissioningParameters setFailSafeExpiryTimeoutSecsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @csrNonce@
-csrNonceSelector :: Selector
+csrNonceSelector :: Selector '[] (Id NSData)
 csrNonceSelector = mkSelector "csrNonce"
 
 -- | @Selector@ for @setCsrNonce:@
-setCsrNonceSelector :: Selector
+setCsrNonceSelector :: Selector '[Id NSData] ()
 setCsrNonceSelector = mkSelector "setCsrNonce:"
 
 -- | @Selector@ for @attestationNonce@
-attestationNonceSelector :: Selector
+attestationNonceSelector :: Selector '[] (Id NSData)
 attestationNonceSelector = mkSelector "attestationNonce"
 
 -- | @Selector@ for @setAttestationNonce:@
-setAttestationNonceSelector :: Selector
+setAttestationNonceSelector :: Selector '[Id NSData] ()
 setAttestationNonceSelector = mkSelector "setAttestationNonce:"
 
 -- | @Selector@ for @wifiSSID@
-wifiSSIDSelector :: Selector
+wifiSSIDSelector :: Selector '[] (Id NSData)
 wifiSSIDSelector = mkSelector "wifiSSID"
 
 -- | @Selector@ for @setWifiSSID:@
-setWifiSSIDSelector :: Selector
+setWifiSSIDSelector :: Selector '[Id NSData] ()
 setWifiSSIDSelector = mkSelector "setWifiSSID:"
 
 -- | @Selector@ for @wifiCredentials@
-wifiCredentialsSelector :: Selector
+wifiCredentialsSelector :: Selector '[] (Id NSData)
 wifiCredentialsSelector = mkSelector "wifiCredentials"
 
 -- | @Selector@ for @setWifiCredentials:@
-setWifiCredentialsSelector :: Selector
+setWifiCredentialsSelector :: Selector '[Id NSData] ()
 setWifiCredentialsSelector = mkSelector "setWifiCredentials:"
 
 -- | @Selector@ for @threadOperationalDataset@
-threadOperationalDatasetSelector :: Selector
+threadOperationalDatasetSelector :: Selector '[] (Id NSData)
 threadOperationalDatasetSelector = mkSelector "threadOperationalDataset"
 
 -- | @Selector@ for @setThreadOperationalDataset:@
-setThreadOperationalDatasetSelector :: Selector
+setThreadOperationalDatasetSelector :: Selector '[Id NSData] ()
 setThreadOperationalDatasetSelector = mkSelector "setThreadOperationalDataset:"
 
 -- | @Selector@ for @deviceAttestationDelegate@
-deviceAttestationDelegateSelector :: Selector
+deviceAttestationDelegateSelector :: Selector '[] RawId
 deviceAttestationDelegateSelector = mkSelector "deviceAttestationDelegate"
 
 -- | @Selector@ for @setDeviceAttestationDelegate:@
-setDeviceAttestationDelegateSelector :: Selector
+setDeviceAttestationDelegateSelector :: Selector '[RawId] ()
 setDeviceAttestationDelegateSelector = mkSelector "setDeviceAttestationDelegate:"
 
 -- | @Selector@ for @failSafeTimeout@
-failSafeTimeoutSelector :: Selector
+failSafeTimeoutSelector :: Selector '[] (Id NSNumber)
 failSafeTimeoutSelector = mkSelector "failSafeTimeout"
 
 -- | @Selector@ for @setFailSafeTimeout:@
-setFailSafeTimeoutSelector :: Selector
+setFailSafeTimeoutSelector :: Selector '[Id NSNumber] ()
 setFailSafeTimeoutSelector = mkSelector "setFailSafeTimeout:"
 
 -- | @Selector@ for @skipCommissioningComplete@
-skipCommissioningCompleteSelector :: Selector
+skipCommissioningCompleteSelector :: Selector '[] Bool
 skipCommissioningCompleteSelector = mkSelector "skipCommissioningComplete"
 
 -- | @Selector@ for @setSkipCommissioningComplete:@
-setSkipCommissioningCompleteSelector :: Selector
+setSkipCommissioningCompleteSelector :: Selector '[Bool] ()
 setSkipCommissioningCompleteSelector = mkSelector "setSkipCommissioningComplete:"
 
 -- | @Selector@ for @countryCode@
-countryCodeSelector :: Selector
+countryCodeSelector :: Selector '[] (Id NSString)
 countryCodeSelector = mkSelector "countryCode"
 
 -- | @Selector@ for @setCountryCode:@
-setCountryCodeSelector :: Selector
+setCountryCodeSelector :: Selector '[Id NSString] ()
 setCountryCodeSelector = mkSelector "setCountryCode:"
 
 -- | @Selector@ for @readEndpointInformation@
-readEndpointInformationSelector :: Selector
+readEndpointInformationSelector :: Selector '[] Bool
 readEndpointInformationSelector = mkSelector "readEndpointInformation"
 
 -- | @Selector@ for @setReadEndpointInformation:@
-setReadEndpointInformationSelector :: Selector
+setReadEndpointInformationSelector :: Selector '[Bool] ()
 setReadEndpointInformationSelector = mkSelector "setReadEndpointInformation:"
 
 -- | @Selector@ for @acceptedTermsAndConditions@
-acceptedTermsAndConditionsSelector :: Selector
+acceptedTermsAndConditionsSelector :: Selector '[] (Id NSNumber)
 acceptedTermsAndConditionsSelector = mkSelector "acceptedTermsAndConditions"
 
 -- | @Selector@ for @setAcceptedTermsAndConditions:@
-setAcceptedTermsAndConditionsSelector :: Selector
+setAcceptedTermsAndConditionsSelector :: Selector '[Id NSNumber] ()
 setAcceptedTermsAndConditionsSelector = mkSelector "setAcceptedTermsAndConditions:"
 
 -- | @Selector@ for @acceptedTermsAndConditionsVersion@
-acceptedTermsAndConditionsVersionSelector :: Selector
+acceptedTermsAndConditionsVersionSelector :: Selector '[] (Id NSNumber)
 acceptedTermsAndConditionsVersionSelector = mkSelector "acceptedTermsAndConditionsVersion"
 
 -- | @Selector@ for @setAcceptedTermsAndConditionsVersion:@
-setAcceptedTermsAndConditionsVersionSelector :: Selector
+setAcceptedTermsAndConditionsVersionSelector :: Selector '[Id NSNumber] ()
 setAcceptedTermsAndConditionsVersionSelector = mkSelector "setAcceptedTermsAndConditionsVersion:"
 
 -- | @Selector@ for @extraAttributesToRead@
-extraAttributesToReadSelector :: Selector
+extraAttributesToReadSelector :: Selector '[] (Id NSArray)
 extraAttributesToReadSelector = mkSelector "extraAttributesToRead"
 
 -- | @Selector@ for @setExtraAttributesToRead:@
-setExtraAttributesToReadSelector :: Selector
+setExtraAttributesToReadSelector :: Selector '[Id NSArray] ()
 setExtraAttributesToReadSelector = mkSelector "setExtraAttributesToRead:"
 
 -- | @Selector@ for @forceWiFiScan@
-forceWiFiScanSelector :: Selector
+forceWiFiScanSelector :: Selector '[] Bool
 forceWiFiScanSelector = mkSelector "forceWiFiScan"
 
 -- | @Selector@ for @setForceWiFiScan:@
-setForceWiFiScanSelector :: Selector
+setForceWiFiScanSelector :: Selector '[Bool] ()
 setForceWiFiScanSelector = mkSelector "setForceWiFiScan:"
 
 -- | @Selector@ for @forceThreadScan@
-forceThreadScanSelector :: Selector
+forceThreadScanSelector :: Selector '[] Bool
 forceThreadScanSelector = mkSelector "forceThreadScan"
 
 -- | @Selector@ for @setForceThreadScan:@
-setForceThreadScanSelector :: Selector
+setForceThreadScanSelector :: Selector '[Bool] ()
 setForceThreadScanSelector = mkSelector "setForceThreadScan:"
 
 -- | @Selector@ for @setCSRNonce:@
-setCSRNonceSelector :: Selector
+setCSRNonceSelector :: Selector '[Id NSData] ()
 setCSRNonceSelector = mkSelector "setCSRNonce:"
 
 -- | @Selector@ for @failSafeExpiryTimeoutSecs@
-failSafeExpiryTimeoutSecsSelector :: Selector
+failSafeExpiryTimeoutSecsSelector :: Selector '[] (Id NSNumber)
 failSafeExpiryTimeoutSecsSelector = mkSelector "failSafeExpiryTimeoutSecs"
 
 -- | @Selector@ for @setFailSafeExpiryTimeoutSecs:@
-setFailSafeExpiryTimeoutSecsSelector :: Selector
+setFailSafeExpiryTimeoutSecsSelector :: Selector '[Id NSNumber] ()
 setFailSafeExpiryTimeoutSecsSelector = mkSelector "setFailSafeExpiryTimeoutSecs:"
 

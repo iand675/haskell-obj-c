@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.GameController.GCDualSenseGamepad
   , touchpadSecondary
   , leftTrigger
   , rightTrigger
+  , leftTriggerSelector
+  , rightTriggerSelector
   , touchpadButtonSelector
   , touchpadPrimarySelector
   , touchpadSecondarySelector
-  , leftTriggerSelector
-  , rightTriggerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,18 +42,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- touchpadButton@
 touchpadButton :: IsGCDualSenseGamepad gcDualSenseGamepad => gcDualSenseGamepad -> IO (Id GCControllerButtonInput)
-touchpadButton gcDualSenseGamepad  =
-    sendMsg gcDualSenseGamepad (mkSelector "touchpadButton") (retPtr retVoid) [] >>= retainedObject . castPtr
+touchpadButton gcDualSenseGamepad =
+  sendMessage gcDualSenseGamepad touchpadButtonSelector
 
 -- | @- touchpadPrimary@
 touchpadPrimary :: IsGCDualSenseGamepad gcDualSenseGamepad => gcDualSenseGamepad -> IO (Id GCControllerDirectionPad)
-touchpadPrimary gcDualSenseGamepad  =
-    sendMsg gcDualSenseGamepad (mkSelector "touchpadPrimary") (retPtr retVoid) [] >>= retainedObject . castPtr
+touchpadPrimary gcDualSenseGamepad =
+  sendMessage gcDualSenseGamepad touchpadPrimarySelector
 
 -- | @- touchpadSecondary@
 touchpadSecondary :: IsGCDualSenseGamepad gcDualSenseGamepad => gcDualSenseGamepad -> IO (Id GCControllerDirectionPad)
-touchpadSecondary gcDualSenseGamepad  =
-    sendMsg gcDualSenseGamepad (mkSelector "touchpadSecondary") (retPtr retVoid) [] >>= retainedObject . castPtr
+touchpadSecondary gcDualSenseGamepad =
+  sendMessage gcDualSenseGamepad touchpadSecondarySelector
 
 -- | Triggers are required to be analog inputs. Common uses would be acceleration and decelleration in a driving game for example.
 --
@@ -64,35 +61,35 @@ touchpadSecondary gcDualSenseGamepad  =
 --
 -- ObjC selector: @- leftTrigger@
 leftTrigger :: IsGCDualSenseGamepad gcDualSenseGamepad => gcDualSenseGamepad -> IO (Id GCDualSenseAdaptiveTrigger)
-leftTrigger gcDualSenseGamepad  =
-    sendMsg gcDualSenseGamepad (mkSelector "leftTrigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftTrigger gcDualSenseGamepad =
+  sendMessage gcDualSenseGamepad leftTriggerSelector
 
 -- | @- rightTrigger@
 rightTrigger :: IsGCDualSenseGamepad gcDualSenseGamepad => gcDualSenseGamepad -> IO (Id GCDualSenseAdaptiveTrigger)
-rightTrigger gcDualSenseGamepad  =
-    sendMsg gcDualSenseGamepad (mkSelector "rightTrigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightTrigger gcDualSenseGamepad =
+  sendMessage gcDualSenseGamepad rightTriggerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @touchpadButton@
-touchpadButtonSelector :: Selector
+touchpadButtonSelector :: Selector '[] (Id GCControllerButtonInput)
 touchpadButtonSelector = mkSelector "touchpadButton"
 
 -- | @Selector@ for @touchpadPrimary@
-touchpadPrimarySelector :: Selector
+touchpadPrimarySelector :: Selector '[] (Id GCControllerDirectionPad)
 touchpadPrimarySelector = mkSelector "touchpadPrimary"
 
 -- | @Selector@ for @touchpadSecondary@
-touchpadSecondarySelector :: Selector
+touchpadSecondarySelector :: Selector '[] (Id GCControllerDirectionPad)
 touchpadSecondarySelector = mkSelector "touchpadSecondary"
 
 -- | @Selector@ for @leftTrigger@
-leftTriggerSelector :: Selector
+leftTriggerSelector :: Selector '[] (Id GCDualSenseAdaptiveTrigger)
 leftTriggerSelector = mkSelector "leftTrigger"
 
 -- | @Selector@ for @rightTrigger@
-rightTriggerSelector :: Selector
+rightTriggerSelector :: Selector '[] (Id GCDualSenseAdaptiveTrigger)
 rightTriggerSelector = mkSelector "rightTrigger"
 

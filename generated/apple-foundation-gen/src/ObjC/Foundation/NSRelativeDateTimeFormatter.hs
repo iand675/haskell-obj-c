@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.Foundation.NSRelativeDateTimeFormatter
   , setCalendar
   , locale
   , setLocale
+  , calendarSelector
+  , dateTimeStyleSelector
+  , formattingContextSelector
+  , localeSelector
+  , localizedStringForDate_relativeToDateSelector
   , localizedStringFromDateComponentsSelector
   , localizedStringFromTimeIntervalSelector
-  , localizedStringForDate_relativeToDateSelector
-  , stringForObjectValueSelector
-  , dateTimeStyleSelector
-  , setDateTimeStyleSelector
-  , unitsStyleSelector
-  , setUnitsStyleSelector
-  , formattingContextSelector
-  , setFormattingContextSelector
-  , calendarSelector
   , setCalendarSelector
-  , localeSelector
+  , setDateTimeStyleSelector
+  , setFormattingContextSelector
   , setLocaleSelector
+  , setUnitsStyleSelector
+  , stringForObjectValueSelector
+  , unitsStyleSelector
 
   -- * Enum types
   , NSFormattingContext(NSFormattingContext)
@@ -55,15 +56,11 @@ module ObjC.Foundation.NSRelativeDateTimeFormatter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,136 +69,131 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- localizedStringFromDateComponents:@
 localizedStringFromDateComponents :: (IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter, IsNSDateComponents dateComponents) => nsRelativeDateTimeFormatter -> dateComponents -> IO (Id NSString)
-localizedStringFromDateComponents nsRelativeDateTimeFormatter  dateComponents =
-  withObjCPtr dateComponents $ \raw_dateComponents ->
-      sendMsg nsRelativeDateTimeFormatter (mkSelector "localizedStringFromDateComponents:") (retPtr retVoid) [argPtr (castPtr raw_dateComponents :: Ptr ())] >>= retainedObject . castPtr
+localizedStringFromDateComponents nsRelativeDateTimeFormatter dateComponents =
+  sendMessage nsRelativeDateTimeFormatter localizedStringFromDateComponentsSelector (toNSDateComponents dateComponents)
 
 -- | @- localizedStringFromTimeInterval:@
 localizedStringFromTimeInterval :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> CDouble -> IO (Id NSString)
-localizedStringFromTimeInterval nsRelativeDateTimeFormatter  timeInterval =
-    sendMsg nsRelativeDateTimeFormatter (mkSelector "localizedStringFromTimeInterval:") (retPtr retVoid) [argCDouble timeInterval] >>= retainedObject . castPtr
+localizedStringFromTimeInterval nsRelativeDateTimeFormatter timeInterval =
+  sendMessage nsRelativeDateTimeFormatter localizedStringFromTimeIntervalSelector timeInterval
 
 -- | @- localizedStringForDate:relativeToDate:@
 localizedStringForDate_relativeToDate :: (IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter, IsNSDate date, IsNSDate referenceDate) => nsRelativeDateTimeFormatter -> date -> referenceDate -> IO (Id NSString)
-localizedStringForDate_relativeToDate nsRelativeDateTimeFormatter  date referenceDate =
-  withObjCPtr date $ \raw_date ->
-    withObjCPtr referenceDate $ \raw_referenceDate ->
-        sendMsg nsRelativeDateTimeFormatter (mkSelector "localizedStringForDate:relativeToDate:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr raw_referenceDate :: Ptr ())] >>= retainedObject . castPtr
+localizedStringForDate_relativeToDate nsRelativeDateTimeFormatter date referenceDate =
+  sendMessage nsRelativeDateTimeFormatter localizedStringForDate_relativeToDateSelector (toNSDate date) (toNSDate referenceDate)
 
 -- | @- stringForObjectValue:@
 stringForObjectValue :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> RawId -> IO (Id NSString)
-stringForObjectValue nsRelativeDateTimeFormatter  obj_ =
-    sendMsg nsRelativeDateTimeFormatter (mkSelector "stringForObjectValue:") (retPtr retVoid) [argPtr (castPtr (unRawId obj_) :: Ptr ())] >>= retainedObject . castPtr
+stringForObjectValue nsRelativeDateTimeFormatter obj_ =
+  sendMessage nsRelativeDateTimeFormatter stringForObjectValueSelector obj_
 
 -- | @- dateTimeStyle@
 dateTimeStyle :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> IO NSRelativeDateTimeFormatterStyle
-dateTimeStyle nsRelativeDateTimeFormatter  =
-    fmap (coerce :: CLong -> NSRelativeDateTimeFormatterStyle) $ sendMsg nsRelativeDateTimeFormatter (mkSelector "dateTimeStyle") retCLong []
+dateTimeStyle nsRelativeDateTimeFormatter =
+  sendMessage nsRelativeDateTimeFormatter dateTimeStyleSelector
 
 -- | @- setDateTimeStyle:@
 setDateTimeStyle :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> NSRelativeDateTimeFormatterStyle -> IO ()
-setDateTimeStyle nsRelativeDateTimeFormatter  value =
-    sendMsg nsRelativeDateTimeFormatter (mkSelector "setDateTimeStyle:") retVoid [argCLong (coerce value)]
+setDateTimeStyle nsRelativeDateTimeFormatter value =
+  sendMessage nsRelativeDateTimeFormatter setDateTimeStyleSelector value
 
 -- | @- unitsStyle@
 unitsStyle :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> IO NSRelativeDateTimeFormatterUnitsStyle
-unitsStyle nsRelativeDateTimeFormatter  =
-    fmap (coerce :: CLong -> NSRelativeDateTimeFormatterUnitsStyle) $ sendMsg nsRelativeDateTimeFormatter (mkSelector "unitsStyle") retCLong []
+unitsStyle nsRelativeDateTimeFormatter =
+  sendMessage nsRelativeDateTimeFormatter unitsStyleSelector
 
 -- | @- setUnitsStyle:@
 setUnitsStyle :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> NSRelativeDateTimeFormatterUnitsStyle -> IO ()
-setUnitsStyle nsRelativeDateTimeFormatter  value =
-    sendMsg nsRelativeDateTimeFormatter (mkSelector "setUnitsStyle:") retVoid [argCLong (coerce value)]
+setUnitsStyle nsRelativeDateTimeFormatter value =
+  sendMessage nsRelativeDateTimeFormatter setUnitsStyleSelector value
 
 -- | @- formattingContext@
 formattingContext :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> IO NSFormattingContext
-formattingContext nsRelativeDateTimeFormatter  =
-    fmap (coerce :: CLong -> NSFormattingContext) $ sendMsg nsRelativeDateTimeFormatter (mkSelector "formattingContext") retCLong []
+formattingContext nsRelativeDateTimeFormatter =
+  sendMessage nsRelativeDateTimeFormatter formattingContextSelector
 
 -- | @- setFormattingContext:@
 setFormattingContext :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> NSFormattingContext -> IO ()
-setFormattingContext nsRelativeDateTimeFormatter  value =
-    sendMsg nsRelativeDateTimeFormatter (mkSelector "setFormattingContext:") retVoid [argCLong (coerce value)]
+setFormattingContext nsRelativeDateTimeFormatter value =
+  sendMessage nsRelativeDateTimeFormatter setFormattingContextSelector value
 
 -- | @- calendar@
 calendar :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> IO (Id NSCalendar)
-calendar nsRelativeDateTimeFormatter  =
-    sendMsg nsRelativeDateTimeFormatter (mkSelector "calendar") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendar nsRelativeDateTimeFormatter =
+  sendMessage nsRelativeDateTimeFormatter calendarSelector
 
 -- | @- setCalendar:@
 setCalendar :: (IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter, IsNSCalendar value) => nsRelativeDateTimeFormatter -> value -> IO ()
-setCalendar nsRelativeDateTimeFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsRelativeDateTimeFormatter (mkSelector "setCalendar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCalendar nsRelativeDateTimeFormatter value =
+  sendMessage nsRelativeDateTimeFormatter setCalendarSelector (toNSCalendar value)
 
 -- | @- locale@
 locale :: IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter => nsRelativeDateTimeFormatter -> IO (Id NSLocale)
-locale nsRelativeDateTimeFormatter  =
-    sendMsg nsRelativeDateTimeFormatter (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale nsRelativeDateTimeFormatter =
+  sendMessage nsRelativeDateTimeFormatter localeSelector
 
 -- | @- setLocale:@
 setLocale :: (IsNSRelativeDateTimeFormatter nsRelativeDateTimeFormatter, IsNSLocale value) => nsRelativeDateTimeFormatter -> value -> IO ()
-setLocale nsRelativeDateTimeFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsRelativeDateTimeFormatter (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale nsRelativeDateTimeFormatter value =
+  sendMessage nsRelativeDateTimeFormatter setLocaleSelector (toNSLocale value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @localizedStringFromDateComponents:@
-localizedStringFromDateComponentsSelector :: Selector
+localizedStringFromDateComponentsSelector :: Selector '[Id NSDateComponents] (Id NSString)
 localizedStringFromDateComponentsSelector = mkSelector "localizedStringFromDateComponents:"
 
 -- | @Selector@ for @localizedStringFromTimeInterval:@
-localizedStringFromTimeIntervalSelector :: Selector
+localizedStringFromTimeIntervalSelector :: Selector '[CDouble] (Id NSString)
 localizedStringFromTimeIntervalSelector = mkSelector "localizedStringFromTimeInterval:"
 
 -- | @Selector@ for @localizedStringForDate:relativeToDate:@
-localizedStringForDate_relativeToDateSelector :: Selector
+localizedStringForDate_relativeToDateSelector :: Selector '[Id NSDate, Id NSDate] (Id NSString)
 localizedStringForDate_relativeToDateSelector = mkSelector "localizedStringForDate:relativeToDate:"
 
 -- | @Selector@ for @stringForObjectValue:@
-stringForObjectValueSelector :: Selector
+stringForObjectValueSelector :: Selector '[RawId] (Id NSString)
 stringForObjectValueSelector = mkSelector "stringForObjectValue:"
 
 -- | @Selector@ for @dateTimeStyle@
-dateTimeStyleSelector :: Selector
+dateTimeStyleSelector :: Selector '[] NSRelativeDateTimeFormatterStyle
 dateTimeStyleSelector = mkSelector "dateTimeStyle"
 
 -- | @Selector@ for @setDateTimeStyle:@
-setDateTimeStyleSelector :: Selector
+setDateTimeStyleSelector :: Selector '[NSRelativeDateTimeFormatterStyle] ()
 setDateTimeStyleSelector = mkSelector "setDateTimeStyle:"
 
 -- | @Selector@ for @unitsStyle@
-unitsStyleSelector :: Selector
+unitsStyleSelector :: Selector '[] NSRelativeDateTimeFormatterUnitsStyle
 unitsStyleSelector = mkSelector "unitsStyle"
 
 -- | @Selector@ for @setUnitsStyle:@
-setUnitsStyleSelector :: Selector
+setUnitsStyleSelector :: Selector '[NSRelativeDateTimeFormatterUnitsStyle] ()
 setUnitsStyleSelector = mkSelector "setUnitsStyle:"
 
 -- | @Selector@ for @formattingContext@
-formattingContextSelector :: Selector
+formattingContextSelector :: Selector '[] NSFormattingContext
 formattingContextSelector = mkSelector "formattingContext"
 
 -- | @Selector@ for @setFormattingContext:@
-setFormattingContextSelector :: Selector
+setFormattingContextSelector :: Selector '[NSFormattingContext] ()
 setFormattingContextSelector = mkSelector "setFormattingContext:"
 
 -- | @Selector@ for @calendar@
-calendarSelector :: Selector
+calendarSelector :: Selector '[] (Id NSCalendar)
 calendarSelector = mkSelector "calendar"
 
 -- | @Selector@ for @setCalendar:@
-setCalendarSelector :: Selector
+setCalendarSelector :: Selector '[Id NSCalendar] ()
 setCalendarSelector = mkSelector "setCalendar:"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 

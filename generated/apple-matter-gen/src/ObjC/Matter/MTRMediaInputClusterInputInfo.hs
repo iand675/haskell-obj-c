@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRMediaInputClusterInputInfo
   , setName
   , descriptionString
   , setDescriptionString
-  , indexSelector
-  , setIndexSelector
-  , inputTypeSelector
-  , setInputTypeSelector
-  , nameSelector
-  , setNameSelector
   , descriptionStringSelector
+  , indexSelector
+  , inputTypeSelector
+  , nameSelector
   , setDescriptionStringSelector
+  , setIndexSelector
+  , setInputTypeSelector
+  , setNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- index@
 index :: IsMTRMediaInputClusterInputInfo mtrMediaInputClusterInputInfo => mtrMediaInputClusterInputInfo -> IO (Id NSNumber)
-index mtrMediaInputClusterInputInfo  =
-    sendMsg mtrMediaInputClusterInputInfo (mkSelector "index") (retPtr retVoid) [] >>= retainedObject . castPtr
+index mtrMediaInputClusterInputInfo =
+  sendMessage mtrMediaInputClusterInputInfo indexSelector
 
 -- | @- setIndex:@
 setIndex :: (IsMTRMediaInputClusterInputInfo mtrMediaInputClusterInputInfo, IsNSNumber value) => mtrMediaInputClusterInputInfo -> value -> IO ()
-setIndex mtrMediaInputClusterInputInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaInputClusterInputInfo (mkSelector "setIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIndex mtrMediaInputClusterInputInfo value =
+  sendMessage mtrMediaInputClusterInputInfo setIndexSelector (toNSNumber value)
 
 -- | @- inputType@
 inputType :: IsMTRMediaInputClusterInputInfo mtrMediaInputClusterInputInfo => mtrMediaInputClusterInputInfo -> IO (Id NSNumber)
-inputType mtrMediaInputClusterInputInfo  =
-    sendMsg mtrMediaInputClusterInputInfo (mkSelector "inputType") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputType mtrMediaInputClusterInputInfo =
+  sendMessage mtrMediaInputClusterInputInfo inputTypeSelector
 
 -- | @- setInputType:@
 setInputType :: (IsMTRMediaInputClusterInputInfo mtrMediaInputClusterInputInfo, IsNSNumber value) => mtrMediaInputClusterInputInfo -> value -> IO ()
-setInputType mtrMediaInputClusterInputInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaInputClusterInputInfo (mkSelector "setInputType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInputType mtrMediaInputClusterInputInfo value =
+  sendMessage mtrMediaInputClusterInputInfo setInputTypeSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRMediaInputClusterInputInfo mtrMediaInputClusterInputInfo => mtrMediaInputClusterInputInfo -> IO (Id NSString)
-name mtrMediaInputClusterInputInfo  =
-    sendMsg mtrMediaInputClusterInputInfo (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrMediaInputClusterInputInfo =
+  sendMessage mtrMediaInputClusterInputInfo nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRMediaInputClusterInputInfo mtrMediaInputClusterInputInfo, IsNSString value) => mtrMediaInputClusterInputInfo -> value -> IO ()
-setName mtrMediaInputClusterInputInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaInputClusterInputInfo (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrMediaInputClusterInputInfo value =
+  sendMessage mtrMediaInputClusterInputInfo setNameSelector (toNSString value)
 
 -- | @- descriptionString@
 descriptionString :: IsMTRMediaInputClusterInputInfo mtrMediaInputClusterInputInfo => mtrMediaInputClusterInputInfo -> IO (Id NSString)
-descriptionString mtrMediaInputClusterInputInfo  =
-    sendMsg mtrMediaInputClusterInputInfo (mkSelector "descriptionString") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptionString mtrMediaInputClusterInputInfo =
+  sendMessage mtrMediaInputClusterInputInfo descriptionStringSelector
 
 -- | @- setDescriptionString:@
 setDescriptionString :: (IsMTRMediaInputClusterInputInfo mtrMediaInputClusterInputInfo, IsNSString value) => mtrMediaInputClusterInputInfo -> value -> IO ()
-setDescriptionString mtrMediaInputClusterInputInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaInputClusterInputInfo (mkSelector "setDescriptionString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDescriptionString mtrMediaInputClusterInputInfo value =
+  sendMessage mtrMediaInputClusterInputInfo setDescriptionStringSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] (Id NSNumber)
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @setIndex:@
-setIndexSelector :: Selector
+setIndexSelector :: Selector '[Id NSNumber] ()
 setIndexSelector = mkSelector "setIndex:"
 
 -- | @Selector@ for @inputType@
-inputTypeSelector :: Selector
+inputTypeSelector :: Selector '[] (Id NSNumber)
 inputTypeSelector = mkSelector "inputType"
 
 -- | @Selector@ for @setInputType:@
-setInputTypeSelector :: Selector
+setInputTypeSelector :: Selector '[Id NSNumber] ()
 setInputTypeSelector = mkSelector "setInputType:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @descriptionString@
-descriptionStringSelector :: Selector
+descriptionStringSelector :: Selector '[] (Id NSString)
 descriptionStringSelector = mkSelector "descriptionString"
 
 -- | @Selector@ for @setDescriptionString:@
-setDescriptionStringSelector :: Selector
+setDescriptionStringSelector :: Selector '[Id NSString] ()
 setDescriptionStringSelector = mkSelector "setDescriptionString:"
 

@@ -12,6 +12,7 @@
 module ObjC.CodeGen.Generate.ClassModule
   ( generateClassModule
   , generateExtensionModules
+  , mkExtMod
   , generateReExportModule
   ) where
 
@@ -188,7 +189,8 @@ generateHeader modName cls known importable allKnownClasses originFilter allMeth
         | hasEnums  = ["{-# LANGUAGE PatternSynonyms #-}"]
         | otherwise = []
   in patSynPragma ++
-  [ "{-# LANGUAGE TypeApplications #-}"
+  [ "{-# LANGUAGE DataKinds #-}"
+  , "{-# LANGUAGE TypeApplications #-}"
   , "{-# LANGUAGE ScopedTypeVariables #-}"
   , "{-# LANGUAGE FlexibleContexts #-}"
   , ""
@@ -224,14 +226,10 @@ exportMethods known importable allKnownClasses cls originFilter =
                        (allClassMethods importable allKnownClasses cls)
       instNames = instanceMethodNameSet cls methods
       methodExports = fmap (\m -> "  , " <> methodHaskellName cls instNames m) methods
-      uniqueSels = dedup Set.empty Set.empty (fmap methodSelector methods)
-      dedup _ _ [] = []
-      dedup seenSel seenHs (s:ss)
-        | Set.member s seenSel = dedup seenSel seenHs ss
-        | Set.member hs seenHs = dedup seenSel seenHs ss
-        | otherwise            = s : dedup (Set.insert s seenSel) (Set.insert hs seenHs) ss
-        where hs = selectorHaskellName s
-      selExports = fmap (\s -> "  , " <> selectorHaskellName s) uniqueSels
+      -- Selector exports: one per method, deduplicated by binding name
+      selNameSet = Set.fromList
+        (fmap (\m -> methodSelectorName cls instNames m) methods)
+      selExports = fmap ("  , " <>) (Set.toList selNameSet)
   in T.unlines (methodExports ++ selExports)
 
 exportEnums :: Map Text EnumDef -> Set Text -> Text
@@ -267,21 +265,12 @@ generateImports
 generateImports fwMap allKnown hierarchy cls framework importable allKnownClasses depFws originFilter allMethodTypes =
   standardImports ++ [""] ++ internalImport ++ structImports ++ enumImports ++ crossFwImportLines
   where
-    usesStret = any (isStructReturn . methodReturnType)
-                    (filter originFilter (allClassMethods importable allKnownClasses cls))
-    msgSendImports
-      | usesStret = "import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)"
-      | otherwise = "import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)"
     standardImports =
-      [ "import Foreign.Ptr (Ptr, nullPtr, castPtr)"
-      , "import Foreign.LibFFI"
+      [ "import Foreign.Ptr (Ptr, FunPtr)"
       , "import Foreign.C.Types"
-      , "import Data.Int (Int8, Int16)"
-      , "import Data.Word (Word16)"
-      , "import Data.Coerce (coerce)"
       , ""
       , "import ObjC.Runtime.Types"
-      , msgSendImports
+      , "import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)"
       , "import ObjC.Runtime.Selector (mkSelector)"
       , "import ObjC.Runtime.Class (getRequiredClass)"
       ]

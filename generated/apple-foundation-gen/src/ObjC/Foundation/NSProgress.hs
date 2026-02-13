@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -62,75 +63,71 @@ module ObjC.Foundation.NSProgress
   , fileCompletedCount
   , setFileCompletedCount
   , old
-  , currentProgressSelector
-  , progressWithTotalUnitCountSelector
-  , discreteProgressWithTotalUnitCountSelector
-  , progressWithTotalUnitCount_parent_pendingUnitCountSelector
-  , initWithParent_userInfoSelector
-  , becomeCurrentWithPendingUnitCountSelector
-  , performAsCurrentWithPendingUnitCount_usingBlockSelector
-  , resignCurrentSelector
   , addChild_withPendingUnitCountSelector
-  , setUserInfoObject_forKeySelector
-  , cancelSelector
-  , pauseSelector
-  , resumeSelector
-  , publishSelector
-  , unpublishSelector
   , addSubscriberForFileURL_withPublishingHandlerSelector
-  , removeSubscriberSelector
-  , totalUnitCountSelector
-  , setTotalUnitCountSelector
-  , completedUnitCountSelector
-  , setCompletedUnitCountSelector
-  , localizedDescriptionSelector
-  , setLocalizedDescriptionSelector
-  , localizedAdditionalDescriptionSelector
-  , setLocalizedAdditionalDescriptionSelector
+  , becomeCurrentWithPendingUnitCountSelector
+  , cancelSelector
   , cancellableSelector
-  , setCancellableSelector
-  , pausableSelector
-  , setPausableSelector
-  , cancelledSelector
-  , pausedSelector
   , cancellationHandlerSelector
-  , setCancellationHandlerSelector
-  , pausingHandlerSelector
-  , setPausingHandlerSelector
-  , resumingHandlerSelector
-  , setResumingHandlerSelector
-  , indeterminateSelector
-  , fractionCompletedSelector
-  , finishedSelector
-  , userInfoSelector
-  , kindSelector
-  , setKindSelector
+  , cancelledSelector
+  , completedUnitCountSelector
+  , currentProgressSelector
+  , discreteProgressWithTotalUnitCountSelector
   , estimatedTimeRemainingSelector
-  , setEstimatedTimeRemainingSelector
-  , throughputSelector
-  , setThroughputSelector
-  , fileOperationKindSelector
-  , setFileOperationKindSelector
-  , fileURLSelector
-  , setFileURLSelector
-  , fileTotalCountSelector
-  , setFileTotalCountSelector
   , fileCompletedCountSelector
-  , setFileCompletedCountSelector
+  , fileOperationKindSelector
+  , fileTotalCountSelector
+  , fileURLSelector
+  , finishedSelector
+  , fractionCompletedSelector
+  , indeterminateSelector
+  , initWithParent_userInfoSelector
+  , kindSelector
+  , localizedAdditionalDescriptionSelector
+  , localizedDescriptionSelector
   , oldSelector
+  , pausableSelector
+  , pauseSelector
+  , pausedSelector
+  , pausingHandlerSelector
+  , performAsCurrentWithPendingUnitCount_usingBlockSelector
+  , progressWithTotalUnitCountSelector
+  , progressWithTotalUnitCount_parent_pendingUnitCountSelector
+  , publishSelector
+  , removeSubscriberSelector
+  , resignCurrentSelector
+  , resumeSelector
+  , resumingHandlerSelector
+  , setCancellableSelector
+  , setCancellationHandlerSelector
+  , setCompletedUnitCountSelector
+  , setEstimatedTimeRemainingSelector
+  , setFileCompletedCountSelector
+  , setFileOperationKindSelector
+  , setFileTotalCountSelector
+  , setFileURLSelector
+  , setKindSelector
+  , setLocalizedAdditionalDescriptionSelector
+  , setLocalizedDescriptionSelector
+  , setPausableSelector
+  , setPausingHandlerSelector
+  , setResumingHandlerSelector
+  , setThroughputSelector
+  , setTotalUnitCountSelector
+  , setUserInfoObject_forKeySelector
+  , throughputSelector
+  , totalUnitCountSelector
+  , unpublishSelector
+  , userInfoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -141,533 +138,518 @@ currentProgress :: IO (Id NSProgress)
 currentProgress  =
   do
     cls' <- getRequiredClass "NSProgress"
-    sendClassMsg cls' (mkSelector "currentProgress") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentProgressSelector
 
 -- | @+ progressWithTotalUnitCount:@
 progressWithTotalUnitCount :: CLong -> IO (Id NSProgress)
 progressWithTotalUnitCount unitCount =
   do
     cls' <- getRequiredClass "NSProgress"
-    sendClassMsg cls' (mkSelector "progressWithTotalUnitCount:") (retPtr retVoid) [argCLong unitCount] >>= retainedObject . castPtr
+    sendClassMessage cls' progressWithTotalUnitCountSelector unitCount
 
 -- | @+ discreteProgressWithTotalUnitCount:@
 discreteProgressWithTotalUnitCount :: CLong -> IO (Id NSProgress)
 discreteProgressWithTotalUnitCount unitCount =
   do
     cls' <- getRequiredClass "NSProgress"
-    sendClassMsg cls' (mkSelector "discreteProgressWithTotalUnitCount:") (retPtr retVoid) [argCLong unitCount] >>= retainedObject . castPtr
+    sendClassMessage cls' discreteProgressWithTotalUnitCountSelector unitCount
 
 -- | @+ progressWithTotalUnitCount:parent:pendingUnitCount:@
 progressWithTotalUnitCount_parent_pendingUnitCount :: IsNSProgress parent => CLong -> parent -> CLong -> IO (Id NSProgress)
 progressWithTotalUnitCount_parent_pendingUnitCount unitCount parent portionOfParentTotalUnitCount =
   do
     cls' <- getRequiredClass "NSProgress"
-    withObjCPtr parent $ \raw_parent ->
-      sendClassMsg cls' (mkSelector "progressWithTotalUnitCount:parent:pendingUnitCount:") (retPtr retVoid) [argCLong unitCount, argPtr (castPtr raw_parent :: Ptr ()), argCLong portionOfParentTotalUnitCount] >>= retainedObject . castPtr
+    sendClassMessage cls' progressWithTotalUnitCount_parent_pendingUnitCountSelector unitCount (toNSProgress parent) portionOfParentTotalUnitCount
 
 -- | @- initWithParent:userInfo:@
 initWithParent_userInfo :: (IsNSProgress nsProgress, IsNSProgress parentProgressOrNil, IsNSDictionary userInfoOrNil) => nsProgress -> parentProgressOrNil -> userInfoOrNil -> IO (Id NSProgress)
-initWithParent_userInfo nsProgress  parentProgressOrNil userInfoOrNil =
-  withObjCPtr parentProgressOrNil $ \raw_parentProgressOrNil ->
-    withObjCPtr userInfoOrNil $ \raw_userInfoOrNil ->
-        sendMsg nsProgress (mkSelector "initWithParent:userInfo:") (retPtr retVoid) [argPtr (castPtr raw_parentProgressOrNil :: Ptr ()), argPtr (castPtr raw_userInfoOrNil :: Ptr ())] >>= ownedObject . castPtr
+initWithParent_userInfo nsProgress parentProgressOrNil userInfoOrNil =
+  sendOwnedMessage nsProgress initWithParent_userInfoSelector (toNSProgress parentProgressOrNil) (toNSDictionary userInfoOrNil)
 
 -- | @- becomeCurrentWithPendingUnitCount:@
 becomeCurrentWithPendingUnitCount :: IsNSProgress nsProgress => nsProgress -> CLong -> IO ()
-becomeCurrentWithPendingUnitCount nsProgress  unitCount =
-    sendMsg nsProgress (mkSelector "becomeCurrentWithPendingUnitCount:") retVoid [argCLong unitCount]
+becomeCurrentWithPendingUnitCount nsProgress unitCount =
+  sendMessage nsProgress becomeCurrentWithPendingUnitCountSelector unitCount
 
 -- | @- performAsCurrentWithPendingUnitCount:usingBlock:@
 performAsCurrentWithPendingUnitCount_usingBlock :: IsNSProgress nsProgress => nsProgress -> CLong -> Ptr () -> IO ()
-performAsCurrentWithPendingUnitCount_usingBlock nsProgress  unitCount work =
-    sendMsg nsProgress (mkSelector "performAsCurrentWithPendingUnitCount:usingBlock:") retVoid [argCLong unitCount, argPtr (castPtr work :: Ptr ())]
+performAsCurrentWithPendingUnitCount_usingBlock nsProgress unitCount work =
+  sendMessage nsProgress performAsCurrentWithPendingUnitCount_usingBlockSelector unitCount work
 
 -- | @- resignCurrent@
 resignCurrent :: IsNSProgress nsProgress => nsProgress -> IO ()
-resignCurrent nsProgress  =
-    sendMsg nsProgress (mkSelector "resignCurrent") retVoid []
+resignCurrent nsProgress =
+  sendMessage nsProgress resignCurrentSelector
 
 -- | @- addChild:withPendingUnitCount:@
 addChild_withPendingUnitCount :: (IsNSProgress nsProgress, IsNSProgress child) => nsProgress -> child -> CLong -> IO ()
-addChild_withPendingUnitCount nsProgress  child inUnitCount =
-  withObjCPtr child $ \raw_child ->
-      sendMsg nsProgress (mkSelector "addChild:withPendingUnitCount:") retVoid [argPtr (castPtr raw_child :: Ptr ()), argCLong inUnitCount]
+addChild_withPendingUnitCount nsProgress child inUnitCount =
+  sendMessage nsProgress addChild_withPendingUnitCountSelector (toNSProgress child) inUnitCount
 
 -- | @- setUserInfoObject:forKey:@
 setUserInfoObject_forKey :: (IsNSProgress nsProgress, IsNSString key) => nsProgress -> RawId -> key -> IO ()
-setUserInfoObject_forKey nsProgress  objectOrNil key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsProgress (mkSelector "setUserInfoObject:forKey:") retVoid [argPtr (castPtr (unRawId objectOrNil) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setUserInfoObject_forKey nsProgress objectOrNil key =
+  sendMessage nsProgress setUserInfoObject_forKeySelector objectOrNil (toNSString key)
 
 -- | @- cancel@
 cancel :: IsNSProgress nsProgress => nsProgress -> IO ()
-cancel nsProgress  =
-    sendMsg nsProgress (mkSelector "cancel") retVoid []
+cancel nsProgress =
+  sendMessage nsProgress cancelSelector
 
 -- | @- pause@
 pause :: IsNSProgress nsProgress => nsProgress -> IO ()
-pause nsProgress  =
-    sendMsg nsProgress (mkSelector "pause") retVoid []
+pause nsProgress =
+  sendMessage nsProgress pauseSelector
 
 -- | @- resume@
 resume :: IsNSProgress nsProgress => nsProgress -> IO ()
-resume nsProgress  =
-    sendMsg nsProgress (mkSelector "resume") retVoid []
+resume nsProgress =
+  sendMessage nsProgress resumeSelector
 
 -- | @- publish@
 publish :: IsNSProgress nsProgress => nsProgress -> IO ()
-publish nsProgress  =
-    sendMsg nsProgress (mkSelector "publish") retVoid []
+publish nsProgress =
+  sendMessage nsProgress publishSelector
 
 -- | @- unpublish@
 unpublish :: IsNSProgress nsProgress => nsProgress -> IO ()
-unpublish nsProgress  =
-    sendMsg nsProgress (mkSelector "unpublish") retVoid []
+unpublish nsProgress =
+  sendMessage nsProgress unpublishSelector
 
 -- | @+ addSubscriberForFileURL:withPublishingHandler:@
 addSubscriberForFileURL_withPublishingHandler :: IsNSURL url => url -> Ptr () -> IO RawId
 addSubscriberForFileURL_withPublishingHandler url publishingHandler =
   do
     cls' <- getRequiredClass "NSProgress"
-    withObjCPtr url $ \raw_url ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "addSubscriberForFileURL:withPublishingHandler:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr publishingHandler :: Ptr ())]
+    sendClassMessage cls' addSubscriberForFileURL_withPublishingHandlerSelector (toNSURL url) publishingHandler
 
 -- | @+ removeSubscriber:@
 removeSubscriber :: RawId -> IO ()
 removeSubscriber subscriber =
   do
     cls' <- getRequiredClass "NSProgress"
-    sendClassMsg cls' (mkSelector "removeSubscriber:") retVoid [argPtr (castPtr (unRawId subscriber) :: Ptr ())]
+    sendClassMessage cls' removeSubscriberSelector subscriber
 
 -- | @- totalUnitCount@
 totalUnitCount :: IsNSProgress nsProgress => nsProgress -> IO CLong
-totalUnitCount nsProgress  =
-    sendMsg nsProgress (mkSelector "totalUnitCount") retCLong []
+totalUnitCount nsProgress =
+  sendMessage nsProgress totalUnitCountSelector
 
 -- | @- setTotalUnitCount:@
 setTotalUnitCount :: IsNSProgress nsProgress => nsProgress -> CLong -> IO ()
-setTotalUnitCount nsProgress  value =
-    sendMsg nsProgress (mkSelector "setTotalUnitCount:") retVoid [argCLong value]
+setTotalUnitCount nsProgress value =
+  sendMessage nsProgress setTotalUnitCountSelector value
 
 -- | @- completedUnitCount@
 completedUnitCount :: IsNSProgress nsProgress => nsProgress -> IO CLong
-completedUnitCount nsProgress  =
-    sendMsg nsProgress (mkSelector "completedUnitCount") retCLong []
+completedUnitCount nsProgress =
+  sendMessage nsProgress completedUnitCountSelector
 
 -- | @- setCompletedUnitCount:@
 setCompletedUnitCount :: IsNSProgress nsProgress => nsProgress -> CLong -> IO ()
-setCompletedUnitCount nsProgress  value =
-    sendMsg nsProgress (mkSelector "setCompletedUnitCount:") retVoid [argCLong value]
+setCompletedUnitCount nsProgress value =
+  sendMessage nsProgress setCompletedUnitCountSelector value
 
 -- | @- localizedDescription@
 localizedDescription :: IsNSProgress nsProgress => nsProgress -> IO (Id NSString)
-localizedDescription nsProgress  =
-    sendMsg nsProgress (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription nsProgress =
+  sendMessage nsProgress localizedDescriptionSelector
 
 -- | @- setLocalizedDescription:@
 setLocalizedDescription :: (IsNSProgress nsProgress, IsNSString value) => nsProgress -> value -> IO ()
-setLocalizedDescription nsProgress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgress (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedDescription nsProgress value =
+  sendMessage nsProgress setLocalizedDescriptionSelector (toNSString value)
 
 -- | @- localizedAdditionalDescription@
 localizedAdditionalDescription :: IsNSProgress nsProgress => nsProgress -> IO (Id NSString)
-localizedAdditionalDescription nsProgress  =
-    sendMsg nsProgress (mkSelector "localizedAdditionalDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedAdditionalDescription nsProgress =
+  sendMessage nsProgress localizedAdditionalDescriptionSelector
 
 -- | @- setLocalizedAdditionalDescription:@
 setLocalizedAdditionalDescription :: (IsNSProgress nsProgress, IsNSString value) => nsProgress -> value -> IO ()
-setLocalizedAdditionalDescription nsProgress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgress (mkSelector "setLocalizedAdditionalDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedAdditionalDescription nsProgress value =
+  sendMessage nsProgress setLocalizedAdditionalDescriptionSelector (toNSString value)
 
 -- | @- cancellable@
 cancellable :: IsNSProgress nsProgress => nsProgress -> IO Bool
-cancellable nsProgress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgress (mkSelector "cancellable") retCULong []
+cancellable nsProgress =
+  sendMessage nsProgress cancellableSelector
 
 -- | @- setCancellable:@
 setCancellable :: IsNSProgress nsProgress => nsProgress -> Bool -> IO ()
-setCancellable nsProgress  value =
-    sendMsg nsProgress (mkSelector "setCancellable:") retVoid [argCULong (if value then 1 else 0)]
+setCancellable nsProgress value =
+  sendMessage nsProgress setCancellableSelector value
 
 -- | @- pausable@
 pausable :: IsNSProgress nsProgress => nsProgress -> IO Bool
-pausable nsProgress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgress (mkSelector "pausable") retCULong []
+pausable nsProgress =
+  sendMessage nsProgress pausableSelector
 
 -- | @- setPausable:@
 setPausable :: IsNSProgress nsProgress => nsProgress -> Bool -> IO ()
-setPausable nsProgress  value =
-    sendMsg nsProgress (mkSelector "setPausable:") retVoid [argCULong (if value then 1 else 0)]
+setPausable nsProgress value =
+  sendMessage nsProgress setPausableSelector value
 
 -- | @- cancelled@
 cancelled :: IsNSProgress nsProgress => nsProgress -> IO Bool
-cancelled nsProgress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgress (mkSelector "cancelled") retCULong []
+cancelled nsProgress =
+  sendMessage nsProgress cancelledSelector
 
 -- | @- paused@
 paused :: IsNSProgress nsProgress => nsProgress -> IO Bool
-paused nsProgress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgress (mkSelector "paused") retCULong []
+paused nsProgress =
+  sendMessage nsProgress pausedSelector
 
 -- | @- cancellationHandler@
 cancellationHandler :: IsNSProgress nsProgress => nsProgress -> IO (Ptr ())
-cancellationHandler nsProgress  =
-    fmap castPtr $ sendMsg nsProgress (mkSelector "cancellationHandler") (retPtr retVoid) []
+cancellationHandler nsProgress =
+  sendMessage nsProgress cancellationHandlerSelector
 
 -- | @- setCancellationHandler:@
 setCancellationHandler :: IsNSProgress nsProgress => nsProgress -> Ptr () -> IO ()
-setCancellationHandler nsProgress  value =
-    sendMsg nsProgress (mkSelector "setCancellationHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCancellationHandler nsProgress value =
+  sendMessage nsProgress setCancellationHandlerSelector value
 
 -- | @- pausingHandler@
 pausingHandler :: IsNSProgress nsProgress => nsProgress -> IO (Ptr ())
-pausingHandler nsProgress  =
-    fmap castPtr $ sendMsg nsProgress (mkSelector "pausingHandler") (retPtr retVoid) []
+pausingHandler nsProgress =
+  sendMessage nsProgress pausingHandlerSelector
 
 -- | @- setPausingHandler:@
 setPausingHandler :: IsNSProgress nsProgress => nsProgress -> Ptr () -> IO ()
-setPausingHandler nsProgress  value =
-    sendMsg nsProgress (mkSelector "setPausingHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPausingHandler nsProgress value =
+  sendMessage nsProgress setPausingHandlerSelector value
 
 -- | @- resumingHandler@
 resumingHandler :: IsNSProgress nsProgress => nsProgress -> IO (Ptr ())
-resumingHandler nsProgress  =
-    fmap castPtr $ sendMsg nsProgress (mkSelector "resumingHandler") (retPtr retVoid) []
+resumingHandler nsProgress =
+  sendMessage nsProgress resumingHandlerSelector
 
 -- | @- setResumingHandler:@
 setResumingHandler :: IsNSProgress nsProgress => nsProgress -> Ptr () -> IO ()
-setResumingHandler nsProgress  value =
-    sendMsg nsProgress (mkSelector "setResumingHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setResumingHandler nsProgress value =
+  sendMessage nsProgress setResumingHandlerSelector value
 
 -- | @- indeterminate@
 indeterminate :: IsNSProgress nsProgress => nsProgress -> IO Bool
-indeterminate nsProgress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgress (mkSelector "indeterminate") retCULong []
+indeterminate nsProgress =
+  sendMessage nsProgress indeterminateSelector
 
 -- | @- fractionCompleted@
 fractionCompleted :: IsNSProgress nsProgress => nsProgress -> IO CDouble
-fractionCompleted nsProgress  =
-    sendMsg nsProgress (mkSelector "fractionCompleted") retCDouble []
+fractionCompleted nsProgress =
+  sendMessage nsProgress fractionCompletedSelector
 
 -- | @- finished@
 finished :: IsNSProgress nsProgress => nsProgress -> IO Bool
-finished nsProgress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgress (mkSelector "finished") retCULong []
+finished nsProgress =
+  sendMessage nsProgress finishedSelector
 
 -- | @- userInfo@
 userInfo :: IsNSProgress nsProgress => nsProgress -> IO (Id NSDictionary)
-userInfo nsProgress  =
-    sendMsg nsProgress (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsProgress =
+  sendMessage nsProgress userInfoSelector
 
 -- | @- kind@
 kind :: IsNSProgress nsProgress => nsProgress -> IO (Id NSString)
-kind nsProgress  =
-    sendMsg nsProgress (mkSelector "kind") (retPtr retVoid) [] >>= retainedObject . castPtr
+kind nsProgress =
+  sendMessage nsProgress kindSelector
 
 -- | @- setKind:@
 setKind :: (IsNSProgress nsProgress, IsNSString value) => nsProgress -> value -> IO ()
-setKind nsProgress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgress (mkSelector "setKind:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKind nsProgress value =
+  sendMessage nsProgress setKindSelector (toNSString value)
 
 -- | @- estimatedTimeRemaining@
 estimatedTimeRemaining :: IsNSProgress nsProgress => nsProgress -> IO (Id NSNumber)
-estimatedTimeRemaining nsProgress  =
-    sendMsg nsProgress (mkSelector "estimatedTimeRemaining") (retPtr retVoid) [] >>= retainedObject . castPtr
+estimatedTimeRemaining nsProgress =
+  sendMessage nsProgress estimatedTimeRemainingSelector
 
 -- | @- setEstimatedTimeRemaining:@
 setEstimatedTimeRemaining :: (IsNSProgress nsProgress, IsNSNumber value) => nsProgress -> value -> IO ()
-setEstimatedTimeRemaining nsProgress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgress (mkSelector "setEstimatedTimeRemaining:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEstimatedTimeRemaining nsProgress value =
+  sendMessage nsProgress setEstimatedTimeRemainingSelector (toNSNumber value)
 
 -- | @- throughput@
 throughput :: IsNSProgress nsProgress => nsProgress -> IO (Id NSNumber)
-throughput nsProgress  =
-    sendMsg nsProgress (mkSelector "throughput") (retPtr retVoid) [] >>= retainedObject . castPtr
+throughput nsProgress =
+  sendMessage nsProgress throughputSelector
 
 -- | @- setThroughput:@
 setThroughput :: (IsNSProgress nsProgress, IsNSNumber value) => nsProgress -> value -> IO ()
-setThroughput nsProgress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgress (mkSelector "setThroughput:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setThroughput nsProgress value =
+  sendMessage nsProgress setThroughputSelector (toNSNumber value)
 
 -- | @- fileOperationKind@
 fileOperationKind :: IsNSProgress nsProgress => nsProgress -> IO (Id NSString)
-fileOperationKind nsProgress  =
-    sendMsg nsProgress (mkSelector "fileOperationKind") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileOperationKind nsProgress =
+  sendMessage nsProgress fileOperationKindSelector
 
 -- | @- setFileOperationKind:@
 setFileOperationKind :: (IsNSProgress nsProgress, IsNSString value) => nsProgress -> value -> IO ()
-setFileOperationKind nsProgress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgress (mkSelector "setFileOperationKind:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFileOperationKind nsProgress value =
+  sendMessage nsProgress setFileOperationKindSelector (toNSString value)
 
 -- | @- fileURL@
 fileURL :: IsNSProgress nsProgress => nsProgress -> IO (Id NSURL)
-fileURL nsProgress  =
-    sendMsg nsProgress (mkSelector "fileURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileURL nsProgress =
+  sendMessage nsProgress fileURLSelector
 
 -- | @- setFileURL:@
 setFileURL :: (IsNSProgress nsProgress, IsNSURL value) => nsProgress -> value -> IO ()
-setFileURL nsProgress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgress (mkSelector "setFileURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFileURL nsProgress value =
+  sendMessage nsProgress setFileURLSelector (toNSURL value)
 
 -- | @- fileTotalCount@
 fileTotalCount :: IsNSProgress nsProgress => nsProgress -> IO (Id NSNumber)
-fileTotalCount nsProgress  =
-    sendMsg nsProgress (mkSelector "fileTotalCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileTotalCount nsProgress =
+  sendMessage nsProgress fileTotalCountSelector
 
 -- | @- setFileTotalCount:@
 setFileTotalCount :: (IsNSProgress nsProgress, IsNSNumber value) => nsProgress -> value -> IO ()
-setFileTotalCount nsProgress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgress (mkSelector "setFileTotalCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFileTotalCount nsProgress value =
+  sendMessage nsProgress setFileTotalCountSelector (toNSNumber value)
 
 -- | @- fileCompletedCount@
 fileCompletedCount :: IsNSProgress nsProgress => nsProgress -> IO (Id NSNumber)
-fileCompletedCount nsProgress  =
-    sendMsg nsProgress (mkSelector "fileCompletedCount") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileCompletedCount nsProgress =
+  sendMessage nsProgress fileCompletedCountSelector
 
 -- | @- setFileCompletedCount:@
 setFileCompletedCount :: (IsNSProgress nsProgress, IsNSNumber value) => nsProgress -> value -> IO ()
-setFileCompletedCount nsProgress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProgress (mkSelector "setFileCompletedCount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFileCompletedCount nsProgress value =
+  sendMessage nsProgress setFileCompletedCountSelector (toNSNumber value)
 
 -- | @- old@
 old :: IsNSProgress nsProgress => nsProgress -> IO Bool
-old nsProgress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProgress (mkSelector "old") retCULong []
+old nsProgress =
+  sendMessage nsProgress oldSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @currentProgress@
-currentProgressSelector :: Selector
+currentProgressSelector :: Selector '[] (Id NSProgress)
 currentProgressSelector = mkSelector "currentProgress"
 
 -- | @Selector@ for @progressWithTotalUnitCount:@
-progressWithTotalUnitCountSelector :: Selector
+progressWithTotalUnitCountSelector :: Selector '[CLong] (Id NSProgress)
 progressWithTotalUnitCountSelector = mkSelector "progressWithTotalUnitCount:"
 
 -- | @Selector@ for @discreteProgressWithTotalUnitCount:@
-discreteProgressWithTotalUnitCountSelector :: Selector
+discreteProgressWithTotalUnitCountSelector :: Selector '[CLong] (Id NSProgress)
 discreteProgressWithTotalUnitCountSelector = mkSelector "discreteProgressWithTotalUnitCount:"
 
 -- | @Selector@ for @progressWithTotalUnitCount:parent:pendingUnitCount:@
-progressWithTotalUnitCount_parent_pendingUnitCountSelector :: Selector
+progressWithTotalUnitCount_parent_pendingUnitCountSelector :: Selector '[CLong, Id NSProgress, CLong] (Id NSProgress)
 progressWithTotalUnitCount_parent_pendingUnitCountSelector = mkSelector "progressWithTotalUnitCount:parent:pendingUnitCount:"
 
 -- | @Selector@ for @initWithParent:userInfo:@
-initWithParent_userInfoSelector :: Selector
+initWithParent_userInfoSelector :: Selector '[Id NSProgress, Id NSDictionary] (Id NSProgress)
 initWithParent_userInfoSelector = mkSelector "initWithParent:userInfo:"
 
 -- | @Selector@ for @becomeCurrentWithPendingUnitCount:@
-becomeCurrentWithPendingUnitCountSelector :: Selector
+becomeCurrentWithPendingUnitCountSelector :: Selector '[CLong] ()
 becomeCurrentWithPendingUnitCountSelector = mkSelector "becomeCurrentWithPendingUnitCount:"
 
 -- | @Selector@ for @performAsCurrentWithPendingUnitCount:usingBlock:@
-performAsCurrentWithPendingUnitCount_usingBlockSelector :: Selector
+performAsCurrentWithPendingUnitCount_usingBlockSelector :: Selector '[CLong, Ptr ()] ()
 performAsCurrentWithPendingUnitCount_usingBlockSelector = mkSelector "performAsCurrentWithPendingUnitCount:usingBlock:"
 
 -- | @Selector@ for @resignCurrent@
-resignCurrentSelector :: Selector
+resignCurrentSelector :: Selector '[] ()
 resignCurrentSelector = mkSelector "resignCurrent"
 
 -- | @Selector@ for @addChild:withPendingUnitCount:@
-addChild_withPendingUnitCountSelector :: Selector
+addChild_withPendingUnitCountSelector :: Selector '[Id NSProgress, CLong] ()
 addChild_withPendingUnitCountSelector = mkSelector "addChild:withPendingUnitCount:"
 
 -- | @Selector@ for @setUserInfoObject:forKey:@
-setUserInfoObject_forKeySelector :: Selector
+setUserInfoObject_forKeySelector :: Selector '[RawId, Id NSString] ()
 setUserInfoObject_forKeySelector = mkSelector "setUserInfoObject:forKey:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @resume@
-resumeSelector :: Selector
+resumeSelector :: Selector '[] ()
 resumeSelector = mkSelector "resume"
 
 -- | @Selector@ for @publish@
-publishSelector :: Selector
+publishSelector :: Selector '[] ()
 publishSelector = mkSelector "publish"
 
 -- | @Selector@ for @unpublish@
-unpublishSelector :: Selector
+unpublishSelector :: Selector '[] ()
 unpublishSelector = mkSelector "unpublish"
 
 -- | @Selector@ for @addSubscriberForFileURL:withPublishingHandler:@
-addSubscriberForFileURL_withPublishingHandlerSelector :: Selector
+addSubscriberForFileURL_withPublishingHandlerSelector :: Selector '[Id NSURL, Ptr ()] RawId
 addSubscriberForFileURL_withPublishingHandlerSelector = mkSelector "addSubscriberForFileURL:withPublishingHandler:"
 
 -- | @Selector@ for @removeSubscriber:@
-removeSubscriberSelector :: Selector
+removeSubscriberSelector :: Selector '[RawId] ()
 removeSubscriberSelector = mkSelector "removeSubscriber:"
 
 -- | @Selector@ for @totalUnitCount@
-totalUnitCountSelector :: Selector
+totalUnitCountSelector :: Selector '[] CLong
 totalUnitCountSelector = mkSelector "totalUnitCount"
 
 -- | @Selector@ for @setTotalUnitCount:@
-setTotalUnitCountSelector :: Selector
+setTotalUnitCountSelector :: Selector '[CLong] ()
 setTotalUnitCountSelector = mkSelector "setTotalUnitCount:"
 
 -- | @Selector@ for @completedUnitCount@
-completedUnitCountSelector :: Selector
+completedUnitCountSelector :: Selector '[] CLong
 completedUnitCountSelector = mkSelector "completedUnitCount"
 
 -- | @Selector@ for @setCompletedUnitCount:@
-setCompletedUnitCountSelector :: Selector
+setCompletedUnitCountSelector :: Selector '[CLong] ()
 setCompletedUnitCountSelector = mkSelector "setCompletedUnitCount:"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @setLocalizedDescription:@
-setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector :: Selector '[Id NSString] ()
 setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
 
 -- | @Selector@ for @localizedAdditionalDescription@
-localizedAdditionalDescriptionSelector :: Selector
+localizedAdditionalDescriptionSelector :: Selector '[] (Id NSString)
 localizedAdditionalDescriptionSelector = mkSelector "localizedAdditionalDescription"
 
 -- | @Selector@ for @setLocalizedAdditionalDescription:@
-setLocalizedAdditionalDescriptionSelector :: Selector
+setLocalizedAdditionalDescriptionSelector :: Selector '[Id NSString] ()
 setLocalizedAdditionalDescriptionSelector = mkSelector "setLocalizedAdditionalDescription:"
 
 -- | @Selector@ for @cancellable@
-cancellableSelector :: Selector
+cancellableSelector :: Selector '[] Bool
 cancellableSelector = mkSelector "cancellable"
 
 -- | @Selector@ for @setCancellable:@
-setCancellableSelector :: Selector
+setCancellableSelector :: Selector '[Bool] ()
 setCancellableSelector = mkSelector "setCancellable:"
 
 -- | @Selector@ for @pausable@
-pausableSelector :: Selector
+pausableSelector :: Selector '[] Bool
 pausableSelector = mkSelector "pausable"
 
 -- | @Selector@ for @setPausable:@
-setPausableSelector :: Selector
+setPausableSelector :: Selector '[Bool] ()
 setPausableSelector = mkSelector "setPausable:"
 
 -- | @Selector@ for @cancelled@
-cancelledSelector :: Selector
+cancelledSelector :: Selector '[] Bool
 cancelledSelector = mkSelector "cancelled"
 
 -- | @Selector@ for @paused@
-pausedSelector :: Selector
+pausedSelector :: Selector '[] Bool
 pausedSelector = mkSelector "paused"
 
 -- | @Selector@ for @cancellationHandler@
-cancellationHandlerSelector :: Selector
+cancellationHandlerSelector :: Selector '[] (Ptr ())
 cancellationHandlerSelector = mkSelector "cancellationHandler"
 
 -- | @Selector@ for @setCancellationHandler:@
-setCancellationHandlerSelector :: Selector
+setCancellationHandlerSelector :: Selector '[Ptr ()] ()
 setCancellationHandlerSelector = mkSelector "setCancellationHandler:"
 
 -- | @Selector@ for @pausingHandler@
-pausingHandlerSelector :: Selector
+pausingHandlerSelector :: Selector '[] (Ptr ())
 pausingHandlerSelector = mkSelector "pausingHandler"
 
 -- | @Selector@ for @setPausingHandler:@
-setPausingHandlerSelector :: Selector
+setPausingHandlerSelector :: Selector '[Ptr ()] ()
 setPausingHandlerSelector = mkSelector "setPausingHandler:"
 
 -- | @Selector@ for @resumingHandler@
-resumingHandlerSelector :: Selector
+resumingHandlerSelector :: Selector '[] (Ptr ())
 resumingHandlerSelector = mkSelector "resumingHandler"
 
 -- | @Selector@ for @setResumingHandler:@
-setResumingHandlerSelector :: Selector
+setResumingHandlerSelector :: Selector '[Ptr ()] ()
 setResumingHandlerSelector = mkSelector "setResumingHandler:"
 
 -- | @Selector@ for @indeterminate@
-indeterminateSelector :: Selector
+indeterminateSelector :: Selector '[] Bool
 indeterminateSelector = mkSelector "indeterminate"
 
 -- | @Selector@ for @fractionCompleted@
-fractionCompletedSelector :: Selector
+fractionCompletedSelector :: Selector '[] CDouble
 fractionCompletedSelector = mkSelector "fractionCompleted"
 
 -- | @Selector@ for @finished@
-finishedSelector :: Selector
+finishedSelector :: Selector '[] Bool
 finishedSelector = mkSelector "finished"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @kind@
-kindSelector :: Selector
+kindSelector :: Selector '[] (Id NSString)
 kindSelector = mkSelector "kind"
 
 -- | @Selector@ for @setKind:@
-setKindSelector :: Selector
+setKindSelector :: Selector '[Id NSString] ()
 setKindSelector = mkSelector "setKind:"
 
 -- | @Selector@ for @estimatedTimeRemaining@
-estimatedTimeRemainingSelector :: Selector
+estimatedTimeRemainingSelector :: Selector '[] (Id NSNumber)
 estimatedTimeRemainingSelector = mkSelector "estimatedTimeRemaining"
 
 -- | @Selector@ for @setEstimatedTimeRemaining:@
-setEstimatedTimeRemainingSelector :: Selector
+setEstimatedTimeRemainingSelector :: Selector '[Id NSNumber] ()
 setEstimatedTimeRemainingSelector = mkSelector "setEstimatedTimeRemaining:"
 
 -- | @Selector@ for @throughput@
-throughputSelector :: Selector
+throughputSelector :: Selector '[] (Id NSNumber)
 throughputSelector = mkSelector "throughput"
 
 -- | @Selector@ for @setThroughput:@
-setThroughputSelector :: Selector
+setThroughputSelector :: Selector '[Id NSNumber] ()
 setThroughputSelector = mkSelector "setThroughput:"
 
 -- | @Selector@ for @fileOperationKind@
-fileOperationKindSelector :: Selector
+fileOperationKindSelector :: Selector '[] (Id NSString)
 fileOperationKindSelector = mkSelector "fileOperationKind"
 
 -- | @Selector@ for @setFileOperationKind:@
-setFileOperationKindSelector :: Selector
+setFileOperationKindSelector :: Selector '[Id NSString] ()
 setFileOperationKindSelector = mkSelector "setFileOperationKind:"
 
 -- | @Selector@ for @fileURL@
-fileURLSelector :: Selector
+fileURLSelector :: Selector '[] (Id NSURL)
 fileURLSelector = mkSelector "fileURL"
 
 -- | @Selector@ for @setFileURL:@
-setFileURLSelector :: Selector
+setFileURLSelector :: Selector '[Id NSURL] ()
 setFileURLSelector = mkSelector "setFileURL:"
 
 -- | @Selector@ for @fileTotalCount@
-fileTotalCountSelector :: Selector
+fileTotalCountSelector :: Selector '[] (Id NSNumber)
 fileTotalCountSelector = mkSelector "fileTotalCount"
 
 -- | @Selector@ for @setFileTotalCount:@
-setFileTotalCountSelector :: Selector
+setFileTotalCountSelector :: Selector '[Id NSNumber] ()
 setFileTotalCountSelector = mkSelector "setFileTotalCount:"
 
 -- | @Selector@ for @fileCompletedCount@
-fileCompletedCountSelector :: Selector
+fileCompletedCountSelector :: Selector '[] (Id NSNumber)
 fileCompletedCountSelector = mkSelector "fileCompletedCount"
 
 -- | @Selector@ for @setFileCompletedCount:@
-setFileCompletedCountSelector :: Selector
+setFileCompletedCountSelector :: Selector '[Id NSNumber] ()
 setFileCompletedCountSelector = mkSelector "setFileCompletedCount:"
 
 -- | @Selector@ for @old@
-oldSelector :: Selector
+oldSelector :: Selector '[] Bool
 oldSelector = mkSelector "old"
 

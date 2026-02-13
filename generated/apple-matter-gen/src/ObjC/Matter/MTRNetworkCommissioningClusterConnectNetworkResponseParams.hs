@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Matter.MTRNetworkCommissioningClusterConnectNetworkResponseParams
   , setErrorValue
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
+  , debugTextSelector
+  , errorValueSelector
   , initWithResponseValue_errorSelector
   , networkingStatusSelector
-  , setNetworkingStatusSelector
-  , debugTextSelector
   , setDebugTextSelector
-  , errorValueSelector
   , setErrorValueSelector
-  , timedInvokeTimeoutMsSelector
+  , setNetworkingStatusSelector
   , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,43 +48,38 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRNetworkCommissioningClusterConnectNetworkResponseParams mtrNetworkCommissioningClusterConnectNetworkResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrNetworkCommissioningClusterConnectNetworkResponseParams -> responseValue -> error_ -> IO (Id MTRNetworkCommissioningClusterConnectNetworkResponseParams)
-initWithResponseValue_error mtrNetworkCommissioningClusterConnectNetworkResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrNetworkCommissioningClusterConnectNetworkResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrNetworkCommissioningClusterConnectNetworkResponseParams responseValue error_ =
+  sendOwnedMessage mtrNetworkCommissioningClusterConnectNetworkResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- networkingStatus@
 networkingStatus :: IsMTRNetworkCommissioningClusterConnectNetworkResponseParams mtrNetworkCommissioningClusterConnectNetworkResponseParams => mtrNetworkCommissioningClusterConnectNetworkResponseParams -> IO (Id NSNumber)
-networkingStatus mtrNetworkCommissioningClusterConnectNetworkResponseParams  =
-    sendMsg mtrNetworkCommissioningClusterConnectNetworkResponseParams (mkSelector "networkingStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkingStatus mtrNetworkCommissioningClusterConnectNetworkResponseParams =
+  sendMessage mtrNetworkCommissioningClusterConnectNetworkResponseParams networkingStatusSelector
 
 -- | @- setNetworkingStatus:@
 setNetworkingStatus :: (IsMTRNetworkCommissioningClusterConnectNetworkResponseParams mtrNetworkCommissioningClusterConnectNetworkResponseParams, IsNSNumber value) => mtrNetworkCommissioningClusterConnectNetworkResponseParams -> value -> IO ()
-setNetworkingStatus mtrNetworkCommissioningClusterConnectNetworkResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterConnectNetworkResponseParams (mkSelector "setNetworkingStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNetworkingStatus mtrNetworkCommissioningClusterConnectNetworkResponseParams value =
+  sendMessage mtrNetworkCommissioningClusterConnectNetworkResponseParams setNetworkingStatusSelector (toNSNumber value)
 
 -- | @- debugText@
 debugText :: IsMTRNetworkCommissioningClusterConnectNetworkResponseParams mtrNetworkCommissioningClusterConnectNetworkResponseParams => mtrNetworkCommissioningClusterConnectNetworkResponseParams -> IO (Id NSString)
-debugText mtrNetworkCommissioningClusterConnectNetworkResponseParams  =
-    sendMsg mtrNetworkCommissioningClusterConnectNetworkResponseParams (mkSelector "debugText") (retPtr retVoid) [] >>= retainedObject . castPtr
+debugText mtrNetworkCommissioningClusterConnectNetworkResponseParams =
+  sendMessage mtrNetworkCommissioningClusterConnectNetworkResponseParams debugTextSelector
 
 -- | @- setDebugText:@
 setDebugText :: (IsMTRNetworkCommissioningClusterConnectNetworkResponseParams mtrNetworkCommissioningClusterConnectNetworkResponseParams, IsNSString value) => mtrNetworkCommissioningClusterConnectNetworkResponseParams -> value -> IO ()
-setDebugText mtrNetworkCommissioningClusterConnectNetworkResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterConnectNetworkResponseParams (mkSelector "setDebugText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDebugText mtrNetworkCommissioningClusterConnectNetworkResponseParams value =
+  sendMessage mtrNetworkCommissioningClusterConnectNetworkResponseParams setDebugTextSelector (toNSString value)
 
 -- | @- errorValue@
 errorValue :: IsMTRNetworkCommissioningClusterConnectNetworkResponseParams mtrNetworkCommissioningClusterConnectNetworkResponseParams => mtrNetworkCommissioningClusterConnectNetworkResponseParams -> IO (Id NSNumber)
-errorValue mtrNetworkCommissioningClusterConnectNetworkResponseParams  =
-    sendMsg mtrNetworkCommissioningClusterConnectNetworkResponseParams (mkSelector "errorValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorValue mtrNetworkCommissioningClusterConnectNetworkResponseParams =
+  sendMessage mtrNetworkCommissioningClusterConnectNetworkResponseParams errorValueSelector
 
 -- | @- setErrorValue:@
 setErrorValue :: (IsMTRNetworkCommissioningClusterConnectNetworkResponseParams mtrNetworkCommissioningClusterConnectNetworkResponseParams, IsNSNumber value) => mtrNetworkCommissioningClusterConnectNetworkResponseParams -> value -> IO ()
-setErrorValue mtrNetworkCommissioningClusterConnectNetworkResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterConnectNetworkResponseParams (mkSelector "setErrorValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setErrorValue mtrNetworkCommissioningClusterConnectNetworkResponseParams value =
+  sendMessage mtrNetworkCommissioningClusterConnectNetworkResponseParams setErrorValueSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,8 +89,8 @@ setErrorValue mtrNetworkCommissioningClusterConnectNetworkResponseParams  value 
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRNetworkCommissioningClusterConnectNetworkResponseParams mtrNetworkCommissioningClusterConnectNetworkResponseParams => mtrNetworkCommissioningClusterConnectNetworkResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrNetworkCommissioningClusterConnectNetworkResponseParams  =
-    sendMsg mtrNetworkCommissioningClusterConnectNetworkResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrNetworkCommissioningClusterConnectNetworkResponseParams =
+  sendMessage mtrNetworkCommissioningClusterConnectNetworkResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -108,47 +100,46 @@ timedInvokeTimeoutMs mtrNetworkCommissioningClusterConnectNetworkResponseParams 
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRNetworkCommissioningClusterConnectNetworkResponseParams mtrNetworkCommissioningClusterConnectNetworkResponseParams, IsNSNumber value) => mtrNetworkCommissioningClusterConnectNetworkResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterConnectNetworkResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterConnectNetworkResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterConnectNetworkResponseParams value =
+  sendMessage mtrNetworkCommissioningClusterConnectNetworkResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRNetworkCommissioningClusterConnectNetworkResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @networkingStatus@
-networkingStatusSelector :: Selector
+networkingStatusSelector :: Selector '[] (Id NSNumber)
 networkingStatusSelector = mkSelector "networkingStatus"
 
 -- | @Selector@ for @setNetworkingStatus:@
-setNetworkingStatusSelector :: Selector
+setNetworkingStatusSelector :: Selector '[Id NSNumber] ()
 setNetworkingStatusSelector = mkSelector "setNetworkingStatus:"
 
 -- | @Selector@ for @debugText@
-debugTextSelector :: Selector
+debugTextSelector :: Selector '[] (Id NSString)
 debugTextSelector = mkSelector "debugText"
 
 -- | @Selector@ for @setDebugText:@
-setDebugTextSelector :: Selector
+setDebugTextSelector :: Selector '[Id NSString] ()
 setDebugTextSelector = mkSelector "setDebugText:"
 
 -- | @Selector@ for @errorValue@
-errorValueSelector :: Selector
+errorValueSelector :: Selector '[] (Id NSNumber)
 errorValueSelector = mkSelector "errorValue"
 
 -- | @Selector@ for @setErrorValue:@
-setErrorValueSelector :: Selector
+setErrorValueSelector :: Selector '[Id NSNumber] ()
 setErrorValueSelector = mkSelector "setErrorValue:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

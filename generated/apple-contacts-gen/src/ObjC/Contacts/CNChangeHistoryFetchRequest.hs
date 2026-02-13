@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.Contacts.CNChangeHistoryFetchRequest
   , setIncludeGroupChanges
   , excludedTransactionAuthors
   , setExcludedTransactionAuthors
-  , startingTokenSelector
-  , setStartingTokenSelector
   , additionalContactKeyDescriptorsSelector
-  , setAdditionalContactKeyDescriptorsSelector
-  , shouldUnifyResultsSelector
-  , setShouldUnifyResultsSelector
-  , mutableObjectsSelector
-  , setMutableObjectsSelector
-  , includeGroupChangesSelector
-  , setIncludeGroupChangesSelector
   , excludedTransactionAuthorsSelector
+  , includeGroupChangesSelector
+  , mutableObjectsSelector
+  , setAdditionalContactKeyDescriptorsSelector
   , setExcludedTransactionAuthorsSelector
+  , setIncludeGroupChangesSelector
+  , setMutableObjectsSelector
+  , setShouldUnifyResultsSelector
+  , setStartingTokenSelector
+  , shouldUnifyResultsSelector
+  , startingTokenSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startingToken@
 startingToken :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> IO (Id NSData)
-startingToken cnChangeHistoryFetchRequest  =
-    sendMsg cnChangeHistoryFetchRequest (mkSelector "startingToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+startingToken cnChangeHistoryFetchRequest =
+  sendMessage cnChangeHistoryFetchRequest startingTokenSelector
 
 -- | Request changes made after a certain point.
 --
@@ -72,9 +69,8 @@ startingToken cnChangeHistoryFetchRequest  =
 --
 -- ObjC selector: @- setStartingToken:@
 setStartingToken :: (IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest, IsNSData value) => cnChangeHistoryFetchRequest -> value -> IO ()
-setStartingToken cnChangeHistoryFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnChangeHistoryFetchRequest (mkSelector "setStartingToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartingToken cnChangeHistoryFetchRequest value =
+  sendMessage cnChangeHistoryFetchRequest setStartingTokenSelector (toNSData value)
 
 -- | Additional keys to include in the fetched contacts.
 --
@@ -84,8 +80,8 @@ setStartingToken cnChangeHistoryFetchRequest  value =
 --
 -- ObjC selector: @- additionalContactKeyDescriptors@
 additionalContactKeyDescriptors :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> IO (Id NSArray)
-additionalContactKeyDescriptors cnChangeHistoryFetchRequest  =
-    sendMsg cnChangeHistoryFetchRequest (mkSelector "additionalContactKeyDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+additionalContactKeyDescriptors cnChangeHistoryFetchRequest =
+  sendMessage cnChangeHistoryFetchRequest additionalContactKeyDescriptorsSelector
 
 -- | Additional keys to include in the fetched contacts.
 --
@@ -95,9 +91,8 @@ additionalContactKeyDescriptors cnChangeHistoryFetchRequest  =
 --
 -- ObjC selector: @- setAdditionalContactKeyDescriptors:@
 setAdditionalContactKeyDescriptors :: (IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest, IsNSArray value) => cnChangeHistoryFetchRequest -> value -> IO ()
-setAdditionalContactKeyDescriptors cnChangeHistoryFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnChangeHistoryFetchRequest (mkSelector "setAdditionalContactKeyDescriptors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdditionalContactKeyDescriptors cnChangeHistoryFetchRequest value =
+  sendMessage cnChangeHistoryFetchRequest setAdditionalContactKeyDescriptorsSelector (toNSArray value)
 
 -- | Returns contact changes as unified contacts.
 --
@@ -107,8 +102,8 @@ setAdditionalContactKeyDescriptors cnChangeHistoryFetchRequest  value =
 --
 -- ObjC selector: @- shouldUnifyResults@
 shouldUnifyResults :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> IO Bool
-shouldUnifyResults cnChangeHistoryFetchRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnChangeHistoryFetchRequest (mkSelector "shouldUnifyResults") retCULong []
+shouldUnifyResults cnChangeHistoryFetchRequest =
+  sendMessage cnChangeHistoryFetchRequest shouldUnifyResultsSelector
 
 -- | Returns contact changes as unified contacts.
 --
@@ -118,8 +113,8 @@ shouldUnifyResults cnChangeHistoryFetchRequest  =
 --
 -- ObjC selector: @- setShouldUnifyResults:@
 setShouldUnifyResults :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> Bool -> IO ()
-setShouldUnifyResults cnChangeHistoryFetchRequest  value =
-    sendMsg cnChangeHistoryFetchRequest (mkSelector "setShouldUnifyResults:") retVoid [argCULong (if value then 1 else 0)]
+setShouldUnifyResults cnChangeHistoryFetchRequest value =
+  sendMessage cnChangeHistoryFetchRequest setShouldUnifyResultsSelector value
 
 -- | To return mutable contacts and groups.
 --
@@ -127,8 +122,8 @@ setShouldUnifyResults cnChangeHistoryFetchRequest  value =
 --
 -- ObjC selector: @- mutableObjects@
 mutableObjects :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> IO Bool
-mutableObjects cnChangeHistoryFetchRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnChangeHistoryFetchRequest (mkSelector "mutableObjects") retCULong []
+mutableObjects cnChangeHistoryFetchRequest =
+  sendMessage cnChangeHistoryFetchRequest mutableObjectsSelector
 
 -- | To return mutable contacts and groups.
 --
@@ -136,22 +131,22 @@ mutableObjects cnChangeHistoryFetchRequest  =
 --
 -- ObjC selector: @- setMutableObjects:@
 setMutableObjects :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> Bool -> IO ()
-setMutableObjects cnChangeHistoryFetchRequest  value =
-    sendMsg cnChangeHistoryFetchRequest (mkSelector "setMutableObjects:") retVoid [argCULong (if value then 1 else 0)]
+setMutableObjects cnChangeHistoryFetchRequest value =
+  sendMessage cnChangeHistoryFetchRequest setMutableObjectsSelector value
 
 -- | Set to @YES@ to also fetch group changes. Default is @NO.@
 --
 -- ObjC selector: @- includeGroupChanges@
 includeGroupChanges :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> IO Bool
-includeGroupChanges cnChangeHistoryFetchRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnChangeHistoryFetchRequest (mkSelector "includeGroupChanges") retCULong []
+includeGroupChanges cnChangeHistoryFetchRequest =
+  sendMessage cnChangeHistoryFetchRequest includeGroupChangesSelector
 
 -- | Set to @YES@ to also fetch group changes. Default is @NO.@
 --
 -- ObjC selector: @- setIncludeGroupChanges:@
 setIncludeGroupChanges :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> Bool -> IO ()
-setIncludeGroupChanges cnChangeHistoryFetchRequest  value =
-    sendMsg cnChangeHistoryFetchRequest (mkSelector "setIncludeGroupChanges:") retVoid [argCULong (if value then 1 else 0)]
+setIncludeGroupChanges cnChangeHistoryFetchRequest value =
+  sendMessage cnChangeHistoryFetchRequest setIncludeGroupChangesSelector value
 
 -- | Exclude changes made by certain authors.
 --
@@ -159,8 +154,8 @@ setIncludeGroupChanges cnChangeHistoryFetchRequest  value =
 --
 -- ObjC selector: @- excludedTransactionAuthors@
 excludedTransactionAuthors :: IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest => cnChangeHistoryFetchRequest -> IO (Id NSArray)
-excludedTransactionAuthors cnChangeHistoryFetchRequest  =
-    sendMsg cnChangeHistoryFetchRequest (mkSelector "excludedTransactionAuthors") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedTransactionAuthors cnChangeHistoryFetchRequest =
+  sendMessage cnChangeHistoryFetchRequest excludedTransactionAuthorsSelector
 
 -- | Exclude changes made by certain authors.
 --
@@ -168,59 +163,58 @@ excludedTransactionAuthors cnChangeHistoryFetchRequest  =
 --
 -- ObjC selector: @- setExcludedTransactionAuthors:@
 setExcludedTransactionAuthors :: (IsCNChangeHistoryFetchRequest cnChangeHistoryFetchRequest, IsNSArray value) => cnChangeHistoryFetchRequest -> value -> IO ()
-setExcludedTransactionAuthors cnChangeHistoryFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cnChangeHistoryFetchRequest (mkSelector "setExcludedTransactionAuthors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExcludedTransactionAuthors cnChangeHistoryFetchRequest value =
+  sendMessage cnChangeHistoryFetchRequest setExcludedTransactionAuthorsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startingToken@
-startingTokenSelector :: Selector
+startingTokenSelector :: Selector '[] (Id NSData)
 startingTokenSelector = mkSelector "startingToken"
 
 -- | @Selector@ for @setStartingToken:@
-setStartingTokenSelector :: Selector
+setStartingTokenSelector :: Selector '[Id NSData] ()
 setStartingTokenSelector = mkSelector "setStartingToken:"
 
 -- | @Selector@ for @additionalContactKeyDescriptors@
-additionalContactKeyDescriptorsSelector :: Selector
+additionalContactKeyDescriptorsSelector :: Selector '[] (Id NSArray)
 additionalContactKeyDescriptorsSelector = mkSelector "additionalContactKeyDescriptors"
 
 -- | @Selector@ for @setAdditionalContactKeyDescriptors:@
-setAdditionalContactKeyDescriptorsSelector :: Selector
+setAdditionalContactKeyDescriptorsSelector :: Selector '[Id NSArray] ()
 setAdditionalContactKeyDescriptorsSelector = mkSelector "setAdditionalContactKeyDescriptors:"
 
 -- | @Selector@ for @shouldUnifyResults@
-shouldUnifyResultsSelector :: Selector
+shouldUnifyResultsSelector :: Selector '[] Bool
 shouldUnifyResultsSelector = mkSelector "shouldUnifyResults"
 
 -- | @Selector@ for @setShouldUnifyResults:@
-setShouldUnifyResultsSelector :: Selector
+setShouldUnifyResultsSelector :: Selector '[Bool] ()
 setShouldUnifyResultsSelector = mkSelector "setShouldUnifyResults:"
 
 -- | @Selector@ for @mutableObjects@
-mutableObjectsSelector :: Selector
+mutableObjectsSelector :: Selector '[] Bool
 mutableObjectsSelector = mkSelector "mutableObjects"
 
 -- | @Selector@ for @setMutableObjects:@
-setMutableObjectsSelector :: Selector
+setMutableObjectsSelector :: Selector '[Bool] ()
 setMutableObjectsSelector = mkSelector "setMutableObjects:"
 
 -- | @Selector@ for @includeGroupChanges@
-includeGroupChangesSelector :: Selector
+includeGroupChangesSelector :: Selector '[] Bool
 includeGroupChangesSelector = mkSelector "includeGroupChanges"
 
 -- | @Selector@ for @setIncludeGroupChanges:@
-setIncludeGroupChangesSelector :: Selector
+setIncludeGroupChangesSelector :: Selector '[Bool] ()
 setIncludeGroupChangesSelector = mkSelector "setIncludeGroupChanges:"
 
 -- | @Selector@ for @excludedTransactionAuthors@
-excludedTransactionAuthorsSelector :: Selector
+excludedTransactionAuthorsSelector :: Selector '[] (Id NSArray)
 excludedTransactionAuthorsSelector = mkSelector "excludedTransactionAuthors"
 
 -- | @Selector@ for @setExcludedTransactionAuthors:@
-setExcludedTransactionAuthorsSelector :: Selector
+setExcludedTransactionAuthorsSelector :: Selector '[Id NSArray] ()
 setExcludedTransactionAuthorsSelector = mkSelector "setExcludedTransactionAuthors:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,32 +40,28 @@ module ObjC.ModelIO.MDLPhysicallyPlausibleLight
   , setAttenuationStartDistance
   , attenuationEndDistance
   , setAttenuationEndDistance
-  , setColorByTemperatureSelector
-  , colorSelector
-  , setColorSelector
-  , lumensSelector
-  , setLumensSelector
-  , innerConeAngleSelector
-  , setInnerConeAngleSelector
-  , outerConeAngleSelector
-  , setOuterConeAngleSelector
-  , attenuationStartDistanceSelector
-  , setAttenuationStartDistanceSelector
   , attenuationEndDistanceSelector
+  , attenuationStartDistanceSelector
+  , colorSelector
+  , innerConeAngleSelector
+  , lumensSelector
+  , outerConeAngleSelector
   , setAttenuationEndDistanceSelector
+  , setAttenuationStartDistanceSelector
+  , setColorByTemperatureSelector
+  , setColorSelector
+  , setInnerConeAngleSelector
+  , setLumensSelector
+  , setOuterConeAngleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,122 +74,122 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setColorByTemperature:@
 setColorByTemperature :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> CFloat -> IO ()
-setColorByTemperature mdlPhysicallyPlausibleLight  temperature =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "setColorByTemperature:") retVoid [argCFloat temperature]
+setColorByTemperature mdlPhysicallyPlausibleLight temperature =
+  sendMessage mdlPhysicallyPlausibleLight setColorByTemperatureSelector temperature
 
 -- | @- color@
 color :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> IO (Ptr ())
-color mdlPhysicallyPlausibleLight  =
-    fmap castPtr $ sendMsg mdlPhysicallyPlausibleLight (mkSelector "color") (retPtr retVoid) []
+color mdlPhysicallyPlausibleLight =
+  sendMessage mdlPhysicallyPlausibleLight colorSelector
 
 -- | @- setColor:@
 setColor :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> Ptr () -> IO ()
-setColor mdlPhysicallyPlausibleLight  value =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "setColor:") retVoid [argPtr value]
+setColor mdlPhysicallyPlausibleLight value =
+  sendMessage mdlPhysicallyPlausibleLight setColorSelector value
 
 -- | @- lumens@
 lumens :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> IO CFloat
-lumens mdlPhysicallyPlausibleLight  =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "lumens") retCFloat []
+lumens mdlPhysicallyPlausibleLight =
+  sendMessage mdlPhysicallyPlausibleLight lumensSelector
 
 -- | @- setLumens:@
 setLumens :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> CFloat -> IO ()
-setLumens mdlPhysicallyPlausibleLight  value =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "setLumens:") retVoid [argCFloat value]
+setLumens mdlPhysicallyPlausibleLight value =
+  sendMessage mdlPhysicallyPlausibleLight setLumensSelector value
 
 -- | @- innerConeAngle@
 innerConeAngle :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> IO CFloat
-innerConeAngle mdlPhysicallyPlausibleLight  =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "innerConeAngle") retCFloat []
+innerConeAngle mdlPhysicallyPlausibleLight =
+  sendMessage mdlPhysicallyPlausibleLight innerConeAngleSelector
 
 -- | @- setInnerConeAngle:@
 setInnerConeAngle :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> CFloat -> IO ()
-setInnerConeAngle mdlPhysicallyPlausibleLight  value =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "setInnerConeAngle:") retVoid [argCFloat value]
+setInnerConeAngle mdlPhysicallyPlausibleLight value =
+  sendMessage mdlPhysicallyPlausibleLight setInnerConeAngleSelector value
 
 -- | @- outerConeAngle@
 outerConeAngle :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> IO CFloat
-outerConeAngle mdlPhysicallyPlausibleLight  =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "outerConeAngle") retCFloat []
+outerConeAngle mdlPhysicallyPlausibleLight =
+  sendMessage mdlPhysicallyPlausibleLight outerConeAngleSelector
 
 -- | @- setOuterConeAngle:@
 setOuterConeAngle :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> CFloat -> IO ()
-setOuterConeAngle mdlPhysicallyPlausibleLight  value =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "setOuterConeAngle:") retVoid [argCFloat value]
+setOuterConeAngle mdlPhysicallyPlausibleLight value =
+  sendMessage mdlPhysicallyPlausibleLight setOuterConeAngleSelector value
 
 -- | @- attenuationStartDistance@
 attenuationStartDistance :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> IO CFloat
-attenuationStartDistance mdlPhysicallyPlausibleLight  =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "attenuationStartDistance") retCFloat []
+attenuationStartDistance mdlPhysicallyPlausibleLight =
+  sendMessage mdlPhysicallyPlausibleLight attenuationStartDistanceSelector
 
 -- | @- setAttenuationStartDistance:@
 setAttenuationStartDistance :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> CFloat -> IO ()
-setAttenuationStartDistance mdlPhysicallyPlausibleLight  value =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "setAttenuationStartDistance:") retVoid [argCFloat value]
+setAttenuationStartDistance mdlPhysicallyPlausibleLight value =
+  sendMessage mdlPhysicallyPlausibleLight setAttenuationStartDistanceSelector value
 
 -- | @- attenuationEndDistance@
 attenuationEndDistance :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> IO CFloat
-attenuationEndDistance mdlPhysicallyPlausibleLight  =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "attenuationEndDistance") retCFloat []
+attenuationEndDistance mdlPhysicallyPlausibleLight =
+  sendMessage mdlPhysicallyPlausibleLight attenuationEndDistanceSelector
 
 -- | @- setAttenuationEndDistance:@
 setAttenuationEndDistance :: IsMDLPhysicallyPlausibleLight mdlPhysicallyPlausibleLight => mdlPhysicallyPlausibleLight -> CFloat -> IO ()
-setAttenuationEndDistance mdlPhysicallyPlausibleLight  value =
-    sendMsg mdlPhysicallyPlausibleLight (mkSelector "setAttenuationEndDistance:") retVoid [argCFloat value]
+setAttenuationEndDistance mdlPhysicallyPlausibleLight value =
+  sendMessage mdlPhysicallyPlausibleLight setAttenuationEndDistanceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setColorByTemperature:@
-setColorByTemperatureSelector :: Selector
+setColorByTemperatureSelector :: Selector '[CFloat] ()
 setColorByTemperatureSelector = mkSelector "setColorByTemperature:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Ptr ())
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Ptr ()] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @lumens@
-lumensSelector :: Selector
+lumensSelector :: Selector '[] CFloat
 lumensSelector = mkSelector "lumens"
 
 -- | @Selector@ for @setLumens:@
-setLumensSelector :: Selector
+setLumensSelector :: Selector '[CFloat] ()
 setLumensSelector = mkSelector "setLumens:"
 
 -- | @Selector@ for @innerConeAngle@
-innerConeAngleSelector :: Selector
+innerConeAngleSelector :: Selector '[] CFloat
 innerConeAngleSelector = mkSelector "innerConeAngle"
 
 -- | @Selector@ for @setInnerConeAngle:@
-setInnerConeAngleSelector :: Selector
+setInnerConeAngleSelector :: Selector '[CFloat] ()
 setInnerConeAngleSelector = mkSelector "setInnerConeAngle:"
 
 -- | @Selector@ for @outerConeAngle@
-outerConeAngleSelector :: Selector
+outerConeAngleSelector :: Selector '[] CFloat
 outerConeAngleSelector = mkSelector "outerConeAngle"
 
 -- | @Selector@ for @setOuterConeAngle:@
-setOuterConeAngleSelector :: Selector
+setOuterConeAngleSelector :: Selector '[CFloat] ()
 setOuterConeAngleSelector = mkSelector "setOuterConeAngle:"
 
 -- | @Selector@ for @attenuationStartDistance@
-attenuationStartDistanceSelector :: Selector
+attenuationStartDistanceSelector :: Selector '[] CFloat
 attenuationStartDistanceSelector = mkSelector "attenuationStartDistance"
 
 -- | @Selector@ for @setAttenuationStartDistance:@
-setAttenuationStartDistanceSelector :: Selector
+setAttenuationStartDistanceSelector :: Selector '[CFloat] ()
 setAttenuationStartDistanceSelector = mkSelector "setAttenuationStartDistance:"
 
 -- | @Selector@ for @attenuationEndDistance@
-attenuationEndDistanceSelector :: Selector
+attenuationEndDistanceSelector :: Selector '[] CFloat
 attenuationEndDistanceSelector = mkSelector "attenuationEndDistance"
 
 -- | @Selector@ for @setAttenuationEndDistance:@
-setAttenuationEndDistanceSelector :: Selector
+setAttenuationEndDistanceSelector :: Selector '[CFloat] ()
 setAttenuationEndDistanceSelector = mkSelector "setAttenuationEndDistance:"
 

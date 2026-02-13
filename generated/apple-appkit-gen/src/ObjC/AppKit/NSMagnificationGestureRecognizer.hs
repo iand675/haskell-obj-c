@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AppKit.NSMagnificationGestureRecognizer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- magnification@
 magnification :: IsNSMagnificationGestureRecognizer nsMagnificationGestureRecognizer => nsMagnificationGestureRecognizer -> IO CDouble
-magnification nsMagnificationGestureRecognizer  =
-    sendMsg nsMagnificationGestureRecognizer (mkSelector "magnification") retCDouble []
+magnification nsMagnificationGestureRecognizer =
+  sendMessage nsMagnificationGestureRecognizer magnificationSelector
 
 -- | @- setMagnification:@
 setMagnification :: IsNSMagnificationGestureRecognizer nsMagnificationGestureRecognizer => nsMagnificationGestureRecognizer -> CDouble -> IO ()
-setMagnification nsMagnificationGestureRecognizer  value =
-    sendMsg nsMagnificationGestureRecognizer (mkSelector "setMagnification:") retVoid [argCDouble value]
+setMagnification nsMagnificationGestureRecognizer value =
+  sendMessage nsMagnificationGestureRecognizer setMagnificationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @magnification@
-magnificationSelector :: Selector
+magnificationSelector :: Selector '[] CDouble
 magnificationSelector = mkSelector "magnification"
 
 -- | @Selector@ for @setMagnification:@
-setMagnificationSelector :: Selector
+setMagnificationSelector :: Selector '[CDouble] ()
 setMagnificationSelector = mkSelector "setMagnification:"
 

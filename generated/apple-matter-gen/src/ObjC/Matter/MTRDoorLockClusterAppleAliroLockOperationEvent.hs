@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRDoorLockClusterAppleAliroLockOperationEvent
   , setFabricIndex
   , credentials
   , setCredentials
-  , lockOperationTypeSelector
-  , setLockOperationTypeSelector
-  , userIndexSelector
-  , setUserIndexSelector
-  , fabricIndexSelector
-  , setFabricIndexSelector
   , credentialsSelector
+  , fabricIndexSelector
+  , lockOperationTypeSelector
   , setCredentialsSelector
+  , setFabricIndexSelector
+  , setLockOperationTypeSelector
+  , setUserIndexSelector
+  , userIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- lockOperationType@
 lockOperationType :: IsMTRDoorLockClusterAppleAliroLockOperationEvent mtrDoorLockClusterAppleAliroLockOperationEvent => mtrDoorLockClusterAppleAliroLockOperationEvent -> IO (Id NSNumber)
-lockOperationType mtrDoorLockClusterAppleAliroLockOperationEvent  =
-    sendMsg mtrDoorLockClusterAppleAliroLockOperationEvent (mkSelector "lockOperationType") (retPtr retVoid) [] >>= retainedObject . castPtr
+lockOperationType mtrDoorLockClusterAppleAliroLockOperationEvent =
+  sendMessage mtrDoorLockClusterAppleAliroLockOperationEvent lockOperationTypeSelector
 
 -- | @- setLockOperationType:@
 setLockOperationType :: (IsMTRDoorLockClusterAppleAliroLockOperationEvent mtrDoorLockClusterAppleAliroLockOperationEvent, IsNSNumber value) => mtrDoorLockClusterAppleAliroLockOperationEvent -> value -> IO ()
-setLockOperationType mtrDoorLockClusterAppleAliroLockOperationEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleAliroLockOperationEvent (mkSelector "setLockOperationType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLockOperationType mtrDoorLockClusterAppleAliroLockOperationEvent value =
+  sendMessage mtrDoorLockClusterAppleAliroLockOperationEvent setLockOperationTypeSelector (toNSNumber value)
 
 -- | @- userIndex@
 userIndex :: IsMTRDoorLockClusterAppleAliroLockOperationEvent mtrDoorLockClusterAppleAliroLockOperationEvent => mtrDoorLockClusterAppleAliroLockOperationEvent -> IO (Id NSNumber)
-userIndex mtrDoorLockClusterAppleAliroLockOperationEvent  =
-    sendMsg mtrDoorLockClusterAppleAliroLockOperationEvent (mkSelector "userIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIndex mtrDoorLockClusterAppleAliroLockOperationEvent =
+  sendMessage mtrDoorLockClusterAppleAliroLockOperationEvent userIndexSelector
 
 -- | @- setUserIndex:@
 setUserIndex :: (IsMTRDoorLockClusterAppleAliroLockOperationEvent mtrDoorLockClusterAppleAliroLockOperationEvent, IsNSNumber value) => mtrDoorLockClusterAppleAliroLockOperationEvent -> value -> IO ()
-setUserIndex mtrDoorLockClusterAppleAliroLockOperationEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleAliroLockOperationEvent (mkSelector "setUserIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserIndex mtrDoorLockClusterAppleAliroLockOperationEvent value =
+  sendMessage mtrDoorLockClusterAppleAliroLockOperationEvent setUserIndexSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRDoorLockClusterAppleAliroLockOperationEvent mtrDoorLockClusterAppleAliroLockOperationEvent => mtrDoorLockClusterAppleAliroLockOperationEvent -> IO (Id NSNumber)
-fabricIndex mtrDoorLockClusterAppleAliroLockOperationEvent  =
-    sendMsg mtrDoorLockClusterAppleAliroLockOperationEvent (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrDoorLockClusterAppleAliroLockOperationEvent =
+  sendMessage mtrDoorLockClusterAppleAliroLockOperationEvent fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRDoorLockClusterAppleAliroLockOperationEvent mtrDoorLockClusterAppleAliroLockOperationEvent, IsNSNumber value) => mtrDoorLockClusterAppleAliroLockOperationEvent -> value -> IO ()
-setFabricIndex mtrDoorLockClusterAppleAliroLockOperationEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleAliroLockOperationEvent (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrDoorLockClusterAppleAliroLockOperationEvent value =
+  sendMessage mtrDoorLockClusterAppleAliroLockOperationEvent setFabricIndexSelector (toNSNumber value)
 
 -- | @- credentials@
 credentials :: IsMTRDoorLockClusterAppleAliroLockOperationEvent mtrDoorLockClusterAppleAliroLockOperationEvent => mtrDoorLockClusterAppleAliroLockOperationEvent -> IO (Id NSArray)
-credentials mtrDoorLockClusterAppleAliroLockOperationEvent  =
-    sendMsg mtrDoorLockClusterAppleAliroLockOperationEvent (mkSelector "credentials") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentials mtrDoorLockClusterAppleAliroLockOperationEvent =
+  sendMessage mtrDoorLockClusterAppleAliroLockOperationEvent credentialsSelector
 
 -- | @- setCredentials:@
 setCredentials :: (IsMTRDoorLockClusterAppleAliroLockOperationEvent mtrDoorLockClusterAppleAliroLockOperationEvent, IsNSArray value) => mtrDoorLockClusterAppleAliroLockOperationEvent -> value -> IO ()
-setCredentials mtrDoorLockClusterAppleAliroLockOperationEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterAppleAliroLockOperationEvent (mkSelector "setCredentials:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredentials mtrDoorLockClusterAppleAliroLockOperationEvent value =
+  sendMessage mtrDoorLockClusterAppleAliroLockOperationEvent setCredentialsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @lockOperationType@
-lockOperationTypeSelector :: Selector
+lockOperationTypeSelector :: Selector '[] (Id NSNumber)
 lockOperationTypeSelector = mkSelector "lockOperationType"
 
 -- | @Selector@ for @setLockOperationType:@
-setLockOperationTypeSelector :: Selector
+setLockOperationTypeSelector :: Selector '[Id NSNumber] ()
 setLockOperationTypeSelector = mkSelector "setLockOperationType:"
 
 -- | @Selector@ for @userIndex@
-userIndexSelector :: Selector
+userIndexSelector :: Selector '[] (Id NSNumber)
 userIndexSelector = mkSelector "userIndex"
 
 -- | @Selector@ for @setUserIndex:@
-setUserIndexSelector :: Selector
+setUserIndexSelector :: Selector '[Id NSNumber] ()
 setUserIndexSelector = mkSelector "setUserIndex:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 
 -- | @Selector@ for @credentials@
-credentialsSelector :: Selector
+credentialsSelector :: Selector '[] (Id NSArray)
 credentialsSelector = mkSelector "credentials"
 
 -- | @Selector@ for @setCredentials:@
-setCredentialsSelector :: Selector
+setCredentialsSelector :: Selector '[Id NSArray] ()
 setCredentialsSelector = mkSelector "setCredentials:"
 

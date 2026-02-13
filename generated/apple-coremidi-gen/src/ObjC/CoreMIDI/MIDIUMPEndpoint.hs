@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,20 +30,20 @@ module ObjC.CoreMIDI.MIDIUMPEndpoint
   , endpointType
   , functionBlocks
   , setFunctionBlocks
-  , initSelector
-  , nameSelector
-  , midiProtocolSelector
-  , supportedMIDIProtocolsSelector
-  , midiDestinationSelector
-  , midiSourceSelector
   , deviceInfoSelector
-  , productInstanceIDSelector
-  , hasStaticFunctionBlocksSelector
-  , hasJRTSReceiveCapabilitySelector
-  , hasJRTSTransmitCapabilitySelector
   , endpointTypeSelector
   , functionBlocksSelector
+  , hasJRTSReceiveCapabilitySelector
+  , hasJRTSTransmitCapabilitySelector
+  , hasStaticFunctionBlocksSelector
+  , initSelector
+  , midiDestinationSelector
+  , midiProtocolSelector
+  , midiSourceSelector
+  , nameSelector
+  , productInstanceIDSelector
   , setFunctionBlocksSelector
+  , supportedMIDIProtocolsSelector
 
   -- * Enum types
   , MIDIProtocolID(MIDIProtocolID)
@@ -59,15 +60,11 @@ module ObjC.CoreMIDI.MIDIUMPEndpoint
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,8 +74,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO (Id MIDIUMPEndpoint)
-init_ midiumpEndpoint  =
-    sendMsg midiumpEndpoint (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ midiumpEndpoint =
+  sendOwnedMessage midiumpEndpoint initSelector
 
 -- | name
 --
@@ -88,8 +85,8 @@ init_ midiumpEndpoint  =
 --
 -- ObjC selector: @- name@
 name :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO (Id NSString)
-name midiumpEndpoint  =
-    sendMsg midiumpEndpoint (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name midiumpEndpoint =
+  sendMessage midiumpEndpoint nameSelector
 
 -- | MIDIProtocol
 --
@@ -97,8 +94,8 @@ name midiumpEndpoint  =
 --
 -- ObjC selector: @- MIDIProtocol@
 midiProtocol :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO MIDIProtocolID
-midiProtocol midiumpEndpoint  =
-    fmap (coerce :: CInt -> MIDIProtocolID) $ sendMsg midiumpEndpoint (mkSelector "MIDIProtocol") retCInt []
+midiProtocol midiumpEndpoint =
+  sendMessage midiumpEndpoint midiProtocolSelector
 
 -- | supportedMIDIProtocols
 --
@@ -106,8 +103,8 @@ midiProtocol midiumpEndpoint  =
 --
 -- ObjC selector: @- supportedMIDIProtocols@
 supportedMIDIProtocols :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO MIDIUMPProtocolOptions
-supportedMIDIProtocols midiumpEndpoint  =
-    fmap (coerce :: CUChar -> MIDIUMPProtocolOptions) $ sendMsg midiumpEndpoint (mkSelector "supportedMIDIProtocols") retCUChar []
+supportedMIDIProtocols midiumpEndpoint =
+  sendMessage midiumpEndpoint supportedMIDIProtocolsSelector
 
 -- | MIDIDestination
 --
@@ -115,8 +112,8 @@ supportedMIDIProtocols midiumpEndpoint  =
 --
 -- ObjC selector: @- MIDIDestination@
 midiDestination :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO CUInt
-midiDestination midiumpEndpoint  =
-    sendMsg midiumpEndpoint (mkSelector "MIDIDestination") retCUInt []
+midiDestination midiumpEndpoint =
+  sendMessage midiumpEndpoint midiDestinationSelector
 
 -- | MIDISource
 --
@@ -124,8 +121,8 @@ midiDestination midiumpEndpoint  =
 --
 -- ObjC selector: @- MIDISource@
 midiSource :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO CUInt
-midiSource midiumpEndpoint  =
-    sendMsg midiumpEndpoint (mkSelector "MIDISource") retCUInt []
+midiSource midiumpEndpoint =
+  sendMessage midiumpEndpoint midiSourceSelector
 
 -- | deviceInfo
 --
@@ -133,8 +130,8 @@ midiSource midiumpEndpoint  =
 --
 -- ObjC selector: @- deviceInfo@
 deviceInfo :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO (Id MIDI2DeviceInfo)
-deviceInfo midiumpEndpoint  =
-    sendMsg midiumpEndpoint (mkSelector "deviceInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceInfo midiumpEndpoint =
+  sendMessage midiumpEndpoint deviceInfoSelector
 
 -- | productInstanceID
 --
@@ -142,8 +139,8 @@ deviceInfo midiumpEndpoint  =
 --
 -- ObjC selector: @- productInstanceID@
 productInstanceID :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO (Id NSString)
-productInstanceID midiumpEndpoint  =
-    sendMsg midiumpEndpoint (mkSelector "productInstanceID") (retPtr retVoid) [] >>= retainedObject . castPtr
+productInstanceID midiumpEndpoint =
+  sendMessage midiumpEndpoint productInstanceIDSelector
 
 -- | hasStaticFunctionBlocks
 --
@@ -151,8 +148,8 @@ productInstanceID midiumpEndpoint  =
 --
 -- ObjC selector: @- hasStaticFunctionBlocks@
 hasStaticFunctionBlocks :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO Bool
-hasStaticFunctionBlocks midiumpEndpoint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpEndpoint (mkSelector "hasStaticFunctionBlocks") retCULong []
+hasStaticFunctionBlocks midiumpEndpoint =
+  sendMessage midiumpEndpoint hasStaticFunctionBlocksSelector
 
 -- | hasJRTSReceiveCapability
 --
@@ -160,8 +157,8 @@ hasStaticFunctionBlocks midiumpEndpoint  =
 --
 -- ObjC selector: @- hasJRTSReceiveCapability@
 hasJRTSReceiveCapability :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO Bool
-hasJRTSReceiveCapability midiumpEndpoint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpEndpoint (mkSelector "hasJRTSReceiveCapability") retCULong []
+hasJRTSReceiveCapability midiumpEndpoint =
+  sendMessage midiumpEndpoint hasJRTSReceiveCapabilitySelector
 
 -- | hasJRTSTransmitCapability
 --
@@ -169,8 +166,8 @@ hasJRTSReceiveCapability midiumpEndpoint  =
 --
 -- ObjC selector: @- hasJRTSTransmitCapability@
 hasJRTSTransmitCapability :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO Bool
-hasJRTSTransmitCapability midiumpEndpoint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpEndpoint (mkSelector "hasJRTSTransmitCapability") retCULong []
+hasJRTSTransmitCapability midiumpEndpoint =
+  sendMessage midiumpEndpoint hasJRTSTransmitCapabilitySelector
 
 -- | endpointType
 --
@@ -178,8 +175,8 @@ hasJRTSTransmitCapability midiumpEndpoint  =
 --
 -- ObjC selector: @- endpointType@
 endpointType :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO MIDIUMPCIObjectBackingType
-endpointType midiumpEndpoint  =
-    fmap (coerce :: CUChar -> MIDIUMPCIObjectBackingType) $ sendMsg midiumpEndpoint (mkSelector "endpointType") retCUChar []
+endpointType midiumpEndpoint =
+  sendMessage midiumpEndpoint endpointTypeSelector
 
 -- | functionBlocks
 --
@@ -187,8 +184,8 @@ endpointType midiumpEndpoint  =
 --
 -- ObjC selector: @- functionBlocks@
 functionBlocks :: IsMIDIUMPEndpoint midiumpEndpoint => midiumpEndpoint -> IO (Id NSArray)
-functionBlocks midiumpEndpoint  =
-    sendMsg midiumpEndpoint (mkSelector "functionBlocks") (retPtr retVoid) [] >>= retainedObject . castPtr
+functionBlocks midiumpEndpoint =
+  sendMessage midiumpEndpoint functionBlocksSelector
 
 -- | functionBlocks
 --
@@ -196,67 +193,66 @@ functionBlocks midiumpEndpoint  =
 --
 -- ObjC selector: @- setFunctionBlocks:@
 setFunctionBlocks :: (IsMIDIUMPEndpoint midiumpEndpoint, IsNSArray value) => midiumpEndpoint -> value -> IO ()
-setFunctionBlocks midiumpEndpoint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg midiumpEndpoint (mkSelector "setFunctionBlocks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFunctionBlocks midiumpEndpoint value =
+  sendMessage midiumpEndpoint setFunctionBlocksSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MIDIUMPEndpoint)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @MIDIProtocol@
-midiProtocolSelector :: Selector
+midiProtocolSelector :: Selector '[] MIDIProtocolID
 midiProtocolSelector = mkSelector "MIDIProtocol"
 
 -- | @Selector@ for @supportedMIDIProtocols@
-supportedMIDIProtocolsSelector :: Selector
+supportedMIDIProtocolsSelector :: Selector '[] MIDIUMPProtocolOptions
 supportedMIDIProtocolsSelector = mkSelector "supportedMIDIProtocols"
 
 -- | @Selector@ for @MIDIDestination@
-midiDestinationSelector :: Selector
+midiDestinationSelector :: Selector '[] CUInt
 midiDestinationSelector = mkSelector "MIDIDestination"
 
 -- | @Selector@ for @MIDISource@
-midiSourceSelector :: Selector
+midiSourceSelector :: Selector '[] CUInt
 midiSourceSelector = mkSelector "MIDISource"
 
 -- | @Selector@ for @deviceInfo@
-deviceInfoSelector :: Selector
+deviceInfoSelector :: Selector '[] (Id MIDI2DeviceInfo)
 deviceInfoSelector = mkSelector "deviceInfo"
 
 -- | @Selector@ for @productInstanceID@
-productInstanceIDSelector :: Selector
+productInstanceIDSelector :: Selector '[] (Id NSString)
 productInstanceIDSelector = mkSelector "productInstanceID"
 
 -- | @Selector@ for @hasStaticFunctionBlocks@
-hasStaticFunctionBlocksSelector :: Selector
+hasStaticFunctionBlocksSelector :: Selector '[] Bool
 hasStaticFunctionBlocksSelector = mkSelector "hasStaticFunctionBlocks"
 
 -- | @Selector@ for @hasJRTSReceiveCapability@
-hasJRTSReceiveCapabilitySelector :: Selector
+hasJRTSReceiveCapabilitySelector :: Selector '[] Bool
 hasJRTSReceiveCapabilitySelector = mkSelector "hasJRTSReceiveCapability"
 
 -- | @Selector@ for @hasJRTSTransmitCapability@
-hasJRTSTransmitCapabilitySelector :: Selector
+hasJRTSTransmitCapabilitySelector :: Selector '[] Bool
 hasJRTSTransmitCapabilitySelector = mkSelector "hasJRTSTransmitCapability"
 
 -- | @Selector@ for @endpointType@
-endpointTypeSelector :: Selector
+endpointTypeSelector :: Selector '[] MIDIUMPCIObjectBackingType
 endpointTypeSelector = mkSelector "endpointType"
 
 -- | @Selector@ for @functionBlocks@
-functionBlocksSelector :: Selector
+functionBlocksSelector :: Selector '[] (Id NSArray)
 functionBlocksSelector = mkSelector "functionBlocks"
 
 -- | @Selector@ for @setFunctionBlocks:@
-setFunctionBlocksSelector :: Selector
+setFunctionBlocksSelector :: Selector '[Id NSArray] ()
 setFunctionBlocksSelector = mkSelector "setFunctionBlocks:"
 

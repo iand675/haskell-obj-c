@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,15 +30,11 @@ module ObjC.PhotosUI.PHProjectSection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,58 +44,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHProjectSection phProjectSection => phProjectSection -> IO (Id PHProjectSection)
-init_ phProjectSection  =
-    sendMsg phProjectSection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phProjectSection =
+  sendOwnedMessage phProjectSection initSelector
 
 -- | @+ new@
 new :: IO (Id PHProjectSection)
 new  =
   do
     cls' <- getRequiredClass "PHProjectSection"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Array containing one or more PHProjectSectionContent objects. Ordered by number of elements from least to most. Projects should only present one level of content to the user at a time as assets will be reused within individual content objects.
 --
 -- ObjC selector: @- sectionContents@
 sectionContents :: IsPHProjectSection phProjectSection => phProjectSection -> IO (Id NSArray)
-sectionContents phProjectSection  =
-    sendMsg phProjectSection (mkSelector "sectionContents") (retPtr retVoid) [] >>= retainedObject . castPtr
+sectionContents phProjectSection =
+  sendMessage phProjectSection sectionContentsSelector
 
 -- | The intended usage of the section (e.g., cover, content, auxiliary)
 --
 -- ObjC selector: @- sectionType@
 sectionType :: IsPHProjectSection phProjectSection => phProjectSection -> IO PHProjectSectionType
-sectionType phProjectSection  =
-    fmap (coerce :: CLong -> PHProjectSectionType) $ sendMsg phProjectSection (mkSelector "sectionType") retCLong []
+sectionType phProjectSection =
+  sendMessage phProjectSection sectionTypeSelector
 
 -- | Title for the section (e.g., a Moment name or a general geographical location), might be an empty string.
 --
 -- ObjC selector: @- title@
 title :: IsPHProjectSection phProjectSection => phProjectSection -> IO (Id NSString)
-title phProjectSection  =
-    sendMsg phProjectSection (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title phProjectSection =
+  sendMessage phProjectSection titleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHProjectSection)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHProjectSection)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sectionContents@
-sectionContentsSelector :: Selector
+sectionContentsSelector :: Selector '[] (Id NSArray)
 sectionContentsSelector = mkSelector "sectionContents"
 
 -- | @Selector@ for @sectionType@
-sectionTypeSelector :: Selector
+sectionTypeSelector :: Selector '[] PHProjectSectionType
 sectionTypeSelector = mkSelector "sectionType"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 

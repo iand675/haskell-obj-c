@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Intents.INSaveProfileInCarIntent
   , profileNumber
   , profileName
   , profileLabel
-  , initWithProfileNumber_profileNameSelector
   , initWithProfileNumber_profileLabelSelector
-  , profileNumberSelector
-  , profileNameSelector
+  , initWithProfileNumber_profileNameSelector
   , profileLabelSelector
+  , profileNameSelector
+  , profileNumberSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,54 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithProfileNumber:profileName:@
 initWithProfileNumber_profileName :: (IsINSaveProfileInCarIntent inSaveProfileInCarIntent, IsNSNumber profileNumber, IsNSString profileName) => inSaveProfileInCarIntent -> profileNumber -> profileName -> IO (Id INSaveProfileInCarIntent)
-initWithProfileNumber_profileName inSaveProfileInCarIntent  profileNumber profileName =
-  withObjCPtr profileNumber $ \raw_profileNumber ->
-    withObjCPtr profileName $ \raw_profileName ->
-        sendMsg inSaveProfileInCarIntent (mkSelector "initWithProfileNumber:profileName:") (retPtr retVoid) [argPtr (castPtr raw_profileNumber :: Ptr ()), argPtr (castPtr raw_profileName :: Ptr ())] >>= ownedObject . castPtr
+initWithProfileNumber_profileName inSaveProfileInCarIntent profileNumber profileName =
+  sendOwnedMessage inSaveProfileInCarIntent initWithProfileNumber_profileNameSelector (toNSNumber profileNumber) (toNSString profileName)
 
 -- | @- initWithProfileNumber:profileLabel:@
 initWithProfileNumber_profileLabel :: (IsINSaveProfileInCarIntent inSaveProfileInCarIntent, IsNSNumber profileNumber, IsNSString profileLabel) => inSaveProfileInCarIntent -> profileNumber -> profileLabel -> IO (Id INSaveProfileInCarIntent)
-initWithProfileNumber_profileLabel inSaveProfileInCarIntent  profileNumber profileLabel =
-  withObjCPtr profileNumber $ \raw_profileNumber ->
-    withObjCPtr profileLabel $ \raw_profileLabel ->
-        sendMsg inSaveProfileInCarIntent (mkSelector "initWithProfileNumber:profileLabel:") (retPtr retVoid) [argPtr (castPtr raw_profileNumber :: Ptr ()), argPtr (castPtr raw_profileLabel :: Ptr ())] >>= ownedObject . castPtr
+initWithProfileNumber_profileLabel inSaveProfileInCarIntent profileNumber profileLabel =
+  sendOwnedMessage inSaveProfileInCarIntent initWithProfileNumber_profileLabelSelector (toNSNumber profileNumber) (toNSString profileLabel)
 
 -- | @- profileNumber@
 profileNumber :: IsINSaveProfileInCarIntent inSaveProfileInCarIntent => inSaveProfileInCarIntent -> IO (Id NSNumber)
-profileNumber inSaveProfileInCarIntent  =
-    sendMsg inSaveProfileInCarIntent (mkSelector "profileNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+profileNumber inSaveProfileInCarIntent =
+  sendMessage inSaveProfileInCarIntent profileNumberSelector
 
 -- | @- profileName@
 profileName :: IsINSaveProfileInCarIntent inSaveProfileInCarIntent => inSaveProfileInCarIntent -> IO (Id NSString)
-profileName inSaveProfileInCarIntent  =
-    sendMsg inSaveProfileInCarIntent (mkSelector "profileName") (retPtr retVoid) [] >>= retainedObject . castPtr
+profileName inSaveProfileInCarIntent =
+  sendMessage inSaveProfileInCarIntent profileNameSelector
 
 -- | @- profileLabel@
 profileLabel :: IsINSaveProfileInCarIntent inSaveProfileInCarIntent => inSaveProfileInCarIntent -> IO (Id NSString)
-profileLabel inSaveProfileInCarIntent  =
-    sendMsg inSaveProfileInCarIntent (mkSelector "profileLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+profileLabel inSaveProfileInCarIntent =
+  sendMessage inSaveProfileInCarIntent profileLabelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithProfileNumber:profileName:@
-initWithProfileNumber_profileNameSelector :: Selector
+initWithProfileNumber_profileNameSelector :: Selector '[Id NSNumber, Id NSString] (Id INSaveProfileInCarIntent)
 initWithProfileNumber_profileNameSelector = mkSelector "initWithProfileNumber:profileName:"
 
 -- | @Selector@ for @initWithProfileNumber:profileLabel:@
-initWithProfileNumber_profileLabelSelector :: Selector
+initWithProfileNumber_profileLabelSelector :: Selector '[Id NSNumber, Id NSString] (Id INSaveProfileInCarIntent)
 initWithProfileNumber_profileLabelSelector = mkSelector "initWithProfileNumber:profileLabel:"
 
 -- | @Selector@ for @profileNumber@
-profileNumberSelector :: Selector
+profileNumberSelector :: Selector '[] (Id NSNumber)
 profileNumberSelector = mkSelector "profileNumber"
 
 -- | @Selector@ for @profileName@
-profileNameSelector :: Selector
+profileNameSelector :: Selector '[] (Id NSString)
 profileNameSelector = mkSelector "profileName"
 
 -- | @Selector@ for @profileLabel@
-profileLabelSelector :: Selector
+profileLabelSelector :: Selector '[] (Id NSString)
 profileLabelSelector = mkSelector "profileLabel"
 

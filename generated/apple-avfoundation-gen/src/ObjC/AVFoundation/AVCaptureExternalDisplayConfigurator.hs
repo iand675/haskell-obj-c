@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.AVFoundation.AVCaptureExternalDisplayConfigurator
   , shouldMatchFrameRateSupported
   , supportsBypassingColorSpaceConversion
   , supportsPreferredResolution
-  , initSelector
-  , newSelector
-  , initWithDevice_previewLayer_configurationSelector
-  , stopSelector
-  , deviceSelector
-  , previewLayerSelector
-  , activeSelector
   , activeExternalDisplayFrameRateSelector
+  , activeSelector
+  , deviceSelector
+  , initSelector
+  , initWithDevice_previewLayer_configurationSelector
+  , newSelector
+  , previewLayerSelector
   , shouldMatchFrameRateSupportedSelector
+  , stopSelector
   , supportsBypassingColorSpaceConversionSelector
   , supportsPreferredResolutionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,15 +53,15 @@ import ObjC.QuartzCore.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureExternalDisplayConfigurator avCaptureExternalDisplayConfigurator => avCaptureExternalDisplayConfigurator -> IO (Id AVCaptureExternalDisplayConfigurator)
-init_ avCaptureExternalDisplayConfigurator  =
-    sendMsg avCaptureExternalDisplayConfigurator (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureExternalDisplayConfigurator =
+  sendOwnedMessage avCaptureExternalDisplayConfigurator initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureExternalDisplayConfigurator)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureExternalDisplayConfigurator"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | An external display configurator instance that attempts to synchronize the preview layer configuration with the device capture configuration.
 --
@@ -78,11 +75,8 @@ new  =
 --
 -- ObjC selector: @- initWithDevice:previewLayer:configuration:@
 initWithDevice_previewLayer_configuration :: (IsAVCaptureExternalDisplayConfigurator avCaptureExternalDisplayConfigurator, IsAVCaptureDevice device, IsCALayer previewLayer, IsAVCaptureExternalDisplayConfiguration configuration) => avCaptureExternalDisplayConfigurator -> device -> previewLayer -> configuration -> IO (Id AVCaptureExternalDisplayConfigurator)
-initWithDevice_previewLayer_configuration avCaptureExternalDisplayConfigurator  device previewLayer configuration =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr previewLayer $ \raw_previewLayer ->
-      withObjCPtr configuration $ \raw_configuration ->
-          sendMsg avCaptureExternalDisplayConfigurator (mkSelector "initWithDevice:previewLayer:configuration:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_previewLayer :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_previewLayer_configuration avCaptureExternalDisplayConfigurator device previewLayer configuration =
+  sendOwnedMessage avCaptureExternalDisplayConfigurator initWithDevice_previewLayer_configurationSelector (toAVCaptureDevice device) (toCALayer previewLayer) (toAVCaptureExternalDisplayConfiguration configuration)
 
 -- | Forces the external display configurator to asynchronously stop configuring the external display.
 --
@@ -90,8 +84,8 @@ initWithDevice_previewLayer_configuration avCaptureExternalDisplayConfigurator  
 --
 -- ObjC selector: @- stop@
 stop :: IsAVCaptureExternalDisplayConfigurator avCaptureExternalDisplayConfigurator => avCaptureExternalDisplayConfigurator -> IO ()
-stop avCaptureExternalDisplayConfigurator  =
-    sendMsg avCaptureExternalDisplayConfigurator (mkSelector "stop") retVoid []
+stop avCaptureExternalDisplayConfigurator =
+  sendMessage avCaptureExternalDisplayConfigurator stopSelector
 
 -- | The device for which the coordinator configures the preview layer.
 --
@@ -99,8 +93,8 @@ stop avCaptureExternalDisplayConfigurator  =
 --
 -- ObjC selector: @- device@
 device :: IsAVCaptureExternalDisplayConfigurator avCaptureExternalDisplayConfigurator => avCaptureExternalDisplayConfigurator -> IO (Id AVCaptureDevice)
-device avCaptureExternalDisplayConfigurator  =
-    sendMsg avCaptureExternalDisplayConfigurator (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device avCaptureExternalDisplayConfigurator =
+  sendMessage avCaptureExternalDisplayConfigurator deviceSelector
 
 -- | The layer for which the configurator adjusts display properties to match the device's state.
 --
@@ -108,8 +102,8 @@ device avCaptureExternalDisplayConfigurator  =
 --
 -- ObjC selector: @- previewLayer@
 previewLayer :: IsAVCaptureExternalDisplayConfigurator avCaptureExternalDisplayConfigurator => avCaptureExternalDisplayConfigurator -> IO (Id CALayer)
-previewLayer avCaptureExternalDisplayConfigurator  =
-    sendMsg avCaptureExternalDisplayConfigurator (mkSelector "previewLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+previewLayer avCaptureExternalDisplayConfigurator =
+  sendMessage avCaptureExternalDisplayConfigurator previewLayerSelector
 
 -- | This property tells you whether the configurator is actively configuring the external display.
 --
@@ -117,8 +111,8 @@ previewLayer avCaptureExternalDisplayConfigurator  =
 --
 -- ObjC selector: @- active@
 active :: IsAVCaptureExternalDisplayConfigurator avCaptureExternalDisplayConfigurator => avCaptureExternalDisplayConfigurator -> IO Bool
-active avCaptureExternalDisplayConfigurator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureExternalDisplayConfigurator (mkSelector "active") retCULong []
+active avCaptureExternalDisplayConfigurator =
+  sendMessage avCaptureExternalDisplayConfigurator activeSelector
 
 -- | The currently configured frame rate on the external display that's displaying the preview layer.
 --
@@ -126,8 +120,8 @@ active avCaptureExternalDisplayConfigurator  =
 --
 -- ObjC selector: @- activeExternalDisplayFrameRate@
 activeExternalDisplayFrameRate :: IsAVCaptureExternalDisplayConfigurator avCaptureExternalDisplayConfigurator => avCaptureExternalDisplayConfigurator -> IO CDouble
-activeExternalDisplayFrameRate avCaptureExternalDisplayConfigurator  =
-    sendMsg avCaptureExternalDisplayConfigurator (mkSelector "activeExternalDisplayFrameRate") retCDouble []
+activeExternalDisplayFrameRate avCaptureExternalDisplayConfigurator =
+  sendMessage avCaptureExternalDisplayConfigurator activeExternalDisplayFrameRateSelector
 
 -- | Whether the external display supports matching frame rate to a capture device.
 --
@@ -138,7 +132,7 @@ shouldMatchFrameRateSupported :: IO Bool
 shouldMatchFrameRateSupported  =
   do
     cls' <- getRequiredClass "AVCaptureExternalDisplayConfigurator"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "shouldMatchFrameRateSupported") retCULong []
+    sendClassMessage cls' shouldMatchFrameRateSupportedSelector
 
 -- | Whether the external display supports bypassing color space conversion.
 --
@@ -149,7 +143,7 @@ supportsBypassingColorSpaceConversion :: IO Bool
 supportsBypassingColorSpaceConversion  =
   do
     cls' <- getRequiredClass "AVCaptureExternalDisplayConfigurator"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsBypassingColorSpaceConversion") retCULong []
+    sendClassMessage cls' supportsBypassingColorSpaceConversionSelector
 
 -- | Whether the external display supports configuration to your preferred resolution.
 --
@@ -160,53 +154,53 @@ supportsPreferredResolution :: IO Bool
 supportsPreferredResolution  =
   do
     cls' <- getRequiredClass "AVCaptureExternalDisplayConfigurator"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsPreferredResolution") retCULong []
+    sendClassMessage cls' supportsPreferredResolutionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureExternalDisplayConfigurator)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureExternalDisplayConfigurator)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:previewLayer:configuration:@
-initWithDevice_previewLayer_configurationSelector :: Selector
+initWithDevice_previewLayer_configurationSelector :: Selector '[Id AVCaptureDevice, Id CALayer, Id AVCaptureExternalDisplayConfiguration] (Id AVCaptureExternalDisplayConfigurator)
 initWithDevice_previewLayer_configurationSelector = mkSelector "initWithDevice:previewLayer:configuration:"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id AVCaptureDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @previewLayer@
-previewLayerSelector :: Selector
+previewLayerSelector :: Selector '[] (Id CALayer)
 previewLayerSelector = mkSelector "previewLayer"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @activeExternalDisplayFrameRate@
-activeExternalDisplayFrameRateSelector :: Selector
+activeExternalDisplayFrameRateSelector :: Selector '[] CDouble
 activeExternalDisplayFrameRateSelector = mkSelector "activeExternalDisplayFrameRate"
 
 -- | @Selector@ for @shouldMatchFrameRateSupported@
-shouldMatchFrameRateSupportedSelector :: Selector
+shouldMatchFrameRateSupportedSelector :: Selector '[] Bool
 shouldMatchFrameRateSupportedSelector = mkSelector "shouldMatchFrameRateSupported"
 
 -- | @Selector@ for @supportsBypassingColorSpaceConversion@
-supportsBypassingColorSpaceConversionSelector :: Selector
+supportsBypassingColorSpaceConversionSelector :: Selector '[] Bool
 supportsBypassingColorSpaceConversionSelector = mkSelector "supportsBypassingColorSpaceConversion"
 
 -- | @Selector@ for @supportsPreferredResolution@
-supportsPreferredResolutionSelector :: Selector
+supportsPreferredResolutionSelector :: Selector '[] Bool
 supportsPreferredResolutionSelector = mkSelector "supportsPreferredResolution"
 

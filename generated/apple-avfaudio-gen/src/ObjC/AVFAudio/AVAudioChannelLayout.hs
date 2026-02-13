@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.AVFAudio.AVAudioChannelLayout
   , layoutTag
   , layout
   , channelCount
-  , initSelector
-  , initWithLayoutTagSelector
-  , initWithLayoutSelector
-  , isEqualSelector
-  , layoutWithLayoutTagSelector
-  , layoutWithLayoutSelector
-  , layoutTagSelector
-  , layoutSelector
   , channelCountSelector
+  , initSelector
+  , initWithLayoutSelector
+  , initWithLayoutTagSelector
+  , isEqualSelector
+  , layoutSelector
+  , layoutTagSelector
+  , layoutWithLayoutSelector
+  , layoutWithLayoutTagSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioChannelLayout avAudioChannelLayout => avAudioChannelLayout -> IO (Id AVAudioChannelLayout)
-init_ avAudioChannelLayout  =
-    sendMsg avAudioChannelLayout (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioChannelLayout =
+  sendOwnedMessage avAudioChannelLayout initSelector
 
 -- | initWithLayoutTag:
 --
@@ -64,8 +61,8 @@ init_ avAudioChannelLayout  =
 --
 -- ObjC selector: @- initWithLayoutTag:@
 initWithLayoutTag :: IsAVAudioChannelLayout avAudioChannelLayout => avAudioChannelLayout -> CUInt -> IO (Id AVAudioChannelLayout)
-initWithLayoutTag avAudioChannelLayout  layoutTag =
-    sendMsg avAudioChannelLayout (mkSelector "initWithLayoutTag:") (retPtr retVoid) [argCUInt layoutTag] >>= ownedObject . castPtr
+initWithLayoutTag avAudioChannelLayout layoutTag =
+  sendOwnedMessage avAudioChannelLayout initWithLayoutTagSelector layoutTag
 
 -- | initWithLayout:
 --
@@ -77,8 +74,8 @@ initWithLayoutTag avAudioChannelLayout  layoutTag =
 --
 -- ObjC selector: @- initWithLayout:@
 initWithLayout :: IsAVAudioChannelLayout avAudioChannelLayout => avAudioChannelLayout -> Const RawId -> IO (Id AVAudioChannelLayout)
-initWithLayout avAudioChannelLayout  layout =
-    sendMsg avAudioChannelLayout (mkSelector "initWithLayout:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst layout)) :: Ptr ())] >>= ownedObject . castPtr
+initWithLayout avAudioChannelLayout layout =
+  sendOwnedMessage avAudioChannelLayout initWithLayoutSelector layout
 
 -- | isEqual:
 --
@@ -90,8 +87,8 @@ initWithLayout avAudioChannelLayout  layout =
 --
 -- ObjC selector: @- isEqual:@
 isEqual :: IsAVAudioChannelLayout avAudioChannelLayout => avAudioChannelLayout -> RawId -> IO Bool
-isEqual avAudioChannelLayout  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioChannelLayout (mkSelector "isEqual:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+isEqual avAudioChannelLayout object =
+  sendMessage avAudioChannelLayout isEqualSelector object
 
 -- | layoutWithLayoutTag:
 --
@@ -102,7 +99,7 @@ layoutWithLayoutTag :: CUInt -> IO (Id AVAudioChannelLayout)
 layoutWithLayoutTag layoutTag =
   do
     cls' <- getRequiredClass "AVAudioChannelLayout"
-    sendClassMsg cls' (mkSelector "layoutWithLayoutTag:") (retPtr retVoid) [argCUInt layoutTag] >>= retainedObject . castPtr
+    sendClassMessage cls' layoutWithLayoutTagSelector layoutTag
 
 -- | layoutWithLayout:
 --
@@ -113,7 +110,7 @@ layoutWithLayout :: Const RawId -> IO (Id AVAudioChannelLayout)
 layoutWithLayout layout =
   do
     cls' <- getRequiredClass "AVAudioChannelLayout"
-    sendClassMsg cls' (mkSelector "layoutWithLayout:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst layout)) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layoutWithLayoutSelector layout
 
 -- | layoutTag
 --
@@ -121,8 +118,8 @@ layoutWithLayout layout =
 --
 -- ObjC selector: @- layoutTag@
 layoutTag :: IsAVAudioChannelLayout avAudioChannelLayout => avAudioChannelLayout -> IO CUInt
-layoutTag avAudioChannelLayout  =
-    sendMsg avAudioChannelLayout (mkSelector "layoutTag") retCUInt []
+layoutTag avAudioChannelLayout =
+  sendMessage avAudioChannelLayout layoutTagSelector
 
 -- | layout
 --
@@ -130,8 +127,8 @@ layoutTag avAudioChannelLayout  =
 --
 -- ObjC selector: @- layout@
 layout :: IsAVAudioChannelLayout avAudioChannelLayout => avAudioChannelLayout -> IO (Const RawId)
-layout avAudioChannelLayout  =
-    fmap Const $ fmap (RawId . castPtr) $ sendMsg avAudioChannelLayout (mkSelector "layout") (retPtr retVoid) []
+layout avAudioChannelLayout =
+  sendMessage avAudioChannelLayout layoutSelector
 
 -- | channelCount
 --
@@ -139,46 +136,46 @@ layout avAudioChannelLayout  =
 --
 -- ObjC selector: @- channelCount@
 channelCount :: IsAVAudioChannelLayout avAudioChannelLayout => avAudioChannelLayout -> IO CUInt
-channelCount avAudioChannelLayout  =
-    sendMsg avAudioChannelLayout (mkSelector "channelCount") retCUInt []
+channelCount avAudioChannelLayout =
+  sendMessage avAudioChannelLayout channelCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioChannelLayout)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithLayoutTag:@
-initWithLayoutTagSelector :: Selector
+initWithLayoutTagSelector :: Selector '[CUInt] (Id AVAudioChannelLayout)
 initWithLayoutTagSelector = mkSelector "initWithLayoutTag:"
 
 -- | @Selector@ for @initWithLayout:@
-initWithLayoutSelector :: Selector
+initWithLayoutSelector :: Selector '[Const RawId] (Id AVAudioChannelLayout)
 initWithLayoutSelector = mkSelector "initWithLayout:"
 
 -- | @Selector@ for @isEqual:@
-isEqualSelector :: Selector
+isEqualSelector :: Selector '[RawId] Bool
 isEqualSelector = mkSelector "isEqual:"
 
 -- | @Selector@ for @layoutWithLayoutTag:@
-layoutWithLayoutTagSelector :: Selector
+layoutWithLayoutTagSelector :: Selector '[CUInt] (Id AVAudioChannelLayout)
 layoutWithLayoutTagSelector = mkSelector "layoutWithLayoutTag:"
 
 -- | @Selector@ for @layoutWithLayout:@
-layoutWithLayoutSelector :: Selector
+layoutWithLayoutSelector :: Selector '[Const RawId] (Id AVAudioChannelLayout)
 layoutWithLayoutSelector = mkSelector "layoutWithLayout:"
 
 -- | @Selector@ for @layoutTag@
-layoutTagSelector :: Selector
+layoutTagSelector :: Selector '[] CUInt
 layoutTagSelector = mkSelector "layoutTag"
 
 -- | @Selector@ for @layout@
-layoutSelector :: Selector
+layoutSelector :: Selector '[] (Const RawId)
 layoutSelector = mkSelector "layout"
 
 -- | @Selector@ for @channelCount@
-channelCountSelector :: Selector
+channelCountSelector :: Selector '[] CUInt
 channelCountSelector = mkSelector "channelCount"
 

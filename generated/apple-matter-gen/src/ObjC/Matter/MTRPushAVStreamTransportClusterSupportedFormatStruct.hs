@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterSupportedFormatStruct
   , ingestMethod
   , setIngestMethod
   , containerFormatSelector
-  , setContainerFormatSelector
   , ingestMethodSelector
+  , setContainerFormatSelector
   , setIngestMethodSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- containerFormat@
 containerFormat :: IsMTRPushAVStreamTransportClusterSupportedFormatStruct mtrPushAVStreamTransportClusterSupportedFormatStruct => mtrPushAVStreamTransportClusterSupportedFormatStruct -> IO (Id NSNumber)
-containerFormat mtrPushAVStreamTransportClusterSupportedFormatStruct  =
-    sendMsg mtrPushAVStreamTransportClusterSupportedFormatStruct (mkSelector "containerFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerFormat mtrPushAVStreamTransportClusterSupportedFormatStruct =
+  sendMessage mtrPushAVStreamTransportClusterSupportedFormatStruct containerFormatSelector
 
 -- | @- setContainerFormat:@
 setContainerFormat :: (IsMTRPushAVStreamTransportClusterSupportedFormatStruct mtrPushAVStreamTransportClusterSupportedFormatStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterSupportedFormatStruct -> value -> IO ()
-setContainerFormat mtrPushAVStreamTransportClusterSupportedFormatStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterSupportedFormatStruct (mkSelector "setContainerFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContainerFormat mtrPushAVStreamTransportClusterSupportedFormatStruct value =
+  sendMessage mtrPushAVStreamTransportClusterSupportedFormatStruct setContainerFormatSelector (toNSNumber value)
 
 -- | @- ingestMethod@
 ingestMethod :: IsMTRPushAVStreamTransportClusterSupportedFormatStruct mtrPushAVStreamTransportClusterSupportedFormatStruct => mtrPushAVStreamTransportClusterSupportedFormatStruct -> IO (Id NSNumber)
-ingestMethod mtrPushAVStreamTransportClusterSupportedFormatStruct  =
-    sendMsg mtrPushAVStreamTransportClusterSupportedFormatStruct (mkSelector "ingestMethod") (retPtr retVoid) [] >>= retainedObject . castPtr
+ingestMethod mtrPushAVStreamTransportClusterSupportedFormatStruct =
+  sendMessage mtrPushAVStreamTransportClusterSupportedFormatStruct ingestMethodSelector
 
 -- | @- setIngestMethod:@
 setIngestMethod :: (IsMTRPushAVStreamTransportClusterSupportedFormatStruct mtrPushAVStreamTransportClusterSupportedFormatStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterSupportedFormatStruct -> value -> IO ()
-setIngestMethod mtrPushAVStreamTransportClusterSupportedFormatStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterSupportedFormatStruct (mkSelector "setIngestMethod:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIngestMethod mtrPushAVStreamTransportClusterSupportedFormatStruct value =
+  sendMessage mtrPushAVStreamTransportClusterSupportedFormatStruct setIngestMethodSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @containerFormat@
-containerFormatSelector :: Selector
+containerFormatSelector :: Selector '[] (Id NSNumber)
 containerFormatSelector = mkSelector "containerFormat"
 
 -- | @Selector@ for @setContainerFormat:@
-setContainerFormatSelector :: Selector
+setContainerFormatSelector :: Selector '[Id NSNumber] ()
 setContainerFormatSelector = mkSelector "setContainerFormat:"
 
 -- | @Selector@ for @ingestMethod@
-ingestMethodSelector :: Selector
+ingestMethodSelector :: Selector '[] (Id NSNumber)
 ingestMethodSelector = mkSelector "ingestMethod"
 
 -- | @Selector@ for @setIngestMethod:@
-setIngestMethodSelector :: Selector
+setIngestMethodSelector :: Selector '[Id NSNumber] ()
 setIngestMethodSelector = mkSelector "setIngestMethod:"
 

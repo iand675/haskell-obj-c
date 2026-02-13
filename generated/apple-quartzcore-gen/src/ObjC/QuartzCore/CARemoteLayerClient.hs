@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.QuartzCore.CARemoteLayerClient
   , clientId
   , layer
   , setLayer
+  , clientIdSelector
   , initWithServerPortSelector
   , invalidateSelector
-  , clientIdSelector
   , layerSelector
   , setLayerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,51 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithServerPort:@
 initWithServerPort :: IsCARemoteLayerClient caRemoteLayerClient => caRemoteLayerClient -> CUInt -> IO (Id CARemoteLayerClient)
-initWithServerPort caRemoteLayerClient  port =
-    sendMsg caRemoteLayerClient (mkSelector "initWithServerPort:") (retPtr retVoid) [argCUInt port] >>= ownedObject . castPtr
+initWithServerPort caRemoteLayerClient port =
+  sendOwnedMessage caRemoteLayerClient initWithServerPortSelector port
 
 -- | @- invalidate@
 invalidate :: IsCARemoteLayerClient caRemoteLayerClient => caRemoteLayerClient -> IO ()
-invalidate caRemoteLayerClient  =
-    sendMsg caRemoteLayerClient (mkSelector "invalidate") retVoid []
+invalidate caRemoteLayerClient =
+  sendMessage caRemoteLayerClient invalidateSelector
 
 -- | @- clientId@
 clientId :: IsCARemoteLayerClient caRemoteLayerClient => caRemoteLayerClient -> IO CUInt
-clientId caRemoteLayerClient  =
-    sendMsg caRemoteLayerClient (mkSelector "clientId") retCUInt []
+clientId caRemoteLayerClient =
+  sendMessage caRemoteLayerClient clientIdSelector
 
 -- | @- layer@
 layer :: IsCARemoteLayerClient caRemoteLayerClient => caRemoteLayerClient -> IO (Id CALayer)
-layer caRemoteLayerClient  =
-    sendMsg caRemoteLayerClient (mkSelector "layer") (retPtr retVoid) [] >>= retainedObject . castPtr
+layer caRemoteLayerClient =
+  sendMessage caRemoteLayerClient layerSelector
 
 -- | @- setLayer:@
 setLayer :: (IsCARemoteLayerClient caRemoteLayerClient, IsCALayer value) => caRemoteLayerClient -> value -> IO ()
-setLayer caRemoteLayerClient  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caRemoteLayerClient (mkSelector "setLayer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLayer caRemoteLayerClient value =
+  sendMessage caRemoteLayerClient setLayerSelector (toCALayer value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithServerPort:@
-initWithServerPortSelector :: Selector
+initWithServerPortSelector :: Selector '[CUInt] (Id CARemoteLayerClient)
 initWithServerPortSelector = mkSelector "initWithServerPort:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @clientId@
-clientIdSelector :: Selector
+clientIdSelector :: Selector '[] CUInt
 clientIdSelector = mkSelector "clientId"
 
 -- | @Selector@ for @layer@
-layerSelector :: Selector
+layerSelector :: Selector '[] (Id CALayer)
 layerSelector = mkSelector "layer"
 
 -- | @Selector@ for @setLayer:@
-setLayerSelector :: Selector
+setLayerSelector :: Selector '[Id CALayer] ()
 setLayerSelector = mkSelector "setLayer:"
 

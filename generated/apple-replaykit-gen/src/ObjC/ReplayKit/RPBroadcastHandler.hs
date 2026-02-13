@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.ReplayKit.RPBroadcastHandler
   , IsRPBroadcastHandler(..)
   , updateServiceInfo
   , updateBroadcastURL
-  , updateServiceInfoSelector
   , updateBroadcastURLSelector
+  , updateServiceInfoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,9 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- updateServiceInfo:@
 updateServiceInfo :: (IsRPBroadcastHandler rpBroadcastHandler, IsNSDictionary serviceInfo) => rpBroadcastHandler -> serviceInfo -> IO ()
-updateServiceInfo rpBroadcastHandler  serviceInfo =
-  withObjCPtr serviceInfo $ \raw_serviceInfo ->
-      sendMsg rpBroadcastHandler (mkSelector "updateServiceInfo:") retVoid [argPtr (castPtr raw_serviceInfo :: Ptr ())]
+updateServiceInfo rpBroadcastHandler serviceInfo =
+  sendMessage rpBroadcastHandler updateServiceInfoSelector (toNSDictionary serviceInfo)
 
 -- | Call this method, supplying it with a URL to update the broadcastURL property on RPBroadcastController.
 --
@@ -49,19 +45,18 @@ updateServiceInfo rpBroadcastHandler  serviceInfo =
 --
 -- ObjC selector: @- updateBroadcastURL:@
 updateBroadcastURL :: (IsRPBroadcastHandler rpBroadcastHandler, IsNSURL broadcastURL) => rpBroadcastHandler -> broadcastURL -> IO ()
-updateBroadcastURL rpBroadcastHandler  broadcastURL =
-  withObjCPtr broadcastURL $ \raw_broadcastURL ->
-      sendMsg rpBroadcastHandler (mkSelector "updateBroadcastURL:") retVoid [argPtr (castPtr raw_broadcastURL :: Ptr ())]
+updateBroadcastURL rpBroadcastHandler broadcastURL =
+  sendMessage rpBroadcastHandler updateBroadcastURLSelector (toNSURL broadcastURL)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateServiceInfo:@
-updateServiceInfoSelector :: Selector
+updateServiceInfoSelector :: Selector '[Id NSDictionary] ()
 updateServiceInfoSelector = mkSelector "updateServiceInfo:"
 
 -- | @Selector@ for @updateBroadcastURL:@
-updateBroadcastURLSelector :: Selector
+updateBroadcastURLSelector :: Selector '[Id NSURL] ()
 updateBroadcastURLSelector = mkSelector "updateBroadcastURL:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,14 +18,14 @@ module ObjC.PencilKit.PKDrawing
   , drawingByAppendingStrokes
   , strokes
   , requiredContentVersion
-  , initSelector
-  , initWithStrokesSelector
-  , initWithData_errorSelector
   , dataRepresentationSelector
   , drawingByAppendingDrawingSelector
   , drawingByAppendingStrokesSelector
-  , strokesSelector
+  , initSelector
+  , initWithData_errorSelector
+  , initWithStrokesSelector
   , requiredContentVersionSelector
+  , strokesSelector
 
   -- * Enum types
   , PKContentVersion(PKContentVersion)
@@ -36,15 +37,11 @@ module ObjC.PencilKit.PKDrawing
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,16 +54,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsPKDrawing pkDrawing => pkDrawing -> IO (Id PKDrawing)
-init_ pkDrawing  =
-    sendMsg pkDrawing (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkDrawing =
+  sendOwnedMessage pkDrawing initSelector
 
 -- | Initializes a drawing with an array of strokes.
 --
 -- ObjC selector: @- initWithStrokes:@
 initWithStrokes :: (IsPKDrawing pkDrawing, IsNSArray strokes) => pkDrawing -> strokes -> IO (Id PKDrawing)
-initWithStrokes pkDrawing  strokes =
-  withObjCPtr strokes $ \raw_strokes ->
-      sendMsg pkDrawing (mkSelector "initWithStrokes:") (retPtr retVoid) [argPtr (castPtr raw_strokes :: Ptr ())] >>= ownedObject . castPtr
+initWithStrokes pkDrawing strokes =
+  sendOwnedMessage pkDrawing initWithStrokesSelector (toNSArray strokes)
 
 -- | Initializes and returns the drawing with the specified data.
 --
@@ -78,10 +74,8 @@ initWithStrokes pkDrawing  strokes =
 --
 -- ObjC selector: @- initWithData:error:@
 initWithData_error :: (IsPKDrawing pkDrawing, IsNSData data_, IsNSError error_) => pkDrawing -> data_ -> error_ -> IO (Id PKDrawing)
-initWithData_error pkDrawing  data_ error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg pkDrawing (mkSelector "initWithData:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData_error pkDrawing data_ error_ =
+  sendOwnedMessage pkDrawing initWithData_errorSelector (toNSData data_) (toNSError error_)
 
 -- | Generate a data representation of the drawing.
 --
@@ -89,8 +83,8 @@ initWithData_error pkDrawing  data_ error_ =
 --
 -- ObjC selector: @- dataRepresentation@
 dataRepresentation :: IsPKDrawing pkDrawing => pkDrawing -> IO (Id NSData)
-dataRepresentation pkDrawing  =
-    sendMsg pkDrawing (mkSelector "dataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataRepresentation pkDrawing =
+  sendMessage pkDrawing dataRepresentationSelector
 
 -- | Returns a new drawing by appending the contents of @drawing@ on top of the receiver’s contents.
 --
@@ -100,9 +94,8 @@ dataRepresentation pkDrawing  =
 --
 -- ObjC selector: @- drawingByAppendingDrawing:@
 drawingByAppendingDrawing :: (IsPKDrawing pkDrawing, IsPKDrawing drawing) => pkDrawing -> drawing -> IO (Id PKDrawing)
-drawingByAppendingDrawing pkDrawing  drawing =
-  withObjCPtr drawing $ \raw_drawing ->
-      sendMsg pkDrawing (mkSelector "drawingByAppendingDrawing:") (retPtr retVoid) [argPtr (castPtr raw_drawing :: Ptr ())] >>= retainedObject . castPtr
+drawingByAppendingDrawing pkDrawing drawing =
+  sendMessage pkDrawing drawingByAppendingDrawingSelector (toPKDrawing drawing)
 
 -- | Create a new drawing by appending an array of strokes to this drawing. This is a convenience method, to quickly add strokes to a drawing.
 --
@@ -112,57 +105,56 @@ drawingByAppendingDrawing pkDrawing  drawing =
 --
 -- ObjC selector: @- drawingByAppendingStrokes:@
 drawingByAppendingStrokes :: (IsPKDrawing pkDrawing, IsNSArray strokes) => pkDrawing -> strokes -> IO (Id PKDrawing)
-drawingByAppendingStrokes pkDrawing  strokes =
-  withObjCPtr strokes $ \raw_strokes ->
-      sendMsg pkDrawing (mkSelector "drawingByAppendingStrokes:") (retPtr retVoid) [argPtr (castPtr raw_strokes :: Ptr ())] >>= retainedObject . castPtr
+drawingByAppendingStrokes pkDrawing strokes =
+  sendMessage pkDrawing drawingByAppendingStrokesSelector (toNSArray strokes)
 
 -- | The strokes that this drawing contains.
 --
 -- ObjC selector: @- strokes@
 strokes :: IsPKDrawing pkDrawing => pkDrawing -> IO (Id NSArray)
-strokes pkDrawing  =
-    sendMsg pkDrawing (mkSelector "strokes") (retPtr retVoid) [] >>= retainedObject . castPtr
+strokes pkDrawing =
+  sendMessage pkDrawing strokesSelector
 
 -- | The PencilKit version required to use this drawing.
 --
 -- ObjC selector: @- requiredContentVersion@
 requiredContentVersion :: IsPKDrawing pkDrawing => pkDrawing -> IO PKContentVersion
-requiredContentVersion pkDrawing  =
-    fmap (coerce :: CLong -> PKContentVersion) $ sendMsg pkDrawing (mkSelector "requiredContentVersion") retCLong []
+requiredContentVersion pkDrawing =
+  sendMessage pkDrawing requiredContentVersionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKDrawing)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithStrokes:@
-initWithStrokesSelector :: Selector
+initWithStrokesSelector :: Selector '[Id NSArray] (Id PKDrawing)
 initWithStrokesSelector = mkSelector "initWithStrokes:"
 
 -- | @Selector@ for @initWithData:error:@
-initWithData_errorSelector :: Selector
+initWithData_errorSelector :: Selector '[Id NSData, Id NSError] (Id PKDrawing)
 initWithData_errorSelector = mkSelector "initWithData:error:"
 
 -- | @Selector@ for @dataRepresentation@
-dataRepresentationSelector :: Selector
+dataRepresentationSelector :: Selector '[] (Id NSData)
 dataRepresentationSelector = mkSelector "dataRepresentation"
 
 -- | @Selector@ for @drawingByAppendingDrawing:@
-drawingByAppendingDrawingSelector :: Selector
+drawingByAppendingDrawingSelector :: Selector '[Id PKDrawing] (Id PKDrawing)
 drawingByAppendingDrawingSelector = mkSelector "drawingByAppendingDrawing:"
 
 -- | @Selector@ for @drawingByAppendingStrokes:@
-drawingByAppendingStrokesSelector :: Selector
+drawingByAppendingStrokesSelector :: Selector '[Id NSArray] (Id PKDrawing)
 drawingByAppendingStrokesSelector = mkSelector "drawingByAppendingStrokes:"
 
 -- | @Selector@ for @strokes@
-strokesSelector :: Selector
+strokesSelector :: Selector '[] (Id NSArray)
 strokesSelector = mkSelector "strokes"
 
 -- | @Selector@ for @requiredContentVersion@
-requiredContentVersionSelector :: Selector
+requiredContentVersionSelector :: Selector '[] PKContentVersion
 requiredContentVersionSelector = mkSelector "requiredContentVersion"
 

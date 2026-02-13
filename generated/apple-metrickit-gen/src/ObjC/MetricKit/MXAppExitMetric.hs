@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.MetricKit.MXAppExitMetric
   , IsMXAppExitMetric(..)
   , foregroundExitData
   , backgroundExitData
-  , foregroundExitDataSelector
   , backgroundExitDataSelector
+  , foregroundExitDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- foregroundExitData@
 foregroundExitData :: IsMXAppExitMetric mxAppExitMetric => mxAppExitMetric -> IO (Id MXForegroundExitData)
-foregroundExitData mxAppExitMetric  =
-    sendMsg mxAppExitMetric (mkSelector "foregroundExitData") (retPtr retVoid) [] >>= retainedObject . castPtr
+foregroundExitData mxAppExitMetric =
+  sendMessage mxAppExitMetric foregroundExitDataSelector
 
 -- | backgroundExitData
 --
@@ -56,18 +53,18 @@ foregroundExitData mxAppExitMetric  =
 --
 -- ObjC selector: @- backgroundExitData@
 backgroundExitData :: IsMXAppExitMetric mxAppExitMetric => mxAppExitMetric -> IO (Id MXBackgroundExitData)
-backgroundExitData mxAppExitMetric  =
-    sendMsg mxAppExitMetric (mkSelector "backgroundExitData") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundExitData mxAppExitMetric =
+  sendMessage mxAppExitMetric backgroundExitDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @foregroundExitData@
-foregroundExitDataSelector :: Selector
+foregroundExitDataSelector :: Selector '[] (Id MXForegroundExitData)
 foregroundExitDataSelector = mkSelector "foregroundExitData"
 
 -- | @Selector@ for @backgroundExitData@
-backgroundExitDataSelector :: Selector
+backgroundExitDataSelector :: Selector '[] (Id MXBackgroundExitData)
 backgroundExitDataSelector = mkSelector "backgroundExitData"
 

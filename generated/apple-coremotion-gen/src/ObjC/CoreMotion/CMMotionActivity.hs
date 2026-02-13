@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.CoreMotion.CMMotionActivity
   , running
   , automotive
   , cycling
-  , confidenceSelector
-  , startDateSelector
-  , unknownSelector
-  , stationarySelector
-  , walkingSelector
-  , runningSelector
   , automotiveSelector
+  , confidenceSelector
   , cyclingSelector
+  , runningSelector
+  , startDateSelector
+  , stationarySelector
+  , unknownSelector
+  , walkingSelector
 
   -- * Enum types
   , CMMotionActivityConfidence(CMMotionActivityConfidence)
@@ -32,15 +33,11 @@ module ObjC.CoreMotion.CMMotionActivity
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,77 +47,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- confidence@
 confidence :: IsCMMotionActivity cmMotionActivity => cmMotionActivity -> IO CMMotionActivityConfidence
-confidence cmMotionActivity  =
-    fmap (coerce :: CLong -> CMMotionActivityConfidence) $ sendMsg cmMotionActivity (mkSelector "confidence") retCLong []
+confidence cmMotionActivity =
+  sendMessage cmMotionActivity confidenceSelector
 
 -- | @- startDate@
 startDate :: IsCMMotionActivity cmMotionActivity => cmMotionActivity -> IO (Id NSDate)
-startDate cmMotionActivity  =
-    sendMsg cmMotionActivity (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate cmMotionActivity =
+  sendMessage cmMotionActivity startDateSelector
 
 -- | @- unknown@
 unknown :: IsCMMotionActivity cmMotionActivity => cmMotionActivity -> IO Bool
-unknown cmMotionActivity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionActivity (mkSelector "unknown") retCULong []
+unknown cmMotionActivity =
+  sendMessage cmMotionActivity unknownSelector
 
 -- | @- stationary@
 stationary :: IsCMMotionActivity cmMotionActivity => cmMotionActivity -> IO Bool
-stationary cmMotionActivity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionActivity (mkSelector "stationary") retCULong []
+stationary cmMotionActivity =
+  sendMessage cmMotionActivity stationarySelector
 
 -- | @- walking@
 walking :: IsCMMotionActivity cmMotionActivity => cmMotionActivity -> IO Bool
-walking cmMotionActivity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionActivity (mkSelector "walking") retCULong []
+walking cmMotionActivity =
+  sendMessage cmMotionActivity walkingSelector
 
 -- | @- running@
 running :: IsCMMotionActivity cmMotionActivity => cmMotionActivity -> IO Bool
-running cmMotionActivity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionActivity (mkSelector "running") retCULong []
+running cmMotionActivity =
+  sendMessage cmMotionActivity runningSelector
 
 -- | @- automotive@
 automotive :: IsCMMotionActivity cmMotionActivity => cmMotionActivity -> IO Bool
-automotive cmMotionActivity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionActivity (mkSelector "automotive") retCULong []
+automotive cmMotionActivity =
+  sendMessage cmMotionActivity automotiveSelector
 
 -- | @- cycling@
 cycling :: IsCMMotionActivity cmMotionActivity => cmMotionActivity -> IO Bool
-cycling cmMotionActivity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmMotionActivity (mkSelector "cycling") retCULong []
+cycling cmMotionActivity =
+  sendMessage cmMotionActivity cyclingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @confidence@
-confidenceSelector :: Selector
+confidenceSelector :: Selector '[] CMMotionActivityConfidence
 confidenceSelector = mkSelector "confidence"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @unknown@
-unknownSelector :: Selector
+unknownSelector :: Selector '[] Bool
 unknownSelector = mkSelector "unknown"
 
 -- | @Selector@ for @stationary@
-stationarySelector :: Selector
+stationarySelector :: Selector '[] Bool
 stationarySelector = mkSelector "stationary"
 
 -- | @Selector@ for @walking@
-walkingSelector :: Selector
+walkingSelector :: Selector '[] Bool
 walkingSelector = mkSelector "walking"
 
 -- | @Selector@ for @running@
-runningSelector :: Selector
+runningSelector :: Selector '[] Bool
 runningSelector = mkSelector "running"
 
 -- | @Selector@ for @automotive@
-automotiveSelector :: Selector
+automotiveSelector :: Selector '[] Bool
 automotiveSelector = mkSelector "automotive"
 
 -- | @Selector@ for @cycling@
-cyclingSelector :: Selector
+cyclingSelector :: Selector '[] Bool
 cyclingSelector = mkSelector "cycling"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.Intents.INSendPaymentIntentResponse
   , code
   , paymentRecord
   , setPaymentRecord
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
   , paymentRecordSelector
   , setPaymentRecordSelector
 
@@ -37,15 +38,11 @@ module ObjC.Intents.INSendPaymentIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,52 +52,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSendPaymentIntentResponse inSendPaymentIntentResponse => inSendPaymentIntentResponse -> IO RawId
-init_ inSendPaymentIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inSendPaymentIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inSendPaymentIntentResponse =
+  sendOwnedMessage inSendPaymentIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINSendPaymentIntentResponse inSendPaymentIntentResponse, IsNSUserActivity userActivity) => inSendPaymentIntentResponse -> INSendPaymentIntentResponseCode -> userActivity -> IO (Id INSendPaymentIntentResponse)
-initWithCode_userActivity inSendPaymentIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inSendPaymentIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inSendPaymentIntentResponse code userActivity =
+  sendOwnedMessage inSendPaymentIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINSendPaymentIntentResponse inSendPaymentIntentResponse => inSendPaymentIntentResponse -> IO INSendPaymentIntentResponseCode
-code inSendPaymentIntentResponse  =
-    fmap (coerce :: CLong -> INSendPaymentIntentResponseCode) $ sendMsg inSendPaymentIntentResponse (mkSelector "code") retCLong []
+code inSendPaymentIntentResponse =
+  sendMessage inSendPaymentIntentResponse codeSelector
 
 -- | @- paymentRecord@
 paymentRecord :: IsINSendPaymentIntentResponse inSendPaymentIntentResponse => inSendPaymentIntentResponse -> IO (Id INPaymentRecord)
-paymentRecord inSendPaymentIntentResponse  =
-    sendMsg inSendPaymentIntentResponse (mkSelector "paymentRecord") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentRecord inSendPaymentIntentResponse =
+  sendMessage inSendPaymentIntentResponse paymentRecordSelector
 
 -- | @- setPaymentRecord:@
 setPaymentRecord :: (IsINSendPaymentIntentResponse inSendPaymentIntentResponse, IsINPaymentRecord value) => inSendPaymentIntentResponse -> value -> IO ()
-setPaymentRecord inSendPaymentIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSendPaymentIntentResponse (mkSelector "setPaymentRecord:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaymentRecord inSendPaymentIntentResponse value =
+  sendMessage inSendPaymentIntentResponse setPaymentRecordSelector (toINPaymentRecord value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INSendPaymentIntentResponseCode, Id NSUserActivity] (Id INSendPaymentIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INSendPaymentIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @paymentRecord@
-paymentRecordSelector :: Selector
+paymentRecordSelector :: Selector '[] (Id INPaymentRecord)
 paymentRecordSelector = mkSelector "paymentRecord"
 
 -- | @Selector@ for @setPaymentRecord:@
-setPaymentRecordSelector :: Selector
+setPaymentRecordSelector :: Selector '[Id INPaymentRecord] ()
 setPaymentRecordSelector = mkSelector "setPaymentRecord:"
 

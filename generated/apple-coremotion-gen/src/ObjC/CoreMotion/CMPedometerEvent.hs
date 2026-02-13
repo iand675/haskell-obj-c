@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,15 +20,11 @@ module ObjC.CoreMotion.CMPedometerEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,23 +34,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- date@
 date :: IsCMPedometerEvent cmPedometerEvent => cmPedometerEvent -> IO (Id NSDate)
-date cmPedometerEvent  =
-    sendMsg cmPedometerEvent (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date cmPedometerEvent =
+  sendMessage cmPedometerEvent dateSelector
 
 -- | @- type@
 type_ :: IsCMPedometerEvent cmPedometerEvent => cmPedometerEvent -> IO CMPedometerEventType
-type_ cmPedometerEvent  =
-    fmap (coerce :: CLong -> CMPedometerEventType) $ sendMsg cmPedometerEvent (mkSelector "type") retCLong []
+type_ cmPedometerEvent =
+  sendMessage cmPedometerEvent typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CMPedometerEventType
 typeSelector = mkSelector "type"
 

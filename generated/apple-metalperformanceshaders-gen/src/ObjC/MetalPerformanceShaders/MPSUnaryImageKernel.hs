@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,12 +21,12 @@ module ObjC.MetalPerformanceShaders.MPSUnaryImageKernel
   , encodeToCommandBuffer_sourceImage_destinationImage
   , edgeMode
   , setEdgeMode
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocatorSelector
-  , encodeToCommandBuffer_sourceTexture_destinationTextureSelector
-  , encodeToCommandBuffer_sourceImage_destinationImageSelector
   , edgeModeSelector
+  , encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocatorSelector
+  , encodeToCommandBuffer_sourceImage_destinationImageSelector
+  , encodeToCommandBuffer_sourceTexture_destinationTextureSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , setEdgeModeSelector
 
   -- * Enum types
@@ -38,15 +39,11 @@ module ObjC.MetalPerformanceShaders.MPSUnaryImageKernel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSUnaryImageKernel mpsUnaryImageKernel => mpsUnaryImageKernel -> RawId -> IO (Id MPSUnaryImageKernel)
-initWithDevice mpsUnaryImageKernel  device =
-    sendMsg mpsUnaryImageKernel (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsUnaryImageKernel device =
+  sendOwnedMessage mpsUnaryImageKernel initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -78,9 +75,8 @@ initWithDevice mpsUnaryImageKernel  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSUnaryImageKernel mpsUnaryImageKernel, IsNSCoder aDecoder) => mpsUnaryImageKernel -> aDecoder -> RawId -> IO (Id MPSUnaryImageKernel)
-initWithCoder_device mpsUnaryImageKernel  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsUnaryImageKernel (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsUnaryImageKernel aDecoder device =
+  sendOwnedMessage mpsUnaryImageKernel initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | This method attempts to apply the MPSKernel in place on a texture.
 --
@@ -140,8 +136,8 @@ initWithCoder_device mpsUnaryImageKernel  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:inPlaceTexture:fallbackCopyAllocator:@
 encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocator :: IsMPSUnaryImageKernel mpsUnaryImageKernel => mpsUnaryImageKernel -> RawId -> RawId -> Ptr () -> IO Bool
-encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocator mpsUnaryImageKernel  commandBuffer texture copyAllocator =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsUnaryImageKernel (mkSelector "encodeToCommandBuffer:inPlaceTexture:fallbackCopyAllocator:") retCULong [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId texture) :: Ptr ()), argPtr (castPtr copyAllocator :: Ptr ())]
+encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocator mpsUnaryImageKernel commandBuffer texture copyAllocator =
+  sendMessage mpsUnaryImageKernel encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocatorSelector commandBuffer texture copyAllocator
 
 -- | Encode a MPSKernel into a command Buffer.  The operation shall proceed out-of-place.
 --
@@ -153,8 +149,8 @@ encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocator mpsUnaryImageKernel  
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceTexture:destinationTexture:@
 encodeToCommandBuffer_sourceTexture_destinationTexture :: IsMPSUnaryImageKernel mpsUnaryImageKernel => mpsUnaryImageKernel -> RawId -> RawId -> RawId -> IO ()
-encodeToCommandBuffer_sourceTexture_destinationTexture mpsUnaryImageKernel  commandBuffer sourceTexture destinationTexture =
-    sendMsg mpsUnaryImageKernel (mkSelector "encodeToCommandBuffer:sourceTexture:destinationTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ())]
+encodeToCommandBuffer_sourceTexture_destinationTexture mpsUnaryImageKernel commandBuffer sourceTexture destinationTexture =
+  sendMessage mpsUnaryImageKernel encodeToCommandBuffer_sourceTexture_destinationTextureSelector commandBuffer sourceTexture destinationTexture
 
 -- | Encode a MPSKernel into a command Buffer.  The operation shall proceed out-of-place.
 --
@@ -166,10 +162,8 @@ encodeToCommandBuffer_sourceTexture_destinationTexture mpsUnaryImageKernel  comm
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceImage:destinationImage:@
 encodeToCommandBuffer_sourceImage_destinationImage :: (IsMPSUnaryImageKernel mpsUnaryImageKernel, IsMPSImage sourceImage, IsMPSImage destinationImage) => mpsUnaryImageKernel -> RawId -> sourceImage -> destinationImage -> IO ()
-encodeToCommandBuffer_sourceImage_destinationImage mpsUnaryImageKernel  commandBuffer sourceImage destinationImage =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-    withObjCPtr destinationImage $ \raw_destinationImage ->
-        sendMsg mpsUnaryImageKernel (mkSelector "encodeToCommandBuffer:sourceImage:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodeToCommandBuffer_sourceImage_destinationImage mpsUnaryImageKernel commandBuffer sourceImage destinationImage =
+  sendMessage mpsUnaryImageKernel encodeToCommandBuffer_sourceImage_destinationImageSelector commandBuffer (toMPSImage sourceImage) (toMPSImage destinationImage)
 
 -- | edgeMode
 --
@@ -181,8 +175,8 @@ encodeToCommandBuffer_sourceImage_destinationImage mpsUnaryImageKernel  commandB
 --
 -- ObjC selector: @- edgeMode@
 edgeMode :: IsMPSUnaryImageKernel mpsUnaryImageKernel => mpsUnaryImageKernel -> IO MPSImageEdgeMode
-edgeMode mpsUnaryImageKernel  =
-    fmap (coerce :: CULong -> MPSImageEdgeMode) $ sendMsg mpsUnaryImageKernel (mkSelector "edgeMode") retCULong []
+edgeMode mpsUnaryImageKernel =
+  sendMessage mpsUnaryImageKernel edgeModeSelector
 
 -- | edgeMode
 --
@@ -194,38 +188,38 @@ edgeMode mpsUnaryImageKernel  =
 --
 -- ObjC selector: @- setEdgeMode:@
 setEdgeMode :: IsMPSUnaryImageKernel mpsUnaryImageKernel => mpsUnaryImageKernel -> MPSImageEdgeMode -> IO ()
-setEdgeMode mpsUnaryImageKernel  value =
-    sendMsg mpsUnaryImageKernel (mkSelector "setEdgeMode:") retVoid [argCULong (coerce value)]
+setEdgeMode mpsUnaryImageKernel value =
+  sendMessage mpsUnaryImageKernel setEdgeModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSUnaryImageKernel)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSUnaryImageKernel)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inPlaceTexture:fallbackCopyAllocator:@
-encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocatorSelector :: Selector
+encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocatorSelector :: Selector '[RawId, RawId, Ptr ()] Bool
 encodeToCommandBuffer_inPlaceTexture_fallbackCopyAllocatorSelector = mkSelector "encodeToCommandBuffer:inPlaceTexture:fallbackCopyAllocator:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceTexture:destinationTexture:@
-encodeToCommandBuffer_sourceTexture_destinationTextureSelector :: Selector
+encodeToCommandBuffer_sourceTexture_destinationTextureSelector :: Selector '[RawId, RawId, RawId] ()
 encodeToCommandBuffer_sourceTexture_destinationTextureSelector = mkSelector "encodeToCommandBuffer:sourceTexture:destinationTexture:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:destinationImage:@
-encodeToCommandBuffer_sourceImage_destinationImageSelector :: Selector
+encodeToCommandBuffer_sourceImage_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id MPSImage] ()
 encodeToCommandBuffer_sourceImage_destinationImageSelector = mkSelector "encodeToCommandBuffer:sourceImage:destinationImage:"
 
 -- | @Selector@ for @edgeMode@
-edgeModeSelector :: Selector
+edgeModeSelector :: Selector '[] MPSImageEdgeMode
 edgeModeSelector = mkSelector "edgeMode"
 
 -- | @Selector@ for @setEdgeMode:@
-setEdgeModeSelector :: Selector
+setEdgeModeSelector :: Selector '[MPSImageEdgeMode] ()
 setEdgeModeSelector = mkSelector "setEdgeMode:"
 

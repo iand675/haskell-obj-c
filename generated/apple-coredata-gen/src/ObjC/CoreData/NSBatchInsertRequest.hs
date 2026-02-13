@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,20 +23,20 @@ module ObjC.CoreData.NSBatchInsertRequest
   , setManagedObjectHandler
   , resultType
   , setResultType
-  , batchInsertRequestWithEntityName_objectsSelector
   , batchInsertRequestWithEntityName_managedObjectHandlerSelector
-  , initSelector
-  , initWithEntityName_objectsSelector
-  , initWithEntity_objectsSelector
-  , initWithEntity_managedObjectHandlerSelector
-  , initWithEntityName_managedObjectHandlerSelector
+  , batchInsertRequestWithEntityName_objectsSelector
   , entityNameSelector
   , entitySelector
-  , objectsToInsertSelector
-  , setObjectsToInsertSelector
+  , initSelector
+  , initWithEntityName_managedObjectHandlerSelector
+  , initWithEntityName_objectsSelector
+  , initWithEntity_managedObjectHandlerSelector
+  , initWithEntity_objectsSelector
   , managedObjectHandlerSelector
-  , setManagedObjectHandlerSelector
+  , objectsToInsertSelector
   , resultTypeSelector
+  , setManagedObjectHandlerSelector
+  , setObjectsToInsertSelector
   , setResultTypeSelector
 
   -- * Enum types
@@ -46,15 +47,11 @@ module ObjC.CoreData.NSBatchInsertRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,151 +64,141 @@ batchInsertRequestWithEntityName_objects :: (IsNSString entityName, IsNSArray di
 batchInsertRequestWithEntityName_objects entityName dictionaries =
   do
     cls' <- getRequiredClass "NSBatchInsertRequest"
-    withObjCPtr entityName $ \raw_entityName ->
-      withObjCPtr dictionaries $ \raw_dictionaries ->
-        sendClassMsg cls' (mkSelector "batchInsertRequestWithEntityName:objects:") (retPtr retVoid) [argPtr (castPtr raw_entityName :: Ptr ()), argPtr (castPtr raw_dictionaries :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' batchInsertRequestWithEntityName_objectsSelector (toNSString entityName) (toNSArray dictionaries)
 
 -- | @+ batchInsertRequestWithEntityName:managedObjectHandler:@
 batchInsertRequestWithEntityName_managedObjectHandler :: IsNSString entityName => entityName -> Ptr () -> IO (Id NSBatchInsertRequest)
 batchInsertRequestWithEntityName_managedObjectHandler entityName handler =
   do
     cls' <- getRequiredClass "NSBatchInsertRequest"
-    withObjCPtr entityName $ \raw_entityName ->
-      sendClassMsg cls' (mkSelector "batchInsertRequestWithEntityName:managedObjectHandler:") (retPtr retVoid) [argPtr (castPtr raw_entityName :: Ptr ()), argPtr (castPtr handler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' batchInsertRequestWithEntityName_managedObjectHandlerSelector (toNSString entityName) handler
 
 -- | @- init@
 init_ :: IsNSBatchInsertRequest nsBatchInsertRequest => nsBatchInsertRequest -> IO (Id NSBatchInsertRequest)
-init_ nsBatchInsertRequest  =
-    sendMsg nsBatchInsertRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsBatchInsertRequest =
+  sendOwnedMessage nsBatchInsertRequest initSelector
 
 -- | @- initWithEntityName:objects:@
 initWithEntityName_objects :: (IsNSBatchInsertRequest nsBatchInsertRequest, IsNSString entityName, IsNSArray dictionaries) => nsBatchInsertRequest -> entityName -> dictionaries -> IO (Id NSBatchInsertRequest)
-initWithEntityName_objects nsBatchInsertRequest  entityName dictionaries =
-  withObjCPtr entityName $ \raw_entityName ->
-    withObjCPtr dictionaries $ \raw_dictionaries ->
-        sendMsg nsBatchInsertRequest (mkSelector "initWithEntityName:objects:") (retPtr retVoid) [argPtr (castPtr raw_entityName :: Ptr ()), argPtr (castPtr raw_dictionaries :: Ptr ())] >>= ownedObject . castPtr
+initWithEntityName_objects nsBatchInsertRequest entityName dictionaries =
+  sendOwnedMessage nsBatchInsertRequest initWithEntityName_objectsSelector (toNSString entityName) (toNSArray dictionaries)
 
 -- | @- initWithEntity:objects:@
 initWithEntity_objects :: (IsNSBatchInsertRequest nsBatchInsertRequest, IsNSEntityDescription entity, IsNSArray dictionaries) => nsBatchInsertRequest -> entity -> dictionaries -> IO (Id NSBatchInsertRequest)
-initWithEntity_objects nsBatchInsertRequest  entity dictionaries =
-  withObjCPtr entity $ \raw_entity ->
-    withObjCPtr dictionaries $ \raw_dictionaries ->
-        sendMsg nsBatchInsertRequest (mkSelector "initWithEntity:objects:") (retPtr retVoid) [argPtr (castPtr raw_entity :: Ptr ()), argPtr (castPtr raw_dictionaries :: Ptr ())] >>= ownedObject . castPtr
+initWithEntity_objects nsBatchInsertRequest entity dictionaries =
+  sendOwnedMessage nsBatchInsertRequest initWithEntity_objectsSelector (toNSEntityDescription entity) (toNSArray dictionaries)
 
 -- | @- initWithEntity:managedObjectHandler:@
 initWithEntity_managedObjectHandler :: (IsNSBatchInsertRequest nsBatchInsertRequest, IsNSEntityDescription entity) => nsBatchInsertRequest -> entity -> Ptr () -> IO (Id NSBatchInsertRequest)
-initWithEntity_managedObjectHandler nsBatchInsertRequest  entity handler =
-  withObjCPtr entity $ \raw_entity ->
-      sendMsg nsBatchInsertRequest (mkSelector "initWithEntity:managedObjectHandler:") (retPtr retVoid) [argPtr (castPtr raw_entity :: Ptr ()), argPtr (castPtr handler :: Ptr ())] >>= ownedObject . castPtr
+initWithEntity_managedObjectHandler nsBatchInsertRequest entity handler =
+  sendOwnedMessage nsBatchInsertRequest initWithEntity_managedObjectHandlerSelector (toNSEntityDescription entity) handler
 
 -- | @- initWithEntityName:managedObjectHandler:@
 initWithEntityName_managedObjectHandler :: (IsNSBatchInsertRequest nsBatchInsertRequest, IsNSString entityName) => nsBatchInsertRequest -> entityName -> Ptr () -> IO (Id NSBatchInsertRequest)
-initWithEntityName_managedObjectHandler nsBatchInsertRequest  entityName handler =
-  withObjCPtr entityName $ \raw_entityName ->
-      sendMsg nsBatchInsertRequest (mkSelector "initWithEntityName:managedObjectHandler:") (retPtr retVoid) [argPtr (castPtr raw_entityName :: Ptr ()), argPtr (castPtr handler :: Ptr ())] >>= ownedObject . castPtr
+initWithEntityName_managedObjectHandler nsBatchInsertRequest entityName handler =
+  sendOwnedMessage nsBatchInsertRequest initWithEntityName_managedObjectHandlerSelector (toNSString entityName) handler
 
 -- | @- entityName@
 entityName :: IsNSBatchInsertRequest nsBatchInsertRequest => nsBatchInsertRequest -> IO (Id NSString)
-entityName nsBatchInsertRequest  =
-    sendMsg nsBatchInsertRequest (mkSelector "entityName") (retPtr retVoid) [] >>= retainedObject . castPtr
+entityName nsBatchInsertRequest =
+  sendMessage nsBatchInsertRequest entityNameSelector
 
 -- | @- entity@
 entity :: IsNSBatchInsertRequest nsBatchInsertRequest => nsBatchInsertRequest -> IO (Id NSEntityDescription)
-entity nsBatchInsertRequest  =
-    sendMsg nsBatchInsertRequest (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+entity nsBatchInsertRequest =
+  sendMessage nsBatchInsertRequest entitySelector
 
 -- | @- objectsToInsert@
 objectsToInsert :: IsNSBatchInsertRequest nsBatchInsertRequest => nsBatchInsertRequest -> IO (Id NSArray)
-objectsToInsert nsBatchInsertRequest  =
-    sendMsg nsBatchInsertRequest (mkSelector "objectsToInsert") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectsToInsert nsBatchInsertRequest =
+  sendMessage nsBatchInsertRequest objectsToInsertSelector
 
 -- | @- setObjectsToInsert:@
 setObjectsToInsert :: (IsNSBatchInsertRequest nsBatchInsertRequest, IsNSArray value) => nsBatchInsertRequest -> value -> IO ()
-setObjectsToInsert nsBatchInsertRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBatchInsertRequest (mkSelector "setObjectsToInsert:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setObjectsToInsert nsBatchInsertRequest value =
+  sendMessage nsBatchInsertRequest setObjectsToInsertSelector (toNSArray value)
 
 -- | @- managedObjectHandler@
 managedObjectHandler :: IsNSBatchInsertRequest nsBatchInsertRequest => nsBatchInsertRequest -> IO (Ptr ())
-managedObjectHandler nsBatchInsertRequest  =
-    fmap castPtr $ sendMsg nsBatchInsertRequest (mkSelector "managedObjectHandler") (retPtr retVoid) []
+managedObjectHandler nsBatchInsertRequest =
+  sendMessage nsBatchInsertRequest managedObjectHandlerSelector
 
 -- | @- setManagedObjectHandler:@
 setManagedObjectHandler :: IsNSBatchInsertRequest nsBatchInsertRequest => nsBatchInsertRequest -> Ptr () -> IO ()
-setManagedObjectHandler nsBatchInsertRequest  value =
-    sendMsg nsBatchInsertRequest (mkSelector "setManagedObjectHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setManagedObjectHandler nsBatchInsertRequest value =
+  sendMessage nsBatchInsertRequest setManagedObjectHandlerSelector value
 
 -- | @- resultType@
 resultType :: IsNSBatchInsertRequest nsBatchInsertRequest => nsBatchInsertRequest -> IO NSBatchInsertRequestResultType
-resultType nsBatchInsertRequest  =
-    fmap (coerce :: CULong -> NSBatchInsertRequestResultType) $ sendMsg nsBatchInsertRequest (mkSelector "resultType") retCULong []
+resultType nsBatchInsertRequest =
+  sendMessage nsBatchInsertRequest resultTypeSelector
 
 -- | @- setResultType:@
 setResultType :: IsNSBatchInsertRequest nsBatchInsertRequest => nsBatchInsertRequest -> NSBatchInsertRequestResultType -> IO ()
-setResultType nsBatchInsertRequest  value =
-    sendMsg nsBatchInsertRequest (mkSelector "setResultType:") retVoid [argCULong (coerce value)]
+setResultType nsBatchInsertRequest value =
+  sendMessage nsBatchInsertRequest setResultTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @batchInsertRequestWithEntityName:objects:@
-batchInsertRequestWithEntityName_objectsSelector :: Selector
+batchInsertRequestWithEntityName_objectsSelector :: Selector '[Id NSString, Id NSArray] (Id NSBatchInsertRequest)
 batchInsertRequestWithEntityName_objectsSelector = mkSelector "batchInsertRequestWithEntityName:objects:"
 
 -- | @Selector@ for @batchInsertRequestWithEntityName:managedObjectHandler:@
-batchInsertRequestWithEntityName_managedObjectHandlerSelector :: Selector
+batchInsertRequestWithEntityName_managedObjectHandlerSelector :: Selector '[Id NSString, Ptr ()] (Id NSBatchInsertRequest)
 batchInsertRequestWithEntityName_managedObjectHandlerSelector = mkSelector "batchInsertRequestWithEntityName:managedObjectHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSBatchInsertRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithEntityName:objects:@
-initWithEntityName_objectsSelector :: Selector
+initWithEntityName_objectsSelector :: Selector '[Id NSString, Id NSArray] (Id NSBatchInsertRequest)
 initWithEntityName_objectsSelector = mkSelector "initWithEntityName:objects:"
 
 -- | @Selector@ for @initWithEntity:objects:@
-initWithEntity_objectsSelector :: Selector
+initWithEntity_objectsSelector :: Selector '[Id NSEntityDescription, Id NSArray] (Id NSBatchInsertRequest)
 initWithEntity_objectsSelector = mkSelector "initWithEntity:objects:"
 
 -- | @Selector@ for @initWithEntity:managedObjectHandler:@
-initWithEntity_managedObjectHandlerSelector :: Selector
+initWithEntity_managedObjectHandlerSelector :: Selector '[Id NSEntityDescription, Ptr ()] (Id NSBatchInsertRequest)
 initWithEntity_managedObjectHandlerSelector = mkSelector "initWithEntity:managedObjectHandler:"
 
 -- | @Selector@ for @initWithEntityName:managedObjectHandler:@
-initWithEntityName_managedObjectHandlerSelector :: Selector
+initWithEntityName_managedObjectHandlerSelector :: Selector '[Id NSString, Ptr ()] (Id NSBatchInsertRequest)
 initWithEntityName_managedObjectHandlerSelector = mkSelector "initWithEntityName:managedObjectHandler:"
 
 -- | @Selector@ for @entityName@
-entityNameSelector :: Selector
+entityNameSelector :: Selector '[] (Id NSString)
 entityNameSelector = mkSelector "entityName"
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] (Id NSEntityDescription)
 entitySelector = mkSelector "entity"
 
 -- | @Selector@ for @objectsToInsert@
-objectsToInsertSelector :: Selector
+objectsToInsertSelector :: Selector '[] (Id NSArray)
 objectsToInsertSelector = mkSelector "objectsToInsert"
 
 -- | @Selector@ for @setObjectsToInsert:@
-setObjectsToInsertSelector :: Selector
+setObjectsToInsertSelector :: Selector '[Id NSArray] ()
 setObjectsToInsertSelector = mkSelector "setObjectsToInsert:"
 
 -- | @Selector@ for @managedObjectHandler@
-managedObjectHandlerSelector :: Selector
+managedObjectHandlerSelector :: Selector '[] (Ptr ())
 managedObjectHandlerSelector = mkSelector "managedObjectHandler"
 
 -- | @Selector@ for @setManagedObjectHandler:@
-setManagedObjectHandlerSelector :: Selector
+setManagedObjectHandlerSelector :: Selector '[Ptr ()] ()
 setManagedObjectHandlerSelector = mkSelector "setManagedObjectHandler:"
 
 -- | @Selector@ for @resultType@
-resultTypeSelector :: Selector
+resultTypeSelector :: Selector '[] NSBatchInsertRequestResultType
 resultTypeSelector = mkSelector "resultType"
 
 -- | @Selector@ for @setResultType:@
-setResultTypeSelector :: Selector
+setResultTypeSelector :: Selector '[NSBatchInsertRequestResultType] ()
 setResultTypeSelector = mkSelector "setResultType:"
 

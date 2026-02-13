@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.Vision.VNRecognizedText
   , string
   , confidence
   , boundingBoxForRange_errorSelector
-  , stringSelector
   , confidenceSelector
+  , stringSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,9 +39,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- boundingBoxForRange:error:@
 boundingBoxForRange_error :: (IsVNRecognizedText vnRecognizedText, IsNSError error_) => vnRecognizedText -> NSRange -> error_ -> IO (Id VNRectangleObservation)
-boundingBoxForRange_error vnRecognizedText  range error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnRecognizedText (mkSelector "boundingBoxForRange:error:") (retPtr retVoid) [argNSRange range, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+boundingBoxForRange_error vnRecognizedText range error_ =
+  sendMessage vnRecognizedText boundingBoxForRange_errorSelector range (toNSError error_)
 
 -- | Field that contains recognized text.
 --
@@ -52,29 +48,29 @@ boundingBoxForRange_error vnRecognizedText  range error_ =
 --
 -- ObjC selector: @- string@
 string :: IsVNRecognizedText vnRecognizedText => vnRecognizedText -> IO (Id NSString)
-string vnRecognizedText  =
-    sendMsg vnRecognizedText (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string vnRecognizedText =
+  sendMessage vnRecognizedText stringSelector
 
 -- | The level of confidence normalized to [0.0, 1.0] where 1.0 is most confident
 --
 -- ObjC selector: @- confidence@
 confidence :: IsVNRecognizedText vnRecognizedText => vnRecognizedText -> IO CFloat
-confidence vnRecognizedText  =
-    sendMsg vnRecognizedText (mkSelector "confidence") retCFloat []
+confidence vnRecognizedText =
+  sendMessage vnRecognizedText confidenceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @boundingBoxForRange:error:@
-boundingBoxForRange_errorSelector :: Selector
+boundingBoxForRange_errorSelector :: Selector '[NSRange, Id NSError] (Id VNRectangleObservation)
 boundingBoxForRange_errorSelector = mkSelector "boundingBoxForRange:error:"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @confidence@
-confidenceSelector :: Selector
+confidenceSelector :: Selector '[] CFloat
 confidenceSelector = mkSelector "confidence"
 

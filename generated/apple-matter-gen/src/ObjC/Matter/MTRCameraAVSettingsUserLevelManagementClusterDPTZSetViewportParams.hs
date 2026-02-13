@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportP
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , videoStreamIDSelector
-  , setVideoStreamIDSelector
-  , viewportSelector
-  , setViewportSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setVideoStreamIDSelector
+  , setViewportSelector
+  , timedInvokeTimeoutMsSelector
+  , videoStreamIDSelector
+  , viewportSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- videoStreamID@
 videoStreamID :: IsMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams => mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams -> IO (Id NSNumber)
-videoStreamID mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams (mkSelector "videoStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoStreamID mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams videoStreamIDSelector
 
 -- | @- setVideoStreamID:@
 setVideoStreamID :: (IsMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams -> value -> IO ()
-setVideoStreamID mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams (mkSelector "setVideoStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoStreamID mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams setVideoStreamIDSelector (toNSNumber value)
 
 -- | @- viewport@
 viewport :: IsMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams => mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams -> IO (Id MTRDataTypeViewportStruct)
-viewport mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams (mkSelector "viewport") (retPtr retVoid) [] >>= retainedObject . castPtr
+viewport mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams viewportSelector
 
 -- | @- setViewport:@
 setViewport :: (IsMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams, IsMTRDataTypeViewportStruct value) => mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams -> value -> IO ()
-setViewport mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams (mkSelector "setViewport:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setViewport mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams setViewportSelector (toMTRDataTypeViewportStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setViewport mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams  
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams => mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewpor
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterDPTZSetView
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams => mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterDPTZSet
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterDPTZSetViewportParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @videoStreamID@
-videoStreamIDSelector :: Selector
+videoStreamIDSelector :: Selector '[] (Id NSNumber)
 videoStreamIDSelector = mkSelector "videoStreamID"
 
 -- | @Selector@ for @setVideoStreamID:@
-setVideoStreamIDSelector :: Selector
+setVideoStreamIDSelector :: Selector '[Id NSNumber] ()
 setVideoStreamIDSelector = mkSelector "setVideoStreamID:"
 
 -- | @Selector@ for @viewport@
-viewportSelector :: Selector
+viewportSelector :: Selector '[] (Id MTRDataTypeViewportStruct)
 viewportSelector = mkSelector "viewport"
 
 -- | @Selector@ for @setViewport:@
-setViewportSelector :: Selector
+setViewportSelector :: Selector '[Id MTRDataTypeViewportStruct] ()
 setViewportSelector = mkSelector "setViewport:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

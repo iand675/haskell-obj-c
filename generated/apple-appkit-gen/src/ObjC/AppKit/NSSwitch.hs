@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.AppKit.NSSwitch
   , IsNSSwitch(..)
   , state
   , setState
-  , stateSelector
   , setStateSelector
+  , stateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- state@
 state :: IsNSSwitch nsSwitch => nsSwitch -> IO CLong
-state nsSwitch  =
-    sendMsg nsSwitch (mkSelector "state") retCLong []
+state nsSwitch =
+  sendMessage nsSwitch stateSelector
 
 -- | @- setState:@
 setState :: IsNSSwitch nsSwitch => nsSwitch -> CLong -> IO ()
-setState nsSwitch  value =
-    sendMsg nsSwitch (mkSelector "setState:") retVoid [argCLong value]
+setState nsSwitch value =
+  sendMessage nsSwitch setStateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] CLong
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @setState:@
-setStateSelector :: Selector
+setStateSelector :: Selector '[CLong] ()
 setStateSelector = mkSelector "setState:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Foundation.NSHTTPURLResponse
   , localizedStringForStatusCode
   , statusCode
   , allHeaderFields
+  , allHeaderFieldsSelector
   , initWithURL_statusCode_HTTPVersion_headerFieldsSelector
-  , valueForHTTPHeaderFieldSelector
   , localizedStringForStatusCodeSelector
   , statusCodeSelector
-  , allHeaderFieldsSelector
+  , valueForHTTPHeaderFieldSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,11 +53,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:statusCode:HTTPVersion:headerFields:@
 initWithURL_statusCode_HTTPVersion_headerFields :: (IsNSHTTPURLResponse nshttpurlResponse, IsNSURL url, IsNSString httpVersion, IsNSDictionary headerFields) => nshttpurlResponse -> url -> CLong -> httpVersion -> headerFields -> IO (Id NSHTTPURLResponse)
-initWithURL_statusCode_HTTPVersion_headerFields nshttpurlResponse  url statusCode httpVersion headerFields =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr httpVersion $ \raw_httpVersion ->
-      withObjCPtr headerFields $ \raw_headerFields ->
-          sendMsg nshttpurlResponse (mkSelector "initWithURL:statusCode:HTTPVersion:headerFields:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCLong statusCode, argPtr (castPtr raw_httpVersion :: Ptr ()), argPtr (castPtr raw_headerFields :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_statusCode_HTTPVersion_headerFields nshttpurlResponse url statusCode httpVersion headerFields =
+  sendOwnedMessage nshttpurlResponse initWithURL_statusCode_HTTPVersion_headerFieldsSelector (toNSURL url) statusCode (toNSString httpVersion) (toNSDictionary headerFields)
 
 -- | valueForHTTPHeaderField:
 --
@@ -72,9 +66,8 @@ initWithURL_statusCode_HTTPVersion_headerFields nshttpurlResponse  url statusCod
 --
 -- ObjC selector: @- valueForHTTPHeaderField:@
 valueForHTTPHeaderField :: (IsNSHTTPURLResponse nshttpurlResponse, IsNSString field) => nshttpurlResponse -> field -> IO (Id NSString)
-valueForHTTPHeaderField nshttpurlResponse  field =
-  withObjCPtr field $ \raw_field ->
-      sendMsg nshttpurlResponse (mkSelector "valueForHTTPHeaderField:") (retPtr retVoid) [argPtr (castPtr raw_field :: Ptr ())] >>= retainedObject . castPtr
+valueForHTTPHeaderField nshttpurlResponse field =
+  sendMessage nshttpurlResponse valueForHTTPHeaderFieldSelector (toNSString field)
 
 -- | localizedStringForStatusCode:
 --
@@ -89,7 +82,7 @@ localizedStringForStatusCode :: CLong -> IO (Id NSString)
 localizedStringForStatusCode statusCode =
   do
     cls' <- getRequiredClass "NSHTTPURLResponse"
-    sendClassMsg cls' (mkSelector "localizedStringForStatusCode:") (retPtr retVoid) [argCLong statusCode] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedStringForStatusCodeSelector statusCode
 
 -- | Returns the HTTP status code of the receiver.
 --
@@ -97,8 +90,8 @@ localizedStringForStatusCode statusCode =
 --
 -- ObjC selector: @- statusCode@
 statusCode :: IsNSHTTPURLResponse nshttpurlResponse => nshttpurlResponse -> IO CLong
-statusCode nshttpurlResponse  =
-    sendMsg nshttpurlResponse (mkSelector "statusCode") retCLong []
+statusCode nshttpurlResponse =
+  sendMessage nshttpurlResponse statusCodeSelector
 
 -- | Returns a dictionary containing all the HTTP header fields    of the receiver.
 --
@@ -108,30 +101,30 @@ statusCode nshttpurlResponse  =
 --
 -- ObjC selector: @- allHeaderFields@
 allHeaderFields :: IsNSHTTPURLResponse nshttpurlResponse => nshttpurlResponse -> IO (Id NSDictionary)
-allHeaderFields nshttpurlResponse  =
-    sendMsg nshttpurlResponse (mkSelector "allHeaderFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+allHeaderFields nshttpurlResponse =
+  sendMessage nshttpurlResponse allHeaderFieldsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:statusCode:HTTPVersion:headerFields:@
-initWithURL_statusCode_HTTPVersion_headerFieldsSelector :: Selector
+initWithURL_statusCode_HTTPVersion_headerFieldsSelector :: Selector '[Id NSURL, CLong, Id NSString, Id NSDictionary] (Id NSHTTPURLResponse)
 initWithURL_statusCode_HTTPVersion_headerFieldsSelector = mkSelector "initWithURL:statusCode:HTTPVersion:headerFields:"
 
 -- | @Selector@ for @valueForHTTPHeaderField:@
-valueForHTTPHeaderFieldSelector :: Selector
+valueForHTTPHeaderFieldSelector :: Selector '[Id NSString] (Id NSString)
 valueForHTTPHeaderFieldSelector = mkSelector "valueForHTTPHeaderField:"
 
 -- | @Selector@ for @localizedStringForStatusCode:@
-localizedStringForStatusCodeSelector :: Selector
+localizedStringForStatusCodeSelector :: Selector '[CLong] (Id NSString)
 localizedStringForStatusCodeSelector = mkSelector "localizedStringForStatusCode:"
 
 -- | @Selector@ for @statusCode@
-statusCodeSelector :: Selector
+statusCodeSelector :: Selector '[] CLong
 statusCodeSelector = mkSelector "statusCode"
 
 -- | @Selector@ for @allHeaderFields@
-allHeaderFieldsSelector :: Selector
+allHeaderFieldsSelector :: Selector '[] (Id NSDictionary)
 allHeaderFieldsSelector = mkSelector "allHeaderFields"
 

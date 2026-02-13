@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,33 +27,29 @@ module ObjC.SceneKit.SCNFloor
   , reflectionResolutionScaleFactor
   , setReflectionResolutionScaleFactor
   , floorSelector
-  , reflectivitySelector
-  , setReflectivitySelector
-  , reflectionFalloffStartSelector
-  , setReflectionFalloffStartSelector
-  , reflectionFalloffEndSelector
-  , setReflectionFalloffEndSelector
-  , reflectionCategoryBitMaskSelector
-  , setReflectionCategoryBitMaskSelector
-  , widthSelector
-  , setWidthSelector
   , lengthSelector
-  , setLengthSelector
+  , reflectionCategoryBitMaskSelector
+  , reflectionFalloffEndSelector
+  , reflectionFalloffStartSelector
   , reflectionResolutionScaleFactorSelector
+  , reflectivitySelector
+  , setLengthSelector
+  , setReflectionCategoryBitMaskSelector
+  , setReflectionFalloffEndSelector
+  , setReflectionFalloffStartSelector
   , setReflectionResolutionScaleFactorSelector
+  , setReflectivitySelector
+  , setWidthSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,7 +67,7 @@ floor :: IO (Id SCNFloor)
 floor  =
   do
     cls' <- getRequiredClass "SCNFloor"
-    sendClassMsg cls' (mkSelector "floor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' floorSelector
 
 -- | reflectivity
 --
@@ -80,8 +77,8 @@ floor  =
 --
 -- ObjC selector: @- reflectivity@
 reflectivity :: IsSCNFloor scnFloor => scnFloor -> IO CDouble
-reflectivity scnFloor  =
-    sendMsg scnFloor (mkSelector "reflectivity") retCDouble []
+reflectivity scnFloor =
+  sendMessage scnFloor reflectivitySelector
 
 -- | reflectivity
 --
@@ -91,8 +88,8 @@ reflectivity scnFloor  =
 --
 -- ObjC selector: @- setReflectivity:@
 setReflectivity :: IsSCNFloor scnFloor => scnFloor -> CDouble -> IO ()
-setReflectivity scnFloor  value =
-    sendMsg scnFloor (mkSelector "setReflectivity:") retVoid [argCDouble value]
+setReflectivity scnFloor value =
+  sendMessage scnFloor setReflectivitySelector value
 
 -- | reflectionFalloffStart
 --
@@ -102,8 +99,8 @@ setReflectivity scnFloor  value =
 --
 -- ObjC selector: @- reflectionFalloffStart@
 reflectionFalloffStart :: IsSCNFloor scnFloor => scnFloor -> IO CDouble
-reflectionFalloffStart scnFloor  =
-    sendMsg scnFloor (mkSelector "reflectionFalloffStart") retCDouble []
+reflectionFalloffStart scnFloor =
+  sendMessage scnFloor reflectionFalloffStartSelector
 
 -- | reflectionFalloffStart
 --
@@ -113,8 +110,8 @@ reflectionFalloffStart scnFloor  =
 --
 -- ObjC selector: @- setReflectionFalloffStart:@
 setReflectionFalloffStart :: IsSCNFloor scnFloor => scnFloor -> CDouble -> IO ()
-setReflectionFalloffStart scnFloor  value =
-    sendMsg scnFloor (mkSelector "setReflectionFalloffStart:") retVoid [argCDouble value]
+setReflectionFalloffStart scnFloor value =
+  sendMessage scnFloor setReflectionFalloffStartSelector value
 
 -- | reflectionFalloffEnd
 --
@@ -124,8 +121,8 @@ setReflectionFalloffStart scnFloor  value =
 --
 -- ObjC selector: @- reflectionFalloffEnd@
 reflectionFalloffEnd :: IsSCNFloor scnFloor => scnFloor -> IO CDouble
-reflectionFalloffEnd scnFloor  =
-    sendMsg scnFloor (mkSelector "reflectionFalloffEnd") retCDouble []
+reflectionFalloffEnd scnFloor =
+  sendMessage scnFloor reflectionFalloffEndSelector
 
 -- | reflectionFalloffEnd
 --
@@ -135,8 +132,8 @@ reflectionFalloffEnd scnFloor  =
 --
 -- ObjC selector: @- setReflectionFalloffEnd:@
 setReflectionFalloffEnd :: IsSCNFloor scnFloor => scnFloor -> CDouble -> IO ()
-setReflectionFalloffEnd scnFloor  value =
-    sendMsg scnFloor (mkSelector "setReflectionFalloffEnd:") retVoid [argCDouble value]
+setReflectionFalloffEnd scnFloor value =
+  sendMessage scnFloor setReflectionFalloffEndSelector value
 
 -- | reflectionCategoryBitMask
 --
@@ -144,8 +141,8 @@ setReflectionFalloffEnd scnFloor  value =
 --
 -- ObjC selector: @- reflectionCategoryBitMask@
 reflectionCategoryBitMask :: IsSCNFloor scnFloor => scnFloor -> IO CULong
-reflectionCategoryBitMask scnFloor  =
-    sendMsg scnFloor (mkSelector "reflectionCategoryBitMask") retCULong []
+reflectionCategoryBitMask scnFloor =
+  sendMessage scnFloor reflectionCategoryBitMaskSelector
 
 -- | reflectionCategoryBitMask
 --
@@ -153,8 +150,8 @@ reflectionCategoryBitMask scnFloor  =
 --
 -- ObjC selector: @- setReflectionCategoryBitMask:@
 setReflectionCategoryBitMask :: IsSCNFloor scnFloor => scnFloor -> CULong -> IO ()
-setReflectionCategoryBitMask scnFloor  value =
-    sendMsg scnFloor (mkSelector "setReflectionCategoryBitMask:") retVoid [argCULong value]
+setReflectionCategoryBitMask scnFloor value =
+  sendMessage scnFloor setReflectionCategoryBitMaskSelector value
 
 -- | width
 --
@@ -164,8 +161,8 @@ setReflectionCategoryBitMask scnFloor  value =
 --
 -- ObjC selector: @- width@
 width :: IsSCNFloor scnFloor => scnFloor -> IO CDouble
-width scnFloor  =
-    sendMsg scnFloor (mkSelector "width") retCDouble []
+width scnFloor =
+  sendMessage scnFloor widthSelector
 
 -- | width
 --
@@ -175,8 +172,8 @@ width scnFloor  =
 --
 -- ObjC selector: @- setWidth:@
 setWidth :: IsSCNFloor scnFloor => scnFloor -> CDouble -> IO ()
-setWidth scnFloor  value =
-    sendMsg scnFloor (mkSelector "setWidth:") retVoid [argCDouble value]
+setWidth scnFloor value =
+  sendMessage scnFloor setWidthSelector value
 
 -- | length
 --
@@ -186,8 +183,8 @@ setWidth scnFloor  value =
 --
 -- ObjC selector: @- length@
 length_ :: IsSCNFloor scnFloor => scnFloor -> IO CDouble
-length_ scnFloor  =
-    sendMsg scnFloor (mkSelector "length") retCDouble []
+length_ scnFloor =
+  sendMessage scnFloor lengthSelector
 
 -- | length
 --
@@ -197,8 +194,8 @@ length_ scnFloor  =
 --
 -- ObjC selector: @- setLength:@
 setLength :: IsSCNFloor scnFloor => scnFloor -> CDouble -> IO ()
-setLength scnFloor  value =
-    sendMsg scnFloor (mkSelector "setLength:") retVoid [argCDouble value]
+setLength scnFloor value =
+  sendMessage scnFloor setLengthSelector value
 
 -- | reflectionResolutionScaleFactor
 --
@@ -208,8 +205,8 @@ setLength scnFloor  value =
 --
 -- ObjC selector: @- reflectionResolutionScaleFactor@
 reflectionResolutionScaleFactor :: IsSCNFloor scnFloor => scnFloor -> IO CDouble
-reflectionResolutionScaleFactor scnFloor  =
-    sendMsg scnFloor (mkSelector "reflectionResolutionScaleFactor") retCDouble []
+reflectionResolutionScaleFactor scnFloor =
+  sendMessage scnFloor reflectionResolutionScaleFactorSelector
 
 -- | reflectionResolutionScaleFactor
 --
@@ -219,70 +216,70 @@ reflectionResolutionScaleFactor scnFloor  =
 --
 -- ObjC selector: @- setReflectionResolutionScaleFactor:@
 setReflectionResolutionScaleFactor :: IsSCNFloor scnFloor => scnFloor -> CDouble -> IO ()
-setReflectionResolutionScaleFactor scnFloor  value =
-    sendMsg scnFloor (mkSelector "setReflectionResolutionScaleFactor:") retVoid [argCDouble value]
+setReflectionResolutionScaleFactor scnFloor value =
+  sendMessage scnFloor setReflectionResolutionScaleFactorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @floor@
-floorSelector :: Selector
+floorSelector :: Selector '[] (Id SCNFloor)
 floorSelector = mkSelector "floor"
 
 -- | @Selector@ for @reflectivity@
-reflectivitySelector :: Selector
+reflectivitySelector :: Selector '[] CDouble
 reflectivitySelector = mkSelector "reflectivity"
 
 -- | @Selector@ for @setReflectivity:@
-setReflectivitySelector :: Selector
+setReflectivitySelector :: Selector '[CDouble] ()
 setReflectivitySelector = mkSelector "setReflectivity:"
 
 -- | @Selector@ for @reflectionFalloffStart@
-reflectionFalloffStartSelector :: Selector
+reflectionFalloffStartSelector :: Selector '[] CDouble
 reflectionFalloffStartSelector = mkSelector "reflectionFalloffStart"
 
 -- | @Selector@ for @setReflectionFalloffStart:@
-setReflectionFalloffStartSelector :: Selector
+setReflectionFalloffStartSelector :: Selector '[CDouble] ()
 setReflectionFalloffStartSelector = mkSelector "setReflectionFalloffStart:"
 
 -- | @Selector@ for @reflectionFalloffEnd@
-reflectionFalloffEndSelector :: Selector
+reflectionFalloffEndSelector :: Selector '[] CDouble
 reflectionFalloffEndSelector = mkSelector "reflectionFalloffEnd"
 
 -- | @Selector@ for @setReflectionFalloffEnd:@
-setReflectionFalloffEndSelector :: Selector
+setReflectionFalloffEndSelector :: Selector '[CDouble] ()
 setReflectionFalloffEndSelector = mkSelector "setReflectionFalloffEnd:"
 
 -- | @Selector@ for @reflectionCategoryBitMask@
-reflectionCategoryBitMaskSelector :: Selector
+reflectionCategoryBitMaskSelector :: Selector '[] CULong
 reflectionCategoryBitMaskSelector = mkSelector "reflectionCategoryBitMask"
 
 -- | @Selector@ for @setReflectionCategoryBitMask:@
-setReflectionCategoryBitMaskSelector :: Selector
+setReflectionCategoryBitMaskSelector :: Selector '[CULong] ()
 setReflectionCategoryBitMaskSelector = mkSelector "setReflectionCategoryBitMask:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CDouble
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CDouble] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CDouble
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @setLength:@
-setLengthSelector :: Selector
+setLengthSelector :: Selector '[CDouble] ()
 setLengthSelector = mkSelector "setLength:"
 
 -- | @Selector@ for @reflectionResolutionScaleFactor@
-reflectionResolutionScaleFactorSelector :: Selector
+reflectionResolutionScaleFactorSelector :: Selector '[] CDouble
 reflectionResolutionScaleFactorSelector = mkSelector "reflectionResolutionScaleFactor"
 
 -- | @Selector@ for @setReflectionResolutionScaleFactor:@
-setReflectionResolutionScaleFactorSelector :: Selector
+setReflectionResolutionScaleFactorSelector :: Selector '[CDouble] ()
 setReflectionResolutionScaleFactorSelector = mkSelector "setReflectionResolutionScaleFactor:"
 

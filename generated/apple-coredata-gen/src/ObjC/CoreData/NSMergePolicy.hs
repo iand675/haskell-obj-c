@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.CoreData.NSMergePolicy
   , mergeByPropertyObjectTrumpMergePolicy
   , mergeByPropertyStoreTrumpMergePolicy
   , mergeType
-  , initWithMergeTypeSelector
-  , initSelector
-  , resolveConflicts_errorSelector
-  , resolveOptimisticLockingVersionConflicts_errorSelector
-  , resolveConstraintConflicts_errorSelector
   , errorMergePolicySelector
-  , rollbackMergePolicySelector
-  , overwriteMergePolicySelector
+  , initSelector
+  , initWithMergeTypeSelector
   , mergeByPropertyObjectTrumpMergePolicySelector
   , mergeByPropertyStoreTrumpMergePolicySelector
   , mergeTypeSelector
+  , overwriteMergePolicySelector
+  , resolveConflicts_errorSelector
+  , resolveConstraintConflicts_errorSelector
+  , resolveOptimisticLockingVersionConflicts_errorSelector
+  , rollbackMergePolicySelector
 
   -- * Enum types
   , NSMergePolicyType(NSMergePolicyType)
@@ -40,15 +41,11 @@ module ObjC.CoreData.NSMergePolicy
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,120 +55,114 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithMergeType:@
 initWithMergeType :: IsNSMergePolicy nsMergePolicy => nsMergePolicy -> NSMergePolicyType -> IO RawId
-initWithMergeType nsMergePolicy  ty =
-    fmap (RawId . castPtr) $ sendMsg nsMergePolicy (mkSelector "initWithMergeType:") (retPtr retVoid) [argCULong (coerce ty)]
+initWithMergeType nsMergePolicy ty =
+  sendOwnedMessage nsMergePolicy initWithMergeTypeSelector ty
 
 -- | @- init@
 init_ :: IsNSMergePolicy nsMergePolicy => nsMergePolicy -> IO (Id NSMergePolicy)
-init_ nsMergePolicy  =
-    sendMsg nsMergePolicy (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsMergePolicy =
+  sendOwnedMessage nsMergePolicy initSelector
 
 -- | @- resolveConflicts:error:@
 resolveConflicts_error :: (IsNSMergePolicy nsMergePolicy, IsNSArray list, IsNSError error_) => nsMergePolicy -> list -> error_ -> IO Bool
-resolveConflicts_error nsMergePolicy  list error_ =
-  withObjCPtr list $ \raw_list ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMergePolicy (mkSelector "resolveConflicts:error:") retCULong [argPtr (castPtr raw_list :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+resolveConflicts_error nsMergePolicy list error_ =
+  sendMessage nsMergePolicy resolveConflicts_errorSelector (toNSArray list) (toNSError error_)
 
 -- | @- resolveOptimisticLockingVersionConflicts:error:@
 resolveOptimisticLockingVersionConflicts_error :: (IsNSMergePolicy nsMergePolicy, IsNSArray list, IsNSError error_) => nsMergePolicy -> list -> error_ -> IO Bool
-resolveOptimisticLockingVersionConflicts_error nsMergePolicy  list error_ =
-  withObjCPtr list $ \raw_list ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMergePolicy (mkSelector "resolveOptimisticLockingVersionConflicts:error:") retCULong [argPtr (castPtr raw_list :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+resolveOptimisticLockingVersionConflicts_error nsMergePolicy list error_ =
+  sendMessage nsMergePolicy resolveOptimisticLockingVersionConflicts_errorSelector (toNSArray list) (toNSError error_)
 
 -- | @- resolveConstraintConflicts:error:@
 resolveConstraintConflicts_error :: (IsNSMergePolicy nsMergePolicy, IsNSArray list, IsNSError error_) => nsMergePolicy -> list -> error_ -> IO Bool
-resolveConstraintConflicts_error nsMergePolicy  list error_ =
-  withObjCPtr list $ \raw_list ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMergePolicy (mkSelector "resolveConstraintConflicts:error:") retCULong [argPtr (castPtr raw_list :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+resolveConstraintConflicts_error nsMergePolicy list error_ =
+  sendMessage nsMergePolicy resolveConstraintConflicts_errorSelector (toNSArray list) (toNSError error_)
 
 -- | @+ errorMergePolicy@
 errorMergePolicy :: IO (Id NSMergePolicy)
 errorMergePolicy  =
   do
     cls' <- getRequiredClass "NSMergePolicy"
-    sendClassMsg cls' (mkSelector "errorMergePolicy") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' errorMergePolicySelector
 
 -- | @+ rollbackMergePolicy@
 rollbackMergePolicy :: IO (Id NSMergePolicy)
 rollbackMergePolicy  =
   do
     cls' <- getRequiredClass "NSMergePolicy"
-    sendClassMsg cls' (mkSelector "rollbackMergePolicy") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' rollbackMergePolicySelector
 
 -- | @+ overwriteMergePolicy@
 overwriteMergePolicy :: IO (Id NSMergePolicy)
 overwriteMergePolicy  =
   do
     cls' <- getRequiredClass "NSMergePolicy"
-    sendClassMsg cls' (mkSelector "overwriteMergePolicy") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' overwriteMergePolicySelector
 
 -- | @+ mergeByPropertyObjectTrumpMergePolicy@
 mergeByPropertyObjectTrumpMergePolicy :: IO (Id NSMergePolicy)
 mergeByPropertyObjectTrumpMergePolicy  =
   do
     cls' <- getRequiredClass "NSMergePolicy"
-    sendClassMsg cls' (mkSelector "mergeByPropertyObjectTrumpMergePolicy") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mergeByPropertyObjectTrumpMergePolicySelector
 
 -- | @+ mergeByPropertyStoreTrumpMergePolicy@
 mergeByPropertyStoreTrumpMergePolicy :: IO (Id NSMergePolicy)
 mergeByPropertyStoreTrumpMergePolicy  =
   do
     cls' <- getRequiredClass "NSMergePolicy"
-    sendClassMsg cls' (mkSelector "mergeByPropertyStoreTrumpMergePolicy") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mergeByPropertyStoreTrumpMergePolicySelector
 
 -- | @- mergeType@
 mergeType :: IsNSMergePolicy nsMergePolicy => nsMergePolicy -> IO NSMergePolicyType
-mergeType nsMergePolicy  =
-    fmap (coerce :: CULong -> NSMergePolicyType) $ sendMsg nsMergePolicy (mkSelector "mergeType") retCULong []
+mergeType nsMergePolicy =
+  sendMessage nsMergePolicy mergeTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMergeType:@
-initWithMergeTypeSelector :: Selector
+initWithMergeTypeSelector :: Selector '[NSMergePolicyType] RawId
 initWithMergeTypeSelector = mkSelector "initWithMergeType:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSMergePolicy)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @resolveConflicts:error:@
-resolveConflicts_errorSelector :: Selector
+resolveConflicts_errorSelector :: Selector '[Id NSArray, Id NSError] Bool
 resolveConflicts_errorSelector = mkSelector "resolveConflicts:error:"
 
 -- | @Selector@ for @resolveOptimisticLockingVersionConflicts:error:@
-resolveOptimisticLockingVersionConflicts_errorSelector :: Selector
+resolveOptimisticLockingVersionConflicts_errorSelector :: Selector '[Id NSArray, Id NSError] Bool
 resolveOptimisticLockingVersionConflicts_errorSelector = mkSelector "resolveOptimisticLockingVersionConflicts:error:"
 
 -- | @Selector@ for @resolveConstraintConflicts:error:@
-resolveConstraintConflicts_errorSelector :: Selector
+resolveConstraintConflicts_errorSelector :: Selector '[Id NSArray, Id NSError] Bool
 resolveConstraintConflicts_errorSelector = mkSelector "resolveConstraintConflicts:error:"
 
 -- | @Selector@ for @errorMergePolicy@
-errorMergePolicySelector :: Selector
+errorMergePolicySelector :: Selector '[] (Id NSMergePolicy)
 errorMergePolicySelector = mkSelector "errorMergePolicy"
 
 -- | @Selector@ for @rollbackMergePolicy@
-rollbackMergePolicySelector :: Selector
+rollbackMergePolicySelector :: Selector '[] (Id NSMergePolicy)
 rollbackMergePolicySelector = mkSelector "rollbackMergePolicy"
 
 -- | @Selector@ for @overwriteMergePolicy@
-overwriteMergePolicySelector :: Selector
+overwriteMergePolicySelector :: Selector '[] (Id NSMergePolicy)
 overwriteMergePolicySelector = mkSelector "overwriteMergePolicy"
 
 -- | @Selector@ for @mergeByPropertyObjectTrumpMergePolicy@
-mergeByPropertyObjectTrumpMergePolicySelector :: Selector
+mergeByPropertyObjectTrumpMergePolicySelector :: Selector '[] (Id NSMergePolicy)
 mergeByPropertyObjectTrumpMergePolicySelector = mkSelector "mergeByPropertyObjectTrumpMergePolicy"
 
 -- | @Selector@ for @mergeByPropertyStoreTrumpMergePolicy@
-mergeByPropertyStoreTrumpMergePolicySelector :: Selector
+mergeByPropertyStoreTrumpMergePolicySelector :: Selector '[] (Id NSMergePolicy)
 mergeByPropertyStoreTrumpMergePolicySelector = mkSelector "mergeByPropertyStoreTrumpMergePolicy"
 
 -- | @Selector@ for @mergeType@
-mergeTypeSelector :: Selector
+mergeTypeSelector :: Selector '[] NSMergePolicyType
 mergeTypeSelector = mkSelector "mergeType"
 

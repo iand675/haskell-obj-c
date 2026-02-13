@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -45,40 +46,40 @@ module ObjC.Metal.MTLSamplerDescriptor
   , setSupportArgumentBuffers
   , label
   , setLabel
-  , minFilterSelector
-  , setMinFilterSelector
-  , magFilterSelector
-  , setMagFilterSelector
-  , mipFilterSelector
-  , setMipFilterSelector
-  , maxAnisotropySelector
-  , setMaxAnisotropySelector
-  , sAddressModeSelector
-  , setSAddressModeSelector
-  , tAddressModeSelector
-  , setTAddressModeSelector
-  , rAddressModeSelector
-  , setRAddressModeSelector
   , borderColorSelector
-  , setBorderColorSelector
-  , reductionModeSelector
-  , setReductionModeSelector
-  , normalizedCoordinatesSelector
-  , setNormalizedCoordinatesSelector
-  , lodMinClampSelector
-  , setLodMinClampSelector
-  , lodMaxClampSelector
-  , setLodMaxClampSelector
-  , lodAverageSelector
-  , setLodAverageSelector
-  , lodBiasSelector
-  , setLodBiasSelector
   , compareFunctionSelector
-  , setCompareFunctionSelector
-  , supportArgumentBuffersSelector
-  , setSupportArgumentBuffersSelector
   , labelSelector
+  , lodAverageSelector
+  , lodBiasSelector
+  , lodMaxClampSelector
+  , lodMinClampSelector
+  , magFilterSelector
+  , maxAnisotropySelector
+  , minFilterSelector
+  , mipFilterSelector
+  , normalizedCoordinatesSelector
+  , rAddressModeSelector
+  , reductionModeSelector
+  , sAddressModeSelector
+  , setBorderColorSelector
+  , setCompareFunctionSelector
   , setLabelSelector
+  , setLodAverageSelector
+  , setLodBiasSelector
+  , setLodMaxClampSelector
+  , setLodMinClampSelector
+  , setMagFilterSelector
+  , setMaxAnisotropySelector
+  , setMinFilterSelector
+  , setMipFilterSelector
+  , setNormalizedCoordinatesSelector
+  , setRAddressModeSelector
+  , setReductionModeSelector
+  , setSAddressModeSelector
+  , setSupportArgumentBuffersSelector
+  , setTAddressModeSelector
+  , supportArgumentBuffersSelector
+  , tAddressModeSelector
 
   -- * Enum types
   , MTLCompareFunction(MTLCompareFunction)
@@ -115,15 +116,11 @@ module ObjC.Metal.MTLSamplerDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -139,8 +136,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- minFilter@
 minFilter :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO MTLSamplerMinMagFilter
-minFilter mtlSamplerDescriptor  =
-    fmap (coerce :: CULong -> MTLSamplerMinMagFilter) $ sendMsg mtlSamplerDescriptor (mkSelector "minFilter") retCULong []
+minFilter mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor minFilterSelector
 
 -- | minFilter
 --
@@ -150,8 +147,8 @@ minFilter mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setMinFilter:@
 setMinFilter :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> MTLSamplerMinMagFilter -> IO ()
-setMinFilter mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setMinFilter:") retVoid [argCULong (coerce value)]
+setMinFilter mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setMinFilterSelector value
 
 -- | magFilter
 --
@@ -161,8 +158,8 @@ setMinFilter mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- magFilter@
 magFilter :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO MTLSamplerMinMagFilter
-magFilter mtlSamplerDescriptor  =
-    fmap (coerce :: CULong -> MTLSamplerMinMagFilter) $ sendMsg mtlSamplerDescriptor (mkSelector "magFilter") retCULong []
+magFilter mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor magFilterSelector
 
 -- | magFilter
 --
@@ -172,8 +169,8 @@ magFilter mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setMagFilter:@
 setMagFilter :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> MTLSamplerMinMagFilter -> IO ()
-setMagFilter mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setMagFilter:") retVoid [argCULong (coerce value)]
+setMagFilter mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setMagFilterSelector value
 
 -- | mipFilter
 --
@@ -183,8 +180,8 @@ setMagFilter mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- mipFilter@
 mipFilter :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO MTLSamplerMipFilter
-mipFilter mtlSamplerDescriptor  =
-    fmap (coerce :: CULong -> MTLSamplerMipFilter) $ sendMsg mtlSamplerDescriptor (mkSelector "mipFilter") retCULong []
+mipFilter mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor mipFilterSelector
 
 -- | mipFilter
 --
@@ -194,8 +191,8 @@ mipFilter mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setMipFilter:@
 setMipFilter :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> MTLSamplerMipFilter -> IO ()
-setMipFilter mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setMipFilter:") retVoid [argCULong (coerce value)]
+setMipFilter mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setMipFilterSelector value
 
 -- | maxAnisotropy
 --
@@ -205,8 +202,8 @@ setMipFilter mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- maxAnisotropy@
 maxAnisotropy :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO CULong
-maxAnisotropy mtlSamplerDescriptor  =
-    sendMsg mtlSamplerDescriptor (mkSelector "maxAnisotropy") retCULong []
+maxAnisotropy mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor maxAnisotropySelector
 
 -- | maxAnisotropy
 --
@@ -216,8 +213,8 @@ maxAnisotropy mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setMaxAnisotropy:@
 setMaxAnisotropy :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> CULong -> IO ()
-setMaxAnisotropy mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setMaxAnisotropy:") retVoid [argCULong value]
+setMaxAnisotropy mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setMaxAnisotropySelector value
 
 -- | sAddressMode
 --
@@ -225,8 +222,8 @@ setMaxAnisotropy mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- sAddressMode@
 sAddressMode :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO MTLSamplerAddressMode
-sAddressMode mtlSamplerDescriptor  =
-    fmap (coerce :: CULong -> MTLSamplerAddressMode) $ sendMsg mtlSamplerDescriptor (mkSelector "sAddressMode") retCULong []
+sAddressMode mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor sAddressModeSelector
 
 -- | sAddressMode
 --
@@ -234,8 +231,8 @@ sAddressMode mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setSAddressMode:@
 setSAddressMode :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> MTLSamplerAddressMode -> IO ()
-setSAddressMode mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setSAddressMode:") retVoid [argCULong (coerce value)]
+setSAddressMode mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setSAddressModeSelector value
 
 -- | tAddressMode
 --
@@ -243,8 +240,8 @@ setSAddressMode mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- tAddressMode@
 tAddressMode :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO MTLSamplerAddressMode
-tAddressMode mtlSamplerDescriptor  =
-    fmap (coerce :: CULong -> MTLSamplerAddressMode) $ sendMsg mtlSamplerDescriptor (mkSelector "tAddressMode") retCULong []
+tAddressMode mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor tAddressModeSelector
 
 -- | tAddressMode
 --
@@ -252,8 +249,8 @@ tAddressMode mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setTAddressMode:@
 setTAddressMode :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> MTLSamplerAddressMode -> IO ()
-setTAddressMode mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setTAddressMode:") retVoid [argCULong (coerce value)]
+setTAddressMode mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setTAddressModeSelector value
 
 -- | rAddressMode
 --
@@ -261,8 +258,8 @@ setTAddressMode mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- rAddressMode@
 rAddressMode :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO MTLSamplerAddressMode
-rAddressMode mtlSamplerDescriptor  =
-    fmap (coerce :: CULong -> MTLSamplerAddressMode) $ sendMsg mtlSamplerDescriptor (mkSelector "rAddressMode") retCULong []
+rAddressMode mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor rAddressModeSelector
 
 -- | rAddressMode
 --
@@ -270,8 +267,8 @@ rAddressMode mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setRAddressMode:@
 setRAddressMode :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> MTLSamplerAddressMode -> IO ()
-setRAddressMode mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setRAddressMode:") retVoid [argCULong (coerce value)]
+setRAddressMode mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setRAddressModeSelector value
 
 -- | borderColor
 --
@@ -279,8 +276,8 @@ setRAddressMode mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- borderColor@
 borderColor :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO MTLSamplerBorderColor
-borderColor mtlSamplerDescriptor  =
-    fmap (coerce :: CULong -> MTLSamplerBorderColor) $ sendMsg mtlSamplerDescriptor (mkSelector "borderColor") retCULong []
+borderColor mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor borderColorSelector
 
 -- | borderColor
 --
@@ -288,8 +285,8 @@ borderColor mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setBorderColor:@
 setBorderColor :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> MTLSamplerBorderColor -> IO ()
-setBorderColor mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setBorderColor:") retVoid [argCULong (coerce value)]
+setBorderColor mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setBorderColorSelector value
 
 -- | Sets the reduction mode for filtering contributing samples.
 --
@@ -297,8 +294,8 @@ setBorderColor mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- reductionMode@
 reductionMode :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO MTLSamplerReductionMode
-reductionMode mtlSamplerDescriptor  =
-    fmap (coerce :: CULong -> MTLSamplerReductionMode) $ sendMsg mtlSamplerDescriptor (mkSelector "reductionMode") retCULong []
+reductionMode mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor reductionModeSelector
 
 -- | Sets the reduction mode for filtering contributing samples.
 --
@@ -306,8 +303,8 @@ reductionMode mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setReductionMode:@
 setReductionMode :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> MTLSamplerReductionMode -> IO ()
-setReductionMode mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setReductionMode:") retVoid [argCULong (coerce value)]
+setReductionMode mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setReductionModeSelector value
 
 -- | normalizedCoordinates.
 --
@@ -317,8 +314,8 @@ setReductionMode mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- normalizedCoordinates@
 normalizedCoordinates :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO Bool
-normalizedCoordinates mtlSamplerDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlSamplerDescriptor (mkSelector "normalizedCoordinates") retCULong []
+normalizedCoordinates mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor normalizedCoordinatesSelector
 
 -- | normalizedCoordinates.
 --
@@ -328,8 +325,8 @@ normalizedCoordinates mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setNormalizedCoordinates:@
 setNormalizedCoordinates :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> Bool -> IO ()
-setNormalizedCoordinates mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setNormalizedCoordinates:") retVoid [argCULong (if value then 1 else 0)]
+setNormalizedCoordinates mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setNormalizedCoordinatesSelector value
 
 -- | lodMinClamp
 --
@@ -339,8 +336,8 @@ setNormalizedCoordinates mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- lodMinClamp@
 lodMinClamp :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO CFloat
-lodMinClamp mtlSamplerDescriptor  =
-    sendMsg mtlSamplerDescriptor (mkSelector "lodMinClamp") retCFloat []
+lodMinClamp mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor lodMinClampSelector
 
 -- | lodMinClamp
 --
@@ -350,8 +347,8 @@ lodMinClamp mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setLodMinClamp:@
 setLodMinClamp :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> CFloat -> IO ()
-setLodMinClamp mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setLodMinClamp:") retVoid [argCFloat value]
+setLodMinClamp mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setLodMinClampSelector value
 
 -- | lodMaxClamp
 --
@@ -361,8 +358,8 @@ setLodMinClamp mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- lodMaxClamp@
 lodMaxClamp :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO CFloat
-lodMaxClamp mtlSamplerDescriptor  =
-    sendMsg mtlSamplerDescriptor (mkSelector "lodMaxClamp") retCFloat []
+lodMaxClamp mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor lodMaxClampSelector
 
 -- | lodMaxClamp
 --
@@ -372,8 +369,8 @@ lodMaxClamp mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setLodMaxClamp:@
 setLodMaxClamp :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> CFloat -> IO ()
-setLodMaxClamp mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setLodMaxClamp:") retVoid [argCFloat value]
+setLodMaxClamp mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setLodMaxClampSelector value
 
 -- | lodAverage
 --
@@ -383,8 +380,8 @@ setLodMaxClamp mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- lodAverage@
 lodAverage :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO Bool
-lodAverage mtlSamplerDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlSamplerDescriptor (mkSelector "lodAverage") retCULong []
+lodAverage mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor lodAverageSelector
 
 -- | lodAverage
 --
@@ -394,8 +391,8 @@ lodAverage mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setLodAverage:@
 setLodAverage :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> Bool -> IO ()
-setLodAverage mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setLodAverage:") retVoid [argCULong (if value then 1 else 0)]
+setLodAverage mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setLodAverageSelector value
 
 -- | Sets the level-of-detail (lod) bias when sampling from a texture.
 --
@@ -403,8 +400,8 @@ setLodAverage mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- lodBias@
 lodBias :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO CFloat
-lodBias mtlSamplerDescriptor  =
-    sendMsg mtlSamplerDescriptor (mkSelector "lodBias") retCFloat []
+lodBias mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor lodBiasSelector
 
 -- | Sets the level-of-detail (lod) bias when sampling from a texture.
 --
@@ -412,8 +409,8 @@ lodBias mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setLodBias:@
 setLodBias :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> CFloat -> IO ()
-setLodBias mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setLodBias:") retVoid [argCFloat value]
+setLodBias mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setLodBiasSelector value
 
 -- | compareFunction
 --
@@ -421,8 +418,8 @@ setLodBias mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- compareFunction@
 compareFunction :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO MTLCompareFunction
-compareFunction mtlSamplerDescriptor  =
-    fmap (coerce :: CULong -> MTLCompareFunction) $ sendMsg mtlSamplerDescriptor (mkSelector "compareFunction") retCULong []
+compareFunction mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor compareFunctionSelector
 
 -- | compareFunction
 --
@@ -430,8 +427,8 @@ compareFunction mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setCompareFunction:@
 setCompareFunction :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> MTLCompareFunction -> IO ()
-setCompareFunction mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setCompareFunction:") retVoid [argCULong (coerce value)]
+setCompareFunction mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setCompareFunctionSelector value
 
 -- | supportArgumentBuffers
 --
@@ -439,8 +436,8 @@ setCompareFunction mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- supportArgumentBuffers@
 supportArgumentBuffers :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO Bool
-supportArgumentBuffers mtlSamplerDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlSamplerDescriptor (mkSelector "supportArgumentBuffers") retCULong []
+supportArgumentBuffers mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor supportArgumentBuffersSelector
 
 -- | supportArgumentBuffers
 --
@@ -448,8 +445,8 @@ supportArgumentBuffers mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setSupportArgumentBuffers:@
 setSupportArgumentBuffers :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> Bool -> IO ()
-setSupportArgumentBuffers mtlSamplerDescriptor  value =
-    sendMsg mtlSamplerDescriptor (mkSelector "setSupportArgumentBuffers:") retVoid [argCULong (if value then 1 else 0)]
+setSupportArgumentBuffers mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setSupportArgumentBuffersSelector value
 
 -- | label
 --
@@ -457,8 +454,8 @@ setSupportArgumentBuffers mtlSamplerDescriptor  value =
 --
 -- ObjC selector: @- label@
 label :: IsMTLSamplerDescriptor mtlSamplerDescriptor => mtlSamplerDescriptor -> IO (Id NSString)
-label mtlSamplerDescriptor  =
-    sendMsg mtlSamplerDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtlSamplerDescriptor =
+  sendMessage mtlSamplerDescriptor labelSelector
 
 -- | label
 --
@@ -466,147 +463,146 @@ label mtlSamplerDescriptor  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTLSamplerDescriptor mtlSamplerDescriptor, IsNSString value) => mtlSamplerDescriptor -> value -> IO ()
-setLabel mtlSamplerDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlSamplerDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtlSamplerDescriptor value =
+  sendMessage mtlSamplerDescriptor setLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @minFilter@
-minFilterSelector :: Selector
+minFilterSelector :: Selector '[] MTLSamplerMinMagFilter
 minFilterSelector = mkSelector "minFilter"
 
 -- | @Selector@ for @setMinFilter:@
-setMinFilterSelector :: Selector
+setMinFilterSelector :: Selector '[MTLSamplerMinMagFilter] ()
 setMinFilterSelector = mkSelector "setMinFilter:"
 
 -- | @Selector@ for @magFilter@
-magFilterSelector :: Selector
+magFilterSelector :: Selector '[] MTLSamplerMinMagFilter
 magFilterSelector = mkSelector "magFilter"
 
 -- | @Selector@ for @setMagFilter:@
-setMagFilterSelector :: Selector
+setMagFilterSelector :: Selector '[MTLSamplerMinMagFilter] ()
 setMagFilterSelector = mkSelector "setMagFilter:"
 
 -- | @Selector@ for @mipFilter@
-mipFilterSelector :: Selector
+mipFilterSelector :: Selector '[] MTLSamplerMipFilter
 mipFilterSelector = mkSelector "mipFilter"
 
 -- | @Selector@ for @setMipFilter:@
-setMipFilterSelector :: Selector
+setMipFilterSelector :: Selector '[MTLSamplerMipFilter] ()
 setMipFilterSelector = mkSelector "setMipFilter:"
 
 -- | @Selector@ for @maxAnisotropy@
-maxAnisotropySelector :: Selector
+maxAnisotropySelector :: Selector '[] CULong
 maxAnisotropySelector = mkSelector "maxAnisotropy"
 
 -- | @Selector@ for @setMaxAnisotropy:@
-setMaxAnisotropySelector :: Selector
+setMaxAnisotropySelector :: Selector '[CULong] ()
 setMaxAnisotropySelector = mkSelector "setMaxAnisotropy:"
 
 -- | @Selector@ for @sAddressMode@
-sAddressModeSelector :: Selector
+sAddressModeSelector :: Selector '[] MTLSamplerAddressMode
 sAddressModeSelector = mkSelector "sAddressMode"
 
 -- | @Selector@ for @setSAddressMode:@
-setSAddressModeSelector :: Selector
+setSAddressModeSelector :: Selector '[MTLSamplerAddressMode] ()
 setSAddressModeSelector = mkSelector "setSAddressMode:"
 
 -- | @Selector@ for @tAddressMode@
-tAddressModeSelector :: Selector
+tAddressModeSelector :: Selector '[] MTLSamplerAddressMode
 tAddressModeSelector = mkSelector "tAddressMode"
 
 -- | @Selector@ for @setTAddressMode:@
-setTAddressModeSelector :: Selector
+setTAddressModeSelector :: Selector '[MTLSamplerAddressMode] ()
 setTAddressModeSelector = mkSelector "setTAddressMode:"
 
 -- | @Selector@ for @rAddressMode@
-rAddressModeSelector :: Selector
+rAddressModeSelector :: Selector '[] MTLSamplerAddressMode
 rAddressModeSelector = mkSelector "rAddressMode"
 
 -- | @Selector@ for @setRAddressMode:@
-setRAddressModeSelector :: Selector
+setRAddressModeSelector :: Selector '[MTLSamplerAddressMode] ()
 setRAddressModeSelector = mkSelector "setRAddressMode:"
 
 -- | @Selector@ for @borderColor@
-borderColorSelector :: Selector
+borderColorSelector :: Selector '[] MTLSamplerBorderColor
 borderColorSelector = mkSelector "borderColor"
 
 -- | @Selector@ for @setBorderColor:@
-setBorderColorSelector :: Selector
+setBorderColorSelector :: Selector '[MTLSamplerBorderColor] ()
 setBorderColorSelector = mkSelector "setBorderColor:"
 
 -- | @Selector@ for @reductionMode@
-reductionModeSelector :: Selector
+reductionModeSelector :: Selector '[] MTLSamplerReductionMode
 reductionModeSelector = mkSelector "reductionMode"
 
 -- | @Selector@ for @setReductionMode:@
-setReductionModeSelector :: Selector
+setReductionModeSelector :: Selector '[MTLSamplerReductionMode] ()
 setReductionModeSelector = mkSelector "setReductionMode:"
 
 -- | @Selector@ for @normalizedCoordinates@
-normalizedCoordinatesSelector :: Selector
+normalizedCoordinatesSelector :: Selector '[] Bool
 normalizedCoordinatesSelector = mkSelector "normalizedCoordinates"
 
 -- | @Selector@ for @setNormalizedCoordinates:@
-setNormalizedCoordinatesSelector :: Selector
+setNormalizedCoordinatesSelector :: Selector '[Bool] ()
 setNormalizedCoordinatesSelector = mkSelector "setNormalizedCoordinates:"
 
 -- | @Selector@ for @lodMinClamp@
-lodMinClampSelector :: Selector
+lodMinClampSelector :: Selector '[] CFloat
 lodMinClampSelector = mkSelector "lodMinClamp"
 
 -- | @Selector@ for @setLodMinClamp:@
-setLodMinClampSelector :: Selector
+setLodMinClampSelector :: Selector '[CFloat] ()
 setLodMinClampSelector = mkSelector "setLodMinClamp:"
 
 -- | @Selector@ for @lodMaxClamp@
-lodMaxClampSelector :: Selector
+lodMaxClampSelector :: Selector '[] CFloat
 lodMaxClampSelector = mkSelector "lodMaxClamp"
 
 -- | @Selector@ for @setLodMaxClamp:@
-setLodMaxClampSelector :: Selector
+setLodMaxClampSelector :: Selector '[CFloat] ()
 setLodMaxClampSelector = mkSelector "setLodMaxClamp:"
 
 -- | @Selector@ for @lodAverage@
-lodAverageSelector :: Selector
+lodAverageSelector :: Selector '[] Bool
 lodAverageSelector = mkSelector "lodAverage"
 
 -- | @Selector@ for @setLodAverage:@
-setLodAverageSelector :: Selector
+setLodAverageSelector :: Selector '[Bool] ()
 setLodAverageSelector = mkSelector "setLodAverage:"
 
 -- | @Selector@ for @lodBias@
-lodBiasSelector :: Selector
+lodBiasSelector :: Selector '[] CFloat
 lodBiasSelector = mkSelector "lodBias"
 
 -- | @Selector@ for @setLodBias:@
-setLodBiasSelector :: Selector
+setLodBiasSelector :: Selector '[CFloat] ()
 setLodBiasSelector = mkSelector "setLodBias:"
 
 -- | @Selector@ for @compareFunction@
-compareFunctionSelector :: Selector
+compareFunctionSelector :: Selector '[] MTLCompareFunction
 compareFunctionSelector = mkSelector "compareFunction"
 
 -- | @Selector@ for @setCompareFunction:@
-setCompareFunctionSelector :: Selector
+setCompareFunctionSelector :: Selector '[MTLCompareFunction] ()
 setCompareFunctionSelector = mkSelector "setCompareFunction:"
 
 -- | @Selector@ for @supportArgumentBuffers@
-supportArgumentBuffersSelector :: Selector
+supportArgumentBuffersSelector :: Selector '[] Bool
 supportArgumentBuffersSelector = mkSelector "supportArgumentBuffers"
 
 -- | @Selector@ for @setSupportArgumentBuffers:@
-setSupportArgumentBuffersSelector :: Selector
+setSupportArgumentBuffersSelector :: Selector '[Bool] ()
 setSupportArgumentBuffersSelector = mkSelector "setSupportArgumentBuffers:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 

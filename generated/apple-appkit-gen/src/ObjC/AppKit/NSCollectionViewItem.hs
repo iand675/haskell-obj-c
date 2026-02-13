@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,15 @@ module ObjC.AppKit.NSCollectionViewItem
   , setTextField
   , draggingImageComponents
   , collectionViewSelector
-  , selectedSelector
-  , setSelectedSelector
-  , highlightStateSelector
-  , setHighlightStateSelector
-  , imageViewSelector
-  , setImageViewSelector
-  , textFieldSelector
-  , setTextFieldSelector
   , draggingImageComponentsSelector
+  , highlightStateSelector
+  , imageViewSelector
+  , selectedSelector
+  , setHighlightStateSelector
+  , setImageViewSelector
+  , setSelectedSelector
+  , setTextFieldSelector
+  , textFieldSelector
 
   -- * Enum types
   , NSCollectionViewItemHighlightState(NSCollectionViewItemHighlightState)
@@ -37,15 +38,11 @@ module ObjC.AppKit.NSCollectionViewItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,97 +52,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- collectionView@
 collectionView :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> IO (Id NSCollectionView)
-collectionView nsCollectionViewItem  =
-    sendMsg nsCollectionViewItem (mkSelector "collectionView") (retPtr retVoid) [] >>= retainedObject . castPtr
+collectionView nsCollectionViewItem =
+  sendMessage nsCollectionViewItem collectionViewSelector
 
 -- | @- selected@
 selected :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> IO Bool
-selected nsCollectionViewItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionViewItem (mkSelector "selected") retCULong []
+selected nsCollectionViewItem =
+  sendMessage nsCollectionViewItem selectedSelector
 
 -- | @- setSelected:@
 setSelected :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> Bool -> IO ()
-setSelected nsCollectionViewItem  value =
-    sendMsg nsCollectionViewItem (mkSelector "setSelected:") retVoid [argCULong (if value then 1 else 0)]
+setSelected nsCollectionViewItem value =
+  sendMessage nsCollectionViewItem setSelectedSelector value
 
 -- | @- highlightState@
 highlightState :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> IO NSCollectionViewItemHighlightState
-highlightState nsCollectionViewItem  =
-    fmap (coerce :: CLong -> NSCollectionViewItemHighlightState) $ sendMsg nsCollectionViewItem (mkSelector "highlightState") retCLong []
+highlightState nsCollectionViewItem =
+  sendMessage nsCollectionViewItem highlightStateSelector
 
 -- | @- setHighlightState:@
 setHighlightState :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> NSCollectionViewItemHighlightState -> IO ()
-setHighlightState nsCollectionViewItem  value =
-    sendMsg nsCollectionViewItem (mkSelector "setHighlightState:") retVoid [argCLong (coerce value)]
+setHighlightState nsCollectionViewItem value =
+  sendMessage nsCollectionViewItem setHighlightStateSelector value
 
 -- | @- imageView@
 imageView :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> IO (Id NSImageView)
-imageView nsCollectionViewItem  =
-    sendMsg nsCollectionViewItem (mkSelector "imageView") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageView nsCollectionViewItem =
+  sendMessage nsCollectionViewItem imageViewSelector
 
 -- | @- setImageView:@
 setImageView :: (IsNSCollectionViewItem nsCollectionViewItem, IsNSImageView value) => nsCollectionViewItem -> value -> IO ()
-setImageView nsCollectionViewItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCollectionViewItem (mkSelector "setImageView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImageView nsCollectionViewItem value =
+  sendMessage nsCollectionViewItem setImageViewSelector (toNSImageView value)
 
 -- | @- textField@
 textField :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> IO (Id NSTextField)
-textField nsCollectionViewItem  =
-    sendMsg nsCollectionViewItem (mkSelector "textField") (retPtr retVoid) [] >>= retainedObject . castPtr
+textField nsCollectionViewItem =
+  sendMessage nsCollectionViewItem textFieldSelector
 
 -- | @- setTextField:@
 setTextField :: (IsNSCollectionViewItem nsCollectionViewItem, IsNSTextField value) => nsCollectionViewItem -> value -> IO ()
-setTextField nsCollectionViewItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCollectionViewItem (mkSelector "setTextField:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextField nsCollectionViewItem value =
+  sendMessage nsCollectionViewItem setTextFieldSelector (toNSTextField value)
 
 -- | @- draggingImageComponents@
 draggingImageComponents :: IsNSCollectionViewItem nsCollectionViewItem => nsCollectionViewItem -> IO (Id NSArray)
-draggingImageComponents nsCollectionViewItem  =
-    sendMsg nsCollectionViewItem (mkSelector "draggingImageComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+draggingImageComponents nsCollectionViewItem =
+  sendMessage nsCollectionViewItem draggingImageComponentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @collectionView@
-collectionViewSelector :: Selector
+collectionViewSelector :: Selector '[] (Id NSCollectionView)
 collectionViewSelector = mkSelector "collectionView"
 
 -- | @Selector@ for @selected@
-selectedSelector :: Selector
+selectedSelector :: Selector '[] Bool
 selectedSelector = mkSelector "selected"
 
 -- | @Selector@ for @setSelected:@
-setSelectedSelector :: Selector
+setSelectedSelector :: Selector '[Bool] ()
 setSelectedSelector = mkSelector "setSelected:"
 
 -- | @Selector@ for @highlightState@
-highlightStateSelector :: Selector
+highlightStateSelector :: Selector '[] NSCollectionViewItemHighlightState
 highlightStateSelector = mkSelector "highlightState"
 
 -- | @Selector@ for @setHighlightState:@
-setHighlightStateSelector :: Selector
+setHighlightStateSelector :: Selector '[NSCollectionViewItemHighlightState] ()
 setHighlightStateSelector = mkSelector "setHighlightState:"
 
 -- | @Selector@ for @imageView@
-imageViewSelector :: Selector
+imageViewSelector :: Selector '[] (Id NSImageView)
 imageViewSelector = mkSelector "imageView"
 
 -- | @Selector@ for @setImageView:@
-setImageViewSelector :: Selector
+setImageViewSelector :: Selector '[Id NSImageView] ()
 setImageViewSelector = mkSelector "setImageView:"
 
 -- | @Selector@ for @textField@
-textFieldSelector :: Selector
+textFieldSelector :: Selector '[] (Id NSTextField)
 textFieldSelector = mkSelector "textField"
 
 -- | @Selector@ for @setTextField:@
-setTextFieldSelector :: Selector
+setTextFieldSelector :: Selector '[Id NSTextField] ()
 setTextFieldSelector = mkSelector "setTextField:"
 
 -- | @Selector@ for @draggingImageComponents@
-draggingImageComponentsSelector :: Selector
+draggingImageComponentsSelector :: Selector '[] (Id NSArray)
 draggingImageComponentsSelector = mkSelector "draggingImageComponents"
 

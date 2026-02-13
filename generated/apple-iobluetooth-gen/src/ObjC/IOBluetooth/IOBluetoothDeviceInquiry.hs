@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,34 +28,30 @@ module ObjC.IOBluetooth.IOBluetoothDeviceInquiry
   , setSearchType
   , updateNewDeviceNames
   , setUpdateNewDeviceNames
-  , inquiryWithDelegateSelector
+  , clearFoundDevicesSelector
+  , delegateSelector
+  , foundDevicesSelector
   , initWithDelegateSelector
+  , inquiryLengthSelector
+  , inquiryWithDelegateSelector
+  , searchTypeSelector
+  , setDelegateSelector
+  , setInquiryLengthSelector
+  , setSearchCriteria_majorDeviceClass_minorDeviceClassSelector
+  , setSearchTypeSelector
+  , setUpdateNewDeviceNamesSelector
   , startSelector
   , stopSelector
-  , foundDevicesSelector
-  , clearFoundDevicesSelector
-  , setSearchCriteria_majorDeviceClass_minorDeviceClassSelector
-  , delegateSelector
-  , setDelegateSelector
-  , inquiryLengthSelector
-  , setInquiryLengthSelector
-  , searchTypeSelector
-  , setSearchTypeSelector
   , updateNewDeviceNamesSelector
-  , setUpdateNewDeviceNamesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,7 +73,7 @@ inquiryWithDelegate :: RawId -> IO (Id IOBluetoothDeviceInquiry)
 inquiryWithDelegate delegate =
   do
     cls' <- getRequiredClass "IOBluetoothDeviceInquiry"
-    sendClassMsg cls' (mkSelector "inquiryWithDelegate:") (retPtr retVoid) [argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' inquiryWithDelegateSelector delegate
 
 -- | initWithDelegate
 --
@@ -88,8 +85,8 @@ inquiryWithDelegate delegate =
 --
 -- ObjC selector: @- initWithDelegate:@
 initWithDelegate :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> RawId -> IO (Id IOBluetoothDeviceInquiry)
-initWithDelegate ioBluetoothDeviceInquiry  delegate =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "initWithDelegate:") (retPtr retVoid) [argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithDelegate ioBluetoothDeviceInquiry delegate =
+  sendOwnedMessage ioBluetoothDeviceInquiry initWithDelegateSelector delegate
 
 -- | start
 --
@@ -101,8 +98,8 @@ initWithDelegate ioBluetoothDeviceInquiry  delegate =
 --
 -- ObjC selector: @- start@
 start :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> IO CInt
-start ioBluetoothDeviceInquiry  =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "start") retCInt []
+start ioBluetoothDeviceInquiry =
+  sendMessage ioBluetoothDeviceInquiry startSelector
 
 -- | stop
 --
@@ -112,8 +109,8 @@ start ioBluetoothDeviceInquiry  =
 --
 -- ObjC selector: @- stop@
 stop :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> IO CInt
-stop ioBluetoothDeviceInquiry  =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "stop") retCInt []
+stop ioBluetoothDeviceInquiry =
+  sendMessage ioBluetoothDeviceInquiry stopSelector
 
 -- | foundDevices
 --
@@ -125,8 +122,8 @@ stop ioBluetoothDeviceInquiry  =
 --
 -- ObjC selector: @- foundDevices@
 foundDevices :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> IO (Id NSArray)
-foundDevices ioBluetoothDeviceInquiry  =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "foundDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+foundDevices ioBluetoothDeviceInquiry =
+  sendMessage ioBluetoothDeviceInquiry foundDevicesSelector
 
 -- | clearFoundDevices
 --
@@ -134,8 +131,8 @@ foundDevices ioBluetoothDeviceInquiry  =
 --
 -- ObjC selector: @- clearFoundDevices@
 clearFoundDevices :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> IO ()
-clearFoundDevices ioBluetoothDeviceInquiry  =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "clearFoundDevices") retVoid []
+clearFoundDevices ioBluetoothDeviceInquiry =
+  sendMessage ioBluetoothDeviceInquiry clearFoundDevicesSelector
 
 -- | setSearchCriteria
 --
@@ -155,18 +152,18 @@ clearFoundDevices ioBluetoothDeviceInquiry  =
 --
 -- ObjC selector: @- setSearchCriteria:majorDeviceClass:minorDeviceClass:@
 setSearchCriteria_majorDeviceClass_minorDeviceClass :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> CUInt -> CUInt -> CUInt -> IO ()
-setSearchCriteria_majorDeviceClass_minorDeviceClass ioBluetoothDeviceInquiry  inServiceClassMajor inMajorDeviceClass inMinorDeviceClass =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "setSearchCriteria:majorDeviceClass:minorDeviceClass:") retVoid [argCUInt inServiceClassMajor, argCUInt inMajorDeviceClass, argCUInt inMinorDeviceClass]
+setSearchCriteria_majorDeviceClass_minorDeviceClass ioBluetoothDeviceInquiry inServiceClassMajor inMajorDeviceClass inMinorDeviceClass =
+  sendMessage ioBluetoothDeviceInquiry setSearchCriteria_majorDeviceClass_minorDeviceClassSelector inServiceClassMajor inMajorDeviceClass inMinorDeviceClass
 
 -- | @- delegate@
 delegate :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> IO RawId
-delegate ioBluetoothDeviceInquiry  =
-    fmap (RawId . castPtr) $ sendMsg ioBluetoothDeviceInquiry (mkSelector "delegate") (retPtr retVoid) []
+delegate ioBluetoothDeviceInquiry =
+  sendMessage ioBluetoothDeviceInquiry delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> RawId -> IO ()
-setDelegate ioBluetoothDeviceInquiry  value =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ioBluetoothDeviceInquiry value =
+  sendMessage ioBluetoothDeviceInquiry setDelegateSelector value
 
 -- | setInquiryLength
 --
@@ -180,8 +177,8 @@ setDelegate ioBluetoothDeviceInquiry  value =
 --
 -- ObjC selector: @- inquiryLength@
 inquiryLength :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> IO CUChar
-inquiryLength ioBluetoothDeviceInquiry  =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "inquiryLength") retCUChar []
+inquiryLength ioBluetoothDeviceInquiry =
+  sendMessage ioBluetoothDeviceInquiry inquiryLengthSelector
 
 -- | setInquiryLength
 --
@@ -195,8 +192,8 @@ inquiryLength ioBluetoothDeviceInquiry  =
 --
 -- ObjC selector: @- setInquiryLength:@
 setInquiryLength :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> CUChar -> IO ()
-setInquiryLength ioBluetoothDeviceInquiry  value =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "setInquiryLength:") retVoid [argCUChar value]
+setInquiryLength ioBluetoothDeviceInquiry value =
+  sendMessage ioBluetoothDeviceInquiry setInquiryLengthSelector value
 
 -- | setSearchType
 --
@@ -208,8 +205,8 @@ setInquiryLength ioBluetoothDeviceInquiry  value =
 --
 -- ObjC selector: @- searchType@
 searchType :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> IO CUInt
-searchType ioBluetoothDeviceInquiry  =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "searchType") retCUInt []
+searchType ioBluetoothDeviceInquiry =
+  sendMessage ioBluetoothDeviceInquiry searchTypeSelector
 
 -- | setSearchType
 --
@@ -221,8 +218,8 @@ searchType ioBluetoothDeviceInquiry  =
 --
 -- ObjC selector: @- setSearchType:@
 setSearchType :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> CUInt -> IO ()
-setSearchType ioBluetoothDeviceInquiry  value =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "setSearchType:") retVoid [argCUInt value]
+setSearchType ioBluetoothDeviceInquiry value =
+  sendMessage ioBluetoothDeviceInquiry setSearchTypeSelector value
 
 -- | setUpdateNewDeviceNames
 --
@@ -234,8 +231,8 @@ setSearchType ioBluetoothDeviceInquiry  value =
 --
 -- ObjC selector: @- updateNewDeviceNames@
 updateNewDeviceNames :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> IO Bool
-updateNewDeviceNames ioBluetoothDeviceInquiry  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothDeviceInquiry (mkSelector "updateNewDeviceNames") retCULong []
+updateNewDeviceNames ioBluetoothDeviceInquiry =
+  sendMessage ioBluetoothDeviceInquiry updateNewDeviceNamesSelector
 
 -- | setUpdateNewDeviceNames
 --
@@ -247,70 +244,70 @@ updateNewDeviceNames ioBluetoothDeviceInquiry  =
 --
 -- ObjC selector: @- setUpdateNewDeviceNames:@
 setUpdateNewDeviceNames :: IsIOBluetoothDeviceInquiry ioBluetoothDeviceInquiry => ioBluetoothDeviceInquiry -> Bool -> IO ()
-setUpdateNewDeviceNames ioBluetoothDeviceInquiry  value =
-    sendMsg ioBluetoothDeviceInquiry (mkSelector "setUpdateNewDeviceNames:") retVoid [argCULong (if value then 1 else 0)]
+setUpdateNewDeviceNames ioBluetoothDeviceInquiry value =
+  sendMessage ioBluetoothDeviceInquiry setUpdateNewDeviceNamesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @inquiryWithDelegate:@
-inquiryWithDelegateSelector :: Selector
+inquiryWithDelegateSelector :: Selector '[RawId] (Id IOBluetoothDeviceInquiry)
 inquiryWithDelegateSelector = mkSelector "inquiryWithDelegate:"
 
 -- | @Selector@ for @initWithDelegate:@
-initWithDelegateSelector :: Selector
+initWithDelegateSelector :: Selector '[RawId] (Id IOBluetoothDeviceInquiry)
 initWithDelegateSelector = mkSelector "initWithDelegate:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] CInt
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] CInt
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @foundDevices@
-foundDevicesSelector :: Selector
+foundDevicesSelector :: Selector '[] (Id NSArray)
 foundDevicesSelector = mkSelector "foundDevices"
 
 -- | @Selector@ for @clearFoundDevices@
-clearFoundDevicesSelector :: Selector
+clearFoundDevicesSelector :: Selector '[] ()
 clearFoundDevicesSelector = mkSelector "clearFoundDevices"
 
 -- | @Selector@ for @setSearchCriteria:majorDeviceClass:minorDeviceClass:@
-setSearchCriteria_majorDeviceClass_minorDeviceClassSelector :: Selector
+setSearchCriteria_majorDeviceClass_minorDeviceClassSelector :: Selector '[CUInt, CUInt, CUInt] ()
 setSearchCriteria_majorDeviceClass_minorDeviceClassSelector = mkSelector "setSearchCriteria:majorDeviceClass:minorDeviceClass:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @inquiryLength@
-inquiryLengthSelector :: Selector
+inquiryLengthSelector :: Selector '[] CUChar
 inquiryLengthSelector = mkSelector "inquiryLength"
 
 -- | @Selector@ for @setInquiryLength:@
-setInquiryLengthSelector :: Selector
+setInquiryLengthSelector :: Selector '[CUChar] ()
 setInquiryLengthSelector = mkSelector "setInquiryLength:"
 
 -- | @Selector@ for @searchType@
-searchTypeSelector :: Selector
+searchTypeSelector :: Selector '[] CUInt
 searchTypeSelector = mkSelector "searchType"
 
 -- | @Selector@ for @setSearchType:@
-setSearchTypeSelector :: Selector
+setSearchTypeSelector :: Selector '[CUInt] ()
 setSearchTypeSelector = mkSelector "setSearchType:"
 
 -- | @Selector@ for @updateNewDeviceNames@
-updateNewDeviceNamesSelector :: Selector
+updateNewDeviceNamesSelector :: Selector '[] Bool
 updateNewDeviceNamesSelector = mkSelector "updateNewDeviceNames"
 
 -- | @Selector@ for @setUpdateNewDeviceNames:@
-setUpdateNewDeviceNamesSelector :: Selector
+setUpdateNewDeviceNamesSelector :: Selector '[Bool] ()
 setUpdateNewDeviceNamesSelector = mkSelector "setUpdateNewDeviceNames:"
 

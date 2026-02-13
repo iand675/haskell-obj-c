@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.Matter.MTRMicrowaveOvenControlClusterSetCookingParametersParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , cookModeSelector
-  , setCookModeSelector
   , cookTimeSelector
-  , setCookTimeSelector
   , powerSettingSelector
+  , serverSideProcessingTimeoutSelector
+  , setCookModeSelector
+  , setCookTimeSelector
   , setPowerSettingSelector
-  , wattSettingIndexSelector
+  , setServerSideProcessingTimeoutSelector
+  , setStartAfterSettingSelector
+  , setTimedInvokeTimeoutMsSelector
   , setWattSettingIndexSelector
   , startAfterSettingSelector
-  , setStartAfterSettingSelector
   , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
+  , wattSettingIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,58 +52,53 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cookMode@
 cookMode :: IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> IO (Id NSNumber)
-cookMode mtrMicrowaveOvenControlClusterSetCookingParametersParams  =
-    sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "cookMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+cookMode mtrMicrowaveOvenControlClusterSetCookingParametersParams =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams cookModeSelector
 
 -- | @- setCookMode:@
 setCookMode :: (IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> value -> IO ()
-setCookMode mtrMicrowaveOvenControlClusterSetCookingParametersParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "setCookMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCookMode mtrMicrowaveOvenControlClusterSetCookingParametersParams value =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams setCookModeSelector (toNSNumber value)
 
 -- | @- cookTime@
 cookTime :: IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> IO (Id NSNumber)
-cookTime mtrMicrowaveOvenControlClusterSetCookingParametersParams  =
-    sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "cookTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cookTime mtrMicrowaveOvenControlClusterSetCookingParametersParams =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams cookTimeSelector
 
 -- | @- setCookTime:@
 setCookTime :: (IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> value -> IO ()
-setCookTime mtrMicrowaveOvenControlClusterSetCookingParametersParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "setCookTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCookTime mtrMicrowaveOvenControlClusterSetCookingParametersParams value =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams setCookTimeSelector (toNSNumber value)
 
 -- | @- powerSetting@
 powerSetting :: IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> IO (Id NSNumber)
-powerSetting mtrMicrowaveOvenControlClusterSetCookingParametersParams  =
-    sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "powerSetting") (retPtr retVoid) [] >>= retainedObject . castPtr
+powerSetting mtrMicrowaveOvenControlClusterSetCookingParametersParams =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams powerSettingSelector
 
 -- | @- setPowerSetting:@
 setPowerSetting :: (IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> value -> IO ()
-setPowerSetting mtrMicrowaveOvenControlClusterSetCookingParametersParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "setPowerSetting:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPowerSetting mtrMicrowaveOvenControlClusterSetCookingParametersParams value =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams setPowerSettingSelector (toNSNumber value)
 
 -- | @- wattSettingIndex@
 wattSettingIndex :: IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> IO (Id NSNumber)
-wattSettingIndex mtrMicrowaveOvenControlClusterSetCookingParametersParams  =
-    sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "wattSettingIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+wattSettingIndex mtrMicrowaveOvenControlClusterSetCookingParametersParams =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams wattSettingIndexSelector
 
 -- | @- setWattSettingIndex:@
 setWattSettingIndex :: (IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> value -> IO ()
-setWattSettingIndex mtrMicrowaveOvenControlClusterSetCookingParametersParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "setWattSettingIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWattSettingIndex mtrMicrowaveOvenControlClusterSetCookingParametersParams value =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams setWattSettingIndexSelector (toNSNumber value)
 
 -- | @- startAfterSetting@
 startAfterSetting :: IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> IO (Id NSNumber)
-startAfterSetting mtrMicrowaveOvenControlClusterSetCookingParametersParams  =
-    sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "startAfterSetting") (retPtr retVoid) [] >>= retainedObject . castPtr
+startAfterSetting mtrMicrowaveOvenControlClusterSetCookingParametersParams =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams startAfterSettingSelector
 
 -- | @- setStartAfterSetting:@
 setStartAfterSetting :: (IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> value -> IO ()
-setStartAfterSetting mtrMicrowaveOvenControlClusterSetCookingParametersParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "setStartAfterSetting:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartAfterSetting mtrMicrowaveOvenControlClusterSetCookingParametersParams value =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams setStartAfterSettingSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -116,8 +108,8 @@ setStartAfterSetting mtrMicrowaveOvenControlClusterSetCookingParametersParams  v
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrMicrowaveOvenControlClusterSetCookingParametersParams  =
-    sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrMicrowaveOvenControlClusterSetCookingParametersParams =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -127,9 +119,8 @@ timedInvokeTimeoutMs mtrMicrowaveOvenControlClusterSetCookingParametersParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrMicrowaveOvenControlClusterSetCookingParametersParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrMicrowaveOvenControlClusterSetCookingParametersParams value =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -139,8 +130,8 @@ setTimedInvokeTimeoutMs mtrMicrowaveOvenControlClusterSetCookingParametersParams
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrMicrowaveOvenControlClusterSetCookingParametersParams  =
-    sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrMicrowaveOvenControlClusterSetCookingParametersParams =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -150,67 +141,66 @@ serverSideProcessingTimeout mtrMicrowaveOvenControlClusterSetCookingParametersPa
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRMicrowaveOvenControlClusterSetCookingParametersParams mtrMicrowaveOvenControlClusterSetCookingParametersParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterSetCookingParametersParams -> value -> IO ()
-setServerSideProcessingTimeout mtrMicrowaveOvenControlClusterSetCookingParametersParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterSetCookingParametersParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrMicrowaveOvenControlClusterSetCookingParametersParams value =
+  sendMessage mtrMicrowaveOvenControlClusterSetCookingParametersParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cookMode@
-cookModeSelector :: Selector
+cookModeSelector :: Selector '[] (Id NSNumber)
 cookModeSelector = mkSelector "cookMode"
 
 -- | @Selector@ for @setCookMode:@
-setCookModeSelector :: Selector
+setCookModeSelector :: Selector '[Id NSNumber] ()
 setCookModeSelector = mkSelector "setCookMode:"
 
 -- | @Selector@ for @cookTime@
-cookTimeSelector :: Selector
+cookTimeSelector :: Selector '[] (Id NSNumber)
 cookTimeSelector = mkSelector "cookTime"
 
 -- | @Selector@ for @setCookTime:@
-setCookTimeSelector :: Selector
+setCookTimeSelector :: Selector '[Id NSNumber] ()
 setCookTimeSelector = mkSelector "setCookTime:"
 
 -- | @Selector@ for @powerSetting@
-powerSettingSelector :: Selector
+powerSettingSelector :: Selector '[] (Id NSNumber)
 powerSettingSelector = mkSelector "powerSetting"
 
 -- | @Selector@ for @setPowerSetting:@
-setPowerSettingSelector :: Selector
+setPowerSettingSelector :: Selector '[Id NSNumber] ()
 setPowerSettingSelector = mkSelector "setPowerSetting:"
 
 -- | @Selector@ for @wattSettingIndex@
-wattSettingIndexSelector :: Selector
+wattSettingIndexSelector :: Selector '[] (Id NSNumber)
 wattSettingIndexSelector = mkSelector "wattSettingIndex"
 
 -- | @Selector@ for @setWattSettingIndex:@
-setWattSettingIndexSelector :: Selector
+setWattSettingIndexSelector :: Selector '[Id NSNumber] ()
 setWattSettingIndexSelector = mkSelector "setWattSettingIndex:"
 
 -- | @Selector@ for @startAfterSetting@
-startAfterSettingSelector :: Selector
+startAfterSettingSelector :: Selector '[] (Id NSNumber)
 startAfterSettingSelector = mkSelector "startAfterSetting"
 
 -- | @Selector@ for @setStartAfterSetting:@
-setStartAfterSettingSelector :: Selector
+setStartAfterSettingSelector :: Selector '[Id NSNumber] ()
 setStartAfterSettingSelector = mkSelector "setStartAfterSetting:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

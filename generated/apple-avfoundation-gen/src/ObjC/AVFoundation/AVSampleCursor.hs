@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.AVFoundation.AVSampleCursor
   , currentSampleIndexInChunk
   , currentSampleDependencyAttachments
   , samplesRequiredForDecoderRefresh
+  , comparePositionInDecodeOrderWithPositionOfCursorSelector
+  , copyCurrentSampleFormatDescriptionSelector
+  , currentChunkStorageURLSelector
+  , currentSampleDependencyAttachmentsSelector
+  , currentSampleIndexInChunkSelector
   , initSelector
   , newSelector
-  , stepInDecodeOrderByCountSelector
-  , stepInPresentationOrderByCountSelector
-  , copyCurrentSampleFormatDescriptionSelector
-  , comparePositionInDecodeOrderWithPositionOfCursorSelector
+  , samplesRequiredForDecoderRefreshSelector
   , samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursorSelector
   , samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursorSelector
-  , currentChunkStorageURLSelector
-  , currentSampleIndexInChunkSelector
-  , currentSampleDependencyAttachmentsSelector
-  , samplesRequiredForDecoderRefreshSelector
+  , stepInDecodeOrderByCountSelector
+  , stepInPresentationOrderByCountSelector
 
   -- * Enum types
   , NSComparisonResult(NSComparisonResult)
@@ -40,15 +41,11 @@ module ObjC.AVFoundation.AVSampleCursor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,15 +55,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVSampleCursor avSampleCursor => avSampleCursor -> IO (Id AVSampleCursor)
-init_ avSampleCursor  =
-    sendMsg avSampleCursor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avSampleCursor =
+  sendOwnedMessage avSampleCursor initSelector
 
 -- | @+ new@
 new :: IO (Id AVSampleCursor)
 new  =
   do
     cls' <- getRequiredClass "AVSampleCursor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | stepInDecodeOrderByCount:
 --
@@ -78,8 +75,8 @@ new  =
 --
 -- ObjC selector: @- stepInDecodeOrderByCount:@
 stepInDecodeOrderByCount :: IsAVSampleCursor avSampleCursor => avSampleCursor -> CLong -> IO CLong
-stepInDecodeOrderByCount avSampleCursor  stepCount =
-    sendMsg avSampleCursor (mkSelector "stepInDecodeOrderByCount:") retCLong [argCLong stepCount]
+stepInDecodeOrderByCount avSampleCursor stepCount =
+  sendMessage avSampleCursor stepInDecodeOrderByCountSelector stepCount
 
 -- | stepInPresentationOrderByCount:
 --
@@ -91,8 +88,8 @@ stepInDecodeOrderByCount avSampleCursor  stepCount =
 --
 -- ObjC selector: @- stepInPresentationOrderByCount:@
 stepInPresentationOrderByCount :: IsAVSampleCursor avSampleCursor => avSampleCursor -> CLong -> IO CLong
-stepInPresentationOrderByCount avSampleCursor  stepCount =
-    sendMsg avSampleCursor (mkSelector "stepInPresentationOrderByCount:") retCLong [argCLong stepCount]
+stepInPresentationOrderByCount avSampleCursor stepCount =
+  sendMessage avSampleCursor stepInPresentationOrderByCountSelector stepCount
 
 -- | copyCurrentSampleFormatDescription:
 --
@@ -100,8 +97,8 @@ stepInPresentationOrderByCount avSampleCursor  stepCount =
 --
 -- ObjC selector: @- copyCurrentSampleFormatDescription@
 copyCurrentSampleFormatDescription :: IsAVSampleCursor avSampleCursor => avSampleCursor -> IO RawId
-copyCurrentSampleFormatDescription avSampleCursor  =
-    fmap (RawId . castPtr) $ sendMsg avSampleCursor (mkSelector "copyCurrentSampleFormatDescription") (retPtr retVoid) []
+copyCurrentSampleFormatDescription avSampleCursor =
+  sendOwnedMessage avSampleCursor copyCurrentSampleFormatDescriptionSelector
 
 -- | comparePositionInDecodeOrderWithPositionOfCursor:
 --
@@ -115,9 +112,8 @@ copyCurrentSampleFormatDescription avSampleCursor  =
 --
 -- ObjC selector: @- comparePositionInDecodeOrderWithPositionOfCursor:@
 comparePositionInDecodeOrderWithPositionOfCursor :: (IsAVSampleCursor avSampleCursor, IsAVSampleCursor cursor) => avSampleCursor -> cursor -> IO NSComparisonResult
-comparePositionInDecodeOrderWithPositionOfCursor avSampleCursor  cursor =
-  withObjCPtr cursor $ \raw_cursor ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg avSampleCursor (mkSelector "comparePositionInDecodeOrderWithPositionOfCursor:") retCLong [argPtr (castPtr raw_cursor :: Ptr ())]
+comparePositionInDecodeOrderWithPositionOfCursor avSampleCursor cursor =
+  sendMessage avSampleCursor comparePositionInDecodeOrderWithPositionOfCursorSelector (toAVSampleCursor cursor)
 
 -- | samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursor:
 --
@@ -131,9 +127,8 @@ comparePositionInDecodeOrderWithPositionOfCursor avSampleCursor  cursor =
 --
 -- ObjC selector: @- samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursor:@
 samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursor :: (IsAVSampleCursor avSampleCursor, IsAVSampleCursor cursor) => avSampleCursor -> cursor -> IO Bool
-samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursor avSampleCursor  cursor =
-  withObjCPtr cursor $ \raw_cursor ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleCursor (mkSelector "samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursor:") retCULong [argPtr (castPtr raw_cursor :: Ptr ())]
+samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursor avSampleCursor cursor =
+  sendMessage avSampleCursor samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursorSelector (toAVSampleCursor cursor)
 
 -- | samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursor:
 --
@@ -147,9 +142,8 @@ samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursor a
 --
 -- ObjC selector: @- samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursor:@
 samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursor :: (IsAVSampleCursor avSampleCursor, IsAVSampleCursor cursor) => avSampleCursor -> cursor -> IO Bool
-samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursor avSampleCursor  cursor =
-  withObjCPtr cursor $ \raw_cursor ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleCursor (mkSelector "samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursor:") retCULong [argPtr (castPtr raw_cursor :: Ptr ())]
+samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursor avSampleCursor cursor =
+  sendMessage avSampleCursor samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursorSelector (toAVSampleCursor cursor)
 
 -- | currentChunkStorageURL
 --
@@ -159,8 +153,8 @@ samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursor a
 --
 -- ObjC selector: @- currentChunkStorageURL@
 currentChunkStorageURL :: IsAVSampleCursor avSampleCursor => avSampleCursor -> IO (Id NSURL)
-currentChunkStorageURL avSampleCursor  =
-    sendMsg avSampleCursor (mkSelector "currentChunkStorageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentChunkStorageURL avSampleCursor =
+  sendMessage avSampleCursor currentChunkStorageURLSelector
 
 -- | currentSampleIndexInChunk
 --
@@ -168,8 +162,8 @@ currentChunkStorageURL avSampleCursor  =
 --
 -- ObjC selector: @- currentSampleIndexInChunk@
 currentSampleIndexInChunk :: IsAVSampleCursor avSampleCursor => avSampleCursor -> IO CLong
-currentSampleIndexInChunk avSampleCursor  =
-    sendMsg avSampleCursor (mkSelector "currentSampleIndexInChunk") retCLong []
+currentSampleIndexInChunk avSampleCursor =
+  sendMessage avSampleCursor currentSampleIndexInChunkSelector
 
 -- | currentSampleDependencyAttachments
 --
@@ -177,8 +171,8 @@ currentSampleIndexInChunk avSampleCursor  =
 --
 -- ObjC selector: @- currentSampleDependencyAttachments@
 currentSampleDependencyAttachments :: IsAVSampleCursor avSampleCursor => avSampleCursor -> IO (Id NSDictionary)
-currentSampleDependencyAttachments avSampleCursor  =
-    sendMsg avSampleCursor (mkSelector "currentSampleDependencyAttachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentSampleDependencyAttachments avSampleCursor =
+  sendMessage avSampleCursor currentSampleDependencyAttachmentsSelector
 
 -- | samplesRequiredForDecoderRefresh
 --
@@ -194,58 +188,58 @@ currentSampleDependencyAttachments avSampleCursor  =
 --
 -- ObjC selector: @- samplesRequiredForDecoderRefresh@
 samplesRequiredForDecoderRefresh :: IsAVSampleCursor avSampleCursor => avSampleCursor -> IO CLong
-samplesRequiredForDecoderRefresh avSampleCursor  =
-    sendMsg avSampleCursor (mkSelector "samplesRequiredForDecoderRefresh") retCLong []
+samplesRequiredForDecoderRefresh avSampleCursor =
+  sendMessage avSampleCursor samplesRequiredForDecoderRefreshSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVSampleCursor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVSampleCursor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @stepInDecodeOrderByCount:@
-stepInDecodeOrderByCountSelector :: Selector
+stepInDecodeOrderByCountSelector :: Selector '[CLong] CLong
 stepInDecodeOrderByCountSelector = mkSelector "stepInDecodeOrderByCount:"
 
 -- | @Selector@ for @stepInPresentationOrderByCount:@
-stepInPresentationOrderByCountSelector :: Selector
+stepInPresentationOrderByCountSelector :: Selector '[CLong] CLong
 stepInPresentationOrderByCountSelector = mkSelector "stepInPresentationOrderByCount:"
 
 -- | @Selector@ for @copyCurrentSampleFormatDescription@
-copyCurrentSampleFormatDescriptionSelector :: Selector
+copyCurrentSampleFormatDescriptionSelector :: Selector '[] RawId
 copyCurrentSampleFormatDescriptionSelector = mkSelector "copyCurrentSampleFormatDescription"
 
 -- | @Selector@ for @comparePositionInDecodeOrderWithPositionOfCursor:@
-comparePositionInDecodeOrderWithPositionOfCursorSelector :: Selector
+comparePositionInDecodeOrderWithPositionOfCursorSelector :: Selector '[Id AVSampleCursor] NSComparisonResult
 comparePositionInDecodeOrderWithPositionOfCursorSelector = mkSelector "comparePositionInDecodeOrderWithPositionOfCursor:"
 
 -- | @Selector@ for @samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursor:@
-samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursorSelector :: Selector
+samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursorSelector :: Selector '[Id AVSampleCursor] Bool
 samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursorSelector = mkSelector "samplesWithEarlierDecodeTimeStampsMayHaveLaterPresentationTimeStampsThanCursor:"
 
 -- | @Selector@ for @samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursor:@
-samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursorSelector :: Selector
+samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursorSelector :: Selector '[Id AVSampleCursor] Bool
 samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursorSelector = mkSelector "samplesWithLaterDecodeTimeStampsMayHaveEarlierPresentationTimeStampsThanCursor:"
 
 -- | @Selector@ for @currentChunkStorageURL@
-currentChunkStorageURLSelector :: Selector
+currentChunkStorageURLSelector :: Selector '[] (Id NSURL)
 currentChunkStorageURLSelector = mkSelector "currentChunkStorageURL"
 
 -- | @Selector@ for @currentSampleIndexInChunk@
-currentSampleIndexInChunkSelector :: Selector
+currentSampleIndexInChunkSelector :: Selector '[] CLong
 currentSampleIndexInChunkSelector = mkSelector "currentSampleIndexInChunk"
 
 -- | @Selector@ for @currentSampleDependencyAttachments@
-currentSampleDependencyAttachmentsSelector :: Selector
+currentSampleDependencyAttachmentsSelector :: Selector '[] (Id NSDictionary)
 currentSampleDependencyAttachmentsSelector = mkSelector "currentSampleDependencyAttachments"
 
 -- | @Selector@ for @samplesRequiredForDecoderRefresh@
-samplesRequiredForDecoderRefreshSelector :: Selector
+samplesRequiredForDecoderRefreshSelector :: Selector '[] CLong
 samplesRequiredForDecoderRefreshSelector = mkSelector "samplesRequiredForDecoderRefresh"
 

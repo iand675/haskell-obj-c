@@ -18,7 +18,3 @@ library:
   source-dirs: src
   exposed-modules:
   - ObjC.GameplayKit.NSArray
-  - ObjC.GameplayKit.SCNNode
-  - ObjC.GameplayKit.SKNode
-  - ObjC.GameplayKit.SKTexture
-  - ObjC.GameplayKit.SKTileMapNode

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,28 +36,28 @@ module ObjC.IOBluetooth.IOBluetoothRFCOMMChannel
   , getDevice
   , getObjectID
   , registerForChannelCloseNotification_selector
-  , registerForChannelOpenNotifications_selectorSelector
-  , registerForChannelOpenNotifications_selector_withChannelID_directionSelector
-  , withRFCOMMChannelRefSelector
-  , withObjectIDSelector
-  , getRFCOMMChannelRefSelector
   , closeChannelSelector
-  , isOpenSelector
-  , getMTUSelector
-  , isTransmissionPausedSelector
-  , write_length_sleepSelector
-  , writeAsync_length_refconSelector
-  , writeSync_lengthSelector
-  , writeSimple_length_sleep_bytesSentSelector
-  , setSerialParameters_dataBits_parity_stopBitsSelector
-  , sendRemoteLineStatusSelector
-  , setDelegateSelector
   , delegateSelector
   , getChannelIDSelector
-  , isIncomingSelector
   , getDeviceSelector
+  , getMTUSelector
   , getObjectIDSelector
+  , getRFCOMMChannelRefSelector
+  , isIncomingSelector
+  , isOpenSelector
+  , isTransmissionPausedSelector
   , registerForChannelCloseNotification_selectorSelector
+  , registerForChannelOpenNotifications_selectorSelector
+  , registerForChannelOpenNotifications_selector_withChannelID_directionSelector
+  , sendRemoteLineStatusSelector
+  , setDelegateSelector
+  , setSerialParameters_dataBits_parity_stopBitsSelector
+  , withObjectIDSelector
+  , withRFCOMMChannelRefSelector
+  , writeAsync_length_refconSelector
+  , writeSimple_length_sleep_bytesSentSelector
+  , writeSync_lengthSelector
+  , write_length_sleepSelector
 
   -- * Enum types
   , BluetoothRFCOMMLineStatus(BluetoothRFCOMMLineStatus)
@@ -76,15 +77,11 @@ module ObjC.IOBluetooth.IOBluetoothRFCOMMChannel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -107,11 +104,11 @@ import ObjC.Foundation.Internal.Classes
 -- Returns: Returns an IOBluetoothUserNotification representing the outstanding RFCOMM channel notification.				To unregister the notification, call -unregister on the resulting IOBluetoothUserNotification 				object.  If an error is encountered creating the notification, nil is returned.  The returned				IOBluetoothUserNotification will be valid for as long as the notification is registered.  It is				not necessary to retain the result.  Once -unregister is called on it, it will no longer be valid.
 --
 -- ObjC selector: @+ registerForChannelOpenNotifications:selector:@
-registerForChannelOpenNotifications_selector :: RawId -> Selector -> IO (Id IOBluetoothUserNotification)
+registerForChannelOpenNotifications_selector :: RawId -> Sel -> IO (Id IOBluetoothUserNotification)
 registerForChannelOpenNotifications_selector object selector =
   do
     cls' <- getRequiredClass "IOBluetoothRFCOMMChannel"
-    sendClassMsg cls' (mkSelector "registerForChannelOpenNotifications:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (unSelector selector)] >>= retainedObject . castPtr
+    sendClassMessage cls' registerForChannelOpenNotifications_selectorSelector object selector
 
 -- | registerForChannelOpenNotifications:selector:
 --
@@ -130,11 +127,11 @@ registerForChannelOpenNotifications_selector object selector =
 -- Returns: Returns an IOBluetoothUserNotification representing the outstanding RFCOMM channel notification.				To unregister the notification, call -unregister on the resulting IOBluetoothUserNotification 				object.  If an error is encountered creating the notification, nil is returned.  The returned				IOBluetoothUserNotification will be valid for as long as the notification is registered.  It is				not necessary to retain the result.  Once -unregister is called on it, it will no longer be valid.
 --
 -- ObjC selector: @+ registerForChannelOpenNotifications:selector:withChannelID:direction:@
-registerForChannelOpenNotifications_selector_withChannelID_direction :: RawId -> Selector -> CUChar -> IOBluetoothUserNotificationChannelDirection -> IO (Id IOBluetoothUserNotification)
+registerForChannelOpenNotifications_selector_withChannelID_direction :: RawId -> Sel -> CUChar -> IOBluetoothUserNotificationChannelDirection -> IO (Id IOBluetoothUserNotification)
 registerForChannelOpenNotifications_selector_withChannelID_direction object selector channelID inDirection =
   do
     cls' <- getRequiredClass "IOBluetoothRFCOMMChannel"
-    sendClassMsg cls' (mkSelector "registerForChannelOpenNotifications:selector:withChannelID:direction:") (retPtr retVoid) [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (unSelector selector), argCUChar channelID, argCInt (coerce inDirection)] >>= retainedObject . castPtr
+    sendClassMessage cls' registerForChannelOpenNotifications_selector_withChannelID_directionSelector object selector channelID inDirection
 
 -- | withRFCOMMChannelRef:
 --
@@ -149,7 +146,7 @@ withRFCOMMChannelRef :: Ptr () -> IO (Id IOBluetoothRFCOMMChannel)
 withRFCOMMChannelRef rfcommChannelRef =
   do
     cls' <- getRequiredClass "IOBluetoothRFCOMMChannel"
-    sendClassMsg cls' (mkSelector "withRFCOMMChannelRef:") (retPtr retVoid) [argPtr rfcommChannelRef] >>= retainedObject . castPtr
+    sendClassMessage cls' withRFCOMMChannelRefSelector rfcommChannelRef
 
 -- | withObjectID:
 --
@@ -166,7 +163,7 @@ withObjectID :: CULong -> IO (Id IOBluetoothRFCOMMChannel)
 withObjectID objectID =
   do
     cls' <- getRequiredClass "IOBluetoothRFCOMMChannel"
-    sendClassMsg cls' (mkSelector "withObjectID:") (retPtr retVoid) [argCULong objectID] >>= retainedObject . castPtr
+    sendClassMessage cls' withObjectIDSelector objectID
 
 -- | getRFCOMMChannelRef
 --
@@ -176,8 +173,8 @@ withObjectID objectID =
 --
 -- ObjC selector: @- getRFCOMMChannelRef@
 getRFCOMMChannelRef :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO (Ptr ())
-getRFCOMMChannelRef ioBluetoothRFCOMMChannel  =
-    fmap castPtr $ sendMsg ioBluetoothRFCOMMChannel (mkSelector "getRFCOMMChannelRef") (retPtr retVoid) []
+getRFCOMMChannelRef ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel getRFCOMMChannelRefSelector
 
 -- | closeChannel
 --
@@ -187,8 +184,8 @@ getRFCOMMChannelRef ioBluetoothRFCOMMChannel  =
 --
 -- ObjC selector: @- closeChannel@
 closeChannel :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO CInt
-closeChannel ioBluetoothRFCOMMChannel  =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "closeChannel") retCInt []
+closeChannel ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel closeChannelSelector
 
 -- | isOpen
 --
@@ -200,8 +197,8 @@ closeChannel ioBluetoothRFCOMMChannel  =
 --
 -- ObjC selector: @- isOpen@
 isOpen :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO Bool
-isOpen ioBluetoothRFCOMMChannel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothRFCOMMChannel (mkSelector "isOpen") retCULong []
+isOpen ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel isOpenSelector
 
 -- | getMTU
 --
@@ -213,8 +210,8 @@ isOpen ioBluetoothRFCOMMChannel  =
 --
 -- ObjC selector: @- getMTU@
 getMTU :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO CUShort
-getMTU ioBluetoothRFCOMMChannel  =
-    fmap fromIntegral $ sendMsg ioBluetoothRFCOMMChannel (mkSelector "getMTU") retCUInt []
+getMTU ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel getMTUSelector
 
 -- | isTransmissionPaused
 --
@@ -226,8 +223,8 @@ getMTU ioBluetoothRFCOMMChannel  =
 --
 -- ObjC selector: @- isTransmissionPaused@
 isTransmissionPaused :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO Bool
-isTransmissionPaused ioBluetoothRFCOMMChannel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothRFCOMMChannel (mkSelector "isTransmissionPaused") retCULong []
+isTransmissionPaused ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel isTransmissionPausedSelector
 
 -- | write:length:sleep:
 --
@@ -245,8 +242,8 @@ isTransmissionPaused ioBluetoothRFCOMMChannel  =
 --
 -- ObjC selector: @- write:length:sleep:@
 write_length_sleep :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> Ptr () -> CUShort -> Bool -> IO CInt
-write_length_sleep ioBluetoothRFCOMMChannel  data_ length_ sleep =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "write:length:sleep:") retCInt [argPtr data_, argCUInt (fromIntegral length_), argCULong (if sleep then 1 else 0)]
+write_length_sleep ioBluetoothRFCOMMChannel data_ length_ sleep =
+  sendMessage ioBluetoothRFCOMMChannel write_length_sleepSelector data_ length_ sleep
 
 -- | writeAsync:length:refcon:
 --
@@ -266,8 +263,8 @@ write_length_sleep ioBluetoothRFCOMMChannel  data_ length_ sleep =
 --
 -- ObjC selector: @- writeAsync:length:refcon:@
 writeAsync_length_refcon :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> Ptr () -> CUShort -> Ptr () -> IO CInt
-writeAsync_length_refcon ioBluetoothRFCOMMChannel  data_ length_ refcon =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "writeAsync:length:refcon:") retCInt [argPtr data_, argCUInt (fromIntegral length_), argPtr refcon]
+writeAsync_length_refcon ioBluetoothRFCOMMChannel data_ length_ refcon =
+  sendMessage ioBluetoothRFCOMMChannel writeAsync_length_refconSelector data_ length_ refcon
 
 -- | writeSync:length:
 --
@@ -285,8 +282,8 @@ writeAsync_length_refcon ioBluetoothRFCOMMChannel  data_ length_ refcon =
 --
 -- ObjC selector: @- writeSync:length:@
 writeSync_length :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> Ptr () -> CUShort -> IO CInt
-writeSync_length ioBluetoothRFCOMMChannel  data_ length_ =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "writeSync:length:") retCInt [argPtr data_, argCUInt (fromIntegral length_)]
+writeSync_length ioBluetoothRFCOMMChannel data_ length_ =
+  sendMessage ioBluetoothRFCOMMChannel writeSync_lengthSelector data_ length_
 
 -- | writeSimple:length:sleep:
 --
@@ -306,8 +303,8 @@ writeSync_length ioBluetoothRFCOMMChannel  data_ length_ =
 --
 -- ObjC selector: @- writeSimple:length:sleep:bytesSent:@
 writeSimple_length_sleep_bytesSent :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> Ptr () -> CUShort -> Bool -> RawId -> IO CInt
-writeSimple_length_sleep_bytesSent ioBluetoothRFCOMMChannel  data_ length_ sleep numBytesSent =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "writeSimple:length:sleep:bytesSent:") retCInt [argPtr data_, argCUInt (fromIntegral length_), argCULong (if sleep then 1 else 0), argPtr (castPtr (unRawId numBytesSent) :: Ptr ())]
+writeSimple_length_sleep_bytesSent ioBluetoothRFCOMMChannel data_ length_ sleep numBytesSent =
+  sendMessage ioBluetoothRFCOMMChannel writeSimple_length_sleep_bytesSentSelector data_ length_ sleep numBytesSent
 
 -- | setSerialParameters:dataBits:parity:stopBits:
 --
@@ -325,8 +322,8 @@ writeSimple_length_sleep_bytesSent ioBluetoothRFCOMMChannel  data_ length_ sleep
 --
 -- ObjC selector: @- setSerialParameters:dataBits:parity:stopBits:@
 setSerialParameters_dataBits_parity_stopBits :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> CUInt -> CUChar -> BluetoothRFCOMMParityType -> CUChar -> IO CInt
-setSerialParameters_dataBits_parity_stopBits ioBluetoothRFCOMMChannel  speed nBits parity bitStop =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "setSerialParameters:dataBits:parity:stopBits:") retCInt [argCUInt speed, argCUChar nBits, argCInt (coerce parity), argCUChar bitStop]
+setSerialParameters_dataBits_parity_stopBits ioBluetoothRFCOMMChannel speed nBits parity bitStop =
+  sendMessage ioBluetoothRFCOMMChannel setSerialParameters_dataBits_parity_stopBitsSelector speed nBits parity bitStop
 
 -- | sendRemoteLineStatus:
 --
@@ -338,8 +335,8 @@ setSerialParameters_dataBits_parity_stopBits ioBluetoothRFCOMMChannel  speed nBi
 --
 -- ObjC selector: @- sendRemoteLineStatus:@
 sendRemoteLineStatus :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> BluetoothRFCOMMLineStatus -> IO CInt
-sendRemoteLineStatus ioBluetoothRFCOMMChannel  lineStatus =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "sendRemoteLineStatus:") retCInt [argCInt (coerce lineStatus)]
+sendRemoteLineStatus ioBluetoothRFCOMMChannel lineStatus =
+  sendMessage ioBluetoothRFCOMMChannel sendRemoteLineStatusSelector lineStatus
 
 -- | setDelegate:
 --
@@ -355,8 +352,8 @@ sendRemoteLineStatus ioBluetoothRFCOMMChannel  lineStatus =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> RawId -> IO CInt
-setDelegate ioBluetoothRFCOMMChannel  delegate =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "setDelegate:") retCInt [argPtr (castPtr (unRawId delegate) :: Ptr ())]
+setDelegate ioBluetoothRFCOMMChannel delegate =
+  sendMessage ioBluetoothRFCOMMChannel setDelegateSelector delegate
 
 -- | delegate
 --
@@ -366,8 +363,8 @@ setDelegate ioBluetoothRFCOMMChannel  delegate =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO RawId
-delegate ioBluetoothRFCOMMChannel  =
-    fmap (RawId . castPtr) $ sendMsg ioBluetoothRFCOMMChannel (mkSelector "delegate") (retPtr retVoid) []
+delegate ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel delegateSelector
 
 -- | channelNumber
 --
@@ -377,8 +374,8 @@ delegate ioBluetoothRFCOMMChannel  =
 --
 -- ObjC selector: @- getChannelID@
 getChannelID :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO CUChar
-getChannelID ioBluetoothRFCOMMChannel  =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "getChannelID") retCUChar []
+getChannelID ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel getChannelIDSelector
 
 -- | isIncoming
 --
@@ -388,8 +385,8 @@ getChannelID ioBluetoothRFCOMMChannel  =
 --
 -- ObjC selector: @- isIncoming@
 isIncoming :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO Bool
-isIncoming ioBluetoothRFCOMMChannel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothRFCOMMChannel (mkSelector "isIncoming") retCULong []
+isIncoming ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel isIncomingSelector
 
 -- | getDevice
 --
@@ -399,8 +396,8 @@ isIncoming ioBluetoothRFCOMMChannel  =
 --
 -- ObjC selector: @- getDevice@
 getDevice :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO (Id IOBluetoothDevice)
-getDevice ioBluetoothRFCOMMChannel  =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "getDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+getDevice ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel getDeviceSelector
 
 -- | getObjectID
 --
@@ -412,8 +409,8 @@ getDevice ioBluetoothRFCOMMChannel  =
 --
 -- ObjC selector: @- getObjectID@
 getObjectID :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> IO CULong
-getObjectID ioBluetoothRFCOMMChannel  =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "getObjectID") retCULong []
+getObjectID ioBluetoothRFCOMMChannel =
+  sendMessage ioBluetoothRFCOMMChannel getObjectIDSelector
 
 -- | registerForChannelCloseNotification:selector:
 --
@@ -428,99 +425,99 @@ getObjectID ioBluetoothRFCOMMChannel  =
 -- Returns: Returns an IOBluetoothUserNotification representing the outstanding RFCOMM channel close notification.				To unregister the notification, call -unregister of the returned IOBluetoothUserNotification 				object.  If an error is encountered creating the notification, nil is returned.
 --
 -- ObjC selector: @- registerForChannelCloseNotification:selector:@
-registerForChannelCloseNotification_selector :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> RawId -> Selector -> IO (Id IOBluetoothUserNotification)
-registerForChannelCloseNotification_selector ioBluetoothRFCOMMChannel  observer inSelector =
-    sendMsg ioBluetoothRFCOMMChannel (mkSelector "registerForChannelCloseNotification:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (unSelector inSelector)] >>= retainedObject . castPtr
+registerForChannelCloseNotification_selector :: IsIOBluetoothRFCOMMChannel ioBluetoothRFCOMMChannel => ioBluetoothRFCOMMChannel -> RawId -> Sel -> IO (Id IOBluetoothUserNotification)
+registerForChannelCloseNotification_selector ioBluetoothRFCOMMChannel observer inSelector =
+  sendMessage ioBluetoothRFCOMMChannel registerForChannelCloseNotification_selectorSelector observer inSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registerForChannelOpenNotifications:selector:@
-registerForChannelOpenNotifications_selectorSelector :: Selector
+registerForChannelOpenNotifications_selectorSelector :: Selector '[RawId, Sel] (Id IOBluetoothUserNotification)
 registerForChannelOpenNotifications_selectorSelector = mkSelector "registerForChannelOpenNotifications:selector:"
 
 -- | @Selector@ for @registerForChannelOpenNotifications:selector:withChannelID:direction:@
-registerForChannelOpenNotifications_selector_withChannelID_directionSelector :: Selector
+registerForChannelOpenNotifications_selector_withChannelID_directionSelector :: Selector '[RawId, Sel, CUChar, IOBluetoothUserNotificationChannelDirection] (Id IOBluetoothUserNotification)
 registerForChannelOpenNotifications_selector_withChannelID_directionSelector = mkSelector "registerForChannelOpenNotifications:selector:withChannelID:direction:"
 
 -- | @Selector@ for @withRFCOMMChannelRef:@
-withRFCOMMChannelRefSelector :: Selector
+withRFCOMMChannelRefSelector :: Selector '[Ptr ()] (Id IOBluetoothRFCOMMChannel)
 withRFCOMMChannelRefSelector = mkSelector "withRFCOMMChannelRef:"
 
 -- | @Selector@ for @withObjectID:@
-withObjectIDSelector :: Selector
+withObjectIDSelector :: Selector '[CULong] (Id IOBluetoothRFCOMMChannel)
 withObjectIDSelector = mkSelector "withObjectID:"
 
 -- | @Selector@ for @getRFCOMMChannelRef@
-getRFCOMMChannelRefSelector :: Selector
+getRFCOMMChannelRefSelector :: Selector '[] (Ptr ())
 getRFCOMMChannelRefSelector = mkSelector "getRFCOMMChannelRef"
 
 -- | @Selector@ for @closeChannel@
-closeChannelSelector :: Selector
+closeChannelSelector :: Selector '[] CInt
 closeChannelSelector = mkSelector "closeChannel"
 
 -- | @Selector@ for @isOpen@
-isOpenSelector :: Selector
+isOpenSelector :: Selector '[] Bool
 isOpenSelector = mkSelector "isOpen"
 
 -- | @Selector@ for @getMTU@
-getMTUSelector :: Selector
+getMTUSelector :: Selector '[] CUShort
 getMTUSelector = mkSelector "getMTU"
 
 -- | @Selector@ for @isTransmissionPaused@
-isTransmissionPausedSelector :: Selector
+isTransmissionPausedSelector :: Selector '[] Bool
 isTransmissionPausedSelector = mkSelector "isTransmissionPaused"
 
 -- | @Selector@ for @write:length:sleep:@
-write_length_sleepSelector :: Selector
+write_length_sleepSelector :: Selector '[Ptr (), CUShort, Bool] CInt
 write_length_sleepSelector = mkSelector "write:length:sleep:"
 
 -- | @Selector@ for @writeAsync:length:refcon:@
-writeAsync_length_refconSelector :: Selector
+writeAsync_length_refconSelector :: Selector '[Ptr (), CUShort, Ptr ()] CInt
 writeAsync_length_refconSelector = mkSelector "writeAsync:length:refcon:"
 
 -- | @Selector@ for @writeSync:length:@
-writeSync_lengthSelector :: Selector
+writeSync_lengthSelector :: Selector '[Ptr (), CUShort] CInt
 writeSync_lengthSelector = mkSelector "writeSync:length:"
 
 -- | @Selector@ for @writeSimple:length:sleep:bytesSent:@
-writeSimple_length_sleep_bytesSentSelector :: Selector
+writeSimple_length_sleep_bytesSentSelector :: Selector '[Ptr (), CUShort, Bool, RawId] CInt
 writeSimple_length_sleep_bytesSentSelector = mkSelector "writeSimple:length:sleep:bytesSent:"
 
 -- | @Selector@ for @setSerialParameters:dataBits:parity:stopBits:@
-setSerialParameters_dataBits_parity_stopBitsSelector :: Selector
+setSerialParameters_dataBits_parity_stopBitsSelector :: Selector '[CUInt, CUChar, BluetoothRFCOMMParityType, CUChar] CInt
 setSerialParameters_dataBits_parity_stopBitsSelector = mkSelector "setSerialParameters:dataBits:parity:stopBits:"
 
 -- | @Selector@ for @sendRemoteLineStatus:@
-sendRemoteLineStatusSelector :: Selector
+sendRemoteLineStatusSelector :: Selector '[BluetoothRFCOMMLineStatus] CInt
 sendRemoteLineStatusSelector = mkSelector "sendRemoteLineStatus:"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] CInt
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @getChannelID@
-getChannelIDSelector :: Selector
+getChannelIDSelector :: Selector '[] CUChar
 getChannelIDSelector = mkSelector "getChannelID"
 
 -- | @Selector@ for @isIncoming@
-isIncomingSelector :: Selector
+isIncomingSelector :: Selector '[] Bool
 isIncomingSelector = mkSelector "isIncoming"
 
 -- | @Selector@ for @getDevice@
-getDeviceSelector :: Selector
+getDeviceSelector :: Selector '[] (Id IOBluetoothDevice)
 getDeviceSelector = mkSelector "getDevice"
 
 -- | @Selector@ for @getObjectID@
-getObjectIDSelector :: Selector
+getObjectIDSelector :: Selector '[] CULong
 getObjectIDSelector = mkSelector "getObjectID"
 
 -- | @Selector@ for @registerForChannelCloseNotification:selector:@
-registerForChannelCloseNotification_selectorSelector :: Selector
+registerForChannelCloseNotification_selectorSelector :: Selector '[RawId, Sel] (Id IOBluetoothUserNotification)
 registerForChannelCloseNotification_selectorSelector = mkSelector "registerForChannelCloseNotification:selector:"
 

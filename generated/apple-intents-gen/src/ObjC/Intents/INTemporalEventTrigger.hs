@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Intents.INTemporalEventTrigger
   , IsINTemporalEventTrigger(..)
   , initWithDateComponentsRange
   , dateComponentsRange
-  , initWithDateComponentsRangeSelector
   , dateComponentsRangeSelector
+  , initWithDateComponentsRangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDateComponentsRange:@
 initWithDateComponentsRange :: (IsINTemporalEventTrigger inTemporalEventTrigger, IsINDateComponentsRange dateComponentsRange) => inTemporalEventTrigger -> dateComponentsRange -> IO (Id INTemporalEventTrigger)
-initWithDateComponentsRange inTemporalEventTrigger  dateComponentsRange =
-  withObjCPtr dateComponentsRange $ \raw_dateComponentsRange ->
-      sendMsg inTemporalEventTrigger (mkSelector "initWithDateComponentsRange:") (retPtr retVoid) [argPtr (castPtr raw_dateComponentsRange :: Ptr ())] >>= ownedObject . castPtr
+initWithDateComponentsRange inTemporalEventTrigger dateComponentsRange =
+  sendOwnedMessage inTemporalEventTrigger initWithDateComponentsRangeSelector (toINDateComponentsRange dateComponentsRange)
 
 -- | @- dateComponentsRange@
 dateComponentsRange :: IsINTemporalEventTrigger inTemporalEventTrigger => inTemporalEventTrigger -> IO (Id INDateComponentsRange)
-dateComponentsRange inTemporalEventTrigger  =
-    sendMsg inTemporalEventTrigger (mkSelector "dateComponentsRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateComponentsRange inTemporalEventTrigger =
+  sendMessage inTemporalEventTrigger dateComponentsRangeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDateComponentsRange:@
-initWithDateComponentsRangeSelector :: Selector
+initWithDateComponentsRangeSelector :: Selector '[Id INDateComponentsRange] (Id INTemporalEventTrigger)
 initWithDateComponentsRangeSelector = mkSelector "initWithDateComponentsRange:"
 
 -- | @Selector@ for @dateComponentsRange@
-dateComponentsRangeSelector :: Selector
+dateComponentsRangeSelector :: Selector '[] (Id INDateComponentsRange)
 dateComponentsRangeSelector = mkSelector "dateComponentsRange"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRIdentifyClusterTriggerEffectParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , effectIdentifierSelector
-  , setEffectIdentifierSelector
   , effectVariantSelector
-  , setEffectVariantSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setEffectIdentifierSelector
+  , setEffectVariantSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- effectIdentifier@
 effectIdentifier :: IsMTRIdentifyClusterTriggerEffectParams mtrIdentifyClusterTriggerEffectParams => mtrIdentifyClusterTriggerEffectParams -> IO (Id NSNumber)
-effectIdentifier mtrIdentifyClusterTriggerEffectParams  =
-    sendMsg mtrIdentifyClusterTriggerEffectParams (mkSelector "effectIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectIdentifier mtrIdentifyClusterTriggerEffectParams =
+  sendMessage mtrIdentifyClusterTriggerEffectParams effectIdentifierSelector
 
 -- | @- setEffectIdentifier:@
 setEffectIdentifier :: (IsMTRIdentifyClusterTriggerEffectParams mtrIdentifyClusterTriggerEffectParams, IsNSNumber value) => mtrIdentifyClusterTriggerEffectParams -> value -> IO ()
-setEffectIdentifier mtrIdentifyClusterTriggerEffectParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrIdentifyClusterTriggerEffectParams (mkSelector "setEffectIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEffectIdentifier mtrIdentifyClusterTriggerEffectParams value =
+  sendMessage mtrIdentifyClusterTriggerEffectParams setEffectIdentifierSelector (toNSNumber value)
 
 -- | @- effectVariant@
 effectVariant :: IsMTRIdentifyClusterTriggerEffectParams mtrIdentifyClusterTriggerEffectParams => mtrIdentifyClusterTriggerEffectParams -> IO (Id NSNumber)
-effectVariant mtrIdentifyClusterTriggerEffectParams  =
-    sendMsg mtrIdentifyClusterTriggerEffectParams (mkSelector "effectVariant") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectVariant mtrIdentifyClusterTriggerEffectParams =
+  sendMessage mtrIdentifyClusterTriggerEffectParams effectVariantSelector
 
 -- | @- setEffectVariant:@
 setEffectVariant :: (IsMTRIdentifyClusterTriggerEffectParams mtrIdentifyClusterTriggerEffectParams, IsNSNumber value) => mtrIdentifyClusterTriggerEffectParams -> value -> IO ()
-setEffectVariant mtrIdentifyClusterTriggerEffectParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrIdentifyClusterTriggerEffectParams (mkSelector "setEffectVariant:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEffectVariant mtrIdentifyClusterTriggerEffectParams value =
+  sendMessage mtrIdentifyClusterTriggerEffectParams setEffectVariantSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setEffectVariant mtrIdentifyClusterTriggerEffectParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRIdentifyClusterTriggerEffectParams mtrIdentifyClusterTriggerEffectParams => mtrIdentifyClusterTriggerEffectParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrIdentifyClusterTriggerEffectParams  =
-    sendMsg mtrIdentifyClusterTriggerEffectParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrIdentifyClusterTriggerEffectParams =
+  sendMessage mtrIdentifyClusterTriggerEffectParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrIdentifyClusterTriggerEffectParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRIdentifyClusterTriggerEffectParams mtrIdentifyClusterTriggerEffectParams, IsNSNumber value) => mtrIdentifyClusterTriggerEffectParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrIdentifyClusterTriggerEffectParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrIdentifyClusterTriggerEffectParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrIdentifyClusterTriggerEffectParams value =
+  sendMessage mtrIdentifyClusterTriggerEffectParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrIdentifyClusterTriggerEffectParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRIdentifyClusterTriggerEffectParams mtrIdentifyClusterTriggerEffectParams => mtrIdentifyClusterTriggerEffectParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrIdentifyClusterTriggerEffectParams  =
-    sendMsg mtrIdentifyClusterTriggerEffectParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrIdentifyClusterTriggerEffectParams =
+  sendMessage mtrIdentifyClusterTriggerEffectParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrIdentifyClusterTriggerEffectParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRIdentifyClusterTriggerEffectParams mtrIdentifyClusterTriggerEffectParams, IsNSNumber value) => mtrIdentifyClusterTriggerEffectParams -> value -> IO ()
-setServerSideProcessingTimeout mtrIdentifyClusterTriggerEffectParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrIdentifyClusterTriggerEffectParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrIdentifyClusterTriggerEffectParams value =
+  sendMessage mtrIdentifyClusterTriggerEffectParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effectIdentifier@
-effectIdentifierSelector :: Selector
+effectIdentifierSelector :: Selector '[] (Id NSNumber)
 effectIdentifierSelector = mkSelector "effectIdentifier"
 
 -- | @Selector@ for @setEffectIdentifier:@
-setEffectIdentifierSelector :: Selector
+setEffectIdentifierSelector :: Selector '[Id NSNumber] ()
 setEffectIdentifierSelector = mkSelector "setEffectIdentifier:"
 
 -- | @Selector@ for @effectVariant@
-effectVariantSelector :: Selector
+effectVariantSelector :: Selector '[] (Id NSNumber)
 effectVariantSelector = mkSelector "effectVariant"
 
 -- | @Selector@ for @setEffectVariant:@
-setEffectVariantSelector :: Selector
+setEffectVariantSelector :: Selector '[Id NSNumber] ()
 setEffectVariantSelector = mkSelector "setEffectVariant:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Foundation.NSUnitConverterLinear
   , initWithCoefficient_constant
   , coefficient
   , constant
-  , initWithCoefficientSelector
-  , initWithCoefficient_constantSelector
   , coefficientSelector
   , constantSelector
+  , initWithCoefficientSelector
+  , initWithCoefficient_constantSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,41 +31,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCoefficient:@
 initWithCoefficient :: IsNSUnitConverterLinear nsUnitConverterLinear => nsUnitConverterLinear -> CDouble -> IO (Id NSUnitConverterLinear)
-initWithCoefficient nsUnitConverterLinear  coefficient =
-    sendMsg nsUnitConverterLinear (mkSelector "initWithCoefficient:") (retPtr retVoid) [argCDouble coefficient] >>= ownedObject . castPtr
+initWithCoefficient nsUnitConverterLinear coefficient =
+  sendOwnedMessage nsUnitConverterLinear initWithCoefficientSelector coefficient
 
 -- | @- initWithCoefficient:constant:@
 initWithCoefficient_constant :: IsNSUnitConverterLinear nsUnitConverterLinear => nsUnitConverterLinear -> CDouble -> CDouble -> IO (Id NSUnitConverterLinear)
-initWithCoefficient_constant nsUnitConverterLinear  coefficient constant =
-    sendMsg nsUnitConverterLinear (mkSelector "initWithCoefficient:constant:") (retPtr retVoid) [argCDouble coefficient, argCDouble constant] >>= ownedObject . castPtr
+initWithCoefficient_constant nsUnitConverterLinear coefficient constant =
+  sendOwnedMessage nsUnitConverterLinear initWithCoefficient_constantSelector coefficient constant
 
 -- | @- coefficient@
 coefficient :: IsNSUnitConverterLinear nsUnitConverterLinear => nsUnitConverterLinear -> IO CDouble
-coefficient nsUnitConverterLinear  =
-    sendMsg nsUnitConverterLinear (mkSelector "coefficient") retCDouble []
+coefficient nsUnitConverterLinear =
+  sendMessage nsUnitConverterLinear coefficientSelector
 
 -- | @- constant@
 constant :: IsNSUnitConverterLinear nsUnitConverterLinear => nsUnitConverterLinear -> IO CDouble
-constant nsUnitConverterLinear  =
-    sendMsg nsUnitConverterLinear (mkSelector "constant") retCDouble []
+constant nsUnitConverterLinear =
+  sendMessage nsUnitConverterLinear constantSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCoefficient:@
-initWithCoefficientSelector :: Selector
+initWithCoefficientSelector :: Selector '[CDouble] (Id NSUnitConverterLinear)
 initWithCoefficientSelector = mkSelector "initWithCoefficient:"
 
 -- | @Selector@ for @initWithCoefficient:constant:@
-initWithCoefficient_constantSelector :: Selector
+initWithCoefficient_constantSelector :: Selector '[CDouble, CDouble] (Id NSUnitConverterLinear)
 initWithCoefficient_constantSelector = mkSelector "initWithCoefficient:constant:"
 
 -- | @Selector@ for @coefficient@
-coefficientSelector :: Selector
+coefficientSelector :: Selector '[] CDouble
 coefficientSelector = mkSelector "coefficient"
 
 -- | @Selector@ for @constant@
-constantSelector :: Selector
+constantSelector :: Selector '[] CDouble
 constantSelector = mkSelector "constant"
 

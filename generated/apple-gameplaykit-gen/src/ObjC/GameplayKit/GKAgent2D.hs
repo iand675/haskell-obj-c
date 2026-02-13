@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.GameplayKit.GKAgent2D
   , updateWithDeltaTime
   , rotation
   , setRotation
-  , updateWithDeltaTimeSelector
   , rotationSelector
   , setRotationSelector
+  , updateWithDeltaTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,36 +34,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- updateWithDeltaTime:@
 updateWithDeltaTime :: IsGKAgent2D gkAgent2D => gkAgent2D -> CDouble -> IO ()
-updateWithDeltaTime gkAgent2D  seconds =
-    sendMsg gkAgent2D (mkSelector "updateWithDeltaTime:") retVoid [argCDouble seconds]
+updateWithDeltaTime gkAgent2D seconds =
+  sendMessage gkAgent2D updateWithDeltaTimeSelector seconds
 
 -- | Z rotation of the agent on the logical XY plane
 --
 -- ObjC selector: @- rotation@
 rotation :: IsGKAgent2D gkAgent2D => gkAgent2D -> IO CFloat
-rotation gkAgent2D  =
-    sendMsg gkAgent2D (mkSelector "rotation") retCFloat []
+rotation gkAgent2D =
+  sendMessage gkAgent2D rotationSelector
 
 -- | Z rotation of the agent on the logical XY plane
 --
 -- ObjC selector: @- setRotation:@
 setRotation :: IsGKAgent2D gkAgent2D => gkAgent2D -> CFloat -> IO ()
-setRotation gkAgent2D  value =
-    sendMsg gkAgent2D (mkSelector "setRotation:") retVoid [argCFloat value]
+setRotation gkAgent2D value =
+  sendMessage gkAgent2D setRotationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateWithDeltaTime:@
-updateWithDeltaTimeSelector :: Selector
+updateWithDeltaTimeSelector :: Selector '[CDouble] ()
 updateWithDeltaTimeSelector = mkSelector "updateWithDeltaTime:"
 
 -- | @Selector@ for @rotation@
-rotationSelector :: Selector
+rotationSelector :: Selector '[] CFloat
 rotationSelector = mkSelector "rotation"
 
 -- | @Selector@ for @setRotation:@
-setRotationSelector :: Selector
+setRotationSelector :: Selector '[CFloat] ()
 setRotationSelector = mkSelector "setRotation:"
 

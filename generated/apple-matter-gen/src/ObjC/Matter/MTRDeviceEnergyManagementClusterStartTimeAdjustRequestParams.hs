@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRDeviceEnergyManagementClusterStartTimeAdjustRequestParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , requestedStartTimeSelector
-  , setRequestedStartTimeSelector
   , causeSelector
-  , setCauseSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , requestedStartTimeSelector
   , serverSideProcessingTimeoutSelector
+  , setCauseSelector
+  , setRequestedStartTimeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- requestedStartTime@
 requestedStartTime :: IsMTRDeviceEnergyManagementClusterStartTimeAdjustRequestParams mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams => mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams -> IO (Id NSNumber)
-requestedStartTime mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams  =
-    sendMsg mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams (mkSelector "requestedStartTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestedStartTime mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams =
+  sendMessage mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams requestedStartTimeSelector
 
 -- | @- setRequestedStartTime:@
 setRequestedStartTime :: (IsMTRDeviceEnergyManagementClusterStartTimeAdjustRequestParams mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams -> value -> IO ()
-setRequestedStartTime mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams (mkSelector "setRequestedStartTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequestedStartTime mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams value =
+  sendMessage mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams setRequestedStartTimeSelector (toNSNumber value)
 
 -- | @- cause@
 cause :: IsMTRDeviceEnergyManagementClusterStartTimeAdjustRequestParams mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams => mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams -> IO (Id NSNumber)
-cause mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams  =
-    sendMsg mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams (mkSelector "cause") (retPtr retVoid) [] >>= retainedObject . castPtr
+cause mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams =
+  sendMessage mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams causeSelector
 
 -- | @- setCause:@
 setCause :: (IsMTRDeviceEnergyManagementClusterStartTimeAdjustRequestParams mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams -> value -> IO ()
-setCause mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams (mkSelector "setCause:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCause mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams value =
+  sendMessage mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams setCauseSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setCause mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDeviceEnergyManagementClusterStartTimeAdjustRequestParams mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams => mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams  =
-    sendMsg mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams =
+  sendMessage mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParam
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDeviceEnergyManagementClusterStartTimeAdjustRequestParams mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams value =
+  sendMessage mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrDeviceEnergyManagementClusterStartTimeAdjustRequestPa
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDeviceEnergyManagementClusterStartTimeAdjustRequestParams mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams => mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams  =
-    sendMsg mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams =
+  sendMessage mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrDeviceEnergyManagementClusterStartTimeAdjustReque
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDeviceEnergyManagementClusterStartTimeAdjustRequestParams mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams, IsNSNumber value) => mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams value =
+  sendMessage mtrDeviceEnergyManagementClusterStartTimeAdjustRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestedStartTime@
-requestedStartTimeSelector :: Selector
+requestedStartTimeSelector :: Selector '[] (Id NSNumber)
 requestedStartTimeSelector = mkSelector "requestedStartTime"
 
 -- | @Selector@ for @setRequestedStartTime:@
-setRequestedStartTimeSelector :: Selector
+setRequestedStartTimeSelector :: Selector '[Id NSNumber] ()
 setRequestedStartTimeSelector = mkSelector "setRequestedStartTime:"
 
 -- | @Selector@ for @cause@
-causeSelector :: Selector
+causeSelector :: Selector '[] (Id NSNumber)
 causeSelector = mkSelector "cause"
 
 -- | @Selector@ for @setCause:@
-setCauseSelector :: Selector
+setCauseSelector :: Selector '[Id NSNumber] ()
 setCauseSelector = mkSelector "setCause:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

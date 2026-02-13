@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRDataTypeICECandidateStruct
   , sdpmLineIndex
   , setSdpmLineIndex
   , candidateSelector
-  , setCandidateSelector
   , sdpMidSelector
-  , setSdpMidSelector
   , sdpmLineIndexSelector
+  , setCandidateSelector
+  , setSdpMidSelector
   , setSdpmLineIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- candidate@
 candidate :: IsMTRDataTypeICECandidateStruct mtrDataTypeICECandidateStruct => mtrDataTypeICECandidateStruct -> IO (Id NSString)
-candidate mtrDataTypeICECandidateStruct  =
-    sendMsg mtrDataTypeICECandidateStruct (mkSelector "candidate") (retPtr retVoid) [] >>= retainedObject . castPtr
+candidate mtrDataTypeICECandidateStruct =
+  sendMessage mtrDataTypeICECandidateStruct candidateSelector
 
 -- | @- setCandidate:@
 setCandidate :: (IsMTRDataTypeICECandidateStruct mtrDataTypeICECandidateStruct, IsNSString value) => mtrDataTypeICECandidateStruct -> value -> IO ()
-setCandidate mtrDataTypeICECandidateStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeICECandidateStruct (mkSelector "setCandidate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCandidate mtrDataTypeICECandidateStruct value =
+  sendMessage mtrDataTypeICECandidateStruct setCandidateSelector (toNSString value)
 
 -- | @- sdpMid@
 sdpMid :: IsMTRDataTypeICECandidateStruct mtrDataTypeICECandidateStruct => mtrDataTypeICECandidateStruct -> IO (Id NSString)
-sdpMid mtrDataTypeICECandidateStruct  =
-    sendMsg mtrDataTypeICECandidateStruct (mkSelector "sdpMid") (retPtr retVoid) [] >>= retainedObject . castPtr
+sdpMid mtrDataTypeICECandidateStruct =
+  sendMessage mtrDataTypeICECandidateStruct sdpMidSelector
 
 -- | @- setSdpMid:@
 setSdpMid :: (IsMTRDataTypeICECandidateStruct mtrDataTypeICECandidateStruct, IsNSString value) => mtrDataTypeICECandidateStruct -> value -> IO ()
-setSdpMid mtrDataTypeICECandidateStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeICECandidateStruct (mkSelector "setSdpMid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSdpMid mtrDataTypeICECandidateStruct value =
+  sendMessage mtrDataTypeICECandidateStruct setSdpMidSelector (toNSString value)
 
 -- | @- sdpmLineIndex@
 sdpmLineIndex :: IsMTRDataTypeICECandidateStruct mtrDataTypeICECandidateStruct => mtrDataTypeICECandidateStruct -> IO (Id NSNumber)
-sdpmLineIndex mtrDataTypeICECandidateStruct  =
-    sendMsg mtrDataTypeICECandidateStruct (mkSelector "sdpmLineIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+sdpmLineIndex mtrDataTypeICECandidateStruct =
+  sendMessage mtrDataTypeICECandidateStruct sdpmLineIndexSelector
 
 -- | @- setSdpmLineIndex:@
 setSdpmLineIndex :: (IsMTRDataTypeICECandidateStruct mtrDataTypeICECandidateStruct, IsNSNumber value) => mtrDataTypeICECandidateStruct -> value -> IO ()
-setSdpmLineIndex mtrDataTypeICECandidateStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypeICECandidateStruct (mkSelector "setSdpmLineIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSdpmLineIndex mtrDataTypeICECandidateStruct value =
+  sendMessage mtrDataTypeICECandidateStruct setSdpmLineIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @candidate@
-candidateSelector :: Selector
+candidateSelector :: Selector '[] (Id NSString)
 candidateSelector = mkSelector "candidate"
 
 -- | @Selector@ for @setCandidate:@
-setCandidateSelector :: Selector
+setCandidateSelector :: Selector '[Id NSString] ()
 setCandidateSelector = mkSelector "setCandidate:"
 
 -- | @Selector@ for @sdpMid@
-sdpMidSelector :: Selector
+sdpMidSelector :: Selector '[] (Id NSString)
 sdpMidSelector = mkSelector "sdpMid"
 
 -- | @Selector@ for @setSdpMid:@
-setSdpMidSelector :: Selector
+setSdpMidSelector :: Selector '[Id NSString] ()
 setSdpMidSelector = mkSelector "setSdpMid:"
 
 -- | @Selector@ for @sdpmLineIndex@
-sdpmLineIndexSelector :: Selector
+sdpmLineIndexSelector :: Selector '[] (Id NSNumber)
 sdpmLineIndexSelector = mkSelector "sdpmLineIndex"
 
 -- | @Selector@ for @setSdpmLineIndex:@
-setSdpmLineIndexSelector :: Selector
+setSdpmLineIndexSelector :: Selector '[Id NSNumber] ()
 setSdpmLineIndexSelector = mkSelector "setSdpmLineIndex:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,30 +26,26 @@ module ObjC.PHASE.PHASESpatialMixerDefinition
   , setListenerDirectivityModelParameters
   , sourceDirectivityModelParameters
   , setSourceDirectivityModelParameters
+  , distanceModelParametersSelector
   , initSelector
-  , newSelector
   , initWithSpatialPipelineSelector
   , initWithSpatialPipeline_identifierSelector
-  , spatialPipelineSelector
-  , distanceModelParametersSelector
-  , setDistanceModelParametersSelector
   , listenerDirectivityModelParametersSelector
+  , newSelector
+  , setDistanceModelParametersSelector
   , setListenerDirectivityModelParametersSelector
-  , sourceDirectivityModelParametersSelector
   , setSourceDirectivityModelParametersSelector
+  , sourceDirectivityModelParametersSelector
+  , spatialPipelineSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,15 +54,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition => phaseSpatialMixerDefinition -> IO (Id PHASESpatialMixerDefinition)
-init_ phaseSpatialMixerDefinition  =
-    sendMsg phaseSpatialMixerDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseSpatialMixerDefinition =
+  sendOwnedMessage phaseSpatialMixerDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASESpatialMixerDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASESpatialMixerDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithSpatialPipeline
 --
@@ -77,9 +74,8 @@ new  =
 --
 -- ObjC selector: @- initWithSpatialPipeline:@
 initWithSpatialPipeline :: (IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition, IsPHASESpatialPipeline spatialPipeline) => phaseSpatialMixerDefinition -> spatialPipeline -> IO (Id PHASESpatialMixerDefinition)
-initWithSpatialPipeline phaseSpatialMixerDefinition  spatialPipeline =
-  withObjCPtr spatialPipeline $ \raw_spatialPipeline ->
-      sendMsg phaseSpatialMixerDefinition (mkSelector "initWithSpatialPipeline:") (retPtr retVoid) [argPtr (castPtr raw_spatialPipeline :: Ptr ())] >>= ownedObject . castPtr
+initWithSpatialPipeline phaseSpatialMixerDefinition spatialPipeline =
+  sendOwnedMessage phaseSpatialMixerDefinition initWithSpatialPipelineSelector (toPHASESpatialPipeline spatialPipeline)
 
 -- | initWithSpatialPipeline:identifier
 --
@@ -93,10 +89,8 @@ initWithSpatialPipeline phaseSpatialMixerDefinition  spatialPipeline =
 --
 -- ObjC selector: @- initWithSpatialPipeline:identifier:@
 initWithSpatialPipeline_identifier :: (IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition, IsPHASESpatialPipeline spatialPipeline, IsNSString identifier) => phaseSpatialMixerDefinition -> spatialPipeline -> identifier -> IO (Id PHASESpatialMixerDefinition)
-initWithSpatialPipeline_identifier phaseSpatialMixerDefinition  spatialPipeline identifier =
-  withObjCPtr spatialPipeline $ \raw_spatialPipeline ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg phaseSpatialMixerDefinition (mkSelector "initWithSpatialPipeline:identifier:") (retPtr retVoid) [argPtr (castPtr raw_spatialPipeline :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithSpatialPipeline_identifier phaseSpatialMixerDefinition spatialPipeline identifier =
+  sendOwnedMessage phaseSpatialMixerDefinition initWithSpatialPipeline_identifierSelector (toPHASESpatialPipeline spatialPipeline) (toNSString identifier)
 
 -- | spatialPipeline
 --
@@ -104,8 +98,8 @@ initWithSpatialPipeline_identifier phaseSpatialMixerDefinition  spatialPipeline 
 --
 -- ObjC selector: @- spatialPipeline@
 spatialPipeline :: IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition => phaseSpatialMixerDefinition -> IO (Id PHASESpatialPipeline)
-spatialPipeline phaseSpatialMixerDefinition  =
-    sendMsg phaseSpatialMixerDefinition (mkSelector "spatialPipeline") (retPtr retVoid) [] >>= retainedObject . castPtr
+spatialPipeline phaseSpatialMixerDefinition =
+  sendMessage phaseSpatialMixerDefinition spatialPipelineSelector
 
 -- | distanceModelParameters
 --
@@ -113,8 +107,8 @@ spatialPipeline phaseSpatialMixerDefinition  =
 --
 -- ObjC selector: @- distanceModelParameters@
 distanceModelParameters :: IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition => phaseSpatialMixerDefinition -> IO (Id PHASEDistanceModelParameters)
-distanceModelParameters phaseSpatialMixerDefinition  =
-    sendMsg phaseSpatialMixerDefinition (mkSelector "distanceModelParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+distanceModelParameters phaseSpatialMixerDefinition =
+  sendMessage phaseSpatialMixerDefinition distanceModelParametersSelector
 
 -- | distanceModelParameters
 --
@@ -122,9 +116,8 @@ distanceModelParameters phaseSpatialMixerDefinition  =
 --
 -- ObjC selector: @- setDistanceModelParameters:@
 setDistanceModelParameters :: (IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition, IsPHASEDistanceModelParameters value) => phaseSpatialMixerDefinition -> value -> IO ()
-setDistanceModelParameters phaseSpatialMixerDefinition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseSpatialMixerDefinition (mkSelector "setDistanceModelParameters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDistanceModelParameters phaseSpatialMixerDefinition value =
+  sendMessage phaseSpatialMixerDefinition setDistanceModelParametersSelector (toPHASEDistanceModelParameters value)
 
 -- | listenerDirectivityModelParameters
 --
@@ -132,8 +125,8 @@ setDistanceModelParameters phaseSpatialMixerDefinition  value =
 --
 -- ObjC selector: @- listenerDirectivityModelParameters@
 listenerDirectivityModelParameters :: IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition => phaseSpatialMixerDefinition -> IO (Id PHASEDirectivityModelParameters)
-listenerDirectivityModelParameters phaseSpatialMixerDefinition  =
-    sendMsg phaseSpatialMixerDefinition (mkSelector "listenerDirectivityModelParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+listenerDirectivityModelParameters phaseSpatialMixerDefinition =
+  sendMessage phaseSpatialMixerDefinition listenerDirectivityModelParametersSelector
 
 -- | listenerDirectivityModelParameters
 --
@@ -141,9 +134,8 @@ listenerDirectivityModelParameters phaseSpatialMixerDefinition  =
 --
 -- ObjC selector: @- setListenerDirectivityModelParameters:@
 setListenerDirectivityModelParameters :: (IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition, IsPHASEDirectivityModelParameters value) => phaseSpatialMixerDefinition -> value -> IO ()
-setListenerDirectivityModelParameters phaseSpatialMixerDefinition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseSpatialMixerDefinition (mkSelector "setListenerDirectivityModelParameters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setListenerDirectivityModelParameters phaseSpatialMixerDefinition value =
+  sendMessage phaseSpatialMixerDefinition setListenerDirectivityModelParametersSelector (toPHASEDirectivityModelParameters value)
 
 -- | sourceDirectivityModelParameters
 --
@@ -151,8 +143,8 @@ setListenerDirectivityModelParameters phaseSpatialMixerDefinition  value =
 --
 -- ObjC selector: @- sourceDirectivityModelParameters@
 sourceDirectivityModelParameters :: IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition => phaseSpatialMixerDefinition -> IO (Id PHASEDirectivityModelParameters)
-sourceDirectivityModelParameters phaseSpatialMixerDefinition  =
-    sendMsg phaseSpatialMixerDefinition (mkSelector "sourceDirectivityModelParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceDirectivityModelParameters phaseSpatialMixerDefinition =
+  sendMessage phaseSpatialMixerDefinition sourceDirectivityModelParametersSelector
 
 -- | sourceDirectivityModelParameters
 --
@@ -160,55 +152,54 @@ sourceDirectivityModelParameters phaseSpatialMixerDefinition  =
 --
 -- ObjC selector: @- setSourceDirectivityModelParameters:@
 setSourceDirectivityModelParameters :: (IsPHASESpatialMixerDefinition phaseSpatialMixerDefinition, IsPHASEDirectivityModelParameters value) => phaseSpatialMixerDefinition -> value -> IO ()
-setSourceDirectivityModelParameters phaseSpatialMixerDefinition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseSpatialMixerDefinition (mkSelector "setSourceDirectivityModelParameters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSourceDirectivityModelParameters phaseSpatialMixerDefinition value =
+  sendMessage phaseSpatialMixerDefinition setSourceDirectivityModelParametersSelector (toPHASEDirectivityModelParameters value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASESpatialMixerDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASESpatialMixerDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithSpatialPipeline:@
-initWithSpatialPipelineSelector :: Selector
+initWithSpatialPipelineSelector :: Selector '[Id PHASESpatialPipeline] (Id PHASESpatialMixerDefinition)
 initWithSpatialPipelineSelector = mkSelector "initWithSpatialPipeline:"
 
 -- | @Selector@ for @initWithSpatialPipeline:identifier:@
-initWithSpatialPipeline_identifierSelector :: Selector
+initWithSpatialPipeline_identifierSelector :: Selector '[Id PHASESpatialPipeline, Id NSString] (Id PHASESpatialMixerDefinition)
 initWithSpatialPipeline_identifierSelector = mkSelector "initWithSpatialPipeline:identifier:"
 
 -- | @Selector@ for @spatialPipeline@
-spatialPipelineSelector :: Selector
+spatialPipelineSelector :: Selector '[] (Id PHASESpatialPipeline)
 spatialPipelineSelector = mkSelector "spatialPipeline"
 
 -- | @Selector@ for @distanceModelParameters@
-distanceModelParametersSelector :: Selector
+distanceModelParametersSelector :: Selector '[] (Id PHASEDistanceModelParameters)
 distanceModelParametersSelector = mkSelector "distanceModelParameters"
 
 -- | @Selector@ for @setDistanceModelParameters:@
-setDistanceModelParametersSelector :: Selector
+setDistanceModelParametersSelector :: Selector '[Id PHASEDistanceModelParameters] ()
 setDistanceModelParametersSelector = mkSelector "setDistanceModelParameters:"
 
 -- | @Selector@ for @listenerDirectivityModelParameters@
-listenerDirectivityModelParametersSelector :: Selector
+listenerDirectivityModelParametersSelector :: Selector '[] (Id PHASEDirectivityModelParameters)
 listenerDirectivityModelParametersSelector = mkSelector "listenerDirectivityModelParameters"
 
 -- | @Selector@ for @setListenerDirectivityModelParameters:@
-setListenerDirectivityModelParametersSelector :: Selector
+setListenerDirectivityModelParametersSelector :: Selector '[Id PHASEDirectivityModelParameters] ()
 setListenerDirectivityModelParametersSelector = mkSelector "setListenerDirectivityModelParameters:"
 
 -- | @Selector@ for @sourceDirectivityModelParameters@
-sourceDirectivityModelParametersSelector :: Selector
+sourceDirectivityModelParametersSelector :: Selector '[] (Id PHASEDirectivityModelParameters)
 sourceDirectivityModelParametersSelector = mkSelector "sourceDirectivityModelParameters"
 
 -- | @Selector@ for @setSourceDirectivityModelParameters:@
-setSourceDirectivityModelParametersSelector :: Selector
+setSourceDirectivityModelParametersSelector :: Selector '[Id PHASEDirectivityModelParameters] ()
 setSourceDirectivityModelParametersSelector = mkSelector "setSourceDirectivityModelParameters:"
 

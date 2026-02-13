@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,35 +27,31 @@ module ObjC.Matter.MTRScenesManagementClusterAttributeValuePairStruct
   , setValueSigned64
   , attributeIDSelector
   , setAttributeIDSelector
-  , valueUnsigned8Selector
-  , setValueUnsigned8Selector
-  , valueSigned8Selector
-  , setValueSigned8Selector
-  , valueUnsigned16Selector
-  , setValueUnsigned16Selector
-  , valueSigned16Selector
   , setValueSigned16Selector
-  , valueUnsigned32Selector
-  , setValueUnsigned32Selector
-  , valueSigned32Selector
   , setValueSigned32Selector
-  , valueUnsigned64Selector
-  , setValueUnsigned64Selector
-  , valueSigned64Selector
   , setValueSigned64Selector
+  , setValueSigned8Selector
+  , setValueUnsigned16Selector
+  , setValueUnsigned32Selector
+  , setValueUnsigned64Selector
+  , setValueUnsigned8Selector
+  , valueSigned16Selector
+  , valueSigned32Selector
+  , valueSigned64Selector
+  , valueSigned8Selector
+  , valueUnsigned16Selector
+  , valueUnsigned32Selector
+  , valueUnsigned64Selector
+  , valueUnsigned8Selector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,176 +60,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- attributeID@
 attributeID :: IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct => mtrScenesManagementClusterAttributeValuePairStruct -> IO (Id NSNumber)
-attributeID mtrScenesManagementClusterAttributeValuePairStruct  =
-    sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "attributeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeID mtrScenesManagementClusterAttributeValuePairStruct =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct attributeIDSelector
 
 -- | @- setAttributeID:@
 setAttributeID :: (IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct, IsNSNumber value) => mtrScenesManagementClusterAttributeValuePairStruct -> value -> IO ()
-setAttributeID mtrScenesManagementClusterAttributeValuePairStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "setAttributeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributeID mtrScenesManagementClusterAttributeValuePairStruct value =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct setAttributeIDSelector (toNSNumber value)
 
 -- | @- valueUnsigned8@
 valueUnsigned8 :: IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct => mtrScenesManagementClusterAttributeValuePairStruct -> IO (Id NSNumber)
-valueUnsigned8 mtrScenesManagementClusterAttributeValuePairStruct  =
-    sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "valueUnsigned8") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueUnsigned8 mtrScenesManagementClusterAttributeValuePairStruct =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct valueUnsigned8Selector
 
 -- | @- setValueUnsigned8:@
 setValueUnsigned8 :: (IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct, IsNSNumber value) => mtrScenesManagementClusterAttributeValuePairStruct -> value -> IO ()
-setValueUnsigned8 mtrScenesManagementClusterAttributeValuePairStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "setValueUnsigned8:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueUnsigned8 mtrScenesManagementClusterAttributeValuePairStruct value =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct setValueUnsigned8Selector (toNSNumber value)
 
 -- | @- valueSigned8@
 valueSigned8 :: IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct => mtrScenesManagementClusterAttributeValuePairStruct -> IO (Id NSNumber)
-valueSigned8 mtrScenesManagementClusterAttributeValuePairStruct  =
-    sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "valueSigned8") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueSigned8 mtrScenesManagementClusterAttributeValuePairStruct =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct valueSigned8Selector
 
 -- | @- setValueSigned8:@
 setValueSigned8 :: (IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct, IsNSNumber value) => mtrScenesManagementClusterAttributeValuePairStruct -> value -> IO ()
-setValueSigned8 mtrScenesManagementClusterAttributeValuePairStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "setValueSigned8:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueSigned8 mtrScenesManagementClusterAttributeValuePairStruct value =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct setValueSigned8Selector (toNSNumber value)
 
 -- | @- valueUnsigned16@
 valueUnsigned16 :: IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct => mtrScenesManagementClusterAttributeValuePairStruct -> IO (Id NSNumber)
-valueUnsigned16 mtrScenesManagementClusterAttributeValuePairStruct  =
-    sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "valueUnsigned16") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueUnsigned16 mtrScenesManagementClusterAttributeValuePairStruct =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct valueUnsigned16Selector
 
 -- | @- setValueUnsigned16:@
 setValueUnsigned16 :: (IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct, IsNSNumber value) => mtrScenesManagementClusterAttributeValuePairStruct -> value -> IO ()
-setValueUnsigned16 mtrScenesManagementClusterAttributeValuePairStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "setValueUnsigned16:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueUnsigned16 mtrScenesManagementClusterAttributeValuePairStruct value =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct setValueUnsigned16Selector (toNSNumber value)
 
 -- | @- valueSigned16@
 valueSigned16 :: IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct => mtrScenesManagementClusterAttributeValuePairStruct -> IO (Id NSNumber)
-valueSigned16 mtrScenesManagementClusterAttributeValuePairStruct  =
-    sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "valueSigned16") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueSigned16 mtrScenesManagementClusterAttributeValuePairStruct =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct valueSigned16Selector
 
 -- | @- setValueSigned16:@
 setValueSigned16 :: (IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct, IsNSNumber value) => mtrScenesManagementClusterAttributeValuePairStruct -> value -> IO ()
-setValueSigned16 mtrScenesManagementClusterAttributeValuePairStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "setValueSigned16:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueSigned16 mtrScenesManagementClusterAttributeValuePairStruct value =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct setValueSigned16Selector (toNSNumber value)
 
 -- | @- valueUnsigned32@
 valueUnsigned32 :: IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct => mtrScenesManagementClusterAttributeValuePairStruct -> IO (Id NSNumber)
-valueUnsigned32 mtrScenesManagementClusterAttributeValuePairStruct  =
-    sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "valueUnsigned32") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueUnsigned32 mtrScenesManagementClusterAttributeValuePairStruct =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct valueUnsigned32Selector
 
 -- | @- setValueUnsigned32:@
 setValueUnsigned32 :: (IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct, IsNSNumber value) => mtrScenesManagementClusterAttributeValuePairStruct -> value -> IO ()
-setValueUnsigned32 mtrScenesManagementClusterAttributeValuePairStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "setValueUnsigned32:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueUnsigned32 mtrScenesManagementClusterAttributeValuePairStruct value =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct setValueUnsigned32Selector (toNSNumber value)
 
 -- | @- valueSigned32@
 valueSigned32 :: IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct => mtrScenesManagementClusterAttributeValuePairStruct -> IO (Id NSNumber)
-valueSigned32 mtrScenesManagementClusterAttributeValuePairStruct  =
-    sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "valueSigned32") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueSigned32 mtrScenesManagementClusterAttributeValuePairStruct =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct valueSigned32Selector
 
 -- | @- setValueSigned32:@
 setValueSigned32 :: (IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct, IsNSNumber value) => mtrScenesManagementClusterAttributeValuePairStruct -> value -> IO ()
-setValueSigned32 mtrScenesManagementClusterAttributeValuePairStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "setValueSigned32:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueSigned32 mtrScenesManagementClusterAttributeValuePairStruct value =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct setValueSigned32Selector (toNSNumber value)
 
 -- | @- valueUnsigned64@
 valueUnsigned64 :: IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct => mtrScenesManagementClusterAttributeValuePairStruct -> IO (Id NSNumber)
-valueUnsigned64 mtrScenesManagementClusterAttributeValuePairStruct  =
-    sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "valueUnsigned64") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueUnsigned64 mtrScenesManagementClusterAttributeValuePairStruct =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct valueUnsigned64Selector
 
 -- | @- setValueUnsigned64:@
 setValueUnsigned64 :: (IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct, IsNSNumber value) => mtrScenesManagementClusterAttributeValuePairStruct -> value -> IO ()
-setValueUnsigned64 mtrScenesManagementClusterAttributeValuePairStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "setValueUnsigned64:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueUnsigned64 mtrScenesManagementClusterAttributeValuePairStruct value =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct setValueUnsigned64Selector (toNSNumber value)
 
 -- | @- valueSigned64@
 valueSigned64 :: IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct => mtrScenesManagementClusterAttributeValuePairStruct -> IO (Id NSNumber)
-valueSigned64 mtrScenesManagementClusterAttributeValuePairStruct  =
-    sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "valueSigned64") (retPtr retVoid) [] >>= retainedObject . castPtr
+valueSigned64 mtrScenesManagementClusterAttributeValuePairStruct =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct valueSigned64Selector
 
 -- | @- setValueSigned64:@
 setValueSigned64 :: (IsMTRScenesManagementClusterAttributeValuePairStruct mtrScenesManagementClusterAttributeValuePairStruct, IsNSNumber value) => mtrScenesManagementClusterAttributeValuePairStruct -> value -> IO ()
-setValueSigned64 mtrScenesManagementClusterAttributeValuePairStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterAttributeValuePairStruct (mkSelector "setValueSigned64:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValueSigned64 mtrScenesManagementClusterAttributeValuePairStruct value =
+  sendMessage mtrScenesManagementClusterAttributeValuePairStruct setValueSigned64Selector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @attributeID@
-attributeIDSelector :: Selector
+attributeIDSelector :: Selector '[] (Id NSNumber)
 attributeIDSelector = mkSelector "attributeID"
 
 -- | @Selector@ for @setAttributeID:@
-setAttributeIDSelector :: Selector
+setAttributeIDSelector :: Selector '[Id NSNumber] ()
 setAttributeIDSelector = mkSelector "setAttributeID:"
 
 -- | @Selector@ for @valueUnsigned8@
-valueUnsigned8Selector :: Selector
+valueUnsigned8Selector :: Selector '[] (Id NSNumber)
 valueUnsigned8Selector = mkSelector "valueUnsigned8"
 
 -- | @Selector@ for @setValueUnsigned8:@
-setValueUnsigned8Selector :: Selector
+setValueUnsigned8Selector :: Selector '[Id NSNumber] ()
 setValueUnsigned8Selector = mkSelector "setValueUnsigned8:"
 
 -- | @Selector@ for @valueSigned8@
-valueSigned8Selector :: Selector
+valueSigned8Selector :: Selector '[] (Id NSNumber)
 valueSigned8Selector = mkSelector "valueSigned8"
 
 -- | @Selector@ for @setValueSigned8:@
-setValueSigned8Selector :: Selector
+setValueSigned8Selector :: Selector '[Id NSNumber] ()
 setValueSigned8Selector = mkSelector "setValueSigned8:"
 
 -- | @Selector@ for @valueUnsigned16@
-valueUnsigned16Selector :: Selector
+valueUnsigned16Selector :: Selector '[] (Id NSNumber)
 valueUnsigned16Selector = mkSelector "valueUnsigned16"
 
 -- | @Selector@ for @setValueUnsigned16:@
-setValueUnsigned16Selector :: Selector
+setValueUnsigned16Selector :: Selector '[Id NSNumber] ()
 setValueUnsigned16Selector = mkSelector "setValueUnsigned16:"
 
 -- | @Selector@ for @valueSigned16@
-valueSigned16Selector :: Selector
+valueSigned16Selector :: Selector '[] (Id NSNumber)
 valueSigned16Selector = mkSelector "valueSigned16"
 
 -- | @Selector@ for @setValueSigned16:@
-setValueSigned16Selector :: Selector
+setValueSigned16Selector :: Selector '[Id NSNumber] ()
 setValueSigned16Selector = mkSelector "setValueSigned16:"
 
 -- | @Selector@ for @valueUnsigned32@
-valueUnsigned32Selector :: Selector
+valueUnsigned32Selector :: Selector '[] (Id NSNumber)
 valueUnsigned32Selector = mkSelector "valueUnsigned32"
 
 -- | @Selector@ for @setValueUnsigned32:@
-setValueUnsigned32Selector :: Selector
+setValueUnsigned32Selector :: Selector '[Id NSNumber] ()
 setValueUnsigned32Selector = mkSelector "setValueUnsigned32:"
 
 -- | @Selector@ for @valueSigned32@
-valueSigned32Selector :: Selector
+valueSigned32Selector :: Selector '[] (Id NSNumber)
 valueSigned32Selector = mkSelector "valueSigned32"
 
 -- | @Selector@ for @setValueSigned32:@
-setValueSigned32Selector :: Selector
+setValueSigned32Selector :: Selector '[Id NSNumber] ()
 setValueSigned32Selector = mkSelector "setValueSigned32:"
 
 -- | @Selector@ for @valueUnsigned64@
-valueUnsigned64Selector :: Selector
+valueUnsigned64Selector :: Selector '[] (Id NSNumber)
 valueUnsigned64Selector = mkSelector "valueUnsigned64"
 
 -- | @Selector@ for @setValueUnsigned64:@
-setValueUnsigned64Selector :: Selector
+setValueUnsigned64Selector :: Selector '[Id NSNumber] ()
 setValueUnsigned64Selector = mkSelector "setValueUnsigned64:"
 
 -- | @Selector@ for @valueSigned64@
-valueSigned64Selector :: Selector
+valueSigned64Selector :: Selector '[] (Id NSNumber)
 valueSigned64Selector = mkSelector "valueSigned64"
 
 -- | @Selector@ for @setValueSigned64:@
-setValueSigned64Selector :: Selector
+setValueSigned64Selector :: Selector '[Id NSNumber] ()
 setValueSigned64Selector = mkSelector "setValueSigned64:"
 

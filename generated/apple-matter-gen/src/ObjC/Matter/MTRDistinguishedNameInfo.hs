@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRDistinguishedNameInfo
   , rootCACertificateID
   , intermediateCACertificateID
   , caseAuthenticatedTags
-  , newSelector
-  , initSelector
-  , nodeIDSelector
-  , fabricIDSelector
-  , rootCACertificateIDSelector
-  , intermediateCACertificateIDSelector
   , caseAuthenticatedTagsSelector
+  , fabricIDSelector
+  , initSelector
+  , intermediateCACertificateIDSelector
+  , newSelector
+  , nodeIDSelector
+  , rootCACertificateIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,77 +43,77 @@ new :: IO (Id MTRDistinguishedNameInfo)
 new  =
   do
     cls' <- getRequiredClass "MTRDistinguishedNameInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMTRDistinguishedNameInfo mtrDistinguishedNameInfo => mtrDistinguishedNameInfo -> IO (Id MTRDistinguishedNameInfo)
-init_ mtrDistinguishedNameInfo  =
-    sendMsg mtrDistinguishedNameInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrDistinguishedNameInfo =
+  sendOwnedMessage mtrDistinguishedNameInfo initSelector
 
 -- | The Node ID contained in the DN, if any.  Will be non-nil for the subject of a valid node operational certificate.
 --
 -- ObjC selector: @- nodeID@
 nodeID :: IsMTRDistinguishedNameInfo mtrDistinguishedNameInfo => mtrDistinguishedNameInfo -> IO (Id NSNumber)
-nodeID mtrDistinguishedNameInfo  =
-    sendMsg mtrDistinguishedNameInfo (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrDistinguishedNameInfo =
+  sendMessage mtrDistinguishedNameInfo nodeIDSelector
 
 -- | The Fabric ID contained in the DN, if any.  Will be non-nil for the subject of a valid node operational certificate, and may be non-nil for the subject of a valid intermediate or root certificate.
 --
 -- ObjC selector: @- fabricID@
 fabricID :: IsMTRDistinguishedNameInfo mtrDistinguishedNameInfo => mtrDistinguishedNameInfo -> IO (Id NSNumber)
-fabricID mtrDistinguishedNameInfo  =
-    sendMsg mtrDistinguishedNameInfo (mkSelector "fabricID") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricID mtrDistinguishedNameInfo =
+  sendMessage mtrDistinguishedNameInfo fabricIDSelector
 
 -- | The @RCAC@ ID contained in the DN, if any.  Will be non-nil for the subject of a valid root certificate.
 --
 -- ObjC selector: @- rootCACertificateID@
 rootCACertificateID :: IsMTRDistinguishedNameInfo mtrDistinguishedNameInfo => mtrDistinguishedNameInfo -> IO (Id NSNumber)
-rootCACertificateID mtrDistinguishedNameInfo  =
-    sendMsg mtrDistinguishedNameInfo (mkSelector "rootCACertificateID") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootCACertificateID mtrDistinguishedNameInfo =
+  sendMessage mtrDistinguishedNameInfo rootCACertificateIDSelector
 
 -- | The @ICAC@ ID contained in the DN, if any.  Will be non-nil for the subject of a valid intermediate certificate.
 --
 -- ObjC selector: @- intermediateCACertificateID@
 intermediateCACertificateID :: IsMTRDistinguishedNameInfo mtrDistinguishedNameInfo => mtrDistinguishedNameInfo -> IO (Id NSNumber)
-intermediateCACertificateID mtrDistinguishedNameInfo  =
-    sendMsg mtrDistinguishedNameInfo (mkSelector "intermediateCACertificateID") (retPtr retVoid) [] >>= retainedObject . castPtr
+intermediateCACertificateID mtrDistinguishedNameInfo =
+  sendMessage mtrDistinguishedNameInfo intermediateCACertificateIDSelector
 
 -- | The set of CASE Authenticated Tags contained in the DN.  Maybe be non-empty for the subject of a valid node operational certificate.
 --
 -- ObjC selector: @- caseAuthenticatedTags@
 caseAuthenticatedTags :: IsMTRDistinguishedNameInfo mtrDistinguishedNameInfo => mtrDistinguishedNameInfo -> IO (Id NSSet)
-caseAuthenticatedTags mtrDistinguishedNameInfo  =
-    sendMsg mtrDistinguishedNameInfo (mkSelector "caseAuthenticatedTags") (retPtr retVoid) [] >>= retainedObject . castPtr
+caseAuthenticatedTags mtrDistinguishedNameInfo =
+  sendMessage mtrDistinguishedNameInfo caseAuthenticatedTagsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRDistinguishedNameInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRDistinguishedNameInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @fabricID@
-fabricIDSelector :: Selector
+fabricIDSelector :: Selector '[] (Id NSNumber)
 fabricIDSelector = mkSelector "fabricID"
 
 -- | @Selector@ for @rootCACertificateID@
-rootCACertificateIDSelector :: Selector
+rootCACertificateIDSelector :: Selector '[] (Id NSNumber)
 rootCACertificateIDSelector = mkSelector "rootCACertificateID"
 
 -- | @Selector@ for @intermediateCACertificateID@
-intermediateCACertificateIDSelector :: Selector
+intermediateCACertificateIDSelector :: Selector '[] (Id NSNumber)
 intermediateCACertificateIDSelector = mkSelector "intermediateCACertificateID"
 
 -- | @Selector@ for @caseAuthenticatedTags@
-caseAuthenticatedTagsSelector :: Selector
+caseAuthenticatedTagsSelector :: Selector '[] (Id NSSet)
 caseAuthenticatedTagsSelector = mkSelector "caseAuthenticatedTags"
 

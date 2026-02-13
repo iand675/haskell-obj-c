@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.SensorKit.SRAcousticSettingsAccessibility
   , monoAudioEnabled
   , backgroundSounds
   , headphoneAccommodations
-  , leftRightBalanceSelector
-  , monoAudioEnabledSelector
   , backgroundSoundsSelector
   , headphoneAccommodationsSelector
+  , leftRightBalanceSelector
+  , monoAudioEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- leftRightBalance@
 leftRightBalance :: IsSRAcousticSettingsAccessibility srAcousticSettingsAccessibility => srAcousticSettingsAccessibility -> IO CDouble
-leftRightBalance srAcousticSettingsAccessibility  =
-    sendMsg srAcousticSettingsAccessibility (mkSelector "leftRightBalance") retCDouble []
+leftRightBalance srAcousticSettingsAccessibility =
+  sendMessage srAcousticSettingsAccessibility leftRightBalanceSelector
 
 -- | monoAudioEnabled
 --
@@ -48,8 +45,8 @@ leftRightBalance srAcousticSettingsAccessibility  =
 --
 -- ObjC selector: @- monoAudioEnabled@
 monoAudioEnabled :: IsSRAcousticSettingsAccessibility srAcousticSettingsAccessibility => srAcousticSettingsAccessibility -> IO Bool
-monoAudioEnabled srAcousticSettingsAccessibility  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg srAcousticSettingsAccessibility (mkSelector "monoAudioEnabled") retCULong []
+monoAudioEnabled srAcousticSettingsAccessibility =
+  sendMessage srAcousticSettingsAccessibility monoAudioEnabledSelector
 
 -- | backgroundSounds
 --
@@ -57,8 +54,8 @@ monoAudioEnabled srAcousticSettingsAccessibility  =
 --
 -- ObjC selector: @- backgroundSounds@
 backgroundSounds :: IsSRAcousticSettingsAccessibility srAcousticSettingsAccessibility => srAcousticSettingsAccessibility -> IO (Id SRAcousticSettingsAccessibilityBackgroundSounds)
-backgroundSounds srAcousticSettingsAccessibility  =
-    sendMsg srAcousticSettingsAccessibility (mkSelector "backgroundSounds") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundSounds srAcousticSettingsAccessibility =
+  sendMessage srAcousticSettingsAccessibility backgroundSoundsSelector
 
 -- | headphoneAccommodations
 --
@@ -66,26 +63,26 @@ backgroundSounds srAcousticSettingsAccessibility  =
 --
 -- ObjC selector: @- headphoneAccommodations@
 headphoneAccommodations :: IsSRAcousticSettingsAccessibility srAcousticSettingsAccessibility => srAcousticSettingsAccessibility -> IO (Id SRAcousticSettingsAccessibilityHeadphoneAccommodations)
-headphoneAccommodations srAcousticSettingsAccessibility  =
-    sendMsg srAcousticSettingsAccessibility (mkSelector "headphoneAccommodations") (retPtr retVoid) [] >>= retainedObject . castPtr
+headphoneAccommodations srAcousticSettingsAccessibility =
+  sendMessage srAcousticSettingsAccessibility headphoneAccommodationsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @leftRightBalance@
-leftRightBalanceSelector :: Selector
+leftRightBalanceSelector :: Selector '[] CDouble
 leftRightBalanceSelector = mkSelector "leftRightBalance"
 
 -- | @Selector@ for @monoAudioEnabled@
-monoAudioEnabledSelector :: Selector
+monoAudioEnabledSelector :: Selector '[] Bool
 monoAudioEnabledSelector = mkSelector "monoAudioEnabled"
 
 -- | @Selector@ for @backgroundSounds@
-backgroundSoundsSelector :: Selector
+backgroundSoundsSelector :: Selector '[] (Id SRAcousticSettingsAccessibilityBackgroundSounds)
 backgroundSoundsSelector = mkSelector "backgroundSounds"
 
 -- | @Selector@ for @headphoneAccommodations@
-headphoneAccommodationsSelector :: Selector
+headphoneAccommodationsSelector :: Selector '[] (Id SRAcousticSettingsAccessibilityHeadphoneAccommodations)
 headphoneAccommodationsSelector = mkSelector "headphoneAccommodations"
 

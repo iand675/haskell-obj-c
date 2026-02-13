@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.EventKit.EKVirtualConferenceProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- fetchVirtualConferenceForIdentifier:completionHandler:@
 fetchVirtualConferenceForIdentifier_completionHandler :: (IsEKVirtualConferenceProvider ekVirtualConferenceProvider, IsNSString identifier) => ekVirtualConferenceProvider -> identifier -> Ptr () -> IO ()
-fetchVirtualConferenceForIdentifier_completionHandler ekVirtualConferenceProvider  identifier completionHandler =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg ekVirtualConferenceProvider (mkSelector "fetchVirtualConferenceForIdentifier:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+fetchVirtualConferenceForIdentifier_completionHandler ekVirtualConferenceProvider identifier completionHandler =
+  sendMessage ekVirtualConferenceProvider fetchVirtualConferenceForIdentifier_completionHandlerSelector (toNSString identifier) completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchVirtualConferenceForIdentifier:completionHandler:@
-fetchVirtualConferenceForIdentifier_completionHandlerSelector :: Selector
+fetchVirtualConferenceForIdentifier_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 fetchVirtualConferenceForIdentifier_completionHandlerSelector = mkSelector "fetchVirtualConferenceForIdentifier:completionHandler:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,19 +27,19 @@ module ObjC.MetalPerformanceShaders.MPSVector
   , vectorBytes
   , offset
   , data_
+  , dataSelector
+  , dataTypeSelector
+  , deviceSelector
+  , initSelector
   , initWithBuffer_descriptorSelector
   , initWithBuffer_offset_descriptorSelector
   , initWithDevice_descriptorSelector
-  , initSelector
-  , synchronizeOnCommandBufferSelector
-  , resourceSizeSelector
-  , deviceSelector
   , lengthSelector
-  , vectorsSelector
-  , dataTypeSelector
-  , vectorBytesSelector
   , offsetSelector
-  , dataSelector
+  , resourceSizeSelector
+  , synchronizeOnCommandBufferSelector
+  , vectorBytesSelector
+  , vectorsSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -72,15 +73,11 @@ module ObjC.MetalPerformanceShaders.MPSVector
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -104,9 +101,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithBuffer:descriptor:@
 initWithBuffer_descriptor :: (IsMPSVector mpsVector, IsMPSVectorDescriptor descriptor) => mpsVector -> RawId -> descriptor -> IO (Id MPSVector)
-initWithBuffer_descriptor mpsVector  buffer descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsVector (mkSelector "initWithBuffer:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithBuffer_descriptor mpsVector buffer descriptor =
+  sendOwnedMessage mpsVector initWithBuffer_descriptorSelector buffer (toMPSVectorDescriptor descriptor)
 
 -- | Initialize a MPSVector object with a MTLBuffer and an offset.
 --
@@ -118,9 +114,8 @@ initWithBuffer_descriptor mpsVector  buffer descriptor =
 --
 -- ObjC selector: @- initWithBuffer:offset:descriptor:@
 initWithBuffer_offset_descriptor :: (IsMPSVector mpsVector, IsMPSVectorDescriptor descriptor) => mpsVector -> RawId -> CULong -> descriptor -> IO (Id MPSVector)
-initWithBuffer_offset_descriptor mpsVector  buffer offset descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsVector (mkSelector "initWithBuffer:offset:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId buffer) :: Ptr ()), argCULong offset, argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithBuffer_offset_descriptor mpsVector buffer offset descriptor =
+  sendOwnedMessage mpsVector initWithBuffer_offset_descriptorSelector buffer offset (toMPSVectorDescriptor descriptor)
 
 -- | Initialize a lazily backed MPSVector object with a descriptor
 --
@@ -134,14 +129,13 @@ initWithBuffer_offset_descriptor mpsVector  buffer offset descriptor =
 --
 -- ObjC selector: @- initWithDevice:descriptor:@
 initWithDevice_descriptor :: (IsMPSVector mpsVector, IsMPSVectorDescriptor descriptor) => mpsVector -> RawId -> descriptor -> IO (Id MPSVector)
-initWithDevice_descriptor mpsVector  device descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsVector (mkSelector "initWithDevice:descriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_descriptor mpsVector device descriptor =
+  sendOwnedMessage mpsVector initWithDevice_descriptorSelector device (toMPSVectorDescriptor descriptor)
 
 -- | @- init@
 init_ :: IsMPSVector mpsVector => mpsVector -> IO (Id MPSVector)
-init_ mpsVector  =
-    sendMsg mpsVector (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsVector =
+  sendOwnedMessage mpsVector initSelector
 
 -- | Flush the underlying MTLBuffer from the device's caches, and invalidate any CPU caches if needed.
 --
@@ -151,8 +145,8 @@ init_ mpsVector  =
 --
 -- ObjC selector: @- synchronizeOnCommandBuffer:@
 synchronizeOnCommandBuffer :: IsMPSVector mpsVector => mpsVector -> RawId -> IO ()
-synchronizeOnCommandBuffer mpsVector  commandBuffer =
-    sendMsg mpsVector (mkSelector "synchronizeOnCommandBuffer:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())]
+synchronizeOnCommandBuffer mpsVector commandBuffer =
+  sendMessage mpsVector synchronizeOnCommandBufferSelector commandBuffer
 
 -- | Get the number of bytes used to allocate underyling MTLResources
 --
@@ -164,8 +158,8 @@ synchronizeOnCommandBuffer mpsVector  commandBuffer =
 --
 -- ObjC selector: @- resourceSize@
 resourceSize :: IsMPSVector mpsVector => mpsVector -> IO CULong
-resourceSize mpsVector  =
-    sendMsg mpsVector (mkSelector "resourceSize") retCULong []
+resourceSize mpsVector =
+  sendMessage mpsVector resourceSizeSelector
 
 -- | device
 --
@@ -173,8 +167,8 @@ resourceSize mpsVector  =
 --
 -- ObjC selector: @- device@
 device :: IsMPSVector mpsVector => mpsVector -> IO RawId
-device mpsVector  =
-    fmap (RawId . castPtr) $ sendMsg mpsVector (mkSelector "device") (retPtr retVoid) []
+device mpsVector =
+  sendMessage mpsVector deviceSelector
 
 -- | length
 --
@@ -182,8 +176,8 @@ device mpsVector  =
 --
 -- ObjC selector: @- length@
 length_ :: IsMPSVector mpsVector => mpsVector -> IO CULong
-length_ mpsVector  =
-    sendMsg mpsVector (mkSelector "length") retCULong []
+length_ mpsVector =
+  sendMessage mpsVector lengthSelector
 
 -- | vectors
 --
@@ -191,8 +185,8 @@ length_ mpsVector  =
 --
 -- ObjC selector: @- vectors@
 vectors :: IsMPSVector mpsVector => mpsVector -> IO CULong
-vectors mpsVector  =
-    sendMsg mpsVector (mkSelector "vectors") retCULong []
+vectors mpsVector =
+  sendMessage mpsVector vectorsSelector
 
 -- | dataType
 --
@@ -200,8 +194,8 @@ vectors mpsVector  =
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSVector mpsVector => mpsVector -> IO MPSDataType
-dataType mpsVector  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsVector (mkSelector "dataType") retCUInt []
+dataType mpsVector =
+  sendMessage mpsVector dataTypeSelector
 
 -- | vectorBytes
 --
@@ -209,8 +203,8 @@ dataType mpsVector  =
 --
 -- ObjC selector: @- vectorBytes@
 vectorBytes :: IsMPSVector mpsVector => mpsVector -> IO CULong
-vectorBytes mpsVector  =
-    sendMsg mpsVector (mkSelector "vectorBytes") retCULong []
+vectorBytes mpsVector =
+  sendMessage mpsVector vectorBytesSelector
 
 -- | offset
 --
@@ -218,8 +212,8 @@ vectorBytes mpsVector  =
 --
 -- ObjC selector: @- offset@
 offset :: IsMPSVector mpsVector => mpsVector -> IO CULong
-offset mpsVector  =
-    sendMsg mpsVector (mkSelector "offset") retCULong []
+offset mpsVector =
+  sendMessage mpsVector offsetSelector
 
 -- | data
 --
@@ -227,62 +221,62 @@ offset mpsVector  =
 --
 -- ObjC selector: @- data@
 data_ :: IsMPSVector mpsVector => mpsVector -> IO RawId
-data_ mpsVector  =
-    fmap (RawId . castPtr) $ sendMsg mpsVector (mkSelector "data") (retPtr retVoid) []
+data_ mpsVector =
+  sendMessage mpsVector dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBuffer:descriptor:@
-initWithBuffer_descriptorSelector :: Selector
+initWithBuffer_descriptorSelector :: Selector '[RawId, Id MPSVectorDescriptor] (Id MPSVector)
 initWithBuffer_descriptorSelector = mkSelector "initWithBuffer:descriptor:"
 
 -- | @Selector@ for @initWithBuffer:offset:descriptor:@
-initWithBuffer_offset_descriptorSelector :: Selector
+initWithBuffer_offset_descriptorSelector :: Selector '[RawId, CULong, Id MPSVectorDescriptor] (Id MPSVector)
 initWithBuffer_offset_descriptorSelector = mkSelector "initWithBuffer:offset:descriptor:"
 
 -- | @Selector@ for @initWithDevice:descriptor:@
-initWithDevice_descriptorSelector :: Selector
+initWithDevice_descriptorSelector :: Selector '[RawId, Id MPSVectorDescriptor] (Id MPSVector)
 initWithDevice_descriptorSelector = mkSelector "initWithDevice:descriptor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSVector)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @synchronizeOnCommandBuffer:@
-synchronizeOnCommandBufferSelector :: Selector
+synchronizeOnCommandBufferSelector :: Selector '[RawId] ()
 synchronizeOnCommandBufferSelector = mkSelector "synchronizeOnCommandBuffer:"
 
 -- | @Selector@ for @resourceSize@
-resourceSizeSelector :: Selector
+resourceSizeSelector :: Selector '[] CULong
 resourceSizeSelector = mkSelector "resourceSize"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CULong
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @vectors@
-vectorsSelector :: Selector
+vectorsSelector :: Selector '[] CULong
 vectorsSelector = mkSelector "vectors"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @vectorBytes@
-vectorBytesSelector :: Selector
+vectorBytesSelector :: Selector '[] CULong
 vectorBytesSelector = mkSelector "vectorBytes"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] CULong
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] RawId
 dataSelector = mkSelector "data"
 

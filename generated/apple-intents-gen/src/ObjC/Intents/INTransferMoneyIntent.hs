@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Intents.INTransferMoneyIntent
   , transactionAmount
   , transactionScheduledDate
   , transactionNote
-  , initWithFromAccount_toAccount_transactionAmount_transactionScheduledDate_transactionNoteSelector
   , fromAccountSelector
+  , initWithFromAccount_toAccount_transactionAmount_transactionScheduledDate_transactionNoteSelector
   , toAccountSelector
   , transactionAmountSelector
-  , transactionScheduledDateSelector
   , transactionNoteSelector
+  , transactionScheduledDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,64 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithFromAccount:toAccount:transactionAmount:transactionScheduledDate:transactionNote:@
 initWithFromAccount_toAccount_transactionAmount_transactionScheduledDate_transactionNote :: (IsINTransferMoneyIntent inTransferMoneyIntent, IsINPaymentAccount fromAccount, IsINPaymentAccount toAccount, IsINPaymentAmount transactionAmount, IsINDateComponentsRange transactionScheduledDate, IsNSString transactionNote) => inTransferMoneyIntent -> fromAccount -> toAccount -> transactionAmount -> transactionScheduledDate -> transactionNote -> IO (Id INTransferMoneyIntent)
-initWithFromAccount_toAccount_transactionAmount_transactionScheduledDate_transactionNote inTransferMoneyIntent  fromAccount toAccount transactionAmount transactionScheduledDate transactionNote =
-  withObjCPtr fromAccount $ \raw_fromAccount ->
-    withObjCPtr toAccount $ \raw_toAccount ->
-      withObjCPtr transactionAmount $ \raw_transactionAmount ->
-        withObjCPtr transactionScheduledDate $ \raw_transactionScheduledDate ->
-          withObjCPtr transactionNote $ \raw_transactionNote ->
-              sendMsg inTransferMoneyIntent (mkSelector "initWithFromAccount:toAccount:transactionAmount:transactionScheduledDate:transactionNote:") (retPtr retVoid) [argPtr (castPtr raw_fromAccount :: Ptr ()), argPtr (castPtr raw_toAccount :: Ptr ()), argPtr (castPtr raw_transactionAmount :: Ptr ()), argPtr (castPtr raw_transactionScheduledDate :: Ptr ()), argPtr (castPtr raw_transactionNote :: Ptr ())] >>= ownedObject . castPtr
+initWithFromAccount_toAccount_transactionAmount_transactionScheduledDate_transactionNote inTransferMoneyIntent fromAccount toAccount transactionAmount transactionScheduledDate transactionNote =
+  sendOwnedMessage inTransferMoneyIntent initWithFromAccount_toAccount_transactionAmount_transactionScheduledDate_transactionNoteSelector (toINPaymentAccount fromAccount) (toINPaymentAccount toAccount) (toINPaymentAmount transactionAmount) (toINDateComponentsRange transactionScheduledDate) (toNSString transactionNote)
 
 -- | @- fromAccount@
 fromAccount :: IsINTransferMoneyIntent inTransferMoneyIntent => inTransferMoneyIntent -> IO (Id INPaymentAccount)
-fromAccount inTransferMoneyIntent  =
-    sendMsg inTransferMoneyIntent (mkSelector "fromAccount") (retPtr retVoid) [] >>= retainedObject . castPtr
+fromAccount inTransferMoneyIntent =
+  sendMessage inTransferMoneyIntent fromAccountSelector
 
 -- | @- toAccount@
 toAccount :: IsINTransferMoneyIntent inTransferMoneyIntent => inTransferMoneyIntent -> IO (Id INPaymentAccount)
-toAccount inTransferMoneyIntent  =
-    sendMsg inTransferMoneyIntent (mkSelector "toAccount") (retPtr retVoid) [] >>= retainedObject . castPtr
+toAccount inTransferMoneyIntent =
+  sendMessage inTransferMoneyIntent toAccountSelector
 
 -- | @- transactionAmount@
 transactionAmount :: IsINTransferMoneyIntent inTransferMoneyIntent => inTransferMoneyIntent -> IO (Id INPaymentAmount)
-transactionAmount inTransferMoneyIntent  =
-    sendMsg inTransferMoneyIntent (mkSelector "transactionAmount") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionAmount inTransferMoneyIntent =
+  sendMessage inTransferMoneyIntent transactionAmountSelector
 
 -- | @- transactionScheduledDate@
 transactionScheduledDate :: IsINTransferMoneyIntent inTransferMoneyIntent => inTransferMoneyIntent -> IO (Id INDateComponentsRange)
-transactionScheduledDate inTransferMoneyIntent  =
-    sendMsg inTransferMoneyIntent (mkSelector "transactionScheduledDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionScheduledDate inTransferMoneyIntent =
+  sendMessage inTransferMoneyIntent transactionScheduledDateSelector
 
 -- | @- transactionNote@
 transactionNote :: IsINTransferMoneyIntent inTransferMoneyIntent => inTransferMoneyIntent -> IO (Id NSString)
-transactionNote inTransferMoneyIntent  =
-    sendMsg inTransferMoneyIntent (mkSelector "transactionNote") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionNote inTransferMoneyIntent =
+  sendMessage inTransferMoneyIntent transactionNoteSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFromAccount:toAccount:transactionAmount:transactionScheduledDate:transactionNote:@
-initWithFromAccount_toAccount_transactionAmount_transactionScheduledDate_transactionNoteSelector :: Selector
+initWithFromAccount_toAccount_transactionAmount_transactionScheduledDate_transactionNoteSelector :: Selector '[Id INPaymentAccount, Id INPaymentAccount, Id INPaymentAmount, Id INDateComponentsRange, Id NSString] (Id INTransferMoneyIntent)
 initWithFromAccount_toAccount_transactionAmount_transactionScheduledDate_transactionNoteSelector = mkSelector "initWithFromAccount:toAccount:transactionAmount:transactionScheduledDate:transactionNote:"
 
 -- | @Selector@ for @fromAccount@
-fromAccountSelector :: Selector
+fromAccountSelector :: Selector '[] (Id INPaymentAccount)
 fromAccountSelector = mkSelector "fromAccount"
 
 -- | @Selector@ for @toAccount@
-toAccountSelector :: Selector
+toAccountSelector :: Selector '[] (Id INPaymentAccount)
 toAccountSelector = mkSelector "toAccount"
 
 -- | @Selector@ for @transactionAmount@
-transactionAmountSelector :: Selector
+transactionAmountSelector :: Selector '[] (Id INPaymentAmount)
 transactionAmountSelector = mkSelector "transactionAmount"
 
 -- | @Selector@ for @transactionScheduledDate@
-transactionScheduledDateSelector :: Selector
+transactionScheduledDateSelector :: Selector '[] (Id INDateComponentsRange)
 transactionScheduledDateSelector = mkSelector "transactionScheduledDate"
 
 -- | @Selector@ for @transactionNote@
-transactionNoteSelector :: Selector
+transactionNoteSelector :: Selector '[] (Id NSString)
 transactionNoteSelector = mkSelector "transactionNote"
 

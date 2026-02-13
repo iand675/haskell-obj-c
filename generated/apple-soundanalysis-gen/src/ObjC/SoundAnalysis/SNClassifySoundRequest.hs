@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.SoundAnalysis.SNClassifySoundRequest
   , setOverlapFactor
   , windowDurationConstraint
   , knownClassifications
-  , initWithMLModel_errorSelector
-  , initWithClassifierIdentifier_errorSelector
   , initSelector
+  , initWithClassifierIdentifier_errorSelector
+  , initWithMLModel_errorSelector
+  , knownClassificationsSelector
   , newSelector
   , overlapFactorSelector
   , setOverlapFactorSelector
   , windowDurationConstraintSelector
-  , knownClassificationsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,10 +51,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithMLModel:error:@
 initWithMLModel_error :: (IsSNClassifySoundRequest snClassifySoundRequest, IsMLModel mlModel, IsNSError error_) => snClassifySoundRequest -> mlModel -> error_ -> IO (Id SNClassifySoundRequest)
-initWithMLModel_error snClassifySoundRequest  mlModel error_ =
-  withObjCPtr mlModel $ \raw_mlModel ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg snClassifySoundRequest (mkSelector "initWithMLModel:error:") (retPtr retVoid) [argPtr (castPtr raw_mlModel :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithMLModel_error snClassifySoundRequest mlModel error_ =
+  sendOwnedMessage snClassifySoundRequest initWithMLModel_errorSelector (toMLModel mlModel) (toNSError error_)
 
 -- | Initializes a sound classification request with a known classifier.
 --
@@ -73,22 +68,20 @@ initWithMLModel_error snClassifySoundRequest  mlModel error_ =
 --
 -- ObjC selector: @- initWithClassifierIdentifier:error:@
 initWithClassifierIdentifier_error :: (IsSNClassifySoundRequest snClassifySoundRequest, IsNSString classifierIdentifier, IsNSError error_) => snClassifySoundRequest -> classifierIdentifier -> error_ -> IO (Id SNClassifySoundRequest)
-initWithClassifierIdentifier_error snClassifySoundRequest  classifierIdentifier error_ =
-  withObjCPtr classifierIdentifier $ \raw_classifierIdentifier ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg snClassifySoundRequest (mkSelector "initWithClassifierIdentifier:error:") (retPtr retVoid) [argPtr (castPtr raw_classifierIdentifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithClassifierIdentifier_error snClassifySoundRequest classifierIdentifier error_ =
+  sendOwnedMessage snClassifySoundRequest initWithClassifierIdentifier_errorSelector (toNSString classifierIdentifier) (toNSError error_)
 
 -- | @- init@
 init_ :: IsSNClassifySoundRequest snClassifySoundRequest => snClassifySoundRequest -> IO (Id SNClassifySoundRequest)
-init_ snClassifySoundRequest  =
-    sendMsg snClassifySoundRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ snClassifySoundRequest =
+  sendOwnedMessage snClassifySoundRequest initSelector
 
 -- | @+ new@
 new :: IO (Id SNClassifySoundRequest)
 new  =
   do
     cls' <- getRequiredClass "SNClassifySoundRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The overlap factor of the windows of audio data provided to the classifier, if the model operates on fixed audio block sizes.
 --
@@ -96,8 +89,8 @@ new  =
 --
 -- ObjC selector: @- overlapFactor@
 overlapFactor :: IsSNClassifySoundRequest snClassifySoundRequest => snClassifySoundRequest -> IO CDouble
-overlapFactor snClassifySoundRequest  =
-    sendMsg snClassifySoundRequest (mkSelector "overlapFactor") retCDouble []
+overlapFactor snClassifySoundRequest =
+  sendMessage snClassifySoundRequest overlapFactorSelector
 
 -- | The overlap factor of the windows of audio data provided to the classifier, if the model operates on fixed audio block sizes.
 --
@@ -105,8 +98,8 @@ overlapFactor snClassifySoundRequest  =
 --
 -- ObjC selector: @- setOverlapFactor:@
 setOverlapFactor :: IsSNClassifySoundRequest snClassifySoundRequest => snClassifySoundRequest -> CDouble -> IO ()
-setOverlapFactor snClassifySoundRequest  value =
-    sendMsg snClassifySoundRequest (mkSelector "setOverlapFactor:") retVoid [argCDouble value]
+setOverlapFactor snClassifySoundRequest value =
+  sendMessage snClassifySoundRequest setOverlapFactorSelector value
 
 -- | The constraints governing permitted analysis window durations.
 --
@@ -114,8 +107,8 @@ setOverlapFactor snClassifySoundRequest  value =
 --
 -- ObjC selector: @- windowDurationConstraint@
 windowDurationConstraint :: IsSNClassifySoundRequest snClassifySoundRequest => snClassifySoundRequest -> IO (Id SNTimeDurationConstraint)
-windowDurationConstraint snClassifySoundRequest  =
-    sendMsg snClassifySoundRequest (mkSelector "windowDurationConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+windowDurationConstraint snClassifySoundRequest =
+  sendMessage snClassifySoundRequest windowDurationConstraintSelector
 
 -- | Lists all labels that can be produced by this request.
 --
@@ -123,42 +116,42 @@ windowDurationConstraint snClassifySoundRequest  =
 --
 -- ObjC selector: @- knownClassifications@
 knownClassifications :: IsSNClassifySoundRequest snClassifySoundRequest => snClassifySoundRequest -> IO (Id NSArray)
-knownClassifications snClassifySoundRequest  =
-    sendMsg snClassifySoundRequest (mkSelector "knownClassifications") (retPtr retVoid) [] >>= retainedObject . castPtr
+knownClassifications snClassifySoundRequest =
+  sendMessage snClassifySoundRequest knownClassificationsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMLModel:error:@
-initWithMLModel_errorSelector :: Selector
+initWithMLModel_errorSelector :: Selector '[Id MLModel, Id NSError] (Id SNClassifySoundRequest)
 initWithMLModel_errorSelector = mkSelector "initWithMLModel:error:"
 
 -- | @Selector@ for @initWithClassifierIdentifier:error:@
-initWithClassifierIdentifier_errorSelector :: Selector
+initWithClassifierIdentifier_errorSelector :: Selector '[Id NSString, Id NSError] (Id SNClassifySoundRequest)
 initWithClassifierIdentifier_errorSelector = mkSelector "initWithClassifierIdentifier:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SNClassifySoundRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SNClassifySoundRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @overlapFactor@
-overlapFactorSelector :: Selector
+overlapFactorSelector :: Selector '[] CDouble
 overlapFactorSelector = mkSelector "overlapFactor"
 
 -- | @Selector@ for @setOverlapFactor:@
-setOverlapFactorSelector :: Selector
+setOverlapFactorSelector :: Selector '[CDouble] ()
 setOverlapFactorSelector = mkSelector "setOverlapFactor:"
 
 -- | @Selector@ for @windowDurationConstraint@
-windowDurationConstraintSelector :: Selector
+windowDurationConstraintSelector :: Selector '[] (Id SNTimeDurationConstraint)
 windowDurationConstraintSelector = mkSelector "windowDurationConstraint"
 
 -- | @Selector@ for @knownClassifications@
-knownClassificationsSelector :: Selector
+knownClassificationsSelector :: Selector '[] (Id NSArray)
 knownClassificationsSelector = mkSelector "knownClassifications"
 

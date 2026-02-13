@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.AVFAudio.AVAudioSessionChannelDescription
   , owningPortUID
   , channelNumber
   , channelLabel
-  , channelNameSelector
-  , owningPortUIDSelector
-  , channelNumberSelector
   , channelLabelSelector
+  , channelNameSelector
+  , channelNumberSelector
+  , owningPortUIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,47 +40,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- channelName@
 channelName :: IsAVAudioSessionChannelDescription avAudioSessionChannelDescription => avAudioSessionChannelDescription -> IO (Id NSString)
-channelName avAudioSessionChannelDescription  =
-    sendMsg avAudioSessionChannelDescription (mkSelector "channelName") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelName avAudioSessionChannelDescription =
+  sendMessage avAudioSessionChannelDescription channelNameSelector
 
 -- | The UID (unique identifier) of the port owning the channel.
 --
 -- ObjC selector: @- owningPortUID@
 owningPortUID :: IsAVAudioSessionChannelDescription avAudioSessionChannelDescription => avAudioSessionChannelDescription -> IO (Id NSString)
-owningPortUID avAudioSessionChannelDescription  =
-    sendMsg avAudioSessionChannelDescription (mkSelector "owningPortUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+owningPortUID avAudioSessionChannelDescription =
+  sendMessage avAudioSessionChannelDescription owningPortUIDSelector
 
 -- | The index of this channel in its owning port's array of channels.
 --
 -- ObjC selector: @- channelNumber@
 channelNumber :: IsAVAudioSessionChannelDescription avAudioSessionChannelDescription => avAudioSessionChannelDescription -> IO CULong
-channelNumber avAudioSessionChannelDescription  =
-    sendMsg avAudioSessionChannelDescription (mkSelector "channelNumber") retCULong []
+channelNumber avAudioSessionChannelDescription =
+  sendMessage avAudioSessionChannelDescription channelNumberSelector
 
 -- | Description of the physical location of this channel.
 --
 -- ObjC selector: @- channelLabel@
 channelLabel :: IsAVAudioSessionChannelDescription avAudioSessionChannelDescription => avAudioSessionChannelDescription -> IO CUInt
-channelLabel avAudioSessionChannelDescription  =
-    sendMsg avAudioSessionChannelDescription (mkSelector "channelLabel") retCUInt []
+channelLabel avAudioSessionChannelDescription =
+  sendMessage avAudioSessionChannelDescription channelLabelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @channelName@
-channelNameSelector :: Selector
+channelNameSelector :: Selector '[] (Id NSString)
 channelNameSelector = mkSelector "channelName"
 
 -- | @Selector@ for @owningPortUID@
-owningPortUIDSelector :: Selector
+owningPortUIDSelector :: Selector '[] (Id NSString)
 owningPortUIDSelector = mkSelector "owningPortUID"
 
 -- | @Selector@ for @channelNumber@
-channelNumberSelector :: Selector
+channelNumberSelector :: Selector '[] CULong
 channelNumberSelector = mkSelector "channelNumber"
 
 -- | @Selector@ for @channelLabel@
-channelLabelSelector :: Selector
+channelLabelSelector :: Selector '[] CUInt
 channelLabelSelector = mkSelector "channelLabel"
 

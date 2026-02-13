@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,8 +12,8 @@ module ObjC.AppKit.NSPressureConfiguration
   , set
   , pressureBehavior
   , initWithPressureBehaviorSelector
-  , setSelector
   , pressureBehaviorSelector
+  , setSelector
 
   -- * Enum types
   , NSPressureBehavior(NSPressureBehavior)
@@ -26,15 +27,11 @@ module ObjC.AppKit.NSPressureConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,32 +41,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPressureBehavior:@
 initWithPressureBehavior :: IsNSPressureConfiguration nsPressureConfiguration => nsPressureConfiguration -> NSPressureBehavior -> IO (Id NSPressureConfiguration)
-initWithPressureBehavior nsPressureConfiguration  pressureBehavior =
-    sendMsg nsPressureConfiguration (mkSelector "initWithPressureBehavior:") (retPtr retVoid) [argCLong (coerce pressureBehavior)] >>= ownedObject . castPtr
+initWithPressureBehavior nsPressureConfiguration pressureBehavior =
+  sendOwnedMessage nsPressureConfiguration initWithPressureBehaviorSelector pressureBehavior
 
 -- | @- set@
 set :: IsNSPressureConfiguration nsPressureConfiguration => nsPressureConfiguration -> IO ()
-set nsPressureConfiguration  =
-    sendMsg nsPressureConfiguration (mkSelector "set") retVoid []
+set nsPressureConfiguration =
+  sendMessage nsPressureConfiguration setSelector
 
 -- | @- pressureBehavior@
 pressureBehavior :: IsNSPressureConfiguration nsPressureConfiguration => nsPressureConfiguration -> IO NSPressureBehavior
-pressureBehavior nsPressureConfiguration  =
-    fmap (coerce :: CLong -> NSPressureBehavior) $ sendMsg nsPressureConfiguration (mkSelector "pressureBehavior") retCLong []
+pressureBehavior nsPressureConfiguration =
+  sendMessage nsPressureConfiguration pressureBehaviorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPressureBehavior:@
-initWithPressureBehaviorSelector :: Selector
+initWithPressureBehaviorSelector :: Selector '[NSPressureBehavior] (Id NSPressureConfiguration)
 initWithPressureBehaviorSelector = mkSelector "initWithPressureBehavior:"
 
 -- | @Selector@ for @set@
-setSelector :: Selector
+setSelector :: Selector '[] ()
 setSelector = mkSelector "set"
 
 -- | @Selector@ for @pressureBehavior@
-pressureBehaviorSelector :: Selector
+pressureBehaviorSelector :: Selector '[] NSPressureBehavior
 pressureBehaviorSelector = mkSelector "pressureBehavior"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -18,13 +19,10 @@ module Main (main) where
 import Control.Monad (when)
 import Data.IORef
 import Data.String (fromString)
-import Foreign.C.Types (CDouble(..), CULong, CFloat)
-import Foreign.LibFFI (retCULong, retCLong, retVoid, retPtr, argPtr)
-import Foreign.ForeignPtr (withForeignPtr)
-import Foreign.Ptr (nullPtr, castPtr, Ptr)
+import Foreign.C.Types (CDouble(..), CFloat)
+import Foreign.Ptr (nullPtr)
 
 import ObjC.Runtime
-import ObjC.Runtime.ActionTarget (newActionTarget)
 
 -- Generated AppKit / Foundation bindings ------------------------------------
 import ObjC.AppKit.NSApplication
@@ -77,6 +75,7 @@ import ObjC.AppKit.NSTableColumn
   ( NSTableColumn
   , pattern NSTableColumnAutoresizingMask
   )
+import ObjC.AppKit.NSTableHeaderView (NSTableHeaderView)
 import ObjC.Foundation.NSString (NSString)
 import ObjC.Foundation.Structs (NSRect(..), NSPoint(..), NSSize(..), NSEdgeInsets(..))
 
@@ -107,6 +106,7 @@ import qualified ObjC.AppKit.NSVisualEffectView as VEV
 import qualified ObjC.AppKit.NSStackView as StkV
 import qualified ObjC.AppKit.NSTableView as TV
 import qualified ObjC.AppKit.NSTableColumn as TC
+import qualified ObjC.Foundation.NSString as Str
 
 -- ---------------------------------------------------------------------------
 -- Domain
@@ -128,21 +128,19 @@ winH = 600
 rowH = 48
 
 -- ---------------------------------------------------------------------------
--- Helpers
+-- Action selectors
 -- ---------------------------------------------------------------------------
 
--- | Convert a managed 'Id' to 'RawId' for returning from an ObjC delegate
--- method.  The retain+autorelease follows the standard +0 return convention
--- and ensures the object survives ForeignPtr finalization.
-returnId :: Id a -> IO RawId
-returnId (Id fp) = withForeignPtr fp $ \p -> do
-  let raw = RawId (castPtr p)
-  -- Bump the retain count so the object survives the ForeignPtr finalizer.
-  _ <- sendMsg raw (mkSelector "retain") (retPtr retVoid) []
-  -- Autorelease to follow the +0 ObjC return convention. The autorelease
-  -- pool will release once; the ARC caller retains before the pool drains.
-  _ <- sendMsg raw (mkSelector "autorelease") (retPtr retVoid) []
-  pure raw
+-- | Handlers that use the sender (for rowForView:)
+toggleItemSel :: Selector '[Id NSView] ()
+toggleItemSel = mkSelector "toggleItem:"
+
+deleteItemSel :: Selector '[Id NSView] ()
+deleteItemSel = mkSelector "deleteItem:"
+
+-- | Handler that ignores the sender
+addItemSel :: Sel
+addItemSel = mkSelector "addItem:"
 
 -- ---------------------------------------------------------------------------
 -- Main
@@ -233,10 +231,7 @@ main = withAutoreleasePool $ do
   StkV.setDistribution inputStack NSStackViewDistributionFill
 
   inputField <- TF.textFieldWithString ("" :: Id NSString)
-  -- setPlaceholderString is not in the generated bindings; send directly.
-  withObjCPtr ("What needs to be done?" :: Id NSString) $ \p ->
-    sendMsg inputField (mkSelector "setPlaceholderString:") retVoid
-      [argPtr (castPtr p :: Ptr ())]
+  TF.setPlaceholderString inputField ("What needs to be done?" :: Id NSString)
   Font.systemFontOfSize 15 >>= Ctrl.setFont inputField
   -- Low horizontal hugging so the text field stretches to fill
   View.setContentHuggingPriority_forOrientation inputField
@@ -245,7 +240,7 @@ main = withAutoreleasePool $ do
 
   -- Add button (target wired after creation below)
   addBtn <- Btn.buttonWithTitle_target_action
-    ("Add" :: Id NSString) (RawId nullPtr) (mkSelector "addItem:")
+    ("Add" :: Id NSString) (RawId nullPtr) (asSel addItemSel)
   StkV.addArrangedSubview inputStack (toNSView addBtn)
 
   StkV.addArrangedSubview mainStack (toNSView inputStack)
@@ -276,8 +271,7 @@ main = withAutoreleasePool $ do
   TV.setStyle tableView NSTableViewStylePlain
   Color.clearColor >>= TV.setBackgroundColor tableView
   -- Remove the header
-  sendMsg tableView (mkSelector "setHeaderView:") retVoid
-    [argPtr (nullPtr :: Ptr ())]
+  TV.setHeaderView tableView (nilId :: Id NSTableHeaderView)
 
   SV.setDocumentView scrollView tableView
   StkV.addArrangedSubview mainStack (toNSView scrollView)
@@ -311,9 +305,8 @@ main = withAutoreleasePool $ do
   -- Table actions target (shared by all row buttons)
   -- =======================================================================
   tableActionsTarget <- newActionTarget
-    [ ("toggleItem:", \sender -> do
-          rowIdx <- sendMsg tableView (mkSelector "rowForView:")
-                      retCLong [argPtr (castPtr (unRawId sender) :: Ptr ())]
+    [ toggleItemSel := \sender -> do
+          rowIdx <- TV.rowForView tableView sender
           when (rowIdx >= 0) $ do
             items <- readIORef itemsRef
             let idx = fromIntegral rowIdx :: Int
@@ -323,18 +316,17 @@ main = withAutoreleasePool $ do
                 then i { todoCompleted = not (todoCompleted i) }
                 else i))
             TV.reloadData tableView
-            updateLabels)
+            updateLabels
 
-    , ("deleteItem:", \sender -> do
-          rowIdx <- sendMsg tableView (mkSelector "rowForView:")
-                      retCLong [argPtr (castPtr (unRawId sender) :: Ptr ())]
+    , deleteItemSel := \sender -> do
+          rowIdx <- TV.rowForView tableView sender
           when (rowIdx >= 0) $ do
             items <- readIORef itemsRef
             let idx = fromIntegral rowIdx :: Int
                 iid = todoId (items !! idx)
             modifyIORef' itemsRef (filter (\i -> todoId i /= iid))
             TV.reloadData tableView
-            updateLabels)
+            updateLabels
     ]
 
   -- =======================================================================
@@ -361,7 +353,7 @@ main = withAutoreleasePool $ do
 
         -- Checkbox
         cb <- Btn.checkboxWithTitle_target_action
-          ("" :: Id NSString) tableActionsTarget (mkSelector "toggleItem:")
+          ("" :: Id NSString) tableActionsTarget (asSel toggleItemSel)
         View.setFrame cb (NSRect (NSPoint 12 12) (NSSize 24 24))
         when done $ Btn.setState cb 1
         View.addSubview rowView (toNSView cb)
@@ -380,43 +372,41 @@ main = withAutoreleasePool $ do
 
         -- Delete button (pinned to right edge via autoresizing)
         del <- Btn.buttonWithTitle_target_action
-          ("✕" :: Id NSString) tableActionsTarget (mkSelector "deleteItem:")
+          ("✕" :: Id NSString) tableActionsTarget (asSel deleteItemSel)
         View.setFrame del (NSRect (NSPoint 396 10) (NSSize 32 28))
         Btn.setBordered del False
         View.setAutoresizingMask del NSViewMinXMargin
         View.addSubview rowView (toNSView del)
 
         -- Return with retain+autorelease for safe handoff to the table view
-        returnId rowView
+        retainAutorelease rowView
     }
 
-  -- Wire delegate + data source (separate objects, no proxy needed)
-  sendMsg tableView (mkSelector "setDelegate:") retVoid
-    [argPtr (castPtr (unRawId delegate) :: Ptr ())]
-  sendMsg tableView (mkSelector "setDataSource:") retVoid
-    [argPtr (castPtr (unRawId dataSource) :: Ptr ())]
+  -- Wire delegate + data source
+  TV.setDelegate   tableView delegate
+  TV.setDataSource tableView dataSource
 
   -- =======================================================================
   -- Add target
   -- =======================================================================
   addTarget' <- newActionTarget
-    [ ("addItem:", \_sender -> do
+    [ addItemSel := do
           text <- Ctrl.stringValue inputField
-          len  <- sendMsg text (mkSelector "length") retCULong [] :: IO CULong
+          len <- Str.length_ text
           when (len > 0) $ do
             iid <- readIORef nextIdRef
             modifyIORef' nextIdRef (+ 1)
             modifyIORef' itemsRef (++ [TodoItem iid text False])
             Ctrl.setStringValue inputField ("" :: Id NSString)
             TV.reloadData tableView
-            updateLabels)
+            updateLabels
     ]
 
   -- Wire add button and input field Return key
   Ctrl.setTarget addBtn  addTarget'
-  Ctrl.setAction addBtn  (mkSelector "addItem:")
+  Ctrl.setAction addBtn  (asSel addItemSel)
   Ctrl.setTarget inputField addTarget'
-  Ctrl.setAction inputField (mkSelector "addItem:")
+  Ctrl.setAction inputField (asSel addItemSel)
 
   -- Show window ------------------------------------------------------------
   Win.makeKeyAndOrderFront window (RawId nullPtr)
@@ -436,7 +426,7 @@ setupMenuBar app = do
   appMenu <- alloc @NSMenu >>= \m -> Menu.initWithTitle m ("App" :: Id NSString)
   quitItem <- alloc @NSMenuItem >>= \mi ->
     MI.initWithTitle_action_keyEquivalent mi
-      ("Quit" :: Id NSString) App.terminateSelector ("q" :: Id NSString)
+      ("Quit" :: Id NSString) (mkSelector "terminate:") ("q" :: Id NSString)
   Menu.addItem appMenu quitItem
   Menu.setSubmenu_forItem menuBar appMenu appMenuItem
   App.setMainMenu app menuBar

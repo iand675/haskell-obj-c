@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.CloudKit.CKShareAccessRequester
   , init_
   , userIdentity
   , participantLookupInfo
-  , newSelector
   , initSelector
-  , userIdentitySelector
+  , newSelector
   , participantLookupInfoSelector
+  , userIdentitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,19 +35,19 @@ new :: IO (Id CKShareAccessRequester)
 new  =
   do
     cls' <- getRequiredClass "CKShareAccessRequester"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsCKShareAccessRequester ckShareAccessRequester => ckShareAccessRequester -> IO (Id CKShareAccessRequester)
-init_ ckShareAccessRequester  =
-    sendMsg ckShareAccessRequester (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckShareAccessRequester =
+  sendOwnedMessage ckShareAccessRequester initSelector
 
 -- | The identity of the user requesting access to the share.
 --
 -- ObjC selector: @- userIdentity@
 userIdentity :: IsCKShareAccessRequester ckShareAccessRequester => ckShareAccessRequester -> IO (Id CKUserIdentity)
-userIdentity ckShareAccessRequester  =
-    sendMsg ckShareAccessRequester (mkSelector "userIdentity") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIdentity ckShareAccessRequester =
+  sendMessage ckShareAccessRequester userIdentitySelector
 
 -- | Lookup information for the requester.
 --
@@ -58,26 +55,26 @@ userIdentity ckShareAccessRequester  =
 --
 -- ObjC selector: @- participantLookupInfo@
 participantLookupInfo :: IsCKShareAccessRequester ckShareAccessRequester => ckShareAccessRequester -> IO (Id CKUserIdentityLookupInfo)
-participantLookupInfo ckShareAccessRequester  =
-    sendMsg ckShareAccessRequester (mkSelector "participantLookupInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+participantLookupInfo ckShareAccessRequester =
+  sendMessage ckShareAccessRequester participantLookupInfoSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKShareAccessRequester)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKShareAccessRequester)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @userIdentity@
-userIdentitySelector :: Selector
+userIdentitySelector :: Selector '[] (Id CKUserIdentity)
 userIdentitySelector = mkSelector "userIdentity"
 
 -- | @Selector@ for @participantLookupInfo@
-participantLookupInfoSelector :: Selector
+participantLookupInfoSelector :: Selector '[] (Id CKUserIdentityLookupInfo)
 participantLookupInfoSelector = mkSelector "participantLookupInfo"
 

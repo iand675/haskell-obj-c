@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AVFoundation.AVAssetResourceLoadingDataRequest
   , requestedLength
   , requestsAllDataToEndOfResource
   , currentOffset
+  , currentOffsetSelector
   , initSelector
   , newSelector
-  , respondWithDataSelector
-  , requestedOffsetSelector
   , requestedLengthSelector
+  , requestedOffsetSelector
   , requestsAllDataToEndOfResourceSelector
-  , currentOffsetSelector
+  , respondWithDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetResourceLoadingDataRequest avAssetResourceLoadingDataRequest => avAssetResourceLoadingDataRequest -> IO (Id AVAssetResourceLoadingDataRequest)
-init_ avAssetResourceLoadingDataRequest  =
-    sendMsg avAssetResourceLoadingDataRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetResourceLoadingDataRequest =
+  sendOwnedMessage avAssetResourceLoadingDataRequest initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetResourceLoadingDataRequest)
 new  =
   do
     cls' <- getRequiredClass "AVAssetResourceLoadingDataRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | respondWithData:
 --
@@ -61,9 +58,8 @@ new  =
 --
 -- ObjC selector: @- respondWithData:@
 respondWithData :: (IsAVAssetResourceLoadingDataRequest avAssetResourceLoadingDataRequest, IsNSData data_) => avAssetResourceLoadingDataRequest -> data_ -> IO ()
-respondWithData avAssetResourceLoadingDataRequest  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg avAssetResourceLoadingDataRequest (mkSelector "respondWithData:") retVoid [argPtr (castPtr raw_data_ :: Ptr ())]
+respondWithData avAssetResourceLoadingDataRequest data_ =
+  sendMessage avAssetResourceLoadingDataRequest respondWithDataSelector (toNSData data_)
 
 -- | requestedOffset
 --
@@ -71,8 +67,8 @@ respondWithData avAssetResourceLoadingDataRequest  data_ =
 --
 -- ObjC selector: @- requestedOffset@
 requestedOffset :: IsAVAssetResourceLoadingDataRequest avAssetResourceLoadingDataRequest => avAssetResourceLoadingDataRequest -> IO CLong
-requestedOffset avAssetResourceLoadingDataRequest  =
-    sendMsg avAssetResourceLoadingDataRequest (mkSelector "requestedOffset") retCLong []
+requestedOffset avAssetResourceLoadingDataRequest =
+  sendMessage avAssetResourceLoadingDataRequest requestedOffsetSelector
 
 -- | requestedLength
 --
@@ -82,8 +78,8 @@ requestedOffset avAssetResourceLoadingDataRequest  =
 --
 -- ObjC selector: @- requestedLength@
 requestedLength :: IsAVAssetResourceLoadingDataRequest avAssetResourceLoadingDataRequest => avAssetResourceLoadingDataRequest -> IO CLong
-requestedLength avAssetResourceLoadingDataRequest  =
-    sendMsg avAssetResourceLoadingDataRequest (mkSelector "requestedLength") retCLong []
+requestedLength avAssetResourceLoadingDataRequest =
+  sendMessage avAssetResourceLoadingDataRequest requestedLengthSelector
 
 -- | requestsAllDataToEndOfResource
 --
@@ -93,8 +89,8 @@ requestedLength avAssetResourceLoadingDataRequest  =
 --
 -- ObjC selector: @- requestsAllDataToEndOfResource@
 requestsAllDataToEndOfResource :: IsAVAssetResourceLoadingDataRequest avAssetResourceLoadingDataRequest => avAssetResourceLoadingDataRequest -> IO Bool
-requestsAllDataToEndOfResource avAssetResourceLoadingDataRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetResourceLoadingDataRequest (mkSelector "requestsAllDataToEndOfResource") retCULong []
+requestsAllDataToEndOfResource avAssetResourceLoadingDataRequest =
+  sendMessage avAssetResourceLoadingDataRequest requestsAllDataToEndOfResourceSelector
 
 -- | currentOffset
 --
@@ -102,38 +98,38 @@ requestsAllDataToEndOfResource avAssetResourceLoadingDataRequest  =
 --
 -- ObjC selector: @- currentOffset@
 currentOffset :: IsAVAssetResourceLoadingDataRequest avAssetResourceLoadingDataRequest => avAssetResourceLoadingDataRequest -> IO CLong
-currentOffset avAssetResourceLoadingDataRequest  =
-    sendMsg avAssetResourceLoadingDataRequest (mkSelector "currentOffset") retCLong []
+currentOffset avAssetResourceLoadingDataRequest =
+  sendMessage avAssetResourceLoadingDataRequest currentOffsetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetResourceLoadingDataRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetResourceLoadingDataRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @respondWithData:@
-respondWithDataSelector :: Selector
+respondWithDataSelector :: Selector '[Id NSData] ()
 respondWithDataSelector = mkSelector "respondWithData:"
 
 -- | @Selector@ for @requestedOffset@
-requestedOffsetSelector :: Selector
+requestedOffsetSelector :: Selector '[] CLong
 requestedOffsetSelector = mkSelector "requestedOffset"
 
 -- | @Selector@ for @requestedLength@
-requestedLengthSelector :: Selector
+requestedLengthSelector :: Selector '[] CLong
 requestedLengthSelector = mkSelector "requestedLength"
 
 -- | @Selector@ for @requestsAllDataToEndOfResource@
-requestsAllDataToEndOfResourceSelector :: Selector
+requestsAllDataToEndOfResourceSelector :: Selector '[] Bool
 requestsAllDataToEndOfResourceSelector = mkSelector "requestsAllDataToEndOfResource"
 
 -- | @Selector@ for @currentOffset@
-currentOffsetSelector :: Selector
+currentOffsetSelector :: Selector '[] CLong
 currentOffsetSelector = mkSelector "currentOffset"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.PDFKit.PDFAnnotationCircle
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,24 +29,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- interiorColor@
 interiorColor :: IsPDFAnnotationCircle pdfAnnotationCircle => pdfAnnotationCircle -> IO (Id NSColor)
-interiorColor pdfAnnotationCircle  =
-    sendMsg pdfAnnotationCircle (mkSelector "interiorColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+interiorColor pdfAnnotationCircle =
+  sendMessage pdfAnnotationCircle interiorColorSelector
 
 -- | @- setInteriorColor:@
 setInteriorColor :: (IsPDFAnnotationCircle pdfAnnotationCircle, IsNSColor color) => pdfAnnotationCircle -> color -> IO ()
-setInteriorColor pdfAnnotationCircle  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg pdfAnnotationCircle (mkSelector "setInteriorColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setInteriorColor pdfAnnotationCircle color =
+  sendMessage pdfAnnotationCircle setInteriorColorSelector (toNSColor color)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @interiorColor@
-interiorColorSelector :: Selector
+interiorColorSelector :: Selector '[] (Id NSColor)
 interiorColorSelector = mkSelector "interiorColor"
 
 -- | @Selector@ for @setInteriorColor:@
-setInteriorColorSelector :: Selector
+setInteriorColorSelector :: Selector '[Id NSColor] ()
 setInteriorColorSelector = mkSelector "setInteriorColor:"
 

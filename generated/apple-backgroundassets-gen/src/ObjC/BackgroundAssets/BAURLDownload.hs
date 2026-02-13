@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.BackgroundAssets.BAURLDownload
   , initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_priority
   , initWithIdentifier_request_applicationGroupIdentifier
   , initWithIdentifier_request_applicationGroupIdentifier_priority
-  , newSelector
   , initSelector
-  , initWithIdentifier_request_fileSize_applicationGroupIdentifierSelector
-  , initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_prioritySelector
   , initWithIdentifier_request_applicationGroupIdentifierSelector
   , initWithIdentifier_request_applicationGroupIdentifier_prioritySelector
+  , initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_prioritySelector
+  , initWithIdentifier_request_fileSize_applicationGroupIdentifierSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,12 +39,12 @@ new :: IO (Id BAURLDownload)
 new  =
   do
     cls' <- getRequiredClass "BAURLDownload"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsBAURLDownload baurlDownload => baurlDownload -> IO (Id BAURLDownload)
-init_ baurlDownload  =
-    sendMsg baurlDownload (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ baurlDownload =
+  sendOwnedMessage baurlDownload initSelector
 
 -- | Constructs a download object to represent the download of a asset located inside of the provided @request.@
 --
@@ -61,11 +58,8 @@ init_ baurlDownload  =
 --
 -- ObjC selector: @- initWithIdentifier:request:fileSize:applicationGroupIdentifier:@
 initWithIdentifier_request_fileSize_applicationGroupIdentifier :: (IsBAURLDownload baurlDownload, IsNSString identifier, IsNSURLRequest request, IsNSString applicationGroupIdentifier) => baurlDownload -> identifier -> request -> CULong -> applicationGroupIdentifier -> IO (Id BAURLDownload)
-initWithIdentifier_request_fileSize_applicationGroupIdentifier baurlDownload  identifier request fileSize applicationGroupIdentifier =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr request $ \raw_request ->
-      withObjCPtr applicationGroupIdentifier $ \raw_applicationGroupIdentifier ->
-          sendMsg baurlDownload (mkSelector "initWithIdentifier:request:fileSize:applicationGroupIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_request :: Ptr ()), argCULong fileSize, argPtr (castPtr raw_applicationGroupIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_request_fileSize_applicationGroupIdentifier baurlDownload identifier request fileSize applicationGroupIdentifier =
+  sendOwnedMessage baurlDownload initWithIdentifier_request_fileSize_applicationGroupIdentifierSelector (toNSString identifier) (toNSURLRequest request) fileSize (toNSString applicationGroupIdentifier)
 
 -- | Constructs a download object to represent the download of a asset located inside of the provided @request.@
 --
@@ -83,11 +77,8 @@ initWithIdentifier_request_fileSize_applicationGroupIdentifier baurlDownload  id
 --
 -- ObjC selector: @- initWithIdentifier:request:essential:fileSize:applicationGroupIdentifier:priority:@
 initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_priority :: (IsBAURLDownload baurlDownload, IsNSString identifier, IsNSURLRequest request, IsNSString applicationGroupIdentifier) => baurlDownload -> identifier -> request -> Bool -> CULong -> applicationGroupIdentifier -> CLong -> IO (Id BAURLDownload)
-initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_priority baurlDownload  identifier request essential fileSize applicationGroupIdentifier priority =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr request $ \raw_request ->
-      withObjCPtr applicationGroupIdentifier $ \raw_applicationGroupIdentifier ->
-          sendMsg baurlDownload (mkSelector "initWithIdentifier:request:essential:fileSize:applicationGroupIdentifier:priority:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_request :: Ptr ()), argCULong (if essential then 1 else 0), argCULong fileSize, argPtr (castPtr raw_applicationGroupIdentifier :: Ptr ()), argCLong priority] >>= ownedObject . castPtr
+initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_priority baurlDownload identifier request essential fileSize applicationGroupIdentifier priority =
+  sendOwnedMessage baurlDownload initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_prioritySelector (toNSString identifier) (toNSURLRequest request) essential fileSize (toNSString applicationGroupIdentifier) priority
 
 -- | Constructs a download object to represent the download of a asset located inside of the provided @request.@
 --
@@ -99,11 +90,8 @@ initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_priorit
 --
 -- ObjC selector: @- initWithIdentifier:request:applicationGroupIdentifier:@
 initWithIdentifier_request_applicationGroupIdentifier :: (IsBAURLDownload baurlDownload, IsNSString identifier, IsNSURLRequest request, IsNSString applicationGroupIdentifier) => baurlDownload -> identifier -> request -> applicationGroupIdentifier -> IO (Id BAURLDownload)
-initWithIdentifier_request_applicationGroupIdentifier baurlDownload  identifier request applicationGroupIdentifier =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr request $ \raw_request ->
-      withObjCPtr applicationGroupIdentifier $ \raw_applicationGroupIdentifier ->
-          sendMsg baurlDownload (mkSelector "initWithIdentifier:request:applicationGroupIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_applicationGroupIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_request_applicationGroupIdentifier baurlDownload identifier request applicationGroupIdentifier =
+  sendOwnedMessage baurlDownload initWithIdentifier_request_applicationGroupIdentifierSelector (toNSString identifier) (toNSURLRequest request) (toNSString applicationGroupIdentifier)
 
 -- | Constructs a download object to represent the download of a asset located inside of the provided @request.@
 --
@@ -117,37 +105,34 @@ initWithIdentifier_request_applicationGroupIdentifier baurlDownload  identifier 
 --
 -- ObjC selector: @- initWithIdentifier:request:applicationGroupIdentifier:priority:@
 initWithIdentifier_request_applicationGroupIdentifier_priority :: (IsBAURLDownload baurlDownload, IsNSString identifier, IsNSURLRequest request, IsNSString applicationGroupIdentifier) => baurlDownload -> identifier -> request -> applicationGroupIdentifier -> CLong -> IO (Id BAURLDownload)
-initWithIdentifier_request_applicationGroupIdentifier_priority baurlDownload  identifier request applicationGroupIdentifier priority =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr request $ \raw_request ->
-      withObjCPtr applicationGroupIdentifier $ \raw_applicationGroupIdentifier ->
-          sendMsg baurlDownload (mkSelector "initWithIdentifier:request:applicationGroupIdentifier:priority:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_applicationGroupIdentifier :: Ptr ()), argCLong priority] >>= ownedObject . castPtr
+initWithIdentifier_request_applicationGroupIdentifier_priority baurlDownload identifier request applicationGroupIdentifier priority =
+  sendOwnedMessage baurlDownload initWithIdentifier_request_applicationGroupIdentifier_prioritySelector (toNSString identifier) (toNSURLRequest request) (toNSString applicationGroupIdentifier) priority
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BAURLDownload)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BAURLDownload)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithIdentifier:request:fileSize:applicationGroupIdentifier:@
-initWithIdentifier_request_fileSize_applicationGroupIdentifierSelector :: Selector
+initWithIdentifier_request_fileSize_applicationGroupIdentifierSelector :: Selector '[Id NSString, Id NSURLRequest, CULong, Id NSString] (Id BAURLDownload)
 initWithIdentifier_request_fileSize_applicationGroupIdentifierSelector = mkSelector "initWithIdentifier:request:fileSize:applicationGroupIdentifier:"
 
 -- | @Selector@ for @initWithIdentifier:request:essential:fileSize:applicationGroupIdentifier:priority:@
-initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_prioritySelector :: Selector
+initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_prioritySelector :: Selector '[Id NSString, Id NSURLRequest, Bool, CULong, Id NSString, CLong] (Id BAURLDownload)
 initWithIdentifier_request_essential_fileSize_applicationGroupIdentifier_prioritySelector = mkSelector "initWithIdentifier:request:essential:fileSize:applicationGroupIdentifier:priority:"
 
 -- | @Selector@ for @initWithIdentifier:request:applicationGroupIdentifier:@
-initWithIdentifier_request_applicationGroupIdentifierSelector :: Selector
+initWithIdentifier_request_applicationGroupIdentifierSelector :: Selector '[Id NSString, Id NSURLRequest, Id NSString] (Id BAURLDownload)
 initWithIdentifier_request_applicationGroupIdentifierSelector = mkSelector "initWithIdentifier:request:applicationGroupIdentifier:"
 
 -- | @Selector@ for @initWithIdentifier:request:applicationGroupIdentifier:priority:@
-initWithIdentifier_request_applicationGroupIdentifier_prioritySelector :: Selector
+initWithIdentifier_request_applicationGroupIdentifier_prioritySelector :: Selector '[Id NSString, Id NSURLRequest, Id NSString, CLong] (Id BAURLDownload)
 initWithIdentifier_request_applicationGroupIdentifier_prioritySelector = mkSelector "initWithIdentifier:request:applicationGroupIdentifier:priority:"
 

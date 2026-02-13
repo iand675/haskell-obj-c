@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.FSKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | A bitmask of access rights.
 -- | @FSAccessMask@ (bitmask)
@@ -74,6 +77,16 @@ pattern FSAccessWriteSecurity = FSAccessMask 4096
 pattern FSAccessTakeOwnership :: FSAccessMask
 pattern FSAccessTakeOwnership = FSAccessMask 8192
 
+instance ObjCArgument FSAccessMask where
+  withObjCArg (FSAccessMask x) k = k (argCULong x)
+
+instance ObjCReturn FSAccessMask where
+  type RawReturn FSAccessMask = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSAccessMask x)
+  fromOwned x = pure (FSAccessMask x)
+
 -- | Flags that describe the behavior of a blockmap operation.
 --
 -- This type is an option set in Swift. In Objective-C, you use the cases of this enumeration to create a bit field.
@@ -93,6 +106,16 @@ pattern FSBlockmapFlagsRead = FSBlockmapFlags 256
 
 pattern FSBlockmapFlagsWrite :: FSBlockmapFlags
 pattern FSBlockmapFlagsWrite = FSBlockmapFlags 512
+
+instance ObjCArgument FSBlockmapFlags where
+  withObjCArg (FSBlockmapFlags x) k = k (argCULong x)
+
+instance ObjCReturn FSBlockmapFlags where
+  type RawReturn FSBlockmapFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSBlockmapFlags x)
+  fromOwned x = pure (FSBlockmapFlags x)
 
 -- | Flags that describe the behavior of an I/O completion operation.
 --
@@ -117,6 +140,16 @@ pattern FSCompleteIOFlagsWrite = FSCompleteIOFlags 512
 pattern FSCompleteIOFlagsAsync :: FSCompleteIOFlags
 pattern FSCompleteIOFlagsAsync = FSCompleteIOFlags 1024
 
+instance ObjCArgument FSCompleteIOFlags where
+  withObjCArg (FSCompleteIOFlags x) k = k (argCULong x)
+
+instance ObjCReturn FSCompleteIOFlags where
+  type RawReturn FSCompleteIOFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSCompleteIOFlags x)
+  fromOwned x = pure (FSCompleteIOFlags x)
+
 -- | An enumeration of container state values.
 --
 -- This enumeration represents values for a container's state engine. Containers start in the ``notReady`` state.
@@ -137,6 +170,16 @@ pattern FSContainerStateReady = FSContainerState 2
 pattern FSContainerStateActive :: FSContainerState
 pattern FSContainerStateActive = FSContainerState 3
 
+instance ObjCArgument FSContainerState where
+  withObjCArg (FSContainerState x) k = k (argCLong x)
+
+instance ObjCReturn FSContainerState where
+  type RawReturn FSContainerState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSContainerState x)
+  fromOwned x = pure (FSContainerState x)
+
 -- | Options that affect the behavior of deactivate methods.
 -- | @FSDeactivateOptions@ (bitmask)
 newtype FSDeactivateOptions = FSDeactivateOptions CLong
@@ -151,6 +194,16 @@ instance Monoid FSDeactivateOptions where
 
 pattern FSDeactivateOptionsForce :: FSDeactivateOptions
 pattern FSDeactivateOptionsForce = FSDeactivateOptions 1
+
+instance ObjCArgument FSDeactivateOptions where
+  withObjCArg (FSDeactivateOptions x) k = k (argCLong x)
+
+instance ObjCReturn FSDeactivateOptions where
+  type RawReturn FSDeactivateOptions = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSDeactivateOptions x)
+  fromOwned x = pure (FSDeactivateOptions x)
 
 -- | A code that indicates a specific FSKit error.
 -- | @FSErrorCode@
@@ -179,6 +232,16 @@ pattern FSErrorStatusOperationPaused = FSErrorCode 4505
 pattern FSErrorInvalidDirectoryCookie :: FSErrorCode
 pattern FSErrorInvalidDirectoryCookie = FSErrorCode 4506
 
+instance ObjCArgument FSErrorCode where
+  withObjCArg (FSErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn FSErrorCode where
+  type RawReturn FSErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSErrorCode x)
+  fromOwned x = pure (FSErrorCode x)
+
 -- | An enumeration of types of extents.
 -- | @FSExtentType@
 newtype FSExtentType = FSExtentType CLong
@@ -190,6 +253,16 @@ pattern FSExtentTypeData = FSExtentType 0
 
 pattern FSExtentTypeZeroFill :: FSExtentType
 pattern FSExtentTypeZeroFill = FSExtentType 1
+
+instance ObjCArgument FSExtentType where
+  withObjCArg (FSExtentType x) k = k (argCLong x)
+
+instance ObjCReturn FSExtentType where
+  type RawReturn FSExtentType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSExtentType x)
+  fromOwned x = pure (FSExtentType x)
 
 -- | A value that indicates a set of item attributes to get or set.
 --
@@ -259,6 +332,16 @@ pattern FSItemAttributeSupportsLimitedXAttrs = FSItemAttribute 65536
 pattern FSItemAttributeInhibitKernelOffloadedIO :: FSItemAttribute
 pattern FSItemAttributeInhibitKernelOffloadedIO = FSItemAttribute 131072
 
+instance ObjCArgument FSItemAttribute where
+  withObjCArg (FSItemAttribute x) k = k (argCLong x)
+
+instance ObjCReturn FSItemAttribute where
+  type RawReturn FSItemAttribute = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSItemAttribute x)
+  fromOwned x = pure (FSItemAttribute x)
+
 -- | Options to specify the item deactivation policy.
 --
 -- Callers may want to set a deactivation policy because ``FSVolume/ItemDeactivation/deactivateItem(_:replyHandler:)`` processing blocks the kernel. Setting a deactivation policy allows the file system to take action at a definitive point in the item's life cycle. These options allow the file system to instruct the FSKit kernel of which circumstances require the expense of a round-trip call to the module.
@@ -287,6 +370,16 @@ pattern FSItemDeactivationForRemovedItems = FSItemDeactivationOptions 1
 pattern FSItemDeactivationForPreallocatedItems :: FSItemDeactivationOptions
 pattern FSItemDeactivationForPreallocatedItems = FSItemDeactivationOptions 2
 
+instance ObjCArgument FSItemDeactivationOptions where
+  withObjCArg (FSItemDeactivationOptions x) k = k (argCULong x)
+
+instance ObjCReturn FSItemDeactivationOptions where
+  type RawReturn FSItemDeactivationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSItemDeactivationOptions x)
+  fromOwned x = pure (FSItemDeactivationOptions x)
+
 -- | The unique identifier for an item.
 --
 -- Use this type when packing items for an enumeration in ``FSDirectoryEntryPacker/packEntry(name:itemType:itemID:nextCookie:attributes:)``. Either provide a unique identifier like an inode number, or one of the special enumeration cases this type defines, like ``FSItem/Identifier/rootDirectory``.
@@ -303,6 +396,16 @@ pattern FSItemIDParentOfRoot = FSItemID 1
 
 pattern FSItemIDRootDirectory :: FSItemID
 pattern FSItemIDRootDirectory = FSItemID 2
+
+instance ObjCArgument FSItemID where
+  withObjCArg (FSItemID x) k = k (argCULong x)
+
+instance ObjCReturn FSItemID where
+  type RawReturn FSItemID = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSItemID x)
+  fromOwned x = pure (FSItemID x)
 
 -- | An enumeration of item types, such as file, directory, or symbolic link.
 -- | @FSItemType@
@@ -334,6 +437,16 @@ pattern FSItemTypeBlockDevice = FSItemType 6
 pattern FSItemTypeSocket :: FSItemType
 pattern FSItemTypeSocket = FSItemType 7
 
+instance ObjCArgument FSItemType where
+  withObjCArg (FSItemType x) k = k (argCLong x)
+
+instance ObjCReturn FSItemType where
+  type RawReturn FSItemType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSItemType x)
+  fromOwned x = pure (FSItemType x)
+
 -- | A type that represents the recognition and usability of a probed resource.
 -- | @FSMatchResult@
 newtype FSMatchResult = FSMatchResult CLong
@@ -351,6 +464,16 @@ pattern FSMatchResultUsableButLimited = FSMatchResult 2
 
 pattern FSMatchResultUsable :: FSMatchResult
 pattern FSMatchResultUsable = FSMatchResult 3
+
+instance ObjCArgument FSMatchResult where
+  withObjCArg (FSMatchResult x) k = k (argCLong x)
+
+instance ObjCReturn FSMatchResult where
+  type RawReturn FSMatchResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSMatchResult x)
+  fromOwned x = pure (FSMatchResult x)
 
 -- | Behavior flags for preallocation operations.
 -- | @FSPreallocateFlags@ (bitmask)
@@ -376,6 +499,16 @@ pattern FSPreallocateFlagsPersist = FSPreallocateFlags 8
 pattern FSPreallocateFlagsFromEOF :: FSPreallocateFlags
 pattern FSPreallocateFlagsFromEOF = FSPreallocateFlags 16
 
+instance ObjCArgument FSPreallocateFlags where
+  withObjCArg (FSPreallocateFlags x) k = k (argCULong x)
+
+instance ObjCReturn FSPreallocateFlags where
+  type RawReturn FSPreallocateFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSPreallocateFlags x)
+  fromOwned x = pure (FSPreallocateFlags x)
+
 -- | Flags to specify the policy when setting extended file attributes.
 -- | @FSSetXattrPolicy@
 newtype FSSetXattrPolicy = FSSetXattrPolicy CULong
@@ -394,6 +527,16 @@ pattern FSSetXattrPolicyMustReplace = FSSetXattrPolicy 2
 pattern FSSetXattrPolicyDelete :: FSSetXattrPolicy
 pattern FSSetXattrPolicyDelete = FSSetXattrPolicy 3
 
+instance ObjCArgument FSSetXattrPolicy where
+  withObjCArg (FSSetXattrPolicy x) k = k (argCULong x)
+
+instance ObjCReturn FSSetXattrPolicy where
+  type RawReturn FSSetXattrPolicy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSSetXattrPolicy x)
+  fromOwned x = pure (FSSetXattrPolicy x)
+
 -- | Behavior flags for use with synchronization calls.
 --
 -- These values are based on flags defined in @mount.h@. Since there are system-defined flags that are valid in the kernel but not in FSKit, this type defines its members as options rather than use an enumeration.
@@ -410,6 +553,16 @@ pattern FSSyncFlagsNoWait = FSSyncFlags 2
 
 pattern FSSyncFlagsDWait :: FSSyncFlags
 pattern FSSyncFlagsDWait = FSSyncFlags 4
+
+instance ObjCArgument FSSyncFlags where
+  withObjCArg (FSSyncFlags x) k = k (argCLong x)
+
+instance ObjCReturn FSSyncFlags where
+  type RawReturn FSSyncFlags = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSSyncFlags x)
+  fromOwned x = pure (FSSyncFlags x)
 
 -- | An enumeration of case-sensitivity support types.
 --
@@ -428,6 +581,16 @@ pattern FSVolumeCaseFormatInsensitive = FSVolumeCaseFormat 1
 pattern FSVolumeCaseFormatInsensitiveCasePreserving :: FSVolumeCaseFormat
 pattern FSVolumeCaseFormatInsensitiveCasePreserving = FSVolumeCaseFormat 2
 
+instance ObjCArgument FSVolumeCaseFormat where
+  withObjCArg (FSVolumeCaseFormat x) k = k (argCLong x)
+
+instance ObjCReturn FSVolumeCaseFormat where
+  type RawReturn FSVolumeCaseFormat = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSVolumeCaseFormat x)
+  fromOwned x = pure (FSVolumeCaseFormat x)
+
 -- | Defined modes for opening a file.
 -- | @FSVolumeOpenModes@ (bitmask)
 newtype FSVolumeOpenModes = FSVolumeOpenModes CULong
@@ -445,3 +608,13 @@ pattern FSVolumeOpenModesRead = FSVolumeOpenModes 1
 
 pattern FSVolumeOpenModesWrite :: FSVolumeOpenModes
 pattern FSVolumeOpenModesWrite = FSVolumeOpenModes 2
+
+instance ObjCArgument FSVolumeOpenModes where
+  withObjCArg (FSVolumeOpenModes x) k = k (argCULong x)
+
+instance ObjCReturn FSVolumeOpenModes where
+  type RawReturn FSVolumeOpenModes = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FSVolumeOpenModes x)
+  fromOwned x = pure (FSVolumeOpenModes x)

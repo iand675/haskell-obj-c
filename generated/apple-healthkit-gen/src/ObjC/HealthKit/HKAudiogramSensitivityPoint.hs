@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.HealthKit.HKAudiogramSensitivityPoint
   , leftEarSensitivity
   , rightEarSensitivity
   , tests
-  , sensitivityPointWithFrequency_leftEarSensitivity_rightEarSensitivity_errorSelector
-  , sensitivityPointWithFrequency_tests_errorSelector
-  , initSelector
   , frequencySelector
+  , initSelector
   , leftEarSensitivitySelector
   , rightEarSensitivitySelector
+  , sensitivityPointWithFrequency_leftEarSensitivity_rightEarSensitivity_errorSelector
+  , sensitivityPointWithFrequency_tests_errorSelector
   , testsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,11 +55,7 @@ sensitivityPointWithFrequency_leftEarSensitivity_rightEarSensitivity_error :: (I
 sensitivityPointWithFrequency_leftEarSensitivity_rightEarSensitivity_error frequency leftEarSensitivity rightEarSensitivity error_ =
   do
     cls' <- getRequiredClass "HKAudiogramSensitivityPoint"
-    withObjCPtr frequency $ \raw_frequency ->
-      withObjCPtr leftEarSensitivity $ \raw_leftEarSensitivity ->
-        withObjCPtr rightEarSensitivity $ \raw_rightEarSensitivity ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "sensitivityPointWithFrequency:leftEarSensitivity:rightEarSensitivity:error:") (retPtr retVoid) [argPtr (castPtr raw_frequency :: Ptr ()), argPtr (castPtr raw_leftEarSensitivity :: Ptr ()), argPtr (castPtr raw_rightEarSensitivity :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sensitivityPointWithFrequency_leftEarSensitivity_rightEarSensitivity_errorSelector (toHKQuantity frequency) (toHKQuantity leftEarSensitivity) (toHKQuantity rightEarSensitivity) (toNSError error_)
 
 -- | sensitivityPointWithFrequency:tests:error:
 --
@@ -81,15 +74,12 @@ sensitivityPointWithFrequency_tests_error :: (IsHKQuantity frequency, IsNSArray 
 sensitivityPointWithFrequency_tests_error frequency tests errorOut =
   do
     cls' <- getRequiredClass "HKAudiogramSensitivityPoint"
-    withObjCPtr frequency $ \raw_frequency ->
-      withObjCPtr tests $ \raw_tests ->
-        withObjCPtr errorOut $ \raw_errorOut ->
-          sendClassMsg cls' (mkSelector "sensitivityPointWithFrequency:tests:error:") (retPtr retVoid) [argPtr (castPtr raw_frequency :: Ptr ()), argPtr (castPtr raw_tests :: Ptr ()), argPtr (castPtr raw_errorOut :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sensitivityPointWithFrequency_tests_errorSelector (toHKQuantity frequency) (toNSArray tests) (toNSError errorOut)
 
 -- | @- init@
 init_ :: IsHKAudiogramSensitivityPoint hkAudiogramSensitivityPoint => hkAudiogramSensitivityPoint -> IO (Id HKAudiogramSensitivityPoint)
-init_ hkAudiogramSensitivityPoint  =
-    sendMsg hkAudiogramSensitivityPoint (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkAudiogramSensitivityPoint =
+  sendOwnedMessage hkAudiogramSensitivityPoint initSelector
 
 -- | frequency  Frequency where sensitivity was measured.  The unit of measurement
 --
@@ -97,8 +87,8 @@ init_ hkAudiogramSensitivityPoint  =
 --
 -- ObjC selector: @- frequency@
 frequency :: IsHKAudiogramSensitivityPoint hkAudiogramSensitivityPoint => hkAudiogramSensitivityPoint -> IO (Id HKQuantity)
-frequency hkAudiogramSensitivityPoint  =
-    sendMsg hkAudiogramSensitivityPoint (mkSelector "frequency") (retPtr retVoid) [] >>= retainedObject . castPtr
+frequency hkAudiogramSensitivityPoint =
+  sendMessage hkAudiogramSensitivityPoint frequencySelector
 
 -- | sensitivity Left ear sensitivity measured in dB from a baseline of 0 dB. Reduced hearing sensitivity corresponds to an increase from 0 dB.
 --
@@ -106,8 +96,8 @@ frequency hkAudiogramSensitivityPoint  =
 --
 -- ObjC selector: @- leftEarSensitivity@
 leftEarSensitivity :: IsHKAudiogramSensitivityPoint hkAudiogramSensitivityPoint => hkAudiogramSensitivityPoint -> IO (Id HKQuantity)
-leftEarSensitivity hkAudiogramSensitivityPoint  =
-    sendMsg hkAudiogramSensitivityPoint (mkSelector "leftEarSensitivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftEarSensitivity hkAudiogramSensitivityPoint =
+  sendMessage hkAudiogramSensitivityPoint leftEarSensitivitySelector
 
 -- | sensitivity Right ear sensitivity measured in dB from a baseline of 0 dB. Reduced hearing sensitivity corresponds to an increase from 0 dB.
 --
@@ -115,8 +105,8 @@ leftEarSensitivity hkAudiogramSensitivityPoint  =
 --
 -- ObjC selector: @- rightEarSensitivity@
 rightEarSensitivity :: IsHKAudiogramSensitivityPoint hkAudiogramSensitivityPoint => hkAudiogramSensitivityPoint -> IO (Id HKQuantity)
-rightEarSensitivity hkAudiogramSensitivityPoint  =
-    sendMsg hkAudiogramSensitivityPoint (mkSelector "rightEarSensitivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightEarSensitivity hkAudiogramSensitivityPoint =
+  sendMessage hkAudiogramSensitivityPoint rightEarSensitivitySelector
 
 -- | tests
 --
@@ -124,38 +114,38 @@ rightEarSensitivity hkAudiogramSensitivityPoint  =
 --
 -- ObjC selector: @- tests@
 tests :: IsHKAudiogramSensitivityPoint hkAudiogramSensitivityPoint => hkAudiogramSensitivityPoint -> IO (Id NSArray)
-tests hkAudiogramSensitivityPoint  =
-    sendMsg hkAudiogramSensitivityPoint (mkSelector "tests") (retPtr retVoid) [] >>= retainedObject . castPtr
+tests hkAudiogramSensitivityPoint =
+  sendMessage hkAudiogramSensitivityPoint testsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sensitivityPointWithFrequency:leftEarSensitivity:rightEarSensitivity:error:@
-sensitivityPointWithFrequency_leftEarSensitivity_rightEarSensitivity_errorSelector :: Selector
+sensitivityPointWithFrequency_leftEarSensitivity_rightEarSensitivity_errorSelector :: Selector '[Id HKQuantity, Id HKQuantity, Id HKQuantity, Id NSError] (Id HKAudiogramSensitivityPoint)
 sensitivityPointWithFrequency_leftEarSensitivity_rightEarSensitivity_errorSelector = mkSelector "sensitivityPointWithFrequency:leftEarSensitivity:rightEarSensitivity:error:"
 
 -- | @Selector@ for @sensitivityPointWithFrequency:tests:error:@
-sensitivityPointWithFrequency_tests_errorSelector :: Selector
+sensitivityPointWithFrequency_tests_errorSelector :: Selector '[Id HKQuantity, Id NSArray, Id NSError] (Id HKAudiogramSensitivityPoint)
 sensitivityPointWithFrequency_tests_errorSelector = mkSelector "sensitivityPointWithFrequency:tests:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKAudiogramSensitivityPoint)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] (Id HKQuantity)
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @leftEarSensitivity@
-leftEarSensitivitySelector :: Selector
+leftEarSensitivitySelector :: Selector '[] (Id HKQuantity)
 leftEarSensitivitySelector = mkSelector "leftEarSensitivity"
 
 -- | @Selector@ for @rightEarSensitivity@
-rightEarSensitivitySelector :: Selector
+rightEarSensitivitySelector :: Selector '[] (Id HKQuantity)
 rightEarSensitivitySelector = mkSelector "rightEarSensitivity"
 
 -- | @Selector@ for @tests@
-testsSelector :: Selector
+testsSelector :: Selector '[] (Id NSArray)
 testsSelector = mkSelector "tests"
 

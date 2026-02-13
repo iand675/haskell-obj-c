@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -351,350 +352,350 @@ module ObjC.AppKit.NSWindow
   , ignoresMouseEvents
   , setIgnoresMouseEvents
   , mouseLocationOutsideOfEventStream
-  , frameRectForContentRect_styleMaskSelector
-  , contentRectForFrameRect_styleMaskSelector
-  , minFrameWidthWithTitle_styleMaskSelector
-  , frameRectForContentRectSelector
-  , contentRectForFrameRectSelector
-  , initWithContentRect_styleMask_backing_deferSelector
-  , initWithContentRect_styleMask_backing_defer_screenSelector
-  , initWithCoderSelector
+  , acceptsMouseMovedEventsSelector
+  , addChildWindow_orderedSelector
+  , addTabbedWindow_orderedSelector
   , addTitlebarAccessoryViewControllerSelector
-  , insertTitlebarAccessoryViewController_atIndexSelector
-  , removeTitlebarAccessoryViewControllerAtIndexSelector
-  , setTitleWithRepresentedFilenameSelector
-  , fieldEditor_forObjectSelector
-  , endEditingForSelector
-  , constrainFrameRect_toScreenSelector
-  , setFrame_displaySelector
-  , setContentSizeSelector
-  , setFrameOriginSelector
-  , setFrameTopLeftPointSelector
-  , cascadeTopLeftFromPointSelector
+  , allowsAutomaticWindowTabbingSelector
+  , allowsConcurrentViewDrawingSelector
+  , allowsToolTipsWhenApplicationIsInactiveSelector
+  , alphaValueSelector
+  , anchorAttributeForOrientationSelector
+  , animationBehaviorSelector
   , animationResizeTimeSelector
-  , setFrame_display_animateSelector
-  , displayIfNeededSelector
-  , displaySelector
-  , updateSelector
-  , makeFirstResponderSelector
-  , closeSelector
-  , miniaturizeSelector
-  , deminiaturizeSelector
-  , zoomSelector
-  , tryToPerform_withSelector
-  , validRequestorForSendType_returnTypeSelector
-  , setContentBorderThickness_forEdgeSelector
-  , contentBorderThicknessForEdgeSelector
-  , setAutorecalculatesContentBorderThickness_forEdgeSelector
+  , appearanceSourceSelector
+  , areCursorRectsEnabledSelector
+  , aspectRatioSelector
+  , attachedSheetSelector
+  , autodisplaySelector
   , autorecalculatesContentBorderThicknessForEdgeSelector
-  , centerSelector
-  , makeKeyAndOrderFrontSelector
-  , orderFrontSelector
-  , orderBackSelector
-  , orderOutSelector
-  , orderWindow_relativeToSelector
-  , orderFrontRegardlessSelector
-  , makeKeyWindowSelector
-  , makeMainWindowSelector
-  , becomeKeyWindowSelector
-  , resignKeyWindowSelector
-  , becomeMainWindowSelector
-  , resignMainWindowSelector
-  , convertRectToScreenSelector
-  , convertRectFromScreenSelector
-  , convertPointToScreenSelector
-  , convertPointFromScreenSelector
-  , convertRectToBackingSelector
-  , convertRectFromBackingSelector
-  , convertPointToBackingSelector
-  , convertPointFromBackingSelector
+  , autorecalculatesKeyViewLoopSelector
+  , backgroundColorSelector
   , backingAlignedRect_optionsSelector
-  , performCloseSelector
-  , performMiniaturizeSelector
-  , performZoomSelector
+  , backingLocationSelector
+  , backingScaleFactorSelector
+  , backingTypeSelector
+  , becomeKeyWindowSelector
+  , becomeMainWindowSelector
+  , beginCriticalSheet_completionHandlerSelector
+  , beginDraggingSessionWithItems_event_sourceSelector
+  , beginSheet_completionHandlerSelector
+  , cacheImageInRectSelector
+  , canBecomeKeyWindowSelector
+  , canBecomeMainWindowSelector
+  , canBecomeVisibleWithoutLoginSelector
+  , canHideSelector
+  , canRepresentDisplayGamutSelector
+  , canStoreColorSelector
+  , cascadeTopLeftFromPointSelector
+  , cascadingReferenceFrameSelector
+  , centerSelector
+  , childWindowsSelector
+  , closeSelector
+  , collectionBehaviorSelector
+  , colorSpaceSelector
+  , constrainFrameRect_toScreenSelector
+  , contentAspectRatioSelector
+  , contentBorderThicknessForEdgeSelector
+  , contentLayoutGuideSelector
+  , contentLayoutRectSelector
+  , contentMaxSizeSelector
+  , contentMinSizeSelector
+  , contentRectForFrameRectSelector
+  , contentRectForFrameRect_styleMaskSelector
+  , contentResizeIncrementsSelector
+  , contentViewControllerSelector
+  , contentViewSelector
+  , convertBaseToScreenSelector
+  , convertPointFromBackingSelector
+  , convertPointFromScreenSelector
+  , convertPointToBackingSelector
+  , convertPointToScreenSelector
+  , convertRectFromBackingSelector
+  , convertRectFromScreenSelector
+  , convertRectToBackingSelector
+  , convertRectToScreenSelector
+  , convertScreenToBaseSelector
+  , currentEventSelector
   , dataWithEPSInsideRectSelector
   , dataWithPDFInsideRectSelector
-  , printSelector
-  , setDynamicDepthLimitSelector
-  , invalidateShadowSelector
-  , toggleFullScreenSelector
-  , setFrameFromStringSelector
-  , saveFrameUsingNameSelector
-  , setFrameUsingName_forceSelector
-  , setFrameUsingNameSelector
-  , setFrameAutosaveNameSelector
-  , removeFrameUsingNameSelector
-  , beginSheet_completionHandlerSelector
-  , beginCriticalSheet_completionHandlerSelector
+  , deepestScreenSelector
+  , defaultButtonCellSelector
+  , defaultDepthLimitSelector
+  , delegateSelector
+  , deminiaturizeSelector
+  , depthLimitSelector
+  , deviceDescriptionSelector
+  , disableCursorRectsSelector
+  , disableFlushWindowSelector
+  , disableKeyEquivalentForDefaultButtonCellSelector
+  , disableScreenUpdatesUntilFlushSelector
+  , disableSnapshotRestorationSelector
+  , discardCachedImageSelector
+  , discardCursorRectsSelector
+  , discardEventsMatchingMask_beforeEventSelector
+  , displayIfNeededSelector
+  , displayLinkWithTarget_selectorSelector
+  , displaySelector
+  , displaysWhenScreenProfileChangesSelector
+  , dockTileSelector
+  , documentEditedSelector
+  , dragImage_at_offset_event_pasteboard_source_slideBackSelector
+  , drawersSelector
+  , enableCursorRectsSelector
+  , enableFlushWindowSelector
+  , enableKeyEquivalentForDefaultButtonCellSelector
+  , enableSnapshotRestorationSelector
+  , endEditingForSelector
   , endSheetSelector
   , endSheet_returnCodeSelector
-  , standardWindowButton_forStyleMaskSelector
-  , standardWindowButtonSelector
-  , addChildWindow_orderedSelector
-  , removeChildWindowSelector
-  , canRepresentDisplayGamutSelector
-  , windowNumbersWithOptionsSelector
-  , windowNumberAtPoint_belowWindowWithWindowNumberSelector
-  , windowWithContentViewControllerSelector
-  , performWindowDragWithEventSelector
-  , selectNextKeyViewSelector
-  , selectPreviousKeyViewSelector
-  , selectKeyViewFollowingViewSelector
-  , selectKeyViewPrecedingViewSelector
-  , disableKeyEquivalentForDefaultButtonCellSelector
-  , enableKeyEquivalentForDefaultButtonCellSelector
-  , recalculateKeyViewLoopSelector
-  , toggleToolbarShownSelector
-  , runToolbarCustomizationPaletteSelector
-  , selectNextTabSelector
-  , selectPreviousTabSelector
-  , moveTabToNewWindowSelector
-  , mergeAllWindowsSelector
-  , toggleTabBarSelector
-  , toggleTabOverviewSelector
-  , addTabbedWindow_orderedSelector
-  , transferWindowSharingToWindow_completionHandlerSelector
-  , requestSharingOfWindow_completionHandlerSelector
-  , requestSharingOfWindowUsingPreview_title_completionHandlerSelector
-  , disableSnapshotRestorationSelector
-  , enableSnapshotRestorationSelector
-  , setIsMiniaturizedSelector
-  , setIsVisibleSelector
-  , setIsZoomedSelector
+  , excludedFromWindowsMenuSelector
+  , fieldEditor_forObjectSelector
+  , firstResponderSelector
+  , floatingPanelSelector
+  , flushWindowDisabledSelector
+  , flushWindowIfNeededSelector
+  , flushWindowSelector
+  , frameAutosaveNameSelector
+  , frameRectForContentRectSelector
+  , frameRectForContentRect_styleMaskSelector
+  , frameSelector
+  , gStateSelector
+  , graphicsContextSelector
   , handleCloseScriptCommandSelector
   , handlePrintScriptCommandSelector
   , handleSaveScriptCommandSelector
-  , visualizeConstraintsSelector
-  , anchorAttributeForOrientationSelector
-  , setAnchorAttribute_forOrientationSelector
-  , updateConstraintsIfNeededSelector
-  , layoutIfNeededSelector
-  , cacheImageInRectSelector
-  , restoreCachedImageSelector
-  , discardCachedImageSelector
-  , menuChangedSelector
-  , gStateSelector
-  , convertBaseToScreenSelector
-  , convertScreenToBaseSelector
-  , userSpaceScaleFactorSelector
-  , useOptimizedDrawingSelector
-  , canStoreColorSelector
-  , disableFlushWindowSelector
-  , enableFlushWindowSelector
-  , flushWindowSelector
-  , flushWindowIfNeededSelector
+  , hasActiveWindowSharingSessionSelector
+  , hasCloseBoxSelector
+  , hasDynamicDepthLimitSelector
+  , hasShadowSelector
+  , hasTitleBarSelector
+  , hidesOnDeactivateSelector
+  , ignoresMouseEventsSelector
+  , inLiveResizeSelector
+  , initWithCoderSelector
+  , initWithContentRect_styleMask_backing_deferSelector
+  , initWithContentRect_styleMask_backing_defer_screenSelector
   , initWithWindowRefSelector
-  , disableScreenUpdatesUntilFlushSelector
-  , displayLinkWithTarget_selectorSelector
-  , beginDraggingSessionWithItems_event_sourceSelector
-  , dragImage_at_offset_event_pasteboard_source_slideBackSelector
-  , registerForDraggedTypesSelector
-  , unregisterDraggedTypesSelector
-  , disableCursorRectsSelector
-  , enableCursorRectsSelector
-  , discardCursorRectsSelector
+  , initialFirstResponderSelector
+  , insertTitlebarAccessoryViewController_atIndexSelector
   , invalidateCursorRectsForViewSelector
-  , resetCursorRectsSelector
-  , trackEventsMatchingMask_timeout_mode_handlerSelector
+  , invalidateShadowSelector
+  , keyViewSelectionDirectionSelector
+  , keyWindowSelector
+  , layoutIfNeededSelector
+  , levelSelector
+  , mainWindowSelector
+  , makeFirstResponderSelector
+  , makeKeyAndOrderFrontSelector
+  , makeKeyWindowSelector
+  , makeMainWindowSelector
+  , maxFullScreenContentSizeSelector
+  , maxSizeSelector
+  , menuChangedSelector
+  , mergeAllWindowsSelector
+  , minFrameWidthWithTitle_styleMaskSelector
+  , minFullScreenContentSizeSelector
+  , minSizeSelector
+  , miniaturizableSelector
+  , miniaturizeSelector
+  , miniaturizedSelector
+  , miniwindowImageSelector
+  , miniwindowTitleSelector
+  , modalPanelSelector
+  , mouseLocationOutsideOfEventStreamSelector
+  , movableByWindowBackgroundSelector
+  , movableSelector
+  , moveTabToNewWindowSelector
   , nextEventMatchingMaskSelector
   , nextEventMatchingMask_untilDate_inMode_dequeueSelector
-  , discardEventsMatchingMask_beforeEventSelector
-  , postEvent_atStartSelector
-  , sendEventSelector
-  , defaultDepthLimitSelector
-  , titleSelector
-  , setTitleSelector
-  , subtitleSelector
-  , setSubtitleSelector
-  , titleVisibilitySelector
-  , setTitleVisibilitySelector
-  , titlebarAppearsTransparentSelector
-  , setTitlebarAppearsTransparentSelector
-  , toolbarStyleSelector
-  , setToolbarStyleSelector
-  , contentLayoutRectSelector
-  , contentLayoutGuideSelector
-  , titlebarAccessoryViewControllersSelector
-  , setTitlebarAccessoryViewControllersSelector
-  , representedURLSelector
-  , setRepresentedURLSelector
-  , representedFilenameSelector
-  , setRepresentedFilenameSelector
-  , excludedFromWindowsMenuSelector
-  , setExcludedFromWindowsMenuSelector
-  , contentViewSelector
-  , setContentViewSelector
-  , delegateSelector
-  , setDelegateSelector
-  , windowNumberSelector
-  , styleMaskSelector
-  , setStyleMaskSelector
-  , cascadingReferenceFrameSelector
-  , frameSelector
-  , inLiveResizeSelector
-  , resizeIncrementsSelector
-  , setResizeIncrementsSelector
-  , aspectRatioSelector
-  , setAspectRatioSelector
-  , contentResizeIncrementsSelector
-  , setContentResizeIncrementsSelector
-  , contentAspectRatioSelector
-  , setContentAspectRatioSelector
-  , viewsNeedDisplaySelector
-  , setViewsNeedDisplaySelector
-  , preservesContentDuringLiveResizeSelector
-  , setPreservesContentDuringLiveResizeSelector
-  , firstResponderSelector
-  , resizeFlagsSelector
-  , releasedWhenClosedSelector
-  , setReleasedWhenClosedSelector
-  , zoomedSelector
-  , miniaturizedSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , movableSelector
-  , setMovableSelector
-  , movableByWindowBackgroundSelector
-  , setMovableByWindowBackgroundSelector
-  , hidesOnDeactivateSelector
-  , setHidesOnDeactivateSelector
-  , canHideSelector
-  , setCanHideSelector
-  , miniwindowImageSelector
-  , setMiniwindowImageSelector
-  , miniwindowTitleSelector
-  , setMiniwindowTitleSelector
-  , dockTileSelector
-  , documentEditedSelector
-  , setDocumentEditedSelector
-  , visibleSelector
-  , keyWindowSelector
-  , mainWindowSelector
-  , canBecomeKeyWindowSelector
-  , canBecomeMainWindowSelector
-  , worksWhenModalSelector
-  , preventsApplicationTerminationWhenModalSelector
-  , setPreventsApplicationTerminationWhenModalSelector
-  , backingScaleFactorSelector
-  , allowsToolTipsWhenApplicationIsInactiveSelector
-  , setAllowsToolTipsWhenApplicationIsInactiveSelector
-  , backingTypeSelector
-  , setBackingTypeSelector
-  , levelSelector
-  , setLevelSelector
-  , depthLimitSelector
-  , setDepthLimitSelector
-  , hasDynamicDepthLimitSelector
-  , screenSelector
-  , deepestScreenSelector
-  , hasShadowSelector
-  , setHasShadowSelector
-  , alphaValueSelector
-  , setAlphaValueSelector
-  , opaqueSelector
-  , setOpaqueSelector
-  , sharingTypeSelector
-  , setSharingTypeSelector
-  , allowsConcurrentViewDrawingSelector
-  , setAllowsConcurrentViewDrawingSelector
-  , displaysWhenScreenProfileChangesSelector
-  , setDisplaysWhenScreenProfileChangesSelector
-  , canBecomeVisibleWithoutLoginSelector
-  , setCanBecomeVisibleWithoutLoginSelector
-  , collectionBehaviorSelector
-  , setCollectionBehaviorSelector
-  , animationBehaviorSelector
-  , setAnimationBehaviorSelector
-  , onActiveSpaceSelector
-  , stringWithSavedFrameSelector
-  , frameAutosaveNameSelector
-  , minSizeSelector
-  , setMinSizeSelector
-  , maxSizeSelector
-  , setMaxSizeSelector
-  , contentMinSizeSelector
-  , setContentMinSizeSelector
-  , contentMaxSizeSelector
-  , setContentMaxSizeSelector
-  , minFullScreenContentSizeSelector
-  , setMinFullScreenContentSizeSelector
-  , maxFullScreenContentSizeSelector
-  , setMaxFullScreenContentSizeSelector
-  , deviceDescriptionSelector
-  , windowControllerSelector
-  , setWindowControllerSelector
-  , sheetsSelector
-  , attachedSheetSelector
-  , sheetSelector
-  , sheetParentSelector
-  , childWindowsSelector
-  , parentWindowSelector
-  , setParentWindowSelector
-  , appearanceSourceSelector
-  , setAppearanceSourceSelector
-  , colorSpaceSelector
-  , setColorSpaceSelector
   , occlusionStateSelector
-  , titlebarSeparatorStyleSelector
-  , setTitlebarSeparatorStyleSelector
-  , contentViewControllerSelector
-  , setContentViewControllerSelector
-  , initialFirstResponderSelector
-  , setInitialFirstResponderSelector
-  , keyViewSelectionDirectionSelector
-  , defaultButtonCellSelector
-  , setDefaultButtonCellSelector
-  , autorecalculatesKeyViewLoopSelector
-  , setAutorecalculatesKeyViewLoopSelector
-  , toolbarSelector
-  , setToolbarSelector
-  , showsToolbarButtonSelector
-  , setShowsToolbarButtonSelector
-  , allowsAutomaticWindowTabbingSelector
-  , setAllowsAutomaticWindowTabbingSelector
-  , userTabbingPreferenceSelector
-  , tabbingModeSelector
-  , setTabbingModeSelector
-  , tabbingIdentifierSelector
-  , setTabbingIdentifierSelector
-  , tabbedWindowsSelector
-  , tabSelector
-  , tabGroupSelector
-  , hasActiveWindowSharingSessionSelector
-  , windowTitlebarLayoutDirectionSelector
-  , restorableSelector
-  , setRestorableSelector
-  , restorationClassSelector
-  , setRestorationClassSelector
-  , hasCloseBoxSelector
-  , hasTitleBarSelector
-  , floatingPanelSelector
-  , miniaturizableSelector
-  , modalPanelSelector
-  , resizableSelector
-  , zoomableSelector
-  , orderedIndexSelector
-  , setOrderedIndexSelector
-  , drawersSelector
-  , flushWindowDisabledSelector
-  , autodisplaySelector
-  , setAutodisplaySelector
-  , graphicsContextSelector
+  , onActiveSpaceSelector
   , oneShotSelector
-  , setOneShotSelector
+  , opaqueSelector
+  , orderBackSelector
+  , orderFrontRegardlessSelector
+  , orderFrontSelector
+  , orderOutSelector
+  , orderWindow_relativeToSelector
+  , orderedIndexSelector
+  , parentWindowSelector
+  , performCloseSelector
+  , performMiniaturizeSelector
+  , performWindowDragWithEventSelector
+  , performZoomSelector
+  , postEvent_atStartSelector
   , preferredBackingLocationSelector
-  , setPreferredBackingLocationSelector
-  , backingLocationSelector
-  , showsResizeIndicatorSelector
-  , setShowsResizeIndicatorSelector
-  , windowRefSelector
-  , areCursorRectsEnabledSelector
-  , currentEventSelector
-  , acceptsMouseMovedEventsSelector
+  , preservesContentDuringLiveResizeSelector
+  , preventsApplicationTerminationWhenModalSelector
+  , printSelector
+  , recalculateKeyViewLoopSelector
+  , registerForDraggedTypesSelector
+  , releasedWhenClosedSelector
+  , removeChildWindowSelector
+  , removeFrameUsingNameSelector
+  , removeTitlebarAccessoryViewControllerAtIndexSelector
+  , representedFilenameSelector
+  , representedURLSelector
+  , requestSharingOfWindowUsingPreview_title_completionHandlerSelector
+  , requestSharingOfWindow_completionHandlerSelector
+  , resetCursorRectsSelector
+  , resignKeyWindowSelector
+  , resignMainWindowSelector
+  , resizableSelector
+  , resizeFlagsSelector
+  , resizeIncrementsSelector
+  , restorableSelector
+  , restorationClassSelector
+  , restoreCachedImageSelector
+  , runToolbarCustomizationPaletteSelector
+  , saveFrameUsingNameSelector
+  , screenSelector
+  , selectKeyViewFollowingViewSelector
+  , selectKeyViewPrecedingViewSelector
+  , selectNextKeyViewSelector
+  , selectNextTabSelector
+  , selectPreviousKeyViewSelector
+  , selectPreviousTabSelector
+  , sendEventSelector
   , setAcceptsMouseMovedEventsSelector
-  , ignoresMouseEventsSelector
+  , setAllowsAutomaticWindowTabbingSelector
+  , setAllowsConcurrentViewDrawingSelector
+  , setAllowsToolTipsWhenApplicationIsInactiveSelector
+  , setAlphaValueSelector
+  , setAnchorAttribute_forOrientationSelector
+  , setAnimationBehaviorSelector
+  , setAppearanceSourceSelector
+  , setAspectRatioSelector
+  , setAutodisplaySelector
+  , setAutorecalculatesContentBorderThickness_forEdgeSelector
+  , setAutorecalculatesKeyViewLoopSelector
+  , setBackgroundColorSelector
+  , setBackingTypeSelector
+  , setCanBecomeVisibleWithoutLoginSelector
+  , setCanHideSelector
+  , setCollectionBehaviorSelector
+  , setColorSpaceSelector
+  , setContentAspectRatioSelector
+  , setContentBorderThickness_forEdgeSelector
+  , setContentMaxSizeSelector
+  , setContentMinSizeSelector
+  , setContentResizeIncrementsSelector
+  , setContentSizeSelector
+  , setContentViewControllerSelector
+  , setContentViewSelector
+  , setDefaultButtonCellSelector
+  , setDelegateSelector
+  , setDepthLimitSelector
+  , setDisplaysWhenScreenProfileChangesSelector
+  , setDocumentEditedSelector
+  , setDynamicDepthLimitSelector
+  , setExcludedFromWindowsMenuSelector
+  , setFrameAutosaveNameSelector
+  , setFrameFromStringSelector
+  , setFrameOriginSelector
+  , setFrameTopLeftPointSelector
+  , setFrameUsingNameSelector
+  , setFrameUsingName_forceSelector
+  , setFrame_displaySelector
+  , setFrame_display_animateSelector
+  , setHasShadowSelector
+  , setHidesOnDeactivateSelector
   , setIgnoresMouseEventsSelector
-  , mouseLocationOutsideOfEventStreamSelector
+  , setInitialFirstResponderSelector
+  , setIsMiniaturizedSelector
+  , setIsVisibleSelector
+  , setIsZoomedSelector
+  , setLevelSelector
+  , setMaxFullScreenContentSizeSelector
+  , setMaxSizeSelector
+  , setMinFullScreenContentSizeSelector
+  , setMinSizeSelector
+  , setMiniwindowImageSelector
+  , setMiniwindowTitleSelector
+  , setMovableByWindowBackgroundSelector
+  , setMovableSelector
+  , setOneShotSelector
+  , setOpaqueSelector
+  , setOrderedIndexSelector
+  , setParentWindowSelector
+  , setPreferredBackingLocationSelector
+  , setPreservesContentDuringLiveResizeSelector
+  , setPreventsApplicationTerminationWhenModalSelector
+  , setReleasedWhenClosedSelector
+  , setRepresentedFilenameSelector
+  , setRepresentedURLSelector
+  , setResizeIncrementsSelector
+  , setRestorableSelector
+  , setRestorationClassSelector
+  , setSharingTypeSelector
+  , setShowsResizeIndicatorSelector
+  , setShowsToolbarButtonSelector
+  , setStyleMaskSelector
+  , setSubtitleSelector
+  , setTabbingIdentifierSelector
+  , setTabbingModeSelector
+  , setTitleSelector
+  , setTitleVisibilitySelector
+  , setTitleWithRepresentedFilenameSelector
+  , setTitlebarAccessoryViewControllersSelector
+  , setTitlebarAppearsTransparentSelector
+  , setTitlebarSeparatorStyleSelector
+  , setToolbarSelector
+  , setToolbarStyleSelector
+  , setViewsNeedDisplaySelector
+  , setWindowControllerSelector
+  , sharingTypeSelector
+  , sheetParentSelector
+  , sheetSelector
+  , sheetsSelector
+  , showsResizeIndicatorSelector
+  , showsToolbarButtonSelector
+  , standardWindowButtonSelector
+  , standardWindowButton_forStyleMaskSelector
+  , stringWithSavedFrameSelector
+  , styleMaskSelector
+  , subtitleSelector
+  , tabGroupSelector
+  , tabSelector
+  , tabbedWindowsSelector
+  , tabbingIdentifierSelector
+  , tabbingModeSelector
+  , titleSelector
+  , titleVisibilitySelector
+  , titlebarAccessoryViewControllersSelector
+  , titlebarAppearsTransparentSelector
+  , titlebarSeparatorStyleSelector
+  , toggleFullScreenSelector
+  , toggleTabBarSelector
+  , toggleTabOverviewSelector
+  , toggleToolbarShownSelector
+  , toolbarSelector
+  , toolbarStyleSelector
+  , trackEventsMatchingMask_timeout_mode_handlerSelector
+  , transferWindowSharingToWindow_completionHandlerSelector
+  , tryToPerform_withSelector
+  , unregisterDraggedTypesSelector
+  , updateConstraintsIfNeededSelector
+  , updateSelector
+  , useOptimizedDrawingSelector
+  , userSpaceScaleFactorSelector
+  , userTabbingPreferenceSelector
+  , validRequestorForSendType_returnTypeSelector
+  , viewsNeedDisplaySelector
+  , visibleSelector
+  , visualizeConstraintsSelector
+  , windowControllerSelector
+  , windowNumberAtPoint_belowWindowWithWindowNumberSelector
+  , windowNumberSelector
+  , windowNumbersWithOptionsSelector
+  , windowRefSelector
+  , windowTitlebarLayoutDirectionSelector
+  , windowWithContentViewControllerSelector
+  , worksWhenModalSelector
+  , zoomSelector
+  , zoomableSelector
+  , zoomedSelector
 
   -- * Enum types
   , NSAlignmentOptions(NSAlignmentOptions)
@@ -896,15 +897,11 @@ module ObjC.AppKit.NSWindow
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -920,464 +917,442 @@ frameRectForContentRect_styleMask :: NSRect -> NSWindowStyleMask -> IO NSRect
 frameRectForContentRect_styleMask cRect style =
   do
     cls' <- getRequiredClass "NSWindow"
-    sendClassMsgStret cls' (mkSelector "frameRectForContentRect:styleMask:") retNSRect [argNSRect cRect, argCULong (coerce style)]
+    sendClassMessage cls' frameRectForContentRect_styleMaskSelector cRect style
 
 -- | @+ contentRectForFrameRect:styleMask:@
 contentRectForFrameRect_styleMask :: NSRect -> NSWindowStyleMask -> IO NSRect
 contentRectForFrameRect_styleMask fRect style =
   do
     cls' <- getRequiredClass "NSWindow"
-    sendClassMsgStret cls' (mkSelector "contentRectForFrameRect:styleMask:") retNSRect [argNSRect fRect, argCULong (coerce style)]
+    sendClassMessage cls' contentRectForFrameRect_styleMaskSelector fRect style
 
 -- | @+ minFrameWidthWithTitle:styleMask:@
 minFrameWidthWithTitle_styleMask :: IsNSString title => title -> NSWindowStyleMask -> IO CDouble
 minFrameWidthWithTitle_styleMask title style =
   do
     cls' <- getRequiredClass "NSWindow"
-    withObjCPtr title $ \raw_title ->
-      sendClassMsg cls' (mkSelector "minFrameWidthWithTitle:styleMask:") retCDouble [argPtr (castPtr raw_title :: Ptr ()), argCULong (coerce style)]
+    sendClassMessage cls' minFrameWidthWithTitle_styleMaskSelector (toNSString title) style
 
 -- | @- frameRectForContentRect:@
 frameRectForContentRect :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO NSRect
-frameRectForContentRect nsWindow  contentRect =
-    sendMsgStret nsWindow (mkSelector "frameRectForContentRect:") retNSRect [argNSRect contentRect]
+frameRectForContentRect nsWindow contentRect =
+  sendMessage nsWindow frameRectForContentRectSelector contentRect
 
 -- | @- contentRectForFrameRect:@
 contentRectForFrameRect :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO NSRect
-contentRectForFrameRect nsWindow  frameRect =
-    sendMsgStret nsWindow (mkSelector "contentRectForFrameRect:") retNSRect [argNSRect frameRect]
+contentRectForFrameRect nsWindow frameRect =
+  sendMessage nsWindow contentRectForFrameRectSelector frameRect
 
 -- | @- initWithContentRect:styleMask:backing:defer:@
 initWithContentRect_styleMask_backing_defer :: IsNSWindow nsWindow => nsWindow -> NSRect -> NSWindowStyleMask -> NSBackingStoreType -> Bool -> IO (Id NSWindow)
-initWithContentRect_styleMask_backing_defer nsWindow  contentRect style backingStoreType flag =
-    sendMsg nsWindow (mkSelector "initWithContentRect:styleMask:backing:defer:") (retPtr retVoid) [argNSRect contentRect, argCULong (coerce style), argCULong (coerce backingStoreType), argCULong (if flag then 1 else 0)] >>= ownedObject . castPtr
+initWithContentRect_styleMask_backing_defer nsWindow contentRect style backingStoreType flag =
+  sendOwnedMessage nsWindow initWithContentRect_styleMask_backing_deferSelector contentRect style backingStoreType flag
 
 -- | @- initWithContentRect:styleMask:backing:defer:screen:@
 initWithContentRect_styleMask_backing_defer_screen :: (IsNSWindow nsWindow, IsNSScreen screen) => nsWindow -> NSRect -> NSWindowStyleMask -> NSBackingStoreType -> Bool -> screen -> IO (Id NSWindow)
-initWithContentRect_styleMask_backing_defer_screen nsWindow  contentRect style backingStoreType flag screen =
-  withObjCPtr screen $ \raw_screen ->
-      sendMsg nsWindow (mkSelector "initWithContentRect:styleMask:backing:defer:screen:") (retPtr retVoid) [argNSRect contentRect, argCULong (coerce style), argCULong (coerce backingStoreType), argCULong (if flag then 1 else 0), argPtr (castPtr raw_screen :: Ptr ())] >>= ownedObject . castPtr
+initWithContentRect_styleMask_backing_defer_screen nsWindow contentRect style backingStoreType flag screen =
+  sendOwnedMessage nsWindow initWithContentRect_styleMask_backing_defer_screenSelector contentRect style backingStoreType flag (toNSScreen screen)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSWindow nsWindow, IsNSCoder coder) => nsWindow -> coder -> IO (Id NSWindow)
-initWithCoder nsWindow  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsWindow (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsWindow coder =
+  sendOwnedMessage nsWindow initWithCoderSelector (toNSCoder coder)
 
 -- | @- addTitlebarAccessoryViewController:@
 addTitlebarAccessoryViewController :: (IsNSWindow nsWindow, IsNSTitlebarAccessoryViewController childViewController) => nsWindow -> childViewController -> IO ()
-addTitlebarAccessoryViewController nsWindow  childViewController =
-  withObjCPtr childViewController $ \raw_childViewController ->
-      sendMsg nsWindow (mkSelector "addTitlebarAccessoryViewController:") retVoid [argPtr (castPtr raw_childViewController :: Ptr ())]
+addTitlebarAccessoryViewController nsWindow childViewController =
+  sendMessage nsWindow addTitlebarAccessoryViewControllerSelector (toNSTitlebarAccessoryViewController childViewController)
 
 -- | @- insertTitlebarAccessoryViewController:atIndex:@
 insertTitlebarAccessoryViewController_atIndex :: (IsNSWindow nsWindow, IsNSTitlebarAccessoryViewController childViewController) => nsWindow -> childViewController -> CLong -> IO ()
-insertTitlebarAccessoryViewController_atIndex nsWindow  childViewController index =
-  withObjCPtr childViewController $ \raw_childViewController ->
-      sendMsg nsWindow (mkSelector "insertTitlebarAccessoryViewController:atIndex:") retVoid [argPtr (castPtr raw_childViewController :: Ptr ()), argCLong index]
+insertTitlebarAccessoryViewController_atIndex nsWindow childViewController index =
+  sendMessage nsWindow insertTitlebarAccessoryViewController_atIndexSelector (toNSTitlebarAccessoryViewController childViewController) index
 
 -- | @- removeTitlebarAccessoryViewControllerAtIndex:@
 removeTitlebarAccessoryViewControllerAtIndex :: IsNSWindow nsWindow => nsWindow -> CLong -> IO ()
-removeTitlebarAccessoryViewControllerAtIndex nsWindow  index =
-    sendMsg nsWindow (mkSelector "removeTitlebarAccessoryViewControllerAtIndex:") retVoid [argCLong index]
+removeTitlebarAccessoryViewControllerAtIndex nsWindow index =
+  sendMessage nsWindow removeTitlebarAccessoryViewControllerAtIndexSelector index
 
 -- | @- setTitleWithRepresentedFilename:@
 setTitleWithRepresentedFilename :: (IsNSWindow nsWindow, IsNSString filename) => nsWindow -> filename -> IO ()
-setTitleWithRepresentedFilename nsWindow  filename =
-  withObjCPtr filename $ \raw_filename ->
-      sendMsg nsWindow (mkSelector "setTitleWithRepresentedFilename:") retVoid [argPtr (castPtr raw_filename :: Ptr ())]
+setTitleWithRepresentedFilename nsWindow filename =
+  sendMessage nsWindow setTitleWithRepresentedFilenameSelector (toNSString filename)
 
 -- | @- fieldEditor:forObject:@
 fieldEditor_forObject :: IsNSWindow nsWindow => nsWindow -> Bool -> RawId -> IO (Id NSText)
-fieldEditor_forObject nsWindow  createFlag object =
-    sendMsg nsWindow (mkSelector "fieldEditor:forObject:") (retPtr retVoid) [argCULong (if createFlag then 1 else 0), argPtr (castPtr (unRawId object) :: Ptr ())] >>= retainedObject . castPtr
+fieldEditor_forObject nsWindow createFlag object =
+  sendMessage nsWindow fieldEditor_forObjectSelector createFlag object
 
 -- | @- endEditingFor:@
 endEditingFor :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-endEditingFor nsWindow  object =
-    sendMsg nsWindow (mkSelector "endEditingFor:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+endEditingFor nsWindow object =
+  sendMessage nsWindow endEditingForSelector object
 
 -- | @- constrainFrameRect:toScreen:@
 constrainFrameRect_toScreen :: (IsNSWindow nsWindow, IsNSScreen screen) => nsWindow -> NSRect -> screen -> IO NSRect
-constrainFrameRect_toScreen nsWindow  frameRect screen =
-  withObjCPtr screen $ \raw_screen ->
-      sendMsgStret nsWindow (mkSelector "constrainFrameRect:toScreen:") retNSRect [argNSRect frameRect, argPtr (castPtr raw_screen :: Ptr ())]
+constrainFrameRect_toScreen nsWindow frameRect screen =
+  sendMessage nsWindow constrainFrameRect_toScreenSelector frameRect (toNSScreen screen)
 
 -- | @- setFrame:display:@
 setFrame_display :: IsNSWindow nsWindow => nsWindow -> NSRect -> Bool -> IO ()
-setFrame_display nsWindow  frameRect flag =
-    sendMsg nsWindow (mkSelector "setFrame:display:") retVoid [argNSRect frameRect, argCULong (if flag then 1 else 0)]
+setFrame_display nsWindow frameRect flag =
+  sendMessage nsWindow setFrame_displaySelector frameRect flag
 
 -- | @- setContentSize:@
 setContentSize :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setContentSize nsWindow  size =
-    sendMsg nsWindow (mkSelector "setContentSize:") retVoid [argNSSize size]
+setContentSize nsWindow size =
+  sendMessage nsWindow setContentSizeSelector size
 
 -- | @- setFrameOrigin:@
 setFrameOrigin :: IsNSWindow nsWindow => nsWindow -> NSPoint -> IO ()
-setFrameOrigin nsWindow  point =
-    sendMsg nsWindow (mkSelector "setFrameOrigin:") retVoid [argNSPoint point]
+setFrameOrigin nsWindow point =
+  sendMessage nsWindow setFrameOriginSelector point
 
 -- | @- setFrameTopLeftPoint:@
 setFrameTopLeftPoint :: IsNSWindow nsWindow => nsWindow -> NSPoint -> IO ()
-setFrameTopLeftPoint nsWindow  point =
-    sendMsg nsWindow (mkSelector "setFrameTopLeftPoint:") retVoid [argNSPoint point]
+setFrameTopLeftPoint nsWindow point =
+  sendMessage nsWindow setFrameTopLeftPointSelector point
 
 -- | @- cascadeTopLeftFromPoint:@
 cascadeTopLeftFromPoint :: IsNSWindow nsWindow => nsWindow -> NSPoint -> IO NSPoint
-cascadeTopLeftFromPoint nsWindow  topLeftPoint =
-    sendMsgStret nsWindow (mkSelector "cascadeTopLeftFromPoint:") retNSPoint [argNSPoint topLeftPoint]
+cascadeTopLeftFromPoint nsWindow topLeftPoint =
+  sendMessage nsWindow cascadeTopLeftFromPointSelector topLeftPoint
 
 -- | Subclasses can override @animationResizeTime:@ to control the total time for the frame change. @newFrame@ is the rect passed into @setFrame:display:animate:@
 --
 -- ObjC selector: @- animationResizeTime:@
 animationResizeTime :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO CDouble
-animationResizeTime nsWindow  newFrame =
-    sendMsg nsWindow (mkSelector "animationResizeTime:") retCDouble [argNSRect newFrame]
+animationResizeTime nsWindow newFrame =
+  sendMessage nsWindow animationResizeTimeSelector newFrame
 
 -- | @setFrame:display:animate:@ is equivalent to @setFrame:display:@ if the @animateFlag@ is NO.    If the @animationFlag@ is YES, this method will perform a smooth resize of the window, where the total time for the resize is specified by @-animationResizeTime:@
 --
 -- ObjC selector: @- setFrame:display:animate:@
 setFrame_display_animate :: IsNSWindow nsWindow => nsWindow -> NSRect -> Bool -> Bool -> IO ()
-setFrame_display_animate nsWindow  frameRect displayFlag animateFlag =
-    sendMsg nsWindow (mkSelector "setFrame:display:animate:") retVoid [argNSRect frameRect, argCULong (if displayFlag then 1 else 0), argCULong (if animateFlag then 1 else 0)]
+setFrame_display_animate nsWindow frameRect displayFlag animateFlag =
+  sendMessage nsWindow setFrame_display_animateSelector frameRect displayFlag animateFlag
 
 -- | @- displayIfNeeded@
 displayIfNeeded :: IsNSWindow nsWindow => nsWindow -> IO ()
-displayIfNeeded nsWindow  =
-    sendMsg nsWindow (mkSelector "displayIfNeeded") retVoid []
+displayIfNeeded nsWindow =
+  sendMessage nsWindow displayIfNeededSelector
 
 -- | @- display@
 display :: IsNSWindow nsWindow => nsWindow -> IO ()
-display nsWindow  =
-    sendMsg nsWindow (mkSelector "display") retVoid []
+display nsWindow =
+  sendMessage nsWindow displaySelector
 
 -- | @- update@
 update :: IsNSWindow nsWindow => nsWindow -> IO ()
-update nsWindow  =
-    sendMsg nsWindow (mkSelector "update") retVoid []
+update nsWindow =
+  sendMessage nsWindow updateSelector
 
 -- | @- makeFirstResponder:@
 makeFirstResponder :: (IsNSWindow nsWindow, IsNSResponder responder) => nsWindow -> responder -> IO Bool
-makeFirstResponder nsWindow  responder =
-  withObjCPtr responder $ \raw_responder ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "makeFirstResponder:") retCULong [argPtr (castPtr raw_responder :: Ptr ())]
+makeFirstResponder nsWindow responder =
+  sendMessage nsWindow makeFirstResponderSelector (toNSResponder responder)
 
 -- | @- close@
 close :: IsNSWindow nsWindow => nsWindow -> IO ()
-close nsWindow  =
-    sendMsg nsWindow (mkSelector "close") retVoid []
+close nsWindow =
+  sendMessage nsWindow closeSelector
 
 -- | @- miniaturize:@
 miniaturize :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-miniaturize nsWindow  sender =
-    sendMsg nsWindow (mkSelector "miniaturize:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+miniaturize nsWindow sender =
+  sendMessage nsWindow miniaturizeSelector sender
 
 -- | @- deminiaturize:@
 deminiaturize :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-deminiaturize nsWindow  sender =
-    sendMsg nsWindow (mkSelector "deminiaturize:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+deminiaturize nsWindow sender =
+  sendMessage nsWindow deminiaturizeSelector sender
 
 -- | @- zoom:@
 zoom :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-zoom nsWindow  sender =
-    sendMsg nsWindow (mkSelector "zoom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+zoom nsWindow sender =
+  sendMessage nsWindow zoomSelector sender
 
 -- | @- tryToPerform:with:@
-tryToPerform_with :: IsNSWindow nsWindow => nsWindow -> Selector -> RawId -> IO Bool
-tryToPerform_with nsWindow  action object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "tryToPerform:with:") retCULong [argPtr (unSelector action), argPtr (castPtr (unRawId object) :: Ptr ())]
+tryToPerform_with :: IsNSWindow nsWindow => nsWindow -> Sel -> RawId -> IO Bool
+tryToPerform_with nsWindow action object =
+  sendMessage nsWindow tryToPerform_withSelector action object
 
 -- | @- validRequestorForSendType:returnType:@
 validRequestorForSendType_returnType :: (IsNSWindow nsWindow, IsNSString sendType, IsNSString returnType) => nsWindow -> sendType -> returnType -> IO RawId
-validRequestorForSendType_returnType nsWindow  sendType returnType =
-  withObjCPtr sendType $ \raw_sendType ->
-    withObjCPtr returnType $ \raw_returnType ->
-        fmap (RawId . castPtr) $ sendMsg nsWindow (mkSelector "validRequestorForSendType:returnType:") (retPtr retVoid) [argPtr (castPtr raw_sendType :: Ptr ()), argPtr (castPtr raw_returnType :: Ptr ())]
+validRequestorForSendType_returnType nsWindow sendType returnType =
+  sendMessage nsWindow validRequestorForSendType_returnTypeSelector (toNSString sendType) (toNSString returnType)
 
 -- | @- setContentBorderThickness:forEdge:@
 setContentBorderThickness_forEdge :: IsNSWindow nsWindow => nsWindow -> CDouble -> NSRectEdge -> IO ()
-setContentBorderThickness_forEdge nsWindow  thickness edge =
-    sendMsg nsWindow (mkSelector "setContentBorderThickness:forEdge:") retVoid [argCDouble thickness, argCULong (coerce edge)]
+setContentBorderThickness_forEdge nsWindow thickness edge =
+  sendMessage nsWindow setContentBorderThickness_forEdgeSelector thickness edge
 
 -- | @- contentBorderThicknessForEdge:@
 contentBorderThicknessForEdge :: IsNSWindow nsWindow => nsWindow -> NSRectEdge -> IO CDouble
-contentBorderThicknessForEdge nsWindow  edge =
-    sendMsg nsWindow (mkSelector "contentBorderThicknessForEdge:") retCDouble [argCULong (coerce edge)]
+contentBorderThicknessForEdge nsWindow edge =
+  sendMessage nsWindow contentBorderThicknessForEdgeSelector edge
 
 -- | @- setAutorecalculatesContentBorderThickness:forEdge:@
 setAutorecalculatesContentBorderThickness_forEdge :: IsNSWindow nsWindow => nsWindow -> Bool -> NSRectEdge -> IO ()
-setAutorecalculatesContentBorderThickness_forEdge nsWindow  flag edge =
-    sendMsg nsWindow (mkSelector "setAutorecalculatesContentBorderThickness:forEdge:") retVoid [argCULong (if flag then 1 else 0), argCULong (coerce edge)]
+setAutorecalculatesContentBorderThickness_forEdge nsWindow flag edge =
+  sendMessage nsWindow setAutorecalculatesContentBorderThickness_forEdgeSelector flag edge
 
 -- | @- autorecalculatesContentBorderThicknessForEdge:@
 autorecalculatesContentBorderThicknessForEdge :: IsNSWindow nsWindow => nsWindow -> NSRectEdge -> IO Bool
-autorecalculatesContentBorderThicknessForEdge nsWindow  edge =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "autorecalculatesContentBorderThicknessForEdge:") retCULong [argCULong (coerce edge)]
+autorecalculatesContentBorderThicknessForEdge nsWindow edge =
+  sendMessage nsWindow autorecalculatesContentBorderThicknessForEdgeSelector edge
 
 -- | @- center@
 center :: IsNSWindow nsWindow => nsWindow -> IO ()
-center nsWindow  =
-    sendMsg nsWindow (mkSelector "center") retVoid []
+center nsWindow =
+  sendMessage nsWindow centerSelector
 
 -- | @- makeKeyAndOrderFront:@
 makeKeyAndOrderFront :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-makeKeyAndOrderFront nsWindow  sender =
-    sendMsg nsWindow (mkSelector "makeKeyAndOrderFront:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+makeKeyAndOrderFront nsWindow sender =
+  sendMessage nsWindow makeKeyAndOrderFrontSelector sender
 
 -- | @- orderFront:@
 orderFront :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-orderFront nsWindow  sender =
-    sendMsg nsWindow (mkSelector "orderFront:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+orderFront nsWindow sender =
+  sendMessage nsWindow orderFrontSelector sender
 
 -- | @- orderBack:@
 orderBack :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-orderBack nsWindow  sender =
-    sendMsg nsWindow (mkSelector "orderBack:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+orderBack nsWindow sender =
+  sendMessage nsWindow orderBackSelector sender
 
 -- | @- orderOut:@
 orderOut :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-orderOut nsWindow  sender =
-    sendMsg nsWindow (mkSelector "orderOut:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+orderOut nsWindow sender =
+  sendMessage nsWindow orderOutSelector sender
 
 -- | @- orderWindow:relativeTo:@
 orderWindow_relativeTo :: IsNSWindow nsWindow => nsWindow -> NSWindowOrderingMode -> CLong -> IO ()
-orderWindow_relativeTo nsWindow  place otherWin =
-    sendMsg nsWindow (mkSelector "orderWindow:relativeTo:") retVoid [argCLong (coerce place), argCLong otherWin]
+orderWindow_relativeTo nsWindow place otherWin =
+  sendMessage nsWindow orderWindow_relativeToSelector place otherWin
 
 -- | @- orderFrontRegardless@
 orderFrontRegardless :: IsNSWindow nsWindow => nsWindow -> IO ()
-orderFrontRegardless nsWindow  =
-    sendMsg nsWindow (mkSelector "orderFrontRegardless") retVoid []
+orderFrontRegardless nsWindow =
+  sendMessage nsWindow orderFrontRegardlessSelector
 
 -- | Makes the window key and main if eligible, updating NSApplication's @-keyWindow@ and @-mainWindow@ properties.
 --
 -- ObjC selector: @- makeKeyWindow@
 makeKeyWindow :: IsNSWindow nsWindow => nsWindow -> IO ()
-makeKeyWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "makeKeyWindow") retVoid []
+makeKeyWindow nsWindow =
+  sendMessage nsWindow makeKeyWindowSelector
 
 -- | Makes the window main if eligible. Updates NSApplication's @-mainWindow@ property.
 --
 -- ObjC selector: @- makeMainWindow@
 makeMainWindow :: IsNSWindow nsWindow => nsWindow -> IO ()
-makeMainWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "makeMainWindow") retVoid []
+makeMainWindow nsWindow =
+  sendMessage nsWindow makeMainWindowSelector
 
 -- | Informs the window that it has become the key window. This method exists as an override point. Do not invoke directly. Instead, invoke @-makeKeyWindow@.
 --
 -- ObjC selector: @- becomeKeyWindow@
 becomeKeyWindow :: IsNSWindow nsWindow => nsWindow -> IO ()
-becomeKeyWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "becomeKeyWindow") retVoid []
+becomeKeyWindow nsWindow =
+  sendMessage nsWindow becomeKeyWindowSelector
 
 -- | Informs the window that it has stopped being the key window. This method exists as an override point. Do not invoke directly. Windows automatically receive this message when deactivating or when another window has become key.
 --
 -- ObjC selector: @- resignKeyWindow@
 resignKeyWindow :: IsNSWindow nsWindow => nsWindow -> IO ()
-resignKeyWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "resignKeyWindow") retVoid []
+resignKeyWindow nsWindow =
+  sendMessage nsWindow resignKeyWindowSelector
 
 -- | Informs the window that it has become the main window. This method exists as an override point. Do not invoke directly. Instead, invoke @-makeMainWindow@.
 --
 -- ObjC selector: @- becomeMainWindow@
 becomeMainWindow :: IsNSWindow nsWindow => nsWindow -> IO ()
-becomeMainWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "becomeMainWindow") retVoid []
+becomeMainWindow nsWindow =
+  sendMessage nsWindow becomeMainWindowSelector
 
 -- | Informs the window that it has stopped being the main window. This method exists as an override point. Do not invoke directly. Windows automatically receive this message when deactivating or when another window has become main.
 --
 -- ObjC selector: @- resignMainWindow@
 resignMainWindow :: IsNSWindow nsWindow => nsWindow -> IO ()
-resignMainWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "resignMainWindow") retVoid []
+resignMainWindow nsWindow =
+  sendMessage nsWindow resignMainWindowSelector
 
 -- | @- convertRectToScreen:@
 convertRectToScreen :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO NSRect
-convertRectToScreen nsWindow  rect =
-    sendMsgStret nsWindow (mkSelector "convertRectToScreen:") retNSRect [argNSRect rect]
+convertRectToScreen nsWindow rect =
+  sendMessage nsWindow convertRectToScreenSelector rect
 
 -- | @- convertRectFromScreen:@
 convertRectFromScreen :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO NSRect
-convertRectFromScreen nsWindow  rect =
-    sendMsgStret nsWindow (mkSelector "convertRectFromScreen:") retNSRect [argNSRect rect]
+convertRectFromScreen nsWindow rect =
+  sendMessage nsWindow convertRectFromScreenSelector rect
 
 -- | @- convertPointToScreen:@
 convertPointToScreen :: IsNSWindow nsWindow => nsWindow -> NSPoint -> IO NSPoint
-convertPointToScreen nsWindow  point =
-    sendMsgStret nsWindow (mkSelector "convertPointToScreen:") retNSPoint [argNSPoint point]
+convertPointToScreen nsWindow point =
+  sendMessage nsWindow convertPointToScreenSelector point
 
 -- | @- convertPointFromScreen:@
 convertPointFromScreen :: IsNSWindow nsWindow => nsWindow -> NSPoint -> IO NSPoint
-convertPointFromScreen nsWindow  point =
-    sendMsgStret nsWindow (mkSelector "convertPointFromScreen:") retNSPoint [argNSPoint point]
+convertPointFromScreen nsWindow point =
+  sendMessage nsWindow convertPointFromScreenSelector point
 
 -- | @- convertRectToBacking:@
 convertRectToBacking :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO NSRect
-convertRectToBacking nsWindow  rect =
-    sendMsgStret nsWindow (mkSelector "convertRectToBacking:") retNSRect [argNSRect rect]
+convertRectToBacking nsWindow rect =
+  sendMessage nsWindow convertRectToBackingSelector rect
 
 -- | @- convertRectFromBacking:@
 convertRectFromBacking :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO NSRect
-convertRectFromBacking nsWindow  rect =
-    sendMsgStret nsWindow (mkSelector "convertRectFromBacking:") retNSRect [argNSRect rect]
+convertRectFromBacking nsWindow rect =
+  sendMessage nsWindow convertRectFromBackingSelector rect
 
 -- | @- convertPointToBacking:@
 convertPointToBacking :: IsNSWindow nsWindow => nsWindow -> NSPoint -> IO NSPoint
-convertPointToBacking nsWindow  point =
-    sendMsgStret nsWindow (mkSelector "convertPointToBacking:") retNSPoint [argNSPoint point]
+convertPointToBacking nsWindow point =
+  sendMessage nsWindow convertPointToBackingSelector point
 
 -- | @- convertPointFromBacking:@
 convertPointFromBacking :: IsNSWindow nsWindow => nsWindow -> NSPoint -> IO NSPoint
-convertPointFromBacking nsWindow  point =
-    sendMsgStret nsWindow (mkSelector "convertPointFromBacking:") retNSPoint [argNSPoint point]
+convertPointFromBacking nsWindow point =
+  sendMessage nsWindow convertPointFromBackingSelector point
 
 -- | Use @NSIntegralRectWithOptions()@ to produce a backing store pixel aligned rectangle from the given input rectangle in window coordinates.
 --
 -- ObjC selector: @- backingAlignedRect:options:@
 backingAlignedRect_options :: IsNSWindow nsWindow => nsWindow -> NSRect -> NSAlignmentOptions -> IO NSRect
-backingAlignedRect_options nsWindow  rect options =
-    sendMsgStret nsWindow (mkSelector "backingAlignedRect:options:") retNSRect [argNSRect rect, argCULong (coerce options)]
+backingAlignedRect_options nsWindow rect options =
+  sendMessage nsWindow backingAlignedRect_optionsSelector rect options
 
 -- | @- performClose:@
 performClose :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-performClose nsWindow  sender =
-    sendMsg nsWindow (mkSelector "performClose:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+performClose nsWindow sender =
+  sendMessage nsWindow performCloseSelector sender
 
 -- | @- performMiniaturize:@
 performMiniaturize :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-performMiniaturize nsWindow  sender =
-    sendMsg nsWindow (mkSelector "performMiniaturize:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+performMiniaturize nsWindow sender =
+  sendMessage nsWindow performMiniaturizeSelector sender
 
 -- | @- performZoom:@
 performZoom :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-performZoom nsWindow  sender =
-    sendMsg nsWindow (mkSelector "performZoom:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+performZoom nsWindow sender =
+  sendMessage nsWindow performZoomSelector sender
 
 -- | @- dataWithEPSInsideRect:@
 dataWithEPSInsideRect :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO (Id NSData)
-dataWithEPSInsideRect nsWindow  rect =
-    sendMsg nsWindow (mkSelector "dataWithEPSInsideRect:") (retPtr retVoid) [argNSRect rect] >>= retainedObject . castPtr
+dataWithEPSInsideRect nsWindow rect =
+  sendMessage nsWindow dataWithEPSInsideRectSelector rect
 
 -- | @- dataWithPDFInsideRect:@
 dataWithPDFInsideRect :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO (Id NSData)
-dataWithPDFInsideRect nsWindow  rect =
-    sendMsg nsWindow (mkSelector "dataWithPDFInsideRect:") (retPtr retVoid) [argNSRect rect] >>= retainedObject . castPtr
+dataWithPDFInsideRect nsWindow rect =
+  sendMessage nsWindow dataWithPDFInsideRectSelector rect
 
 -- | @- print:@
 print_ :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-print_ nsWindow  sender =
-    sendMsg nsWindow (mkSelector "print:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+print_ nsWindow sender =
+  sendMessage nsWindow printSelector sender
 
 -- | @- setDynamicDepthLimit:@
 setDynamicDepthLimit :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setDynamicDepthLimit nsWindow  flag =
-    sendMsg nsWindow (mkSelector "setDynamicDepthLimit:") retVoid [argCULong (if flag then 1 else 0)]
+setDynamicDepthLimit nsWindow flag =
+  sendMessage nsWindow setDynamicDepthLimitSelector flag
 
 -- | @- invalidateShadow@
 invalidateShadow :: IsNSWindow nsWindow => nsWindow -> IO ()
-invalidateShadow nsWindow  =
-    sendMsg nsWindow (mkSelector "invalidateShadow") retVoid []
+invalidateShadow nsWindow =
+  sendMessage nsWindow invalidateShadowSelector
 
 -- | @-toggleFullScreen:@ enters or exits for full screen. A window must have @NSWindowCollectionBehaviorFullScreenAuxiliary@ or @NSWindowCollectionBehaviorFullScreenPrimary@ included in the @collectionBehavior@ property; if it does not, this method may simply do nothing.
 --
 -- ObjC selector: @- toggleFullScreen:@
 toggleFullScreen :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-toggleFullScreen nsWindow  sender =
-    sendMsg nsWindow (mkSelector "toggleFullScreen:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+toggleFullScreen nsWindow sender =
+  sendMessage nsWindow toggleFullScreenSelector sender
 
 -- | @- setFrameFromString:@
 setFrameFromString :: (IsNSWindow nsWindow, IsNSString string) => nsWindow -> string -> IO ()
-setFrameFromString nsWindow  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsWindow (mkSelector "setFrameFromString:") retVoid [argPtr (castPtr raw_string :: Ptr ())]
+setFrameFromString nsWindow string =
+  sendMessage nsWindow setFrameFromStringSelector (toNSString string)
 
 -- | @- saveFrameUsingName:@
 saveFrameUsingName :: (IsNSWindow nsWindow, IsNSString name) => nsWindow -> name -> IO ()
-saveFrameUsingName nsWindow  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsWindow (mkSelector "saveFrameUsingName:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+saveFrameUsingName nsWindow name =
+  sendMessage nsWindow saveFrameUsingNameSelector (toNSString name)
 
 -- | @- setFrameUsingName:force:@
 setFrameUsingName_force :: (IsNSWindow nsWindow, IsNSString name) => nsWindow -> name -> Bool -> IO Bool
-setFrameUsingName_force nsWindow  name force =
-  withObjCPtr name $ \raw_name ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "setFrameUsingName:force:") retCULong [argPtr (castPtr raw_name :: Ptr ()), argCULong (if force then 1 else 0)]
+setFrameUsingName_force nsWindow name force =
+  sendMessage nsWindow setFrameUsingName_forceSelector (toNSString name) force
 
 -- | @- setFrameUsingName:@
 setFrameUsingName :: (IsNSWindow nsWindow, IsNSString name) => nsWindow -> name -> IO Bool
-setFrameUsingName nsWindow  name =
-  withObjCPtr name $ \raw_name ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "setFrameUsingName:") retCULong [argPtr (castPtr raw_name :: Ptr ())]
+setFrameUsingName nsWindow name =
+  sendMessage nsWindow setFrameUsingNameSelector (toNSString name)
 
 -- | @- setFrameAutosaveName:@
 setFrameAutosaveName :: (IsNSWindow nsWindow, IsNSString name) => nsWindow -> name -> IO Bool
-setFrameAutosaveName nsWindow  name =
-  withObjCPtr name $ \raw_name ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "setFrameAutosaveName:") retCULong [argPtr (castPtr raw_name :: Ptr ())]
+setFrameAutosaveName nsWindow name =
+  sendMessage nsWindow setFrameAutosaveNameSelector (toNSString name)
 
 -- | @+ removeFrameUsingName:@
 removeFrameUsingName :: IsNSString name => name -> IO ()
 removeFrameUsingName name =
   do
     cls' <- getRequiredClass "NSWindow"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "removeFrameUsingName:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+    sendClassMessage cls' removeFrameUsingNameSelector (toNSString name)
 
 -- | @- beginSheet:completionHandler:@
 beginSheet_completionHandler :: (IsNSWindow nsWindow, IsNSWindow sheetWindow) => nsWindow -> sheetWindow -> Ptr () -> IO ()
-beginSheet_completionHandler nsWindow  sheetWindow handler =
-  withObjCPtr sheetWindow $ \raw_sheetWindow ->
-      sendMsg nsWindow (mkSelector "beginSheet:completionHandler:") retVoid [argPtr (castPtr raw_sheetWindow :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+beginSheet_completionHandler nsWindow sheetWindow handler =
+  sendMessage nsWindow beginSheet_completionHandlerSelector (toNSWindow sheetWindow) handler
 
 -- | @- beginCriticalSheet:completionHandler:@
 beginCriticalSheet_completionHandler :: (IsNSWindow nsWindow, IsNSWindow sheetWindow) => nsWindow -> sheetWindow -> Ptr () -> IO ()
-beginCriticalSheet_completionHandler nsWindow  sheetWindow handler =
-  withObjCPtr sheetWindow $ \raw_sheetWindow ->
-      sendMsg nsWindow (mkSelector "beginCriticalSheet:completionHandler:") retVoid [argPtr (castPtr raw_sheetWindow :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+beginCriticalSheet_completionHandler nsWindow sheetWindow handler =
+  sendMessage nsWindow beginCriticalSheet_completionHandlerSelector (toNSWindow sheetWindow) handler
 
 -- | @- endSheet:@
 endSheet :: (IsNSWindow nsWindow, IsNSWindow sheetWindow) => nsWindow -> sheetWindow -> IO ()
-endSheet nsWindow  sheetWindow =
-  withObjCPtr sheetWindow $ \raw_sheetWindow ->
-      sendMsg nsWindow (mkSelector "endSheet:") retVoid [argPtr (castPtr raw_sheetWindow :: Ptr ())]
+endSheet nsWindow sheetWindow =
+  sendMessage nsWindow endSheetSelector (toNSWindow sheetWindow)
 
 -- | @- endSheet:returnCode:@
 endSheet_returnCode :: (IsNSWindow nsWindow, IsNSWindow sheetWindow) => nsWindow -> sheetWindow -> CLong -> IO ()
-endSheet_returnCode nsWindow  sheetWindow returnCode =
-  withObjCPtr sheetWindow $ \raw_sheetWindow ->
-      sendMsg nsWindow (mkSelector "endSheet:returnCode:") retVoid [argPtr (castPtr raw_sheetWindow :: Ptr ()), argCLong returnCode]
+endSheet_returnCode nsWindow sheetWindow returnCode =
+  sendMessage nsWindow endSheet_returnCodeSelector (toNSWindow sheetWindow) returnCode
 
 -- | @+ standardWindowButton:forStyleMask:@
 standardWindowButton_forStyleMask :: NSWindowButton -> NSWindowStyleMask -> IO (Id NSButton)
 standardWindowButton_forStyleMask b styleMask =
   do
     cls' <- getRequiredClass "NSWindow"
-    sendClassMsg cls' (mkSelector "standardWindowButton:forStyleMask:") (retPtr retVoid) [argCULong (coerce b), argCULong (coerce styleMask)] >>= retainedObject . castPtr
+    sendClassMessage cls' standardWindowButton_forStyleMaskSelector b styleMask
 
 -- | @- standardWindowButton:@
 standardWindowButton :: IsNSWindow nsWindow => nsWindow -> NSWindowButton -> IO (Id NSButton)
-standardWindowButton nsWindow  b =
-    sendMsg nsWindow (mkSelector "standardWindowButton:") (retPtr retVoid) [argCULong (coerce b)] >>= retainedObject . castPtr
+standardWindowButton nsWindow b =
+  sendMessage nsWindow standardWindowButtonSelector b
 
 -- | @- addChildWindow:ordered:@
 addChildWindow_ordered :: (IsNSWindow nsWindow, IsNSWindow childWin) => nsWindow -> childWin -> NSWindowOrderingMode -> IO ()
-addChildWindow_ordered nsWindow  childWin place =
-  withObjCPtr childWin $ \raw_childWin ->
-      sendMsg nsWindow (mkSelector "addChildWindow:ordered:") retVoid [argPtr (castPtr raw_childWin :: Ptr ()), argCLong (coerce place)]
+addChildWindow_ordered nsWindow childWin place =
+  sendMessage nsWindow addChildWindow_orderedSelector (toNSWindow childWin) place
 
 -- | @- removeChildWindow:@
 removeChildWindow :: (IsNSWindow nsWindow, IsNSWindow childWin) => nsWindow -> childWin -> IO ()
-removeChildWindow nsWindow  childWin =
-  withObjCPtr childWin $ \raw_childWin ->
-      sendMsg nsWindow (mkSelector "removeChildWindow:") retVoid [argPtr (castPtr raw_childWin :: Ptr ())]
+removeChildWindow nsWindow childWin =
+  sendMessage nsWindow removeChildWindowSelector (toNSWindow childWin)
 
 -- | @-canRepresentDisplayGamut:@ returns @YES@ if the colorSpace of the receiving window, and the @colorSpace@ of the screen containing that window, are capable of representing the given display gamut
 --
 -- ObjC selector: @- canRepresentDisplayGamut:@
 canRepresentDisplayGamut :: IsNSWindow nsWindow => nsWindow -> NSDisplayGamut -> IO Bool
-canRepresentDisplayGamut nsWindow  displayGamut =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "canRepresentDisplayGamut:") retCULong [argCLong (coerce displayGamut)]
+canRepresentDisplayGamut nsWindow displayGamut =
+  sendMessage nsWindow canRepresentDisplayGamutSelector displayGamut
 
 -- | @+windowNumbersWithOptions:@ returns an autoreleased array of @NSNumbers@ containing windowNumbers for all visible windows satisfying options.  If no options are specified, only visible windows belonging to the calling application and on the active space are included.  If options include @NSWindowNumberListAllApplications,@ visible windows belonging to all applications are included.  If options include @NSWindowNumberListAllSpaces,@ visible windows on all spaces are included.  Windows on the active space are returned in z-order.   Examples:       To get an array of windowNumbers visible on the current space and belonging to the calling application:  	@windowNumbers = [NSWindow windowNumbersWithOptions:0];@      To get an array of windowNumbers visible on any space and belonging to any application:	@windowNumbers = [NSWindow windowNumbersWithOptions:NSWindowNumberListAllApplications|NSWindowNumberListAllSpaces];@      To get an array of windowNumbers visible on any space and belonging to the calling application:	@windowNumbers = [NSWindow windowNumbersWithOptions:NSWindowNumberListAllSpaces];@
 --
@@ -1386,7 +1361,7 @@ windowNumbersWithOptions :: NSWindowNumberListOptions -> IO (Id NSArray)
 windowNumbersWithOptions options =
   do
     cls' <- getRequiredClass "NSWindow"
-    sendClassMsg cls' (mkSelector "windowNumbersWithOptions:") (retPtr retVoid) [argCULong (coerce options)] >>= retainedObject . castPtr
+    sendClassMessage cls' windowNumbersWithOptionsSelector options
 
 -- | @+windowNumberAtPoint:belowWindowWithWindowNumber:@ returns the number of the frontmost window that would be hit by a mouseDown at the screen location "point".  "windowNum" can be specified to exclude a given window along with all windows above it, and may belong to any application.  If no windows are to be excluded, specify 0 for "windowNum".  The windowNumber returned may correspond to a window in another application.
 --
@@ -1395,7 +1370,7 @@ windowNumberAtPoint_belowWindowWithWindowNumber :: NSPoint -> CLong -> IO CLong
 windowNumberAtPoint_belowWindowWithWindowNumber point windowNumber =
   do
     cls' <- getRequiredClass "NSWindow"
-    sendClassMsg cls' (mkSelector "windowNumberAtPoint:belowWindowWithWindowNumber:") retCLong [argNSPoint point, argCLong windowNumber]
+    sendClassMessage cls' windowNumberAtPoint_belowWindowWithWindowNumberSelector point windowNumber
 
 -- | Convenience method for creating an autoreleased titled window with the given contentViewController. A basic NSWindow with the following attributes is made: titled, closable, resizable, miniaturizable. The window's title is automatically bound to the contentViewController's title. The size of the window can easily be controlled by utilizing autolayout and applying size constraints to the view (or its subviews). The window has isReleasedWhenClosed set to NO, and it must be explicitly retained to keep the window instance alive. To have it automatically be freed when it is closed, do the following: [window retain] and [window setReleasedWhenClosed:YES].
 --
@@ -1404,105 +1379,100 @@ windowWithContentViewController :: IsNSViewController contentViewController => c
 windowWithContentViewController contentViewController =
   do
     cls' <- getRequiredClass "NSWindow"
-    withObjCPtr contentViewController $ \raw_contentViewController ->
-      sendClassMsg cls' (mkSelector "windowWithContentViewController:") (retPtr retVoid) [argPtr (castPtr raw_contentViewController :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' windowWithContentViewControllerSelector (toNSViewController contentViewController)
 
 -- | Call to start a drag (moving the window) in the Window Server process. In general, this can be done after a mouseDown event has come in and been examined by an application or view. The view may determine it wants to allow that portion of the window to start a window drag, and can hand off the work to the Window Server process by calling this method. This allows the window to participate in space switching, and other system features. Pass the original mouseDown event to the method. The method will return right away, and a mouseUp may not get sent.
 --
 -- ObjC selector: @- performWindowDragWithEvent:@
 performWindowDragWithEvent :: (IsNSWindow nsWindow, IsNSEvent event) => nsWindow -> event -> IO ()
-performWindowDragWithEvent nsWindow  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsWindow (mkSelector "performWindowDragWithEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+performWindowDragWithEvent nsWindow event =
+  sendMessage nsWindow performWindowDragWithEventSelector (toNSEvent event)
 
 -- | @- selectNextKeyView:@
 selectNextKeyView :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-selectNextKeyView nsWindow  sender =
-    sendMsg nsWindow (mkSelector "selectNextKeyView:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectNextKeyView nsWindow sender =
+  sendMessage nsWindow selectNextKeyViewSelector sender
 
 -- | @- selectPreviousKeyView:@
 selectPreviousKeyView :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-selectPreviousKeyView nsWindow  sender =
-    sendMsg nsWindow (mkSelector "selectPreviousKeyView:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectPreviousKeyView nsWindow sender =
+  sendMessage nsWindow selectPreviousKeyViewSelector sender
 
 -- | @- selectKeyViewFollowingView:@
 selectKeyViewFollowingView :: (IsNSWindow nsWindow, IsNSView view) => nsWindow -> view -> IO ()
-selectKeyViewFollowingView nsWindow  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsWindow (mkSelector "selectKeyViewFollowingView:") retVoid [argPtr (castPtr raw_view :: Ptr ())]
+selectKeyViewFollowingView nsWindow view =
+  sendMessage nsWindow selectKeyViewFollowingViewSelector (toNSView view)
 
 -- | @- selectKeyViewPrecedingView:@
 selectKeyViewPrecedingView :: (IsNSWindow nsWindow, IsNSView view) => nsWindow -> view -> IO ()
-selectKeyViewPrecedingView nsWindow  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsWindow (mkSelector "selectKeyViewPrecedingView:") retVoid [argPtr (castPtr raw_view :: Ptr ())]
+selectKeyViewPrecedingView nsWindow view =
+  sendMessage nsWindow selectKeyViewPrecedingViewSelector (toNSView view)
 
 -- | @- disableKeyEquivalentForDefaultButtonCell@
 disableKeyEquivalentForDefaultButtonCell :: IsNSWindow nsWindow => nsWindow -> IO ()
-disableKeyEquivalentForDefaultButtonCell nsWindow  =
-    sendMsg nsWindow (mkSelector "disableKeyEquivalentForDefaultButtonCell") retVoid []
+disableKeyEquivalentForDefaultButtonCell nsWindow =
+  sendMessage nsWindow disableKeyEquivalentForDefaultButtonCellSelector
 
 -- | @- enableKeyEquivalentForDefaultButtonCell@
 enableKeyEquivalentForDefaultButtonCell :: IsNSWindow nsWindow => nsWindow -> IO ()
-enableKeyEquivalentForDefaultButtonCell nsWindow  =
-    sendMsg nsWindow (mkSelector "enableKeyEquivalentForDefaultButtonCell") retVoid []
+enableKeyEquivalentForDefaultButtonCell nsWindow =
+  sendMessage nsWindow enableKeyEquivalentForDefaultButtonCellSelector
 
 -- | @- recalculateKeyViewLoop@
 recalculateKeyViewLoop :: IsNSWindow nsWindow => nsWindow -> IO ()
-recalculateKeyViewLoop nsWindow  =
-    sendMsg nsWindow (mkSelector "recalculateKeyViewLoop") retVoid []
+recalculateKeyViewLoop nsWindow =
+  sendMessage nsWindow recalculateKeyViewLoopSelector
 
 -- | @- toggleToolbarShown:@
 toggleToolbarShown :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-toggleToolbarShown nsWindow  sender =
-    sendMsg nsWindow (mkSelector "toggleToolbarShown:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+toggleToolbarShown nsWindow sender =
+  sendMessage nsWindow toggleToolbarShownSelector sender
 
 -- | @- runToolbarCustomizationPalette:@
 runToolbarCustomizationPalette :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-runToolbarCustomizationPalette nsWindow  sender =
-    sendMsg nsWindow (mkSelector "runToolbarCustomizationPalette:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+runToolbarCustomizationPalette nsWindow sender =
+  sendMessage nsWindow runToolbarCustomizationPaletteSelector sender
 
 -- | Actions that can be called to perform various tabbed window behaviors. UI that is hooked up to these items can be automatically validated by calling @NSWindow@'s @validateUserInterfaceItem.@
 --
 -- ObjC selector: @- selectNextTab:@
 selectNextTab :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-selectNextTab nsWindow  sender =
-    sendMsg nsWindow (mkSelector "selectNextTab:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectNextTab nsWindow sender =
+  sendMessage nsWindow selectNextTabSelector sender
 
 -- | @- selectPreviousTab:@
 selectPreviousTab :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-selectPreviousTab nsWindow  sender =
-    sendMsg nsWindow (mkSelector "selectPreviousTab:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectPreviousTab nsWindow sender =
+  sendMessage nsWindow selectPreviousTabSelector sender
 
 -- | @- moveTabToNewWindow:@
 moveTabToNewWindow :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-moveTabToNewWindow nsWindow  sender =
-    sendMsg nsWindow (mkSelector "moveTabToNewWindow:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+moveTabToNewWindow nsWindow sender =
+  sendMessage nsWindow moveTabToNewWindowSelector sender
 
 -- | @- mergeAllWindows:@
 mergeAllWindows :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-mergeAllWindows nsWindow  sender =
-    sendMsg nsWindow (mkSelector "mergeAllWindows:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+mergeAllWindows nsWindow sender =
+  sendMessage nsWindow mergeAllWindowsSelector sender
 
 -- | @- toggleTabBar:@
 toggleTabBar :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-toggleTabBar nsWindow  sender =
-    sendMsg nsWindow (mkSelector "toggleTabBar:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+toggleTabBar nsWindow sender =
+  sendMessage nsWindow toggleTabBarSelector sender
 
 -- | Toggle the Tab Picker / Tab Overview UI which is invoked via "Show All Tabs". Performs the toggle in an animated fashion. Use @tabGroup.isOverviewVisible@ to find out if it is visible or not at a given time.
 --
 -- ObjC selector: @- toggleTabOverview:@
 toggleTabOverview :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-toggleTabOverview nsWindow  sender =
-    sendMsg nsWindow (mkSelector "toggleTabOverview:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+toggleTabOverview nsWindow sender =
+  sendMessage nsWindow toggleTabOverviewSelector sender
 
 -- | This is now a cover for @-[self.tabGroup addWindow:]@, which allows more precise placement.
 --
 -- ObjC selector: @- addTabbedWindow:ordered:@
 addTabbedWindow_ordered :: (IsNSWindow nsWindow, IsNSWindow window) => nsWindow -> window -> NSWindowOrderingMode -> IO ()
-addTabbedWindow_ordered nsWindow  window ordered =
-  withObjCPtr window $ \raw_window ->
-      sendMsg nsWindow (mkSelector "addTabbedWindow:ordered:") retVoid [argPtr (castPtr raw_window :: Ptr ()), argCLong (coerce ordered)]
+addTabbedWindow_ordered nsWindow window ordered =
+  sendMessage nsWindow addTabbedWindow_orderedSelector (toNSWindow window) ordered
 
 -- | Attempt to move window sharing (i.e. within a SharePlay session) from the receiver to another window. In response to this request, the user may choose to transfer sharing to the new window, or simply stop sharing the content.
 --
@@ -1512,9 +1482,8 @@ addTabbedWindow_ordered nsWindow  window ordered =
 --
 -- ObjC selector: @- transferWindowSharingToWindow:completionHandler:@
 transferWindowSharingToWindow_completionHandler :: (IsNSWindow nsWindow, IsNSWindow window) => nsWindow -> window -> Ptr () -> IO ()
-transferWindowSharingToWindow_completionHandler nsWindow  window completionHandler =
-  withObjCPtr window $ \raw_window ->
-      sendMsg nsWindow (mkSelector "transferWindowSharingToWindow:completionHandler:") retVoid [argPtr (castPtr raw_window :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+transferWindowSharingToWindow_completionHandler nsWindow window completionHandler =
+  sendMessage nsWindow transferWindowSharingToWindow_completionHandlerSelector (toNSWindow window) completionHandler
 
 -- | Request sharing of window.  If there is an available ScreenCaptureKit sharing session, an alert will be presented asking the user to confirm the share
 --
@@ -1524,9 +1493,8 @@ transferWindowSharingToWindow_completionHandler nsWindow  window completionHandl
 --
 -- ObjC selector: @- requestSharingOfWindow:completionHandler:@
 requestSharingOfWindow_completionHandler :: (IsNSWindow nsWindow, IsNSWindow window) => nsWindow -> window -> Ptr () -> IO ()
-requestSharingOfWindow_completionHandler nsWindow  window completionHandler =
-  withObjCPtr window $ \raw_window ->
-      sendMsg nsWindow (mkSelector "requestSharingOfWindow:completionHandler:") retVoid [argPtr (castPtr raw_window :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+requestSharingOfWindow_completionHandler nsWindow window completionHandler =
+  sendMessage nsWindow requestSharingOfWindow_completionHandlerSelector (toNSWindow window) completionHandler
 
 -- | Request sharing of window to be provided later.  If there is an available ScreenCaptureKit sharing session, an alert will be presented asking the user to confirm the share.  The delegate will be asked to provide the window to share via windowForSharingRequestFromWindow:
 --
@@ -1538,1016 +1506,983 @@ requestSharingOfWindow_completionHandler nsWindow  window completionHandler =
 --
 -- ObjC selector: @- requestSharingOfWindowUsingPreview:title:completionHandler:@
 requestSharingOfWindowUsingPreview_title_completionHandler :: (IsNSWindow nsWindow, IsNSImage image, IsNSString title) => nsWindow -> image -> title -> Ptr () -> IO ()
-requestSharingOfWindowUsingPreview_title_completionHandler nsWindow  image title completionHandler =
-  withObjCPtr image $ \raw_image ->
-    withObjCPtr title $ \raw_title ->
-        sendMsg nsWindow (mkSelector "requestSharingOfWindowUsingPreview:title:completionHandler:") retVoid [argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+requestSharingOfWindowUsingPreview_title_completionHandler nsWindow image title completionHandler =
+  sendMessage nsWindow requestSharingOfWindowUsingPreview_title_completionHandlerSelector (toNSImage image) (toNSString title) completionHandler
 
 -- | @- disableSnapshotRestoration@
 disableSnapshotRestoration :: IsNSWindow nsWindow => nsWindow -> IO ()
-disableSnapshotRestoration nsWindow  =
-    sendMsg nsWindow (mkSelector "disableSnapshotRestoration") retVoid []
+disableSnapshotRestoration nsWindow =
+  sendMessage nsWindow disableSnapshotRestorationSelector
 
 -- | @- enableSnapshotRestoration@
 enableSnapshotRestoration :: IsNSWindow nsWindow => nsWindow -> IO ()
-enableSnapshotRestoration nsWindow  =
-    sendMsg nsWindow (mkSelector "enableSnapshotRestoration") retVoid []
+enableSnapshotRestoration nsWindow =
+  sendMessage nsWindow enableSnapshotRestorationSelector
 
 -- | @- setIsMiniaturized:@
 setIsMiniaturized :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setIsMiniaturized nsWindow  flag =
-    sendMsg nsWindow (mkSelector "setIsMiniaturized:") retVoid [argCULong (if flag then 1 else 0)]
+setIsMiniaturized nsWindow flag =
+  sendMessage nsWindow setIsMiniaturizedSelector flag
 
 -- | @- setIsVisible:@
 setIsVisible :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setIsVisible nsWindow  flag =
-    sendMsg nsWindow (mkSelector "setIsVisible:") retVoid [argCULong (if flag then 1 else 0)]
+setIsVisible nsWindow flag =
+  sendMessage nsWindow setIsVisibleSelector flag
 
 -- | @- setIsZoomed:@
 setIsZoomed :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setIsZoomed nsWindow  flag =
-    sendMsg nsWindow (mkSelector "setIsZoomed:") retVoid [argCULong (if flag then 1 else 0)]
+setIsZoomed nsWindow flag =
+  sendMessage nsWindow setIsZoomedSelector flag
 
 -- | @- handleCloseScriptCommand:@
 handleCloseScriptCommand :: (IsNSWindow nsWindow, IsNSCloseCommand command) => nsWindow -> command -> IO RawId
-handleCloseScriptCommand nsWindow  command =
-  withObjCPtr command $ \raw_command ->
-      fmap (RawId . castPtr) $ sendMsg nsWindow (mkSelector "handleCloseScriptCommand:") (retPtr retVoid) [argPtr (castPtr raw_command :: Ptr ())]
+handleCloseScriptCommand nsWindow command =
+  sendMessage nsWindow handleCloseScriptCommandSelector (toNSCloseCommand command)
 
 -- | @- handlePrintScriptCommand:@
 handlePrintScriptCommand :: (IsNSWindow nsWindow, IsNSScriptCommand command) => nsWindow -> command -> IO RawId
-handlePrintScriptCommand nsWindow  command =
-  withObjCPtr command $ \raw_command ->
-      fmap (RawId . castPtr) $ sendMsg nsWindow (mkSelector "handlePrintScriptCommand:") (retPtr retVoid) [argPtr (castPtr raw_command :: Ptr ())]
+handlePrintScriptCommand nsWindow command =
+  sendMessage nsWindow handlePrintScriptCommandSelector (toNSScriptCommand command)
 
 -- | @- handleSaveScriptCommand:@
 handleSaveScriptCommand :: (IsNSWindow nsWindow, IsNSScriptCommand command) => nsWindow -> command -> IO RawId
-handleSaveScriptCommand nsWindow  command =
-  withObjCPtr command $ \raw_command ->
-      fmap (RawId . castPtr) $ sendMsg nsWindow (mkSelector "handleSaveScriptCommand:") (retPtr retVoid) [argPtr (castPtr raw_command :: Ptr ())]
+handleSaveScriptCommand nsWindow command =
+  sendMessage nsWindow handleSaveScriptCommandSelector (toNSScriptCommand command)
 
 -- | @- visualizeConstraints:@
 visualizeConstraints :: (IsNSWindow nsWindow, IsNSArray constraints) => nsWindow -> constraints -> IO ()
-visualizeConstraints nsWindow  constraints =
-  withObjCPtr constraints $ \raw_constraints ->
-      sendMsg nsWindow (mkSelector "visualizeConstraints:") retVoid [argPtr (castPtr raw_constraints :: Ptr ())]
+visualizeConstraints nsWindow constraints =
+  sendMessage nsWindow visualizeConstraintsSelector (toNSArray constraints)
 
 -- | @- anchorAttributeForOrientation:@
 anchorAttributeForOrientation :: IsNSWindow nsWindow => nsWindow -> NSLayoutConstraintOrientation -> IO NSLayoutAttribute
-anchorAttributeForOrientation nsWindow  orientation =
-    fmap (coerce :: CLong -> NSLayoutAttribute) $ sendMsg nsWindow (mkSelector "anchorAttributeForOrientation:") retCLong [argCLong (coerce orientation)]
+anchorAttributeForOrientation nsWindow orientation =
+  sendMessage nsWindow anchorAttributeForOrientationSelector orientation
 
 -- | @- setAnchorAttribute:forOrientation:@
 setAnchorAttribute_forOrientation :: IsNSWindow nsWindow => nsWindow -> NSLayoutAttribute -> NSLayoutConstraintOrientation -> IO ()
-setAnchorAttribute_forOrientation nsWindow  attr orientation =
-    sendMsg nsWindow (mkSelector "setAnchorAttribute:forOrientation:") retVoid [argCLong (coerce attr), argCLong (coerce orientation)]
+setAnchorAttribute_forOrientation nsWindow attr orientation =
+  sendMessage nsWindow setAnchorAttribute_forOrientationSelector attr orientation
 
 -- | @- updateConstraintsIfNeeded@
 updateConstraintsIfNeeded :: IsNSWindow nsWindow => nsWindow -> IO ()
-updateConstraintsIfNeeded nsWindow  =
-    sendMsg nsWindow (mkSelector "updateConstraintsIfNeeded") retVoid []
+updateConstraintsIfNeeded nsWindow =
+  sendMessage nsWindow updateConstraintsIfNeededSelector
 
 -- | @- layoutIfNeeded@
 layoutIfNeeded :: IsNSWindow nsWindow => nsWindow -> IO ()
-layoutIfNeeded nsWindow  =
-    sendMsg nsWindow (mkSelector "layoutIfNeeded") retVoid []
+layoutIfNeeded nsWindow =
+  sendMessage nsWindow layoutIfNeededSelector
 
 -- | @- cacheImageInRect:@
 cacheImageInRect :: IsNSWindow nsWindow => nsWindow -> NSRect -> IO ()
-cacheImageInRect nsWindow  rect =
-    sendMsg nsWindow (mkSelector "cacheImageInRect:") retVoid [argNSRect rect]
+cacheImageInRect nsWindow rect =
+  sendMessage nsWindow cacheImageInRectSelector rect
 
 -- | @- restoreCachedImage@
 restoreCachedImage :: IsNSWindow nsWindow => nsWindow -> IO ()
-restoreCachedImage nsWindow  =
-    sendMsg nsWindow (mkSelector "restoreCachedImage") retVoid []
+restoreCachedImage nsWindow =
+  sendMessage nsWindow restoreCachedImageSelector
 
 -- | @- discardCachedImage@
 discardCachedImage :: IsNSWindow nsWindow => nsWindow -> IO ()
-discardCachedImage nsWindow  =
-    sendMsg nsWindow (mkSelector "discardCachedImage") retVoid []
+discardCachedImage nsWindow =
+  sendMessage nsWindow discardCachedImageSelector
 
 -- | @+ menuChanged:@
 menuChanged :: IsNSMenu menu => menu -> IO ()
 menuChanged menu =
   do
     cls' <- getRequiredClass "NSWindow"
-    withObjCPtr menu $ \raw_menu ->
-      sendClassMsg cls' (mkSelector "menuChanged:") retVoid [argPtr (castPtr raw_menu :: Ptr ())]
+    sendClassMessage cls' menuChangedSelector (toNSMenu menu)
 
 -- | @- gState@
 gState :: IsNSWindow nsWindow => nsWindow -> IO CLong
-gState nsWindow  =
-    sendMsg nsWindow (mkSelector "gState") retCLong []
+gState nsWindow =
+  sendMessage nsWindow gStateSelector
 
 -- | @- convertBaseToScreen:@
 convertBaseToScreen :: IsNSWindow nsWindow => nsWindow -> NSPoint -> IO NSPoint
-convertBaseToScreen nsWindow  point =
-    sendMsgStret nsWindow (mkSelector "convertBaseToScreen:") retNSPoint [argNSPoint point]
+convertBaseToScreen nsWindow point =
+  sendMessage nsWindow convertBaseToScreenSelector point
 
 -- | @- convertScreenToBase:@
 convertScreenToBase :: IsNSWindow nsWindow => nsWindow -> NSPoint -> IO NSPoint
-convertScreenToBase nsWindow  point =
-    sendMsgStret nsWindow (mkSelector "convertScreenToBase:") retNSPoint [argNSPoint point]
+convertScreenToBase nsWindow point =
+  sendMessage nsWindow convertScreenToBaseSelector point
 
 -- | @- userSpaceScaleFactor@
 userSpaceScaleFactor :: IsNSWindow nsWindow => nsWindow -> IO CDouble
-userSpaceScaleFactor nsWindow  =
-    sendMsg nsWindow (mkSelector "userSpaceScaleFactor") retCDouble []
+userSpaceScaleFactor nsWindow =
+  sendMessage nsWindow userSpaceScaleFactorSelector
 
 -- | @- useOptimizedDrawing:@
 useOptimizedDrawing :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-useOptimizedDrawing nsWindow  flag =
-    sendMsg nsWindow (mkSelector "useOptimizedDrawing:") retVoid [argCULong (if flag then 1 else 0)]
+useOptimizedDrawing nsWindow flag =
+  sendMessage nsWindow useOptimizedDrawingSelector flag
 
 -- | @- canStoreColor@
 canStoreColor :: IsNSWindow nsWindow => nsWindow -> IO Bool
-canStoreColor nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "canStoreColor") retCULong []
+canStoreColor nsWindow =
+  sendMessage nsWindow canStoreColorSelector
 
 -- | @- disableFlushWindow@
 disableFlushWindow :: IsNSWindow nsWindow => nsWindow -> IO ()
-disableFlushWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "disableFlushWindow") retVoid []
+disableFlushWindow nsWindow =
+  sendMessage nsWindow disableFlushWindowSelector
 
 -- | @- enableFlushWindow@
 enableFlushWindow :: IsNSWindow nsWindow => nsWindow -> IO ()
-enableFlushWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "enableFlushWindow") retVoid []
+enableFlushWindow nsWindow =
+  sendMessage nsWindow enableFlushWindowSelector
 
 -- | @- flushWindow@
 flushWindow :: IsNSWindow nsWindow => nsWindow -> IO ()
-flushWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "flushWindow") retVoid []
+flushWindow nsWindow =
+  sendMessage nsWindow flushWindowSelector
 
 -- | @- flushWindowIfNeeded@
 flushWindowIfNeeded :: IsNSWindow nsWindow => nsWindow -> IO ()
-flushWindowIfNeeded nsWindow  =
-    sendMsg nsWindow (mkSelector "flushWindowIfNeeded") retVoid []
+flushWindowIfNeeded nsWindow =
+  sendMessage nsWindow flushWindowIfNeededSelector
 
 -- | @- initWithWindowRef:@
 initWithWindowRef :: IsNSWindow nsWindow => nsWindow -> Ptr () -> IO (Id NSWindow)
-initWithWindowRef nsWindow  windowRef =
-    sendMsg nsWindow (mkSelector "initWithWindowRef:") (retPtr retVoid) [argPtr windowRef] >>= ownedObject . castPtr
+initWithWindowRef nsWindow windowRef =
+  sendOwnedMessage nsWindow initWithWindowRefSelector windowRef
 
 -- | @- disableScreenUpdatesUntilFlush@
 disableScreenUpdatesUntilFlush :: IsNSWindow nsWindow => nsWindow -> IO ()
-disableScreenUpdatesUntilFlush nsWindow  =
-    sendMsg nsWindow (mkSelector "disableScreenUpdatesUntilFlush") retVoid []
+disableScreenUpdatesUntilFlush nsWindow =
+  sendMessage nsWindow disableScreenUpdatesUntilFlushSelector
 
 -- | @- displayLinkWithTarget:selector:@
-displayLinkWithTarget_selector :: IsNSWindow nsWindow => nsWindow -> RawId -> Selector -> IO (Id CADisplayLink)
-displayLinkWithTarget_selector nsWindow  target selector =
-    sendMsg nsWindow (mkSelector "displayLinkWithTarget:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector selector)] >>= retainedObject . castPtr
+displayLinkWithTarget_selector :: IsNSWindow nsWindow => nsWindow -> RawId -> Sel -> IO (Id CADisplayLink)
+displayLinkWithTarget_selector nsWindow target selector =
+  sendMessage nsWindow displayLinkWithTarget_selectorSelector target selector
 
 -- | @- beginDraggingSessionWithItems:event:source:@
 beginDraggingSessionWithItems_event_source :: (IsNSWindow nsWindow, IsNSArray items, IsNSEvent event) => nsWindow -> items -> event -> RawId -> IO (Id NSDraggingSession)
-beginDraggingSessionWithItems_event_source nsWindow  items event source =
-  withObjCPtr items $ \raw_items ->
-    withObjCPtr event $ \raw_event ->
-        sendMsg nsWindow (mkSelector "beginDraggingSessionWithItems:event:source:") (retPtr retVoid) [argPtr (castPtr raw_items :: Ptr ()), argPtr (castPtr raw_event :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ())] >>= retainedObject . castPtr
+beginDraggingSessionWithItems_event_source nsWindow items event source =
+  sendMessage nsWindow beginDraggingSessionWithItems_event_sourceSelector (toNSArray items) (toNSEvent event) source
 
 -- | @- dragImage:at:offset:event:pasteboard:source:slideBack:@
 dragImage_at_offset_event_pasteboard_source_slideBack :: (IsNSWindow nsWindow, IsNSImage image, IsNSEvent event, IsNSPasteboard pboard) => nsWindow -> image -> NSPoint -> NSSize -> event -> pboard -> RawId -> Bool -> IO ()
-dragImage_at_offset_event_pasteboard_source_slideBack nsWindow  image baseLocation initialOffset event pboard sourceObj slideFlag =
-  withObjCPtr image $ \raw_image ->
-    withObjCPtr event $ \raw_event ->
-      withObjCPtr pboard $ \raw_pboard ->
-          sendMsg nsWindow (mkSelector "dragImage:at:offset:event:pasteboard:source:slideBack:") retVoid [argPtr (castPtr raw_image :: Ptr ()), argNSPoint baseLocation, argNSSize initialOffset, argPtr (castPtr raw_event :: Ptr ()), argPtr (castPtr raw_pboard :: Ptr ()), argPtr (castPtr (unRawId sourceObj) :: Ptr ()), argCULong (if slideFlag then 1 else 0)]
+dragImage_at_offset_event_pasteboard_source_slideBack nsWindow image baseLocation initialOffset event pboard sourceObj slideFlag =
+  sendMessage nsWindow dragImage_at_offset_event_pasteboard_source_slideBackSelector (toNSImage image) baseLocation initialOffset (toNSEvent event) (toNSPasteboard pboard) sourceObj slideFlag
 
 -- | @- registerForDraggedTypes:@
 registerForDraggedTypes :: (IsNSWindow nsWindow, IsNSArray newTypes) => nsWindow -> newTypes -> IO ()
-registerForDraggedTypes nsWindow  newTypes =
-  withObjCPtr newTypes $ \raw_newTypes ->
-      sendMsg nsWindow (mkSelector "registerForDraggedTypes:") retVoid [argPtr (castPtr raw_newTypes :: Ptr ())]
+registerForDraggedTypes nsWindow newTypes =
+  sendMessage nsWindow registerForDraggedTypesSelector (toNSArray newTypes)
 
 -- | @- unregisterDraggedTypes@
 unregisterDraggedTypes :: IsNSWindow nsWindow => nsWindow -> IO ()
-unregisterDraggedTypes nsWindow  =
-    sendMsg nsWindow (mkSelector "unregisterDraggedTypes") retVoid []
+unregisterDraggedTypes nsWindow =
+  sendMessage nsWindow unregisterDraggedTypesSelector
 
 -- | @- disableCursorRects@
 disableCursorRects :: IsNSWindow nsWindow => nsWindow -> IO ()
-disableCursorRects nsWindow  =
-    sendMsg nsWindow (mkSelector "disableCursorRects") retVoid []
+disableCursorRects nsWindow =
+  sendMessage nsWindow disableCursorRectsSelector
 
 -- | @- enableCursorRects@
 enableCursorRects :: IsNSWindow nsWindow => nsWindow -> IO ()
-enableCursorRects nsWindow  =
-    sendMsg nsWindow (mkSelector "enableCursorRects") retVoid []
+enableCursorRects nsWindow =
+  sendMessage nsWindow enableCursorRectsSelector
 
 -- | @- discardCursorRects@
 discardCursorRects :: IsNSWindow nsWindow => nsWindow -> IO ()
-discardCursorRects nsWindow  =
-    sendMsg nsWindow (mkSelector "discardCursorRects") retVoid []
+discardCursorRects nsWindow =
+  sendMessage nsWindow discardCursorRectsSelector
 
 -- | @- invalidateCursorRectsForView:@
 invalidateCursorRectsForView :: (IsNSWindow nsWindow, IsNSView view) => nsWindow -> view -> IO ()
-invalidateCursorRectsForView nsWindow  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsWindow (mkSelector "invalidateCursorRectsForView:") retVoid [argPtr (castPtr raw_view :: Ptr ())]
+invalidateCursorRectsForView nsWindow view =
+  sendMessage nsWindow invalidateCursorRectsForViewSelector (toNSView view)
 
 -- | @- resetCursorRects@
 resetCursorRects :: IsNSWindow nsWindow => nsWindow -> IO ()
-resetCursorRects nsWindow  =
-    sendMsg nsWindow (mkSelector "resetCursorRects") retVoid []
+resetCursorRects nsWindow =
+  sendMessage nsWindow resetCursorRectsSelector
 
 -- | Tracks events matching the supplied mask with the supplied tracking handler until the tracking handler explicitly terminates tracking. Each event is removed from the event queue then passed to the tracking handler. If a matching event does not exist in the event queue, then the main thread blocks in the specified runloop mode until an event of the requested type is received or the timeout expires. If the timeout expires, the tracking handler is called with a nil event. A negative timeout is interpreted as 0. Use @NSEventDurationForever@ to never timeout. Tracking continues until @*stop@ is set to @YES.@ Calls to @-nextEventMatchingMask:…@ are allowed inside the trackingHandler block. This method returns once tracking is terminated.
 --
 -- ObjC selector: @- trackEventsMatchingMask:timeout:mode:handler:@
 trackEventsMatchingMask_timeout_mode_handler :: (IsNSWindow nsWindow, IsNSString mode) => nsWindow -> NSEventMask -> CDouble -> mode -> Ptr () -> IO ()
-trackEventsMatchingMask_timeout_mode_handler nsWindow  mask timeout mode trackingHandler =
-  withObjCPtr mode $ \raw_mode ->
-      sendMsg nsWindow (mkSelector "trackEventsMatchingMask:timeout:mode:handler:") retVoid [argCULong (coerce mask), argCDouble timeout, argPtr (castPtr raw_mode :: Ptr ()), argPtr (castPtr trackingHandler :: Ptr ())]
+trackEventsMatchingMask_timeout_mode_handler nsWindow mask timeout mode trackingHandler =
+  sendMessage nsWindow trackEventsMatchingMask_timeout_mode_handlerSelector mask timeout (toNSString mode) trackingHandler
 
 -- | @- nextEventMatchingMask:@
 nextEventMatchingMask :: IsNSWindow nsWindow => nsWindow -> NSEventMask -> IO (Id NSEvent)
-nextEventMatchingMask nsWindow  mask =
-    sendMsg nsWindow (mkSelector "nextEventMatchingMask:") (retPtr retVoid) [argCULong (coerce mask)] >>= retainedObject . castPtr
+nextEventMatchingMask nsWindow mask =
+  sendMessage nsWindow nextEventMatchingMaskSelector mask
 
 -- | @- nextEventMatchingMask:untilDate:inMode:dequeue:@
 nextEventMatchingMask_untilDate_inMode_dequeue :: (IsNSWindow nsWindow, IsNSDate expiration, IsNSString mode) => nsWindow -> NSEventMask -> expiration -> mode -> Bool -> IO (Id NSEvent)
-nextEventMatchingMask_untilDate_inMode_dequeue nsWindow  mask expiration mode deqFlag =
-  withObjCPtr expiration $ \raw_expiration ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsWindow (mkSelector "nextEventMatchingMask:untilDate:inMode:dequeue:") (retPtr retVoid) [argCULong (coerce mask), argPtr (castPtr raw_expiration :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ()), argCULong (if deqFlag then 1 else 0)] >>= retainedObject . castPtr
+nextEventMatchingMask_untilDate_inMode_dequeue nsWindow mask expiration mode deqFlag =
+  sendMessage nsWindow nextEventMatchingMask_untilDate_inMode_dequeueSelector mask (toNSDate expiration) (toNSString mode) deqFlag
 
 -- | @- discardEventsMatchingMask:beforeEvent:@
 discardEventsMatchingMask_beforeEvent :: (IsNSWindow nsWindow, IsNSEvent lastEvent) => nsWindow -> NSEventMask -> lastEvent -> IO ()
-discardEventsMatchingMask_beforeEvent nsWindow  mask lastEvent =
-  withObjCPtr lastEvent $ \raw_lastEvent ->
-      sendMsg nsWindow (mkSelector "discardEventsMatchingMask:beforeEvent:") retVoid [argCULong (coerce mask), argPtr (castPtr raw_lastEvent :: Ptr ())]
+discardEventsMatchingMask_beforeEvent nsWindow mask lastEvent =
+  sendMessage nsWindow discardEventsMatchingMask_beforeEventSelector mask (toNSEvent lastEvent)
 
 -- | @- postEvent:atStart:@
 postEvent_atStart :: (IsNSWindow nsWindow, IsNSEvent event) => nsWindow -> event -> Bool -> IO ()
-postEvent_atStart nsWindow  event flag =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsWindow (mkSelector "postEvent:atStart:") retVoid [argPtr (castPtr raw_event :: Ptr ()), argCULong (if flag then 1 else 0)]
+postEvent_atStart nsWindow event flag =
+  sendMessage nsWindow postEvent_atStartSelector (toNSEvent event) flag
 
 -- | @- sendEvent:@
 sendEvent :: (IsNSWindow nsWindow, IsNSEvent event) => nsWindow -> event -> IO ()
-sendEvent nsWindow  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsWindow (mkSelector "sendEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+sendEvent nsWindow event =
+  sendMessage nsWindow sendEventSelector (toNSEvent event)
 
 -- | @+ defaultDepthLimit@
 defaultDepthLimit :: IO NSWindowDepth
 defaultDepthLimit  =
   do
     cls' <- getRequiredClass "NSWindow"
-    fmap (coerce :: CInt -> NSWindowDepth) $ sendClassMsg cls' (mkSelector "defaultDepthLimit") retCInt []
+    sendClassMessage cls' defaultDepthLimitSelector
 
 -- | @- title@
 title :: IsNSWindow nsWindow => nsWindow -> IO (Id NSString)
-title nsWindow  =
-    sendMsg nsWindow (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsWindow =
+  sendMessage nsWindow titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSWindow nsWindow, IsNSString value) => nsWindow -> value -> IO ()
-setTitle nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsWindow value =
+  sendMessage nsWindow setTitleSelector (toNSString value)
 
 -- | Secondary text that may be displayed adjacent to or below the primary title depending on the configuration of the window. A value of empty string will remove the subtitle from the window layout.
 --
 -- ObjC selector: @- subtitle@
 subtitle :: IsNSWindow nsWindow => nsWindow -> IO (Id NSString)
-subtitle nsWindow  =
-    sendMsg nsWindow (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitle nsWindow =
+  sendMessage nsWindow subtitleSelector
 
 -- | Secondary text that may be displayed adjacent to or below the primary title depending on the configuration of the window. A value of empty string will remove the subtitle from the window layout.
 --
 -- ObjC selector: @- setSubtitle:@
 setSubtitle :: (IsNSWindow nsWindow, IsNSString value) => nsWindow -> value -> IO ()
-setSubtitle nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setSubtitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubtitle nsWindow value =
+  sendMessage nsWindow setSubtitleSelector (toNSString value)
 
 -- | See the enum values for how this property works.
 --
 -- ObjC selector: @- titleVisibility@
 titleVisibility :: IsNSWindow nsWindow => nsWindow -> IO NSWindowTitleVisibility
-titleVisibility nsWindow  =
-    fmap (coerce :: CLong -> NSWindowTitleVisibility) $ sendMsg nsWindow (mkSelector "titleVisibility") retCLong []
+titleVisibility nsWindow =
+  sendMessage nsWindow titleVisibilitySelector
 
 -- | See the enum values for how this property works.
 --
 -- ObjC selector: @- setTitleVisibility:@
 setTitleVisibility :: IsNSWindow nsWindow => nsWindow -> NSWindowTitleVisibility -> IO ()
-setTitleVisibility nsWindow  value =
-    sendMsg nsWindow (mkSelector "setTitleVisibility:") retVoid [argCLong (coerce value)]
+setTitleVisibility nsWindow value =
+  sendMessage nsWindow setTitleVisibilitySelector value
 
 -- | When @YES,@ the titlebar doesn't draw its background, allowing all buttons to show through, and "click through" to happen. In general, this is only useful when @NSFullSizeContentViewWindowMask@ is set.
 --
 -- ObjC selector: @- titlebarAppearsTransparent@
 titlebarAppearsTransparent :: IsNSWindow nsWindow => nsWindow -> IO Bool
-titlebarAppearsTransparent nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "titlebarAppearsTransparent") retCULong []
+titlebarAppearsTransparent nsWindow =
+  sendMessage nsWindow titlebarAppearsTransparentSelector
 
 -- | When @YES,@ the titlebar doesn't draw its background, allowing all buttons to show through, and "click through" to happen. In general, this is only useful when @NSFullSizeContentViewWindowMask@ is set.
 --
 -- ObjC selector: @- setTitlebarAppearsTransparent:@
 setTitlebarAppearsTransparent :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setTitlebarAppearsTransparent nsWindow  value =
-    sendMsg nsWindow (mkSelector "setTitlebarAppearsTransparent:") retVoid [argCULong (if value then 1 else 0)]
+setTitlebarAppearsTransparent nsWindow value =
+  sendMessage nsWindow setTitlebarAppearsTransparentSelector value
 
 -- | Specifies how the titlebar area of the window should appear when the window displays an NSToolbar
 --
 -- ObjC selector: @- toolbarStyle@
 toolbarStyle :: IsNSWindow nsWindow => nsWindow -> IO NSWindowToolbarStyle
-toolbarStyle nsWindow  =
-    fmap (coerce :: CLong -> NSWindowToolbarStyle) $ sendMsg nsWindow (mkSelector "toolbarStyle") retCLong []
+toolbarStyle nsWindow =
+  sendMessage nsWindow toolbarStyleSelector
 
 -- | Specifies how the titlebar area of the window should appear when the window displays an NSToolbar
 --
 -- ObjC selector: @- setToolbarStyle:@
 setToolbarStyle :: IsNSWindow nsWindow => nsWindow -> NSWindowToolbarStyle -> IO ()
-setToolbarStyle nsWindow  value =
-    sendMsg nsWindow (mkSelector "setToolbarStyle:") retVoid [argCLong (coerce value)]
+setToolbarStyle nsWindow value =
+  sendMessage nsWindow setToolbarStyleSelector value
 
 -- | The @contentLayoutRect@ will return the area inside the window that is for non-obscured content. Typically, this is the same thing as the @contentView@'s frame. However, for windows with the @NSFullSizeContentViewWindowMask@ set, there needs to be a way to determine the portion that is not under the toolbar. The @contentLayoutRect@ returns the portion of the layout that is not obscured under the toolbar. @contentLayoutRect@ is in window coordinates. It is KVO compliant. */
 --
 -- ObjC selector: @- contentLayoutRect@
 contentLayoutRect :: IsNSWindow nsWindow => nsWindow -> IO NSRect
-contentLayoutRect nsWindow  =
-    sendMsgStret nsWindow (mkSelector "contentLayoutRect") retNSRect []
+contentLayoutRect nsWindow =
+  sendMessage nsWindow contentLayoutRectSelector
 
 -- | @contentLayoutGuide@ is a corollary to @contentLayoutRect.@ It can be used by autolayout constraints to automatically bind to the @contentLayoutRect.@
 --
 -- ObjC selector: @- contentLayoutGuide@
 contentLayoutGuide :: IsNSWindow nsWindow => nsWindow -> IO RawId
-contentLayoutGuide nsWindow  =
-    fmap (RawId . castPtr) $ sendMsg nsWindow (mkSelector "contentLayoutGuide") (retPtr retVoid) []
+contentLayoutGuide nsWindow =
+  sendMessage nsWindow contentLayoutGuideSelector
 
 -- | @- titlebarAccessoryViewControllers@
 titlebarAccessoryViewControllers :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
-titlebarAccessoryViewControllers nsWindow  =
-    sendMsg nsWindow (mkSelector "titlebarAccessoryViewControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+titlebarAccessoryViewControllers nsWindow =
+  sendMessage nsWindow titlebarAccessoryViewControllersSelector
 
 -- | @- setTitlebarAccessoryViewControllers:@
 setTitlebarAccessoryViewControllers :: (IsNSWindow nsWindow, IsNSArray value) => nsWindow -> value -> IO ()
-setTitlebarAccessoryViewControllers nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setTitlebarAccessoryViewControllers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitlebarAccessoryViewControllers nsWindow value =
+  sendMessage nsWindow setTitlebarAccessoryViewControllersSelector (toNSArray value)
 
 -- | If url is not nil and its path is not empty, the window will show a document icon in the titlebar. If the url represents a filename or other resource with a known icon, that icon will be used as the document icon.  Otherwise the default document icon will be used.  The icon can be customized using @-[[NSWindow standardWindowButton:NSWindowDocumentIconButton] setImage:customImage]@.  If url is not nil and its path is not empty, the window will have a pop-up menu which can be shown via command-click on the area containing the document icon and title.  By default, this menu will display the path components of the url.  The presence and contents of this menu can be controlled by the delegate method @-[window:shouldPopUpDocumentPathMenu:]@ If the url is nil or has an empty path, the window will not show a document icon and will not have a pop-up menu available via command-click.
 --
 -- ObjC selector: @- representedURL@
 representedURL :: IsNSWindow nsWindow => nsWindow -> IO (Id NSURL)
-representedURL nsWindow  =
-    sendMsg nsWindow (mkSelector "representedURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+representedURL nsWindow =
+  sendMessage nsWindow representedURLSelector
 
 -- | If url is not nil and its path is not empty, the window will show a document icon in the titlebar. If the url represents a filename or other resource with a known icon, that icon will be used as the document icon.  Otherwise the default document icon will be used.  The icon can be customized using @-[[NSWindow standardWindowButton:NSWindowDocumentIconButton] setImage:customImage]@.  If url is not nil and its path is not empty, the window will have a pop-up menu which can be shown via command-click on the area containing the document icon and title.  By default, this menu will display the path components of the url.  The presence and contents of this menu can be controlled by the delegate method @-[window:shouldPopUpDocumentPathMenu:]@ If the url is nil or has an empty path, the window will not show a document icon and will not have a pop-up menu available via command-click.
 --
 -- ObjC selector: @- setRepresentedURL:@
 setRepresentedURL :: (IsNSWindow nsWindow, IsNSURL value) => nsWindow -> value -> IO ()
-setRepresentedURL nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setRepresentedURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRepresentedURL nsWindow value =
+  sendMessage nsWindow setRepresentedURLSelector (toNSURL value)
 
 -- | @- representedFilename@
 representedFilename :: IsNSWindow nsWindow => nsWindow -> IO (Id NSString)
-representedFilename nsWindow  =
-    sendMsg nsWindow (mkSelector "representedFilename") (retPtr retVoid) [] >>= retainedObject . castPtr
+representedFilename nsWindow =
+  sendMessage nsWindow representedFilenameSelector
 
 -- | @- setRepresentedFilename:@
 setRepresentedFilename :: (IsNSWindow nsWindow, IsNSString value) => nsWindow -> value -> IO ()
-setRepresentedFilename nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setRepresentedFilename:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRepresentedFilename nsWindow value =
+  sendMessage nsWindow setRepresentedFilenameSelector (toNSString value)
 
 -- | @- excludedFromWindowsMenu@
 excludedFromWindowsMenu :: IsNSWindow nsWindow => nsWindow -> IO Bool
-excludedFromWindowsMenu nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "excludedFromWindowsMenu") retCULong []
+excludedFromWindowsMenu nsWindow =
+  sendMessage nsWindow excludedFromWindowsMenuSelector
 
 -- | @- setExcludedFromWindowsMenu:@
 setExcludedFromWindowsMenu :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setExcludedFromWindowsMenu nsWindow  value =
-    sendMsg nsWindow (mkSelector "setExcludedFromWindowsMenu:") retVoid [argCULong (if value then 1 else 0)]
+setExcludedFromWindowsMenu nsWindow value =
+  sendMessage nsWindow setExcludedFromWindowsMenuSelector value
 
 -- | @- contentView@
 contentView :: IsNSWindow nsWindow => nsWindow -> IO (Id NSView)
-contentView nsWindow  =
-    sendMsg nsWindow (mkSelector "contentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentView nsWindow =
+  sendMessage nsWindow contentViewSelector
 
 -- | @- setContentView:@
 setContentView :: (IsNSWindow nsWindow, IsNSView value) => nsWindow -> value -> IO ()
-setContentView nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setContentView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentView nsWindow value =
+  sendMessage nsWindow setContentViewSelector (toNSView value)
 
 -- | @- delegate@
 delegate :: IsNSWindow nsWindow => nsWindow -> IO RawId
-delegate nsWindow  =
-    fmap (RawId . castPtr) $ sendMsg nsWindow (mkSelector "delegate") (retPtr retVoid) []
+delegate nsWindow =
+  sendMessage nsWindow delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSWindow nsWindow => nsWindow -> RawId -> IO ()
-setDelegate nsWindow  value =
-    sendMsg nsWindow (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsWindow value =
+  sendMessage nsWindow setDelegateSelector value
 
 -- | @- windowNumber@
 windowNumber :: IsNSWindow nsWindow => nsWindow -> IO CLong
-windowNumber nsWindow  =
-    sendMsg nsWindow (mkSelector "windowNumber") retCLong []
+windowNumber nsWindow =
+  sendMessage nsWindow windowNumberSelector
 
 -- | Note: The styleMask can only be set on macOS 10.6 and later. Valid @styleMask@ settings have the same restrictions as the @styleMask@ passed to @-initWithContentRect:styleMask:backing:defer:@.  Some @styleMask@ changes will cause the view hierarchy to be rebuilt, since there is a different subclass for the top level view of a borderless window than for the top level view of a titled window.
 --
 -- ObjC selector: @- styleMask@
 styleMask :: IsNSWindow nsWindow => nsWindow -> IO NSWindowStyleMask
-styleMask nsWindow  =
-    fmap (coerce :: CULong -> NSWindowStyleMask) $ sendMsg nsWindow (mkSelector "styleMask") retCULong []
+styleMask nsWindow =
+  sendMessage nsWindow styleMaskSelector
 
 -- | Note: The styleMask can only be set on macOS 10.6 and later. Valid @styleMask@ settings have the same restrictions as the @styleMask@ passed to @-initWithContentRect:styleMask:backing:defer:@.  Some @styleMask@ changes will cause the view hierarchy to be rebuilt, since there is a different subclass for the top level view of a borderless window than for the top level view of a titled window.
 --
 -- ObjC selector: @- setStyleMask:@
 setStyleMask :: IsNSWindow nsWindow => nsWindow -> NSWindowStyleMask -> IO ()
-setStyleMask nsWindow  value =
-    sendMsg nsWindow (mkSelector "setStyleMask:") retVoid [argCULong (coerce value)]
+setStyleMask nsWindow value =
+  sendMessage nsWindow setStyleMaskSelector value
 
 -- | The frame to use when cascading or sizing a new window based on the receiver's position or size. This may be different from @frame@ when the receiver is positioned by the system.
 --
 -- ObjC selector: @- cascadingReferenceFrame@
 cascadingReferenceFrame :: IsNSWindow nsWindow => nsWindow -> IO NSRect
-cascadingReferenceFrame nsWindow  =
-    sendMsgStret nsWindow (mkSelector "cascadingReferenceFrame") retNSRect []
+cascadingReferenceFrame nsWindow =
+  sendMessage nsWindow cascadingReferenceFrameSelector
 
 -- | @- frame@
 frame :: IsNSWindow nsWindow => nsWindow -> IO NSRect
-frame nsWindow  =
-    sendMsgStret nsWindow (mkSelector "frame") retNSRect []
+frame nsWindow =
+  sendMessage nsWindow frameSelector
 
 -- | @- inLiveResize@
 inLiveResize :: IsNSWindow nsWindow => nsWindow -> IO Bool
-inLiveResize nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "inLiveResize") retCULong []
+inLiveResize nsWindow =
+  sendMessage nsWindow inLiveResizeSelector
 
 -- | @- resizeIncrements@
 resizeIncrements :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-resizeIncrements nsWindow  =
-    sendMsgStret nsWindow (mkSelector "resizeIncrements") retNSSize []
+resizeIncrements nsWindow =
+  sendMessage nsWindow resizeIncrementsSelector
 
 -- | @- setResizeIncrements:@
 setResizeIncrements :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setResizeIncrements nsWindow  value =
-    sendMsg nsWindow (mkSelector "setResizeIncrements:") retVoid [argNSSize value]
+setResizeIncrements nsWindow value =
+  sendMessage nsWindow setResizeIncrementsSelector value
 
 -- | @- aspectRatio@
 aspectRatio :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-aspectRatio nsWindow  =
-    sendMsgStret nsWindow (mkSelector "aspectRatio") retNSSize []
+aspectRatio nsWindow =
+  sendMessage nsWindow aspectRatioSelector
 
 -- | @- setAspectRatio:@
 setAspectRatio :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setAspectRatio nsWindow  value =
-    sendMsg nsWindow (mkSelector "setAspectRatio:") retVoid [argNSSize value]
+setAspectRatio nsWindow value =
+  sendMessage nsWindow setAspectRatioSelector value
 
 -- | @- contentResizeIncrements@
 contentResizeIncrements :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-contentResizeIncrements nsWindow  =
-    sendMsgStret nsWindow (mkSelector "contentResizeIncrements") retNSSize []
+contentResizeIncrements nsWindow =
+  sendMessage nsWindow contentResizeIncrementsSelector
 
 -- | @- setContentResizeIncrements:@
 setContentResizeIncrements :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setContentResizeIncrements nsWindow  value =
-    sendMsg nsWindow (mkSelector "setContentResizeIncrements:") retVoid [argNSSize value]
+setContentResizeIncrements nsWindow value =
+  sendMessage nsWindow setContentResizeIncrementsSelector value
 
 -- | @- contentAspectRatio@
 contentAspectRatio :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-contentAspectRatio nsWindow  =
-    sendMsgStret nsWindow (mkSelector "contentAspectRatio") retNSSize []
+contentAspectRatio nsWindow =
+  sendMessage nsWindow contentAspectRatioSelector
 
 -- | @- setContentAspectRatio:@
 setContentAspectRatio :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setContentAspectRatio nsWindow  value =
-    sendMsg nsWindow (mkSelector "setContentAspectRatio:") retVoid [argNSSize value]
+setContentAspectRatio nsWindow value =
+  sendMessage nsWindow setContentAspectRatioSelector value
 
 -- | @- viewsNeedDisplay@
 viewsNeedDisplay :: IsNSWindow nsWindow => nsWindow -> IO Bool
-viewsNeedDisplay nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "viewsNeedDisplay") retCULong []
+viewsNeedDisplay nsWindow =
+  sendMessage nsWindow viewsNeedDisplaySelector
 
 -- | @- setViewsNeedDisplay:@
 setViewsNeedDisplay :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setViewsNeedDisplay nsWindow  value =
-    sendMsg nsWindow (mkSelector "setViewsNeedDisplay:") retVoid [argCULong (if value then 1 else 0)]
+setViewsNeedDisplay nsWindow value =
+  sendMessage nsWindow setViewsNeedDisplaySelector value
 
 -- | @- preservesContentDuringLiveResize@
 preservesContentDuringLiveResize :: IsNSWindow nsWindow => nsWindow -> IO Bool
-preservesContentDuringLiveResize nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "preservesContentDuringLiveResize") retCULong []
+preservesContentDuringLiveResize nsWindow =
+  sendMessage nsWindow preservesContentDuringLiveResizeSelector
 
 -- | @- setPreservesContentDuringLiveResize:@
 setPreservesContentDuringLiveResize :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setPreservesContentDuringLiveResize nsWindow  value =
-    sendMsg nsWindow (mkSelector "setPreservesContentDuringLiveResize:") retVoid [argCULong (if value then 1 else 0)]
+setPreservesContentDuringLiveResize nsWindow value =
+  sendMessage nsWindow setPreservesContentDuringLiveResizeSelector value
 
 -- | @- firstResponder@
 firstResponder :: IsNSWindow nsWindow => nsWindow -> IO (Id NSResponder)
-firstResponder nsWindow  =
-    sendMsg nsWindow (mkSelector "firstResponder") (retPtr retVoid) [] >>= retainedObject . castPtr
+firstResponder nsWindow =
+  sendMessage nsWindow firstResponderSelector
 
 -- | @- resizeFlags@
 resizeFlags :: IsNSWindow nsWindow => nsWindow -> IO NSEventModifierFlags
-resizeFlags nsWindow  =
-    fmap (coerce :: CULong -> NSEventModifierFlags) $ sendMsg nsWindow (mkSelector "resizeFlags") retCULong []
+resizeFlags nsWindow =
+  sendMessage nsWindow resizeFlagsSelector
 
 -- | @- releasedWhenClosed@
 releasedWhenClosed :: IsNSWindow nsWindow => nsWindow -> IO Bool
-releasedWhenClosed nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "releasedWhenClosed") retCULong []
+releasedWhenClosed nsWindow =
+  sendMessage nsWindow releasedWhenClosedSelector
 
 -- | @- setReleasedWhenClosed:@
 setReleasedWhenClosed :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setReleasedWhenClosed nsWindow  value =
-    sendMsg nsWindow (mkSelector "setReleasedWhenClosed:") retVoid [argCULong (if value then 1 else 0)]
+setReleasedWhenClosed nsWindow value =
+  sendMessage nsWindow setReleasedWhenClosedSelector value
 
 -- | @- zoomed@
 zoomed :: IsNSWindow nsWindow => nsWindow -> IO Bool
-zoomed nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "zoomed") retCULong []
+zoomed nsWindow =
+  sendMessage nsWindow zoomedSelector
 
 -- | @- miniaturized@
 miniaturized :: IsNSWindow nsWindow => nsWindow -> IO Bool
-miniaturized nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "miniaturized") retCULong []
+miniaturized nsWindow =
+  sendMessage nsWindow miniaturizedSelector
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSWindow nsWindow => nsWindow -> IO (Id NSColor)
-backgroundColor nsWindow  =
-    sendMsg nsWindow (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsWindow =
+  sendMessage nsWindow backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSWindow nsWindow, IsNSColor value) => nsWindow -> value -> IO ()
-setBackgroundColor nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsWindow value =
+  sendMessage nsWindow setBackgroundColorSelector (toNSColor value)
 
 -- | @- movable@
 movable :: IsNSWindow nsWindow => nsWindow -> IO Bool
-movable nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "movable") retCULong []
+movable nsWindow =
+  sendMessage nsWindow movableSelector
 
 -- | @- setMovable:@
 setMovable :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setMovable nsWindow  value =
-    sendMsg nsWindow (mkSelector "setMovable:") retVoid [argCULong (if value then 1 else 0)]
+setMovable nsWindow value =
+  sendMessage nsWindow setMovableSelector value
 
 -- | @- movableByWindowBackground@
 movableByWindowBackground :: IsNSWindow nsWindow => nsWindow -> IO Bool
-movableByWindowBackground nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "movableByWindowBackground") retCULong []
+movableByWindowBackground nsWindow =
+  sendMessage nsWindow movableByWindowBackgroundSelector
 
 -- | @- setMovableByWindowBackground:@
 setMovableByWindowBackground :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setMovableByWindowBackground nsWindow  value =
-    sendMsg nsWindow (mkSelector "setMovableByWindowBackground:") retVoid [argCULong (if value then 1 else 0)]
+setMovableByWindowBackground nsWindow value =
+  sendMessage nsWindow setMovableByWindowBackgroundSelector value
 
 -- | @- hidesOnDeactivate@
 hidesOnDeactivate :: IsNSWindow nsWindow => nsWindow -> IO Bool
-hidesOnDeactivate nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "hidesOnDeactivate") retCULong []
+hidesOnDeactivate nsWindow =
+  sendMessage nsWindow hidesOnDeactivateSelector
 
 -- | @- setHidesOnDeactivate:@
 setHidesOnDeactivate :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setHidesOnDeactivate nsWindow  value =
-    sendMsg nsWindow (mkSelector "setHidesOnDeactivate:") retVoid [argCULong (if value then 1 else 0)]
+setHidesOnDeactivate nsWindow value =
+  sendMessage nsWindow setHidesOnDeactivateSelector value
 
 -- | Indicates whether a window can be hidden during @-[NSApplication hide:]@.  Default is @YES.@
 --
 -- ObjC selector: @- canHide@
 canHide :: IsNSWindow nsWindow => nsWindow -> IO Bool
-canHide nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "canHide") retCULong []
+canHide nsWindow =
+  sendMessage nsWindow canHideSelector
 
 -- | Indicates whether a window can be hidden during @-[NSApplication hide:]@.  Default is @YES.@
 --
 -- ObjC selector: @- setCanHide:@
 setCanHide :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setCanHide nsWindow  value =
-    sendMsg nsWindow (mkSelector "setCanHide:") retVoid [argCULong (if value then 1 else 0)]
+setCanHide nsWindow value =
+  sendMessage nsWindow setCanHideSelector value
 
 -- | @- miniwindowImage@
 miniwindowImage :: IsNSWindow nsWindow => nsWindow -> IO (Id NSImage)
-miniwindowImage nsWindow  =
-    sendMsg nsWindow (mkSelector "miniwindowImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+miniwindowImage nsWindow =
+  sendMessage nsWindow miniwindowImageSelector
 
 -- | @- setMiniwindowImage:@
 setMiniwindowImage :: (IsNSWindow nsWindow, IsNSImage value) => nsWindow -> value -> IO ()
-setMiniwindowImage nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setMiniwindowImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMiniwindowImage nsWindow value =
+  sendMessage nsWindow setMiniwindowImageSelector (toNSImage value)
 
 -- | @- miniwindowTitle@
 miniwindowTitle :: IsNSWindow nsWindow => nsWindow -> IO (Id NSString)
-miniwindowTitle nsWindow  =
-    sendMsg nsWindow (mkSelector "miniwindowTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+miniwindowTitle nsWindow =
+  sendMessage nsWindow miniwindowTitleSelector
 
 -- | @- setMiniwindowTitle:@
 setMiniwindowTitle :: (IsNSWindow nsWindow, IsNSString value) => nsWindow -> value -> IO ()
-setMiniwindowTitle nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setMiniwindowTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMiniwindowTitle nsWindow value =
+  sendMessage nsWindow setMiniwindowTitleSelector (toNSString value)
 
 -- | @- dockTile@
 dockTile :: IsNSWindow nsWindow => nsWindow -> IO (Id NSDockTile)
-dockTile nsWindow  =
-    sendMsg nsWindow (mkSelector "dockTile") (retPtr retVoid) [] >>= retainedObject . castPtr
+dockTile nsWindow =
+  sendMessage nsWindow dockTileSelector
 
 -- | @- documentEdited@
 documentEdited :: IsNSWindow nsWindow => nsWindow -> IO Bool
-documentEdited nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "documentEdited") retCULong []
+documentEdited nsWindow =
+  sendMessage nsWindow documentEditedSelector
 
 -- | @- setDocumentEdited:@
 setDocumentEdited :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setDocumentEdited nsWindow  value =
-    sendMsg nsWindow (mkSelector "setDocumentEdited:") retVoid [argCULong (if value then 1 else 0)]
+setDocumentEdited nsWindow value =
+  sendMessage nsWindow setDocumentEditedSelector value
 
 -- | @- visible@
 visible :: IsNSWindow nsWindow => nsWindow -> IO Bool
-visible nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "visible") retCULong []
+visible nsWindow =
+  sendMessage nsWindow visibleSelector
 
 -- | @- keyWindow@
 keyWindow :: IsNSWindow nsWindow => nsWindow -> IO Bool
-keyWindow nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "keyWindow") retCULong []
+keyWindow nsWindow =
+  sendMessage nsWindow keyWindowSelector
 
 -- | @- mainWindow@
 mainWindow :: IsNSWindow nsWindow => nsWindow -> IO Bool
-mainWindow nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "mainWindow") retCULong []
+mainWindow nsWindow =
+  sendMessage nsWindow mainWindowSelector
 
 -- | @- canBecomeKeyWindow@
 canBecomeKeyWindow :: IsNSWindow nsWindow => nsWindow -> IO Bool
-canBecomeKeyWindow nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "canBecomeKeyWindow") retCULong []
+canBecomeKeyWindow nsWindow =
+  sendMessage nsWindow canBecomeKeyWindowSelector
 
 -- | @- canBecomeMainWindow@
 canBecomeMainWindow :: IsNSWindow nsWindow => nsWindow -> IO Bool
-canBecomeMainWindow nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "canBecomeMainWindow") retCULong []
+canBecomeMainWindow nsWindow =
+  sendMessage nsWindow canBecomeMainWindowSelector
 
 -- | @- worksWhenModal@
 worksWhenModal :: IsNSWindow nsWindow => nsWindow -> IO Bool
-worksWhenModal nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "worksWhenModal") retCULong []
+worksWhenModal nsWindow =
+  sendMessage nsWindow worksWhenModalSelector
 
 -- | A Boolean value that indicates whether or not to prevent application termination when the receiving window is presented modally. The value of this property is @YES@ if the window should prevent application termination when modal; otherwise, @NO@. The default value is @YES@. However, note that some window subclasses and some windows created indirectly (like those created by UI frameworks like AppKit and SwiftUI), may have different default values. For example, the Open panel and toolbar customization sheets should not prevent application termination, so those windows have @preventsApplicationTerminationWhenModal@ set to @NO@. Some @NSAlert@s, like those that are simply informational, have windows that do not prevent application termination by default. Setting this property overrides the default behavior.
 --
 -- ObjC selector: @- preventsApplicationTerminationWhenModal@
 preventsApplicationTerminationWhenModal :: IsNSWindow nsWindow => nsWindow -> IO Bool
-preventsApplicationTerminationWhenModal nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "preventsApplicationTerminationWhenModal") retCULong []
+preventsApplicationTerminationWhenModal nsWindow =
+  sendMessage nsWindow preventsApplicationTerminationWhenModalSelector
 
 -- | A Boolean value that indicates whether or not to prevent application termination when the receiving window is presented modally. The value of this property is @YES@ if the window should prevent application termination when modal; otherwise, @NO@. The default value is @YES@. However, note that some window subclasses and some windows created indirectly (like those created by UI frameworks like AppKit and SwiftUI), may have different default values. For example, the Open panel and toolbar customization sheets should not prevent application termination, so those windows have @preventsApplicationTerminationWhenModal@ set to @NO@. Some @NSAlert@s, like those that are simply informational, have windows that do not prevent application termination by default. Setting this property overrides the default behavior.
 --
 -- ObjC selector: @- setPreventsApplicationTerminationWhenModal:@
 setPreventsApplicationTerminationWhenModal :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setPreventsApplicationTerminationWhenModal nsWindow  value =
-    sendMsg nsWindow (mkSelector "setPreventsApplicationTerminationWhenModal:") retVoid [argCULong (if value then 1 else 0)]
+setPreventsApplicationTerminationWhenModal nsWindow value =
+  sendMessage nsWindow setPreventsApplicationTerminationWhenModalSelector value
 
 -- | Returns the scale factor representing the number of backing store pixels corresponding to each linear unit in window space on this @NSWindow.@ This method is provided for rare cases when the explicit scale factor is needed. Please use @-convert*ToBacking:@ methods whenever possible.
 --
 -- ObjC selector: @- backingScaleFactor@
 backingScaleFactor :: IsNSWindow nsWindow => nsWindow -> IO CDouble
-backingScaleFactor nsWindow  =
-    sendMsg nsWindow (mkSelector "backingScaleFactor") retCDouble []
+backingScaleFactor nsWindow =
+  sendMessage nsWindow backingScaleFactorSelector
 
 -- | Default is @NO.@ Set to @YES@ to allow a window to display tooltips even when the application is in the background.  Note that, enabling tooltips in an inactive application will cause the app to do work any time the mouse passes over the window.  This can degrade system performance. Returns @YES@ if this window displays tooltips even when the application is in the background.  To configure this setting you should call @-setAllowsToolTipsWhenApplicationIsInactive:@ instead of overriding @-allowsToolTipsWhenApplicationIsInactive@.
 --
 -- ObjC selector: @- allowsToolTipsWhenApplicationIsInactive@
 allowsToolTipsWhenApplicationIsInactive :: IsNSWindow nsWindow => nsWindow -> IO Bool
-allowsToolTipsWhenApplicationIsInactive nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "allowsToolTipsWhenApplicationIsInactive") retCULong []
+allowsToolTipsWhenApplicationIsInactive nsWindow =
+  sendMessage nsWindow allowsToolTipsWhenApplicationIsInactiveSelector
 
 -- | Default is @NO.@ Set to @YES@ to allow a window to display tooltips even when the application is in the background.  Note that, enabling tooltips in an inactive application will cause the app to do work any time the mouse passes over the window.  This can degrade system performance. Returns @YES@ if this window displays tooltips even when the application is in the background.  To configure this setting you should call @-setAllowsToolTipsWhenApplicationIsInactive:@ instead of overriding @-allowsToolTipsWhenApplicationIsInactive@.
 --
 -- ObjC selector: @- setAllowsToolTipsWhenApplicationIsInactive:@
 setAllowsToolTipsWhenApplicationIsInactive :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setAllowsToolTipsWhenApplicationIsInactive nsWindow  value =
-    sendMsg nsWindow (mkSelector "setAllowsToolTipsWhenApplicationIsInactive:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsToolTipsWhenApplicationIsInactive nsWindow value =
+  sendMessage nsWindow setAllowsToolTipsWhenApplicationIsInactiveSelector value
 
 -- | @- backingType@
 backingType :: IsNSWindow nsWindow => nsWindow -> IO NSBackingStoreType
-backingType nsWindow  =
-    fmap (coerce :: CULong -> NSBackingStoreType) $ sendMsg nsWindow (mkSelector "backingType") retCULong []
+backingType nsWindow =
+  sendMessage nsWindow backingTypeSelector
 
 -- | @- setBackingType:@
 setBackingType :: IsNSWindow nsWindow => nsWindow -> NSBackingStoreType -> IO ()
-setBackingType nsWindow  value =
-    sendMsg nsWindow (mkSelector "setBackingType:") retVoid [argCULong (coerce value)]
+setBackingType nsWindow value =
+  sendMessage nsWindow setBackingTypeSelector value
 
 -- | @- level@
 level :: IsNSWindow nsWindow => nsWindow -> IO CLong
-level nsWindow  =
-    sendMsg nsWindow (mkSelector "level") retCLong []
+level nsWindow =
+  sendMessage nsWindow levelSelector
 
 -- | @- setLevel:@
 setLevel :: IsNSWindow nsWindow => nsWindow -> CLong -> IO ()
-setLevel nsWindow  value =
-    sendMsg nsWindow (mkSelector "setLevel:") retVoid [argCLong value]
+setLevel nsWindow value =
+  sendMessage nsWindow setLevelSelector value
 
 -- | @- depthLimit@
 depthLimit :: IsNSWindow nsWindow => nsWindow -> IO NSWindowDepth
-depthLimit nsWindow  =
-    fmap (coerce :: CInt -> NSWindowDepth) $ sendMsg nsWindow (mkSelector "depthLimit") retCInt []
+depthLimit nsWindow =
+  sendMessage nsWindow depthLimitSelector
 
 -- | @- setDepthLimit:@
 setDepthLimit :: IsNSWindow nsWindow => nsWindow -> NSWindowDepth -> IO ()
-setDepthLimit nsWindow  value =
-    sendMsg nsWindow (mkSelector "setDepthLimit:") retVoid [argCInt (coerce value)]
+setDepthLimit nsWindow value =
+  sendMessage nsWindow setDepthLimitSelector value
 
 -- | @- hasDynamicDepthLimit@
 hasDynamicDepthLimit :: IsNSWindow nsWindow => nsWindow -> IO Bool
-hasDynamicDepthLimit nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "hasDynamicDepthLimit") retCULong []
+hasDynamicDepthLimit nsWindow =
+  sendMessage nsWindow hasDynamicDepthLimitSelector
 
 -- | The screen property returns the best screen for the window. If the window only intersects one screen, it returns that screen. If it intersects more than one screen, then it resolves the tie through based on what space it is mostly on. It may return nil if there are no available screens, or it is completely off screen.
 --
 -- ObjC selector: @- screen@
 screen :: IsNSWindow nsWindow => nsWindow -> IO (Id NSScreen)
-screen nsWindow  =
-    sendMsg nsWindow (mkSelector "screen") (retPtr retVoid) [] >>= retainedObject . castPtr
+screen nsWindow =
+  sendMessage nsWindow screenSelector
 
 -- | @- deepestScreen@
 deepestScreen :: IsNSWindow nsWindow => nsWindow -> IO (Id NSScreen)
-deepestScreen nsWindow  =
-    sendMsg nsWindow (mkSelector "deepestScreen") (retPtr retVoid) [] >>= retainedObject . castPtr
+deepestScreen nsWindow =
+  sendMessage nsWindow deepestScreenSelector
 
 -- | @- hasShadow@
 hasShadow :: IsNSWindow nsWindow => nsWindow -> IO Bool
-hasShadow nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "hasShadow") retCULong []
+hasShadow nsWindow =
+  sendMessage nsWindow hasShadowSelector
 
 -- | @- setHasShadow:@
 setHasShadow :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setHasShadow nsWindow  value =
-    sendMsg nsWindow (mkSelector "setHasShadow:") retVoid [argCULong (if value then 1 else 0)]
+setHasShadow nsWindow value =
+  sendMessage nsWindow setHasShadowSelector value
 
 -- | @- alphaValue@
 alphaValue :: IsNSWindow nsWindow => nsWindow -> IO CDouble
-alphaValue nsWindow  =
-    sendMsg nsWindow (mkSelector "alphaValue") retCDouble []
+alphaValue nsWindow =
+  sendMessage nsWindow alphaValueSelector
 
 -- | @- setAlphaValue:@
 setAlphaValue :: IsNSWindow nsWindow => nsWindow -> CDouble -> IO ()
-setAlphaValue nsWindow  value =
-    sendMsg nsWindow (mkSelector "setAlphaValue:") retVoid [argCDouble value]
+setAlphaValue nsWindow value =
+  sendMessage nsWindow setAlphaValueSelector value
 
 -- | @- opaque@
 opaque :: IsNSWindow nsWindow => nsWindow -> IO Bool
-opaque nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "opaque") retCULong []
+opaque nsWindow =
+  sendMessage nsWindow opaqueSelector
 
 -- | @- setOpaque:@
 setOpaque :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setOpaque nsWindow  value =
-    sendMsg nsWindow (mkSelector "setOpaque:") retVoid [argCULong (if value then 1 else 0)]
+setOpaque nsWindow value =
+  sendMessage nsWindow setOpaqueSelector value
 
 -- | @-setSharingType:@ specifies whether the window content can be read from another process.  The default sharing type is @NSWindowSharingReadOnly,@ which means other processes can read the window content (eg. for window capture) but cannot modify it.  If you set your window sharing type to @NSWindowSharingNone,@ so that the content cannot be captured, your window will also not be able to participate in a number of system services, so this setting should be used with caution.
 --
 -- ObjC selector: @- sharingType@
 sharingType :: IsNSWindow nsWindow => nsWindow -> IO NSWindowSharingType
-sharingType nsWindow  =
-    fmap (coerce :: CULong -> NSWindowSharingType) $ sendMsg nsWindow (mkSelector "sharingType") retCULong []
+sharingType nsWindow =
+  sendMessage nsWindow sharingTypeSelector
 
 -- | @-setSharingType:@ specifies whether the window content can be read from another process.  The default sharing type is @NSWindowSharingReadOnly,@ which means other processes can read the window content (eg. for window capture) but cannot modify it.  If you set your window sharing type to @NSWindowSharingNone,@ so that the content cannot be captured, your window will also not be able to participate in a number of system services, so this setting should be used with caution.
 --
 -- ObjC selector: @- setSharingType:@
 setSharingType :: IsNSWindow nsWindow => nsWindow -> NSWindowSharingType -> IO ()
-setSharingType nsWindow  value =
-    sendMsg nsWindow (mkSelector "setSharingType:") retVoid [argCULong (coerce value)]
+setSharingType nsWindow value =
+  sendMessage nsWindow setSharingTypeSelector value
 
 -- | Controls whether threading of view drawing should be enabled for this window.  Defaults to @YES.@  When this is set to @YES,@ AppKit's view system is allowed to perform @-drawRect:@ activity for the window's views on threads other than the main thread, for views that have @canDrawConcurrently == YES@.  When this is set to @NO,@ the window's views will be drawn serially as on 10.5 and earlier, even though some of the views may have @canDrawConcurrently == YES@.
 --
 -- ObjC selector: @- allowsConcurrentViewDrawing@
 allowsConcurrentViewDrawing :: IsNSWindow nsWindow => nsWindow -> IO Bool
-allowsConcurrentViewDrawing nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "allowsConcurrentViewDrawing") retCULong []
+allowsConcurrentViewDrawing nsWindow =
+  sendMessage nsWindow allowsConcurrentViewDrawingSelector
 
 -- | Controls whether threading of view drawing should be enabled for this window.  Defaults to @YES.@  When this is set to @YES,@ AppKit's view system is allowed to perform @-drawRect:@ activity for the window's views on threads other than the main thread, for views that have @canDrawConcurrently == YES@.  When this is set to @NO,@ the window's views will be drawn serially as on 10.5 and earlier, even though some of the views may have @canDrawConcurrently == YES@.
 --
 -- ObjC selector: @- setAllowsConcurrentViewDrawing:@
 setAllowsConcurrentViewDrawing :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setAllowsConcurrentViewDrawing nsWindow  value =
-    sendMsg nsWindow (mkSelector "setAllowsConcurrentViewDrawing:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsConcurrentViewDrawing nsWindow value =
+  sendMessage nsWindow setAllowsConcurrentViewDrawingSelector value
 
 -- | @- displaysWhenScreenProfileChanges@
 displaysWhenScreenProfileChanges :: IsNSWindow nsWindow => nsWindow -> IO Bool
-displaysWhenScreenProfileChanges nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "displaysWhenScreenProfileChanges") retCULong []
+displaysWhenScreenProfileChanges nsWindow =
+  sendMessage nsWindow displaysWhenScreenProfileChangesSelector
 
 -- | @- setDisplaysWhenScreenProfileChanges:@
 setDisplaysWhenScreenProfileChanges :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setDisplaysWhenScreenProfileChanges nsWindow  value =
-    sendMsg nsWindow (mkSelector "setDisplaysWhenScreenProfileChanges:") retVoid [argCULong (if value then 1 else 0)]
+setDisplaysWhenScreenProfileChanges nsWindow value =
+  sendMessage nsWindow setDisplaysWhenScreenProfileChangesSelector value
 
 -- | This API controls whether the receiver is permitted onscreen before the user has logged in.  This property is off by default.  Alert panels and windows presented by input managers are examples of windows which should have this property set.
 --
 -- ObjC selector: @- canBecomeVisibleWithoutLogin@
 canBecomeVisibleWithoutLogin :: IsNSWindow nsWindow => nsWindow -> IO Bool
-canBecomeVisibleWithoutLogin nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "canBecomeVisibleWithoutLogin") retCULong []
+canBecomeVisibleWithoutLogin nsWindow =
+  sendMessage nsWindow canBecomeVisibleWithoutLoginSelector
 
 -- | This API controls whether the receiver is permitted onscreen before the user has logged in.  This property is off by default.  Alert panels and windows presented by input managers are examples of windows which should have this property set.
 --
 -- ObjC selector: @- setCanBecomeVisibleWithoutLogin:@
 setCanBecomeVisibleWithoutLogin :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setCanBecomeVisibleWithoutLogin nsWindow  value =
-    sendMsg nsWindow (mkSelector "setCanBecomeVisibleWithoutLogin:") retVoid [argCULong (if value then 1 else 0)]
+setCanBecomeVisibleWithoutLogin nsWindow value =
+  sendMessage nsWindow setCanBecomeVisibleWithoutLoginSelector value
 
 -- | @- collectionBehavior@
 collectionBehavior :: IsNSWindow nsWindow => nsWindow -> IO NSWindowCollectionBehavior
-collectionBehavior nsWindow  =
-    fmap (coerce :: CULong -> NSWindowCollectionBehavior) $ sendMsg nsWindow (mkSelector "collectionBehavior") retCULong []
+collectionBehavior nsWindow =
+  sendMessage nsWindow collectionBehaviorSelector
 
 -- | @- setCollectionBehavior:@
 setCollectionBehavior :: IsNSWindow nsWindow => nsWindow -> NSWindowCollectionBehavior -> IO ()
-setCollectionBehavior nsWindow  value =
-    sendMsg nsWindow (mkSelector "setCollectionBehavior:") retVoid [argCULong (coerce value)]
+setCollectionBehavior nsWindow value =
+  sendMessage nsWindow setCollectionBehaviorSelector value
 
 -- | Provides for per-window control over automatic orderFront/orderOut animation behaviors added in 10.7.  Can be set to @NSWindowAnimationBehaviorNone@ to disable Appkit's automatic animations for a given window, or to one of the other non-Default @NSWindowAnimationBehavior@ values to override AppKit's automatic inference of appropriate animation behavior based on the window's apparent type.
 --
 -- ObjC selector: @- animationBehavior@
 animationBehavior :: IsNSWindow nsWindow => nsWindow -> IO NSWindowAnimationBehavior
-animationBehavior nsWindow  =
-    fmap (coerce :: CLong -> NSWindowAnimationBehavior) $ sendMsg nsWindow (mkSelector "animationBehavior") retCLong []
+animationBehavior nsWindow =
+  sendMessage nsWindow animationBehaviorSelector
 
 -- | Provides for per-window control over automatic orderFront/orderOut animation behaviors added in 10.7.  Can be set to @NSWindowAnimationBehaviorNone@ to disable Appkit's automatic animations for a given window, or to one of the other non-Default @NSWindowAnimationBehavior@ values to override AppKit's automatic inference of appropriate animation behavior based on the window's apparent type.
 --
 -- ObjC selector: @- setAnimationBehavior:@
 setAnimationBehavior :: IsNSWindow nsWindow => nsWindow -> NSWindowAnimationBehavior -> IO ()
-setAnimationBehavior nsWindow  value =
-    sendMsg nsWindow (mkSelector "setAnimationBehavior:") retVoid [argCLong (coerce value)]
+setAnimationBehavior nsWindow value =
+  sendMessage nsWindow setAnimationBehaviorSelector value
 
 -- | Returns @YES@ if this window is associated with the active space.  For visible windows, this API indicates whether the window is currently visible on the active space.  For offscreen windows, it indicates whether ordering the window onscreen would make it bring it onto the active space
 --
 -- ObjC selector: @- onActiveSpace@
 onActiveSpace :: IsNSWindow nsWindow => nsWindow -> IO Bool
-onActiveSpace nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "onActiveSpace") retCULong []
+onActiveSpace nsWindow =
+  sendMessage nsWindow onActiveSpaceSelector
 
 -- | @- stringWithSavedFrame@
 stringWithSavedFrame :: IsNSWindow nsWindow => nsWindow -> IO (Id NSString)
-stringWithSavedFrame nsWindow  =
-    sendMsg nsWindow (mkSelector "stringWithSavedFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringWithSavedFrame nsWindow =
+  sendMessage nsWindow stringWithSavedFrameSelector
 
 -- | @- frameAutosaveName@
 frameAutosaveName :: IsNSWindow nsWindow => nsWindow -> IO (Id NSString)
-frameAutosaveName nsWindow  =
-    sendMsg nsWindow (mkSelector "frameAutosaveName") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameAutosaveName nsWindow =
+  sendMessage nsWindow frameAutosaveNameSelector
 
 -- | @- minSize@
 minSize :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-minSize nsWindow  =
-    sendMsgStret nsWindow (mkSelector "minSize") retNSSize []
+minSize nsWindow =
+  sendMessage nsWindow minSizeSelector
 
 -- | @- setMinSize:@
 setMinSize :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setMinSize nsWindow  value =
-    sendMsg nsWindow (mkSelector "setMinSize:") retVoid [argNSSize value]
+setMinSize nsWindow value =
+  sendMessage nsWindow setMinSizeSelector value
 
 -- | @- maxSize@
 maxSize :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-maxSize nsWindow  =
-    sendMsgStret nsWindow (mkSelector "maxSize") retNSSize []
+maxSize nsWindow =
+  sendMessage nsWindow maxSizeSelector
 
 -- | @- setMaxSize:@
 setMaxSize :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setMaxSize nsWindow  value =
-    sendMsg nsWindow (mkSelector "setMaxSize:") retVoid [argNSSize value]
+setMaxSize nsWindow value =
+  sendMessage nsWindow setMaxSizeSelector value
 
 -- | @- contentMinSize@
 contentMinSize :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-contentMinSize nsWindow  =
-    sendMsgStret nsWindow (mkSelector "contentMinSize") retNSSize []
+contentMinSize nsWindow =
+  sendMessage nsWindow contentMinSizeSelector
 
 -- | @- setContentMinSize:@
 setContentMinSize :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setContentMinSize nsWindow  value =
-    sendMsg nsWindow (mkSelector "setContentMinSize:") retVoid [argNSSize value]
+setContentMinSize nsWindow value =
+  sendMessage nsWindow setContentMinSizeSelector value
 
 -- | @- contentMaxSize@
 contentMaxSize :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-contentMaxSize nsWindow  =
-    sendMsgStret nsWindow (mkSelector "contentMaxSize") retNSSize []
+contentMaxSize nsWindow =
+  sendMessage nsWindow contentMaxSizeSelector
 
 -- | @- setContentMaxSize:@
 setContentMaxSize :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setContentMaxSize nsWindow  value =
-    sendMsg nsWindow (mkSelector "setContentMaxSize:") retVoid [argNSSize value]
+setContentMaxSize nsWindow value =
+  sendMessage nsWindow setContentMaxSizeSelector value
 
 -- | @- minFullScreenContentSize@
 minFullScreenContentSize :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-minFullScreenContentSize nsWindow  =
-    sendMsgStret nsWindow (mkSelector "minFullScreenContentSize") retNSSize []
+minFullScreenContentSize nsWindow =
+  sendMessage nsWindow minFullScreenContentSizeSelector
 
 -- | @- setMinFullScreenContentSize:@
 setMinFullScreenContentSize :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setMinFullScreenContentSize nsWindow  value =
-    sendMsg nsWindow (mkSelector "setMinFullScreenContentSize:") retVoid [argNSSize value]
+setMinFullScreenContentSize nsWindow value =
+  sendMessage nsWindow setMinFullScreenContentSizeSelector value
 
 -- | @- maxFullScreenContentSize@
 maxFullScreenContentSize :: IsNSWindow nsWindow => nsWindow -> IO NSSize
-maxFullScreenContentSize nsWindow  =
-    sendMsgStret nsWindow (mkSelector "maxFullScreenContentSize") retNSSize []
+maxFullScreenContentSize nsWindow =
+  sendMessage nsWindow maxFullScreenContentSizeSelector
 
 -- | @- setMaxFullScreenContentSize:@
 setMaxFullScreenContentSize :: IsNSWindow nsWindow => nsWindow -> NSSize -> IO ()
-setMaxFullScreenContentSize nsWindow  value =
-    sendMsg nsWindow (mkSelector "setMaxFullScreenContentSize:") retVoid [argNSSize value]
+setMaxFullScreenContentSize nsWindow value =
+  sendMessage nsWindow setMaxFullScreenContentSizeSelector value
 
 -- | @- deviceDescription@
 deviceDescription :: IsNSWindow nsWindow => nsWindow -> IO (Id NSDictionary)
-deviceDescription nsWindow  =
-    sendMsg nsWindow (mkSelector "deviceDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceDescription nsWindow =
+  sendMessage nsWindow deviceDescriptionSelector
 
 -- | @- windowController@
 windowController :: IsNSWindow nsWindow => nsWindow -> IO (Id NSWindowController)
-windowController nsWindow  =
-    sendMsg nsWindow (mkSelector "windowController") (retPtr retVoid) [] >>= retainedObject . castPtr
+windowController nsWindow =
+  sendMessage nsWindow windowControllerSelector
 
 -- | @- setWindowController:@
 setWindowController :: (IsNSWindow nsWindow, IsNSWindowController value) => nsWindow -> value -> IO ()
-setWindowController nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setWindowController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWindowController nsWindow value =
+  sendMessage nsWindow setWindowControllerSelector (toNSWindowController value)
 
 -- | An ordered array of the sheets on the window. This consists of the presented sheets in top-to-bottom order, followed by queued sheets in the order they were queued. This does not include nested/sub-sheets.
 --
 -- ObjC selector: @- sheets@
 sheets :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
-sheets nsWindow  =
-    sendMsg nsWindow (mkSelector "sheets") (retPtr retVoid) [] >>= retainedObject . castPtr
+sheets nsWindow =
+  sendMessage nsWindow sheetsSelector
 
 -- | Returns the top-most sheet if there is one or more sheets, or nil if there is no sheet.
 --
 -- ObjC selector: @- attachedSheet@
 attachedSheet :: IsNSWindow nsWindow => nsWindow -> IO (Id NSWindow)
-attachedSheet nsWindow  =
-    sendMsg nsWindow (mkSelector "attachedSheet") (retPtr retVoid) [] >>= retainedObject . castPtr
+attachedSheet nsWindow =
+  sendMessage nsWindow attachedSheetSelector
 
 -- | @- sheet@
 sheet :: IsNSWindow nsWindow => nsWindow -> IO Bool
-sheet nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "sheet") retCULong []
+sheet nsWindow =
+  sendMessage nsWindow sheetSelector
 
 -- | Returns the window that the sheet is directly attached to. This is based on the logical attachment of the sheet, not visual attachment. This relationship exists starting when the sheet is begun (using @NSApplication's@ @-beginSheet:modalForWindow:modalDelegate:didEndSelector:contextInfo: or NSWindow's -beginSheet:completionHandler:@), and ending once it is ordered out. Returns nil if the window is not a sheet or has no sheet parent.
 --
 -- ObjC selector: @- sheetParent@
 sheetParent :: IsNSWindow nsWindow => nsWindow -> IO (Id NSWindow)
-sheetParent nsWindow  =
-    sendMsg nsWindow (mkSelector "sheetParent") (retPtr retVoid) [] >>= retainedObject . castPtr
+sheetParent nsWindow =
+  sendMessage nsWindow sheetParentSelector
 
 -- | @- childWindows@
 childWindows :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
-childWindows nsWindow  =
-    sendMsg nsWindow (mkSelector "childWindows") (retPtr retVoid) [] >>= retainedObject . castPtr
+childWindows nsWindow =
+  sendMessage nsWindow childWindowsSelector
 
 -- | @- parentWindow@
 parentWindow :: IsNSWindow nsWindow => nsWindow -> IO (Id NSWindow)
-parentWindow nsWindow  =
-    sendMsg nsWindow (mkSelector "parentWindow") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentWindow nsWindow =
+  sendMessage nsWindow parentWindowSelector
 
 -- | @- setParentWindow:@
 setParentWindow :: (IsNSWindow nsWindow, IsNSWindow value) => nsWindow -> value -> IO ()
-setParentWindow nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setParentWindow:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setParentWindow nsWindow value =
+  sendMessage nsWindow setParentWindowSelector (toNSWindow value)
 
 -- | If set, the receiver will inherit the appearance of that object, as well as use KVO to observe its effectiveAppearance for changes. Typically this is used for child windows that are shown from a parent window or specific view. Defaults to NSApp.
 --
 -- ObjC selector: @- appearanceSource@
 appearanceSource :: IsNSWindow nsWindow => nsWindow -> IO (Id NSObject)
-appearanceSource nsWindow  =
-    sendMsg nsWindow (mkSelector "appearanceSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+appearanceSource nsWindow =
+  sendMessage nsWindow appearanceSourceSelector
 
 -- | If set, the receiver will inherit the appearance of that object, as well as use KVO to observe its effectiveAppearance for changes. Typically this is used for child windows that are shown from a parent window or specific view. Defaults to NSApp.
 --
 -- ObjC selector: @- setAppearanceSource:@
 setAppearanceSource :: (IsNSWindow nsWindow, IsNSObject value) => nsWindow -> value -> IO ()
-setAppearanceSource nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setAppearanceSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppearanceSource nsWindow value =
+  sendMessage nsWindow setAppearanceSourceSelector (toNSObject value)
 
 -- | @- colorSpace@
 colorSpace :: IsNSWindow nsWindow => nsWindow -> IO (Id NSColorSpace)
-colorSpace nsWindow  =
-    sendMsg nsWindow (mkSelector "colorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorSpace nsWindow =
+  sendMessage nsWindow colorSpaceSelector
 
 -- | @- setColorSpace:@
 setColorSpace :: (IsNSWindow nsWindow, IsNSColorSpace value) => nsWindow -> value -> IO ()
-setColorSpace nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setColorSpace:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColorSpace nsWindow value =
+  sendMessage nsWindow setColorSpaceSelector (toNSColorSpace value)
 
 -- | @- occlusionState@
 occlusionState :: IsNSWindow nsWindow => nsWindow -> IO NSWindowOcclusionState
-occlusionState nsWindow  =
-    fmap (coerce :: CULong -> NSWindowOcclusionState) $ sendMsg nsWindow (mkSelector "occlusionState") retCULong []
+occlusionState nsWindow =
+  sendMessage nsWindow occlusionStateSelector
 
 -- | Specifies the style of separator displayed between the window's titlebar and content.
 --
@@ -2555,8 +2490,8 @@ occlusionState nsWindow  =
 --
 -- ObjC selector: @- titlebarSeparatorStyle@
 titlebarSeparatorStyle :: IsNSWindow nsWindow => nsWindow -> IO NSTitlebarSeparatorStyle
-titlebarSeparatorStyle nsWindow  =
-    fmap (coerce :: CLong -> NSTitlebarSeparatorStyle) $ sendMsg nsWindow (mkSelector "titlebarSeparatorStyle") retCLong []
+titlebarSeparatorStyle nsWindow =
+  sendMessage nsWindow titlebarSeparatorStyleSelector
 
 -- | Specifies the style of separator displayed between the window's titlebar and content.
 --
@@ -2564,81 +2499,77 @@ titlebarSeparatorStyle nsWindow  =
 --
 -- ObjC selector: @- setTitlebarSeparatorStyle:@
 setTitlebarSeparatorStyle :: IsNSWindow nsWindow => nsWindow -> NSTitlebarSeparatorStyle -> IO ()
-setTitlebarSeparatorStyle nsWindow  value =
-    sendMsg nsWindow (mkSelector "setTitlebarSeparatorStyle:") retVoid [argCLong (coerce value)]
+setTitlebarSeparatorStyle nsWindow value =
+  sendMessage nsWindow setTitlebarSeparatorStyleSelector value
 
 -- | The main content view controller for the window. This provides the contentView of the window. Assigning this value will remove the existing contentView and will make the contentViewController.view the main contentView for the window. The default value is nil. The contentViewController only controls the contentView, and not the title of the window. The window title can easily be bound to the contentViewController with the following: [window bind:NSTitleBinding toObject:contentViewController withKeyPath:"title" options:nil]. Setting the contentViewController will cause the window to resize based on the current size of the contentViewController. Autolayout should be used to restrict the size of the window. The value of the contentViewController is encoded in the NIB. Directly assigning a contentView will clear out the contentViewController.
 --
 -- ObjC selector: @- contentViewController@
 contentViewController :: IsNSWindow nsWindow => nsWindow -> IO (Id NSViewController)
-contentViewController nsWindow  =
-    sendMsg nsWindow (mkSelector "contentViewController") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentViewController nsWindow =
+  sendMessage nsWindow contentViewControllerSelector
 
 -- | The main content view controller for the window. This provides the contentView of the window. Assigning this value will remove the existing contentView and will make the contentViewController.view the main contentView for the window. The default value is nil. The contentViewController only controls the contentView, and not the title of the window. The window title can easily be bound to the contentViewController with the following: [window bind:NSTitleBinding toObject:contentViewController withKeyPath:"title" options:nil]. Setting the contentViewController will cause the window to resize based on the current size of the contentViewController. Autolayout should be used to restrict the size of the window. The value of the contentViewController is encoded in the NIB. Directly assigning a contentView will clear out the contentViewController.
 --
 -- ObjC selector: @- setContentViewController:@
 setContentViewController :: (IsNSWindow nsWindow, IsNSViewController value) => nsWindow -> value -> IO ()
-setContentViewController nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setContentViewController:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentViewController nsWindow value =
+  sendMessage nsWindow setContentViewControllerSelector (toNSViewController value)
 
 -- | @- initialFirstResponder@
 initialFirstResponder :: IsNSWindow nsWindow => nsWindow -> IO (Id NSView)
-initialFirstResponder nsWindow  =
-    sendMsg nsWindow (mkSelector "initialFirstResponder") (retPtr retVoid) [] >>= ownedObject . castPtr
+initialFirstResponder nsWindow =
+  sendOwnedMessage nsWindow initialFirstResponderSelector
 
 -- | @- setInitialFirstResponder:@
 setInitialFirstResponder :: (IsNSWindow nsWindow, IsNSView value) => nsWindow -> value -> IO ()
-setInitialFirstResponder nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setInitialFirstResponder:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInitialFirstResponder nsWindow value =
+  sendMessage nsWindow setInitialFirstResponderSelector (toNSView value)
 
 -- | @- keyViewSelectionDirection@
 keyViewSelectionDirection :: IsNSWindow nsWindow => nsWindow -> IO NSSelectionDirection
-keyViewSelectionDirection nsWindow  =
-    fmap (coerce :: CULong -> NSSelectionDirection) $ sendMsg nsWindow (mkSelector "keyViewSelectionDirection") retCULong []
+keyViewSelectionDirection nsWindow =
+  sendMessage nsWindow keyViewSelectionDirectionSelector
 
 -- | @- defaultButtonCell@
 defaultButtonCell :: IsNSWindow nsWindow => nsWindow -> IO (Id NSButtonCell)
-defaultButtonCell nsWindow  =
-    sendMsg nsWindow (mkSelector "defaultButtonCell") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultButtonCell nsWindow =
+  sendMessage nsWindow defaultButtonCellSelector
 
 -- | @- setDefaultButtonCell:@
 setDefaultButtonCell :: (IsNSWindow nsWindow, IsNSButtonCell value) => nsWindow -> value -> IO ()
-setDefaultButtonCell nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setDefaultButtonCell:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultButtonCell nsWindow value =
+  sendMessage nsWindow setDefaultButtonCellSelector (toNSButtonCell value)
 
 -- | @- autorecalculatesKeyViewLoop@
 autorecalculatesKeyViewLoop :: IsNSWindow nsWindow => nsWindow -> IO Bool
-autorecalculatesKeyViewLoop nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "autorecalculatesKeyViewLoop") retCULong []
+autorecalculatesKeyViewLoop nsWindow =
+  sendMessage nsWindow autorecalculatesKeyViewLoopSelector
 
 -- | @- setAutorecalculatesKeyViewLoop:@
 setAutorecalculatesKeyViewLoop :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setAutorecalculatesKeyViewLoop nsWindow  value =
-    sendMsg nsWindow (mkSelector "setAutorecalculatesKeyViewLoop:") retVoid [argCULong (if value then 1 else 0)]
+setAutorecalculatesKeyViewLoop nsWindow value =
+  sendMessage nsWindow setAutorecalculatesKeyViewLoopSelector value
 
 -- | @- toolbar@
 toolbar :: IsNSWindow nsWindow => nsWindow -> IO (Id NSToolbar)
-toolbar nsWindow  =
-    sendMsg nsWindow (mkSelector "toolbar") (retPtr retVoid) [] >>= retainedObject . castPtr
+toolbar nsWindow =
+  sendMessage nsWindow toolbarSelector
 
 -- | @- setToolbar:@
 setToolbar :: (IsNSWindow nsWindow, IsNSToolbar value) => nsWindow -> value -> IO ()
-setToolbar nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setToolbar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setToolbar nsWindow value =
+  sendMessage nsWindow setToolbarSelector (toNSToolbar value)
 
 -- | @- showsToolbarButton@
 showsToolbarButton :: IsNSWindow nsWindow => nsWindow -> IO Bool
-showsToolbarButton nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "showsToolbarButton") retCULong []
+showsToolbarButton nsWindow =
+  sendMessage nsWindow showsToolbarButtonSelector
 
 -- | @- setShowsToolbarButton:@
 setShowsToolbarButton :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setShowsToolbarButton nsWindow  value =
-    sendMsg nsWindow (mkSelector "setShowsToolbarButton:") retVoid [argCULong (if value then 1 else 0)]
+setShowsToolbarButton nsWindow value =
+  sendMessage nsWindow setShowsToolbarButtonSelector value
 
 -- | Allows automatic window tabbing when the value is @YES.@ By default, this will be set to @YES,@ but applications can explicitly opt out of all automatic tabbing by setting it to NO, and can still adopted explicit window tabbing, if desired.
 --
@@ -2647,7 +2578,7 @@ allowsAutomaticWindowTabbing :: IO Bool
 allowsAutomaticWindowTabbing  =
   do
     cls' <- getRequiredClass "NSWindow"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "allowsAutomaticWindowTabbing") retCULong []
+    sendClassMessage cls' allowsAutomaticWindowTabbingSelector
 
 -- | Allows automatic window tabbing when the value is @YES.@ By default, this will be set to @YES,@ but applications can explicitly opt out of all automatic tabbing by setting it to NO, and can still adopted explicit window tabbing, if desired.
 --
@@ -2656,7 +2587,7 @@ setAllowsAutomaticWindowTabbing :: Bool -> IO ()
 setAllowsAutomaticWindowTabbing value =
   do
     cls' <- getRequiredClass "NSWindow"
-    sendClassMsg cls' (mkSelector "setAllowsAutomaticWindowTabbing:") retVoid [argCULong (if value then 1 else 0)]
+    sendClassMessage cls' setAllowsAutomaticWindowTabbingSelector value
 
 -- | Returns the user's tabbing preference as set in System Preferences. This value should be queried anytime a new window is made to see if the user wants to automatically show it in tabs.
 --
@@ -2665,1614 +2596,1613 @@ userTabbingPreference :: IO NSWindowUserTabbingPreference
 userTabbingPreference  =
   do
     cls' <- getRequiredClass "NSWindow"
-    fmap (coerce :: CLong -> NSWindowUserTabbingPreference) $ sendClassMsg cls' (mkSelector "userTabbingPreference") retCLong []
+    sendClassMessage cls' userTabbingPreferenceSelector
 
 -- | Get and set the tabbing mode for this window. This should be set before a window is shown. The default value is @NSWindowTabbingModeAutomatic.@ When the value is @NSWindowTabbingModeAutomatic,@ the system will look at the @userTabbingPreference@ and automatically tab windows together based on the tabbingIdentifier, when it is appropriate to do so.
 --
 -- ObjC selector: @- tabbingMode@
 tabbingMode :: IsNSWindow nsWindow => nsWindow -> IO NSWindowTabbingMode
-tabbingMode nsWindow  =
-    fmap (coerce :: CLong -> NSWindowTabbingMode) $ sendMsg nsWindow (mkSelector "tabbingMode") retCLong []
+tabbingMode nsWindow =
+  sendMessage nsWindow tabbingModeSelector
 
 -- | Get and set the tabbing mode for this window. This should be set before a window is shown. The default value is @NSWindowTabbingModeAutomatic.@ When the value is @NSWindowTabbingModeAutomatic,@ the system will look at the @userTabbingPreference@ and automatically tab windows together based on the tabbingIdentifier, when it is appropriate to do so.
 --
 -- ObjC selector: @- setTabbingMode:@
 setTabbingMode :: IsNSWindow nsWindow => nsWindow -> NSWindowTabbingMode -> IO ()
-setTabbingMode nsWindow  value =
-    sendMsg nsWindow (mkSelector "setTabbingMode:") retVoid [argCLong (coerce value)]
+setTabbingMode nsWindow value =
+  sendMessage nsWindow setTabbingModeSelector value
 
 -- | Windows with the same @tabbingIdentifier@ will have the ability to be tabbed together when a window is being shown. This allows aggregation of similar windows. By default, the @tabbingIdentifier@ will be generated based on inherent window properties, such as the window class name, the delegate class name, the window controller class name, and some additional state. Windows can be explicitly made to group together by using the same @tabbingIdentifier.@
 --
 -- ObjC selector: @- tabbingIdentifier@
 tabbingIdentifier :: IsNSWindow nsWindow => nsWindow -> IO (Id NSString)
-tabbingIdentifier nsWindow  =
-    sendMsg nsWindow (mkSelector "tabbingIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+tabbingIdentifier nsWindow =
+  sendMessage nsWindow tabbingIdentifierSelector
 
 -- | Windows with the same @tabbingIdentifier@ will have the ability to be tabbed together when a window is being shown. This allows aggregation of similar windows. By default, the @tabbingIdentifier@ will be generated based on inherent window properties, such as the window class name, the delegate class name, the window controller class name, and some additional state. Windows can be explicitly made to group together by using the same @tabbingIdentifier.@
 --
 -- ObjC selector: @- setTabbingIdentifier:@
 setTabbingIdentifier :: (IsNSWindow nsWindow, IsNSString value) => nsWindow -> value -> IO ()
-setTabbingIdentifier nsWindow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindow (mkSelector "setTabbingIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTabbingIdentifier nsWindow value =
+  sendMessage nsWindow setTabbingIdentifierSelector (toNSString value)
 
 -- | This is now a cover for @self.tabGroup.windows@, but will return nil if the window is not showing a tab bar.
 --
 -- ObjC selector: @- tabbedWindows@
 tabbedWindows :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
-tabbedWindows nsWindow  =
-    sendMsg nsWindow (mkSelector "tabbedWindows") (retPtr retVoid) [] >>= retainedObject . castPtr
+tabbedWindows nsWindow =
+  sendMessage nsWindow tabbedWindowsSelector
 
 -- | Access the properties for this window when it is a tabbed window environment. See the @NSWindowTab@ header and comments for more information.
 --
 -- ObjC selector: @- tab@
 tab :: IsNSWindow nsWindow => nsWindow -> IO (Id NSWindowTab)
-tab nsWindow  =
-    sendMsg nsWindow (mkSelector "tab") (retPtr retVoid) [] >>= retainedObject . castPtr
+tab nsWindow =
+  sendMessage nsWindow tabSelector
 
 -- | Represents a tab group of windows. This @tabGroup@ is lazily created on demand.
 --
 -- ObjC selector: @- tabGroup@
 tabGroup :: IsNSWindow nsWindow => nsWindow -> IO (Id NSWindowTabGroup)
-tabGroup nsWindow  =
-    sendMsg nsWindow (mkSelector "tabGroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+tabGroup nsWindow =
+  sendMessage nsWindow tabGroupSelector
 
 -- | Indicates whether the receiver is the subject of an active SharePlay sharing session.
 --
 -- ObjC selector: @- hasActiveWindowSharingSession@
 hasActiveWindowSharingSession :: IsNSWindow nsWindow => nsWindow -> IO Bool
-hasActiveWindowSharingSession nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "hasActiveWindowSharingSession") retCULong []
+hasActiveWindowSharingSession nsWindow =
+  sendMessage nsWindow hasActiveWindowSharingSessionSelector
 
 -- | Retrieve the layout direction of the window titlebar: this includes the standard window buttons (close/minimize/maximize buttons) and the title for this window. In general, this will return "right to left" (RTL) if the primary system language is RTL. The layout direction may be RTL even in applications that do not have a RTL language localization. This value should be utilized if an application uses titlebarAppearsTransparent and places controls underneath the titlebar.
 --
 -- ObjC selector: @- windowTitlebarLayoutDirection@
 windowTitlebarLayoutDirection :: IsNSWindow nsWindow => nsWindow -> IO NSUserInterfaceLayoutDirection
-windowTitlebarLayoutDirection nsWindow  =
-    fmap (coerce :: CLong -> NSUserInterfaceLayoutDirection) $ sendMsg nsWindow (mkSelector "windowTitlebarLayoutDirection") retCLong []
+windowTitlebarLayoutDirection nsWindow =
+  sendMessage nsWindow windowTitlebarLayoutDirectionSelector
 
 -- | @- restorable@
 restorable :: IsNSWindow nsWindow => nsWindow -> IO Bool
-restorable nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "restorable") retCULong []
+restorable nsWindow =
+  sendMessage nsWindow restorableSelector
 
 -- | @- setRestorable:@
 setRestorable :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setRestorable nsWindow  value =
-    sendMsg nsWindow (mkSelector "setRestorable:") retVoid [argCULong (if value then 1 else 0)]
+setRestorable nsWindow value =
+  sendMessage nsWindow setRestorableSelector value
 
 -- | @- restorationClass@
 restorationClass :: IsNSWindow nsWindow => nsWindow -> IO Class
-restorationClass nsWindow  =
-    fmap (Class . castPtr) $ sendMsg nsWindow (mkSelector "restorationClass") (retPtr retVoid) []
+restorationClass nsWindow =
+  sendMessage nsWindow restorationClassSelector
 
 -- | @- setRestorationClass:@
 setRestorationClass :: IsNSWindow nsWindow => nsWindow -> Class -> IO ()
-setRestorationClass nsWindow  value =
-    sendMsg nsWindow (mkSelector "setRestorationClass:") retVoid [argPtr (unClass value)]
+setRestorationClass nsWindow value =
+  sendMessage nsWindow setRestorationClassSelector value
 
 -- | @- hasCloseBox@
 hasCloseBox :: IsNSWindow nsWindow => nsWindow -> IO Bool
-hasCloseBox nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "hasCloseBox") retCULong []
+hasCloseBox nsWindow =
+  sendMessage nsWindow hasCloseBoxSelector
 
 -- | @- hasTitleBar@
 hasTitleBar :: IsNSWindow nsWindow => nsWindow -> IO Bool
-hasTitleBar nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "hasTitleBar") retCULong []
+hasTitleBar nsWindow =
+  sendMessage nsWindow hasTitleBarSelector
 
 -- | @- floatingPanel@
 floatingPanel :: IsNSWindow nsWindow => nsWindow -> IO Bool
-floatingPanel nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "floatingPanel") retCULong []
+floatingPanel nsWindow =
+  sendMessage nsWindow floatingPanelSelector
 
 -- | @- miniaturizable@
 miniaturizable :: IsNSWindow nsWindow => nsWindow -> IO Bool
-miniaturizable nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "miniaturizable") retCULong []
+miniaturizable nsWindow =
+  sendMessage nsWindow miniaturizableSelector
 
 -- | @- modalPanel@
 modalPanel :: IsNSWindow nsWindow => nsWindow -> IO Bool
-modalPanel nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "modalPanel") retCULong []
+modalPanel nsWindow =
+  sendMessage nsWindow modalPanelSelector
 
 -- | @- resizable@
 resizable :: IsNSWindow nsWindow => nsWindow -> IO Bool
-resizable nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "resizable") retCULong []
+resizable nsWindow =
+  sendMessage nsWindow resizableSelector
 
 -- | @- zoomable@
 zoomable :: IsNSWindow nsWindow => nsWindow -> IO Bool
-zoomable nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "zoomable") retCULong []
+zoomable nsWindow =
+  sendMessage nsWindow zoomableSelector
 
 -- | @- orderedIndex@
 orderedIndex :: IsNSWindow nsWindow => nsWindow -> IO CLong
-orderedIndex nsWindow  =
-    sendMsg nsWindow (mkSelector "orderedIndex") retCLong []
+orderedIndex nsWindow =
+  sendMessage nsWindow orderedIndexSelector
 
 -- | @- setOrderedIndex:@
 setOrderedIndex :: IsNSWindow nsWindow => nsWindow -> CLong -> IO ()
-setOrderedIndex nsWindow  value =
-    sendMsg nsWindow (mkSelector "setOrderedIndex:") retVoid [argCLong value]
+setOrderedIndex nsWindow value =
+  sendMessage nsWindow setOrderedIndexSelector value
 
 -- | @- drawers@
 drawers :: IsNSWindow nsWindow => nsWindow -> IO (Id NSArray)
-drawers nsWindow  =
-    sendMsg nsWindow (mkSelector "drawers") (retPtr retVoid) [] >>= retainedObject . castPtr
+drawers nsWindow =
+  sendMessage nsWindow drawersSelector
 
 -- | @- flushWindowDisabled@
 flushWindowDisabled :: IsNSWindow nsWindow => nsWindow -> IO Bool
-flushWindowDisabled nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "flushWindowDisabled") retCULong []
+flushWindowDisabled nsWindow =
+  sendMessage nsWindow flushWindowDisabledSelector
 
 -- | @- autodisplay@
 autodisplay :: IsNSWindow nsWindow => nsWindow -> IO Bool
-autodisplay nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "autodisplay") retCULong []
+autodisplay nsWindow =
+  sendMessage nsWindow autodisplaySelector
 
 -- | @- setAutodisplay:@
 setAutodisplay :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setAutodisplay nsWindow  value =
-    sendMsg nsWindow (mkSelector "setAutodisplay:") retVoid [argCULong (if value then 1 else 0)]
+setAutodisplay nsWindow value =
+  sendMessage nsWindow setAutodisplaySelector value
 
 -- | @- graphicsContext@
 graphicsContext :: IsNSWindow nsWindow => nsWindow -> IO (Id NSGraphicsContext)
-graphicsContext nsWindow  =
-    sendMsg nsWindow (mkSelector "graphicsContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+graphicsContext nsWindow =
+  sendMessage nsWindow graphicsContextSelector
 
 -- | @- oneShot@
 oneShot :: IsNSWindow nsWindow => nsWindow -> IO Bool
-oneShot nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "oneShot") retCULong []
+oneShot nsWindow =
+  sendMessage nsWindow oneShotSelector
 
 -- | @- setOneShot:@
 setOneShot :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setOneShot nsWindow  value =
-    sendMsg nsWindow (mkSelector "setOneShot:") retVoid [argCULong (if value then 1 else 0)]
+setOneShot nsWindow value =
+  sendMessage nsWindow setOneShotSelector value
 
 -- | @- preferredBackingLocation@
 preferredBackingLocation :: IsNSWindow nsWindow => nsWindow -> IO NSWindowBackingLocation
-preferredBackingLocation nsWindow  =
-    fmap (coerce :: CULong -> NSWindowBackingLocation) $ sendMsg nsWindow (mkSelector "preferredBackingLocation") retCULong []
+preferredBackingLocation nsWindow =
+  sendMessage nsWindow preferredBackingLocationSelector
 
 -- | @- setPreferredBackingLocation:@
 setPreferredBackingLocation :: IsNSWindow nsWindow => nsWindow -> NSWindowBackingLocation -> IO ()
-setPreferredBackingLocation nsWindow  value =
-    sendMsg nsWindow (mkSelector "setPreferredBackingLocation:") retVoid [argCULong (coerce value)]
+setPreferredBackingLocation nsWindow value =
+  sendMessage nsWindow setPreferredBackingLocationSelector value
 
 -- | @- backingLocation@
 backingLocation :: IsNSWindow nsWindow => nsWindow -> IO NSWindowBackingLocation
-backingLocation nsWindow  =
-    fmap (coerce :: CULong -> NSWindowBackingLocation) $ sendMsg nsWindow (mkSelector "backingLocation") retCULong []
+backingLocation nsWindow =
+  sendMessage nsWindow backingLocationSelector
 
 -- | @- showsResizeIndicator@
 showsResizeIndicator :: IsNSWindow nsWindow => nsWindow -> IO Bool
-showsResizeIndicator nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "showsResizeIndicator") retCULong []
+showsResizeIndicator nsWindow =
+  sendMessage nsWindow showsResizeIndicatorSelector
 
 -- | @- setShowsResizeIndicator:@
 setShowsResizeIndicator :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setShowsResizeIndicator nsWindow  value =
-    sendMsg nsWindow (mkSelector "setShowsResizeIndicator:") retVoid [argCULong (if value then 1 else 0)]
+setShowsResizeIndicator nsWindow value =
+  sendMessage nsWindow setShowsResizeIndicatorSelector value
 
 -- | @- windowRef@
 windowRef :: IsNSWindow nsWindow => nsWindow -> IO (Ptr ())
-windowRef nsWindow  =
-    fmap castPtr $ sendMsg nsWindow (mkSelector "windowRef") (retPtr retVoid) []
+windowRef nsWindow =
+  sendMessage nsWindow windowRefSelector
 
 -- | @- areCursorRectsEnabled@
 areCursorRectsEnabled :: IsNSWindow nsWindow => nsWindow -> IO Bool
-areCursorRectsEnabled nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "areCursorRectsEnabled") retCULong []
+areCursorRectsEnabled nsWindow =
+  sendMessage nsWindow areCursorRectsEnabledSelector
 
 -- | @- currentEvent@
 currentEvent :: IsNSWindow nsWindow => nsWindow -> IO (Id NSEvent)
-currentEvent nsWindow  =
-    sendMsg nsWindow (mkSelector "currentEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentEvent nsWindow =
+  sendMessage nsWindow currentEventSelector
 
 -- | @- acceptsMouseMovedEvents@
 acceptsMouseMovedEvents :: IsNSWindow nsWindow => nsWindow -> IO Bool
-acceptsMouseMovedEvents nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "acceptsMouseMovedEvents") retCULong []
+acceptsMouseMovedEvents nsWindow =
+  sendMessage nsWindow acceptsMouseMovedEventsSelector
 
 -- | @- setAcceptsMouseMovedEvents:@
 setAcceptsMouseMovedEvents :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setAcceptsMouseMovedEvents nsWindow  value =
-    sendMsg nsWindow (mkSelector "setAcceptsMouseMovedEvents:") retVoid [argCULong (if value then 1 else 0)]
+setAcceptsMouseMovedEvents nsWindow value =
+  sendMessage nsWindow setAcceptsMouseMovedEventsSelector value
 
 -- | @- ignoresMouseEvents@
 ignoresMouseEvents :: IsNSWindow nsWindow => nsWindow -> IO Bool
-ignoresMouseEvents nsWindow  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsWindow (mkSelector "ignoresMouseEvents") retCULong []
+ignoresMouseEvents nsWindow =
+  sendMessage nsWindow ignoresMouseEventsSelector
 
 -- | @- setIgnoresMouseEvents:@
 setIgnoresMouseEvents :: IsNSWindow nsWindow => nsWindow -> Bool -> IO ()
-setIgnoresMouseEvents nsWindow  value =
-    sendMsg nsWindow (mkSelector "setIgnoresMouseEvents:") retVoid [argCULong (if value then 1 else 0)]
+setIgnoresMouseEvents nsWindow value =
+  sendMessage nsWindow setIgnoresMouseEventsSelector value
 
 -- | @- mouseLocationOutsideOfEventStream@
 mouseLocationOutsideOfEventStream :: IsNSWindow nsWindow => nsWindow -> IO NSPoint
-mouseLocationOutsideOfEventStream nsWindow  =
-    sendMsgStret nsWindow (mkSelector "mouseLocationOutsideOfEventStream") retNSPoint []
+mouseLocationOutsideOfEventStream nsWindow =
+  sendMessage nsWindow mouseLocationOutsideOfEventStreamSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @frameRectForContentRect:styleMask:@
-frameRectForContentRect_styleMaskSelector :: Selector
+frameRectForContentRect_styleMaskSelector :: Selector '[NSRect, NSWindowStyleMask] NSRect
 frameRectForContentRect_styleMaskSelector = mkSelector "frameRectForContentRect:styleMask:"
 
 -- | @Selector@ for @contentRectForFrameRect:styleMask:@
-contentRectForFrameRect_styleMaskSelector :: Selector
+contentRectForFrameRect_styleMaskSelector :: Selector '[NSRect, NSWindowStyleMask] NSRect
 contentRectForFrameRect_styleMaskSelector = mkSelector "contentRectForFrameRect:styleMask:"
 
 -- | @Selector@ for @minFrameWidthWithTitle:styleMask:@
-minFrameWidthWithTitle_styleMaskSelector :: Selector
+minFrameWidthWithTitle_styleMaskSelector :: Selector '[Id NSString, NSWindowStyleMask] CDouble
 minFrameWidthWithTitle_styleMaskSelector = mkSelector "minFrameWidthWithTitle:styleMask:"
 
 -- | @Selector@ for @frameRectForContentRect:@
-frameRectForContentRectSelector :: Selector
+frameRectForContentRectSelector :: Selector '[NSRect] NSRect
 frameRectForContentRectSelector = mkSelector "frameRectForContentRect:"
 
 -- | @Selector@ for @contentRectForFrameRect:@
-contentRectForFrameRectSelector :: Selector
+contentRectForFrameRectSelector :: Selector '[NSRect] NSRect
 contentRectForFrameRectSelector = mkSelector "contentRectForFrameRect:"
 
 -- | @Selector@ for @initWithContentRect:styleMask:backing:defer:@
-initWithContentRect_styleMask_backing_deferSelector :: Selector
+initWithContentRect_styleMask_backing_deferSelector :: Selector '[NSRect, NSWindowStyleMask, NSBackingStoreType, Bool] (Id NSWindow)
 initWithContentRect_styleMask_backing_deferSelector = mkSelector "initWithContentRect:styleMask:backing:defer:"
 
 -- | @Selector@ for @initWithContentRect:styleMask:backing:defer:screen:@
-initWithContentRect_styleMask_backing_defer_screenSelector :: Selector
+initWithContentRect_styleMask_backing_defer_screenSelector :: Selector '[NSRect, NSWindowStyleMask, NSBackingStoreType, Bool, Id NSScreen] (Id NSWindow)
 initWithContentRect_styleMask_backing_defer_screenSelector = mkSelector "initWithContentRect:styleMask:backing:defer:screen:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSWindow)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @addTitlebarAccessoryViewController:@
-addTitlebarAccessoryViewControllerSelector :: Selector
+addTitlebarAccessoryViewControllerSelector :: Selector '[Id NSTitlebarAccessoryViewController] ()
 addTitlebarAccessoryViewControllerSelector = mkSelector "addTitlebarAccessoryViewController:"
 
 -- | @Selector@ for @insertTitlebarAccessoryViewController:atIndex:@
-insertTitlebarAccessoryViewController_atIndexSelector :: Selector
+insertTitlebarAccessoryViewController_atIndexSelector :: Selector '[Id NSTitlebarAccessoryViewController, CLong] ()
 insertTitlebarAccessoryViewController_atIndexSelector = mkSelector "insertTitlebarAccessoryViewController:atIndex:"
 
 -- | @Selector@ for @removeTitlebarAccessoryViewControllerAtIndex:@
-removeTitlebarAccessoryViewControllerAtIndexSelector :: Selector
+removeTitlebarAccessoryViewControllerAtIndexSelector :: Selector '[CLong] ()
 removeTitlebarAccessoryViewControllerAtIndexSelector = mkSelector "removeTitlebarAccessoryViewControllerAtIndex:"
 
 -- | @Selector@ for @setTitleWithRepresentedFilename:@
-setTitleWithRepresentedFilenameSelector :: Selector
+setTitleWithRepresentedFilenameSelector :: Selector '[Id NSString] ()
 setTitleWithRepresentedFilenameSelector = mkSelector "setTitleWithRepresentedFilename:"
 
 -- | @Selector@ for @fieldEditor:forObject:@
-fieldEditor_forObjectSelector :: Selector
+fieldEditor_forObjectSelector :: Selector '[Bool, RawId] (Id NSText)
 fieldEditor_forObjectSelector = mkSelector "fieldEditor:forObject:"
 
 -- | @Selector@ for @endEditingFor:@
-endEditingForSelector :: Selector
+endEditingForSelector :: Selector '[RawId] ()
 endEditingForSelector = mkSelector "endEditingFor:"
 
 -- | @Selector@ for @constrainFrameRect:toScreen:@
-constrainFrameRect_toScreenSelector :: Selector
+constrainFrameRect_toScreenSelector :: Selector '[NSRect, Id NSScreen] NSRect
 constrainFrameRect_toScreenSelector = mkSelector "constrainFrameRect:toScreen:"
 
 -- | @Selector@ for @setFrame:display:@
-setFrame_displaySelector :: Selector
+setFrame_displaySelector :: Selector '[NSRect, Bool] ()
 setFrame_displaySelector = mkSelector "setFrame:display:"
 
 -- | @Selector@ for @setContentSize:@
-setContentSizeSelector :: Selector
+setContentSizeSelector :: Selector '[NSSize] ()
 setContentSizeSelector = mkSelector "setContentSize:"
 
 -- | @Selector@ for @setFrameOrigin:@
-setFrameOriginSelector :: Selector
+setFrameOriginSelector :: Selector '[NSPoint] ()
 setFrameOriginSelector = mkSelector "setFrameOrigin:"
 
 -- | @Selector@ for @setFrameTopLeftPoint:@
-setFrameTopLeftPointSelector :: Selector
+setFrameTopLeftPointSelector :: Selector '[NSPoint] ()
 setFrameTopLeftPointSelector = mkSelector "setFrameTopLeftPoint:"
 
 -- | @Selector@ for @cascadeTopLeftFromPoint:@
-cascadeTopLeftFromPointSelector :: Selector
+cascadeTopLeftFromPointSelector :: Selector '[NSPoint] NSPoint
 cascadeTopLeftFromPointSelector = mkSelector "cascadeTopLeftFromPoint:"
 
 -- | @Selector@ for @animationResizeTime:@
-animationResizeTimeSelector :: Selector
+animationResizeTimeSelector :: Selector '[NSRect] CDouble
 animationResizeTimeSelector = mkSelector "animationResizeTime:"
 
 -- | @Selector@ for @setFrame:display:animate:@
-setFrame_display_animateSelector :: Selector
+setFrame_display_animateSelector :: Selector '[NSRect, Bool, Bool] ()
 setFrame_display_animateSelector = mkSelector "setFrame:display:animate:"
 
 -- | @Selector@ for @displayIfNeeded@
-displayIfNeededSelector :: Selector
+displayIfNeededSelector :: Selector '[] ()
 displayIfNeededSelector = mkSelector "displayIfNeeded"
 
 -- | @Selector@ for @display@
-displaySelector :: Selector
+displaySelector :: Selector '[] ()
 displaySelector = mkSelector "display"
 
 -- | @Selector@ for @update@
-updateSelector :: Selector
+updateSelector :: Selector '[] ()
 updateSelector = mkSelector "update"
 
 -- | @Selector@ for @makeFirstResponder:@
-makeFirstResponderSelector :: Selector
+makeFirstResponderSelector :: Selector '[Id NSResponder] Bool
 makeFirstResponderSelector = mkSelector "makeFirstResponder:"
 
 -- | @Selector@ for @close@
-closeSelector :: Selector
+closeSelector :: Selector '[] ()
 closeSelector = mkSelector "close"
 
 -- | @Selector@ for @miniaturize:@
-miniaturizeSelector :: Selector
+miniaturizeSelector :: Selector '[RawId] ()
 miniaturizeSelector = mkSelector "miniaturize:"
 
 -- | @Selector@ for @deminiaturize:@
-deminiaturizeSelector :: Selector
+deminiaturizeSelector :: Selector '[RawId] ()
 deminiaturizeSelector = mkSelector "deminiaturize:"
 
 -- | @Selector@ for @zoom:@
-zoomSelector :: Selector
+zoomSelector :: Selector '[RawId] ()
 zoomSelector = mkSelector "zoom:"
 
 -- | @Selector@ for @tryToPerform:with:@
-tryToPerform_withSelector :: Selector
+tryToPerform_withSelector :: Selector '[Sel, RawId] Bool
 tryToPerform_withSelector = mkSelector "tryToPerform:with:"
 
 -- | @Selector@ for @validRequestorForSendType:returnType:@
-validRequestorForSendType_returnTypeSelector :: Selector
+validRequestorForSendType_returnTypeSelector :: Selector '[Id NSString, Id NSString] RawId
 validRequestorForSendType_returnTypeSelector = mkSelector "validRequestorForSendType:returnType:"
 
 -- | @Selector@ for @setContentBorderThickness:forEdge:@
-setContentBorderThickness_forEdgeSelector :: Selector
+setContentBorderThickness_forEdgeSelector :: Selector '[CDouble, NSRectEdge] ()
 setContentBorderThickness_forEdgeSelector = mkSelector "setContentBorderThickness:forEdge:"
 
 -- | @Selector@ for @contentBorderThicknessForEdge:@
-contentBorderThicknessForEdgeSelector :: Selector
+contentBorderThicknessForEdgeSelector :: Selector '[NSRectEdge] CDouble
 contentBorderThicknessForEdgeSelector = mkSelector "contentBorderThicknessForEdge:"
 
 -- | @Selector@ for @setAutorecalculatesContentBorderThickness:forEdge:@
-setAutorecalculatesContentBorderThickness_forEdgeSelector :: Selector
+setAutorecalculatesContentBorderThickness_forEdgeSelector :: Selector '[Bool, NSRectEdge] ()
 setAutorecalculatesContentBorderThickness_forEdgeSelector = mkSelector "setAutorecalculatesContentBorderThickness:forEdge:"
 
 -- | @Selector@ for @autorecalculatesContentBorderThicknessForEdge:@
-autorecalculatesContentBorderThicknessForEdgeSelector :: Selector
+autorecalculatesContentBorderThicknessForEdgeSelector :: Selector '[NSRectEdge] Bool
 autorecalculatesContentBorderThicknessForEdgeSelector = mkSelector "autorecalculatesContentBorderThicknessForEdge:"
 
 -- | @Selector@ for @center@
-centerSelector :: Selector
+centerSelector :: Selector '[] ()
 centerSelector = mkSelector "center"
 
 -- | @Selector@ for @makeKeyAndOrderFront:@
-makeKeyAndOrderFrontSelector :: Selector
+makeKeyAndOrderFrontSelector :: Selector '[RawId] ()
 makeKeyAndOrderFrontSelector = mkSelector "makeKeyAndOrderFront:"
 
 -- | @Selector@ for @orderFront:@
-orderFrontSelector :: Selector
+orderFrontSelector :: Selector '[RawId] ()
 orderFrontSelector = mkSelector "orderFront:"
 
 -- | @Selector@ for @orderBack:@
-orderBackSelector :: Selector
+orderBackSelector :: Selector '[RawId] ()
 orderBackSelector = mkSelector "orderBack:"
 
 -- | @Selector@ for @orderOut:@
-orderOutSelector :: Selector
+orderOutSelector :: Selector '[RawId] ()
 orderOutSelector = mkSelector "orderOut:"
 
 -- | @Selector@ for @orderWindow:relativeTo:@
-orderWindow_relativeToSelector :: Selector
+orderWindow_relativeToSelector :: Selector '[NSWindowOrderingMode, CLong] ()
 orderWindow_relativeToSelector = mkSelector "orderWindow:relativeTo:"
 
 -- | @Selector@ for @orderFrontRegardless@
-orderFrontRegardlessSelector :: Selector
+orderFrontRegardlessSelector :: Selector '[] ()
 orderFrontRegardlessSelector = mkSelector "orderFrontRegardless"
 
 -- | @Selector@ for @makeKeyWindow@
-makeKeyWindowSelector :: Selector
+makeKeyWindowSelector :: Selector '[] ()
 makeKeyWindowSelector = mkSelector "makeKeyWindow"
 
 -- | @Selector@ for @makeMainWindow@
-makeMainWindowSelector :: Selector
+makeMainWindowSelector :: Selector '[] ()
 makeMainWindowSelector = mkSelector "makeMainWindow"
 
 -- | @Selector@ for @becomeKeyWindow@
-becomeKeyWindowSelector :: Selector
+becomeKeyWindowSelector :: Selector '[] ()
 becomeKeyWindowSelector = mkSelector "becomeKeyWindow"
 
 -- | @Selector@ for @resignKeyWindow@
-resignKeyWindowSelector :: Selector
+resignKeyWindowSelector :: Selector '[] ()
 resignKeyWindowSelector = mkSelector "resignKeyWindow"
 
 -- | @Selector@ for @becomeMainWindow@
-becomeMainWindowSelector :: Selector
+becomeMainWindowSelector :: Selector '[] ()
 becomeMainWindowSelector = mkSelector "becomeMainWindow"
 
 -- | @Selector@ for @resignMainWindow@
-resignMainWindowSelector :: Selector
+resignMainWindowSelector :: Selector '[] ()
 resignMainWindowSelector = mkSelector "resignMainWindow"
 
 -- | @Selector@ for @convertRectToScreen:@
-convertRectToScreenSelector :: Selector
+convertRectToScreenSelector :: Selector '[NSRect] NSRect
 convertRectToScreenSelector = mkSelector "convertRectToScreen:"
 
 -- | @Selector@ for @convertRectFromScreen:@
-convertRectFromScreenSelector :: Selector
+convertRectFromScreenSelector :: Selector '[NSRect] NSRect
 convertRectFromScreenSelector = mkSelector "convertRectFromScreen:"
 
 -- | @Selector@ for @convertPointToScreen:@
-convertPointToScreenSelector :: Selector
+convertPointToScreenSelector :: Selector '[NSPoint] NSPoint
 convertPointToScreenSelector = mkSelector "convertPointToScreen:"
 
 -- | @Selector@ for @convertPointFromScreen:@
-convertPointFromScreenSelector :: Selector
+convertPointFromScreenSelector :: Selector '[NSPoint] NSPoint
 convertPointFromScreenSelector = mkSelector "convertPointFromScreen:"
 
 -- | @Selector@ for @convertRectToBacking:@
-convertRectToBackingSelector :: Selector
+convertRectToBackingSelector :: Selector '[NSRect] NSRect
 convertRectToBackingSelector = mkSelector "convertRectToBacking:"
 
 -- | @Selector@ for @convertRectFromBacking:@
-convertRectFromBackingSelector :: Selector
+convertRectFromBackingSelector :: Selector '[NSRect] NSRect
 convertRectFromBackingSelector = mkSelector "convertRectFromBacking:"
 
 -- | @Selector@ for @convertPointToBacking:@
-convertPointToBackingSelector :: Selector
+convertPointToBackingSelector :: Selector '[NSPoint] NSPoint
 convertPointToBackingSelector = mkSelector "convertPointToBacking:"
 
 -- | @Selector@ for @convertPointFromBacking:@
-convertPointFromBackingSelector :: Selector
+convertPointFromBackingSelector :: Selector '[NSPoint] NSPoint
 convertPointFromBackingSelector = mkSelector "convertPointFromBacking:"
 
 -- | @Selector@ for @backingAlignedRect:options:@
-backingAlignedRect_optionsSelector :: Selector
+backingAlignedRect_optionsSelector :: Selector '[NSRect, NSAlignmentOptions] NSRect
 backingAlignedRect_optionsSelector = mkSelector "backingAlignedRect:options:"
 
 -- | @Selector@ for @performClose:@
-performCloseSelector :: Selector
+performCloseSelector :: Selector '[RawId] ()
 performCloseSelector = mkSelector "performClose:"
 
 -- | @Selector@ for @performMiniaturize:@
-performMiniaturizeSelector :: Selector
+performMiniaturizeSelector :: Selector '[RawId] ()
 performMiniaturizeSelector = mkSelector "performMiniaturize:"
 
 -- | @Selector@ for @performZoom:@
-performZoomSelector :: Selector
+performZoomSelector :: Selector '[RawId] ()
 performZoomSelector = mkSelector "performZoom:"
 
 -- | @Selector@ for @dataWithEPSInsideRect:@
-dataWithEPSInsideRectSelector :: Selector
+dataWithEPSInsideRectSelector :: Selector '[NSRect] (Id NSData)
 dataWithEPSInsideRectSelector = mkSelector "dataWithEPSInsideRect:"
 
 -- | @Selector@ for @dataWithPDFInsideRect:@
-dataWithPDFInsideRectSelector :: Selector
+dataWithPDFInsideRectSelector :: Selector '[NSRect] (Id NSData)
 dataWithPDFInsideRectSelector = mkSelector "dataWithPDFInsideRect:"
 
 -- | @Selector@ for @print:@
-printSelector :: Selector
+printSelector :: Selector '[RawId] ()
 printSelector = mkSelector "print:"
 
 -- | @Selector@ for @setDynamicDepthLimit:@
-setDynamicDepthLimitSelector :: Selector
+setDynamicDepthLimitSelector :: Selector '[Bool] ()
 setDynamicDepthLimitSelector = mkSelector "setDynamicDepthLimit:"
 
 -- | @Selector@ for @invalidateShadow@
-invalidateShadowSelector :: Selector
+invalidateShadowSelector :: Selector '[] ()
 invalidateShadowSelector = mkSelector "invalidateShadow"
 
 -- | @Selector@ for @toggleFullScreen:@
-toggleFullScreenSelector :: Selector
+toggleFullScreenSelector :: Selector '[RawId] ()
 toggleFullScreenSelector = mkSelector "toggleFullScreen:"
 
 -- | @Selector@ for @setFrameFromString:@
-setFrameFromStringSelector :: Selector
+setFrameFromStringSelector :: Selector '[Id NSString] ()
 setFrameFromStringSelector = mkSelector "setFrameFromString:"
 
 -- | @Selector@ for @saveFrameUsingName:@
-saveFrameUsingNameSelector :: Selector
+saveFrameUsingNameSelector :: Selector '[Id NSString] ()
 saveFrameUsingNameSelector = mkSelector "saveFrameUsingName:"
 
 -- | @Selector@ for @setFrameUsingName:force:@
-setFrameUsingName_forceSelector :: Selector
+setFrameUsingName_forceSelector :: Selector '[Id NSString, Bool] Bool
 setFrameUsingName_forceSelector = mkSelector "setFrameUsingName:force:"
 
 -- | @Selector@ for @setFrameUsingName:@
-setFrameUsingNameSelector :: Selector
+setFrameUsingNameSelector :: Selector '[Id NSString] Bool
 setFrameUsingNameSelector = mkSelector "setFrameUsingName:"
 
 -- | @Selector@ for @setFrameAutosaveName:@
-setFrameAutosaveNameSelector :: Selector
+setFrameAutosaveNameSelector :: Selector '[Id NSString] Bool
 setFrameAutosaveNameSelector = mkSelector "setFrameAutosaveName:"
 
 -- | @Selector@ for @removeFrameUsingName:@
-removeFrameUsingNameSelector :: Selector
+removeFrameUsingNameSelector :: Selector '[Id NSString] ()
 removeFrameUsingNameSelector = mkSelector "removeFrameUsingName:"
 
 -- | @Selector@ for @beginSheet:completionHandler:@
-beginSheet_completionHandlerSelector :: Selector
+beginSheet_completionHandlerSelector :: Selector '[Id NSWindow, Ptr ()] ()
 beginSheet_completionHandlerSelector = mkSelector "beginSheet:completionHandler:"
 
 -- | @Selector@ for @beginCriticalSheet:completionHandler:@
-beginCriticalSheet_completionHandlerSelector :: Selector
+beginCriticalSheet_completionHandlerSelector :: Selector '[Id NSWindow, Ptr ()] ()
 beginCriticalSheet_completionHandlerSelector = mkSelector "beginCriticalSheet:completionHandler:"
 
 -- | @Selector@ for @endSheet:@
-endSheetSelector :: Selector
+endSheetSelector :: Selector '[Id NSWindow] ()
 endSheetSelector = mkSelector "endSheet:"
 
 -- | @Selector@ for @endSheet:returnCode:@
-endSheet_returnCodeSelector :: Selector
+endSheet_returnCodeSelector :: Selector '[Id NSWindow, CLong] ()
 endSheet_returnCodeSelector = mkSelector "endSheet:returnCode:"
 
 -- | @Selector@ for @standardWindowButton:forStyleMask:@
-standardWindowButton_forStyleMaskSelector :: Selector
+standardWindowButton_forStyleMaskSelector :: Selector '[NSWindowButton, NSWindowStyleMask] (Id NSButton)
 standardWindowButton_forStyleMaskSelector = mkSelector "standardWindowButton:forStyleMask:"
 
 -- | @Selector@ for @standardWindowButton:@
-standardWindowButtonSelector :: Selector
+standardWindowButtonSelector :: Selector '[NSWindowButton] (Id NSButton)
 standardWindowButtonSelector = mkSelector "standardWindowButton:"
 
 -- | @Selector@ for @addChildWindow:ordered:@
-addChildWindow_orderedSelector :: Selector
+addChildWindow_orderedSelector :: Selector '[Id NSWindow, NSWindowOrderingMode] ()
 addChildWindow_orderedSelector = mkSelector "addChildWindow:ordered:"
 
 -- | @Selector@ for @removeChildWindow:@
-removeChildWindowSelector :: Selector
+removeChildWindowSelector :: Selector '[Id NSWindow] ()
 removeChildWindowSelector = mkSelector "removeChildWindow:"
 
 -- | @Selector@ for @canRepresentDisplayGamut:@
-canRepresentDisplayGamutSelector :: Selector
+canRepresentDisplayGamutSelector :: Selector '[NSDisplayGamut] Bool
 canRepresentDisplayGamutSelector = mkSelector "canRepresentDisplayGamut:"
 
 -- | @Selector@ for @windowNumbersWithOptions:@
-windowNumbersWithOptionsSelector :: Selector
+windowNumbersWithOptionsSelector :: Selector '[NSWindowNumberListOptions] (Id NSArray)
 windowNumbersWithOptionsSelector = mkSelector "windowNumbersWithOptions:"
 
 -- | @Selector@ for @windowNumberAtPoint:belowWindowWithWindowNumber:@
-windowNumberAtPoint_belowWindowWithWindowNumberSelector :: Selector
+windowNumberAtPoint_belowWindowWithWindowNumberSelector :: Selector '[NSPoint, CLong] CLong
 windowNumberAtPoint_belowWindowWithWindowNumberSelector = mkSelector "windowNumberAtPoint:belowWindowWithWindowNumber:"
 
 -- | @Selector@ for @windowWithContentViewController:@
-windowWithContentViewControllerSelector :: Selector
+windowWithContentViewControllerSelector :: Selector '[Id NSViewController] (Id NSWindow)
 windowWithContentViewControllerSelector = mkSelector "windowWithContentViewController:"
 
 -- | @Selector@ for @performWindowDragWithEvent:@
-performWindowDragWithEventSelector :: Selector
+performWindowDragWithEventSelector :: Selector '[Id NSEvent] ()
 performWindowDragWithEventSelector = mkSelector "performWindowDragWithEvent:"
 
 -- | @Selector@ for @selectNextKeyView:@
-selectNextKeyViewSelector :: Selector
+selectNextKeyViewSelector :: Selector '[RawId] ()
 selectNextKeyViewSelector = mkSelector "selectNextKeyView:"
 
 -- | @Selector@ for @selectPreviousKeyView:@
-selectPreviousKeyViewSelector :: Selector
+selectPreviousKeyViewSelector :: Selector '[RawId] ()
 selectPreviousKeyViewSelector = mkSelector "selectPreviousKeyView:"
 
 -- | @Selector@ for @selectKeyViewFollowingView:@
-selectKeyViewFollowingViewSelector :: Selector
+selectKeyViewFollowingViewSelector :: Selector '[Id NSView] ()
 selectKeyViewFollowingViewSelector = mkSelector "selectKeyViewFollowingView:"
 
 -- | @Selector@ for @selectKeyViewPrecedingView:@
-selectKeyViewPrecedingViewSelector :: Selector
+selectKeyViewPrecedingViewSelector :: Selector '[Id NSView] ()
 selectKeyViewPrecedingViewSelector = mkSelector "selectKeyViewPrecedingView:"
 
 -- | @Selector@ for @disableKeyEquivalentForDefaultButtonCell@
-disableKeyEquivalentForDefaultButtonCellSelector :: Selector
+disableKeyEquivalentForDefaultButtonCellSelector :: Selector '[] ()
 disableKeyEquivalentForDefaultButtonCellSelector = mkSelector "disableKeyEquivalentForDefaultButtonCell"
 
 -- | @Selector@ for @enableKeyEquivalentForDefaultButtonCell@
-enableKeyEquivalentForDefaultButtonCellSelector :: Selector
+enableKeyEquivalentForDefaultButtonCellSelector :: Selector '[] ()
 enableKeyEquivalentForDefaultButtonCellSelector = mkSelector "enableKeyEquivalentForDefaultButtonCell"
 
 -- | @Selector@ for @recalculateKeyViewLoop@
-recalculateKeyViewLoopSelector :: Selector
+recalculateKeyViewLoopSelector :: Selector '[] ()
 recalculateKeyViewLoopSelector = mkSelector "recalculateKeyViewLoop"
 
 -- | @Selector@ for @toggleToolbarShown:@
-toggleToolbarShownSelector :: Selector
+toggleToolbarShownSelector :: Selector '[RawId] ()
 toggleToolbarShownSelector = mkSelector "toggleToolbarShown:"
 
 -- | @Selector@ for @runToolbarCustomizationPalette:@
-runToolbarCustomizationPaletteSelector :: Selector
+runToolbarCustomizationPaletteSelector :: Selector '[RawId] ()
 runToolbarCustomizationPaletteSelector = mkSelector "runToolbarCustomizationPalette:"
 
 -- | @Selector@ for @selectNextTab:@
-selectNextTabSelector :: Selector
+selectNextTabSelector :: Selector '[RawId] ()
 selectNextTabSelector = mkSelector "selectNextTab:"
 
 -- | @Selector@ for @selectPreviousTab:@
-selectPreviousTabSelector :: Selector
+selectPreviousTabSelector :: Selector '[RawId] ()
 selectPreviousTabSelector = mkSelector "selectPreviousTab:"
 
 -- | @Selector@ for @moveTabToNewWindow:@
-moveTabToNewWindowSelector :: Selector
+moveTabToNewWindowSelector :: Selector '[RawId] ()
 moveTabToNewWindowSelector = mkSelector "moveTabToNewWindow:"
 
 -- | @Selector@ for @mergeAllWindows:@
-mergeAllWindowsSelector :: Selector
+mergeAllWindowsSelector :: Selector '[RawId] ()
 mergeAllWindowsSelector = mkSelector "mergeAllWindows:"
 
 -- | @Selector@ for @toggleTabBar:@
-toggleTabBarSelector :: Selector
+toggleTabBarSelector :: Selector '[RawId] ()
 toggleTabBarSelector = mkSelector "toggleTabBar:"
 
 -- | @Selector@ for @toggleTabOverview:@
-toggleTabOverviewSelector :: Selector
+toggleTabOverviewSelector :: Selector '[RawId] ()
 toggleTabOverviewSelector = mkSelector "toggleTabOverview:"
 
 -- | @Selector@ for @addTabbedWindow:ordered:@
-addTabbedWindow_orderedSelector :: Selector
+addTabbedWindow_orderedSelector :: Selector '[Id NSWindow, NSWindowOrderingMode] ()
 addTabbedWindow_orderedSelector = mkSelector "addTabbedWindow:ordered:"
 
 -- | @Selector@ for @transferWindowSharingToWindow:completionHandler:@
-transferWindowSharingToWindow_completionHandlerSelector :: Selector
+transferWindowSharingToWindow_completionHandlerSelector :: Selector '[Id NSWindow, Ptr ()] ()
 transferWindowSharingToWindow_completionHandlerSelector = mkSelector "transferWindowSharingToWindow:completionHandler:"
 
 -- | @Selector@ for @requestSharingOfWindow:completionHandler:@
-requestSharingOfWindow_completionHandlerSelector :: Selector
+requestSharingOfWindow_completionHandlerSelector :: Selector '[Id NSWindow, Ptr ()] ()
 requestSharingOfWindow_completionHandlerSelector = mkSelector "requestSharingOfWindow:completionHandler:"
 
 -- | @Selector@ for @requestSharingOfWindowUsingPreview:title:completionHandler:@
-requestSharingOfWindowUsingPreview_title_completionHandlerSelector :: Selector
+requestSharingOfWindowUsingPreview_title_completionHandlerSelector :: Selector '[Id NSImage, Id NSString, Ptr ()] ()
 requestSharingOfWindowUsingPreview_title_completionHandlerSelector = mkSelector "requestSharingOfWindowUsingPreview:title:completionHandler:"
 
 -- | @Selector@ for @disableSnapshotRestoration@
-disableSnapshotRestorationSelector :: Selector
+disableSnapshotRestorationSelector :: Selector '[] ()
 disableSnapshotRestorationSelector = mkSelector "disableSnapshotRestoration"
 
 -- | @Selector@ for @enableSnapshotRestoration@
-enableSnapshotRestorationSelector :: Selector
+enableSnapshotRestorationSelector :: Selector '[] ()
 enableSnapshotRestorationSelector = mkSelector "enableSnapshotRestoration"
 
 -- | @Selector@ for @setIsMiniaturized:@
-setIsMiniaturizedSelector :: Selector
+setIsMiniaturizedSelector :: Selector '[Bool] ()
 setIsMiniaturizedSelector = mkSelector "setIsMiniaturized:"
 
 -- | @Selector@ for @setIsVisible:@
-setIsVisibleSelector :: Selector
+setIsVisibleSelector :: Selector '[Bool] ()
 setIsVisibleSelector = mkSelector "setIsVisible:"
 
 -- | @Selector@ for @setIsZoomed:@
-setIsZoomedSelector :: Selector
+setIsZoomedSelector :: Selector '[Bool] ()
 setIsZoomedSelector = mkSelector "setIsZoomed:"
 
 -- | @Selector@ for @handleCloseScriptCommand:@
-handleCloseScriptCommandSelector :: Selector
+handleCloseScriptCommandSelector :: Selector '[Id NSCloseCommand] RawId
 handleCloseScriptCommandSelector = mkSelector "handleCloseScriptCommand:"
 
 -- | @Selector@ for @handlePrintScriptCommand:@
-handlePrintScriptCommandSelector :: Selector
+handlePrintScriptCommandSelector :: Selector '[Id NSScriptCommand] RawId
 handlePrintScriptCommandSelector = mkSelector "handlePrintScriptCommand:"
 
 -- | @Selector@ for @handleSaveScriptCommand:@
-handleSaveScriptCommandSelector :: Selector
+handleSaveScriptCommandSelector :: Selector '[Id NSScriptCommand] RawId
 handleSaveScriptCommandSelector = mkSelector "handleSaveScriptCommand:"
 
 -- | @Selector@ for @visualizeConstraints:@
-visualizeConstraintsSelector :: Selector
+visualizeConstraintsSelector :: Selector '[Id NSArray] ()
 visualizeConstraintsSelector = mkSelector "visualizeConstraints:"
 
 -- | @Selector@ for @anchorAttributeForOrientation:@
-anchorAttributeForOrientationSelector :: Selector
+anchorAttributeForOrientationSelector :: Selector '[NSLayoutConstraintOrientation] NSLayoutAttribute
 anchorAttributeForOrientationSelector = mkSelector "anchorAttributeForOrientation:"
 
 -- | @Selector@ for @setAnchorAttribute:forOrientation:@
-setAnchorAttribute_forOrientationSelector :: Selector
+setAnchorAttribute_forOrientationSelector :: Selector '[NSLayoutAttribute, NSLayoutConstraintOrientation] ()
 setAnchorAttribute_forOrientationSelector = mkSelector "setAnchorAttribute:forOrientation:"
 
 -- | @Selector@ for @updateConstraintsIfNeeded@
-updateConstraintsIfNeededSelector :: Selector
+updateConstraintsIfNeededSelector :: Selector '[] ()
 updateConstraintsIfNeededSelector = mkSelector "updateConstraintsIfNeeded"
 
 -- | @Selector@ for @layoutIfNeeded@
-layoutIfNeededSelector :: Selector
+layoutIfNeededSelector :: Selector '[] ()
 layoutIfNeededSelector = mkSelector "layoutIfNeeded"
 
 -- | @Selector@ for @cacheImageInRect:@
-cacheImageInRectSelector :: Selector
+cacheImageInRectSelector :: Selector '[NSRect] ()
 cacheImageInRectSelector = mkSelector "cacheImageInRect:"
 
 -- | @Selector@ for @restoreCachedImage@
-restoreCachedImageSelector :: Selector
+restoreCachedImageSelector :: Selector '[] ()
 restoreCachedImageSelector = mkSelector "restoreCachedImage"
 
 -- | @Selector@ for @discardCachedImage@
-discardCachedImageSelector :: Selector
+discardCachedImageSelector :: Selector '[] ()
 discardCachedImageSelector = mkSelector "discardCachedImage"
 
 -- | @Selector@ for @menuChanged:@
-menuChangedSelector :: Selector
+menuChangedSelector :: Selector '[Id NSMenu] ()
 menuChangedSelector = mkSelector "menuChanged:"
 
 -- | @Selector@ for @gState@
-gStateSelector :: Selector
+gStateSelector :: Selector '[] CLong
 gStateSelector = mkSelector "gState"
 
 -- | @Selector@ for @convertBaseToScreen:@
-convertBaseToScreenSelector :: Selector
+convertBaseToScreenSelector :: Selector '[NSPoint] NSPoint
 convertBaseToScreenSelector = mkSelector "convertBaseToScreen:"
 
 -- | @Selector@ for @convertScreenToBase:@
-convertScreenToBaseSelector :: Selector
+convertScreenToBaseSelector :: Selector '[NSPoint] NSPoint
 convertScreenToBaseSelector = mkSelector "convertScreenToBase:"
 
 -- | @Selector@ for @userSpaceScaleFactor@
-userSpaceScaleFactorSelector :: Selector
+userSpaceScaleFactorSelector :: Selector '[] CDouble
 userSpaceScaleFactorSelector = mkSelector "userSpaceScaleFactor"
 
 -- | @Selector@ for @useOptimizedDrawing:@
-useOptimizedDrawingSelector :: Selector
+useOptimizedDrawingSelector :: Selector '[Bool] ()
 useOptimizedDrawingSelector = mkSelector "useOptimizedDrawing:"
 
 -- | @Selector@ for @canStoreColor@
-canStoreColorSelector :: Selector
+canStoreColorSelector :: Selector '[] Bool
 canStoreColorSelector = mkSelector "canStoreColor"
 
 -- | @Selector@ for @disableFlushWindow@
-disableFlushWindowSelector :: Selector
+disableFlushWindowSelector :: Selector '[] ()
 disableFlushWindowSelector = mkSelector "disableFlushWindow"
 
 -- | @Selector@ for @enableFlushWindow@
-enableFlushWindowSelector :: Selector
+enableFlushWindowSelector :: Selector '[] ()
 enableFlushWindowSelector = mkSelector "enableFlushWindow"
 
 -- | @Selector@ for @flushWindow@
-flushWindowSelector :: Selector
+flushWindowSelector :: Selector '[] ()
 flushWindowSelector = mkSelector "flushWindow"
 
 -- | @Selector@ for @flushWindowIfNeeded@
-flushWindowIfNeededSelector :: Selector
+flushWindowIfNeededSelector :: Selector '[] ()
 flushWindowIfNeededSelector = mkSelector "flushWindowIfNeeded"
 
 -- | @Selector@ for @initWithWindowRef:@
-initWithWindowRefSelector :: Selector
+initWithWindowRefSelector :: Selector '[Ptr ()] (Id NSWindow)
 initWithWindowRefSelector = mkSelector "initWithWindowRef:"
 
 -- | @Selector@ for @disableScreenUpdatesUntilFlush@
-disableScreenUpdatesUntilFlushSelector :: Selector
+disableScreenUpdatesUntilFlushSelector :: Selector '[] ()
 disableScreenUpdatesUntilFlushSelector = mkSelector "disableScreenUpdatesUntilFlush"
 
 -- | @Selector@ for @displayLinkWithTarget:selector:@
-displayLinkWithTarget_selectorSelector :: Selector
+displayLinkWithTarget_selectorSelector :: Selector '[RawId, Sel] (Id CADisplayLink)
 displayLinkWithTarget_selectorSelector = mkSelector "displayLinkWithTarget:selector:"
 
 -- | @Selector@ for @beginDraggingSessionWithItems:event:source:@
-beginDraggingSessionWithItems_event_sourceSelector :: Selector
+beginDraggingSessionWithItems_event_sourceSelector :: Selector '[Id NSArray, Id NSEvent, RawId] (Id NSDraggingSession)
 beginDraggingSessionWithItems_event_sourceSelector = mkSelector "beginDraggingSessionWithItems:event:source:"
 
 -- | @Selector@ for @dragImage:at:offset:event:pasteboard:source:slideBack:@
-dragImage_at_offset_event_pasteboard_source_slideBackSelector :: Selector
+dragImage_at_offset_event_pasteboard_source_slideBackSelector :: Selector '[Id NSImage, NSPoint, NSSize, Id NSEvent, Id NSPasteboard, RawId, Bool] ()
 dragImage_at_offset_event_pasteboard_source_slideBackSelector = mkSelector "dragImage:at:offset:event:pasteboard:source:slideBack:"
 
 -- | @Selector@ for @registerForDraggedTypes:@
-registerForDraggedTypesSelector :: Selector
+registerForDraggedTypesSelector :: Selector '[Id NSArray] ()
 registerForDraggedTypesSelector = mkSelector "registerForDraggedTypes:"
 
 -- | @Selector@ for @unregisterDraggedTypes@
-unregisterDraggedTypesSelector :: Selector
+unregisterDraggedTypesSelector :: Selector '[] ()
 unregisterDraggedTypesSelector = mkSelector "unregisterDraggedTypes"
 
 -- | @Selector@ for @disableCursorRects@
-disableCursorRectsSelector :: Selector
+disableCursorRectsSelector :: Selector '[] ()
 disableCursorRectsSelector = mkSelector "disableCursorRects"
 
 -- | @Selector@ for @enableCursorRects@
-enableCursorRectsSelector :: Selector
+enableCursorRectsSelector :: Selector '[] ()
 enableCursorRectsSelector = mkSelector "enableCursorRects"
 
 -- | @Selector@ for @discardCursorRects@
-discardCursorRectsSelector :: Selector
+discardCursorRectsSelector :: Selector '[] ()
 discardCursorRectsSelector = mkSelector "discardCursorRects"
 
 -- | @Selector@ for @invalidateCursorRectsForView:@
-invalidateCursorRectsForViewSelector :: Selector
+invalidateCursorRectsForViewSelector :: Selector '[Id NSView] ()
 invalidateCursorRectsForViewSelector = mkSelector "invalidateCursorRectsForView:"
 
 -- | @Selector@ for @resetCursorRects@
-resetCursorRectsSelector :: Selector
+resetCursorRectsSelector :: Selector '[] ()
 resetCursorRectsSelector = mkSelector "resetCursorRects"
 
 -- | @Selector@ for @trackEventsMatchingMask:timeout:mode:handler:@
-trackEventsMatchingMask_timeout_mode_handlerSelector :: Selector
+trackEventsMatchingMask_timeout_mode_handlerSelector :: Selector '[NSEventMask, CDouble, Id NSString, Ptr ()] ()
 trackEventsMatchingMask_timeout_mode_handlerSelector = mkSelector "trackEventsMatchingMask:timeout:mode:handler:"
 
 -- | @Selector@ for @nextEventMatchingMask:@
-nextEventMatchingMaskSelector :: Selector
+nextEventMatchingMaskSelector :: Selector '[NSEventMask] (Id NSEvent)
 nextEventMatchingMaskSelector = mkSelector "nextEventMatchingMask:"
 
 -- | @Selector@ for @nextEventMatchingMask:untilDate:inMode:dequeue:@
-nextEventMatchingMask_untilDate_inMode_dequeueSelector :: Selector
+nextEventMatchingMask_untilDate_inMode_dequeueSelector :: Selector '[NSEventMask, Id NSDate, Id NSString, Bool] (Id NSEvent)
 nextEventMatchingMask_untilDate_inMode_dequeueSelector = mkSelector "nextEventMatchingMask:untilDate:inMode:dequeue:"
 
 -- | @Selector@ for @discardEventsMatchingMask:beforeEvent:@
-discardEventsMatchingMask_beforeEventSelector :: Selector
+discardEventsMatchingMask_beforeEventSelector :: Selector '[NSEventMask, Id NSEvent] ()
 discardEventsMatchingMask_beforeEventSelector = mkSelector "discardEventsMatchingMask:beforeEvent:"
 
 -- | @Selector@ for @postEvent:atStart:@
-postEvent_atStartSelector :: Selector
+postEvent_atStartSelector :: Selector '[Id NSEvent, Bool] ()
 postEvent_atStartSelector = mkSelector "postEvent:atStart:"
 
 -- | @Selector@ for @sendEvent:@
-sendEventSelector :: Selector
+sendEventSelector :: Selector '[Id NSEvent] ()
 sendEventSelector = mkSelector "sendEvent:"
 
 -- | @Selector@ for @defaultDepthLimit@
-defaultDepthLimitSelector :: Selector
+defaultDepthLimitSelector :: Selector '[] NSWindowDepth
 defaultDepthLimitSelector = mkSelector "defaultDepthLimit"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @subtitle@
-subtitleSelector :: Selector
+subtitleSelector :: Selector '[] (Id NSString)
 subtitleSelector = mkSelector "subtitle"
 
 -- | @Selector@ for @setSubtitle:@
-setSubtitleSelector :: Selector
+setSubtitleSelector :: Selector '[Id NSString] ()
 setSubtitleSelector = mkSelector "setSubtitle:"
 
 -- | @Selector@ for @titleVisibility@
-titleVisibilitySelector :: Selector
+titleVisibilitySelector :: Selector '[] NSWindowTitleVisibility
 titleVisibilitySelector = mkSelector "titleVisibility"
 
 -- | @Selector@ for @setTitleVisibility:@
-setTitleVisibilitySelector :: Selector
+setTitleVisibilitySelector :: Selector '[NSWindowTitleVisibility] ()
 setTitleVisibilitySelector = mkSelector "setTitleVisibility:"
 
 -- | @Selector@ for @titlebarAppearsTransparent@
-titlebarAppearsTransparentSelector :: Selector
+titlebarAppearsTransparentSelector :: Selector '[] Bool
 titlebarAppearsTransparentSelector = mkSelector "titlebarAppearsTransparent"
 
 -- | @Selector@ for @setTitlebarAppearsTransparent:@
-setTitlebarAppearsTransparentSelector :: Selector
+setTitlebarAppearsTransparentSelector :: Selector '[Bool] ()
 setTitlebarAppearsTransparentSelector = mkSelector "setTitlebarAppearsTransparent:"
 
 -- | @Selector@ for @toolbarStyle@
-toolbarStyleSelector :: Selector
+toolbarStyleSelector :: Selector '[] NSWindowToolbarStyle
 toolbarStyleSelector = mkSelector "toolbarStyle"
 
 -- | @Selector@ for @setToolbarStyle:@
-setToolbarStyleSelector :: Selector
+setToolbarStyleSelector :: Selector '[NSWindowToolbarStyle] ()
 setToolbarStyleSelector = mkSelector "setToolbarStyle:"
 
 -- | @Selector@ for @contentLayoutRect@
-contentLayoutRectSelector :: Selector
+contentLayoutRectSelector :: Selector '[] NSRect
 contentLayoutRectSelector = mkSelector "contentLayoutRect"
 
 -- | @Selector@ for @contentLayoutGuide@
-contentLayoutGuideSelector :: Selector
+contentLayoutGuideSelector :: Selector '[] RawId
 contentLayoutGuideSelector = mkSelector "contentLayoutGuide"
 
 -- | @Selector@ for @titlebarAccessoryViewControllers@
-titlebarAccessoryViewControllersSelector :: Selector
+titlebarAccessoryViewControllersSelector :: Selector '[] (Id NSArray)
 titlebarAccessoryViewControllersSelector = mkSelector "titlebarAccessoryViewControllers"
 
 -- | @Selector@ for @setTitlebarAccessoryViewControllers:@
-setTitlebarAccessoryViewControllersSelector :: Selector
+setTitlebarAccessoryViewControllersSelector :: Selector '[Id NSArray] ()
 setTitlebarAccessoryViewControllersSelector = mkSelector "setTitlebarAccessoryViewControllers:"
 
 -- | @Selector@ for @representedURL@
-representedURLSelector :: Selector
+representedURLSelector :: Selector '[] (Id NSURL)
 representedURLSelector = mkSelector "representedURL"
 
 -- | @Selector@ for @setRepresentedURL:@
-setRepresentedURLSelector :: Selector
+setRepresentedURLSelector :: Selector '[Id NSURL] ()
 setRepresentedURLSelector = mkSelector "setRepresentedURL:"
 
 -- | @Selector@ for @representedFilename@
-representedFilenameSelector :: Selector
+representedFilenameSelector :: Selector '[] (Id NSString)
 representedFilenameSelector = mkSelector "representedFilename"
 
 -- | @Selector@ for @setRepresentedFilename:@
-setRepresentedFilenameSelector :: Selector
+setRepresentedFilenameSelector :: Selector '[Id NSString] ()
 setRepresentedFilenameSelector = mkSelector "setRepresentedFilename:"
 
 -- | @Selector@ for @excludedFromWindowsMenu@
-excludedFromWindowsMenuSelector :: Selector
+excludedFromWindowsMenuSelector :: Selector '[] Bool
 excludedFromWindowsMenuSelector = mkSelector "excludedFromWindowsMenu"
 
 -- | @Selector@ for @setExcludedFromWindowsMenu:@
-setExcludedFromWindowsMenuSelector :: Selector
+setExcludedFromWindowsMenuSelector :: Selector '[Bool] ()
 setExcludedFromWindowsMenuSelector = mkSelector "setExcludedFromWindowsMenu:"
 
 -- | @Selector@ for @contentView@
-contentViewSelector :: Selector
+contentViewSelector :: Selector '[] (Id NSView)
 contentViewSelector = mkSelector "contentView"
 
 -- | @Selector@ for @setContentView:@
-setContentViewSelector :: Selector
+setContentViewSelector :: Selector '[Id NSView] ()
 setContentViewSelector = mkSelector "setContentView:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @windowNumber@
-windowNumberSelector :: Selector
+windowNumberSelector :: Selector '[] CLong
 windowNumberSelector = mkSelector "windowNumber"
 
 -- | @Selector@ for @styleMask@
-styleMaskSelector :: Selector
+styleMaskSelector :: Selector '[] NSWindowStyleMask
 styleMaskSelector = mkSelector "styleMask"
 
 -- | @Selector@ for @setStyleMask:@
-setStyleMaskSelector :: Selector
+setStyleMaskSelector :: Selector '[NSWindowStyleMask] ()
 setStyleMaskSelector = mkSelector "setStyleMask:"
 
 -- | @Selector@ for @cascadingReferenceFrame@
-cascadingReferenceFrameSelector :: Selector
+cascadingReferenceFrameSelector :: Selector '[] NSRect
 cascadingReferenceFrameSelector = mkSelector "cascadingReferenceFrame"
 
 -- | @Selector@ for @frame@
-frameSelector :: Selector
+frameSelector :: Selector '[] NSRect
 frameSelector = mkSelector "frame"
 
 -- | @Selector@ for @inLiveResize@
-inLiveResizeSelector :: Selector
+inLiveResizeSelector :: Selector '[] Bool
 inLiveResizeSelector = mkSelector "inLiveResize"
 
 -- | @Selector@ for @resizeIncrements@
-resizeIncrementsSelector :: Selector
+resizeIncrementsSelector :: Selector '[] NSSize
 resizeIncrementsSelector = mkSelector "resizeIncrements"
 
 -- | @Selector@ for @setResizeIncrements:@
-setResizeIncrementsSelector :: Selector
+setResizeIncrementsSelector :: Selector '[NSSize] ()
 setResizeIncrementsSelector = mkSelector "setResizeIncrements:"
 
 -- | @Selector@ for @aspectRatio@
-aspectRatioSelector :: Selector
+aspectRatioSelector :: Selector '[] NSSize
 aspectRatioSelector = mkSelector "aspectRatio"
 
 -- | @Selector@ for @setAspectRatio:@
-setAspectRatioSelector :: Selector
+setAspectRatioSelector :: Selector '[NSSize] ()
 setAspectRatioSelector = mkSelector "setAspectRatio:"
 
 -- | @Selector@ for @contentResizeIncrements@
-contentResizeIncrementsSelector :: Selector
+contentResizeIncrementsSelector :: Selector '[] NSSize
 contentResizeIncrementsSelector = mkSelector "contentResizeIncrements"
 
 -- | @Selector@ for @setContentResizeIncrements:@
-setContentResizeIncrementsSelector :: Selector
+setContentResizeIncrementsSelector :: Selector '[NSSize] ()
 setContentResizeIncrementsSelector = mkSelector "setContentResizeIncrements:"
 
 -- | @Selector@ for @contentAspectRatio@
-contentAspectRatioSelector :: Selector
+contentAspectRatioSelector :: Selector '[] NSSize
 contentAspectRatioSelector = mkSelector "contentAspectRatio"
 
 -- | @Selector@ for @setContentAspectRatio:@
-setContentAspectRatioSelector :: Selector
+setContentAspectRatioSelector :: Selector '[NSSize] ()
 setContentAspectRatioSelector = mkSelector "setContentAspectRatio:"
 
 -- | @Selector@ for @viewsNeedDisplay@
-viewsNeedDisplaySelector :: Selector
+viewsNeedDisplaySelector :: Selector '[] Bool
 viewsNeedDisplaySelector = mkSelector "viewsNeedDisplay"
 
 -- | @Selector@ for @setViewsNeedDisplay:@
-setViewsNeedDisplaySelector :: Selector
+setViewsNeedDisplaySelector :: Selector '[Bool] ()
 setViewsNeedDisplaySelector = mkSelector "setViewsNeedDisplay:"
 
 -- | @Selector@ for @preservesContentDuringLiveResize@
-preservesContentDuringLiveResizeSelector :: Selector
+preservesContentDuringLiveResizeSelector :: Selector '[] Bool
 preservesContentDuringLiveResizeSelector = mkSelector "preservesContentDuringLiveResize"
 
 -- | @Selector@ for @setPreservesContentDuringLiveResize:@
-setPreservesContentDuringLiveResizeSelector :: Selector
+setPreservesContentDuringLiveResizeSelector :: Selector '[Bool] ()
 setPreservesContentDuringLiveResizeSelector = mkSelector "setPreservesContentDuringLiveResize:"
 
 -- | @Selector@ for @firstResponder@
-firstResponderSelector :: Selector
+firstResponderSelector :: Selector '[] (Id NSResponder)
 firstResponderSelector = mkSelector "firstResponder"
 
 -- | @Selector@ for @resizeFlags@
-resizeFlagsSelector :: Selector
+resizeFlagsSelector :: Selector '[] NSEventModifierFlags
 resizeFlagsSelector = mkSelector "resizeFlags"
 
 -- | @Selector@ for @releasedWhenClosed@
-releasedWhenClosedSelector :: Selector
+releasedWhenClosedSelector :: Selector '[] Bool
 releasedWhenClosedSelector = mkSelector "releasedWhenClosed"
 
 -- | @Selector@ for @setReleasedWhenClosed:@
-setReleasedWhenClosedSelector :: Selector
+setReleasedWhenClosedSelector :: Selector '[Bool] ()
 setReleasedWhenClosedSelector = mkSelector "setReleasedWhenClosed:"
 
 -- | @Selector@ for @zoomed@
-zoomedSelector :: Selector
+zoomedSelector :: Selector '[] Bool
 zoomedSelector = mkSelector "zoomed"
 
 -- | @Selector@ for @miniaturized@
-miniaturizedSelector :: Selector
+miniaturizedSelector :: Selector '[] Bool
 miniaturizedSelector = mkSelector "miniaturized"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @movable@
-movableSelector :: Selector
+movableSelector :: Selector '[] Bool
 movableSelector = mkSelector "movable"
 
 -- | @Selector@ for @setMovable:@
-setMovableSelector :: Selector
+setMovableSelector :: Selector '[Bool] ()
 setMovableSelector = mkSelector "setMovable:"
 
 -- | @Selector@ for @movableByWindowBackground@
-movableByWindowBackgroundSelector :: Selector
+movableByWindowBackgroundSelector :: Selector '[] Bool
 movableByWindowBackgroundSelector = mkSelector "movableByWindowBackground"
 
 -- | @Selector@ for @setMovableByWindowBackground:@
-setMovableByWindowBackgroundSelector :: Selector
+setMovableByWindowBackgroundSelector :: Selector '[Bool] ()
 setMovableByWindowBackgroundSelector = mkSelector "setMovableByWindowBackground:"
 
 -- | @Selector@ for @hidesOnDeactivate@
-hidesOnDeactivateSelector :: Selector
+hidesOnDeactivateSelector :: Selector '[] Bool
 hidesOnDeactivateSelector = mkSelector "hidesOnDeactivate"
 
 -- | @Selector@ for @setHidesOnDeactivate:@
-setHidesOnDeactivateSelector :: Selector
+setHidesOnDeactivateSelector :: Selector '[Bool] ()
 setHidesOnDeactivateSelector = mkSelector "setHidesOnDeactivate:"
 
 -- | @Selector@ for @canHide@
-canHideSelector :: Selector
+canHideSelector :: Selector '[] Bool
 canHideSelector = mkSelector "canHide"
 
 -- | @Selector@ for @setCanHide:@
-setCanHideSelector :: Selector
+setCanHideSelector :: Selector '[Bool] ()
 setCanHideSelector = mkSelector "setCanHide:"
 
 -- | @Selector@ for @miniwindowImage@
-miniwindowImageSelector :: Selector
+miniwindowImageSelector :: Selector '[] (Id NSImage)
 miniwindowImageSelector = mkSelector "miniwindowImage"
 
 -- | @Selector@ for @setMiniwindowImage:@
-setMiniwindowImageSelector :: Selector
+setMiniwindowImageSelector :: Selector '[Id NSImage] ()
 setMiniwindowImageSelector = mkSelector "setMiniwindowImage:"
 
 -- | @Selector@ for @miniwindowTitle@
-miniwindowTitleSelector :: Selector
+miniwindowTitleSelector :: Selector '[] (Id NSString)
 miniwindowTitleSelector = mkSelector "miniwindowTitle"
 
 -- | @Selector@ for @setMiniwindowTitle:@
-setMiniwindowTitleSelector :: Selector
+setMiniwindowTitleSelector :: Selector '[Id NSString] ()
 setMiniwindowTitleSelector = mkSelector "setMiniwindowTitle:"
 
 -- | @Selector@ for @dockTile@
-dockTileSelector :: Selector
+dockTileSelector :: Selector '[] (Id NSDockTile)
 dockTileSelector = mkSelector "dockTile"
 
 -- | @Selector@ for @documentEdited@
-documentEditedSelector :: Selector
+documentEditedSelector :: Selector '[] Bool
 documentEditedSelector = mkSelector "documentEdited"
 
 -- | @Selector@ for @setDocumentEdited:@
-setDocumentEditedSelector :: Selector
+setDocumentEditedSelector :: Selector '[Bool] ()
 setDocumentEditedSelector = mkSelector "setDocumentEdited:"
 
 -- | @Selector@ for @visible@
-visibleSelector :: Selector
+visibleSelector :: Selector '[] Bool
 visibleSelector = mkSelector "visible"
 
 -- | @Selector@ for @keyWindow@
-keyWindowSelector :: Selector
+keyWindowSelector :: Selector '[] Bool
 keyWindowSelector = mkSelector "keyWindow"
 
 -- | @Selector@ for @mainWindow@
-mainWindowSelector :: Selector
+mainWindowSelector :: Selector '[] Bool
 mainWindowSelector = mkSelector "mainWindow"
 
 -- | @Selector@ for @canBecomeKeyWindow@
-canBecomeKeyWindowSelector :: Selector
+canBecomeKeyWindowSelector :: Selector '[] Bool
 canBecomeKeyWindowSelector = mkSelector "canBecomeKeyWindow"
 
 -- | @Selector@ for @canBecomeMainWindow@
-canBecomeMainWindowSelector :: Selector
+canBecomeMainWindowSelector :: Selector '[] Bool
 canBecomeMainWindowSelector = mkSelector "canBecomeMainWindow"
 
 -- | @Selector@ for @worksWhenModal@
-worksWhenModalSelector :: Selector
+worksWhenModalSelector :: Selector '[] Bool
 worksWhenModalSelector = mkSelector "worksWhenModal"
 
 -- | @Selector@ for @preventsApplicationTerminationWhenModal@
-preventsApplicationTerminationWhenModalSelector :: Selector
+preventsApplicationTerminationWhenModalSelector :: Selector '[] Bool
 preventsApplicationTerminationWhenModalSelector = mkSelector "preventsApplicationTerminationWhenModal"
 
 -- | @Selector@ for @setPreventsApplicationTerminationWhenModal:@
-setPreventsApplicationTerminationWhenModalSelector :: Selector
+setPreventsApplicationTerminationWhenModalSelector :: Selector '[Bool] ()
 setPreventsApplicationTerminationWhenModalSelector = mkSelector "setPreventsApplicationTerminationWhenModal:"
 
 -- | @Selector@ for @backingScaleFactor@
-backingScaleFactorSelector :: Selector
+backingScaleFactorSelector :: Selector '[] CDouble
 backingScaleFactorSelector = mkSelector "backingScaleFactor"
 
 -- | @Selector@ for @allowsToolTipsWhenApplicationIsInactive@
-allowsToolTipsWhenApplicationIsInactiveSelector :: Selector
+allowsToolTipsWhenApplicationIsInactiveSelector :: Selector '[] Bool
 allowsToolTipsWhenApplicationIsInactiveSelector = mkSelector "allowsToolTipsWhenApplicationIsInactive"
 
 -- | @Selector@ for @setAllowsToolTipsWhenApplicationIsInactive:@
-setAllowsToolTipsWhenApplicationIsInactiveSelector :: Selector
+setAllowsToolTipsWhenApplicationIsInactiveSelector :: Selector '[Bool] ()
 setAllowsToolTipsWhenApplicationIsInactiveSelector = mkSelector "setAllowsToolTipsWhenApplicationIsInactive:"
 
 -- | @Selector@ for @backingType@
-backingTypeSelector :: Selector
+backingTypeSelector :: Selector '[] NSBackingStoreType
 backingTypeSelector = mkSelector "backingType"
 
 -- | @Selector@ for @setBackingType:@
-setBackingTypeSelector :: Selector
+setBackingTypeSelector :: Selector '[NSBackingStoreType] ()
 setBackingTypeSelector = mkSelector "setBackingType:"
 
 -- | @Selector@ for @level@
-levelSelector :: Selector
+levelSelector :: Selector '[] CLong
 levelSelector = mkSelector "level"
 
 -- | @Selector@ for @setLevel:@
-setLevelSelector :: Selector
+setLevelSelector :: Selector '[CLong] ()
 setLevelSelector = mkSelector "setLevel:"
 
 -- | @Selector@ for @depthLimit@
-depthLimitSelector :: Selector
+depthLimitSelector :: Selector '[] NSWindowDepth
 depthLimitSelector = mkSelector "depthLimit"
 
 -- | @Selector@ for @setDepthLimit:@
-setDepthLimitSelector :: Selector
+setDepthLimitSelector :: Selector '[NSWindowDepth] ()
 setDepthLimitSelector = mkSelector "setDepthLimit:"
 
 -- | @Selector@ for @hasDynamicDepthLimit@
-hasDynamicDepthLimitSelector :: Selector
+hasDynamicDepthLimitSelector :: Selector '[] Bool
 hasDynamicDepthLimitSelector = mkSelector "hasDynamicDepthLimit"
 
 -- | @Selector@ for @screen@
-screenSelector :: Selector
+screenSelector :: Selector '[] (Id NSScreen)
 screenSelector = mkSelector "screen"
 
 -- | @Selector@ for @deepestScreen@
-deepestScreenSelector :: Selector
+deepestScreenSelector :: Selector '[] (Id NSScreen)
 deepestScreenSelector = mkSelector "deepestScreen"
 
 -- | @Selector@ for @hasShadow@
-hasShadowSelector :: Selector
+hasShadowSelector :: Selector '[] Bool
 hasShadowSelector = mkSelector "hasShadow"
 
 -- | @Selector@ for @setHasShadow:@
-setHasShadowSelector :: Selector
+setHasShadowSelector :: Selector '[Bool] ()
 setHasShadowSelector = mkSelector "setHasShadow:"
 
 -- | @Selector@ for @alphaValue@
-alphaValueSelector :: Selector
+alphaValueSelector :: Selector '[] CDouble
 alphaValueSelector = mkSelector "alphaValue"
 
 -- | @Selector@ for @setAlphaValue:@
-setAlphaValueSelector :: Selector
+setAlphaValueSelector :: Selector '[CDouble] ()
 setAlphaValueSelector = mkSelector "setAlphaValue:"
 
 -- | @Selector@ for @opaque@
-opaqueSelector :: Selector
+opaqueSelector :: Selector '[] Bool
 opaqueSelector = mkSelector "opaque"
 
 -- | @Selector@ for @setOpaque:@
-setOpaqueSelector :: Selector
+setOpaqueSelector :: Selector '[Bool] ()
 setOpaqueSelector = mkSelector "setOpaque:"
 
 -- | @Selector@ for @sharingType@
-sharingTypeSelector :: Selector
+sharingTypeSelector :: Selector '[] NSWindowSharingType
 sharingTypeSelector = mkSelector "sharingType"
 
 -- | @Selector@ for @setSharingType:@
-setSharingTypeSelector :: Selector
+setSharingTypeSelector :: Selector '[NSWindowSharingType] ()
 setSharingTypeSelector = mkSelector "setSharingType:"
 
 -- | @Selector@ for @allowsConcurrentViewDrawing@
-allowsConcurrentViewDrawingSelector :: Selector
+allowsConcurrentViewDrawingSelector :: Selector '[] Bool
 allowsConcurrentViewDrawingSelector = mkSelector "allowsConcurrentViewDrawing"
 
 -- | @Selector@ for @setAllowsConcurrentViewDrawing:@
-setAllowsConcurrentViewDrawingSelector :: Selector
+setAllowsConcurrentViewDrawingSelector :: Selector '[Bool] ()
 setAllowsConcurrentViewDrawingSelector = mkSelector "setAllowsConcurrentViewDrawing:"
 
 -- | @Selector@ for @displaysWhenScreenProfileChanges@
-displaysWhenScreenProfileChangesSelector :: Selector
+displaysWhenScreenProfileChangesSelector :: Selector '[] Bool
 displaysWhenScreenProfileChangesSelector = mkSelector "displaysWhenScreenProfileChanges"
 
 -- | @Selector@ for @setDisplaysWhenScreenProfileChanges:@
-setDisplaysWhenScreenProfileChangesSelector :: Selector
+setDisplaysWhenScreenProfileChangesSelector :: Selector '[Bool] ()
 setDisplaysWhenScreenProfileChangesSelector = mkSelector "setDisplaysWhenScreenProfileChanges:"
 
 -- | @Selector@ for @canBecomeVisibleWithoutLogin@
-canBecomeVisibleWithoutLoginSelector :: Selector
+canBecomeVisibleWithoutLoginSelector :: Selector '[] Bool
 canBecomeVisibleWithoutLoginSelector = mkSelector "canBecomeVisibleWithoutLogin"
 
 -- | @Selector@ for @setCanBecomeVisibleWithoutLogin:@
-setCanBecomeVisibleWithoutLoginSelector :: Selector
+setCanBecomeVisibleWithoutLoginSelector :: Selector '[Bool] ()
 setCanBecomeVisibleWithoutLoginSelector = mkSelector "setCanBecomeVisibleWithoutLogin:"
 
 -- | @Selector@ for @collectionBehavior@
-collectionBehaviorSelector :: Selector
+collectionBehaviorSelector :: Selector '[] NSWindowCollectionBehavior
 collectionBehaviorSelector = mkSelector "collectionBehavior"
 
 -- | @Selector@ for @setCollectionBehavior:@
-setCollectionBehaviorSelector :: Selector
+setCollectionBehaviorSelector :: Selector '[NSWindowCollectionBehavior] ()
 setCollectionBehaviorSelector = mkSelector "setCollectionBehavior:"
 
 -- | @Selector@ for @animationBehavior@
-animationBehaviorSelector :: Selector
+animationBehaviorSelector :: Selector '[] NSWindowAnimationBehavior
 animationBehaviorSelector = mkSelector "animationBehavior"
 
 -- | @Selector@ for @setAnimationBehavior:@
-setAnimationBehaviorSelector :: Selector
+setAnimationBehaviorSelector :: Selector '[NSWindowAnimationBehavior] ()
 setAnimationBehaviorSelector = mkSelector "setAnimationBehavior:"
 
 -- | @Selector@ for @onActiveSpace@
-onActiveSpaceSelector :: Selector
+onActiveSpaceSelector :: Selector '[] Bool
 onActiveSpaceSelector = mkSelector "onActiveSpace"
 
 -- | @Selector@ for @stringWithSavedFrame@
-stringWithSavedFrameSelector :: Selector
+stringWithSavedFrameSelector :: Selector '[] (Id NSString)
 stringWithSavedFrameSelector = mkSelector "stringWithSavedFrame"
 
 -- | @Selector@ for @frameAutosaveName@
-frameAutosaveNameSelector :: Selector
+frameAutosaveNameSelector :: Selector '[] (Id NSString)
 frameAutosaveNameSelector = mkSelector "frameAutosaveName"
 
 -- | @Selector@ for @minSize@
-minSizeSelector :: Selector
+minSizeSelector :: Selector '[] NSSize
 minSizeSelector = mkSelector "minSize"
 
 -- | @Selector@ for @setMinSize:@
-setMinSizeSelector :: Selector
+setMinSizeSelector :: Selector '[NSSize] ()
 setMinSizeSelector = mkSelector "setMinSize:"
 
 -- | @Selector@ for @maxSize@
-maxSizeSelector :: Selector
+maxSizeSelector :: Selector '[] NSSize
 maxSizeSelector = mkSelector "maxSize"
 
 -- | @Selector@ for @setMaxSize:@
-setMaxSizeSelector :: Selector
+setMaxSizeSelector :: Selector '[NSSize] ()
 setMaxSizeSelector = mkSelector "setMaxSize:"
 
 -- | @Selector@ for @contentMinSize@
-contentMinSizeSelector :: Selector
+contentMinSizeSelector :: Selector '[] NSSize
 contentMinSizeSelector = mkSelector "contentMinSize"
 
 -- | @Selector@ for @setContentMinSize:@
-setContentMinSizeSelector :: Selector
+setContentMinSizeSelector :: Selector '[NSSize] ()
 setContentMinSizeSelector = mkSelector "setContentMinSize:"
 
 -- | @Selector@ for @contentMaxSize@
-contentMaxSizeSelector :: Selector
+contentMaxSizeSelector :: Selector '[] NSSize
 contentMaxSizeSelector = mkSelector "contentMaxSize"
 
 -- | @Selector@ for @setContentMaxSize:@
-setContentMaxSizeSelector :: Selector
+setContentMaxSizeSelector :: Selector '[NSSize] ()
 setContentMaxSizeSelector = mkSelector "setContentMaxSize:"
 
 -- | @Selector@ for @minFullScreenContentSize@
-minFullScreenContentSizeSelector :: Selector
+minFullScreenContentSizeSelector :: Selector '[] NSSize
 minFullScreenContentSizeSelector = mkSelector "minFullScreenContentSize"
 
 -- | @Selector@ for @setMinFullScreenContentSize:@
-setMinFullScreenContentSizeSelector :: Selector
+setMinFullScreenContentSizeSelector :: Selector '[NSSize] ()
 setMinFullScreenContentSizeSelector = mkSelector "setMinFullScreenContentSize:"
 
 -- | @Selector@ for @maxFullScreenContentSize@
-maxFullScreenContentSizeSelector :: Selector
+maxFullScreenContentSizeSelector :: Selector '[] NSSize
 maxFullScreenContentSizeSelector = mkSelector "maxFullScreenContentSize"
 
 -- | @Selector@ for @setMaxFullScreenContentSize:@
-setMaxFullScreenContentSizeSelector :: Selector
+setMaxFullScreenContentSizeSelector :: Selector '[NSSize] ()
 setMaxFullScreenContentSizeSelector = mkSelector "setMaxFullScreenContentSize:"
 
 -- | @Selector@ for @deviceDescription@
-deviceDescriptionSelector :: Selector
+deviceDescriptionSelector :: Selector '[] (Id NSDictionary)
 deviceDescriptionSelector = mkSelector "deviceDescription"
 
 -- | @Selector@ for @windowController@
-windowControllerSelector :: Selector
+windowControllerSelector :: Selector '[] (Id NSWindowController)
 windowControllerSelector = mkSelector "windowController"
 
 -- | @Selector@ for @setWindowController:@
-setWindowControllerSelector :: Selector
+setWindowControllerSelector :: Selector '[Id NSWindowController] ()
 setWindowControllerSelector = mkSelector "setWindowController:"
 
 -- | @Selector@ for @sheets@
-sheetsSelector :: Selector
+sheetsSelector :: Selector '[] (Id NSArray)
 sheetsSelector = mkSelector "sheets"
 
 -- | @Selector@ for @attachedSheet@
-attachedSheetSelector :: Selector
+attachedSheetSelector :: Selector '[] (Id NSWindow)
 attachedSheetSelector = mkSelector "attachedSheet"
 
 -- | @Selector@ for @sheet@
-sheetSelector :: Selector
+sheetSelector :: Selector '[] Bool
 sheetSelector = mkSelector "sheet"
 
 -- | @Selector@ for @sheetParent@
-sheetParentSelector :: Selector
+sheetParentSelector :: Selector '[] (Id NSWindow)
 sheetParentSelector = mkSelector "sheetParent"
 
 -- | @Selector@ for @childWindows@
-childWindowsSelector :: Selector
+childWindowsSelector :: Selector '[] (Id NSArray)
 childWindowsSelector = mkSelector "childWindows"
 
 -- | @Selector@ for @parentWindow@
-parentWindowSelector :: Selector
+parentWindowSelector :: Selector '[] (Id NSWindow)
 parentWindowSelector = mkSelector "parentWindow"
 
 -- | @Selector@ for @setParentWindow:@
-setParentWindowSelector :: Selector
+setParentWindowSelector :: Selector '[Id NSWindow] ()
 setParentWindowSelector = mkSelector "setParentWindow:"
 
 -- | @Selector@ for @appearanceSource@
-appearanceSourceSelector :: Selector
+appearanceSourceSelector :: Selector '[] (Id NSObject)
 appearanceSourceSelector = mkSelector "appearanceSource"
 
 -- | @Selector@ for @setAppearanceSource:@
-setAppearanceSourceSelector :: Selector
+setAppearanceSourceSelector :: Selector '[Id NSObject] ()
 setAppearanceSourceSelector = mkSelector "setAppearanceSource:"
 
 -- | @Selector@ for @colorSpace@
-colorSpaceSelector :: Selector
+colorSpaceSelector :: Selector '[] (Id NSColorSpace)
 colorSpaceSelector = mkSelector "colorSpace"
 
 -- | @Selector@ for @setColorSpace:@
-setColorSpaceSelector :: Selector
+setColorSpaceSelector :: Selector '[Id NSColorSpace] ()
 setColorSpaceSelector = mkSelector "setColorSpace:"
 
 -- | @Selector@ for @occlusionState@
-occlusionStateSelector :: Selector
+occlusionStateSelector :: Selector '[] NSWindowOcclusionState
 occlusionStateSelector = mkSelector "occlusionState"
 
 -- | @Selector@ for @titlebarSeparatorStyle@
-titlebarSeparatorStyleSelector :: Selector
+titlebarSeparatorStyleSelector :: Selector '[] NSTitlebarSeparatorStyle
 titlebarSeparatorStyleSelector = mkSelector "titlebarSeparatorStyle"
 
 -- | @Selector@ for @setTitlebarSeparatorStyle:@
-setTitlebarSeparatorStyleSelector :: Selector
+setTitlebarSeparatorStyleSelector :: Selector '[NSTitlebarSeparatorStyle] ()
 setTitlebarSeparatorStyleSelector = mkSelector "setTitlebarSeparatorStyle:"
 
 -- | @Selector@ for @contentViewController@
-contentViewControllerSelector :: Selector
+contentViewControllerSelector :: Selector '[] (Id NSViewController)
 contentViewControllerSelector = mkSelector "contentViewController"
 
 -- | @Selector@ for @setContentViewController:@
-setContentViewControllerSelector :: Selector
+setContentViewControllerSelector :: Selector '[Id NSViewController] ()
 setContentViewControllerSelector = mkSelector "setContentViewController:"
 
 -- | @Selector@ for @initialFirstResponder@
-initialFirstResponderSelector :: Selector
+initialFirstResponderSelector :: Selector '[] (Id NSView)
 initialFirstResponderSelector = mkSelector "initialFirstResponder"
 
 -- | @Selector@ for @setInitialFirstResponder:@
-setInitialFirstResponderSelector :: Selector
+setInitialFirstResponderSelector :: Selector '[Id NSView] ()
 setInitialFirstResponderSelector = mkSelector "setInitialFirstResponder:"
 
 -- | @Selector@ for @keyViewSelectionDirection@
-keyViewSelectionDirectionSelector :: Selector
+keyViewSelectionDirectionSelector :: Selector '[] NSSelectionDirection
 keyViewSelectionDirectionSelector = mkSelector "keyViewSelectionDirection"
 
 -- | @Selector@ for @defaultButtonCell@
-defaultButtonCellSelector :: Selector
+defaultButtonCellSelector :: Selector '[] (Id NSButtonCell)
 defaultButtonCellSelector = mkSelector "defaultButtonCell"
 
 -- | @Selector@ for @setDefaultButtonCell:@
-setDefaultButtonCellSelector :: Selector
+setDefaultButtonCellSelector :: Selector '[Id NSButtonCell] ()
 setDefaultButtonCellSelector = mkSelector "setDefaultButtonCell:"
 
 -- | @Selector@ for @autorecalculatesKeyViewLoop@
-autorecalculatesKeyViewLoopSelector :: Selector
+autorecalculatesKeyViewLoopSelector :: Selector '[] Bool
 autorecalculatesKeyViewLoopSelector = mkSelector "autorecalculatesKeyViewLoop"
 
 -- | @Selector@ for @setAutorecalculatesKeyViewLoop:@
-setAutorecalculatesKeyViewLoopSelector :: Selector
+setAutorecalculatesKeyViewLoopSelector :: Selector '[Bool] ()
 setAutorecalculatesKeyViewLoopSelector = mkSelector "setAutorecalculatesKeyViewLoop:"
 
 -- | @Selector@ for @toolbar@
-toolbarSelector :: Selector
+toolbarSelector :: Selector '[] (Id NSToolbar)
 toolbarSelector = mkSelector "toolbar"
 
 -- | @Selector@ for @setToolbar:@
-setToolbarSelector :: Selector
+setToolbarSelector :: Selector '[Id NSToolbar] ()
 setToolbarSelector = mkSelector "setToolbar:"
 
 -- | @Selector@ for @showsToolbarButton@
-showsToolbarButtonSelector :: Selector
+showsToolbarButtonSelector :: Selector '[] Bool
 showsToolbarButtonSelector = mkSelector "showsToolbarButton"
 
 -- | @Selector@ for @setShowsToolbarButton:@
-setShowsToolbarButtonSelector :: Selector
+setShowsToolbarButtonSelector :: Selector '[Bool] ()
 setShowsToolbarButtonSelector = mkSelector "setShowsToolbarButton:"
 
 -- | @Selector@ for @allowsAutomaticWindowTabbing@
-allowsAutomaticWindowTabbingSelector :: Selector
+allowsAutomaticWindowTabbingSelector :: Selector '[] Bool
 allowsAutomaticWindowTabbingSelector = mkSelector "allowsAutomaticWindowTabbing"
 
 -- | @Selector@ for @setAllowsAutomaticWindowTabbing:@
-setAllowsAutomaticWindowTabbingSelector :: Selector
+setAllowsAutomaticWindowTabbingSelector :: Selector '[Bool] ()
 setAllowsAutomaticWindowTabbingSelector = mkSelector "setAllowsAutomaticWindowTabbing:"
 
 -- | @Selector@ for @userTabbingPreference@
-userTabbingPreferenceSelector :: Selector
+userTabbingPreferenceSelector :: Selector '[] NSWindowUserTabbingPreference
 userTabbingPreferenceSelector = mkSelector "userTabbingPreference"
 
 -- | @Selector@ for @tabbingMode@
-tabbingModeSelector :: Selector
+tabbingModeSelector :: Selector '[] NSWindowTabbingMode
 tabbingModeSelector = mkSelector "tabbingMode"
 
 -- | @Selector@ for @setTabbingMode:@
-setTabbingModeSelector :: Selector
+setTabbingModeSelector :: Selector '[NSWindowTabbingMode] ()
 setTabbingModeSelector = mkSelector "setTabbingMode:"
 
 -- | @Selector@ for @tabbingIdentifier@
-tabbingIdentifierSelector :: Selector
+tabbingIdentifierSelector :: Selector '[] (Id NSString)
 tabbingIdentifierSelector = mkSelector "tabbingIdentifier"
 
 -- | @Selector@ for @setTabbingIdentifier:@
-setTabbingIdentifierSelector :: Selector
+setTabbingIdentifierSelector :: Selector '[Id NSString] ()
 setTabbingIdentifierSelector = mkSelector "setTabbingIdentifier:"
 
 -- | @Selector@ for @tabbedWindows@
-tabbedWindowsSelector :: Selector
+tabbedWindowsSelector :: Selector '[] (Id NSArray)
 tabbedWindowsSelector = mkSelector "tabbedWindows"
 
 -- | @Selector@ for @tab@
-tabSelector :: Selector
+tabSelector :: Selector '[] (Id NSWindowTab)
 tabSelector = mkSelector "tab"
 
 -- | @Selector@ for @tabGroup@
-tabGroupSelector :: Selector
+tabGroupSelector :: Selector '[] (Id NSWindowTabGroup)
 tabGroupSelector = mkSelector "tabGroup"
 
 -- | @Selector@ for @hasActiveWindowSharingSession@
-hasActiveWindowSharingSessionSelector :: Selector
+hasActiveWindowSharingSessionSelector :: Selector '[] Bool
 hasActiveWindowSharingSessionSelector = mkSelector "hasActiveWindowSharingSession"
 
 -- | @Selector@ for @windowTitlebarLayoutDirection@
-windowTitlebarLayoutDirectionSelector :: Selector
+windowTitlebarLayoutDirectionSelector :: Selector '[] NSUserInterfaceLayoutDirection
 windowTitlebarLayoutDirectionSelector = mkSelector "windowTitlebarLayoutDirection"
 
 -- | @Selector@ for @restorable@
-restorableSelector :: Selector
+restorableSelector :: Selector '[] Bool
 restorableSelector = mkSelector "restorable"
 
 -- | @Selector@ for @setRestorable:@
-setRestorableSelector :: Selector
+setRestorableSelector :: Selector '[Bool] ()
 setRestorableSelector = mkSelector "setRestorable:"
 
 -- | @Selector@ for @restorationClass@
-restorationClassSelector :: Selector
+restorationClassSelector :: Selector '[] Class
 restorationClassSelector = mkSelector "restorationClass"
 
 -- | @Selector@ for @setRestorationClass:@
-setRestorationClassSelector :: Selector
+setRestorationClassSelector :: Selector '[Class] ()
 setRestorationClassSelector = mkSelector "setRestorationClass:"
 
 -- | @Selector@ for @hasCloseBox@
-hasCloseBoxSelector :: Selector
+hasCloseBoxSelector :: Selector '[] Bool
 hasCloseBoxSelector = mkSelector "hasCloseBox"
 
 -- | @Selector@ for @hasTitleBar@
-hasTitleBarSelector :: Selector
+hasTitleBarSelector :: Selector '[] Bool
 hasTitleBarSelector = mkSelector "hasTitleBar"
 
 -- | @Selector@ for @floatingPanel@
-floatingPanelSelector :: Selector
+floatingPanelSelector :: Selector '[] Bool
 floatingPanelSelector = mkSelector "floatingPanel"
 
 -- | @Selector@ for @miniaturizable@
-miniaturizableSelector :: Selector
+miniaturizableSelector :: Selector '[] Bool
 miniaturizableSelector = mkSelector "miniaturizable"
 
 -- | @Selector@ for @modalPanel@
-modalPanelSelector :: Selector
+modalPanelSelector :: Selector '[] Bool
 modalPanelSelector = mkSelector "modalPanel"
 
 -- | @Selector@ for @resizable@
-resizableSelector :: Selector
+resizableSelector :: Selector '[] Bool
 resizableSelector = mkSelector "resizable"
 
 -- | @Selector@ for @zoomable@
-zoomableSelector :: Selector
+zoomableSelector :: Selector '[] Bool
 zoomableSelector = mkSelector "zoomable"
 
 -- | @Selector@ for @orderedIndex@
-orderedIndexSelector :: Selector
+orderedIndexSelector :: Selector '[] CLong
 orderedIndexSelector = mkSelector "orderedIndex"
 
 -- | @Selector@ for @setOrderedIndex:@
-setOrderedIndexSelector :: Selector
+setOrderedIndexSelector :: Selector '[CLong] ()
 setOrderedIndexSelector = mkSelector "setOrderedIndex:"
 
 -- | @Selector@ for @drawers@
-drawersSelector :: Selector
+drawersSelector :: Selector '[] (Id NSArray)
 drawersSelector = mkSelector "drawers"
 
 -- | @Selector@ for @flushWindowDisabled@
-flushWindowDisabledSelector :: Selector
+flushWindowDisabledSelector :: Selector '[] Bool
 flushWindowDisabledSelector = mkSelector "flushWindowDisabled"
 
 -- | @Selector@ for @autodisplay@
-autodisplaySelector :: Selector
+autodisplaySelector :: Selector '[] Bool
 autodisplaySelector = mkSelector "autodisplay"
 
 -- | @Selector@ for @setAutodisplay:@
-setAutodisplaySelector :: Selector
+setAutodisplaySelector :: Selector '[Bool] ()
 setAutodisplaySelector = mkSelector "setAutodisplay:"
 
 -- | @Selector@ for @graphicsContext@
-graphicsContextSelector :: Selector
+graphicsContextSelector :: Selector '[] (Id NSGraphicsContext)
 graphicsContextSelector = mkSelector "graphicsContext"
 
 -- | @Selector@ for @oneShot@
-oneShotSelector :: Selector
+oneShotSelector :: Selector '[] Bool
 oneShotSelector = mkSelector "oneShot"
 
 -- | @Selector@ for @setOneShot:@
-setOneShotSelector :: Selector
+setOneShotSelector :: Selector '[Bool] ()
 setOneShotSelector = mkSelector "setOneShot:"
 
 -- | @Selector@ for @preferredBackingLocation@
-preferredBackingLocationSelector :: Selector
+preferredBackingLocationSelector :: Selector '[] NSWindowBackingLocation
 preferredBackingLocationSelector = mkSelector "preferredBackingLocation"
 
 -- | @Selector@ for @setPreferredBackingLocation:@
-setPreferredBackingLocationSelector :: Selector
+setPreferredBackingLocationSelector :: Selector '[NSWindowBackingLocation] ()
 setPreferredBackingLocationSelector = mkSelector "setPreferredBackingLocation:"
 
 -- | @Selector@ for @backingLocation@
-backingLocationSelector :: Selector
+backingLocationSelector :: Selector '[] NSWindowBackingLocation
 backingLocationSelector = mkSelector "backingLocation"
 
 -- | @Selector@ for @showsResizeIndicator@
-showsResizeIndicatorSelector :: Selector
+showsResizeIndicatorSelector :: Selector '[] Bool
 showsResizeIndicatorSelector = mkSelector "showsResizeIndicator"
 
 -- | @Selector@ for @setShowsResizeIndicator:@
-setShowsResizeIndicatorSelector :: Selector
+setShowsResizeIndicatorSelector :: Selector '[Bool] ()
 setShowsResizeIndicatorSelector = mkSelector "setShowsResizeIndicator:"
 
 -- | @Selector@ for @windowRef@
-windowRefSelector :: Selector
+windowRefSelector :: Selector '[] (Ptr ())
 windowRefSelector = mkSelector "windowRef"
 
 -- | @Selector@ for @areCursorRectsEnabled@
-areCursorRectsEnabledSelector :: Selector
+areCursorRectsEnabledSelector :: Selector '[] Bool
 areCursorRectsEnabledSelector = mkSelector "areCursorRectsEnabled"
 
 -- | @Selector@ for @currentEvent@
-currentEventSelector :: Selector
+currentEventSelector :: Selector '[] (Id NSEvent)
 currentEventSelector = mkSelector "currentEvent"
 
 -- | @Selector@ for @acceptsMouseMovedEvents@
-acceptsMouseMovedEventsSelector :: Selector
+acceptsMouseMovedEventsSelector :: Selector '[] Bool
 acceptsMouseMovedEventsSelector = mkSelector "acceptsMouseMovedEvents"
 
 -- | @Selector@ for @setAcceptsMouseMovedEvents:@
-setAcceptsMouseMovedEventsSelector :: Selector
+setAcceptsMouseMovedEventsSelector :: Selector '[Bool] ()
 setAcceptsMouseMovedEventsSelector = mkSelector "setAcceptsMouseMovedEvents:"
 
 -- | @Selector@ for @ignoresMouseEvents@
-ignoresMouseEventsSelector :: Selector
+ignoresMouseEventsSelector :: Selector '[] Bool
 ignoresMouseEventsSelector = mkSelector "ignoresMouseEvents"
 
 -- | @Selector@ for @setIgnoresMouseEvents:@
-setIgnoresMouseEventsSelector :: Selector
+setIgnoresMouseEventsSelector :: Selector '[Bool] ()
 setIgnoresMouseEventsSelector = mkSelector "setIgnoresMouseEvents:"
 
 -- | @Selector@ for @mouseLocationOutsideOfEventStream@
-mouseLocationOutsideOfEventStreamSelector :: Selector
+mouseLocationOutsideOfEventStreamSelector :: Selector '[] NSPoint
 mouseLocationOutsideOfEventStreamSelector = mkSelector "mouseLocationOutsideOfEventStream"
 

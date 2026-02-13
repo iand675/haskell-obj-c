@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -196,21 +197,21 @@ module ObjC.MetalPerformanceShaders.MPSAccelerationStructure
   , status
   , usage
   , setUsage
-  , initSelector
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , initWithGroupSelector
-  , initWithCoder_groupSelector
-  , rebuildSelector
-  , rebuildWithCompletionHandlerSelector
-  , encodeRefitToCommandBufferSelector
   , copyWithZone_deviceSelector
   , copyWithZone_groupSelector
+  , encodeRefitToCommandBufferSelector
   , encodeWithCoderSelector
   , groupSelector
+  , initSelector
+  , initWithCoder_deviceSelector
+  , initWithCoder_groupSelector
+  , initWithDeviceSelector
+  , initWithGroupSelector
+  , rebuildSelector
+  , rebuildWithCompletionHandlerSelector
+  , setUsageSelector
   , statusSelector
   , usageSelector
-  , setUsageSelector
 
   -- * Enum types
   , MPSAccelerationStructureStatus(MPSAccelerationStructureStatus)
@@ -225,15 +226,11 @@ module ObjC.MetalPerformanceShaders.MPSAccelerationStructure
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -244,23 +241,22 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> IO (Id MPSAccelerationStructure)
-init_ mpsAccelerationStructure  =
-    sendMsg mpsAccelerationStructure (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsAccelerationStructure =
+  sendOwnedMessage mpsAccelerationStructure initSelector
 
 -- | Initialize the acceleration structure with a Metal device
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> RawId -> IO (Id MPSAccelerationStructure)
-initWithDevice mpsAccelerationStructure  device =
-    sendMsg mpsAccelerationStructure (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsAccelerationStructure device =
+  sendOwnedMessage mpsAccelerationStructure initWithDeviceSelector device
 
 -- | Initialize the acceleration structure with an NSCoder and a Metal device. Buffer properties such as the vertex buffer, instance buffer, etc. are set to nil. Encode and decode these buffers along with the acceleration structure instead.
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSAccelerationStructure mpsAccelerationStructure, IsNSCoder aDecoder) => mpsAccelerationStructure -> aDecoder -> RawId -> IO (Id MPSAccelerationStructure)
-initWithCoder_device mpsAccelerationStructure  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsAccelerationStructure (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsAccelerationStructure aDecoder device =
+  sendOwnedMessage mpsAccelerationStructure initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Initialize the acceleration structure with an acceleration structure group, if the acceleration structure will be used in an instance hierarchy.
 --
@@ -268,18 +264,15 @@ initWithCoder_device mpsAccelerationStructure  aDecoder device =
 --
 -- ObjC selector: @- initWithGroup:@
 initWithGroup :: (IsMPSAccelerationStructure mpsAccelerationStructure, IsMPSAccelerationStructureGroup group) => mpsAccelerationStructure -> group -> IO (Id MPSAccelerationStructure)
-initWithGroup mpsAccelerationStructure  group =
-  withObjCPtr group $ \raw_group ->
-      sendMsg mpsAccelerationStructure (mkSelector "initWithGroup:") (retPtr retVoid) [argPtr (castPtr raw_group :: Ptr ())] >>= ownedObject . castPtr
+initWithGroup mpsAccelerationStructure group =
+  sendOwnedMessage mpsAccelerationStructure initWithGroupSelector (toMPSAccelerationStructureGroup group)
 
 -- | Initialize the acceleration structure with an NSCoder and an acceleration structure group, if the acceleration structure will be used in an instance hierarchy. All acceleration structures in the instance hierarchy must share the same group. Buffer properties such as the vertex buffer, instance buffer, etc. are set to nil. Encode and decode these buffers along with the acceleration structure instead.
 --
 -- ObjC selector: @- initWithCoder:group:@
 initWithCoder_group :: (IsMPSAccelerationStructure mpsAccelerationStructure, IsNSCoder aDecoder, IsMPSAccelerationStructureGroup group) => mpsAccelerationStructure -> aDecoder -> group -> IO (Id MPSAccelerationStructure)
-initWithCoder_group mpsAccelerationStructure  aDecoder group =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-    withObjCPtr group $ \raw_group ->
-        sendMsg mpsAccelerationStructure (mkSelector "initWithCoder:group:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr raw_group :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_group mpsAccelerationStructure aDecoder group =
+  sendOwnedMessage mpsAccelerationStructure initWithCoder_groupSelector (toNSCoder aDecoder) (toMPSAccelerationStructureGroup group)
 
 -- | Rebuild the acceleration structure
 --
@@ -289,8 +282,8 @@ initWithCoder_group mpsAccelerationStructure  aDecoder group =
 --
 -- ObjC selector: @- rebuild@
 rebuild :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> IO ()
-rebuild mpsAccelerationStructure  =
-    sendMsg mpsAccelerationStructure (mkSelector "rebuild") retVoid []
+rebuild mpsAccelerationStructure =
+  sendMessage mpsAccelerationStructure rebuildSelector
 
 -- | Rebuild the acceleration structure asynchronously
 --
@@ -300,8 +293,8 @@ rebuild mpsAccelerationStructure  =
 --
 -- ObjC selector: @- rebuildWithCompletionHandler:@
 rebuildWithCompletionHandler :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> Ptr () -> IO ()
-rebuildWithCompletionHandler mpsAccelerationStructure  completionHandler =
-    sendMsg mpsAccelerationStructure (mkSelector "rebuildWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+rebuildWithCompletionHandler mpsAccelerationStructure completionHandler =
+  sendMessage mpsAccelerationStructure rebuildWithCompletionHandlerSelector completionHandler
 
 -- | Refit the existing acceleration structure to new data
 --
@@ -311,8 +304,8 @@ rebuildWithCompletionHandler mpsAccelerationStructure  completionHandler =
 --
 -- ObjC selector: @- encodeRefitToCommandBuffer:@
 encodeRefitToCommandBuffer :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> RawId -> IO ()
-encodeRefitToCommandBuffer mpsAccelerationStructure  commandBuffer =
-    sendMsg mpsAccelerationStructure (mkSelector "encodeRefitToCommandBuffer:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ())]
+encodeRefitToCommandBuffer mpsAccelerationStructure commandBuffer =
+  sendMessage mpsAccelerationStructure encodeRefitToCommandBufferSelector commandBuffer
 
 -- | Create a a copy of this acceleration structure
 --
@@ -324,8 +317,8 @@ encodeRefitToCommandBuffer mpsAccelerationStructure  commandBuffer =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> Ptr () -> RawId -> IO (Id MPSAccelerationStructure)
-copyWithZone_device mpsAccelerationStructure  zone device =
-    sendMsg mpsAccelerationStructure (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsAccelerationStructure zone device =
+  sendOwnedMessage mpsAccelerationStructure copyWithZone_deviceSelector zone device
 
 -- | Create a a copy of this acceleration structure
 --
@@ -337,9 +330,8 @@ copyWithZone_device mpsAccelerationStructure  zone device =
 --
 -- ObjC selector: @- copyWithZone:group:@
 copyWithZone_group :: (IsMPSAccelerationStructure mpsAccelerationStructure, IsMPSAccelerationStructureGroup group) => mpsAccelerationStructure -> Ptr () -> group -> IO (Id MPSAccelerationStructure)
-copyWithZone_group mpsAccelerationStructure  zone group =
-  withObjCPtr group $ \raw_group ->
-      sendMsg mpsAccelerationStructure (mkSelector "copyWithZone:group:") (retPtr retVoid) [argPtr zone, argPtr (castPtr raw_group :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_group mpsAccelerationStructure zone group =
+  sendOwnedMessage mpsAccelerationStructure copyWithZone_groupSelector zone (toMPSAccelerationStructureGroup group)
 
 -- | Encode the acceleration structure with an NSCoder
 --
@@ -349,99 +341,98 @@ copyWithZone_group mpsAccelerationStructure  zone group =
 --
 -- ObjC selector: @- encodeWithCoder:@
 encodeWithCoder :: (IsMPSAccelerationStructure mpsAccelerationStructure, IsNSCoder coder) => mpsAccelerationStructure -> coder -> IO ()
-encodeWithCoder mpsAccelerationStructure  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg mpsAccelerationStructure (mkSelector "encodeWithCoder:") retVoid [argPtr (castPtr raw_coder :: Ptr ())]
+encodeWithCoder mpsAccelerationStructure coder =
+  sendMessage mpsAccelerationStructure encodeWithCoderSelector (toNSCoder coder)
 
 -- | The group this acceleration structure was created with
 --
 -- ObjC selector: @- group@
 group :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> IO (Id MPSAccelerationStructureGroup)
-group mpsAccelerationStructure  =
-    sendMsg mpsAccelerationStructure (mkSelector "group") (retPtr retVoid) [] >>= retainedObject . castPtr
+group mpsAccelerationStructure =
+  sendMessage mpsAccelerationStructure groupSelector
 
 -- | Status indicating whether the acceleration structure has finished building
 --
 -- ObjC selector: @- status@
 status :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> IO MPSAccelerationStructureStatus
-status mpsAccelerationStructure  =
-    fmap (coerce :: CULong -> MPSAccelerationStructureStatus) $ sendMsg mpsAccelerationStructure (mkSelector "status") retCULong []
+status mpsAccelerationStructure =
+  sendMessage mpsAccelerationStructure statusSelector
 
 -- | Acceleration structure usage options. Changes to this property require rebuilding the acceleration structure. Defaults to MPSAccelerationStructureUsageNone.
 --
 -- ObjC selector: @- usage@
 usage :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> IO MPSAccelerationStructureUsage
-usage mpsAccelerationStructure  =
-    fmap (coerce :: CULong -> MPSAccelerationStructureUsage) $ sendMsg mpsAccelerationStructure (mkSelector "usage") retCULong []
+usage mpsAccelerationStructure =
+  sendMessage mpsAccelerationStructure usageSelector
 
 -- | Acceleration structure usage options. Changes to this property require rebuilding the acceleration structure. Defaults to MPSAccelerationStructureUsageNone.
 --
 -- ObjC selector: @- setUsage:@
 setUsage :: IsMPSAccelerationStructure mpsAccelerationStructure => mpsAccelerationStructure -> MPSAccelerationStructureUsage -> IO ()
-setUsage mpsAccelerationStructure  value =
-    sendMsg mpsAccelerationStructure (mkSelector "setUsage:") retVoid [argCULong (coerce value)]
+setUsage mpsAccelerationStructure value =
+  sendMessage mpsAccelerationStructure setUsageSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSAccelerationStructure)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSAccelerationStructure)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSAccelerationStructure)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithGroup:@
-initWithGroupSelector :: Selector
+initWithGroupSelector :: Selector '[Id MPSAccelerationStructureGroup] (Id MPSAccelerationStructure)
 initWithGroupSelector = mkSelector "initWithGroup:"
 
 -- | @Selector@ for @initWithCoder:group:@
-initWithCoder_groupSelector :: Selector
+initWithCoder_groupSelector :: Selector '[Id NSCoder, Id MPSAccelerationStructureGroup] (Id MPSAccelerationStructure)
 initWithCoder_groupSelector = mkSelector "initWithCoder:group:"
 
 -- | @Selector@ for @rebuild@
-rebuildSelector :: Selector
+rebuildSelector :: Selector '[] ()
 rebuildSelector = mkSelector "rebuild"
 
 -- | @Selector@ for @rebuildWithCompletionHandler:@
-rebuildWithCompletionHandlerSelector :: Selector
+rebuildWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 rebuildWithCompletionHandlerSelector = mkSelector "rebuildWithCompletionHandler:"
 
 -- | @Selector@ for @encodeRefitToCommandBuffer:@
-encodeRefitToCommandBufferSelector :: Selector
+encodeRefitToCommandBufferSelector :: Selector '[RawId] ()
 encodeRefitToCommandBufferSelector = mkSelector "encodeRefitToCommandBuffer:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSAccelerationStructure)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @copyWithZone:group:@
-copyWithZone_groupSelector :: Selector
+copyWithZone_groupSelector :: Selector '[Ptr (), Id MPSAccelerationStructureGroup] (Id MPSAccelerationStructure)
 copyWithZone_groupSelector = mkSelector "copyWithZone:group:"
 
 -- | @Selector@ for @encodeWithCoder:@
-encodeWithCoderSelector :: Selector
+encodeWithCoderSelector :: Selector '[Id NSCoder] ()
 encodeWithCoderSelector = mkSelector "encodeWithCoder:"
 
 -- | @Selector@ for @group@
-groupSelector :: Selector
+groupSelector :: Selector '[] (Id MPSAccelerationStructureGroup)
 groupSelector = mkSelector "group"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] MPSAccelerationStructureStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @usage@
-usageSelector :: Selector
+usageSelector :: Selector '[] MPSAccelerationStructureUsage
 usageSelector = mkSelector "usage"
 
 -- | @Selector@ for @setUsage:@
-setUsageSelector :: Selector
+setUsageSelector :: Selector '[MPSAccelerationStructureUsage] ()
 setUsageSelector = mkSelector "setUsage:"
 

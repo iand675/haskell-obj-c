@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.Foundation.NSBundleResourceRequest
   , tags
   , bundle
   , progress
+  , beginAccessingResourcesWithCompletionHandlerSelector
+  , bundleSelector
+  , conditionallyBeginAccessingResourcesWithCompletionHandlerSelector
+  , endAccessingResourcesSelector
   , initSelector
   , initWithTagsSelector
   , initWithTags_bundleSelector
-  , beginAccessingResourcesWithCompletionHandlerSelector
-  , conditionallyBeginAccessingResourcesWithCompletionHandlerSelector
-  , endAccessingResourcesSelector
   , loadingPrioritySelector
+  , progressSelector
   , setLoadingPrioritySelector
   , tagsSelector
-  , bundleSelector
-  , progressSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,107 +45,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSBundleResourceRequest nsBundleResourceRequest => nsBundleResourceRequest -> IO (Id NSBundleResourceRequest)
-init_ nsBundleResourceRequest  =
-    sendMsg nsBundleResourceRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsBundleResourceRequest =
+  sendOwnedMessage nsBundleResourceRequest initSelector
 
 -- | @- initWithTags:@
 initWithTags :: (IsNSBundleResourceRequest nsBundleResourceRequest, IsNSSet tags) => nsBundleResourceRequest -> tags -> IO (Id NSBundleResourceRequest)
-initWithTags nsBundleResourceRequest  tags =
-  withObjCPtr tags $ \raw_tags ->
-      sendMsg nsBundleResourceRequest (mkSelector "initWithTags:") (retPtr retVoid) [argPtr (castPtr raw_tags :: Ptr ())] >>= ownedObject . castPtr
+initWithTags nsBundleResourceRequest tags =
+  sendOwnedMessage nsBundleResourceRequest initWithTagsSelector (toNSSet tags)
 
 -- | @- initWithTags:bundle:@
 initWithTags_bundle :: (IsNSBundleResourceRequest nsBundleResourceRequest, IsNSSet tags, IsNSBundle bundle) => nsBundleResourceRequest -> tags -> bundle -> IO (Id NSBundleResourceRequest)
-initWithTags_bundle nsBundleResourceRequest  tags bundle =
-  withObjCPtr tags $ \raw_tags ->
-    withObjCPtr bundle $ \raw_bundle ->
-        sendMsg nsBundleResourceRequest (mkSelector "initWithTags:bundle:") (retPtr retVoid) [argPtr (castPtr raw_tags :: Ptr ()), argPtr (castPtr raw_bundle :: Ptr ())] >>= ownedObject . castPtr
+initWithTags_bundle nsBundleResourceRequest tags bundle =
+  sendOwnedMessage nsBundleResourceRequest initWithTags_bundleSelector (toNSSet tags) (toNSBundle bundle)
 
 -- | @- beginAccessingResourcesWithCompletionHandler:@
 beginAccessingResourcesWithCompletionHandler :: IsNSBundleResourceRequest nsBundleResourceRequest => nsBundleResourceRequest -> Ptr () -> IO ()
-beginAccessingResourcesWithCompletionHandler nsBundleResourceRequest  completionHandler =
-    sendMsg nsBundleResourceRequest (mkSelector "beginAccessingResourcesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+beginAccessingResourcesWithCompletionHandler nsBundleResourceRequest completionHandler =
+  sendMessage nsBundleResourceRequest beginAccessingResourcesWithCompletionHandlerSelector completionHandler
 
 -- | @- conditionallyBeginAccessingResourcesWithCompletionHandler:@
 conditionallyBeginAccessingResourcesWithCompletionHandler :: IsNSBundleResourceRequest nsBundleResourceRequest => nsBundleResourceRequest -> Ptr () -> IO ()
-conditionallyBeginAccessingResourcesWithCompletionHandler nsBundleResourceRequest  completionHandler =
-    sendMsg nsBundleResourceRequest (mkSelector "conditionallyBeginAccessingResourcesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+conditionallyBeginAccessingResourcesWithCompletionHandler nsBundleResourceRequest completionHandler =
+  sendMessage nsBundleResourceRequest conditionallyBeginAccessingResourcesWithCompletionHandlerSelector completionHandler
 
 -- | @- endAccessingResources@
 endAccessingResources :: IsNSBundleResourceRequest nsBundleResourceRequest => nsBundleResourceRequest -> IO ()
-endAccessingResources nsBundleResourceRequest  =
-    sendMsg nsBundleResourceRequest (mkSelector "endAccessingResources") retVoid []
+endAccessingResources nsBundleResourceRequest =
+  sendMessage nsBundleResourceRequest endAccessingResourcesSelector
 
 -- | @- loadingPriority@
 loadingPriority :: IsNSBundleResourceRequest nsBundleResourceRequest => nsBundleResourceRequest -> IO CDouble
-loadingPriority nsBundleResourceRequest  =
-    sendMsg nsBundleResourceRequest (mkSelector "loadingPriority") retCDouble []
+loadingPriority nsBundleResourceRequest =
+  sendMessage nsBundleResourceRequest loadingPrioritySelector
 
 -- | @- setLoadingPriority:@
 setLoadingPriority :: IsNSBundleResourceRequest nsBundleResourceRequest => nsBundleResourceRequest -> CDouble -> IO ()
-setLoadingPriority nsBundleResourceRequest  value =
-    sendMsg nsBundleResourceRequest (mkSelector "setLoadingPriority:") retVoid [argCDouble value]
+setLoadingPriority nsBundleResourceRequest value =
+  sendMessage nsBundleResourceRequest setLoadingPrioritySelector value
 
 -- | @- tags@
 tags :: IsNSBundleResourceRequest nsBundleResourceRequest => nsBundleResourceRequest -> IO (Id NSSet)
-tags nsBundleResourceRequest  =
-    sendMsg nsBundleResourceRequest (mkSelector "tags") (retPtr retVoid) [] >>= retainedObject . castPtr
+tags nsBundleResourceRequest =
+  sendMessage nsBundleResourceRequest tagsSelector
 
 -- | @- bundle@
 bundle :: IsNSBundleResourceRequest nsBundleResourceRequest => nsBundleResourceRequest -> IO (Id NSBundle)
-bundle nsBundleResourceRequest  =
-    sendMsg nsBundleResourceRequest (mkSelector "bundle") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundle nsBundleResourceRequest =
+  sendMessage nsBundleResourceRequest bundleSelector
 
 -- | @- progress@
 progress :: IsNSBundleResourceRequest nsBundleResourceRequest => nsBundleResourceRequest -> IO (Id NSProgress)
-progress nsBundleResourceRequest  =
-    sendMsg nsBundleResourceRequest (mkSelector "progress") (retPtr retVoid) [] >>= retainedObject . castPtr
+progress nsBundleResourceRequest =
+  sendMessage nsBundleResourceRequest progressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSBundleResourceRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithTags:@
-initWithTagsSelector :: Selector
+initWithTagsSelector :: Selector '[Id NSSet] (Id NSBundleResourceRequest)
 initWithTagsSelector = mkSelector "initWithTags:"
 
 -- | @Selector@ for @initWithTags:bundle:@
-initWithTags_bundleSelector :: Selector
+initWithTags_bundleSelector :: Selector '[Id NSSet, Id NSBundle] (Id NSBundleResourceRequest)
 initWithTags_bundleSelector = mkSelector "initWithTags:bundle:"
 
 -- | @Selector@ for @beginAccessingResourcesWithCompletionHandler:@
-beginAccessingResourcesWithCompletionHandlerSelector :: Selector
+beginAccessingResourcesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 beginAccessingResourcesWithCompletionHandlerSelector = mkSelector "beginAccessingResourcesWithCompletionHandler:"
 
 -- | @Selector@ for @conditionallyBeginAccessingResourcesWithCompletionHandler:@
-conditionallyBeginAccessingResourcesWithCompletionHandlerSelector :: Selector
+conditionallyBeginAccessingResourcesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 conditionallyBeginAccessingResourcesWithCompletionHandlerSelector = mkSelector "conditionallyBeginAccessingResourcesWithCompletionHandler:"
 
 -- | @Selector@ for @endAccessingResources@
-endAccessingResourcesSelector :: Selector
+endAccessingResourcesSelector :: Selector '[] ()
 endAccessingResourcesSelector = mkSelector "endAccessingResources"
 
 -- | @Selector@ for @loadingPriority@
-loadingPrioritySelector :: Selector
+loadingPrioritySelector :: Selector '[] CDouble
 loadingPrioritySelector = mkSelector "loadingPriority"
 
 -- | @Selector@ for @setLoadingPriority:@
-setLoadingPrioritySelector :: Selector
+setLoadingPrioritySelector :: Selector '[CDouble] ()
 setLoadingPrioritySelector = mkSelector "setLoadingPriority:"
 
 -- | @Selector@ for @tags@
-tagsSelector :: Selector
+tagsSelector :: Selector '[] (Id NSSet)
 tagsSelector = mkSelector "tags"
 
 -- | @Selector@ for @bundle@
-bundleSelector :: Selector
+bundleSelector :: Selector '[] (Id NSBundle)
 bundleSelector = mkSelector "bundle"
 
 -- | @Selector@ for @progress@
-progressSelector :: Selector
+progressSelector :: Selector '[] (Id NSProgress)
 progressSelector = mkSelector "progress"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.Vision.VNRecognizedPointsObservation
   , keypointsMultiArrayAndReturnError
   , availableKeys
   , availableGroupKeys
-  , newSelector
+  , availableGroupKeysSelector
+  , availableKeysSelector
   , initSelector
+  , keypointsMultiArrayAndReturnErrorSelector
+  , newSelector
   , recognizedPointForKey_errorSelector
   , recognizedPointsForGroupKey_errorSelector
-  , keypointsMultiArrayAndReturnErrorSelector
-  , availableKeysSelector
-  , availableGroupKeysSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,12 +48,12 @@ new :: IO (Id VNRecognizedPointsObservation)
 new  =
   do
     cls' <- getRequiredClass "VNRecognizedPointsObservation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVNRecognizedPointsObservation vnRecognizedPointsObservation => vnRecognizedPointsObservation -> IO (Id VNRecognizedPointsObservation)
-init_ vnRecognizedPointsObservation  =
-    sendMsg vnRecognizedPointsObservation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnRecognizedPointsObservation =
+  sendOwnedMessage vnRecognizedPointsObservation initSelector
 
 -- | Obtains a specific normalized recognized point.
 --
@@ -68,10 +65,8 @@ init_ vnRecognizedPointsObservation  =
 --
 -- ObjC selector: @- recognizedPointForKey:error:@
 recognizedPointForKey_error :: (IsVNRecognizedPointsObservation vnRecognizedPointsObservation, IsNSString pointKey, IsNSError error_) => vnRecognizedPointsObservation -> pointKey -> error_ -> IO (Id VNRecognizedPoint)
-recognizedPointForKey_error vnRecognizedPointsObservation  pointKey error_ =
-  withObjCPtr pointKey $ \raw_pointKey ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnRecognizedPointsObservation (mkSelector "recognizedPointForKey:error:") (retPtr retVoid) [argPtr (castPtr raw_pointKey :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointForKey_error vnRecognizedPointsObservation pointKey error_ =
+  sendMessage vnRecognizedPointsObservation recognizedPointForKey_errorSelector (toNSString pointKey) (toNSError error_)
 
 -- | Obtains the collection of points associated with an identified grouping.
 --
@@ -85,10 +80,8 @@ recognizedPointForKey_error vnRecognizedPointsObservation  pointKey error_ =
 --
 -- ObjC selector: @- recognizedPointsForGroupKey:error:@
 recognizedPointsForGroupKey_error :: (IsVNRecognizedPointsObservation vnRecognizedPointsObservation, IsNSString groupKey, IsNSError error_) => vnRecognizedPointsObservation -> groupKey -> error_ -> IO (Id NSDictionary)
-recognizedPointsForGroupKey_error vnRecognizedPointsObservation  groupKey error_ =
-  withObjCPtr groupKey $ \raw_groupKey ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnRecognizedPointsObservation (mkSelector "recognizedPointsForGroupKey:error:") (retPtr retVoid) [argPtr (castPtr raw_groupKey :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointsForGroupKey_error vnRecognizedPointsObservation groupKey error_ =
+  sendMessage vnRecognizedPointsObservation recognizedPointsForGroupKey_errorSelector (toNSString groupKey) (toNSError error_)
 
 -- | Returns the recognized points packaged into an MLMultiArray.
 --
@@ -100,53 +93,52 @@ recognizedPointsForGroupKey_error vnRecognizedPointsObservation  groupKey error_
 --
 -- ObjC selector: @- keypointsMultiArrayAndReturnError:@
 keypointsMultiArrayAndReturnError :: (IsVNRecognizedPointsObservation vnRecognizedPointsObservation, IsNSError error_) => vnRecognizedPointsObservation -> error_ -> IO (Id MLMultiArray)
-keypointsMultiArrayAndReturnError vnRecognizedPointsObservation  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnRecognizedPointsObservation (mkSelector "keypointsMultiArrayAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+keypointsMultiArrayAndReturnError vnRecognizedPointsObservation error_ =
+  sendMessage vnRecognizedPointsObservation keypointsMultiArrayAndReturnErrorSelector (toNSError error_)
 
 -- | Returns all of the point group keys available in the observation.
 --
 -- ObjC selector: @- availableKeys@
 availableKeys :: IsVNRecognizedPointsObservation vnRecognizedPointsObservation => vnRecognizedPointsObservation -> IO (Id NSArray)
-availableKeys vnRecognizedPointsObservation  =
-    sendMsg vnRecognizedPointsObservation (mkSelector "availableKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableKeys vnRecognizedPointsObservation =
+  sendMessage vnRecognizedPointsObservation availableKeysSelector
 
 -- | The availableGroupKeys property returns all of the point group labels usable with the observation.
 --
 -- ObjC selector: @- availableGroupKeys@
 availableGroupKeys :: IsVNRecognizedPointsObservation vnRecognizedPointsObservation => vnRecognizedPointsObservation -> IO (Id NSArray)
-availableGroupKeys vnRecognizedPointsObservation  =
-    sendMsg vnRecognizedPointsObservation (mkSelector "availableGroupKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableGroupKeys vnRecognizedPointsObservation =
+  sendMessage vnRecognizedPointsObservation availableGroupKeysSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VNRecognizedPointsObservation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNRecognizedPointsObservation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @recognizedPointForKey:error:@
-recognizedPointForKey_errorSelector :: Selector
+recognizedPointForKey_errorSelector :: Selector '[Id NSString, Id NSError] (Id VNRecognizedPoint)
 recognizedPointForKey_errorSelector = mkSelector "recognizedPointForKey:error:"
 
 -- | @Selector@ for @recognizedPointsForGroupKey:error:@
-recognizedPointsForGroupKey_errorSelector :: Selector
+recognizedPointsForGroupKey_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSDictionary)
 recognizedPointsForGroupKey_errorSelector = mkSelector "recognizedPointsForGroupKey:error:"
 
 -- | @Selector@ for @keypointsMultiArrayAndReturnError:@
-keypointsMultiArrayAndReturnErrorSelector :: Selector
+keypointsMultiArrayAndReturnErrorSelector :: Selector '[Id NSError] (Id MLMultiArray)
 keypointsMultiArrayAndReturnErrorSelector = mkSelector "keypointsMultiArrayAndReturnError:"
 
 -- | @Selector@ for @availableKeys@
-availableKeysSelector :: Selector
+availableKeysSelector :: Selector '[] (Id NSArray)
 availableKeysSelector = mkSelector "availableKeys"
 
 -- | @Selector@ for @availableGroupKeys@
-availableGroupKeysSelector :: Selector
+availableGroupKeysSelector :: Selector '[] (Id NSArray)
 availableGroupKeysSelector = mkSelector "availableGroupKeys"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.GameKit.GKInvite
   , playerGroup
   , playerAttributes
   , inviter
-  , senderSelector
   , hostedSelector
-  , playerGroupSelector
-  , playerAttributesSelector
   , inviterSelector
+  , playerAttributesSelector
+  , playerGroupSelector
+  , senderSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,56 +36,56 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sender@
 sender :: IsGKInvite gkInvite => gkInvite -> IO (Id GKPlayer)
-sender gkInvite  =
-    sendMsg gkInvite (mkSelector "sender") (retPtr retVoid) [] >>= retainedObject . castPtr
+sender gkInvite =
+  sendMessage gkInvite senderSelector
 
 -- | @- hosted@
 hosted :: IsGKInvite gkInvite => gkInvite -> IO Bool
-hosted gkInvite  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkInvite (mkSelector "hosted") retCULong []
+hosted gkInvite =
+  sendMessage gkInvite hostedSelector
 
 -- | player group from inviter's match request
 --
 -- ObjC selector: @- playerGroup@
 playerGroup :: IsGKInvite gkInvite => gkInvite -> IO CULong
-playerGroup gkInvite  =
-    sendMsg gkInvite (mkSelector "playerGroup") retCULong []
+playerGroup gkInvite =
+  sendMessage gkInvite playerGroupSelector
 
 -- | player attributes from inviter's match request
 --
 -- ObjC selector: @- playerAttributes@
 playerAttributes :: IsGKInvite gkInvite => gkInvite -> IO CUInt
-playerAttributes gkInvite  =
-    sendMsg gkInvite (mkSelector "playerAttributes") retCUInt []
+playerAttributes gkInvite =
+  sendMessage gkInvite playerAttributesSelector
 
 -- | * This property is obsolete. **
 --
 -- ObjC selector: @- inviter@
 inviter :: IsGKInvite gkInvite => gkInvite -> IO (Id NSString)
-inviter gkInvite  =
-    sendMsg gkInvite (mkSelector "inviter") (retPtr retVoid) [] >>= retainedObject . castPtr
+inviter gkInvite =
+  sendMessage gkInvite inviterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sender@
-senderSelector :: Selector
+senderSelector :: Selector '[] (Id GKPlayer)
 senderSelector = mkSelector "sender"
 
 -- | @Selector@ for @hosted@
-hostedSelector :: Selector
+hostedSelector :: Selector '[] Bool
 hostedSelector = mkSelector "hosted"
 
 -- | @Selector@ for @playerGroup@
-playerGroupSelector :: Selector
+playerGroupSelector :: Selector '[] CULong
 playerGroupSelector = mkSelector "playerGroup"
 
 -- | @Selector@ for @playerAttributes@
-playerAttributesSelector :: Selector
+playerAttributesSelector :: Selector '[] CUInt
 playerAttributesSelector = mkSelector "playerAttributes"
 
 -- | @Selector@ for @inviter@
-inviterSelector :: Selector
+inviterSelector :: Selector '[] (Id NSString)
 inviterSelector = mkSelector "inviter"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.Matter.MTRClusterPulseWidthModulation
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,89 +42,81 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterPulseWidthModulation mtrClusterPulseWidthModulation, IsMTRReadParams params) => mtrClusterPulseWidthModulation -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterPulseWidthModulation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterPulseWidthModulation (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterPulseWidthModulation params =
+  sendMessage mtrClusterPulseWidthModulation readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterPulseWidthModulation mtrClusterPulseWidthModulation, IsMTRReadParams params) => mtrClusterPulseWidthModulation -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterPulseWidthModulation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterPulseWidthModulation (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterPulseWidthModulation params =
+  sendMessage mtrClusterPulseWidthModulation readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterPulseWidthModulation mtrClusterPulseWidthModulation, IsMTRReadParams params) => mtrClusterPulseWidthModulation -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterPulseWidthModulation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterPulseWidthModulation (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterPulseWidthModulation params =
+  sendMessage mtrClusterPulseWidthModulation readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterPulseWidthModulation mtrClusterPulseWidthModulation, IsMTRReadParams params) => mtrClusterPulseWidthModulation -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterPulseWidthModulation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterPulseWidthModulation (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterPulseWidthModulation params =
+  sendMessage mtrClusterPulseWidthModulation readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterPulseWidthModulation mtrClusterPulseWidthModulation, IsMTRReadParams params) => mtrClusterPulseWidthModulation -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterPulseWidthModulation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterPulseWidthModulation (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterPulseWidthModulation params =
+  sendMessage mtrClusterPulseWidthModulation readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterPulseWidthModulation mtrClusterPulseWidthModulation => mtrClusterPulseWidthModulation -> IO (Id MTRClusterPulseWidthModulation)
-init_ mtrClusterPulseWidthModulation  =
-    sendMsg mtrClusterPulseWidthModulation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterPulseWidthModulation =
+  sendOwnedMessage mtrClusterPulseWidthModulation initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterPulseWidthModulation)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterPulseWidthModulation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterPulseWidthModulation mtrClusterPulseWidthModulation, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterPulseWidthModulation -> device -> endpointID -> queue -> IO (Id MTRClusterPulseWidthModulation)
-initWithDevice_endpointID_queue mtrClusterPulseWidthModulation  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterPulseWidthModulation (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterPulseWidthModulation device endpointID queue =
+  sendOwnedMessage mtrClusterPulseWidthModulation initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterPulseWidthModulation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterPulseWidthModulation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterPulseWidthModulation)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

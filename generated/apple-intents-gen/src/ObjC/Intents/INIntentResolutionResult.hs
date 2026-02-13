@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Intents.INIntentResolutionResult
   , unsupported
   , unsupportedWithReason
   , confirmationRequiredWithItemToConfirm_forReason
+  , confirmationRequiredWithItemToConfirm_forReasonSelector
   , initSelector
   , needsValueSelector
   , notRequiredSelector
   , unsupportedSelector
   , unsupportedWithReasonSelector
-  , confirmationRequiredWithItemToConfirm_forReasonSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,69 +36,69 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINIntentResolutionResult inIntentResolutionResult => inIntentResolutionResult -> IO (Id INIntentResolutionResult)
-init_ inIntentResolutionResult  =
-    sendMsg inIntentResolutionResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inIntentResolutionResult =
+  sendOwnedMessage inIntentResolutionResult initSelector
 
 -- | @+ needsValue@
 needsValue :: IO (Id INIntentResolutionResult)
 needsValue  =
   do
     cls' <- getRequiredClass "INIntentResolutionResult"
-    sendClassMsg cls' (mkSelector "needsValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' needsValueSelector
 
 -- | @+ notRequired@
 notRequired :: IO (Id INIntentResolutionResult)
 notRequired  =
   do
     cls' <- getRequiredClass "INIntentResolutionResult"
-    sendClassMsg cls' (mkSelector "notRequired") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' notRequiredSelector
 
 -- | @+ unsupported@
 unsupported :: IO (Id INIntentResolutionResult)
 unsupported  =
   do
     cls' <- getRequiredClass "INIntentResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupported") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedSelector
 
 -- | @+ unsupportedWithReason:@
 unsupportedWithReason :: CLong -> IO (Id INIntentResolutionResult)
 unsupportedWithReason reason =
   do
     cls' <- getRequiredClass "INIntentResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupportedWithReason:") (retPtr retVoid) [argCLong reason] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedWithReasonSelector reason
 
 -- | @+ confirmationRequiredWithItemToConfirm:forReason:@
 confirmationRequiredWithItemToConfirm_forReason :: RawId -> CLong -> IO (Id INIntentResolutionResult)
 confirmationRequiredWithItemToConfirm_forReason itemToConfirm reason =
   do
     cls' <- getRequiredClass "INIntentResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithItemToConfirm:forReason:") (retPtr retVoid) [argPtr (castPtr (unRawId itemToConfirm) :: Ptr ()), argCLong reason] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithItemToConfirm_forReasonSelector itemToConfirm reason
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INIntentResolutionResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @needsValue@
-needsValueSelector :: Selector
+needsValueSelector :: Selector '[] (Id INIntentResolutionResult)
 needsValueSelector = mkSelector "needsValue"
 
 -- | @Selector@ for @notRequired@
-notRequiredSelector :: Selector
+notRequiredSelector :: Selector '[] (Id INIntentResolutionResult)
 notRequiredSelector = mkSelector "notRequired"
 
 -- | @Selector@ for @unsupported@
-unsupportedSelector :: Selector
+unsupportedSelector :: Selector '[] (Id INIntentResolutionResult)
 unsupportedSelector = mkSelector "unsupported"
 
 -- | @Selector@ for @unsupportedWithReason:@
-unsupportedWithReasonSelector :: Selector
+unsupportedWithReasonSelector :: Selector '[CLong] (Id INIntentResolutionResult)
 unsupportedWithReasonSelector = mkSelector "unsupportedWithReason:"
 
 -- | @Selector@ for @confirmationRequiredWithItemToConfirm:forReason:@
-confirmationRequiredWithItemToConfirm_forReasonSelector :: Selector
+confirmationRequiredWithItemToConfirm_forReasonSelector :: Selector '[RawId, CLong] (Id INIntentResolutionResult)
 confirmationRequiredWithItemToConfirm_forReasonSelector = mkSelector "confirmationRequiredWithItemToConfirm:forReason:"
 

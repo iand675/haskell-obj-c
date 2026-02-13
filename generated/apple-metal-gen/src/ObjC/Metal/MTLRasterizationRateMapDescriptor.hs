@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.Metal.MTLRasterizationRateMapDescriptor
   , label
   , setLabel
   , layerCount
-  , layerAtIndexSelector
-  , setLayer_atIndexSelector
-  , layersSelector
   , labelSelector
-  , setLabelSelector
+  , layerAtIndexSelector
   , layerCountSelector
+  , layersSelector
+  , setLabelSelector
+  , setLayer_atIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- layerAtIndex:@
 layerAtIndex :: IsMTLRasterizationRateMapDescriptor mtlRasterizationRateMapDescriptor => mtlRasterizationRateMapDescriptor -> CULong -> IO (Id MTLRasterizationRateLayerDescriptor)
-layerAtIndex mtlRasterizationRateMapDescriptor  layerIndex =
-    sendMsg mtlRasterizationRateMapDescriptor (mkSelector "layerAtIndex:") (retPtr retVoid) [argCULong layerIndex] >>= retainedObject . castPtr
+layerAtIndex mtlRasterizationRateMapDescriptor layerIndex =
+  sendMessage mtlRasterizationRateMapDescriptor layerAtIndexSelector layerIndex
 
 -- | setLayer:atIndex:
 --
@@ -62,9 +59,8 @@ layerAtIndex mtlRasterizationRateMapDescriptor  layerIndex =
 --
 -- ObjC selector: @- setLayer:atIndex:@
 setLayer_atIndex :: (IsMTLRasterizationRateMapDescriptor mtlRasterizationRateMapDescriptor, IsMTLRasterizationRateLayerDescriptor layer) => mtlRasterizationRateMapDescriptor -> layer -> CULong -> IO ()
-setLayer_atIndex mtlRasterizationRateMapDescriptor  layer layerIndex =
-  withObjCPtr layer $ \raw_layer ->
-      sendMsg mtlRasterizationRateMapDescriptor (mkSelector "setLayer:atIndex:") retVoid [argPtr (castPtr raw_layer :: Ptr ()), argCULong layerIndex]
+setLayer_atIndex mtlRasterizationRateMapDescriptor layer layerIndex =
+  sendMessage mtlRasterizationRateMapDescriptor setLayer_atIndexSelector (toMTLRasterizationRateLayerDescriptor layer) layerIndex
 
 -- | layers
 --
@@ -74,8 +70,8 @@ setLayer_atIndex mtlRasterizationRateMapDescriptor  layer layerIndex =
 --
 -- ObjC selector: @- layers@
 layers :: IsMTLRasterizationRateMapDescriptor mtlRasterizationRateMapDescriptor => mtlRasterizationRateMapDescriptor -> IO (Id MTLRasterizationRateLayerArray)
-layers mtlRasterizationRateMapDescriptor  =
-    sendMsg mtlRasterizationRateMapDescriptor (mkSelector "layers") (retPtr retVoid) [] >>= retainedObject . castPtr
+layers mtlRasterizationRateMapDescriptor =
+  sendMessage mtlRasterizationRateMapDescriptor layersSelector
 
 -- | label
 --
@@ -85,8 +81,8 @@ layers mtlRasterizationRateMapDescriptor  =
 --
 -- ObjC selector: @- label@
 label :: IsMTLRasterizationRateMapDescriptor mtlRasterizationRateMapDescriptor => mtlRasterizationRateMapDescriptor -> IO (Id NSString)
-label mtlRasterizationRateMapDescriptor  =
-    sendMsg mtlRasterizationRateMapDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtlRasterizationRateMapDescriptor =
+  sendMessage mtlRasterizationRateMapDescriptor labelSelector
 
 -- | label
 --
@@ -96,9 +92,8 @@ label mtlRasterizationRateMapDescriptor  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTLRasterizationRateMapDescriptor mtlRasterizationRateMapDescriptor, IsNSString value) => mtlRasterizationRateMapDescriptor -> value -> IO ()
-setLabel mtlRasterizationRateMapDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlRasterizationRateMapDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtlRasterizationRateMapDescriptor value =
+  sendMessage mtlRasterizationRateMapDescriptor setLabelSelector (toNSString value)
 
 -- | layerCount
 --
@@ -108,34 +103,34 @@ setLabel mtlRasterizationRateMapDescriptor  value =
 --
 -- ObjC selector: @- layerCount@
 layerCount :: IsMTLRasterizationRateMapDescriptor mtlRasterizationRateMapDescriptor => mtlRasterizationRateMapDescriptor -> IO CULong
-layerCount mtlRasterizationRateMapDescriptor  =
-    sendMsg mtlRasterizationRateMapDescriptor (mkSelector "layerCount") retCULong []
+layerCount mtlRasterizationRateMapDescriptor =
+  sendMessage mtlRasterizationRateMapDescriptor layerCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerAtIndex:@
-layerAtIndexSelector :: Selector
+layerAtIndexSelector :: Selector '[CULong] (Id MTLRasterizationRateLayerDescriptor)
 layerAtIndexSelector = mkSelector "layerAtIndex:"
 
 -- | @Selector@ for @setLayer:atIndex:@
-setLayer_atIndexSelector :: Selector
+setLayer_atIndexSelector :: Selector '[Id MTLRasterizationRateLayerDescriptor, CULong] ()
 setLayer_atIndexSelector = mkSelector "setLayer:atIndex:"
 
 -- | @Selector@ for @layers@
-layersSelector :: Selector
+layersSelector :: Selector '[] (Id MTLRasterizationRateLayerArray)
 layersSelector = mkSelector "layers"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @layerCount@
-layerCountSelector :: Selector
+layerCountSelector :: Selector '[] CULong
 layerCountSelector = mkSelector "layerCount"
 

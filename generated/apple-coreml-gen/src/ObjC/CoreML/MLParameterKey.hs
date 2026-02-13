@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,36 +26,32 @@ module ObjC.CoreML.MLParameterKey
   , biases
   , linkedModelFileName
   , linkedModelSearchPath
-  , initSelector
-  , newSelector
-  , scopedToSelector
-  , learningRateSelector
-  , momentumSelector
-  , miniBatchSizeSelector
   , beta1Selector
   , beta2Selector
-  , epsSelector
-  , epochsSelector
-  , shuffleSelector
-  , seedSelector
-  , numberOfNeighborsSelector
-  , weightsSelector
   , biasesSelector
+  , epochsSelector
+  , epsSelector
+  , initSelector
+  , learningRateSelector
   , linkedModelFileNameSelector
   , linkedModelSearchPathSelector
+  , miniBatchSizeSelector
+  , momentumSelector
+  , newSelector
+  , numberOfNeighborsSelector
+  , scopedToSelector
+  , seedSelector
+  , shuffleSelector
+  , weightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,189 +60,188 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLParameterKey mlParameterKey => mlParameterKey -> IO (Id MLParameterKey)
-init_ mlParameterKey  =
-    sendMsg mlParameterKey (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlParameterKey =
+  sendOwnedMessage mlParameterKey initSelector
 
 -- | @+ new@
 new :: IO RawId
 new  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- scopedTo:@
 scopedTo :: (IsMLParameterKey mlParameterKey, IsNSString scope) => mlParameterKey -> scope -> IO (Id MLParameterKey)
-scopedTo mlParameterKey  scope =
-  withObjCPtr scope $ \raw_scope ->
-      sendMsg mlParameterKey (mkSelector "scopedTo:") (retPtr retVoid) [argPtr (castPtr raw_scope :: Ptr ())] >>= retainedObject . castPtr
+scopedTo mlParameterKey scope =
+  sendMessage mlParameterKey scopedToSelector (toNSString scope)
 
 -- | @+ learningRate@
 learningRate :: IO (Id MLParameterKey)
 learningRate  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "learningRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' learningRateSelector
 
 -- | @+ momentum@
 momentum :: IO (Id MLParameterKey)
 momentum  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "momentum") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' momentumSelector
 
 -- | @+ miniBatchSize@
 miniBatchSize :: IO (Id MLParameterKey)
 miniBatchSize  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "miniBatchSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' miniBatchSizeSelector
 
 -- | @+ beta1@
 beta1 :: IO (Id MLParameterKey)
 beta1  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "beta1") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' beta1Selector
 
 -- | @+ beta2@
 beta2 :: IO (Id MLParameterKey)
 beta2  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "beta2") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' beta2Selector
 
 -- | @+ eps@
 eps :: IO (Id MLParameterKey)
 eps  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "eps") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' epsSelector
 
 -- | @+ epochs@
 epochs :: IO (Id MLParameterKey)
 epochs  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "epochs") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' epochsSelector
 
 -- | @+ shuffle@
 shuffle :: IO (Id MLParameterKey)
 shuffle  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "shuffle") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' shuffleSelector
 
 -- | @+ seed@
 seed :: IO (Id MLParameterKey)
 seed  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "seed") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' seedSelector
 
 -- | @+ numberOfNeighbors@
 numberOfNeighbors :: IO (Id MLParameterKey)
 numberOfNeighbors  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "numberOfNeighbors") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' numberOfNeighborsSelector
 
 -- | @+ weights@
 weights :: IO (Id MLParameterKey)
 weights  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "weights") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' weightsSelector
 
 -- | @+ biases@
 biases :: IO (Id MLParameterKey)
 biases  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "biases") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' biasesSelector
 
 -- | @+ linkedModelFileName@
 linkedModelFileName :: IO (Id MLParameterKey)
 linkedModelFileName  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "linkedModelFileName") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' linkedModelFileNameSelector
 
 -- | @+ linkedModelSearchPath@
 linkedModelSearchPath :: IO (Id MLParameterKey)
 linkedModelSearchPath  =
   do
     cls' <- getRequiredClass "MLParameterKey"
-    sendClassMsg cls' (mkSelector "linkedModelSearchPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' linkedModelSearchPathSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLParameterKey)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] RawId
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @scopedTo:@
-scopedToSelector :: Selector
+scopedToSelector :: Selector '[Id NSString] (Id MLParameterKey)
 scopedToSelector = mkSelector "scopedTo:"
 
 -- | @Selector@ for @learningRate@
-learningRateSelector :: Selector
+learningRateSelector :: Selector '[] (Id MLParameterKey)
 learningRateSelector = mkSelector "learningRate"
 
 -- | @Selector@ for @momentum@
-momentumSelector :: Selector
+momentumSelector :: Selector '[] (Id MLParameterKey)
 momentumSelector = mkSelector "momentum"
 
 -- | @Selector@ for @miniBatchSize@
-miniBatchSizeSelector :: Selector
+miniBatchSizeSelector :: Selector '[] (Id MLParameterKey)
 miniBatchSizeSelector = mkSelector "miniBatchSize"
 
 -- | @Selector@ for @beta1@
-beta1Selector :: Selector
+beta1Selector :: Selector '[] (Id MLParameterKey)
 beta1Selector = mkSelector "beta1"
 
 -- | @Selector@ for @beta2@
-beta2Selector :: Selector
+beta2Selector :: Selector '[] (Id MLParameterKey)
 beta2Selector = mkSelector "beta2"
 
 -- | @Selector@ for @eps@
-epsSelector :: Selector
+epsSelector :: Selector '[] (Id MLParameterKey)
 epsSelector = mkSelector "eps"
 
 -- | @Selector@ for @epochs@
-epochsSelector :: Selector
+epochsSelector :: Selector '[] (Id MLParameterKey)
 epochsSelector = mkSelector "epochs"
 
 -- | @Selector@ for @shuffle@
-shuffleSelector :: Selector
+shuffleSelector :: Selector '[] (Id MLParameterKey)
 shuffleSelector = mkSelector "shuffle"
 
 -- | @Selector@ for @seed@
-seedSelector :: Selector
+seedSelector :: Selector '[] (Id MLParameterKey)
 seedSelector = mkSelector "seed"
 
 -- | @Selector@ for @numberOfNeighbors@
-numberOfNeighborsSelector :: Selector
+numberOfNeighborsSelector :: Selector '[] (Id MLParameterKey)
 numberOfNeighborsSelector = mkSelector "numberOfNeighbors"
 
 -- | @Selector@ for @weights@
-weightsSelector :: Selector
+weightsSelector :: Selector '[] (Id MLParameterKey)
 weightsSelector = mkSelector "weights"
 
 -- | @Selector@ for @biases@
-biasesSelector :: Selector
+biasesSelector :: Selector '[] (Id MLParameterKey)
 biasesSelector = mkSelector "biases"
 
 -- | @Selector@ for @linkedModelFileName@
-linkedModelFileNameSelector :: Selector
+linkedModelFileNameSelector :: Selector '[] (Id MLParameterKey)
 linkedModelFileNameSelector = mkSelector "linkedModelFileName"
 
 -- | @Selector@ for @linkedModelSearchPath@
-linkedModelSearchPathSelector :: Selector
+linkedModelSearchPathSelector :: Selector '[] (Id MLParameterKey)
 linkedModelSearchPathSelector = mkSelector "linkedModelSearchPath"
 

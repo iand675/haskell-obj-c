@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.JavaScriptCore.JSVirtualMachine
   , init_
   , addManagedReference_withOwner
   , removeManagedReference_withOwner
-  , initSelector
   , addManagedReference_withOwnerSelector
+  , initSelector
   , removeManagedReference_withOwnerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsJSVirtualMachine jsVirtualMachine => jsVirtualMachine -> IO (Id JSVirtualMachine)
-init_ jsVirtualMachine  =
-    sendMsg jsVirtualMachine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ jsVirtualMachine =
+  sendOwnedMessage jsVirtualMachine initSelector
 
 -- | Memory Management
 --
@@ -58,8 +55,8 @@ init_ jsVirtualMachine  =
 --
 -- ObjC selector: @- addManagedReference:withOwner:@
 addManagedReference_withOwner :: IsJSVirtualMachine jsVirtualMachine => jsVirtualMachine -> RawId -> RawId -> IO ()
-addManagedReference_withOwner jsVirtualMachine  object owner =
-    sendMsg jsVirtualMachine (mkSelector "addManagedReference:withOwner:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr (unRawId owner) :: Ptr ())]
+addManagedReference_withOwner jsVirtualMachine object owner =
+  sendMessage jsVirtualMachine addManagedReference_withOwnerSelector object owner
 
 -- | Notify the JSVirtualMachine that a previous object relationship no longer exists.
 --
@@ -71,22 +68,22 @@ addManagedReference_withOwner jsVirtualMachine  object owner =
 --
 -- ObjC selector: @- removeManagedReference:withOwner:@
 removeManagedReference_withOwner :: IsJSVirtualMachine jsVirtualMachine => jsVirtualMachine -> RawId -> RawId -> IO ()
-removeManagedReference_withOwner jsVirtualMachine  object owner =
-    sendMsg jsVirtualMachine (mkSelector "removeManagedReference:withOwner:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr (unRawId owner) :: Ptr ())]
+removeManagedReference_withOwner jsVirtualMachine object owner =
+  sendMessage jsVirtualMachine removeManagedReference_withOwnerSelector object owner
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id JSVirtualMachine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @addManagedReference:withOwner:@
-addManagedReference_withOwnerSelector :: Selector
+addManagedReference_withOwnerSelector :: Selector '[RawId, RawId] ()
 addManagedReference_withOwnerSelector = mkSelector "addManagedReference:withOwner:"
 
 -- | @Selector@ for @removeManagedReference:withOwner:@
-removeManagedReference_withOwnerSelector :: Selector
+removeManagedReference_withOwnerSelector :: Selector '[RawId, RawId] ()
 removeManagedReference_withOwnerSelector = mkSelector "removeManagedReference:withOwner:"
 

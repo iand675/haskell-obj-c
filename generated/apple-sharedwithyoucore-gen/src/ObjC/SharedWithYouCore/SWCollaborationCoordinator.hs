@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.SharedWithYouCore.SWCollaborationCoordinator
   , sharedCoordinator
   , actionHandler
   , setActionHandler
-  , sharedCoordinatorSelector
   , actionHandlerSelector
   , setActionHandlerSelector
+  , sharedCoordinatorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,31 +33,31 @@ sharedCoordinator :: IO (Id SWCollaborationCoordinator)
 sharedCoordinator  =
   do
     cls' <- getRequiredClass "SWCollaborationCoordinator"
-    sendClassMsg cls' (mkSelector "sharedCoordinator") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedCoordinatorSelector
 
 -- | @- actionHandler@
 actionHandler :: IsSWCollaborationCoordinator swCollaborationCoordinator => swCollaborationCoordinator -> IO RawId
-actionHandler swCollaborationCoordinator  =
-    fmap (RawId . castPtr) $ sendMsg swCollaborationCoordinator (mkSelector "actionHandler") (retPtr retVoid) []
+actionHandler swCollaborationCoordinator =
+  sendMessage swCollaborationCoordinator actionHandlerSelector
 
 -- | @- setActionHandler:@
 setActionHandler :: IsSWCollaborationCoordinator swCollaborationCoordinator => swCollaborationCoordinator -> RawId -> IO ()
-setActionHandler swCollaborationCoordinator  value =
-    sendMsg swCollaborationCoordinator (mkSelector "setActionHandler:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setActionHandler swCollaborationCoordinator value =
+  sendMessage swCollaborationCoordinator setActionHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedCoordinator@
-sharedCoordinatorSelector :: Selector
+sharedCoordinatorSelector :: Selector '[] (Id SWCollaborationCoordinator)
 sharedCoordinatorSelector = mkSelector "sharedCoordinator"
 
 -- | @Selector@ for @actionHandler@
-actionHandlerSelector :: Selector
+actionHandlerSelector :: Selector '[] RawId
 actionHandlerSelector = mkSelector "actionHandler"
 
 -- | @Selector@ for @setActionHandler:@
-setActionHandlerSelector :: Selector
+setActionHandlerSelector :: Selector '[RawId] ()
 setActionHandlerSelector = mkSelector "setActionHandler:"
 

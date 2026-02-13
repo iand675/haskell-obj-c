@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.PassKit.PKSuicaPassProperties
   , lowBalanceGateNotificationEnabled
   , greenCarTicketUsed
   , blacklisted
-  , passPropertiesForPassSelector
-  , transitBalanceSelector
-  , transitBalanceCurrencyCodeSelector
-  , inStationSelector
-  , inShinkansenStationSelector
   , balanceAllowedForCommuteSelector
-  , lowBalanceGateNotificationEnabledSelector
-  , greenCarTicketUsedSelector
   , blacklistedSelector
+  , greenCarTicketUsedSelector
+  , inShinkansenStationSelector
+  , inStationSelector
+  , lowBalanceGateNotificationEnabledSelector
+  , passPropertiesForPassSelector
+  , transitBalanceCurrencyCodeSelector
+  , transitBalanceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,88 +47,87 @@ passPropertiesForPass :: IsPKPass pass => pass -> IO (Id PKSuicaPassProperties)
 passPropertiesForPass pass =
   do
     cls' <- getRequiredClass "PKSuicaPassProperties"
-    withObjCPtr pass $ \raw_pass ->
-      sendClassMsg cls' (mkSelector "passPropertiesForPass:") (retPtr retVoid) [argPtr (castPtr raw_pass :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' passPropertiesForPassSelector (toPKPass pass)
 
 -- | @- transitBalance@
 transitBalance :: IsPKSuicaPassProperties pkSuicaPassProperties => pkSuicaPassProperties -> IO (Id NSDecimalNumber)
-transitBalance pkSuicaPassProperties  =
-    sendMsg pkSuicaPassProperties (mkSelector "transitBalance") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitBalance pkSuicaPassProperties =
+  sendMessage pkSuicaPassProperties transitBalanceSelector
 
 -- | @- transitBalanceCurrencyCode@
 transitBalanceCurrencyCode :: IsPKSuicaPassProperties pkSuicaPassProperties => pkSuicaPassProperties -> IO (Id NSString)
-transitBalanceCurrencyCode pkSuicaPassProperties  =
-    sendMsg pkSuicaPassProperties (mkSelector "transitBalanceCurrencyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitBalanceCurrencyCode pkSuicaPassProperties =
+  sendMessage pkSuicaPassProperties transitBalanceCurrencyCodeSelector
 
 -- | @- inStation@
 inStation :: IsPKSuicaPassProperties pkSuicaPassProperties => pkSuicaPassProperties -> IO Bool
-inStation pkSuicaPassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkSuicaPassProperties (mkSelector "inStation") retCULong []
+inStation pkSuicaPassProperties =
+  sendMessage pkSuicaPassProperties inStationSelector
 
 -- | Note: isInShinkansenStation is not a subset of isInStation.
 --
 -- ObjC selector: @- inShinkansenStation@
 inShinkansenStation :: IsPKSuicaPassProperties pkSuicaPassProperties => pkSuicaPassProperties -> IO Bool
-inShinkansenStation pkSuicaPassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkSuicaPassProperties (mkSelector "inShinkansenStation") retCULong []
+inShinkansenStation pkSuicaPassProperties =
+  sendMessage pkSuicaPassProperties inShinkansenStationSelector
 
 -- | @- balanceAllowedForCommute@
 balanceAllowedForCommute :: IsPKSuicaPassProperties pkSuicaPassProperties => pkSuicaPassProperties -> IO Bool
-balanceAllowedForCommute pkSuicaPassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkSuicaPassProperties (mkSelector "balanceAllowedForCommute") retCULong []
+balanceAllowedForCommute pkSuicaPassProperties =
+  sendMessage pkSuicaPassProperties balanceAllowedForCommuteSelector
 
 -- | @- lowBalanceGateNotificationEnabled@
 lowBalanceGateNotificationEnabled :: IsPKSuicaPassProperties pkSuicaPassProperties => pkSuicaPassProperties -> IO Bool
-lowBalanceGateNotificationEnabled pkSuicaPassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkSuicaPassProperties (mkSelector "lowBalanceGateNotificationEnabled") retCULong []
+lowBalanceGateNotificationEnabled pkSuicaPassProperties =
+  sendMessage pkSuicaPassProperties lowBalanceGateNotificationEnabledSelector
 
 -- | @- greenCarTicketUsed@
 greenCarTicketUsed :: IsPKSuicaPassProperties pkSuicaPassProperties => pkSuicaPassProperties -> IO Bool
-greenCarTicketUsed pkSuicaPassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkSuicaPassProperties (mkSelector "greenCarTicketUsed") retCULong []
+greenCarTicketUsed pkSuicaPassProperties =
+  sendMessage pkSuicaPassProperties greenCarTicketUsedSelector
 
 -- | @- blacklisted@
 blacklisted :: IsPKSuicaPassProperties pkSuicaPassProperties => pkSuicaPassProperties -> IO Bool
-blacklisted pkSuicaPassProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkSuicaPassProperties (mkSelector "blacklisted") retCULong []
+blacklisted pkSuicaPassProperties =
+  sendMessage pkSuicaPassProperties blacklistedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @passPropertiesForPass:@
-passPropertiesForPassSelector :: Selector
+passPropertiesForPassSelector :: Selector '[Id PKPass] (Id PKSuicaPassProperties)
 passPropertiesForPassSelector = mkSelector "passPropertiesForPass:"
 
 -- | @Selector@ for @transitBalance@
-transitBalanceSelector :: Selector
+transitBalanceSelector :: Selector '[] (Id NSDecimalNumber)
 transitBalanceSelector = mkSelector "transitBalance"
 
 -- | @Selector@ for @transitBalanceCurrencyCode@
-transitBalanceCurrencyCodeSelector :: Selector
+transitBalanceCurrencyCodeSelector :: Selector '[] (Id NSString)
 transitBalanceCurrencyCodeSelector = mkSelector "transitBalanceCurrencyCode"
 
 -- | @Selector@ for @inStation@
-inStationSelector :: Selector
+inStationSelector :: Selector '[] Bool
 inStationSelector = mkSelector "inStation"
 
 -- | @Selector@ for @inShinkansenStation@
-inShinkansenStationSelector :: Selector
+inShinkansenStationSelector :: Selector '[] Bool
 inShinkansenStationSelector = mkSelector "inShinkansenStation"
 
 -- | @Selector@ for @balanceAllowedForCommute@
-balanceAllowedForCommuteSelector :: Selector
+balanceAllowedForCommuteSelector :: Selector '[] Bool
 balanceAllowedForCommuteSelector = mkSelector "balanceAllowedForCommute"
 
 -- | @Selector@ for @lowBalanceGateNotificationEnabled@
-lowBalanceGateNotificationEnabledSelector :: Selector
+lowBalanceGateNotificationEnabledSelector :: Selector '[] Bool
 lowBalanceGateNotificationEnabledSelector = mkSelector "lowBalanceGateNotificationEnabled"
 
 -- | @Selector@ for @greenCarTicketUsed@
-greenCarTicketUsedSelector :: Selector
+greenCarTicketUsedSelector :: Selector '[] Bool
 greenCarTicketUsedSelector = mkSelector "greenCarTicketUsed"
 
 -- | @Selector@ for @blacklisted@
-blacklistedSelector :: Selector
+blacklistedSelector :: Selector '[] Bool
 blacklistedSelector = mkSelector "blacklisted"
 

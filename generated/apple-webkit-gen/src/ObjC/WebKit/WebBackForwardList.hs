@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,35 +31,31 @@ module ObjC.WebKit.WebBackForwardList
   , backListCount
   , forwardListCount
   , addItemSelector
+  , backItemSelector
+  , backListCountSelector
+  , backListWithLimitSelector
+  , capacitySelector
+  , containsItemSelector
+  , currentItemSelector
+  , forwardItemSelector
+  , forwardListCountSelector
+  , forwardListWithLimitSelector
   , goBackSelector
   , goForwardSelector
   , goToItemSelector
-  , backListWithLimitSelector
-  , forwardListWithLimitSelector
-  , containsItemSelector
   , itemAtIndexSelector
-  , setPageCacheSizeSelector
   , pageCacheSizeSelector
-  , backItemSelector
-  , currentItemSelector
-  , forwardItemSelector
-  , capacitySelector
   , setCapacitySelector
-  , backListCountSelector
-  , forwardListCountSelector
+  , setPageCacheSizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,9 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addItem:@
 addItem :: (IsWebBackForwardList webBackForwardList, IsWebHistoryItem item) => webBackForwardList -> item -> IO ()
-addItem webBackForwardList  item =
-  withObjCPtr item $ \raw_item ->
-      sendMsg webBackForwardList (mkSelector "addItem:") retVoid [argPtr (castPtr raw_item :: Ptr ())]
+addItem webBackForwardList item =
+  sendMessage webBackForwardList addItemSelector (toWebHistoryItem item)
 
 -- | goBack
 --
@@ -85,8 +81,8 @@ addItem webBackForwardList  item =
 --
 -- ObjC selector: @- goBack@
 goBack :: IsWebBackForwardList webBackForwardList => webBackForwardList -> IO ()
-goBack webBackForwardList  =
-    sendMsg webBackForwardList (mkSelector "goBack") retVoid []
+goBack webBackForwardList =
+  sendMessage webBackForwardList goBackSelector
 
 -- | goForward
 --
@@ -94,8 +90,8 @@ goBack webBackForwardList  =
 --
 -- ObjC selector: @- goForward@
 goForward :: IsWebBackForwardList webBackForwardList => webBackForwardList -> IO ()
-goForward webBackForwardList  =
-    sendMsg webBackForwardList (mkSelector "goForward") retVoid []
+goForward webBackForwardList =
+  sendMessage webBackForwardList goForwardSelector
 
 -- | goToItem:
 --
@@ -105,9 +101,8 @@ goForward webBackForwardList  =
 --
 -- ObjC selector: @- goToItem:@
 goToItem :: (IsWebBackForwardList webBackForwardList, IsWebHistoryItem item) => webBackForwardList -> item -> IO ()
-goToItem webBackForwardList  item =
-  withObjCPtr item $ \raw_item ->
-      sendMsg webBackForwardList (mkSelector "goToItem:") retVoid [argPtr (castPtr raw_item :: Ptr ())]
+goToItem webBackForwardList item =
+  sendMessage webBackForwardList goToItemSelector (toWebHistoryItem item)
 
 -- | backListWithLimit:
 --
@@ -119,8 +114,8 @@ goToItem webBackForwardList  item =
 --
 -- ObjC selector: @- backListWithLimit:@
 backListWithLimit :: IsWebBackForwardList webBackForwardList => webBackForwardList -> CInt -> IO (Id NSArray)
-backListWithLimit webBackForwardList  limit =
-    sendMsg webBackForwardList (mkSelector "backListWithLimit:") (retPtr retVoid) [argCInt limit] >>= retainedObject . castPtr
+backListWithLimit webBackForwardList limit =
+  sendMessage webBackForwardList backListWithLimitSelector limit
 
 -- | forwardListWithLimit:
 --
@@ -132,8 +127,8 @@ backListWithLimit webBackForwardList  limit =
 --
 -- ObjC selector: @- forwardListWithLimit:@
 forwardListWithLimit :: IsWebBackForwardList webBackForwardList => webBackForwardList -> CInt -> IO (Id NSArray)
-forwardListWithLimit webBackForwardList  limit =
-    sendMsg webBackForwardList (mkSelector "forwardListWithLimit:") (retPtr retVoid) [argCInt limit] >>= retainedObject . castPtr
+forwardListWithLimit webBackForwardList limit =
+  sendMessage webBackForwardList forwardListWithLimitSelector limit
 
 -- | containsItem:
 --
@@ -143,9 +138,8 @@ forwardListWithLimit webBackForwardList  limit =
 --
 -- ObjC selector: @- containsItem:@
 containsItem :: (IsWebBackForwardList webBackForwardList, IsWebHistoryItem item) => webBackForwardList -> item -> IO Bool
-containsItem webBackForwardList  item =
-  withObjCPtr item $ \raw_item ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg webBackForwardList (mkSelector "containsItem:") retCULong [argPtr (castPtr raw_item :: Ptr ())]
+containsItem webBackForwardList item =
+  sendMessage webBackForwardList containsItemSelector (toWebHistoryItem item)
 
 -- | itemAtIndex:
 --
@@ -157,8 +151,8 @@ containsItem webBackForwardList  item =
 --
 -- ObjC selector: @- itemAtIndex:@
 itemAtIndex :: IsWebBackForwardList webBackForwardList => webBackForwardList -> CInt -> IO (Id WebHistoryItem)
-itemAtIndex webBackForwardList  index =
-    sendMsg webBackForwardList (mkSelector "itemAtIndex:") (retPtr retVoid) [argCInt index] >>= retainedObject . castPtr
+itemAtIndex webBackForwardList index =
+  sendMessage webBackForwardList itemAtIndexSelector index
 
 -- | setPageCacheSize:
 --
@@ -168,8 +162,8 @@ itemAtIndex webBackForwardList  index =
 --
 -- ObjC selector: @- setPageCacheSize:@
 setPageCacheSize :: IsWebBackForwardList webBackForwardList => webBackForwardList -> CULong -> IO ()
-setPageCacheSize webBackForwardList  size =
-    sendMsg webBackForwardList (mkSelector "setPageCacheSize:") retVoid [argCULong size]
+setPageCacheSize webBackForwardList size =
+  sendMessage webBackForwardList setPageCacheSizeSelector size
 
 -- | pageCacheSize
 --
@@ -179,8 +173,8 @@ setPageCacheSize webBackForwardList  size =
 --
 -- ObjC selector: @- pageCacheSize@
 pageCacheSize :: IsWebBackForwardList webBackForwardList => webBackForwardList -> IO CULong
-pageCacheSize webBackForwardList  =
-    sendMsg webBackForwardList (mkSelector "pageCacheSize") retCULong []
+pageCacheSize webBackForwardList =
+  sendMessage webBackForwardList pageCacheSizeSelector
 
 -- | backItem
 --
@@ -188,8 +182,8 @@ pageCacheSize webBackForwardList  =
 --
 -- ObjC selector: @- backItem@
 backItem :: IsWebBackForwardList webBackForwardList => webBackForwardList -> IO (Id WebHistoryItem)
-backItem webBackForwardList  =
-    sendMsg webBackForwardList (mkSelector "backItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+backItem webBackForwardList =
+  sendMessage webBackForwardList backItemSelector
 
 -- | currentItem
 --
@@ -197,8 +191,8 @@ backItem webBackForwardList  =
 --
 -- ObjC selector: @- currentItem@
 currentItem :: IsWebBackForwardList webBackForwardList => webBackForwardList -> IO (Id WebHistoryItem)
-currentItem webBackForwardList  =
-    sendMsg webBackForwardList (mkSelector "currentItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentItem webBackForwardList =
+  sendMessage webBackForwardList currentItemSelector
 
 -- | forwardItem
 --
@@ -206,8 +200,8 @@ currentItem webBackForwardList  =
 --
 -- ObjC selector: @- forwardItem@
 forwardItem :: IsWebBackForwardList webBackForwardList => webBackForwardList -> IO (Id WebHistoryItem)
-forwardItem webBackForwardList  =
-    sendMsg webBackForwardList (mkSelector "forwardItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+forwardItem webBackForwardList =
+  sendMessage webBackForwardList forwardItemSelector
 
 -- | capacity
 --
@@ -215,8 +209,8 @@ forwardItem webBackForwardList  =
 --
 -- ObjC selector: @- capacity@
 capacity :: IsWebBackForwardList webBackForwardList => webBackForwardList -> IO CInt
-capacity webBackForwardList  =
-    sendMsg webBackForwardList (mkSelector "capacity") retCInt []
+capacity webBackForwardList =
+  sendMessage webBackForwardList capacitySelector
 
 -- | capacity
 --
@@ -224,8 +218,8 @@ capacity webBackForwardList  =
 --
 -- ObjC selector: @- setCapacity:@
 setCapacity :: IsWebBackForwardList webBackForwardList => webBackForwardList -> CInt -> IO ()
-setCapacity webBackForwardList  value =
-    sendMsg webBackForwardList (mkSelector "setCapacity:") retVoid [argCInt value]
+setCapacity webBackForwardList value =
+  sendMessage webBackForwardList setCapacitySelector value
 
 -- | backListCount
 --
@@ -233,8 +227,8 @@ setCapacity webBackForwardList  value =
 --
 -- ObjC selector: @- backListCount@
 backListCount :: IsWebBackForwardList webBackForwardList => webBackForwardList -> IO CInt
-backListCount webBackForwardList  =
-    sendMsg webBackForwardList (mkSelector "backListCount") retCInt []
+backListCount webBackForwardList =
+  sendMessage webBackForwardList backListCountSelector
 
 -- | forwardListCount
 --
@@ -242,78 +236,78 @@ backListCount webBackForwardList  =
 --
 -- ObjC selector: @- forwardListCount@
 forwardListCount :: IsWebBackForwardList webBackForwardList => webBackForwardList -> IO CInt
-forwardListCount webBackForwardList  =
-    sendMsg webBackForwardList (mkSelector "forwardListCount") retCInt []
+forwardListCount webBackForwardList =
+  sendMessage webBackForwardList forwardListCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addItem:@
-addItemSelector :: Selector
+addItemSelector :: Selector '[Id WebHistoryItem] ()
 addItemSelector = mkSelector "addItem:"
 
 -- | @Selector@ for @goBack@
-goBackSelector :: Selector
+goBackSelector :: Selector '[] ()
 goBackSelector = mkSelector "goBack"
 
 -- | @Selector@ for @goForward@
-goForwardSelector :: Selector
+goForwardSelector :: Selector '[] ()
 goForwardSelector = mkSelector "goForward"
 
 -- | @Selector@ for @goToItem:@
-goToItemSelector :: Selector
+goToItemSelector :: Selector '[Id WebHistoryItem] ()
 goToItemSelector = mkSelector "goToItem:"
 
 -- | @Selector@ for @backListWithLimit:@
-backListWithLimitSelector :: Selector
+backListWithLimitSelector :: Selector '[CInt] (Id NSArray)
 backListWithLimitSelector = mkSelector "backListWithLimit:"
 
 -- | @Selector@ for @forwardListWithLimit:@
-forwardListWithLimitSelector :: Selector
+forwardListWithLimitSelector :: Selector '[CInt] (Id NSArray)
 forwardListWithLimitSelector = mkSelector "forwardListWithLimit:"
 
 -- | @Selector@ for @containsItem:@
-containsItemSelector :: Selector
+containsItemSelector :: Selector '[Id WebHistoryItem] Bool
 containsItemSelector = mkSelector "containsItem:"
 
 -- | @Selector@ for @itemAtIndex:@
-itemAtIndexSelector :: Selector
+itemAtIndexSelector :: Selector '[CInt] (Id WebHistoryItem)
 itemAtIndexSelector = mkSelector "itemAtIndex:"
 
 -- | @Selector@ for @setPageCacheSize:@
-setPageCacheSizeSelector :: Selector
+setPageCacheSizeSelector :: Selector '[CULong] ()
 setPageCacheSizeSelector = mkSelector "setPageCacheSize:"
 
 -- | @Selector@ for @pageCacheSize@
-pageCacheSizeSelector :: Selector
+pageCacheSizeSelector :: Selector '[] CULong
 pageCacheSizeSelector = mkSelector "pageCacheSize"
 
 -- | @Selector@ for @backItem@
-backItemSelector :: Selector
+backItemSelector :: Selector '[] (Id WebHistoryItem)
 backItemSelector = mkSelector "backItem"
 
 -- | @Selector@ for @currentItem@
-currentItemSelector :: Selector
+currentItemSelector :: Selector '[] (Id WebHistoryItem)
 currentItemSelector = mkSelector "currentItem"
 
 -- | @Selector@ for @forwardItem@
-forwardItemSelector :: Selector
+forwardItemSelector :: Selector '[] (Id WebHistoryItem)
 forwardItemSelector = mkSelector "forwardItem"
 
 -- | @Selector@ for @capacity@
-capacitySelector :: Selector
+capacitySelector :: Selector '[] CInt
 capacitySelector = mkSelector "capacity"
 
 -- | @Selector@ for @setCapacity:@
-setCapacitySelector :: Selector
+setCapacitySelector :: Selector '[CInt] ()
 setCapacitySelector = mkSelector "setCapacity:"
 
 -- | @Selector@ for @backListCount@
-backListCountSelector :: Selector
+backListCountSelector :: Selector '[] CInt
 backListCountSelector = mkSelector "backListCount"
 
 -- | @Selector@ for @forwardListCount@
-forwardListCountSelector :: Selector
+forwardListCountSelector :: Selector '[] CInt
 forwardListCountSelector = mkSelector "forwardListCount"
 

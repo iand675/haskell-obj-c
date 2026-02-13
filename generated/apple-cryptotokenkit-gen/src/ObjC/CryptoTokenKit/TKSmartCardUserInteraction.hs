@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.CryptoTokenKit.TKSmartCardUserInteraction
   , setInitialTimeout
   , interactionTimeout
   , setInteractionTimeout
-  , runWithReplySelector
   , cancelSelector
   , delegateSelector
-  , setDelegateSelector
   , initialTimeoutSelector
-  , setInitialTimeoutSelector
   , interactionTimeoutSelector
+  , runWithReplySelector
+  , setDelegateSelector
+  , setInitialTimeoutSelector
   , setInteractionTimeoutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- runWithReply:@
 runWithReply :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> Ptr () -> IO ()
-runWithReply tkSmartCardUserInteraction  reply =
-    sendMsg tkSmartCardUserInteraction (mkSelector "runWithReply:") retVoid [argPtr (castPtr reply :: Ptr ())]
+runWithReply tkSmartCardUserInteraction reply =
+  sendMessage tkSmartCardUserInteraction runWithReplySelector reply
 
 -- | Attempts to cancel a running interaction. Note that for some interactions, this functionality might not be available.
 --
@@ -58,22 +55,22 @@ runWithReply tkSmartCardUserInteraction  reply =
 --
 -- ObjC selector: @- cancel@
 cancel :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> IO Bool
-cancel tkSmartCardUserInteraction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkSmartCardUserInteraction (mkSelector "cancel") retCULong []
+cancel tkSmartCardUserInteraction =
+  sendMessage tkSmartCardUserInteraction cancelSelector
 
 -- | Delegate for state observing of the interaction.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> IO RawId
-delegate tkSmartCardUserInteraction  =
-    fmap (RawId . castPtr) $ sendMsg tkSmartCardUserInteraction (mkSelector "delegate") (retPtr retVoid) []
+delegate tkSmartCardUserInteraction =
+  sendMessage tkSmartCardUserInteraction delegateSelector
 
 -- | Delegate for state observing of the interaction.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> RawId -> IO ()
-setDelegate tkSmartCardUserInteraction  value =
-    sendMsg tkSmartCardUserInteraction (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate tkSmartCardUserInteraction value =
+  sendMessage tkSmartCardUserInteraction setDelegateSelector value
 
 -- | Initial interaction timeout. If set to 0, the reader-defined default timeout is used.
 --
@@ -81,8 +78,8 @@ setDelegate tkSmartCardUserInteraction  value =
 --
 -- ObjC selector: @- initialTimeout@
 initialTimeout :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> IO CDouble
-initialTimeout tkSmartCardUserInteraction  =
-    sendMsg tkSmartCardUserInteraction (mkSelector "initialTimeout") retCDouble []
+initialTimeout tkSmartCardUserInteraction =
+  sendOwnedMessage tkSmartCardUserInteraction initialTimeoutSelector
 
 -- | Initial interaction timeout. If set to 0, the reader-defined default timeout is used.
 --
@@ -90,8 +87,8 @@ initialTimeout tkSmartCardUserInteraction  =
 --
 -- ObjC selector: @- setInitialTimeout:@
 setInitialTimeout :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> CDouble -> IO ()
-setInitialTimeout tkSmartCardUserInteraction  value =
-    sendMsg tkSmartCardUserInteraction (mkSelector "setInitialTimeout:") retVoid [argCDouble value]
+setInitialTimeout tkSmartCardUserInteraction value =
+  sendMessage tkSmartCardUserInteraction setInitialTimeoutSelector value
 
 -- | Timeout after the first key stroke. If set to 0, the reader-defined default timeout is used.
 --
@@ -99,8 +96,8 @@ setInitialTimeout tkSmartCardUserInteraction  value =
 --
 -- ObjC selector: @- interactionTimeout@
 interactionTimeout :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> IO CDouble
-interactionTimeout tkSmartCardUserInteraction  =
-    sendMsg tkSmartCardUserInteraction (mkSelector "interactionTimeout") retCDouble []
+interactionTimeout tkSmartCardUserInteraction =
+  sendMessage tkSmartCardUserInteraction interactionTimeoutSelector
 
 -- | Timeout after the first key stroke. If set to 0, the reader-defined default timeout is used.
 --
@@ -108,42 +105,42 @@ interactionTimeout tkSmartCardUserInteraction  =
 --
 -- ObjC selector: @- setInteractionTimeout:@
 setInteractionTimeout :: IsTKSmartCardUserInteraction tkSmartCardUserInteraction => tkSmartCardUserInteraction -> CDouble -> IO ()
-setInteractionTimeout tkSmartCardUserInteraction  value =
-    sendMsg tkSmartCardUserInteraction (mkSelector "setInteractionTimeout:") retVoid [argCDouble value]
+setInteractionTimeout tkSmartCardUserInteraction value =
+  sendMessage tkSmartCardUserInteraction setInteractionTimeoutSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @runWithReply:@
-runWithReplySelector :: Selector
+runWithReplySelector :: Selector '[Ptr ()] ()
 runWithReplySelector = mkSelector "runWithReply:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] Bool
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @initialTimeout@
-initialTimeoutSelector :: Selector
+initialTimeoutSelector :: Selector '[] CDouble
 initialTimeoutSelector = mkSelector "initialTimeout"
 
 -- | @Selector@ for @setInitialTimeout:@
-setInitialTimeoutSelector :: Selector
+setInitialTimeoutSelector :: Selector '[CDouble] ()
 setInitialTimeoutSelector = mkSelector "setInitialTimeout:"
 
 -- | @Selector@ for @interactionTimeout@
-interactionTimeoutSelector :: Selector
+interactionTimeoutSelector :: Selector '[] CDouble
 interactionTimeoutSelector = mkSelector "interactionTimeout"
 
 -- | @Selector@ for @setInteractionTimeout:@
-setInteractionTimeoutSelector :: Selector
+setInteractionTimeoutSelector :: Selector '[CDouble] ()
 setInteractionTimeoutSelector = mkSelector "setInteractionTimeout:"
 

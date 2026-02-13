@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Matter.MTRDoorLockClusterLockOperationErrorEvent
   , setSourceNode
   , credentials
   , setCredentials
-  , lockOperationTypeSelector
-  , setLockOperationTypeSelector
-  , operationSourceSelector
-  , setOperationSourceSelector
-  , operationErrorSelector
-  , setOperationErrorSelector
-  , userIndexSelector
-  , setUserIndexSelector
-  , fabricIndexSelector
-  , setFabricIndexSelector
-  , sourceNodeSelector
-  , setSourceNodeSelector
   , credentialsSelector
+  , fabricIndexSelector
+  , lockOperationTypeSelector
+  , operationErrorSelector
+  , operationSourceSelector
   , setCredentialsSelector
+  , setFabricIndexSelector
+  , setLockOperationTypeSelector
+  , setOperationErrorSelector
+  , setOperationSourceSelector
+  , setSourceNodeSelector
+  , setUserIndexSelector
+  , sourceNodeSelector
+  , userIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,138 +52,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- lockOperationType@
 lockOperationType :: IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent => mtrDoorLockClusterLockOperationErrorEvent -> IO (Id NSNumber)
-lockOperationType mtrDoorLockClusterLockOperationErrorEvent  =
-    sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "lockOperationType") (retPtr retVoid) [] >>= retainedObject . castPtr
+lockOperationType mtrDoorLockClusterLockOperationErrorEvent =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent lockOperationTypeSelector
 
 -- | @- setLockOperationType:@
 setLockOperationType :: (IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent, IsNSNumber value) => mtrDoorLockClusterLockOperationErrorEvent -> value -> IO ()
-setLockOperationType mtrDoorLockClusterLockOperationErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "setLockOperationType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLockOperationType mtrDoorLockClusterLockOperationErrorEvent value =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent setLockOperationTypeSelector (toNSNumber value)
 
 -- | @- operationSource@
 operationSource :: IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent => mtrDoorLockClusterLockOperationErrorEvent -> IO (Id NSNumber)
-operationSource mtrDoorLockClusterLockOperationErrorEvent  =
-    sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "operationSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationSource mtrDoorLockClusterLockOperationErrorEvent =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent operationSourceSelector
 
 -- | @- setOperationSource:@
 setOperationSource :: (IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent, IsNSNumber value) => mtrDoorLockClusterLockOperationErrorEvent -> value -> IO ()
-setOperationSource mtrDoorLockClusterLockOperationErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "setOperationSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperationSource mtrDoorLockClusterLockOperationErrorEvent value =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent setOperationSourceSelector (toNSNumber value)
 
 -- | @- operationError@
 operationError :: IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent => mtrDoorLockClusterLockOperationErrorEvent -> IO (Id NSNumber)
-operationError mtrDoorLockClusterLockOperationErrorEvent  =
-    sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "operationError") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationError mtrDoorLockClusterLockOperationErrorEvent =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent operationErrorSelector
 
 -- | @- setOperationError:@
 setOperationError :: (IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent, IsNSNumber value) => mtrDoorLockClusterLockOperationErrorEvent -> value -> IO ()
-setOperationError mtrDoorLockClusterLockOperationErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "setOperationError:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperationError mtrDoorLockClusterLockOperationErrorEvent value =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent setOperationErrorSelector (toNSNumber value)
 
 -- | @- userIndex@
 userIndex :: IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent => mtrDoorLockClusterLockOperationErrorEvent -> IO (Id NSNumber)
-userIndex mtrDoorLockClusterLockOperationErrorEvent  =
-    sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "userIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIndex mtrDoorLockClusterLockOperationErrorEvent =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent userIndexSelector
 
 -- | @- setUserIndex:@
 setUserIndex :: (IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent, IsNSNumber value) => mtrDoorLockClusterLockOperationErrorEvent -> value -> IO ()
-setUserIndex mtrDoorLockClusterLockOperationErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "setUserIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserIndex mtrDoorLockClusterLockOperationErrorEvent value =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent setUserIndexSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent => mtrDoorLockClusterLockOperationErrorEvent -> IO (Id NSNumber)
-fabricIndex mtrDoorLockClusterLockOperationErrorEvent  =
-    sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrDoorLockClusterLockOperationErrorEvent =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent, IsNSNumber value) => mtrDoorLockClusterLockOperationErrorEvent -> value -> IO ()
-setFabricIndex mtrDoorLockClusterLockOperationErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrDoorLockClusterLockOperationErrorEvent value =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent setFabricIndexSelector (toNSNumber value)
 
 -- | @- sourceNode@
 sourceNode :: IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent => mtrDoorLockClusterLockOperationErrorEvent -> IO (Id NSNumber)
-sourceNode mtrDoorLockClusterLockOperationErrorEvent  =
-    sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "sourceNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceNode mtrDoorLockClusterLockOperationErrorEvent =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent sourceNodeSelector
 
 -- | @- setSourceNode:@
 setSourceNode :: (IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent, IsNSNumber value) => mtrDoorLockClusterLockOperationErrorEvent -> value -> IO ()
-setSourceNode mtrDoorLockClusterLockOperationErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "setSourceNode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSourceNode mtrDoorLockClusterLockOperationErrorEvent value =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent setSourceNodeSelector (toNSNumber value)
 
 -- | @- credentials@
 credentials :: IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent => mtrDoorLockClusterLockOperationErrorEvent -> IO (Id NSArray)
-credentials mtrDoorLockClusterLockOperationErrorEvent  =
-    sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "credentials") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentials mtrDoorLockClusterLockOperationErrorEvent =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent credentialsSelector
 
 -- | @- setCredentials:@
 setCredentials :: (IsMTRDoorLockClusterLockOperationErrorEvent mtrDoorLockClusterLockOperationErrorEvent, IsNSArray value) => mtrDoorLockClusterLockOperationErrorEvent -> value -> IO ()
-setCredentials mtrDoorLockClusterLockOperationErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterLockOperationErrorEvent (mkSelector "setCredentials:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredentials mtrDoorLockClusterLockOperationErrorEvent value =
+  sendMessage mtrDoorLockClusterLockOperationErrorEvent setCredentialsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @lockOperationType@
-lockOperationTypeSelector :: Selector
+lockOperationTypeSelector :: Selector '[] (Id NSNumber)
 lockOperationTypeSelector = mkSelector "lockOperationType"
 
 -- | @Selector@ for @setLockOperationType:@
-setLockOperationTypeSelector :: Selector
+setLockOperationTypeSelector :: Selector '[Id NSNumber] ()
 setLockOperationTypeSelector = mkSelector "setLockOperationType:"
 
 -- | @Selector@ for @operationSource@
-operationSourceSelector :: Selector
+operationSourceSelector :: Selector '[] (Id NSNumber)
 operationSourceSelector = mkSelector "operationSource"
 
 -- | @Selector@ for @setOperationSource:@
-setOperationSourceSelector :: Selector
+setOperationSourceSelector :: Selector '[Id NSNumber] ()
 setOperationSourceSelector = mkSelector "setOperationSource:"
 
 -- | @Selector@ for @operationError@
-operationErrorSelector :: Selector
+operationErrorSelector :: Selector '[] (Id NSNumber)
 operationErrorSelector = mkSelector "operationError"
 
 -- | @Selector@ for @setOperationError:@
-setOperationErrorSelector :: Selector
+setOperationErrorSelector :: Selector '[Id NSNumber] ()
 setOperationErrorSelector = mkSelector "setOperationError:"
 
 -- | @Selector@ for @userIndex@
-userIndexSelector :: Selector
+userIndexSelector :: Selector '[] (Id NSNumber)
 userIndexSelector = mkSelector "userIndex"
 
 -- | @Selector@ for @setUserIndex:@
-setUserIndexSelector :: Selector
+setUserIndexSelector :: Selector '[Id NSNumber] ()
 setUserIndexSelector = mkSelector "setUserIndex:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 
 -- | @Selector@ for @sourceNode@
-sourceNodeSelector :: Selector
+sourceNodeSelector :: Selector '[] (Id NSNumber)
 sourceNodeSelector = mkSelector "sourceNode"
 
 -- | @Selector@ for @setSourceNode:@
-setSourceNodeSelector :: Selector
+setSourceNodeSelector :: Selector '[Id NSNumber] ()
 setSourceNodeSelector = mkSelector "setSourceNode:"
 
 -- | @Selector@ for @credentials@
-credentialsSelector :: Selector
+credentialsSelector :: Selector '[] (Id NSArray)
 credentialsSelector = mkSelector "credentials"
 
 -- | @Selector@ for @setCredentials:@
-setCredentialsSelector :: Selector
+setCredentialsSelector :: Selector '[Id NSArray] ()
 setCredentialsSelector = mkSelector "setCredentials:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AuthenticationServices.ASCredentialIdentityStoreState
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- enabled@
 enabled :: IsASCredentialIdentityStoreState asCredentialIdentityStoreState => asCredentialIdentityStoreState -> IO Bool
-enabled asCredentialIdentityStoreState  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asCredentialIdentityStoreState (mkSelector "enabled") retCULong []
+enabled asCredentialIdentityStoreState =
+  sendMessage asCredentialIdentityStoreState enabledSelector
 
 -- | Get whether the credential identity store supports incremental updates.
 --
@@ -48,18 +45,18 @@ enabled asCredentialIdentityStoreState  =
 --
 -- ObjC selector: @- supportsIncrementalUpdates@
 supportsIncrementalUpdates :: IsASCredentialIdentityStoreState asCredentialIdentityStoreState => asCredentialIdentityStoreState -> IO Bool
-supportsIncrementalUpdates asCredentialIdentityStoreState  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asCredentialIdentityStoreState (mkSelector "supportsIncrementalUpdates") retCULong []
+supportsIncrementalUpdates asCredentialIdentityStoreState =
+  sendMessage asCredentialIdentityStoreState supportsIncrementalUpdatesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @supportsIncrementalUpdates@
-supportsIncrementalUpdatesSelector :: Selector
+supportsIncrementalUpdatesSelector :: Selector '[] Bool
 supportsIncrementalUpdatesSelector = mkSelector "supportsIncrementalUpdates"
 

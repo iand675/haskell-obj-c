@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNPooling
   , initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY
   , initWithCoder_device
   , initWithDevice
-  , initWithDevice_kernelWidth_kernelHeightSelector
-  , initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
+  , initWithDevice_kernelWidth_kernelHeightSelector
+  , initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:@
 initWithDevice_kernelWidth_kernelHeight :: IsMPSCNNPooling mpscnnPooling => mpscnnPooling -> RawId -> CULong -> CULong -> IO (Id MPSCNNPooling)
-initWithDevice_kernelWidth_kernelHeight mpscnnPooling  device kernelWidth kernelHeight =
-    sendMsg mpscnnPooling (mkSelector "initWithDevice:kernelWidth:kernelHeight:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight mpscnnPooling device kernelWidth kernelHeight =
+  sendOwnedMessage mpscnnPooling initWithDevice_kernelWidth_kernelHeightSelector device kernelWidth kernelHeight
 
 -- | Initialize a pooling filter
 --
@@ -70,8 +67,8 @@ initWithDevice_kernelWidth_kernelHeight mpscnnPooling  device kernelWidth kernel
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:@
 initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY :: IsMPSCNNPooling mpscnnPooling => mpscnnPooling -> RawId -> CULong -> CULong -> CULong -> CULong -> IO (Id MPSCNNPooling)
-initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY mpscnnPooling  device kernelWidth kernelHeight strideInPixelsX strideInPixelsY =
-    sendMsg mpscnnPooling (mkSelector "initWithDevice:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight, argCULong strideInPixelsX, argCULong strideInPixelsY] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY mpscnnPooling device kernelWidth kernelHeight strideInPixelsX strideInPixelsY =
+  sendOwnedMessage mpscnnPooling initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector device kernelWidth kernelHeight strideInPixelsX strideInPixelsY
 
 -- | NSSecureCoding compatability
 --
@@ -85,32 +82,31 @@ initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY mpscnnPo
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNPooling mpscnnPooling, IsNSCoder aDecoder) => mpscnnPooling -> aDecoder -> RawId -> IO (Id MPSCNNPooling)
-initWithCoder_device mpscnnPooling  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnPooling (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnPooling aDecoder device =
+  sendOwnedMessage mpscnnPooling initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNPooling mpscnnPooling => mpscnnPooling -> RawId -> IO (Id MPSCNNPooling)
-initWithDevice mpscnnPooling  device =
-    sendMsg mpscnnPooling (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnPooling device =
+  sendOwnedMessage mpscnnPooling initWithDeviceSelector device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:@
-initWithDevice_kernelWidth_kernelHeightSelector :: Selector
+initWithDevice_kernelWidth_kernelHeightSelector :: Selector '[RawId, CULong, CULong] (Id MPSCNNPooling)
 initWithDevice_kernelWidth_kernelHeightSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:"
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:@
-initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector :: Selector
+initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector :: Selector '[RawId, CULong, CULong, CULong, CULong] (Id MPSCNNPooling)
 initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNPooling)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNPooling)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 

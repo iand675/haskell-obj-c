@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.AVFAudio.AVAudioIONode
   , presentationLatency
   , audioUnit
   , voiceProcessingEnabled
-  , setVoiceProcessingEnabled_errorSelector
-  , presentationLatencySelector
   , audioUnitSelector
+  , presentationLatencySelector
+  , setVoiceProcessingEnabled_errorSelector
   , voiceProcessingEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,9 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setVoiceProcessingEnabled:error:@
 setVoiceProcessingEnabled_error :: (IsAVAudioIONode avAudioIONode, IsNSError outError) => avAudioIONode -> Bool -> outError -> IO Bool
-setVoiceProcessingEnabled_error avAudioIONode  enabled outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioIONode (mkSelector "setVoiceProcessingEnabled:error:") retCULong [argCULong (if enabled then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())]
+setVoiceProcessingEnabled_error avAudioIONode enabled outError =
+  sendMessage avAudioIONode setVoiceProcessingEnabled_errorSelector enabled (toNSError outError)
 
 -- | presentationLatency
 --
@@ -71,8 +67,8 @@ setVoiceProcessingEnabled_error avAudioIONode  enabled outError =
 --
 -- ObjC selector: @- presentationLatency@
 presentationLatency :: IsAVAudioIONode avAudioIONode => avAudioIONode -> IO CDouble
-presentationLatency avAudioIONode  =
-    sendMsg avAudioIONode (mkSelector "presentationLatency") retCDouble []
+presentationLatency avAudioIONode =
+  sendMessage avAudioIONode presentationLatencySelector
 
 -- | audioUnit
 --
@@ -82,8 +78,8 @@ presentationLatency avAudioIONode  =
 --
 -- ObjC selector: @- audioUnit@
 audioUnit :: IsAVAudioIONode avAudioIONode => avAudioIONode -> IO (Ptr ())
-audioUnit avAudioIONode  =
-    fmap castPtr $ sendMsg avAudioIONode (mkSelector "audioUnit") (retPtr retVoid) []
+audioUnit avAudioIONode =
+  sendMessage avAudioIONode audioUnitSelector
 
 -- | voiceProcessingEnabled
 --
@@ -91,26 +87,26 @@ audioUnit avAudioIONode  =
 --
 -- ObjC selector: @- voiceProcessingEnabled@
 voiceProcessingEnabled :: IsAVAudioIONode avAudioIONode => avAudioIONode -> IO Bool
-voiceProcessingEnabled avAudioIONode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioIONode (mkSelector "voiceProcessingEnabled") retCULong []
+voiceProcessingEnabled avAudioIONode =
+  sendMessage avAudioIONode voiceProcessingEnabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setVoiceProcessingEnabled:error:@
-setVoiceProcessingEnabled_errorSelector :: Selector
+setVoiceProcessingEnabled_errorSelector :: Selector '[Bool, Id NSError] Bool
 setVoiceProcessingEnabled_errorSelector = mkSelector "setVoiceProcessingEnabled:error:"
 
 -- | @Selector@ for @presentationLatency@
-presentationLatencySelector :: Selector
+presentationLatencySelector :: Selector '[] CDouble
 presentationLatencySelector = mkSelector "presentationLatency"
 
 -- | @Selector@ for @audioUnit@
-audioUnitSelector :: Selector
+audioUnitSelector :: Selector '[] (Ptr ())
 audioUnitSelector = mkSelector "audioUnit"
 
 -- | @Selector@ for @voiceProcessingEnabled@
-voiceProcessingEnabledSelector :: Selector
+voiceProcessingEnabledSelector :: Selector '[] Bool
 voiceProcessingEnabledSelector = mkSelector "voiceProcessingEnabled"
 

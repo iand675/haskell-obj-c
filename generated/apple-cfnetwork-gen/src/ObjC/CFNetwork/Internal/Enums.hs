@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CFNetwork.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CFHostInfoType@
 newtype CFHostInfoType = CFHostInfoType CInt
@@ -24,6 +27,16 @@ pattern KCFHostNames = CFHostInfoType 1
 
 pattern KCFHostReachability :: CFHostInfoType
 pattern KCFHostReachability = CFHostInfoType 2
+
+instance ObjCArgument CFHostInfoType where
+  withObjCArg (CFHostInfoType x) k = k (argCInt x)
+
+instance ObjCReturn CFHostInfoType where
+  type RawReturn CFHostInfoType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFHostInfoType x)
+  fromOwned x = pure (CFHostInfoType x)
 
 -- | @CFNetDiagnosticStatusValues@
 newtype CFNetDiagnosticStatusValues = CFNetDiagnosticStatusValues CInt
@@ -44,6 +57,16 @@ pattern KCFNetDiagnosticConnectionIndeterminate = CFNetDiagnosticStatusValues (-
 
 pattern KCFNetDiagnosticConnectionDown :: CFNetDiagnosticStatusValues
 pattern KCFNetDiagnosticConnectionDown = CFNetDiagnosticStatusValues (-66557)
+
+instance ObjCArgument CFNetDiagnosticStatusValues where
+  withObjCArg (CFNetDiagnosticStatusValues x) k = k (argCInt x)
+
+instance ObjCReturn CFNetDiagnosticStatusValues where
+  type RawReturn CFNetDiagnosticStatusValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNetDiagnosticStatusValues x)
+  fromOwned x = pure (CFNetDiagnosticStatusValues x)
 
 -- | @CFNetServiceBrowserFlags@ (bitmask)
 newtype CFNetServiceBrowserFlags = CFNetServiceBrowserFlags CULong
@@ -71,6 +94,16 @@ pattern KCFNetServiceFlagIsRegistrationDomain = CFNetServiceBrowserFlags 4
 pattern KCFNetServiceFlagRemove :: CFNetServiceBrowserFlags
 pattern KCFNetServiceFlagRemove = CFNetServiceBrowserFlags 8
 
+instance ObjCArgument CFNetServiceBrowserFlags where
+  withObjCArg (CFNetServiceBrowserFlags x) k = k (argCULong x)
+
+instance ObjCReturn CFNetServiceBrowserFlags where
+  type RawReturn CFNetServiceBrowserFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNetServiceBrowserFlags x)
+  fromOwned x = pure (CFNetServiceBrowserFlags x)
+
 -- | @CFNetServiceMonitorType@
 newtype CFNetServiceMonitorType = CFNetServiceMonitorType CInt
   deriving stock (Eq, Ord, Show)
@@ -78,6 +111,16 @@ newtype CFNetServiceMonitorType = CFNetServiceMonitorType CInt
 
 pattern KCFNetServiceMonitorTXT :: CFNetServiceMonitorType
 pattern KCFNetServiceMonitorTXT = CFNetServiceMonitorType 1
+
+instance ObjCArgument CFNetServiceMonitorType where
+  withObjCArg (CFNetServiceMonitorType x) k = k (argCInt x)
+
+instance ObjCReturn CFNetServiceMonitorType where
+  type RawReturn CFNetServiceMonitorType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNetServiceMonitorType x)
+  fromOwned x = pure (CFNetServiceMonitorType x)
 
 -- | @CFNetServiceRegisterFlags@ (bitmask)
 newtype CFNetServiceRegisterFlags = CFNetServiceRegisterFlags CULong
@@ -92,6 +135,16 @@ instance Monoid CFNetServiceRegisterFlags where
 
 pattern KCFNetServiceFlagNoAutoRename :: CFNetServiceRegisterFlags
 pattern KCFNetServiceFlagNoAutoRename = CFNetServiceRegisterFlags 1
+
+instance ObjCArgument CFNetServiceRegisterFlags where
+  withObjCArg (CFNetServiceRegisterFlags x) k = k (argCULong x)
+
+instance ObjCReturn CFNetServiceRegisterFlags where
+  type RawReturn CFNetServiceRegisterFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNetServiceRegisterFlags x)
+  fromOwned x = pure (CFNetServiceRegisterFlags x)
 
 -- | @CFNetServicesError@
 newtype CFNetServicesError = CFNetServicesError CInt
@@ -124,6 +177,16 @@ pattern KCFNetServicesErrorTimeout = CFNetServicesError (-72007)
 
 pattern KCFNetServicesErrorMissingRequiredConfiguration :: CFNetServicesError
 pattern KCFNetServicesErrorMissingRequiredConfiguration = CFNetServicesError (-72008)
+
+instance ObjCArgument CFNetServicesError where
+  withObjCArg (CFNetServicesError x) k = k (argCInt x)
+
+instance ObjCReturn CFNetServicesError where
+  type RawReturn CFNetServicesError = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNetServicesError x)
+  fromOwned x = pure (CFNetServicesError x)
 
 -- | @CFNetworkErrors@
 newtype CFNetworkErrors = CFNetworkErrors CInt
@@ -382,6 +445,16 @@ pattern KCFNetServiceErrorTimeout = CFNetworkErrors (-72007)
 pattern KCFNetServiceErrorDNSServiceFailure :: CFNetworkErrors
 pattern KCFNetServiceErrorDNSServiceFailure = CFNetworkErrors (-73000)
 
+instance ObjCArgument CFNetworkErrors where
+  withObjCArg (CFNetworkErrors x) k = k (argCInt x)
+
+instance ObjCReturn CFNetworkErrors where
+  type RawReturn CFNetworkErrors = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFNetworkErrors x)
+  fromOwned x = pure (CFNetworkErrors x)
+
 -- | @CFStreamErrorHTTP@
 newtype CFStreamErrorHTTP = CFStreamErrorHTTP CInt
   deriving stock (Eq, Ord, Show)
@@ -396,6 +469,16 @@ pattern KCFStreamErrorHTTPRedirectionLoop = CFStreamErrorHTTP (-2)
 pattern KCFStreamErrorHTTPBadURL :: CFStreamErrorHTTP
 pattern KCFStreamErrorHTTPBadURL = CFStreamErrorHTTP (-3)
 
+instance ObjCArgument CFStreamErrorHTTP where
+  withObjCArg (CFStreamErrorHTTP x) k = k (argCInt x)
+
+instance ObjCReturn CFStreamErrorHTTP where
+  type RawReturn CFStreamErrorHTTP = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStreamErrorHTTP x)
+  fromOwned x = pure (CFStreamErrorHTTP x)
+
 -- | @CFStreamErrorHTTPAuthentication@
 newtype CFStreamErrorHTTPAuthentication = CFStreamErrorHTTPAuthentication CInt
   deriving stock (Eq, Ord, Show)
@@ -409,3 +492,13 @@ pattern KCFStreamErrorHTTPAuthenticationBadUserName = CFStreamErrorHTTPAuthentic
 
 pattern KCFStreamErrorHTTPAuthenticationBadPassword :: CFStreamErrorHTTPAuthentication
 pattern KCFStreamErrorHTTPAuthenticationBadPassword = CFStreamErrorHTTPAuthentication (-1002)
+
+instance ObjCArgument CFStreamErrorHTTPAuthentication where
+  withObjCArg (CFStreamErrorHTTPAuthentication x) k = k (argCInt x)
+
+instance ObjCReturn CFStreamErrorHTTPAuthentication where
+  type RawReturn CFStreamErrorHTTPAuthentication = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CFStreamErrorHTTPAuthentication x)
+  fromOwned x = pure (CFStreamErrorHTTPAuthentication x)

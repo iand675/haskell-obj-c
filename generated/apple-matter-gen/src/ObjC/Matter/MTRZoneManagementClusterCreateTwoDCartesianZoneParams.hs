@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRZoneManagementClusterCreateTwoDCartesianZoneParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , zoneSelector
-  , setZoneSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setZoneSelector
+  , timedInvokeTimeoutMsSelector
+  , zoneSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- zone@
 zone :: IsMTRZoneManagementClusterCreateTwoDCartesianZoneParams mtrZoneManagementClusterCreateTwoDCartesianZoneParams => mtrZoneManagementClusterCreateTwoDCartesianZoneParams -> IO (Id MTRZoneManagementClusterTwoDCartesianZoneStruct)
-zone mtrZoneManagementClusterCreateTwoDCartesianZoneParams  =
-    sendMsg mtrZoneManagementClusterCreateTwoDCartesianZoneParams (mkSelector "zone") (retPtr retVoid) [] >>= retainedObject . castPtr
+zone mtrZoneManagementClusterCreateTwoDCartesianZoneParams =
+  sendMessage mtrZoneManagementClusterCreateTwoDCartesianZoneParams zoneSelector
 
 -- | @- setZone:@
 setZone :: (IsMTRZoneManagementClusterCreateTwoDCartesianZoneParams mtrZoneManagementClusterCreateTwoDCartesianZoneParams, IsMTRZoneManagementClusterTwoDCartesianZoneStruct value) => mtrZoneManagementClusterCreateTwoDCartesianZoneParams -> value -> IO ()
-setZone mtrZoneManagementClusterCreateTwoDCartesianZoneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterCreateTwoDCartesianZoneParams (mkSelector "setZone:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setZone mtrZoneManagementClusterCreateTwoDCartesianZoneParams value =
+  sendMessage mtrZoneManagementClusterCreateTwoDCartesianZoneParams setZoneSelector (toMTRZoneManagementClusterTwoDCartesianZoneStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setZone mtrZoneManagementClusterCreateTwoDCartesianZoneParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRZoneManagementClusterCreateTwoDCartesianZoneParams mtrZoneManagementClusterCreateTwoDCartesianZoneParams => mtrZoneManagementClusterCreateTwoDCartesianZoneParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrZoneManagementClusterCreateTwoDCartesianZoneParams  =
-    sendMsg mtrZoneManagementClusterCreateTwoDCartesianZoneParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrZoneManagementClusterCreateTwoDCartesianZoneParams =
+  sendMessage mtrZoneManagementClusterCreateTwoDCartesianZoneParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrZoneManagementClusterCreateTwoDCartesianZoneParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRZoneManagementClusterCreateTwoDCartesianZoneParams mtrZoneManagementClusterCreateTwoDCartesianZoneParams, IsNSNumber value) => mtrZoneManagementClusterCreateTwoDCartesianZoneParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrZoneManagementClusterCreateTwoDCartesianZoneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterCreateTwoDCartesianZoneParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrZoneManagementClusterCreateTwoDCartesianZoneParams value =
+  sendMessage mtrZoneManagementClusterCreateTwoDCartesianZoneParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrZoneManagementClusterCreateTwoDCartesianZoneParams  v
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRZoneManagementClusterCreateTwoDCartesianZoneParams mtrZoneManagementClusterCreateTwoDCartesianZoneParams => mtrZoneManagementClusterCreateTwoDCartesianZoneParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrZoneManagementClusterCreateTwoDCartesianZoneParams  =
-    sendMsg mtrZoneManagementClusterCreateTwoDCartesianZoneParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrZoneManagementClusterCreateTwoDCartesianZoneParams =
+  sendMessage mtrZoneManagementClusterCreateTwoDCartesianZoneParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrZoneManagementClusterCreateTwoDCartesianZoneParam
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRZoneManagementClusterCreateTwoDCartesianZoneParams mtrZoneManagementClusterCreateTwoDCartesianZoneParams, IsNSNumber value) => mtrZoneManagementClusterCreateTwoDCartesianZoneParams -> value -> IO ()
-setServerSideProcessingTimeout mtrZoneManagementClusterCreateTwoDCartesianZoneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterCreateTwoDCartesianZoneParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrZoneManagementClusterCreateTwoDCartesianZoneParams value =
+  sendMessage mtrZoneManagementClusterCreateTwoDCartesianZoneParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @zone@
-zoneSelector :: Selector
+zoneSelector :: Selector '[] (Id MTRZoneManagementClusterTwoDCartesianZoneStruct)
 zoneSelector = mkSelector "zone"
 
 -- | @Selector@ for @setZone:@
-setZoneSelector :: Selector
+setZoneSelector :: Selector '[Id MTRZoneManagementClusterTwoDCartesianZoneStruct] ()
 setZoneSelector = mkSelector "setZone:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

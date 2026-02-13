@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterDatastoreAdministratorInformati
   , setVendorID
   , icac
   , setIcac
-  , nodeIDSelector
-  , setNodeIDSelector
   , friendlyNameSelector
-  , setFriendlyNameSelector
-  , vendorIDSelector
-  , setVendorIDSelector
   , icacSelector
+  , nodeIDSelector
+  , setFriendlyNameSelector
   , setIcacSelector
+  , setNodeIDSelector
+  , setVendorIDSelector
+  , vendorIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nodeID@
 nodeID :: IsMTRJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct -> IO (Id NSNumber)
-nodeID mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct nodeIDSelector
 
 -- | @- setNodeID:@
 setNodeID :: (IsMTRJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct -> value -> IO ()
-setNodeID mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct (mkSelector "setNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeID mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct setNodeIDSelector (toNSNumber value)
 
 -- | @- friendlyName@
 friendlyName :: IsMTRJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct -> IO (Id NSString)
-friendlyName mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct (mkSelector "friendlyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+friendlyName mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct friendlyNameSelector
 
 -- | @- setFriendlyName:@
 setFriendlyName :: (IsMTRJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct, IsNSString value) => mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct -> value -> IO ()
-setFriendlyName mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct (mkSelector "setFriendlyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFriendlyName mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct setFriendlyNameSelector (toNSString value)
 
 -- | @- vendorID@
 vendorID :: IsMTRJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct -> IO (Id NSNumber)
-vendorID mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct (mkSelector "vendorID") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorID mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct vendorIDSelector
 
 -- | @- setVendorID:@
 setVendorID :: (IsMTRJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct -> value -> IO ()
-setVendorID mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct (mkSelector "setVendorID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVendorID mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct setVendorIDSelector (toNSNumber value)
 
 -- | @- icac@
 icac :: IsMTRJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct -> IO (Id NSData)
-icac mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct (mkSelector "icac") (retPtr retVoid) [] >>= retainedObject . castPtr
+icac mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct icacSelector
 
 -- | @- setIcac:@
 setIcac :: (IsMTRJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct, IsNSData value) => mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct -> value -> IO ()
-setIcac mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct (mkSelector "setIcac:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIcac mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreAdministratorInformationEntryStruct setIcacSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @setNodeID:@
-setNodeIDSelector :: Selector
+setNodeIDSelector :: Selector '[Id NSNumber] ()
 setNodeIDSelector = mkSelector "setNodeID:"
 
 -- | @Selector@ for @friendlyName@
-friendlyNameSelector :: Selector
+friendlyNameSelector :: Selector '[] (Id NSString)
 friendlyNameSelector = mkSelector "friendlyName"
 
 -- | @Selector@ for @setFriendlyName:@
-setFriendlyNameSelector :: Selector
+setFriendlyNameSelector :: Selector '[Id NSString] ()
 setFriendlyNameSelector = mkSelector "setFriendlyName:"
 
 -- | @Selector@ for @vendorID@
-vendorIDSelector :: Selector
+vendorIDSelector :: Selector '[] (Id NSNumber)
 vendorIDSelector = mkSelector "vendorID"
 
 -- | @Selector@ for @setVendorID:@
-setVendorIDSelector :: Selector
+setVendorIDSelector :: Selector '[Id NSNumber] ()
 setVendorIDSelector = mkSelector "setVendorID:"
 
 -- | @Selector@ for @icac@
-icacSelector :: Selector
+icacSelector :: Selector '[] (Id NSData)
 icacSelector = mkSelector "icac"
 
 -- | @Selector@ for @setIcac:@
-setIcacSelector :: Selector
+setIcacSelector :: Selector '[Id NSData] ()
 setIcacSelector = mkSelector "setIcac:"
 

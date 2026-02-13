@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTREnergyEVSEClusterStartDiagnosticsParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTREnergyEVSEClusterStartDiagnosticsParams mtrEnergyEVSEClusterStartDiagnosticsParams => mtrEnergyEVSEClusterStartDiagnosticsParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrEnergyEVSEClusterStartDiagnosticsParams  =
-    sendMsg mtrEnergyEVSEClusterStartDiagnosticsParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrEnergyEVSEClusterStartDiagnosticsParams =
+  sendMessage mtrEnergyEVSEClusterStartDiagnosticsParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -52,9 +49,8 @@ timedInvokeTimeoutMs mtrEnergyEVSEClusterStartDiagnosticsParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTREnergyEVSEClusterStartDiagnosticsParams mtrEnergyEVSEClusterStartDiagnosticsParams, IsNSNumber value) => mtrEnergyEVSEClusterStartDiagnosticsParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrEnergyEVSEClusterStartDiagnosticsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterStartDiagnosticsParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrEnergyEVSEClusterStartDiagnosticsParams value =
+  sendMessage mtrEnergyEVSEClusterStartDiagnosticsParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -64,8 +60,8 @@ setTimedInvokeTimeoutMs mtrEnergyEVSEClusterStartDiagnosticsParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTREnergyEVSEClusterStartDiagnosticsParams mtrEnergyEVSEClusterStartDiagnosticsParams => mtrEnergyEVSEClusterStartDiagnosticsParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrEnergyEVSEClusterStartDiagnosticsParams  =
-    sendMsg mtrEnergyEVSEClusterStartDiagnosticsParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrEnergyEVSEClusterStartDiagnosticsParams =
+  sendMessage mtrEnergyEVSEClusterStartDiagnosticsParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -75,27 +71,26 @@ serverSideProcessingTimeout mtrEnergyEVSEClusterStartDiagnosticsParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTREnergyEVSEClusterStartDiagnosticsParams mtrEnergyEVSEClusterStartDiagnosticsParams, IsNSNumber value) => mtrEnergyEVSEClusterStartDiagnosticsParams -> value -> IO ()
-setServerSideProcessingTimeout mtrEnergyEVSEClusterStartDiagnosticsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterStartDiagnosticsParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrEnergyEVSEClusterStartDiagnosticsParams value =
+  sendMessage mtrEnergyEVSEClusterStartDiagnosticsParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Tcl.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @Tcl_PathType@
 newtype Tcl_PathType = Tcl_PathType CInt
@@ -24,3 +27,13 @@ pattern TCL_PATH_RELATIVE = Tcl_PathType 1
 
 pattern TCL_PATH_VOLUME_RELATIVE :: Tcl_PathType
 pattern TCL_PATH_VOLUME_RELATIVE = Tcl_PathType 2
+
+instance ObjCArgument Tcl_PathType where
+  withObjCArg (Tcl_PathType x) k = k (argCInt x)
+
+instance ObjCReturn Tcl_PathType where
+  type RawReturn Tcl_PathType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (Tcl_PathType x)
+  fromOwned x = pure (Tcl_PathType x)

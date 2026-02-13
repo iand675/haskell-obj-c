@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.HealthKit.HKVisionPrescription
   , prescriptionType
   , dateIssued
   , expirationDate
-  , prescriptionWithType_dateIssued_expirationDate_device_metadataSelector
+  , dateIssuedSelector
+  , expirationDateSelector
   , initSelector
   , newSelector
   , prescriptionTypeSelector
-  , dateIssuedSelector
-  , expirationDateSelector
+  , prescriptionWithType_dateIssued_expirationDate_device_metadataSelector
 
   -- * Enum types
   , HKVisionPrescriptionType(HKVisionPrescriptionType)
@@ -31,15 +32,11 @@ module ObjC.HealthKit.HKVisionPrescription
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,23 +61,19 @@ prescriptionWithType_dateIssued_expirationDate_device_metadata :: (IsNSDate date
 prescriptionWithType_dateIssued_expirationDate_device_metadata type_ dateIssued expirationDate device metadata =
   do
     cls' <- getRequiredClass "HKVisionPrescription"
-    withObjCPtr dateIssued $ \raw_dateIssued ->
-      withObjCPtr expirationDate $ \raw_expirationDate ->
-        withObjCPtr device $ \raw_device ->
-          withObjCPtr metadata $ \raw_metadata ->
-            sendClassMsg cls' (mkSelector "prescriptionWithType:dateIssued:expirationDate:device:metadata:") (retPtr retVoid) [argCULong (coerce type_), argPtr (castPtr raw_dateIssued :: Ptr ()), argPtr (castPtr raw_expirationDate :: Ptr ()), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' prescriptionWithType_dateIssued_expirationDate_device_metadataSelector type_ (toNSDate dateIssued) (toNSDate expirationDate) (toHKDevice device) (toNSDictionary metadata)
 
 -- | @- init@
 init_ :: IsHKVisionPrescription hkVisionPrescription => hkVisionPrescription -> IO (Id HKVisionPrescription)
-init_ hkVisionPrescription  =
-    sendMsg hkVisionPrescription (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkVisionPrescription =
+  sendOwnedMessage hkVisionPrescription initSelector
 
 -- | @+ new@
 new :: IO (Id HKVisionPrescription)
 new  =
   do
     cls' <- getRequiredClass "HKVisionPrescription"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | prescriptionType
 --
@@ -88,8 +81,8 @@ new  =
 --
 -- ObjC selector: @- prescriptionType@
 prescriptionType :: IsHKVisionPrescription hkVisionPrescription => hkVisionPrescription -> IO HKVisionPrescriptionType
-prescriptionType hkVisionPrescription  =
-    fmap (coerce :: CULong -> HKVisionPrescriptionType) $ sendMsg hkVisionPrescription (mkSelector "prescriptionType") retCULong []
+prescriptionType hkVisionPrescription =
+  sendMessage hkVisionPrescription prescriptionTypeSelector
 
 -- | dateIssued
 --
@@ -97,8 +90,8 @@ prescriptionType hkVisionPrescription  =
 --
 -- ObjC selector: @- dateIssued@
 dateIssued :: IsHKVisionPrescription hkVisionPrescription => hkVisionPrescription -> IO (Id NSDate)
-dateIssued hkVisionPrescription  =
-    sendMsg hkVisionPrescription (mkSelector "dateIssued") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateIssued hkVisionPrescription =
+  sendMessage hkVisionPrescription dateIssuedSelector
 
 -- | expirationDate
 --
@@ -106,34 +99,34 @@ dateIssued hkVisionPrescription  =
 --
 -- ObjC selector: @- expirationDate@
 expirationDate :: IsHKVisionPrescription hkVisionPrescription => hkVisionPrescription -> IO (Id NSDate)
-expirationDate hkVisionPrescription  =
-    sendMsg hkVisionPrescription (mkSelector "expirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationDate hkVisionPrescription =
+  sendMessage hkVisionPrescription expirationDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @prescriptionWithType:dateIssued:expirationDate:device:metadata:@
-prescriptionWithType_dateIssued_expirationDate_device_metadataSelector :: Selector
+prescriptionWithType_dateIssued_expirationDate_device_metadataSelector :: Selector '[HKVisionPrescriptionType, Id NSDate, Id NSDate, Id HKDevice, Id NSDictionary] (Id HKVisionPrescription)
 prescriptionWithType_dateIssued_expirationDate_device_metadataSelector = mkSelector "prescriptionWithType:dateIssued:expirationDate:device:metadata:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKVisionPrescription)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKVisionPrescription)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @prescriptionType@
-prescriptionTypeSelector :: Selector
+prescriptionTypeSelector :: Selector '[] HKVisionPrescriptionType
 prescriptionTypeSelector = mkSelector "prescriptionType"
 
 -- | @Selector@ for @dateIssued@
-dateIssuedSelector :: Selector
+dateIssuedSelector :: Selector '[] (Id NSDate)
 dateIssuedSelector = mkSelector "dateIssued"
 
 -- | @Selector@ for @expirationDate@
-expirationDateSelector :: Selector
+expirationDateSelector :: Selector '[] (Id NSDate)
 expirationDateSelector = mkSelector "expirationDate"
 

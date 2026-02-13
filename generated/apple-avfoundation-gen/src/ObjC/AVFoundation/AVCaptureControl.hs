@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,23 +21,19 @@ module ObjC.AVFoundation.AVCaptureControl
   , new
   , enabled
   , setEnabled
+  , enabledSelector
   , initSelector
   , newSelector
-  , enabledSelector
   , setEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureControl avCaptureControl => avCaptureControl -> IO (Id AVCaptureControl)
-init_ avCaptureControl  =
-    sendMsg avCaptureControl (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureControl =
+  sendOwnedMessage avCaptureControl initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureControl)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureControl"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | enabled
 --
@@ -63,8 +60,8 @@ new  =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAVCaptureControl avCaptureControl => avCaptureControl -> IO Bool
-enabled avCaptureControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureControl (mkSelector "enabled") retCULong []
+enabled avCaptureControl =
+  sendMessage avCaptureControl enabledSelector
 
 -- | enabled
 --
@@ -74,26 +71,26 @@ enabled avCaptureControl  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsAVCaptureControl avCaptureControl => avCaptureControl -> Bool -> IO ()
-setEnabled avCaptureControl  value =
-    sendMsg avCaptureControl (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled avCaptureControl value =
+  sendMessage avCaptureControl setEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureControl)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureControl)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 

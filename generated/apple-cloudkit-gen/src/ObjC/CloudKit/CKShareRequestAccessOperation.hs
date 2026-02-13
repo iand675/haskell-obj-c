@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.CloudKit.CKShareRequestAccessOperation
   , setShareRequestAccessCompletionBlock
   , initSelector
   , initWithShareURLsSelector
-  , shareURLsSelector
-  , setShareURLsSelector
   , perShareAccessRequestCompletionBlockSelector
   , setPerShareAccessRequestCompletionBlockSelector
-  , shareRequestAccessCompletionBlockSelector
   , setShareRequestAccessCompletionBlockSelector
+  , setShareURLsSelector
+  , shareRequestAccessCompletionBlockSelector
+  , shareURLsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsCKShareRequestAccessOperation ckShareRequestAccessOperation => ckShareRequestAccessOperation -> IO (Id CKShareRequestAccessOperation)
-init_ ckShareRequestAccessOperation  =
-    sendMsg ckShareRequestAccessOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckShareRequestAccessOperation =
+  sendOwnedMessage ckShareRequestAccessOperation initSelector
 
 -- | Creates a share request access operation configured with specified share URLs.
 --
@@ -54,9 +51,8 @@ init_ ckShareRequestAccessOperation  =
 --
 -- ObjC selector: @- initWithShareURLs:@
 initWithShareURLs :: (IsCKShareRequestAccessOperation ckShareRequestAccessOperation, IsNSArray shareURLs) => ckShareRequestAccessOperation -> shareURLs -> IO (Id CKShareRequestAccessOperation)
-initWithShareURLs ckShareRequestAccessOperation  shareURLs =
-  withObjCPtr shareURLs $ \raw_shareURLs ->
-      sendMsg ckShareRequestAccessOperation (mkSelector "initWithShareURLs:") (retPtr retVoid) [argPtr (castPtr raw_shareURLs :: Ptr ())] >>= ownedObject . castPtr
+initWithShareURLs ckShareRequestAccessOperation shareURLs =
+  sendOwnedMessage ckShareRequestAccessOperation initWithShareURLsSelector (toNSArray shareURLs)
 
 -- | The URLs of the shares to request access to.
 --
@@ -64,8 +60,8 @@ initWithShareURLs ckShareRequestAccessOperation  shareURLs =
 --
 -- ObjC selector: @- shareURLs@
 shareURLs :: IsCKShareRequestAccessOperation ckShareRequestAccessOperation => ckShareRequestAccessOperation -> IO (Id NSArray)
-shareURLs ckShareRequestAccessOperation  =
-    sendMsg ckShareRequestAccessOperation (mkSelector "shareURLs") (retPtr retVoid) [] >>= retainedObject . castPtr
+shareURLs ckShareRequestAccessOperation =
+  sendMessage ckShareRequestAccessOperation shareURLsSelector
 
 -- | The URLs of the shares to request access to.
 --
@@ -73,9 +69,8 @@ shareURLs ckShareRequestAccessOperation  =
 --
 -- ObjC selector: @- setShareURLs:@
 setShareURLs :: (IsCKShareRequestAccessOperation ckShareRequestAccessOperation, IsNSArray value) => ckShareRequestAccessOperation -> value -> IO ()
-setShareURLs ckShareRequestAccessOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckShareRequestAccessOperation (mkSelector "setShareURLs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShareURLs ckShareRequestAccessOperation value =
+  sendMessage ckShareRequestAccessOperation setShareURLsSelector (toNSArray value)
 
 -- | A completion block called once for each processed share URL.
 --
@@ -85,8 +80,8 @@ setShareURLs ckShareRequestAccessOperation  value =
 --
 -- ObjC selector: @- perShareAccessRequestCompletionBlock@
 perShareAccessRequestCompletionBlock :: IsCKShareRequestAccessOperation ckShareRequestAccessOperation => ckShareRequestAccessOperation -> IO (Ptr ())
-perShareAccessRequestCompletionBlock ckShareRequestAccessOperation  =
-    fmap castPtr $ sendMsg ckShareRequestAccessOperation (mkSelector "perShareAccessRequestCompletionBlock") (retPtr retVoid) []
+perShareAccessRequestCompletionBlock ckShareRequestAccessOperation =
+  sendMessage ckShareRequestAccessOperation perShareAccessRequestCompletionBlockSelector
 
 -- | A completion block called once for each processed share URL.
 --
@@ -96,8 +91,8 @@ perShareAccessRequestCompletionBlock ckShareRequestAccessOperation  =
 --
 -- ObjC selector: @- setPerShareAccessRequestCompletionBlock:@
 setPerShareAccessRequestCompletionBlock :: IsCKShareRequestAccessOperation ckShareRequestAccessOperation => ckShareRequestAccessOperation -> Ptr () -> IO ()
-setPerShareAccessRequestCompletionBlock ckShareRequestAccessOperation  value =
-    sendMsg ckShareRequestAccessOperation (mkSelector "setPerShareAccessRequestCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerShareAccessRequestCompletionBlock ckShareRequestAccessOperation value =
+  sendMessage ckShareRequestAccessOperation setPerShareAccessRequestCompletionBlockSelector value
 
 -- | A completion block called when the entire operation finishes.
 --
@@ -107,8 +102,8 @@ setPerShareAccessRequestCompletionBlock ckShareRequestAccessOperation  value =
 --
 -- ObjC selector: @- shareRequestAccessCompletionBlock@
 shareRequestAccessCompletionBlock :: IsCKShareRequestAccessOperation ckShareRequestAccessOperation => ckShareRequestAccessOperation -> IO (Ptr ())
-shareRequestAccessCompletionBlock ckShareRequestAccessOperation  =
-    fmap castPtr $ sendMsg ckShareRequestAccessOperation (mkSelector "shareRequestAccessCompletionBlock") (retPtr retVoid) []
+shareRequestAccessCompletionBlock ckShareRequestAccessOperation =
+  sendMessage ckShareRequestAccessOperation shareRequestAccessCompletionBlockSelector
 
 -- | A completion block called when the entire operation finishes.
 --
@@ -118,42 +113,42 @@ shareRequestAccessCompletionBlock ckShareRequestAccessOperation  =
 --
 -- ObjC selector: @- setShareRequestAccessCompletionBlock:@
 setShareRequestAccessCompletionBlock :: IsCKShareRequestAccessOperation ckShareRequestAccessOperation => ckShareRequestAccessOperation -> Ptr () -> IO ()
-setShareRequestAccessCompletionBlock ckShareRequestAccessOperation  value =
-    sendMsg ckShareRequestAccessOperation (mkSelector "setShareRequestAccessCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setShareRequestAccessCompletionBlock ckShareRequestAccessOperation value =
+  sendMessage ckShareRequestAccessOperation setShareRequestAccessCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKShareRequestAccessOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithShareURLs:@
-initWithShareURLsSelector :: Selector
+initWithShareURLsSelector :: Selector '[Id NSArray] (Id CKShareRequestAccessOperation)
 initWithShareURLsSelector = mkSelector "initWithShareURLs:"
 
 -- | @Selector@ for @shareURLs@
-shareURLsSelector :: Selector
+shareURLsSelector :: Selector '[] (Id NSArray)
 shareURLsSelector = mkSelector "shareURLs"
 
 -- | @Selector@ for @setShareURLs:@
-setShareURLsSelector :: Selector
+setShareURLsSelector :: Selector '[Id NSArray] ()
 setShareURLsSelector = mkSelector "setShareURLs:"
 
 -- | @Selector@ for @perShareAccessRequestCompletionBlock@
-perShareAccessRequestCompletionBlockSelector :: Selector
+perShareAccessRequestCompletionBlockSelector :: Selector '[] (Ptr ())
 perShareAccessRequestCompletionBlockSelector = mkSelector "perShareAccessRequestCompletionBlock"
 
 -- | @Selector@ for @setPerShareAccessRequestCompletionBlock:@
-setPerShareAccessRequestCompletionBlockSelector :: Selector
+setPerShareAccessRequestCompletionBlockSelector :: Selector '[Ptr ()] ()
 setPerShareAccessRequestCompletionBlockSelector = mkSelector "setPerShareAccessRequestCompletionBlock:"
 
 -- | @Selector@ for @shareRequestAccessCompletionBlock@
-shareRequestAccessCompletionBlockSelector :: Selector
+shareRequestAccessCompletionBlockSelector :: Selector '[] (Ptr ())
 shareRequestAccessCompletionBlockSelector = mkSelector "shareRequestAccessCompletionBlock"
 
 -- | @Selector@ for @setShareRequestAccessCompletionBlock:@
-setShareRequestAccessCompletionBlockSelector :: Selector
+setShareRequestAccessCompletionBlockSelector :: Selector '[Ptr ()] ()
 setShareRequestAccessCompletionBlockSelector = mkSelector "setShareRequestAccessCompletionBlock:"
 

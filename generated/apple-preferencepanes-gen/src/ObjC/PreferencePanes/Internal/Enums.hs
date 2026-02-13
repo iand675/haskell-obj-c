@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.PreferencePanes.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @NSPreferencePaneUnselectReply@
 newtype NSPreferencePaneUnselectReply = NSPreferencePaneUnselectReply CULong
@@ -24,3 +27,13 @@ pattern NSUnselectNow = NSPreferencePaneUnselectReply 1
 
 pattern NSUnselectLater :: NSPreferencePaneUnselectReply
 pattern NSUnselectLater = NSPreferencePaneUnselectReply 2
+
+instance ObjCArgument NSPreferencePaneUnselectReply where
+  withObjCArg (NSPreferencePaneUnselectReply x) k = k (argCULong x)
+
+instance ObjCReturn NSPreferencePaneUnselectReply where
+  type RawReturn NSPreferencePaneUnselectReply = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPreferencePaneUnselectReply x)
+  fromOwned x = pure (NSPreferencePaneUnselectReply x)

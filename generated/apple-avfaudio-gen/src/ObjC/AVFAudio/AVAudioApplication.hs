@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,14 +20,14 @@ module ObjC.AVFAudio.AVAudioApplication
   , recordPermission
   , microphoneInjectionPermission
   , initSelector
-  , setInputMuted_errorSelector
-  , setInputMuteStateChangeHandler_errorSelector
-  , requestRecordPermissionWithCompletionHandlerSelector
-  , requestMicrophoneInjectionPermissionWithCompletionHandlerSelector
-  , sharedInstanceSelector
   , inputMutedSelector
-  , recordPermissionSelector
   , microphoneInjectionPermissionSelector
+  , recordPermissionSelector
+  , requestMicrophoneInjectionPermissionWithCompletionHandlerSelector
+  , requestRecordPermissionWithCompletionHandlerSelector
+  , setInputMuteStateChangeHandler_errorSelector
+  , setInputMuted_errorSelector
+  , sharedInstanceSelector
 
   -- * Enum types
   , AVAudioApplicationMicrophoneInjectionPermission(AVAudioApplicationMicrophoneInjectionPermission)
@@ -41,15 +42,11 @@ module ObjC.AVFAudio.AVAudioApplication
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsAVAudioApplication avAudioApplication => avAudioApplication -> IO (Id AVAudioApplication)
-init_ avAudioApplication  =
-    sendMsg avAudioApplication (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioApplication =
+  sendOwnedMessage avAudioApplication initSelector
 
 -- | Set the muted/unmuted state of the application's audio input. When set true, inputs (microphone etc.) of all audio clients relating to this application will have their samples zeroed out.
 --
@@ -70,9 +67,8 @@ init_ avAudioApplication  =
 --
 -- ObjC selector: @- setInputMuted:error:@
 setInputMuted_error :: (IsAVAudioApplication avAudioApplication, IsNSError outError) => avAudioApplication -> Bool -> outError -> IO Bool
-setInputMuted_error avAudioApplication  muted outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioApplication (mkSelector "setInputMuted:error:") retCULong [argCULong (if muted then 1 else 0), argPtr (castPtr raw_outError :: Ptr ())]
+setInputMuted_error avAudioApplication muted outError =
+  sendMessage avAudioApplication setInputMuted_errorSelector muted (toNSError outError)
 
 -- | Provide a block that implements your app's input (microphone) muting logic (macOS only). The block will be called			whenever the input mute state changes, either due to changing the @AVAudioApplication.inputMute@ property on			this API, or due to a Bluetooth audio accessory gesture (certain AirPods / Beats headphones) changing the mute state.
 --
@@ -82,9 +78,8 @@ setInputMuted_error avAudioApplication  muted outError =
 --
 -- ObjC selector: @- setInputMuteStateChangeHandler:error:@
 setInputMuteStateChangeHandler_error :: (IsAVAudioApplication avAudioApplication, IsNSError outError) => avAudioApplication -> Ptr () -> outError -> IO Bool
-setInputMuteStateChangeHandler_error avAudioApplication  inputMuteHandler outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioApplication (mkSelector "setInputMuteStateChangeHandler:error:") retCULong [argPtr (castPtr inputMuteHandler :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+setInputMuteStateChangeHandler_error avAudioApplication inputMuteHandler outError =
+  sendMessage avAudioApplication setInputMuteStateChangeHandler_errorSelector inputMuteHandler (toNSError outError)
 
 -- | Checks to see if calling process has permission to record audio.
 --
@@ -95,7 +90,7 @@ requestRecordPermissionWithCompletionHandler :: Ptr () -> IO ()
 requestRecordPermissionWithCompletionHandler response =
   do
     cls' <- getRequiredClass "AVAudioApplication"
-    sendClassMsg cls' (mkSelector "requestRecordPermissionWithCompletionHandler:") retVoid [argPtr (castPtr response :: Ptr ())]
+    sendClassMessage cls' requestRecordPermissionWithCompletionHandlerSelector response
 
 -- | Checks to see if calling process has permission to inject audio to input stream.
 --
@@ -106,7 +101,7 @@ requestMicrophoneInjectionPermissionWithCompletionHandler :: Ptr () -> IO ()
 requestMicrophoneInjectionPermissionWithCompletionHandler response =
   do
     cls' <- getRequiredClass "AVAudioApplication"
-    sendClassMsg cls' (mkSelector "requestMicrophoneInjectionPermissionWithCompletionHandler:") retVoid [argPtr (castPtr response :: Ptr ())]
+    sendClassMessage cls' requestMicrophoneInjectionPermissionWithCompletionHandlerSelector response
 
 -- | Returns the singleton instance
 --
@@ -115,66 +110,66 @@ sharedInstance :: IO (Id AVAudioApplication)
 sharedInstance  =
   do
     cls' <- getRequiredClass "AVAudioApplication"
-    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedInstanceSelector
 
 -- | Get the input muted state - return value is boolean 0 for unmuted or value 1 for muted (input samples zeroed out)
 --
 -- ObjC selector: @- inputMuted@
 inputMuted :: IsAVAudioApplication avAudioApplication => avAudioApplication -> IO Bool
-inputMuted avAudioApplication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioApplication (mkSelector "inputMuted") retCULong []
+inputMuted avAudioApplication =
+  sendMessage avAudioApplication inputMutedSelector
 
 -- | Returns an enum indicating whether the user has granted or denied permission to record, or has not been asked
 --
 -- ObjC selector: @- recordPermission@
 recordPermission :: IsAVAudioApplication avAudioApplication => avAudioApplication -> IO AVAudioApplicationRecordPermission
-recordPermission avAudioApplication  =
-    fmap (coerce :: CLong -> AVAudioApplicationRecordPermission) $ sendMsg avAudioApplication (mkSelector "recordPermission") retCLong []
+recordPermission avAudioApplication =
+  sendMessage avAudioApplication recordPermissionSelector
 
 -- | Returns an enum indicating whether the user has granted or denied permission to inject audio into input, or has not been asked
 --
 -- ObjC selector: @- microphoneInjectionPermission@
 microphoneInjectionPermission :: IsAVAudioApplication avAudioApplication => avAudioApplication -> IO AVAudioApplicationMicrophoneInjectionPermission
-microphoneInjectionPermission avAudioApplication  =
-    fmap (coerce :: CLong -> AVAudioApplicationMicrophoneInjectionPermission) $ sendMsg avAudioApplication (mkSelector "microphoneInjectionPermission") retCLong []
+microphoneInjectionPermission avAudioApplication =
+  sendMessage avAudioApplication microphoneInjectionPermissionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioApplication)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setInputMuted:error:@
-setInputMuted_errorSelector :: Selector
+setInputMuted_errorSelector :: Selector '[Bool, Id NSError] Bool
 setInputMuted_errorSelector = mkSelector "setInputMuted:error:"
 
 -- | @Selector@ for @setInputMuteStateChangeHandler:error:@
-setInputMuteStateChangeHandler_errorSelector :: Selector
+setInputMuteStateChangeHandler_errorSelector :: Selector '[Ptr (), Id NSError] Bool
 setInputMuteStateChangeHandler_errorSelector = mkSelector "setInputMuteStateChangeHandler:error:"
 
 -- | @Selector@ for @requestRecordPermissionWithCompletionHandler:@
-requestRecordPermissionWithCompletionHandlerSelector :: Selector
+requestRecordPermissionWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestRecordPermissionWithCompletionHandlerSelector = mkSelector "requestRecordPermissionWithCompletionHandler:"
 
 -- | @Selector@ for @requestMicrophoneInjectionPermissionWithCompletionHandler:@
-requestMicrophoneInjectionPermissionWithCompletionHandlerSelector :: Selector
+requestMicrophoneInjectionPermissionWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 requestMicrophoneInjectionPermissionWithCompletionHandlerSelector = mkSelector "requestMicrophoneInjectionPermissionWithCompletionHandler:"
 
 -- | @Selector@ for @sharedInstance@
-sharedInstanceSelector :: Selector
+sharedInstanceSelector :: Selector '[] (Id AVAudioApplication)
 sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @inputMuted@
-inputMutedSelector :: Selector
+inputMutedSelector :: Selector '[] Bool
 inputMutedSelector = mkSelector "inputMuted"
 
 -- | @Selector@ for @recordPermission@
-recordPermissionSelector :: Selector
+recordPermissionSelector :: Selector '[] AVAudioApplicationRecordPermission
 recordPermissionSelector = mkSelector "recordPermission"
 
 -- | @Selector@ for @microphoneInjectionPermission@
-microphoneInjectionPermissionSelector :: Selector
+microphoneInjectionPermissionSelector :: Selector '[] AVAudioApplicationMicrophoneInjectionPermission
 microphoneInjectionPermissionSelector = mkSelector "microphoneInjectionPermission"
 

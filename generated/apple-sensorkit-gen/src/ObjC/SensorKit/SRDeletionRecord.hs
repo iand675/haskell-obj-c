@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.SensorKit.SRDeletionRecord
   , startTime
   , endTime
   , reason
-  , startTimeSelector
   , endTimeSelector
   , reasonSelector
+  , startTimeSelector
 
   -- * Enum types
   , SRDeletionReason(SRDeletionReason)
@@ -24,15 +25,11 @@ module ObjC.SensorKit.SRDeletionRecord
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,32 +39,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- startTime@
 startTime :: IsSRDeletionRecord srDeletionRecord => srDeletionRecord -> IO CDouble
-startTime srDeletionRecord  =
-    sendMsg srDeletionRecord (mkSelector "startTime") retCDouble []
+startTime srDeletionRecord =
+  sendMessage srDeletionRecord startTimeSelector
 
 -- | @- endTime@
 endTime :: IsSRDeletionRecord srDeletionRecord => srDeletionRecord -> IO CDouble
-endTime srDeletionRecord  =
-    sendMsg srDeletionRecord (mkSelector "endTime") retCDouble []
+endTime srDeletionRecord =
+  sendMessage srDeletionRecord endTimeSelector
 
 -- | @- reason@
 reason :: IsSRDeletionRecord srDeletionRecord => srDeletionRecord -> IO SRDeletionReason
-reason srDeletionRecord  =
-    fmap (coerce :: CLong -> SRDeletionReason) $ sendMsg srDeletionRecord (mkSelector "reason") retCLong []
+reason srDeletionRecord =
+  sendMessage srDeletionRecord reasonSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startTime@
-startTimeSelector :: Selector
+startTimeSelector :: Selector '[] CDouble
 startTimeSelector = mkSelector "startTime"
 
 -- | @Selector@ for @endTime@
-endTimeSelector :: Selector
+endTimeSelector :: Selector '[] CDouble
 endTimeSelector = mkSelector "endTime"
 
 -- | @Selector@ for @reason@
-reasonSelector :: Selector
+reasonSelector :: Selector '[] SRDeletionReason
 reasonSelector = mkSelector "reason"
 

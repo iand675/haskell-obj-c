@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.AppKit.NSTreeNode
   , childNodes
   , mutableChildNodes
   , parentNode
-  , treeNodeWithRepresentedObjectSelector
-  , initWithRepresentedObjectSelector
-  , descendantNodeAtIndexPathSelector
-  , sortWithSortDescriptors_recursivelySelector
-  , representedObjectSelector
-  , indexPathSelector
-  , leafSelector
   , childNodesSelector
+  , descendantNodeAtIndexPathSelector
+  , indexPathSelector
+  , initWithRepresentedObjectSelector
+  , leafSelector
   , mutableChildNodesSelector
   , parentNodeSelector
+  , representedObjectSelector
+  , sortWithSortDescriptors_recursivelySelector
+  , treeNodeWithRepresentedObjectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,96 +47,94 @@ treeNodeWithRepresentedObject :: RawId -> IO (Id NSTreeNode)
 treeNodeWithRepresentedObject modelObject =
   do
     cls' <- getRequiredClass "NSTreeNode"
-    sendClassMsg cls' (mkSelector "treeNodeWithRepresentedObject:") (retPtr retVoid) [argPtr (castPtr (unRawId modelObject) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' treeNodeWithRepresentedObjectSelector modelObject
 
 -- | @- initWithRepresentedObject:@
 initWithRepresentedObject :: IsNSTreeNode nsTreeNode => nsTreeNode -> RawId -> IO (Id NSTreeNode)
-initWithRepresentedObject nsTreeNode  modelObject =
-    sendMsg nsTreeNode (mkSelector "initWithRepresentedObject:") (retPtr retVoid) [argPtr (castPtr (unRawId modelObject) :: Ptr ())] >>= ownedObject . castPtr
+initWithRepresentedObject nsTreeNode modelObject =
+  sendOwnedMessage nsTreeNode initWithRepresentedObjectSelector modelObject
 
 -- | @- descendantNodeAtIndexPath:@
 descendantNodeAtIndexPath :: (IsNSTreeNode nsTreeNode, IsNSIndexPath indexPath) => nsTreeNode -> indexPath -> IO (Id NSTreeNode)
-descendantNodeAtIndexPath nsTreeNode  indexPath =
-  withObjCPtr indexPath $ \raw_indexPath ->
-      sendMsg nsTreeNode (mkSelector "descendantNodeAtIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_indexPath :: Ptr ())] >>= retainedObject . castPtr
+descendantNodeAtIndexPath nsTreeNode indexPath =
+  sendMessage nsTreeNode descendantNodeAtIndexPathSelector (toNSIndexPath indexPath)
 
 -- | @- sortWithSortDescriptors:recursively:@
 sortWithSortDescriptors_recursively :: (IsNSTreeNode nsTreeNode, IsNSArray sortDescriptors) => nsTreeNode -> sortDescriptors -> Bool -> IO ()
-sortWithSortDescriptors_recursively nsTreeNode  sortDescriptors recursively =
-  withObjCPtr sortDescriptors $ \raw_sortDescriptors ->
-      sendMsg nsTreeNode (mkSelector "sortWithSortDescriptors:recursively:") retVoid [argPtr (castPtr raw_sortDescriptors :: Ptr ()), argCULong (if recursively then 1 else 0)]
+sortWithSortDescriptors_recursively nsTreeNode sortDescriptors recursively =
+  sendMessage nsTreeNode sortWithSortDescriptors_recursivelySelector (toNSArray sortDescriptors) recursively
 
 -- | @- representedObject@
 representedObject :: IsNSTreeNode nsTreeNode => nsTreeNode -> IO RawId
-representedObject nsTreeNode  =
-    fmap (RawId . castPtr) $ sendMsg nsTreeNode (mkSelector "representedObject") (retPtr retVoid) []
+representedObject nsTreeNode =
+  sendMessage nsTreeNode representedObjectSelector
 
 -- | @- indexPath@
 indexPath :: IsNSTreeNode nsTreeNode => nsTreeNode -> IO (Id NSIndexPath)
-indexPath nsTreeNode  =
-    sendMsg nsTreeNode (mkSelector "indexPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+indexPath nsTreeNode =
+  sendMessage nsTreeNode indexPathSelector
 
 -- | @- leaf@
 leaf :: IsNSTreeNode nsTreeNode => nsTreeNode -> IO Bool
-leaf nsTreeNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTreeNode (mkSelector "leaf") retCULong []
+leaf nsTreeNode =
+  sendMessage nsTreeNode leafSelector
 
 -- | @- childNodes@
 childNodes :: IsNSTreeNode nsTreeNode => nsTreeNode -> IO (Id NSArray)
-childNodes nsTreeNode  =
-    sendMsg nsTreeNode (mkSelector "childNodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+childNodes nsTreeNode =
+  sendMessage nsTreeNode childNodesSelector
 
 -- | @- mutableChildNodes@
 mutableChildNodes :: IsNSTreeNode nsTreeNode => nsTreeNode -> IO (Id NSMutableArray)
-mutableChildNodes nsTreeNode  =
-    sendMsg nsTreeNode (mkSelector "mutableChildNodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+mutableChildNodes nsTreeNode =
+  sendMessage nsTreeNode mutableChildNodesSelector
 
 -- | @- parentNode@
 parentNode :: IsNSTreeNode nsTreeNode => nsTreeNode -> IO (Id NSTreeNode)
-parentNode nsTreeNode  =
-    sendMsg nsTreeNode (mkSelector "parentNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentNode nsTreeNode =
+  sendMessage nsTreeNode parentNodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @treeNodeWithRepresentedObject:@
-treeNodeWithRepresentedObjectSelector :: Selector
+treeNodeWithRepresentedObjectSelector :: Selector '[RawId] (Id NSTreeNode)
 treeNodeWithRepresentedObjectSelector = mkSelector "treeNodeWithRepresentedObject:"
 
 -- | @Selector@ for @initWithRepresentedObject:@
-initWithRepresentedObjectSelector :: Selector
+initWithRepresentedObjectSelector :: Selector '[RawId] (Id NSTreeNode)
 initWithRepresentedObjectSelector = mkSelector "initWithRepresentedObject:"
 
 -- | @Selector@ for @descendantNodeAtIndexPath:@
-descendantNodeAtIndexPathSelector :: Selector
+descendantNodeAtIndexPathSelector :: Selector '[Id NSIndexPath] (Id NSTreeNode)
 descendantNodeAtIndexPathSelector = mkSelector "descendantNodeAtIndexPath:"
 
 -- | @Selector@ for @sortWithSortDescriptors:recursively:@
-sortWithSortDescriptors_recursivelySelector :: Selector
+sortWithSortDescriptors_recursivelySelector :: Selector '[Id NSArray, Bool] ()
 sortWithSortDescriptors_recursivelySelector = mkSelector "sortWithSortDescriptors:recursively:"
 
 -- | @Selector@ for @representedObject@
-representedObjectSelector :: Selector
+representedObjectSelector :: Selector '[] RawId
 representedObjectSelector = mkSelector "representedObject"
 
 -- | @Selector@ for @indexPath@
-indexPathSelector :: Selector
+indexPathSelector :: Selector '[] (Id NSIndexPath)
 indexPathSelector = mkSelector "indexPath"
 
 -- | @Selector@ for @leaf@
-leafSelector :: Selector
+leafSelector :: Selector '[] Bool
 leafSelector = mkSelector "leaf"
 
 -- | @Selector@ for @childNodes@
-childNodesSelector :: Selector
+childNodesSelector :: Selector '[] (Id NSArray)
 childNodesSelector = mkSelector "childNodes"
 
 -- | @Selector@ for @mutableChildNodes@
-mutableChildNodesSelector :: Selector
+mutableChildNodesSelector :: Selector '[] (Id NSMutableArray)
 mutableChildNodesSelector = mkSelector "mutableChildNodes"
 
 -- | @Selector@ for @parentNode@
-parentNodeSelector :: Selector
+parentNodeSelector :: Selector '[] (Id NSTreeNode)
 parentNodeSelector = mkSelector "parentNode"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNUpsamplingNearestNode
   , initWithSource_integerScaleFactorX_integerScaleFactorY
   , scaleFactorX
   , scaleFactorY
-  , nodeWithSource_integerScaleFactorX_integerScaleFactorYSelector
   , initWithSource_integerScaleFactorX_integerScaleFactorYSelector
+  , nodeWithSource_integerScaleFactorX_integerScaleFactorYSelector
   , scaleFactorXSelector
   , scaleFactorYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,7 @@ nodeWithSource_integerScaleFactorX_integerScaleFactorY :: IsMPSNNImageNode sourc
 nodeWithSource_integerScaleFactorX_integerScaleFactorY sourceNode integerScaleFactorX integerScaleFactorY =
   do
     cls' <- getRequiredClass "MPSCNNUpsamplingNearestNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:integerScaleFactorX:integerScaleFactorY:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong integerScaleFactorX, argCULong integerScaleFactorY] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_integerScaleFactorX_integerScaleFactorYSelector (toMPSNNImageNode sourceNode) integerScaleFactorX integerScaleFactorY
 
 -- | Init a node representing a MPSCNNUpsamplingNearest kernel
 --
@@ -65,37 +61,36 @@ nodeWithSource_integerScaleFactorX_integerScaleFactorY sourceNode integerScaleFa
 --
 -- ObjC selector: @- initWithSource:integerScaleFactorX:integerScaleFactorY:@
 initWithSource_integerScaleFactorX_integerScaleFactorY :: (IsMPSCNNUpsamplingNearestNode mpscnnUpsamplingNearestNode, IsMPSNNImageNode sourceNode) => mpscnnUpsamplingNearestNode -> sourceNode -> CULong -> CULong -> IO (Id MPSCNNUpsamplingNearestNode)
-initWithSource_integerScaleFactorX_integerScaleFactorY mpscnnUpsamplingNearestNode  sourceNode integerScaleFactorX integerScaleFactorY =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnUpsamplingNearestNode (mkSelector "initWithSource:integerScaleFactorX:integerScaleFactorY:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong integerScaleFactorX, argCULong integerScaleFactorY] >>= ownedObject . castPtr
+initWithSource_integerScaleFactorX_integerScaleFactorY mpscnnUpsamplingNearestNode sourceNode integerScaleFactorX integerScaleFactorY =
+  sendOwnedMessage mpscnnUpsamplingNearestNode initWithSource_integerScaleFactorX_integerScaleFactorYSelector (toMPSNNImageNode sourceNode) integerScaleFactorX integerScaleFactorY
 
 -- | @- scaleFactorX@
 scaleFactorX :: IsMPSCNNUpsamplingNearestNode mpscnnUpsamplingNearestNode => mpscnnUpsamplingNearestNode -> IO CDouble
-scaleFactorX mpscnnUpsamplingNearestNode  =
-    sendMsg mpscnnUpsamplingNearestNode (mkSelector "scaleFactorX") retCDouble []
+scaleFactorX mpscnnUpsamplingNearestNode =
+  sendMessage mpscnnUpsamplingNearestNode scaleFactorXSelector
 
 -- | @- scaleFactorY@
 scaleFactorY :: IsMPSCNNUpsamplingNearestNode mpscnnUpsamplingNearestNode => mpscnnUpsamplingNearestNode -> IO CDouble
-scaleFactorY mpscnnUpsamplingNearestNode  =
-    sendMsg mpscnnUpsamplingNearestNode (mkSelector "scaleFactorY") retCDouble []
+scaleFactorY mpscnnUpsamplingNearestNode =
+  sendMessage mpscnnUpsamplingNearestNode scaleFactorYSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:integerScaleFactorX:integerScaleFactorY:@
-nodeWithSource_integerScaleFactorX_integerScaleFactorYSelector :: Selector
+nodeWithSource_integerScaleFactorX_integerScaleFactorYSelector :: Selector '[Id MPSNNImageNode, CULong, CULong] (Id MPSCNNUpsamplingNearestNode)
 nodeWithSource_integerScaleFactorX_integerScaleFactorYSelector = mkSelector "nodeWithSource:integerScaleFactorX:integerScaleFactorY:"
 
 -- | @Selector@ for @initWithSource:integerScaleFactorX:integerScaleFactorY:@
-initWithSource_integerScaleFactorX_integerScaleFactorYSelector :: Selector
+initWithSource_integerScaleFactorX_integerScaleFactorYSelector :: Selector '[Id MPSNNImageNode, CULong, CULong] (Id MPSCNNUpsamplingNearestNode)
 initWithSource_integerScaleFactorX_integerScaleFactorYSelector = mkSelector "initWithSource:integerScaleFactorX:integerScaleFactorY:"
 
 -- | @Selector@ for @scaleFactorX@
-scaleFactorXSelector :: Selector
+scaleFactorXSelector :: Selector '[] CDouble
 scaleFactorXSelector = mkSelector "scaleFactorX"
 
 -- | @Selector@ for @scaleFactorY@
-scaleFactorYSelector :: Selector
+scaleFactorYSelector :: Selector '[] CDouble
 scaleFactorYSelector = mkSelector "scaleFactorY"
 

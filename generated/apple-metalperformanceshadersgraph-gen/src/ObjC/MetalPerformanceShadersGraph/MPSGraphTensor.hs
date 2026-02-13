@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphTensor
   , shape
   , dataType
   , operation
-  , initSelector
-  , shapeSelector
   , dataTypeSelector
+  , initSelector
   , operationSelector
+  , shapeSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -52,15 +53,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphTensor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,8 +69,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsMPSGraphTensor mpsGraphTensor => mpsGraphTensor -> IO (Id MPSGraphTensor)
-init_ mpsGraphTensor  =
-    sendMsg mpsGraphTensor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsGraphTensor =
+  sendOwnedMessage mpsGraphTensor initSelector
 
 -- | The shape of the tensor.
 --
@@ -81,40 +78,40 @@ init_ mpsGraphTensor  =
 --
 -- ObjC selector: @- shape@
 shape :: IsMPSGraphTensor mpsGraphTensor => mpsGraphTensor -> IO RawId
-shape mpsGraphTensor  =
-    fmap (RawId . castPtr) $ sendMsg mpsGraphTensor (mkSelector "shape") (retPtr retVoid) []
+shape mpsGraphTensor =
+  sendMessage mpsGraphTensor shapeSelector
 
 -- | The data type of the tensor.
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSGraphTensor mpsGraphTensor => mpsGraphTensor -> IO MPSDataType
-dataType mpsGraphTensor  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsGraphTensor (mkSelector "dataType") retCUInt []
+dataType mpsGraphTensor =
+  sendMessage mpsGraphTensor dataTypeSelector
 
 -- | The operation responsible for creating this tensor.
 --
 -- ObjC selector: @- operation@
 operation :: IsMPSGraphTensor mpsGraphTensor => mpsGraphTensor -> IO (Id MPSGraphOperation)
-operation mpsGraphTensor  =
-    sendMsg mpsGraphTensor (mkSelector "operation") (retPtr retVoid) [] >>= retainedObject . castPtr
+operation mpsGraphTensor =
+  sendMessage mpsGraphTensor operationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSGraphTensor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] RawId
 shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @operation@
-operationSelector :: Selector
+operationSelector :: Selector '[] (Id MPSGraphOperation)
 operationSelector = mkSelector "operation"
 

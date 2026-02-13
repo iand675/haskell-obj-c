@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.Foundation.NSComparisonPredicate
   , rightExpression
   , customSelector
   , options
-  , predicateWithLeftExpression_rightExpression_modifier_type_optionsSelector
-  , predicateWithLeftExpression_rightExpression_customSelectorSelector
-  , initWithLeftExpression_rightExpression_modifier_type_optionsSelector
-  , initWithLeftExpression_rightExpression_customSelectorSelector
-  , initWithCoderSelector
-  , predicateOperatorTypeSelector
   , comparisonPredicateModifierSelector
-  , leftExpressionSelector
-  , rightExpressionSelector
   , customSelectorSelector
+  , initWithCoderSelector
+  , initWithLeftExpression_rightExpression_customSelectorSelector
+  , initWithLeftExpression_rightExpression_modifier_type_optionsSelector
+  , leftExpressionSelector
   , optionsSelector
+  , predicateOperatorTypeSelector
+  , predicateWithLeftExpression_rightExpression_customSelectorSelector
+  , predicateWithLeftExpression_rightExpression_modifier_type_optionsSelector
+  , rightExpressionSelector
 
   -- * Enum types
   , NSComparisonPredicateModifier(NSComparisonPredicateModifier)
@@ -57,15 +58,11 @@ module ObjC.Foundation.NSComparisonPredicate
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,114 +74,105 @@ predicateWithLeftExpression_rightExpression_modifier_type_options :: (IsNSExpres
 predicateWithLeftExpression_rightExpression_modifier_type_options lhs rhs modifier type_ options =
   do
     cls' <- getRequiredClass "NSComparisonPredicate"
-    withObjCPtr lhs $ \raw_lhs ->
-      withObjCPtr rhs $ \raw_rhs ->
-        sendClassMsg cls' (mkSelector "predicateWithLeftExpression:rightExpression:modifier:type:options:") (retPtr retVoid) [argPtr (castPtr raw_lhs :: Ptr ()), argPtr (castPtr raw_rhs :: Ptr ()), argCULong (coerce modifier), argCULong (coerce type_), argCULong (coerce options)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateWithLeftExpression_rightExpression_modifier_type_optionsSelector (toNSExpression lhs) (toNSExpression rhs) modifier type_ options
 
 -- | @+ predicateWithLeftExpression:rightExpression:customSelector:@
-predicateWithLeftExpression_rightExpression_customSelector :: (IsNSExpression lhs, IsNSExpression rhs) => lhs -> rhs -> Selector -> IO (Id NSComparisonPredicate)
+predicateWithLeftExpression_rightExpression_customSelector :: (IsNSExpression lhs, IsNSExpression rhs) => lhs -> rhs -> Sel -> IO (Id NSComparisonPredicate)
 predicateWithLeftExpression_rightExpression_customSelector lhs rhs selector =
   do
     cls' <- getRequiredClass "NSComparisonPredicate"
-    withObjCPtr lhs $ \raw_lhs ->
-      withObjCPtr rhs $ \raw_rhs ->
-        sendClassMsg cls' (mkSelector "predicateWithLeftExpression:rightExpression:customSelector:") (retPtr retVoid) [argPtr (castPtr raw_lhs :: Ptr ()), argPtr (castPtr raw_rhs :: Ptr ()), argPtr (unSelector selector)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateWithLeftExpression_rightExpression_customSelectorSelector (toNSExpression lhs) (toNSExpression rhs) selector
 
 -- | @- initWithLeftExpression:rightExpression:modifier:type:options:@
 initWithLeftExpression_rightExpression_modifier_type_options :: (IsNSComparisonPredicate nsComparisonPredicate, IsNSExpression lhs, IsNSExpression rhs) => nsComparisonPredicate -> lhs -> rhs -> NSComparisonPredicateModifier -> NSPredicateOperatorType -> NSComparisonPredicateOptions -> IO (Id NSComparisonPredicate)
-initWithLeftExpression_rightExpression_modifier_type_options nsComparisonPredicate  lhs rhs modifier type_ options =
-  withObjCPtr lhs $ \raw_lhs ->
-    withObjCPtr rhs $ \raw_rhs ->
-        sendMsg nsComparisonPredicate (mkSelector "initWithLeftExpression:rightExpression:modifier:type:options:") (retPtr retVoid) [argPtr (castPtr raw_lhs :: Ptr ()), argPtr (castPtr raw_rhs :: Ptr ()), argCULong (coerce modifier), argCULong (coerce type_), argCULong (coerce options)] >>= ownedObject . castPtr
+initWithLeftExpression_rightExpression_modifier_type_options nsComparisonPredicate lhs rhs modifier type_ options =
+  sendOwnedMessage nsComparisonPredicate initWithLeftExpression_rightExpression_modifier_type_optionsSelector (toNSExpression lhs) (toNSExpression rhs) modifier type_ options
 
 -- | @- initWithLeftExpression:rightExpression:customSelector:@
-initWithLeftExpression_rightExpression_customSelector :: (IsNSComparisonPredicate nsComparisonPredicate, IsNSExpression lhs, IsNSExpression rhs) => nsComparisonPredicate -> lhs -> rhs -> Selector -> IO (Id NSComparisonPredicate)
-initWithLeftExpression_rightExpression_customSelector nsComparisonPredicate  lhs rhs selector =
-  withObjCPtr lhs $ \raw_lhs ->
-    withObjCPtr rhs $ \raw_rhs ->
-        sendMsg nsComparisonPredicate (mkSelector "initWithLeftExpression:rightExpression:customSelector:") (retPtr retVoid) [argPtr (castPtr raw_lhs :: Ptr ()), argPtr (castPtr raw_rhs :: Ptr ()), argPtr (unSelector selector)] >>= ownedObject . castPtr
+initWithLeftExpression_rightExpression_customSelector :: (IsNSComparisonPredicate nsComparisonPredicate, IsNSExpression lhs, IsNSExpression rhs) => nsComparisonPredicate -> lhs -> rhs -> Sel -> IO (Id NSComparisonPredicate)
+initWithLeftExpression_rightExpression_customSelector nsComparisonPredicate lhs rhs selector =
+  sendOwnedMessage nsComparisonPredicate initWithLeftExpression_rightExpression_customSelectorSelector (toNSExpression lhs) (toNSExpression rhs) selector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSComparisonPredicate nsComparisonPredicate, IsNSCoder coder) => nsComparisonPredicate -> coder -> IO (Id NSComparisonPredicate)
-initWithCoder nsComparisonPredicate  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsComparisonPredicate (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsComparisonPredicate coder =
+  sendOwnedMessage nsComparisonPredicate initWithCoderSelector (toNSCoder coder)
 
 -- | @- predicateOperatorType@
 predicateOperatorType :: IsNSComparisonPredicate nsComparisonPredicate => nsComparisonPredicate -> IO NSPredicateOperatorType
-predicateOperatorType nsComparisonPredicate  =
-    fmap (coerce :: CULong -> NSPredicateOperatorType) $ sendMsg nsComparisonPredicate (mkSelector "predicateOperatorType") retCULong []
+predicateOperatorType nsComparisonPredicate =
+  sendMessage nsComparisonPredicate predicateOperatorTypeSelector
 
 -- | @- comparisonPredicateModifier@
 comparisonPredicateModifier :: IsNSComparisonPredicate nsComparisonPredicate => nsComparisonPredicate -> IO NSComparisonPredicateModifier
-comparisonPredicateModifier nsComparisonPredicate  =
-    fmap (coerce :: CULong -> NSComparisonPredicateModifier) $ sendMsg nsComparisonPredicate (mkSelector "comparisonPredicateModifier") retCULong []
+comparisonPredicateModifier nsComparisonPredicate =
+  sendMessage nsComparisonPredicate comparisonPredicateModifierSelector
 
 -- | @- leftExpression@
 leftExpression :: IsNSComparisonPredicate nsComparisonPredicate => nsComparisonPredicate -> IO (Id NSExpression)
-leftExpression nsComparisonPredicate  =
-    sendMsg nsComparisonPredicate (mkSelector "leftExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftExpression nsComparisonPredicate =
+  sendMessage nsComparisonPredicate leftExpressionSelector
 
 -- | @- rightExpression@
 rightExpression :: IsNSComparisonPredicate nsComparisonPredicate => nsComparisonPredicate -> IO (Id NSExpression)
-rightExpression nsComparisonPredicate  =
-    sendMsg nsComparisonPredicate (mkSelector "rightExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightExpression nsComparisonPredicate =
+  sendMessage nsComparisonPredicate rightExpressionSelector
 
 -- | @- customSelector@
-customSelector :: IsNSComparisonPredicate nsComparisonPredicate => nsComparisonPredicate -> IO Selector
-customSelector nsComparisonPredicate  =
-    fmap (Selector . castPtr) $ sendMsg nsComparisonPredicate (mkSelector "customSelector") (retPtr retVoid) []
+customSelector :: IsNSComparisonPredicate nsComparisonPredicate => nsComparisonPredicate -> IO Sel
+customSelector nsComparisonPredicate =
+  sendMessage nsComparisonPredicate customSelectorSelector
 
 -- | @- options@
 options :: IsNSComparisonPredicate nsComparisonPredicate => nsComparisonPredicate -> IO NSComparisonPredicateOptions
-options nsComparisonPredicate  =
-    fmap (coerce :: CULong -> NSComparisonPredicateOptions) $ sendMsg nsComparisonPredicate (mkSelector "options") retCULong []
+options nsComparisonPredicate =
+  sendMessage nsComparisonPredicate optionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @predicateWithLeftExpression:rightExpression:modifier:type:options:@
-predicateWithLeftExpression_rightExpression_modifier_type_optionsSelector :: Selector
+predicateWithLeftExpression_rightExpression_modifier_type_optionsSelector :: Selector '[Id NSExpression, Id NSExpression, NSComparisonPredicateModifier, NSPredicateOperatorType, NSComparisonPredicateOptions] (Id NSComparisonPredicate)
 predicateWithLeftExpression_rightExpression_modifier_type_optionsSelector = mkSelector "predicateWithLeftExpression:rightExpression:modifier:type:options:"
 
 -- | @Selector@ for @predicateWithLeftExpression:rightExpression:customSelector:@
-predicateWithLeftExpression_rightExpression_customSelectorSelector :: Selector
+predicateWithLeftExpression_rightExpression_customSelectorSelector :: Selector '[Id NSExpression, Id NSExpression, Sel] (Id NSComparisonPredicate)
 predicateWithLeftExpression_rightExpression_customSelectorSelector = mkSelector "predicateWithLeftExpression:rightExpression:customSelector:"
 
 -- | @Selector@ for @initWithLeftExpression:rightExpression:modifier:type:options:@
-initWithLeftExpression_rightExpression_modifier_type_optionsSelector :: Selector
+initWithLeftExpression_rightExpression_modifier_type_optionsSelector :: Selector '[Id NSExpression, Id NSExpression, NSComparisonPredicateModifier, NSPredicateOperatorType, NSComparisonPredicateOptions] (Id NSComparisonPredicate)
 initWithLeftExpression_rightExpression_modifier_type_optionsSelector = mkSelector "initWithLeftExpression:rightExpression:modifier:type:options:"
 
 -- | @Selector@ for @initWithLeftExpression:rightExpression:customSelector:@
-initWithLeftExpression_rightExpression_customSelectorSelector :: Selector
+initWithLeftExpression_rightExpression_customSelectorSelector :: Selector '[Id NSExpression, Id NSExpression, Sel] (Id NSComparisonPredicate)
 initWithLeftExpression_rightExpression_customSelectorSelector = mkSelector "initWithLeftExpression:rightExpression:customSelector:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSComparisonPredicate)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @predicateOperatorType@
-predicateOperatorTypeSelector :: Selector
+predicateOperatorTypeSelector :: Selector '[] NSPredicateOperatorType
 predicateOperatorTypeSelector = mkSelector "predicateOperatorType"
 
 -- | @Selector@ for @comparisonPredicateModifier@
-comparisonPredicateModifierSelector :: Selector
+comparisonPredicateModifierSelector :: Selector '[] NSComparisonPredicateModifier
 comparisonPredicateModifierSelector = mkSelector "comparisonPredicateModifier"
 
 -- | @Selector@ for @leftExpression@
-leftExpressionSelector :: Selector
+leftExpressionSelector :: Selector '[] (Id NSExpression)
 leftExpressionSelector = mkSelector "leftExpression"
 
 -- | @Selector@ for @rightExpression@
-rightExpressionSelector :: Selector
+rightExpressionSelector :: Selector '[] (Id NSExpression)
 rightExpressionSelector = mkSelector "rightExpression"
 
 -- | @Selector@ for @customSelector@
-customSelectorSelector :: Selector
+customSelectorSelector :: Selector '[] Sel
 customSelectorSelector = mkSelector "customSelector"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] NSComparisonPredicateOptions
 optionsSelector = mkSelector "options"
 

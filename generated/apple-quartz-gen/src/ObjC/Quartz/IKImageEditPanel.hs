@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Quartz.IKImageEditPanel
   , dataSource
   , setDataSource
   , filterArray
-  , sharedImageEditPanelSelector
-  , reloadDataSelector
   , dataSourceSelector
-  , setDataSourceSelector
   , filterArraySelector
+  , reloadDataSelector
+  , setDataSourceSelector
+  , sharedImageEditPanelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,7 +46,7 @@ sharedImageEditPanel :: IO (Id IKImageEditPanel)
 sharedImageEditPanel  =
   do
     cls' <- getRequiredClass "IKImageEditPanel"
-    sendClassMsg cls' (mkSelector "sharedImageEditPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedImageEditPanelSelector
 
 -- | reloadData
 --
@@ -57,8 +54,8 @@ sharedImageEditPanel  =
 --
 -- ObjC selector: @- reloadData@
 reloadData :: IsIKImageEditPanel ikImageEditPanel => ikImageEditPanel -> IO ()
-reloadData ikImageEditPanel  =
-    sendMsg ikImageEditPanel (mkSelector "reloadData") retVoid []
+reloadData ikImageEditPanel =
+  sendMessage ikImageEditPanel reloadDataSelector
 
 -- | dataSource
 --
@@ -66,8 +63,8 @@ reloadData ikImageEditPanel  =
 --
 -- ObjC selector: @- dataSource@
 dataSource :: IsIKImageEditPanel ikImageEditPanel => ikImageEditPanel -> IO RawId
-dataSource ikImageEditPanel  =
-    fmap (RawId . castPtr) $ sendMsg ikImageEditPanel (mkSelector "dataSource") (retPtr retVoid) []
+dataSource ikImageEditPanel =
+  sendMessage ikImageEditPanel dataSourceSelector
 
 -- | dataSource
 --
@@ -75,8 +72,8 @@ dataSource ikImageEditPanel  =
 --
 -- ObjC selector: @- setDataSource:@
 setDataSource :: IsIKImageEditPanel ikImageEditPanel => ikImageEditPanel -> RawId -> IO ()
-setDataSource ikImageEditPanel  value =
-    sendMsg ikImageEditPanel (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDataSource ikImageEditPanel value =
+  sendMessage ikImageEditPanel setDataSourceSelector value
 
 -- | filterArray
 --
@@ -84,30 +81,30 @@ setDataSource ikImageEditPanel  value =
 --
 -- ObjC selector: @- filterArray@
 filterArray :: IsIKImageEditPanel ikImageEditPanel => ikImageEditPanel -> IO (Id NSArray)
-filterArray ikImageEditPanel  =
-    sendMsg ikImageEditPanel (mkSelector "filterArray") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterArray ikImageEditPanel =
+  sendMessage ikImageEditPanel filterArraySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedImageEditPanel@
-sharedImageEditPanelSelector :: Selector
+sharedImageEditPanelSelector :: Selector '[] (Id IKImageEditPanel)
 sharedImageEditPanelSelector = mkSelector "sharedImageEditPanel"
 
 -- | @Selector@ for @reloadData@
-reloadDataSelector :: Selector
+reloadDataSelector :: Selector '[] ()
 reloadDataSelector = mkSelector "reloadData"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] RawId
 dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @setDataSource:@
-setDataSourceSelector :: Selector
+setDataSourceSelector :: Selector '[RawId] ()
 setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @filterArray@
-filterArraySelector :: Selector
+filterArraySelector :: Selector '[] (Id NSArray)
 filterArraySelector = mkSelector "filterArray"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRThermostatClusterScheduleTypeStruct
   , setNumberOfSchedules
   , scheduleTypeFeatures
   , setScheduleTypeFeatures
-  , systemModeSelector
-  , setSystemModeSelector
   , numberOfSchedulesSelector
-  , setNumberOfSchedulesSelector
   , scheduleTypeFeaturesSelector
+  , setNumberOfSchedulesSelector
   , setScheduleTypeFeaturesSelector
+  , setSystemModeSelector
+  , systemModeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- systemMode@
 systemMode :: IsMTRThermostatClusterScheduleTypeStruct mtrThermostatClusterScheduleTypeStruct => mtrThermostatClusterScheduleTypeStruct -> IO (Id NSNumber)
-systemMode mtrThermostatClusterScheduleTypeStruct  =
-    sendMsg mtrThermostatClusterScheduleTypeStruct (mkSelector "systemMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemMode mtrThermostatClusterScheduleTypeStruct =
+  sendMessage mtrThermostatClusterScheduleTypeStruct systemModeSelector
 
 -- | @- setSystemMode:@
 setSystemMode :: (IsMTRThermostatClusterScheduleTypeStruct mtrThermostatClusterScheduleTypeStruct, IsNSNumber value) => mtrThermostatClusterScheduleTypeStruct -> value -> IO ()
-setSystemMode mtrThermostatClusterScheduleTypeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleTypeStruct (mkSelector "setSystemMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSystemMode mtrThermostatClusterScheduleTypeStruct value =
+  sendMessage mtrThermostatClusterScheduleTypeStruct setSystemModeSelector (toNSNumber value)
 
 -- | @- numberOfSchedules@
 numberOfSchedules :: IsMTRThermostatClusterScheduleTypeStruct mtrThermostatClusterScheduleTypeStruct => mtrThermostatClusterScheduleTypeStruct -> IO (Id NSNumber)
-numberOfSchedules mtrThermostatClusterScheduleTypeStruct  =
-    sendMsg mtrThermostatClusterScheduleTypeStruct (mkSelector "numberOfSchedules") (retPtr retVoid) [] >>= retainedObject . castPtr
+numberOfSchedules mtrThermostatClusterScheduleTypeStruct =
+  sendMessage mtrThermostatClusterScheduleTypeStruct numberOfSchedulesSelector
 
 -- | @- setNumberOfSchedules:@
 setNumberOfSchedules :: (IsMTRThermostatClusterScheduleTypeStruct mtrThermostatClusterScheduleTypeStruct, IsNSNumber value) => mtrThermostatClusterScheduleTypeStruct -> value -> IO ()
-setNumberOfSchedules mtrThermostatClusterScheduleTypeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleTypeStruct (mkSelector "setNumberOfSchedules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNumberOfSchedules mtrThermostatClusterScheduleTypeStruct value =
+  sendMessage mtrThermostatClusterScheduleTypeStruct setNumberOfSchedulesSelector (toNSNumber value)
 
 -- | @- scheduleTypeFeatures@
 scheduleTypeFeatures :: IsMTRThermostatClusterScheduleTypeStruct mtrThermostatClusterScheduleTypeStruct => mtrThermostatClusterScheduleTypeStruct -> IO (Id NSNumber)
-scheduleTypeFeatures mtrThermostatClusterScheduleTypeStruct  =
-    sendMsg mtrThermostatClusterScheduleTypeStruct (mkSelector "scheduleTypeFeatures") (retPtr retVoid) [] >>= retainedObject . castPtr
+scheduleTypeFeatures mtrThermostatClusterScheduleTypeStruct =
+  sendMessage mtrThermostatClusterScheduleTypeStruct scheduleTypeFeaturesSelector
 
 -- | @- setScheduleTypeFeatures:@
 setScheduleTypeFeatures :: (IsMTRThermostatClusterScheduleTypeStruct mtrThermostatClusterScheduleTypeStruct, IsNSNumber value) => mtrThermostatClusterScheduleTypeStruct -> value -> IO ()
-setScheduleTypeFeatures mtrThermostatClusterScheduleTypeStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterScheduleTypeStruct (mkSelector "setScheduleTypeFeatures:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScheduleTypeFeatures mtrThermostatClusterScheduleTypeStruct value =
+  sendMessage mtrThermostatClusterScheduleTypeStruct setScheduleTypeFeaturesSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @systemMode@
-systemModeSelector :: Selector
+systemModeSelector :: Selector '[] (Id NSNumber)
 systemModeSelector = mkSelector "systemMode"
 
 -- | @Selector@ for @setSystemMode:@
-setSystemModeSelector :: Selector
+setSystemModeSelector :: Selector '[Id NSNumber] ()
 setSystemModeSelector = mkSelector "setSystemMode:"
 
 -- | @Selector@ for @numberOfSchedules@
-numberOfSchedulesSelector :: Selector
+numberOfSchedulesSelector :: Selector '[] (Id NSNumber)
 numberOfSchedulesSelector = mkSelector "numberOfSchedules"
 
 -- | @Selector@ for @setNumberOfSchedules:@
-setNumberOfSchedulesSelector :: Selector
+setNumberOfSchedulesSelector :: Selector '[Id NSNumber] ()
 setNumberOfSchedulesSelector = mkSelector "setNumberOfSchedules:"
 
 -- | @Selector@ for @scheduleTypeFeatures@
-scheduleTypeFeaturesSelector :: Selector
+scheduleTypeFeaturesSelector :: Selector '[] (Id NSNumber)
 scheduleTypeFeaturesSelector = mkSelector "scheduleTypeFeatures"
 
 -- | @Selector@ for @setScheduleTypeFeatures:@
-setScheduleTypeFeaturesSelector :: Selector
+setScheduleTypeFeaturesSelector :: Selector '[Id NSNumber] ()
 setScheduleTypeFeaturesSelector = mkSelector "setScheduleTypeFeatures:"
 

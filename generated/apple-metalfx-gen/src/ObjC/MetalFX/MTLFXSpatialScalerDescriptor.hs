@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,24 +28,24 @@ module ObjC.MetalFX.MTLFXSpatialScalerDescriptor
   , setOutputHeight
   , colorProcessingMode
   , setColorProcessingMode
+  , colorProcessingModeSelector
+  , colorTextureFormatSelector
+  , inputHeightSelector
+  , inputWidthSelector
   , newSpatialScalerWithDeviceSelector
   , newSpatialScalerWithDevice_compilerSelector
-  , supportsMetal4FXSelector
-  , supportsDeviceSelector
-  , colorTextureFormatSelector
-  , setColorTextureFormatSelector
-  , outputTextureFormatSelector
-  , setOutputTextureFormatSelector
-  , inputWidthSelector
-  , setInputWidthSelector
-  , inputHeightSelector
-  , setInputHeightSelector
-  , outputWidthSelector
-  , setOutputWidthSelector
   , outputHeightSelector
-  , setOutputHeightSelector
-  , colorProcessingModeSelector
+  , outputTextureFormatSelector
+  , outputWidthSelector
   , setColorProcessingModeSelector
+  , setColorTextureFormatSelector
+  , setInputHeightSelector
+  , setInputWidthSelector
+  , setOutputHeightSelector
+  , setOutputTextureFormatSelector
+  , setOutputWidthSelector
+  , supportsDeviceSelector
+  , supportsMetal4FXSelector
 
   -- * Enum types
   , MTLFXSpatialScalerColorProcessingMode(MTLFXSpatialScalerColorProcessingMode)
@@ -54,15 +55,11 @@ module ObjC.MetalFX.MTLFXSpatialScalerDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -76,8 +73,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- newSpatialScalerWithDevice:@
 newSpatialScalerWithDevice :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> RawId -> IO RawId
-newSpatialScalerWithDevice mtlfxSpatialScalerDescriptor  device =
-    fmap (RawId . castPtr) $ sendMsg mtlfxSpatialScalerDescriptor (mkSelector "newSpatialScalerWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())]
+newSpatialScalerWithDevice mtlfxSpatialScalerDescriptor device =
+  sendOwnedMessage mtlfxSpatialScalerDescriptor newSpatialScalerWithDeviceSelector device
 
 -- | Creates a spatial scaler instance for a Metal device.
 --
@@ -85,8 +82,8 @@ newSpatialScalerWithDevice mtlfxSpatialScalerDescriptor  device =
 --
 -- ObjC selector: @- newSpatialScalerWithDevice:compiler:@
 newSpatialScalerWithDevice_compiler :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> RawId -> RawId -> IO RawId
-newSpatialScalerWithDevice_compiler mtlfxSpatialScalerDescriptor  device compiler =
-    fmap (RawId . castPtr) $ sendMsg mtlfxSpatialScalerDescriptor (mkSelector "newSpatialScalerWithDevice:compiler:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId compiler) :: Ptr ())]
+newSpatialScalerWithDevice_compiler mtlfxSpatialScalerDescriptor device compiler =
+  sendOwnedMessage mtlfxSpatialScalerDescriptor newSpatialScalerWithDevice_compilerSelector device compiler
 
 -- | Queries whether a Metal device supports spatial scaling compatible with Metal 4.
 --
@@ -99,7 +96,7 @@ supportsMetal4FX :: RawId -> IO Bool
 supportsMetal4FX device =
   do
     cls' <- getRequiredClass "MTLFXSpatialScalerDescriptor"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsMetal4FX:") retCULong [argPtr (castPtr (unRawId device) :: Ptr ())]
+    sendClassMessage cls' supportsMetal4FXSelector device
 
 -- | Returns a Boolean value that indicates whether the spatial scaler works with a GPU.
 --
@@ -112,91 +109,91 @@ supportsDevice :: RawId -> IO Bool
 supportsDevice device =
   do
     cls' <- getRequiredClass "MTLFXSpatialScalerDescriptor"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsDevice:") retCULong [argPtr (castPtr (unRawId device) :: Ptr ())]
+    sendClassMessage cls' supportsDeviceSelector device
 
 -- | The pixel format of the input color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- colorTextureFormat@
 colorTextureFormat :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> IO CInt
-colorTextureFormat mtlfxSpatialScalerDescriptor  =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "colorTextureFormat") retCInt []
+colorTextureFormat mtlfxSpatialScalerDescriptor =
+  sendMessage mtlfxSpatialScalerDescriptor colorTextureFormatSelector
 
 -- | The pixel format of the input color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- setColorTextureFormat:@
 setColorTextureFormat :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> CInt -> IO ()
-setColorTextureFormat mtlfxSpatialScalerDescriptor  value =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "setColorTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setColorTextureFormat mtlfxSpatialScalerDescriptor value =
+  sendMessage mtlfxSpatialScalerDescriptor setColorTextureFormatSelector value
 
 -- | The pixel format of the output texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- outputTextureFormat@
 outputTextureFormat :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> IO CInt
-outputTextureFormat mtlfxSpatialScalerDescriptor  =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "outputTextureFormat") retCInt []
+outputTextureFormat mtlfxSpatialScalerDescriptor =
+  sendMessage mtlfxSpatialScalerDescriptor outputTextureFormatSelector
 
 -- | The pixel format of the output texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- setOutputTextureFormat:@
 setOutputTextureFormat :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> CInt -> IO ()
-setOutputTextureFormat mtlfxSpatialScalerDescriptor  value =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "setOutputTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setOutputTextureFormat mtlfxSpatialScalerDescriptor value =
+  sendMessage mtlfxSpatialScalerDescriptor setOutputTextureFormatSelector value
 
 -- | The width of the input color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- inputWidth@
 inputWidth :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> IO CULong
-inputWidth mtlfxSpatialScalerDescriptor  =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "inputWidth") retCULong []
+inputWidth mtlfxSpatialScalerDescriptor =
+  sendMessage mtlfxSpatialScalerDescriptor inputWidthSelector
 
 -- | The width of the input color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- setInputWidth:@
 setInputWidth :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> CULong -> IO ()
-setInputWidth mtlfxSpatialScalerDescriptor  value =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "setInputWidth:") retVoid [argCULong value]
+setInputWidth mtlfxSpatialScalerDescriptor value =
+  sendMessage mtlfxSpatialScalerDescriptor setInputWidthSelector value
 
 -- | The height of the input color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- inputHeight@
 inputHeight :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> IO CULong
-inputHeight mtlfxSpatialScalerDescriptor  =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "inputHeight") retCULong []
+inputHeight mtlfxSpatialScalerDescriptor =
+  sendMessage mtlfxSpatialScalerDescriptor inputHeightSelector
 
 -- | The height of the input color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- setInputHeight:@
 setInputHeight :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> CULong -> IO ()
-setInputHeight mtlfxSpatialScalerDescriptor  value =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "setInputHeight:") retVoid [argCULong value]
+setInputHeight mtlfxSpatialScalerDescriptor value =
+  sendMessage mtlfxSpatialScalerDescriptor setInputHeightSelector value
 
 -- | The width of the output color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- outputWidth@
 outputWidth :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> IO CULong
-outputWidth mtlfxSpatialScalerDescriptor  =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "outputWidth") retCULong []
+outputWidth mtlfxSpatialScalerDescriptor =
+  sendMessage mtlfxSpatialScalerDescriptor outputWidthSelector
 
 -- | The width of the output color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- setOutputWidth:@
 setOutputWidth :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> CULong -> IO ()
-setOutputWidth mtlfxSpatialScalerDescriptor  value =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "setOutputWidth:") retVoid [argCULong value]
+setOutputWidth mtlfxSpatialScalerDescriptor value =
+  sendMessage mtlfxSpatialScalerDescriptor setOutputWidthSelector value
 
 -- | The height of the output color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- outputHeight@
 outputHeight :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> IO CULong
-outputHeight mtlfxSpatialScalerDescriptor  =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "outputHeight") retCULong []
+outputHeight mtlfxSpatialScalerDescriptor =
+  sendMessage mtlfxSpatialScalerDescriptor outputHeightSelector
 
 -- | The height of the output color texture for the spatial scaler you create with this descriptor.
 --
 -- ObjC selector: @- setOutputHeight:@
 setOutputHeight :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> CULong -> IO ()
-setOutputHeight mtlfxSpatialScalerDescriptor  value =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "setOutputHeight:") retVoid [argCULong value]
+setOutputHeight mtlfxSpatialScalerDescriptor value =
+  sendMessage mtlfxSpatialScalerDescriptor setOutputHeightSelector value
 
 -- | The color space of the input color texture for the spatial scaler you create with this descriptor.
 --
@@ -204,8 +201,8 @@ setOutputHeight mtlfxSpatialScalerDescriptor  value =
 --
 -- ObjC selector: @- colorProcessingMode@
 colorProcessingMode :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> IO MTLFXSpatialScalerColorProcessingMode
-colorProcessingMode mtlfxSpatialScalerDescriptor  =
-    fmap (coerce :: CLong -> MTLFXSpatialScalerColorProcessingMode) $ sendMsg mtlfxSpatialScalerDescriptor (mkSelector "colorProcessingMode") retCLong []
+colorProcessingMode mtlfxSpatialScalerDescriptor =
+  sendMessage mtlfxSpatialScalerDescriptor colorProcessingModeSelector
 
 -- | The color space of the input color texture for the spatial scaler you create with this descriptor.
 --
@@ -213,82 +210,82 @@ colorProcessingMode mtlfxSpatialScalerDescriptor  =
 --
 -- ObjC selector: @- setColorProcessingMode:@
 setColorProcessingMode :: IsMTLFXSpatialScalerDescriptor mtlfxSpatialScalerDescriptor => mtlfxSpatialScalerDescriptor -> MTLFXSpatialScalerColorProcessingMode -> IO ()
-setColorProcessingMode mtlfxSpatialScalerDescriptor  value =
-    sendMsg mtlfxSpatialScalerDescriptor (mkSelector "setColorProcessingMode:") retVoid [argCLong (coerce value)]
+setColorProcessingMode mtlfxSpatialScalerDescriptor value =
+  sendMessage mtlfxSpatialScalerDescriptor setColorProcessingModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newSpatialScalerWithDevice:@
-newSpatialScalerWithDeviceSelector :: Selector
+newSpatialScalerWithDeviceSelector :: Selector '[RawId] RawId
 newSpatialScalerWithDeviceSelector = mkSelector "newSpatialScalerWithDevice:"
 
 -- | @Selector@ for @newSpatialScalerWithDevice:compiler:@
-newSpatialScalerWithDevice_compilerSelector :: Selector
+newSpatialScalerWithDevice_compilerSelector :: Selector '[RawId, RawId] RawId
 newSpatialScalerWithDevice_compilerSelector = mkSelector "newSpatialScalerWithDevice:compiler:"
 
 -- | @Selector@ for @supportsMetal4FX:@
-supportsMetal4FXSelector :: Selector
+supportsMetal4FXSelector :: Selector '[RawId] Bool
 supportsMetal4FXSelector = mkSelector "supportsMetal4FX:"
 
 -- | @Selector@ for @supportsDevice:@
-supportsDeviceSelector :: Selector
+supportsDeviceSelector :: Selector '[RawId] Bool
 supportsDeviceSelector = mkSelector "supportsDevice:"
 
 -- | @Selector@ for @colorTextureFormat@
-colorTextureFormatSelector :: Selector
+colorTextureFormatSelector :: Selector '[] CInt
 colorTextureFormatSelector = mkSelector "colorTextureFormat"
 
 -- | @Selector@ for @setColorTextureFormat:@
-setColorTextureFormatSelector :: Selector
+setColorTextureFormatSelector :: Selector '[CInt] ()
 setColorTextureFormatSelector = mkSelector "setColorTextureFormat:"
 
 -- | @Selector@ for @outputTextureFormat@
-outputTextureFormatSelector :: Selector
+outputTextureFormatSelector :: Selector '[] CInt
 outputTextureFormatSelector = mkSelector "outputTextureFormat"
 
 -- | @Selector@ for @setOutputTextureFormat:@
-setOutputTextureFormatSelector :: Selector
+setOutputTextureFormatSelector :: Selector '[CInt] ()
 setOutputTextureFormatSelector = mkSelector "setOutputTextureFormat:"
 
 -- | @Selector@ for @inputWidth@
-inputWidthSelector :: Selector
+inputWidthSelector :: Selector '[] CULong
 inputWidthSelector = mkSelector "inputWidth"
 
 -- | @Selector@ for @setInputWidth:@
-setInputWidthSelector :: Selector
+setInputWidthSelector :: Selector '[CULong] ()
 setInputWidthSelector = mkSelector "setInputWidth:"
 
 -- | @Selector@ for @inputHeight@
-inputHeightSelector :: Selector
+inputHeightSelector :: Selector '[] CULong
 inputHeightSelector = mkSelector "inputHeight"
 
 -- | @Selector@ for @setInputHeight:@
-setInputHeightSelector :: Selector
+setInputHeightSelector :: Selector '[CULong] ()
 setInputHeightSelector = mkSelector "setInputHeight:"
 
 -- | @Selector@ for @outputWidth@
-outputWidthSelector :: Selector
+outputWidthSelector :: Selector '[] CULong
 outputWidthSelector = mkSelector "outputWidth"
 
 -- | @Selector@ for @setOutputWidth:@
-setOutputWidthSelector :: Selector
+setOutputWidthSelector :: Selector '[CULong] ()
 setOutputWidthSelector = mkSelector "setOutputWidth:"
 
 -- | @Selector@ for @outputHeight@
-outputHeightSelector :: Selector
+outputHeightSelector :: Selector '[] CULong
 outputHeightSelector = mkSelector "outputHeight"
 
 -- | @Selector@ for @setOutputHeight:@
-setOutputHeightSelector :: Selector
+setOutputHeightSelector :: Selector '[CULong] ()
 setOutputHeightSelector = mkSelector "setOutputHeight:"
 
 -- | @Selector@ for @colorProcessingMode@
-colorProcessingModeSelector :: Selector
+colorProcessingModeSelector :: Selector '[] MTLFXSpatialScalerColorProcessingMode
 colorProcessingModeSelector = mkSelector "colorProcessingMode"
 
 -- | @Selector@ for @setColorProcessingMode:@
-setColorProcessingModeSelector :: Selector
+setColorProcessingModeSelector :: Selector '[MTLFXSpatialScalerColorProcessingMode] ()
 setColorProcessingModeSelector = mkSelector "setColorProcessingMode:"
 

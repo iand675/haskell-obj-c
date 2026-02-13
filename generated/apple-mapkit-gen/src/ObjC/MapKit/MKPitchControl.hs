@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.MapKit.MKPitchControl
   , pitchControlWithMapView
   , mapView
   , setMapView
-  , pitchControlWithMapViewSelector
   , mapViewSelector
+  , pitchControlWithMapViewSelector
   , setMapViewSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,33 +34,31 @@ pitchControlWithMapView :: IsMKMapView mapView => mapView -> IO (Id MKPitchContr
 pitchControlWithMapView mapView =
   do
     cls' <- getRequiredClass "MKPitchControl"
-    withObjCPtr mapView $ \raw_mapView ->
-      sendClassMsg cls' (mkSelector "pitchControlWithMapView:") (retPtr retVoid) [argPtr (castPtr raw_mapView :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pitchControlWithMapViewSelector (toMKMapView mapView)
 
 -- | @- mapView@
 mapView :: IsMKPitchControl mkPitchControl => mkPitchControl -> IO (Id MKMapView)
-mapView mkPitchControl  =
-    sendMsg mkPitchControl (mkSelector "mapView") (retPtr retVoid) [] >>= retainedObject . castPtr
+mapView mkPitchControl =
+  sendMessage mkPitchControl mapViewSelector
 
 -- | @- setMapView:@
 setMapView :: (IsMKPitchControl mkPitchControl, IsMKMapView value) => mkPitchControl -> value -> IO ()
-setMapView mkPitchControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkPitchControl (mkSelector "setMapView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMapView mkPitchControl value =
+  sendMessage mkPitchControl setMapViewSelector (toMKMapView value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pitchControlWithMapView:@
-pitchControlWithMapViewSelector :: Selector
+pitchControlWithMapViewSelector :: Selector '[Id MKMapView] (Id MKPitchControl)
 pitchControlWithMapViewSelector = mkSelector "pitchControlWithMapView:"
 
 -- | @Selector@ for @mapView@
-mapViewSelector :: Selector
+mapViewSelector :: Selector '[] (Id MKMapView)
 mapViewSelector = mkSelector "mapView"
 
 -- | @Selector@ for @setMapView:@
-setMapViewSelector :: Selector
+setMapViewSelector :: Selector '[Id MKMapView] ()
 setMapViewSelector = mkSelector "setMapView:"
 

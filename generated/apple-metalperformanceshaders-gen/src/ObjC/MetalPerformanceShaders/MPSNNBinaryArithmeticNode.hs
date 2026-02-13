@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,48 +38,44 @@ module ObjC.MetalPerformanceShaders.MPSNNBinaryArithmeticNode
   , setMinimumValue
   , maximumValue
   , setMaximumValue
-  , nodeWithSourcesSelector
-  , nodeWithLeftSource_rightSourceSelector
-  , initWithSourcesSelector
-  , initWithLeftSource_rightSourceSelector
+  , biasSelector
   , gradientClassSelector
   , gradientFilterWithSourcesSelector
   , gradientFiltersWithSourcesSelector
-  , primaryScaleSelector
-  , setPrimaryScaleSelector
-  , secondaryScaleSelector
-  , setSecondaryScaleSelector
-  , biasSelector
-  , setBiasSelector
-  , primaryStrideInPixelsXSelector
-  , setPrimaryStrideInPixelsXSelector
-  , primaryStrideInPixelsYSelector
-  , setPrimaryStrideInPixelsYSelector
-  , primaryStrideInFeatureChannelsSelector
-  , setPrimaryStrideInFeatureChannelsSelector
-  , secondaryStrideInPixelsXSelector
-  , setSecondaryStrideInPixelsXSelector
-  , secondaryStrideInPixelsYSelector
-  , setSecondaryStrideInPixelsYSelector
-  , secondaryStrideInFeatureChannelsSelector
-  , setSecondaryStrideInFeatureChannelsSelector
-  , minimumValueSelector
-  , setMinimumValueSelector
+  , initWithLeftSource_rightSourceSelector
+  , initWithSourcesSelector
   , maximumValueSelector
+  , minimumValueSelector
+  , nodeWithLeftSource_rightSourceSelector
+  , nodeWithSourcesSelector
+  , primaryScaleSelector
+  , primaryStrideInFeatureChannelsSelector
+  , primaryStrideInPixelsXSelector
+  , primaryStrideInPixelsYSelector
+  , secondaryScaleSelector
+  , secondaryStrideInFeatureChannelsSelector
+  , secondaryStrideInPixelsXSelector
+  , secondaryStrideInPixelsYSelector
+  , setBiasSelector
   , setMaximumValueSelector
+  , setMinimumValueSelector
+  , setPrimaryScaleSelector
+  , setPrimaryStrideInFeatureChannelsSelector
+  , setPrimaryStrideInPixelsXSelector
+  , setPrimaryStrideInPixelsYSelector
+  , setSecondaryScaleSelector
+  , setSecondaryStrideInFeatureChannelsSelector
+  , setSecondaryStrideInPixelsXSelector
+  , setSecondaryStrideInPixelsYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -94,8 +91,7 @@ nodeWithSources :: IsNSArray sourceNodes => sourceNodes -> IO (Id MPSNNBinaryAri
 nodeWithSources sourceNodes =
   do
     cls' <- getRequiredClass "MPSNNBinaryArithmeticNode"
-    withObjCPtr sourceNodes $ \raw_sourceNodes ->
-      sendClassMsg cls' (mkSelector "nodeWithSources:") (retPtr retVoid) [argPtr (castPtr raw_sourceNodes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourcesSelector (toNSArray sourceNodes)
 
 -- | create an autoreleased arithemtic node with two sources
 --
@@ -108,9 +104,7 @@ nodeWithLeftSource_rightSource :: (IsMPSNNImageNode left, IsMPSNNImageNode right
 nodeWithLeftSource_rightSource left right =
   do
     cls' <- getRequiredClass "MPSNNBinaryArithmeticNode"
-    withObjCPtr left $ \raw_left ->
-      withObjCPtr right $ \raw_right ->
-        sendClassMsg cls' (mkSelector "nodeWithLeftSource:rightSource:") (retPtr retVoid) [argPtr (castPtr raw_left :: Ptr ()), argPtr (castPtr raw_right :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithLeftSource_rightSourceSelector (toMPSNNImageNode left) (toMPSNNImageNode right)
 
 -- | init an arithemtic node with an array of sources
 --
@@ -118,9 +112,8 @@ nodeWithLeftSource_rightSource left right =
 --
 -- ObjC selector: @- initWithSources:@
 initWithSources :: (IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode, IsNSArray sourceNodes) => mpsnnBinaryArithmeticNode -> sourceNodes -> IO (Id MPSNNBinaryArithmeticNode)
-initWithSources mpsnnBinaryArithmeticNode  sourceNodes =
-  withObjCPtr sourceNodes $ \raw_sourceNodes ->
-      sendMsg mpsnnBinaryArithmeticNode (mkSelector "initWithSources:") (retPtr retVoid) [argPtr (castPtr raw_sourceNodes :: Ptr ())] >>= ownedObject . castPtr
+initWithSources mpsnnBinaryArithmeticNode sourceNodes =
+  sendOwnedMessage mpsnnBinaryArithmeticNode initWithSourcesSelector (toNSArray sourceNodes)
 
 -- | init an arithemtic node with two sources
 --
@@ -130,21 +123,18 @@ initWithSources mpsnnBinaryArithmeticNode  sourceNodes =
 --
 -- ObjC selector: @- initWithLeftSource:rightSource:@
 initWithLeftSource_rightSource :: (IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode, IsMPSNNImageNode left, IsMPSNNImageNode right) => mpsnnBinaryArithmeticNode -> left -> right -> IO (Id MPSNNBinaryArithmeticNode)
-initWithLeftSource_rightSource mpsnnBinaryArithmeticNode  left right =
-  withObjCPtr left $ \raw_left ->
-    withObjCPtr right $ \raw_right ->
-        sendMsg mpsnnBinaryArithmeticNode (mkSelector "initWithLeftSource:rightSource:") (retPtr retVoid) [argPtr (castPtr raw_left :: Ptr ()), argPtr (castPtr raw_right :: Ptr ())] >>= ownedObject . castPtr
+initWithLeftSource_rightSource mpsnnBinaryArithmeticNode left right =
+  sendOwnedMessage mpsnnBinaryArithmeticNode initWithLeftSource_rightSourceSelector (toMPSNNImageNode left) (toMPSNNImageNode right)
 
 -- | @- gradientClass@
 gradientClass :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO Class
-gradientClass mpsnnBinaryArithmeticNode  =
-    fmap (Class . castPtr) $ sendMsg mpsnnBinaryArithmeticNode (mkSelector "gradientClass") (retPtr retVoid) []
+gradientClass mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode gradientClassSelector
 
 -- | @- gradientFilterWithSources:@
 gradientFilterWithSources :: (IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode, IsNSArray gradientImages) => mpsnnBinaryArithmeticNode -> gradientImages -> IO (Id MPSNNGradientFilterNode)
-gradientFilterWithSources mpsnnBinaryArithmeticNode  gradientImages =
-  withObjCPtr gradientImages $ \raw_gradientImages ->
-      sendMsg mpsnnBinaryArithmeticNode (mkSelector "gradientFilterWithSources:") (retPtr retVoid) [argPtr (castPtr raw_gradientImages :: Ptr ())] >>= retainedObject . castPtr
+gradientFilterWithSources mpsnnBinaryArithmeticNode gradientImages =
+  sendMessage mpsnnBinaryArithmeticNode gradientFilterWithSourcesSelector (toNSArray gradientImages)
 
 -- | create new arithmetic gradient nodes
 --
@@ -152,237 +142,236 @@ gradientFilterWithSources mpsnnBinaryArithmeticNode  gradientImages =
 --
 -- ObjC selector: @- gradientFiltersWithSources:@
 gradientFiltersWithSources :: (IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode, IsNSArray gradientImages) => mpsnnBinaryArithmeticNode -> gradientImages -> IO (Id NSArray)
-gradientFiltersWithSources mpsnnBinaryArithmeticNode  gradientImages =
-  withObjCPtr gradientImages $ \raw_gradientImages ->
-      sendMsg mpsnnBinaryArithmeticNode (mkSelector "gradientFiltersWithSources:") (retPtr retVoid) [argPtr (castPtr raw_gradientImages :: Ptr ())] >>= retainedObject . castPtr
+gradientFiltersWithSources mpsnnBinaryArithmeticNode gradientImages =
+  sendMessage mpsnnBinaryArithmeticNode gradientFiltersWithSourcesSelector (toNSArray gradientImages)
 
 -- | @- primaryScale@
 primaryScale :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CFloat
-primaryScale mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "primaryScale") retCFloat []
+primaryScale mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode primaryScaleSelector
 
 -- | @- setPrimaryScale:@
 setPrimaryScale :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CFloat -> IO ()
-setPrimaryScale mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setPrimaryScale:") retVoid [argCFloat value]
+setPrimaryScale mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setPrimaryScaleSelector value
 
 -- | @- secondaryScale@
 secondaryScale :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CFloat
-secondaryScale mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "secondaryScale") retCFloat []
+secondaryScale mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode secondaryScaleSelector
 
 -- | @- setSecondaryScale:@
 setSecondaryScale :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CFloat -> IO ()
-setSecondaryScale mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setSecondaryScale:") retVoid [argCFloat value]
+setSecondaryScale mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setSecondaryScaleSelector value
 
 -- | @- bias@
 bias :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CFloat
-bias mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "bias") retCFloat []
+bias mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode biasSelector
 
 -- | @- setBias:@
 setBias :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CFloat -> IO ()
-setBias mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setBias:") retVoid [argCFloat value]
+setBias mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setBiasSelector value
 
 -- | @- primaryStrideInPixelsX@
 primaryStrideInPixelsX :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CULong
-primaryStrideInPixelsX mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "primaryStrideInPixelsX") retCULong []
+primaryStrideInPixelsX mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode primaryStrideInPixelsXSelector
 
 -- | @- setPrimaryStrideInPixelsX:@
 setPrimaryStrideInPixelsX :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CULong -> IO ()
-setPrimaryStrideInPixelsX mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setPrimaryStrideInPixelsX:") retVoid [argCULong value]
+setPrimaryStrideInPixelsX mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setPrimaryStrideInPixelsXSelector value
 
 -- | @- primaryStrideInPixelsY@
 primaryStrideInPixelsY :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CULong
-primaryStrideInPixelsY mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "primaryStrideInPixelsY") retCULong []
+primaryStrideInPixelsY mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode primaryStrideInPixelsYSelector
 
 -- | @- setPrimaryStrideInPixelsY:@
 setPrimaryStrideInPixelsY :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CULong -> IO ()
-setPrimaryStrideInPixelsY mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setPrimaryStrideInPixelsY:") retVoid [argCULong value]
+setPrimaryStrideInPixelsY mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setPrimaryStrideInPixelsYSelector value
 
 -- | @- primaryStrideInFeatureChannels@
 primaryStrideInFeatureChannels :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CULong
-primaryStrideInFeatureChannels mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "primaryStrideInFeatureChannels") retCULong []
+primaryStrideInFeatureChannels mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode primaryStrideInFeatureChannelsSelector
 
 -- | @- setPrimaryStrideInFeatureChannels:@
 setPrimaryStrideInFeatureChannels :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CULong -> IO ()
-setPrimaryStrideInFeatureChannels mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setPrimaryStrideInFeatureChannels:") retVoid [argCULong value]
+setPrimaryStrideInFeatureChannels mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setPrimaryStrideInFeatureChannelsSelector value
 
 -- | @- secondaryStrideInPixelsX@
 secondaryStrideInPixelsX :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CULong
-secondaryStrideInPixelsX mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "secondaryStrideInPixelsX") retCULong []
+secondaryStrideInPixelsX mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode secondaryStrideInPixelsXSelector
 
 -- | @- setSecondaryStrideInPixelsX:@
 setSecondaryStrideInPixelsX :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CULong -> IO ()
-setSecondaryStrideInPixelsX mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setSecondaryStrideInPixelsX:") retVoid [argCULong value]
+setSecondaryStrideInPixelsX mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setSecondaryStrideInPixelsXSelector value
 
 -- | @- secondaryStrideInPixelsY@
 secondaryStrideInPixelsY :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CULong
-secondaryStrideInPixelsY mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "secondaryStrideInPixelsY") retCULong []
+secondaryStrideInPixelsY mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode secondaryStrideInPixelsYSelector
 
 -- | @- setSecondaryStrideInPixelsY:@
 setSecondaryStrideInPixelsY :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CULong -> IO ()
-setSecondaryStrideInPixelsY mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setSecondaryStrideInPixelsY:") retVoid [argCULong value]
+setSecondaryStrideInPixelsY mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setSecondaryStrideInPixelsYSelector value
 
 -- | @- secondaryStrideInFeatureChannels@
 secondaryStrideInFeatureChannels :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CULong
-secondaryStrideInFeatureChannels mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "secondaryStrideInFeatureChannels") retCULong []
+secondaryStrideInFeatureChannels mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode secondaryStrideInFeatureChannelsSelector
 
 -- | @- setSecondaryStrideInFeatureChannels:@
 setSecondaryStrideInFeatureChannels :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CULong -> IO ()
-setSecondaryStrideInFeatureChannels mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setSecondaryStrideInFeatureChannels:") retVoid [argCULong value]
+setSecondaryStrideInFeatureChannels mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setSecondaryStrideInFeatureChannelsSelector value
 
 -- | @- minimumValue@
 minimumValue :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CFloat
-minimumValue mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "minimumValue") retCFloat []
+minimumValue mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode minimumValueSelector
 
 -- | @- setMinimumValue:@
 setMinimumValue :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CFloat -> IO ()
-setMinimumValue mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setMinimumValue:") retVoid [argCFloat value]
+setMinimumValue mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setMinimumValueSelector value
 
 -- | @- maximumValue@
 maximumValue :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> IO CFloat
-maximumValue mpsnnBinaryArithmeticNode  =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "maximumValue") retCFloat []
+maximumValue mpsnnBinaryArithmeticNode =
+  sendMessage mpsnnBinaryArithmeticNode maximumValueSelector
 
 -- | @- setMaximumValue:@
 setMaximumValue :: IsMPSNNBinaryArithmeticNode mpsnnBinaryArithmeticNode => mpsnnBinaryArithmeticNode -> CFloat -> IO ()
-setMaximumValue mpsnnBinaryArithmeticNode  value =
-    sendMsg mpsnnBinaryArithmeticNode (mkSelector "setMaximumValue:") retVoid [argCFloat value]
+setMaximumValue mpsnnBinaryArithmeticNode value =
+  sendMessage mpsnnBinaryArithmeticNode setMaximumValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSources:@
-nodeWithSourcesSelector :: Selector
+nodeWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNBinaryArithmeticNode)
 nodeWithSourcesSelector = mkSelector "nodeWithSources:"
 
 -- | @Selector@ for @nodeWithLeftSource:rightSource:@
-nodeWithLeftSource_rightSourceSelector :: Selector
+nodeWithLeftSource_rightSourceSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode] (Id MPSNNBinaryArithmeticNode)
 nodeWithLeftSource_rightSourceSelector = mkSelector "nodeWithLeftSource:rightSource:"
 
 -- | @Selector@ for @initWithSources:@
-initWithSourcesSelector :: Selector
+initWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNBinaryArithmeticNode)
 initWithSourcesSelector = mkSelector "initWithSources:"
 
 -- | @Selector@ for @initWithLeftSource:rightSource:@
-initWithLeftSource_rightSourceSelector :: Selector
+initWithLeftSource_rightSourceSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode] (Id MPSNNBinaryArithmeticNode)
 initWithLeftSource_rightSourceSelector = mkSelector "initWithLeftSource:rightSource:"
 
 -- | @Selector@ for @gradientClass@
-gradientClassSelector :: Selector
+gradientClassSelector :: Selector '[] Class
 gradientClassSelector = mkSelector "gradientClass"
 
 -- | @Selector@ for @gradientFilterWithSources:@
-gradientFilterWithSourcesSelector :: Selector
+gradientFilterWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNGradientFilterNode)
 gradientFilterWithSourcesSelector = mkSelector "gradientFilterWithSources:"
 
 -- | @Selector@ for @gradientFiltersWithSources:@
-gradientFiltersWithSourcesSelector :: Selector
+gradientFiltersWithSourcesSelector :: Selector '[Id NSArray] (Id NSArray)
 gradientFiltersWithSourcesSelector = mkSelector "gradientFiltersWithSources:"
 
 -- | @Selector@ for @primaryScale@
-primaryScaleSelector :: Selector
+primaryScaleSelector :: Selector '[] CFloat
 primaryScaleSelector = mkSelector "primaryScale"
 
 -- | @Selector@ for @setPrimaryScale:@
-setPrimaryScaleSelector :: Selector
+setPrimaryScaleSelector :: Selector '[CFloat] ()
 setPrimaryScaleSelector = mkSelector "setPrimaryScale:"
 
 -- | @Selector@ for @secondaryScale@
-secondaryScaleSelector :: Selector
+secondaryScaleSelector :: Selector '[] CFloat
 secondaryScaleSelector = mkSelector "secondaryScale"
 
 -- | @Selector@ for @setSecondaryScale:@
-setSecondaryScaleSelector :: Selector
+setSecondaryScaleSelector :: Selector '[CFloat] ()
 setSecondaryScaleSelector = mkSelector "setSecondaryScale:"
 
 -- | @Selector@ for @bias@
-biasSelector :: Selector
+biasSelector :: Selector '[] CFloat
 biasSelector = mkSelector "bias"
 
 -- | @Selector@ for @setBias:@
-setBiasSelector :: Selector
+setBiasSelector :: Selector '[CFloat] ()
 setBiasSelector = mkSelector "setBias:"
 
 -- | @Selector@ for @primaryStrideInPixelsX@
-primaryStrideInPixelsXSelector :: Selector
+primaryStrideInPixelsXSelector :: Selector '[] CULong
 primaryStrideInPixelsXSelector = mkSelector "primaryStrideInPixelsX"
 
 -- | @Selector@ for @setPrimaryStrideInPixelsX:@
-setPrimaryStrideInPixelsXSelector :: Selector
+setPrimaryStrideInPixelsXSelector :: Selector '[CULong] ()
 setPrimaryStrideInPixelsXSelector = mkSelector "setPrimaryStrideInPixelsX:"
 
 -- | @Selector@ for @primaryStrideInPixelsY@
-primaryStrideInPixelsYSelector :: Selector
+primaryStrideInPixelsYSelector :: Selector '[] CULong
 primaryStrideInPixelsYSelector = mkSelector "primaryStrideInPixelsY"
 
 -- | @Selector@ for @setPrimaryStrideInPixelsY:@
-setPrimaryStrideInPixelsYSelector :: Selector
+setPrimaryStrideInPixelsYSelector :: Selector '[CULong] ()
 setPrimaryStrideInPixelsYSelector = mkSelector "setPrimaryStrideInPixelsY:"
 
 -- | @Selector@ for @primaryStrideInFeatureChannels@
-primaryStrideInFeatureChannelsSelector :: Selector
+primaryStrideInFeatureChannelsSelector :: Selector '[] CULong
 primaryStrideInFeatureChannelsSelector = mkSelector "primaryStrideInFeatureChannels"
 
 -- | @Selector@ for @setPrimaryStrideInFeatureChannels:@
-setPrimaryStrideInFeatureChannelsSelector :: Selector
+setPrimaryStrideInFeatureChannelsSelector :: Selector '[CULong] ()
 setPrimaryStrideInFeatureChannelsSelector = mkSelector "setPrimaryStrideInFeatureChannels:"
 
 -- | @Selector@ for @secondaryStrideInPixelsX@
-secondaryStrideInPixelsXSelector :: Selector
+secondaryStrideInPixelsXSelector :: Selector '[] CULong
 secondaryStrideInPixelsXSelector = mkSelector "secondaryStrideInPixelsX"
 
 -- | @Selector@ for @setSecondaryStrideInPixelsX:@
-setSecondaryStrideInPixelsXSelector :: Selector
+setSecondaryStrideInPixelsXSelector :: Selector '[CULong] ()
 setSecondaryStrideInPixelsXSelector = mkSelector "setSecondaryStrideInPixelsX:"
 
 -- | @Selector@ for @secondaryStrideInPixelsY@
-secondaryStrideInPixelsYSelector :: Selector
+secondaryStrideInPixelsYSelector :: Selector '[] CULong
 secondaryStrideInPixelsYSelector = mkSelector "secondaryStrideInPixelsY"
 
 -- | @Selector@ for @setSecondaryStrideInPixelsY:@
-setSecondaryStrideInPixelsYSelector :: Selector
+setSecondaryStrideInPixelsYSelector :: Selector '[CULong] ()
 setSecondaryStrideInPixelsYSelector = mkSelector "setSecondaryStrideInPixelsY:"
 
 -- | @Selector@ for @secondaryStrideInFeatureChannels@
-secondaryStrideInFeatureChannelsSelector :: Selector
+secondaryStrideInFeatureChannelsSelector :: Selector '[] CULong
 secondaryStrideInFeatureChannelsSelector = mkSelector "secondaryStrideInFeatureChannels"
 
 -- | @Selector@ for @setSecondaryStrideInFeatureChannels:@
-setSecondaryStrideInFeatureChannelsSelector :: Selector
+setSecondaryStrideInFeatureChannelsSelector :: Selector '[CULong] ()
 setSecondaryStrideInFeatureChannelsSelector = mkSelector "setSecondaryStrideInFeatureChannels:"
 
 -- | @Selector@ for @minimumValue@
-minimumValueSelector :: Selector
+minimumValueSelector :: Selector '[] CFloat
 minimumValueSelector = mkSelector "minimumValue"
 
 -- | @Selector@ for @setMinimumValue:@
-setMinimumValueSelector :: Selector
+setMinimumValueSelector :: Selector '[CFloat] ()
 setMinimumValueSelector = mkSelector "setMinimumValue:"
 
 -- | @Selector@ for @maximumValue@
-maximumValueSelector :: Selector
+maximumValueSelector :: Selector '[] CFloat
 maximumValueSelector = mkSelector "maximumValue"
 
 -- | @Selector@ for @setMaximumValue:@
-setMaximumValueSelector :: Selector
+setMaximumValueSelector :: Selector '[CFloat] ()
 setMaximumValueSelector = mkSelector "setMaximumValue:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRDeviceEnergyManagementClusterPowerAdjustEndEvent
   , energyUse
   , setEnergyUse
   , causeSelector
-  , setCauseSelector
   , durationSelector
-  , setDurationSelector
   , energyUseSelector
+  , setCauseSelector
+  , setDurationSelector
   , setEnergyUseSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cause@
 cause :: IsMTRDeviceEnergyManagementClusterPowerAdjustEndEvent mtrDeviceEnergyManagementClusterPowerAdjustEndEvent => mtrDeviceEnergyManagementClusterPowerAdjustEndEvent -> IO (Id NSNumber)
-cause mtrDeviceEnergyManagementClusterPowerAdjustEndEvent  =
-    sendMsg mtrDeviceEnergyManagementClusterPowerAdjustEndEvent (mkSelector "cause") (retPtr retVoid) [] >>= retainedObject . castPtr
+cause mtrDeviceEnergyManagementClusterPowerAdjustEndEvent =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustEndEvent causeSelector
 
 -- | @- setCause:@
 setCause :: (IsMTRDeviceEnergyManagementClusterPowerAdjustEndEvent mtrDeviceEnergyManagementClusterPowerAdjustEndEvent, IsNSNumber value) => mtrDeviceEnergyManagementClusterPowerAdjustEndEvent -> value -> IO ()
-setCause mtrDeviceEnergyManagementClusterPowerAdjustEndEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterPowerAdjustEndEvent (mkSelector "setCause:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCause mtrDeviceEnergyManagementClusterPowerAdjustEndEvent value =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustEndEvent setCauseSelector (toNSNumber value)
 
 -- | @- duration@
 duration :: IsMTRDeviceEnergyManagementClusterPowerAdjustEndEvent mtrDeviceEnergyManagementClusterPowerAdjustEndEvent => mtrDeviceEnergyManagementClusterPowerAdjustEndEvent -> IO (Id NSNumber)
-duration mtrDeviceEnergyManagementClusterPowerAdjustEndEvent  =
-    sendMsg mtrDeviceEnergyManagementClusterPowerAdjustEndEvent (mkSelector "duration") (retPtr retVoid) [] >>= retainedObject . castPtr
+duration mtrDeviceEnergyManagementClusterPowerAdjustEndEvent =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustEndEvent durationSelector
 
 -- | @- setDuration:@
 setDuration :: (IsMTRDeviceEnergyManagementClusterPowerAdjustEndEvent mtrDeviceEnergyManagementClusterPowerAdjustEndEvent, IsNSNumber value) => mtrDeviceEnergyManagementClusterPowerAdjustEndEvent -> value -> IO ()
-setDuration mtrDeviceEnergyManagementClusterPowerAdjustEndEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterPowerAdjustEndEvent (mkSelector "setDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDuration mtrDeviceEnergyManagementClusterPowerAdjustEndEvent value =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustEndEvent setDurationSelector (toNSNumber value)
 
 -- | @- energyUse@
 energyUse :: IsMTRDeviceEnergyManagementClusterPowerAdjustEndEvent mtrDeviceEnergyManagementClusterPowerAdjustEndEvent => mtrDeviceEnergyManagementClusterPowerAdjustEndEvent -> IO (Id NSNumber)
-energyUse mtrDeviceEnergyManagementClusterPowerAdjustEndEvent  =
-    sendMsg mtrDeviceEnergyManagementClusterPowerAdjustEndEvent (mkSelector "energyUse") (retPtr retVoid) [] >>= retainedObject . castPtr
+energyUse mtrDeviceEnergyManagementClusterPowerAdjustEndEvent =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustEndEvent energyUseSelector
 
 -- | @- setEnergyUse:@
 setEnergyUse :: (IsMTRDeviceEnergyManagementClusterPowerAdjustEndEvent mtrDeviceEnergyManagementClusterPowerAdjustEndEvent, IsNSNumber value) => mtrDeviceEnergyManagementClusterPowerAdjustEndEvent -> value -> IO ()
-setEnergyUse mtrDeviceEnergyManagementClusterPowerAdjustEndEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterPowerAdjustEndEvent (mkSelector "setEnergyUse:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEnergyUse mtrDeviceEnergyManagementClusterPowerAdjustEndEvent value =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustEndEvent setEnergyUseSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cause@
-causeSelector :: Selector
+causeSelector :: Selector '[] (Id NSNumber)
 causeSelector = mkSelector "cause"
 
 -- | @Selector@ for @setCause:@
-setCauseSelector :: Selector
+setCauseSelector :: Selector '[Id NSNumber] ()
 setCauseSelector = mkSelector "setCause:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] (Id NSNumber)
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[Id NSNumber] ()
 setDurationSelector = mkSelector "setDuration:"
 
 -- | @Selector@ for @energyUse@
-energyUseSelector :: Selector
+energyUseSelector :: Selector '[] (Id NSNumber)
 energyUseSelector = mkSelector "energyUse"
 
 -- | @Selector@ for @setEnergyUse:@
-setEnergyUseSelector :: Selector
+setEnergyUseSelector :: Selector '[Id NSNumber] ()
 setEnergyUseSelector = mkSelector "setEnergyUse:"
 

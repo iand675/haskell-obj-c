@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayLUTDequantize
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,23 +36,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSNDArrayLUTDequantize mpsndArrayLUTDequantize => mpsndArrayLUTDequantize -> RawId -> IO (Id MPSNDArrayLUTDequantize)
-initWithDevice mpsndArrayLUTDequantize  device =
-    sendMsg mpsndArrayLUTDequantize (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsndArrayLUTDequantize device =
+  sendOwnedMessage mpsndArrayLUTDequantize initWithDeviceSelector device
 
 -- | @- initWithDevice:sourceCount:@
 initWithDevice_sourceCount :: IsMPSNDArrayLUTDequantize mpsndArrayLUTDequantize => mpsndArrayLUTDequantize -> RawId -> CULong -> IO (Id MPSNDArrayLUTDequantize)
-initWithDevice_sourceCount mpsndArrayLUTDequantize  device sourceCount =
-    sendMsg mpsndArrayLUTDequantize (mkSelector "initWithDevice:sourceCount:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong sourceCount] >>= ownedObject . castPtr
+initWithDevice_sourceCount mpsndArrayLUTDequantize device sourceCount =
+  sendOwnedMessage mpsndArrayLUTDequantize initWithDevice_sourceCountSelector device sourceCount
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNDArrayLUTDequantize)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:sourceCount:@
-initWithDevice_sourceCountSelector :: Selector
+initWithDevice_sourceCountSelector :: Selector '[RawId, CULong] (Id MPSNDArrayLUTDequantize)
 initWithDevice_sourceCountSelector = mkSelector "initWithDevice:sourceCount:"
 

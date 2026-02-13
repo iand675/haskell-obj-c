@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,23 +21,19 @@ module ObjC.Virtualization.VZFileHandleNetworkDeviceAttachment
   , fileHandle
   , maximumTransmissionUnit
   , setMaximumTransmissionUnit
-  , initWithFileHandleSelector
   , fileHandleSelector
+  , initWithFileHandleSelector
   , maximumTransmissionUnitSelector
   , setMaximumTransmissionUnitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,16 +46,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFileHandle:@
 initWithFileHandle :: (IsVZFileHandleNetworkDeviceAttachment vzFileHandleNetworkDeviceAttachment, IsNSFileHandle fileHandle) => vzFileHandleNetworkDeviceAttachment -> fileHandle -> IO (Id VZFileHandleNetworkDeviceAttachment)
-initWithFileHandle vzFileHandleNetworkDeviceAttachment  fileHandle =
-  withObjCPtr fileHandle $ \raw_fileHandle ->
-      sendMsg vzFileHandleNetworkDeviceAttachment (mkSelector "initWithFileHandle:") (retPtr retVoid) [argPtr (castPtr raw_fileHandle :: Ptr ())] >>= ownedObject . castPtr
+initWithFileHandle vzFileHandleNetworkDeviceAttachment fileHandle =
+  sendOwnedMessage vzFileHandleNetworkDeviceAttachment initWithFileHandleSelector (toNSFileHandle fileHandle)
 
 -- | The file handle associated with this attachment.
 --
 -- ObjC selector: @- fileHandle@
 fileHandle :: IsVZFileHandleNetworkDeviceAttachment vzFileHandleNetworkDeviceAttachment => vzFileHandleNetworkDeviceAttachment -> IO (Id NSFileHandle)
-fileHandle vzFileHandleNetworkDeviceAttachment  =
-    sendMsg vzFileHandleNetworkDeviceAttachment (mkSelector "fileHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileHandle vzFileHandleNetworkDeviceAttachment =
+  sendMessage vzFileHandleNetworkDeviceAttachment fileHandleSelector
 
 -- | The maximum transmission unit (MTU) associated with this attachment.
 --
@@ -68,8 +64,8 @@ fileHandle vzFileHandleNetworkDeviceAttachment  =
 --
 -- ObjC selector: @- maximumTransmissionUnit@
 maximumTransmissionUnit :: IsVZFileHandleNetworkDeviceAttachment vzFileHandleNetworkDeviceAttachment => vzFileHandleNetworkDeviceAttachment -> IO CLong
-maximumTransmissionUnit vzFileHandleNetworkDeviceAttachment  =
-    sendMsg vzFileHandleNetworkDeviceAttachment (mkSelector "maximumTransmissionUnit") retCLong []
+maximumTransmissionUnit vzFileHandleNetworkDeviceAttachment =
+  sendMessage vzFileHandleNetworkDeviceAttachment maximumTransmissionUnitSelector
 
 -- | The maximum transmission unit (MTU) associated with this attachment.
 --
@@ -79,26 +75,26 @@ maximumTransmissionUnit vzFileHandleNetworkDeviceAttachment  =
 --
 -- ObjC selector: @- setMaximumTransmissionUnit:@
 setMaximumTransmissionUnit :: IsVZFileHandleNetworkDeviceAttachment vzFileHandleNetworkDeviceAttachment => vzFileHandleNetworkDeviceAttachment -> CLong -> IO ()
-setMaximumTransmissionUnit vzFileHandleNetworkDeviceAttachment  value =
-    sendMsg vzFileHandleNetworkDeviceAttachment (mkSelector "setMaximumTransmissionUnit:") retVoid [argCLong value]
+setMaximumTransmissionUnit vzFileHandleNetworkDeviceAttachment value =
+  sendMessage vzFileHandleNetworkDeviceAttachment setMaximumTransmissionUnitSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFileHandle:@
-initWithFileHandleSelector :: Selector
+initWithFileHandleSelector :: Selector '[Id NSFileHandle] (Id VZFileHandleNetworkDeviceAttachment)
 initWithFileHandleSelector = mkSelector "initWithFileHandle:"
 
 -- | @Selector@ for @fileHandle@
-fileHandleSelector :: Selector
+fileHandleSelector :: Selector '[] (Id NSFileHandle)
 fileHandleSelector = mkSelector "fileHandle"
 
 -- | @Selector@ for @maximumTransmissionUnit@
-maximumTransmissionUnitSelector :: Selector
+maximumTransmissionUnitSelector :: Selector '[] CLong
 maximumTransmissionUnitSelector = mkSelector "maximumTransmissionUnit"
 
 -- | @Selector@ for @setMaximumTransmissionUnit:@
-setMaximumTransmissionUnitSelector :: Selector
+setMaximumTransmissionUnitSelector :: Selector '[CLong] ()
 setMaximumTransmissionUnitSelector = mkSelector "setMaximumTransmissionUnit:"
 

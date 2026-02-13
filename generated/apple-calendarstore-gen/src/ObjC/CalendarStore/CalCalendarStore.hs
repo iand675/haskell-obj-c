@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,36 +24,32 @@ module ObjC.CalendarStore.CalCalendarStore
   , taskPredicateWithUncompletedTasks
   , taskPredicateWithUncompletedTasksDueBefore_calendars
   , taskPredicateWithTasksCompletedSince_calendars
-  , defaultCalendarStoreSelector
-  , calendarsSelector
   , calendarWithUIDSelector
-  , saveCalendar_errorSelector
-  , removeCalendar_errorSelector
-  , eventsWithPredicateSelector
-  , eventWithUID_occurrenceSelector
-  , tasksWithPredicateSelector
-  , taskWithUIDSelector
-  , saveTask_errorSelector
-  , removeTask_errorSelector
-  , eventPredicateWithStartDate_endDate_calendarsSelector
+  , calendarsSelector
+  , defaultCalendarStoreSelector
   , eventPredicateWithStartDate_endDate_UID_calendarsSelector
+  , eventPredicateWithStartDate_endDate_calendarsSelector
+  , eventWithUID_occurrenceSelector
+  , eventsWithPredicateSelector
+  , removeCalendar_errorSelector
+  , removeTask_errorSelector
+  , saveCalendar_errorSelector
+  , saveTask_errorSelector
   , taskPredicateWithCalendarsSelector
-  , taskPredicateWithUncompletedTasksSelector
-  , taskPredicateWithUncompletedTasksDueBefore_calendarsSelector
   , taskPredicateWithTasksCompletedSince_calendarsSelector
+  , taskPredicateWithUncompletedTasksDueBefore_calendarsSelector
+  , taskPredicateWithUncompletedTasksSelector
+  , taskWithUIDSelector
+  , tasksWithPredicateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,196 +61,169 @@ defaultCalendarStore :: IO (Id CalCalendarStore)
 defaultCalendarStore  =
   do
     cls' <- getRequiredClass "CalCalendarStore"
-    sendClassMsg cls' (mkSelector "defaultCalendarStore") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultCalendarStoreSelector
 
 -- | @- calendars@
 calendars :: IsCalCalendarStore calCalendarStore => calCalendarStore -> IO (Id NSArray)
-calendars calCalendarStore  =
-    sendMsg calCalendarStore (mkSelector "calendars") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendars calCalendarStore =
+  sendMessage calCalendarStore calendarsSelector
 
 -- | @- calendarWithUID:@
 calendarWithUID :: (IsCalCalendarStore calCalendarStore, IsNSString uid) => calCalendarStore -> uid -> IO (Id CalCalendar)
-calendarWithUID calCalendarStore  uid =
-  withObjCPtr uid $ \raw_uid ->
-      sendMsg calCalendarStore (mkSelector "calendarWithUID:") (retPtr retVoid) [argPtr (castPtr raw_uid :: Ptr ())] >>= retainedObject . castPtr
+calendarWithUID calCalendarStore uid =
+  sendMessage calCalendarStore calendarWithUIDSelector (toNSString uid)
 
 -- | @- saveCalendar:error:@
 saveCalendar_error :: (IsCalCalendarStore calCalendarStore, IsCalCalendar calendar, IsNSError error_) => calCalendarStore -> calendar -> error_ -> IO Bool
-saveCalendar_error calCalendarStore  calendar error_ =
-  withObjCPtr calendar $ \raw_calendar ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg calCalendarStore (mkSelector "saveCalendar:error:") retCULong [argPtr (castPtr raw_calendar :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+saveCalendar_error calCalendarStore calendar error_ =
+  sendMessage calCalendarStore saveCalendar_errorSelector (toCalCalendar calendar) (toNSError error_)
 
 -- | @- removeCalendar:error:@
 removeCalendar_error :: (IsCalCalendarStore calCalendarStore, IsCalCalendar calendar, IsNSError error_) => calCalendarStore -> calendar -> error_ -> IO Bool
-removeCalendar_error calCalendarStore  calendar error_ =
-  withObjCPtr calendar $ \raw_calendar ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg calCalendarStore (mkSelector "removeCalendar:error:") retCULong [argPtr (castPtr raw_calendar :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+removeCalendar_error calCalendarStore calendar error_ =
+  sendMessage calCalendarStore removeCalendar_errorSelector (toCalCalendar calendar) (toNSError error_)
 
 -- | @- eventsWithPredicate:@
 eventsWithPredicate :: (IsCalCalendarStore calCalendarStore, IsNSPredicate predicate) => calCalendarStore -> predicate -> IO (Id NSArray)
-eventsWithPredicate calCalendarStore  predicate =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg calCalendarStore (mkSelector "eventsWithPredicate:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ())] >>= retainedObject . castPtr
+eventsWithPredicate calCalendarStore predicate =
+  sendMessage calCalendarStore eventsWithPredicateSelector (toNSPredicate predicate)
 
 -- | @- eventWithUID:occurrence:@
 eventWithUID_occurrence :: (IsCalCalendarStore calCalendarStore, IsNSString uid, IsNSDate date) => calCalendarStore -> uid -> date -> IO (Id CalEvent)
-eventWithUID_occurrence calCalendarStore  uid date =
-  withObjCPtr uid $ \raw_uid ->
-    withObjCPtr date $ \raw_date ->
-        sendMsg calCalendarStore (mkSelector "eventWithUID:occurrence:") (retPtr retVoid) [argPtr (castPtr raw_uid :: Ptr ()), argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+eventWithUID_occurrence calCalendarStore uid date =
+  sendMessage calCalendarStore eventWithUID_occurrenceSelector (toNSString uid) (toNSDate date)
 
 -- | @- tasksWithPredicate:@
 tasksWithPredicate :: (IsCalCalendarStore calCalendarStore, IsNSPredicate predicate) => calCalendarStore -> predicate -> IO (Id NSArray)
-tasksWithPredicate calCalendarStore  predicate =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg calCalendarStore (mkSelector "tasksWithPredicate:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ())] >>= retainedObject . castPtr
+tasksWithPredicate calCalendarStore predicate =
+  sendMessage calCalendarStore tasksWithPredicateSelector (toNSPredicate predicate)
 
 -- | @- taskWithUID:@
 taskWithUID :: (IsCalCalendarStore calCalendarStore, IsNSString uid) => calCalendarStore -> uid -> IO (Id CalTask)
-taskWithUID calCalendarStore  uid =
-  withObjCPtr uid $ \raw_uid ->
-      sendMsg calCalendarStore (mkSelector "taskWithUID:") (retPtr retVoid) [argPtr (castPtr raw_uid :: Ptr ())] >>= retainedObject . castPtr
+taskWithUID calCalendarStore uid =
+  sendMessage calCalendarStore taskWithUIDSelector (toNSString uid)
 
 -- | @- saveTask:error:@
 saveTask_error :: (IsCalCalendarStore calCalendarStore, IsCalTask task, IsNSError error_) => calCalendarStore -> task -> error_ -> IO Bool
-saveTask_error calCalendarStore  task error_ =
-  withObjCPtr task $ \raw_task ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg calCalendarStore (mkSelector "saveTask:error:") retCULong [argPtr (castPtr raw_task :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+saveTask_error calCalendarStore task error_ =
+  sendMessage calCalendarStore saveTask_errorSelector (toCalTask task) (toNSError error_)
 
 -- | @- removeTask:error:@
 removeTask_error :: (IsCalCalendarStore calCalendarStore, IsCalTask task, IsNSError error_) => calCalendarStore -> task -> error_ -> IO Bool
-removeTask_error calCalendarStore  task error_ =
-  withObjCPtr task $ \raw_task ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg calCalendarStore (mkSelector "removeTask:error:") retCULong [argPtr (castPtr raw_task :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+removeTask_error calCalendarStore task error_ =
+  sendMessage calCalendarStore removeTask_errorSelector (toCalTask task) (toNSError error_)
 
 -- | @+ eventPredicateWithStartDate:endDate:calendars:@
 eventPredicateWithStartDate_endDate_calendars :: (IsNSDate startDate, IsNSDate endDate, IsNSArray calendars) => startDate -> endDate -> calendars -> IO (Id NSPredicate)
 eventPredicateWithStartDate_endDate_calendars startDate endDate calendars =
   do
     cls' <- getRequiredClass "CalCalendarStore"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        withObjCPtr calendars $ \raw_calendars ->
-          sendClassMsg cls' (mkSelector "eventPredicateWithStartDate:endDate:calendars:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' eventPredicateWithStartDate_endDate_calendarsSelector (toNSDate startDate) (toNSDate endDate) (toNSArray calendars)
 
 -- | @+ eventPredicateWithStartDate:endDate:UID:calendars:@
 eventPredicateWithStartDate_endDate_UID_calendars :: (IsNSDate startDate, IsNSDate endDate, IsNSString uid, IsNSArray calendars) => startDate -> endDate -> uid -> calendars -> IO (Id NSPredicate)
 eventPredicateWithStartDate_endDate_UID_calendars startDate endDate uid calendars =
   do
     cls' <- getRequiredClass "CalCalendarStore"
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        withObjCPtr uid $ \raw_uid ->
-          withObjCPtr calendars $ \raw_calendars ->
-            sendClassMsg cls' (mkSelector "eventPredicateWithStartDate:endDate:UID:calendars:") (retPtr retVoid) [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_uid :: Ptr ()), argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' eventPredicateWithStartDate_endDate_UID_calendarsSelector (toNSDate startDate) (toNSDate endDate) (toNSString uid) (toNSArray calendars)
 
 -- | @+ taskPredicateWithCalendars:@
 taskPredicateWithCalendars :: IsNSArray calendars => calendars -> IO (Id NSPredicate)
 taskPredicateWithCalendars calendars =
   do
     cls' <- getRequiredClass "CalCalendarStore"
-    withObjCPtr calendars $ \raw_calendars ->
-      sendClassMsg cls' (mkSelector "taskPredicateWithCalendars:") (retPtr retVoid) [argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' taskPredicateWithCalendarsSelector (toNSArray calendars)
 
 -- | @+ taskPredicateWithUncompletedTasks:@
 taskPredicateWithUncompletedTasks :: IsNSArray calendars => calendars -> IO (Id NSPredicate)
 taskPredicateWithUncompletedTasks calendars =
   do
     cls' <- getRequiredClass "CalCalendarStore"
-    withObjCPtr calendars $ \raw_calendars ->
-      sendClassMsg cls' (mkSelector "taskPredicateWithUncompletedTasks:") (retPtr retVoid) [argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' taskPredicateWithUncompletedTasksSelector (toNSArray calendars)
 
 -- | @+ taskPredicateWithUncompletedTasksDueBefore:calendars:@
 taskPredicateWithUncompletedTasksDueBefore_calendars :: (IsNSDate dueDate, IsNSArray calendars) => dueDate -> calendars -> IO (Id NSPredicate)
 taskPredicateWithUncompletedTasksDueBefore_calendars dueDate calendars =
   do
     cls' <- getRequiredClass "CalCalendarStore"
-    withObjCPtr dueDate $ \raw_dueDate ->
-      withObjCPtr calendars $ \raw_calendars ->
-        sendClassMsg cls' (mkSelector "taskPredicateWithUncompletedTasksDueBefore:calendars:") (retPtr retVoid) [argPtr (castPtr raw_dueDate :: Ptr ()), argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' taskPredicateWithUncompletedTasksDueBefore_calendarsSelector (toNSDate dueDate) (toNSArray calendars)
 
 -- | @+ taskPredicateWithTasksCompletedSince:calendars:@
 taskPredicateWithTasksCompletedSince_calendars :: (IsNSDate completedSince, IsNSArray calendars) => completedSince -> calendars -> IO (Id NSPredicate)
 taskPredicateWithTasksCompletedSince_calendars completedSince calendars =
   do
     cls' <- getRequiredClass "CalCalendarStore"
-    withObjCPtr completedSince $ \raw_completedSince ->
-      withObjCPtr calendars $ \raw_calendars ->
-        sendClassMsg cls' (mkSelector "taskPredicateWithTasksCompletedSince:calendars:") (retPtr retVoid) [argPtr (castPtr raw_completedSince :: Ptr ()), argPtr (castPtr raw_calendars :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' taskPredicateWithTasksCompletedSince_calendarsSelector (toNSDate completedSince) (toNSArray calendars)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultCalendarStore@
-defaultCalendarStoreSelector :: Selector
+defaultCalendarStoreSelector :: Selector '[] (Id CalCalendarStore)
 defaultCalendarStoreSelector = mkSelector "defaultCalendarStore"
 
 -- | @Selector@ for @calendars@
-calendarsSelector :: Selector
+calendarsSelector :: Selector '[] (Id NSArray)
 calendarsSelector = mkSelector "calendars"
 
 -- | @Selector@ for @calendarWithUID:@
-calendarWithUIDSelector :: Selector
+calendarWithUIDSelector :: Selector '[Id NSString] (Id CalCalendar)
 calendarWithUIDSelector = mkSelector "calendarWithUID:"
 
 -- | @Selector@ for @saveCalendar:error:@
-saveCalendar_errorSelector :: Selector
+saveCalendar_errorSelector :: Selector '[Id CalCalendar, Id NSError] Bool
 saveCalendar_errorSelector = mkSelector "saveCalendar:error:"
 
 -- | @Selector@ for @removeCalendar:error:@
-removeCalendar_errorSelector :: Selector
+removeCalendar_errorSelector :: Selector '[Id CalCalendar, Id NSError] Bool
 removeCalendar_errorSelector = mkSelector "removeCalendar:error:"
 
 -- | @Selector@ for @eventsWithPredicate:@
-eventsWithPredicateSelector :: Selector
+eventsWithPredicateSelector :: Selector '[Id NSPredicate] (Id NSArray)
 eventsWithPredicateSelector = mkSelector "eventsWithPredicate:"
 
 -- | @Selector@ for @eventWithUID:occurrence:@
-eventWithUID_occurrenceSelector :: Selector
+eventWithUID_occurrenceSelector :: Selector '[Id NSString, Id NSDate] (Id CalEvent)
 eventWithUID_occurrenceSelector = mkSelector "eventWithUID:occurrence:"
 
 -- | @Selector@ for @tasksWithPredicate:@
-tasksWithPredicateSelector :: Selector
+tasksWithPredicateSelector :: Selector '[Id NSPredicate] (Id NSArray)
 tasksWithPredicateSelector = mkSelector "tasksWithPredicate:"
 
 -- | @Selector@ for @taskWithUID:@
-taskWithUIDSelector :: Selector
+taskWithUIDSelector :: Selector '[Id NSString] (Id CalTask)
 taskWithUIDSelector = mkSelector "taskWithUID:"
 
 -- | @Selector@ for @saveTask:error:@
-saveTask_errorSelector :: Selector
+saveTask_errorSelector :: Selector '[Id CalTask, Id NSError] Bool
 saveTask_errorSelector = mkSelector "saveTask:error:"
 
 -- | @Selector@ for @removeTask:error:@
-removeTask_errorSelector :: Selector
+removeTask_errorSelector :: Selector '[Id CalTask, Id NSError] Bool
 removeTask_errorSelector = mkSelector "removeTask:error:"
 
 -- | @Selector@ for @eventPredicateWithStartDate:endDate:calendars:@
-eventPredicateWithStartDate_endDate_calendarsSelector :: Selector
+eventPredicateWithStartDate_endDate_calendarsSelector :: Selector '[Id NSDate, Id NSDate, Id NSArray] (Id NSPredicate)
 eventPredicateWithStartDate_endDate_calendarsSelector = mkSelector "eventPredicateWithStartDate:endDate:calendars:"
 
 -- | @Selector@ for @eventPredicateWithStartDate:endDate:UID:calendars:@
-eventPredicateWithStartDate_endDate_UID_calendarsSelector :: Selector
+eventPredicateWithStartDate_endDate_UID_calendarsSelector :: Selector '[Id NSDate, Id NSDate, Id NSString, Id NSArray] (Id NSPredicate)
 eventPredicateWithStartDate_endDate_UID_calendarsSelector = mkSelector "eventPredicateWithStartDate:endDate:UID:calendars:"
 
 -- | @Selector@ for @taskPredicateWithCalendars:@
-taskPredicateWithCalendarsSelector :: Selector
+taskPredicateWithCalendarsSelector :: Selector '[Id NSArray] (Id NSPredicate)
 taskPredicateWithCalendarsSelector = mkSelector "taskPredicateWithCalendars:"
 
 -- | @Selector@ for @taskPredicateWithUncompletedTasks:@
-taskPredicateWithUncompletedTasksSelector :: Selector
+taskPredicateWithUncompletedTasksSelector :: Selector '[Id NSArray] (Id NSPredicate)
 taskPredicateWithUncompletedTasksSelector = mkSelector "taskPredicateWithUncompletedTasks:"
 
 -- | @Selector@ for @taskPredicateWithUncompletedTasksDueBefore:calendars:@
-taskPredicateWithUncompletedTasksDueBefore_calendarsSelector :: Selector
+taskPredicateWithUncompletedTasksDueBefore_calendarsSelector :: Selector '[Id NSDate, Id NSArray] (Id NSPredicate)
 taskPredicateWithUncompletedTasksDueBefore_calendarsSelector = mkSelector "taskPredicateWithUncompletedTasksDueBefore:calendars:"
 
 -- | @Selector@ for @taskPredicateWithTasksCompletedSince:calendars:@
-taskPredicateWithTasksCompletedSince_calendarsSelector :: Selector
+taskPredicateWithTasksCompletedSince_calendarsSelector :: Selector '[Id NSDate, Id NSArray] (Id NSPredicate)
 taskPredicateWithTasksCompletedSince_calendarsSelector = mkSelector "taskPredicateWithTasksCompletedSince:calendars:"
 

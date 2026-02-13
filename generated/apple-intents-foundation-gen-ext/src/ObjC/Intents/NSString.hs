@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,15 +18,11 @@ module ObjC.Intents.NSString
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,26 +36,21 @@ deferredLocalizedIntentsStringWithFormat :: IsNSString format => format -> IO (I
 deferredLocalizedIntentsStringWithFormat format =
   do
     cls' <- getRequiredClass "NSString"
-    withObjCPtr format $ \raw_format ->
-      sendClassMsg cls' (mkSelector "deferredLocalizedIntentsStringWithFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deferredLocalizedIntentsStringWithFormatSelector (toNSString format)
 
 -- | @+ deferredLocalizedIntentsStringWithFormat:fromTable:@
 deferredLocalizedIntentsStringWithFormat_fromTable :: (IsNSString format, IsNSString table) => format -> table -> IO (Id NSString)
 deferredLocalizedIntentsStringWithFormat_fromTable format table =
   do
     cls' <- getRequiredClass "NSString"
-    withObjCPtr format $ \raw_format ->
-      withObjCPtr table $ \raw_table ->
-        sendClassMsg cls' (mkSelector "deferredLocalizedIntentsStringWithFormat:fromTable:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr raw_table :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deferredLocalizedIntentsStringWithFormat_fromTableSelector (toNSString format) (toNSString table)
 
 -- | @+ deferredLocalizedIntentsStringWithFormat:fromTable:arguments:@
 deferredLocalizedIntentsStringWithFormat_fromTable_arguments :: (IsNSString format, IsNSString table) => format -> table -> RawId -> IO (Id NSString)
 deferredLocalizedIntentsStringWithFormat_fromTable_arguments format table arguments =
   do
     cls' <- getRequiredClass "NSString"
-    withObjCPtr format $ \raw_format ->
-      withObjCPtr table $ \raw_table ->
-        sendClassMsg cls' (mkSelector "deferredLocalizedIntentsStringWithFormat:fromTable:arguments:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr raw_table :: Ptr ()), argPtr (castPtr (unRawId arguments) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deferredLocalizedIntentsStringWithFormat_fromTable_argumentsSelector (toNSString format) (toNSString table) arguments
 
 
 -- | Allows using @OverloadedStrings@ for @Id NSString@.
@@ -72,14 +64,14 @@ instance IsString (Id NSString) where
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @deferredLocalizedIntentsStringWithFormat:@
-deferredLocalizedIntentsStringWithFormatSelector :: Selector
+deferredLocalizedIntentsStringWithFormatSelector :: Selector '[Id NSString] (Id NSString)
 deferredLocalizedIntentsStringWithFormatSelector = mkSelector "deferredLocalizedIntentsStringWithFormat:"
 
 -- | @Selector@ for @deferredLocalizedIntentsStringWithFormat:fromTable:@
-deferredLocalizedIntentsStringWithFormat_fromTableSelector :: Selector
+deferredLocalizedIntentsStringWithFormat_fromTableSelector :: Selector '[Id NSString, Id NSString] (Id NSString)
 deferredLocalizedIntentsStringWithFormat_fromTableSelector = mkSelector "deferredLocalizedIntentsStringWithFormat:fromTable:"
 
 -- | @Selector@ for @deferredLocalizedIntentsStringWithFormat:fromTable:arguments:@
-deferredLocalizedIntentsStringWithFormat_fromTable_argumentsSelector :: Selector
+deferredLocalizedIntentsStringWithFormat_fromTable_argumentsSelector :: Selector '[Id NSString, Id NSString, RawId] (Id NSString)
 deferredLocalizedIntentsStringWithFormat_fromTable_argumentsSelector = mkSelector "deferredLocalizedIntentsStringWithFormat:fromTable:arguments:"
 

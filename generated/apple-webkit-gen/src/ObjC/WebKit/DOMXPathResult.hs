@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.WebKit.DOMXPathResult
   , singleNodeValue
   , invalidIteratorState
   , snapshotLength
-  , iterateNextSelector
-  , snapshotItemSelector
-  , resultTypeSelector
-  , numberValueSelector
-  , stringValueSelector
   , booleanValueSelector
-  , singleNodeValueSelector
   , invalidIteratorStateSelector
+  , iterateNextSelector
+  , numberValueSelector
+  , resultTypeSelector
+  , singleNodeValueSelector
+  , snapshotItemSelector
   , snapshotLengthSelector
+  , stringValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,86 +42,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- iterateNext@
 iterateNext :: IsDOMXPathResult domxPathResult => domxPathResult -> IO (Id DOMNode)
-iterateNext domxPathResult  =
-    sendMsg domxPathResult (mkSelector "iterateNext") (retPtr retVoid) [] >>= retainedObject . castPtr
+iterateNext domxPathResult =
+  sendMessage domxPathResult iterateNextSelector
 
 -- | @- snapshotItem:@
 snapshotItem :: IsDOMXPathResult domxPathResult => domxPathResult -> CUInt -> IO (Id DOMNode)
-snapshotItem domxPathResult  index =
-    sendMsg domxPathResult (mkSelector "snapshotItem:") (retPtr retVoid) [argCUInt index] >>= retainedObject . castPtr
+snapshotItem domxPathResult index =
+  sendMessage domxPathResult snapshotItemSelector index
 
 -- | @- resultType@
 resultType :: IsDOMXPathResult domxPathResult => domxPathResult -> IO CUShort
-resultType domxPathResult  =
-    fmap fromIntegral $ sendMsg domxPathResult (mkSelector "resultType") retCUInt []
+resultType domxPathResult =
+  sendMessage domxPathResult resultTypeSelector
 
 -- | @- numberValue@
 numberValue :: IsDOMXPathResult domxPathResult => domxPathResult -> IO CDouble
-numberValue domxPathResult  =
-    sendMsg domxPathResult (mkSelector "numberValue") retCDouble []
+numberValue domxPathResult =
+  sendMessage domxPathResult numberValueSelector
 
 -- | @- stringValue@
 stringValue :: IsDOMXPathResult domxPathResult => domxPathResult -> IO (Id NSString)
-stringValue domxPathResult  =
-    sendMsg domxPathResult (mkSelector "stringValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringValue domxPathResult =
+  sendMessage domxPathResult stringValueSelector
 
 -- | @- booleanValue@
 booleanValue :: IsDOMXPathResult domxPathResult => domxPathResult -> IO Bool
-booleanValue domxPathResult  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domxPathResult (mkSelector "booleanValue") retCULong []
+booleanValue domxPathResult =
+  sendMessage domxPathResult booleanValueSelector
 
 -- | @- singleNodeValue@
 singleNodeValue :: IsDOMXPathResult domxPathResult => domxPathResult -> IO (Id DOMNode)
-singleNodeValue domxPathResult  =
-    sendMsg domxPathResult (mkSelector "singleNodeValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+singleNodeValue domxPathResult =
+  sendMessage domxPathResult singleNodeValueSelector
 
 -- | @- invalidIteratorState@
 invalidIteratorState :: IsDOMXPathResult domxPathResult => domxPathResult -> IO Bool
-invalidIteratorState domxPathResult  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domxPathResult (mkSelector "invalidIteratorState") retCULong []
+invalidIteratorState domxPathResult =
+  sendMessage domxPathResult invalidIteratorStateSelector
 
 -- | @- snapshotLength@
 snapshotLength :: IsDOMXPathResult domxPathResult => domxPathResult -> IO CUInt
-snapshotLength domxPathResult  =
-    sendMsg domxPathResult (mkSelector "snapshotLength") retCUInt []
+snapshotLength domxPathResult =
+  sendMessage domxPathResult snapshotLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @iterateNext@
-iterateNextSelector :: Selector
+iterateNextSelector :: Selector '[] (Id DOMNode)
 iterateNextSelector = mkSelector "iterateNext"
 
 -- | @Selector@ for @snapshotItem:@
-snapshotItemSelector :: Selector
+snapshotItemSelector :: Selector '[CUInt] (Id DOMNode)
 snapshotItemSelector = mkSelector "snapshotItem:"
 
 -- | @Selector@ for @resultType@
-resultTypeSelector :: Selector
+resultTypeSelector :: Selector '[] CUShort
 resultTypeSelector = mkSelector "resultType"
 
 -- | @Selector@ for @numberValue@
-numberValueSelector :: Selector
+numberValueSelector :: Selector '[] CDouble
 numberValueSelector = mkSelector "numberValue"
 
 -- | @Selector@ for @stringValue@
-stringValueSelector :: Selector
+stringValueSelector :: Selector '[] (Id NSString)
 stringValueSelector = mkSelector "stringValue"
 
 -- | @Selector@ for @booleanValue@
-booleanValueSelector :: Selector
+booleanValueSelector :: Selector '[] Bool
 booleanValueSelector = mkSelector "booleanValue"
 
 -- | @Selector@ for @singleNodeValue@
-singleNodeValueSelector :: Selector
+singleNodeValueSelector :: Selector '[] (Id DOMNode)
 singleNodeValueSelector = mkSelector "singleNodeValue"
 
 -- | @Selector@ for @invalidIteratorState@
-invalidIteratorStateSelector :: Selector
+invalidIteratorStateSelector :: Selector '[] Bool
 invalidIteratorStateSelector = mkSelector "invalidIteratorState"
 
 -- | @Selector@ for @snapshotLength@
-snapshotLengthSelector :: Selector
+snapshotLengthSelector :: Selector '[] CUInt
 snapshotLengthSelector = mkSelector "snapshotLength"
 

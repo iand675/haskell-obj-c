@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,16 +28,16 @@ module ObjC.CloudKit.CKNotification
   , isPruned
   , subscriptionID
   , badge
+  , badgeSelector
+  , containerIdentifierSelector
   , initSelector
+  , isPrunedSelector
   , newSelector
   , notificationFromRemoteNotificationDictionarySelector
-  , notificationTypeSelector
   , notificationIDSelector
-  , containerIdentifierSelector
-  , subscriptionOwnerUserRecordIDSelector
-  , isPrunedSelector
+  , notificationTypeSelector
   , subscriptionIDSelector
-  , badgeSelector
+  , subscriptionOwnerUserRecordIDSelector
 
   -- * Enum types
   , CKNotificationType(CKNotificationType)
@@ -47,15 +48,11 @@ module ObjC.CloudKit.CKNotification
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,47 +62,46 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKNotification ckNotification => ckNotification -> IO (Id CKNotification)
-init_ ckNotification  =
-    sendMsg ckNotification (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckNotification =
+  sendOwnedMessage ckNotification initSelector
 
 -- | @+ new@
 new :: IO (Id CKNotification)
 new  =
   do
     cls' <- getRequiredClass "CKNotification"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @+ notificationFromRemoteNotificationDictionary:@
 notificationFromRemoteNotificationDictionary :: IsNSDictionary notificationDictionary => notificationDictionary -> IO (Id CKNotification)
 notificationFromRemoteNotificationDictionary notificationDictionary =
   do
     cls' <- getRequiredClass "CKNotification"
-    withObjCPtr notificationDictionary $ \raw_notificationDictionary ->
-      sendClassMsg cls' (mkSelector "notificationFromRemoteNotificationDictionary:") (retPtr retVoid) [argPtr (castPtr raw_notificationDictionary :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' notificationFromRemoteNotificationDictionarySelector (toNSDictionary notificationDictionary)
 
 -- | When you instantiate a ``CKNotification`` from a remote notification dictionary, you will get back a concrete subclass defined below.  Use @notificationType@ to avoid @as?@ or @-isKindOfClass:@ checks.
 --
 -- ObjC selector: @- notificationType@
 notificationType :: IsCKNotification ckNotification => ckNotification -> IO CKNotificationType
-notificationType ckNotification  =
-    fmap (coerce :: CLong -> CKNotificationType) $ sendMsg ckNotification (mkSelector "notificationType") retCLong []
+notificationType ckNotification =
+  sendMessage ckNotification notificationTypeSelector
 
 -- | @- notificationID@
 notificationID :: IsCKNotification ckNotification => ckNotification -> IO (Id CKNotificationID)
-notificationID ckNotification  =
-    sendMsg ckNotification (mkSelector "notificationID") (retPtr retVoid) [] >>= retainedObject . castPtr
+notificationID ckNotification =
+  sendMessage ckNotification notificationIDSelector
 
 -- | @- containerIdentifier@
 containerIdentifier :: IsCKNotification ckNotification => ckNotification -> IO (Id NSString)
-containerIdentifier ckNotification  =
-    sendMsg ckNotification (mkSelector "containerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerIdentifier ckNotification =
+  sendMessage ckNotification containerIdentifierSelector
 
 -- | The user @recordID@ of the owner of the subscription for which this notification was generated
 --
 -- ObjC selector: @- subscriptionOwnerUserRecordID@
 subscriptionOwnerUserRecordID :: IsCKNotification ckNotification => ckNotification -> IO (Id CKRecordID)
-subscriptionOwnerUserRecordID ckNotification  =
-    sendMsg ckNotification (mkSelector "subscriptionOwnerUserRecordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionOwnerUserRecordID ckNotification =
+  sendMessage ckNotification subscriptionOwnerUserRecordIDSelector
 
 -- | Whether or not the notification fully represents what the server wanted to send.
 --
@@ -113,62 +109,62 @@ subscriptionOwnerUserRecordID ckNotification  =
 --
 -- ObjC selector: @- isPruned@
 isPruned :: IsCKNotification ckNotification => ckNotification -> IO Bool
-isPruned ckNotification  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckNotification (mkSelector "isPruned") retCULong []
+isPruned ckNotification =
+  sendMessage ckNotification isPrunedSelector
 
 -- | The ID of the subscription that caused this notification to fire.
 --
 -- ObjC selector: @- subscriptionID@
 subscriptionID :: IsCKNotification ckNotification => ckNotification -> IO (Id NSString)
-subscriptionID ckNotification  =
-    sendMsg ckNotification (mkSelector "subscriptionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionID ckNotification =
+  sendMessage ckNotification subscriptionIDSelector
 
 -- | @- badge@
 badge :: IsCKNotification ckNotification => ckNotification -> IO (Id NSNumber)
-badge ckNotification  =
-    sendMsg ckNotification (mkSelector "badge") (retPtr retVoid) [] >>= retainedObject . castPtr
+badge ckNotification =
+  sendMessage ckNotification badgeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKNotification)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKNotification)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @notificationFromRemoteNotificationDictionary:@
-notificationFromRemoteNotificationDictionarySelector :: Selector
+notificationFromRemoteNotificationDictionarySelector :: Selector '[Id NSDictionary] (Id CKNotification)
 notificationFromRemoteNotificationDictionarySelector = mkSelector "notificationFromRemoteNotificationDictionary:"
 
 -- | @Selector@ for @notificationType@
-notificationTypeSelector :: Selector
+notificationTypeSelector :: Selector '[] CKNotificationType
 notificationTypeSelector = mkSelector "notificationType"
 
 -- | @Selector@ for @notificationID@
-notificationIDSelector :: Selector
+notificationIDSelector :: Selector '[] (Id CKNotificationID)
 notificationIDSelector = mkSelector "notificationID"
 
 -- | @Selector@ for @containerIdentifier@
-containerIdentifierSelector :: Selector
+containerIdentifierSelector :: Selector '[] (Id NSString)
 containerIdentifierSelector = mkSelector "containerIdentifier"
 
 -- | @Selector@ for @subscriptionOwnerUserRecordID@
-subscriptionOwnerUserRecordIDSelector :: Selector
+subscriptionOwnerUserRecordIDSelector :: Selector '[] (Id CKRecordID)
 subscriptionOwnerUserRecordIDSelector = mkSelector "subscriptionOwnerUserRecordID"
 
 -- | @Selector@ for @isPruned@
-isPrunedSelector :: Selector
+isPrunedSelector :: Selector '[] Bool
 isPrunedSelector = mkSelector "isPruned"
 
 -- | @Selector@ for @subscriptionID@
-subscriptionIDSelector :: Selector
+subscriptionIDSelector :: Selector '[] (Id NSString)
 subscriptionIDSelector = mkSelector "subscriptionID"
 
 -- | @Selector@ for @badge@
-badgeSelector :: Selector
+badgeSelector :: Selector '[] (Id NSNumber)
 badgeSelector = mkSelector "badge"
 

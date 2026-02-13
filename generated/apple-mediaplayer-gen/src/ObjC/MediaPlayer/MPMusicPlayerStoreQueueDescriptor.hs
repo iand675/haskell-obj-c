@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.MediaPlayer.MPMusicPlayerStoreQueueDescriptor
   , startItemID
   , setStartItemID
   , initWithStoreIDsSelector
-  , setStartTime_forItemWithStoreIDSelector
   , setEndTime_forItemWithStoreIDSelector
-  , storeIDsSelector
+  , setStartItemIDSelector
+  , setStartTime_forItemWithStoreIDSelector
   , setStoreIDsSelector
   , startItemIDSelector
-  , setStartItemIDSelector
+  , storeIDsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,73 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithStoreIDs:@
 initWithStoreIDs :: (IsMPMusicPlayerStoreQueueDescriptor mpMusicPlayerStoreQueueDescriptor, IsNSArray storeIDs) => mpMusicPlayerStoreQueueDescriptor -> storeIDs -> IO (Id MPMusicPlayerStoreQueueDescriptor)
-initWithStoreIDs mpMusicPlayerStoreQueueDescriptor  storeIDs =
-  withObjCPtr storeIDs $ \raw_storeIDs ->
-      sendMsg mpMusicPlayerStoreQueueDescriptor (mkSelector "initWithStoreIDs:") (retPtr retVoid) [argPtr (castPtr raw_storeIDs :: Ptr ())] >>= ownedObject . castPtr
+initWithStoreIDs mpMusicPlayerStoreQueueDescriptor storeIDs =
+  sendOwnedMessage mpMusicPlayerStoreQueueDescriptor initWithStoreIDsSelector (toNSArray storeIDs)
 
 -- | @- setStartTime:forItemWithStoreID:@
 setStartTime_forItemWithStoreID :: (IsMPMusicPlayerStoreQueueDescriptor mpMusicPlayerStoreQueueDescriptor, IsNSString storeID) => mpMusicPlayerStoreQueueDescriptor -> CDouble -> storeID -> IO ()
-setStartTime_forItemWithStoreID mpMusicPlayerStoreQueueDescriptor  startTime storeID =
-  withObjCPtr storeID $ \raw_storeID ->
-      sendMsg mpMusicPlayerStoreQueueDescriptor (mkSelector "setStartTime:forItemWithStoreID:") retVoid [argCDouble startTime, argPtr (castPtr raw_storeID :: Ptr ())]
+setStartTime_forItemWithStoreID mpMusicPlayerStoreQueueDescriptor startTime storeID =
+  sendMessage mpMusicPlayerStoreQueueDescriptor setStartTime_forItemWithStoreIDSelector startTime (toNSString storeID)
 
 -- | @- setEndTime:forItemWithStoreID:@
 setEndTime_forItemWithStoreID :: (IsMPMusicPlayerStoreQueueDescriptor mpMusicPlayerStoreQueueDescriptor, IsNSString storeID) => mpMusicPlayerStoreQueueDescriptor -> CDouble -> storeID -> IO ()
-setEndTime_forItemWithStoreID mpMusicPlayerStoreQueueDescriptor  endTime storeID =
-  withObjCPtr storeID $ \raw_storeID ->
-      sendMsg mpMusicPlayerStoreQueueDescriptor (mkSelector "setEndTime:forItemWithStoreID:") retVoid [argCDouble endTime, argPtr (castPtr raw_storeID :: Ptr ())]
+setEndTime_forItemWithStoreID mpMusicPlayerStoreQueueDescriptor endTime storeID =
+  sendMessage mpMusicPlayerStoreQueueDescriptor setEndTime_forItemWithStoreIDSelector endTime (toNSString storeID)
 
 -- | @- storeIDs@
 storeIDs :: IsMPMusicPlayerStoreQueueDescriptor mpMusicPlayerStoreQueueDescriptor => mpMusicPlayerStoreQueueDescriptor -> IO (Id NSArray)
-storeIDs mpMusicPlayerStoreQueueDescriptor  =
-    sendMsg mpMusicPlayerStoreQueueDescriptor (mkSelector "storeIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+storeIDs mpMusicPlayerStoreQueueDescriptor =
+  sendMessage mpMusicPlayerStoreQueueDescriptor storeIDsSelector
 
 -- | @- setStoreIDs:@
 setStoreIDs :: (IsMPMusicPlayerStoreQueueDescriptor mpMusicPlayerStoreQueueDescriptor, IsNSArray value) => mpMusicPlayerStoreQueueDescriptor -> value -> IO ()
-setStoreIDs mpMusicPlayerStoreQueueDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpMusicPlayerStoreQueueDescriptor (mkSelector "setStoreIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStoreIDs mpMusicPlayerStoreQueueDescriptor value =
+  sendMessage mpMusicPlayerStoreQueueDescriptor setStoreIDsSelector (toNSArray value)
 
 -- | @- startItemID@
 startItemID :: IsMPMusicPlayerStoreQueueDescriptor mpMusicPlayerStoreQueueDescriptor => mpMusicPlayerStoreQueueDescriptor -> IO (Id NSString)
-startItemID mpMusicPlayerStoreQueueDescriptor  =
-    sendMsg mpMusicPlayerStoreQueueDescriptor (mkSelector "startItemID") (retPtr retVoid) [] >>= retainedObject . castPtr
+startItemID mpMusicPlayerStoreQueueDescriptor =
+  sendMessage mpMusicPlayerStoreQueueDescriptor startItemIDSelector
 
 -- | @- setStartItemID:@
 setStartItemID :: (IsMPMusicPlayerStoreQueueDescriptor mpMusicPlayerStoreQueueDescriptor, IsNSString value) => mpMusicPlayerStoreQueueDescriptor -> value -> IO ()
-setStartItemID mpMusicPlayerStoreQueueDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpMusicPlayerStoreQueueDescriptor (mkSelector "setStartItemID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartItemID mpMusicPlayerStoreQueueDescriptor value =
+  sendMessage mpMusicPlayerStoreQueueDescriptor setStartItemIDSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithStoreIDs:@
-initWithStoreIDsSelector :: Selector
+initWithStoreIDsSelector :: Selector '[Id NSArray] (Id MPMusicPlayerStoreQueueDescriptor)
 initWithStoreIDsSelector = mkSelector "initWithStoreIDs:"
 
 -- | @Selector@ for @setStartTime:forItemWithStoreID:@
-setStartTime_forItemWithStoreIDSelector :: Selector
+setStartTime_forItemWithStoreIDSelector :: Selector '[CDouble, Id NSString] ()
 setStartTime_forItemWithStoreIDSelector = mkSelector "setStartTime:forItemWithStoreID:"
 
 -- | @Selector@ for @setEndTime:forItemWithStoreID:@
-setEndTime_forItemWithStoreIDSelector :: Selector
+setEndTime_forItemWithStoreIDSelector :: Selector '[CDouble, Id NSString] ()
 setEndTime_forItemWithStoreIDSelector = mkSelector "setEndTime:forItemWithStoreID:"
 
 -- | @Selector@ for @storeIDs@
-storeIDsSelector :: Selector
+storeIDsSelector :: Selector '[] (Id NSArray)
 storeIDsSelector = mkSelector "storeIDs"
 
 -- | @Selector@ for @setStoreIDs:@
-setStoreIDsSelector :: Selector
+setStoreIDsSelector :: Selector '[Id NSArray] ()
 setStoreIDsSelector = mkSelector "setStoreIDs:"
 
 -- | @Selector@ for @startItemID@
-startItemIDSelector :: Selector
+startItemIDSelector :: Selector '[] (Id NSString)
 startItemIDSelector = mkSelector "startItemID"
 
 -- | @Selector@ for @setStartItemID:@
-setStartItemIDSelector :: Selector
+setStartItemIDSelector :: Selector '[Id NSString] ()
 setStartItemIDSelector = mkSelector "setStartItemID:"
 

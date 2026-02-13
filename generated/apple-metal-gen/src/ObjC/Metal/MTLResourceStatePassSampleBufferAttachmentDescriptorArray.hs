@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Metal.MTLResourceStatePassSampleBufferAttachmentDescriptorArray
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsMTLResourceStatePassSampleBufferAttachmentDescriptorArray mtlResourceStatePassSampleBufferAttachmentDescriptorArray => mtlResourceStatePassSampleBufferAttachmentDescriptorArray -> CULong -> IO (Id MTLResourceStatePassSampleBufferAttachmentDescriptor)
-objectAtIndexedSubscript mtlResourceStatePassSampleBufferAttachmentDescriptorArray  attachmentIndex =
-    sendMsg mtlResourceStatePassSampleBufferAttachmentDescriptorArray (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong attachmentIndex] >>= retainedObject . castPtr
+objectAtIndexedSubscript mtlResourceStatePassSampleBufferAttachmentDescriptorArray attachmentIndex =
+  sendMessage mtlResourceStatePassSampleBufferAttachmentDescriptorArray objectAtIndexedSubscriptSelector attachmentIndex
 
 -- | @- setObject:atIndexedSubscript:@
 setObject_atIndexedSubscript :: (IsMTLResourceStatePassSampleBufferAttachmentDescriptorArray mtlResourceStatePassSampleBufferAttachmentDescriptorArray, IsMTLResourceStatePassSampleBufferAttachmentDescriptor attachment) => mtlResourceStatePassSampleBufferAttachmentDescriptorArray -> attachment -> CULong -> IO ()
-setObject_atIndexedSubscript mtlResourceStatePassSampleBufferAttachmentDescriptorArray  attachment attachmentIndex =
-  withObjCPtr attachment $ \raw_attachment ->
-      sendMsg mtlResourceStatePassSampleBufferAttachmentDescriptorArray (mkSelector "setObject:atIndexedSubscript:") retVoid [argPtr (castPtr raw_attachment :: Ptr ()), argCULong attachmentIndex]
+setObject_atIndexedSubscript mtlResourceStatePassSampleBufferAttachmentDescriptorArray attachment attachmentIndex =
+  sendMessage mtlResourceStatePassSampleBufferAttachmentDescriptorArray setObject_atIndexedSubscriptSelector (toMTLResourceStatePassSampleBufferAttachmentDescriptor attachment) attachmentIndex
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id MTLResourceStatePassSampleBufferAttachmentDescriptor)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @setObject:atIndexedSubscript:@
-setObject_atIndexedSubscriptSelector :: Selector
+setObject_atIndexedSubscriptSelector :: Selector '[Id MTLResourceStatePassSampleBufferAttachmentDescriptor, CULong] ()
 setObject_atIndexedSubscriptSelector = mkSelector "setObject:atIndexedSubscript:"
 

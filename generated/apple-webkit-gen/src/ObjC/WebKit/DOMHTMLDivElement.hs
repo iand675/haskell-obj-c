@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.WebKit.DOMHTMLDivElement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- align@
 align :: IsDOMHTMLDivElement domhtmlDivElement => domhtmlDivElement -> IO (Id NSString)
-align domhtmlDivElement  =
-    sendMsg domhtmlDivElement (mkSelector "align") (retPtr retVoid) [] >>= retainedObject . castPtr
+align domhtmlDivElement =
+  sendMessage domhtmlDivElement alignSelector
 
 -- | @- setAlign:@
 setAlign :: (IsDOMHTMLDivElement domhtmlDivElement, IsNSString value) => domhtmlDivElement -> value -> IO ()
-setAlign domhtmlDivElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlDivElement (mkSelector "setAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlign domhtmlDivElement value =
+  sendMessage domhtmlDivElement setAlignSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @align@
-alignSelector :: Selector
+alignSelector :: Selector '[] (Id NSString)
 alignSelector = mkSelector "align"
 
 -- | @Selector@ for @setAlign:@
-setAlignSelector :: Selector
+setAlignSelector :: Selector '[Id NSString] ()
 setAlignSelector = mkSelector "setAlign:"
 

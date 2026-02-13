@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Matter.MTRZoneManagementClusterCreateTwoDCartesianZoneResponseParams
   , zoneID
   , setZoneID
   , initWithResponseValue_errorSelector
-  , zoneIDSelector
   , setZoneIDSelector
+  , zoneIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRZoneManagementClusterCreateTwoDCartesianZoneResponseParams mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams -> responseValue -> error_ -> IO (Id MTRZoneManagementClusterCreateTwoDCartesianZoneResponseParams)
-initWithResponseValue_error mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams responseValue error_ =
+  sendOwnedMessage mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- zoneID@
 zoneID :: IsMTRZoneManagementClusterCreateTwoDCartesianZoneResponseParams mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams => mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams -> IO (Id NSNumber)
-zoneID mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams  =
-    sendMsg mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams (mkSelector "zoneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+zoneID mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams =
+  sendMessage mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams zoneIDSelector
 
 -- | @- setZoneID:@
 setZoneID :: (IsMTRZoneManagementClusterCreateTwoDCartesianZoneResponseParams mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams, IsNSNumber value) => mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams -> value -> IO ()
-setZoneID mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams (mkSelector "setZoneID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setZoneID mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams value =
+  sendMessage mtrZoneManagementClusterCreateTwoDCartesianZoneResponseParams setZoneIDSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRZoneManagementClusterCreateTwoDCartesianZoneResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @zoneID@
-zoneIDSelector :: Selector
+zoneIDSelector :: Selector '[] (Id NSNumber)
 zoneIDSelector = mkSelector "zoneID"
 
 -- | @Selector@ for @setZoneID:@
-setZoneIDSelector :: Selector
+setZoneIDSelector :: Selector '[Id NSNumber] ()
 setZoneIDSelector = mkSelector "setZoneID:"
 

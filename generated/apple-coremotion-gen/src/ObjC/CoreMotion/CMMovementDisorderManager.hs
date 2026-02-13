@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,14 +20,14 @@ module ObjC.CoreMotion.CMMovementDisorderManager
   , queryTremorFromDate_toDate_withHandler
   , lastProcessedDate
   , monitorKinesiasExpirationDate
-  , isAvailableSelector
-  , versionSelector
   , authorizationStatusSelector
+  , isAvailableSelector
+  , lastProcessedDateSelector
+  , monitorKinesiasExpirationDateSelector
   , monitorKinesiasForDurationSelector
   , queryDyskineticSymptomFromDate_toDate_withHandlerSelector
   , queryTremorFromDate_toDate_withHandlerSelector
-  , lastProcessedDateSelector
-  , monitorKinesiasExpirationDateSelector
+  , versionSelector
 
   -- * Enum types
   , CMAuthorizationStatus(CMAuthorizationStatus)
@@ -37,15 +38,11 @@ module ObjC.CoreMotion.CMMovementDisorderManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,7 +61,7 @@ isAvailable :: IO Bool
 isAvailable  =
   do
     cls' <- getRequiredClass "CMMovementDisorderManager"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isAvailable") retCULong []
+    sendClassMessage cls' isAvailableSelector
 
 -- | version
 --
@@ -77,7 +74,7 @@ version :: IO (Id NSString)
 version  =
   do
     cls' <- getRequiredClass "CMMovementDisorderManager"
-    sendClassMsg cls' (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' versionSelector
 
 -- | authorizationStatus
 --
@@ -90,7 +87,7 @@ authorizationStatus :: IO CMAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "CMMovementDisorderManager"
-    fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | monitorKinesiasForDuration:
 --
@@ -102,8 +99,8 @@ authorizationStatus  =
 --
 -- ObjC selector: @- monitorKinesiasForDuration:@
 monitorKinesiasForDuration :: IsCMMovementDisorderManager cmMovementDisorderManager => cmMovementDisorderManager -> CDouble -> IO ()
-monitorKinesiasForDuration cmMovementDisorderManager  duration =
-    sendMsg cmMovementDisorderManager (mkSelector "monitorKinesiasForDuration:") retVoid [argCDouble duration]
+monitorKinesiasForDuration cmMovementDisorderManager duration =
+  sendMessage cmMovementDisorderManager monitorKinesiasForDurationSelector duration
 
 -- | queryDyskineticSymptomFromDate:toDate:withHandler:
 --
@@ -119,10 +116,8 @@ monitorKinesiasForDuration cmMovementDisorderManager  duration =
 --
 -- ObjC selector: @- queryDyskineticSymptomFromDate:toDate:withHandler:@
 queryDyskineticSymptomFromDate_toDate_withHandler :: (IsCMMovementDisorderManager cmMovementDisorderManager, IsNSDate fromDate, IsNSDate toDate) => cmMovementDisorderManager -> fromDate -> toDate -> Ptr () -> IO ()
-queryDyskineticSymptomFromDate_toDate_withHandler cmMovementDisorderManager  fromDate toDate handler =
-  withObjCPtr fromDate $ \raw_fromDate ->
-    withObjCPtr toDate $ \raw_toDate ->
-        sendMsg cmMovementDisorderManager (mkSelector "queryDyskineticSymptomFromDate:toDate:withHandler:") retVoid [argPtr (castPtr raw_fromDate :: Ptr ()), argPtr (castPtr raw_toDate :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+queryDyskineticSymptomFromDate_toDate_withHandler cmMovementDisorderManager fromDate toDate handler =
+  sendMessage cmMovementDisorderManager queryDyskineticSymptomFromDate_toDate_withHandlerSelector (toNSDate fromDate) (toNSDate toDate) handler
 
 -- | queryTremorFromDate:toDate:withHandler:
 --
@@ -138,10 +133,8 @@ queryDyskineticSymptomFromDate_toDate_withHandler cmMovementDisorderManager  fro
 --
 -- ObjC selector: @- queryTremorFromDate:toDate:withHandler:@
 queryTremorFromDate_toDate_withHandler :: (IsCMMovementDisorderManager cmMovementDisorderManager, IsNSDate fromDate, IsNSDate toDate) => cmMovementDisorderManager -> fromDate -> toDate -> Ptr () -> IO ()
-queryTremorFromDate_toDate_withHandler cmMovementDisorderManager  fromDate toDate handler =
-  withObjCPtr fromDate $ \raw_fromDate ->
-    withObjCPtr toDate $ \raw_toDate ->
-        sendMsg cmMovementDisorderManager (mkSelector "queryTremorFromDate:toDate:withHandler:") retVoid [argPtr (castPtr raw_fromDate :: Ptr ()), argPtr (castPtr raw_toDate :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+queryTremorFromDate_toDate_withHandler cmMovementDisorderManager fromDate toDate handler =
+  sendMessage cmMovementDisorderManager queryTremorFromDate_toDate_withHandlerSelector (toNSDate fromDate) (toNSDate toDate) handler
 
 -- | lastProcessedDate
 --
@@ -151,8 +144,8 @@ queryTremorFromDate_toDate_withHandler cmMovementDisorderManager  fromDate toDat
 --
 -- ObjC selector: @- lastProcessedDate@
 lastProcessedDate :: IsCMMovementDisorderManager cmMovementDisorderManager => cmMovementDisorderManager -> IO (Id NSDate)
-lastProcessedDate cmMovementDisorderManager  =
-    sendMsg cmMovementDisorderManager (mkSelector "lastProcessedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastProcessedDate cmMovementDisorderManager =
+  sendMessage cmMovementDisorderManager lastProcessedDateSelector
 
 -- | monitorKinesiasExpirationDate
 --
@@ -162,42 +155,42 @@ lastProcessedDate cmMovementDisorderManager  =
 --
 -- ObjC selector: @- monitorKinesiasExpirationDate@
 monitorKinesiasExpirationDate :: IsCMMovementDisorderManager cmMovementDisorderManager => cmMovementDisorderManager -> IO (Id NSDate)
-monitorKinesiasExpirationDate cmMovementDisorderManager  =
-    sendMsg cmMovementDisorderManager (mkSelector "monitorKinesiasExpirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+monitorKinesiasExpirationDate cmMovementDisorderManager =
+  sendMessage cmMovementDisorderManager monitorKinesiasExpirationDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isAvailable@
-isAvailableSelector :: Selector
+isAvailableSelector :: Selector '[] Bool
 isAvailableSelector = mkSelector "isAvailable"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CMAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @monitorKinesiasForDuration:@
-monitorKinesiasForDurationSelector :: Selector
+monitorKinesiasForDurationSelector :: Selector '[CDouble] ()
 monitorKinesiasForDurationSelector = mkSelector "monitorKinesiasForDuration:"
 
 -- | @Selector@ for @queryDyskineticSymptomFromDate:toDate:withHandler:@
-queryDyskineticSymptomFromDate_toDate_withHandlerSelector :: Selector
+queryDyskineticSymptomFromDate_toDate_withHandlerSelector :: Selector '[Id NSDate, Id NSDate, Ptr ()] ()
 queryDyskineticSymptomFromDate_toDate_withHandlerSelector = mkSelector "queryDyskineticSymptomFromDate:toDate:withHandler:"
 
 -- | @Selector@ for @queryTremorFromDate:toDate:withHandler:@
-queryTremorFromDate_toDate_withHandlerSelector :: Selector
+queryTremorFromDate_toDate_withHandlerSelector :: Selector '[Id NSDate, Id NSDate, Ptr ()] ()
 queryTremorFromDate_toDate_withHandlerSelector = mkSelector "queryTremorFromDate:toDate:withHandler:"
 
 -- | @Selector@ for @lastProcessedDate@
-lastProcessedDateSelector :: Selector
+lastProcessedDateSelector :: Selector '[] (Id NSDate)
 lastProcessedDateSelector = mkSelector "lastProcessedDate"
 
 -- | @Selector@ for @monitorKinesiasExpirationDate@
-monitorKinesiasExpirationDateSelector :: Selector
+monitorKinesiasExpirationDateSelector :: Selector '[] (Id NSDate)
 monitorKinesiasExpirationDateSelector = mkSelector "monitorKinesiasExpirationDate"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.SpriteKit.SKTextureAtlas
   , textureNames
   , atlasNamedSelector
   , atlasWithDictionarySelector
-  , textureNamedSelector
   , preloadTextureAtlases_withCompletionHandlerSelector
   , preloadWithCompletionHandlerSelector
+  , textureNamedSelector
   , textureNamesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,22 +39,19 @@ atlasNamed :: IsNSString name => name -> IO (Id SKTextureAtlas)
 atlasNamed name =
   do
     cls' <- getRequiredClass "SKTextureAtlas"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "atlasNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' atlasNamedSelector (toNSString name)
 
 -- | @+ atlasWithDictionary:@
 atlasWithDictionary :: IsNSDictionary properties => properties -> IO (Id SKTextureAtlas)
 atlasWithDictionary properties =
   do
     cls' <- getRequiredClass "SKTextureAtlas"
-    withObjCPtr properties $ \raw_properties ->
-      sendClassMsg cls' (mkSelector "atlasWithDictionary:") (retPtr retVoid) [argPtr (castPtr raw_properties :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' atlasWithDictionarySelector (toNSDictionary properties)
 
 -- | @- textureNamed:@
 textureNamed :: (IsSKTextureAtlas skTextureAtlas, IsNSString name) => skTextureAtlas -> name -> IO (Id SKTexture)
-textureNamed skTextureAtlas  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skTextureAtlas (mkSelector "textureNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+textureNamed skTextureAtlas name =
+  sendMessage skTextureAtlas textureNamedSelector (toNSString name)
 
 -- | Start a texture atlas preload operation on an array of texture atlas
 --
@@ -70,46 +64,45 @@ preloadTextureAtlases_withCompletionHandler :: IsNSArray textureAtlases => textu
 preloadTextureAtlases_withCompletionHandler textureAtlases completionHandler =
   do
     cls' <- getRequiredClass "SKTextureAtlas"
-    withObjCPtr textureAtlases $ \raw_textureAtlases ->
-      sendClassMsg cls' (mkSelector "preloadTextureAtlases:withCompletionHandler:") retVoid [argPtr (castPtr raw_textureAtlases :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' preloadTextureAtlases_withCompletionHandlerSelector (toNSArray textureAtlases) completionHandler
 
 -- | Request that this texture atlas be loaded into vram on the next render update, with a callback handler.
 --
 -- ObjC selector: @- preloadWithCompletionHandler:@
 preloadWithCompletionHandler :: IsSKTextureAtlas skTextureAtlas => skTextureAtlas -> Ptr () -> IO ()
-preloadWithCompletionHandler skTextureAtlas  completionHandler =
-    sendMsg skTextureAtlas (mkSelector "preloadWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+preloadWithCompletionHandler skTextureAtlas completionHandler =
+  sendMessage skTextureAtlas preloadWithCompletionHandlerSelector completionHandler
 
 -- | @- textureNames@
 textureNames :: IsSKTextureAtlas skTextureAtlas => skTextureAtlas -> IO (Id NSArray)
-textureNames skTextureAtlas  =
-    sendMsg skTextureAtlas (mkSelector "textureNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+textureNames skTextureAtlas =
+  sendMessage skTextureAtlas textureNamesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @atlasNamed:@
-atlasNamedSelector :: Selector
+atlasNamedSelector :: Selector '[Id NSString] (Id SKTextureAtlas)
 atlasNamedSelector = mkSelector "atlasNamed:"
 
 -- | @Selector@ for @atlasWithDictionary:@
-atlasWithDictionarySelector :: Selector
+atlasWithDictionarySelector :: Selector '[Id NSDictionary] (Id SKTextureAtlas)
 atlasWithDictionarySelector = mkSelector "atlasWithDictionary:"
 
 -- | @Selector@ for @textureNamed:@
-textureNamedSelector :: Selector
+textureNamedSelector :: Selector '[Id NSString] (Id SKTexture)
 textureNamedSelector = mkSelector "textureNamed:"
 
 -- | @Selector@ for @preloadTextureAtlases:withCompletionHandler:@
-preloadTextureAtlases_withCompletionHandlerSelector :: Selector
+preloadTextureAtlases_withCompletionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 preloadTextureAtlases_withCompletionHandlerSelector = mkSelector "preloadTextureAtlases:withCompletionHandler:"
 
 -- | @Selector@ for @preloadWithCompletionHandler:@
-preloadWithCompletionHandlerSelector :: Selector
+preloadWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 preloadWithCompletionHandlerSelector = mkSelector "preloadWithCompletionHandler:"
 
 -- | @Selector@ for @textureNames@
-textureNamesSelector :: Selector
+textureNamesSelector :: Selector '[] (Id NSArray)
 textureNamesSelector = mkSelector "textureNames"
 

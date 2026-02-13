@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.MetalPerformanceShaders.MPSImageHistogram
   , histogramSizeForSourceFormat
   , zeroHistogram
   , setZeroHistogram
-  , initWithDevice_histogramInfoSelector
-  , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector
   , histogramSizeForSourceFormatSelector
-  , zeroHistogramSelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_histogramInfoSelector
   , setZeroHistogramSelector
+  , zeroHistogramSelector
 
   -- * Enum types
   , MTLPixelFormat(MTLPixelFormat)
@@ -169,15 +170,11 @@ module ObjC.MetalPerformanceShaders.MPSImageHistogram
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -195,8 +192,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:histogramInfo:@
 initWithDevice_histogramInfo :: IsMPSImageHistogram mpsImageHistogram => mpsImageHistogram -> RawId -> Const RawId -> IO (Id MPSImageHistogram)
-initWithDevice_histogramInfo mpsImageHistogram  device histogramInfo =
-    sendMsg mpsImageHistogram (mkSelector "initWithDevice:histogramInfo:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId (unConst histogramInfo)) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_histogramInfo mpsImageHistogram device histogramInfo =
+  sendOwnedMessage mpsImageHistogram initWithDevice_histogramInfoSelector device histogramInfo
 
 -- | NSSecureCoding compatability
 --
@@ -210,9 +207,8 @@ initWithDevice_histogramInfo mpsImageHistogram  device histogramInfo =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageHistogram mpsImageHistogram, IsNSCoder aDecoder) => mpsImageHistogram -> aDecoder -> RawId -> IO (Id MPSImageHistogram)
-initWithCoder_device mpsImageHistogram  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageHistogram (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageHistogram aDecoder device =
+  sendOwnedMessage mpsImageHistogram initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode the filter to a command buffer using a MTLComputeCommandEncoder.
 --
@@ -230,8 +226,8 @@ initWithCoder_device mpsImageHistogram  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceTexture:histogram:histogramOffset:@
 encodeToCommandBuffer_sourceTexture_histogram_histogramOffset :: IsMPSImageHistogram mpsImageHistogram => mpsImageHistogram -> RawId -> RawId -> RawId -> CULong -> IO ()
-encodeToCommandBuffer_sourceTexture_histogram_histogramOffset mpsImageHistogram  commandBuffer source histogram histogramOffset =
-    sendMsg mpsImageHistogram (mkSelector "encodeToCommandBuffer:sourceTexture:histogram:histogramOffset:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ()), argPtr (castPtr (unRawId histogram) :: Ptr ()), argCULong histogramOffset]
+encodeToCommandBuffer_sourceTexture_histogram_histogramOffset mpsImageHistogram commandBuffer source histogram histogramOffset =
+  sendMessage mpsImageHistogram encodeToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector commandBuffer source histogram histogramOffset
 
 -- | The amount of space in the output MTLBuffer the histogram will take up.
 --
@@ -243,8 +239,8 @@ encodeToCommandBuffer_sourceTexture_histogram_histogramOffset mpsImageHistogram 
 --
 -- ObjC selector: @- histogramSizeForSourceFormat:@
 histogramSizeForSourceFormat :: IsMPSImageHistogram mpsImageHistogram => mpsImageHistogram -> MTLPixelFormat -> IO CULong
-histogramSizeForSourceFormat mpsImageHistogram  sourceFormat =
-    sendMsg mpsImageHistogram (mkSelector "histogramSizeForSourceFormat:") retCULong [argCULong (coerce sourceFormat)]
+histogramSizeForSourceFormat mpsImageHistogram sourceFormat =
+  sendMessage mpsImageHistogram histogramSizeForSourceFormatSelector sourceFormat
 
 -- | zeroHistogram
 --
@@ -254,8 +250,8 @@ histogramSizeForSourceFormat mpsImageHistogram  sourceFormat =
 --
 -- ObjC selector: @- zeroHistogram@
 zeroHistogram :: IsMPSImageHistogram mpsImageHistogram => mpsImageHistogram -> IO Bool
-zeroHistogram mpsImageHistogram  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsImageHistogram (mkSelector "zeroHistogram") retCULong []
+zeroHistogram mpsImageHistogram =
+  sendMessage mpsImageHistogram zeroHistogramSelector
 
 -- | zeroHistogram
 --
@@ -265,34 +261,34 @@ zeroHistogram mpsImageHistogram  =
 --
 -- ObjC selector: @- setZeroHistogram:@
 setZeroHistogram :: IsMPSImageHistogram mpsImageHistogram => mpsImageHistogram -> Bool -> IO ()
-setZeroHistogram mpsImageHistogram  value =
-    sendMsg mpsImageHistogram (mkSelector "setZeroHistogram:") retVoid [argCULong (if value then 1 else 0)]
+setZeroHistogram mpsImageHistogram value =
+  sendMessage mpsImageHistogram setZeroHistogramSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:histogramInfo:@
-initWithDevice_histogramInfoSelector :: Selector
+initWithDevice_histogramInfoSelector :: Selector '[RawId, Const RawId] (Id MPSImageHistogram)
 initWithDevice_histogramInfoSelector = mkSelector "initWithDevice:histogramInfo:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageHistogram)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceTexture:histogram:histogramOffset:@
-encodeToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector :: Selector
+encodeToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector :: Selector '[RawId, RawId, RawId, CULong] ()
 encodeToCommandBuffer_sourceTexture_histogram_histogramOffsetSelector = mkSelector "encodeToCommandBuffer:sourceTexture:histogram:histogramOffset:"
 
 -- | @Selector@ for @histogramSizeForSourceFormat:@
-histogramSizeForSourceFormatSelector :: Selector
+histogramSizeForSourceFormatSelector :: Selector '[MTLPixelFormat] CULong
 histogramSizeForSourceFormatSelector = mkSelector "histogramSizeForSourceFormat:"
 
 -- | @Selector@ for @zeroHistogram@
-zeroHistogramSelector :: Selector
+zeroHistogramSelector :: Selector '[] Bool
 zeroHistogramSelector = mkSelector "zeroHistogram"
 
 -- | @Selector@ for @setZeroHistogram:@
-setZeroHistogramSelector :: Selector
+setZeroHistogramSelector :: Selector '[Bool] ()
 setZeroHistogramSelector = mkSelector "setZeroHistogram:"
 

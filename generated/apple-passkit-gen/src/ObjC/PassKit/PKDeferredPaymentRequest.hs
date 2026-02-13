@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.PassKit.PKDeferredPaymentRequest
   , setFreeCancellationDate
   , freeCancellationDateTimeZone
   , setFreeCancellationDateTimeZone
+  , billingAgreementSelector
+  , deferredBillingSelector
+  , freeCancellationDateSelector
+  , freeCancellationDateTimeZoneSelector
   , initSelector
   , initWithPaymentDescription_deferredBilling_managementURLSelector
-  , paymentDescriptionSelector
-  , setPaymentDescriptionSelector
-  , deferredBillingSelector
-  , setDeferredBillingSelector
-  , billingAgreementSelector
-  , setBillingAgreementSelector
   , managementURLSelector
-  , setManagementURLSelector
-  , tokenNotificationURLSelector
-  , setTokenNotificationURLSelector
-  , freeCancellationDateSelector
+  , paymentDescriptionSelector
+  , setBillingAgreementSelector
+  , setDeferredBillingSelector
   , setFreeCancellationDateSelector
-  , freeCancellationDateTimeZoneSelector
   , setFreeCancellationDateTimeZoneSelector
+  , setManagementURLSelector
+  , setPaymentDescriptionSelector
+  , setTokenNotificationURLSelector
+  , tokenNotificationURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,159 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPKDeferredPaymentRequest pkDeferredPaymentRequest => pkDeferredPaymentRequest -> IO (Id PKDeferredPaymentRequest)
-init_ pkDeferredPaymentRequest  =
-    sendMsg pkDeferredPaymentRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkDeferredPaymentRequest =
+  sendOwnedMessage pkDeferredPaymentRequest initSelector
 
 -- | @- initWithPaymentDescription:deferredBilling:managementURL:@
 initWithPaymentDescription_deferredBilling_managementURL :: (IsPKDeferredPaymentRequest pkDeferredPaymentRequest, IsNSString paymentDescription, IsPKDeferredPaymentSummaryItem deferredBilling, IsNSURL managementURL) => pkDeferredPaymentRequest -> paymentDescription -> deferredBilling -> managementURL -> IO (Id PKDeferredPaymentRequest)
-initWithPaymentDescription_deferredBilling_managementURL pkDeferredPaymentRequest  paymentDescription deferredBilling managementURL =
-  withObjCPtr paymentDescription $ \raw_paymentDescription ->
-    withObjCPtr deferredBilling $ \raw_deferredBilling ->
-      withObjCPtr managementURL $ \raw_managementURL ->
-          sendMsg pkDeferredPaymentRequest (mkSelector "initWithPaymentDescription:deferredBilling:managementURL:") (retPtr retVoid) [argPtr (castPtr raw_paymentDescription :: Ptr ()), argPtr (castPtr raw_deferredBilling :: Ptr ()), argPtr (castPtr raw_managementURL :: Ptr ())] >>= ownedObject . castPtr
+initWithPaymentDescription_deferredBilling_managementURL pkDeferredPaymentRequest paymentDescription deferredBilling managementURL =
+  sendOwnedMessage pkDeferredPaymentRequest initWithPaymentDescription_deferredBilling_managementURLSelector (toNSString paymentDescription) (toPKDeferredPaymentSummaryItem deferredBilling) (toNSURL managementURL)
 
 -- | @- paymentDescription@
 paymentDescription :: IsPKDeferredPaymentRequest pkDeferredPaymentRequest => pkDeferredPaymentRequest -> IO (Id NSString)
-paymentDescription pkDeferredPaymentRequest  =
-    sendMsg pkDeferredPaymentRequest (mkSelector "paymentDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentDescription pkDeferredPaymentRequest =
+  sendMessage pkDeferredPaymentRequest paymentDescriptionSelector
 
 -- | @- setPaymentDescription:@
 setPaymentDescription :: (IsPKDeferredPaymentRequest pkDeferredPaymentRequest, IsNSString value) => pkDeferredPaymentRequest -> value -> IO ()
-setPaymentDescription pkDeferredPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDeferredPaymentRequest (mkSelector "setPaymentDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaymentDescription pkDeferredPaymentRequest value =
+  sendMessage pkDeferredPaymentRequest setPaymentDescriptionSelector (toNSString value)
 
 -- | @- deferredBilling@
 deferredBilling :: IsPKDeferredPaymentRequest pkDeferredPaymentRequest => pkDeferredPaymentRequest -> IO (Id PKDeferredPaymentSummaryItem)
-deferredBilling pkDeferredPaymentRequest  =
-    sendMsg pkDeferredPaymentRequest (mkSelector "deferredBilling") (retPtr retVoid) [] >>= retainedObject . castPtr
+deferredBilling pkDeferredPaymentRequest =
+  sendMessage pkDeferredPaymentRequest deferredBillingSelector
 
 -- | @- setDeferredBilling:@
 setDeferredBilling :: (IsPKDeferredPaymentRequest pkDeferredPaymentRequest, IsPKDeferredPaymentSummaryItem value) => pkDeferredPaymentRequest -> value -> IO ()
-setDeferredBilling pkDeferredPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDeferredPaymentRequest (mkSelector "setDeferredBilling:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeferredBilling pkDeferredPaymentRequest value =
+  sendMessage pkDeferredPaymentRequest setDeferredBillingSelector (toPKDeferredPaymentSummaryItem value)
 
 -- | @- billingAgreement@
 billingAgreement :: IsPKDeferredPaymentRequest pkDeferredPaymentRequest => pkDeferredPaymentRequest -> IO (Id NSString)
-billingAgreement pkDeferredPaymentRequest  =
-    sendMsg pkDeferredPaymentRequest (mkSelector "billingAgreement") (retPtr retVoid) [] >>= retainedObject . castPtr
+billingAgreement pkDeferredPaymentRequest =
+  sendMessage pkDeferredPaymentRequest billingAgreementSelector
 
 -- | @- setBillingAgreement:@
 setBillingAgreement :: (IsPKDeferredPaymentRequest pkDeferredPaymentRequest, IsNSString value) => pkDeferredPaymentRequest -> value -> IO ()
-setBillingAgreement pkDeferredPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDeferredPaymentRequest (mkSelector "setBillingAgreement:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBillingAgreement pkDeferredPaymentRequest value =
+  sendMessage pkDeferredPaymentRequest setBillingAgreementSelector (toNSString value)
 
 -- | @- managementURL@
 managementURL :: IsPKDeferredPaymentRequest pkDeferredPaymentRequest => pkDeferredPaymentRequest -> IO (Id NSURL)
-managementURL pkDeferredPaymentRequest  =
-    sendMsg pkDeferredPaymentRequest (mkSelector "managementURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+managementURL pkDeferredPaymentRequest =
+  sendMessage pkDeferredPaymentRequest managementURLSelector
 
 -- | @- setManagementURL:@
 setManagementURL :: (IsPKDeferredPaymentRequest pkDeferredPaymentRequest, IsNSURL value) => pkDeferredPaymentRequest -> value -> IO ()
-setManagementURL pkDeferredPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDeferredPaymentRequest (mkSelector "setManagementURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setManagementURL pkDeferredPaymentRequest value =
+  sendMessage pkDeferredPaymentRequest setManagementURLSelector (toNSURL value)
 
 -- | @- tokenNotificationURL@
 tokenNotificationURL :: IsPKDeferredPaymentRequest pkDeferredPaymentRequest => pkDeferredPaymentRequest -> IO (Id NSURL)
-tokenNotificationURL pkDeferredPaymentRequest  =
-    sendMsg pkDeferredPaymentRequest (mkSelector "tokenNotificationURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+tokenNotificationURL pkDeferredPaymentRequest =
+  sendMessage pkDeferredPaymentRequest tokenNotificationURLSelector
 
 -- | @- setTokenNotificationURL:@
 setTokenNotificationURL :: (IsPKDeferredPaymentRequest pkDeferredPaymentRequest, IsNSURL value) => pkDeferredPaymentRequest -> value -> IO ()
-setTokenNotificationURL pkDeferredPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDeferredPaymentRequest (mkSelector "setTokenNotificationURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTokenNotificationURL pkDeferredPaymentRequest value =
+  sendMessage pkDeferredPaymentRequest setTokenNotificationURLSelector (toNSURL value)
 
 -- | @- freeCancellationDate@
 freeCancellationDate :: IsPKDeferredPaymentRequest pkDeferredPaymentRequest => pkDeferredPaymentRequest -> IO (Id NSDate)
-freeCancellationDate pkDeferredPaymentRequest  =
-    sendMsg pkDeferredPaymentRequest (mkSelector "freeCancellationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+freeCancellationDate pkDeferredPaymentRequest =
+  sendMessage pkDeferredPaymentRequest freeCancellationDateSelector
 
 -- | @- setFreeCancellationDate:@
 setFreeCancellationDate :: (IsPKDeferredPaymentRequest pkDeferredPaymentRequest, IsNSDate value) => pkDeferredPaymentRequest -> value -> IO ()
-setFreeCancellationDate pkDeferredPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDeferredPaymentRequest (mkSelector "setFreeCancellationDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFreeCancellationDate pkDeferredPaymentRequest value =
+  sendMessage pkDeferredPaymentRequest setFreeCancellationDateSelector (toNSDate value)
 
 -- | @- freeCancellationDateTimeZone@
 freeCancellationDateTimeZone :: IsPKDeferredPaymentRequest pkDeferredPaymentRequest => pkDeferredPaymentRequest -> IO (Id NSTimeZone)
-freeCancellationDateTimeZone pkDeferredPaymentRequest  =
-    sendMsg pkDeferredPaymentRequest (mkSelector "freeCancellationDateTimeZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+freeCancellationDateTimeZone pkDeferredPaymentRequest =
+  sendMessage pkDeferredPaymentRequest freeCancellationDateTimeZoneSelector
 
 -- | @- setFreeCancellationDateTimeZone:@
 setFreeCancellationDateTimeZone :: (IsPKDeferredPaymentRequest pkDeferredPaymentRequest, IsNSTimeZone value) => pkDeferredPaymentRequest -> value -> IO ()
-setFreeCancellationDateTimeZone pkDeferredPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkDeferredPaymentRequest (mkSelector "setFreeCancellationDateTimeZone:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFreeCancellationDateTimeZone pkDeferredPaymentRequest value =
+  sendMessage pkDeferredPaymentRequest setFreeCancellationDateTimeZoneSelector (toNSTimeZone value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKDeferredPaymentRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithPaymentDescription:deferredBilling:managementURL:@
-initWithPaymentDescription_deferredBilling_managementURLSelector :: Selector
+initWithPaymentDescription_deferredBilling_managementURLSelector :: Selector '[Id NSString, Id PKDeferredPaymentSummaryItem, Id NSURL] (Id PKDeferredPaymentRequest)
 initWithPaymentDescription_deferredBilling_managementURLSelector = mkSelector "initWithPaymentDescription:deferredBilling:managementURL:"
 
 -- | @Selector@ for @paymentDescription@
-paymentDescriptionSelector :: Selector
+paymentDescriptionSelector :: Selector '[] (Id NSString)
 paymentDescriptionSelector = mkSelector "paymentDescription"
 
 -- | @Selector@ for @setPaymentDescription:@
-setPaymentDescriptionSelector :: Selector
+setPaymentDescriptionSelector :: Selector '[Id NSString] ()
 setPaymentDescriptionSelector = mkSelector "setPaymentDescription:"
 
 -- | @Selector@ for @deferredBilling@
-deferredBillingSelector :: Selector
+deferredBillingSelector :: Selector '[] (Id PKDeferredPaymentSummaryItem)
 deferredBillingSelector = mkSelector "deferredBilling"
 
 -- | @Selector@ for @setDeferredBilling:@
-setDeferredBillingSelector :: Selector
+setDeferredBillingSelector :: Selector '[Id PKDeferredPaymentSummaryItem] ()
 setDeferredBillingSelector = mkSelector "setDeferredBilling:"
 
 -- | @Selector@ for @billingAgreement@
-billingAgreementSelector :: Selector
+billingAgreementSelector :: Selector '[] (Id NSString)
 billingAgreementSelector = mkSelector "billingAgreement"
 
 -- | @Selector@ for @setBillingAgreement:@
-setBillingAgreementSelector :: Selector
+setBillingAgreementSelector :: Selector '[Id NSString] ()
 setBillingAgreementSelector = mkSelector "setBillingAgreement:"
 
 -- | @Selector@ for @managementURL@
-managementURLSelector :: Selector
+managementURLSelector :: Selector '[] (Id NSURL)
 managementURLSelector = mkSelector "managementURL"
 
 -- | @Selector@ for @setManagementURL:@
-setManagementURLSelector :: Selector
+setManagementURLSelector :: Selector '[Id NSURL] ()
 setManagementURLSelector = mkSelector "setManagementURL:"
 
 -- | @Selector@ for @tokenNotificationURL@
-tokenNotificationURLSelector :: Selector
+tokenNotificationURLSelector :: Selector '[] (Id NSURL)
 tokenNotificationURLSelector = mkSelector "tokenNotificationURL"
 
 -- | @Selector@ for @setTokenNotificationURL:@
-setTokenNotificationURLSelector :: Selector
+setTokenNotificationURLSelector :: Selector '[Id NSURL] ()
 setTokenNotificationURLSelector = mkSelector "setTokenNotificationURL:"
 
 -- | @Selector@ for @freeCancellationDate@
-freeCancellationDateSelector :: Selector
+freeCancellationDateSelector :: Selector '[] (Id NSDate)
 freeCancellationDateSelector = mkSelector "freeCancellationDate"
 
 -- | @Selector@ for @setFreeCancellationDate:@
-setFreeCancellationDateSelector :: Selector
+setFreeCancellationDateSelector :: Selector '[Id NSDate] ()
 setFreeCancellationDateSelector = mkSelector "setFreeCancellationDate:"
 
 -- | @Selector@ for @freeCancellationDateTimeZone@
-freeCancellationDateTimeZoneSelector :: Selector
+freeCancellationDateTimeZoneSelector :: Selector '[] (Id NSTimeZone)
 freeCancellationDateTimeZoneSelector = mkSelector "freeCancellationDateTimeZone"
 
 -- | @Selector@ for @setFreeCancellationDateTimeZone:@
-setFreeCancellationDateTimeZoneSelector :: Selector
+setFreeCancellationDateTimeZoneSelector :: Selector '[Id NSTimeZone] ()
 setFreeCancellationDateTimeZoneSelector = mkSelector "setFreeCancellationDateTimeZone:"
 

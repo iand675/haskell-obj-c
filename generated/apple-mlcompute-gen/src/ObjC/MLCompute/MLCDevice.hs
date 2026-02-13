@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,15 @@ module ObjC.MLCompute.MLCDevice
   , type_
   , actualDeviceType
   , gpuDevices
-  , cpuDeviceSelector
-  , gpuDeviceSelector
+  , actualDeviceTypeSelector
   , aneDeviceSelector
+  , cpuDeviceSelector
+  , deviceWithGPUDevicesSelector
   , deviceWithTypeSelector
   , deviceWithType_selectsMultipleComputeDevicesSelector
-  , deviceWithGPUDevicesSelector
-  , typeSelector
-  , actualDeviceTypeSelector
+  , gpuDeviceSelector
   , gpuDevicesSelector
+  , typeSelector
 
   -- * Enum types
   , MLCDeviceType(MLCDeviceType)
@@ -40,15 +41,11 @@ module ObjC.MLCompute.MLCDevice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,7 +62,7 @@ cpuDevice :: IO (Id MLCDevice)
 cpuDevice  =
   do
     cls' <- getRequiredClass "MLCDevice"
-    sendClassMsg cls' (mkSelector "cpuDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cpuDeviceSelector
 
 -- | Creates a device which uses a GPU, if any.
 --
@@ -76,7 +73,7 @@ gpuDevice :: IO (Id MLCDevice)
 gpuDevice  =
   do
     cls' <- getRequiredClass "MLCDevice"
-    sendClassMsg cls' (mkSelector "gpuDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gpuDeviceSelector
 
 -- | Creates a device which uses the Apple Neural Engine, if any.
 --
@@ -87,7 +84,7 @@ aneDevice :: IO (Id MLCDevice)
 aneDevice  =
   do
     cls' <- getRequiredClass "MLCDevice"
-    sendClassMsg cls' (mkSelector "aneDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' aneDeviceSelector
 
 -- | Create a MLCDevice object
 --
@@ -100,7 +97,7 @@ deviceWithType :: MLCDeviceType -> IO (Id MLCDevice)
 deviceWithType type_ =
   do
     cls' <- getRequiredClass "MLCDevice"
-    sendClassMsg cls' (mkSelector "deviceWithType:") (retPtr retVoid) [argCInt (coerce type_)] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithTypeSelector type_
 
 -- | Create a MLCDevice object that uses multiple devices if available
 --
@@ -115,7 +112,7 @@ deviceWithType_selectsMultipleComputeDevices :: MLCDeviceType -> Bool -> IO (Id 
 deviceWithType_selectsMultipleComputeDevices type_ selectsMultipleComputeDevices =
   do
     cls' <- getRequiredClass "MLCDevice"
-    sendClassMsg cls' (mkSelector "deviceWithType:selectsMultipleComputeDevices:") (retPtr retVoid) [argCInt (coerce type_), argCULong (if selectsMultipleComputeDevices then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithType_selectsMultipleComputeDevicesSelector type_ selectsMultipleComputeDevices
 
 -- | Create a MLCDevice object
 --
@@ -130,8 +127,7 @@ deviceWithGPUDevices :: IsNSArray gpus => gpus -> IO (Id MLCDevice)
 deviceWithGPUDevices gpus =
   do
     cls' <- getRequiredClass "MLCDevice"
-    withObjCPtr gpus $ \raw_gpus ->
-      sendClassMsg cls' (mkSelector "deviceWithGPUDevices:") (retPtr retVoid) [argPtr (castPtr raw_gpus :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithGPUDevicesSelector (toNSArray gpus)
 
 -- | type
 --
@@ -141,8 +137,8 @@ deviceWithGPUDevices gpus =
 --
 -- ObjC selector: @- type@
 type_ :: IsMLCDevice mlcDevice => mlcDevice -> IO MLCDeviceType
-type_ mlcDevice  =
-    fmap (coerce :: CInt -> MLCDeviceType) $ sendMsg mlcDevice (mkSelector "type") retCInt []
+type_ mlcDevice =
+  sendMessage mlcDevice typeSelector
 
 -- | actualDeviceType
 --
@@ -152,51 +148,51 @@ type_ mlcDevice  =
 --
 -- ObjC selector: @- actualDeviceType@
 actualDeviceType :: IsMLCDevice mlcDevice => mlcDevice -> IO MLCDeviceType
-actualDeviceType mlcDevice  =
-    fmap (coerce :: CInt -> MLCDeviceType) $ sendMsg mlcDevice (mkSelector "actualDeviceType") retCInt []
+actualDeviceType mlcDevice =
+  sendMessage mlcDevice actualDeviceTypeSelector
 
 -- | @- gpuDevices@
 gpuDevices :: IsMLCDevice mlcDevice => mlcDevice -> IO (Id NSArray)
-gpuDevices mlcDevice  =
-    sendMsg mlcDevice (mkSelector "gpuDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpuDevices mlcDevice =
+  sendMessage mlcDevice gpuDevicesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cpuDevice@
-cpuDeviceSelector :: Selector
+cpuDeviceSelector :: Selector '[] (Id MLCDevice)
 cpuDeviceSelector = mkSelector "cpuDevice"
 
 -- | @Selector@ for @gpuDevice@
-gpuDeviceSelector :: Selector
+gpuDeviceSelector :: Selector '[] (Id MLCDevice)
 gpuDeviceSelector = mkSelector "gpuDevice"
 
 -- | @Selector@ for @aneDevice@
-aneDeviceSelector :: Selector
+aneDeviceSelector :: Selector '[] (Id MLCDevice)
 aneDeviceSelector = mkSelector "aneDevice"
 
 -- | @Selector@ for @deviceWithType:@
-deviceWithTypeSelector :: Selector
+deviceWithTypeSelector :: Selector '[MLCDeviceType] (Id MLCDevice)
 deviceWithTypeSelector = mkSelector "deviceWithType:"
 
 -- | @Selector@ for @deviceWithType:selectsMultipleComputeDevices:@
-deviceWithType_selectsMultipleComputeDevicesSelector :: Selector
+deviceWithType_selectsMultipleComputeDevicesSelector :: Selector '[MLCDeviceType, Bool] (Id MLCDevice)
 deviceWithType_selectsMultipleComputeDevicesSelector = mkSelector "deviceWithType:selectsMultipleComputeDevices:"
 
 -- | @Selector@ for @deviceWithGPUDevices:@
-deviceWithGPUDevicesSelector :: Selector
+deviceWithGPUDevicesSelector :: Selector '[Id NSArray] (Id MLCDevice)
 deviceWithGPUDevicesSelector = mkSelector "deviceWithGPUDevices:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MLCDeviceType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @actualDeviceType@
-actualDeviceTypeSelector :: Selector
+actualDeviceTypeSelector :: Selector '[] MLCDeviceType
 actualDeviceTypeSelector = mkSelector "actualDeviceType"
 
 -- | @Selector@ for @gpuDevices@
-gpuDevicesSelector :: Selector
+gpuDevicesSelector :: Selector '[] (Id NSArray)
 gpuDevicesSelector = mkSelector "gpuDevices"
 

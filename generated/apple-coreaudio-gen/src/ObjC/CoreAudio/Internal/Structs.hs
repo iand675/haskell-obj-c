@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.CoreAudioTypes.Internal.Structs
 
 -- | AudioObjectPropertyAddress
@@ -44,6 +46,16 @@ argAudioObjectPropertyAddress = mkStorableArg audioObjectPropertyAddressStructTy
 retAudioObjectPropertyAddress :: RetType AudioObjectPropertyAddress
 retAudioObjectPropertyAddress = mkStorableRetType audioObjectPropertyAddressStructType
 
+instance ObjCArgument AudioObjectPropertyAddress where
+  withObjCArg x k = k (argAudioObjectPropertyAddress x)
+
+instance ObjCReturn AudioObjectPropertyAddress where
+  type RawReturn AudioObjectPropertyAddress = AudioObjectPropertyAddress
+  objcRetType = retAudioObjectPropertyAddress
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AudioStreamRangedDescription
 --
 -- This structure allows a specific sample rate range to be associated with an                    AudioStreamBasicDescription that specifies its sample rate as                    kAudioStreamAnyRate.
@@ -72,3 +84,13 @@ argAudioStreamRangedDescription = mkStorableArg audioStreamRangedDescriptionStru
 
 retAudioStreamRangedDescription :: RetType AudioStreamRangedDescription
 retAudioStreamRangedDescription = mkStorableRetType audioStreamRangedDescriptionStructType
+
+instance ObjCArgument AudioStreamRangedDescription where
+  withObjCArg x k = k (argAudioStreamRangedDescription x)
+
+instance ObjCReturn AudioStreamRangedDescription where
+  type RawReturn AudioStreamRangedDescription = AudioStreamRangedDescription
+  objcRetType = retAudioStreamRangedDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

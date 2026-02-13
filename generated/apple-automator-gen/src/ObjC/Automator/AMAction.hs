@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,34 +36,34 @@ module ObjC.Automator.AMAction
   , output
   , setOutput
   , stopped
-  , initWithDefinition_fromArchiveSelector
-  , initWithContentsOfURL_errorSelector
-  , runWithInput_fromAction_errorSelector
-  , runWithInput_errorSelector
-  , runAsynchronouslyWithInputSelector
-  , willFinishRunningSelector
-  , didFinishRunningWithErrorSelector
-  , finishRunningWithErrorSelector
-  , stopSelector
-  , resetSelector
-  , writeToDictionarySelector
-  , openedSelector
   , activatedSelector
   , closedSelector
-  , updateParametersSelector
-  , parametersUpdatedSelector
+  , didFinishRunningWithErrorSelector
+  , finishRunningWithErrorSelector
+  , ignoresInputSelector
+  , initWithContentsOfURL_errorSelector
+  , initWithDefinition_fromArchiveSelector
   , logMessageWithLevel_formatSelector
   , nameSelector
-  , ignoresInputSelector
-  , selectedInputTypeSelector
-  , setSelectedInputTypeSelector
-  , selectedOutputTypeSelector
-  , setSelectedOutputTypeSelector
-  , progressValueSelector
-  , setProgressValueSelector
+  , openedSelector
   , outputSelector
+  , parametersUpdatedSelector
+  , progressValueSelector
+  , resetSelector
+  , runAsynchronouslyWithInputSelector
+  , runWithInput_errorSelector
+  , runWithInput_fromAction_errorSelector
+  , selectedInputTypeSelector
+  , selectedOutputTypeSelector
   , setOutputSelector
+  , setProgressValueSelector
+  , setSelectedInputTypeSelector
+  , setSelectedOutputTypeSelector
+  , stopSelector
   , stoppedSelector
+  , updateParametersSelector
+  , willFinishRunningSelector
+  , writeToDictionarySelector
 
   -- * Enum types
   , AMLogLevel(AMLogLevel)
@@ -73,15 +74,11 @@ module ObjC.Automator.AMAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -91,267 +88,257 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDefinition:fromArchive:@
 initWithDefinition_fromArchive :: (IsAMAction amAction, IsNSDictionary dict) => amAction -> dict -> Bool -> IO (Id AMAction)
-initWithDefinition_fromArchive amAction  dict archived =
-  withObjCPtr dict $ \raw_dict ->
-      sendMsg amAction (mkSelector "initWithDefinition:fromArchive:") (retPtr retVoid) [argPtr (castPtr raw_dict :: Ptr ()), argCULong (if archived then 1 else 0)] >>= ownedObject . castPtr
+initWithDefinition_fromArchive amAction dict archived =
+  sendOwnedMessage amAction initWithDefinition_fromArchiveSelector (toNSDictionary dict) archived
 
 -- | @- initWithContentsOfURL:error:@
 initWithContentsOfURL_error :: (IsAMAction amAction, IsNSURL fileURL, IsNSError outError) => amAction -> fileURL -> outError -> IO (Id AMAction)
-initWithContentsOfURL_error amAction  fileURL outError =
-  withObjCPtr fileURL $ \raw_fileURL ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg amAction (mkSelector "initWithContentsOfURL:error:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL_error amAction fileURL outError =
+  sendOwnedMessage amAction initWithContentsOfURL_errorSelector (toNSURL fileURL) (toNSError outError)
 
 -- | @- runWithInput:fromAction:error:@
 runWithInput_fromAction_error :: (IsAMAction amAction, IsAMAction anAction, IsNSDictionary errorInfo) => amAction -> RawId -> anAction -> errorInfo -> IO RawId
-runWithInput_fromAction_error amAction  input anAction errorInfo =
-  withObjCPtr anAction $ \raw_anAction ->
-    withObjCPtr errorInfo $ \raw_errorInfo ->
-        fmap (RawId . castPtr) $ sendMsg amAction (mkSelector "runWithInput:fromAction:error:") (retPtr retVoid) [argPtr (castPtr (unRawId input) :: Ptr ()), argPtr (castPtr raw_anAction :: Ptr ()), argPtr (castPtr raw_errorInfo :: Ptr ())]
+runWithInput_fromAction_error amAction input anAction errorInfo =
+  sendMessage amAction runWithInput_fromAction_errorSelector input (toAMAction anAction) (toNSDictionary errorInfo)
 
 -- | @- runWithInput:error:@
 runWithInput_error :: (IsAMAction amAction, IsNSError error_) => amAction -> RawId -> error_ -> IO RawId
-runWithInput_error amAction  input error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap (RawId . castPtr) $ sendMsg amAction (mkSelector "runWithInput:error:") (retPtr retVoid) [argPtr (castPtr (unRawId input) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+runWithInput_error amAction input error_ =
+  sendMessage amAction runWithInput_errorSelector input (toNSError error_)
 
 -- | @- runAsynchronouslyWithInput:@
 runAsynchronouslyWithInput :: IsAMAction amAction => amAction -> RawId -> IO ()
-runAsynchronouslyWithInput amAction  input =
-    sendMsg amAction (mkSelector "runAsynchronouslyWithInput:") retVoid [argPtr (castPtr (unRawId input) :: Ptr ())]
+runAsynchronouslyWithInput amAction input =
+  sendMessage amAction runAsynchronouslyWithInputSelector input
 
 -- | @- willFinishRunning@
 willFinishRunning :: IsAMAction amAction => amAction -> IO ()
-willFinishRunning amAction  =
-    sendMsg amAction (mkSelector "willFinishRunning") retVoid []
+willFinishRunning amAction =
+  sendMessage amAction willFinishRunningSelector
 
 -- | @- didFinishRunningWithError:@
 didFinishRunningWithError :: (IsAMAction amAction, IsNSDictionary errorInfo) => amAction -> errorInfo -> IO ()
-didFinishRunningWithError amAction  errorInfo =
-  withObjCPtr errorInfo $ \raw_errorInfo ->
-      sendMsg amAction (mkSelector "didFinishRunningWithError:") retVoid [argPtr (castPtr raw_errorInfo :: Ptr ())]
+didFinishRunningWithError amAction errorInfo =
+  sendMessage amAction didFinishRunningWithErrorSelector (toNSDictionary errorInfo)
 
 -- | @- finishRunningWithError:@
 finishRunningWithError :: (IsAMAction amAction, IsNSError error_) => amAction -> error_ -> IO ()
-finishRunningWithError amAction  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg amAction (mkSelector "finishRunningWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+finishRunningWithError amAction error_ =
+  sendMessage amAction finishRunningWithErrorSelector (toNSError error_)
 
 -- | @- stop@
 stop :: IsAMAction amAction => amAction -> IO ()
-stop amAction  =
-    sendMsg amAction (mkSelector "stop") retVoid []
+stop amAction =
+  sendMessage amAction stopSelector
 
 -- | @- reset@
 reset :: IsAMAction amAction => amAction -> IO ()
-reset amAction  =
-    sendMsg amAction (mkSelector "reset") retVoid []
+reset amAction =
+  sendMessage amAction resetSelector
 
 -- | @- writeToDictionary:@
 writeToDictionary :: (IsAMAction amAction, IsNSMutableDictionary dictionary) => amAction -> dictionary -> IO ()
-writeToDictionary amAction  dictionary =
-  withObjCPtr dictionary $ \raw_dictionary ->
-      sendMsg amAction (mkSelector "writeToDictionary:") retVoid [argPtr (castPtr raw_dictionary :: Ptr ())]
+writeToDictionary amAction dictionary =
+  sendMessage amAction writeToDictionarySelector (toNSMutableDictionary dictionary)
 
 -- | @- opened@
 opened :: IsAMAction amAction => amAction -> IO ()
-opened amAction  =
-    sendMsg amAction (mkSelector "opened") retVoid []
+opened amAction =
+  sendMessage amAction openedSelector
 
 -- | @- activated@
 activated :: IsAMAction amAction => amAction -> IO ()
-activated amAction  =
-    sendMsg amAction (mkSelector "activated") retVoid []
+activated amAction =
+  sendMessage amAction activatedSelector
 
 -- | @- closed@
 closed :: IsAMAction amAction => amAction -> IO ()
-closed amAction  =
-    sendMsg amAction (mkSelector "closed") retVoid []
+closed amAction =
+  sendMessage amAction closedSelector
 
 -- | @- updateParameters@
 updateParameters :: IsAMAction amAction => amAction -> IO ()
-updateParameters amAction  =
-    sendMsg amAction (mkSelector "updateParameters") retVoid []
+updateParameters amAction =
+  sendMessage amAction updateParametersSelector
 
 -- | @- parametersUpdated@
 parametersUpdated :: IsAMAction amAction => amAction -> IO ()
-parametersUpdated amAction  =
-    sendMsg amAction (mkSelector "parametersUpdated") retVoid []
+parametersUpdated amAction =
+  sendMessage amAction parametersUpdatedSelector
 
 -- | @- logMessageWithLevel:format:@
 logMessageWithLevel_format :: (IsAMAction amAction, IsNSString format) => amAction -> AMLogLevel -> format -> IO ()
-logMessageWithLevel_format amAction  level format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg amAction (mkSelector "logMessageWithLevel:format:") retVoid [argCULong (coerce level), argPtr (castPtr raw_format :: Ptr ())]
+logMessageWithLevel_format amAction level format =
+  sendMessage amAction logMessageWithLevel_formatSelector level (toNSString format)
 
 -- | @- name@
 name :: IsAMAction amAction => amAction -> IO RawId
-name amAction  =
-    fmap (RawId . castPtr) $ sendMsg amAction (mkSelector "name") (retPtr retVoid) []
+name amAction =
+  sendMessage amAction nameSelector
 
 -- | @- ignoresInput@
 ignoresInput :: IsAMAction amAction => amAction -> IO Bool
-ignoresInput amAction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg amAction (mkSelector "ignoresInput") retCULong []
+ignoresInput amAction =
+  sendMessage amAction ignoresInputSelector
 
 -- | @- selectedInputType@
 selectedInputType :: IsAMAction amAction => amAction -> IO RawId
-selectedInputType amAction  =
-    fmap (RawId . castPtr) $ sendMsg amAction (mkSelector "selectedInputType") (retPtr retVoid) []
+selectedInputType amAction =
+  sendMessage amAction selectedInputTypeSelector
 
 -- | @- setSelectedInputType:@
 setSelectedInputType :: IsAMAction amAction => amAction -> RawId -> IO ()
-setSelectedInputType amAction  value =
-    sendMsg amAction (mkSelector "setSelectedInputType:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSelectedInputType amAction value =
+  sendMessage amAction setSelectedInputTypeSelector value
 
 -- | @- selectedOutputType@
 selectedOutputType :: IsAMAction amAction => amAction -> IO RawId
-selectedOutputType amAction  =
-    fmap (RawId . castPtr) $ sendMsg amAction (mkSelector "selectedOutputType") (retPtr retVoid) []
+selectedOutputType amAction =
+  sendMessage amAction selectedOutputTypeSelector
 
 -- | @- setSelectedOutputType:@
 setSelectedOutputType :: IsAMAction amAction => amAction -> RawId -> IO ()
-setSelectedOutputType amAction  value =
-    sendMsg amAction (mkSelector "setSelectedOutputType:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setSelectedOutputType amAction value =
+  sendMessage amAction setSelectedOutputTypeSelector value
 
 -- | @- progressValue@
 progressValue :: IsAMAction amAction => amAction -> IO CDouble
-progressValue amAction  =
-    sendMsg amAction (mkSelector "progressValue") retCDouble []
+progressValue amAction =
+  sendMessage amAction progressValueSelector
 
 -- | @- setProgressValue:@
 setProgressValue :: IsAMAction amAction => amAction -> CDouble -> IO ()
-setProgressValue amAction  value =
-    sendMsg amAction (mkSelector "setProgressValue:") retVoid [argCDouble value]
+setProgressValue amAction value =
+  sendMessage amAction setProgressValueSelector value
 
 -- | @- output@
 output :: IsAMAction amAction => amAction -> IO RawId
-output amAction  =
-    fmap (RawId . castPtr) $ sendMsg amAction (mkSelector "output") (retPtr retVoid) []
+output amAction =
+  sendMessage amAction outputSelector
 
 -- | @- setOutput:@
 setOutput :: IsAMAction amAction => amAction -> RawId -> IO ()
-setOutput amAction  value =
-    sendMsg amAction (mkSelector "setOutput:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setOutput amAction value =
+  sendMessage amAction setOutputSelector value
 
 -- | @- stopped@
 stopped :: IsAMAction amAction => amAction -> IO Bool
-stopped amAction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg amAction (mkSelector "stopped") retCULong []
+stopped amAction =
+  sendMessage amAction stoppedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDefinition:fromArchive:@
-initWithDefinition_fromArchiveSelector :: Selector
+initWithDefinition_fromArchiveSelector :: Selector '[Id NSDictionary, Bool] (Id AMAction)
 initWithDefinition_fromArchiveSelector = mkSelector "initWithDefinition:fromArchive:"
 
 -- | @Selector@ for @initWithContentsOfURL:error:@
-initWithContentsOfURL_errorSelector :: Selector
+initWithContentsOfURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id AMAction)
 initWithContentsOfURL_errorSelector = mkSelector "initWithContentsOfURL:error:"
 
 -- | @Selector@ for @runWithInput:fromAction:error:@
-runWithInput_fromAction_errorSelector :: Selector
+runWithInput_fromAction_errorSelector :: Selector '[RawId, Id AMAction, Id NSDictionary] RawId
 runWithInput_fromAction_errorSelector = mkSelector "runWithInput:fromAction:error:"
 
 -- | @Selector@ for @runWithInput:error:@
-runWithInput_errorSelector :: Selector
+runWithInput_errorSelector :: Selector '[RawId, Id NSError] RawId
 runWithInput_errorSelector = mkSelector "runWithInput:error:"
 
 -- | @Selector@ for @runAsynchronouslyWithInput:@
-runAsynchronouslyWithInputSelector :: Selector
+runAsynchronouslyWithInputSelector :: Selector '[RawId] ()
 runAsynchronouslyWithInputSelector = mkSelector "runAsynchronouslyWithInput:"
 
 -- | @Selector@ for @willFinishRunning@
-willFinishRunningSelector :: Selector
+willFinishRunningSelector :: Selector '[] ()
 willFinishRunningSelector = mkSelector "willFinishRunning"
 
 -- | @Selector@ for @didFinishRunningWithError:@
-didFinishRunningWithErrorSelector :: Selector
+didFinishRunningWithErrorSelector :: Selector '[Id NSDictionary] ()
 didFinishRunningWithErrorSelector = mkSelector "didFinishRunningWithError:"
 
 -- | @Selector@ for @finishRunningWithError:@
-finishRunningWithErrorSelector :: Selector
+finishRunningWithErrorSelector :: Selector '[Id NSError] ()
 finishRunningWithErrorSelector = mkSelector "finishRunningWithError:"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @writeToDictionary:@
-writeToDictionarySelector :: Selector
+writeToDictionarySelector :: Selector '[Id NSMutableDictionary] ()
 writeToDictionarySelector = mkSelector "writeToDictionary:"
 
 -- | @Selector@ for @opened@
-openedSelector :: Selector
+openedSelector :: Selector '[] ()
 openedSelector = mkSelector "opened"
 
 -- | @Selector@ for @activated@
-activatedSelector :: Selector
+activatedSelector :: Selector '[] ()
 activatedSelector = mkSelector "activated"
 
 -- | @Selector@ for @closed@
-closedSelector :: Selector
+closedSelector :: Selector '[] ()
 closedSelector = mkSelector "closed"
 
 -- | @Selector@ for @updateParameters@
-updateParametersSelector :: Selector
+updateParametersSelector :: Selector '[] ()
 updateParametersSelector = mkSelector "updateParameters"
 
 -- | @Selector@ for @parametersUpdated@
-parametersUpdatedSelector :: Selector
+parametersUpdatedSelector :: Selector '[] ()
 parametersUpdatedSelector = mkSelector "parametersUpdated"
 
 -- | @Selector@ for @logMessageWithLevel:format:@
-logMessageWithLevel_formatSelector :: Selector
+logMessageWithLevel_formatSelector :: Selector '[AMLogLevel, Id NSString] ()
 logMessageWithLevel_formatSelector = mkSelector "logMessageWithLevel:format:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] RawId
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @ignoresInput@
-ignoresInputSelector :: Selector
+ignoresInputSelector :: Selector '[] Bool
 ignoresInputSelector = mkSelector "ignoresInput"
 
 -- | @Selector@ for @selectedInputType@
-selectedInputTypeSelector :: Selector
+selectedInputTypeSelector :: Selector '[] RawId
 selectedInputTypeSelector = mkSelector "selectedInputType"
 
 -- | @Selector@ for @setSelectedInputType:@
-setSelectedInputTypeSelector :: Selector
+setSelectedInputTypeSelector :: Selector '[RawId] ()
 setSelectedInputTypeSelector = mkSelector "setSelectedInputType:"
 
 -- | @Selector@ for @selectedOutputType@
-selectedOutputTypeSelector :: Selector
+selectedOutputTypeSelector :: Selector '[] RawId
 selectedOutputTypeSelector = mkSelector "selectedOutputType"
 
 -- | @Selector@ for @setSelectedOutputType:@
-setSelectedOutputTypeSelector :: Selector
+setSelectedOutputTypeSelector :: Selector '[RawId] ()
 setSelectedOutputTypeSelector = mkSelector "setSelectedOutputType:"
 
 -- | @Selector@ for @progressValue@
-progressValueSelector :: Selector
+progressValueSelector :: Selector '[] CDouble
 progressValueSelector = mkSelector "progressValue"
 
 -- | @Selector@ for @setProgressValue:@
-setProgressValueSelector :: Selector
+setProgressValueSelector :: Selector '[CDouble] ()
 setProgressValueSelector = mkSelector "setProgressValue:"
 
 -- | @Selector@ for @output@
-outputSelector :: Selector
+outputSelector :: Selector '[] RawId
 outputSelector = mkSelector "output"
 
 -- | @Selector@ for @setOutput:@
-setOutputSelector :: Selector
+setOutputSelector :: Selector '[RawId] ()
 setOutputSelector = mkSelector "setOutput:"
 
 -- | @Selector@ for @stopped@
-stoppedSelector :: Selector
+stoppedSelector :: Selector '[] Bool
 stoppedSelector = mkSelector "stopped"
 

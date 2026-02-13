@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.MailKit.MEDecodedMessageBanner
   , title
   , primaryActionTitle
   , dismissable
-  , newSelector
+  , dismissableSelector
   , initSelector
   , initWithTitle_primaryActionTitle_dismissableSelector
-  , titleSelector
+  , newSelector
   , primaryActionTitleSelector
-  , dismissableSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,60 +41,58 @@ new :: IO (Id MEDecodedMessageBanner)
 new  =
   do
     cls' <- getRequiredClass "MEDecodedMessageBanner"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMEDecodedMessageBanner meDecodedMessageBanner => meDecodedMessageBanner -> IO (Id MEDecodedMessageBanner)
-init_ meDecodedMessageBanner  =
-    sendMsg meDecodedMessageBanner (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meDecodedMessageBanner =
+  sendOwnedMessage meDecodedMessageBanner initSelector
 
 -- | @- initWithTitle:primaryActionTitle:dismissable:@
 initWithTitle_primaryActionTitle_dismissable :: (IsMEDecodedMessageBanner meDecodedMessageBanner, IsNSString title, IsNSString primaryActionTitle) => meDecodedMessageBanner -> title -> primaryActionTitle -> Bool -> IO (Id MEDecodedMessageBanner)
-initWithTitle_primaryActionTitle_dismissable meDecodedMessageBanner  title primaryActionTitle dismissable =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr primaryActionTitle $ \raw_primaryActionTitle ->
-        sendMsg meDecodedMessageBanner (mkSelector "initWithTitle:primaryActionTitle:dismissable:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_primaryActionTitle :: Ptr ()), argCULong (if dismissable then 1 else 0)] >>= ownedObject . castPtr
+initWithTitle_primaryActionTitle_dismissable meDecodedMessageBanner title primaryActionTitle dismissable =
+  sendOwnedMessage meDecodedMessageBanner initWithTitle_primaryActionTitle_dismissableSelector (toNSString title) (toNSString primaryActionTitle) dismissable
 
 -- | @- title@
 title :: IsMEDecodedMessageBanner meDecodedMessageBanner => meDecodedMessageBanner -> IO (Id NSString)
-title meDecodedMessageBanner  =
-    sendMsg meDecodedMessageBanner (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title meDecodedMessageBanner =
+  sendMessage meDecodedMessageBanner titleSelector
 
 -- | @- primaryActionTitle@
 primaryActionTitle :: IsMEDecodedMessageBanner meDecodedMessageBanner => meDecodedMessageBanner -> IO (Id NSString)
-primaryActionTitle meDecodedMessageBanner  =
-    sendMsg meDecodedMessageBanner (mkSelector "primaryActionTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryActionTitle meDecodedMessageBanner =
+  sendMessage meDecodedMessageBanner primaryActionTitleSelector
 
 -- | @- dismissable@
 dismissable :: IsMEDecodedMessageBanner meDecodedMessageBanner => meDecodedMessageBanner -> IO Bool
-dismissable meDecodedMessageBanner  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meDecodedMessageBanner (mkSelector "dismissable") retCULong []
+dismissable meDecodedMessageBanner =
+  sendMessage meDecodedMessageBanner dismissableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEDecodedMessageBanner)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEDecodedMessageBanner)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithTitle:primaryActionTitle:dismissable:@
-initWithTitle_primaryActionTitle_dismissableSelector :: Selector
+initWithTitle_primaryActionTitle_dismissableSelector :: Selector '[Id NSString, Id NSString, Bool] (Id MEDecodedMessageBanner)
 initWithTitle_primaryActionTitle_dismissableSelector = mkSelector "initWithTitle:primaryActionTitle:dismissable:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @primaryActionTitle@
-primaryActionTitleSelector :: Selector
+primaryActionTitleSelector :: Selector '[] (Id NSString)
 primaryActionTitleSelector = mkSelector "primaryActionTitle"
 
 -- | @Selector@ for @dismissable@
-dismissableSelector :: Selector
+dismissableSelector :: Selector '[] Bool
 dismissableSelector = mkSelector "dismissable"
 

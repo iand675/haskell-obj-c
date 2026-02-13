@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,46 +34,42 @@ module ObjC.Quartz.QCView
   , start
   , stop
   , play
+  , autostartsRenderingSelector
+  , createSnapshotImageOfTypeSelector
+  , eraseColorSelector
+  , eraseSelector
+  , eventForwardingMaskSelector
+  , isPausedRenderingSelector
+  , isRenderingSelector
   , loadCompositionFromFileSelector
   , loadCompositionSelector
   , loadedCompositionSelector
-  , unloadCompositionSelector
-  , setAutostartsRenderingSelector
-  , autostartsRenderingSelector
-  , setEraseColorSelector
-  , eraseColorSelector
-  , setEventForwardingMaskSelector
-  , eventForwardingMaskSelector
-  , setMaxRenderingFrameRateSelector
   , maxRenderingFrameRateSelector
-  , eraseSelector
-  , startRenderingSelector
-  , renderAtTime_argumentsSelector
-  , pauseRenderingSelector
-  , isPausedRenderingSelector
-  , resumeRenderingSelector
-  , stopRenderingSelector
-  , isRenderingSelector
-  , snapshotImageSelector
-  , createSnapshotImageOfTypeSelector
   , openGLContextSelector
   , openGLPixelFormatSelector
-  , startSelector
-  , stopSelector
+  , pauseRenderingSelector
   , playSelector
+  , renderAtTime_argumentsSelector
+  , resumeRenderingSelector
+  , setAutostartsRenderingSelector
+  , setEraseColorSelector
+  , setEventForwardingMaskSelector
+  , setMaxRenderingFrameRateSelector
+  , snapshotImageSelector
+  , startRenderingSelector
+  , startSelector
+  , stopRenderingSelector
+  , stopSelector
+  , unloadCompositionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,253 +79,248 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- loadCompositionFromFile:@
 loadCompositionFromFile :: (IsQCView qcView, IsNSString path) => qcView -> path -> IO Bool
-loadCompositionFromFile qcView  path =
-  withObjCPtr path $ \raw_path ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcView (mkSelector "loadCompositionFromFile:") retCULong [argPtr (castPtr raw_path :: Ptr ())]
+loadCompositionFromFile qcView path =
+  sendMessage qcView loadCompositionFromFileSelector (toNSString path)
 
 -- | @- loadComposition:@
 loadComposition :: (IsQCView qcView, IsQCComposition composition) => qcView -> composition -> IO Bool
-loadComposition qcView  composition =
-  withObjCPtr composition $ \raw_composition ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcView (mkSelector "loadComposition:") retCULong [argPtr (castPtr raw_composition :: Ptr ())]
+loadComposition qcView composition =
+  sendMessage qcView loadCompositionSelector (toQCComposition composition)
 
 -- | @- loadedComposition@
 loadedComposition :: IsQCView qcView => qcView -> IO (Id QCComposition)
-loadedComposition qcView  =
-    sendMsg qcView (mkSelector "loadedComposition") (retPtr retVoid) [] >>= retainedObject . castPtr
+loadedComposition qcView =
+  sendMessage qcView loadedCompositionSelector
 
 -- | @- unloadComposition@
 unloadComposition :: IsQCView qcView => qcView -> IO ()
-unloadComposition qcView  =
-    sendMsg qcView (mkSelector "unloadComposition") retVoid []
+unloadComposition qcView =
+  sendMessage qcView unloadCompositionSelector
 
 -- | @- setAutostartsRendering:@
 setAutostartsRendering :: IsQCView qcView => qcView -> Bool -> IO ()
-setAutostartsRendering qcView  flag =
-    sendMsg qcView (mkSelector "setAutostartsRendering:") retVoid [argCULong (if flag then 1 else 0)]
+setAutostartsRendering qcView flag =
+  sendMessage qcView setAutostartsRenderingSelector flag
 
 -- | @- autostartsRendering@
 autostartsRendering :: IsQCView qcView => qcView -> IO Bool
-autostartsRendering qcView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcView (mkSelector "autostartsRendering") retCULong []
+autostartsRendering qcView =
+  sendMessage qcView autostartsRenderingSelector
 
 -- | @- setEraseColor:@
 setEraseColor :: (IsQCView qcView, IsNSColor color) => qcView -> color -> IO ()
-setEraseColor qcView  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg qcView (mkSelector "setEraseColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setEraseColor qcView color =
+  sendMessage qcView setEraseColorSelector (toNSColor color)
 
 -- | @- eraseColor@
 eraseColor :: IsQCView qcView => qcView -> IO (Id NSColor)
-eraseColor qcView  =
-    sendMsg qcView (mkSelector "eraseColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+eraseColor qcView =
+  sendMessage qcView eraseColorSelector
 
 -- | @- setEventForwardingMask:@
 setEventForwardingMask :: IsQCView qcView => qcView -> CULong -> IO ()
-setEventForwardingMask qcView  mask =
-    sendMsg qcView (mkSelector "setEventForwardingMask:") retVoid [argCULong mask]
+setEventForwardingMask qcView mask =
+  sendMessage qcView setEventForwardingMaskSelector mask
 
 -- | @- eventForwardingMask@
 eventForwardingMask :: IsQCView qcView => qcView -> IO CULong
-eventForwardingMask qcView  =
-    sendMsg qcView (mkSelector "eventForwardingMask") retCULong []
+eventForwardingMask qcView =
+  sendMessage qcView eventForwardingMaskSelector
 
 -- | @- setMaxRenderingFrameRate:@
 setMaxRenderingFrameRate :: IsQCView qcView => qcView -> CFloat -> IO ()
-setMaxRenderingFrameRate qcView  maxFPS =
-    sendMsg qcView (mkSelector "setMaxRenderingFrameRate:") retVoid [argCFloat maxFPS]
+setMaxRenderingFrameRate qcView maxFPS =
+  sendMessage qcView setMaxRenderingFrameRateSelector maxFPS
 
 -- | @- maxRenderingFrameRate@
 maxRenderingFrameRate :: IsQCView qcView => qcView -> IO CFloat
-maxRenderingFrameRate qcView  =
-    sendMsg qcView (mkSelector "maxRenderingFrameRate") retCFloat []
+maxRenderingFrameRate qcView =
+  sendMessage qcView maxRenderingFrameRateSelector
 
 -- | @- erase@
 erase :: IsQCView qcView => qcView -> IO ()
-erase qcView  =
-    sendMsg qcView (mkSelector "erase") retVoid []
+erase qcView =
+  sendMessage qcView eraseSelector
 
 -- | @- startRendering@
 startRendering :: IsQCView qcView => qcView -> IO Bool
-startRendering qcView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcView (mkSelector "startRendering") retCULong []
+startRendering qcView =
+  sendMessage qcView startRenderingSelector
 
 -- | @- renderAtTime:arguments:@
 renderAtTime_arguments :: (IsQCView qcView, IsNSDictionary arguments) => qcView -> CDouble -> arguments -> IO Bool
-renderAtTime_arguments qcView  time arguments =
-  withObjCPtr arguments $ \raw_arguments ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcView (mkSelector "renderAtTime:arguments:") retCULong [argCDouble time, argPtr (castPtr raw_arguments :: Ptr ())]
+renderAtTime_arguments qcView time arguments =
+  sendMessage qcView renderAtTime_argumentsSelector time (toNSDictionary arguments)
 
 -- | @- pauseRendering@
 pauseRendering :: IsQCView qcView => qcView -> IO ()
-pauseRendering qcView  =
-    sendMsg qcView (mkSelector "pauseRendering") retVoid []
+pauseRendering qcView =
+  sendMessage qcView pauseRenderingSelector
 
 -- | @- isPausedRendering@
 isPausedRendering :: IsQCView qcView => qcView -> IO Bool
-isPausedRendering qcView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcView (mkSelector "isPausedRendering") retCULong []
+isPausedRendering qcView =
+  sendMessage qcView isPausedRenderingSelector
 
 -- | @- resumeRendering@
 resumeRendering :: IsQCView qcView => qcView -> IO ()
-resumeRendering qcView  =
-    sendMsg qcView (mkSelector "resumeRendering") retVoid []
+resumeRendering qcView =
+  sendMessage qcView resumeRenderingSelector
 
 -- | @- stopRendering@
 stopRendering :: IsQCView qcView => qcView -> IO ()
-stopRendering qcView  =
-    sendMsg qcView (mkSelector "stopRendering") retVoid []
+stopRendering qcView =
+  sendMessage qcView stopRenderingSelector
 
 -- | @- isRendering@
 isRendering :: IsQCView qcView => qcView -> IO Bool
-isRendering qcView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcView (mkSelector "isRendering") retCULong []
+isRendering qcView =
+  sendMessage qcView isRenderingSelector
 
 -- | @- snapshotImage@
 snapshotImage :: IsQCView qcView => qcView -> IO (Id NSImage)
-snapshotImage qcView  =
-    sendMsg qcView (mkSelector "snapshotImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+snapshotImage qcView =
+  sendMessage qcView snapshotImageSelector
 
 -- | @- createSnapshotImageOfType:@
 createSnapshotImageOfType :: (IsQCView qcView, IsNSString type_) => qcView -> type_ -> IO RawId
-createSnapshotImageOfType qcView  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      fmap (RawId . castPtr) $ sendMsg qcView (mkSelector "createSnapshotImageOfType:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ())]
+createSnapshotImageOfType qcView type_ =
+  sendMessage qcView createSnapshotImageOfTypeSelector (toNSString type_)
 
 -- | @- openGLContext@
 openGLContext :: IsQCView qcView => qcView -> IO (Id NSOpenGLContext)
-openGLContext qcView  =
-    sendMsg qcView (mkSelector "openGLContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+openGLContext qcView =
+  sendMessage qcView openGLContextSelector
 
 -- | @- openGLPixelFormat@
 openGLPixelFormat :: IsQCView qcView => qcView -> IO (Id NSOpenGLPixelFormat)
-openGLPixelFormat qcView  =
-    sendMsg qcView (mkSelector "openGLPixelFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+openGLPixelFormat qcView =
+  sendMessage qcView openGLPixelFormatSelector
 
 -- | @- start:@
 start :: IsQCView qcView => qcView -> RawId -> IO ()
-start qcView  sender =
-    sendMsg qcView (mkSelector "start:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+start qcView sender =
+  sendMessage qcView startSelector sender
 
 -- | @- stop:@
 stop :: IsQCView qcView => qcView -> RawId -> IO ()
-stop qcView  sender =
-    sendMsg qcView (mkSelector "stop:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+stop qcView sender =
+  sendMessage qcView stopSelector sender
 
 -- | @- play:@
 play :: IsQCView qcView => qcView -> RawId -> IO ()
-play qcView  sender =
-    sendMsg qcView (mkSelector "play:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+play qcView sender =
+  sendMessage qcView playSelector sender
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadCompositionFromFile:@
-loadCompositionFromFileSelector :: Selector
+loadCompositionFromFileSelector :: Selector '[Id NSString] Bool
 loadCompositionFromFileSelector = mkSelector "loadCompositionFromFile:"
 
 -- | @Selector@ for @loadComposition:@
-loadCompositionSelector :: Selector
+loadCompositionSelector :: Selector '[Id QCComposition] Bool
 loadCompositionSelector = mkSelector "loadComposition:"
 
 -- | @Selector@ for @loadedComposition@
-loadedCompositionSelector :: Selector
+loadedCompositionSelector :: Selector '[] (Id QCComposition)
 loadedCompositionSelector = mkSelector "loadedComposition"
 
 -- | @Selector@ for @unloadComposition@
-unloadCompositionSelector :: Selector
+unloadCompositionSelector :: Selector '[] ()
 unloadCompositionSelector = mkSelector "unloadComposition"
 
 -- | @Selector@ for @setAutostartsRendering:@
-setAutostartsRenderingSelector :: Selector
+setAutostartsRenderingSelector :: Selector '[Bool] ()
 setAutostartsRenderingSelector = mkSelector "setAutostartsRendering:"
 
 -- | @Selector@ for @autostartsRendering@
-autostartsRenderingSelector :: Selector
+autostartsRenderingSelector :: Selector '[] Bool
 autostartsRenderingSelector = mkSelector "autostartsRendering"
 
 -- | @Selector@ for @setEraseColor:@
-setEraseColorSelector :: Selector
+setEraseColorSelector :: Selector '[Id NSColor] ()
 setEraseColorSelector = mkSelector "setEraseColor:"
 
 -- | @Selector@ for @eraseColor@
-eraseColorSelector :: Selector
+eraseColorSelector :: Selector '[] (Id NSColor)
 eraseColorSelector = mkSelector "eraseColor"
 
 -- | @Selector@ for @setEventForwardingMask:@
-setEventForwardingMaskSelector :: Selector
+setEventForwardingMaskSelector :: Selector '[CULong] ()
 setEventForwardingMaskSelector = mkSelector "setEventForwardingMask:"
 
 -- | @Selector@ for @eventForwardingMask@
-eventForwardingMaskSelector :: Selector
+eventForwardingMaskSelector :: Selector '[] CULong
 eventForwardingMaskSelector = mkSelector "eventForwardingMask"
 
 -- | @Selector@ for @setMaxRenderingFrameRate:@
-setMaxRenderingFrameRateSelector :: Selector
+setMaxRenderingFrameRateSelector :: Selector '[CFloat] ()
 setMaxRenderingFrameRateSelector = mkSelector "setMaxRenderingFrameRate:"
 
 -- | @Selector@ for @maxRenderingFrameRate@
-maxRenderingFrameRateSelector :: Selector
+maxRenderingFrameRateSelector :: Selector '[] CFloat
 maxRenderingFrameRateSelector = mkSelector "maxRenderingFrameRate"
 
 -- | @Selector@ for @erase@
-eraseSelector :: Selector
+eraseSelector :: Selector '[] ()
 eraseSelector = mkSelector "erase"
 
 -- | @Selector@ for @startRendering@
-startRenderingSelector :: Selector
+startRenderingSelector :: Selector '[] Bool
 startRenderingSelector = mkSelector "startRendering"
 
 -- | @Selector@ for @renderAtTime:arguments:@
-renderAtTime_argumentsSelector :: Selector
+renderAtTime_argumentsSelector :: Selector '[CDouble, Id NSDictionary] Bool
 renderAtTime_argumentsSelector = mkSelector "renderAtTime:arguments:"
 
 -- | @Selector@ for @pauseRendering@
-pauseRenderingSelector :: Selector
+pauseRenderingSelector :: Selector '[] ()
 pauseRenderingSelector = mkSelector "pauseRendering"
 
 -- | @Selector@ for @isPausedRendering@
-isPausedRenderingSelector :: Selector
+isPausedRenderingSelector :: Selector '[] Bool
 isPausedRenderingSelector = mkSelector "isPausedRendering"
 
 -- | @Selector@ for @resumeRendering@
-resumeRenderingSelector :: Selector
+resumeRenderingSelector :: Selector '[] ()
 resumeRenderingSelector = mkSelector "resumeRendering"
 
 -- | @Selector@ for @stopRendering@
-stopRenderingSelector :: Selector
+stopRenderingSelector :: Selector '[] ()
 stopRenderingSelector = mkSelector "stopRendering"
 
 -- | @Selector@ for @isRendering@
-isRenderingSelector :: Selector
+isRenderingSelector :: Selector '[] Bool
 isRenderingSelector = mkSelector "isRendering"
 
 -- | @Selector@ for @snapshotImage@
-snapshotImageSelector :: Selector
+snapshotImageSelector :: Selector '[] (Id NSImage)
 snapshotImageSelector = mkSelector "snapshotImage"
 
 -- | @Selector@ for @createSnapshotImageOfType:@
-createSnapshotImageOfTypeSelector :: Selector
+createSnapshotImageOfTypeSelector :: Selector '[Id NSString] RawId
 createSnapshotImageOfTypeSelector = mkSelector "createSnapshotImageOfType:"
 
 -- | @Selector@ for @openGLContext@
-openGLContextSelector :: Selector
+openGLContextSelector :: Selector '[] (Id NSOpenGLContext)
 openGLContextSelector = mkSelector "openGLContext"
 
 -- | @Selector@ for @openGLPixelFormat@
-openGLPixelFormatSelector :: Selector
+openGLPixelFormatSelector :: Selector '[] (Id NSOpenGLPixelFormat)
 openGLPixelFormatSelector = mkSelector "openGLPixelFormat"
 
 -- | @Selector@ for @start:@
-startSelector :: Selector
+startSelector :: Selector '[RawId] ()
 startSelector = mkSelector "start:"
 
 -- | @Selector@ for @stop:@
-stopSelector :: Selector
+stopSelector :: Selector '[RawId] ()
 stopSelector = mkSelector "stop:"
 
 -- | @Selector@ for @play:@
-playSelector :: Selector
+playSelector :: Selector '[RawId] ()
 playSelector = mkSelector "play:"
 

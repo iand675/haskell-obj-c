@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.SharedWithYouCore.SWPersonIdentityProof
   , inclusionHashes
   , publicKey
   , publicKeyIndex
+  , inclusionHashesSelector
   , initSelector
   , newSelector
-  , inclusionHashesSelector
-  , publicKeySelector
   , publicKeyIndexSelector
+  , publicKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSWPersonIdentityProof swPersonIdentityProof => swPersonIdentityProof -> IO (Id SWPersonIdentityProof)
-init_ swPersonIdentityProof  =
-    sendMsg swPersonIdentityProof (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swPersonIdentityProof =
+  sendOwnedMessage swPersonIdentityProof initSelector
 
 -- | @+ new@
 new :: IO (Id SWPersonIdentityProof)
 new  =
   do
     cls' <- getRequiredClass "SWPersonIdentityProof"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Hashes of missing Merkle tree nodes that can provide proof of inclusion.
 --
@@ -57,15 +54,15 @@ new  =
 --
 -- ObjC selector: @- inclusionHashes@
 inclusionHashes :: IsSWPersonIdentityProof swPersonIdentityProof => swPersonIdentityProof -> IO (Id NSArray)
-inclusionHashes swPersonIdentityProof  =
-    sendMsg swPersonIdentityProof (mkSelector "inclusionHashes") (retPtr retVoid) [] >>= retainedObject . castPtr
+inclusionHashes swPersonIdentityProof =
+  sendMessage swPersonIdentityProof inclusionHashesSelector
 
 -- | Public key of local device
 --
 -- ObjC selector: @- publicKey@
 publicKey :: IsSWPersonIdentityProof swPersonIdentityProof => swPersonIdentityProof -> IO (Id NSData)
-publicKey swPersonIdentityProof  =
-    sendMsg swPersonIdentityProof (mkSelector "publicKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicKey swPersonIdentityProof =
+  sendMessage swPersonIdentityProof publicKeySelector
 
 -- | Index of local public key in the Merkle tree
 --
@@ -73,30 +70,30 @@ publicKey swPersonIdentityProof  =
 --
 -- ObjC selector: @- publicKeyIndex@
 publicKeyIndex :: IsSWPersonIdentityProof swPersonIdentityProof => swPersonIdentityProof -> IO CULong
-publicKeyIndex swPersonIdentityProof  =
-    sendMsg swPersonIdentityProof (mkSelector "publicKeyIndex") retCULong []
+publicKeyIndex swPersonIdentityProof =
+  sendMessage swPersonIdentityProof publicKeyIndexSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWPersonIdentityProof)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWPersonIdentityProof)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @inclusionHashes@
-inclusionHashesSelector :: Selector
+inclusionHashesSelector :: Selector '[] (Id NSArray)
 inclusionHashesSelector = mkSelector "inclusionHashes"
 
 -- | @Selector@ for @publicKey@
-publicKeySelector :: Selector
+publicKeySelector :: Selector '[] (Id NSData)
 publicKeySelector = mkSelector "publicKey"
 
 -- | @Selector@ for @publicKeyIndex@
-publicKeyIndexSelector :: Selector
+publicKeyIndexSelector :: Selector '[] CULong
 publicKeyIndexSelector = mkSelector "publicKeyIndex"
 

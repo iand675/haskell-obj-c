@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.CloudKit.CKQueryNotification
   , recordFields
   , recordID
   , databaseScope
+  , databaseScopeSelector
   , queryNotificationReasonSelector
   , recordFieldsSelector
   , recordIDSelector
-  , databaseScopeSelector
 
   -- * Enum types
   , CKDatabaseScope(CKDatabaseScope)
@@ -32,15 +33,11 @@ module ObjC.CloudKit.CKQueryNotification
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- queryNotificationReason@
 queryNotificationReason :: IsCKQueryNotification ckQueryNotification => ckQueryNotification -> IO CKQueryNotificationReason
-queryNotificationReason ckQueryNotification  =
-    fmap (coerce :: CLong -> CKQueryNotificationReason) $ sendMsg ckQueryNotification (mkSelector "queryNotificationReason") retCLong []
+queryNotificationReason ckQueryNotification =
+  sendMessage ckQueryNotification queryNotificationReasonSelector
 
 -- | A set of key->value pairs for creates and updates.
 --
@@ -59,36 +56,36 @@ queryNotificationReason ckQueryNotification  =
 --
 -- ObjC selector: @- recordFields@
 recordFields :: IsCKQueryNotification ckQueryNotification => ckQueryNotification -> IO (Id NSDictionary)
-recordFields ckQueryNotification  =
-    sendMsg ckQueryNotification (mkSelector "recordFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordFields ckQueryNotification =
+  sendMessage ckQueryNotification recordFieldsSelector
 
 -- | @- recordID@
 recordID :: IsCKQueryNotification ckQueryNotification => ckQueryNotification -> IO (Id CKRecordID)
-recordID ckQueryNotification  =
-    sendMsg ckQueryNotification (mkSelector "recordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordID ckQueryNotification =
+  sendMessage ckQueryNotification recordIDSelector
 
 -- | @- databaseScope@
 databaseScope :: IsCKQueryNotification ckQueryNotification => ckQueryNotification -> IO CKDatabaseScope
-databaseScope ckQueryNotification  =
-    fmap (coerce :: CLong -> CKDatabaseScope) $ sendMsg ckQueryNotification (mkSelector "databaseScope") retCLong []
+databaseScope ckQueryNotification =
+  sendMessage ckQueryNotification databaseScopeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @queryNotificationReason@
-queryNotificationReasonSelector :: Selector
+queryNotificationReasonSelector :: Selector '[] CKQueryNotificationReason
 queryNotificationReasonSelector = mkSelector "queryNotificationReason"
 
 -- | @Selector@ for @recordFields@
-recordFieldsSelector :: Selector
+recordFieldsSelector :: Selector '[] (Id NSDictionary)
 recordFieldsSelector = mkSelector "recordFields"
 
 -- | @Selector@ for @recordID@
-recordIDSelector :: Selector
+recordIDSelector :: Selector '[] (Id CKRecordID)
 recordIDSelector = mkSelector "recordID"
 
 -- | @Selector@ for @databaseScope@
-databaseScopeSelector :: Selector
+databaseScopeSelector :: Selector '[] CKDatabaseScope
 databaseScopeSelector = mkSelector "databaseScope"
 

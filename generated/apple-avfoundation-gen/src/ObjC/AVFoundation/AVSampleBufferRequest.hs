@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,20 +26,20 @@ module ObjC.AVFoundation.AVSampleBufferRequest
   , setMaxSampleCount
   , mode
   , setMode
-  , initSelector
-  , newSelector
-  , initWithStartCursorSelector
-  , startCursorSelector
   , directionSelector
-  , setDirectionSelector
+  , initSelector
+  , initWithStartCursorSelector
   , limitCursorSelector
-  , setLimitCursorSelector
-  , preferredMinSampleCountSelector
-  , setPreferredMinSampleCountSelector
   , maxSampleCountSelector
-  , setMaxSampleCountSelector
   , modeSelector
+  , newSelector
+  , preferredMinSampleCountSelector
+  , setDirectionSelector
+  , setLimitCursorSelector
+  , setMaxSampleCountSelector
   , setModeSelector
+  , setPreferredMinSampleCountSelector
+  , startCursorSelector
 
   -- * Enum types
   , AVSampleBufferRequestDirection(AVSampleBufferRequestDirection)
@@ -52,15 +53,11 @@ module ObjC.AVFoundation.AVSampleBufferRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,135 +67,133 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> IO (Id AVSampleBufferRequest)
-init_ avSampleBufferRequest  =
-    sendMsg avSampleBufferRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avSampleBufferRequest =
+  sendOwnedMessage avSampleBufferRequest initSelector
 
 -- | @+ new@
 new :: IO (Id AVSampleBufferRequest)
 new  =
   do
     cls' <- getRequiredClass "AVSampleBufferRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithStartCursor:@
 initWithStartCursor :: (IsAVSampleBufferRequest avSampleBufferRequest, IsAVSampleCursor startCursor) => avSampleBufferRequest -> startCursor -> IO (Id AVSampleBufferRequest)
-initWithStartCursor avSampleBufferRequest  startCursor =
-  withObjCPtr startCursor $ \raw_startCursor ->
-      sendMsg avSampleBufferRequest (mkSelector "initWithStartCursor:") (retPtr retVoid) [argPtr (castPtr raw_startCursor :: Ptr ())] >>= ownedObject . castPtr
+initWithStartCursor avSampleBufferRequest startCursor =
+  sendOwnedMessage avSampleBufferRequest initWithStartCursorSelector (toAVSampleCursor startCursor)
 
 -- | @- startCursor@
 startCursor :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> IO (Id AVSampleCursor)
-startCursor avSampleBufferRequest  =
-    sendMsg avSampleBufferRequest (mkSelector "startCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+startCursor avSampleBufferRequest =
+  sendMessage avSampleBufferRequest startCursorSelector
 
 -- | @- direction@
 direction :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> IO AVSampleBufferRequestDirection
-direction avSampleBufferRequest  =
-    fmap (coerce :: CLong -> AVSampleBufferRequestDirection) $ sendMsg avSampleBufferRequest (mkSelector "direction") retCLong []
+direction avSampleBufferRequest =
+  sendMessage avSampleBufferRequest directionSelector
 
 -- | @- setDirection:@
 setDirection :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> AVSampleBufferRequestDirection -> IO ()
-setDirection avSampleBufferRequest  value =
-    sendMsg avSampleBufferRequest (mkSelector "setDirection:") retVoid [argCLong (coerce value)]
+setDirection avSampleBufferRequest value =
+  sendMessage avSampleBufferRequest setDirectionSelector value
 
 -- | @- limitCursor@
 limitCursor :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> IO (Id AVSampleCursor)
-limitCursor avSampleBufferRequest  =
-    sendMsg avSampleBufferRequest (mkSelector "limitCursor") (retPtr retVoid) [] >>= retainedObject . castPtr
+limitCursor avSampleBufferRequest =
+  sendMessage avSampleBufferRequest limitCursorSelector
 
 -- | @- setLimitCursor:@
 setLimitCursor :: (IsAVSampleBufferRequest avSampleBufferRequest, IsAVSampleCursor value) => avSampleBufferRequest -> value -> IO ()
-setLimitCursor avSampleBufferRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSampleBufferRequest (mkSelector "setLimitCursor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLimitCursor avSampleBufferRequest value =
+  sendMessage avSampleBufferRequest setLimitCursorSelector (toAVSampleCursor value)
 
 -- | @- preferredMinSampleCount@
 preferredMinSampleCount :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> IO CLong
-preferredMinSampleCount avSampleBufferRequest  =
-    sendMsg avSampleBufferRequest (mkSelector "preferredMinSampleCount") retCLong []
+preferredMinSampleCount avSampleBufferRequest =
+  sendMessage avSampleBufferRequest preferredMinSampleCountSelector
 
 -- | @- setPreferredMinSampleCount:@
 setPreferredMinSampleCount :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> CLong -> IO ()
-setPreferredMinSampleCount avSampleBufferRequest  value =
-    sendMsg avSampleBufferRequest (mkSelector "setPreferredMinSampleCount:") retVoid [argCLong value]
+setPreferredMinSampleCount avSampleBufferRequest value =
+  sendMessage avSampleBufferRequest setPreferredMinSampleCountSelector value
 
 -- | @- maxSampleCount@
 maxSampleCount :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> IO CLong
-maxSampleCount avSampleBufferRequest  =
-    sendMsg avSampleBufferRequest (mkSelector "maxSampleCount") retCLong []
+maxSampleCount avSampleBufferRequest =
+  sendMessage avSampleBufferRequest maxSampleCountSelector
 
 -- | @- setMaxSampleCount:@
 setMaxSampleCount :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> CLong -> IO ()
-setMaxSampleCount avSampleBufferRequest  value =
-    sendMsg avSampleBufferRequest (mkSelector "setMaxSampleCount:") retVoid [argCLong value]
+setMaxSampleCount avSampleBufferRequest value =
+  sendMessage avSampleBufferRequest setMaxSampleCountSelector value
 
 -- | @- mode@
 mode :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> IO AVSampleBufferRequestMode
-mode avSampleBufferRequest  =
-    fmap (coerce :: CLong -> AVSampleBufferRequestMode) $ sendMsg avSampleBufferRequest (mkSelector "mode") retCLong []
+mode avSampleBufferRequest =
+  sendMessage avSampleBufferRequest modeSelector
 
 -- | @- setMode:@
 setMode :: IsAVSampleBufferRequest avSampleBufferRequest => avSampleBufferRequest -> AVSampleBufferRequestMode -> IO ()
-setMode avSampleBufferRequest  value =
-    sendMsg avSampleBufferRequest (mkSelector "setMode:") retVoid [argCLong (coerce value)]
+setMode avSampleBufferRequest value =
+  sendMessage avSampleBufferRequest setModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVSampleBufferRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVSampleBufferRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithStartCursor:@
-initWithStartCursorSelector :: Selector
+initWithStartCursorSelector :: Selector '[Id AVSampleCursor] (Id AVSampleBufferRequest)
 initWithStartCursorSelector = mkSelector "initWithStartCursor:"
 
 -- | @Selector@ for @startCursor@
-startCursorSelector :: Selector
+startCursorSelector :: Selector '[] (Id AVSampleCursor)
 startCursorSelector = mkSelector "startCursor"
 
 -- | @Selector@ for @direction@
-directionSelector :: Selector
+directionSelector :: Selector '[] AVSampleBufferRequestDirection
 directionSelector = mkSelector "direction"
 
 -- | @Selector@ for @setDirection:@
-setDirectionSelector :: Selector
+setDirectionSelector :: Selector '[AVSampleBufferRequestDirection] ()
 setDirectionSelector = mkSelector "setDirection:"
 
 -- | @Selector@ for @limitCursor@
-limitCursorSelector :: Selector
+limitCursorSelector :: Selector '[] (Id AVSampleCursor)
 limitCursorSelector = mkSelector "limitCursor"
 
 -- | @Selector@ for @setLimitCursor:@
-setLimitCursorSelector :: Selector
+setLimitCursorSelector :: Selector '[Id AVSampleCursor] ()
 setLimitCursorSelector = mkSelector "setLimitCursor:"
 
 -- | @Selector@ for @preferredMinSampleCount@
-preferredMinSampleCountSelector :: Selector
+preferredMinSampleCountSelector :: Selector '[] CLong
 preferredMinSampleCountSelector = mkSelector "preferredMinSampleCount"
 
 -- | @Selector@ for @setPreferredMinSampleCount:@
-setPreferredMinSampleCountSelector :: Selector
+setPreferredMinSampleCountSelector :: Selector '[CLong] ()
 setPreferredMinSampleCountSelector = mkSelector "setPreferredMinSampleCount:"
 
 -- | @Selector@ for @maxSampleCount@
-maxSampleCountSelector :: Selector
+maxSampleCountSelector :: Selector '[] CLong
 maxSampleCountSelector = mkSelector "maxSampleCount"
 
 -- | @Selector@ for @setMaxSampleCount:@
-setMaxSampleCountSelector :: Selector
+setMaxSampleCountSelector :: Selector '[CLong] ()
 setMaxSampleCountSelector = mkSelector "setMaxSampleCount:"
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] AVSampleBufferRequestMode
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[AVSampleBufferRequestMode] ()
 setModeSelector = mkSelector "setMode:"
 

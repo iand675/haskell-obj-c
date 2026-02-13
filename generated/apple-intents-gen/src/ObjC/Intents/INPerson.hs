@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,28 +31,28 @@ module ObjC.Intents.INPerson
   , isMe
   , aliases
   , suggestionType
+  , aliasesSelector
+  , contactIdentifierSelector
+  , contactSuggestionSelector
+  , customIdentifierSelector
+  , displayNameSelector
+  , handleSelector
+  , imageSelector
   , initSelector
+  , initWithHandle_displayName_contactIdentifierSelector
+  , initWithHandle_nameComponents_contactIdentifierSelector
+  , initWithHandle_nameComponents_displayName_image_contactIdentifierSelector
   , initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifierSelector
-  , initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_relationshipSelector
+  , initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_aliases_suggestionTypeSelector
+  , initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isContactSuggestion_suggestionTypeSelector
   , initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMeSelector
   , initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe_suggestionTypeSelector
-  , initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isContactSuggestion_suggestionTypeSelector
-  , initWithHandle_nameComponents_contactIdentifierSelector
-  , initWithHandle_displayName_contactIdentifierSelector
-  , initWithHandle_nameComponents_displayName_image_contactIdentifierSelector
-  , initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_aliases_suggestionTypeSelector
-  , personHandleSelector
-  , nameComponentsSelector
-  , displayNameSelector
-  , imageSelector
-  , contactIdentifierSelector
-  , customIdentifierSelector
-  , relationshipSelector
-  , contactSuggestionSelector
-  , handleSelector
-  , siriMatchesSelector
+  , initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_relationshipSelector
   , isMeSelector
-  , aliasesSelector
+  , nameComponentsSelector
+  , personHandleSelector
+  , relationshipSelector
+  , siriMatchesSelector
   , suggestionTypeSelector
 
   -- * Enum types
@@ -62,15 +63,11 @@ module ObjC.Intents.INPerson
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,261 +77,212 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINPerson inPerson => inPerson -> IO (Id INPerson)
-init_ inPerson  =
-    sendMsg inPerson (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inPerson =
+  sendOwnedMessage inPerson initSelector
 
 -- | @- initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:@
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier :: (IsINPerson inPerson, IsINPersonHandle personHandle, IsNSPersonNameComponents nameComponents, IsNSString displayName, IsINImage image, IsNSString contactIdentifier, IsNSString customIdentifier) => inPerson -> personHandle -> nameComponents -> displayName -> image -> contactIdentifier -> customIdentifier -> IO (Id INPerson)
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier inPerson  personHandle nameComponents displayName image contactIdentifier customIdentifier =
-  withObjCPtr personHandle $ \raw_personHandle ->
-    withObjCPtr nameComponents $ \raw_nameComponents ->
-      withObjCPtr displayName $ \raw_displayName ->
-        withObjCPtr image $ \raw_image ->
-          withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-            withObjCPtr customIdentifier $ \raw_customIdentifier ->
-                sendMsg inPerson (mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_personHandle :: Ptr ()), argPtr (castPtr raw_nameComponents :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_contactIdentifier :: Ptr ()), argPtr (castPtr raw_customIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier inPerson personHandle nameComponents displayName image contactIdentifier customIdentifier =
+  sendOwnedMessage inPerson initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifierSelector (toINPersonHandle personHandle) (toNSPersonNameComponents nameComponents) (toNSString displayName) (toINImage image) (toNSString contactIdentifier) (toNSString customIdentifier)
 
 -- | @- initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:relationship:@
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_relationship :: (IsINPerson inPerson, IsINPersonHandle personHandle, IsNSPersonNameComponents nameComponents, IsNSString displayName, IsINImage image, IsNSString contactIdentifier, IsNSString customIdentifier, IsNSString relationship) => inPerson -> personHandle -> nameComponents -> displayName -> image -> contactIdentifier -> customIdentifier -> relationship -> IO (Id INPerson)
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_relationship inPerson  personHandle nameComponents displayName image contactIdentifier customIdentifier relationship =
-  withObjCPtr personHandle $ \raw_personHandle ->
-    withObjCPtr nameComponents $ \raw_nameComponents ->
-      withObjCPtr displayName $ \raw_displayName ->
-        withObjCPtr image $ \raw_image ->
-          withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-            withObjCPtr customIdentifier $ \raw_customIdentifier ->
-              withObjCPtr relationship $ \raw_relationship ->
-                  sendMsg inPerson (mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:relationship:") (retPtr retVoid) [argPtr (castPtr raw_personHandle :: Ptr ()), argPtr (castPtr raw_nameComponents :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_contactIdentifier :: Ptr ()), argPtr (castPtr raw_customIdentifier :: Ptr ()), argPtr (castPtr raw_relationship :: Ptr ())] >>= ownedObject . castPtr
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_relationship inPerson personHandle nameComponents displayName image contactIdentifier customIdentifier relationship =
+  sendOwnedMessage inPerson initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_relationshipSelector (toINPersonHandle personHandle) (toNSPersonNameComponents nameComponents) (toNSString displayName) (toINImage image) (toNSString contactIdentifier) (toNSString customIdentifier) (toNSString relationship)
 
 -- | @- initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isMe:@
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe :: (IsINPerson inPerson, IsINPersonHandle personHandle, IsNSPersonNameComponents nameComponents, IsNSString displayName, IsINImage image, IsNSString contactIdentifier, IsNSString customIdentifier) => inPerson -> personHandle -> nameComponents -> displayName -> image -> contactIdentifier -> customIdentifier -> Bool -> IO (Id INPerson)
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe inPerson  personHandle nameComponents displayName image contactIdentifier customIdentifier isMe =
-  withObjCPtr personHandle $ \raw_personHandle ->
-    withObjCPtr nameComponents $ \raw_nameComponents ->
-      withObjCPtr displayName $ \raw_displayName ->
-        withObjCPtr image $ \raw_image ->
-          withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-            withObjCPtr customIdentifier $ \raw_customIdentifier ->
-                sendMsg inPerson (mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isMe:") (retPtr retVoid) [argPtr (castPtr raw_personHandle :: Ptr ()), argPtr (castPtr raw_nameComponents :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_contactIdentifier :: Ptr ()), argPtr (castPtr raw_customIdentifier :: Ptr ()), argCULong (if isMe then 1 else 0)] >>= ownedObject . castPtr
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe inPerson personHandle nameComponents displayName image contactIdentifier customIdentifier isMe =
+  sendOwnedMessage inPerson initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMeSelector (toINPersonHandle personHandle) (toNSPersonNameComponents nameComponents) (toNSString displayName) (toINImage image) (toNSString contactIdentifier) (toNSString customIdentifier) isMe
 
 -- | @- initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isMe:suggestionType:@
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe_suggestionType :: (IsINPerson inPerson, IsINPersonHandle personHandle, IsNSPersonNameComponents nameComponents, IsNSString displayName, IsINImage image, IsNSString contactIdentifier, IsNSString customIdentifier) => inPerson -> personHandle -> nameComponents -> displayName -> image -> contactIdentifier -> customIdentifier -> Bool -> INPersonSuggestionType -> IO (Id INPerson)
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe_suggestionType inPerson  personHandle nameComponents displayName image contactIdentifier customIdentifier isMe suggestionType =
-  withObjCPtr personHandle $ \raw_personHandle ->
-    withObjCPtr nameComponents $ \raw_nameComponents ->
-      withObjCPtr displayName $ \raw_displayName ->
-        withObjCPtr image $ \raw_image ->
-          withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-            withObjCPtr customIdentifier $ \raw_customIdentifier ->
-                sendMsg inPerson (mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isMe:suggestionType:") (retPtr retVoid) [argPtr (castPtr raw_personHandle :: Ptr ()), argPtr (castPtr raw_nameComponents :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_contactIdentifier :: Ptr ()), argPtr (castPtr raw_customIdentifier :: Ptr ()), argCULong (if isMe then 1 else 0), argCLong (coerce suggestionType)] >>= ownedObject . castPtr
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe_suggestionType inPerson personHandle nameComponents displayName image contactIdentifier customIdentifier isMe suggestionType =
+  sendOwnedMessage inPerson initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe_suggestionTypeSelector (toINPersonHandle personHandle) (toNSPersonNameComponents nameComponents) (toNSString displayName) (toINImage image) (toNSString contactIdentifier) (toNSString customIdentifier) isMe suggestionType
 
 -- | @- initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isContactSuggestion:suggestionType:@
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isContactSuggestion_suggestionType :: (IsINPerson inPerson, IsINPersonHandle personHandle, IsNSPersonNameComponents nameComponents, IsNSString displayName, IsINImage image, IsNSString contactIdentifier, IsNSString customIdentifier) => inPerson -> personHandle -> nameComponents -> displayName -> image -> contactIdentifier -> customIdentifier -> Bool -> INPersonSuggestionType -> IO (Id INPerson)
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isContactSuggestion_suggestionType inPerson  personHandle nameComponents displayName image contactIdentifier customIdentifier isContactSuggestion suggestionType =
-  withObjCPtr personHandle $ \raw_personHandle ->
-    withObjCPtr nameComponents $ \raw_nameComponents ->
-      withObjCPtr displayName $ \raw_displayName ->
-        withObjCPtr image $ \raw_image ->
-          withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-            withObjCPtr customIdentifier $ \raw_customIdentifier ->
-                sendMsg inPerson (mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isContactSuggestion:suggestionType:") (retPtr retVoid) [argPtr (castPtr raw_personHandle :: Ptr ()), argPtr (castPtr raw_nameComponents :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_contactIdentifier :: Ptr ()), argPtr (castPtr raw_customIdentifier :: Ptr ()), argCULong (if isContactSuggestion then 1 else 0), argCLong (coerce suggestionType)] >>= ownedObject . castPtr
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isContactSuggestion_suggestionType inPerson personHandle nameComponents displayName image contactIdentifier customIdentifier isContactSuggestion suggestionType =
+  sendOwnedMessage inPerson initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isContactSuggestion_suggestionTypeSelector (toINPersonHandle personHandle) (toNSPersonNameComponents nameComponents) (toNSString displayName) (toINImage image) (toNSString contactIdentifier) (toNSString customIdentifier) isContactSuggestion suggestionType
 
 -- | @- initWithHandle:nameComponents:contactIdentifier:@
 initWithHandle_nameComponents_contactIdentifier :: (IsINPerson inPerson, IsNSString handle, IsNSPersonNameComponents nameComponents, IsNSString contactIdentifier) => inPerson -> handle -> nameComponents -> contactIdentifier -> IO (Id INPerson)
-initWithHandle_nameComponents_contactIdentifier inPerson  handle nameComponents contactIdentifier =
-  withObjCPtr handle $ \raw_handle ->
-    withObjCPtr nameComponents $ \raw_nameComponents ->
-      withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-          sendMsg inPerson (mkSelector "initWithHandle:nameComponents:contactIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_handle :: Ptr ()), argPtr (castPtr raw_nameComponents :: Ptr ()), argPtr (castPtr raw_contactIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithHandle_nameComponents_contactIdentifier inPerson handle nameComponents contactIdentifier =
+  sendOwnedMessage inPerson initWithHandle_nameComponents_contactIdentifierSelector (toNSString handle) (toNSPersonNameComponents nameComponents) (toNSString contactIdentifier)
 
 -- | @- initWithHandle:displayName:contactIdentifier:@
 initWithHandle_displayName_contactIdentifier :: (IsINPerson inPerson, IsNSString handle, IsNSString displayName, IsNSString contactIdentifier) => inPerson -> handle -> displayName -> contactIdentifier -> IO (Id INPerson)
-initWithHandle_displayName_contactIdentifier inPerson  handle displayName contactIdentifier =
-  withObjCPtr handle $ \raw_handle ->
-    withObjCPtr displayName $ \raw_displayName ->
-      withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-          sendMsg inPerson (mkSelector "initWithHandle:displayName:contactIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_handle :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_contactIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithHandle_displayName_contactIdentifier inPerson handle displayName contactIdentifier =
+  sendOwnedMessage inPerson initWithHandle_displayName_contactIdentifierSelector (toNSString handle) (toNSString displayName) (toNSString contactIdentifier)
 
 -- | @- initWithHandle:nameComponents:displayName:image:contactIdentifier:@
 initWithHandle_nameComponents_displayName_image_contactIdentifier :: (IsINPerson inPerson, IsNSString handle, IsNSPersonNameComponents nameComponents, IsNSString displayName, IsINImage image, IsNSString contactIdentifier) => inPerson -> handle -> nameComponents -> displayName -> image -> contactIdentifier -> IO (Id INPerson)
-initWithHandle_nameComponents_displayName_image_contactIdentifier inPerson  handle nameComponents displayName image contactIdentifier =
-  withObjCPtr handle $ \raw_handle ->
-    withObjCPtr nameComponents $ \raw_nameComponents ->
-      withObjCPtr displayName $ \raw_displayName ->
-        withObjCPtr image $ \raw_image ->
-          withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-              sendMsg inPerson (mkSelector "initWithHandle:nameComponents:displayName:image:contactIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_handle :: Ptr ()), argPtr (castPtr raw_nameComponents :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_contactIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithHandle_nameComponents_displayName_image_contactIdentifier inPerson handle nameComponents displayName image contactIdentifier =
+  sendOwnedMessage inPerson initWithHandle_nameComponents_displayName_image_contactIdentifierSelector (toNSString handle) (toNSPersonNameComponents nameComponents) (toNSString displayName) (toINImage image) (toNSString contactIdentifier)
 
 -- | @- initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:aliases:suggestionType:@
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_aliases_suggestionType :: (IsINPerson inPerson, IsINPersonHandle personHandle, IsNSPersonNameComponents nameComponents, IsNSString displayName, IsINImage image, IsNSString contactIdentifier, IsNSString customIdentifier, IsNSArray aliases) => inPerson -> personHandle -> nameComponents -> displayName -> image -> contactIdentifier -> customIdentifier -> aliases -> INPersonSuggestionType -> IO (Id INPerson)
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_aliases_suggestionType inPerson  personHandle nameComponents displayName image contactIdentifier customIdentifier aliases suggestionType =
-  withObjCPtr personHandle $ \raw_personHandle ->
-    withObjCPtr nameComponents $ \raw_nameComponents ->
-      withObjCPtr displayName $ \raw_displayName ->
-        withObjCPtr image $ \raw_image ->
-          withObjCPtr contactIdentifier $ \raw_contactIdentifier ->
-            withObjCPtr customIdentifier $ \raw_customIdentifier ->
-              withObjCPtr aliases $ \raw_aliases ->
-                  sendMsg inPerson (mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:aliases:suggestionType:") (retPtr retVoid) [argPtr (castPtr raw_personHandle :: Ptr ()), argPtr (castPtr raw_nameComponents :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_contactIdentifier :: Ptr ()), argPtr (castPtr raw_customIdentifier :: Ptr ()), argPtr (castPtr raw_aliases :: Ptr ()), argCLong (coerce suggestionType)] >>= ownedObject . castPtr
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_aliases_suggestionType inPerson personHandle nameComponents displayName image contactIdentifier customIdentifier aliases suggestionType =
+  sendOwnedMessage inPerson initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_aliases_suggestionTypeSelector (toINPersonHandle personHandle) (toNSPersonNameComponents nameComponents) (toNSString displayName) (toINImage image) (toNSString contactIdentifier) (toNSString customIdentifier) (toNSArray aliases) suggestionType
 
 -- | @- personHandle@
 personHandle :: IsINPerson inPerson => inPerson -> IO (Id INPersonHandle)
-personHandle inPerson  =
-    sendMsg inPerson (mkSelector "personHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+personHandle inPerson =
+  sendMessage inPerson personHandleSelector
 
 -- | @- nameComponents@
 nameComponents :: IsINPerson inPerson => inPerson -> IO (Id NSPersonNameComponents)
-nameComponents inPerson  =
-    sendMsg inPerson (mkSelector "nameComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+nameComponents inPerson =
+  sendMessage inPerson nameComponentsSelector
 
 -- | @- displayName@
 displayName :: IsINPerson inPerson => inPerson -> IO (Id NSString)
-displayName inPerson  =
-    sendMsg inPerson (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName inPerson =
+  sendMessage inPerson displayNameSelector
 
 -- | @- image@
 image :: IsINPerson inPerson => inPerson -> IO (Id INImage)
-image inPerson  =
-    sendMsg inPerson (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image inPerson =
+  sendMessage inPerson imageSelector
 
 -- | @- contactIdentifier@
 contactIdentifier :: IsINPerson inPerson => inPerson -> IO (Id NSString)
-contactIdentifier inPerson  =
-    sendMsg inPerson (mkSelector "contactIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+contactIdentifier inPerson =
+  sendMessage inPerson contactIdentifierSelector
 
 -- | @- customIdentifier@
 customIdentifier :: IsINPerson inPerson => inPerson -> IO (Id NSString)
-customIdentifier inPerson  =
-    sendMsg inPerson (mkSelector "customIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+customIdentifier inPerson =
+  sendMessage inPerson customIdentifierSelector
 
 -- | @- relationship@
 relationship :: IsINPerson inPerson => inPerson -> IO (Id NSString)
-relationship inPerson  =
-    sendMsg inPerson (mkSelector "relationship") (retPtr retVoid) [] >>= retainedObject . castPtr
+relationship inPerson =
+  sendMessage inPerson relationshipSelector
 
 -- | @- contactSuggestion@
 contactSuggestion :: IsINPerson inPerson => inPerson -> IO Bool
-contactSuggestion inPerson  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inPerson (mkSelector "contactSuggestion") retCULong []
+contactSuggestion inPerson =
+  sendMessage inPerson contactSuggestionSelector
 
 -- | @- handle@
 handle :: IsINPerson inPerson => inPerson -> IO (Id NSString)
-handle inPerson  =
-    sendMsg inPerson (mkSelector "handle") (retPtr retVoid) [] >>= retainedObject . castPtr
+handle inPerson =
+  sendMessage inPerson handleSelector
 
 -- | @- siriMatches@
 siriMatches :: IsINPerson inPerson => inPerson -> IO (Id NSArray)
-siriMatches inPerson  =
-    sendMsg inPerson (mkSelector "siriMatches") (retPtr retVoid) [] >>= retainedObject . castPtr
+siriMatches inPerson =
+  sendMessage inPerson siriMatchesSelector
 
 -- | @- isMe@
 isMe :: IsINPerson inPerson => inPerson -> IO Bool
-isMe inPerson  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inPerson (mkSelector "isMe") retCULong []
+isMe inPerson =
+  sendMessage inPerson isMeSelector
 
 -- | @- aliases@
 aliases :: IsINPerson inPerson => inPerson -> IO (Id NSArray)
-aliases inPerson  =
-    sendMsg inPerson (mkSelector "aliases") (retPtr retVoid) [] >>= retainedObject . castPtr
+aliases inPerson =
+  sendMessage inPerson aliasesSelector
 
 -- | @- suggestionType@
 suggestionType :: IsINPerson inPerson => inPerson -> IO INPersonSuggestionType
-suggestionType inPerson  =
-    fmap (coerce :: CLong -> INPersonSuggestionType) $ sendMsg inPerson (mkSelector "suggestionType") retCLong []
+suggestionType inPerson =
+  sendMessage inPerson suggestionTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INPerson)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:@
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifierSelector :: Selector
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifierSelector :: Selector '[Id INPersonHandle, Id NSPersonNameComponents, Id NSString, Id INImage, Id NSString, Id NSString] (Id INPerson)
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifierSelector = mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:"
 
 -- | @Selector@ for @initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:relationship:@
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_relationshipSelector :: Selector
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_relationshipSelector :: Selector '[Id INPersonHandle, Id NSPersonNameComponents, Id NSString, Id INImage, Id NSString, Id NSString, Id NSString] (Id INPerson)
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_relationshipSelector = mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:relationship:"
 
 -- | @Selector@ for @initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isMe:@
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMeSelector :: Selector
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMeSelector :: Selector '[Id INPersonHandle, Id NSPersonNameComponents, Id NSString, Id INImage, Id NSString, Id NSString, Bool] (Id INPerson)
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMeSelector = mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isMe:"
 
 -- | @Selector@ for @initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isMe:suggestionType:@
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe_suggestionTypeSelector :: Selector
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe_suggestionTypeSelector :: Selector '[Id INPersonHandle, Id NSPersonNameComponents, Id NSString, Id INImage, Id NSString, Id NSString, Bool, INPersonSuggestionType] (Id INPerson)
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isMe_suggestionTypeSelector = mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isMe:suggestionType:"
 
 -- | @Selector@ for @initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isContactSuggestion:suggestionType:@
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isContactSuggestion_suggestionTypeSelector :: Selector
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isContactSuggestion_suggestionTypeSelector :: Selector '[Id INPersonHandle, Id NSPersonNameComponents, Id NSString, Id INImage, Id NSString, Id NSString, Bool, INPersonSuggestionType] (Id INPerson)
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_isContactSuggestion_suggestionTypeSelector = mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:isContactSuggestion:suggestionType:"
 
 -- | @Selector@ for @initWithHandle:nameComponents:contactIdentifier:@
-initWithHandle_nameComponents_contactIdentifierSelector :: Selector
+initWithHandle_nameComponents_contactIdentifierSelector :: Selector '[Id NSString, Id NSPersonNameComponents, Id NSString] (Id INPerson)
 initWithHandle_nameComponents_contactIdentifierSelector = mkSelector "initWithHandle:nameComponents:contactIdentifier:"
 
 -- | @Selector@ for @initWithHandle:displayName:contactIdentifier:@
-initWithHandle_displayName_contactIdentifierSelector :: Selector
+initWithHandle_displayName_contactIdentifierSelector :: Selector '[Id NSString, Id NSString, Id NSString] (Id INPerson)
 initWithHandle_displayName_contactIdentifierSelector = mkSelector "initWithHandle:displayName:contactIdentifier:"
 
 -- | @Selector@ for @initWithHandle:nameComponents:displayName:image:contactIdentifier:@
-initWithHandle_nameComponents_displayName_image_contactIdentifierSelector :: Selector
+initWithHandle_nameComponents_displayName_image_contactIdentifierSelector :: Selector '[Id NSString, Id NSPersonNameComponents, Id NSString, Id INImage, Id NSString] (Id INPerson)
 initWithHandle_nameComponents_displayName_image_contactIdentifierSelector = mkSelector "initWithHandle:nameComponents:displayName:image:contactIdentifier:"
 
 -- | @Selector@ for @initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:aliases:suggestionType:@
-initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_aliases_suggestionTypeSelector :: Selector
+initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_aliases_suggestionTypeSelector :: Selector '[Id INPersonHandle, Id NSPersonNameComponents, Id NSString, Id INImage, Id NSString, Id NSString, Id NSArray, INPersonSuggestionType] (Id INPerson)
 initWithPersonHandle_nameComponents_displayName_image_contactIdentifier_customIdentifier_aliases_suggestionTypeSelector = mkSelector "initWithPersonHandle:nameComponents:displayName:image:contactIdentifier:customIdentifier:aliases:suggestionType:"
 
 -- | @Selector@ for @personHandle@
-personHandleSelector :: Selector
+personHandleSelector :: Selector '[] (Id INPersonHandle)
 personHandleSelector = mkSelector "personHandle"
 
 -- | @Selector@ for @nameComponents@
-nameComponentsSelector :: Selector
+nameComponentsSelector :: Selector '[] (Id NSPersonNameComponents)
 nameComponentsSelector = mkSelector "nameComponents"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id INImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @contactIdentifier@
-contactIdentifierSelector :: Selector
+contactIdentifierSelector :: Selector '[] (Id NSString)
 contactIdentifierSelector = mkSelector "contactIdentifier"
 
 -- | @Selector@ for @customIdentifier@
-customIdentifierSelector :: Selector
+customIdentifierSelector :: Selector '[] (Id NSString)
 customIdentifierSelector = mkSelector "customIdentifier"
 
 -- | @Selector@ for @relationship@
-relationshipSelector :: Selector
+relationshipSelector :: Selector '[] (Id NSString)
 relationshipSelector = mkSelector "relationship"
 
 -- | @Selector@ for @contactSuggestion@
-contactSuggestionSelector :: Selector
+contactSuggestionSelector :: Selector '[] Bool
 contactSuggestionSelector = mkSelector "contactSuggestion"
 
 -- | @Selector@ for @handle@
-handleSelector :: Selector
+handleSelector :: Selector '[] (Id NSString)
 handleSelector = mkSelector "handle"
 
 -- | @Selector@ for @siriMatches@
-siriMatchesSelector :: Selector
+siriMatchesSelector :: Selector '[] (Id NSArray)
 siriMatchesSelector = mkSelector "siriMatches"
 
 -- | @Selector@ for @isMe@
-isMeSelector :: Selector
+isMeSelector :: Selector '[] Bool
 isMeSelector = mkSelector "isMe"
 
 -- | @Selector@ for @aliases@
-aliasesSelector :: Selector
+aliasesSelector :: Selector '[] (Id NSArray)
 aliasesSelector = mkSelector "aliases"
 
 -- | @Selector@ for @suggestionType@
-suggestionTypeSelector :: Selector
+suggestionTypeSelector :: Selector '[] INPersonSuggestionType
 suggestionTypeSelector = mkSelector "suggestionType"
 

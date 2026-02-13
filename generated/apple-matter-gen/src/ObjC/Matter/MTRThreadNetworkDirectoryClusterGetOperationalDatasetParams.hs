@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRThreadNetworkDirectoryClusterGetOperationalDatasetParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , extendedPanIDSelector
-  , setExtendedPanIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setExtendedPanIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- extendedPanID@
 extendedPanID :: IsMTRThreadNetworkDirectoryClusterGetOperationalDatasetParams mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams => mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams -> IO (Id NSData)
-extendedPanID mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams  =
-    sendMsg mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams (mkSelector "extendedPanID") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedPanID mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams =
+  sendMessage mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams extendedPanIDSelector
 
 -- | @- setExtendedPanID:@
 setExtendedPanID :: (IsMTRThreadNetworkDirectoryClusterGetOperationalDatasetParams mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams, IsNSData value) => mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams -> value -> IO ()
-setExtendedPanID mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams (mkSelector "setExtendedPanID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedPanID mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams value =
+  sendMessage mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams setExtendedPanIDSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setExtendedPanID mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams  va
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRThreadNetworkDirectoryClusterGetOperationalDatasetParams mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams => mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams  =
-    sendMsg mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams =
+  sendMessage mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRThreadNetworkDirectoryClusterGetOperationalDatasetParams mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams, IsNSNumber value) => mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams value =
+  sendMessage mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterGetOperationalDatasetPar
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRThreadNetworkDirectoryClusterGetOperationalDatasetParams mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams => mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams  =
-    sendMsg mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams =
+  sendMessage mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrThreadNetworkDirectoryClusterGetOperationalDatase
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRThreadNetworkDirectoryClusterGetOperationalDatasetParams mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams, IsNSNumber value) => mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams -> value -> IO ()
-setServerSideProcessingTimeout mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams value =
+  sendMessage mtrThreadNetworkDirectoryClusterGetOperationalDatasetParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @extendedPanID@
-extendedPanIDSelector :: Selector
+extendedPanIDSelector :: Selector '[] (Id NSData)
 extendedPanIDSelector = mkSelector "extendedPanID"
 
 -- | @Selector@ for @setExtendedPanID:@
-setExtendedPanIDSelector :: Selector
+setExtendedPanIDSelector :: Selector '[Id NSData] ()
 setExtendedPanIDSelector = mkSelector "setExtendedPanID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

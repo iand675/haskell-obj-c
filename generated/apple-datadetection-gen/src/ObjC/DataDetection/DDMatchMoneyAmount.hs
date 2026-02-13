@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.DataDetection.DDMatchMoneyAmount
   , IsDDMatchMoneyAmount(..)
   , currency
   , amount
-  , currencySelector
   , amountSelector
+  , currencySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,25 +34,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- currency@
 currency :: IsDDMatchMoneyAmount ddMatchMoneyAmount => ddMatchMoneyAmount -> IO (Id NSString)
-currency ddMatchMoneyAmount  =
-    sendMsg ddMatchMoneyAmount (mkSelector "currency") (retPtr retVoid) [] >>= retainedObject . castPtr
+currency ddMatchMoneyAmount =
+  sendMessage ddMatchMoneyAmount currencySelector
 
 -- | A number that represents an amount of money.
 --
 -- ObjC selector: @- amount@
 amount :: IsDDMatchMoneyAmount ddMatchMoneyAmount => ddMatchMoneyAmount -> IO CDouble
-amount ddMatchMoneyAmount  =
-    sendMsg ddMatchMoneyAmount (mkSelector "amount") retCDouble []
+amount ddMatchMoneyAmount =
+  sendMessage ddMatchMoneyAmount amountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @currency@
-currencySelector :: Selector
+currencySelector :: Selector '[] (Id NSString)
 currencySelector = mkSelector "currency"
 
 -- | @Selector@ for @amount@
-amountSelector :: Selector
+amountSelector :: Selector '[] CDouble
 amountSelector = mkSelector "amount"
 

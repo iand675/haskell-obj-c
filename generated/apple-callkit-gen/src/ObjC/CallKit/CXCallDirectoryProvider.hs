@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.CallKit.CXCallDirectoryProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -29,15 +26,14 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- beginRequestWithExtensionContext:@
 beginRequestWithExtensionContext :: (IsCXCallDirectoryProvider cxCallDirectoryProvider, IsCXCallDirectoryExtensionContext context) => cxCallDirectoryProvider -> context -> IO ()
-beginRequestWithExtensionContext cxCallDirectoryProvider  context =
-  withObjCPtr context $ \raw_context ->
-      sendMsg cxCallDirectoryProvider (mkSelector "beginRequestWithExtensionContext:") retVoid [argPtr (castPtr raw_context :: Ptr ())]
+beginRequestWithExtensionContext cxCallDirectoryProvider context =
+  sendMessage cxCallDirectoryProvider beginRequestWithExtensionContextSelector (toCXCallDirectoryExtensionContext context)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @beginRequestWithExtensionContext:@
-beginRequestWithExtensionContextSelector :: Selector
+beginRequestWithExtensionContextSelector :: Selector '[Id CXCallDirectoryExtensionContext] ()
 beginRequestWithExtensionContextSelector = mkSelector "beginRequestWithExtensionContext:"
 

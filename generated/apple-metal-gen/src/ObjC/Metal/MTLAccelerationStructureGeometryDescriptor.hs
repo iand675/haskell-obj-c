@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,35 +25,31 @@ module ObjC.Metal.MTLAccelerationStructureGeometryDescriptor
   , setPrimitiveDataStride
   , primitiveDataElementSize
   , setPrimitiveDataElementSize
-  , intersectionFunctionTableOffsetSelector
-  , setIntersectionFunctionTableOffsetSelector
-  , opaqueSelector
-  , setOpaqueSelector
   , allowDuplicateIntersectionFunctionInvocationSelector
-  , setAllowDuplicateIntersectionFunctionInvocationSelector
+  , intersectionFunctionTableOffsetSelector
   , labelSelector
-  , setLabelSelector
-  , primitiveDataBufferSelector
-  , setPrimitiveDataBufferSelector
+  , opaqueSelector
   , primitiveDataBufferOffsetSelector
-  , setPrimitiveDataBufferOffsetSelector
-  , primitiveDataStrideSelector
-  , setPrimitiveDataStrideSelector
+  , primitiveDataBufferSelector
   , primitiveDataElementSizeSelector
+  , primitiveDataStrideSelector
+  , setAllowDuplicateIntersectionFunctionInvocationSelector
+  , setIntersectionFunctionTableOffsetSelector
+  , setLabelSelector
+  , setOpaqueSelector
+  , setPrimitiveDataBufferOffsetSelector
+  , setPrimitiveDataBufferSelector
   , setPrimitiveDataElementSizeSelector
+  , setPrimitiveDataStrideSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,178 +58,177 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- intersectionFunctionTableOffset@
 intersectionFunctionTableOffset :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> IO CULong
-intersectionFunctionTableOffset mtlAccelerationStructureGeometryDescriptor  =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "intersectionFunctionTableOffset") retCULong []
+intersectionFunctionTableOffset mtlAccelerationStructureGeometryDescriptor =
+  sendMessage mtlAccelerationStructureGeometryDescriptor intersectionFunctionTableOffsetSelector
 
 -- | @- setIntersectionFunctionTableOffset:@
 setIntersectionFunctionTableOffset :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> CULong -> IO ()
-setIntersectionFunctionTableOffset mtlAccelerationStructureGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setIntersectionFunctionTableOffset:") retVoid [argCULong value]
+setIntersectionFunctionTableOffset mtlAccelerationStructureGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureGeometryDescriptor setIntersectionFunctionTableOffsetSelector value
 
 -- | Whether the geometry is opaque
 --
 -- ObjC selector: @- opaque@
 opaque :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> IO Bool
-opaque mtlAccelerationStructureGeometryDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "opaque") retCULong []
+opaque mtlAccelerationStructureGeometryDescriptor =
+  sendMessage mtlAccelerationStructureGeometryDescriptor opaqueSelector
 
 -- | Whether the geometry is opaque
 --
 -- ObjC selector: @- setOpaque:@
 setOpaque :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> Bool -> IO ()
-setOpaque mtlAccelerationStructureGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setOpaque:") retVoid [argCULong (if value then 1 else 0)]
+setOpaque mtlAccelerationStructureGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureGeometryDescriptor setOpaqueSelector value
 
 -- | Whether intersection functions may be invoked more than once per ray/primitive intersection. Defaults to YES.
 --
 -- ObjC selector: @- allowDuplicateIntersectionFunctionInvocation@
 allowDuplicateIntersectionFunctionInvocation :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> IO Bool
-allowDuplicateIntersectionFunctionInvocation mtlAccelerationStructureGeometryDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "allowDuplicateIntersectionFunctionInvocation") retCULong []
+allowDuplicateIntersectionFunctionInvocation mtlAccelerationStructureGeometryDescriptor =
+  sendMessage mtlAccelerationStructureGeometryDescriptor allowDuplicateIntersectionFunctionInvocationSelector
 
 -- | Whether intersection functions may be invoked more than once per ray/primitive intersection. Defaults to YES.
 --
 -- ObjC selector: @- setAllowDuplicateIntersectionFunctionInvocation:@
 setAllowDuplicateIntersectionFunctionInvocation :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> Bool -> IO ()
-setAllowDuplicateIntersectionFunctionInvocation mtlAccelerationStructureGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setAllowDuplicateIntersectionFunctionInvocation:") retVoid [argCULong (if value then 1 else 0)]
+setAllowDuplicateIntersectionFunctionInvocation mtlAccelerationStructureGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureGeometryDescriptor setAllowDuplicateIntersectionFunctionInvocationSelector value
 
 -- | Label
 --
 -- ObjC selector: @- label@
 label :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> IO (Id NSString)
-label mtlAccelerationStructureGeometryDescriptor  =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtlAccelerationStructureGeometryDescriptor =
+  sendMessage mtlAccelerationStructureGeometryDescriptor labelSelector
 
 -- | Label
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor, IsNSString value) => mtlAccelerationStructureGeometryDescriptor -> value -> IO ()
-setLabel mtlAccelerationStructureGeometryDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtlAccelerationStructureGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureGeometryDescriptor setLabelSelector (toNSString value)
 
 -- | Data buffer containing per-primitive data. May be nil.
 --
 -- ObjC selector: @- primitiveDataBuffer@
 primitiveDataBuffer :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> IO RawId
-primitiveDataBuffer mtlAccelerationStructureGeometryDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "primitiveDataBuffer") (retPtr retVoid) []
+primitiveDataBuffer mtlAccelerationStructureGeometryDescriptor =
+  sendMessage mtlAccelerationStructureGeometryDescriptor primitiveDataBufferSelector
 
 -- | Data buffer containing per-primitive data. May be nil.
 --
 -- ObjC selector: @- setPrimitiveDataBuffer:@
 setPrimitiveDataBuffer :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> RawId -> IO ()
-setPrimitiveDataBuffer mtlAccelerationStructureGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setPrimitiveDataBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPrimitiveDataBuffer mtlAccelerationStructureGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureGeometryDescriptor setPrimitiveDataBufferSelector value
 
 -- | Primitive data buffer offset in bytes. Must be aligned to the platform's buffer offset alignment. Defaults to 0 bytes.
 --
 -- ObjC selector: @- primitiveDataBufferOffset@
 primitiveDataBufferOffset :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> IO CULong
-primitiveDataBufferOffset mtlAccelerationStructureGeometryDescriptor  =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "primitiveDataBufferOffset") retCULong []
+primitiveDataBufferOffset mtlAccelerationStructureGeometryDescriptor =
+  sendMessage mtlAccelerationStructureGeometryDescriptor primitiveDataBufferOffsetSelector
 
 -- | Primitive data buffer offset in bytes. Must be aligned to the platform's buffer offset alignment. Defaults to 0 bytes.
 --
 -- ObjC selector: @- setPrimitiveDataBufferOffset:@
 setPrimitiveDataBufferOffset :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> CULong -> IO ()
-setPrimitiveDataBufferOffset mtlAccelerationStructureGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setPrimitiveDataBufferOffset:") retVoid [argCULong value]
+setPrimitiveDataBufferOffset mtlAccelerationStructureGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureGeometryDescriptor setPrimitiveDataBufferOffsetSelector value
 
 -- | Stride, in bytes, between per-primitive data in the primitive data buffer. Must be at least primitiveDataElementSize and must be a multiple of 4 bytes. Defaults to 0 bytes. Assumed to be equal to primitiveDataElementSize if zero.
 --
 -- ObjC selector: @- primitiveDataStride@
 primitiveDataStride :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> IO CULong
-primitiveDataStride mtlAccelerationStructureGeometryDescriptor  =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "primitiveDataStride") retCULong []
+primitiveDataStride mtlAccelerationStructureGeometryDescriptor =
+  sendMessage mtlAccelerationStructureGeometryDescriptor primitiveDataStrideSelector
 
 -- | Stride, in bytes, between per-primitive data in the primitive data buffer. Must be at least primitiveDataElementSize and must be a multiple of 4 bytes. Defaults to 0 bytes. Assumed to be equal to primitiveDataElementSize if zero.
 --
 -- ObjC selector: @- setPrimitiveDataStride:@
 setPrimitiveDataStride :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> CULong -> IO ()
-setPrimitiveDataStride mtlAccelerationStructureGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setPrimitiveDataStride:") retVoid [argCULong value]
+setPrimitiveDataStride mtlAccelerationStructureGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureGeometryDescriptor setPrimitiveDataStrideSelector value
 
 -- | Size, in bytes, of the data for each primitive in the primitive data buffer. Must be at most primitiveDataStride and must be a multiple of 4 bytes. Defaults to 0 bytes.
 --
 -- ObjC selector: @- primitiveDataElementSize@
 primitiveDataElementSize :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> IO CULong
-primitiveDataElementSize mtlAccelerationStructureGeometryDescriptor  =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "primitiveDataElementSize") retCULong []
+primitiveDataElementSize mtlAccelerationStructureGeometryDescriptor =
+  sendMessage mtlAccelerationStructureGeometryDescriptor primitiveDataElementSizeSelector
 
 -- | Size, in bytes, of the data for each primitive in the primitive data buffer. Must be at most primitiveDataStride and must be a multiple of 4 bytes. Defaults to 0 bytes.
 --
 -- ObjC selector: @- setPrimitiveDataElementSize:@
 setPrimitiveDataElementSize :: IsMTLAccelerationStructureGeometryDescriptor mtlAccelerationStructureGeometryDescriptor => mtlAccelerationStructureGeometryDescriptor -> CULong -> IO ()
-setPrimitiveDataElementSize mtlAccelerationStructureGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureGeometryDescriptor (mkSelector "setPrimitiveDataElementSize:") retVoid [argCULong value]
+setPrimitiveDataElementSize mtlAccelerationStructureGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureGeometryDescriptor setPrimitiveDataElementSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @intersectionFunctionTableOffset@
-intersectionFunctionTableOffsetSelector :: Selector
+intersectionFunctionTableOffsetSelector :: Selector '[] CULong
 intersectionFunctionTableOffsetSelector = mkSelector "intersectionFunctionTableOffset"
 
 -- | @Selector@ for @setIntersectionFunctionTableOffset:@
-setIntersectionFunctionTableOffsetSelector :: Selector
+setIntersectionFunctionTableOffsetSelector :: Selector '[CULong] ()
 setIntersectionFunctionTableOffsetSelector = mkSelector "setIntersectionFunctionTableOffset:"
 
 -- | @Selector@ for @opaque@
-opaqueSelector :: Selector
+opaqueSelector :: Selector '[] Bool
 opaqueSelector = mkSelector "opaque"
 
 -- | @Selector@ for @setOpaque:@
-setOpaqueSelector :: Selector
+setOpaqueSelector :: Selector '[Bool] ()
 setOpaqueSelector = mkSelector "setOpaque:"
 
 -- | @Selector@ for @allowDuplicateIntersectionFunctionInvocation@
-allowDuplicateIntersectionFunctionInvocationSelector :: Selector
+allowDuplicateIntersectionFunctionInvocationSelector :: Selector '[] Bool
 allowDuplicateIntersectionFunctionInvocationSelector = mkSelector "allowDuplicateIntersectionFunctionInvocation"
 
 -- | @Selector@ for @setAllowDuplicateIntersectionFunctionInvocation:@
-setAllowDuplicateIntersectionFunctionInvocationSelector :: Selector
+setAllowDuplicateIntersectionFunctionInvocationSelector :: Selector '[Bool] ()
 setAllowDuplicateIntersectionFunctionInvocationSelector = mkSelector "setAllowDuplicateIntersectionFunctionInvocation:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @primitiveDataBuffer@
-primitiveDataBufferSelector :: Selector
+primitiveDataBufferSelector :: Selector '[] RawId
 primitiveDataBufferSelector = mkSelector "primitiveDataBuffer"
 
 -- | @Selector@ for @setPrimitiveDataBuffer:@
-setPrimitiveDataBufferSelector :: Selector
+setPrimitiveDataBufferSelector :: Selector '[RawId] ()
 setPrimitiveDataBufferSelector = mkSelector "setPrimitiveDataBuffer:"
 
 -- | @Selector@ for @primitiveDataBufferOffset@
-primitiveDataBufferOffsetSelector :: Selector
+primitiveDataBufferOffsetSelector :: Selector '[] CULong
 primitiveDataBufferOffsetSelector = mkSelector "primitiveDataBufferOffset"
 
 -- | @Selector@ for @setPrimitiveDataBufferOffset:@
-setPrimitiveDataBufferOffsetSelector :: Selector
+setPrimitiveDataBufferOffsetSelector :: Selector '[CULong] ()
 setPrimitiveDataBufferOffsetSelector = mkSelector "setPrimitiveDataBufferOffset:"
 
 -- | @Selector@ for @primitiveDataStride@
-primitiveDataStrideSelector :: Selector
+primitiveDataStrideSelector :: Selector '[] CULong
 primitiveDataStrideSelector = mkSelector "primitiveDataStride"
 
 -- | @Selector@ for @setPrimitiveDataStride:@
-setPrimitiveDataStrideSelector :: Selector
+setPrimitiveDataStrideSelector :: Selector '[CULong] ()
 setPrimitiveDataStrideSelector = mkSelector "setPrimitiveDataStride:"
 
 -- | @Selector@ for @primitiveDataElementSize@
-primitiveDataElementSizeSelector :: Selector
+primitiveDataElementSizeSelector :: Selector '[] CULong
 primitiveDataElementSizeSelector = mkSelector "primitiveDataElementSize"
 
 -- | @Selector@ for @setPrimitiveDataElementSize:@
-setPrimitiveDataElementSizeSelector :: Selector
+setPrimitiveDataElementSizeSelector :: Selector '[CULong] ()
 setPrimitiveDataElementSizeSelector = mkSelector "setPrimitiveDataElementSize:"
 

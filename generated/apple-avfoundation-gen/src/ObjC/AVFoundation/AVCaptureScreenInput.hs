@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.AVFoundation.AVCaptureScreenInput
   , setCapturesCursor
   , removesDuplicateFrames
   , setRemovesDuplicateFrames
-  , initSelector
-  , newSelector
-  , initWithDisplayIDSelector
-  , scaleFactorSelector
-  , setScaleFactorSelector
-  , capturesMouseClicksSelector
-  , setCapturesMouseClicksSelector
   , capturesCursorSelector
-  , setCapturesCursorSelector
+  , capturesMouseClicksSelector
+  , initSelector
+  , initWithDisplayIDSelector
+  , newSelector
   , removesDuplicateFramesSelector
+  , scaleFactorSelector
+  , setCapturesCursorSelector
+  , setCapturesMouseClicksSelector
   , setRemovesDuplicateFramesSelector
+  , setScaleFactorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,15 +58,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> IO (Id AVCaptureScreenInput)
-init_ avCaptureScreenInput  =
-    sendMsg avCaptureScreenInput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureScreenInput =
+  sendOwnedMessage avCaptureScreenInput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureScreenInput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureScreenInput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithDisplayID:
 --
@@ -83,8 +80,8 @@ new  =
 --
 -- ObjC selector: @- initWithDisplayID:@
 initWithDisplayID :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> CUInt -> IO (Id AVCaptureScreenInput)
-initWithDisplayID avCaptureScreenInput  displayID =
-    sendMsg avCaptureScreenInput (mkSelector "initWithDisplayID:") (retPtr retVoid) [argCUInt displayID] >>= ownedObject . castPtr
+initWithDisplayID avCaptureScreenInput displayID =
+  sendOwnedMessage avCaptureScreenInput initWithDisplayIDSelector displayID
 
 -- | scaleFactor
 --
@@ -94,8 +91,8 @@ initWithDisplayID avCaptureScreenInput  displayID =
 --
 -- ObjC selector: @- scaleFactor@
 scaleFactor :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> IO CDouble
-scaleFactor avCaptureScreenInput  =
-    sendMsg avCaptureScreenInput (mkSelector "scaleFactor") retCDouble []
+scaleFactor avCaptureScreenInput =
+  sendMessage avCaptureScreenInput scaleFactorSelector
 
 -- | scaleFactor
 --
@@ -105,8 +102,8 @@ scaleFactor avCaptureScreenInput  =
 --
 -- ObjC selector: @- setScaleFactor:@
 setScaleFactor :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> CDouble -> IO ()
-setScaleFactor avCaptureScreenInput  value =
-    sendMsg avCaptureScreenInput (mkSelector "setScaleFactor:") retVoid [argCDouble value]
+setScaleFactor avCaptureScreenInput value =
+  sendMessage avCaptureScreenInput setScaleFactorSelector value
 
 -- | capturesMouseClicks
 --
@@ -116,8 +113,8 @@ setScaleFactor avCaptureScreenInput  value =
 --
 -- ObjC selector: @- capturesMouseClicks@
 capturesMouseClicks :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> IO Bool
-capturesMouseClicks avCaptureScreenInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureScreenInput (mkSelector "capturesMouseClicks") retCULong []
+capturesMouseClicks avCaptureScreenInput =
+  sendMessage avCaptureScreenInput capturesMouseClicksSelector
 
 -- | capturesMouseClicks
 --
@@ -127,8 +124,8 @@ capturesMouseClicks avCaptureScreenInput  =
 --
 -- ObjC selector: @- setCapturesMouseClicks:@
 setCapturesMouseClicks :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> Bool -> IO ()
-setCapturesMouseClicks avCaptureScreenInput  value =
-    sendMsg avCaptureScreenInput (mkSelector "setCapturesMouseClicks:") retVoid [argCULong (if value then 1 else 0)]
+setCapturesMouseClicks avCaptureScreenInput value =
+  sendMessage avCaptureScreenInput setCapturesMouseClicksSelector value
 
 -- | capturesCursor
 --
@@ -138,8 +135,8 @@ setCapturesMouseClicks avCaptureScreenInput  value =
 --
 -- ObjC selector: @- capturesCursor@
 capturesCursor :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> IO Bool
-capturesCursor avCaptureScreenInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureScreenInput (mkSelector "capturesCursor") retCULong []
+capturesCursor avCaptureScreenInput =
+  sendMessage avCaptureScreenInput capturesCursorSelector
 
 -- | capturesCursor
 --
@@ -149,8 +146,8 @@ capturesCursor avCaptureScreenInput  =
 --
 -- ObjC selector: @- setCapturesCursor:@
 setCapturesCursor :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> Bool -> IO ()
-setCapturesCursor avCaptureScreenInput  value =
-    sendMsg avCaptureScreenInput (mkSelector "setCapturesCursor:") retVoid [argCULong (if value then 1 else 0)]
+setCapturesCursor avCaptureScreenInput value =
+  sendMessage avCaptureScreenInput setCapturesCursorSelector value
 
 -- | removesDuplicateFrames
 --
@@ -162,8 +159,8 @@ setCapturesCursor avCaptureScreenInput  value =
 --
 -- ObjC selector: @- removesDuplicateFrames@
 removesDuplicateFrames :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> IO Bool
-removesDuplicateFrames avCaptureScreenInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureScreenInput (mkSelector "removesDuplicateFrames") retCULong []
+removesDuplicateFrames avCaptureScreenInput =
+  sendMessage avCaptureScreenInput removesDuplicateFramesSelector
 
 -- | removesDuplicateFrames
 --
@@ -175,54 +172,54 @@ removesDuplicateFrames avCaptureScreenInput  =
 --
 -- ObjC selector: @- setRemovesDuplicateFrames:@
 setRemovesDuplicateFrames :: IsAVCaptureScreenInput avCaptureScreenInput => avCaptureScreenInput -> Bool -> IO ()
-setRemovesDuplicateFrames avCaptureScreenInput  value =
-    sendMsg avCaptureScreenInput (mkSelector "setRemovesDuplicateFrames:") retVoid [argCULong (if value then 1 else 0)]
+setRemovesDuplicateFrames avCaptureScreenInput value =
+  sendMessage avCaptureScreenInput setRemovesDuplicateFramesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureScreenInput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureScreenInput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDisplayID:@
-initWithDisplayIDSelector :: Selector
+initWithDisplayIDSelector :: Selector '[CUInt] (Id AVCaptureScreenInput)
 initWithDisplayIDSelector = mkSelector "initWithDisplayID:"
 
 -- | @Selector@ for @scaleFactor@
-scaleFactorSelector :: Selector
+scaleFactorSelector :: Selector '[] CDouble
 scaleFactorSelector = mkSelector "scaleFactor"
 
 -- | @Selector@ for @setScaleFactor:@
-setScaleFactorSelector :: Selector
+setScaleFactorSelector :: Selector '[CDouble] ()
 setScaleFactorSelector = mkSelector "setScaleFactor:"
 
 -- | @Selector@ for @capturesMouseClicks@
-capturesMouseClicksSelector :: Selector
+capturesMouseClicksSelector :: Selector '[] Bool
 capturesMouseClicksSelector = mkSelector "capturesMouseClicks"
 
 -- | @Selector@ for @setCapturesMouseClicks:@
-setCapturesMouseClicksSelector :: Selector
+setCapturesMouseClicksSelector :: Selector '[Bool] ()
 setCapturesMouseClicksSelector = mkSelector "setCapturesMouseClicks:"
 
 -- | @Selector@ for @capturesCursor@
-capturesCursorSelector :: Selector
+capturesCursorSelector :: Selector '[] Bool
 capturesCursorSelector = mkSelector "capturesCursor"
 
 -- | @Selector@ for @setCapturesCursor:@
-setCapturesCursorSelector :: Selector
+setCapturesCursorSelector :: Selector '[Bool] ()
 setCapturesCursorSelector = mkSelector "setCapturesCursor:"
 
 -- | @Selector@ for @removesDuplicateFrames@
-removesDuplicateFramesSelector :: Selector
+removesDuplicateFramesSelector :: Selector '[] Bool
 removesDuplicateFramesSelector = mkSelector "removesDuplicateFrames"
 
 -- | @Selector@ for @setRemovesDuplicateFrames:@
-setRemovesDuplicateFramesSelector :: Selector
+setRemovesDuplicateFramesSelector :: Selector '[Bool] ()
 setRemovesDuplicateFramesSelector = mkSelector "setRemovesDuplicateFrames:"
 

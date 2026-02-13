@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Foundation.NSExtensionItem
   , setAttachments
   , userInfo
   , setUserInfo
-  , attributedTitleSelector
-  , setAttributedTitleSelector
-  , attributedContentTextSelector
-  , setAttributedContentTextSelector
   , attachmentsSelector
+  , attributedContentTextSelector
+  , attributedTitleSelector
   , setAttachmentsSelector
-  , userInfoSelector
+  , setAttributedContentTextSelector
+  , setAttributedTitleSelector
   , setUserInfoSelector
+  , userInfoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,81 +39,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- attributedTitle@
 attributedTitle :: IsNSExtensionItem nsExtensionItem => nsExtensionItem -> IO (Id NSAttributedString)
-attributedTitle nsExtensionItem  =
-    sendMsg nsExtensionItem (mkSelector "attributedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedTitle nsExtensionItem =
+  sendMessage nsExtensionItem attributedTitleSelector
 
 -- | @- setAttributedTitle:@
 setAttributedTitle :: (IsNSExtensionItem nsExtensionItem, IsNSAttributedString value) => nsExtensionItem -> value -> IO ()
-setAttributedTitle nsExtensionItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsExtensionItem (mkSelector "setAttributedTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedTitle nsExtensionItem value =
+  sendMessage nsExtensionItem setAttributedTitleSelector (toNSAttributedString value)
 
 -- | @- attributedContentText@
 attributedContentText :: IsNSExtensionItem nsExtensionItem => nsExtensionItem -> IO (Id NSAttributedString)
-attributedContentText nsExtensionItem  =
-    sendMsg nsExtensionItem (mkSelector "attributedContentText") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedContentText nsExtensionItem =
+  sendMessage nsExtensionItem attributedContentTextSelector
 
 -- | @- setAttributedContentText:@
 setAttributedContentText :: (IsNSExtensionItem nsExtensionItem, IsNSAttributedString value) => nsExtensionItem -> value -> IO ()
-setAttributedContentText nsExtensionItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsExtensionItem (mkSelector "setAttributedContentText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedContentText nsExtensionItem value =
+  sendMessage nsExtensionItem setAttributedContentTextSelector (toNSAttributedString value)
 
 -- | @- attachments@
 attachments :: IsNSExtensionItem nsExtensionItem => nsExtensionItem -> IO (Id NSArray)
-attachments nsExtensionItem  =
-    sendMsg nsExtensionItem (mkSelector "attachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+attachments nsExtensionItem =
+  sendMessage nsExtensionItem attachmentsSelector
 
 -- | @- setAttachments:@
 setAttachments :: (IsNSExtensionItem nsExtensionItem, IsNSArray value) => nsExtensionItem -> value -> IO ()
-setAttachments nsExtensionItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsExtensionItem (mkSelector "setAttachments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttachments nsExtensionItem value =
+  sendMessage nsExtensionItem setAttachmentsSelector (toNSArray value)
 
 -- | @- userInfo@
 userInfo :: IsNSExtensionItem nsExtensionItem => nsExtensionItem -> IO (Id NSDictionary)
-userInfo nsExtensionItem  =
-    sendMsg nsExtensionItem (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsExtensionItem =
+  sendMessage nsExtensionItem userInfoSelector
 
 -- | @- setUserInfo:@
 setUserInfo :: (IsNSExtensionItem nsExtensionItem, IsNSDictionary value) => nsExtensionItem -> value -> IO ()
-setUserInfo nsExtensionItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsExtensionItem (mkSelector "setUserInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserInfo nsExtensionItem value =
+  sendMessage nsExtensionItem setUserInfoSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @attributedTitle@
-attributedTitleSelector :: Selector
+attributedTitleSelector :: Selector '[] (Id NSAttributedString)
 attributedTitleSelector = mkSelector "attributedTitle"
 
 -- | @Selector@ for @setAttributedTitle:@
-setAttributedTitleSelector :: Selector
+setAttributedTitleSelector :: Selector '[Id NSAttributedString] ()
 setAttributedTitleSelector = mkSelector "setAttributedTitle:"
 
 -- | @Selector@ for @attributedContentText@
-attributedContentTextSelector :: Selector
+attributedContentTextSelector :: Selector '[] (Id NSAttributedString)
 attributedContentTextSelector = mkSelector "attributedContentText"
 
 -- | @Selector@ for @setAttributedContentText:@
-setAttributedContentTextSelector :: Selector
+setAttributedContentTextSelector :: Selector '[Id NSAttributedString] ()
 setAttributedContentTextSelector = mkSelector "setAttributedContentText:"
 
 -- | @Selector@ for @attachments@
-attachmentsSelector :: Selector
+attachmentsSelector :: Selector '[] (Id NSArray)
 attachmentsSelector = mkSelector "attachments"
 
 -- | @Selector@ for @setAttachments:@
-setAttachmentsSelector :: Selector
+setAttachmentsSelector :: Selector '[Id NSArray] ()
 setAttachmentsSelector = mkSelector "setAttachments:"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @setUserInfo:@
-setUserInfoSelector :: Selector
+setUserInfoSelector :: Selector '[Id NSDictionary] ()
 setUserInfoSelector = mkSelector "setUserInfo:"
 

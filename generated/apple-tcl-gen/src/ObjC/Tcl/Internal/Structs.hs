@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data TclPlatStubs = TclPlatStubs
   { tclPlatStubsMagic :: !CInt
@@ -36,6 +38,16 @@ argTclPlatStubs = mkStorableArg tclPlatStubsStructType
 
 retTclPlatStubs :: RetType TclPlatStubs
 retTclPlatStubs = mkStorableRetType tclPlatStubsStructType
+
+instance ObjCArgument TclPlatStubs where
+  withObjCArg x k = k (argTclPlatStubs x)
+
+instance ObjCReturn TclPlatStubs where
+  type RawReturn TclPlatStubs = TclPlatStubs
+  objcRetType = retTclPlatStubs
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TclStubHooks = TclStubHooks
   { tclStubHooksTclPlatStubs :: !(Ptr ())
@@ -63,6 +75,16 @@ argTclStubHooks = mkStorableArg tclStubHooksStructType
 
 retTclStubHooks :: RetType TclStubHooks
 retTclStubHooks = mkStorableRetType tclStubHooksStructType
+
+instance ObjCArgument TclStubHooks where
+  withObjCArg x k = k (argTclStubHooks x)
+
+instance ObjCReturn TclStubHooks where
+  type RawReturn TclStubHooks = TclStubHooks
+  objcRetType = retTclStubHooks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data TclStubs = TclStubs
   { tclStubsMagic :: !CInt
@@ -1828,6 +1850,16 @@ argTclStubs = mkStorableArg tclStubsStructType
 retTclStubs :: RetType TclStubs
 retTclStubs = mkStorableRetType tclStubsStructType
 
+instance ObjCArgument TclStubs where
+  withObjCArg x k = k (argTclStubs x)
+
+instance ObjCReturn TclStubs where
+  type RawReturn TclStubs = TclStubs
+  objcRetType = retTclStubs
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data Tcl_Config = Tcl_Config
   { tcl_ConfigKey :: !(Ptr ())
   , tcl_ConfigValue :: !(Ptr ())
@@ -1851,6 +1883,16 @@ argTcl_Config = mkStorableArg tcl_ConfigStructType
 
 retTcl_Config :: RetType Tcl_Config
 retTcl_Config = mkStorableRetType tcl_ConfigStructType
+
+instance ObjCArgument Tcl_Config where
+  withObjCArg x k = k (argTcl_Config x)
+
+instance ObjCReturn Tcl_Config where
+  type RawReturn Tcl_Config = Tcl_Config
+  objcRetType = retTcl_Config
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data Tcl_Interp = Tcl_Interp
   { tcl_InterpResult :: !(Ptr ())
@@ -1879,6 +1921,16 @@ argTcl_Interp = mkStorableArg tcl_InterpStructType
 retTcl_Interp :: RetType Tcl_Interp
 retTcl_Interp = mkStorableRetType tcl_InterpStructType
 
+instance ObjCArgument Tcl_Interp where
+  withObjCArg x k = k (argTcl_Interp x)
+
+instance ObjCReturn Tcl_Interp where
+  type RawReturn Tcl_Interp = Tcl_Interp
+  objcRetType = retTcl_Interp
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data Tcl_RegExpIndices = Tcl_RegExpIndices
   { tcl_RegExpIndicesStart :: !CLong
   , tcl_RegExpIndicesEnd :: !CLong
@@ -1903,6 +1955,16 @@ argTcl_RegExpIndices = mkStorableArg tcl_RegExpIndicesStructType
 retTcl_RegExpIndices :: RetType Tcl_RegExpIndices
 retTcl_RegExpIndices = mkStorableRetType tcl_RegExpIndicesStructType
 
+instance ObjCArgument Tcl_RegExpIndices where
+  withObjCArg x k = k (argTcl_RegExpIndices x)
+
+instance ObjCReturn Tcl_RegExpIndices where
+  type RawReturn Tcl_RegExpIndices = Tcl_RegExpIndices
+  objcRetType = retTcl_RegExpIndices
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data Tcl_Time = Tcl_Time
   { tcl_TimeSec :: !CLong
   , tcl_TimeUsec :: !CLong
@@ -1926,6 +1988,16 @@ argTcl_Time = mkStorableArg tcl_TimeStructType
 
 retTcl_Time :: RetType Tcl_Time
 retTcl_Time = mkStorableRetType tcl_TimeStructType
+
+instance ObjCArgument Tcl_Time where
+  withObjCArg x k = k (argTcl_Time x)
+
+instance ObjCReturn Tcl_Time where
+  type RawReturn Tcl_Time = Tcl_Time
+  objcRetType = retTcl_Time
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data Tcl_Token = Tcl_Token
   { tcl_TokenType :: !CInt
@@ -1957,6 +2029,16 @@ argTcl_Token = mkStorableArg tcl_TokenStructType
 retTcl_Token :: RetType Tcl_Token
 retTcl_Token = mkStorableRetType tcl_TokenStructType
 
+instance ObjCArgument Tcl_Token where
+  withObjCArg x k = k (argTcl_Token x)
+
+instance ObjCReturn Tcl_Token where
+  type RawReturn Tcl_Token = Tcl_Token
+  objcRetType = retTcl_Token
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data Tcl_Value = Tcl_Value
   { tcl_ValueType :: !CInt
   , tcl_ValueIntValue :: !CLong
@@ -1986,3 +2068,13 @@ argTcl_Value = mkStorableArg tcl_ValueStructType
 
 retTcl_Value :: RetType Tcl_Value
 retTcl_Value = mkStorableRetType tcl_ValueStructType
+
+instance ObjCArgument Tcl_Value where
+  withObjCArg x k = k (argTcl_Value x)
+
+instance ObjCReturn Tcl_Value where
+  type RawReturn Tcl_Value = Tcl_Value
+  objcRetType = retTcl_Value
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

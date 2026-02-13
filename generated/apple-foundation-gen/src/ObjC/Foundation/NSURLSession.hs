@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,55 +43,51 @@ module ObjC.Foundation.NSURLSession
   , configuration
   , sessionDescription
   , setSessionDescription
-  , sessionWithConfigurationSelector
-  , sessionWithConfiguration_delegate_delegateQueueSelector
-  , finishTasksAndInvalidateSelector
-  , invalidateAndCancelSelector
-  , resetWithCompletionHandlerSelector
-  , flushWithCompletionHandlerSelector
+  , configurationSelector
   , dataTaskWithRequestSelector
-  , dataTaskWithURLSelector
-  , uploadTaskWithRequest_fromFileSelector
-  , uploadTaskWithRequest_fromDataSelector
-  , uploadTaskWithResumeDataSelector
-  , uploadTaskWithStreamedRequestSelector
-  , downloadTaskWithRequestSelector
-  , downloadTaskWithURLSelector
-  , downloadTaskWithResumeDataSelector
-  , streamTaskWithHostName_portSelector
-  , streamTaskWithNetServiceSelector
-  , webSocketTaskWithURLSelector
-  , webSocketTaskWithURL_protocolsSelector
-  , webSocketTaskWithRequestSelector
-  , initSelector
-  , newSelector
   , dataTaskWithRequest_completionHandlerSelector
+  , dataTaskWithURLSelector
   , dataTaskWithURL_completionHandlerSelector
-  , uploadTaskWithRequest_fromFile_completionHandlerSelector
-  , uploadTaskWithRequest_fromData_completionHandlerSelector
-  , uploadTaskWithResumeData_completionHandlerSelector
-  , downloadTaskWithRequest_completionHandlerSelector
-  , downloadTaskWithURL_completionHandlerSelector
-  , downloadTaskWithResumeData_completionHandlerSelector
-  , sharedSessionSelector
   , delegateQueueSelector
   , delegateSelector
-  , configurationSelector
+  , downloadTaskWithRequestSelector
+  , downloadTaskWithRequest_completionHandlerSelector
+  , downloadTaskWithResumeDataSelector
+  , downloadTaskWithResumeData_completionHandlerSelector
+  , downloadTaskWithURLSelector
+  , downloadTaskWithURL_completionHandlerSelector
+  , finishTasksAndInvalidateSelector
+  , flushWithCompletionHandlerSelector
+  , initSelector
+  , invalidateAndCancelSelector
+  , newSelector
+  , resetWithCompletionHandlerSelector
   , sessionDescriptionSelector
+  , sessionWithConfigurationSelector
+  , sessionWithConfiguration_delegate_delegateQueueSelector
   , setSessionDescriptionSelector
+  , sharedSessionSelector
+  , streamTaskWithHostName_portSelector
+  , streamTaskWithNetServiceSelector
+  , uploadTaskWithRequest_fromDataSelector
+  , uploadTaskWithRequest_fromData_completionHandlerSelector
+  , uploadTaskWithRequest_fromFileSelector
+  , uploadTaskWithRequest_fromFile_completionHandlerSelector
+  , uploadTaskWithResumeDataSelector
+  , uploadTaskWithResumeData_completionHandlerSelector
+  , uploadTaskWithStreamedRequestSelector
+  , webSocketTaskWithRequestSelector
+  , webSocketTaskWithURLSelector
+  , webSocketTaskWithURL_protocolsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,63 +98,54 @@ sessionWithConfiguration :: IsNSURLSessionConfiguration configuration => configu
 sessionWithConfiguration configuration =
   do
     cls' <- getRequiredClass "NSURLSession"
-    withObjCPtr configuration $ \raw_configuration ->
-      sendClassMsg cls' (mkSelector "sessionWithConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sessionWithConfigurationSelector (toNSURLSessionConfiguration configuration)
 
 -- | @+ sessionWithConfiguration:delegate:delegateQueue:@
 sessionWithConfiguration_delegate_delegateQueue :: (IsNSURLSessionConfiguration configuration, IsNSOperationQueue queue) => configuration -> RawId -> queue -> IO (Id NSURLSession)
 sessionWithConfiguration_delegate_delegateQueue configuration delegate queue =
   do
     cls' <- getRequiredClass "NSURLSession"
-    withObjCPtr configuration $ \raw_configuration ->
-      withObjCPtr queue $ \raw_queue ->
-        sendClassMsg cls' (mkSelector "sessionWithConfiguration:delegate:delegateQueue:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sessionWithConfiguration_delegate_delegateQueueSelector (toNSURLSessionConfiguration configuration) delegate (toNSOperationQueue queue)
 
 -- | @- finishTasksAndInvalidate@
 finishTasksAndInvalidate :: IsNSURLSession nsurlSession => nsurlSession -> IO ()
-finishTasksAndInvalidate nsurlSession  =
-    sendMsg nsurlSession (mkSelector "finishTasksAndInvalidate") retVoid []
+finishTasksAndInvalidate nsurlSession =
+  sendMessage nsurlSession finishTasksAndInvalidateSelector
 
 -- | @- invalidateAndCancel@
 invalidateAndCancel :: IsNSURLSession nsurlSession => nsurlSession -> IO ()
-invalidateAndCancel nsurlSession  =
-    sendMsg nsurlSession (mkSelector "invalidateAndCancel") retVoid []
+invalidateAndCancel nsurlSession =
+  sendMessage nsurlSession invalidateAndCancelSelector
 
 -- | @- resetWithCompletionHandler:@
 resetWithCompletionHandler :: IsNSURLSession nsurlSession => nsurlSession -> Ptr () -> IO ()
-resetWithCompletionHandler nsurlSession  completionHandler =
-    sendMsg nsurlSession (mkSelector "resetWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+resetWithCompletionHandler nsurlSession completionHandler =
+  sendMessage nsurlSession resetWithCompletionHandlerSelector completionHandler
 
 -- | @- flushWithCompletionHandler:@
 flushWithCompletionHandler :: IsNSURLSession nsurlSession => nsurlSession -> Ptr () -> IO ()
-flushWithCompletionHandler nsurlSession  completionHandler =
-    sendMsg nsurlSession (mkSelector "flushWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+flushWithCompletionHandler nsurlSession completionHandler =
+  sendMessage nsurlSession flushWithCompletionHandlerSelector completionHandler
 
 -- | @- dataTaskWithRequest:@
 dataTaskWithRequest :: (IsNSURLSession nsurlSession, IsNSURLRequest request) => nsurlSession -> request -> IO (Id NSURLSessionDataTask)
-dataTaskWithRequest nsurlSession  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlSession (mkSelector "dataTaskWithRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())] >>= retainedObject . castPtr
+dataTaskWithRequest nsurlSession request =
+  sendMessage nsurlSession dataTaskWithRequestSelector (toNSURLRequest request)
 
 -- | @- dataTaskWithURL:@
 dataTaskWithURL :: (IsNSURLSession nsurlSession, IsNSURL url) => nsurlSession -> url -> IO (Id NSURLSessionDataTask)
-dataTaskWithURL nsurlSession  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsurlSession (mkSelector "dataTaskWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+dataTaskWithURL nsurlSession url =
+  sendMessage nsurlSession dataTaskWithURLSelector (toNSURL url)
 
 -- | @- uploadTaskWithRequest:fromFile:@
 uploadTaskWithRequest_fromFile :: (IsNSURLSession nsurlSession, IsNSURLRequest request, IsNSURL fileURL) => nsurlSession -> request -> fileURL -> IO (Id NSURLSessionUploadTask)
-uploadTaskWithRequest_fromFile nsurlSession  request fileURL =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr fileURL $ \raw_fileURL ->
-        sendMsg nsurlSession (mkSelector "uploadTaskWithRequest:fromFile:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_fileURL :: Ptr ())] >>= retainedObject . castPtr
+uploadTaskWithRequest_fromFile nsurlSession request fileURL =
+  sendMessage nsurlSession uploadTaskWithRequest_fromFileSelector (toNSURLRequest request) (toNSURL fileURL)
 
 -- | @- uploadTaskWithRequest:fromData:@
 uploadTaskWithRequest_fromData :: (IsNSURLSession nsurlSession, IsNSURLRequest request, IsNSData bodyData) => nsurlSession -> request -> bodyData -> IO (Id NSURLSessionUploadTask)
-uploadTaskWithRequest_fromData nsurlSession  request bodyData =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr bodyData $ \raw_bodyData ->
-        sendMsg nsurlSession (mkSelector "uploadTaskWithRequest:fromData:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_bodyData :: Ptr ())] >>= retainedObject . castPtr
+uploadTaskWithRequest_fromData nsurlSession request bodyData =
+  sendMessage nsurlSession uploadTaskWithRequest_fromDataSelector (toNSURLRequest request) (toNSData bodyData)
 
 -- | Creates an upload task from a resume data blob. Requires the server to support the latest resumable uploads Internet-Draft from the HTTP Working Group, found at https://datatracker.ietf.org/doc/draft-ietf-httpbis-resumable-upload/ If resuming from an upload file, the file must still exist and be unmodified. If the upload cannot be successfully resumed, URLSession:task:didCompleteWithError: will be called.
 --
@@ -165,102 +153,85 @@ uploadTaskWithRequest_fromData nsurlSession  request bodyData =
 --
 -- ObjC selector: @- uploadTaskWithResumeData:@
 uploadTaskWithResumeData :: (IsNSURLSession nsurlSession, IsNSData resumeData) => nsurlSession -> resumeData -> IO (Id NSURLSessionUploadTask)
-uploadTaskWithResumeData nsurlSession  resumeData =
-  withObjCPtr resumeData $ \raw_resumeData ->
-      sendMsg nsurlSession (mkSelector "uploadTaskWithResumeData:") (retPtr retVoid) [argPtr (castPtr raw_resumeData :: Ptr ())] >>= retainedObject . castPtr
+uploadTaskWithResumeData nsurlSession resumeData =
+  sendMessage nsurlSession uploadTaskWithResumeDataSelector (toNSData resumeData)
 
 -- | @- uploadTaskWithStreamedRequest:@
 uploadTaskWithStreamedRequest :: (IsNSURLSession nsurlSession, IsNSURLRequest request) => nsurlSession -> request -> IO (Id NSURLSessionUploadTask)
-uploadTaskWithStreamedRequest nsurlSession  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlSession (mkSelector "uploadTaskWithStreamedRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())] >>= retainedObject . castPtr
+uploadTaskWithStreamedRequest nsurlSession request =
+  sendMessage nsurlSession uploadTaskWithStreamedRequestSelector (toNSURLRequest request)
 
 -- | @- downloadTaskWithRequest:@
 downloadTaskWithRequest :: (IsNSURLSession nsurlSession, IsNSURLRequest request) => nsurlSession -> request -> IO (Id NSURLSessionDownloadTask)
-downloadTaskWithRequest nsurlSession  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlSession (mkSelector "downloadTaskWithRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())] >>= retainedObject . castPtr
+downloadTaskWithRequest nsurlSession request =
+  sendMessage nsurlSession downloadTaskWithRequestSelector (toNSURLRequest request)
 
 -- | @- downloadTaskWithURL:@
 downloadTaskWithURL :: (IsNSURLSession nsurlSession, IsNSURL url) => nsurlSession -> url -> IO (Id NSURLSessionDownloadTask)
-downloadTaskWithURL nsurlSession  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsurlSession (mkSelector "downloadTaskWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+downloadTaskWithURL nsurlSession url =
+  sendMessage nsurlSession downloadTaskWithURLSelector (toNSURL url)
 
 -- | @- downloadTaskWithResumeData:@
 downloadTaskWithResumeData :: (IsNSURLSession nsurlSession, IsNSData resumeData) => nsurlSession -> resumeData -> IO (Id NSURLSessionDownloadTask)
-downloadTaskWithResumeData nsurlSession  resumeData =
-  withObjCPtr resumeData $ \raw_resumeData ->
-      sendMsg nsurlSession (mkSelector "downloadTaskWithResumeData:") (retPtr retVoid) [argPtr (castPtr raw_resumeData :: Ptr ())] >>= retainedObject . castPtr
+downloadTaskWithResumeData nsurlSession resumeData =
+  sendMessage nsurlSession downloadTaskWithResumeDataSelector (toNSData resumeData)
 
 -- | @- streamTaskWithHostName:port:@
 streamTaskWithHostName_port :: (IsNSURLSession nsurlSession, IsNSString hostname) => nsurlSession -> hostname -> CLong -> IO (Id NSURLSessionStreamTask)
-streamTaskWithHostName_port nsurlSession  hostname port =
-  withObjCPtr hostname $ \raw_hostname ->
-      sendMsg nsurlSession (mkSelector "streamTaskWithHostName:port:") (retPtr retVoid) [argPtr (castPtr raw_hostname :: Ptr ()), argCLong port] >>= retainedObject . castPtr
+streamTaskWithHostName_port nsurlSession hostname port =
+  sendMessage nsurlSession streamTaskWithHostName_portSelector (toNSString hostname) port
 
 -- | @- streamTaskWithNetService:@
 streamTaskWithNetService :: (IsNSURLSession nsurlSession, IsNSNetService service) => nsurlSession -> service -> IO (Id NSURLSessionStreamTask)
-streamTaskWithNetService nsurlSession  service =
-  withObjCPtr service $ \raw_service ->
-      sendMsg nsurlSession (mkSelector "streamTaskWithNetService:") (retPtr retVoid) [argPtr (castPtr raw_service :: Ptr ())] >>= retainedObject . castPtr
+streamTaskWithNetService nsurlSession service =
+  sendMessage nsurlSession streamTaskWithNetServiceSelector (toNSNetService service)
 
 -- | @- webSocketTaskWithURL:@
 webSocketTaskWithURL :: (IsNSURLSession nsurlSession, IsNSURL url) => nsurlSession -> url -> IO (Id NSURLSessionWebSocketTask)
-webSocketTaskWithURL nsurlSession  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsurlSession (mkSelector "webSocketTaskWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+webSocketTaskWithURL nsurlSession url =
+  sendMessage nsurlSession webSocketTaskWithURLSelector (toNSURL url)
 
 -- | @- webSocketTaskWithURL:protocols:@
 webSocketTaskWithURL_protocols :: (IsNSURLSession nsurlSession, IsNSURL url, IsNSArray protocols) => nsurlSession -> url -> protocols -> IO (Id NSURLSessionWebSocketTask)
-webSocketTaskWithURL_protocols nsurlSession  url protocols =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr protocols $ \raw_protocols ->
-        sendMsg nsurlSession (mkSelector "webSocketTaskWithURL:protocols:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_protocols :: Ptr ())] >>= retainedObject . castPtr
+webSocketTaskWithURL_protocols nsurlSession url protocols =
+  sendMessage nsurlSession webSocketTaskWithURL_protocolsSelector (toNSURL url) (toNSArray protocols)
 
 -- | @- webSocketTaskWithRequest:@
 webSocketTaskWithRequest :: (IsNSURLSession nsurlSession, IsNSURLRequest request) => nsurlSession -> request -> IO (Id NSURLSessionWebSocketTask)
-webSocketTaskWithRequest nsurlSession  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlSession (mkSelector "webSocketTaskWithRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())] >>= retainedObject . castPtr
+webSocketTaskWithRequest nsurlSession request =
+  sendMessage nsurlSession webSocketTaskWithRequestSelector (toNSURLRequest request)
 
 -- | @- init@
 init_ :: IsNSURLSession nsurlSession => nsurlSession -> IO (Id NSURLSession)
-init_ nsurlSession  =
-    sendMsg nsurlSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsurlSession =
+  sendOwnedMessage nsurlSession initSelector
 
 -- | @+ new@
 new :: IO (Id NSURLSession)
 new  =
   do
     cls' <- getRequiredClass "NSURLSession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- dataTaskWithRequest:completionHandler:@
 dataTaskWithRequest_completionHandler :: (IsNSURLSession nsurlSession, IsNSURLRequest request) => nsurlSession -> request -> Ptr () -> IO (Id NSURLSessionDataTask)
-dataTaskWithRequest_completionHandler nsurlSession  request completionHandler =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlSession (mkSelector "dataTaskWithRequest:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+dataTaskWithRequest_completionHandler nsurlSession request completionHandler =
+  sendMessage nsurlSession dataTaskWithRequest_completionHandlerSelector (toNSURLRequest request) completionHandler
 
 -- | @- dataTaskWithURL:completionHandler:@
 dataTaskWithURL_completionHandler :: (IsNSURLSession nsurlSession, IsNSURL url) => nsurlSession -> url -> Ptr () -> IO (Id NSURLSessionDataTask)
-dataTaskWithURL_completionHandler nsurlSession  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsurlSession (mkSelector "dataTaskWithURL:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+dataTaskWithURL_completionHandler nsurlSession url completionHandler =
+  sendMessage nsurlSession dataTaskWithURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | @- uploadTaskWithRequest:fromFile:completionHandler:@
 uploadTaskWithRequest_fromFile_completionHandler :: (IsNSURLSession nsurlSession, IsNSURLRequest request, IsNSURL fileURL) => nsurlSession -> request -> fileURL -> Ptr () -> IO (Id NSURLSessionUploadTask)
-uploadTaskWithRequest_fromFile_completionHandler nsurlSession  request fileURL completionHandler =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr fileURL $ \raw_fileURL ->
-        sendMsg nsurlSession (mkSelector "uploadTaskWithRequest:fromFile:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+uploadTaskWithRequest_fromFile_completionHandler nsurlSession request fileURL completionHandler =
+  sendMessage nsurlSession uploadTaskWithRequest_fromFile_completionHandlerSelector (toNSURLRequest request) (toNSURL fileURL) completionHandler
 
 -- | @- uploadTaskWithRequest:fromData:completionHandler:@
 uploadTaskWithRequest_fromData_completionHandler :: (IsNSURLSession nsurlSession, IsNSURLRequest request, IsNSData bodyData) => nsurlSession -> request -> bodyData -> Ptr () -> IO (Id NSURLSessionUploadTask)
-uploadTaskWithRequest_fromData_completionHandler nsurlSession  request bodyData completionHandler =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr bodyData $ \raw_bodyData ->
-        sendMsg nsurlSession (mkSelector "uploadTaskWithRequest:fromData:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_bodyData :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+uploadTaskWithRequest_fromData_completionHandler nsurlSession request bodyData completionHandler =
+  sendMessage nsurlSession uploadTaskWithRequest_fromData_completionHandlerSelector (toNSURLRequest request) (toNSData bodyData) completionHandler
 
 -- | Creates a URLSessionUploadTask from a resume data blob. If resuming from an upload file, the file must still exist and be unmodified.
 --
@@ -268,206 +239,201 @@ uploadTaskWithRequest_fromData_completionHandler nsurlSession  request bodyData 
 --
 -- ObjC selector: @- uploadTaskWithResumeData:completionHandler:@
 uploadTaskWithResumeData_completionHandler :: (IsNSURLSession nsurlSession, IsNSData resumeData) => nsurlSession -> resumeData -> Ptr () -> IO (Id NSURLSessionUploadTask)
-uploadTaskWithResumeData_completionHandler nsurlSession  resumeData completionHandler =
-  withObjCPtr resumeData $ \raw_resumeData ->
-      sendMsg nsurlSession (mkSelector "uploadTaskWithResumeData:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_resumeData :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+uploadTaskWithResumeData_completionHandler nsurlSession resumeData completionHandler =
+  sendMessage nsurlSession uploadTaskWithResumeData_completionHandlerSelector (toNSData resumeData) completionHandler
 
 -- | @- downloadTaskWithRequest:completionHandler:@
 downloadTaskWithRequest_completionHandler :: (IsNSURLSession nsurlSession, IsNSURLRequest request) => nsurlSession -> request -> Ptr () -> IO (Id NSURLSessionDownloadTask)
-downloadTaskWithRequest_completionHandler nsurlSession  request completionHandler =
-  withObjCPtr request $ \raw_request ->
-      sendMsg nsurlSession (mkSelector "downloadTaskWithRequest:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+downloadTaskWithRequest_completionHandler nsurlSession request completionHandler =
+  sendMessage nsurlSession downloadTaskWithRequest_completionHandlerSelector (toNSURLRequest request) completionHandler
 
 -- | @- downloadTaskWithURL:completionHandler:@
 downloadTaskWithURL_completionHandler :: (IsNSURLSession nsurlSession, IsNSURL url) => nsurlSession -> url -> Ptr () -> IO (Id NSURLSessionDownloadTask)
-downloadTaskWithURL_completionHandler nsurlSession  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsurlSession (mkSelector "downloadTaskWithURL:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+downloadTaskWithURL_completionHandler nsurlSession url completionHandler =
+  sendMessage nsurlSession downloadTaskWithURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | @- downloadTaskWithResumeData:completionHandler:@
 downloadTaskWithResumeData_completionHandler :: (IsNSURLSession nsurlSession, IsNSData resumeData) => nsurlSession -> resumeData -> Ptr () -> IO (Id NSURLSessionDownloadTask)
-downloadTaskWithResumeData_completionHandler nsurlSession  resumeData completionHandler =
-  withObjCPtr resumeData $ \raw_resumeData ->
-      sendMsg nsurlSession (mkSelector "downloadTaskWithResumeData:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_resumeData :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+downloadTaskWithResumeData_completionHandler nsurlSession resumeData completionHandler =
+  sendMessage nsurlSession downloadTaskWithResumeData_completionHandlerSelector (toNSData resumeData) completionHandler
 
 -- | @+ sharedSession@
 sharedSession :: IO (Id NSURLSession)
 sharedSession  =
   do
     cls' <- getRequiredClass "NSURLSession"
-    sendClassMsg cls' (mkSelector "sharedSession") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedSessionSelector
 
 -- | @- delegateQueue@
 delegateQueue :: IsNSURLSession nsurlSession => nsurlSession -> IO (Id NSOperationQueue)
-delegateQueue nsurlSession  =
-    sendMsg nsurlSession (mkSelector "delegateQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateQueue nsurlSession =
+  sendMessage nsurlSession delegateQueueSelector
 
 -- | @- delegate@
 delegate :: IsNSURLSession nsurlSession => nsurlSession -> IO RawId
-delegate nsurlSession  =
-    fmap (RawId . castPtr) $ sendMsg nsurlSession (mkSelector "delegate") (retPtr retVoid) []
+delegate nsurlSession =
+  sendMessage nsurlSession delegateSelector
 
 -- | @- configuration@
 configuration :: IsNSURLSession nsurlSession => nsurlSession -> IO (Id NSURLSessionConfiguration)
-configuration nsurlSession  =
-    sendMsg nsurlSession (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration nsurlSession =
+  sendMessage nsurlSession configurationSelector
 
 -- | @- sessionDescription@
 sessionDescription :: IsNSURLSession nsurlSession => nsurlSession -> IO (Id NSString)
-sessionDescription nsurlSession  =
-    sendMsg nsurlSession (mkSelector "sessionDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionDescription nsurlSession =
+  sendMessage nsurlSession sessionDescriptionSelector
 
 -- | @- setSessionDescription:@
 setSessionDescription :: (IsNSURLSession nsurlSession, IsNSString value) => nsurlSession -> value -> IO ()
-setSessionDescription nsurlSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSession (mkSelector "setSessionDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSessionDescription nsurlSession value =
+  sendMessage nsurlSession setSessionDescriptionSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sessionWithConfiguration:@
-sessionWithConfigurationSelector :: Selector
+sessionWithConfigurationSelector :: Selector '[Id NSURLSessionConfiguration] (Id NSURLSession)
 sessionWithConfigurationSelector = mkSelector "sessionWithConfiguration:"
 
 -- | @Selector@ for @sessionWithConfiguration:delegate:delegateQueue:@
-sessionWithConfiguration_delegate_delegateQueueSelector :: Selector
+sessionWithConfiguration_delegate_delegateQueueSelector :: Selector '[Id NSURLSessionConfiguration, RawId, Id NSOperationQueue] (Id NSURLSession)
 sessionWithConfiguration_delegate_delegateQueueSelector = mkSelector "sessionWithConfiguration:delegate:delegateQueue:"
 
 -- | @Selector@ for @finishTasksAndInvalidate@
-finishTasksAndInvalidateSelector :: Selector
+finishTasksAndInvalidateSelector :: Selector '[] ()
 finishTasksAndInvalidateSelector = mkSelector "finishTasksAndInvalidate"
 
 -- | @Selector@ for @invalidateAndCancel@
-invalidateAndCancelSelector :: Selector
+invalidateAndCancelSelector :: Selector '[] ()
 invalidateAndCancelSelector = mkSelector "invalidateAndCancel"
 
 -- | @Selector@ for @resetWithCompletionHandler:@
-resetWithCompletionHandlerSelector :: Selector
+resetWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 resetWithCompletionHandlerSelector = mkSelector "resetWithCompletionHandler:"
 
 -- | @Selector@ for @flushWithCompletionHandler:@
-flushWithCompletionHandlerSelector :: Selector
+flushWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 flushWithCompletionHandlerSelector = mkSelector "flushWithCompletionHandler:"
 
 -- | @Selector@ for @dataTaskWithRequest:@
-dataTaskWithRequestSelector :: Selector
+dataTaskWithRequestSelector :: Selector '[Id NSURLRequest] (Id NSURLSessionDataTask)
 dataTaskWithRequestSelector = mkSelector "dataTaskWithRequest:"
 
 -- | @Selector@ for @dataTaskWithURL:@
-dataTaskWithURLSelector :: Selector
+dataTaskWithURLSelector :: Selector '[Id NSURL] (Id NSURLSessionDataTask)
 dataTaskWithURLSelector = mkSelector "dataTaskWithURL:"
 
 -- | @Selector@ for @uploadTaskWithRequest:fromFile:@
-uploadTaskWithRequest_fromFileSelector :: Selector
+uploadTaskWithRequest_fromFileSelector :: Selector '[Id NSURLRequest, Id NSURL] (Id NSURLSessionUploadTask)
 uploadTaskWithRequest_fromFileSelector = mkSelector "uploadTaskWithRequest:fromFile:"
 
 -- | @Selector@ for @uploadTaskWithRequest:fromData:@
-uploadTaskWithRequest_fromDataSelector :: Selector
+uploadTaskWithRequest_fromDataSelector :: Selector '[Id NSURLRequest, Id NSData] (Id NSURLSessionUploadTask)
 uploadTaskWithRequest_fromDataSelector = mkSelector "uploadTaskWithRequest:fromData:"
 
 -- | @Selector@ for @uploadTaskWithResumeData:@
-uploadTaskWithResumeDataSelector :: Selector
+uploadTaskWithResumeDataSelector :: Selector '[Id NSData] (Id NSURLSessionUploadTask)
 uploadTaskWithResumeDataSelector = mkSelector "uploadTaskWithResumeData:"
 
 -- | @Selector@ for @uploadTaskWithStreamedRequest:@
-uploadTaskWithStreamedRequestSelector :: Selector
+uploadTaskWithStreamedRequestSelector :: Selector '[Id NSURLRequest] (Id NSURLSessionUploadTask)
 uploadTaskWithStreamedRequestSelector = mkSelector "uploadTaskWithStreamedRequest:"
 
 -- | @Selector@ for @downloadTaskWithRequest:@
-downloadTaskWithRequestSelector :: Selector
+downloadTaskWithRequestSelector :: Selector '[Id NSURLRequest] (Id NSURLSessionDownloadTask)
 downloadTaskWithRequestSelector = mkSelector "downloadTaskWithRequest:"
 
 -- | @Selector@ for @downloadTaskWithURL:@
-downloadTaskWithURLSelector :: Selector
+downloadTaskWithURLSelector :: Selector '[Id NSURL] (Id NSURLSessionDownloadTask)
 downloadTaskWithURLSelector = mkSelector "downloadTaskWithURL:"
 
 -- | @Selector@ for @downloadTaskWithResumeData:@
-downloadTaskWithResumeDataSelector :: Selector
+downloadTaskWithResumeDataSelector :: Selector '[Id NSData] (Id NSURLSessionDownloadTask)
 downloadTaskWithResumeDataSelector = mkSelector "downloadTaskWithResumeData:"
 
 -- | @Selector@ for @streamTaskWithHostName:port:@
-streamTaskWithHostName_portSelector :: Selector
+streamTaskWithHostName_portSelector :: Selector '[Id NSString, CLong] (Id NSURLSessionStreamTask)
 streamTaskWithHostName_portSelector = mkSelector "streamTaskWithHostName:port:"
 
 -- | @Selector@ for @streamTaskWithNetService:@
-streamTaskWithNetServiceSelector :: Selector
+streamTaskWithNetServiceSelector :: Selector '[Id NSNetService] (Id NSURLSessionStreamTask)
 streamTaskWithNetServiceSelector = mkSelector "streamTaskWithNetService:"
 
 -- | @Selector@ for @webSocketTaskWithURL:@
-webSocketTaskWithURLSelector :: Selector
+webSocketTaskWithURLSelector :: Selector '[Id NSURL] (Id NSURLSessionWebSocketTask)
 webSocketTaskWithURLSelector = mkSelector "webSocketTaskWithURL:"
 
 -- | @Selector@ for @webSocketTaskWithURL:protocols:@
-webSocketTaskWithURL_protocolsSelector :: Selector
+webSocketTaskWithURL_protocolsSelector :: Selector '[Id NSURL, Id NSArray] (Id NSURLSessionWebSocketTask)
 webSocketTaskWithURL_protocolsSelector = mkSelector "webSocketTaskWithURL:protocols:"
 
 -- | @Selector@ for @webSocketTaskWithRequest:@
-webSocketTaskWithRequestSelector :: Selector
+webSocketTaskWithRequestSelector :: Selector '[Id NSURLRequest] (Id NSURLSessionWebSocketTask)
 webSocketTaskWithRequestSelector = mkSelector "webSocketTaskWithRequest:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSURLSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSURLSession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @dataTaskWithRequest:completionHandler:@
-dataTaskWithRequest_completionHandlerSelector :: Selector
+dataTaskWithRequest_completionHandlerSelector :: Selector '[Id NSURLRequest, Ptr ()] (Id NSURLSessionDataTask)
 dataTaskWithRequest_completionHandlerSelector = mkSelector "dataTaskWithRequest:completionHandler:"
 
 -- | @Selector@ for @dataTaskWithURL:completionHandler:@
-dataTaskWithURL_completionHandlerSelector :: Selector
+dataTaskWithURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] (Id NSURLSessionDataTask)
 dataTaskWithURL_completionHandlerSelector = mkSelector "dataTaskWithURL:completionHandler:"
 
 -- | @Selector@ for @uploadTaskWithRequest:fromFile:completionHandler:@
-uploadTaskWithRequest_fromFile_completionHandlerSelector :: Selector
+uploadTaskWithRequest_fromFile_completionHandlerSelector :: Selector '[Id NSURLRequest, Id NSURL, Ptr ()] (Id NSURLSessionUploadTask)
 uploadTaskWithRequest_fromFile_completionHandlerSelector = mkSelector "uploadTaskWithRequest:fromFile:completionHandler:"
 
 -- | @Selector@ for @uploadTaskWithRequest:fromData:completionHandler:@
-uploadTaskWithRequest_fromData_completionHandlerSelector :: Selector
+uploadTaskWithRequest_fromData_completionHandlerSelector :: Selector '[Id NSURLRequest, Id NSData, Ptr ()] (Id NSURLSessionUploadTask)
 uploadTaskWithRequest_fromData_completionHandlerSelector = mkSelector "uploadTaskWithRequest:fromData:completionHandler:"
 
 -- | @Selector@ for @uploadTaskWithResumeData:completionHandler:@
-uploadTaskWithResumeData_completionHandlerSelector :: Selector
+uploadTaskWithResumeData_completionHandlerSelector :: Selector '[Id NSData, Ptr ()] (Id NSURLSessionUploadTask)
 uploadTaskWithResumeData_completionHandlerSelector = mkSelector "uploadTaskWithResumeData:completionHandler:"
 
 -- | @Selector@ for @downloadTaskWithRequest:completionHandler:@
-downloadTaskWithRequest_completionHandlerSelector :: Selector
+downloadTaskWithRequest_completionHandlerSelector :: Selector '[Id NSURLRequest, Ptr ()] (Id NSURLSessionDownloadTask)
 downloadTaskWithRequest_completionHandlerSelector = mkSelector "downloadTaskWithRequest:completionHandler:"
 
 -- | @Selector@ for @downloadTaskWithURL:completionHandler:@
-downloadTaskWithURL_completionHandlerSelector :: Selector
+downloadTaskWithURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] (Id NSURLSessionDownloadTask)
 downloadTaskWithURL_completionHandlerSelector = mkSelector "downloadTaskWithURL:completionHandler:"
 
 -- | @Selector@ for @downloadTaskWithResumeData:completionHandler:@
-downloadTaskWithResumeData_completionHandlerSelector :: Selector
+downloadTaskWithResumeData_completionHandlerSelector :: Selector '[Id NSData, Ptr ()] (Id NSURLSessionDownloadTask)
 downloadTaskWithResumeData_completionHandlerSelector = mkSelector "downloadTaskWithResumeData:completionHandler:"
 
 -- | @Selector@ for @sharedSession@
-sharedSessionSelector :: Selector
+sharedSessionSelector :: Selector '[] (Id NSURLSession)
 sharedSessionSelector = mkSelector "sharedSession"
 
 -- | @Selector@ for @delegateQueue@
-delegateQueueSelector :: Selector
+delegateQueueSelector :: Selector '[] (Id NSOperationQueue)
 delegateQueueSelector = mkSelector "delegateQueue"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id NSURLSessionConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @sessionDescription@
-sessionDescriptionSelector :: Selector
+sessionDescriptionSelector :: Selector '[] (Id NSString)
 sessionDescriptionSelector = mkSelector "sessionDescription"
 
 -- | @Selector@ for @setSessionDescription:@
-setSessionDescriptionSelector :: Selector
+setSessionDescriptionSelector :: Selector '[Id NSString] ()
 setSessionDescriptionSelector = mkSelector "setSessionDescription:"
 

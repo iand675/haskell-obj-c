@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.WebKit.WKWebExtensionTabConfiguration
   , shouldBePinned
   , shouldBeMuted
   , shouldReaderModeBeActive
-  , newSelector
-  , initSelector
-  , windowSelector
   , indexSelector
+  , initSelector
+  , newSelector
   , parentTabSelector
-  , urlSelector
-  , shouldBeActiveSelector
   , shouldAddToSelectionSelector
-  , shouldBePinnedSelector
+  , shouldBeActiveSelector
   , shouldBeMutedSelector
+  , shouldBePinnedSelector
   , shouldReaderModeBeActiveSelector
+  , urlSelector
+  , windowSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,12 +53,12 @@ new :: IO (Id WKWebExtensionTabConfiguration)
 new  =
   do
     cls' <- getRequiredClass "WKWebExtensionTabConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO (Id WKWebExtensionTabConfiguration)
-init_ wkWebExtensionTabConfiguration  =
-    sendMsg wkWebExtensionTabConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkWebExtensionTabConfiguration =
+  sendOwnedMessage wkWebExtensionTabConfiguration initSelector
 
 -- | Indicates the window where the tab should be opened.
 --
@@ -69,15 +66,15 @@ init_ wkWebExtensionTabConfiguration  =
 --
 -- ObjC selector: @- window@
 window :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO RawId
-window wkWebExtensionTabConfiguration  =
-    fmap (RawId . castPtr) $ sendMsg wkWebExtensionTabConfiguration (mkSelector "window") (retPtr retVoid) []
+window wkWebExtensionTabConfiguration =
+  sendMessage wkWebExtensionTabConfiguration windowSelector
 
 -- | Indicates the position where the tab should be opened within the window.
 --
 -- ObjC selector: @- index@
 index :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO CULong
-index wkWebExtensionTabConfiguration  =
-    sendMsg wkWebExtensionTabConfiguration (mkSelector "index") retCULong []
+index wkWebExtensionTabConfiguration =
+  sendMessage wkWebExtensionTabConfiguration indexSelector
 
 -- | Indicates the parent tab with which the tab should be related.
 --
@@ -85,8 +82,8 @@ index wkWebExtensionTabConfiguration  =
 --
 -- ObjC selector: @- parentTab@
 parentTab :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO RawId
-parentTab wkWebExtensionTabConfiguration  =
-    fmap (RawId . castPtr) $ sendMsg wkWebExtensionTabConfiguration (mkSelector "parentTab") (retPtr retVoid) []
+parentTab wkWebExtensionTabConfiguration =
+  sendMessage wkWebExtensionTabConfiguration parentTabSelector
 
 -- | Indicates the initial URL for the tab.
 --
@@ -94,8 +91,8 @@ parentTab wkWebExtensionTabConfiguration  =
 --
 -- ObjC selector: @- url@
 url :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO (Id NSURL)
-url wkWebExtensionTabConfiguration  =
-    sendMsg wkWebExtensionTabConfiguration (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url wkWebExtensionTabConfiguration =
+  sendMessage wkWebExtensionTabConfiguration urlSelector
 
 -- | Indicates whether the tab should be the active tab.
 --
@@ -103,8 +100,8 @@ url wkWebExtensionTabConfiguration  =
 --
 -- ObjC selector: @- shouldBeActive@
 shouldBeActive :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO Bool
-shouldBeActive wkWebExtensionTabConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionTabConfiguration (mkSelector "shouldBeActive") retCULong []
+shouldBeActive wkWebExtensionTabConfiguration =
+  sendMessage wkWebExtensionTabConfiguration shouldBeActiveSelector
 
 -- | Indicates whether the tab should be added to the current tab selection.
 --
@@ -112,75 +109,75 @@ shouldBeActive wkWebExtensionTabConfiguration  =
 --
 -- ObjC selector: @- shouldAddToSelection@
 shouldAddToSelection :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO Bool
-shouldAddToSelection wkWebExtensionTabConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionTabConfiguration (mkSelector "shouldAddToSelection") retCULong []
+shouldAddToSelection wkWebExtensionTabConfiguration =
+  sendMessage wkWebExtensionTabConfiguration shouldAddToSelectionSelector
 
 -- | Indicates whether the tab should be pinned.
 --
 -- ObjC selector: @- shouldBePinned@
 shouldBePinned :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO Bool
-shouldBePinned wkWebExtensionTabConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionTabConfiguration (mkSelector "shouldBePinned") retCULong []
+shouldBePinned wkWebExtensionTabConfiguration =
+  sendMessage wkWebExtensionTabConfiguration shouldBePinnedSelector
 
 -- | Indicates whether the tab should be muted.
 --
 -- ObjC selector: @- shouldBeMuted@
 shouldBeMuted :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO Bool
-shouldBeMuted wkWebExtensionTabConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionTabConfiguration (mkSelector "shouldBeMuted") retCULong []
+shouldBeMuted wkWebExtensionTabConfiguration =
+  sendMessage wkWebExtensionTabConfiguration shouldBeMutedSelector
 
 -- | Indicates whether reader mode in the tab should be active.
 --
 -- ObjC selector: @- shouldReaderModeBeActive@
 shouldReaderModeBeActive :: IsWKWebExtensionTabConfiguration wkWebExtensionTabConfiguration => wkWebExtensionTabConfiguration -> IO Bool
-shouldReaderModeBeActive wkWebExtensionTabConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionTabConfiguration (mkSelector "shouldReaderModeBeActive") retCULong []
+shouldReaderModeBeActive wkWebExtensionTabConfiguration =
+  sendMessage wkWebExtensionTabConfiguration shouldReaderModeBeActiveSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id WKWebExtensionTabConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKWebExtensionTabConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @window@
-windowSelector :: Selector
+windowSelector :: Selector '[] RawId
 windowSelector = mkSelector "window"
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] CULong
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @parentTab@
-parentTabSelector :: Selector
+parentTabSelector :: Selector '[] RawId
 parentTabSelector = mkSelector "parentTab"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @shouldBeActive@
-shouldBeActiveSelector :: Selector
+shouldBeActiveSelector :: Selector '[] Bool
 shouldBeActiveSelector = mkSelector "shouldBeActive"
 
 -- | @Selector@ for @shouldAddToSelection@
-shouldAddToSelectionSelector :: Selector
+shouldAddToSelectionSelector :: Selector '[] Bool
 shouldAddToSelectionSelector = mkSelector "shouldAddToSelection"
 
 -- | @Selector@ for @shouldBePinned@
-shouldBePinnedSelector :: Selector
+shouldBePinnedSelector :: Selector '[] Bool
 shouldBePinnedSelector = mkSelector "shouldBePinned"
 
 -- | @Selector@ for @shouldBeMuted@
-shouldBeMutedSelector :: Selector
+shouldBeMutedSelector :: Selector '[] Bool
 shouldBeMutedSelector = mkSelector "shouldBeMuted"
 
 -- | @Selector@ for @shouldReaderModeBeActive@
-shouldReaderModeBeActiveSelector :: Selector
+shouldReaderModeBeActiveSelector :: Selector '[] Bool
 shouldReaderModeBeActiveSelector = mkSelector "shouldReaderModeBeActive"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.MultipeerConnectivity.MCPeerID
   , IsMCPeerID(..)
   , initWithDisplayName
   , displayName
-  , initWithDisplayNameSelector
   , displayNameSelector
+  , initWithDisplayNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDisplayName:@
 initWithDisplayName :: (IsMCPeerID mcPeerID, IsNSString myDisplayName) => mcPeerID -> myDisplayName -> IO (Id MCPeerID)
-initWithDisplayName mcPeerID  myDisplayName =
-  withObjCPtr myDisplayName $ \raw_myDisplayName ->
-      sendMsg mcPeerID (mkSelector "initWithDisplayName:") (retPtr retVoid) [argPtr (castPtr raw_myDisplayName :: Ptr ())] >>= ownedObject . castPtr
+initWithDisplayName mcPeerID myDisplayName =
+  sendOwnedMessage mcPeerID initWithDisplayNameSelector (toNSString myDisplayName)
 
 -- | @- displayName@
 displayName :: IsMCPeerID mcPeerID => mcPeerID -> IO (Id NSString)
-displayName mcPeerID  =
-    sendMsg mcPeerID (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName mcPeerID =
+  sendMessage mcPeerID displayNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDisplayName:@
-initWithDisplayNameSelector :: Selector
+initWithDisplayNameSelector :: Selector '[Id NSString] (Id MCPeerID)
 initWithDisplayNameSelector = mkSelector "initWithDisplayName:"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 

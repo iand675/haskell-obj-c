@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.AppKit.NSShadow
   , setShadowColor
   , initSelector
   , setSelector
-  , shadowOffsetSelector
+  , setShadowBlurRadiusSelector
+  , setShadowColorSelector
   , setShadowOffsetSelector
   , shadowBlurRadiusSelector
-  , setShadowBlurRadiusSelector
   , shadowColorSelector
-  , setShadowColorSelector
+  , shadowOffsetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,78 +41,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSShadow nsShadow => nsShadow -> IO (Id NSShadow)
-init_ nsShadow  =
-    sendMsg nsShadow (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsShadow =
+  sendOwnedMessage nsShadow initSelector
 
 -- | @- set@
 set :: IsNSShadow nsShadow => nsShadow -> IO ()
-set nsShadow  =
-    sendMsg nsShadow (mkSelector "set") retVoid []
+set nsShadow =
+  sendMessage nsShadow setSelector
 
 -- | @- shadowOffset@
 shadowOffset :: IsNSShadow nsShadow => nsShadow -> IO NSSize
-shadowOffset nsShadow  =
-    sendMsgStret nsShadow (mkSelector "shadowOffset") retNSSize []
+shadowOffset nsShadow =
+  sendMessage nsShadow shadowOffsetSelector
 
 -- | @- setShadowOffset:@
 setShadowOffset :: IsNSShadow nsShadow => nsShadow -> NSSize -> IO ()
-setShadowOffset nsShadow  value =
-    sendMsg nsShadow (mkSelector "setShadowOffset:") retVoid [argNSSize value]
+setShadowOffset nsShadow value =
+  sendMessage nsShadow setShadowOffsetSelector value
 
 -- | @- shadowBlurRadius@
 shadowBlurRadius :: IsNSShadow nsShadow => nsShadow -> IO CDouble
-shadowBlurRadius nsShadow  =
-    sendMsg nsShadow (mkSelector "shadowBlurRadius") retCDouble []
+shadowBlurRadius nsShadow =
+  sendMessage nsShadow shadowBlurRadiusSelector
 
 -- | @- setShadowBlurRadius:@
 setShadowBlurRadius :: IsNSShadow nsShadow => nsShadow -> CDouble -> IO ()
-setShadowBlurRadius nsShadow  value =
-    sendMsg nsShadow (mkSelector "setShadowBlurRadius:") retVoid [argCDouble value]
+setShadowBlurRadius nsShadow value =
+  sendMessage nsShadow setShadowBlurRadiusSelector value
 
 -- | @- shadowColor@
 shadowColor :: IsNSShadow nsShadow => nsShadow -> IO (Id NSColor)
-shadowColor nsShadow  =
-    sendMsg nsShadow (mkSelector "shadowColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+shadowColor nsShadow =
+  sendMessage nsShadow shadowColorSelector
 
 -- | @- setShadowColor:@
 setShadowColor :: (IsNSShadow nsShadow, IsNSColor value) => nsShadow -> value -> IO ()
-setShadowColor nsShadow  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsShadow (mkSelector "setShadowColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShadowColor nsShadow value =
+  sendMessage nsShadow setShadowColorSelector (toNSColor value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSShadow)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @set@
-setSelector :: Selector
+setSelector :: Selector '[] ()
 setSelector = mkSelector "set"
 
 -- | @Selector@ for @shadowOffset@
-shadowOffsetSelector :: Selector
+shadowOffsetSelector :: Selector '[] NSSize
 shadowOffsetSelector = mkSelector "shadowOffset"
 
 -- | @Selector@ for @setShadowOffset:@
-setShadowOffsetSelector :: Selector
+setShadowOffsetSelector :: Selector '[NSSize] ()
 setShadowOffsetSelector = mkSelector "setShadowOffset:"
 
 -- | @Selector@ for @shadowBlurRadius@
-shadowBlurRadiusSelector :: Selector
+shadowBlurRadiusSelector :: Selector '[] CDouble
 shadowBlurRadiusSelector = mkSelector "shadowBlurRadius"
 
 -- | @Selector@ for @setShadowBlurRadius:@
-setShadowBlurRadiusSelector :: Selector
+setShadowBlurRadiusSelector :: Selector '[CDouble] ()
 setShadowBlurRadiusSelector = mkSelector "setShadowBlurRadius:"
 
 -- | @Selector@ for @shadowColor@
-shadowColorSelector :: Selector
+shadowColorSelector :: Selector '[] (Id NSColor)
 shadowColorSelector = mkSelector "shadowColor"
 
 -- | @Selector@ for @setShadowColor:@
-setShadowColorSelector :: Selector
+setShadowColorSelector :: Selector '[Id NSColor] ()
 setShadowColorSelector = mkSelector "setShadowColor:"
 

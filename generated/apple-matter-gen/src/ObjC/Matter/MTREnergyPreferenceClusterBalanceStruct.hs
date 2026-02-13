@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTREnergyPreferenceClusterBalanceStruct
   , setStep
   , label
   , setLabel
-  , stepSelector
-  , setStepSelector
   , labelSelector
   , setLabelSelector
+  , setStepSelector
+  , stepSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- step@
 step :: IsMTREnergyPreferenceClusterBalanceStruct mtrEnergyPreferenceClusterBalanceStruct => mtrEnergyPreferenceClusterBalanceStruct -> IO (Id NSNumber)
-step mtrEnergyPreferenceClusterBalanceStruct  =
-    sendMsg mtrEnergyPreferenceClusterBalanceStruct (mkSelector "step") (retPtr retVoid) [] >>= retainedObject . castPtr
+step mtrEnergyPreferenceClusterBalanceStruct =
+  sendMessage mtrEnergyPreferenceClusterBalanceStruct stepSelector
 
 -- | @- setStep:@
 setStep :: (IsMTREnergyPreferenceClusterBalanceStruct mtrEnergyPreferenceClusterBalanceStruct, IsNSNumber value) => mtrEnergyPreferenceClusterBalanceStruct -> value -> IO ()
-setStep mtrEnergyPreferenceClusterBalanceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyPreferenceClusterBalanceStruct (mkSelector "setStep:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStep mtrEnergyPreferenceClusterBalanceStruct value =
+  sendMessage mtrEnergyPreferenceClusterBalanceStruct setStepSelector (toNSNumber value)
 
 -- | @- label@
 label :: IsMTREnergyPreferenceClusterBalanceStruct mtrEnergyPreferenceClusterBalanceStruct => mtrEnergyPreferenceClusterBalanceStruct -> IO (Id NSString)
-label mtrEnergyPreferenceClusterBalanceStruct  =
-    sendMsg mtrEnergyPreferenceClusterBalanceStruct (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtrEnergyPreferenceClusterBalanceStruct =
+  sendMessage mtrEnergyPreferenceClusterBalanceStruct labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsMTREnergyPreferenceClusterBalanceStruct mtrEnergyPreferenceClusterBalanceStruct, IsNSString value) => mtrEnergyPreferenceClusterBalanceStruct -> value -> IO ()
-setLabel mtrEnergyPreferenceClusterBalanceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyPreferenceClusterBalanceStruct (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtrEnergyPreferenceClusterBalanceStruct value =
+  sendMessage mtrEnergyPreferenceClusterBalanceStruct setLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @step@
-stepSelector :: Selector
+stepSelector :: Selector '[] (Id NSNumber)
 stepSelector = mkSelector "step"
 
 -- | @Selector@ for @setStep:@
-setStepSelector :: Selector
+setStepSelector :: Selector '[Id NSNumber] ()
 setStepSelector = mkSelector "setStep:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterVideoResolutionStruct
   , setWidth
   , height
   , setHeight
-  , widthSelector
-  , setWidthSelector
   , heightSelector
   , setHeightSelector
+  , setWidthSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- width@
 width :: IsMTRCameraAVStreamManagementClusterVideoResolutionStruct mtrCameraAVStreamManagementClusterVideoResolutionStruct => mtrCameraAVStreamManagementClusterVideoResolutionStruct -> IO (Id NSNumber)
-width mtrCameraAVStreamManagementClusterVideoResolutionStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoResolutionStruct (mkSelector "width") (retPtr retVoid) [] >>= retainedObject . castPtr
+width mtrCameraAVStreamManagementClusterVideoResolutionStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoResolutionStruct widthSelector
 
 -- | @- setWidth:@
 setWidth :: (IsMTRCameraAVStreamManagementClusterVideoResolutionStruct mtrCameraAVStreamManagementClusterVideoResolutionStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoResolutionStruct -> value -> IO ()
-setWidth mtrCameraAVStreamManagementClusterVideoResolutionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoResolutionStruct (mkSelector "setWidth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWidth mtrCameraAVStreamManagementClusterVideoResolutionStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoResolutionStruct setWidthSelector (toNSNumber value)
 
 -- | @- height@
 height :: IsMTRCameraAVStreamManagementClusterVideoResolutionStruct mtrCameraAVStreamManagementClusterVideoResolutionStruct => mtrCameraAVStreamManagementClusterVideoResolutionStruct -> IO (Id NSNumber)
-height mtrCameraAVStreamManagementClusterVideoResolutionStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoResolutionStruct (mkSelector "height") (retPtr retVoid) [] >>= retainedObject . castPtr
+height mtrCameraAVStreamManagementClusterVideoResolutionStruct =
+  sendMessage mtrCameraAVStreamManagementClusterVideoResolutionStruct heightSelector
 
 -- | @- setHeight:@
 setHeight :: (IsMTRCameraAVStreamManagementClusterVideoResolutionStruct mtrCameraAVStreamManagementClusterVideoResolutionStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoResolutionStruct -> value -> IO ()
-setHeight mtrCameraAVStreamManagementClusterVideoResolutionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoResolutionStruct (mkSelector "setHeight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeight mtrCameraAVStreamManagementClusterVideoResolutionStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoResolutionStruct setHeightSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] (Id NSNumber)
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[Id NSNumber] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] (Id NSNumber)
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[Id NSNumber] ()
 setHeightSelector = mkSelector "setHeight:"
 

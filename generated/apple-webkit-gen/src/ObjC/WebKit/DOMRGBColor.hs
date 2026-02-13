@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.WebKit.DOMRGBColor
   , blue
   , alpha
   , color
-  , redSelector
-  , greenSelector
-  , blueSelector
   , alphaSelector
+  , blueSelector
   , colorSelector
+  , greenSelector
+  , redSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,50 +35,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- red@
 red :: IsDOMRGBColor domrgbColor => domrgbColor -> IO (Id DOMCSSPrimitiveValue)
-red domrgbColor  =
-    sendMsg domrgbColor (mkSelector "red") (retPtr retVoid) [] >>= retainedObject . castPtr
+red domrgbColor =
+  sendMessage domrgbColor redSelector
 
 -- | @- green@
 green :: IsDOMRGBColor domrgbColor => domrgbColor -> IO (Id DOMCSSPrimitiveValue)
-green domrgbColor  =
-    sendMsg domrgbColor (mkSelector "green") (retPtr retVoid) [] >>= retainedObject . castPtr
+green domrgbColor =
+  sendMessage domrgbColor greenSelector
 
 -- | @- blue@
 blue :: IsDOMRGBColor domrgbColor => domrgbColor -> IO (Id DOMCSSPrimitiveValue)
-blue domrgbColor  =
-    sendMsg domrgbColor (mkSelector "blue") (retPtr retVoid) [] >>= retainedObject . castPtr
+blue domrgbColor =
+  sendMessage domrgbColor blueSelector
 
 -- | @- alpha@
 alpha :: IsDOMRGBColor domrgbColor => domrgbColor -> IO (Id DOMCSSPrimitiveValue)
-alpha domrgbColor  =
-    sendMsg domrgbColor (mkSelector "alpha") (retPtr retVoid) [] >>= retainedObject . castPtr
+alpha domrgbColor =
+  sendMessage domrgbColor alphaSelector
 
 -- | @- color@
 color :: IsDOMRGBColor domrgbColor => domrgbColor -> IO (Id NSColor)
-color domrgbColor  =
-    sendMsg domrgbColor (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color domrgbColor =
+  sendMessage domrgbColor colorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @red@
-redSelector :: Selector
+redSelector :: Selector '[] (Id DOMCSSPrimitiveValue)
 redSelector = mkSelector "red"
 
 -- | @Selector@ for @green@
-greenSelector :: Selector
+greenSelector :: Selector '[] (Id DOMCSSPrimitiveValue)
 greenSelector = mkSelector "green"
 
 -- | @Selector@ for @blue@
-blueSelector :: Selector
+blueSelector :: Selector '[] (Id DOMCSSPrimitiveValue)
 blueSelector = mkSelector "blue"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] (Id DOMCSSPrimitiveValue)
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSColor)
 colorSelector = mkSelector "color"
 

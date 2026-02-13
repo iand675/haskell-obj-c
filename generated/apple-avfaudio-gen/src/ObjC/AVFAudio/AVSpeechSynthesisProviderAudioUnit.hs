@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AVFAudio.AVSpeechSynthesisProviderAudioUnit
   , setSpeechVoices
   , speechSynthesisOutputMetadataBlock
   , setSpeechSynthesisOutputMetadataBlock
-  , synthesizeSpeechRequestSelector
   , cancelSpeechRequestSelector
-  , speechVoicesSelector
+  , setSpeechSynthesisOutputMetadataBlockSelector
   , setSpeechVoicesSelector
   , speechSynthesisOutputMetadataBlockSelector
-  , setSpeechSynthesisOutputMetadataBlockSelector
+  , speechVoicesSelector
+  , synthesizeSpeechRequestSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,16 +41,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- synthesizeSpeechRequest:@
 synthesizeSpeechRequest :: (IsAVSpeechSynthesisProviderAudioUnit avSpeechSynthesisProviderAudioUnit, IsAVSpeechSynthesisProviderRequest speechRequest) => avSpeechSynthesisProviderAudioUnit -> speechRequest -> IO ()
-synthesizeSpeechRequest avSpeechSynthesisProviderAudioUnit  speechRequest =
-  withObjCPtr speechRequest $ \raw_speechRequest ->
-      sendMsg avSpeechSynthesisProviderAudioUnit (mkSelector "synthesizeSpeechRequest:") retVoid [argPtr (castPtr raw_speechRequest :: Ptr ())]
+synthesizeSpeechRequest avSpeechSynthesisProviderAudioUnit speechRequest =
+  sendMessage avSpeechSynthesisProviderAudioUnit synthesizeSpeechRequestSelector (toAVSpeechSynthesisProviderRequest speechRequest)
 
 -- | Informs the audio unit that the speech request job should be discarded.
 --
 -- ObjC selector: @- cancelSpeechRequest@
 cancelSpeechRequest :: IsAVSpeechSynthesisProviderAudioUnit avSpeechSynthesisProviderAudioUnit => avSpeechSynthesisProviderAudioUnit -> IO ()
-cancelSpeechRequest avSpeechSynthesisProviderAudioUnit  =
-    sendMsg avSpeechSynthesisProviderAudioUnit (mkSelector "cancelSpeechRequest") retVoid []
+cancelSpeechRequest avSpeechSynthesisProviderAudioUnit =
+  sendMessage avSpeechSynthesisProviderAudioUnit cancelSpeechRequestSelector
 
 -- | Returns the voices this audio unit has available and ready for synthesis.
 --
@@ -61,8 +57,8 @@ cancelSpeechRequest avSpeechSynthesisProviderAudioUnit  =
 --
 -- ObjC selector: @- speechVoices@
 speechVoices :: IsAVSpeechSynthesisProviderAudioUnit avSpeechSynthesisProviderAudioUnit => avSpeechSynthesisProviderAudioUnit -> IO (Id NSArray)
-speechVoices avSpeechSynthesisProviderAudioUnit  =
-    sendMsg avSpeechSynthesisProviderAudioUnit (mkSelector "speechVoices") (retPtr retVoid) [] >>= retainedObject . castPtr
+speechVoices avSpeechSynthesisProviderAudioUnit =
+  sendMessage avSpeechSynthesisProviderAudioUnit speechVoicesSelector
 
 -- | Returns the voices this audio unit has available and ready for synthesis.
 --
@@ -70,9 +66,8 @@ speechVoices avSpeechSynthesisProviderAudioUnit  =
 --
 -- ObjC selector: @- setSpeechVoices:@
 setSpeechVoices :: (IsAVSpeechSynthesisProviderAudioUnit avSpeechSynthesisProviderAudioUnit, IsNSArray value) => avSpeechSynthesisProviderAudioUnit -> value -> IO ()
-setSpeechVoices avSpeechSynthesisProviderAudioUnit  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSpeechSynthesisProviderAudioUnit (mkSelector "setSpeechVoices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSpeechVoices avSpeechSynthesisProviderAudioUnit value =
+  sendMessage avSpeechSynthesisProviderAudioUnit setSpeechVoicesSelector (toNSArray value)
 
 -- | A property set by the host that is called by the audio unit to supply metadata for a speech request.
 --
@@ -82,8 +77,8 @@ setSpeechVoices avSpeechSynthesisProviderAudioUnit  value =
 --
 -- ObjC selector: @- speechSynthesisOutputMetadataBlock@
 speechSynthesisOutputMetadataBlock :: IsAVSpeechSynthesisProviderAudioUnit avSpeechSynthesisProviderAudioUnit => avSpeechSynthesisProviderAudioUnit -> IO (Ptr ())
-speechSynthesisOutputMetadataBlock avSpeechSynthesisProviderAudioUnit  =
-    fmap castPtr $ sendMsg avSpeechSynthesisProviderAudioUnit (mkSelector "speechSynthesisOutputMetadataBlock") (retPtr retVoid) []
+speechSynthesisOutputMetadataBlock avSpeechSynthesisProviderAudioUnit =
+  sendMessage avSpeechSynthesisProviderAudioUnit speechSynthesisOutputMetadataBlockSelector
 
 -- | A property set by the host that is called by the audio unit to supply metadata for a speech request.
 --
@@ -93,34 +88,34 @@ speechSynthesisOutputMetadataBlock avSpeechSynthesisProviderAudioUnit  =
 --
 -- ObjC selector: @- setSpeechSynthesisOutputMetadataBlock:@
 setSpeechSynthesisOutputMetadataBlock :: IsAVSpeechSynthesisProviderAudioUnit avSpeechSynthesisProviderAudioUnit => avSpeechSynthesisProviderAudioUnit -> Ptr () -> IO ()
-setSpeechSynthesisOutputMetadataBlock avSpeechSynthesisProviderAudioUnit  value =
-    sendMsg avSpeechSynthesisProviderAudioUnit (mkSelector "setSpeechSynthesisOutputMetadataBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setSpeechSynthesisOutputMetadataBlock avSpeechSynthesisProviderAudioUnit value =
+  sendMessage avSpeechSynthesisProviderAudioUnit setSpeechSynthesisOutputMetadataBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @synthesizeSpeechRequest:@
-synthesizeSpeechRequestSelector :: Selector
+synthesizeSpeechRequestSelector :: Selector '[Id AVSpeechSynthesisProviderRequest] ()
 synthesizeSpeechRequestSelector = mkSelector "synthesizeSpeechRequest:"
 
 -- | @Selector@ for @cancelSpeechRequest@
-cancelSpeechRequestSelector :: Selector
+cancelSpeechRequestSelector :: Selector '[] ()
 cancelSpeechRequestSelector = mkSelector "cancelSpeechRequest"
 
 -- | @Selector@ for @speechVoices@
-speechVoicesSelector :: Selector
+speechVoicesSelector :: Selector '[] (Id NSArray)
 speechVoicesSelector = mkSelector "speechVoices"
 
 -- | @Selector@ for @setSpeechVoices:@
-setSpeechVoicesSelector :: Selector
+setSpeechVoicesSelector :: Selector '[Id NSArray] ()
 setSpeechVoicesSelector = mkSelector "setSpeechVoices:"
 
 -- | @Selector@ for @speechSynthesisOutputMetadataBlock@
-speechSynthesisOutputMetadataBlockSelector :: Selector
+speechSynthesisOutputMetadataBlockSelector :: Selector '[] (Ptr ())
 speechSynthesisOutputMetadataBlockSelector = mkSelector "speechSynthesisOutputMetadataBlock"
 
 -- | @Selector@ for @setSpeechSynthesisOutputMetadataBlock:@
-setSpeechSynthesisOutputMetadataBlockSelector :: Selector
+setSpeechSynthesisOutputMetadataBlockSelector :: Selector '[Ptr ()] ()
 setSpeechSynthesisOutputMetadataBlockSelector = mkSelector "setSpeechSynthesisOutputMetadataBlock:"
 

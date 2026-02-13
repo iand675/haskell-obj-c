@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AppKit.NSCollectionViewFlowLayoutInvalidationContext
   , setInvalidateFlowLayoutDelegateMetrics
   , invalidateFlowLayoutAttributes
   , setInvalidateFlowLayoutAttributes
-  , invalidateFlowLayoutDelegateMetricsSelector
-  , setInvalidateFlowLayoutDelegateMetricsSelector
   , invalidateFlowLayoutAttributesSelector
+  , invalidateFlowLayoutDelegateMetricsSelector
   , setInvalidateFlowLayoutAttributesSelector
+  , setInvalidateFlowLayoutDelegateMetricsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- invalidateFlowLayoutDelegateMetrics@
 invalidateFlowLayoutDelegateMetrics :: IsNSCollectionViewFlowLayoutInvalidationContext nsCollectionViewFlowLayoutInvalidationContext => nsCollectionViewFlowLayoutInvalidationContext -> IO Bool
-invalidateFlowLayoutDelegateMetrics nsCollectionViewFlowLayoutInvalidationContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionViewFlowLayoutInvalidationContext (mkSelector "invalidateFlowLayoutDelegateMetrics") retCULong []
+invalidateFlowLayoutDelegateMetrics nsCollectionViewFlowLayoutInvalidationContext =
+  sendMessage nsCollectionViewFlowLayoutInvalidationContext invalidateFlowLayoutDelegateMetricsSelector
 
 -- | @- setInvalidateFlowLayoutDelegateMetrics:@
 setInvalidateFlowLayoutDelegateMetrics :: IsNSCollectionViewFlowLayoutInvalidationContext nsCollectionViewFlowLayoutInvalidationContext => nsCollectionViewFlowLayoutInvalidationContext -> Bool -> IO ()
-setInvalidateFlowLayoutDelegateMetrics nsCollectionViewFlowLayoutInvalidationContext  value =
-    sendMsg nsCollectionViewFlowLayoutInvalidationContext (mkSelector "setInvalidateFlowLayoutDelegateMetrics:") retVoid [argCULong (if value then 1 else 0)]
+setInvalidateFlowLayoutDelegateMetrics nsCollectionViewFlowLayoutInvalidationContext value =
+  sendMessage nsCollectionViewFlowLayoutInvalidationContext setInvalidateFlowLayoutDelegateMetricsSelector value
 
 -- | @- invalidateFlowLayoutAttributes@
 invalidateFlowLayoutAttributes :: IsNSCollectionViewFlowLayoutInvalidationContext nsCollectionViewFlowLayoutInvalidationContext => nsCollectionViewFlowLayoutInvalidationContext -> IO Bool
-invalidateFlowLayoutAttributes nsCollectionViewFlowLayoutInvalidationContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionViewFlowLayoutInvalidationContext (mkSelector "invalidateFlowLayoutAttributes") retCULong []
+invalidateFlowLayoutAttributes nsCollectionViewFlowLayoutInvalidationContext =
+  sendMessage nsCollectionViewFlowLayoutInvalidationContext invalidateFlowLayoutAttributesSelector
 
 -- | @- setInvalidateFlowLayoutAttributes:@
 setInvalidateFlowLayoutAttributes :: IsNSCollectionViewFlowLayoutInvalidationContext nsCollectionViewFlowLayoutInvalidationContext => nsCollectionViewFlowLayoutInvalidationContext -> Bool -> IO ()
-setInvalidateFlowLayoutAttributes nsCollectionViewFlowLayoutInvalidationContext  value =
-    sendMsg nsCollectionViewFlowLayoutInvalidationContext (mkSelector "setInvalidateFlowLayoutAttributes:") retVoid [argCULong (if value then 1 else 0)]
+setInvalidateFlowLayoutAttributes nsCollectionViewFlowLayoutInvalidationContext value =
+  sendMessage nsCollectionViewFlowLayoutInvalidationContext setInvalidateFlowLayoutAttributesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @invalidateFlowLayoutDelegateMetrics@
-invalidateFlowLayoutDelegateMetricsSelector :: Selector
+invalidateFlowLayoutDelegateMetricsSelector :: Selector '[] Bool
 invalidateFlowLayoutDelegateMetricsSelector = mkSelector "invalidateFlowLayoutDelegateMetrics"
 
 -- | @Selector@ for @setInvalidateFlowLayoutDelegateMetrics:@
-setInvalidateFlowLayoutDelegateMetricsSelector :: Selector
+setInvalidateFlowLayoutDelegateMetricsSelector :: Selector '[Bool] ()
 setInvalidateFlowLayoutDelegateMetricsSelector = mkSelector "setInvalidateFlowLayoutDelegateMetrics:"
 
 -- | @Selector@ for @invalidateFlowLayoutAttributes@
-invalidateFlowLayoutAttributesSelector :: Selector
+invalidateFlowLayoutAttributesSelector :: Selector '[] Bool
 invalidateFlowLayoutAttributesSelector = mkSelector "invalidateFlowLayoutAttributes"
 
 -- | @Selector@ for @setInvalidateFlowLayoutAttributes:@
-setInvalidateFlowLayoutAttributesSelector :: Selector
+setInvalidateFlowLayoutAttributesSelector :: Selector '[Bool] ()
 setInvalidateFlowLayoutAttributesSelector = mkSelector "setInvalidateFlowLayoutAttributes:"
 

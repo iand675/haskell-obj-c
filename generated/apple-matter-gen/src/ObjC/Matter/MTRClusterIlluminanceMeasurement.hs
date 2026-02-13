@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,33 +23,29 @@ module ObjC.Matter.MTRClusterIlluminanceMeasurement
   , new
   , initWithDevice_endpoint_queue
   , initWithDevice_endpointID_queue
-  , readAttributeMeasuredValueWithParamsSelector
-  , readAttributeMinMeasuredValueWithParamsSelector
-  , readAttributeMaxMeasuredValueWithParamsSelector
-  , readAttributeToleranceWithParamsSelector
-  , readAttributeLightSensorTypeWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeLightSensorTypeWithParamsSelector
+  , readAttributeMaxMeasuredValueWithParamsSelector
+  , readAttributeMeasuredValueWithParamsSelector
+  , readAttributeMinMeasuredValueWithParamsSelector
+  , readAttributeToleranceWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,150 +54,135 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeMeasuredValueWithParams:@
 readAttributeMeasuredValueWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMeasuredValueWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMeasuredValueWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMinMeasuredValueWithParams:@
 readAttributeMinMeasuredValueWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMinMeasuredValueWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeMinMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinMeasuredValueWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeMinMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaxMeasuredValueWithParams:@
 readAttributeMaxMeasuredValueWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeMaxMeasuredValueWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeMaxMeasuredValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxMeasuredValueWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeMaxMeasuredValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeToleranceWithParams:@
 readAttributeToleranceWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeToleranceWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeToleranceWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeToleranceWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeToleranceWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLightSensorTypeWithParams:@
 readAttributeLightSensorTypeWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeLightSensorTypeWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeLightSensorTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLightSensorTypeWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeLightSensorTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRReadParams params) => mtrClusterIlluminanceMeasurement -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterIlluminanceMeasurement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterIlluminanceMeasurement (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterIlluminanceMeasurement params =
+  sendMessage mtrClusterIlluminanceMeasurement readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement => mtrClusterIlluminanceMeasurement -> IO (Id MTRClusterIlluminanceMeasurement)
-init_ mtrClusterIlluminanceMeasurement  =
-    sendMsg mtrClusterIlluminanceMeasurement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterIlluminanceMeasurement =
+  sendOwnedMessage mtrClusterIlluminanceMeasurement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterIlluminanceMeasurement)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterIlluminanceMeasurement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRDevice device, IsNSObject queue) => mtrClusterIlluminanceMeasurement -> device -> CUShort -> queue -> IO (Id MTRClusterIlluminanceMeasurement)
-initWithDevice_endpoint_queue mtrClusterIlluminanceMeasurement  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterIlluminanceMeasurement (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterIlluminanceMeasurement device endpoint queue =
+  sendOwnedMessage mtrClusterIlluminanceMeasurement initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterIlluminanceMeasurement mtrClusterIlluminanceMeasurement, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterIlluminanceMeasurement -> device -> endpointID -> queue -> IO (Id MTRClusterIlluminanceMeasurement)
-initWithDevice_endpointID_queue mtrClusterIlluminanceMeasurement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterIlluminanceMeasurement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterIlluminanceMeasurement device endpointID queue =
+  sendOwnedMessage mtrClusterIlluminanceMeasurement initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeMeasuredValueWithParams:@
-readAttributeMeasuredValueWithParamsSelector :: Selector
+readAttributeMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMeasuredValueWithParamsSelector = mkSelector "readAttributeMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeMinMeasuredValueWithParams:@
-readAttributeMinMeasuredValueWithParamsSelector :: Selector
+readAttributeMinMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinMeasuredValueWithParamsSelector = mkSelector "readAttributeMinMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeMaxMeasuredValueWithParams:@
-readAttributeMaxMeasuredValueWithParamsSelector :: Selector
+readAttributeMaxMeasuredValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxMeasuredValueWithParamsSelector = mkSelector "readAttributeMaxMeasuredValueWithParams:"
 
 -- | @Selector@ for @readAttributeToleranceWithParams:@
-readAttributeToleranceWithParamsSelector :: Selector
+readAttributeToleranceWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeToleranceWithParamsSelector = mkSelector "readAttributeToleranceWithParams:"
 
 -- | @Selector@ for @readAttributeLightSensorTypeWithParams:@
-readAttributeLightSensorTypeWithParamsSelector :: Selector
+readAttributeLightSensorTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLightSensorTypeWithParamsSelector = mkSelector "readAttributeLightSensorTypeWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterIlluminanceMeasurement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterIlluminanceMeasurement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterIlluminanceMeasurement)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterIlluminanceMeasurement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

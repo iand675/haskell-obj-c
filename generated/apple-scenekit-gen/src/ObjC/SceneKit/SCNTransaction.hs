@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.SceneKit.SCNTransaction
   , setDisableActions
   , completionBlock
   , setCompletionBlock
+  , animationDurationSelector
+  , animationTimingFunctionSelector
   , beginSelector
   , commitSelector
+  , completionBlockSelector
+  , disableActionsSelector
   , flushSelector
   , lockSelector
+  , setAnimationDurationSelector
+  , setAnimationTimingFunctionSelector
+  , setCompletionBlockSelector
+  , setDisableActionsSelector
+  , setValue_forKeySelector
   , unlockSelector
   , valueForKeySelector
-  , setValue_forKeySelector
-  , animationDurationSelector
-  , setAnimationDurationSelector
-  , animationTimingFunctionSelector
-  , setAnimationTimingFunctionSelector
-  , disableActionsSelector
-  , setDisableActionsSelector
-  , completionBlockSelector
-  , setCompletionBlockSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,170 +57,167 @@ begin :: IO ()
 begin  =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "begin") retVoid []
+    sendClassMessage cls' beginSelector
 
 -- | @+ commit@
 commit :: IO ()
 commit  =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "commit") retVoid []
+    sendClassMessage cls' commitSelector
 
 -- | @+ flush@
 flush :: IO ()
 flush  =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "flush") retVoid []
+    sendClassMessage cls' flushSelector
 
 -- | @+ lock@
 lock :: IO ()
 lock  =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "lock") retVoid []
+    sendClassMessage cls' lockSelector
 
 -- | @+ unlock@
 unlock :: IO ()
 unlock  =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "unlock") retVoid []
+    sendClassMessage cls' unlockSelector
 
 -- | @+ valueForKey:@
 valueForKey :: IsNSString key => key -> IO RawId
 valueForKey key =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "valueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+    sendClassMessage cls' valueForKeySelector (toNSString key)
 
 -- | @+ setValue:forKey:@
 setValue_forKey :: IsNSString key => RawId -> key -> IO ()
 setValue_forKey value key =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    withObjCPtr key $ \raw_key ->
-      sendClassMsg cls' (mkSelector "setValue:forKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+    sendClassMessage cls' setValue_forKeySelector value (toNSString key)
 
 -- | @+ animationDuration@
 animationDuration :: IO CDouble
 animationDuration  =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "animationDuration") retCDouble []
+    sendClassMessage cls' animationDurationSelector
 
 -- | @+ setAnimationDuration:@
 setAnimationDuration :: CDouble -> IO ()
 setAnimationDuration value =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "setAnimationDuration:") retVoid [argCDouble value]
+    sendClassMessage cls' setAnimationDurationSelector value
 
 -- | @+ animationTimingFunction@
 animationTimingFunction :: IO (Id CAMediaTimingFunction)
 animationTimingFunction  =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "animationTimingFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' animationTimingFunctionSelector
 
 -- | @+ setAnimationTimingFunction:@
 setAnimationTimingFunction :: IsCAMediaTimingFunction value => value -> IO ()
 setAnimationTimingFunction value =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "setAnimationTimingFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+    sendClassMessage cls' setAnimationTimingFunctionSelector (toCAMediaTimingFunction value)
 
 -- | @+ disableActions@
 disableActions :: IO Bool
 disableActions  =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "disableActions") retCULong []
+    sendClassMessage cls' disableActionsSelector
 
 -- | @+ setDisableActions:@
 setDisableActions :: Bool -> IO ()
 setDisableActions value =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "setDisableActions:") retVoid [argCULong (if value then 1 else 0)]
+    sendClassMessage cls' setDisableActionsSelector value
 
 -- | @+ completionBlock@
 completionBlock :: IO (Ptr ())
 completionBlock  =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    fmap castPtr $ sendClassMsg cls' (mkSelector "completionBlock") (retPtr retVoid) []
+    sendClassMessage cls' completionBlockSelector
 
 -- | @+ setCompletionBlock:@
 setCompletionBlock :: Ptr () -> IO ()
 setCompletionBlock value =
   do
     cls' <- getRequiredClass "SCNTransaction"
-    sendClassMsg cls' (mkSelector "setCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+    sendClassMessage cls' setCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @begin@
-beginSelector :: Selector
+beginSelector :: Selector '[] ()
 beginSelector = mkSelector "begin"
 
 -- | @Selector@ for @commit@
-commitSelector :: Selector
+commitSelector :: Selector '[] ()
 commitSelector = mkSelector "commit"
 
 -- | @Selector@ for @flush@
-flushSelector :: Selector
+flushSelector :: Selector '[] ()
 flushSelector = mkSelector "flush"
 
 -- | @Selector@ for @lock@
-lockSelector :: Selector
+lockSelector :: Selector '[] ()
 lockSelector = mkSelector "lock"
 
 -- | @Selector@ for @unlock@
-unlockSelector :: Selector
+unlockSelector :: Selector '[] ()
 unlockSelector = mkSelector "unlock"
 
 -- | @Selector@ for @valueForKey:@
-valueForKeySelector :: Selector
+valueForKeySelector :: Selector '[Id NSString] RawId
 valueForKeySelector = mkSelector "valueForKey:"
 
 -- | @Selector@ for @setValue:forKey:@
-setValue_forKeySelector :: Selector
+setValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 setValue_forKeySelector = mkSelector "setValue:forKey:"
 
 -- | @Selector@ for @animationDuration@
-animationDurationSelector :: Selector
+animationDurationSelector :: Selector '[] CDouble
 animationDurationSelector = mkSelector "animationDuration"
 
 -- | @Selector@ for @setAnimationDuration:@
-setAnimationDurationSelector :: Selector
+setAnimationDurationSelector :: Selector '[CDouble] ()
 setAnimationDurationSelector = mkSelector "setAnimationDuration:"
 
 -- | @Selector@ for @animationTimingFunction@
-animationTimingFunctionSelector :: Selector
+animationTimingFunctionSelector :: Selector '[] (Id CAMediaTimingFunction)
 animationTimingFunctionSelector = mkSelector "animationTimingFunction"
 
 -- | @Selector@ for @setAnimationTimingFunction:@
-setAnimationTimingFunctionSelector :: Selector
+setAnimationTimingFunctionSelector :: Selector '[Id CAMediaTimingFunction] ()
 setAnimationTimingFunctionSelector = mkSelector "setAnimationTimingFunction:"
 
 -- | @Selector@ for @disableActions@
-disableActionsSelector :: Selector
+disableActionsSelector :: Selector '[] Bool
 disableActionsSelector = mkSelector "disableActions"
 
 -- | @Selector@ for @setDisableActions:@
-setDisableActionsSelector :: Selector
+setDisableActionsSelector :: Selector '[Bool] ()
 setDisableActionsSelector = mkSelector "setDisableActions:"
 
 -- | @Selector@ for @completionBlock@
-completionBlockSelector :: Selector
+completionBlockSelector :: Selector '[] (Ptr ())
 completionBlockSelector = mkSelector "completionBlock"
 
 -- | @Selector@ for @setCompletionBlock:@
-setCompletionBlockSelector :: Selector
+setCompletionBlockSelector :: Selector '[Ptr ()] ()
 setCompletionBlockSelector = mkSelector "setCompletionBlock:"
 

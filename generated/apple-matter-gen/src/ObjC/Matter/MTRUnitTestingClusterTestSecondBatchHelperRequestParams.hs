@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRUnitTestingClusterTestSecondBatchHelperRequestParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , sleepBeforeResponseTimeMsSelector
-  , setSleepBeforeResponseTimeMsSelector
-  , sizeOfResponseBufferSelector
-  , setSizeOfResponseBufferSelector
   , fillCharacterSelector
-  , setFillCharacterSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setFillCharacterSelector
   , setServerSideProcessingTimeoutSelector
+  , setSizeOfResponseBufferSelector
+  , setSleepBeforeResponseTimeMsSelector
+  , setTimedInvokeTimeoutMsSelector
+  , sizeOfResponseBufferSelector
+  , sleepBeforeResponseTimeMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sleepBeforeResponseTimeMs@
 sleepBeforeResponseTimeMs :: IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> IO (Id NSNumber)
-sleepBeforeResponseTimeMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams  =
-    sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "sleepBeforeResponseTimeMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+sleepBeforeResponseTimeMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams sleepBeforeResponseTimeMsSelector
 
 -- | @- setSleepBeforeResponseTimeMs:@
 setSleepBeforeResponseTimeMs :: (IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> value -> IO ()
-setSleepBeforeResponseTimeMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "setSleepBeforeResponseTimeMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSleepBeforeResponseTimeMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams value =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams setSleepBeforeResponseTimeMsSelector (toNSNumber value)
 
 -- | @- sizeOfResponseBuffer@
 sizeOfResponseBuffer :: IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> IO (Id NSNumber)
-sizeOfResponseBuffer mtrUnitTestingClusterTestSecondBatchHelperRequestParams  =
-    sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "sizeOfResponseBuffer") (retPtr retVoid) [] >>= retainedObject . castPtr
+sizeOfResponseBuffer mtrUnitTestingClusterTestSecondBatchHelperRequestParams =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams sizeOfResponseBufferSelector
 
 -- | @- setSizeOfResponseBuffer:@
 setSizeOfResponseBuffer :: (IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> value -> IO ()
-setSizeOfResponseBuffer mtrUnitTestingClusterTestSecondBatchHelperRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "setSizeOfResponseBuffer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSizeOfResponseBuffer mtrUnitTestingClusterTestSecondBatchHelperRequestParams value =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams setSizeOfResponseBufferSelector (toNSNumber value)
 
 -- | @- fillCharacter@
 fillCharacter :: IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> IO (Id NSNumber)
-fillCharacter mtrUnitTestingClusterTestSecondBatchHelperRequestParams  =
-    sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "fillCharacter") (retPtr retVoid) [] >>= retainedObject . castPtr
+fillCharacter mtrUnitTestingClusterTestSecondBatchHelperRequestParams =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams fillCharacterSelector
 
 -- | @- setFillCharacter:@
 setFillCharacter :: (IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> value -> IO ()
-setFillCharacter mtrUnitTestingClusterTestSecondBatchHelperRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "setFillCharacter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFillCharacter mtrUnitTestingClusterTestSecondBatchHelperRequestParams value =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams setFillCharacterSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setFillCharacter mtrUnitTestingClusterTestSecondBatchHelperRequestParams  value 
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams  =
-    sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams value =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrUnitTestingClusterTestSecondBatchHelperRequestParams 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrUnitTestingClusterTestSecondBatchHelperRequestParams  =
-    sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrUnitTestingClusterTestSecondBatchHelperRequestParams =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrUnitTestingClusterTestSecondBatchHelperRequestPar
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRUnitTestingClusterTestSecondBatchHelperRequestParams mtrUnitTestingClusterTestSecondBatchHelperRequestParams, IsNSNumber value) => mtrUnitTestingClusterTestSecondBatchHelperRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrUnitTestingClusterTestSecondBatchHelperRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestSecondBatchHelperRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrUnitTestingClusterTestSecondBatchHelperRequestParams value =
+  sendMessage mtrUnitTestingClusterTestSecondBatchHelperRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sleepBeforeResponseTimeMs@
-sleepBeforeResponseTimeMsSelector :: Selector
+sleepBeforeResponseTimeMsSelector :: Selector '[] (Id NSNumber)
 sleepBeforeResponseTimeMsSelector = mkSelector "sleepBeforeResponseTimeMs"
 
 -- | @Selector@ for @setSleepBeforeResponseTimeMs:@
-setSleepBeforeResponseTimeMsSelector :: Selector
+setSleepBeforeResponseTimeMsSelector :: Selector '[Id NSNumber] ()
 setSleepBeforeResponseTimeMsSelector = mkSelector "setSleepBeforeResponseTimeMs:"
 
 -- | @Selector@ for @sizeOfResponseBuffer@
-sizeOfResponseBufferSelector :: Selector
+sizeOfResponseBufferSelector :: Selector '[] (Id NSNumber)
 sizeOfResponseBufferSelector = mkSelector "sizeOfResponseBuffer"
 
 -- | @Selector@ for @setSizeOfResponseBuffer:@
-setSizeOfResponseBufferSelector :: Selector
+setSizeOfResponseBufferSelector :: Selector '[Id NSNumber] ()
 setSizeOfResponseBufferSelector = mkSelector "setSizeOfResponseBuffer:"
 
 -- | @Selector@ for @fillCharacter@
-fillCharacterSelector :: Selector
+fillCharacterSelector :: Selector '[] (Id NSNumber)
 fillCharacterSelector = mkSelector "fillCharacter"
 
 -- | @Selector@ for @setFillCharacter:@
-setFillCharacterSelector :: Selector
+setFillCharacterSelector :: Selector '[Id NSNumber] ()
 setFillCharacterSelector = mkSelector "setFillCharacter:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

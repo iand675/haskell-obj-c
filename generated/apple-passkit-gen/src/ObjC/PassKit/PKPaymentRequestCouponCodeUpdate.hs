@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.PassKit.PKPaymentRequestCouponCodeUpdate
   , initWithErrors_paymentSummaryItems_shippingMethods
   , errors
   , setErrors
-  , initWithErrors_paymentSummaryItems_shippingMethodsSelector
   , errorsSelector
+  , initWithErrors_paymentSummaryItems_shippingMethodsSelector
   , setErrorsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,36 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithErrors:paymentSummaryItems:shippingMethods:@
 initWithErrors_paymentSummaryItems_shippingMethods :: (IsPKPaymentRequestCouponCodeUpdate pkPaymentRequestCouponCodeUpdate, IsNSArray errors, IsNSArray paymentSummaryItems, IsNSArray shippingMethods) => pkPaymentRequestCouponCodeUpdate -> errors -> paymentSummaryItems -> shippingMethods -> IO (Id PKPaymentRequestCouponCodeUpdate)
-initWithErrors_paymentSummaryItems_shippingMethods pkPaymentRequestCouponCodeUpdate  errors paymentSummaryItems shippingMethods =
-  withObjCPtr errors $ \raw_errors ->
-    withObjCPtr paymentSummaryItems $ \raw_paymentSummaryItems ->
-      withObjCPtr shippingMethods $ \raw_shippingMethods ->
-          sendMsg pkPaymentRequestCouponCodeUpdate (mkSelector "initWithErrors:paymentSummaryItems:shippingMethods:") (retPtr retVoid) [argPtr (castPtr raw_errors :: Ptr ()), argPtr (castPtr raw_paymentSummaryItems :: Ptr ()), argPtr (castPtr raw_shippingMethods :: Ptr ())] >>= ownedObject . castPtr
+initWithErrors_paymentSummaryItems_shippingMethods pkPaymentRequestCouponCodeUpdate errors paymentSummaryItems shippingMethods =
+  sendOwnedMessage pkPaymentRequestCouponCodeUpdate initWithErrors_paymentSummaryItems_shippingMethodsSelector (toNSArray errors) (toNSArray paymentSummaryItems) (toNSArray shippingMethods)
 
 -- | @- errors@
 errors :: IsPKPaymentRequestCouponCodeUpdate pkPaymentRequestCouponCodeUpdate => pkPaymentRequestCouponCodeUpdate -> IO (Id NSArray)
-errors pkPaymentRequestCouponCodeUpdate  =
-    sendMsg pkPaymentRequestCouponCodeUpdate (mkSelector "errors") (retPtr retVoid) [] >>= retainedObject . castPtr
+errors pkPaymentRequestCouponCodeUpdate =
+  sendMessage pkPaymentRequestCouponCodeUpdate errorsSelector
 
 -- | @- setErrors:@
 setErrors :: (IsPKPaymentRequestCouponCodeUpdate pkPaymentRequestCouponCodeUpdate, IsNSArray value) => pkPaymentRequestCouponCodeUpdate -> value -> IO ()
-setErrors pkPaymentRequestCouponCodeUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestCouponCodeUpdate (mkSelector "setErrors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setErrors pkPaymentRequestCouponCodeUpdate value =
+  sendMessage pkPaymentRequestCouponCodeUpdate setErrorsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithErrors:paymentSummaryItems:shippingMethods:@
-initWithErrors_paymentSummaryItems_shippingMethodsSelector :: Selector
+initWithErrors_paymentSummaryItems_shippingMethodsSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray] (Id PKPaymentRequestCouponCodeUpdate)
 initWithErrors_paymentSummaryItems_shippingMethodsSelector = mkSelector "initWithErrors:paymentSummaryItems:shippingMethods:"
 
 -- | @Selector@ for @errors@
-errorsSelector :: Selector
+errorsSelector :: Selector '[] (Id NSArray)
 errorsSelector = mkSelector "errors"
 
 -- | @Selector@ for @setErrors:@
-setErrorsSelector :: Selector
+setErrorsSelector :: Selector '[Id NSArray] ()
 setErrorsSelector = mkSelector "setErrors:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data NSFileProviderTypeAndCreator = NSFileProviderTypeAndCreator
   { nsFileProviderTypeAndCreatorType :: !CUInt
@@ -36,3 +38,13 @@ argNSFileProviderTypeAndCreator = mkStorableArg nsFileProviderTypeAndCreatorStru
 
 retNSFileProviderTypeAndCreator :: RetType NSFileProviderTypeAndCreator
 retNSFileProviderTypeAndCreator = mkStorableRetType nsFileProviderTypeAndCreatorStructType
+
+instance ObjCArgument NSFileProviderTypeAndCreator where
+  withObjCArg x k = k (argNSFileProviderTypeAndCreator x)
+
+instance ObjCReturn NSFileProviderTypeAndCreator where
+  type RawReturn NSFileProviderTypeAndCreator = NSFileProviderTypeAndCreator
+  objcRetType = retNSFileProviderTypeAndCreator
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

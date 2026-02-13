@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.MediaAccessibility.MAMusicHapticsManager
   , new
   , sharedManager
   , isActive
-  , checkHapticTrackAvailabilityForMediaMatchingCode_completionHandlerSelector
   , addStatusObserverSelector
-  , removeStatusObserverSelector
+  , checkHapticTrackAvailabilityForMediaMatchingCode_completionHandlerSelector
   , initSelector
-  , newSelector
-  , sharedManagerSelector
   , isActiveSelector
+  , newSelector
+  , removeStatusObserverSelector
+  , sharedManagerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,40 +40,39 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- checkHapticTrackAvailabilityForMediaMatchingCode:completionHandler:@
 checkHapticTrackAvailabilityForMediaMatchingCode_completionHandler :: (IsMAMusicHapticsManager maMusicHapticsManager, IsNSString internationalStandardRecordingCode) => maMusicHapticsManager -> internationalStandardRecordingCode -> Ptr () -> IO ()
-checkHapticTrackAvailabilityForMediaMatchingCode_completionHandler maMusicHapticsManager  internationalStandardRecordingCode completionHandler =
-  withObjCPtr internationalStandardRecordingCode $ \raw_internationalStandardRecordingCode ->
-      sendMsg maMusicHapticsManager (mkSelector "checkHapticTrackAvailabilityForMediaMatchingCode:completionHandler:") retVoid [argPtr (castPtr raw_internationalStandardRecordingCode :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+checkHapticTrackAvailabilityForMediaMatchingCode_completionHandler maMusicHapticsManager internationalStandardRecordingCode completionHandler =
+  sendMessage maMusicHapticsManager checkHapticTrackAvailabilityForMediaMatchingCode_completionHandlerSelector (toNSString internationalStandardRecordingCode) completionHandler
 
 -- | Determine the status of haptic playback for the now playing track asynchronously. This will only be delivered for the app that is the active Now Playing app.
 --
 -- ObjC selector: @- addStatusObserver:@
 addStatusObserver :: IsMAMusicHapticsManager maMusicHapticsManager => maMusicHapticsManager -> Ptr () -> IO RawId
-addStatusObserver maMusicHapticsManager  statusHandler =
-    fmap (RawId . castPtr) $ sendMsg maMusicHapticsManager (mkSelector "addStatusObserver:") (retPtr retVoid) [argPtr (castPtr statusHandler :: Ptr ())]
+addStatusObserver maMusicHapticsManager statusHandler =
+  sendMessage maMusicHapticsManager addStatusObserverSelector statusHandler
 
 -- | @- removeStatusObserver:@
 removeStatusObserver :: IsMAMusicHapticsManager maMusicHapticsManager => maMusicHapticsManager -> RawId -> IO ()
-removeStatusObserver maMusicHapticsManager  registrationToken =
-    sendMsg maMusicHapticsManager (mkSelector "removeStatusObserver:") retVoid [argPtr (castPtr (unRawId registrationToken) :: Ptr ())]
+removeStatusObserver maMusicHapticsManager registrationToken =
+  sendMessage maMusicHapticsManager removeStatusObserverSelector registrationToken
 
 -- | @- init@
 init_ :: IsMAMusicHapticsManager maMusicHapticsManager => maMusicHapticsManager -> IO (Id MAMusicHapticsManager)
-init_ maMusicHapticsManager  =
-    sendMsg maMusicHapticsManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ maMusicHapticsManager =
+  sendOwnedMessage maMusicHapticsManager initSelector
 
 -- | @+ new@
 new :: IO (Id MAMusicHapticsManager)
 new  =
   do
     cls' <- getRequiredClass "MAMusicHapticsManager"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @+ sharedManager@
 sharedManager :: IO (Id MAMusicHapticsManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "MAMusicHapticsManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | Whether the user setting to indicate Music Haptics are currently active.
 --
@@ -84,38 +80,38 @@ sharedManager  =
 --
 -- ObjC selector: @- isActive@
 isActive :: IsMAMusicHapticsManager maMusicHapticsManager => maMusicHapticsManager -> IO Bool
-isActive maMusicHapticsManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg maMusicHapticsManager (mkSelector "isActive") retCULong []
+isActive maMusicHapticsManager =
+  sendMessage maMusicHapticsManager isActiveSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @checkHapticTrackAvailabilityForMediaMatchingCode:completionHandler:@
-checkHapticTrackAvailabilityForMediaMatchingCode_completionHandlerSelector :: Selector
+checkHapticTrackAvailabilityForMediaMatchingCode_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 checkHapticTrackAvailabilityForMediaMatchingCode_completionHandlerSelector = mkSelector "checkHapticTrackAvailabilityForMediaMatchingCode:completionHandler:"
 
 -- | @Selector@ for @addStatusObserver:@
-addStatusObserverSelector :: Selector
+addStatusObserverSelector :: Selector '[Ptr ()] RawId
 addStatusObserverSelector = mkSelector "addStatusObserver:"
 
 -- | @Selector@ for @removeStatusObserver:@
-removeStatusObserverSelector :: Selector
+removeStatusObserverSelector :: Selector '[RawId] ()
 removeStatusObserverSelector = mkSelector "removeStatusObserver:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MAMusicHapticsManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MAMusicHapticsManager)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id MAMusicHapticsManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @isActive@
-isActiveSelector :: Selector
+isActiveSelector :: Selector '[] Bool
 isActiveSelector = mkSelector "isActive"
 

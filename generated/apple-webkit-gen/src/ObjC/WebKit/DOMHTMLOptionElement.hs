@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.WebKit.DOMHTMLOptionElement
   , setValue
   , text
   , index
-  , disabledSelector
-  , setDisabledSelector
-  , formSelector
-  , labelSelector
-  , setLabelSelector
   , defaultSelectedSelector
-  , setDefaultSelectedSelector
+  , disabledSelector
+  , formSelector
+  , indexSelector
+  , labelSelector
   , selectedSelector
+  , setDefaultSelectedSelector
+  , setDisabledSelector
+  , setLabelSelector
   , setSelectedSelector
-  , valueSelector
   , setValueSelector
   , textSelector
-  , indexSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,124 +50,122 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- disabled@
 disabled :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> IO Bool
-disabled domhtmlOptionElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlOptionElement (mkSelector "disabled") retCULong []
+disabled domhtmlOptionElement =
+  sendMessage domhtmlOptionElement disabledSelector
 
 -- | @- setDisabled:@
 setDisabled :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> Bool -> IO ()
-setDisabled domhtmlOptionElement  value =
-    sendMsg domhtmlOptionElement (mkSelector "setDisabled:") retVoid [argCULong (if value then 1 else 0)]
+setDisabled domhtmlOptionElement value =
+  sendMessage domhtmlOptionElement setDisabledSelector value
 
 -- | @- form@
 form :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> IO (Id DOMHTMLFormElement)
-form domhtmlOptionElement  =
-    sendMsg domhtmlOptionElement (mkSelector "form") (retPtr retVoid) [] >>= retainedObject . castPtr
+form domhtmlOptionElement =
+  sendMessage domhtmlOptionElement formSelector
 
 -- | @- label@
 label :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> IO (Id NSString)
-label domhtmlOptionElement  =
-    sendMsg domhtmlOptionElement (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label domhtmlOptionElement =
+  sendMessage domhtmlOptionElement labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsDOMHTMLOptionElement domhtmlOptionElement, IsNSString value) => domhtmlOptionElement -> value -> IO ()
-setLabel domhtmlOptionElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlOptionElement (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel domhtmlOptionElement value =
+  sendMessage domhtmlOptionElement setLabelSelector (toNSString value)
 
 -- | @- defaultSelected@
 defaultSelected :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> IO Bool
-defaultSelected domhtmlOptionElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlOptionElement (mkSelector "defaultSelected") retCULong []
+defaultSelected domhtmlOptionElement =
+  sendMessage domhtmlOptionElement defaultSelectedSelector
 
 -- | @- setDefaultSelected:@
 setDefaultSelected :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> Bool -> IO ()
-setDefaultSelected domhtmlOptionElement  value =
-    sendMsg domhtmlOptionElement (mkSelector "setDefaultSelected:") retVoid [argCULong (if value then 1 else 0)]
+setDefaultSelected domhtmlOptionElement value =
+  sendMessage domhtmlOptionElement setDefaultSelectedSelector value
 
 -- | @- selected@
 selected :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> IO Bool
-selected domhtmlOptionElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlOptionElement (mkSelector "selected") retCULong []
+selected domhtmlOptionElement =
+  sendMessage domhtmlOptionElement selectedSelector
 
 -- | @- setSelected:@
 setSelected :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> Bool -> IO ()
-setSelected domhtmlOptionElement  value =
-    sendMsg domhtmlOptionElement (mkSelector "setSelected:") retVoid [argCULong (if value then 1 else 0)]
+setSelected domhtmlOptionElement value =
+  sendMessage domhtmlOptionElement setSelectedSelector value
 
 -- | @- value@
 value :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> IO (Id NSString)
-value domhtmlOptionElement  =
-    sendMsg domhtmlOptionElement (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value domhtmlOptionElement =
+  sendMessage domhtmlOptionElement valueSelector
 
 -- | @- setValue:@
 setValue :: (IsDOMHTMLOptionElement domhtmlOptionElement, IsNSString value) => domhtmlOptionElement -> value -> IO ()
-setValue domhtmlOptionElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlOptionElement (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue domhtmlOptionElement value =
+  sendMessage domhtmlOptionElement setValueSelector (toNSString value)
 
 -- | @- text@
 text :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> IO (Id NSString)
-text domhtmlOptionElement  =
-    sendMsg domhtmlOptionElement (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text domhtmlOptionElement =
+  sendMessage domhtmlOptionElement textSelector
 
 -- | @- index@
 index :: IsDOMHTMLOptionElement domhtmlOptionElement => domhtmlOptionElement -> IO CInt
-index domhtmlOptionElement  =
-    sendMsg domhtmlOptionElement (mkSelector "index") retCInt []
+index domhtmlOptionElement =
+  sendMessage domhtmlOptionElement indexSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @disabled@
-disabledSelector :: Selector
+disabledSelector :: Selector '[] Bool
 disabledSelector = mkSelector "disabled"
 
 -- | @Selector@ for @setDisabled:@
-setDisabledSelector :: Selector
+setDisabledSelector :: Selector '[Bool] ()
 setDisabledSelector = mkSelector "setDisabled:"
 
 -- | @Selector@ for @form@
-formSelector :: Selector
+formSelector :: Selector '[] (Id DOMHTMLFormElement)
 formSelector = mkSelector "form"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @defaultSelected@
-defaultSelectedSelector :: Selector
+defaultSelectedSelector :: Selector '[] Bool
 defaultSelectedSelector = mkSelector "defaultSelected"
 
 -- | @Selector@ for @setDefaultSelected:@
-setDefaultSelectedSelector :: Selector
+setDefaultSelectedSelector :: Selector '[Bool] ()
 setDefaultSelectedSelector = mkSelector "setDefaultSelected:"
 
 -- | @Selector@ for @selected@
-selectedSelector :: Selector
+selectedSelector :: Selector '[] Bool
 selectedSelector = mkSelector "selected"
 
 -- | @Selector@ for @setSelected:@
-setSelectedSelector :: Selector
+setSelectedSelector :: Selector '[Bool] ()
 setSelectedSelector = mkSelector "setSelected:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] CInt
 indexSelector = mkSelector "index"
 

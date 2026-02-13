@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,8 @@ module ObjC.FSKit.FSItemGetAttributesRequest
   , wantedAttributes
   , setWantedAttributes
   , isAttributeWantedSelector
-  , wantedAttributesSelector
   , setWantedAttributesSelector
+  , wantedAttributesSelector
 
   -- * Enum types
   , FSItemAttribute(FSItemAttribute)
@@ -41,15 +42,11 @@ module ObjC.FSKit.FSItemGetAttributesRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isAttributeWanted:@
 isAttributeWanted :: IsFSItemGetAttributesRequest fsItemGetAttributesRequest => fsItemGetAttributesRequest -> FSItemAttribute -> IO Bool
-isAttributeWanted fsItemGetAttributesRequest  attribute =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsItemGetAttributesRequest (mkSelector "isAttributeWanted:") retCULong [argCLong (coerce attribute)]
+isAttributeWanted fsItemGetAttributesRequest attribute =
+  sendMessage fsItemGetAttributesRequest isAttributeWantedSelector attribute
 
 -- | The attributes requested by the request.
 --
@@ -72,8 +69,8 @@ isAttributeWanted fsItemGetAttributesRequest  attribute =
 --
 -- ObjC selector: @- wantedAttributes@
 wantedAttributes :: IsFSItemGetAttributesRequest fsItemGetAttributesRequest => fsItemGetAttributesRequest -> IO FSItemAttribute
-wantedAttributes fsItemGetAttributesRequest  =
-    fmap (coerce :: CLong -> FSItemAttribute) $ sendMsg fsItemGetAttributesRequest (mkSelector "wantedAttributes") retCLong []
+wantedAttributes fsItemGetAttributesRequest =
+  sendMessage fsItemGetAttributesRequest wantedAttributesSelector
 
 -- | The attributes requested by the request.
 --
@@ -81,22 +78,22 @@ wantedAttributes fsItemGetAttributesRequest  =
 --
 -- ObjC selector: @- setWantedAttributes:@
 setWantedAttributes :: IsFSItemGetAttributesRequest fsItemGetAttributesRequest => fsItemGetAttributesRequest -> FSItemAttribute -> IO ()
-setWantedAttributes fsItemGetAttributesRequest  value =
-    sendMsg fsItemGetAttributesRequest (mkSelector "setWantedAttributes:") retVoid [argCLong (coerce value)]
+setWantedAttributes fsItemGetAttributesRequest value =
+  sendMessage fsItemGetAttributesRequest setWantedAttributesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isAttributeWanted:@
-isAttributeWantedSelector :: Selector
+isAttributeWantedSelector :: Selector '[FSItemAttribute] Bool
 isAttributeWantedSelector = mkSelector "isAttributeWanted:"
 
 -- | @Selector@ for @wantedAttributes@
-wantedAttributesSelector :: Selector
+wantedAttributesSelector :: Selector '[] FSItemAttribute
 wantedAttributesSelector = mkSelector "wantedAttributes"
 
 -- | @Selector@ for @setWantedAttributes:@
-setWantedAttributesSelector :: Selector
+setWantedAttributesSelector :: Selector '[FSItemAttribute] ()
 setWantedAttributesSelector = mkSelector "setWantedAttributes:"
 

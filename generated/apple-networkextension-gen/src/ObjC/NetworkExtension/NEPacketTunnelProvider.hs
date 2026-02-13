@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,12 +21,12 @@ module ObjC.NetworkExtension.NEPacketTunnelProvider
   , createUDPSessionThroughTunnelToEndpoint_fromEndpoint
   , packetFlow
   , virtualInterface
-  , startTunnelWithOptions_completionHandlerSelector
-  , stopTunnelWithReason_completionHandlerSelector
   , cancelTunnelWithErrorSelector
   , createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegateSelector
   , createUDPSessionThroughTunnelToEndpoint_fromEndpointSelector
   , packetFlowSelector
+  , startTunnelWithOptions_completionHandlerSelector
+  , stopTunnelWithReason_completionHandlerSelector
   , virtualInterfaceSelector
 
   -- * Enum types
@@ -51,15 +52,11 @@ module ObjC.NetworkExtension.NEPacketTunnelProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,9 +74,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startTunnelWithOptions:completionHandler:@
 startTunnelWithOptions_completionHandler :: (IsNEPacketTunnelProvider nePacketTunnelProvider, IsNSDictionary options) => nePacketTunnelProvider -> options -> Ptr () -> IO ()
-startTunnelWithOptions_completionHandler nePacketTunnelProvider  options completionHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg nePacketTunnelProvider (mkSelector "startTunnelWithOptions:completionHandler:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+startTunnelWithOptions_completionHandler nePacketTunnelProvider options completionHandler =
+  sendMessage nePacketTunnelProvider startTunnelWithOptions_completionHandlerSelector (toNSDictionary options) completionHandler
 
 -- | stopTunnelWithReason:completionHandler:
 --
@@ -91,8 +87,8 @@ startTunnelWithOptions_completionHandler nePacketTunnelProvider  options complet
 --
 -- ObjC selector: @- stopTunnelWithReason:completionHandler:@
 stopTunnelWithReason_completionHandler :: IsNEPacketTunnelProvider nePacketTunnelProvider => nePacketTunnelProvider -> NEProviderStopReason -> Ptr () -> IO ()
-stopTunnelWithReason_completionHandler nePacketTunnelProvider  reason completionHandler =
-    sendMsg nePacketTunnelProvider (mkSelector "stopTunnelWithReason:completionHandler:") retVoid [argCLong (coerce reason), argPtr (castPtr completionHandler :: Ptr ())]
+stopTunnelWithReason_completionHandler nePacketTunnelProvider reason completionHandler =
+  sendMessage nePacketTunnelProvider stopTunnelWithReason_completionHandlerSelector reason completionHandler
 
 -- | cancelTunnelWithError:
 --
@@ -102,9 +98,8 @@ stopTunnelWithReason_completionHandler nePacketTunnelProvider  reason completion
 --
 -- ObjC selector: @- cancelTunnelWithError:@
 cancelTunnelWithError :: (IsNEPacketTunnelProvider nePacketTunnelProvider, IsNSError error_) => nePacketTunnelProvider -> error_ -> IO ()
-cancelTunnelWithError nePacketTunnelProvider  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nePacketTunnelProvider (mkSelector "cancelTunnelWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+cancelTunnelWithError nePacketTunnelProvider error_ =
+  sendMessage nePacketTunnelProvider cancelTunnelWithErrorSelector (toNSError error_)
 
 -- | createTCPConnectionThroughTunnelToEndpoint:enableTLS:TLSParameters:delegate:
 --
@@ -122,10 +117,8 @@ cancelTunnelWithError nePacketTunnelProvider  error_ =
 --
 -- ObjC selector: @- createTCPConnectionThroughTunnelToEndpoint:enableTLS:TLSParameters:delegate:@
 createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegate :: (IsNEPacketTunnelProvider nePacketTunnelProvider, IsNWEndpoint remoteEndpoint, IsNWTLSParameters tlsParameters) => nePacketTunnelProvider -> remoteEndpoint -> Bool -> tlsParameters -> RawId -> IO (Id NWTCPConnection)
-createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegate nePacketTunnelProvider  remoteEndpoint enableTLS tlsParameters delegate =
-  withObjCPtr remoteEndpoint $ \raw_remoteEndpoint ->
-    withObjCPtr tlsParameters $ \raw_tlsParameters ->
-        sendMsg nePacketTunnelProvider (mkSelector "createTCPConnectionThroughTunnelToEndpoint:enableTLS:TLSParameters:delegate:") (retPtr retVoid) [argPtr (castPtr raw_remoteEndpoint :: Ptr ()), argCULong (if enableTLS then 1 else 0), argPtr (castPtr raw_tlsParameters :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= retainedObject . castPtr
+createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegate nePacketTunnelProvider remoteEndpoint enableTLS tlsParameters delegate =
+  sendMessage nePacketTunnelProvider createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegateSelector (toNWEndpoint remoteEndpoint) enableTLS (toNWTLSParameters tlsParameters) delegate
 
 -- | createUDPSessionThroughTunnelToEndpoint:fromEndpoint:
 --
@@ -139,10 +132,8 @@ createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegate nePa
 --
 -- ObjC selector: @- createUDPSessionThroughTunnelToEndpoint:fromEndpoint:@
 createUDPSessionThroughTunnelToEndpoint_fromEndpoint :: (IsNEPacketTunnelProvider nePacketTunnelProvider, IsNWEndpoint remoteEndpoint, IsNWHostEndpoint localEndpoint) => nePacketTunnelProvider -> remoteEndpoint -> localEndpoint -> IO (Id NWUDPSession)
-createUDPSessionThroughTunnelToEndpoint_fromEndpoint nePacketTunnelProvider  remoteEndpoint localEndpoint =
-  withObjCPtr remoteEndpoint $ \raw_remoteEndpoint ->
-    withObjCPtr localEndpoint $ \raw_localEndpoint ->
-        sendMsg nePacketTunnelProvider (mkSelector "createUDPSessionThroughTunnelToEndpoint:fromEndpoint:") (retPtr retVoid) [argPtr (castPtr raw_remoteEndpoint :: Ptr ()), argPtr (castPtr raw_localEndpoint :: Ptr ())] >>= retainedObject . castPtr
+createUDPSessionThroughTunnelToEndpoint_fromEndpoint nePacketTunnelProvider remoteEndpoint localEndpoint =
+  sendMessage nePacketTunnelProvider createUDPSessionThroughTunnelToEndpoint_fromEndpointSelector (toNWEndpoint remoteEndpoint) (toNWHostEndpoint localEndpoint)
 
 -- | packetFlow
 --
@@ -150,8 +141,8 @@ createUDPSessionThroughTunnelToEndpoint_fromEndpoint nePacketTunnelProvider  rem
 --
 -- ObjC selector: @- packetFlow@
 packetFlow :: IsNEPacketTunnelProvider nePacketTunnelProvider => nePacketTunnelProvider -> IO (Id NEPacketTunnelFlow)
-packetFlow nePacketTunnelProvider  =
-    sendMsg nePacketTunnelProvider (mkSelector "packetFlow") (retPtr retVoid) [] >>= retainedObject . castPtr
+packetFlow nePacketTunnelProvider =
+  sendMessage nePacketTunnelProvider packetFlowSelector
 
 -- | virtualInterface
 --
@@ -161,38 +152,38 @@ packetFlow nePacketTunnelProvider  =
 --
 -- ObjC selector: @- virtualInterface@
 virtualInterface :: IsNEPacketTunnelProvider nePacketTunnelProvider => nePacketTunnelProvider -> IO (Id NSObject)
-virtualInterface nePacketTunnelProvider  =
-    sendMsg nePacketTunnelProvider (mkSelector "virtualInterface") (retPtr retVoid) [] >>= retainedObject . castPtr
+virtualInterface nePacketTunnelProvider =
+  sendMessage nePacketTunnelProvider virtualInterfaceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startTunnelWithOptions:completionHandler:@
-startTunnelWithOptions_completionHandlerSelector :: Selector
+startTunnelWithOptions_completionHandlerSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 startTunnelWithOptions_completionHandlerSelector = mkSelector "startTunnelWithOptions:completionHandler:"
 
 -- | @Selector@ for @stopTunnelWithReason:completionHandler:@
-stopTunnelWithReason_completionHandlerSelector :: Selector
+stopTunnelWithReason_completionHandlerSelector :: Selector '[NEProviderStopReason, Ptr ()] ()
 stopTunnelWithReason_completionHandlerSelector = mkSelector "stopTunnelWithReason:completionHandler:"
 
 -- | @Selector@ for @cancelTunnelWithError:@
-cancelTunnelWithErrorSelector :: Selector
+cancelTunnelWithErrorSelector :: Selector '[Id NSError] ()
 cancelTunnelWithErrorSelector = mkSelector "cancelTunnelWithError:"
 
 -- | @Selector@ for @createTCPConnectionThroughTunnelToEndpoint:enableTLS:TLSParameters:delegate:@
-createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegateSelector :: Selector
+createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegateSelector :: Selector '[Id NWEndpoint, Bool, Id NWTLSParameters, RawId] (Id NWTCPConnection)
 createTCPConnectionThroughTunnelToEndpoint_enableTLS_TLSParameters_delegateSelector = mkSelector "createTCPConnectionThroughTunnelToEndpoint:enableTLS:TLSParameters:delegate:"
 
 -- | @Selector@ for @createUDPSessionThroughTunnelToEndpoint:fromEndpoint:@
-createUDPSessionThroughTunnelToEndpoint_fromEndpointSelector :: Selector
+createUDPSessionThroughTunnelToEndpoint_fromEndpointSelector :: Selector '[Id NWEndpoint, Id NWHostEndpoint] (Id NWUDPSession)
 createUDPSessionThroughTunnelToEndpoint_fromEndpointSelector = mkSelector "createUDPSessionThroughTunnelToEndpoint:fromEndpoint:"
 
 -- | @Selector@ for @packetFlow@
-packetFlowSelector :: Selector
+packetFlowSelector :: Selector '[] (Id NEPacketTunnelFlow)
 packetFlowSelector = mkSelector "packetFlow"
 
 -- | @Selector@ for @virtualInterface@
-virtualInterfaceSelector :: Selector
+virtualInterfaceSelector :: Selector '[] (Id NSObject)
 virtualInterfaceSelector = mkSelector "virtualInterface"
 

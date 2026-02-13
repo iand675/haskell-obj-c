@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,25 +21,21 @@ module ObjC.NetworkExtension.NETunnelNetworkSettings
   , setDNSSettings
   , proxySettings
   , setProxySettings
-  , initWithTunnelRemoteAddressSelector
-  , tunnelRemoteAddressSelector
   , dnsSettingsSelector
-  , setDNSSettingsSelector
+  , initWithTunnelRemoteAddressSelector
   , proxySettingsSelector
+  , setDNSSettingsSelector
   , setProxySettingsSelector
+  , tunnelRemoteAddressSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithTunnelRemoteAddress:@
 initWithTunnelRemoteAddress :: (IsNETunnelNetworkSettings neTunnelNetworkSettings, IsNSString address) => neTunnelNetworkSettings -> address -> IO (Id NETunnelNetworkSettings)
-initWithTunnelRemoteAddress neTunnelNetworkSettings  address =
-  withObjCPtr address $ \raw_address ->
-      sendMsg neTunnelNetworkSettings (mkSelector "initWithTunnelRemoteAddress:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ())] >>= ownedObject . castPtr
+initWithTunnelRemoteAddress neTunnelNetworkSettings address =
+  sendOwnedMessage neTunnelNetworkSettings initWithTunnelRemoteAddressSelector (toNSString address)
 
 -- | tunnelRemoteAddress
 --
@@ -63,8 +59,8 @@ initWithTunnelRemoteAddress neTunnelNetworkSettings  address =
 --
 -- ObjC selector: @- tunnelRemoteAddress@
 tunnelRemoteAddress :: IsNETunnelNetworkSettings neTunnelNetworkSettings => neTunnelNetworkSettings -> IO (Id NSString)
-tunnelRemoteAddress neTunnelNetworkSettings  =
-    sendMsg neTunnelNetworkSettings (mkSelector "tunnelRemoteAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+tunnelRemoteAddress neTunnelNetworkSettings =
+  sendMessage neTunnelNetworkSettings tunnelRemoteAddressSelector
 
 -- | DNSSettings
 --
@@ -72,8 +68,8 @@ tunnelRemoteAddress neTunnelNetworkSettings  =
 --
 -- ObjC selector: @- DNSSettings@
 dnsSettings :: IsNETunnelNetworkSettings neTunnelNetworkSettings => neTunnelNetworkSettings -> IO (Id NEDNSSettings)
-dnsSettings neTunnelNetworkSettings  =
-    sendMsg neTunnelNetworkSettings (mkSelector "DNSSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+dnsSettings neTunnelNetworkSettings =
+  sendMessage neTunnelNetworkSettings dnsSettingsSelector
 
 -- | DNSSettings
 --
@@ -81,9 +77,8 @@ dnsSettings neTunnelNetworkSettings  =
 --
 -- ObjC selector: @- setDNSSettings:@
 setDNSSettings :: (IsNETunnelNetworkSettings neTunnelNetworkSettings, IsNEDNSSettings value) => neTunnelNetworkSettings -> value -> IO ()
-setDNSSettings neTunnelNetworkSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTunnelNetworkSettings (mkSelector "setDNSSettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDNSSettings neTunnelNetworkSettings value =
+  sendMessage neTunnelNetworkSettings setDNSSettingsSelector (toNEDNSSettings value)
 
 -- | proxySettings
 --
@@ -91,8 +86,8 @@ setDNSSettings neTunnelNetworkSettings  value =
 --
 -- ObjC selector: @- proxySettings@
 proxySettings :: IsNETunnelNetworkSettings neTunnelNetworkSettings => neTunnelNetworkSettings -> IO (Id NEProxySettings)
-proxySettings neTunnelNetworkSettings  =
-    sendMsg neTunnelNetworkSettings (mkSelector "proxySettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+proxySettings neTunnelNetworkSettings =
+  sendMessage neTunnelNetworkSettings proxySettingsSelector
 
 -- | proxySettings
 --
@@ -100,35 +95,34 @@ proxySettings neTunnelNetworkSettings  =
 --
 -- ObjC selector: @- setProxySettings:@
 setProxySettings :: (IsNETunnelNetworkSettings neTunnelNetworkSettings, IsNEProxySettings value) => neTunnelNetworkSettings -> value -> IO ()
-setProxySettings neTunnelNetworkSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTunnelNetworkSettings (mkSelector "setProxySettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProxySettings neTunnelNetworkSettings value =
+  sendMessage neTunnelNetworkSettings setProxySettingsSelector (toNEProxySettings value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTunnelRemoteAddress:@
-initWithTunnelRemoteAddressSelector :: Selector
+initWithTunnelRemoteAddressSelector :: Selector '[Id NSString] (Id NETunnelNetworkSettings)
 initWithTunnelRemoteAddressSelector = mkSelector "initWithTunnelRemoteAddress:"
 
 -- | @Selector@ for @tunnelRemoteAddress@
-tunnelRemoteAddressSelector :: Selector
+tunnelRemoteAddressSelector :: Selector '[] (Id NSString)
 tunnelRemoteAddressSelector = mkSelector "tunnelRemoteAddress"
 
 -- | @Selector@ for @DNSSettings@
-dnsSettingsSelector :: Selector
+dnsSettingsSelector :: Selector '[] (Id NEDNSSettings)
 dnsSettingsSelector = mkSelector "DNSSettings"
 
 -- | @Selector@ for @setDNSSettings:@
-setDNSSettingsSelector :: Selector
+setDNSSettingsSelector :: Selector '[Id NEDNSSettings] ()
 setDNSSettingsSelector = mkSelector "setDNSSettings:"
 
 -- | @Selector@ for @proxySettings@
-proxySettingsSelector :: Selector
+proxySettingsSelector :: Selector '[] (Id NEProxySettings)
 proxySettingsSelector = mkSelector "proxySettings"
 
 -- | @Selector@ for @setProxySettings:@
-setProxySettingsSelector :: Selector
+setProxySettingsSelector :: Selector '[Id NEProxySettings] ()
 setProxySettingsSelector = mkSelector "setProxySettings:"
 

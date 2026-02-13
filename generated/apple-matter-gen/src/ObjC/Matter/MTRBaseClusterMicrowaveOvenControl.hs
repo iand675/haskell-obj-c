@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -58,67 +59,63 @@ module ObjC.Matter.MTRBaseClusterMicrowaveOvenControl
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , setCookingParametersWithParams_completionSelector
-  , setCookingParametersWithCompletionSelector
   , addMoreTimeWithParams_completionSelector
-  , readAttributeCookTimeWithCompletionSelector
-  , subscribeAttributeCookTimeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeCookTimeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMaxCookTimeWithCompletionSelector
-  , subscribeAttributeMaxCookTimeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMaxCookTimeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributePowerSettingWithCompletionSelector
-  , subscribeAttributePowerSettingWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributePowerSettingWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMinPowerWithCompletionSelector
-  , subscribeAttributeMinPowerWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMinPowerWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeMaxPowerWithCompletionSelector
-  , subscribeAttributeMaxPowerWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeMaxPowerWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributePowerStepWithCompletionSelector
-  , subscribeAttributePowerStepWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributePowerStepWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeSupportedWattsWithCompletionSelector
-  , subscribeAttributeSupportedWattsWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeSupportedWattsWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeSelectedWattIndexWithCompletionSelector
-  , subscribeAttributeSelectedWattIndexWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeSelectedWattIndexWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeWattRatingWithCompletionSelector
-  , subscribeAttributeWattRatingWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeWattRatingWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
-  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
-  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
-  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
   , initSelector
-  , newSelector
   , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeCookTimeWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeCookTimeWithCompletionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
+  , readAttributeMaxCookTimeWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMaxCookTimeWithCompletionSelector
+  , readAttributeMaxPowerWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMaxPowerWithCompletionSelector
+  , readAttributeMinPowerWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeMinPowerWithCompletionSelector
+  , readAttributePowerSettingWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributePowerSettingWithCompletionSelector
+  , readAttributePowerStepWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributePowerStepWithCompletionSelector
+  , readAttributeSelectedWattIndexWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeSelectedWattIndexWithCompletionSelector
+  , readAttributeSupportedWattsWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeSupportedWattsWithCompletionSelector
+  , readAttributeWattRatingWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeWattRatingWithCompletionSelector
+  , setCookingParametersWithCompletionSelector
+  , setCookingParametersWithParams_completionSelector
+  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeCookTimeWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMaxCookTimeWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMaxPowerWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeMinPowerWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributePowerSettingWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributePowerStepWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeSelectedWattIndexWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeSupportedWattsWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeWattRatingWithParams_subscriptionEstablished_reportHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -131,14 +128,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setCookingParametersWithParams:completion:@
 setCookingParametersWithParams_completion :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRMicrowaveOvenControlClusterSetCookingParametersParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> IO ()
-setCookingParametersWithParams_completion mtrBaseClusterMicrowaveOvenControl  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "setCookingParametersWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setCookingParametersWithParams_completion mtrBaseClusterMicrowaveOvenControl params completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl setCookingParametersWithParams_completionSelector (toMTRMicrowaveOvenControlClusterSetCookingParametersParams params) completion
 
 -- | @- setCookingParametersWithCompletion:@
 setCookingParametersWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-setCookingParametersWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "setCookingParametersWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+setCookingParametersWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl setCookingParametersWithCompletionSelector completion
 
 -- | Command AddMoreTime
 --
@@ -146,519 +142,459 @@ setCookingParametersWithCompletion mtrBaseClusterMicrowaveOvenControl  completio
 --
 -- ObjC selector: @- addMoreTimeWithParams:completion:@
 addMoreTimeWithParams_completion :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRMicrowaveOvenControlClusterAddMoreTimeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> IO ()
-addMoreTimeWithParams_completion mtrBaseClusterMicrowaveOvenControl  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "addMoreTimeWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addMoreTimeWithParams_completion mtrBaseClusterMicrowaveOvenControl params completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl addMoreTimeWithParams_completionSelector (toMTRMicrowaveOvenControlClusterAddMoreTimeParams params) completion
 
 -- | @- readAttributeCookTimeWithCompletion:@
 readAttributeCookTimeWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeCookTimeWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeCookTimeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeCookTimeWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeCookTimeWithCompletionSelector completion
 
 -- | @- subscribeAttributeCookTimeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeCookTimeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeCookTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeCookTimeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeCookTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeCookTimeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeCookTimeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeCookTimeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeCookTimeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeCookTimeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeCookTimeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMaxCookTimeWithCompletion:@
 readAttributeMaxCookTimeWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeMaxCookTimeWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeMaxCookTimeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMaxCookTimeWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeMaxCookTimeWithCompletionSelector completion
 
 -- | @- subscribeAttributeMaxCookTimeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMaxCookTimeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMaxCookTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeMaxCookTimeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMaxCookTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeMaxCookTimeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMaxCookTimeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMaxCookTimeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMaxCookTimeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMaxCookTimeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMaxCookTimeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributePowerSettingWithCompletion:@
 readAttributePowerSettingWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributePowerSettingWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributePowerSettingWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributePowerSettingWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributePowerSettingWithCompletionSelector completion
 
 -- | @- subscribeAttributePowerSettingWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributePowerSettingWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributePowerSettingWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributePowerSettingWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributePowerSettingWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributePowerSettingWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributePowerSettingWithClusterStateCache:endpoint:queue:completion:@
 readAttributePowerSettingWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributePowerSettingWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributePowerSettingWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributePowerSettingWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMinPowerWithCompletion:@
 readAttributeMinPowerWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeMinPowerWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeMinPowerWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMinPowerWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeMinPowerWithCompletionSelector completion
 
 -- | @- subscribeAttributeMinPowerWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMinPowerWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMinPowerWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeMinPowerWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMinPowerWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeMinPowerWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMinPowerWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMinPowerWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMinPowerWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMinPowerWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMinPowerWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeMaxPowerWithCompletion:@
 readAttributeMaxPowerWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeMaxPowerWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeMaxPowerWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeMaxPowerWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeMaxPowerWithCompletionSelector completion
 
 -- | @- subscribeAttributeMaxPowerWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeMaxPowerWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeMaxPowerWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeMaxPowerWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeMaxPowerWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeMaxPowerWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeMaxPowerWithClusterStateCache:endpoint:queue:completion:@
 readAttributeMaxPowerWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeMaxPowerWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeMaxPowerWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeMaxPowerWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributePowerStepWithCompletion:@
 readAttributePowerStepWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributePowerStepWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributePowerStepWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributePowerStepWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributePowerStepWithCompletionSelector completion
 
 -- | @- subscribeAttributePowerStepWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributePowerStepWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributePowerStepWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributePowerStepWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributePowerStepWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributePowerStepWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributePowerStepWithClusterStateCache:endpoint:queue:completion:@
 readAttributePowerStepWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributePowerStepWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributePowerStepWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributePowerStepWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeSupportedWattsWithCompletion:@
 readAttributeSupportedWattsWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeSupportedWattsWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeSupportedWattsWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeSupportedWattsWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeSupportedWattsWithCompletionSelector completion
 
 -- | @- subscribeAttributeSupportedWattsWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeSupportedWattsWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeSupportedWattsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeSupportedWattsWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeSupportedWattsWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeSupportedWattsWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeSupportedWattsWithClusterStateCache:endpoint:queue:completion:@
 readAttributeSupportedWattsWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeSupportedWattsWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeSupportedWattsWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeSupportedWattsWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeSelectedWattIndexWithCompletion:@
 readAttributeSelectedWattIndexWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeSelectedWattIndexWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeSelectedWattIndexWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeSelectedWattIndexWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeSelectedWattIndexWithCompletionSelector completion
 
 -- | @- subscribeAttributeSelectedWattIndexWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeSelectedWattIndexWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeSelectedWattIndexWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeSelectedWattIndexWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeSelectedWattIndexWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeSelectedWattIndexWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeSelectedWattIndexWithClusterStateCache:endpoint:queue:completion:@
 readAttributeSelectedWattIndexWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeSelectedWattIndexWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeSelectedWattIndexWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeSelectedWattIndexWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeWattRatingWithCompletion:@
 readAttributeWattRatingWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeWattRatingWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeWattRatingWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeWattRatingWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeWattRatingWithCompletionSelector completion
 
 -- | @- subscribeAttributeWattRatingWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeWattRatingWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeWattRatingWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeWattRatingWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeWattRatingWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeWattRatingWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeWattRatingWithClusterStateCache:endpoint:queue:completion:@
 readAttributeWattRatingWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeWattRatingWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeWattRatingWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeWattRatingWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterMicrowaveOvenControl  completion =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterMicrowaveOvenControl completion =
+  sendMessage mtrBaseClusterMicrowaveOvenControl readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRSubscribeParams params) => mtrBaseClusterMicrowaveOvenControl -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterMicrowaveOvenControl params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterMicrowaveOvenControl subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl => mtrBaseClusterMicrowaveOvenControl -> IO (Id MTRBaseClusterMicrowaveOvenControl)
-init_ mtrBaseClusterMicrowaveOvenControl  =
-    sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterMicrowaveOvenControl =
+  sendOwnedMessage mtrBaseClusterMicrowaveOvenControl initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterMicrowaveOvenControl)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterMicrowaveOvenControl"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterMicrowaveOvenControl mtrBaseClusterMicrowaveOvenControl, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterMicrowaveOvenControl -> device -> endpointID -> queue -> IO (Id MTRBaseClusterMicrowaveOvenControl)
-initWithDevice_endpointID_queue mtrBaseClusterMicrowaveOvenControl  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterMicrowaveOvenControl (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterMicrowaveOvenControl device endpointID queue =
+  sendOwnedMessage mtrBaseClusterMicrowaveOvenControl initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setCookingParametersWithParams:completion:@
-setCookingParametersWithParams_completionSelector :: Selector
+setCookingParametersWithParams_completionSelector :: Selector '[Id MTRMicrowaveOvenControlClusterSetCookingParametersParams, Ptr ()] ()
 setCookingParametersWithParams_completionSelector = mkSelector "setCookingParametersWithParams:completion:"
 
 -- | @Selector@ for @setCookingParametersWithCompletion:@
-setCookingParametersWithCompletionSelector :: Selector
+setCookingParametersWithCompletionSelector :: Selector '[Ptr ()] ()
 setCookingParametersWithCompletionSelector = mkSelector "setCookingParametersWithCompletion:"
 
 -- | @Selector@ for @addMoreTimeWithParams:completion:@
-addMoreTimeWithParams_completionSelector :: Selector
+addMoreTimeWithParams_completionSelector :: Selector '[Id MTRMicrowaveOvenControlClusterAddMoreTimeParams, Ptr ()] ()
 addMoreTimeWithParams_completionSelector = mkSelector "addMoreTimeWithParams:completion:"
 
 -- | @Selector@ for @readAttributeCookTimeWithCompletion:@
-readAttributeCookTimeWithCompletionSelector :: Selector
+readAttributeCookTimeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeCookTimeWithCompletionSelector = mkSelector "readAttributeCookTimeWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeCookTimeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeCookTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeCookTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeCookTimeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeCookTimeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeCookTimeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeCookTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeCookTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeCookTimeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeCookTimeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMaxCookTimeWithCompletion:@
-readAttributeMaxCookTimeWithCompletionSelector :: Selector
+readAttributeMaxCookTimeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMaxCookTimeWithCompletionSelector = mkSelector "readAttributeMaxCookTimeWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMaxCookTimeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMaxCookTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMaxCookTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMaxCookTimeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMaxCookTimeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMaxCookTimeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMaxCookTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMaxCookTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMaxCookTimeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMaxCookTimeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributePowerSettingWithCompletion:@
-readAttributePowerSettingWithCompletionSelector :: Selector
+readAttributePowerSettingWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributePowerSettingWithCompletionSelector = mkSelector "readAttributePowerSettingWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributePowerSettingWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributePowerSettingWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributePowerSettingWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributePowerSettingWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributePowerSettingWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributePowerSettingWithClusterStateCache:endpoint:queue:completion:@
-readAttributePowerSettingWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributePowerSettingWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributePowerSettingWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributePowerSettingWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMinPowerWithCompletion:@
-readAttributeMinPowerWithCompletionSelector :: Selector
+readAttributeMinPowerWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMinPowerWithCompletionSelector = mkSelector "readAttributeMinPowerWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMinPowerWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMinPowerWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMinPowerWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMinPowerWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMinPowerWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMinPowerWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMinPowerWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMinPowerWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMinPowerWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMinPowerWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeMaxPowerWithCompletion:@
-readAttributeMaxPowerWithCompletionSelector :: Selector
+readAttributeMaxPowerWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeMaxPowerWithCompletionSelector = mkSelector "readAttributeMaxPowerWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeMaxPowerWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeMaxPowerWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeMaxPowerWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeMaxPowerWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeMaxPowerWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeMaxPowerWithClusterStateCache:endpoint:queue:completion:@
-readAttributeMaxPowerWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeMaxPowerWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeMaxPowerWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeMaxPowerWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributePowerStepWithCompletion:@
-readAttributePowerStepWithCompletionSelector :: Selector
+readAttributePowerStepWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributePowerStepWithCompletionSelector = mkSelector "readAttributePowerStepWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributePowerStepWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributePowerStepWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributePowerStepWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributePowerStepWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributePowerStepWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributePowerStepWithClusterStateCache:endpoint:queue:completion:@
-readAttributePowerStepWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributePowerStepWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributePowerStepWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributePowerStepWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeSupportedWattsWithCompletion:@
-readAttributeSupportedWattsWithCompletionSelector :: Selector
+readAttributeSupportedWattsWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeSupportedWattsWithCompletionSelector = mkSelector "readAttributeSupportedWattsWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeSupportedWattsWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeSupportedWattsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeSupportedWattsWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeSupportedWattsWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeSupportedWattsWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeSupportedWattsWithClusterStateCache:endpoint:queue:completion:@
-readAttributeSupportedWattsWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeSupportedWattsWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeSupportedWattsWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeSupportedWattsWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeSelectedWattIndexWithCompletion:@
-readAttributeSelectedWattIndexWithCompletionSelector :: Selector
+readAttributeSelectedWattIndexWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeSelectedWattIndexWithCompletionSelector = mkSelector "readAttributeSelectedWattIndexWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeSelectedWattIndexWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeSelectedWattIndexWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeSelectedWattIndexWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeSelectedWattIndexWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeSelectedWattIndexWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeSelectedWattIndexWithClusterStateCache:endpoint:queue:completion:@
-readAttributeSelectedWattIndexWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeSelectedWattIndexWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeSelectedWattIndexWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeSelectedWattIndexWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeWattRatingWithCompletion:@
-readAttributeWattRatingWithCompletionSelector :: Selector
+readAttributeWattRatingWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeWattRatingWithCompletionSelector = mkSelector "readAttributeWattRatingWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeWattRatingWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeWattRatingWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeWattRatingWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeWattRatingWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeWattRatingWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeWattRatingWithClusterStateCache:endpoint:queue:completion:@
-readAttributeWattRatingWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeWattRatingWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeWattRatingWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeWattRatingWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterMicrowaveOvenControl)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterMicrowaveOvenControl)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterMicrowaveOvenControl)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

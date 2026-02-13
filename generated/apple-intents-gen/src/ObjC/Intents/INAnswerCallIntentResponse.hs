@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.Intents.INAnswerCallIntentResponse
   , code
   , callRecords
   , setCallRecords
+  , callRecordsSelector
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
-  , callRecordsSelector
   , setCallRecordsSelector
 
   -- * Enum types
@@ -30,15 +31,11 @@ module ObjC.Intents.INAnswerCallIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,52 +45,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINAnswerCallIntentResponse inAnswerCallIntentResponse => inAnswerCallIntentResponse -> IO RawId
-init_ inAnswerCallIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inAnswerCallIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inAnswerCallIntentResponse =
+  sendOwnedMessage inAnswerCallIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINAnswerCallIntentResponse inAnswerCallIntentResponse, IsNSUserActivity userActivity) => inAnswerCallIntentResponse -> INAnswerCallIntentResponseCode -> userActivity -> IO (Id INAnswerCallIntentResponse)
-initWithCode_userActivity inAnswerCallIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inAnswerCallIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inAnswerCallIntentResponse code userActivity =
+  sendOwnedMessage inAnswerCallIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINAnswerCallIntentResponse inAnswerCallIntentResponse => inAnswerCallIntentResponse -> IO INAnswerCallIntentResponseCode
-code inAnswerCallIntentResponse  =
-    fmap (coerce :: CLong -> INAnswerCallIntentResponseCode) $ sendMsg inAnswerCallIntentResponse (mkSelector "code") retCLong []
+code inAnswerCallIntentResponse =
+  sendMessage inAnswerCallIntentResponse codeSelector
 
 -- | @- callRecords@
 callRecords :: IsINAnswerCallIntentResponse inAnswerCallIntentResponse => inAnswerCallIntentResponse -> IO (Id NSArray)
-callRecords inAnswerCallIntentResponse  =
-    sendMsg inAnswerCallIntentResponse (mkSelector "callRecords") (retPtr retVoid) [] >>= retainedObject . castPtr
+callRecords inAnswerCallIntentResponse =
+  sendMessage inAnswerCallIntentResponse callRecordsSelector
 
 -- | @- setCallRecords:@
 setCallRecords :: (IsINAnswerCallIntentResponse inAnswerCallIntentResponse, IsNSArray value) => inAnswerCallIntentResponse -> value -> IO ()
-setCallRecords inAnswerCallIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inAnswerCallIntentResponse (mkSelector "setCallRecords:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCallRecords inAnswerCallIntentResponse value =
+  sendMessage inAnswerCallIntentResponse setCallRecordsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INAnswerCallIntentResponseCode, Id NSUserActivity] (Id INAnswerCallIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INAnswerCallIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @callRecords@
-callRecordsSelector :: Selector
+callRecordsSelector :: Selector '[] (Id NSArray)
 callRecordsSelector = mkSelector "callRecords"
 
 -- | @Selector@ for @setCallRecords:@
-setCallRecordsSelector :: Selector
+setCallRecordsSelector :: Selector '[Id NSArray] ()
 setCallRecordsSelector = mkSelector "setCallRecords:"
 

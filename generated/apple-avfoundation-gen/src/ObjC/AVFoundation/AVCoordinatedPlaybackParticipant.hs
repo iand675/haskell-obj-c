@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.AVFoundation.AVCoordinatedPlaybackParticipant
   , suspensionReasons
   , readyToPlay
   , identifier
-  , suspensionReasonsSelector
-  , readyToPlaySelector
   , identifierSelector
+  , readyToPlaySelector
+  , suspensionReasonsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- suspensionReasons@
 suspensionReasons :: IsAVCoordinatedPlaybackParticipant avCoordinatedPlaybackParticipant => avCoordinatedPlaybackParticipant -> IO (Id NSArray)
-suspensionReasons avCoordinatedPlaybackParticipant  =
-    sendMsg avCoordinatedPlaybackParticipant (mkSelector "suspensionReasons") (retPtr retVoid) [] >>= retainedObject . castPtr
+suspensionReasons avCoordinatedPlaybackParticipant =
+  sendMessage avCoordinatedPlaybackParticipant suspensionReasonsSelector
 
 -- | YES if the participant is ready to play.
 --
 -- ObjC selector: @- readyToPlay@
 readyToPlay :: IsAVCoordinatedPlaybackParticipant avCoordinatedPlaybackParticipant => avCoordinatedPlaybackParticipant -> IO Bool
-readyToPlay avCoordinatedPlaybackParticipant  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCoordinatedPlaybackParticipant (mkSelector "readyToPlay") retCULong []
+readyToPlay avCoordinatedPlaybackParticipant =
+  sendMessage avCoordinatedPlaybackParticipant readyToPlaySelector
 
 -- | A unique id for the participant.
 --
@@ -55,22 +52,22 @@ readyToPlay avCoordinatedPlaybackParticipant  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsAVCoordinatedPlaybackParticipant avCoordinatedPlaybackParticipant => avCoordinatedPlaybackParticipant -> IO (Id NSUUID)
-identifier avCoordinatedPlaybackParticipant  =
-    sendMsg avCoordinatedPlaybackParticipant (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier avCoordinatedPlaybackParticipant =
+  sendMessage avCoordinatedPlaybackParticipant identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @suspensionReasons@
-suspensionReasonsSelector :: Selector
+suspensionReasonsSelector :: Selector '[] (Id NSArray)
 suspensionReasonsSelector = mkSelector "suspensionReasons"
 
 -- | @Selector@ for @readyToPlay@
-readyToPlaySelector :: Selector
+readyToPlaySelector :: Selector '[] Bool
 readyToPlaySelector = mkSelector "readyToPlay"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSUUID)
 identifierSelector = mkSelector "identifier"
 

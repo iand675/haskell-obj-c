@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,42 +32,38 @@ module ObjC.Matter.MTRClusterClosureDimension
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , setTargetWithParams_expectedValues_expectedValueInterval_completionSelector
-  , setTargetWithExpectedValues_expectedValueInterval_completionSelector
-  , stepWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeCurrentStateWithParamsSelector
-  , readAttributeTargetStateWithParamsSelector
-  , readAttributeResolutionWithParamsSelector
-  , readAttributeStepValueWithParamsSelector
-  , readAttributeUnitWithParamsSelector
-  , readAttributeUnitRangeWithParamsSelector
-  , readAttributeLimitRangeWithParamsSelector
-  , readAttributeTranslationDirectionWithParamsSelector
-  , readAttributeRotationAxisWithParamsSelector
-  , readAttributeOverflowWithParamsSelector
-  , readAttributeModulationTypeWithParamsSelector
-  , readAttributeLatchControlModesWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeCurrentStateWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeLatchControlModesWithParamsSelector
+  , readAttributeLimitRangeWithParamsSelector
+  , readAttributeModulationTypeWithParamsSelector
+  , readAttributeOverflowWithParamsSelector
+  , readAttributeResolutionWithParamsSelector
+  , readAttributeRotationAxisWithParamsSelector
+  , readAttributeStepValueWithParamsSelector
+  , readAttributeTargetStateWithParamsSelector
+  , readAttributeTranslationDirectionWithParamsSelector
+  , readAttributeUnitRangeWithParamsSelector
+  , readAttributeUnitWithParamsSelector
+  , setTargetWithExpectedValues_expectedValueInterval_completionSelector
+  , setTargetWithParams_expectedValues_expectedValueInterval_completionSelector
+  , stepWithParams_expectedValues_expectedValueInterval_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,244 +72,216 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setTargetWithParams:expectedValues:expectedValueInterval:completion:@
 setTargetWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRClosureDimensionClusterSetTargetParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterClosureDimension -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setTargetWithParams_expectedValues_expectedValueInterval_completion mtrClusterClosureDimension  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterClosureDimension (mkSelector "setTargetWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setTargetWithParams_expectedValues_expectedValueInterval_completion mtrClusterClosureDimension params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterClosureDimension setTargetWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRClosureDimensionClusterSetTargetParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setTargetWithExpectedValues:expectedValueInterval:completion:@
 setTargetWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterClosureDimension -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-setTargetWithExpectedValues_expectedValueInterval_completion mtrClusterClosureDimension  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterClosureDimension (mkSelector "setTargetWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setTargetWithExpectedValues_expectedValueInterval_completion mtrClusterClosureDimension expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterClosureDimension setTargetWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- stepWithParams:expectedValues:expectedValueInterval:completion:@
 stepWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRClosureDimensionClusterStepParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterClosureDimension -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-stepWithParams_expectedValues_expectedValueInterval_completion mtrClusterClosureDimension  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterClosureDimension (mkSelector "stepWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+stepWithParams_expectedValues_expectedValueInterval_completion mtrClusterClosureDimension params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterClosureDimension stepWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRClosureDimensionClusterStepParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeCurrentStateWithParams:@
 readAttributeCurrentStateWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeCurrentStateWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeCurrentStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentStateWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeCurrentStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTargetStateWithParams:@
 readAttributeTargetStateWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeTargetStateWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeTargetStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTargetStateWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeTargetStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeResolutionWithParams:@
 readAttributeResolutionWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeResolutionWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeResolutionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeResolutionWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeResolutionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeStepValueWithParams:@
 readAttributeStepValueWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeStepValueWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeStepValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeStepValueWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeStepValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeUnitWithParams:@
 readAttributeUnitWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeUnitWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeUnitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUnitWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeUnitWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeUnitRangeWithParams:@
 readAttributeUnitRangeWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeUnitRangeWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeUnitRangeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUnitRangeWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeUnitRangeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLimitRangeWithParams:@
 readAttributeLimitRangeWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeLimitRangeWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeLimitRangeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLimitRangeWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeLimitRangeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTranslationDirectionWithParams:@
 readAttributeTranslationDirectionWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeTranslationDirectionWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeTranslationDirectionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTranslationDirectionWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeTranslationDirectionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeRotationAxisWithParams:@
 readAttributeRotationAxisWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeRotationAxisWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeRotationAxisWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRotationAxisWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeRotationAxisWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeOverflowWithParams:@
 readAttributeOverflowWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeOverflowWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeOverflowWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeOverflowWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeOverflowWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeModulationTypeWithParams:@
 readAttributeModulationTypeWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeModulationTypeWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeModulationTypeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeModulationTypeWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeModulationTypeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLatchControlModesWithParams:@
 readAttributeLatchControlModesWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeLatchControlModesWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeLatchControlModesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLatchControlModesWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeLatchControlModesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRReadParams params) => mtrClusterClosureDimension -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterClosureDimension  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterClosureDimension (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterClosureDimension params =
+  sendMessage mtrClusterClosureDimension readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterClosureDimension mtrClusterClosureDimension => mtrClusterClosureDimension -> IO (Id MTRClusterClosureDimension)
-init_ mtrClusterClosureDimension  =
-    sendMsg mtrClusterClosureDimension (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterClosureDimension =
+  sendOwnedMessage mtrClusterClosureDimension initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterClosureDimension)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterClosureDimension"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterClosureDimension mtrClusterClosureDimension, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterClosureDimension -> device -> endpointID -> queue -> IO (Id MTRClusterClosureDimension)
-initWithDevice_endpointID_queue mtrClusterClosureDimension  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterClosureDimension (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterClosureDimension device endpointID queue =
+  sendOwnedMessage mtrClusterClosureDimension initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setTargetWithParams:expectedValues:expectedValueInterval:completion:@
-setTargetWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setTargetWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRClosureDimensionClusterSetTargetParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setTargetWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setTargetWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setTargetWithExpectedValues:expectedValueInterval:completion:@
-setTargetWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+setTargetWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 setTargetWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "setTargetWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @stepWithParams:expectedValues:expectedValueInterval:completion:@
-stepWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+stepWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRClosureDimensionClusterStepParams, Id NSArray, Id NSNumber, Ptr ()] ()
 stepWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "stepWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeCurrentStateWithParams:@
-readAttributeCurrentStateWithParamsSelector :: Selector
+readAttributeCurrentStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentStateWithParamsSelector = mkSelector "readAttributeCurrentStateWithParams:"
 
 -- | @Selector@ for @readAttributeTargetStateWithParams:@
-readAttributeTargetStateWithParamsSelector :: Selector
+readAttributeTargetStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTargetStateWithParamsSelector = mkSelector "readAttributeTargetStateWithParams:"
 
 -- | @Selector@ for @readAttributeResolutionWithParams:@
-readAttributeResolutionWithParamsSelector :: Selector
+readAttributeResolutionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeResolutionWithParamsSelector = mkSelector "readAttributeResolutionWithParams:"
 
 -- | @Selector@ for @readAttributeStepValueWithParams:@
-readAttributeStepValueWithParamsSelector :: Selector
+readAttributeStepValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeStepValueWithParamsSelector = mkSelector "readAttributeStepValueWithParams:"
 
 -- | @Selector@ for @readAttributeUnitWithParams:@
-readAttributeUnitWithParamsSelector :: Selector
+readAttributeUnitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUnitWithParamsSelector = mkSelector "readAttributeUnitWithParams:"
 
 -- | @Selector@ for @readAttributeUnitRangeWithParams:@
-readAttributeUnitRangeWithParamsSelector :: Selector
+readAttributeUnitRangeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUnitRangeWithParamsSelector = mkSelector "readAttributeUnitRangeWithParams:"
 
 -- | @Selector@ for @readAttributeLimitRangeWithParams:@
-readAttributeLimitRangeWithParamsSelector :: Selector
+readAttributeLimitRangeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLimitRangeWithParamsSelector = mkSelector "readAttributeLimitRangeWithParams:"
 
 -- | @Selector@ for @readAttributeTranslationDirectionWithParams:@
-readAttributeTranslationDirectionWithParamsSelector :: Selector
+readAttributeTranslationDirectionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTranslationDirectionWithParamsSelector = mkSelector "readAttributeTranslationDirectionWithParams:"
 
 -- | @Selector@ for @readAttributeRotationAxisWithParams:@
-readAttributeRotationAxisWithParamsSelector :: Selector
+readAttributeRotationAxisWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRotationAxisWithParamsSelector = mkSelector "readAttributeRotationAxisWithParams:"
 
 -- | @Selector@ for @readAttributeOverflowWithParams:@
-readAttributeOverflowWithParamsSelector :: Selector
+readAttributeOverflowWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeOverflowWithParamsSelector = mkSelector "readAttributeOverflowWithParams:"
 
 -- | @Selector@ for @readAttributeModulationTypeWithParams:@
-readAttributeModulationTypeWithParamsSelector :: Selector
+readAttributeModulationTypeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeModulationTypeWithParamsSelector = mkSelector "readAttributeModulationTypeWithParams:"
 
 -- | @Selector@ for @readAttributeLatchControlModesWithParams:@
-readAttributeLatchControlModesWithParamsSelector :: Selector
+readAttributeLatchControlModesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLatchControlModesWithParamsSelector = mkSelector "readAttributeLatchControlModesWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterClosureDimension)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterClosureDimension)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterClosureDimension)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

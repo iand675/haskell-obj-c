@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.DataDetection.DDMatchCalendarEvent
   , endDate
   , endTimeZone
   , allDaySelector
-  , startDateSelector
-  , startTimeZoneSelector
   , endDateSelector
   , endTimeZoneSelector
+  , startDateSelector
+  , startTimeZoneSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,58 +40,58 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- allDay@
 allDay :: IsDDMatchCalendarEvent ddMatchCalendarEvent => ddMatchCalendarEvent -> IO Bool
-allDay ddMatchCalendarEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ddMatchCalendarEvent (mkSelector "allDay") retCULong []
+allDay ddMatchCalendarEvent =
+  sendMessage ddMatchCalendarEvent allDaySelector
 
 -- | A date that represents the start of the event.
 --
 -- ObjC selector: @- startDate@
 startDate :: IsDDMatchCalendarEvent ddMatchCalendarEvent => ddMatchCalendarEvent -> IO (Id NSDate)
-startDate ddMatchCalendarEvent  =
-    sendMsg ddMatchCalendarEvent (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate ddMatchCalendarEvent =
+  sendMessage ddMatchCalendarEvent startDateSelector
 
 -- | The time zone for the event’s start date.
 --
 -- ObjC selector: @- startTimeZone@
 startTimeZone :: IsDDMatchCalendarEvent ddMatchCalendarEvent => ddMatchCalendarEvent -> IO (Id NSTimeZone)
-startTimeZone ddMatchCalendarEvent  =
-    sendMsg ddMatchCalendarEvent (mkSelector "startTimeZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+startTimeZone ddMatchCalendarEvent =
+  sendMessage ddMatchCalendarEvent startTimeZoneSelector
 
 -- | A date that represents the end of the event.
 --
 -- ObjC selector: @- endDate@
 endDate :: IsDDMatchCalendarEvent ddMatchCalendarEvent => ddMatchCalendarEvent -> IO (Id NSDate)
-endDate ddMatchCalendarEvent  =
-    sendMsg ddMatchCalendarEvent (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate ddMatchCalendarEvent =
+  sendMessage ddMatchCalendarEvent endDateSelector
 
 -- | The time zone for the event’s end date.
 --
 -- ObjC selector: @- endTimeZone@
 endTimeZone :: IsDDMatchCalendarEvent ddMatchCalendarEvent => ddMatchCalendarEvent -> IO (Id NSTimeZone)
-endTimeZone ddMatchCalendarEvent  =
-    sendMsg ddMatchCalendarEvent (mkSelector "endTimeZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+endTimeZone ddMatchCalendarEvent =
+  sendMessage ddMatchCalendarEvent endTimeZoneSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @allDay@
-allDaySelector :: Selector
+allDaySelector :: Selector '[] Bool
 allDaySelector = mkSelector "allDay"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @startTimeZone@
-startTimeZoneSelector :: Selector
+startTimeZoneSelector :: Selector '[] (Id NSTimeZone)
 startTimeZoneSelector = mkSelector "startTimeZone"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @endTimeZone@
-endTimeZoneSelector :: Selector
+endTimeZoneSelector :: Selector '[] (Id NSTimeZone)
 endTimeZoneSelector = mkSelector "endTimeZone"
 

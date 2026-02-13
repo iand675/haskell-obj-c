@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,8 +11,8 @@ module ObjC.AppKit.NSCollectionViewUpdateItem
   , indexPathBeforeUpdate
   , indexPathAfterUpdate
   , updateAction
-  , indexPathBeforeUpdateSelector
   , indexPathAfterUpdateSelector
+  , indexPathBeforeUpdateSelector
   , updateActionSelector
 
   -- * Enum types
@@ -24,15 +25,11 @@ module ObjC.AppKit.NSCollectionViewUpdateItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,32 +39,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- indexPathBeforeUpdate@
 indexPathBeforeUpdate :: IsNSCollectionViewUpdateItem nsCollectionViewUpdateItem => nsCollectionViewUpdateItem -> IO (Id NSIndexPath)
-indexPathBeforeUpdate nsCollectionViewUpdateItem  =
-    sendMsg nsCollectionViewUpdateItem (mkSelector "indexPathBeforeUpdate") (retPtr retVoid) [] >>= retainedObject . castPtr
+indexPathBeforeUpdate nsCollectionViewUpdateItem =
+  sendMessage nsCollectionViewUpdateItem indexPathBeforeUpdateSelector
 
 -- | @- indexPathAfterUpdate@
 indexPathAfterUpdate :: IsNSCollectionViewUpdateItem nsCollectionViewUpdateItem => nsCollectionViewUpdateItem -> IO (Id NSIndexPath)
-indexPathAfterUpdate nsCollectionViewUpdateItem  =
-    sendMsg nsCollectionViewUpdateItem (mkSelector "indexPathAfterUpdate") (retPtr retVoid) [] >>= retainedObject . castPtr
+indexPathAfterUpdate nsCollectionViewUpdateItem =
+  sendMessage nsCollectionViewUpdateItem indexPathAfterUpdateSelector
 
 -- | @- updateAction@
 updateAction :: IsNSCollectionViewUpdateItem nsCollectionViewUpdateItem => nsCollectionViewUpdateItem -> IO NSCollectionUpdateAction
-updateAction nsCollectionViewUpdateItem  =
-    fmap (coerce :: CLong -> NSCollectionUpdateAction) $ sendMsg nsCollectionViewUpdateItem (mkSelector "updateAction") retCLong []
+updateAction nsCollectionViewUpdateItem =
+  sendMessage nsCollectionViewUpdateItem updateActionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @indexPathBeforeUpdate@
-indexPathBeforeUpdateSelector :: Selector
+indexPathBeforeUpdateSelector :: Selector '[] (Id NSIndexPath)
 indexPathBeforeUpdateSelector = mkSelector "indexPathBeforeUpdate"
 
 -- | @Selector@ for @indexPathAfterUpdate@
-indexPathAfterUpdateSelector :: Selector
+indexPathAfterUpdateSelector :: Selector '[] (Id NSIndexPath)
 indexPathAfterUpdateSelector = mkSelector "indexPathAfterUpdate"
 
 -- | @Selector@ for @updateAction@
-updateActionSelector :: Selector
+updateActionSelector :: Selector '[] NSCollectionUpdateAction
 updateActionSelector = mkSelector "updateAction"
 

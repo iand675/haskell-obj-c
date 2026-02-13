@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.Metal.MTL4CommitOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addFeedbackHandler:@
 addFeedbackHandler :: IsMTL4CommitOptions mtL4CommitOptions => mtL4CommitOptions -> Ptr () -> IO ()
-addFeedbackHandler mtL4CommitOptions  block =
-    sendMsg mtL4CommitOptions (mkSelector "addFeedbackHandler:") retVoid [argPtr (castPtr block :: Ptr ())]
+addFeedbackHandler mtL4CommitOptions block =
+  sendMessage mtL4CommitOptions addFeedbackHandlerSelector block
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addFeedbackHandler:@
-addFeedbackHandlerSelector :: Selector
+addFeedbackHandlerSelector :: Selector '[Ptr ()] ()
 addFeedbackHandlerSelector = mkSelector "addFeedbackHandler:"
 

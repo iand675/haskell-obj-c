@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVPlayerItemErrorLog
   , extendedLogData
   , extendedLogDataStringEncoding
   , events
-  , initSelector
-  , newSelector
+  , eventsSelector
   , extendedLogDataSelector
   , extendedLogDataStringEncodingSelector
-  , eventsSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerItemErrorLog avPlayerItemErrorLog => avPlayerItemErrorLog -> IO (Id AVPlayerItemErrorLog)
-init_ avPlayerItemErrorLog  =
-    sendMsg avPlayerItemErrorLog (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerItemErrorLog =
+  sendOwnedMessage avPlayerItemErrorLog initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerItemErrorLog)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerItemErrorLog"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Serializes an AVPlayerItemErrorLog in the Extended Log File Format.
 --
@@ -61,8 +58,8 @@ new  =
 --
 -- ObjC selector: @- extendedLogData@
 extendedLogData :: IsAVPlayerItemErrorLog avPlayerItemErrorLog => avPlayerItemErrorLog -> IO (Id NSData)
-extendedLogData avPlayerItemErrorLog  =
-    sendMsg avPlayerItemErrorLog (mkSelector "extendedLogData") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedLogData avPlayerItemErrorLog =
+  sendMessage avPlayerItemErrorLog extendedLogDataSelector
 
 -- | Returns the NSStringEncoding for extendedLogData, see above.
 --
@@ -70,8 +67,8 @@ extendedLogData avPlayerItemErrorLog  =
 --
 -- ObjC selector: @- extendedLogDataStringEncoding@
 extendedLogDataStringEncoding :: IsAVPlayerItemErrorLog avPlayerItemErrorLog => avPlayerItemErrorLog -> IO CULong
-extendedLogDataStringEncoding avPlayerItemErrorLog  =
-    sendMsg avPlayerItemErrorLog (mkSelector "extendedLogDataStringEncoding") retCULong []
+extendedLogDataStringEncoding avPlayerItemErrorLog =
+  sendMessage avPlayerItemErrorLog extendedLogDataStringEncodingSelector
 
 -- | An ordered collection of AVPlayerItemErrorLogEvent instances.
 --
@@ -79,30 +76,30 @@ extendedLogDataStringEncoding avPlayerItemErrorLog  =
 --
 -- ObjC selector: @- events@
 events :: IsAVPlayerItemErrorLog avPlayerItemErrorLog => avPlayerItemErrorLog -> IO (Id NSArray)
-events avPlayerItemErrorLog  =
-    sendMsg avPlayerItemErrorLog (mkSelector "events") (retPtr retVoid) [] >>= retainedObject . castPtr
+events avPlayerItemErrorLog =
+  sendMessage avPlayerItemErrorLog eventsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerItemErrorLog)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerItemErrorLog)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @extendedLogData@
-extendedLogDataSelector :: Selector
+extendedLogDataSelector :: Selector '[] (Id NSData)
 extendedLogDataSelector = mkSelector "extendedLogData"
 
 -- | @Selector@ for @extendedLogDataStringEncoding@
-extendedLogDataStringEncodingSelector :: Selector
+extendedLogDataStringEncodingSelector :: Selector '[] CULong
 extendedLogDataStringEncodingSelector = mkSelector "extendedLogDataStringEncoding"
 
 -- | @Selector@ for @events@
-eventsSelector :: Selector
+eventsSelector :: Selector '[] (Id NSArray)
 eventsSelector = mkSelector "events"
 

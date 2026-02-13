@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.IntentsUI.INUIEditVoiceShortcutViewController
   , initWithNibName_bundle
   , delegate
   , setDelegate
-  , initWithVoiceShortcutSelector
+  , delegateSelector
   , initSelector
   , initWithNibName_bundleSelector
-  , delegateSelector
+  , initWithVoiceShortcutSelector
   , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,53 +42,50 @@ import ObjC.Intents.Internal.Classes
 --
 -- ObjC selector: @- initWithVoiceShortcut:@
 initWithVoiceShortcut :: (IsINUIEditVoiceShortcutViewController inuiEditVoiceShortcutViewController, IsINVoiceShortcut voiceShortcut) => inuiEditVoiceShortcutViewController -> voiceShortcut -> IO (Id INUIEditVoiceShortcutViewController)
-initWithVoiceShortcut inuiEditVoiceShortcutViewController  voiceShortcut =
-  withObjCPtr voiceShortcut $ \raw_voiceShortcut ->
-      sendMsg inuiEditVoiceShortcutViewController (mkSelector "initWithVoiceShortcut:") (retPtr retVoid) [argPtr (castPtr raw_voiceShortcut :: Ptr ())] >>= ownedObject . castPtr
+initWithVoiceShortcut inuiEditVoiceShortcutViewController voiceShortcut =
+  sendOwnedMessage inuiEditVoiceShortcutViewController initWithVoiceShortcutSelector (toINVoiceShortcut voiceShortcut)
 
 -- | @- init@
 init_ :: IsINUIEditVoiceShortcutViewController inuiEditVoiceShortcutViewController => inuiEditVoiceShortcutViewController -> IO (Id INUIEditVoiceShortcutViewController)
-init_ inuiEditVoiceShortcutViewController  =
-    sendMsg inuiEditVoiceShortcutViewController (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inuiEditVoiceShortcutViewController =
+  sendOwnedMessage inuiEditVoiceShortcutViewController initSelector
 
 -- | @- initWithNibName:bundle:@
 initWithNibName_bundle :: (IsINUIEditVoiceShortcutViewController inuiEditVoiceShortcutViewController, IsNSString nibNameOrNil, IsNSBundle nibBundleOrNil) => inuiEditVoiceShortcutViewController -> nibNameOrNil -> nibBundleOrNil -> IO (Id INUIEditVoiceShortcutViewController)
-initWithNibName_bundle inuiEditVoiceShortcutViewController  nibNameOrNil nibBundleOrNil =
-  withObjCPtr nibNameOrNil $ \raw_nibNameOrNil ->
-    withObjCPtr nibBundleOrNil $ \raw_nibBundleOrNil ->
-        sendMsg inuiEditVoiceShortcutViewController (mkSelector "initWithNibName:bundle:") (retPtr retVoid) [argPtr (castPtr raw_nibNameOrNil :: Ptr ()), argPtr (castPtr raw_nibBundleOrNil :: Ptr ())] >>= ownedObject . castPtr
+initWithNibName_bundle inuiEditVoiceShortcutViewController nibNameOrNil nibBundleOrNil =
+  sendOwnedMessage inuiEditVoiceShortcutViewController initWithNibName_bundleSelector (toNSString nibNameOrNil) (toNSBundle nibBundleOrNil)
 
 -- | @- delegate@
 delegate :: IsINUIEditVoiceShortcutViewController inuiEditVoiceShortcutViewController => inuiEditVoiceShortcutViewController -> IO RawId
-delegate inuiEditVoiceShortcutViewController  =
-    fmap (RawId . castPtr) $ sendMsg inuiEditVoiceShortcutViewController (mkSelector "delegate") (retPtr retVoid) []
+delegate inuiEditVoiceShortcutViewController =
+  sendMessage inuiEditVoiceShortcutViewController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsINUIEditVoiceShortcutViewController inuiEditVoiceShortcutViewController => inuiEditVoiceShortcutViewController -> RawId -> IO ()
-setDelegate inuiEditVoiceShortcutViewController  value =
-    sendMsg inuiEditVoiceShortcutViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate inuiEditVoiceShortcutViewController value =
+  sendMessage inuiEditVoiceShortcutViewController setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithVoiceShortcut:@
-initWithVoiceShortcutSelector :: Selector
+initWithVoiceShortcutSelector :: Selector '[Id INVoiceShortcut] (Id INUIEditVoiceShortcutViewController)
 initWithVoiceShortcutSelector = mkSelector "initWithVoiceShortcut:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INUIEditVoiceShortcutViewController)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithNibName:bundle:@
-initWithNibName_bundleSelector :: Selector
+initWithNibName_bundleSelector :: Selector '[Id NSString, Id NSBundle] (Id INUIEditVoiceShortcutViewController)
 initWithNibName_bundleSelector = mkSelector "initWithNibName:bundle:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

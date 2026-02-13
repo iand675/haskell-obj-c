@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.MediaExtension.MESampleLocation
   , new
   , init_
   , byteSource
-  , newSelector
-  , initSelector
   , byteSourceSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,12 +39,12 @@ new :: IO (Id MESampleLocation)
 new  =
   do
     cls' <- getRequiredClass "MESampleLocation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMESampleLocation meSampleLocation => meSampleLocation -> IO (Id MESampleLocation)
-init_ meSampleLocation  =
-    sendMsg meSampleLocation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meSampleLocation =
+  sendOwnedMessage meSampleLocation initSelector
 
 -- | byteSource
 --
@@ -55,22 +52,22 @@ init_ meSampleLocation  =
 --
 -- ObjC selector: @- byteSource@
 byteSource :: IsMESampleLocation meSampleLocation => meSampleLocation -> IO (Id MEByteSource)
-byteSource meSampleLocation  =
-    sendMsg meSampleLocation (mkSelector "byteSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+byteSource meSampleLocation =
+  sendMessage meSampleLocation byteSourceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MESampleLocation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MESampleLocation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @byteSource@
-byteSourceSelector :: Selector
+byteSourceSelector :: Selector '[] (Id MEByteSource)
 byteSourceSelector = mkSelector "byteSource"
 

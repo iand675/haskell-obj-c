@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.AVFoundation.AVAssetPlaybackAssistant
   , init_
   , new
   , assetPlaybackAssistantWithAsset
+  , assetPlaybackAssistantWithAssetSelector
   , initSelector
   , newSelector
-  , assetPlaybackAssistantWithAssetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,15 +34,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetPlaybackAssistant avAssetPlaybackAssistant => avAssetPlaybackAssistant -> IO (Id AVAssetPlaybackAssistant)
-init_ avAssetPlaybackAssistant  =
-    sendMsg avAssetPlaybackAssistant (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetPlaybackAssistant =
+  sendOwnedMessage avAssetPlaybackAssistant initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetPlaybackAssistant)
 new  =
   do
     cls' <- getRequiredClass "AVAssetPlaybackAssistant"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns an instance of AVAssetPlaybackAssistant for inspection of an AVAsset object.
 --
@@ -58,22 +55,21 @@ assetPlaybackAssistantWithAsset :: IsAVAsset asset => asset -> IO (Id AVAssetPla
 assetPlaybackAssistantWithAsset asset =
   do
     cls' <- getRequiredClass "AVAssetPlaybackAssistant"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "assetPlaybackAssistantWithAsset:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetPlaybackAssistantWithAssetSelector (toAVAsset asset)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetPlaybackAssistant)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetPlaybackAssistant)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetPlaybackAssistantWithAsset:@
-assetPlaybackAssistantWithAssetSelector :: Selector
+assetPlaybackAssistantWithAssetSelector :: Selector '[Id AVAsset] (Id AVAssetPlaybackAssistant)
 assetPlaybackAssistantWithAssetSelector = mkSelector "assetPlaybackAssistantWithAsset:"
 

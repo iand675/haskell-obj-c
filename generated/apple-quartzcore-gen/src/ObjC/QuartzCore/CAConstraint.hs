@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,15 @@ module ObjC.QuartzCore.CAConstraint
   , sourceAttribute
   , scale
   , offset
-  , constraintWithAttribute_relativeTo_attribute_scale_offsetSelector
-  , constraintWithAttribute_relativeTo_attribute_offsetSelector
-  , constraintWithAttribute_relativeTo_attributeSelector
-  , initWithAttribute_relativeTo_attribute_scale_offsetSelector
   , attributeSelector
-  , sourceNameSelector
-  , sourceAttributeSelector
-  , scaleSelector
+  , constraintWithAttribute_relativeTo_attributeSelector
+  , constraintWithAttribute_relativeTo_attribute_offsetSelector
+  , constraintWithAttribute_relativeTo_attribute_scale_offsetSelector
+  , initWithAttribute_relativeTo_attribute_scale_offsetSelector
   , offsetSelector
+  , scaleSelector
+  , sourceAttributeSelector
+  , sourceNameSelector
 
   -- * Enum types
   , CAConstraintAttribute(CAConstraintAttribute)
@@ -41,15 +42,11 @@ module ObjC.QuartzCore.CAConstraint
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,93 +59,89 @@ constraintWithAttribute_relativeTo_attribute_scale_offset :: IsNSString srcId =>
 constraintWithAttribute_relativeTo_attribute_scale_offset attr srcId srcAttr m c =
   do
     cls' <- getRequiredClass "CAConstraint"
-    withObjCPtr srcId $ \raw_srcId ->
-      sendClassMsg cls' (mkSelector "constraintWithAttribute:relativeTo:attribute:scale:offset:") (retPtr retVoid) [argCInt (coerce attr), argPtr (castPtr raw_srcId :: Ptr ()), argCInt (coerce srcAttr), argCDouble m, argCDouble c] >>= retainedObject . castPtr
+    sendClassMessage cls' constraintWithAttribute_relativeTo_attribute_scale_offsetSelector attr (toNSString srcId) srcAttr m c
 
 -- | @+ constraintWithAttribute:relativeTo:attribute:offset:@
 constraintWithAttribute_relativeTo_attribute_offset :: IsNSString srcId => CAConstraintAttribute -> srcId -> CAConstraintAttribute -> CDouble -> IO (Id CAConstraint)
 constraintWithAttribute_relativeTo_attribute_offset attr srcId srcAttr c =
   do
     cls' <- getRequiredClass "CAConstraint"
-    withObjCPtr srcId $ \raw_srcId ->
-      sendClassMsg cls' (mkSelector "constraintWithAttribute:relativeTo:attribute:offset:") (retPtr retVoid) [argCInt (coerce attr), argPtr (castPtr raw_srcId :: Ptr ()), argCInt (coerce srcAttr), argCDouble c] >>= retainedObject . castPtr
+    sendClassMessage cls' constraintWithAttribute_relativeTo_attribute_offsetSelector attr (toNSString srcId) srcAttr c
 
 -- | @+ constraintWithAttribute:relativeTo:attribute:@
 constraintWithAttribute_relativeTo_attribute :: IsNSString srcId => CAConstraintAttribute -> srcId -> CAConstraintAttribute -> IO (Id CAConstraint)
 constraintWithAttribute_relativeTo_attribute attr srcId srcAttr =
   do
     cls' <- getRequiredClass "CAConstraint"
-    withObjCPtr srcId $ \raw_srcId ->
-      sendClassMsg cls' (mkSelector "constraintWithAttribute:relativeTo:attribute:") (retPtr retVoid) [argCInt (coerce attr), argPtr (castPtr raw_srcId :: Ptr ()), argCInt (coerce srcAttr)] >>= retainedObject . castPtr
+    sendClassMessage cls' constraintWithAttribute_relativeTo_attributeSelector attr (toNSString srcId) srcAttr
 
 -- | @- initWithAttribute:relativeTo:attribute:scale:offset:@
 initWithAttribute_relativeTo_attribute_scale_offset :: (IsCAConstraint caConstraint, IsNSString srcId) => caConstraint -> CAConstraintAttribute -> srcId -> CAConstraintAttribute -> CDouble -> CDouble -> IO (Id CAConstraint)
-initWithAttribute_relativeTo_attribute_scale_offset caConstraint  attr srcId srcAttr m c =
-  withObjCPtr srcId $ \raw_srcId ->
-      sendMsg caConstraint (mkSelector "initWithAttribute:relativeTo:attribute:scale:offset:") (retPtr retVoid) [argCInt (coerce attr), argPtr (castPtr raw_srcId :: Ptr ()), argCInt (coerce srcAttr), argCDouble m, argCDouble c] >>= ownedObject . castPtr
+initWithAttribute_relativeTo_attribute_scale_offset caConstraint attr srcId srcAttr m c =
+  sendOwnedMessage caConstraint initWithAttribute_relativeTo_attribute_scale_offsetSelector attr (toNSString srcId) srcAttr m c
 
 -- | @- attribute@
 attribute :: IsCAConstraint caConstraint => caConstraint -> IO CAConstraintAttribute
-attribute caConstraint  =
-    fmap (coerce :: CInt -> CAConstraintAttribute) $ sendMsg caConstraint (mkSelector "attribute") retCInt []
+attribute caConstraint =
+  sendMessage caConstraint attributeSelector
 
 -- | @- sourceName@
 sourceName :: IsCAConstraint caConstraint => caConstraint -> IO (Id NSString)
-sourceName caConstraint  =
-    sendMsg caConstraint (mkSelector "sourceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceName caConstraint =
+  sendMessage caConstraint sourceNameSelector
 
 -- | @- sourceAttribute@
 sourceAttribute :: IsCAConstraint caConstraint => caConstraint -> IO CAConstraintAttribute
-sourceAttribute caConstraint  =
-    fmap (coerce :: CInt -> CAConstraintAttribute) $ sendMsg caConstraint (mkSelector "sourceAttribute") retCInt []
+sourceAttribute caConstraint =
+  sendMessage caConstraint sourceAttributeSelector
 
 -- | @- scale@
 scale :: IsCAConstraint caConstraint => caConstraint -> IO CDouble
-scale caConstraint  =
-    sendMsg caConstraint (mkSelector "scale") retCDouble []
+scale caConstraint =
+  sendMessage caConstraint scaleSelector
 
 -- | @- offset@
 offset :: IsCAConstraint caConstraint => caConstraint -> IO CDouble
-offset caConstraint  =
-    sendMsg caConstraint (mkSelector "offset") retCDouble []
+offset caConstraint =
+  sendMessage caConstraint offsetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @constraintWithAttribute:relativeTo:attribute:scale:offset:@
-constraintWithAttribute_relativeTo_attribute_scale_offsetSelector :: Selector
+constraintWithAttribute_relativeTo_attribute_scale_offsetSelector :: Selector '[CAConstraintAttribute, Id NSString, CAConstraintAttribute, CDouble, CDouble] (Id CAConstraint)
 constraintWithAttribute_relativeTo_attribute_scale_offsetSelector = mkSelector "constraintWithAttribute:relativeTo:attribute:scale:offset:"
 
 -- | @Selector@ for @constraintWithAttribute:relativeTo:attribute:offset:@
-constraintWithAttribute_relativeTo_attribute_offsetSelector :: Selector
+constraintWithAttribute_relativeTo_attribute_offsetSelector :: Selector '[CAConstraintAttribute, Id NSString, CAConstraintAttribute, CDouble] (Id CAConstraint)
 constraintWithAttribute_relativeTo_attribute_offsetSelector = mkSelector "constraintWithAttribute:relativeTo:attribute:offset:"
 
 -- | @Selector@ for @constraintWithAttribute:relativeTo:attribute:@
-constraintWithAttribute_relativeTo_attributeSelector :: Selector
+constraintWithAttribute_relativeTo_attributeSelector :: Selector '[CAConstraintAttribute, Id NSString, CAConstraintAttribute] (Id CAConstraint)
 constraintWithAttribute_relativeTo_attributeSelector = mkSelector "constraintWithAttribute:relativeTo:attribute:"
 
 -- | @Selector@ for @initWithAttribute:relativeTo:attribute:scale:offset:@
-initWithAttribute_relativeTo_attribute_scale_offsetSelector :: Selector
+initWithAttribute_relativeTo_attribute_scale_offsetSelector :: Selector '[CAConstraintAttribute, Id NSString, CAConstraintAttribute, CDouble, CDouble] (Id CAConstraint)
 initWithAttribute_relativeTo_attribute_scale_offsetSelector = mkSelector "initWithAttribute:relativeTo:attribute:scale:offset:"
 
 -- | @Selector@ for @attribute@
-attributeSelector :: Selector
+attributeSelector :: Selector '[] CAConstraintAttribute
 attributeSelector = mkSelector "attribute"
 
 -- | @Selector@ for @sourceName@
-sourceNameSelector :: Selector
+sourceNameSelector :: Selector '[] (Id NSString)
 sourceNameSelector = mkSelector "sourceName"
 
 -- | @Selector@ for @sourceAttribute@
-sourceAttributeSelector :: Selector
+sourceAttributeSelector :: Selector '[] CAConstraintAttribute
 sourceAttributeSelector = mkSelector "sourceAttribute"
 
 -- | @Selector@ for @scale@
-scaleSelector :: Selector
+scaleSelector :: Selector '[] CDouble
 scaleSelector = mkSelector "scale"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] CDouble
 offsetSelector = mkSelector "offset"
 

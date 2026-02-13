@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Contacts.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | The authorization the user has given the application to access an entity type.
 -- | @CNAuthorizationStatus@
@@ -32,6 +35,16 @@ pattern CNAuthorizationStatusAuthorized = CNAuthorizationStatus 3
 pattern CNAuthorizationStatusLimited :: CNAuthorizationStatus
 pattern CNAuthorizationStatusLimited = CNAuthorizationStatus 4
 
+instance ObjCArgument CNAuthorizationStatus where
+  withObjCArg (CNAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn CNAuthorizationStatus where
+  type RawReturn CNAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNAuthorizationStatus x)
+  fromOwned x = pure (CNAuthorizationStatus x)
+
 -- | The formatting order of the contact name components.
 -- | @CNContactDisplayNameOrder@
 newtype CNContactDisplayNameOrder = CNContactDisplayNameOrder CLong
@@ -47,6 +60,16 @@ pattern CNContactDisplayNameOrderGivenNameFirst = CNContactDisplayNameOrder 1
 pattern CNContactDisplayNameOrderFamilyNameFirst :: CNContactDisplayNameOrder
 pattern CNContactDisplayNameOrderFamilyNameFirst = CNContactDisplayNameOrder 2
 
+instance ObjCArgument CNContactDisplayNameOrder where
+  withObjCArg (CNContactDisplayNameOrder x) k = k (argCLong x)
+
+instance ObjCReturn CNContactDisplayNameOrder where
+  type RawReturn CNContactDisplayNameOrder = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNContactDisplayNameOrder x)
+  fromOwned x = pure (CNContactDisplayNameOrder x)
+
 -- | The formatting styles for contact names.
 -- | @CNContactFormatterStyle@
 newtype CNContactFormatterStyle = CNContactFormatterStyle CLong
@@ -58,6 +81,16 @@ pattern CNContactFormatterStyleFullName = CNContactFormatterStyle 0
 
 pattern CNContactFormatterStylePhoneticFullName :: CNContactFormatterStyle
 pattern CNContactFormatterStylePhoneticFullName = CNContactFormatterStyle 1
+
+instance ObjCArgument CNContactFormatterStyle where
+  withObjCArg (CNContactFormatterStyle x) k = k (argCLong x)
+
+instance ObjCReturn CNContactFormatterStyle where
+  type RawReturn CNContactFormatterStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNContactFormatterStyle x)
+  fromOwned x = pure (CNContactFormatterStyle x)
 
 -- | Sort order for contacts.
 --
@@ -79,6 +112,16 @@ pattern CNContactSortOrderGivenName = CNContactSortOrder 2
 pattern CNContactSortOrderFamilyName :: CNContactSortOrder
 pattern CNContactSortOrderFamilyName = CNContactSortOrder 3
 
+instance ObjCArgument CNContactSortOrder where
+  withObjCArg (CNContactSortOrder x) k = k (argCLong x)
+
+instance ObjCReturn CNContactSortOrder where
+  type RawReturn CNContactSortOrder = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNContactSortOrder x)
+  fromOwned x = pure (CNContactSortOrder x)
+
 -- | @CNContactType@
 newtype CNContactType = CNContactType CLong
   deriving stock (Eq, Ord, Show)
@@ -89,6 +132,16 @@ pattern CNContactTypePerson = CNContactType 0
 
 pattern CNContactTypeOrganization :: CNContactType
 pattern CNContactTypeOrganization = CNContactType 1
+
+instance ObjCArgument CNContactType where
+  withObjCArg (CNContactType x) k = k (argCLong x)
+
+instance ObjCReturn CNContactType where
+  type RawReturn CNContactType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNContactType x)
+  fromOwned x = pure (CNContactType x)
 
 -- | @CNContainerType@
 newtype CNContainerType = CNContainerType CLong
@@ -107,6 +160,16 @@ pattern CNContainerTypeExchange = CNContainerType 2
 pattern CNContainerTypeCardDAV :: CNContainerType
 pattern CNContainerTypeCardDAV = CNContainerType 3
 
+instance ObjCArgument CNContainerType where
+  withObjCArg (CNContainerType x) k = k (argCLong x)
+
+instance ObjCReturn CNContainerType where
+  type RawReturn CNContainerType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNContainerType x)
+  fromOwned x = pure (CNContainerType x)
+
 -- | The entities the user can grant access to.
 -- | @CNEntityType@
 newtype CNEntityType = CNEntityType CLong
@@ -115,6 +178,16 @@ newtype CNEntityType = CNEntityType CLong
 
 pattern CNEntityTypeContacts :: CNEntityType
 pattern CNEntityTypeContacts = CNEntityType 0
+
+instance ObjCArgument CNEntityType where
+  withObjCArg (CNEntityType x) k = k (argCLong x)
+
+instance ObjCReturn CNEntityType where
+  type RawReturn CNEntityType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNEntityType x)
+  fromOwned x = pure (CNEntityType x)
 
 -- | @CNErrorCode@
 newtype CNErrorCode = CNErrorCode CLong
@@ -205,6 +278,16 @@ pattern CNErrorCodeVCardMalformed = CNErrorCode 700
 pattern CNErrorCodeVCardSummarizationError :: CNErrorCode
 pattern CNErrorCodeVCardSummarizationError = CNErrorCode 701
 
+instance ObjCArgument CNErrorCode where
+  withObjCArg (CNErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn CNErrorCode where
+  type RawReturn CNErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNErrorCode x)
+  fromOwned x = pure (CNErrorCode x)
+
 -- | The formatting styles for postal addresses.
 -- | @CNPostalAddressFormatterStyle@
 newtype CNPostalAddressFormatterStyle = CNPostalAddressFormatterStyle CLong
@@ -213,3 +296,13 @@ newtype CNPostalAddressFormatterStyle = CNPostalAddressFormatterStyle CLong
 
 pattern CNPostalAddressFormatterStyleMailingAddress :: CNPostalAddressFormatterStyle
 pattern CNPostalAddressFormatterStyleMailingAddress = CNPostalAddressFormatterStyle 0
+
+instance ObjCArgument CNPostalAddressFormatterStyle where
+  withObjCArg (CNPostalAddressFormatterStyle x) k = k (argCLong x)
+
+instance ObjCReturn CNPostalAddressFormatterStyle where
+  type RawReturn CNPostalAddressFormatterStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CNPostalAddressFormatterStyle x)
+  fromOwned x = pure (CNPostalAddressFormatterStyle x)

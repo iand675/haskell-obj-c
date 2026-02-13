@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.CoreMotion.CMStepCounter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,44 +35,40 @@ isStepCountingAvailable :: IO Bool
 isStepCountingAvailable  =
   do
     cls' <- getRequiredClass "CMStepCounter"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isStepCountingAvailable") retCULong []
+    sendClassMessage cls' isStepCountingAvailableSelector
 
 -- | @- queryStepCountStartingFrom:to:toQueue:withHandler:@
 queryStepCountStartingFrom_to_toQueue_withHandler :: (IsCMStepCounter cmStepCounter, IsNSDate start, IsNSDate end, IsNSOperationQueue queue) => cmStepCounter -> start -> end -> queue -> Ptr () -> IO ()
-queryStepCountStartingFrom_to_toQueue_withHandler cmStepCounter  start end queue handler =
-  withObjCPtr start $ \raw_start ->
-    withObjCPtr end $ \raw_end ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg cmStepCounter (mkSelector "queryStepCountStartingFrom:to:toQueue:withHandler:") retVoid [argPtr (castPtr raw_start :: Ptr ()), argPtr (castPtr raw_end :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+queryStepCountStartingFrom_to_toQueue_withHandler cmStepCounter start end queue handler =
+  sendMessage cmStepCounter queryStepCountStartingFrom_to_toQueue_withHandlerSelector (toNSDate start) (toNSDate end) (toNSOperationQueue queue) handler
 
 -- | @- startStepCountingUpdatesToQueue:updateOn:withHandler:@
 startStepCountingUpdatesToQueue_updateOn_withHandler :: (IsCMStepCounter cmStepCounter, IsNSOperationQueue queue) => cmStepCounter -> queue -> CLong -> Ptr () -> IO ()
-startStepCountingUpdatesToQueue_updateOn_withHandler cmStepCounter  queue stepCounts handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmStepCounter (mkSelector "startStepCountingUpdatesToQueue:updateOn:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argCLong stepCounts, argPtr (castPtr handler :: Ptr ())]
+startStepCountingUpdatesToQueue_updateOn_withHandler cmStepCounter queue stepCounts handler =
+  sendMessage cmStepCounter startStepCountingUpdatesToQueue_updateOn_withHandlerSelector (toNSOperationQueue queue) stepCounts handler
 
 -- | @- stopStepCountingUpdates@
 stopStepCountingUpdates :: IsCMStepCounter cmStepCounter => cmStepCounter -> IO ()
-stopStepCountingUpdates cmStepCounter  =
-    sendMsg cmStepCounter (mkSelector "stopStepCountingUpdates") retVoid []
+stopStepCountingUpdates cmStepCounter =
+  sendMessage cmStepCounter stopStepCountingUpdatesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isStepCountingAvailable@
-isStepCountingAvailableSelector :: Selector
+isStepCountingAvailableSelector :: Selector '[] Bool
 isStepCountingAvailableSelector = mkSelector "isStepCountingAvailable"
 
 -- | @Selector@ for @queryStepCountStartingFrom:to:toQueue:withHandler:@
-queryStepCountStartingFrom_to_toQueue_withHandlerSelector :: Selector
+queryStepCountStartingFrom_to_toQueue_withHandlerSelector :: Selector '[Id NSDate, Id NSDate, Id NSOperationQueue, Ptr ()] ()
 queryStepCountStartingFrom_to_toQueue_withHandlerSelector = mkSelector "queryStepCountStartingFrom:to:toQueue:withHandler:"
 
 -- | @Selector@ for @startStepCountingUpdatesToQueue:updateOn:withHandler:@
-startStepCountingUpdatesToQueue_updateOn_withHandlerSelector :: Selector
+startStepCountingUpdatesToQueue_updateOn_withHandlerSelector :: Selector '[Id NSOperationQueue, CLong, Ptr ()] ()
 startStepCountingUpdatesToQueue_updateOn_withHandlerSelector = mkSelector "startStepCountingUpdatesToQueue:updateOn:withHandler:"
 
 -- | @Selector@ for @stopStepCountingUpdates@
-stopStepCountingUpdatesSelector :: Selector
+stopStepCountingUpdatesSelector :: Selector '[] ()
 stopStepCountingUpdatesSelector = mkSelector "stopStepCountingUpdates"
 

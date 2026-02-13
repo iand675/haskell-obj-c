@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.MediaPlayer.MPPlayableContentManagerContext
   , contentLimitsEnforced
   , contentLimitsEnabled
   , endpointAvailable
+  , contentLimitsEnabledSelector
+  , contentLimitsEnforcedSelector
+  , endpointAvailableSelector
   , enforcedContentItemsCountSelector
   , enforcedContentTreeDepthSelector
-  , contentLimitsEnforcedSelector
-  , contentLimitsEnabledSelector
-  , endpointAvailableSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,56 +38,56 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- enforcedContentItemsCount@
 enforcedContentItemsCount :: IsMPPlayableContentManagerContext mpPlayableContentManagerContext => mpPlayableContentManagerContext -> IO CLong
-enforcedContentItemsCount mpPlayableContentManagerContext  =
-    sendMsg mpPlayableContentManagerContext (mkSelector "enforcedContentItemsCount") retCLong []
+enforcedContentItemsCount mpPlayableContentManagerContext =
+  sendMessage mpPlayableContentManagerContext enforcedContentItemsCountSelector
 
 -- | The depth of the navigation hierarchy the content server will allow. Exceeding this limit will result in a crash.
 --
 -- ObjC selector: @- enforcedContentTreeDepth@
 enforcedContentTreeDepth :: IsMPPlayableContentManagerContext mpPlayableContentManagerContext => mpPlayableContentManagerContext -> IO CLong
-enforcedContentTreeDepth mpPlayableContentManagerContext  =
-    sendMsg mpPlayableContentManagerContext (mkSelector "enforcedContentTreeDepth") retCLong []
+enforcedContentTreeDepth mpPlayableContentManagerContext =
+  sendMessage mpPlayableContentManagerContext enforcedContentTreeDepthSelector
 
 -- | Represents whether content limits are being enforced by the content server or not.
 --
 -- ObjC selector: @- contentLimitsEnforced@
 contentLimitsEnforced :: IsMPPlayableContentManagerContext mpPlayableContentManagerContext => mpPlayableContentManagerContext -> IO Bool
-contentLimitsEnforced mpPlayableContentManagerContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpPlayableContentManagerContext (mkSelector "contentLimitsEnforced") retCULong []
+contentLimitsEnforced mpPlayableContentManagerContext =
+  sendMessage mpPlayableContentManagerContext contentLimitsEnforcedSelector
 
 -- | @- contentLimitsEnabled@
 contentLimitsEnabled :: IsMPPlayableContentManagerContext mpPlayableContentManagerContext => mpPlayableContentManagerContext -> IO Bool
-contentLimitsEnabled mpPlayableContentManagerContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpPlayableContentManagerContext (mkSelector "contentLimitsEnabled") retCULong []
+contentLimitsEnabled mpPlayableContentManagerContext =
+  sendMessage mpPlayableContentManagerContext contentLimitsEnabledSelector
 
 -- | Represents whether the content server is available or not.
 --
 -- ObjC selector: @- endpointAvailable@
 endpointAvailable :: IsMPPlayableContentManagerContext mpPlayableContentManagerContext => mpPlayableContentManagerContext -> IO Bool
-endpointAvailable mpPlayableContentManagerContext  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpPlayableContentManagerContext (mkSelector "endpointAvailable") retCULong []
+endpointAvailable mpPlayableContentManagerContext =
+  sendMessage mpPlayableContentManagerContext endpointAvailableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @enforcedContentItemsCount@
-enforcedContentItemsCountSelector :: Selector
+enforcedContentItemsCountSelector :: Selector '[] CLong
 enforcedContentItemsCountSelector = mkSelector "enforcedContentItemsCount"
 
 -- | @Selector@ for @enforcedContentTreeDepth@
-enforcedContentTreeDepthSelector :: Selector
+enforcedContentTreeDepthSelector :: Selector '[] CLong
 enforcedContentTreeDepthSelector = mkSelector "enforcedContentTreeDepth"
 
 -- | @Selector@ for @contentLimitsEnforced@
-contentLimitsEnforcedSelector :: Selector
+contentLimitsEnforcedSelector :: Selector '[] Bool
 contentLimitsEnforcedSelector = mkSelector "contentLimitsEnforced"
 
 -- | @Selector@ for @contentLimitsEnabled@
-contentLimitsEnabledSelector :: Selector
+contentLimitsEnabledSelector :: Selector '[] Bool
 contentLimitsEnabledSelector = mkSelector "contentLimitsEnabled"
 
 -- | @Selector@ for @endpointAvailable@
-endpointAvailableSelector :: Selector
+endpointAvailableSelector :: Selector '[] Bool
 endpointAvailableSelector = mkSelector "endpointAvailable"
 

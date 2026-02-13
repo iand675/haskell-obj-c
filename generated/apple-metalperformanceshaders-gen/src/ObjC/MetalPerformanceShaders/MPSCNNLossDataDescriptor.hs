@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,12 +20,12 @@ module ObjC.MetalPerformanceShaders.MPSCNNLossDataDescriptor
   , setBytesPerRow
   , bytesPerImage
   , setBytesPerImage
+  , bytesPerImageSelector
+  , bytesPerRowSelector
   , initSelector
   , layoutSelector
-  , bytesPerRowSelector
-  , setBytesPerRowSelector
-  , bytesPerImageSelector
   , setBytesPerImageSelector
+  , setBytesPerRowSelector
 
   -- * Enum types
   , MPSDataLayout(MPSDataLayout)
@@ -33,15 +34,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNLossDataDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMPSCNNLossDataDescriptor mpscnnLossDataDescriptor => mpscnnLossDataDescriptor -> IO (Id MPSCNNLossDataDescriptor)
-init_ mpscnnLossDataDescriptor  =
-    sendMsg mpscnnLossDataDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpscnnLossDataDescriptor =
+  sendOwnedMessage mpscnnLossDataDescriptor initSelector
 
 -- | layout
 --
@@ -62,8 +59,8 @@ init_ mpscnnLossDataDescriptor  =
 --
 -- ObjC selector: @- layout@
 layout :: IsMPSCNNLossDataDescriptor mpscnnLossDataDescriptor => mpscnnLossDataDescriptor -> IO MPSDataLayout
-layout mpscnnLossDataDescriptor  =
-    fmap (coerce :: CULong -> MPSDataLayout) $ sendMsg mpscnnLossDataDescriptor (mkSelector "layout") retCULong []
+layout mpscnnLossDataDescriptor =
+  sendMessage mpscnnLossDataDescriptor layoutSelector
 
 -- | bytesPerRow
 --
@@ -73,8 +70,8 @@ layout mpscnnLossDataDescriptor  =
 --
 -- ObjC selector: @- bytesPerRow@
 bytesPerRow :: IsMPSCNNLossDataDescriptor mpscnnLossDataDescriptor => mpscnnLossDataDescriptor -> IO CULong
-bytesPerRow mpscnnLossDataDescriptor  =
-    sendMsg mpscnnLossDataDescriptor (mkSelector "bytesPerRow") retCULong []
+bytesPerRow mpscnnLossDataDescriptor =
+  sendMessage mpscnnLossDataDescriptor bytesPerRowSelector
 
 -- | bytesPerRow
 --
@@ -84,8 +81,8 @@ bytesPerRow mpscnnLossDataDescriptor  =
 --
 -- ObjC selector: @- setBytesPerRow:@
 setBytesPerRow :: IsMPSCNNLossDataDescriptor mpscnnLossDataDescriptor => mpscnnLossDataDescriptor -> CULong -> IO ()
-setBytesPerRow mpscnnLossDataDescriptor  value =
-    sendMsg mpscnnLossDataDescriptor (mkSelector "setBytesPerRow:") retVoid [argCULong value]
+setBytesPerRow mpscnnLossDataDescriptor value =
+  sendMessage mpscnnLossDataDescriptor setBytesPerRowSelector value
 
 -- | bytesPerImage
 --
@@ -95,8 +92,8 @@ setBytesPerRow mpscnnLossDataDescriptor  value =
 --
 -- ObjC selector: @- bytesPerImage@
 bytesPerImage :: IsMPSCNNLossDataDescriptor mpscnnLossDataDescriptor => mpscnnLossDataDescriptor -> IO CULong
-bytesPerImage mpscnnLossDataDescriptor  =
-    sendMsg mpscnnLossDataDescriptor (mkSelector "bytesPerImage") retCULong []
+bytesPerImage mpscnnLossDataDescriptor =
+  sendMessage mpscnnLossDataDescriptor bytesPerImageSelector
 
 -- | bytesPerImage
 --
@@ -106,34 +103,34 @@ bytesPerImage mpscnnLossDataDescriptor  =
 --
 -- ObjC selector: @- setBytesPerImage:@
 setBytesPerImage :: IsMPSCNNLossDataDescriptor mpscnnLossDataDescriptor => mpscnnLossDataDescriptor -> CULong -> IO ()
-setBytesPerImage mpscnnLossDataDescriptor  value =
-    sendMsg mpscnnLossDataDescriptor (mkSelector "setBytesPerImage:") retVoid [argCULong value]
+setBytesPerImage mpscnnLossDataDescriptor value =
+  sendMessage mpscnnLossDataDescriptor setBytesPerImageSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSCNNLossDataDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @layout@
-layoutSelector :: Selector
+layoutSelector :: Selector '[] MPSDataLayout
 layoutSelector = mkSelector "layout"
 
 -- | @Selector@ for @bytesPerRow@
-bytesPerRowSelector :: Selector
+bytesPerRowSelector :: Selector '[] CULong
 bytesPerRowSelector = mkSelector "bytesPerRow"
 
 -- | @Selector@ for @setBytesPerRow:@
-setBytesPerRowSelector :: Selector
+setBytesPerRowSelector :: Selector '[CULong] ()
 setBytesPerRowSelector = mkSelector "setBytesPerRow:"
 
 -- | @Selector@ for @bytesPerImage@
-bytesPerImageSelector :: Selector
+bytesPerImageSelector :: Selector '[] CULong
 bytesPerImageSelector = mkSelector "bytesPerImage"
 
 -- | @Selector@ for @setBytesPerImage:@
-setBytesPerImageSelector :: Selector
+setBytesPerImageSelector :: Selector '[CULong] ()
 setBytesPerImageSelector = mkSelector "setBytesPerImage:"
 

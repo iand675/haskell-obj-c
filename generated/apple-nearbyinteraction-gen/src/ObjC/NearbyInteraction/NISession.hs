@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,31 +21,27 @@ module ObjC.NearbyInteraction.NISession
   , setDelegateQueue
   , discoveryToken
   , configuration
-  , runWithConfigurationSelector
-  , pauseSelector
-  , invalidateSelector
-  , setARSessionSelector
-  , supportedSelector
-  , deviceCapabilitiesSelector
-  , delegateSelector
-  , setDelegateSelector
-  , delegateQueueSelector
-  , setDelegateQueueSelector
-  , discoveryTokenSelector
   , configurationSelector
+  , delegateQueueSelector
+  , delegateSelector
+  , deviceCapabilitiesSelector
+  , discoveryTokenSelector
+  , invalidateSelector
+  , pauseSelector
+  , runWithConfigurationSelector
+  , setARSessionSelector
+  , setDelegateQueueSelector
+  , setDelegateSelector
+  , supportedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,9 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- runWithConfiguration:@
 runWithConfiguration :: (IsNISession niSession, IsNIConfiguration configuration) => niSession -> configuration -> IO ()
-runWithConfiguration niSession  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg niSession (mkSelector "runWithConfiguration:") retVoid [argPtr (castPtr raw_configuration :: Ptr ())]
+runWithConfiguration niSession configuration =
+  sendMessage niSession runWithConfigurationSelector (toNIConfiguration configuration)
 
 -- | Pause an ongoing nearby interaction session.
 --
@@ -67,8 +63,8 @@ runWithConfiguration niSession  configuration =
 --
 -- ObjC selector: @- pause@
 pause :: IsNISession niSession => niSession -> IO ()
-pause niSession  =
-    sendMsg niSession (mkSelector "pause") retVoid []
+pause niSession =
+  sendMessage niSession pauseSelector
 
 -- | Invalidate an ongoing nearby interaction session.
 --
@@ -76,8 +72,8 @@ pause niSession  =
 --
 -- ObjC selector: @- invalidate@
 invalidate :: IsNISession niSession => niSession -> IO ()
-invalidate niSession  =
-    sendMsg niSession (mkSelector "invalidate") retVoid []
+invalidate niSession =
+  sendMessage niSession invalidateSelector
 
 -- | Provide an ARSession object for use with the NISession
 --
@@ -93,8 +89,8 @@ invalidate niSession  =
 --
 -- ObjC selector: @- setARSession:@
 setARSession :: IsNISession niSession => niSession -> RawId -> IO ()
-setARSession niSession  session =
-    sendMsg niSession (mkSelector "setARSession:") retVoid [argPtr (castPtr (unRawId session) :: Ptr ())]
+setARSession niSession session =
+  sendMessage niSession setARSessionSelector session
 
 -- | Whether or not this device is capable of participating in a nearby interaction session.
 --
@@ -103,7 +99,7 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "NISession"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- | Get the protocol that describes nearby interaction capabilities on this device.
 --
@@ -114,21 +110,21 @@ deviceCapabilities :: IO RawId
 deviceCapabilities  =
   do
     cls' <- getRequiredClass "NISession"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "deviceCapabilities") (retPtr retVoid) []
+    sendClassMessage cls' deviceCapabilitiesSelector
 
 -- | A delegate for receiving NISession updates.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsNISession niSession => niSession -> IO RawId
-delegate niSession  =
-    fmap (RawId . castPtr) $ sendMsg niSession (mkSelector "delegate") (retPtr retVoid) []
+delegate niSession =
+  sendMessage niSession delegateSelector
 
 -- | A delegate for receiving NISession updates.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsNISession niSession => niSession -> RawId -> IO ()
-setDelegate niSession  value =
-    sendMsg niSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate niSession value =
+  sendMessage niSession setDelegateSelector value
 
 -- | The dispatch queue on which the delegate calls are performed.
 --
@@ -136,8 +132,8 @@ setDelegate niSession  value =
 --
 -- ObjC selector: @- delegateQueue@
 delegateQueue :: IsNISession niSession => niSession -> IO (Id NSObject)
-delegateQueue niSession  =
-    sendMsg niSession (mkSelector "delegateQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateQueue niSession =
+  sendMessage niSession delegateQueueSelector
 
 -- | The dispatch queue on which the delegate calls are performed.
 --
@@ -145,9 +141,8 @@ delegateQueue niSession  =
 --
 -- ObjC selector: @- setDelegateQueue:@
 setDelegateQueue :: (IsNISession niSession, IsNSObject value) => niSession -> value -> IO ()
-setDelegateQueue niSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg niSession (mkSelector "setDelegateQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDelegateQueue niSession value =
+  sendMessage niSession setDelegateQueueSelector (toNSObject value)
 
 -- | A unique nearby interaction identifier for this session.
 --
@@ -155,65 +150,65 @@ setDelegateQueue niSession  value =
 --
 -- ObjC selector: @- discoveryToken@
 discoveryToken :: IsNISession niSession => niSession -> IO (Id NIDiscoveryToken)
-discoveryToken niSession  =
-    sendMsg niSession (mkSelector "discoveryToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+discoveryToken niSession =
+  sendMessage niSession discoveryTokenSelector
 
 -- | The nearby interaction configuration currently being used by the session.
 --
 -- ObjC selector: @- configuration@
 configuration :: IsNISession niSession => niSession -> IO (Id NIConfiguration)
-configuration niSession  =
-    sendMsg niSession (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration niSession =
+  sendMessage niSession configurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @runWithConfiguration:@
-runWithConfigurationSelector :: Selector
+runWithConfigurationSelector :: Selector '[Id NIConfiguration] ()
 runWithConfigurationSelector = mkSelector "runWithConfiguration:"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @setARSession:@
-setARSessionSelector :: Selector
+setARSessionSelector :: Selector '[RawId] ()
 setARSessionSelector = mkSelector "setARSession:"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 
 -- | @Selector@ for @deviceCapabilities@
-deviceCapabilitiesSelector :: Selector
+deviceCapabilitiesSelector :: Selector '[] RawId
 deviceCapabilitiesSelector = mkSelector "deviceCapabilities"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegateQueue@
-delegateQueueSelector :: Selector
+delegateQueueSelector :: Selector '[] (Id NSObject)
 delegateQueueSelector = mkSelector "delegateQueue"
 
 -- | @Selector@ for @setDelegateQueue:@
-setDelegateQueueSelector :: Selector
+setDelegateQueueSelector :: Selector '[Id NSObject] ()
 setDelegateQueueSelector = mkSelector "setDelegateQueue:"
 
 -- | @Selector@ for @discoveryToken@
-discoveryTokenSelector :: Selector
+discoveryTokenSelector :: Selector '[] (Id NIDiscoveryToken)
 discoveryTokenSelector = mkSelector "discoveryToken"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id NIConfiguration)
 configurationSelector = mkSelector "configuration"
 

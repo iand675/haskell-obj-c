@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -76,31 +77,27 @@ module ObjC.DiscRecording.DRTrack
   , length_
   , preGap
   , setPreGap
+  , estimateLengthSelector
   , initWithProducerSelector
+  , lengthSelector
+  , preGapSelector
   , propertiesSelector
+  , setPreGapSelector
   , setPropertiesSelector
   , testProductionSpeedForIntervalSelector
   , testProductionSpeedForLengthSelector
-  , estimateLengthSelector
-  , trackForRootFolderSelector
-  , trackForAudioOfLength_producerSelector
   , trackForAudioFileSelector
-  , lengthSelector
-  , preGapSelector
-  , setPreGapSelector
+  , trackForAudioOfLength_producerSelector
+  , trackForRootFolderSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -117,8 +114,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithProducer:@
 initWithProducer :: IsDRTrack drTrack => drTrack -> RawId -> IO RawId
-initWithProducer drTrack  producer =
-    fmap (RawId . castPtr) $ sendMsg drTrack (mkSelector "initWithProducer:") (retPtr retVoid) [argPtr (castPtr (unRawId producer) :: Ptr ())]
+initWithProducer drTrack producer =
+  sendOwnedMessage drTrack initWithProducerSelector producer
 
 -- | properties
 --
@@ -128,8 +125,8 @@ initWithProducer drTrack  producer =
 --
 -- ObjC selector: @- properties@
 properties :: IsDRTrack drTrack => drTrack -> IO (Id NSDictionary)
-properties drTrack  =
-    sendMsg drTrack (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+properties drTrack =
+  sendMessage drTrack propertiesSelector
 
 -- | setProperties:
 --
@@ -139,9 +136,8 @@ properties drTrack  =
 --
 -- ObjC selector: @- setProperties:@
 setProperties :: (IsDRTrack drTrack, IsNSDictionary properties) => drTrack -> properties -> IO ()
-setProperties drTrack  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg drTrack (mkSelector "setProperties:") retVoid [argPtr (castPtr raw_properties :: Ptr ())]
+setProperties drTrack properties =
+  sendMessage drTrack setPropertiesSelector (toNSDictionary properties)
 
 -- | testProductionSpeedForInterval:
 --
@@ -163,8 +159,8 @@ setProperties drTrack  properties =
 --
 -- ObjC selector: @- testProductionSpeedForInterval:@
 testProductionSpeedForInterval :: IsDRTrack drTrack => drTrack -> CDouble -> IO CFloat
-testProductionSpeedForInterval drTrack  interval =
-    sendMsg drTrack (mkSelector "testProductionSpeedForInterval:") retCFloat [argCDouble interval]
+testProductionSpeedForInterval drTrack interval =
+  sendMessage drTrack testProductionSpeedForIntervalSelector interval
 
 -- | testProductionSpeedForLength:
 --
@@ -186,8 +182,8 @@ testProductionSpeedForInterval drTrack  interval =
 --
 -- ObjC selector: @- testProductionSpeedForLength:@
 testProductionSpeedForLength :: IsDRTrack drTrack => drTrack -> CUInt -> IO CFloat
-testProductionSpeedForLength drTrack  length_ =
-    sendMsg drTrack (mkSelector "testProductionSpeedForLength:") retCFloat [argCUInt length_]
+testProductionSpeedForLength drTrack length_ =
+  sendMessage drTrack testProductionSpeedForLengthSelector length_
 
 -- | estimateLength
 --
@@ -201,8 +197,8 @@ testProductionSpeedForLength drTrack  length_ =
 --
 -- ObjC selector: @- estimateLength@
 estimateLength :: IsDRTrack drTrack => drTrack -> IO CULong
-estimateLength drTrack  =
-    sendMsg drTrack (mkSelector "estimateLength") retCULong []
+estimateLength drTrack =
+  sendMessage drTrack estimateLengthSelector
 
 -- | trackForRootFolder:
 --
@@ -223,8 +219,7 @@ trackForRootFolder :: IsDRFolder rootFolder => rootFolder -> IO (Id DRTrack)
 trackForRootFolder rootFolder =
   do
     cls' <- getRequiredClass "DRTrack"
-    withObjCPtr rootFolder $ \raw_rootFolder ->
-      sendClassMsg cls' (mkSelector "trackForRootFolder:") (retPtr retVoid) [argPtr (castPtr raw_rootFolder :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' trackForRootFolderSelector (toDRFolder rootFolder)
 
 -- | trackForAudioOfLength:producer:
 --
@@ -247,8 +242,7 @@ trackForAudioOfLength_producer :: IsDRMSF length_ => length_ -> RawId -> IO (Id 
 trackForAudioOfLength_producer length_ producer =
   do
     cls' <- getRequiredClass "DRTrack"
-    withObjCPtr length_ $ \raw_length_ ->
-      sendClassMsg cls' (mkSelector "trackForAudioOfLength:producer:") (retPtr retVoid) [argPtr (castPtr raw_length_ :: Ptr ()), argPtr (castPtr (unRawId producer) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' trackForAudioOfLength_producerSelector (toDRMSF length_) producer
 
 -- | trackForAudioFile:
 --
@@ -265,8 +259,7 @@ trackForAudioFile :: IsNSString path => path -> IO (Id DRTrack)
 trackForAudioFile path =
   do
     cls' <- getRequiredClass "DRTrack"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "trackForAudioFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' trackForAudioFileSelector (toNSString path)
 
 -- | length
 --
@@ -278,8 +271,8 @@ trackForAudioFile path =
 --
 -- ObjC selector: @- length@
 length_ :: IsDRTrack drTrack => drTrack -> IO (Id DRMSF)
-length_ drTrack  =
-    sendMsg drTrack (mkSelector "length") (retPtr retVoid) [] >>= retainedObject . castPtr
+length_ drTrack =
+  sendMessage drTrack lengthSelector
 
 -- | preGap
 --
@@ -303,8 +296,8 @@ length_ drTrack  =
 --
 -- ObjC selector: @- preGap@
 preGap :: IsDRTrack drTrack => drTrack -> IO (Id DRMSF)
-preGap drTrack  =
-    sendMsg drTrack (mkSelector "preGap") (retPtr retVoid) [] >>= retainedObject . castPtr
+preGap drTrack =
+  sendMessage drTrack preGapSelector
 
 -- | setPreGap:
 --
@@ -320,59 +313,58 @@ preGap drTrack  =
 --
 -- ObjC selector: @- setPreGap:@
 setPreGap :: (IsDRTrack drTrack, IsDRMSF preGap) => drTrack -> preGap -> IO ()
-setPreGap drTrack  preGap =
-  withObjCPtr preGap $ \raw_preGap ->
-      sendMsg drTrack (mkSelector "setPreGap:") retVoid [argPtr (castPtr raw_preGap :: Ptr ())]
+setPreGap drTrack preGap =
+  sendMessage drTrack setPreGapSelector (toDRMSF preGap)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithProducer:@
-initWithProducerSelector :: Selector
+initWithProducerSelector :: Selector '[RawId] RawId
 initWithProducerSelector = mkSelector "initWithProducer:"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSDictionary)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @setProperties:@
-setPropertiesSelector :: Selector
+setPropertiesSelector :: Selector '[Id NSDictionary] ()
 setPropertiesSelector = mkSelector "setProperties:"
 
 -- | @Selector@ for @testProductionSpeedForInterval:@
-testProductionSpeedForIntervalSelector :: Selector
+testProductionSpeedForIntervalSelector :: Selector '[CDouble] CFloat
 testProductionSpeedForIntervalSelector = mkSelector "testProductionSpeedForInterval:"
 
 -- | @Selector@ for @testProductionSpeedForLength:@
-testProductionSpeedForLengthSelector :: Selector
+testProductionSpeedForLengthSelector :: Selector '[CUInt] CFloat
 testProductionSpeedForLengthSelector = mkSelector "testProductionSpeedForLength:"
 
 -- | @Selector@ for @estimateLength@
-estimateLengthSelector :: Selector
+estimateLengthSelector :: Selector '[] CULong
 estimateLengthSelector = mkSelector "estimateLength"
 
 -- | @Selector@ for @trackForRootFolder:@
-trackForRootFolderSelector :: Selector
+trackForRootFolderSelector :: Selector '[Id DRFolder] (Id DRTrack)
 trackForRootFolderSelector = mkSelector "trackForRootFolder:"
 
 -- | @Selector@ for @trackForAudioOfLength:producer:@
-trackForAudioOfLength_producerSelector :: Selector
+trackForAudioOfLength_producerSelector :: Selector '[Id DRMSF, RawId] (Id DRTrack)
 trackForAudioOfLength_producerSelector = mkSelector "trackForAudioOfLength:producer:"
 
 -- | @Selector@ for @trackForAudioFile:@
-trackForAudioFileSelector :: Selector
+trackForAudioFileSelector :: Selector '[Id NSString] (Id DRTrack)
 trackForAudioFileSelector = mkSelector "trackForAudioFile:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] (Id DRMSF)
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @preGap@
-preGapSelector :: Selector
+preGapSelector :: Selector '[] (Id DRMSF)
 preGapSelector = mkSelector "preGap"
 
 -- | @Selector@ for @setPreGap:@
-setPreGapSelector :: Selector
+setPreGapSelector :: Selector '[Id DRMSF] ()
 setPreGapSelector = mkSelector "setPreGap:"
 

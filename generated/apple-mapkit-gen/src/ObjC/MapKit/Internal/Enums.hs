@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MapKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @MKAddressFilterOption@ (bitmask)
 newtype MKAddressFilterOption = MKAddressFilterOption CULong
@@ -40,6 +43,16 @@ pattern MKAddressFilterOptionSubLocality = MKAddressFilterOption 16
 pattern MKAddressFilterOptionPostalCode :: MKAddressFilterOption
 pattern MKAddressFilterOptionPostalCode = MKAddressFilterOption 32
 
+instance ObjCArgument MKAddressFilterOption where
+  withObjCArg (MKAddressFilterOption x) k = k (argCULong x)
+
+instance ObjCReturn MKAddressFilterOption where
+  type RawReturn MKAddressFilterOption = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKAddressFilterOption x)
+  fromOwned x = pure (MKAddressFilterOption x)
+
 -- | @MKAddressRepresentationsContextStyle@
 newtype MKAddressRepresentationsContextStyle = MKAddressRepresentationsContextStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -54,6 +67,16 @@ pattern MKAddressRepresentationsContextStyleShort = MKAddressRepresentationsCont
 pattern MKAddressRepresentationsContextStyleFull :: MKAddressRepresentationsContextStyle
 pattern MKAddressRepresentationsContextStyleFull = MKAddressRepresentationsContextStyle 2
 
+instance ObjCArgument MKAddressRepresentationsContextStyle where
+  withObjCArg (MKAddressRepresentationsContextStyle x) k = k (argCLong x)
+
+instance ObjCReturn MKAddressRepresentationsContextStyle where
+  type RawReturn MKAddressRepresentationsContextStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKAddressRepresentationsContextStyle x)
+  fromOwned x = pure (MKAddressRepresentationsContextStyle x)
+
 -- | @MKAnnotationViewCollisionMode@
 newtype MKAnnotationViewCollisionMode = MKAnnotationViewCollisionMode CLong
   deriving stock (Eq, Ord, Show)
@@ -67,6 +90,16 @@ pattern MKAnnotationViewCollisionModeCircle = MKAnnotationViewCollisionMode 1
 
 pattern MKAnnotationViewCollisionModeNone :: MKAnnotationViewCollisionMode
 pattern MKAnnotationViewCollisionModeNone = MKAnnotationViewCollisionMode 2
+
+instance ObjCArgument MKAnnotationViewCollisionMode where
+  withObjCArg (MKAnnotationViewCollisionMode x) k = k (argCLong x)
+
+instance ObjCReturn MKAnnotationViewCollisionMode where
+  type RawReturn MKAnnotationViewCollisionMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKAnnotationViewCollisionMode x)
+  fromOwned x = pure (MKAnnotationViewCollisionMode x)
 
 -- | @MKAnnotationViewDragState@
 newtype MKAnnotationViewDragState = MKAnnotationViewDragState CULong
@@ -88,6 +121,16 @@ pattern MKAnnotationViewDragStateCanceling = MKAnnotationViewDragState 3
 pattern MKAnnotationViewDragStateEnding :: MKAnnotationViewDragState
 pattern MKAnnotationViewDragStateEnding = MKAnnotationViewDragState 4
 
+instance ObjCArgument MKAnnotationViewDragState where
+  withObjCArg (MKAnnotationViewDragState x) k = k (argCULong x)
+
+instance ObjCReturn MKAnnotationViewDragState where
+  type RawReturn MKAnnotationViewDragState = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKAnnotationViewDragState x)
+  fromOwned x = pure (MKAnnotationViewDragState x)
+
 -- | @MKDirectionsRoutePreference@
 newtype MKDirectionsRoutePreference = MKDirectionsRoutePreference CLong
   deriving stock (Eq, Ord, Show)
@@ -98,6 +141,16 @@ pattern MKDirectionsRoutePreferenceAny = MKDirectionsRoutePreference 0
 
 pattern MKDirectionsRoutePreferenceAvoid :: MKDirectionsRoutePreference
 pattern MKDirectionsRoutePreferenceAvoid = MKDirectionsRoutePreference 1
+
+instance ObjCArgument MKDirectionsRoutePreference where
+  withObjCArg (MKDirectionsRoutePreference x) k = k (argCLong x)
+
+instance ObjCReturn MKDirectionsRoutePreference where
+  type RawReturn MKDirectionsRoutePreference = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKDirectionsRoutePreference x)
+  fromOwned x = pure (MKDirectionsRoutePreference x)
 
 -- | @MKDirectionsTransportType@ (bitmask)
 newtype MKDirectionsTransportType = MKDirectionsTransportType CULong
@@ -125,6 +178,16 @@ pattern MKDirectionsTransportTypeCycling = MKDirectionsTransportType 8
 pattern MKDirectionsTransportTypeAny :: MKDirectionsTransportType
 pattern MKDirectionsTransportTypeAny = MKDirectionsTransportType 268435455
 
+instance ObjCArgument MKDirectionsTransportType where
+  withObjCArg (MKDirectionsTransportType x) k = k (argCULong x)
+
+instance ObjCReturn MKDirectionsTransportType where
+  type RawReturn MKDirectionsTransportType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKDirectionsTransportType x)
+  fromOwned x = pure (MKDirectionsTransportType x)
+
 -- | @MKDistanceFormatterUnitStyle@
 newtype MKDistanceFormatterUnitStyle = MKDistanceFormatterUnitStyle CULong
   deriving stock (Eq, Ord, Show)
@@ -138,6 +201,16 @@ pattern MKDistanceFormatterUnitStyleAbbreviated = MKDistanceFormatterUnitStyle 1
 
 pattern MKDistanceFormatterUnitStyleFull :: MKDistanceFormatterUnitStyle
 pattern MKDistanceFormatterUnitStyleFull = MKDistanceFormatterUnitStyle 2
+
+instance ObjCArgument MKDistanceFormatterUnitStyle where
+  withObjCArg (MKDistanceFormatterUnitStyle x) k = k (argCULong x)
+
+instance ObjCReturn MKDistanceFormatterUnitStyle where
+  type RawReturn MKDistanceFormatterUnitStyle = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKDistanceFormatterUnitStyle x)
+  fromOwned x = pure (MKDistanceFormatterUnitStyle x)
 
 -- | @MKDistanceFormatterUnits@
 newtype MKDistanceFormatterUnits = MKDistanceFormatterUnits CULong
@@ -155,6 +228,16 @@ pattern MKDistanceFormatterUnitsImperial = MKDistanceFormatterUnits 2
 
 pattern MKDistanceFormatterUnitsImperialWithYards :: MKDistanceFormatterUnits
 pattern MKDistanceFormatterUnitsImperialWithYards = MKDistanceFormatterUnits 3
+
+instance ObjCArgument MKDistanceFormatterUnits where
+  withObjCArg (MKDistanceFormatterUnits x) k = k (argCULong x)
+
+instance ObjCReturn MKDistanceFormatterUnits where
+  type RawReturn MKDistanceFormatterUnits = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKDistanceFormatterUnits x)
+  fromOwned x = pure (MKDistanceFormatterUnits x)
 
 -- | @MKErrorCode@
 newtype MKErrorCode = MKErrorCode CULong
@@ -179,6 +262,16 @@ pattern MKErrorDirectionsNotFound = MKErrorCode 5
 pattern MKErrorDecodingFailed :: MKErrorCode
 pattern MKErrorDecodingFailed = MKErrorCode 6
 
+instance ObjCArgument MKErrorCode where
+  withObjCArg (MKErrorCode x) k = k (argCULong x)
+
+instance ObjCReturn MKErrorCode where
+  type RawReturn MKErrorCode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKErrorCode x)
+  fromOwned x = pure (MKErrorCode x)
+
 -- | @MKFeatureVisibility@
 newtype MKFeatureVisibility = MKFeatureVisibility CLong
   deriving stock (Eq, Ord, Show)
@@ -192,6 +285,16 @@ pattern MKFeatureVisibilityHidden = MKFeatureVisibility 1
 
 pattern MKFeatureVisibilityVisible :: MKFeatureVisibility
 pattern MKFeatureVisibilityVisible = MKFeatureVisibility 2
+
+instance ObjCArgument MKFeatureVisibility where
+  withObjCArg (MKFeatureVisibility x) k = k (argCLong x)
+
+instance ObjCReturn MKFeatureVisibility where
+  type RawReturn MKFeatureVisibility = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKFeatureVisibility x)
+  fromOwned x = pure (MKFeatureVisibility x)
 
 -- | @MKLocalSearchCompleterResultType@ (bitmask)
 newtype MKLocalSearchCompleterResultType = MKLocalSearchCompleterResultType CULong
@@ -216,6 +319,16 @@ pattern MKLocalSearchCompleterResultTypeQuery = MKLocalSearchCompleterResultType
 pattern MKLocalSearchCompleterResultTypePhysicalFeature :: MKLocalSearchCompleterResultType
 pattern MKLocalSearchCompleterResultTypePhysicalFeature = MKLocalSearchCompleterResultType 8
 
+instance ObjCArgument MKLocalSearchCompleterResultType where
+  withObjCArg (MKLocalSearchCompleterResultType x) k = k (argCULong x)
+
+instance ObjCReturn MKLocalSearchCompleterResultType where
+  type RawReturn MKLocalSearchCompleterResultType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKLocalSearchCompleterResultType x)
+  fromOwned x = pure (MKLocalSearchCompleterResultType x)
+
 -- | @MKLocalSearchRegionPriority@
 newtype MKLocalSearchRegionPriority = MKLocalSearchRegionPriority CLong
   deriving stock (Eq, Ord, Show)
@@ -226,6 +339,16 @@ pattern MKLocalSearchRegionPriorityDefault = MKLocalSearchRegionPriority 0
 
 pattern MKLocalSearchRegionPriorityRequired :: MKLocalSearchRegionPriority
 pattern MKLocalSearchRegionPriorityRequired = MKLocalSearchRegionPriority 1
+
+instance ObjCArgument MKLocalSearchRegionPriority where
+  withObjCArg (MKLocalSearchRegionPriority x) k = k (argCLong x)
+
+instance ObjCReturn MKLocalSearchRegionPriority where
+  type RawReturn MKLocalSearchRegionPriority = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKLocalSearchRegionPriority x)
+  fromOwned x = pure (MKLocalSearchRegionPriority x)
 
 -- | @MKLocalSearchResultType@ (bitmask)
 newtype MKLocalSearchResultType = MKLocalSearchResultType CULong
@@ -247,6 +370,16 @@ pattern MKLocalSearchResultTypePointOfInterest = MKLocalSearchResultType 2
 pattern MKLocalSearchResultTypePhysicalFeature :: MKLocalSearchResultType
 pattern MKLocalSearchResultTypePhysicalFeature = MKLocalSearchResultType 4
 
+instance ObjCArgument MKLocalSearchResultType where
+  withObjCArg (MKLocalSearchResultType x) k = k (argCULong x)
+
+instance ObjCReturn MKLocalSearchResultType where
+  type RawReturn MKLocalSearchResultType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKLocalSearchResultType x)
+  fromOwned x = pure (MKLocalSearchResultType x)
+
 -- | @MKLookAroundBadgePosition@
 newtype MKLookAroundBadgePosition = MKLookAroundBadgePosition CLong
   deriving stock (Eq, Ord, Show)
@@ -261,6 +394,16 @@ pattern MKLookAroundBadgePositionTopTrailing = MKLookAroundBadgePosition 1
 pattern MKLookAroundBadgePositionBottomTrailing :: MKLookAroundBadgePosition
 pattern MKLookAroundBadgePositionBottomTrailing = MKLookAroundBadgePosition 2
 
+instance ObjCArgument MKLookAroundBadgePosition where
+  withObjCArg (MKLookAroundBadgePosition x) k = k (argCLong x)
+
+instance ObjCReturn MKLookAroundBadgePosition where
+  type RawReturn MKLookAroundBadgePosition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKLookAroundBadgePosition x)
+  fromOwned x = pure (MKLookAroundBadgePosition x)
+
 -- | @MKMapElevationStyle@
 newtype MKMapElevationStyle = MKMapElevationStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -271,6 +414,16 @@ pattern MKMapElevationStyleFlat = MKMapElevationStyle 0
 
 pattern MKMapElevationStyleRealistic :: MKMapElevationStyle
 pattern MKMapElevationStyleRealistic = MKMapElevationStyle 1
+
+instance ObjCArgument MKMapElevationStyle where
+  withObjCArg (MKMapElevationStyle x) k = k (argCLong x)
+
+instance ObjCReturn MKMapElevationStyle where
+  type RawReturn MKMapElevationStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKMapElevationStyle x)
+  fromOwned x = pure (MKMapElevationStyle x)
 
 -- | @MKMapItemDetailSelectionAccessoryCalloutStyle@
 newtype MKMapItemDetailSelectionAccessoryCalloutStyle = MKMapItemDetailSelectionAccessoryCalloutStyle CLong
@@ -285,6 +438,16 @@ pattern MKMapItemDetailSelectionAccessoryCalloutStyleFull = MKMapItemDetailSelec
 
 pattern MKMapItemDetailSelectionAccessoryCalloutStyleCompact :: MKMapItemDetailSelectionAccessoryCalloutStyle
 pattern MKMapItemDetailSelectionAccessoryCalloutStyleCompact = MKMapItemDetailSelectionAccessoryCalloutStyle 2
+
+instance ObjCArgument MKMapItemDetailSelectionAccessoryCalloutStyle where
+  withObjCArg (MKMapItemDetailSelectionAccessoryCalloutStyle x) k = k (argCLong x)
+
+instance ObjCReturn MKMapItemDetailSelectionAccessoryCalloutStyle where
+  type RawReturn MKMapItemDetailSelectionAccessoryCalloutStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKMapItemDetailSelectionAccessoryCalloutStyle x)
+  fromOwned x = pure (MKMapItemDetailSelectionAccessoryCalloutStyle x)
 
 -- | @MKMapType@
 newtype MKMapType = MKMapType CULong
@@ -309,6 +472,16 @@ pattern MKMapTypeHybridFlyover = MKMapType 4
 pattern MKMapTypeMutedStandard :: MKMapType
 pattern MKMapTypeMutedStandard = MKMapType 5
 
+instance ObjCArgument MKMapType where
+  withObjCArg (MKMapType x) k = k (argCULong x)
+
+instance ObjCReturn MKMapType where
+  type RawReturn MKMapType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKMapType x)
+  fromOwned x = pure (MKMapType x)
+
 -- | @MKOverlayLevel@
 newtype MKOverlayLevel = MKOverlayLevel CLong
   deriving stock (Eq, Ord, Show)
@@ -319,6 +492,16 @@ pattern MKOverlayLevelAboveRoads = MKOverlayLevel 0
 
 pattern MKOverlayLevelAboveLabels :: MKOverlayLevel
 pattern MKOverlayLevelAboveLabels = MKOverlayLevel 1
+
+instance ObjCArgument MKOverlayLevel where
+  withObjCArg (MKOverlayLevel x) k = k (argCLong x)
+
+instance ObjCReturn MKOverlayLevel where
+  type RawReturn MKOverlayLevel = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKOverlayLevel x)
+  fromOwned x = pure (MKOverlayLevel x)
 
 -- | @MKPinAnnotationColor@
 newtype MKPinAnnotationColor = MKPinAnnotationColor CULong
@@ -334,6 +517,16 @@ pattern MKPinAnnotationColorGreen = MKPinAnnotationColor 1
 pattern MKPinAnnotationColorPurple :: MKPinAnnotationColor
 pattern MKPinAnnotationColorPurple = MKPinAnnotationColor 2
 
+instance ObjCArgument MKPinAnnotationColor where
+  withObjCArg (MKPinAnnotationColor x) k = k (argCULong x)
+
+instance ObjCReturn MKPinAnnotationColor where
+  type RawReturn MKPinAnnotationColor = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKPinAnnotationColor x)
+  fromOwned x = pure (MKPinAnnotationColor x)
+
 -- | @MKSearchCompletionFilterType@
 newtype MKSearchCompletionFilterType = MKSearchCompletionFilterType CLong
   deriving stock (Eq, Ord, Show)
@@ -345,6 +538,16 @@ pattern MKSearchCompletionFilterTypeLocationsAndQueries = MKSearchCompletionFilt
 pattern MKSearchCompletionFilterTypeLocationsOnly :: MKSearchCompletionFilterType
 pattern MKSearchCompletionFilterTypeLocationsOnly = MKSearchCompletionFilterType 1
 
+instance ObjCArgument MKSearchCompletionFilterType where
+  withObjCArg (MKSearchCompletionFilterType x) k = k (argCLong x)
+
+instance ObjCReturn MKSearchCompletionFilterType where
+  type RawReturn MKSearchCompletionFilterType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKSearchCompletionFilterType x)
+  fromOwned x = pure (MKSearchCompletionFilterType x)
+
 -- | @MKStandardMapEmphasisStyle@
 newtype MKStandardMapEmphasisStyle = MKStandardMapEmphasisStyle CLong
   deriving stock (Eq, Ord, Show)
@@ -355,6 +558,16 @@ pattern MKStandardMapEmphasisStyleDefault = MKStandardMapEmphasisStyle 0
 
 pattern MKStandardMapEmphasisStyleMuted :: MKStandardMapEmphasisStyle
 pattern MKStandardMapEmphasisStyleMuted = MKStandardMapEmphasisStyle 1
+
+instance ObjCArgument MKStandardMapEmphasisStyle where
+  withObjCArg (MKStandardMapEmphasisStyle x) k = k (argCLong x)
+
+instance ObjCReturn MKStandardMapEmphasisStyle where
+  type RawReturn MKStandardMapEmphasisStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKStandardMapEmphasisStyle x)
+  fromOwned x = pure (MKStandardMapEmphasisStyle x)
 
 -- | @MKUserTrackingMode@
 newtype MKUserTrackingMode = MKUserTrackingMode CLong
@@ -369,3 +582,13 @@ pattern MKUserTrackingModeFollow = MKUserTrackingMode 1
 
 pattern MKUserTrackingModeFollowWithHeading :: MKUserTrackingMode
 pattern MKUserTrackingModeFollowWithHeading = MKUserTrackingMode 2
+
+instance ObjCArgument MKUserTrackingMode where
+  withObjCArg (MKUserTrackingMode x) k = k (argCLong x)
+
+instance ObjCReturn MKUserTrackingMode where
+  type RawReturn MKUserTrackingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MKUserTrackingMode x)
+  fromOwned x = pure (MKUserTrackingMode x)

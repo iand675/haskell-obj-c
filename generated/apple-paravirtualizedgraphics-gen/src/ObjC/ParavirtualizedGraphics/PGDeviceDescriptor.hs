@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,41 +29,37 @@ module ObjC.ParavirtualizedGraphics.PGDeviceDescriptor
   , setRemoveTraceRange
   , displayPortCount
   , setDisplayPortCount
-  , deviceSelector
-  , setDeviceSelector
-  , mmioLengthSelector
-  , setMmioLengthSelector
-  , createTaskSelector
-  , setCreateTaskSelector
-  , destroyTaskSelector
-  , setDestroyTaskSelector
-  , mapMemorySelector
-  , setMapMemorySelector
-  , unmapMemorySelector
-  , setUnmapMemorySelector
-  , readMemorySelector
-  , setReadMemorySelector
-  , raiseInterruptSelector
-  , setRaiseInterruptSelector
   , addTraceRangeSelector
-  , setAddTraceRangeSelector
-  , removeTraceRangeSelector
-  , setRemoveTraceRangeSelector
+  , createTaskSelector
+  , destroyTaskSelector
+  , deviceSelector
   , displayPortCountSelector
+  , mapMemorySelector
+  , mmioLengthSelector
+  , raiseInterruptSelector
+  , readMemorySelector
+  , removeTraceRangeSelector
+  , setAddTraceRangeSelector
+  , setCreateTaskSelector
+  , setDestroyTaskSelector
+  , setDeviceSelector
   , setDisplayPortCountSelector
+  , setMapMemorySelector
+  , setMmioLengthSelector
+  , setRaiseInterruptSelector
+  , setReadMemorySelector
+  , setRemoveTraceRangeSelector
+  , setUnmapMemorySelector
+  , unmapMemorySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,8 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- device@
 device :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO RawId
-device pgDeviceDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg pgDeviceDescriptor (mkSelector "device") (retPtr retVoid) []
+device pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor deviceSelector
 
 -- | device
 --
@@ -84,8 +81,8 @@ device pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setDevice:@
 setDevice :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> RawId -> IO ()
-setDevice pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setDevice:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDevice pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setDeviceSelector value
 
 -- | mmioLength
 --
@@ -95,8 +92,8 @@ setDevice pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- mmioLength@
 mmioLength :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO CULong
-mmioLength pgDeviceDescriptor  =
-    sendMsg pgDeviceDescriptor (mkSelector "mmioLength") retCULong []
+mmioLength pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor mmioLengthSelector
 
 -- | mmioLength
 --
@@ -106,8 +103,8 @@ mmioLength pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setMmioLength:@
 setMmioLength :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> CULong -> IO ()
-setMmioLength pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setMmioLength:") retVoid [argCULong value]
+setMmioLength pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setMmioLengthSelector value
 
 -- | createTask
 --
@@ -115,8 +112,8 @@ setMmioLength pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- createTask@
 createTask :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO (Ptr ())
-createTask pgDeviceDescriptor  =
-    fmap castPtr $ sendMsg pgDeviceDescriptor (mkSelector "createTask") (retPtr retVoid) []
+createTask pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor createTaskSelector
 
 -- | createTask
 --
@@ -124,8 +121,8 @@ createTask pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setCreateTask:@
 setCreateTask :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> Ptr () -> IO ()
-setCreateTask pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setCreateTask:") retVoid [argPtr (castPtr value :: Ptr ())]
+setCreateTask pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setCreateTaskSelector value
 
 -- | destroyTask
 --
@@ -133,8 +130,8 @@ setCreateTask pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- destroyTask@
 destroyTask :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO (Ptr ())
-destroyTask pgDeviceDescriptor  =
-    fmap castPtr $ sendMsg pgDeviceDescriptor (mkSelector "destroyTask") (retPtr retVoid) []
+destroyTask pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor destroyTaskSelector
 
 -- | destroyTask
 --
@@ -142,8 +139,8 @@ destroyTask pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setDestroyTask:@
 setDestroyTask :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> Ptr () -> IO ()
-setDestroyTask pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setDestroyTask:") retVoid [argPtr (castPtr value :: Ptr ())]
+setDestroyTask pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setDestroyTaskSelector value
 
 -- | mapMemory
 --
@@ -151,8 +148,8 @@ setDestroyTask pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- mapMemory@
 mapMemory :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO (Ptr ())
-mapMemory pgDeviceDescriptor  =
-    fmap castPtr $ sendMsg pgDeviceDescriptor (mkSelector "mapMemory") (retPtr retVoid) []
+mapMemory pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor mapMemorySelector
 
 -- | mapMemory
 --
@@ -160,8 +157,8 @@ mapMemory pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setMapMemory:@
 setMapMemory :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> Ptr () -> IO ()
-setMapMemory pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setMapMemory:") retVoid [argPtr (castPtr value :: Ptr ())]
+setMapMemory pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setMapMemorySelector value
 
 -- | unmapMemory
 --
@@ -169,8 +166,8 @@ setMapMemory pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- unmapMemory@
 unmapMemory :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO (Ptr ())
-unmapMemory pgDeviceDescriptor  =
-    fmap castPtr $ sendMsg pgDeviceDescriptor (mkSelector "unmapMemory") (retPtr retVoid) []
+unmapMemory pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor unmapMemorySelector
 
 -- | unmapMemory
 --
@@ -178,8 +175,8 @@ unmapMemory pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setUnmapMemory:@
 setUnmapMemory :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> Ptr () -> IO ()
-setUnmapMemory pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setUnmapMemory:") retVoid [argPtr (castPtr value :: Ptr ())]
+setUnmapMemory pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setUnmapMemorySelector value
 
 -- | readMemory
 --
@@ -187,8 +184,8 @@ setUnmapMemory pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- readMemory@
 readMemory :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO (Ptr ())
-readMemory pgDeviceDescriptor  =
-    fmap castPtr $ sendMsg pgDeviceDescriptor (mkSelector "readMemory") (retPtr retVoid) []
+readMemory pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor readMemorySelector
 
 -- | readMemory
 --
@@ -196,8 +193,8 @@ readMemory pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setReadMemory:@
 setReadMemory :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> Ptr () -> IO ()
-setReadMemory pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setReadMemory:") retVoid [argPtr (castPtr value :: Ptr ())]
+setReadMemory pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setReadMemorySelector value
 
 -- | raiseInterrupt
 --
@@ -205,8 +202,8 @@ setReadMemory pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- raiseInterrupt@
 raiseInterrupt :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO (Ptr ())
-raiseInterrupt pgDeviceDescriptor  =
-    fmap castPtr $ sendMsg pgDeviceDescriptor (mkSelector "raiseInterrupt") (retPtr retVoid) []
+raiseInterrupt pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor raiseInterruptSelector
 
 -- | raiseInterrupt
 --
@@ -214,8 +211,8 @@ raiseInterrupt pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setRaiseInterrupt:@
 setRaiseInterrupt :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> Ptr () -> IO ()
-setRaiseInterrupt pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setRaiseInterrupt:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRaiseInterrupt pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setRaiseInterruptSelector value
 
 -- | addTraceRange
 --
@@ -225,8 +222,8 @@ setRaiseInterrupt pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- addTraceRange@
 addTraceRange :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO (Ptr ())
-addTraceRange pgDeviceDescriptor  =
-    fmap castPtr $ sendMsg pgDeviceDescriptor (mkSelector "addTraceRange") (retPtr retVoid) []
+addTraceRange pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor addTraceRangeSelector
 
 -- | addTraceRange
 --
@@ -236,8 +233,8 @@ addTraceRange pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setAddTraceRange:@
 setAddTraceRange :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> Ptr () -> IO ()
-setAddTraceRange pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setAddTraceRange:") retVoid [argPtr (castPtr value :: Ptr ())]
+setAddTraceRange pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setAddTraceRangeSelector value
 
 -- | removeTraceRange
 --
@@ -247,8 +244,8 @@ setAddTraceRange pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- removeTraceRange@
 removeTraceRange :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO (Ptr ())
-removeTraceRange pgDeviceDescriptor  =
-    fmap castPtr $ sendMsg pgDeviceDescriptor (mkSelector "removeTraceRange") (retPtr retVoid) []
+removeTraceRange pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor removeTraceRangeSelector
 
 -- | removeTraceRange
 --
@@ -258,8 +255,8 @@ removeTraceRange pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setRemoveTraceRange:@
 setRemoveTraceRange :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> Ptr () -> IO ()
-setRemoveTraceRange pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setRemoveTraceRange:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRemoveTraceRange pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setRemoveTraceRangeSelector value
 
 -- | displayPortCount
 --
@@ -269,8 +266,8 @@ setRemoveTraceRange pgDeviceDescriptor  value =
 --
 -- ObjC selector: @- displayPortCount@
 displayPortCount :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> IO CUInt
-displayPortCount pgDeviceDescriptor  =
-    sendMsg pgDeviceDescriptor (mkSelector "displayPortCount") retCUInt []
+displayPortCount pgDeviceDescriptor =
+  sendMessage pgDeviceDescriptor displayPortCountSelector
 
 -- | displayPortCount
 --
@@ -280,98 +277,98 @@ displayPortCount pgDeviceDescriptor  =
 --
 -- ObjC selector: @- setDisplayPortCount:@
 setDisplayPortCount :: IsPGDeviceDescriptor pgDeviceDescriptor => pgDeviceDescriptor -> CUInt -> IO ()
-setDisplayPortCount pgDeviceDescriptor  value =
-    sendMsg pgDeviceDescriptor (mkSelector "setDisplayPortCount:") retVoid [argCUInt value]
+setDisplayPortCount pgDeviceDescriptor value =
+  sendMessage pgDeviceDescriptor setDisplayPortCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @setDevice:@
-setDeviceSelector :: Selector
+setDeviceSelector :: Selector '[RawId] ()
 setDeviceSelector = mkSelector "setDevice:"
 
 -- | @Selector@ for @mmioLength@
-mmioLengthSelector :: Selector
+mmioLengthSelector :: Selector '[] CULong
 mmioLengthSelector = mkSelector "mmioLength"
 
 -- | @Selector@ for @setMmioLength:@
-setMmioLengthSelector :: Selector
+setMmioLengthSelector :: Selector '[CULong] ()
 setMmioLengthSelector = mkSelector "setMmioLength:"
 
 -- | @Selector@ for @createTask@
-createTaskSelector :: Selector
+createTaskSelector :: Selector '[] (Ptr ())
 createTaskSelector = mkSelector "createTask"
 
 -- | @Selector@ for @setCreateTask:@
-setCreateTaskSelector :: Selector
+setCreateTaskSelector :: Selector '[Ptr ()] ()
 setCreateTaskSelector = mkSelector "setCreateTask:"
 
 -- | @Selector@ for @destroyTask@
-destroyTaskSelector :: Selector
+destroyTaskSelector :: Selector '[] (Ptr ())
 destroyTaskSelector = mkSelector "destroyTask"
 
 -- | @Selector@ for @setDestroyTask:@
-setDestroyTaskSelector :: Selector
+setDestroyTaskSelector :: Selector '[Ptr ()] ()
 setDestroyTaskSelector = mkSelector "setDestroyTask:"
 
 -- | @Selector@ for @mapMemory@
-mapMemorySelector :: Selector
+mapMemorySelector :: Selector '[] (Ptr ())
 mapMemorySelector = mkSelector "mapMemory"
 
 -- | @Selector@ for @setMapMemory:@
-setMapMemorySelector :: Selector
+setMapMemorySelector :: Selector '[Ptr ()] ()
 setMapMemorySelector = mkSelector "setMapMemory:"
 
 -- | @Selector@ for @unmapMemory@
-unmapMemorySelector :: Selector
+unmapMemorySelector :: Selector '[] (Ptr ())
 unmapMemorySelector = mkSelector "unmapMemory"
 
 -- | @Selector@ for @setUnmapMemory:@
-setUnmapMemorySelector :: Selector
+setUnmapMemorySelector :: Selector '[Ptr ()] ()
 setUnmapMemorySelector = mkSelector "setUnmapMemory:"
 
 -- | @Selector@ for @readMemory@
-readMemorySelector :: Selector
+readMemorySelector :: Selector '[] (Ptr ())
 readMemorySelector = mkSelector "readMemory"
 
 -- | @Selector@ for @setReadMemory:@
-setReadMemorySelector :: Selector
+setReadMemorySelector :: Selector '[Ptr ()] ()
 setReadMemorySelector = mkSelector "setReadMemory:"
 
 -- | @Selector@ for @raiseInterrupt@
-raiseInterruptSelector :: Selector
+raiseInterruptSelector :: Selector '[] (Ptr ())
 raiseInterruptSelector = mkSelector "raiseInterrupt"
 
 -- | @Selector@ for @setRaiseInterrupt:@
-setRaiseInterruptSelector :: Selector
+setRaiseInterruptSelector :: Selector '[Ptr ()] ()
 setRaiseInterruptSelector = mkSelector "setRaiseInterrupt:"
 
 -- | @Selector@ for @addTraceRange@
-addTraceRangeSelector :: Selector
+addTraceRangeSelector :: Selector '[] (Ptr ())
 addTraceRangeSelector = mkSelector "addTraceRange"
 
 -- | @Selector@ for @setAddTraceRange:@
-setAddTraceRangeSelector :: Selector
+setAddTraceRangeSelector :: Selector '[Ptr ()] ()
 setAddTraceRangeSelector = mkSelector "setAddTraceRange:"
 
 -- | @Selector@ for @removeTraceRange@
-removeTraceRangeSelector :: Selector
+removeTraceRangeSelector :: Selector '[] (Ptr ())
 removeTraceRangeSelector = mkSelector "removeTraceRange"
 
 -- | @Selector@ for @setRemoveTraceRange:@
-setRemoveTraceRangeSelector :: Selector
+setRemoveTraceRangeSelector :: Selector '[Ptr ()] ()
 setRemoveTraceRangeSelector = mkSelector "setRemoveTraceRange:"
 
 -- | @Selector@ for @displayPortCount@
-displayPortCountSelector :: Selector
+displayPortCountSelector :: Selector '[] CUInt
 displayPortCountSelector = mkSelector "displayPortCount"
 
 -- | @Selector@ for @setDisplayPortCount:@
-setDisplayPortCountSelector :: Selector
+setDisplayPortCountSelector :: Selector '[CUInt] ()
 setDisplayPortCountSelector = mkSelector "setDisplayPortCount:"
 

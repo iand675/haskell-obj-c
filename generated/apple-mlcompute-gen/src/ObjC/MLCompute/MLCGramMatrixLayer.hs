@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,15 +27,11 @@ module ObjC.MLCompute.MLCGramMatrixLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,7 +49,7 @@ layerWithScale :: CFloat -> IO (Id MLCGramMatrixLayer)
 layerWithScale scale =
   do
     cls' <- getRequiredClass "MLCGramMatrixLayer"
-    sendClassMsg cls' (mkSelector "layerWithScale:") (retPtr retVoid) [argCFloat scale] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithScaleSelector scale
 
 -- | scale
 --
@@ -60,18 +57,18 @@ layerWithScale scale =
 --
 -- ObjC selector: @- scale@
 scale :: IsMLCGramMatrixLayer mlcGramMatrixLayer => mlcGramMatrixLayer -> IO CFloat
-scale mlcGramMatrixLayer  =
-    sendMsg mlcGramMatrixLayer (mkSelector "scale") retCFloat []
+scale mlcGramMatrixLayer =
+  sendMessage mlcGramMatrixLayer scaleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithScale:@
-layerWithScaleSelector :: Selector
+layerWithScaleSelector :: Selector '[CFloat] (Id MLCGramMatrixLayer)
 layerWithScaleSelector = mkSelector "layerWithScale:"
 
 -- | @Selector@ for @scale@
-scaleSelector :: Selector
+scaleSelector :: Selector '[] CFloat
 scaleSelector = mkSelector "scale"
 

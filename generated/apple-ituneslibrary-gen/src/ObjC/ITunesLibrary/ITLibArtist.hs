@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.ITunesLibrary.ITLibArtist
   , sortName
   , persistentID
   , nameSelector
-  , sortNameSelector
   , persistentIDSelector
+  , sortNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,36 +34,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- name@
 name :: IsITLibArtist itLibArtist => itLibArtist -> IO (Id NSString)
-name itLibArtist  =
-    sendMsg itLibArtist (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name itLibArtist =
+  sendMessage itLibArtist nameSelector
 
 -- | The name of this artist that should be used for sorting purposes.
 --
 -- ObjC selector: @- sortName@
 sortName :: IsITLibArtist itLibArtist => itLibArtist -> IO (Id NSString)
-sortName itLibArtist  =
-    sendMsg itLibArtist (mkSelector "sortName") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortName itLibArtist =
+  sendMessage itLibArtist sortNameSelector
 
 -- | The unique identifier of this artist.
 --
 -- ObjC selector: @- persistentID@
 persistentID :: IsITLibArtist itLibArtist => itLibArtist -> IO (Id NSNumber)
-persistentID itLibArtist  =
-    sendMsg itLibArtist (mkSelector "persistentID") (retPtr retVoid) [] >>= retainedObject . castPtr
+persistentID itLibArtist =
+  sendMessage itLibArtist persistentIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @sortName@
-sortNameSelector :: Selector
+sortNameSelector :: Selector '[] (Id NSString)
 sortNameSelector = mkSelector "sortName"
 
 -- | @Selector@ for @persistentID@
-persistentIDSelector :: Selector
+persistentIDSelector :: Selector '[] (Id NSNumber)
 persistentIDSelector = mkSelector "persistentID"
 

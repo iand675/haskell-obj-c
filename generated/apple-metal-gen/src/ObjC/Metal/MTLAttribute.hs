@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.Metal.MTLAttribute
   , active
   , patchData
   , patchControlPointData
-  , nameSelector
+  , activeSelector
   , attributeIndexSelector
   , attributeTypeSelector
-  , activeSelector
-  , patchDataSelector
+  , nameSelector
   , patchControlPointDataSelector
+  , patchDataSelector
 
   -- * Enum types
   , MTLDataType(MTLDataType)
@@ -122,15 +123,11 @@ module ObjC.Metal.MTLAttribute
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -140,59 +137,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMTLAttribute mtlAttribute => mtlAttribute -> IO (Id NSString)
-name mtlAttribute  =
-    sendMsg mtlAttribute (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtlAttribute =
+  sendMessage mtlAttribute nameSelector
 
 -- | @- attributeIndex@
 attributeIndex :: IsMTLAttribute mtlAttribute => mtlAttribute -> IO CULong
-attributeIndex mtlAttribute  =
-    sendMsg mtlAttribute (mkSelector "attributeIndex") retCULong []
+attributeIndex mtlAttribute =
+  sendMessage mtlAttribute attributeIndexSelector
 
 -- | @- attributeType@
 attributeType :: IsMTLAttribute mtlAttribute => mtlAttribute -> IO MTLDataType
-attributeType mtlAttribute  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlAttribute (mkSelector "attributeType") retCULong []
+attributeType mtlAttribute =
+  sendMessage mtlAttribute attributeTypeSelector
 
 -- | @- active@
 active :: IsMTLAttribute mtlAttribute => mtlAttribute -> IO Bool
-active mtlAttribute  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlAttribute (mkSelector "active") retCULong []
+active mtlAttribute =
+  sendMessage mtlAttribute activeSelector
 
 -- | @- patchData@
 patchData :: IsMTLAttribute mtlAttribute => mtlAttribute -> IO Bool
-patchData mtlAttribute  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlAttribute (mkSelector "patchData") retCULong []
+patchData mtlAttribute =
+  sendMessage mtlAttribute patchDataSelector
 
 -- | @- patchControlPointData@
 patchControlPointData :: IsMTLAttribute mtlAttribute => mtlAttribute -> IO Bool
-patchControlPointData mtlAttribute  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlAttribute (mkSelector "patchControlPointData") retCULong []
+patchControlPointData mtlAttribute =
+  sendMessage mtlAttribute patchControlPointDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @attributeIndex@
-attributeIndexSelector :: Selector
+attributeIndexSelector :: Selector '[] CULong
 attributeIndexSelector = mkSelector "attributeIndex"
 
 -- | @Selector@ for @attributeType@
-attributeTypeSelector :: Selector
+attributeTypeSelector :: Selector '[] MTLDataType
 attributeTypeSelector = mkSelector "attributeType"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @patchData@
-patchDataSelector :: Selector
+patchDataSelector :: Selector '[] Bool
 patchDataSelector = mkSelector "patchData"
 
 -- | @Selector@ for @patchControlPointData@
-patchControlPointDataSelector :: Selector
+patchControlPointDataSelector :: Selector '[] Bool
 patchControlPointDataSelector = mkSelector "patchControlPointData"
 

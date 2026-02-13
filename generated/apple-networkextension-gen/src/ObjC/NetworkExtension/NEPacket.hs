@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,11 +21,11 @@ module ObjC.NetworkExtension.NEPacket
   , protocolFamily
   , direction
   , metadata
-  , initWithData_protocolFamilySelector
   , dataSelector
-  , protocolFamilySelector
   , directionSelector
+  , initWithData_protocolFamilySelector
   , metadataSelector
+  , protocolFamilySelector
 
   -- * Enum types
   , NETrafficDirection(NETrafficDirection)
@@ -34,15 +35,11 @@ module ObjC.NetworkExtension.NEPacket
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,9 +57,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithData:protocolFamily:@
 initWithData_protocolFamily :: (IsNEPacket nePacket, IsNSData data_) => nePacket -> data_ -> CUChar -> IO (Id NEPacket)
-initWithData_protocolFamily nePacket  data_ protocolFamily =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nePacket (mkSelector "initWithData:protocolFamily:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argCUChar protocolFamily] >>= ownedObject . castPtr
+initWithData_protocolFamily nePacket data_ protocolFamily =
+  sendOwnedMessage nePacket initWithData_protocolFamilySelector (toNSData data_) protocolFamily
 
 -- | data
 --
@@ -70,8 +66,8 @@ initWithData_protocolFamily nePacket  data_ protocolFamily =
 --
 -- ObjC selector: @- data@
 data_ :: IsNEPacket nePacket => nePacket -> IO (Id NSData)
-data_ nePacket  =
-    sendMsg nePacket (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ nePacket =
+  sendMessage nePacket dataSelector
 
 -- | protocolFamily
 --
@@ -79,8 +75,8 @@ data_ nePacket  =
 --
 -- ObjC selector: @- protocolFamily@
 protocolFamily :: IsNEPacket nePacket => nePacket -> IO CUChar
-protocolFamily nePacket  =
-    sendMsg nePacket (mkSelector "protocolFamily") retCUChar []
+protocolFamily nePacket =
+  sendMessage nePacket protocolFamilySelector
 
 -- | direction
 --
@@ -88,8 +84,8 @@ protocolFamily nePacket  =
 --
 -- ObjC selector: @- direction@
 direction :: IsNEPacket nePacket => nePacket -> IO NETrafficDirection
-direction nePacket  =
-    fmap (coerce :: CLong -> NETrafficDirection) $ sendMsg nePacket (mkSelector "direction") retCLong []
+direction nePacket =
+  sendMessage nePacket directionSelector
 
 -- | metadata
 --
@@ -97,30 +93,30 @@ direction nePacket  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsNEPacket nePacket => nePacket -> IO (Id NEFlowMetaData)
-metadata nePacket  =
-    sendMsg nePacket (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata nePacket =
+  sendMessage nePacket metadataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithData:protocolFamily:@
-initWithData_protocolFamilySelector :: Selector
+initWithData_protocolFamilySelector :: Selector '[Id NSData, CUChar] (Id NEPacket)
 initWithData_protocolFamilySelector = mkSelector "initWithData:protocolFamily:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @protocolFamily@
-protocolFamilySelector :: Selector
+protocolFamilySelector :: Selector '[] CUChar
 protocolFamilySelector = mkSelector "protocolFamily"
 
 -- | @Selector@ for @direction@
-directionSelector :: Selector
+directionSelector :: Selector '[] NETrafficDirection
 directionSelector = mkSelector "direction"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NEFlowMetaData)
 metadataSelector = mkSelector "metadata"
 

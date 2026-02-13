@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.AVFoundation.AVMutableTimedMetadataGroup
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,24 +32,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- items@
 items :: IsAVMutableTimedMetadataGroup avMutableTimedMetadataGroup => avMutableTimedMetadataGroup -> IO (Id NSArray)
-items avMutableTimedMetadataGroup  =
-    sendMsg avMutableTimedMetadataGroup (mkSelector "items") (retPtr retVoid) [] >>= retainedObject . castPtr
+items avMutableTimedMetadataGroup =
+  sendMessage avMutableTimedMetadataGroup itemsSelector
 
 -- | @- setItems:@
 setItems :: (IsAVMutableTimedMetadataGroup avMutableTimedMetadataGroup, IsNSArray value) => avMutableTimedMetadataGroup -> value -> IO ()
-setItems avMutableTimedMetadataGroup  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableTimedMetadataGroup (mkSelector "setItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setItems avMutableTimedMetadataGroup value =
+  sendMessage avMutableTimedMetadataGroup setItemsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @items@
-itemsSelector :: Selector
+itemsSelector :: Selector '[] (Id NSArray)
 itemsSelector = mkSelector "items"
 
 -- | @Selector@ for @setItems:@
-setItemsSelector :: Selector
+setItemsSelector :: Selector '[Id NSArray] ()
 setItemsSelector = mkSelector "setItems:"
 

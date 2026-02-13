@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Metal.MTL4LibraryFunctionDescriptor
   , setName
   , library
   , setLibrary
-  , nameSelector
-  , setNameSelector
   , librarySelector
+  , nameSelector
   , setLibrarySelector
+  , setNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,48 +36,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- name@
 name :: IsMTL4LibraryFunctionDescriptor mtL4LibraryFunctionDescriptor => mtL4LibraryFunctionDescriptor -> IO (Id NSString)
-name mtL4LibraryFunctionDescriptor  =
-    sendMsg mtL4LibraryFunctionDescriptor (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtL4LibraryFunctionDescriptor =
+  sendMessage mtL4LibraryFunctionDescriptor nameSelector
 
 -- | Assigns a name to the function.
 --
 -- ObjC selector: @- setName:@
 setName :: (IsMTL4LibraryFunctionDescriptor mtL4LibraryFunctionDescriptor, IsNSString value) => mtL4LibraryFunctionDescriptor -> value -> IO ()
-setName mtL4LibraryFunctionDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4LibraryFunctionDescriptor (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtL4LibraryFunctionDescriptor value =
+  sendMessage mtL4LibraryFunctionDescriptor setNameSelector (toNSString value)
 
 -- | Returns a reference to the library containing the function.
 --
 -- ObjC selector: @- library@
 library :: IsMTL4LibraryFunctionDescriptor mtL4LibraryFunctionDescriptor => mtL4LibraryFunctionDescriptor -> IO RawId
-library mtL4LibraryFunctionDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtL4LibraryFunctionDescriptor (mkSelector "library") (retPtr retVoid) []
+library mtL4LibraryFunctionDescriptor =
+  sendMessage mtL4LibraryFunctionDescriptor librarySelector
 
 -- | Returns a reference to the library containing the function.
 --
 -- ObjC selector: @- setLibrary:@
 setLibrary :: IsMTL4LibraryFunctionDescriptor mtL4LibraryFunctionDescriptor => mtL4LibraryFunctionDescriptor -> RawId -> IO ()
-setLibrary mtL4LibraryFunctionDescriptor  value =
-    sendMsg mtL4LibraryFunctionDescriptor (mkSelector "setLibrary:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setLibrary mtL4LibraryFunctionDescriptor value =
+  sendMessage mtL4LibraryFunctionDescriptor setLibrarySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @library@
-librarySelector :: Selector
+librarySelector :: Selector '[] RawId
 librarySelector = mkSelector "library"
 
 -- | @Selector@ for @setLibrary:@
-setLibrarySelector :: Selector
+setLibrarySelector :: Selector '[RawId] ()
 setLibrarySelector = mkSelector "setLibrary:"
 

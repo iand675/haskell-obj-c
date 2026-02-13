@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreServices.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @BTreeKeyLimits@
 newtype BTreeKeyLimits = BTreeKeyLimits CInt
@@ -18,6 +21,16 @@ newtype BTreeKeyLimits = BTreeKeyLimits CInt
 
 pattern KMaxKeyLength :: BTreeKeyLimits
 pattern KMaxKeyLength = BTreeKeyLimits 520
+
+instance ObjCArgument BTreeKeyLimits where
+  withObjCArg (BTreeKeyLimits x) k = k (argCInt x)
+
+instance ObjCReturn BTreeKeyLimits where
+  type RawReturn BTreeKeyLimits = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BTreeKeyLimits x)
+  fromOwned x = pure (BTreeKeyLimits x)
 
 -- | @LSAcceptanceFlags@ (bitmask)
 newtype LSAcceptanceFlags = LSAcceptanceFlags CUInt
@@ -36,6 +49,16 @@ pattern KLSAcceptDefault = LSAcceptanceFlags 1
 pattern KLSAcceptAllowLoginUI :: LSAcceptanceFlags
 pattern KLSAcceptAllowLoginUI = LSAcceptanceFlags 2
 
+instance ObjCArgument LSAcceptanceFlags where
+  withObjCArg (LSAcceptanceFlags x) k = k (argCUInt x)
+
+instance ObjCReturn LSAcceptanceFlags where
+  type RawReturn LSAcceptanceFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LSAcceptanceFlags x)
+  fromOwned x = pure (LSAcceptanceFlags x)
+
 -- | @LSHandlerOptions@ (bitmask)
 newtype LSHandlerOptions = LSHandlerOptions CUInt
   deriving stock (Eq, Ord, Show)
@@ -52,6 +75,16 @@ pattern KLSHandlerOptionsDefault = LSHandlerOptions 0
 
 pattern KLSHandlerOptionsIgnoreCreator :: LSHandlerOptions
 pattern KLSHandlerOptionsIgnoreCreator = LSHandlerOptions 1
+
+instance ObjCArgument LSHandlerOptions where
+  withObjCArg (LSHandlerOptions x) k = k (argCUInt x)
+
+instance ObjCReturn LSHandlerOptions where
+  type RawReturn LSHandlerOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LSHandlerOptions x)
+  fromOwned x = pure (LSHandlerOptions x)
 
 -- | @LSItemInfoFlags@ (bitmask)
 newtype LSItemInfoFlags = LSItemInfoFlags CUInt
@@ -106,6 +139,16 @@ pattern KLSItemInfoIsVolume = LSItemInfoFlags 4096
 pattern KLSItemInfoExtensionIsHidden :: LSItemInfoFlags
 pattern KLSItemInfoExtensionIsHidden = LSItemInfoFlags 1048576
 
+instance ObjCArgument LSItemInfoFlags where
+  withObjCArg (LSItemInfoFlags x) k = k (argCUInt x)
+
+instance ObjCReturn LSItemInfoFlags where
+  type RawReturn LSItemInfoFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LSItemInfoFlags x)
+  fromOwned x = pure (LSItemInfoFlags x)
+
 -- | @LSLaunchFlags@ (bitmask)
 newtype LSLaunchFlags = LSLaunchFlags CUInt
   deriving stock (Eq, Ord, Show)
@@ -144,6 +187,16 @@ pattern KLSLaunchAndHide = LSLaunchFlags 1048576
 pattern KLSLaunchAndHideOthers :: LSLaunchFlags
 pattern KLSLaunchAndHideOthers = LSLaunchFlags 2097152
 
+instance ObjCArgument LSLaunchFlags where
+  withObjCArg (LSLaunchFlags x) k = k (argCUInt x)
+
+instance ObjCReturn LSLaunchFlags where
+  type RawReturn LSLaunchFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LSLaunchFlags x)
+  fromOwned x = pure (LSLaunchFlags x)
+
 -- | @LSRequestedInfo@ (bitmask)
 newtype LSRequestedInfo = LSRequestedInfo CUInt
   deriving stock (Eq, Ord, Show)
@@ -179,6 +232,16 @@ pattern KLSRequestExtensionFlagsOnly = LSRequestedInfo 64
 pattern KLSRequestAllInfo :: LSRequestedInfo
 pattern KLSRequestAllInfo = LSRequestedInfo 4294967295
 
+instance ObjCArgument LSRequestedInfo where
+  withObjCArg (LSRequestedInfo x) k = k (argCUInt x)
+
+instance ObjCReturn LSRequestedInfo where
+  type RawReturn LSRequestedInfo = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LSRequestedInfo x)
+  fromOwned x = pure (LSRequestedInfo x)
+
 -- | @LSRolesMask@ (bitmask)
 newtype LSRolesMask = LSRolesMask CUInt
   deriving stock (Eq, Ord, Show)
@@ -205,6 +268,16 @@ pattern KLSRolesShell = LSRolesMask 8
 pattern KLSRolesAll :: LSRolesMask
 pattern KLSRolesAll = LSRolesMask 4294967295
 
+instance ObjCArgument LSRolesMask where
+  withObjCArg (LSRolesMask x) k = k (argCUInt x)
+
+instance ObjCReturn LSRolesMask where
+  type RawReturn LSRolesMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LSRolesMask x)
+  fromOwned x = pure (LSRolesMask x)
+
 -- | @SKDocumentIndexState@
 newtype SKDocumentIndexState = SKDocumentIndexState CInt
   deriving stock (Eq, Ord, Show)
@@ -221,6 +294,16 @@ pattern KSKDocumentStateAddPending = SKDocumentIndexState 2
 
 pattern KSKDocumentStateDeletePending :: SKDocumentIndexState
 pattern KSKDocumentStateDeletePending = SKDocumentIndexState 3
+
+instance ObjCArgument SKDocumentIndexState where
+  withObjCArg (SKDocumentIndexState x) k = k (argCInt x)
+
+instance ObjCReturn SKDocumentIndexState where
+  type RawReturn SKDocumentIndexState = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKDocumentIndexState x)
+  fromOwned x = pure (SKDocumentIndexState x)
 
 -- | @SKIndexType@
 newtype SKIndexType = SKIndexType CInt
@@ -239,6 +322,16 @@ pattern KSKIndexVector = SKIndexType 2
 pattern KSKIndexInvertedVector :: SKIndexType
 pattern KSKIndexInvertedVector = SKIndexType 3
 
+instance ObjCArgument SKIndexType where
+  withObjCArg (SKIndexType x) k = k (argCInt x)
+
+instance ObjCReturn SKIndexType where
+  type RawReturn SKIndexType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKIndexType x)
+  fromOwned x = pure (SKIndexType x)
+
 -- | @SKSearchType@
 newtype SKSearchType = SKSearchType CInt
   deriving stock (Eq, Ord, Show)
@@ -255,6 +348,16 @@ pattern KSKSearchRequiredRanked = SKSearchType 2
 
 pattern KSKSearchPrefixRanked :: SKSearchType
 pattern KSKSearchPrefixRanked = SKSearchType 3
+
+instance ObjCArgument SKSearchType where
+  withObjCArg (SKSearchType x) k = k (argCInt x)
+
+instance ObjCReturn SKSearchType where
+  type RawReturn SKSearchType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SKSearchType x)
+  fromOwned x = pure (SKSearchType x)
 
 -- | @WSTypeID@
 newtype WSTypeID = WSTypeID CInt
@@ -290,3 +393,13 @@ pattern EWSArrayType = WSTypeID 8
 
 pattern EWSDictionaryType :: WSTypeID
 pattern EWSDictionaryType = WSTypeID 9
+
+instance ObjCArgument WSTypeID where
+  withObjCArg (WSTypeID x) k = k (argCInt x)
+
+instance ObjCReturn WSTypeID where
+  type RawReturn WSTypeID = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WSTypeID x)
+  fromOwned x = pure (WSTypeID x)

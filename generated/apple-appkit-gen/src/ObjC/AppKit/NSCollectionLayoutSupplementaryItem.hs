@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.AppKit.NSCollectionLayoutSupplementaryItem
   , elementKind
   , containerAnchor
   , itemAnchor
+  , containerAnchorSelector
+  , elementKindSelector
+  , initSelector
+  , itemAnchorSelector
+  , newSelector
+  , setZIndexSelector
   , supplementaryItemWithLayoutSize_elementKind_containerAnchorSelector
   , supplementaryItemWithLayoutSize_elementKind_containerAnchor_itemAnchorSelector
-  , initSelector
-  , newSelector
   , zIndexSelector
-  , setZIndexSelector
-  , elementKindSelector
-  , containerAnchorSelector
-  , itemAnchorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,96 +45,89 @@ supplementaryItemWithLayoutSize_elementKind_containerAnchor :: (IsNSCollectionLa
 supplementaryItemWithLayoutSize_elementKind_containerAnchor layoutSize elementKind containerAnchor =
   do
     cls' <- getRequiredClass "NSCollectionLayoutSupplementaryItem"
-    withObjCPtr layoutSize $ \raw_layoutSize ->
-      withObjCPtr elementKind $ \raw_elementKind ->
-        withObjCPtr containerAnchor $ \raw_containerAnchor ->
-          sendClassMsg cls' (mkSelector "supplementaryItemWithLayoutSize:elementKind:containerAnchor:") (retPtr retVoid) [argPtr (castPtr raw_layoutSize :: Ptr ()), argPtr (castPtr raw_elementKind :: Ptr ()), argPtr (castPtr raw_containerAnchor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' supplementaryItemWithLayoutSize_elementKind_containerAnchorSelector (toNSCollectionLayoutSize layoutSize) (toNSString elementKind) (toNSCollectionLayoutAnchor containerAnchor)
 
 -- | @+ supplementaryItemWithLayoutSize:elementKind:containerAnchor:itemAnchor:@
 supplementaryItemWithLayoutSize_elementKind_containerAnchor_itemAnchor :: (IsNSCollectionLayoutSize layoutSize, IsNSString elementKind, IsNSCollectionLayoutAnchor containerAnchor, IsNSCollectionLayoutAnchor itemAnchor) => layoutSize -> elementKind -> containerAnchor -> itemAnchor -> IO (Id NSCollectionLayoutSupplementaryItem)
 supplementaryItemWithLayoutSize_elementKind_containerAnchor_itemAnchor layoutSize elementKind containerAnchor itemAnchor =
   do
     cls' <- getRequiredClass "NSCollectionLayoutSupplementaryItem"
-    withObjCPtr layoutSize $ \raw_layoutSize ->
-      withObjCPtr elementKind $ \raw_elementKind ->
-        withObjCPtr containerAnchor $ \raw_containerAnchor ->
-          withObjCPtr itemAnchor $ \raw_itemAnchor ->
-            sendClassMsg cls' (mkSelector "supplementaryItemWithLayoutSize:elementKind:containerAnchor:itemAnchor:") (retPtr retVoid) [argPtr (castPtr raw_layoutSize :: Ptr ()), argPtr (castPtr raw_elementKind :: Ptr ()), argPtr (castPtr raw_containerAnchor :: Ptr ()), argPtr (castPtr raw_itemAnchor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' supplementaryItemWithLayoutSize_elementKind_containerAnchor_itemAnchorSelector (toNSCollectionLayoutSize layoutSize) (toNSString elementKind) (toNSCollectionLayoutAnchor containerAnchor) (toNSCollectionLayoutAnchor itemAnchor)
 
 -- | @- init@
 init_ :: IsNSCollectionLayoutSupplementaryItem nsCollectionLayoutSupplementaryItem => nsCollectionLayoutSupplementaryItem -> IO (Id NSCollectionLayoutSupplementaryItem)
-init_ nsCollectionLayoutSupplementaryItem  =
-    sendMsg nsCollectionLayoutSupplementaryItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionLayoutSupplementaryItem =
+  sendOwnedMessage nsCollectionLayoutSupplementaryItem initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionLayoutSupplementaryItem)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionLayoutSupplementaryItem"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- zIndex@
 zIndex :: IsNSCollectionLayoutSupplementaryItem nsCollectionLayoutSupplementaryItem => nsCollectionLayoutSupplementaryItem -> IO CLong
-zIndex nsCollectionLayoutSupplementaryItem  =
-    sendMsg nsCollectionLayoutSupplementaryItem (mkSelector "zIndex") retCLong []
+zIndex nsCollectionLayoutSupplementaryItem =
+  sendMessage nsCollectionLayoutSupplementaryItem zIndexSelector
 
 -- | @- setZIndex:@
 setZIndex :: IsNSCollectionLayoutSupplementaryItem nsCollectionLayoutSupplementaryItem => nsCollectionLayoutSupplementaryItem -> CLong -> IO ()
-setZIndex nsCollectionLayoutSupplementaryItem  value =
-    sendMsg nsCollectionLayoutSupplementaryItem (mkSelector "setZIndex:") retVoid [argCLong value]
+setZIndex nsCollectionLayoutSupplementaryItem value =
+  sendMessage nsCollectionLayoutSupplementaryItem setZIndexSelector value
 
 -- | @- elementKind@
 elementKind :: IsNSCollectionLayoutSupplementaryItem nsCollectionLayoutSupplementaryItem => nsCollectionLayoutSupplementaryItem -> IO (Id NSString)
-elementKind nsCollectionLayoutSupplementaryItem  =
-    sendMsg nsCollectionLayoutSupplementaryItem (mkSelector "elementKind") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementKind nsCollectionLayoutSupplementaryItem =
+  sendMessage nsCollectionLayoutSupplementaryItem elementKindSelector
 
 -- | @- containerAnchor@
 containerAnchor :: IsNSCollectionLayoutSupplementaryItem nsCollectionLayoutSupplementaryItem => nsCollectionLayoutSupplementaryItem -> IO (Id NSCollectionLayoutAnchor)
-containerAnchor nsCollectionLayoutSupplementaryItem  =
-    sendMsg nsCollectionLayoutSupplementaryItem (mkSelector "containerAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerAnchor nsCollectionLayoutSupplementaryItem =
+  sendMessage nsCollectionLayoutSupplementaryItem containerAnchorSelector
 
 -- | @- itemAnchor@
 itemAnchor :: IsNSCollectionLayoutSupplementaryItem nsCollectionLayoutSupplementaryItem => nsCollectionLayoutSupplementaryItem -> IO (Id NSCollectionLayoutAnchor)
-itemAnchor nsCollectionLayoutSupplementaryItem  =
-    sendMsg nsCollectionLayoutSupplementaryItem (mkSelector "itemAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+itemAnchor nsCollectionLayoutSupplementaryItem =
+  sendMessage nsCollectionLayoutSupplementaryItem itemAnchorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supplementaryItemWithLayoutSize:elementKind:containerAnchor:@
-supplementaryItemWithLayoutSize_elementKind_containerAnchorSelector :: Selector
+supplementaryItemWithLayoutSize_elementKind_containerAnchorSelector :: Selector '[Id NSCollectionLayoutSize, Id NSString, Id NSCollectionLayoutAnchor] (Id NSCollectionLayoutSupplementaryItem)
 supplementaryItemWithLayoutSize_elementKind_containerAnchorSelector = mkSelector "supplementaryItemWithLayoutSize:elementKind:containerAnchor:"
 
 -- | @Selector@ for @supplementaryItemWithLayoutSize:elementKind:containerAnchor:itemAnchor:@
-supplementaryItemWithLayoutSize_elementKind_containerAnchor_itemAnchorSelector :: Selector
+supplementaryItemWithLayoutSize_elementKind_containerAnchor_itemAnchorSelector :: Selector '[Id NSCollectionLayoutSize, Id NSString, Id NSCollectionLayoutAnchor, Id NSCollectionLayoutAnchor] (Id NSCollectionLayoutSupplementaryItem)
 supplementaryItemWithLayoutSize_elementKind_containerAnchor_itemAnchorSelector = mkSelector "supplementaryItemWithLayoutSize:elementKind:containerAnchor:itemAnchor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionLayoutSupplementaryItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionLayoutSupplementaryItem)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @zIndex@
-zIndexSelector :: Selector
+zIndexSelector :: Selector '[] CLong
 zIndexSelector = mkSelector "zIndex"
 
 -- | @Selector@ for @setZIndex:@
-setZIndexSelector :: Selector
+setZIndexSelector :: Selector '[CLong] ()
 setZIndexSelector = mkSelector "setZIndex:"
 
 -- | @Selector@ for @elementKind@
-elementKindSelector :: Selector
+elementKindSelector :: Selector '[] (Id NSString)
 elementKindSelector = mkSelector "elementKind"
 
 -- | @Selector@ for @containerAnchor@
-containerAnchorSelector :: Selector
+containerAnchorSelector :: Selector '[] (Id NSCollectionLayoutAnchor)
 containerAnchorSelector = mkSelector "containerAnchor"
 
 -- | @Selector@ for @itemAnchor@
-itemAnchorSelector :: Selector
+itemAnchorSelector :: Selector '[] (Id NSCollectionLayoutAnchor)
 itemAnchorSelector = mkSelector "itemAnchor"
 

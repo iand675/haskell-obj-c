@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreGraphics.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CGBitmapInfo@ (bitmask)
 newtype CGBitmapInfo = CGBitmapInfo CUInt
@@ -58,6 +61,16 @@ pattern KCGBitmapByteOrder16Big = CGBitmapInfo 12288
 pattern KCGBitmapByteOrder32Big :: CGBitmapInfo
 pattern KCGBitmapByteOrder32Big = CGBitmapInfo 16384
 
+instance ObjCArgument CGBitmapInfo where
+  withObjCArg (CGBitmapInfo x) k = k (argCUInt x)
+
+instance ObjCReturn CGBitmapInfo where
+  type RawReturn CGBitmapInfo = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGBitmapInfo x)
+  fromOwned x = pure (CGBitmapInfo x)
+
 -- | @CGBitmapLayout@
 newtype CGBitmapLayout = CGBitmapLayout CUInt
   deriving stock (Eq, Ord, Show)
@@ -98,6 +111,16 @@ pattern KCGBitmapLayoutXBGR = CGBitmapLayout 10
 
 pattern KCGBitmapLayoutCMYK :: CGBitmapLayout
 pattern KCGBitmapLayoutCMYK = CGBitmapLayout 11
+
+instance ObjCArgument CGBitmapLayout where
+  withObjCArg (CGBitmapLayout x) k = k (argCUInt x)
+
+instance ObjCReturn CGBitmapLayout where
+  type RawReturn CGBitmapLayout = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGBitmapLayout x)
+  fromOwned x = pure (CGBitmapLayout x)
 
 -- | @CGBlendMode@
 newtype CGBlendMode = CGBlendMode CInt
@@ -188,6 +211,16 @@ pattern KCGBlendModePlusDarker = CGBlendMode 26
 pattern KCGBlendModePlusLighter :: CGBlendMode
 pattern KCGBlendModePlusLighter = CGBlendMode 27
 
+instance ObjCArgument CGBlendMode where
+  withObjCArg (CGBlendMode x) k = k (argCInt x)
+
+instance ObjCReturn CGBlendMode where
+  type RawReturn CGBlendMode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGBlendMode x)
+  fromOwned x = pure (CGBlendMode x)
+
 -- | @CGCaptureOptions@ (bitmask)
 newtype CGCaptureOptions = CGCaptureOptions CUInt
   deriving stock (Eq, Ord, Show)
@@ -205,6 +238,16 @@ pattern KCGCaptureNoOptions = CGCaptureOptions 0
 pattern KCGCaptureNoFill :: CGCaptureOptions
 pattern KCGCaptureNoFill = CGCaptureOptions 1
 
+instance ObjCArgument CGCaptureOptions where
+  withObjCArg (CGCaptureOptions x) k = k (argCUInt x)
+
+instance ObjCReturn CGCaptureOptions where
+  type RawReturn CGCaptureOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGCaptureOptions x)
+  fromOwned x = pure (CGCaptureOptions x)
+
 -- | @CGColorConversionInfoTransformType@
 newtype CGColorConversionInfoTransformType = CGColorConversionInfoTransformType CUInt
   deriving stock (Eq, Ord, Show)
@@ -218,6 +261,16 @@ pattern KCGColorConversionTransformToSpace = CGColorConversionInfoTransformType 
 
 pattern KCGColorConversionTransformApplySpace :: CGColorConversionInfoTransformType
 pattern KCGColorConversionTransformApplySpace = CGColorConversionInfoTransformType 2
+
+instance ObjCArgument CGColorConversionInfoTransformType where
+  withObjCArg (CGColorConversionInfoTransformType x) k = k (argCUInt x)
+
+instance ObjCReturn CGColorConversionInfoTransformType where
+  type RawReturn CGColorConversionInfoTransformType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGColorConversionInfoTransformType x)
+  fromOwned x = pure (CGColorConversionInfoTransformType x)
 
 -- | @CGColorModel@ (bitmask)
 newtype CGColorModel = CGColorModel CUInt
@@ -248,6 +301,16 @@ pattern KCGColorModelLab = CGColorModel 8
 pattern KCGColorModelDeviceN :: CGColorModel
 pattern KCGColorModelDeviceN = CGColorModel 16
 
+instance ObjCArgument CGColorModel where
+  withObjCArg (CGColorModel x) k = k (argCUInt x)
+
+instance ObjCReturn CGColorModel where
+  type RawReturn CGColorModel = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGColorModel x)
+  fromOwned x = pure (CGColorModel x)
+
 -- | @CGColorRenderingIntent@
 newtype CGColorRenderingIntent = CGColorRenderingIntent CInt
   deriving stock (Eq, Ord, Show)
@@ -267,6 +330,16 @@ pattern KCGRenderingIntentPerceptual = CGColorRenderingIntent 3
 
 pattern KCGRenderingIntentSaturation :: CGColorRenderingIntent
 pattern KCGRenderingIntentSaturation = CGColorRenderingIntent 4
+
+instance ObjCArgument CGColorRenderingIntent where
+  withObjCArg (CGColorRenderingIntent x) k = k (argCInt x)
+
+instance ObjCReturn CGColorRenderingIntent where
+  type RawReturn CGColorRenderingIntent = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGColorRenderingIntent x)
+  fromOwned x = pure (CGColorRenderingIntent x)
 
 -- | @CGColorSpaceModel@
 newtype CGColorSpaceModel = CGColorSpaceModel CInt
@@ -300,6 +373,16 @@ pattern KCGColorSpaceModelPattern = CGColorSpaceModel 6
 pattern KCGColorSpaceModelXYZ :: CGColorSpaceModel
 pattern KCGColorSpaceModelXYZ = CGColorSpaceModel 7
 
+instance ObjCArgument CGColorSpaceModel where
+  withObjCArg (CGColorSpaceModel x) k = k (argCInt x)
+
+instance ObjCReturn CGColorSpaceModel where
+  type RawReturn CGColorSpaceModel = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGColorSpaceModel x)
+  fromOwned x = pure (CGColorSpaceModel x)
+
 -- | @CGComponent@
 newtype CGComponent = CGComponent CUInt
   deriving stock (Eq, Ord, Show)
@@ -326,6 +409,16 @@ pattern KCGComponentFloat16Bit = CGComponent 5
 pattern KCGComponentFloat32Bit :: CGComponent
 pattern KCGComponentFloat32Bit = CGComponent 4
 
+instance ObjCArgument CGComponent where
+  withObjCArg (CGComponent x) k = k (argCUInt x)
+
+instance ObjCReturn CGComponent where
+  type RawReturn CGComponent = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGComponent x)
+  fromOwned x = pure (CGComponent x)
+
 -- | @CGConfigureOption@ (bitmask)
 newtype CGConfigureOption = CGConfigureOption CUInt
   deriving stock (Eq, Ord, Show)
@@ -345,6 +438,16 @@ pattern KCGConfigureForSession = CGConfigureOption 1
 
 pattern KCGConfigurePermanently :: CGConfigureOption
 pattern KCGConfigurePermanently = CGConfigureOption 2
+
+instance ObjCArgument CGConfigureOption where
+  withObjCArg (CGConfigureOption x) k = k (argCUInt x)
+
+instance ObjCReturn CGConfigureOption where
+  type RawReturn CGConfigureOption = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGConfigureOption x)
+  fromOwned x = pure (CGConfigureOption x)
 
 -- | @CGDisplayChangeSummaryFlags@ (bitmask)
 newtype CGDisplayChangeSummaryFlags = CGDisplayChangeSummaryFlags CUInt
@@ -390,6 +493,16 @@ pattern KCGDisplayUnMirrorFlag = CGDisplayChangeSummaryFlags 2048
 pattern KCGDisplayDesktopShapeChangedFlag :: CGDisplayChangeSummaryFlags
 pattern KCGDisplayDesktopShapeChangedFlag = CGDisplayChangeSummaryFlags 4096
 
+instance ObjCArgument CGDisplayChangeSummaryFlags where
+  withObjCArg (CGDisplayChangeSummaryFlags x) k = k (argCUInt x)
+
+instance ObjCReturn CGDisplayChangeSummaryFlags where
+  type RawReturn CGDisplayChangeSummaryFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGDisplayChangeSummaryFlags x)
+  fromOwned x = pure (CGDisplayChangeSummaryFlags x)
+
 -- | CGDisplayStreamFrameStatus
 --
 -- Provides information about incoming frame updates
@@ -418,6 +531,16 @@ pattern KCGDisplayStreamFrameStatusFrameBlank = CGDisplayStreamFrameStatus 2
 pattern KCGDisplayStreamFrameStatusStopped :: CGDisplayStreamFrameStatus
 pattern KCGDisplayStreamFrameStatusStopped = CGDisplayStreamFrameStatus 3
 
+instance ObjCArgument CGDisplayStreamFrameStatus where
+  withObjCArg (CGDisplayStreamFrameStatus x) k = k (argCInt x)
+
+instance ObjCReturn CGDisplayStreamFrameStatus where
+  type RawReturn CGDisplayStreamFrameStatus = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGDisplayStreamFrameStatus x)
+  fromOwned x = pure (CGDisplayStreamFrameStatus x)
+
 -- | CGDisplayStreamUpdateRectType
 --
 -- Used to select which array of rectangles to be returned by CGDisplayUpdateGetRects
@@ -445,6 +568,16 @@ pattern KCGDisplayStreamUpdateDirtyRects = CGDisplayStreamUpdateRectType 2
 
 pattern KCGDisplayStreamUpdateReducedDirtyRects :: CGDisplayStreamUpdateRectType
 pattern KCGDisplayStreamUpdateReducedDirtyRects = CGDisplayStreamUpdateRectType 3
+
+instance ObjCArgument CGDisplayStreamUpdateRectType where
+  withObjCArg (CGDisplayStreamUpdateRectType x) k = k (argCInt x)
+
+instance ObjCReturn CGDisplayStreamUpdateRectType where
+  type RawReturn CGDisplayStreamUpdateRectType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGDisplayStreamUpdateRectType x)
+  fromOwned x = pure (CGDisplayStreamUpdateRectType x)
 
 -- | @CGError@
 newtype CGError = CGError CInt
@@ -483,6 +616,16 @@ pattern KCGErrorInvalidOperation = CGError 1010
 
 pattern KCGErrorNoneAvailable :: CGError
 pattern KCGErrorNoneAvailable = CGError 1011
+
+instance ObjCArgument CGError where
+  withObjCArg (CGError x) k = k (argCInt x)
+
+instance ObjCReturn CGError where
+  type RawReturn CGError = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGError x)
+  fromOwned x = pure (CGError x)
 
 -- | @CGEventField@
 newtype CGEventField = CGEventField CUInt
@@ -684,6 +827,16 @@ pattern KCGScrollWheelEventRawDeltaAxis1 = CGEventField 178
 pattern KCGScrollWheelEventRawDeltaAxis2 :: CGEventField
 pattern KCGScrollWheelEventRawDeltaAxis2 = CGEventField 177
 
+instance ObjCArgument CGEventField where
+  withObjCArg (CGEventField x) k = k (argCUInt x)
+
+instance ObjCReturn CGEventField where
+  type RawReturn CGEventField = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventField x)
+  fromOwned x = pure (CGEventField x)
+
 -- | @CGEventFilterMask@ (bitmask)
 newtype CGEventFilterMask = CGEventFilterMask CUInt
   deriving stock (Eq, Ord, Show)
@@ -703,6 +856,16 @@ pattern KCGEventFilterMaskPermitLocalKeyboardEvents = CGEventFilterMask 2
 
 pattern KCGEventFilterMaskPermitSystemDefinedEvents :: CGEventFilterMask
 pattern KCGEventFilterMaskPermitSystemDefinedEvents = CGEventFilterMask 4
+
+instance ObjCArgument CGEventFilterMask where
+  withObjCArg (CGEventFilterMask x) k = k (argCUInt x)
+
+instance ObjCReturn CGEventFilterMask where
+  type RawReturn CGEventFilterMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventFilterMask x)
+  fromOwned x = pure (CGEventFilterMask x)
 
 -- | @CGEventFlags@ (bitmask)
 newtype CGEventFlags = CGEventFlags CULong
@@ -742,6 +905,16 @@ pattern KCGEventFlagMaskNumericPad = CGEventFlags 2097152
 pattern KCGEventFlagMaskNonCoalesced :: CGEventFlags
 pattern KCGEventFlagMaskNonCoalesced = CGEventFlags 256
 
+instance ObjCArgument CGEventFlags where
+  withObjCArg (CGEventFlags x) k = k (argCULong x)
+
+instance ObjCReturn CGEventFlags where
+  type RawReturn CGEventFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventFlags x)
+  fromOwned x = pure (CGEventFlags x)
+
 -- | @CGEventMouseSubtype@
 newtype CGEventMouseSubtype = CGEventMouseSubtype CUInt
   deriving stock (Eq, Ord, Show)
@@ -755,6 +928,16 @@ pattern KCGEventMouseSubtypeTabletPoint = CGEventMouseSubtype 1
 
 pattern KCGEventMouseSubtypeTabletProximity :: CGEventMouseSubtype
 pattern KCGEventMouseSubtypeTabletProximity = CGEventMouseSubtype 2
+
+instance ObjCArgument CGEventMouseSubtype where
+  withObjCArg (CGEventMouseSubtype x) k = k (argCUInt x)
+
+instance ObjCReturn CGEventMouseSubtype where
+  type RawReturn CGEventMouseSubtype = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventMouseSubtype x)
+  fromOwned x = pure (CGEventMouseSubtype x)
 
 -- | @CGEventSourceStateID@
 newtype CGEventSourceStateID = CGEventSourceStateID CInt
@@ -770,6 +953,16 @@ pattern KCGEventSourceStateCombinedSessionState = CGEventSourceStateID 0
 pattern KCGEventSourceStateHIDSystemState :: CGEventSourceStateID
 pattern KCGEventSourceStateHIDSystemState = CGEventSourceStateID 1
 
+instance ObjCArgument CGEventSourceStateID where
+  withObjCArg (CGEventSourceStateID x) k = k (argCInt x)
+
+instance ObjCReturn CGEventSourceStateID where
+  type RawReturn CGEventSourceStateID = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventSourceStateID x)
+  fromOwned x = pure (CGEventSourceStateID x)
+
 -- | @CGEventSuppressionState@
 newtype CGEventSuppressionState = CGEventSuppressionState CUInt
   deriving stock (Eq, Ord, Show)
@@ -783,6 +976,16 @@ pattern KCGEventSuppressionStateRemoteMouseDrag = CGEventSuppressionState 1
 
 pattern KCGNumberOfEventSuppressionStates :: CGEventSuppressionState
 pattern KCGNumberOfEventSuppressionStates = CGEventSuppressionState 2
+
+instance ObjCArgument CGEventSuppressionState where
+  withObjCArg (CGEventSuppressionState x) k = k (argCUInt x)
+
+instance ObjCReturn CGEventSuppressionState where
+  type RawReturn CGEventSuppressionState = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventSuppressionState x)
+  fromOwned x = pure (CGEventSuppressionState x)
 
 -- | @CGEventTapLocation@
 newtype CGEventTapLocation = CGEventTapLocation CUInt
@@ -798,6 +1001,16 @@ pattern KCGSessionEventTap = CGEventTapLocation 1
 pattern KCGAnnotatedSessionEventTap :: CGEventTapLocation
 pattern KCGAnnotatedSessionEventTap = CGEventTapLocation 2
 
+instance ObjCArgument CGEventTapLocation where
+  withObjCArg (CGEventTapLocation x) k = k (argCUInt x)
+
+instance ObjCReturn CGEventTapLocation where
+  type RawReturn CGEventTapLocation = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventTapLocation x)
+  fromOwned x = pure (CGEventTapLocation x)
+
 -- | @CGEventTapOptions@
 newtype CGEventTapOptions = CGEventTapOptions CUInt
   deriving stock (Eq, Ord, Show)
@@ -809,6 +1022,16 @@ pattern KCGEventTapOptionDefault = CGEventTapOptions 0
 pattern KCGEventTapOptionListenOnly :: CGEventTapOptions
 pattern KCGEventTapOptionListenOnly = CGEventTapOptions 1
 
+instance ObjCArgument CGEventTapOptions where
+  withObjCArg (CGEventTapOptions x) k = k (argCUInt x)
+
+instance ObjCReturn CGEventTapOptions where
+  type RawReturn CGEventTapOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventTapOptions x)
+  fromOwned x = pure (CGEventTapOptions x)
+
 -- | @CGEventTapPlacement@
 newtype CGEventTapPlacement = CGEventTapPlacement CUInt
   deriving stock (Eq, Ord, Show)
@@ -819,6 +1042,16 @@ pattern KCGHeadInsertEventTap = CGEventTapPlacement 0
 
 pattern KCGTailAppendEventTap :: CGEventTapPlacement
 pattern KCGTailAppendEventTap = CGEventTapPlacement 1
+
+instance ObjCArgument CGEventTapPlacement where
+  withObjCArg (CGEventTapPlacement x) k = k (argCUInt x)
+
+instance ObjCReturn CGEventTapPlacement where
+  type RawReturn CGEventTapPlacement = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventTapPlacement x)
+  fromOwned x = pure (CGEventTapPlacement x)
 
 -- | @CGEventType@
 newtype CGEventType = CGEventType CUInt
@@ -882,6 +1115,16 @@ pattern KCGEventTapDisabledByTimeout = CGEventType 4294967294
 pattern KCGEventTapDisabledByUserInput :: CGEventType
 pattern KCGEventTapDisabledByUserInput = CGEventType 4294967295
 
+instance ObjCArgument CGEventType where
+  withObjCArg (CGEventType x) k = k (argCUInt x)
+
+instance ObjCReturn CGEventType where
+  type RawReturn CGEventType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGEventType x)
+  fromOwned x = pure (CGEventType x)
+
 -- | @CGFontPostScriptFormat@
 newtype CGFontPostScriptFormat = CGFontPostScriptFormat CInt
   deriving stock (Eq, Ord, Show)
@@ -895,6 +1138,16 @@ pattern KCGFontPostScriptFormatType3 = CGFontPostScriptFormat 3
 
 pattern KCGFontPostScriptFormatType42 :: CGFontPostScriptFormat
 pattern KCGFontPostScriptFormatType42 = CGFontPostScriptFormat 42
+
+instance ObjCArgument CGFontPostScriptFormat where
+  withObjCArg (CGFontPostScriptFormat x) k = k (argCInt x)
+
+instance ObjCReturn CGFontPostScriptFormat where
+  type RawReturn CGFontPostScriptFormat = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGFontPostScriptFormat x)
+  fromOwned x = pure (CGFontPostScriptFormat x)
 
 -- | @CGGesturePhase@
 newtype CGGesturePhase = CGGesturePhase CUInt
@@ -919,6 +1172,16 @@ pattern KCGGesturePhaseCancelled = CGGesturePhase 8
 pattern KCGGesturePhaseMayBegin :: CGGesturePhase
 pattern KCGGesturePhaseMayBegin = CGGesturePhase 128
 
+instance ObjCArgument CGGesturePhase where
+  withObjCArg (CGGesturePhase x) k = k (argCUInt x)
+
+instance ObjCReturn CGGesturePhase where
+  type RawReturn CGGesturePhase = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGGesturePhase x)
+  fromOwned x = pure (CGGesturePhase x)
+
 -- | @CGGlyphDeprecatedEnum@
 newtype CGGlyphDeprecatedEnum = CGGlyphDeprecatedEnum CInt
   deriving stock (Eq, Ord, Show)
@@ -929,6 +1192,16 @@ pattern CGGlyphMin = CGGlyphDeprecatedEnum 0
 
 pattern CGGlyphMax :: CGGlyphDeprecatedEnum
 pattern CGGlyphMax = CGGlyphDeprecatedEnum 1
+
+instance ObjCArgument CGGlyphDeprecatedEnum where
+  withObjCArg (CGGlyphDeprecatedEnum x) k = k (argCInt x)
+
+instance ObjCReturn CGGlyphDeprecatedEnum where
+  type RawReturn CGGlyphDeprecatedEnum = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGGlyphDeprecatedEnum x)
+  fromOwned x = pure (CGGlyphDeprecatedEnum x)
 
 -- | @CGGradientDrawingOptions@ (bitmask)
 newtype CGGradientDrawingOptions = CGGradientDrawingOptions CUInt
@@ -946,6 +1219,16 @@ pattern KCGGradientDrawsBeforeStartLocation = CGGradientDrawingOptions 1
 
 pattern KCGGradientDrawsAfterEndLocation :: CGGradientDrawingOptions
 pattern KCGGradientDrawsAfterEndLocation = CGGradientDrawingOptions 2
+
+instance ObjCArgument CGGradientDrawingOptions where
+  withObjCArg (CGGradientDrawingOptions x) k = k (argCUInt x)
+
+instance ObjCReturn CGGradientDrawingOptions where
+  type RawReturn CGGradientDrawingOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGGradientDrawingOptions x)
+  fromOwned x = pure (CGGradientDrawingOptions x)
 
 -- | @CGImageAlphaInfo@
 newtype CGImageAlphaInfo = CGImageAlphaInfo CUInt
@@ -976,6 +1259,16 @@ pattern KCGImageAlphaNoneSkipFirst = CGImageAlphaInfo 6
 pattern KCGImageAlphaOnly :: CGImageAlphaInfo
 pattern KCGImageAlphaOnly = CGImageAlphaInfo 7
 
+instance ObjCArgument CGImageAlphaInfo where
+  withObjCArg (CGImageAlphaInfo x) k = k (argCUInt x)
+
+instance ObjCReturn CGImageAlphaInfo where
+  type RawReturn CGImageAlphaInfo = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGImageAlphaInfo x)
+  fromOwned x = pure (CGImageAlphaInfo x)
+
 -- | @CGImageByteOrderInfo@
 newtype CGImageByteOrderInfo = CGImageByteOrderInfo CUInt
   deriving stock (Eq, Ord, Show)
@@ -1005,6 +1298,16 @@ pattern KCGImageByteOrder16Host = CGImageByteOrderInfo 4096
 pattern KCGImageByteOrder32Host :: CGImageByteOrderInfo
 pattern KCGImageByteOrder32Host = CGImageByteOrderInfo 8192
 
+instance ObjCArgument CGImageByteOrderInfo where
+  withObjCArg (CGImageByteOrderInfo x) k = k (argCUInt x)
+
+instance ObjCReturn CGImageByteOrderInfo where
+  type RawReturn CGImageByteOrderInfo = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGImageByteOrderInfo x)
+  fromOwned x = pure (CGImageByteOrderInfo x)
+
 -- | @CGImageComponentInfo@
 newtype CGImageComponentInfo = CGImageComponentInfo CUInt
   deriving stock (Eq, Ord, Show)
@@ -1015,6 +1318,16 @@ pattern KCGImageComponentInteger = CGImageComponentInfo 0
 
 pattern KCGImageComponentFloat :: CGImageComponentInfo
 pattern KCGImageComponentFloat = CGImageComponentInfo 256
+
+instance ObjCArgument CGImageComponentInfo where
+  withObjCArg (CGImageComponentInfo x) k = k (argCUInt x)
+
+instance ObjCReturn CGImageComponentInfo where
+  type RawReturn CGImageComponentInfo = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGImageComponentInfo x)
+  fromOwned x = pure (CGImageComponentInfo x)
 
 -- | @CGImagePixelFormatInfo@
 newtype CGImagePixelFormatInfo = CGImagePixelFormatInfo CUInt
@@ -1039,6 +1352,16 @@ pattern KCGImagePixelFormatRGB101010 = CGImagePixelFormatInfo 196608
 pattern KCGImagePixelFormatRGBCIF10 :: CGImagePixelFormatInfo
 pattern KCGImagePixelFormatRGBCIF10 = CGImagePixelFormatInfo 262144
 
+instance ObjCArgument CGImagePixelFormatInfo where
+  withObjCArg (CGImagePixelFormatInfo x) k = k (argCUInt x)
+
+instance ObjCReturn CGImagePixelFormatInfo where
+  type RawReturn CGImagePixelFormatInfo = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGImagePixelFormatInfo x)
+  fromOwned x = pure (CGImagePixelFormatInfo x)
+
 -- | @CGInterpolationQuality@
 newtype CGInterpolationQuality = CGInterpolationQuality CInt
   deriving stock (Eq, Ord, Show)
@@ -1059,6 +1382,16 @@ pattern KCGInterpolationMedium = CGInterpolationQuality 4
 pattern KCGInterpolationHigh :: CGInterpolationQuality
 pattern KCGInterpolationHigh = CGInterpolationQuality 3
 
+instance ObjCArgument CGInterpolationQuality where
+  withObjCArg (CGInterpolationQuality x) k = k (argCInt x)
+
+instance ObjCReturn CGInterpolationQuality where
+  type RawReturn CGInterpolationQuality = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGInterpolationQuality x)
+  fromOwned x = pure (CGInterpolationQuality x)
+
 -- | @CGLineCap@
 newtype CGLineCap = CGLineCap CInt
   deriving stock (Eq, Ord, Show)
@@ -1073,6 +1406,16 @@ pattern KCGLineCapRound = CGLineCap 1
 pattern KCGLineCapSquare :: CGLineCap
 pattern KCGLineCapSquare = CGLineCap 2
 
+instance ObjCArgument CGLineCap where
+  withObjCArg (CGLineCap x) k = k (argCInt x)
+
+instance ObjCReturn CGLineCap where
+  type RawReturn CGLineCap = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGLineCap x)
+  fromOwned x = pure (CGLineCap x)
+
 -- | @CGLineJoin@
 newtype CGLineJoin = CGLineJoin CInt
   deriving stock (Eq, Ord, Show)
@@ -1086,6 +1429,16 @@ pattern KCGLineJoinRound = CGLineJoin 1
 
 pattern KCGLineJoinBevel :: CGLineJoin
 pattern KCGLineJoinBevel = CGLineJoin 2
+
+instance ObjCArgument CGLineJoin where
+  withObjCArg (CGLineJoin x) k = k (argCInt x)
+
+instance ObjCReturn CGLineJoin where
+  type RawReturn CGLineJoin = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGLineJoin x)
+  fromOwned x = pure (CGLineJoin x)
 
 -- | @CGMomentumScrollPhase@
 newtype CGMomentumScrollPhase = CGMomentumScrollPhase CUInt
@@ -1104,6 +1457,16 @@ pattern KCGMomentumScrollPhaseContinue = CGMomentumScrollPhase 2
 pattern KCGMomentumScrollPhaseEnd :: CGMomentumScrollPhase
 pattern KCGMomentumScrollPhaseEnd = CGMomentumScrollPhase 3
 
+instance ObjCArgument CGMomentumScrollPhase where
+  withObjCArg (CGMomentumScrollPhase x) k = k (argCUInt x)
+
+instance ObjCReturn CGMomentumScrollPhase where
+  type RawReturn CGMomentumScrollPhase = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGMomentumScrollPhase x)
+  fromOwned x = pure (CGMomentumScrollPhase x)
+
 -- | @CGMouseButton@
 newtype CGMouseButton = CGMouseButton CUInt
   deriving stock (Eq, Ord, Show)
@@ -1117,6 +1480,16 @@ pattern KCGMouseButtonRight = CGMouseButton 1
 
 pattern KCGMouseButtonCenter :: CGMouseButton
 pattern KCGMouseButtonCenter = CGMouseButton 2
+
+instance ObjCArgument CGMouseButton where
+  withObjCArg (CGMouseButton x) k = k (argCUInt x)
+
+instance ObjCReturn CGMouseButton where
+  type RawReturn CGMouseButton = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGMouseButton x)
+  fromOwned x = pure (CGMouseButton x)
 
 -- | @CGPDFAccessPermissions@ (bitmask)
 newtype CGPDFAccessPermissions = CGPDFAccessPermissions CUInt
@@ -1153,6 +1526,16 @@ pattern KCGPDFAllowsCommenting = CGPDFAccessPermissions 64
 pattern KCGPDFAllowsFormFieldEntry :: CGPDFAccessPermissions
 pattern KCGPDFAllowsFormFieldEntry = CGPDFAccessPermissions 128
 
+instance ObjCArgument CGPDFAccessPermissions where
+  withObjCArg (CGPDFAccessPermissions x) k = k (argCUInt x)
+
+instance ObjCReturn CGPDFAccessPermissions where
+  type RawReturn CGPDFAccessPermissions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGPDFAccessPermissions x)
+  fromOwned x = pure (CGPDFAccessPermissions x)
+
 -- | @CGPDFBox@
 newtype CGPDFBox = CGPDFBox CInt
   deriving stock (Eq, Ord, Show)
@@ -1173,6 +1556,16 @@ pattern KCGPDFTrimBox = CGPDFBox 3
 pattern KCGPDFArtBox :: CGPDFBox
 pattern KCGPDFArtBox = CGPDFBox 4
 
+instance ObjCArgument CGPDFBox where
+  withObjCArg (CGPDFBox x) k = k (argCInt x)
+
+instance ObjCReturn CGPDFBox where
+  type RawReturn CGPDFBox = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGPDFBox x)
+  fromOwned x = pure (CGPDFBox x)
+
 -- | @CGPDFDataFormat@
 newtype CGPDFDataFormat = CGPDFDataFormat CInt
   deriving stock (Eq, Ord, Show)
@@ -1186,6 +1579,16 @@ pattern CGPDFDataFormatJPEGEncoded = CGPDFDataFormat 1
 
 pattern CGPDFDataFormatJPEG2000 :: CGPDFDataFormat
 pattern CGPDFDataFormatJPEG2000 = CGPDFDataFormat 2
+
+instance ObjCArgument CGPDFDataFormat where
+  withObjCArg (CGPDFDataFormat x) k = k (argCInt x)
+
+instance ObjCReturn CGPDFDataFormat where
+  type RawReturn CGPDFDataFormat = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGPDFDataFormat x)
+  fromOwned x = pure (CGPDFDataFormat x)
 
 -- | @CGPDFObjectType@
 newtype CGPDFObjectType = CGPDFObjectType CInt
@@ -1218,6 +1621,16 @@ pattern KCGPDFObjectTypeDictionary = CGPDFObjectType 8
 
 pattern KCGPDFObjectTypeStream :: CGPDFObjectType
 pattern KCGPDFObjectTypeStream = CGPDFObjectType 9
+
+instance ObjCArgument CGPDFObjectType where
+  withObjCArg (CGPDFObjectType x) k = k (argCInt x)
+
+instance ObjCReturn CGPDFObjectType where
+  type RawReturn CGPDFObjectType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGPDFObjectType x)
+  fromOwned x = pure (CGPDFObjectType x)
 
 -- | @CGPDFTagType@
 newtype CGPDFTagType = CGPDFTagType CInt
@@ -1374,6 +1787,16 @@ pattern CGPDFTagTypeForm = CGPDFTagType 702
 pattern CGPDFTagTypeObject :: CGPDFTagType
 pattern CGPDFTagTypeObject = CGPDFTagType 800
 
+instance ObjCArgument CGPDFTagType where
+  withObjCArg (CGPDFTagType x) k = k (argCInt x)
+
+instance ObjCReturn CGPDFTagType where
+  type RawReturn CGPDFTagType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGPDFTagType x)
+  fromOwned x = pure (CGPDFTagType x)
+
 -- | @CGPathDrawingMode@
 newtype CGPathDrawingMode = CGPathDrawingMode CInt
   deriving stock (Eq, Ord, Show)
@@ -1393,6 +1816,16 @@ pattern KCGPathFillStroke = CGPathDrawingMode 3
 
 pattern KCGPathEOFillStroke :: CGPathDrawingMode
 pattern KCGPathEOFillStroke = CGPathDrawingMode 4
+
+instance ObjCArgument CGPathDrawingMode where
+  withObjCArg (CGPathDrawingMode x) k = k (argCInt x)
+
+instance ObjCReturn CGPathDrawingMode where
+  type RawReturn CGPathDrawingMode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGPathDrawingMode x)
+  fromOwned x = pure (CGPathDrawingMode x)
 
 -- | @CGPathElementType@
 newtype CGPathElementType = CGPathElementType CInt
@@ -1414,6 +1847,16 @@ pattern KCGPathElementAddCurveToPoint = CGPathElementType 3
 pattern KCGPathElementCloseSubpath :: CGPathElementType
 pattern KCGPathElementCloseSubpath = CGPathElementType 4
 
+instance ObjCArgument CGPathElementType where
+  withObjCArg (CGPathElementType x) k = k (argCInt x)
+
+instance ObjCReturn CGPathElementType where
+  type RawReturn CGPathElementType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGPathElementType x)
+  fromOwned x = pure (CGPathElementType x)
+
 -- | @CGPatternTiling@
 newtype CGPatternTiling = CGPatternTiling CInt
   deriving stock (Eq, Ord, Show)
@@ -1427,6 +1870,16 @@ pattern KCGPatternTilingConstantSpacingMinimalDistortion = CGPatternTiling 1
 
 pattern KCGPatternTilingConstantSpacing :: CGPatternTiling
 pattern KCGPatternTilingConstantSpacing = CGPatternTiling 2
+
+instance ObjCArgument CGPatternTiling where
+  withObjCArg (CGPatternTiling x) k = k (argCInt x)
+
+instance ObjCReturn CGPatternTiling where
+  type RawReturn CGPatternTiling = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGPatternTiling x)
+  fromOwned x = pure (CGPatternTiling x)
 
 -- | @CGScreenUpdateOperation@ (bitmask)
 newtype CGScreenUpdateOperation = CGScreenUpdateOperation CUInt
@@ -1448,6 +1901,16 @@ pattern KCGScreenUpdateOperationMove = CGScreenUpdateOperation 1
 pattern KCGScreenUpdateOperationReducedDirtyRectangleCount :: CGScreenUpdateOperation
 pattern KCGScreenUpdateOperationReducedDirtyRectangleCount = CGScreenUpdateOperation 2147483648
 
+instance ObjCArgument CGScreenUpdateOperation where
+  withObjCArg (CGScreenUpdateOperation x) k = k (argCUInt x)
+
+instance ObjCReturn CGScreenUpdateOperation where
+  type RawReturn CGScreenUpdateOperation = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGScreenUpdateOperation x)
+  fromOwned x = pure (CGScreenUpdateOperation x)
+
 -- | @CGScrollEventUnit@
 newtype CGScrollEventUnit = CGScrollEventUnit CUInt
   deriving stock (Eq, Ord, Show)
@@ -1458,6 +1921,16 @@ pattern KCGScrollEventUnitPixel = CGScrollEventUnit 0
 
 pattern KCGScrollEventUnitLine :: CGScrollEventUnit
 pattern KCGScrollEventUnitLine = CGScrollEventUnit 1
+
+instance ObjCArgument CGScrollEventUnit where
+  withObjCArg (CGScrollEventUnit x) k = k (argCUInt x)
+
+instance ObjCReturn CGScrollEventUnit where
+  type RawReturn CGScrollEventUnit = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGScrollEventUnit x)
+  fromOwned x = pure (CGScrollEventUnit x)
 
 -- | @CGScrollPhase@
 newtype CGScrollPhase = CGScrollPhase CUInt
@@ -1478,6 +1951,16 @@ pattern KCGScrollPhaseCancelled = CGScrollPhase 8
 
 pattern KCGScrollPhaseMayBegin :: CGScrollPhase
 pattern KCGScrollPhaseMayBegin = CGScrollPhase 128
+
+instance ObjCArgument CGScrollPhase where
+  withObjCArg (CGScrollPhase x) k = k (argCUInt x)
+
+instance ObjCReturn CGScrollPhase where
+  type RawReturn CGScrollPhase = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGScrollPhase x)
+  fromOwned x = pure (CGScrollPhase x)
 
 -- | @CGTextDrawingMode@
 newtype CGTextDrawingMode = CGTextDrawingMode CInt
@@ -1508,6 +1991,16 @@ pattern KCGTextFillStrokeClip = CGTextDrawingMode 6
 pattern KCGTextClip :: CGTextDrawingMode
 pattern KCGTextClip = CGTextDrawingMode 7
 
+instance ObjCArgument CGTextDrawingMode where
+  withObjCArg (CGTextDrawingMode x) k = k (argCInt x)
+
+instance ObjCReturn CGTextDrawingMode where
+  type RawReturn CGTextDrawingMode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGTextDrawingMode x)
+  fromOwned x = pure (CGTextDrawingMode x)
+
 -- | @CGTextEncoding@
 newtype CGTextEncoding = CGTextEncoding CInt
   deriving stock (Eq, Ord, Show)
@@ -1518,6 +2011,16 @@ pattern KCGEncodingFontSpecific = CGTextEncoding 0
 
 pattern KCGEncodingMacRoman :: CGTextEncoding
 pattern KCGEncodingMacRoman = CGTextEncoding 1
+
+instance ObjCArgument CGTextEncoding where
+  withObjCArg (CGTextEncoding x) k = k (argCInt x)
+
+instance ObjCReturn CGTextEncoding where
+  type RawReturn CGTextEncoding = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGTextEncoding x)
+  fromOwned x = pure (CGTextEncoding x)
 
 -- | @CGToneMapping@
 newtype CGToneMapping = CGToneMapping CUInt
@@ -1542,6 +2045,16 @@ pattern KCGToneMappingEXRGamma = CGToneMapping 4
 pattern KCGToneMappingNone :: CGToneMapping
 pattern KCGToneMappingNone = CGToneMapping 5
 
+instance ObjCArgument CGToneMapping where
+  withObjCArg (CGToneMapping x) k = k (argCUInt x)
+
+instance ObjCReturn CGToneMapping where
+  type RawReturn CGToneMapping = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGToneMapping x)
+  fromOwned x = pure (CGToneMapping x)
+
 -- | @CGWindowBackingType@
 newtype CGWindowBackingType = CGWindowBackingType CUInt
   deriving stock (Eq, Ord, Show)
@@ -1555,6 +2068,16 @@ pattern KCGBackingStoreNonretained = CGWindowBackingType 1
 
 pattern KCGBackingStoreBuffered :: CGWindowBackingType
 pattern KCGBackingStoreBuffered = CGWindowBackingType 2
+
+instance ObjCArgument CGWindowBackingType where
+  withObjCArg (CGWindowBackingType x) k = k (argCUInt x)
+
+instance ObjCReturn CGWindowBackingType where
+  type RawReturn CGWindowBackingType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGWindowBackingType x)
+  fromOwned x = pure (CGWindowBackingType x)
 
 -- | @CGWindowImageOption@ (bitmask)
 newtype CGWindowImageOption = CGWindowImageOption CUInt
@@ -1584,6 +2107,16 @@ pattern KCGWindowImageBestResolution = CGWindowImageOption 8
 
 pattern KCGWindowImageNominalResolution :: CGWindowImageOption
 pattern KCGWindowImageNominalResolution = CGWindowImageOption 16
+
+instance ObjCArgument CGWindowImageOption where
+  withObjCArg (CGWindowImageOption x) k = k (argCUInt x)
+
+instance ObjCReturn CGWindowImageOption where
+  type RawReturn CGWindowImageOption = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGWindowImageOption x)
+  fromOwned x = pure (CGWindowImageOption x)
 
 -- | @CGWindowLevelKey@
 newtype CGWindowLevelKey = CGWindowLevelKey CInt
@@ -1656,6 +2189,16 @@ pattern KCGAssistiveTechHighWindowLevelKey = CGWindowLevelKey 20
 pattern KCGNumberOfWindowLevelKeys :: CGWindowLevelKey
 pattern KCGNumberOfWindowLevelKeys = CGWindowLevelKey 21
 
+instance ObjCArgument CGWindowLevelKey where
+  withObjCArg (CGWindowLevelKey x) k = k (argCInt x)
+
+instance ObjCReturn CGWindowLevelKey where
+  type RawReturn CGWindowLevelKey = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGWindowLevelKey x)
+  fromOwned x = pure (CGWindowLevelKey x)
+
 -- | @CGWindowListOption@ (bitmask)
 newtype CGWindowListOption = CGWindowListOption CUInt
   deriving stock (Eq, Ord, Show)
@@ -1685,6 +2228,16 @@ pattern KCGWindowListOptionIncludingWindow = CGWindowListOption 8
 pattern KCGWindowListExcludeDesktopElements :: CGWindowListOption
 pattern KCGWindowListExcludeDesktopElements = CGWindowListOption 16
 
+instance ObjCArgument CGWindowListOption where
+  withObjCArg (CGWindowListOption x) k = k (argCUInt x)
+
+instance ObjCReturn CGWindowListOption where
+  type RawReturn CGWindowListOption = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGWindowListOption x)
+  fromOwned x = pure (CGWindowListOption x)
+
 -- | @CGWindowSharingType@
 newtype CGWindowSharingType = CGWindowSharingType CUInt
   deriving stock (Eq, Ord, Show)
@@ -1698,3 +2251,13 @@ pattern KCGWindowSharingReadOnly = CGWindowSharingType 1
 
 pattern KCGWindowSharingReadWrite :: CGWindowSharingType
 pattern KCGWindowSharingReadWrite = CGWindowSharingType 2
+
+instance ObjCArgument CGWindowSharingType where
+  withObjCArg (CGWindowSharingType x) k = k (argCUInt x)
+
+instance ObjCReturn CGWindowSharingType where
+  type RawReturn CGWindowSharingType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CGWindowSharingType x)
+  fromOwned x = pure (CGWindowSharingType x)

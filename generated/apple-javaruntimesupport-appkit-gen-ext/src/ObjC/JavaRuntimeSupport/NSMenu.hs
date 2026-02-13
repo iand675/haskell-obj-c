@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.JavaRuntimeSupport.NSMenu
   , javaMenuWithTitle
   , setJavaMenuDelegate
   , isJavaMenu
+  , isJavaMenuSelector
   , javaMenuWithTitleSelector
   , setJavaMenuDelegateSelector
-  , isJavaMenuSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,32 +34,31 @@ javaMenuWithTitle :: IsNSString title => title -> IO (Id NSMenu)
 javaMenuWithTitle title =
   do
     cls' <- getRequiredClass "NSMenu"
-    withObjCPtr title $ \raw_title ->
-      sendClassMsg cls' (mkSelector "javaMenuWithTitle:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' javaMenuWithTitleSelector (toNSString title)
 
 -- | @- setJavaMenuDelegate:@
 setJavaMenuDelegate :: IsNSMenu nsMenu => nsMenu -> RawId -> IO ()
-setJavaMenuDelegate nsMenu  delegate =
-    sendMsg nsMenu (mkSelector "setJavaMenuDelegate:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ())]
+setJavaMenuDelegate nsMenu delegate =
+  sendMessage nsMenu setJavaMenuDelegateSelector delegate
 
 -- | @- isJavaMenu@
 isJavaMenu :: IsNSMenu nsMenu => nsMenu -> IO Bool
-isJavaMenu nsMenu  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMenu (mkSelector "isJavaMenu") retCULong []
+isJavaMenu nsMenu =
+  sendMessage nsMenu isJavaMenuSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @javaMenuWithTitle:@
-javaMenuWithTitleSelector :: Selector
+javaMenuWithTitleSelector :: Selector '[Id NSString] (Id NSMenu)
 javaMenuWithTitleSelector = mkSelector "javaMenuWithTitle:"
 
 -- | @Selector@ for @setJavaMenuDelegate:@
-setJavaMenuDelegateSelector :: Selector
+setJavaMenuDelegateSelector :: Selector '[RawId] ()
 setJavaMenuDelegateSelector = mkSelector "setJavaMenuDelegate:"
 
 -- | @Selector@ for @isJavaMenu@
-isJavaMenuSelector :: Selector
+isJavaMenuSelector :: Selector '[] Bool
 isJavaMenuSelector = mkSelector "isJavaMenu"
 

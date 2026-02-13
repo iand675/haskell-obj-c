@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.MediaPlayer.MPMediaPlaylistCreationMetadata
   , setAuthorDisplayName
   , descriptionText
   , setDescriptionText
-  , newSelector
+  , authorDisplayNameSelector
+  , descriptionTextSelector
   , initSelector
   , initWithNameSelector
   , nameSelector
-  , authorDisplayNameSelector
+  , newSelector
   , setAuthorDisplayNameSelector
-  , descriptionTextSelector
   , setDescriptionTextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,85 +43,82 @@ new :: IO (Id MPMediaPlaylistCreationMetadata)
 new  =
   do
     cls' <- getRequiredClass "MPMediaPlaylistCreationMetadata"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMPMediaPlaylistCreationMetadata mpMediaPlaylistCreationMetadata => mpMediaPlaylistCreationMetadata -> IO (Id MPMediaPlaylistCreationMetadata)
-init_ mpMediaPlaylistCreationMetadata  =
-    sendMsg mpMediaPlaylistCreationMetadata (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpMediaPlaylistCreationMetadata =
+  sendOwnedMessage mpMediaPlaylistCreationMetadata initSelector
 
 -- | @- initWithName:@
 initWithName :: (IsMPMediaPlaylistCreationMetadata mpMediaPlaylistCreationMetadata, IsNSString name) => mpMediaPlaylistCreationMetadata -> name -> IO (Id MPMediaPlaylistCreationMetadata)
-initWithName mpMediaPlaylistCreationMetadata  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mpMediaPlaylistCreationMetadata (mkSelector "initWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithName mpMediaPlaylistCreationMetadata name =
+  sendOwnedMessage mpMediaPlaylistCreationMetadata initWithNameSelector (toNSString name)
 
 -- | The display name of the playlist.
 --
 -- ObjC selector: @- name@
 name :: IsMPMediaPlaylistCreationMetadata mpMediaPlaylistCreationMetadata => mpMediaPlaylistCreationMetadata -> IO (Id NSString)
-name mpMediaPlaylistCreationMetadata  =
-    sendMsg mpMediaPlaylistCreationMetadata (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mpMediaPlaylistCreationMetadata =
+  sendMessage mpMediaPlaylistCreationMetadata nameSelector
 
 -- | Defaults to the requesting app's display name.
 --
 -- ObjC selector: @- authorDisplayName@
 authorDisplayName :: IsMPMediaPlaylistCreationMetadata mpMediaPlaylistCreationMetadata => mpMediaPlaylistCreationMetadata -> IO (Id NSString)
-authorDisplayName mpMediaPlaylistCreationMetadata  =
-    sendMsg mpMediaPlaylistCreationMetadata (mkSelector "authorDisplayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorDisplayName mpMediaPlaylistCreationMetadata =
+  sendMessage mpMediaPlaylistCreationMetadata authorDisplayNameSelector
 
 -- | Defaults to the requesting app's display name.
 --
 -- ObjC selector: @- setAuthorDisplayName:@
 setAuthorDisplayName :: (IsMPMediaPlaylistCreationMetadata mpMediaPlaylistCreationMetadata, IsNSString value) => mpMediaPlaylistCreationMetadata -> value -> IO ()
-setAuthorDisplayName mpMediaPlaylistCreationMetadata  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpMediaPlaylistCreationMetadata (mkSelector "setAuthorDisplayName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuthorDisplayName mpMediaPlaylistCreationMetadata value =
+  sendMessage mpMediaPlaylistCreationMetadata setAuthorDisplayNameSelector (toNSString value)
 
 -- | @- descriptionText@
 descriptionText :: IsMPMediaPlaylistCreationMetadata mpMediaPlaylistCreationMetadata => mpMediaPlaylistCreationMetadata -> IO (Id NSString)
-descriptionText mpMediaPlaylistCreationMetadata  =
-    sendMsg mpMediaPlaylistCreationMetadata (mkSelector "descriptionText") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptionText mpMediaPlaylistCreationMetadata =
+  sendMessage mpMediaPlaylistCreationMetadata descriptionTextSelector
 
 -- | @- setDescriptionText:@
 setDescriptionText :: (IsMPMediaPlaylistCreationMetadata mpMediaPlaylistCreationMetadata, IsNSString value) => mpMediaPlaylistCreationMetadata -> value -> IO ()
-setDescriptionText mpMediaPlaylistCreationMetadata  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpMediaPlaylistCreationMetadata (mkSelector "setDescriptionText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDescriptionText mpMediaPlaylistCreationMetadata value =
+  sendMessage mpMediaPlaylistCreationMetadata setDescriptionTextSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MPMediaPlaylistCreationMetadata)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPMediaPlaylistCreationMetadata)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithName:@
-initWithNameSelector :: Selector
+initWithNameSelector :: Selector '[Id NSString] (Id MPMediaPlaylistCreationMetadata)
 initWithNameSelector = mkSelector "initWithName:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @authorDisplayName@
-authorDisplayNameSelector :: Selector
+authorDisplayNameSelector :: Selector '[] (Id NSString)
 authorDisplayNameSelector = mkSelector "authorDisplayName"
 
 -- | @Selector@ for @setAuthorDisplayName:@
-setAuthorDisplayNameSelector :: Selector
+setAuthorDisplayNameSelector :: Selector '[Id NSString] ()
 setAuthorDisplayNameSelector = mkSelector "setAuthorDisplayName:"
 
 -- | @Selector@ for @descriptionText@
-descriptionTextSelector :: Selector
+descriptionTextSelector :: Selector '[] (Id NSString)
 descriptionTextSelector = mkSelector "descriptionText"
 
 -- | @Selector@ for @setDescriptionText:@
-setDescriptionTextSelector :: Selector
+setDescriptionTextSelector :: Selector '[Id NSString] ()
 setDescriptionTextSelector = mkSelector "setDescriptionText:"
 

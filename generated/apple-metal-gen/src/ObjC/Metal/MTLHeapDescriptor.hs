@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,22 +26,22 @@ module ObjC.Metal.MTLHeapDescriptor
   , setType
   , maxCompatiblePlacementSparsePageSize
   , setMaxCompatiblePlacementSparsePageSize
-  , sizeSelector
-  , setSizeSelector
-  , storageModeSelector
-  , setStorageModeSelector
   , cpuCacheModeSelector
-  , setCpuCacheModeSelector
-  , sparsePageSizeSelector
-  , setSparsePageSizeSelector
   , hazardTrackingModeSelector
-  , setHazardTrackingModeSelector
-  , resourceOptionsSelector
-  , setResourceOptionsSelector
-  , typeSelector
-  , setTypeSelector
   , maxCompatiblePlacementSparsePageSizeSelector
+  , resourceOptionsSelector
+  , setCpuCacheModeSelector
+  , setHazardTrackingModeSelector
   , setMaxCompatiblePlacementSparsePageSizeSelector
+  , setResourceOptionsSelector
+  , setSizeSelector
+  , setSparsePageSizeSelector
+  , setStorageModeSelector
+  , setTypeSelector
+  , sizeSelector
+  , sparsePageSizeSelector
+  , storageModeSelector
+  , typeSelector
 
   -- * Enum types
   , MTLCPUCacheMode(MTLCPUCacheMode)
@@ -78,15 +79,11 @@ module ObjC.Metal.MTLHeapDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,8 +99,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- size@
 size :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> IO CULong
-size mtlHeapDescriptor  =
-    sendMsg mtlHeapDescriptor (mkSelector "size") retCULong []
+size mtlHeapDescriptor =
+  sendMessage mtlHeapDescriptor sizeSelector
 
 -- | size
 --
@@ -113,8 +110,8 @@ size mtlHeapDescriptor  =
 --
 -- ObjC selector: @- setSize:@
 setSize :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> CULong -> IO ()
-setSize mtlHeapDescriptor  value =
-    sendMsg mtlHeapDescriptor (mkSelector "setSize:") retVoid [argCULong value]
+setSize mtlHeapDescriptor value =
+  sendMessage mtlHeapDescriptor setSizeSelector value
 
 -- | storageMode
 --
@@ -124,8 +121,8 @@ setSize mtlHeapDescriptor  value =
 --
 -- ObjC selector: @- storageMode@
 storageMode :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> IO MTLStorageMode
-storageMode mtlHeapDescriptor  =
-    fmap (coerce :: CULong -> MTLStorageMode) $ sendMsg mtlHeapDescriptor (mkSelector "storageMode") retCULong []
+storageMode mtlHeapDescriptor =
+  sendMessage mtlHeapDescriptor storageModeSelector
 
 -- | storageMode
 --
@@ -135,8 +132,8 @@ storageMode mtlHeapDescriptor  =
 --
 -- ObjC selector: @- setStorageMode:@
 setStorageMode :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> MTLStorageMode -> IO ()
-setStorageMode mtlHeapDescriptor  value =
-    sendMsg mtlHeapDescriptor (mkSelector "setStorageMode:") retVoid [argCULong (coerce value)]
+setStorageMode mtlHeapDescriptor value =
+  sendMessage mtlHeapDescriptor setStorageModeSelector value
 
 -- | cpuCacheMode
 --
@@ -146,8 +143,8 @@ setStorageMode mtlHeapDescriptor  value =
 --
 -- ObjC selector: @- cpuCacheMode@
 cpuCacheMode :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> IO MTLCPUCacheMode
-cpuCacheMode mtlHeapDescriptor  =
-    fmap (coerce :: CULong -> MTLCPUCacheMode) $ sendMsg mtlHeapDescriptor (mkSelector "cpuCacheMode") retCULong []
+cpuCacheMode mtlHeapDescriptor =
+  sendMessage mtlHeapDescriptor cpuCacheModeSelector
 
 -- | cpuCacheMode
 --
@@ -157,8 +154,8 @@ cpuCacheMode mtlHeapDescriptor  =
 --
 -- ObjC selector: @- setCpuCacheMode:@
 setCpuCacheMode :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> MTLCPUCacheMode -> IO ()
-setCpuCacheMode mtlHeapDescriptor  value =
-    sendMsg mtlHeapDescriptor (mkSelector "setCpuCacheMode:") retVoid [argCULong (coerce value)]
+setCpuCacheMode mtlHeapDescriptor value =
+  sendMessage mtlHeapDescriptor setCpuCacheModeSelector value
 
 -- | sparsePageSize
 --
@@ -166,8 +163,8 @@ setCpuCacheMode mtlHeapDescriptor  value =
 --
 -- ObjC selector: @- sparsePageSize@
 sparsePageSize :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> IO MTLSparsePageSize
-sparsePageSize mtlHeapDescriptor  =
-    fmap (coerce :: CLong -> MTLSparsePageSize) $ sendMsg mtlHeapDescriptor (mkSelector "sparsePageSize") retCLong []
+sparsePageSize mtlHeapDescriptor =
+  sendMessage mtlHeapDescriptor sparsePageSizeSelector
 
 -- | sparsePageSize
 --
@@ -175,8 +172,8 @@ sparsePageSize mtlHeapDescriptor  =
 --
 -- ObjC selector: @- setSparsePageSize:@
 setSparsePageSize :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> MTLSparsePageSize -> IO ()
-setSparsePageSize mtlHeapDescriptor  value =
-    sendMsg mtlHeapDescriptor (mkSelector "setSparsePageSize:") retVoid [argCLong (coerce value)]
+setSparsePageSize mtlHeapDescriptor value =
+  sendMessage mtlHeapDescriptor setSparsePageSizeSelector value
 
 -- | hazardTrackingMode
 --
@@ -186,8 +183,8 @@ setSparsePageSize mtlHeapDescriptor  value =
 --
 -- ObjC selector: @- hazardTrackingMode@
 hazardTrackingMode :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> IO MTLHazardTrackingMode
-hazardTrackingMode mtlHeapDescriptor  =
-    fmap (coerce :: CULong -> MTLHazardTrackingMode) $ sendMsg mtlHeapDescriptor (mkSelector "hazardTrackingMode") retCULong []
+hazardTrackingMode mtlHeapDescriptor =
+  sendMessage mtlHeapDescriptor hazardTrackingModeSelector
 
 -- | hazardTrackingMode
 --
@@ -197,8 +194,8 @@ hazardTrackingMode mtlHeapDescriptor  =
 --
 -- ObjC selector: @- setHazardTrackingMode:@
 setHazardTrackingMode :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> MTLHazardTrackingMode -> IO ()
-setHazardTrackingMode mtlHeapDescriptor  value =
-    sendMsg mtlHeapDescriptor (mkSelector "setHazardTrackingMode:") retVoid [argCULong (coerce value)]
+setHazardTrackingMode mtlHeapDescriptor value =
+  sendMessage mtlHeapDescriptor setHazardTrackingModeSelector value
 
 -- | resourceOptions
 --
@@ -208,8 +205,8 @@ setHazardTrackingMode mtlHeapDescriptor  value =
 --
 -- ObjC selector: @- resourceOptions@
 resourceOptions :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> IO MTLResourceOptions
-resourceOptions mtlHeapDescriptor  =
-    fmap (coerce :: CULong -> MTLResourceOptions) $ sendMsg mtlHeapDescriptor (mkSelector "resourceOptions") retCULong []
+resourceOptions mtlHeapDescriptor =
+  sendMessage mtlHeapDescriptor resourceOptionsSelector
 
 -- | resourceOptions
 --
@@ -219,8 +216,8 @@ resourceOptions mtlHeapDescriptor  =
 --
 -- ObjC selector: @- setResourceOptions:@
 setResourceOptions :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> MTLResourceOptions -> IO ()
-setResourceOptions mtlHeapDescriptor  value =
-    sendMsg mtlHeapDescriptor (mkSelector "setResourceOptions:") retVoid [argCULong (coerce value)]
+setResourceOptions mtlHeapDescriptor value =
+  sendMessage mtlHeapDescriptor setResourceOptionsSelector value
 
 -- | type
 --
@@ -230,8 +227,8 @@ setResourceOptions mtlHeapDescriptor  value =
 --
 -- ObjC selector: @- type@
 type_ :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> IO MTLHeapType
-type_ mtlHeapDescriptor  =
-    fmap (coerce :: CLong -> MTLHeapType) $ sendMsg mtlHeapDescriptor (mkSelector "type") retCLong []
+type_ mtlHeapDescriptor =
+  sendMessage mtlHeapDescriptor typeSelector
 
 -- | type
 --
@@ -241,8 +238,8 @@ type_ mtlHeapDescriptor  =
 --
 -- ObjC selector: @- setType:@
 setType :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> MTLHeapType -> IO ()
-setType mtlHeapDescriptor  value =
-    sendMsg mtlHeapDescriptor (mkSelector "setType:") retVoid [argCLong (coerce value)]
+setType mtlHeapDescriptor value =
+  sendMessage mtlHeapDescriptor setTypeSelector value
 
 -- | Specifies the largest sparse page size that the Metal heap supports.
 --
@@ -252,8 +249,8 @@ setType mtlHeapDescriptor  value =
 --
 -- ObjC selector: @- maxCompatiblePlacementSparsePageSize@
 maxCompatiblePlacementSparsePageSize :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> IO MTLSparsePageSize
-maxCompatiblePlacementSparsePageSize mtlHeapDescriptor  =
-    fmap (coerce :: CLong -> MTLSparsePageSize) $ sendMsg mtlHeapDescriptor (mkSelector "maxCompatiblePlacementSparsePageSize") retCLong []
+maxCompatiblePlacementSparsePageSize mtlHeapDescriptor =
+  sendMessage mtlHeapDescriptor maxCompatiblePlacementSparsePageSizeSelector
 
 -- | Specifies the largest sparse page size that the Metal heap supports.
 --
@@ -263,74 +260,74 @@ maxCompatiblePlacementSparsePageSize mtlHeapDescriptor  =
 --
 -- ObjC selector: @- setMaxCompatiblePlacementSparsePageSize:@
 setMaxCompatiblePlacementSparsePageSize :: IsMTLHeapDescriptor mtlHeapDescriptor => mtlHeapDescriptor -> MTLSparsePageSize -> IO ()
-setMaxCompatiblePlacementSparsePageSize mtlHeapDescriptor  value =
-    sendMsg mtlHeapDescriptor (mkSelector "setMaxCompatiblePlacementSparsePageSize:") retVoid [argCLong (coerce value)]
+setMaxCompatiblePlacementSparsePageSize mtlHeapDescriptor value =
+  sendMessage mtlHeapDescriptor setMaxCompatiblePlacementSparsePageSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] CULong
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @setSize:@
-setSizeSelector :: Selector
+setSizeSelector :: Selector '[CULong] ()
 setSizeSelector = mkSelector "setSize:"
 
 -- | @Selector@ for @storageMode@
-storageModeSelector :: Selector
+storageModeSelector :: Selector '[] MTLStorageMode
 storageModeSelector = mkSelector "storageMode"
 
 -- | @Selector@ for @setStorageMode:@
-setStorageModeSelector :: Selector
+setStorageModeSelector :: Selector '[MTLStorageMode] ()
 setStorageModeSelector = mkSelector "setStorageMode:"
 
 -- | @Selector@ for @cpuCacheMode@
-cpuCacheModeSelector :: Selector
+cpuCacheModeSelector :: Selector '[] MTLCPUCacheMode
 cpuCacheModeSelector = mkSelector "cpuCacheMode"
 
 -- | @Selector@ for @setCpuCacheMode:@
-setCpuCacheModeSelector :: Selector
+setCpuCacheModeSelector :: Selector '[MTLCPUCacheMode] ()
 setCpuCacheModeSelector = mkSelector "setCpuCacheMode:"
 
 -- | @Selector@ for @sparsePageSize@
-sparsePageSizeSelector :: Selector
+sparsePageSizeSelector :: Selector '[] MTLSparsePageSize
 sparsePageSizeSelector = mkSelector "sparsePageSize"
 
 -- | @Selector@ for @setSparsePageSize:@
-setSparsePageSizeSelector :: Selector
+setSparsePageSizeSelector :: Selector '[MTLSparsePageSize] ()
 setSparsePageSizeSelector = mkSelector "setSparsePageSize:"
 
 -- | @Selector@ for @hazardTrackingMode@
-hazardTrackingModeSelector :: Selector
+hazardTrackingModeSelector :: Selector '[] MTLHazardTrackingMode
 hazardTrackingModeSelector = mkSelector "hazardTrackingMode"
 
 -- | @Selector@ for @setHazardTrackingMode:@
-setHazardTrackingModeSelector :: Selector
+setHazardTrackingModeSelector :: Selector '[MTLHazardTrackingMode] ()
 setHazardTrackingModeSelector = mkSelector "setHazardTrackingMode:"
 
 -- | @Selector@ for @resourceOptions@
-resourceOptionsSelector :: Selector
+resourceOptionsSelector :: Selector '[] MTLResourceOptions
 resourceOptionsSelector = mkSelector "resourceOptions"
 
 -- | @Selector@ for @setResourceOptions:@
-setResourceOptionsSelector :: Selector
+setResourceOptionsSelector :: Selector '[MTLResourceOptions] ()
 setResourceOptionsSelector = mkSelector "setResourceOptions:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MTLHeapType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[MTLHeapType] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @maxCompatiblePlacementSparsePageSize@
-maxCompatiblePlacementSparsePageSizeSelector :: Selector
+maxCompatiblePlacementSparsePageSizeSelector :: Selector '[] MTLSparsePageSize
 maxCompatiblePlacementSparsePageSizeSelector = mkSelector "maxCompatiblePlacementSparsePageSize"
 
 -- | @Selector@ for @setMaxCompatiblePlacementSparsePageSize:@
-setMaxCompatiblePlacementSparsePageSizeSelector :: Selector
+setMaxCompatiblePlacementSparsePageSizeSelector :: Selector '[MTLSparsePageSize] ()
 setMaxCompatiblePlacementSparsePageSizeSelector = mkSelector "setMaxCompatiblePlacementSparsePageSize:"
 

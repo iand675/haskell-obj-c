@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.MLCompute.MLCTensorParameter
   , tensor
   , isUpdatable
   , setIsUpdatable
-  , newSelector
   , initSelector
+  , isUpdatableSelector
+  , newSelector
   , parameterWithTensorSelector
   , parameterWithTensor_optimizerDataSelector
-  , tensorSelector
-  , isUpdatableSelector
   , setIsUpdatableSelector
+  , tensorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,12 +45,12 @@ new :: IO (Id MLCTensorParameter)
 new  =
   do
     cls' <- getRequiredClass "MLCTensorParameter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCTensorParameter mlcTensorParameter => mlcTensorParameter -> IO (Id MLCTensorParameter)
-init_ mlcTensorParameter  =
-    sendMsg mlcTensorParameter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcTensorParameter =
+  sendOwnedMessage mlcTensorParameter initSelector
 
 -- | Create a tensor parameter
 --
@@ -66,8 +63,7 @@ parameterWithTensor :: IsMLCTensor tensor => tensor -> IO (Id MLCTensorParameter
 parameterWithTensor tensor =
   do
     cls' <- getRequiredClass "MLCTensorParameter"
-    withObjCPtr tensor $ \raw_tensor ->
-      sendClassMsg cls' (mkSelector "parameterWithTensor:") (retPtr retVoid) [argPtr (castPtr raw_tensor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' parameterWithTensorSelector (toMLCTensor tensor)
 
 -- | Create a tensor parameter
 --
@@ -82,9 +78,7 @@ parameterWithTensor_optimizerData :: (IsMLCTensor tensor, IsNSArray optimizerDat
 parameterWithTensor_optimizerData tensor optimizerData =
   do
     cls' <- getRequiredClass "MLCTensorParameter"
-    withObjCPtr tensor $ \raw_tensor ->
-      withObjCPtr optimizerData $ \raw_optimizerData ->
-        sendClassMsg cls' (mkSelector "parameterWithTensor:optimizerData:") (retPtr retVoid) [argPtr (castPtr raw_tensor :: Ptr ()), argPtr (castPtr raw_optimizerData :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' parameterWithTensor_optimizerDataSelector (toMLCTensor tensor) (toNSArray optimizerData)
 
 -- | tensor
 --
@@ -92,8 +86,8 @@ parameterWithTensor_optimizerData tensor optimizerData =
 --
 -- ObjC selector: @- tensor@
 tensor :: IsMLCTensorParameter mlcTensorParameter => mlcTensorParameter -> IO (Id MLCTensor)
-tensor mlcTensorParameter  =
-    sendMsg mlcTensorParameter (mkSelector "tensor") (retPtr retVoid) [] >>= retainedObject . castPtr
+tensor mlcTensorParameter =
+  sendMessage mlcTensorParameter tensorSelector
 
 -- | isUpdatable
 --
@@ -101,8 +95,8 @@ tensor mlcTensorParameter  =
 --
 -- ObjC selector: @- isUpdatable@
 isUpdatable :: IsMLCTensorParameter mlcTensorParameter => mlcTensorParameter -> IO Bool
-isUpdatable mlcTensorParameter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTensorParameter (mkSelector "isUpdatable") retCULong []
+isUpdatable mlcTensorParameter =
+  sendMessage mlcTensorParameter isUpdatableSelector
 
 -- | isUpdatable
 --
@@ -110,38 +104,38 @@ isUpdatable mlcTensorParameter  =
 --
 -- ObjC selector: @- setIsUpdatable:@
 setIsUpdatable :: IsMLCTensorParameter mlcTensorParameter => mlcTensorParameter -> Bool -> IO ()
-setIsUpdatable mlcTensorParameter  value =
-    sendMsg mlcTensorParameter (mkSelector "setIsUpdatable:") retVoid [argCULong (if value then 1 else 0)]
+setIsUpdatable mlcTensorParameter value =
+  sendMessage mlcTensorParameter setIsUpdatableSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCTensorParameter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCTensorParameter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @parameterWithTensor:@
-parameterWithTensorSelector :: Selector
+parameterWithTensorSelector :: Selector '[Id MLCTensor] (Id MLCTensorParameter)
 parameterWithTensorSelector = mkSelector "parameterWithTensor:"
 
 -- | @Selector@ for @parameterWithTensor:optimizerData:@
-parameterWithTensor_optimizerDataSelector :: Selector
+parameterWithTensor_optimizerDataSelector :: Selector '[Id MLCTensor, Id NSArray] (Id MLCTensorParameter)
 parameterWithTensor_optimizerDataSelector = mkSelector "parameterWithTensor:optimizerData:"
 
 -- | @Selector@ for @tensor@
-tensorSelector :: Selector
+tensorSelector :: Selector '[] (Id MLCTensor)
 tensorSelector = mkSelector "tensor"
 
 -- | @Selector@ for @isUpdatable@
-isUpdatableSelector :: Selector
+isUpdatableSelector :: Selector '[] Bool
 isUpdatableSelector = mkSelector "isUpdatable"
 
 -- | @Selector@ for @setIsUpdatable:@
-setIsUpdatableSelector :: Selector
+setIsUpdatableSelector :: Selector '[Bool] ()
 setIsUpdatableSelector = mkSelector "setIsUpdatable:"
 

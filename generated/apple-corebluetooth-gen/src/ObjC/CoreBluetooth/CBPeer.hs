@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.CoreBluetooth.CBPeer
   , IsCBPeer(..)
   , init_
   , identifier
-  , initSelector
   , identifierSelector
+  , initSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,8 +28,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCBPeer cbPeer => cbPeer -> IO (Id CBPeer)
-init_ cbPeer  =
-    sendMsg cbPeer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cbPeer =
+  sendOwnedMessage cbPeer initSelector
 
 -- | identifier
 --
@@ -40,18 +37,18 @@ init_ cbPeer  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsCBPeer cbPeer => cbPeer -> IO RawId
-identifier cbPeer  =
-    fmap (RawId . castPtr) $ sendMsg cbPeer (mkSelector "identifier") (retPtr retVoid) []
+identifier cbPeer =
+  sendMessage cbPeer identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CBPeer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] RawId
 identifierSelector = mkSelector "identifier"
 

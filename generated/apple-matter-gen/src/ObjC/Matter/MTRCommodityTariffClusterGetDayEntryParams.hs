@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRCommodityTariffClusterGetDayEntryParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , dayEntryIDSelector
-  , setDayEntryIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setDayEntryIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- dayEntryID@
 dayEntryID :: IsMTRCommodityTariffClusterGetDayEntryParams mtrCommodityTariffClusterGetDayEntryParams => mtrCommodityTariffClusterGetDayEntryParams -> IO (Id NSNumber)
-dayEntryID mtrCommodityTariffClusterGetDayEntryParams  =
-    sendMsg mtrCommodityTariffClusterGetDayEntryParams (mkSelector "dayEntryID") (retPtr retVoid) [] >>= retainedObject . castPtr
+dayEntryID mtrCommodityTariffClusterGetDayEntryParams =
+  sendMessage mtrCommodityTariffClusterGetDayEntryParams dayEntryIDSelector
 
 -- | @- setDayEntryID:@
 setDayEntryID :: (IsMTRCommodityTariffClusterGetDayEntryParams mtrCommodityTariffClusterGetDayEntryParams, IsNSNumber value) => mtrCommodityTariffClusterGetDayEntryParams -> value -> IO ()
-setDayEntryID mtrCommodityTariffClusterGetDayEntryParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterGetDayEntryParams (mkSelector "setDayEntryID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDayEntryID mtrCommodityTariffClusterGetDayEntryParams value =
+  sendMessage mtrCommodityTariffClusterGetDayEntryParams setDayEntryIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setDayEntryID mtrCommodityTariffClusterGetDayEntryParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCommodityTariffClusterGetDayEntryParams mtrCommodityTariffClusterGetDayEntryParams => mtrCommodityTariffClusterGetDayEntryParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCommodityTariffClusterGetDayEntryParams  =
-    sendMsg mtrCommodityTariffClusterGetDayEntryParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCommodityTariffClusterGetDayEntryParams =
+  sendMessage mtrCommodityTariffClusterGetDayEntryParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrCommodityTariffClusterGetDayEntryParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCommodityTariffClusterGetDayEntryParams mtrCommodityTariffClusterGetDayEntryParams, IsNSNumber value) => mtrCommodityTariffClusterGetDayEntryParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCommodityTariffClusterGetDayEntryParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterGetDayEntryParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCommodityTariffClusterGetDayEntryParams value =
+  sendMessage mtrCommodityTariffClusterGetDayEntryParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrCommodityTariffClusterGetDayEntryParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCommodityTariffClusterGetDayEntryParams mtrCommodityTariffClusterGetDayEntryParams => mtrCommodityTariffClusterGetDayEntryParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCommodityTariffClusterGetDayEntryParams  =
-    sendMsg mtrCommodityTariffClusterGetDayEntryParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCommodityTariffClusterGetDayEntryParams =
+  sendMessage mtrCommodityTariffClusterGetDayEntryParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrCommodityTariffClusterGetDayEntryParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCommodityTariffClusterGetDayEntryParams mtrCommodityTariffClusterGetDayEntryParams, IsNSNumber value) => mtrCommodityTariffClusterGetDayEntryParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCommodityTariffClusterGetDayEntryParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterGetDayEntryParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCommodityTariffClusterGetDayEntryParams value =
+  sendMessage mtrCommodityTariffClusterGetDayEntryParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dayEntryID@
-dayEntryIDSelector :: Selector
+dayEntryIDSelector :: Selector '[] (Id NSNumber)
 dayEntryIDSelector = mkSelector "dayEntryID"
 
 -- | @Selector@ for @setDayEntryID:@
-setDayEntryIDSelector :: Selector
+setDayEntryIDSelector :: Selector '[Id NSNumber] ()
 setDayEntryIDSelector = mkSelector "setDayEntryID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

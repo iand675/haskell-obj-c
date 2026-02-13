@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.StoreKit.SKRequest
   , delegate
   , setDelegate
   , cancelSelector
-  , startSelector
   , delegateSelector
   , setDelegateSelector
+  , startSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cancel@
 cancel :: IsSKRequest skRequest => skRequest -> IO ()
-cancel skRequest  =
-    sendMsg skRequest (mkSelector "cancel") retVoid []
+cancel skRequest =
+  sendMessage skRequest cancelSelector
 
 -- | @- start@
 start :: IsSKRequest skRequest => skRequest -> IO ()
-start skRequest  =
-    sendMsg skRequest (mkSelector "start") retVoid []
+start skRequest =
+  sendMessage skRequest startSelector
 
 -- | @- delegate@
 delegate :: IsSKRequest skRequest => skRequest -> IO RawId
-delegate skRequest  =
-    fmap (RawId . castPtr) $ sendMsg skRequest (mkSelector "delegate") (retPtr retVoid) []
+delegate skRequest =
+  sendMessage skRequest delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsSKRequest skRequest => skRequest -> RawId -> IO ()
-setDelegate skRequest  value =
-    sendMsg skRequest (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate skRequest value =
+  sendMessage skRequest setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

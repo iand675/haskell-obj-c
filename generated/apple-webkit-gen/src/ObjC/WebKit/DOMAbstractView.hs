@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.WebKit.DOMAbstractView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -29,14 +26,14 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- document@
 document :: IsDOMAbstractView domAbstractView => domAbstractView -> IO (Id DOMDocument)
-document domAbstractView  =
-    sendMsg domAbstractView (mkSelector "document") (retPtr retVoid) [] >>= retainedObject . castPtr
+document domAbstractView =
+  sendMessage domAbstractView documentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @document@
-documentSelector :: Selector
+documentSelector :: Selector '[] (Id DOMDocument)
 documentSelector = mkSelector "document"
 

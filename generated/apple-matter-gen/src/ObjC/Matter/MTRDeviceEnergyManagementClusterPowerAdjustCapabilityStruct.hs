@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRDeviceEnergyManagementClusterPowerAdjustCapabilityStruct
   , setPowerAdjustCapability
   , cause
   , setCause
-  , powerAdjustCapabilitySelector
-  , setPowerAdjustCapabilitySelector
   , causeSelector
+  , powerAdjustCapabilitySelector
   , setCauseSelector
+  , setPowerAdjustCapabilitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- powerAdjustCapability@
 powerAdjustCapability :: IsMTRDeviceEnergyManagementClusterPowerAdjustCapabilityStruct mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct => mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct -> IO (Id NSArray)
-powerAdjustCapability mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct (mkSelector "powerAdjustCapability") (retPtr retVoid) [] >>= retainedObject . castPtr
+powerAdjustCapability mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct powerAdjustCapabilitySelector
 
 -- | @- setPowerAdjustCapability:@
 setPowerAdjustCapability :: (IsMTRDeviceEnergyManagementClusterPowerAdjustCapabilityStruct mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct, IsNSArray value) => mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct -> value -> IO ()
-setPowerAdjustCapability mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct (mkSelector "setPowerAdjustCapability:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPowerAdjustCapability mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct setPowerAdjustCapabilitySelector (toNSArray value)
 
 -- | @- cause@
 cause :: IsMTRDeviceEnergyManagementClusterPowerAdjustCapabilityStruct mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct => mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct -> IO (Id NSNumber)
-cause mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct (mkSelector "cause") (retPtr retVoid) [] >>= retainedObject . castPtr
+cause mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct causeSelector
 
 -- | @- setCause:@
 setCause :: (IsMTRDeviceEnergyManagementClusterPowerAdjustCapabilityStruct mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct -> value -> IO ()
-setCause mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct (mkSelector "setCause:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCause mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterPowerAdjustCapabilityStruct setCauseSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @powerAdjustCapability@
-powerAdjustCapabilitySelector :: Selector
+powerAdjustCapabilitySelector :: Selector '[] (Id NSArray)
 powerAdjustCapabilitySelector = mkSelector "powerAdjustCapability"
 
 -- | @Selector@ for @setPowerAdjustCapability:@
-setPowerAdjustCapabilitySelector :: Selector
+setPowerAdjustCapabilitySelector :: Selector '[Id NSArray] ()
 setPowerAdjustCapabilitySelector = mkSelector "setPowerAdjustCapability:"
 
 -- | @Selector@ for @cause@
-causeSelector :: Selector
+causeSelector :: Selector '[] (Id NSNumber)
 causeSelector = mkSelector "cause"
 
 -- | @Selector@ for @setCause:@
-setCauseSelector :: Selector
+setCauseSelector :: Selector '[Id NSNumber] ()
 setCauseSelector = mkSelector "setCause:"
 

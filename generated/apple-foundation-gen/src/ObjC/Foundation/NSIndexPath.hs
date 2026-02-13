@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,16 +19,16 @@ module ObjC.Foundation.NSIndexPath
   , compare_
   , getIndexes
   , length_
-  , indexPathWithIndexSelector
-  , indexPathWithIndexes_lengthSelector
-  , initWithIndexes_lengthSelector
-  , initWithIndexSelector
-  , indexPathByAddingIndexSelector
-  , indexPathByRemovingLastIndexSelector
-  , indexAtPositionSelector
-  , getIndexes_rangeSelector
   , compareSelector
   , getIndexesSelector
+  , getIndexes_rangeSelector
+  , indexAtPositionSelector
+  , indexPathByAddingIndexSelector
+  , indexPathByRemovingLastIndexSelector
+  , indexPathWithIndexSelector
+  , indexPathWithIndexes_lengthSelector
+  , initWithIndexSelector
+  , initWithIndexes_lengthSelector
   , lengthSelector
 
   -- * Enum types
@@ -38,15 +39,11 @@ module ObjC.Foundation.NSIndexPath
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,39 +56,39 @@ indexPathWithIndex :: CULong -> IO (Id NSIndexPath)
 indexPathWithIndex index =
   do
     cls' <- getRequiredClass "NSIndexPath"
-    sendClassMsg cls' (mkSelector "indexPathWithIndex:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+    sendClassMessage cls' indexPathWithIndexSelector index
 
 -- | @+ indexPathWithIndexes:length:@
 indexPathWithIndexes_length :: Const (Ptr CULong) -> CULong -> IO (Id NSIndexPath)
 indexPathWithIndexes_length indexes length_ =
   do
     cls' <- getRequiredClass "NSIndexPath"
-    sendClassMsg cls' (mkSelector "indexPathWithIndexes:length:") (retPtr retVoid) [argPtr (unConst indexes), argCULong length_] >>= retainedObject . castPtr
+    sendClassMessage cls' indexPathWithIndexes_lengthSelector indexes length_
 
 -- | @- initWithIndexes:length:@
 initWithIndexes_length :: IsNSIndexPath nsIndexPath => nsIndexPath -> Const (Ptr CULong) -> CULong -> IO (Id NSIndexPath)
-initWithIndexes_length nsIndexPath  indexes length_ =
-    sendMsg nsIndexPath (mkSelector "initWithIndexes:length:") (retPtr retVoid) [argPtr (unConst indexes), argCULong length_] >>= ownedObject . castPtr
+initWithIndexes_length nsIndexPath indexes length_ =
+  sendOwnedMessage nsIndexPath initWithIndexes_lengthSelector indexes length_
 
 -- | @- initWithIndex:@
 initWithIndex :: IsNSIndexPath nsIndexPath => nsIndexPath -> CULong -> IO (Id NSIndexPath)
-initWithIndex nsIndexPath  index =
-    sendMsg nsIndexPath (mkSelector "initWithIndex:") (retPtr retVoid) [argCULong index] >>= ownedObject . castPtr
+initWithIndex nsIndexPath index =
+  sendOwnedMessage nsIndexPath initWithIndexSelector index
 
 -- | @- indexPathByAddingIndex:@
 indexPathByAddingIndex :: IsNSIndexPath nsIndexPath => nsIndexPath -> CULong -> IO (Id NSIndexPath)
-indexPathByAddingIndex nsIndexPath  index =
-    sendMsg nsIndexPath (mkSelector "indexPathByAddingIndex:") (retPtr retVoid) [argCULong index] >>= retainedObject . castPtr
+indexPathByAddingIndex nsIndexPath index =
+  sendMessage nsIndexPath indexPathByAddingIndexSelector index
 
 -- | @- indexPathByRemovingLastIndex@
 indexPathByRemovingLastIndex :: IsNSIndexPath nsIndexPath => nsIndexPath -> IO (Id NSIndexPath)
-indexPathByRemovingLastIndex nsIndexPath  =
-    sendMsg nsIndexPath (mkSelector "indexPathByRemovingLastIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+indexPathByRemovingLastIndex nsIndexPath =
+  sendMessage nsIndexPath indexPathByRemovingLastIndexSelector
 
 -- | @- indexAtPosition:@
 indexAtPosition :: IsNSIndexPath nsIndexPath => nsIndexPath -> CULong -> IO CULong
-indexAtPosition nsIndexPath  position =
-    sendMsg nsIndexPath (mkSelector "indexAtPosition:") retCULong [argCULong position]
+indexAtPosition nsIndexPath position =
+  sendMessage nsIndexPath indexAtPositionSelector position
 
 -- | Copies the indexes stored in this index path from the positions specified by positionRange into indexes.
 --
@@ -103,72 +100,71 @@ indexAtPosition nsIndexPath  position =
 --
 -- ObjC selector: @- getIndexes:range:@
 getIndexes_range :: IsNSIndexPath nsIndexPath => nsIndexPath -> Ptr CULong -> NSRange -> IO ()
-getIndexes_range nsIndexPath  indexes positionRange =
-    sendMsg nsIndexPath (mkSelector "getIndexes:range:") retVoid [argPtr indexes, argNSRange positionRange]
+getIndexes_range nsIndexPath indexes positionRange =
+  sendMessage nsIndexPath getIndexes_rangeSelector indexes positionRange
 
 -- | @- compare:@
 compare_ :: (IsNSIndexPath nsIndexPath, IsNSIndexPath otherObject) => nsIndexPath -> otherObject -> IO NSComparisonResult
-compare_ nsIndexPath  otherObject =
-  withObjCPtr otherObject $ \raw_otherObject ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg nsIndexPath (mkSelector "compare:") retCLong [argPtr (castPtr raw_otherObject :: Ptr ())]
+compare_ nsIndexPath otherObject =
+  sendMessage nsIndexPath compareSelector (toNSIndexPath otherObject)
 
 -- | This method is unsafe because it could potentially cause buffer overruns. You should use -getIndexes:range: instead.
 --
 -- ObjC selector: @- getIndexes:@
 getIndexes :: IsNSIndexPath nsIndexPath => nsIndexPath -> Ptr CULong -> IO ()
-getIndexes nsIndexPath  indexes =
-    sendMsg nsIndexPath (mkSelector "getIndexes:") retVoid [argPtr indexes]
+getIndexes nsIndexPath indexes =
+  sendMessage nsIndexPath getIndexesSelector indexes
 
 -- | @- length@
 length_ :: IsNSIndexPath nsIndexPath => nsIndexPath -> IO CULong
-length_ nsIndexPath  =
-    sendMsg nsIndexPath (mkSelector "length") retCULong []
+length_ nsIndexPath =
+  sendMessage nsIndexPath lengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @indexPathWithIndex:@
-indexPathWithIndexSelector :: Selector
+indexPathWithIndexSelector :: Selector '[CULong] (Id NSIndexPath)
 indexPathWithIndexSelector = mkSelector "indexPathWithIndex:"
 
 -- | @Selector@ for @indexPathWithIndexes:length:@
-indexPathWithIndexes_lengthSelector :: Selector
+indexPathWithIndexes_lengthSelector :: Selector '[Const (Ptr CULong), CULong] (Id NSIndexPath)
 indexPathWithIndexes_lengthSelector = mkSelector "indexPathWithIndexes:length:"
 
 -- | @Selector@ for @initWithIndexes:length:@
-initWithIndexes_lengthSelector :: Selector
+initWithIndexes_lengthSelector :: Selector '[Const (Ptr CULong), CULong] (Id NSIndexPath)
 initWithIndexes_lengthSelector = mkSelector "initWithIndexes:length:"
 
 -- | @Selector@ for @initWithIndex:@
-initWithIndexSelector :: Selector
+initWithIndexSelector :: Selector '[CULong] (Id NSIndexPath)
 initWithIndexSelector = mkSelector "initWithIndex:"
 
 -- | @Selector@ for @indexPathByAddingIndex:@
-indexPathByAddingIndexSelector :: Selector
+indexPathByAddingIndexSelector :: Selector '[CULong] (Id NSIndexPath)
 indexPathByAddingIndexSelector = mkSelector "indexPathByAddingIndex:"
 
 -- | @Selector@ for @indexPathByRemovingLastIndex@
-indexPathByRemovingLastIndexSelector :: Selector
+indexPathByRemovingLastIndexSelector :: Selector '[] (Id NSIndexPath)
 indexPathByRemovingLastIndexSelector = mkSelector "indexPathByRemovingLastIndex"
 
 -- | @Selector@ for @indexAtPosition:@
-indexAtPositionSelector :: Selector
+indexAtPositionSelector :: Selector '[CULong] CULong
 indexAtPositionSelector = mkSelector "indexAtPosition:"
 
 -- | @Selector@ for @getIndexes:range:@
-getIndexes_rangeSelector :: Selector
+getIndexes_rangeSelector :: Selector '[Ptr CULong, NSRange] ()
 getIndexes_rangeSelector = mkSelector "getIndexes:range:"
 
 -- | @Selector@ for @compare:@
-compareSelector :: Selector
+compareSelector :: Selector '[Id NSIndexPath] NSComparisonResult
 compareSelector = mkSelector "compare:"
 
 -- | @Selector@ for @getIndexes:@
-getIndexesSelector :: Selector
+getIndexesSelector :: Selector '[Ptr CULong] ()
 getIndexesSelector = mkSelector "getIndexes:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CULong
 lengthSelector = mkSelector "length"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,8 +11,8 @@ module ObjC.Intents.INPreferences
   , siriAuthorizationStatus
   , requestSiriAuthorization
   , siriLanguageCode
-  , siriAuthorizationStatusSelector
   , requestSiriAuthorizationSelector
+  , siriAuthorizationStatusSelector
   , siriLanguageCodeSelector
 
   -- * Enum types
@@ -23,15 +24,11 @@ module ObjC.Intents.INPreferences
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,35 +41,35 @@ siriAuthorizationStatus :: IO INSiriAuthorizationStatus
 siriAuthorizationStatus  =
   do
     cls' <- getRequiredClass "INPreferences"
-    fmap (coerce :: CLong -> INSiriAuthorizationStatus) $ sendClassMsg cls' (mkSelector "siriAuthorizationStatus") retCLong []
+    sendClassMessage cls' siriAuthorizationStatusSelector
 
 -- | @+ requestSiriAuthorization:@
 requestSiriAuthorization :: Ptr () -> IO ()
 requestSiriAuthorization handler =
   do
     cls' <- getRequiredClass "INPreferences"
-    sendClassMsg cls' (mkSelector "requestSiriAuthorization:") retVoid [argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' requestSiriAuthorizationSelector handler
 
 -- | @+ siriLanguageCode@
 siriLanguageCode :: IO (Id NSString)
 siriLanguageCode  =
   do
     cls' <- getRequiredClass "INPreferences"
-    sendClassMsg cls' (mkSelector "siriLanguageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' siriLanguageCodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @siriAuthorizationStatus@
-siriAuthorizationStatusSelector :: Selector
+siriAuthorizationStatusSelector :: Selector '[] INSiriAuthorizationStatus
 siriAuthorizationStatusSelector = mkSelector "siriAuthorizationStatus"
 
 -- | @Selector@ for @requestSiriAuthorization:@
-requestSiriAuthorizationSelector :: Selector
+requestSiriAuthorizationSelector :: Selector '[Ptr ()] ()
 requestSiriAuthorizationSelector = mkSelector "requestSiriAuthorization:"
 
 -- | @Selector@ for @siriLanguageCode@
-siriLanguageCodeSelector :: Selector
+siriLanguageCodeSelector :: Selector '[] (Id NSString)
 siriLanguageCodeSelector = mkSelector "siriLanguageCode"
 

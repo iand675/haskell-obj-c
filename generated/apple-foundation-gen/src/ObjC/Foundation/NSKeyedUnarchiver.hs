@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,36 +40,38 @@ module ObjC.Foundation.NSKeyedUnarchiver
   , setRequiresSecureCoding
   , decodingFailurePolicy
   , setDecodingFailurePolicy
-  , initForReadingFromData_errorSelector
-  , unarchivedObjectOfClass_fromData_errorSelector
-  , unarchivedArrayOfObjectsOfClass_fromData_errorSelector
-  , unarchivedDictionaryWithKeysOfClass_objectsOfClass_fromData_errorSelector
-  , unarchivedObjectOfClasses_fromData_errorSelector
-  , unarchivedArrayOfObjectsOfClasses_fromData_errorSelector
-  , unarchivedDictionaryWithKeysOfClasses_objectsOfClasses_fromData_errorSelector
-  , initSelector
-  , initForReadingWithDataSelector
-  , unarchiveObjectWithDataSelector
-  , unarchiveTopLevelObjectWithData_errorSelector
-  , unarchiveObjectWithFileSelector
-  , finishDecodingSelector
-  , setClass_forClassNameSelector
   , classForClassNameSelector
   , containsValueForKeySelector
-  , decodeObjectForKeySelector
   , decodeBoolForKeySelector
-  , decodeIntForKeySelector
+  , decodeBytesForKey_returnedLengthSelector
+  , decodeDoubleForKeySelector
+  , decodeFloatForKeySelector
   , decodeInt32ForKeySelector
   , decodeInt64ForKeySelector
-  , decodeFloatForKeySelector
-  , decodeDoubleForKeySelector
-  , decodeBytesForKey_returnedLengthSelector
-  , delegateSelector
-  , setDelegateSelector
-  , requiresSecureCodingSelector
-  , setRequiresSecureCodingSelector
+  , decodeIntForKeySelector
+  , decodeObjectForKeySelector
   , decodingFailurePolicySelector
+  , delegateSelector
+  , finishDecodingSelector
+  , initForReadingFromData_errorSelector
+  , initForReadingWithDataSelector
+  , initSelector
+  , nsKeyedUnarchiverClassForClassNameSelector
+  , nsKeyedUnarchiverSetClass_forClassNameSelector
+  , requiresSecureCodingSelector
+  , setClass_forClassNameSelector
   , setDecodingFailurePolicySelector
+  , setDelegateSelector
+  , setRequiresSecureCodingSelector
+  , unarchiveObjectWithDataSelector
+  , unarchiveObjectWithFileSelector
+  , unarchiveTopLevelObjectWithData_errorSelector
+  , unarchivedArrayOfObjectsOfClass_fromData_errorSelector
+  , unarchivedArrayOfObjectsOfClasses_fromData_errorSelector
+  , unarchivedDictionaryWithKeysOfClass_objectsOfClass_fromData_errorSelector
+  , unarchivedDictionaryWithKeysOfClasses_objectsOfClasses_fromData_errorSelector
+  , unarchivedObjectOfClass_fromData_errorSelector
+  , unarchivedObjectOfClasses_fromData_errorSelector
 
   -- * Enum types
   , NSDecodingFailurePolicy(NSDecodingFailurePolicy)
@@ -77,15 +80,11 @@ module ObjC.Foundation.NSKeyedUnarchiver
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,10 +101,8 @@ import ObjC.Foundation.Internal.Enums
 --
 -- ObjC selector: @- initForReadingFromData:error:@
 initForReadingFromData_error :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSData data_, IsNSError error_) => nsKeyedUnarchiver -> data_ -> error_ -> IO (Id NSKeyedUnarchiver)
-initForReadingFromData_error nsKeyedUnarchiver  data_ error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsKeyedUnarchiver (mkSelector "initForReadingFromData:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initForReadingFromData_error nsKeyedUnarchiver data_ error_ =
+  sendOwnedMessage nsKeyedUnarchiver initForReadingFromData_errorSelector (toNSData data_) (toNSError error_)
 
 -- | Decodes the root object of the given class from the given archive, previously encoded by @NSKeyedArchiver.@
 --
@@ -118,9 +115,7 @@ unarchivedObjectOfClass_fromData_error :: (IsNSData data_, IsNSError error_) => 
 unarchivedObjectOfClass_fromData_error cls data_ error_ =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "unarchivedObjectOfClass:fromData:error:") (retPtr retVoid) [argPtr (unClass cls), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' unarchivedObjectOfClass_fromData_errorSelector cls (toNSData data_) (toNSError error_)
 
 -- | Decodes the @NSArray@ root object from @data@ which should be an @NSArray<cls>@ containing the given non-collection class (no nested arrays or arrays of dictionaries, etc) from the given archive, previously encoded by @NSKeyedArchiver.@  Enables @requiresSecureCoding@ and sets the @decodingFailurePolicy@ to @NSDecodingFailurePolicySetErrorAndReturn.@
 --
@@ -131,9 +126,7 @@ unarchivedArrayOfObjectsOfClass_fromData_error :: (IsNSData data_, IsNSError err
 unarchivedArrayOfObjectsOfClass_fromData_error cls data_ error_ =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "unarchivedArrayOfObjectsOfClass:fromData:error:") (retPtr retVoid) [argPtr (unClass cls), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' unarchivedArrayOfObjectsOfClass_fromData_errorSelector cls (toNSData data_) (toNSError error_)
 
 -- | Decodes the @NSDictionary@ root object from @data@ which should be an @NSDictionary<keyCls,objectCls>@  with keys of type given in @keyCls@ and objects of the given non-collection class @objectCls@ (no nested dictionaries or other dictionaries contained in the dictionary, etc) from the given archive, previously encoded by @NSKeyedArchiver.@
 --
@@ -146,9 +139,7 @@ unarchivedDictionaryWithKeysOfClass_objectsOfClass_fromData_error :: (IsNSData d
 unarchivedDictionaryWithKeysOfClass_objectsOfClass_fromData_error keyCls valueCls data_ error_ =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "unarchivedDictionaryWithKeysOfClass:objectsOfClass:fromData:error:") (retPtr retVoid) [argPtr (unClass keyCls), argPtr (unClass valueCls), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' unarchivedDictionaryWithKeysOfClass_objectsOfClass_fromData_errorSelector keyCls valueCls (toNSData data_) (toNSError error_)
 
 -- | Decodes the root object of one of the given classes from the given archive, previously encoded by @NSKeyedArchiver.@
 --
@@ -161,10 +152,7 @@ unarchivedObjectOfClasses_fromData_error :: (IsNSSet classes, IsNSData data_, Is
 unarchivedObjectOfClasses_fromData_error classes data_ error_ =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr classes $ \raw_classes ->
-      withObjCPtr data_ $ \raw_data_ ->
-        withObjCPtr error_ $ \raw_error_ ->
-          fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "unarchivedObjectOfClasses:fromData:error:") (retPtr retVoid) [argPtr (castPtr raw_classes :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' unarchivedObjectOfClasses_fromData_errorSelector (toNSSet classes) (toNSData data_) (toNSError error_)
 
 -- | Decodes the @NSArray@ root object from @data@ which should be an @NSArray,@ containing the given non-collection classes in @classes@  (no nested arrays or arrays of dictionaries, etc) from the given archive, previously encoded by @NSKeyedArchiver.@
 --
@@ -177,10 +165,7 @@ unarchivedArrayOfObjectsOfClasses_fromData_error :: (IsNSSet classes, IsNSData d
 unarchivedArrayOfObjectsOfClasses_fromData_error classes data_ error_ =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr classes $ \raw_classes ->
-      withObjCPtr data_ $ \raw_data_ ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "unarchivedArrayOfObjectsOfClasses:fromData:error:") (retPtr retVoid) [argPtr (castPtr raw_classes :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' unarchivedArrayOfObjectsOfClasses_fromData_errorSelector (toNSSet classes) (toNSData data_) (toNSError error_)
 
 -- | Decodes the @NSDictionary@ root object from @data@ which should be an @NSDictionary,@ with keys of the types given in @keyClasses@ and objects of the given non-collection classes in @objectClasses@ (no nested dictionaries or other dictionaries contained in the dictionary, etc) from the given archive, previously encoded by @NSKeyedArchiver.@
 --
@@ -193,286 +178,272 @@ unarchivedDictionaryWithKeysOfClasses_objectsOfClasses_fromData_error :: (IsNSSe
 unarchivedDictionaryWithKeysOfClasses_objectsOfClasses_fromData_error keyClasses valueClasses data_ error_ =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr keyClasses $ \raw_keyClasses ->
-      withObjCPtr valueClasses $ \raw_valueClasses ->
-        withObjCPtr data_ $ \raw_data_ ->
-          withObjCPtr error_ $ \raw_error_ ->
-            sendClassMsg cls' (mkSelector "unarchivedDictionaryWithKeysOfClasses:objectsOfClasses:fromData:error:") (retPtr retVoid) [argPtr (castPtr raw_keyClasses :: Ptr ()), argPtr (castPtr raw_valueClasses :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' unarchivedDictionaryWithKeysOfClasses_objectsOfClasses_fromData_errorSelector (toNSSet keyClasses) (toNSSet valueClasses) (toNSData data_) (toNSError error_)
 
 -- | @- init@
 init_ :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> IO (Id NSKeyedUnarchiver)
-init_ nsKeyedUnarchiver  =
-    sendMsg nsKeyedUnarchiver (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsKeyedUnarchiver =
+  sendOwnedMessage nsKeyedUnarchiver initSelector
 
 -- | @- initForReadingWithData:@
 initForReadingWithData :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSData data_) => nsKeyedUnarchiver -> data_ -> IO (Id NSKeyedUnarchiver)
-initForReadingWithData nsKeyedUnarchiver  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nsKeyedUnarchiver (mkSelector "initForReadingWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initForReadingWithData nsKeyedUnarchiver data_ =
+  sendOwnedMessage nsKeyedUnarchiver initForReadingWithDataSelector (toNSData data_)
 
 -- | @+ unarchiveObjectWithData:@
 unarchiveObjectWithData :: IsNSData data_ => data_ -> IO RawId
 unarchiveObjectWithData data_ =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr data_ $ \raw_data_ ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "unarchiveObjectWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())]
+    sendClassMessage cls' unarchiveObjectWithDataSelector (toNSData data_)
 
 -- | @+ unarchiveTopLevelObjectWithData:error:@
 unarchiveTopLevelObjectWithData_error :: (IsNSData data_, IsNSError error_) => data_ -> error_ -> IO RawId
 unarchiveTopLevelObjectWithData_error data_ error_ =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "unarchiveTopLevelObjectWithData:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' unarchiveTopLevelObjectWithData_errorSelector (toNSData data_) (toNSError error_)
 
 -- | @+ unarchiveObjectWithFile:@
 unarchiveObjectWithFile :: IsNSString path => path -> IO RawId
 unarchiveObjectWithFile path =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr path $ \raw_path ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "unarchiveObjectWithFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())]
+    sendClassMessage cls' unarchiveObjectWithFileSelector (toNSString path)
 
 -- | @- finishDecoding@
 finishDecoding :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> IO ()
-finishDecoding nsKeyedUnarchiver  =
-    sendMsg nsKeyedUnarchiver (mkSelector "finishDecoding") retVoid []
+finishDecoding nsKeyedUnarchiver =
+  sendMessage nsKeyedUnarchiver finishDecodingSelector
 
 -- | @+ setClass:forClassName:@
 nsKeyedUnarchiverSetClass_forClassName :: IsNSString codedName => Class -> codedName -> IO ()
 nsKeyedUnarchiverSetClass_forClassName cls codedName =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr codedName $ \raw_codedName ->
-      sendClassMsg cls' (mkSelector "setClass:forClassName:") retVoid [argPtr (unClass cls), argPtr (castPtr raw_codedName :: Ptr ())]
+    sendClassMessage cls' nsKeyedUnarchiverSetClass_forClassNameSelector cls (toNSString codedName)
 
 -- | @- setClass:forClassName:@
 setClass_forClassName :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString codedName) => nsKeyedUnarchiver -> Class -> codedName -> IO ()
-setClass_forClassName nsKeyedUnarchiver  cls codedName =
-  withObjCPtr codedName $ \raw_codedName ->
-      sendMsg nsKeyedUnarchiver (mkSelector "setClass:forClassName:") retVoid [argPtr (unClass cls), argPtr (castPtr raw_codedName :: Ptr ())]
+setClass_forClassName nsKeyedUnarchiver cls codedName =
+  sendMessage nsKeyedUnarchiver setClass_forClassNameSelector cls (toNSString codedName)
 
 -- | @+ classForClassName:@
 nsKeyedUnarchiverClassForClassName :: IsNSString codedName => codedName -> IO Class
 nsKeyedUnarchiverClassForClassName codedName =
   do
     cls' <- getRequiredClass "NSKeyedUnarchiver"
-    withObjCPtr codedName $ \raw_codedName ->
-      fmap (Class . castPtr) $ sendClassMsg cls' (mkSelector "classForClassName:") (retPtr retVoid) [argPtr (castPtr raw_codedName :: Ptr ())]
+    sendClassMessage cls' nsKeyedUnarchiverClassForClassNameSelector (toNSString codedName)
 
 -- | @- classForClassName:@
 classForClassName :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString codedName) => nsKeyedUnarchiver -> codedName -> IO Class
-classForClassName nsKeyedUnarchiver  codedName =
-  withObjCPtr codedName $ \raw_codedName ->
-      fmap (Class . castPtr) $ sendMsg nsKeyedUnarchiver (mkSelector "classForClassName:") (retPtr retVoid) [argPtr (castPtr raw_codedName :: Ptr ())]
+classForClassName nsKeyedUnarchiver codedName =
+  sendMessage nsKeyedUnarchiver classForClassNameSelector (toNSString codedName)
 
 -- | @- containsValueForKey:@
 containsValueForKey :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString key) => nsKeyedUnarchiver -> key -> IO Bool
-containsValueForKey nsKeyedUnarchiver  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsKeyedUnarchiver (mkSelector "containsValueForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+containsValueForKey nsKeyedUnarchiver key =
+  sendMessage nsKeyedUnarchiver containsValueForKeySelector (toNSString key)
 
 -- | @- decodeObjectForKey:@
 decodeObjectForKey :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString key) => nsKeyedUnarchiver -> key -> IO RawId
-decodeObjectForKey nsKeyedUnarchiver  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsKeyedUnarchiver (mkSelector "decodeObjectForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+decodeObjectForKey nsKeyedUnarchiver key =
+  sendMessage nsKeyedUnarchiver decodeObjectForKeySelector (toNSString key)
 
 -- | @- decodeBoolForKey:@
 decodeBoolForKey :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString key) => nsKeyedUnarchiver -> key -> IO Bool
-decodeBoolForKey nsKeyedUnarchiver  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsKeyedUnarchiver (mkSelector "decodeBoolForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+decodeBoolForKey nsKeyedUnarchiver key =
+  sendMessage nsKeyedUnarchiver decodeBoolForKeySelector (toNSString key)
 
 -- | @- decodeIntForKey:@
 decodeIntForKey :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString key) => nsKeyedUnarchiver -> key -> IO CInt
-decodeIntForKey nsKeyedUnarchiver  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsKeyedUnarchiver (mkSelector "decodeIntForKey:") retCInt [argPtr (castPtr raw_key :: Ptr ())]
+decodeIntForKey nsKeyedUnarchiver key =
+  sendMessage nsKeyedUnarchiver decodeIntForKeySelector (toNSString key)
 
 -- | @- decodeInt32ForKey:@
 decodeInt32ForKey :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString key) => nsKeyedUnarchiver -> key -> IO CInt
-decodeInt32ForKey nsKeyedUnarchiver  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsKeyedUnarchiver (mkSelector "decodeInt32ForKey:") retCInt [argPtr (castPtr raw_key :: Ptr ())]
+decodeInt32ForKey nsKeyedUnarchiver key =
+  sendMessage nsKeyedUnarchiver decodeInt32ForKeySelector (toNSString key)
 
 -- | @- decodeInt64ForKey:@
 decodeInt64ForKey :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString key) => nsKeyedUnarchiver -> key -> IO CLong
-decodeInt64ForKey nsKeyedUnarchiver  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsKeyedUnarchiver (mkSelector "decodeInt64ForKey:") retCLong [argPtr (castPtr raw_key :: Ptr ())]
+decodeInt64ForKey nsKeyedUnarchiver key =
+  sendMessage nsKeyedUnarchiver decodeInt64ForKeySelector (toNSString key)
 
 -- | @- decodeFloatForKey:@
 decodeFloatForKey :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString key) => nsKeyedUnarchiver -> key -> IO CFloat
-decodeFloatForKey nsKeyedUnarchiver  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsKeyedUnarchiver (mkSelector "decodeFloatForKey:") retCFloat [argPtr (castPtr raw_key :: Ptr ())]
+decodeFloatForKey nsKeyedUnarchiver key =
+  sendMessage nsKeyedUnarchiver decodeFloatForKeySelector (toNSString key)
 
 -- | @- decodeDoubleForKey:@
 decodeDoubleForKey :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString key) => nsKeyedUnarchiver -> key -> IO CDouble
-decodeDoubleForKey nsKeyedUnarchiver  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsKeyedUnarchiver (mkSelector "decodeDoubleForKey:") retCDouble [argPtr (castPtr raw_key :: Ptr ())]
+decodeDoubleForKey nsKeyedUnarchiver key =
+  sendMessage nsKeyedUnarchiver decodeDoubleForKeySelector (toNSString key)
 
 -- | @- decodeBytesForKey:returnedLength:@
 decodeBytesForKey_returnedLength :: (IsNSKeyedUnarchiver nsKeyedUnarchiver, IsNSString key) => nsKeyedUnarchiver -> key -> Ptr CULong -> IO (Const (Ptr CUChar))
-decodeBytesForKey_returnedLength nsKeyedUnarchiver  key lengthp =
-  withObjCPtr key $ \raw_key ->
-      fmap Const $ fmap castPtr $ sendMsg nsKeyedUnarchiver (mkSelector "decodeBytesForKey:returnedLength:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr lengthp]
+decodeBytesForKey_returnedLength nsKeyedUnarchiver key lengthp =
+  sendMessage nsKeyedUnarchiver decodeBytesForKey_returnedLengthSelector (toNSString key) lengthp
 
 -- | @- delegate@
 delegate :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> IO RawId
-delegate nsKeyedUnarchiver  =
-    fmap (RawId . castPtr) $ sendMsg nsKeyedUnarchiver (mkSelector "delegate") (retPtr retVoid) []
+delegate nsKeyedUnarchiver =
+  sendMessage nsKeyedUnarchiver delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> RawId -> IO ()
-setDelegate nsKeyedUnarchiver  value =
-    sendMsg nsKeyedUnarchiver (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsKeyedUnarchiver value =
+  sendMessage nsKeyedUnarchiver setDelegateSelector value
 
 -- | @- requiresSecureCoding@
 requiresSecureCoding :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> IO Bool
-requiresSecureCoding nsKeyedUnarchiver  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsKeyedUnarchiver (mkSelector "requiresSecureCoding") retCULong []
+requiresSecureCoding nsKeyedUnarchiver =
+  sendMessage nsKeyedUnarchiver requiresSecureCodingSelector
 
 -- | @- setRequiresSecureCoding:@
 setRequiresSecureCoding :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> Bool -> IO ()
-setRequiresSecureCoding nsKeyedUnarchiver  value =
-    sendMsg nsKeyedUnarchiver (mkSelector "setRequiresSecureCoding:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresSecureCoding nsKeyedUnarchiver value =
+  sendMessage nsKeyedUnarchiver setRequiresSecureCodingSelector value
 
 -- | @- decodingFailurePolicy@
 decodingFailurePolicy :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> IO NSDecodingFailurePolicy
-decodingFailurePolicy nsKeyedUnarchiver  =
-    fmap (coerce :: CLong -> NSDecodingFailurePolicy) $ sendMsg nsKeyedUnarchiver (mkSelector "decodingFailurePolicy") retCLong []
+decodingFailurePolicy nsKeyedUnarchiver =
+  sendMessage nsKeyedUnarchiver decodingFailurePolicySelector
 
 -- | @- setDecodingFailurePolicy:@
 setDecodingFailurePolicy :: IsNSKeyedUnarchiver nsKeyedUnarchiver => nsKeyedUnarchiver -> NSDecodingFailurePolicy -> IO ()
-setDecodingFailurePolicy nsKeyedUnarchiver  value =
-    sendMsg nsKeyedUnarchiver (mkSelector "setDecodingFailurePolicy:") retVoid [argCLong (coerce value)]
+setDecodingFailurePolicy nsKeyedUnarchiver value =
+  sendMessage nsKeyedUnarchiver setDecodingFailurePolicySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initForReadingFromData:error:@
-initForReadingFromData_errorSelector :: Selector
+initForReadingFromData_errorSelector :: Selector '[Id NSData, Id NSError] (Id NSKeyedUnarchiver)
 initForReadingFromData_errorSelector = mkSelector "initForReadingFromData:error:"
 
 -- | @Selector@ for @unarchivedObjectOfClass:fromData:error:@
-unarchivedObjectOfClass_fromData_errorSelector :: Selector
+unarchivedObjectOfClass_fromData_errorSelector :: Selector '[Class, Id NSData, Id NSError] RawId
 unarchivedObjectOfClass_fromData_errorSelector = mkSelector "unarchivedObjectOfClass:fromData:error:"
 
 -- | @Selector@ for @unarchivedArrayOfObjectsOfClass:fromData:error:@
-unarchivedArrayOfObjectsOfClass_fromData_errorSelector :: Selector
+unarchivedArrayOfObjectsOfClass_fromData_errorSelector :: Selector '[Class, Id NSData, Id NSError] (Id NSArray)
 unarchivedArrayOfObjectsOfClass_fromData_errorSelector = mkSelector "unarchivedArrayOfObjectsOfClass:fromData:error:"
 
 -- | @Selector@ for @unarchivedDictionaryWithKeysOfClass:objectsOfClass:fromData:error:@
-unarchivedDictionaryWithKeysOfClass_objectsOfClass_fromData_errorSelector :: Selector
+unarchivedDictionaryWithKeysOfClass_objectsOfClass_fromData_errorSelector :: Selector '[Class, Class, Id NSData, Id NSError] (Id NSDictionary)
 unarchivedDictionaryWithKeysOfClass_objectsOfClass_fromData_errorSelector = mkSelector "unarchivedDictionaryWithKeysOfClass:objectsOfClass:fromData:error:"
 
 -- | @Selector@ for @unarchivedObjectOfClasses:fromData:error:@
-unarchivedObjectOfClasses_fromData_errorSelector :: Selector
+unarchivedObjectOfClasses_fromData_errorSelector :: Selector '[Id NSSet, Id NSData, Id NSError] RawId
 unarchivedObjectOfClasses_fromData_errorSelector = mkSelector "unarchivedObjectOfClasses:fromData:error:"
 
 -- | @Selector@ for @unarchivedArrayOfObjectsOfClasses:fromData:error:@
-unarchivedArrayOfObjectsOfClasses_fromData_errorSelector :: Selector
+unarchivedArrayOfObjectsOfClasses_fromData_errorSelector :: Selector '[Id NSSet, Id NSData, Id NSError] (Id NSArray)
 unarchivedArrayOfObjectsOfClasses_fromData_errorSelector = mkSelector "unarchivedArrayOfObjectsOfClasses:fromData:error:"
 
 -- | @Selector@ for @unarchivedDictionaryWithKeysOfClasses:objectsOfClasses:fromData:error:@
-unarchivedDictionaryWithKeysOfClasses_objectsOfClasses_fromData_errorSelector :: Selector
+unarchivedDictionaryWithKeysOfClasses_objectsOfClasses_fromData_errorSelector :: Selector '[Id NSSet, Id NSSet, Id NSData, Id NSError] (Id NSDictionary)
 unarchivedDictionaryWithKeysOfClasses_objectsOfClasses_fromData_errorSelector = mkSelector "unarchivedDictionaryWithKeysOfClasses:objectsOfClasses:fromData:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSKeyedUnarchiver)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initForReadingWithData:@
-initForReadingWithDataSelector :: Selector
+initForReadingWithDataSelector :: Selector '[Id NSData] (Id NSKeyedUnarchiver)
 initForReadingWithDataSelector = mkSelector "initForReadingWithData:"
 
 -- | @Selector@ for @unarchiveObjectWithData:@
-unarchiveObjectWithDataSelector :: Selector
+unarchiveObjectWithDataSelector :: Selector '[Id NSData] RawId
 unarchiveObjectWithDataSelector = mkSelector "unarchiveObjectWithData:"
 
 -- | @Selector@ for @unarchiveTopLevelObjectWithData:error:@
-unarchiveTopLevelObjectWithData_errorSelector :: Selector
+unarchiveTopLevelObjectWithData_errorSelector :: Selector '[Id NSData, Id NSError] RawId
 unarchiveTopLevelObjectWithData_errorSelector = mkSelector "unarchiveTopLevelObjectWithData:error:"
 
 -- | @Selector@ for @unarchiveObjectWithFile:@
-unarchiveObjectWithFileSelector :: Selector
+unarchiveObjectWithFileSelector :: Selector '[Id NSString] RawId
 unarchiveObjectWithFileSelector = mkSelector "unarchiveObjectWithFile:"
 
 -- | @Selector@ for @finishDecoding@
-finishDecodingSelector :: Selector
+finishDecodingSelector :: Selector '[] ()
 finishDecodingSelector = mkSelector "finishDecoding"
 
 -- | @Selector@ for @setClass:forClassName:@
-setClass_forClassNameSelector :: Selector
+nsKeyedUnarchiverSetClass_forClassNameSelector :: Selector '[Class, Id NSString] ()
+nsKeyedUnarchiverSetClass_forClassNameSelector = mkSelector "setClass:forClassName:"
+
+-- | @Selector@ for @setClass:forClassName:@
+setClass_forClassNameSelector :: Selector '[Class, Id NSString] ()
 setClass_forClassNameSelector = mkSelector "setClass:forClassName:"
 
 -- | @Selector@ for @classForClassName:@
-classForClassNameSelector :: Selector
+nsKeyedUnarchiverClassForClassNameSelector :: Selector '[Id NSString] Class
+nsKeyedUnarchiverClassForClassNameSelector = mkSelector "classForClassName:"
+
+-- | @Selector@ for @classForClassName:@
+classForClassNameSelector :: Selector '[Id NSString] Class
 classForClassNameSelector = mkSelector "classForClassName:"
 
 -- | @Selector@ for @containsValueForKey:@
-containsValueForKeySelector :: Selector
+containsValueForKeySelector :: Selector '[Id NSString] Bool
 containsValueForKeySelector = mkSelector "containsValueForKey:"
 
 -- | @Selector@ for @decodeObjectForKey:@
-decodeObjectForKeySelector :: Selector
+decodeObjectForKeySelector :: Selector '[Id NSString] RawId
 decodeObjectForKeySelector = mkSelector "decodeObjectForKey:"
 
 -- | @Selector@ for @decodeBoolForKey:@
-decodeBoolForKeySelector :: Selector
+decodeBoolForKeySelector :: Selector '[Id NSString] Bool
 decodeBoolForKeySelector = mkSelector "decodeBoolForKey:"
 
 -- | @Selector@ for @decodeIntForKey:@
-decodeIntForKeySelector :: Selector
+decodeIntForKeySelector :: Selector '[Id NSString] CInt
 decodeIntForKeySelector = mkSelector "decodeIntForKey:"
 
 -- | @Selector@ for @decodeInt32ForKey:@
-decodeInt32ForKeySelector :: Selector
+decodeInt32ForKeySelector :: Selector '[Id NSString] CInt
 decodeInt32ForKeySelector = mkSelector "decodeInt32ForKey:"
 
 -- | @Selector@ for @decodeInt64ForKey:@
-decodeInt64ForKeySelector :: Selector
+decodeInt64ForKeySelector :: Selector '[Id NSString] CLong
 decodeInt64ForKeySelector = mkSelector "decodeInt64ForKey:"
 
 -- | @Selector@ for @decodeFloatForKey:@
-decodeFloatForKeySelector :: Selector
+decodeFloatForKeySelector :: Selector '[Id NSString] CFloat
 decodeFloatForKeySelector = mkSelector "decodeFloatForKey:"
 
 -- | @Selector@ for @decodeDoubleForKey:@
-decodeDoubleForKeySelector :: Selector
+decodeDoubleForKeySelector :: Selector '[Id NSString] CDouble
 decodeDoubleForKeySelector = mkSelector "decodeDoubleForKey:"
 
 -- | @Selector@ for @decodeBytesForKey:returnedLength:@
-decodeBytesForKey_returnedLengthSelector :: Selector
+decodeBytesForKey_returnedLengthSelector :: Selector '[Id NSString, Ptr CULong] (Const (Ptr CUChar))
 decodeBytesForKey_returnedLengthSelector = mkSelector "decodeBytesForKey:returnedLength:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @requiresSecureCoding@
-requiresSecureCodingSelector :: Selector
+requiresSecureCodingSelector :: Selector '[] Bool
 requiresSecureCodingSelector = mkSelector "requiresSecureCoding"
 
 -- | @Selector@ for @setRequiresSecureCoding:@
-setRequiresSecureCodingSelector :: Selector
+setRequiresSecureCodingSelector :: Selector '[Bool] ()
 setRequiresSecureCodingSelector = mkSelector "setRequiresSecureCoding:"
 
 -- | @Selector@ for @decodingFailurePolicy@
-decodingFailurePolicySelector :: Selector
+decodingFailurePolicySelector :: Selector '[] NSDecodingFailurePolicy
 decodingFailurePolicySelector = mkSelector "decodingFailurePolicy"
 
 -- | @Selector@ for @setDecodingFailurePolicy:@
-setDecodingFailurePolicySelector :: Selector
+setDecodingFailurePolicySelector :: Selector '[NSDecodingFailurePolicy] ()
 setDecodingFailurePolicySelector = mkSelector "setDecodingFailurePolicy:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.OSAKit.OSAScriptView
   , setIndentsWrappedLines
   , indentWidth
   , setIndentWidth
-  , sourceSelector
-  , setSourceSelector
-  , usesScriptAssistantSelector
-  , setUsesScriptAssistantSelector
-  , usesTabsSelector
-  , setUsesTabsSelector
-  , tabWidthSelector
-  , setTabWidthSelector
-  , wrapsLinesSelector
-  , setWrapsLinesSelector
-  , indentsWrappedLinesSelector
-  , setIndentsWrappedLinesSelector
   , indentWidthSelector
+  , indentsWrappedLinesSelector
   , setIndentWidthSelector
+  , setIndentsWrappedLinesSelector
+  , setSourceSelector
+  , setTabWidthSelector
+  , setUsesScriptAssistantSelector
+  , setUsesTabsSelector
+  , setWrapsLinesSelector
+  , sourceSelector
+  , tabWidthSelector
+  , usesScriptAssistantSelector
+  , usesTabsSelector
+  , wrapsLinesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,132 +53,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- source@
 source :: IsOSAScriptView osaScriptView => osaScriptView -> IO (Id NSString)
-source osaScriptView  =
-    sendMsg osaScriptView (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+source osaScriptView =
+  sendMessage osaScriptView sourceSelector
 
 -- | @- setSource:@
 setSource :: (IsOSAScriptView osaScriptView, IsNSString value) => osaScriptView -> value -> IO ()
-setSource osaScriptView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg osaScriptView (mkSelector "setSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSource osaScriptView value =
+  sendMessage osaScriptView setSourceSelector (toNSString value)
 
 -- | @- usesScriptAssistant@
 usesScriptAssistant :: IsOSAScriptView osaScriptView => osaScriptView -> IO Bool
-usesScriptAssistant osaScriptView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg osaScriptView (mkSelector "usesScriptAssistant") retCULong []
+usesScriptAssistant osaScriptView =
+  sendMessage osaScriptView usesScriptAssistantSelector
 
 -- | @- setUsesScriptAssistant:@
 setUsesScriptAssistant :: IsOSAScriptView osaScriptView => osaScriptView -> Bool -> IO ()
-setUsesScriptAssistant osaScriptView  value =
-    sendMsg osaScriptView (mkSelector "setUsesScriptAssistant:") retVoid [argCULong (if value then 1 else 0)]
+setUsesScriptAssistant osaScriptView value =
+  sendMessage osaScriptView setUsesScriptAssistantSelector value
 
 -- | @- usesTabs@
 usesTabs :: IsOSAScriptView osaScriptView => osaScriptView -> IO Bool
-usesTabs osaScriptView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg osaScriptView (mkSelector "usesTabs") retCULong []
+usesTabs osaScriptView =
+  sendMessage osaScriptView usesTabsSelector
 
 -- | @- setUsesTabs:@
 setUsesTabs :: IsOSAScriptView osaScriptView => osaScriptView -> Bool -> IO ()
-setUsesTabs osaScriptView  value =
-    sendMsg osaScriptView (mkSelector "setUsesTabs:") retVoid [argCULong (if value then 1 else 0)]
+setUsesTabs osaScriptView value =
+  sendMessage osaScriptView setUsesTabsSelector value
 
 -- | @- tabWidth@
 tabWidth :: IsOSAScriptView osaScriptView => osaScriptView -> IO CULong
-tabWidth osaScriptView  =
-    sendMsg osaScriptView (mkSelector "tabWidth") retCULong []
+tabWidth osaScriptView =
+  sendMessage osaScriptView tabWidthSelector
 
 -- | @- setTabWidth:@
 setTabWidth :: IsOSAScriptView osaScriptView => osaScriptView -> CULong -> IO ()
-setTabWidth osaScriptView  value =
-    sendMsg osaScriptView (mkSelector "setTabWidth:") retVoid [argCULong value]
+setTabWidth osaScriptView value =
+  sendMessage osaScriptView setTabWidthSelector value
 
 -- | @- wrapsLines@
 wrapsLines :: IsOSAScriptView osaScriptView => osaScriptView -> IO Bool
-wrapsLines osaScriptView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg osaScriptView (mkSelector "wrapsLines") retCULong []
+wrapsLines osaScriptView =
+  sendMessage osaScriptView wrapsLinesSelector
 
 -- | @- setWrapsLines:@
 setWrapsLines :: IsOSAScriptView osaScriptView => osaScriptView -> Bool -> IO ()
-setWrapsLines osaScriptView  value =
-    sendMsg osaScriptView (mkSelector "setWrapsLines:") retVoid [argCULong (if value then 1 else 0)]
+setWrapsLines osaScriptView value =
+  sendMessage osaScriptView setWrapsLinesSelector value
 
 -- | @- indentsWrappedLines@
 indentsWrappedLines :: IsOSAScriptView osaScriptView => osaScriptView -> IO Bool
-indentsWrappedLines osaScriptView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg osaScriptView (mkSelector "indentsWrappedLines") retCULong []
+indentsWrappedLines osaScriptView =
+  sendMessage osaScriptView indentsWrappedLinesSelector
 
 -- | @- setIndentsWrappedLines:@
 setIndentsWrappedLines :: IsOSAScriptView osaScriptView => osaScriptView -> Bool -> IO ()
-setIndentsWrappedLines osaScriptView  value =
-    sendMsg osaScriptView (mkSelector "setIndentsWrappedLines:") retVoid [argCULong (if value then 1 else 0)]
+setIndentsWrappedLines osaScriptView value =
+  sendMessage osaScriptView setIndentsWrappedLinesSelector value
 
 -- | @- indentWidth@
 indentWidth :: IsOSAScriptView osaScriptView => osaScriptView -> IO CULong
-indentWidth osaScriptView  =
-    sendMsg osaScriptView (mkSelector "indentWidth") retCULong []
+indentWidth osaScriptView =
+  sendMessage osaScriptView indentWidthSelector
 
 -- | @- setIndentWidth:@
 setIndentWidth :: IsOSAScriptView osaScriptView => osaScriptView -> CULong -> IO ()
-setIndentWidth osaScriptView  value =
-    sendMsg osaScriptView (mkSelector "setIndentWidth:") retVoid [argCULong value]
+setIndentWidth osaScriptView value =
+  sendMessage osaScriptView setIndentWidthSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id NSString)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @setSource:@
-setSourceSelector :: Selector
+setSourceSelector :: Selector '[Id NSString] ()
 setSourceSelector = mkSelector "setSource:"
 
 -- | @Selector@ for @usesScriptAssistant@
-usesScriptAssistantSelector :: Selector
+usesScriptAssistantSelector :: Selector '[] Bool
 usesScriptAssistantSelector = mkSelector "usesScriptAssistant"
 
 -- | @Selector@ for @setUsesScriptAssistant:@
-setUsesScriptAssistantSelector :: Selector
+setUsesScriptAssistantSelector :: Selector '[Bool] ()
 setUsesScriptAssistantSelector = mkSelector "setUsesScriptAssistant:"
 
 -- | @Selector@ for @usesTabs@
-usesTabsSelector :: Selector
+usesTabsSelector :: Selector '[] Bool
 usesTabsSelector = mkSelector "usesTabs"
 
 -- | @Selector@ for @setUsesTabs:@
-setUsesTabsSelector :: Selector
+setUsesTabsSelector :: Selector '[Bool] ()
 setUsesTabsSelector = mkSelector "setUsesTabs:"
 
 -- | @Selector@ for @tabWidth@
-tabWidthSelector :: Selector
+tabWidthSelector :: Selector '[] CULong
 tabWidthSelector = mkSelector "tabWidth"
 
 -- | @Selector@ for @setTabWidth:@
-setTabWidthSelector :: Selector
+setTabWidthSelector :: Selector '[CULong] ()
 setTabWidthSelector = mkSelector "setTabWidth:"
 
 -- | @Selector@ for @wrapsLines@
-wrapsLinesSelector :: Selector
+wrapsLinesSelector :: Selector '[] Bool
 wrapsLinesSelector = mkSelector "wrapsLines"
 
 -- | @Selector@ for @setWrapsLines:@
-setWrapsLinesSelector :: Selector
+setWrapsLinesSelector :: Selector '[Bool] ()
 setWrapsLinesSelector = mkSelector "setWrapsLines:"
 
 -- | @Selector@ for @indentsWrappedLines@
-indentsWrappedLinesSelector :: Selector
+indentsWrappedLinesSelector :: Selector '[] Bool
 indentsWrappedLinesSelector = mkSelector "indentsWrappedLines"
 
 -- | @Selector@ for @setIndentsWrappedLines:@
-setIndentsWrappedLinesSelector :: Selector
+setIndentsWrappedLinesSelector :: Selector '[Bool] ()
 setIndentsWrappedLinesSelector = mkSelector "setIndentsWrappedLines:"
 
 -- | @Selector@ for @indentWidth@
-indentWidthSelector :: Selector
+indentWidthSelector :: Selector '[] CULong
 indentWidthSelector = mkSelector "indentWidth"
 
 -- | @Selector@ for @setIndentWidth:@
-setIndentWidthSelector :: Selector
+setIndentWidthSelector :: Selector '[CULong] ()
 setIndentWidthSelector = mkSelector "setIndentWidth:"
 

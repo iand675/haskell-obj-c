@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.ModelIO.MDLVertexBufferLayout
   , stride
   , setStride
   , initWithStrideSelector
-  , strideSelector
   , setStrideSelector
+  , strideSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithStride:@
 initWithStride :: IsMDLVertexBufferLayout mdlVertexBufferLayout => mdlVertexBufferLayout -> CULong -> IO (Id MDLVertexBufferLayout)
-initWithStride mdlVertexBufferLayout  stride =
-    sendMsg mdlVertexBufferLayout (mkSelector "initWithStride:") (retPtr retVoid) [argCULong stride] >>= ownedObject . castPtr
+initWithStride mdlVertexBufferLayout stride =
+  sendOwnedMessage mdlVertexBufferLayout initWithStrideSelector stride
 
 -- | stride
 --
@@ -48,8 +45,8 @@ initWithStride mdlVertexBufferLayout  stride =
 --
 -- ObjC selector: @- stride@
 stride :: IsMDLVertexBufferLayout mdlVertexBufferLayout => mdlVertexBufferLayout -> IO CULong
-stride mdlVertexBufferLayout  =
-    sendMsg mdlVertexBufferLayout (mkSelector "stride") retCULong []
+stride mdlVertexBufferLayout =
+  sendMessage mdlVertexBufferLayout strideSelector
 
 -- | stride
 --
@@ -59,22 +56,22 @@ stride mdlVertexBufferLayout  =
 --
 -- ObjC selector: @- setStride:@
 setStride :: IsMDLVertexBufferLayout mdlVertexBufferLayout => mdlVertexBufferLayout -> CULong -> IO ()
-setStride mdlVertexBufferLayout  value =
-    sendMsg mdlVertexBufferLayout (mkSelector "setStride:") retVoid [argCULong value]
+setStride mdlVertexBufferLayout value =
+  sendMessage mdlVertexBufferLayout setStrideSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithStride:@
-initWithStrideSelector :: Selector
+initWithStrideSelector :: Selector '[CULong] (Id MDLVertexBufferLayout)
 initWithStrideSelector = mkSelector "initWithStride:"
 
 -- | @Selector@ for @stride@
-strideSelector :: Selector
+strideSelector :: Selector '[] CULong
 strideSelector = mkSelector "stride"
 
 -- | @Selector@ for @setStride:@
-setStrideSelector :: Selector
+setStrideSelector :: Selector '[CULong] ()
 setStrideSelector = mkSelector "setStride:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.PDFKit.PDFAnnotationLine
   , setEndLineStyle
   , interiorColor
   , setInteriorColor
-  , startPointSelector
-  , setStartPointSelector
-  , endPointSelector
-  , setEndPointSelector
-  , startLineStyleSelector
-  , setStartLineStyleSelector
   , endLineStyleSelector
-  , setEndLineStyleSelector
+  , endPointSelector
   , interiorColorSelector
+  , setEndLineStyleSelector
+  , setEndPointSelector
   , setInteriorColorSelector
+  , setStartLineStyleSelector
+  , setStartPointSelector
+  , startLineStyleSelector
+  , startPointSelector
 
   -- * Enum types
   , PDFLineStyle(PDFLineStyle)
@@ -39,15 +40,11 @@ module ObjC.PDFKit.PDFAnnotationLine
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,96 +56,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- startPoint@
 startPoint :: IsPDFAnnotationLine pdfAnnotationLine => pdfAnnotationLine -> IO NSPoint
-startPoint pdfAnnotationLine  =
-    sendMsgStret pdfAnnotationLine (mkSelector "startPoint") retNSPoint []
+startPoint pdfAnnotationLine =
+  sendMessage pdfAnnotationLine startPointSelector
 
 -- | @- setStartPoint:@
 setStartPoint :: IsPDFAnnotationLine pdfAnnotationLine => pdfAnnotationLine -> NSPoint -> IO ()
-setStartPoint pdfAnnotationLine  point =
-    sendMsg pdfAnnotationLine (mkSelector "setStartPoint:") retVoid [argNSPoint point]
+setStartPoint pdfAnnotationLine point =
+  sendMessage pdfAnnotationLine setStartPointSelector point
 
 -- | @- endPoint@
 endPoint :: IsPDFAnnotationLine pdfAnnotationLine => pdfAnnotationLine -> IO NSPoint
-endPoint pdfAnnotationLine  =
-    sendMsgStret pdfAnnotationLine (mkSelector "endPoint") retNSPoint []
+endPoint pdfAnnotationLine =
+  sendMessage pdfAnnotationLine endPointSelector
 
 -- | @- setEndPoint:@
 setEndPoint :: IsPDFAnnotationLine pdfAnnotationLine => pdfAnnotationLine -> NSPoint -> IO ()
-setEndPoint pdfAnnotationLine  point =
-    sendMsg pdfAnnotationLine (mkSelector "setEndPoint:") retVoid [argNSPoint point]
+setEndPoint pdfAnnotationLine point =
+  sendMessage pdfAnnotationLine setEndPointSelector point
 
 -- | @- startLineStyle@
 startLineStyle :: IsPDFAnnotationLine pdfAnnotationLine => pdfAnnotationLine -> IO PDFLineStyle
-startLineStyle pdfAnnotationLine  =
-    fmap (coerce :: CLong -> PDFLineStyle) $ sendMsg pdfAnnotationLine (mkSelector "startLineStyle") retCLong []
+startLineStyle pdfAnnotationLine =
+  sendMessage pdfAnnotationLine startLineStyleSelector
 
 -- | @- setStartLineStyle:@
 setStartLineStyle :: IsPDFAnnotationLine pdfAnnotationLine => pdfAnnotationLine -> PDFLineStyle -> IO ()
-setStartLineStyle pdfAnnotationLine  style =
-    sendMsg pdfAnnotationLine (mkSelector "setStartLineStyle:") retVoid [argCLong (coerce style)]
+setStartLineStyle pdfAnnotationLine style =
+  sendMessage pdfAnnotationLine setStartLineStyleSelector style
 
 -- | @- endLineStyle@
 endLineStyle :: IsPDFAnnotationLine pdfAnnotationLine => pdfAnnotationLine -> IO PDFLineStyle
-endLineStyle pdfAnnotationLine  =
-    fmap (coerce :: CLong -> PDFLineStyle) $ sendMsg pdfAnnotationLine (mkSelector "endLineStyle") retCLong []
+endLineStyle pdfAnnotationLine =
+  sendMessage pdfAnnotationLine endLineStyleSelector
 
 -- | @- setEndLineStyle:@
 setEndLineStyle :: IsPDFAnnotationLine pdfAnnotationLine => pdfAnnotationLine -> PDFLineStyle -> IO ()
-setEndLineStyle pdfAnnotationLine  style =
-    sendMsg pdfAnnotationLine (mkSelector "setEndLineStyle:") retVoid [argCLong (coerce style)]
+setEndLineStyle pdfAnnotationLine style =
+  sendMessage pdfAnnotationLine setEndLineStyleSelector style
 
 -- | @- interiorColor@
 interiorColor :: IsPDFAnnotationLine pdfAnnotationLine => pdfAnnotationLine -> IO (Id NSColor)
-interiorColor pdfAnnotationLine  =
-    sendMsg pdfAnnotationLine (mkSelector "interiorColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+interiorColor pdfAnnotationLine =
+  sendMessage pdfAnnotationLine interiorColorSelector
 
 -- | @- setInteriorColor:@
 setInteriorColor :: (IsPDFAnnotationLine pdfAnnotationLine, IsNSColor color) => pdfAnnotationLine -> color -> IO ()
-setInteriorColor pdfAnnotationLine  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg pdfAnnotationLine (mkSelector "setInteriorColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setInteriorColor pdfAnnotationLine color =
+  sendMessage pdfAnnotationLine setInteriorColorSelector (toNSColor color)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startPoint@
-startPointSelector :: Selector
+startPointSelector :: Selector '[] NSPoint
 startPointSelector = mkSelector "startPoint"
 
 -- | @Selector@ for @setStartPoint:@
-setStartPointSelector :: Selector
+setStartPointSelector :: Selector '[NSPoint] ()
 setStartPointSelector = mkSelector "setStartPoint:"
 
 -- | @Selector@ for @endPoint@
-endPointSelector :: Selector
+endPointSelector :: Selector '[] NSPoint
 endPointSelector = mkSelector "endPoint"
 
 -- | @Selector@ for @setEndPoint:@
-setEndPointSelector :: Selector
+setEndPointSelector :: Selector '[NSPoint] ()
 setEndPointSelector = mkSelector "setEndPoint:"
 
 -- | @Selector@ for @startLineStyle@
-startLineStyleSelector :: Selector
+startLineStyleSelector :: Selector '[] PDFLineStyle
 startLineStyleSelector = mkSelector "startLineStyle"
 
 -- | @Selector@ for @setStartLineStyle:@
-setStartLineStyleSelector :: Selector
+setStartLineStyleSelector :: Selector '[PDFLineStyle] ()
 setStartLineStyleSelector = mkSelector "setStartLineStyle:"
 
 -- | @Selector@ for @endLineStyle@
-endLineStyleSelector :: Selector
+endLineStyleSelector :: Selector '[] PDFLineStyle
 endLineStyleSelector = mkSelector "endLineStyle"
 
 -- | @Selector@ for @setEndLineStyle:@
-setEndLineStyleSelector :: Selector
+setEndLineStyleSelector :: Selector '[PDFLineStyle] ()
 setEndLineStyleSelector = mkSelector "setEndLineStyle:"
 
 -- | @Selector@ for @interiorColor@
-interiorColorSelector :: Selector
+interiorColorSelector :: Selector '[] (Id NSColor)
 interiorColorSelector = mkSelector "interiorColor"
 
 -- | @Selector@ for @setInteriorColor:@
-setInteriorColorSelector :: Selector
+setInteriorColorSelector :: Selector '[Id NSColor] ()
 setInteriorColorSelector = mkSelector "setInteriorColor:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.Intents.INAddTasksTargetTaskListResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,24 +36,22 @@ confirmationRequiredWithTaskListToConfirm_forReason :: IsINTaskList taskListToCo
 confirmationRequiredWithTaskListToConfirm_forReason taskListToConfirm reason =
   do
     cls' <- getRequiredClass "INAddTasksTargetTaskListResolutionResult"
-    withObjCPtr taskListToConfirm $ \raw_taskListToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithTaskListToConfirm:forReason:") (retPtr retVoid) [argPtr (castPtr raw_taskListToConfirm :: Ptr ()), argCLong (coerce reason)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithTaskListToConfirm_forReasonSelector (toINTaskList taskListToConfirm) reason
 
 -- | @- initWithTaskListResolutionResult:@
 initWithTaskListResolutionResult :: (IsINAddTasksTargetTaskListResolutionResult inAddTasksTargetTaskListResolutionResult, IsINTaskListResolutionResult taskListResolutionResult) => inAddTasksTargetTaskListResolutionResult -> taskListResolutionResult -> IO (Id INAddTasksTargetTaskListResolutionResult)
-initWithTaskListResolutionResult inAddTasksTargetTaskListResolutionResult  taskListResolutionResult =
-  withObjCPtr taskListResolutionResult $ \raw_taskListResolutionResult ->
-      sendMsg inAddTasksTargetTaskListResolutionResult (mkSelector "initWithTaskListResolutionResult:") (retPtr retVoid) [argPtr (castPtr raw_taskListResolutionResult :: Ptr ())] >>= ownedObject . castPtr
+initWithTaskListResolutionResult inAddTasksTargetTaskListResolutionResult taskListResolutionResult =
+  sendOwnedMessage inAddTasksTargetTaskListResolutionResult initWithTaskListResolutionResultSelector (toINTaskListResolutionResult taskListResolutionResult)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @confirmationRequiredWithTaskListToConfirm:forReason:@
-confirmationRequiredWithTaskListToConfirm_forReasonSelector :: Selector
+confirmationRequiredWithTaskListToConfirm_forReasonSelector :: Selector '[Id INTaskList, INAddTasksTargetTaskListConfirmationReason] (Id INAddTasksTargetTaskListResolutionResult)
 confirmationRequiredWithTaskListToConfirm_forReasonSelector = mkSelector "confirmationRequiredWithTaskListToConfirm:forReason:"
 
 -- | @Selector@ for @initWithTaskListResolutionResult:@
-initWithTaskListResolutionResultSelector :: Selector
+initWithTaskListResolutionResultSelector :: Selector '[Id INTaskListResolutionResult] (Id INAddTasksTargetTaskListResolutionResult)
 initWithTaskListResolutionResultSelector = mkSelector "initWithTaskListResolutionResult:"
 

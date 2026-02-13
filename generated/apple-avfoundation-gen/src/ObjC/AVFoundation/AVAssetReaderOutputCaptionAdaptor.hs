@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.AVFoundation.AVAssetReaderOutputCaptionAdaptor
   , assetReaderTrackOutput
   , validationDelegate
   , setValidationDelegate
-  , initSelector
-  , newSelector
   , assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutputSelector
-  , initWithAssetReaderTrackOutputSelector
-  , nextCaptionGroupSelector
-  , captionsNotPresentInPreviousGroupsInCaptionGroupSelector
   , assetReaderTrackOutputSelector
-  , validationDelegateSelector
+  , captionsNotPresentInPreviousGroupsInCaptionGroupSelector
+  , initSelector
+  , initWithAssetReaderTrackOutputSelector
+  , newSelector
+  , nextCaptionGroupSelector
   , setValidationDelegateSelector
+  , validationDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutputCaptionAdaptor => avAssetReaderOutputCaptionAdaptor -> IO (Id AVAssetReaderOutputCaptionAdaptor)
-init_ avAssetReaderOutputCaptionAdaptor  =
-    sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetReaderOutputCaptionAdaptor =
+  sendOwnedMessage avAssetReaderOutputCaptionAdaptor initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetReaderOutputCaptionAdaptor)
 new  =
   do
     cls' <- getRequiredClass "AVAssetReaderOutputCaptionAdaptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutput:
 --
@@ -70,8 +67,7 @@ assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutput :: IsAVAssetReaderTrac
 assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutput trackOutput =
   do
     cls' <- getRequiredClass "AVAssetReaderOutputCaptionAdaptor"
-    withObjCPtr trackOutput $ \raw_trackOutput ->
-      sendClassMsg cls' (mkSelector "assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutput:") (retPtr retVoid) [argPtr (castPtr raw_trackOutput :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutputSelector (toAVAssetReaderTrackOutput trackOutput)
 
 -- | initWithAssetReaderTrackOutput:
 --
@@ -85,9 +81,8 @@ assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutput trackOutput =
 --
 -- ObjC selector: @- initWithAssetReaderTrackOutput:@
 initWithAssetReaderTrackOutput :: (IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutputCaptionAdaptor, IsAVAssetReaderTrackOutput trackOutput) => avAssetReaderOutputCaptionAdaptor -> trackOutput -> IO (Id AVAssetReaderOutputCaptionAdaptor)
-initWithAssetReaderTrackOutput avAssetReaderOutputCaptionAdaptor  trackOutput =
-  withObjCPtr trackOutput $ \raw_trackOutput ->
-      sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "initWithAssetReaderTrackOutput:") (retPtr retVoid) [argPtr (castPtr raw_trackOutput :: Ptr ())] >>= ownedObject . castPtr
+initWithAssetReaderTrackOutput avAssetReaderOutputCaptionAdaptor trackOutput =
+  sendOwnedMessage avAssetReaderOutputCaptionAdaptor initWithAssetReaderTrackOutputSelector (toAVAssetReaderTrackOutput trackOutput)
 
 -- | nextCaptionGroup
 --
@@ -101,8 +96,8 @@ initWithAssetReaderTrackOutput avAssetReaderOutputCaptionAdaptor  trackOutput =
 --
 -- ObjC selector: @- nextCaptionGroup@
 nextCaptionGroup :: IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutputCaptionAdaptor => avAssetReaderOutputCaptionAdaptor -> IO (Id AVCaptionGroup)
-nextCaptionGroup avAssetReaderOutputCaptionAdaptor  =
-    sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "nextCaptionGroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextCaptionGroup avAssetReaderOutputCaptionAdaptor =
+  sendMessage avAssetReaderOutputCaptionAdaptor nextCaptionGroupSelector
 
 -- | captionsNotPresentInPreviousGroupsInCaptionGroup:
 --
@@ -116,9 +111,8 @@ nextCaptionGroup avAssetReaderOutputCaptionAdaptor  =
 --
 -- ObjC selector: @- captionsNotPresentInPreviousGroupsInCaptionGroup:@
 captionsNotPresentInPreviousGroupsInCaptionGroup :: (IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutputCaptionAdaptor, IsAVCaptionGroup captionGroup) => avAssetReaderOutputCaptionAdaptor -> captionGroup -> IO (Id NSArray)
-captionsNotPresentInPreviousGroupsInCaptionGroup avAssetReaderOutputCaptionAdaptor  captionGroup =
-  withObjCPtr captionGroup $ \raw_captionGroup ->
-      sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "captionsNotPresentInPreviousGroupsInCaptionGroup:") (retPtr retVoid) [argPtr (castPtr raw_captionGroup :: Ptr ())] >>= retainedObject . castPtr
+captionsNotPresentInPreviousGroupsInCaptionGroup avAssetReaderOutputCaptionAdaptor captionGroup =
+  sendMessage avAssetReaderOutputCaptionAdaptor captionsNotPresentInPreviousGroupsInCaptionGroupSelector (toAVCaptionGroup captionGroup)
 
 -- | assetReaderTrackOutput
 --
@@ -126,8 +120,8 @@ captionsNotPresentInPreviousGroupsInCaptionGroup avAssetReaderOutputCaptionAdapt
 --
 -- ObjC selector: @- assetReaderTrackOutput@
 assetReaderTrackOutput :: IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutputCaptionAdaptor => avAssetReaderOutputCaptionAdaptor -> IO (Id AVAssetReaderTrackOutput)
-assetReaderTrackOutput avAssetReaderOutputCaptionAdaptor  =
-    sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "assetReaderTrackOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetReaderTrackOutput avAssetReaderOutputCaptionAdaptor =
+  sendMessage avAssetReaderOutputCaptionAdaptor assetReaderTrackOutputSelector
 
 -- | validationDelegate:
 --
@@ -135,8 +129,8 @@ assetReaderTrackOutput avAssetReaderOutputCaptionAdaptor  =
 --
 -- ObjC selector: @- validationDelegate@
 validationDelegate :: IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutputCaptionAdaptor => avAssetReaderOutputCaptionAdaptor -> IO RawId
-validationDelegate avAssetReaderOutputCaptionAdaptor  =
-    fmap (RawId . castPtr) $ sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "validationDelegate") (retPtr retVoid) []
+validationDelegate avAssetReaderOutputCaptionAdaptor =
+  sendMessage avAssetReaderOutputCaptionAdaptor validationDelegateSelector
 
 -- | validationDelegate:
 --
@@ -144,46 +138,46 @@ validationDelegate avAssetReaderOutputCaptionAdaptor  =
 --
 -- ObjC selector: @- setValidationDelegate:@
 setValidationDelegate :: IsAVAssetReaderOutputCaptionAdaptor avAssetReaderOutputCaptionAdaptor => avAssetReaderOutputCaptionAdaptor -> RawId -> IO ()
-setValidationDelegate avAssetReaderOutputCaptionAdaptor  value =
-    sendMsg avAssetReaderOutputCaptionAdaptor (mkSelector "setValidationDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setValidationDelegate avAssetReaderOutputCaptionAdaptor value =
+  sendMessage avAssetReaderOutputCaptionAdaptor setValidationDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetReaderOutputCaptionAdaptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetReaderOutputCaptionAdaptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutput:@
-assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutputSelector :: Selector
+assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutputSelector :: Selector '[Id AVAssetReaderTrackOutput] (Id AVAssetReaderOutputCaptionAdaptor)
 assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutputSelector = mkSelector "assetReaderOutputCaptionAdaptorWithAssetReaderTrackOutput:"
 
 -- | @Selector@ for @initWithAssetReaderTrackOutput:@
-initWithAssetReaderTrackOutputSelector :: Selector
+initWithAssetReaderTrackOutputSelector :: Selector '[Id AVAssetReaderTrackOutput] (Id AVAssetReaderOutputCaptionAdaptor)
 initWithAssetReaderTrackOutputSelector = mkSelector "initWithAssetReaderTrackOutput:"
 
 -- | @Selector@ for @nextCaptionGroup@
-nextCaptionGroupSelector :: Selector
+nextCaptionGroupSelector :: Selector '[] (Id AVCaptionGroup)
 nextCaptionGroupSelector = mkSelector "nextCaptionGroup"
 
 -- | @Selector@ for @captionsNotPresentInPreviousGroupsInCaptionGroup:@
-captionsNotPresentInPreviousGroupsInCaptionGroupSelector :: Selector
+captionsNotPresentInPreviousGroupsInCaptionGroupSelector :: Selector '[Id AVCaptionGroup] (Id NSArray)
 captionsNotPresentInPreviousGroupsInCaptionGroupSelector = mkSelector "captionsNotPresentInPreviousGroupsInCaptionGroup:"
 
 -- | @Selector@ for @assetReaderTrackOutput@
-assetReaderTrackOutputSelector :: Selector
+assetReaderTrackOutputSelector :: Selector '[] (Id AVAssetReaderTrackOutput)
 assetReaderTrackOutputSelector = mkSelector "assetReaderTrackOutput"
 
 -- | @Selector@ for @validationDelegate@
-validationDelegateSelector :: Selector
+validationDelegateSelector :: Selector '[] RawId
 validationDelegateSelector = mkSelector "validationDelegate"
 
 -- | @Selector@ for @setValidationDelegate:@
-setValidationDelegateSelector :: Selector
+setValidationDelegateSelector :: Selector '[RawId] ()
 setValidationDelegateSelector = mkSelector "setValidationDelegate:"
 

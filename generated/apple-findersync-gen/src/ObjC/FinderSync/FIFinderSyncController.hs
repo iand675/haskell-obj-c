@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,31 +25,27 @@ module ObjC.FinderSync.FIFinderSyncController
   , setDirectoryURLs
   , extensionEnabled
   , defaultControllerSelector
-  , setBadgeImage_label_forBadgeIdentifierSelector
-  , setBadgeIdentifier_forURLSelector
-  , targetedURLSelector
-  , selectedItemURLsSelector
+  , directoryURLsSelector
+  , extensionEnabledSelector
   , lastUsedDateForItemWithURLSelector
+  , selectedItemURLsSelector
+  , setBadgeIdentifier_forURLSelector
+  , setBadgeImage_label_forBadgeIdentifierSelector
+  , setDirectoryURLsSelector
   , setLastUsedDate_forItemWithURL_completionSelector
-  , tagDataForItemWithURLSelector
   , setTagData_forItemWithURL_completionSelector
   , showExtensionManagementInterfaceSelector
-  , directoryURLsSelector
-  , setDirectoryURLsSelector
-  , extensionEnabledSelector
+  , tagDataForItemWithURLSelector
+  , targetedURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,7 +62,7 @@ defaultController :: IO (Id FIFinderSyncController)
 defaultController  =
   do
     cls' <- getRequiredClass "FIFinderSyncController"
-    sendClassMsg cls' (mkSelector "defaultController") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultControllerSelector
 
 -- | Sets the badge image and label for the given ID.
 --
@@ -75,11 +72,8 @@ defaultController  =
 --
 -- ObjC selector: @- setBadgeImage:label:forBadgeIdentifier:@
 setBadgeImage_label_forBadgeIdentifier :: (IsFIFinderSyncController fiFinderSyncController, IsNSImage image, IsNSString label, IsNSString badgeID) => fiFinderSyncController -> image -> label -> badgeID -> IO ()
-setBadgeImage_label_forBadgeIdentifier fiFinderSyncController  image label badgeID =
-  withObjCPtr image $ \raw_image ->
-    withObjCPtr label $ \raw_label ->
-      withObjCPtr badgeID $ \raw_badgeID ->
-          sendMsg fiFinderSyncController (mkSelector "setBadgeImage:label:forBadgeIdentifier:") retVoid [argPtr (castPtr raw_image :: Ptr ()), argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr raw_badgeID :: Ptr ())]
+setBadgeImage_label_forBadgeIdentifier fiFinderSyncController image label badgeID =
+  sendMessage fiFinderSyncController setBadgeImage_label_forBadgeIdentifierSelector (toNSImage image) (toNSString label) (toNSString badgeID)
 
 -- | Sets the badge for a file or directory.
 --
@@ -93,10 +87,8 @@ setBadgeImage_label_forBadgeIdentifier fiFinderSyncController  image label badge
 --
 -- ObjC selector: @- setBadgeIdentifier:forURL:@
 setBadgeIdentifier_forURL :: (IsFIFinderSyncController fiFinderSyncController, IsNSString badgeID, IsNSURL url) => fiFinderSyncController -> badgeID -> url -> IO ()
-setBadgeIdentifier_forURL fiFinderSyncController  badgeID url =
-  withObjCPtr badgeID $ \raw_badgeID ->
-    withObjCPtr url $ \raw_url ->
-        sendMsg fiFinderSyncController (mkSelector "setBadgeIdentifier:forURL:") retVoid [argPtr (castPtr raw_badgeID :: Ptr ()), argPtr (castPtr raw_url :: Ptr ())]
+setBadgeIdentifier_forURL fiFinderSyncController badgeID url =
+  sendMessage fiFinderSyncController setBadgeIdentifier_forURLSelector (toNSString badgeID) (toNSURL url)
 
 -- | Returns the URL of the Finder’s current target.
 --
@@ -108,8 +100,8 @@ setBadgeIdentifier_forURL fiFinderSyncController  badgeID url =
 --
 -- ObjC selector: @- targetedURL@
 targetedURL :: IsFIFinderSyncController fiFinderSyncController => fiFinderSyncController -> IO (Id NSURL)
-targetedURL fiFinderSyncController  =
-    sendMsg fiFinderSyncController (mkSelector "targetedURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetedURL fiFinderSyncController =
+  sendMessage fiFinderSyncController targetedURLSelector
 
 -- | Returns an array of selected items.
 --
@@ -121,41 +113,35 @@ targetedURL fiFinderSyncController  =
 --
 -- ObjC selector: @- selectedItemURLs@
 selectedItemURLs :: IsFIFinderSyncController fiFinderSyncController => fiFinderSyncController -> IO (Id NSArray)
-selectedItemURLs fiFinderSyncController  =
-    sendMsg fiFinderSyncController (mkSelector "selectedItemURLs") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedItemURLs fiFinderSyncController =
+  sendMessage fiFinderSyncController selectedItemURLsSelector
 
 -- | @- lastUsedDateForItemWithURL:@
 lastUsedDateForItemWithURL :: (IsFIFinderSyncController fiFinderSyncController, IsNSURL itemURL) => fiFinderSyncController -> itemURL -> IO (Id NSDate)
-lastUsedDateForItemWithURL fiFinderSyncController  itemURL =
-  withObjCPtr itemURL $ \raw_itemURL ->
-      sendMsg fiFinderSyncController (mkSelector "lastUsedDateForItemWithURL:") (retPtr retVoid) [argPtr (castPtr raw_itemURL :: Ptr ())] >>= retainedObject . castPtr
+lastUsedDateForItemWithURL fiFinderSyncController itemURL =
+  sendMessage fiFinderSyncController lastUsedDateForItemWithURLSelector (toNSURL itemURL)
 
 -- | @- setLastUsedDate:forItemWithURL:completion:@
 setLastUsedDate_forItemWithURL_completion :: (IsFIFinderSyncController fiFinderSyncController, IsNSDate lastUsedDate, IsNSURL itemURL) => fiFinderSyncController -> lastUsedDate -> itemURL -> Ptr () -> IO ()
-setLastUsedDate_forItemWithURL_completion fiFinderSyncController  lastUsedDate itemURL completion =
-  withObjCPtr lastUsedDate $ \raw_lastUsedDate ->
-    withObjCPtr itemURL $ \raw_itemURL ->
-        sendMsg fiFinderSyncController (mkSelector "setLastUsedDate:forItemWithURL:completion:") retVoid [argPtr (castPtr raw_lastUsedDate :: Ptr ()), argPtr (castPtr raw_itemURL :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setLastUsedDate_forItemWithURL_completion fiFinderSyncController lastUsedDate itemURL completion =
+  sendMessage fiFinderSyncController setLastUsedDate_forItemWithURL_completionSelector (toNSDate lastUsedDate) (toNSURL itemURL) completion
 
 -- | @- tagDataForItemWithURL:@
 tagDataForItemWithURL :: (IsFIFinderSyncController fiFinderSyncController, IsNSURL itemURL) => fiFinderSyncController -> itemURL -> IO (Id NSData)
-tagDataForItemWithURL fiFinderSyncController  itemURL =
-  withObjCPtr itemURL $ \raw_itemURL ->
-      sendMsg fiFinderSyncController (mkSelector "tagDataForItemWithURL:") (retPtr retVoid) [argPtr (castPtr raw_itemURL :: Ptr ())] >>= retainedObject . castPtr
+tagDataForItemWithURL fiFinderSyncController itemURL =
+  sendMessage fiFinderSyncController tagDataForItemWithURLSelector (toNSURL itemURL)
 
 -- | @- setTagData:forItemWithURL:completion:@
 setTagData_forItemWithURL_completion :: (IsFIFinderSyncController fiFinderSyncController, IsNSData tagData, IsNSURL itemURL) => fiFinderSyncController -> tagData -> itemURL -> Ptr () -> IO ()
-setTagData_forItemWithURL_completion fiFinderSyncController  tagData itemURL completion =
-  withObjCPtr tagData $ \raw_tagData ->
-    withObjCPtr itemURL $ \raw_itemURL ->
-        sendMsg fiFinderSyncController (mkSelector "setTagData:forItemWithURL:completion:") retVoid [argPtr (castPtr raw_tagData :: Ptr ()), argPtr (castPtr raw_itemURL :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setTagData_forItemWithURL_completion fiFinderSyncController tagData itemURL completion =
+  sendMessage fiFinderSyncController setTagData_forItemWithURL_completionSelector (toNSData tagData) (toNSURL itemURL) completion
 
 -- | @+ showExtensionManagementInterface@
 showExtensionManagementInterface :: IO ()
 showExtensionManagementInterface  =
   do
     cls' <- getRequiredClass "FIFinderSyncController"
-    sendClassMsg cls' (mkSelector "showExtensionManagementInterface") retVoid []
+    sendClassMessage cls' showExtensionManagementInterfaceSelector
 
 -- | The directories managed by this extension.
 --
@@ -165,8 +151,8 @@ showExtensionManagementInterface  =
 --
 -- ObjC selector: @- directoryURLs@
 directoryURLs :: IsFIFinderSyncController fiFinderSyncController => fiFinderSyncController -> IO (Id NSSet)
-directoryURLs fiFinderSyncController  =
-    sendMsg fiFinderSyncController (mkSelector "directoryURLs") (retPtr retVoid) [] >>= retainedObject . castPtr
+directoryURLs fiFinderSyncController =
+  sendMessage fiFinderSyncController directoryURLsSelector
 
 -- | The directories managed by this extension.
 --
@@ -176,70 +162,69 @@ directoryURLs fiFinderSyncController  =
 --
 -- ObjC selector: @- setDirectoryURLs:@
 setDirectoryURLs :: (IsFIFinderSyncController fiFinderSyncController, IsNSSet value) => fiFinderSyncController -> value -> IO ()
-setDirectoryURLs fiFinderSyncController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg fiFinderSyncController (mkSelector "setDirectoryURLs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDirectoryURLs fiFinderSyncController value =
+  sendMessage fiFinderSyncController setDirectoryURLsSelector (toNSSet value)
 
 -- | @+ extensionEnabled@
 extensionEnabled :: IO Bool
 extensionEnabled  =
   do
     cls' <- getRequiredClass "FIFinderSyncController"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "extensionEnabled") retCULong []
+    sendClassMessage cls' extensionEnabledSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultController@
-defaultControllerSelector :: Selector
+defaultControllerSelector :: Selector '[] (Id FIFinderSyncController)
 defaultControllerSelector = mkSelector "defaultController"
 
 -- | @Selector@ for @setBadgeImage:label:forBadgeIdentifier:@
-setBadgeImage_label_forBadgeIdentifierSelector :: Selector
+setBadgeImage_label_forBadgeIdentifierSelector :: Selector '[Id NSImage, Id NSString, Id NSString] ()
 setBadgeImage_label_forBadgeIdentifierSelector = mkSelector "setBadgeImage:label:forBadgeIdentifier:"
 
 -- | @Selector@ for @setBadgeIdentifier:forURL:@
-setBadgeIdentifier_forURLSelector :: Selector
+setBadgeIdentifier_forURLSelector :: Selector '[Id NSString, Id NSURL] ()
 setBadgeIdentifier_forURLSelector = mkSelector "setBadgeIdentifier:forURL:"
 
 -- | @Selector@ for @targetedURL@
-targetedURLSelector :: Selector
+targetedURLSelector :: Selector '[] (Id NSURL)
 targetedURLSelector = mkSelector "targetedURL"
 
 -- | @Selector@ for @selectedItemURLs@
-selectedItemURLsSelector :: Selector
+selectedItemURLsSelector :: Selector '[] (Id NSArray)
 selectedItemURLsSelector = mkSelector "selectedItemURLs"
 
 -- | @Selector@ for @lastUsedDateForItemWithURL:@
-lastUsedDateForItemWithURLSelector :: Selector
+lastUsedDateForItemWithURLSelector :: Selector '[Id NSURL] (Id NSDate)
 lastUsedDateForItemWithURLSelector = mkSelector "lastUsedDateForItemWithURL:"
 
 -- | @Selector@ for @setLastUsedDate:forItemWithURL:completion:@
-setLastUsedDate_forItemWithURL_completionSelector :: Selector
+setLastUsedDate_forItemWithURL_completionSelector :: Selector '[Id NSDate, Id NSURL, Ptr ()] ()
 setLastUsedDate_forItemWithURL_completionSelector = mkSelector "setLastUsedDate:forItemWithURL:completion:"
 
 -- | @Selector@ for @tagDataForItemWithURL:@
-tagDataForItemWithURLSelector :: Selector
+tagDataForItemWithURLSelector :: Selector '[Id NSURL] (Id NSData)
 tagDataForItemWithURLSelector = mkSelector "tagDataForItemWithURL:"
 
 -- | @Selector@ for @setTagData:forItemWithURL:completion:@
-setTagData_forItemWithURL_completionSelector :: Selector
+setTagData_forItemWithURL_completionSelector :: Selector '[Id NSData, Id NSURL, Ptr ()] ()
 setTagData_forItemWithURL_completionSelector = mkSelector "setTagData:forItemWithURL:completion:"
 
 -- | @Selector@ for @showExtensionManagementInterface@
-showExtensionManagementInterfaceSelector :: Selector
+showExtensionManagementInterfaceSelector :: Selector '[] ()
 showExtensionManagementInterfaceSelector = mkSelector "showExtensionManagementInterface"
 
 -- | @Selector@ for @directoryURLs@
-directoryURLsSelector :: Selector
+directoryURLsSelector :: Selector '[] (Id NSSet)
 directoryURLsSelector = mkSelector "directoryURLs"
 
 -- | @Selector@ for @setDirectoryURLs:@
-setDirectoryURLsSelector :: Selector
+setDirectoryURLsSelector :: Selector '[Id NSSet] ()
 setDirectoryURLsSelector = mkSelector "setDirectoryURLs:"
 
 -- | @Selector@ for @extensionEnabled@
-extensionEnabledSelector :: Selector
+extensionEnabledSelector :: Selector '[] Bool
 extensionEnabledSelector = mkSelector "extensionEnabled"
 

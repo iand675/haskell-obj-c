@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.SystemExtensions.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @OSSystemExtensionErrorCode@
 newtype OSSystemExtensionErrorCode = OSSystemExtensionErrorCode CLong
@@ -55,6 +58,16 @@ pattern OSSystemExtensionErrorRequestSuperseded = OSSystemExtensionErrorCode 12
 pattern OSSystemExtensionErrorAuthorizationRequired :: OSSystemExtensionErrorCode
 pattern OSSystemExtensionErrorAuthorizationRequired = OSSystemExtensionErrorCode 13
 
+instance ObjCArgument OSSystemExtensionErrorCode where
+  withObjCArg (OSSystemExtensionErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn OSSystemExtensionErrorCode where
+  type RawReturn OSSystemExtensionErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSSystemExtensionErrorCode x)
+  fromOwned x = pure (OSSystemExtensionErrorCode x)
+
 -- | @OSSystemExtensionReplacementAction@
 newtype OSSystemExtensionReplacementAction = OSSystemExtensionReplacementAction CLong
   deriving stock (Eq, Ord, Show)
@@ -65,6 +78,16 @@ pattern OSSystemExtensionReplacementActionCancel = OSSystemExtensionReplacementA
 
 pattern OSSystemExtensionReplacementActionReplace :: OSSystemExtensionReplacementAction
 pattern OSSystemExtensionReplacementActionReplace = OSSystemExtensionReplacementAction 1
+
+instance ObjCArgument OSSystemExtensionReplacementAction where
+  withObjCArg (OSSystemExtensionReplacementAction x) k = k (argCLong x)
+
+instance ObjCReturn OSSystemExtensionReplacementAction where
+  type RawReturn OSSystemExtensionReplacementAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSSystemExtensionReplacementAction x)
+  fromOwned x = pure (OSSystemExtensionReplacementAction x)
 
 -- | Describes additional result feedback after completion of a system extension request
 -- | @OSSystemExtensionRequestResult@
@@ -77,3 +100,13 @@ pattern OSSystemExtensionRequestCompleted = OSSystemExtensionRequestResult 0
 
 pattern OSSystemExtensionRequestWillCompleteAfterReboot :: OSSystemExtensionRequestResult
 pattern OSSystemExtensionRequestWillCompleteAfterReboot = OSSystemExtensionRequestResult 1
+
+instance ObjCArgument OSSystemExtensionRequestResult where
+  withObjCArg (OSSystemExtensionRequestResult x) k = k (argCLong x)
+
+instance ObjCReturn OSSystemExtensionRequestResult where
+  type RawReturn OSSystemExtensionRequestResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OSSystemExtensionRequestResult x)
+  fromOwned x = pure (OSSystemExtensionRequestResult x)

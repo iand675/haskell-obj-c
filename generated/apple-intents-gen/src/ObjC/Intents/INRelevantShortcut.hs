@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,13 +25,13 @@ module ObjC.Intents.INRelevantShortcut
   , initWithShortcutSelector
   , relevanceProvidersSelector
   , setRelevanceProvidersSelector
-  , watchTemplateSelector
+  , setShortcutRoleSelector
   , setWatchTemplateSelector
-  , widgetKindSelector
   , setWidgetKindSelector
   , shortcutRoleSelector
-  , setShortcutRoleSelector
   , shortcutSelector
+  , watchTemplateSelector
+  , widgetKindSelector
 
   -- * Enum types
   , INRelevantShortcutRole(INRelevantShortcutRole)
@@ -39,15 +40,11 @@ module ObjC.Intents.INRelevantShortcut
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,9 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithShortcut:@
 initWithShortcut :: (IsINRelevantShortcut inRelevantShortcut, IsINShortcut shortcut) => inRelevantShortcut -> shortcut -> IO (Id INRelevantShortcut)
-initWithShortcut inRelevantShortcut  shortcut =
-  withObjCPtr shortcut $ \raw_shortcut ->
-      sendMsg inRelevantShortcut (mkSelector "initWithShortcut:") (retPtr retVoid) [argPtr (castPtr raw_shortcut :: Ptr ())] >>= ownedObject . castPtr
+initWithShortcut inRelevantShortcut shortcut =
+  sendOwnedMessage inRelevantShortcut initWithShortcutSelector (toINShortcut shortcut)
 
 -- | A collection of relevance information that is attached to the relevant shortcuts.
 --
@@ -71,8 +67,8 @@ initWithShortcut inRelevantShortcut  shortcut =
 --
 -- ObjC selector: @- relevanceProviders@
 relevanceProviders :: IsINRelevantShortcut inRelevantShortcut => inRelevantShortcut -> IO (Id NSArray)
-relevanceProviders inRelevantShortcut  =
-    sendMsg inRelevantShortcut (mkSelector "relevanceProviders") (retPtr retVoid) [] >>= retainedObject . castPtr
+relevanceProviders inRelevantShortcut =
+  sendMessage inRelevantShortcut relevanceProvidersSelector
 
 -- | A collection of relevance information that is attached to the relevant shortcuts.
 --
@@ -82,9 +78,8 @@ relevanceProviders inRelevantShortcut  =
 --
 -- ObjC selector: @- setRelevanceProviders:@
 setRelevanceProviders :: (IsINRelevantShortcut inRelevantShortcut, IsNSArray value) => inRelevantShortcut -> value -> IO ()
-setRelevanceProviders inRelevantShortcut  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRelevantShortcut (mkSelector "setRelevanceProviders:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRelevanceProviders inRelevantShortcut value =
+  sendMessage inRelevantShortcut setRelevanceProvidersSelector (toNSArray value)
 
 -- | Customizes the display of the relevant shortcut on the Siri watch face.
 --
@@ -94,8 +89,8 @@ setRelevanceProviders inRelevantShortcut  value =
 --
 -- ObjC selector: @- watchTemplate@
 watchTemplate :: IsINRelevantShortcut inRelevantShortcut => inRelevantShortcut -> IO (Id INDefaultCardTemplate)
-watchTemplate inRelevantShortcut  =
-    sendMsg inRelevantShortcut (mkSelector "watchTemplate") (retPtr retVoid) [] >>= retainedObject . castPtr
+watchTemplate inRelevantShortcut =
+  sendMessage inRelevantShortcut watchTemplateSelector
 
 -- | Customizes the display of the relevant shortcut on the Siri watch face.
 --
@@ -105,9 +100,8 @@ watchTemplate inRelevantShortcut  =
 --
 -- ObjC selector: @- setWatchTemplate:@
 setWatchTemplate :: (IsINRelevantShortcut inRelevantShortcut, IsINDefaultCardTemplate value) => inRelevantShortcut -> value -> IO ()
-setWatchTemplate inRelevantShortcut  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRelevantShortcut (mkSelector "setWatchTemplate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWatchTemplate inRelevantShortcut value =
+  sendMessage inRelevantShortcut setWatchTemplateSelector (toINDefaultCardTemplate value)
 
 -- | Links the relevant shortcut to a specific WidgetKit widget kind.
 --
@@ -115,8 +109,8 @@ setWatchTemplate inRelevantShortcut  value =
 --
 -- ObjC selector: @- widgetKind@
 widgetKind :: IsINRelevantShortcut inRelevantShortcut => inRelevantShortcut -> IO (Id NSString)
-widgetKind inRelevantShortcut  =
-    sendMsg inRelevantShortcut (mkSelector "widgetKind") (retPtr retVoid) [] >>= retainedObject . castPtr
+widgetKind inRelevantShortcut =
+  sendMessage inRelevantShortcut widgetKindSelector
 
 -- | Links the relevant shortcut to a specific WidgetKit widget kind.
 --
@@ -124,9 +118,8 @@ widgetKind inRelevantShortcut  =
 --
 -- ObjC selector: @- setWidgetKind:@
 setWidgetKind :: (IsINRelevantShortcut inRelevantShortcut, IsNSString value) => inRelevantShortcut -> value -> IO ()
-setWidgetKind inRelevantShortcut  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRelevantShortcut (mkSelector "setWidgetKind:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWidgetKind inRelevantShortcut value =
+  sendMessage inRelevantShortcut setWidgetKindSelector (toNSString value)
 
 -- | The role of the relevant shortcut.
 --
@@ -136,8 +129,8 @@ setWidgetKind inRelevantShortcut  value =
 --
 -- ObjC selector: @- shortcutRole@
 shortcutRole :: IsINRelevantShortcut inRelevantShortcut => inRelevantShortcut -> IO INRelevantShortcutRole
-shortcutRole inRelevantShortcut  =
-    fmap (coerce :: CLong -> INRelevantShortcutRole) $ sendMsg inRelevantShortcut (mkSelector "shortcutRole") retCLong []
+shortcutRole inRelevantShortcut =
+  sendMessage inRelevantShortcut shortcutRoleSelector
 
 -- | The role of the relevant shortcut.
 --
@@ -147,8 +140,8 @@ shortcutRole inRelevantShortcut  =
 --
 -- ObjC selector: @- setShortcutRole:@
 setShortcutRole :: IsINRelevantShortcut inRelevantShortcut => inRelevantShortcut -> INRelevantShortcutRole -> IO ()
-setShortcutRole inRelevantShortcut  value =
-    sendMsg inRelevantShortcut (mkSelector "setShortcutRole:") retVoid [argCLong (coerce value)]
+setShortcutRole inRelevantShortcut value =
+  sendMessage inRelevantShortcut setShortcutRoleSelector value
 
 -- | The shortcut that will be performed when this relevant shortcut is invoked.
 --
@@ -156,50 +149,50 @@ setShortcutRole inRelevantShortcut  value =
 --
 -- ObjC selector: @- shortcut@
 shortcut :: IsINRelevantShortcut inRelevantShortcut => inRelevantShortcut -> IO (Id INShortcut)
-shortcut inRelevantShortcut  =
-    sendMsg inRelevantShortcut (mkSelector "shortcut") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortcut inRelevantShortcut =
+  sendMessage inRelevantShortcut shortcutSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithShortcut:@
-initWithShortcutSelector :: Selector
+initWithShortcutSelector :: Selector '[Id INShortcut] (Id INRelevantShortcut)
 initWithShortcutSelector = mkSelector "initWithShortcut:"
 
 -- | @Selector@ for @relevanceProviders@
-relevanceProvidersSelector :: Selector
+relevanceProvidersSelector :: Selector '[] (Id NSArray)
 relevanceProvidersSelector = mkSelector "relevanceProviders"
 
 -- | @Selector@ for @setRelevanceProviders:@
-setRelevanceProvidersSelector :: Selector
+setRelevanceProvidersSelector :: Selector '[Id NSArray] ()
 setRelevanceProvidersSelector = mkSelector "setRelevanceProviders:"
 
 -- | @Selector@ for @watchTemplate@
-watchTemplateSelector :: Selector
+watchTemplateSelector :: Selector '[] (Id INDefaultCardTemplate)
 watchTemplateSelector = mkSelector "watchTemplate"
 
 -- | @Selector@ for @setWatchTemplate:@
-setWatchTemplateSelector :: Selector
+setWatchTemplateSelector :: Selector '[Id INDefaultCardTemplate] ()
 setWatchTemplateSelector = mkSelector "setWatchTemplate:"
 
 -- | @Selector@ for @widgetKind@
-widgetKindSelector :: Selector
+widgetKindSelector :: Selector '[] (Id NSString)
 widgetKindSelector = mkSelector "widgetKind"
 
 -- | @Selector@ for @setWidgetKind:@
-setWidgetKindSelector :: Selector
+setWidgetKindSelector :: Selector '[Id NSString] ()
 setWidgetKindSelector = mkSelector "setWidgetKind:"
 
 -- | @Selector@ for @shortcutRole@
-shortcutRoleSelector :: Selector
+shortcutRoleSelector :: Selector '[] INRelevantShortcutRole
 shortcutRoleSelector = mkSelector "shortcutRole"
 
 -- | @Selector@ for @setShortcutRole:@
-setShortcutRoleSelector :: Selector
+setShortcutRoleSelector :: Selector '[INRelevantShortcutRole] ()
 setShortcutRoleSelector = mkSelector "setShortcutRole:"
 
 -- | @Selector@ for @shortcut@
-shortcutSelector :: Selector
+shortcutSelector :: Selector '[] (Id INShortcut)
 shortcutSelector = mkSelector "shortcut"
 

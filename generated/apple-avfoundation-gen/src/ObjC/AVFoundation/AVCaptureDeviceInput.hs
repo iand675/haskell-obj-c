@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,27 +35,27 @@ module ObjC.AVFoundation.AVCaptureDeviceInput
   , setCinematicVideoCaptureEnabled
   , simulatedAperture
   , setSimulatedAperture
-  , deviceInputWithDevice_errorSelector
-  , initWithDevice_errorSelector
-  , portsWithMediaType_sourceDeviceType_sourceDevicePositionSelector
-  , unfollowExternalSyncDeviceSelector
-  , isMultichannelAudioModeSupportedSelector
-  , deviceSelector
-  , unifiedAutoExposureDefaultsEnabledSelector
-  , setUnifiedAutoExposureDefaultsEnabledSelector
-  , lockedVideoFrameDurationSupportedSelector
-  , externalSyncSupportedSelector
-  , externalSyncDeviceSelector
-  , multichannelAudioModeSelector
-  , setMultichannelAudioModeSelector
-  , windNoiseRemovalSupportedSelector
-  , windNoiseRemovalEnabledSelector
-  , setWindNoiseRemovalEnabledSelector
-  , cinematicVideoCaptureSupportedSelector
   , cinematicVideoCaptureEnabledSelector
+  , cinematicVideoCaptureSupportedSelector
+  , deviceInputWithDevice_errorSelector
+  , deviceSelector
+  , externalSyncDeviceSelector
+  , externalSyncSupportedSelector
+  , initWithDevice_errorSelector
+  , isMultichannelAudioModeSupportedSelector
+  , lockedVideoFrameDurationSupportedSelector
+  , multichannelAudioModeSelector
+  , portsWithMediaType_sourceDeviceType_sourceDevicePositionSelector
   , setCinematicVideoCaptureEnabledSelector
-  , simulatedApertureSelector
+  , setMultichannelAudioModeSelector
   , setSimulatedApertureSelector
+  , setUnifiedAutoExposureDefaultsEnabledSelector
+  , setWindNoiseRemovalEnabledSelector
+  , simulatedApertureSelector
+  , unfollowExternalSyncDeviceSelector
+  , unifiedAutoExposureDefaultsEnabledSelector
+  , windNoiseRemovalEnabledSelector
+  , windNoiseRemovalSupportedSelector
 
   -- * Enum types
   , AVCaptureDevicePosition(AVCaptureDevicePosition)
@@ -68,15 +69,11 @@ module ObjC.AVFoundation.AVCaptureDeviceInput
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,9 +98,7 @@ deviceInputWithDevice_error :: (IsAVCaptureDevice device, IsNSError outError) =>
 deviceInputWithDevice_error device outError =
   do
     cls' <- getRequiredClass "AVCaptureDeviceInput"
-    withObjCPtr device $ \raw_device ->
-      withObjCPtr outError $ \raw_outError ->
-        sendClassMsg cls' (mkSelector "deviceInputWithDevice:error:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceInputWithDevice_errorSelector (toAVCaptureDevice device) (toNSError outError)
 
 -- | initWithDevice:error:
 --
@@ -119,10 +114,8 @@ deviceInputWithDevice_error device outError =
 --
 -- ObjC selector: @- initWithDevice:error:@
 initWithDevice_error :: (IsAVCaptureDeviceInput avCaptureDeviceInput, IsAVCaptureDevice device, IsNSError outError) => avCaptureDeviceInput -> device -> outError -> IO (Id AVCaptureDeviceInput)
-initWithDevice_error avCaptureDeviceInput  device outError =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg avCaptureDeviceInput (mkSelector "initWithDevice:error:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_error avCaptureDeviceInput device outError =
+  sendOwnedMessage avCaptureDeviceInput initWithDevice_errorSelector (toAVCaptureDevice device) (toNSError outError)
 
 -- | portsWithMediaType:sourceDeviceType:sourceDevicePosition:
 --
@@ -148,10 +141,8 @@ initWithDevice_error avCaptureDeviceInput  device outError =
 --
 -- ObjC selector: @- portsWithMediaType:sourceDeviceType:sourceDevicePosition:@
 portsWithMediaType_sourceDeviceType_sourceDevicePosition :: (IsAVCaptureDeviceInput avCaptureDeviceInput, IsNSString mediaType, IsNSString sourceDeviceType) => avCaptureDeviceInput -> mediaType -> sourceDeviceType -> AVCaptureDevicePosition -> IO (Id NSArray)
-portsWithMediaType_sourceDeviceType_sourceDevicePosition avCaptureDeviceInput  mediaType sourceDeviceType sourceDevicePosition =
-  withObjCPtr mediaType $ \raw_mediaType ->
-    withObjCPtr sourceDeviceType $ \raw_sourceDeviceType ->
-        sendMsg avCaptureDeviceInput (mkSelector "portsWithMediaType:sourceDeviceType:sourceDevicePosition:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ()), argPtr (castPtr raw_sourceDeviceType :: Ptr ()), argCLong (coerce sourceDevicePosition)] >>= retainedObject . castPtr
+portsWithMediaType_sourceDeviceType_sourceDevicePosition avCaptureDeviceInput mediaType sourceDeviceType sourceDevicePosition =
+  sendMessage avCaptureDeviceInput portsWithMediaType_sourceDeviceType_sourceDevicePositionSelector (toNSString mediaType) (toNSString sourceDeviceType) sourceDevicePosition
 
 -- | Discontinues external sync.
 --
@@ -159,8 +150,8 @@ portsWithMediaType_sourceDeviceType_sourceDevicePosition avCaptureDeviceInput  m
 --
 -- ObjC selector: @- unfollowExternalSyncDevice@
 unfollowExternalSyncDevice :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO ()
-unfollowExternalSyncDevice avCaptureDeviceInput  =
-    sendMsg avCaptureDeviceInput (mkSelector "unfollowExternalSyncDevice") retVoid []
+unfollowExternalSyncDevice avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput unfollowExternalSyncDeviceSelector
 
 -- | isMultichannelAudioModeSupported:
 --
@@ -176,8 +167,8 @@ unfollowExternalSyncDevice avCaptureDeviceInput  =
 --
 -- ObjC selector: @- isMultichannelAudioModeSupported:@
 isMultichannelAudioModeSupported :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> AVCaptureMultichannelAudioMode -> IO Bool
-isMultichannelAudioModeSupported avCaptureDeviceInput  multichannelAudioMode =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceInput (mkSelector "isMultichannelAudioModeSupported:") retCULong [argCLong (coerce multichannelAudioMode)]
+isMultichannelAudioModeSupported avCaptureDeviceInput multichannelAudioMode =
+  sendMessage avCaptureDeviceInput isMultichannelAudioModeSupportedSelector multichannelAudioMode
 
 -- | device
 --
@@ -187,8 +178,8 @@ isMultichannelAudioModeSupported avCaptureDeviceInput  multichannelAudioMode =
 --
 -- ObjC selector: @- device@
 device :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO (Id AVCaptureDevice)
-device avCaptureDeviceInput  =
-    sendMsg avCaptureDeviceInput (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput deviceSelector
 
 -- | unifiedAutoExposureDefaultsEnabled
 --
@@ -200,8 +191,8 @@ device avCaptureDeviceInput  =
 --
 -- ObjC selector: @- unifiedAutoExposureDefaultsEnabled@
 unifiedAutoExposureDefaultsEnabled :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO Bool
-unifiedAutoExposureDefaultsEnabled avCaptureDeviceInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceInput (mkSelector "unifiedAutoExposureDefaultsEnabled") retCULong []
+unifiedAutoExposureDefaultsEnabled avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput unifiedAutoExposureDefaultsEnabledSelector
 
 -- | unifiedAutoExposureDefaultsEnabled
 --
@@ -213,8 +204,8 @@ unifiedAutoExposureDefaultsEnabled avCaptureDeviceInput  =
 --
 -- ObjC selector: @- setUnifiedAutoExposureDefaultsEnabled:@
 setUnifiedAutoExposureDefaultsEnabled :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> Bool -> IO ()
-setUnifiedAutoExposureDefaultsEnabled avCaptureDeviceInput  value =
-    sendMsg avCaptureDeviceInput (mkSelector "setUnifiedAutoExposureDefaultsEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setUnifiedAutoExposureDefaultsEnabled avCaptureDeviceInput value =
+  sendMessage avCaptureDeviceInput setUnifiedAutoExposureDefaultsEnabledSelector value
 
 -- | Indicates whether the device input supports locked frame durations.
 --
@@ -222,8 +213,8 @@ setUnifiedAutoExposureDefaultsEnabled avCaptureDeviceInput  value =
 --
 -- ObjC selector: @- lockedVideoFrameDurationSupported@
 lockedVideoFrameDurationSupported :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO Bool
-lockedVideoFrameDurationSupported avCaptureDeviceInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceInput (mkSelector "lockedVideoFrameDurationSupported") retCULong []
+lockedVideoFrameDurationSupported avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput lockedVideoFrameDurationSupportedSelector
 
 -- | Indicates whether the device input supports being configured to follow an external sync device.
 --
@@ -231,8 +222,8 @@ lockedVideoFrameDurationSupported avCaptureDeviceInput  =
 --
 -- ObjC selector: @- externalSyncSupported@
 externalSyncSupported :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO Bool
-externalSyncSupported avCaptureDeviceInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceInput (mkSelector "externalSyncSupported") retCULong []
+externalSyncSupported avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput externalSyncSupportedSelector
 
 -- | The external sync device currently being followed by this input.
 --
@@ -240,8 +231,8 @@ externalSyncSupported avCaptureDeviceInput  =
 --
 -- ObjC selector: @- externalSyncDevice@
 externalSyncDevice :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO (Id AVExternalSyncDevice)
-externalSyncDevice avCaptureDeviceInput  =
-    sendMsg avCaptureDeviceInput (mkSelector "externalSyncDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+externalSyncDevice avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput externalSyncDeviceSelector
 
 -- | multichannelAudioMode
 --
@@ -253,8 +244,8 @@ externalSyncDevice avCaptureDeviceInput  =
 --
 -- ObjC selector: @- multichannelAudioMode@
 multichannelAudioMode :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO AVCaptureMultichannelAudioMode
-multichannelAudioMode avCaptureDeviceInput  =
-    fmap (coerce :: CLong -> AVCaptureMultichannelAudioMode) $ sendMsg avCaptureDeviceInput (mkSelector "multichannelAudioMode") retCLong []
+multichannelAudioMode avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput multichannelAudioModeSelector
 
 -- | multichannelAudioMode
 --
@@ -266,8 +257,8 @@ multichannelAudioMode avCaptureDeviceInput  =
 --
 -- ObjC selector: @- setMultichannelAudioMode:@
 setMultichannelAudioMode :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> AVCaptureMultichannelAudioMode -> IO ()
-setMultichannelAudioMode avCaptureDeviceInput  value =
-    sendMsg avCaptureDeviceInput (mkSelector "setMultichannelAudioMode:") retVoid [argCLong (coerce value)]
+setMultichannelAudioMode avCaptureDeviceInput value =
+  sendMessage avCaptureDeviceInput setMultichannelAudioModeSelector value
 
 -- | windNoiseRemovalSupported
 --
@@ -277,8 +268,8 @@ setMultichannelAudioMode avCaptureDeviceInput  value =
 --
 -- ObjC selector: @- windNoiseRemovalSupported@
 windNoiseRemovalSupported :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO Bool
-windNoiseRemovalSupported avCaptureDeviceInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceInput (mkSelector "windNoiseRemovalSupported") retCULong []
+windNoiseRemovalSupported avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput windNoiseRemovalSupportedSelector
 
 -- | windNoiseRemovalEnabled
 --
@@ -288,8 +279,8 @@ windNoiseRemovalSupported avCaptureDeviceInput  =
 --
 -- ObjC selector: @- windNoiseRemovalEnabled@
 windNoiseRemovalEnabled :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO Bool
-windNoiseRemovalEnabled avCaptureDeviceInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceInput (mkSelector "windNoiseRemovalEnabled") retCULong []
+windNoiseRemovalEnabled avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput windNoiseRemovalEnabledSelector
 
 -- | windNoiseRemovalEnabled
 --
@@ -299,8 +290,8 @@ windNoiseRemovalEnabled avCaptureDeviceInput  =
 --
 -- ObjC selector: @- setWindNoiseRemovalEnabled:@
 setWindNoiseRemovalEnabled :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> Bool -> IO ()
-setWindNoiseRemovalEnabled avCaptureDeviceInput  value =
-    sendMsg avCaptureDeviceInput (mkSelector "setWindNoiseRemovalEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setWindNoiseRemovalEnabled avCaptureDeviceInput value =
+  sendMessage avCaptureDeviceInput setWindNoiseRemovalEnabledSelector value
 
 -- | A BOOL value specifying whether Cinematic Video capture is supported.
 --
@@ -316,8 +307,8 @@ setWindNoiseRemovalEnabled avCaptureDeviceInput  value =
 --
 -- ObjC selector: @- cinematicVideoCaptureSupported@
 cinematicVideoCaptureSupported :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO Bool
-cinematicVideoCaptureSupported avCaptureDeviceInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceInput (mkSelector "cinematicVideoCaptureSupported") retCULong []
+cinematicVideoCaptureSupported avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput cinematicVideoCaptureSupportedSelector
 
 -- | A BOOL value specifying whether the Cinematic Video effect is being applied to any movie file output, video data output, metadata output, or video preview layer added to the capture session.
 --
@@ -329,8 +320,8 @@ cinematicVideoCaptureSupported avCaptureDeviceInput  =
 --
 -- ObjC selector: @- cinematicVideoCaptureEnabled@
 cinematicVideoCaptureEnabled :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO Bool
-cinematicVideoCaptureEnabled avCaptureDeviceInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDeviceInput (mkSelector "cinematicVideoCaptureEnabled") retCULong []
+cinematicVideoCaptureEnabled avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput cinematicVideoCaptureEnabledSelector
 
 -- | A BOOL value specifying whether the Cinematic Video effect is being applied to any movie file output, video data output, metadata output, or video preview layer added to the capture session.
 --
@@ -342,8 +333,8 @@ cinematicVideoCaptureEnabled avCaptureDeviceInput  =
 --
 -- ObjC selector: @- setCinematicVideoCaptureEnabled:@
 setCinematicVideoCaptureEnabled :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> Bool -> IO ()
-setCinematicVideoCaptureEnabled avCaptureDeviceInput  value =
-    sendMsg avCaptureDeviceInput (mkSelector "setCinematicVideoCaptureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setCinematicVideoCaptureEnabled avCaptureDeviceInput value =
+  sendMessage avCaptureDeviceInput setCinematicVideoCaptureEnabledSelector value
 
 -- | Shallow depth of field simulated aperture.
 --
@@ -359,8 +350,8 @@ setCinematicVideoCaptureEnabled avCaptureDeviceInput  value =
 --
 -- ObjC selector: @- simulatedAperture@
 simulatedAperture :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> IO CFloat
-simulatedAperture avCaptureDeviceInput  =
-    sendMsg avCaptureDeviceInput (mkSelector "simulatedAperture") retCFloat []
+simulatedAperture avCaptureDeviceInput =
+  sendMessage avCaptureDeviceInput simulatedApertureSelector
 
 -- | Shallow depth of field simulated aperture.
 --
@@ -376,94 +367,94 @@ simulatedAperture avCaptureDeviceInput  =
 --
 -- ObjC selector: @- setSimulatedAperture:@
 setSimulatedAperture :: IsAVCaptureDeviceInput avCaptureDeviceInput => avCaptureDeviceInput -> CFloat -> IO ()
-setSimulatedAperture avCaptureDeviceInput  value =
-    sendMsg avCaptureDeviceInput (mkSelector "setSimulatedAperture:") retVoid [argCFloat value]
+setSimulatedAperture avCaptureDeviceInput value =
+  sendMessage avCaptureDeviceInput setSimulatedApertureSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @deviceInputWithDevice:error:@
-deviceInputWithDevice_errorSelector :: Selector
+deviceInputWithDevice_errorSelector :: Selector '[Id AVCaptureDevice, Id NSError] (Id AVCaptureDeviceInput)
 deviceInputWithDevice_errorSelector = mkSelector "deviceInputWithDevice:error:"
 
 -- | @Selector@ for @initWithDevice:error:@
-initWithDevice_errorSelector :: Selector
+initWithDevice_errorSelector :: Selector '[Id AVCaptureDevice, Id NSError] (Id AVCaptureDeviceInput)
 initWithDevice_errorSelector = mkSelector "initWithDevice:error:"
 
 -- | @Selector@ for @portsWithMediaType:sourceDeviceType:sourceDevicePosition:@
-portsWithMediaType_sourceDeviceType_sourceDevicePositionSelector :: Selector
+portsWithMediaType_sourceDeviceType_sourceDevicePositionSelector :: Selector '[Id NSString, Id NSString, AVCaptureDevicePosition] (Id NSArray)
 portsWithMediaType_sourceDeviceType_sourceDevicePositionSelector = mkSelector "portsWithMediaType:sourceDeviceType:sourceDevicePosition:"
 
 -- | @Selector@ for @unfollowExternalSyncDevice@
-unfollowExternalSyncDeviceSelector :: Selector
+unfollowExternalSyncDeviceSelector :: Selector '[] ()
 unfollowExternalSyncDeviceSelector = mkSelector "unfollowExternalSyncDevice"
 
 -- | @Selector@ for @isMultichannelAudioModeSupported:@
-isMultichannelAudioModeSupportedSelector :: Selector
+isMultichannelAudioModeSupportedSelector :: Selector '[AVCaptureMultichannelAudioMode] Bool
 isMultichannelAudioModeSupportedSelector = mkSelector "isMultichannelAudioModeSupported:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id AVCaptureDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @unifiedAutoExposureDefaultsEnabled@
-unifiedAutoExposureDefaultsEnabledSelector :: Selector
+unifiedAutoExposureDefaultsEnabledSelector :: Selector '[] Bool
 unifiedAutoExposureDefaultsEnabledSelector = mkSelector "unifiedAutoExposureDefaultsEnabled"
 
 -- | @Selector@ for @setUnifiedAutoExposureDefaultsEnabled:@
-setUnifiedAutoExposureDefaultsEnabledSelector :: Selector
+setUnifiedAutoExposureDefaultsEnabledSelector :: Selector '[Bool] ()
 setUnifiedAutoExposureDefaultsEnabledSelector = mkSelector "setUnifiedAutoExposureDefaultsEnabled:"
 
 -- | @Selector@ for @lockedVideoFrameDurationSupported@
-lockedVideoFrameDurationSupportedSelector :: Selector
+lockedVideoFrameDurationSupportedSelector :: Selector '[] Bool
 lockedVideoFrameDurationSupportedSelector = mkSelector "lockedVideoFrameDurationSupported"
 
 -- | @Selector@ for @externalSyncSupported@
-externalSyncSupportedSelector :: Selector
+externalSyncSupportedSelector :: Selector '[] Bool
 externalSyncSupportedSelector = mkSelector "externalSyncSupported"
 
 -- | @Selector@ for @externalSyncDevice@
-externalSyncDeviceSelector :: Selector
+externalSyncDeviceSelector :: Selector '[] (Id AVExternalSyncDevice)
 externalSyncDeviceSelector = mkSelector "externalSyncDevice"
 
 -- | @Selector@ for @multichannelAudioMode@
-multichannelAudioModeSelector :: Selector
+multichannelAudioModeSelector :: Selector '[] AVCaptureMultichannelAudioMode
 multichannelAudioModeSelector = mkSelector "multichannelAudioMode"
 
 -- | @Selector@ for @setMultichannelAudioMode:@
-setMultichannelAudioModeSelector :: Selector
+setMultichannelAudioModeSelector :: Selector '[AVCaptureMultichannelAudioMode] ()
 setMultichannelAudioModeSelector = mkSelector "setMultichannelAudioMode:"
 
 -- | @Selector@ for @windNoiseRemovalSupported@
-windNoiseRemovalSupportedSelector :: Selector
+windNoiseRemovalSupportedSelector :: Selector '[] Bool
 windNoiseRemovalSupportedSelector = mkSelector "windNoiseRemovalSupported"
 
 -- | @Selector@ for @windNoiseRemovalEnabled@
-windNoiseRemovalEnabledSelector :: Selector
+windNoiseRemovalEnabledSelector :: Selector '[] Bool
 windNoiseRemovalEnabledSelector = mkSelector "windNoiseRemovalEnabled"
 
 -- | @Selector@ for @setWindNoiseRemovalEnabled:@
-setWindNoiseRemovalEnabledSelector :: Selector
+setWindNoiseRemovalEnabledSelector :: Selector '[Bool] ()
 setWindNoiseRemovalEnabledSelector = mkSelector "setWindNoiseRemovalEnabled:"
 
 -- | @Selector@ for @cinematicVideoCaptureSupported@
-cinematicVideoCaptureSupportedSelector :: Selector
+cinematicVideoCaptureSupportedSelector :: Selector '[] Bool
 cinematicVideoCaptureSupportedSelector = mkSelector "cinematicVideoCaptureSupported"
 
 -- | @Selector@ for @cinematicVideoCaptureEnabled@
-cinematicVideoCaptureEnabledSelector :: Selector
+cinematicVideoCaptureEnabledSelector :: Selector '[] Bool
 cinematicVideoCaptureEnabledSelector = mkSelector "cinematicVideoCaptureEnabled"
 
 -- | @Selector@ for @setCinematicVideoCaptureEnabled:@
-setCinematicVideoCaptureEnabledSelector :: Selector
+setCinematicVideoCaptureEnabledSelector :: Selector '[Bool] ()
 setCinematicVideoCaptureEnabledSelector = mkSelector "setCinematicVideoCaptureEnabled:"
 
 -- | @Selector@ for @simulatedAperture@
-simulatedApertureSelector :: Selector
+simulatedApertureSelector :: Selector '[] CFloat
 simulatedApertureSelector = mkSelector "simulatedAperture"
 
 -- | @Selector@ for @setSimulatedAperture:@
-setSimulatedApertureSelector :: Selector
+setSimulatedApertureSelector :: Selector '[CFloat] ()
 setSimulatedApertureSelector = mkSelector "setSimulatedAperture:"
 

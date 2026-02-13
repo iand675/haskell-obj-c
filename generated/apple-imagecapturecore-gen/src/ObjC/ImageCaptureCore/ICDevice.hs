@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,39 +45,39 @@ module ObjC.ImageCaptureCore.ICDevice
   , remote
   , persistentIDString
   , moduleExecutableArchitecture
-  , requestOpenSessionSelector
-  , requestCloseSessionSelector
-  , requestEjectSelector
-  , requestOpenSessionWithOptions_completionSelector
-  , requestCloseSessionWithOptions_completionSelector
-  , requestEjectWithCompletionSelector
-  , requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfoSelector
-  , requestEjectOrDisconnectSelector
-  , requestYieldSelector
-  , delegateSelector
-  , setDelegateSelector
-  , typeSelector
+  , autolaunchApplicationPathSelector
   , capabilitiesSelector
-  , nameSelector
-  , productKindSelector
-  , iconSelector
-  , systemSymbolNameSelector
-  , transportTypeSelector
-  , uuidStringSelector
-  , locationDescriptionSelector
+  , delegateSelector
   , hasOpenSessionSelector
-  , userDataSelector
+  , iconSelector
+  , locationDescriptionSelector
+  , moduleExecutableArchitectureSelector
   , modulePathSelector
   , moduleVersionSelector
+  , nameSelector
+  , persistentIDStringSelector
+  , productKindSelector
+  , remoteSelector
+  , requestCloseSessionSelector
+  , requestCloseSessionWithOptions_completionSelector
+  , requestEjectOrDisconnectSelector
+  , requestEjectSelector
+  , requestEjectWithCompletionSelector
+  , requestOpenSessionSelector
+  , requestOpenSessionWithOptions_completionSelector
+  , requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfoSelector
+  , requestYieldSelector
   , serialNumberStringSelector
+  , setAutolaunchApplicationPathSelector
+  , setDelegateSelector
+  , systemSymbolNameSelector
+  , transportTypeSelector
+  , typeSelector
   , usbLocationIDSelector
   , usbProductIDSelector
   , usbVendorIDSelector
-  , autolaunchApplicationPathSelector
-  , setAutolaunchApplicationPathSelector
-  , remoteSelector
-  , persistentIDStringSelector
-  , moduleExecutableArchitectureSelector
+  , userDataSelector
+  , uuidStringSelector
 
   -- * Enum types
   , ICDeviceType(ICDeviceType)
@@ -85,15 +86,11 @@ module ObjC.ImageCaptureCore.ICDevice
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -111,8 +108,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requestOpenSession@
 requestOpenSession :: IsICDevice icDevice => icDevice -> IO ()
-requestOpenSession icDevice  =
-    sendMsg icDevice (mkSelector "requestOpenSession") retVoid []
+requestOpenSession icDevice =
+  sendMessage icDevice requestOpenSessionSelector
 
 -- | requestCloseSession
 --
@@ -124,8 +121,8 @@ requestOpenSession icDevice  =
 --
 -- ObjC selector: @- requestCloseSession@
 requestCloseSession :: IsICDevice icDevice => icDevice -> IO ()
-requestCloseSession icDevice  =
-    sendMsg icDevice (mkSelector "requestCloseSession") retVoid []
+requestCloseSession icDevice =
+  sendMessage icDevice requestCloseSessionSelector
 
 -- | requestEject
 --
@@ -133,8 +130,8 @@ requestCloseSession icDevice  =
 --
 -- ObjC selector: @- requestEject@
 requestEject :: IsICDevice icDevice => icDevice -> IO ()
-requestEject icDevice  =
-    sendMsg icDevice (mkSelector "requestEject") retVoid []
+requestEject icDevice =
+  sendMessage icDevice requestEjectSelector
 
 -- | requestOpenSessionWithOptions:completion
 --
@@ -146,9 +143,8 @@ requestEject icDevice  =
 --
 -- ObjC selector: @- requestOpenSessionWithOptions:completion:@
 requestOpenSessionWithOptions_completion :: (IsICDevice icDevice, IsNSDictionary options) => icDevice -> options -> Ptr () -> IO ()
-requestOpenSessionWithOptions_completion icDevice  options completion =
-  withObjCPtr options $ \raw_options ->
-      sendMsg icDevice (mkSelector "requestOpenSessionWithOptions:completion:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+requestOpenSessionWithOptions_completion icDevice options completion =
+  sendMessage icDevice requestOpenSessionWithOptions_completionSelector (toNSDictionary options) completion
 
 -- | requestCloseSessionWithOptions:completion
 --
@@ -160,9 +156,8 @@ requestOpenSessionWithOptions_completion icDevice  options completion =
 --
 -- ObjC selector: @- requestCloseSessionWithOptions:completion:@
 requestCloseSessionWithOptions_completion :: (IsICDevice icDevice, IsNSDictionary options) => icDevice -> options -> Ptr () -> IO ()
-requestCloseSessionWithOptions_completion icDevice  options completion =
-  withObjCPtr options $ \raw_options ->
-      sendMsg icDevice (mkSelector "requestCloseSessionWithOptions:completion:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+requestCloseSessionWithOptions_completion icDevice options completion =
+  sendMessage icDevice requestCloseSessionWithOptions_completionSelector (toNSDictionary options) completion
 
 -- | requestEjectWithCompletion:
 --
@@ -174,8 +169,8 @@ requestCloseSessionWithOptions_completion icDevice  options completion =
 --
 -- ObjC selector: @- requestEjectWithCompletion:@
 requestEjectWithCompletion :: IsICDevice icDevice => icDevice -> Ptr () -> IO ()
-requestEjectWithCompletion icDevice  completion =
-    sendMsg icDevice (mkSelector "requestEjectWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+requestEjectWithCompletion icDevice completion =
+  sendMessage icDevice requestEjectWithCompletionSelector completion
 
 -- | requestSendMessage:outData:maxReturnDataSize:sendMessageDelegate:didSendMessageSelector:contextInfo:
 --
@@ -192,10 +187,9 @@ requestEjectWithCompletion icDevice  completion =
 -- Note: Execution of the delegate callback will occur on the main thread.
 --
 -- ObjC selector: @- requestSendMessage:outData:maxReturnedDataSize:sendMessageDelegate:didSendMessageSelector:contextInfo:@
-requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfo :: (IsICDevice icDevice, IsNSData data_) => icDevice -> CUInt -> data_ -> CUInt -> RawId -> Selector -> Ptr () -> IO ()
-requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfo icDevice  messageCode data_ maxReturnedDataSize sendMessageDelegate selector contextInfo =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg icDevice (mkSelector "requestSendMessage:outData:maxReturnedDataSize:sendMessageDelegate:didSendMessageSelector:contextInfo:") retVoid [argCUInt messageCode, argPtr (castPtr raw_data_ :: Ptr ()), argCUInt maxReturnedDataSize, argPtr (castPtr (unRawId sendMessageDelegate) :: Ptr ()), argPtr (unSelector selector), argPtr contextInfo]
+requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfo :: (IsICDevice icDevice, IsNSData data_) => icDevice -> CUInt -> data_ -> CUInt -> RawId -> Sel -> Ptr () -> IO ()
+requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfo icDevice messageCode data_ maxReturnedDataSize sendMessageDelegate selector contextInfo =
+  sendMessage icDevice requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfoSelector messageCode (toNSData data_) maxReturnedDataSize sendMessageDelegate selector contextInfo
 
 -- | requestEjectOrDisconnect
 --
@@ -203,8 +197,8 @@ requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessag
 --
 -- ObjC selector: @- requestEjectOrDisconnect@
 requestEjectOrDisconnect :: IsICDevice icDevice => icDevice -> IO ()
-requestEjectOrDisconnect icDevice  =
-    sendMsg icDevice (mkSelector "requestEjectOrDisconnect") retVoid []
+requestEjectOrDisconnect icDevice =
+  sendMessage icDevice requestEjectOrDisconnectSelector
 
 -- | requestYield
 --
@@ -214,8 +208,8 @@ requestEjectOrDisconnect icDevice  =
 --
 -- ObjC selector: @- requestYield@
 requestYield :: IsICDevice icDevice => icDevice -> IO ()
-requestYield icDevice  =
-    sendMsg icDevice (mkSelector "requestYield") retVoid []
+requestYield icDevice =
+  sendMessage icDevice requestYieldSelector
 
 -- | delegate
 --
@@ -225,8 +219,8 @@ requestYield icDevice  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsICDevice icDevice => icDevice -> IO RawId
-delegate icDevice  =
-    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "delegate") (retPtr retVoid) []
+delegate icDevice =
+  sendMessage icDevice delegateSelector
 
 -- | delegate
 --
@@ -236,8 +230,8 @@ delegate icDevice  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsICDevice icDevice => icDevice -> RawId -> IO ()
-setDelegate icDevice  value =
-    sendMsg icDevice (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate icDevice value =
+  sendMessage icDevice setDelegateSelector value
 
 -- | type
 --
@@ -249,8 +243,8 @@ setDelegate icDevice  value =
 --
 -- ObjC selector: @- type@
 type_ :: IsICDevice icDevice => icDevice -> IO ICDeviceType
-type_ icDevice  =
-    fmap (coerce :: CULong -> ICDeviceType) $ sendMsg icDevice (mkSelector "type") retCULong []
+type_ icDevice =
+  sendMessage icDevice typeSelector
 
 -- | capabilities
 --
@@ -258,8 +252,8 @@ type_ icDevice  =
 --
 -- ObjC selector: @- capabilities@
 capabilities :: IsICDevice icDevice => icDevice -> IO (Id NSArray)
-capabilities icDevice  =
-    sendMsg icDevice (mkSelector "capabilities") (retPtr retVoid) [] >>= retainedObject . castPtr
+capabilities icDevice =
+  sendMessage icDevice capabilitiesSelector
 
 -- | name
 --
@@ -269,8 +263,8 @@ capabilities icDevice  =
 --
 -- ObjC selector: @- name@
 name :: IsICDevice icDevice => icDevice -> IO (Id NSString)
-name icDevice  =
-    sendMsg icDevice (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name icDevice =
+  sendMessage icDevice nameSelector
 
 -- | productKind
 --
@@ -278,8 +272,8 @@ name icDevice  =
 --
 -- ObjC selector: @- productKind@
 productKind :: IsICDevice icDevice => icDevice -> IO (Id NSString)
-productKind icDevice  =
-    sendMsg icDevice (mkSelector "productKind") (retPtr retVoid) [] >>= retainedObject . castPtr
+productKind icDevice =
+  sendMessage icDevice productKindSelector
 
 -- | icon
 --
@@ -287,8 +281,8 @@ productKind icDevice  =
 --
 -- ObjC selector: @- icon@
 icon :: IsICDevice icDevice => icDevice -> IO (Ptr ())
-icon icDevice  =
-    fmap castPtr $ sendMsg icDevice (mkSelector "icon") (retPtr retVoid) []
+icon icDevice =
+  sendMessage icDevice iconSelector
 
 -- | systemSymbolName
 --
@@ -296,8 +290,8 @@ icon icDevice  =
 --
 -- ObjC selector: @- systemSymbolName@
 systemSymbolName :: IsICDevice icDevice => icDevice -> IO (Id NSString)
-systemSymbolName icDevice  =
-    sendMsg icDevice (mkSelector "systemSymbolName") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemSymbolName icDevice =
+  sendMessage icDevice systemSymbolNameSelector
 
 -- | transportType
 --
@@ -305,8 +299,8 @@ systemSymbolName icDevice  =
 --
 -- ObjC selector: @- transportType@
 transportType :: IsICDevice icDevice => icDevice -> IO (Id NSString)
-transportType icDevice  =
-    sendMsg icDevice (mkSelector "transportType") (retPtr retVoid) [] >>= retainedObject . castPtr
+transportType icDevice =
+  sendMessage icDevice transportTypeSelector
 
 -- | UUIDString
 --
@@ -314,8 +308,8 @@ transportType icDevice  =
 --
 -- ObjC selector: @- UUIDString@
 uuidString :: IsICDevice icDevice => icDevice -> IO (Id NSString)
-uuidString icDevice  =
-    sendMsg icDevice (mkSelector "UUIDString") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuidString icDevice =
+  sendMessage icDevice uuidStringSelector
 
 -- | locationDescription
 --
@@ -325,8 +319,8 @@ uuidString icDevice  =
 --
 -- ObjC selector: @- locationDescription@
 locationDescription :: IsICDevice icDevice => icDevice -> IO RawId
-locationDescription icDevice  =
-    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "locationDescription") (retPtr retVoid) []
+locationDescription icDevice =
+  sendMessage icDevice locationDescriptionSelector
 
 -- | hasOpenSession
 --
@@ -334,8 +328,8 @@ locationDescription icDevice  =
 --
 -- ObjC selector: @- hasOpenSession@
 hasOpenSession :: IsICDevice icDevice => icDevice -> IO Bool
-hasOpenSession icDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icDevice (mkSelector "hasOpenSession") retCULong []
+hasOpenSession icDevice =
+  sendMessage icDevice hasOpenSessionSelector
 
 -- | userData
 --
@@ -343,8 +337,8 @@ hasOpenSession icDevice  =
 --
 -- ObjC selector: @- userData@
 userData :: IsICDevice icDevice => icDevice -> IO (Id NSMutableDictionary)
-userData icDevice  =
-    sendMsg icDevice (mkSelector "userData") (retPtr retVoid) [] >>= retainedObject . castPtr
+userData icDevice =
+  sendMessage icDevice userDataSelector
 
 -- | modulePath
 --
@@ -352,8 +346,8 @@ userData icDevice  =
 --
 -- ObjC selector: @- modulePath@
 modulePath :: IsICDevice icDevice => icDevice -> IO RawId
-modulePath icDevice  =
-    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "modulePath") (retPtr retVoid) []
+modulePath icDevice =
+  sendMessage icDevice modulePathSelector
 
 -- | moduleVersion
 --
@@ -363,8 +357,8 @@ modulePath icDevice  =
 --
 -- ObjC selector: @- moduleVersion@
 moduleVersion :: IsICDevice icDevice => icDevice -> IO RawId
-moduleVersion icDevice  =
-    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "moduleVersion") (retPtr retVoid) []
+moduleVersion icDevice =
+  sendMessage icDevice moduleVersionSelector
 
 -- | serialNumberString
 --
@@ -372,8 +366,8 @@ moduleVersion icDevice  =
 --
 -- ObjC selector: @- serialNumberString@
 serialNumberString :: IsICDevice icDevice => icDevice -> IO RawId
-serialNumberString icDevice  =
-    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "serialNumberString") (retPtr retVoid) []
+serialNumberString icDevice =
+  sendMessage icDevice serialNumberStringSelector
 
 -- | usbLocationID
 --
@@ -381,8 +375,8 @@ serialNumberString icDevice  =
 --
 -- ObjC selector: @- usbLocationID@
 usbLocationID :: IsICDevice icDevice => icDevice -> IO CInt
-usbLocationID icDevice  =
-    sendMsg icDevice (mkSelector "usbLocationID") retCInt []
+usbLocationID icDevice =
+  sendMessage icDevice usbLocationIDSelector
 
 -- | usbProductID
 --
@@ -390,8 +384,8 @@ usbLocationID icDevice  =
 --
 -- ObjC selector: @- usbProductID@
 usbProductID :: IsICDevice icDevice => icDevice -> IO CInt
-usbProductID icDevice  =
-    sendMsg icDevice (mkSelector "usbProductID") retCInt []
+usbProductID icDevice =
+  sendMessage icDevice usbProductIDSelector
 
 -- | usbVendorID
 --
@@ -399,8 +393,8 @@ usbProductID icDevice  =
 --
 -- ObjC selector: @- usbVendorID@
 usbVendorID :: IsICDevice icDevice => icDevice -> IO CInt
-usbVendorID icDevice  =
-    sendMsg icDevice (mkSelector "usbVendorID") retCInt []
+usbVendorID icDevice =
+  sendMessage icDevice usbVendorIDSelector
 
 -- | autolaunchApplicationPath
 --
@@ -410,8 +404,8 @@ usbVendorID icDevice  =
 --
 -- ObjC selector: @- autolaunchApplicationPath@
 autolaunchApplicationPath :: IsICDevice icDevice => icDevice -> IO RawId
-autolaunchApplicationPath icDevice  =
-    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "autolaunchApplicationPath") (retPtr retVoid) []
+autolaunchApplicationPath icDevice =
+  sendMessage icDevice autolaunchApplicationPathSelector
 
 -- | autolaunchApplicationPath
 --
@@ -421,8 +415,8 @@ autolaunchApplicationPath icDevice  =
 --
 -- ObjC selector: @- setAutolaunchApplicationPath:@
 setAutolaunchApplicationPath :: IsICDevice icDevice => icDevice -> RawId -> IO ()
-setAutolaunchApplicationPath icDevice  value =
-    sendMsg icDevice (mkSelector "setAutolaunchApplicationPath:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setAutolaunchApplicationPath icDevice value =
+  sendMessage icDevice setAutolaunchApplicationPathSelector value
 
 -- | remote
 --
@@ -436,8 +430,8 @@ setAutolaunchApplicationPath icDevice  value =
 --
 -- ObjC selector: @- remote@
 remote :: IsICDevice icDevice => icDevice -> IO Bool
-remote icDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icDevice (mkSelector "remote") retCULong []
+remote icDevice =
+  sendMessage icDevice remoteSelector
 
 -- | persistentIDString
 --
@@ -445,8 +439,8 @@ remote icDevice  =
 --
 -- ObjC selector: @- persistentIDString@
 persistentIDString :: IsICDevice icDevice => icDevice -> IO RawId
-persistentIDString icDevice  =
-    fmap (RawId . castPtr) $ sendMsg icDevice (mkSelector "persistentIDString") (retPtr retVoid) []
+persistentIDString icDevice =
+  sendMessage icDevice persistentIDStringSelector
 
 -- | moduleExecutableArchitecture
 --
@@ -454,142 +448,142 @@ persistentIDString icDevice  =
 --
 -- ObjC selector: @- moduleExecutableArchitecture@
 moduleExecutableArchitecture :: IsICDevice icDevice => icDevice -> IO CInt
-moduleExecutableArchitecture icDevice  =
-    sendMsg icDevice (mkSelector "moduleExecutableArchitecture") retCInt []
+moduleExecutableArchitecture icDevice =
+  sendMessage icDevice moduleExecutableArchitectureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestOpenSession@
-requestOpenSessionSelector :: Selector
+requestOpenSessionSelector :: Selector '[] ()
 requestOpenSessionSelector = mkSelector "requestOpenSession"
 
 -- | @Selector@ for @requestCloseSession@
-requestCloseSessionSelector :: Selector
+requestCloseSessionSelector :: Selector '[] ()
 requestCloseSessionSelector = mkSelector "requestCloseSession"
 
 -- | @Selector@ for @requestEject@
-requestEjectSelector :: Selector
+requestEjectSelector :: Selector '[] ()
 requestEjectSelector = mkSelector "requestEject"
 
 -- | @Selector@ for @requestOpenSessionWithOptions:completion:@
-requestOpenSessionWithOptions_completionSelector :: Selector
+requestOpenSessionWithOptions_completionSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 requestOpenSessionWithOptions_completionSelector = mkSelector "requestOpenSessionWithOptions:completion:"
 
 -- | @Selector@ for @requestCloseSessionWithOptions:completion:@
-requestCloseSessionWithOptions_completionSelector :: Selector
+requestCloseSessionWithOptions_completionSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 requestCloseSessionWithOptions_completionSelector = mkSelector "requestCloseSessionWithOptions:completion:"
 
 -- | @Selector@ for @requestEjectWithCompletion:@
-requestEjectWithCompletionSelector :: Selector
+requestEjectWithCompletionSelector :: Selector '[Ptr ()] ()
 requestEjectWithCompletionSelector = mkSelector "requestEjectWithCompletion:"
 
 -- | @Selector@ for @requestSendMessage:outData:maxReturnedDataSize:sendMessageDelegate:didSendMessageSelector:contextInfo:@
-requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfoSelector :: Selector
+requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfoSelector :: Selector '[CUInt, Id NSData, CUInt, RawId, Sel, Ptr ()] ()
 requestSendMessage_outData_maxReturnedDataSize_sendMessageDelegate_didSendMessageSelector_contextInfoSelector = mkSelector "requestSendMessage:outData:maxReturnedDataSize:sendMessageDelegate:didSendMessageSelector:contextInfo:"
 
 -- | @Selector@ for @requestEjectOrDisconnect@
-requestEjectOrDisconnectSelector :: Selector
+requestEjectOrDisconnectSelector :: Selector '[] ()
 requestEjectOrDisconnectSelector = mkSelector "requestEjectOrDisconnect"
 
 -- | @Selector@ for @requestYield@
-requestYieldSelector :: Selector
+requestYieldSelector :: Selector '[] ()
 requestYieldSelector = mkSelector "requestYield"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] ICDeviceType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @capabilities@
-capabilitiesSelector :: Selector
+capabilitiesSelector :: Selector '[] (Id NSArray)
 capabilitiesSelector = mkSelector "capabilities"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @productKind@
-productKindSelector :: Selector
+productKindSelector :: Selector '[] (Id NSString)
 productKindSelector = mkSelector "productKind"
 
 -- | @Selector@ for @icon@
-iconSelector :: Selector
+iconSelector :: Selector '[] (Ptr ())
 iconSelector = mkSelector "icon"
 
 -- | @Selector@ for @systemSymbolName@
-systemSymbolNameSelector :: Selector
+systemSymbolNameSelector :: Selector '[] (Id NSString)
 systemSymbolNameSelector = mkSelector "systemSymbolName"
 
 -- | @Selector@ for @transportType@
-transportTypeSelector :: Selector
+transportTypeSelector :: Selector '[] (Id NSString)
 transportTypeSelector = mkSelector "transportType"
 
 -- | @Selector@ for @UUIDString@
-uuidStringSelector :: Selector
+uuidStringSelector :: Selector '[] (Id NSString)
 uuidStringSelector = mkSelector "UUIDString"
 
 -- | @Selector@ for @locationDescription@
-locationDescriptionSelector :: Selector
+locationDescriptionSelector :: Selector '[] RawId
 locationDescriptionSelector = mkSelector "locationDescription"
 
 -- | @Selector@ for @hasOpenSession@
-hasOpenSessionSelector :: Selector
+hasOpenSessionSelector :: Selector '[] Bool
 hasOpenSessionSelector = mkSelector "hasOpenSession"
 
 -- | @Selector@ for @userData@
-userDataSelector :: Selector
+userDataSelector :: Selector '[] (Id NSMutableDictionary)
 userDataSelector = mkSelector "userData"
 
 -- | @Selector@ for @modulePath@
-modulePathSelector :: Selector
+modulePathSelector :: Selector '[] RawId
 modulePathSelector = mkSelector "modulePath"
 
 -- | @Selector@ for @moduleVersion@
-moduleVersionSelector :: Selector
+moduleVersionSelector :: Selector '[] RawId
 moduleVersionSelector = mkSelector "moduleVersion"
 
 -- | @Selector@ for @serialNumberString@
-serialNumberStringSelector :: Selector
+serialNumberStringSelector :: Selector '[] RawId
 serialNumberStringSelector = mkSelector "serialNumberString"
 
 -- | @Selector@ for @usbLocationID@
-usbLocationIDSelector :: Selector
+usbLocationIDSelector :: Selector '[] CInt
 usbLocationIDSelector = mkSelector "usbLocationID"
 
 -- | @Selector@ for @usbProductID@
-usbProductIDSelector :: Selector
+usbProductIDSelector :: Selector '[] CInt
 usbProductIDSelector = mkSelector "usbProductID"
 
 -- | @Selector@ for @usbVendorID@
-usbVendorIDSelector :: Selector
+usbVendorIDSelector :: Selector '[] CInt
 usbVendorIDSelector = mkSelector "usbVendorID"
 
 -- | @Selector@ for @autolaunchApplicationPath@
-autolaunchApplicationPathSelector :: Selector
+autolaunchApplicationPathSelector :: Selector '[] RawId
 autolaunchApplicationPathSelector = mkSelector "autolaunchApplicationPath"
 
 -- | @Selector@ for @setAutolaunchApplicationPath:@
-setAutolaunchApplicationPathSelector :: Selector
+setAutolaunchApplicationPathSelector :: Selector '[RawId] ()
 setAutolaunchApplicationPathSelector = mkSelector "setAutolaunchApplicationPath:"
 
 -- | @Selector@ for @remote@
-remoteSelector :: Selector
+remoteSelector :: Selector '[] Bool
 remoteSelector = mkSelector "remote"
 
 -- | @Selector@ for @persistentIDString@
-persistentIDStringSelector :: Selector
+persistentIDStringSelector :: Selector '[] RawId
 persistentIDStringSelector = mkSelector "persistentIDString"
 
 -- | @Selector@ for @moduleExecutableArchitecture@
-moduleExecutableArchitectureSelector :: Selector
+moduleExecutableArchitectureSelector :: Selector '[] CInt
 moduleExecutableArchitectureSelector = mkSelector "moduleExecutableArchitecture"
 

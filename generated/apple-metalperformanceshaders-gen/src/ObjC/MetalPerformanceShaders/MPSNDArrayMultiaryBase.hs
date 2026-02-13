@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,15 +18,15 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayMultiaryBase
   , destinationArrayDescriptorForSourceArrays_sourceState
   , destinationArrayAllocator
   , setDestinationArrayAllocator
+  , copyWithZone_deviceSelector
+  , destinationArrayAllocatorSelector
+  , destinationArrayDescriptorForSourceArrays_sourceStateSelector
   , edgeModeAtSourceIndexSelector
+  , encodeWithCoderSelector
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , initWithDevice_sourceCountSelector
-  , initWithCoder_deviceSelector
-  , encodeWithCoderSelector
-  , copyWithZone_deviceSelector
   , resultStateForSourceArrays_sourceStates_destinationArraySelector
-  , destinationArrayDescriptorForSourceArrays_sourceStateSelector
-  , destinationArrayAllocatorSelector
   , setDestinationArrayAllocatorSelector
 
   -- * Enum types
@@ -38,15 +39,11 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayMultiaryBase
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,13 +59,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- edgeModeAtSourceIndex:@
 edgeModeAtSourceIndex :: IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase => mpsndArrayMultiaryBase -> CULong -> IO MPSImageEdgeMode
-edgeModeAtSourceIndex mpsndArrayMultiaryBase  sourceIndex =
-    fmap (coerce :: CULong -> MPSImageEdgeMode) $ sendMsg mpsndArrayMultiaryBase (mkSelector "edgeModeAtSourceIndex:") retCULong [argCULong sourceIndex]
+edgeModeAtSourceIndex mpsndArrayMultiaryBase sourceIndex =
+  sendMessage mpsndArrayMultiaryBase edgeModeAtSourceIndexSelector sourceIndex
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase => mpsndArrayMultiaryBase -> RawId -> IO (Id MPSNDArrayMultiaryBase)
-initWithDevice mpsndArrayMultiaryBase  device =
-    sendMsg mpsndArrayMultiaryBase (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsndArrayMultiaryBase device =
+  sendOwnedMessage mpsndArrayMultiaryBase initWithDeviceSelector device
 
 -- | Initialize a MPSNDArrayMultiaryKernel
 --
@@ -80,8 +77,8 @@ initWithDevice mpsndArrayMultiaryBase  device =
 --
 -- ObjC selector: @- initWithDevice:sourceCount:@
 initWithDevice_sourceCount :: IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase => mpsndArrayMultiaryBase -> RawId -> CULong -> IO (Id MPSNDArrayMultiaryBase)
-initWithDevice_sourceCount mpsndArrayMultiaryBase  device count =
-    sendMsg mpsndArrayMultiaryBase (mkSelector "initWithDevice:sourceCount:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong count] >>= ownedObject . castPtr
+initWithDevice_sourceCount mpsndArrayMultiaryBase device count =
+  sendOwnedMessage mpsndArrayMultiaryBase initWithDevice_sourceCountSelector device count
 
 -- | Initialize a MPSNDArrayMultiaryKernel from a NSCoder
 --
@@ -93,9 +90,8 @@ initWithDevice_sourceCount mpsndArrayMultiaryBase  device count =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase, IsNSCoder coder) => mpsndArrayMultiaryBase -> coder -> RawId -> IO (Id MPSNDArrayMultiaryBase)
-initWithCoder_device mpsndArrayMultiaryBase  coder device =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg mpsndArrayMultiaryBase (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsndArrayMultiaryBase coder device =
+  sendOwnedMessage mpsndArrayMultiaryBase initWithCoder_deviceSelector (toNSCoder coder) device
 
 -- | Initialize a MPSNDArrayMultiaryKernel from a NSCoder
 --
@@ -103,9 +99,8 @@ initWithCoder_device mpsndArrayMultiaryBase  coder device =
 --
 -- ObjC selector: @- encodeWithCoder:@
 encodeWithCoder :: (IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase, IsNSCoder coder) => mpsndArrayMultiaryBase -> coder -> IO ()
-encodeWithCoder mpsndArrayMultiaryBase  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg mpsndArrayMultiaryBase (mkSelector "encodeWithCoder:") retVoid [argPtr (castPtr raw_coder :: Ptr ())]
+encodeWithCoder mpsndArrayMultiaryBase coder =
+  sendMessage mpsndArrayMultiaryBase encodeWithCoderSelector (toNSCoder coder)
 
 -- | Create a copy with
 --
@@ -117,16 +112,13 @@ encodeWithCoder mpsndArrayMultiaryBase  coder =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase => mpsndArrayMultiaryBase -> Ptr () -> RawId -> IO (Id MPSNDArrayMultiaryBase)
-copyWithZone_device mpsndArrayMultiaryBase  zone device =
-    sendMsg mpsndArrayMultiaryBase (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsndArrayMultiaryBase zone device =
+  sendOwnedMessage mpsndArrayMultiaryBase copyWithZone_deviceSelector zone device
 
 -- | @- resultStateForSourceArrays:sourceStates:destinationArray:@
 resultStateForSourceArrays_sourceStates_destinationArray :: (IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase, IsNSArray sourceArrays, IsNSArray sourceStates, IsMPSNDArray destinationArray) => mpsndArrayMultiaryBase -> sourceArrays -> sourceStates -> destinationArray -> IO (Id MPSState)
-resultStateForSourceArrays_sourceStates_destinationArray mpsndArrayMultiaryBase  sourceArrays sourceStates destinationArray =
-  withObjCPtr sourceArrays $ \raw_sourceArrays ->
-    withObjCPtr sourceStates $ \raw_sourceStates ->
-      withObjCPtr destinationArray $ \raw_destinationArray ->
-          sendMsg mpsndArrayMultiaryBase (mkSelector "resultStateForSourceArrays:sourceStates:destinationArray:") (retPtr retVoid) [argPtr (castPtr raw_sourceArrays :: Ptr ()), argPtr (castPtr raw_sourceStates :: Ptr ()), argPtr (castPtr raw_destinationArray :: Ptr ())] >>= retainedObject . castPtr
+resultStateForSourceArrays_sourceStates_destinationArray mpsndArrayMultiaryBase sourceArrays sourceStates destinationArray =
+  sendMessage mpsndArrayMultiaryBase resultStateForSourceArrays_sourceStates_destinationArraySelector (toNSArray sourceArrays) (toNSArray sourceStates) (toMPSNDArray destinationArray)
 
 -- | Return a descriptor suitable for allocating a NSArray to receive the result
 --
@@ -140,10 +132,8 @@ resultStateForSourceArrays_sourceStates_destinationArray mpsndArrayMultiaryBase 
 --
 -- ObjC selector: @- destinationArrayDescriptorForSourceArrays:sourceState:@
 destinationArrayDescriptorForSourceArrays_sourceState :: (IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase, IsNSArray sources, IsMPSState state) => mpsndArrayMultiaryBase -> sources -> state -> IO (Id MPSNDArrayDescriptor)
-destinationArrayDescriptorForSourceArrays_sourceState mpsndArrayMultiaryBase  sources state =
-  withObjCPtr sources $ \raw_sources ->
-    withObjCPtr state $ \raw_state ->
-        sendMsg mpsndArrayMultiaryBase (mkSelector "destinationArrayDescriptorForSourceArrays:sourceState:") (retPtr retVoid) [argPtr (castPtr raw_sources :: Ptr ()), argPtr (castPtr raw_state :: Ptr ())] >>= retainedObject . castPtr
+destinationArrayDescriptorForSourceArrays_sourceState mpsndArrayMultiaryBase sources state =
+  sendMessage mpsndArrayMultiaryBase destinationArrayDescriptorForSourceArrays_sourceStateSelector (toNSArray sources) (toMPSState state)
 
 -- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
 --
@@ -151,8 +141,8 @@ destinationArrayDescriptorForSourceArrays_sourceState mpsndArrayMultiaryBase  so
 --
 -- ObjC selector: @- destinationArrayAllocator@
 destinationArrayAllocator :: IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase => mpsndArrayMultiaryBase -> IO RawId
-destinationArrayAllocator mpsndArrayMultiaryBase  =
-    fmap (RawId . castPtr) $ sendMsg mpsndArrayMultiaryBase (mkSelector "destinationArrayAllocator") (retPtr retVoid) []
+destinationArrayAllocator mpsndArrayMultiaryBase =
+  sendMessage mpsndArrayMultiaryBase destinationArrayAllocatorSelector
 
 -- | Method to allocate the result image for -encodeToCommandBuffer:sourceImage:
 --
@@ -160,50 +150,50 @@ destinationArrayAllocator mpsndArrayMultiaryBase  =
 --
 -- ObjC selector: @- setDestinationArrayAllocator:@
 setDestinationArrayAllocator :: IsMPSNDArrayMultiaryBase mpsndArrayMultiaryBase => mpsndArrayMultiaryBase -> RawId -> IO ()
-setDestinationArrayAllocator mpsndArrayMultiaryBase  value =
-    sendMsg mpsndArrayMultiaryBase (mkSelector "setDestinationArrayAllocator:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDestinationArrayAllocator mpsndArrayMultiaryBase value =
+  sendMessage mpsndArrayMultiaryBase setDestinationArrayAllocatorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @edgeModeAtSourceIndex:@
-edgeModeAtSourceIndexSelector :: Selector
+edgeModeAtSourceIndexSelector :: Selector '[CULong] MPSImageEdgeMode
 edgeModeAtSourceIndexSelector = mkSelector "edgeModeAtSourceIndex:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNDArrayMultiaryBase)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:sourceCount:@
-initWithDevice_sourceCountSelector :: Selector
+initWithDevice_sourceCountSelector :: Selector '[RawId, CULong] (Id MPSNDArrayMultiaryBase)
 initWithDevice_sourceCountSelector = mkSelector "initWithDevice:sourceCount:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNDArrayMultiaryBase)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeWithCoder:@
-encodeWithCoderSelector :: Selector
+encodeWithCoderSelector :: Selector '[Id NSCoder] ()
 encodeWithCoderSelector = mkSelector "encodeWithCoder:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSNDArrayMultiaryBase)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @resultStateForSourceArrays:sourceStates:destinationArray:@
-resultStateForSourceArrays_sourceStates_destinationArraySelector :: Selector
+resultStateForSourceArrays_sourceStates_destinationArraySelector :: Selector '[Id NSArray, Id NSArray, Id MPSNDArray] (Id MPSState)
 resultStateForSourceArrays_sourceStates_destinationArraySelector = mkSelector "resultStateForSourceArrays:sourceStates:destinationArray:"
 
 -- | @Selector@ for @destinationArrayDescriptorForSourceArrays:sourceState:@
-destinationArrayDescriptorForSourceArrays_sourceStateSelector :: Selector
+destinationArrayDescriptorForSourceArrays_sourceStateSelector :: Selector '[Id NSArray, Id MPSState] (Id MPSNDArrayDescriptor)
 destinationArrayDescriptorForSourceArrays_sourceStateSelector = mkSelector "destinationArrayDescriptorForSourceArrays:sourceState:"
 
 -- | @Selector@ for @destinationArrayAllocator@
-destinationArrayAllocatorSelector :: Selector
+destinationArrayAllocatorSelector :: Selector '[] RawId
 destinationArrayAllocatorSelector = mkSelector "destinationArrayAllocator"
 
 -- | @Selector@ for @setDestinationArrayAllocator:@
-setDestinationArrayAllocatorSelector :: Selector
+setDestinationArrayAllocatorSelector :: Selector '[RawId] ()
 setDestinationArrayAllocatorSelector = mkSelector "setDestinationArrayAllocator:"
 

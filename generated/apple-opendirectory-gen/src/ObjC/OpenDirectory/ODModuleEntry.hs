@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.OpenDirectory.ODModuleEntry
   , setXpcServiceName
   , uuidString
   , setUuidString
-  , moduleEntryWithName_xpcServiceNameSelector
-  , setOption_valueSelector
-  , optionSelector
   , mappingsSelector
-  , setMappingsSelector
-  , supportedOptionsSelector
+  , moduleEntryWithName_xpcServiceNameSelector
   , nameSelector
+  , optionSelector
+  , setMappingsSelector
   , setNameSelector
-  , xpcServiceNameSelector
-  , setXpcServiceNameSelector
-  , uuidStringSelector
+  , setOption_valueSelector
   , setUuidStringSelector
+  , setXpcServiceNameSelector
+  , supportedOptionsSelector
+  , uuidStringSelector
+  , xpcServiceNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,9 +57,7 @@ moduleEntryWithName_xpcServiceName :: (IsNSString name, IsNSString xpcServiceNam
 moduleEntryWithName_xpcServiceName name xpcServiceName =
   do
     cls' <- getRequiredClass "ODModuleEntry"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr xpcServiceName $ \raw_xpcServiceName ->
-        sendClassMsg cls' (mkSelector "moduleEntryWithName:xpcServiceName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_xpcServiceName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' moduleEntryWithName_xpcServiceNameSelector (toNSString name) (toNSString xpcServiceName)
 
 -- | setOption:value:
 --
@@ -72,9 +67,8 @@ moduleEntryWithName_xpcServiceName name xpcServiceName =
 --
 -- ObjC selector: @- setOption:value:@
 setOption_value :: (IsODModuleEntry odModuleEntry, IsNSString optionName) => odModuleEntry -> optionName -> RawId -> IO ()
-setOption_value odModuleEntry  optionName value =
-  withObjCPtr optionName $ \raw_optionName ->
-      sendMsg odModuleEntry (mkSelector "setOption:value:") retVoid [argPtr (castPtr raw_optionName :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ())]
+setOption_value odModuleEntry optionName value =
+  sendMessage odModuleEntry setOption_valueSelector (toNSString optionName) value
 
 -- | option:
 --
@@ -84,108 +78,103 @@ setOption_value odModuleEntry  optionName value =
 --
 -- ObjC selector: @- option:@
 option :: (IsODModuleEntry odModuleEntry, IsNSString optionName) => odModuleEntry -> optionName -> IO RawId
-option odModuleEntry  optionName =
-  withObjCPtr optionName $ \raw_optionName ->
-      fmap (RawId . castPtr) $ sendMsg odModuleEntry (mkSelector "option:") (retPtr retVoid) [argPtr (castPtr raw_optionName :: Ptr ())]
+option odModuleEntry optionName =
+  sendMessage odModuleEntry optionSelector (toNSString optionName)
 
 -- | @- mappings@
 mappings :: IsODModuleEntry odModuleEntry => odModuleEntry -> IO (Id ODMappings)
-mappings odModuleEntry  =
-    sendMsg odModuleEntry (mkSelector "mappings") (retPtr retVoid) [] >>= retainedObject . castPtr
+mappings odModuleEntry =
+  sendMessage odModuleEntry mappingsSelector
 
 -- | @- setMappings:@
 setMappings :: (IsODModuleEntry odModuleEntry, IsODMappings value) => odModuleEntry -> value -> IO ()
-setMappings odModuleEntry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odModuleEntry (mkSelector "setMappings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMappings odModuleEntry value =
+  sendMessage odModuleEntry setMappingsSelector (toODMappings value)
 
 -- | @- supportedOptions@
 supportedOptions :: IsODModuleEntry odModuleEntry => odModuleEntry -> IO (Id NSArray)
-supportedOptions odModuleEntry  =
-    sendMsg odModuleEntry (mkSelector "supportedOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedOptions odModuleEntry =
+  sendMessage odModuleEntry supportedOptionsSelector
 
 -- | @- name@
 name :: IsODModuleEntry odModuleEntry => odModuleEntry -> IO (Id NSString)
-name odModuleEntry  =
-    sendMsg odModuleEntry (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name odModuleEntry =
+  sendMessage odModuleEntry nameSelector
 
 -- | @- setName:@
 setName :: (IsODModuleEntry odModuleEntry, IsNSString value) => odModuleEntry -> value -> IO ()
-setName odModuleEntry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odModuleEntry (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName odModuleEntry value =
+  sendMessage odModuleEntry setNameSelector (toNSString value)
 
 -- | @- xpcServiceName@
 xpcServiceName :: IsODModuleEntry odModuleEntry => odModuleEntry -> IO (Id NSString)
-xpcServiceName odModuleEntry  =
-    sendMsg odModuleEntry (mkSelector "xpcServiceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+xpcServiceName odModuleEntry =
+  sendMessage odModuleEntry xpcServiceNameSelector
 
 -- | @- setXpcServiceName:@
 setXpcServiceName :: (IsODModuleEntry odModuleEntry, IsNSString value) => odModuleEntry -> value -> IO ()
-setXpcServiceName odModuleEntry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odModuleEntry (mkSelector "setXpcServiceName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setXpcServiceName odModuleEntry value =
+  sendMessage odModuleEntry setXpcServiceNameSelector (toNSString value)
 
 -- | @- uuidString@
 uuidString :: IsODModuleEntry odModuleEntry => odModuleEntry -> IO (Id NSString)
-uuidString odModuleEntry  =
-    sendMsg odModuleEntry (mkSelector "uuidString") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuidString odModuleEntry =
+  sendMessage odModuleEntry uuidStringSelector
 
 -- | @- setUuidString:@
 setUuidString :: (IsODModuleEntry odModuleEntry, IsNSString value) => odModuleEntry -> value -> IO ()
-setUuidString odModuleEntry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg odModuleEntry (mkSelector "setUuidString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUuidString odModuleEntry value =
+  sendMessage odModuleEntry setUuidStringSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @moduleEntryWithName:xpcServiceName:@
-moduleEntryWithName_xpcServiceNameSelector :: Selector
+moduleEntryWithName_xpcServiceNameSelector :: Selector '[Id NSString, Id NSString] (Id ODModuleEntry)
 moduleEntryWithName_xpcServiceNameSelector = mkSelector "moduleEntryWithName:xpcServiceName:"
 
 -- | @Selector@ for @setOption:value:@
-setOption_valueSelector :: Selector
+setOption_valueSelector :: Selector '[Id NSString, RawId] ()
 setOption_valueSelector = mkSelector "setOption:value:"
 
 -- | @Selector@ for @option:@
-optionSelector :: Selector
+optionSelector :: Selector '[Id NSString] RawId
 optionSelector = mkSelector "option:"
 
 -- | @Selector@ for @mappings@
-mappingsSelector :: Selector
+mappingsSelector :: Selector '[] (Id ODMappings)
 mappingsSelector = mkSelector "mappings"
 
 -- | @Selector@ for @setMappings:@
-setMappingsSelector :: Selector
+setMappingsSelector :: Selector '[Id ODMappings] ()
 setMappingsSelector = mkSelector "setMappings:"
 
 -- | @Selector@ for @supportedOptions@
-supportedOptionsSelector :: Selector
+supportedOptionsSelector :: Selector '[] (Id NSArray)
 supportedOptionsSelector = mkSelector "supportedOptions"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @xpcServiceName@
-xpcServiceNameSelector :: Selector
+xpcServiceNameSelector :: Selector '[] (Id NSString)
 xpcServiceNameSelector = mkSelector "xpcServiceName"
 
 -- | @Selector@ for @setXpcServiceName:@
-setXpcServiceNameSelector :: Selector
+setXpcServiceNameSelector :: Selector '[Id NSString] ()
 setXpcServiceNameSelector = mkSelector "setXpcServiceName:"
 
 -- | @Selector@ for @uuidString@
-uuidStringSelector :: Selector
+uuidStringSelector :: Selector '[] (Id NSString)
 uuidStringSelector = mkSelector "uuidString"
 
 -- | @Selector@ for @setUuidString:@
-setUuidStringSelector :: Selector
+setUuidStringSelector :: Selector '[Id NSString] ()
 setUuidStringSelector = mkSelector "setUuidString:"
 

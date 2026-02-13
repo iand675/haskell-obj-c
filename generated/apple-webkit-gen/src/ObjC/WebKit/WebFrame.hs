@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,41 +33,37 @@ module ObjC.WebKit.WebFrame
   , windowObject
   , globalContext
   , javaScriptContext
+  , childFramesSelector
+  , dataSourceSelector
+  , domDocumentSelector
+  , findFrameNamedSelector
+  , frameElementSelector
+  , frameViewSelector
+  , globalContextSelector
   , initWithName_webFrameView_webViewSelector
-  , loadRequestSelector
-  , loadData_MIMEType_textEncodingName_baseURLSelector
-  , loadHTMLString_baseURLSelector
+  , javaScriptContextSelector
   , loadAlternateHTMLString_baseURL_forUnreachableURLSelector
   , loadArchiveSelector
-  , stopLoadingSelector
-  , reloadSelector
-  , reloadFromOriginSelector
-  , findFrameNamedSelector
+  , loadData_MIMEType_textEncodingName_baseURLSelector
+  , loadHTMLString_baseURLSelector
+  , loadRequestSelector
   , nameSelector
-  , webViewSelector
-  , frameViewSelector
-  , domDocumentSelector
-  , frameElementSelector
-  , dataSourceSelector
-  , provisionalDataSourceSelector
   , parentFrameSelector
-  , childFramesSelector
+  , provisionalDataSourceSelector
+  , reloadFromOriginSelector
+  , reloadSelector
+  , stopLoadingSelector
+  , webViewSelector
   , windowObjectSelector
-  , globalContextSelector
-  , javaScriptContextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -90,11 +87,8 @@ import ObjC.JavaScriptCore.Internal.Classes
 --
 -- ObjC selector: @- initWithName:webFrameView:webView:@
 initWithName_webFrameView_webView :: (IsWebFrame webFrame, IsNSString name, IsWebFrameView view, IsWebView webView) => webFrame -> name -> view -> webView -> IO (Id WebFrame)
-initWithName_webFrameView_webView webFrame  name view webView =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr webView $ \raw_webView ->
-          sendMsg webFrame (mkSelector "initWithName:webFrameView:webView:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_view :: Ptr ()), argPtr (castPtr raw_webView :: Ptr ())] >>= ownedObject . castPtr
+initWithName_webFrameView_webView webFrame name view webView =
+  sendOwnedMessage webFrame initWithName_webFrameView_webViewSelector (toNSString name) (toWebFrameView view) (toWebView webView)
 
 -- | loadRequest:
 --
@@ -102,9 +96,8 @@ initWithName_webFrameView_webView webFrame  name view webView =
 --
 -- ObjC selector: @- loadRequest:@
 loadRequest :: (IsWebFrame webFrame, IsNSURLRequest request) => webFrame -> request -> IO ()
-loadRequest webFrame  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg webFrame (mkSelector "loadRequest:") retVoid [argPtr (castPtr raw_request :: Ptr ())]
+loadRequest webFrame request =
+  sendMessage webFrame loadRequestSelector (toNSURLRequest request)
 
 -- | loadData:MIMEType:textEncodingName:baseURL:
 --
@@ -118,12 +111,8 @@ loadRequest webFrame  request =
 --
 -- ObjC selector: @- loadData:MIMEType:textEncodingName:baseURL:@
 loadData_MIMEType_textEncodingName_baseURL :: (IsWebFrame webFrame, IsNSData data_, IsNSString mimeType, IsNSString encodingName, IsNSURL url) => webFrame -> data_ -> mimeType -> encodingName -> url -> IO ()
-loadData_MIMEType_textEncodingName_baseURL webFrame  data_ mimeType encodingName url =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr mimeType $ \raw_mimeType ->
-      withObjCPtr encodingName $ \raw_encodingName ->
-        withObjCPtr url $ \raw_url ->
-            sendMsg webFrame (mkSelector "loadData:MIMEType:textEncodingName:baseURL:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_mimeType :: Ptr ()), argPtr (castPtr raw_encodingName :: Ptr ()), argPtr (castPtr raw_url :: Ptr ())]
+loadData_MIMEType_textEncodingName_baseURL webFrame data_ mimeType encodingName url =
+  sendMessage webFrame loadData_MIMEType_textEncodingName_baseURLSelector (toNSData data_) (toNSString mimeType) (toNSString encodingName) (toNSURL url)
 
 -- | loadHTMLString:baseURL:
 --
@@ -133,10 +122,8 @@ loadData_MIMEType_textEncodingName_baseURL webFrame  data_ mimeType encodingName
 --
 -- ObjC selector: @- loadHTMLString:baseURL:@
 loadHTMLString_baseURL :: (IsWebFrame webFrame, IsNSString string, IsNSURL url) => webFrame -> string -> url -> IO ()
-loadHTMLString_baseURL webFrame  string url =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr url $ \raw_url ->
-        sendMsg webFrame (mkSelector "loadHTMLString:baseURL:") retVoid [argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_url :: Ptr ())]
+loadHTMLString_baseURL webFrame string url =
+  sendMessage webFrame loadHTMLString_baseURLSelector (toNSString string) (toNSURL url)
 
 -- | loadAlternateHTMLString:baseURL:forUnreachableURL:
 --
@@ -152,11 +139,8 @@ loadHTMLString_baseURL webFrame  string url =
 --
 -- ObjC selector: @- loadAlternateHTMLString:baseURL:forUnreachableURL:@
 loadAlternateHTMLString_baseURL_forUnreachableURL :: (IsWebFrame webFrame, IsNSString string, IsNSURL baseURL, IsNSURL unreachableURL) => webFrame -> string -> baseURL -> unreachableURL -> IO ()
-loadAlternateHTMLString_baseURL_forUnreachableURL webFrame  string baseURL unreachableURL =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr baseURL $ \raw_baseURL ->
-      withObjCPtr unreachableURL $ \raw_unreachableURL ->
-          sendMsg webFrame (mkSelector "loadAlternateHTMLString:baseURL:forUnreachableURL:") retVoid [argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_baseURL :: Ptr ()), argPtr (castPtr raw_unreachableURL :: Ptr ())]
+loadAlternateHTMLString_baseURL_forUnreachableURL webFrame string baseURL unreachableURL =
+  sendMessage webFrame loadAlternateHTMLString_baseURL_forUnreachableURLSelector (toNSString string) (toNSURL baseURL) (toNSURL unreachableURL)
 
 -- | loadArchive:
 --
@@ -166,9 +150,8 @@ loadAlternateHTMLString_baseURL_forUnreachableURL webFrame  string baseURL unrea
 --
 -- ObjC selector: @- loadArchive:@
 loadArchive :: (IsWebFrame webFrame, IsWebArchive archive) => webFrame -> archive -> IO ()
-loadArchive webFrame  archive =
-  withObjCPtr archive $ \raw_archive ->
-      sendMsg webFrame (mkSelector "loadArchive:") retVoid [argPtr (castPtr raw_archive :: Ptr ())]
+loadArchive webFrame archive =
+  sendMessage webFrame loadArchiveSelector (toWebArchive archive)
 
 -- | stopLoading
 --
@@ -176,8 +159,8 @@ loadArchive webFrame  archive =
 --
 -- ObjC selector: @- stopLoading@
 stopLoading :: IsWebFrame webFrame => webFrame -> IO ()
-stopLoading webFrame  =
-    sendMsg webFrame (mkSelector "stopLoading") retVoid []
+stopLoading webFrame =
+  sendMessage webFrame stopLoadingSelector
 
 -- | reload
 --
@@ -185,8 +168,8 @@ stopLoading webFrame  =
 --
 -- ObjC selector: @- reload@
 reload :: IsWebFrame webFrame => webFrame -> IO ()
-reload webFrame  =
-    sendMsg webFrame (mkSelector "reload") retVoid []
+reload webFrame =
+  sendMessage webFrame reloadSelector
 
 -- | reloadFromOrigin
 --
@@ -194,8 +177,8 @@ reload webFrame  =
 --
 -- ObjC selector: @- reloadFromOrigin@
 reloadFromOrigin :: IsWebFrame webFrame => webFrame -> IO ()
-reloadFromOrigin webFrame  =
-    sendMsg webFrame (mkSelector "reloadFromOrigin") retVoid []
+reloadFromOrigin webFrame =
+  sendMessage webFrame reloadFromOriginSelector
 
 -- | findFrameNamed:
 --
@@ -207,9 +190,8 @@ reloadFromOrigin webFrame  =
 --
 -- ObjC selector: @- findFrameNamed:@
 findFrameNamed :: (IsWebFrame webFrame, IsNSString name) => webFrame -> name -> IO (Id WebFrame)
-findFrameNamed webFrame  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg webFrame (mkSelector "findFrameNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+findFrameNamed webFrame name =
+  sendMessage webFrame findFrameNamedSelector (toNSString name)
 
 -- | name
 --
@@ -217,8 +199,8 @@ findFrameNamed webFrame  name =
 --
 -- ObjC selector: @- name@
 name :: IsWebFrame webFrame => webFrame -> IO (Id NSString)
-name webFrame  =
-    sendMsg webFrame (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name webFrame =
+  sendMessage webFrame nameSelector
 
 -- | webView
 --
@@ -226,8 +208,8 @@ name webFrame  =
 --
 -- ObjC selector: @- webView@
 webView :: IsWebFrame webFrame => webFrame -> IO (Id WebView)
-webView webFrame  =
-    sendMsg webFrame (mkSelector "webView") (retPtr retVoid) [] >>= retainedObject . castPtr
+webView webFrame =
+  sendMessage webFrame webViewSelector
 
 -- | frameView
 --
@@ -235,8 +217,8 @@ webView webFrame  =
 --
 -- ObjC selector: @- frameView@
 frameView :: IsWebFrame webFrame => webFrame -> IO (Id WebFrameView)
-frameView webFrame  =
-    sendMsg webFrame (mkSelector "frameView") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameView webFrame =
+  sendMessage webFrame frameViewSelector
 
 -- | DOMDocument
 --
@@ -244,8 +226,8 @@ frameView webFrame  =
 --
 -- ObjC selector: @- DOMDocument@
 domDocument :: IsWebFrame webFrame => webFrame -> IO (Id DOMDocument)
-domDocument webFrame  =
-    sendMsg webFrame (mkSelector "DOMDocument") (retPtr retVoid) [] >>= retainedObject . castPtr
+domDocument webFrame =
+  sendMessage webFrame domDocumentSelector
 
 -- | frameElement
 --
@@ -253,8 +235,8 @@ domDocument webFrame  =
 --
 -- ObjC selector: @- frameElement@
 frameElement :: IsWebFrame webFrame => webFrame -> IO (Id DOMHTMLElement)
-frameElement webFrame  =
-    sendMsg webFrame (mkSelector "frameElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameElement webFrame =
+  sendMessage webFrame frameElementSelector
 
 -- | dataSource
 --
@@ -264,8 +246,8 @@ frameElement webFrame  =
 --
 -- ObjC selector: @- dataSource@
 dataSource :: IsWebFrame webFrame => webFrame -> IO (Id WebDataSource)
-dataSource webFrame  =
-    sendMsg webFrame (mkSelector "dataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataSource webFrame =
+  sendMessage webFrame dataSourceSelector
 
 -- | provisionalDataSource
 --
@@ -275,8 +257,8 @@ dataSource webFrame  =
 --
 -- ObjC selector: @- provisionalDataSource@
 provisionalDataSource :: IsWebFrame webFrame => webFrame -> IO (Id WebDataSource)
-provisionalDataSource webFrame  =
-    sendMsg webFrame (mkSelector "provisionalDataSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+provisionalDataSource webFrame =
+  sendMessage webFrame provisionalDataSourceSelector
 
 -- | parentFrame
 --
@@ -284,8 +266,8 @@ provisionalDataSource webFrame  =
 --
 -- ObjC selector: @- parentFrame@
 parentFrame :: IsWebFrame webFrame => webFrame -> IO (Id WebFrame)
-parentFrame webFrame  =
-    sendMsg webFrame (mkSelector "parentFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentFrame webFrame =
+  sendMessage webFrame parentFrameSelector
 
 -- | childFrames
 --
@@ -295,8 +277,8 @@ parentFrame webFrame  =
 --
 -- ObjC selector: @- childFrames@
 childFrames :: IsWebFrame webFrame => webFrame -> IO (Id NSArray)
-childFrames webFrame  =
-    sendMsg webFrame (mkSelector "childFrames") (retPtr retVoid) [] >>= retainedObject . castPtr
+childFrames webFrame =
+  sendMessage webFrame childFramesSelector
 
 -- | windowObject
 --
@@ -304,8 +286,8 @@ childFrames webFrame  =
 --
 -- ObjC selector: @- windowObject@
 windowObject :: IsWebFrame webFrame => webFrame -> IO (Id WebScriptObject)
-windowObject webFrame  =
-    sendMsg webFrame (mkSelector "windowObject") (retPtr retVoid) [] >>= retainedObject . castPtr
+windowObject webFrame =
+  sendMessage webFrame windowObjectSelector
 
 -- | globalContext
 --
@@ -315,8 +297,8 @@ windowObject webFrame  =
 --
 -- ObjC selector: @- globalContext@
 globalContext :: IsWebFrame webFrame => webFrame -> IO (Ptr ())
-globalContext webFrame  =
-    fmap castPtr $ sendMsg webFrame (mkSelector "globalContext") (retPtr retVoid) []
+globalContext webFrame =
+  sendMessage webFrame globalContextSelector
 
 -- | javaScriptContext
 --
@@ -326,98 +308,98 @@ globalContext webFrame  =
 --
 -- ObjC selector: @- javaScriptContext@
 javaScriptContext :: IsWebFrame webFrame => webFrame -> IO (Id JSContext)
-javaScriptContext webFrame  =
-    sendMsg webFrame (mkSelector "javaScriptContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+javaScriptContext webFrame =
+  sendMessage webFrame javaScriptContextSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:webFrameView:webView:@
-initWithName_webFrameView_webViewSelector :: Selector
+initWithName_webFrameView_webViewSelector :: Selector '[Id NSString, Id WebFrameView, Id WebView] (Id WebFrame)
 initWithName_webFrameView_webViewSelector = mkSelector "initWithName:webFrameView:webView:"
 
 -- | @Selector@ for @loadRequest:@
-loadRequestSelector :: Selector
+loadRequestSelector :: Selector '[Id NSURLRequest] ()
 loadRequestSelector = mkSelector "loadRequest:"
 
 -- | @Selector@ for @loadData:MIMEType:textEncodingName:baseURL:@
-loadData_MIMEType_textEncodingName_baseURLSelector :: Selector
+loadData_MIMEType_textEncodingName_baseURLSelector :: Selector '[Id NSData, Id NSString, Id NSString, Id NSURL] ()
 loadData_MIMEType_textEncodingName_baseURLSelector = mkSelector "loadData:MIMEType:textEncodingName:baseURL:"
 
 -- | @Selector@ for @loadHTMLString:baseURL:@
-loadHTMLString_baseURLSelector :: Selector
+loadHTMLString_baseURLSelector :: Selector '[Id NSString, Id NSURL] ()
 loadHTMLString_baseURLSelector = mkSelector "loadHTMLString:baseURL:"
 
 -- | @Selector@ for @loadAlternateHTMLString:baseURL:forUnreachableURL:@
-loadAlternateHTMLString_baseURL_forUnreachableURLSelector :: Selector
+loadAlternateHTMLString_baseURL_forUnreachableURLSelector :: Selector '[Id NSString, Id NSURL, Id NSURL] ()
 loadAlternateHTMLString_baseURL_forUnreachableURLSelector = mkSelector "loadAlternateHTMLString:baseURL:forUnreachableURL:"
 
 -- | @Selector@ for @loadArchive:@
-loadArchiveSelector :: Selector
+loadArchiveSelector :: Selector '[Id WebArchive] ()
 loadArchiveSelector = mkSelector "loadArchive:"
 
 -- | @Selector@ for @stopLoading@
-stopLoadingSelector :: Selector
+stopLoadingSelector :: Selector '[] ()
 stopLoadingSelector = mkSelector "stopLoading"
 
 -- | @Selector@ for @reload@
-reloadSelector :: Selector
+reloadSelector :: Selector '[] ()
 reloadSelector = mkSelector "reload"
 
 -- | @Selector@ for @reloadFromOrigin@
-reloadFromOriginSelector :: Selector
+reloadFromOriginSelector :: Selector '[] ()
 reloadFromOriginSelector = mkSelector "reloadFromOrigin"
 
 -- | @Selector@ for @findFrameNamed:@
-findFrameNamedSelector :: Selector
+findFrameNamedSelector :: Selector '[Id NSString] (Id WebFrame)
 findFrameNamedSelector = mkSelector "findFrameNamed:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @webView@
-webViewSelector :: Selector
+webViewSelector :: Selector '[] (Id WebView)
 webViewSelector = mkSelector "webView"
 
 -- | @Selector@ for @frameView@
-frameViewSelector :: Selector
+frameViewSelector :: Selector '[] (Id WebFrameView)
 frameViewSelector = mkSelector "frameView"
 
 -- | @Selector@ for @DOMDocument@
-domDocumentSelector :: Selector
+domDocumentSelector :: Selector '[] (Id DOMDocument)
 domDocumentSelector = mkSelector "DOMDocument"
 
 -- | @Selector@ for @frameElement@
-frameElementSelector :: Selector
+frameElementSelector :: Selector '[] (Id DOMHTMLElement)
 frameElementSelector = mkSelector "frameElement"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] (Id WebDataSource)
 dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @provisionalDataSource@
-provisionalDataSourceSelector :: Selector
+provisionalDataSourceSelector :: Selector '[] (Id WebDataSource)
 provisionalDataSourceSelector = mkSelector "provisionalDataSource"
 
 -- | @Selector@ for @parentFrame@
-parentFrameSelector :: Selector
+parentFrameSelector :: Selector '[] (Id WebFrame)
 parentFrameSelector = mkSelector "parentFrame"
 
 -- | @Selector@ for @childFrames@
-childFramesSelector :: Selector
+childFramesSelector :: Selector '[] (Id NSArray)
 childFramesSelector = mkSelector "childFrames"
 
 -- | @Selector@ for @windowObject@
-windowObjectSelector :: Selector
+windowObjectSelector :: Selector '[] (Id WebScriptObject)
 windowObjectSelector = mkSelector "windowObject"
 
 -- | @Selector@ for @globalContext@
-globalContextSelector :: Selector
+globalContextSelector :: Selector '[] (Ptr ())
 globalContextSelector = mkSelector "globalContext"
 
 -- | @Selector@ for @javaScriptContext@
-javaScriptContextSelector :: Selector
+javaScriptContextSelector :: Selector '[] (Id JSContext)
 javaScriptContextSelector = mkSelector "javaScriptContext"
 

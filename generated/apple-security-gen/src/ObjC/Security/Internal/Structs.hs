@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Callback API provided by the AuthorizationEngine.
 --
@@ -82,6 +84,16 @@ argAuthorizationCallbacks = mkStorableArg authorizationCallbacksStructType
 retAuthorizationCallbacks :: RetType AuthorizationCallbacks
 retAuthorizationCallbacks = mkStorableRetType authorizationCallbacksStructType
 
+instance ObjCArgument AuthorizationCallbacks where
+  withObjCArg x k = k (argAuthorizationCallbacks x)
+
+instance ObjCReturn AuthorizationCallbacks where
+  type RawReturn AuthorizationCallbacks = AuthorizationCallbacks
+  objcRetType = retAuthorizationCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | Interface that must be implemented by each plugin.
 --
 -- version  Must be set to kAuthorizationPluginInterfaceVersion     PluginDestroy    Plugin should clean up and release any resources it is holding.     MechanismCreate  The plugin should create a mechanism named mechanismId.  The mechanism needs to use the AuthorizationEngineRef for the callbacks and pass back a   AuthorizationMechanismRef for itself.  MechanismDestroy will be called when it is no longer needed.     MechanismInvoke  Invoke an instance of a mechanism.  It should call SetResult during or after returning from this function.     MechanismDeactivate  Mechanism should respond with a DidDeactivate as soon as possible     MechanismDestroy Mechanism should clean up and release any resources it is holding
@@ -121,6 +133,16 @@ argAuthorizationPluginInterface = mkStorableArg authorizationPluginInterfaceStru
 retAuthorizationPluginInterface :: RetType AuthorizationPluginInterface
 retAuthorizationPluginInterface = mkStorableRetType authorizationPluginInterfaceStructType
 
+instance ObjCArgument AuthorizationPluginInterface where
+  withObjCArg x k = k (argAuthorizationPluginInterface x)
+
+instance ObjCReturn AuthorizationPluginInterface where
+  type RawReturn AuthorizationPluginInterface = AuthorizationPluginInterface
+  objcRetType = retAuthorizationPluginInterface
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AuthorizationValue
 --
 -- Auxiliary data is passed between the engine and the mechanism as AuthorizationValues
@@ -147,6 +169,16 @@ argAuthorizationValue = mkStorableArg authorizationValueStructType
 
 retAuthorizationValue :: RetType AuthorizationValue
 retAuthorizationValue = mkStorableRetType authorizationValueStructType
+
+instance ObjCArgument AuthorizationValue where
+  withObjCArg x k = k (argAuthorizationValue x)
+
+instance ObjCReturn AuthorizationValue where
+  type RawReturn AuthorizationValue = AuthorizationValue
+  objcRetType = retAuthorizationValue
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CE_BasicConstraints = CE_BasicConstraints
   { cE_BasicConstraintsCA :: !CInt
@@ -175,6 +207,16 @@ argCE_BasicConstraints = mkStorableArg cE_BasicConstraintsStructType
 retCE_BasicConstraints :: RetType CE_BasicConstraints
 retCE_BasicConstraints = mkStorableRetType cE_BasicConstraintsStructType
 
+instance ObjCArgument CE_BasicConstraints where
+  withObjCArg x k = k (argCE_BasicConstraints x)
+
+instance ObjCReturn CE_BasicConstraints where
+  type RawReturn CE_BasicConstraints = CE_BasicConstraints
+  objcRetType = retCE_BasicConstraints
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CE_DataAndType = CE_DataAndType
   { cE_DataAndTypeType :: !CInt
   , cE_DataAndTypeExtension :: !CInt
@@ -202,6 +244,16 @@ argCE_DataAndType = mkStorableArg cE_DataAndTypeStructType
 retCE_DataAndType :: RetType CE_DataAndType
 retCE_DataAndType = mkStorableRetType cE_DataAndTypeStructType
 
+instance ObjCArgument CE_DataAndType where
+  withObjCArg x k = k (argCE_DataAndType x)
+
+instance ObjCReturn CE_DataAndType where
+  type RawReturn CE_DataAndType = CE_DataAndType
+  objcRetType = retCE_DataAndType
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CE_ExtendedKeyUsage = CE_ExtendedKeyUsage
   { cE_ExtendedKeyUsageNumPurposes :: !CUInt
   , cE_ExtendedKeyUsagePurposes :: !(Ptr ())
@@ -225,6 +277,16 @@ argCE_ExtendedKeyUsage = mkStorableArg cE_ExtendedKeyUsageStructType
 
 retCE_ExtendedKeyUsage :: RetType CE_ExtendedKeyUsage
 retCE_ExtendedKeyUsage = mkStorableRetType cE_ExtendedKeyUsageStructType
+
+instance ObjCArgument CE_ExtendedKeyUsage where
+  withObjCArg x k = k (argCE_ExtendedKeyUsage x)
+
+instance ObjCReturn CE_ExtendedKeyUsage where
+  type RawReturn CE_ExtendedKeyUsage = CE_ExtendedKeyUsage
+  objcRetType = retCE_ExtendedKeyUsage
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CE_PolicyConstraints = CE_PolicyConstraints
   { cE_PolicyConstraintsRequireExplicitPolicyPresent :: !CInt
@@ -256,6 +318,16 @@ argCE_PolicyConstraints = mkStorableArg cE_PolicyConstraintsStructType
 retCE_PolicyConstraints :: RetType CE_PolicyConstraints
 retCE_PolicyConstraints = mkStorableRetType cE_PolicyConstraintsStructType
 
+instance ObjCArgument CE_PolicyConstraints where
+  withObjCArg x k = k (argCE_PolicyConstraints x)
+
+instance ObjCReturn CE_PolicyConstraints where
+  type RawReturn CE_PolicyConstraints = CE_PolicyConstraints
+  objcRetType = retCE_PolicyConstraints
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CE_SubjectKeyID = CE_SubjectKeyID
   { cE_SubjectKeyIDLength :: !CULong
   , cE_SubjectKeyIDData :: !(Ptr ())
@@ -280,6 +352,16 @@ argCE_SubjectKeyID = mkStorableArg cE_SubjectKeyIDStructType
 retCE_SubjectKeyID :: RetType CE_SubjectKeyID
 retCE_SubjectKeyID = mkStorableRetType cE_SubjectKeyIDStructType
 
+instance ObjCArgument CE_SubjectKeyID where
+  withObjCArg x k = k (argCE_SubjectKeyID x)
+
+instance ObjCReturn CE_SubjectKeyID where
+  type RawReturn CE_SubjectKeyID = CE_SubjectKeyID
+  objcRetType = retCE_SubjectKeyID
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_ACL_ENTRY_INFO = CSSM_ACL_ENTRY_INFO
   { cssM_ACL_ENTRY_INFOEntryPublicInfo :: !(Ptr ())
   , cssM_ACL_ENTRY_INFOEntryHandle :: !CLong
@@ -303,6 +385,16 @@ argCSSM_ACL_ENTRY_INFO = mkStorableArg cssM_ACL_ENTRY_INFOStructType
 
 retCSSM_ACL_ENTRY_INFO :: RetType CSSM_ACL_ENTRY_INFO
 retCSSM_ACL_ENTRY_INFO = mkStorableRetType cssM_ACL_ENTRY_INFOStructType
+
+instance ObjCArgument CSSM_ACL_ENTRY_INFO where
+  withObjCArg x k = k (argCSSM_ACL_ENTRY_INFO x)
+
+instance ObjCReturn CSSM_ACL_ENTRY_INFO where
+  type RawReturn CSSM_ACL_ENTRY_INFO = CSSM_ACL_ENTRY_INFO
+  objcRetType = retCSSM_ACL_ENTRY_INFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_ACL_ENTRY_INPUT = CSSM_ACL_ENTRY_INPUT
   { cssM_ACL_ENTRY_INPUTPrototype :: !(Ptr ())
@@ -331,6 +423,16 @@ argCSSM_ACL_ENTRY_INPUT = mkStorableArg cssM_ACL_ENTRY_INPUTStructType
 retCSSM_ACL_ENTRY_INPUT :: RetType CSSM_ACL_ENTRY_INPUT
 retCSSM_ACL_ENTRY_INPUT = mkStorableRetType cssM_ACL_ENTRY_INPUTStructType
 
+instance ObjCArgument CSSM_ACL_ENTRY_INPUT where
+  withObjCArg x k = k (argCSSM_ACL_ENTRY_INPUT x)
+
+instance ObjCReturn CSSM_ACL_ENTRY_INPUT where
+  type RawReturn CSSM_ACL_ENTRY_INPUT = CSSM_ACL_ENTRY_INPUT
+  objcRetType = retCSSM_ACL_ENTRY_INPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR = CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR
   { cssM_ACL_KEYCHAIN_PROMPT_SELECTORVersion :: !CUShort
   , cssM_ACL_KEYCHAIN_PROMPT_SELECTORFlags :: !CUShort
@@ -354,6 +456,16 @@ argCSSM_ACL_KEYCHAIN_PROMPT_SELECTOR = mkStorableArg cssM_ACL_KEYCHAIN_PROMPT_SE
 
 retCSSM_ACL_KEYCHAIN_PROMPT_SELECTOR :: RetType CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR
 retCSSM_ACL_KEYCHAIN_PROMPT_SELECTOR = mkStorableRetType cssM_ACL_KEYCHAIN_PROMPT_SELECTORStructType
+
+instance ObjCArgument CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR where
+  withObjCArg x k = k (argCSSM_ACL_KEYCHAIN_PROMPT_SELECTOR x)
+
+instance ObjCReturn CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR where
+  type RawReturn CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR = CSSM_ACL_KEYCHAIN_PROMPT_SELECTOR
+  objcRetType = retCSSM_ACL_KEYCHAIN_PROMPT_SELECTOR
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_ACL_PROCESS_SUBJECT_SELECTOR = CSSM_ACL_PROCESS_SUBJECT_SELECTOR
   { cssM_ACL_PROCESS_SUBJECT_SELECTORVersion :: !CUShort
@@ -384,6 +496,16 @@ argCSSM_ACL_PROCESS_SUBJECT_SELECTOR = mkStorableArg cssM_ACL_PROCESS_SUBJECT_SE
 
 retCSSM_ACL_PROCESS_SUBJECT_SELECTOR :: RetType CSSM_ACL_PROCESS_SUBJECT_SELECTOR
 retCSSM_ACL_PROCESS_SUBJECT_SELECTOR = mkStorableRetType cssM_ACL_PROCESS_SUBJECT_SELECTORStructType
+
+instance ObjCArgument CSSM_ACL_PROCESS_SUBJECT_SELECTOR where
+  withObjCArg x k = k (argCSSM_ACL_PROCESS_SUBJECT_SELECTOR x)
+
+instance ObjCReturn CSSM_ACL_PROCESS_SUBJECT_SELECTOR where
+  type RawReturn CSSM_ACL_PROCESS_SUBJECT_SELECTOR = CSSM_ACL_PROCESS_SUBJECT_SELECTOR
+  objcRetType = retCSSM_ACL_PROCESS_SUBJECT_SELECTOR
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_API_MEMORY_FUNCS = CSSM_API_MEMORY_FUNCS
   { cssM_API_MEMORY_FUNCSMalloc_func :: !(Ptr ())
@@ -418,6 +540,16 @@ argCSSM_API_MEMORY_FUNCS = mkStorableArg cssM_API_MEMORY_FUNCSStructType
 retCSSM_API_MEMORY_FUNCS :: RetType CSSM_API_MEMORY_FUNCS
 retCSSM_API_MEMORY_FUNCS = mkStorableRetType cssM_API_MEMORY_FUNCSStructType
 
+instance ObjCArgument CSSM_API_MEMORY_FUNCS where
+  withObjCArg x k = k (argCSSM_API_MEMORY_FUNCS x)
+
+instance ObjCReturn CSSM_API_MEMORY_FUNCS where
+  type RawReturn CSSM_API_MEMORY_FUNCS = CSSM_API_MEMORY_FUNCS
+  objcRetType = retCSSM_API_MEMORY_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS = CSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS
   { cssM_APPLECSPDL_DB_IS_LOCKED_PARAMETERSIsLocked :: !CUChar
   } deriving (Eq, Show)
@@ -438,6 +570,16 @@ argCSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS = mkStorableArg cssM_APPLECSPDL_DB_IS
 
 retCSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS :: RetType CSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS
 retCSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS = mkStorableRetType cssM_APPLECSPDL_DB_IS_LOCKED_PARAMETERSStructType
+
+instance ObjCArgument CSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS where
+  withObjCArg x k = k (argCSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS x)
+
+instance ObjCReturn CSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS where
+  type RawReturn CSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS = CSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS
+  objcRetType = retCSSM_APPLECSPDL_DB_IS_LOCKED_PARAMETERS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS = CSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS
   { cssM_APPLECSPDL_DB_SETTINGS_PARAMETERSIdleTimeout :: !CUInt
@@ -462,6 +604,16 @@ argCSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS = mkStorableArg cssM_APPLECSPDL_DB_SET
 
 retCSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS :: RetType CSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS
 retCSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS = mkStorableRetType cssM_APPLECSPDL_DB_SETTINGS_PARAMETERSStructType
+
+instance ObjCArgument CSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS where
+  withObjCArg x k = k (argCSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS x)
+
+instance ObjCReturn CSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS where
+  type RawReturn CSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS = CSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS
+  objcRetType = retCSSM_APPLECSPDL_DB_SETTINGS_PARAMETERS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_APPLEDL_OPEN_PARAMETERS = CSSM_APPLEDL_OPEN_PARAMETERS
   { cssM_APPLEDL_OPEN_PARAMETERSLength :: !CUInt
@@ -496,6 +648,16 @@ argCSSM_APPLEDL_OPEN_PARAMETERS = mkStorableArg cssM_APPLEDL_OPEN_PARAMETERSStru
 retCSSM_APPLEDL_OPEN_PARAMETERS :: RetType CSSM_APPLEDL_OPEN_PARAMETERS
 retCSSM_APPLEDL_OPEN_PARAMETERS = mkStorableRetType cssM_APPLEDL_OPEN_PARAMETERSStructType
 
+instance ObjCArgument CSSM_APPLEDL_OPEN_PARAMETERS where
+  withObjCArg x k = k (argCSSM_APPLEDL_OPEN_PARAMETERS x)
+
+instance ObjCReturn CSSM_APPLEDL_OPEN_PARAMETERS where
+  type RawReturn CSSM_APPLEDL_OPEN_PARAMETERS = CSSM_APPLEDL_OPEN_PARAMETERS
+  objcRetType = retCSSM_APPLEDL_OPEN_PARAMETERS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_BASE_CERTS = CSSM_BASE_CERTS
   { cssM_BASE_CERTSTPHandle :: !CLong
   , cssM_BASE_CERTSCLHandle :: !CLong
@@ -523,6 +685,16 @@ argCSSM_BASE_CERTS = mkStorableArg cssM_BASE_CERTSStructType
 retCSSM_BASE_CERTS :: RetType CSSM_BASE_CERTS
 retCSSM_BASE_CERTS = mkStorableRetType cssM_BASE_CERTSStructType
 
+instance ObjCArgument CSSM_BASE_CERTS where
+  withObjCArg x k = k (argCSSM_BASE_CERTS x)
+
+instance ObjCReturn CSSM_BASE_CERTS where
+  type RawReturn CSSM_BASE_CERTS = CSSM_BASE_CERTS
+  objcRetType = retCSSM_BASE_CERTS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_CERT_BUNDLE_HEADER = CSSM_CERT_BUNDLE_HEADER
   { cssM_CERT_BUNDLE_HEADERBundleType :: !CUInt
   , cssM_CERT_BUNDLE_HEADERBundleEncoding :: !CUInt
@@ -546,6 +718,16 @@ argCSSM_CERT_BUNDLE_HEADER = mkStorableArg cssM_CERT_BUNDLE_HEADERStructType
 
 retCSSM_CERT_BUNDLE_HEADER :: RetType CSSM_CERT_BUNDLE_HEADER
 retCSSM_CERT_BUNDLE_HEADER = mkStorableRetType cssM_CERT_BUNDLE_HEADERStructType
+
+instance ObjCArgument CSSM_CERT_BUNDLE_HEADER where
+  withObjCArg x k = k (argCSSM_CERT_BUNDLE_HEADER x)
+
+instance ObjCReturn CSSM_CERT_BUNDLE_HEADER where
+  type RawReturn CSSM_CERT_BUNDLE_HEADER = CSSM_CERT_BUNDLE_HEADER
+  objcRetType = retCSSM_CERT_BUNDLE_HEADER
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_CONTEXT = CSSM_CONTEXT
   { cssM_CONTEXTContextType :: !CUInt
@@ -591,6 +773,16 @@ argCSSM_CONTEXT = mkStorableArg cssM_CONTEXTStructType
 
 retCSSM_CONTEXT :: RetType CSSM_CONTEXT
 retCSSM_CONTEXT = mkStorableRetType cssM_CONTEXTStructType
+
+instance ObjCArgument CSSM_CONTEXT where
+  withObjCArg x k = k (argCSSM_CONTEXT x)
+
+instance ObjCReturn CSSM_CONTEXT where
+  type RawReturn CSSM_CONTEXT = CSSM_CONTEXT
+  objcRetType = retCSSM_CONTEXT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_CSP_OPERATIONAL_STATISTICS = CSSM_CSP_OPERATIONAL_STATISTICS
   { cssM_CSP_OPERATIONAL_STATISTICSUserAuthenticated :: !CInt
@@ -640,6 +832,16 @@ argCSSM_CSP_OPERATIONAL_STATISTICS = mkStorableArg cssM_CSP_OPERATIONAL_STATISTI
 retCSSM_CSP_OPERATIONAL_STATISTICS :: RetType CSSM_CSP_OPERATIONAL_STATISTICS
 retCSSM_CSP_OPERATIONAL_STATISTICS = mkStorableRetType cssM_CSP_OPERATIONAL_STATISTICSStructType
 
+instance ObjCArgument CSSM_CSP_OPERATIONAL_STATISTICS where
+  withObjCArg x k = k (argCSSM_CSP_OPERATIONAL_STATISTICS x)
+
+instance ObjCReturn CSSM_CSP_OPERATIONAL_STATISTICS where
+  type RawReturn CSSM_CSP_OPERATIONAL_STATISTICS = CSSM_CSP_OPERATIONAL_STATISTICS
+  objcRetType = retCSSM_CSP_OPERATIONAL_STATISTICS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_DBINFO = CSSM_DBINFO
   { cssM_DBINFONumberOfRecordTypes :: !CUInt
   , cssM_DBINFODefaultParsingModules :: !(Ptr ())
@@ -679,6 +881,16 @@ argCSSM_DBINFO = mkStorableArg cssM_DBINFOStructType
 retCSSM_DBINFO :: RetType CSSM_DBINFO
 retCSSM_DBINFO = mkStorableRetType cssM_DBINFOStructType
 
+instance ObjCArgument CSSM_DBINFO where
+  withObjCArg x k = k (argCSSM_DBINFO x)
+
+instance ObjCReturn CSSM_DBINFO where
+  type RawReturn CSSM_DBINFO = CSSM_DBINFO
+  objcRetType = retCSSM_DBINFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_DB_ATTRIBUTE_DATA = CSSM_DB_ATTRIBUTE_DATA
   { cssM_DB_ATTRIBUTE_DATAInfo :: !(Ptr ())
   , cssM_DB_ATTRIBUTE_DATANumberOfValues :: !CUInt
@@ -705,6 +917,16 @@ argCSSM_DB_ATTRIBUTE_DATA = mkStorableArg cssM_DB_ATTRIBUTE_DATAStructType
 
 retCSSM_DB_ATTRIBUTE_DATA :: RetType CSSM_DB_ATTRIBUTE_DATA
 retCSSM_DB_ATTRIBUTE_DATA = mkStorableRetType cssM_DB_ATTRIBUTE_DATAStructType
+
+instance ObjCArgument CSSM_DB_ATTRIBUTE_DATA where
+  withObjCArg x k = k (argCSSM_DB_ATTRIBUTE_DATA x)
+
+instance ObjCReturn CSSM_DB_ATTRIBUTE_DATA where
+  type RawReturn CSSM_DB_ATTRIBUTE_DATA = CSSM_DB_ATTRIBUTE_DATA
+  objcRetType = retCSSM_DB_ATTRIBUTE_DATA
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_DB_INDEX_INFO = CSSM_DB_INDEX_INFO
   { cssM_DB_INDEX_INFOIndexType :: !CUInt
@@ -733,6 +955,16 @@ argCSSM_DB_INDEX_INFO = mkStorableArg cssM_DB_INDEX_INFOStructType
 retCSSM_DB_INDEX_INFO :: RetType CSSM_DB_INDEX_INFO
 retCSSM_DB_INDEX_INFO = mkStorableRetType cssM_DB_INDEX_INFOStructType
 
+instance ObjCArgument CSSM_DB_INDEX_INFO where
+  withObjCArg x k = k (argCSSM_DB_INDEX_INFO x)
+
+instance ObjCReturn CSSM_DB_INDEX_INFO where
+  type RawReturn CSSM_DB_INDEX_INFO = CSSM_DB_INDEX_INFO
+  objcRetType = retCSSM_DB_INDEX_INFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_DB_PARSING_MODULE_INFO = CSSM_DB_PARSING_MODULE_INFO
   { cssM_DB_PARSING_MODULE_INFORecordType :: !CUInt
   , cssM_DB_PARSING_MODULE_INFOModuleSubserviceUid :: !(Ptr ())
@@ -756,6 +988,16 @@ argCSSM_DB_PARSING_MODULE_INFO = mkStorableArg cssM_DB_PARSING_MODULE_INFOStruct
 
 retCSSM_DB_PARSING_MODULE_INFO :: RetType CSSM_DB_PARSING_MODULE_INFO
 retCSSM_DB_PARSING_MODULE_INFO = mkStorableRetType cssM_DB_PARSING_MODULE_INFOStructType
+
+instance ObjCArgument CSSM_DB_PARSING_MODULE_INFO where
+  withObjCArg x k = k (argCSSM_DB_PARSING_MODULE_INFO x)
+
+instance ObjCReturn CSSM_DB_PARSING_MODULE_INFO where
+  type RawReturn CSSM_DB_PARSING_MODULE_INFO = CSSM_DB_PARSING_MODULE_INFO
+  objcRetType = retCSSM_DB_PARSING_MODULE_INFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_DB_RECORD_ATTRIBUTE_DATA = CSSM_DB_RECORD_ATTRIBUTE_DATA
   { cssM_DB_RECORD_ATTRIBUTE_DATADataRecordType :: !CUInt
@@ -787,6 +1029,16 @@ argCSSM_DB_RECORD_ATTRIBUTE_DATA = mkStorableArg cssM_DB_RECORD_ATTRIBUTE_DATASt
 retCSSM_DB_RECORD_ATTRIBUTE_DATA :: RetType CSSM_DB_RECORD_ATTRIBUTE_DATA
 retCSSM_DB_RECORD_ATTRIBUTE_DATA = mkStorableRetType cssM_DB_RECORD_ATTRIBUTE_DATAStructType
 
+instance ObjCArgument CSSM_DB_RECORD_ATTRIBUTE_DATA where
+  withObjCArg x k = k (argCSSM_DB_RECORD_ATTRIBUTE_DATA x)
+
+instance ObjCReturn CSSM_DB_RECORD_ATTRIBUTE_DATA where
+  type RawReturn CSSM_DB_RECORD_ATTRIBUTE_DATA = CSSM_DB_RECORD_ATTRIBUTE_DATA
+  objcRetType = retCSSM_DB_RECORD_ATTRIBUTE_DATA
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_DB_RECORD_ATTRIBUTE_INFO = CSSM_DB_RECORD_ATTRIBUTE_INFO
   { cssM_DB_RECORD_ATTRIBUTE_INFODataRecordType :: !CUInt
   , cssM_DB_RECORD_ATTRIBUTE_INFONumberOfAttributes :: !CUInt
@@ -814,6 +1066,16 @@ argCSSM_DB_RECORD_ATTRIBUTE_INFO = mkStorableArg cssM_DB_RECORD_ATTRIBUTE_INFOSt
 retCSSM_DB_RECORD_ATTRIBUTE_INFO :: RetType CSSM_DB_RECORD_ATTRIBUTE_INFO
 retCSSM_DB_RECORD_ATTRIBUTE_INFO = mkStorableRetType cssM_DB_RECORD_ATTRIBUTE_INFOStructType
 
+instance ObjCArgument CSSM_DB_RECORD_ATTRIBUTE_INFO where
+  withObjCArg x k = k (argCSSM_DB_RECORD_ATTRIBUTE_INFO x)
+
+instance ObjCReturn CSSM_DB_RECORD_ATTRIBUTE_INFO where
+  type RawReturn CSSM_DB_RECORD_ATTRIBUTE_INFO = CSSM_DB_RECORD_ATTRIBUTE_INFO
+  objcRetType = retCSSM_DB_RECORD_ATTRIBUTE_INFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_DB_RECORD_INDEX_INFO = CSSM_DB_RECORD_INDEX_INFO
   { cssM_DB_RECORD_INDEX_INFODataRecordType :: !CUInt
   , cssM_DB_RECORD_INDEX_INFONumberOfIndexes :: !CUInt
@@ -840,6 +1102,16 @@ argCSSM_DB_RECORD_INDEX_INFO = mkStorableArg cssM_DB_RECORD_INDEX_INFOStructType
 
 retCSSM_DB_RECORD_INDEX_INFO :: RetType CSSM_DB_RECORD_INDEX_INFO
 retCSSM_DB_RECORD_INDEX_INFO = mkStorableRetType cssM_DB_RECORD_INDEX_INFOStructType
+
+instance ObjCArgument CSSM_DB_RECORD_INDEX_INFO where
+  withObjCArg x k = k (argCSSM_DB_RECORD_INDEX_INFO x)
+
+instance ObjCReturn CSSM_DB_RECORD_INDEX_INFO where
+  type RawReturn CSSM_DB_RECORD_INDEX_INFO = CSSM_DB_RECORD_INDEX_INFO
+  objcRetType = retCSSM_DB_RECORD_INDEX_INFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_DB_SCHEMA_INDEX_INFO = CSSM_DB_SCHEMA_INDEX_INFO
   { cssM_DB_SCHEMA_INDEX_INFOAttributeId :: !CUInt
@@ -871,6 +1143,16 @@ argCSSM_DB_SCHEMA_INDEX_INFO = mkStorableArg cssM_DB_SCHEMA_INDEX_INFOStructType
 retCSSM_DB_SCHEMA_INDEX_INFO :: RetType CSSM_DB_SCHEMA_INDEX_INFO
 retCSSM_DB_SCHEMA_INDEX_INFO = mkStorableRetType cssM_DB_SCHEMA_INDEX_INFOStructType
 
+instance ObjCArgument CSSM_DB_SCHEMA_INDEX_INFO where
+  withObjCArg x k = k (argCSSM_DB_SCHEMA_INDEX_INFO x)
+
+instance ObjCReturn CSSM_DB_SCHEMA_INDEX_INFO where
+  type RawReturn CSSM_DB_SCHEMA_INDEX_INFO = CSSM_DB_SCHEMA_INDEX_INFO
+  objcRetType = retCSSM_DB_SCHEMA_INDEX_INFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_DL_DB_HANDLE = CSSM_DL_DB_HANDLE
   { cssM_DL_DB_HANDLEDLHandle :: !CLong
   , cssM_DL_DB_HANDLEDBHandle :: !CLong
@@ -894,6 +1176,16 @@ argCSSM_DL_DB_HANDLE = mkStorableArg cssM_DL_DB_HANDLEStructType
 
 retCSSM_DL_DB_HANDLE :: RetType CSSM_DL_DB_HANDLE
 retCSSM_DL_DB_HANDLE = mkStorableRetType cssM_DL_DB_HANDLEStructType
+
+instance ObjCArgument CSSM_DL_DB_HANDLE where
+  withObjCArg x k = k (argCSSM_DL_DB_HANDLE x)
+
+instance ObjCReturn CSSM_DL_DB_HANDLE where
+  type RawReturn CSSM_DL_DB_HANDLE = CSSM_DL_DB_HANDLE
+  objcRetType = retCSSM_DL_DB_HANDLE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_DL_DB_LIST = CSSM_DL_DB_LIST
   { cssM_DL_DB_LISTNumHandles :: !CUInt
@@ -919,6 +1211,16 @@ argCSSM_DL_DB_LIST = mkStorableArg cssM_DL_DB_LISTStructType
 retCSSM_DL_DB_LIST :: RetType CSSM_DL_DB_LIST
 retCSSM_DL_DB_LIST = mkStorableRetType cssM_DL_DB_LISTStructType
 
+instance ObjCArgument CSSM_DL_DB_LIST where
+  withObjCArg x k = k (argCSSM_DL_DB_LIST x)
+
+instance ObjCReturn CSSM_DL_DB_LIST where
+  type RawReturn CSSM_DL_DB_LIST = CSSM_DL_DB_LIST
+  objcRetType = retCSSM_DL_DB_LIST
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_EVIDENCE = CSSM_EVIDENCE
   { cssM_EVIDENCEEvidenceForm :: !CUInt
   , cssM_EVIDENCEEvidence :: !(Ptr ())
@@ -943,6 +1245,16 @@ argCSSM_EVIDENCE = mkStorableArg cssM_EVIDENCEStructType
 retCSSM_EVIDENCE :: RetType CSSM_EVIDENCE
 retCSSM_EVIDENCE = mkStorableRetType cssM_EVIDENCEStructType
 
+instance ObjCArgument CSSM_EVIDENCE where
+  withObjCArg x k = k (argCSSM_EVIDENCE x)
+
+instance ObjCReturn CSSM_EVIDENCE where
+  type RawReturn CSSM_EVIDENCE = CSSM_EVIDENCE
+  objcRetType = retCSSM_EVIDENCE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_FIELDGROUP = CSSM_FIELDGROUP
   { cssM_FIELDGROUPNumberOfFields :: !CInt
   , cssM_FIELDGROUPFields :: !(Ptr ())
@@ -966,6 +1278,16 @@ argCSSM_FIELDGROUP = mkStorableArg cssM_FIELDGROUPStructType
 
 retCSSM_FIELDGROUP :: RetType CSSM_FIELDGROUP
 retCSSM_FIELDGROUP = mkStorableRetType cssM_FIELDGROUPStructType
+
+instance ObjCArgument CSSM_FIELDGROUP where
+  withObjCArg x k = k (argCSSM_FIELDGROUP x)
+
+instance ObjCReturn CSSM_FIELDGROUP where
+  type RawReturn CSSM_FIELDGROUP = CSSM_FIELDGROUP
+  objcRetType = retCSSM_FIELDGROUP
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_KEYHEADER = CSSM_KEYHEADER
   { cssM_KEYHEADERHeaderVersion :: !CUInt
@@ -1027,6 +1349,16 @@ argCSSM_KEYHEADER = mkStorableArg cssM_KEYHEADERStructType
 retCSSM_KEYHEADER :: RetType CSSM_KEYHEADER
 retCSSM_KEYHEADER = mkStorableRetType cssM_KEYHEADERStructType
 
+instance ObjCArgument CSSM_KEYHEADER where
+  withObjCArg x k = k (argCSSM_KEYHEADER x)
+
+instance ObjCReturn CSSM_KEYHEADER where
+  type RawReturn CSSM_KEYHEADER = CSSM_KEYHEADER
+  objcRetType = retCSSM_KEYHEADER
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_KEY_SIZE = CSSM_KEY_SIZE
   { cssM_KEY_SIZELogicalKeySizeInBits :: !CUInt
   , cssM_KEY_SIZEEffectiveKeySizeInBits :: !CUInt
@@ -1050,6 +1382,16 @@ argCSSM_KEY_SIZE = mkStorableArg cssM_KEY_SIZEStructType
 
 retCSSM_KEY_SIZE :: RetType CSSM_KEY_SIZE
 retCSSM_KEY_SIZE = mkStorableRetType cssM_KEY_SIZEStructType
+
+instance ObjCArgument CSSM_KEY_SIZE where
+  withObjCArg x k = k (argCSSM_KEY_SIZE x)
+
+instance ObjCReturn CSSM_KEY_SIZE where
+  type RawReturn CSSM_KEY_SIZE = CSSM_KEY_SIZE
+  objcRetType = retCSSM_KEY_SIZE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_KRSUBSERVICE = CSSM_KRSUBSERVICE
   { cssM_KRSUBSERVICESubServiceId :: !CUInt
@@ -1078,6 +1420,16 @@ argCSSM_KRSUBSERVICE = mkStorableArg cssM_KRSUBSERVICEStructType
 retCSSM_KRSUBSERVICE :: RetType CSSM_KRSUBSERVICE
 retCSSM_KRSUBSERVICE = mkStorableRetType cssM_KRSUBSERVICEStructType
 
+instance ObjCArgument CSSM_KRSUBSERVICE where
+  withObjCArg x k = k (argCSSM_KRSUBSERVICE x)
+
+instance ObjCReturn CSSM_KRSUBSERVICE where
+  type RawReturn CSSM_KRSUBSERVICE = CSSM_KRSUBSERVICE
+  objcRetType = retCSSM_KRSUBSERVICE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_KR_NAME = CSSM_KR_NAME
   { cssM_KR_NAMEType :: !CUChar
   , cssM_KR_NAMELength :: !CUChar
@@ -1104,6 +1456,16 @@ argCSSM_KR_NAME = mkStorableArg cssM_KR_NAMEStructType
 
 retCSSM_KR_NAME :: RetType CSSM_KR_NAME
 retCSSM_KR_NAME = mkStorableRetType cssM_KR_NAMEStructType
+
+instance ObjCArgument CSSM_KR_NAME where
+  withObjCArg x k = k (argCSSM_KR_NAME x)
+
+instance ObjCReturn CSSM_KR_NAME where
+  type RawReturn CSSM_KR_NAME = CSSM_KR_NAME
+  objcRetType = retCSSM_KR_NAME
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_KR_POLICY_LIST_ITEM = CSSM_KR_POLICY_LIST_ITEM
   { cssM_KR_POLICY_LIST_ITEMNext :: !(Ptr ())
@@ -1147,6 +1509,16 @@ argCSSM_KR_POLICY_LIST_ITEM = mkStorableArg cssM_KR_POLICY_LIST_ITEMStructType
 retCSSM_KR_POLICY_LIST_ITEM :: RetType CSSM_KR_POLICY_LIST_ITEM
 retCSSM_KR_POLICY_LIST_ITEM = mkStorableRetType cssM_KR_POLICY_LIST_ITEMStructType
 
+instance ObjCArgument CSSM_KR_POLICY_LIST_ITEM where
+  withObjCArg x k = k (argCSSM_KR_POLICY_LIST_ITEM x)
+
+instance ObjCReturn CSSM_KR_POLICY_LIST_ITEM where
+  type RawReturn CSSM_KR_POLICY_LIST_ITEM = CSSM_KR_POLICY_LIST_ITEM
+  objcRetType = retCSSM_KR_POLICY_LIST_ITEM
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_LIST = CSSM_LIST
   { cssM_LISTListType :: !CUInt
   , cssM_LISTHead :: !(Ptr ())
@@ -1173,6 +1545,16 @@ argCSSM_LIST = mkStorableArg cssM_LISTStructType
 
 retCSSM_LIST :: RetType CSSM_LIST
 retCSSM_LIST = mkStorableRetType cssM_LISTStructType
+
+instance ObjCArgument CSSM_LIST where
+  withObjCArg x k = k (argCSSM_LIST x)
+
+instance ObjCReturn CSSM_LIST where
+  type RawReturn CSSM_LIST = CSSM_LIST
+  objcRetType = retCSSM_LIST
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_MANAGER_REGISTRATION_INFO = CSSM_MANAGER_REGISTRATION_INFO
   { cssM_MANAGER_REGISTRATION_INFOInitialize :: !(Ptr ())
@@ -1210,6 +1592,16 @@ argCSSM_MANAGER_REGISTRATION_INFO = mkStorableArg cssM_MANAGER_REGISTRATION_INFO
 retCSSM_MANAGER_REGISTRATION_INFO :: RetType CSSM_MANAGER_REGISTRATION_INFO
 retCSSM_MANAGER_REGISTRATION_INFO = mkStorableRetType cssM_MANAGER_REGISTRATION_INFOStructType
 
+instance ObjCArgument CSSM_MANAGER_REGISTRATION_INFO where
+  withObjCArg x k = k (argCSSM_MANAGER_REGISTRATION_INFO x)
+
+instance ObjCReturn CSSM_MANAGER_REGISTRATION_INFO where
+  type RawReturn CSSM_MANAGER_REGISTRATION_INFO = CSSM_MANAGER_REGISTRATION_INFO
+  objcRetType = retCSSM_MANAGER_REGISTRATION_INFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_MEMORY_FUNCS = CSSM_MEMORY_FUNCS
   { cssM_MEMORY_FUNCSMalloc_func :: !(Ptr ())
   , cssM_MEMORY_FUNCSFree_func :: !(Ptr ())
@@ -1243,6 +1635,16 @@ argCSSM_MEMORY_FUNCS = mkStorableArg cssM_MEMORY_FUNCSStructType
 retCSSM_MEMORY_FUNCS :: RetType CSSM_MEMORY_FUNCS
 retCSSM_MEMORY_FUNCS = mkStorableRetType cssM_MEMORY_FUNCSStructType
 
+instance ObjCArgument CSSM_MEMORY_FUNCS where
+  withObjCArg x k = k (argCSSM_MEMORY_FUNCS x)
+
+instance ObjCReturn CSSM_MEMORY_FUNCS where
+  type RawReturn CSSM_MEMORY_FUNCS = CSSM_MEMORY_FUNCS
+  objcRetType = retCSSM_MEMORY_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_NAME_LIST = CSSM_NAME_LIST
   { cssM_NAME_LISTNumStrings :: !CUInt
   , cssM_NAME_LISTString :: !(Ptr ())
@@ -1266,6 +1668,16 @@ argCSSM_NAME_LIST = mkStorableArg cssM_NAME_LISTStructType
 
 retCSSM_NAME_LIST :: RetType CSSM_NAME_LIST
 retCSSM_NAME_LIST = mkStorableRetType cssM_NAME_LISTStructType
+
+instance ObjCArgument CSSM_NAME_LIST where
+  withObjCArg x k = k (argCSSM_NAME_LIST x)
+
+instance ObjCReturn CSSM_NAME_LIST where
+  type RawReturn CSSM_NAME_LIST = CSSM_NAME_LIST
+  objcRetType = retCSSM_NAME_LIST
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_PARSED_CERT = CSSM_PARSED_CERT
   { cssM_PARSED_CERTCertType :: !CUInt
@@ -1294,6 +1706,16 @@ argCSSM_PARSED_CERT = mkStorableArg cssM_PARSED_CERTStructType
 retCSSM_PARSED_CERT :: RetType CSSM_PARSED_CERT
 retCSSM_PARSED_CERT = mkStorableRetType cssM_PARSED_CERTStructType
 
+instance ObjCArgument CSSM_PARSED_CERT where
+  withObjCArg x k = k (argCSSM_PARSED_CERT x)
+
+instance ObjCReturn CSSM_PARSED_CERT where
+  type RawReturn CSSM_PARSED_CERT = CSSM_PARSED_CERT
+  objcRetType = retCSSM_PARSED_CERT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_PARSED_CRL = CSSM_PARSED_CRL
   { cssM_PARSED_CRLCrlType :: !CUInt
   , cssM_PARSED_CRLParsedCrlFormat :: !CUInt
@@ -1321,6 +1743,16 @@ argCSSM_PARSED_CRL = mkStorableArg cssM_PARSED_CRLStructType
 retCSSM_PARSED_CRL :: RetType CSSM_PARSED_CRL
 retCSSM_PARSED_CRL = mkStorableRetType cssM_PARSED_CRLStructType
 
+instance ObjCArgument CSSM_PARSED_CRL where
+  withObjCArg x k = k (argCSSM_PARSED_CRL x)
+
+instance ObjCReturn CSSM_PARSED_CRL where
+  type RawReturn CSSM_PARSED_CRL = CSSM_PARSED_CRL
+  objcRetType = retCSSM_PARSED_CRL
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_QUERY_LIMITS = CSSM_QUERY_LIMITS
   { cssM_QUERY_LIMITSTimeLimit :: !CUInt
   , cssM_QUERY_LIMITSSizeLimit :: !CUInt
@@ -1344,6 +1776,16 @@ argCSSM_QUERY_LIMITS = mkStorableArg cssM_QUERY_LIMITSStructType
 
 retCSSM_QUERY_LIMITS :: RetType CSSM_QUERY_LIMITS
 retCSSM_QUERY_LIMITS = mkStorableRetType cssM_QUERY_LIMITSStructType
+
+instance ObjCArgument CSSM_QUERY_LIMITS where
+  withObjCArg x k = k (argCSSM_QUERY_LIMITS x)
+
+instance ObjCReturn CSSM_QUERY_LIMITS where
+  type RawReturn CSSM_QUERY_LIMITS = CSSM_QUERY_LIMITS
+  objcRetType = retCSSM_QUERY_LIMITS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_QUERY_SIZE_DATA = CSSM_QUERY_SIZE_DATA
   { cssM_QUERY_SIZE_DATASizeInputBlock :: !CUInt
@@ -1369,6 +1811,16 @@ argCSSM_QUERY_SIZE_DATA = mkStorableArg cssM_QUERY_SIZE_DATAStructType
 retCSSM_QUERY_SIZE_DATA :: RetType CSSM_QUERY_SIZE_DATA
 retCSSM_QUERY_SIZE_DATA = mkStorableRetType cssM_QUERY_SIZE_DATAStructType
 
+instance ObjCArgument CSSM_QUERY_SIZE_DATA where
+  withObjCArg x k = k (argCSSM_QUERY_SIZE_DATA x)
+
+instance ObjCReturn CSSM_QUERY_SIZE_DATA where
+  type RawReturn CSSM_QUERY_SIZE_DATA = CSSM_QUERY_SIZE_DATA
+  objcRetType = retCSSM_QUERY_SIZE_DATA
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_RANGE = CSSM_RANGE
   { cssM_RANGEMin :: !CUInt
   , cssM_RANGEMax :: !CUInt
@@ -1392,6 +1844,16 @@ argCSSM_RANGE = mkStorableArg cssM_RANGEStructType
 
 retCSSM_RANGE :: RetType CSSM_RANGE
 retCSSM_RANGE = mkStorableRetType cssM_RANGEStructType
+
+instance ObjCArgument CSSM_RANGE where
+  withObjCArg x k = k (argCSSM_RANGE x)
+
+instance ObjCReturn CSSM_RANGE where
+  type RawReturn CSSM_RANGE = CSSM_RANGE
+  objcRetType = retCSSM_RANGE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_RESOURCE_CONTROL_CONTEXT = CSSM_RESOURCE_CONTROL_CONTEXT
   { cssM_RESOURCE_CONTROL_CONTEXTAccessCred :: !(Ptr ())
@@ -1417,6 +1879,16 @@ argCSSM_RESOURCE_CONTROL_CONTEXT = mkStorableArg cssM_RESOURCE_CONTROL_CONTEXTSt
 retCSSM_RESOURCE_CONTROL_CONTEXT :: RetType CSSM_RESOURCE_CONTROL_CONTEXT
 retCSSM_RESOURCE_CONTROL_CONTEXT = mkStorableRetType cssM_RESOURCE_CONTROL_CONTEXTStructType
 
+instance ObjCArgument CSSM_RESOURCE_CONTROL_CONTEXT where
+  withObjCArg x k = k (argCSSM_RESOURCE_CONTROL_CONTEXT x)
+
+instance ObjCReturn CSSM_RESOURCE_CONTROL_CONTEXT where
+  type RawReturn CSSM_RESOURCE_CONTROL_CONTEXT = CSSM_RESOURCE_CONTROL_CONTEXT
+  objcRetType = retCSSM_RESOURCE_CONTROL_CONTEXT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_SELECTION_PREDICATE = CSSM_SELECTION_PREDICATE
   { cssM_SELECTION_PREDICATEDbOperator :: !CUInt
   , cssM_SELECTION_PREDICATEAttribute :: !(Ptr ())
@@ -1441,6 +1913,16 @@ argCSSM_SELECTION_PREDICATE = mkStorableArg cssM_SELECTION_PREDICATEStructType
 retCSSM_SELECTION_PREDICATE :: RetType CSSM_SELECTION_PREDICATE
 retCSSM_SELECTION_PREDICATE = mkStorableRetType cssM_SELECTION_PREDICATEStructType
 
+instance ObjCArgument CSSM_SELECTION_PREDICATE where
+  withObjCArg x k = k (argCSSM_SELECTION_PREDICATE x)
+
+instance ObjCReturn CSSM_SELECTION_PREDICATE where
+  type RawReturn CSSM_SELECTION_PREDICATE = CSSM_SELECTION_PREDICATE
+  objcRetType = retCSSM_SELECTION_PREDICATE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_SPI_AC_FUNCS = CSSM_SPI_AC_FUNCS
   { cssM_SPI_AC_FUNCSAuthCompute :: !(Ptr ())
   , cssM_SPI_AC_FUNCSPassThrough :: !(Ptr ())
@@ -1464,6 +1946,16 @@ argCSSM_SPI_AC_FUNCS = mkStorableArg cssM_SPI_AC_FUNCSStructType
 
 retCSSM_SPI_AC_FUNCS :: RetType CSSM_SPI_AC_FUNCS
 retCSSM_SPI_AC_FUNCS = mkStorableRetType cssM_SPI_AC_FUNCSStructType
+
+instance ObjCArgument CSSM_SPI_AC_FUNCS where
+  withObjCArg x k = k (argCSSM_SPI_AC_FUNCS x)
+
+instance ObjCReturn CSSM_SPI_AC_FUNCS where
+  type RawReturn CSSM_SPI_AC_FUNCS = CSSM_SPI_AC_FUNCS
+  objcRetType = retCSSM_SPI_AC_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_SPI_CL_FUNCS = CSSM_SPI_CL_FUNCS
   { cssM_SPI_CL_FUNCSCertCreateTemplate :: !(Ptr ())
@@ -1599,6 +2091,16 @@ argCSSM_SPI_CL_FUNCS = mkStorableArg cssM_SPI_CL_FUNCSStructType
 
 retCSSM_SPI_CL_FUNCS :: RetType CSSM_SPI_CL_FUNCS
 retCSSM_SPI_CL_FUNCS = mkStorableRetType cssM_SPI_CL_FUNCSStructType
+
+instance ObjCArgument CSSM_SPI_CL_FUNCS where
+  withObjCArg x k = k (argCSSM_SPI_CL_FUNCS x)
+
+instance ObjCReturn CSSM_SPI_CL_FUNCS where
+  type RawReturn CSSM_SPI_CL_FUNCS = CSSM_SPI_CL_FUNCS
+  objcRetType = retCSSM_SPI_CL_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_SPI_CSP_FUNCS = CSSM_SPI_CSP_FUNCS
   { cssM_SPI_CSP_FUNCSEventNotify :: !(Ptr ())
@@ -1789,6 +2291,16 @@ argCSSM_SPI_CSP_FUNCS = mkStorableArg cssM_SPI_CSP_FUNCSStructType
 retCSSM_SPI_CSP_FUNCS :: RetType CSSM_SPI_CSP_FUNCS
 retCSSM_SPI_CSP_FUNCS = mkStorableRetType cssM_SPI_CSP_FUNCSStructType
 
+instance ObjCArgument CSSM_SPI_CSP_FUNCS where
+  withObjCArg x k = k (argCSSM_SPI_CSP_FUNCS x)
+
+instance ObjCReturn CSSM_SPI_CSP_FUNCS where
+  type RawReturn CSSM_SPI_CSP_FUNCS = CSSM_SPI_CSP_FUNCS
+  objcRetType = retCSSM_SPI_CSP_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_SPI_DL_FUNCS = CSSM_SPI_DL_FUNCS
   { cssM_SPI_DL_FUNCSDbOpen :: !(Ptr ())
   , cssM_SPI_DL_FUNCSDbClose :: !(Ptr ())
@@ -1876,6 +2388,16 @@ argCSSM_SPI_DL_FUNCS = mkStorableArg cssM_SPI_DL_FUNCSStructType
 retCSSM_SPI_DL_FUNCS :: RetType CSSM_SPI_DL_FUNCS
 retCSSM_SPI_DL_FUNCS = mkStorableRetType cssM_SPI_DL_FUNCSStructType
 
+instance ObjCArgument CSSM_SPI_DL_FUNCS where
+  withObjCArg x k = k (argCSSM_SPI_DL_FUNCS x)
+
+instance ObjCReturn CSSM_SPI_DL_FUNCS where
+  type RawReturn CSSM_SPI_DL_FUNCS = CSSM_SPI_DL_FUNCS
+  objcRetType = retCSSM_SPI_DL_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_SPI_KR_FUNCS = CSSM_SPI_KR_FUNCS
   { cssM_SPI_KR_FUNCSRegistrationRequest :: !(Ptr ())
   , cssM_SPI_KR_FUNCSRegistrationRetrieve :: !(Ptr ())
@@ -1920,6 +2442,16 @@ argCSSM_SPI_KR_FUNCS = mkStorableArg cssM_SPI_KR_FUNCSStructType
 
 retCSSM_SPI_KR_FUNCS :: RetType CSSM_SPI_KR_FUNCS
 retCSSM_SPI_KR_FUNCS = mkStorableRetType cssM_SPI_KR_FUNCSStructType
+
+instance ObjCArgument CSSM_SPI_KR_FUNCS where
+  withObjCArg x k = k (argCSSM_SPI_KR_FUNCS x)
+
+instance ObjCReturn CSSM_SPI_KR_FUNCS where
+  type RawReturn CSSM_SPI_KR_FUNCS = CSSM_SPI_KR_FUNCS
+  objcRetType = retCSSM_SPI_KR_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_SPI_TP_FUNCS = CSSM_SPI_TP_FUNCS
   { cssM_SPI_TP_FUNCSSubmitCredRequest :: !(Ptr ())
@@ -2008,6 +2540,16 @@ argCSSM_SPI_TP_FUNCS = mkStorableArg cssM_SPI_TP_FUNCSStructType
 retCSSM_SPI_TP_FUNCS :: RetType CSSM_SPI_TP_FUNCS
 retCSSM_SPI_TP_FUNCS = mkStorableRetType cssM_SPI_TP_FUNCSStructType
 
+instance ObjCArgument CSSM_SPI_TP_FUNCS where
+  withObjCArg x k = k (argCSSM_SPI_TP_FUNCS x)
+
+instance ObjCReturn CSSM_SPI_TP_FUNCS where
+  type RawReturn CSSM_SPI_TP_FUNCS = CSSM_SPI_TP_FUNCS
+  objcRetType = retCSSM_SPI_TP_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_STATE_FUNCS = CSSM_STATE_FUNCS
   { cssM_STATE_FUNCSCssm_GetAttachFunctions :: !(Ptr ())
   , cssM_STATE_FUNCSCssm_ReleaseAttachFunctions :: !(Ptr ())
@@ -2043,6 +2585,16 @@ argCSSM_STATE_FUNCS = mkStorableArg cssM_STATE_FUNCSStructType
 
 retCSSM_STATE_FUNCS :: RetType CSSM_STATE_FUNCS
 retCSSM_STATE_FUNCS = mkStorableRetType cssM_STATE_FUNCSStructType
+
+instance ObjCArgument CSSM_STATE_FUNCS where
+  withObjCArg x k = k (argCSSM_STATE_FUNCS x)
+
+instance ObjCReturn CSSM_STATE_FUNCS where
+  type RawReturn CSSM_STATE_FUNCS = CSSM_STATE_FUNCS
+  objcRetType = retCSSM_STATE_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_CERTCHANGE_INPUT = CSSM_TP_CERTCHANGE_INPUT
   { cssM_TP_CERTCHANGE_INPUTAction :: !CUInt
@@ -2082,6 +2634,16 @@ argCSSM_TP_CERTCHANGE_INPUT = mkStorableArg cssM_TP_CERTCHANGE_INPUTStructType
 
 retCSSM_TP_CERTCHANGE_INPUT :: RetType CSSM_TP_CERTCHANGE_INPUT
 retCSSM_TP_CERTCHANGE_INPUT = mkStorableRetType cssM_TP_CERTCHANGE_INPUTStructType
+
+instance ObjCArgument CSSM_TP_CERTCHANGE_INPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTCHANGE_INPUT x)
+
+instance ObjCReturn CSSM_TP_CERTCHANGE_INPUT where
+  type RawReturn CSSM_TP_CERTCHANGE_INPUT = CSSM_TP_CERTCHANGE_INPUT
+  objcRetType = retCSSM_TP_CERTCHANGE_INPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_CERTISSUE_INPUT = CSSM_TP_CERTISSUE_INPUT
   { cssM_TP_CERTISSUE_INPUTCSPSubserviceUid :: !(Ptr ())
@@ -2125,6 +2687,16 @@ argCSSM_TP_CERTISSUE_INPUT = mkStorableArg cssM_TP_CERTISSUE_INPUTStructType
 retCSSM_TP_CERTISSUE_INPUT :: RetType CSSM_TP_CERTISSUE_INPUT
 retCSSM_TP_CERTISSUE_INPUT = mkStorableRetType cssM_TP_CERTISSUE_INPUTStructType
 
+instance ObjCArgument CSSM_TP_CERTISSUE_INPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTISSUE_INPUT x)
+
+instance ObjCReturn CSSM_TP_CERTISSUE_INPUT where
+  type RawReturn CSSM_TP_CERTISSUE_INPUT = CSSM_TP_CERTISSUE_INPUT
+  objcRetType = retCSSM_TP_CERTISSUE_INPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TP_CERTISSUE_OUTPUT = CSSM_TP_CERTISSUE_OUTPUT
   { cssM_TP_CERTISSUE_OUTPUTIssueStatus :: !CUInt
   , cssM_TP_CERTISSUE_OUTPUTCertGroup :: !(Ptr ())
@@ -2151,6 +2723,16 @@ argCSSM_TP_CERTISSUE_OUTPUT = mkStorableArg cssM_TP_CERTISSUE_OUTPUTStructType
 
 retCSSM_TP_CERTISSUE_OUTPUT :: RetType CSSM_TP_CERTISSUE_OUTPUT
 retCSSM_TP_CERTISSUE_OUTPUT = mkStorableRetType cssM_TP_CERTISSUE_OUTPUTStructType
+
+instance ObjCArgument CSSM_TP_CERTISSUE_OUTPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTISSUE_OUTPUT x)
+
+instance ObjCReturn CSSM_TP_CERTISSUE_OUTPUT where
+  type RawReturn CSSM_TP_CERTISSUE_OUTPUT = CSSM_TP_CERTISSUE_OUTPUT
+  objcRetType = retCSSM_TP_CERTISSUE_OUTPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_CERTNOTARIZE_INPUT = CSSM_TP_CERTNOTARIZE_INPUT
   { cssM_TP_CERTNOTARIZE_INPUTCLHandle :: !CLong
@@ -2197,6 +2779,16 @@ argCSSM_TP_CERTNOTARIZE_INPUT = mkStorableArg cssM_TP_CERTNOTARIZE_INPUTStructTy
 retCSSM_TP_CERTNOTARIZE_INPUT :: RetType CSSM_TP_CERTNOTARIZE_INPUT
 retCSSM_TP_CERTNOTARIZE_INPUT = mkStorableRetType cssM_TP_CERTNOTARIZE_INPUTStructType
 
+instance ObjCArgument CSSM_TP_CERTNOTARIZE_INPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTNOTARIZE_INPUT x)
+
+instance ObjCReturn CSSM_TP_CERTNOTARIZE_INPUT where
+  type RawReturn CSSM_TP_CERTNOTARIZE_INPUT = CSSM_TP_CERTNOTARIZE_INPUT
+  objcRetType = retCSSM_TP_CERTNOTARIZE_INPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TP_CERTNOTARIZE_OUTPUT = CSSM_TP_CERTNOTARIZE_OUTPUT
   { cssM_TP_CERTNOTARIZE_OUTPUTNotarizeStatus :: !CUInt
   , cssM_TP_CERTNOTARIZE_OUTPUTNotarizedCertGroup :: !(Ptr ())
@@ -2223,6 +2815,16 @@ argCSSM_TP_CERTNOTARIZE_OUTPUT = mkStorableArg cssM_TP_CERTNOTARIZE_OUTPUTStruct
 
 retCSSM_TP_CERTNOTARIZE_OUTPUT :: RetType CSSM_TP_CERTNOTARIZE_OUTPUT
 retCSSM_TP_CERTNOTARIZE_OUTPUT = mkStorableRetType cssM_TP_CERTNOTARIZE_OUTPUTStructType
+
+instance ObjCArgument CSSM_TP_CERTNOTARIZE_OUTPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTNOTARIZE_OUTPUT x)
+
+instance ObjCReturn CSSM_TP_CERTNOTARIZE_OUTPUT where
+  type RawReturn CSSM_TP_CERTNOTARIZE_OUTPUT = CSSM_TP_CERTNOTARIZE_OUTPUT
+  objcRetType = retCSSM_TP_CERTNOTARIZE_OUTPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_CERTRECLAIM_INPUT = CSSM_TP_CERTRECLAIM_INPUT
   { cssM_TP_CERTRECLAIM_INPUTCLHandle :: !CLong
@@ -2254,6 +2856,16 @@ argCSSM_TP_CERTRECLAIM_INPUT = mkStorableArg cssM_TP_CERTRECLAIM_INPUTStructType
 retCSSM_TP_CERTRECLAIM_INPUT :: RetType CSSM_TP_CERTRECLAIM_INPUT
 retCSSM_TP_CERTRECLAIM_INPUT = mkStorableRetType cssM_TP_CERTRECLAIM_INPUTStructType
 
+instance ObjCArgument CSSM_TP_CERTRECLAIM_INPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTRECLAIM_INPUT x)
+
+instance ObjCReturn CSSM_TP_CERTRECLAIM_INPUT where
+  type RawReturn CSSM_TP_CERTRECLAIM_INPUT = CSSM_TP_CERTRECLAIM_INPUT
+  objcRetType = retCSSM_TP_CERTRECLAIM_INPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TP_CERTRECLAIM_OUTPUT = CSSM_TP_CERTRECLAIM_OUTPUT
   { cssM_TP_CERTRECLAIM_OUTPUTReclaimStatus :: !CUInt
   , cssM_TP_CERTRECLAIM_OUTPUTReclaimedCertGroup :: !(Ptr ())
@@ -2280,6 +2892,16 @@ argCSSM_TP_CERTRECLAIM_OUTPUT = mkStorableArg cssM_TP_CERTRECLAIM_OUTPUTStructTy
 
 retCSSM_TP_CERTRECLAIM_OUTPUT :: RetType CSSM_TP_CERTRECLAIM_OUTPUT
 retCSSM_TP_CERTRECLAIM_OUTPUT = mkStorableRetType cssM_TP_CERTRECLAIM_OUTPUTStructType
+
+instance ObjCArgument CSSM_TP_CERTRECLAIM_OUTPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTRECLAIM_OUTPUT x)
+
+instance ObjCReturn CSSM_TP_CERTRECLAIM_OUTPUT where
+  type RawReturn CSSM_TP_CERTRECLAIM_OUTPUT = CSSM_TP_CERTRECLAIM_OUTPUT
+  objcRetType = retCSSM_TP_CERTRECLAIM_OUTPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_CERTVERIFY_INPUT = CSSM_TP_CERTVERIFY_INPUT
   { cssM_TP_CERTVERIFY_INPUTCLHandle :: !CLong
@@ -2308,6 +2930,16 @@ argCSSM_TP_CERTVERIFY_INPUT = mkStorableArg cssM_TP_CERTVERIFY_INPUTStructType
 retCSSM_TP_CERTVERIFY_INPUT :: RetType CSSM_TP_CERTVERIFY_INPUT
 retCSSM_TP_CERTVERIFY_INPUT = mkStorableRetType cssM_TP_CERTVERIFY_INPUTStructType
 
+instance ObjCArgument CSSM_TP_CERTVERIFY_INPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTVERIFY_INPUT x)
+
+instance ObjCReturn CSSM_TP_CERTVERIFY_INPUT where
+  type RawReturn CSSM_TP_CERTVERIFY_INPUT = CSSM_TP_CERTVERIFY_INPUT
+  objcRetType = retCSSM_TP_CERTVERIFY_INPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TP_CERTVERIFY_OUTPUT = CSSM_TP_CERTVERIFY_OUTPUT
   { cssM_TP_CERTVERIFY_OUTPUTVerifyStatus :: !CUInt
   , cssM_TP_CERTVERIFY_OUTPUTNumberOfEvidence :: !CUInt
@@ -2335,6 +2967,16 @@ argCSSM_TP_CERTVERIFY_OUTPUT = mkStorableArg cssM_TP_CERTVERIFY_OUTPUTStructType
 retCSSM_TP_CERTVERIFY_OUTPUT :: RetType CSSM_TP_CERTVERIFY_OUTPUT
 retCSSM_TP_CERTVERIFY_OUTPUT = mkStorableRetType cssM_TP_CERTVERIFY_OUTPUTStructType
 
+instance ObjCArgument CSSM_TP_CERTVERIFY_OUTPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTVERIFY_OUTPUT x)
+
+instance ObjCReturn CSSM_TP_CERTVERIFY_OUTPUT where
+  type RawReturn CSSM_TP_CERTVERIFY_OUTPUT = CSSM_TP_CERTVERIFY_OUTPUT
+  objcRetType = retCSSM_TP_CERTVERIFY_OUTPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TP_CONFIRM_RESPONSE = CSSM_TP_CONFIRM_RESPONSE
   { cssM_TP_CONFIRM_RESPONSENumberOfResponses :: !CUInt
   , cssM_TP_CONFIRM_RESPONSEResponses :: !(Ptr ())
@@ -2358,6 +3000,16 @@ argCSSM_TP_CONFIRM_RESPONSE = mkStorableArg cssM_TP_CONFIRM_RESPONSEStructType
 
 retCSSM_TP_CONFIRM_RESPONSE :: RetType CSSM_TP_CONFIRM_RESPONSE
 retCSSM_TP_CONFIRM_RESPONSE = mkStorableRetType cssM_TP_CONFIRM_RESPONSEStructType
+
+instance ObjCArgument CSSM_TP_CONFIRM_RESPONSE where
+  withObjCArg x k = k (argCSSM_TP_CONFIRM_RESPONSE x)
+
+instance ObjCReturn CSSM_TP_CONFIRM_RESPONSE where
+  type RawReturn CSSM_TP_CONFIRM_RESPONSE = CSSM_TP_CONFIRM_RESPONSE
+  objcRetType = retCSSM_TP_CONFIRM_RESPONSE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_CRLISSUE_INPUT = CSSM_TP_CRLISSUE_INPUT
   { cssM_TP_CRLISSUE_INPUTCLHandle :: !CLong
@@ -2392,6 +3044,16 @@ argCSSM_TP_CRLISSUE_INPUT = mkStorableArg cssM_TP_CRLISSUE_INPUTStructType
 retCSSM_TP_CRLISSUE_INPUT :: RetType CSSM_TP_CRLISSUE_INPUT
 retCSSM_TP_CRLISSUE_INPUT = mkStorableRetType cssM_TP_CRLISSUE_INPUTStructType
 
+instance ObjCArgument CSSM_TP_CRLISSUE_INPUT where
+  withObjCArg x k = k (argCSSM_TP_CRLISSUE_INPUT x)
+
+instance ObjCReturn CSSM_TP_CRLISSUE_INPUT where
+  type RawReturn CSSM_TP_CRLISSUE_INPUT = CSSM_TP_CRLISSUE_INPUT
+  objcRetType = retCSSM_TP_CRLISSUE_INPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TP_CRLISSUE_OUTPUT = CSSM_TP_CRLISSUE_OUTPUT
   { cssM_TP_CRLISSUE_OUTPUTIssueStatus :: !CUInt
   , cssM_TP_CRLISSUE_OUTPUTCrl :: !(Ptr ())
@@ -2418,6 +3080,16 @@ argCSSM_TP_CRLISSUE_OUTPUT = mkStorableArg cssM_TP_CRLISSUE_OUTPUTStructType
 
 retCSSM_TP_CRLISSUE_OUTPUT :: RetType CSSM_TP_CRLISSUE_OUTPUT
 retCSSM_TP_CRLISSUE_OUTPUT = mkStorableRetType cssM_TP_CRLISSUE_OUTPUTStructType
+
+instance ObjCArgument CSSM_TP_CRLISSUE_OUTPUT where
+  withObjCArg x k = k (argCSSM_TP_CRLISSUE_OUTPUT x)
+
+instance ObjCReturn CSSM_TP_CRLISSUE_OUTPUT where
+  type RawReturn CSSM_TP_CRLISSUE_OUTPUT = CSSM_TP_CRLISSUE_OUTPUT
+  objcRetType = retCSSM_TP_CRLISSUE_OUTPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_POLICYINFO = CSSM_TP_POLICYINFO
   { cssM_TP_POLICYINFONumberOfPolicyIds :: !CUInt
@@ -2446,6 +3118,16 @@ argCSSM_TP_POLICYINFO = mkStorableArg cssM_TP_POLICYINFOStructType
 retCSSM_TP_POLICYINFO :: RetType CSSM_TP_POLICYINFO
 retCSSM_TP_POLICYINFO = mkStorableRetType cssM_TP_POLICYINFOStructType
 
+instance ObjCArgument CSSM_TP_POLICYINFO where
+  withObjCArg x k = k (argCSSM_TP_POLICYINFO x)
+
+instance ObjCReturn CSSM_TP_POLICYINFO where
+  type RawReturn CSSM_TP_POLICYINFO = CSSM_TP_POLICYINFO
+  objcRetType = retCSSM_TP_POLICYINFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TP_REQUEST_SET = CSSM_TP_REQUEST_SET
   { cssM_TP_REQUEST_SETNumberOfRequests :: !CUInt
   , cssM_TP_REQUEST_SETRequests :: !(Ptr ())
@@ -2469,6 +3151,16 @@ argCSSM_TP_REQUEST_SET = mkStorableArg cssM_TP_REQUEST_SETStructType
 
 retCSSM_TP_REQUEST_SET :: RetType CSSM_TP_REQUEST_SET
 retCSSM_TP_REQUEST_SET = mkStorableRetType cssM_TP_REQUEST_SETStructType
+
+instance ObjCArgument CSSM_TP_REQUEST_SET where
+  withObjCArg x k = k (argCSSM_TP_REQUEST_SET x)
+
+instance ObjCReturn CSSM_TP_REQUEST_SET where
+  type RawReturn CSSM_TP_REQUEST_SET = CSSM_TP_REQUEST_SET
+  objcRetType = retCSSM_TP_REQUEST_SET
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_RESULT_SET = CSSM_TP_RESULT_SET
   { cssM_TP_RESULT_SETNumberOfResults :: !CUInt
@@ -2494,6 +3186,16 @@ argCSSM_TP_RESULT_SET = mkStorableArg cssM_TP_RESULT_SETStructType
 retCSSM_TP_RESULT_SET :: RetType CSSM_TP_RESULT_SET
 retCSSM_TP_RESULT_SET = mkStorableRetType cssM_TP_RESULT_SETStructType
 
+instance ObjCArgument CSSM_TP_RESULT_SET where
+  withObjCArg x k = k (argCSSM_TP_RESULT_SET x)
+
+instance ObjCReturn CSSM_TP_RESULT_SET where
+  type RawReturn CSSM_TP_RESULT_SET = CSSM_TP_RESULT_SET
+  objcRetType = retCSSM_TP_RESULT_SET
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TP_VERIFY_CONTEXT_RESULT = CSSM_TP_VERIFY_CONTEXT_RESULT
   { cssM_TP_VERIFY_CONTEXT_RESULTNumberOfEvidences :: !CUInt
   , cssM_TP_VERIFY_CONTEXT_RESULTEvidence :: !(Ptr ())
@@ -2518,6 +3220,16 @@ argCSSM_TP_VERIFY_CONTEXT_RESULT = mkStorableArg cssM_TP_VERIFY_CONTEXT_RESULTSt
 retCSSM_TP_VERIFY_CONTEXT_RESULT :: RetType CSSM_TP_VERIFY_CONTEXT_RESULT
 retCSSM_TP_VERIFY_CONTEXT_RESULT = mkStorableRetType cssM_TP_VERIFY_CONTEXT_RESULTStructType
 
+instance ObjCArgument CSSM_TP_VERIFY_CONTEXT_RESULT where
+  withObjCArg x k = k (argCSSM_TP_VERIFY_CONTEXT_RESULT x)
+
+instance ObjCReturn CSSM_TP_VERIFY_CONTEXT_RESULT where
+  type RawReturn CSSM_TP_VERIFY_CONTEXT_RESULT = CSSM_TP_VERIFY_CONTEXT_RESULT
+  objcRetType = retCSSM_TP_VERIFY_CONTEXT_RESULT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TUPLEGROUP = CSSM_TUPLEGROUP
   { cssM_TUPLEGROUPNumberOfTuples :: !CUInt
   , cssM_TUPLEGROUPTuples :: !(Ptr ())
@@ -2541,6 +3253,16 @@ argCSSM_TUPLEGROUP = mkStorableArg cssM_TUPLEGROUPStructType
 
 retCSSM_TUPLEGROUP :: RetType CSSM_TUPLEGROUP
 retCSSM_TUPLEGROUP = mkStorableRetType cssM_TUPLEGROUPStructType
+
+instance ObjCArgument CSSM_TUPLEGROUP where
+  withObjCArg x k = k (argCSSM_TUPLEGROUP x)
+
+instance ObjCReturn CSSM_TUPLEGROUP where
+  type RawReturn CSSM_TUPLEGROUP = CSSM_TUPLEGROUP
+  objcRetType = retCSSM_TUPLEGROUP
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_UPCALLS = CSSM_UPCALLS
   { cssM_UPCALLSMalloc_func :: !(Ptr ())
@@ -2578,6 +3300,16 @@ argCSSM_UPCALLS = mkStorableArg cssM_UPCALLSStructType
 retCSSM_UPCALLS :: RetType CSSM_UPCALLS
 retCSSM_UPCALLS = mkStorableRetType cssM_UPCALLSStructType
 
+instance ObjCArgument CSSM_UPCALLS where
+  withObjCArg x k = k (argCSSM_UPCALLS x)
+
+instance ObjCReturn CSSM_UPCALLS where
+  type RawReturn CSSM_UPCALLS = CSSM_UPCALLS
+  objcRetType = retCSSM_UPCALLS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_VERSION = CSSM_VERSION
   { cssM_VERSIONMajor :: !CUInt
   , cssM_VERSIONMinor :: !CUInt
@@ -2601,6 +3333,16 @@ argCSSM_VERSION = mkStorableArg cssM_VERSIONStructType
 
 retCSSM_VERSION :: RetType CSSM_VERSION
 retCSSM_VERSION = mkStorableRetType cssM_VERSIONStructType
+
+instance ObjCArgument CSSM_VERSION where
+  withObjCArg x k = k (argCSSM_VERSION x)
+
+instance ObjCReturn CSSM_VERSION where
+  type RawReturn CSSM_VERSION = CSSM_VERSION
+  objcRetType = retCSSM_VERSION
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_X509EXT_BASICCONSTRAINTS = CSSM_X509EXT_BASICCONSTRAINTS
   { cssM_X509EXT_BASICCONSTRAINTSCA :: !CInt
@@ -2629,6 +3371,16 @@ argCSSM_X509EXT_BASICCONSTRAINTS = mkStorableArg cssM_X509EXT_BASICCONSTRAINTSSt
 retCSSM_X509EXT_BASICCONSTRAINTS :: RetType CSSM_X509EXT_BASICCONSTRAINTS
 retCSSM_X509EXT_BASICCONSTRAINTS = mkStorableRetType cssM_X509EXT_BASICCONSTRAINTSStructType
 
+instance ObjCArgument CSSM_X509EXT_BASICCONSTRAINTS where
+  withObjCArg x k = k (argCSSM_X509EXT_BASICCONSTRAINTS x)
+
+instance ObjCReturn CSSM_X509EXT_BASICCONSTRAINTS where
+  type RawReturn CSSM_X509EXT_BASICCONSTRAINTS = CSSM_X509EXT_BASICCONSTRAINTS
+  objcRetType = retCSSM_X509EXT_BASICCONSTRAINTS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_X509_EXTENSIONS = CSSM_X509_EXTENSIONS
   { cssM_X509_EXTENSIONSNumberOfExtensions :: !CUInt
   , cssM_X509_EXTENSIONSExtensions :: !(Ptr ())
@@ -2652,6 +3404,16 @@ argCSSM_X509_EXTENSIONS = mkStorableArg cssM_X509_EXTENSIONSStructType
 
 retCSSM_X509_EXTENSIONS :: RetType CSSM_X509_EXTENSIONS
 retCSSM_X509_EXTENSIONS = mkStorableRetType cssM_X509_EXTENSIONSStructType
+
+instance ObjCArgument CSSM_X509_EXTENSIONS where
+  withObjCArg x k = k (argCSSM_X509_EXTENSIONS x)
+
+instance ObjCReturn CSSM_X509_EXTENSIONS where
+  type RawReturn CSSM_X509_EXTENSIONS = CSSM_X509_EXTENSIONS
+  objcRetType = retCSSM_X509_EXTENSIONS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_X509_NAME = CSSM_X509_NAME
   { cssM_X509_NAMENumberOfRDNs :: !CUInt
@@ -2677,6 +3439,16 @@ argCSSM_X509_NAME = mkStorableArg cssM_X509_NAMEStructType
 retCSSM_X509_NAME :: RetType CSSM_X509_NAME
 retCSSM_X509_NAME = mkStorableRetType cssM_X509_NAMEStructType
 
+instance ObjCArgument CSSM_X509_NAME where
+  withObjCArg x k = k (argCSSM_X509_NAME x)
+
+instance ObjCReturn CSSM_X509_NAME where
+  type RawReturn CSSM_X509_NAME = CSSM_X509_NAME
+  objcRetType = retCSSM_X509_NAME
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_X509_RDN = CSSM_X509_RDN
   { cssM_X509_RDNNumberOfPairs :: !CUInt
   , cssM_X509_RDNAttributeTypeAndValue :: !(Ptr ())
@@ -2700,6 +3472,16 @@ argCSSM_X509_RDN = mkStorableArg cssM_X509_RDNStructType
 
 retCSSM_X509_RDN :: RetType CSSM_X509_RDN
 retCSSM_X509_RDN = mkStorableRetType cssM_X509_RDNStructType
+
+instance ObjCArgument CSSM_X509_RDN where
+  withObjCArg x k = k (argCSSM_X509_RDN x)
+
+instance ObjCReturn CSSM_X509_RDN where
+  type RawReturn CSSM_X509_RDN = CSSM_X509_RDN
+  objcRetType = retCSSM_X509_RDN
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_X509_REVOKED_CERT_LIST = CSSM_X509_REVOKED_CERT_LIST
   { cssM_X509_REVOKED_CERT_LISTNumberOfRevokedCertEntries :: !CUInt
@@ -2725,6 +3507,16 @@ argCSSM_X509_REVOKED_CERT_LIST = mkStorableArg cssM_X509_REVOKED_CERT_LISTStruct
 retCSSM_X509_REVOKED_CERT_LIST :: RetType CSSM_X509_REVOKED_CERT_LIST
 retCSSM_X509_REVOKED_CERT_LIST = mkStorableRetType cssM_X509_REVOKED_CERT_LISTStructType
 
+instance ObjCArgument CSSM_X509_REVOKED_CERT_LIST where
+  withObjCArg x k = k (argCSSM_X509_REVOKED_CERT_LIST x)
+
+instance ObjCReturn CSSM_X509_REVOKED_CERT_LIST where
+  type RawReturn CSSM_X509_REVOKED_CERT_LIST = CSSM_X509_REVOKED_CERT_LIST
+  objcRetType = retCSSM_X509_REVOKED_CERT_LIST
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data MDS_DB_HANDLE = MDS_DB_HANDLE
   { mdS_DB_HANDLEDLHandle :: !CLong
   , mdS_DB_HANDLEDBHandle :: !CLong
@@ -2748,6 +3540,16 @@ argMDS_DB_HANDLE = mkStorableArg mdS_DB_HANDLEStructType
 
 retMDS_DB_HANDLE :: RetType MDS_DB_HANDLE
 retMDS_DB_HANDLE = mkStorableRetType mdS_DB_HANDLEStructType
+
+instance ObjCArgument MDS_DB_HANDLE where
+  withObjCArg x k = k (argMDS_DB_HANDLE x)
+
+instance ObjCReturn MDS_DB_HANDLE where
+  type RawReturn MDS_DB_HANDLE = MDS_DB_HANDLE
+  objcRetType = retMDS_DB_HANDLE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data MDS_FUNCS = MDS_FUNCS
   { mdS_FUNCSDbOpen :: !(Ptr ())
@@ -2812,6 +3614,16 @@ argMDS_FUNCS = mkStorableArg mdS_FUNCSStructType
 retMDS_FUNCS :: RetType MDS_FUNCS
 retMDS_FUNCS = mkStorableRetType mdS_FUNCSStructType
 
+instance ObjCArgument MDS_FUNCS where
+  withObjCArg x k = k (argMDS_FUNCS x)
+
+instance ObjCReturn MDS_FUNCS where
+  type RawReturn MDS_FUNCS = MDS_FUNCS
+  objcRetType = retMDS_FUNCS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SecAsn1Item = SecAsn1Item
   { secAsn1ItemLength :: !CULong
   , secAsn1ItemData :: !(Ptr ())
@@ -2836,6 +3648,16 @@ argSecAsn1Item = mkStorableArg secAsn1ItemStructType
 retSecAsn1Item :: RetType SecAsn1Item
 retSecAsn1Item = mkStorableRetType secAsn1ItemStructType
 
+instance ObjCArgument SecAsn1Item where
+  withObjCArg x k = k (argSecAsn1Item x)
+
+instance ObjCReturn SecAsn1Item where
+  type RawReturn SecAsn1Item = SecAsn1Item
+  objcRetType = retSecAsn1Item
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data SecAsn1Oid = SecAsn1Oid
   { secAsn1OidLength :: !CULong
   , secAsn1OidData :: !(Ptr ())
@@ -2859,6 +3681,16 @@ argSecAsn1Oid = mkStorableArg secAsn1OidStructType
 
 retSecAsn1Oid :: RetType SecAsn1Oid
 retSecAsn1Oid = mkStorableRetType secAsn1OidStructType
+
+instance ObjCArgument SecAsn1Oid where
+  withObjCArg x k = k (argSecAsn1Oid x)
+
+instance ObjCReturn SecAsn1Oid where
+  type RawReturn SecAsn1Oid = SecAsn1Oid
+  objcRetType = retSecAsn1Oid
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data SecAsn1Template = SecAsn1Template
   { secAsn1TemplateKind :: !CUInt
@@ -2890,6 +3722,16 @@ argSecAsn1Template = mkStorableArg secAsn1TemplateStructType
 retSecAsn1Template :: RetType SecAsn1Template
 retSecAsn1Template = mkStorableRetType secAsn1TemplateStructType
 
+instance ObjCArgument SecAsn1Template where
+  withObjCArg x k = k (argSecAsn1Template x)
+
+instance ObjCReturn SecAsn1Template where
+  type RawReturn SecAsn1Template = SecAsn1Template
+  objcRetType = retSecAsn1Template
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | SecKeychainAttribute
 --
 -- Contains keychain attributes.     tag A 4-byte attribute tag.     length The length of the buffer pointed to by data.     data A pointer to the attribute data.
@@ -2919,6 +3761,16 @@ argSecKeychainAttribute = mkStorableArg secKeychainAttributeStructType
 
 retSecKeychainAttribute :: RetType SecKeychainAttribute
 retSecKeychainAttribute = mkStorableRetType secKeychainAttributeStructType
+
+instance ObjCArgument SecKeychainAttribute where
+  withObjCArg x k = k (argSecKeychainAttribute x)
+
+instance ObjCReturn SecKeychainAttribute where
+  type RawReturn SecKeychainAttribute = SecKeychainAttribute
+  objcRetType = retSecKeychainAttribute
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | SecKeychainCallbackInfo
 --
@@ -2955,6 +3807,16 @@ argSecKeychainCallbackInfo = mkStorableArg secKeychainCallbackInfoStructType
 retSecKeychainCallbackInfo :: RetType SecKeychainCallbackInfo
 retSecKeychainCallbackInfo = mkStorableRetType secKeychainCallbackInfoStructType
 
+instance ObjCArgument SecKeychainCallbackInfo where
+  withObjCArg x k = k (argSecKeychainCallbackInfo x)
+
+instance ObjCReturn SecKeychainCallbackInfo where
+  type RawReturn SecKeychainCallbackInfo = SecKeychainCallbackInfo
+  objcRetType = retSecKeychainCallbackInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | SecKeychainSettings
 --
 -- Contains keychain settings.	 version An unsigned 32-bit integer representing the keychain version.	 lockOnSleep A boolean value indicating whether the keychain locks when the system sleeps.	 useLockInterval A boolean value indicating whether the keychain automatically locks after a certain period of time.	 lockInterval An unsigned 32-bit integer representing the number of seconds before the keychain locks.
@@ -2988,6 +3850,16 @@ argSecKeychainSettings = mkStorableArg secKeychainSettingsStructType
 retSecKeychainSettings :: RetType SecKeychainSettings
 retSecKeychainSettings = mkStorableRetType secKeychainSettingsStructType
 
+instance ObjCArgument SecKeychainSettings where
+  withObjCArg x k = k (argSecKeychainSettings x)
+
+instance ObjCReturn SecKeychainSettings where
+  type RawReturn SecKeychainSettings = SecKeychainSettings
+  objcRetType = retSecKeychainSettings
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CE_GeneralName = CE_GeneralName
   { cE_GeneralNameNameType :: !CInt
   , cE_GeneralNameBerEncoded :: !CInt
@@ -3015,6 +3887,16 @@ argCE_GeneralName = mkStorableArg cE_GeneralNameStructType
 retCE_GeneralName :: RetType CE_GeneralName
 retCE_GeneralName = mkStorableRetType cE_GeneralNameStructType
 
+instance ObjCArgument CE_GeneralName where
+  withObjCArg x k = k (argCE_GeneralName x)
+
+instance ObjCReturn CE_GeneralName where
+  type RawReturn CE_GeneralName = CE_GeneralName
+  objcRetType = retCE_GeneralName
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CE_OtherName = CE_OtherName
   { cE_OtherNameTypeId :: !SecAsn1Oid
   , cE_OtherNameValue :: !SecAsn1Item
@@ -3038,6 +3920,16 @@ argCE_OtherName = mkStorableArg cE_OtherNameStructType
 
 retCE_OtherName :: RetType CE_OtherName
 retCE_OtherName = mkStorableRetType cE_OtherNameStructType
+
+instance ObjCArgument CE_OtherName where
+  withObjCArg x k = k (argCE_OtherName x)
+
+instance ObjCReturn CE_OtherName where
+  type RawReturn CE_OtherName = CE_OtherName
+  objcRetType = retCE_OtherName
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CE_PolicyMapping = CE_PolicyMapping
   { cE_PolicyMappingIssuerDomainPolicy :: !SecAsn1Oid
@@ -3063,6 +3955,16 @@ argCE_PolicyMapping = mkStorableArg cE_PolicyMappingStructType
 retCE_PolicyMapping :: RetType CE_PolicyMapping
 retCE_PolicyMapping = mkStorableRetType cE_PolicyMappingStructType
 
+instance ObjCArgument CE_PolicyMapping where
+  withObjCArg x k = k (argCE_PolicyMapping x)
+
+instance ObjCReturn CE_PolicyMapping where
+  type RawReturn CE_PolicyMapping = CE_PolicyMapping
+  objcRetType = retCE_PolicyMapping
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CE_PolicyQualifierInfo = CE_PolicyQualifierInfo
   { cE_PolicyQualifierInfoPolicyQualifierId :: !SecAsn1Oid
   , cE_PolicyQualifierInfoQualifier :: !SecAsn1Item
@@ -3086,6 +3988,16 @@ argCE_PolicyQualifierInfo = mkStorableArg cE_PolicyQualifierInfoStructType
 
 retCE_PolicyQualifierInfo :: RetType CE_PolicyQualifierInfo
 retCE_PolicyQualifierInfo = mkStorableRetType cE_PolicyQualifierInfoStructType
+
+instance ObjCArgument CE_PolicyQualifierInfo where
+  withObjCArg x k = k (argCE_PolicyQualifierInfo x)
+
+instance ObjCReturn CE_PolicyQualifierInfo where
+  type RawReturn CE_PolicyQualifierInfo = CE_PolicyQualifierInfo
+  objcRetType = retCE_PolicyQualifierInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_ACL_OWNER_PROTOTYPE = CSSM_ACL_OWNER_PROTOTYPE
   { cssM_ACL_OWNER_PROTOTYPETypedSubject :: !CSSM_LIST
@@ -3111,6 +4023,16 @@ argCSSM_ACL_OWNER_PROTOTYPE = mkStorableArg cssM_ACL_OWNER_PROTOTYPEStructType
 retCSSM_ACL_OWNER_PROTOTYPE :: RetType CSSM_ACL_OWNER_PROTOTYPE
 retCSSM_ACL_OWNER_PROTOTYPE = mkStorableRetType cssM_ACL_OWNER_PROTOTYPEStructType
 
+instance ObjCArgument CSSM_ACL_OWNER_PROTOTYPE where
+  withObjCArg x k = k (argCSSM_ACL_OWNER_PROTOTYPE x)
+
+instance ObjCReturn CSSM_ACL_OWNER_PROTOTYPE where
+  type RawReturn CSSM_ACL_OWNER_PROTOTYPE = CSSM_ACL_OWNER_PROTOTYPE
+  objcRetType = retCSSM_ACL_OWNER_PROTOTYPE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_ACL_VALIDITY_PERIOD = CSSM_ACL_VALIDITY_PERIOD
   { cssM_ACL_VALIDITY_PERIODStartDate :: !SecAsn1Item
   , cssM_ACL_VALIDITY_PERIODEndDate :: !SecAsn1Item
@@ -3135,6 +4057,16 @@ argCSSM_ACL_VALIDITY_PERIOD = mkStorableArg cssM_ACL_VALIDITY_PERIODStructType
 retCSSM_ACL_VALIDITY_PERIOD :: RetType CSSM_ACL_VALIDITY_PERIOD
 retCSSM_ACL_VALIDITY_PERIOD = mkStorableRetType cssM_ACL_VALIDITY_PERIODStructType
 
+instance ObjCArgument CSSM_ACL_VALIDITY_PERIOD where
+  withObjCArg x k = k (argCSSM_ACL_VALIDITY_PERIOD x)
+
+instance ObjCReturn CSSM_ACL_VALIDITY_PERIOD where
+  type RawReturn CSSM_ACL_VALIDITY_PERIOD = CSSM_ACL_VALIDITY_PERIOD
+  objcRetType = retCSSM_ACL_VALIDITY_PERIOD
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_CERT_BUNDLE = CSSM_CERT_BUNDLE
   { cssM_CERT_BUNDLEBundleHeader :: !CSSM_CERT_BUNDLE_HEADER
   , cssM_CERT_BUNDLEBundle :: !SecAsn1Item
@@ -3158,6 +4090,16 @@ argCSSM_CERT_BUNDLE = mkStorableArg cssM_CERT_BUNDLEStructType
 
 retCSSM_CERT_BUNDLE :: RetType CSSM_CERT_BUNDLE
 retCSSM_CERT_BUNDLE = mkStorableRetType cssM_CERT_BUNDLEStructType
+
+instance ObjCArgument CSSM_CERT_BUNDLE where
+  withObjCArg x k = k (argCSSM_CERT_BUNDLE x)
+
+instance ObjCReturn CSSM_CERT_BUNDLE where
+  type RawReturn CSSM_CERT_BUNDLE = CSSM_CERT_BUNDLE
+  objcRetType = retCSSM_CERT_BUNDLE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_CRYPTO_DATA = CSSM_CRYPTO_DATA
   { cssM_CRYPTO_DATAParam :: !SecAsn1Item
@@ -3185,6 +4127,16 @@ argCSSM_CRYPTO_DATA = mkStorableArg cssM_CRYPTO_DATAStructType
 
 retCSSM_CRYPTO_DATA :: RetType CSSM_CRYPTO_DATA
 retCSSM_CRYPTO_DATA = mkStorableRetType cssM_CRYPTO_DATAStructType
+
+instance ObjCArgument CSSM_CRYPTO_DATA where
+  withObjCArg x k = k (argCSSM_CRYPTO_DATA x)
+
+instance ObjCReturn CSSM_CRYPTO_DATA where
+  type RawReturn CSSM_CRYPTO_DATA = CSSM_CRYPTO_DATA
+  objcRetType = retCSSM_CRYPTO_DATA
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_DB_SCHEMA_ATTRIBUTE_INFO = CSSM_DB_SCHEMA_ATTRIBUTE_INFO
   { cssM_DB_SCHEMA_ATTRIBUTE_INFOAttributeId :: !CUInt
@@ -3216,6 +4168,16 @@ argCSSM_DB_SCHEMA_ATTRIBUTE_INFO = mkStorableArg cssM_DB_SCHEMA_ATTRIBUTE_INFOSt
 retCSSM_DB_SCHEMA_ATTRIBUTE_INFO :: RetType CSSM_DB_SCHEMA_ATTRIBUTE_INFO
 retCSSM_DB_SCHEMA_ATTRIBUTE_INFO = mkStorableRetType cssM_DB_SCHEMA_ATTRIBUTE_INFOStructType
 
+instance ObjCArgument CSSM_DB_SCHEMA_ATTRIBUTE_INFO where
+  withObjCArg x k = k (argCSSM_DB_SCHEMA_ATTRIBUTE_INFO x)
+
+instance ObjCReturn CSSM_DB_SCHEMA_ATTRIBUTE_INFO where
+  type RawReturn CSSM_DB_SCHEMA_ATTRIBUTE_INFO = CSSM_DB_SCHEMA_ATTRIBUTE_INFO
+  objcRetType = retCSSM_DB_SCHEMA_ATTRIBUTE_INFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_DB_UNIQUE_RECORD = CSSM_DB_UNIQUE_RECORD
   { cssM_DB_UNIQUE_RECORDRecordLocator :: !(Ptr ())
   , cssM_DB_UNIQUE_RECORDRecordIdentifier :: !SecAsn1Item
@@ -3239,6 +4201,16 @@ argCSSM_DB_UNIQUE_RECORD = mkStorableArg cssM_DB_UNIQUE_RECORDStructType
 
 retCSSM_DB_UNIQUE_RECORD :: RetType CSSM_DB_UNIQUE_RECORD
 retCSSM_DB_UNIQUE_RECORD = mkStorableRetType cssM_DB_UNIQUE_RECORDStructType
+
+instance ObjCArgument CSSM_DB_UNIQUE_RECORD where
+  withObjCArg x k = k (argCSSM_DB_UNIQUE_RECORD x)
+
+instance ObjCReturn CSSM_DB_UNIQUE_RECORD where
+  type RawReturn CSSM_DB_UNIQUE_RECORD = CSSM_DB_UNIQUE_RECORD
+  objcRetType = retCSSM_DB_UNIQUE_RECORD
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_ENCODED_CERT = CSSM_ENCODED_CERT
   { cssM_ENCODED_CERTCertType :: !CUInt
@@ -3267,6 +4239,16 @@ argCSSM_ENCODED_CERT = mkStorableArg cssM_ENCODED_CERTStructType
 retCSSM_ENCODED_CERT :: RetType CSSM_ENCODED_CERT
 retCSSM_ENCODED_CERT = mkStorableRetType cssM_ENCODED_CERTStructType
 
+instance ObjCArgument CSSM_ENCODED_CERT where
+  withObjCArg x k = k (argCSSM_ENCODED_CERT x)
+
+instance ObjCReturn CSSM_ENCODED_CERT where
+  type RawReturn CSSM_ENCODED_CERT = CSSM_ENCODED_CERT
+  objcRetType = retCSSM_ENCODED_CERT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_ENCODED_CRL = CSSM_ENCODED_CRL
   { cssM_ENCODED_CRLCrlType :: !CUInt
   , cssM_ENCODED_CRLCrlEncoding :: !CUInt
@@ -3294,6 +4276,16 @@ argCSSM_ENCODED_CRL = mkStorableArg cssM_ENCODED_CRLStructType
 retCSSM_ENCODED_CRL :: RetType CSSM_ENCODED_CRL
 retCSSM_ENCODED_CRL = mkStorableRetType cssM_ENCODED_CRLStructType
 
+instance ObjCArgument CSSM_ENCODED_CRL where
+  withObjCArg x k = k (argCSSM_ENCODED_CRL x)
+
+instance ObjCReturn CSSM_ENCODED_CRL where
+  type RawReturn CSSM_ENCODED_CRL = CSSM_ENCODED_CRL
+  objcRetType = retCSSM_ENCODED_CRL
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_FIELD = CSSM_FIELD
   { cssM_FIELDFieldOid :: !SecAsn1Oid
   , cssM_FIELDFieldValue :: !SecAsn1Item
@@ -3317,6 +4309,16 @@ argCSSM_FIELD = mkStorableArg cssM_FIELDStructType
 
 retCSSM_FIELD :: RetType CSSM_FIELD
 retCSSM_FIELD = mkStorableRetType cssM_FIELDStructType
+
+instance ObjCArgument CSSM_FIELD where
+  withObjCArg x k = k (argCSSM_FIELD x)
+
+instance ObjCReturn CSSM_FIELD where
+  type RawReturn CSSM_FIELD = CSSM_FIELD
+  objcRetType = retCSSM_FIELD
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_KEA_DERIVE_PARAMS = CSSM_KEA_DERIVE_PARAMS
   { cssM_KEA_DERIVE_PARAMSRb :: !SecAsn1Item
@@ -3342,6 +4344,16 @@ argCSSM_KEA_DERIVE_PARAMS = mkStorableArg cssM_KEA_DERIVE_PARAMSStructType
 retCSSM_KEA_DERIVE_PARAMS :: RetType CSSM_KEA_DERIVE_PARAMS
 retCSSM_KEA_DERIVE_PARAMS = mkStorableRetType cssM_KEA_DERIVE_PARAMSStructType
 
+instance ObjCArgument CSSM_KEA_DERIVE_PARAMS where
+  withObjCArg x k = k (argCSSM_KEA_DERIVE_PARAMS x)
+
+instance ObjCReturn CSSM_KEA_DERIVE_PARAMS where
+  type RawReturn CSSM_KEA_DERIVE_PARAMS = CSSM_KEA_DERIVE_PARAMS
+  objcRetType = retCSSM_KEA_DERIVE_PARAMS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_KEY = CSSM_KEY
   { cssM_KEYKeyHeader :: !(Ptr ())
   , cssM_KEYKeyData :: !SecAsn1Item
@@ -3365,6 +4377,16 @@ argCSSM_KEY = mkStorableArg cssM_KEYStructType
 
 retCSSM_KEY :: RetType CSSM_KEY
 retCSSM_KEY = mkStorableRetType cssM_KEYStructType
+
+instance ObjCArgument CSSM_KEY where
+  withObjCArg x k = k (argCSSM_KEY x)
+
+instance ObjCReturn CSSM_KEY where
+  type RawReturn CSSM_KEY = CSSM_KEY
+  objcRetType = retCSSM_KEY
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_KR_PROFILE = CSSM_KR_PROFILE
   { cssM_KR_PROFILEUserName :: !CSSM_KR_NAME
@@ -3420,6 +4442,16 @@ argCSSM_KR_PROFILE = mkStorableArg cssM_KR_PROFILEStructType
 retCSSM_KR_PROFILE :: RetType CSSM_KR_PROFILE
 retCSSM_KR_PROFILE = mkStorableRetType cssM_KR_PROFILEStructType
 
+instance ObjCArgument CSSM_KR_PROFILE where
+  withObjCArg x k = k (argCSSM_KR_PROFILE x)
+
+instance ObjCReturn CSSM_KR_PROFILE where
+  type RawReturn CSSM_KR_PROFILE = CSSM_KR_PROFILE
+  objcRetType = retCSSM_KR_PROFILE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_MANAGER_EVENT_NOTIFICATION = CSSM_MANAGER_EVENT_NOTIFICATION
   { cssM_MANAGER_EVENT_NOTIFICATIONDestinationModuleManagerType :: !CUInt
   , cssM_MANAGER_EVENT_NOTIFICATIONSourceModuleManagerType :: !CUInt
@@ -3453,6 +4485,16 @@ argCSSM_MANAGER_EVENT_NOTIFICATION = mkStorableArg cssM_MANAGER_EVENT_NOTIFICATI
 retCSSM_MANAGER_EVENT_NOTIFICATION :: RetType CSSM_MANAGER_EVENT_NOTIFICATION
 retCSSM_MANAGER_EVENT_NOTIFICATION = mkStorableRetType cssM_MANAGER_EVENT_NOTIFICATIONStructType
 
+instance ObjCArgument CSSM_MANAGER_EVENT_NOTIFICATION where
+  withObjCArg x k = k (argCSSM_MANAGER_EVENT_NOTIFICATION x)
+
+instance ObjCReturn CSSM_MANAGER_EVENT_NOTIFICATION where
+  type RawReturn CSSM_MANAGER_EVENT_NOTIFICATION = CSSM_MANAGER_EVENT_NOTIFICATION
+  objcRetType = retCSSM_MANAGER_EVENT_NOTIFICATION
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_NET_ADDRESS = CSSM_NET_ADDRESS
   { cssM_NET_ADDRESSAddressType :: !CUInt
   , cssM_NET_ADDRESSAddress :: !SecAsn1Item
@@ -3476,6 +4518,16 @@ argCSSM_NET_ADDRESS = mkStorableArg cssM_NET_ADDRESSStructType
 
 retCSSM_NET_ADDRESS :: RetType CSSM_NET_ADDRESS
 retCSSM_NET_ADDRESS = mkStorableRetType cssM_NET_ADDRESSStructType
+
+instance ObjCArgument CSSM_NET_ADDRESS where
+  withObjCArg x k = k (argCSSM_NET_ADDRESS x)
+
+instance ObjCReturn CSSM_NET_ADDRESS where
+  type RawReturn CSSM_NET_ADDRESS = CSSM_NET_ADDRESS
+  objcRetType = retCSSM_NET_ADDRESS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_PKCS1_OAEP_PARAMS = CSSM_PKCS1_OAEP_PARAMS
   { cssM_PKCS1_OAEP_PARAMSHashAlgorithm :: !CUInt
@@ -3513,6 +4565,16 @@ argCSSM_PKCS1_OAEP_PARAMS = mkStorableArg cssM_PKCS1_OAEP_PARAMSStructType
 retCSSM_PKCS1_OAEP_PARAMS :: RetType CSSM_PKCS1_OAEP_PARAMS
 retCSSM_PKCS1_OAEP_PARAMS = mkStorableRetType cssM_PKCS1_OAEP_PARAMSStructType
 
+instance ObjCArgument CSSM_PKCS1_OAEP_PARAMS where
+  withObjCArg x k = k (argCSSM_PKCS1_OAEP_PARAMS x)
+
+instance ObjCReturn CSSM_PKCS1_OAEP_PARAMS where
+  type RawReturn CSSM_PKCS1_OAEP_PARAMS = CSSM_PKCS1_OAEP_PARAMS
+  objcRetType = retCSSM_PKCS1_OAEP_PARAMS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_PKCS5_PBKDF1_PARAMS = CSSM_PKCS5_PBKDF1_PARAMS
   { cssM_PKCS5_PBKDF1_PARAMSPassphrase :: !SecAsn1Item
   , cssM_PKCS5_PBKDF1_PARAMSInitVector :: !SecAsn1Item
@@ -3537,6 +4599,16 @@ argCSSM_PKCS5_PBKDF1_PARAMS = mkStorableArg cssM_PKCS5_PBKDF1_PARAMSStructType
 retCSSM_PKCS5_PBKDF1_PARAMS :: RetType CSSM_PKCS5_PBKDF1_PARAMS
 retCSSM_PKCS5_PBKDF1_PARAMS = mkStorableRetType cssM_PKCS5_PBKDF1_PARAMSStructType
 
+instance ObjCArgument CSSM_PKCS5_PBKDF1_PARAMS where
+  withObjCArg x k = k (argCSSM_PKCS5_PBKDF1_PARAMS x)
+
+instance ObjCReturn CSSM_PKCS5_PBKDF1_PARAMS where
+  type RawReturn CSSM_PKCS5_PBKDF1_PARAMS = CSSM_PKCS5_PBKDF1_PARAMS
+  objcRetType = retCSSM_PKCS5_PBKDF1_PARAMS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_PKCS5_PBKDF2_PARAMS = CSSM_PKCS5_PBKDF2_PARAMS
   { cssM_PKCS5_PBKDF2_PARAMSPassphrase :: !SecAsn1Item
   , cssM_PKCS5_PBKDF2_PARAMSPseudoRandomFunction :: !CUInt
@@ -3560,6 +4632,16 @@ argCSSM_PKCS5_PBKDF2_PARAMS = mkStorableArg cssM_PKCS5_PBKDF2_PARAMSStructType
 
 retCSSM_PKCS5_PBKDF2_PARAMS :: RetType CSSM_PKCS5_PBKDF2_PARAMS
 retCSSM_PKCS5_PBKDF2_PARAMS = mkStorableRetType cssM_PKCS5_PBKDF2_PARAMSStructType
+
+instance ObjCArgument CSSM_PKCS5_PBKDF2_PARAMS where
+  withObjCArg x k = k (argCSSM_PKCS5_PBKDF2_PARAMS x)
+
+instance ObjCReturn CSSM_PKCS5_PBKDF2_PARAMS where
+  type RawReturn CSSM_PKCS5_PBKDF2_PARAMS = CSSM_PKCS5_PBKDF2_PARAMS
+  objcRetType = retCSSM_PKCS5_PBKDF2_PARAMS
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_QUERY = CSSM_QUERY
   { cssM_QUERYRecordType :: !CUInt
@@ -3597,6 +4679,16 @@ argCSSM_QUERY = mkStorableArg cssM_QUERYStructType
 retCSSM_QUERY :: RetType CSSM_QUERY
 retCSSM_QUERY = mkStorableRetType cssM_QUERYStructType
 
+instance ObjCArgument CSSM_QUERY where
+  withObjCArg x k = k (argCSSM_QUERY x)
+
+instance ObjCReturn CSSM_QUERY where
+  type RawReturn CSSM_QUERY = CSSM_QUERY
+  objcRetType = retCSSM_QUERY
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_SUBSERVICE_UID = CSSM_SUBSERVICE_UID
   { cssM_SUBSERVICE_UIDGuid :: !(Ptr ())
   , cssM_SUBSERVICE_UIDVersion :: !CSSM_VERSION
@@ -3626,6 +4718,16 @@ argCSSM_SUBSERVICE_UID = mkStorableArg cssM_SUBSERVICE_UIDStructType
 
 retCSSM_SUBSERVICE_UID :: RetType CSSM_SUBSERVICE_UID
 retCSSM_SUBSERVICE_UID = mkStorableRetType cssM_SUBSERVICE_UIDStructType
+
+instance ObjCArgument CSSM_SUBSERVICE_UID where
+  withObjCArg x k = k (argCSSM_SUBSERVICE_UID x)
+
+instance ObjCReturn CSSM_SUBSERVICE_UID where
+  type RawReturn CSSM_SUBSERVICE_UID = CSSM_SUBSERVICE_UID
+  objcRetType = retCSSM_SUBSERVICE_UID
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_CALLERAUTH_CONTEXT = CSSM_TP_CALLERAUTH_CONTEXT
   { cssM_TP_CALLERAUTH_CONTEXTPolicy :: !CSSM_TP_POLICYINFO
@@ -3669,6 +4771,16 @@ argCSSM_TP_CALLERAUTH_CONTEXT = mkStorableArg cssM_TP_CALLERAUTH_CONTEXTStructTy
 retCSSM_TP_CALLERAUTH_CONTEXT :: RetType CSSM_TP_CALLERAUTH_CONTEXT
 retCSSM_TP_CALLERAUTH_CONTEXT = mkStorableRetType cssM_TP_CALLERAUTH_CONTEXTStructType
 
+instance ObjCArgument CSSM_TP_CALLERAUTH_CONTEXT where
+  withObjCArg x k = k (argCSSM_TP_CALLERAUTH_CONTEXT x)
+
+instance ObjCReturn CSSM_TP_CALLERAUTH_CONTEXT where
+  type RawReturn CSSM_TP_CALLERAUTH_CONTEXT = CSSM_TP_CALLERAUTH_CONTEXT
+  objcRetType = retCSSM_TP_CALLERAUTH_CONTEXT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_TP_VERIFY_CONTEXT = CSSM_TP_VERIFY_CONTEXT
   { cssM_TP_VERIFY_CONTEXTAction :: !CUInt
   , cssM_TP_VERIFY_CONTEXTActionData :: !SecAsn1Item
@@ -3699,6 +4811,16 @@ argCSSM_TP_VERIFY_CONTEXT = mkStorableArg cssM_TP_VERIFY_CONTEXTStructType
 retCSSM_TP_VERIFY_CONTEXT :: RetType CSSM_TP_VERIFY_CONTEXT
 retCSSM_TP_VERIFY_CONTEXT = mkStorableRetType cssM_TP_VERIFY_CONTEXTStructType
 
+instance ObjCArgument CSSM_TP_VERIFY_CONTEXT where
+  withObjCArg x k = k (argCSSM_TP_VERIFY_CONTEXT x)
+
+instance ObjCReturn CSSM_TP_VERIFY_CONTEXT where
+  type RawReturn CSSM_TP_VERIFY_CONTEXT = CSSM_TP_VERIFY_CONTEXT
+  objcRetType = retCSSM_TP_VERIFY_CONTEXT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_WRAP_KEY = CSSM_WRAP_KEY
   { cssM_WRAP_KEYKeyHeader :: !(Ptr ())
   , cssM_WRAP_KEYKeyData :: !SecAsn1Item
@@ -3722,6 +4844,16 @@ argCSSM_WRAP_KEY = mkStorableArg cssM_WRAP_KEYStructType
 
 retCSSM_WRAP_KEY :: RetType CSSM_WRAP_KEY
 retCSSM_WRAP_KEY = mkStorableRetType cssM_WRAP_KEYStructType
+
+instance ObjCArgument CSSM_WRAP_KEY where
+  withObjCArg x k = k (argCSSM_WRAP_KEY x)
+
+instance ObjCReturn CSSM_WRAP_KEY where
+  type RawReturn CSSM_WRAP_KEY = CSSM_WRAP_KEY
+  objcRetType = retCSSM_WRAP_KEY
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_X509EXT_POLICYINFO = CSSM_X509EXT_POLICYINFO
   { cssM_X509EXT_POLICYINFOPolicyIdentifier :: !SecAsn1Oid
@@ -3747,6 +4879,16 @@ argCSSM_X509EXT_POLICYINFO = mkStorableArg cssM_X509EXT_POLICYINFOStructType
 retCSSM_X509EXT_POLICYINFO :: RetType CSSM_X509EXT_POLICYINFO
 retCSSM_X509EXT_POLICYINFO = mkStorableRetType cssM_X509EXT_POLICYINFOStructType
 
+instance ObjCArgument CSSM_X509EXT_POLICYINFO where
+  withObjCArg x k = k (argCSSM_X509EXT_POLICYINFO x)
+
+instance ObjCReturn CSSM_X509EXT_POLICYINFO where
+  type RawReturn CSSM_X509EXT_POLICYINFO = CSSM_X509EXT_POLICYINFO
+  objcRetType = retCSSM_X509EXT_POLICYINFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_X509EXT_POLICYQUALIFIERINFO = CSSM_X509EXT_POLICYQUALIFIERINFO
   { cssM_X509EXT_POLICYQUALIFIERINFOPolicyQualifierId :: !SecAsn1Oid
   , cssM_X509EXT_POLICYQUALIFIERINFOValue :: !SecAsn1Item
@@ -3770,6 +4912,16 @@ argCSSM_X509EXT_POLICYQUALIFIERINFO = mkStorableArg cssM_X509EXT_POLICYQUALIFIER
 
 retCSSM_X509EXT_POLICYQUALIFIERINFO :: RetType CSSM_X509EXT_POLICYQUALIFIERINFO
 retCSSM_X509EXT_POLICYQUALIFIERINFO = mkStorableRetType cssM_X509EXT_POLICYQUALIFIERINFOStructType
+
+instance ObjCArgument CSSM_X509EXT_POLICYQUALIFIERINFO where
+  withObjCArg x k = k (argCSSM_X509EXT_POLICYQUALIFIERINFO x)
+
+instance ObjCReturn CSSM_X509EXT_POLICYQUALIFIERINFO where
+  type RawReturn CSSM_X509EXT_POLICYQUALIFIERINFO = CSSM_X509EXT_POLICYQUALIFIERINFO
+  objcRetType = retCSSM_X509EXT_POLICYQUALIFIERINFO
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_X509EXT_TAGandVALUE = CSSM_X509EXT_TAGandVALUE
   { cssM_X509EXT_TAGandVALUEType :: !CUChar
@@ -3795,6 +4947,16 @@ argCSSM_X509EXT_TAGandVALUE = mkStorableArg cssM_X509EXT_TAGandVALUEStructType
 retCSSM_X509EXT_TAGandVALUE :: RetType CSSM_X509EXT_TAGandVALUE
 retCSSM_X509EXT_TAGandVALUE = mkStorableRetType cssM_X509EXT_TAGandVALUEStructType
 
+instance ObjCArgument CSSM_X509EXT_TAGandVALUE where
+  withObjCArg x k = k (argCSSM_X509EXT_TAGandVALUE x)
+
+instance ObjCReturn CSSM_X509EXT_TAGandVALUE where
+  type RawReturn CSSM_X509EXT_TAGandVALUE = CSSM_X509EXT_TAGandVALUE
+  objcRetType = retCSSM_X509EXT_TAGandVALUE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_X509_SIGNATURE = CSSM_X509_SIGNATURE
   { cssM_X509_SIGNATUREAlgorithmIdentifier :: !CInt
   , cssM_X509_SIGNATUREEncrypted :: !SecAsn1Item
@@ -3819,6 +4981,16 @@ argCSSM_X509_SIGNATURE = mkStorableArg cssM_X509_SIGNATUREStructType
 retCSSM_X509_SIGNATURE :: RetType CSSM_X509_SIGNATURE
 retCSSM_X509_SIGNATURE = mkStorableRetType cssM_X509_SIGNATUREStructType
 
+instance ObjCArgument CSSM_X509_SIGNATURE where
+  withObjCArg x k = k (argCSSM_X509_SIGNATURE x)
+
+instance ObjCReturn CSSM_X509_SIGNATURE where
+  type RawReturn CSSM_X509_SIGNATURE = CSSM_X509_SIGNATURE
+  objcRetType = retCSSM_X509_SIGNATURE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_X509_TIME = CSSM_X509_TIME
   { cssM_X509_TIMETimeType :: !CUChar
   , cssM_X509_TIMETime :: !SecAsn1Item
@@ -3842,6 +5014,16 @@ argCSSM_X509_TIME = mkStorableArg cssM_X509_TIMEStructType
 
 retCSSM_X509_TIME :: RetType CSSM_X509_TIME
 retCSSM_X509_TIME = mkStorableRetType cssM_X509_TIMEStructType
+
+instance ObjCArgument CSSM_X509_TIME where
+  withObjCArg x k = k (argCSSM_X509_TIME x)
+
+instance ObjCReturn CSSM_X509_TIME where
+  type RawReturn CSSM_X509_TIME = CSSM_X509_TIME
+  objcRetType = retCSSM_X509_TIME
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_X509_TYPE_VALUE_PAIR = CSSM_X509_TYPE_VALUE_PAIR
   { cssM_X509_TYPE_VALUE_PAIRType :: !SecAsn1Oid
@@ -3870,6 +5052,16 @@ argCSSM_X509_TYPE_VALUE_PAIR = mkStorableArg cssM_X509_TYPE_VALUE_PAIRStructType
 retCSSM_X509_TYPE_VALUE_PAIR :: RetType CSSM_X509_TYPE_VALUE_PAIR
 retCSSM_X509_TYPE_VALUE_PAIR = mkStorableRetType cssM_X509_TYPE_VALUE_PAIRStructType
 
+instance ObjCArgument CSSM_X509_TYPE_VALUE_PAIR where
+  withObjCArg x k = k (argCSSM_X509_TYPE_VALUE_PAIR x)
+
+instance ObjCReturn CSSM_X509_TYPE_VALUE_PAIR where
+  type RawReturn CSSM_X509_TYPE_VALUE_PAIR = CSSM_X509_TYPE_VALUE_PAIR
+  objcRetType = retCSSM_X509_TYPE_VALUE_PAIR
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CE_AccessDescription = CE_AccessDescription
   { cE_AccessDescriptionAccessMethod :: !SecAsn1Oid
   , cE_AccessDescriptionAccessLocation :: !CE_GeneralName
@@ -3893,6 +5085,16 @@ argCE_AccessDescription = mkStorableArg cE_AccessDescriptionStructType
 
 retCE_AccessDescription :: RetType CE_AccessDescription
 retCE_AccessDescription = mkStorableRetType cE_AccessDescriptionStructType
+
+instance ObjCArgument CE_AccessDescription where
+  withObjCArg x k = k (argCE_AccessDescription x)
+
+instance ObjCReturn CE_AccessDescription where
+  type RawReturn CE_AccessDescription = CE_AccessDescription
+  objcRetType = retCE_AccessDescription
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_CERT_PAIR = CSSM_CERT_PAIR
   { cssM_CERT_PAIREncodedCert :: !CSSM_ENCODED_CERT
@@ -3918,6 +5120,16 @@ argCSSM_CERT_PAIR = mkStorableArg cssM_CERT_PAIRStructType
 retCSSM_CERT_PAIR :: RetType CSSM_CERT_PAIR
 retCSSM_CERT_PAIR = mkStorableRetType cssM_CERT_PAIRStructType
 
+instance ObjCArgument CSSM_CERT_PAIR where
+  withObjCArg x k = k (argCSSM_CERT_PAIR x)
+
+instance ObjCReturn CSSM_CERT_PAIR where
+  type RawReturn CSSM_CERT_PAIR = CSSM_CERT_PAIR
+  objcRetType = retCSSM_CERT_PAIR
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_CRL_PAIR = CSSM_CRL_PAIR
   { cssM_CRL_PAIREncodedCrl :: !CSSM_ENCODED_CRL
   , cssM_CRL_PAIRParsedCrl :: !CSSM_PARSED_CRL
@@ -3941,6 +5153,16 @@ argCSSM_CRL_PAIR = mkStorableArg cssM_CRL_PAIRStructType
 
 retCSSM_CRL_PAIR :: RetType CSSM_CRL_PAIR
 retCSSM_CRL_PAIR = mkStorableRetType cssM_CRL_PAIRStructType
+
+instance ObjCArgument CSSM_CRL_PAIR where
+  withObjCArg x k = k (argCSSM_CRL_PAIR x)
+
+instance ObjCReturn CSSM_CRL_PAIR where
+  type RawReturn CSSM_CRL_PAIR = CSSM_CRL_PAIR
+  objcRetType = retCSSM_CRL_PAIR
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_TP_CERTCHANGE_OUTPUT = CSSM_TP_CERTCHANGE_OUTPUT
   { cssM_TP_CERTCHANGE_OUTPUTActionStatus :: !CUInt
@@ -3966,6 +5188,16 @@ argCSSM_TP_CERTCHANGE_OUTPUT = mkStorableArg cssM_TP_CERTCHANGE_OUTPUTStructType
 retCSSM_TP_CERTCHANGE_OUTPUT :: RetType CSSM_TP_CERTCHANGE_OUTPUT
 retCSSM_TP_CERTCHANGE_OUTPUT = mkStorableRetType cssM_TP_CERTCHANGE_OUTPUTStructType
 
+instance ObjCArgument CSSM_TP_CERTCHANGE_OUTPUT where
+  withObjCArg x k = k (argCSSM_TP_CERTCHANGE_OUTPUT x)
+
+instance ObjCReturn CSSM_TP_CERTCHANGE_OUTPUT where
+  type RawReturn CSSM_TP_CERTCHANGE_OUTPUT = CSSM_TP_CERTCHANGE_OUTPUT
+  objcRetType = retCSSM_TP_CERTCHANGE_OUTPUT
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_X509EXT_PAIR = CSSM_X509EXT_PAIR
   { cssM_X509EXT_PAIRTagAndValue :: !CSSM_X509EXT_TAGandVALUE
   , cssM_X509EXT_PAIRParsedValue :: !(Ptr ())
@@ -3989,6 +5221,16 @@ argCSSM_X509EXT_PAIR = mkStorableArg cssM_X509EXT_PAIRStructType
 
 retCSSM_X509EXT_PAIR :: RetType CSSM_X509EXT_PAIR
 retCSSM_X509EXT_PAIR = mkStorableRetType cssM_X509EXT_PAIRStructType
+
+instance ObjCArgument CSSM_X509EXT_PAIR where
+  withObjCArg x k = k (argCSSM_X509EXT_PAIR x)
+
+instance ObjCReturn CSSM_X509EXT_PAIR where
+  type RawReturn CSSM_X509EXT_PAIR = CSSM_X509EXT_PAIR
+  objcRetType = retCSSM_X509EXT_PAIR
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_X509_REVOKED_CERT_ENTRY = CSSM_X509_REVOKED_CERT_ENTRY
   { cssM_X509_REVOKED_CERT_ENTRYCertificateSerialNumber :: !SecAsn1Item
@@ -4016,6 +5258,16 @@ argCSSM_X509_REVOKED_CERT_ENTRY = mkStorableArg cssM_X509_REVOKED_CERT_ENTRYStru
 
 retCSSM_X509_REVOKED_CERT_ENTRY :: RetType CSSM_X509_REVOKED_CERT_ENTRY
 retCSSM_X509_REVOKED_CERT_ENTRY = mkStorableRetType cssM_X509_REVOKED_CERT_ENTRYStructType
+
+instance ObjCArgument CSSM_X509_REVOKED_CERT_ENTRY where
+  withObjCArg x k = k (argCSSM_X509_REVOKED_CERT_ENTRY x)
+
+instance ObjCReturn CSSM_X509_REVOKED_CERT_ENTRY where
+  type RawReturn CSSM_X509_REVOKED_CERT_ENTRY = CSSM_X509_REVOKED_CERT_ENTRY
+  objcRetType = retCSSM_X509_REVOKED_CERT_ENTRY
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_X509_TBS_CERTLIST = CSSM_X509_TBS_CERTLIST
   { cssM_X509_TBS_CERTLISTVersion :: !SecAsn1Item
@@ -4056,6 +5308,16 @@ argCSSM_X509_TBS_CERTLIST = mkStorableArg cssM_X509_TBS_CERTLISTStructType
 retCSSM_X509_TBS_CERTLIST :: RetType CSSM_X509_TBS_CERTLIST
 retCSSM_X509_TBS_CERTLIST = mkStorableRetType cssM_X509_TBS_CERTLISTStructType
 
+instance ObjCArgument CSSM_X509_TBS_CERTLIST where
+  withObjCArg x k = k (argCSSM_X509_TBS_CERTLIST x)
+
+instance ObjCReturn CSSM_X509_TBS_CERTLIST where
+  type RawReturn CSSM_X509_TBS_CERTLIST = CSSM_X509_TBS_CERTLIST
+  objcRetType = retCSSM_X509_TBS_CERTLIST
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_X509_VALIDITY = CSSM_X509_VALIDITY
   { cssM_X509_VALIDITYNotBefore :: !CSSM_X509_TIME
   , cssM_X509_VALIDITYNotAfter :: !CSSM_X509_TIME
@@ -4080,6 +5342,16 @@ argCSSM_X509_VALIDITY = mkStorableArg cssM_X509_VALIDITYStructType
 retCSSM_X509_VALIDITY :: RetType CSSM_X509_VALIDITY
 retCSSM_X509_VALIDITY = mkStorableRetType cssM_X509_VALIDITYStructType
 
+instance ObjCArgument CSSM_X509_VALIDITY where
+  withObjCArg x k = k (argCSSM_X509_VALIDITY x)
+
+instance ObjCReturn CSSM_X509_VALIDITY where
+  type RawReturn CSSM_X509_VALIDITY = CSSM_X509_VALIDITY
+  objcRetType = retCSSM_X509_VALIDITY
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_X509_SIGNED_CRL = CSSM_X509_SIGNED_CRL
   { cssM_X509_SIGNED_CRLTbsCertList :: !CSSM_X509_TBS_CERTLIST
   , cssM_X509_SIGNED_CRLSignature :: !CSSM_X509_SIGNATURE
@@ -4103,6 +5375,16 @@ argCSSM_X509_SIGNED_CRL = mkStorableArg cssM_X509_SIGNED_CRLStructType
 
 retCSSM_X509_SIGNED_CRL :: RetType CSSM_X509_SIGNED_CRL
 retCSSM_X509_SIGNED_CRL = mkStorableRetType cssM_X509_SIGNED_CRLStructType
+
+instance ObjCArgument CSSM_X509_SIGNED_CRL where
+  withObjCArg x k = k (argCSSM_X509_SIGNED_CRL x)
+
+instance ObjCReturn CSSM_X509_SIGNED_CRL where
+  type RawReturn CSSM_X509_SIGNED_CRL = CSSM_X509_SIGNED_CRL
+  objcRetType = retCSSM_X509_SIGNED_CRL
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CSSM_X509_TBS_CERTIFICATE = CSSM_X509_TBS_CERTIFICATE
   { cssM_X509_TBS_CERTIFICATEVersion :: !SecAsn1Item
@@ -4152,6 +5434,16 @@ argCSSM_X509_TBS_CERTIFICATE = mkStorableArg cssM_X509_TBS_CERTIFICATEStructType
 retCSSM_X509_TBS_CERTIFICATE :: RetType CSSM_X509_TBS_CERTIFICATE
 retCSSM_X509_TBS_CERTIFICATE = mkStorableRetType cssM_X509_TBS_CERTIFICATEStructType
 
+instance ObjCArgument CSSM_X509_TBS_CERTIFICATE where
+  withObjCArg x k = k (argCSSM_X509_TBS_CERTIFICATE x)
+
+instance ObjCReturn CSSM_X509_TBS_CERTIFICATE where
+  type RawReturn CSSM_X509_TBS_CERTIFICATE = CSSM_X509_TBS_CERTIFICATE
+  objcRetType = retCSSM_X509_TBS_CERTIFICATE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CSSM_X509_SIGNED_CERTIFICATE = CSSM_X509_SIGNED_CERTIFICATE
   { cssM_X509_SIGNED_CERTIFICATECertificate :: !CSSM_X509_TBS_CERTIFICATE
   , cssM_X509_SIGNED_CERTIFICATESignature :: !CSSM_X509_SIGNATURE
@@ -4175,3 +5467,13 @@ argCSSM_X509_SIGNED_CERTIFICATE = mkStorableArg cssM_X509_SIGNED_CERTIFICATEStru
 
 retCSSM_X509_SIGNED_CERTIFICATE :: RetType CSSM_X509_SIGNED_CERTIFICATE
 retCSSM_X509_SIGNED_CERTIFICATE = mkStorableRetType cssM_X509_SIGNED_CERTIFICATEStructType
+
+instance ObjCArgument CSSM_X509_SIGNED_CERTIFICATE where
+  withObjCArg x k = k (argCSSM_X509_SIGNED_CERTIFICATE x)
+
+instance ObjCReturn CSSM_X509_SIGNED_CERTIFICATE where
+  type RawReturn CSSM_X509_SIGNED_CERTIFICATE = CSSM_X509_SIGNED_CERTIFICATE
+  objcRetType = retCSSM_X509_SIGNED_CERTIFICATE
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

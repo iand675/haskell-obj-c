@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,15 +27,11 @@ module ObjC.AVFAudio.AVAudioOutputNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioOutputNode avAudioOutputNode => avAudioOutputNode -> IO (Id AVAudioOutputNode)
-init_ avAudioOutputNode  =
-    sendMsg avAudioOutputNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioOutputNode =
+  sendOwnedMessage avAudioOutputNode initSelector
 
 -- | intendedSpatialExperience
 --
@@ -54,8 +51,8 @@ init_ avAudioOutputNode  =
 --
 -- ObjC selector: @- intendedSpatialExperience@
 intendedSpatialExperience :: IsAVAudioOutputNode avAudioOutputNode => avAudioOutputNode -> IO RawId
-intendedSpatialExperience avAudioOutputNode  =
-    fmap (RawId . castPtr) $ sendMsg avAudioOutputNode (mkSelector "intendedSpatialExperience") (retPtr retVoid) []
+intendedSpatialExperience avAudioOutputNode =
+  sendMessage avAudioOutputNode intendedSpatialExperienceSelector
 
 -- | intendedSpatialExperience
 --
@@ -65,22 +62,22 @@ intendedSpatialExperience avAudioOutputNode  =
 --
 -- ObjC selector: @- setIntendedSpatialExperience:@
 setIntendedSpatialExperience :: IsAVAudioOutputNode avAudioOutputNode => avAudioOutputNode -> RawId -> IO ()
-setIntendedSpatialExperience avAudioOutputNode  value =
-    sendMsg avAudioOutputNode (mkSelector "setIntendedSpatialExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setIntendedSpatialExperience avAudioOutputNode value =
+  sendMessage avAudioOutputNode setIntendedSpatialExperienceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioOutputNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @intendedSpatialExperience@
-intendedSpatialExperienceSelector :: Selector
+intendedSpatialExperienceSelector :: Selector '[] RawId
 intendedSpatialExperienceSelector = mkSelector "intendedSpatialExperience"
 
 -- | @Selector@ for @setIntendedSpatialExperience:@
-setIntendedSpatialExperienceSelector :: Selector
+setIntendedSpatialExperienceSelector :: Selector '[RawId] ()
 setIntendedSpatialExperienceSelector = mkSelector "setIntendedSpatialExperience:"
 

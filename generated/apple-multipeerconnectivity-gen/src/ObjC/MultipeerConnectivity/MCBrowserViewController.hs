@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.MultipeerConnectivity.MCBrowserViewController
   , setMinimumNumberOfPeers
   , maximumNumberOfPeers
   , setMaximumNumberOfPeers
-  , initWithServiceType_sessionSelector
-  , initWithBrowser_sessionSelector
-  , delegateSelector
-  , setDelegateSelector
   , browserSelector
-  , sessionSelector
-  , minimumNumberOfPeersSelector
-  , setMinimumNumberOfPeersSelector
+  , delegateSelector
+  , initWithBrowser_sessionSelector
+  , initWithServiceType_sessionSelector
   , maximumNumberOfPeersSelector
+  , minimumNumberOfPeersSelector
+  , sessionSelector
+  , setDelegateSelector
   , setMaximumNumberOfPeersSelector
+  , setMinimumNumberOfPeersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,99 +45,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithServiceType:session:@
 initWithServiceType_session :: (IsMCBrowserViewController mcBrowserViewController, IsNSString serviceType, IsMCSession session) => mcBrowserViewController -> serviceType -> session -> IO (Id MCBrowserViewController)
-initWithServiceType_session mcBrowserViewController  serviceType session =
-  withObjCPtr serviceType $ \raw_serviceType ->
-    withObjCPtr session $ \raw_session ->
-        sendMsg mcBrowserViewController (mkSelector "initWithServiceType:session:") (retPtr retVoid) [argPtr (castPtr raw_serviceType :: Ptr ()), argPtr (castPtr raw_session :: Ptr ())] >>= ownedObject . castPtr
+initWithServiceType_session mcBrowserViewController serviceType session =
+  sendOwnedMessage mcBrowserViewController initWithServiceType_sessionSelector (toNSString serviceType) (toMCSession session)
 
 -- | @- initWithBrowser:session:@
 initWithBrowser_session :: (IsMCBrowserViewController mcBrowserViewController, IsMCNearbyServiceBrowser browser, IsMCSession session) => mcBrowserViewController -> browser -> session -> IO (Id MCBrowserViewController)
-initWithBrowser_session mcBrowserViewController  browser session =
-  withObjCPtr browser $ \raw_browser ->
-    withObjCPtr session $ \raw_session ->
-        sendMsg mcBrowserViewController (mkSelector "initWithBrowser:session:") (retPtr retVoid) [argPtr (castPtr raw_browser :: Ptr ()), argPtr (castPtr raw_session :: Ptr ())] >>= ownedObject . castPtr
+initWithBrowser_session mcBrowserViewController browser session =
+  sendOwnedMessage mcBrowserViewController initWithBrowser_sessionSelector (toMCNearbyServiceBrowser browser) (toMCSession session)
 
 -- | @- delegate@
 delegate :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> IO RawId
-delegate mcBrowserViewController  =
-    fmap (RawId . castPtr) $ sendMsg mcBrowserViewController (mkSelector "delegate") (retPtr retVoid) []
+delegate mcBrowserViewController =
+  sendMessage mcBrowserViewController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> RawId -> IO ()
-setDelegate mcBrowserViewController  value =
-    sendMsg mcBrowserViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate mcBrowserViewController value =
+  sendMessage mcBrowserViewController setDelegateSelector value
 
 -- | @- browser@
 browser :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> IO (Id MCNearbyServiceBrowser)
-browser mcBrowserViewController  =
-    sendMsg mcBrowserViewController (mkSelector "browser") (retPtr retVoid) [] >>= retainedObject . castPtr
+browser mcBrowserViewController =
+  sendMessage mcBrowserViewController browserSelector
 
 -- | @- session@
 session :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> IO (Id MCSession)
-session mcBrowserViewController  =
-    sendMsg mcBrowserViewController (mkSelector "session") (retPtr retVoid) [] >>= retainedObject . castPtr
+session mcBrowserViewController =
+  sendMessage mcBrowserViewController sessionSelector
 
 -- | @- minimumNumberOfPeers@
 minimumNumberOfPeers :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> IO CULong
-minimumNumberOfPeers mcBrowserViewController  =
-    sendMsg mcBrowserViewController (mkSelector "minimumNumberOfPeers") retCULong []
+minimumNumberOfPeers mcBrowserViewController =
+  sendMessage mcBrowserViewController minimumNumberOfPeersSelector
 
 -- | @- setMinimumNumberOfPeers:@
 setMinimumNumberOfPeers :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> CULong -> IO ()
-setMinimumNumberOfPeers mcBrowserViewController  value =
-    sendMsg mcBrowserViewController (mkSelector "setMinimumNumberOfPeers:") retVoid [argCULong value]
+setMinimumNumberOfPeers mcBrowserViewController value =
+  sendMessage mcBrowserViewController setMinimumNumberOfPeersSelector value
 
 -- | @- maximumNumberOfPeers@
 maximumNumberOfPeers :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> IO CULong
-maximumNumberOfPeers mcBrowserViewController  =
-    sendMsg mcBrowserViewController (mkSelector "maximumNumberOfPeers") retCULong []
+maximumNumberOfPeers mcBrowserViewController =
+  sendMessage mcBrowserViewController maximumNumberOfPeersSelector
 
 -- | @- setMaximumNumberOfPeers:@
 setMaximumNumberOfPeers :: IsMCBrowserViewController mcBrowserViewController => mcBrowserViewController -> CULong -> IO ()
-setMaximumNumberOfPeers mcBrowserViewController  value =
-    sendMsg mcBrowserViewController (mkSelector "setMaximumNumberOfPeers:") retVoid [argCULong value]
+setMaximumNumberOfPeers mcBrowserViewController value =
+  sendMessage mcBrowserViewController setMaximumNumberOfPeersSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithServiceType:session:@
-initWithServiceType_sessionSelector :: Selector
+initWithServiceType_sessionSelector :: Selector '[Id NSString, Id MCSession] (Id MCBrowserViewController)
 initWithServiceType_sessionSelector = mkSelector "initWithServiceType:session:"
 
 -- | @Selector@ for @initWithBrowser:session:@
-initWithBrowser_sessionSelector :: Selector
+initWithBrowser_sessionSelector :: Selector '[Id MCNearbyServiceBrowser, Id MCSession] (Id MCBrowserViewController)
 initWithBrowser_sessionSelector = mkSelector "initWithBrowser:session:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @browser@
-browserSelector :: Selector
+browserSelector :: Selector '[] (Id MCNearbyServiceBrowser)
 browserSelector = mkSelector "browser"
 
 -- | @Selector@ for @session@
-sessionSelector :: Selector
+sessionSelector :: Selector '[] (Id MCSession)
 sessionSelector = mkSelector "session"
 
 -- | @Selector@ for @minimumNumberOfPeers@
-minimumNumberOfPeersSelector :: Selector
+minimumNumberOfPeersSelector :: Selector '[] CULong
 minimumNumberOfPeersSelector = mkSelector "minimumNumberOfPeers"
 
 -- | @Selector@ for @setMinimumNumberOfPeers:@
-setMinimumNumberOfPeersSelector :: Selector
+setMinimumNumberOfPeersSelector :: Selector '[CULong] ()
 setMinimumNumberOfPeersSelector = mkSelector "setMinimumNumberOfPeers:"
 
 -- | @Selector@ for @maximumNumberOfPeers@
-maximumNumberOfPeersSelector :: Selector
+maximumNumberOfPeersSelector :: Selector '[] CULong
 maximumNumberOfPeersSelector = mkSelector "maximumNumberOfPeers"
 
 -- | @Selector@ for @setMaximumNumberOfPeers:@
-setMaximumNumberOfPeersSelector :: Selector
+setMaximumNumberOfPeersSelector :: Selector '[CULong] ()
 setMaximumNumberOfPeersSelector = mkSelector "setMaximumNumberOfPeers:"
 

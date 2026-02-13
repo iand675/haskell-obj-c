@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AppKit.NSTableHeaderView
   , draggedColumn
   , draggedDistance
   , resizedColumn
-  , headerRectOfColumnSelector
   , columnAtPointSelector
-  , tableViewSelector
-  , setTableViewSelector
   , draggedColumnSelector
   , draggedDistanceSelector
+  , headerRectOfColumnSelector
   , resizedColumnSelector
+  , setTableViewSelector
+  , tableViewSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,69 +39,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- headerRectOfColumn:@
 headerRectOfColumn :: IsNSTableHeaderView nsTableHeaderView => nsTableHeaderView -> CLong -> IO NSRect
-headerRectOfColumn nsTableHeaderView  column =
-    sendMsgStret nsTableHeaderView (mkSelector "headerRectOfColumn:") retNSRect [argCLong column]
+headerRectOfColumn nsTableHeaderView column =
+  sendMessage nsTableHeaderView headerRectOfColumnSelector column
 
 -- | @- columnAtPoint:@
 columnAtPoint :: IsNSTableHeaderView nsTableHeaderView => nsTableHeaderView -> NSPoint -> IO CLong
-columnAtPoint nsTableHeaderView  point =
-    sendMsg nsTableHeaderView (mkSelector "columnAtPoint:") retCLong [argNSPoint point]
+columnAtPoint nsTableHeaderView point =
+  sendMessage nsTableHeaderView columnAtPointSelector point
 
 -- | @- tableView@
 tableView :: IsNSTableHeaderView nsTableHeaderView => nsTableHeaderView -> IO (Id NSTableView)
-tableView nsTableHeaderView  =
-    sendMsg nsTableHeaderView (mkSelector "tableView") (retPtr retVoid) [] >>= retainedObject . castPtr
+tableView nsTableHeaderView =
+  sendMessage nsTableHeaderView tableViewSelector
 
 -- | @- setTableView:@
 setTableView :: (IsNSTableHeaderView nsTableHeaderView, IsNSTableView value) => nsTableHeaderView -> value -> IO ()
-setTableView nsTableHeaderView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTableHeaderView (mkSelector "setTableView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTableView nsTableHeaderView value =
+  sendMessage nsTableHeaderView setTableViewSelector (toNSTableView value)
 
 -- | @- draggedColumn@
 draggedColumn :: IsNSTableHeaderView nsTableHeaderView => nsTableHeaderView -> IO CLong
-draggedColumn nsTableHeaderView  =
-    sendMsg nsTableHeaderView (mkSelector "draggedColumn") retCLong []
+draggedColumn nsTableHeaderView =
+  sendMessage nsTableHeaderView draggedColumnSelector
 
 -- | @- draggedDistance@
 draggedDistance :: IsNSTableHeaderView nsTableHeaderView => nsTableHeaderView -> IO CDouble
-draggedDistance nsTableHeaderView  =
-    sendMsg nsTableHeaderView (mkSelector "draggedDistance") retCDouble []
+draggedDistance nsTableHeaderView =
+  sendMessage nsTableHeaderView draggedDistanceSelector
 
 -- | @- resizedColumn@
 resizedColumn :: IsNSTableHeaderView nsTableHeaderView => nsTableHeaderView -> IO CLong
-resizedColumn nsTableHeaderView  =
-    sendMsg nsTableHeaderView (mkSelector "resizedColumn") retCLong []
+resizedColumn nsTableHeaderView =
+  sendMessage nsTableHeaderView resizedColumnSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @headerRectOfColumn:@
-headerRectOfColumnSelector :: Selector
+headerRectOfColumnSelector :: Selector '[CLong] NSRect
 headerRectOfColumnSelector = mkSelector "headerRectOfColumn:"
 
 -- | @Selector@ for @columnAtPoint:@
-columnAtPointSelector :: Selector
+columnAtPointSelector :: Selector '[NSPoint] CLong
 columnAtPointSelector = mkSelector "columnAtPoint:"
 
 -- | @Selector@ for @tableView@
-tableViewSelector :: Selector
+tableViewSelector :: Selector '[] (Id NSTableView)
 tableViewSelector = mkSelector "tableView"
 
 -- | @Selector@ for @setTableView:@
-setTableViewSelector :: Selector
+setTableViewSelector :: Selector '[Id NSTableView] ()
 setTableViewSelector = mkSelector "setTableView:"
 
 -- | @Selector@ for @draggedColumn@
-draggedColumnSelector :: Selector
+draggedColumnSelector :: Selector '[] CLong
 draggedColumnSelector = mkSelector "draggedColumn"
 
 -- | @Selector@ for @draggedDistance@
-draggedDistanceSelector :: Selector
+draggedDistanceSelector :: Selector '[] CDouble
 draggedDistanceSelector = mkSelector "draggedDistance"
 
 -- | @Selector@ for @resizedColumn@
-resizedColumnSelector :: Selector
+resizedColumnSelector :: Selector '[] CLong
 resizedColumnSelector = mkSelector "resizedColumn"
 

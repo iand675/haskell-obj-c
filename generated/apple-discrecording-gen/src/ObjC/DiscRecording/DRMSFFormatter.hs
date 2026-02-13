@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.DiscRecording.DRMSFFormatter
   , initWithFormat
   , format
   , setFormat
-  , initWithFormatSelector
   , formatSelector
+  , initWithFormatSelector
   , setFormatSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,9 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFormat:@
 initWithFormat :: (IsDRMSFFormatter drmsfFormatter, IsNSString format) => drmsfFormatter -> format -> IO RawId
-initWithFormat drmsfFormatter  format =
-  withObjCPtr format $ \raw_format ->
-      fmap (RawId . castPtr) $ sendMsg drmsfFormatter (mkSelector "initWithFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())]
+initWithFormat drmsfFormatter format =
+  sendOwnedMessage drmsfFormatter initWithFormatSelector (toNSString format)
 
 -- | format
 --
@@ -57,8 +53,8 @@ initWithFormat drmsfFormatter  format =
 --
 -- ObjC selector: @- format@
 format :: IsDRMSFFormatter drmsfFormatter => drmsfFormatter -> IO (Id NSString)
-format drmsfFormatter  =
-    sendMsg drmsfFormatter (mkSelector "format") (retPtr retVoid) [] >>= retainedObject . castPtr
+format drmsfFormatter =
+  sendMessage drmsfFormatter formatSelector
 
 -- | setFormat:
 --
@@ -76,23 +72,22 @@ format drmsfFormatter  =
 --
 -- ObjC selector: @- setFormat:@
 setFormat :: (IsDRMSFFormatter drmsfFormatter, IsNSString format) => drmsfFormatter -> format -> IO ()
-setFormat drmsfFormatter  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg drmsfFormatter (mkSelector "setFormat:") retVoid [argPtr (castPtr raw_format :: Ptr ())]
+setFormat drmsfFormatter format =
+  sendMessage drmsfFormatter setFormatSelector (toNSString format)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFormat:@
-initWithFormatSelector :: Selector
+initWithFormatSelector :: Selector '[Id NSString] RawId
 initWithFormatSelector = mkSelector "initWithFormat:"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] (Id NSString)
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @setFormat:@
-setFormatSelector :: Selector
+setFormatSelector :: Selector '[Id NSString] ()
 setFormatSelector = mkSelector "setFormat:"
 

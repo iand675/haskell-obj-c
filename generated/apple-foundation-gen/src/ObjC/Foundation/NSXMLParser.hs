@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,28 +30,28 @@ module ObjC.Foundation.NSXMLParser
   , systemID
   , lineNumber
   , columnNumber
+  , abortParsingSelector
+  , allowedExternalEntityURLsSelector
+  , columnNumberSelector
+  , delegateSelector
+  , externalEntityResolvingPolicySelector
   , initWithContentsOfURLSelector
   , initWithDataSelector
   , initWithStreamSelector
-  , parseSelector
-  , abortParsingSelector
-  , delegateSelector
-  , setDelegateSelector
-  , shouldProcessNamespacesSelector
-  , setShouldProcessNamespacesSelector
-  , shouldReportNamespacePrefixesSelector
-  , setShouldReportNamespacePrefixesSelector
-  , externalEntityResolvingPolicySelector
-  , setExternalEntityResolvingPolicySelector
-  , allowedExternalEntityURLsSelector
-  , setAllowedExternalEntityURLsSelector
-  , parserErrorSelector
-  , shouldResolveExternalEntitiesSelector
-  , setShouldResolveExternalEntitiesSelector
-  , publicIDSelector
-  , systemIDSelector
   , lineNumberSelector
-  , columnNumberSelector
+  , parseSelector
+  , parserErrorSelector
+  , publicIDSelector
+  , setAllowedExternalEntityURLsSelector
+  , setDelegateSelector
+  , setExternalEntityResolvingPolicySelector
+  , setShouldProcessNamespacesSelector
+  , setShouldReportNamespacePrefixesSelector
+  , setShouldResolveExternalEntitiesSelector
+  , shouldProcessNamespacesSelector
+  , shouldReportNamespacePrefixesSelector
+  , shouldResolveExternalEntitiesSelector
+  , systemIDSelector
 
   -- * Enum types
   , NSXMLParserExternalEntityResolvingPolicy(NSXMLParserExternalEntityResolvingPolicy)
@@ -61,15 +62,11 @@ module ObjC.Foundation.NSXMLParser
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,207 +75,203 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithContentsOfURL:@
 initWithContentsOfURL :: (IsNSXMLParser nsxmlParser, IsNSURL url) => nsxmlParser -> url -> IO (Id NSXMLParser)
-initWithContentsOfURL nsxmlParser  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsxmlParser (mkSelector "initWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL nsxmlParser url =
+  sendOwnedMessage nsxmlParser initWithContentsOfURLSelector (toNSURL url)
 
 -- | @- initWithData:@
 initWithData :: (IsNSXMLParser nsxmlParser, IsNSData data_) => nsxmlParser -> data_ -> IO (Id NSXMLParser)
-initWithData nsxmlParser  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nsxmlParser (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData nsxmlParser data_ =
+  sendOwnedMessage nsxmlParser initWithDataSelector (toNSData data_)
 
 -- | @- initWithStream:@
 initWithStream :: (IsNSXMLParser nsxmlParser, IsNSInputStream stream) => nsxmlParser -> stream -> IO (Id NSXMLParser)
-initWithStream nsxmlParser  stream =
-  withObjCPtr stream $ \raw_stream ->
-      sendMsg nsxmlParser (mkSelector "initWithStream:") (retPtr retVoid) [argPtr (castPtr raw_stream :: Ptr ())] >>= ownedObject . castPtr
+initWithStream nsxmlParser stream =
+  sendOwnedMessage nsxmlParser initWithStreamSelector (toNSInputStream stream)
 
 -- | @- parse@
 parse :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO Bool
-parse nsxmlParser  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsxmlParser (mkSelector "parse") retCULong []
+parse nsxmlParser =
+  sendMessage nsxmlParser parseSelector
 
 -- | @- abortParsing@
 abortParsing :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO ()
-abortParsing nsxmlParser  =
-    sendMsg nsxmlParser (mkSelector "abortParsing") retVoid []
+abortParsing nsxmlParser =
+  sendMessage nsxmlParser abortParsingSelector
 
 -- | @- delegate@
 delegate :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO RawId
-delegate nsxmlParser  =
-    fmap (RawId . castPtr) $ sendMsg nsxmlParser (mkSelector "delegate") (retPtr retVoid) []
+delegate nsxmlParser =
+  sendMessage nsxmlParser delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSXMLParser nsxmlParser => nsxmlParser -> RawId -> IO ()
-setDelegate nsxmlParser  value =
-    sendMsg nsxmlParser (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsxmlParser value =
+  sendMessage nsxmlParser setDelegateSelector value
 
 -- | @- shouldProcessNamespaces@
 shouldProcessNamespaces :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO Bool
-shouldProcessNamespaces nsxmlParser  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsxmlParser (mkSelector "shouldProcessNamespaces") retCULong []
+shouldProcessNamespaces nsxmlParser =
+  sendMessage nsxmlParser shouldProcessNamespacesSelector
 
 -- | @- setShouldProcessNamespaces:@
 setShouldProcessNamespaces :: IsNSXMLParser nsxmlParser => nsxmlParser -> Bool -> IO ()
-setShouldProcessNamespaces nsxmlParser  value =
-    sendMsg nsxmlParser (mkSelector "setShouldProcessNamespaces:") retVoid [argCULong (if value then 1 else 0)]
+setShouldProcessNamespaces nsxmlParser value =
+  sendMessage nsxmlParser setShouldProcessNamespacesSelector value
 
 -- | @- shouldReportNamespacePrefixes@
 shouldReportNamespacePrefixes :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO Bool
-shouldReportNamespacePrefixes nsxmlParser  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsxmlParser (mkSelector "shouldReportNamespacePrefixes") retCULong []
+shouldReportNamespacePrefixes nsxmlParser =
+  sendMessage nsxmlParser shouldReportNamespacePrefixesSelector
 
 -- | @- setShouldReportNamespacePrefixes:@
 setShouldReportNamespacePrefixes :: IsNSXMLParser nsxmlParser => nsxmlParser -> Bool -> IO ()
-setShouldReportNamespacePrefixes nsxmlParser  value =
-    sendMsg nsxmlParser (mkSelector "setShouldReportNamespacePrefixes:") retVoid [argCULong (if value then 1 else 0)]
+setShouldReportNamespacePrefixes nsxmlParser value =
+  sendMessage nsxmlParser setShouldReportNamespacePrefixesSelector value
 
 -- | @- externalEntityResolvingPolicy@
 externalEntityResolvingPolicy :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO NSXMLParserExternalEntityResolvingPolicy
-externalEntityResolvingPolicy nsxmlParser  =
-    fmap (coerce :: CULong -> NSXMLParserExternalEntityResolvingPolicy) $ sendMsg nsxmlParser (mkSelector "externalEntityResolvingPolicy") retCULong []
+externalEntityResolvingPolicy nsxmlParser =
+  sendMessage nsxmlParser externalEntityResolvingPolicySelector
 
 -- | @- setExternalEntityResolvingPolicy:@
 setExternalEntityResolvingPolicy :: IsNSXMLParser nsxmlParser => nsxmlParser -> NSXMLParserExternalEntityResolvingPolicy -> IO ()
-setExternalEntityResolvingPolicy nsxmlParser  value =
-    sendMsg nsxmlParser (mkSelector "setExternalEntityResolvingPolicy:") retVoid [argCULong (coerce value)]
+setExternalEntityResolvingPolicy nsxmlParser value =
+  sendMessage nsxmlParser setExternalEntityResolvingPolicySelector value
 
 -- | @- allowedExternalEntityURLs@
 allowedExternalEntityURLs :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO (Id NSSet)
-allowedExternalEntityURLs nsxmlParser  =
-    sendMsg nsxmlParser (mkSelector "allowedExternalEntityURLs") (retPtr retVoid) [] >>= retainedObject . castPtr
+allowedExternalEntityURLs nsxmlParser =
+  sendMessage nsxmlParser allowedExternalEntityURLsSelector
 
 -- | @- setAllowedExternalEntityURLs:@
 setAllowedExternalEntityURLs :: (IsNSXMLParser nsxmlParser, IsNSSet value) => nsxmlParser -> value -> IO ()
-setAllowedExternalEntityURLs nsxmlParser  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxmlParser (mkSelector "setAllowedExternalEntityURLs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAllowedExternalEntityURLs nsxmlParser value =
+  sendMessage nsxmlParser setAllowedExternalEntityURLsSelector (toNSSet value)
 
 -- | @- parserError@
 parserError :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO (Id NSError)
-parserError nsxmlParser  =
-    sendMsg nsxmlParser (mkSelector "parserError") (retPtr retVoid) [] >>= retainedObject . castPtr
+parserError nsxmlParser =
+  sendMessage nsxmlParser parserErrorSelector
 
 -- | @- shouldResolveExternalEntities@
 shouldResolveExternalEntities :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO Bool
-shouldResolveExternalEntities nsxmlParser  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsxmlParser (mkSelector "shouldResolveExternalEntities") retCULong []
+shouldResolveExternalEntities nsxmlParser =
+  sendMessage nsxmlParser shouldResolveExternalEntitiesSelector
 
 -- | @- setShouldResolveExternalEntities:@
 setShouldResolveExternalEntities :: IsNSXMLParser nsxmlParser => nsxmlParser -> Bool -> IO ()
-setShouldResolveExternalEntities nsxmlParser  value =
-    sendMsg nsxmlParser (mkSelector "setShouldResolveExternalEntities:") retVoid [argCULong (if value then 1 else 0)]
+setShouldResolveExternalEntities nsxmlParser value =
+  sendMessage nsxmlParser setShouldResolveExternalEntitiesSelector value
 
 -- | @- publicID@
 publicID :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO (Id NSString)
-publicID nsxmlParser  =
-    sendMsg nsxmlParser (mkSelector "publicID") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicID nsxmlParser =
+  sendMessage nsxmlParser publicIDSelector
 
 -- | @- systemID@
 systemID :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO (Id NSString)
-systemID nsxmlParser  =
-    sendMsg nsxmlParser (mkSelector "systemID") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemID nsxmlParser =
+  sendMessage nsxmlParser systemIDSelector
 
 -- | @- lineNumber@
 lineNumber :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO CLong
-lineNumber nsxmlParser  =
-    sendMsg nsxmlParser (mkSelector "lineNumber") retCLong []
+lineNumber nsxmlParser =
+  sendMessage nsxmlParser lineNumberSelector
 
 -- | @- columnNumber@
 columnNumber :: IsNSXMLParser nsxmlParser => nsxmlParser -> IO CLong
-columnNumber nsxmlParser  =
-    sendMsg nsxmlParser (mkSelector "columnNumber") retCLong []
+columnNumber nsxmlParser =
+  sendMessage nsxmlParser columnNumberSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithContentsOfURL:@
-initWithContentsOfURLSelector :: Selector
+initWithContentsOfURLSelector :: Selector '[Id NSURL] (Id NSXMLParser)
 initWithContentsOfURLSelector = mkSelector "initWithContentsOfURL:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id NSXMLParser)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @initWithStream:@
-initWithStreamSelector :: Selector
+initWithStreamSelector :: Selector '[Id NSInputStream] (Id NSXMLParser)
 initWithStreamSelector = mkSelector "initWithStream:"
 
 -- | @Selector@ for @parse@
-parseSelector :: Selector
+parseSelector :: Selector '[] Bool
 parseSelector = mkSelector "parse"
 
 -- | @Selector@ for @abortParsing@
-abortParsingSelector :: Selector
+abortParsingSelector :: Selector '[] ()
 abortParsingSelector = mkSelector "abortParsing"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @shouldProcessNamespaces@
-shouldProcessNamespacesSelector :: Selector
+shouldProcessNamespacesSelector :: Selector '[] Bool
 shouldProcessNamespacesSelector = mkSelector "shouldProcessNamespaces"
 
 -- | @Selector@ for @setShouldProcessNamespaces:@
-setShouldProcessNamespacesSelector :: Selector
+setShouldProcessNamespacesSelector :: Selector '[Bool] ()
 setShouldProcessNamespacesSelector = mkSelector "setShouldProcessNamespaces:"
 
 -- | @Selector@ for @shouldReportNamespacePrefixes@
-shouldReportNamespacePrefixesSelector :: Selector
+shouldReportNamespacePrefixesSelector :: Selector '[] Bool
 shouldReportNamespacePrefixesSelector = mkSelector "shouldReportNamespacePrefixes"
 
 -- | @Selector@ for @setShouldReportNamespacePrefixes:@
-setShouldReportNamespacePrefixesSelector :: Selector
+setShouldReportNamespacePrefixesSelector :: Selector '[Bool] ()
 setShouldReportNamespacePrefixesSelector = mkSelector "setShouldReportNamespacePrefixes:"
 
 -- | @Selector@ for @externalEntityResolvingPolicy@
-externalEntityResolvingPolicySelector :: Selector
+externalEntityResolvingPolicySelector :: Selector '[] NSXMLParserExternalEntityResolvingPolicy
 externalEntityResolvingPolicySelector = mkSelector "externalEntityResolvingPolicy"
 
 -- | @Selector@ for @setExternalEntityResolvingPolicy:@
-setExternalEntityResolvingPolicySelector :: Selector
+setExternalEntityResolvingPolicySelector :: Selector '[NSXMLParserExternalEntityResolvingPolicy] ()
 setExternalEntityResolvingPolicySelector = mkSelector "setExternalEntityResolvingPolicy:"
 
 -- | @Selector@ for @allowedExternalEntityURLs@
-allowedExternalEntityURLsSelector :: Selector
+allowedExternalEntityURLsSelector :: Selector '[] (Id NSSet)
 allowedExternalEntityURLsSelector = mkSelector "allowedExternalEntityURLs"
 
 -- | @Selector@ for @setAllowedExternalEntityURLs:@
-setAllowedExternalEntityURLsSelector :: Selector
+setAllowedExternalEntityURLsSelector :: Selector '[Id NSSet] ()
 setAllowedExternalEntityURLsSelector = mkSelector "setAllowedExternalEntityURLs:"
 
 -- | @Selector@ for @parserError@
-parserErrorSelector :: Selector
+parserErrorSelector :: Selector '[] (Id NSError)
 parserErrorSelector = mkSelector "parserError"
 
 -- | @Selector@ for @shouldResolveExternalEntities@
-shouldResolveExternalEntitiesSelector :: Selector
+shouldResolveExternalEntitiesSelector :: Selector '[] Bool
 shouldResolveExternalEntitiesSelector = mkSelector "shouldResolveExternalEntities"
 
 -- | @Selector@ for @setShouldResolveExternalEntities:@
-setShouldResolveExternalEntitiesSelector :: Selector
+setShouldResolveExternalEntitiesSelector :: Selector '[Bool] ()
 setShouldResolveExternalEntitiesSelector = mkSelector "setShouldResolveExternalEntities:"
 
 -- | @Selector@ for @publicID@
-publicIDSelector :: Selector
+publicIDSelector :: Selector '[] (Id NSString)
 publicIDSelector = mkSelector "publicID"
 
 -- | @Selector@ for @systemID@
-systemIDSelector :: Selector
+systemIDSelector :: Selector '[] (Id NSString)
 systemIDSelector = mkSelector "systemID"
 
 -- | @Selector@ for @lineNumber@
-lineNumberSelector :: Selector
+lineNumberSelector :: Selector '[] CLong
 lineNumberSelector = mkSelector "lineNumber"
 
 -- | @Selector@ for @columnNumber@
-columnNumberSelector :: Selector
+columnNumberSelector :: Selector '[] CLong
 columnNumberSelector = mkSelector "columnNumber"
 

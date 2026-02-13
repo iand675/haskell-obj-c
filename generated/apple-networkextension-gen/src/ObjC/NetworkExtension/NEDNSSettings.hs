@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,19 +25,19 @@ module ObjC.NetworkExtension.NEDNSSettings
   , setMatchDomainsNoSearch
   , allowFailover
   , setAllowFailover
-  , initWithServersSelector
-  , dnsProtocolSelector
-  , serversSelector
-  , searchDomainsSelector
-  , setSearchDomainsSelector
-  , domainNameSelector
-  , setDomainNameSelector
-  , matchDomainsSelector
-  , setMatchDomainsSelector
-  , matchDomainsNoSearchSelector
-  , setMatchDomainsNoSearchSelector
   , allowFailoverSelector
+  , dnsProtocolSelector
+  , domainNameSelector
+  , initWithServersSelector
+  , matchDomainsNoSearchSelector
+  , matchDomainsSelector
+  , searchDomainsSelector
+  , serversSelector
   , setAllowFailoverSelector
+  , setDomainNameSelector
+  , setMatchDomainsNoSearchSelector
+  , setMatchDomainsSelector
+  , setSearchDomainsSelector
 
   -- * Enum types
   , NEDNSProtocol(NEDNSProtocol)
@@ -46,15 +47,11 @@ module ObjC.NetworkExtension.NEDNSSettings
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,9 +67,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithServers:@
 initWithServers :: (IsNEDNSSettings nednsSettings, IsNSArray servers) => nednsSettings -> servers -> IO (Id NEDNSSettings)
-initWithServers nednsSettings  servers =
-  withObjCPtr servers $ \raw_servers ->
-      sendMsg nednsSettings (mkSelector "initWithServers:") (retPtr retVoid) [argPtr (castPtr raw_servers :: Ptr ())] >>= ownedObject . castPtr
+initWithServers nednsSettings servers =
+  sendOwnedMessage nednsSettings initWithServersSelector (toNSArray servers)
 
 -- | dnsProtocol
 --
@@ -80,8 +76,8 @@ initWithServers nednsSettings  servers =
 --
 -- ObjC selector: @- dnsProtocol@
 dnsProtocol :: IsNEDNSSettings nednsSettings => nednsSettings -> IO NEDNSProtocol
-dnsProtocol nednsSettings  =
-    fmap (coerce :: CLong -> NEDNSProtocol) $ sendMsg nednsSettings (mkSelector "dnsProtocol") retCLong []
+dnsProtocol nednsSettings =
+  sendMessage nednsSettings dnsProtocolSelector
 
 -- | servers
 --
@@ -89,8 +85,8 @@ dnsProtocol nednsSettings  =
 --
 -- ObjC selector: @- servers@
 servers :: IsNEDNSSettings nednsSettings => nednsSettings -> IO (Id NSArray)
-servers nednsSettings  =
-    sendMsg nednsSettings (mkSelector "servers") (retPtr retVoid) [] >>= retainedObject . castPtr
+servers nednsSettings =
+  sendMessage nednsSettings serversSelector
 
 -- | searchDomains
 --
@@ -98,8 +94,8 @@ servers nednsSettings  =
 --
 -- ObjC selector: @- searchDomains@
 searchDomains :: IsNEDNSSettings nednsSettings => nednsSettings -> IO (Id NSArray)
-searchDomains nednsSettings  =
-    sendMsg nednsSettings (mkSelector "searchDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+searchDomains nednsSettings =
+  sendMessage nednsSettings searchDomainsSelector
 
 -- | searchDomains
 --
@@ -107,9 +103,8 @@ searchDomains nednsSettings  =
 --
 -- ObjC selector: @- setSearchDomains:@
 setSearchDomains :: (IsNEDNSSettings nednsSettings, IsNSArray value) => nednsSettings -> value -> IO ()
-setSearchDomains nednsSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsSettings (mkSelector "setSearchDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSearchDomains nednsSettings value =
+  sendMessage nednsSettings setSearchDomainsSelector (toNSArray value)
 
 -- | domainName
 --
@@ -117,8 +112,8 @@ setSearchDomains nednsSettings  value =
 --
 -- ObjC selector: @- domainName@
 domainName :: IsNEDNSSettings nednsSettings => nednsSettings -> IO (Id NSString)
-domainName nednsSettings  =
-    sendMsg nednsSettings (mkSelector "domainName") (retPtr retVoid) [] >>= retainedObject . castPtr
+domainName nednsSettings =
+  sendMessage nednsSettings domainNameSelector
 
 -- | domainName
 --
@@ -126,9 +121,8 @@ domainName nednsSettings  =
 --
 -- ObjC selector: @- setDomainName:@
 setDomainName :: (IsNEDNSSettings nednsSettings, IsNSString value) => nednsSettings -> value -> IO ()
-setDomainName nednsSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsSettings (mkSelector "setDomainName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDomainName nednsSettings value =
+  sendMessage nednsSettings setDomainNameSelector (toNSString value)
 
 -- | matchDomains
 --
@@ -136,8 +130,8 @@ setDomainName nednsSettings  value =
 --
 -- ObjC selector: @- matchDomains@
 matchDomains :: IsNEDNSSettings nednsSettings => nednsSettings -> IO (Id NSArray)
-matchDomains nednsSettings  =
-    sendMsg nednsSettings (mkSelector "matchDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchDomains nednsSettings =
+  sendMessage nednsSettings matchDomainsSelector
 
 -- | matchDomains
 --
@@ -145,9 +139,8 @@ matchDomains nednsSettings  =
 --
 -- ObjC selector: @- setMatchDomains:@
 setMatchDomains :: (IsNEDNSSettings nednsSettings, IsNSArray value) => nednsSettings -> value -> IO ()
-setMatchDomains nednsSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsSettings (mkSelector "setMatchDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatchDomains nednsSettings value =
+  sendMessage nednsSettings setMatchDomainsSelector (toNSArray value)
 
 -- | matchDomainsNoSearch
 --
@@ -155,8 +148,8 @@ setMatchDomains nednsSettings  value =
 --
 -- ObjC selector: @- matchDomainsNoSearch@
 matchDomainsNoSearch :: IsNEDNSSettings nednsSettings => nednsSettings -> IO Bool
-matchDomainsNoSearch nednsSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nednsSettings (mkSelector "matchDomainsNoSearch") retCULong []
+matchDomainsNoSearch nednsSettings =
+  sendMessage nednsSettings matchDomainsNoSearchSelector
 
 -- | matchDomainsNoSearch
 --
@@ -164,8 +157,8 @@ matchDomainsNoSearch nednsSettings  =
 --
 -- ObjC selector: @- setMatchDomainsNoSearch:@
 setMatchDomainsNoSearch :: IsNEDNSSettings nednsSettings => nednsSettings -> Bool -> IO ()
-setMatchDomainsNoSearch nednsSettings  value =
-    sendMsg nednsSettings (mkSelector "setMatchDomainsNoSearch:") retVoid [argCULong (if value then 1 else 0)]
+setMatchDomainsNoSearch nednsSettings value =
+  sendMessage nednsSettings setMatchDomainsNoSearchSelector value
 
 -- | allowFailover
 --
@@ -173,8 +166,8 @@ setMatchDomainsNoSearch nednsSettings  value =
 --
 -- ObjC selector: @- allowFailover@
 allowFailover :: IsNEDNSSettings nednsSettings => nednsSettings -> IO Bool
-allowFailover nednsSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nednsSettings (mkSelector "allowFailover") retCULong []
+allowFailover nednsSettings =
+  sendMessage nednsSettings allowFailoverSelector
 
 -- | allowFailover
 --
@@ -182,62 +175,62 @@ allowFailover nednsSettings  =
 --
 -- ObjC selector: @- setAllowFailover:@
 setAllowFailover :: IsNEDNSSettings nednsSettings => nednsSettings -> Bool -> IO ()
-setAllowFailover nednsSettings  value =
-    sendMsg nednsSettings (mkSelector "setAllowFailover:") retVoid [argCULong (if value then 1 else 0)]
+setAllowFailover nednsSettings value =
+  sendMessage nednsSettings setAllowFailoverSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithServers:@
-initWithServersSelector :: Selector
+initWithServersSelector :: Selector '[Id NSArray] (Id NEDNSSettings)
 initWithServersSelector = mkSelector "initWithServers:"
 
 -- | @Selector@ for @dnsProtocol@
-dnsProtocolSelector :: Selector
+dnsProtocolSelector :: Selector '[] NEDNSProtocol
 dnsProtocolSelector = mkSelector "dnsProtocol"
 
 -- | @Selector@ for @servers@
-serversSelector :: Selector
+serversSelector :: Selector '[] (Id NSArray)
 serversSelector = mkSelector "servers"
 
 -- | @Selector@ for @searchDomains@
-searchDomainsSelector :: Selector
+searchDomainsSelector :: Selector '[] (Id NSArray)
 searchDomainsSelector = mkSelector "searchDomains"
 
 -- | @Selector@ for @setSearchDomains:@
-setSearchDomainsSelector :: Selector
+setSearchDomainsSelector :: Selector '[Id NSArray] ()
 setSearchDomainsSelector = mkSelector "setSearchDomains:"
 
 -- | @Selector@ for @domainName@
-domainNameSelector :: Selector
+domainNameSelector :: Selector '[] (Id NSString)
 domainNameSelector = mkSelector "domainName"
 
 -- | @Selector@ for @setDomainName:@
-setDomainNameSelector :: Selector
+setDomainNameSelector :: Selector '[Id NSString] ()
 setDomainNameSelector = mkSelector "setDomainName:"
 
 -- | @Selector@ for @matchDomains@
-matchDomainsSelector :: Selector
+matchDomainsSelector :: Selector '[] (Id NSArray)
 matchDomainsSelector = mkSelector "matchDomains"
 
 -- | @Selector@ for @setMatchDomains:@
-setMatchDomainsSelector :: Selector
+setMatchDomainsSelector :: Selector '[Id NSArray] ()
 setMatchDomainsSelector = mkSelector "setMatchDomains:"
 
 -- | @Selector@ for @matchDomainsNoSearch@
-matchDomainsNoSearchSelector :: Selector
+matchDomainsNoSearchSelector :: Selector '[] Bool
 matchDomainsNoSearchSelector = mkSelector "matchDomainsNoSearch"
 
 -- | @Selector@ for @setMatchDomainsNoSearch:@
-setMatchDomainsNoSearchSelector :: Selector
+setMatchDomainsNoSearchSelector :: Selector '[Bool] ()
 setMatchDomainsNoSearchSelector = mkSelector "setMatchDomainsNoSearch:"
 
 -- | @Selector@ for @allowFailover@
-allowFailoverSelector :: Selector
+allowFailoverSelector :: Selector '[] Bool
 allowFailoverSelector = mkSelector "allowFailover"
 
 -- | @Selector@ for @setAllowFailover:@
-setAllowFailoverSelector :: Selector
+setAllowFailoverSelector :: Selector '[Bool] ()
 setAllowFailoverSelector = mkSelector "setAllowFailover:"
 

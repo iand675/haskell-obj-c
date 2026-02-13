@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AutomaticAssessmentConfiguration.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @AEAssessmentErrorCode@
 newtype AEAssessmentErrorCode = AEAssessmentErrorCode CLong
@@ -30,6 +33,16 @@ pattern AEAssessmentErrorConfigurationUpdatesNotSupported = AEAssessmentErrorCod
 
 pattern AEAssessmentErrorRequiredParticipantsNotAvailable :: AEAssessmentErrorCode
 pattern AEAssessmentErrorRequiredParticipantsNotAvailable = AEAssessmentErrorCode 5
+
+instance ObjCArgument AEAssessmentErrorCode where
+  withObjCArg (AEAssessmentErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn AEAssessmentErrorCode where
+  type RawReturn AEAssessmentErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AEAssessmentErrorCode x)
+  fromOwned x = pure (AEAssessmentErrorCode x)
 
 -- | The set of autocorrect features that you can enable during an assessment.
 --
@@ -69,3 +82,13 @@ pattern AEAutocorrectModeSpelling = AEAutocorrectMode 1
 
 pattern AEAutocorrectModePunctuation :: AEAutocorrectMode
 pattern AEAutocorrectModePunctuation = AEAutocorrectMode 2
+
+instance ObjCArgument AEAutocorrectMode where
+  withObjCArg (AEAutocorrectMode x) k = k (argCULong x)
+
+instance ObjCReturn AEAutocorrectMode where
+  type RawReturn AEAutocorrectMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AEAutocorrectMode x)
+  fromOwned x = pure (AEAutocorrectMode x)

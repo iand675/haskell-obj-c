@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.Cinematic.CNDecision
   , userDecision
   , groupDecision
   , strongDecision
+  , detectionGroupIDSelector
+  , detectionIDSelector
+  , groupDecisionSelector
   , initSelector
   , newSelector
-  , detectionIDSelector
-  , detectionGroupIDSelector
-  , userDecisionSelector
-  , groupDecisionSelector
   , strongDecisionSelector
+  , userDecisionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,80 +42,80 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCNDecision cnDecision => cnDecision -> IO (Id CNDecision)
-init_ cnDecision  =
-    sendMsg cnDecision (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnDecision =
+  sendOwnedMessage cnDecision initSelector
 
 -- | @+ new@
 new :: IO (Id CNDecision)
 new  =
   do
     cls' <- getRequiredClass "CNDecision"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The detectionID of the detection to focus on if this is not a group decision.
 --
 -- ObjC selector: @- detectionID@
 detectionID :: IsCNDecision cnDecision => cnDecision -> IO CLong
-detectionID cnDecision  =
-    sendMsg cnDecision (mkSelector "detectionID") retCLong []
+detectionID cnDecision =
+  sendMessage cnDecision detectionIDSelector
 
 -- | The detectionGroupID of the detection to focus on if this is a group decision.
 --
 -- ObjC selector: @- detectionGroupID@
 detectionGroupID :: IsCNDecision cnDecision => cnDecision -> IO CLong
-detectionGroupID cnDecision  =
-    sendMsg cnDecision (mkSelector "detectionGroupID") retCLong []
+detectionGroupID cnDecision =
+  sendMessage cnDecision detectionGroupIDSelector
 
 -- | Whether this is a user-created decision, or a base decision.
 --
 -- ObjC selector: @- userDecision@
 userDecision :: IsCNDecision cnDecision => cnDecision -> IO Bool
-userDecision cnDecision  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnDecision (mkSelector "userDecision") retCULong []
+userDecision cnDecision =
+  sendMessage cnDecision userDecisionSelector
 
 -- | Whether this is a group decision or not.
 --
 -- ObjC selector: @- groupDecision@
 groupDecision :: IsCNDecision cnDecision => cnDecision -> IO Bool
-groupDecision cnDecision  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnDecision (mkSelector "groupDecision") retCULong []
+groupDecision cnDecision =
+  sendMessage cnDecision groupDecisionSelector
 
 -- | Whether this is a strong decision or not. A strong decision keeps focus for as long as possible.
 --
 -- ObjC selector: @- strongDecision@
 strongDecision :: IsCNDecision cnDecision => cnDecision -> IO Bool
-strongDecision cnDecision  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnDecision (mkSelector "strongDecision") retCULong []
+strongDecision cnDecision =
+  sendMessage cnDecision strongDecisionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNDecision)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNDecision)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @detectionID@
-detectionIDSelector :: Selector
+detectionIDSelector :: Selector '[] CLong
 detectionIDSelector = mkSelector "detectionID"
 
 -- | @Selector@ for @detectionGroupID@
-detectionGroupIDSelector :: Selector
+detectionGroupIDSelector :: Selector '[] CLong
 detectionGroupIDSelector = mkSelector "detectionGroupID"
 
 -- | @Selector@ for @userDecision@
-userDecisionSelector :: Selector
+userDecisionSelector :: Selector '[] Bool
 userDecisionSelector = mkSelector "userDecision"
 
 -- | @Selector@ for @groupDecision@
-groupDecisionSelector :: Selector
+groupDecisionSelector :: Selector '[] Bool
 groupDecisionSelector = mkSelector "groupDecision"
 
 -- | @Selector@ for @strongDecision@
-strongDecisionSelector :: Selector
+strongDecisionSelector :: Selector '[] Bool
 strongDecisionSelector = mkSelector "strongDecision"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.ScreenCaptureKit.SCRecordingOutputConfiguration
   , setOutputFileType
   , availableVideoCodecTypes
   , availableOutputFileTypes
-  , outputURLSelector
-  , setOutputURLSelector
-  , videoCodecTypeSelector
-  , setVideoCodecTypeSelector
-  , outputFileTypeSelector
-  , setOutputFileTypeSelector
-  , availableVideoCodecTypesSelector
   , availableOutputFileTypesSelector
+  , availableVideoCodecTypesSelector
+  , outputFileTypeSelector
+  , outputURLSelector
+  , setOutputFileTypeSelector
+  , setOutputURLSelector
+  , setVideoCodecTypeSelector
+  , videoCodecTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,94 +46,91 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- outputURL@
 outputURL :: IsSCRecordingOutputConfiguration scRecordingOutputConfiguration => scRecordingOutputConfiguration -> IO (Id NSURL)
-outputURL scRecordingOutputConfiguration  =
-    sendMsg scRecordingOutputConfiguration (mkSelector "outputURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputURL scRecordingOutputConfiguration =
+  sendMessage scRecordingOutputConfiguration outputURLSelector
 
 -- | Specifies output URL to save the recording.
 --
 -- ObjC selector: @- setOutputURL:@
 setOutputURL :: (IsSCRecordingOutputConfiguration scRecordingOutputConfiguration, IsNSURL value) => scRecordingOutputConfiguration -> value -> IO ()
-setOutputURL scRecordingOutputConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scRecordingOutputConfiguration (mkSelector "setOutputURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputURL scRecordingOutputConfiguration value =
+  sendMessage scRecordingOutputConfiguration setOutputURLSelector (toNSURL value)
 
 -- | Specifies video codec for the recording output, default is AVVideoCodecTypeH264, supported values can be obtained using availableVideoCodecTypes
 --
 -- ObjC selector: @- videoCodecType@
 videoCodecType :: IsSCRecordingOutputConfiguration scRecordingOutputConfiguration => scRecordingOutputConfiguration -> IO (Id NSString)
-videoCodecType scRecordingOutputConfiguration  =
-    sendMsg scRecordingOutputConfiguration (mkSelector "videoCodecType") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoCodecType scRecordingOutputConfiguration =
+  sendMessage scRecordingOutputConfiguration videoCodecTypeSelector
 
 -- | Specifies video codec for the recording output, default is AVVideoCodecTypeH264, supported values can be obtained using availableVideoCodecTypes
 --
 -- ObjC selector: @- setVideoCodecType:@
 setVideoCodecType :: (IsSCRecordingOutputConfiguration scRecordingOutputConfiguration, IsNSString value) => scRecordingOutputConfiguration -> value -> IO ()
-setVideoCodecType scRecordingOutputConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scRecordingOutputConfiguration (mkSelector "setVideoCodecType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoCodecType scRecordingOutputConfiguration value =
+  sendMessage scRecordingOutputConfiguration setVideoCodecTypeSelector (toNSString value)
 
 -- | Specifies file type for the recording output, default is AVFileTypeMPEG4, supported values can be obtained using availableOutputFileTypes
 --
 -- ObjC selector: @- outputFileType@
 outputFileType :: IsSCRecordingOutputConfiguration scRecordingOutputConfiguration => scRecordingOutputConfiguration -> IO (Id NSString)
-outputFileType scRecordingOutputConfiguration  =
-    sendMsg scRecordingOutputConfiguration (mkSelector "outputFileType") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputFileType scRecordingOutputConfiguration =
+  sendMessage scRecordingOutputConfiguration outputFileTypeSelector
 
 -- | Specifies file type for the recording output, default is AVFileTypeMPEG4, supported values can be obtained using availableOutputFileTypes
 --
 -- ObjC selector: @- setOutputFileType:@
 setOutputFileType :: (IsSCRecordingOutputConfiguration scRecordingOutputConfiguration, IsNSString value) => scRecordingOutputConfiguration -> value -> IO ()
-setOutputFileType scRecordingOutputConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scRecordingOutputConfiguration (mkSelector "setOutputFileType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputFileType scRecordingOutputConfiguration value =
+  sendMessage scRecordingOutputConfiguration setOutputFileTypeSelector (toNSString value)
 
 -- | Returns an array of supported video codec formats that can be specified in SCRecordingOutputConfiguration for videoCodecType
 --
 -- ObjC selector: @- availableVideoCodecTypes@
 availableVideoCodecTypes :: IsSCRecordingOutputConfiguration scRecordingOutputConfiguration => scRecordingOutputConfiguration -> IO (Id NSArray)
-availableVideoCodecTypes scRecordingOutputConfiguration  =
-    sendMsg scRecordingOutputConfiguration (mkSelector "availableVideoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableVideoCodecTypes scRecordingOutputConfiguration =
+  sendMessage scRecordingOutputConfiguration availableVideoCodecTypesSelector
 
 -- | Returns an array of supported file types that can be specified in SCRecordingOutputConfiguration for outputFileType    Provides the file types AVCaptureAudioFileOutput can write.
 --
 -- ObjC selector: @- availableOutputFileTypes@
 availableOutputFileTypes :: IsSCRecordingOutputConfiguration scRecordingOutputConfiguration => scRecordingOutputConfiguration -> IO (Id NSArray)
-availableOutputFileTypes scRecordingOutputConfiguration  =
-    sendMsg scRecordingOutputConfiguration (mkSelector "availableOutputFileTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableOutputFileTypes scRecordingOutputConfiguration =
+  sendMessage scRecordingOutputConfiguration availableOutputFileTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @outputURL@
-outputURLSelector :: Selector
+outputURLSelector :: Selector '[] (Id NSURL)
 outputURLSelector = mkSelector "outputURL"
 
 -- | @Selector@ for @setOutputURL:@
-setOutputURLSelector :: Selector
+setOutputURLSelector :: Selector '[Id NSURL] ()
 setOutputURLSelector = mkSelector "setOutputURL:"
 
 -- | @Selector@ for @videoCodecType@
-videoCodecTypeSelector :: Selector
+videoCodecTypeSelector :: Selector '[] (Id NSString)
 videoCodecTypeSelector = mkSelector "videoCodecType"
 
 -- | @Selector@ for @setVideoCodecType:@
-setVideoCodecTypeSelector :: Selector
+setVideoCodecTypeSelector :: Selector '[Id NSString] ()
 setVideoCodecTypeSelector = mkSelector "setVideoCodecType:"
 
 -- | @Selector@ for @outputFileType@
-outputFileTypeSelector :: Selector
+outputFileTypeSelector :: Selector '[] (Id NSString)
 outputFileTypeSelector = mkSelector "outputFileType"
 
 -- | @Selector@ for @setOutputFileType:@
-setOutputFileTypeSelector :: Selector
+setOutputFileTypeSelector :: Selector '[Id NSString] ()
 setOutputFileTypeSelector = mkSelector "setOutputFileType:"
 
 -- | @Selector@ for @availableVideoCodecTypes@
-availableVideoCodecTypesSelector :: Selector
+availableVideoCodecTypesSelector :: Selector '[] (Id NSArray)
 availableVideoCodecTypesSelector = mkSelector "availableVideoCodecTypes"
 
 -- | @Selector@ for @availableOutputFileTypes@
-availableOutputFileTypesSelector :: Selector
+availableOutputFileTypesSelector :: Selector '[] (Id NSArray)
 availableOutputFileTypesSelector = mkSelector "availableOutputFileTypes"
 

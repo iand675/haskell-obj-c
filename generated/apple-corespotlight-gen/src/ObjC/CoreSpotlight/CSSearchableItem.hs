@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.CoreSpotlight.CSSearchableItem
   , setIsUpdate
   , updateListenerOptions
   , setUpdateListenerOptions
-  , initWithUniqueIdentifier_domainIdentifier_attributeSetSelector
-  , compareByRankSelector
-  , uniqueIdentifierSelector
-  , setUniqueIdentifierSelector
-  , domainIdentifierSelector
-  , setDomainIdentifierSelector
-  , expirationDateSelector
-  , setExpirationDateSelector
   , attributeSetSelector
-  , setAttributeSetSelector
+  , compareByRankSelector
+  , domainIdentifierSelector
+  , expirationDateSelector
+  , initWithUniqueIdentifier_domainIdentifier_attributeSetSelector
   , isUpdateSelector
+  , setAttributeSetSelector
+  , setDomainIdentifierSelector
+  , setExpirationDateSelector
   , setIsUpdateSelector
-  , updateListenerOptionsSelector
+  , setUniqueIdentifierSelector
   , setUpdateListenerOptionsSelector
+  , uniqueIdentifierSelector
+  , updateListenerOptionsSelector
 
   -- * Enum types
   , CSSearchableItemUpdateListenerOptions(CSSearchableItemUpdateListenerOptions)
@@ -48,15 +49,11 @@ module ObjC.CoreSpotlight.CSSearchableItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,139 +64,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithUniqueIdentifier:domainIdentifier:attributeSet:@
 initWithUniqueIdentifier_domainIdentifier_attributeSet :: (IsCSSearchableItem csSearchableItem, IsNSString uniqueIdentifier, IsNSString domainIdentifier, IsCSSearchableItemAttributeSet attributeSet) => csSearchableItem -> uniqueIdentifier -> domainIdentifier -> attributeSet -> IO (Id CSSearchableItem)
-initWithUniqueIdentifier_domainIdentifier_attributeSet csSearchableItem  uniqueIdentifier domainIdentifier attributeSet =
-  withObjCPtr uniqueIdentifier $ \raw_uniqueIdentifier ->
-    withObjCPtr domainIdentifier $ \raw_domainIdentifier ->
-      withObjCPtr attributeSet $ \raw_attributeSet ->
-          sendMsg csSearchableItem (mkSelector "initWithUniqueIdentifier:domainIdentifier:attributeSet:") (retPtr retVoid) [argPtr (castPtr raw_uniqueIdentifier :: Ptr ()), argPtr (castPtr raw_domainIdentifier :: Ptr ()), argPtr (castPtr raw_attributeSet :: Ptr ())] >>= ownedObject . castPtr
+initWithUniqueIdentifier_domainIdentifier_attributeSet csSearchableItem uniqueIdentifier domainIdentifier attributeSet =
+  sendOwnedMessage csSearchableItem initWithUniqueIdentifier_domainIdentifier_attributeSetSelector (toNSString uniqueIdentifier) (toNSString domainIdentifier) (toCSSearchableItemAttributeSet attributeSet)
 
 -- | @- compareByRank:@
 compareByRank :: (IsCSSearchableItem csSearchableItem, IsCSSearchableItem other) => csSearchableItem -> other -> IO NSComparisonResult
-compareByRank csSearchableItem  other =
-  withObjCPtr other $ \raw_other ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg csSearchableItem (mkSelector "compareByRank:") retCLong [argPtr (castPtr raw_other :: Ptr ())]
+compareByRank csSearchableItem other =
+  sendMessage csSearchableItem compareByRankSelector (toCSSearchableItem other)
 
 -- | @- uniqueIdentifier@
 uniqueIdentifier :: IsCSSearchableItem csSearchableItem => csSearchableItem -> IO (Id NSString)
-uniqueIdentifier csSearchableItem  =
-    sendMsg csSearchableItem (mkSelector "uniqueIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueIdentifier csSearchableItem =
+  sendMessage csSearchableItem uniqueIdentifierSelector
 
 -- | @- setUniqueIdentifier:@
 setUniqueIdentifier :: (IsCSSearchableItem csSearchableItem, IsNSString value) => csSearchableItem -> value -> IO ()
-setUniqueIdentifier csSearchableItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItem (mkSelector "setUniqueIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUniqueIdentifier csSearchableItem value =
+  sendMessage csSearchableItem setUniqueIdentifierSelector (toNSString value)
 
 -- | @- domainIdentifier@
 domainIdentifier :: IsCSSearchableItem csSearchableItem => csSearchableItem -> IO (Id NSString)
-domainIdentifier csSearchableItem  =
-    sendMsg csSearchableItem (mkSelector "domainIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+domainIdentifier csSearchableItem =
+  sendMessage csSearchableItem domainIdentifierSelector
 
 -- | @- setDomainIdentifier:@
 setDomainIdentifier :: (IsCSSearchableItem csSearchableItem, IsNSString value) => csSearchableItem -> value -> IO ()
-setDomainIdentifier csSearchableItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItem (mkSelector "setDomainIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDomainIdentifier csSearchableItem value =
+  sendMessage csSearchableItem setDomainIdentifierSelector (toNSString value)
 
 -- | @- expirationDate@
 expirationDate :: IsCSSearchableItem csSearchableItem => csSearchableItem -> IO (Id NSDate)
-expirationDate csSearchableItem  =
-    sendMsg csSearchableItem (mkSelector "expirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationDate csSearchableItem =
+  sendMessage csSearchableItem expirationDateSelector
 
 -- | @- setExpirationDate:@
 setExpirationDate :: (IsCSSearchableItem csSearchableItem, IsNSDate value) => csSearchableItem -> value -> IO ()
-setExpirationDate csSearchableItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItem (mkSelector "setExpirationDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExpirationDate csSearchableItem value =
+  sendMessage csSearchableItem setExpirationDateSelector (toNSDate value)
 
 -- | @- attributeSet@
 attributeSet :: IsCSSearchableItem csSearchableItem => csSearchableItem -> IO (Id CSSearchableItemAttributeSet)
-attributeSet csSearchableItem  =
-    sendMsg csSearchableItem (mkSelector "attributeSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeSet csSearchableItem =
+  sendMessage csSearchableItem attributeSetSelector
 
 -- | @- setAttributeSet:@
 setAttributeSet :: (IsCSSearchableItem csSearchableItem, IsCSSearchableItemAttributeSet value) => csSearchableItem -> value -> IO ()
-setAttributeSet csSearchableItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csSearchableItem (mkSelector "setAttributeSet:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributeSet csSearchableItem value =
+  sendMessage csSearchableItem setAttributeSetSelector (toCSSearchableItemAttributeSet value)
 
 -- | @- isUpdate@
 isUpdate :: IsCSSearchableItem csSearchableItem => csSearchableItem -> IO Bool
-isUpdate csSearchableItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg csSearchableItem (mkSelector "isUpdate") retCULong []
+isUpdate csSearchableItem =
+  sendMessage csSearchableItem isUpdateSelector
 
 -- | @- setIsUpdate:@
 setIsUpdate :: IsCSSearchableItem csSearchableItem => csSearchableItem -> Bool -> IO ()
-setIsUpdate csSearchableItem  value =
-    sendMsg csSearchableItem (mkSelector "setIsUpdate:") retVoid [argCULong (if value then 1 else 0)]
+setIsUpdate csSearchableItem value =
+  sendMessage csSearchableItem setIsUpdateSelector value
 
 -- | @- updateListenerOptions@
 updateListenerOptions :: IsCSSearchableItem csSearchableItem => csSearchableItem -> IO CSSearchableItemUpdateListenerOptions
-updateListenerOptions csSearchableItem  =
-    fmap (coerce :: CULong -> CSSearchableItemUpdateListenerOptions) $ sendMsg csSearchableItem (mkSelector "updateListenerOptions") retCULong []
+updateListenerOptions csSearchableItem =
+  sendMessage csSearchableItem updateListenerOptionsSelector
 
 -- | @- setUpdateListenerOptions:@
 setUpdateListenerOptions :: IsCSSearchableItem csSearchableItem => csSearchableItem -> CSSearchableItemUpdateListenerOptions -> IO ()
-setUpdateListenerOptions csSearchableItem  value =
-    sendMsg csSearchableItem (mkSelector "setUpdateListenerOptions:") retVoid [argCULong (coerce value)]
+setUpdateListenerOptions csSearchableItem value =
+  sendMessage csSearchableItem setUpdateListenerOptionsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUniqueIdentifier:domainIdentifier:attributeSet:@
-initWithUniqueIdentifier_domainIdentifier_attributeSetSelector :: Selector
+initWithUniqueIdentifier_domainIdentifier_attributeSetSelector :: Selector '[Id NSString, Id NSString, Id CSSearchableItemAttributeSet] (Id CSSearchableItem)
 initWithUniqueIdentifier_domainIdentifier_attributeSetSelector = mkSelector "initWithUniqueIdentifier:domainIdentifier:attributeSet:"
 
 -- | @Selector@ for @compareByRank:@
-compareByRankSelector :: Selector
+compareByRankSelector :: Selector '[Id CSSearchableItem] NSComparisonResult
 compareByRankSelector = mkSelector "compareByRank:"
 
 -- | @Selector@ for @uniqueIdentifier@
-uniqueIdentifierSelector :: Selector
+uniqueIdentifierSelector :: Selector '[] (Id NSString)
 uniqueIdentifierSelector = mkSelector "uniqueIdentifier"
 
 -- | @Selector@ for @setUniqueIdentifier:@
-setUniqueIdentifierSelector :: Selector
+setUniqueIdentifierSelector :: Selector '[Id NSString] ()
 setUniqueIdentifierSelector = mkSelector "setUniqueIdentifier:"
 
 -- | @Selector@ for @domainIdentifier@
-domainIdentifierSelector :: Selector
+domainIdentifierSelector :: Selector '[] (Id NSString)
 domainIdentifierSelector = mkSelector "domainIdentifier"
 
 -- | @Selector@ for @setDomainIdentifier:@
-setDomainIdentifierSelector :: Selector
+setDomainIdentifierSelector :: Selector '[Id NSString] ()
 setDomainIdentifierSelector = mkSelector "setDomainIdentifier:"
 
 -- | @Selector@ for @expirationDate@
-expirationDateSelector :: Selector
+expirationDateSelector :: Selector '[] (Id NSDate)
 expirationDateSelector = mkSelector "expirationDate"
 
 -- | @Selector@ for @setExpirationDate:@
-setExpirationDateSelector :: Selector
+setExpirationDateSelector :: Selector '[Id NSDate] ()
 setExpirationDateSelector = mkSelector "setExpirationDate:"
 
 -- | @Selector@ for @attributeSet@
-attributeSetSelector :: Selector
+attributeSetSelector :: Selector '[] (Id CSSearchableItemAttributeSet)
 attributeSetSelector = mkSelector "attributeSet"
 
 -- | @Selector@ for @setAttributeSet:@
-setAttributeSetSelector :: Selector
+setAttributeSetSelector :: Selector '[Id CSSearchableItemAttributeSet] ()
 setAttributeSetSelector = mkSelector "setAttributeSet:"
 
 -- | @Selector@ for @isUpdate@
-isUpdateSelector :: Selector
+isUpdateSelector :: Selector '[] Bool
 isUpdateSelector = mkSelector "isUpdate"
 
 -- | @Selector@ for @setIsUpdate:@
-setIsUpdateSelector :: Selector
+setIsUpdateSelector :: Selector '[Bool] ()
 setIsUpdateSelector = mkSelector "setIsUpdate:"
 
 -- | @Selector@ for @updateListenerOptions@
-updateListenerOptionsSelector :: Selector
+updateListenerOptionsSelector :: Selector '[] CSSearchableItemUpdateListenerOptions
 updateListenerOptionsSelector = mkSelector "updateListenerOptions"
 
 -- | @Selector@ for @setUpdateListenerOptions:@
-setUpdateListenerOptionsSelector :: Selector
+setUpdateListenerOptionsSelector :: Selector '[CSSearchableItemUpdateListenerOptions] ()
 setUpdateListenerOptionsSelector = mkSelector "setUpdateListenerOptions:"
 

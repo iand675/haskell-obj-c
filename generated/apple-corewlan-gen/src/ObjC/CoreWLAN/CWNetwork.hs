@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,19 +23,19 @@ module ObjC.CoreWLAN.CWNetwork
   , countryCode
   , beaconInterval
   , ibss
-  , isEqualToNetworkSelector
-  , supportsSecuritySelector
-  , supportsPHYModeSelector
-  , ssidSelector
-  , ssidDataSelector
-  , bssidSelector
-  , wlanChannelSelector
-  , rssiValueSelector
-  , noiseMeasurementSelector
-  , informationElementDataSelector
-  , countryCodeSelector
   , beaconIntervalSelector
+  , bssidSelector
+  , countryCodeSelector
   , ibssSelector
+  , informationElementDataSelector
+  , isEqualToNetworkSelector
+  , noiseMeasurementSelector
+  , rssiValueSelector
+  , ssidDataSelector
+  , ssidSelector
+  , supportsPHYModeSelector
+  , supportsSecuritySelector
+  , wlanChannelSelector
 
   -- * Enum types
   , CWPHYMode(CWPHYMode)
@@ -66,15 +67,11 @@ module ObjC.CoreWLAN.CWNetwork
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,9 +89,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isEqualToNetwork:@
 isEqualToNetwork :: (IsCWNetwork cwNetwork, IsCWNetwork network) => cwNetwork -> network -> IO Bool
-isEqualToNetwork cwNetwork  network =
-  withObjCPtr network $ \raw_network ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwNetwork (mkSelector "isEqualToNetwork:") retCULong [argPtr (castPtr raw_network :: Ptr ())]
+isEqualToNetwork cwNetwork network =
+  sendMessage cwNetwork isEqualToNetworkSelector (toCWNetwork network)
 
 -- | @security@ — A CWSecurity type value.
 --
@@ -104,8 +100,8 @@ isEqualToNetwork cwNetwork  network =
 --
 -- ObjC selector: @- supportsSecurity:@
 supportsSecurity :: IsCWNetwork cwNetwork => cwNetwork -> CWSecurity -> IO Bool
-supportsSecurity cwNetwork  security =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwNetwork (mkSelector "supportsSecurity:") retCULong [argCLong (coerce security)]
+supportsSecurity cwNetwork security =
+  sendMessage cwNetwork supportsSecuritySelector security
 
 -- | @phyMode@ — A CWPHYMode type value.
 --
@@ -115,8 +111,8 @@ supportsSecurity cwNetwork  security =
 --
 -- ObjC selector: @- supportsPHYMode:@
 supportsPHYMode :: IsCWNetwork cwNetwork => cwNetwork -> CWPHYMode -> IO Bool
-supportsPHYMode cwNetwork  phyMode =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwNetwork (mkSelector "supportsPHYMode:") retCULong [argCLong (coerce phyMode)]
+supportsPHYMode cwNetwork phyMode =
+  sendMessage cwNetwork supportsPHYModeSelector phyMode
 
 -- | Returns the service set identifier (SSID) for the Wi-Fi network device, encoded as a string.
 --
@@ -128,8 +124,8 @@ supportsPHYMode cwNetwork  phyMode =
 --
 -- ObjC selector: @- ssid@
 ssid :: IsCWNetwork cwNetwork => cwNetwork -> IO RawId
-ssid cwNetwork  =
-    fmap (RawId . castPtr) $ sendMsg cwNetwork (mkSelector "ssid") (retPtr retVoid) []
+ssid cwNetwork =
+  sendMessage cwNetwork ssidSelector
 
 -- | Returns the service set identifier (SSID) for the Wi-Fi network device, encapsulated in an NSData object.
 --
@@ -141,8 +137,8 @@ ssid cwNetwork  =
 --
 -- ObjC selector: @- ssidData@
 ssidData :: IsCWNetwork cwNetwork => cwNetwork -> IO RawId
-ssidData cwNetwork  =
-    fmap (RawId . castPtr) $ sendMsg cwNetwork (mkSelector "ssidData") (retPtr retVoid) []
+ssidData cwNetwork =
+  sendMessage cwNetwork ssidDataSelector
 
 -- | Returns the basic service set identifier (BSSID) for the Wi-Fi network device, returned as UTF-8 string.
 --
@@ -154,36 +150,36 @@ ssidData cwNetwork  =
 --
 -- ObjC selector: @- bssid@
 bssid :: IsCWNetwork cwNetwork => cwNetwork -> IO RawId
-bssid cwNetwork  =
-    fmap (RawId . castPtr) $ sendMsg cwNetwork (mkSelector "bssid") (retPtr retVoid) []
+bssid cwNetwork =
+  sendMessage cwNetwork bssidSelector
 
 -- | The operating channel of the Wi-Fi device.
 --
 -- ObjC selector: @- wlanChannel@
 wlanChannel :: IsCWNetwork cwNetwork => cwNetwork -> IO RawId
-wlanChannel cwNetwork  =
-    fmap (RawId . castPtr) $ sendMsg cwNetwork (mkSelector "wlanChannel") (retPtr retVoid) []
+wlanChannel cwNetwork =
+  sendMessage cwNetwork wlanChannelSelector
 
 -- | Returns the received signal strength indication (RSSI) measurement (dBm) for the Wi-Fi device.
 --
 -- ObjC selector: @- rssiValue@
 rssiValue :: IsCWNetwork cwNetwork => cwNetwork -> IO CLong
-rssiValue cwNetwork  =
-    sendMsg cwNetwork (mkSelector "rssiValue") retCLong []
+rssiValue cwNetwork =
+  sendMessage cwNetwork rssiValueSelector
 
 -- | Returns the noise measurement (dBm) for the Wi-Fi device.
 --
 -- ObjC selector: @- noiseMeasurement@
 noiseMeasurement :: IsCWNetwork cwNetwork => cwNetwork -> IO CLong
-noiseMeasurement cwNetwork  =
-    sendMsg cwNetwork (mkSelector "noiseMeasurement") retCLong []
+noiseMeasurement cwNetwork =
+  sendMessage cwNetwork noiseMeasurementSelector
 
 -- | Returns information element data included in beacon or probe response frames.
 --
 -- ObjC selector: @- informationElementData@
 informationElementData :: IsCWNetwork cwNetwork => cwNetwork -> IO RawId
-informationElementData cwNetwork  =
-    fmap (RawId . castPtr) $ sendMsg cwNetwork (mkSelector "informationElementData") (retPtr retVoid) []
+informationElementData cwNetwork =
+  sendMessage cwNetwork informationElementDataSelector
 
 -- | Returns the advertised country code (ISO/IEC 3166-1:1997) for the Wi-Fi device.
 --
@@ -193,15 +189,15 @@ informationElementData cwNetwork  =
 --
 -- ObjC selector: @- countryCode@
 countryCode :: IsCWNetwork cwNetwork => cwNetwork -> IO RawId
-countryCode cwNetwork  =
-    fmap (RawId . castPtr) $ sendMsg cwNetwork (mkSelector "countryCode") (retPtr retVoid) []
+countryCode cwNetwork =
+  sendMessage cwNetwork countryCodeSelector
 
 -- | Returns the beacon interval (ms) for the Wi-Fi device.
 --
 -- ObjC selector: @- beaconInterval@
 beaconInterval :: IsCWNetwork cwNetwork => cwNetwork -> IO CLong
-beaconInterval cwNetwork  =
-    sendMsg cwNetwork (mkSelector "beaconInterval") retCLong []
+beaconInterval cwNetwork =
+  sendMessage cwNetwork beaconIntervalSelector
 
 -- | Returns: YES if the Wi-Fi device is part of an IBSS network, NO otherwise.
 --
@@ -209,62 +205,62 @@ beaconInterval cwNetwork  =
 --
 -- ObjC selector: @- ibss@
 ibss :: IsCWNetwork cwNetwork => cwNetwork -> IO Bool
-ibss cwNetwork  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cwNetwork (mkSelector "ibss") retCULong []
+ibss cwNetwork =
+  sendMessage cwNetwork ibssSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isEqualToNetwork:@
-isEqualToNetworkSelector :: Selector
+isEqualToNetworkSelector :: Selector '[Id CWNetwork] Bool
 isEqualToNetworkSelector = mkSelector "isEqualToNetwork:"
 
 -- | @Selector@ for @supportsSecurity:@
-supportsSecuritySelector :: Selector
+supportsSecuritySelector :: Selector '[CWSecurity] Bool
 supportsSecuritySelector = mkSelector "supportsSecurity:"
 
 -- | @Selector@ for @supportsPHYMode:@
-supportsPHYModeSelector :: Selector
+supportsPHYModeSelector :: Selector '[CWPHYMode] Bool
 supportsPHYModeSelector = mkSelector "supportsPHYMode:"
 
 -- | @Selector@ for @ssid@
-ssidSelector :: Selector
+ssidSelector :: Selector '[] RawId
 ssidSelector = mkSelector "ssid"
 
 -- | @Selector@ for @ssidData@
-ssidDataSelector :: Selector
+ssidDataSelector :: Selector '[] RawId
 ssidDataSelector = mkSelector "ssidData"
 
 -- | @Selector@ for @bssid@
-bssidSelector :: Selector
+bssidSelector :: Selector '[] RawId
 bssidSelector = mkSelector "bssid"
 
 -- | @Selector@ for @wlanChannel@
-wlanChannelSelector :: Selector
+wlanChannelSelector :: Selector '[] RawId
 wlanChannelSelector = mkSelector "wlanChannel"
 
 -- | @Selector@ for @rssiValue@
-rssiValueSelector :: Selector
+rssiValueSelector :: Selector '[] CLong
 rssiValueSelector = mkSelector "rssiValue"
 
 -- | @Selector@ for @noiseMeasurement@
-noiseMeasurementSelector :: Selector
+noiseMeasurementSelector :: Selector '[] CLong
 noiseMeasurementSelector = mkSelector "noiseMeasurement"
 
 -- | @Selector@ for @informationElementData@
-informationElementDataSelector :: Selector
+informationElementDataSelector :: Selector '[] RawId
 informationElementDataSelector = mkSelector "informationElementData"
 
 -- | @Selector@ for @countryCode@
-countryCodeSelector :: Selector
+countryCodeSelector :: Selector '[] RawId
 countryCodeSelector = mkSelector "countryCode"
 
 -- | @Selector@ for @beaconInterval@
-beaconIntervalSelector :: Selector
+beaconIntervalSelector :: Selector '[] CLong
 beaconIntervalSelector = mkSelector "beaconInterval"
 
 -- | @Selector@ for @ibss@
-ibssSelector :: Selector
+ibssSelector :: Selector '[] Bool
 ibssSelector = mkSelector "ibss"
 

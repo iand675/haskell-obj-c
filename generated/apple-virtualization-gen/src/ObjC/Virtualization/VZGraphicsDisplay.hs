@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,24 +22,20 @@ module ObjC.Virtualization.VZGraphicsDisplay
   , reconfigureWithConfiguration_error
   , addObserver
   , removeObserver
-  , newSelector
-  , initSelector
-  , reconfigureWithConfiguration_errorSelector
   , addObserverSelector
+  , initSelector
+  , newSelector
+  , reconfigureWithConfiguration_errorSelector
   , removeObserverSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,12 +47,12 @@ new :: IO (Id VZGraphicsDisplay)
 new  =
   do
     cls' <- getRequiredClass "VZGraphicsDisplay"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZGraphicsDisplay vzGraphicsDisplay => vzGraphicsDisplay -> IO (Id VZGraphicsDisplay)
-init_ vzGraphicsDisplay  =
-    sendMsg vzGraphicsDisplay (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzGraphicsDisplay =
+  sendOwnedMessage vzGraphicsDisplay initSelector
 
 -- | Reconfigure this display.
 --
@@ -73,10 +70,8 @@ init_ vzGraphicsDisplay  =
 --
 -- ObjC selector: @- reconfigureWithConfiguration:error:@
 reconfigureWithConfiguration_error :: (IsVZGraphicsDisplay vzGraphicsDisplay, IsVZGraphicsDisplayConfiguration configuration, IsNSError error_) => vzGraphicsDisplay -> configuration -> error_ -> IO Bool
-reconfigureWithConfiguration_error vzGraphicsDisplay  configuration error_ =
-  withObjCPtr configuration $ \raw_configuration ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzGraphicsDisplay (mkSelector "reconfigureWithConfiguration:error:") retCULong [argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+reconfigureWithConfiguration_error vzGraphicsDisplay configuration error_ =
+  sendMessage vzGraphicsDisplay reconfigureWithConfiguration_errorSelector (toVZGraphicsDisplayConfiguration configuration) (toNSError error_)
 
 -- | Add an observer.
 --
@@ -84,8 +79,8 @@ reconfigureWithConfiguration_error vzGraphicsDisplay  configuration error_ =
 --
 -- ObjC selector: @- addObserver:@
 addObserver :: IsVZGraphicsDisplay vzGraphicsDisplay => vzGraphicsDisplay -> RawId -> IO ()
-addObserver vzGraphicsDisplay  observer =
-    sendMsg vzGraphicsDisplay (mkSelector "addObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+addObserver vzGraphicsDisplay observer =
+  sendMessage vzGraphicsDisplay addObserverSelector observer
 
 -- | Remove an observer.
 --
@@ -93,30 +88,30 @@ addObserver vzGraphicsDisplay  observer =
 --
 -- ObjC selector: @- removeObserver:@
 removeObserver :: IsVZGraphicsDisplay vzGraphicsDisplay => vzGraphicsDisplay -> RawId -> IO ()
-removeObserver vzGraphicsDisplay  observer =
-    sendMsg vzGraphicsDisplay (mkSelector "removeObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+removeObserver vzGraphicsDisplay observer =
+  sendMessage vzGraphicsDisplay removeObserverSelector observer
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZGraphicsDisplay)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZGraphicsDisplay)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @reconfigureWithConfiguration:error:@
-reconfigureWithConfiguration_errorSelector :: Selector
+reconfigureWithConfiguration_errorSelector :: Selector '[Id VZGraphicsDisplayConfiguration, Id NSError] Bool
 reconfigureWithConfiguration_errorSelector = mkSelector "reconfigureWithConfiguration:error:"
 
 -- | @Selector@ for @addObserver:@
-addObserverSelector :: Selector
+addObserverSelector :: Selector '[RawId] ()
 addObserverSelector = mkSelector "addObserver:"
 
 -- | @Selector@ for @removeObserver:@
-removeObserverSelector :: Selector
+removeObserverSelector :: Selector '[RawId] ()
 removeObserverSelector = mkSelector "removeObserver:"
 

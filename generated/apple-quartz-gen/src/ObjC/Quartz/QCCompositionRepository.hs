@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Quartz.QCCompositionRepository
   , compositionWithIdentifier
   , compositionsWithProtocols_andAttributes
   , allCompositions
-  , sharedCompositionRepositorySelector
+  , allCompositionsSelector
   , compositionWithIdentifierSelector
   , compositionsWithProtocols_andAttributesSelector
-  , allCompositionsSelector
+  , sharedCompositionRepositorySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,43 +35,40 @@ sharedCompositionRepository :: IO (Id QCCompositionRepository)
 sharedCompositionRepository  =
   do
     cls' <- getRequiredClass "QCCompositionRepository"
-    sendClassMsg cls' (mkSelector "sharedCompositionRepository") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedCompositionRepositorySelector
 
 -- | @- compositionWithIdentifier:@
 compositionWithIdentifier :: (IsQCCompositionRepository qcCompositionRepository, IsNSString identifier) => qcCompositionRepository -> identifier -> IO (Id QCComposition)
-compositionWithIdentifier qcCompositionRepository  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg qcCompositionRepository (mkSelector "compositionWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+compositionWithIdentifier qcCompositionRepository identifier =
+  sendMessage qcCompositionRepository compositionWithIdentifierSelector (toNSString identifier)
 
 -- | @- compositionsWithProtocols:andAttributes:@
 compositionsWithProtocols_andAttributes :: (IsQCCompositionRepository qcCompositionRepository, IsNSArray protocols, IsNSDictionary attributes) => qcCompositionRepository -> protocols -> attributes -> IO (Id NSArray)
-compositionsWithProtocols_andAttributes qcCompositionRepository  protocols attributes =
-  withObjCPtr protocols $ \raw_protocols ->
-    withObjCPtr attributes $ \raw_attributes ->
-        sendMsg qcCompositionRepository (mkSelector "compositionsWithProtocols:andAttributes:") (retPtr retVoid) [argPtr (castPtr raw_protocols :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
+compositionsWithProtocols_andAttributes qcCompositionRepository protocols attributes =
+  sendMessage qcCompositionRepository compositionsWithProtocols_andAttributesSelector (toNSArray protocols) (toNSDictionary attributes)
 
 -- | @- allCompositions@
 allCompositions :: IsQCCompositionRepository qcCompositionRepository => qcCompositionRepository -> IO (Id NSArray)
-allCompositions qcCompositionRepository  =
-    sendMsg qcCompositionRepository (mkSelector "allCompositions") (retPtr retVoid) [] >>= retainedObject . castPtr
+allCompositions qcCompositionRepository =
+  sendMessage qcCompositionRepository allCompositionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedCompositionRepository@
-sharedCompositionRepositorySelector :: Selector
+sharedCompositionRepositorySelector :: Selector '[] (Id QCCompositionRepository)
 sharedCompositionRepositorySelector = mkSelector "sharedCompositionRepository"
 
 -- | @Selector@ for @compositionWithIdentifier:@
-compositionWithIdentifierSelector :: Selector
+compositionWithIdentifierSelector :: Selector '[Id NSString] (Id QCComposition)
 compositionWithIdentifierSelector = mkSelector "compositionWithIdentifier:"
 
 -- | @Selector@ for @compositionsWithProtocols:andAttributes:@
-compositionsWithProtocols_andAttributesSelector :: Selector
+compositionsWithProtocols_andAttributesSelector :: Selector '[Id NSArray, Id NSDictionary] (Id NSArray)
 compositionsWithProtocols_andAttributesSelector = mkSelector "compositionsWithProtocols:andAttributes:"
 
 -- | @Selector@ for @allCompositions@
-allCompositionsSelector :: Selector
+allCompositionsSelector :: Selector '[] (Id NSArray)
 allCompositionsSelector = mkSelector "allCompositions"
 

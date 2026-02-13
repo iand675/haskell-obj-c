@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.SharedWithYou.SWCollaborationHighlight
   , title
   , creationDate
   , collaborationIdentifierSelector
-  , titleSelector
   , creationDateSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- collaborationIdentifier@
 collaborationIdentifier :: IsSWCollaborationHighlight swCollaborationHighlight => swCollaborationHighlight -> IO (Id NSString)
-collaborationIdentifier swCollaborationHighlight  =
-    sendMsg swCollaborationHighlight (mkSelector "collaborationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+collaborationIdentifier swCollaborationHighlight =
+  sendMessage swCollaborationHighlight collaborationIdentifierSelector
 
 -- | Title of the collaboration highlight
 --
@@ -50,29 +47,29 @@ collaborationIdentifier swCollaborationHighlight  =
 --
 -- ObjC selector: @- title@
 title :: IsSWCollaborationHighlight swCollaborationHighlight => swCollaborationHighlight -> IO (Id NSString)
-title swCollaborationHighlight  =
-    sendMsg swCollaborationHighlight (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title swCollaborationHighlight =
+  sendMessage swCollaborationHighlight titleSelector
 
 -- | Date when the file was created
 --
 -- ObjC selector: @- creationDate@
 creationDate :: IsSWCollaborationHighlight swCollaborationHighlight => swCollaborationHighlight -> IO (Id NSDate)
-creationDate swCollaborationHighlight  =
-    sendMsg swCollaborationHighlight (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate swCollaborationHighlight =
+  sendMessage swCollaborationHighlight creationDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @collaborationIdentifier@
-collaborationIdentifierSelector :: Selector
+collaborationIdentifierSelector :: Selector '[] (Id NSString)
 collaborationIdentifierSelector = mkSelector "collaborationIdentifier"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 

@@ -112,7 +112,7 @@ mapType kt = go
 
     go ObjCBool = HsTyCon "Bool"
 
-    go ObjCSEL = HsTyCon "Selector"
+    go ObjCSEL = HsTyCon "Sel"
 
     go ObjCInstancetype = HsTyApp (HsTyCon "Id") (HsTyVar "a")
 
@@ -278,7 +278,7 @@ mapPrimitive kt qualType desugared
   | isIdDesugared desugared            = HsTyCon "RawId"
 
   -- Mis-parsed SEL (with nullability annotation)
-  | isSELDesugared desugared           = HsTyCon "Selector"
+  | isSELDesugared desugared           = HsTyCon "Sel"
 
   -- Mis-parsed Class
   | desugared == "Class"               = HsTyCon "Class"

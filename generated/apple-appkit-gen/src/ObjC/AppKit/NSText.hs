@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -79,78 +80,78 @@ module ObjC.AppKit.NSText
   , setHorizontallyResizable
   , verticallyResizable
   , setVerticallyResizable
-  , initWithFrameSelector
-  , initWithCoderSelector
-  , replaceCharactersInRange_withStringSelector
-  , replaceCharactersInRange_withRTFSelector
-  , replaceCharactersInRange_withRTFDSelector
-  , rtfFromRangeSelector
-  , rtfdFromRangeSelector
-  , writeRTFDToFile_atomicallySelector
-  , readRTFDFromFileSelector
-  , scrollRangeToVisibleSelector
-  , setTextColor_rangeSelector
-  , setFont_rangeSelector
-  , sizeToFitSelector
-  , copySelector
-  , copyFontSelector
-  , copyRulerSelector
-  , cutSelector
-  , deleteSelector
-  , pasteSelector
-  , pasteFontSelector
-  , pasteRulerSelector
-  , selectAllSelector
-  , changeFontSelector
+  , alignCenterSelector
   , alignLeftSelector
   , alignRightSelector
-  , alignCenterSelector
+  , alignmentSelector
+  , backgroundColorSelector
+  , baseWritingDirectionSelector
+  , changeFontSelector
+  , checkSpellingSelector
+  , copyFontSelector
+  , copyRulerSelector
+  , copySelector
+  , cutSelector
+  , delegateSelector
+  , deleteSelector
+  , drawsBackgroundSelector
+  , editableSelector
+  , fieldEditorSelector
+  , fontSelector
+  , horizontallyResizableSelector
+  , importsGraphicsSelector
+  , initWithCoderSelector
+  , initWithFrameSelector
+  , maxSizeSelector
+  , minSizeSelector
+  , pasteFontSelector
+  , pasteRulerSelector
+  , pasteSelector
+  , readRTFDFromFileSelector
+  , replaceCharactersInRange_withRTFDSelector
+  , replaceCharactersInRange_withRTFSelector
+  , replaceCharactersInRange_withStringSelector
+  , richTextSelector
+  , rtfFromRangeSelector
+  , rtfdFromRangeSelector
+  , rulerVisibleSelector
+  , scrollRangeToVisibleSelector
+  , selectAllSelector
+  , selectableSelector
+  , selectedRangeSelector
+  , setAlignmentSelector
+  , setBackgroundColorSelector
+  , setBaseWritingDirectionSelector
+  , setDelegateSelector
+  , setDrawsBackgroundSelector
+  , setEditableSelector
+  , setFieldEditorSelector
+  , setFontSelector
+  , setFont_rangeSelector
+  , setHorizontallyResizableSelector
+  , setImportsGraphicsSelector
+  , setMaxSizeSelector
+  , setMinSizeSelector
+  , setRichTextSelector
+  , setSelectableSelector
+  , setSelectedRangeSelector
+  , setStringSelector
+  , setTextColorSelector
+  , setTextColor_rangeSelector
+  , setUsesFontPanelSelector
+  , setVerticallyResizableSelector
+  , showGuessPanelSelector
+  , sizeToFitSelector
+  , stringSelector
   , subscriptSelector
   , superscriptSelector
+  , textColorSelector
+  , toggleRulerSelector
   , underlineSelector
   , unscriptSelector
-  , showGuessPanelSelector
-  , checkSpellingSelector
-  , toggleRulerSelector
-  , stringSelector
-  , setStringSelector
-  , delegateSelector
-  , setDelegateSelector
-  , editableSelector
-  , setEditableSelector
-  , selectableSelector
-  , setSelectableSelector
-  , richTextSelector
-  , setRichTextSelector
-  , importsGraphicsSelector
-  , setImportsGraphicsSelector
-  , fieldEditorSelector
-  , setFieldEditorSelector
   , usesFontPanelSelector
-  , setUsesFontPanelSelector
-  , drawsBackgroundSelector
-  , setDrawsBackgroundSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , rulerVisibleSelector
-  , selectedRangeSelector
-  , setSelectedRangeSelector
-  , fontSelector
-  , setFontSelector
-  , textColorSelector
-  , setTextColorSelector
-  , alignmentSelector
-  , setAlignmentSelector
-  , baseWritingDirectionSelector
-  , setBaseWritingDirectionSelector
-  , maxSizeSelector
-  , setMaxSizeSelector
-  , minSizeSelector
-  , setMinSizeSelector
-  , horizontallyResizableSelector
-  , setHorizontallyResizableSelector
   , verticallyResizableSelector
-  , setVerticallyResizableSelector
+  , writeRTFDToFile_atomicallySelector
 
   -- * Enum types
   , NSTextAlignment(NSTextAlignment)
@@ -166,15 +167,11 @@ module ObjC.AppKit.NSText
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -185,665 +182,653 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithFrame:@
 initWithFrame :: IsNSText nsText => nsText -> NSRect -> IO (Id NSText)
-initWithFrame nsText  frameRect =
-    sendMsg nsText (mkSelector "initWithFrame:") (retPtr retVoid) [argNSRect frameRect] >>= ownedObject . castPtr
+initWithFrame nsText frameRect =
+  sendOwnedMessage nsText initWithFrameSelector frameRect
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSText nsText, IsNSCoder coder) => nsText -> coder -> IO (Id NSText)
-initWithCoder nsText  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsText (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsText coder =
+  sendOwnedMessage nsText initWithCoderSelector (toNSCoder coder)
 
 -- | @- replaceCharactersInRange:withString:@
 replaceCharactersInRange_withString :: (IsNSText nsText, IsNSString string) => nsText -> NSRange -> string -> IO ()
-replaceCharactersInRange_withString nsText  range string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsText (mkSelector "replaceCharactersInRange:withString:") retVoid [argNSRange range, argPtr (castPtr raw_string :: Ptr ())]
+replaceCharactersInRange_withString nsText range string =
+  sendMessage nsText replaceCharactersInRange_withStringSelector range (toNSString string)
 
 -- | @- replaceCharactersInRange:withRTF:@
 replaceCharactersInRange_withRTF :: (IsNSText nsText, IsNSData rtfData) => nsText -> NSRange -> rtfData -> IO ()
-replaceCharactersInRange_withRTF nsText  range rtfData =
-  withObjCPtr rtfData $ \raw_rtfData ->
-      sendMsg nsText (mkSelector "replaceCharactersInRange:withRTF:") retVoid [argNSRange range, argPtr (castPtr raw_rtfData :: Ptr ())]
+replaceCharactersInRange_withRTF nsText range rtfData =
+  sendMessage nsText replaceCharactersInRange_withRTFSelector range (toNSData rtfData)
 
 -- | @- replaceCharactersInRange:withRTFD:@
 replaceCharactersInRange_withRTFD :: (IsNSText nsText, IsNSData rtfdData) => nsText -> NSRange -> rtfdData -> IO ()
-replaceCharactersInRange_withRTFD nsText  range rtfdData =
-  withObjCPtr rtfdData $ \raw_rtfdData ->
-      sendMsg nsText (mkSelector "replaceCharactersInRange:withRTFD:") retVoid [argNSRange range, argPtr (castPtr raw_rtfdData :: Ptr ())]
+replaceCharactersInRange_withRTFD nsText range rtfdData =
+  sendMessage nsText replaceCharactersInRange_withRTFDSelector range (toNSData rtfdData)
 
 -- | @- RTFFromRange:@
 rtfFromRange :: IsNSText nsText => nsText -> NSRange -> IO (Id NSData)
-rtfFromRange nsText  range =
-    sendMsg nsText (mkSelector "RTFFromRange:") (retPtr retVoid) [argNSRange range] >>= retainedObject . castPtr
+rtfFromRange nsText range =
+  sendMessage nsText rtfFromRangeSelector range
 
 -- | @- RTFDFromRange:@
 rtfdFromRange :: IsNSText nsText => nsText -> NSRange -> IO (Id NSData)
-rtfdFromRange nsText  range =
-    sendMsg nsText (mkSelector "RTFDFromRange:") (retPtr retVoid) [argNSRange range] >>= retainedObject . castPtr
+rtfdFromRange nsText range =
+  sendMessage nsText rtfdFromRangeSelector range
 
 -- | @- writeRTFDToFile:atomically:@
 writeRTFDToFile_atomically :: (IsNSText nsText, IsNSString path) => nsText -> path -> Bool -> IO Bool
-writeRTFDToFile_atomically nsText  path flag =
-  withObjCPtr path $ \raw_path ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "writeRTFDToFile:atomically:") retCULong [argPtr (castPtr raw_path :: Ptr ()), argCULong (if flag then 1 else 0)]
+writeRTFDToFile_atomically nsText path flag =
+  sendMessage nsText writeRTFDToFile_atomicallySelector (toNSString path) flag
 
 -- | @- readRTFDFromFile:@
 readRTFDFromFile :: (IsNSText nsText, IsNSString path) => nsText -> path -> IO Bool
-readRTFDFromFile nsText  path =
-  withObjCPtr path $ \raw_path ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "readRTFDFromFile:") retCULong [argPtr (castPtr raw_path :: Ptr ())]
+readRTFDFromFile nsText path =
+  sendMessage nsText readRTFDFromFileSelector (toNSString path)
 
 -- | @- scrollRangeToVisible:@
 scrollRangeToVisible :: IsNSText nsText => nsText -> NSRange -> IO ()
-scrollRangeToVisible nsText  range =
-    sendMsg nsText (mkSelector "scrollRangeToVisible:") retVoid [argNSRange range]
+scrollRangeToVisible nsText range =
+  sendMessage nsText scrollRangeToVisibleSelector range
 
 -- | @- setTextColor:range:@
 setTextColor_range :: (IsNSText nsText, IsNSColor color) => nsText -> color -> NSRange -> IO ()
-setTextColor_range nsText  color range =
-  withObjCPtr color $ \raw_color ->
-      sendMsg nsText (mkSelector "setTextColor:range:") retVoid [argPtr (castPtr raw_color :: Ptr ()), argNSRange range]
+setTextColor_range nsText color range =
+  sendMessage nsText setTextColor_rangeSelector (toNSColor color) range
 
 -- | @- setFont:range:@
 setFont_range :: (IsNSText nsText, IsNSFont font) => nsText -> font -> NSRange -> IO ()
-setFont_range nsText  font range =
-  withObjCPtr font $ \raw_font ->
-      sendMsg nsText (mkSelector "setFont:range:") retVoid [argPtr (castPtr raw_font :: Ptr ()), argNSRange range]
+setFont_range nsText font range =
+  sendMessage nsText setFont_rangeSelector (toNSFont font) range
 
 -- | @- sizeToFit@
 sizeToFit :: IsNSText nsText => nsText -> IO ()
-sizeToFit nsText  =
-    sendMsg nsText (mkSelector "sizeToFit") retVoid []
+sizeToFit nsText =
+  sendMessage nsText sizeToFitSelector
 
 -- | @- copy:@
 copy :: IsNSText nsText => nsText -> RawId -> IO ()
-copy nsText  sender =
-    sendMsg nsText (mkSelector "copy:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+copy nsText sender =
+  sendOwnedMessage nsText copySelector sender
 
 -- | @- copyFont:@
 copyFont :: IsNSText nsText => nsText -> RawId -> IO ()
-copyFont nsText  sender =
-    sendMsg nsText (mkSelector "copyFont:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+copyFont nsText sender =
+  sendOwnedMessage nsText copyFontSelector sender
 
 -- | @- copyRuler:@
 copyRuler :: IsNSText nsText => nsText -> RawId -> IO ()
-copyRuler nsText  sender =
-    sendMsg nsText (mkSelector "copyRuler:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+copyRuler nsText sender =
+  sendOwnedMessage nsText copyRulerSelector sender
 
 -- | @- cut:@
 cut :: IsNSText nsText => nsText -> RawId -> IO ()
-cut nsText  sender =
-    sendMsg nsText (mkSelector "cut:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+cut nsText sender =
+  sendMessage nsText cutSelector sender
 
 -- | @- delete:@
 delete :: IsNSText nsText => nsText -> RawId -> IO ()
-delete nsText  sender =
-    sendMsg nsText (mkSelector "delete:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+delete nsText sender =
+  sendMessage nsText deleteSelector sender
 
 -- | @- paste:@
 paste :: IsNSText nsText => nsText -> RawId -> IO ()
-paste nsText  sender =
-    sendMsg nsText (mkSelector "paste:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+paste nsText sender =
+  sendMessage nsText pasteSelector sender
 
 -- | @- pasteFont:@
 pasteFont :: IsNSText nsText => nsText -> RawId -> IO ()
-pasteFont nsText  sender =
-    sendMsg nsText (mkSelector "pasteFont:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+pasteFont nsText sender =
+  sendMessage nsText pasteFontSelector sender
 
 -- | @- pasteRuler:@
 pasteRuler :: IsNSText nsText => nsText -> RawId -> IO ()
-pasteRuler nsText  sender =
-    sendMsg nsText (mkSelector "pasteRuler:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+pasteRuler nsText sender =
+  sendMessage nsText pasteRulerSelector sender
 
 -- | @- selectAll:@
 selectAll :: IsNSText nsText => nsText -> RawId -> IO ()
-selectAll nsText  sender =
-    sendMsg nsText (mkSelector "selectAll:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectAll nsText sender =
+  sendMessage nsText selectAllSelector sender
 
 -- | @- changeFont:@
 changeFont :: IsNSText nsText => nsText -> RawId -> IO ()
-changeFont nsText  sender =
-    sendMsg nsText (mkSelector "changeFont:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+changeFont nsText sender =
+  sendMessage nsText changeFontSelector sender
 
 -- | @- alignLeft:@
 alignLeft :: IsNSText nsText => nsText -> RawId -> IO ()
-alignLeft nsText  sender =
-    sendMsg nsText (mkSelector "alignLeft:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+alignLeft nsText sender =
+  sendMessage nsText alignLeftSelector sender
 
 -- | @- alignRight:@
 alignRight :: IsNSText nsText => nsText -> RawId -> IO ()
-alignRight nsText  sender =
-    sendMsg nsText (mkSelector "alignRight:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+alignRight nsText sender =
+  sendMessage nsText alignRightSelector sender
 
 -- | @- alignCenter:@
 alignCenter :: IsNSText nsText => nsText -> RawId -> IO ()
-alignCenter nsText  sender =
-    sendMsg nsText (mkSelector "alignCenter:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+alignCenter nsText sender =
+  sendMessage nsText alignCenterSelector sender
 
 -- | @- subscript:@
 subscript :: IsNSText nsText => nsText -> RawId -> IO ()
-subscript nsText  sender =
-    sendMsg nsText (mkSelector "subscript:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+subscript nsText sender =
+  sendMessage nsText subscriptSelector sender
 
 -- | @- superscript:@
 superscript :: IsNSText nsText => nsText -> RawId -> IO ()
-superscript nsText  sender =
-    sendMsg nsText (mkSelector "superscript:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+superscript nsText sender =
+  sendMessage nsText superscriptSelector sender
 
 -- | @- underline:@
 underline :: IsNSText nsText => nsText -> RawId -> IO ()
-underline nsText  sender =
-    sendMsg nsText (mkSelector "underline:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+underline nsText sender =
+  sendMessage nsText underlineSelector sender
 
 -- | @- unscript:@
 unscript :: IsNSText nsText => nsText -> RawId -> IO ()
-unscript nsText  sender =
-    sendMsg nsText (mkSelector "unscript:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+unscript nsText sender =
+  sendMessage nsText unscriptSelector sender
 
 -- | @- showGuessPanel:@
 showGuessPanel :: IsNSText nsText => nsText -> RawId -> IO ()
-showGuessPanel nsText  sender =
-    sendMsg nsText (mkSelector "showGuessPanel:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+showGuessPanel nsText sender =
+  sendMessage nsText showGuessPanelSelector sender
 
 -- | @- checkSpelling:@
 checkSpelling :: IsNSText nsText => nsText -> RawId -> IO ()
-checkSpelling nsText  sender =
-    sendMsg nsText (mkSelector "checkSpelling:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+checkSpelling nsText sender =
+  sendMessage nsText checkSpellingSelector sender
 
 -- | @- toggleRuler:@
 toggleRuler :: IsNSText nsText => nsText -> RawId -> IO ()
-toggleRuler nsText  sender =
-    sendMsg nsText (mkSelector "toggleRuler:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+toggleRuler nsText sender =
+  sendMessage nsText toggleRulerSelector sender
 
 -- | @- string@
 string :: IsNSText nsText => nsText -> IO (Id NSString)
-string nsText  =
-    sendMsg nsText (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string nsText =
+  sendMessage nsText stringSelector
 
 -- | @- setString:@
 setString :: (IsNSText nsText, IsNSString value) => nsText -> value -> IO ()
-setString nsText  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsText (mkSelector "setString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setString nsText value =
+  sendMessage nsText setStringSelector (toNSString value)
 
 -- | @- delegate@
 delegate :: IsNSText nsText => nsText -> IO RawId
-delegate nsText  =
-    fmap (RawId . castPtr) $ sendMsg nsText (mkSelector "delegate") (retPtr retVoid) []
+delegate nsText =
+  sendMessage nsText delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSText nsText => nsText -> RawId -> IO ()
-setDelegate nsText  value =
-    sendMsg nsText (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsText value =
+  sendMessage nsText setDelegateSelector value
 
 -- | @- editable@
 editable :: IsNSText nsText => nsText -> IO Bool
-editable nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "editable") retCULong []
+editable nsText =
+  sendMessage nsText editableSelector
 
 -- | @- setEditable:@
 setEditable :: IsNSText nsText => nsText -> Bool -> IO ()
-setEditable nsText  value =
-    sendMsg nsText (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable nsText value =
+  sendMessage nsText setEditableSelector value
 
 -- | @- selectable@
 selectable :: IsNSText nsText => nsText -> IO Bool
-selectable nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "selectable") retCULong []
+selectable nsText =
+  sendMessage nsText selectableSelector
 
 -- | @- setSelectable:@
 setSelectable :: IsNSText nsText => nsText -> Bool -> IO ()
-setSelectable nsText  value =
-    sendMsg nsText (mkSelector "setSelectable:") retVoid [argCULong (if value then 1 else 0)]
+setSelectable nsText value =
+  sendMessage nsText setSelectableSelector value
 
 -- | @- richText@
 richText :: IsNSText nsText => nsText -> IO Bool
-richText nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "richText") retCULong []
+richText nsText =
+  sendMessage nsText richTextSelector
 
 -- | @- setRichText:@
 setRichText :: IsNSText nsText => nsText -> Bool -> IO ()
-setRichText nsText  value =
-    sendMsg nsText (mkSelector "setRichText:") retVoid [argCULong (if value then 1 else 0)]
+setRichText nsText value =
+  sendMessage nsText setRichTextSelector value
 
 -- | @- importsGraphics@
 importsGraphics :: IsNSText nsText => nsText -> IO Bool
-importsGraphics nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "importsGraphics") retCULong []
+importsGraphics nsText =
+  sendMessage nsText importsGraphicsSelector
 
 -- | @- setImportsGraphics:@
 setImportsGraphics :: IsNSText nsText => nsText -> Bool -> IO ()
-setImportsGraphics nsText  value =
-    sendMsg nsText (mkSelector "setImportsGraphics:") retVoid [argCULong (if value then 1 else 0)]
+setImportsGraphics nsText value =
+  sendMessage nsText setImportsGraphicsSelector value
 
 -- | @- fieldEditor@
 fieldEditor :: IsNSText nsText => nsText -> IO Bool
-fieldEditor nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "fieldEditor") retCULong []
+fieldEditor nsText =
+  sendMessage nsText fieldEditorSelector
 
 -- | @- setFieldEditor:@
 setFieldEditor :: IsNSText nsText => nsText -> Bool -> IO ()
-setFieldEditor nsText  value =
-    sendMsg nsText (mkSelector "setFieldEditor:") retVoid [argCULong (if value then 1 else 0)]
+setFieldEditor nsText value =
+  sendMessage nsText setFieldEditorSelector value
 
 -- | @- usesFontPanel@
 usesFontPanel :: IsNSText nsText => nsText -> IO Bool
-usesFontPanel nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "usesFontPanel") retCULong []
+usesFontPanel nsText =
+  sendMessage nsText usesFontPanelSelector
 
 -- | @- setUsesFontPanel:@
 setUsesFontPanel :: IsNSText nsText => nsText -> Bool -> IO ()
-setUsesFontPanel nsText  value =
-    sendMsg nsText (mkSelector "setUsesFontPanel:") retVoid [argCULong (if value then 1 else 0)]
+setUsesFontPanel nsText value =
+  sendMessage nsText setUsesFontPanelSelector value
 
 -- | @- drawsBackground@
 drawsBackground :: IsNSText nsText => nsText -> IO Bool
-drawsBackground nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "drawsBackground") retCULong []
+drawsBackground nsText =
+  sendMessage nsText drawsBackgroundSelector
 
 -- | @- setDrawsBackground:@
 setDrawsBackground :: IsNSText nsText => nsText -> Bool -> IO ()
-setDrawsBackground nsText  value =
-    sendMsg nsText (mkSelector "setDrawsBackground:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsBackground nsText value =
+  sendMessage nsText setDrawsBackgroundSelector value
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSText nsText => nsText -> IO (Id NSColor)
-backgroundColor nsText  =
-    sendMsg nsText (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsText =
+  sendMessage nsText backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSText nsText, IsNSColor value) => nsText -> value -> IO ()
-setBackgroundColor nsText  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsText (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsText value =
+  sendMessage nsText setBackgroundColorSelector (toNSColor value)
 
 -- | @- rulerVisible@
 rulerVisible :: IsNSText nsText => nsText -> IO Bool
-rulerVisible nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "rulerVisible") retCULong []
+rulerVisible nsText =
+  sendMessage nsText rulerVisibleSelector
 
 -- | @- selectedRange@
 selectedRange :: IsNSText nsText => nsText -> IO NSRange
-selectedRange nsText  =
-    sendMsgStret nsText (mkSelector "selectedRange") retNSRange []
+selectedRange nsText =
+  sendMessage nsText selectedRangeSelector
 
 -- | @- setSelectedRange:@
 setSelectedRange :: IsNSText nsText => nsText -> NSRange -> IO ()
-setSelectedRange nsText  value =
-    sendMsg nsText (mkSelector "setSelectedRange:") retVoid [argNSRange value]
+setSelectedRange nsText value =
+  sendMessage nsText setSelectedRangeSelector value
 
 -- | @- font@
 font :: IsNSText nsText => nsText -> IO (Id NSFont)
-font nsText  =
-    sendMsg nsText (mkSelector "font") (retPtr retVoid) [] >>= retainedObject . castPtr
+font nsText =
+  sendMessage nsText fontSelector
 
 -- | @- setFont:@
 setFont :: (IsNSText nsText, IsNSFont value) => nsText -> value -> IO ()
-setFont nsText  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsText (mkSelector "setFont:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFont nsText value =
+  sendMessage nsText setFontSelector (toNSFont value)
 
 -- | @- textColor@
 textColor :: IsNSText nsText => nsText -> IO (Id NSColor)
-textColor nsText  =
-    sendMsg nsText (mkSelector "textColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+textColor nsText =
+  sendMessage nsText textColorSelector
 
 -- | @- setTextColor:@
 setTextColor :: (IsNSText nsText, IsNSColor value) => nsText -> value -> IO ()
-setTextColor nsText  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsText (mkSelector "setTextColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextColor nsText value =
+  sendMessage nsText setTextColorSelector (toNSColor value)
 
 -- | @- alignment@
 alignment :: IsNSText nsText => nsText -> IO NSTextAlignment
-alignment nsText  =
-    fmap (coerce :: CLong -> NSTextAlignment) $ sendMsg nsText (mkSelector "alignment") retCLong []
+alignment nsText =
+  sendMessage nsText alignmentSelector
 
 -- | @- setAlignment:@
 setAlignment :: IsNSText nsText => nsText -> NSTextAlignment -> IO ()
-setAlignment nsText  value =
-    sendMsg nsText (mkSelector "setAlignment:") retVoid [argCLong (coerce value)]
+setAlignment nsText value =
+  sendMessage nsText setAlignmentSelector value
 
 -- | @- baseWritingDirection@
 baseWritingDirection :: IsNSText nsText => nsText -> IO NSWritingDirection
-baseWritingDirection nsText  =
-    fmap (coerce :: CLong -> NSWritingDirection) $ sendMsg nsText (mkSelector "baseWritingDirection") retCLong []
+baseWritingDirection nsText =
+  sendMessage nsText baseWritingDirectionSelector
 
 -- | @- setBaseWritingDirection:@
 setBaseWritingDirection :: IsNSText nsText => nsText -> NSWritingDirection -> IO ()
-setBaseWritingDirection nsText  value =
-    sendMsg nsText (mkSelector "setBaseWritingDirection:") retVoid [argCLong (coerce value)]
+setBaseWritingDirection nsText value =
+  sendMessage nsText setBaseWritingDirectionSelector value
 
 -- | @- maxSize@
 maxSize :: IsNSText nsText => nsText -> IO NSSize
-maxSize nsText  =
-    sendMsgStret nsText (mkSelector "maxSize") retNSSize []
+maxSize nsText =
+  sendMessage nsText maxSizeSelector
 
 -- | @- setMaxSize:@
 setMaxSize :: IsNSText nsText => nsText -> NSSize -> IO ()
-setMaxSize nsText  value =
-    sendMsg nsText (mkSelector "setMaxSize:") retVoid [argNSSize value]
+setMaxSize nsText value =
+  sendMessage nsText setMaxSizeSelector value
 
 -- | @- minSize@
 minSize :: IsNSText nsText => nsText -> IO NSSize
-minSize nsText  =
-    sendMsgStret nsText (mkSelector "minSize") retNSSize []
+minSize nsText =
+  sendMessage nsText minSizeSelector
 
 -- | @- setMinSize:@
 setMinSize :: IsNSText nsText => nsText -> NSSize -> IO ()
-setMinSize nsText  value =
-    sendMsg nsText (mkSelector "setMinSize:") retVoid [argNSSize value]
+setMinSize nsText value =
+  sendMessage nsText setMinSizeSelector value
 
 -- | @- horizontallyResizable@
 horizontallyResizable :: IsNSText nsText => nsText -> IO Bool
-horizontallyResizable nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "horizontallyResizable") retCULong []
+horizontallyResizable nsText =
+  sendMessage nsText horizontallyResizableSelector
 
 -- | @- setHorizontallyResizable:@
 setHorizontallyResizable :: IsNSText nsText => nsText -> Bool -> IO ()
-setHorizontallyResizable nsText  value =
-    sendMsg nsText (mkSelector "setHorizontallyResizable:") retVoid [argCULong (if value then 1 else 0)]
+setHorizontallyResizable nsText value =
+  sendMessage nsText setHorizontallyResizableSelector value
 
 -- | @- verticallyResizable@
 verticallyResizable :: IsNSText nsText => nsText -> IO Bool
-verticallyResizable nsText  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsText (mkSelector "verticallyResizable") retCULong []
+verticallyResizable nsText =
+  sendMessage nsText verticallyResizableSelector
 
 -- | @- setVerticallyResizable:@
 setVerticallyResizable :: IsNSText nsText => nsText -> Bool -> IO ()
-setVerticallyResizable nsText  value =
-    sendMsg nsText (mkSelector "setVerticallyResizable:") retVoid [argCULong (if value then 1 else 0)]
+setVerticallyResizable nsText value =
+  sendMessage nsText setVerticallyResizableSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrame:@
-initWithFrameSelector :: Selector
+initWithFrameSelector :: Selector '[NSRect] (Id NSText)
 initWithFrameSelector = mkSelector "initWithFrame:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSText)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @replaceCharactersInRange:withString:@
-replaceCharactersInRange_withStringSelector :: Selector
+replaceCharactersInRange_withStringSelector :: Selector '[NSRange, Id NSString] ()
 replaceCharactersInRange_withStringSelector = mkSelector "replaceCharactersInRange:withString:"
 
 -- | @Selector@ for @replaceCharactersInRange:withRTF:@
-replaceCharactersInRange_withRTFSelector :: Selector
+replaceCharactersInRange_withRTFSelector :: Selector '[NSRange, Id NSData] ()
 replaceCharactersInRange_withRTFSelector = mkSelector "replaceCharactersInRange:withRTF:"
 
 -- | @Selector@ for @replaceCharactersInRange:withRTFD:@
-replaceCharactersInRange_withRTFDSelector :: Selector
+replaceCharactersInRange_withRTFDSelector :: Selector '[NSRange, Id NSData] ()
 replaceCharactersInRange_withRTFDSelector = mkSelector "replaceCharactersInRange:withRTFD:"
 
 -- | @Selector@ for @RTFFromRange:@
-rtfFromRangeSelector :: Selector
+rtfFromRangeSelector :: Selector '[NSRange] (Id NSData)
 rtfFromRangeSelector = mkSelector "RTFFromRange:"
 
 -- | @Selector@ for @RTFDFromRange:@
-rtfdFromRangeSelector :: Selector
+rtfdFromRangeSelector :: Selector '[NSRange] (Id NSData)
 rtfdFromRangeSelector = mkSelector "RTFDFromRange:"
 
 -- | @Selector@ for @writeRTFDToFile:atomically:@
-writeRTFDToFile_atomicallySelector :: Selector
+writeRTFDToFile_atomicallySelector :: Selector '[Id NSString, Bool] Bool
 writeRTFDToFile_atomicallySelector = mkSelector "writeRTFDToFile:atomically:"
 
 -- | @Selector@ for @readRTFDFromFile:@
-readRTFDFromFileSelector :: Selector
+readRTFDFromFileSelector :: Selector '[Id NSString] Bool
 readRTFDFromFileSelector = mkSelector "readRTFDFromFile:"
 
 -- | @Selector@ for @scrollRangeToVisible:@
-scrollRangeToVisibleSelector :: Selector
+scrollRangeToVisibleSelector :: Selector '[NSRange] ()
 scrollRangeToVisibleSelector = mkSelector "scrollRangeToVisible:"
 
 -- | @Selector@ for @setTextColor:range:@
-setTextColor_rangeSelector :: Selector
+setTextColor_rangeSelector :: Selector '[Id NSColor, NSRange] ()
 setTextColor_rangeSelector = mkSelector "setTextColor:range:"
 
 -- | @Selector@ for @setFont:range:@
-setFont_rangeSelector :: Selector
+setFont_rangeSelector :: Selector '[Id NSFont, NSRange] ()
 setFont_rangeSelector = mkSelector "setFont:range:"
 
 -- | @Selector@ for @sizeToFit@
-sizeToFitSelector :: Selector
+sizeToFitSelector :: Selector '[] ()
 sizeToFitSelector = mkSelector "sizeToFit"
 
 -- | @Selector@ for @copy:@
-copySelector :: Selector
+copySelector :: Selector '[RawId] ()
 copySelector = mkSelector "copy:"
 
 -- | @Selector@ for @copyFont:@
-copyFontSelector :: Selector
+copyFontSelector :: Selector '[RawId] ()
 copyFontSelector = mkSelector "copyFont:"
 
 -- | @Selector@ for @copyRuler:@
-copyRulerSelector :: Selector
+copyRulerSelector :: Selector '[RawId] ()
 copyRulerSelector = mkSelector "copyRuler:"
 
 -- | @Selector@ for @cut:@
-cutSelector :: Selector
+cutSelector :: Selector '[RawId] ()
 cutSelector = mkSelector "cut:"
 
 -- | @Selector@ for @delete:@
-deleteSelector :: Selector
+deleteSelector :: Selector '[RawId] ()
 deleteSelector = mkSelector "delete:"
 
 -- | @Selector@ for @paste:@
-pasteSelector :: Selector
+pasteSelector :: Selector '[RawId] ()
 pasteSelector = mkSelector "paste:"
 
 -- | @Selector@ for @pasteFont:@
-pasteFontSelector :: Selector
+pasteFontSelector :: Selector '[RawId] ()
 pasteFontSelector = mkSelector "pasteFont:"
 
 -- | @Selector@ for @pasteRuler:@
-pasteRulerSelector :: Selector
+pasteRulerSelector :: Selector '[RawId] ()
 pasteRulerSelector = mkSelector "pasteRuler:"
 
 -- | @Selector@ for @selectAll:@
-selectAllSelector :: Selector
+selectAllSelector :: Selector '[RawId] ()
 selectAllSelector = mkSelector "selectAll:"
 
 -- | @Selector@ for @changeFont:@
-changeFontSelector :: Selector
+changeFontSelector :: Selector '[RawId] ()
 changeFontSelector = mkSelector "changeFont:"
 
 -- | @Selector@ for @alignLeft:@
-alignLeftSelector :: Selector
+alignLeftSelector :: Selector '[RawId] ()
 alignLeftSelector = mkSelector "alignLeft:"
 
 -- | @Selector@ for @alignRight:@
-alignRightSelector :: Selector
+alignRightSelector :: Selector '[RawId] ()
 alignRightSelector = mkSelector "alignRight:"
 
 -- | @Selector@ for @alignCenter:@
-alignCenterSelector :: Selector
+alignCenterSelector :: Selector '[RawId] ()
 alignCenterSelector = mkSelector "alignCenter:"
 
 -- | @Selector@ for @subscript:@
-subscriptSelector :: Selector
+subscriptSelector :: Selector '[RawId] ()
 subscriptSelector = mkSelector "subscript:"
 
 -- | @Selector@ for @superscript:@
-superscriptSelector :: Selector
+superscriptSelector :: Selector '[RawId] ()
 superscriptSelector = mkSelector "superscript:"
 
 -- | @Selector@ for @underline:@
-underlineSelector :: Selector
+underlineSelector :: Selector '[RawId] ()
 underlineSelector = mkSelector "underline:"
 
 -- | @Selector@ for @unscript:@
-unscriptSelector :: Selector
+unscriptSelector :: Selector '[RawId] ()
 unscriptSelector = mkSelector "unscript:"
 
 -- | @Selector@ for @showGuessPanel:@
-showGuessPanelSelector :: Selector
+showGuessPanelSelector :: Selector '[RawId] ()
 showGuessPanelSelector = mkSelector "showGuessPanel:"
 
 -- | @Selector@ for @checkSpelling:@
-checkSpellingSelector :: Selector
+checkSpellingSelector :: Selector '[RawId] ()
 checkSpellingSelector = mkSelector "checkSpelling:"
 
 -- | @Selector@ for @toggleRuler:@
-toggleRulerSelector :: Selector
+toggleRulerSelector :: Selector '[RawId] ()
 toggleRulerSelector = mkSelector "toggleRuler:"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @setString:@
-setStringSelector :: Selector
+setStringSelector :: Selector '[Id NSString] ()
 setStringSelector = mkSelector "setString:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @selectable@
-selectableSelector :: Selector
+selectableSelector :: Selector '[] Bool
 selectableSelector = mkSelector "selectable"
 
 -- | @Selector@ for @setSelectable:@
-setSelectableSelector :: Selector
+setSelectableSelector :: Selector '[Bool] ()
 setSelectableSelector = mkSelector "setSelectable:"
 
 -- | @Selector@ for @richText@
-richTextSelector :: Selector
+richTextSelector :: Selector '[] Bool
 richTextSelector = mkSelector "richText"
 
 -- | @Selector@ for @setRichText:@
-setRichTextSelector :: Selector
+setRichTextSelector :: Selector '[Bool] ()
 setRichTextSelector = mkSelector "setRichText:"
 
 -- | @Selector@ for @importsGraphics@
-importsGraphicsSelector :: Selector
+importsGraphicsSelector :: Selector '[] Bool
 importsGraphicsSelector = mkSelector "importsGraphics"
 
 -- | @Selector@ for @setImportsGraphics:@
-setImportsGraphicsSelector :: Selector
+setImportsGraphicsSelector :: Selector '[Bool] ()
 setImportsGraphicsSelector = mkSelector "setImportsGraphics:"
 
 -- | @Selector@ for @fieldEditor@
-fieldEditorSelector :: Selector
+fieldEditorSelector :: Selector '[] Bool
 fieldEditorSelector = mkSelector "fieldEditor"
 
 -- | @Selector@ for @setFieldEditor:@
-setFieldEditorSelector :: Selector
+setFieldEditorSelector :: Selector '[Bool] ()
 setFieldEditorSelector = mkSelector "setFieldEditor:"
 
 -- | @Selector@ for @usesFontPanel@
-usesFontPanelSelector :: Selector
+usesFontPanelSelector :: Selector '[] Bool
 usesFontPanelSelector = mkSelector "usesFontPanel"
 
 -- | @Selector@ for @setUsesFontPanel:@
-setUsesFontPanelSelector :: Selector
+setUsesFontPanelSelector :: Selector '[Bool] ()
 setUsesFontPanelSelector = mkSelector "setUsesFontPanel:"
 
 -- | @Selector@ for @drawsBackground@
-drawsBackgroundSelector :: Selector
+drawsBackgroundSelector :: Selector '[] Bool
 drawsBackgroundSelector = mkSelector "drawsBackground"
 
 -- | @Selector@ for @setDrawsBackground:@
-setDrawsBackgroundSelector :: Selector
+setDrawsBackgroundSelector :: Selector '[Bool] ()
 setDrawsBackgroundSelector = mkSelector "setDrawsBackground:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @rulerVisible@
-rulerVisibleSelector :: Selector
+rulerVisibleSelector :: Selector '[] Bool
 rulerVisibleSelector = mkSelector "rulerVisible"
 
 -- | @Selector@ for @selectedRange@
-selectedRangeSelector :: Selector
+selectedRangeSelector :: Selector '[] NSRange
 selectedRangeSelector = mkSelector "selectedRange"
 
 -- | @Selector@ for @setSelectedRange:@
-setSelectedRangeSelector :: Selector
+setSelectedRangeSelector :: Selector '[NSRange] ()
 setSelectedRangeSelector = mkSelector "setSelectedRange:"
 
 -- | @Selector@ for @font@
-fontSelector :: Selector
+fontSelector :: Selector '[] (Id NSFont)
 fontSelector = mkSelector "font"
 
 -- | @Selector@ for @setFont:@
-setFontSelector :: Selector
+setFontSelector :: Selector '[Id NSFont] ()
 setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @textColor@
-textColorSelector :: Selector
+textColorSelector :: Selector '[] (Id NSColor)
 textColorSelector = mkSelector "textColor"
 
 -- | @Selector@ for @setTextColor:@
-setTextColorSelector :: Selector
+setTextColorSelector :: Selector '[Id NSColor] ()
 setTextColorSelector = mkSelector "setTextColor:"
 
 -- | @Selector@ for @alignment@
-alignmentSelector :: Selector
+alignmentSelector :: Selector '[] NSTextAlignment
 alignmentSelector = mkSelector "alignment"
 
 -- | @Selector@ for @setAlignment:@
-setAlignmentSelector :: Selector
+setAlignmentSelector :: Selector '[NSTextAlignment] ()
 setAlignmentSelector = mkSelector "setAlignment:"
 
 -- | @Selector@ for @baseWritingDirection@
-baseWritingDirectionSelector :: Selector
+baseWritingDirectionSelector :: Selector '[] NSWritingDirection
 baseWritingDirectionSelector = mkSelector "baseWritingDirection"
 
 -- | @Selector@ for @setBaseWritingDirection:@
-setBaseWritingDirectionSelector :: Selector
+setBaseWritingDirectionSelector :: Selector '[NSWritingDirection] ()
 setBaseWritingDirectionSelector = mkSelector "setBaseWritingDirection:"
 
 -- | @Selector@ for @maxSize@
-maxSizeSelector :: Selector
+maxSizeSelector :: Selector '[] NSSize
 maxSizeSelector = mkSelector "maxSize"
 
 -- | @Selector@ for @setMaxSize:@
-setMaxSizeSelector :: Selector
+setMaxSizeSelector :: Selector '[NSSize] ()
 setMaxSizeSelector = mkSelector "setMaxSize:"
 
 -- | @Selector@ for @minSize@
-minSizeSelector :: Selector
+minSizeSelector :: Selector '[] NSSize
 minSizeSelector = mkSelector "minSize"
 
 -- | @Selector@ for @setMinSize:@
-setMinSizeSelector :: Selector
+setMinSizeSelector :: Selector '[NSSize] ()
 setMinSizeSelector = mkSelector "setMinSize:"
 
 -- | @Selector@ for @horizontallyResizable@
-horizontallyResizableSelector :: Selector
+horizontallyResizableSelector :: Selector '[] Bool
 horizontallyResizableSelector = mkSelector "horizontallyResizable"
 
 -- | @Selector@ for @setHorizontallyResizable:@
-setHorizontallyResizableSelector :: Selector
+setHorizontallyResizableSelector :: Selector '[Bool] ()
 setHorizontallyResizableSelector = mkSelector "setHorizontallyResizable:"
 
 -- | @Selector@ for @verticallyResizable@
-verticallyResizableSelector :: Selector
+verticallyResizableSelector :: Selector '[] Bool
 verticallyResizableSelector = mkSelector "verticallyResizable"
 
 -- | @Selector@ for @setVerticallyResizable:@
-setVerticallyResizableSelector :: Selector
+setVerticallyResizableSelector :: Selector '[Bool] ()
 setVerticallyResizableSelector = mkSelector "setVerticallyResizable:"
 

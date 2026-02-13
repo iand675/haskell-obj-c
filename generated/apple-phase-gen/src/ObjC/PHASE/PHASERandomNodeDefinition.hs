@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.PHASE.PHASERandomNodeDefinition
   , addSubtree_weight
   , uniqueSelectionQueueLength
   , setUniqueSelectionQueueLength
+  , addSubtree_weightSelector
   , initSelector
   , initWithIdentifierSelector
-  , addSubtree_weightSelector
-  , uniqueSelectionQueueLengthSelector
   , setUniqueSelectionQueueLengthSelector
+  , uniqueSelectionQueueLengthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsPHASERandomNodeDefinition phaseRandomNodeDefinition => phaseRandomNodeDefinition -> IO (Id PHASERandomNodeDefinition)
-init_ phaseRandomNodeDefinition  =
-    sendMsg phaseRandomNodeDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseRandomNodeDefinition =
+  sendOwnedMessage phaseRandomNodeDefinition initSelector
 
 -- | initWithIdentifier
 --
@@ -64,9 +61,8 @@ init_ phaseRandomNodeDefinition  =
 --
 -- ObjC selector: @- initWithIdentifier:@
 initWithIdentifier :: (IsPHASERandomNodeDefinition phaseRandomNodeDefinition, IsNSString identifier) => phaseRandomNodeDefinition -> identifier -> IO (Id PHASERandomNodeDefinition)
-initWithIdentifier phaseRandomNodeDefinition  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg phaseRandomNodeDefinition (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier phaseRandomNodeDefinition identifier =
+  sendOwnedMessage phaseRandomNodeDefinition initWithIdentifierSelector (toNSString identifier)
 
 -- | addSubtree
 --
@@ -78,10 +74,8 @@ initWithIdentifier phaseRandomNodeDefinition  identifier =
 --
 -- ObjC selector: @- addSubtree:weight:@
 addSubtree_weight :: (IsPHASERandomNodeDefinition phaseRandomNodeDefinition, IsPHASESoundEventNodeDefinition subtree, IsNSNumber weight) => phaseRandomNodeDefinition -> subtree -> weight -> IO ()
-addSubtree_weight phaseRandomNodeDefinition  subtree weight =
-  withObjCPtr subtree $ \raw_subtree ->
-    withObjCPtr weight $ \raw_weight ->
-        sendMsg phaseRandomNodeDefinition (mkSelector "addSubtree:weight:") retVoid [argPtr (castPtr raw_subtree :: Ptr ()), argPtr (castPtr raw_weight :: Ptr ())]
+addSubtree_weight phaseRandomNodeDefinition subtree weight =
+  sendMessage phaseRandomNodeDefinition addSubtree_weightSelector (toPHASESoundEventNodeDefinition subtree) (toNSNumber weight)
 
 -- | uniqueSelectionQueueLength
 --
@@ -89,8 +83,8 @@ addSubtree_weight phaseRandomNodeDefinition  subtree weight =
 --
 -- ObjC selector: @- uniqueSelectionQueueLength@
 uniqueSelectionQueueLength :: IsPHASERandomNodeDefinition phaseRandomNodeDefinition => phaseRandomNodeDefinition -> IO CLong
-uniqueSelectionQueueLength phaseRandomNodeDefinition  =
-    sendMsg phaseRandomNodeDefinition (mkSelector "uniqueSelectionQueueLength") retCLong []
+uniqueSelectionQueueLength phaseRandomNodeDefinition =
+  sendMessage phaseRandomNodeDefinition uniqueSelectionQueueLengthSelector
 
 -- | uniqueSelectionQueueLength
 --
@@ -98,30 +92,30 @@ uniqueSelectionQueueLength phaseRandomNodeDefinition  =
 --
 -- ObjC selector: @- setUniqueSelectionQueueLength:@
 setUniqueSelectionQueueLength :: IsPHASERandomNodeDefinition phaseRandomNodeDefinition => phaseRandomNodeDefinition -> CLong -> IO ()
-setUniqueSelectionQueueLength phaseRandomNodeDefinition  value =
-    sendMsg phaseRandomNodeDefinition (mkSelector "setUniqueSelectionQueueLength:") retVoid [argCLong value]
+setUniqueSelectionQueueLength phaseRandomNodeDefinition value =
+  sendMessage phaseRandomNodeDefinition setUniqueSelectionQueueLengthSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASERandomNodeDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[Id NSString] (Id PHASERandomNodeDefinition)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @addSubtree:weight:@
-addSubtree_weightSelector :: Selector
+addSubtree_weightSelector :: Selector '[Id PHASESoundEventNodeDefinition, Id NSNumber] ()
 addSubtree_weightSelector = mkSelector "addSubtree:weight:"
 
 -- | @Selector@ for @uniqueSelectionQueueLength@
-uniqueSelectionQueueLengthSelector :: Selector
+uniqueSelectionQueueLengthSelector :: Selector '[] CLong
 uniqueSelectionQueueLengthSelector = mkSelector "uniqueSelectionQueueLength"
 
 -- | @Selector@ for @setUniqueSelectionQueueLength:@
-setUniqueSelectionQueueLengthSelector :: Selector
+setUniqueSelectionQueueLengthSelector :: Selector '[CLong] ()
 setUniqueSelectionQueueLengthSelector = mkSelector "setUniqueSelectionQueueLength:"
 

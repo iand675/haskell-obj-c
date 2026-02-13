@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 import ObjC.CoreMedia.Internal.Enums
 
 -- | CMTag
@@ -45,3 +47,13 @@ argCMTag = mkStorableArg cmTagStructType
 
 retCMTag :: RetType CMTag
 retCMTag = mkStorableRetType cmTagStructType
+
+instance ObjCArgument CMTag where
+  withObjCArg x k = k (argCMTag x)
+
+instance ObjCReturn CMTag where
+  type RawReturn CMTag = CMTag
+  objcRetType = retCMTag
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

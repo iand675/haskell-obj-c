@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.ModelIO.MDLCheckerboardTexture
   , setColor1
   , color2
   , setColor2
-  , divisionsSelector
-  , setDivisionsSelector
   , color1Selector
-  , setColor1Selector
   , color2Selector
+  , divisionsSelector
+  , setColor1Selector
   , setColor2Selector
+  , setDivisionsSelector
 
   -- * Enum types
   , MDLTextureChannelEncoding(MDLTextureChannelEncoding)
@@ -40,15 +41,11 @@ module ObjC.ModelIO.MDLCheckerboardTexture
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,59 +55,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- divisions@
 divisions :: IsMDLCheckerboardTexture mdlCheckerboardTexture => mdlCheckerboardTexture -> IO CFloat
-divisions mdlCheckerboardTexture  =
-    sendMsg mdlCheckerboardTexture (mkSelector "divisions") retCFloat []
+divisions mdlCheckerboardTexture =
+  sendMessage mdlCheckerboardTexture divisionsSelector
 
 -- | @- setDivisions:@
 setDivisions :: IsMDLCheckerboardTexture mdlCheckerboardTexture => mdlCheckerboardTexture -> CFloat -> IO ()
-setDivisions mdlCheckerboardTexture  value =
-    sendMsg mdlCheckerboardTexture (mkSelector "setDivisions:") retVoid [argCFloat value]
+setDivisions mdlCheckerboardTexture value =
+  sendMessage mdlCheckerboardTexture setDivisionsSelector value
 
 -- | @- color1@
 color1 :: IsMDLCheckerboardTexture mdlCheckerboardTexture => mdlCheckerboardTexture -> IO (Ptr ())
-color1 mdlCheckerboardTexture  =
-    fmap castPtr $ sendMsg mdlCheckerboardTexture (mkSelector "color1") (retPtr retVoid) []
+color1 mdlCheckerboardTexture =
+  sendMessage mdlCheckerboardTexture color1Selector
 
 -- | @- setColor1:@
 setColor1 :: IsMDLCheckerboardTexture mdlCheckerboardTexture => mdlCheckerboardTexture -> Ptr () -> IO ()
-setColor1 mdlCheckerboardTexture  value =
-    sendMsg mdlCheckerboardTexture (mkSelector "setColor1:") retVoid [argPtr value]
+setColor1 mdlCheckerboardTexture value =
+  sendMessage mdlCheckerboardTexture setColor1Selector value
 
 -- | @- color2@
 color2 :: IsMDLCheckerboardTexture mdlCheckerboardTexture => mdlCheckerboardTexture -> IO (Ptr ())
-color2 mdlCheckerboardTexture  =
-    fmap castPtr $ sendMsg mdlCheckerboardTexture (mkSelector "color2") (retPtr retVoid) []
+color2 mdlCheckerboardTexture =
+  sendMessage mdlCheckerboardTexture color2Selector
 
 -- | @- setColor2:@
 setColor2 :: IsMDLCheckerboardTexture mdlCheckerboardTexture => mdlCheckerboardTexture -> Ptr () -> IO ()
-setColor2 mdlCheckerboardTexture  value =
-    sendMsg mdlCheckerboardTexture (mkSelector "setColor2:") retVoid [argPtr value]
+setColor2 mdlCheckerboardTexture value =
+  sendMessage mdlCheckerboardTexture setColor2Selector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @divisions@
-divisionsSelector :: Selector
+divisionsSelector :: Selector '[] CFloat
 divisionsSelector = mkSelector "divisions"
 
 -- | @Selector@ for @setDivisions:@
-setDivisionsSelector :: Selector
+setDivisionsSelector :: Selector '[CFloat] ()
 setDivisionsSelector = mkSelector "setDivisions:"
 
 -- | @Selector@ for @color1@
-color1Selector :: Selector
+color1Selector :: Selector '[] (Ptr ())
 color1Selector = mkSelector "color1"
 
 -- | @Selector@ for @setColor1:@
-setColor1Selector :: Selector
+setColor1Selector :: Selector '[Ptr ()] ()
 setColor1Selector = mkSelector "setColor1:"
 
 -- | @Selector@ for @color2@
-color2Selector :: Selector
+color2Selector :: Selector '[] (Ptr ())
 color2Selector = mkSelector "color2"
 
 -- | @Selector@ for @setColor2:@
-setColor2Selector :: Selector
+setColor2Selector :: Selector '[Ptr ()] ()
 setColor2Selector = mkSelector "setColor2:"
 

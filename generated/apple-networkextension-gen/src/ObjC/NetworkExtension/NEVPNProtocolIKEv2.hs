@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -47,40 +48,40 @@ module ObjC.NetworkExtension.NEVPNProtocolIKEv2
   , setMtu
   , ppkConfiguration
   , setPpkConfiguration
-  , deadPeerDetectionRateSelector
-  , setDeadPeerDetectionRateSelector
-  , serverCertificateIssuerCommonNameSelector
-  , setServerCertificateIssuerCommonNameSelector
-  , serverCertificateCommonNameSelector
-  , setServerCertificateCommonNameSelector
-  , certificateTypeSelector
-  , setCertificateTypeSelector
-  , useConfigurationAttributeInternalIPSubnetSelector
-  , setUseConfigurationAttributeInternalIPSubnetSelector
-  , ikeSecurityAssociationParametersSelector
-  , childSecurityAssociationParametersSelector
-  , disableMOBIKESelector
-  , setDisableMOBIKESelector
-  , disableRedirectSelector
-  , setDisableRedirectSelector
-  , enablePFSSelector
-  , setEnablePFSSelector
   , allowPostQuantumKeyExchangeFallbackSelector
-  , setAllowPostQuantumKeyExchangeFallbackSelector
-  , enableRevocationCheckSelector
-  , setEnableRevocationCheckSelector
-  , strictRevocationCheckSelector
-  , setStrictRevocationCheckSelector
-  , minimumTLSVersionSelector
-  , setMinimumTLSVersionSelector
-  , maximumTLSVersionSelector
-  , setMaximumTLSVersionSelector
+  , certificateTypeSelector
+  , childSecurityAssociationParametersSelector
+  , deadPeerDetectionRateSelector
+  , disableMOBIKESelector
+  , disableRedirectSelector
   , enableFallbackSelector
-  , setEnableFallbackSelector
+  , enablePFSSelector
+  , enableRevocationCheckSelector
+  , ikeSecurityAssociationParametersSelector
+  , maximumTLSVersionSelector
+  , minimumTLSVersionSelector
   , mtuSelector
-  , setMtuSelector
   , ppkConfigurationSelector
+  , serverCertificateCommonNameSelector
+  , serverCertificateIssuerCommonNameSelector
+  , setAllowPostQuantumKeyExchangeFallbackSelector
+  , setCertificateTypeSelector
+  , setDeadPeerDetectionRateSelector
+  , setDisableMOBIKESelector
+  , setDisableRedirectSelector
+  , setEnableFallbackSelector
+  , setEnablePFSSelector
+  , setEnableRevocationCheckSelector
+  , setMaximumTLSVersionSelector
+  , setMinimumTLSVersionSelector
+  , setMtuSelector
   , setPpkConfigurationSelector
+  , setServerCertificateCommonNameSelector
+  , setServerCertificateIssuerCommonNameSelector
+  , setStrictRevocationCheckSelector
+  , setUseConfigurationAttributeInternalIPSubnetSelector
+  , strictRevocationCheckSelector
+  , useConfigurationAttributeInternalIPSubnetSelector
 
   -- * Enum types
   , NEVPNIKEv2CertificateType(NEVPNIKEv2CertificateType)
@@ -103,15 +104,11 @@ module ObjC.NetworkExtension.NEVPNProtocolIKEv2
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -125,8 +122,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- deadPeerDetectionRate@
 deadPeerDetectionRate :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO NEVPNIKEv2DeadPeerDetectionRate
-deadPeerDetectionRate nevpnProtocolIKEv2  =
-    fmap (coerce :: CLong -> NEVPNIKEv2DeadPeerDetectionRate) $ sendMsg nevpnProtocolIKEv2 (mkSelector "deadPeerDetectionRate") retCLong []
+deadPeerDetectionRate nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 deadPeerDetectionRateSelector
 
 -- | deadPeerDetectionRate
 --
@@ -134,8 +131,8 @@ deadPeerDetectionRate nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setDeadPeerDetectionRate:@
 setDeadPeerDetectionRate :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> NEVPNIKEv2DeadPeerDetectionRate -> IO ()
-setDeadPeerDetectionRate nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setDeadPeerDetectionRate:") retVoid [argCLong (coerce value)]
+setDeadPeerDetectionRate nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setDeadPeerDetectionRateSelector value
 
 -- | serverCertificateIssuerCommonName
 --
@@ -143,8 +140,8 @@ setDeadPeerDetectionRate nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- serverCertificateIssuerCommonName@
 serverCertificateIssuerCommonName :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NSString)
-serverCertificateIssuerCommonName nevpnProtocolIKEv2  =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "serverCertificateIssuerCommonName") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverCertificateIssuerCommonName nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 serverCertificateIssuerCommonNameSelector
 
 -- | serverCertificateIssuerCommonName
 --
@@ -152,9 +149,8 @@ serverCertificateIssuerCommonName nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setServerCertificateIssuerCommonName:@
 setServerCertificateIssuerCommonName :: (IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2, IsNSString value) => nevpnProtocolIKEv2 -> value -> IO ()
-setServerCertificateIssuerCommonName nevpnProtocolIKEv2  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnProtocolIKEv2 (mkSelector "setServerCertificateIssuerCommonName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerCertificateIssuerCommonName nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setServerCertificateIssuerCommonNameSelector (toNSString value)
 
 -- | serverCertificateCommonName
 --
@@ -162,8 +158,8 @@ setServerCertificateIssuerCommonName nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- serverCertificateCommonName@
 serverCertificateCommonName :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NSString)
-serverCertificateCommonName nevpnProtocolIKEv2  =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "serverCertificateCommonName") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverCertificateCommonName nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 serverCertificateCommonNameSelector
 
 -- | serverCertificateCommonName
 --
@@ -171,9 +167,8 @@ serverCertificateCommonName nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setServerCertificateCommonName:@
 setServerCertificateCommonName :: (IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2, IsNSString value) => nevpnProtocolIKEv2 -> value -> IO ()
-setServerCertificateCommonName nevpnProtocolIKEv2  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnProtocolIKEv2 (mkSelector "setServerCertificateCommonName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerCertificateCommonName nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setServerCertificateCommonNameSelector (toNSString value)
 
 -- | certificateType
 --
@@ -181,8 +176,8 @@ setServerCertificateCommonName nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- certificateType@
 certificateType :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO NEVPNIKEv2CertificateType
-certificateType nevpnProtocolIKEv2  =
-    fmap (coerce :: CLong -> NEVPNIKEv2CertificateType) $ sendMsg nevpnProtocolIKEv2 (mkSelector "certificateType") retCLong []
+certificateType nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 certificateTypeSelector
 
 -- | certificateType
 --
@@ -190,8 +185,8 @@ certificateType nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setCertificateType:@
 setCertificateType :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> NEVPNIKEv2CertificateType -> IO ()
-setCertificateType nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setCertificateType:") retVoid [argCLong (coerce value)]
+setCertificateType nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setCertificateTypeSelector value
 
 -- | useConfigurationAttributeInternalIPSubnet
 --
@@ -199,8 +194,8 @@ setCertificateType nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- useConfigurationAttributeInternalIPSubnet@
 useConfigurationAttributeInternalIPSubnet :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO Bool
-useConfigurationAttributeInternalIPSubnet nevpnProtocolIKEv2  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnProtocolIKEv2 (mkSelector "useConfigurationAttributeInternalIPSubnet") retCULong []
+useConfigurationAttributeInternalIPSubnet nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 useConfigurationAttributeInternalIPSubnetSelector
 
 -- | useConfigurationAttributeInternalIPSubnet
 --
@@ -208,8 +203,8 @@ useConfigurationAttributeInternalIPSubnet nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setUseConfigurationAttributeInternalIPSubnet:@
 setUseConfigurationAttributeInternalIPSubnet :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> Bool -> IO ()
-setUseConfigurationAttributeInternalIPSubnet nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setUseConfigurationAttributeInternalIPSubnet:") retVoid [argCULong (if value then 1 else 0)]
+setUseConfigurationAttributeInternalIPSubnet nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setUseConfigurationAttributeInternalIPSubnetSelector value
 
 -- | IKESecurityAssociationParameters
 --
@@ -217,8 +212,8 @@ setUseConfigurationAttributeInternalIPSubnet nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- IKESecurityAssociationParameters@
 ikeSecurityAssociationParameters :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NEVPNIKEv2SecurityAssociationParameters)
-ikeSecurityAssociationParameters nevpnProtocolIKEv2  =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "IKESecurityAssociationParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+ikeSecurityAssociationParameters nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 ikeSecurityAssociationParametersSelector
 
 -- | childSecurityAssociationParameters
 --
@@ -226,8 +221,8 @@ ikeSecurityAssociationParameters nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- childSecurityAssociationParameters@
 childSecurityAssociationParameters :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NEVPNIKEv2SecurityAssociationParameters)
-childSecurityAssociationParameters nevpnProtocolIKEv2  =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "childSecurityAssociationParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+childSecurityAssociationParameters nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 childSecurityAssociationParametersSelector
 
 -- | disableMOBIKE
 --
@@ -235,8 +230,8 @@ childSecurityAssociationParameters nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- disableMOBIKE@
 disableMOBIKE :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO Bool
-disableMOBIKE nevpnProtocolIKEv2  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnProtocolIKEv2 (mkSelector "disableMOBIKE") retCULong []
+disableMOBIKE nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 disableMOBIKESelector
 
 -- | disableMOBIKE
 --
@@ -244,8 +239,8 @@ disableMOBIKE nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setDisableMOBIKE:@
 setDisableMOBIKE :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> Bool -> IO ()
-setDisableMOBIKE nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setDisableMOBIKE:") retVoid [argCULong (if value then 1 else 0)]
+setDisableMOBIKE nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setDisableMOBIKESelector value
 
 -- | disableRedirect
 --
@@ -253,8 +248,8 @@ setDisableMOBIKE nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- disableRedirect@
 disableRedirect :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO Bool
-disableRedirect nevpnProtocolIKEv2  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnProtocolIKEv2 (mkSelector "disableRedirect") retCULong []
+disableRedirect nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 disableRedirectSelector
 
 -- | disableRedirect
 --
@@ -262,8 +257,8 @@ disableRedirect nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setDisableRedirect:@
 setDisableRedirect :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> Bool -> IO ()
-setDisableRedirect nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setDisableRedirect:") retVoid [argCULong (if value then 1 else 0)]
+setDisableRedirect nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setDisableRedirectSelector value
 
 -- | enablePFS
 --
@@ -271,8 +266,8 @@ setDisableRedirect nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- enablePFS@
 enablePFS :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO Bool
-enablePFS nevpnProtocolIKEv2  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnProtocolIKEv2 (mkSelector "enablePFS") retCULong []
+enablePFS nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 enablePFSSelector
 
 -- | enablePFS
 --
@@ -280,8 +275,8 @@ enablePFS nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setEnablePFS:@
 setEnablePFS :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> Bool -> IO ()
-setEnablePFS nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setEnablePFS:") retVoid [argCULong (if value then 1 else 0)]
+setEnablePFS nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setEnablePFSSelector value
 
 -- | allowPostQuantumKeyExchangeFallback
 --
@@ -289,8 +284,8 @@ setEnablePFS nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- allowPostQuantumKeyExchangeFallback@
 allowPostQuantumKeyExchangeFallback :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO Bool
-allowPostQuantumKeyExchangeFallback nevpnProtocolIKEv2  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnProtocolIKEv2 (mkSelector "allowPostQuantumKeyExchangeFallback") retCULong []
+allowPostQuantumKeyExchangeFallback nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 allowPostQuantumKeyExchangeFallbackSelector
 
 -- | allowPostQuantumKeyExchangeFallback
 --
@@ -298,8 +293,8 @@ allowPostQuantumKeyExchangeFallback nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setAllowPostQuantumKeyExchangeFallback:@
 setAllowPostQuantumKeyExchangeFallback :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> Bool -> IO ()
-setAllowPostQuantumKeyExchangeFallback nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setAllowPostQuantumKeyExchangeFallback:") retVoid [argCULong (if value then 1 else 0)]
+setAllowPostQuantumKeyExchangeFallback nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setAllowPostQuantumKeyExchangeFallbackSelector value
 
 -- | enableRevocationCheck
 --
@@ -307,8 +302,8 @@ setAllowPostQuantumKeyExchangeFallback nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- enableRevocationCheck@
 enableRevocationCheck :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO Bool
-enableRevocationCheck nevpnProtocolIKEv2  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnProtocolIKEv2 (mkSelector "enableRevocationCheck") retCULong []
+enableRevocationCheck nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 enableRevocationCheckSelector
 
 -- | enableRevocationCheck
 --
@@ -316,8 +311,8 @@ enableRevocationCheck nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setEnableRevocationCheck:@
 setEnableRevocationCheck :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> Bool -> IO ()
-setEnableRevocationCheck nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setEnableRevocationCheck:") retVoid [argCULong (if value then 1 else 0)]
+setEnableRevocationCheck nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setEnableRevocationCheckSelector value
 
 -- | strictRevocationCheck
 --
@@ -325,8 +320,8 @@ setEnableRevocationCheck nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- strictRevocationCheck@
 strictRevocationCheck :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO Bool
-strictRevocationCheck nevpnProtocolIKEv2  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnProtocolIKEv2 (mkSelector "strictRevocationCheck") retCULong []
+strictRevocationCheck nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 strictRevocationCheckSelector
 
 -- | strictRevocationCheck
 --
@@ -334,8 +329,8 @@ strictRevocationCheck nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setStrictRevocationCheck:@
 setStrictRevocationCheck :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> Bool -> IO ()
-setStrictRevocationCheck nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setStrictRevocationCheck:") retVoid [argCULong (if value then 1 else 0)]
+setStrictRevocationCheck nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setStrictRevocationCheckSelector value
 
 -- | minimumTLSVersion
 --
@@ -343,8 +338,8 @@ setStrictRevocationCheck nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- minimumTLSVersion@
 minimumTLSVersion :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO NEVPNIKEv2TLSVersion
-minimumTLSVersion nevpnProtocolIKEv2  =
-    fmap (coerce :: CLong -> NEVPNIKEv2TLSVersion) $ sendMsg nevpnProtocolIKEv2 (mkSelector "minimumTLSVersion") retCLong []
+minimumTLSVersion nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 minimumTLSVersionSelector
 
 -- | minimumTLSVersion
 --
@@ -352,8 +347,8 @@ minimumTLSVersion nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setMinimumTLSVersion:@
 setMinimumTLSVersion :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> NEVPNIKEv2TLSVersion -> IO ()
-setMinimumTLSVersion nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setMinimumTLSVersion:") retVoid [argCLong (coerce value)]
+setMinimumTLSVersion nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setMinimumTLSVersionSelector value
 
 -- | maximumTLSVersion
 --
@@ -361,8 +356,8 @@ setMinimumTLSVersion nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- maximumTLSVersion@
 maximumTLSVersion :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO NEVPNIKEv2TLSVersion
-maximumTLSVersion nevpnProtocolIKEv2  =
-    fmap (coerce :: CLong -> NEVPNIKEv2TLSVersion) $ sendMsg nevpnProtocolIKEv2 (mkSelector "maximumTLSVersion") retCLong []
+maximumTLSVersion nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 maximumTLSVersionSelector
 
 -- | maximumTLSVersion
 --
@@ -370,8 +365,8 @@ maximumTLSVersion nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setMaximumTLSVersion:@
 setMaximumTLSVersion :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> NEVPNIKEv2TLSVersion -> IO ()
-setMaximumTLSVersion nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setMaximumTLSVersion:") retVoid [argCLong (coerce value)]
+setMaximumTLSVersion nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setMaximumTLSVersionSelector value
 
 -- | enableFallback
 --
@@ -379,8 +374,8 @@ setMaximumTLSVersion nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- enableFallback@
 enableFallback :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO Bool
-enableFallback nevpnProtocolIKEv2  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnProtocolIKEv2 (mkSelector "enableFallback") retCULong []
+enableFallback nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 enableFallbackSelector
 
 -- | enableFallback
 --
@@ -388,8 +383,8 @@ enableFallback nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setEnableFallback:@
 setEnableFallback :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> Bool -> IO ()
-setEnableFallback nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setEnableFallback:") retVoid [argCULong (if value then 1 else 0)]
+setEnableFallback nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setEnableFallbackSelector value
 
 -- | mtu
 --
@@ -397,8 +392,8 @@ setEnableFallback nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- mtu@
 mtu :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO CULong
-mtu nevpnProtocolIKEv2  =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "mtu") retCULong []
+mtu nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 mtuSelector
 
 -- | mtu
 --
@@ -406,8 +401,8 @@ mtu nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setMtu:@
 setMtu :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> CULong -> IO ()
-setMtu nevpnProtocolIKEv2  value =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "setMtu:") retVoid [argCULong value]
+setMtu nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setMtuSelector value
 
 -- | ppkConfiguration
 --
@@ -415,8 +410,8 @@ setMtu nevpnProtocolIKEv2  value =
 --
 -- ObjC selector: @- ppkConfiguration@
 ppkConfiguration :: IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2 => nevpnProtocolIKEv2 -> IO (Id NEVPNIKEv2PPKConfiguration)
-ppkConfiguration nevpnProtocolIKEv2  =
-    sendMsg nevpnProtocolIKEv2 (mkSelector "ppkConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+ppkConfiguration nevpnProtocolIKEv2 =
+  sendMessage nevpnProtocolIKEv2 ppkConfigurationSelector
 
 -- | ppkConfiguration
 --
@@ -424,147 +419,146 @@ ppkConfiguration nevpnProtocolIKEv2  =
 --
 -- ObjC selector: @- setPpkConfiguration:@
 setPpkConfiguration :: (IsNEVPNProtocolIKEv2 nevpnProtocolIKEv2, IsNEVPNIKEv2PPKConfiguration value) => nevpnProtocolIKEv2 -> value -> IO ()
-setPpkConfiguration nevpnProtocolIKEv2  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnProtocolIKEv2 (mkSelector "setPpkConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPpkConfiguration nevpnProtocolIKEv2 value =
+  sendMessage nevpnProtocolIKEv2 setPpkConfigurationSelector (toNEVPNIKEv2PPKConfiguration value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @deadPeerDetectionRate@
-deadPeerDetectionRateSelector :: Selector
+deadPeerDetectionRateSelector :: Selector '[] NEVPNIKEv2DeadPeerDetectionRate
 deadPeerDetectionRateSelector = mkSelector "deadPeerDetectionRate"
 
 -- | @Selector@ for @setDeadPeerDetectionRate:@
-setDeadPeerDetectionRateSelector :: Selector
+setDeadPeerDetectionRateSelector :: Selector '[NEVPNIKEv2DeadPeerDetectionRate] ()
 setDeadPeerDetectionRateSelector = mkSelector "setDeadPeerDetectionRate:"
 
 -- | @Selector@ for @serverCertificateIssuerCommonName@
-serverCertificateIssuerCommonNameSelector :: Selector
+serverCertificateIssuerCommonNameSelector :: Selector '[] (Id NSString)
 serverCertificateIssuerCommonNameSelector = mkSelector "serverCertificateIssuerCommonName"
 
 -- | @Selector@ for @setServerCertificateIssuerCommonName:@
-setServerCertificateIssuerCommonNameSelector :: Selector
+setServerCertificateIssuerCommonNameSelector :: Selector '[Id NSString] ()
 setServerCertificateIssuerCommonNameSelector = mkSelector "setServerCertificateIssuerCommonName:"
 
 -- | @Selector@ for @serverCertificateCommonName@
-serverCertificateCommonNameSelector :: Selector
+serverCertificateCommonNameSelector :: Selector '[] (Id NSString)
 serverCertificateCommonNameSelector = mkSelector "serverCertificateCommonName"
 
 -- | @Selector@ for @setServerCertificateCommonName:@
-setServerCertificateCommonNameSelector :: Selector
+setServerCertificateCommonNameSelector :: Selector '[Id NSString] ()
 setServerCertificateCommonNameSelector = mkSelector "setServerCertificateCommonName:"
 
 -- | @Selector@ for @certificateType@
-certificateTypeSelector :: Selector
+certificateTypeSelector :: Selector '[] NEVPNIKEv2CertificateType
 certificateTypeSelector = mkSelector "certificateType"
 
 -- | @Selector@ for @setCertificateType:@
-setCertificateTypeSelector :: Selector
+setCertificateTypeSelector :: Selector '[NEVPNIKEv2CertificateType] ()
 setCertificateTypeSelector = mkSelector "setCertificateType:"
 
 -- | @Selector@ for @useConfigurationAttributeInternalIPSubnet@
-useConfigurationAttributeInternalIPSubnetSelector :: Selector
+useConfigurationAttributeInternalIPSubnetSelector :: Selector '[] Bool
 useConfigurationAttributeInternalIPSubnetSelector = mkSelector "useConfigurationAttributeInternalIPSubnet"
 
 -- | @Selector@ for @setUseConfigurationAttributeInternalIPSubnet:@
-setUseConfigurationAttributeInternalIPSubnetSelector :: Selector
+setUseConfigurationAttributeInternalIPSubnetSelector :: Selector '[Bool] ()
 setUseConfigurationAttributeInternalIPSubnetSelector = mkSelector "setUseConfigurationAttributeInternalIPSubnet:"
 
 -- | @Selector@ for @IKESecurityAssociationParameters@
-ikeSecurityAssociationParametersSelector :: Selector
+ikeSecurityAssociationParametersSelector :: Selector '[] (Id NEVPNIKEv2SecurityAssociationParameters)
 ikeSecurityAssociationParametersSelector = mkSelector "IKESecurityAssociationParameters"
 
 -- | @Selector@ for @childSecurityAssociationParameters@
-childSecurityAssociationParametersSelector :: Selector
+childSecurityAssociationParametersSelector :: Selector '[] (Id NEVPNIKEv2SecurityAssociationParameters)
 childSecurityAssociationParametersSelector = mkSelector "childSecurityAssociationParameters"
 
 -- | @Selector@ for @disableMOBIKE@
-disableMOBIKESelector :: Selector
+disableMOBIKESelector :: Selector '[] Bool
 disableMOBIKESelector = mkSelector "disableMOBIKE"
 
 -- | @Selector@ for @setDisableMOBIKE:@
-setDisableMOBIKESelector :: Selector
+setDisableMOBIKESelector :: Selector '[Bool] ()
 setDisableMOBIKESelector = mkSelector "setDisableMOBIKE:"
 
 -- | @Selector@ for @disableRedirect@
-disableRedirectSelector :: Selector
+disableRedirectSelector :: Selector '[] Bool
 disableRedirectSelector = mkSelector "disableRedirect"
 
 -- | @Selector@ for @setDisableRedirect:@
-setDisableRedirectSelector :: Selector
+setDisableRedirectSelector :: Selector '[Bool] ()
 setDisableRedirectSelector = mkSelector "setDisableRedirect:"
 
 -- | @Selector@ for @enablePFS@
-enablePFSSelector :: Selector
+enablePFSSelector :: Selector '[] Bool
 enablePFSSelector = mkSelector "enablePFS"
 
 -- | @Selector@ for @setEnablePFS:@
-setEnablePFSSelector :: Selector
+setEnablePFSSelector :: Selector '[Bool] ()
 setEnablePFSSelector = mkSelector "setEnablePFS:"
 
 -- | @Selector@ for @allowPostQuantumKeyExchangeFallback@
-allowPostQuantumKeyExchangeFallbackSelector :: Selector
+allowPostQuantumKeyExchangeFallbackSelector :: Selector '[] Bool
 allowPostQuantumKeyExchangeFallbackSelector = mkSelector "allowPostQuantumKeyExchangeFallback"
 
 -- | @Selector@ for @setAllowPostQuantumKeyExchangeFallback:@
-setAllowPostQuantumKeyExchangeFallbackSelector :: Selector
+setAllowPostQuantumKeyExchangeFallbackSelector :: Selector '[Bool] ()
 setAllowPostQuantumKeyExchangeFallbackSelector = mkSelector "setAllowPostQuantumKeyExchangeFallback:"
 
 -- | @Selector@ for @enableRevocationCheck@
-enableRevocationCheckSelector :: Selector
+enableRevocationCheckSelector :: Selector '[] Bool
 enableRevocationCheckSelector = mkSelector "enableRevocationCheck"
 
 -- | @Selector@ for @setEnableRevocationCheck:@
-setEnableRevocationCheckSelector :: Selector
+setEnableRevocationCheckSelector :: Selector '[Bool] ()
 setEnableRevocationCheckSelector = mkSelector "setEnableRevocationCheck:"
 
 -- | @Selector@ for @strictRevocationCheck@
-strictRevocationCheckSelector :: Selector
+strictRevocationCheckSelector :: Selector '[] Bool
 strictRevocationCheckSelector = mkSelector "strictRevocationCheck"
 
 -- | @Selector@ for @setStrictRevocationCheck:@
-setStrictRevocationCheckSelector :: Selector
+setStrictRevocationCheckSelector :: Selector '[Bool] ()
 setStrictRevocationCheckSelector = mkSelector "setStrictRevocationCheck:"
 
 -- | @Selector@ for @minimumTLSVersion@
-minimumTLSVersionSelector :: Selector
+minimumTLSVersionSelector :: Selector '[] NEVPNIKEv2TLSVersion
 minimumTLSVersionSelector = mkSelector "minimumTLSVersion"
 
 -- | @Selector@ for @setMinimumTLSVersion:@
-setMinimumTLSVersionSelector :: Selector
+setMinimumTLSVersionSelector :: Selector '[NEVPNIKEv2TLSVersion] ()
 setMinimumTLSVersionSelector = mkSelector "setMinimumTLSVersion:"
 
 -- | @Selector@ for @maximumTLSVersion@
-maximumTLSVersionSelector :: Selector
+maximumTLSVersionSelector :: Selector '[] NEVPNIKEv2TLSVersion
 maximumTLSVersionSelector = mkSelector "maximumTLSVersion"
 
 -- | @Selector@ for @setMaximumTLSVersion:@
-setMaximumTLSVersionSelector :: Selector
+setMaximumTLSVersionSelector :: Selector '[NEVPNIKEv2TLSVersion] ()
 setMaximumTLSVersionSelector = mkSelector "setMaximumTLSVersion:"
 
 -- | @Selector@ for @enableFallback@
-enableFallbackSelector :: Selector
+enableFallbackSelector :: Selector '[] Bool
 enableFallbackSelector = mkSelector "enableFallback"
 
 -- | @Selector@ for @setEnableFallback:@
-setEnableFallbackSelector :: Selector
+setEnableFallbackSelector :: Selector '[Bool] ()
 setEnableFallbackSelector = mkSelector "setEnableFallback:"
 
 -- | @Selector@ for @mtu@
-mtuSelector :: Selector
+mtuSelector :: Selector '[] CULong
 mtuSelector = mkSelector "mtu"
 
 -- | @Selector@ for @setMtu:@
-setMtuSelector :: Selector
+setMtuSelector :: Selector '[CULong] ()
 setMtuSelector = mkSelector "setMtu:"
 
 -- | @Selector@ for @ppkConfiguration@
-ppkConfigurationSelector :: Selector
+ppkConfigurationSelector :: Selector '[] (Id NEVPNIKEv2PPKConfiguration)
 ppkConfigurationSelector = mkSelector "ppkConfiguration"
 
 -- | @Selector@ for @setPpkConfiguration:@
-setPpkConfigurationSelector :: Selector
+setPpkConfigurationSelector :: Selector '[Id NEVPNIKEv2PPKConfiguration] ()
 setPpkConfigurationSelector = mkSelector "setPpkConfiguration:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.CoreBluetooth.CBCharacteristic
   , descriptors
   , isBroadcasted
   , isNotifying
-  , serviceSelector
-  , propertiesSelector
-  , valueSelector
   , descriptorsSelector
   , isBroadcastedSelector
   , isNotifyingSelector
+  , propertiesSelector
+  , serviceSelector
+  , valueSelector
 
   -- * Enum types
   , CBCharacteristicProperties(CBCharacteristicProperties)
@@ -39,15 +40,11 @@ module ObjC.CoreBluetooth.CBCharacteristic
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- service@
 service :: IsCBCharacteristic cbCharacteristic => cbCharacteristic -> IO (Id CBService)
-service cbCharacteristic  =
-    sendMsg cbCharacteristic (mkSelector "service") (retPtr retVoid) [] >>= retainedObject . castPtr
+service cbCharacteristic =
+  sendMessage cbCharacteristic serviceSelector
 
 -- | properties
 --
@@ -70,8 +67,8 @@ service cbCharacteristic  =
 --
 -- ObjC selector: @- properties@
 properties :: IsCBCharacteristic cbCharacteristic => cbCharacteristic -> IO CBCharacteristicProperties
-properties cbCharacteristic  =
-    fmap (coerce :: CULong -> CBCharacteristicProperties) $ sendMsg cbCharacteristic (mkSelector "properties") retCULong []
+properties cbCharacteristic =
+  sendMessage cbCharacteristic propertiesSelector
 
 -- | value
 --
@@ -79,8 +76,8 @@ properties cbCharacteristic  =
 --
 -- ObjC selector: @- value@
 value :: IsCBCharacteristic cbCharacteristic => cbCharacteristic -> IO (Id NSData)
-value cbCharacteristic  =
-    sendMsg cbCharacteristic (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value cbCharacteristic =
+  sendMessage cbCharacteristic valueSelector
 
 -- | descriptors
 --
@@ -88,8 +85,8 @@ value cbCharacteristic  =
 --
 -- ObjC selector: @- descriptors@
 descriptors :: IsCBCharacteristic cbCharacteristic => cbCharacteristic -> IO (Id NSArray)
-descriptors cbCharacteristic  =
-    sendMsg cbCharacteristic (mkSelector "descriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptors cbCharacteristic =
+  sendMessage cbCharacteristic descriptorsSelector
 
 -- | isBroadcasted
 --
@@ -97,8 +94,8 @@ descriptors cbCharacteristic  =
 --
 -- ObjC selector: @- isBroadcasted@
 isBroadcasted :: IsCBCharacteristic cbCharacteristic => cbCharacteristic -> IO Bool
-isBroadcasted cbCharacteristic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbCharacteristic (mkSelector "isBroadcasted") retCULong []
+isBroadcasted cbCharacteristic =
+  sendMessage cbCharacteristic isBroadcastedSelector
 
 -- | isNotifying
 --
@@ -106,34 +103,34 @@ isBroadcasted cbCharacteristic  =
 --
 -- ObjC selector: @- isNotifying@
 isNotifying :: IsCBCharacteristic cbCharacteristic => cbCharacteristic -> IO Bool
-isNotifying cbCharacteristic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbCharacteristic (mkSelector "isNotifying") retCULong []
+isNotifying cbCharacteristic =
+  sendMessage cbCharacteristic isNotifyingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @service@
-serviceSelector :: Selector
+serviceSelector :: Selector '[] (Id CBService)
 serviceSelector = mkSelector "service"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] CBCharacteristicProperties
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSData)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @descriptors@
-descriptorsSelector :: Selector
+descriptorsSelector :: Selector '[] (Id NSArray)
 descriptorsSelector = mkSelector "descriptors"
 
 -- | @Selector@ for @isBroadcasted@
-isBroadcastedSelector :: Selector
+isBroadcastedSelector :: Selector '[] Bool
 isBroadcastedSelector = mkSelector "isBroadcasted"
 
 -- | @Selector@ for @isNotifying@
-isNotifyingSelector :: Selector
+isNotifyingSelector :: Selector '[] Bool
 isNotifyingSelector = mkSelector "isNotifying"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,12 +15,12 @@ module ObjC.Intents.INCancelRideIntentResponse
   , setCancellationFee
   , cancellationFeeThreshold
   , setCancellationFeeThreshold
+  , cancellationFeeSelector
+  , cancellationFeeThresholdSelector
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
-  , cancellationFeeSelector
   , setCancellationFeeSelector
-  , cancellationFeeThresholdSelector
   , setCancellationFeeThresholdSelector
 
   -- * Enum types
@@ -31,15 +32,11 @@ module ObjC.Intents.INCancelRideIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,71 +46,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINCancelRideIntentResponse inCancelRideIntentResponse => inCancelRideIntentResponse -> IO (Id INCancelRideIntentResponse)
-init_ inCancelRideIntentResponse  =
-    sendMsg inCancelRideIntentResponse (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inCancelRideIntentResponse =
+  sendOwnedMessage inCancelRideIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINCancelRideIntentResponse inCancelRideIntentResponse, IsNSUserActivity userActivity) => inCancelRideIntentResponse -> INCancelRideIntentResponseCode -> userActivity -> IO (Id INCancelRideIntentResponse)
-initWithCode_userActivity inCancelRideIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inCancelRideIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inCancelRideIntentResponse code userActivity =
+  sendOwnedMessage inCancelRideIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINCancelRideIntentResponse inCancelRideIntentResponse => inCancelRideIntentResponse -> IO INCancelRideIntentResponseCode
-code inCancelRideIntentResponse  =
-    fmap (coerce :: CLong -> INCancelRideIntentResponseCode) $ sendMsg inCancelRideIntentResponse (mkSelector "code") retCLong []
+code inCancelRideIntentResponse =
+  sendMessage inCancelRideIntentResponse codeSelector
 
 -- | @- cancellationFee@
 cancellationFee :: IsINCancelRideIntentResponse inCancelRideIntentResponse => inCancelRideIntentResponse -> IO (Id INCurrencyAmount)
-cancellationFee inCancelRideIntentResponse  =
-    sendMsg inCancelRideIntentResponse (mkSelector "cancellationFee") (retPtr retVoid) [] >>= retainedObject . castPtr
+cancellationFee inCancelRideIntentResponse =
+  sendMessage inCancelRideIntentResponse cancellationFeeSelector
 
 -- | @- setCancellationFee:@
 setCancellationFee :: (IsINCancelRideIntentResponse inCancelRideIntentResponse, IsINCurrencyAmount value) => inCancelRideIntentResponse -> value -> IO ()
-setCancellationFee inCancelRideIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inCancelRideIntentResponse (mkSelector "setCancellationFee:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCancellationFee inCancelRideIntentResponse value =
+  sendMessage inCancelRideIntentResponse setCancellationFeeSelector (toINCurrencyAmount value)
 
 -- | @- cancellationFeeThreshold@
 cancellationFeeThreshold :: IsINCancelRideIntentResponse inCancelRideIntentResponse => inCancelRideIntentResponse -> IO (Id NSDateComponents)
-cancellationFeeThreshold inCancelRideIntentResponse  =
-    sendMsg inCancelRideIntentResponse (mkSelector "cancellationFeeThreshold") (retPtr retVoid) [] >>= retainedObject . castPtr
+cancellationFeeThreshold inCancelRideIntentResponse =
+  sendMessage inCancelRideIntentResponse cancellationFeeThresholdSelector
 
 -- | @- setCancellationFeeThreshold:@
 setCancellationFeeThreshold :: (IsINCancelRideIntentResponse inCancelRideIntentResponse, IsNSDateComponents value) => inCancelRideIntentResponse -> value -> IO ()
-setCancellationFeeThreshold inCancelRideIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inCancelRideIntentResponse (mkSelector "setCancellationFeeThreshold:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCancellationFeeThreshold inCancelRideIntentResponse value =
+  sendMessage inCancelRideIntentResponse setCancellationFeeThresholdSelector (toNSDateComponents value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INCancelRideIntentResponse)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INCancelRideIntentResponseCode, Id NSUserActivity] (Id INCancelRideIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INCancelRideIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @cancellationFee@
-cancellationFeeSelector :: Selector
+cancellationFeeSelector :: Selector '[] (Id INCurrencyAmount)
 cancellationFeeSelector = mkSelector "cancellationFee"
 
 -- | @Selector@ for @setCancellationFee:@
-setCancellationFeeSelector :: Selector
+setCancellationFeeSelector :: Selector '[Id INCurrencyAmount] ()
 setCancellationFeeSelector = mkSelector "setCancellationFee:"
 
 -- | @Selector@ for @cancellationFeeThreshold@
-cancellationFeeThresholdSelector :: Selector
+cancellationFeeThresholdSelector :: Selector '[] (Id NSDateComponents)
 cancellationFeeThresholdSelector = mkSelector "cancellationFeeThreshold"
 
 -- | @Selector@ for @setCancellationFeeThreshold:@
-setCancellationFeeThresholdSelector :: Selector
+setCancellationFeeThresholdSelector :: Selector '[Id NSDateComponents] ()
 setCancellationFeeThresholdSelector = mkSelector "setCancellationFeeThreshold:"
 

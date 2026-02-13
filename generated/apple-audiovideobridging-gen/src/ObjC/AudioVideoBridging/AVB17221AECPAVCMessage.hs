@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AudioVideoBridging.AVB17221AECPAVCMessage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- commandResponse@
 commandResponse :: IsAVB17221AECPAVCMessage avB17221AECPAVCMessage => avB17221AECPAVCMessage -> IO (Id NSData)
-commandResponse avB17221AECPAVCMessage  =
-    sendMsg avB17221AECPAVCMessage (mkSelector "commandResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+commandResponse avB17221AECPAVCMessage =
+  sendMessage avB17221AECPAVCMessage commandResponseSelector
 
 -- | commandResponse
 --
@@ -50,19 +47,18 @@ commandResponse avB17221AECPAVCMessage  =
 --
 -- ObjC selector: @- setCommandResponse:@
 setCommandResponse :: (IsAVB17221AECPAVCMessage avB17221AECPAVCMessage, IsNSData value) => avB17221AECPAVCMessage -> value -> IO ()
-setCommandResponse avB17221AECPAVCMessage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avB17221AECPAVCMessage (mkSelector "setCommandResponse:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCommandResponse avB17221AECPAVCMessage value =
+  sendMessage avB17221AECPAVCMessage setCommandResponseSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @commandResponse@
-commandResponseSelector :: Selector
+commandResponseSelector :: Selector '[] (Id NSData)
 commandResponseSelector = mkSelector "commandResponse"
 
 -- | @Selector@ for @setCommandResponse:@
-setCommandResponseSelector :: Selector
+setCommandResponseSelector :: Selector '[Id NSData] ()
 setCommandResponseSelector = mkSelector "setCommandResponse:"
 

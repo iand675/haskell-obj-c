@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.MetalPerformanceShaders.MPSCNNNeuronELU
   , IsMPSCNNNeuronELU(..)
   , initWithDevice_a
   , initWithDevice
-  , initWithDevice_aSelector
   , initWithDeviceSelector
+  , initWithDevice_aSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,23 +42,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:a:@
 initWithDevice_a :: IsMPSCNNNeuronELU mpscnnNeuronELU => mpscnnNeuronELU -> RawId -> CFloat -> IO (Id MPSCNNNeuronELU)
-initWithDevice_a mpscnnNeuronELU  device a =
-    sendMsg mpscnnNeuronELU (mkSelector "initWithDevice:a:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat a] >>= ownedObject . castPtr
+initWithDevice_a mpscnnNeuronELU device a =
+  sendOwnedMessage mpscnnNeuronELU initWithDevice_aSelector device a
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNNeuronELU mpscnnNeuronELU => mpscnnNeuronELU -> RawId -> IO (Id MPSCNNNeuronELU)
-initWithDevice mpscnnNeuronELU  device =
-    sendMsg mpscnnNeuronELU (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnNeuronELU device =
+  sendOwnedMessage mpscnnNeuronELU initWithDeviceSelector device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:a:@
-initWithDevice_aSelector :: Selector
+initWithDevice_aSelector :: Selector '[RawId, CFloat] (Id MPSCNNNeuronELU)
 initWithDevice_aSelector = mkSelector "initWithDevice:a:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNNeuronELU)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 

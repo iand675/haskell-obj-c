@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.MediaPlayer.MPSkipIntervalCommand
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,26 +30,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- preferredIntervals@
 preferredIntervals :: IsMPSkipIntervalCommand mpSkipIntervalCommand => mpSkipIntervalCommand -> IO (Id NSArray)
-preferredIntervals mpSkipIntervalCommand  =
-    sendMsg mpSkipIntervalCommand (mkSelector "preferredIntervals") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredIntervals mpSkipIntervalCommand =
+  sendMessage mpSkipIntervalCommand preferredIntervalsSelector
 
 -- | An array of NSNumbers (NSTimeIntervals) that contain preferred skip intervals.
 --
 -- ObjC selector: @- setPreferredIntervals:@
 setPreferredIntervals :: (IsMPSkipIntervalCommand mpSkipIntervalCommand, IsNSArray value) => mpSkipIntervalCommand -> value -> IO ()
-setPreferredIntervals mpSkipIntervalCommand  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpSkipIntervalCommand (mkSelector "setPreferredIntervals:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredIntervals mpSkipIntervalCommand value =
+  sendMessage mpSkipIntervalCommand setPreferredIntervalsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @preferredIntervals@
-preferredIntervalsSelector :: Selector
+preferredIntervalsSelector :: Selector '[] (Id NSArray)
 preferredIntervalsSelector = mkSelector "preferredIntervals"
 
 -- | @Selector@ for @setPreferredIntervals:@
-setPreferredIntervalsSelector :: Selector
+setPreferredIntervalsSelector :: Selector '[Id NSArray] ()
 setPreferredIntervalsSelector = mkSelector "setPreferredIntervals:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.MetalPerformanceShaders.MPSCNNNeuronNode
   , a
   , b
   , c
-  , nodeWithSource_descriptorSelector
-  , initSelector
   , aSelector
   , bSelector
   , cSelector
+  , initSelector
+  , nodeWithSource_descriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,57 +45,55 @@ nodeWithSource_descriptor :: (IsMPSNNImageNode sourceNode, IsMPSNNNeuronDescript
 nodeWithSource_descriptor sourceNode descriptor =
   do
     cls' <- getRequiredClass "MPSCNNNeuronNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      withObjCPtr descriptor $ \raw_descriptor ->
-        sendClassMsg cls' (mkSelector "nodeWithSource:descriptor:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_descriptorSelector (toMPSNNImageNode sourceNode) (toMPSNNNeuronDescriptor descriptor)
 
 -- | @- init@
 init_ :: IsMPSCNNNeuronNode mpscnnNeuronNode => mpscnnNeuronNode -> IO (Id MPSCNNNeuronNode)
-init_ mpscnnNeuronNode  =
-    sendMsg mpscnnNeuronNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpscnnNeuronNode =
+  sendOwnedMessage mpscnnNeuronNode initSelector
 
 -- | filter parameter a
 --
 -- ObjC selector: @- a@
 a :: IsMPSCNNNeuronNode mpscnnNeuronNode => mpscnnNeuronNode -> IO CFloat
-a mpscnnNeuronNode  =
-    sendMsg mpscnnNeuronNode (mkSelector "a") retCFloat []
+a mpscnnNeuronNode =
+  sendMessage mpscnnNeuronNode aSelector
 
 -- | filter parameter b
 --
 -- ObjC selector: @- b@
 b :: IsMPSCNNNeuronNode mpscnnNeuronNode => mpscnnNeuronNode -> IO CFloat
-b mpscnnNeuronNode  =
-    sendMsg mpscnnNeuronNode (mkSelector "b") retCFloat []
+b mpscnnNeuronNode =
+  sendMessage mpscnnNeuronNode bSelector
 
 -- | filter parameter c
 --
 -- ObjC selector: @- c@
 c :: IsMPSCNNNeuronNode mpscnnNeuronNode => mpscnnNeuronNode -> IO CFloat
-c mpscnnNeuronNode  =
-    sendMsg mpscnnNeuronNode (mkSelector "c") retCFloat []
+c mpscnnNeuronNode =
+  sendMessage mpscnnNeuronNode cSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:descriptor:@
-nodeWithSource_descriptorSelector :: Selector
+nodeWithSource_descriptorSelector :: Selector '[Id MPSNNImageNode, Id MPSNNNeuronDescriptor] (Id MPSCNNNeuronNode)
 nodeWithSource_descriptorSelector = mkSelector "nodeWithSource:descriptor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSCNNNeuronNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @a@
-aSelector :: Selector
+aSelector :: Selector '[] CFloat
 aSelector = mkSelector "a"
 
 -- | @Selector@ for @b@
-bSelector :: Selector
+bSelector :: Selector '[] CFloat
 bSelector = mkSelector "b"
 
 -- | @Selector@ for @c@
-cSelector :: Selector
+cSelector :: Selector '[] CFloat
 cSelector = mkSelector "c"
 

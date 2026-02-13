@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INVolumeResolutionResult
   , successWithResolvedVolume
   , disambiguationWithVolumeToDisambiguate
   , confirmationRequiredWithVolumeToConfirm
-  , successWithResolvedVolumeSelector
-  , disambiguationWithVolumeToDisambiguateSelector
   , confirmationRequiredWithVolumeToConfirmSelector
+  , disambiguationWithVolumeToDisambiguateSelector
+  , successWithResolvedVolumeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedVolume :: IsNSMeasurement resolvedVolume => resolvedVolume ->
 successWithResolvedVolume resolvedVolume =
   do
     cls' <- getRequiredClass "INVolumeResolutionResult"
-    withObjCPtr resolvedVolume $ \raw_resolvedVolume ->
-      sendClassMsg cls' (mkSelector "successWithResolvedVolume:") (retPtr retVoid) [argPtr (castPtr raw_resolvedVolume :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedVolumeSelector (toNSMeasurement resolvedVolume)
 
 -- | @+ disambiguationWithVolumeToDisambiguate:@
 disambiguationWithVolumeToDisambiguate :: IsNSArray volumeToDisambiguate => volumeToDisambiguate -> IO (Id INVolumeResolutionResult)
 disambiguationWithVolumeToDisambiguate volumeToDisambiguate =
   do
     cls' <- getRequiredClass "INVolumeResolutionResult"
-    withObjCPtr volumeToDisambiguate $ \raw_volumeToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithVolumeToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_volumeToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithVolumeToDisambiguateSelector (toNSArray volumeToDisambiguate)
 
 -- | @+ confirmationRequiredWithVolumeToConfirm:@
 confirmationRequiredWithVolumeToConfirm :: IsNSMeasurement volumeToConfirm => volumeToConfirm -> IO (Id INVolumeResolutionResult)
 confirmationRequiredWithVolumeToConfirm volumeToConfirm =
   do
     cls' <- getRequiredClass "INVolumeResolutionResult"
-    withObjCPtr volumeToConfirm $ \raw_volumeToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithVolumeToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_volumeToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithVolumeToConfirmSelector (toNSMeasurement volumeToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedVolume:@
-successWithResolvedVolumeSelector :: Selector
+successWithResolvedVolumeSelector :: Selector '[Id NSMeasurement] (Id INVolumeResolutionResult)
 successWithResolvedVolumeSelector = mkSelector "successWithResolvedVolume:"
 
 -- | @Selector@ for @disambiguationWithVolumeToDisambiguate:@
-disambiguationWithVolumeToDisambiguateSelector :: Selector
+disambiguationWithVolumeToDisambiguateSelector :: Selector '[Id NSArray] (Id INVolumeResolutionResult)
 disambiguationWithVolumeToDisambiguateSelector = mkSelector "disambiguationWithVolumeToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithVolumeToConfirm:@
-confirmationRequiredWithVolumeToConfirmSelector :: Selector
+confirmationRequiredWithVolumeToConfirmSelector :: Selector '[Id NSMeasurement] (Id INVolumeResolutionResult)
 confirmationRequiredWithVolumeToConfirmSelector = mkSelector "confirmationRequiredWithVolumeToConfirm:"
 

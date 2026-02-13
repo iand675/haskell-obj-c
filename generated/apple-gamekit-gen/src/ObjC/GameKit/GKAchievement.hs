@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,41 +29,37 @@ module ObjC.GameKit.GKAchievement
   , player
   , playerID
   , hidden
-  , resetAchievementsWithCompletionHandlerSelector
-  , initWithIdentifierSelector
-  , initWithIdentifier_playerSelector
-  , reportAchievements_withCompletionHandlerSelector
-  , challengeComposeControllerWithPlayers_message_completionHandlerSelector
   , challengeComposeControllerWithMessage_players_completionHandlerSelector
   , challengeComposeControllerWithMessage_players_completionSelector
-  , issueChallengeToPlayers_messageSelector
-  , reportAchievements_withEligibleChallenges_withCompletionHandlerSelector
-  , initWithIdentifier_forPlayerSelector
-  , reportAchievementWithCompletionHandlerSelector
-  , identifierSelector
-  , setIdentifierSelector
-  , percentCompleteSelector
-  , setPercentCompleteSelector
+  , challengeComposeControllerWithPlayers_message_completionHandlerSelector
   , completedSelector
-  , lastReportedDateSelector
-  , showsCompletionBannerSelector
-  , setShowsCompletionBannerSelector
-  , playerSelector
-  , playerIDSelector
   , hiddenSelector
+  , identifierSelector
+  , initWithIdentifierSelector
+  , initWithIdentifier_forPlayerSelector
+  , initWithIdentifier_playerSelector
+  , issueChallengeToPlayers_messageSelector
+  , lastReportedDateSelector
+  , percentCompleteSelector
+  , playerIDSelector
+  , playerSelector
+  , reportAchievementWithCompletionHandlerSelector
+  , reportAchievements_withCompletionHandlerSelector
+  , reportAchievements_withEligibleChallenges_withCompletionHandlerSelector
+  , resetAchievementsWithCompletionHandlerSelector
+  , setIdentifierSelector
+  , setPercentCompleteSelector
+  , setShowsCompletionBannerSelector
+  , showsCompletionBannerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,24 +74,21 @@ resetAchievementsWithCompletionHandler :: Ptr () -> IO ()
 resetAchievementsWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "GKAchievement"
-    sendClassMsg cls' (mkSelector "resetAchievementsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' resetAchievementsWithCompletionHandlerSelector completionHandler
 
 -- | Designated initializer
 --
 -- ObjC selector: @- initWithIdentifier:@
 initWithIdentifier :: (IsGKAchievement gkAchievement, IsNSString identifier) => gkAchievement -> identifier -> IO (Id GKAchievement)
-initWithIdentifier gkAchievement  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg gkAchievement (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier gkAchievement identifier =
+  sendOwnedMessage gkAchievement initWithIdentifierSelector (toNSString identifier)
 
 -- | Initialize the achievement for a specific player. Use to submit participant achievements when ending a turn-based match.
 --
 -- ObjC selector: @- initWithIdentifier:player:@
 initWithIdentifier_player :: (IsGKAchievement gkAchievement, IsNSString identifier, IsGKPlayer player) => gkAchievement -> identifier -> player -> IO (Id GKAchievement)
-initWithIdentifier_player gkAchievement  identifier player =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr player $ \raw_player ->
-        sendMsg gkAchievement (mkSelector "initWithIdentifier:player:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_player :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_player gkAchievement identifier player =
+  sendOwnedMessage gkAchievement initWithIdentifier_playerSelector (toNSString identifier) (toGKPlayer player)
 
 -- | Report an array of achievements to the server. Percent complete is required. Points, completed state are set based on percentComplete. isHidden is set to NO anytime this method is invoked. Date is optional. Error will be nil on success. Possible reasons for error: 1. Local player not authenticated 2. Communications failure 3. Reported Achievement does not exist
 --
@@ -103,40 +97,31 @@ reportAchievements_withCompletionHandler :: IsNSArray achievements => achievemen
 reportAchievements_withCompletionHandler achievements completionHandler =
   do
     cls' <- getRequiredClass "GKAchievement"
-    withObjCPtr achievements $ \raw_achievements ->
-      sendClassMsg cls' (mkSelector "reportAchievements:withCompletionHandler:") retVoid [argPtr (castPtr raw_achievements :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' reportAchievements_withCompletionHandlerSelector (toNSArray achievements) completionHandler
 
 -- | * This method is obsolete. Calling this method does nothing and will return nil **
 --
 -- ObjC selector: @- challengeComposeControllerWithPlayers:message:completionHandler:@
 challengeComposeControllerWithPlayers_message_completionHandler :: (IsGKAchievement gkAchievement, IsNSArray playerIDs, IsNSString message) => gkAchievement -> playerIDs -> message -> Ptr () -> IO (Id NSViewController)
-challengeComposeControllerWithPlayers_message_completionHandler gkAchievement  playerIDs message completionHandler =
-  withObjCPtr playerIDs $ \raw_playerIDs ->
-    withObjCPtr message $ \raw_message ->
-        sendMsg gkAchievement (mkSelector "challengeComposeControllerWithPlayers:message:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_playerIDs :: Ptr ()), argPtr (castPtr raw_message :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+challengeComposeControllerWithPlayers_message_completionHandler gkAchievement playerIDs message completionHandler =
+  sendMessage gkAchievement challengeComposeControllerWithPlayers_message_completionHandlerSelector (toNSArray playerIDs) (toNSString message) completionHandler
 
 -- | @- challengeComposeControllerWithMessage:players:completionHandler:@
 challengeComposeControllerWithMessage_players_completionHandler :: (IsGKAchievement gkAchievement, IsNSString message, IsNSArray players) => gkAchievement -> message -> players -> Ptr () -> IO (Id NSViewController)
-challengeComposeControllerWithMessage_players_completionHandler gkAchievement  message players completionHandler =
-  withObjCPtr message $ \raw_message ->
-    withObjCPtr players $ \raw_players ->
-        sendMsg gkAchievement (mkSelector "challengeComposeControllerWithMessage:players:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_message :: Ptr ()), argPtr (castPtr raw_players :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+challengeComposeControllerWithMessage_players_completionHandler gkAchievement message players completionHandler =
+  sendMessage gkAchievement challengeComposeControllerWithMessage_players_completionHandlerSelector (toNSString message) (toNSArray players) completionHandler
 
 -- | @- challengeComposeControllerWithMessage:players:completion:@
 challengeComposeControllerWithMessage_players_completion :: (IsGKAchievement gkAchievement, IsNSString message, IsNSArray players) => gkAchievement -> message -> players -> Ptr () -> IO (Id NSViewController)
-challengeComposeControllerWithMessage_players_completion gkAchievement  message players completionHandler =
-  withObjCPtr message $ \raw_message ->
-    withObjCPtr players $ \raw_players ->
-        sendMsg gkAchievement (mkSelector "challengeComposeControllerWithMessage:players:completion:") (retPtr retVoid) [argPtr (castPtr raw_message :: Ptr ()), argPtr (castPtr raw_players :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= retainedObject . castPtr
+challengeComposeControllerWithMessage_players_completion gkAchievement message players completionHandler =
+  sendMessage gkAchievement challengeComposeControllerWithMessage_players_completionSelector (toNSString message) (toNSArray players) completionHandler
 
 -- | * This method is obsolete. It will never be invoked and its implementation does nothing**
 --
 -- ObjC selector: @- issueChallengeToPlayers:message:@
 issueChallengeToPlayers_message :: (IsGKAchievement gkAchievement, IsNSArray playerIDs, IsNSString message) => gkAchievement -> playerIDs -> message -> IO ()
-issueChallengeToPlayers_message gkAchievement  playerIDs message =
-  withObjCPtr playerIDs $ \raw_playerIDs ->
-    withObjCPtr message $ \raw_message ->
-        sendMsg gkAchievement (mkSelector "issueChallengeToPlayers:message:") retVoid [argPtr (castPtr raw_playerIDs :: Ptr ()), argPtr (castPtr raw_message :: Ptr ())]
+issueChallengeToPlayers_message gkAchievement playerIDs message =
+  sendMessage gkAchievement issueChallengeToPlayers_messageSelector (toNSArray playerIDs) (toNSString message)
 
 -- | Use this alternative to reportAchievements:withCompletionHandler: to allow only certain specific challenges to be completed. Pass nil to avoid completing any challenges.
 --
@@ -145,189 +130,184 @@ reportAchievements_withEligibleChallenges_withCompletionHandler :: (IsNSArray ac
 reportAchievements_withEligibleChallenges_withCompletionHandler achievements challenges completionHandler =
   do
     cls' <- getRequiredClass "GKAchievement"
-    withObjCPtr achievements $ \raw_achievements ->
-      withObjCPtr challenges $ \raw_challenges ->
-        sendClassMsg cls' (mkSelector "reportAchievements:withEligibleChallenges:withCompletionHandler:") retVoid [argPtr (castPtr raw_achievements :: Ptr ()), argPtr (castPtr raw_challenges :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' reportAchievements_withEligibleChallenges_withCompletionHandlerSelector (toNSArray achievements) (toNSArray challenges) completionHandler
 
 -- | * This method is obsolete. Calling this initializer does nothing and will return nil **
 --
 -- ObjC selector: @- initWithIdentifier:forPlayer:@
 initWithIdentifier_forPlayer :: (IsGKAchievement gkAchievement, IsNSString identifier, IsNSString playerID) => gkAchievement -> identifier -> playerID -> IO (Id GKAchievement)
-initWithIdentifier_forPlayer gkAchievement  identifier playerID =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr playerID $ \raw_playerID ->
-        sendMsg gkAchievement (mkSelector "initWithIdentifier:forPlayer:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_playerID :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_forPlayer gkAchievement identifier playerID =
+  sendOwnedMessage gkAchievement initWithIdentifier_forPlayerSelector (toNSString identifier) (toNSString playerID)
 
 -- | @- reportAchievementWithCompletionHandler:@
 reportAchievementWithCompletionHandler :: IsGKAchievement gkAchievement => gkAchievement -> Ptr () -> IO ()
-reportAchievementWithCompletionHandler gkAchievement  completionHandler =
-    sendMsg gkAchievement (mkSelector "reportAchievementWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+reportAchievementWithCompletionHandler gkAchievement completionHandler =
+  sendMessage gkAchievement reportAchievementWithCompletionHandlerSelector completionHandler
 
 -- | Achievement identifier
 --
 -- ObjC selector: @- identifier@
 identifier :: IsGKAchievement gkAchievement => gkAchievement -> IO (Id NSString)
-identifier gkAchievement  =
-    sendMsg gkAchievement (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier gkAchievement =
+  sendMessage gkAchievement identifierSelector
 
 -- | Achievement identifier
 --
 -- ObjC selector: @- setIdentifier:@
 setIdentifier :: (IsGKAchievement gkAchievement, IsNSString value) => gkAchievement -> value -> IO ()
-setIdentifier gkAchievement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkAchievement (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier gkAchievement value =
+  sendMessage gkAchievement setIdentifierSelector (toNSString value)
 
 -- | Required, Percentage of achievement complete.
 --
 -- ObjC selector: @- percentComplete@
 percentComplete :: IsGKAchievement gkAchievement => gkAchievement -> IO CDouble
-percentComplete gkAchievement  =
-    sendMsg gkAchievement (mkSelector "percentComplete") retCDouble []
+percentComplete gkAchievement =
+  sendMessage gkAchievement percentCompleteSelector
 
 -- | Required, Percentage of achievement complete.
 --
 -- ObjC selector: @- setPercentComplete:@
 setPercentComplete :: IsGKAchievement gkAchievement => gkAchievement -> CDouble -> IO ()
-setPercentComplete gkAchievement  value =
-    sendMsg gkAchievement (mkSelector "setPercentComplete:") retVoid [argCDouble value]
+setPercentComplete gkAchievement value =
+  sendMessage gkAchievement setPercentCompleteSelector value
 
 -- | Set to NO until percentComplete = 100.
 --
 -- ObjC selector: @- completed@
 completed :: IsGKAchievement gkAchievement => gkAchievement -> IO Bool
-completed gkAchievement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkAchievement (mkSelector "completed") retCULong []
+completed gkAchievement =
+  sendMessage gkAchievement completedSelector
 
 -- | Date the achievement was last reported. Read-only. Created at initialization
 --
 -- ObjC selector: @- lastReportedDate@
 lastReportedDate :: IsGKAchievement gkAchievement => gkAchievement -> IO (Id NSDate)
-lastReportedDate gkAchievement  =
-    sendMsg gkAchievement (mkSelector "lastReportedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastReportedDate gkAchievement =
+  sendMessage gkAchievement lastReportedDateSelector
 
 -- | A banner will be momentarily displayed after reporting a completed achievement
 --
 -- ObjC selector: @- showsCompletionBanner@
 showsCompletionBanner :: IsGKAchievement gkAchievement => gkAchievement -> IO Bool
-showsCompletionBanner gkAchievement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkAchievement (mkSelector "showsCompletionBanner") retCULong []
+showsCompletionBanner gkAchievement =
+  sendMessage gkAchievement showsCompletionBannerSelector
 
 -- | A banner will be momentarily displayed after reporting a completed achievement
 --
 -- ObjC selector: @- setShowsCompletionBanner:@
 setShowsCompletionBanner :: IsGKAchievement gkAchievement => gkAchievement -> Bool -> IO ()
-setShowsCompletionBanner gkAchievement  value =
-    sendMsg gkAchievement (mkSelector "setShowsCompletionBanner:") retVoid [argCULong (if value then 1 else 0)]
+setShowsCompletionBanner gkAchievement value =
+  sendMessage gkAchievement setShowsCompletionBannerSelector value
 
 -- | The identifier of the player that earned the achievement.
 --
 -- ObjC selector: @- player@
 player :: IsGKAchievement gkAchievement => gkAchievement -> IO (Id GKPlayer)
-player gkAchievement  =
-    sendMsg gkAchievement (mkSelector "player") (retPtr retVoid) [] >>= retainedObject . castPtr
+player gkAchievement =
+  sendMessage gkAchievement playerSelector
 
 -- | * This property is obsolete. **
 --
 -- ObjC selector: @- playerID@
 playerID :: IsGKAchievement gkAchievement => gkAchievement -> IO (Id NSString)
-playerID gkAchievement  =
-    sendMsg gkAchievement (mkSelector "playerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerID gkAchievement =
+  sendMessage gkAchievement playerIDSelector
 
 -- | @- hidden@
 hidden :: IsGKAchievement gkAchievement => gkAchievement -> IO Bool
-hidden gkAchievement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkAchievement (mkSelector "hidden") retCULong []
+hidden gkAchievement =
+  sendMessage gkAchievement hiddenSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @resetAchievementsWithCompletionHandler:@
-resetAchievementsWithCompletionHandlerSelector :: Selector
+resetAchievementsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 resetAchievementsWithCompletionHandlerSelector = mkSelector "resetAchievementsWithCompletionHandler:"
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[Id NSString] (Id GKAchievement)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @initWithIdentifier:player:@
-initWithIdentifier_playerSelector :: Selector
+initWithIdentifier_playerSelector :: Selector '[Id NSString, Id GKPlayer] (Id GKAchievement)
 initWithIdentifier_playerSelector = mkSelector "initWithIdentifier:player:"
 
 -- | @Selector@ for @reportAchievements:withCompletionHandler:@
-reportAchievements_withCompletionHandlerSelector :: Selector
+reportAchievements_withCompletionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 reportAchievements_withCompletionHandlerSelector = mkSelector "reportAchievements:withCompletionHandler:"
 
 -- | @Selector@ for @challengeComposeControllerWithPlayers:message:completionHandler:@
-challengeComposeControllerWithPlayers_message_completionHandlerSelector :: Selector
+challengeComposeControllerWithPlayers_message_completionHandlerSelector :: Selector '[Id NSArray, Id NSString, Ptr ()] (Id NSViewController)
 challengeComposeControllerWithPlayers_message_completionHandlerSelector = mkSelector "challengeComposeControllerWithPlayers:message:completionHandler:"
 
 -- | @Selector@ for @challengeComposeControllerWithMessage:players:completionHandler:@
-challengeComposeControllerWithMessage_players_completionHandlerSelector :: Selector
+challengeComposeControllerWithMessage_players_completionHandlerSelector :: Selector '[Id NSString, Id NSArray, Ptr ()] (Id NSViewController)
 challengeComposeControllerWithMessage_players_completionHandlerSelector = mkSelector "challengeComposeControllerWithMessage:players:completionHandler:"
 
 -- | @Selector@ for @challengeComposeControllerWithMessage:players:completion:@
-challengeComposeControllerWithMessage_players_completionSelector :: Selector
+challengeComposeControllerWithMessage_players_completionSelector :: Selector '[Id NSString, Id NSArray, Ptr ()] (Id NSViewController)
 challengeComposeControllerWithMessage_players_completionSelector = mkSelector "challengeComposeControllerWithMessage:players:completion:"
 
 -- | @Selector@ for @issueChallengeToPlayers:message:@
-issueChallengeToPlayers_messageSelector :: Selector
+issueChallengeToPlayers_messageSelector :: Selector '[Id NSArray, Id NSString] ()
 issueChallengeToPlayers_messageSelector = mkSelector "issueChallengeToPlayers:message:"
 
 -- | @Selector@ for @reportAchievements:withEligibleChallenges:withCompletionHandler:@
-reportAchievements_withEligibleChallenges_withCompletionHandlerSelector :: Selector
+reportAchievements_withEligibleChallenges_withCompletionHandlerSelector :: Selector '[Id NSArray, Id NSArray, Ptr ()] ()
 reportAchievements_withEligibleChallenges_withCompletionHandlerSelector = mkSelector "reportAchievements:withEligibleChallenges:withCompletionHandler:"
 
 -- | @Selector@ for @initWithIdentifier:forPlayer:@
-initWithIdentifier_forPlayerSelector :: Selector
+initWithIdentifier_forPlayerSelector :: Selector '[Id NSString, Id NSString] (Id GKAchievement)
 initWithIdentifier_forPlayerSelector = mkSelector "initWithIdentifier:forPlayer:"
 
 -- | @Selector@ for @reportAchievementWithCompletionHandler:@
-reportAchievementWithCompletionHandlerSelector :: Selector
+reportAchievementWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 reportAchievementWithCompletionHandlerSelector = mkSelector "reportAchievementWithCompletionHandler:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @percentComplete@
-percentCompleteSelector :: Selector
+percentCompleteSelector :: Selector '[] CDouble
 percentCompleteSelector = mkSelector "percentComplete"
 
 -- | @Selector@ for @setPercentComplete:@
-setPercentCompleteSelector :: Selector
+setPercentCompleteSelector :: Selector '[CDouble] ()
 setPercentCompleteSelector = mkSelector "setPercentComplete:"
 
 -- | @Selector@ for @completed@
-completedSelector :: Selector
+completedSelector :: Selector '[] Bool
 completedSelector = mkSelector "completed"
 
 -- | @Selector@ for @lastReportedDate@
-lastReportedDateSelector :: Selector
+lastReportedDateSelector :: Selector '[] (Id NSDate)
 lastReportedDateSelector = mkSelector "lastReportedDate"
 
 -- | @Selector@ for @showsCompletionBanner@
-showsCompletionBannerSelector :: Selector
+showsCompletionBannerSelector :: Selector '[] Bool
 showsCompletionBannerSelector = mkSelector "showsCompletionBanner"
 
 -- | @Selector@ for @setShowsCompletionBanner:@
-setShowsCompletionBannerSelector :: Selector
+setShowsCompletionBannerSelector :: Selector '[Bool] ()
 setShowsCompletionBannerSelector = mkSelector "setShowsCompletionBanner:"
 
 -- | @Selector@ for @player@
-playerSelector :: Selector
+playerSelector :: Selector '[] (Id GKPlayer)
 playerSelector = mkSelector "player"
 
 -- | @Selector@ for @playerID@
-playerIDSelector :: Selector
+playerIDSelector :: Selector '[] (Id NSString)
 playerIDSelector = mkSelector "playerID"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 

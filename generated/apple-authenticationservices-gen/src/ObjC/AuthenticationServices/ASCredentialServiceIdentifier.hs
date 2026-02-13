@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.AuthenticationServices.ASCredentialServiceIdentifier
   , displayName
   , identifier
   , type_
-  , initWithIdentifier_typeSelector
-  , initWithIdentifier_type_displayNameSelector
   , displayNameSelector
   , identifierSelector
+  , initWithIdentifier_typeSelector
+  , initWithIdentifier_type_displayNameSelector
   , typeSelector
 
   -- * Enum types
@@ -26,15 +27,11 @@ module ObjC.AuthenticationServices.ASCredentialServiceIdentifier
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,9 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifier:type:@
 initWithIdentifier_type :: (IsASCredentialServiceIdentifier asCredentialServiceIdentifier, IsNSString identifier) => asCredentialServiceIdentifier -> identifier -> ASCredentialServiceIdentifierType -> IO (Id ASCredentialServiceIdentifier)
-initWithIdentifier_type asCredentialServiceIdentifier  identifier type_ =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg asCredentialServiceIdentifier (mkSelector "initWithIdentifier:type:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argCLong (coerce type_)] >>= ownedObject . castPtr
+initWithIdentifier_type asCredentialServiceIdentifier identifier type_ =
+  sendOwnedMessage asCredentialServiceIdentifier initWithIdentifier_typeSelector (toNSString identifier) type_
 
 -- | Initializes an ASCredentialServiceIdentifier object.
 --
@@ -60,17 +56,15 @@ initWithIdentifier_type asCredentialServiceIdentifier  identifier type_ =
 --
 -- ObjC selector: @- initWithIdentifier:type:displayName:@
 initWithIdentifier_type_displayName :: (IsASCredentialServiceIdentifier asCredentialServiceIdentifier, IsNSString identifier, IsNSString displayName) => asCredentialServiceIdentifier -> identifier -> ASCredentialServiceIdentifierType -> displayName -> IO (Id ASCredentialServiceIdentifier)
-initWithIdentifier_type_displayName asCredentialServiceIdentifier  identifier type_ displayName =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr displayName $ \raw_displayName ->
-        sendMsg asCredentialServiceIdentifier (mkSelector "initWithIdentifier:type:displayName:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argCLong (coerce type_), argPtr (castPtr raw_displayName :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_type_displayName asCredentialServiceIdentifier identifier type_ displayName =
+  sendOwnedMessage asCredentialServiceIdentifier initWithIdentifier_type_displayNameSelector (toNSString identifier) type_ (toNSString displayName)
 
 -- | A user visible name for the identifier. For @app@ types it will contain the localized name of the app. For @URL@ types it will contain the host name of the URL if it contains a valid host. For @URL@ type identifiers that do not contain a valid host and for @domain@ type identifiers, this will be equal to @identifier@. This property is meant only as a best effort suggestion for display purposes. It is not used by the system to identify the service or suggest a credential for AutoFill.
 --
 -- ObjC selector: @- displayName@
 displayName :: IsASCredentialServiceIdentifier asCredentialServiceIdentifier => asCredentialServiceIdentifier -> IO (Id NSString)
-displayName asCredentialServiceIdentifier  =
-    sendMsg asCredentialServiceIdentifier (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName asCredentialServiceIdentifier =
+  sendMessage asCredentialServiceIdentifier displayNameSelector
 
 -- | Get the identifier.
 --
@@ -78,8 +72,8 @@ displayName asCredentialServiceIdentifier  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsASCredentialServiceIdentifier asCredentialServiceIdentifier => asCredentialServiceIdentifier -> IO (Id NSString)
-identifier asCredentialServiceIdentifier  =
-    sendMsg asCredentialServiceIdentifier (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier asCredentialServiceIdentifier =
+  sendMessage asCredentialServiceIdentifier identifierSelector
 
 -- | Get the service identifier type.
 --
@@ -87,30 +81,30 @@ identifier asCredentialServiceIdentifier  =
 --
 -- ObjC selector: @- type@
 type_ :: IsASCredentialServiceIdentifier asCredentialServiceIdentifier => asCredentialServiceIdentifier -> IO ASCredentialServiceIdentifierType
-type_ asCredentialServiceIdentifier  =
-    fmap (coerce :: CLong -> ASCredentialServiceIdentifierType) $ sendMsg asCredentialServiceIdentifier (mkSelector "type") retCLong []
+type_ asCredentialServiceIdentifier =
+  sendMessage asCredentialServiceIdentifier typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:type:@
-initWithIdentifier_typeSelector :: Selector
+initWithIdentifier_typeSelector :: Selector '[Id NSString, ASCredentialServiceIdentifierType] (Id ASCredentialServiceIdentifier)
 initWithIdentifier_typeSelector = mkSelector "initWithIdentifier:type:"
 
 -- | @Selector@ for @initWithIdentifier:type:displayName:@
-initWithIdentifier_type_displayNameSelector :: Selector
+initWithIdentifier_type_displayNameSelector :: Selector '[Id NSString, ASCredentialServiceIdentifierType, Id NSString] (Id ASCredentialServiceIdentifier)
 initWithIdentifier_type_displayNameSelector = mkSelector "initWithIdentifier:type:displayName:"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] ASCredentialServiceIdentifierType
 typeSelector = mkSelector "type"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.DeviceDiscoveryExtension.DDDiscoverySession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,15 +30,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reportEvent:@
 reportEvent :: (IsDDDiscoverySession ddDiscoverySession, IsDDDeviceEvent inEvent) => ddDiscoverySession -> inEvent -> IO ()
-reportEvent ddDiscoverySession  inEvent =
-  withObjCPtr inEvent $ \raw_inEvent ->
-      sendMsg ddDiscoverySession (mkSelector "reportEvent:") retVoid [argPtr (castPtr raw_inEvent :: Ptr ())]
+reportEvent ddDiscoverySession inEvent =
+  sendMessage ddDiscoverySession reportEventSelector (toDDDeviceEvent inEvent)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reportEvent:@
-reportEventSelector :: Selector
+reportEventSelector :: Selector '[Id DDDeviceEvent] ()
 reportEventSelector = mkSelector "reportEvent:"
 

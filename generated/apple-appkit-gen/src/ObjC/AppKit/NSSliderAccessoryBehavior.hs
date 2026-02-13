@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AppKit.NSSliderAccessoryBehavior
   , automaticBehavior
   , valueStepBehavior
   , valueResetBehavior
-  , behaviorWithTarget_actionSelector
-  , behaviorWithHandlerSelector
-  , handleActionSelector
   , automaticBehaviorSelector
-  , valueStepBehaviorSelector
+  , behaviorWithHandlerSelector
+  , behaviorWithTarget_actionSelector
+  , handleActionSelector
   , valueResetBehaviorSelector
+  , valueStepBehaviorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,11 +37,11 @@ import ObjC.Foundation.Internal.Classes
 -- | The action is sent to the target on interaction. The optional first parameter is an NSSliderAccessory.
 --
 -- ObjC selector: @+ behaviorWithTarget:action:@
-behaviorWithTarget_action :: RawId -> Selector -> IO (Id NSSliderAccessoryBehavior)
+behaviorWithTarget_action :: RawId -> Sel -> IO (Id NSSliderAccessoryBehavior)
 behaviorWithTarget_action target action =
   do
     cls' <- getRequiredClass "NSSliderAccessoryBehavior"
-    sendClassMsg cls' (mkSelector "behaviorWithTarget:action:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector action)] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorWithTarget_actionSelector target action
 
 -- | The handler block is invoked on interaction. This variant is not codable and will assert in @-encodeWithCoder:@.
 --
@@ -53,15 +50,14 @@ behaviorWithHandler :: Ptr () -> IO (Id NSSliderAccessoryBehavior)
 behaviorWithHandler handler =
   do
     cls' <- getRequiredClass "NSSliderAccessoryBehavior"
-    sendClassMsg cls' (mkSelector "behaviorWithHandler:") (retPtr retVoid) [argPtr (castPtr handler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorWithHandlerSelector handler
 
 -- | Override point for custom subclasses to handle interaction.
 --
 -- ObjC selector: @- handleAction:@
 handleAction :: (IsNSSliderAccessoryBehavior nsSliderAccessoryBehavior, IsNSSliderAccessory sender) => nsSliderAccessoryBehavior -> sender -> IO ()
-handleAction nsSliderAccessoryBehavior  sender =
-  withObjCPtr sender $ \raw_sender ->
-      sendMsg nsSliderAccessoryBehavior (mkSelector "handleAction:") retVoid [argPtr (castPtr raw_sender :: Ptr ())]
+handleAction nsSliderAccessoryBehavior sender =
+  sendMessage nsSliderAccessoryBehavior handleActionSelector (toNSSliderAccessory sender)
 
 -- | The behavior is automatically picked to be the system standard for the slider's current context, e.g. NSTouchBarItems have @.valueStep@ behavior.
 --
@@ -70,7 +66,7 @@ automaticBehavior :: IO (Id NSSliderAccessoryBehavior)
 automaticBehavior  =
   do
     cls' <- getRequiredClass "NSSliderAccessoryBehavior"
-    sendClassMsg cls' (mkSelector "automaticBehavior") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' automaticBehaviorSelector
 
 -- | The value of the slider moves towards the associated value for the accessory with by a delta of the slider's @altIncrementValue@.
 --
@@ -79,7 +75,7 @@ valueStepBehavior :: IO (Id NSSliderAccessoryBehavior)
 valueStepBehavior  =
   do
     cls' <- getRequiredClass "NSSliderAccessoryBehavior"
-    sendClassMsg cls' (mkSelector "valueStepBehavior") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' valueStepBehaviorSelector
 
 -- | The value of the slider is reset to the associated value for the accessory.
 --
@@ -88,33 +84,33 @@ valueResetBehavior :: IO (Id NSSliderAccessoryBehavior)
 valueResetBehavior  =
   do
     cls' <- getRequiredClass "NSSliderAccessoryBehavior"
-    sendClassMsg cls' (mkSelector "valueResetBehavior") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' valueResetBehaviorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @behaviorWithTarget:action:@
-behaviorWithTarget_actionSelector :: Selector
+behaviorWithTarget_actionSelector :: Selector '[RawId, Sel] (Id NSSliderAccessoryBehavior)
 behaviorWithTarget_actionSelector = mkSelector "behaviorWithTarget:action:"
 
 -- | @Selector@ for @behaviorWithHandler:@
-behaviorWithHandlerSelector :: Selector
+behaviorWithHandlerSelector :: Selector '[Ptr ()] (Id NSSliderAccessoryBehavior)
 behaviorWithHandlerSelector = mkSelector "behaviorWithHandler:"
 
 -- | @Selector@ for @handleAction:@
-handleActionSelector :: Selector
+handleActionSelector :: Selector '[Id NSSliderAccessory] ()
 handleActionSelector = mkSelector "handleAction:"
 
 -- | @Selector@ for @automaticBehavior@
-automaticBehaviorSelector :: Selector
+automaticBehaviorSelector :: Selector '[] (Id NSSliderAccessoryBehavior)
 automaticBehaviorSelector = mkSelector "automaticBehavior"
 
 -- | @Selector@ for @valueStepBehavior@
-valueStepBehaviorSelector :: Selector
+valueStepBehaviorSelector :: Selector '[] (Id NSSliderAccessoryBehavior)
 valueStepBehaviorSelector = mkSelector "valueStepBehavior"
 
 -- | @Selector@ for @valueResetBehavior@
-valueResetBehaviorSelector :: Selector
+valueResetBehaviorSelector :: Selector '[] (Id NSSliderAccessoryBehavior)
 valueResetBehaviorSelector = mkSelector "valueResetBehavior"
 

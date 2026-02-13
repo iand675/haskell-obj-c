@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -52,51 +53,51 @@ module ObjC.Foundation.NSDateComponents
   , setRepeatedDay
   , date
   , validDate
-  , weekSelector
-  , setWeekSelector
-  , setValue_forComponentSelector
-  , valueForComponentSelector
-  , isValidDateInCalendarSelector
   , calendarSelector
-  , setCalendarSelector
-  , timeZoneSelector
-  , setTimeZoneSelector
-  , eraSelector
-  , setEraSelector
-  , yearSelector
-  , setYearSelector
-  , monthSelector
-  , setMonthSelector
-  , daySelector
-  , setDaySelector
-  , hourSelector
-  , setHourSelector
-  , minuteSelector
-  , setMinuteSelector
-  , secondSelector
-  , setSecondSelector
-  , nanosecondSelector
-  , setNanosecondSelector
-  , weekdaySelector
-  , setWeekdaySelector
-  , weekdayOrdinalSelector
-  , setWeekdayOrdinalSelector
-  , quarterSelector
-  , setQuarterSelector
-  , weekOfMonthSelector
-  , setWeekOfMonthSelector
-  , weekOfYearSelector
-  , setWeekOfYearSelector
-  , yearForWeekOfYearSelector
-  , setYearForWeekOfYearSelector
-  , dayOfYearSelector
-  , setDayOfYearSelector
-  , leapMonthSelector
-  , setLeapMonthSelector
-  , repeatedDaySelector
-  , setRepeatedDaySelector
   , dateSelector
+  , dayOfYearSelector
+  , daySelector
+  , eraSelector
+  , hourSelector
+  , isValidDateInCalendarSelector
+  , leapMonthSelector
+  , minuteSelector
+  , monthSelector
+  , nanosecondSelector
+  , quarterSelector
+  , repeatedDaySelector
+  , secondSelector
+  , setCalendarSelector
+  , setDayOfYearSelector
+  , setDaySelector
+  , setEraSelector
+  , setHourSelector
+  , setLeapMonthSelector
+  , setMinuteSelector
+  , setMonthSelector
+  , setNanosecondSelector
+  , setQuarterSelector
+  , setRepeatedDaySelector
+  , setSecondSelector
+  , setTimeZoneSelector
+  , setValue_forComponentSelector
+  , setWeekOfMonthSelector
+  , setWeekOfYearSelector
+  , setWeekSelector
+  , setWeekdayOrdinalSelector
+  , setWeekdaySelector
+  , setYearForWeekOfYearSelector
+  , setYearSelector
+  , timeZoneSelector
   , validDateSelector
+  , valueForComponentSelector
+  , weekOfMonthSelector
+  , weekOfYearSelector
+  , weekSelector
+  , weekdayOrdinalSelector
+  , weekdaySelector
+  , yearForWeekOfYearSelector
+  , yearSelector
 
   -- * Enum types
   , NSCalendarUnit(NSCalendarUnit)
@@ -138,15 +139,11 @@ module ObjC.Foundation.NSDateComponents
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -155,413 +152,410 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- week@
 week :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-week nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "week") retCLong []
+week nsDateComponents =
+  sendMessage nsDateComponents weekSelector
 
 -- | @- setWeek:@
 setWeek :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setWeek nsDateComponents  v =
-    sendMsg nsDateComponents (mkSelector "setWeek:") retVoid [argCLong v]
+setWeek nsDateComponents v =
+  sendMessage nsDateComponents setWeekSelector v
 
 -- | @- setValue:forComponent:@
 setValue_forComponent :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> NSCalendarUnit -> IO ()
-setValue_forComponent nsDateComponents  value unit =
-    sendMsg nsDateComponents (mkSelector "setValue:forComponent:") retVoid [argCLong value, argCULong (coerce unit)]
+setValue_forComponent nsDateComponents value unit =
+  sendMessage nsDateComponents setValue_forComponentSelector value unit
 
 -- | @- valueForComponent:@
 valueForComponent :: IsNSDateComponents nsDateComponents => nsDateComponents -> NSCalendarUnit -> IO CLong
-valueForComponent nsDateComponents  unit =
-    sendMsg nsDateComponents (mkSelector "valueForComponent:") retCLong [argCULong (coerce unit)]
+valueForComponent nsDateComponents unit =
+  sendMessage nsDateComponents valueForComponentSelector unit
 
 -- | @- isValidDateInCalendar:@
 isValidDateInCalendar :: (IsNSDateComponents nsDateComponents, IsNSCalendar calendar) => nsDateComponents -> calendar -> IO Bool
-isValidDateInCalendar nsDateComponents  calendar =
-  withObjCPtr calendar $ \raw_calendar ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateComponents (mkSelector "isValidDateInCalendar:") retCULong [argPtr (castPtr raw_calendar :: Ptr ())]
+isValidDateInCalendar nsDateComponents calendar =
+  sendMessage nsDateComponents isValidDateInCalendarSelector (toNSCalendar calendar)
 
 -- | @- calendar@
 calendar :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO (Id NSCalendar)
-calendar nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "calendar") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendar nsDateComponents =
+  sendMessage nsDateComponents calendarSelector
 
 -- | @- setCalendar:@
 setCalendar :: (IsNSDateComponents nsDateComponents, IsNSCalendar value) => nsDateComponents -> value -> IO ()
-setCalendar nsDateComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateComponents (mkSelector "setCalendar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCalendar nsDateComponents value =
+  sendMessage nsDateComponents setCalendarSelector (toNSCalendar value)
 
 -- | @- timeZone@
 timeZone :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO (Id NSTimeZone)
-timeZone nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "timeZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeZone nsDateComponents =
+  sendMessage nsDateComponents timeZoneSelector
 
 -- | @- setTimeZone:@
 setTimeZone :: (IsNSDateComponents nsDateComponents, IsNSTimeZone value) => nsDateComponents -> value -> IO ()
-setTimeZone nsDateComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateComponents (mkSelector "setTimeZone:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeZone nsDateComponents value =
+  sendMessage nsDateComponents setTimeZoneSelector (toNSTimeZone value)
 
 -- | @- era@
 era :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-era nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "era") retCLong []
+era nsDateComponents =
+  sendMessage nsDateComponents eraSelector
 
 -- | @- setEra:@
 setEra :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setEra nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setEra:") retVoid [argCLong value]
+setEra nsDateComponents value =
+  sendMessage nsDateComponents setEraSelector value
 
 -- | @- year@
 year :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-year nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "year") retCLong []
+year nsDateComponents =
+  sendMessage nsDateComponents yearSelector
 
 -- | @- setYear:@
 setYear :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setYear nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setYear:") retVoid [argCLong value]
+setYear nsDateComponents value =
+  sendMessage nsDateComponents setYearSelector value
 
 -- | @- month@
 month :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-month nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "month") retCLong []
+month nsDateComponents =
+  sendMessage nsDateComponents monthSelector
 
 -- | @- setMonth:@
 setMonth :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setMonth nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setMonth:") retVoid [argCLong value]
+setMonth nsDateComponents value =
+  sendMessage nsDateComponents setMonthSelector value
 
 -- | @- day@
 day :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-day nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "day") retCLong []
+day nsDateComponents =
+  sendMessage nsDateComponents daySelector
 
 -- | @- setDay:@
 setDay :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setDay nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setDay:") retVoid [argCLong value]
+setDay nsDateComponents value =
+  sendMessage nsDateComponents setDaySelector value
 
 -- | @- hour@
 hour :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-hour nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "hour") retCLong []
+hour nsDateComponents =
+  sendMessage nsDateComponents hourSelector
 
 -- | @- setHour:@
 setHour :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setHour nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setHour:") retVoid [argCLong value]
+setHour nsDateComponents value =
+  sendMessage nsDateComponents setHourSelector value
 
 -- | @- minute@
 minute :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-minute nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "minute") retCLong []
+minute nsDateComponents =
+  sendMessage nsDateComponents minuteSelector
 
 -- | @- setMinute:@
 setMinute :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setMinute nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setMinute:") retVoid [argCLong value]
+setMinute nsDateComponents value =
+  sendMessage nsDateComponents setMinuteSelector value
 
 -- | @- second@
 second :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-second nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "second") retCLong []
+second nsDateComponents =
+  sendMessage nsDateComponents secondSelector
 
 -- | @- setSecond:@
 setSecond :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setSecond nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setSecond:") retVoid [argCLong value]
+setSecond nsDateComponents value =
+  sendMessage nsDateComponents setSecondSelector value
 
 -- | @- nanosecond@
 nanosecond :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-nanosecond nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "nanosecond") retCLong []
+nanosecond nsDateComponents =
+  sendMessage nsDateComponents nanosecondSelector
 
 -- | @- setNanosecond:@
 setNanosecond :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setNanosecond nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setNanosecond:") retVoid [argCLong value]
+setNanosecond nsDateComponents value =
+  sendMessage nsDateComponents setNanosecondSelector value
 
 -- | @- weekday@
 weekday :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-weekday nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "weekday") retCLong []
+weekday nsDateComponents =
+  sendMessage nsDateComponents weekdaySelector
 
 -- | @- setWeekday:@
 setWeekday :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setWeekday nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setWeekday:") retVoid [argCLong value]
+setWeekday nsDateComponents value =
+  sendMessage nsDateComponents setWeekdaySelector value
 
 -- | @- weekdayOrdinal@
 weekdayOrdinal :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-weekdayOrdinal nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "weekdayOrdinal") retCLong []
+weekdayOrdinal nsDateComponents =
+  sendMessage nsDateComponents weekdayOrdinalSelector
 
 -- | @- setWeekdayOrdinal:@
 setWeekdayOrdinal :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setWeekdayOrdinal nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setWeekdayOrdinal:") retVoid [argCLong value]
+setWeekdayOrdinal nsDateComponents value =
+  sendMessage nsDateComponents setWeekdayOrdinalSelector value
 
 -- | @- quarter@
 quarter :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-quarter nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "quarter") retCLong []
+quarter nsDateComponents =
+  sendMessage nsDateComponents quarterSelector
 
 -- | @- setQuarter:@
 setQuarter :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setQuarter nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setQuarter:") retVoid [argCLong value]
+setQuarter nsDateComponents value =
+  sendMessage nsDateComponents setQuarterSelector value
 
 -- | @- weekOfMonth@
 weekOfMonth :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-weekOfMonth nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "weekOfMonth") retCLong []
+weekOfMonth nsDateComponents =
+  sendMessage nsDateComponents weekOfMonthSelector
 
 -- | @- setWeekOfMonth:@
 setWeekOfMonth :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setWeekOfMonth nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setWeekOfMonth:") retVoid [argCLong value]
+setWeekOfMonth nsDateComponents value =
+  sendMessage nsDateComponents setWeekOfMonthSelector value
 
 -- | @- weekOfYear@
 weekOfYear :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-weekOfYear nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "weekOfYear") retCLong []
+weekOfYear nsDateComponents =
+  sendMessage nsDateComponents weekOfYearSelector
 
 -- | @- setWeekOfYear:@
 setWeekOfYear :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setWeekOfYear nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setWeekOfYear:") retVoid [argCLong value]
+setWeekOfYear nsDateComponents value =
+  sendMessage nsDateComponents setWeekOfYearSelector value
 
 -- | @- yearForWeekOfYear@
 yearForWeekOfYear :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-yearForWeekOfYear nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "yearForWeekOfYear") retCLong []
+yearForWeekOfYear nsDateComponents =
+  sendMessage nsDateComponents yearForWeekOfYearSelector
 
 -- | @- setYearForWeekOfYear:@
 setYearForWeekOfYear :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setYearForWeekOfYear nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setYearForWeekOfYear:") retVoid [argCLong value]
+setYearForWeekOfYear nsDateComponents value =
+  sendMessage nsDateComponents setYearForWeekOfYearSelector value
 
 -- | @- dayOfYear@
 dayOfYear :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO CLong
-dayOfYear nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "dayOfYear") retCLong []
+dayOfYear nsDateComponents =
+  sendMessage nsDateComponents dayOfYearSelector
 
 -- | @- setDayOfYear:@
 setDayOfYear :: IsNSDateComponents nsDateComponents => nsDateComponents -> CLong -> IO ()
-setDayOfYear nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setDayOfYear:") retVoid [argCLong value]
+setDayOfYear nsDateComponents value =
+  sendMessage nsDateComponents setDayOfYearSelector value
 
 -- | @- leapMonth@
 leapMonth :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO Bool
-leapMonth nsDateComponents  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateComponents (mkSelector "leapMonth") retCULong []
+leapMonth nsDateComponents =
+  sendMessage nsDateComponents leapMonthSelector
 
 -- | @- setLeapMonth:@
 setLeapMonth :: IsNSDateComponents nsDateComponents => nsDateComponents -> Bool -> IO ()
-setLeapMonth nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setLeapMonth:") retVoid [argCULong (if value then 1 else 0)]
+setLeapMonth nsDateComponents value =
+  sendMessage nsDateComponents setLeapMonthSelector value
 
 -- | @- repeatedDay@
 repeatedDay :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO Bool
-repeatedDay nsDateComponents  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateComponents (mkSelector "repeatedDay") retCULong []
+repeatedDay nsDateComponents =
+  sendMessage nsDateComponents repeatedDaySelector
 
 -- | @- setRepeatedDay:@
 setRepeatedDay :: IsNSDateComponents nsDateComponents => nsDateComponents -> Bool -> IO ()
-setRepeatedDay nsDateComponents  value =
-    sendMsg nsDateComponents (mkSelector "setRepeatedDay:") retVoid [argCULong (if value then 1 else 0)]
+setRepeatedDay nsDateComponents value =
+  sendMessage nsDateComponents setRepeatedDaySelector value
 
 -- | @- date@
 date :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO (Id NSDate)
-date nsDateComponents  =
-    sendMsg nsDateComponents (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date nsDateComponents =
+  sendMessage nsDateComponents dateSelector
 
 -- | @- validDate@
 validDate :: IsNSDateComponents nsDateComponents => nsDateComponents -> IO Bool
-validDate nsDateComponents  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateComponents (mkSelector "validDate") retCULong []
+validDate nsDateComponents =
+  sendMessage nsDateComponents validDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @week@
-weekSelector :: Selector
+weekSelector :: Selector '[] CLong
 weekSelector = mkSelector "week"
 
 -- | @Selector@ for @setWeek:@
-setWeekSelector :: Selector
+setWeekSelector :: Selector '[CLong] ()
 setWeekSelector = mkSelector "setWeek:"
 
 -- | @Selector@ for @setValue:forComponent:@
-setValue_forComponentSelector :: Selector
+setValue_forComponentSelector :: Selector '[CLong, NSCalendarUnit] ()
 setValue_forComponentSelector = mkSelector "setValue:forComponent:"
 
 -- | @Selector@ for @valueForComponent:@
-valueForComponentSelector :: Selector
+valueForComponentSelector :: Selector '[NSCalendarUnit] CLong
 valueForComponentSelector = mkSelector "valueForComponent:"
 
 -- | @Selector@ for @isValidDateInCalendar:@
-isValidDateInCalendarSelector :: Selector
+isValidDateInCalendarSelector :: Selector '[Id NSCalendar] Bool
 isValidDateInCalendarSelector = mkSelector "isValidDateInCalendar:"
 
 -- | @Selector@ for @calendar@
-calendarSelector :: Selector
+calendarSelector :: Selector '[] (Id NSCalendar)
 calendarSelector = mkSelector "calendar"
 
 -- | @Selector@ for @setCalendar:@
-setCalendarSelector :: Selector
+setCalendarSelector :: Selector '[Id NSCalendar] ()
 setCalendarSelector = mkSelector "setCalendar:"
 
 -- | @Selector@ for @timeZone@
-timeZoneSelector :: Selector
+timeZoneSelector :: Selector '[] (Id NSTimeZone)
 timeZoneSelector = mkSelector "timeZone"
 
 -- | @Selector@ for @setTimeZone:@
-setTimeZoneSelector :: Selector
+setTimeZoneSelector :: Selector '[Id NSTimeZone] ()
 setTimeZoneSelector = mkSelector "setTimeZone:"
 
 -- | @Selector@ for @era@
-eraSelector :: Selector
+eraSelector :: Selector '[] CLong
 eraSelector = mkSelector "era"
 
 -- | @Selector@ for @setEra:@
-setEraSelector :: Selector
+setEraSelector :: Selector '[CLong] ()
 setEraSelector = mkSelector "setEra:"
 
 -- | @Selector@ for @year@
-yearSelector :: Selector
+yearSelector :: Selector '[] CLong
 yearSelector = mkSelector "year"
 
 -- | @Selector@ for @setYear:@
-setYearSelector :: Selector
+setYearSelector :: Selector '[CLong] ()
 setYearSelector = mkSelector "setYear:"
 
 -- | @Selector@ for @month@
-monthSelector :: Selector
+monthSelector :: Selector '[] CLong
 monthSelector = mkSelector "month"
 
 -- | @Selector@ for @setMonth:@
-setMonthSelector :: Selector
+setMonthSelector :: Selector '[CLong] ()
 setMonthSelector = mkSelector "setMonth:"
 
 -- | @Selector@ for @day@
-daySelector :: Selector
+daySelector :: Selector '[] CLong
 daySelector = mkSelector "day"
 
 -- | @Selector@ for @setDay:@
-setDaySelector :: Selector
+setDaySelector :: Selector '[CLong] ()
 setDaySelector = mkSelector "setDay:"
 
 -- | @Selector@ for @hour@
-hourSelector :: Selector
+hourSelector :: Selector '[] CLong
 hourSelector = mkSelector "hour"
 
 -- | @Selector@ for @setHour:@
-setHourSelector :: Selector
+setHourSelector :: Selector '[CLong] ()
 setHourSelector = mkSelector "setHour:"
 
 -- | @Selector@ for @minute@
-minuteSelector :: Selector
+minuteSelector :: Selector '[] CLong
 minuteSelector = mkSelector "minute"
 
 -- | @Selector@ for @setMinute:@
-setMinuteSelector :: Selector
+setMinuteSelector :: Selector '[CLong] ()
 setMinuteSelector = mkSelector "setMinute:"
 
 -- | @Selector@ for @second@
-secondSelector :: Selector
+secondSelector :: Selector '[] CLong
 secondSelector = mkSelector "second"
 
 -- | @Selector@ for @setSecond:@
-setSecondSelector :: Selector
+setSecondSelector :: Selector '[CLong] ()
 setSecondSelector = mkSelector "setSecond:"
 
 -- | @Selector@ for @nanosecond@
-nanosecondSelector :: Selector
+nanosecondSelector :: Selector '[] CLong
 nanosecondSelector = mkSelector "nanosecond"
 
 -- | @Selector@ for @setNanosecond:@
-setNanosecondSelector :: Selector
+setNanosecondSelector :: Selector '[CLong] ()
 setNanosecondSelector = mkSelector "setNanosecond:"
 
 -- | @Selector@ for @weekday@
-weekdaySelector :: Selector
+weekdaySelector :: Selector '[] CLong
 weekdaySelector = mkSelector "weekday"
 
 -- | @Selector@ for @setWeekday:@
-setWeekdaySelector :: Selector
+setWeekdaySelector :: Selector '[CLong] ()
 setWeekdaySelector = mkSelector "setWeekday:"
 
 -- | @Selector@ for @weekdayOrdinal@
-weekdayOrdinalSelector :: Selector
+weekdayOrdinalSelector :: Selector '[] CLong
 weekdayOrdinalSelector = mkSelector "weekdayOrdinal"
 
 -- | @Selector@ for @setWeekdayOrdinal:@
-setWeekdayOrdinalSelector :: Selector
+setWeekdayOrdinalSelector :: Selector '[CLong] ()
 setWeekdayOrdinalSelector = mkSelector "setWeekdayOrdinal:"
 
 -- | @Selector@ for @quarter@
-quarterSelector :: Selector
+quarterSelector :: Selector '[] CLong
 quarterSelector = mkSelector "quarter"
 
 -- | @Selector@ for @setQuarter:@
-setQuarterSelector :: Selector
+setQuarterSelector :: Selector '[CLong] ()
 setQuarterSelector = mkSelector "setQuarter:"
 
 -- | @Selector@ for @weekOfMonth@
-weekOfMonthSelector :: Selector
+weekOfMonthSelector :: Selector '[] CLong
 weekOfMonthSelector = mkSelector "weekOfMonth"
 
 -- | @Selector@ for @setWeekOfMonth:@
-setWeekOfMonthSelector :: Selector
+setWeekOfMonthSelector :: Selector '[CLong] ()
 setWeekOfMonthSelector = mkSelector "setWeekOfMonth:"
 
 -- | @Selector@ for @weekOfYear@
-weekOfYearSelector :: Selector
+weekOfYearSelector :: Selector '[] CLong
 weekOfYearSelector = mkSelector "weekOfYear"
 
 -- | @Selector@ for @setWeekOfYear:@
-setWeekOfYearSelector :: Selector
+setWeekOfYearSelector :: Selector '[CLong] ()
 setWeekOfYearSelector = mkSelector "setWeekOfYear:"
 
 -- | @Selector@ for @yearForWeekOfYear@
-yearForWeekOfYearSelector :: Selector
+yearForWeekOfYearSelector :: Selector '[] CLong
 yearForWeekOfYearSelector = mkSelector "yearForWeekOfYear"
 
 -- | @Selector@ for @setYearForWeekOfYear:@
-setYearForWeekOfYearSelector :: Selector
+setYearForWeekOfYearSelector :: Selector '[CLong] ()
 setYearForWeekOfYearSelector = mkSelector "setYearForWeekOfYear:"
 
 -- | @Selector@ for @dayOfYear@
-dayOfYearSelector :: Selector
+dayOfYearSelector :: Selector '[] CLong
 dayOfYearSelector = mkSelector "dayOfYear"
 
 -- | @Selector@ for @setDayOfYear:@
-setDayOfYearSelector :: Selector
+setDayOfYearSelector :: Selector '[CLong] ()
 setDayOfYearSelector = mkSelector "setDayOfYear:"
 
 -- | @Selector@ for @leapMonth@
-leapMonthSelector :: Selector
+leapMonthSelector :: Selector '[] Bool
 leapMonthSelector = mkSelector "leapMonth"
 
 -- | @Selector@ for @setLeapMonth:@
-setLeapMonthSelector :: Selector
+setLeapMonthSelector :: Selector '[Bool] ()
 setLeapMonthSelector = mkSelector "setLeapMonth:"
 
 -- | @Selector@ for @repeatedDay@
-repeatedDaySelector :: Selector
+repeatedDaySelector :: Selector '[] Bool
 repeatedDaySelector = mkSelector "repeatedDay"
 
 -- | @Selector@ for @setRepeatedDay:@
-setRepeatedDaySelector :: Selector
+setRepeatedDaySelector :: Selector '[Bool] ()
 setRepeatedDaySelector = mkSelector "setRepeatedDay:"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @validDate@
-validDateSelector :: Selector
+validDateSelector :: Selector '[] Bool
 validDateSelector = mkSelector "validDate"
 

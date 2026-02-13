@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.MLCompute.MLCSoftmaxLayer
   , layerWithOperation_dimension
   , operation
   , dimension
+  , dimensionSelector
   , layerWithOperationSelector
   , layerWithOperation_dimensionSelector
   , operationSelector
-  , dimensionSelector
 
   -- * Enum types
   , MLCSoftmaxOperation(MLCSoftmaxOperation)
@@ -27,15 +28,11 @@ module ObjC.MLCompute.MLCSoftmaxLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,7 +51,7 @@ layerWithOperation :: MLCSoftmaxOperation -> IO (Id MLCSoftmaxLayer)
 layerWithOperation operation =
   do
     cls' <- getRequiredClass "MLCSoftmaxLayer"
-    sendClassMsg cls' (mkSelector "layerWithOperation:") (retPtr retVoid) [argCInt (coerce operation)] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithOperationSelector operation
 
 -- | Create a softmax layer
 --
@@ -69,7 +66,7 @@ layerWithOperation_dimension :: MLCSoftmaxOperation -> CULong -> IO (Id MLCSoftm
 layerWithOperation_dimension operation dimension =
   do
     cls' <- getRequiredClass "MLCSoftmaxLayer"
-    sendClassMsg cls' (mkSelector "layerWithOperation:dimension:") (retPtr retVoid) [argCInt (coerce operation), argCULong dimension] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithOperation_dimensionSelector operation dimension
 
 -- | operation
 --
@@ -77,8 +74,8 @@ layerWithOperation_dimension operation dimension =
 --
 -- ObjC selector: @- operation@
 operation :: IsMLCSoftmaxLayer mlcSoftmaxLayer => mlcSoftmaxLayer -> IO MLCSoftmaxOperation
-operation mlcSoftmaxLayer  =
-    fmap (coerce :: CInt -> MLCSoftmaxOperation) $ sendMsg mlcSoftmaxLayer (mkSelector "operation") retCInt []
+operation mlcSoftmaxLayer =
+  sendMessage mlcSoftmaxLayer operationSelector
 
 -- | dimension
 --
@@ -86,26 +83,26 @@ operation mlcSoftmaxLayer  =
 --
 -- ObjC selector: @- dimension@
 dimension :: IsMLCSoftmaxLayer mlcSoftmaxLayer => mlcSoftmaxLayer -> IO CULong
-dimension mlcSoftmaxLayer  =
-    sendMsg mlcSoftmaxLayer (mkSelector "dimension") retCULong []
+dimension mlcSoftmaxLayer =
+  sendMessage mlcSoftmaxLayer dimensionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithOperation:@
-layerWithOperationSelector :: Selector
+layerWithOperationSelector :: Selector '[MLCSoftmaxOperation] (Id MLCSoftmaxLayer)
 layerWithOperationSelector = mkSelector "layerWithOperation:"
 
 -- | @Selector@ for @layerWithOperation:dimension:@
-layerWithOperation_dimensionSelector :: Selector
+layerWithOperation_dimensionSelector :: Selector '[MLCSoftmaxOperation, CULong] (Id MLCSoftmaxLayer)
 layerWithOperation_dimensionSelector = mkSelector "layerWithOperation:dimension:"
 
 -- | @Selector@ for @operation@
-operationSelector :: Selector
+operationSelector :: Selector '[] MLCSoftmaxOperation
 operationSelector = mkSelector "operation"
 
 -- | @Selector@ for @dimension@
-dimensionSelector :: Selector
+dimensionSelector :: Selector '[] CULong
 dimensionSelector = mkSelector "dimension"
 

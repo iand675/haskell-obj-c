@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRContentControlClusterSetScheduledContentRatingThresholdPar
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , ratingSelector
-  , setRatingSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setRatingSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rating@
 rating :: IsMTRContentControlClusterSetScheduledContentRatingThresholdParams mtrContentControlClusterSetScheduledContentRatingThresholdParams => mtrContentControlClusterSetScheduledContentRatingThresholdParams -> IO (Id NSString)
-rating mtrContentControlClusterSetScheduledContentRatingThresholdParams  =
-    sendMsg mtrContentControlClusterSetScheduledContentRatingThresholdParams (mkSelector "rating") (retPtr retVoid) [] >>= retainedObject . castPtr
+rating mtrContentControlClusterSetScheduledContentRatingThresholdParams =
+  sendMessage mtrContentControlClusterSetScheduledContentRatingThresholdParams ratingSelector
 
 -- | @- setRating:@
 setRating :: (IsMTRContentControlClusterSetScheduledContentRatingThresholdParams mtrContentControlClusterSetScheduledContentRatingThresholdParams, IsNSString value) => mtrContentControlClusterSetScheduledContentRatingThresholdParams -> value -> IO ()
-setRating mtrContentControlClusterSetScheduledContentRatingThresholdParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterSetScheduledContentRatingThresholdParams (mkSelector "setRating:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRating mtrContentControlClusterSetScheduledContentRatingThresholdParams value =
+  sendMessage mtrContentControlClusterSetScheduledContentRatingThresholdParams setRatingSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setRating mtrContentControlClusterSetScheduledContentRatingThresholdParams  valu
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRContentControlClusterSetScheduledContentRatingThresholdParams mtrContentControlClusterSetScheduledContentRatingThresholdParams => mtrContentControlClusterSetScheduledContentRatingThresholdParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrContentControlClusterSetScheduledContentRatingThresholdParams  =
-    sendMsg mtrContentControlClusterSetScheduledContentRatingThresholdParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrContentControlClusterSetScheduledContentRatingThresholdParams =
+  sendMessage mtrContentControlClusterSetScheduledContentRatingThresholdParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrContentControlClusterSetScheduledContentRatingThresholdP
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRContentControlClusterSetScheduledContentRatingThresholdParams mtrContentControlClusterSetScheduledContentRatingThresholdParams, IsNSNumber value) => mtrContentControlClusterSetScheduledContentRatingThresholdParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrContentControlClusterSetScheduledContentRatingThresholdParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterSetScheduledContentRatingThresholdParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrContentControlClusterSetScheduledContentRatingThresholdParams value =
+  sendMessage mtrContentControlClusterSetScheduledContentRatingThresholdParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrContentControlClusterSetScheduledContentRatingThresho
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRContentControlClusterSetScheduledContentRatingThresholdParams mtrContentControlClusterSetScheduledContentRatingThresholdParams => mtrContentControlClusterSetScheduledContentRatingThresholdParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrContentControlClusterSetScheduledContentRatingThresholdParams  =
-    sendMsg mtrContentControlClusterSetScheduledContentRatingThresholdParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrContentControlClusterSetScheduledContentRatingThresholdParams =
+  sendMessage mtrContentControlClusterSetScheduledContentRatingThresholdParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrContentControlClusterSetScheduledContentRatingThr
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRContentControlClusterSetScheduledContentRatingThresholdParams mtrContentControlClusterSetScheduledContentRatingThresholdParams, IsNSNumber value) => mtrContentControlClusterSetScheduledContentRatingThresholdParams -> value -> IO ()
-setServerSideProcessingTimeout mtrContentControlClusterSetScheduledContentRatingThresholdParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterSetScheduledContentRatingThresholdParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrContentControlClusterSetScheduledContentRatingThresholdParams value =
+  sendMessage mtrContentControlClusterSetScheduledContentRatingThresholdParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rating@
-ratingSelector :: Selector
+ratingSelector :: Selector '[] (Id NSString)
 ratingSelector = mkSelector "rating"
 
 -- | @Selector@ for @setRating:@
-setRatingSelector :: Selector
+setRatingSelector :: Selector '[Id NSString] ()
 setRatingSelector = mkSelector "setRating:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

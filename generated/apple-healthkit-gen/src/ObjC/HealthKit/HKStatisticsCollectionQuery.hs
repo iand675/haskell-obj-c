@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.HealthKit.HKStatisticsCollectionQuery
   , setInitialResultsHandler
   , statisticsUpdateHandler
   , setStatisticsUpdateHandler
-  , initWithQuantityType_quantitySamplePredicate_options_anchorDate_intervalComponentsSelector
   , anchorDateSelector
-  , optionsSelector
-  , intervalComponentsSelector
+  , initWithQuantityType_quantitySamplePredicate_options_anchorDate_intervalComponentsSelector
   , initialResultsHandlerSelector
+  , intervalComponentsSelector
+  , optionsSelector
   , setInitialResultsHandlerSelector
-  , statisticsUpdateHandlerSelector
   , setStatisticsUpdateHandlerSelector
+  , statisticsUpdateHandlerSelector
 
   -- * Enum types
   , HKStatisticsOptions(HKStatisticsOptions)
@@ -38,15 +39,11 @@ module ObjC.HealthKit.HKStatisticsCollectionQuery
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,81 +53,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithQuantityType:quantitySamplePredicate:options:anchorDate:intervalComponents:@
 initWithQuantityType_quantitySamplePredicate_options_anchorDate_intervalComponents :: (IsHKStatisticsCollectionQuery hkStatisticsCollectionQuery, IsHKQuantityType quantityType, IsNSPredicate quantitySamplePredicate, IsNSDate anchorDate, IsNSDateComponents intervalComponents) => hkStatisticsCollectionQuery -> quantityType -> quantitySamplePredicate -> HKStatisticsOptions -> anchorDate -> intervalComponents -> IO (Id HKStatisticsCollectionQuery)
-initWithQuantityType_quantitySamplePredicate_options_anchorDate_intervalComponents hkStatisticsCollectionQuery  quantityType quantitySamplePredicate options anchorDate intervalComponents =
-  withObjCPtr quantityType $ \raw_quantityType ->
-    withObjCPtr quantitySamplePredicate $ \raw_quantitySamplePredicate ->
-      withObjCPtr anchorDate $ \raw_anchorDate ->
-        withObjCPtr intervalComponents $ \raw_intervalComponents ->
-            sendMsg hkStatisticsCollectionQuery (mkSelector "initWithQuantityType:quantitySamplePredicate:options:anchorDate:intervalComponents:") (retPtr retVoid) [argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_quantitySamplePredicate :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_anchorDate :: Ptr ()), argPtr (castPtr raw_intervalComponents :: Ptr ())] >>= ownedObject . castPtr
+initWithQuantityType_quantitySamplePredicate_options_anchorDate_intervalComponents hkStatisticsCollectionQuery quantityType quantitySamplePredicate options anchorDate intervalComponents =
+  sendOwnedMessage hkStatisticsCollectionQuery initWithQuantityType_quantitySamplePredicate_options_anchorDate_intervalComponentsSelector (toHKQuantityType quantityType) (toNSPredicate quantitySamplePredicate) options (toNSDate anchorDate) (toNSDateComponents intervalComponents)
 
 -- | @- anchorDate@
 anchorDate :: IsHKStatisticsCollectionQuery hkStatisticsCollectionQuery => hkStatisticsCollectionQuery -> IO (Id NSDate)
-anchorDate hkStatisticsCollectionQuery  =
-    sendMsg hkStatisticsCollectionQuery (mkSelector "anchorDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+anchorDate hkStatisticsCollectionQuery =
+  sendMessage hkStatisticsCollectionQuery anchorDateSelector
 
 -- | @- options@
 options :: IsHKStatisticsCollectionQuery hkStatisticsCollectionQuery => hkStatisticsCollectionQuery -> IO HKStatisticsOptions
-options hkStatisticsCollectionQuery  =
-    fmap (coerce :: CULong -> HKStatisticsOptions) $ sendMsg hkStatisticsCollectionQuery (mkSelector "options") retCULong []
+options hkStatisticsCollectionQuery =
+  sendMessage hkStatisticsCollectionQuery optionsSelector
 
 -- | @- intervalComponents@
 intervalComponents :: IsHKStatisticsCollectionQuery hkStatisticsCollectionQuery => hkStatisticsCollectionQuery -> IO (Id NSDateComponents)
-intervalComponents hkStatisticsCollectionQuery  =
-    sendMsg hkStatisticsCollectionQuery (mkSelector "intervalComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+intervalComponents hkStatisticsCollectionQuery =
+  sendMessage hkStatisticsCollectionQuery intervalComponentsSelector
 
 -- | @- initialResultsHandler@
 initialResultsHandler :: IsHKStatisticsCollectionQuery hkStatisticsCollectionQuery => hkStatisticsCollectionQuery -> IO (Ptr ())
-initialResultsHandler hkStatisticsCollectionQuery  =
-    fmap castPtr $ sendMsg hkStatisticsCollectionQuery (mkSelector "initialResultsHandler") (retPtr retVoid) []
+initialResultsHandler hkStatisticsCollectionQuery =
+  sendOwnedMessage hkStatisticsCollectionQuery initialResultsHandlerSelector
 
 -- | @- setInitialResultsHandler:@
 setInitialResultsHandler :: IsHKStatisticsCollectionQuery hkStatisticsCollectionQuery => hkStatisticsCollectionQuery -> Ptr () -> IO ()
-setInitialResultsHandler hkStatisticsCollectionQuery  value =
-    sendMsg hkStatisticsCollectionQuery (mkSelector "setInitialResultsHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setInitialResultsHandler hkStatisticsCollectionQuery value =
+  sendMessage hkStatisticsCollectionQuery setInitialResultsHandlerSelector value
 
 -- | @- statisticsUpdateHandler@
 statisticsUpdateHandler :: IsHKStatisticsCollectionQuery hkStatisticsCollectionQuery => hkStatisticsCollectionQuery -> IO (Ptr ())
-statisticsUpdateHandler hkStatisticsCollectionQuery  =
-    fmap castPtr $ sendMsg hkStatisticsCollectionQuery (mkSelector "statisticsUpdateHandler") (retPtr retVoid) []
+statisticsUpdateHandler hkStatisticsCollectionQuery =
+  sendMessage hkStatisticsCollectionQuery statisticsUpdateHandlerSelector
 
 -- | @- setStatisticsUpdateHandler:@
 setStatisticsUpdateHandler :: IsHKStatisticsCollectionQuery hkStatisticsCollectionQuery => hkStatisticsCollectionQuery -> Ptr () -> IO ()
-setStatisticsUpdateHandler hkStatisticsCollectionQuery  value =
-    sendMsg hkStatisticsCollectionQuery (mkSelector "setStatisticsUpdateHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setStatisticsUpdateHandler hkStatisticsCollectionQuery value =
+  sendMessage hkStatisticsCollectionQuery setStatisticsUpdateHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithQuantityType:quantitySamplePredicate:options:anchorDate:intervalComponents:@
-initWithQuantityType_quantitySamplePredicate_options_anchorDate_intervalComponentsSelector :: Selector
+initWithQuantityType_quantitySamplePredicate_options_anchorDate_intervalComponentsSelector :: Selector '[Id HKQuantityType, Id NSPredicate, HKStatisticsOptions, Id NSDate, Id NSDateComponents] (Id HKStatisticsCollectionQuery)
 initWithQuantityType_quantitySamplePredicate_options_anchorDate_intervalComponentsSelector = mkSelector "initWithQuantityType:quantitySamplePredicate:options:anchorDate:intervalComponents:"
 
 -- | @Selector@ for @anchorDate@
-anchorDateSelector :: Selector
+anchorDateSelector :: Selector '[] (Id NSDate)
 anchorDateSelector = mkSelector "anchorDate"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] HKStatisticsOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @intervalComponents@
-intervalComponentsSelector :: Selector
+intervalComponentsSelector :: Selector '[] (Id NSDateComponents)
 intervalComponentsSelector = mkSelector "intervalComponents"
 
 -- | @Selector@ for @initialResultsHandler@
-initialResultsHandlerSelector :: Selector
+initialResultsHandlerSelector :: Selector '[] (Ptr ())
 initialResultsHandlerSelector = mkSelector "initialResultsHandler"
 
 -- | @Selector@ for @setInitialResultsHandler:@
-setInitialResultsHandlerSelector :: Selector
+setInitialResultsHandlerSelector :: Selector '[Ptr ()] ()
 setInitialResultsHandlerSelector = mkSelector "setInitialResultsHandler:"
 
 -- | @Selector@ for @statisticsUpdateHandler@
-statisticsUpdateHandlerSelector :: Selector
+statisticsUpdateHandlerSelector :: Selector '[] (Ptr ())
 statisticsUpdateHandlerSelector = mkSelector "statisticsUpdateHandler"
 
 -- | @Selector@ for @setStatisticsUpdateHandler:@
-setStatisticsUpdateHandlerSelector :: Selector
+setStatisticsUpdateHandlerSelector :: Selector '[Ptr ()] ()
 setStatisticsUpdateHandlerSelector = mkSelector "setStatisticsUpdateHandler:"
 

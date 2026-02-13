@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,8 @@ module ObjC.CoreMotion.CMWaterSubmersionMeasurement
   , dateSelector
   , depthSelector
   , pressureSelector
-  , surfacePressureSelector
   , submersionStateSelector
+  , surfacePressureSelector
 
   -- * Enum types
   , CMWaterSubmersionDepthState(CMWaterSubmersionDepthState)
@@ -30,15 +31,11 @@ module ObjC.CoreMotion.CMWaterSubmersionMeasurement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,50 +45,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- date@
 date :: IsCMWaterSubmersionMeasurement cmWaterSubmersionMeasurement => cmWaterSubmersionMeasurement -> IO (Id NSDate)
-date cmWaterSubmersionMeasurement  =
-    sendMsg cmWaterSubmersionMeasurement (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date cmWaterSubmersionMeasurement =
+  sendMessage cmWaterSubmersionMeasurement dateSelector
 
 -- | @- depth@
 depth :: IsCMWaterSubmersionMeasurement cmWaterSubmersionMeasurement => cmWaterSubmersionMeasurement -> IO (Id NSMeasurement)
-depth cmWaterSubmersionMeasurement  =
-    sendMsg cmWaterSubmersionMeasurement (mkSelector "depth") (retPtr retVoid) [] >>= retainedObject . castPtr
+depth cmWaterSubmersionMeasurement =
+  sendMessage cmWaterSubmersionMeasurement depthSelector
 
 -- | @- pressure@
 pressure :: IsCMWaterSubmersionMeasurement cmWaterSubmersionMeasurement => cmWaterSubmersionMeasurement -> IO (Id NSMeasurement)
-pressure cmWaterSubmersionMeasurement  =
-    sendMsg cmWaterSubmersionMeasurement (mkSelector "pressure") (retPtr retVoid) [] >>= retainedObject . castPtr
+pressure cmWaterSubmersionMeasurement =
+  sendMessage cmWaterSubmersionMeasurement pressureSelector
 
 -- | @- surfacePressure@
 surfacePressure :: IsCMWaterSubmersionMeasurement cmWaterSubmersionMeasurement => cmWaterSubmersionMeasurement -> IO (Id NSMeasurement)
-surfacePressure cmWaterSubmersionMeasurement  =
-    sendMsg cmWaterSubmersionMeasurement (mkSelector "surfacePressure") (retPtr retVoid) [] >>= retainedObject . castPtr
+surfacePressure cmWaterSubmersionMeasurement =
+  sendMessage cmWaterSubmersionMeasurement surfacePressureSelector
 
 -- | @- submersionState@
 submersionState :: IsCMWaterSubmersionMeasurement cmWaterSubmersionMeasurement => cmWaterSubmersionMeasurement -> IO CMWaterSubmersionDepthState
-submersionState cmWaterSubmersionMeasurement  =
-    fmap (coerce :: CLong -> CMWaterSubmersionDepthState) $ sendMsg cmWaterSubmersionMeasurement (mkSelector "submersionState") retCLong []
+submersionState cmWaterSubmersionMeasurement =
+  sendMessage cmWaterSubmersionMeasurement submersionStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @depth@
-depthSelector :: Selector
+depthSelector :: Selector '[] (Id NSMeasurement)
 depthSelector = mkSelector "depth"
 
 -- | @Selector@ for @pressure@
-pressureSelector :: Selector
+pressureSelector :: Selector '[] (Id NSMeasurement)
 pressureSelector = mkSelector "pressure"
 
 -- | @Selector@ for @surfacePressure@
-surfacePressureSelector :: Selector
+surfacePressureSelector :: Selector '[] (Id NSMeasurement)
 surfacePressureSelector = mkSelector "surfacePressure"
 
 -- | @Selector@ for @submersionState@
-submersionStateSelector :: Selector
+submersionStateSelector :: Selector '[] CMWaterSubmersionDepthState
 submersionStateSelector = mkSelector "submersionState"
 

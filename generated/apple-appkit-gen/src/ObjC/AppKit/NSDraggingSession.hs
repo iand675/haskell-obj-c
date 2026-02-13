@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.AppKit.NSDraggingSession
   , draggingPasteboard
   , draggingSequenceNumber
   , draggingLocation
-  , enumerateDraggingItemsWithOptions_forView_classes_searchOptions_usingBlockSelector
-  , draggingFormationSelector
-  , setDraggingFormationSelector
   , animatesToStartingPositionsOnCancelOrFailSelector
-  , setAnimatesToStartingPositionsOnCancelOrFailSelector
+  , draggingFormationSelector
   , draggingLeaderIndexSelector
-  , setDraggingLeaderIndexSelector
+  , draggingLocationSelector
   , draggingPasteboardSelector
   , draggingSequenceNumberSelector
-  , draggingLocationSelector
+  , enumerateDraggingItemsWithOptions_forView_classes_searchOptions_usingBlockSelector
+  , setAnimatesToStartingPositionsOnCancelOrFailSelector
+  , setDraggingFormationSelector
+  , setDraggingLeaderIndexSelector
 
   -- * Enum types
   , NSDraggingFormation(NSDraggingFormation)
@@ -41,15 +42,11 @@ module ObjC.AppKit.NSDraggingSession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,98 +57,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- enumerateDraggingItemsWithOptions:forView:classes:searchOptions:usingBlock:@
 enumerateDraggingItemsWithOptions_forView_classes_searchOptions_usingBlock :: (IsNSDraggingSession nsDraggingSession, IsNSView view, IsNSArray classArray, IsNSDictionary searchOptions) => nsDraggingSession -> NSDraggingItemEnumerationOptions -> view -> classArray -> searchOptions -> Ptr () -> IO ()
-enumerateDraggingItemsWithOptions_forView_classes_searchOptions_usingBlock nsDraggingSession  enumOpts view classArray searchOptions block =
-  withObjCPtr view $ \raw_view ->
-    withObjCPtr classArray $ \raw_classArray ->
-      withObjCPtr searchOptions $ \raw_searchOptions ->
-          sendMsg nsDraggingSession (mkSelector "enumerateDraggingItemsWithOptions:forView:classes:searchOptions:usingBlock:") retVoid [argCULong (coerce enumOpts), argPtr (castPtr raw_view :: Ptr ()), argPtr (castPtr raw_classArray :: Ptr ()), argPtr (castPtr raw_searchOptions :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+enumerateDraggingItemsWithOptions_forView_classes_searchOptions_usingBlock nsDraggingSession enumOpts view classArray searchOptions block =
+  sendMessage nsDraggingSession enumerateDraggingItemsWithOptions_forView_classes_searchOptions_usingBlockSelector enumOpts (toNSView view) (toNSArray classArray) (toNSDictionary searchOptions) block
 
 -- | @- draggingFormation@
 draggingFormation :: IsNSDraggingSession nsDraggingSession => nsDraggingSession -> IO NSDraggingFormation
-draggingFormation nsDraggingSession  =
-    fmap (coerce :: CLong -> NSDraggingFormation) $ sendMsg nsDraggingSession (mkSelector "draggingFormation") retCLong []
+draggingFormation nsDraggingSession =
+  sendMessage nsDraggingSession draggingFormationSelector
 
 -- | @- setDraggingFormation:@
 setDraggingFormation :: IsNSDraggingSession nsDraggingSession => nsDraggingSession -> NSDraggingFormation -> IO ()
-setDraggingFormation nsDraggingSession  value =
-    sendMsg nsDraggingSession (mkSelector "setDraggingFormation:") retVoid [argCLong (coerce value)]
+setDraggingFormation nsDraggingSession value =
+  sendMessage nsDraggingSession setDraggingFormationSelector value
 
 -- | @- animatesToStartingPositionsOnCancelOrFail@
 animatesToStartingPositionsOnCancelOrFail :: IsNSDraggingSession nsDraggingSession => nsDraggingSession -> IO Bool
-animatesToStartingPositionsOnCancelOrFail nsDraggingSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDraggingSession (mkSelector "animatesToStartingPositionsOnCancelOrFail") retCULong []
+animatesToStartingPositionsOnCancelOrFail nsDraggingSession =
+  sendMessage nsDraggingSession animatesToStartingPositionsOnCancelOrFailSelector
 
 -- | @- setAnimatesToStartingPositionsOnCancelOrFail:@
 setAnimatesToStartingPositionsOnCancelOrFail :: IsNSDraggingSession nsDraggingSession => nsDraggingSession -> Bool -> IO ()
-setAnimatesToStartingPositionsOnCancelOrFail nsDraggingSession  value =
-    sendMsg nsDraggingSession (mkSelector "setAnimatesToStartingPositionsOnCancelOrFail:") retVoid [argCULong (if value then 1 else 0)]
+setAnimatesToStartingPositionsOnCancelOrFail nsDraggingSession value =
+  sendMessage nsDraggingSession setAnimatesToStartingPositionsOnCancelOrFailSelector value
 
 -- | @- draggingLeaderIndex@
 draggingLeaderIndex :: IsNSDraggingSession nsDraggingSession => nsDraggingSession -> IO CLong
-draggingLeaderIndex nsDraggingSession  =
-    sendMsg nsDraggingSession (mkSelector "draggingLeaderIndex") retCLong []
+draggingLeaderIndex nsDraggingSession =
+  sendMessage nsDraggingSession draggingLeaderIndexSelector
 
 -- | @- setDraggingLeaderIndex:@
 setDraggingLeaderIndex :: IsNSDraggingSession nsDraggingSession => nsDraggingSession -> CLong -> IO ()
-setDraggingLeaderIndex nsDraggingSession  value =
-    sendMsg nsDraggingSession (mkSelector "setDraggingLeaderIndex:") retVoid [argCLong value]
+setDraggingLeaderIndex nsDraggingSession value =
+  sendMessage nsDraggingSession setDraggingLeaderIndexSelector value
 
 -- | @- draggingPasteboard@
 draggingPasteboard :: IsNSDraggingSession nsDraggingSession => nsDraggingSession -> IO (Id NSPasteboard)
-draggingPasteboard nsDraggingSession  =
-    sendMsg nsDraggingSession (mkSelector "draggingPasteboard") (retPtr retVoid) [] >>= retainedObject . castPtr
+draggingPasteboard nsDraggingSession =
+  sendMessage nsDraggingSession draggingPasteboardSelector
 
 -- | @- draggingSequenceNumber@
 draggingSequenceNumber :: IsNSDraggingSession nsDraggingSession => nsDraggingSession -> IO CLong
-draggingSequenceNumber nsDraggingSession  =
-    sendMsg nsDraggingSession (mkSelector "draggingSequenceNumber") retCLong []
+draggingSequenceNumber nsDraggingSession =
+  sendMessage nsDraggingSession draggingSequenceNumberSelector
 
 -- | @- draggingLocation@
 draggingLocation :: IsNSDraggingSession nsDraggingSession => nsDraggingSession -> IO NSPoint
-draggingLocation nsDraggingSession  =
-    sendMsgStret nsDraggingSession (mkSelector "draggingLocation") retNSPoint []
+draggingLocation nsDraggingSession =
+  sendMessage nsDraggingSession draggingLocationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @enumerateDraggingItemsWithOptions:forView:classes:searchOptions:usingBlock:@
-enumerateDraggingItemsWithOptions_forView_classes_searchOptions_usingBlockSelector :: Selector
+enumerateDraggingItemsWithOptions_forView_classes_searchOptions_usingBlockSelector :: Selector '[NSDraggingItemEnumerationOptions, Id NSView, Id NSArray, Id NSDictionary, Ptr ()] ()
 enumerateDraggingItemsWithOptions_forView_classes_searchOptions_usingBlockSelector = mkSelector "enumerateDraggingItemsWithOptions:forView:classes:searchOptions:usingBlock:"
 
 -- | @Selector@ for @draggingFormation@
-draggingFormationSelector :: Selector
+draggingFormationSelector :: Selector '[] NSDraggingFormation
 draggingFormationSelector = mkSelector "draggingFormation"
 
 -- | @Selector@ for @setDraggingFormation:@
-setDraggingFormationSelector :: Selector
+setDraggingFormationSelector :: Selector '[NSDraggingFormation] ()
 setDraggingFormationSelector = mkSelector "setDraggingFormation:"
 
 -- | @Selector@ for @animatesToStartingPositionsOnCancelOrFail@
-animatesToStartingPositionsOnCancelOrFailSelector :: Selector
+animatesToStartingPositionsOnCancelOrFailSelector :: Selector '[] Bool
 animatesToStartingPositionsOnCancelOrFailSelector = mkSelector "animatesToStartingPositionsOnCancelOrFail"
 
 -- | @Selector@ for @setAnimatesToStartingPositionsOnCancelOrFail:@
-setAnimatesToStartingPositionsOnCancelOrFailSelector :: Selector
+setAnimatesToStartingPositionsOnCancelOrFailSelector :: Selector '[Bool] ()
 setAnimatesToStartingPositionsOnCancelOrFailSelector = mkSelector "setAnimatesToStartingPositionsOnCancelOrFail:"
 
 -- | @Selector@ for @draggingLeaderIndex@
-draggingLeaderIndexSelector :: Selector
+draggingLeaderIndexSelector :: Selector '[] CLong
 draggingLeaderIndexSelector = mkSelector "draggingLeaderIndex"
 
 -- | @Selector@ for @setDraggingLeaderIndex:@
-setDraggingLeaderIndexSelector :: Selector
+setDraggingLeaderIndexSelector :: Selector '[CLong] ()
 setDraggingLeaderIndexSelector = mkSelector "setDraggingLeaderIndex:"
 
 -- | @Selector@ for @draggingPasteboard@
-draggingPasteboardSelector :: Selector
+draggingPasteboardSelector :: Selector '[] (Id NSPasteboard)
 draggingPasteboardSelector = mkSelector "draggingPasteboard"
 
 -- | @Selector@ for @draggingSequenceNumber@
-draggingSequenceNumberSelector :: Selector
+draggingSequenceNumberSelector :: Selector '[] CLong
 draggingSequenceNumberSelector = mkSelector "draggingSequenceNumber"
 
 -- | @Selector@ for @draggingLocation@
-draggingLocationSelector :: Selector
+draggingLocationSelector :: Selector '[] NSPoint
 draggingLocationSelector = mkSelector "draggingLocation"
 

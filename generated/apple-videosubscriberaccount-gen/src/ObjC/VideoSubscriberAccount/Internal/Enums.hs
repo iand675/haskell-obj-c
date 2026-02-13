@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.VideoSubscriberAccount.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Represents the current state of the application's access to the user's subscription information.
 -- | @VSAccountAccessStatus@
@@ -29,6 +32,16 @@ pattern VSAccountAccessStatusDenied = VSAccountAccessStatus 2
 pattern VSAccountAccessStatusGranted :: VSAccountAccessStatus
 pattern VSAccountAccessStatusGranted = VSAccountAccessStatus 3
 
+instance ObjCArgument VSAccountAccessStatus where
+  withObjCArg (VSAccountAccessStatus x) k = k (argCLong x)
+
+instance ObjCReturn VSAccountAccessStatus where
+  type RawReturn VSAccountAccessStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VSAccountAccessStatus x)
+  fromOwned x = pure (VSAccountAccessStatus x)
+
 -- | Auto sign in authorization state.
 -- | @VSAutoSignInAuthorization@
 newtype VSAutoSignInAuthorization = VSAutoSignInAuthorization CLong
@@ -43,6 +56,16 @@ pattern VSAutoSignInAuthorizationGranted = VSAutoSignInAuthorization 1
 
 pattern VSAutoSignInAuthorizationDenied :: VSAutoSignInAuthorization
 pattern VSAutoSignInAuthorizationDenied = VSAutoSignInAuthorization 2
+
+instance ObjCArgument VSAutoSignInAuthorization where
+  withObjCArg (VSAutoSignInAuthorization x) k = k (argCLong x)
+
+instance ObjCReturn VSAutoSignInAuthorization where
+  type RawReturn VSAutoSignInAuthorization = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VSAutoSignInAuthorization x)
+  fromOwned x = pure (VSAutoSignInAuthorization x)
 
 -- | @VSErrorCode@
 newtype VSErrorCode = VSErrorCode CLong
@@ -73,6 +96,16 @@ pattern VSErrorCodeRejected = VSErrorCode 6
 pattern VSErrorCodeUnsupported :: VSErrorCode
 pattern VSErrorCodeUnsupported = VSErrorCode 7
 
+instance ObjCArgument VSErrorCode where
+  withObjCArg (VSErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn VSErrorCode where
+  type RawReturn VSErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VSErrorCode x)
+  fromOwned x = pure (VSErrorCode x)
+
 -- | @VSOriginatingDeviceCategory@
 newtype VSOriginatingDeviceCategory = VSOriginatingDeviceCategory CLong
   deriving stock (Eq, Ord, Show)
@@ -83,6 +116,16 @@ pattern VSOriginatingDeviceCategoryMobile = VSOriginatingDeviceCategory 0
 
 pattern VSOriginatingDeviceCategoryOther :: VSOriginatingDeviceCategory
 pattern VSOriginatingDeviceCategoryOther = VSOriginatingDeviceCategory 1
+
+instance ObjCArgument VSOriginatingDeviceCategory where
+  withObjCArg (VSOriginatingDeviceCategory x) k = k (argCLong x)
+
+instance ObjCReturn VSOriginatingDeviceCategory where
+  type RawReturn VSOriginatingDeviceCategory = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VSOriginatingDeviceCategory x)
+  fromOwned x = pure (VSOriginatingDeviceCategory x)
 
 -- | Describes the level of access to content.
 -- | @VSSubscriptionAccessLevel@
@@ -98,6 +141,16 @@ pattern VSSubscriptionAccessLevelFreeWithAccount = VSSubscriptionAccessLevel 1
 
 pattern VSSubscriptionAccessLevelPaid :: VSSubscriptionAccessLevel
 pattern VSSubscriptionAccessLevelPaid = VSSubscriptionAccessLevel 2
+
+instance ObjCArgument VSSubscriptionAccessLevel where
+  withObjCArg (VSSubscriptionAccessLevel x) k = k (argCLong x)
+
+instance ObjCReturn VSSubscriptionAccessLevel where
+  type RawReturn VSSubscriptionAccessLevel = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VSSubscriptionAccessLevel x)
+  fromOwned x = pure (VSSubscriptionAccessLevel x)
 
 -- | @VSUserAccountQueryOptions@ (bitmask)
 newtype VSUserAccountQueryOptions = VSUserAccountQueryOptions CLong
@@ -116,6 +169,16 @@ pattern VSUserAccountQueryNone = VSUserAccountQueryOptions 0
 pattern VSUserAccountQueryAllDevices :: VSUserAccountQueryOptions
 pattern VSUserAccountQueryAllDevices = VSUserAccountQueryOptions 1
 
+instance ObjCArgument VSUserAccountQueryOptions where
+  withObjCArg (VSUserAccountQueryOptions x) k = k (argCLong x)
+
+instance ObjCReturn VSUserAccountQueryOptions where
+  type RawReturn VSUserAccountQueryOptions = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VSUserAccountQueryOptions x)
+  fromOwned x = pure (VSUserAccountQueryOptions x)
+
 -- | @VSUserAccountType@
 newtype VSUserAccountType = VSUserAccountType CLong
   deriving stock (Eq, Ord, Show)
@@ -126,3 +189,13 @@ pattern VSUserAccountTypeFree = VSUserAccountType 0
 
 pattern VSUserAccountTypePaid :: VSUserAccountType
 pattern VSUserAccountTypePaid = VSUserAccountType 1
+
+instance ObjCArgument VSUserAccountType where
+  withObjCArg (VSUserAccountType x) k = k (argCLong x)
+
+instance ObjCReturn VSUserAccountType where
+  type RawReturn VSUserAccountType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VSUserAccountType x)
+  fromOwned x = pure (VSUserAccountType x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.Quartz.IKFilterBrowserView
   , IsIKFilterBrowserView(..)
   , setPreviewState
   , filterName
-  , setPreviewStateSelector
   , filterNameSelector
+  , setPreviewStateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,8 +45,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setPreviewState:@
 setPreviewState :: IsIKFilterBrowserView ikFilterBrowserView => ikFilterBrowserView -> Bool -> IO ()
-setPreviewState ikFilterBrowserView  inState =
-    sendMsg ikFilterBrowserView (mkSelector "setPreviewState:") retVoid [argCULong (if inState then 1 else 0)]
+setPreviewState ikFilterBrowserView inState =
+  sendMessage ikFilterBrowserView setPreviewStateSelector inState
 
 -- | filterName
 --
@@ -59,18 +56,18 @@ setPreviewState ikFilterBrowserView  inState =
 --
 -- ObjC selector: @- filterName@
 filterName :: IsIKFilterBrowserView ikFilterBrowserView => ikFilterBrowserView -> IO (Id NSString)
-filterName ikFilterBrowserView  =
-    sendMsg ikFilterBrowserView (mkSelector "filterName") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterName ikFilterBrowserView =
+  sendMessage ikFilterBrowserView filterNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setPreviewState:@
-setPreviewStateSelector :: Selector
+setPreviewStateSelector :: Selector '[Bool] ()
 setPreviewStateSelector = mkSelector "setPreviewState:"
 
 -- | @Selector@ for @filterName@
-filterNameSelector :: Selector
+filterNameSelector :: Selector '[] (Id NSString)
 filterNameSelector = mkSelector "filterName"
 

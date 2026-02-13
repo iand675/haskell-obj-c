@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTROperationalCredentialsClusterCSRResponseParams
   , setAttestationSignature
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
+  , attestationSignatureSelector
   , initWithResponseValue_errorSelector
   , nocsrElementsSelector
-  , setNocsrElementsSelector
-  , attestationSignatureSelector
   , setAttestationSignatureSelector
-  , timedInvokeTimeoutMsSelector
+  , setNocsrElementsSelector
   , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,32 +44,28 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTROperationalCredentialsClusterCSRResponseParams mtrOperationalCredentialsClusterCSRResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrOperationalCredentialsClusterCSRResponseParams -> responseValue -> error_ -> IO (Id MTROperationalCredentialsClusterCSRResponseParams)
-initWithResponseValue_error mtrOperationalCredentialsClusterCSRResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrOperationalCredentialsClusterCSRResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrOperationalCredentialsClusterCSRResponseParams responseValue error_ =
+  sendOwnedMessage mtrOperationalCredentialsClusterCSRResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- nocsrElements@
 nocsrElements :: IsMTROperationalCredentialsClusterCSRResponseParams mtrOperationalCredentialsClusterCSRResponseParams => mtrOperationalCredentialsClusterCSRResponseParams -> IO (Id NSData)
-nocsrElements mtrOperationalCredentialsClusterCSRResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterCSRResponseParams (mkSelector "nocsrElements") (retPtr retVoid) [] >>= retainedObject . castPtr
+nocsrElements mtrOperationalCredentialsClusterCSRResponseParams =
+  sendMessage mtrOperationalCredentialsClusterCSRResponseParams nocsrElementsSelector
 
 -- | @- setNocsrElements:@
 setNocsrElements :: (IsMTROperationalCredentialsClusterCSRResponseParams mtrOperationalCredentialsClusterCSRResponseParams, IsNSData value) => mtrOperationalCredentialsClusterCSRResponseParams -> value -> IO ()
-setNocsrElements mtrOperationalCredentialsClusterCSRResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCSRResponseParams (mkSelector "setNocsrElements:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNocsrElements mtrOperationalCredentialsClusterCSRResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterCSRResponseParams setNocsrElementsSelector (toNSData value)
 
 -- | @- attestationSignature@
 attestationSignature :: IsMTROperationalCredentialsClusterCSRResponseParams mtrOperationalCredentialsClusterCSRResponseParams => mtrOperationalCredentialsClusterCSRResponseParams -> IO (Id NSData)
-attestationSignature mtrOperationalCredentialsClusterCSRResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterCSRResponseParams (mkSelector "attestationSignature") (retPtr retVoid) [] >>= retainedObject . castPtr
+attestationSignature mtrOperationalCredentialsClusterCSRResponseParams =
+  sendMessage mtrOperationalCredentialsClusterCSRResponseParams attestationSignatureSelector
 
 -- | @- setAttestationSignature:@
 setAttestationSignature :: (IsMTROperationalCredentialsClusterCSRResponseParams mtrOperationalCredentialsClusterCSRResponseParams, IsNSData value) => mtrOperationalCredentialsClusterCSRResponseParams -> value -> IO ()
-setAttestationSignature mtrOperationalCredentialsClusterCSRResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCSRResponseParams (mkSelector "setAttestationSignature:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttestationSignature mtrOperationalCredentialsClusterCSRResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterCSRResponseParams setAttestationSignatureSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,8 +75,8 @@ setAttestationSignature mtrOperationalCredentialsClusterCSRResponseParams  value
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterCSRResponseParams mtrOperationalCredentialsClusterCSRResponseParams => mtrOperationalCredentialsClusterCSRResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterCSRResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRResponseParams =
+  sendMessage mtrOperationalCredentialsClusterCSRResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -93,39 +86,38 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterCSRResponseParams mtrOperationalCredentialsClusterCSRResponseParams, IsNSNumber value) => mtrOperationalCredentialsClusterCSRResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterCSRResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterCSRResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterCSRResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTROperationalCredentialsClusterCSRResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @nocsrElements@
-nocsrElementsSelector :: Selector
+nocsrElementsSelector :: Selector '[] (Id NSData)
 nocsrElementsSelector = mkSelector "nocsrElements"
 
 -- | @Selector@ for @setNocsrElements:@
-setNocsrElementsSelector :: Selector
+setNocsrElementsSelector :: Selector '[Id NSData] ()
 setNocsrElementsSelector = mkSelector "setNocsrElements:"
 
 -- | @Selector@ for @attestationSignature@
-attestationSignatureSelector :: Selector
+attestationSignatureSelector :: Selector '[] (Id NSData)
 attestationSignatureSelector = mkSelector "attestationSignature"
 
 -- | @Selector@ for @setAttestationSignature:@
-setAttestationSignatureSelector :: Selector
+setAttestationSignatureSelector :: Selector '[Id NSData] ()
 setAttestationSignatureSelector = mkSelector "setAttestationSignature:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

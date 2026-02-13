@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.HealthKit.HKWorkoutEffortRelationship
   , workout
   , activity
   , samples
-  , workoutSelector
   , activitySelector
   , samplesSelector
+  , workoutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,15 +32,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- workout@
 workout :: IsHKWorkoutEffortRelationship hkWorkoutEffortRelationship => hkWorkoutEffortRelationship -> IO (Id HKWorkout)
-workout hkWorkoutEffortRelationship  =
-    sendMsg hkWorkoutEffortRelationship (mkSelector "workout") (retPtr retVoid) [] >>= retainedObject . castPtr
+workout hkWorkoutEffortRelationship =
+  sendMessage hkWorkoutEffortRelationship workoutSelector
 
 -- | activity
 --
 -- ObjC selector: @- activity@
 activity :: IsHKWorkoutEffortRelationship hkWorkoutEffortRelationship => hkWorkoutEffortRelationship -> IO (Id HKWorkoutActivity)
-activity hkWorkoutEffortRelationship  =
-    sendMsg hkWorkoutEffortRelationship (mkSelector "activity") (retPtr retVoid) [] >>= retainedObject . castPtr
+activity hkWorkoutEffortRelationship =
+  sendMessage hkWorkoutEffortRelationship activitySelector
 
 -- | samples
 --
@@ -51,22 +48,22 @@ activity hkWorkoutEffortRelationship  =
 --
 -- ObjC selector: @- samples@
 samples :: IsHKWorkoutEffortRelationship hkWorkoutEffortRelationship => hkWorkoutEffortRelationship -> IO (Id NSArray)
-samples hkWorkoutEffortRelationship  =
-    sendMsg hkWorkoutEffortRelationship (mkSelector "samples") (retPtr retVoid) [] >>= retainedObject . castPtr
+samples hkWorkoutEffortRelationship =
+  sendMessage hkWorkoutEffortRelationship samplesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @workout@
-workoutSelector :: Selector
+workoutSelector :: Selector '[] (Id HKWorkout)
 workoutSelector = mkSelector "workout"
 
 -- | @Selector@ for @activity@
-activitySelector :: Selector
+activitySelector :: Selector '[] (Id HKWorkoutActivity)
 activitySelector = mkSelector "activity"
 
 -- | @Selector@ for @samples@
-samplesSelector :: Selector
+samplesSelector :: Selector '[] (Id NSArray)
 samplesSelector = mkSelector "samples"
 

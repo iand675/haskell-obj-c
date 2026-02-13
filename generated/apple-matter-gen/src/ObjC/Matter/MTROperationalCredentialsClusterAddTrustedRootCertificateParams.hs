@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTROperationalCredentialsClusterAddTrustedRootCertificatePara
   , rootCertificate
   , setRootCertificate
   , rootCACertificateSelector
-  , setRootCACertificateSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
   , rootCertificateSelector
+  , serverSideProcessingTimeoutSelector
+  , setRootCACertificateSelector
   , setRootCertificateSelector
+  , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,14 +40,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rootCACertificate@
 rootCACertificate :: IsMTROperationalCredentialsClusterAddTrustedRootCertificateParams mtrOperationalCredentialsClusterAddTrustedRootCertificateParams => mtrOperationalCredentialsClusterAddTrustedRootCertificateParams -> IO (Id NSData)
-rootCACertificate mtrOperationalCredentialsClusterAddTrustedRootCertificateParams  =
-    sendMsg mtrOperationalCredentialsClusterAddTrustedRootCertificateParams (mkSelector "rootCACertificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootCACertificate mtrOperationalCredentialsClusterAddTrustedRootCertificateParams =
+  sendMessage mtrOperationalCredentialsClusterAddTrustedRootCertificateParams rootCACertificateSelector
 
 -- | @- setRootCACertificate:@
 setRootCACertificate :: (IsMTROperationalCredentialsClusterAddTrustedRootCertificateParams mtrOperationalCredentialsClusterAddTrustedRootCertificateParams, IsNSData value) => mtrOperationalCredentialsClusterAddTrustedRootCertificateParams -> value -> IO ()
-setRootCACertificate mtrOperationalCredentialsClusterAddTrustedRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddTrustedRootCertificateParams (mkSelector "setRootCACertificate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRootCACertificate mtrOperationalCredentialsClusterAddTrustedRootCertificateParams value =
+  sendMessage mtrOperationalCredentialsClusterAddTrustedRootCertificateParams setRootCACertificateSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -60,8 +56,8 @@ setRootCACertificate mtrOperationalCredentialsClusterAddTrustedRootCertificatePa
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROperationalCredentialsClusterAddTrustedRootCertificateParams mtrOperationalCredentialsClusterAddTrustedRootCertificateParams => mtrOperationalCredentialsClusterAddTrustedRootCertificateParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOperationalCredentialsClusterAddTrustedRootCertificateParams  =
-    sendMsg mtrOperationalCredentialsClusterAddTrustedRootCertificateParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOperationalCredentialsClusterAddTrustedRootCertificateParams =
+  sendMessage mtrOperationalCredentialsClusterAddTrustedRootCertificateParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,9 +67,8 @@ timedInvokeTimeoutMs mtrOperationalCredentialsClusterAddTrustedRootCertificatePa
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROperationalCredentialsClusterAddTrustedRootCertificateParams mtrOperationalCredentialsClusterAddTrustedRootCertificateParams, IsNSNumber value) => mtrOperationalCredentialsClusterAddTrustedRootCertificateParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterAddTrustedRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddTrustedRootCertificateParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterAddTrustedRootCertificateParams value =
+  sendMessage mtrOperationalCredentialsClusterAddTrustedRootCertificateParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -83,8 +78,8 @@ setTimedInvokeTimeoutMs mtrOperationalCredentialsClusterAddTrustedRootCertificat
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTROperationalCredentialsClusterAddTrustedRootCertificateParams mtrOperationalCredentialsClusterAddTrustedRootCertificateParams => mtrOperationalCredentialsClusterAddTrustedRootCertificateParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrOperationalCredentialsClusterAddTrustedRootCertificateParams  =
-    sendMsg mtrOperationalCredentialsClusterAddTrustedRootCertificateParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrOperationalCredentialsClusterAddTrustedRootCertificateParams =
+  sendMessage mtrOperationalCredentialsClusterAddTrustedRootCertificateParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,54 +89,52 @@ serverSideProcessingTimeout mtrOperationalCredentialsClusterAddTrustedRootCertif
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTROperationalCredentialsClusterAddTrustedRootCertificateParams mtrOperationalCredentialsClusterAddTrustedRootCertificateParams, IsNSNumber value) => mtrOperationalCredentialsClusterAddTrustedRootCertificateParams -> value -> IO ()
-setServerSideProcessingTimeout mtrOperationalCredentialsClusterAddTrustedRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddTrustedRootCertificateParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrOperationalCredentialsClusterAddTrustedRootCertificateParams value =
+  sendMessage mtrOperationalCredentialsClusterAddTrustedRootCertificateParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- | @- rootCertificate@
 rootCertificate :: IsMTROperationalCredentialsClusterAddTrustedRootCertificateParams mtrOperationalCredentialsClusterAddTrustedRootCertificateParams => mtrOperationalCredentialsClusterAddTrustedRootCertificateParams -> IO (Id NSData)
-rootCertificate mtrOperationalCredentialsClusterAddTrustedRootCertificateParams  =
-    sendMsg mtrOperationalCredentialsClusterAddTrustedRootCertificateParams (mkSelector "rootCertificate") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootCertificate mtrOperationalCredentialsClusterAddTrustedRootCertificateParams =
+  sendMessage mtrOperationalCredentialsClusterAddTrustedRootCertificateParams rootCertificateSelector
 
 -- | @- setRootCertificate:@
 setRootCertificate :: (IsMTROperationalCredentialsClusterAddTrustedRootCertificateParams mtrOperationalCredentialsClusterAddTrustedRootCertificateParams, IsNSData value) => mtrOperationalCredentialsClusterAddTrustedRootCertificateParams -> value -> IO ()
-setRootCertificate mtrOperationalCredentialsClusterAddTrustedRootCertificateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterAddTrustedRootCertificateParams (mkSelector "setRootCertificate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRootCertificate mtrOperationalCredentialsClusterAddTrustedRootCertificateParams value =
+  sendMessage mtrOperationalCredentialsClusterAddTrustedRootCertificateParams setRootCertificateSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rootCACertificate@
-rootCACertificateSelector :: Selector
+rootCACertificateSelector :: Selector '[] (Id NSData)
 rootCACertificateSelector = mkSelector "rootCACertificate"
 
 -- | @Selector@ for @setRootCACertificate:@
-setRootCACertificateSelector :: Selector
+setRootCACertificateSelector :: Selector '[Id NSData] ()
 setRootCACertificateSelector = mkSelector "setRootCACertificate:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 
 -- | @Selector@ for @rootCertificate@
-rootCertificateSelector :: Selector
+rootCertificateSelector :: Selector '[] (Id NSData)
 rootCertificateSelector = mkSelector "rootCertificate"
 
 -- | @Selector@ for @setRootCertificate:@
-setRootCertificateSelector :: Selector
+setRootCertificateSelector :: Selector '[Id NSData] ()
 setRootCertificateSelector = mkSelector "setRootCertificate:"
 

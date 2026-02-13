@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRServiceAreaClusterSkipAreaParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , skippedAreaSelector
-  , setSkippedAreaSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setSkippedAreaSelector
+  , setTimedInvokeTimeoutMsSelector
+  , skippedAreaSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- skippedArea@
 skippedArea :: IsMTRServiceAreaClusterSkipAreaParams mtrServiceAreaClusterSkipAreaParams => mtrServiceAreaClusterSkipAreaParams -> IO (Id NSNumber)
-skippedArea mtrServiceAreaClusterSkipAreaParams  =
-    sendMsg mtrServiceAreaClusterSkipAreaParams (mkSelector "skippedArea") (retPtr retVoid) [] >>= retainedObject . castPtr
+skippedArea mtrServiceAreaClusterSkipAreaParams =
+  sendMessage mtrServiceAreaClusterSkipAreaParams skippedAreaSelector
 
 -- | @- setSkippedArea:@
 setSkippedArea :: (IsMTRServiceAreaClusterSkipAreaParams mtrServiceAreaClusterSkipAreaParams, IsNSNumber value) => mtrServiceAreaClusterSkipAreaParams -> value -> IO ()
-setSkippedArea mtrServiceAreaClusterSkipAreaParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterSkipAreaParams (mkSelector "setSkippedArea:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSkippedArea mtrServiceAreaClusterSkipAreaParams value =
+  sendMessage mtrServiceAreaClusterSkipAreaParams setSkippedAreaSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setSkippedArea mtrServiceAreaClusterSkipAreaParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRServiceAreaClusterSkipAreaParams mtrServiceAreaClusterSkipAreaParams => mtrServiceAreaClusterSkipAreaParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrServiceAreaClusterSkipAreaParams  =
-    sendMsg mtrServiceAreaClusterSkipAreaParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrServiceAreaClusterSkipAreaParams =
+  sendMessage mtrServiceAreaClusterSkipAreaParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrServiceAreaClusterSkipAreaParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRServiceAreaClusterSkipAreaParams mtrServiceAreaClusterSkipAreaParams, IsNSNumber value) => mtrServiceAreaClusterSkipAreaParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrServiceAreaClusterSkipAreaParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterSkipAreaParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrServiceAreaClusterSkipAreaParams value =
+  sendMessage mtrServiceAreaClusterSkipAreaParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrServiceAreaClusterSkipAreaParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRServiceAreaClusterSkipAreaParams mtrServiceAreaClusterSkipAreaParams => mtrServiceAreaClusterSkipAreaParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrServiceAreaClusterSkipAreaParams  =
-    sendMsg mtrServiceAreaClusterSkipAreaParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrServiceAreaClusterSkipAreaParams =
+  sendMessage mtrServiceAreaClusterSkipAreaParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrServiceAreaClusterSkipAreaParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRServiceAreaClusterSkipAreaParams mtrServiceAreaClusterSkipAreaParams, IsNSNumber value) => mtrServiceAreaClusterSkipAreaParams -> value -> IO ()
-setServerSideProcessingTimeout mtrServiceAreaClusterSkipAreaParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrServiceAreaClusterSkipAreaParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrServiceAreaClusterSkipAreaParams value =
+  sendMessage mtrServiceAreaClusterSkipAreaParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @skippedArea@
-skippedAreaSelector :: Selector
+skippedAreaSelector :: Selector '[] (Id NSNumber)
 skippedAreaSelector = mkSelector "skippedArea"
 
 -- | @Selector@ for @setSkippedArea:@
-setSkippedAreaSelector :: Selector
+setSkippedAreaSelector :: Selector '[Id NSNumber] ()
 setSkippedAreaSelector = mkSelector "setSkippedArea:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

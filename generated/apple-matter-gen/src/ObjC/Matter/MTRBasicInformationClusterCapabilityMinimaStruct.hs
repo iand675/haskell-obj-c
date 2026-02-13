@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Matter.MTRBasicInformationClusterCapabilityMinimaStruct
   , setSubscriptionsPerFabric
   , caseSessionsPerFabricSelector
   , setCaseSessionsPerFabricSelector
-  , subscriptionsPerFabricSelector
   , setSubscriptionsPerFabricSelector
+  , subscriptionsPerFabricSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- caseSessionsPerFabric@
 caseSessionsPerFabric :: IsMTRBasicInformationClusterCapabilityMinimaStruct mtrBasicInformationClusterCapabilityMinimaStruct => mtrBasicInformationClusterCapabilityMinimaStruct -> IO (Id NSNumber)
-caseSessionsPerFabric mtrBasicInformationClusterCapabilityMinimaStruct  =
-    sendMsg mtrBasicInformationClusterCapabilityMinimaStruct (mkSelector "caseSessionsPerFabric") (retPtr retVoid) [] >>= retainedObject . castPtr
+caseSessionsPerFabric mtrBasicInformationClusterCapabilityMinimaStruct =
+  sendMessage mtrBasicInformationClusterCapabilityMinimaStruct caseSessionsPerFabricSelector
 
 -- | @- setCaseSessionsPerFabric:@
 setCaseSessionsPerFabric :: (IsMTRBasicInformationClusterCapabilityMinimaStruct mtrBasicInformationClusterCapabilityMinimaStruct, IsNSNumber value) => mtrBasicInformationClusterCapabilityMinimaStruct -> value -> IO ()
-setCaseSessionsPerFabric mtrBasicInformationClusterCapabilityMinimaStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBasicInformationClusterCapabilityMinimaStruct (mkSelector "setCaseSessionsPerFabric:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaseSessionsPerFabric mtrBasicInformationClusterCapabilityMinimaStruct value =
+  sendMessage mtrBasicInformationClusterCapabilityMinimaStruct setCaseSessionsPerFabricSelector (toNSNumber value)
 
 -- | @- subscriptionsPerFabric@
 subscriptionsPerFabric :: IsMTRBasicInformationClusterCapabilityMinimaStruct mtrBasicInformationClusterCapabilityMinimaStruct => mtrBasicInformationClusterCapabilityMinimaStruct -> IO (Id NSNumber)
-subscriptionsPerFabric mtrBasicInformationClusterCapabilityMinimaStruct  =
-    sendMsg mtrBasicInformationClusterCapabilityMinimaStruct (mkSelector "subscriptionsPerFabric") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionsPerFabric mtrBasicInformationClusterCapabilityMinimaStruct =
+  sendMessage mtrBasicInformationClusterCapabilityMinimaStruct subscriptionsPerFabricSelector
 
 -- | @- setSubscriptionsPerFabric:@
 setSubscriptionsPerFabric :: (IsMTRBasicInformationClusterCapabilityMinimaStruct mtrBasicInformationClusterCapabilityMinimaStruct, IsNSNumber value) => mtrBasicInformationClusterCapabilityMinimaStruct -> value -> IO ()
-setSubscriptionsPerFabric mtrBasicInformationClusterCapabilityMinimaStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBasicInformationClusterCapabilityMinimaStruct (mkSelector "setSubscriptionsPerFabric:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubscriptionsPerFabric mtrBasicInformationClusterCapabilityMinimaStruct value =
+  sendMessage mtrBasicInformationClusterCapabilityMinimaStruct setSubscriptionsPerFabricSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @caseSessionsPerFabric@
-caseSessionsPerFabricSelector :: Selector
+caseSessionsPerFabricSelector :: Selector '[] (Id NSNumber)
 caseSessionsPerFabricSelector = mkSelector "caseSessionsPerFabric"
 
 -- | @Selector@ for @setCaseSessionsPerFabric:@
-setCaseSessionsPerFabricSelector :: Selector
+setCaseSessionsPerFabricSelector :: Selector '[Id NSNumber] ()
 setCaseSessionsPerFabricSelector = mkSelector "setCaseSessionsPerFabric:"
 
 -- | @Selector@ for @subscriptionsPerFabric@
-subscriptionsPerFabricSelector :: Selector
+subscriptionsPerFabricSelector :: Selector '[] (Id NSNumber)
 subscriptionsPerFabricSelector = mkSelector "subscriptionsPerFabric"
 
 -- | @Selector@ for @setSubscriptionsPerFabric:@
-setSubscriptionsPerFabricSelector :: Selector
+setSubscriptionsPerFabricSelector :: Selector '[Id NSNumber] ()
 setSubscriptionsPerFabricSelector = mkSelector "setSubscriptionsPerFabric:"
 

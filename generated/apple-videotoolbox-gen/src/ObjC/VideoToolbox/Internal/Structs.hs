@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data VTDecompressionOutputCallbackRecord = VTDecompressionOutputCallbackRecord
   { vtDecompressionOutputCallbackRecordDecompressionOutputCallback :: !(Ptr ())
@@ -37,6 +39,16 @@ argVTDecompressionOutputCallbackRecord = mkStorableArg vtDecompressionOutputCall
 retVTDecompressionOutputCallbackRecord :: RetType VTDecompressionOutputCallbackRecord
 retVTDecompressionOutputCallbackRecord = mkStorableRetType vtDecompressionOutputCallbackRecordStructType
 
+instance ObjCArgument VTDecompressionOutputCallbackRecord where
+  withObjCArg x k = k (argVTDecompressionOutputCallbackRecord x)
+
+instance ObjCReturn VTDecompressionOutputCallbackRecord where
+  type RawReturn VTDecompressionOutputCallbackRecord = VTDecompressionOutputCallbackRecord
+  objcRetType = retVTDecompressionOutputCallbackRecord
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data VTInt32Point = VTInt32Point
   { vtInt32PointX :: !CInt
   , vtInt32PointY :: !CInt
@@ -61,6 +73,16 @@ argVTInt32Point = mkStorableArg vtInt32PointStructType
 retVTInt32Point :: RetType VTInt32Point
 retVTInt32Point = mkStorableRetType vtInt32PointStructType
 
+instance ObjCArgument VTInt32Point where
+  withObjCArg x k = k (argVTInt32Point x)
+
+instance ObjCReturn VTInt32Point where
+  type RawReturn VTInt32Point = VTInt32Point
+  objcRetType = retVTInt32Point
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data VTInt32Size = VTInt32Size
   { vtInt32SizeWidth :: !CInt
   , vtInt32SizeHeight :: !CInt
@@ -84,3 +106,13 @@ argVTInt32Size = mkStorableArg vtInt32SizeStructType
 
 retVTInt32Size :: RetType VTInt32Size
 retVTInt32Size = mkStorableRetType vtInt32SizeStructType
+
+instance ObjCArgument VTInt32Size where
+  withObjCArg x k = k (argVTInt32Size x)
+
+instance ObjCReturn VTInt32Size where
+  type RawReturn VTInt32Size = VTInt32Size
+  objcRetType = retVTInt32Size
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

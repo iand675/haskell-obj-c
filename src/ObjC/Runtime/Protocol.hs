@@ -52,7 +52,7 @@ foreign import ccall unsafe "objc_registerProtocol"
   c_objc_registerProtocol :: Protocol -> IO ()
 
 foreign import ccall unsafe "protocol_addMethodDescription"
-  c_protocol_addMethodDescription :: Protocol -> Selector -> CString -> ObjCBool -> ObjCBool -> IO ()
+  c_protocol_addMethodDescription :: Protocol -> Ptr ObjCSel -> CString -> ObjCBool -> ObjCBool -> IO ()
 
 foreign import ccall unsafe "protocol_addProtocol"
   c_protocol_addProtocol :: Protocol -> Protocol -> IO ()
@@ -127,8 +127,8 @@ objc_registerProtocol = c_objc_registerProtocol
 -- | Add a method description to a protocol.
 -- @isRequired@: whether the method is required.
 -- @isInstanceMethod@: whether it is an instance method (vs class method).
-protocol_addMethodDescription :: Protocol -> Selector -> CString -> Bool -> Bool -> IO ()
-protocol_addMethodDescription proto sel types isReq isInst =
+protocol_addMethodDescription :: Protocol -> Selector args ret -> CString -> Bool -> Bool -> IO ()
+protocol_addMethodDescription proto (Selector sel) types isReq isInst =
   c_protocol_addMethodDescription proto sel types (toObjCBool isReq) (toObjCBool isInst)
 
 -- | Add a protocol that this protocol conforms to.
@@ -169,14 +169,14 @@ protocol_copyMethodDescriptionList proto isReq isInst =
 -- Note: this function is not available via direct FFI because it returns
 -- a struct by value. Use 'protocol_copyMethodDescriptionList' and filter
 -- instead.
-protocol_getMethodDescription :: Protocol -> Selector -> Bool -> Bool -> IO (Maybe ObjCMethodDescription)
-protocol_getMethodDescription proto sel isReq isInst = do
+protocol_getMethodDescription :: Protocol -> Selector args ret -> Bool -> Bool -> IO (Maybe ObjCMethodDescription)
+protocol_getMethodDescription proto (Selector sel) isReq isInst = do
   descs <- protocol_copyMethodDescriptionList proto isReq isInst
   pure (findDesc descs)
   where
     findDesc [] = Nothing
     findDesc (d:ds)
-      | methodDescName d == sel = Just d
+      | unSelector (methodDescName d) == sel = Just d
       | otherwise = findDesc ds
 
 -- | Copy the list of properties declared by a protocol.

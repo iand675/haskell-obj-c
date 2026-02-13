@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRThermostatClusterSetActiveScheduleRequestParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , scheduleHandleSelector
-  , setScheduleHandleSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setScheduleHandleSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- scheduleHandle@
 scheduleHandle :: IsMTRThermostatClusterSetActiveScheduleRequestParams mtrThermostatClusterSetActiveScheduleRequestParams => mtrThermostatClusterSetActiveScheduleRequestParams -> IO (Id NSData)
-scheduleHandle mtrThermostatClusterSetActiveScheduleRequestParams  =
-    sendMsg mtrThermostatClusterSetActiveScheduleRequestParams (mkSelector "scheduleHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+scheduleHandle mtrThermostatClusterSetActiveScheduleRequestParams =
+  sendMessage mtrThermostatClusterSetActiveScheduleRequestParams scheduleHandleSelector
 
 -- | @- setScheduleHandle:@
 setScheduleHandle :: (IsMTRThermostatClusterSetActiveScheduleRequestParams mtrThermostatClusterSetActiveScheduleRequestParams, IsNSData value) => mtrThermostatClusterSetActiveScheduleRequestParams -> value -> IO ()
-setScheduleHandle mtrThermostatClusterSetActiveScheduleRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetActiveScheduleRequestParams (mkSelector "setScheduleHandle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScheduleHandle mtrThermostatClusterSetActiveScheduleRequestParams value =
+  sendMessage mtrThermostatClusterSetActiveScheduleRequestParams setScheduleHandleSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setScheduleHandle mtrThermostatClusterSetActiveScheduleRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRThermostatClusterSetActiveScheduleRequestParams mtrThermostatClusterSetActiveScheduleRequestParams => mtrThermostatClusterSetActiveScheduleRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrThermostatClusterSetActiveScheduleRequestParams  =
-    sendMsg mtrThermostatClusterSetActiveScheduleRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrThermostatClusterSetActiveScheduleRequestParams =
+  sendMessage mtrThermostatClusterSetActiveScheduleRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrThermostatClusterSetActiveScheduleRequestParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRThermostatClusterSetActiveScheduleRequestParams mtrThermostatClusterSetActiveScheduleRequestParams, IsNSNumber value) => mtrThermostatClusterSetActiveScheduleRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrThermostatClusterSetActiveScheduleRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetActiveScheduleRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrThermostatClusterSetActiveScheduleRequestParams value =
+  sendMessage mtrThermostatClusterSetActiveScheduleRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrThermostatClusterSetActiveScheduleRequestParams  valu
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRThermostatClusterSetActiveScheduleRequestParams mtrThermostatClusterSetActiveScheduleRequestParams => mtrThermostatClusterSetActiveScheduleRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrThermostatClusterSetActiveScheduleRequestParams  =
-    sendMsg mtrThermostatClusterSetActiveScheduleRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrThermostatClusterSetActiveScheduleRequestParams =
+  sendMessage mtrThermostatClusterSetActiveScheduleRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrThermostatClusterSetActiveScheduleRequestParams  
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRThermostatClusterSetActiveScheduleRequestParams mtrThermostatClusterSetActiveScheduleRequestParams, IsNSNumber value) => mtrThermostatClusterSetActiveScheduleRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrThermostatClusterSetActiveScheduleRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetActiveScheduleRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrThermostatClusterSetActiveScheduleRequestParams value =
+  sendMessage mtrThermostatClusterSetActiveScheduleRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scheduleHandle@
-scheduleHandleSelector :: Selector
+scheduleHandleSelector :: Selector '[] (Id NSData)
 scheduleHandleSelector = mkSelector "scheduleHandle"
 
 -- | @Selector@ for @setScheduleHandle:@
-setScheduleHandleSelector :: Selector
+setScheduleHandleSelector :: Selector '[Id NSData] ()
 setScheduleHandleSelector = mkSelector "setScheduleHandle:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.HealthKit.HKQuantitySample
   , quantityType
   , quantity
   , count
-  , quantitySampleWithType_quantity_startDate_endDateSelector
-  , quantitySampleWithType_quantity_startDate_endDate_metadataSelector
-  , quantitySampleWithType_quantity_startDate_endDate_device_metadataSelector
-  , quantityTypeSelector
-  , quantitySelector
   , countSelector
+  , quantitySampleWithType_quantity_startDate_endDateSelector
+  , quantitySampleWithType_quantity_startDate_endDate_device_metadataSelector
+  , quantitySampleWithType_quantity_startDate_endDate_metadataSelector
+  , quantitySelector
+  , quantityTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,11 +49,7 @@ quantitySampleWithType_quantity_startDate_endDate :: (IsHKQuantityType quantityT
 quantitySampleWithType_quantity_startDate_endDate quantityType quantity startDate endDate =
   do
     cls' <- getRequiredClass "HKQuantitySample"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr quantity $ \raw_quantity ->
-        withObjCPtr startDate $ \raw_startDate ->
-          withObjCPtr endDate $ \raw_endDate ->
-            sendClassMsg cls' (mkSelector "quantitySampleWithType:quantity:startDate:endDate:") (retPtr retVoid) [argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_quantity :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' quantitySampleWithType_quantity_startDate_endDateSelector (toHKQuantityType quantityType) (toHKQuantity quantity) (toNSDate startDate) (toNSDate endDate)
 
 -- | quantitySampleWithType:quantity:startDate:endDate:metadata:
 --
@@ -69,12 +62,7 @@ quantitySampleWithType_quantity_startDate_endDate_metadata :: (IsHKQuantityType 
 quantitySampleWithType_quantity_startDate_endDate_metadata quantityType quantity startDate endDate metadata =
   do
     cls' <- getRequiredClass "HKQuantitySample"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr quantity $ \raw_quantity ->
-        withObjCPtr startDate $ \raw_startDate ->
-          withObjCPtr endDate $ \raw_endDate ->
-            withObjCPtr metadata $ \raw_metadata ->
-              sendClassMsg cls' (mkSelector "quantitySampleWithType:quantity:startDate:endDate:metadata:") (retPtr retVoid) [argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_quantity :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' quantitySampleWithType_quantity_startDate_endDate_metadataSelector (toHKQuantityType quantityType) (toHKQuantity quantity) (toNSDate startDate) (toNSDate endDate) (toNSDictionary metadata)
 
 -- | quantitySampleWithType:quantity:startDate:endDate:device:metadata:
 --
@@ -97,23 +85,17 @@ quantitySampleWithType_quantity_startDate_endDate_device_metadata :: (IsHKQuanti
 quantitySampleWithType_quantity_startDate_endDate_device_metadata quantityType quantity startDate endDate device metadata =
   do
     cls' <- getRequiredClass "HKQuantitySample"
-    withObjCPtr quantityType $ \raw_quantityType ->
-      withObjCPtr quantity $ \raw_quantity ->
-        withObjCPtr startDate $ \raw_startDate ->
-          withObjCPtr endDate $ \raw_endDate ->
-            withObjCPtr device $ \raw_device ->
-              withObjCPtr metadata $ \raw_metadata ->
-                sendClassMsg cls' (mkSelector "quantitySampleWithType:quantity:startDate:endDate:device:metadata:") (retPtr retVoid) [argPtr (castPtr raw_quantityType :: Ptr ()), argPtr (castPtr raw_quantity :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' quantitySampleWithType_quantity_startDate_endDate_device_metadataSelector (toHKQuantityType quantityType) (toHKQuantity quantity) (toNSDate startDate) (toNSDate endDate) (toHKDevice device) (toNSDictionary metadata)
 
 -- | @- quantityType@
 quantityType :: IsHKQuantitySample hkQuantitySample => hkQuantitySample -> IO (Id HKQuantityType)
-quantityType hkQuantitySample  =
-    sendMsg hkQuantitySample (mkSelector "quantityType") (retPtr retVoid) [] >>= retainedObject . castPtr
+quantityType hkQuantitySample =
+  sendMessage hkQuantitySample quantityTypeSelector
 
 -- | @- quantity@
 quantity :: IsHKQuantitySample hkQuantitySample => hkQuantitySample -> IO (Id HKQuantity)
-quantity hkQuantitySample  =
-    sendMsg hkQuantitySample (mkSelector "quantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+quantity hkQuantitySample =
+  sendMessage hkQuantitySample quantitySelector
 
 -- | count
 --
@@ -123,34 +105,34 @@ quantity hkQuantitySample  =
 --
 -- ObjC selector: @- count@
 count :: IsHKQuantitySample hkQuantitySample => hkQuantitySample -> IO CLong
-count hkQuantitySample  =
-    sendMsg hkQuantitySample (mkSelector "count") retCLong []
+count hkQuantitySample =
+  sendMessage hkQuantitySample countSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @quantitySampleWithType:quantity:startDate:endDate:@
-quantitySampleWithType_quantity_startDate_endDateSelector :: Selector
+quantitySampleWithType_quantity_startDate_endDateSelector :: Selector '[Id HKQuantityType, Id HKQuantity, Id NSDate, Id NSDate] (Id HKQuantitySample)
 quantitySampleWithType_quantity_startDate_endDateSelector = mkSelector "quantitySampleWithType:quantity:startDate:endDate:"
 
 -- | @Selector@ for @quantitySampleWithType:quantity:startDate:endDate:metadata:@
-quantitySampleWithType_quantity_startDate_endDate_metadataSelector :: Selector
+quantitySampleWithType_quantity_startDate_endDate_metadataSelector :: Selector '[Id HKQuantityType, Id HKQuantity, Id NSDate, Id NSDate, Id NSDictionary] (Id HKQuantitySample)
 quantitySampleWithType_quantity_startDate_endDate_metadataSelector = mkSelector "quantitySampleWithType:quantity:startDate:endDate:metadata:"
 
 -- | @Selector@ for @quantitySampleWithType:quantity:startDate:endDate:device:metadata:@
-quantitySampleWithType_quantity_startDate_endDate_device_metadataSelector :: Selector
+quantitySampleWithType_quantity_startDate_endDate_device_metadataSelector :: Selector '[Id HKQuantityType, Id HKQuantity, Id NSDate, Id NSDate, Id HKDevice, Id NSDictionary] (Id HKQuantitySample)
 quantitySampleWithType_quantity_startDate_endDate_device_metadataSelector = mkSelector "quantitySampleWithType:quantity:startDate:endDate:device:metadata:"
 
 -- | @Selector@ for @quantityType@
-quantityTypeSelector :: Selector
+quantityTypeSelector :: Selector '[] (Id HKQuantityType)
 quantityTypeSelector = mkSelector "quantityType"
 
 -- | @Selector@ for @quantity@
-quantitySelector :: Selector
+quantitySelector :: Selector '[] (Id HKQuantity)
 quantitySelector = mkSelector "quantity"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CLong
 countSelector = mkSelector "count"
 

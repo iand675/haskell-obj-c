@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.AVFoundation.AVCaptionFormatConformer
   , conformedCaptionForCaption_error
   , conformsCaptionsToTimeRange
   , setConformsCaptionsToTimeRange
-  , initSelector
-  , newSelector
   , captionFormatConformerWithConversionSettingsSelector
-  , initWithConversionSettingsSelector
   , conformedCaptionForCaption_errorSelector
   , conformsCaptionsToTimeRangeSelector
+  , initSelector
+  , initWithConversionSettingsSelector
+  , newSelector
   , setConformsCaptionsToTimeRangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptionFormatConformer avCaptionFormatConformer => avCaptionFormatConformer -> IO (Id AVCaptionFormatConformer)
-init_ avCaptionFormatConformer  =
-    sendMsg avCaptionFormatConformer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptionFormatConformer =
+  sendOwnedMessage avCaptionFormatConformer initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptionFormatConformer)
 new  =
   do
     cls' <- getRequiredClass "AVCaptionFormatConformer"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | captionFormatConformerWithConversionSettings:conversionSettings:
 --
@@ -68,8 +65,7 @@ captionFormatConformerWithConversionSettings :: IsNSDictionary conversionSetting
 captionFormatConformerWithConversionSettings conversionSettings =
   do
     cls' <- getRequiredClass "AVCaptionFormatConformer"
-    withObjCPtr conversionSettings $ \raw_conversionSettings ->
-      sendClassMsg cls' (mkSelector "captionFormatConformerWithConversionSettings:") (retPtr retVoid) [argPtr (castPtr raw_conversionSettings :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' captionFormatConformerWithConversionSettingsSelector (toNSDictionary conversionSettings)
 
 -- | initWithConversionSettings:conversionSettings:
 --
@@ -83,9 +79,8 @@ captionFormatConformerWithConversionSettings conversionSettings =
 --
 -- ObjC selector: @- initWithConversionSettings:@
 initWithConversionSettings :: (IsAVCaptionFormatConformer avCaptionFormatConformer, IsNSDictionary conversionSettings) => avCaptionFormatConformer -> conversionSettings -> IO (Id AVCaptionFormatConformer)
-initWithConversionSettings avCaptionFormatConformer  conversionSettings =
-  withObjCPtr conversionSettings $ \raw_conversionSettings ->
-      sendMsg avCaptionFormatConformer (mkSelector "initWithConversionSettings:") (retPtr retVoid) [argPtr (castPtr raw_conversionSettings :: Ptr ())] >>= ownedObject . castPtr
+initWithConversionSettings avCaptionFormatConformer conversionSettings =
+  sendOwnedMessage avCaptionFormatConformer initWithConversionSettingsSelector (toNSDictionary conversionSettings)
 
 -- | conformedCaptionForCaption:error:
 --
@@ -99,10 +94,8 @@ initWithConversionSettings avCaptionFormatConformer  conversionSettings =
 --
 -- ObjC selector: @- conformedCaptionForCaption:error:@
 conformedCaptionForCaption_error :: (IsAVCaptionFormatConformer avCaptionFormatConformer, IsAVCaption caption, IsNSError outError) => avCaptionFormatConformer -> caption -> outError -> IO (Id AVCaption)
-conformedCaptionForCaption_error avCaptionFormatConformer  caption outError =
-  withObjCPtr caption $ \raw_caption ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg avCaptionFormatConformer (mkSelector "conformedCaptionForCaption:error:") (retPtr retVoid) [argPtr (castPtr raw_caption :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+conformedCaptionForCaption_error avCaptionFormatConformer caption outError =
+  sendMessage avCaptionFormatConformer conformedCaptionForCaption_errorSelector (toAVCaption caption) (toNSError outError)
 
 -- | conformsCaptionsToTimeRange
 --
@@ -112,8 +105,8 @@ conformedCaptionForCaption_error avCaptionFormatConformer  caption outError =
 --
 -- ObjC selector: @- conformsCaptionsToTimeRange@
 conformsCaptionsToTimeRange :: IsAVCaptionFormatConformer avCaptionFormatConformer => avCaptionFormatConformer -> IO Bool
-conformsCaptionsToTimeRange avCaptionFormatConformer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptionFormatConformer (mkSelector "conformsCaptionsToTimeRange") retCULong []
+conformsCaptionsToTimeRange avCaptionFormatConformer =
+  sendMessage avCaptionFormatConformer conformsCaptionsToTimeRangeSelector
 
 -- | conformsCaptionsToTimeRange
 --
@@ -123,38 +116,38 @@ conformsCaptionsToTimeRange avCaptionFormatConformer  =
 --
 -- ObjC selector: @- setConformsCaptionsToTimeRange:@
 setConformsCaptionsToTimeRange :: IsAVCaptionFormatConformer avCaptionFormatConformer => avCaptionFormatConformer -> Bool -> IO ()
-setConformsCaptionsToTimeRange avCaptionFormatConformer  value =
-    sendMsg avCaptionFormatConformer (mkSelector "setConformsCaptionsToTimeRange:") retVoid [argCULong (if value then 1 else 0)]
+setConformsCaptionsToTimeRange avCaptionFormatConformer value =
+  sendMessage avCaptionFormatConformer setConformsCaptionsToTimeRangeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptionFormatConformer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptionFormatConformer)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @captionFormatConformerWithConversionSettings:@
-captionFormatConformerWithConversionSettingsSelector :: Selector
+captionFormatConformerWithConversionSettingsSelector :: Selector '[Id NSDictionary] (Id AVCaptionFormatConformer)
 captionFormatConformerWithConversionSettingsSelector = mkSelector "captionFormatConformerWithConversionSettings:"
 
 -- | @Selector@ for @initWithConversionSettings:@
-initWithConversionSettingsSelector :: Selector
+initWithConversionSettingsSelector :: Selector '[Id NSDictionary] (Id AVCaptionFormatConformer)
 initWithConversionSettingsSelector = mkSelector "initWithConversionSettings:"
 
 -- | @Selector@ for @conformedCaptionForCaption:error:@
-conformedCaptionForCaption_errorSelector :: Selector
+conformedCaptionForCaption_errorSelector :: Selector '[Id AVCaption, Id NSError] (Id AVCaption)
 conformedCaptionForCaption_errorSelector = mkSelector "conformedCaptionForCaption:error:"
 
 -- | @Selector@ for @conformsCaptionsToTimeRange@
-conformsCaptionsToTimeRangeSelector :: Selector
+conformsCaptionsToTimeRangeSelector :: Selector '[] Bool
 conformsCaptionsToTimeRangeSelector = mkSelector "conformsCaptionsToTimeRange"
 
 -- | @Selector@ for @setConformsCaptionsToTimeRange:@
-setConformsCaptionsToTimeRangeSelector :: Selector
+setConformsCaptionsToTimeRangeSelector :: Selector '[Bool] ()
 setConformsCaptionsToTimeRangeSelector = mkSelector "setConformsCaptionsToTimeRange:"
 

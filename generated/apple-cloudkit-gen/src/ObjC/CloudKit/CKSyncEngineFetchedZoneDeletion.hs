@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,8 +14,8 @@ module ObjC.CloudKit.CKSyncEngineFetchedZoneDeletion
   , reason
   , initSelector
   , newSelector
-  , zoneIDSelector
   , reasonSelector
+  , zoneIDSelector
 
   -- * Enum types
   , CKSyncEngineZoneDeletionReason(CKSyncEngineZoneDeletionReason)
@@ -24,15 +25,11 @@ module ObjC.CloudKit.CKSyncEngineFetchedZoneDeletion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,43 +39,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKSyncEngineFetchedZoneDeletion ckSyncEngineFetchedZoneDeletion => ckSyncEngineFetchedZoneDeletion -> IO (Id CKSyncEngineFetchedZoneDeletion)
-init_ ckSyncEngineFetchedZoneDeletion  =
-    sendMsg ckSyncEngineFetchedZoneDeletion (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEngineFetchedZoneDeletion =
+  sendOwnedMessage ckSyncEngineFetchedZoneDeletion initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEngineFetchedZoneDeletion)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEngineFetchedZoneDeletion"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- zoneID@
 zoneID :: IsCKSyncEngineFetchedZoneDeletion ckSyncEngineFetchedZoneDeletion => ckSyncEngineFetchedZoneDeletion -> IO (Id CKRecordZoneID)
-zoneID ckSyncEngineFetchedZoneDeletion  =
-    sendMsg ckSyncEngineFetchedZoneDeletion (mkSelector "zoneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+zoneID ckSyncEngineFetchedZoneDeletion =
+  sendMessage ckSyncEngineFetchedZoneDeletion zoneIDSelector
 
 -- | @- reason@
 reason :: IsCKSyncEngineFetchedZoneDeletion ckSyncEngineFetchedZoneDeletion => ckSyncEngineFetchedZoneDeletion -> IO CKSyncEngineZoneDeletionReason
-reason ckSyncEngineFetchedZoneDeletion  =
-    fmap (coerce :: CLong -> CKSyncEngineZoneDeletionReason) $ sendMsg ckSyncEngineFetchedZoneDeletion (mkSelector "reason") retCLong []
+reason ckSyncEngineFetchedZoneDeletion =
+  sendMessage ckSyncEngineFetchedZoneDeletion reasonSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEngineFetchedZoneDeletion)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEngineFetchedZoneDeletion)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @zoneID@
-zoneIDSelector :: Selector
+zoneIDSelector :: Selector '[] (Id CKRecordZoneID)
 zoneIDSelector = mkSelector "zoneID"
 
 -- | @Selector@ for @reason@
-reasonSelector :: Selector
+reasonSelector :: Selector '[] CKSyncEngineZoneDeletionReason
 reasonSelector = mkSelector "reason"
 

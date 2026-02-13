@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Virtualization.VZSharedDirectory
   , initWithURL_readOnly
   , url
   , readOnly
-  , newSelector
   , initSelector
   , initWithURL_readOnlySelector
-  , urlSelector
+  , newSelector
   , readOnlySelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,12 +39,12 @@ new :: IO (Id VZSharedDirectory)
 new  =
   do
     cls' <- getRequiredClass "VZSharedDirectory"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZSharedDirectory vzSharedDirectory => vzSharedDirectory -> IO (Id VZSharedDirectory)
-init_ vzSharedDirectory  =
-    sendMsg vzSharedDirectory (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzSharedDirectory =
+  sendOwnedMessage vzSharedDirectory initSelector
 
 -- | Initialize with a host directory.
 --
@@ -57,9 +54,8 @@ init_ vzSharedDirectory  =
 --
 -- ObjC selector: @- initWithURL:readOnly:@
 initWithURL_readOnly :: (IsVZSharedDirectory vzSharedDirectory, IsNSURL url) => vzSharedDirectory -> url -> Bool -> IO (Id VZSharedDirectory)
-initWithURL_readOnly vzSharedDirectory  url readOnly =
-  withObjCPtr url $ \raw_url ->
-      sendMsg vzSharedDirectory (mkSelector "initWithURL:readOnly:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (if readOnly then 1 else 0)] >>= ownedObject . castPtr
+initWithURL_readOnly vzSharedDirectory url readOnly =
+  sendOwnedMessage vzSharedDirectory initWithURL_readOnlySelector (toNSURL url) readOnly
 
 -- | File URL to a directory on the host to expose to the guest.
 --
@@ -67,37 +63,37 @@ initWithURL_readOnly vzSharedDirectory  url readOnly =
 --
 -- ObjC selector: @- URL@
 url :: IsVZSharedDirectory vzSharedDirectory => vzSharedDirectory -> IO (Id NSURL)
-url vzSharedDirectory  =
-    sendMsg vzSharedDirectory (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url vzSharedDirectory =
+  sendMessage vzSharedDirectory urlSelector
 
 -- | Whether or not the directory will be exposed as read-only to the guest.
 --
 -- ObjC selector: @- readOnly@
 readOnly :: IsVZSharedDirectory vzSharedDirectory => vzSharedDirectory -> IO Bool
-readOnly vzSharedDirectory  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzSharedDirectory (mkSelector "readOnly") retCULong []
+readOnly vzSharedDirectory =
+  sendMessage vzSharedDirectory readOnlySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZSharedDirectory)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZSharedDirectory)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithURL:readOnly:@
-initWithURL_readOnlySelector :: Selector
+initWithURL_readOnlySelector :: Selector '[Id NSURL, Bool] (Id VZSharedDirectory)
 initWithURL_readOnlySelector = mkSelector "initWithURL:readOnly:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @readOnly@
-readOnlySelector :: Selector
+readOnlySelector :: Selector '[] Bool
 readOnlySelector = mkSelector "readOnly"
 

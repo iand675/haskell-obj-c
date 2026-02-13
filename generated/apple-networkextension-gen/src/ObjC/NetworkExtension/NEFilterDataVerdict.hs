@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,13 +23,13 @@ module ObjC.NetworkExtension.NEFilterDataVerdict
   , statisticsReportFrequency
   , setStatisticsReportFrequency
   , allowVerdictSelector
-  , dropVerdictSelector
-  , remediateVerdictWithRemediationURLMapKey_remediationButtonTextMapKeySelector
   , dataVerdictWithPassBytes_peekBytesSelector
+  , dropVerdictSelector
   , needRulesVerdictSelector
   , pauseVerdictSelector
-  , statisticsReportFrequencySelector
+  , remediateVerdictWithRemediationURLMapKey_remediationButtonTextMapKeySelector
   , setStatisticsReportFrequencySelector
+  , statisticsReportFrequencySelector
 
   -- * Enum types
   , NEFilterReportFrequency(NEFilterReportFrequency)
@@ -39,15 +40,11 @@ module ObjC.NetworkExtension.NEFilterDataVerdict
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,7 +63,7 @@ allowVerdict :: IO (Id NEFilterDataVerdict)
 allowVerdict  =
   do
     cls' <- getRequiredClass "NEFilterDataVerdict"
-    sendClassMsg cls' (mkSelector "allowVerdict") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' allowVerdictSelector
 
 -- | dropVerdict
 --
@@ -79,7 +76,7 @@ dropVerdict :: IO (Id NEFilterDataVerdict)
 dropVerdict  =
   do
     cls' <- getRequiredClass "NEFilterDataVerdict"
-    sendClassMsg cls' (mkSelector "dropVerdict") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' dropVerdictSelector
 
 -- | remediateVerdictWithRemediationURLMapKey:remediationButtonTextMapKey:
 --
@@ -96,9 +93,7 @@ remediateVerdictWithRemediationURLMapKey_remediationButtonTextMapKey :: (IsNSStr
 remediateVerdictWithRemediationURLMapKey_remediationButtonTextMapKey remediationURLMapKey remediationButtonTextMapKey =
   do
     cls' <- getRequiredClass "NEFilterDataVerdict"
-    withObjCPtr remediationURLMapKey $ \raw_remediationURLMapKey ->
-      withObjCPtr remediationButtonTextMapKey $ \raw_remediationButtonTextMapKey ->
-        sendClassMsg cls' (mkSelector "remediateVerdictWithRemediationURLMapKey:remediationButtonTextMapKey:") (retPtr retVoid) [argPtr (castPtr raw_remediationURLMapKey :: Ptr ()), argPtr (castPtr raw_remediationButtonTextMapKey :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' remediateVerdictWithRemediationURLMapKey_remediationButtonTextMapKeySelector (toNSString remediationURLMapKey) (toNSString remediationButtonTextMapKey)
 
 -- | dataVerdictWithPassBytes:peekBytes:
 --
@@ -115,7 +110,7 @@ dataVerdictWithPassBytes_peekBytes :: CULong -> CULong -> IO (Id NEFilterDataVer
 dataVerdictWithPassBytes_peekBytes passBytes peekBytes =
   do
     cls' <- getRequiredClass "NEFilterDataVerdict"
-    sendClassMsg cls' (mkSelector "dataVerdictWithPassBytes:peekBytes:") (retPtr retVoid) [argCULong passBytes, argCULong peekBytes] >>= retainedObject . castPtr
+    sendClassMessage cls' dataVerdictWithPassBytes_peekBytesSelector passBytes peekBytes
 
 -- | needRulesVerdict
 --
@@ -128,7 +123,7 @@ needRulesVerdict :: IO (Id NEFilterDataVerdict)
 needRulesVerdict  =
   do
     cls' <- getRequiredClass "NEFilterDataVerdict"
-    sendClassMsg cls' (mkSelector "needRulesVerdict") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' needRulesVerdictSelector
 
 -- | pauseVerdict
 --
@@ -141,7 +136,7 @@ pauseVerdict :: IO (Id NEFilterDataVerdict)
 pauseVerdict  =
   do
     cls' <- getRequiredClass "NEFilterDataVerdict"
-    sendClassMsg cls' (mkSelector "pauseVerdict") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pauseVerdictSelector
 
 -- | statisticsReportFrequency
 --
@@ -149,8 +144,8 @@ pauseVerdict  =
 --
 -- ObjC selector: @- statisticsReportFrequency@
 statisticsReportFrequency :: IsNEFilterDataVerdict neFilterDataVerdict => neFilterDataVerdict -> IO NEFilterReportFrequency
-statisticsReportFrequency neFilterDataVerdict  =
-    fmap (coerce :: CLong -> NEFilterReportFrequency) $ sendMsg neFilterDataVerdict (mkSelector "statisticsReportFrequency") retCLong []
+statisticsReportFrequency neFilterDataVerdict =
+  sendMessage neFilterDataVerdict statisticsReportFrequencySelector
 
 -- | statisticsReportFrequency
 --
@@ -158,42 +153,42 @@ statisticsReportFrequency neFilterDataVerdict  =
 --
 -- ObjC selector: @- setStatisticsReportFrequency:@
 setStatisticsReportFrequency :: IsNEFilterDataVerdict neFilterDataVerdict => neFilterDataVerdict -> NEFilterReportFrequency -> IO ()
-setStatisticsReportFrequency neFilterDataVerdict  value =
-    sendMsg neFilterDataVerdict (mkSelector "setStatisticsReportFrequency:") retVoid [argCLong (coerce value)]
+setStatisticsReportFrequency neFilterDataVerdict value =
+  sendMessage neFilterDataVerdict setStatisticsReportFrequencySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @allowVerdict@
-allowVerdictSelector :: Selector
+allowVerdictSelector :: Selector '[] (Id NEFilterDataVerdict)
 allowVerdictSelector = mkSelector "allowVerdict"
 
 -- | @Selector@ for @dropVerdict@
-dropVerdictSelector :: Selector
+dropVerdictSelector :: Selector '[] (Id NEFilterDataVerdict)
 dropVerdictSelector = mkSelector "dropVerdict"
 
 -- | @Selector@ for @remediateVerdictWithRemediationURLMapKey:remediationButtonTextMapKey:@
-remediateVerdictWithRemediationURLMapKey_remediationButtonTextMapKeySelector :: Selector
+remediateVerdictWithRemediationURLMapKey_remediationButtonTextMapKeySelector :: Selector '[Id NSString, Id NSString] (Id NEFilterDataVerdict)
 remediateVerdictWithRemediationURLMapKey_remediationButtonTextMapKeySelector = mkSelector "remediateVerdictWithRemediationURLMapKey:remediationButtonTextMapKey:"
 
 -- | @Selector@ for @dataVerdictWithPassBytes:peekBytes:@
-dataVerdictWithPassBytes_peekBytesSelector :: Selector
+dataVerdictWithPassBytes_peekBytesSelector :: Selector '[CULong, CULong] (Id NEFilterDataVerdict)
 dataVerdictWithPassBytes_peekBytesSelector = mkSelector "dataVerdictWithPassBytes:peekBytes:"
 
 -- | @Selector@ for @needRulesVerdict@
-needRulesVerdictSelector :: Selector
+needRulesVerdictSelector :: Selector '[] (Id NEFilterDataVerdict)
 needRulesVerdictSelector = mkSelector "needRulesVerdict"
 
 -- | @Selector@ for @pauseVerdict@
-pauseVerdictSelector :: Selector
+pauseVerdictSelector :: Selector '[] (Id NEFilterDataVerdict)
 pauseVerdictSelector = mkSelector "pauseVerdict"
 
 -- | @Selector@ for @statisticsReportFrequency@
-statisticsReportFrequencySelector :: Selector
+statisticsReportFrequencySelector :: Selector '[] NEFilterReportFrequency
 statisticsReportFrequencySelector = mkSelector "statisticsReportFrequency"
 
 -- | @Selector@ for @setStatisticsReportFrequency:@
-setStatisticsReportFrequencySelector :: Selector
+setStatisticsReportFrequencySelector :: Selector '[NEFilterReportFrequency] ()
 setStatisticsReportFrequencySelector = mkSelector "setStatisticsReportFrequency:"
 

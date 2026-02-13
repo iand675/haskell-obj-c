@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,14 +18,14 @@ module ObjC.CryptoTokenKit.TKSmartCardATR
   , protocols
   , historicalBytes
   , historicalRecords
+  , bytesSelector
+  , historicalBytesSelector
+  , historicalRecordsSelector
   , initWithBytesSelector
   , initWithSourceSelector
   , interfaceGroupAtIndexSelector
   , interfaceGroupForProtocolSelector
-  , bytesSelector
   , protocolsSelector
-  , historicalBytesSelector
-  , historicalRecordsSelector
 
   -- * Enum types
   , TKSmartCardProtocol(TKSmartCardProtocol)
@@ -36,15 +37,11 @@ module ObjC.CryptoTokenKit.TKSmartCardATR
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,9 +57,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithBytes:@
 initWithBytes :: (IsTKSmartCardATR tkSmartCardATR, IsNSData bytes) => tkSmartCardATR -> bytes -> IO (Id TKSmartCardATR)
-initWithBytes tkSmartCardATR  bytes =
-  withObjCPtr bytes $ \raw_bytes ->
-      sendMsg tkSmartCardATR (mkSelector "initWithBytes:") (retPtr retVoid) [argPtr (castPtr raw_bytes :: Ptr ())] >>= ownedObject . castPtr
+initWithBytes tkSmartCardATR bytes =
+  sendOwnedMessage tkSmartCardATR initWithBytesSelector (toNSData bytes)
 
 -- | Parses ATR from stream.
 --
@@ -72,8 +68,8 @@ initWithBytes tkSmartCardATR  bytes =
 --
 -- ObjC selector: @- initWithSource:@
 initWithSource :: IsTKSmartCardATR tkSmartCardATR => tkSmartCardATR -> Ptr () -> IO (Id TKSmartCardATR)
-initWithSource tkSmartCardATR  source =
-    sendMsg tkSmartCardATR (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr source :: Ptr ())] >>= ownedObject . castPtr
+initWithSource tkSmartCardATR source =
+  sendOwnedMessage tkSmartCardATR initWithSourceSelector source
 
 -- | Retrieves interface group with specified index.
 --
@@ -83,36 +79,36 @@ initWithSource tkSmartCardATR  source =
 --
 -- ObjC selector: @- interfaceGroupAtIndex:@
 interfaceGroupAtIndex :: IsTKSmartCardATR tkSmartCardATR => tkSmartCardATR -> CLong -> IO (Id TKSmartCardATRInterfaceGroup)
-interfaceGroupAtIndex tkSmartCardATR  index =
-    sendMsg tkSmartCardATR (mkSelector "interfaceGroupAtIndex:") (retPtr retVoid) [argCLong index] >>= retainedObject . castPtr
+interfaceGroupAtIndex tkSmartCardATR index =
+  sendMessage tkSmartCardATR interfaceGroupAtIndexSelector index
 
 -- | @protocol@ — Protocol number for which the interface group is requested.
 --
 -- ObjC selector: @- interfaceGroupForProtocol:@
 interfaceGroupForProtocol :: IsTKSmartCardATR tkSmartCardATR => tkSmartCardATR -> TKSmartCardProtocol -> IO (Id TKSmartCardATRInterfaceGroup)
-interfaceGroupForProtocol tkSmartCardATR  protocol =
-    sendMsg tkSmartCardATR (mkSelector "interfaceGroupForProtocol:") (retPtr retVoid) [argCULong (coerce protocol)] >>= retainedObject . castPtr
+interfaceGroupForProtocol tkSmartCardATR protocol =
+  sendMessage tkSmartCardATR interfaceGroupForProtocolSelector protocol
 
 -- | Full ATR as string of bytes
 --
 -- ObjC selector: @- bytes@
 bytes :: IsTKSmartCardATR tkSmartCardATR => tkSmartCardATR -> IO (Id NSData)
-bytes tkSmartCardATR  =
-    sendMsg tkSmartCardATR (mkSelector "bytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+bytes tkSmartCardATR =
+  sendMessage tkSmartCardATR bytesSelector
 
 -- | Array of NSNumber of protocols indicated in ATR, in the correct order (i.e. the default protocol comes first), duplicates sorted out.
 --
 -- ObjC selector: @- protocols@
 protocols :: IsTKSmartCardATR tkSmartCardATR => tkSmartCardATR -> IO (Id NSArray)
-protocols tkSmartCardATR  =
-    sendMsg tkSmartCardATR (mkSelector "protocols") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocols tkSmartCardATR =
+  sendMessage tkSmartCardATR protocolsSelector
 
 -- | Just historical bytes of ATR, without Tck and interface bytes.
 --
 -- ObjC selector: @- historicalBytes@
 historicalBytes :: IsTKSmartCardATR tkSmartCardATR => tkSmartCardATR -> IO (Id NSData)
-historicalBytes tkSmartCardATR  =
-    sendMsg tkSmartCardATR (mkSelector "historicalBytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+historicalBytes tkSmartCardATR =
+  sendMessage tkSmartCardATR historicalBytesSelector
 
 -- | An array of TKCompactTLVRecord instances with TLV records parsed from historical bytes.  If historical bytes are not structured using Compact TLV encoding, nil is returned.
 --
@@ -120,42 +116,42 @@ historicalBytes tkSmartCardATR  =
 --
 -- ObjC selector: @- historicalRecords@
 historicalRecords :: IsTKSmartCardATR tkSmartCardATR => tkSmartCardATR -> IO (Id NSArray)
-historicalRecords tkSmartCardATR  =
-    sendMsg tkSmartCardATR (mkSelector "historicalRecords") (retPtr retVoid) [] >>= retainedObject . castPtr
+historicalRecords tkSmartCardATR =
+  sendMessage tkSmartCardATR historicalRecordsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBytes:@
-initWithBytesSelector :: Selector
+initWithBytesSelector :: Selector '[Id NSData] (Id TKSmartCardATR)
 initWithBytesSelector = mkSelector "initWithBytes:"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Ptr ()] (Id TKSmartCardATR)
 initWithSourceSelector = mkSelector "initWithSource:"
 
 -- | @Selector@ for @interfaceGroupAtIndex:@
-interfaceGroupAtIndexSelector :: Selector
+interfaceGroupAtIndexSelector :: Selector '[CLong] (Id TKSmartCardATRInterfaceGroup)
 interfaceGroupAtIndexSelector = mkSelector "interfaceGroupAtIndex:"
 
 -- | @Selector@ for @interfaceGroupForProtocol:@
-interfaceGroupForProtocolSelector :: Selector
+interfaceGroupForProtocolSelector :: Selector '[TKSmartCardProtocol] (Id TKSmartCardATRInterfaceGroup)
 interfaceGroupForProtocolSelector = mkSelector "interfaceGroupForProtocol:"
 
 -- | @Selector@ for @bytes@
-bytesSelector :: Selector
+bytesSelector :: Selector '[] (Id NSData)
 bytesSelector = mkSelector "bytes"
 
 -- | @Selector@ for @protocols@
-protocolsSelector :: Selector
+protocolsSelector :: Selector '[] (Id NSArray)
 protocolsSelector = mkSelector "protocols"
 
 -- | @Selector@ for @historicalBytes@
-historicalBytesSelector :: Selector
+historicalBytesSelector :: Selector '[] (Id NSData)
 historicalBytesSelector = mkSelector "historicalBytes"
 
 -- | @Selector@ for @historicalRecords@
-historicalRecordsSelector :: Selector
+historicalRecordsSelector :: Selector '[] (Id NSArray)
 historicalRecordsSelector = mkSelector "historicalRecords"
 

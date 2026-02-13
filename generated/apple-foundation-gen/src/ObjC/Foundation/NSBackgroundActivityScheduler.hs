@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.Foundation.NSBackgroundActivityScheduler
   , tolerance
   , setTolerance
   , shouldDefer
-  , initWithIdentifierSelector
-  , scheduleWithBlockSelector
-  , invalidateSelector
   , identifierSelector
-  , qualityOfServiceSelector
-  , setQualityOfServiceSelector
-  , repeatsSelector
-  , setRepeatsSelector
+  , initWithIdentifierSelector
   , intervalSelector
+  , invalidateSelector
+  , qualityOfServiceSelector
+  , repeatsSelector
+  , scheduleWithBlockSelector
   , setIntervalSelector
-  , toleranceSelector
+  , setQualityOfServiceSelector
+  , setRepeatsSelector
   , setToleranceSelector
   , shouldDeferSelector
+  , toleranceSelector
 
   -- * Enum types
   , NSQualityOfService(NSQualityOfService)
@@ -44,15 +45,11 @@ module ObjC.Foundation.NSBackgroundActivityScheduler
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,123 +58,122 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithIdentifier:@
 initWithIdentifier :: (IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler, IsNSString identifier) => nsBackgroundActivityScheduler -> identifier -> IO (Id NSBackgroundActivityScheduler)
-initWithIdentifier nsBackgroundActivityScheduler  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg nsBackgroundActivityScheduler (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier nsBackgroundActivityScheduler identifier =
+  sendOwnedMessage nsBackgroundActivityScheduler initWithIdentifierSelector (toNSString identifier)
 
 -- | @- scheduleWithBlock:@
 scheduleWithBlock :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> Ptr () -> IO ()
-scheduleWithBlock nsBackgroundActivityScheduler  block =
-    sendMsg nsBackgroundActivityScheduler (mkSelector "scheduleWithBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+scheduleWithBlock nsBackgroundActivityScheduler block =
+  sendMessage nsBackgroundActivityScheduler scheduleWithBlockSelector block
 
 -- | @- invalidate@
 invalidate :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> IO ()
-invalidate nsBackgroundActivityScheduler  =
-    sendMsg nsBackgroundActivityScheduler (mkSelector "invalidate") retVoid []
+invalidate nsBackgroundActivityScheduler =
+  sendMessage nsBackgroundActivityScheduler invalidateSelector
 
 -- | @- identifier@
 identifier :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> IO (Id NSString)
-identifier nsBackgroundActivityScheduler  =
-    sendMsg nsBackgroundActivityScheduler (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsBackgroundActivityScheduler =
+  sendMessage nsBackgroundActivityScheduler identifierSelector
 
 -- | @- qualityOfService@
 qualityOfService :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> IO NSQualityOfService
-qualityOfService nsBackgroundActivityScheduler  =
-    fmap (coerce :: CLong -> NSQualityOfService) $ sendMsg nsBackgroundActivityScheduler (mkSelector "qualityOfService") retCLong []
+qualityOfService nsBackgroundActivityScheduler =
+  sendMessage nsBackgroundActivityScheduler qualityOfServiceSelector
 
 -- | @- setQualityOfService:@
 setQualityOfService :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> NSQualityOfService -> IO ()
-setQualityOfService nsBackgroundActivityScheduler  value =
-    sendMsg nsBackgroundActivityScheduler (mkSelector "setQualityOfService:") retVoid [argCLong (coerce value)]
+setQualityOfService nsBackgroundActivityScheduler value =
+  sendMessage nsBackgroundActivityScheduler setQualityOfServiceSelector value
 
 -- | @- repeats@
 repeats :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> IO Bool
-repeats nsBackgroundActivityScheduler  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsBackgroundActivityScheduler (mkSelector "repeats") retCULong []
+repeats nsBackgroundActivityScheduler =
+  sendMessage nsBackgroundActivityScheduler repeatsSelector
 
 -- | @- setRepeats:@
 setRepeats :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> Bool -> IO ()
-setRepeats nsBackgroundActivityScheduler  value =
-    sendMsg nsBackgroundActivityScheduler (mkSelector "setRepeats:") retVoid [argCULong (if value then 1 else 0)]
+setRepeats nsBackgroundActivityScheduler value =
+  sendMessage nsBackgroundActivityScheduler setRepeatsSelector value
 
 -- | @- interval@
 interval :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> IO CDouble
-interval nsBackgroundActivityScheduler  =
-    sendMsg nsBackgroundActivityScheduler (mkSelector "interval") retCDouble []
+interval nsBackgroundActivityScheduler =
+  sendMessage nsBackgroundActivityScheduler intervalSelector
 
 -- | @- setInterval:@
 setInterval :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> CDouble -> IO ()
-setInterval nsBackgroundActivityScheduler  value =
-    sendMsg nsBackgroundActivityScheduler (mkSelector "setInterval:") retVoid [argCDouble value]
+setInterval nsBackgroundActivityScheduler value =
+  sendMessage nsBackgroundActivityScheduler setIntervalSelector value
 
 -- | @- tolerance@
 tolerance :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> IO CDouble
-tolerance nsBackgroundActivityScheduler  =
-    sendMsg nsBackgroundActivityScheduler (mkSelector "tolerance") retCDouble []
+tolerance nsBackgroundActivityScheduler =
+  sendMessage nsBackgroundActivityScheduler toleranceSelector
 
 -- | @- setTolerance:@
 setTolerance :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> CDouble -> IO ()
-setTolerance nsBackgroundActivityScheduler  value =
-    sendMsg nsBackgroundActivityScheduler (mkSelector "setTolerance:") retVoid [argCDouble value]
+setTolerance nsBackgroundActivityScheduler value =
+  sendMessage nsBackgroundActivityScheduler setToleranceSelector value
 
 -- | @- shouldDefer@
 shouldDefer :: IsNSBackgroundActivityScheduler nsBackgroundActivityScheduler => nsBackgroundActivityScheduler -> IO Bool
-shouldDefer nsBackgroundActivityScheduler  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsBackgroundActivityScheduler (mkSelector "shouldDefer") retCULong []
+shouldDefer nsBackgroundActivityScheduler =
+  sendMessage nsBackgroundActivityScheduler shouldDeferSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[Id NSString] (Id NSBackgroundActivityScheduler)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @scheduleWithBlock:@
-scheduleWithBlockSelector :: Selector
+scheduleWithBlockSelector :: Selector '[Ptr ()] ()
 scheduleWithBlockSelector = mkSelector "scheduleWithBlock:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @qualityOfService@
-qualityOfServiceSelector :: Selector
+qualityOfServiceSelector :: Selector '[] NSQualityOfService
 qualityOfServiceSelector = mkSelector "qualityOfService"
 
 -- | @Selector@ for @setQualityOfService:@
-setQualityOfServiceSelector :: Selector
+setQualityOfServiceSelector :: Selector '[NSQualityOfService] ()
 setQualityOfServiceSelector = mkSelector "setQualityOfService:"
 
 -- | @Selector@ for @repeats@
-repeatsSelector :: Selector
+repeatsSelector :: Selector '[] Bool
 repeatsSelector = mkSelector "repeats"
 
 -- | @Selector@ for @setRepeats:@
-setRepeatsSelector :: Selector
+setRepeatsSelector :: Selector '[Bool] ()
 setRepeatsSelector = mkSelector "setRepeats:"
 
 -- | @Selector@ for @interval@
-intervalSelector :: Selector
+intervalSelector :: Selector '[] CDouble
 intervalSelector = mkSelector "interval"
 
 -- | @Selector@ for @setInterval:@
-setIntervalSelector :: Selector
+setIntervalSelector :: Selector '[CDouble] ()
 setIntervalSelector = mkSelector "setInterval:"
 
 -- | @Selector@ for @tolerance@
-toleranceSelector :: Selector
+toleranceSelector :: Selector '[] CDouble
 toleranceSelector = mkSelector "tolerance"
 
 -- | @Selector@ for @setTolerance:@
-setToleranceSelector :: Selector
+setToleranceSelector :: Selector '[CDouble] ()
 setToleranceSelector = mkSelector "setTolerance:"
 
 -- | @Selector@ for @shouldDefer@
-shouldDeferSelector :: Selector
+shouldDeferSelector :: Selector '[] Bool
 shouldDeferSelector = mkSelector "shouldDefer"
 

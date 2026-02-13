@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.ModelIO.MDLAnimatedVector3Array
   , IsMDLAnimatedVector3Array(..)
   , initWithElementCount
   , elementCount
-  , initWithElementCountSelector
   , elementCountSelector
+  , initWithElementCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithElementCount:@
 initWithElementCount :: IsMDLAnimatedVector3Array mdlAnimatedVector3Array => mdlAnimatedVector3Array -> CULong -> IO RawId
-initWithElementCount mdlAnimatedVector3Array  arrayElementCount =
-    fmap (RawId . castPtr) $ sendMsg mdlAnimatedVector3Array (mkSelector "initWithElementCount:") (retPtr retVoid) [argCULong arrayElementCount]
+initWithElementCount mdlAnimatedVector3Array arrayElementCount =
+  sendOwnedMessage mdlAnimatedVector3Array initWithElementCountSelector arrayElementCount
 
 -- | @- elementCount@
 elementCount :: IsMDLAnimatedVector3Array mdlAnimatedVector3Array => mdlAnimatedVector3Array -> IO CULong
-elementCount mdlAnimatedVector3Array  =
-    sendMsg mdlAnimatedVector3Array (mkSelector "elementCount") retCULong []
+elementCount mdlAnimatedVector3Array =
+  sendMessage mdlAnimatedVector3Array elementCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithElementCount:@
-initWithElementCountSelector :: Selector
+initWithElementCountSelector :: Selector '[CULong] RawId
 initWithElementCountSelector = mkSelector "initWithElementCount:"
 
 -- | @Selector@ for @elementCount@
-elementCountSelector :: Selector
+elementCountSelector :: Selector '[] CULong
 elementCountSelector = mkSelector "elementCount"
 

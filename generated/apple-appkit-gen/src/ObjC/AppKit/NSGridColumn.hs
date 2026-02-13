@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,19 +23,19 @@ module ObjC.AppKit.NSGridColumn
   , hidden
   , setHidden
   , cellAtIndexSelector
-  , mergeCellsInRangeSelector
   , gridViewSelector
-  , numberOfCellsSelector
-  , xPlacementSelector
-  , setXPlacementSelector
-  , widthSelector
-  , setWidthSelector
-  , leadingPaddingSelector
-  , setLeadingPaddingSelector
-  , trailingPaddingSelector
-  , setTrailingPaddingSelector
   , hiddenSelector
+  , leadingPaddingSelector
+  , mergeCellsInRangeSelector
+  , numberOfCellsSelector
   , setHiddenSelector
+  , setLeadingPaddingSelector
+  , setTrailingPaddingSelector
+  , setWidthSelector
+  , setXPlacementSelector
+  , trailingPaddingSelector
+  , widthSelector
+  , xPlacementSelector
 
   -- * Enum types
   , NSGridCellPlacement(NSGridCellPlacement)
@@ -49,15 +50,11 @@ module ObjC.AppKit.NSGridColumn
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,131 +65,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cellAtIndex:@
 cellAtIndex :: IsNSGridColumn nsGridColumn => nsGridColumn -> CLong -> IO (Id NSGridCell)
-cellAtIndex nsGridColumn  index =
-    sendMsg nsGridColumn (mkSelector "cellAtIndex:") (retPtr retVoid) [argCLong index] >>= retainedObject . castPtr
+cellAtIndex nsGridColumn index =
+  sendMessage nsGridColumn cellAtIndexSelector index
 
 -- | @- mergeCellsInRange:@
 mergeCellsInRange :: IsNSGridColumn nsGridColumn => nsGridColumn -> NSRange -> IO ()
-mergeCellsInRange nsGridColumn  range =
-    sendMsg nsGridColumn (mkSelector "mergeCellsInRange:") retVoid [argNSRange range]
+mergeCellsInRange nsGridColumn range =
+  sendMessage nsGridColumn mergeCellsInRangeSelector range
 
 -- | @- gridView@
 gridView :: IsNSGridColumn nsGridColumn => nsGridColumn -> IO (Id NSGridView)
-gridView nsGridColumn  =
-    sendMsg nsGridColumn (mkSelector "gridView") (retPtr retVoid) [] >>= retainedObject . castPtr
+gridView nsGridColumn =
+  sendMessage nsGridColumn gridViewSelector
 
 -- | @- numberOfCells@
 numberOfCells :: IsNSGridColumn nsGridColumn => nsGridColumn -> IO CLong
-numberOfCells nsGridColumn  =
-    sendMsg nsGridColumn (mkSelector "numberOfCells") retCLong []
+numberOfCells nsGridColumn =
+  sendMessage nsGridColumn numberOfCellsSelector
 
 -- | @- xPlacement@
 xPlacement :: IsNSGridColumn nsGridColumn => nsGridColumn -> IO NSGridCellPlacement
-xPlacement nsGridColumn  =
-    fmap (coerce :: CLong -> NSGridCellPlacement) $ sendMsg nsGridColumn (mkSelector "xPlacement") retCLong []
+xPlacement nsGridColumn =
+  sendMessage nsGridColumn xPlacementSelector
 
 -- | @- setXPlacement:@
 setXPlacement :: IsNSGridColumn nsGridColumn => nsGridColumn -> NSGridCellPlacement -> IO ()
-setXPlacement nsGridColumn  value =
-    sendMsg nsGridColumn (mkSelector "setXPlacement:") retVoid [argCLong (coerce value)]
+setXPlacement nsGridColumn value =
+  sendMessage nsGridColumn setXPlacementSelector value
 
 -- | @- width@
 width :: IsNSGridColumn nsGridColumn => nsGridColumn -> IO CDouble
-width nsGridColumn  =
-    sendMsg nsGridColumn (mkSelector "width") retCDouble []
+width nsGridColumn =
+  sendMessage nsGridColumn widthSelector
 
 -- | @- setWidth:@
 setWidth :: IsNSGridColumn nsGridColumn => nsGridColumn -> CDouble -> IO ()
-setWidth nsGridColumn  value =
-    sendMsg nsGridColumn (mkSelector "setWidth:") retVoid [argCDouble value]
+setWidth nsGridColumn value =
+  sendMessage nsGridColumn setWidthSelector value
 
 -- | @- leadingPadding@
 leadingPadding :: IsNSGridColumn nsGridColumn => nsGridColumn -> IO CDouble
-leadingPadding nsGridColumn  =
-    sendMsg nsGridColumn (mkSelector "leadingPadding") retCDouble []
+leadingPadding nsGridColumn =
+  sendMessage nsGridColumn leadingPaddingSelector
 
 -- | @- setLeadingPadding:@
 setLeadingPadding :: IsNSGridColumn nsGridColumn => nsGridColumn -> CDouble -> IO ()
-setLeadingPadding nsGridColumn  value =
-    sendMsg nsGridColumn (mkSelector "setLeadingPadding:") retVoid [argCDouble value]
+setLeadingPadding nsGridColumn value =
+  sendMessage nsGridColumn setLeadingPaddingSelector value
 
 -- | @- trailingPadding@
 trailingPadding :: IsNSGridColumn nsGridColumn => nsGridColumn -> IO CDouble
-trailingPadding nsGridColumn  =
-    sendMsg nsGridColumn (mkSelector "trailingPadding") retCDouble []
+trailingPadding nsGridColumn =
+  sendMessage nsGridColumn trailingPaddingSelector
 
 -- | @- setTrailingPadding:@
 setTrailingPadding :: IsNSGridColumn nsGridColumn => nsGridColumn -> CDouble -> IO ()
-setTrailingPadding nsGridColumn  value =
-    sendMsg nsGridColumn (mkSelector "setTrailingPadding:") retVoid [argCDouble value]
+setTrailingPadding nsGridColumn value =
+  sendMessage nsGridColumn setTrailingPaddingSelector value
 
 -- | @- hidden@
 hidden :: IsNSGridColumn nsGridColumn => nsGridColumn -> IO Bool
-hidden nsGridColumn  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGridColumn (mkSelector "hidden") retCULong []
+hidden nsGridColumn =
+  sendMessage nsGridColumn hiddenSelector
 
 -- | @- setHidden:@
 setHidden :: IsNSGridColumn nsGridColumn => nsGridColumn -> Bool -> IO ()
-setHidden nsGridColumn  value =
-    sendMsg nsGridColumn (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden nsGridColumn value =
+  sendMessage nsGridColumn setHiddenSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cellAtIndex:@
-cellAtIndexSelector :: Selector
+cellAtIndexSelector :: Selector '[CLong] (Id NSGridCell)
 cellAtIndexSelector = mkSelector "cellAtIndex:"
 
 -- | @Selector@ for @mergeCellsInRange:@
-mergeCellsInRangeSelector :: Selector
+mergeCellsInRangeSelector :: Selector '[NSRange] ()
 mergeCellsInRangeSelector = mkSelector "mergeCellsInRange:"
 
 -- | @Selector@ for @gridView@
-gridViewSelector :: Selector
+gridViewSelector :: Selector '[] (Id NSGridView)
 gridViewSelector = mkSelector "gridView"
 
 -- | @Selector@ for @numberOfCells@
-numberOfCellsSelector :: Selector
+numberOfCellsSelector :: Selector '[] CLong
 numberOfCellsSelector = mkSelector "numberOfCells"
 
 -- | @Selector@ for @xPlacement@
-xPlacementSelector :: Selector
+xPlacementSelector :: Selector '[] NSGridCellPlacement
 xPlacementSelector = mkSelector "xPlacement"
 
 -- | @Selector@ for @setXPlacement:@
-setXPlacementSelector :: Selector
+setXPlacementSelector :: Selector '[NSGridCellPlacement] ()
 setXPlacementSelector = mkSelector "setXPlacement:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CDouble
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CDouble] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @leadingPadding@
-leadingPaddingSelector :: Selector
+leadingPaddingSelector :: Selector '[] CDouble
 leadingPaddingSelector = mkSelector "leadingPadding"
 
 -- | @Selector@ for @setLeadingPadding:@
-setLeadingPaddingSelector :: Selector
+setLeadingPaddingSelector :: Selector '[CDouble] ()
 setLeadingPaddingSelector = mkSelector "setLeadingPadding:"
 
 -- | @Selector@ for @trailingPadding@
-trailingPaddingSelector :: Selector
+trailingPaddingSelector :: Selector '[] CDouble
 trailingPaddingSelector = mkSelector "trailingPadding"
 
 -- | @Selector@ for @setTrailingPadding:@
-setTrailingPaddingSelector :: Selector
+setTrailingPaddingSelector :: Selector '[CDouble] ()
 setTrailingPaddingSelector = mkSelector "setTrailingPadding:"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 

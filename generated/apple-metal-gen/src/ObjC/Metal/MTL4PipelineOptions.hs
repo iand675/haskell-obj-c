@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.Metal.MTL4PipelineOptions
   , setShaderValidation
   , shaderReflection
   , setShaderReflection
-  , shaderValidationSelector
+  , setShaderReflectionSelector
   , setShaderValidationSelector
   , shaderReflectionSelector
-  , setShaderReflectionSelector
+  , shaderValidationSelector
 
   -- * Enum types
   , MTL4ShaderReflection(MTL4ShaderReflection)
@@ -32,15 +33,11 @@ module ObjC.Metal.MTL4PipelineOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,47 +49,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- shaderValidation@
 shaderValidation :: IsMTL4PipelineOptions mtL4PipelineOptions => mtL4PipelineOptions -> IO MTLShaderValidation
-shaderValidation mtL4PipelineOptions  =
-    fmap (coerce :: CLong -> MTLShaderValidation) $ sendMsg mtL4PipelineOptions (mkSelector "shaderValidation") retCLong []
+shaderValidation mtL4PipelineOptions =
+  sendMessage mtL4PipelineOptions shaderValidationSelector
 
 -- | Controls whether to enable or disable Metal Shader Validation for the pipeline.
 --
 -- ObjC selector: @- setShaderValidation:@
 setShaderValidation :: IsMTL4PipelineOptions mtL4PipelineOptions => mtL4PipelineOptions -> MTLShaderValidation -> IO ()
-setShaderValidation mtL4PipelineOptions  value =
-    sendMsg mtL4PipelineOptions (mkSelector "setShaderValidation:") retVoid [argCLong (coerce value)]
+setShaderValidation mtL4PipelineOptions value =
+  sendMessage mtL4PipelineOptions setShaderValidationSelector value
 
 -- | Controls whether to include Metal shader reflection in this pipeline.
 --
 -- ObjC selector: @- shaderReflection@
 shaderReflection :: IsMTL4PipelineOptions mtL4PipelineOptions => mtL4PipelineOptions -> IO MTL4ShaderReflection
-shaderReflection mtL4PipelineOptions  =
-    fmap (coerce :: CULong -> MTL4ShaderReflection) $ sendMsg mtL4PipelineOptions (mkSelector "shaderReflection") retCULong []
+shaderReflection mtL4PipelineOptions =
+  sendMessage mtL4PipelineOptions shaderReflectionSelector
 
 -- | Controls whether to include Metal shader reflection in this pipeline.
 --
 -- ObjC selector: @- setShaderReflection:@
 setShaderReflection :: IsMTL4PipelineOptions mtL4PipelineOptions => mtL4PipelineOptions -> MTL4ShaderReflection -> IO ()
-setShaderReflection mtL4PipelineOptions  value =
-    sendMsg mtL4PipelineOptions (mkSelector "setShaderReflection:") retVoid [argCULong (coerce value)]
+setShaderReflection mtL4PipelineOptions value =
+  sendMessage mtL4PipelineOptions setShaderReflectionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @shaderValidation@
-shaderValidationSelector :: Selector
+shaderValidationSelector :: Selector '[] MTLShaderValidation
 shaderValidationSelector = mkSelector "shaderValidation"
 
 -- | @Selector@ for @setShaderValidation:@
-setShaderValidationSelector :: Selector
+setShaderValidationSelector :: Selector '[MTLShaderValidation] ()
 setShaderValidationSelector = mkSelector "setShaderValidation:"
 
 -- | @Selector@ for @shaderReflection@
-shaderReflectionSelector :: Selector
+shaderReflectionSelector :: Selector '[] MTL4ShaderReflection
 shaderReflectionSelector = mkSelector "shaderReflection"
 
 -- | @Selector@ for @setShaderReflection:@
-setShaderReflectionSelector :: Selector
+setShaderReflectionSelector :: Selector '[MTL4ShaderReflection] ()
 setShaderReflectionSelector = mkSelector "setShaderReflection:"
 

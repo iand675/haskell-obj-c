@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.CoreImage.CIWarpKernel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -32,14 +29,13 @@ kernelWithString :: IsNSString string => string -> IO (Id CIWarpKernel)
 kernelWithString string =
   do
     cls' <- getRequiredClass "CIWarpKernel"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "kernelWithString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' kernelWithStringSelector (toNSString string)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @kernelWithString:@
-kernelWithStringSelector :: Selector
+kernelWithStringSelector :: Selector '[Id NSString] (Id CIWarpKernel)
 kernelWithStringSelector = mkSelector "kernelWithString:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Matter.MTRClosureDimensionClusterStepParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , directionSelector
-  , setDirectionSelector
   , numberOfStepsSelector
-  , setNumberOfStepsSelector
-  , speedSelector
-  , setSpeedSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setDirectionSelector
+  , setNumberOfStepsSelector
   , setServerSideProcessingTimeoutSelector
+  , setSpeedSelector
+  , setTimedInvokeTimeoutMsSelector
+  , speedSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- direction@
 direction :: IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams => mtrClosureDimensionClusterStepParams -> IO (Id NSNumber)
-direction mtrClosureDimensionClusterStepParams  =
-    sendMsg mtrClosureDimensionClusterStepParams (mkSelector "direction") (retPtr retVoid) [] >>= retainedObject . castPtr
+direction mtrClosureDimensionClusterStepParams =
+  sendMessage mtrClosureDimensionClusterStepParams directionSelector
 
 -- | @- setDirection:@
 setDirection :: (IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams, IsNSNumber value) => mtrClosureDimensionClusterStepParams -> value -> IO ()
-setDirection mtrClosureDimensionClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureDimensionClusterStepParams (mkSelector "setDirection:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDirection mtrClosureDimensionClusterStepParams value =
+  sendMessage mtrClosureDimensionClusterStepParams setDirectionSelector (toNSNumber value)
 
 -- | @- numberOfSteps@
 numberOfSteps :: IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams => mtrClosureDimensionClusterStepParams -> IO (Id NSNumber)
-numberOfSteps mtrClosureDimensionClusterStepParams  =
-    sendMsg mtrClosureDimensionClusterStepParams (mkSelector "numberOfSteps") (retPtr retVoid) [] >>= retainedObject . castPtr
+numberOfSteps mtrClosureDimensionClusterStepParams =
+  sendMessage mtrClosureDimensionClusterStepParams numberOfStepsSelector
 
 -- | @- setNumberOfSteps:@
 setNumberOfSteps :: (IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams, IsNSNumber value) => mtrClosureDimensionClusterStepParams -> value -> IO ()
-setNumberOfSteps mtrClosureDimensionClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureDimensionClusterStepParams (mkSelector "setNumberOfSteps:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNumberOfSteps mtrClosureDimensionClusterStepParams value =
+  sendMessage mtrClosureDimensionClusterStepParams setNumberOfStepsSelector (toNSNumber value)
 
 -- | @- speed@
 speed :: IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams => mtrClosureDimensionClusterStepParams -> IO (Id NSNumber)
-speed mtrClosureDimensionClusterStepParams  =
-    sendMsg mtrClosureDimensionClusterStepParams (mkSelector "speed") (retPtr retVoid) [] >>= retainedObject . castPtr
+speed mtrClosureDimensionClusterStepParams =
+  sendMessage mtrClosureDimensionClusterStepParams speedSelector
 
 -- | @- setSpeed:@
 setSpeed :: (IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams, IsNSNumber value) => mtrClosureDimensionClusterStepParams -> value -> IO ()
-setSpeed mtrClosureDimensionClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureDimensionClusterStepParams (mkSelector "setSpeed:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSpeed mtrClosureDimensionClusterStepParams value =
+  sendMessage mtrClosureDimensionClusterStepParams setSpeedSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setSpeed mtrClosureDimensionClusterStepParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams => mtrClosureDimensionClusterStepParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrClosureDimensionClusterStepParams  =
-    sendMsg mtrClosureDimensionClusterStepParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrClosureDimensionClusterStepParams =
+  sendMessage mtrClosureDimensionClusterStepParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrClosureDimensionClusterStepParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams, IsNSNumber value) => mtrClosureDimensionClusterStepParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrClosureDimensionClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureDimensionClusterStepParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrClosureDimensionClusterStepParams value =
+  sendMessage mtrClosureDimensionClusterStepParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrClosureDimensionClusterStepParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams => mtrClosureDimensionClusterStepParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrClosureDimensionClusterStepParams  =
-    sendMsg mtrClosureDimensionClusterStepParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrClosureDimensionClusterStepParams =
+  sendMessage mtrClosureDimensionClusterStepParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrClosureDimensionClusterStepParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRClosureDimensionClusterStepParams mtrClosureDimensionClusterStepParams, IsNSNumber value) => mtrClosureDimensionClusterStepParams -> value -> IO ()
-setServerSideProcessingTimeout mtrClosureDimensionClusterStepParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureDimensionClusterStepParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrClosureDimensionClusterStepParams value =
+  sendMessage mtrClosureDimensionClusterStepParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @direction@
-directionSelector :: Selector
+directionSelector :: Selector '[] (Id NSNumber)
 directionSelector = mkSelector "direction"
 
 -- | @Selector@ for @setDirection:@
-setDirectionSelector :: Selector
+setDirectionSelector :: Selector '[Id NSNumber] ()
 setDirectionSelector = mkSelector "setDirection:"
 
 -- | @Selector@ for @numberOfSteps@
-numberOfStepsSelector :: Selector
+numberOfStepsSelector :: Selector '[] (Id NSNumber)
 numberOfStepsSelector = mkSelector "numberOfSteps"
 
 -- | @Selector@ for @setNumberOfSteps:@
-setNumberOfStepsSelector :: Selector
+setNumberOfStepsSelector :: Selector '[Id NSNumber] ()
 setNumberOfStepsSelector = mkSelector "setNumberOfSteps:"
 
 -- | @Selector@ for @speed@
-speedSelector :: Selector
+speedSelector :: Selector '[] (Id NSNumber)
 speedSelector = mkSelector "speed"
 
 -- | @Selector@ for @setSpeed:@
-setSpeedSelector :: Selector
+setSpeedSelector :: Selector '[Id NSNumber] ()
 setSpeedSelector = mkSelector "setSpeed:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.Metal.MTL4MachineLearningPipelineDescriptor
   , setLabel
   , machineLearningFunctionDescriptor
   , setMachineLearningFunctionDescriptor
+  , inputDimensionsAtBufferIndexSelector
+  , labelSelector
+  , machineLearningFunctionDescriptorSelector
+  , resetSelector
   , setInputDimensions_atBufferIndexSelector
   , setInputDimensions_withRangeSelector
-  , inputDimensionsAtBufferIndexSelector
-  , resetSelector
-  , labelSelector
   , setLabelSelector
-  , machineLearningFunctionDescriptorSelector
   , setMachineLearningFunctionDescriptorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,9 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setInputDimensions:atBufferIndex:@
 setInputDimensions_atBufferIndex :: (IsMTL4MachineLearningPipelineDescriptor mtL4MachineLearningPipelineDescriptor, IsMTLTensorExtents dimensions) => mtL4MachineLearningPipelineDescriptor -> dimensions -> CLong -> IO ()
-setInputDimensions_atBufferIndex mtL4MachineLearningPipelineDescriptor  dimensions bufferIndex =
-  withObjCPtr dimensions $ \raw_dimensions ->
-      sendMsg mtL4MachineLearningPipelineDescriptor (mkSelector "setInputDimensions:atBufferIndex:") retVoid [argPtr (castPtr raw_dimensions :: Ptr ()), argCLong bufferIndex]
+setInputDimensions_atBufferIndex mtL4MachineLearningPipelineDescriptor dimensions bufferIndex =
+  sendMessage mtL4MachineLearningPipelineDescriptor setInputDimensions_atBufferIndexSelector (toMTLTensorExtents dimensions) bufferIndex
 
 -- | Sets the dimensions of multiple input tensors on a range of buffer bindings.
 --
@@ -66,87 +62,84 @@ setInputDimensions_atBufferIndex mtL4MachineLearningPipelineDescriptor  dimensio
 --
 -- ObjC selector: @- setInputDimensions:withRange:@
 setInputDimensions_withRange :: (IsMTL4MachineLearningPipelineDescriptor mtL4MachineLearningPipelineDescriptor, IsNSArray dimensions) => mtL4MachineLearningPipelineDescriptor -> dimensions -> NSRange -> IO ()
-setInputDimensions_withRange mtL4MachineLearningPipelineDescriptor  dimensions range =
-  withObjCPtr dimensions $ \raw_dimensions ->
-      sendMsg mtL4MachineLearningPipelineDescriptor (mkSelector "setInputDimensions:withRange:") retVoid [argPtr (castPtr raw_dimensions :: Ptr ()), argNSRange range]
+setInputDimensions_withRange mtL4MachineLearningPipelineDescriptor dimensions range =
+  sendMessage mtL4MachineLearningPipelineDescriptor setInputDimensions_withRangeSelector (toNSArray dimensions) range
 
 -- | Obtains the dimensions of the input tensor at @bufferIndex@ if set, @nil@ otherwise.
 --
 -- ObjC selector: @- inputDimensionsAtBufferIndex:@
 inputDimensionsAtBufferIndex :: IsMTL4MachineLearningPipelineDescriptor mtL4MachineLearningPipelineDescriptor => mtL4MachineLearningPipelineDescriptor -> CLong -> IO (Id MTLTensorExtents)
-inputDimensionsAtBufferIndex mtL4MachineLearningPipelineDescriptor  bufferIndex =
-    sendMsg mtL4MachineLearningPipelineDescriptor (mkSelector "inputDimensionsAtBufferIndex:") (retPtr retVoid) [argCLong bufferIndex] >>= retainedObject . castPtr
+inputDimensionsAtBufferIndex mtL4MachineLearningPipelineDescriptor bufferIndex =
+  sendMessage mtL4MachineLearningPipelineDescriptor inputDimensionsAtBufferIndexSelector bufferIndex
 
 -- | Resets the descriptor to its default values.
 --
 -- ObjC selector: @- reset@
 reset :: IsMTL4MachineLearningPipelineDescriptor mtL4MachineLearningPipelineDescriptor => mtL4MachineLearningPipelineDescriptor -> IO ()
-reset mtL4MachineLearningPipelineDescriptor  =
-    sendMsg mtL4MachineLearningPipelineDescriptor (mkSelector "reset") retVoid []
+reset mtL4MachineLearningPipelineDescriptor =
+  sendMessage mtL4MachineLearningPipelineDescriptor resetSelector
 
 -- | Assigns an optional string that helps identify pipeline states you create from this descriptor.
 --
 -- ObjC selector: @- label@
 label :: IsMTL4MachineLearningPipelineDescriptor mtL4MachineLearningPipelineDescriptor => mtL4MachineLearningPipelineDescriptor -> IO (Id NSString)
-label mtL4MachineLearningPipelineDescriptor  =
-    sendMsg mtL4MachineLearningPipelineDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtL4MachineLearningPipelineDescriptor =
+  sendMessage mtL4MachineLearningPipelineDescriptor labelSelector
 
 -- | Assigns an optional string that helps identify pipeline states you create from this descriptor.
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTL4MachineLearningPipelineDescriptor mtL4MachineLearningPipelineDescriptor, IsNSString value) => mtL4MachineLearningPipelineDescriptor -> value -> IO ()
-setLabel mtL4MachineLearningPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4MachineLearningPipelineDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtL4MachineLearningPipelineDescriptor value =
+  sendMessage mtL4MachineLearningPipelineDescriptor setLabelSelector (toNSString value)
 
 -- | Assigns the function that the machine learning pipeline you create from this descriptor executes.
 --
 -- ObjC selector: @- machineLearningFunctionDescriptor@
 machineLearningFunctionDescriptor :: IsMTL4MachineLearningPipelineDescriptor mtL4MachineLearningPipelineDescriptor => mtL4MachineLearningPipelineDescriptor -> IO (Id MTL4FunctionDescriptor)
-machineLearningFunctionDescriptor mtL4MachineLearningPipelineDescriptor  =
-    sendMsg mtL4MachineLearningPipelineDescriptor (mkSelector "machineLearningFunctionDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+machineLearningFunctionDescriptor mtL4MachineLearningPipelineDescriptor =
+  sendMessage mtL4MachineLearningPipelineDescriptor machineLearningFunctionDescriptorSelector
 
 -- | Assigns the function that the machine learning pipeline you create from this descriptor executes.
 --
 -- ObjC selector: @- setMachineLearningFunctionDescriptor:@
 setMachineLearningFunctionDescriptor :: (IsMTL4MachineLearningPipelineDescriptor mtL4MachineLearningPipelineDescriptor, IsMTL4FunctionDescriptor value) => mtL4MachineLearningPipelineDescriptor -> value -> IO ()
-setMachineLearningFunctionDescriptor mtL4MachineLearningPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4MachineLearningPipelineDescriptor (mkSelector "setMachineLearningFunctionDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMachineLearningFunctionDescriptor mtL4MachineLearningPipelineDescriptor value =
+  sendMessage mtL4MachineLearningPipelineDescriptor setMachineLearningFunctionDescriptorSelector (toMTL4FunctionDescriptor value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setInputDimensions:atBufferIndex:@
-setInputDimensions_atBufferIndexSelector :: Selector
+setInputDimensions_atBufferIndexSelector :: Selector '[Id MTLTensorExtents, CLong] ()
 setInputDimensions_atBufferIndexSelector = mkSelector "setInputDimensions:atBufferIndex:"
 
 -- | @Selector@ for @setInputDimensions:withRange:@
-setInputDimensions_withRangeSelector :: Selector
+setInputDimensions_withRangeSelector :: Selector '[Id NSArray, NSRange] ()
 setInputDimensions_withRangeSelector = mkSelector "setInputDimensions:withRange:"
 
 -- | @Selector@ for @inputDimensionsAtBufferIndex:@
-inputDimensionsAtBufferIndexSelector :: Selector
+inputDimensionsAtBufferIndexSelector :: Selector '[CLong] (Id MTLTensorExtents)
 inputDimensionsAtBufferIndexSelector = mkSelector "inputDimensionsAtBufferIndex:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @machineLearningFunctionDescriptor@
-machineLearningFunctionDescriptorSelector :: Selector
+machineLearningFunctionDescriptorSelector :: Selector '[] (Id MTL4FunctionDescriptor)
 machineLearningFunctionDescriptorSelector = mkSelector "machineLearningFunctionDescriptor"
 
 -- | @Selector@ for @setMachineLearningFunctionDescriptor:@
-setMachineLearningFunctionDescriptorSelector :: Selector
+setMachineLearningFunctionDescriptorSelector :: Selector '[Id MTL4FunctionDescriptor] ()
 setMachineLearningFunctionDescriptorSelector = mkSelector "setMachineLearningFunctionDescriptor:"
 

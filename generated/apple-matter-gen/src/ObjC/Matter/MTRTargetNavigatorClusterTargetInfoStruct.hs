@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRTargetNavigatorClusterTargetInfoStruct
   , name
   , setName
   , identifierSelector
-  , setIdentifierSelector
   , nameSelector
+  , setIdentifierSelector
   , setNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- identifier@
 identifier :: IsMTRTargetNavigatorClusterTargetInfoStruct mtrTargetNavigatorClusterTargetInfoStruct => mtrTargetNavigatorClusterTargetInfoStruct -> IO (Id NSNumber)
-identifier mtrTargetNavigatorClusterTargetInfoStruct  =
-    sendMsg mtrTargetNavigatorClusterTargetInfoStruct (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier mtrTargetNavigatorClusterTargetInfoStruct =
+  sendMessage mtrTargetNavigatorClusterTargetInfoStruct identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsMTRTargetNavigatorClusterTargetInfoStruct mtrTargetNavigatorClusterTargetInfoStruct, IsNSNumber value) => mtrTargetNavigatorClusterTargetInfoStruct -> value -> IO ()
-setIdentifier mtrTargetNavigatorClusterTargetInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterTargetInfoStruct (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier mtrTargetNavigatorClusterTargetInfoStruct value =
+  sendMessage mtrTargetNavigatorClusterTargetInfoStruct setIdentifierSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRTargetNavigatorClusterTargetInfoStruct mtrTargetNavigatorClusterTargetInfoStruct => mtrTargetNavigatorClusterTargetInfoStruct -> IO (Id NSString)
-name mtrTargetNavigatorClusterTargetInfoStruct  =
-    sendMsg mtrTargetNavigatorClusterTargetInfoStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrTargetNavigatorClusterTargetInfoStruct =
+  sendMessage mtrTargetNavigatorClusterTargetInfoStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRTargetNavigatorClusterTargetInfoStruct mtrTargetNavigatorClusterTargetInfoStruct, IsNSString value) => mtrTargetNavigatorClusterTargetInfoStruct -> value -> IO ()
-setName mtrTargetNavigatorClusterTargetInfoStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterTargetInfoStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrTargetNavigatorClusterTargetInfoStruct value =
+  sendMessage mtrTargetNavigatorClusterTargetInfoStruct setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSNumber)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSNumber] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

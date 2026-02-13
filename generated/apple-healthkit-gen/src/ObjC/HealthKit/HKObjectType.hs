@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,38 +30,34 @@ module ObjC.HealthKit.HKObjectType
   , requiresPerObjectAuthorization
   , clinicalTypeForIdentifier
   , identifier
-  , initSelector
-  , quantityTypeForIdentifierSelector
-  , categoryTypeForIdentifierSelector
-  , characteristicTypeForIdentifierSelector
-  , correlationTypeForIdentifierSelector
-  , documentTypeForIdentifierSelector
-  , scoredAssessmentTypeForIdentifierSelector
-  , seriesTypeForIdentifierSelector
-  , workoutTypeSelector
   , activitySummaryTypeSelector
   , audiogramSampleTypeSelector
+  , categoryTypeForIdentifierSelector
+  , characteristicTypeForIdentifierSelector
+  , clinicalTypeForIdentifierSelector
+  , correlationTypeForIdentifierSelector
+  , documentTypeForIdentifierSelector
   , electrocardiogramTypeSelector
+  , identifierSelector
+  , initSelector
   , medicationDoseEventTypeSelector
-  , visionPrescriptionTypeSelector
+  , quantityTypeForIdentifierSelector
+  , requiresPerObjectAuthorizationSelector
+  , scoredAssessmentTypeForIdentifierSelector
+  , seriesTypeForIdentifierSelector
   , stateOfMindTypeSelector
   , userAnnotatedMedicationTypeSelector
-  , requiresPerObjectAuthorizationSelector
-  , clinicalTypeForIdentifierSelector
-  , identifierSelector
+  , visionPrescriptionTypeSelector
+  , workoutTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,120 +66,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKObjectType hkObjectType => hkObjectType -> IO (Id HKObjectType)
-init_ hkObjectType  =
-    sendMsg hkObjectType (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkObjectType =
+  sendOwnedMessage hkObjectType initSelector
 
 -- | @+ quantityTypeForIdentifier:@
 quantityTypeForIdentifier :: IsNSString identifier => identifier -> IO (Id HKQuantityType)
 quantityTypeForIdentifier identifier =
   do
     cls' <- getRequiredClass "HKObjectType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "quantityTypeForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' quantityTypeForIdentifierSelector (toNSString identifier)
 
 -- | @+ categoryTypeForIdentifier:@
 categoryTypeForIdentifier :: IsNSString identifier => identifier -> IO (Id HKCategoryType)
 categoryTypeForIdentifier identifier =
   do
     cls' <- getRequiredClass "HKObjectType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "categoryTypeForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' categoryTypeForIdentifierSelector (toNSString identifier)
 
 -- | @+ characteristicTypeForIdentifier:@
 characteristicTypeForIdentifier :: IsNSString identifier => identifier -> IO (Id HKCharacteristicType)
 characteristicTypeForIdentifier identifier =
   do
     cls' <- getRequiredClass "HKObjectType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "characteristicTypeForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' characteristicTypeForIdentifierSelector (toNSString identifier)
 
 -- | @+ correlationTypeForIdentifier:@
 correlationTypeForIdentifier :: IsNSString identifier => identifier -> IO (Id HKCorrelationType)
 correlationTypeForIdentifier identifier =
   do
     cls' <- getRequiredClass "HKObjectType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "correlationTypeForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' correlationTypeForIdentifierSelector (toNSString identifier)
 
 -- | @+ documentTypeForIdentifier:@
 documentTypeForIdentifier :: IsNSString identifier => identifier -> IO (Id HKDocumentType)
 documentTypeForIdentifier identifier =
   do
     cls' <- getRequiredClass "HKObjectType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "documentTypeForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' documentTypeForIdentifierSelector (toNSString identifier)
 
 -- | @+ scoredAssessmentTypeForIdentifier:@
 scoredAssessmentTypeForIdentifier :: IsNSString identifier => identifier -> IO (Id HKScoredAssessmentType)
 scoredAssessmentTypeForIdentifier identifier =
   do
     cls' <- getRequiredClass "HKObjectType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "scoredAssessmentTypeForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' scoredAssessmentTypeForIdentifierSelector (toNSString identifier)
 
 -- | @+ seriesTypeForIdentifier:@
 seriesTypeForIdentifier :: IsNSString identifier => identifier -> IO (Id HKSeriesType)
 seriesTypeForIdentifier identifier =
   do
     cls' <- getRequiredClass "HKObjectType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "seriesTypeForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' seriesTypeForIdentifierSelector (toNSString identifier)
 
 -- | @+ workoutType@
 workoutType :: IO (Id HKWorkoutType)
 workoutType  =
   do
     cls' <- getRequiredClass "HKObjectType"
-    sendClassMsg cls' (mkSelector "workoutType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutTypeSelector
 
 -- | @+ activitySummaryType@
 activitySummaryType :: IO (Id HKActivitySummaryType)
 activitySummaryType  =
   do
     cls' <- getRequiredClass "HKObjectType"
-    sendClassMsg cls' (mkSelector "activitySummaryType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' activitySummaryTypeSelector
 
 -- | @+ audiogramSampleType@
 audiogramSampleType :: IO (Id HKAudiogramSampleType)
 audiogramSampleType  =
   do
     cls' <- getRequiredClass "HKObjectType"
-    sendClassMsg cls' (mkSelector "audiogramSampleType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' audiogramSampleTypeSelector
 
 -- | @+ electrocardiogramType@
 electrocardiogramType :: IO (Id HKElectrocardiogramType)
 electrocardiogramType  =
   do
     cls' <- getRequiredClass "HKObjectType"
-    sendClassMsg cls' (mkSelector "electrocardiogramType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' electrocardiogramTypeSelector
 
 -- | @+ medicationDoseEventType@
 medicationDoseEventType :: IO (Id HKMedicationDoseEventType)
 medicationDoseEventType  =
   do
     cls' <- getRequiredClass "HKObjectType"
-    sendClassMsg cls' (mkSelector "medicationDoseEventType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' medicationDoseEventTypeSelector
 
 -- | @+ visionPrescriptionType@
 visionPrescriptionType :: IO (Id HKPrescriptionType)
 visionPrescriptionType  =
   do
     cls' <- getRequiredClass "HKObjectType"
-    sendClassMsg cls' (mkSelector "visionPrescriptionType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' visionPrescriptionTypeSelector
 
 -- | @+ stateOfMindType@
 stateOfMindType :: IO (Id HKStateOfMindType)
 stateOfMindType  =
   do
     cls' <- getRequiredClass "HKObjectType"
-    sendClassMsg cls' (mkSelector "stateOfMindType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' stateOfMindTypeSelector
 
 -- | @+ userAnnotatedMedicationType@
 userAnnotatedMedicationType :: IO (Id HKUserAnnotatedMedicationType)
 userAnnotatedMedicationType  =
   do
     cls' <- getRequiredClass "HKObjectType"
-    sendClassMsg cls' (mkSelector "userAnnotatedMedicationType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' userAnnotatedMedicationTypeSelector
 
 -- | requiresPerObjectAuthorization
 --
@@ -190,16 +180,15 @@ userAnnotatedMedicationType  =
 --
 -- ObjC selector: @- requiresPerObjectAuthorization@
 requiresPerObjectAuthorization :: IsHKObjectType hkObjectType => hkObjectType -> IO Bool
-requiresPerObjectAuthorization hkObjectType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkObjectType (mkSelector "requiresPerObjectAuthorization") retCULong []
+requiresPerObjectAuthorization hkObjectType =
+  sendMessage hkObjectType requiresPerObjectAuthorizationSelector
 
 -- | @+ clinicalTypeForIdentifier:@
 clinicalTypeForIdentifier :: IsNSString identifier => identifier -> IO (Id HKClinicalType)
 clinicalTypeForIdentifier identifier =
   do
     cls' <- getRequiredClass "HKObjectType"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "clinicalTypeForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' clinicalTypeForIdentifierSelector (toNSString identifier)
 
 -- | identifier
 --
@@ -209,86 +198,86 @@ clinicalTypeForIdentifier identifier =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsHKObjectType hkObjectType => hkObjectType -> IO (Id NSString)
-identifier hkObjectType  =
-    sendMsg hkObjectType (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier hkObjectType =
+  sendMessage hkObjectType identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKObjectType)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @quantityTypeForIdentifier:@
-quantityTypeForIdentifierSelector :: Selector
+quantityTypeForIdentifierSelector :: Selector '[Id NSString] (Id HKQuantityType)
 quantityTypeForIdentifierSelector = mkSelector "quantityTypeForIdentifier:"
 
 -- | @Selector@ for @categoryTypeForIdentifier:@
-categoryTypeForIdentifierSelector :: Selector
+categoryTypeForIdentifierSelector :: Selector '[Id NSString] (Id HKCategoryType)
 categoryTypeForIdentifierSelector = mkSelector "categoryTypeForIdentifier:"
 
 -- | @Selector@ for @characteristicTypeForIdentifier:@
-characteristicTypeForIdentifierSelector :: Selector
+characteristicTypeForIdentifierSelector :: Selector '[Id NSString] (Id HKCharacteristicType)
 characteristicTypeForIdentifierSelector = mkSelector "characteristicTypeForIdentifier:"
 
 -- | @Selector@ for @correlationTypeForIdentifier:@
-correlationTypeForIdentifierSelector :: Selector
+correlationTypeForIdentifierSelector :: Selector '[Id NSString] (Id HKCorrelationType)
 correlationTypeForIdentifierSelector = mkSelector "correlationTypeForIdentifier:"
 
 -- | @Selector@ for @documentTypeForIdentifier:@
-documentTypeForIdentifierSelector :: Selector
+documentTypeForIdentifierSelector :: Selector '[Id NSString] (Id HKDocumentType)
 documentTypeForIdentifierSelector = mkSelector "documentTypeForIdentifier:"
 
 -- | @Selector@ for @scoredAssessmentTypeForIdentifier:@
-scoredAssessmentTypeForIdentifierSelector :: Selector
+scoredAssessmentTypeForIdentifierSelector :: Selector '[Id NSString] (Id HKScoredAssessmentType)
 scoredAssessmentTypeForIdentifierSelector = mkSelector "scoredAssessmentTypeForIdentifier:"
 
 -- | @Selector@ for @seriesTypeForIdentifier:@
-seriesTypeForIdentifierSelector :: Selector
+seriesTypeForIdentifierSelector :: Selector '[Id NSString] (Id HKSeriesType)
 seriesTypeForIdentifierSelector = mkSelector "seriesTypeForIdentifier:"
 
 -- | @Selector@ for @workoutType@
-workoutTypeSelector :: Selector
+workoutTypeSelector :: Selector '[] (Id HKWorkoutType)
 workoutTypeSelector = mkSelector "workoutType"
 
 -- | @Selector@ for @activitySummaryType@
-activitySummaryTypeSelector :: Selector
+activitySummaryTypeSelector :: Selector '[] (Id HKActivitySummaryType)
 activitySummaryTypeSelector = mkSelector "activitySummaryType"
 
 -- | @Selector@ for @audiogramSampleType@
-audiogramSampleTypeSelector :: Selector
+audiogramSampleTypeSelector :: Selector '[] (Id HKAudiogramSampleType)
 audiogramSampleTypeSelector = mkSelector "audiogramSampleType"
 
 -- | @Selector@ for @electrocardiogramType@
-electrocardiogramTypeSelector :: Selector
+electrocardiogramTypeSelector :: Selector '[] (Id HKElectrocardiogramType)
 electrocardiogramTypeSelector = mkSelector "electrocardiogramType"
 
 -- | @Selector@ for @medicationDoseEventType@
-medicationDoseEventTypeSelector :: Selector
+medicationDoseEventTypeSelector :: Selector '[] (Id HKMedicationDoseEventType)
 medicationDoseEventTypeSelector = mkSelector "medicationDoseEventType"
 
 -- | @Selector@ for @visionPrescriptionType@
-visionPrescriptionTypeSelector :: Selector
+visionPrescriptionTypeSelector :: Selector '[] (Id HKPrescriptionType)
 visionPrescriptionTypeSelector = mkSelector "visionPrescriptionType"
 
 -- | @Selector@ for @stateOfMindType@
-stateOfMindTypeSelector :: Selector
+stateOfMindTypeSelector :: Selector '[] (Id HKStateOfMindType)
 stateOfMindTypeSelector = mkSelector "stateOfMindType"
 
 -- | @Selector@ for @userAnnotatedMedicationType@
-userAnnotatedMedicationTypeSelector :: Selector
+userAnnotatedMedicationTypeSelector :: Selector '[] (Id HKUserAnnotatedMedicationType)
 userAnnotatedMedicationTypeSelector = mkSelector "userAnnotatedMedicationType"
 
 -- | @Selector@ for @requiresPerObjectAuthorization@
-requiresPerObjectAuthorizationSelector :: Selector
+requiresPerObjectAuthorizationSelector :: Selector '[] Bool
 requiresPerObjectAuthorizationSelector = mkSelector "requiresPerObjectAuthorization"
 
 -- | @Selector@ for @clinicalTypeForIdentifier:@
-clinicalTypeForIdentifierSelector :: Selector
+clinicalTypeForIdentifierSelector :: Selector '[Id NSString] (Id HKClinicalType)
 clinicalTypeForIdentifierSelector = mkSelector "clinicalTypeForIdentifier:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 

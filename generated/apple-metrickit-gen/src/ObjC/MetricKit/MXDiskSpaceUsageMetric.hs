@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,27 +25,23 @@ module ObjC.MetricKit.MXDiskSpaceUsageMetric
   , totalCloneSize
   , totalDiskSpaceUsedSize
   , totalDiskSpaceCapacity
-  , totalBinaryFileSizeSelector
   , totalBinaryFileCountSelector
-  , totalDataFileSizeSelector
-  , totalDataFileCountSelector
+  , totalBinaryFileSizeSelector
   , totalCacheFolderSizeSelector
   , totalCloneSizeSelector
-  , totalDiskSpaceUsedSizeSelector
+  , totalDataFileCountSelector
+  , totalDataFileSizeSelector
   , totalDiskSpaceCapacitySelector
+  , totalDiskSpaceUsedSizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- totalBinaryFileSize@
 totalBinaryFileSize :: IsMXDiskSpaceUsageMetric mxDiskSpaceUsageMetric => mxDiskSpaceUsageMetric -> IO (Id NSMeasurement)
-totalBinaryFileSize mxDiskSpaceUsageMetric  =
-    sendMsg mxDiskSpaceUsageMetric (mkSelector "totalBinaryFileSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalBinaryFileSize mxDiskSpaceUsageMetric =
+  sendMessage mxDiskSpaceUsageMetric totalBinaryFileSizeSelector
 
 -- | totalBinaryFileCount
 --
@@ -68,8 +65,8 @@ totalBinaryFileSize mxDiskSpaceUsageMetric  =
 --
 -- ObjC selector: @- totalBinaryFileCount@
 totalBinaryFileCount :: IsMXDiskSpaceUsageMetric mxDiskSpaceUsageMetric => mxDiskSpaceUsageMetric -> IO CLong
-totalBinaryFileCount mxDiskSpaceUsageMetric  =
-    sendMsg mxDiskSpaceUsageMetric (mkSelector "totalBinaryFileCount") retCLong []
+totalBinaryFileCount mxDiskSpaceUsageMetric =
+  sendMessage mxDiskSpaceUsageMetric totalBinaryFileCountSelector
 
 -- | totalDataFileSize
 --
@@ -79,8 +76,8 @@ totalBinaryFileCount mxDiskSpaceUsageMetric  =
 --
 -- ObjC selector: @- totalDataFileSize@
 totalDataFileSize :: IsMXDiskSpaceUsageMetric mxDiskSpaceUsageMetric => mxDiskSpaceUsageMetric -> IO (Id NSMeasurement)
-totalDataFileSize mxDiskSpaceUsageMetric  =
-    sendMsg mxDiskSpaceUsageMetric (mkSelector "totalDataFileSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalDataFileSize mxDiskSpaceUsageMetric =
+  sendMessage mxDiskSpaceUsageMetric totalDataFileSizeSelector
 
 -- | totalDataFileCount
 --
@@ -88,8 +85,8 @@ totalDataFileSize mxDiskSpaceUsageMetric  =
 --
 -- ObjC selector: @- totalDataFileCount@
 totalDataFileCount :: IsMXDiskSpaceUsageMetric mxDiskSpaceUsageMetric => mxDiskSpaceUsageMetric -> IO CLong
-totalDataFileCount mxDiskSpaceUsageMetric  =
-    sendMsg mxDiskSpaceUsageMetric (mkSelector "totalDataFileCount") retCLong []
+totalDataFileCount mxDiskSpaceUsageMetric =
+  sendMessage mxDiskSpaceUsageMetric totalDataFileCountSelector
 
 -- | totalCacheFolderSize
 --
@@ -99,8 +96,8 @@ totalDataFileCount mxDiskSpaceUsageMetric  =
 --
 -- ObjC selector: @- totalCacheFolderSize@
 totalCacheFolderSize :: IsMXDiskSpaceUsageMetric mxDiskSpaceUsageMetric => mxDiskSpaceUsageMetric -> IO (Id NSMeasurement)
-totalCacheFolderSize mxDiskSpaceUsageMetric  =
-    sendMsg mxDiskSpaceUsageMetric (mkSelector "totalCacheFolderSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalCacheFolderSize mxDiskSpaceUsageMetric =
+  sendMessage mxDiskSpaceUsageMetric totalCacheFolderSizeSelector
 
 -- | totalCloneSize
 --
@@ -110,8 +107,8 @@ totalCacheFolderSize mxDiskSpaceUsageMetric  =
 --
 -- ObjC selector: @- totalCloneSize@
 totalCloneSize :: IsMXDiskSpaceUsageMetric mxDiskSpaceUsageMetric => mxDiskSpaceUsageMetric -> IO (Id NSMeasurement)
-totalCloneSize mxDiskSpaceUsageMetric  =
-    sendMsg mxDiskSpaceUsageMetric (mkSelector "totalCloneSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalCloneSize mxDiskSpaceUsageMetric =
+  sendMessage mxDiskSpaceUsageMetric totalCloneSizeSelector
 
 -- | totalDiskSpaceUsedSize
 --
@@ -121,8 +118,8 @@ totalCloneSize mxDiskSpaceUsageMetric  =
 --
 -- ObjC selector: @- totalDiskSpaceUsedSize@
 totalDiskSpaceUsedSize :: IsMXDiskSpaceUsageMetric mxDiskSpaceUsageMetric => mxDiskSpaceUsageMetric -> IO (Id NSMeasurement)
-totalDiskSpaceUsedSize mxDiskSpaceUsageMetric  =
-    sendMsg mxDiskSpaceUsageMetric (mkSelector "totalDiskSpaceUsedSize") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalDiskSpaceUsedSize mxDiskSpaceUsageMetric =
+  sendMessage mxDiskSpaceUsageMetric totalDiskSpaceUsedSizeSelector
 
 -- | totalDiskSpaceCapacity
 --
@@ -132,42 +129,42 @@ totalDiskSpaceUsedSize mxDiskSpaceUsageMetric  =
 --
 -- ObjC selector: @- totalDiskSpaceCapacity@
 totalDiskSpaceCapacity :: IsMXDiskSpaceUsageMetric mxDiskSpaceUsageMetric => mxDiskSpaceUsageMetric -> IO (Id NSMeasurement)
-totalDiskSpaceCapacity mxDiskSpaceUsageMetric  =
-    sendMsg mxDiskSpaceUsageMetric (mkSelector "totalDiskSpaceCapacity") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalDiskSpaceCapacity mxDiskSpaceUsageMetric =
+  sendMessage mxDiskSpaceUsageMetric totalDiskSpaceCapacitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @totalBinaryFileSize@
-totalBinaryFileSizeSelector :: Selector
+totalBinaryFileSizeSelector :: Selector '[] (Id NSMeasurement)
 totalBinaryFileSizeSelector = mkSelector "totalBinaryFileSize"
 
 -- | @Selector@ for @totalBinaryFileCount@
-totalBinaryFileCountSelector :: Selector
+totalBinaryFileCountSelector :: Selector '[] CLong
 totalBinaryFileCountSelector = mkSelector "totalBinaryFileCount"
 
 -- | @Selector@ for @totalDataFileSize@
-totalDataFileSizeSelector :: Selector
+totalDataFileSizeSelector :: Selector '[] (Id NSMeasurement)
 totalDataFileSizeSelector = mkSelector "totalDataFileSize"
 
 -- | @Selector@ for @totalDataFileCount@
-totalDataFileCountSelector :: Selector
+totalDataFileCountSelector :: Selector '[] CLong
 totalDataFileCountSelector = mkSelector "totalDataFileCount"
 
 -- | @Selector@ for @totalCacheFolderSize@
-totalCacheFolderSizeSelector :: Selector
+totalCacheFolderSizeSelector :: Selector '[] (Id NSMeasurement)
 totalCacheFolderSizeSelector = mkSelector "totalCacheFolderSize"
 
 -- | @Selector@ for @totalCloneSize@
-totalCloneSizeSelector :: Selector
+totalCloneSizeSelector :: Selector '[] (Id NSMeasurement)
 totalCloneSizeSelector = mkSelector "totalCloneSize"
 
 -- | @Selector@ for @totalDiskSpaceUsedSize@
-totalDiskSpaceUsedSizeSelector :: Selector
+totalDiskSpaceUsedSizeSelector :: Selector '[] (Id NSMeasurement)
 totalDiskSpaceUsedSizeSelector = mkSelector "totalDiskSpaceUsedSize"
 
 -- | @Selector@ for @totalDiskSpaceCapacity@
-totalDiskSpaceCapacitySelector :: Selector
+totalDiskSpaceCapacitySelector :: Selector '[] (Id NSMeasurement)
 totalDiskSpaceCapacitySelector = mkSelector "totalDiskSpaceCapacity"
 

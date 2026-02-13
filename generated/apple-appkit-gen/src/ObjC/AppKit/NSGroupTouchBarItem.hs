@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,21 +24,21 @@ module ObjC.AppKit.NSGroupTouchBarItem
   , effectiveCompressionOptions
   , prioritizedCompressionOptions
   , setPrioritizedCompressionOptions
+  , alertStyleGroupItemWithIdentifierSelector
+  , customizationLabelSelector
+  , effectiveCompressionOptionsSelector
   , groupItemWithIdentifier_itemsSelector
   , groupItemWithIdentifier_items_allowedCompressionOptionsSelector
-  , alertStyleGroupItemWithIdentifierSelector
   , groupTouchBarSelector
-  , setGroupTouchBarSelector
-  , customizationLabelSelector
-  , setCustomizationLabelSelector
   , groupUserInterfaceLayoutDirectionSelector
-  , setGroupUserInterfaceLayoutDirectionSelector
-  , prefersEqualWidthsSelector
-  , setPrefersEqualWidthsSelector
   , preferredItemWidthSelector
-  , setPreferredItemWidthSelector
-  , effectiveCompressionOptionsSelector
+  , prefersEqualWidthsSelector
   , prioritizedCompressionOptionsSelector
+  , setCustomizationLabelSelector
+  , setGroupTouchBarSelector
+  , setGroupUserInterfaceLayoutDirectionSelector
+  , setPreferredItemWidthSelector
+  , setPrefersEqualWidthsSelector
   , setPrioritizedCompressionOptionsSelector
 
   -- * Enum types
@@ -47,15 +48,11 @@ module ObjC.AppKit.NSGroupTouchBarItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,161 +65,152 @@ groupItemWithIdentifier_items :: (IsNSString identifier, IsNSArray items) => ide
 groupItemWithIdentifier_items identifier items =
   do
     cls' <- getRequiredClass "NSGroupTouchBarItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr items $ \raw_items ->
-        sendClassMsg cls' (mkSelector "groupItemWithIdentifier:items:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_items :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' groupItemWithIdentifier_itemsSelector (toNSString identifier) (toNSArray items)
 
 -- | @+ groupItemWithIdentifier:items:allowedCompressionOptions:@
 groupItemWithIdentifier_items_allowedCompressionOptions :: (IsNSString identifier, IsNSArray items, IsNSUserInterfaceCompressionOptions allowedCompressionOptions) => identifier -> items -> allowedCompressionOptions -> IO (Id NSGroupTouchBarItem)
 groupItemWithIdentifier_items_allowedCompressionOptions identifier items allowedCompressionOptions =
   do
     cls' <- getRequiredClass "NSGroupTouchBarItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr items $ \raw_items ->
-        withObjCPtr allowedCompressionOptions $ \raw_allowedCompressionOptions ->
-          sendClassMsg cls' (mkSelector "groupItemWithIdentifier:items:allowedCompressionOptions:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_items :: Ptr ()), argPtr (castPtr raw_allowedCompressionOptions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' groupItemWithIdentifier_items_allowedCompressionOptionsSelector (toNSString identifier) (toNSArray items) (toNSUserInterfaceCompressionOptions allowedCompressionOptions)
 
 -- | @+ alertStyleGroupItemWithIdentifier:@
 alertStyleGroupItemWithIdentifier :: IsNSString identifier => identifier -> IO (Id NSGroupTouchBarItem)
 alertStyleGroupItemWithIdentifier identifier =
   do
     cls' <- getRequiredClass "NSGroupTouchBarItem"
-    withObjCPtr identifier $ \raw_identifier ->
-      sendClassMsg cls' (mkSelector "alertStyleGroupItemWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' alertStyleGroupItemWithIdentifierSelector (toNSString identifier)
 
 -- | @- groupTouchBar@
 groupTouchBar :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> IO (Id NSTouchBar)
-groupTouchBar nsGroupTouchBarItem  =
-    sendMsg nsGroupTouchBarItem (mkSelector "groupTouchBar") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupTouchBar nsGroupTouchBarItem =
+  sendMessage nsGroupTouchBarItem groupTouchBarSelector
 
 -- | @- setGroupTouchBar:@
 setGroupTouchBar :: (IsNSGroupTouchBarItem nsGroupTouchBarItem, IsNSTouchBar value) => nsGroupTouchBarItem -> value -> IO ()
-setGroupTouchBar nsGroupTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsGroupTouchBarItem (mkSelector "setGroupTouchBar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupTouchBar nsGroupTouchBarItem value =
+  sendMessage nsGroupTouchBarItem setGroupTouchBarSelector (toNSTouchBar value)
 
 -- | @- customizationLabel@
 customizationLabel :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> IO (Id NSString)
-customizationLabel nsGroupTouchBarItem  =
-    sendMsg nsGroupTouchBarItem (mkSelector "customizationLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+customizationLabel nsGroupTouchBarItem =
+  sendMessage nsGroupTouchBarItem customizationLabelSelector
 
 -- | @- setCustomizationLabel:@
 setCustomizationLabel :: (IsNSGroupTouchBarItem nsGroupTouchBarItem, IsNSString value) => nsGroupTouchBarItem -> value -> IO ()
-setCustomizationLabel nsGroupTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsGroupTouchBarItem (mkSelector "setCustomizationLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomizationLabel nsGroupTouchBarItem value =
+  sendMessage nsGroupTouchBarItem setCustomizationLabelSelector (toNSString value)
 
 -- | @- groupUserInterfaceLayoutDirection@
 groupUserInterfaceLayoutDirection :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> IO NSUserInterfaceLayoutDirection
-groupUserInterfaceLayoutDirection nsGroupTouchBarItem  =
-    fmap (coerce :: CLong -> NSUserInterfaceLayoutDirection) $ sendMsg nsGroupTouchBarItem (mkSelector "groupUserInterfaceLayoutDirection") retCLong []
+groupUserInterfaceLayoutDirection nsGroupTouchBarItem =
+  sendMessage nsGroupTouchBarItem groupUserInterfaceLayoutDirectionSelector
 
 -- | @- setGroupUserInterfaceLayoutDirection:@
 setGroupUserInterfaceLayoutDirection :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> NSUserInterfaceLayoutDirection -> IO ()
-setGroupUserInterfaceLayoutDirection nsGroupTouchBarItem  value =
-    sendMsg nsGroupTouchBarItem (mkSelector "setGroupUserInterfaceLayoutDirection:") retVoid [argCLong (coerce value)]
+setGroupUserInterfaceLayoutDirection nsGroupTouchBarItem value =
+  sendMessage nsGroupTouchBarItem setGroupUserInterfaceLayoutDirectionSelector value
 
 -- | @- prefersEqualWidths@
 prefersEqualWidths :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> IO Bool
-prefersEqualWidths nsGroupTouchBarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsGroupTouchBarItem (mkSelector "prefersEqualWidths") retCULong []
+prefersEqualWidths nsGroupTouchBarItem =
+  sendMessage nsGroupTouchBarItem prefersEqualWidthsSelector
 
 -- | @- setPrefersEqualWidths:@
 setPrefersEqualWidths :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> Bool -> IO ()
-setPrefersEqualWidths nsGroupTouchBarItem  value =
-    sendMsg nsGroupTouchBarItem (mkSelector "setPrefersEqualWidths:") retVoid [argCULong (if value then 1 else 0)]
+setPrefersEqualWidths nsGroupTouchBarItem value =
+  sendMessage nsGroupTouchBarItem setPrefersEqualWidthsSelector value
 
 -- | @- preferredItemWidth@
 preferredItemWidth :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> IO CDouble
-preferredItemWidth nsGroupTouchBarItem  =
-    sendMsg nsGroupTouchBarItem (mkSelector "preferredItemWidth") retCDouble []
+preferredItemWidth nsGroupTouchBarItem =
+  sendMessage nsGroupTouchBarItem preferredItemWidthSelector
 
 -- | @- setPreferredItemWidth:@
 setPreferredItemWidth :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> CDouble -> IO ()
-setPreferredItemWidth nsGroupTouchBarItem  value =
-    sendMsg nsGroupTouchBarItem (mkSelector "setPreferredItemWidth:") retVoid [argCDouble value]
+setPreferredItemWidth nsGroupTouchBarItem value =
+  sendMessage nsGroupTouchBarItem setPreferredItemWidthSelector value
 
 -- | @- effectiveCompressionOptions@
 effectiveCompressionOptions :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> IO (Id NSUserInterfaceCompressionOptions)
-effectiveCompressionOptions nsGroupTouchBarItem  =
-    sendMsg nsGroupTouchBarItem (mkSelector "effectiveCompressionOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectiveCompressionOptions nsGroupTouchBarItem =
+  sendMessage nsGroupTouchBarItem effectiveCompressionOptionsSelector
 
 -- | @- prioritizedCompressionOptions@
 prioritizedCompressionOptions :: IsNSGroupTouchBarItem nsGroupTouchBarItem => nsGroupTouchBarItem -> IO (Id NSArray)
-prioritizedCompressionOptions nsGroupTouchBarItem  =
-    sendMsg nsGroupTouchBarItem (mkSelector "prioritizedCompressionOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+prioritizedCompressionOptions nsGroupTouchBarItem =
+  sendMessage nsGroupTouchBarItem prioritizedCompressionOptionsSelector
 
 -- | @- setPrioritizedCompressionOptions:@
 setPrioritizedCompressionOptions :: (IsNSGroupTouchBarItem nsGroupTouchBarItem, IsNSArray value) => nsGroupTouchBarItem -> value -> IO ()
-setPrioritizedCompressionOptions nsGroupTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsGroupTouchBarItem (mkSelector "setPrioritizedCompressionOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrioritizedCompressionOptions nsGroupTouchBarItem value =
+  sendMessage nsGroupTouchBarItem setPrioritizedCompressionOptionsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupItemWithIdentifier:items:@
-groupItemWithIdentifier_itemsSelector :: Selector
+groupItemWithIdentifier_itemsSelector :: Selector '[Id NSString, Id NSArray] (Id NSGroupTouchBarItem)
 groupItemWithIdentifier_itemsSelector = mkSelector "groupItemWithIdentifier:items:"
 
 -- | @Selector@ for @groupItemWithIdentifier:items:allowedCompressionOptions:@
-groupItemWithIdentifier_items_allowedCompressionOptionsSelector :: Selector
+groupItemWithIdentifier_items_allowedCompressionOptionsSelector :: Selector '[Id NSString, Id NSArray, Id NSUserInterfaceCompressionOptions] (Id NSGroupTouchBarItem)
 groupItemWithIdentifier_items_allowedCompressionOptionsSelector = mkSelector "groupItemWithIdentifier:items:allowedCompressionOptions:"
 
 -- | @Selector@ for @alertStyleGroupItemWithIdentifier:@
-alertStyleGroupItemWithIdentifierSelector :: Selector
+alertStyleGroupItemWithIdentifierSelector :: Selector '[Id NSString] (Id NSGroupTouchBarItem)
 alertStyleGroupItemWithIdentifierSelector = mkSelector "alertStyleGroupItemWithIdentifier:"
 
 -- | @Selector@ for @groupTouchBar@
-groupTouchBarSelector :: Selector
+groupTouchBarSelector :: Selector '[] (Id NSTouchBar)
 groupTouchBarSelector = mkSelector "groupTouchBar"
 
 -- | @Selector@ for @setGroupTouchBar:@
-setGroupTouchBarSelector :: Selector
+setGroupTouchBarSelector :: Selector '[Id NSTouchBar] ()
 setGroupTouchBarSelector = mkSelector "setGroupTouchBar:"
 
 -- | @Selector@ for @customizationLabel@
-customizationLabelSelector :: Selector
+customizationLabelSelector :: Selector '[] (Id NSString)
 customizationLabelSelector = mkSelector "customizationLabel"
 
 -- | @Selector@ for @setCustomizationLabel:@
-setCustomizationLabelSelector :: Selector
+setCustomizationLabelSelector :: Selector '[Id NSString] ()
 setCustomizationLabelSelector = mkSelector "setCustomizationLabel:"
 
 -- | @Selector@ for @groupUserInterfaceLayoutDirection@
-groupUserInterfaceLayoutDirectionSelector :: Selector
+groupUserInterfaceLayoutDirectionSelector :: Selector '[] NSUserInterfaceLayoutDirection
 groupUserInterfaceLayoutDirectionSelector = mkSelector "groupUserInterfaceLayoutDirection"
 
 -- | @Selector@ for @setGroupUserInterfaceLayoutDirection:@
-setGroupUserInterfaceLayoutDirectionSelector :: Selector
+setGroupUserInterfaceLayoutDirectionSelector :: Selector '[NSUserInterfaceLayoutDirection] ()
 setGroupUserInterfaceLayoutDirectionSelector = mkSelector "setGroupUserInterfaceLayoutDirection:"
 
 -- | @Selector@ for @prefersEqualWidths@
-prefersEqualWidthsSelector :: Selector
+prefersEqualWidthsSelector :: Selector '[] Bool
 prefersEqualWidthsSelector = mkSelector "prefersEqualWidths"
 
 -- | @Selector@ for @setPrefersEqualWidths:@
-setPrefersEqualWidthsSelector :: Selector
+setPrefersEqualWidthsSelector :: Selector '[Bool] ()
 setPrefersEqualWidthsSelector = mkSelector "setPrefersEqualWidths:"
 
 -- | @Selector@ for @preferredItemWidth@
-preferredItemWidthSelector :: Selector
+preferredItemWidthSelector :: Selector '[] CDouble
 preferredItemWidthSelector = mkSelector "preferredItemWidth"
 
 -- | @Selector@ for @setPreferredItemWidth:@
-setPreferredItemWidthSelector :: Selector
+setPreferredItemWidthSelector :: Selector '[CDouble] ()
 setPreferredItemWidthSelector = mkSelector "setPreferredItemWidth:"
 
 -- | @Selector@ for @effectiveCompressionOptions@
-effectiveCompressionOptionsSelector :: Selector
+effectiveCompressionOptionsSelector :: Selector '[] (Id NSUserInterfaceCompressionOptions)
 effectiveCompressionOptionsSelector = mkSelector "effectiveCompressionOptions"
 
 -- | @Selector@ for @prioritizedCompressionOptions@
-prioritizedCompressionOptionsSelector :: Selector
+prioritizedCompressionOptionsSelector :: Selector '[] (Id NSArray)
 prioritizedCompressionOptionsSelector = mkSelector "prioritizedCompressionOptions"
 
 -- | @Selector@ for @setPrioritizedCompressionOptions:@
-setPrioritizedCompressionOptionsSelector :: Selector
+setPrioritizedCompressionOptionsSelector :: Selector '[Id NSArray] ()
 setPrioritizedCompressionOptionsSelector = mkSelector "setPrioritizedCompressionOptions:"
 

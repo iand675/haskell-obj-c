@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.Speech.SFSpeechLanguageModel
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,20 +39,14 @@ prepareCustomLanguageModelForUrl_clientIdentifier_configuration_completion :: (I
 prepareCustomLanguageModelForUrl_clientIdentifier_configuration_completion asset clientIdentifier configuration completion =
   do
     cls' <- getRequiredClass "SFSpeechLanguageModel"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr clientIdentifier $ \raw_clientIdentifier ->
-        withObjCPtr configuration $ \raw_configuration ->
-          sendClassMsg cls' (mkSelector "prepareCustomLanguageModelForUrl:clientIdentifier:configuration:completion:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_clientIdentifier :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' prepareCustomLanguageModelForUrl_clientIdentifier_configuration_completionSelector (toNSURL asset) (toNSString clientIdentifier) (toSFSpeechLanguageModelConfiguration configuration) completion
 
 -- | @+ prepareCustomLanguageModelForUrl:clientIdentifier:configuration:ignoresCache:completion:@
 prepareCustomLanguageModelForUrl_clientIdentifier_configuration_ignoresCache_completion :: (IsNSURL asset, IsNSString clientIdentifier, IsSFSpeechLanguageModelConfiguration configuration) => asset -> clientIdentifier -> configuration -> Bool -> Ptr () -> IO ()
 prepareCustomLanguageModelForUrl_clientIdentifier_configuration_ignoresCache_completion asset clientIdentifier configuration ignoresCache completion =
   do
     cls' <- getRequiredClass "SFSpeechLanguageModel"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr clientIdentifier $ \raw_clientIdentifier ->
-        withObjCPtr configuration $ \raw_configuration ->
-          sendClassMsg cls' (mkSelector "prepareCustomLanguageModelForUrl:clientIdentifier:configuration:ignoresCache:completion:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_clientIdentifier :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argCULong (if ignoresCache then 1 else 0), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' prepareCustomLanguageModelForUrl_clientIdentifier_configuration_ignoresCache_completionSelector (toNSURL asset) (toNSString clientIdentifier) (toSFSpeechLanguageModelConfiguration configuration) ignoresCache completion
 
 -- | Creates a language model from custom training data.
 --
@@ -66,9 +57,7 @@ prepareCustomLanguageModelForUrl_configuration_completion :: (IsNSURL asset, IsS
 prepareCustomLanguageModelForUrl_configuration_completion asset configuration completion =
   do
     cls' <- getRequiredClass "SFSpeechLanguageModel"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr configuration $ \raw_configuration ->
-        sendClassMsg cls' (mkSelector "prepareCustomLanguageModelForUrl:configuration:completion:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' prepareCustomLanguageModelForUrl_configuration_completionSelector (toNSURL asset) (toSFSpeechLanguageModelConfiguration configuration) completion
 
 -- | Creates a language model from custom training data.
 --
@@ -79,27 +68,25 @@ prepareCustomLanguageModelForUrl_configuration_ignoresCache_completion :: (IsNSU
 prepareCustomLanguageModelForUrl_configuration_ignoresCache_completion asset configuration ignoresCache completion =
   do
     cls' <- getRequiredClass "SFSpeechLanguageModel"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr configuration $ \raw_configuration ->
-        sendClassMsg cls' (mkSelector "prepareCustomLanguageModelForUrl:configuration:ignoresCache:completion:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argCULong (if ignoresCache then 1 else 0), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' prepareCustomLanguageModelForUrl_configuration_ignoresCache_completionSelector (toNSURL asset) (toSFSpeechLanguageModelConfiguration configuration) ignoresCache completion
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @prepareCustomLanguageModelForUrl:clientIdentifier:configuration:completion:@
-prepareCustomLanguageModelForUrl_clientIdentifier_configuration_completionSelector :: Selector
+prepareCustomLanguageModelForUrl_clientIdentifier_configuration_completionSelector :: Selector '[Id NSURL, Id NSString, Id SFSpeechLanguageModelConfiguration, Ptr ()] ()
 prepareCustomLanguageModelForUrl_clientIdentifier_configuration_completionSelector = mkSelector "prepareCustomLanguageModelForUrl:clientIdentifier:configuration:completion:"
 
 -- | @Selector@ for @prepareCustomLanguageModelForUrl:clientIdentifier:configuration:ignoresCache:completion:@
-prepareCustomLanguageModelForUrl_clientIdentifier_configuration_ignoresCache_completionSelector :: Selector
+prepareCustomLanguageModelForUrl_clientIdentifier_configuration_ignoresCache_completionSelector :: Selector '[Id NSURL, Id NSString, Id SFSpeechLanguageModelConfiguration, Bool, Ptr ()] ()
 prepareCustomLanguageModelForUrl_clientIdentifier_configuration_ignoresCache_completionSelector = mkSelector "prepareCustomLanguageModelForUrl:clientIdentifier:configuration:ignoresCache:completion:"
 
 -- | @Selector@ for @prepareCustomLanguageModelForUrl:configuration:completion:@
-prepareCustomLanguageModelForUrl_configuration_completionSelector :: Selector
+prepareCustomLanguageModelForUrl_configuration_completionSelector :: Selector '[Id NSURL, Id SFSpeechLanguageModelConfiguration, Ptr ()] ()
 prepareCustomLanguageModelForUrl_configuration_completionSelector = mkSelector "prepareCustomLanguageModelForUrl:configuration:completion:"
 
 -- | @Selector@ for @prepareCustomLanguageModelForUrl:configuration:ignoresCache:completion:@
-prepareCustomLanguageModelForUrl_configuration_ignoresCache_completionSelector :: Selector
+prepareCustomLanguageModelForUrl_configuration_ignoresCache_completionSelector :: Selector '[Id NSURL, Id SFSpeechLanguageModelConfiguration, Bool, Ptr ()] ()
 prepareCustomLanguageModelForUrl_configuration_ignoresCache_completionSelector = mkSelector "prepareCustomLanguageModelForUrl:configuration:ignoresCache:completion:"
 

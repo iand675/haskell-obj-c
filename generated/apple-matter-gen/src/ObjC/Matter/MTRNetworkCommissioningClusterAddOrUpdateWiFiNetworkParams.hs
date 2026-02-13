@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , ssidSelector
-  , setSsidSelector
-  , credentialsSelector
-  , setCredentialsSelector
   , breadcrumbSelector
-  , setBreadcrumbSelector
-  , networkIdentitySelector
-  , setNetworkIdentitySelector
   , clientIdentifierSelector
-  , setClientIdentifierSelector
+  , credentialsSelector
+  , networkIdentitySelector
   , possessionNonceSelector
-  , setPossessionNonceSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setBreadcrumbSelector
+  , setClientIdentifierSelector
+  , setCredentialsSelector
+  , setNetworkIdentitySelector
+  , setPossessionNonceSelector
   , setServerSideProcessingTimeoutSelector
+  , setSsidSelector
+  , setTimedInvokeTimeoutMsSelector
+  , ssidSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,69 +56,63 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- ssid@
 ssid :: IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> IO (Id NSData)
-ssid mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "ssid") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssid mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams ssidSelector
 
 -- | @- setSsid:@
 setSsid :: (IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, IsNSData value) => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> value -> IO ()
-setSsid mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "setSsid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSsid mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams setSsidSelector (toNSData value)
 
 -- | @- credentials@
 credentials :: IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> IO (Id NSData)
-credentials mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "credentials") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentials mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams credentialsSelector
 
 -- | @- setCredentials:@
 setCredentials :: (IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, IsNSData value) => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> value -> IO ()
-setCredentials mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "setCredentials:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredentials mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams setCredentialsSelector (toNSData value)
 
 -- | @- breadcrumb@
 breadcrumb :: IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> IO (Id NSNumber)
-breadcrumb mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "breadcrumb") (retPtr retVoid) [] >>= retainedObject . castPtr
+breadcrumb mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams breadcrumbSelector
 
 -- | @- setBreadcrumb:@
 setBreadcrumb :: (IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, IsNSNumber value) => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> value -> IO ()
-setBreadcrumb mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "setBreadcrumb:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBreadcrumb mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams setBreadcrumbSelector (toNSNumber value)
 
 -- | @- networkIdentity@
 networkIdentity :: IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> IO (Id NSData)
-networkIdentity mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "networkIdentity") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkIdentity mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams networkIdentitySelector
 
 -- | @- setNetworkIdentity:@
 setNetworkIdentity :: (IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, IsNSData value) => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> value -> IO ()
-setNetworkIdentity mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "setNetworkIdentity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNetworkIdentity mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams setNetworkIdentitySelector (toNSData value)
 
 -- | @- clientIdentifier@
 clientIdentifier :: IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> IO (Id NSData)
-clientIdentifier mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "clientIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientIdentifier mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams clientIdentifierSelector
 
 -- | @- setClientIdentifier:@
 setClientIdentifier :: (IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, IsNSData value) => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> value -> IO ()
-setClientIdentifier mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "setClientIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClientIdentifier mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams setClientIdentifierSelector (toNSData value)
 
 -- | @- possessionNonce@
 possessionNonce :: IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> IO (Id NSData)
-possessionNonce mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "possessionNonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+possessionNonce mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams possessionNonceSelector
 
 -- | @- setPossessionNonce:@
 setPossessionNonce :: (IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, IsNSData value) => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> value -> IO ()
-setPossessionNonce mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "setPossessionNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPossessionNonce mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams setPossessionNonceSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -131,8 +122,8 @@ setPossessionNonce mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  v
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -142,9 +133,8 @@ timedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams 
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, IsNSNumber value) => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -154,8 +144,8 @@ setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkPara
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -165,75 +155,74 @@ serverSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateWiFiNetwork
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, IsNSNumber value) => mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams -> value -> IO ()
-setServerSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @ssid@
-ssidSelector :: Selector
+ssidSelector :: Selector '[] (Id NSData)
 ssidSelector = mkSelector "ssid"
 
 -- | @Selector@ for @setSsid:@
-setSsidSelector :: Selector
+setSsidSelector :: Selector '[Id NSData] ()
 setSsidSelector = mkSelector "setSsid:"
 
 -- | @Selector@ for @credentials@
-credentialsSelector :: Selector
+credentialsSelector :: Selector '[] (Id NSData)
 credentialsSelector = mkSelector "credentials"
 
 -- | @Selector@ for @setCredentials:@
-setCredentialsSelector :: Selector
+setCredentialsSelector :: Selector '[Id NSData] ()
 setCredentialsSelector = mkSelector "setCredentials:"
 
 -- | @Selector@ for @breadcrumb@
-breadcrumbSelector :: Selector
+breadcrumbSelector :: Selector '[] (Id NSNumber)
 breadcrumbSelector = mkSelector "breadcrumb"
 
 -- | @Selector@ for @setBreadcrumb:@
-setBreadcrumbSelector :: Selector
+setBreadcrumbSelector :: Selector '[Id NSNumber] ()
 setBreadcrumbSelector = mkSelector "setBreadcrumb:"
 
 -- | @Selector@ for @networkIdentity@
-networkIdentitySelector :: Selector
+networkIdentitySelector :: Selector '[] (Id NSData)
 networkIdentitySelector = mkSelector "networkIdentity"
 
 -- | @Selector@ for @setNetworkIdentity:@
-setNetworkIdentitySelector :: Selector
+setNetworkIdentitySelector :: Selector '[Id NSData] ()
 setNetworkIdentitySelector = mkSelector "setNetworkIdentity:"
 
 -- | @Selector@ for @clientIdentifier@
-clientIdentifierSelector :: Selector
+clientIdentifierSelector :: Selector '[] (Id NSData)
 clientIdentifierSelector = mkSelector "clientIdentifier"
 
 -- | @Selector@ for @setClientIdentifier:@
-setClientIdentifierSelector :: Selector
+setClientIdentifierSelector :: Selector '[Id NSData] ()
 setClientIdentifierSelector = mkSelector "setClientIdentifier:"
 
 -- | @Selector@ for @possessionNonce@
-possessionNonceSelector :: Selector
+possessionNonceSelector :: Selector '[] (Id NSData)
 possessionNonceSelector = mkSelector "possessionNonce"
 
 -- | @Selector@ for @setPossessionNonce:@
-setPossessionNonceSelector :: Selector
+setPossessionNonceSelector :: Selector '[Id NSData] ()
 setPossessionNonceSelector = mkSelector "setPossessionNonce:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

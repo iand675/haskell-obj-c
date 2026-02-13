@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.SceneKit.SCNCylinder
   , heightSegmentCount
   , setHeightSegmentCount
   , cylinderWithRadius_heightSelector
-  , radiusSelector
-  , setRadiusSelector
-  , heightSelector
-  , setHeightSelector
-  , radialSegmentCountSelector
-  , setRadialSegmentCountSelector
   , heightSegmentCountSelector
+  , heightSelector
+  , radialSegmentCountSelector
+  , radiusSelector
   , setHeightSegmentCountSelector
+  , setHeightSelector
+  , setRadialSegmentCountSelector
+  , setRadiusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,7 +57,7 @@ cylinderWithRadius_height :: CDouble -> CDouble -> IO (Id SCNCylinder)
 cylinderWithRadius_height radius height =
   do
     cls' <- getRequiredClass "SCNCylinder"
-    sendClassMsg cls' (mkSelector "cylinderWithRadius:height:") (retPtr retVoid) [argCDouble radius, argCDouble height] >>= retainedObject . castPtr
+    sendClassMessage cls' cylinderWithRadius_heightSelector radius height
 
 -- | radius
 --
@@ -70,8 +67,8 @@ cylinderWithRadius_height radius height =
 --
 -- ObjC selector: @- radius@
 radius :: IsSCNCylinder scnCylinder => scnCylinder -> IO CDouble
-radius scnCylinder  =
-    sendMsg scnCylinder (mkSelector "radius") retCDouble []
+radius scnCylinder =
+  sendMessage scnCylinder radiusSelector
 
 -- | radius
 --
@@ -81,8 +78,8 @@ radius scnCylinder  =
 --
 -- ObjC selector: @- setRadius:@
 setRadius :: IsSCNCylinder scnCylinder => scnCylinder -> CDouble -> IO ()
-setRadius scnCylinder  value =
-    sendMsg scnCylinder (mkSelector "setRadius:") retVoid [argCDouble value]
+setRadius scnCylinder value =
+  sendMessage scnCylinder setRadiusSelector value
 
 -- | height
 --
@@ -92,8 +89,8 @@ setRadius scnCylinder  value =
 --
 -- ObjC selector: @- height@
 height :: IsSCNCylinder scnCylinder => scnCylinder -> IO CDouble
-height scnCylinder  =
-    sendMsg scnCylinder (mkSelector "height") retCDouble []
+height scnCylinder =
+  sendMessage scnCylinder heightSelector
 
 -- | height
 --
@@ -103,8 +100,8 @@ height scnCylinder  =
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsSCNCylinder scnCylinder => scnCylinder -> CDouble -> IO ()
-setHeight scnCylinder  value =
-    sendMsg scnCylinder (mkSelector "setHeight:") retVoid [argCDouble value]
+setHeight scnCylinder value =
+  sendMessage scnCylinder setHeightSelector value
 
 -- | radialSegmentCount
 --
@@ -114,8 +111,8 @@ setHeight scnCylinder  value =
 --
 -- ObjC selector: @- radialSegmentCount@
 radialSegmentCount :: IsSCNCylinder scnCylinder => scnCylinder -> IO CLong
-radialSegmentCount scnCylinder  =
-    sendMsg scnCylinder (mkSelector "radialSegmentCount") retCLong []
+radialSegmentCount scnCylinder =
+  sendMessage scnCylinder radialSegmentCountSelector
 
 -- | radialSegmentCount
 --
@@ -125,8 +122,8 @@ radialSegmentCount scnCylinder  =
 --
 -- ObjC selector: @- setRadialSegmentCount:@
 setRadialSegmentCount :: IsSCNCylinder scnCylinder => scnCylinder -> CLong -> IO ()
-setRadialSegmentCount scnCylinder  value =
-    sendMsg scnCylinder (mkSelector "setRadialSegmentCount:") retVoid [argCLong value]
+setRadialSegmentCount scnCylinder value =
+  sendMessage scnCylinder setRadialSegmentCountSelector value
 
 -- | heightSegmentCount
 --
@@ -136,8 +133,8 @@ setRadialSegmentCount scnCylinder  value =
 --
 -- ObjC selector: @- heightSegmentCount@
 heightSegmentCount :: IsSCNCylinder scnCylinder => scnCylinder -> IO CLong
-heightSegmentCount scnCylinder  =
-    sendMsg scnCylinder (mkSelector "heightSegmentCount") retCLong []
+heightSegmentCount scnCylinder =
+  sendMessage scnCylinder heightSegmentCountSelector
 
 -- | heightSegmentCount
 --
@@ -147,46 +144,46 @@ heightSegmentCount scnCylinder  =
 --
 -- ObjC selector: @- setHeightSegmentCount:@
 setHeightSegmentCount :: IsSCNCylinder scnCylinder => scnCylinder -> CLong -> IO ()
-setHeightSegmentCount scnCylinder  value =
-    sendMsg scnCylinder (mkSelector "setHeightSegmentCount:") retVoid [argCLong value]
+setHeightSegmentCount scnCylinder value =
+  sendMessage scnCylinder setHeightSegmentCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cylinderWithRadius:height:@
-cylinderWithRadius_heightSelector :: Selector
+cylinderWithRadius_heightSelector :: Selector '[CDouble, CDouble] (Id SCNCylinder)
 cylinderWithRadius_heightSelector = mkSelector "cylinderWithRadius:height:"
 
 -- | @Selector@ for @radius@
-radiusSelector :: Selector
+radiusSelector :: Selector '[] CDouble
 radiusSelector = mkSelector "radius"
 
 -- | @Selector@ for @setRadius:@
-setRadiusSelector :: Selector
+setRadiusSelector :: Selector '[CDouble] ()
 setRadiusSelector = mkSelector "setRadius:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CDouble
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CDouble] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @radialSegmentCount@
-radialSegmentCountSelector :: Selector
+radialSegmentCountSelector :: Selector '[] CLong
 radialSegmentCountSelector = mkSelector "radialSegmentCount"
 
 -- | @Selector@ for @setRadialSegmentCount:@
-setRadialSegmentCountSelector :: Selector
+setRadialSegmentCountSelector :: Selector '[CLong] ()
 setRadialSegmentCountSelector = mkSelector "setRadialSegmentCount:"
 
 -- | @Selector@ for @heightSegmentCount@
-heightSegmentCountSelector :: Selector
+heightSegmentCountSelector :: Selector '[] CLong
 heightSegmentCountSelector = mkSelector "heightSegmentCount"
 
 -- | @Selector@ for @setHeightSegmentCount:@
-setHeightSegmentCountSelector :: Selector
+setHeightSegmentCountSelector :: Selector '[CLong] ()
 setHeightSegmentCountSelector = mkSelector "setHeightSegmentCount:"
 

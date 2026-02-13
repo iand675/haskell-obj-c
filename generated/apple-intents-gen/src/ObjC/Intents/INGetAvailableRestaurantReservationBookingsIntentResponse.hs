@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.Intents.INGetAvailableRestaurantReservationBookingsIntentResponse
   , termsAndConditions
   , setTermsAndConditions
   , availableBookings
-  , initWithAvailableBookings_code_userActivitySelector
-  , codeSelector
-  , localizedRestaurantDescriptionTextSelector
-  , setLocalizedRestaurantDescriptionTextSelector
-  , localizedBookingAdvisementTextSelector
-  , setLocalizedBookingAdvisementTextSelector
-  , termsAndConditionsSelector
-  , setTermsAndConditionsSelector
   , availableBookingsSelector
+  , codeSelector
+  , initWithAvailableBookings_code_userActivitySelector
+  , localizedBookingAdvisementTextSelector
+  , localizedRestaurantDescriptionTextSelector
+  , setLocalizedBookingAdvisementTextSelector
+  , setLocalizedRestaurantDescriptionTextSelector
+  , setTermsAndConditionsSelector
+  , termsAndConditionsSelector
 
   -- * Enum types
   , INGetAvailableRestaurantReservationBookingsIntentCode(INGetAvailableRestaurantReservationBookingsIntentCode)
@@ -35,15 +36,11 @@ module ObjC.Intents.INGetAvailableRestaurantReservationBookingsIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,91 +50,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithAvailableBookings:code:userActivity:@
 initWithAvailableBookings_code_userActivity :: (IsINGetAvailableRestaurantReservationBookingsIntentResponse inGetAvailableRestaurantReservationBookingsIntentResponse, IsNSArray availableBookings, IsNSUserActivity userActivity) => inGetAvailableRestaurantReservationBookingsIntentResponse -> availableBookings -> INGetAvailableRestaurantReservationBookingsIntentCode -> userActivity -> IO (Id INGetAvailableRestaurantReservationBookingsIntentResponse)
-initWithAvailableBookings_code_userActivity inGetAvailableRestaurantReservationBookingsIntentResponse  availableBookings code userActivity =
-  withObjCPtr availableBookings $ \raw_availableBookings ->
-    withObjCPtr userActivity $ \raw_userActivity ->
-        sendMsg inGetAvailableRestaurantReservationBookingsIntentResponse (mkSelector "initWithAvailableBookings:code:userActivity:") (retPtr retVoid) [argPtr (castPtr raw_availableBookings :: Ptr ()), argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithAvailableBookings_code_userActivity inGetAvailableRestaurantReservationBookingsIntentResponse availableBookings code userActivity =
+  sendOwnedMessage inGetAvailableRestaurantReservationBookingsIntentResponse initWithAvailableBookings_code_userActivitySelector (toNSArray availableBookings) code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINGetAvailableRestaurantReservationBookingsIntentResponse inGetAvailableRestaurantReservationBookingsIntentResponse => inGetAvailableRestaurantReservationBookingsIntentResponse -> IO INGetAvailableRestaurantReservationBookingsIntentCode
-code inGetAvailableRestaurantReservationBookingsIntentResponse  =
-    fmap (coerce :: CLong -> INGetAvailableRestaurantReservationBookingsIntentCode) $ sendMsg inGetAvailableRestaurantReservationBookingsIntentResponse (mkSelector "code") retCLong []
+code inGetAvailableRestaurantReservationBookingsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingsIntentResponse codeSelector
 
 -- | @- localizedRestaurantDescriptionText@
 localizedRestaurantDescriptionText :: IsINGetAvailableRestaurantReservationBookingsIntentResponse inGetAvailableRestaurantReservationBookingsIntentResponse => inGetAvailableRestaurantReservationBookingsIntentResponse -> IO (Id NSString)
-localizedRestaurantDescriptionText inGetAvailableRestaurantReservationBookingsIntentResponse  =
-    sendMsg inGetAvailableRestaurantReservationBookingsIntentResponse (mkSelector "localizedRestaurantDescriptionText") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedRestaurantDescriptionText inGetAvailableRestaurantReservationBookingsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingsIntentResponse localizedRestaurantDescriptionTextSelector
 
 -- | @- setLocalizedRestaurantDescriptionText:@
 setLocalizedRestaurantDescriptionText :: (IsINGetAvailableRestaurantReservationBookingsIntentResponse inGetAvailableRestaurantReservationBookingsIntentResponse, IsNSString value) => inGetAvailableRestaurantReservationBookingsIntentResponse -> value -> IO ()
-setLocalizedRestaurantDescriptionText inGetAvailableRestaurantReservationBookingsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetAvailableRestaurantReservationBookingsIntentResponse (mkSelector "setLocalizedRestaurantDescriptionText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedRestaurantDescriptionText inGetAvailableRestaurantReservationBookingsIntentResponse value =
+  sendMessage inGetAvailableRestaurantReservationBookingsIntentResponse setLocalizedRestaurantDescriptionTextSelector (toNSString value)
 
 -- | @- localizedBookingAdvisementText@
 localizedBookingAdvisementText :: IsINGetAvailableRestaurantReservationBookingsIntentResponse inGetAvailableRestaurantReservationBookingsIntentResponse => inGetAvailableRestaurantReservationBookingsIntentResponse -> IO (Id NSString)
-localizedBookingAdvisementText inGetAvailableRestaurantReservationBookingsIntentResponse  =
-    sendMsg inGetAvailableRestaurantReservationBookingsIntentResponse (mkSelector "localizedBookingAdvisementText") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedBookingAdvisementText inGetAvailableRestaurantReservationBookingsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingsIntentResponse localizedBookingAdvisementTextSelector
 
 -- | @- setLocalizedBookingAdvisementText:@
 setLocalizedBookingAdvisementText :: (IsINGetAvailableRestaurantReservationBookingsIntentResponse inGetAvailableRestaurantReservationBookingsIntentResponse, IsNSString value) => inGetAvailableRestaurantReservationBookingsIntentResponse -> value -> IO ()
-setLocalizedBookingAdvisementText inGetAvailableRestaurantReservationBookingsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetAvailableRestaurantReservationBookingsIntentResponse (mkSelector "setLocalizedBookingAdvisementText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedBookingAdvisementText inGetAvailableRestaurantReservationBookingsIntentResponse value =
+  sendMessage inGetAvailableRestaurantReservationBookingsIntentResponse setLocalizedBookingAdvisementTextSelector (toNSString value)
 
 -- | @- termsAndConditions@
 termsAndConditions :: IsINGetAvailableRestaurantReservationBookingsIntentResponse inGetAvailableRestaurantReservationBookingsIntentResponse => inGetAvailableRestaurantReservationBookingsIntentResponse -> IO (Id INTermsAndConditions)
-termsAndConditions inGetAvailableRestaurantReservationBookingsIntentResponse  =
-    sendMsg inGetAvailableRestaurantReservationBookingsIntentResponse (mkSelector "termsAndConditions") (retPtr retVoid) [] >>= retainedObject . castPtr
+termsAndConditions inGetAvailableRestaurantReservationBookingsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingsIntentResponse termsAndConditionsSelector
 
 -- | @- setTermsAndConditions:@
 setTermsAndConditions :: (IsINGetAvailableRestaurantReservationBookingsIntentResponse inGetAvailableRestaurantReservationBookingsIntentResponse, IsINTermsAndConditions value) => inGetAvailableRestaurantReservationBookingsIntentResponse -> value -> IO ()
-setTermsAndConditions inGetAvailableRestaurantReservationBookingsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetAvailableRestaurantReservationBookingsIntentResponse (mkSelector "setTermsAndConditions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTermsAndConditions inGetAvailableRestaurantReservationBookingsIntentResponse value =
+  sendMessage inGetAvailableRestaurantReservationBookingsIntentResponse setTermsAndConditionsSelector (toINTermsAndConditions value)
 
 -- | @- availableBookings@
 availableBookings :: IsINGetAvailableRestaurantReservationBookingsIntentResponse inGetAvailableRestaurantReservationBookingsIntentResponse => inGetAvailableRestaurantReservationBookingsIntentResponse -> IO (Id NSArray)
-availableBookings inGetAvailableRestaurantReservationBookingsIntentResponse  =
-    sendMsg inGetAvailableRestaurantReservationBookingsIntentResponse (mkSelector "availableBookings") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableBookings inGetAvailableRestaurantReservationBookingsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingsIntentResponse availableBookingsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAvailableBookings:code:userActivity:@
-initWithAvailableBookings_code_userActivitySelector :: Selector
+initWithAvailableBookings_code_userActivitySelector :: Selector '[Id NSArray, INGetAvailableRestaurantReservationBookingsIntentCode, Id NSUserActivity] (Id INGetAvailableRestaurantReservationBookingsIntentResponse)
 initWithAvailableBookings_code_userActivitySelector = mkSelector "initWithAvailableBookings:code:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INGetAvailableRestaurantReservationBookingsIntentCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @localizedRestaurantDescriptionText@
-localizedRestaurantDescriptionTextSelector :: Selector
+localizedRestaurantDescriptionTextSelector :: Selector '[] (Id NSString)
 localizedRestaurantDescriptionTextSelector = mkSelector "localizedRestaurantDescriptionText"
 
 -- | @Selector@ for @setLocalizedRestaurantDescriptionText:@
-setLocalizedRestaurantDescriptionTextSelector :: Selector
+setLocalizedRestaurantDescriptionTextSelector :: Selector '[Id NSString] ()
 setLocalizedRestaurantDescriptionTextSelector = mkSelector "setLocalizedRestaurantDescriptionText:"
 
 -- | @Selector@ for @localizedBookingAdvisementText@
-localizedBookingAdvisementTextSelector :: Selector
+localizedBookingAdvisementTextSelector :: Selector '[] (Id NSString)
 localizedBookingAdvisementTextSelector = mkSelector "localizedBookingAdvisementText"
 
 -- | @Selector@ for @setLocalizedBookingAdvisementText:@
-setLocalizedBookingAdvisementTextSelector :: Selector
+setLocalizedBookingAdvisementTextSelector :: Selector '[Id NSString] ()
 setLocalizedBookingAdvisementTextSelector = mkSelector "setLocalizedBookingAdvisementText:"
 
 -- | @Selector@ for @termsAndConditions@
-termsAndConditionsSelector :: Selector
+termsAndConditionsSelector :: Selector '[] (Id INTermsAndConditions)
 termsAndConditionsSelector = mkSelector "termsAndConditions"
 
 -- | @Selector@ for @setTermsAndConditions:@
-setTermsAndConditionsSelector :: Selector
+setTermsAndConditionsSelector :: Selector '[Id INTermsAndConditions] ()
 setTermsAndConditionsSelector = mkSelector "setTermsAndConditions:"
 
 -- | @Selector@ for @availableBookings@
-availableBookingsSelector :: Selector
+availableBookingsSelector :: Selector '[] (Id NSArray)
 availableBookingsSelector = mkSelector "availableBookings"
 

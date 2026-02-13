@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,15 @@ module ObjC.PHASE.PHASEAssetRegistry
   , unregisterAssetWithIdentifier_completion
   , assetForIdentifier
   , globalMetaParameters
+  , assetForIdentifierSelector
+  , globalMetaParametersSelector
   , initSelector
   , newSelector
   , registerGlobalMetaParameter_errorSelector
-  , registerSoundEventAssetWithRootNode_identifier_errorSelector
   , registerSoundAssetAtURL_identifier_assetType_channelLayout_normalizationMode_errorSelector
   , registerSoundAssetWithData_identifier_format_normalizationMode_errorSelector
+  , registerSoundEventAssetWithRootNode_identifier_errorSelector
   , unregisterAssetWithIdentifier_completionSelector
-  , assetForIdentifierSelector
-  , globalMetaParametersSelector
 
   -- * Enum types
   , PHASEAssetType(PHASEAssetType)
@@ -42,15 +43,11 @@ module ObjC.PHASE.PHASEAssetRegistry
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,15 +58,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEAssetRegistry phaseAssetRegistry => phaseAssetRegistry -> IO (Id PHASEAssetRegistry)
-init_ phaseAssetRegistry  =
-    sendMsg phaseAssetRegistry (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseAssetRegistry =
+  sendOwnedMessage phaseAssetRegistry initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEAssetRegistry)
 new  =
   do
     cls' <- getRequiredClass "PHASEAssetRegistry"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | registerGlobalMetaParameter:error
 --
@@ -85,10 +82,8 @@ new  =
 --
 -- ObjC selector: @- registerGlobalMetaParameter:error:@
 registerGlobalMetaParameter_error :: (IsPHASEAssetRegistry phaseAssetRegistry, IsPHASEMetaParameterDefinition metaParameterDefinition, IsNSError error_) => phaseAssetRegistry -> metaParameterDefinition -> error_ -> IO (Id PHASEGlobalMetaParameterAsset)
-registerGlobalMetaParameter_error phaseAssetRegistry  metaParameterDefinition error_ =
-  withObjCPtr metaParameterDefinition $ \raw_metaParameterDefinition ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg phaseAssetRegistry (mkSelector "registerGlobalMetaParameter:error:") (retPtr retVoid) [argPtr (castPtr raw_metaParameterDefinition :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+registerGlobalMetaParameter_error phaseAssetRegistry metaParameterDefinition error_ =
+  sendMessage phaseAssetRegistry registerGlobalMetaParameter_errorSelector (toPHASEMetaParameterDefinition metaParameterDefinition) (toNSError error_)
 
 -- | registerSoundEventAssetWithRootNode:identifier:error
 --
@@ -106,11 +101,8 @@ registerGlobalMetaParameter_error phaseAssetRegistry  metaParameterDefinition er
 --
 -- ObjC selector: @- registerSoundEventAssetWithRootNode:identifier:error:@
 registerSoundEventAssetWithRootNode_identifier_error :: (IsPHASEAssetRegistry phaseAssetRegistry, IsPHASESoundEventNodeDefinition rootNode, IsNSString identifier, IsNSError error_) => phaseAssetRegistry -> rootNode -> identifier -> error_ -> IO (Id PHASESoundEventNodeAsset)
-registerSoundEventAssetWithRootNode_identifier_error phaseAssetRegistry  rootNode identifier error_ =
-  withObjCPtr rootNode $ \raw_rootNode ->
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg phaseAssetRegistry (mkSelector "registerSoundEventAssetWithRootNode:identifier:error:") (retPtr retVoid) [argPtr (castPtr raw_rootNode :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+registerSoundEventAssetWithRootNode_identifier_error phaseAssetRegistry rootNode identifier error_ =
+  sendMessage phaseAssetRegistry registerSoundEventAssetWithRootNode_identifier_errorSelector (toPHASESoundEventNodeDefinition rootNode) (toNSString identifier) (toNSError error_)
 
 -- | registerSoundAssetAtURL:identifier:assetType:channelLayout:normalizationMode:error
 --
@@ -134,12 +126,8 @@ registerSoundEventAssetWithRootNode_identifier_error phaseAssetRegistry  rootNod
 --
 -- ObjC selector: @- registerSoundAssetAtURL:identifier:assetType:channelLayout:normalizationMode:error:@
 registerSoundAssetAtURL_identifier_assetType_channelLayout_normalizationMode_error :: (IsPHASEAssetRegistry phaseAssetRegistry, IsNSURL url, IsNSString identifier, IsAVAudioChannelLayout channelLayout, IsNSError error_) => phaseAssetRegistry -> url -> identifier -> PHASEAssetType -> channelLayout -> PHASENormalizationMode -> error_ -> IO (Id PHASESoundAsset)
-registerSoundAssetAtURL_identifier_assetType_channelLayout_normalizationMode_error phaseAssetRegistry  url identifier assetType channelLayout normalizationMode error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr channelLayout $ \raw_channelLayout ->
-        withObjCPtr error_ $ \raw_error_ ->
-            sendMsg phaseAssetRegistry (mkSelector "registerSoundAssetAtURL:identifier:assetType:channelLayout:normalizationMode:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ()), argCLong (coerce assetType), argPtr (castPtr raw_channelLayout :: Ptr ()), argCLong (coerce normalizationMode), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+registerSoundAssetAtURL_identifier_assetType_channelLayout_normalizationMode_error phaseAssetRegistry url identifier assetType channelLayout normalizationMode error_ =
+  sendMessage phaseAssetRegistry registerSoundAssetAtURL_identifier_assetType_channelLayout_normalizationMode_errorSelector (toNSURL url) (toNSString identifier) assetType (toAVAudioChannelLayout channelLayout) normalizationMode (toNSError error_)
 
 -- | registerSoundAssetWithData:identifier:format:normalizationMode:error
 --
@@ -161,12 +149,8 @@ registerSoundAssetAtURL_identifier_assetType_channelLayout_normalizationMode_err
 --
 -- ObjC selector: @- registerSoundAssetWithData:identifier:format:normalizationMode:error:@
 registerSoundAssetWithData_identifier_format_normalizationMode_error :: (IsPHASEAssetRegistry phaseAssetRegistry, IsNSData data_, IsNSString identifier, IsAVAudioFormat format, IsNSError error_) => phaseAssetRegistry -> data_ -> identifier -> format -> PHASENormalizationMode -> error_ -> IO (Id PHASESoundAsset)
-registerSoundAssetWithData_identifier_format_normalizationMode_error phaseAssetRegistry  data_ identifier format normalizationMode error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr format $ \raw_format ->
-        withObjCPtr error_ $ \raw_error_ ->
-            sendMsg phaseAssetRegistry (mkSelector "registerSoundAssetWithData:identifier:format:normalizationMode:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_format :: Ptr ()), argCLong (coerce normalizationMode), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+registerSoundAssetWithData_identifier_format_normalizationMode_error phaseAssetRegistry data_ identifier format normalizationMode error_ =
+  sendMessage phaseAssetRegistry registerSoundAssetWithData_identifier_format_normalizationMode_errorSelector (toNSData data_) (toNSString identifier) (toAVAudioFormat format) normalizationMode (toNSError error_)
 
 -- | unregisterAssetWithIdentifier:completion:
 --
@@ -178,9 +162,8 @@ registerSoundAssetWithData_identifier_format_normalizationMode_error phaseAssetR
 --
 -- ObjC selector: @- unregisterAssetWithIdentifier:completion:@
 unregisterAssetWithIdentifier_completion :: (IsPHASEAssetRegistry phaseAssetRegistry, IsNSString identifier) => phaseAssetRegistry -> identifier -> Ptr () -> IO ()
-unregisterAssetWithIdentifier_completion phaseAssetRegistry  identifier handler =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg phaseAssetRegistry (mkSelector "unregisterAssetWithIdentifier:completion:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+unregisterAssetWithIdentifier_completion phaseAssetRegistry identifier handler =
+  sendMessage phaseAssetRegistry unregisterAssetWithIdentifier_completionSelector (toNSString identifier) handler
 
 -- | assetForIdentifier
 --
@@ -192,9 +175,8 @@ unregisterAssetWithIdentifier_completion phaseAssetRegistry  identifier handler 
 --
 -- ObjC selector: @- assetForIdentifier:@
 assetForIdentifier :: (IsPHASEAssetRegistry phaseAssetRegistry, IsNSString identifier) => phaseAssetRegistry -> identifier -> IO (Id PHASEAsset)
-assetForIdentifier phaseAssetRegistry  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg phaseAssetRegistry (mkSelector "assetForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= retainedObject . castPtr
+assetForIdentifier phaseAssetRegistry identifier =
+  sendMessage phaseAssetRegistry assetForIdentifierSelector (toNSString identifier)
 
 -- | globalMetaParameters
 --
@@ -202,46 +184,46 @@ assetForIdentifier phaseAssetRegistry  identifier =
 --
 -- ObjC selector: @- globalMetaParameters@
 globalMetaParameters :: IsPHASEAssetRegistry phaseAssetRegistry => phaseAssetRegistry -> IO (Id NSDictionary)
-globalMetaParameters phaseAssetRegistry  =
-    sendMsg phaseAssetRegistry (mkSelector "globalMetaParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+globalMetaParameters phaseAssetRegistry =
+  sendMessage phaseAssetRegistry globalMetaParametersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEAssetRegistry)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEAssetRegistry)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @registerGlobalMetaParameter:error:@
-registerGlobalMetaParameter_errorSelector :: Selector
+registerGlobalMetaParameter_errorSelector :: Selector '[Id PHASEMetaParameterDefinition, Id NSError] (Id PHASEGlobalMetaParameterAsset)
 registerGlobalMetaParameter_errorSelector = mkSelector "registerGlobalMetaParameter:error:"
 
 -- | @Selector@ for @registerSoundEventAssetWithRootNode:identifier:error:@
-registerSoundEventAssetWithRootNode_identifier_errorSelector :: Selector
+registerSoundEventAssetWithRootNode_identifier_errorSelector :: Selector '[Id PHASESoundEventNodeDefinition, Id NSString, Id NSError] (Id PHASESoundEventNodeAsset)
 registerSoundEventAssetWithRootNode_identifier_errorSelector = mkSelector "registerSoundEventAssetWithRootNode:identifier:error:"
 
 -- | @Selector@ for @registerSoundAssetAtURL:identifier:assetType:channelLayout:normalizationMode:error:@
-registerSoundAssetAtURL_identifier_assetType_channelLayout_normalizationMode_errorSelector :: Selector
+registerSoundAssetAtURL_identifier_assetType_channelLayout_normalizationMode_errorSelector :: Selector '[Id NSURL, Id NSString, PHASEAssetType, Id AVAudioChannelLayout, PHASENormalizationMode, Id NSError] (Id PHASESoundAsset)
 registerSoundAssetAtURL_identifier_assetType_channelLayout_normalizationMode_errorSelector = mkSelector "registerSoundAssetAtURL:identifier:assetType:channelLayout:normalizationMode:error:"
 
 -- | @Selector@ for @registerSoundAssetWithData:identifier:format:normalizationMode:error:@
-registerSoundAssetWithData_identifier_format_normalizationMode_errorSelector :: Selector
+registerSoundAssetWithData_identifier_format_normalizationMode_errorSelector :: Selector '[Id NSData, Id NSString, Id AVAudioFormat, PHASENormalizationMode, Id NSError] (Id PHASESoundAsset)
 registerSoundAssetWithData_identifier_format_normalizationMode_errorSelector = mkSelector "registerSoundAssetWithData:identifier:format:normalizationMode:error:"
 
 -- | @Selector@ for @unregisterAssetWithIdentifier:completion:@
-unregisterAssetWithIdentifier_completionSelector :: Selector
+unregisterAssetWithIdentifier_completionSelector :: Selector '[Id NSString, Ptr ()] ()
 unregisterAssetWithIdentifier_completionSelector = mkSelector "unregisterAssetWithIdentifier:completion:"
 
 -- | @Selector@ for @assetForIdentifier:@
-assetForIdentifierSelector :: Selector
+assetForIdentifierSelector :: Selector '[Id NSString] (Id PHASEAsset)
 assetForIdentifierSelector = mkSelector "assetForIdentifier:"
 
 -- | @Selector@ for @globalMetaParameters@
-globalMetaParametersSelector :: Selector
+globalMetaParametersSelector :: Selector '[] (Id NSDictionary)
 globalMetaParametersSelector = mkSelector "globalMetaParameters"
 

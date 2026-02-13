@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,24 +22,20 @@ module ObjC.Virtualization.VZVirtioSocketDevice
   , setSocketListener_forPort
   , removeSocketListenerForPort
   , connectToPort_completionHandler
-  , newSelector
-  , initSelector
-  , setSocketListener_forPortSelector
-  , removeSocketListenerForPortSelector
   , connectToPort_completionHandlerSelector
+  , initSelector
+  , newSelector
+  , removeSocketListenerForPortSelector
+  , setSocketListener_forPortSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,12 +47,12 @@ new :: IO (Id VZVirtioSocketDevice)
 new  =
   do
     cls' <- getRequiredClass "VZVirtioSocketDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZVirtioSocketDevice vzVirtioSocketDevice => vzVirtioSocketDevice -> IO (Id VZVirtioSocketDevice)
-init_ vzVirtioSocketDevice  =
-    sendMsg vzVirtioSocketDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioSocketDevice =
+  sendOwnedMessage vzVirtioSocketDevice initSelector
 
 -- | Sets a listener at a specified port.
 --
@@ -67,9 +64,8 @@ init_ vzVirtioSocketDevice  =
 --
 -- ObjC selector: @- setSocketListener:forPort:@
 setSocketListener_forPort :: (IsVZVirtioSocketDevice vzVirtioSocketDevice, IsVZVirtioSocketListener listener) => vzVirtioSocketDevice -> listener -> CUInt -> IO ()
-setSocketListener_forPort vzVirtioSocketDevice  listener port =
-  withObjCPtr listener $ \raw_listener ->
-      sendMsg vzVirtioSocketDevice (mkSelector "setSocketListener:forPort:") retVoid [argPtr (castPtr raw_listener :: Ptr ()), argCUInt port]
+setSocketListener_forPort vzVirtioSocketDevice listener port =
+  sendMessage vzVirtioSocketDevice setSocketListener_forPortSelector (toVZVirtioSocketListener listener) port
 
 -- | Removes the listener at a specified port.
 --
@@ -79,8 +75,8 @@ setSocketListener_forPort vzVirtioSocketDevice  listener port =
 --
 -- ObjC selector: @- removeSocketListenerForPort:@
 removeSocketListenerForPort :: IsVZVirtioSocketDevice vzVirtioSocketDevice => vzVirtioSocketDevice -> CUInt -> IO ()
-removeSocketListenerForPort vzVirtioSocketDevice  port =
-    sendMsg vzVirtioSocketDevice (mkSelector "removeSocketListenerForPort:") retVoid [argCUInt port]
+removeSocketListenerForPort vzVirtioSocketDevice port =
+  sendMessage vzVirtioSocketDevice removeSocketListenerForPortSelector port
 
 -- | Connects to a specified port.
 --
@@ -92,30 +88,30 @@ removeSocketListenerForPort vzVirtioSocketDevice  port =
 --
 -- ObjC selector: @- connectToPort:completionHandler:@
 connectToPort_completionHandler :: IsVZVirtioSocketDevice vzVirtioSocketDevice => vzVirtioSocketDevice -> CUInt -> Ptr () -> IO ()
-connectToPort_completionHandler vzVirtioSocketDevice  port completionHandler =
-    sendMsg vzVirtioSocketDevice (mkSelector "connectToPort:completionHandler:") retVoid [argCUInt port, argPtr (castPtr completionHandler :: Ptr ())]
+connectToPort_completionHandler vzVirtioSocketDevice port completionHandler =
+  sendMessage vzVirtioSocketDevice connectToPort_completionHandlerSelector port completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZVirtioSocketDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioSocketDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setSocketListener:forPort:@
-setSocketListener_forPortSelector :: Selector
+setSocketListener_forPortSelector :: Selector '[Id VZVirtioSocketListener, CUInt] ()
 setSocketListener_forPortSelector = mkSelector "setSocketListener:forPort:"
 
 -- | @Selector@ for @removeSocketListenerForPort:@
-removeSocketListenerForPortSelector :: Selector
+removeSocketListenerForPortSelector :: Selector '[CUInt] ()
 removeSocketListenerForPortSelector = mkSelector "removeSocketListenerForPort:"
 
 -- | @Selector@ for @connectToPort:completionHandler:@
-connectToPort_completionHandlerSelector :: Selector
+connectToPort_completionHandlerSelector :: Selector '[CUInt, Ptr ()] ()
 connectToPort_completionHandlerSelector = mkSelector "connectToPort:completionHandler:"
 

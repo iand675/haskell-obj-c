@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.AVFoundation.AVMutableComposition
   , removeTrack
   , mutableTrackCompatibleWithTrack
   , tracks
+  , addMutableTrackWithMediaType_preferredTrackIDSelector
   , compositionSelector
   , compositionWithURLAssetInitializationOptionsSelector
-  , trackWithTrackIDSelector
   , loadTrackWithTrackID_completionHandlerSelector
-  , tracksWithMediaTypeSelector
-  , tracksWithMediaCharacteristicSelector
-  , addMutableTrackWithMediaType_preferredTrackIDSelector
-  , removeTrackSelector
   , mutableTrackCompatibleWithTrackSelector
+  , removeTrackSelector
+  , trackWithTrackIDSelector
   , tracksSelector
+  , tracksWithMediaCharacteristicSelector
+  , tracksWithMediaTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,7 +51,7 @@ composition :: IO (Id AVMutableComposition)
 composition  =
   do
     cls' <- getRequiredClass "AVMutableComposition"
-    sendClassMsg cls' (mkSelector "composition") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' compositionSelector
 
 -- | compositionWithURLAssetInitializationOptions:
 --
@@ -69,8 +66,7 @@ compositionWithURLAssetInitializationOptions :: IsNSDictionary urlAssetInitializ
 compositionWithURLAssetInitializationOptions urlAssetInitializationOptions =
   do
     cls' <- getRequiredClass "AVMutableComposition"
-    withObjCPtr urlAssetInitializationOptions $ \raw_urlAssetInitializationOptions ->
-      sendClassMsg cls' (mkSelector "compositionWithURLAssetInitializationOptions:") (retPtr retVoid) [argPtr (castPtr raw_urlAssetInitializationOptions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' compositionWithURLAssetInitializationOptionsSelector (toNSDictionary urlAssetInitializationOptions)
 
 -- | trackWithTrackID:
 --
@@ -84,8 +80,8 @@ compositionWithURLAssetInitializationOptions urlAssetInitializationOptions =
 --
 -- ObjC selector: @- trackWithTrackID:@
 trackWithTrackID :: IsAVMutableComposition avMutableComposition => avMutableComposition -> CInt -> IO (Id AVMutableCompositionTrack)
-trackWithTrackID avMutableComposition  trackID =
-    sendMsg avMutableComposition (mkSelector "trackWithTrackID:") (retPtr retVoid) [argCInt trackID] >>= retainedObject . castPtr
+trackWithTrackID avMutableComposition trackID =
+  sendMessage avMutableComposition trackWithTrackIDSelector trackID
 
 -- | loadTrackWithTrackID:completionHandler:
 --
@@ -97,8 +93,8 @@ trackWithTrackID avMutableComposition  trackID =
 --
 -- ObjC selector: @- loadTrackWithTrackID:completionHandler:@
 loadTrackWithTrackID_completionHandler :: IsAVMutableComposition avMutableComposition => avMutableComposition -> CInt -> Ptr () -> IO ()
-loadTrackWithTrackID_completionHandler avMutableComposition  trackID completionHandler =
-    sendMsg avMutableComposition (mkSelector "loadTrackWithTrackID:completionHandler:") retVoid [argCInt trackID, argPtr (castPtr completionHandler :: Ptr ())]
+loadTrackWithTrackID_completionHandler avMutableComposition trackID completionHandler =
+  sendMessage avMutableComposition loadTrackWithTrackID_completionHandlerSelector trackID completionHandler
 
 -- | tracksWithMediaType:
 --
@@ -112,9 +108,8 @@ loadTrackWithTrackID_completionHandler avMutableComposition  trackID completionH
 --
 -- ObjC selector: @- tracksWithMediaType:@
 tracksWithMediaType :: (IsAVMutableComposition avMutableComposition, IsNSString mediaType) => avMutableComposition -> mediaType -> IO (Id NSArray)
-tracksWithMediaType avMutableComposition  mediaType =
-  withObjCPtr mediaType $ \raw_mediaType ->
-      sendMsg avMutableComposition (mkSelector "tracksWithMediaType:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaType avMutableComposition mediaType =
+  sendMessage avMutableComposition tracksWithMediaTypeSelector (toNSString mediaType)
 
 -- | tracksWithMediaCharacteristic:
 --
@@ -128,9 +123,8 @@ tracksWithMediaType avMutableComposition  mediaType =
 --
 -- ObjC selector: @- tracksWithMediaCharacteristic:@
 tracksWithMediaCharacteristic :: (IsAVMutableComposition avMutableComposition, IsNSString mediaCharacteristic) => avMutableComposition -> mediaCharacteristic -> IO (Id NSArray)
-tracksWithMediaCharacteristic avMutableComposition  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avMutableComposition (mkSelector "tracksWithMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaCharacteristic avMutableComposition mediaCharacteristic =
+  sendMessage avMutableComposition tracksWithMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | addMutableTrackWithMediaType:preferredTrackID:
 --
@@ -146,9 +140,8 @@ tracksWithMediaCharacteristic avMutableComposition  mediaCharacteristic =
 --
 -- ObjC selector: @- addMutableTrackWithMediaType:preferredTrackID:@
 addMutableTrackWithMediaType_preferredTrackID :: (IsAVMutableComposition avMutableComposition, IsNSString mediaType) => avMutableComposition -> mediaType -> CInt -> IO (Id AVMutableCompositionTrack)
-addMutableTrackWithMediaType_preferredTrackID avMutableComposition  mediaType preferredTrackID =
-  withObjCPtr mediaType $ \raw_mediaType ->
-      sendMsg avMutableComposition (mkSelector "addMutableTrackWithMediaType:preferredTrackID:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ()), argCInt preferredTrackID] >>= retainedObject . castPtr
+addMutableTrackWithMediaType_preferredTrackID avMutableComposition mediaType preferredTrackID =
+  sendMessage avMutableComposition addMutableTrackWithMediaType_preferredTrackIDSelector (toNSString mediaType) preferredTrackID
 
 -- | removeTrack:
 --
@@ -160,9 +153,8 @@ addMutableTrackWithMediaType_preferredTrackID avMutableComposition  mediaType pr
 --
 -- ObjC selector: @- removeTrack:@
 removeTrack :: (IsAVMutableComposition avMutableComposition, IsAVCompositionTrack track) => avMutableComposition -> track -> IO ()
-removeTrack avMutableComposition  track =
-  withObjCPtr track $ \raw_track ->
-      sendMsg avMutableComposition (mkSelector "removeTrack:") retVoid [argPtr (castPtr raw_track :: Ptr ())]
+removeTrack avMutableComposition track =
+  sendMessage avMutableComposition removeTrackSelector (toAVCompositionTrack track)
 
 -- | mutableTrackCompatibleWithTrack:
 --
@@ -180,9 +172,8 @@ removeTrack avMutableComposition  track =
 --
 -- ObjC selector: @- mutableTrackCompatibleWithTrack:@
 mutableTrackCompatibleWithTrack :: (IsAVMutableComposition avMutableComposition, IsAVAssetTrack track) => avMutableComposition -> track -> IO (Id AVMutableCompositionTrack)
-mutableTrackCompatibleWithTrack avMutableComposition  track =
-  withObjCPtr track $ \raw_track ->
-      sendMsg avMutableComposition (mkSelector "mutableTrackCompatibleWithTrack:") (retPtr retVoid) [argPtr (castPtr raw_track :: Ptr ())] >>= retainedObject . castPtr
+mutableTrackCompatibleWithTrack avMutableComposition track =
+  sendMessage avMutableComposition mutableTrackCompatibleWithTrackSelector (toAVAssetTrack track)
 
 -- | tracks
 --
@@ -190,50 +181,50 @@ mutableTrackCompatibleWithTrack avMutableComposition  track =
 --
 -- ObjC selector: @- tracks@
 tracks :: IsAVMutableComposition avMutableComposition => avMutableComposition -> IO (Id NSArray)
-tracks avMutableComposition  =
-    sendMsg avMutableComposition (mkSelector "tracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tracks avMutableComposition =
+  sendMessage avMutableComposition tracksSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @composition@
-compositionSelector :: Selector
+compositionSelector :: Selector '[] (Id AVMutableComposition)
 compositionSelector = mkSelector "composition"
 
 -- | @Selector@ for @compositionWithURLAssetInitializationOptions:@
-compositionWithURLAssetInitializationOptionsSelector :: Selector
+compositionWithURLAssetInitializationOptionsSelector :: Selector '[Id NSDictionary] (Id AVMutableComposition)
 compositionWithURLAssetInitializationOptionsSelector = mkSelector "compositionWithURLAssetInitializationOptions:"
 
 -- | @Selector@ for @trackWithTrackID:@
-trackWithTrackIDSelector :: Selector
+trackWithTrackIDSelector :: Selector '[CInt] (Id AVMutableCompositionTrack)
 trackWithTrackIDSelector = mkSelector "trackWithTrackID:"
 
 -- | @Selector@ for @loadTrackWithTrackID:completionHandler:@
-loadTrackWithTrackID_completionHandlerSelector :: Selector
+loadTrackWithTrackID_completionHandlerSelector :: Selector '[CInt, Ptr ()] ()
 loadTrackWithTrackID_completionHandlerSelector = mkSelector "loadTrackWithTrackID:completionHandler:"
 
 -- | @Selector@ for @tracksWithMediaType:@
-tracksWithMediaTypeSelector :: Selector
+tracksWithMediaTypeSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaTypeSelector = mkSelector "tracksWithMediaType:"
 
 -- | @Selector@ for @tracksWithMediaCharacteristic:@
-tracksWithMediaCharacteristicSelector :: Selector
+tracksWithMediaCharacteristicSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaCharacteristicSelector = mkSelector "tracksWithMediaCharacteristic:"
 
 -- | @Selector@ for @addMutableTrackWithMediaType:preferredTrackID:@
-addMutableTrackWithMediaType_preferredTrackIDSelector :: Selector
+addMutableTrackWithMediaType_preferredTrackIDSelector :: Selector '[Id NSString, CInt] (Id AVMutableCompositionTrack)
 addMutableTrackWithMediaType_preferredTrackIDSelector = mkSelector "addMutableTrackWithMediaType:preferredTrackID:"
 
 -- | @Selector@ for @removeTrack:@
-removeTrackSelector :: Selector
+removeTrackSelector :: Selector '[Id AVCompositionTrack] ()
 removeTrackSelector = mkSelector "removeTrack:"
 
 -- | @Selector@ for @mutableTrackCompatibleWithTrack:@
-mutableTrackCompatibleWithTrackSelector :: Selector
+mutableTrackCompatibleWithTrackSelector :: Selector '[Id AVAssetTrack] (Id AVMutableCompositionTrack)
 mutableTrackCompatibleWithTrackSelector = mkSelector "mutableTrackCompatibleWithTrack:"
 
 -- | @Selector@ for @tracks@
-tracksSelector :: Selector
+tracksSelector :: Selector '[] (Id NSArray)
 tracksSelector = mkSelector "tracks"
 

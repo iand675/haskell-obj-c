@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.MapKit.MKGeoJSONFeature
   , identifier
   , properties
   , geometry
+  , geometrySelector
   , identifierSelector
   , propertiesSelector
-  , geometrySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- identifier@
 identifier :: IsMKGeoJSONFeature mkGeoJSONFeature => mkGeoJSONFeature -> IO (Id NSString)
-identifier mkGeoJSONFeature  =
-    sendMsg mkGeoJSONFeature (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier mkGeoJSONFeature =
+  sendMessage mkGeoJSONFeature identifierSelector
 
 -- | @- properties@
 properties :: IsMKGeoJSONFeature mkGeoJSONFeature => mkGeoJSONFeature -> IO (Id NSData)
-properties mkGeoJSONFeature  =
-    sendMsg mkGeoJSONFeature (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+properties mkGeoJSONFeature =
+  sendMessage mkGeoJSONFeature propertiesSelector
 
 -- | @- geometry@
 geometry :: IsMKGeoJSONFeature mkGeoJSONFeature => mkGeoJSONFeature -> IO (Id NSArray)
-geometry mkGeoJSONFeature  =
-    sendMsg mkGeoJSONFeature (mkSelector "geometry") (retPtr retVoid) [] >>= retainedObject . castPtr
+geometry mkGeoJSONFeature =
+  sendMessage mkGeoJSONFeature geometrySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSData)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @geometry@
-geometrySelector :: Selector
+geometrySelector :: Selector '[] (Id NSArray)
 geometrySelector = mkSelector "geometry"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.PHASE.PHASEEnvelope
   , segments
   , domain
   , range
+  , domainSelector
+  , evaluateForValueSelector
   , initSelector
   , newSelector
-  , evaluateForValueSelector
-  , segmentsSelector
-  , domainSelector
   , rangeSelector
+  , segmentsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEEnvelope phaseEnvelope => phaseEnvelope -> IO (Id PHASEEnvelope)
-init_ phaseEnvelope  =
-    sendMsg phaseEnvelope (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseEnvelope =
+  sendOwnedMessage phaseEnvelope initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEEnvelope)
 new  =
   do
     cls' <- getRequiredClass "PHASEEnvelope"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | evaluateForValue
 --
@@ -67,8 +64,8 @@ new  =
 --
 -- ObjC selector: @- evaluateForValue:@
 evaluateForValue :: IsPHASEEnvelope phaseEnvelope => phaseEnvelope -> CDouble -> IO CDouble
-evaluateForValue phaseEnvelope  x =
-    sendMsg phaseEnvelope (mkSelector "evaluateForValue:") retCDouble [argCDouble x]
+evaluateForValue phaseEnvelope x =
+  sendMessage phaseEnvelope evaluateForValueSelector x
 
 -- | segments
 --
@@ -76,8 +73,8 @@ evaluateForValue phaseEnvelope  x =
 --
 -- ObjC selector: @- segments@
 segments :: IsPHASEEnvelope phaseEnvelope => phaseEnvelope -> IO (Id NSArray)
-segments phaseEnvelope  =
-    sendMsg phaseEnvelope (mkSelector "segments") (retPtr retVoid) [] >>= retainedObject . castPtr
+segments phaseEnvelope =
+  sendMessage phaseEnvelope segmentsSelector
 
 -- | domain
 --
@@ -87,8 +84,8 @@ segments phaseEnvelope  =
 --
 -- ObjC selector: @- domain@
 domain :: IsPHASEEnvelope phaseEnvelope => phaseEnvelope -> IO (Id PHASENumericPair)
-domain phaseEnvelope  =
-    sendMsg phaseEnvelope (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain phaseEnvelope =
+  sendMessage phaseEnvelope domainSelector
 
 -- | range
 --
@@ -98,34 +95,34 @@ domain phaseEnvelope  =
 --
 -- ObjC selector: @- range@
 range :: IsPHASEEnvelope phaseEnvelope => phaseEnvelope -> IO (Id PHASENumericPair)
-range phaseEnvelope  =
-    sendMsg phaseEnvelope (mkSelector "range") (retPtr retVoid) [] >>= retainedObject . castPtr
+range phaseEnvelope =
+  sendMessage phaseEnvelope rangeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEEnvelope)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEEnvelope)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @evaluateForValue:@
-evaluateForValueSelector :: Selector
+evaluateForValueSelector :: Selector '[CDouble] CDouble
 evaluateForValueSelector = mkSelector "evaluateForValue:"
 
 -- | @Selector@ for @segments@
-segmentsSelector :: Selector
+segmentsSelector :: Selector '[] (Id NSArray)
 segmentsSelector = mkSelector "segments"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id PHASENumericPair)
 domainSelector = mkSelector "domain"
 
 -- | @Selector@ for @range@
-rangeSelector :: Selector
+rangeSelector :: Selector '[] (Id PHASENumericPair)
 rangeSelector = mkSelector "range"
 

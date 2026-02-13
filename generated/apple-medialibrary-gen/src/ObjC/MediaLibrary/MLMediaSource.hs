@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.MediaLibrary.MLMediaSource
   , mediaSourceIdentifier
   , attributes
   , rootMediaGroup
+  , attributesSelector
   , mediaGroupForIdentifierSelector
   , mediaGroupsForIdentifiersSelector
+  , mediaLibrarySelector
   , mediaObjectForIdentifierSelector
   , mediaObjectsForIdentifiersSelector
-  , mediaLibrarySelector
   , mediaSourceIdentifierSelector
-  , attributesSelector
   , rootMediaGroupSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- mediaGroupForIdentifier:@
 mediaGroupForIdentifier :: (IsMLMediaSource mlMediaSource, IsNSString mediaGroupIdentifier) => mlMediaSource -> mediaGroupIdentifier -> IO (Id MLMediaGroup)
-mediaGroupForIdentifier mlMediaSource  mediaGroupIdentifier =
-  withObjCPtr mediaGroupIdentifier $ \raw_mediaGroupIdentifier ->
-      sendMsg mlMediaSource (mkSelector "mediaGroupForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_mediaGroupIdentifier :: Ptr ())] >>= retainedObject . castPtr
+mediaGroupForIdentifier mlMediaSource mediaGroupIdentifier =
+  sendMessage mlMediaSource mediaGroupForIdentifierSelector (toNSString mediaGroupIdentifier)
 
 -- | @- mediaGroupsForIdentifiers:@
 mediaGroupsForIdentifiers :: (IsMLMediaSource mlMediaSource, IsNSArray mediaGroupIdentifiers) => mlMediaSource -> mediaGroupIdentifiers -> IO (Id NSDictionary)
-mediaGroupsForIdentifiers mlMediaSource  mediaGroupIdentifiers =
-  withObjCPtr mediaGroupIdentifiers $ \raw_mediaGroupIdentifiers ->
-      sendMsg mlMediaSource (mkSelector "mediaGroupsForIdentifiers:") (retPtr retVoid) [argPtr (castPtr raw_mediaGroupIdentifiers :: Ptr ())] >>= retainedObject . castPtr
+mediaGroupsForIdentifiers mlMediaSource mediaGroupIdentifiers =
+  sendMessage mlMediaSource mediaGroupsForIdentifiersSelector (toNSArray mediaGroupIdentifiers)
 
 -- | @- mediaObjectForIdentifier:@
 mediaObjectForIdentifier :: (IsMLMediaSource mlMediaSource, IsNSString mediaObjectIdentifier) => mlMediaSource -> mediaObjectIdentifier -> IO (Id MLMediaObject)
-mediaObjectForIdentifier mlMediaSource  mediaObjectIdentifier =
-  withObjCPtr mediaObjectIdentifier $ \raw_mediaObjectIdentifier ->
-      sendMsg mlMediaSource (mkSelector "mediaObjectForIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_mediaObjectIdentifier :: Ptr ())] >>= retainedObject . castPtr
+mediaObjectForIdentifier mlMediaSource mediaObjectIdentifier =
+  sendMessage mlMediaSource mediaObjectForIdentifierSelector (toNSString mediaObjectIdentifier)
 
 -- | @- mediaObjectsForIdentifiers:@
 mediaObjectsForIdentifiers :: (IsMLMediaSource mlMediaSource, IsNSArray mediaObjectIdentifiers) => mlMediaSource -> mediaObjectIdentifiers -> IO (Id NSDictionary)
-mediaObjectsForIdentifiers mlMediaSource  mediaObjectIdentifiers =
-  withObjCPtr mediaObjectIdentifiers $ \raw_mediaObjectIdentifiers ->
-      sendMsg mlMediaSource (mkSelector "mediaObjectsForIdentifiers:") (retPtr retVoid) [argPtr (castPtr raw_mediaObjectIdentifiers :: Ptr ())] >>= retainedObject . castPtr
+mediaObjectsForIdentifiers mlMediaSource mediaObjectIdentifiers =
+  sendMessage mlMediaSource mediaObjectsForIdentifiersSelector (toNSArray mediaObjectIdentifiers)
 
 -- | @- mediaLibrary@
 mediaLibrary :: IsMLMediaSource mlMediaSource => mlMediaSource -> IO (Id MLMediaLibrary)
-mediaLibrary mlMediaSource  =
-    sendMsg mlMediaSource (mkSelector "mediaLibrary") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaLibrary mlMediaSource =
+  sendMessage mlMediaSource mediaLibrarySelector
 
 -- | @- mediaSourceIdentifier@
 mediaSourceIdentifier :: IsMLMediaSource mlMediaSource => mlMediaSource -> IO (Id NSString)
-mediaSourceIdentifier mlMediaSource  =
-    sendMsg mlMediaSource (mkSelector "mediaSourceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaSourceIdentifier mlMediaSource =
+  sendMessage mlMediaSource mediaSourceIdentifierSelector
 
 -- | @- attributes@
 attributes :: IsMLMediaSource mlMediaSource => mlMediaSource -> IO (Id NSDictionary)
-attributes mlMediaSource  =
-    sendMsg mlMediaSource (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes mlMediaSource =
+  sendMessage mlMediaSource attributesSelector
 
 -- | @- rootMediaGroup@
 rootMediaGroup :: IsMLMediaSource mlMediaSource => mlMediaSource -> IO (Id MLMediaGroup)
-rootMediaGroup mlMediaSource  =
-    sendMsg mlMediaSource (mkSelector "rootMediaGroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootMediaGroup mlMediaSource =
+  sendMessage mlMediaSource rootMediaGroupSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mediaGroupForIdentifier:@
-mediaGroupForIdentifierSelector :: Selector
+mediaGroupForIdentifierSelector :: Selector '[Id NSString] (Id MLMediaGroup)
 mediaGroupForIdentifierSelector = mkSelector "mediaGroupForIdentifier:"
 
 -- | @Selector@ for @mediaGroupsForIdentifiers:@
-mediaGroupsForIdentifiersSelector :: Selector
+mediaGroupsForIdentifiersSelector :: Selector '[Id NSArray] (Id NSDictionary)
 mediaGroupsForIdentifiersSelector = mkSelector "mediaGroupsForIdentifiers:"
 
 -- | @Selector@ for @mediaObjectForIdentifier:@
-mediaObjectForIdentifierSelector :: Selector
+mediaObjectForIdentifierSelector :: Selector '[Id NSString] (Id MLMediaObject)
 mediaObjectForIdentifierSelector = mkSelector "mediaObjectForIdentifier:"
 
 -- | @Selector@ for @mediaObjectsForIdentifiers:@
-mediaObjectsForIdentifiersSelector :: Selector
+mediaObjectsForIdentifiersSelector :: Selector '[Id NSArray] (Id NSDictionary)
 mediaObjectsForIdentifiersSelector = mkSelector "mediaObjectsForIdentifiers:"
 
 -- | @Selector@ for @mediaLibrary@
-mediaLibrarySelector :: Selector
+mediaLibrarySelector :: Selector '[] (Id MLMediaLibrary)
 mediaLibrarySelector = mkSelector "mediaLibrary"
 
 -- | @Selector@ for @mediaSourceIdentifier@
-mediaSourceIdentifierSelector :: Selector
+mediaSourceIdentifierSelector :: Selector '[] (Id NSString)
 mediaSourceIdentifierSelector = mkSelector "mediaSourceIdentifier"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @rootMediaGroup@
-rootMediaGroupSelector :: Selector
+rootMediaGroupSelector :: Selector '[] (Id MLMediaGroup)
 rootMediaGroupSelector = mkSelector "rootMediaGroup"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterFindTransportResponseParams
   , transportConfigurations
   , setTransportConfigurations
   , initWithResponseValue_errorSelector
-  , transportConfigurationsSelector
   , setTransportConfigurationsSelector
+  , transportConfigurationsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRPushAVStreamTransportClusterFindTransportResponseParams mtrPushAVStreamTransportClusterFindTransportResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrPushAVStreamTransportClusterFindTransportResponseParams -> responseValue -> error_ -> IO (Id MTRPushAVStreamTransportClusterFindTransportResponseParams)
-initWithResponseValue_error mtrPushAVStreamTransportClusterFindTransportResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrPushAVStreamTransportClusterFindTransportResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrPushAVStreamTransportClusterFindTransportResponseParams responseValue error_ =
+  sendOwnedMessage mtrPushAVStreamTransportClusterFindTransportResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- transportConfigurations@
 transportConfigurations :: IsMTRPushAVStreamTransportClusterFindTransportResponseParams mtrPushAVStreamTransportClusterFindTransportResponseParams => mtrPushAVStreamTransportClusterFindTransportResponseParams -> IO (Id NSArray)
-transportConfigurations mtrPushAVStreamTransportClusterFindTransportResponseParams  =
-    sendMsg mtrPushAVStreamTransportClusterFindTransportResponseParams (mkSelector "transportConfigurations") (retPtr retVoid) [] >>= retainedObject . castPtr
+transportConfigurations mtrPushAVStreamTransportClusterFindTransportResponseParams =
+  sendMessage mtrPushAVStreamTransportClusterFindTransportResponseParams transportConfigurationsSelector
 
 -- | @- setTransportConfigurations:@
 setTransportConfigurations :: (IsMTRPushAVStreamTransportClusterFindTransportResponseParams mtrPushAVStreamTransportClusterFindTransportResponseParams, IsNSArray value) => mtrPushAVStreamTransportClusterFindTransportResponseParams -> value -> IO ()
-setTransportConfigurations mtrPushAVStreamTransportClusterFindTransportResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterFindTransportResponseParams (mkSelector "setTransportConfigurations:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransportConfigurations mtrPushAVStreamTransportClusterFindTransportResponseParams value =
+  sendMessage mtrPushAVStreamTransportClusterFindTransportResponseParams setTransportConfigurationsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRPushAVStreamTransportClusterFindTransportResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @transportConfigurations@
-transportConfigurationsSelector :: Selector
+transportConfigurationsSelector :: Selector '[] (Id NSArray)
 transportConfigurationsSelector = mkSelector "transportConfigurations"
 
 -- | @Selector@ for @setTransportConfigurations:@
-setTransportConfigurationsSelector :: Selector
+setTransportConfigurationsSelector :: Selector '[Id NSArray] ()
 setTransportConfigurationsSelector = mkSelector "setTransportConfigurations:"
 

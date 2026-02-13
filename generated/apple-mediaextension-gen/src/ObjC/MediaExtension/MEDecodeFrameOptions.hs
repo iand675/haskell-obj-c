@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.MediaExtension.MEDecodeFrameOptions
   , realTimePlayback
   , setRealTimePlayback
   , doNotOutputFrameSelector
-  , setDoNotOutputFrameSelector
   , realTimePlaybackSelector
+  , setDoNotOutputFrameSelector
   , setRealTimePlaybackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- doNotOutputFrame@
 doNotOutputFrame :: IsMEDecodeFrameOptions meDecodeFrameOptions => meDecodeFrameOptions -> IO Bool
-doNotOutputFrame meDecodeFrameOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meDecodeFrameOptions (mkSelector "doNotOutputFrame") retCULong []
+doNotOutputFrame meDecodeFrameOptions =
+  sendMessage meDecodeFrameOptions doNotOutputFrameSelector
 
 -- | doNotOutputFrame
 --
@@ -52,8 +49,8 @@ doNotOutputFrame meDecodeFrameOptions  =
 --
 -- ObjC selector: @- setDoNotOutputFrame:@
 setDoNotOutputFrame :: IsMEDecodeFrameOptions meDecodeFrameOptions => meDecodeFrameOptions -> Bool -> IO ()
-setDoNotOutputFrame meDecodeFrameOptions  value =
-    sendMsg meDecodeFrameOptions (mkSelector "setDoNotOutputFrame:") retVoid [argCULong (if value then 1 else 0)]
+setDoNotOutputFrame meDecodeFrameOptions value =
+  sendMessage meDecodeFrameOptions setDoNotOutputFrameSelector value
 
 -- | realTimePlayback
 --
@@ -63,8 +60,8 @@ setDoNotOutputFrame meDecodeFrameOptions  value =
 --
 -- ObjC selector: @- realTimePlayback@
 realTimePlayback :: IsMEDecodeFrameOptions meDecodeFrameOptions => meDecodeFrameOptions -> IO Bool
-realTimePlayback meDecodeFrameOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meDecodeFrameOptions (mkSelector "realTimePlayback") retCULong []
+realTimePlayback meDecodeFrameOptions =
+  sendMessage meDecodeFrameOptions realTimePlaybackSelector
 
 -- | realTimePlayback
 --
@@ -74,26 +71,26 @@ realTimePlayback meDecodeFrameOptions  =
 --
 -- ObjC selector: @- setRealTimePlayback:@
 setRealTimePlayback :: IsMEDecodeFrameOptions meDecodeFrameOptions => meDecodeFrameOptions -> Bool -> IO ()
-setRealTimePlayback meDecodeFrameOptions  value =
-    sendMsg meDecodeFrameOptions (mkSelector "setRealTimePlayback:") retVoid [argCULong (if value then 1 else 0)]
+setRealTimePlayback meDecodeFrameOptions value =
+  sendMessage meDecodeFrameOptions setRealTimePlaybackSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @doNotOutputFrame@
-doNotOutputFrameSelector :: Selector
+doNotOutputFrameSelector :: Selector '[] Bool
 doNotOutputFrameSelector = mkSelector "doNotOutputFrame"
 
 -- | @Selector@ for @setDoNotOutputFrame:@
-setDoNotOutputFrameSelector :: Selector
+setDoNotOutputFrameSelector :: Selector '[Bool] ()
 setDoNotOutputFrameSelector = mkSelector "setDoNotOutputFrame:"
 
 -- | @Selector@ for @realTimePlayback@
-realTimePlaybackSelector :: Selector
+realTimePlaybackSelector :: Selector '[] Bool
 realTimePlaybackSelector = mkSelector "realTimePlayback"
 
 -- | @Selector@ for @setRealTimePlayback:@
-setRealTimePlaybackSelector :: Selector
+setRealTimePlaybackSelector :: Selector '[Bool] ()
 setRealTimePlaybackSelector = mkSelector "setRealTimePlayback:"
 

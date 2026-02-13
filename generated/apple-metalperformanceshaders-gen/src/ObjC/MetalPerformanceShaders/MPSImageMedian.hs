@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.MetalPerformanceShaders.MPSImageMedian
   , maxKernelDiameter
   , minKernelDiameter
   , kernelDiameter
-  , initWithDevice_kernelDiameterSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
+  , initWithDevice_kernelDiameterSelector
+  , kernelDiameterSelector
   , maxKernelDiameterSelector
   , minKernelDiameterSelector
-  , kernelDiameterSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelDiameter:@
 initWithDevice_kernelDiameter :: IsMPSImageMedian mpsImageMedian => mpsImageMedian -> RawId -> CULong -> IO (Id MPSImageMedian)
-initWithDevice_kernelDiameter mpsImageMedian  device kernelDiameter =
-    sendMsg mpsImageMedian (mkSelector "initWithDevice:kernelDiameter:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelDiameter] >>= ownedObject . castPtr
+initWithDevice_kernelDiameter mpsImageMedian device kernelDiameter =
+  sendOwnedMessage mpsImageMedian initWithDevice_kernelDiameterSelector device kernelDiameter
 
 -- | NSSecureCoding compatability
 --
@@ -68,14 +65,13 @@ initWithDevice_kernelDiameter mpsImageMedian  device kernelDiameter =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageMedian mpsImageMedian, IsNSCoder aDecoder) => mpsImageMedian -> aDecoder -> RawId -> IO (Id MPSImageMedian)
-initWithCoder_device mpsImageMedian  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageMedian (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageMedian aDecoder device =
+  sendOwnedMessage mpsImageMedian initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageMedian mpsImageMedian => mpsImageMedian -> RawId -> IO (Id MPSImageMedian)
-initWithDevice mpsImageMedian  device =
-    sendMsg mpsImageMedian (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageMedian device =
+  sendOwnedMessage mpsImageMedian initWithDeviceSelector device
 
 -- | The maximum diameter in pixels of the filter window supported by the median filter.
 --
@@ -84,7 +80,7 @@ maxKernelDiameter :: IO CULong
 maxKernelDiameter  =
   do
     cls' <- getRequiredClass "MPSImageMedian"
-    sendClassMsg cls' (mkSelector "maxKernelDiameter") retCULong []
+    sendClassMessage cls' maxKernelDiameterSelector
 
 -- | The minimum diameter in pixels of the filter window supported by the median filter.
 --
@@ -93,7 +89,7 @@ minKernelDiameter :: IO CULong
 minKernelDiameter  =
   do
     cls' <- getRequiredClass "MPSImageMedian"
-    sendClassMsg cls' (mkSelector "minKernelDiameter") retCULong []
+    sendClassMessage cls' minKernelDiameterSelector
 
 -- | kernelDiameter
 --
@@ -103,34 +99,34 @@ minKernelDiameter  =
 --
 -- ObjC selector: @- kernelDiameter@
 kernelDiameter :: IsMPSImageMedian mpsImageMedian => mpsImageMedian -> IO CULong
-kernelDiameter mpsImageMedian  =
-    sendMsg mpsImageMedian (mkSelector "kernelDiameter") retCULong []
+kernelDiameter mpsImageMedian =
+  sendMessage mpsImageMedian kernelDiameterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelDiameter:@
-initWithDevice_kernelDiameterSelector :: Selector
+initWithDevice_kernelDiameterSelector :: Selector '[RawId, CULong] (Id MPSImageMedian)
 initWithDevice_kernelDiameterSelector = mkSelector "initWithDevice:kernelDiameter:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageMedian)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageMedian)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @maxKernelDiameter@
-maxKernelDiameterSelector :: Selector
+maxKernelDiameterSelector :: Selector '[] CULong
 maxKernelDiameterSelector = mkSelector "maxKernelDiameter"
 
 -- | @Selector@ for @minKernelDiameter@
-minKernelDiameterSelector :: Selector
+minKernelDiameterSelector :: Selector '[] CULong
 minKernelDiameterSelector = mkSelector "minKernelDiameter"
 
 -- | @Selector@ for @kernelDiameter@
-kernelDiameterSelector :: Selector
+kernelDiameterSelector :: Selector '[] CULong
 kernelDiameterSelector = mkSelector "kernelDiameter"
 

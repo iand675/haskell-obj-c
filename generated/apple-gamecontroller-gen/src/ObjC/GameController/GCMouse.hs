@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.GameController.GCMouse
   , mice
   , mouseInput
   , current
+  , currentSelector
   , miceSelector
   , mouseInputSelector
-  , currentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,14 +37,14 @@ mice :: IO (Id NSArray)
 mice  =
   do
     cls' <- getRequiredClass "GCMouse"
-    sendClassMsg cls' (mkSelector "mice") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' miceSelector
 
 -- | Unlike GCController GCMouse supports only one input profile Profile contains mouse buttons, scroll wheel and  pointer delta.
 --
 -- ObjC selector: @- mouseInput@
 mouseInput :: IsGCMouse gcMouse => gcMouse -> IO (Id GCMouseInput)
-mouseInput gcMouse  =
-    sendMsg gcMouse (mkSelector "mouseInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+mouseInput gcMouse =
+  sendMessage gcMouse mouseInputSelector
 
 -- | The most recently used mouse device. If a user actuates a mouse input, that mouse will become the current one.
 --
@@ -60,21 +57,21 @@ current :: IO (Id GCMouse)
 current  =
   do
     cls' <- getRequiredClass "GCMouse"
-    sendClassMsg cls' (mkSelector "current") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mice@
-miceSelector :: Selector
+miceSelector :: Selector '[] (Id NSArray)
 miceSelector = mkSelector "mice"
 
 -- | @Selector@ for @mouseInput@
-mouseInputSelector :: Selector
+mouseInputSelector :: Selector '[] (Id GCMouseInput)
 mouseInputSelector = mkSelector "mouseInput"
 
 -- | @Selector@ for @current@
-currentSelector :: Selector
+currentSelector :: Selector '[] (Id GCMouse)
 currentSelector = mkSelector "current"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -61,70 +62,66 @@ module ObjC.Quartz.IKImageView
   , setImageCorrection
   , backgroundColor
   , setBackgroundColor
-  , setImage_imagePropertiesSelector
-  , setImageWithURLSelector
-  , imageSelector
-  , imageSizeSelector
-  , imagePropertiesSelector
-  , setRotationAngle_centerPointSelector
-  , rotateImageLeftSelector
-  , rotateImageRightSelector
-  , setImageZoomFactor_centerPointSelector
-  , zoomImageToRectSelector
-  , zoomImageToFitSelector
-  , zoomImageToActualSizeSelector
-  , zoomInSelector
-  , zoomOutSelector
-  , flipImageHorizontalSelector
-  , flipImageVerticalSelector
-  , cropSelector
-  , setOverlay_forTypeSelector
-  , overlayForTypeSelector
-  , scrollToPointSelector
-  , scrollToRectSelector
-  , convertViewPointToImagePointSelector
-  , convertViewRectToImageRectSelector
+  , autohidesScrollersSelector
+  , autoresizesSelector
+  , backgroundColorSelector
   , convertImagePointToViewPointSelector
   , convertImageRectToViewRectSelector
-  , delegateSelector
-  , setDelegateSelector
-  , zoomFactorSelector
-  , setZoomFactorSelector
-  , rotationAngleSelector
-  , setRotationAngleSelector
+  , convertViewPointToImagePointSelector
+  , convertViewRectToImageRectSelector
+  , cropSelector
   , currentToolModeSelector
-  , setCurrentToolModeSelector
-  , autoresizesSelector
-  , setAutoresizesSelector
-  , hasHorizontalScrollerSelector
-  , setHasHorizontalScrollerSelector
-  , hasVerticalScrollerSelector
-  , setHasVerticalScrollerSelector
-  , autohidesScrollersSelector
-  , setAutohidesScrollersSelector
-  , supportsDragAndDropSelector
-  , setSupportsDragAndDropSelector
-  , editableSelector
-  , setEditableSelector
+  , delegateSelector
   , doubleClickOpensImageEditPanelSelector
-  , setDoubleClickOpensImageEditPanelSelector
+  , editableSelector
+  , flipImageHorizontalSelector
+  , flipImageVerticalSelector
+  , hasHorizontalScrollerSelector
+  , hasVerticalScrollerSelector
   , imageCorrectionSelector
-  , setImageCorrectionSelector
-  , backgroundColorSelector
+  , imagePropertiesSelector
+  , imageSelector
+  , imageSizeSelector
+  , overlayForTypeSelector
+  , rotateImageLeftSelector
+  , rotateImageRightSelector
+  , rotationAngleSelector
+  , scrollToPointSelector
+  , scrollToRectSelector
+  , setAutohidesScrollersSelector
+  , setAutoresizesSelector
   , setBackgroundColorSelector
+  , setCurrentToolModeSelector
+  , setDelegateSelector
+  , setDoubleClickOpensImageEditPanelSelector
+  , setEditableSelector
+  , setHasHorizontalScrollerSelector
+  , setHasVerticalScrollerSelector
+  , setImageCorrectionSelector
+  , setImageWithURLSelector
+  , setImageZoomFactor_centerPointSelector
+  , setImage_imagePropertiesSelector
+  , setOverlay_forTypeSelector
+  , setRotationAngleSelector
+  , setRotationAngle_centerPointSelector
+  , setSupportsDragAndDropSelector
+  , setZoomFactorSelector
+  , supportsDragAndDropSelector
+  , zoomFactorSelector
+  , zoomImageToActualSizeSelector
+  , zoomImageToFitSelector
+  , zoomImageToRectSelector
+  , zoomInSelector
+  , zoomOutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -141,9 +138,8 @@ import ObjC.QuartzCore.Internal.Classes
 --
 -- ObjC selector: @- setImage:imageProperties:@
 setImage_imageProperties :: (IsIKImageView ikImageView, IsNSDictionary metaData) => ikImageView -> Ptr () -> metaData -> IO ()
-setImage_imageProperties ikImageView  image metaData =
-  withObjCPtr metaData $ \raw_metaData ->
-      sendMsg ikImageView (mkSelector "setImage:imageProperties:") retVoid [argPtr image, argPtr (castPtr raw_metaData :: Ptr ())]
+setImage_imageProperties ikImageView image metaData =
+  sendMessage ikImageView setImage_imagePropertiesSelector image (toNSDictionary metaData)
 
 -- | setImageWithURL:
 --
@@ -151,9 +147,8 @@ setImage_imageProperties ikImageView  image metaData =
 --
 -- ObjC selector: @- setImageWithURL:@
 setImageWithURL :: (IsIKImageView ikImageView, IsNSURL url) => ikImageView -> url -> IO ()
-setImageWithURL ikImageView  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg ikImageView (mkSelector "setImageWithURL:") retVoid [argPtr (castPtr raw_url :: Ptr ())]
+setImageWithURL ikImageView url =
+  sendMessage ikImageView setImageWithURLSelector (toNSURL url)
 
 -- | image
 --
@@ -161,8 +156,8 @@ setImageWithURL ikImageView  url =
 --
 -- ObjC selector: @- image@
 image :: IsIKImageView ikImageView => ikImageView -> IO (Ptr ())
-image ikImageView  =
-    fmap castPtr $ sendMsg ikImageView (mkSelector "image") (retPtr retVoid) []
+image ikImageView =
+  sendMessage ikImageView imageSelector
 
 -- | imageSize
 --
@@ -170,8 +165,8 @@ image ikImageView  =
 --
 -- ObjC selector: @- imageSize@
 imageSize :: IsIKImageView ikImageView => ikImageView -> IO NSSize
-imageSize ikImageView  =
-    sendMsgStret ikImageView (mkSelector "imageSize") retNSSize []
+imageSize ikImageView =
+  sendMessage ikImageView imageSizeSelector
 
 -- | imageProperties
 --
@@ -179,8 +174,8 @@ imageSize ikImageView  =
 --
 -- ObjC selector: @- imageProperties@
 imageProperties :: IsIKImageView ikImageView => ikImageView -> IO (Id NSDictionary)
-imageProperties ikImageView  =
-    sendMsg ikImageView (mkSelector "imageProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageProperties ikImageView =
+  sendMessage ikImageView imagePropertiesSelector
 
 -- | setRotationAngle:centerPoint:
 --
@@ -188,8 +183,8 @@ imageProperties ikImageView  =
 --
 -- ObjC selector: @- setRotationAngle:centerPoint:@
 setRotationAngle_centerPoint :: IsIKImageView ikImageView => ikImageView -> CDouble -> NSPoint -> IO ()
-setRotationAngle_centerPoint ikImageView  rotationAngle centerPoint =
-    sendMsg ikImageView (mkSelector "setRotationAngle:centerPoint:") retVoid [argCDouble rotationAngle, argNSPoint centerPoint]
+setRotationAngle_centerPoint ikImageView rotationAngle centerPoint =
+  sendMessage ikImageView setRotationAngle_centerPointSelector rotationAngle centerPoint
 
 -- | rotateImageLeft:
 --
@@ -197,8 +192,8 @@ setRotationAngle_centerPoint ikImageView  rotationAngle centerPoint =
 --
 -- ObjC selector: @- rotateImageLeft:@
 rotateImageLeft :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-rotateImageLeft ikImageView  sender =
-    sendMsg ikImageView (mkSelector "rotateImageLeft:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+rotateImageLeft ikImageView sender =
+  sendMessage ikImageView rotateImageLeftSelector sender
 
 -- | rotateImageRight:
 --
@@ -206,8 +201,8 @@ rotateImageLeft ikImageView  sender =
 --
 -- ObjC selector: @- rotateImageRight:@
 rotateImageRight :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-rotateImageRight ikImageView  sender =
-    sendMsg ikImageView (mkSelector "rotateImageRight:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+rotateImageRight ikImageView sender =
+  sendMessage ikImageView rotateImageRightSelector sender
 
 -- | setImageZoomFactor:centerPoint:
 --
@@ -215,8 +210,8 @@ rotateImageRight ikImageView  sender =
 --
 -- ObjC selector: @- setImageZoomFactor:centerPoint:@
 setImageZoomFactor_centerPoint :: IsIKImageView ikImageView => ikImageView -> CDouble -> NSPoint -> IO ()
-setImageZoomFactor_centerPoint ikImageView  zoomFactor centerPoint =
-    sendMsg ikImageView (mkSelector "setImageZoomFactor:centerPoint:") retVoid [argCDouble zoomFactor, argNSPoint centerPoint]
+setImageZoomFactor_centerPoint ikImageView zoomFactor centerPoint =
+  sendMessage ikImageView setImageZoomFactor_centerPointSelector zoomFactor centerPoint
 
 -- | zoomImageToRect:
 --
@@ -224,8 +219,8 @@ setImageZoomFactor_centerPoint ikImageView  zoomFactor centerPoint =
 --
 -- ObjC selector: @- zoomImageToRect:@
 zoomImageToRect :: IsIKImageView ikImageView => ikImageView -> NSRect -> IO ()
-zoomImageToRect ikImageView  rect =
-    sendMsg ikImageView (mkSelector "zoomImageToRect:") retVoid [argNSRect rect]
+zoomImageToRect ikImageView rect =
+  sendMessage ikImageView zoomImageToRectSelector rect
 
 -- | zoomImageToFit:
 --
@@ -233,8 +228,8 @@ zoomImageToRect ikImageView  rect =
 --
 -- ObjC selector: @- zoomImageToFit:@
 zoomImageToFit :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-zoomImageToFit ikImageView  sender =
-    sendMsg ikImageView (mkSelector "zoomImageToFit:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+zoomImageToFit ikImageView sender =
+  sendMessage ikImageView zoomImageToFitSelector sender
 
 -- | zoomImageToActualSize:
 --
@@ -242,8 +237,8 @@ zoomImageToFit ikImageView  sender =
 --
 -- ObjC selector: @- zoomImageToActualSize:@
 zoomImageToActualSize :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-zoomImageToActualSize ikImageView  sender =
-    sendMsg ikImageView (mkSelector "zoomImageToActualSize:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+zoomImageToActualSize ikImageView sender =
+  sendMessage ikImageView zoomImageToActualSizeSelector sender
 
 -- | zoomIn:
 --
@@ -251,8 +246,8 @@ zoomImageToActualSize ikImageView  sender =
 --
 -- ObjC selector: @- zoomIn:@
 zoomIn :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-zoomIn ikImageView  sender =
-    sendMsg ikImageView (mkSelector "zoomIn:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+zoomIn ikImageView sender =
+  sendMessage ikImageView zoomInSelector sender
 
 -- | zoomOut:
 --
@@ -260,8 +255,8 @@ zoomIn ikImageView  sender =
 --
 -- ObjC selector: @- zoomOut:@
 zoomOut :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-zoomOut ikImageView  sender =
-    sendMsg ikImageView (mkSelector "zoomOut:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+zoomOut ikImageView sender =
+  sendMessage ikImageView zoomOutSelector sender
 
 -- | flipImageHorizontal:
 --
@@ -269,8 +264,8 @@ zoomOut ikImageView  sender =
 --
 -- ObjC selector: @- flipImageHorizontal:@
 flipImageHorizontal :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-flipImageHorizontal ikImageView  sender =
-    sendMsg ikImageView (mkSelector "flipImageHorizontal:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+flipImageHorizontal ikImageView sender =
+  sendMessage ikImageView flipImageHorizontalSelector sender
 
 -- | flipImageVertical:
 --
@@ -278,8 +273,8 @@ flipImageHorizontal ikImageView  sender =
 --
 -- ObjC selector: @- flipImageVertical:@
 flipImageVertical :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-flipImageVertical ikImageView  sender =
-    sendMsg ikImageView (mkSelector "flipImageVertical:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+flipImageVertical ikImageView sender =
+  sendMessage ikImageView flipImageVerticalSelector sender
 
 -- | crop:
 --
@@ -287,8 +282,8 @@ flipImageVertical ikImageView  sender =
 --
 -- ObjC selector: @- crop:@
 crop :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-crop ikImageView  sender =
-    sendMsg ikImageView (mkSelector "crop:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+crop ikImageView sender =
+  sendMessage ikImageView cropSelector sender
 
 -- | setOverlay:forType:
 --
@@ -296,10 +291,8 @@ crop ikImageView  sender =
 --
 -- ObjC selector: @- setOverlay:forType:@
 setOverlay_forType :: (IsIKImageView ikImageView, IsCALayer layer, IsNSString layerType) => ikImageView -> layer -> layerType -> IO ()
-setOverlay_forType ikImageView  layer layerType =
-  withObjCPtr layer $ \raw_layer ->
-    withObjCPtr layerType $ \raw_layerType ->
-        sendMsg ikImageView (mkSelector "setOverlay:forType:") retVoid [argPtr (castPtr raw_layer :: Ptr ()), argPtr (castPtr raw_layerType :: Ptr ())]
+setOverlay_forType ikImageView layer layerType =
+  sendMessage ikImageView setOverlay_forTypeSelector (toCALayer layer) (toNSString layerType)
 
 -- | overlayForType:
 --
@@ -307,9 +300,8 @@ setOverlay_forType ikImageView  layer layerType =
 --
 -- ObjC selector: @- overlayForType:@
 overlayForType :: (IsIKImageView ikImageView, IsNSString layerType) => ikImageView -> layerType -> IO (Id CALayer)
-overlayForType ikImageView  layerType =
-  withObjCPtr layerType $ \raw_layerType ->
-      sendMsg ikImageView (mkSelector "overlayForType:") (retPtr retVoid) [argPtr (castPtr raw_layerType :: Ptr ())] >>= retainedObject . castPtr
+overlayForType ikImageView layerType =
+  sendMessage ikImageView overlayForTypeSelector (toNSString layerType)
 
 -- | scrollToPoint:
 --
@@ -317,8 +309,8 @@ overlayForType ikImageView  layerType =
 --
 -- ObjC selector: @- scrollToPoint:@
 scrollToPoint :: IsIKImageView ikImageView => ikImageView -> NSPoint -> IO ()
-scrollToPoint ikImageView  point =
-    sendMsg ikImageView (mkSelector "scrollToPoint:") retVoid [argNSPoint point]
+scrollToPoint ikImageView point =
+  sendMessage ikImageView scrollToPointSelector point
 
 -- | scrollToRect:
 --
@@ -326,8 +318,8 @@ scrollToPoint ikImageView  point =
 --
 -- ObjC selector: @- scrollToRect:@
 scrollToRect :: IsIKImageView ikImageView => ikImageView -> NSRect -> IO ()
-scrollToRect ikImageView  rect =
-    sendMsg ikImageView (mkSelector "scrollToRect:") retVoid [argNSRect rect]
+scrollToRect ikImageView rect =
+  sendMessage ikImageView scrollToRectSelector rect
 
 -- | convertViewPointToImagePoint:
 --
@@ -335,8 +327,8 @@ scrollToRect ikImageView  rect =
 --
 -- ObjC selector: @- convertViewPointToImagePoint:@
 convertViewPointToImagePoint :: IsIKImageView ikImageView => ikImageView -> NSPoint -> IO NSPoint
-convertViewPointToImagePoint ikImageView  viewPoint =
-    sendMsgStret ikImageView (mkSelector "convertViewPointToImagePoint:") retNSPoint [argNSPoint viewPoint]
+convertViewPointToImagePoint ikImageView viewPoint =
+  sendMessage ikImageView convertViewPointToImagePointSelector viewPoint
 
 -- | convertViewRectToImageRect:
 --
@@ -344,8 +336,8 @@ convertViewPointToImagePoint ikImageView  viewPoint =
 --
 -- ObjC selector: @- convertViewRectToImageRect:@
 convertViewRectToImageRect :: IsIKImageView ikImageView => ikImageView -> NSRect -> IO NSRect
-convertViewRectToImageRect ikImageView  viewRect =
-    sendMsgStret ikImageView (mkSelector "convertViewRectToImageRect:") retNSRect [argNSRect viewRect]
+convertViewRectToImageRect ikImageView viewRect =
+  sendMessage ikImageView convertViewRectToImageRectSelector viewRect
 
 -- | convertImagePointToViewPoint:
 --
@@ -353,8 +345,8 @@ convertViewRectToImageRect ikImageView  viewRect =
 --
 -- ObjC selector: @- convertImagePointToViewPoint:@
 convertImagePointToViewPoint :: IsIKImageView ikImageView => ikImageView -> NSPoint -> IO NSPoint
-convertImagePointToViewPoint ikImageView  imagePoint =
-    sendMsgStret ikImageView (mkSelector "convertImagePointToViewPoint:") retNSPoint [argNSPoint imagePoint]
+convertImagePointToViewPoint ikImageView imagePoint =
+  sendMessage ikImageView convertImagePointToViewPointSelector imagePoint
 
 -- | convertImageRectToViewRect:
 --
@@ -362,8 +354,8 @@ convertImagePointToViewPoint ikImageView  imagePoint =
 --
 -- ObjC selector: @- convertImageRectToViewRect:@
 convertImageRectToViewRect :: IsIKImageView ikImageView => ikImageView -> NSRect -> IO NSRect
-convertImageRectToViewRect ikImageView  imageRect =
-    sendMsgStret ikImageView (mkSelector "convertImageRectToViewRect:") retNSRect [argNSRect imageRect]
+convertImageRectToViewRect ikImageView imageRect =
+  sendMessage ikImageView convertImageRectToViewRectSelector imageRect
 
 -- | delegate
 --
@@ -371,8 +363,8 @@ convertImageRectToViewRect ikImageView  imageRect =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsIKImageView ikImageView => ikImageView -> IO RawId
-delegate ikImageView  =
-    fmap (RawId . castPtr) $ sendMsg ikImageView (mkSelector "delegate") (retPtr retVoid) []
+delegate ikImageView =
+  sendMessage ikImageView delegateSelector
 
 -- | delegate
 --
@@ -380,8 +372,8 @@ delegate ikImageView  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsIKImageView ikImageView => ikImageView -> RawId -> IO ()
-setDelegate ikImageView  value =
-    sendMsg ikImageView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ikImageView value =
+  sendMessage ikImageView setDelegateSelector value
 
 -- | zoomFactor
 --
@@ -389,8 +381,8 @@ setDelegate ikImageView  value =
 --
 -- ObjC selector: @- zoomFactor@
 zoomFactor :: IsIKImageView ikImageView => ikImageView -> IO CDouble
-zoomFactor ikImageView  =
-    sendMsg ikImageView (mkSelector "zoomFactor") retCDouble []
+zoomFactor ikImageView =
+  sendMessage ikImageView zoomFactorSelector
 
 -- | zoomFactor
 --
@@ -398,8 +390,8 @@ zoomFactor ikImageView  =
 --
 -- ObjC selector: @- setZoomFactor:@
 setZoomFactor :: IsIKImageView ikImageView => ikImageView -> CDouble -> IO ()
-setZoomFactor ikImageView  value =
-    sendMsg ikImageView (mkSelector "setZoomFactor:") retVoid [argCDouble value]
+setZoomFactor ikImageView value =
+  sendMessage ikImageView setZoomFactorSelector value
 
 -- | rotationAngle
 --
@@ -407,8 +399,8 @@ setZoomFactor ikImageView  value =
 --
 -- ObjC selector: @- rotationAngle@
 rotationAngle :: IsIKImageView ikImageView => ikImageView -> IO CDouble
-rotationAngle ikImageView  =
-    sendMsg ikImageView (mkSelector "rotationAngle") retCDouble []
+rotationAngle ikImageView =
+  sendMessage ikImageView rotationAngleSelector
 
 -- | rotationAngle
 --
@@ -416,8 +408,8 @@ rotationAngle ikImageView  =
 --
 -- ObjC selector: @- setRotationAngle:@
 setRotationAngle :: IsIKImageView ikImageView => ikImageView -> CDouble -> IO ()
-setRotationAngle ikImageView  value =
-    sendMsg ikImageView (mkSelector "setRotationAngle:") retVoid [argCDouble value]
+setRotationAngle ikImageView value =
+  sendMessage ikImageView setRotationAngleSelector value
 
 -- | currentToolMode
 --
@@ -425,8 +417,8 @@ setRotationAngle ikImageView  value =
 --
 -- ObjC selector: @- currentToolMode@
 currentToolMode :: IsIKImageView ikImageView => ikImageView -> IO (Id NSString)
-currentToolMode ikImageView  =
-    sendMsg ikImageView (mkSelector "currentToolMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentToolMode ikImageView =
+  sendMessage ikImageView currentToolModeSelector
 
 -- | currentToolMode
 --
@@ -434,9 +426,8 @@ currentToolMode ikImageView  =
 --
 -- ObjC selector: @- setCurrentToolMode:@
 setCurrentToolMode :: (IsIKImageView ikImageView, IsNSString value) => ikImageView -> value -> IO ()
-setCurrentToolMode ikImageView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikImageView (mkSelector "setCurrentToolMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentToolMode ikImageView value =
+  sendMessage ikImageView setCurrentToolModeSelector (toNSString value)
 
 -- | autoresizes
 --
@@ -444,8 +435,8 @@ setCurrentToolMode ikImageView  value =
 --
 -- ObjC selector: @- autoresizes@
 autoresizes :: IsIKImageView ikImageView => ikImageView -> IO Bool
-autoresizes ikImageView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageView (mkSelector "autoresizes") retCULong []
+autoresizes ikImageView =
+  sendMessage ikImageView autoresizesSelector
 
 -- | autoresizes
 --
@@ -453,8 +444,8 @@ autoresizes ikImageView  =
 --
 -- ObjC selector: @- setAutoresizes:@
 setAutoresizes :: IsIKImageView ikImageView => ikImageView -> Bool -> IO ()
-setAutoresizes ikImageView  value =
-    sendMsg ikImageView (mkSelector "setAutoresizes:") retVoid [argCULong (if value then 1 else 0)]
+setAutoresizes ikImageView value =
+  sendMessage ikImageView setAutoresizesSelector value
 
 -- | hasHorizontalScroller
 --
@@ -462,8 +453,8 @@ setAutoresizes ikImageView  value =
 --
 -- ObjC selector: @- hasHorizontalScroller@
 hasHorizontalScroller :: IsIKImageView ikImageView => ikImageView -> IO Bool
-hasHorizontalScroller ikImageView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageView (mkSelector "hasHorizontalScroller") retCULong []
+hasHorizontalScroller ikImageView =
+  sendMessage ikImageView hasHorizontalScrollerSelector
 
 -- | hasHorizontalScroller
 --
@@ -471,8 +462,8 @@ hasHorizontalScroller ikImageView  =
 --
 -- ObjC selector: @- setHasHorizontalScroller:@
 setHasHorizontalScroller :: IsIKImageView ikImageView => ikImageView -> Bool -> IO ()
-setHasHorizontalScroller ikImageView  value =
-    sendMsg ikImageView (mkSelector "setHasHorizontalScroller:") retVoid [argCULong (if value then 1 else 0)]
+setHasHorizontalScroller ikImageView value =
+  sendMessage ikImageView setHasHorizontalScrollerSelector value
 
 -- | hasVerticalScroller
 --
@@ -480,8 +471,8 @@ setHasHorizontalScroller ikImageView  value =
 --
 -- ObjC selector: @- hasVerticalScroller@
 hasVerticalScroller :: IsIKImageView ikImageView => ikImageView -> IO Bool
-hasVerticalScroller ikImageView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageView (mkSelector "hasVerticalScroller") retCULong []
+hasVerticalScroller ikImageView =
+  sendMessage ikImageView hasVerticalScrollerSelector
 
 -- | hasVerticalScroller
 --
@@ -489,8 +480,8 @@ hasVerticalScroller ikImageView  =
 --
 -- ObjC selector: @- setHasVerticalScroller:@
 setHasVerticalScroller :: IsIKImageView ikImageView => ikImageView -> Bool -> IO ()
-setHasVerticalScroller ikImageView  value =
-    sendMsg ikImageView (mkSelector "setHasVerticalScroller:") retVoid [argCULong (if value then 1 else 0)]
+setHasVerticalScroller ikImageView value =
+  sendMessage ikImageView setHasVerticalScrollerSelector value
 
 -- | autohidesScrollers
 --
@@ -498,8 +489,8 @@ setHasVerticalScroller ikImageView  value =
 --
 -- ObjC selector: @- autohidesScrollers@
 autohidesScrollers :: IsIKImageView ikImageView => ikImageView -> IO Bool
-autohidesScrollers ikImageView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageView (mkSelector "autohidesScrollers") retCULong []
+autohidesScrollers ikImageView =
+  sendMessage ikImageView autohidesScrollersSelector
 
 -- | autohidesScrollers
 --
@@ -507,8 +498,8 @@ autohidesScrollers ikImageView  =
 --
 -- ObjC selector: @- setAutohidesScrollers:@
 setAutohidesScrollers :: IsIKImageView ikImageView => ikImageView -> Bool -> IO ()
-setAutohidesScrollers ikImageView  value =
-    sendMsg ikImageView (mkSelector "setAutohidesScrollers:") retVoid [argCULong (if value then 1 else 0)]
+setAutohidesScrollers ikImageView value =
+  sendMessage ikImageView setAutohidesScrollersSelector value
 
 -- | supportsDragAndDrop
 --
@@ -516,8 +507,8 @@ setAutohidesScrollers ikImageView  value =
 --
 -- ObjC selector: @- supportsDragAndDrop@
 supportsDragAndDrop :: IsIKImageView ikImageView => ikImageView -> IO Bool
-supportsDragAndDrop ikImageView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageView (mkSelector "supportsDragAndDrop") retCULong []
+supportsDragAndDrop ikImageView =
+  sendMessage ikImageView supportsDragAndDropSelector
 
 -- | supportsDragAndDrop
 --
@@ -525,8 +516,8 @@ supportsDragAndDrop ikImageView  =
 --
 -- ObjC selector: @- setSupportsDragAndDrop:@
 setSupportsDragAndDrop :: IsIKImageView ikImageView => ikImageView -> Bool -> IO ()
-setSupportsDragAndDrop ikImageView  value =
-    sendMsg ikImageView (mkSelector "setSupportsDragAndDrop:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsDragAndDrop ikImageView value =
+  sendMessage ikImageView setSupportsDragAndDropSelector value
 
 -- | editable
 --
@@ -534,8 +525,8 @@ setSupportsDragAndDrop ikImageView  value =
 --
 -- ObjC selector: @- editable@
 editable :: IsIKImageView ikImageView => ikImageView -> IO Bool
-editable ikImageView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageView (mkSelector "editable") retCULong []
+editable ikImageView =
+  sendMessage ikImageView editableSelector
 
 -- | editable
 --
@@ -543,8 +534,8 @@ editable ikImageView  =
 --
 -- ObjC selector: @- setEditable:@
 setEditable :: IsIKImageView ikImageView => ikImageView -> Bool -> IO ()
-setEditable ikImageView  value =
-    sendMsg ikImageView (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable ikImageView value =
+  sendMessage ikImageView setEditableSelector value
 
 -- | doubleClickOpensImageEditPane
 --
@@ -552,8 +543,8 @@ setEditable ikImageView  value =
 --
 -- ObjC selector: @- doubleClickOpensImageEditPanel@
 doubleClickOpensImageEditPanel :: IsIKImageView ikImageView => ikImageView -> IO Bool
-doubleClickOpensImageEditPanel ikImageView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikImageView (mkSelector "doubleClickOpensImageEditPanel") retCULong []
+doubleClickOpensImageEditPanel ikImageView =
+  sendMessage ikImageView doubleClickOpensImageEditPanelSelector
 
 -- | doubleClickOpensImageEditPane
 --
@@ -561,8 +552,8 @@ doubleClickOpensImageEditPanel ikImageView  =
 --
 -- ObjC selector: @- setDoubleClickOpensImageEditPanel:@
 setDoubleClickOpensImageEditPanel :: IsIKImageView ikImageView => ikImageView -> Bool -> IO ()
-setDoubleClickOpensImageEditPanel ikImageView  value =
-    sendMsg ikImageView (mkSelector "setDoubleClickOpensImageEditPanel:") retVoid [argCULong (if value then 1 else 0)]
+setDoubleClickOpensImageEditPanel ikImageView value =
+  sendMessage ikImageView setDoubleClickOpensImageEditPanelSelector value
 
 -- | imageCorrection
 --
@@ -570,8 +561,8 @@ setDoubleClickOpensImageEditPanel ikImageView  value =
 --
 -- ObjC selector: @- imageCorrection@
 imageCorrection :: IsIKImageView ikImageView => ikImageView -> IO (Id CIFilter)
-imageCorrection ikImageView  =
-    sendMsg ikImageView (mkSelector "imageCorrection") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageCorrection ikImageView =
+  sendMessage ikImageView imageCorrectionSelector
 
 -- | imageCorrection
 --
@@ -579,9 +570,8 @@ imageCorrection ikImageView  =
 --
 -- ObjC selector: @- setImageCorrection:@
 setImageCorrection :: (IsIKImageView ikImageView, IsCIFilter value) => ikImageView -> value -> IO ()
-setImageCorrection ikImageView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikImageView (mkSelector "setImageCorrection:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImageCorrection ikImageView value =
+  sendMessage ikImageView setImageCorrectionSelector (toCIFilter value)
 
 -- | backgroundColor
 --
@@ -589,8 +579,8 @@ setImageCorrection ikImageView  value =
 --
 -- ObjC selector: @- backgroundColor@
 backgroundColor :: IsIKImageView ikImageView => ikImageView -> IO (Id NSColor)
-backgroundColor ikImageView  =
-    sendMsg ikImageView (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor ikImageView =
+  sendMessage ikImageView backgroundColorSelector
 
 -- | backgroundColor
 --
@@ -598,215 +588,214 @@ backgroundColor ikImageView  =
 --
 -- ObjC selector: @- setBackgroundColor:@
 setBackgroundColor :: (IsIKImageView ikImageView, IsNSColor value) => ikImageView -> value -> IO ()
-setBackgroundColor ikImageView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ikImageView (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor ikImageView value =
+  sendMessage ikImageView setBackgroundColorSelector (toNSColor value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setImage:imageProperties:@
-setImage_imagePropertiesSelector :: Selector
+setImage_imagePropertiesSelector :: Selector '[Ptr (), Id NSDictionary] ()
 setImage_imagePropertiesSelector = mkSelector "setImage:imageProperties:"
 
 -- | @Selector@ for @setImageWithURL:@
-setImageWithURLSelector :: Selector
+setImageWithURLSelector :: Selector '[Id NSURL] ()
 setImageWithURLSelector = mkSelector "setImageWithURL:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Ptr ())
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @imageSize@
-imageSizeSelector :: Selector
+imageSizeSelector :: Selector '[] NSSize
 imageSizeSelector = mkSelector "imageSize"
 
 -- | @Selector@ for @imageProperties@
-imagePropertiesSelector :: Selector
+imagePropertiesSelector :: Selector '[] (Id NSDictionary)
 imagePropertiesSelector = mkSelector "imageProperties"
 
 -- | @Selector@ for @setRotationAngle:centerPoint:@
-setRotationAngle_centerPointSelector :: Selector
+setRotationAngle_centerPointSelector :: Selector '[CDouble, NSPoint] ()
 setRotationAngle_centerPointSelector = mkSelector "setRotationAngle:centerPoint:"
 
 -- | @Selector@ for @rotateImageLeft:@
-rotateImageLeftSelector :: Selector
+rotateImageLeftSelector :: Selector '[RawId] ()
 rotateImageLeftSelector = mkSelector "rotateImageLeft:"
 
 -- | @Selector@ for @rotateImageRight:@
-rotateImageRightSelector :: Selector
+rotateImageRightSelector :: Selector '[RawId] ()
 rotateImageRightSelector = mkSelector "rotateImageRight:"
 
 -- | @Selector@ for @setImageZoomFactor:centerPoint:@
-setImageZoomFactor_centerPointSelector :: Selector
+setImageZoomFactor_centerPointSelector :: Selector '[CDouble, NSPoint] ()
 setImageZoomFactor_centerPointSelector = mkSelector "setImageZoomFactor:centerPoint:"
 
 -- | @Selector@ for @zoomImageToRect:@
-zoomImageToRectSelector :: Selector
+zoomImageToRectSelector :: Selector '[NSRect] ()
 zoomImageToRectSelector = mkSelector "zoomImageToRect:"
 
 -- | @Selector@ for @zoomImageToFit:@
-zoomImageToFitSelector :: Selector
+zoomImageToFitSelector :: Selector '[RawId] ()
 zoomImageToFitSelector = mkSelector "zoomImageToFit:"
 
 -- | @Selector@ for @zoomImageToActualSize:@
-zoomImageToActualSizeSelector :: Selector
+zoomImageToActualSizeSelector :: Selector '[RawId] ()
 zoomImageToActualSizeSelector = mkSelector "zoomImageToActualSize:"
 
 -- | @Selector@ for @zoomIn:@
-zoomInSelector :: Selector
+zoomInSelector :: Selector '[RawId] ()
 zoomInSelector = mkSelector "zoomIn:"
 
 -- | @Selector@ for @zoomOut:@
-zoomOutSelector :: Selector
+zoomOutSelector :: Selector '[RawId] ()
 zoomOutSelector = mkSelector "zoomOut:"
 
 -- | @Selector@ for @flipImageHorizontal:@
-flipImageHorizontalSelector :: Selector
+flipImageHorizontalSelector :: Selector '[RawId] ()
 flipImageHorizontalSelector = mkSelector "flipImageHorizontal:"
 
 -- | @Selector@ for @flipImageVertical:@
-flipImageVerticalSelector :: Selector
+flipImageVerticalSelector :: Selector '[RawId] ()
 flipImageVerticalSelector = mkSelector "flipImageVertical:"
 
 -- | @Selector@ for @crop:@
-cropSelector :: Selector
+cropSelector :: Selector '[RawId] ()
 cropSelector = mkSelector "crop:"
 
 -- | @Selector@ for @setOverlay:forType:@
-setOverlay_forTypeSelector :: Selector
+setOverlay_forTypeSelector :: Selector '[Id CALayer, Id NSString] ()
 setOverlay_forTypeSelector = mkSelector "setOverlay:forType:"
 
 -- | @Selector@ for @overlayForType:@
-overlayForTypeSelector :: Selector
+overlayForTypeSelector :: Selector '[Id NSString] (Id CALayer)
 overlayForTypeSelector = mkSelector "overlayForType:"
 
 -- | @Selector@ for @scrollToPoint:@
-scrollToPointSelector :: Selector
+scrollToPointSelector :: Selector '[NSPoint] ()
 scrollToPointSelector = mkSelector "scrollToPoint:"
 
 -- | @Selector@ for @scrollToRect:@
-scrollToRectSelector :: Selector
+scrollToRectSelector :: Selector '[NSRect] ()
 scrollToRectSelector = mkSelector "scrollToRect:"
 
 -- | @Selector@ for @convertViewPointToImagePoint:@
-convertViewPointToImagePointSelector :: Selector
+convertViewPointToImagePointSelector :: Selector '[NSPoint] NSPoint
 convertViewPointToImagePointSelector = mkSelector "convertViewPointToImagePoint:"
 
 -- | @Selector@ for @convertViewRectToImageRect:@
-convertViewRectToImageRectSelector :: Selector
+convertViewRectToImageRectSelector :: Selector '[NSRect] NSRect
 convertViewRectToImageRectSelector = mkSelector "convertViewRectToImageRect:"
 
 -- | @Selector@ for @convertImagePointToViewPoint:@
-convertImagePointToViewPointSelector :: Selector
+convertImagePointToViewPointSelector :: Selector '[NSPoint] NSPoint
 convertImagePointToViewPointSelector = mkSelector "convertImagePointToViewPoint:"
 
 -- | @Selector@ for @convertImageRectToViewRect:@
-convertImageRectToViewRectSelector :: Selector
+convertImageRectToViewRectSelector :: Selector '[NSRect] NSRect
 convertImageRectToViewRectSelector = mkSelector "convertImageRectToViewRect:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @zoomFactor@
-zoomFactorSelector :: Selector
+zoomFactorSelector :: Selector '[] CDouble
 zoomFactorSelector = mkSelector "zoomFactor"
 
 -- | @Selector@ for @setZoomFactor:@
-setZoomFactorSelector :: Selector
+setZoomFactorSelector :: Selector '[CDouble] ()
 setZoomFactorSelector = mkSelector "setZoomFactor:"
 
 -- | @Selector@ for @rotationAngle@
-rotationAngleSelector :: Selector
+rotationAngleSelector :: Selector '[] CDouble
 rotationAngleSelector = mkSelector "rotationAngle"
 
 -- | @Selector@ for @setRotationAngle:@
-setRotationAngleSelector :: Selector
+setRotationAngleSelector :: Selector '[CDouble] ()
 setRotationAngleSelector = mkSelector "setRotationAngle:"
 
 -- | @Selector@ for @currentToolMode@
-currentToolModeSelector :: Selector
+currentToolModeSelector :: Selector '[] (Id NSString)
 currentToolModeSelector = mkSelector "currentToolMode"
 
 -- | @Selector@ for @setCurrentToolMode:@
-setCurrentToolModeSelector :: Selector
+setCurrentToolModeSelector :: Selector '[Id NSString] ()
 setCurrentToolModeSelector = mkSelector "setCurrentToolMode:"
 
 -- | @Selector@ for @autoresizes@
-autoresizesSelector :: Selector
+autoresizesSelector :: Selector '[] Bool
 autoresizesSelector = mkSelector "autoresizes"
 
 -- | @Selector@ for @setAutoresizes:@
-setAutoresizesSelector :: Selector
+setAutoresizesSelector :: Selector '[Bool] ()
 setAutoresizesSelector = mkSelector "setAutoresizes:"
 
 -- | @Selector@ for @hasHorizontalScroller@
-hasHorizontalScrollerSelector :: Selector
+hasHorizontalScrollerSelector :: Selector '[] Bool
 hasHorizontalScrollerSelector = mkSelector "hasHorizontalScroller"
 
 -- | @Selector@ for @setHasHorizontalScroller:@
-setHasHorizontalScrollerSelector :: Selector
+setHasHorizontalScrollerSelector :: Selector '[Bool] ()
 setHasHorizontalScrollerSelector = mkSelector "setHasHorizontalScroller:"
 
 -- | @Selector@ for @hasVerticalScroller@
-hasVerticalScrollerSelector :: Selector
+hasVerticalScrollerSelector :: Selector '[] Bool
 hasVerticalScrollerSelector = mkSelector "hasVerticalScroller"
 
 -- | @Selector@ for @setHasVerticalScroller:@
-setHasVerticalScrollerSelector :: Selector
+setHasVerticalScrollerSelector :: Selector '[Bool] ()
 setHasVerticalScrollerSelector = mkSelector "setHasVerticalScroller:"
 
 -- | @Selector@ for @autohidesScrollers@
-autohidesScrollersSelector :: Selector
+autohidesScrollersSelector :: Selector '[] Bool
 autohidesScrollersSelector = mkSelector "autohidesScrollers"
 
 -- | @Selector@ for @setAutohidesScrollers:@
-setAutohidesScrollersSelector :: Selector
+setAutohidesScrollersSelector :: Selector '[Bool] ()
 setAutohidesScrollersSelector = mkSelector "setAutohidesScrollers:"
 
 -- | @Selector@ for @supportsDragAndDrop@
-supportsDragAndDropSelector :: Selector
+supportsDragAndDropSelector :: Selector '[] Bool
 supportsDragAndDropSelector = mkSelector "supportsDragAndDrop"
 
 -- | @Selector@ for @setSupportsDragAndDrop:@
-setSupportsDragAndDropSelector :: Selector
+setSupportsDragAndDropSelector :: Selector '[Bool] ()
 setSupportsDragAndDropSelector = mkSelector "setSupportsDragAndDrop:"
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @doubleClickOpensImageEditPanel@
-doubleClickOpensImageEditPanelSelector :: Selector
+doubleClickOpensImageEditPanelSelector :: Selector '[] Bool
 doubleClickOpensImageEditPanelSelector = mkSelector "doubleClickOpensImageEditPanel"
 
 -- | @Selector@ for @setDoubleClickOpensImageEditPanel:@
-setDoubleClickOpensImageEditPanelSelector :: Selector
+setDoubleClickOpensImageEditPanelSelector :: Selector '[Bool] ()
 setDoubleClickOpensImageEditPanelSelector = mkSelector "setDoubleClickOpensImageEditPanel:"
 
 -- | @Selector@ for @imageCorrection@
-imageCorrectionSelector :: Selector
+imageCorrectionSelector :: Selector '[] (Id CIFilter)
 imageCorrectionSelector = mkSelector "imageCorrection"
 
 -- | @Selector@ for @setImageCorrection:@
-setImageCorrectionSelector :: Selector
+setImageCorrectionSelector :: Selector '[Id CIFilter] ()
 setImageCorrectionSelector = mkSelector "setImageCorrection:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 

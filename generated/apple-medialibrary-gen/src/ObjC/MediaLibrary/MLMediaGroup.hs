@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.MediaLibrary.MLMediaGroup
   , url
   , modificationDate
   , mediaObjects
-  , mediaLibrarySelector
-  , parentSelector
-  , mediaSourceIdentifierSelector
-  , nameSelector
-  , identifierSelector
-  , typeIdentifierSelector
   , attributesSelector
   , childGroupsSelector
-  , urlSelector
-  , modificationDateSelector
+  , identifierSelector
+  , mediaLibrarySelector
   , mediaObjectsSelector
+  , mediaSourceIdentifierSelector
+  , modificationDateSelector
+  , nameSelector
+  , parentSelector
+  , typeIdentifierSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,104 +46,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- mediaLibrary@
 mediaLibrary :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id MLMediaLibrary)
-mediaLibrary mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "mediaLibrary") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaLibrary mlMediaGroup =
+  sendMessage mlMediaGroup mediaLibrarySelector
 
 -- | @- parent@
 parent :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id MLMediaGroup)
-parent mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "parent") (retPtr retVoid) [] >>= retainedObject . castPtr
+parent mlMediaGroup =
+  sendMessage mlMediaGroup parentSelector
 
 -- | @- mediaSourceIdentifier@
 mediaSourceIdentifier :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id NSString)
-mediaSourceIdentifier mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "mediaSourceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaSourceIdentifier mlMediaGroup =
+  sendMessage mlMediaGroup mediaSourceIdentifierSelector
 
 -- | @- name@
 name :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id NSString)
-name mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mlMediaGroup =
+  sendMessage mlMediaGroup nameSelector
 
 -- | @- identifier@
 identifier :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id NSString)
-identifier mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier mlMediaGroup =
+  sendMessage mlMediaGroup identifierSelector
 
 -- | @- typeIdentifier@
 typeIdentifier :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id NSString)
-typeIdentifier mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "typeIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+typeIdentifier mlMediaGroup =
+  sendMessage mlMediaGroup typeIdentifierSelector
 
 -- | @- attributes@
 attributes :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id NSDictionary)
-attributes mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes mlMediaGroup =
+  sendMessage mlMediaGroup attributesSelector
 
 -- | @- childGroups@
 childGroups :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id NSArray)
-childGroups mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "childGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+childGroups mlMediaGroup =
+  sendMessage mlMediaGroup childGroupsSelector
 
 -- | @- URL@
 url :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id NSURL)
-url mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url mlMediaGroup =
+  sendMessage mlMediaGroup urlSelector
 
 -- | @- modificationDate@
 modificationDate :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id NSDate)
-modificationDate mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "modificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+modificationDate mlMediaGroup =
+  sendMessage mlMediaGroup modificationDateSelector
 
 -- | @- mediaObjects@
 mediaObjects :: IsMLMediaGroup mlMediaGroup => mlMediaGroup -> IO (Id NSArray)
-mediaObjects mlMediaGroup  =
-    sendMsg mlMediaGroup (mkSelector "mediaObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaObjects mlMediaGroup =
+  sendMessage mlMediaGroup mediaObjectsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mediaLibrary@
-mediaLibrarySelector :: Selector
+mediaLibrarySelector :: Selector '[] (Id MLMediaLibrary)
 mediaLibrarySelector = mkSelector "mediaLibrary"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] (Id MLMediaGroup)
 parentSelector = mkSelector "parent"
 
 -- | @Selector@ for @mediaSourceIdentifier@
-mediaSourceIdentifierSelector :: Selector
+mediaSourceIdentifierSelector :: Selector '[] (Id NSString)
 mediaSourceIdentifierSelector = mkSelector "mediaSourceIdentifier"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @typeIdentifier@
-typeIdentifierSelector :: Selector
+typeIdentifierSelector :: Selector '[] (Id NSString)
 typeIdentifierSelector = mkSelector "typeIdentifier"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @childGroups@
-childGroupsSelector :: Selector
+childGroupsSelector :: Selector '[] (Id NSArray)
 childGroupsSelector = mkSelector "childGroups"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @modificationDate@
-modificationDateSelector :: Selector
+modificationDateSelector :: Selector '[] (Id NSDate)
 modificationDateSelector = mkSelector "modificationDate"
 
 -- | @Selector@ for @mediaObjects@
-mediaObjectsSelector :: Selector
+mediaObjectsSelector :: Selector '[] (Id NSArray)
 mediaObjectsSelector = mkSelector "mediaObjects"
 

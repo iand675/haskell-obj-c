@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -157,15 +158,11 @@ module ObjC.Metal.MTLTileRenderPipelineColorAttachmentDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -177,25 +174,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- pixelFormat@
 pixelFormat :: IsMTLTileRenderPipelineColorAttachmentDescriptor mtlTileRenderPipelineColorAttachmentDescriptor => mtlTileRenderPipelineColorAttachmentDescriptor -> IO MTLPixelFormat
-pixelFormat mtlTileRenderPipelineColorAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLPixelFormat) $ sendMsg mtlTileRenderPipelineColorAttachmentDescriptor (mkSelector "pixelFormat") retCULong []
+pixelFormat mtlTileRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlTileRenderPipelineColorAttachmentDescriptor pixelFormatSelector
 
 -- | Pixel format.  Defaults to MTLPixelFormatInvalid
 --
 -- ObjC selector: @- setPixelFormat:@
 setPixelFormat :: IsMTLTileRenderPipelineColorAttachmentDescriptor mtlTileRenderPipelineColorAttachmentDescriptor => mtlTileRenderPipelineColorAttachmentDescriptor -> MTLPixelFormat -> IO ()
-setPixelFormat mtlTileRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlTileRenderPipelineColorAttachmentDescriptor (mkSelector "setPixelFormat:") retVoid [argCULong (coerce value)]
+setPixelFormat mtlTileRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlTileRenderPipelineColorAttachmentDescriptor setPixelFormatSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] MTLPixelFormat
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @setPixelFormat:@
-setPixelFormatSelector :: Selector
+setPixelFormatSelector :: Selector '[MTLPixelFormat] ()
 setPixelFormatSelector = mkSelector "setPixelFormat:"
 

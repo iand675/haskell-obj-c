@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.PhotosUI.PHProjectAssetElement
   , regionsOfInterest
   , horizontallyFlipped
   , verticallyFlipped
-  , cloudAssetIdentifierSelector
   , annotationSelector
-  , regionsOfInterestSelector
+  , cloudAssetIdentifierSelector
   , horizontallyFlippedSelector
+  , regionsOfInterestSelector
   , verticallyFlippedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,22 +39,22 @@ import ObjC.Photos.Internal.Classes
 --
 -- ObjC selector: @- cloudAssetIdentifier@
 cloudAssetIdentifier :: IsPHProjectAssetElement phProjectAssetElement => phProjectAssetElement -> IO (Id PHCloudIdentifier)
-cloudAssetIdentifier phProjectAssetElement  =
-    sendMsg phProjectAssetElement (mkSelector "cloudAssetIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+cloudAssetIdentifier phProjectAssetElement =
+  sendMessage phProjectAssetElement cloudAssetIdentifierSelector
 
 -- | If a user has explicitly annotated an asset (e.g., caption) that value will be provided in this property.
 --
 -- ObjC selector: @- annotation@
 annotation :: IsPHProjectAssetElement phProjectAssetElement => phProjectAssetElement -> IO (Id NSString)
-annotation phProjectAssetElement  =
-    sendMsg phProjectAssetElement (mkSelector "annotation") (retPtr retVoid) [] >>= retainedObject . castPtr
+annotation phProjectAssetElement =
+  sendMessage phProjectAssetElement annotationSelector
 
 -- | Array of regions of interest (faces, objects, etc.) in the assets. Note: Photos will filter out features of an asset that it doesn't believe to be meaningful in the context of the user's full library. For example, random faces in a crowd.
 --
 -- ObjC selector: @- regionsOfInterest@
 regionsOfInterest :: IsPHProjectAssetElement phProjectAssetElement => phProjectAssetElement -> IO (Id NSArray)
-regionsOfInterest phProjectAssetElement  =
-    sendMsg phProjectAssetElement (mkSelector "regionsOfInterest") (retPtr retVoid) [] >>= retainedObject . castPtr
+regionsOfInterest phProjectAssetElement =
+  sendMessage phProjectAssetElement regionsOfInterestSelector
 
 -- | The following properties are only used when the user creates a new project from an existing Apple Print Product.
 --
@@ -65,37 +62,37 @@ regionsOfInterest phProjectAssetElement  =
 --
 -- ObjC selector: @- horizontallyFlipped@
 horizontallyFlipped :: IsPHProjectAssetElement phProjectAssetElement => phProjectAssetElement -> IO Bool
-horizontallyFlipped phProjectAssetElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phProjectAssetElement (mkSelector "horizontallyFlipped") retCULong []
+horizontallyFlipped phProjectAssetElement =
+  sendMessage phProjectAssetElement horizontallyFlippedSelector
 
 -- | YES if the asset was presented vertically flipped in the originating project.
 --
 -- ObjC selector: @- verticallyFlipped@
 verticallyFlipped :: IsPHProjectAssetElement phProjectAssetElement => phProjectAssetElement -> IO Bool
-verticallyFlipped phProjectAssetElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phProjectAssetElement (mkSelector "verticallyFlipped") retCULong []
+verticallyFlipped phProjectAssetElement =
+  sendMessage phProjectAssetElement verticallyFlippedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cloudAssetIdentifier@
-cloudAssetIdentifierSelector :: Selector
+cloudAssetIdentifierSelector :: Selector '[] (Id PHCloudIdentifier)
 cloudAssetIdentifierSelector = mkSelector "cloudAssetIdentifier"
 
 -- | @Selector@ for @annotation@
-annotationSelector :: Selector
+annotationSelector :: Selector '[] (Id NSString)
 annotationSelector = mkSelector "annotation"
 
 -- | @Selector@ for @regionsOfInterest@
-regionsOfInterestSelector :: Selector
+regionsOfInterestSelector :: Selector '[] (Id NSArray)
 regionsOfInterestSelector = mkSelector "regionsOfInterest"
 
 -- | @Selector@ for @horizontallyFlipped@
-horizontallyFlippedSelector :: Selector
+horizontallyFlippedSelector :: Selector '[] Bool
 horizontallyFlippedSelector = mkSelector "horizontallyFlipped"
 
 -- | @Selector@ for @verticallyFlipped@
-verticallyFlippedSelector :: Selector
+verticallyFlippedSelector :: Selector '[] Bool
 verticallyFlippedSelector = mkSelector "verticallyFlipped"
 

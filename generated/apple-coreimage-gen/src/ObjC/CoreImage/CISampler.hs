@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.CoreImage.CISampler
   , initWithImage_keysAndValues
   , initWithImage_options
   , definition
-  , samplerWithImageSelector
-  , samplerWithImage_keysAndValuesSelector
-  , samplerWithImage_optionsSelector
+  , definitionSelector
   , initWithImageSelector
   , initWithImage_keysAndValuesSelector
   , initWithImage_optionsSelector
-  , definitionSelector
+  , samplerWithImageSelector
+  , samplerWithImage_keysAndValuesSelector
+  , samplerWithImage_optionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,79 +41,71 @@ samplerWithImage :: IsCIImage im => im -> IO (Id CISampler)
 samplerWithImage im =
   do
     cls' <- getRequiredClass "CISampler"
-    withObjCPtr im $ \raw_im ->
-      sendClassMsg cls' (mkSelector "samplerWithImage:") (retPtr retVoid) [argPtr (castPtr raw_im :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' samplerWithImageSelector (toCIImage im)
 
 -- | @+ samplerWithImage:keysAndValues:@
 samplerWithImage_keysAndValues :: IsCIImage im => im -> RawId -> IO (Id CISampler)
 samplerWithImage_keysAndValues im key0 =
   do
     cls' <- getRequiredClass "CISampler"
-    withObjCPtr im $ \raw_im ->
-      sendClassMsg cls' (mkSelector "samplerWithImage:keysAndValues:") (retPtr retVoid) [argPtr (castPtr raw_im :: Ptr ()), argPtr (castPtr (unRawId key0) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' samplerWithImage_keysAndValuesSelector (toCIImage im) key0
 
 -- | @+ samplerWithImage:options:@
 samplerWithImage_options :: (IsCIImage im, IsNSDictionary dict) => im -> dict -> IO (Id CISampler)
 samplerWithImage_options im dict =
   do
     cls' <- getRequiredClass "CISampler"
-    withObjCPtr im $ \raw_im ->
-      withObjCPtr dict $ \raw_dict ->
-        sendClassMsg cls' (mkSelector "samplerWithImage:options:") (retPtr retVoid) [argPtr (castPtr raw_im :: Ptr ()), argPtr (castPtr raw_dict :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' samplerWithImage_optionsSelector (toCIImage im) (toNSDictionary dict)
 
 -- | @- initWithImage:@
 initWithImage :: (IsCISampler ciSampler, IsCIImage im) => ciSampler -> im -> IO (Id CISampler)
-initWithImage ciSampler  im =
-  withObjCPtr im $ \raw_im ->
-      sendMsg ciSampler (mkSelector "initWithImage:") (retPtr retVoid) [argPtr (castPtr raw_im :: Ptr ())] >>= ownedObject . castPtr
+initWithImage ciSampler im =
+  sendOwnedMessage ciSampler initWithImageSelector (toCIImage im)
 
 -- | @- initWithImage:keysAndValues:@
 initWithImage_keysAndValues :: (IsCISampler ciSampler, IsCIImage im) => ciSampler -> im -> RawId -> IO (Id CISampler)
-initWithImage_keysAndValues ciSampler  im key0 =
-  withObjCPtr im $ \raw_im ->
-      sendMsg ciSampler (mkSelector "initWithImage:keysAndValues:") (retPtr retVoid) [argPtr (castPtr raw_im :: Ptr ()), argPtr (castPtr (unRawId key0) :: Ptr ())] >>= ownedObject . castPtr
+initWithImage_keysAndValues ciSampler im key0 =
+  sendOwnedMessage ciSampler initWithImage_keysAndValuesSelector (toCIImage im) key0
 
 -- | @- initWithImage:options:@
 initWithImage_options :: (IsCISampler ciSampler, IsCIImage im, IsNSDictionary dict) => ciSampler -> im -> dict -> IO (Id CISampler)
-initWithImage_options ciSampler  im dict =
-  withObjCPtr im $ \raw_im ->
-    withObjCPtr dict $ \raw_dict ->
-        sendMsg ciSampler (mkSelector "initWithImage:options:") (retPtr retVoid) [argPtr (castPtr raw_im :: Ptr ()), argPtr (castPtr raw_dict :: Ptr ())] >>= ownedObject . castPtr
+initWithImage_options ciSampler im dict =
+  sendOwnedMessage ciSampler initWithImage_optionsSelector (toCIImage im) (toNSDictionary dict)
 
 -- | @- definition@
 definition :: IsCISampler ciSampler => ciSampler -> IO (Id CIFilterShape)
-definition ciSampler  =
-    sendMsg ciSampler (mkSelector "definition") (retPtr retVoid) [] >>= retainedObject . castPtr
+definition ciSampler =
+  sendMessage ciSampler definitionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @samplerWithImage:@
-samplerWithImageSelector :: Selector
+samplerWithImageSelector :: Selector '[Id CIImage] (Id CISampler)
 samplerWithImageSelector = mkSelector "samplerWithImage:"
 
 -- | @Selector@ for @samplerWithImage:keysAndValues:@
-samplerWithImage_keysAndValuesSelector :: Selector
+samplerWithImage_keysAndValuesSelector :: Selector '[Id CIImage, RawId] (Id CISampler)
 samplerWithImage_keysAndValuesSelector = mkSelector "samplerWithImage:keysAndValues:"
 
 -- | @Selector@ for @samplerWithImage:options:@
-samplerWithImage_optionsSelector :: Selector
+samplerWithImage_optionsSelector :: Selector '[Id CIImage, Id NSDictionary] (Id CISampler)
 samplerWithImage_optionsSelector = mkSelector "samplerWithImage:options:"
 
 -- | @Selector@ for @initWithImage:@
-initWithImageSelector :: Selector
+initWithImageSelector :: Selector '[Id CIImage] (Id CISampler)
 initWithImageSelector = mkSelector "initWithImage:"
 
 -- | @Selector@ for @initWithImage:keysAndValues:@
-initWithImage_keysAndValuesSelector :: Selector
+initWithImage_keysAndValuesSelector :: Selector '[Id CIImage, RawId] (Id CISampler)
 initWithImage_keysAndValuesSelector = mkSelector "initWithImage:keysAndValues:"
 
 -- | @Selector@ for @initWithImage:options:@
-initWithImage_optionsSelector :: Selector
+initWithImage_optionsSelector :: Selector '[Id CIImage, Id NSDictionary] (Id CISampler)
 initWithImage_optionsSelector = mkSelector "initWithImage:options:"
 
 -- | @Selector@ for @definition@
-definitionSelector :: Selector
+definitionSelector :: Selector '[] (Id CIFilterShape)
 definitionSelector = mkSelector "definition"
 

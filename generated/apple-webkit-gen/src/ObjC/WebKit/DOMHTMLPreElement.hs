@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.WebKit.DOMHTMLPreElement
   , setWidth
   , wrap
   , setWrap
-  , widthSelector
   , setWidthSelector
-  , wrapSelector
   , setWrapSelector
+  , widthSelector
+  , wrapSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- width@
 width :: IsDOMHTMLPreElement domhtmlPreElement => domhtmlPreElement -> IO CInt
-width domhtmlPreElement  =
-    sendMsg domhtmlPreElement (mkSelector "width") retCInt []
+width domhtmlPreElement =
+  sendMessage domhtmlPreElement widthSelector
 
 -- | @- setWidth:@
 setWidth :: IsDOMHTMLPreElement domhtmlPreElement => domhtmlPreElement -> CInt -> IO ()
-setWidth domhtmlPreElement  value =
-    sendMsg domhtmlPreElement (mkSelector "setWidth:") retVoid [argCInt value]
+setWidth domhtmlPreElement value =
+  sendMessage domhtmlPreElement setWidthSelector value
 
 -- | @- wrap@
 wrap :: IsDOMHTMLPreElement domhtmlPreElement => domhtmlPreElement -> IO Bool
-wrap domhtmlPreElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlPreElement (mkSelector "wrap") retCULong []
+wrap domhtmlPreElement =
+  sendMessage domhtmlPreElement wrapSelector
 
 -- | @- setWrap:@
 setWrap :: IsDOMHTMLPreElement domhtmlPreElement => domhtmlPreElement -> Bool -> IO ()
-setWrap domhtmlPreElement  value =
-    sendMsg domhtmlPreElement (mkSelector "setWrap:") retVoid [argCULong (if value then 1 else 0)]
+setWrap domhtmlPreElement value =
+  sendMessage domhtmlPreElement setWrapSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CInt
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CInt] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @wrap@
-wrapSelector :: Selector
+wrapSelector :: Selector '[] Bool
 wrapSelector = mkSelector "wrap"
 
 -- | @Selector@ for @setWrap:@
-setWrapSelector :: Selector
+setWrapSelector :: Selector '[Bool] ()
 setWrapSelector = mkSelector "setWrap:"
 

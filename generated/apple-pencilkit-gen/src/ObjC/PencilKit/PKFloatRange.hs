@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.PencilKit.PKFloatRange
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithLowerBound:upperBound:@
 initWithLowerBound_upperBound :: IsPKFloatRange pkFloatRange => pkFloatRange -> CDouble -> CDouble -> IO (Id PKFloatRange)
-initWithLowerBound_upperBound pkFloatRange  lowerBound upperBound =
-    sendMsg pkFloatRange (mkSelector "initWithLowerBound:upperBound:") (retPtr retVoid) [argCDouble lowerBound, argCDouble upperBound] >>= ownedObject . castPtr
+initWithLowerBound_upperBound pkFloatRange lowerBound upperBound =
+  sendOwnedMessage pkFloatRange initWithLowerBound_upperBoundSelector lowerBound upperBound
 
 -- | @- lowerBound@
 lowerBound :: IsPKFloatRange pkFloatRange => pkFloatRange -> IO CDouble
-lowerBound pkFloatRange  =
-    sendMsg pkFloatRange (mkSelector "lowerBound") retCDouble []
+lowerBound pkFloatRange =
+  sendMessage pkFloatRange lowerBoundSelector
 
 -- | @- upperBound@
 upperBound :: IsPKFloatRange pkFloatRange => pkFloatRange -> IO CDouble
-upperBound pkFloatRange  =
-    sendMsg pkFloatRange (mkSelector "upperBound") retCDouble []
+upperBound pkFloatRange =
+  sendMessage pkFloatRange upperBoundSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLowerBound:upperBound:@
-initWithLowerBound_upperBoundSelector :: Selector
+initWithLowerBound_upperBoundSelector :: Selector '[CDouble, CDouble] (Id PKFloatRange)
 initWithLowerBound_upperBoundSelector = mkSelector "initWithLowerBound:upperBound:"
 
 -- | @Selector@ for @lowerBound@
-lowerBoundSelector :: Selector
+lowerBoundSelector :: Selector '[] CDouble
 lowerBoundSelector = mkSelector "lowerBound"
 
 -- | @Selector@ for @upperBound@
-upperBoundSelector :: Selector
+upperBoundSelector :: Selector '[] CDouble
 upperBoundSelector = mkSelector "upperBound"
 

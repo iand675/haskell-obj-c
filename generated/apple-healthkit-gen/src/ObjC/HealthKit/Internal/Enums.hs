@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.HealthKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | HKActivityMoveMode
 --
@@ -29,6 +32,16 @@ pattern HKActivityMoveModeActiveEnergy = HKActivityMoveMode 1
 pattern HKActivityMoveModeAppleMoveTime :: HKActivityMoveMode
 pattern HKActivityMoveModeAppleMoveTime = HKActivityMoveMode 2
 
+instance ObjCArgument HKActivityMoveMode where
+  withObjCArg (HKActivityMoveMode x) k = k (argCLong x)
+
+instance ObjCReturn HKActivityMoveMode where
+  type RawReturn HKActivityMoveMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKActivityMoveMode x)
+  fromOwned x = pure (HKActivityMoveMode x)
+
 -- | HKAppleECGAlgorithmVersion
 --
 -- Indicates which algorithm version number was used by the ECG app on Apple Watch.
@@ -47,6 +60,16 @@ pattern HKAppleECGAlgorithmVersion1 = HKAppleECGAlgorithmVersion 1
 pattern HKAppleECGAlgorithmVersion2 :: HKAppleECGAlgorithmVersion
 pattern HKAppleECGAlgorithmVersion2 = HKAppleECGAlgorithmVersion 2
 
+instance ObjCArgument HKAppleECGAlgorithmVersion where
+  withObjCArg (HKAppleECGAlgorithmVersion x) k = k (argCLong x)
+
+instance ObjCReturn HKAppleECGAlgorithmVersion where
+  type RawReturn HKAppleECGAlgorithmVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKAppleECGAlgorithmVersion x)
+  fromOwned x = pure (HKAppleECGAlgorithmVersion x)
+
 -- | HKAppleSleepingBreathingDisturbancesClassification
 --
 -- This enumerated type is used to represent a classification of the user's breathing disturbances
@@ -64,6 +87,16 @@ pattern HKAppleSleepingBreathingDisturbancesClassificationNotElevated = HKAppleS
 
 pattern HKAppleSleepingBreathingDisturbancesClassificationElevated :: HKAppleSleepingBreathingDisturbancesClassification
 pattern HKAppleSleepingBreathingDisturbancesClassificationElevated = HKAppleSleepingBreathingDisturbancesClassification 1
+
+instance ObjCArgument HKAppleSleepingBreathingDisturbancesClassification where
+  withObjCArg (HKAppleSleepingBreathingDisturbancesClassification x) k = k (argCLong x)
+
+instance ObjCReturn HKAppleSleepingBreathingDisturbancesClassification where
+  type RawReturn HKAppleSleepingBreathingDisturbancesClassification = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKAppleSleepingBreathingDisturbancesClassification x)
+  fromOwned x = pure (HKAppleSleepingBreathingDisturbancesClassification x)
 
 -- | HKAppleWalkingSteadinessClassification
 --
@@ -88,6 +121,16 @@ pattern HKAppleWalkingSteadinessClassificationLow = HKAppleWalkingSteadinessClas
 pattern HKAppleWalkingSteadinessClassificationVeryLow :: HKAppleWalkingSteadinessClassification
 pattern HKAppleWalkingSteadinessClassificationVeryLow = HKAppleWalkingSteadinessClassification 3
 
+instance ObjCArgument HKAppleWalkingSteadinessClassification where
+  withObjCArg (HKAppleWalkingSteadinessClassification x) k = k (argCLong x)
+
+instance ObjCReturn HKAppleWalkingSteadinessClassification where
+  type RawReturn HKAppleWalkingSteadinessClassification = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKAppleWalkingSteadinessClassification x)
+  fromOwned x = pure (HKAppleWalkingSteadinessClassification x)
+
 -- | HKAudiogramConductionType
 --
 -- Represents the conduction type used for an HKAudiogramSensitivityTest
@@ -100,6 +143,16 @@ newtype HKAudiogramConductionType = HKAudiogramConductionType CLong
 
 pattern HKAudiogramConductionTypeAir :: HKAudiogramConductionType
 pattern HKAudiogramConductionTypeAir = HKAudiogramConductionType 0
+
+instance ObjCArgument HKAudiogramConductionType where
+  withObjCArg (HKAudiogramConductionType x) k = k (argCLong x)
+
+instance ObjCReturn HKAudiogramConductionType where
+  type RawReturn HKAudiogramConductionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKAudiogramConductionType x)
+  fromOwned x = pure (HKAudiogramConductionType x)
 
 -- | HKAudiogramSensitivityTestSide
 --
@@ -118,6 +171,16 @@ pattern HKAudiogramSensitivityTestSideLeft = HKAudiogramSensitivityTestSide 0
 
 pattern HKAudiogramSensitivityTestSideRight :: HKAudiogramSensitivityTestSide
 pattern HKAudiogramSensitivityTestSideRight = HKAudiogramSensitivityTestSide 1
+
+instance ObjCArgument HKAudiogramSensitivityTestSide where
+  withObjCArg (HKAudiogramSensitivityTestSide x) k = k (argCLong x)
+
+instance ObjCReturn HKAudiogramSensitivityTestSide where
+  type RawReturn HKAudiogramSensitivityTestSide = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKAudiogramSensitivityTestSide x)
+  fromOwned x = pure (HKAudiogramSensitivityTestSide x)
 
 -- | HKAuthorizationRequestStatus
 --
@@ -144,6 +207,16 @@ pattern HKAuthorizationRequestStatusShouldRequest = HKAuthorizationRequestStatus
 pattern HKAuthorizationRequestStatusUnnecessary :: HKAuthorizationRequestStatus
 pattern HKAuthorizationRequestStatusUnnecessary = HKAuthorizationRequestStatus 2
 
+instance ObjCArgument HKAuthorizationRequestStatus where
+  withObjCArg (HKAuthorizationRequestStatus x) k = k (argCLong x)
+
+instance ObjCReturn HKAuthorizationRequestStatus where
+  type RawReturn HKAuthorizationRequestStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKAuthorizationRequestStatus x)
+  fromOwned x = pure (HKAuthorizationRequestStatus x)
+
 -- | HKAuthorizationStatus
 --
 -- This enumerated type is used to indicate the currently granted authorization status for a specific            HKObjectType.
@@ -169,6 +242,16 @@ pattern HKAuthorizationStatusSharingDenied = HKAuthorizationStatus 1
 pattern HKAuthorizationStatusSharingAuthorized :: HKAuthorizationStatus
 pattern HKAuthorizationStatusSharingAuthorized = HKAuthorizationStatus 2
 
+instance ObjCArgument HKAuthorizationStatus where
+  withObjCArg (HKAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn HKAuthorizationStatus where
+  type RawReturn HKAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKAuthorizationStatus x)
+  fromOwned x = pure (HKAuthorizationStatus x)
+
 -- | HKBiologicalSex
 --
 -- This enumerated type is used to represent the biological sex of an individual.
@@ -189,6 +272,16 @@ pattern HKBiologicalSexMale = HKBiologicalSex 2
 pattern HKBiologicalSexOther :: HKBiologicalSex
 pattern HKBiologicalSexOther = HKBiologicalSex 3
 
+instance ObjCArgument HKBiologicalSex where
+  withObjCArg (HKBiologicalSex x) k = k (argCLong x)
+
+instance ObjCReturn HKBiologicalSex where
+  type RawReturn HKBiologicalSex = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKBiologicalSex x)
+  fromOwned x = pure (HKBiologicalSex x)
+
 -- | HKBloodGlucoseMealTime
 --
 -- Indicates how your blood glucose reading relates to a meal.
@@ -206,6 +299,16 @@ pattern HKBloodGlucoseMealTimePreprandial = HKBloodGlucoseMealTime 1
 
 pattern HKBloodGlucoseMealTimePostprandial :: HKBloodGlucoseMealTime
 pattern HKBloodGlucoseMealTimePostprandial = HKBloodGlucoseMealTime 2
+
+instance ObjCArgument HKBloodGlucoseMealTime where
+  withObjCArg (HKBloodGlucoseMealTime x) k = k (argCLong x)
+
+instance ObjCReturn HKBloodGlucoseMealTime where
+  type RawReturn HKBloodGlucoseMealTime = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKBloodGlucoseMealTime x)
+  fromOwned x = pure (HKBloodGlucoseMealTime x)
 
 -- | HKBloodType
 --
@@ -241,6 +344,16 @@ pattern HKBloodTypeOPositive = HKBloodType 7
 
 pattern HKBloodTypeONegative :: HKBloodType
 pattern HKBloodTypeONegative = HKBloodType 8
+
+instance ObjCArgument HKBloodType where
+  withObjCArg (HKBloodType x) k = k (argCLong x)
+
+instance ObjCReturn HKBloodType where
+  type RawReturn HKBloodType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKBloodType x)
+  fromOwned x = pure (HKBloodType x)
 
 -- | @HKBodyTemperatureSensorLocation@
 newtype HKBodyTemperatureSensorLocation = HKBodyTemperatureSensorLocation CLong
@@ -283,6 +396,16 @@ pattern HKBodyTemperatureSensorLocationTemporalArtery = HKBodyTemperatureSensorL
 pattern HKBodyTemperatureSensorLocationForehead :: HKBodyTemperatureSensorLocation
 pattern HKBodyTemperatureSensorLocationForehead = HKBodyTemperatureSensorLocation 11
 
+instance ObjCArgument HKBodyTemperatureSensorLocation where
+  withObjCArg (HKBodyTemperatureSensorLocation x) k = k (argCLong x)
+
+instance ObjCReturn HKBodyTemperatureSensorLocation where
+  type RawReturn HKBodyTemperatureSensorLocation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKBodyTemperatureSensorLocation x)
+  fromOwned x = pure (HKBodyTemperatureSensorLocation x)
+
 -- | HKCategoryValue
 --
 -- This category value is to be used for types which don't have a specific value defined.
@@ -293,6 +416,16 @@ newtype HKCategoryValue = HKCategoryValue CLong
 
 pattern HKCategoryValueNotApplicable :: HKCategoryValue
 pattern HKCategoryValueNotApplicable = HKCategoryValue 0
+
+instance ObjCArgument HKCategoryValue where
+  withObjCArg (HKCategoryValue x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValue where
+  type RawReturn HKCategoryValue = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValue x)
+  fromOwned x = pure (HKCategoryValue x)
 
 -- | HKCategoryValueAppetiteChanges
 --
@@ -313,6 +446,16 @@ pattern HKCategoryValueAppetiteChangesDecreased = HKCategoryValueAppetiteChanges
 
 pattern HKCategoryValueAppetiteChangesIncreased :: HKCategoryValueAppetiteChanges
 pattern HKCategoryValueAppetiteChangesIncreased = HKCategoryValueAppetiteChanges 3
+
+instance ObjCArgument HKCategoryValueAppetiteChanges where
+  withObjCArg (HKCategoryValueAppetiteChanges x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueAppetiteChanges where
+  type RawReturn HKCategoryValueAppetiteChanges = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueAppetiteChanges x)
+  fromOwned x = pure (HKCategoryValueAppetiteChanges x)
 
 -- | HKCategoryValueAppleStandHour
 --
@@ -335,6 +478,16 @@ pattern HKCategoryValueAppleStandHourStood = HKCategoryValueAppleStandHour 0
 
 pattern HKCategoryValueAppleStandHourIdle :: HKCategoryValueAppleStandHour
 pattern HKCategoryValueAppleStandHourIdle = HKCategoryValueAppleStandHour 1
+
+instance ObjCArgument HKCategoryValueAppleStandHour where
+  withObjCArg (HKCategoryValueAppleStandHour x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueAppleStandHour where
+  type RawReturn HKCategoryValueAppleStandHour = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueAppleStandHour x)
+  fromOwned x = pure (HKCategoryValueAppleStandHour x)
 
 -- | HKCategoryValueAppleWalkingSteadinessEvent
 --
@@ -372,6 +525,16 @@ pattern HKCategoryValueAppleWalkingSteadinessEventRepeatLow = HKCategoryValueApp
 pattern HKCategoryValueAppleWalkingSteadinessEventRepeatVeryLow :: HKCategoryValueAppleWalkingSteadinessEvent
 pattern HKCategoryValueAppleWalkingSteadinessEventRepeatVeryLow = HKCategoryValueAppleWalkingSteadinessEvent 4
 
+instance ObjCArgument HKCategoryValueAppleWalkingSteadinessEvent where
+  withObjCArg (HKCategoryValueAppleWalkingSteadinessEvent x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueAppleWalkingSteadinessEvent where
+  type RawReturn HKCategoryValueAppleWalkingSteadinessEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueAppleWalkingSteadinessEvent x)
+  fromOwned x = pure (HKCategoryValueAppleWalkingSteadinessEvent x)
+
 -- | HKCategoryValueAudioExposureEvent
 --
 -- Specifies the kind of audio exposure event associated with the sample.
@@ -382,6 +545,16 @@ newtype HKCategoryValueAudioExposureEvent = HKCategoryValueAudioExposureEvent CL
 
 pattern HKCategoryValueAudioExposureEventLoudEnvironment :: HKCategoryValueAudioExposureEvent
 pattern HKCategoryValueAudioExposureEventLoudEnvironment = HKCategoryValueAudioExposureEvent 1
+
+instance ObjCArgument HKCategoryValueAudioExposureEvent where
+  withObjCArg (HKCategoryValueAudioExposureEvent x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueAudioExposureEvent where
+  type RawReturn HKCategoryValueAudioExposureEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueAudioExposureEvent x)
+  fromOwned x = pure (HKCategoryValueAudioExposureEvent x)
 
 -- | HKCategoryValueCervicalMucusQuality
 --
@@ -407,6 +580,16 @@ pattern HKCategoryValueCervicalMucusQualityWatery = HKCategoryValueCervicalMucus
 
 pattern HKCategoryValueCervicalMucusQualityEggWhite :: HKCategoryValueCervicalMucusQuality
 pattern HKCategoryValueCervicalMucusQualityEggWhite = HKCategoryValueCervicalMucusQuality 5
+
+instance ObjCArgument HKCategoryValueCervicalMucusQuality where
+  withObjCArg (HKCategoryValueCervicalMucusQuality x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueCervicalMucusQuality where
+  type RawReturn HKCategoryValueCervicalMucusQuality = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueCervicalMucusQuality x)
+  fromOwned x = pure (HKCategoryValueCervicalMucusQuality x)
 
 -- | HKCategoryValueContraceptive
 --
@@ -437,6 +620,16 @@ pattern HKCategoryValueContraceptiveOral = HKCategoryValueContraceptive 6
 pattern HKCategoryValueContraceptivePatch :: HKCategoryValueContraceptive
 pattern HKCategoryValueContraceptivePatch = HKCategoryValueContraceptive 7
 
+instance ObjCArgument HKCategoryValueContraceptive where
+  withObjCArg (HKCategoryValueContraceptive x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueContraceptive where
+  type RawReturn HKCategoryValueContraceptive = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueContraceptive x)
+  fromOwned x = pure (HKCategoryValueContraceptive x)
+
 -- | HKCategoryValueEnvironmentalAudioExposureEvent
 --
 -- Specifies the kind of environmental audio exposure event associated with the sample.
@@ -451,6 +644,16 @@ newtype HKCategoryValueEnvironmentalAudioExposureEvent = HKCategoryValueEnvironm
 
 pattern HKCategoryValueEnvironmentalAudioExposureEventMomentaryLimit :: HKCategoryValueEnvironmentalAudioExposureEvent
 pattern HKCategoryValueEnvironmentalAudioExposureEventMomentaryLimit = HKCategoryValueEnvironmentalAudioExposureEvent 1
+
+instance ObjCArgument HKCategoryValueEnvironmentalAudioExposureEvent where
+  withObjCArg (HKCategoryValueEnvironmentalAudioExposureEvent x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueEnvironmentalAudioExposureEvent where
+  type RawReturn HKCategoryValueEnvironmentalAudioExposureEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueEnvironmentalAudioExposureEvent x)
+  fromOwned x = pure (HKCategoryValueEnvironmentalAudioExposureEvent x)
 
 -- | HKCategoryValueHeadphoneAudioExposureEvent
 --
@@ -467,6 +670,16 @@ newtype HKCategoryValueHeadphoneAudioExposureEvent = HKCategoryValueHeadphoneAud
 pattern HKCategoryValueHeadphoneAudioExposureEventSevenDayLimit :: HKCategoryValueHeadphoneAudioExposureEvent
 pattern HKCategoryValueHeadphoneAudioExposureEventSevenDayLimit = HKCategoryValueHeadphoneAudioExposureEvent 1
 
+instance ObjCArgument HKCategoryValueHeadphoneAudioExposureEvent where
+  withObjCArg (HKCategoryValueHeadphoneAudioExposureEvent x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueHeadphoneAudioExposureEvent where
+  type RawReturn HKCategoryValueHeadphoneAudioExposureEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueHeadphoneAudioExposureEvent x)
+  fromOwned x = pure (HKCategoryValueHeadphoneAudioExposureEvent x)
+
 -- | HKCategoryValueLowCardioFitnessEvent
 --
 -- Specifies the type of cardio fitness event.
@@ -481,6 +694,16 @@ newtype HKCategoryValueLowCardioFitnessEvent = HKCategoryValueLowCardioFitnessEv
 
 pattern HKCategoryValueLowCardioFitnessEventLowFitness :: HKCategoryValueLowCardioFitnessEvent
 pattern HKCategoryValueLowCardioFitnessEventLowFitness = HKCategoryValueLowCardioFitnessEvent 1
+
+instance ObjCArgument HKCategoryValueLowCardioFitnessEvent where
+  withObjCArg (HKCategoryValueLowCardioFitnessEvent x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueLowCardioFitnessEvent where
+  type RawReturn HKCategoryValueLowCardioFitnessEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueLowCardioFitnessEvent x)
+  fromOwned x = pure (HKCategoryValueLowCardioFitnessEvent x)
 
 -- | HKCategoryValueMenstrualFlow
 --
@@ -504,6 +727,16 @@ pattern HKCategoryValueMenstrualFlowHeavy = HKCategoryValueMenstrualFlow 4
 
 pattern HKCategoryValueMenstrualFlowNone :: HKCategoryValueMenstrualFlow
 pattern HKCategoryValueMenstrualFlowNone = HKCategoryValueMenstrualFlow 5
+
+instance ObjCArgument HKCategoryValueMenstrualFlow where
+  withObjCArg (HKCategoryValueMenstrualFlow x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueMenstrualFlow where
+  type RawReturn HKCategoryValueMenstrualFlow = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueMenstrualFlow x)
+  fromOwned x = pure (HKCategoryValueMenstrualFlow x)
 
 -- | HKCategoryValueOvulationTestResult
 --
@@ -530,6 +763,16 @@ pattern HKCategoryValueOvulationTestResultIndeterminate = HKCategoryValueOvulati
 pattern HKCategoryValueOvulationTestResultEstrogenSurge :: HKCategoryValueOvulationTestResult
 pattern HKCategoryValueOvulationTestResultEstrogenSurge = HKCategoryValueOvulationTestResult 4
 
+instance ObjCArgument HKCategoryValueOvulationTestResult where
+  withObjCArg (HKCategoryValueOvulationTestResult x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueOvulationTestResult where
+  type RawReturn HKCategoryValueOvulationTestResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueOvulationTestResult x)
+  fromOwned x = pure (HKCategoryValueOvulationTestResult x)
+
 -- | HKCategoryValuePregnancyTestResult
 --
 -- Set of values that may be used for HKCategorySamples with the                HKCategoryTypeIdentifierPregnancyTestResult type.
@@ -549,6 +792,16 @@ pattern HKCategoryValuePregnancyTestResultPositive = HKCategoryValuePregnancyTes
 pattern HKCategoryValuePregnancyTestResultIndeterminate :: HKCategoryValuePregnancyTestResult
 pattern HKCategoryValuePregnancyTestResultIndeterminate = HKCategoryValuePregnancyTestResult 3
 
+instance ObjCArgument HKCategoryValuePregnancyTestResult where
+  withObjCArg (HKCategoryValuePregnancyTestResult x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValuePregnancyTestResult where
+  type RawReturn HKCategoryValuePregnancyTestResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValuePregnancyTestResult x)
+  fromOwned x = pure (HKCategoryValuePregnancyTestResult x)
+
 -- | HKCategoryValuePresence
 --
 -- Set of values to indicate whether a data type is present or not.
@@ -562,6 +815,16 @@ pattern HKCategoryValuePresencePresent = HKCategoryValuePresence 0
 
 pattern HKCategoryValuePresenceNotPresent :: HKCategoryValuePresence
 pattern HKCategoryValuePresenceNotPresent = HKCategoryValuePresence 1
+
+instance ObjCArgument HKCategoryValuePresence where
+  withObjCArg (HKCategoryValuePresence x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValuePresence where
+  type RawReturn HKCategoryValuePresence = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValuePresence x)
+  fromOwned x = pure (HKCategoryValuePresence x)
 
 -- | HKCategoryValueProgesteroneTestResult
 --
@@ -581,6 +844,16 @@ pattern HKCategoryValueProgesteroneTestResultPositive = HKCategoryValueProgester
 
 pattern HKCategoryValueProgesteroneTestResultIndeterminate :: HKCategoryValueProgesteroneTestResult
 pattern HKCategoryValueProgesteroneTestResultIndeterminate = HKCategoryValueProgesteroneTestResult 3
+
+instance ObjCArgument HKCategoryValueProgesteroneTestResult where
+  withObjCArg (HKCategoryValueProgesteroneTestResult x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueProgesteroneTestResult where
+  type RawReturn HKCategoryValueProgesteroneTestResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueProgesteroneTestResult x)
+  fromOwned x = pure (HKCategoryValueProgesteroneTestResult x)
 
 -- | HKCategoryValueSeverity
 --
@@ -604,6 +877,16 @@ pattern HKCategoryValueSeverityModerate = HKCategoryValueSeverity 3
 
 pattern HKCategoryValueSeveritySevere :: HKCategoryValueSeverity
 pattern HKCategoryValueSeveritySevere = HKCategoryValueSeverity 4
+
+instance ObjCArgument HKCategoryValueSeverity where
+  withObjCArg (HKCategoryValueSeverity x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueSeverity where
+  type RawReturn HKCategoryValueSeverity = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueSeverity x)
+  fromOwned x = pure (HKCategoryValueSeverity x)
 
 -- | HKCategoryValueSleepAnalysis
 --
@@ -648,6 +931,16 @@ pattern HKCategoryValueSleepAnalysisAsleepDeep = HKCategoryValueSleepAnalysis 4
 pattern HKCategoryValueSleepAnalysisAsleepREM :: HKCategoryValueSleepAnalysis
 pattern HKCategoryValueSleepAnalysisAsleepREM = HKCategoryValueSleepAnalysis 5
 
+instance ObjCArgument HKCategoryValueSleepAnalysis where
+  withObjCArg (HKCategoryValueSleepAnalysis x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueSleepAnalysis where
+  type RawReturn HKCategoryValueSleepAnalysis = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueSleepAnalysis x)
+  fromOwned x = pure (HKCategoryValueSleepAnalysis x)
+
 -- | HKCategoryValueVaginalBleeding
 --
 -- Set of values to indicate the type of bleeding.
@@ -670,6 +963,16 @@ pattern HKCategoryValueVaginalBleedingHeavy = HKCategoryValueVaginalBleeding 4
 
 pattern HKCategoryValueVaginalBleedingNone :: HKCategoryValueVaginalBleeding
 pattern HKCategoryValueVaginalBleedingNone = HKCategoryValueVaginalBleeding 5
+
+instance ObjCArgument HKCategoryValueVaginalBleeding where
+  withObjCArg (HKCategoryValueVaginalBleeding x) k = k (argCLong x)
+
+instance ObjCReturn HKCategoryValueVaginalBleeding where
+  type RawReturn HKCategoryValueVaginalBleeding = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCategoryValueVaginalBleeding x)
+  fromOwned x = pure (HKCategoryValueVaginalBleeding x)
 
 -- | HKCyclingFunctionalThresholdPowerTestType
 --
@@ -707,6 +1010,16 @@ pattern HKCyclingFunctionalThresholdPowerTestTypeRampTest = HKCyclingFunctionalT
 pattern HKCyclingFunctionalThresholdPowerTestTypePredictionExercise :: HKCyclingFunctionalThresholdPowerTestType
 pattern HKCyclingFunctionalThresholdPowerTestTypePredictionExercise = HKCyclingFunctionalThresholdPowerTestType 4
 
+instance ObjCArgument HKCyclingFunctionalThresholdPowerTestType where
+  withObjCArg (HKCyclingFunctionalThresholdPowerTestType x) k = k (argCLong x)
+
+instance ObjCReturn HKCyclingFunctionalThresholdPowerTestType where
+  type RawReturn HKCyclingFunctionalThresholdPowerTestType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKCyclingFunctionalThresholdPowerTestType x)
+  fromOwned x = pure (HKCyclingFunctionalThresholdPowerTestType x)
+
 -- | HKDevicePlacementSide
 --
 -- The detected placement of the device during the bout of walking
@@ -734,6 +1047,16 @@ pattern HKDevicePlacementSideRight = HKDevicePlacementSide 2
 
 pattern HKDevicePlacementSideCentral :: HKDevicePlacementSide
 pattern HKDevicePlacementSideCentral = HKDevicePlacementSide 3
+
+instance ObjCArgument HKDevicePlacementSide where
+  withObjCArg (HKDevicePlacementSide x) k = k (argCLong x)
+
+instance ObjCReturn HKDevicePlacementSide where
+  type RawReturn HKDevicePlacementSide = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKDevicePlacementSide x)
+  fromOwned x = pure (HKDevicePlacementSide x)
 
 -- | HKElectrocardiogramClassification
 --
@@ -783,6 +1106,16 @@ pattern HKElectrocardiogramClassificationInconclusiveOther = HKElectrocardiogram
 pattern HKElectrocardiogramClassificationUnrecognized :: HKElectrocardiogramClassification
 pattern HKElectrocardiogramClassificationUnrecognized = HKElectrocardiogramClassification 100
 
+instance ObjCArgument HKElectrocardiogramClassification where
+  withObjCArg (HKElectrocardiogramClassification x) k = k (argCLong x)
+
+instance ObjCReturn HKElectrocardiogramClassification where
+  type RawReturn HKElectrocardiogramClassification = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKElectrocardiogramClassification x)
+  fromOwned x = pure (HKElectrocardiogramClassification x)
+
 -- | HKElectrocardiogramLead
 --
 -- The medically-defined leads supported by HKElectrocardiogram
@@ -797,6 +1130,16 @@ newtype HKElectrocardiogramLead = HKElectrocardiogramLead CLong
 
 pattern HKElectrocardiogramLeadAppleWatchSimilarToLeadI :: HKElectrocardiogramLead
 pattern HKElectrocardiogramLeadAppleWatchSimilarToLeadI = HKElectrocardiogramLead 1
+
+instance ObjCArgument HKElectrocardiogramLead where
+  withObjCArg (HKElectrocardiogramLead x) k = k (argCLong x)
+
+instance ObjCReturn HKElectrocardiogramLead where
+  type RawReturn HKElectrocardiogramLead = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKElectrocardiogramLead x)
+  fromOwned x = pure (HKElectrocardiogramLead x)
 
 -- | HKElectrocardiogramSymptomsStatus
 --
@@ -820,6 +1163,16 @@ pattern HKElectrocardiogramSymptomsStatusNone = HKElectrocardiogramSymptomsStatu
 
 pattern HKElectrocardiogramSymptomsStatusPresent :: HKElectrocardiogramSymptomsStatus
 pattern HKElectrocardiogramSymptomsStatusPresent = HKElectrocardiogramSymptomsStatus 2
+
+instance ObjCArgument HKElectrocardiogramSymptomsStatus where
+  withObjCArg (HKElectrocardiogramSymptomsStatus x) k = k (argCLong x)
+
+instance ObjCReturn HKElectrocardiogramSymptomsStatus where
+  type RawReturn HKElectrocardiogramSymptomsStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKElectrocardiogramSymptomsStatus x)
+  fromOwned x = pure (HKElectrocardiogramSymptomsStatus x)
 
 -- | HKErrorCode
 --
@@ -916,6 +1269,16 @@ pattern HKErrorBackgroundWorkoutSessionNotAllowed = HKErrorCode 14
 pattern HKErrorNotPermissibleForGuestUserMode :: HKErrorCode
 pattern HKErrorNotPermissibleForGuestUserMode = HKErrorCode 15
 
+instance ObjCArgument HKErrorCode where
+  withObjCArg (HKErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn HKErrorCode where
+  type RawReturn HKErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKErrorCode x)
+  fromOwned x = pure (HKErrorCode x)
+
 -- | HKFitzpatrickSkinType
 --
 -- This enumerated type is used to represent the skin type of an individual based on the Fitzpatrick scale.
@@ -959,6 +1322,16 @@ pattern HKFitzpatrickSkinTypeV = HKFitzpatrickSkinType 5
 pattern HKFitzpatrickSkinTypeVI :: HKFitzpatrickSkinType
 pattern HKFitzpatrickSkinTypeVI = HKFitzpatrickSkinType 6
 
+instance ObjCArgument HKFitzpatrickSkinType where
+  withObjCArg (HKFitzpatrickSkinType x) k = k (argCLong x)
+
+instance ObjCReturn HKFitzpatrickSkinType where
+  type RawReturn HKFitzpatrickSkinType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKFitzpatrickSkinType x)
+  fromOwned x = pure (HKFitzpatrickSkinType x)
+
 -- | HKGAD7AssessmentAnswer
 --
 -- Answer to question on GAD-7 assessment.
@@ -978,6 +1351,16 @@ pattern HKGAD7AssessmentAnswerMoreThanHalfTheDays = HKGAD7AssessmentAnswer 2
 
 pattern HKGAD7AssessmentAnswerNearlyEveryDay :: HKGAD7AssessmentAnswer
 pattern HKGAD7AssessmentAnswerNearlyEveryDay = HKGAD7AssessmentAnswer 3
+
+instance ObjCArgument HKGAD7AssessmentAnswer where
+  withObjCArg (HKGAD7AssessmentAnswer x) k = k (argCLong x)
+
+instance ObjCReturn HKGAD7AssessmentAnswer where
+  type RawReturn HKGAD7AssessmentAnswer = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKGAD7AssessmentAnswer x)
+  fromOwned x = pure (HKGAD7AssessmentAnswer x)
 
 -- | HKGAD7AssessmentRisk
 --
@@ -999,6 +1382,16 @@ pattern HKGAD7AssessmentRiskModerate = HKGAD7AssessmentRisk 3
 pattern HKGAD7AssessmentRiskSevere :: HKGAD7AssessmentRisk
 pattern HKGAD7AssessmentRiskSevere = HKGAD7AssessmentRisk 4
 
+instance ObjCArgument HKGAD7AssessmentRisk where
+  withObjCArg (HKGAD7AssessmentRisk x) k = k (argCLong x)
+
+instance ObjCReturn HKGAD7AssessmentRisk where
+  type RawReturn HKGAD7AssessmentRisk = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKGAD7AssessmentRisk x)
+  fromOwned x = pure (HKGAD7AssessmentRisk x)
+
 -- | @HKHeartRateMotionContext@
 newtype HKHeartRateMotionContext = HKHeartRateMotionContext CLong
   deriving stock (Eq, Ord, Show)
@@ -1012,6 +1405,16 @@ pattern HKHeartRateMotionContextSedentary = HKHeartRateMotionContext 1
 
 pattern HKHeartRateMotionContextActive :: HKHeartRateMotionContext
 pattern HKHeartRateMotionContextActive = HKHeartRateMotionContext 2
+
+instance ObjCArgument HKHeartRateMotionContext where
+  withObjCArg (HKHeartRateMotionContext x) k = k (argCLong x)
+
+instance ObjCReturn HKHeartRateMotionContext where
+  type RawReturn HKHeartRateMotionContext = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKHeartRateMotionContext x)
+  fromOwned x = pure (HKHeartRateMotionContext x)
 
 -- | HKHeartRateRecoveryTestType
 --
@@ -1042,6 +1445,16 @@ pattern HKHeartRateRecoveryTestTypePredictionSubMaxExercise = HKHeartRateRecover
 pattern HKHeartRateRecoveryTestTypePredictionNonExercise :: HKHeartRateRecoveryTestType
 pattern HKHeartRateRecoveryTestTypePredictionNonExercise = HKHeartRateRecoveryTestType 3
 
+instance ObjCArgument HKHeartRateRecoveryTestType where
+  withObjCArg (HKHeartRateRecoveryTestType x) k = k (argCLong x)
+
+instance ObjCReturn HKHeartRateRecoveryTestType where
+  type RawReturn HKHeartRateRecoveryTestType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKHeartRateRecoveryTestType x)
+  fromOwned x = pure (HKHeartRateRecoveryTestType x)
+
 -- | @HKHeartRateSensorLocation@
 newtype HKHeartRateSensorLocation = HKHeartRateSensorLocation CLong
   deriving stock (Eq, Ord, Show)
@@ -1068,6 +1481,16 @@ pattern HKHeartRateSensorLocationEarLobe = HKHeartRateSensorLocation 5
 pattern HKHeartRateSensorLocationFoot :: HKHeartRateSensorLocation
 pattern HKHeartRateSensorLocationFoot = HKHeartRateSensorLocation 6
 
+instance ObjCArgument HKHeartRateSensorLocation where
+  withObjCArg (HKHeartRateSensorLocation x) k = k (argCLong x)
+
+instance ObjCReturn HKHeartRateSensorLocation where
+  type RawReturn HKHeartRateSensorLocation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKHeartRateSensorLocation x)
+  fromOwned x = pure (HKHeartRateSensorLocation x)
+
 -- | HKInsulinDeliveryReason
 --
 -- Represents a medical reason for the delivery of insulin
@@ -1089,6 +1512,16 @@ pattern HKInsulinDeliveryReasonBasal = HKInsulinDeliveryReason 1
 
 pattern HKInsulinDeliveryReasonBolus :: HKInsulinDeliveryReason
 pattern HKInsulinDeliveryReasonBolus = HKInsulinDeliveryReason 2
+
+instance ObjCArgument HKInsulinDeliveryReason where
+  withObjCArg (HKInsulinDeliveryReason x) k = k (argCLong x)
+
+instance ObjCReturn HKInsulinDeliveryReason where
+  type RawReturn HKInsulinDeliveryReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKInsulinDeliveryReason x)
+  fromOwned x = pure (HKInsulinDeliveryReason x)
 
 -- | The statuses the system assigns to a logged medication dose event.
 -- | @HKMedicationDoseEventLogStatus@
@@ -1114,6 +1547,16 @@ pattern HKMedicationDoseEventLogStatusSkipped = HKMedicationDoseEventLogStatus 5
 pattern HKMedicationDoseEventLogStatusNotLogged :: HKMedicationDoseEventLogStatus
 pattern HKMedicationDoseEventLogStatusNotLogged = HKMedicationDoseEventLogStatus 6
 
+instance ObjCArgument HKMedicationDoseEventLogStatus where
+  withObjCArg (HKMedicationDoseEventLogStatus x) k = k (argCLong x)
+
+instance ObjCReturn HKMedicationDoseEventLogStatus where
+  type RawReturn HKMedicationDoseEventLogStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKMedicationDoseEventLogStatus x)
+  fromOwned x = pure (HKMedicationDoseEventLogStatus x)
+
 -- | The kind of schedule the system associates with a logged medication dose event.
 --
 -- Each value tells you whether the person logged the dose ad-hoc or in response to a scheduled medication reminder.
@@ -1127,6 +1570,16 @@ pattern HKMedicationDoseEventScheduleTypeAsNeeded = HKMedicationDoseEventSchedul
 
 pattern HKMedicationDoseEventScheduleTypeSchedule :: HKMedicationDoseEventScheduleType
 pattern HKMedicationDoseEventScheduleTypeSchedule = HKMedicationDoseEventScheduleType 2
+
+instance ObjCArgument HKMedicationDoseEventScheduleType where
+  withObjCArg (HKMedicationDoseEventScheduleType x) k = k (argCLong x)
+
+instance ObjCReturn HKMedicationDoseEventScheduleType where
+  type RawReturn HKMedicationDoseEventScheduleType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKMedicationDoseEventScheduleType x)
+  fromOwned x = pure (HKMedicationDoseEventScheduleType x)
 
 -- | @HKMetricPrefix@
 newtype HKMetricPrefix = HKMetricPrefix CLong
@@ -1175,6 +1628,16 @@ pattern HKMetricPrefixGiga = HKMetricPrefix 11
 pattern HKMetricPrefixTera :: HKMetricPrefix
 pattern HKMetricPrefixTera = HKMetricPrefix 12
 
+instance ObjCArgument HKMetricPrefix where
+  withObjCArg (HKMetricPrefix x) k = k (argCLong x)
+
+instance ObjCReturn HKMetricPrefix where
+  type RawReturn HKMetricPrefix = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKMetricPrefix x)
+  fromOwned x = pure (HKMetricPrefix x)
+
 -- | HKPHQ9AssessmentAnswer
 --
 -- Answer to question on PHQ-9 assessment.
@@ -1197,6 +1660,16 @@ pattern HKPHQ9AssessmentAnswerNearlyEveryDay = HKPHQ9AssessmentAnswer 3
 
 pattern HKPHQ9AssessmentAnswerPreferNotToAnswer :: HKPHQ9AssessmentAnswer
 pattern HKPHQ9AssessmentAnswerPreferNotToAnswer = HKPHQ9AssessmentAnswer 4
+
+instance ObjCArgument HKPHQ9AssessmentAnswer where
+  withObjCArg (HKPHQ9AssessmentAnswer x) k = k (argCLong x)
+
+instance ObjCReturn HKPHQ9AssessmentAnswer where
+  type RawReturn HKPHQ9AssessmentAnswer = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKPHQ9AssessmentAnswer x)
+  fromOwned x = pure (HKPHQ9AssessmentAnswer x)
 
 -- | HKPHQ9AssessmentRisk
 --
@@ -1221,6 +1694,16 @@ pattern HKPHQ9AssessmentRiskModeratelySevere = HKPHQ9AssessmentRisk 4
 pattern HKPHQ9AssessmentRiskSevere :: HKPHQ9AssessmentRisk
 pattern HKPHQ9AssessmentRiskSevere = HKPHQ9AssessmentRisk 5
 
+instance ObjCArgument HKPHQ9AssessmentRisk where
+  withObjCArg (HKPHQ9AssessmentRisk x) k = k (argCLong x)
+
+instance ObjCReturn HKPHQ9AssessmentRisk where
+  type RawReturn HKPHQ9AssessmentRisk = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKPHQ9AssessmentRisk x)
+  fromOwned x = pure (HKPHQ9AssessmentRisk x)
+
 -- | HKPhysicalEffortEstimationType
 --
 -- Represents the estimation used to create a Physical Effort Sample.
@@ -1242,6 +1725,16 @@ pattern HKPhysicalEffortEstimationTypeActivityLookup = HKPhysicalEffortEstimatio
 
 pattern HKPhysicalEffortEstimationTypeDeviceSensed :: HKPhysicalEffortEstimationType
 pattern HKPhysicalEffortEstimationTypeDeviceSensed = HKPhysicalEffortEstimationType 2
+
+instance ObjCArgument HKPhysicalEffortEstimationType where
+  withObjCArg (HKPhysicalEffortEstimationType x) k = k (argCLong x)
+
+instance ObjCReturn HKPhysicalEffortEstimationType where
+  type RawReturn HKPhysicalEffortEstimationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKPhysicalEffortEstimationType x)
+  fromOwned x = pure (HKPhysicalEffortEstimationType x)
 
 -- | HKPrismBase
 --
@@ -1265,6 +1758,16 @@ pattern HKPrismBaseIn = HKPrismBase 3
 
 pattern HKPrismBaseOut :: HKPrismBase
 pattern HKPrismBaseOut = HKPrismBase 4
+
+instance ObjCArgument HKPrismBase where
+  withObjCArg (HKPrismBase x) k = k (argCLong x)
+
+instance ObjCReturn HKPrismBase where
+  type RawReturn HKPrismBase = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKPrismBase x)
+  fromOwned x = pure (HKPrismBase x)
 
 -- | HKQuantityAggregationStyle
 --
@@ -1297,6 +1800,16 @@ pattern HKQuantityAggregationStyleDiscreteTemporallyWeighted = HKQuantityAggrega
 pattern HKQuantityAggregationStyleDiscreteEquivalentContinuousLevel :: HKQuantityAggregationStyle
 pattern HKQuantityAggregationStyleDiscreteEquivalentContinuousLevel = HKQuantityAggregationStyle 3
 
+instance ObjCArgument HKQuantityAggregationStyle where
+  withObjCArg (HKQuantityAggregationStyle x) k = k (argCLong x)
+
+instance ObjCReturn HKQuantityAggregationStyle where
+  type RawReturn HKQuantityAggregationStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKQuantityAggregationStyle x)
+  fromOwned x = pure (HKQuantityAggregationStyle x)
+
 -- | HKQueryOptions
 --
 -- Time interval options are used to describe how an HKSample's time period overlaps with a given time period.
@@ -1325,6 +1838,16 @@ pattern HKQueryOptionStrictStartDate = HKQueryOptions 1
 
 pattern HKQueryOptionStrictEndDate :: HKQueryOptions
 pattern HKQueryOptionStrictEndDate = HKQueryOptions 2
+
+instance ObjCArgument HKQueryOptions where
+  withObjCArg (HKQueryOptions x) k = k (argCULong x)
+
+instance ObjCReturn HKQueryOptions where
+  type RawReturn HKQueryOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKQueryOptions x)
+  fromOwned x = pure (HKQueryOptions x)
 
 -- | HKStateOfMindAssociation
 --
@@ -1388,6 +1911,16 @@ pattern HKStateOfMindAssociationWork = HKStateOfMindAssociation 17
 pattern HKStateOfMindAssociationWeather :: HKStateOfMindAssociation
 pattern HKStateOfMindAssociationWeather = HKStateOfMindAssociation 18
 
+instance ObjCArgument HKStateOfMindAssociation where
+  withObjCArg (HKStateOfMindAssociation x) k = k (argCLong x)
+
+instance ObjCReturn HKStateOfMindAssociation where
+  type RawReturn HKStateOfMindAssociation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKStateOfMindAssociation x)
+  fromOwned x = pure (HKStateOfMindAssociation x)
+
 -- | HKStateOfMindKind
 --
 -- The kind of feeling type captured by a state of mind log, considering the period of time the reflection concerns.
@@ -1401,6 +1934,16 @@ pattern HKStateOfMindKindMomentaryEmotion = HKStateOfMindKind 1
 
 pattern HKStateOfMindKindDailyMood :: HKStateOfMindKind
 pattern HKStateOfMindKindDailyMood = HKStateOfMindKind 2
+
+instance ObjCArgument HKStateOfMindKind where
+  withObjCArg (HKStateOfMindKind x) k = k (argCLong x)
+
+instance ObjCReturn HKStateOfMindKind where
+  type RawReturn HKStateOfMindKind = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKStateOfMindKind x)
+  fromOwned x = pure (HKStateOfMindKind x)
 
 -- | HKStateOfMindLabel
 --
@@ -1524,6 +2067,16 @@ pattern HKStateOfMindLabelOverwhelmed = HKStateOfMindLabel 37
 pattern HKStateOfMindLabelSatisfied :: HKStateOfMindLabel
 pattern HKStateOfMindLabelSatisfied = HKStateOfMindLabel 38
 
+instance ObjCArgument HKStateOfMindLabel where
+  withObjCArg (HKStateOfMindLabel x) k = k (argCLong x)
+
+instance ObjCReturn HKStateOfMindLabel where
+  type RawReturn HKStateOfMindLabel = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKStateOfMindLabel x)
+  fromOwned x = pure (HKStateOfMindLabel x)
+
 -- | HKStateOfMindValenceClassification
 --
 -- A general region of pleasantness derived from valence logged on a state of mind sample.
@@ -1552,6 +2105,16 @@ pattern HKStateOfMindValenceClassificationPleasant = HKStateOfMindValenceClassif
 
 pattern HKStateOfMindValenceClassificationVeryPleasant :: HKStateOfMindValenceClassification
 pattern HKStateOfMindValenceClassificationVeryPleasant = HKStateOfMindValenceClassification 7
+
+instance ObjCArgument HKStateOfMindValenceClassification where
+  withObjCArg (HKStateOfMindValenceClassification x) k = k (argCLong x)
+
+instance ObjCReturn HKStateOfMindValenceClassification where
+  type RawReturn HKStateOfMindValenceClassification = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKStateOfMindValenceClassification x)
+  fromOwned x = pure (HKStateOfMindValenceClassification x)
 
 -- | HKStatisticsOptions
 --
@@ -1614,6 +2177,16 @@ pattern HKStatisticsOptionDiscreteMostRecent = HKStatisticsOptions 32
 pattern HKStatisticsOptionDuration :: HKStatisticsOptions
 pattern HKStatisticsOptionDuration = HKStatisticsOptions 64
 
+instance ObjCArgument HKStatisticsOptions where
+  withObjCArg (HKStatisticsOptions x) k = k (argCULong x)
+
+instance ObjCReturn HKStatisticsOptions where
+  type RawReturn HKStatisticsOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKStatisticsOptions x)
+  fromOwned x = pure (HKStatisticsOptions x)
+
 -- | HKSwimmingStrokeStyle
 --
 -- Represents a style of stroke used during a swimming workout.
@@ -1643,6 +2216,16 @@ pattern HKSwimmingStrokeStyleButterfly = HKSwimmingStrokeStyle 5
 pattern HKSwimmingStrokeStyleKickboard :: HKSwimmingStrokeStyle
 pattern HKSwimmingStrokeStyleKickboard = HKSwimmingStrokeStyle 6
 
+instance ObjCArgument HKSwimmingStrokeStyle where
+  withObjCArg (HKSwimmingStrokeStyle x) k = k (argCLong x)
+
+instance ObjCReturn HKSwimmingStrokeStyle where
+  type RawReturn HKSwimmingStrokeStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKSwimmingStrokeStyle x)
+  fromOwned x = pure (HKSwimmingStrokeStyle x)
+
 -- | HKUpdateFrequency
 -- | @HKUpdateFrequency@
 newtype HKUpdateFrequency = HKUpdateFrequency CLong
@@ -1661,6 +2244,16 @@ pattern HKUpdateFrequencyDaily = HKUpdateFrequency 3
 pattern HKUpdateFrequencyWeekly :: HKUpdateFrequency
 pattern HKUpdateFrequencyWeekly = HKUpdateFrequency 4
 
+instance ObjCArgument HKUpdateFrequency where
+  withObjCArg (HKUpdateFrequency x) k = k (argCLong x)
+
+instance ObjCReturn HKUpdateFrequency where
+  type RawReturn HKUpdateFrequency = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKUpdateFrequency x)
+  fromOwned x = pure (HKUpdateFrequency x)
+
 -- | @HKUserMotionContext@
 newtype HKUserMotionContext = HKUserMotionContext CLong
   deriving stock (Eq, Ord, Show)
@@ -1674,6 +2267,16 @@ pattern HKUserMotionContextStationary = HKUserMotionContext 1
 
 pattern HKUserMotionContextActive :: HKUserMotionContext
 pattern HKUserMotionContextActive = HKUserMotionContext 2
+
+instance ObjCArgument HKUserMotionContext where
+  withObjCArg (HKUserMotionContext x) k = k (argCLong x)
+
+instance ObjCReturn HKUserMotionContext where
+  type RawReturn HKUserMotionContext = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKUserMotionContext x)
+  fromOwned x = pure (HKUserMotionContext x)
 
 -- | HKVO2MaxTestType
 --
@@ -1711,6 +2314,16 @@ pattern HKVO2MaxTestTypePredictionNonExercise = HKVO2MaxTestType 3
 pattern HKVO2MaxTestTypePredictionStepTest :: HKVO2MaxTestType
 pattern HKVO2MaxTestTypePredictionStepTest = HKVO2MaxTestType 4
 
+instance ObjCArgument HKVO2MaxTestType where
+  withObjCArg (HKVO2MaxTestType x) k = k (argCLong x)
+
+instance ObjCReturn HKVO2MaxTestType where
+  type RawReturn HKVO2MaxTestType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKVO2MaxTestType x)
+  fromOwned x = pure (HKVO2MaxTestType x)
+
 -- | HKVisionEye
 --
 -- Represents an eye
@@ -1725,6 +2338,16 @@ pattern HKVisionEyeLeft = HKVisionEye 1
 pattern HKVisionEyeRight :: HKVisionEye
 pattern HKVisionEyeRight = HKVisionEye 2
 
+instance ObjCArgument HKVisionEye where
+  withObjCArg (HKVisionEye x) k = k (argCLong x)
+
+instance ObjCReturn HKVisionEye where
+  type RawReturn HKVisionEye = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKVisionEye x)
+  fromOwned x = pure (HKVisionEye x)
+
 -- | HKVisionPrescriptionType
 --
 -- Represents a vision prescription type
@@ -1738,6 +2361,16 @@ pattern HKVisionPrescriptionTypeGlasses = HKVisionPrescriptionType 1
 
 pattern HKVisionPrescriptionTypeContacts :: HKVisionPrescriptionType
 pattern HKVisionPrescriptionTypeContacts = HKVisionPrescriptionType 2
+
+instance ObjCArgument HKVisionPrescriptionType where
+  withObjCArg (HKVisionPrescriptionType x) k = k (argCULong x)
+
+instance ObjCReturn HKVisionPrescriptionType where
+  type RawReturn HKVisionPrescriptionType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKVisionPrescriptionType x)
+  fromOwned x = pure (HKVisionPrescriptionType x)
 
 -- | HKWaterSalinity
 --
@@ -1754,6 +2387,16 @@ pattern HKWaterSalinityFreshWater = HKWaterSalinity 1
 
 pattern HKWaterSalinitySaltWater :: HKWaterSalinity
 pattern HKWaterSalinitySaltWater = HKWaterSalinity 2
+
+instance ObjCArgument HKWaterSalinity where
+  withObjCArg (HKWaterSalinity x) k = k (argCLong x)
+
+instance ObjCReturn HKWaterSalinity where
+  type RawReturn HKWaterSalinity = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWaterSalinity x)
+  fromOwned x = pure (HKWaterSalinity x)
 
 -- | @HKWeatherCondition@
 newtype HKWeatherCondition = HKWeatherCondition CLong
@@ -1844,6 +2487,16 @@ pattern HKWeatherConditionHurricane = HKWeatherCondition 26
 pattern HKWeatherConditionTornado :: HKWeatherCondition
 pattern HKWeatherConditionTornado = HKWeatherCondition 27
 
+instance ObjCArgument HKWeatherCondition where
+  withObjCArg (HKWeatherCondition x) k = k (argCLong x)
+
+instance ObjCReturn HKWeatherCondition where
+  type RawReturn HKWeatherCondition = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWeatherCondition x)
+  fromOwned x = pure (HKWeatherCondition x)
+
 -- | HKWheelchairUse
 --
 -- This enumerated type is used to represent whether the user uses a wheelchair.
@@ -1864,6 +2517,16 @@ pattern HKWheelchairUseNo = HKWheelchairUse 1
 
 pattern HKWheelchairUseYes :: HKWheelchairUse
 pattern HKWheelchairUseYes = HKWheelchairUse 2
+
+instance ObjCArgument HKWheelchairUse where
+  withObjCArg (HKWheelchairUse x) k = k (argCLong x)
+
+instance ObjCReturn HKWheelchairUse where
+  type RawReturn HKWheelchairUse = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWheelchairUse x)
+  fromOwned x = pure (HKWheelchairUse x)
 
 -- | HKWorkoutActivityType
 --
@@ -2125,6 +2788,16 @@ pattern HKWorkoutActivityTypeUnderwaterDiving = HKWorkoutActivityType 84
 pattern HKWorkoutActivityTypeOther :: HKWorkoutActivityType
 pattern HKWorkoutActivityTypeOther = HKWorkoutActivityType 3000
 
+instance ObjCArgument HKWorkoutActivityType where
+  withObjCArg (HKWorkoutActivityType x) k = k (argCULong x)
+
+instance ObjCReturn HKWorkoutActivityType where
+  type RawReturn HKWorkoutActivityType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWorkoutActivityType x)
+  fromOwned x = pure (HKWorkoutActivityType x)
+
 -- | HKWorkoutEffortRelationshipQueryOptions
 --
 -- Option for specifying which workout effort relationship sample(s) to retrieve
@@ -2142,6 +2815,16 @@ pattern HKWorkoutEffortRelationshipQueryOptionsDefault = HKWorkoutEffortRelation
 
 pattern HKWorkoutEffortRelationshipQueryOptionsMostRelevant :: HKWorkoutEffortRelationshipQueryOptions
 pattern HKWorkoutEffortRelationshipQueryOptionsMostRelevant = HKWorkoutEffortRelationshipQueryOptions 1
+
+instance ObjCArgument HKWorkoutEffortRelationshipQueryOptions where
+  withObjCArg (HKWorkoutEffortRelationshipQueryOptions x) k = k (argCLong x)
+
+instance ObjCReturn HKWorkoutEffortRelationshipQueryOptions where
+  type RawReturn HKWorkoutEffortRelationshipQueryOptions = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWorkoutEffortRelationshipQueryOptions x)
+  fromOwned x = pure (HKWorkoutEffortRelationshipQueryOptions x)
 
 -- | @HKWorkoutEventType@
 newtype HKWorkoutEventType = HKWorkoutEventType CLong
@@ -2172,6 +2855,16 @@ pattern HKWorkoutEventTypeSegment = HKWorkoutEventType 7
 pattern HKWorkoutEventTypePauseOrResumeRequest :: HKWorkoutEventType
 pattern HKWorkoutEventTypePauseOrResumeRequest = HKWorkoutEventType 8
 
+instance ObjCArgument HKWorkoutEventType where
+  withObjCArg (HKWorkoutEventType x) k = k (argCLong x)
+
+instance ObjCReturn HKWorkoutEventType where
+  type RawReturn HKWorkoutEventType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWorkoutEventType x)
+  fromOwned x = pure (HKWorkoutEventType x)
+
 -- | HKWorkoutSessionLocationType
 --
 -- This enumerated type is used to represent the location type of a workout session.
@@ -2190,6 +2883,16 @@ pattern HKWorkoutSessionLocationTypeIndoor = HKWorkoutSessionLocationType 2
 
 pattern HKWorkoutSessionLocationTypeOutdoor :: HKWorkoutSessionLocationType
 pattern HKWorkoutSessionLocationTypeOutdoor = HKWorkoutSessionLocationType 3
+
+instance ObjCArgument HKWorkoutSessionLocationType where
+  withObjCArg (HKWorkoutSessionLocationType x) k = k (argCLong x)
+
+instance ObjCReturn HKWorkoutSessionLocationType where
+  type RawReturn HKWorkoutSessionLocationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWorkoutSessionLocationType x)
+  fromOwned x = pure (HKWorkoutSessionLocationType x)
 
 -- | HKWorkoutSessionState
 --
@@ -2217,6 +2920,16 @@ pattern HKWorkoutSessionStatePrepared = HKWorkoutSessionState 5
 pattern HKWorkoutSessionStateStopped :: HKWorkoutSessionState
 pattern HKWorkoutSessionStateStopped = HKWorkoutSessionState 6
 
+instance ObjCArgument HKWorkoutSessionState where
+  withObjCArg (HKWorkoutSessionState x) k = k (argCLong x)
+
+instance ObjCReturn HKWorkoutSessionState where
+  type RawReturn HKWorkoutSessionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWorkoutSessionState x)
+  fromOwned x = pure (HKWorkoutSessionState x)
+
 -- | HKWorkoutSessionType
 --
 -- This enumerated type is used to represent the type of a workout session.
@@ -2234,6 +2947,16 @@ pattern HKWorkoutSessionTypePrimary = HKWorkoutSessionType 0
 
 pattern HKWorkoutSessionTypeMirrored :: HKWorkoutSessionType
 pattern HKWorkoutSessionTypeMirrored = HKWorkoutSessionType 1
+
+instance ObjCArgument HKWorkoutSessionType where
+  withObjCArg (HKWorkoutSessionType x) k = k (argCLong x)
+
+instance ObjCReturn HKWorkoutSessionType where
+  type RawReturn HKWorkoutSessionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWorkoutSessionType x)
+  fromOwned x = pure (HKWorkoutSessionType x)
 
 -- | HKWorkoutSwimmingLocationType
 --
@@ -2253,3 +2976,13 @@ pattern HKWorkoutSwimmingLocationTypePool = HKWorkoutSwimmingLocationType 1
 
 pattern HKWorkoutSwimmingLocationTypeOpenWater :: HKWorkoutSwimmingLocationType
 pattern HKWorkoutSwimmingLocationTypeOpenWater = HKWorkoutSwimmingLocationType 2
+
+instance ObjCArgument HKWorkoutSwimmingLocationType where
+  withObjCArg (HKWorkoutSwimmingLocationType x) k = k (argCLong x)
+
+instance ObjCReturn HKWorkoutSwimmingLocationType where
+  type RawReturn HKWorkoutSwimmingLocationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (HKWorkoutSwimmingLocationType x)
+  fromOwned x = pure (HKWorkoutSwimmingLocationType x)

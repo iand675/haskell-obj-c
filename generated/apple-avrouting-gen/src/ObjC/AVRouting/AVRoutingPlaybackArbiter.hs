@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.AVRouting.AVRoutingPlaybackArbiter
   , setPreferredParticipantForNonMixableAudioRoutes
   , preferredParticipantForExternalPlayback
   , setPreferredParticipantForExternalPlayback
-  , sharedRoutingPlaybackArbiterSelector
   , initSelector
   , newSelector
-  , preferredParticipantForNonMixableAudioRoutesSelector
-  , setPreferredParticipantForNonMixableAudioRoutesSelector
   , preferredParticipantForExternalPlaybackSelector
+  , preferredParticipantForNonMixableAudioRoutesSelector
   , setPreferredParticipantForExternalPlaybackSelector
+  , setPreferredParticipantForNonMixableAudioRoutesSelector
+  , sharedRoutingPlaybackArbiterSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,19 +47,19 @@ sharedRoutingPlaybackArbiter :: IO (Id AVRoutingPlaybackArbiter)
 sharedRoutingPlaybackArbiter  =
   do
     cls' <- getRequiredClass "AVRoutingPlaybackArbiter"
-    sendClassMsg cls' (mkSelector "sharedRoutingPlaybackArbiter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedRoutingPlaybackArbiterSelector
 
 -- | @- init@
 init_ :: IsAVRoutingPlaybackArbiter avRoutingPlaybackArbiter => avRoutingPlaybackArbiter -> IO (Id AVRoutingPlaybackArbiter)
-init_ avRoutingPlaybackArbiter  =
-    sendMsg avRoutingPlaybackArbiter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avRoutingPlaybackArbiter =
+  sendOwnedMessage avRoutingPlaybackArbiter initSelector
 
 -- | @+ new@
 new :: IO (Id AVRoutingPlaybackArbiter)
 new  =
   do
     cls' <- getRequiredClass "AVRoutingPlaybackArbiter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The participant that has priority to play audio when it's not possible to play multiple audio sources concurrently.
 --
@@ -72,8 +69,8 @@ new  =
 --
 -- ObjC selector: @- preferredParticipantForNonMixableAudioRoutes@
 preferredParticipantForNonMixableAudioRoutes :: IsAVRoutingPlaybackArbiter avRoutingPlaybackArbiter => avRoutingPlaybackArbiter -> IO RawId
-preferredParticipantForNonMixableAudioRoutes avRoutingPlaybackArbiter  =
-    fmap (RawId . castPtr) $ sendMsg avRoutingPlaybackArbiter (mkSelector "preferredParticipantForNonMixableAudioRoutes") (retPtr retVoid) []
+preferredParticipantForNonMixableAudioRoutes avRoutingPlaybackArbiter =
+  sendMessage avRoutingPlaybackArbiter preferredParticipantForNonMixableAudioRoutesSelector
 
 -- | The participant that has priority to play audio when it's not possible to play multiple audio sources concurrently.
 --
@@ -83,8 +80,8 @@ preferredParticipantForNonMixableAudioRoutes avRoutingPlaybackArbiter  =
 --
 -- ObjC selector: @- setPreferredParticipantForNonMixableAudioRoutes:@
 setPreferredParticipantForNonMixableAudioRoutes :: IsAVRoutingPlaybackArbiter avRoutingPlaybackArbiter => avRoutingPlaybackArbiter -> RawId -> IO ()
-setPreferredParticipantForNonMixableAudioRoutes avRoutingPlaybackArbiter  value =
-    sendMsg avRoutingPlaybackArbiter (mkSelector "setPreferredParticipantForNonMixableAudioRoutes:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPreferredParticipantForNonMixableAudioRoutes avRoutingPlaybackArbiter value =
+  sendMessage avRoutingPlaybackArbiter setPreferredParticipantForNonMixableAudioRoutesSelector value
 
 -- | The participant that has priority to play on external playback interfaces.
 --
@@ -94,8 +91,8 @@ setPreferredParticipantForNonMixableAudioRoutes avRoutingPlaybackArbiter  value 
 --
 -- ObjC selector: @- preferredParticipantForExternalPlayback@
 preferredParticipantForExternalPlayback :: IsAVRoutingPlaybackArbiter avRoutingPlaybackArbiter => avRoutingPlaybackArbiter -> IO RawId
-preferredParticipantForExternalPlayback avRoutingPlaybackArbiter  =
-    fmap (RawId . castPtr) $ sendMsg avRoutingPlaybackArbiter (mkSelector "preferredParticipantForExternalPlayback") (retPtr retVoid) []
+preferredParticipantForExternalPlayback avRoutingPlaybackArbiter =
+  sendMessage avRoutingPlaybackArbiter preferredParticipantForExternalPlaybackSelector
 
 -- | The participant that has priority to play on external playback interfaces.
 --
@@ -105,38 +102,38 @@ preferredParticipantForExternalPlayback avRoutingPlaybackArbiter  =
 --
 -- ObjC selector: @- setPreferredParticipantForExternalPlayback:@
 setPreferredParticipantForExternalPlayback :: IsAVRoutingPlaybackArbiter avRoutingPlaybackArbiter => avRoutingPlaybackArbiter -> RawId -> IO ()
-setPreferredParticipantForExternalPlayback avRoutingPlaybackArbiter  value =
-    sendMsg avRoutingPlaybackArbiter (mkSelector "setPreferredParticipantForExternalPlayback:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPreferredParticipantForExternalPlayback avRoutingPlaybackArbiter value =
+  sendMessage avRoutingPlaybackArbiter setPreferredParticipantForExternalPlaybackSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedRoutingPlaybackArbiter@
-sharedRoutingPlaybackArbiterSelector :: Selector
+sharedRoutingPlaybackArbiterSelector :: Selector '[] (Id AVRoutingPlaybackArbiter)
 sharedRoutingPlaybackArbiterSelector = mkSelector "sharedRoutingPlaybackArbiter"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVRoutingPlaybackArbiter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVRoutingPlaybackArbiter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @preferredParticipantForNonMixableAudioRoutes@
-preferredParticipantForNonMixableAudioRoutesSelector :: Selector
+preferredParticipantForNonMixableAudioRoutesSelector :: Selector '[] RawId
 preferredParticipantForNonMixableAudioRoutesSelector = mkSelector "preferredParticipantForNonMixableAudioRoutes"
 
 -- | @Selector@ for @setPreferredParticipantForNonMixableAudioRoutes:@
-setPreferredParticipantForNonMixableAudioRoutesSelector :: Selector
+setPreferredParticipantForNonMixableAudioRoutesSelector :: Selector '[RawId] ()
 setPreferredParticipantForNonMixableAudioRoutesSelector = mkSelector "setPreferredParticipantForNonMixableAudioRoutes:"
 
 -- | @Selector@ for @preferredParticipantForExternalPlayback@
-preferredParticipantForExternalPlaybackSelector :: Selector
+preferredParticipantForExternalPlaybackSelector :: Selector '[] RawId
 preferredParticipantForExternalPlaybackSelector = mkSelector "preferredParticipantForExternalPlayback"
 
 -- | @Selector@ for @setPreferredParticipantForExternalPlayback:@
-setPreferredParticipantForExternalPlaybackSelector :: Selector
+setPreferredParticipantForExternalPlaybackSelector :: Selector '[RawId] ()
 setPreferredParticipantForExternalPlaybackSelector = mkSelector "setPreferredParticipantForExternalPlayback:"
 

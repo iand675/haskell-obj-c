@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Matter.MTRAccessControlClusterAccessControlExtensionChangedEvent
   , fabricIndex
   , setFabricIndex
   , adminNodeIDSelector
-  , setAdminNodeIDSelector
   , adminPasscodeIDSelector
-  , setAdminPasscodeIDSelector
   , changeTypeSelector
-  , setChangeTypeSelector
-  , latestValueSelector
-  , setLatestValueSelector
   , fabricIndexSelector
+  , latestValueSelector
+  , setAdminNodeIDSelector
+  , setAdminPasscodeIDSelector
+  , setChangeTypeSelector
   , setFabricIndexSelector
+  , setLatestValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,100 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- adminNodeID@
 adminNodeID :: IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent => mtrAccessControlClusterAccessControlExtensionChangedEvent -> IO (Id NSNumber)
-adminNodeID mtrAccessControlClusterAccessControlExtensionChangedEvent  =
-    sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "adminNodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+adminNodeID mtrAccessControlClusterAccessControlExtensionChangedEvent =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent adminNodeIDSelector
 
 -- | @- setAdminNodeID:@
 setAdminNodeID :: (IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent, IsNSNumber value) => mtrAccessControlClusterAccessControlExtensionChangedEvent -> value -> IO ()
-setAdminNodeID mtrAccessControlClusterAccessControlExtensionChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "setAdminNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdminNodeID mtrAccessControlClusterAccessControlExtensionChangedEvent value =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent setAdminNodeIDSelector (toNSNumber value)
 
 -- | @- adminPasscodeID@
 adminPasscodeID :: IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent => mtrAccessControlClusterAccessControlExtensionChangedEvent -> IO (Id NSNumber)
-adminPasscodeID mtrAccessControlClusterAccessControlExtensionChangedEvent  =
-    sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "adminPasscodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+adminPasscodeID mtrAccessControlClusterAccessControlExtensionChangedEvent =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent adminPasscodeIDSelector
 
 -- | @- setAdminPasscodeID:@
 setAdminPasscodeID :: (IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent, IsNSNumber value) => mtrAccessControlClusterAccessControlExtensionChangedEvent -> value -> IO ()
-setAdminPasscodeID mtrAccessControlClusterAccessControlExtensionChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "setAdminPasscodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdminPasscodeID mtrAccessControlClusterAccessControlExtensionChangedEvent value =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent setAdminPasscodeIDSelector (toNSNumber value)
 
 -- | @- changeType@
 changeType :: IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent => mtrAccessControlClusterAccessControlExtensionChangedEvent -> IO (Id NSNumber)
-changeType mtrAccessControlClusterAccessControlExtensionChangedEvent  =
-    sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "changeType") (retPtr retVoid) [] >>= retainedObject . castPtr
+changeType mtrAccessControlClusterAccessControlExtensionChangedEvent =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent changeTypeSelector
 
 -- | @- setChangeType:@
 setChangeType :: (IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent, IsNSNumber value) => mtrAccessControlClusterAccessControlExtensionChangedEvent -> value -> IO ()
-setChangeType mtrAccessControlClusterAccessControlExtensionChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "setChangeType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChangeType mtrAccessControlClusterAccessControlExtensionChangedEvent value =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent setChangeTypeSelector (toNSNumber value)
 
 -- | @- latestValue@
 latestValue :: IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent => mtrAccessControlClusterAccessControlExtensionChangedEvent -> IO (Id MTRAccessControlClusterAccessControlExtensionStruct)
-latestValue mtrAccessControlClusterAccessControlExtensionChangedEvent  =
-    sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "latestValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+latestValue mtrAccessControlClusterAccessControlExtensionChangedEvent =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent latestValueSelector
 
 -- | @- setLatestValue:@
 setLatestValue :: (IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent, IsMTRAccessControlClusterAccessControlExtensionStruct value) => mtrAccessControlClusterAccessControlExtensionChangedEvent -> value -> IO ()
-setLatestValue mtrAccessControlClusterAccessControlExtensionChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "setLatestValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLatestValue mtrAccessControlClusterAccessControlExtensionChangedEvent value =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent setLatestValueSelector (toMTRAccessControlClusterAccessControlExtensionStruct value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent => mtrAccessControlClusterAccessControlExtensionChangedEvent -> IO (Id NSNumber)
-fabricIndex mtrAccessControlClusterAccessControlExtensionChangedEvent  =
-    sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrAccessControlClusterAccessControlExtensionChangedEvent =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRAccessControlClusterAccessControlExtensionChangedEvent mtrAccessControlClusterAccessControlExtensionChangedEvent, IsNSNumber value) => mtrAccessControlClusterAccessControlExtensionChangedEvent -> value -> IO ()
-setFabricIndex mtrAccessControlClusterAccessControlExtensionChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterAccessControlExtensionChangedEvent (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrAccessControlClusterAccessControlExtensionChangedEvent value =
+  sendMessage mtrAccessControlClusterAccessControlExtensionChangedEvent setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @adminNodeID@
-adminNodeIDSelector :: Selector
+adminNodeIDSelector :: Selector '[] (Id NSNumber)
 adminNodeIDSelector = mkSelector "adminNodeID"
 
 -- | @Selector@ for @setAdminNodeID:@
-setAdminNodeIDSelector :: Selector
+setAdminNodeIDSelector :: Selector '[Id NSNumber] ()
 setAdminNodeIDSelector = mkSelector "setAdminNodeID:"
 
 -- | @Selector@ for @adminPasscodeID@
-adminPasscodeIDSelector :: Selector
+adminPasscodeIDSelector :: Selector '[] (Id NSNumber)
 adminPasscodeIDSelector = mkSelector "adminPasscodeID"
 
 -- | @Selector@ for @setAdminPasscodeID:@
-setAdminPasscodeIDSelector :: Selector
+setAdminPasscodeIDSelector :: Selector '[Id NSNumber] ()
 setAdminPasscodeIDSelector = mkSelector "setAdminPasscodeID:"
 
 -- | @Selector@ for @changeType@
-changeTypeSelector :: Selector
+changeTypeSelector :: Selector '[] (Id NSNumber)
 changeTypeSelector = mkSelector "changeType"
 
 -- | @Selector@ for @setChangeType:@
-setChangeTypeSelector :: Selector
+setChangeTypeSelector :: Selector '[Id NSNumber] ()
 setChangeTypeSelector = mkSelector "setChangeType:"
 
 -- | @Selector@ for @latestValue@
-latestValueSelector :: Selector
+latestValueSelector :: Selector '[] (Id MTRAccessControlClusterAccessControlExtensionStruct)
 latestValueSelector = mkSelector "latestValue"
 
 -- | @Selector@ for @setLatestValue:@
-setLatestValueSelector :: Selector
+setLatestValueSelector :: Selector '[Id MTRAccessControlClusterAccessControlExtensionStruct] ()
 setLatestValueSelector = mkSelector "setLatestValue:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

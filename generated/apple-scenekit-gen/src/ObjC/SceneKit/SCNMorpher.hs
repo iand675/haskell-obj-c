@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,18 +24,18 @@ module ObjC.SceneKit.SCNMorpher
   , setCalculationMode
   , unifiesNormals
   , setUnifiesNormals
-  , setWeight_forTargetAtIndexSelector
-  , weightForTargetAtIndexSelector
-  , setWeight_forTargetNamedSelector
-  , weightForTargetNamedSelector
-  , targetsSelector
-  , setTargetsSelector
-  , weightsSelector
-  , setWeightsSelector
   , calculationModeSelector
   , setCalculationModeSelector
-  , unifiesNormalsSelector
+  , setTargetsSelector
   , setUnifiesNormalsSelector
+  , setWeight_forTargetAtIndexSelector
+  , setWeight_forTargetNamedSelector
+  , setWeightsSelector
+  , targetsSelector
+  , unifiesNormalsSelector
+  , weightForTargetAtIndexSelector
+  , weightForTargetNamedSelector
+  , weightsSelector
 
   -- * Enum types
   , SCNMorpherCalculationMode(SCNMorpherCalculationMode)
@@ -43,15 +44,11 @@ module ObjC.SceneKit.SCNMorpher
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setWeight:forTargetAtIndex:@
 setWeight_forTargetAtIndex :: IsSCNMorpher scnMorpher => scnMorpher -> CDouble -> CULong -> IO ()
-setWeight_forTargetAtIndex scnMorpher  weight targetIndex =
-    sendMsg scnMorpher (mkSelector "setWeight:forTargetAtIndex:") retVoid [argCDouble weight, argCULong targetIndex]
+setWeight_forTargetAtIndex scnMorpher weight targetIndex =
+  sendMessage scnMorpher setWeight_forTargetAtIndexSelector weight targetIndex
 
 -- | weightForTargetAtIndex:
 --
@@ -74,8 +71,8 @@ setWeight_forTargetAtIndex scnMorpher  weight targetIndex =
 --
 -- ObjC selector: @- weightForTargetAtIndex:@
 weightForTargetAtIndex :: IsSCNMorpher scnMorpher => scnMorpher -> CULong -> IO CDouble
-weightForTargetAtIndex scnMorpher  targetIndex =
-    sendMsg scnMorpher (mkSelector "weightForTargetAtIndex:") retCDouble [argCULong targetIndex]
+weightForTargetAtIndex scnMorpher targetIndex =
+  sendMessage scnMorpher weightForTargetAtIndexSelector targetIndex
 
 -- | setWeight:forTargetNamed:
 --
@@ -83,9 +80,8 @@ weightForTargetAtIndex scnMorpher  targetIndex =
 --
 -- ObjC selector: @- setWeight:forTargetNamed:@
 setWeight_forTargetNamed :: (IsSCNMorpher scnMorpher, IsNSString targetName) => scnMorpher -> CDouble -> targetName -> IO ()
-setWeight_forTargetNamed scnMorpher  weight targetName =
-  withObjCPtr targetName $ \raw_targetName ->
-      sendMsg scnMorpher (mkSelector "setWeight:forTargetNamed:") retVoid [argCDouble weight, argPtr (castPtr raw_targetName :: Ptr ())]
+setWeight_forTargetNamed scnMorpher weight targetName =
+  sendMessage scnMorpher setWeight_forTargetNamedSelector weight (toNSString targetName)
 
 -- | weightForTargetNamed:
 --
@@ -93,9 +89,8 @@ setWeight_forTargetNamed scnMorpher  weight targetName =
 --
 -- ObjC selector: @- weightForTargetNamed:@
 weightForTargetNamed :: (IsSCNMorpher scnMorpher, IsNSString targetName) => scnMorpher -> targetName -> IO CDouble
-weightForTargetNamed scnMorpher  targetName =
-  withObjCPtr targetName $ \raw_targetName ->
-      sendMsg scnMorpher (mkSelector "weightForTargetNamed:") retCDouble [argPtr (castPtr raw_targetName :: Ptr ())]
+weightForTargetNamed scnMorpher targetName =
+  sendMessage scnMorpher weightForTargetNamedSelector (toNSString targetName)
 
 -- | targets
 --
@@ -105,8 +100,8 @@ weightForTargetNamed scnMorpher  targetName =
 --
 -- ObjC selector: @- targets@
 targets :: IsSCNMorpher scnMorpher => scnMorpher -> IO (Id NSArray)
-targets scnMorpher  =
-    sendMsg scnMorpher (mkSelector "targets") (retPtr retVoid) [] >>= retainedObject . castPtr
+targets scnMorpher =
+  sendMessage scnMorpher targetsSelector
 
 -- | targets
 --
@@ -116,9 +111,8 @@ targets scnMorpher  =
 --
 -- ObjC selector: @- setTargets:@
 setTargets :: (IsSCNMorpher scnMorpher, IsNSArray value) => scnMorpher -> value -> IO ()
-setTargets scnMorpher  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnMorpher (mkSelector "setTargets:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTargets scnMorpher value =
+  sendMessage scnMorpher setTargetsSelector (toNSArray value)
 
 -- | weights
 --
@@ -126,8 +120,8 @@ setTargets scnMorpher  value =
 --
 -- ObjC selector: @- weights@
 weights :: IsSCNMorpher scnMorpher => scnMorpher -> IO (Id NSArray)
-weights scnMorpher  =
-    sendMsg scnMorpher (mkSelector "weights") (retPtr retVoid) [] >>= retainedObject . castPtr
+weights scnMorpher =
+  sendMessage scnMorpher weightsSelector
 
 -- | weights
 --
@@ -135,9 +129,8 @@ weights scnMorpher  =
 --
 -- ObjC selector: @- setWeights:@
 setWeights :: (IsSCNMorpher scnMorpher, IsNSArray value) => scnMorpher -> value -> IO ()
-setWeights scnMorpher  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnMorpher (mkSelector "setWeights:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWeights scnMorpher value =
+  sendMessage scnMorpher setWeightsSelector (toNSArray value)
 
 -- | calculationMode
 --
@@ -145,8 +138,8 @@ setWeights scnMorpher  value =
 --
 -- ObjC selector: @- calculationMode@
 calculationMode :: IsSCNMorpher scnMorpher => scnMorpher -> IO SCNMorpherCalculationMode
-calculationMode scnMorpher  =
-    fmap (coerce :: CLong -> SCNMorpherCalculationMode) $ sendMsg scnMorpher (mkSelector "calculationMode") retCLong []
+calculationMode scnMorpher =
+  sendMessage scnMorpher calculationModeSelector
 
 -- | calculationMode
 --
@@ -154,8 +147,8 @@ calculationMode scnMorpher  =
 --
 -- ObjC selector: @- setCalculationMode:@
 setCalculationMode :: IsSCNMorpher scnMorpher => scnMorpher -> SCNMorpherCalculationMode -> IO ()
-setCalculationMode scnMorpher  value =
-    sendMsg scnMorpher (mkSelector "setCalculationMode:") retVoid [argCLong (coerce value)]
+setCalculationMode scnMorpher value =
+  sendMessage scnMorpher setCalculationModeSelector value
 
 -- | unifiesNormals
 --
@@ -163,8 +156,8 @@ setCalculationMode scnMorpher  value =
 --
 -- ObjC selector: @- unifiesNormals@
 unifiesNormals :: IsSCNMorpher scnMorpher => scnMorpher -> IO Bool
-unifiesNormals scnMorpher  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnMorpher (mkSelector "unifiesNormals") retCULong []
+unifiesNormals scnMorpher =
+  sendMessage scnMorpher unifiesNormalsSelector
 
 -- | unifiesNormals
 --
@@ -172,58 +165,58 @@ unifiesNormals scnMorpher  =
 --
 -- ObjC selector: @- setUnifiesNormals:@
 setUnifiesNormals :: IsSCNMorpher scnMorpher => scnMorpher -> Bool -> IO ()
-setUnifiesNormals scnMorpher  value =
-    sendMsg scnMorpher (mkSelector "setUnifiesNormals:") retVoid [argCULong (if value then 1 else 0)]
+setUnifiesNormals scnMorpher value =
+  sendMessage scnMorpher setUnifiesNormalsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setWeight:forTargetAtIndex:@
-setWeight_forTargetAtIndexSelector :: Selector
+setWeight_forTargetAtIndexSelector :: Selector '[CDouble, CULong] ()
 setWeight_forTargetAtIndexSelector = mkSelector "setWeight:forTargetAtIndex:"
 
 -- | @Selector@ for @weightForTargetAtIndex:@
-weightForTargetAtIndexSelector :: Selector
+weightForTargetAtIndexSelector :: Selector '[CULong] CDouble
 weightForTargetAtIndexSelector = mkSelector "weightForTargetAtIndex:"
 
 -- | @Selector@ for @setWeight:forTargetNamed:@
-setWeight_forTargetNamedSelector :: Selector
+setWeight_forTargetNamedSelector :: Selector '[CDouble, Id NSString] ()
 setWeight_forTargetNamedSelector = mkSelector "setWeight:forTargetNamed:"
 
 -- | @Selector@ for @weightForTargetNamed:@
-weightForTargetNamedSelector :: Selector
+weightForTargetNamedSelector :: Selector '[Id NSString] CDouble
 weightForTargetNamedSelector = mkSelector "weightForTargetNamed:"
 
 -- | @Selector@ for @targets@
-targetsSelector :: Selector
+targetsSelector :: Selector '[] (Id NSArray)
 targetsSelector = mkSelector "targets"
 
 -- | @Selector@ for @setTargets:@
-setTargetsSelector :: Selector
+setTargetsSelector :: Selector '[Id NSArray] ()
 setTargetsSelector = mkSelector "setTargets:"
 
 -- | @Selector@ for @weights@
-weightsSelector :: Selector
+weightsSelector :: Selector '[] (Id NSArray)
 weightsSelector = mkSelector "weights"
 
 -- | @Selector@ for @setWeights:@
-setWeightsSelector :: Selector
+setWeightsSelector :: Selector '[Id NSArray] ()
 setWeightsSelector = mkSelector "setWeights:"
 
 -- | @Selector@ for @calculationMode@
-calculationModeSelector :: Selector
+calculationModeSelector :: Selector '[] SCNMorpherCalculationMode
 calculationModeSelector = mkSelector "calculationMode"
 
 -- | @Selector@ for @setCalculationMode:@
-setCalculationModeSelector :: Selector
+setCalculationModeSelector :: Selector '[SCNMorpherCalculationMode] ()
 setCalculationModeSelector = mkSelector "setCalculationMode:"
 
 -- | @Selector@ for @unifiesNormals@
-unifiesNormalsSelector :: Selector
+unifiesNormalsSelector :: Selector '[] Bool
 unifiesNormalsSelector = mkSelector "unifiesNormals"
 
 -- | @Selector@ for @setUnifiesNormals:@
-setUnifiesNormalsSelector :: Selector
+setUnifiesNormalsSelector :: Selector '[Bool] ()
 setUnifiesNormalsSelector = mkSelector "setUnifiesNormals:"
 

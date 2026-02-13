@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,14 +20,14 @@ module ObjC.AppKit.NSMediaLibraryBrowserController
   , setFrame
   , mediaLibraries
   , setMediaLibraries
-  , togglePanelSelector
-  , sharedMediaLibraryBrowserControllerSelector
-  , visibleSelector
-  , setVisibleSelector
   , frameSelector
-  , setFrameSelector
   , mediaLibrariesSelector
+  , setFrameSelector
   , setMediaLibrariesSelector
+  , setVisibleSelector
+  , sharedMediaLibraryBrowserControllerSelector
+  , togglePanelSelector
+  , visibleSelector
 
   -- * Enum types
   , NSMediaLibrary(NSMediaLibrary)
@@ -36,15 +37,11 @@ module ObjC.AppKit.NSMediaLibraryBrowserController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,79 +52,79 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- togglePanel:@
 togglePanel :: IsNSMediaLibraryBrowserController nsMediaLibraryBrowserController => nsMediaLibraryBrowserController -> RawId -> IO ()
-togglePanel nsMediaLibraryBrowserController  sender =
-    sendMsg nsMediaLibraryBrowserController (mkSelector "togglePanel:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+togglePanel nsMediaLibraryBrowserController sender =
+  sendMessage nsMediaLibraryBrowserController togglePanelSelector sender
 
 -- | @+ sharedMediaLibraryBrowserController@
 sharedMediaLibraryBrowserController :: IO (Id NSMediaLibraryBrowserController)
 sharedMediaLibraryBrowserController  =
   do
     cls' <- getRequiredClass "NSMediaLibraryBrowserController"
-    sendClassMsg cls' (mkSelector "sharedMediaLibraryBrowserController") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedMediaLibraryBrowserControllerSelector
 
 -- | @- visible@
 visible :: IsNSMediaLibraryBrowserController nsMediaLibraryBrowserController => nsMediaLibraryBrowserController -> IO Bool
-visible nsMediaLibraryBrowserController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMediaLibraryBrowserController (mkSelector "visible") retCULong []
+visible nsMediaLibraryBrowserController =
+  sendMessage nsMediaLibraryBrowserController visibleSelector
 
 -- | @- setVisible:@
 setVisible :: IsNSMediaLibraryBrowserController nsMediaLibraryBrowserController => nsMediaLibraryBrowserController -> Bool -> IO ()
-setVisible nsMediaLibraryBrowserController  value =
-    sendMsg nsMediaLibraryBrowserController (mkSelector "setVisible:") retVoid [argCULong (if value then 1 else 0)]
+setVisible nsMediaLibraryBrowserController value =
+  sendMessage nsMediaLibraryBrowserController setVisibleSelector value
 
 -- | @- frame@
 frame :: IsNSMediaLibraryBrowserController nsMediaLibraryBrowserController => nsMediaLibraryBrowserController -> IO NSRect
-frame nsMediaLibraryBrowserController  =
-    sendMsgStret nsMediaLibraryBrowserController (mkSelector "frame") retNSRect []
+frame nsMediaLibraryBrowserController =
+  sendMessage nsMediaLibraryBrowserController frameSelector
 
 -- | @- setFrame:@
 setFrame :: IsNSMediaLibraryBrowserController nsMediaLibraryBrowserController => nsMediaLibraryBrowserController -> NSRect -> IO ()
-setFrame nsMediaLibraryBrowserController  value =
-    sendMsg nsMediaLibraryBrowserController (mkSelector "setFrame:") retVoid [argNSRect value]
+setFrame nsMediaLibraryBrowserController value =
+  sendMessage nsMediaLibraryBrowserController setFrameSelector value
 
 -- | @- mediaLibraries@
 mediaLibraries :: IsNSMediaLibraryBrowserController nsMediaLibraryBrowserController => nsMediaLibraryBrowserController -> IO NSMediaLibrary
-mediaLibraries nsMediaLibraryBrowserController  =
-    fmap (coerce :: CULong -> NSMediaLibrary) $ sendMsg nsMediaLibraryBrowserController (mkSelector "mediaLibraries") retCULong []
+mediaLibraries nsMediaLibraryBrowserController =
+  sendMessage nsMediaLibraryBrowserController mediaLibrariesSelector
 
 -- | @- setMediaLibraries:@
 setMediaLibraries :: IsNSMediaLibraryBrowserController nsMediaLibraryBrowserController => nsMediaLibraryBrowserController -> NSMediaLibrary -> IO ()
-setMediaLibraries nsMediaLibraryBrowserController  value =
-    sendMsg nsMediaLibraryBrowserController (mkSelector "setMediaLibraries:") retVoid [argCULong (coerce value)]
+setMediaLibraries nsMediaLibraryBrowserController value =
+  sendMessage nsMediaLibraryBrowserController setMediaLibrariesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @togglePanel:@
-togglePanelSelector :: Selector
+togglePanelSelector :: Selector '[RawId] ()
 togglePanelSelector = mkSelector "togglePanel:"
 
 -- | @Selector@ for @sharedMediaLibraryBrowserController@
-sharedMediaLibraryBrowserControllerSelector :: Selector
+sharedMediaLibraryBrowserControllerSelector :: Selector '[] (Id NSMediaLibraryBrowserController)
 sharedMediaLibraryBrowserControllerSelector = mkSelector "sharedMediaLibraryBrowserController"
 
 -- | @Selector@ for @visible@
-visibleSelector :: Selector
+visibleSelector :: Selector '[] Bool
 visibleSelector = mkSelector "visible"
 
 -- | @Selector@ for @setVisible:@
-setVisibleSelector :: Selector
+setVisibleSelector :: Selector '[Bool] ()
 setVisibleSelector = mkSelector "setVisible:"
 
 -- | @Selector@ for @frame@
-frameSelector :: Selector
+frameSelector :: Selector '[] NSRect
 frameSelector = mkSelector "frame"
 
 -- | @Selector@ for @setFrame:@
-setFrameSelector :: Selector
+setFrameSelector :: Selector '[NSRect] ()
 setFrameSelector = mkSelector "setFrame:"
 
 -- | @Selector@ for @mediaLibraries@
-mediaLibrariesSelector :: Selector
+mediaLibrariesSelector :: Selector '[] NSMediaLibrary
 mediaLibrariesSelector = mkSelector "mediaLibraries"
 
 -- | @Selector@ for @setMediaLibraries:@
-setMediaLibrariesSelector :: Selector
+setMediaLibrariesSelector :: Selector '[NSMediaLibrary] ()
 setMediaLibrariesSelector = mkSelector "setMediaLibraries:"
 

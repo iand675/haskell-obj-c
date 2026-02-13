@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,8 +12,8 @@ module ObjC.SensorKit.SRTextInputSession
   , sessionType
   , sessionIdentifier
   , durationSelector
-  , sessionTypeSelector
   , sessionIdentifierSelector
+  , sessionTypeSelector
 
   -- * Enum types
   , SRTextInputSessionType(SRTextInputSessionType)
@@ -23,15 +24,11 @@ module ObjC.SensorKit.SRTextInputSession
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,13 +38,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- duration@
 duration :: IsSRTextInputSession srTextInputSession => srTextInputSession -> IO CDouble
-duration srTextInputSession  =
-    sendMsg srTextInputSession (mkSelector "duration") retCDouble []
+duration srTextInputSession =
+  sendMessage srTextInputSession durationSelector
 
 -- | @- sessionType@
 sessionType :: IsSRTextInputSession srTextInputSession => srTextInputSession -> IO SRTextInputSessionType
-sessionType srTextInputSession  =
-    fmap (coerce :: CLong -> SRTextInputSessionType) $ sendMsg srTextInputSession (mkSelector "sessionType") retCLong []
+sessionType srTextInputSession =
+  sendMessage srTextInputSession sessionTypeSelector
 
 -- | sessionIdentifier
 --
@@ -55,22 +52,22 @@ sessionType srTextInputSession  =
 --
 -- ObjC selector: @- sessionIdentifier@
 sessionIdentifier :: IsSRTextInputSession srTextInputSession => srTextInputSession -> IO (Id NSString)
-sessionIdentifier srTextInputSession  =
-    sendMsg srTextInputSession (mkSelector "sessionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionIdentifier srTextInputSession =
+  sendMessage srTextInputSession sessionIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @sessionType@
-sessionTypeSelector :: Selector
+sessionTypeSelector :: Selector '[] SRTextInputSessionType
 sessionTypeSelector = mkSelector "sessionType"
 
 -- | @Selector@ for @sessionIdentifier@
-sessionIdentifierSelector :: Selector
+sessionIdentifierSelector :: Selector '[] (Id NSString)
 sessionIdentifierSelector = mkSelector "sessionIdentifier"
 

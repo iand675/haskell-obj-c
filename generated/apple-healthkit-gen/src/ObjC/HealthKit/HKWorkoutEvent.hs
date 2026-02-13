@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,14 +20,14 @@ module ObjC.HealthKit.HKWorkoutEvent
   , date
   , dateInterval
   , metadata
+  , dateIntervalSelector
+  , dateSelector
+  , initSelector
+  , metadataSelector
+  , typeSelector
+  , workoutEventWithType_dateInterval_metadataSelector
   , workoutEventWithType_dateSelector
   , workoutEventWithType_date_metadataSelector
-  , workoutEventWithType_dateInterval_metadataSelector
-  , initSelector
-  , typeSelector
-  , dateSelector
-  , dateIntervalSelector
-  , metadataSelector
 
   -- * Enum types
   , HKWorkoutEventType(HKWorkoutEventType)
@@ -41,15 +42,11 @@ module ObjC.HealthKit.HKWorkoutEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,17 +59,14 @@ workoutEventWithType_date :: IsNSDate date => HKWorkoutEventType -> date -> IO (
 workoutEventWithType_date type_ date =
   do
     cls' <- getRequiredClass "HKWorkoutEvent"
-    withObjCPtr date $ \raw_date ->
-      sendClassMsg cls' (mkSelector "workoutEventWithType:date:") (retPtr retVoid) [argCLong (coerce type_), argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutEventWithType_dateSelector type_ (toNSDate date)
 
 -- | @+ workoutEventWithType:date:metadata:@
 workoutEventWithType_date_metadata :: (IsNSDate date, IsNSDictionary metadata) => HKWorkoutEventType -> date -> metadata -> IO (Id HKWorkoutEvent)
 workoutEventWithType_date_metadata type_ date metadata =
   do
     cls' <- getRequiredClass "HKWorkoutEvent"
-    withObjCPtr date $ \raw_date ->
-      withObjCPtr metadata $ \raw_metadata ->
-        sendClassMsg cls' (mkSelector "workoutEventWithType:date:metadata:") (retPtr retVoid) [argCLong (coerce type_), argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutEventWithType_date_metadataSelector type_ (toNSDate date) (toNSDictionary metadata)
 
 -- | workoutEventWithType:dateInterval:metadata:
 --
@@ -89,14 +83,12 @@ workoutEventWithType_dateInterval_metadata :: (IsNSDateInterval dateInterval, Is
 workoutEventWithType_dateInterval_metadata type_ dateInterval metadata =
   do
     cls' <- getRequiredClass "HKWorkoutEvent"
-    withObjCPtr dateInterval $ \raw_dateInterval ->
-      withObjCPtr metadata $ \raw_metadata ->
-        sendClassMsg cls' (mkSelector "workoutEventWithType:dateInterval:metadata:") (retPtr retVoid) [argCLong (coerce type_), argPtr (castPtr raw_dateInterval :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' workoutEventWithType_dateInterval_metadataSelector type_ (toNSDateInterval dateInterval) (toNSDictionary metadata)
 
 -- | @- init@
 init_ :: IsHKWorkoutEvent hkWorkoutEvent => hkWorkoutEvent -> IO (Id HKWorkoutEvent)
-init_ hkWorkoutEvent  =
-    sendMsg hkWorkoutEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkWorkoutEvent =
+  sendOwnedMessage hkWorkoutEvent initSelector
 
 -- | workoutEventType
 --
@@ -104,13 +96,13 @@ init_ hkWorkoutEvent  =
 --
 -- ObjC selector: @- type@
 type_ :: IsHKWorkoutEvent hkWorkoutEvent => hkWorkoutEvent -> IO HKWorkoutEventType
-type_ hkWorkoutEvent  =
-    fmap (coerce :: CLong -> HKWorkoutEventType) $ sendMsg hkWorkoutEvent (mkSelector "type") retCLong []
+type_ hkWorkoutEvent =
+  sendMessage hkWorkoutEvent typeSelector
 
 -- | @- date@
 date :: IsHKWorkoutEvent hkWorkoutEvent => hkWorkoutEvent -> IO (Id NSDate)
-date hkWorkoutEvent  =
-    sendMsg hkWorkoutEvent (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date hkWorkoutEvent =
+  sendMessage hkWorkoutEvent dateSelector
 
 -- | dateInterval
 --
@@ -120,8 +112,8 @@ date hkWorkoutEvent  =
 --
 -- ObjC selector: @- dateInterval@
 dateInterval :: IsHKWorkoutEvent hkWorkoutEvent => hkWorkoutEvent -> IO (Id NSDateInterval)
-dateInterval hkWorkoutEvent  =
-    sendMsg hkWorkoutEvent (mkSelector "dateInterval") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateInterval hkWorkoutEvent =
+  sendMessage hkWorkoutEvent dateIntervalSelector
 
 -- | metadata
 --
@@ -131,42 +123,42 @@ dateInterval hkWorkoutEvent  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsHKWorkoutEvent hkWorkoutEvent => hkWorkoutEvent -> IO (Id NSDictionary)
-metadata hkWorkoutEvent  =
-    sendMsg hkWorkoutEvent (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata hkWorkoutEvent =
+  sendMessage hkWorkoutEvent metadataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @workoutEventWithType:date:@
-workoutEventWithType_dateSelector :: Selector
+workoutEventWithType_dateSelector :: Selector '[HKWorkoutEventType, Id NSDate] (Id HKWorkoutEvent)
 workoutEventWithType_dateSelector = mkSelector "workoutEventWithType:date:"
 
 -- | @Selector@ for @workoutEventWithType:date:metadata:@
-workoutEventWithType_date_metadataSelector :: Selector
+workoutEventWithType_date_metadataSelector :: Selector '[HKWorkoutEventType, Id NSDate, Id NSDictionary] (Id HKWorkoutEvent)
 workoutEventWithType_date_metadataSelector = mkSelector "workoutEventWithType:date:metadata:"
 
 -- | @Selector@ for @workoutEventWithType:dateInterval:metadata:@
-workoutEventWithType_dateInterval_metadataSelector :: Selector
+workoutEventWithType_dateInterval_metadataSelector :: Selector '[HKWorkoutEventType, Id NSDateInterval, Id NSDictionary] (Id HKWorkoutEvent)
 workoutEventWithType_dateInterval_metadataSelector = mkSelector "workoutEventWithType:dateInterval:metadata:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKWorkoutEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] HKWorkoutEventType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @dateInterval@
-dateIntervalSelector :: Selector
+dateIntervalSelector :: Selector '[] (Id NSDateInterval)
 dateIntervalSelector = mkSelector "dateInterval"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSDictionary)
 metadataSelector = mkSelector "metadata"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.SensorKit.SRSensorReader
   , sensor
   , delegate
   , setDelegate
-  , initWithSensorSelector
-  , initSelector
-  , newSelector
-  , startRecordingSelector
-  , stopRecordingSelector
+  , authorizationStatusSelector
+  , delegateSelector
   , fetchDevicesSelector
   , fetchSelector
+  , initSelector
+  , initWithSensorSelector
+  , newSelector
   , requestAuthorizationForSensors_completionSelector
-  , authorizationStatusSelector
   , sensorSelector
-  , delegateSelector
   , setDelegateSelector
+  , startRecordingSelector
+  , stopRecordingSelector
 
   -- * Enum types
   , SRAuthorizationStatus(SRAuthorizationStatus)
@@ -40,15 +41,11 @@ module ObjC.SensorKit.SRSensorReader
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,21 +57,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSensor:@
 initWithSensor :: (IsSRSensorReader srSensorReader, IsNSString sensor) => srSensorReader -> sensor -> IO (Id SRSensorReader)
-initWithSensor srSensorReader  sensor =
-  withObjCPtr sensor $ \raw_sensor ->
-      sendMsg srSensorReader (mkSelector "initWithSensor:") (retPtr retVoid) [argPtr (castPtr raw_sensor :: Ptr ())] >>= ownedObject . castPtr
+initWithSensor srSensorReader sensor =
+  sendOwnedMessage srSensorReader initWithSensorSelector (toNSString sensor)
 
 -- | @- init@
 init_ :: IsSRSensorReader srSensorReader => srSensorReader -> IO (Id SRSensorReader)
-init_ srSensorReader  =
-    sendMsg srSensorReader (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srSensorReader =
+  sendOwnedMessage srSensorReader initSelector
 
 -- | @+ new@
 new :: IO (Id SRSensorReader)
 new  =
   do
     cls' <- getRequiredClass "SRSensorReader"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Starts recording for the reader's sensor
 --
@@ -86,8 +82,8 @@ new  =
 --
 -- ObjC selector: @- startRecording@
 startRecording :: IsSRSensorReader srSensorReader => srSensorReader -> IO ()
-startRecording srSensorReader  =
-    sendMsg srSensorReader (mkSelector "startRecording") retVoid []
+startRecording srSensorReader =
+  sendMessage srSensorReader startRecordingSelector
 
 -- | Stops recording for the reader's sensor
 --
@@ -99,8 +95,8 @@ startRecording srSensorReader  =
 --
 -- ObjC selector: @- stopRecording@
 stopRecording :: IsSRSensorReader srSensorReader => srSensorReader -> IO ()
-stopRecording srSensorReader  =
-    sendMsg srSensorReader (mkSelector "stopRecording") retVoid []
+stopRecording srSensorReader =
+  sendMessage srSensorReader stopRecordingSelector
 
 -- | Fetches device information for all devices that have stored data for the given sensor in SensorKit
 --
@@ -108,8 +104,8 @@ stopRecording srSensorReader  =
 --
 -- ObjC selector: @- fetchDevices@
 fetchDevices :: IsSRSensorReader srSensorReader => srSensorReader -> IO ()
-fetchDevices srSensorReader  =
-    sendMsg srSensorReader (mkSelector "fetchDevices") retVoid []
+fetchDevices srSensorReader =
+  sendMessage srSensorReader fetchDevicesSelector
 
 -- | Fetches samples for the reader's sensor for given request parameters
 --
@@ -125,9 +121,8 @@ fetchDevices srSensorReader  =
 --
 -- ObjC selector: @- fetch:@
 fetch :: (IsSRSensorReader srSensorReader, IsSRFetchRequest request) => srSensorReader -> request -> IO ()
-fetch srSensorReader  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg srSensorReader (mkSelector "fetch:") retVoid [argPtr (castPtr raw_request :: Ptr ())]
+fetch srSensorReader request =
+  sendMessage srSensorReader fetchSelector (toSRFetchRequest request)
 
 -- | Request authorization to a given set of sensors
 --
@@ -142,82 +137,81 @@ requestAuthorizationForSensors_completion :: IsNSSet sensors => sensors -> Ptr (
 requestAuthorizationForSensors_completion sensors completion =
   do
     cls' <- getRequiredClass "SRSensorReader"
-    withObjCPtr sensors $ \raw_sensors ->
-      sendClassMsg cls' (mkSelector "requestAuthorizationForSensors:completion:") retVoid [argPtr (castPtr raw_sensors :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' requestAuthorizationForSensors_completionSelector (toNSSet sensors) completion
 
 -- | The current authorization status of the calling application.
 --
 -- ObjC selector: @- authorizationStatus@
 authorizationStatus :: IsSRSensorReader srSensorReader => srSensorReader -> IO SRAuthorizationStatus
-authorizationStatus srSensorReader  =
-    fmap (coerce :: CLong -> SRAuthorizationStatus) $ sendMsg srSensorReader (mkSelector "authorizationStatus") retCLong []
+authorizationStatus srSensorReader =
+  sendMessage srSensorReader authorizationStatusSelector
 
 -- | the sensor this reader was initialized with
 --
 -- ObjC selector: @- sensor@
 sensor :: IsSRSensorReader srSensorReader => srSensorReader -> IO (Id NSString)
-sensor srSensorReader  =
-    sendMsg srSensorReader (mkSelector "sensor") (retPtr retVoid) [] >>= retainedObject . castPtr
+sensor srSensorReader =
+  sendMessage srSensorReader sensorSelector
 
 -- | @- delegate@
 delegate :: IsSRSensorReader srSensorReader => srSensorReader -> IO RawId
-delegate srSensorReader  =
-    fmap (RawId . castPtr) $ sendMsg srSensorReader (mkSelector "delegate") (retPtr retVoid) []
+delegate srSensorReader =
+  sendMessage srSensorReader delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsSRSensorReader srSensorReader => srSensorReader -> RawId -> IO ()
-setDelegate srSensorReader  value =
-    sendMsg srSensorReader (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate srSensorReader value =
+  sendMessage srSensorReader setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSensor:@
-initWithSensorSelector :: Selector
+initWithSensorSelector :: Selector '[Id NSString] (Id SRSensorReader)
 initWithSensorSelector = mkSelector "initWithSensor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRSensorReader)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRSensorReader)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @startRecording@
-startRecordingSelector :: Selector
+startRecordingSelector :: Selector '[] ()
 startRecordingSelector = mkSelector "startRecording"
 
 -- | @Selector@ for @stopRecording@
-stopRecordingSelector :: Selector
+stopRecordingSelector :: Selector '[] ()
 stopRecordingSelector = mkSelector "stopRecording"
 
 -- | @Selector@ for @fetchDevices@
-fetchDevicesSelector :: Selector
+fetchDevicesSelector :: Selector '[] ()
 fetchDevicesSelector = mkSelector "fetchDevices"
 
 -- | @Selector@ for @fetch:@
-fetchSelector :: Selector
+fetchSelector :: Selector '[Id SRFetchRequest] ()
 fetchSelector = mkSelector "fetch:"
 
 -- | @Selector@ for @requestAuthorizationForSensors:completion:@
-requestAuthorizationForSensors_completionSelector :: Selector
+requestAuthorizationForSensors_completionSelector :: Selector '[Id NSSet, Ptr ()] ()
 requestAuthorizationForSensors_completionSelector = mkSelector "requestAuthorizationForSensors:completion:"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] SRAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @sensor@
-sensorSelector :: Selector
+sensorSelector :: Selector '[] (Id NSString)
 sensorSelector = mkSelector "sensor"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

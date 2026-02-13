@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,32 +24,28 @@ module ObjC.ThreadNetwork.THCredentials
   , panID
   , creationDate
   , lastModificationDate
-  , initSelector
-  , newSelector
-  , networkNameSelector
-  , extendedPANIDSelector
-  , borderAgentIDSelector
   , activeOperationalDataSetSelector
-  , networkKeySelector
-  , pskcSelector
+  , borderAgentIDSelector
   , channelSelector
-  , setChannelSelector
-  , panIDSelector
   , creationDateSelector
+  , extendedPANIDSelector
+  , initSelector
   , lastModificationDateSelector
+  , networkKeySelector
+  , networkNameSelector
+  , newSelector
+  , panIDSelector
+  , pskcSelector
+  , setChannelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,29 +54,29 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsTHCredentials thCredentials => thCredentials -> IO (Id THCredentials)
-init_ thCredentials  =
-    sendMsg thCredentials (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ thCredentials =
+  sendOwnedMessage thCredentials initSelector
 
 -- | @+ new@
 new :: IO (Id THCredentials)
 new  =
   do
     cls' <- getRequiredClass "THCredentials"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The Thread network name.
 --
 -- ObjC selector: @- networkName@
 networkName :: IsTHCredentials thCredentials => thCredentials -> IO (Id NSString)
-networkName thCredentials  =
-    sendMsg thCredentials (mkSelector "networkName") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkName thCredentials =
+  sendMessage thCredentials networkNameSelector
 
 -- | The Thread network extended PAN identifier.
 --
 -- ObjC selector: @- extendedPANID@
 extendedPANID :: IsTHCredentials thCredentials => thCredentials -> IO (Id NSData)
-extendedPANID thCredentials  =
-    sendMsg thCredentials (mkSelector "extendedPANID") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedPANID thCredentials =
+  sendMessage thCredentials extendedPANIDSelector
 
 -- | The identifer of an active Thread network Border Agent.
 --
@@ -87,8 +84,8 @@ extendedPANID thCredentials  =
 --
 -- ObjC selector: @- borderAgentID@
 borderAgentID :: IsTHCredentials thCredentials => thCredentials -> IO (Id NSData)
-borderAgentID thCredentials  =
-    sendMsg thCredentials (mkSelector "borderAgentID") (retPtr retVoid) [] >>= retainedObject . castPtr
+borderAgentID thCredentials =
+  sendMessage thCredentials borderAgentIDSelector
 
 -- | The essential operational parameters for the Thread network.
 --
@@ -96,111 +93,111 @@ borderAgentID thCredentials  =
 --
 -- ObjC selector: @- activeOperationalDataSet@
 activeOperationalDataSet :: IsTHCredentials thCredentials => thCredentials -> IO (Id NSData)
-activeOperationalDataSet thCredentials  =
-    sendMsg thCredentials (mkSelector "activeOperationalDataSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeOperationalDataSet thCredentials =
+  sendMessage thCredentials activeOperationalDataSetSelector
 
 -- | The sixteen byte Thread network key.
 --
 -- ObjC selector: @- networkKey@
 networkKey :: IsTHCredentials thCredentials => thCredentials -> IO (Id NSData)
-networkKey thCredentials  =
-    sendMsg thCredentials (mkSelector "networkKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkKey thCredentials =
+  sendMessage thCredentials networkKeySelector
 
 -- | The sixteen byte Thread network pre-shared key for the Commissioner.
 --
 -- ObjC selector: @- PSKC@
 pskc :: IsTHCredentials thCredentials => thCredentials -> IO (Id NSData)
-pskc thCredentials  =
-    sendMsg thCredentials (mkSelector "PSKC") (retPtr retVoid) [] >>= retainedObject . castPtr
+pskc thCredentials =
+  sendMessage thCredentials pskcSelector
 
 -- | The Thread network radio channel.
 --
 -- ObjC selector: @- channel@
 channel :: IsTHCredentials thCredentials => thCredentials -> IO CUChar
-channel thCredentials  =
-    sendMsg thCredentials (mkSelector "channel") retCUChar []
+channel thCredentials =
+  sendMessage thCredentials channelSelector
 
 -- | The Thread network radio channel.
 --
 -- ObjC selector: @- setChannel:@
 setChannel :: IsTHCredentials thCredentials => thCredentials -> CUChar -> IO ()
-setChannel thCredentials  value =
-    sendMsg thCredentials (mkSelector "setChannel:") retVoid [argCUChar value]
+setChannel thCredentials value =
+  sendMessage thCredentials setChannelSelector value
 
 -- | The two byte Thead network PAN identifier.
 --
 -- ObjC selector: @- panID@
 panID :: IsTHCredentials thCredentials => thCredentials -> IO (Id NSData)
-panID thCredentials  =
-    sendMsg thCredentials (mkSelector "panID") (retPtr retVoid) [] >>= retainedObject . castPtr
+panID thCredentials =
+  sendMessage thCredentials panIDSelector
 
 -- | The date and time that the framework stored the credential in the database.
 --
 -- ObjC selector: @- creationDate@
 creationDate :: IsTHCredentials thCredentials => thCredentials -> IO (Id NSDate)
-creationDate thCredentials  =
-    sendMsg thCredentials (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate thCredentials =
+  sendMessage thCredentials creationDateSelector
 
 -- | The date and time that the framework updated the credential in the database.
 --
 -- ObjC selector: @- lastModificationDate@
 lastModificationDate :: IsTHCredentials thCredentials => thCredentials -> IO (Id NSDate)
-lastModificationDate thCredentials  =
-    sendMsg thCredentials (mkSelector "lastModificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastModificationDate thCredentials =
+  sendMessage thCredentials lastModificationDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id THCredentials)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id THCredentials)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @networkName@
-networkNameSelector :: Selector
+networkNameSelector :: Selector '[] (Id NSString)
 networkNameSelector = mkSelector "networkName"
 
 -- | @Selector@ for @extendedPANID@
-extendedPANIDSelector :: Selector
+extendedPANIDSelector :: Selector '[] (Id NSData)
 extendedPANIDSelector = mkSelector "extendedPANID"
 
 -- | @Selector@ for @borderAgentID@
-borderAgentIDSelector :: Selector
+borderAgentIDSelector :: Selector '[] (Id NSData)
 borderAgentIDSelector = mkSelector "borderAgentID"
 
 -- | @Selector@ for @activeOperationalDataSet@
-activeOperationalDataSetSelector :: Selector
+activeOperationalDataSetSelector :: Selector '[] (Id NSData)
 activeOperationalDataSetSelector = mkSelector "activeOperationalDataSet"
 
 -- | @Selector@ for @networkKey@
-networkKeySelector :: Selector
+networkKeySelector :: Selector '[] (Id NSData)
 networkKeySelector = mkSelector "networkKey"
 
 -- | @Selector@ for @PSKC@
-pskcSelector :: Selector
+pskcSelector :: Selector '[] (Id NSData)
 pskcSelector = mkSelector "PSKC"
 
 -- | @Selector@ for @channel@
-channelSelector :: Selector
+channelSelector :: Selector '[] CUChar
 channelSelector = mkSelector "channel"
 
 -- | @Selector@ for @setChannel:@
-setChannelSelector :: Selector
+setChannelSelector :: Selector '[CUChar] ()
 setChannelSelector = mkSelector "setChannel:"
 
 -- | @Selector@ for @panID@
-panIDSelector :: Selector
+panIDSelector :: Selector '[] (Id NSData)
 panIDSelector = mkSelector "panID"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @lastModificationDate@
-lastModificationDateSelector :: Selector
+lastModificationDateSelector :: Selector '[] (Id NSDate)
 lastModificationDateSelector = mkSelector "lastModificationDate"
 

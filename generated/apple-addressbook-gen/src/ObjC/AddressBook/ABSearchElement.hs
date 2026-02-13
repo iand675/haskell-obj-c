@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.AddressBook.ABSearchElement
   , IsABSearchElement(..)
   , searchElementForConjunction_children
   , matchesRecord
-  , searchElementForConjunction_childrenSelector
   , matchesRecordSelector
+  , searchElementForConjunction_childrenSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,24 +31,22 @@ searchElementForConjunction_children :: IsNSArray children => CLong -> children 
 searchElementForConjunction_children conjuction children =
   do
     cls' <- getRequiredClass "ABSearchElement"
-    withObjCPtr children $ \raw_children ->
-      sendClassMsg cls' (mkSelector "searchElementForConjunction:children:") (retPtr retVoid) [argCLong conjuction, argPtr (castPtr raw_children :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' searchElementForConjunction_childrenSelector conjuction (toNSArray children)
 
 -- | @- matchesRecord:@
 matchesRecord :: (IsABSearchElement abSearchElement, IsABRecord record) => abSearchElement -> record -> IO Bool
-matchesRecord abSearchElement  record =
-  withObjCPtr record $ \raw_record ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abSearchElement (mkSelector "matchesRecord:") retCULong [argPtr (castPtr raw_record :: Ptr ())]
+matchesRecord abSearchElement record =
+  sendMessage abSearchElement matchesRecordSelector (toABRecord record)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @searchElementForConjunction:children:@
-searchElementForConjunction_childrenSelector :: Selector
+searchElementForConjunction_childrenSelector :: Selector '[CLong, Id NSArray] (Id ABSearchElement)
 searchElementForConjunction_childrenSelector = mkSelector "searchElementForConjunction:children:"
 
 -- | @Selector@ for @matchesRecord:@
-matchesRecordSelector :: Selector
+matchesRecordSelector :: Selector '[Id ABRecord] Bool
 matchesRecordSelector = mkSelector "matchesRecord:"
 

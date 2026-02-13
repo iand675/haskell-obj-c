@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,14 +22,14 @@ module ObjC.AVFoundation.AVPlayerInterstitialEventMonitor
   , currentEvent
   , currentEventSkippableState
   , currentEventSkipControlLabel
-  , interstitialEventMonitorWithPrimaryPlayerSelector
-  , initWithPrimaryPlayerSelector
-  , primaryPlayerSelector
-  , interstitialPlayerSelector
-  , eventsSelector
   , currentEventSelector
-  , currentEventSkippableStateSelector
   , currentEventSkipControlLabelSelector
+  , currentEventSkippableStateSelector
+  , eventsSelector
+  , initWithPrimaryPlayerSelector
+  , interstitialEventMonitorWithPrimaryPlayerSelector
+  , interstitialPlayerSelector
+  , primaryPlayerSelector
 
   -- * Enum types
   , AVPlayerInterstitialEventSkippableEventState(AVPlayerInterstitialEventSkippableEventState)
@@ -39,15 +40,11 @@ module ObjC.AVFoundation.AVPlayerInterstitialEventMonitor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,28 +63,26 @@ interstitialEventMonitorWithPrimaryPlayer :: IsAVPlayer primaryPlayer => primary
 interstitialEventMonitorWithPrimaryPlayer primaryPlayer =
   do
     cls' <- getRequiredClass "AVPlayerInterstitialEventMonitor"
-    withObjCPtr primaryPlayer $ \raw_primaryPlayer ->
-      sendClassMsg cls' (mkSelector "interstitialEventMonitorWithPrimaryPlayer:") (retPtr retVoid) [argPtr (castPtr raw_primaryPlayer :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' interstitialEventMonitorWithPrimaryPlayerSelector (toAVPlayer primaryPlayer)
 
 -- | @- initWithPrimaryPlayer:@
 initWithPrimaryPlayer :: (IsAVPlayerInterstitialEventMonitor avPlayerInterstitialEventMonitor, IsAVPlayer primaryPlayer) => avPlayerInterstitialEventMonitor -> primaryPlayer -> IO (Id AVPlayerInterstitialEventMonitor)
-initWithPrimaryPlayer avPlayerInterstitialEventMonitor  primaryPlayer =
-  withObjCPtr primaryPlayer $ \raw_primaryPlayer ->
-      sendMsg avPlayerInterstitialEventMonitor (mkSelector "initWithPrimaryPlayer:") (retPtr retVoid) [argPtr (castPtr raw_primaryPlayer :: Ptr ())] >>= ownedObject . castPtr
+initWithPrimaryPlayer avPlayerInterstitialEventMonitor primaryPlayer =
+  sendOwnedMessage avPlayerInterstitialEventMonitor initWithPrimaryPlayerSelector (toAVPlayer primaryPlayer)
 
 -- | The AVPlayer that will play the primaryItems of the receiver's interstitial events.
 --
 -- ObjC selector: @- primaryPlayer@
 primaryPlayer :: IsAVPlayerInterstitialEventMonitor avPlayerInterstitialEventMonitor => avPlayerInterstitialEventMonitor -> IO (Id AVPlayer)
-primaryPlayer avPlayerInterstitialEventMonitor  =
-    sendMsg avPlayerInterstitialEventMonitor (mkSelector "primaryPlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryPlayer avPlayerInterstitialEventMonitor =
+  sendMessage avPlayerInterstitialEventMonitor primaryPlayerSelector
 
 -- | The AVQueuePlayer that will play interstitial items during suspension of playback of primary items.
 --
 -- ObjC selector: @- interstitialPlayer@
 interstitialPlayer :: IsAVPlayerInterstitialEventMonitor avPlayerInterstitialEventMonitor => avPlayerInterstitialEventMonitor -> IO (Id AVQueuePlayer)
-interstitialPlayer avPlayerInterstitialEventMonitor  =
-    sendMsg avPlayerInterstitialEventMonitor (mkSelector "interstitialPlayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+interstitialPlayer avPlayerInterstitialEventMonitor =
+  sendMessage avPlayerInterstitialEventMonitor interstitialPlayerSelector
 
 -- | Provides the current schedule of interstitial events, specified either intrinsically within the content of primary items, such as via use of directives carried by HLS media playlists, or via use of an AVPlayerInterstitialEventController.
 --
@@ -95,15 +90,15 @@ interstitialPlayer avPlayerInterstitialEventMonitor  =
 --
 -- ObjC selector: @- events@
 events :: IsAVPlayerInterstitialEventMonitor avPlayerInterstitialEventMonitor => avPlayerInterstitialEventMonitor -> IO (Id NSArray)
-events avPlayerInterstitialEventMonitor  =
-    sendMsg avPlayerInterstitialEventMonitor (mkSelector "events") (retPtr retVoid) [] >>= retainedObject . castPtr
+events avPlayerInterstitialEventMonitor =
+  sendMessage avPlayerInterstitialEventMonitor eventsSelector
 
 -- | The current interstitial event. Has a value of nil during playback of primary content by the primary player.
 --
 -- ObjC selector: @- currentEvent@
 currentEvent :: IsAVPlayerInterstitialEventMonitor avPlayerInterstitialEventMonitor => avPlayerInterstitialEventMonitor -> IO (Id AVPlayerInterstitialEvent)
-currentEvent avPlayerInterstitialEventMonitor  =
-    sendMsg avPlayerInterstitialEventMonitor (mkSelector "currentEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentEvent avPlayerInterstitialEventMonitor =
+  sendMessage avPlayerInterstitialEventMonitor currentEventSelector
 
 -- | The skippable event state for the currentEvent.
 --
@@ -111,8 +106,8 @@ currentEvent avPlayerInterstitialEventMonitor  =
 --
 -- ObjC selector: @- currentEventSkippableState@
 currentEventSkippableState :: IsAVPlayerInterstitialEventMonitor avPlayerInterstitialEventMonitor => avPlayerInterstitialEventMonitor -> IO AVPlayerInterstitialEventSkippableEventState
-currentEventSkippableState avPlayerInterstitialEventMonitor  =
-    fmap (coerce :: CLong -> AVPlayerInterstitialEventSkippableEventState) $ sendMsg avPlayerInterstitialEventMonitor (mkSelector "currentEventSkippableState") retCLong []
+currentEventSkippableState avPlayerInterstitialEventMonitor =
+  sendMessage avPlayerInterstitialEventMonitor currentEventSkippableStateSelector
 
 -- | The skip control label for the currentEvent.
 --
@@ -120,42 +115,42 @@ currentEventSkippableState avPlayerInterstitialEventMonitor  =
 --
 -- ObjC selector: @- currentEventSkipControlLabel@
 currentEventSkipControlLabel :: IsAVPlayerInterstitialEventMonitor avPlayerInterstitialEventMonitor => avPlayerInterstitialEventMonitor -> IO (Id NSString)
-currentEventSkipControlLabel avPlayerInterstitialEventMonitor  =
-    sendMsg avPlayerInterstitialEventMonitor (mkSelector "currentEventSkipControlLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentEventSkipControlLabel avPlayerInterstitialEventMonitor =
+  sendMessage avPlayerInterstitialEventMonitor currentEventSkipControlLabelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @interstitialEventMonitorWithPrimaryPlayer:@
-interstitialEventMonitorWithPrimaryPlayerSelector :: Selector
+interstitialEventMonitorWithPrimaryPlayerSelector :: Selector '[Id AVPlayer] (Id AVPlayerInterstitialEventMonitor)
 interstitialEventMonitorWithPrimaryPlayerSelector = mkSelector "interstitialEventMonitorWithPrimaryPlayer:"
 
 -- | @Selector@ for @initWithPrimaryPlayer:@
-initWithPrimaryPlayerSelector :: Selector
+initWithPrimaryPlayerSelector :: Selector '[Id AVPlayer] (Id AVPlayerInterstitialEventMonitor)
 initWithPrimaryPlayerSelector = mkSelector "initWithPrimaryPlayer:"
 
 -- | @Selector@ for @primaryPlayer@
-primaryPlayerSelector :: Selector
+primaryPlayerSelector :: Selector '[] (Id AVPlayer)
 primaryPlayerSelector = mkSelector "primaryPlayer"
 
 -- | @Selector@ for @interstitialPlayer@
-interstitialPlayerSelector :: Selector
+interstitialPlayerSelector :: Selector '[] (Id AVQueuePlayer)
 interstitialPlayerSelector = mkSelector "interstitialPlayer"
 
 -- | @Selector@ for @events@
-eventsSelector :: Selector
+eventsSelector :: Selector '[] (Id NSArray)
 eventsSelector = mkSelector "events"
 
 -- | @Selector@ for @currentEvent@
-currentEventSelector :: Selector
+currentEventSelector :: Selector '[] (Id AVPlayerInterstitialEvent)
 currentEventSelector = mkSelector "currentEvent"
 
 -- | @Selector@ for @currentEventSkippableState@
-currentEventSkippableStateSelector :: Selector
+currentEventSkippableStateSelector :: Selector '[] AVPlayerInterstitialEventSkippableEventState
 currentEventSkippableStateSelector = mkSelector "currentEventSkippableState"
 
 -- | @Selector@ for @currentEventSkipControlLabel@
-currentEventSkipControlLabelSelector :: Selector
+currentEventSkipControlLabelSelector :: Selector '[] (Id NSString)
 currentEventSkipControlLabelSelector = mkSelector "currentEventSkipControlLabel"
 

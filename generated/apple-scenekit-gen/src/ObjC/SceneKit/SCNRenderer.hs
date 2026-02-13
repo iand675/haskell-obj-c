@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,15 @@ module ObjC.SceneKit.SCNRenderer
   , scene
   , setScene
   , nextFrameTime
+  , nextFrameTimeSelector
+  , renderAtTimeSelector
+  , renderSelector
   , rendererWithContext_optionsSelector
   , rendererWithDevice_optionsSelector
-  , renderAtTimeSelector
-  , updateAtTimeSelector
-  , updateProbes_atTimeSelector
-  , renderSelector
   , sceneSelector
   , setSceneSelector
-  , nextFrameTimeSelector
+  , updateAtTimeSelector
+  , updateProbes_atTimeSelector
 
   -- * Enum types
   , SCNAntialiasingMode(SCNAntialiasingMode)
@@ -40,15 +41,11 @@ module ObjC.SceneKit.SCNRenderer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,8 +68,7 @@ rendererWithContext_options :: IsNSDictionary options => Ptr () -> options -> IO
 rendererWithContext_options context options =
   do
     cls' <- getRequiredClass "SCNRenderer"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "rendererWithContext:options:") (retPtr retVoid) [argPtr context, argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' rendererWithContext_optionsSelector context (toNSDictionary options)
 
 -- | rendererWithDevice:options:
 --
@@ -87,8 +83,7 @@ rendererWithDevice_options :: IsNSDictionary options => RawId -> options -> IO (
 rendererWithDevice_options device options =
   do
     cls' <- getRequiredClass "SCNRenderer"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "rendererWithDevice:options:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' rendererWithDevice_optionsSelector device (toNSDictionary options)
 
 -- | renderAtTime:
 --
@@ -98,8 +93,8 @@ rendererWithDevice_options device options =
 --
 -- ObjC selector: @- renderAtTime:@
 renderAtTime :: IsSCNRenderer scnRenderer => scnRenderer -> CDouble -> IO ()
-renderAtTime scnRenderer  time =
-    sendMsg scnRenderer (mkSelector "renderAtTime:") retVoid [argCDouble time]
+renderAtTime scnRenderer time =
+  sendMessage scnRenderer renderAtTimeSelector time
 
 -- | updateAtTime:
 --
@@ -107,8 +102,8 @@ renderAtTime scnRenderer  time =
 --
 -- ObjC selector: @- updateAtTime:@
 updateAtTime :: IsSCNRenderer scnRenderer => scnRenderer -> CDouble -> IO ()
-updateAtTime scnRenderer  time =
-    sendMsg scnRenderer (mkSelector "updateAtTime:") retVoid [argCDouble time]
+updateAtTime scnRenderer time =
+  sendMessage scnRenderer updateAtTimeSelector time
 
 -- | updateProbes:atTime:
 --
@@ -122,9 +117,8 @@ updateAtTime scnRenderer  time =
 --
 -- ObjC selector: @- updateProbes:atTime:@
 updateProbes_atTime :: (IsSCNRenderer scnRenderer, IsNSArray lightProbes) => scnRenderer -> lightProbes -> CDouble -> IO ()
-updateProbes_atTime scnRenderer  lightProbes time =
-  withObjCPtr lightProbes $ \raw_lightProbes ->
-      sendMsg scnRenderer (mkSelector "updateProbes:atTime:") retVoid [argPtr (castPtr raw_lightProbes :: Ptr ()), argCDouble time]
+updateProbes_atTime scnRenderer lightProbes time =
+  sendMessage scnRenderer updateProbes_atTimeSelector (toNSArray lightProbes) time
 
 -- | render
 --
@@ -134,8 +128,8 @@ updateProbes_atTime scnRenderer  lightProbes time =
 --
 -- ObjC selector: @- render@
 render :: IsSCNRenderer scnRenderer => scnRenderer -> IO ()
-render scnRenderer  =
-    sendMsg scnRenderer (mkSelector "render") retVoid []
+render scnRenderer =
+  sendMessage scnRenderer renderSelector
 
 -- | scene
 --
@@ -143,8 +137,8 @@ render scnRenderer  =
 --
 -- ObjC selector: @- scene@
 scene :: IsSCNRenderer scnRenderer => scnRenderer -> IO (Id SCNScene)
-scene scnRenderer  =
-    sendMsg scnRenderer (mkSelector "scene") (retPtr retVoid) [] >>= retainedObject . castPtr
+scene scnRenderer =
+  sendMessage scnRenderer sceneSelector
 
 -- | scene
 --
@@ -152,9 +146,8 @@ scene scnRenderer  =
 --
 -- ObjC selector: @- setScene:@
 setScene :: (IsSCNRenderer scnRenderer, IsSCNScene value) => scnRenderer -> value -> IO ()
-setScene scnRenderer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnRenderer (mkSelector "setScene:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScene scnRenderer value =
+  sendMessage scnRenderer setSceneSelector (toSCNScene value)
 
 -- | nextFrameTime
 --
@@ -162,46 +155,46 @@ setScene scnRenderer  value =
 --
 -- ObjC selector: @- nextFrameTime@
 nextFrameTime :: IsSCNRenderer scnRenderer => scnRenderer -> IO CDouble
-nextFrameTime scnRenderer  =
-    sendMsg scnRenderer (mkSelector "nextFrameTime") retCDouble []
+nextFrameTime scnRenderer =
+  sendMessage scnRenderer nextFrameTimeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rendererWithContext:options:@
-rendererWithContext_optionsSelector :: Selector
+rendererWithContext_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id SCNRenderer)
 rendererWithContext_optionsSelector = mkSelector "rendererWithContext:options:"
 
 -- | @Selector@ for @rendererWithDevice:options:@
-rendererWithDevice_optionsSelector :: Selector
+rendererWithDevice_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id SCNRenderer)
 rendererWithDevice_optionsSelector = mkSelector "rendererWithDevice:options:"
 
 -- | @Selector@ for @renderAtTime:@
-renderAtTimeSelector :: Selector
+renderAtTimeSelector :: Selector '[CDouble] ()
 renderAtTimeSelector = mkSelector "renderAtTime:"
 
 -- | @Selector@ for @updateAtTime:@
-updateAtTimeSelector :: Selector
+updateAtTimeSelector :: Selector '[CDouble] ()
 updateAtTimeSelector = mkSelector "updateAtTime:"
 
 -- | @Selector@ for @updateProbes:atTime:@
-updateProbes_atTimeSelector :: Selector
+updateProbes_atTimeSelector :: Selector '[Id NSArray, CDouble] ()
 updateProbes_atTimeSelector = mkSelector "updateProbes:atTime:"
 
 -- | @Selector@ for @render@
-renderSelector :: Selector
+renderSelector :: Selector '[] ()
 renderSelector = mkSelector "render"
 
 -- | @Selector@ for @scene@
-sceneSelector :: Selector
+sceneSelector :: Selector '[] (Id SCNScene)
 sceneSelector = mkSelector "scene"
 
 -- | @Selector@ for @setScene:@
-setSceneSelector :: Selector
+setSceneSelector :: Selector '[Id SCNScene] ()
 setSceneSelector = mkSelector "setScene:"
 
 -- | @Selector@ for @nextFrameTime@
-nextFrameTimeSelector :: Selector
+nextFrameTimeSelector :: Selector '[] CDouble
 nextFrameTimeSelector = mkSelector "nextFrameTime"
 

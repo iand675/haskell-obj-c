@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,15 +26,11 @@ module ObjC.MetalPerformanceShaders.MPSNNComparisonNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- comparisonType@
 comparisonType :: IsMPSNNComparisonNode mpsnnComparisonNode => mpsnnComparisonNode -> IO MPSNNComparisonType
-comparisonType mpsnnComparisonNode  =
-    fmap (coerce :: CULong -> MPSNNComparisonType) $ sendMsg mpsnnComparisonNode (mkSelector "comparisonType") retCULong []
+comparisonType mpsnnComparisonNode =
+  sendMessage mpsnnComparisonNode comparisonTypeSelector
 
 -- | comparisonType
 --
@@ -56,18 +53,18 @@ comparisonType mpsnnComparisonNode  =
 --
 -- ObjC selector: @- setComparisonType:@
 setComparisonType :: IsMPSNNComparisonNode mpsnnComparisonNode => mpsnnComparisonNode -> MPSNNComparisonType -> IO ()
-setComparisonType mpsnnComparisonNode  value =
-    sendMsg mpsnnComparisonNode (mkSelector "setComparisonType:") retVoid [argCULong (coerce value)]
+setComparisonType mpsnnComparisonNode value =
+  sendMessage mpsnnComparisonNode setComparisonTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @comparisonType@
-comparisonTypeSelector :: Selector
+comparisonTypeSelector :: Selector '[] MPSNNComparisonType
 comparisonTypeSelector = mkSelector "comparisonType"
 
 -- | @Selector@ for @setComparisonType:@
-setComparisonTypeSelector :: Selector
+setComparisonTypeSelector :: Selector '[MPSNNComparisonType] ()
 setComparisonTypeSelector = mkSelector "setComparisonType:"
 

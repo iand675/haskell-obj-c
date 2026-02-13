@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INTemporalEventTriggerTypeOptionsResolutionResult
   , IsINTemporalEventTriggerTypeOptionsResolutionResult(..)
   , successWithResolvedTemporalEventTriggerTypeOptions
   , confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirm
-  , successWithResolvedTemporalEventTriggerTypeOptionsSelector
   , confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirmSelector
+  , successWithResolvedTemporalEventTriggerTypeOptionsSelector
 
   -- * Enum types
   , INTemporalEventTriggerTypeOptions(INTemporalEventTriggerTypeOptions)
@@ -20,15 +21,11 @@ module ObjC.Intents.INTemporalEventTriggerTypeOptionsResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,24 +38,24 @@ successWithResolvedTemporalEventTriggerTypeOptions :: INTemporalEventTriggerType
 successWithResolvedTemporalEventTriggerTypeOptions resolvedTemporalEventTriggerTypeOptions =
   do
     cls' <- getRequiredClass "INTemporalEventTriggerTypeOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedTemporalEventTriggerTypeOptions:") (retPtr retVoid) [argCULong (coerce resolvedTemporalEventTriggerTypeOptions)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedTemporalEventTriggerTypeOptionsSelector resolvedTemporalEventTriggerTypeOptions
 
 -- | @+ confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirm:@
 confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirm :: INTemporalEventTriggerTypeOptions -> IO (Id INTemporalEventTriggerTypeOptionsResolutionResult)
 confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirm temporalEventTriggerTypeOptionsToConfirm =
   do
     cls' <- getRequiredClass "INTemporalEventTriggerTypeOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirm:") (retPtr retVoid) [argCULong (coerce temporalEventTriggerTypeOptionsToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirmSelector temporalEventTriggerTypeOptionsToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedTemporalEventTriggerTypeOptions:@
-successWithResolvedTemporalEventTriggerTypeOptionsSelector :: Selector
+successWithResolvedTemporalEventTriggerTypeOptionsSelector :: Selector '[INTemporalEventTriggerTypeOptions] (Id INTemporalEventTriggerTypeOptionsResolutionResult)
 successWithResolvedTemporalEventTriggerTypeOptionsSelector = mkSelector "successWithResolvedTemporalEventTriggerTypeOptions:"
 
 -- | @Selector@ for @confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirm:@
-confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirmSelector :: Selector
+confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirmSelector :: Selector '[INTemporalEventTriggerTypeOptions] (Id INTemporalEventTriggerTypeOptionsResolutionResult)
 confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirmSelector = mkSelector "confirmationRequiredWithTemporalEventTriggerTypeOptionsToConfirm:"
 

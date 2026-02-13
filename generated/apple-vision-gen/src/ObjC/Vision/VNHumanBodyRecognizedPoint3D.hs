@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Vision.VNHumanBodyRecognizedPoint3D
   , new
   , init_
   , parentJoint
-  , newSelector
   , initSelector
+  , newSelector
   , parentJointSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,31 +33,31 @@ new :: IO (Id VNHumanBodyRecognizedPoint3D)
 new  =
   do
     cls' <- getRequiredClass "VNHumanBodyRecognizedPoint3D"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVNHumanBodyRecognizedPoint3D vnHumanBodyRecognizedPoint3D => vnHumanBodyRecognizedPoint3D -> IO (Id VNHumanBodyRecognizedPoint3D)
-init_ vnHumanBodyRecognizedPoint3D  =
-    sendMsg vnHumanBodyRecognizedPoint3D (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnHumanBodyRecognizedPoint3D =
+  sendOwnedMessage vnHumanBodyRecognizedPoint3D initSelector
 
 -- | @- parentJoint@
 parentJoint :: IsVNHumanBodyRecognizedPoint3D vnHumanBodyRecognizedPoint3D => vnHumanBodyRecognizedPoint3D -> IO (Id NSString)
-parentJoint vnHumanBodyRecognizedPoint3D  =
-    sendMsg vnHumanBodyRecognizedPoint3D (mkSelector "parentJoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentJoint vnHumanBodyRecognizedPoint3D =
+  sendMessage vnHumanBodyRecognizedPoint3D parentJointSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VNHumanBodyRecognizedPoint3D)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNHumanBodyRecognizedPoint3D)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @parentJoint@
-parentJointSelector :: Selector
+parentJointSelector :: Selector '[] (Id NSString)
 parentJointSelector = mkSelector "parentJoint"
 

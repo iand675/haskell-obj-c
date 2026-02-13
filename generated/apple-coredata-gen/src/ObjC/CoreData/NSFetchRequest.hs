@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -48,47 +49,47 @@ module ObjC.CoreData.NSFetchRequest
   , setPropertiesToGroupBy
   , havingPredicate
   , setHavingPredicate
+  , affectedStoresSelector
+  , entityNameSelector
+  , entitySelector
+  , executeSelector
+  , fetchBatchSizeSelector
+  , fetchLimitSelector
+  , fetchOffsetSelector
   , fetchRequestWithEntityNameSelector
+  , havingPredicateSelector
+  , includesPendingChangesSelector
+  , includesPropertyValuesSelector
+  , includesSubentitiesSelector
   , initSelector
   , initWithEntityNameSelector
-  , executeSelector
-  , entitySelector
-  , setEntitySelector
-  , entityNameSelector
   , predicateSelector
-  , setPredicateSelector
-  , sortDescriptorsSelector
-  , setSortDescriptorsSelector
-  , fetchLimitSelector
-  , setFetchLimitSelector
-  , affectedStoresSelector
-  , setAffectedStoresSelector
-  , resultTypeSelector
-  , setResultTypeSelector
-  , includesSubentitiesSelector
-  , setIncludesSubentitiesSelector
-  , includesPropertyValuesSelector
-  , setIncludesPropertyValuesSelector
-  , returnsObjectsAsFaultsSelector
-  , setReturnsObjectsAsFaultsSelector
-  , relationshipKeyPathsForPrefetchingSelector
-  , setRelationshipKeyPathsForPrefetchingSelector
-  , includesPendingChangesSelector
-  , setIncludesPendingChangesSelector
-  , returnsDistinctResultsSelector
-  , setReturnsDistinctResultsSelector
   , propertiesToFetchSelector
-  , setPropertiesToFetchSelector
-  , fetchOffsetSelector
-  , setFetchOffsetSelector
-  , fetchBatchSizeSelector
-  , setFetchBatchSizeSelector
-  , shouldRefreshRefetchedObjectsSelector
-  , setShouldRefreshRefetchedObjectsSelector
   , propertiesToGroupBySelector
-  , setPropertiesToGroupBySelector
-  , havingPredicateSelector
+  , relationshipKeyPathsForPrefetchingSelector
+  , resultTypeSelector
+  , returnsDistinctResultsSelector
+  , returnsObjectsAsFaultsSelector
+  , setAffectedStoresSelector
+  , setEntitySelector
+  , setFetchBatchSizeSelector
+  , setFetchLimitSelector
+  , setFetchOffsetSelector
   , setHavingPredicateSelector
+  , setIncludesPendingChangesSelector
+  , setIncludesPropertyValuesSelector
+  , setIncludesSubentitiesSelector
+  , setPredicateSelector
+  , setPropertiesToFetchSelector
+  , setPropertiesToGroupBySelector
+  , setRelationshipKeyPathsForPrefetchingSelector
+  , setResultTypeSelector
+  , setReturnsDistinctResultsSelector
+  , setReturnsObjectsAsFaultsSelector
+  , setShouldRefreshRefetchedObjectsSelector
+  , setSortDescriptorsSelector
+  , shouldRefreshRefetchedObjectsSelector
+  , sortDescriptorsSelector
 
   -- * Enum types
   , NSFetchRequestResultType(NSFetchRequestResultType)
@@ -99,15 +100,11 @@ module ObjC.CoreData.NSFetchRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -120,384 +117,373 @@ fetchRequestWithEntityName :: IsNSString entityName => entityName -> IO (Id NSFe
 fetchRequestWithEntityName entityName =
   do
     cls' <- getRequiredClass "NSFetchRequest"
-    withObjCPtr entityName $ \raw_entityName ->
-      sendClassMsg cls' (mkSelector "fetchRequestWithEntityName:") (retPtr retVoid) [argPtr (castPtr raw_entityName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchRequestWithEntityNameSelector (toNSString entityName)
 
 -- | @- init@
 init_ :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSFetchRequest)
-init_ nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsFetchRequest =
+  sendOwnedMessage nsFetchRequest initSelector
 
 -- | @- initWithEntityName:@
 initWithEntityName :: (IsNSFetchRequest nsFetchRequest, IsNSString entityName) => nsFetchRequest -> entityName -> IO (Id NSFetchRequest)
-initWithEntityName nsFetchRequest  entityName =
-  withObjCPtr entityName $ \raw_entityName ->
-      sendMsg nsFetchRequest (mkSelector "initWithEntityName:") (retPtr retVoid) [argPtr (castPtr raw_entityName :: Ptr ())] >>= ownedObject . castPtr
+initWithEntityName nsFetchRequest entityName =
+  sendOwnedMessage nsFetchRequest initWithEntityNameSelector (toNSString entityName)
 
 -- | @- execute:@
 execute :: (IsNSFetchRequest nsFetchRequest, IsNSError error_) => nsFetchRequest -> error_ -> IO (Id NSArray)
-execute nsFetchRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nsFetchRequest (mkSelector "execute:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+execute nsFetchRequest error_ =
+  sendMessage nsFetchRequest executeSelector (toNSError error_)
 
 -- | @- entity@
 entity :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSEntityDescription)
-entity nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+entity nsFetchRequest =
+  sendMessage nsFetchRequest entitySelector
 
 -- | @- setEntity:@
 setEntity :: (IsNSFetchRequest nsFetchRequest, IsNSEntityDescription value) => nsFetchRequest -> value -> IO ()
-setEntity nsFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchRequest (mkSelector "setEntity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEntity nsFetchRequest value =
+  sendMessage nsFetchRequest setEntitySelector (toNSEntityDescription value)
 
 -- | @- entityName@
 entityName :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSString)
-entityName nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "entityName") (retPtr retVoid) [] >>= retainedObject . castPtr
+entityName nsFetchRequest =
+  sendMessage nsFetchRequest entityNameSelector
 
 -- | @- predicate@
 predicate :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSPredicate)
-predicate nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "predicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicate nsFetchRequest =
+  sendMessage nsFetchRequest predicateSelector
 
 -- | @- setPredicate:@
 setPredicate :: (IsNSFetchRequest nsFetchRequest, IsNSPredicate value) => nsFetchRequest -> value -> IO ()
-setPredicate nsFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchRequest (mkSelector "setPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPredicate nsFetchRequest value =
+  sendMessage nsFetchRequest setPredicateSelector (toNSPredicate value)
 
 -- | @- sortDescriptors@
 sortDescriptors :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSArray)
-sortDescriptors nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "sortDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortDescriptors nsFetchRequest =
+  sendMessage nsFetchRequest sortDescriptorsSelector
 
 -- | @- setSortDescriptors:@
 setSortDescriptors :: (IsNSFetchRequest nsFetchRequest, IsNSArray value) => nsFetchRequest -> value -> IO ()
-setSortDescriptors nsFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchRequest (mkSelector "setSortDescriptors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSortDescriptors nsFetchRequest value =
+  sendMessage nsFetchRequest setSortDescriptorsSelector (toNSArray value)
 
 -- | @- fetchLimit@
 fetchLimit :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO CULong
-fetchLimit nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "fetchLimit") retCULong []
+fetchLimit nsFetchRequest =
+  sendMessage nsFetchRequest fetchLimitSelector
 
 -- | @- setFetchLimit:@
 setFetchLimit :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> CULong -> IO ()
-setFetchLimit nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setFetchLimit:") retVoid [argCULong value]
+setFetchLimit nsFetchRequest value =
+  sendMessage nsFetchRequest setFetchLimitSelector value
 
 -- | @- affectedStores@
 affectedStores :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSArray)
-affectedStores nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "affectedStores") (retPtr retVoid) [] >>= retainedObject . castPtr
+affectedStores nsFetchRequest =
+  sendMessage nsFetchRequest affectedStoresSelector
 
 -- | @- setAffectedStores:@
 setAffectedStores :: (IsNSFetchRequest nsFetchRequest, IsNSArray value) => nsFetchRequest -> value -> IO ()
-setAffectedStores nsFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchRequest (mkSelector "setAffectedStores:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAffectedStores nsFetchRequest value =
+  sendMessage nsFetchRequest setAffectedStoresSelector (toNSArray value)
 
 -- | @- resultType@
 resultType :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO NSFetchRequestResultType
-resultType nsFetchRequest  =
-    fmap (coerce :: CULong -> NSFetchRequestResultType) $ sendMsg nsFetchRequest (mkSelector "resultType") retCULong []
+resultType nsFetchRequest =
+  sendMessage nsFetchRequest resultTypeSelector
 
 -- | @- setResultType:@
 setResultType :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> NSFetchRequestResultType -> IO ()
-setResultType nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setResultType:") retVoid [argCULong (coerce value)]
+setResultType nsFetchRequest value =
+  sendMessage nsFetchRequest setResultTypeSelector value
 
 -- | @- includesSubentities@
 includesSubentities :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO Bool
-includesSubentities nsFetchRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFetchRequest (mkSelector "includesSubentities") retCULong []
+includesSubentities nsFetchRequest =
+  sendMessage nsFetchRequest includesSubentitiesSelector
 
 -- | @- setIncludesSubentities:@
 setIncludesSubentities :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> Bool -> IO ()
-setIncludesSubentities nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setIncludesSubentities:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesSubentities nsFetchRequest value =
+  sendMessage nsFetchRequest setIncludesSubentitiesSelector value
 
 -- | @- includesPropertyValues@
 includesPropertyValues :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO Bool
-includesPropertyValues nsFetchRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFetchRequest (mkSelector "includesPropertyValues") retCULong []
+includesPropertyValues nsFetchRequest =
+  sendMessage nsFetchRequest includesPropertyValuesSelector
 
 -- | @- setIncludesPropertyValues:@
 setIncludesPropertyValues :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> Bool -> IO ()
-setIncludesPropertyValues nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setIncludesPropertyValues:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesPropertyValues nsFetchRequest value =
+  sendMessage nsFetchRequest setIncludesPropertyValuesSelector value
 
 -- | @- returnsObjectsAsFaults@
 returnsObjectsAsFaults :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO Bool
-returnsObjectsAsFaults nsFetchRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFetchRequest (mkSelector "returnsObjectsAsFaults") retCULong []
+returnsObjectsAsFaults nsFetchRequest =
+  sendMessage nsFetchRequest returnsObjectsAsFaultsSelector
 
 -- | @- setReturnsObjectsAsFaults:@
 setReturnsObjectsAsFaults :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> Bool -> IO ()
-setReturnsObjectsAsFaults nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setReturnsObjectsAsFaults:") retVoid [argCULong (if value then 1 else 0)]
+setReturnsObjectsAsFaults nsFetchRequest value =
+  sendMessage nsFetchRequest setReturnsObjectsAsFaultsSelector value
 
 -- | @- relationshipKeyPathsForPrefetching@
 relationshipKeyPathsForPrefetching :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSArray)
-relationshipKeyPathsForPrefetching nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "relationshipKeyPathsForPrefetching") (retPtr retVoid) [] >>= retainedObject . castPtr
+relationshipKeyPathsForPrefetching nsFetchRequest =
+  sendMessage nsFetchRequest relationshipKeyPathsForPrefetchingSelector
 
 -- | @- setRelationshipKeyPathsForPrefetching:@
 setRelationshipKeyPathsForPrefetching :: (IsNSFetchRequest nsFetchRequest, IsNSArray value) => nsFetchRequest -> value -> IO ()
-setRelationshipKeyPathsForPrefetching nsFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchRequest (mkSelector "setRelationshipKeyPathsForPrefetching:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRelationshipKeyPathsForPrefetching nsFetchRequest value =
+  sendMessage nsFetchRequest setRelationshipKeyPathsForPrefetchingSelector (toNSArray value)
 
 -- | @- includesPendingChanges@
 includesPendingChanges :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO Bool
-includesPendingChanges nsFetchRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFetchRequest (mkSelector "includesPendingChanges") retCULong []
+includesPendingChanges nsFetchRequest =
+  sendMessage nsFetchRequest includesPendingChangesSelector
 
 -- | @- setIncludesPendingChanges:@
 setIncludesPendingChanges :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> Bool -> IO ()
-setIncludesPendingChanges nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setIncludesPendingChanges:") retVoid [argCULong (if value then 1 else 0)]
+setIncludesPendingChanges nsFetchRequest value =
+  sendMessage nsFetchRequest setIncludesPendingChangesSelector value
 
 -- | @- returnsDistinctResults@
 returnsDistinctResults :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO Bool
-returnsDistinctResults nsFetchRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFetchRequest (mkSelector "returnsDistinctResults") retCULong []
+returnsDistinctResults nsFetchRequest =
+  sendMessage nsFetchRequest returnsDistinctResultsSelector
 
 -- | @- setReturnsDistinctResults:@
 setReturnsDistinctResults :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> Bool -> IO ()
-setReturnsDistinctResults nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setReturnsDistinctResults:") retVoid [argCULong (if value then 1 else 0)]
+setReturnsDistinctResults nsFetchRequest value =
+  sendMessage nsFetchRequest setReturnsDistinctResultsSelector value
 
 -- | @- propertiesToFetch@
 propertiesToFetch :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSArray)
-propertiesToFetch nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "propertiesToFetch") (retPtr retVoid) [] >>= retainedObject . castPtr
+propertiesToFetch nsFetchRequest =
+  sendMessage nsFetchRequest propertiesToFetchSelector
 
 -- | @- setPropertiesToFetch:@
 setPropertiesToFetch :: (IsNSFetchRequest nsFetchRequest, IsNSArray value) => nsFetchRequest -> value -> IO ()
-setPropertiesToFetch nsFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchRequest (mkSelector "setPropertiesToFetch:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPropertiesToFetch nsFetchRequest value =
+  sendMessage nsFetchRequest setPropertiesToFetchSelector (toNSArray value)
 
 -- | @- fetchOffset@
 fetchOffset :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO CULong
-fetchOffset nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "fetchOffset") retCULong []
+fetchOffset nsFetchRequest =
+  sendMessage nsFetchRequest fetchOffsetSelector
 
 -- | @- setFetchOffset:@
 setFetchOffset :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> CULong -> IO ()
-setFetchOffset nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setFetchOffset:") retVoid [argCULong value]
+setFetchOffset nsFetchRequest value =
+  sendMessage nsFetchRequest setFetchOffsetSelector value
 
 -- | @- fetchBatchSize@
 fetchBatchSize :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO CULong
-fetchBatchSize nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "fetchBatchSize") retCULong []
+fetchBatchSize nsFetchRequest =
+  sendMessage nsFetchRequest fetchBatchSizeSelector
 
 -- | @- setFetchBatchSize:@
 setFetchBatchSize :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> CULong -> IO ()
-setFetchBatchSize nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setFetchBatchSize:") retVoid [argCULong value]
+setFetchBatchSize nsFetchRequest value =
+  sendMessage nsFetchRequest setFetchBatchSizeSelector value
 
 -- | @- shouldRefreshRefetchedObjects@
 shouldRefreshRefetchedObjects :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO Bool
-shouldRefreshRefetchedObjects nsFetchRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFetchRequest (mkSelector "shouldRefreshRefetchedObjects") retCULong []
+shouldRefreshRefetchedObjects nsFetchRequest =
+  sendMessage nsFetchRequest shouldRefreshRefetchedObjectsSelector
 
 -- | @- setShouldRefreshRefetchedObjects:@
 setShouldRefreshRefetchedObjects :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> Bool -> IO ()
-setShouldRefreshRefetchedObjects nsFetchRequest  value =
-    sendMsg nsFetchRequest (mkSelector "setShouldRefreshRefetchedObjects:") retVoid [argCULong (if value then 1 else 0)]
+setShouldRefreshRefetchedObjects nsFetchRequest value =
+  sendMessage nsFetchRequest setShouldRefreshRefetchedObjectsSelector value
 
 -- | @- propertiesToGroupBy@
 propertiesToGroupBy :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSArray)
-propertiesToGroupBy nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "propertiesToGroupBy") (retPtr retVoid) [] >>= retainedObject . castPtr
+propertiesToGroupBy nsFetchRequest =
+  sendMessage nsFetchRequest propertiesToGroupBySelector
 
 -- | @- setPropertiesToGroupBy:@
 setPropertiesToGroupBy :: (IsNSFetchRequest nsFetchRequest, IsNSArray value) => nsFetchRequest -> value -> IO ()
-setPropertiesToGroupBy nsFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchRequest (mkSelector "setPropertiesToGroupBy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPropertiesToGroupBy nsFetchRequest value =
+  sendMessage nsFetchRequest setPropertiesToGroupBySelector (toNSArray value)
 
 -- | @- havingPredicate@
 havingPredicate :: IsNSFetchRequest nsFetchRequest => nsFetchRequest -> IO (Id NSPredicate)
-havingPredicate nsFetchRequest  =
-    sendMsg nsFetchRequest (mkSelector "havingPredicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+havingPredicate nsFetchRequest =
+  sendMessage nsFetchRequest havingPredicateSelector
 
 -- | @- setHavingPredicate:@
 setHavingPredicate :: (IsNSFetchRequest nsFetchRequest, IsNSPredicate value) => nsFetchRequest -> value -> IO ()
-setHavingPredicate nsFetchRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchRequest (mkSelector "setHavingPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHavingPredicate nsFetchRequest value =
+  sendMessage nsFetchRequest setHavingPredicateSelector (toNSPredicate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchRequestWithEntityName:@
-fetchRequestWithEntityNameSelector :: Selector
+fetchRequestWithEntityNameSelector :: Selector '[Id NSString] (Id NSFetchRequest)
 fetchRequestWithEntityNameSelector = mkSelector "fetchRequestWithEntityName:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSFetchRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithEntityName:@
-initWithEntityNameSelector :: Selector
+initWithEntityNameSelector :: Selector '[Id NSString] (Id NSFetchRequest)
 initWithEntityNameSelector = mkSelector "initWithEntityName:"
 
 -- | @Selector@ for @execute:@
-executeSelector :: Selector
+executeSelector :: Selector '[Id NSError] (Id NSArray)
 executeSelector = mkSelector "execute:"
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] (Id NSEntityDescription)
 entitySelector = mkSelector "entity"
 
 -- | @Selector@ for @setEntity:@
-setEntitySelector :: Selector
+setEntitySelector :: Selector '[Id NSEntityDescription] ()
 setEntitySelector = mkSelector "setEntity:"
 
 -- | @Selector@ for @entityName@
-entityNameSelector :: Selector
+entityNameSelector :: Selector '[] (Id NSString)
 entityNameSelector = mkSelector "entityName"
 
 -- | @Selector@ for @predicate@
-predicateSelector :: Selector
+predicateSelector :: Selector '[] (Id NSPredicate)
 predicateSelector = mkSelector "predicate"
 
 -- | @Selector@ for @setPredicate:@
-setPredicateSelector :: Selector
+setPredicateSelector :: Selector '[Id NSPredicate] ()
 setPredicateSelector = mkSelector "setPredicate:"
 
 -- | @Selector@ for @sortDescriptors@
-sortDescriptorsSelector :: Selector
+sortDescriptorsSelector :: Selector '[] (Id NSArray)
 sortDescriptorsSelector = mkSelector "sortDescriptors"
 
 -- | @Selector@ for @setSortDescriptors:@
-setSortDescriptorsSelector :: Selector
+setSortDescriptorsSelector :: Selector '[Id NSArray] ()
 setSortDescriptorsSelector = mkSelector "setSortDescriptors:"
 
 -- | @Selector@ for @fetchLimit@
-fetchLimitSelector :: Selector
+fetchLimitSelector :: Selector '[] CULong
 fetchLimitSelector = mkSelector "fetchLimit"
 
 -- | @Selector@ for @setFetchLimit:@
-setFetchLimitSelector :: Selector
+setFetchLimitSelector :: Selector '[CULong] ()
 setFetchLimitSelector = mkSelector "setFetchLimit:"
 
 -- | @Selector@ for @affectedStores@
-affectedStoresSelector :: Selector
+affectedStoresSelector :: Selector '[] (Id NSArray)
 affectedStoresSelector = mkSelector "affectedStores"
 
 -- | @Selector@ for @setAffectedStores:@
-setAffectedStoresSelector :: Selector
+setAffectedStoresSelector :: Selector '[Id NSArray] ()
 setAffectedStoresSelector = mkSelector "setAffectedStores:"
 
 -- | @Selector@ for @resultType@
-resultTypeSelector :: Selector
+resultTypeSelector :: Selector '[] NSFetchRequestResultType
 resultTypeSelector = mkSelector "resultType"
 
 -- | @Selector@ for @setResultType:@
-setResultTypeSelector :: Selector
+setResultTypeSelector :: Selector '[NSFetchRequestResultType] ()
 setResultTypeSelector = mkSelector "setResultType:"
 
 -- | @Selector@ for @includesSubentities@
-includesSubentitiesSelector :: Selector
+includesSubentitiesSelector :: Selector '[] Bool
 includesSubentitiesSelector = mkSelector "includesSubentities"
 
 -- | @Selector@ for @setIncludesSubentities:@
-setIncludesSubentitiesSelector :: Selector
+setIncludesSubentitiesSelector :: Selector '[Bool] ()
 setIncludesSubentitiesSelector = mkSelector "setIncludesSubentities:"
 
 -- | @Selector@ for @includesPropertyValues@
-includesPropertyValuesSelector :: Selector
+includesPropertyValuesSelector :: Selector '[] Bool
 includesPropertyValuesSelector = mkSelector "includesPropertyValues"
 
 -- | @Selector@ for @setIncludesPropertyValues:@
-setIncludesPropertyValuesSelector :: Selector
+setIncludesPropertyValuesSelector :: Selector '[Bool] ()
 setIncludesPropertyValuesSelector = mkSelector "setIncludesPropertyValues:"
 
 -- | @Selector@ for @returnsObjectsAsFaults@
-returnsObjectsAsFaultsSelector :: Selector
+returnsObjectsAsFaultsSelector :: Selector '[] Bool
 returnsObjectsAsFaultsSelector = mkSelector "returnsObjectsAsFaults"
 
 -- | @Selector@ for @setReturnsObjectsAsFaults:@
-setReturnsObjectsAsFaultsSelector :: Selector
+setReturnsObjectsAsFaultsSelector :: Selector '[Bool] ()
 setReturnsObjectsAsFaultsSelector = mkSelector "setReturnsObjectsAsFaults:"
 
 -- | @Selector@ for @relationshipKeyPathsForPrefetching@
-relationshipKeyPathsForPrefetchingSelector :: Selector
+relationshipKeyPathsForPrefetchingSelector :: Selector '[] (Id NSArray)
 relationshipKeyPathsForPrefetchingSelector = mkSelector "relationshipKeyPathsForPrefetching"
 
 -- | @Selector@ for @setRelationshipKeyPathsForPrefetching:@
-setRelationshipKeyPathsForPrefetchingSelector :: Selector
+setRelationshipKeyPathsForPrefetchingSelector :: Selector '[Id NSArray] ()
 setRelationshipKeyPathsForPrefetchingSelector = mkSelector "setRelationshipKeyPathsForPrefetching:"
 
 -- | @Selector@ for @includesPendingChanges@
-includesPendingChangesSelector :: Selector
+includesPendingChangesSelector :: Selector '[] Bool
 includesPendingChangesSelector = mkSelector "includesPendingChanges"
 
 -- | @Selector@ for @setIncludesPendingChanges:@
-setIncludesPendingChangesSelector :: Selector
+setIncludesPendingChangesSelector :: Selector '[Bool] ()
 setIncludesPendingChangesSelector = mkSelector "setIncludesPendingChanges:"
 
 -- | @Selector@ for @returnsDistinctResults@
-returnsDistinctResultsSelector :: Selector
+returnsDistinctResultsSelector :: Selector '[] Bool
 returnsDistinctResultsSelector = mkSelector "returnsDistinctResults"
 
 -- | @Selector@ for @setReturnsDistinctResults:@
-setReturnsDistinctResultsSelector :: Selector
+setReturnsDistinctResultsSelector :: Selector '[Bool] ()
 setReturnsDistinctResultsSelector = mkSelector "setReturnsDistinctResults:"
 
 -- | @Selector@ for @propertiesToFetch@
-propertiesToFetchSelector :: Selector
+propertiesToFetchSelector :: Selector '[] (Id NSArray)
 propertiesToFetchSelector = mkSelector "propertiesToFetch"
 
 -- | @Selector@ for @setPropertiesToFetch:@
-setPropertiesToFetchSelector :: Selector
+setPropertiesToFetchSelector :: Selector '[Id NSArray] ()
 setPropertiesToFetchSelector = mkSelector "setPropertiesToFetch:"
 
 -- | @Selector@ for @fetchOffset@
-fetchOffsetSelector :: Selector
+fetchOffsetSelector :: Selector '[] CULong
 fetchOffsetSelector = mkSelector "fetchOffset"
 
 -- | @Selector@ for @setFetchOffset:@
-setFetchOffsetSelector :: Selector
+setFetchOffsetSelector :: Selector '[CULong] ()
 setFetchOffsetSelector = mkSelector "setFetchOffset:"
 
 -- | @Selector@ for @fetchBatchSize@
-fetchBatchSizeSelector :: Selector
+fetchBatchSizeSelector :: Selector '[] CULong
 fetchBatchSizeSelector = mkSelector "fetchBatchSize"
 
 -- | @Selector@ for @setFetchBatchSize:@
-setFetchBatchSizeSelector :: Selector
+setFetchBatchSizeSelector :: Selector '[CULong] ()
 setFetchBatchSizeSelector = mkSelector "setFetchBatchSize:"
 
 -- | @Selector@ for @shouldRefreshRefetchedObjects@
-shouldRefreshRefetchedObjectsSelector :: Selector
+shouldRefreshRefetchedObjectsSelector :: Selector '[] Bool
 shouldRefreshRefetchedObjectsSelector = mkSelector "shouldRefreshRefetchedObjects"
 
 -- | @Selector@ for @setShouldRefreshRefetchedObjects:@
-setShouldRefreshRefetchedObjectsSelector :: Selector
+setShouldRefreshRefetchedObjectsSelector :: Selector '[Bool] ()
 setShouldRefreshRefetchedObjectsSelector = mkSelector "setShouldRefreshRefetchedObjects:"
 
 -- | @Selector@ for @propertiesToGroupBy@
-propertiesToGroupBySelector :: Selector
+propertiesToGroupBySelector :: Selector '[] (Id NSArray)
 propertiesToGroupBySelector = mkSelector "propertiesToGroupBy"
 
 -- | @Selector@ for @setPropertiesToGroupBy:@
-setPropertiesToGroupBySelector :: Selector
+setPropertiesToGroupBySelector :: Selector '[Id NSArray] ()
 setPropertiesToGroupBySelector = mkSelector "setPropertiesToGroupBy:"
 
 -- | @Selector@ for @havingPredicate@
-havingPredicateSelector :: Selector
+havingPredicateSelector :: Selector '[] (Id NSPredicate)
 havingPredicateSelector = mkSelector "havingPredicate"
 
 -- | @Selector@ for @setHavingPredicate:@
-setHavingPredicateSelector :: Selector
+setHavingPredicateSelector :: Selector '[Id NSPredicate] ()
 setHavingPredicateSelector = mkSelector "setHavingPredicate:"
 

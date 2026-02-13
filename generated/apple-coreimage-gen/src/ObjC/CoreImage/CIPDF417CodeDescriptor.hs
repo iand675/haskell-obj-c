@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.CoreImage.CIPDF417CodeDescriptor
   , isCompact
   , rowCount
   , columnCount
-  , initWithPayload_isCompact_rowCount_columnCountSelector
+  , columnCountSelector
   , descriptorWithPayload_isCompact_rowCount_columnCountSelector
   , errorCorrectedPayloadSelector
+  , initWithPayload_isCompact_rowCount_columnCountSelector
   , isCompactSelector
   , rowCountSelector
-  , columnCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,9 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPayload:isCompact:rowCount:columnCount:@
 initWithPayload_isCompact_rowCount_columnCount :: (IsCIPDF417CodeDescriptor cipdF417CodeDescriptor, IsNSData errorCorrectedPayload) => cipdF417CodeDescriptor -> errorCorrectedPayload -> Bool -> CLong -> CLong -> IO (Id CIPDF417CodeDescriptor)
-initWithPayload_isCompact_rowCount_columnCount cipdF417CodeDescriptor  errorCorrectedPayload isCompact rowCount columnCount =
-  withObjCPtr errorCorrectedPayload $ \raw_errorCorrectedPayload ->
-      sendMsg cipdF417CodeDescriptor (mkSelector "initWithPayload:isCompact:rowCount:columnCount:") (retPtr retVoid) [argPtr (castPtr raw_errorCorrectedPayload :: Ptr ()), argCULong (if isCompact then 1 else 0), argCLong rowCount, argCLong columnCount] >>= ownedObject . castPtr
+initWithPayload_isCompact_rowCount_columnCount cipdF417CodeDescriptor errorCorrectedPayload isCompact rowCount columnCount =
+  sendOwnedMessage cipdF417CodeDescriptor initWithPayload_isCompact_rowCount_columnCountSelector (toNSData errorCorrectedPayload) isCompact rowCount columnCount
 
 -- | Creates an PDF417 code descriptor for the given payload and parameters.
 --
@@ -62,8 +58,7 @@ descriptorWithPayload_isCompact_rowCount_columnCount :: IsNSData errorCorrectedP
 descriptorWithPayload_isCompact_rowCount_columnCount errorCorrectedPayload isCompact rowCount columnCount =
   do
     cls' <- getRequiredClass "CIPDF417CodeDescriptor"
-    withObjCPtr errorCorrectedPayload $ \raw_errorCorrectedPayload ->
-      sendClassMsg cls' (mkSelector "descriptorWithPayload:isCompact:rowCount:columnCount:") (retPtr retVoid) [argPtr (castPtr raw_errorCorrectedPayload :: Ptr ()), argCULong (if isCompact then 1 else 0), argCLong rowCount, argCLong columnCount] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithPayload_isCompact_rowCount_columnCountSelector (toNSData errorCorrectedPayload) isCompact rowCount columnCount
 
 -- | The error-corrected payload containing the data encoded in the PDF417 code symbol.
 --
@@ -73,8 +68,8 @@ descriptorWithPayload_isCompact_rowCount_columnCount errorCorrectedPayload isCom
 --
 -- ObjC selector: @- errorCorrectedPayload@
 errorCorrectedPayload :: IsCIPDF417CodeDescriptor cipdF417CodeDescriptor => cipdF417CodeDescriptor -> IO (Id NSData)
-errorCorrectedPayload cipdF417CodeDescriptor  =
-    sendMsg cipdF417CodeDescriptor (mkSelector "errorCorrectedPayload") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorCorrectedPayload cipdF417CodeDescriptor =
+  sendMessage cipdF417CodeDescriptor errorCorrectedPayloadSelector
 
 -- | A boolean value telling if the PDF417 code is compact.
 --
@@ -82,8 +77,8 @@ errorCorrectedPayload cipdF417CodeDescriptor  =
 --
 -- ObjC selector: @- isCompact@
 isCompact :: IsCIPDF417CodeDescriptor cipdF417CodeDescriptor => cipdF417CodeDescriptor -> IO Bool
-isCompact cipdF417CodeDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cipdF417CodeDescriptor (mkSelector "isCompact") retCULong []
+isCompact cipdF417CodeDescriptor =
+  sendMessage cipdF417CodeDescriptor isCompactSelector
 
 -- | The number of rows in the PDF417 code symbol.
 --
@@ -91,8 +86,8 @@ isCompact cipdF417CodeDescriptor  =
 --
 -- ObjC selector: @- rowCount@
 rowCount :: IsCIPDF417CodeDescriptor cipdF417CodeDescriptor => cipdF417CodeDescriptor -> IO CLong
-rowCount cipdF417CodeDescriptor  =
-    sendMsg cipdF417CodeDescriptor (mkSelector "rowCount") retCLong []
+rowCount cipdF417CodeDescriptor =
+  sendMessage cipdF417CodeDescriptor rowCountSelector
 
 -- | The number of columns in the PDF417 code symbol.
 --
@@ -100,34 +95,34 @@ rowCount cipdF417CodeDescriptor  =
 --
 -- ObjC selector: @- columnCount@
 columnCount :: IsCIPDF417CodeDescriptor cipdF417CodeDescriptor => cipdF417CodeDescriptor -> IO CLong
-columnCount cipdF417CodeDescriptor  =
-    sendMsg cipdF417CodeDescriptor (mkSelector "columnCount") retCLong []
+columnCount cipdF417CodeDescriptor =
+  sendMessage cipdF417CodeDescriptor columnCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPayload:isCompact:rowCount:columnCount:@
-initWithPayload_isCompact_rowCount_columnCountSelector :: Selector
+initWithPayload_isCompact_rowCount_columnCountSelector :: Selector '[Id NSData, Bool, CLong, CLong] (Id CIPDF417CodeDescriptor)
 initWithPayload_isCompact_rowCount_columnCountSelector = mkSelector "initWithPayload:isCompact:rowCount:columnCount:"
 
 -- | @Selector@ for @descriptorWithPayload:isCompact:rowCount:columnCount:@
-descriptorWithPayload_isCompact_rowCount_columnCountSelector :: Selector
+descriptorWithPayload_isCompact_rowCount_columnCountSelector :: Selector '[Id NSData, Bool, CLong, CLong] (Id CIPDF417CodeDescriptor)
 descriptorWithPayload_isCompact_rowCount_columnCountSelector = mkSelector "descriptorWithPayload:isCompact:rowCount:columnCount:"
 
 -- | @Selector@ for @errorCorrectedPayload@
-errorCorrectedPayloadSelector :: Selector
+errorCorrectedPayloadSelector :: Selector '[] (Id NSData)
 errorCorrectedPayloadSelector = mkSelector "errorCorrectedPayload"
 
 -- | @Selector@ for @isCompact@
-isCompactSelector :: Selector
+isCompactSelector :: Selector '[] Bool
 isCompactSelector = mkSelector "isCompact"
 
 -- | @Selector@ for @rowCount@
-rowCountSelector :: Selector
+rowCountSelector :: Selector '[] CLong
 rowCountSelector = mkSelector "rowCount"
 
 -- | @Selector@ for @columnCount@
-columnCountSelector :: Selector
+columnCountSelector :: Selector '[] CLong
 columnCountSelector = mkSelector "columnCount"
 

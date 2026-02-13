@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AVFoundation.AVAsynchronousCIImageFilteringRequest
   , finishWithImage_context
   , finishWithError
   , sourceImage
-  , finishWithImage_contextSelector
   , finishWithErrorSelector
+  , finishWithImage_contextSelector
   , sourceImageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,39 +35,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- finishWithImage:context:@
 finishWithImage_context :: (IsAVAsynchronousCIImageFilteringRequest avAsynchronousCIImageFilteringRequest, IsCIImage filteredImage, IsCIContext context) => avAsynchronousCIImageFilteringRequest -> filteredImage -> context -> IO ()
-finishWithImage_context avAsynchronousCIImageFilteringRequest  filteredImage context =
-  withObjCPtr filteredImage $ \raw_filteredImage ->
-    withObjCPtr context $ \raw_context ->
-        sendMsg avAsynchronousCIImageFilteringRequest (mkSelector "finishWithImage:context:") retVoid [argPtr (castPtr raw_filteredImage :: Ptr ()), argPtr (castPtr raw_context :: Ptr ())]
+finishWithImage_context avAsynchronousCIImageFilteringRequest filteredImage context =
+  sendMessage avAsynchronousCIImageFilteringRequest finishWithImage_contextSelector (toCIImage filteredImage) (toCIContext context)
 
 -- | Callback the filter should call when filtering failed. The error parameter should describe the actual error.
 --
 -- ObjC selector: @- finishWithError:@
 finishWithError :: (IsAVAsynchronousCIImageFilteringRequest avAsynchronousCIImageFilteringRequest, IsNSError error_) => avAsynchronousCIImageFilteringRequest -> error_ -> IO ()
-finishWithError avAsynchronousCIImageFilteringRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg avAsynchronousCIImageFilteringRequest (mkSelector "finishWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+finishWithError avAsynchronousCIImageFilteringRequest error_ =
+  sendMessage avAsynchronousCIImageFilteringRequest finishWithErrorSelector (toNSError error_)
 
 -- | CIImage for the first enabled source video track. Unlike AVAsynchronousVideoCompositionRequest, renderContext.renderTransform is already applied to the source image.
 --
 -- ObjC selector: @- sourceImage@
 sourceImage :: IsAVAsynchronousCIImageFilteringRequest avAsynchronousCIImageFilteringRequest => avAsynchronousCIImageFilteringRequest -> IO (Id CIImage)
-sourceImage avAsynchronousCIImageFilteringRequest  =
-    sendMsg avAsynchronousCIImageFilteringRequest (mkSelector "sourceImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceImage avAsynchronousCIImageFilteringRequest =
+  sendMessage avAsynchronousCIImageFilteringRequest sourceImageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @finishWithImage:context:@
-finishWithImage_contextSelector :: Selector
+finishWithImage_contextSelector :: Selector '[Id CIImage, Id CIContext] ()
 finishWithImage_contextSelector = mkSelector "finishWithImage:context:"
 
 -- | @Selector@ for @finishWithError:@
-finishWithErrorSelector :: Selector
+finishWithErrorSelector :: Selector '[Id NSError] ()
 finishWithErrorSelector = mkSelector "finishWithError:"
 
 -- | @Selector@ for @sourceImage@
-sourceImageSelector :: Selector
+sourceImageSelector :: Selector '[] (Id CIImage)
 sourceImageSelector = mkSelector "sourceImage"
 

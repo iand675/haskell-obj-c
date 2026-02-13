@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.Foundation.NSPropertyListSerialization
   , propertyListWithStream_options_format_error
   , dataFromPropertyList_format_errorDescription
   , propertyListFromData_mutabilityOption_format_errorDescription
-  , propertyList_isValidForFormatSelector
+  , dataFromPropertyList_format_errorDescriptionSelector
   , dataWithPropertyList_format_options_errorSelector
-  , writePropertyList_toStream_format_options_errorSelector
+  , propertyListFromData_mutabilityOption_format_errorDescriptionSelector
   , propertyListWithData_options_format_errorSelector
   , propertyListWithStream_options_format_errorSelector
-  , dataFromPropertyList_format_errorDescriptionSelector
-  , propertyListFromData_mutabilityOption_format_errorDescriptionSelector
+  , propertyList_isValidForFormatSelector
+  , writePropertyList_toStream_format_options_errorSelector
 
   -- * Enum types
   , NSPropertyListFormat(NSPropertyListFormat)
@@ -34,15 +35,11 @@ module ObjC.Foundation.NSPropertyListSerialization
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,89 +51,79 @@ propertyList_isValidForFormat :: RawId -> NSPropertyListFormat -> IO Bool
 propertyList_isValidForFormat plist format =
   do
     cls' <- getRequiredClass "NSPropertyListSerialization"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "propertyList:isValidForFormat:") retCULong [argPtr (castPtr (unRawId plist) :: Ptr ()), argCULong (coerce format)]
+    sendClassMessage cls' propertyList_isValidForFormatSelector plist format
 
 -- | @+ dataWithPropertyList:format:options:error:@
 dataWithPropertyList_format_options_error :: IsNSError error_ => RawId -> NSPropertyListFormat -> CULong -> error_ -> IO (Id NSData)
 dataWithPropertyList_format_options_error plist format opt error_ =
   do
     cls' <- getRequiredClass "NSPropertyListSerialization"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "dataWithPropertyList:format:options:error:") (retPtr retVoid) [argPtr (castPtr (unRawId plist) :: Ptr ()), argCULong (coerce format), argCULong opt, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dataWithPropertyList_format_options_errorSelector plist format opt (toNSError error_)
 
 -- | @+ writePropertyList:toStream:format:options:error:@
 writePropertyList_toStream_format_options_error :: (IsNSOutputStream stream, IsNSError error_) => RawId -> stream -> NSPropertyListFormat -> CULong -> error_ -> IO CLong
 writePropertyList_toStream_format_options_error plist stream format opt error_ =
   do
     cls' <- getRequiredClass "NSPropertyListSerialization"
-    withObjCPtr stream $ \raw_stream ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "writePropertyList:toStream:format:options:error:") retCLong [argPtr (castPtr (unRawId plist) :: Ptr ()), argPtr (castPtr raw_stream :: Ptr ()), argCULong (coerce format), argCULong opt, argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' writePropertyList_toStream_format_options_errorSelector plist (toNSOutputStream stream) format opt (toNSError error_)
 
 -- | @+ propertyListWithData:options:format:error:@
 propertyListWithData_options_format_error :: (IsNSData data_, IsNSError error_) => data_ -> NSPropertyListMutabilityOptions -> Ptr NSPropertyListFormat -> error_ -> IO RawId
 propertyListWithData_options_format_error data_ opt format error_ =
   do
     cls' <- getRequiredClass "NSPropertyListSerialization"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "propertyListWithData:options:format:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argCULong (coerce opt), argPtr format, argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' propertyListWithData_options_format_errorSelector (toNSData data_) opt format (toNSError error_)
 
 -- | @+ propertyListWithStream:options:format:error:@
 propertyListWithStream_options_format_error :: (IsNSInputStream stream, IsNSError error_) => stream -> NSPropertyListMutabilityOptions -> Ptr NSPropertyListFormat -> error_ -> IO RawId
 propertyListWithStream_options_format_error stream opt format error_ =
   do
     cls' <- getRequiredClass "NSPropertyListSerialization"
-    withObjCPtr stream $ \raw_stream ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "propertyListWithStream:options:format:error:") (retPtr retVoid) [argPtr (castPtr raw_stream :: Ptr ()), argCULong (coerce opt), argPtr format, argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' propertyListWithStream_options_format_errorSelector (toNSInputStream stream) opt format (toNSError error_)
 
 -- | @+ dataFromPropertyList:format:errorDescription:@
 dataFromPropertyList_format_errorDescription :: IsNSString errorString => RawId -> NSPropertyListFormat -> errorString -> IO (Id NSData)
 dataFromPropertyList_format_errorDescription plist format errorString =
   do
     cls' <- getRequiredClass "NSPropertyListSerialization"
-    withObjCPtr errorString $ \raw_errorString ->
-      sendClassMsg cls' (mkSelector "dataFromPropertyList:format:errorDescription:") (retPtr retVoid) [argPtr (castPtr (unRawId plist) :: Ptr ()), argCULong (coerce format), argPtr (castPtr raw_errorString :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dataFromPropertyList_format_errorDescriptionSelector plist format (toNSString errorString)
 
 -- | @+ propertyListFromData:mutabilityOption:format:errorDescription:@
 propertyListFromData_mutabilityOption_format_errorDescription :: (IsNSData data_, IsNSString errorString) => data_ -> NSPropertyListMutabilityOptions -> Ptr NSPropertyListFormat -> errorString -> IO RawId
 propertyListFromData_mutabilityOption_format_errorDescription data_ opt format errorString =
   do
     cls' <- getRequiredClass "NSPropertyListSerialization"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr errorString $ \raw_errorString ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "propertyListFromData:mutabilityOption:format:errorDescription:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argCULong (coerce opt), argPtr format, argPtr (castPtr raw_errorString :: Ptr ())]
+    sendClassMessage cls' propertyListFromData_mutabilityOption_format_errorDescriptionSelector (toNSData data_) opt format (toNSString errorString)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @propertyList:isValidForFormat:@
-propertyList_isValidForFormatSelector :: Selector
+propertyList_isValidForFormatSelector :: Selector '[RawId, NSPropertyListFormat] Bool
 propertyList_isValidForFormatSelector = mkSelector "propertyList:isValidForFormat:"
 
 -- | @Selector@ for @dataWithPropertyList:format:options:error:@
-dataWithPropertyList_format_options_errorSelector :: Selector
+dataWithPropertyList_format_options_errorSelector :: Selector '[RawId, NSPropertyListFormat, CULong, Id NSError] (Id NSData)
 dataWithPropertyList_format_options_errorSelector = mkSelector "dataWithPropertyList:format:options:error:"
 
 -- | @Selector@ for @writePropertyList:toStream:format:options:error:@
-writePropertyList_toStream_format_options_errorSelector :: Selector
+writePropertyList_toStream_format_options_errorSelector :: Selector '[RawId, Id NSOutputStream, NSPropertyListFormat, CULong, Id NSError] CLong
 writePropertyList_toStream_format_options_errorSelector = mkSelector "writePropertyList:toStream:format:options:error:"
 
 -- | @Selector@ for @propertyListWithData:options:format:error:@
-propertyListWithData_options_format_errorSelector :: Selector
+propertyListWithData_options_format_errorSelector :: Selector '[Id NSData, NSPropertyListMutabilityOptions, Ptr NSPropertyListFormat, Id NSError] RawId
 propertyListWithData_options_format_errorSelector = mkSelector "propertyListWithData:options:format:error:"
 
 -- | @Selector@ for @propertyListWithStream:options:format:error:@
-propertyListWithStream_options_format_errorSelector :: Selector
+propertyListWithStream_options_format_errorSelector :: Selector '[Id NSInputStream, NSPropertyListMutabilityOptions, Ptr NSPropertyListFormat, Id NSError] RawId
 propertyListWithStream_options_format_errorSelector = mkSelector "propertyListWithStream:options:format:error:"
 
 -- | @Selector@ for @dataFromPropertyList:format:errorDescription:@
-dataFromPropertyList_format_errorDescriptionSelector :: Selector
+dataFromPropertyList_format_errorDescriptionSelector :: Selector '[RawId, NSPropertyListFormat, Id NSString] (Id NSData)
 dataFromPropertyList_format_errorDescriptionSelector = mkSelector "dataFromPropertyList:format:errorDescription:"
 
 -- | @Selector@ for @propertyListFromData:mutabilityOption:format:errorDescription:@
-propertyListFromData_mutabilityOption_format_errorDescriptionSelector :: Selector
+propertyListFromData_mutabilityOption_format_errorDescriptionSelector :: Selector '[Id NSData, NSPropertyListMutabilityOptions, Ptr NSPropertyListFormat, Id NSString] RawId
 propertyListFromData_mutabilityOption_format_errorDescriptionSelector = mkSelector "propertyListFromData:mutabilityOption:format:errorDescription:"
 

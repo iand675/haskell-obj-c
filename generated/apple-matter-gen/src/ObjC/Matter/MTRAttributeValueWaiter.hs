@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRAttributeValueWaiter
   , new
   , cancel
   , uuid
+  , cancelSelector
   , initSelector
   , newSelector
-  , cancelSelector
   , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,45 +32,45 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRAttributeValueWaiter mtrAttributeValueWaiter => mtrAttributeValueWaiter -> IO (Id MTRAttributeValueWaiter)
-init_ mtrAttributeValueWaiter  =
-    sendMsg mtrAttributeValueWaiter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrAttributeValueWaiter =
+  sendOwnedMessage mtrAttributeValueWaiter initSelector
 
 -- | @+ new@
 new :: IO (Id MTRAttributeValueWaiter)
 new  =
   do
     cls' <- getRequiredClass "MTRAttributeValueWaiter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Cancel the wait for the set of attribute path/value pairs represented by this MTRAttributeValueWaiter.  If the completion has not been called yet, it will becalled with MTRErrorCodeCancelled.
 --
 -- ObjC selector: @- cancel@
 cancel :: IsMTRAttributeValueWaiter mtrAttributeValueWaiter => mtrAttributeValueWaiter -> IO ()
-cancel mtrAttributeValueWaiter  =
-    sendMsg mtrAttributeValueWaiter (mkSelector "cancel") retVoid []
+cancel mtrAttributeValueWaiter =
+  sendMessage mtrAttributeValueWaiter cancelSelector
 
 -- | @- UUID@
 uuid :: IsMTRAttributeValueWaiter mtrAttributeValueWaiter => mtrAttributeValueWaiter -> IO (Id NSUUID)
-uuid mtrAttributeValueWaiter  =
-    sendMsg mtrAttributeValueWaiter (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid mtrAttributeValueWaiter =
+  sendMessage mtrAttributeValueWaiter uuidSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRAttributeValueWaiter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRAttributeValueWaiter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "UUID"
 

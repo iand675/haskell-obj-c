@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,24 +32,24 @@ module ObjC.AVFoundation.AVCaptureMovieFileOutput
   , spatialVideoCaptureSupported
   , spatialVideoCaptureEnabled
   , setSpatialVideoCaptureEnabled
-  , initSelector
-  , newSelector
-  , supportedOutputSettingsKeysForConnectionSelector
-  , outputSettingsForConnectionSelector
-  , setOutputSettings_forConnectionSelector
-  , recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnectionSelector
-  , setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnectionSelector
-  , setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBehaviorConditionsSelector
-  , metadataSelector
-  , setMetadataSelector
   , availableVideoCodecTypesSelector
-  , primaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector
-  , setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector
-  , primaryConstituentDeviceSwitchingBehaviorForRecordingSelector
+  , initSelector
+  , metadataSelector
+  , newSelector
+  , outputSettingsForConnectionSelector
   , primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecordingSelector
-  , spatialVideoCaptureSupportedSelector
-  , spatialVideoCaptureEnabledSelector
+  , primaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector
+  , primaryConstituentDeviceSwitchingBehaviorForRecordingSelector
+  , recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnectionSelector
+  , setMetadataSelector
+  , setOutputSettings_forConnectionSelector
+  , setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector
+  , setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBehaviorConditionsSelector
+  , setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnectionSelector
   , setSpatialVideoCaptureEnabledSelector
+  , spatialVideoCaptureEnabledSelector
+  , spatialVideoCaptureSupportedSelector
+  , supportedOutputSettingsKeysForConnectionSelector
 
   -- * Enum types
   , AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions(AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions)
@@ -64,15 +65,11 @@ module ObjC.AVFoundation.AVCaptureMovieFileOutput
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -82,15 +79,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> IO (Id AVCaptureMovieFileOutput)
-init_ avCaptureMovieFileOutput  =
-    sendMsg avCaptureMovieFileOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureMovieFileOutput =
+  sendOwnedMessage avCaptureMovieFileOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureMovieFileOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureMovieFileOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | supportedOutputSettingsKeysForConnection:
 --
@@ -102,9 +99,8 @@ new  =
 --
 -- ObjC selector: @- supportedOutputSettingsKeysForConnection:@
 supportedOutputSettingsKeysForConnection :: (IsAVCaptureMovieFileOutput avCaptureMovieFileOutput, IsAVCaptureConnection connection) => avCaptureMovieFileOutput -> connection -> IO (Id NSArray)
-supportedOutputSettingsKeysForConnection avCaptureMovieFileOutput  connection =
-  withObjCPtr connection $ \raw_connection ->
-      sendMsg avCaptureMovieFileOutput (mkSelector "supportedOutputSettingsKeysForConnection:") (retPtr retVoid) [argPtr (castPtr raw_connection :: Ptr ())] >>= retainedObject . castPtr
+supportedOutputSettingsKeysForConnection avCaptureMovieFileOutput connection =
+  sendMessage avCaptureMovieFileOutput supportedOutputSettingsKeysForConnectionSelector (toAVCaptureConnection connection)
 
 -- | outputSettingsForConnection:
 --
@@ -118,9 +114,8 @@ supportedOutputSettingsKeysForConnection avCaptureMovieFileOutput  connection =
 --
 -- ObjC selector: @- outputSettingsForConnection:@
 outputSettingsForConnection :: (IsAVCaptureMovieFileOutput avCaptureMovieFileOutput, IsAVCaptureConnection connection) => avCaptureMovieFileOutput -> connection -> IO (Id NSDictionary)
-outputSettingsForConnection avCaptureMovieFileOutput  connection =
-  withObjCPtr connection $ \raw_connection ->
-      sendMsg avCaptureMovieFileOutput (mkSelector "outputSettingsForConnection:") (retPtr retVoid) [argPtr (castPtr raw_connection :: Ptr ())] >>= retainedObject . castPtr
+outputSettingsForConnection avCaptureMovieFileOutput connection =
+  sendMessage avCaptureMovieFileOutput outputSettingsForConnectionSelector (toAVCaptureConnection connection)
 
 -- | setOutputSettings:forConnection:
 --
@@ -138,10 +133,8 @@ outputSettingsForConnection avCaptureMovieFileOutput  connection =
 --
 -- ObjC selector: @- setOutputSettings:forConnection:@
 setOutputSettings_forConnection :: (IsAVCaptureMovieFileOutput avCaptureMovieFileOutput, IsNSDictionary outputSettings, IsAVCaptureConnection connection) => avCaptureMovieFileOutput -> outputSettings -> connection -> IO ()
-setOutputSettings_forConnection avCaptureMovieFileOutput  outputSettings connection =
-  withObjCPtr outputSettings $ \raw_outputSettings ->
-    withObjCPtr connection $ \raw_connection ->
-        sendMsg avCaptureMovieFileOutput (mkSelector "setOutputSettings:forConnection:") retVoid [argPtr (castPtr raw_outputSettings :: Ptr ()), argPtr (castPtr raw_connection :: Ptr ())]
+setOutputSettings_forConnection avCaptureMovieFileOutput outputSettings connection =
+  sendMessage avCaptureMovieFileOutput setOutputSettings_forConnectionSelector (toNSDictionary outputSettings) (toAVCaptureConnection connection)
 
 -- | recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection:
 --
@@ -153,9 +146,8 @@ setOutputSettings_forConnection avCaptureMovieFileOutput  outputSettings connect
 --
 -- ObjC selector: @- recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection:@
 recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection :: (IsAVCaptureMovieFileOutput avCaptureMovieFileOutput, IsAVCaptureConnection connection) => avCaptureMovieFileOutput -> connection -> IO Bool
-recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection avCaptureMovieFileOutput  connection =
-  withObjCPtr connection $ \raw_connection ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureMovieFileOutput (mkSelector "recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection:") retCULong [argPtr (castPtr raw_connection :: Ptr ())]
+recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection avCaptureMovieFileOutput connection =
+  sendMessage avCaptureMovieFileOutput recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnectionSelector (toAVCaptureConnection connection)
 
 -- | setRecordsVideoOrientationAndMirroringChanges:asMetadataTrackForConnection:
 --
@@ -177,9 +169,8 @@ recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection avCapture
 --
 -- ObjC selector: @- setRecordsVideoOrientationAndMirroringChanges:asMetadataTrackForConnection:@
 setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnection :: (IsAVCaptureMovieFileOutput avCaptureMovieFileOutput, IsAVCaptureConnection connection) => avCaptureMovieFileOutput -> Bool -> connection -> IO ()
-setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnection avCaptureMovieFileOutput  doRecordChanges connection =
-  withObjCPtr connection $ \raw_connection ->
-      sendMsg avCaptureMovieFileOutput (mkSelector "setRecordsVideoOrientationAndMirroringChanges:asMetadataTrackForConnection:") retVoid [argCULong (if doRecordChanges then 1 else 0), argPtr (castPtr raw_connection :: Ptr ())]
+setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnection avCaptureMovieFileOutput doRecordChanges connection =
+  sendMessage avCaptureMovieFileOutput setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnectionSelector doRecordChanges (toAVCaptureConnection connection)
 
 -- | setPrimaryConstituentDeviceSwitchingBehaviorForRecording:restrictedSwitchingBehaviorConditions:
 --
@@ -189,8 +180,8 @@ setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnection avCap
 --
 -- ObjC selector: @- setPrimaryConstituentDeviceSwitchingBehaviorForRecording:restrictedSwitchingBehaviorConditions:@
 setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBehaviorConditions :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> AVCapturePrimaryConstituentDeviceSwitchingBehavior -> AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions -> IO ()
-setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBehaviorConditions avCaptureMovieFileOutput  switchingBehavior restrictedSwitchingBehaviorConditions =
-    sendMsg avCaptureMovieFileOutput (mkSelector "setPrimaryConstituentDeviceSwitchingBehaviorForRecording:restrictedSwitchingBehaviorConditions:") retVoid [argCLong (coerce switchingBehavior), argCULong (coerce restrictedSwitchingBehaviorConditions)]
+setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBehaviorConditions avCaptureMovieFileOutput switchingBehavior restrictedSwitchingBehaviorConditions =
+  sendMessage avCaptureMovieFileOutput setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBehaviorConditionsSelector switchingBehavior restrictedSwitchingBehaviorConditions
 
 -- | metadata
 --
@@ -200,8 +191,8 @@ setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBeha
 --
 -- ObjC selector: @- metadata@
 metadata :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> IO (Id NSArray)
-metadata avCaptureMovieFileOutput  =
-    sendMsg avCaptureMovieFileOutput (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avCaptureMovieFileOutput =
+  sendMessage avCaptureMovieFileOutput metadataSelector
 
 -- | metadata
 --
@@ -211,9 +202,8 @@ metadata avCaptureMovieFileOutput  =
 --
 -- ObjC selector: @- setMetadata:@
 setMetadata :: (IsAVCaptureMovieFileOutput avCaptureMovieFileOutput, IsNSArray value) => avCaptureMovieFileOutput -> value -> IO ()
-setMetadata avCaptureMovieFileOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureMovieFileOutput (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadata avCaptureMovieFileOutput value =
+  sendMessage avCaptureMovieFileOutput setMetadataSelector (toNSArray value)
 
 -- | availableVideoCodecTypes
 --
@@ -223,8 +213,8 @@ setMetadata avCaptureMovieFileOutput  value =
 --
 -- ObjC selector: @- availableVideoCodecTypes@
 availableVideoCodecTypes :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> IO (Id NSArray)
-availableVideoCodecTypes avCaptureMovieFileOutput  =
-    sendMsg avCaptureMovieFileOutput (mkSelector "availableVideoCodecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableVideoCodecTypes avCaptureMovieFileOutput =
+  sendMessage avCaptureMovieFileOutput availableVideoCodecTypesSelector
 
 -- | primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled
 --
@@ -234,8 +224,8 @@ availableVideoCodecTypes avCaptureMovieFileOutput  =
 --
 -- ObjC selector: @- primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled@
 primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> IO Bool
-primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled avCaptureMovieFileOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureMovieFileOutput (mkSelector "primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled") retCULong []
+primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled avCaptureMovieFileOutput =
+  sendMessage avCaptureMovieFileOutput primaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector
 
 -- | primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled
 --
@@ -245,8 +235,8 @@ primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled avCaptureMovieFileO
 --
 -- ObjC selector: @- setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabled:@
 setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabled :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> Bool -> IO ()
-setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabled avCaptureMovieFileOutput  value =
-    sendMsg avCaptureMovieFileOutput (mkSelector "setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabled avCaptureMovieFileOutput value =
+  sendMessage avCaptureMovieFileOutput setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector value
 
 -- | primaryConstituentDeviceSwitchingBehaviorForRecording
 --
@@ -256,8 +246,8 @@ setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabled avCaptureMovieFi
 --
 -- ObjC selector: @- primaryConstituentDeviceSwitchingBehaviorForRecording@
 primaryConstituentDeviceSwitchingBehaviorForRecording :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> IO AVCapturePrimaryConstituentDeviceSwitchingBehavior
-primaryConstituentDeviceSwitchingBehaviorForRecording avCaptureMovieFileOutput  =
-    fmap (coerce :: CLong -> AVCapturePrimaryConstituentDeviceSwitchingBehavior) $ sendMsg avCaptureMovieFileOutput (mkSelector "primaryConstituentDeviceSwitchingBehaviorForRecording") retCLong []
+primaryConstituentDeviceSwitchingBehaviorForRecording avCaptureMovieFileOutput =
+  sendMessage avCaptureMovieFileOutput primaryConstituentDeviceSwitchingBehaviorForRecordingSelector
 
 -- | primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording
 --
@@ -267,8 +257,8 @@ primaryConstituentDeviceSwitchingBehaviorForRecording avCaptureMovieFileOutput  
 --
 -- ObjC selector: @- primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording@
 primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> IO AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
-primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording avCaptureMovieFileOutput  =
-    fmap (coerce :: CULong -> AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions) $ sendMsg avCaptureMovieFileOutput (mkSelector "primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording") retCULong []
+primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording avCaptureMovieFileOutput =
+  sendMessage avCaptureMovieFileOutput primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecordingSelector
 
 -- | spatialVideoCaptureSupported
 --
@@ -276,8 +266,8 @@ primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording avCapt
 --
 -- ObjC selector: @- spatialVideoCaptureSupported@
 spatialVideoCaptureSupported :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> IO Bool
-spatialVideoCaptureSupported avCaptureMovieFileOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureMovieFileOutput (mkSelector "spatialVideoCaptureSupported") retCULong []
+spatialVideoCaptureSupported avCaptureMovieFileOutput =
+  sendMessage avCaptureMovieFileOutput spatialVideoCaptureSupportedSelector
 
 -- | spatialVideoCaptureEnabled
 --
@@ -293,8 +283,8 @@ spatialVideoCaptureSupported avCaptureMovieFileOutput  =
 --
 -- ObjC selector: @- spatialVideoCaptureEnabled@
 spatialVideoCaptureEnabled :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> IO Bool
-spatialVideoCaptureEnabled avCaptureMovieFileOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureMovieFileOutput (mkSelector "spatialVideoCaptureEnabled") retCULong []
+spatialVideoCaptureEnabled avCaptureMovieFileOutput =
+  sendMessage avCaptureMovieFileOutput spatialVideoCaptureEnabledSelector
 
 -- | spatialVideoCaptureEnabled
 --
@@ -310,82 +300,82 @@ spatialVideoCaptureEnabled avCaptureMovieFileOutput  =
 --
 -- ObjC selector: @- setSpatialVideoCaptureEnabled:@
 setSpatialVideoCaptureEnabled :: IsAVCaptureMovieFileOutput avCaptureMovieFileOutput => avCaptureMovieFileOutput -> Bool -> IO ()
-setSpatialVideoCaptureEnabled avCaptureMovieFileOutput  value =
-    sendMsg avCaptureMovieFileOutput (mkSelector "setSpatialVideoCaptureEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setSpatialVideoCaptureEnabled avCaptureMovieFileOutput value =
+  sendMessage avCaptureMovieFileOutput setSpatialVideoCaptureEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureMovieFileOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureMovieFileOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @supportedOutputSettingsKeysForConnection:@
-supportedOutputSettingsKeysForConnectionSelector :: Selector
+supportedOutputSettingsKeysForConnectionSelector :: Selector '[Id AVCaptureConnection] (Id NSArray)
 supportedOutputSettingsKeysForConnectionSelector = mkSelector "supportedOutputSettingsKeysForConnection:"
 
 -- | @Selector@ for @outputSettingsForConnection:@
-outputSettingsForConnectionSelector :: Selector
+outputSettingsForConnectionSelector :: Selector '[Id AVCaptureConnection] (Id NSDictionary)
 outputSettingsForConnectionSelector = mkSelector "outputSettingsForConnection:"
 
 -- | @Selector@ for @setOutputSettings:forConnection:@
-setOutputSettings_forConnectionSelector :: Selector
+setOutputSettings_forConnectionSelector :: Selector '[Id NSDictionary, Id AVCaptureConnection] ()
 setOutputSettings_forConnectionSelector = mkSelector "setOutputSettings:forConnection:"
 
 -- | @Selector@ for @recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection:@
-recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnectionSelector :: Selector
+recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnectionSelector :: Selector '[Id AVCaptureConnection] Bool
 recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnectionSelector = mkSelector "recordsVideoOrientationAndMirroringChangesAsMetadataTrackForConnection:"
 
 -- | @Selector@ for @setRecordsVideoOrientationAndMirroringChanges:asMetadataTrackForConnection:@
-setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnectionSelector :: Selector
+setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnectionSelector :: Selector '[Bool, Id AVCaptureConnection] ()
 setRecordsVideoOrientationAndMirroringChanges_asMetadataTrackForConnectionSelector = mkSelector "setRecordsVideoOrientationAndMirroringChanges:asMetadataTrackForConnection:"
 
 -- | @Selector@ for @setPrimaryConstituentDeviceSwitchingBehaviorForRecording:restrictedSwitchingBehaviorConditions:@
-setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBehaviorConditionsSelector :: Selector
+setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBehaviorConditionsSelector :: Selector '[AVCapturePrimaryConstituentDeviceSwitchingBehavior, AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions] ()
 setPrimaryConstituentDeviceSwitchingBehaviorForRecording_restrictedSwitchingBehaviorConditionsSelector = mkSelector "setPrimaryConstituentDeviceSwitchingBehaviorForRecording:restrictedSwitchingBehaviorConditions:"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSArray)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @setMetadata:@
-setMetadataSelector :: Selector
+setMetadataSelector :: Selector '[Id NSArray] ()
 setMetadataSelector = mkSelector "setMetadata:"
 
 -- | @Selector@ for @availableVideoCodecTypes@
-availableVideoCodecTypesSelector :: Selector
+availableVideoCodecTypesSelector :: Selector '[] (Id NSArray)
 availableVideoCodecTypesSelector = mkSelector "availableVideoCodecTypes"
 
 -- | @Selector@ for @primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled@
-primaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector :: Selector
+primaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector :: Selector '[] Bool
 primaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector = mkSelector "primaryConstituentDeviceSwitchingBehaviorForRecordingEnabled"
 
 -- | @Selector@ for @setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabled:@
-setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector :: Selector
+setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector :: Selector '[Bool] ()
 setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabledSelector = mkSelector "setPrimaryConstituentDeviceSwitchingBehaviorForRecordingEnabled:"
 
 -- | @Selector@ for @primaryConstituentDeviceSwitchingBehaviorForRecording@
-primaryConstituentDeviceSwitchingBehaviorForRecordingSelector :: Selector
+primaryConstituentDeviceSwitchingBehaviorForRecordingSelector :: Selector '[] AVCapturePrimaryConstituentDeviceSwitchingBehavior
 primaryConstituentDeviceSwitchingBehaviorForRecordingSelector = mkSelector "primaryConstituentDeviceSwitchingBehaviorForRecording"
 
 -- | @Selector@ for @primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording@
-primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecordingSelector :: Selector
+primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecordingSelector :: Selector '[] AVCapturePrimaryConstituentDeviceRestrictedSwitchingBehaviorConditions
 primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecordingSelector = mkSelector "primaryConstituentDeviceRestrictedSwitchingBehaviorConditionsForRecording"
 
 -- | @Selector@ for @spatialVideoCaptureSupported@
-spatialVideoCaptureSupportedSelector :: Selector
+spatialVideoCaptureSupportedSelector :: Selector '[] Bool
 spatialVideoCaptureSupportedSelector = mkSelector "spatialVideoCaptureSupported"
 
 -- | @Selector@ for @spatialVideoCaptureEnabled@
-spatialVideoCaptureEnabledSelector :: Selector
+spatialVideoCaptureEnabledSelector :: Selector '[] Bool
 spatialVideoCaptureEnabledSelector = mkSelector "spatialVideoCaptureEnabled"
 
 -- | @Selector@ for @setSpatialVideoCaptureEnabled:@
-setSpatialVideoCaptureEnabledSelector :: Selector
+setSpatialVideoCaptureEnabledSelector :: Selector '[Bool] ()
 setSpatialVideoCaptureEnabledSelector = mkSelector "setSpatialVideoCaptureEnabled:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRTestClusterClusterTestNullableOptionalResponseParams
   , setOriginalValue
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , wasPresentSelector
-  , setWasPresentSelector
-  , wasNullSelector
-  , setWasNullSelector
-  , valueSelector
-  , setValueSelector
   , originalValueSelector
   , setOriginalValueSelector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
+  , setValueSelector
+  , setWasNullSelector
+  , setWasPresentSelector
+  , timedInvokeTimeoutMsSelector
+  , valueSelector
+  , wasNullSelector
+  , wasPresentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,47 +44,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- wasPresent@
 wasPresent :: IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams => mtrTestClusterClusterTestNullableOptionalResponseParams -> IO (Id NSNumber)
-wasPresent mtrTestClusterClusterTestNullableOptionalResponseParams  =
-    sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "wasPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+wasPresent mtrTestClusterClusterTestNullableOptionalResponseParams =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams wasPresentSelector
 
 -- | @- setWasPresent:@
 setWasPresent :: (IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams, IsNSNumber value) => mtrTestClusterClusterTestNullableOptionalResponseParams -> value -> IO ()
-setWasPresent mtrTestClusterClusterTestNullableOptionalResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "setWasPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWasPresent mtrTestClusterClusterTestNullableOptionalResponseParams value =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams setWasPresentSelector (toNSNumber value)
 
 -- | @- wasNull@
 wasNull :: IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams => mtrTestClusterClusterTestNullableOptionalResponseParams -> IO (Id NSNumber)
-wasNull mtrTestClusterClusterTestNullableOptionalResponseParams  =
-    sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "wasNull") (retPtr retVoid) [] >>= retainedObject . castPtr
+wasNull mtrTestClusterClusterTestNullableOptionalResponseParams =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams wasNullSelector
 
 -- | @- setWasNull:@
 setWasNull :: (IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams, IsNSNumber value) => mtrTestClusterClusterTestNullableOptionalResponseParams -> value -> IO ()
-setWasNull mtrTestClusterClusterTestNullableOptionalResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "setWasNull:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWasNull mtrTestClusterClusterTestNullableOptionalResponseParams value =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams setWasNullSelector (toNSNumber value)
 
 -- | @- value@
 value :: IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams => mtrTestClusterClusterTestNullableOptionalResponseParams -> IO (Id NSNumber)
-value mtrTestClusterClusterTestNullableOptionalResponseParams  =
-    sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mtrTestClusterClusterTestNullableOptionalResponseParams =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams valueSelector
 
 -- | @- setValue:@
 setValue :: (IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams, IsNSNumber value) => mtrTestClusterClusterTestNullableOptionalResponseParams -> value -> IO ()
-setValue mtrTestClusterClusterTestNullableOptionalResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue mtrTestClusterClusterTestNullableOptionalResponseParams value =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams setValueSelector (toNSNumber value)
 
 -- | @- originalValue@
 originalValue :: IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams => mtrTestClusterClusterTestNullableOptionalResponseParams -> IO (Id NSNumber)
-originalValue mtrTestClusterClusterTestNullableOptionalResponseParams  =
-    sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "originalValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalValue mtrTestClusterClusterTestNullableOptionalResponseParams =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams originalValueSelector
 
 -- | @- setOriginalValue:@
 setOriginalValue :: (IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams, IsNSNumber value) => mtrTestClusterClusterTestNullableOptionalResponseParams -> value -> IO ()
-setOriginalValue mtrTestClusterClusterTestNullableOptionalResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "setOriginalValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOriginalValue mtrTestClusterClusterTestNullableOptionalResponseParams value =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams setOriginalValueSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,8 +90,8 @@ setOriginalValue mtrTestClusterClusterTestNullableOptionalResponseParams  value 
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams => mtrTestClusterClusterTestNullableOptionalResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTestClusterClusterTestNullableOptionalResponseParams  =
-    sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrTestClusterClusterTestNullableOptionalResponseParams =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -108,51 +101,50 @@ timedInvokeTimeoutMs mtrTestClusterClusterTestNullableOptionalResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTestClusterClusterTestNullableOptionalResponseParams mtrTestClusterClusterTestNullableOptionalResponseParams, IsNSNumber value) => mtrTestClusterClusterTestNullableOptionalResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTestClusterClusterTestNullableOptionalResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTestClusterClusterTestNullableOptionalResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrTestClusterClusterTestNullableOptionalResponseParams value =
+  sendMessage mtrTestClusterClusterTestNullableOptionalResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @wasPresent@
-wasPresentSelector :: Selector
+wasPresentSelector :: Selector '[] (Id NSNumber)
 wasPresentSelector = mkSelector "wasPresent"
 
 -- | @Selector@ for @setWasPresent:@
-setWasPresentSelector :: Selector
+setWasPresentSelector :: Selector '[Id NSNumber] ()
 setWasPresentSelector = mkSelector "setWasPresent:"
 
 -- | @Selector@ for @wasNull@
-wasNullSelector :: Selector
+wasNullSelector :: Selector '[] (Id NSNumber)
 wasNullSelector = mkSelector "wasNull"
 
 -- | @Selector@ for @setWasNull:@
-setWasNullSelector :: Selector
+setWasNullSelector :: Selector '[Id NSNumber] ()
 setWasNullSelector = mkSelector "setWasNull:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSNumber)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSNumber] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @originalValue@
-originalValueSelector :: Selector
+originalValueSelector :: Selector '[] (Id NSNumber)
 originalValueSelector = mkSelector "originalValue"
 
 -- | @Selector@ for @setOriginalValue:@
-setOriginalValueSelector :: Selector
+setOriginalValueSelector :: Selector '[Id NSNumber] ()
 setOriginalValueSelector = mkSelector "setOriginalValue:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

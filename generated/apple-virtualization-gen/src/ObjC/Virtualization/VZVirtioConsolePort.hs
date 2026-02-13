@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Virtualization.VZVirtioConsolePort
   , name
   , attachment
   , setAttachment
-  , newSelector
+  , attachmentSelector
   , initSelector
   , nameSelector
-  , attachmentSelector
+  , newSelector
   , setAttachmentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,12 +41,12 @@ new :: IO (Id VZVirtioConsolePort)
 new  =
   do
     cls' <- getRequiredClass "VZVirtioConsolePort"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZVirtioConsolePort vzVirtioConsolePort => vzVirtioConsolePort -> IO (Id VZVirtioConsolePort)
-init_ vzVirtioConsolePort  =
-    sendMsg vzVirtioConsolePort (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioConsolePort =
+  sendOwnedMessage vzVirtioConsolePort initSelector
 
 -- | The console port name currently being used by this port.
 --
@@ -57,8 +54,8 @@ init_ vzVirtioConsolePort  =
 --
 -- ObjC selector: @- name@
 name :: IsVZVirtioConsolePort vzVirtioConsolePort => vzVirtioConsolePort -> IO (Id NSString)
-name vzVirtioConsolePort  =
-    sendMsg vzVirtioConsolePort (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name vzVirtioConsolePort =
+  sendMessage vzVirtioConsolePort nameSelector
 
 -- | The console port attachment that's currently connected to this console port.
 --
@@ -66,8 +63,8 @@ name vzVirtioConsolePort  =
 --
 -- ObjC selector: @- attachment@
 attachment :: IsVZVirtioConsolePort vzVirtioConsolePort => vzVirtioConsolePort -> IO (Id VZSerialPortAttachment)
-attachment vzVirtioConsolePort  =
-    sendMsg vzVirtioConsolePort (mkSelector "attachment") (retPtr retVoid) [] >>= retainedObject . castPtr
+attachment vzVirtioConsolePort =
+  sendMessage vzVirtioConsolePort attachmentSelector
 
 -- | The console port attachment that's currently connected to this console port.
 --
@@ -75,31 +72,30 @@ attachment vzVirtioConsolePort  =
 --
 -- ObjC selector: @- setAttachment:@
 setAttachment :: (IsVZVirtioConsolePort vzVirtioConsolePort, IsVZSerialPortAttachment value) => vzVirtioConsolePort -> value -> IO ()
-setAttachment vzVirtioConsolePort  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzVirtioConsolePort (mkSelector "setAttachment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttachment vzVirtioConsolePort value =
+  sendMessage vzVirtioConsolePort setAttachmentSelector (toVZSerialPortAttachment value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZVirtioConsolePort)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioConsolePort)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @attachment@
-attachmentSelector :: Selector
+attachmentSelector :: Selector '[] (Id VZSerialPortAttachment)
 attachmentSelector = mkSelector "attachment"
 
 -- | @Selector@ for @setAttachment:@
-setAttachmentSelector :: Selector
+setAttachmentSelector :: Selector '[Id VZSerialPortAttachment] ()
 setAttachmentSelector = mkSelector "setAttachment:"
 

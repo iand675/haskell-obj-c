@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.MediaPlayer.MPFeedbackCommandEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,14 +30,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- negative@
 negative :: IsMPFeedbackCommandEvent mpFeedbackCommandEvent => mpFeedbackCommandEvent -> IO Bool
-negative mpFeedbackCommandEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpFeedbackCommandEvent (mkSelector "negative") retCULong []
+negative mpFeedbackCommandEvent =
+  sendMessage mpFeedbackCommandEvent negativeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @negative@
-negativeSelector :: Selector
+negativeSelector :: Selector '[] Bool
 negativeSelector = mkSelector "negative"
 

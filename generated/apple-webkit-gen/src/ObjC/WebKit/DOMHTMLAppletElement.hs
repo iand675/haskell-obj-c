@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,40 +30,36 @@ module ObjC.WebKit.DOMHTMLAppletElement
   , width
   , setWidth
   , alignSelector
-  , setAlignSelector
   , altSelector
-  , setAltSelector
   , archiveSelector
-  , setArchiveSelector
-  , codeSelector
-  , setCodeSelector
   , codeBaseSelector
-  , setCodeBaseSelector
+  , codeSelector
   , heightSelector
-  , setHeightSelector
   , hspaceSelector
-  , setHspaceSelector
   , nameSelector
-  , setNameSelector
   , objectSelector
+  , setAlignSelector
+  , setAltSelector
+  , setArchiveSelector
+  , setCodeBaseSelector
+  , setCodeSelector
+  , setHeightSelector
+  , setHspaceSelector
+  , setNameSelector
   , setObjectSelector
-  , vspaceSelector
   , setVspaceSelector
-  , widthSelector
   , setWidthSelector
+  , vspaceSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,212 +68,203 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- align@
 align :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO (Id NSString)
-align domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "align") (retPtr retVoid) [] >>= retainedObject . castPtr
+align domhtmlAppletElement =
+  sendMessage domhtmlAppletElement alignSelector
 
 -- | @- setAlign:@
 setAlign :: (IsDOMHTMLAppletElement domhtmlAppletElement, IsNSString value) => domhtmlAppletElement -> value -> IO ()
-setAlign domhtmlAppletElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAppletElement (mkSelector "setAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlign domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setAlignSelector (toNSString value)
 
 -- | @- alt@
 alt :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO (Id NSString)
-alt domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "alt") (retPtr retVoid) [] >>= retainedObject . castPtr
+alt domhtmlAppletElement =
+  sendMessage domhtmlAppletElement altSelector
 
 -- | @- setAlt:@
 setAlt :: (IsDOMHTMLAppletElement domhtmlAppletElement, IsNSString value) => domhtmlAppletElement -> value -> IO ()
-setAlt domhtmlAppletElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAppletElement (mkSelector "setAlt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlt domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setAltSelector (toNSString value)
 
 -- | @- archive@
 archive :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO (Id NSString)
-archive domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "archive") (retPtr retVoid) [] >>= retainedObject . castPtr
+archive domhtmlAppletElement =
+  sendMessage domhtmlAppletElement archiveSelector
 
 -- | @- setArchive:@
 setArchive :: (IsDOMHTMLAppletElement domhtmlAppletElement, IsNSString value) => domhtmlAppletElement -> value -> IO ()
-setArchive domhtmlAppletElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAppletElement (mkSelector "setArchive:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArchive domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setArchiveSelector (toNSString value)
 
 -- | @- code@
 code :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO (Id NSString)
-code domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "code") (retPtr retVoid) [] >>= retainedObject . castPtr
+code domhtmlAppletElement =
+  sendMessage domhtmlAppletElement codeSelector
 
 -- | @- setCode:@
 setCode :: (IsDOMHTMLAppletElement domhtmlAppletElement, IsNSString value) => domhtmlAppletElement -> value -> IO ()
-setCode domhtmlAppletElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAppletElement (mkSelector "setCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCode domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setCodeSelector (toNSString value)
 
 -- | @- codeBase@
 codeBase :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO (Id NSString)
-codeBase domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "codeBase") (retPtr retVoid) [] >>= retainedObject . castPtr
+codeBase domhtmlAppletElement =
+  sendMessage domhtmlAppletElement codeBaseSelector
 
 -- | @- setCodeBase:@
 setCodeBase :: (IsDOMHTMLAppletElement domhtmlAppletElement, IsNSString value) => domhtmlAppletElement -> value -> IO ()
-setCodeBase domhtmlAppletElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAppletElement (mkSelector "setCodeBase:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCodeBase domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setCodeBaseSelector (toNSString value)
 
 -- | @- height@
 height :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO (Id NSString)
-height domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "height") (retPtr retVoid) [] >>= retainedObject . castPtr
+height domhtmlAppletElement =
+  sendMessage domhtmlAppletElement heightSelector
 
 -- | @- setHeight:@
 setHeight :: (IsDOMHTMLAppletElement domhtmlAppletElement, IsNSString value) => domhtmlAppletElement -> value -> IO ()
-setHeight domhtmlAppletElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAppletElement (mkSelector "setHeight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeight domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setHeightSelector (toNSString value)
 
 -- | @- hspace@
 hspace :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO CInt
-hspace domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "hspace") retCInt []
+hspace domhtmlAppletElement =
+  sendMessage domhtmlAppletElement hspaceSelector
 
 -- | @- setHspace:@
 setHspace :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> CInt -> IO ()
-setHspace domhtmlAppletElement  value =
-    sendMsg domhtmlAppletElement (mkSelector "setHspace:") retVoid [argCInt value]
+setHspace domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setHspaceSelector value
 
 -- | @- name@
 name :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO (Id NSString)
-name domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlAppletElement =
+  sendMessage domhtmlAppletElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLAppletElement domhtmlAppletElement, IsNSString value) => domhtmlAppletElement -> value -> IO ()
-setName domhtmlAppletElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAppletElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setNameSelector (toNSString value)
 
 -- | @- object@
 object :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO (Id NSString)
-object domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "object") (retPtr retVoid) [] >>= retainedObject . castPtr
+object domhtmlAppletElement =
+  sendMessage domhtmlAppletElement objectSelector
 
 -- | @- setObject:@
 setObject :: (IsDOMHTMLAppletElement domhtmlAppletElement, IsNSString value) => domhtmlAppletElement -> value -> IO ()
-setObject domhtmlAppletElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAppletElement (mkSelector "setObject:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setObject domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setObjectSelector (toNSString value)
 
 -- | @- vspace@
 vspace :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO CInt
-vspace domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "vspace") retCInt []
+vspace domhtmlAppletElement =
+  sendMessage domhtmlAppletElement vspaceSelector
 
 -- | @- setVspace:@
 setVspace :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> CInt -> IO ()
-setVspace domhtmlAppletElement  value =
-    sendMsg domhtmlAppletElement (mkSelector "setVspace:") retVoid [argCInt value]
+setVspace domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setVspaceSelector value
 
 -- | @- width@
 width :: IsDOMHTMLAppletElement domhtmlAppletElement => domhtmlAppletElement -> IO (Id NSString)
-width domhtmlAppletElement  =
-    sendMsg domhtmlAppletElement (mkSelector "width") (retPtr retVoid) [] >>= retainedObject . castPtr
+width domhtmlAppletElement =
+  sendMessage domhtmlAppletElement widthSelector
 
 -- | @- setWidth:@
 setWidth :: (IsDOMHTMLAppletElement domhtmlAppletElement, IsNSString value) => domhtmlAppletElement -> value -> IO ()
-setWidth domhtmlAppletElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAppletElement (mkSelector "setWidth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWidth domhtmlAppletElement value =
+  sendMessage domhtmlAppletElement setWidthSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @align@
-alignSelector :: Selector
+alignSelector :: Selector '[] (Id NSString)
 alignSelector = mkSelector "align"
 
 -- | @Selector@ for @setAlign:@
-setAlignSelector :: Selector
+setAlignSelector :: Selector '[Id NSString] ()
 setAlignSelector = mkSelector "setAlign:"
 
 -- | @Selector@ for @alt@
-altSelector :: Selector
+altSelector :: Selector '[] (Id NSString)
 altSelector = mkSelector "alt"
 
 -- | @Selector@ for @setAlt:@
-setAltSelector :: Selector
+setAltSelector :: Selector '[Id NSString] ()
 setAltSelector = mkSelector "setAlt:"
 
 -- | @Selector@ for @archive@
-archiveSelector :: Selector
+archiveSelector :: Selector '[] (Id NSString)
 archiveSelector = mkSelector "archive"
 
 -- | @Selector@ for @setArchive:@
-setArchiveSelector :: Selector
+setArchiveSelector :: Selector '[Id NSString] ()
 setArchiveSelector = mkSelector "setArchive:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] (Id NSString)
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @setCode:@
-setCodeSelector :: Selector
+setCodeSelector :: Selector '[Id NSString] ()
 setCodeSelector = mkSelector "setCode:"
 
 -- | @Selector@ for @codeBase@
-codeBaseSelector :: Selector
+codeBaseSelector :: Selector '[] (Id NSString)
 codeBaseSelector = mkSelector "codeBase"
 
 -- | @Selector@ for @setCodeBase:@
-setCodeBaseSelector :: Selector
+setCodeBaseSelector :: Selector '[Id NSString] ()
 setCodeBaseSelector = mkSelector "setCodeBase:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] (Id NSString)
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[Id NSString] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @hspace@
-hspaceSelector :: Selector
+hspaceSelector :: Selector '[] CInt
 hspaceSelector = mkSelector "hspace"
 
 -- | @Selector@ for @setHspace:@
-setHspaceSelector :: Selector
+setHspaceSelector :: Selector '[CInt] ()
 setHspaceSelector = mkSelector "setHspace:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @object@
-objectSelector :: Selector
+objectSelector :: Selector '[] (Id NSString)
 objectSelector = mkSelector "object"
 
 -- | @Selector@ for @setObject:@
-setObjectSelector :: Selector
+setObjectSelector :: Selector '[Id NSString] ()
 setObjectSelector = mkSelector "setObject:"
 
 -- | @Selector@ for @vspace@
-vspaceSelector :: Selector
+vspaceSelector :: Selector '[] CInt
 vspaceSelector = mkSelector "vspace"
 
 -- | @Selector@ for @setVspace:@
-setVspaceSelector :: Selector
+setVspaceSelector :: Selector '[CInt] ()
 setVspaceSelector = mkSelector "setVspace:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] (Id NSString)
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[Id NSString] ()
 setWidthSelector = mkSelector "setWidth:"
 

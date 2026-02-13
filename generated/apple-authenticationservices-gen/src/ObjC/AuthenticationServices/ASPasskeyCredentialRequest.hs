@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,31 +21,27 @@ module ObjC.AuthenticationServices.ASPasskeyCredentialRequest
   , excludedCredentials
   , assertionExtensionInput
   , registrationExtensionInput
+  , assertionExtensionInputSelector
+  , clientDataHashSelector
+  , excludedCredentialsSelector
   , initSelector
   , initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector
   , initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_assertionExtensionInputSelector
   , initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_registrationExtensionInputSelector
+  , registrationExtensionInputSelector
   , requestWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector
-  , clientDataHashSelector
-  , userVerificationPreferenceSelector
   , setUserVerificationPreferenceSelector
   , supportedAlgorithmsSelector
-  , excludedCredentialsSelector
-  , assertionExtensionInputSelector
-  , registrationExtensionInputSelector
+  , userVerificationPreferenceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id ASPasskeyCredentialRequest)
-init_ asPasskeyCredentialRequest  =
-    sendMsg asPasskeyCredentialRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asPasskeyCredentialRequest =
+  sendOwnedMessage asPasskeyCredentialRequest initSelector
 
 -- | Initializes an instance of ASPasskeyCredentialRequest.
 --
@@ -66,12 +63,8 @@ init_ asPasskeyCredentialRequest  =
 --
 -- ObjC selector: @- initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:@
 initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms :: (IsASPasskeyCredentialRequest asPasskeyCredentialRequest, IsASPasskeyCredentialIdentity credentialIdentity, IsNSData clientDataHash, IsNSString userVerificationPreference, IsNSArray supportedAlgorithms) => asPasskeyCredentialRequest -> credentialIdentity -> clientDataHash -> userVerificationPreference -> supportedAlgorithms -> IO (Id ASPasskeyCredentialRequest)
-initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms asPasskeyCredentialRequest  credentialIdentity clientDataHash userVerificationPreference supportedAlgorithms =
-  withObjCPtr credentialIdentity $ \raw_credentialIdentity ->
-    withObjCPtr clientDataHash $ \raw_clientDataHash ->
-      withObjCPtr userVerificationPreference $ \raw_userVerificationPreference ->
-        withObjCPtr supportedAlgorithms $ \raw_supportedAlgorithms ->
-            sendMsg asPasskeyCredentialRequest (mkSelector "initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:") (retPtr retVoid) [argPtr (castPtr raw_credentialIdentity :: Ptr ()), argPtr (castPtr raw_clientDataHash :: Ptr ()), argPtr (castPtr raw_userVerificationPreference :: Ptr ()), argPtr (castPtr raw_supportedAlgorithms :: Ptr ())] >>= ownedObject . castPtr
+initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms asPasskeyCredentialRequest credentialIdentity clientDataHash userVerificationPreference supportedAlgorithms =
+  sendOwnedMessage asPasskeyCredentialRequest initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector (toASPasskeyCredentialIdentity credentialIdentity) (toNSData clientDataHash) (toNSString userVerificationPreference) (toNSArray supportedAlgorithms)
 
 -- | Initializes an instance of ASPasskeyCredentialRequest.
 --
@@ -87,13 +80,8 @@ initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAl
 --
 -- ObjC selector: @- initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:assertionExtensionInput:@
 initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_assertionExtensionInput :: (IsASPasskeyCredentialRequest asPasskeyCredentialRequest, IsASPasskeyCredentialIdentity credentialIdentity, IsNSData clientDataHash, IsNSString userVerificationPreference, IsNSArray supportedAlgorithms, IsASPasskeyAssertionCredentialExtensionInput assertionExtensionInput) => asPasskeyCredentialRequest -> credentialIdentity -> clientDataHash -> userVerificationPreference -> supportedAlgorithms -> assertionExtensionInput -> IO (Id ASPasskeyCredentialRequest)
-initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_assertionExtensionInput asPasskeyCredentialRequest  credentialIdentity clientDataHash userVerificationPreference supportedAlgorithms assertionExtensionInput =
-  withObjCPtr credentialIdentity $ \raw_credentialIdentity ->
-    withObjCPtr clientDataHash $ \raw_clientDataHash ->
-      withObjCPtr userVerificationPreference $ \raw_userVerificationPreference ->
-        withObjCPtr supportedAlgorithms $ \raw_supportedAlgorithms ->
-          withObjCPtr assertionExtensionInput $ \raw_assertionExtensionInput ->
-              sendMsg asPasskeyCredentialRequest (mkSelector "initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:assertionExtensionInput:") (retPtr retVoid) [argPtr (castPtr raw_credentialIdentity :: Ptr ()), argPtr (castPtr raw_clientDataHash :: Ptr ()), argPtr (castPtr raw_userVerificationPreference :: Ptr ()), argPtr (castPtr raw_supportedAlgorithms :: Ptr ()), argPtr (castPtr raw_assertionExtensionInput :: Ptr ())] >>= ownedObject . castPtr
+initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_assertionExtensionInput asPasskeyCredentialRequest credentialIdentity clientDataHash userVerificationPreference supportedAlgorithms assertionExtensionInput =
+  sendOwnedMessage asPasskeyCredentialRequest initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_assertionExtensionInputSelector (toASPasskeyCredentialIdentity credentialIdentity) (toNSData clientDataHash) (toNSString userVerificationPreference) (toNSArray supportedAlgorithms) (toASPasskeyAssertionCredentialExtensionInput assertionExtensionInput)
 
 -- | Initializes an instance of ASPasskeyCredentialRequest.
 --
@@ -109,13 +97,8 @@ initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAl
 --
 -- ObjC selector: @- initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:registrationExtensionInput:@
 initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_registrationExtensionInput :: (IsASPasskeyCredentialRequest asPasskeyCredentialRequest, IsASPasskeyCredentialIdentity credentialIdentity, IsNSData clientDataHash, IsNSString userVerificationPreference, IsNSArray supportedAlgorithms, IsASPasskeyRegistrationCredentialExtensionInput registrationExtensionInput) => asPasskeyCredentialRequest -> credentialIdentity -> clientDataHash -> userVerificationPreference -> supportedAlgorithms -> registrationExtensionInput -> IO (Id ASPasskeyCredentialRequest)
-initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_registrationExtensionInput asPasskeyCredentialRequest  credentialIdentity clientDataHash userVerificationPreference supportedAlgorithms registrationExtensionInput =
-  withObjCPtr credentialIdentity $ \raw_credentialIdentity ->
-    withObjCPtr clientDataHash $ \raw_clientDataHash ->
-      withObjCPtr userVerificationPreference $ \raw_userVerificationPreference ->
-        withObjCPtr supportedAlgorithms $ \raw_supportedAlgorithms ->
-          withObjCPtr registrationExtensionInput $ \raw_registrationExtensionInput ->
-              sendMsg asPasskeyCredentialRequest (mkSelector "initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:registrationExtensionInput:") (retPtr retVoid) [argPtr (castPtr raw_credentialIdentity :: Ptr ()), argPtr (castPtr raw_clientDataHash :: Ptr ()), argPtr (castPtr raw_userVerificationPreference :: Ptr ()), argPtr (castPtr raw_supportedAlgorithms :: Ptr ()), argPtr (castPtr raw_registrationExtensionInput :: Ptr ())] >>= ownedObject . castPtr
+initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_registrationExtensionInput asPasskeyCredentialRequest credentialIdentity clientDataHash userVerificationPreference supportedAlgorithms registrationExtensionInput =
+  sendOwnedMessage asPasskeyCredentialRequest initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_registrationExtensionInputSelector (toASPasskeyCredentialIdentity credentialIdentity) (toNSData clientDataHash) (toNSString userVerificationPreference) (toNSArray supportedAlgorithms) (toASPasskeyRegistrationCredentialExtensionInput registrationExtensionInput)
 
 -- | Creates and initializes an instance of ASPasskeyCredentialRequest.
 --
@@ -130,109 +113,104 @@ requestWithCredentialIdentity_clientDataHash_userVerificationPreference_supporte
 requestWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms credentialIdentity clientDataHash userVerificationPreference supportedAlgorithms =
   do
     cls' <- getRequiredClass "ASPasskeyCredentialRequest"
-    withObjCPtr credentialIdentity $ \raw_credentialIdentity ->
-      withObjCPtr clientDataHash $ \raw_clientDataHash ->
-        withObjCPtr userVerificationPreference $ \raw_userVerificationPreference ->
-          withObjCPtr supportedAlgorithms $ \raw_supportedAlgorithms ->
-            sendClassMsg cls' (mkSelector "requestWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:") (retPtr retVoid) [argPtr (castPtr raw_credentialIdentity :: Ptr ()), argPtr (castPtr raw_clientDataHash :: Ptr ()), argPtr (castPtr raw_userVerificationPreference :: Ptr ()), argPtr (castPtr raw_supportedAlgorithms :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' requestWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector (toASPasskeyCredentialIdentity credentialIdentity) (toNSData clientDataHash) (toNSString userVerificationPreference) (toNSArray supportedAlgorithms)
 
 -- | Hash of client data for credential provider to sign as part of the assertion/registration operation.
 --
 -- ObjC selector: @- clientDataHash@
 clientDataHash :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id NSData)
-clientDataHash asPasskeyCredentialRequest  =
-    sendMsg asPasskeyCredentialRequest (mkSelector "clientDataHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientDataHash asPasskeyCredentialRequest =
+  sendMessage asPasskeyCredentialRequest clientDataHashSelector
 
 -- | A preference for whether the authenticator should attempt to verify that it is being used by its owner, such as through a PIN or biometrics.
 --
 -- ObjC selector: @- userVerificationPreference@
 userVerificationPreference :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id NSString)
-userVerificationPreference asPasskeyCredentialRequest  =
-    sendMsg asPasskeyCredentialRequest (mkSelector "userVerificationPreference") (retPtr retVoid) [] >>= retainedObject . castPtr
+userVerificationPreference asPasskeyCredentialRequest =
+  sendMessage asPasskeyCredentialRequest userVerificationPreferenceSelector
 
 -- | A preference for whether the authenticator should attempt to verify that it is being used by its owner, such as through a PIN or biometrics.
 --
 -- ObjC selector: @- setUserVerificationPreference:@
 setUserVerificationPreference :: (IsASPasskeyCredentialRequest asPasskeyCredentialRequest, IsNSString value) => asPasskeyCredentialRequest -> value -> IO ()
-setUserVerificationPreference asPasskeyCredentialRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asPasskeyCredentialRequest (mkSelector "setUserVerificationPreference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserVerificationPreference asPasskeyCredentialRequest value =
+  sendMessage asPasskeyCredentialRequest setUserVerificationPreferenceSelector (toNSString value)
 
 -- | A list of signing algorithms supported by the relying party. Will be empty for assertion requests.
 --
 -- ObjC selector: @- supportedAlgorithms@
 supportedAlgorithms :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id NSArray)
-supportedAlgorithms asPasskeyCredentialRequest  =
-    sendMsg asPasskeyCredentialRequest (mkSelector "supportedAlgorithms") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedAlgorithms asPasskeyCredentialRequest =
+  sendMessage asPasskeyCredentialRequest supportedAlgorithmsSelector
 
 -- | @- excludedCredentials@
 excludedCredentials :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id NSArray)
-excludedCredentials asPasskeyCredentialRequest  =
-    sendMsg asPasskeyCredentialRequest (mkSelector "excludedCredentials") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedCredentials asPasskeyCredentialRequest =
+  sendMessage asPasskeyCredentialRequest excludedCredentialsSelector
 
 -- | Inputs for WebAuthn extensions used for passkey assertion. Will be nil for registration requests.
 --
 -- ObjC selector: @- assertionExtensionInput@
 assertionExtensionInput :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id ASPasskeyAssertionCredentialExtensionInput)
-assertionExtensionInput asPasskeyCredentialRequest  =
-    sendMsg asPasskeyCredentialRequest (mkSelector "assertionExtensionInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+assertionExtensionInput asPasskeyCredentialRequest =
+  sendMessage asPasskeyCredentialRequest assertionExtensionInputSelector
 
 -- | Inputs for WebAuthn extensions used for passkey registration. Will be nil for assertion requests.
 --
 -- ObjC selector: @- registrationExtensionInput@
 registrationExtensionInput :: IsASPasskeyCredentialRequest asPasskeyCredentialRequest => asPasskeyCredentialRequest -> IO (Id ASPasskeyRegistrationCredentialExtensionInput)
-registrationExtensionInput asPasskeyCredentialRequest  =
-    sendMsg asPasskeyCredentialRequest (mkSelector "registrationExtensionInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+registrationExtensionInput asPasskeyCredentialRequest =
+  sendMessage asPasskeyCredentialRequest registrationExtensionInputSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASPasskeyCredentialRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:@
-initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector :: Selector
+initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector :: Selector '[Id ASPasskeyCredentialIdentity, Id NSData, Id NSString, Id NSArray] (Id ASPasskeyCredentialRequest)
 initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector = mkSelector "initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:"
 
 -- | @Selector@ for @initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:assertionExtensionInput:@
-initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_assertionExtensionInputSelector :: Selector
+initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_assertionExtensionInputSelector :: Selector '[Id ASPasskeyCredentialIdentity, Id NSData, Id NSString, Id NSArray, Id ASPasskeyAssertionCredentialExtensionInput] (Id ASPasskeyCredentialRequest)
 initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_assertionExtensionInputSelector = mkSelector "initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:assertionExtensionInput:"
 
 -- | @Selector@ for @initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:registrationExtensionInput:@
-initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_registrationExtensionInputSelector :: Selector
+initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_registrationExtensionInputSelector :: Selector '[Id ASPasskeyCredentialIdentity, Id NSData, Id NSString, Id NSArray, Id ASPasskeyRegistrationCredentialExtensionInput] (Id ASPasskeyCredentialRequest)
 initWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithms_registrationExtensionInputSelector = mkSelector "initWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:registrationExtensionInput:"
 
 -- | @Selector@ for @requestWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:@
-requestWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector :: Selector
+requestWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector :: Selector '[Id ASPasskeyCredentialIdentity, Id NSData, Id NSString, Id NSArray] (Id ASPasskeyCredentialRequest)
 requestWithCredentialIdentity_clientDataHash_userVerificationPreference_supportedAlgorithmsSelector = mkSelector "requestWithCredentialIdentity:clientDataHash:userVerificationPreference:supportedAlgorithms:"
 
 -- | @Selector@ for @clientDataHash@
-clientDataHashSelector :: Selector
+clientDataHashSelector :: Selector '[] (Id NSData)
 clientDataHashSelector = mkSelector "clientDataHash"
 
 -- | @Selector@ for @userVerificationPreference@
-userVerificationPreferenceSelector :: Selector
+userVerificationPreferenceSelector :: Selector '[] (Id NSString)
 userVerificationPreferenceSelector = mkSelector "userVerificationPreference"
 
 -- | @Selector@ for @setUserVerificationPreference:@
-setUserVerificationPreferenceSelector :: Selector
+setUserVerificationPreferenceSelector :: Selector '[Id NSString] ()
 setUserVerificationPreferenceSelector = mkSelector "setUserVerificationPreference:"
 
 -- | @Selector@ for @supportedAlgorithms@
-supportedAlgorithmsSelector :: Selector
+supportedAlgorithmsSelector :: Selector '[] (Id NSArray)
 supportedAlgorithmsSelector = mkSelector "supportedAlgorithms"
 
 -- | @Selector@ for @excludedCredentials@
-excludedCredentialsSelector :: Selector
+excludedCredentialsSelector :: Selector '[] (Id NSArray)
 excludedCredentialsSelector = mkSelector "excludedCredentials"
 
 -- | @Selector@ for @assertionExtensionInput@
-assertionExtensionInputSelector :: Selector
+assertionExtensionInputSelector :: Selector '[] (Id ASPasskeyAssertionCredentialExtensionInput)
 assertionExtensionInputSelector = mkSelector "assertionExtensionInput"
 
 -- | @Selector@ for @registrationExtensionInput@
-registrationExtensionInputSelector :: Selector
+registrationExtensionInputSelector :: Selector '[] (Id ASPasskeyRegistrationCredentialExtensionInput)
 registrationExtensionInputSelector = mkSelector "registrationExtensionInput"
 

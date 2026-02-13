@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.GameplayKit.GKGridGraph
   , gridWidth
   , gridHeight
   , diagonalsAllowed
-  , connectNodeToAdjacentNodesSelector
   , classForGenericArgumentAtIndexSelector
-  , gridWidthSelector
-  , gridHeightSelector
+  , connectNodeToAdjacentNodesSelector
   , diagonalsAllowedSelector
+  , gridHeightSelector
+  , gridWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,53 +38,52 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- connectNodeToAdjacentNodes:@
 connectNodeToAdjacentNodes :: (IsGKGridGraph gkGridGraph, IsGKGridGraphNode node) => gkGridGraph -> node -> IO ()
-connectNodeToAdjacentNodes gkGridGraph  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg gkGridGraph (mkSelector "connectNodeToAdjacentNodes:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+connectNodeToAdjacentNodes gkGridGraph node =
+  sendMessage gkGridGraph connectNodeToAdjacentNodesSelector (toGKGridGraphNode node)
 
 -- | Returns the class of the specified generic index
 --
 -- ObjC selector: @- classForGenericArgumentAtIndex:@
 classForGenericArgumentAtIndex :: IsGKGridGraph gkGridGraph => gkGridGraph -> CULong -> IO Class
-classForGenericArgumentAtIndex gkGridGraph  index =
-    fmap (Class . castPtr) $ sendMsg gkGridGraph (mkSelector "classForGenericArgumentAtIndex:") (retPtr retVoid) [argCULong index]
+classForGenericArgumentAtIndex gkGridGraph index =
+  sendMessage gkGridGraph classForGenericArgumentAtIndexSelector index
 
 -- | @- gridWidth@
 gridWidth :: IsGKGridGraph gkGridGraph => gkGridGraph -> IO CULong
-gridWidth gkGridGraph  =
-    sendMsg gkGridGraph (mkSelector "gridWidth") retCULong []
+gridWidth gkGridGraph =
+  sendMessage gkGridGraph gridWidthSelector
 
 -- | @- gridHeight@
 gridHeight :: IsGKGridGraph gkGridGraph => gkGridGraph -> IO CULong
-gridHeight gkGridGraph  =
-    sendMsg gkGridGraph (mkSelector "gridHeight") retCULong []
+gridHeight gkGridGraph =
+  sendMessage gkGridGraph gridHeightSelector
 
 -- | @- diagonalsAllowed@
 diagonalsAllowed :: IsGKGridGraph gkGridGraph => gkGridGraph -> IO Bool
-diagonalsAllowed gkGridGraph  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkGridGraph (mkSelector "diagonalsAllowed") retCULong []
+diagonalsAllowed gkGridGraph =
+  sendMessage gkGridGraph diagonalsAllowedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @connectNodeToAdjacentNodes:@
-connectNodeToAdjacentNodesSelector :: Selector
+connectNodeToAdjacentNodesSelector :: Selector '[Id GKGridGraphNode] ()
 connectNodeToAdjacentNodesSelector = mkSelector "connectNodeToAdjacentNodes:"
 
 -- | @Selector@ for @classForGenericArgumentAtIndex:@
-classForGenericArgumentAtIndexSelector :: Selector
+classForGenericArgumentAtIndexSelector :: Selector '[CULong] Class
 classForGenericArgumentAtIndexSelector = mkSelector "classForGenericArgumentAtIndex:"
 
 -- | @Selector@ for @gridWidth@
-gridWidthSelector :: Selector
+gridWidthSelector :: Selector '[] CULong
 gridWidthSelector = mkSelector "gridWidth"
 
 -- | @Selector@ for @gridHeight@
-gridHeightSelector :: Selector
+gridHeightSelector :: Selector '[] CULong
 gridHeightSelector = mkSelector "gridHeight"
 
 -- | @Selector@ for @diagonalsAllowed@
-diagonalsAllowedSelector :: Selector
+diagonalsAllowedSelector :: Selector '[] Bool
 diagonalsAllowedSelector = mkSelector "diagonalsAllowed"
 

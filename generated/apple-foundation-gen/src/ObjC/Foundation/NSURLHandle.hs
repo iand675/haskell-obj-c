@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,30 +32,30 @@ module ObjC.Foundation.NSURLHandle
   , loadInForeground
   , beginLoadInBackground
   , endLoadInBackground
-  , registerURLHandleClassSelector
-  , urlHandleClassForURLSelector
-  , statusSelector
-  , failureReasonSelector
   , addClientSelector
-  , removeClientSelector
-  , loadInBackgroundSelector
-  , cancelLoadInBackgroundSelector
-  , resourceDataSelector
   , availableResourceDataSelector
-  , expectedResourceDataSizeSelector
-  , flushCachedDataSelector
   , backgroundLoadDidFailWithReasonSelector
-  , didLoadBytes_loadCompleteSelector
-  , canInitWithURLSelector
-  , cachedHandleForURLSelector
-  , initWithURL_cachedSelector
-  , propertyForKeySelector
-  , propertyForKeyIfAvailableSelector
-  , writeProperty_forKeySelector
-  , writeDataSelector
-  , loadInForegroundSelector
   , beginLoadInBackgroundSelector
+  , cachedHandleForURLSelector
+  , canInitWithURLSelector
+  , cancelLoadInBackgroundSelector
+  , didLoadBytes_loadCompleteSelector
   , endLoadInBackgroundSelector
+  , expectedResourceDataSizeSelector
+  , failureReasonSelector
+  , flushCachedDataSelector
+  , initWithURL_cachedSelector
+  , loadInBackgroundSelector
+  , loadInForegroundSelector
+  , propertyForKeyIfAvailableSelector
+  , propertyForKeySelector
+  , registerURLHandleClassSelector
+  , removeClientSelector
+  , resourceDataSelector
+  , statusSelector
+  , urlHandleClassForURLSelector
+  , writeDataSelector
+  , writeProperty_forKeySelector
 
   -- * Enum types
   , NSURLHandleStatus(NSURLHandleStatus)
@@ -65,15 +66,11 @@ module ObjC.Foundation.NSURLHandle
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,236 +82,226 @@ registerURLHandleClass :: Class -> IO ()
 registerURLHandleClass anURLHandleSubclass =
   do
     cls' <- getRequiredClass "NSURLHandle"
-    sendClassMsg cls' (mkSelector "registerURLHandleClass:") retVoid [argPtr (unClass anURLHandleSubclass)]
+    sendClassMessage cls' registerURLHandleClassSelector anURLHandleSubclass
 
 -- | @+ URLHandleClassForURL:@
 urlHandleClassForURL :: IsNSURL anURL => anURL -> IO Class
 urlHandleClassForURL anURL =
   do
     cls' <- getRequiredClass "NSURLHandle"
-    withObjCPtr anURL $ \raw_anURL ->
-      fmap (Class . castPtr) $ sendClassMsg cls' (mkSelector "URLHandleClassForURL:") (retPtr retVoid) [argPtr (castPtr raw_anURL :: Ptr ())]
+    sendClassMessage cls' urlHandleClassForURLSelector (toNSURL anURL)
 
 -- | @- status@
 status :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO NSURLHandleStatus
-status nsurlHandle  =
-    fmap (coerce :: CULong -> NSURLHandleStatus) $ sendMsg nsurlHandle (mkSelector "status") retCULong []
+status nsurlHandle =
+  sendMessage nsurlHandle statusSelector
 
 -- | @- failureReason@
 failureReason :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO (Id NSString)
-failureReason nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "failureReason") (retPtr retVoid) [] >>= retainedObject . castPtr
+failureReason nsurlHandle =
+  sendMessage nsurlHandle failureReasonSelector
 
 -- | @- addClient:@
 addClient :: IsNSURLHandle nsurlHandle => nsurlHandle -> RawId -> IO ()
-addClient nsurlHandle  client =
-    sendMsg nsurlHandle (mkSelector "addClient:") retVoid [argPtr (castPtr (unRawId client) :: Ptr ())]
+addClient nsurlHandle client =
+  sendMessage nsurlHandle addClientSelector client
 
 -- | @- removeClient:@
 removeClient :: IsNSURLHandle nsurlHandle => nsurlHandle -> RawId -> IO ()
-removeClient nsurlHandle  client =
-    sendMsg nsurlHandle (mkSelector "removeClient:") retVoid [argPtr (castPtr (unRawId client) :: Ptr ())]
+removeClient nsurlHandle client =
+  sendMessage nsurlHandle removeClientSelector client
 
 -- | @- loadInBackground@
 loadInBackground :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO ()
-loadInBackground nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "loadInBackground") retVoid []
+loadInBackground nsurlHandle =
+  sendMessage nsurlHandle loadInBackgroundSelector
 
 -- | @- cancelLoadInBackground@
 cancelLoadInBackground :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO ()
-cancelLoadInBackground nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "cancelLoadInBackground") retVoid []
+cancelLoadInBackground nsurlHandle =
+  sendMessage nsurlHandle cancelLoadInBackgroundSelector
 
 -- | @- resourceData@
 resourceData :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO (Id NSData)
-resourceData nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "resourceData") (retPtr retVoid) [] >>= retainedObject . castPtr
+resourceData nsurlHandle =
+  sendMessage nsurlHandle resourceDataSelector
 
 -- | @- availableResourceData@
 availableResourceData :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO (Id NSData)
-availableResourceData nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "availableResourceData") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableResourceData nsurlHandle =
+  sendMessage nsurlHandle availableResourceDataSelector
 
 -- | @- expectedResourceDataSize@
 expectedResourceDataSize :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO CLong
-expectedResourceDataSize nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "expectedResourceDataSize") retCLong []
+expectedResourceDataSize nsurlHandle =
+  sendMessage nsurlHandle expectedResourceDataSizeSelector
 
 -- | @- flushCachedData@
 flushCachedData :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO ()
-flushCachedData nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "flushCachedData") retVoid []
+flushCachedData nsurlHandle =
+  sendMessage nsurlHandle flushCachedDataSelector
 
 -- | @- backgroundLoadDidFailWithReason:@
 backgroundLoadDidFailWithReason :: (IsNSURLHandle nsurlHandle, IsNSString reason) => nsurlHandle -> reason -> IO ()
-backgroundLoadDidFailWithReason nsurlHandle  reason =
-  withObjCPtr reason $ \raw_reason ->
-      sendMsg nsurlHandle (mkSelector "backgroundLoadDidFailWithReason:") retVoid [argPtr (castPtr raw_reason :: Ptr ())]
+backgroundLoadDidFailWithReason nsurlHandle reason =
+  sendMessage nsurlHandle backgroundLoadDidFailWithReasonSelector (toNSString reason)
 
 -- | @- didLoadBytes:loadComplete:@
 didLoadBytes_loadComplete :: (IsNSURLHandle nsurlHandle, IsNSData newBytes) => nsurlHandle -> newBytes -> Bool -> IO ()
-didLoadBytes_loadComplete nsurlHandle  newBytes yorn =
-  withObjCPtr newBytes $ \raw_newBytes ->
-      sendMsg nsurlHandle (mkSelector "didLoadBytes:loadComplete:") retVoid [argPtr (castPtr raw_newBytes :: Ptr ()), argCULong (if yorn then 1 else 0)]
+didLoadBytes_loadComplete nsurlHandle newBytes yorn =
+  sendMessage nsurlHandle didLoadBytes_loadCompleteSelector (toNSData newBytes) yorn
 
 -- | @+ canInitWithURL:@
 canInitWithURL :: IsNSURL anURL => anURL -> IO Bool
 canInitWithURL anURL =
   do
     cls' <- getRequiredClass "NSURLHandle"
-    withObjCPtr anURL $ \raw_anURL ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canInitWithURL:") retCULong [argPtr (castPtr raw_anURL :: Ptr ())]
+    sendClassMessage cls' canInitWithURLSelector (toNSURL anURL)
 
 -- | @+ cachedHandleForURL:@
 cachedHandleForURL :: IsNSURL anURL => anURL -> IO (Id NSURLHandle)
 cachedHandleForURL anURL =
   do
     cls' <- getRequiredClass "NSURLHandle"
-    withObjCPtr anURL $ \raw_anURL ->
-      sendClassMsg cls' (mkSelector "cachedHandleForURL:") (retPtr retVoid) [argPtr (castPtr raw_anURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' cachedHandleForURLSelector (toNSURL anURL)
 
 -- | @- initWithURL:cached:@
 initWithURL_cached :: (IsNSURLHandle nsurlHandle, IsNSURL anURL) => nsurlHandle -> anURL -> Bool -> IO RawId
-initWithURL_cached nsurlHandle  anURL willCache =
-  withObjCPtr anURL $ \raw_anURL ->
-      fmap (RawId . castPtr) $ sendMsg nsurlHandle (mkSelector "initWithURL:cached:") (retPtr retVoid) [argPtr (castPtr raw_anURL :: Ptr ()), argCULong (if willCache then 1 else 0)]
+initWithURL_cached nsurlHandle anURL willCache =
+  sendOwnedMessage nsurlHandle initWithURL_cachedSelector (toNSURL anURL) willCache
 
 -- | @- propertyForKey:@
 propertyForKey :: (IsNSURLHandle nsurlHandle, IsNSString propertyKey) => nsurlHandle -> propertyKey -> IO RawId
-propertyForKey nsurlHandle  propertyKey =
-  withObjCPtr propertyKey $ \raw_propertyKey ->
-      fmap (RawId . castPtr) $ sendMsg nsurlHandle (mkSelector "propertyForKey:") (retPtr retVoid) [argPtr (castPtr raw_propertyKey :: Ptr ())]
+propertyForKey nsurlHandle propertyKey =
+  sendMessage nsurlHandle propertyForKeySelector (toNSString propertyKey)
 
 -- | @- propertyForKeyIfAvailable:@
 propertyForKeyIfAvailable :: (IsNSURLHandle nsurlHandle, IsNSString propertyKey) => nsurlHandle -> propertyKey -> IO RawId
-propertyForKeyIfAvailable nsurlHandle  propertyKey =
-  withObjCPtr propertyKey $ \raw_propertyKey ->
-      fmap (RawId . castPtr) $ sendMsg nsurlHandle (mkSelector "propertyForKeyIfAvailable:") (retPtr retVoid) [argPtr (castPtr raw_propertyKey :: Ptr ())]
+propertyForKeyIfAvailable nsurlHandle propertyKey =
+  sendMessage nsurlHandle propertyForKeyIfAvailableSelector (toNSString propertyKey)
 
 -- | @- writeProperty:forKey:@
 writeProperty_forKey :: (IsNSURLHandle nsurlHandle, IsNSString propertyKey) => nsurlHandle -> RawId -> propertyKey -> IO Bool
-writeProperty_forKey nsurlHandle  propertyValue propertyKey =
-  withObjCPtr propertyKey $ \raw_propertyKey ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlHandle (mkSelector "writeProperty:forKey:") retCULong [argPtr (castPtr (unRawId propertyValue) :: Ptr ()), argPtr (castPtr raw_propertyKey :: Ptr ())]
+writeProperty_forKey nsurlHandle propertyValue propertyKey =
+  sendMessage nsurlHandle writeProperty_forKeySelector propertyValue (toNSString propertyKey)
 
 -- | @- writeData:@
 writeData :: (IsNSURLHandle nsurlHandle, IsNSData data_) => nsurlHandle -> data_ -> IO Bool
-writeData nsurlHandle  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlHandle (mkSelector "writeData:") retCULong [argPtr (castPtr raw_data_ :: Ptr ())]
+writeData nsurlHandle data_ =
+  sendMessage nsurlHandle writeDataSelector (toNSData data_)
 
 -- | @- loadInForeground@
 loadInForeground :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO (Id NSData)
-loadInForeground nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "loadInForeground") (retPtr retVoid) [] >>= retainedObject . castPtr
+loadInForeground nsurlHandle =
+  sendMessage nsurlHandle loadInForegroundSelector
 
 -- | @- beginLoadInBackground@
 beginLoadInBackground :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO ()
-beginLoadInBackground nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "beginLoadInBackground") retVoid []
+beginLoadInBackground nsurlHandle =
+  sendMessage nsurlHandle beginLoadInBackgroundSelector
 
 -- | @- endLoadInBackground@
 endLoadInBackground :: IsNSURLHandle nsurlHandle => nsurlHandle -> IO ()
-endLoadInBackground nsurlHandle  =
-    sendMsg nsurlHandle (mkSelector "endLoadInBackground") retVoid []
+endLoadInBackground nsurlHandle =
+  sendMessage nsurlHandle endLoadInBackgroundSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registerURLHandleClass:@
-registerURLHandleClassSelector :: Selector
+registerURLHandleClassSelector :: Selector '[Class] ()
 registerURLHandleClassSelector = mkSelector "registerURLHandleClass:"
 
 -- | @Selector@ for @URLHandleClassForURL:@
-urlHandleClassForURLSelector :: Selector
+urlHandleClassForURLSelector :: Selector '[Id NSURL] Class
 urlHandleClassForURLSelector = mkSelector "URLHandleClassForURL:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] NSURLHandleStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @failureReason@
-failureReasonSelector :: Selector
+failureReasonSelector :: Selector '[] (Id NSString)
 failureReasonSelector = mkSelector "failureReason"
 
 -- | @Selector@ for @addClient:@
-addClientSelector :: Selector
+addClientSelector :: Selector '[RawId] ()
 addClientSelector = mkSelector "addClient:"
 
 -- | @Selector@ for @removeClient:@
-removeClientSelector :: Selector
+removeClientSelector :: Selector '[RawId] ()
 removeClientSelector = mkSelector "removeClient:"
 
 -- | @Selector@ for @loadInBackground@
-loadInBackgroundSelector :: Selector
+loadInBackgroundSelector :: Selector '[] ()
 loadInBackgroundSelector = mkSelector "loadInBackground"
 
 -- | @Selector@ for @cancelLoadInBackground@
-cancelLoadInBackgroundSelector :: Selector
+cancelLoadInBackgroundSelector :: Selector '[] ()
 cancelLoadInBackgroundSelector = mkSelector "cancelLoadInBackground"
 
 -- | @Selector@ for @resourceData@
-resourceDataSelector :: Selector
+resourceDataSelector :: Selector '[] (Id NSData)
 resourceDataSelector = mkSelector "resourceData"
 
 -- | @Selector@ for @availableResourceData@
-availableResourceDataSelector :: Selector
+availableResourceDataSelector :: Selector '[] (Id NSData)
 availableResourceDataSelector = mkSelector "availableResourceData"
 
 -- | @Selector@ for @expectedResourceDataSize@
-expectedResourceDataSizeSelector :: Selector
+expectedResourceDataSizeSelector :: Selector '[] CLong
 expectedResourceDataSizeSelector = mkSelector "expectedResourceDataSize"
 
 -- | @Selector@ for @flushCachedData@
-flushCachedDataSelector :: Selector
+flushCachedDataSelector :: Selector '[] ()
 flushCachedDataSelector = mkSelector "flushCachedData"
 
 -- | @Selector@ for @backgroundLoadDidFailWithReason:@
-backgroundLoadDidFailWithReasonSelector :: Selector
+backgroundLoadDidFailWithReasonSelector :: Selector '[Id NSString] ()
 backgroundLoadDidFailWithReasonSelector = mkSelector "backgroundLoadDidFailWithReason:"
 
 -- | @Selector@ for @didLoadBytes:loadComplete:@
-didLoadBytes_loadCompleteSelector :: Selector
+didLoadBytes_loadCompleteSelector :: Selector '[Id NSData, Bool] ()
 didLoadBytes_loadCompleteSelector = mkSelector "didLoadBytes:loadComplete:"
 
 -- | @Selector@ for @canInitWithURL:@
-canInitWithURLSelector :: Selector
+canInitWithURLSelector :: Selector '[Id NSURL] Bool
 canInitWithURLSelector = mkSelector "canInitWithURL:"
 
 -- | @Selector@ for @cachedHandleForURL:@
-cachedHandleForURLSelector :: Selector
+cachedHandleForURLSelector :: Selector '[Id NSURL] (Id NSURLHandle)
 cachedHandleForURLSelector = mkSelector "cachedHandleForURL:"
 
 -- | @Selector@ for @initWithURL:cached:@
-initWithURL_cachedSelector :: Selector
+initWithURL_cachedSelector :: Selector '[Id NSURL, Bool] RawId
 initWithURL_cachedSelector = mkSelector "initWithURL:cached:"
 
 -- | @Selector@ for @propertyForKey:@
-propertyForKeySelector :: Selector
+propertyForKeySelector :: Selector '[Id NSString] RawId
 propertyForKeySelector = mkSelector "propertyForKey:"
 
 -- | @Selector@ for @propertyForKeyIfAvailable:@
-propertyForKeyIfAvailableSelector :: Selector
+propertyForKeyIfAvailableSelector :: Selector '[Id NSString] RawId
 propertyForKeyIfAvailableSelector = mkSelector "propertyForKeyIfAvailable:"
 
 -- | @Selector@ for @writeProperty:forKey:@
-writeProperty_forKeySelector :: Selector
+writeProperty_forKeySelector :: Selector '[RawId, Id NSString] Bool
 writeProperty_forKeySelector = mkSelector "writeProperty:forKey:"
 
 -- | @Selector@ for @writeData:@
-writeDataSelector :: Selector
+writeDataSelector :: Selector '[Id NSData] Bool
 writeDataSelector = mkSelector "writeData:"
 
 -- | @Selector@ for @loadInForeground@
-loadInForegroundSelector :: Selector
+loadInForegroundSelector :: Selector '[] (Id NSData)
 loadInForegroundSelector = mkSelector "loadInForeground"
 
 -- | @Selector@ for @beginLoadInBackground@
-beginLoadInBackgroundSelector :: Selector
+beginLoadInBackgroundSelector :: Selector '[] ()
 beginLoadInBackgroundSelector = mkSelector "beginLoadInBackground"
 
 -- | @Selector@ for @endLoadInBackground@
-endLoadInBackgroundSelector :: Selector
+endLoadInBackgroundSelector :: Selector '[] ()
 endLoadInBackgroundSelector = mkSelector "endLoadInBackground"
 

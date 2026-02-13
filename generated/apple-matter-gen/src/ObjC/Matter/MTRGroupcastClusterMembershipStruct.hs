@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRGroupcastClusterMembershipStruct
   , setExpiringKeyID
   , fabricIndex
   , setFabricIndex
-  , groupIDSelector
-  , setGroupIDSelector
   , endpointsSelector
-  , setEndpointsSelector
-  , keyIDSelector
-  , setKeyIDSelector
-  , hasAuxiliaryACLSelector
-  , setHasAuxiliaryACLSelector
   , expiringKeyIDSelector
-  , setExpiringKeyIDSelector
   , fabricIndexSelector
+  , groupIDSelector
+  , hasAuxiliaryACLSelector
+  , keyIDSelector
+  , setEndpointsSelector
+  , setExpiringKeyIDSelector
   , setFabricIndexSelector
+  , setGroupIDSelector
+  , setHasAuxiliaryACLSelector
+  , setKeyIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupID@
 groupID :: IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct => mtrGroupcastClusterMembershipStruct -> IO (Id NSNumber)
-groupID mtrGroupcastClusterMembershipStruct  =
-    sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrGroupcastClusterMembershipStruct =
+  sendMessage mtrGroupcastClusterMembershipStruct groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct, IsNSNumber value) => mtrGroupcastClusterMembershipStruct -> value -> IO ()
-setGroupID mtrGroupcastClusterMembershipStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrGroupcastClusterMembershipStruct value =
+  sendMessage mtrGroupcastClusterMembershipStruct setGroupIDSelector (toNSNumber value)
 
 -- | @- endpoints@
 endpoints :: IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct => mtrGroupcastClusterMembershipStruct -> IO (Id NSArray)
-endpoints mtrGroupcastClusterMembershipStruct  =
-    sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "endpoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoints mtrGroupcastClusterMembershipStruct =
+  sendMessage mtrGroupcastClusterMembershipStruct endpointsSelector
 
 -- | @- setEndpoints:@
 setEndpoints :: (IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct, IsNSArray value) => mtrGroupcastClusterMembershipStruct -> value -> IO ()
-setEndpoints mtrGroupcastClusterMembershipStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "setEndpoints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpoints mtrGroupcastClusterMembershipStruct value =
+  sendMessage mtrGroupcastClusterMembershipStruct setEndpointsSelector (toNSArray value)
 
 -- | @- keyID@
 keyID :: IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct => mtrGroupcastClusterMembershipStruct -> IO (Id NSNumber)
-keyID mtrGroupcastClusterMembershipStruct  =
-    sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "keyID") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyID mtrGroupcastClusterMembershipStruct =
+  sendMessage mtrGroupcastClusterMembershipStruct keyIDSelector
 
 -- | @- setKeyID:@
 setKeyID :: (IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct, IsNSNumber value) => mtrGroupcastClusterMembershipStruct -> value -> IO ()
-setKeyID mtrGroupcastClusterMembershipStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "setKeyID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyID mtrGroupcastClusterMembershipStruct value =
+  sendMessage mtrGroupcastClusterMembershipStruct setKeyIDSelector (toNSNumber value)
 
 -- | @- hasAuxiliaryACL@
 hasAuxiliaryACL :: IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct => mtrGroupcastClusterMembershipStruct -> IO (Id NSNumber)
-hasAuxiliaryACL mtrGroupcastClusterMembershipStruct  =
-    sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "hasAuxiliaryACL") (retPtr retVoid) [] >>= retainedObject . castPtr
+hasAuxiliaryACL mtrGroupcastClusterMembershipStruct =
+  sendMessage mtrGroupcastClusterMembershipStruct hasAuxiliaryACLSelector
 
 -- | @- setHasAuxiliaryACL:@
 setHasAuxiliaryACL :: (IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct, IsNSNumber value) => mtrGroupcastClusterMembershipStruct -> value -> IO ()
-setHasAuxiliaryACL mtrGroupcastClusterMembershipStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "setHasAuxiliaryACL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHasAuxiliaryACL mtrGroupcastClusterMembershipStruct value =
+  sendMessage mtrGroupcastClusterMembershipStruct setHasAuxiliaryACLSelector (toNSNumber value)
 
 -- | @- expiringKeyID@
 expiringKeyID :: IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct => mtrGroupcastClusterMembershipStruct -> IO (Id NSNumber)
-expiringKeyID mtrGroupcastClusterMembershipStruct  =
-    sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "expiringKeyID") (retPtr retVoid) [] >>= retainedObject . castPtr
+expiringKeyID mtrGroupcastClusterMembershipStruct =
+  sendMessage mtrGroupcastClusterMembershipStruct expiringKeyIDSelector
 
 -- | @- setExpiringKeyID:@
 setExpiringKeyID :: (IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct, IsNSNumber value) => mtrGroupcastClusterMembershipStruct -> value -> IO ()
-setExpiringKeyID mtrGroupcastClusterMembershipStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "setExpiringKeyID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExpiringKeyID mtrGroupcastClusterMembershipStruct value =
+  sendMessage mtrGroupcastClusterMembershipStruct setExpiringKeyIDSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct => mtrGroupcastClusterMembershipStruct -> IO (Id NSNumber)
-fabricIndex mtrGroupcastClusterMembershipStruct  =
-    sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrGroupcastClusterMembershipStruct =
+  sendMessage mtrGroupcastClusterMembershipStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRGroupcastClusterMembershipStruct mtrGroupcastClusterMembershipStruct, IsNSNumber value) => mtrGroupcastClusterMembershipStruct -> value -> IO ()
-setFabricIndex mtrGroupcastClusterMembershipStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterMembershipStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrGroupcastClusterMembershipStruct value =
+  sendMessage mtrGroupcastClusterMembershipStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @endpoints@
-endpointsSelector :: Selector
+endpointsSelector :: Selector '[] (Id NSArray)
 endpointsSelector = mkSelector "endpoints"
 
 -- | @Selector@ for @setEndpoints:@
-setEndpointsSelector :: Selector
+setEndpointsSelector :: Selector '[Id NSArray] ()
 setEndpointsSelector = mkSelector "setEndpoints:"
 
 -- | @Selector@ for @keyID@
-keyIDSelector :: Selector
+keyIDSelector :: Selector '[] (Id NSNumber)
 keyIDSelector = mkSelector "keyID"
 
 -- | @Selector@ for @setKeyID:@
-setKeyIDSelector :: Selector
+setKeyIDSelector :: Selector '[Id NSNumber] ()
 setKeyIDSelector = mkSelector "setKeyID:"
 
 -- | @Selector@ for @hasAuxiliaryACL@
-hasAuxiliaryACLSelector :: Selector
+hasAuxiliaryACLSelector :: Selector '[] (Id NSNumber)
 hasAuxiliaryACLSelector = mkSelector "hasAuxiliaryACL"
 
 -- | @Selector@ for @setHasAuxiliaryACL:@
-setHasAuxiliaryACLSelector :: Selector
+setHasAuxiliaryACLSelector :: Selector '[Id NSNumber] ()
 setHasAuxiliaryACLSelector = mkSelector "setHasAuxiliaryACL:"
 
 -- | @Selector@ for @expiringKeyID@
-expiringKeyIDSelector :: Selector
+expiringKeyIDSelector :: Selector '[] (Id NSNumber)
 expiringKeyIDSelector = mkSelector "expiringKeyID"
 
 -- | @Selector@ for @setExpiringKeyID:@
-setExpiringKeyIDSelector :: Selector
+setExpiringKeyIDSelector :: Selector '[Id NSNumber] ()
 setExpiringKeyIDSelector = mkSelector "setExpiringKeyID:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -101,114 +102,110 @@ module ObjC.CoreImage.CIImage
   , semanticSegmentationMatte
   , portraitEffectsMatte
   , depthData
+  , autoAdjustmentFiltersSelector
+  , autoAdjustmentFiltersWithOptionsSelector
+  , blackImageSelector
+  , blueImageSelector
+  , cgImageSelector
+  , clearImageSelector
+  , colorSpaceSelector
+  , contentAverageLightLevelSelector
+  , contentHeadroomSelector
+  , cyanImageSelector
+  , definitionSelector
+  , depthDataSelector
+  , emptyImageSelector
+  , grayImageSelector
+  , greenImageSelector
+  , imageByApplyingCGOrientationSelector
+  , imageByApplyingFilterSelector
+  , imageByApplyingFilter_withInputParametersSelector
+  , imageByApplyingGainMapSelector
+  , imageByApplyingGainMap_headroomSelector
+  , imageByApplyingGaussianBlurWithSigmaSelector
+  , imageByApplyingOrientationSelector
+  , imageByClampingToExtentSelector
+  , imageByColorMatchingColorSpaceToWorkingSpaceSelector
+  , imageByColorMatchingWorkingSpaceToColorSpaceSelector
+  , imageByCompositingOverImageSelector
+  , imageByConvertingLabToWorkingSpaceSelector
+  , imageByConvertingWorkingSpaceToLabSelector
+  , imageByInsertingIntermediateSelector
+  , imageByInsertingTiledIntermediateSelector
+  , imageByPremultiplyingAlphaSelector
+  , imageBySamplingLinearSelector
+  , imageBySamplingNearestSelector
+  , imageBySettingContentAverageLightLevelSelector
+  , imageBySettingContentHeadroomSelector
+  , imageBySettingPropertiesSelector
+  , imageByUnpremultiplyingAlphaSelector
   , imageWithCGImageSelector
-  , imageWithCGImage_optionsSelector
   , imageWithCGImageSource_index_optionsSelector
+  , imageWithCGImage_optionsSelector
   , imageWithCGLayerSelector
   , imageWithCGLayer_optionsSelector
-  , imageWithMTLTexture_optionsSelector
-  , imageWithContentsOfURLSelector
-  , imageWithContentsOfURL_optionsSelector
-  , imageWithDataSelector
-  , imageWithData_optionsSelector
   , imageWithCVImageBufferSelector
   , imageWithCVImageBuffer_optionsSelector
   , imageWithCVPixelBufferSelector
   , imageWithCVPixelBuffer_optionsSelector
+  , imageWithColorSelector
+  , imageWithContentsOfURLSelector
+  , imageWithContentsOfURL_optionsSelector
+  , imageWithDataSelector
+  , imageWithData_optionsSelector
+  , imageWithDepthDataSelector
+  , imageWithDepthData_optionsSelector
   , imageWithIOSurfaceSelector
   , imageWithIOSurface_optionsSelector
-  , imageWithColorSelector
-  , emptyImageSelector
+  , imageWithImageProvider_size__format_colorSpace_optionsSelector
+  , imageWithMTLTexture_optionsSelector
+  , imageWithPortaitEffectsMatteSelector
+  , imageWithPortaitEffectsMatte_optionsSelector
+  , imageWithSemanticSegmentationMatteSelector
+  , imageWithSemanticSegmentationMatte_optionsSelector
   , initWithCGImageSelector
-  , initWithCGImage_optionsSelector
   , initWithCGImageSource_index_optionsSelector
+  , initWithCGImage_optionsSelector
   , initWithCGLayerSelector
   , initWithCGLayer_optionsSelector
-  , initWithDataSelector
-  , initWithData_optionsSelector
-  , initWithMTLTexture_optionsSelector
-  , initWithContentsOfURLSelector
-  , initWithContentsOfURL_optionsSelector
-  , initWithIOSurfaceSelector
-  , initWithIOSurface_optionsSelector
-  , initWithIOSurface_plane_format_optionsSelector
   , initWithCVImageBufferSelector
   , initWithCVImageBuffer_optionsSelector
   , initWithCVPixelBufferSelector
   , initWithCVPixelBuffer_optionsSelector
   , initWithColorSelector
-  , imageByApplyingOrientationSelector
-  , imageByApplyingCGOrientationSelector
-  , imageByCompositingOverImageSelector
-  , imageByClampingToExtentSelector
-  , imageByApplyingFilter_withInputParametersSelector
-  , imageByApplyingFilterSelector
-  , imageByColorMatchingColorSpaceToWorkingSpaceSelector
-  , imageByColorMatchingWorkingSpaceToColorSpaceSelector
-  , imageByPremultiplyingAlphaSelector
-  , imageByUnpremultiplyingAlphaSelector
-  , imageByApplyingGaussianBlurWithSigmaSelector
-  , imageBySettingPropertiesSelector
-  , imageBySamplingLinearSelector
-  , imageBySamplingNearestSelector
-  , imageByInsertingIntermediateSelector
-  , imageByInsertingTiledIntermediateSelector
-  , imageByApplyingGainMapSelector
-  , imageByApplyingGainMap_headroomSelector
-  , imageBySettingContentHeadroomSelector
-  , imageBySettingContentAverageLightLevelSelector
-  , imageWithImageProvider_size__format_colorSpace_optionsSelector
-  , initWithImageProvider_size__format_colorSpace_optionsSelector
-  , initWithSemanticSegmentationMatte_optionsSelector
-  , initWithSemanticSegmentationMatteSelector
-  , imageWithSemanticSegmentationMatte_optionsSelector
-  , imageWithSemanticSegmentationMatteSelector
-  , initWithPortaitEffectsMatte_optionsSelector
-  , initWithPortaitEffectsMatteSelector
-  , imageWithPortaitEffectsMatte_optionsSelector
-  , imageWithPortaitEffectsMatteSelector
-  , initWithDepthData_optionsSelector
+  , initWithContentsOfURLSelector
+  , initWithContentsOfURL_optionsSelector
+  , initWithDataSelector
+  , initWithData_optionsSelector
   , initWithDepthDataSelector
-  , imageWithDepthData_optionsSelector
-  , imageWithDepthDataSelector
-  , imageByConvertingWorkingSpaceToLabSelector
-  , imageByConvertingLabToWorkingSpaceSelector
-  , autoAdjustmentFiltersSelector
-  , autoAdjustmentFiltersWithOptionsSelector
-  , blackImageSelector
-  , whiteImageSelector
-  , grayImageSelector
-  , redImageSelector
-  , greenImageSelector
-  , blueImageSelector
-  , cyanImageSelector
+  , initWithDepthData_optionsSelector
+  , initWithIOSurfaceSelector
+  , initWithIOSurface_optionsSelector
+  , initWithIOSurface_plane_format_optionsSelector
+  , initWithImageProvider_size__format_colorSpace_optionsSelector
+  , initWithMTLTexture_optionsSelector
+  , initWithPortaitEffectsMatteSelector
+  , initWithPortaitEffectsMatte_optionsSelector
+  , initWithSemanticSegmentationMatteSelector
+  , initWithSemanticSegmentationMatte_optionsSelector
   , magentaImageSelector
-  , yellowImageSelector
-  , clearImageSelector
   , opaqueSelector
-  , definitionSelector
-  , urlSelector
-  , colorSpaceSelector
-  , contentHeadroomSelector
-  , contentAverageLightLevelSelector
   , pixelBufferSelector
-  , cgImageSelector
-  , semanticSegmentationMatteSelector
   , portraitEffectsMatteSelector
-  , depthDataSelector
+  , redImageSelector
+  , semanticSegmentationMatteSelector
+  , urlSelector
+  , whiteImageSelector
+  , yellowImageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -220,306 +217,273 @@ imageWithCGImage :: Ptr () -> IO (Id CIImage)
 imageWithCGImage image =
   do
     cls' <- getRequiredClass "CIImage"
-    sendClassMsg cls' (mkSelector "imageWithCGImage:") (retPtr retVoid) [argPtr image] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithCGImageSelector image
 
 -- | @+ imageWithCGImage:options:@
 imageWithCGImage_options :: IsNSDictionary options => Ptr () -> options -> IO (Id CIImage)
 imageWithCGImage_options image options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithCGImage:options:") (retPtr retVoid) [argPtr image, argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithCGImage_optionsSelector image (toNSDictionary options)
 
 -- | @+ imageWithCGImageSource:index:options:@
 imageWithCGImageSource_index_options :: IsNSDictionary dict => Ptr () -> CULong -> dict -> IO (Id CIImage)
 imageWithCGImageSource_index_options source index dict =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr dict $ \raw_dict ->
-      sendClassMsg cls' (mkSelector "imageWithCGImageSource:index:options:") (retPtr retVoid) [argPtr source, argCULong index, argPtr (castPtr raw_dict :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithCGImageSource_index_optionsSelector source index (toNSDictionary dict)
 
 -- | @+ imageWithCGLayer:@
 imageWithCGLayer :: Ptr () -> IO (Id CIImage)
 imageWithCGLayer layer =
   do
     cls' <- getRequiredClass "CIImage"
-    sendClassMsg cls' (mkSelector "imageWithCGLayer:") (retPtr retVoid) [argPtr layer] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithCGLayerSelector layer
 
 -- | @+ imageWithCGLayer:options:@
 imageWithCGLayer_options :: IsNSDictionary options => Ptr () -> options -> IO (Id CIImage)
 imageWithCGLayer_options layer options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithCGLayer:options:") (retPtr retVoid) [argPtr layer, argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithCGLayer_optionsSelector layer (toNSDictionary options)
 
 -- | @+ imageWithMTLTexture:options:@
 imageWithMTLTexture_options :: IsNSDictionary options => RawId -> options -> IO (Id CIImage)
 imageWithMTLTexture_options texture options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithMTLTexture:options:") (retPtr retVoid) [argPtr (castPtr (unRawId texture) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithMTLTexture_optionsSelector texture (toNSDictionary options)
 
 -- | @+ imageWithContentsOfURL:@
 imageWithContentsOfURL :: IsNSURL url => url -> IO (Id CIImage)
 imageWithContentsOfURL url =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "imageWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithContentsOfURLSelector (toNSURL url)
 
 -- | @+ imageWithContentsOfURL:options:@
 imageWithContentsOfURL_options :: (IsNSURL url, IsNSDictionary options) => url -> options -> IO (Id CIImage)
 imageWithContentsOfURL_options url options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "imageWithContentsOfURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithContentsOfURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | @+ imageWithData:@
 imageWithData :: IsNSData data_ => data_ -> IO (Id CIImage)
 imageWithData data_ =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr data_ $ \raw_data_ ->
-      sendClassMsg cls' (mkSelector "imageWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithDataSelector (toNSData data_)
 
 -- | @+ imageWithData:options:@
 imageWithData_options :: (IsNSData data_, IsNSDictionary options) => data_ -> options -> IO (Id CIImage)
 imageWithData_options data_ options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "imageWithData:options:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithData_optionsSelector (toNSData data_) (toNSDictionary options)
 
 -- | @+ imageWithCVImageBuffer:@
 imageWithCVImageBuffer :: Ptr () -> IO (Id CIImage)
 imageWithCVImageBuffer imageBuffer =
   do
     cls' <- getRequiredClass "CIImage"
-    sendClassMsg cls' (mkSelector "imageWithCVImageBuffer:") (retPtr retVoid) [argPtr imageBuffer] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithCVImageBufferSelector imageBuffer
 
 -- | @+ imageWithCVImageBuffer:options:@
 imageWithCVImageBuffer_options :: IsNSDictionary options => Ptr () -> options -> IO (Id CIImage)
 imageWithCVImageBuffer_options imageBuffer options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithCVImageBuffer:options:") (retPtr retVoid) [argPtr imageBuffer, argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithCVImageBuffer_optionsSelector imageBuffer (toNSDictionary options)
 
 -- | @+ imageWithCVPixelBuffer:@
 imageWithCVPixelBuffer :: Ptr () -> IO (Id CIImage)
 imageWithCVPixelBuffer pixelBuffer =
   do
     cls' <- getRequiredClass "CIImage"
-    sendClassMsg cls' (mkSelector "imageWithCVPixelBuffer:") (retPtr retVoid) [argPtr pixelBuffer] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithCVPixelBufferSelector pixelBuffer
 
 -- | @+ imageWithCVPixelBuffer:options:@
 imageWithCVPixelBuffer_options :: IsNSDictionary options => Ptr () -> options -> IO (Id CIImage)
 imageWithCVPixelBuffer_options pixelBuffer options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithCVPixelBuffer:options:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithCVPixelBuffer_optionsSelector pixelBuffer (toNSDictionary options)
 
 -- | @+ imageWithIOSurface:@
 imageWithIOSurface :: Ptr () -> IO (Id CIImage)
 imageWithIOSurface surface =
   do
     cls' <- getRequiredClass "CIImage"
-    sendClassMsg cls' (mkSelector "imageWithIOSurface:") (retPtr retVoid) [argPtr surface] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithIOSurfaceSelector surface
 
 -- | @+ imageWithIOSurface:options:@
 imageWithIOSurface_options :: IsNSDictionary options => Ptr () -> options -> IO (Id CIImage)
 imageWithIOSurface_options surface options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithIOSurface:options:") (retPtr retVoid) [argPtr surface, argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithIOSurface_optionsSelector surface (toNSDictionary options)
 
 -- | @+ imageWithColor:@
 imageWithColor :: IsCIColor color => color -> IO (Id CIImage)
 imageWithColor color =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr color $ \raw_color ->
-      sendClassMsg cls' (mkSelector "imageWithColor:") (retPtr retVoid) [argPtr (castPtr raw_color :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithColorSelector (toCIColor color)
 
 -- | @+ emptyImage@
 emptyImage :: IO (Id CIImage)
 emptyImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    sendClassMsg cls' (mkSelector "emptyImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' emptyImageSelector
 
 -- | @- initWithCGImage:@
 initWithCGImage :: IsCIImage ciImage => ciImage -> Ptr () -> IO (Id CIImage)
-initWithCGImage ciImage  image =
-    sendMsg ciImage (mkSelector "initWithCGImage:") (retPtr retVoid) [argPtr image] >>= ownedObject . castPtr
+initWithCGImage ciImage image =
+  sendOwnedMessage ciImage initWithCGImageSelector image
 
 -- | @- initWithCGImage:options:@
 initWithCGImage_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> Ptr () -> options -> IO (Id CIImage)
-initWithCGImage_options ciImage  image options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithCGImage:options:") (retPtr retVoid) [argPtr image, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCGImage_options ciImage image options =
+  sendOwnedMessage ciImage initWithCGImage_optionsSelector image (toNSDictionary options)
 
 -- | @- initWithCGImageSource:index:options:@
 initWithCGImageSource_index_options :: (IsCIImage ciImage, IsNSDictionary dict) => ciImage -> Ptr () -> CULong -> dict -> IO (Id CIImage)
-initWithCGImageSource_index_options ciImage  source index dict =
-  withObjCPtr dict $ \raw_dict ->
-      sendMsg ciImage (mkSelector "initWithCGImageSource:index:options:") (retPtr retVoid) [argPtr source, argCULong index, argPtr (castPtr raw_dict :: Ptr ())] >>= ownedObject . castPtr
+initWithCGImageSource_index_options ciImage source index dict =
+  sendOwnedMessage ciImage initWithCGImageSource_index_optionsSelector source index (toNSDictionary dict)
 
 -- | @- initWithCGLayer:@
 initWithCGLayer :: IsCIImage ciImage => ciImage -> Ptr () -> IO (Id CIImage)
-initWithCGLayer ciImage  layer =
-    sendMsg ciImage (mkSelector "initWithCGLayer:") (retPtr retVoid) [argPtr layer] >>= ownedObject . castPtr
+initWithCGLayer ciImage layer =
+  sendOwnedMessage ciImage initWithCGLayerSelector layer
 
 -- | @- initWithCGLayer:options:@
 initWithCGLayer_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> Ptr () -> options -> IO (Id CIImage)
-initWithCGLayer_options ciImage  layer options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithCGLayer:options:") (retPtr retVoid) [argPtr layer, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCGLayer_options ciImage layer options =
+  sendOwnedMessage ciImage initWithCGLayer_optionsSelector layer (toNSDictionary options)
 
 -- | @- initWithData:@
 initWithData :: (IsCIImage ciImage, IsNSData data_) => ciImage -> data_ -> IO (Id CIImage)
-initWithData ciImage  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg ciImage (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData ciImage data_ =
+  sendOwnedMessage ciImage initWithDataSelector (toNSData data_)
 
 -- | @- initWithData:options:@
 initWithData_options :: (IsCIImage ciImage, IsNSData data_, IsNSDictionary options) => ciImage -> data_ -> options -> IO (Id CIImage)
-initWithData_options ciImage  data_ options =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg ciImage (mkSelector "initWithData:options:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithData_options ciImage data_ options =
+  sendOwnedMessage ciImage initWithData_optionsSelector (toNSData data_) (toNSDictionary options)
 
 -- | @- initWithMTLTexture:options:@
 initWithMTLTexture_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> RawId -> options -> IO (Id CIImage)
-initWithMTLTexture_options ciImage  texture options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithMTLTexture:options:") (retPtr retVoid) [argPtr (castPtr (unRawId texture) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithMTLTexture_options ciImage texture options =
+  sendOwnedMessage ciImage initWithMTLTexture_optionsSelector texture (toNSDictionary options)
 
 -- | @- initWithContentsOfURL:@
 initWithContentsOfURL :: (IsCIImage ciImage, IsNSURL url) => ciImage -> url -> IO (Id CIImage)
-initWithContentsOfURL ciImage  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg ciImage (mkSelector "initWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL ciImage url =
+  sendOwnedMessage ciImage initWithContentsOfURLSelector (toNSURL url)
 
 -- | @- initWithContentsOfURL:options:@
 initWithContentsOfURL_options :: (IsCIImage ciImage, IsNSURL url, IsNSDictionary options) => ciImage -> url -> options -> IO (Id CIImage)
-initWithContentsOfURL_options ciImage  url options =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg ciImage (mkSelector "initWithContentsOfURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL_options ciImage url options =
+  sendOwnedMessage ciImage initWithContentsOfURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | @- initWithIOSurface:@
 initWithIOSurface :: IsCIImage ciImage => ciImage -> Ptr () -> IO (Id CIImage)
-initWithIOSurface ciImage  surface =
-    sendMsg ciImage (mkSelector "initWithIOSurface:") (retPtr retVoid) [argPtr surface] >>= ownedObject . castPtr
+initWithIOSurface ciImage surface =
+  sendOwnedMessage ciImage initWithIOSurfaceSelector surface
 
 -- | @- initWithIOSurface:options:@
 initWithIOSurface_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> Ptr () -> options -> IO (Id CIImage)
-initWithIOSurface_options ciImage  surface options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithIOSurface:options:") (retPtr retVoid) [argPtr surface, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithIOSurface_options ciImage surface options =
+  sendOwnedMessage ciImage initWithIOSurface_optionsSelector surface (toNSDictionary options)
 
 -- | @- initWithIOSurface:plane:format:options:@
 initWithIOSurface_plane_format_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> Ptr () -> CULong -> CInt -> options -> IO (Id CIImage)
-initWithIOSurface_plane_format_options ciImage  surface plane format options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithIOSurface:plane:format:options:") (retPtr retVoid) [argPtr surface, argCULong plane, argCInt format, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithIOSurface_plane_format_options ciImage surface plane format options =
+  sendOwnedMessage ciImage initWithIOSurface_plane_format_optionsSelector surface plane format (toNSDictionary options)
 
 -- | @- initWithCVImageBuffer:@
 initWithCVImageBuffer :: IsCIImage ciImage => ciImage -> Ptr () -> IO (Id CIImage)
-initWithCVImageBuffer ciImage  imageBuffer =
-    sendMsg ciImage (mkSelector "initWithCVImageBuffer:") (retPtr retVoid) [argPtr imageBuffer] >>= ownedObject . castPtr
+initWithCVImageBuffer ciImage imageBuffer =
+  sendOwnedMessage ciImage initWithCVImageBufferSelector imageBuffer
 
 -- | @- initWithCVImageBuffer:options:@
 initWithCVImageBuffer_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> Ptr () -> options -> IO (Id CIImage)
-initWithCVImageBuffer_options ciImage  imageBuffer options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithCVImageBuffer:options:") (retPtr retVoid) [argPtr imageBuffer, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCVImageBuffer_options ciImage imageBuffer options =
+  sendOwnedMessage ciImage initWithCVImageBuffer_optionsSelector imageBuffer (toNSDictionary options)
 
 -- | @- initWithCVPixelBuffer:@
 initWithCVPixelBuffer :: IsCIImage ciImage => ciImage -> Ptr () -> IO (Id CIImage)
-initWithCVPixelBuffer ciImage  pixelBuffer =
-    sendMsg ciImage (mkSelector "initWithCVPixelBuffer:") (retPtr retVoid) [argPtr pixelBuffer] >>= ownedObject . castPtr
+initWithCVPixelBuffer ciImage pixelBuffer =
+  sendOwnedMessage ciImage initWithCVPixelBufferSelector pixelBuffer
 
 -- | @- initWithCVPixelBuffer:options:@
 initWithCVPixelBuffer_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> Ptr () -> options -> IO (Id CIImage)
-initWithCVPixelBuffer_options ciImage  pixelBuffer options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithCVPixelBuffer:options:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithCVPixelBuffer_options ciImage pixelBuffer options =
+  sendOwnedMessage ciImage initWithCVPixelBuffer_optionsSelector pixelBuffer (toNSDictionary options)
 
 -- | @- initWithColor:@
 initWithColor :: (IsCIImage ciImage, IsCIColor color) => ciImage -> color -> IO (Id CIImage)
-initWithColor ciImage  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg ciImage (mkSelector "initWithColor:") (retPtr retVoid) [argPtr (castPtr raw_color :: Ptr ())] >>= ownedObject . castPtr
+initWithColor ciImage color =
+  sendOwnedMessage ciImage initWithColorSelector (toCIColor color)
 
 -- | @- imageByApplyingOrientation:@
 imageByApplyingOrientation :: IsCIImage ciImage => ciImage -> CInt -> IO (Id CIImage)
-imageByApplyingOrientation ciImage  orientation =
-    sendMsg ciImage (mkSelector "imageByApplyingOrientation:") (retPtr retVoid) [argCInt orientation] >>= retainedObject . castPtr
+imageByApplyingOrientation ciImage orientation =
+  sendMessage ciImage imageByApplyingOrientationSelector orientation
 
 -- | @- imageByApplyingCGOrientation:@
 imageByApplyingCGOrientation :: IsCIImage ciImage => ciImage -> CInt -> IO (Id CIImage)
-imageByApplyingCGOrientation ciImage  orientation =
-    sendMsg ciImage (mkSelector "imageByApplyingCGOrientation:") (retPtr retVoid) [argCInt (fromIntegral orientation)] >>= retainedObject . castPtr
+imageByApplyingCGOrientation ciImage orientation =
+  sendMessage ciImage imageByApplyingCGOrientationSelector orientation
 
 -- | @- imageByCompositingOverImage:@
 imageByCompositingOverImage :: (IsCIImage ciImage, IsCIImage dest) => ciImage -> dest -> IO (Id CIImage)
-imageByCompositingOverImage ciImage  dest =
-  withObjCPtr dest $ \raw_dest ->
-      sendMsg ciImage (mkSelector "imageByCompositingOverImage:") (retPtr retVoid) [argPtr (castPtr raw_dest :: Ptr ())] >>= retainedObject . castPtr
+imageByCompositingOverImage ciImage dest =
+  sendMessage ciImage imageByCompositingOverImageSelector (toCIImage dest)
 
 -- | @- imageByClampingToExtent@
 imageByClampingToExtent :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
-imageByClampingToExtent ciImage  =
-    sendMsg ciImage (mkSelector "imageByClampingToExtent") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageByClampingToExtent ciImage =
+  sendMessage ciImage imageByClampingToExtentSelector
 
 -- | @- imageByApplyingFilter:withInputParameters:@
 imageByApplyingFilter_withInputParameters :: (IsCIImage ciImage, IsNSString filterName, IsNSDictionary params) => ciImage -> filterName -> params -> IO (Id CIImage)
-imageByApplyingFilter_withInputParameters ciImage  filterName params =
-  withObjCPtr filterName $ \raw_filterName ->
-    withObjCPtr params $ \raw_params ->
-        sendMsg ciImage (mkSelector "imageByApplyingFilter:withInputParameters:") (retPtr retVoid) [argPtr (castPtr raw_filterName :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+imageByApplyingFilter_withInputParameters ciImage filterName params =
+  sendMessage ciImage imageByApplyingFilter_withInputParametersSelector (toNSString filterName) (toNSDictionary params)
 
 -- | @- imageByApplyingFilter:@
 imageByApplyingFilter :: (IsCIImage ciImage, IsNSString filterName) => ciImage -> filterName -> IO (Id CIImage)
-imageByApplyingFilter ciImage  filterName =
-  withObjCPtr filterName $ \raw_filterName ->
-      sendMsg ciImage (mkSelector "imageByApplyingFilter:") (retPtr retVoid) [argPtr (castPtr raw_filterName :: Ptr ())] >>= retainedObject . castPtr
+imageByApplyingFilter ciImage filterName =
+  sendMessage ciImage imageByApplyingFilterSelector (toNSString filterName)
 
 -- | @- imageByColorMatchingColorSpaceToWorkingSpace:@
 imageByColorMatchingColorSpaceToWorkingSpace :: IsCIImage ciImage => ciImage -> Ptr () -> IO (Id CIImage)
-imageByColorMatchingColorSpaceToWorkingSpace ciImage  colorSpace =
-    sendMsg ciImage (mkSelector "imageByColorMatchingColorSpaceToWorkingSpace:") (retPtr retVoid) [argPtr colorSpace] >>= retainedObject . castPtr
+imageByColorMatchingColorSpaceToWorkingSpace ciImage colorSpace =
+  sendMessage ciImage imageByColorMatchingColorSpaceToWorkingSpaceSelector colorSpace
 
 -- | @- imageByColorMatchingWorkingSpaceToColorSpace:@
 imageByColorMatchingWorkingSpaceToColorSpace :: IsCIImage ciImage => ciImage -> Ptr () -> IO (Id CIImage)
-imageByColorMatchingWorkingSpaceToColorSpace ciImage  colorSpace =
-    sendMsg ciImage (mkSelector "imageByColorMatchingWorkingSpaceToColorSpace:") (retPtr retVoid) [argPtr colorSpace] >>= retainedObject . castPtr
+imageByColorMatchingWorkingSpaceToColorSpace ciImage colorSpace =
+  sendMessage ciImage imageByColorMatchingWorkingSpaceToColorSpaceSelector colorSpace
 
 -- | @- imageByPremultiplyingAlpha@
 imageByPremultiplyingAlpha :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
-imageByPremultiplyingAlpha ciImage  =
-    sendMsg ciImage (mkSelector "imageByPremultiplyingAlpha") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageByPremultiplyingAlpha ciImage =
+  sendMessage ciImage imageByPremultiplyingAlphaSelector
 
 -- | @- imageByUnpremultiplyingAlpha@
 imageByUnpremultiplyingAlpha :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
-imageByUnpremultiplyingAlpha ciImage  =
-    sendMsg ciImage (mkSelector "imageByUnpremultiplyingAlpha") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageByUnpremultiplyingAlpha ciImage =
+  sendMessage ciImage imageByUnpremultiplyingAlphaSelector
 
 -- | Create an image by applying a gaussian blur to the receiver. - Parameters:    - sigma: The sigma of the gaussian blur to apply to the receiver.             If the sigma is very small (less than @0.16@) then the receiver is returned. - Returns:     An autoreleased ``CIImage`` instance or the received image.
 --
 -- ObjC selector: @- imageByApplyingGaussianBlurWithSigma:@
 imageByApplyingGaussianBlurWithSigma :: IsCIImage ciImage => ciImage -> CDouble -> IO (Id CIImage)
-imageByApplyingGaussianBlurWithSigma ciImage  sigma =
-    sendMsg ciImage (mkSelector "imageByApplyingGaussianBlurWithSigma:") (retPtr retVoid) [argCDouble sigma] >>= retainedObject . castPtr
+imageByApplyingGaussianBlurWithSigma ciImage sigma =
+  sendMessage ciImage imageByApplyingGaussianBlurWithSigmaSelector sigma
 
 -- | Return a new image by changing the receiver's metadata properties.
 --
@@ -529,23 +493,22 @@ imageByApplyingGaussianBlurWithSigma ciImage  sigma =
 --
 -- ObjC selector: @- imageBySettingProperties:@
 imageBySettingProperties :: (IsCIImage ciImage, IsNSDictionary properties) => ciImage -> properties -> IO (Id CIImage)
-imageBySettingProperties ciImage  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg ciImage (mkSelector "imageBySettingProperties:") (retPtr retVoid) [argPtr (castPtr raw_properties :: Ptr ())] >>= retainedObject . castPtr
+imageBySettingProperties ciImage properties =
+  sendMessage ciImage imageBySettingPropertiesSelector (toNSDictionary properties)
 
 -- | Create an image by changing the receiver's sample mode to bilinear interpolation. - Returns:     An autoreleased ``CIImage`` instance with a bilinear sampling.
 --
 -- ObjC selector: @- imageBySamplingLinear@
 imageBySamplingLinear :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
-imageBySamplingLinear ciImage  =
-    sendMsg ciImage (mkSelector "imageBySamplingLinear") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageBySamplingLinear ciImage =
+  sendMessage ciImage imageBySamplingLinearSelector
 
 -- | Create an image by changing the receiver's sample mode to nearest neighbor. - Returns:     An autoreleased ``CIImage`` instance with a nearest sampling.
 --
 -- ObjC selector: @- imageBySamplingNearest@
 imageBySamplingNearest :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
-imageBySamplingNearest ciImage  =
-    sendMsg ciImage (mkSelector "imageBySamplingNearest") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageBySamplingNearest ciImage =
+  sendMessage ciImage imageBySamplingNearestSelector
 
 -- | Create an image that inserts a intermediate that is cacheable
 --
@@ -553,8 +516,8 @@ imageBySamplingNearest ciImage  =
 --
 -- ObjC selector: @- imageByInsertingIntermediate@
 imageByInsertingIntermediate :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
-imageByInsertingIntermediate ciImage  =
-    sendMsg ciImage (mkSelector "imageByInsertingIntermediate") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageByInsertingIntermediate ciImage =
+  sendMessage ciImage imageByInsertingIntermediateSelector
 
 -- | Create an image that inserts a intermediate that is cached in tiles
 --
@@ -562,8 +525,8 @@ imageByInsertingIntermediate ciImage  =
 --
 -- ObjC selector: @- imageByInsertingTiledIntermediate@
 imageByInsertingTiledIntermediate :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
-imageByInsertingTiledIntermediate ciImage  =
-    sendMsg ciImage (mkSelector "imageByInsertingTiledIntermediate") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageByInsertingTiledIntermediate ciImage =
+  sendMessage ciImage imageByInsertingTiledIntermediateSelector
 
 -- | Create an image that applies a gain map Core Image image to the received Core Image image.
 --
@@ -575,9 +538,8 @@ imageByInsertingTiledIntermediate ciImage  =
 --
 -- ObjC selector: @- imageByApplyingGainMap:@
 imageByApplyingGainMap :: (IsCIImage ciImage, IsCIImage gainmap) => ciImage -> gainmap -> IO (Id CIImage)
-imageByApplyingGainMap ciImage  gainmap =
-  withObjCPtr gainmap $ \raw_gainmap ->
-      sendMsg ciImage (mkSelector "imageByApplyingGainMap:") (retPtr retVoid) [argPtr (castPtr raw_gainmap :: Ptr ())] >>= retainedObject . castPtr
+imageByApplyingGainMap ciImage gainmap =
+  sendMessage ciImage imageByApplyingGainMapSelector (toCIImage gainmap)
 
 -- | Create an image that applies a gain map Core Image image with a specified headroom to the received Core Image image.
 --
@@ -585,9 +547,8 @@ imageByApplyingGainMap ciImage  gainmap =
 --
 -- ObjC selector: @- imageByApplyingGainMap:headroom:@
 imageByApplyingGainMap_headroom :: (IsCIImage ciImage, IsCIImage gainmap) => ciImage -> gainmap -> CFloat -> IO (Id CIImage)
-imageByApplyingGainMap_headroom ciImage  gainmap headroom =
-  withObjCPtr gainmap $ \raw_gainmap ->
-      sendMsg ciImage (mkSelector "imageByApplyingGainMap:headroom:") (retPtr retVoid) [argPtr (castPtr raw_gainmap :: Ptr ()), argCFloat headroom] >>= retainedObject . castPtr
+imageByApplyingGainMap_headroom ciImage gainmap headroom =
+  sendMessage ciImage imageByApplyingGainMap_headroomSelector (toCIImage gainmap) headroom
 
 -- | Create an image by changing the receiver's contentHeadroom property.
 --
@@ -597,8 +558,8 @@ imageByApplyingGainMap_headroom ciImage  gainmap headroom =
 --
 -- ObjC selector: @- imageBySettingContentHeadroom:@
 imageBySettingContentHeadroom :: IsCIImage ciImage => ciImage -> CFloat -> IO (Id CIImage)
-imageBySettingContentHeadroom ciImage  headroom =
-    sendMsg ciImage (mkSelector "imageBySettingContentHeadroom:") (retPtr retVoid) [argCFloat headroom] >>= retainedObject . castPtr
+imageBySettingContentHeadroom ciImage headroom =
+  sendMessage ciImage imageBySettingContentHeadroomSelector headroom
 
 -- | Create an image by changing the receiver's contentAverageLightLevel property.
 --
@@ -608,8 +569,8 @@ imageBySettingContentHeadroom ciImage  headroom =
 --
 -- ObjC selector: @- imageBySettingContentAverageLightLevel:@
 imageBySettingContentAverageLightLevel :: IsCIImage ciImage => ciImage -> CFloat -> IO (Id CIImage)
-imageBySettingContentAverageLightLevel ciImage  average =
-    sendMsg ciImage (mkSelector "imageBySettingContentAverageLightLevel:") (retPtr retVoid) [argCFloat average] >>= retainedObject . castPtr
+imageBySettingContentAverageLightLevel ciImage average =
+  sendMessage ciImage imageBySettingContentAverageLightLevelSelector average
 
 -- | Create an image object based on pixels from an image provider object.
 --
@@ -622,8 +583,7 @@ imageWithImageProvider_size__format_colorSpace_options :: IsNSDictionary options
 imageWithImageProvider_size__format_colorSpace_options provider width height format colorSpace options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithImageProvider:size::format:colorSpace:options:") (retPtr retVoid) [argPtr (castPtr (unRawId provider) :: Ptr ()), argCULong width, argCULong height, argCInt format, argPtr colorSpace, argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithImageProvider_size__format_colorSpace_optionsSelector provider width height format colorSpace (toNSDictionary options)
 
 -- | Initializes an image object based on pixels from an image provider object.
 --
@@ -633,200 +593,192 @@ imageWithImageProvider_size__format_colorSpace_options provider width height for
 --
 -- ObjC selector: @- initWithImageProvider:size::format:colorSpace:options:@
 initWithImageProvider_size__format_colorSpace_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> RawId -> CULong -> CULong -> CInt -> Ptr () -> options -> IO (Id CIImage)
-initWithImageProvider_size__format_colorSpace_options ciImage  provider width height format colorSpace options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithImageProvider:size::format:colorSpace:options:") (retPtr retVoid) [argPtr (castPtr (unRawId provider) :: Ptr ()), argCULong width, argCULong height, argCInt format, argPtr colorSpace, argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithImageProvider_size__format_colorSpace_options ciImage provider width height format colorSpace options =
+  sendOwnedMessage ciImage initWithImageProvider_size__format_colorSpace_optionsSelector provider width height format colorSpace (toNSDictionary options)
 
 -- | @- initWithSemanticSegmentationMatte:options:@
 initWithSemanticSegmentationMatte_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> RawId -> options -> IO (Id CIImage)
-initWithSemanticSegmentationMatte_options ciImage  matte options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithSemanticSegmentationMatte:options:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithSemanticSegmentationMatte_options ciImage matte options =
+  sendOwnedMessage ciImage initWithSemanticSegmentationMatte_optionsSelector matte (toNSDictionary options)
 
 -- | @- initWithSemanticSegmentationMatte:@
 initWithSemanticSegmentationMatte :: IsCIImage ciImage => ciImage -> RawId -> IO (Id CIImage)
-initWithSemanticSegmentationMatte ciImage  matte =
-    sendMsg ciImage (mkSelector "initWithSemanticSegmentationMatte:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ())] >>= ownedObject . castPtr
+initWithSemanticSegmentationMatte ciImage matte =
+  sendOwnedMessage ciImage initWithSemanticSegmentationMatteSelector matte
 
 -- | @+ imageWithSemanticSegmentationMatte:options:@
 imageWithSemanticSegmentationMatte_options :: IsNSDictionary options => RawId -> options -> IO (Id CIImage)
 imageWithSemanticSegmentationMatte_options matte options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithSemanticSegmentationMatte:options:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithSemanticSegmentationMatte_optionsSelector matte (toNSDictionary options)
 
 -- | @+ imageWithSemanticSegmentationMatte:@
 imageWithSemanticSegmentationMatte :: RawId -> IO (Id CIImage)
 imageWithSemanticSegmentationMatte matte =
   do
     cls' <- getRequiredClass "CIImage"
-    sendClassMsg cls' (mkSelector "imageWithSemanticSegmentationMatte:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithSemanticSegmentationMatteSelector matte
 
 -- | @- initWithPortaitEffectsMatte:options:@
 initWithPortaitEffectsMatte_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> RawId -> options -> IO (Id CIImage)
-initWithPortaitEffectsMatte_options ciImage  matte options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithPortaitEffectsMatte:options:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithPortaitEffectsMatte_options ciImage matte options =
+  sendOwnedMessage ciImage initWithPortaitEffectsMatte_optionsSelector matte (toNSDictionary options)
 
 -- | @- initWithPortaitEffectsMatte:@
 initWithPortaitEffectsMatte :: IsCIImage ciImage => ciImage -> RawId -> IO (Id CIImage)
-initWithPortaitEffectsMatte ciImage  matte =
-    sendMsg ciImage (mkSelector "initWithPortaitEffectsMatte:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ())] >>= ownedObject . castPtr
+initWithPortaitEffectsMatte ciImage matte =
+  sendOwnedMessage ciImage initWithPortaitEffectsMatteSelector matte
 
 -- | @+ imageWithPortaitEffectsMatte:options:@
 imageWithPortaitEffectsMatte_options :: IsNSDictionary options => RawId -> options -> IO (Id CIImage)
 imageWithPortaitEffectsMatte_options matte options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithPortaitEffectsMatte:options:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithPortaitEffectsMatte_optionsSelector matte (toNSDictionary options)
 
 -- | @+ imageWithPortaitEffectsMatte:@
 imageWithPortaitEffectsMatte :: RawId -> IO (Id CIImage)
 imageWithPortaitEffectsMatte matte =
   do
     cls' <- getRequiredClass "CIImage"
-    sendClassMsg cls' (mkSelector "imageWithPortaitEffectsMatte:") (retPtr retVoid) [argPtr (castPtr (unRawId matte) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithPortaitEffectsMatteSelector matte
 
 -- | @- initWithDepthData:options:@
 initWithDepthData_options :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> RawId -> options -> IO (Id CIImage)
-initWithDepthData_options ciImage  data_ options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "initWithDepthData:options:") (retPtr retVoid) [argPtr (castPtr (unRawId data_) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithDepthData_options ciImage data_ options =
+  sendOwnedMessage ciImage initWithDepthData_optionsSelector data_ (toNSDictionary options)
 
 -- | @- initWithDepthData:@
 initWithDepthData :: IsCIImage ciImage => ciImage -> RawId -> IO (Id CIImage)
-initWithDepthData ciImage  data_ =
-    sendMsg ciImage (mkSelector "initWithDepthData:") (retPtr retVoid) [argPtr (castPtr (unRawId data_) :: Ptr ())] >>= ownedObject . castPtr
+initWithDepthData ciImage data_ =
+  sendOwnedMessage ciImage initWithDepthDataSelector data_
 
 -- | @+ imageWithDepthData:options:@
 imageWithDepthData_options :: IsNSDictionary options => RawId -> options -> IO (Id CIImage)
 imageWithDepthData_options data_ options =
   do
     cls' <- getRequiredClass "CIImage"
-    withObjCPtr options $ \raw_options ->
-      sendClassMsg cls' (mkSelector "imageWithDepthData:options:") (retPtr retVoid) [argPtr (castPtr (unRawId data_) :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithDepthData_optionsSelector data_ (toNSDictionary options)
 
 -- | @+ imageWithDepthData:@
 imageWithDepthData :: RawId -> IO (Id CIImage)
 imageWithDepthData data_ =
   do
     cls' <- getRequiredClass "CIImage"
-    sendClassMsg cls' (mkSelector "imageWithDepthData:") (retPtr retVoid) [argPtr (castPtr (unRawId data_) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithDepthDataSelector data_
 
 -- | @- imageByConvertingWorkingSpaceToLab@
 imageByConvertingWorkingSpaceToLab :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
-imageByConvertingWorkingSpaceToLab ciImage  =
-    sendMsg ciImage (mkSelector "imageByConvertingWorkingSpaceToLab") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageByConvertingWorkingSpaceToLab ciImage =
+  sendMessage ciImage imageByConvertingWorkingSpaceToLabSelector
 
 -- | @- imageByConvertingLabToWorkingSpace@
 imageByConvertingLabToWorkingSpace :: IsCIImage ciImage => ciImage -> IO (Id CIImage)
-imageByConvertingLabToWorkingSpace ciImage  =
-    sendMsg ciImage (mkSelector "imageByConvertingLabToWorkingSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageByConvertingLabToWorkingSpace ciImage =
+  sendMessage ciImage imageByConvertingLabToWorkingSpaceSelector
 
 -- | @- autoAdjustmentFilters@
 autoAdjustmentFilters :: IsCIImage ciImage => ciImage -> IO (Id NSArray)
-autoAdjustmentFilters ciImage  =
-    sendMsg ciImage (mkSelector "autoAdjustmentFilters") (retPtr retVoid) [] >>= retainedObject . castPtr
+autoAdjustmentFilters ciImage =
+  sendMessage ciImage autoAdjustmentFiltersSelector
 
 -- | @- autoAdjustmentFiltersWithOptions:@
 autoAdjustmentFiltersWithOptions :: (IsCIImage ciImage, IsNSDictionary options) => ciImage -> options -> IO (Id NSArray)
-autoAdjustmentFiltersWithOptions ciImage  options =
-  withObjCPtr options $ \raw_options ->
-      sendMsg ciImage (mkSelector "autoAdjustmentFiltersWithOptions:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+autoAdjustmentFiltersWithOptions ciImage options =
+  sendMessage ciImage autoAdjustmentFiltersWithOptionsSelector (toNSDictionary options)
 
 -- | @+ blackImage@
 blackImage :: IO RawId
 blackImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "blackImage") (retPtr retVoid) []
+    sendClassMessage cls' blackImageSelector
 
 -- | @+ whiteImage@
 whiteImage :: IO RawId
 whiteImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "whiteImage") (retPtr retVoid) []
+    sendClassMessage cls' whiteImageSelector
 
 -- | @+ grayImage@
 grayImage :: IO RawId
 grayImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "grayImage") (retPtr retVoid) []
+    sendClassMessage cls' grayImageSelector
 
 -- | @+ redImage@
 redImage :: IO RawId
 redImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "redImage") (retPtr retVoid) []
+    sendClassMessage cls' redImageSelector
 
 -- | @+ greenImage@
 greenImage :: IO RawId
 greenImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "greenImage") (retPtr retVoid) []
+    sendClassMessage cls' greenImageSelector
 
 -- | @+ blueImage@
 blueImage :: IO RawId
 blueImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "blueImage") (retPtr retVoid) []
+    sendClassMessage cls' blueImageSelector
 
 -- | @+ cyanImage@
 cyanImage :: IO RawId
 cyanImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "cyanImage") (retPtr retVoid) []
+    sendClassMessage cls' cyanImageSelector
 
 -- | @+ magentaImage@
 magentaImage :: IO RawId
 magentaImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "magentaImage") (retPtr retVoid) []
+    sendClassMessage cls' magentaImageSelector
 
 -- | @+ yellowImage@
 yellowImage :: IO RawId
 yellowImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "yellowImage") (retPtr retVoid) []
+    sendClassMessage cls' yellowImageSelector
 
 -- | @+ clearImage@
 clearImage :: IO RawId
 clearImage  =
   do
     cls' <- getRequiredClass "CIImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "clearImage") (retPtr retVoid) []
+    sendClassMessage cls' clearImageSelector
 
 -- | Returns YES if the image is known to have and alpha value of @1.0@ over the entire image extent.
 --
 -- ObjC selector: @- opaque@
 opaque :: IsCIImage ciImage => ciImage -> IO Bool
-opaque ciImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciImage (mkSelector "opaque") retCULong []
+opaque ciImage =
+  sendMessage ciImage opaqueSelector
 
 -- | @- definition@
 definition :: IsCIImage ciImage => ciImage -> IO RawId
-definition ciImage  =
-    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "definition") (retPtr retVoid) []
+definition ciImage =
+  sendMessage ciImage definitionSelector
 
 -- | @- url@
 url :: IsCIImage ciImage => ciImage -> IO RawId
-url ciImage  =
-    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "url") (retPtr retVoid) []
+url ciImage =
+  sendMessage ciImage urlSelector
 
 -- | @- colorSpace@
 colorSpace :: IsCIImage ciImage => ciImage -> IO (Ptr ())
-colorSpace ciImage  =
-    fmap castPtr $ sendMsg ciImage (mkSelector "colorSpace") (retPtr retVoid) []
+colorSpace ciImage =
+  sendMessage ciImage colorSpaceSelector
 
 -- | Returns the content headroom of the image.
 --
@@ -842,8 +794,8 @@ colorSpace ciImage  =
 --
 -- ObjC selector: @- contentHeadroom@
 contentHeadroom :: IsCIImage ciImage => ciImage -> IO CFloat
-contentHeadroom ciImage  =
-    sendMsg ciImage (mkSelector "contentHeadroom") retCFloat []
+contentHeadroom ciImage =
+  sendMessage ciImage contentHeadroomSelector
 
 -- | Returns the content average light level of the image.
 --
@@ -859,415 +811,415 @@ contentHeadroom ciImage  =
 --
 -- ObjC selector: @- contentAverageLightLevel@
 contentAverageLightLevel :: IsCIImage ciImage => ciImage -> IO CFloat
-contentAverageLightLevel ciImage  =
-    sendMsg ciImage (mkSelector "contentAverageLightLevel") retCFloat []
+contentAverageLightLevel ciImage =
+  sendMessage ciImage contentAverageLightLevelSelector
 
 -- | @- pixelBuffer@
 pixelBuffer :: IsCIImage ciImage => ciImage -> IO (Ptr ())
-pixelBuffer ciImage  =
-    fmap castPtr $ sendMsg ciImage (mkSelector "pixelBuffer") (retPtr retVoid) []
+pixelBuffer ciImage =
+  sendMessage ciImage pixelBufferSelector
 
 -- | @- CGImage@
 cgImage :: IsCIImage ciImage => ciImage -> IO (Ptr ())
-cgImage ciImage  =
-    fmap castPtr $ sendMsg ciImage (mkSelector "CGImage") (retPtr retVoid) []
+cgImage ciImage =
+  sendMessage ciImage cgImageSelector
 
 -- | @- semanticSegmentationMatte@
 semanticSegmentationMatte :: IsCIImage ciImage => ciImage -> IO RawId
-semanticSegmentationMatte ciImage  =
-    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "semanticSegmentationMatte") (retPtr retVoid) []
+semanticSegmentationMatte ciImage =
+  sendMessage ciImage semanticSegmentationMatteSelector
 
 -- | @- portraitEffectsMatte@
 portraitEffectsMatte :: IsCIImage ciImage => ciImage -> IO RawId
-portraitEffectsMatte ciImage  =
-    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "portraitEffectsMatte") (retPtr retVoid) []
+portraitEffectsMatte ciImage =
+  sendMessage ciImage portraitEffectsMatteSelector
 
 -- | @- depthData@
 depthData :: IsCIImage ciImage => ciImage -> IO RawId
-depthData ciImage  =
-    fmap (RawId . castPtr) $ sendMsg ciImage (mkSelector "depthData") (retPtr retVoid) []
+depthData ciImage =
+  sendMessage ciImage depthDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageWithCGImage:@
-imageWithCGImageSelector :: Selector
+imageWithCGImageSelector :: Selector '[Ptr ()] (Id CIImage)
 imageWithCGImageSelector = mkSelector "imageWithCGImage:"
 
 -- | @Selector@ for @imageWithCGImage:options:@
-imageWithCGImage_optionsSelector :: Selector
+imageWithCGImage_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 imageWithCGImage_optionsSelector = mkSelector "imageWithCGImage:options:"
 
 -- | @Selector@ for @imageWithCGImageSource:index:options:@
-imageWithCGImageSource_index_optionsSelector :: Selector
+imageWithCGImageSource_index_optionsSelector :: Selector '[Ptr (), CULong, Id NSDictionary] (Id CIImage)
 imageWithCGImageSource_index_optionsSelector = mkSelector "imageWithCGImageSource:index:options:"
 
 -- | @Selector@ for @imageWithCGLayer:@
-imageWithCGLayerSelector :: Selector
+imageWithCGLayerSelector :: Selector '[Ptr ()] (Id CIImage)
 imageWithCGLayerSelector = mkSelector "imageWithCGLayer:"
 
 -- | @Selector@ for @imageWithCGLayer:options:@
-imageWithCGLayer_optionsSelector :: Selector
+imageWithCGLayer_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 imageWithCGLayer_optionsSelector = mkSelector "imageWithCGLayer:options:"
 
 -- | @Selector@ for @imageWithMTLTexture:options:@
-imageWithMTLTexture_optionsSelector :: Selector
+imageWithMTLTexture_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id CIImage)
 imageWithMTLTexture_optionsSelector = mkSelector "imageWithMTLTexture:options:"
 
 -- | @Selector@ for @imageWithContentsOfURL:@
-imageWithContentsOfURLSelector :: Selector
+imageWithContentsOfURLSelector :: Selector '[Id NSURL] (Id CIImage)
 imageWithContentsOfURLSelector = mkSelector "imageWithContentsOfURL:"
 
 -- | @Selector@ for @imageWithContentsOfURL:options:@
-imageWithContentsOfURL_optionsSelector :: Selector
+imageWithContentsOfURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id CIImage)
 imageWithContentsOfURL_optionsSelector = mkSelector "imageWithContentsOfURL:options:"
 
 -- | @Selector@ for @imageWithData:@
-imageWithDataSelector :: Selector
+imageWithDataSelector :: Selector '[Id NSData] (Id CIImage)
 imageWithDataSelector = mkSelector "imageWithData:"
 
 -- | @Selector@ for @imageWithData:options:@
-imageWithData_optionsSelector :: Selector
+imageWithData_optionsSelector :: Selector '[Id NSData, Id NSDictionary] (Id CIImage)
 imageWithData_optionsSelector = mkSelector "imageWithData:options:"
 
 -- | @Selector@ for @imageWithCVImageBuffer:@
-imageWithCVImageBufferSelector :: Selector
+imageWithCVImageBufferSelector :: Selector '[Ptr ()] (Id CIImage)
 imageWithCVImageBufferSelector = mkSelector "imageWithCVImageBuffer:"
 
 -- | @Selector@ for @imageWithCVImageBuffer:options:@
-imageWithCVImageBuffer_optionsSelector :: Selector
+imageWithCVImageBuffer_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 imageWithCVImageBuffer_optionsSelector = mkSelector "imageWithCVImageBuffer:options:"
 
 -- | @Selector@ for @imageWithCVPixelBuffer:@
-imageWithCVPixelBufferSelector :: Selector
+imageWithCVPixelBufferSelector :: Selector '[Ptr ()] (Id CIImage)
 imageWithCVPixelBufferSelector = mkSelector "imageWithCVPixelBuffer:"
 
 -- | @Selector@ for @imageWithCVPixelBuffer:options:@
-imageWithCVPixelBuffer_optionsSelector :: Selector
+imageWithCVPixelBuffer_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 imageWithCVPixelBuffer_optionsSelector = mkSelector "imageWithCVPixelBuffer:options:"
 
 -- | @Selector@ for @imageWithIOSurface:@
-imageWithIOSurfaceSelector :: Selector
+imageWithIOSurfaceSelector :: Selector '[Ptr ()] (Id CIImage)
 imageWithIOSurfaceSelector = mkSelector "imageWithIOSurface:"
 
 -- | @Selector@ for @imageWithIOSurface:options:@
-imageWithIOSurface_optionsSelector :: Selector
+imageWithIOSurface_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 imageWithIOSurface_optionsSelector = mkSelector "imageWithIOSurface:options:"
 
 -- | @Selector@ for @imageWithColor:@
-imageWithColorSelector :: Selector
+imageWithColorSelector :: Selector '[Id CIColor] (Id CIImage)
 imageWithColorSelector = mkSelector "imageWithColor:"
 
 -- | @Selector@ for @emptyImage@
-emptyImageSelector :: Selector
+emptyImageSelector :: Selector '[] (Id CIImage)
 emptyImageSelector = mkSelector "emptyImage"
 
 -- | @Selector@ for @initWithCGImage:@
-initWithCGImageSelector :: Selector
+initWithCGImageSelector :: Selector '[Ptr ()] (Id CIImage)
 initWithCGImageSelector = mkSelector "initWithCGImage:"
 
 -- | @Selector@ for @initWithCGImage:options:@
-initWithCGImage_optionsSelector :: Selector
+initWithCGImage_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 initWithCGImage_optionsSelector = mkSelector "initWithCGImage:options:"
 
 -- | @Selector@ for @initWithCGImageSource:index:options:@
-initWithCGImageSource_index_optionsSelector :: Selector
+initWithCGImageSource_index_optionsSelector :: Selector '[Ptr (), CULong, Id NSDictionary] (Id CIImage)
 initWithCGImageSource_index_optionsSelector = mkSelector "initWithCGImageSource:index:options:"
 
 -- | @Selector@ for @initWithCGLayer:@
-initWithCGLayerSelector :: Selector
+initWithCGLayerSelector :: Selector '[Ptr ()] (Id CIImage)
 initWithCGLayerSelector = mkSelector "initWithCGLayer:"
 
 -- | @Selector@ for @initWithCGLayer:options:@
-initWithCGLayer_optionsSelector :: Selector
+initWithCGLayer_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 initWithCGLayer_optionsSelector = mkSelector "initWithCGLayer:options:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id CIImage)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @initWithData:options:@
-initWithData_optionsSelector :: Selector
+initWithData_optionsSelector :: Selector '[Id NSData, Id NSDictionary] (Id CIImage)
 initWithData_optionsSelector = mkSelector "initWithData:options:"
 
 -- | @Selector@ for @initWithMTLTexture:options:@
-initWithMTLTexture_optionsSelector :: Selector
+initWithMTLTexture_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id CIImage)
 initWithMTLTexture_optionsSelector = mkSelector "initWithMTLTexture:options:"
 
 -- | @Selector@ for @initWithContentsOfURL:@
-initWithContentsOfURLSelector :: Selector
+initWithContentsOfURLSelector :: Selector '[Id NSURL] (Id CIImage)
 initWithContentsOfURLSelector = mkSelector "initWithContentsOfURL:"
 
 -- | @Selector@ for @initWithContentsOfURL:options:@
-initWithContentsOfURL_optionsSelector :: Selector
+initWithContentsOfURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id CIImage)
 initWithContentsOfURL_optionsSelector = mkSelector "initWithContentsOfURL:options:"
 
 -- | @Selector@ for @initWithIOSurface:@
-initWithIOSurfaceSelector :: Selector
+initWithIOSurfaceSelector :: Selector '[Ptr ()] (Id CIImage)
 initWithIOSurfaceSelector = mkSelector "initWithIOSurface:"
 
 -- | @Selector@ for @initWithIOSurface:options:@
-initWithIOSurface_optionsSelector :: Selector
+initWithIOSurface_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 initWithIOSurface_optionsSelector = mkSelector "initWithIOSurface:options:"
 
 -- | @Selector@ for @initWithIOSurface:plane:format:options:@
-initWithIOSurface_plane_format_optionsSelector :: Selector
+initWithIOSurface_plane_format_optionsSelector :: Selector '[Ptr (), CULong, CInt, Id NSDictionary] (Id CIImage)
 initWithIOSurface_plane_format_optionsSelector = mkSelector "initWithIOSurface:plane:format:options:"
 
 -- | @Selector@ for @initWithCVImageBuffer:@
-initWithCVImageBufferSelector :: Selector
+initWithCVImageBufferSelector :: Selector '[Ptr ()] (Id CIImage)
 initWithCVImageBufferSelector = mkSelector "initWithCVImageBuffer:"
 
 -- | @Selector@ for @initWithCVImageBuffer:options:@
-initWithCVImageBuffer_optionsSelector :: Selector
+initWithCVImageBuffer_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 initWithCVImageBuffer_optionsSelector = mkSelector "initWithCVImageBuffer:options:"
 
 -- | @Selector@ for @initWithCVPixelBuffer:@
-initWithCVPixelBufferSelector :: Selector
+initWithCVPixelBufferSelector :: Selector '[Ptr ()] (Id CIImage)
 initWithCVPixelBufferSelector = mkSelector "initWithCVPixelBuffer:"
 
 -- | @Selector@ for @initWithCVPixelBuffer:options:@
-initWithCVPixelBuffer_optionsSelector :: Selector
+initWithCVPixelBuffer_optionsSelector :: Selector '[Ptr (), Id NSDictionary] (Id CIImage)
 initWithCVPixelBuffer_optionsSelector = mkSelector "initWithCVPixelBuffer:options:"
 
 -- | @Selector@ for @initWithColor:@
-initWithColorSelector :: Selector
+initWithColorSelector :: Selector '[Id CIColor] (Id CIImage)
 initWithColorSelector = mkSelector "initWithColor:"
 
 -- | @Selector@ for @imageByApplyingOrientation:@
-imageByApplyingOrientationSelector :: Selector
+imageByApplyingOrientationSelector :: Selector '[CInt] (Id CIImage)
 imageByApplyingOrientationSelector = mkSelector "imageByApplyingOrientation:"
 
 -- | @Selector@ for @imageByApplyingCGOrientation:@
-imageByApplyingCGOrientationSelector :: Selector
+imageByApplyingCGOrientationSelector :: Selector '[CInt] (Id CIImage)
 imageByApplyingCGOrientationSelector = mkSelector "imageByApplyingCGOrientation:"
 
 -- | @Selector@ for @imageByCompositingOverImage:@
-imageByCompositingOverImageSelector :: Selector
+imageByCompositingOverImageSelector :: Selector '[Id CIImage] (Id CIImage)
 imageByCompositingOverImageSelector = mkSelector "imageByCompositingOverImage:"
 
 -- | @Selector@ for @imageByClampingToExtent@
-imageByClampingToExtentSelector :: Selector
+imageByClampingToExtentSelector :: Selector '[] (Id CIImage)
 imageByClampingToExtentSelector = mkSelector "imageByClampingToExtent"
 
 -- | @Selector@ for @imageByApplyingFilter:withInputParameters:@
-imageByApplyingFilter_withInputParametersSelector :: Selector
+imageByApplyingFilter_withInputParametersSelector :: Selector '[Id NSString, Id NSDictionary] (Id CIImage)
 imageByApplyingFilter_withInputParametersSelector = mkSelector "imageByApplyingFilter:withInputParameters:"
 
 -- | @Selector@ for @imageByApplyingFilter:@
-imageByApplyingFilterSelector :: Selector
+imageByApplyingFilterSelector :: Selector '[Id NSString] (Id CIImage)
 imageByApplyingFilterSelector = mkSelector "imageByApplyingFilter:"
 
 -- | @Selector@ for @imageByColorMatchingColorSpaceToWorkingSpace:@
-imageByColorMatchingColorSpaceToWorkingSpaceSelector :: Selector
+imageByColorMatchingColorSpaceToWorkingSpaceSelector :: Selector '[Ptr ()] (Id CIImage)
 imageByColorMatchingColorSpaceToWorkingSpaceSelector = mkSelector "imageByColorMatchingColorSpaceToWorkingSpace:"
 
 -- | @Selector@ for @imageByColorMatchingWorkingSpaceToColorSpace:@
-imageByColorMatchingWorkingSpaceToColorSpaceSelector :: Selector
+imageByColorMatchingWorkingSpaceToColorSpaceSelector :: Selector '[Ptr ()] (Id CIImage)
 imageByColorMatchingWorkingSpaceToColorSpaceSelector = mkSelector "imageByColorMatchingWorkingSpaceToColorSpace:"
 
 -- | @Selector@ for @imageByPremultiplyingAlpha@
-imageByPremultiplyingAlphaSelector :: Selector
+imageByPremultiplyingAlphaSelector :: Selector '[] (Id CIImage)
 imageByPremultiplyingAlphaSelector = mkSelector "imageByPremultiplyingAlpha"
 
 -- | @Selector@ for @imageByUnpremultiplyingAlpha@
-imageByUnpremultiplyingAlphaSelector :: Selector
+imageByUnpremultiplyingAlphaSelector :: Selector '[] (Id CIImage)
 imageByUnpremultiplyingAlphaSelector = mkSelector "imageByUnpremultiplyingAlpha"
 
 -- | @Selector@ for @imageByApplyingGaussianBlurWithSigma:@
-imageByApplyingGaussianBlurWithSigmaSelector :: Selector
+imageByApplyingGaussianBlurWithSigmaSelector :: Selector '[CDouble] (Id CIImage)
 imageByApplyingGaussianBlurWithSigmaSelector = mkSelector "imageByApplyingGaussianBlurWithSigma:"
 
 -- | @Selector@ for @imageBySettingProperties:@
-imageBySettingPropertiesSelector :: Selector
+imageBySettingPropertiesSelector :: Selector '[Id NSDictionary] (Id CIImage)
 imageBySettingPropertiesSelector = mkSelector "imageBySettingProperties:"
 
 -- | @Selector@ for @imageBySamplingLinear@
-imageBySamplingLinearSelector :: Selector
+imageBySamplingLinearSelector :: Selector '[] (Id CIImage)
 imageBySamplingLinearSelector = mkSelector "imageBySamplingLinear"
 
 -- | @Selector@ for @imageBySamplingNearest@
-imageBySamplingNearestSelector :: Selector
+imageBySamplingNearestSelector :: Selector '[] (Id CIImage)
 imageBySamplingNearestSelector = mkSelector "imageBySamplingNearest"
 
 -- | @Selector@ for @imageByInsertingIntermediate@
-imageByInsertingIntermediateSelector :: Selector
+imageByInsertingIntermediateSelector :: Selector '[] (Id CIImage)
 imageByInsertingIntermediateSelector = mkSelector "imageByInsertingIntermediate"
 
 -- | @Selector@ for @imageByInsertingTiledIntermediate@
-imageByInsertingTiledIntermediateSelector :: Selector
+imageByInsertingTiledIntermediateSelector :: Selector '[] (Id CIImage)
 imageByInsertingTiledIntermediateSelector = mkSelector "imageByInsertingTiledIntermediate"
 
 -- | @Selector@ for @imageByApplyingGainMap:@
-imageByApplyingGainMapSelector :: Selector
+imageByApplyingGainMapSelector :: Selector '[Id CIImage] (Id CIImage)
 imageByApplyingGainMapSelector = mkSelector "imageByApplyingGainMap:"
 
 -- | @Selector@ for @imageByApplyingGainMap:headroom:@
-imageByApplyingGainMap_headroomSelector :: Selector
+imageByApplyingGainMap_headroomSelector :: Selector '[Id CIImage, CFloat] (Id CIImage)
 imageByApplyingGainMap_headroomSelector = mkSelector "imageByApplyingGainMap:headroom:"
 
 -- | @Selector@ for @imageBySettingContentHeadroom:@
-imageBySettingContentHeadroomSelector :: Selector
+imageBySettingContentHeadroomSelector :: Selector '[CFloat] (Id CIImage)
 imageBySettingContentHeadroomSelector = mkSelector "imageBySettingContentHeadroom:"
 
 -- | @Selector@ for @imageBySettingContentAverageLightLevel:@
-imageBySettingContentAverageLightLevelSelector :: Selector
+imageBySettingContentAverageLightLevelSelector :: Selector '[CFloat] (Id CIImage)
 imageBySettingContentAverageLightLevelSelector = mkSelector "imageBySettingContentAverageLightLevel:"
 
 -- | @Selector@ for @imageWithImageProvider:size::format:colorSpace:options:@
-imageWithImageProvider_size__format_colorSpace_optionsSelector :: Selector
+imageWithImageProvider_size__format_colorSpace_optionsSelector :: Selector '[RawId, CULong, CULong, CInt, Ptr (), Id NSDictionary] (Id CIImage)
 imageWithImageProvider_size__format_colorSpace_optionsSelector = mkSelector "imageWithImageProvider:size::format:colorSpace:options:"
 
 -- | @Selector@ for @initWithImageProvider:size::format:colorSpace:options:@
-initWithImageProvider_size__format_colorSpace_optionsSelector :: Selector
+initWithImageProvider_size__format_colorSpace_optionsSelector :: Selector '[RawId, CULong, CULong, CInt, Ptr (), Id NSDictionary] (Id CIImage)
 initWithImageProvider_size__format_colorSpace_optionsSelector = mkSelector "initWithImageProvider:size::format:colorSpace:options:"
 
 -- | @Selector@ for @initWithSemanticSegmentationMatte:options:@
-initWithSemanticSegmentationMatte_optionsSelector :: Selector
+initWithSemanticSegmentationMatte_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id CIImage)
 initWithSemanticSegmentationMatte_optionsSelector = mkSelector "initWithSemanticSegmentationMatte:options:"
 
 -- | @Selector@ for @initWithSemanticSegmentationMatte:@
-initWithSemanticSegmentationMatteSelector :: Selector
+initWithSemanticSegmentationMatteSelector :: Selector '[RawId] (Id CIImage)
 initWithSemanticSegmentationMatteSelector = mkSelector "initWithSemanticSegmentationMatte:"
 
 -- | @Selector@ for @imageWithSemanticSegmentationMatte:options:@
-imageWithSemanticSegmentationMatte_optionsSelector :: Selector
+imageWithSemanticSegmentationMatte_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id CIImage)
 imageWithSemanticSegmentationMatte_optionsSelector = mkSelector "imageWithSemanticSegmentationMatte:options:"
 
 -- | @Selector@ for @imageWithSemanticSegmentationMatte:@
-imageWithSemanticSegmentationMatteSelector :: Selector
+imageWithSemanticSegmentationMatteSelector :: Selector '[RawId] (Id CIImage)
 imageWithSemanticSegmentationMatteSelector = mkSelector "imageWithSemanticSegmentationMatte:"
 
 -- | @Selector@ for @initWithPortaitEffectsMatte:options:@
-initWithPortaitEffectsMatte_optionsSelector :: Selector
+initWithPortaitEffectsMatte_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id CIImage)
 initWithPortaitEffectsMatte_optionsSelector = mkSelector "initWithPortaitEffectsMatte:options:"
 
 -- | @Selector@ for @initWithPortaitEffectsMatte:@
-initWithPortaitEffectsMatteSelector :: Selector
+initWithPortaitEffectsMatteSelector :: Selector '[RawId] (Id CIImage)
 initWithPortaitEffectsMatteSelector = mkSelector "initWithPortaitEffectsMatte:"
 
 -- | @Selector@ for @imageWithPortaitEffectsMatte:options:@
-imageWithPortaitEffectsMatte_optionsSelector :: Selector
+imageWithPortaitEffectsMatte_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id CIImage)
 imageWithPortaitEffectsMatte_optionsSelector = mkSelector "imageWithPortaitEffectsMatte:options:"
 
 -- | @Selector@ for @imageWithPortaitEffectsMatte:@
-imageWithPortaitEffectsMatteSelector :: Selector
+imageWithPortaitEffectsMatteSelector :: Selector '[RawId] (Id CIImage)
 imageWithPortaitEffectsMatteSelector = mkSelector "imageWithPortaitEffectsMatte:"
 
 -- | @Selector@ for @initWithDepthData:options:@
-initWithDepthData_optionsSelector :: Selector
+initWithDepthData_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id CIImage)
 initWithDepthData_optionsSelector = mkSelector "initWithDepthData:options:"
 
 -- | @Selector@ for @initWithDepthData:@
-initWithDepthDataSelector :: Selector
+initWithDepthDataSelector :: Selector '[RawId] (Id CIImage)
 initWithDepthDataSelector = mkSelector "initWithDepthData:"
 
 -- | @Selector@ for @imageWithDepthData:options:@
-imageWithDepthData_optionsSelector :: Selector
+imageWithDepthData_optionsSelector :: Selector '[RawId, Id NSDictionary] (Id CIImage)
 imageWithDepthData_optionsSelector = mkSelector "imageWithDepthData:options:"
 
 -- | @Selector@ for @imageWithDepthData:@
-imageWithDepthDataSelector :: Selector
+imageWithDepthDataSelector :: Selector '[RawId] (Id CIImage)
 imageWithDepthDataSelector = mkSelector "imageWithDepthData:"
 
 -- | @Selector@ for @imageByConvertingWorkingSpaceToLab@
-imageByConvertingWorkingSpaceToLabSelector :: Selector
+imageByConvertingWorkingSpaceToLabSelector :: Selector '[] (Id CIImage)
 imageByConvertingWorkingSpaceToLabSelector = mkSelector "imageByConvertingWorkingSpaceToLab"
 
 -- | @Selector@ for @imageByConvertingLabToWorkingSpace@
-imageByConvertingLabToWorkingSpaceSelector :: Selector
+imageByConvertingLabToWorkingSpaceSelector :: Selector '[] (Id CIImage)
 imageByConvertingLabToWorkingSpaceSelector = mkSelector "imageByConvertingLabToWorkingSpace"
 
 -- | @Selector@ for @autoAdjustmentFilters@
-autoAdjustmentFiltersSelector :: Selector
+autoAdjustmentFiltersSelector :: Selector '[] (Id NSArray)
 autoAdjustmentFiltersSelector = mkSelector "autoAdjustmentFilters"
 
 -- | @Selector@ for @autoAdjustmentFiltersWithOptions:@
-autoAdjustmentFiltersWithOptionsSelector :: Selector
+autoAdjustmentFiltersWithOptionsSelector :: Selector '[Id NSDictionary] (Id NSArray)
 autoAdjustmentFiltersWithOptionsSelector = mkSelector "autoAdjustmentFiltersWithOptions:"
 
 -- | @Selector@ for @blackImage@
-blackImageSelector :: Selector
+blackImageSelector :: Selector '[] RawId
 blackImageSelector = mkSelector "blackImage"
 
 -- | @Selector@ for @whiteImage@
-whiteImageSelector :: Selector
+whiteImageSelector :: Selector '[] RawId
 whiteImageSelector = mkSelector "whiteImage"
 
 -- | @Selector@ for @grayImage@
-grayImageSelector :: Selector
+grayImageSelector :: Selector '[] RawId
 grayImageSelector = mkSelector "grayImage"
 
 -- | @Selector@ for @redImage@
-redImageSelector :: Selector
+redImageSelector :: Selector '[] RawId
 redImageSelector = mkSelector "redImage"
 
 -- | @Selector@ for @greenImage@
-greenImageSelector :: Selector
+greenImageSelector :: Selector '[] RawId
 greenImageSelector = mkSelector "greenImage"
 
 -- | @Selector@ for @blueImage@
-blueImageSelector :: Selector
+blueImageSelector :: Selector '[] RawId
 blueImageSelector = mkSelector "blueImage"
 
 -- | @Selector@ for @cyanImage@
-cyanImageSelector :: Selector
+cyanImageSelector :: Selector '[] RawId
 cyanImageSelector = mkSelector "cyanImage"
 
 -- | @Selector@ for @magentaImage@
-magentaImageSelector :: Selector
+magentaImageSelector :: Selector '[] RawId
 magentaImageSelector = mkSelector "magentaImage"
 
 -- | @Selector@ for @yellowImage@
-yellowImageSelector :: Selector
+yellowImageSelector :: Selector '[] RawId
 yellowImageSelector = mkSelector "yellowImage"
 
 -- | @Selector@ for @clearImage@
-clearImageSelector :: Selector
+clearImageSelector :: Selector '[] RawId
 clearImageSelector = mkSelector "clearImage"
 
 -- | @Selector@ for @opaque@
-opaqueSelector :: Selector
+opaqueSelector :: Selector '[] Bool
 opaqueSelector = mkSelector "opaque"
 
 -- | @Selector@ for @definition@
-definitionSelector :: Selector
+definitionSelector :: Selector '[] RawId
 definitionSelector = mkSelector "definition"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] RawId
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @colorSpace@
-colorSpaceSelector :: Selector
+colorSpaceSelector :: Selector '[] (Ptr ())
 colorSpaceSelector = mkSelector "colorSpace"
 
 -- | @Selector@ for @contentHeadroom@
-contentHeadroomSelector :: Selector
+contentHeadroomSelector :: Selector '[] CFloat
 contentHeadroomSelector = mkSelector "contentHeadroom"
 
 -- | @Selector@ for @contentAverageLightLevel@
-contentAverageLightLevelSelector :: Selector
+contentAverageLightLevelSelector :: Selector '[] CFloat
 contentAverageLightLevelSelector = mkSelector "contentAverageLightLevel"
 
 -- | @Selector@ for @pixelBuffer@
-pixelBufferSelector :: Selector
+pixelBufferSelector :: Selector '[] (Ptr ())
 pixelBufferSelector = mkSelector "pixelBuffer"
 
 -- | @Selector@ for @CGImage@
-cgImageSelector :: Selector
+cgImageSelector :: Selector '[] (Ptr ())
 cgImageSelector = mkSelector "CGImage"
 
 -- | @Selector@ for @semanticSegmentationMatte@
-semanticSegmentationMatteSelector :: Selector
+semanticSegmentationMatteSelector :: Selector '[] RawId
 semanticSegmentationMatteSelector = mkSelector "semanticSegmentationMatte"
 
 -- | @Selector@ for @portraitEffectsMatte@
-portraitEffectsMatteSelector :: Selector
+portraitEffectsMatteSelector :: Selector '[] RawId
 portraitEffectsMatteSelector = mkSelector "portraitEffectsMatte"
 
 -- | @Selector@ for @depthData@
-depthDataSelector :: Selector
+depthDataSelector :: Selector '[] RawId
 depthDataSelector = mkSelector "depthData"
 

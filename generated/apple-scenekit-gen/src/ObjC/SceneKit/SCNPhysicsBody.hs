@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -70,65 +71,65 @@ module ObjC.SceneKit.SCNPhysicsBody
   , setLinearRestingThreshold
   , angularRestingThreshold
   , setAngularRestingThreshold
-  , staticBodySelector
-  , dynamicBodySelector
-  , kinematicBodySelector
-  , bodyWithType_shapeSelector
-  , applyForce_impulseSelector
-  , applyForce_atPosition_impulseSelector
-  , applyTorque_impulseSelector
-  , clearAllForcesSelector
-  , resetTransformSelector
-  , setRestingSelector
-  , typeSelector
-  , setTypeSelector
-  , massSelector
-  , setMassSelector
-  , momentOfInertiaSelector
-  , setMomentOfInertiaSelector
-  , usesDefaultMomentOfInertiaSelector
-  , setUsesDefaultMomentOfInertiaSelector
-  , chargeSelector
-  , setChargeSelector
-  , frictionSelector
-  , setFrictionSelector
-  , restitutionSelector
-  , setRestitutionSelector
-  , rollingFrictionSelector
-  , setRollingFrictionSelector
-  , physicsShapeSelector
-  , setPhysicsShapeSelector
-  , isRestingSelector
-  , allowsRestingSelector
-  , setAllowsRestingSelector
-  , velocitySelector
-  , setVelocitySelector
-  , angularVelocitySelector
-  , setAngularVelocitySelector
-  , dampingSelector
-  , setDampingSelector
-  , angularDampingSelector
-  , setAngularDampingSelector
-  , velocityFactorSelector
-  , setVelocityFactorSelector
-  , angularVelocityFactorSelector
-  , setAngularVelocityFactorSelector
-  , categoryBitMaskSelector
-  , setCategoryBitMaskSelector
-  , collisionBitMaskSelector
-  , setCollisionBitMaskSelector
-  , contactTestBitMaskSelector
-  , setContactTestBitMaskSelector
   , affectedByGravitySelector
-  , setAffectedByGravitySelector
-  , continuousCollisionDetectionThresholdSelector
-  , setContinuousCollisionDetectionThresholdSelector
-  , centerOfMassOffsetSelector
-  , setCenterOfMassOffsetSelector
-  , linearRestingThresholdSelector
-  , setLinearRestingThresholdSelector
+  , allowsRestingSelector
+  , angularDampingSelector
   , angularRestingThresholdSelector
+  , angularVelocityFactorSelector
+  , angularVelocitySelector
+  , applyForce_atPosition_impulseSelector
+  , applyForce_impulseSelector
+  , applyTorque_impulseSelector
+  , bodyWithType_shapeSelector
+  , categoryBitMaskSelector
+  , centerOfMassOffsetSelector
+  , chargeSelector
+  , clearAllForcesSelector
+  , collisionBitMaskSelector
+  , contactTestBitMaskSelector
+  , continuousCollisionDetectionThresholdSelector
+  , dampingSelector
+  , dynamicBodySelector
+  , frictionSelector
+  , isRestingSelector
+  , kinematicBodySelector
+  , linearRestingThresholdSelector
+  , massSelector
+  , momentOfInertiaSelector
+  , physicsShapeSelector
+  , resetTransformSelector
+  , restitutionSelector
+  , rollingFrictionSelector
+  , setAffectedByGravitySelector
+  , setAllowsRestingSelector
+  , setAngularDampingSelector
   , setAngularRestingThresholdSelector
+  , setAngularVelocityFactorSelector
+  , setAngularVelocitySelector
+  , setCategoryBitMaskSelector
+  , setCenterOfMassOffsetSelector
+  , setChargeSelector
+  , setCollisionBitMaskSelector
+  , setContactTestBitMaskSelector
+  , setContinuousCollisionDetectionThresholdSelector
+  , setDampingSelector
+  , setFrictionSelector
+  , setLinearRestingThresholdSelector
+  , setMassSelector
+  , setMomentOfInertiaSelector
+  , setPhysicsShapeSelector
+  , setRestingSelector
+  , setRestitutionSelector
+  , setRollingFrictionSelector
+  , setTypeSelector
+  , setUsesDefaultMomentOfInertiaSelector
+  , setVelocityFactorSelector
+  , setVelocitySelector
+  , staticBodySelector
+  , typeSelector
+  , usesDefaultMomentOfInertiaSelector
+  , velocityFactorSelector
+  , velocitySelector
 
   -- * Enum types
   , SCNPhysicsBodyType(SCNPhysicsBodyType)
@@ -138,15 +139,11 @@ module ObjC.SceneKit.SCNPhysicsBody
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -160,543 +157,541 @@ staticBody :: IO (Id SCNPhysicsBody)
 staticBody  =
   do
     cls' <- getRequiredClass "SCNPhysicsBody"
-    sendClassMsg cls' (mkSelector "staticBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' staticBodySelector
 
 -- | @+ dynamicBody@
 dynamicBody :: IO (Id SCNPhysicsBody)
 dynamicBody  =
   do
     cls' <- getRequiredClass "SCNPhysicsBody"
-    sendClassMsg cls' (mkSelector "dynamicBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' dynamicBodySelector
 
 -- | @+ kinematicBody@
 kinematicBody :: IO (Id SCNPhysicsBody)
 kinematicBody  =
   do
     cls' <- getRequiredClass "SCNPhysicsBody"
-    sendClassMsg cls' (mkSelector "kinematicBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kinematicBodySelector
 
 -- | @+ bodyWithType:shape:@
 bodyWithType_shape :: IsSCNPhysicsShape shape => SCNPhysicsBodyType -> shape -> IO (Id SCNPhysicsBody)
 bodyWithType_shape type_ shape =
   do
     cls' <- getRequiredClass "SCNPhysicsBody"
-    withObjCPtr shape $ \raw_shape ->
-      sendClassMsg cls' (mkSelector "bodyWithType:shape:") (retPtr retVoid) [argCLong (coerce type_), argPtr (castPtr raw_shape :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' bodyWithType_shapeSelector type_ (toSCNPhysicsShape shape)
 
 -- | @- applyForce:impulse:@
 applyForce_impulse :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNVector3 -> Bool -> IO ()
-applyForce_impulse scnPhysicsBody  direction impulse =
-    sendMsg scnPhysicsBody (mkSelector "applyForce:impulse:") retVoid [argSCNVector3 direction, argCULong (if impulse then 1 else 0)]
+applyForce_impulse scnPhysicsBody direction impulse =
+  sendMessage scnPhysicsBody applyForce_impulseSelector direction impulse
 
 -- | @- applyForce:atPosition:impulse:@
 applyForce_atPosition_impulse :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNVector3 -> SCNVector3 -> Bool -> IO ()
-applyForce_atPosition_impulse scnPhysicsBody  direction position impulse =
-    sendMsg scnPhysicsBody (mkSelector "applyForce:atPosition:impulse:") retVoid [argSCNVector3 direction, argSCNVector3 position, argCULong (if impulse then 1 else 0)]
+applyForce_atPosition_impulse scnPhysicsBody direction position impulse =
+  sendMessage scnPhysicsBody applyForce_atPosition_impulseSelector direction position impulse
 
 -- | @- applyTorque:impulse:@
 applyTorque_impulse :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNVector4 -> Bool -> IO ()
-applyTorque_impulse scnPhysicsBody  torque impulse =
-    sendMsg scnPhysicsBody (mkSelector "applyTorque:impulse:") retVoid [argSCNVector4 torque, argCULong (if impulse then 1 else 0)]
+applyTorque_impulse scnPhysicsBody torque impulse =
+  sendMessage scnPhysicsBody applyTorque_impulseSelector torque impulse
 
 -- | @- clearAllForces@
 clearAllForces :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO ()
-clearAllForces scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "clearAllForces") retVoid []
+clearAllForces scnPhysicsBody =
+  sendMessage scnPhysicsBody clearAllForcesSelector
 
 -- | @- resetTransform@
 resetTransform :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO ()
-resetTransform scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "resetTransform") retVoid []
+resetTransform scnPhysicsBody =
+  sendMessage scnPhysicsBody resetTransformSelector
 
 -- | @- setResting:@
 setResting :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> Bool -> IO ()
-setResting scnPhysicsBody  resting =
-    sendMsg scnPhysicsBody (mkSelector "setResting:") retVoid [argCULong (if resting then 1 else 0)]
+setResting scnPhysicsBody resting =
+  sendMessage scnPhysicsBody setRestingSelector resting
 
 -- | @- type@
 type_ :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO SCNPhysicsBodyType
-type_ scnPhysicsBody  =
-    fmap (coerce :: CLong -> SCNPhysicsBodyType) $ sendMsg scnPhysicsBody (mkSelector "type") retCLong []
+type_ scnPhysicsBody =
+  sendMessage scnPhysicsBody typeSelector
 
 -- | @- setType:@
 setType :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNPhysicsBodyType -> IO ()
-setType scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setType:") retVoid [argCLong (coerce value)]
+setType scnPhysicsBody value =
+  sendMessage scnPhysicsBody setTypeSelector value
 
 -- | @- mass@
 mass :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-mass scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "mass") retCDouble []
+mass scnPhysicsBody =
+  sendMessage scnPhysicsBody massSelector
 
 -- | @- setMass:@
 setMass :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setMass scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setMass:") retVoid [argCDouble value]
+setMass scnPhysicsBody value =
+  sendMessage scnPhysicsBody setMassSelector value
 
 -- | @- momentOfInertia@
 momentOfInertia :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO SCNVector3
-momentOfInertia scnPhysicsBody  =
-    sendMsgStret scnPhysicsBody (mkSelector "momentOfInertia") retSCNVector3 []
+momentOfInertia scnPhysicsBody =
+  sendMessage scnPhysicsBody momentOfInertiaSelector
 
 -- | @- setMomentOfInertia:@
 setMomentOfInertia :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNVector3 -> IO ()
-setMomentOfInertia scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setMomentOfInertia:") retVoid [argSCNVector3 value]
+setMomentOfInertia scnPhysicsBody value =
+  sendMessage scnPhysicsBody setMomentOfInertiaSelector value
 
 -- | @- usesDefaultMomentOfInertia@
 usesDefaultMomentOfInertia :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO Bool
-usesDefaultMomentOfInertia scnPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnPhysicsBody (mkSelector "usesDefaultMomentOfInertia") retCULong []
+usesDefaultMomentOfInertia scnPhysicsBody =
+  sendMessage scnPhysicsBody usesDefaultMomentOfInertiaSelector
 
 -- | @- setUsesDefaultMomentOfInertia:@
 setUsesDefaultMomentOfInertia :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> Bool -> IO ()
-setUsesDefaultMomentOfInertia scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setUsesDefaultMomentOfInertia:") retVoid [argCULong (if value then 1 else 0)]
+setUsesDefaultMomentOfInertia scnPhysicsBody value =
+  sendMessage scnPhysicsBody setUsesDefaultMomentOfInertiaSelector value
 
 -- | @- charge@
 charge :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-charge scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "charge") retCDouble []
+charge scnPhysicsBody =
+  sendMessage scnPhysicsBody chargeSelector
 
 -- | @- setCharge:@
 setCharge :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setCharge scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setCharge:") retVoid [argCDouble value]
+setCharge scnPhysicsBody value =
+  sendMessage scnPhysicsBody setChargeSelector value
 
 -- | @- friction@
 friction :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-friction scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "friction") retCDouble []
+friction scnPhysicsBody =
+  sendMessage scnPhysicsBody frictionSelector
 
 -- | @- setFriction:@
 setFriction :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setFriction scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setFriction:") retVoid [argCDouble value]
+setFriction scnPhysicsBody value =
+  sendMessage scnPhysicsBody setFrictionSelector value
 
 -- | @- restitution@
 restitution :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-restitution scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "restitution") retCDouble []
+restitution scnPhysicsBody =
+  sendMessage scnPhysicsBody restitutionSelector
 
 -- | @- setRestitution:@
 setRestitution :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setRestitution scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setRestitution:") retVoid [argCDouble value]
+setRestitution scnPhysicsBody value =
+  sendMessage scnPhysicsBody setRestitutionSelector value
 
 -- | @- rollingFriction@
 rollingFriction :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-rollingFriction scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "rollingFriction") retCDouble []
+rollingFriction scnPhysicsBody =
+  sendMessage scnPhysicsBody rollingFrictionSelector
 
 -- | @- setRollingFriction:@
 setRollingFriction :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setRollingFriction scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setRollingFriction:") retVoid [argCDouble value]
+setRollingFriction scnPhysicsBody value =
+  sendMessage scnPhysicsBody setRollingFrictionSelector value
 
 -- | @- physicsShape@
 physicsShape :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO (Id SCNPhysicsShape)
-physicsShape scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "physicsShape") (retPtr retVoid) [] >>= retainedObject . castPtr
+physicsShape scnPhysicsBody =
+  sendMessage scnPhysicsBody physicsShapeSelector
 
 -- | @- setPhysicsShape:@
 setPhysicsShape :: (IsSCNPhysicsBody scnPhysicsBody, IsSCNPhysicsShape value) => scnPhysicsBody -> value -> IO ()
-setPhysicsShape scnPhysicsBody  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnPhysicsBody (mkSelector "setPhysicsShape:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPhysicsShape scnPhysicsBody value =
+  sendMessage scnPhysicsBody setPhysicsShapeSelector (toSCNPhysicsShape value)
 
 -- | @- isResting@
 isResting :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO Bool
-isResting scnPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnPhysicsBody (mkSelector "isResting") retCULong []
+isResting scnPhysicsBody =
+  sendMessage scnPhysicsBody isRestingSelector
 
 -- | @- allowsResting@
 allowsResting :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO Bool
-allowsResting scnPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnPhysicsBody (mkSelector "allowsResting") retCULong []
+allowsResting scnPhysicsBody =
+  sendMessage scnPhysicsBody allowsRestingSelector
 
 -- | @- setAllowsResting:@
 setAllowsResting :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> Bool -> IO ()
-setAllowsResting scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setAllowsResting:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsResting scnPhysicsBody value =
+  sendMessage scnPhysicsBody setAllowsRestingSelector value
 
 -- | @- velocity@
 velocity :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO SCNVector3
-velocity scnPhysicsBody  =
-    sendMsgStret scnPhysicsBody (mkSelector "velocity") retSCNVector3 []
+velocity scnPhysicsBody =
+  sendMessage scnPhysicsBody velocitySelector
 
 -- | @- setVelocity:@
 setVelocity :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNVector3 -> IO ()
-setVelocity scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setVelocity:") retVoid [argSCNVector3 value]
+setVelocity scnPhysicsBody value =
+  sendMessage scnPhysicsBody setVelocitySelector value
 
 -- | @- angularVelocity@
 angularVelocity :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO SCNVector4
-angularVelocity scnPhysicsBody  =
-    sendMsgStret scnPhysicsBody (mkSelector "angularVelocity") retSCNVector4 []
+angularVelocity scnPhysicsBody =
+  sendMessage scnPhysicsBody angularVelocitySelector
 
 -- | @- setAngularVelocity:@
 setAngularVelocity :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNVector4 -> IO ()
-setAngularVelocity scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setAngularVelocity:") retVoid [argSCNVector4 value]
+setAngularVelocity scnPhysicsBody value =
+  sendMessage scnPhysicsBody setAngularVelocitySelector value
 
 -- | @- damping@
 damping :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-damping scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "damping") retCDouble []
+damping scnPhysicsBody =
+  sendMessage scnPhysicsBody dampingSelector
 
 -- | @- setDamping:@
 setDamping :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setDamping scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setDamping:") retVoid [argCDouble value]
+setDamping scnPhysicsBody value =
+  sendMessage scnPhysicsBody setDampingSelector value
 
 -- | @- angularDamping@
 angularDamping :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-angularDamping scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "angularDamping") retCDouble []
+angularDamping scnPhysicsBody =
+  sendMessage scnPhysicsBody angularDampingSelector
 
 -- | @- setAngularDamping:@
 setAngularDamping :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setAngularDamping scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setAngularDamping:") retVoid [argCDouble value]
+setAngularDamping scnPhysicsBody value =
+  sendMessage scnPhysicsBody setAngularDampingSelector value
 
 -- | @- velocityFactor@
 velocityFactor :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO SCNVector3
-velocityFactor scnPhysicsBody  =
-    sendMsgStret scnPhysicsBody (mkSelector "velocityFactor") retSCNVector3 []
+velocityFactor scnPhysicsBody =
+  sendMessage scnPhysicsBody velocityFactorSelector
 
 -- | @- setVelocityFactor:@
 setVelocityFactor :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNVector3 -> IO ()
-setVelocityFactor scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setVelocityFactor:") retVoid [argSCNVector3 value]
+setVelocityFactor scnPhysicsBody value =
+  sendMessage scnPhysicsBody setVelocityFactorSelector value
 
 -- | @- angularVelocityFactor@
 angularVelocityFactor :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO SCNVector3
-angularVelocityFactor scnPhysicsBody  =
-    sendMsgStret scnPhysicsBody (mkSelector "angularVelocityFactor") retSCNVector3 []
+angularVelocityFactor scnPhysicsBody =
+  sendMessage scnPhysicsBody angularVelocityFactorSelector
 
 -- | @- setAngularVelocityFactor:@
 setAngularVelocityFactor :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNVector3 -> IO ()
-setAngularVelocityFactor scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setAngularVelocityFactor:") retVoid [argSCNVector3 value]
+setAngularVelocityFactor scnPhysicsBody value =
+  sendMessage scnPhysicsBody setAngularVelocityFactorSelector value
 
 -- | @- categoryBitMask@
 categoryBitMask :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CULong
-categoryBitMask scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "categoryBitMask") retCULong []
+categoryBitMask scnPhysicsBody =
+  sendMessage scnPhysicsBody categoryBitMaskSelector
 
 -- | @- setCategoryBitMask:@
 setCategoryBitMask :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CULong -> IO ()
-setCategoryBitMask scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setCategoryBitMask:") retVoid [argCULong value]
+setCategoryBitMask scnPhysicsBody value =
+  sendMessage scnPhysicsBody setCategoryBitMaskSelector value
 
 -- | @- collisionBitMask@
 collisionBitMask :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CULong
-collisionBitMask scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "collisionBitMask") retCULong []
+collisionBitMask scnPhysicsBody =
+  sendMessage scnPhysicsBody collisionBitMaskSelector
 
 -- | @- setCollisionBitMask:@
 setCollisionBitMask :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CULong -> IO ()
-setCollisionBitMask scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setCollisionBitMask:") retVoid [argCULong value]
+setCollisionBitMask scnPhysicsBody value =
+  sendMessage scnPhysicsBody setCollisionBitMaskSelector value
 
 -- | @- contactTestBitMask@
 contactTestBitMask :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CULong
-contactTestBitMask scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "contactTestBitMask") retCULong []
+contactTestBitMask scnPhysicsBody =
+  sendMessage scnPhysicsBody contactTestBitMaskSelector
 
 -- | @- setContactTestBitMask:@
 setContactTestBitMask :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CULong -> IO ()
-setContactTestBitMask scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setContactTestBitMask:") retVoid [argCULong value]
+setContactTestBitMask scnPhysicsBody value =
+  sendMessage scnPhysicsBody setContactTestBitMaskSelector value
 
 -- | @- affectedByGravity@
 affectedByGravity :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO Bool
-affectedByGravity scnPhysicsBody  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnPhysicsBody (mkSelector "affectedByGravity") retCULong []
+affectedByGravity scnPhysicsBody =
+  sendMessage scnPhysicsBody affectedByGravitySelector
 
 -- | @- setAffectedByGravity:@
 setAffectedByGravity :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> Bool -> IO ()
-setAffectedByGravity scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setAffectedByGravity:") retVoid [argCULong (if value then 1 else 0)]
+setAffectedByGravity scnPhysicsBody value =
+  sendMessage scnPhysicsBody setAffectedByGravitySelector value
 
 -- | @- continuousCollisionDetectionThreshold@
 continuousCollisionDetectionThreshold :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-continuousCollisionDetectionThreshold scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "continuousCollisionDetectionThreshold") retCDouble []
+continuousCollisionDetectionThreshold scnPhysicsBody =
+  sendMessage scnPhysicsBody continuousCollisionDetectionThresholdSelector
 
 -- | @- setContinuousCollisionDetectionThreshold:@
 setContinuousCollisionDetectionThreshold :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setContinuousCollisionDetectionThreshold scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setContinuousCollisionDetectionThreshold:") retVoid [argCDouble value]
+setContinuousCollisionDetectionThreshold scnPhysicsBody value =
+  sendMessage scnPhysicsBody setContinuousCollisionDetectionThresholdSelector value
 
 -- | @- centerOfMassOffset@
 centerOfMassOffset :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO SCNVector3
-centerOfMassOffset scnPhysicsBody  =
-    sendMsgStret scnPhysicsBody (mkSelector "centerOfMassOffset") retSCNVector3 []
+centerOfMassOffset scnPhysicsBody =
+  sendMessage scnPhysicsBody centerOfMassOffsetSelector
 
 -- | @- setCenterOfMassOffset:@
 setCenterOfMassOffset :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> SCNVector3 -> IO ()
-setCenterOfMassOffset scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setCenterOfMassOffset:") retVoid [argSCNVector3 value]
+setCenterOfMassOffset scnPhysicsBody value =
+  sendMessage scnPhysicsBody setCenterOfMassOffsetSelector value
 
 -- | @- linearRestingThreshold@
 linearRestingThreshold :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-linearRestingThreshold scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "linearRestingThreshold") retCDouble []
+linearRestingThreshold scnPhysicsBody =
+  sendMessage scnPhysicsBody linearRestingThresholdSelector
 
 -- | @- setLinearRestingThreshold:@
 setLinearRestingThreshold :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setLinearRestingThreshold scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setLinearRestingThreshold:") retVoid [argCDouble value]
+setLinearRestingThreshold scnPhysicsBody value =
+  sendMessage scnPhysicsBody setLinearRestingThresholdSelector value
 
 -- | @- angularRestingThreshold@
 angularRestingThreshold :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> IO CDouble
-angularRestingThreshold scnPhysicsBody  =
-    sendMsg scnPhysicsBody (mkSelector "angularRestingThreshold") retCDouble []
+angularRestingThreshold scnPhysicsBody =
+  sendMessage scnPhysicsBody angularRestingThresholdSelector
 
 -- | @- setAngularRestingThreshold:@
 setAngularRestingThreshold :: IsSCNPhysicsBody scnPhysicsBody => scnPhysicsBody -> CDouble -> IO ()
-setAngularRestingThreshold scnPhysicsBody  value =
-    sendMsg scnPhysicsBody (mkSelector "setAngularRestingThreshold:") retVoid [argCDouble value]
+setAngularRestingThreshold scnPhysicsBody value =
+  sendMessage scnPhysicsBody setAngularRestingThresholdSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @staticBody@
-staticBodySelector :: Selector
+staticBodySelector :: Selector '[] (Id SCNPhysicsBody)
 staticBodySelector = mkSelector "staticBody"
 
 -- | @Selector@ for @dynamicBody@
-dynamicBodySelector :: Selector
+dynamicBodySelector :: Selector '[] (Id SCNPhysicsBody)
 dynamicBodySelector = mkSelector "dynamicBody"
 
 -- | @Selector@ for @kinematicBody@
-kinematicBodySelector :: Selector
+kinematicBodySelector :: Selector '[] (Id SCNPhysicsBody)
 kinematicBodySelector = mkSelector "kinematicBody"
 
 -- | @Selector@ for @bodyWithType:shape:@
-bodyWithType_shapeSelector :: Selector
+bodyWithType_shapeSelector :: Selector '[SCNPhysicsBodyType, Id SCNPhysicsShape] (Id SCNPhysicsBody)
 bodyWithType_shapeSelector = mkSelector "bodyWithType:shape:"
 
 -- | @Selector@ for @applyForce:impulse:@
-applyForce_impulseSelector :: Selector
+applyForce_impulseSelector :: Selector '[SCNVector3, Bool] ()
 applyForce_impulseSelector = mkSelector "applyForce:impulse:"
 
 -- | @Selector@ for @applyForce:atPosition:impulse:@
-applyForce_atPosition_impulseSelector :: Selector
+applyForce_atPosition_impulseSelector :: Selector '[SCNVector3, SCNVector3, Bool] ()
 applyForce_atPosition_impulseSelector = mkSelector "applyForce:atPosition:impulse:"
 
 -- | @Selector@ for @applyTorque:impulse:@
-applyTorque_impulseSelector :: Selector
+applyTorque_impulseSelector :: Selector '[SCNVector4, Bool] ()
 applyTorque_impulseSelector = mkSelector "applyTorque:impulse:"
 
 -- | @Selector@ for @clearAllForces@
-clearAllForcesSelector :: Selector
+clearAllForcesSelector :: Selector '[] ()
 clearAllForcesSelector = mkSelector "clearAllForces"
 
 -- | @Selector@ for @resetTransform@
-resetTransformSelector :: Selector
+resetTransformSelector :: Selector '[] ()
 resetTransformSelector = mkSelector "resetTransform"
 
 -- | @Selector@ for @setResting:@
-setRestingSelector :: Selector
+setRestingSelector :: Selector '[Bool] ()
 setRestingSelector = mkSelector "setResting:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] SCNPhysicsBodyType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[SCNPhysicsBodyType] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @mass@
-massSelector :: Selector
+massSelector :: Selector '[] CDouble
 massSelector = mkSelector "mass"
 
 -- | @Selector@ for @setMass:@
-setMassSelector :: Selector
+setMassSelector :: Selector '[CDouble] ()
 setMassSelector = mkSelector "setMass:"
 
 -- | @Selector@ for @momentOfInertia@
-momentOfInertiaSelector :: Selector
+momentOfInertiaSelector :: Selector '[] SCNVector3
 momentOfInertiaSelector = mkSelector "momentOfInertia"
 
 -- | @Selector@ for @setMomentOfInertia:@
-setMomentOfInertiaSelector :: Selector
+setMomentOfInertiaSelector :: Selector '[SCNVector3] ()
 setMomentOfInertiaSelector = mkSelector "setMomentOfInertia:"
 
 -- | @Selector@ for @usesDefaultMomentOfInertia@
-usesDefaultMomentOfInertiaSelector :: Selector
+usesDefaultMomentOfInertiaSelector :: Selector '[] Bool
 usesDefaultMomentOfInertiaSelector = mkSelector "usesDefaultMomentOfInertia"
 
 -- | @Selector@ for @setUsesDefaultMomentOfInertia:@
-setUsesDefaultMomentOfInertiaSelector :: Selector
+setUsesDefaultMomentOfInertiaSelector :: Selector '[Bool] ()
 setUsesDefaultMomentOfInertiaSelector = mkSelector "setUsesDefaultMomentOfInertia:"
 
 -- | @Selector@ for @charge@
-chargeSelector :: Selector
+chargeSelector :: Selector '[] CDouble
 chargeSelector = mkSelector "charge"
 
 -- | @Selector@ for @setCharge:@
-setChargeSelector :: Selector
+setChargeSelector :: Selector '[CDouble] ()
 setChargeSelector = mkSelector "setCharge:"
 
 -- | @Selector@ for @friction@
-frictionSelector :: Selector
+frictionSelector :: Selector '[] CDouble
 frictionSelector = mkSelector "friction"
 
 -- | @Selector@ for @setFriction:@
-setFrictionSelector :: Selector
+setFrictionSelector :: Selector '[CDouble] ()
 setFrictionSelector = mkSelector "setFriction:"
 
 -- | @Selector@ for @restitution@
-restitutionSelector :: Selector
+restitutionSelector :: Selector '[] CDouble
 restitutionSelector = mkSelector "restitution"
 
 -- | @Selector@ for @setRestitution:@
-setRestitutionSelector :: Selector
+setRestitutionSelector :: Selector '[CDouble] ()
 setRestitutionSelector = mkSelector "setRestitution:"
 
 -- | @Selector@ for @rollingFriction@
-rollingFrictionSelector :: Selector
+rollingFrictionSelector :: Selector '[] CDouble
 rollingFrictionSelector = mkSelector "rollingFriction"
 
 -- | @Selector@ for @setRollingFriction:@
-setRollingFrictionSelector :: Selector
+setRollingFrictionSelector :: Selector '[CDouble] ()
 setRollingFrictionSelector = mkSelector "setRollingFriction:"
 
 -- | @Selector@ for @physicsShape@
-physicsShapeSelector :: Selector
+physicsShapeSelector :: Selector '[] (Id SCNPhysicsShape)
 physicsShapeSelector = mkSelector "physicsShape"
 
 -- | @Selector@ for @setPhysicsShape:@
-setPhysicsShapeSelector :: Selector
+setPhysicsShapeSelector :: Selector '[Id SCNPhysicsShape] ()
 setPhysicsShapeSelector = mkSelector "setPhysicsShape:"
 
 -- | @Selector@ for @isResting@
-isRestingSelector :: Selector
+isRestingSelector :: Selector '[] Bool
 isRestingSelector = mkSelector "isResting"
 
 -- | @Selector@ for @allowsResting@
-allowsRestingSelector :: Selector
+allowsRestingSelector :: Selector '[] Bool
 allowsRestingSelector = mkSelector "allowsResting"
 
 -- | @Selector@ for @setAllowsResting:@
-setAllowsRestingSelector :: Selector
+setAllowsRestingSelector :: Selector '[Bool] ()
 setAllowsRestingSelector = mkSelector "setAllowsResting:"
 
 -- | @Selector@ for @velocity@
-velocitySelector :: Selector
+velocitySelector :: Selector '[] SCNVector3
 velocitySelector = mkSelector "velocity"
 
 -- | @Selector@ for @setVelocity:@
-setVelocitySelector :: Selector
+setVelocitySelector :: Selector '[SCNVector3] ()
 setVelocitySelector = mkSelector "setVelocity:"
 
 -- | @Selector@ for @angularVelocity@
-angularVelocitySelector :: Selector
+angularVelocitySelector :: Selector '[] SCNVector4
 angularVelocitySelector = mkSelector "angularVelocity"
 
 -- | @Selector@ for @setAngularVelocity:@
-setAngularVelocitySelector :: Selector
+setAngularVelocitySelector :: Selector '[SCNVector4] ()
 setAngularVelocitySelector = mkSelector "setAngularVelocity:"
 
 -- | @Selector@ for @damping@
-dampingSelector :: Selector
+dampingSelector :: Selector '[] CDouble
 dampingSelector = mkSelector "damping"
 
 -- | @Selector@ for @setDamping:@
-setDampingSelector :: Selector
+setDampingSelector :: Selector '[CDouble] ()
 setDampingSelector = mkSelector "setDamping:"
 
 -- | @Selector@ for @angularDamping@
-angularDampingSelector :: Selector
+angularDampingSelector :: Selector '[] CDouble
 angularDampingSelector = mkSelector "angularDamping"
 
 -- | @Selector@ for @setAngularDamping:@
-setAngularDampingSelector :: Selector
+setAngularDampingSelector :: Selector '[CDouble] ()
 setAngularDampingSelector = mkSelector "setAngularDamping:"
 
 -- | @Selector@ for @velocityFactor@
-velocityFactorSelector :: Selector
+velocityFactorSelector :: Selector '[] SCNVector3
 velocityFactorSelector = mkSelector "velocityFactor"
 
 -- | @Selector@ for @setVelocityFactor:@
-setVelocityFactorSelector :: Selector
+setVelocityFactorSelector :: Selector '[SCNVector3] ()
 setVelocityFactorSelector = mkSelector "setVelocityFactor:"
 
 -- | @Selector@ for @angularVelocityFactor@
-angularVelocityFactorSelector :: Selector
+angularVelocityFactorSelector :: Selector '[] SCNVector3
 angularVelocityFactorSelector = mkSelector "angularVelocityFactor"
 
 -- | @Selector@ for @setAngularVelocityFactor:@
-setAngularVelocityFactorSelector :: Selector
+setAngularVelocityFactorSelector :: Selector '[SCNVector3] ()
 setAngularVelocityFactorSelector = mkSelector "setAngularVelocityFactor:"
 
 -- | @Selector@ for @categoryBitMask@
-categoryBitMaskSelector :: Selector
+categoryBitMaskSelector :: Selector '[] CULong
 categoryBitMaskSelector = mkSelector "categoryBitMask"
 
 -- | @Selector@ for @setCategoryBitMask:@
-setCategoryBitMaskSelector :: Selector
+setCategoryBitMaskSelector :: Selector '[CULong] ()
 setCategoryBitMaskSelector = mkSelector "setCategoryBitMask:"
 
 -- | @Selector@ for @collisionBitMask@
-collisionBitMaskSelector :: Selector
+collisionBitMaskSelector :: Selector '[] CULong
 collisionBitMaskSelector = mkSelector "collisionBitMask"
 
 -- | @Selector@ for @setCollisionBitMask:@
-setCollisionBitMaskSelector :: Selector
+setCollisionBitMaskSelector :: Selector '[CULong] ()
 setCollisionBitMaskSelector = mkSelector "setCollisionBitMask:"
 
 -- | @Selector@ for @contactTestBitMask@
-contactTestBitMaskSelector :: Selector
+contactTestBitMaskSelector :: Selector '[] CULong
 contactTestBitMaskSelector = mkSelector "contactTestBitMask"
 
 -- | @Selector@ for @setContactTestBitMask:@
-setContactTestBitMaskSelector :: Selector
+setContactTestBitMaskSelector :: Selector '[CULong] ()
 setContactTestBitMaskSelector = mkSelector "setContactTestBitMask:"
 
 -- | @Selector@ for @affectedByGravity@
-affectedByGravitySelector :: Selector
+affectedByGravitySelector :: Selector '[] Bool
 affectedByGravitySelector = mkSelector "affectedByGravity"
 
 -- | @Selector@ for @setAffectedByGravity:@
-setAffectedByGravitySelector :: Selector
+setAffectedByGravitySelector :: Selector '[Bool] ()
 setAffectedByGravitySelector = mkSelector "setAffectedByGravity:"
 
 -- | @Selector@ for @continuousCollisionDetectionThreshold@
-continuousCollisionDetectionThresholdSelector :: Selector
+continuousCollisionDetectionThresholdSelector :: Selector '[] CDouble
 continuousCollisionDetectionThresholdSelector = mkSelector "continuousCollisionDetectionThreshold"
 
 -- | @Selector@ for @setContinuousCollisionDetectionThreshold:@
-setContinuousCollisionDetectionThresholdSelector :: Selector
+setContinuousCollisionDetectionThresholdSelector :: Selector '[CDouble] ()
 setContinuousCollisionDetectionThresholdSelector = mkSelector "setContinuousCollisionDetectionThreshold:"
 
 -- | @Selector@ for @centerOfMassOffset@
-centerOfMassOffsetSelector :: Selector
+centerOfMassOffsetSelector :: Selector '[] SCNVector3
 centerOfMassOffsetSelector = mkSelector "centerOfMassOffset"
 
 -- | @Selector@ for @setCenterOfMassOffset:@
-setCenterOfMassOffsetSelector :: Selector
+setCenterOfMassOffsetSelector :: Selector '[SCNVector3] ()
 setCenterOfMassOffsetSelector = mkSelector "setCenterOfMassOffset:"
 
 -- | @Selector@ for @linearRestingThreshold@
-linearRestingThresholdSelector :: Selector
+linearRestingThresholdSelector :: Selector '[] CDouble
 linearRestingThresholdSelector = mkSelector "linearRestingThreshold"
 
 -- | @Selector@ for @setLinearRestingThreshold:@
-setLinearRestingThresholdSelector :: Selector
+setLinearRestingThresholdSelector :: Selector '[CDouble] ()
 setLinearRestingThresholdSelector = mkSelector "setLinearRestingThreshold:"
 
 -- | @Selector@ for @angularRestingThreshold@
-angularRestingThresholdSelector :: Selector
+angularRestingThresholdSelector :: Selector '[] CDouble
 angularRestingThresholdSelector = mkSelector "angularRestingThreshold"
 
 -- | @Selector@ for @setAngularRestingThreshold:@
-setAngularRestingThresholdSelector :: Selector
+setAngularRestingThresholdSelector :: Selector '[CDouble] ()
 setAngularRestingThresholdSelector = mkSelector "setAngularRestingThreshold:"
 

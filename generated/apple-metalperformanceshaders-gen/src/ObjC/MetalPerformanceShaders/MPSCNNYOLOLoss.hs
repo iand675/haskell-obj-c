@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,28 +30,28 @@ module ObjC.MetalPerformanceShaders.MPSCNNYOLOLoss
   , numberOfAnchorBoxes
   , anchorBoxes
   , reduceAcrossBatch
+  , anchorBoxesSelector
+  , encodeBatchToCommandBuffer_sourceImages_labelsSelector
+  , encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector
+  , encodeToCommandBuffer_sourceImage_labelsSelector
+  , encodeToCommandBuffer_sourceImage_labels_destinationImageSelector
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , initWithDevice_lossDescriptorSelector
-  , initWithCoder_deviceSelector
-  , encodeToCommandBuffer_sourceImage_labels_destinationImageSelector
-  , encodeToCommandBuffer_sourceImage_labelsSelector
-  , encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector
-  , encodeBatchToCommandBuffer_sourceImages_labelsSelector
-  , lossXYSelector
-  , lossWHSelector
-  , lossConfidenceSelector
   , lossClassesSelector
-  , scaleXYSelector
-  , scaleWHSelector
+  , lossConfidenceSelector
+  , lossWHSelector
+  , lossXYSelector
+  , maxIOUForObjectAbsenceSelector
+  , minIOUForObjectPresenceSelector
+  , numberOfAnchorBoxesSelector
+  , reduceAcrossBatchSelector
+  , reductionTypeSelector
+  , scaleClassSelector
   , scaleNoObjectSelector
   , scaleObjectSelector
-  , scaleClassSelector
-  , minIOUForObjectPresenceSelector
-  , maxIOUForObjectAbsenceSelector
-  , reductionTypeSelector
-  , numberOfAnchorBoxesSelector
-  , anchorBoxesSelector
-  , reduceAcrossBatchSelector
+  , scaleWHSelector
+  , scaleXYSelector
 
   -- * Enum types
   , MPSCNNReductionType(MPSCNNReductionType)
@@ -62,15 +63,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNYOLOLoss
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,8 +77,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> RawId -> IO (Id MPSCNNYOLOLoss)
-initWithDevice mpscnnyoloLoss  device =
-    sendMsg mpscnnyoloLoss (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnyoloLoss device =
+  sendOwnedMessage mpscnnyoloLoss initWithDeviceSelector device
 
 -- | Initialize the loss filter with a loss descriptor.
 --
@@ -93,17 +90,15 @@ initWithDevice mpscnnyoloLoss  device =
 --
 -- ObjC selector: @- initWithDevice:lossDescriptor:@
 initWithDevice_lossDescriptor :: (IsMPSCNNYOLOLoss mpscnnyoloLoss, IsMPSCNNYOLOLossDescriptor lossDescriptor) => mpscnnyoloLoss -> RawId -> lossDescriptor -> IO (Id MPSCNNYOLOLoss)
-initWithDevice_lossDescriptor mpscnnyoloLoss  device lossDescriptor =
-  withObjCPtr lossDescriptor $ \raw_lossDescriptor ->
-      sendMsg mpscnnyoloLoss (mkSelector "initWithDevice:lossDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_lossDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_lossDescriptor mpscnnyoloLoss device lossDescriptor =
+  sendOwnedMessage mpscnnyoloLoss initWithDevice_lossDescriptorSelector device (toMPSCNNYOLOLossDescriptor lossDescriptor)
 
 -- | <NSSecureCoding> support
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNYOLOLoss mpscnnyoloLoss, IsNSCoder aDecoder) => mpscnnyoloLoss -> aDecoder -> RawId -> IO (Id MPSCNNYOLOLoss)
-initWithCoder_device mpscnnyoloLoss  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnyoloLoss (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnyoloLoss aDecoder device =
+  sendOwnedMessage mpscnnyoloLoss initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode a MPSCNNYOLOLoss filter and return a gradient in the destinationImage.
 --
@@ -119,11 +114,8 @@ initWithCoder_device mpscnnyoloLoss  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceImage:labels:destinationImage:@
 encodeToCommandBuffer_sourceImage_labels_destinationImage :: (IsMPSCNNYOLOLoss mpscnnyoloLoss, IsMPSImage sourceImage, IsMPSCNNLossLabels labels, IsMPSImage destinationImage) => mpscnnyoloLoss -> RawId -> sourceImage -> labels -> destinationImage -> IO ()
-encodeToCommandBuffer_sourceImage_labels_destinationImage mpscnnyoloLoss  commandBuffer sourceImage labels destinationImage =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-    withObjCPtr labels $ \raw_labels ->
-      withObjCPtr destinationImage $ \raw_destinationImage ->
-          sendMsg mpscnnyoloLoss (mkSelector "encodeToCommandBuffer:sourceImage:labels:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_labels :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodeToCommandBuffer_sourceImage_labels_destinationImage mpscnnyoloLoss commandBuffer sourceImage labels destinationImage =
+  sendMessage mpscnnyoloLoss encodeToCommandBuffer_sourceImage_labels_destinationImageSelector commandBuffer (toMPSImage sourceImage) (toMPSCNNLossLabels labels) (toMPSImage destinationImage)
 
 -- | Encode a MPSCNNLoss filter and return a gradient.
 --
@@ -139,20 +131,18 @@ encodeToCommandBuffer_sourceImage_labels_destinationImage mpscnnyoloLoss  comman
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceImage:labels:@
 encodeToCommandBuffer_sourceImage_labels :: (IsMPSCNNYOLOLoss mpscnnyoloLoss, IsMPSImage sourceImage, IsMPSCNNLossLabels labels) => mpscnnyoloLoss -> RawId -> sourceImage -> labels -> IO (Id MPSImage)
-encodeToCommandBuffer_sourceImage_labels mpscnnyoloLoss  commandBuffer sourceImage labels =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-    withObjCPtr labels $ \raw_labels ->
-        sendMsg mpscnnyoloLoss (mkSelector "encodeToCommandBuffer:sourceImage:labels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_labels :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceImage_labels mpscnnyoloLoss commandBuffer sourceImage labels =
+  sendMessage mpscnnyoloLoss encodeToCommandBuffer_sourceImage_labelsSelector commandBuffer (toMPSImage sourceImage) (toMPSCNNLossLabels labels)
 
 -- | @- encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:@
 encodeBatchToCommandBuffer_sourceImages_labels_destinationImages :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeBatchToCommandBuffer_sourceImages_labels_destinationImages mpscnnyoloLoss  commandBuffer sourceImage labels destinationImage =
-    sendMsg mpscnnyoloLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ()), argPtr (castPtr (unRawId destinationImage) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImages mpscnnyoloLoss commandBuffer sourceImage labels destinationImage =
+  sendMessage mpscnnyoloLoss encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector commandBuffer sourceImage labels destinationImage
 
 -- | @- encodeBatchToCommandBuffer:sourceImages:labels:@
 encodeBatchToCommandBuffer_sourceImages_labels :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> RawId -> RawId -> RawId -> IO RawId
-encodeBatchToCommandBuffer_sourceImages_labels mpscnnyoloLoss  commandBuffer sourceImage labels =
-    fmap (RawId . castPtr) $ sendMsg mpscnnyoloLoss (mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImage) :: Ptr ()), argPtr (castPtr (unRawId labels) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceImages_labels mpscnnyoloLoss commandBuffer sourceImage labels =
+  sendMessage mpscnnyoloLoss encodeBatchToCommandBuffer_sourceImages_labelsSelector commandBuffer sourceImage labels
 
 -- | lossXY
 --
@@ -160,8 +150,8 @@ encodeBatchToCommandBuffer_sourceImages_labels mpscnnyoloLoss  commandBuffer sou
 --
 -- ObjC selector: @- lossXY@
 lossXY :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO (Id MPSCNNLoss)
-lossXY mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "lossXY") (retPtr retVoid) [] >>= retainedObject . castPtr
+lossXY mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss lossXYSelector
 
 -- | lossWH
 --
@@ -169,8 +159,8 @@ lossXY mpscnnyoloLoss  =
 --
 -- ObjC selector: @- lossWH@
 lossWH :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO (Id MPSCNNLoss)
-lossWH mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "lossWH") (retPtr retVoid) [] >>= retainedObject . castPtr
+lossWH mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss lossWHSelector
 
 -- | lossConfidence
 --
@@ -178,8 +168,8 @@ lossWH mpscnnyoloLoss  =
 --
 -- ObjC selector: @- lossConfidence@
 lossConfidence :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO (Id MPSCNNLoss)
-lossConfidence mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "lossConfidence") (retPtr retVoid) [] >>= retainedObject . castPtr
+lossConfidence mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss lossConfidenceSelector
 
 -- | lossClasses
 --
@@ -187,155 +177,155 @@ lossConfidence mpscnnyoloLoss  =
 --
 -- ObjC selector: @- lossClasses@
 lossClasses :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO (Id MPSCNNLoss)
-lossClasses mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "lossClasses") (retPtr retVoid) [] >>= retainedObject . castPtr
+lossClasses mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss lossClassesSelector
 
 -- | See MPSCNNYOLOLossDescriptor for information about the following properties.
 --
 -- ObjC selector: @- scaleXY@
 scaleXY :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO CFloat
-scaleXY mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "scaleXY") retCFloat []
+scaleXY mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss scaleXYSelector
 
 -- | @- scaleWH@
 scaleWH :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO CFloat
-scaleWH mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "scaleWH") retCFloat []
+scaleWH mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss scaleWHSelector
 
 -- | @- scaleNoObject@
 scaleNoObject :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO CFloat
-scaleNoObject mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "scaleNoObject") retCFloat []
+scaleNoObject mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss scaleNoObjectSelector
 
 -- | @- scaleObject@
 scaleObject :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO CFloat
-scaleObject mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "scaleObject") retCFloat []
+scaleObject mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss scaleObjectSelector
 
 -- | @- scaleClass@
 scaleClass :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO CFloat
-scaleClass mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "scaleClass") retCFloat []
+scaleClass mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss scaleClassSelector
 
 -- | @- minIOUForObjectPresence@
 minIOUForObjectPresence :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO CFloat
-minIOUForObjectPresence mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "minIOUForObjectPresence") retCFloat []
+minIOUForObjectPresence mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss minIOUForObjectPresenceSelector
 
 -- | @- maxIOUForObjectAbsence@
 maxIOUForObjectAbsence :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO CFloat
-maxIOUForObjectAbsence mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "maxIOUForObjectAbsence") retCFloat []
+maxIOUForObjectAbsence mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss maxIOUForObjectAbsenceSelector
 
 -- | @- reductionType@
 reductionType :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO MPSCNNReductionType
-reductionType mpscnnyoloLoss  =
-    fmap (coerce :: CInt -> MPSCNNReductionType) $ sendMsg mpscnnyoloLoss (mkSelector "reductionType") retCInt []
+reductionType mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss reductionTypeSelector
 
 -- | @- numberOfAnchorBoxes@
 numberOfAnchorBoxes :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO CULong
-numberOfAnchorBoxes mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "numberOfAnchorBoxes") retCULong []
+numberOfAnchorBoxes mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss numberOfAnchorBoxesSelector
 
 -- | @- anchorBoxes@
 anchorBoxes :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO (Id NSData)
-anchorBoxes mpscnnyoloLoss  =
-    sendMsg mpscnnyoloLoss (mkSelector "anchorBoxes") (retPtr retVoid) [] >>= retainedObject . castPtr
+anchorBoxes mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss anchorBoxesSelector
 
 -- | @- reduceAcrossBatch@
 reduceAcrossBatch :: IsMPSCNNYOLOLoss mpscnnyoloLoss => mpscnnyoloLoss -> IO Bool
-reduceAcrossBatch mpscnnyoloLoss  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnyoloLoss (mkSelector "reduceAcrossBatch") retCULong []
+reduceAcrossBatch mpscnnyoloLoss =
+  sendMessage mpscnnyoloLoss reduceAcrossBatchSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNYOLOLoss)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:lossDescriptor:@
-initWithDevice_lossDescriptorSelector :: Selector
+initWithDevice_lossDescriptorSelector :: Selector '[RawId, Id MPSCNNYOLOLossDescriptor] (Id MPSCNNYOLOLoss)
 initWithDevice_lossDescriptorSelector = mkSelector "initWithDevice:lossDescriptor:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNYOLOLoss)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:labels:destinationImage:@
-encodeToCommandBuffer_sourceImage_labels_destinationImageSelector :: Selector
+encodeToCommandBuffer_sourceImage_labels_destinationImageSelector :: Selector '[RawId, Id MPSImage, Id MPSCNNLossLabels, Id MPSImage] ()
 encodeToCommandBuffer_sourceImage_labels_destinationImageSelector = mkSelector "encodeToCommandBuffer:sourceImage:labels:destinationImage:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:labels:@
-encodeToCommandBuffer_sourceImage_labelsSelector :: Selector
+encodeToCommandBuffer_sourceImage_labelsSelector :: Selector '[RawId, Id MPSImage, Id MPSCNNLossLabels] (Id MPSImage)
 encodeToCommandBuffer_sourceImage_labelsSelector = mkSelector "encodeToCommandBuffer:sourceImage:labels:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:@
-encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector :: Selector '[RawId, RawId, RawId, RawId] ()
 encodeBatchToCommandBuffer_sourceImages_labels_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:destinationImages:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:labels:@
-encodeBatchToCommandBuffer_sourceImages_labelsSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_labelsSelector :: Selector '[RawId, RawId, RawId] RawId
 encodeBatchToCommandBuffer_sourceImages_labelsSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:labels:"
 
 -- | @Selector@ for @lossXY@
-lossXYSelector :: Selector
+lossXYSelector :: Selector '[] (Id MPSCNNLoss)
 lossXYSelector = mkSelector "lossXY"
 
 -- | @Selector@ for @lossWH@
-lossWHSelector :: Selector
+lossWHSelector :: Selector '[] (Id MPSCNNLoss)
 lossWHSelector = mkSelector "lossWH"
 
 -- | @Selector@ for @lossConfidence@
-lossConfidenceSelector :: Selector
+lossConfidenceSelector :: Selector '[] (Id MPSCNNLoss)
 lossConfidenceSelector = mkSelector "lossConfidence"
 
 -- | @Selector@ for @lossClasses@
-lossClassesSelector :: Selector
+lossClassesSelector :: Selector '[] (Id MPSCNNLoss)
 lossClassesSelector = mkSelector "lossClasses"
 
 -- | @Selector@ for @scaleXY@
-scaleXYSelector :: Selector
+scaleXYSelector :: Selector '[] CFloat
 scaleXYSelector = mkSelector "scaleXY"
 
 -- | @Selector@ for @scaleWH@
-scaleWHSelector :: Selector
+scaleWHSelector :: Selector '[] CFloat
 scaleWHSelector = mkSelector "scaleWH"
 
 -- | @Selector@ for @scaleNoObject@
-scaleNoObjectSelector :: Selector
+scaleNoObjectSelector :: Selector '[] CFloat
 scaleNoObjectSelector = mkSelector "scaleNoObject"
 
 -- | @Selector@ for @scaleObject@
-scaleObjectSelector :: Selector
+scaleObjectSelector :: Selector '[] CFloat
 scaleObjectSelector = mkSelector "scaleObject"
 
 -- | @Selector@ for @scaleClass@
-scaleClassSelector :: Selector
+scaleClassSelector :: Selector '[] CFloat
 scaleClassSelector = mkSelector "scaleClass"
 
 -- | @Selector@ for @minIOUForObjectPresence@
-minIOUForObjectPresenceSelector :: Selector
+minIOUForObjectPresenceSelector :: Selector '[] CFloat
 minIOUForObjectPresenceSelector = mkSelector "minIOUForObjectPresence"
 
 -- | @Selector@ for @maxIOUForObjectAbsence@
-maxIOUForObjectAbsenceSelector :: Selector
+maxIOUForObjectAbsenceSelector :: Selector '[] CFloat
 maxIOUForObjectAbsenceSelector = mkSelector "maxIOUForObjectAbsence"
 
 -- | @Selector@ for @reductionType@
-reductionTypeSelector :: Selector
+reductionTypeSelector :: Selector '[] MPSCNNReductionType
 reductionTypeSelector = mkSelector "reductionType"
 
 -- | @Selector@ for @numberOfAnchorBoxes@
-numberOfAnchorBoxesSelector :: Selector
+numberOfAnchorBoxesSelector :: Selector '[] CULong
 numberOfAnchorBoxesSelector = mkSelector "numberOfAnchorBoxes"
 
 -- | @Selector@ for @anchorBoxes@
-anchorBoxesSelector :: Selector
+anchorBoxesSelector :: Selector '[] (Id NSData)
 anchorBoxesSelector = mkSelector "anchorBoxes"
 
 -- | @Selector@ for @reduceAcrossBatch@
-reduceAcrossBatchSelector :: Selector
+reduceAcrossBatchSelector :: Selector '[] Bool
 reduceAcrossBatchSelector = mkSelector "reduceAcrossBatch"
 

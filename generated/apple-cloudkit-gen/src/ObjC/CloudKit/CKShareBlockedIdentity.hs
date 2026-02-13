@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.CloudKit.CKShareBlockedIdentity
   , new
   , init_
   , userIdentity
-  , newSelector
   , initSelector
+  , newSelector
   , userIdentitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,33 +33,33 @@ new :: IO (Id CKShareBlockedIdentity)
 new  =
   do
     cls' <- getRequiredClass "CKShareBlockedIdentity"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsCKShareBlockedIdentity ckShareBlockedIdentity => ckShareBlockedIdentity -> IO (Id CKShareBlockedIdentity)
-init_ ckShareBlockedIdentity  =
-    sendMsg ckShareBlockedIdentity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckShareBlockedIdentity =
+  sendOwnedMessage ckShareBlockedIdentity initSelector
 
 -- | The identity of the user who has been blocked from requesting access to the share.
 --
 -- ObjC selector: @- userIdentity@
 userIdentity :: IsCKShareBlockedIdentity ckShareBlockedIdentity => ckShareBlockedIdentity -> IO (Id CKUserIdentity)
-userIdentity ckShareBlockedIdentity  =
-    sendMsg ckShareBlockedIdentity (mkSelector "userIdentity") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIdentity ckShareBlockedIdentity =
+  sendMessage ckShareBlockedIdentity userIdentitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKShareBlockedIdentity)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKShareBlockedIdentity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @userIdentity@
-userIdentitySelector :: Selector
+userIdentitySelector :: Selector '[] (Id CKUserIdentity)
 userIdentitySelector = mkSelector "userIdentity"
 

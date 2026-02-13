@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,15 @@ module ObjC.MetalPerformanceShaders.MPSVectorDescriptor
   , dataType
   , setDataType
   , vectorBytes
+  , dataTypeSelector
+  , lengthSelector
+  , setDataTypeSelector
+  , setLengthSelector
+  , vectorBytesForLength_dataTypeSelector
+  , vectorBytesSelector
   , vectorDescriptorWithLength_dataTypeSelector
   , vectorDescriptorWithLength_vectors_vectorBytes_dataTypeSelector
-  , vectorBytesForLength_dataTypeSelector
-  , lengthSelector
-  , setLengthSelector
   , vectorsSelector
-  , dataTypeSelector
-  , setDataTypeSelector
-  , vectorBytesSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -64,15 +65,11 @@ module ObjC.MetalPerformanceShaders.MPSVectorDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,7 +90,7 @@ vectorDescriptorWithLength_dataType :: CULong -> MPSDataType -> IO (Id MPSVector
 vectorDescriptorWithLength_dataType length_ dataType =
   do
     cls' <- getRequiredClass "MPSVectorDescriptor"
-    sendClassMsg cls' (mkSelector "vectorDescriptorWithLength:dataType:") (retPtr retVoid) [argCULong length_, argCUInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' vectorDescriptorWithLength_dataTypeSelector length_ dataType
 
 -- | Create a MPSVectorDescriptor with the specified length and data type.
 --
@@ -112,7 +109,7 @@ vectorDescriptorWithLength_vectors_vectorBytes_dataType :: CULong -> CULong -> C
 vectorDescriptorWithLength_vectors_vectorBytes_dataType length_ vectors vectorBytes dataType =
   do
     cls' <- getRequiredClass "MPSVectorDescriptor"
-    sendClassMsg cls' (mkSelector "vectorDescriptorWithLength:vectors:vectorBytes:dataType:") (retPtr retVoid) [argCULong length_, argCULong vectors, argCULong vectorBytes, argCUInt (coerce dataType)] >>= retainedObject . castPtr
+    sendClassMessage cls' vectorDescriptorWithLength_vectors_vectorBytes_dataTypeSelector length_ vectors vectorBytes dataType
 
 -- | Return the recommended stride, in bytes, to be used for an array              of vectors of a given length.
 --
@@ -127,7 +124,7 @@ vectorBytesForLength_dataType :: CULong -> MPSDataType -> IO CULong
 vectorBytesForLength_dataType length_ dataType =
   do
     cls' <- getRequiredClass "MPSVectorDescriptor"
-    sendClassMsg cls' (mkSelector "vectorBytesForLength:dataType:") retCULong [argCULong length_, argCUInt (coerce dataType)]
+    sendClassMessage cls' vectorBytesForLength_dataTypeSelector length_ dataType
 
 -- | length
 --
@@ -135,8 +132,8 @@ vectorBytesForLength_dataType length_ dataType =
 --
 -- ObjC selector: @- length@
 length_ :: IsMPSVectorDescriptor mpsVectorDescriptor => mpsVectorDescriptor -> IO CULong
-length_ mpsVectorDescriptor  =
-    sendMsg mpsVectorDescriptor (mkSelector "length") retCULong []
+length_ mpsVectorDescriptor =
+  sendMessage mpsVectorDescriptor lengthSelector
 
 -- | length
 --
@@ -144,8 +141,8 @@ length_ mpsVectorDescriptor  =
 --
 -- ObjC selector: @- setLength:@
 setLength :: IsMPSVectorDescriptor mpsVectorDescriptor => mpsVectorDescriptor -> CULong -> IO ()
-setLength mpsVectorDescriptor  value =
-    sendMsg mpsVectorDescriptor (mkSelector "setLength:") retVoid [argCULong value]
+setLength mpsVectorDescriptor value =
+  sendMessage mpsVectorDescriptor setLengthSelector value
 
 -- | vectors
 --
@@ -153,8 +150,8 @@ setLength mpsVectorDescriptor  value =
 --
 -- ObjC selector: @- vectors@
 vectors :: IsMPSVectorDescriptor mpsVectorDescriptor => mpsVectorDescriptor -> IO CULong
-vectors mpsVectorDescriptor  =
-    sendMsg mpsVectorDescriptor (mkSelector "vectors") retCULong []
+vectors mpsVectorDescriptor =
+  sendMessage mpsVectorDescriptor vectorsSelector
 
 -- | dataType
 --
@@ -162,8 +159,8 @@ vectors mpsVectorDescriptor  =
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSVectorDescriptor mpsVectorDescriptor => mpsVectorDescriptor -> IO MPSDataType
-dataType mpsVectorDescriptor  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsVectorDescriptor (mkSelector "dataType") retCUInt []
+dataType mpsVectorDescriptor =
+  sendMessage mpsVectorDescriptor dataTypeSelector
 
 -- | dataType
 --
@@ -171,8 +168,8 @@ dataType mpsVectorDescriptor  =
 --
 -- ObjC selector: @- setDataType:@
 setDataType :: IsMPSVectorDescriptor mpsVectorDescriptor => mpsVectorDescriptor -> MPSDataType -> IO ()
-setDataType mpsVectorDescriptor  value =
-    sendMsg mpsVectorDescriptor (mkSelector "setDataType:") retVoid [argCUInt (coerce value)]
+setDataType mpsVectorDescriptor value =
+  sendMessage mpsVectorDescriptor setDataTypeSelector value
 
 -- | vectorBytes
 --
@@ -180,46 +177,46 @@ setDataType mpsVectorDescriptor  value =
 --
 -- ObjC selector: @- vectorBytes@
 vectorBytes :: IsMPSVectorDescriptor mpsVectorDescriptor => mpsVectorDescriptor -> IO CULong
-vectorBytes mpsVectorDescriptor  =
-    sendMsg mpsVectorDescriptor (mkSelector "vectorBytes") retCULong []
+vectorBytes mpsVectorDescriptor =
+  sendMessage mpsVectorDescriptor vectorBytesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @vectorDescriptorWithLength:dataType:@
-vectorDescriptorWithLength_dataTypeSelector :: Selector
+vectorDescriptorWithLength_dataTypeSelector :: Selector '[CULong, MPSDataType] (Id MPSVectorDescriptor)
 vectorDescriptorWithLength_dataTypeSelector = mkSelector "vectorDescriptorWithLength:dataType:"
 
 -- | @Selector@ for @vectorDescriptorWithLength:vectors:vectorBytes:dataType:@
-vectorDescriptorWithLength_vectors_vectorBytes_dataTypeSelector :: Selector
+vectorDescriptorWithLength_vectors_vectorBytes_dataTypeSelector :: Selector '[CULong, CULong, CULong, MPSDataType] (Id MPSVectorDescriptor)
 vectorDescriptorWithLength_vectors_vectorBytes_dataTypeSelector = mkSelector "vectorDescriptorWithLength:vectors:vectorBytes:dataType:"
 
 -- | @Selector@ for @vectorBytesForLength:dataType:@
-vectorBytesForLength_dataTypeSelector :: Selector
+vectorBytesForLength_dataTypeSelector :: Selector '[CULong, MPSDataType] CULong
 vectorBytesForLength_dataTypeSelector = mkSelector "vectorBytesForLength:dataType:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CULong
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @setLength:@
-setLengthSelector :: Selector
+setLengthSelector :: Selector '[CULong] ()
 setLengthSelector = mkSelector "setLength:"
 
 -- | @Selector@ for @vectors@
-vectorsSelector :: Selector
+vectorsSelector :: Selector '[] CULong
 vectorsSelector = mkSelector "vectors"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @setDataType:@
-setDataTypeSelector :: Selector
+setDataTypeSelector :: Selector '[MPSDataType] ()
 setDataTypeSelector = mkSelector "setDataType:"
 
 -- | @Selector@ for @vectorBytes@
-vectorBytesSelector :: Selector
+vectorBytesSelector :: Selector '[] CULong
 vectorBytesSelector = mkSelector "vectorBytes"
 

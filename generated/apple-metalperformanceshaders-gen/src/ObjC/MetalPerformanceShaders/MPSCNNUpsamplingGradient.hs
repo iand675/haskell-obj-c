@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,15 +41,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNUpsamplingGradient
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,8 +54,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNUpsamplingGradient mpscnnUpsamplingGradient => mpscnnUpsamplingGradient -> RawId -> IO (Id MPSCNNUpsamplingGradient)
-initWithDevice mpscnnUpsamplingGradient  device =
-    sendMsg mpscnnUpsamplingGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnUpsamplingGradient device =
+  sendOwnedMessage mpscnnUpsamplingGradient initWithDeviceSelector device
 
 -- | scaleFactorX
 --
@@ -66,8 +63,8 @@ initWithDevice mpscnnUpsamplingGradient  device =
 --
 -- ObjC selector: @- scaleFactorX@
 scaleFactorX :: IsMPSCNNUpsamplingGradient mpscnnUpsamplingGradient => mpscnnUpsamplingGradient -> IO CDouble
-scaleFactorX mpscnnUpsamplingGradient  =
-    sendMsg mpscnnUpsamplingGradient (mkSelector "scaleFactorX") retCDouble []
+scaleFactorX mpscnnUpsamplingGradient =
+  sendMessage mpscnnUpsamplingGradient scaleFactorXSelector
 
 -- | scaleFactorY
 --
@@ -75,22 +72,22 @@ scaleFactorX mpscnnUpsamplingGradient  =
 --
 -- ObjC selector: @- scaleFactorY@
 scaleFactorY :: IsMPSCNNUpsamplingGradient mpscnnUpsamplingGradient => mpscnnUpsamplingGradient -> IO CDouble
-scaleFactorY mpscnnUpsamplingGradient  =
-    sendMsg mpscnnUpsamplingGradient (mkSelector "scaleFactorY") retCDouble []
+scaleFactorY mpscnnUpsamplingGradient =
+  sendMessage mpscnnUpsamplingGradient scaleFactorYSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNUpsamplingGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @scaleFactorX@
-scaleFactorXSelector :: Selector
+scaleFactorXSelector :: Selector '[] CDouble
 scaleFactorXSelector = mkSelector "scaleFactorX"
 
 -- | @Selector@ for @scaleFactorY@
-scaleFactorYSelector :: Selector
+scaleFactorYSelector :: Selector '[] CDouble
 scaleFactorYSelector = mkSelector "scaleFactorY"
 

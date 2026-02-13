@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.AuthenticationServices.ASPasskeyCredentialIdentity
   , recordIdentifier
   , rank
   , setRank
+  , credentialIDSelector
+  , identityWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector
   , initSelector
   , initWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector
-  , identityWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector
-  , relyingPartyIdentifierSelector
-  , userNameSelector
-  , credentialIDSelector
-  , userHandleSelector
-  , recordIdentifierSelector
   , rankSelector
+  , recordIdentifierSelector
+  , relyingPartyIdentifierSelector
   , setRankSelector
+  , userHandleSelector
+  , userNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASPasskeyCredentialIdentity asPasskeyCredentialIdentity => asPasskeyCredentialIdentity -> IO (Id ASPasskeyCredentialIdentity)
-init_ asPasskeyCredentialIdentity  =
-    sendMsg asPasskeyCredentialIdentity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asPasskeyCredentialIdentity =
+  sendOwnedMessage asPasskeyCredentialIdentity initSelector
 
 -- | Initialize an instance of ASPasskeyCredentialIdentity.
 --
@@ -68,13 +65,8 @@ init_ asPasskeyCredentialIdentity  =
 --
 -- ObjC selector: @- initWithRelyingPartyIdentifier:userName:credentialID:userHandle:recordIdentifier:@
 initWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifier :: (IsASPasskeyCredentialIdentity asPasskeyCredentialIdentity, IsNSString relyingPartyIdentifier, IsNSString userName, IsNSData credentialID, IsNSData userHandle, IsNSString recordIdentifier) => asPasskeyCredentialIdentity -> relyingPartyIdentifier -> userName -> credentialID -> userHandle -> recordIdentifier -> IO (Id ASPasskeyCredentialIdentity)
-initWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifier asPasskeyCredentialIdentity  relyingPartyIdentifier userName credentialID userHandle recordIdentifier =
-  withObjCPtr relyingPartyIdentifier $ \raw_relyingPartyIdentifier ->
-    withObjCPtr userName $ \raw_userName ->
-      withObjCPtr credentialID $ \raw_credentialID ->
-        withObjCPtr userHandle $ \raw_userHandle ->
-          withObjCPtr recordIdentifier $ \raw_recordIdentifier ->
-              sendMsg asPasskeyCredentialIdentity (mkSelector "initWithRelyingPartyIdentifier:userName:credentialID:userHandle:recordIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_relyingPartyIdentifier :: Ptr ()), argPtr (castPtr raw_userName :: Ptr ()), argPtr (castPtr raw_credentialID :: Ptr ()), argPtr (castPtr raw_userHandle :: Ptr ()), argPtr (castPtr raw_recordIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifier asPasskeyCredentialIdentity relyingPartyIdentifier userName credentialID userHandle recordIdentifier =
+  sendOwnedMessage asPasskeyCredentialIdentity initWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector (toNSString relyingPartyIdentifier) (toNSString userName) (toNSData credentialID) (toNSData userHandle) (toNSString recordIdentifier)
 
 -- | Create and initialize an instance of ASPasskeyCredentialIdentity.
 --
@@ -93,12 +85,7 @@ identityWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdenti
 identityWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifier relyingPartyIdentifier userName credentialID userHandle recordIdentifier =
   do
     cls' <- getRequiredClass "ASPasskeyCredentialIdentity"
-    withObjCPtr relyingPartyIdentifier $ \raw_relyingPartyIdentifier ->
-      withObjCPtr userName $ \raw_userName ->
-        withObjCPtr credentialID $ \raw_credentialID ->
-          withObjCPtr userHandle $ \raw_userHandle ->
-            withObjCPtr recordIdentifier $ \raw_recordIdentifier ->
-              sendClassMsg cls' (mkSelector "identityWithRelyingPartyIdentifier:userName:credentialID:userHandle:recordIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_relyingPartyIdentifier :: Ptr ()), argPtr (castPtr raw_userName :: Ptr ()), argPtr (castPtr raw_credentialID :: Ptr ()), argPtr (castPtr raw_userHandle :: Ptr ()), argPtr (castPtr raw_recordIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' identityWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector (toNSString relyingPartyIdentifier) (toNSString userName) (toNSData credentialID) (toNSData userHandle) (toNSString recordIdentifier)
 
 -- | The relying party identifier of this passkey credential.
 --
@@ -106,8 +93,8 @@ identityWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdenti
 --
 -- ObjC selector: @- relyingPartyIdentifier@
 relyingPartyIdentifier :: IsASPasskeyCredentialIdentity asPasskeyCredentialIdentity => asPasskeyCredentialIdentity -> IO (Id NSString)
-relyingPartyIdentifier asPasskeyCredentialIdentity  =
-    sendMsg asPasskeyCredentialIdentity (mkSelector "relyingPartyIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+relyingPartyIdentifier asPasskeyCredentialIdentity =
+  sendMessage asPasskeyCredentialIdentity relyingPartyIdentifierSelector
 
 -- | The user name of this passkey credential.
 --
@@ -115,8 +102,8 @@ relyingPartyIdentifier asPasskeyCredentialIdentity  =
 --
 -- ObjC selector: @- userName@
 userName :: IsASPasskeyCredentialIdentity asPasskeyCredentialIdentity => asPasskeyCredentialIdentity -> IO (Id NSString)
-userName asPasskeyCredentialIdentity  =
-    sendMsg asPasskeyCredentialIdentity (mkSelector "userName") (retPtr retVoid) [] >>= retainedObject . castPtr
+userName asPasskeyCredentialIdentity =
+  sendMessage asPasskeyCredentialIdentity userNameSelector
 
 -- | The credential ID of this passkey credential.
 --
@@ -124,8 +111,8 @@ userName asPasskeyCredentialIdentity  =
 --
 -- ObjC selector: @- credentialID@
 credentialID :: IsASPasskeyCredentialIdentity asPasskeyCredentialIdentity => asPasskeyCredentialIdentity -> IO (Id NSData)
-credentialID asPasskeyCredentialIdentity  =
-    sendMsg asPasskeyCredentialIdentity (mkSelector "credentialID") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentialID asPasskeyCredentialIdentity =
+  sendMessage asPasskeyCredentialIdentity credentialIDSelector
 
 -- | The user handle of this passkey credential.
 --
@@ -133,8 +120,8 @@ credentialID asPasskeyCredentialIdentity  =
 --
 -- ObjC selector: @- userHandle@
 userHandle :: IsASPasskeyCredentialIdentity asPasskeyCredentialIdentity => asPasskeyCredentialIdentity -> IO (Id NSData)
-userHandle asPasskeyCredentialIdentity  =
-    sendMsg asPasskeyCredentialIdentity (mkSelector "userHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+userHandle asPasskeyCredentialIdentity =
+  sendMessage asPasskeyCredentialIdentity userHandleSelector
 
 -- | Get the record identifier.
 --
@@ -144,8 +131,8 @@ userHandle asPasskeyCredentialIdentity  =
 --
 -- ObjC selector: @- recordIdentifier@
 recordIdentifier :: IsASPasskeyCredentialIdentity asPasskeyCredentialIdentity => asPasskeyCredentialIdentity -> IO (Id NSString)
-recordIdentifier asPasskeyCredentialIdentity  =
-    sendMsg asPasskeyCredentialIdentity (mkSelector "recordIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordIdentifier asPasskeyCredentialIdentity =
+  sendMessage asPasskeyCredentialIdentity recordIdentifierSelector
 
 -- | Get or set the rank of the credential identity object.
 --
@@ -153,8 +140,8 @@ recordIdentifier asPasskeyCredentialIdentity  =
 --
 -- ObjC selector: @- rank@
 rank :: IsASPasskeyCredentialIdentity asPasskeyCredentialIdentity => asPasskeyCredentialIdentity -> IO CLong
-rank asPasskeyCredentialIdentity  =
-    sendMsg asPasskeyCredentialIdentity (mkSelector "rank") retCLong []
+rank asPasskeyCredentialIdentity =
+  sendMessage asPasskeyCredentialIdentity rankSelector
 
 -- | Get or set the rank of the credential identity object.
 --
@@ -162,50 +149,50 @@ rank asPasskeyCredentialIdentity  =
 --
 -- ObjC selector: @- setRank:@
 setRank :: IsASPasskeyCredentialIdentity asPasskeyCredentialIdentity => asPasskeyCredentialIdentity -> CLong -> IO ()
-setRank asPasskeyCredentialIdentity  value =
-    sendMsg asPasskeyCredentialIdentity (mkSelector "setRank:") retVoid [argCLong value]
+setRank asPasskeyCredentialIdentity value =
+  sendMessage asPasskeyCredentialIdentity setRankSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASPasskeyCredentialIdentity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRelyingPartyIdentifier:userName:credentialID:userHandle:recordIdentifier:@
-initWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector :: Selector
+initWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector :: Selector '[Id NSString, Id NSString, Id NSData, Id NSData, Id NSString] (Id ASPasskeyCredentialIdentity)
 initWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector = mkSelector "initWithRelyingPartyIdentifier:userName:credentialID:userHandle:recordIdentifier:"
 
 -- | @Selector@ for @identityWithRelyingPartyIdentifier:userName:credentialID:userHandle:recordIdentifier:@
-identityWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector :: Selector
+identityWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector :: Selector '[Id NSString, Id NSString, Id NSData, Id NSData, Id NSString] (Id ASPasskeyCredentialIdentity)
 identityWithRelyingPartyIdentifier_userName_credentialID_userHandle_recordIdentifierSelector = mkSelector "identityWithRelyingPartyIdentifier:userName:credentialID:userHandle:recordIdentifier:"
 
 -- | @Selector@ for @relyingPartyIdentifier@
-relyingPartyIdentifierSelector :: Selector
+relyingPartyIdentifierSelector :: Selector '[] (Id NSString)
 relyingPartyIdentifierSelector = mkSelector "relyingPartyIdentifier"
 
 -- | @Selector@ for @userName@
-userNameSelector :: Selector
+userNameSelector :: Selector '[] (Id NSString)
 userNameSelector = mkSelector "userName"
 
 -- | @Selector@ for @credentialID@
-credentialIDSelector :: Selector
+credentialIDSelector :: Selector '[] (Id NSData)
 credentialIDSelector = mkSelector "credentialID"
 
 -- | @Selector@ for @userHandle@
-userHandleSelector :: Selector
+userHandleSelector :: Selector '[] (Id NSData)
 userHandleSelector = mkSelector "userHandle"
 
 -- | @Selector@ for @recordIdentifier@
-recordIdentifierSelector :: Selector
+recordIdentifierSelector :: Selector '[] (Id NSString)
 recordIdentifierSelector = mkSelector "recordIdentifier"
 
 -- | @Selector@ for @rank@
-rankSelector :: Selector
+rankSelector :: Selector '[] CLong
 rankSelector = mkSelector "rank"
 
 -- | @Selector@ for @setRank:@
-setRankSelector :: Selector
+setRankSelector :: Selector '[CLong] ()
 setRankSelector = mkSelector "setRank:"
 

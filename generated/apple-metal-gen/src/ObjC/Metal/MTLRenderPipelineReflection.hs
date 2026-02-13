@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Metal.MTLRenderPipelineReflection
   , vertexArguments
   , fragmentArguments
   , tileArguments
-  , vertexBindingsSelector
-  , fragmentBindingsSelector
-  , tileBindingsSelector
-  , objectBindingsSelector
-  , meshBindingsSelector
-  , vertexArgumentsSelector
   , fragmentArgumentsSelector
+  , fragmentBindingsSelector
+  , meshBindingsSelector
+  , objectBindingsSelector
   , tileArgumentsSelector
+  , tileBindingsSelector
+  , vertexArgumentsSelector
+  , vertexBindingsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,77 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- vertexBindings@
 vertexBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
-vertexBindings mtlRenderPipelineReflection  =
-    sendMsg mtlRenderPipelineReflection (mkSelector "vertexBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexBindings mtlRenderPipelineReflection =
+  sendMessage mtlRenderPipelineReflection vertexBindingsSelector
 
 -- | @- fragmentBindings@
 fragmentBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
-fragmentBindings mtlRenderPipelineReflection  =
-    sendMsg mtlRenderPipelineReflection (mkSelector "fragmentBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragmentBindings mtlRenderPipelineReflection =
+  sendMessage mtlRenderPipelineReflection fragmentBindingsSelector
 
 -- | @- tileBindings@
 tileBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
-tileBindings mtlRenderPipelineReflection  =
-    sendMsg mtlRenderPipelineReflection (mkSelector "tileBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+tileBindings mtlRenderPipelineReflection =
+  sendMessage mtlRenderPipelineReflection tileBindingsSelector
 
 -- | @- objectBindings@
 objectBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
-objectBindings mtlRenderPipelineReflection  =
-    sendMsg mtlRenderPipelineReflection (mkSelector "objectBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectBindings mtlRenderPipelineReflection =
+  sendMessage mtlRenderPipelineReflection objectBindingsSelector
 
 -- | @- meshBindings@
 meshBindings :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
-meshBindings mtlRenderPipelineReflection  =
-    sendMsg mtlRenderPipelineReflection (mkSelector "meshBindings") (retPtr retVoid) [] >>= retainedObject . castPtr
+meshBindings mtlRenderPipelineReflection =
+  sendMessage mtlRenderPipelineReflection meshBindingsSelector
 
 -- | @- vertexArguments@
 vertexArguments :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
-vertexArguments mtlRenderPipelineReflection  =
-    sendMsg mtlRenderPipelineReflection (mkSelector "vertexArguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexArguments mtlRenderPipelineReflection =
+  sendMessage mtlRenderPipelineReflection vertexArgumentsSelector
 
 -- | @- fragmentArguments@
 fragmentArguments :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
-fragmentArguments mtlRenderPipelineReflection  =
-    sendMsg mtlRenderPipelineReflection (mkSelector "fragmentArguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragmentArguments mtlRenderPipelineReflection =
+  sendMessage mtlRenderPipelineReflection fragmentArgumentsSelector
 
 -- | @- tileArguments@
 tileArguments :: IsMTLRenderPipelineReflection mtlRenderPipelineReflection => mtlRenderPipelineReflection -> IO (Id NSArray)
-tileArguments mtlRenderPipelineReflection  =
-    sendMsg mtlRenderPipelineReflection (mkSelector "tileArguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+tileArguments mtlRenderPipelineReflection =
+  sendMessage mtlRenderPipelineReflection tileArgumentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @vertexBindings@
-vertexBindingsSelector :: Selector
+vertexBindingsSelector :: Selector '[] (Id NSArray)
 vertexBindingsSelector = mkSelector "vertexBindings"
 
 -- | @Selector@ for @fragmentBindings@
-fragmentBindingsSelector :: Selector
+fragmentBindingsSelector :: Selector '[] (Id NSArray)
 fragmentBindingsSelector = mkSelector "fragmentBindings"
 
 -- | @Selector@ for @tileBindings@
-tileBindingsSelector :: Selector
+tileBindingsSelector :: Selector '[] (Id NSArray)
 tileBindingsSelector = mkSelector "tileBindings"
 
 -- | @Selector@ for @objectBindings@
-objectBindingsSelector :: Selector
+objectBindingsSelector :: Selector '[] (Id NSArray)
 objectBindingsSelector = mkSelector "objectBindings"
 
 -- | @Selector@ for @meshBindings@
-meshBindingsSelector :: Selector
+meshBindingsSelector :: Selector '[] (Id NSArray)
 meshBindingsSelector = mkSelector "meshBindings"
 
 -- | @Selector@ for @vertexArguments@
-vertexArgumentsSelector :: Selector
+vertexArgumentsSelector :: Selector '[] (Id NSArray)
 vertexArgumentsSelector = mkSelector "vertexArguments"
 
 -- | @Selector@ for @fragmentArguments@
-fragmentArgumentsSelector :: Selector
+fragmentArgumentsSelector :: Selector '[] (Id NSArray)
 fragmentArgumentsSelector = mkSelector "fragmentArguments"
 
 -- | @Selector@ for @tileArguments@
-tileArgumentsSelector :: Selector
+tileArgumentsSelector :: Selector '[] (Id NSArray)
 tileArgumentsSelector = mkSelector "tileArguments"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,15 +29,11 @@ module ObjC.FSKit.FSResource
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSResource fsResource => fsResource -> IO (Id FSResource)
-init_ fsResource  =
-    sendMsg fsResource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsResource =
+  sendOwnedMessage fsResource initSelector
 
 -- | Creates a proxy object of this resource.
 --
@@ -54,8 +51,8 @@ init_ fsResource  =
 --
 -- ObjC selector: @- makeProxy@
 makeProxy :: IsFSResource fsResource => fsResource -> IO (Id FSResource)
-makeProxy fsResource  =
-    sendMsg fsResource (mkSelector "makeProxy") (retPtr retVoid) [] >>= retainedObject . castPtr
+makeProxy fsResource =
+  sendMessage fsResource makeProxySelector
 
 -- | Revokes the resource.
 --
@@ -63,8 +60,8 @@ makeProxy fsResource  =
 --
 -- ObjC selector: @- revoke@
 revoke :: IsFSResource fsResource => fsResource -> IO ()
-revoke fsResource  =
-    sendMsg fsResource (mkSelector "revoke") retVoid []
+revoke fsResource =
+  sendMessage fsResource revokeSelector
 
 -- | A Boolean value that indicates whether the resource is revoked.
 --
@@ -72,26 +69,26 @@ revoke fsResource  =
 --
 -- ObjC selector: @- revoked@
 revoked :: IsFSResource fsResource => fsResource -> IO Bool
-revoked fsResource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsResource (mkSelector "revoked") retCULong []
+revoked fsResource =
+  sendMessage fsResource revokedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSResource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @makeProxy@
-makeProxySelector :: Selector
+makeProxySelector :: Selector '[] (Id FSResource)
 makeProxySelector = mkSelector "makeProxy"
 
 -- | @Selector@ for @revoke@
-revokeSelector :: Selector
+revokeSelector :: Selector '[] ()
 revokeSelector = mkSelector "revoke"
 
 -- | @Selector@ for @revoked@
-revokedSelector :: Selector
+revokedSelector :: Selector '[] Bool
 revokedSelector = mkSelector "revoked"
 

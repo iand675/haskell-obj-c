@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.AppKit.NSPersistentDocument
   , managedObjectContext
   , setManagedObjectContext
   , managedObjectModel
+  , configurePersistentStoreCoordinatorForURL_ofType_errorSelector
   , configurePersistentStoreCoordinatorForURL_ofType_modelConfiguration_storeOptions_errorSelector
+  , managedObjectContextSelector
+  , managedObjectModelSelector
   , persistentStoreTypeForFileTypeSelector
-  , writeToURL_ofType_forSaveOperation_originalContentsURL_errorSelector
   , readFromURL_ofType_errorSelector
   , revertToContentsOfURL_ofType_errorSelector
-  , configurePersistentStoreCoordinatorForURL_ofType_errorSelector
-  , managedObjectContextSelector
   , setManagedObjectContextSelector
-  , managedObjectModelSelector
+  , writeToURL_ofType_forSaveOperation_originalContentsURL_errorSelector
 
   -- * Enum types
   , NSSaveOperationType(NSSaveOperationType)
@@ -38,15 +39,11 @@ module ObjC.AppKit.NSPersistentDocument
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,106 +54,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- configurePersistentStoreCoordinatorForURL:ofType:modelConfiguration:storeOptions:error:@
 configurePersistentStoreCoordinatorForURL_ofType_modelConfiguration_storeOptions_error :: (IsNSPersistentDocument nsPersistentDocument, IsNSURL url, IsNSString fileType, IsNSString configuration, IsNSDictionary storeOptions, IsNSError error_) => nsPersistentDocument -> url -> fileType -> configuration -> storeOptions -> error_ -> IO Bool
-configurePersistentStoreCoordinatorForURL_ofType_modelConfiguration_storeOptions_error nsPersistentDocument  url fileType configuration storeOptions error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr fileType $ \raw_fileType ->
-      withObjCPtr configuration $ \raw_configuration ->
-        withObjCPtr storeOptions $ \raw_storeOptions ->
-          withObjCPtr error_ $ \raw_error_ ->
-              fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentDocument (mkSelector "configurePersistentStoreCoordinatorForURL:ofType:modelConfiguration:storeOptions:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_fileType :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_storeOptions :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+configurePersistentStoreCoordinatorForURL_ofType_modelConfiguration_storeOptions_error nsPersistentDocument url fileType configuration storeOptions error_ =
+  sendMessage nsPersistentDocument configurePersistentStoreCoordinatorForURL_ofType_modelConfiguration_storeOptions_errorSelector (toNSURL url) (toNSString fileType) (toNSString configuration) (toNSDictionary storeOptions) (toNSError error_)
 
 -- | @- persistentStoreTypeForFileType:@
 persistentStoreTypeForFileType :: (IsNSPersistentDocument nsPersistentDocument, IsNSString fileType) => nsPersistentDocument -> fileType -> IO (Id NSString)
-persistentStoreTypeForFileType nsPersistentDocument  fileType =
-  withObjCPtr fileType $ \raw_fileType ->
-      sendMsg nsPersistentDocument (mkSelector "persistentStoreTypeForFileType:") (retPtr retVoid) [argPtr (castPtr raw_fileType :: Ptr ())] >>= retainedObject . castPtr
+persistentStoreTypeForFileType nsPersistentDocument fileType =
+  sendMessage nsPersistentDocument persistentStoreTypeForFileTypeSelector (toNSString fileType)
 
 -- | @- writeToURL:ofType:forSaveOperation:originalContentsURL:error:@
 writeToURL_ofType_forSaveOperation_originalContentsURL_error :: (IsNSPersistentDocument nsPersistentDocument, IsNSURL absoluteURL, IsNSString typeName, IsNSURL absoluteOriginalContentsURL, IsNSError error_) => nsPersistentDocument -> absoluteURL -> typeName -> NSSaveOperationType -> absoluteOriginalContentsURL -> error_ -> IO Bool
-writeToURL_ofType_forSaveOperation_originalContentsURL_error nsPersistentDocument  absoluteURL typeName saveOperation absoluteOriginalContentsURL error_ =
-  withObjCPtr absoluteURL $ \raw_absoluteURL ->
-    withObjCPtr typeName $ \raw_typeName ->
-      withObjCPtr absoluteOriginalContentsURL $ \raw_absoluteOriginalContentsURL ->
-        withObjCPtr error_ $ \raw_error_ ->
-            fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentDocument (mkSelector "writeToURL:ofType:forSaveOperation:originalContentsURL:error:") retCULong [argPtr (castPtr raw_absoluteURL :: Ptr ()), argPtr (castPtr raw_typeName :: Ptr ()), argCULong (coerce saveOperation), argPtr (castPtr raw_absoluteOriginalContentsURL :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+writeToURL_ofType_forSaveOperation_originalContentsURL_error nsPersistentDocument absoluteURL typeName saveOperation absoluteOriginalContentsURL error_ =
+  sendMessage nsPersistentDocument writeToURL_ofType_forSaveOperation_originalContentsURL_errorSelector (toNSURL absoluteURL) (toNSString typeName) saveOperation (toNSURL absoluteOriginalContentsURL) (toNSError error_)
 
 -- | @- readFromURL:ofType:error:@
 readFromURL_ofType_error :: (IsNSPersistentDocument nsPersistentDocument, IsNSURL absoluteURL, IsNSString typeName, IsNSError error_) => nsPersistentDocument -> absoluteURL -> typeName -> error_ -> IO Bool
-readFromURL_ofType_error nsPersistentDocument  absoluteURL typeName error_ =
-  withObjCPtr absoluteURL $ \raw_absoluteURL ->
-    withObjCPtr typeName $ \raw_typeName ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentDocument (mkSelector "readFromURL:ofType:error:") retCULong [argPtr (castPtr raw_absoluteURL :: Ptr ()), argPtr (castPtr raw_typeName :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+readFromURL_ofType_error nsPersistentDocument absoluteURL typeName error_ =
+  sendMessage nsPersistentDocument readFromURL_ofType_errorSelector (toNSURL absoluteURL) (toNSString typeName) (toNSError error_)
 
 -- | @- revertToContentsOfURL:ofType:error:@
 revertToContentsOfURL_ofType_error :: (IsNSPersistentDocument nsPersistentDocument, IsNSURL inAbsoluteURL, IsNSString inTypeName, IsNSError outError) => nsPersistentDocument -> inAbsoluteURL -> inTypeName -> outError -> IO Bool
-revertToContentsOfURL_ofType_error nsPersistentDocument  inAbsoluteURL inTypeName outError =
-  withObjCPtr inAbsoluteURL $ \raw_inAbsoluteURL ->
-    withObjCPtr inTypeName $ \raw_inTypeName ->
-      withObjCPtr outError $ \raw_outError ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentDocument (mkSelector "revertToContentsOfURL:ofType:error:") retCULong [argPtr (castPtr raw_inAbsoluteURL :: Ptr ()), argPtr (castPtr raw_inTypeName :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+revertToContentsOfURL_ofType_error nsPersistentDocument inAbsoluteURL inTypeName outError =
+  sendMessage nsPersistentDocument revertToContentsOfURL_ofType_errorSelector (toNSURL inAbsoluteURL) (toNSString inTypeName) (toNSError outError)
 
 -- | @- configurePersistentStoreCoordinatorForURL:ofType:error:@
 configurePersistentStoreCoordinatorForURL_ofType_error :: (IsNSPersistentDocument nsPersistentDocument, IsNSURL url, IsNSString fileType, IsNSError error_) => nsPersistentDocument -> url -> fileType -> error_ -> IO Bool
-configurePersistentStoreCoordinatorForURL_ofType_error nsPersistentDocument  url fileType error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr fileType $ \raw_fileType ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentDocument (mkSelector "configurePersistentStoreCoordinatorForURL:ofType:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_fileType :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+configurePersistentStoreCoordinatorForURL_ofType_error nsPersistentDocument url fileType error_ =
+  sendMessage nsPersistentDocument configurePersistentStoreCoordinatorForURL_ofType_errorSelector (toNSURL url) (toNSString fileType) (toNSError error_)
 
 -- | @- managedObjectContext@
 managedObjectContext :: IsNSPersistentDocument nsPersistentDocument => nsPersistentDocument -> IO (Id NSManagedObjectContext)
-managedObjectContext nsPersistentDocument  =
-    sendMsg nsPersistentDocument (mkSelector "managedObjectContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+managedObjectContext nsPersistentDocument =
+  sendMessage nsPersistentDocument managedObjectContextSelector
 
 -- | @- setManagedObjectContext:@
 setManagedObjectContext :: (IsNSPersistentDocument nsPersistentDocument, IsNSManagedObjectContext value) => nsPersistentDocument -> value -> IO ()
-setManagedObjectContext nsPersistentDocument  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersistentDocument (mkSelector "setManagedObjectContext:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setManagedObjectContext nsPersistentDocument value =
+  sendMessage nsPersistentDocument setManagedObjectContextSelector (toNSManagedObjectContext value)
 
 -- | @- managedObjectModel@
 managedObjectModel :: IsNSPersistentDocument nsPersistentDocument => nsPersistentDocument -> IO (Id NSManagedObjectModel)
-managedObjectModel nsPersistentDocument  =
-    sendMsg nsPersistentDocument (mkSelector "managedObjectModel") (retPtr retVoid) [] >>= retainedObject . castPtr
+managedObjectModel nsPersistentDocument =
+  sendMessage nsPersistentDocument managedObjectModelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @configurePersistentStoreCoordinatorForURL:ofType:modelConfiguration:storeOptions:error:@
-configurePersistentStoreCoordinatorForURL_ofType_modelConfiguration_storeOptions_errorSelector :: Selector
+configurePersistentStoreCoordinatorForURL_ofType_modelConfiguration_storeOptions_errorSelector :: Selector '[Id NSURL, Id NSString, Id NSString, Id NSDictionary, Id NSError] Bool
 configurePersistentStoreCoordinatorForURL_ofType_modelConfiguration_storeOptions_errorSelector = mkSelector "configurePersistentStoreCoordinatorForURL:ofType:modelConfiguration:storeOptions:error:"
 
 -- | @Selector@ for @persistentStoreTypeForFileType:@
-persistentStoreTypeForFileTypeSelector :: Selector
+persistentStoreTypeForFileTypeSelector :: Selector '[Id NSString] (Id NSString)
 persistentStoreTypeForFileTypeSelector = mkSelector "persistentStoreTypeForFileType:"
 
 -- | @Selector@ for @writeToURL:ofType:forSaveOperation:originalContentsURL:error:@
-writeToURL_ofType_forSaveOperation_originalContentsURL_errorSelector :: Selector
+writeToURL_ofType_forSaveOperation_originalContentsURL_errorSelector :: Selector '[Id NSURL, Id NSString, NSSaveOperationType, Id NSURL, Id NSError] Bool
 writeToURL_ofType_forSaveOperation_originalContentsURL_errorSelector = mkSelector "writeToURL:ofType:forSaveOperation:originalContentsURL:error:"
 
 -- | @Selector@ for @readFromURL:ofType:error:@
-readFromURL_ofType_errorSelector :: Selector
+readFromURL_ofType_errorSelector :: Selector '[Id NSURL, Id NSString, Id NSError] Bool
 readFromURL_ofType_errorSelector = mkSelector "readFromURL:ofType:error:"
 
 -- | @Selector@ for @revertToContentsOfURL:ofType:error:@
-revertToContentsOfURL_ofType_errorSelector :: Selector
+revertToContentsOfURL_ofType_errorSelector :: Selector '[Id NSURL, Id NSString, Id NSError] Bool
 revertToContentsOfURL_ofType_errorSelector = mkSelector "revertToContentsOfURL:ofType:error:"
 
 -- | @Selector@ for @configurePersistentStoreCoordinatorForURL:ofType:error:@
-configurePersistentStoreCoordinatorForURL_ofType_errorSelector :: Selector
+configurePersistentStoreCoordinatorForURL_ofType_errorSelector :: Selector '[Id NSURL, Id NSString, Id NSError] Bool
 configurePersistentStoreCoordinatorForURL_ofType_errorSelector = mkSelector "configurePersistentStoreCoordinatorForURL:ofType:error:"
 
 -- | @Selector@ for @managedObjectContext@
-managedObjectContextSelector :: Selector
+managedObjectContextSelector :: Selector '[] (Id NSManagedObjectContext)
 managedObjectContextSelector = mkSelector "managedObjectContext"
 
 -- | @Selector@ for @setManagedObjectContext:@
-setManagedObjectContextSelector :: Selector
+setManagedObjectContextSelector :: Selector '[Id NSManagedObjectContext] ()
 setManagedObjectContextSelector = mkSelector "setManagedObjectContext:"
 
 -- | @Selector@ for @managedObjectModel@
-managedObjectModelSelector :: Selector
+managedObjectModelSelector :: Selector '[] (Id NSManagedObjectModel)
 managedObjectModelSelector = mkSelector "managedObjectModel"
 

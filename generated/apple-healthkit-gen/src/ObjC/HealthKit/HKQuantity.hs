@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,11 +17,11 @@ module ObjC.HealthKit.HKQuantity
   , isCompatibleWithUnit
   , doubleValueForUnit
   , compare_
-  , initSelector
-  , quantityWithUnit_doubleValueSelector
-  , isCompatibleWithUnitSelector
-  , doubleValueForUnitSelector
   , compareSelector
+  , doubleValueForUnitSelector
+  , initSelector
+  , isCompatibleWithUnitSelector
+  , quantityWithUnit_doubleValueSelector
 
   -- * Enum types
   , NSComparisonResult(NSComparisonResult)
@@ -30,15 +31,11 @@ module ObjC.HealthKit.HKQuantity
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,8 +45,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKQuantity hkQuantity => hkQuantity -> IO (Id HKQuantity)
-init_ hkQuantity  =
-    sendMsg hkQuantity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkQuantity =
+  sendOwnedMessage hkQuantity initSelector
 
 -- | quantityWithUnit:doubleValue:
 --
@@ -60,8 +57,7 @@ quantityWithUnit_doubleValue :: IsHKUnit unit => unit -> CDouble -> IO (Id HKQua
 quantityWithUnit_doubleValue unit value =
   do
     cls' <- getRequiredClass "HKQuantity"
-    withObjCPtr unit $ \raw_unit ->
-      sendClassMsg cls' (mkSelector "quantityWithUnit:doubleValue:") (retPtr retVoid) [argPtr (castPtr raw_unit :: Ptr ()), argCDouble value] >>= retainedObject . castPtr
+    sendClassMessage cls' quantityWithUnit_doubleValueSelector (toHKUnit unit) value
 
 -- | isCompatibleWithUnit:
 --
@@ -69,9 +65,8 @@ quantityWithUnit_doubleValue unit value =
 --
 -- ObjC selector: @- isCompatibleWithUnit:@
 isCompatibleWithUnit :: (IsHKQuantity hkQuantity, IsHKUnit unit) => hkQuantity -> unit -> IO Bool
-isCompatibleWithUnit hkQuantity  unit =
-  withObjCPtr unit $ \raw_unit ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkQuantity (mkSelector "isCompatibleWithUnit:") retCULong [argPtr (castPtr raw_unit :: Ptr ())]
+isCompatibleWithUnit hkQuantity unit =
+  sendMessage hkQuantity isCompatibleWithUnitSelector (toHKUnit unit)
 
 -- | doubleValueForUnit:
 --
@@ -81,9 +76,8 @@ isCompatibleWithUnit hkQuantity  unit =
 --
 -- ObjC selector: @- doubleValueForUnit:@
 doubleValueForUnit :: (IsHKQuantity hkQuantity, IsHKUnit unit) => hkQuantity -> unit -> IO CDouble
-doubleValueForUnit hkQuantity  unit =
-  withObjCPtr unit $ \raw_unit ->
-      sendMsg hkQuantity (mkSelector "doubleValueForUnit:") retCDouble [argPtr (castPtr raw_unit :: Ptr ())]
+doubleValueForUnit hkQuantity unit =
+  sendMessage hkQuantity doubleValueForUnitSelector (toHKUnit unit)
 
 -- | compare:
 --
@@ -93,31 +87,30 @@ doubleValueForUnit hkQuantity  unit =
 --
 -- ObjC selector: @- compare:@
 compare_ :: (IsHKQuantity hkQuantity, IsHKQuantity quantity) => hkQuantity -> quantity -> IO NSComparisonResult
-compare_ hkQuantity  quantity =
-  withObjCPtr quantity $ \raw_quantity ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg hkQuantity (mkSelector "compare:") retCLong [argPtr (castPtr raw_quantity :: Ptr ())]
+compare_ hkQuantity quantity =
+  sendMessage hkQuantity compareSelector (toHKQuantity quantity)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKQuantity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @quantityWithUnit:doubleValue:@
-quantityWithUnit_doubleValueSelector :: Selector
+quantityWithUnit_doubleValueSelector :: Selector '[Id HKUnit, CDouble] (Id HKQuantity)
 quantityWithUnit_doubleValueSelector = mkSelector "quantityWithUnit:doubleValue:"
 
 -- | @Selector@ for @isCompatibleWithUnit:@
-isCompatibleWithUnitSelector :: Selector
+isCompatibleWithUnitSelector :: Selector '[Id HKUnit] Bool
 isCompatibleWithUnitSelector = mkSelector "isCompatibleWithUnit:"
 
 -- | @Selector@ for @doubleValueForUnit:@
-doubleValueForUnitSelector :: Selector
+doubleValueForUnitSelector :: Selector '[Id HKUnit] CDouble
 doubleValueForUnitSelector = mkSelector "doubleValueForUnit:"
 
 -- | @Selector@ for @compare:@
-compareSelector :: Selector
+compareSelector :: Selector '[Id HKQuantity] NSComparisonResult
 compareSelector = mkSelector "compare:"
 

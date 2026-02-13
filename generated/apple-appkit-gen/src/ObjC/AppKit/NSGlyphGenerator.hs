@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AppKit.NSGlyphGenerator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,25 +28,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- generateGlyphsForGlyphStorage:desiredNumberOfCharacters:glyphIndex:characterIndex:@
 generateGlyphsForGlyphStorage_desiredNumberOfCharacters_glyphIndex_characterIndex :: IsNSGlyphGenerator nsGlyphGenerator => nsGlyphGenerator -> RawId -> CULong -> Ptr CULong -> Ptr CULong -> IO ()
-generateGlyphsForGlyphStorage_desiredNumberOfCharacters_glyphIndex_characterIndex nsGlyphGenerator  glyphStorage nChars glyphIndex charIndex =
-    sendMsg nsGlyphGenerator (mkSelector "generateGlyphsForGlyphStorage:desiredNumberOfCharacters:glyphIndex:characterIndex:") retVoid [argPtr (castPtr (unRawId glyphStorage) :: Ptr ()), argCULong nChars, argPtr glyphIndex, argPtr charIndex]
+generateGlyphsForGlyphStorage_desiredNumberOfCharacters_glyphIndex_characterIndex nsGlyphGenerator glyphStorage nChars glyphIndex charIndex =
+  sendMessage nsGlyphGenerator generateGlyphsForGlyphStorage_desiredNumberOfCharacters_glyphIndex_characterIndexSelector glyphStorage nChars glyphIndex charIndex
 
 -- | @+ sharedGlyphGenerator@
 sharedGlyphGenerator :: IO (Id NSGlyphGenerator)
 sharedGlyphGenerator  =
   do
     cls' <- getRequiredClass "NSGlyphGenerator"
-    sendClassMsg cls' (mkSelector "sharedGlyphGenerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedGlyphGeneratorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @generateGlyphsForGlyphStorage:desiredNumberOfCharacters:glyphIndex:characterIndex:@
-generateGlyphsForGlyphStorage_desiredNumberOfCharacters_glyphIndex_characterIndexSelector :: Selector
+generateGlyphsForGlyphStorage_desiredNumberOfCharacters_glyphIndex_characterIndexSelector :: Selector '[RawId, CULong, Ptr CULong, Ptr CULong] ()
 generateGlyphsForGlyphStorage_desiredNumberOfCharacters_glyphIndex_characterIndexSelector = mkSelector "generateGlyphsForGlyphStorage:desiredNumberOfCharacters:glyphIndex:characterIndex:"
 
 -- | @Selector@ for @sharedGlyphGenerator@
-sharedGlyphGeneratorSelector :: Selector
+sharedGlyphGeneratorSelector :: Selector '[] (Id NSGlyphGenerator)
 sharedGlyphGeneratorSelector = mkSelector "sharedGlyphGenerator"
 

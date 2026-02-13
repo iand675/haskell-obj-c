@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRApplicationLauncherClusterApplicationEPStruct
   , endpoint
   , setEndpoint
   , applicationSelector
-  , setApplicationSelector
   , endpointSelector
+  , setApplicationSelector
   , setEndpointSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- application@
 application :: IsMTRApplicationLauncherClusterApplicationEPStruct mtrApplicationLauncherClusterApplicationEPStruct => mtrApplicationLauncherClusterApplicationEPStruct -> IO (Id MTRApplicationLauncherClusterApplicationStruct)
-application mtrApplicationLauncherClusterApplicationEPStruct  =
-    sendMsg mtrApplicationLauncherClusterApplicationEPStruct (mkSelector "application") (retPtr retVoid) [] >>= retainedObject . castPtr
+application mtrApplicationLauncherClusterApplicationEPStruct =
+  sendMessage mtrApplicationLauncherClusterApplicationEPStruct applicationSelector
 
 -- | @- setApplication:@
 setApplication :: (IsMTRApplicationLauncherClusterApplicationEPStruct mtrApplicationLauncherClusterApplicationEPStruct, IsMTRApplicationLauncherClusterApplicationStruct value) => mtrApplicationLauncherClusterApplicationEPStruct -> value -> IO ()
-setApplication mtrApplicationLauncherClusterApplicationEPStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterApplicationEPStruct (mkSelector "setApplication:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplication mtrApplicationLauncherClusterApplicationEPStruct value =
+  sendMessage mtrApplicationLauncherClusterApplicationEPStruct setApplicationSelector (toMTRApplicationLauncherClusterApplicationStruct value)
 
 -- | @- endpoint@
 endpoint :: IsMTRApplicationLauncherClusterApplicationEPStruct mtrApplicationLauncherClusterApplicationEPStruct => mtrApplicationLauncherClusterApplicationEPStruct -> IO (Id NSNumber)
-endpoint mtrApplicationLauncherClusterApplicationEPStruct  =
-    sendMsg mtrApplicationLauncherClusterApplicationEPStruct (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoint mtrApplicationLauncherClusterApplicationEPStruct =
+  sendMessage mtrApplicationLauncherClusterApplicationEPStruct endpointSelector
 
 -- | @- setEndpoint:@
 setEndpoint :: (IsMTRApplicationLauncherClusterApplicationEPStruct mtrApplicationLauncherClusterApplicationEPStruct, IsNSNumber value) => mtrApplicationLauncherClusterApplicationEPStruct -> value -> IO ()
-setEndpoint mtrApplicationLauncherClusterApplicationEPStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterApplicationEPStruct (mkSelector "setEndpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpoint mtrApplicationLauncherClusterApplicationEPStruct value =
+  sendMessage mtrApplicationLauncherClusterApplicationEPStruct setEndpointSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @application@
-applicationSelector :: Selector
+applicationSelector :: Selector '[] (Id MTRApplicationLauncherClusterApplicationStruct)
 applicationSelector = mkSelector "application"
 
 -- | @Selector@ for @setApplication:@
-setApplicationSelector :: Selector
+setApplicationSelector :: Selector '[Id MTRApplicationLauncherClusterApplicationStruct] ()
 setApplicationSelector = mkSelector "setApplication:"
 
 -- | @Selector@ for @endpoint@
-endpointSelector :: Selector
+endpointSelector :: Selector '[] (Id NSNumber)
 endpointSelector = mkSelector "endpoint"
 
 -- | @Selector@ for @setEndpoint:@
-setEndpointSelector :: Selector
+setEndpointSelector :: Selector '[Id NSNumber] ()
 setEndpointSelector = mkSelector "setEndpoint:"
 

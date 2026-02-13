@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.CryptoTokenKit.TKTokenSession
   , token
   , delegate
   , setDelegate
-  , initWithTokenSelector
-  , initSelector
-  , tokenSelector
   , delegateSelector
+  , initSelector
+  , initWithTokenSelector
   , setDelegateSelector
+  , tokenSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,51 +44,50 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithToken:@
 initWithToken :: (IsTKTokenSession tkTokenSession, IsTKToken token) => tkTokenSession -> token -> IO (Id TKTokenSession)
-initWithToken tkTokenSession  token =
-  withObjCPtr token $ \raw_token ->
-      sendMsg tkTokenSession (mkSelector "initWithToken:") (retPtr retVoid) [argPtr (castPtr raw_token :: Ptr ())] >>= ownedObject . castPtr
+initWithToken tkTokenSession token =
+  sendOwnedMessage tkTokenSession initWithTokenSelector (toTKToken token)
 
 -- | @- init@
 init_ :: IsTKTokenSession tkTokenSession => tkTokenSession -> IO (Id TKTokenSession)
-init_ tkTokenSession  =
-    sendMsg tkTokenSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkTokenSession =
+  sendOwnedMessage tkTokenSession initSelector
 
 -- | @- token@
 token :: IsTKTokenSession tkTokenSession => tkTokenSession -> IO (Id TKToken)
-token tkTokenSession  =
-    sendMsg tkTokenSession (mkSelector "token") (retPtr retVoid) [] >>= retainedObject . castPtr
+token tkTokenSession =
+  sendMessage tkTokenSession tokenSelector
 
 -- | @- delegate@
 delegate :: IsTKTokenSession tkTokenSession => tkTokenSession -> IO RawId
-delegate tkTokenSession  =
-    fmap (RawId . castPtr) $ sendMsg tkTokenSession (mkSelector "delegate") (retPtr retVoid) []
+delegate tkTokenSession =
+  sendMessage tkTokenSession delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsTKTokenSession tkTokenSession => tkTokenSession -> RawId -> IO ()
-setDelegate tkTokenSession  value =
-    sendMsg tkTokenSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate tkTokenSession value =
+  sendMessage tkTokenSession setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithToken:@
-initWithTokenSelector :: Selector
+initWithTokenSelector :: Selector '[Id TKToken] (Id TKTokenSession)
 initWithTokenSelector = mkSelector "initWithToken:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKTokenSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @token@
-tokenSelector :: Selector
+tokenSelector :: Selector '[] (Id TKToken)
 tokenSelector = mkSelector "token"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

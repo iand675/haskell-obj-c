@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.MetalPerformanceShaders.MPSCNNInstanceNormalizationNode
   , initWithSource_dataSource
   , trainingStyle
   , setTrainingStyle
-  , nodeWithSource_dataSourceSelector
   , initWithSource_dataSourceSelector
-  , trainingStyleSelector
+  , nodeWithSource_dataSourceSelector
   , setTrainingStyleSelector
+  , trainingStyleSelector
 
   -- * Enum types
   , MPSNNTrainingStyle(MPSNNTrainingStyle)
@@ -24,15 +25,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNInstanceNormalizationNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,46 +42,44 @@ nodeWithSource_dataSource :: IsMPSNNImageNode source => source -> RawId -> IO (I
 nodeWithSource_dataSource source dataSource =
   do
     cls' <- getRequiredClass "MPSCNNInstanceNormalizationNode"
-    withObjCPtr source $ \raw_source ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:dataSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr (unRawId dataSource) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_dataSourceSelector (toMPSNNImageNode source) dataSource
 
 -- | @- initWithSource:dataSource:@
 initWithSource_dataSource :: (IsMPSCNNInstanceNormalizationNode mpscnnInstanceNormalizationNode, IsMPSNNImageNode source) => mpscnnInstanceNormalizationNode -> source -> RawId -> IO (Id MPSCNNInstanceNormalizationNode)
-initWithSource_dataSource mpscnnInstanceNormalizationNode  source dataSource =
-  withObjCPtr source $ \raw_source ->
-      sendMsg mpscnnInstanceNormalizationNode (mkSelector "initWithSource:dataSource:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argPtr (castPtr (unRawId dataSource) :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_dataSource mpscnnInstanceNormalizationNode source dataSource =
+  sendOwnedMessage mpscnnInstanceNormalizationNode initWithSource_dataSourceSelector (toMPSNNImageNode source) dataSource
 
 -- | The training style of the forward node will be propagated to gradient nodes made from it
 --
 -- ObjC selector: @- trainingStyle@
 trainingStyle :: IsMPSCNNInstanceNormalizationNode mpscnnInstanceNormalizationNode => mpscnnInstanceNormalizationNode -> IO MPSNNTrainingStyle
-trainingStyle mpscnnInstanceNormalizationNode  =
-    fmap (coerce :: CULong -> MPSNNTrainingStyle) $ sendMsg mpscnnInstanceNormalizationNode (mkSelector "trainingStyle") retCULong []
+trainingStyle mpscnnInstanceNormalizationNode =
+  sendMessage mpscnnInstanceNormalizationNode trainingStyleSelector
 
 -- | The training style of the forward node will be propagated to gradient nodes made from it
 --
 -- ObjC selector: @- setTrainingStyle:@
 setTrainingStyle :: IsMPSCNNInstanceNormalizationNode mpscnnInstanceNormalizationNode => mpscnnInstanceNormalizationNode -> MPSNNTrainingStyle -> IO ()
-setTrainingStyle mpscnnInstanceNormalizationNode  value =
-    sendMsg mpscnnInstanceNormalizationNode (mkSelector "setTrainingStyle:") retVoid [argCULong (coerce value)]
+setTrainingStyle mpscnnInstanceNormalizationNode value =
+  sendMessage mpscnnInstanceNormalizationNode setTrainingStyleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:dataSource:@
-nodeWithSource_dataSourceSelector :: Selector
+nodeWithSource_dataSourceSelector :: Selector '[Id MPSNNImageNode, RawId] (Id MPSCNNInstanceNormalizationNode)
 nodeWithSource_dataSourceSelector = mkSelector "nodeWithSource:dataSource:"
 
 -- | @Selector@ for @initWithSource:dataSource:@
-initWithSource_dataSourceSelector :: Selector
+initWithSource_dataSourceSelector :: Selector '[Id MPSNNImageNode, RawId] (Id MPSCNNInstanceNormalizationNode)
 initWithSource_dataSourceSelector = mkSelector "initWithSource:dataSource:"
 
 -- | @Selector@ for @trainingStyle@
-trainingStyleSelector :: Selector
+trainingStyleSelector :: Selector '[] MPSNNTrainingStyle
 trainingStyleSelector = mkSelector "trainingStyle"
 
 -- | @Selector@ for @setTrainingStyle:@
-setTrainingStyleSelector :: Selector
+setTrainingStyleSelector :: Selector '[MPSNNTrainingStyle] ()
 setTrainingStyleSelector = mkSelector "setTrainingStyle:"
 

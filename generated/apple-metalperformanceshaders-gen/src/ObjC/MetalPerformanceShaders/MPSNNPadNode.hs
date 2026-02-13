@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,9 +18,9 @@ module ObjC.MetalPerformanceShaders.MPSNNPadNode
   , initWithSource_paddingSizeBefore_paddingSizeAfter_edgeMode
   , fillValue
   , setFillValue
-  , nodeWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector
-  , initWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector
   , fillValueSelector
+  , initWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector
+  , nodeWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector
   , setFillValueSelector
 
   -- * Enum types
@@ -32,15 +33,11 @@ module ObjC.MetalPerformanceShaders.MPSNNPadNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,8 +63,7 @@ nodeWithSource_paddingSizeBefore_paddingSizeAfter_edgeMode :: IsMPSNNImageNode s
 nodeWithSource_paddingSizeBefore_paddingSizeAfter_edgeMode source paddingSizeBefore paddingSizeAfter edgeMode =
   do
     cls' <- getRequiredClass "MPSNNPadNode"
-    withObjCPtr source $ \raw_source ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:paddingSizeBefore:paddingSizeAfter:edgeMode:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argMPSImageCoordinate paddingSizeBefore, argMPSImageCoordinate paddingSizeAfter, argCULong (coerce edgeMode)] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector (toMPSNNImageNode source) paddingSizeBefore paddingSizeAfter edgeMode
 
 -- | Init a node representing a MPSNNPad kernel
 --
@@ -83,9 +79,8 @@ nodeWithSource_paddingSizeBefore_paddingSizeAfter_edgeMode source paddingSizeBef
 --
 -- ObjC selector: @- initWithSource:paddingSizeBefore:paddingSizeAfter:edgeMode:@
 initWithSource_paddingSizeBefore_paddingSizeAfter_edgeMode :: (IsMPSNNPadNode mpsnnPadNode, IsMPSNNImageNode source) => mpsnnPadNode -> source -> MPSImageCoordinate -> MPSImageCoordinate -> MPSImageEdgeMode -> IO (Id MPSNNPadNode)
-initWithSource_paddingSizeBefore_paddingSizeAfter_edgeMode mpsnnPadNode  source paddingSizeBefore paddingSizeAfter edgeMode =
-  withObjCPtr source $ \raw_source ->
-      sendMsg mpsnnPadNode (mkSelector "initWithSource:paddingSizeBefore:paddingSizeAfter:edgeMode:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argMPSImageCoordinate paddingSizeBefore, argMPSImageCoordinate paddingSizeAfter, argCULong (coerce edgeMode)] >>= ownedObject . castPtr
+initWithSource_paddingSizeBefore_paddingSizeAfter_edgeMode mpsnnPadNode source paddingSizeBefore paddingSizeAfter edgeMode =
+  sendOwnedMessage mpsnnPadNode initWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector (toMPSNNImageNode source) paddingSizeBefore paddingSizeAfter edgeMode
 
 -- | fillValue
 --
@@ -93,8 +88,8 @@ initWithSource_paddingSizeBefore_paddingSizeAfter_edgeMode mpsnnPadNode  source 
 --
 -- ObjC selector: @- fillValue@
 fillValue :: IsMPSNNPadNode mpsnnPadNode => mpsnnPadNode -> IO CFloat
-fillValue mpsnnPadNode  =
-    sendMsg mpsnnPadNode (mkSelector "fillValue") retCFloat []
+fillValue mpsnnPadNode =
+  sendMessage mpsnnPadNode fillValueSelector
 
 -- | fillValue
 --
@@ -102,26 +97,26 @@ fillValue mpsnnPadNode  =
 --
 -- ObjC selector: @- setFillValue:@
 setFillValue :: IsMPSNNPadNode mpsnnPadNode => mpsnnPadNode -> CFloat -> IO ()
-setFillValue mpsnnPadNode  value =
-    sendMsg mpsnnPadNode (mkSelector "setFillValue:") retVoid [argCFloat value]
+setFillValue mpsnnPadNode value =
+  sendMessage mpsnnPadNode setFillValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:paddingSizeBefore:paddingSizeAfter:edgeMode:@
-nodeWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector :: Selector
+nodeWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector :: Selector '[Id MPSNNImageNode, MPSImageCoordinate, MPSImageCoordinate, MPSImageEdgeMode] (Id MPSNNPadNode)
 nodeWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector = mkSelector "nodeWithSource:paddingSizeBefore:paddingSizeAfter:edgeMode:"
 
 -- | @Selector@ for @initWithSource:paddingSizeBefore:paddingSizeAfter:edgeMode:@
-initWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector :: Selector
+initWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector :: Selector '[Id MPSNNImageNode, MPSImageCoordinate, MPSImageCoordinate, MPSImageEdgeMode] (Id MPSNNPadNode)
 initWithSource_paddingSizeBefore_paddingSizeAfter_edgeModeSelector = mkSelector "initWithSource:paddingSizeBefore:paddingSizeAfter:edgeMode:"
 
 -- | @Selector@ for @fillValue@
-fillValueSelector :: Selector
+fillValueSelector :: Selector '[] CFloat
 fillValueSelector = mkSelector "fillValue"
 
 -- | @Selector@ for @setFillValue:@
-setFillValueSelector :: Selector
+setFillValueSelector :: Selector '[CFloat] ()
 setFillValueSelector = mkSelector "setFillValue:"
 

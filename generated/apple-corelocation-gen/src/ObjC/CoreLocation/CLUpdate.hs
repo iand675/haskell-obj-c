@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.CoreLocation.CLUpdate
   , accuracyLimited
   , serviceSessionRequired
   , authorizationRequestInProgress
-  , authorizationDeniedSelector
-  , authorizationDeniedGloballySelector
-  , authorizationRestrictedSelector
-  , isStationarySelector
-  , stationarySelector
-  , insufficientlyInUseSelector
-  , locationUnavailableSelector
   , accuracyLimitedSelector
-  , serviceSessionRequiredSelector
+  , authorizationDeniedGloballySelector
+  , authorizationDeniedSelector
   , authorizationRequestInProgressSelector
+  , authorizationRestrictedSelector
+  , insufficientlyInUseSelector
+  , isStationarySelector
+  , locationUnavailableSelector
+  , serviceSessionRequiredSelector
+  , stationarySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,95 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- authorizationDenied@
 authorizationDenied :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-authorizationDenied clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "authorizationDenied") retCULong []
+authorizationDenied clUpdate =
+  sendMessage clUpdate authorizationDeniedSelector
 
 -- | @- authorizationDeniedGlobally@
 authorizationDeniedGlobally :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-authorizationDeniedGlobally clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "authorizationDeniedGlobally") retCULong []
+authorizationDeniedGlobally clUpdate =
+  sendMessage clUpdate authorizationDeniedGloballySelector
 
 -- | @- authorizationRestricted@
 authorizationRestricted :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-authorizationRestricted clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "authorizationRestricted") retCULong []
+authorizationRestricted clUpdate =
+  sendMessage clUpdate authorizationRestrictedSelector
 
 -- | @- isStationary@
 isStationary :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-isStationary clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "isStationary") retCULong []
+isStationary clUpdate =
+  sendMessage clUpdate isStationarySelector
 
 -- | @- stationary@
 stationary :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-stationary clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "stationary") retCULong []
+stationary clUpdate =
+  sendMessage clUpdate stationarySelector
 
 -- | @- insufficientlyInUse@
 insufficientlyInUse :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-insufficientlyInUse clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "insufficientlyInUse") retCULong []
+insufficientlyInUse clUpdate =
+  sendMessage clUpdate insufficientlyInUseSelector
 
 -- | @- locationUnavailable@
 locationUnavailable :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-locationUnavailable clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "locationUnavailable") retCULong []
+locationUnavailable clUpdate =
+  sendMessage clUpdate locationUnavailableSelector
 
 -- | @- accuracyLimited@
 accuracyLimited :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-accuracyLimited clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "accuracyLimited") retCULong []
+accuracyLimited clUpdate =
+  sendMessage clUpdate accuracyLimitedSelector
 
 -- | @- serviceSessionRequired@
 serviceSessionRequired :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-serviceSessionRequired clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "serviceSessionRequired") retCULong []
+serviceSessionRequired clUpdate =
+  sendMessage clUpdate serviceSessionRequiredSelector
 
 -- | @- authorizationRequestInProgress@
 authorizationRequestInProgress :: IsCLUpdate clUpdate => clUpdate -> IO Bool
-authorizationRequestInProgress clUpdate  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clUpdate (mkSelector "authorizationRequestInProgress") retCULong []
+authorizationRequestInProgress clUpdate =
+  sendMessage clUpdate authorizationRequestInProgressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationDenied@
-authorizationDeniedSelector :: Selector
+authorizationDeniedSelector :: Selector '[] Bool
 authorizationDeniedSelector = mkSelector "authorizationDenied"
 
 -- | @Selector@ for @authorizationDeniedGlobally@
-authorizationDeniedGloballySelector :: Selector
+authorizationDeniedGloballySelector :: Selector '[] Bool
 authorizationDeniedGloballySelector = mkSelector "authorizationDeniedGlobally"
 
 -- | @Selector@ for @authorizationRestricted@
-authorizationRestrictedSelector :: Selector
+authorizationRestrictedSelector :: Selector '[] Bool
 authorizationRestrictedSelector = mkSelector "authorizationRestricted"
 
 -- | @Selector@ for @isStationary@
-isStationarySelector :: Selector
+isStationarySelector :: Selector '[] Bool
 isStationarySelector = mkSelector "isStationary"
 
 -- | @Selector@ for @stationary@
-stationarySelector :: Selector
+stationarySelector :: Selector '[] Bool
 stationarySelector = mkSelector "stationary"
 
 -- | @Selector@ for @insufficientlyInUse@
-insufficientlyInUseSelector :: Selector
+insufficientlyInUseSelector :: Selector '[] Bool
 insufficientlyInUseSelector = mkSelector "insufficientlyInUse"
 
 -- | @Selector@ for @locationUnavailable@
-locationUnavailableSelector :: Selector
+locationUnavailableSelector :: Selector '[] Bool
 locationUnavailableSelector = mkSelector "locationUnavailable"
 
 -- | @Selector@ for @accuracyLimited@
-accuracyLimitedSelector :: Selector
+accuracyLimitedSelector :: Selector '[] Bool
 accuracyLimitedSelector = mkSelector "accuracyLimited"
 
 -- | @Selector@ for @serviceSessionRequired@
-serviceSessionRequiredSelector :: Selector
+serviceSessionRequiredSelector :: Selector '[] Bool
 serviceSessionRequiredSelector = mkSelector "serviceSessionRequired"
 
 -- | @Selector@ for @authorizationRequestInProgress@
-authorizationRequestInProgressSelector :: Selector
+authorizationRequestInProgressSelector :: Selector '[] Bool
 authorizationRequestInProgressSelector = mkSelector "authorizationRequestInProgress"
 

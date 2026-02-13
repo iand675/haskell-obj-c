@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.PassKit.PKIssuerProvisioningExtensionHandler
   , IsPKIssuerProvisioningExtensionHandler(..)
   , statusWithCompletion
   , generateAddPaymentPassRequestForPassEntryWithIdentifier_configuration_certificateChain_nonce_nonceSignature_completionHandler
-  , statusWithCompletionSelector
   , generateAddPaymentPassRequestForPassEntryWithIdentifier_configuration_certificateChain_nonce_nonceSignature_completionHandlerSelector
+  , statusWithCompletionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,28 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- statusWithCompletion:@
 statusWithCompletion :: IsPKIssuerProvisioningExtensionHandler pkIssuerProvisioningExtensionHandler => pkIssuerProvisioningExtensionHandler -> Ptr () -> IO ()
-statusWithCompletion pkIssuerProvisioningExtensionHandler  completion =
-    sendMsg pkIssuerProvisioningExtensionHandler (mkSelector "statusWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+statusWithCompletion pkIssuerProvisioningExtensionHandler completion =
+  sendMessage pkIssuerProvisioningExtensionHandler statusWithCompletionSelector completion
 
 -- | @- generateAddPaymentPassRequestForPassEntryWithIdentifier:configuration:certificateChain:nonce:nonceSignature:completionHandler:@
 generateAddPaymentPassRequestForPassEntryWithIdentifier_configuration_certificateChain_nonce_nonceSignature_completionHandler :: (IsPKIssuerProvisioningExtensionHandler pkIssuerProvisioningExtensionHandler, IsNSString identifier, IsPKAddPaymentPassRequestConfiguration configuration, IsNSArray certificates, IsNSData nonce, IsNSData nonceSignature) => pkIssuerProvisioningExtensionHandler -> identifier -> configuration -> certificates -> nonce -> nonceSignature -> Ptr () -> IO ()
-generateAddPaymentPassRequestForPassEntryWithIdentifier_configuration_certificateChain_nonce_nonceSignature_completionHandler pkIssuerProvisioningExtensionHandler  identifier configuration certificates nonce nonceSignature completion =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr configuration $ \raw_configuration ->
-      withObjCPtr certificates $ \raw_certificates ->
-        withObjCPtr nonce $ \raw_nonce ->
-          withObjCPtr nonceSignature $ \raw_nonceSignature ->
-              sendMsg pkIssuerProvisioningExtensionHandler (mkSelector "generateAddPaymentPassRequestForPassEntryWithIdentifier:configuration:certificateChain:nonce:nonceSignature:completionHandler:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_certificates :: Ptr ()), argPtr (castPtr raw_nonce :: Ptr ()), argPtr (castPtr raw_nonceSignature :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+generateAddPaymentPassRequestForPassEntryWithIdentifier_configuration_certificateChain_nonce_nonceSignature_completionHandler pkIssuerProvisioningExtensionHandler identifier configuration certificates nonce nonceSignature completion =
+  sendMessage pkIssuerProvisioningExtensionHandler generateAddPaymentPassRequestForPassEntryWithIdentifier_configuration_certificateChain_nonce_nonceSignature_completionHandlerSelector (toNSString identifier) (toPKAddPaymentPassRequestConfiguration configuration) (toNSArray certificates) (toNSData nonce) (toNSData nonceSignature) completion
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @statusWithCompletion:@
-statusWithCompletionSelector :: Selector
+statusWithCompletionSelector :: Selector '[Ptr ()] ()
 statusWithCompletionSelector = mkSelector "statusWithCompletion:"
 
 -- | @Selector@ for @generateAddPaymentPassRequestForPassEntryWithIdentifier:configuration:certificateChain:nonce:nonceSignature:completionHandler:@
-generateAddPaymentPassRequestForPassEntryWithIdentifier_configuration_certificateChain_nonce_nonceSignature_completionHandlerSelector :: Selector
+generateAddPaymentPassRequestForPassEntryWithIdentifier_configuration_certificateChain_nonce_nonceSignature_completionHandlerSelector :: Selector '[Id NSString, Id PKAddPaymentPassRequestConfiguration, Id NSArray, Id NSData, Id NSData, Ptr ()] ()
 generateAddPaymentPassRequestForPassEntryWithIdentifier_configuration_certificateChain_nonce_nonceSignature_completionHandlerSelector = mkSelector "generateAddPaymentPassRequestForPassEntryWithIdentifier:configuration:certificateChain:nonce:nonceSignature:completionHandler:"
 

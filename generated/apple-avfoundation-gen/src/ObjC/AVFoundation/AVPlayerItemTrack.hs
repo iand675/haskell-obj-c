@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.AVFoundation.AVPlayerItemTrack
   , videoFieldMode
   , setVideoFieldMode
   , assetTrackSelector
+  , currentVideoFrameRateSelector
   , enabledSelector
   , setEnabledSelector
-  , currentVideoFrameRateSelector
-  , videoFieldModeSelector
   , setVideoFieldModeSelector
+  , videoFieldModeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- assetTrack@
 assetTrack :: IsAVPlayerItemTrack avPlayerItemTrack => avPlayerItemTrack -> IO (Id AVAssetTrack)
-assetTrack avPlayerItemTrack  =
-    sendMsg avPlayerItemTrack (mkSelector "assetTrack") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetTrack avPlayerItemTrack =
+  sendMessage avPlayerItemTrack assetTrackSelector
 
 -- | enabled
 --
@@ -62,8 +59,8 @@ assetTrack avPlayerItemTrack  =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAVPlayerItemTrack avPlayerItemTrack => avPlayerItemTrack -> IO Bool
-enabled avPlayerItemTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerItemTrack (mkSelector "enabled") retCULong []
+enabled avPlayerItemTrack =
+  sendMessage avPlayerItemTrack enabledSelector
 
 -- | enabled
 --
@@ -73,8 +70,8 @@ enabled avPlayerItemTrack  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsAVPlayerItemTrack avPlayerItemTrack => avPlayerItemTrack -> Bool -> IO ()
-setEnabled avPlayerItemTrack  value =
-    sendMsg avPlayerItemTrack (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled avPlayerItemTrack value =
+  sendMessage avPlayerItemTrack setEnabledSelector value
 
 -- | currentVideoFrameRate
 --
@@ -86,8 +83,8 @@ setEnabled avPlayerItemTrack  value =
 --
 -- ObjC selector: @- currentVideoFrameRate@
 currentVideoFrameRate :: IsAVPlayerItemTrack avPlayerItemTrack => avPlayerItemTrack -> IO CFloat
-currentVideoFrameRate avPlayerItemTrack  =
-    sendMsg avPlayerItemTrack (mkSelector "currentVideoFrameRate") retCFloat []
+currentVideoFrameRate avPlayerItemTrack =
+  sendMessage avPlayerItemTrack currentVideoFrameRateSelector
 
 -- | videoFieldMode
 --
@@ -99,8 +96,8 @@ currentVideoFrameRate avPlayerItemTrack  =
 --
 -- ObjC selector: @- videoFieldMode@
 videoFieldMode :: IsAVPlayerItemTrack avPlayerItemTrack => avPlayerItemTrack -> IO (Id NSString)
-videoFieldMode avPlayerItemTrack  =
-    sendMsg avPlayerItemTrack (mkSelector "videoFieldMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoFieldMode avPlayerItemTrack =
+  sendMessage avPlayerItemTrack videoFieldModeSelector
 
 -- | videoFieldMode
 --
@@ -112,35 +109,34 @@ videoFieldMode avPlayerItemTrack  =
 --
 -- ObjC selector: @- setVideoFieldMode:@
 setVideoFieldMode :: (IsAVPlayerItemTrack avPlayerItemTrack, IsNSString value) => avPlayerItemTrack -> value -> IO ()
-setVideoFieldMode avPlayerItemTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerItemTrack (mkSelector "setVideoFieldMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoFieldMode avPlayerItemTrack value =
+  sendMessage avPlayerItemTrack setVideoFieldModeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @assetTrack@
-assetTrackSelector :: Selector
+assetTrackSelector :: Selector '[] (Id AVAssetTrack)
 assetTrackSelector = mkSelector "assetTrack"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @currentVideoFrameRate@
-currentVideoFrameRateSelector :: Selector
+currentVideoFrameRateSelector :: Selector '[] CFloat
 currentVideoFrameRateSelector = mkSelector "currentVideoFrameRate"
 
 -- | @Selector@ for @videoFieldMode@
-videoFieldModeSelector :: Selector
+videoFieldModeSelector :: Selector '[] (Id NSString)
 videoFieldModeSelector = mkSelector "videoFieldMode"
 
 -- | @Selector@ for @setVideoFieldMode:@
-setVideoFieldModeSelector :: Selector
+setVideoFieldModeSelector :: Selector '[Id NSString] ()
 setVideoFieldModeSelector = mkSelector "setVideoFieldMode:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,11 +13,11 @@ module ObjC.Intents.INCallRecordFilter
   , participants
   , callTypes
   , callCapability
+  , callCapabilitySelector
+  , callTypesSelector
   , initSelector
   , initWithParticipants_callTypes_callCapabilitySelector
   , participantsSelector
-  , callTypesSelector
-  , callCapabilitySelector
 
   -- * Enum types
   , INCallCapability(INCallCapability)
@@ -35,15 +36,11 @@ module ObjC.Intents.INCallRecordFilter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,51 +50,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINCallRecordFilter inCallRecordFilter => inCallRecordFilter -> IO (Id INCallRecordFilter)
-init_ inCallRecordFilter  =
-    sendMsg inCallRecordFilter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inCallRecordFilter =
+  sendOwnedMessage inCallRecordFilter initSelector
 
 -- | @- initWithParticipants:callTypes:callCapability:@
 initWithParticipants_callTypes_callCapability :: (IsINCallRecordFilter inCallRecordFilter, IsNSArray participants) => inCallRecordFilter -> participants -> INCallRecordTypeOptions -> INCallCapability -> IO (Id INCallRecordFilter)
-initWithParticipants_callTypes_callCapability inCallRecordFilter  participants callTypes callCapability =
-  withObjCPtr participants $ \raw_participants ->
-      sendMsg inCallRecordFilter (mkSelector "initWithParticipants:callTypes:callCapability:") (retPtr retVoid) [argPtr (castPtr raw_participants :: Ptr ()), argCULong (coerce callTypes), argCLong (coerce callCapability)] >>= ownedObject . castPtr
+initWithParticipants_callTypes_callCapability inCallRecordFilter participants callTypes callCapability =
+  sendOwnedMessage inCallRecordFilter initWithParticipants_callTypes_callCapabilitySelector (toNSArray participants) callTypes callCapability
 
 -- | @- participants@
 participants :: IsINCallRecordFilter inCallRecordFilter => inCallRecordFilter -> IO (Id NSArray)
-participants inCallRecordFilter  =
-    sendMsg inCallRecordFilter (mkSelector "participants") (retPtr retVoid) [] >>= retainedObject . castPtr
+participants inCallRecordFilter =
+  sendMessage inCallRecordFilter participantsSelector
 
 -- | @- callTypes@
 callTypes :: IsINCallRecordFilter inCallRecordFilter => inCallRecordFilter -> IO INCallRecordTypeOptions
-callTypes inCallRecordFilter  =
-    fmap (coerce :: CULong -> INCallRecordTypeOptions) $ sendMsg inCallRecordFilter (mkSelector "callTypes") retCULong []
+callTypes inCallRecordFilter =
+  sendMessage inCallRecordFilter callTypesSelector
 
 -- | @- callCapability@
 callCapability :: IsINCallRecordFilter inCallRecordFilter => inCallRecordFilter -> IO INCallCapability
-callCapability inCallRecordFilter  =
-    fmap (coerce :: CLong -> INCallCapability) $ sendMsg inCallRecordFilter (mkSelector "callCapability") retCLong []
+callCapability inCallRecordFilter =
+  sendMessage inCallRecordFilter callCapabilitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INCallRecordFilter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithParticipants:callTypes:callCapability:@
-initWithParticipants_callTypes_callCapabilitySelector :: Selector
+initWithParticipants_callTypes_callCapabilitySelector :: Selector '[Id NSArray, INCallRecordTypeOptions, INCallCapability] (Id INCallRecordFilter)
 initWithParticipants_callTypes_callCapabilitySelector = mkSelector "initWithParticipants:callTypes:callCapability:"
 
 -- | @Selector@ for @participants@
-participantsSelector :: Selector
+participantsSelector :: Selector '[] (Id NSArray)
 participantsSelector = mkSelector "participants"
 
 -- | @Selector@ for @callTypes@
-callTypesSelector :: Selector
+callTypesSelector :: Selector '[] INCallRecordTypeOptions
 callTypesSelector = mkSelector "callTypes"
 
 -- | @Selector@ for @callCapability@
-callCapabilitySelector :: Selector
+callCapabilitySelector :: Selector '[] INCallCapability
 callCapabilitySelector = mkSelector "callCapability"
 

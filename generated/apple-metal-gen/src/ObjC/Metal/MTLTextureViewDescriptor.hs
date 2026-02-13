@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.Metal.MTLTextureViewDescriptor
   , setLevelRange
   , sliceRange
   , setSliceRange
-  , pixelFormatSelector
-  , setPixelFormatSelector
-  , textureTypeSelector
-  , setTextureTypeSelector
   , levelRangeSelector
+  , pixelFormatSelector
   , setLevelRangeSelector
-  , sliceRangeSelector
+  , setPixelFormatSelector
   , setSliceRangeSelector
+  , setTextureTypeSelector
+  , sliceRangeSelector
+  , textureTypeSelector
 
   -- * Enum types
   , MTLPixelFormat(MTLPixelFormat)
@@ -180,15 +181,11 @@ module ObjC.Metal.MTLTextureViewDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -203,8 +200,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- pixelFormat@
 pixelFormat :: IsMTLTextureViewDescriptor mtlTextureViewDescriptor => mtlTextureViewDescriptor -> IO MTLPixelFormat
-pixelFormat mtlTextureViewDescriptor  =
-    fmap (coerce :: CULong -> MTLPixelFormat) $ sendMsg mtlTextureViewDescriptor (mkSelector "pixelFormat") retCULong []
+pixelFormat mtlTextureViewDescriptor =
+  sendMessage mtlTextureViewDescriptor pixelFormatSelector
 
 -- | pixelFormat
 --
@@ -212,8 +209,8 @@ pixelFormat mtlTextureViewDescriptor  =
 --
 -- ObjC selector: @- setPixelFormat:@
 setPixelFormat :: IsMTLTextureViewDescriptor mtlTextureViewDescriptor => mtlTextureViewDescriptor -> MTLPixelFormat -> IO ()
-setPixelFormat mtlTextureViewDescriptor  value =
-    sendMsg mtlTextureViewDescriptor (mkSelector "setPixelFormat:") retVoid [argCULong (coerce value)]
+setPixelFormat mtlTextureViewDescriptor value =
+  sendMessage mtlTextureViewDescriptor setPixelFormatSelector value
 
 -- | textureType
 --
@@ -221,8 +218,8 @@ setPixelFormat mtlTextureViewDescriptor  value =
 --
 -- ObjC selector: @- textureType@
 textureType :: IsMTLTextureViewDescriptor mtlTextureViewDescriptor => mtlTextureViewDescriptor -> IO MTLTextureType
-textureType mtlTextureViewDescriptor  =
-    fmap (coerce :: CULong -> MTLTextureType) $ sendMsg mtlTextureViewDescriptor (mkSelector "textureType") retCULong []
+textureType mtlTextureViewDescriptor =
+  sendMessage mtlTextureViewDescriptor textureTypeSelector
 
 -- | textureType
 --
@@ -230,8 +227,8 @@ textureType mtlTextureViewDescriptor  =
 --
 -- ObjC selector: @- setTextureType:@
 setTextureType :: IsMTLTextureViewDescriptor mtlTextureViewDescriptor => mtlTextureViewDescriptor -> MTLTextureType -> IO ()
-setTextureType mtlTextureViewDescriptor  value =
-    sendMsg mtlTextureViewDescriptor (mkSelector "setTextureType:") retVoid [argCULong (coerce value)]
+setTextureType mtlTextureViewDescriptor value =
+  sendMessage mtlTextureViewDescriptor setTextureTypeSelector value
 
 -- | levelRange
 --
@@ -239,8 +236,8 @@ setTextureType mtlTextureViewDescriptor  value =
 --
 -- ObjC selector: @- levelRange@
 levelRange :: IsMTLTextureViewDescriptor mtlTextureViewDescriptor => mtlTextureViewDescriptor -> IO NSRange
-levelRange mtlTextureViewDescriptor  =
-    sendMsgStret mtlTextureViewDescriptor (mkSelector "levelRange") retNSRange []
+levelRange mtlTextureViewDescriptor =
+  sendMessage mtlTextureViewDescriptor levelRangeSelector
 
 -- | levelRange
 --
@@ -248,8 +245,8 @@ levelRange mtlTextureViewDescriptor  =
 --
 -- ObjC selector: @- setLevelRange:@
 setLevelRange :: IsMTLTextureViewDescriptor mtlTextureViewDescriptor => mtlTextureViewDescriptor -> NSRange -> IO ()
-setLevelRange mtlTextureViewDescriptor  value =
-    sendMsg mtlTextureViewDescriptor (mkSelector "setLevelRange:") retVoid [argNSRange value]
+setLevelRange mtlTextureViewDescriptor value =
+  sendMessage mtlTextureViewDescriptor setLevelRangeSelector value
 
 -- | sliceRange
 --
@@ -257,8 +254,8 @@ setLevelRange mtlTextureViewDescriptor  value =
 --
 -- ObjC selector: @- sliceRange@
 sliceRange :: IsMTLTextureViewDescriptor mtlTextureViewDescriptor => mtlTextureViewDescriptor -> IO NSRange
-sliceRange mtlTextureViewDescriptor  =
-    sendMsgStret mtlTextureViewDescriptor (mkSelector "sliceRange") retNSRange []
+sliceRange mtlTextureViewDescriptor =
+  sendMessage mtlTextureViewDescriptor sliceRangeSelector
 
 -- | sliceRange
 --
@@ -266,42 +263,42 @@ sliceRange mtlTextureViewDescriptor  =
 --
 -- ObjC selector: @- setSliceRange:@
 setSliceRange :: IsMTLTextureViewDescriptor mtlTextureViewDescriptor => mtlTextureViewDescriptor -> NSRange -> IO ()
-setSliceRange mtlTextureViewDescriptor  value =
-    sendMsg mtlTextureViewDescriptor (mkSelector "setSliceRange:") retVoid [argNSRange value]
+setSliceRange mtlTextureViewDescriptor value =
+  sendMessage mtlTextureViewDescriptor setSliceRangeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] MTLPixelFormat
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @setPixelFormat:@
-setPixelFormatSelector :: Selector
+setPixelFormatSelector :: Selector '[MTLPixelFormat] ()
 setPixelFormatSelector = mkSelector "setPixelFormat:"
 
 -- | @Selector@ for @textureType@
-textureTypeSelector :: Selector
+textureTypeSelector :: Selector '[] MTLTextureType
 textureTypeSelector = mkSelector "textureType"
 
 -- | @Selector@ for @setTextureType:@
-setTextureTypeSelector :: Selector
+setTextureTypeSelector :: Selector '[MTLTextureType] ()
 setTextureTypeSelector = mkSelector "setTextureType:"
 
 -- | @Selector@ for @levelRange@
-levelRangeSelector :: Selector
+levelRangeSelector :: Selector '[] NSRange
 levelRangeSelector = mkSelector "levelRange"
 
 -- | @Selector@ for @setLevelRange:@
-setLevelRangeSelector :: Selector
+setLevelRangeSelector :: Selector '[NSRange] ()
 setLevelRangeSelector = mkSelector "setLevelRange:"
 
 -- | @Selector@ for @sliceRange@
-sliceRangeSelector :: Selector
+sliceRangeSelector :: Selector '[] NSRange
 sliceRangeSelector = mkSelector "sliceRange"
 
 -- | @Selector@ for @setSliceRange:@
-setSliceRangeSelector :: Selector
+setSliceRangeSelector :: Selector '[NSRange] ()
 setSliceRangeSelector = mkSelector "setSliceRange:"
 

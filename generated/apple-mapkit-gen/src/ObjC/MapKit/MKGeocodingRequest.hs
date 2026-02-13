@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.MapKit.MKGeocodingRequest
   , addressString
   , preferredLocale
   , setPreferredLocale
-  , initSelector
-  , newSelector
-  , initWithAddressStringSelector
+  , addressStringSelector
   , cancelSelector
   , cancelledSelector
+  , initSelector
+  , initWithAddressStringSelector
   , loadingSelector
-  , addressStringSelector
+  , newSelector
   , preferredLocaleSelector
   , setPreferredLocaleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,90 +42,88 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMKGeocodingRequest mkGeocodingRequest => mkGeocodingRequest -> IO (Id MKGeocodingRequest)
-init_ mkGeocodingRequest  =
-    sendMsg mkGeocodingRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mkGeocodingRequest =
+  sendOwnedMessage mkGeocodingRequest initSelector
 
 -- | @+ new@
 new :: IO (Id MKGeocodingRequest)
 new  =
   do
     cls' <- getRequiredClass "MKGeocodingRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithAddressString:@
 initWithAddressString :: (IsMKGeocodingRequest mkGeocodingRequest, IsNSString addressString) => mkGeocodingRequest -> addressString -> IO (Id MKGeocodingRequest)
-initWithAddressString mkGeocodingRequest  addressString =
-  withObjCPtr addressString $ \raw_addressString ->
-      sendMsg mkGeocodingRequest (mkSelector "initWithAddressString:") (retPtr retVoid) [argPtr (castPtr raw_addressString :: Ptr ())] >>= ownedObject . castPtr
+initWithAddressString mkGeocodingRequest addressString =
+  sendOwnedMessage mkGeocodingRequest initWithAddressStringSelector (toNSString addressString)
 
 -- | @- cancel@
 cancel :: IsMKGeocodingRequest mkGeocodingRequest => mkGeocodingRequest -> IO ()
-cancel mkGeocodingRequest  =
-    sendMsg mkGeocodingRequest (mkSelector "cancel") retVoid []
+cancel mkGeocodingRequest =
+  sendMessage mkGeocodingRequest cancelSelector
 
 -- | @- cancelled@
 cancelled :: IsMKGeocodingRequest mkGeocodingRequest => mkGeocodingRequest -> IO Bool
-cancelled mkGeocodingRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkGeocodingRequest (mkSelector "cancelled") retCULong []
+cancelled mkGeocodingRequest =
+  sendMessage mkGeocodingRequest cancelledSelector
 
 -- | @- loading@
 loading :: IsMKGeocodingRequest mkGeocodingRequest => mkGeocodingRequest -> IO Bool
-loading mkGeocodingRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkGeocodingRequest (mkSelector "loading") retCULong []
+loading mkGeocodingRequest =
+  sendMessage mkGeocodingRequest loadingSelector
 
 -- | @- addressString@
 addressString :: IsMKGeocodingRequest mkGeocodingRequest => mkGeocodingRequest -> IO (Id NSString)
-addressString mkGeocodingRequest  =
-    sendMsg mkGeocodingRequest (mkSelector "addressString") (retPtr retVoid) [] >>= retainedObject . castPtr
+addressString mkGeocodingRequest =
+  sendMessage mkGeocodingRequest addressStringSelector
 
 -- | @- preferredLocale@
 preferredLocale :: IsMKGeocodingRequest mkGeocodingRequest => mkGeocodingRequest -> IO (Id NSLocale)
-preferredLocale mkGeocodingRequest  =
-    sendMsg mkGeocodingRequest (mkSelector "preferredLocale") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredLocale mkGeocodingRequest =
+  sendMessage mkGeocodingRequest preferredLocaleSelector
 
 -- | @- setPreferredLocale:@
 setPreferredLocale :: (IsMKGeocodingRequest mkGeocodingRequest, IsNSLocale value) => mkGeocodingRequest -> value -> IO ()
-setPreferredLocale mkGeocodingRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkGeocodingRequest (mkSelector "setPreferredLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredLocale mkGeocodingRequest value =
+  sendMessage mkGeocodingRequest setPreferredLocaleSelector (toNSLocale value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MKGeocodingRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MKGeocodingRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithAddressString:@
-initWithAddressStringSelector :: Selector
+initWithAddressStringSelector :: Selector '[Id NSString] (Id MKGeocodingRequest)
 initWithAddressStringSelector = mkSelector "initWithAddressString:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @cancelled@
-cancelledSelector :: Selector
+cancelledSelector :: Selector '[] Bool
 cancelledSelector = mkSelector "cancelled"
 
 -- | @Selector@ for @loading@
-loadingSelector :: Selector
+loadingSelector :: Selector '[] Bool
 loadingSelector = mkSelector "loading"
 
 -- | @Selector@ for @addressString@
-addressStringSelector :: Selector
+addressStringSelector :: Selector '[] (Id NSString)
 addressStringSelector = mkSelector "addressString"
 
 -- | @Selector@ for @preferredLocale@
-preferredLocaleSelector :: Selector
+preferredLocaleSelector :: Selector '[] (Id NSLocale)
 preferredLocaleSelector = mkSelector "preferredLocale"
 
 -- | @Selector@ for @setPreferredLocale:@
-setPreferredLocaleSelector :: Selector
+setPreferredLocaleSelector :: Selector '[Id NSLocale] ()
 setPreferredLocaleSelector = mkSelector "setPreferredLocale:"
 

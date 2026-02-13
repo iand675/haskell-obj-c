@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,46 +34,42 @@ module ObjC.WebKit.DOMHTMLTextAreaElement
   , setSelectionEnd
   , accessKey
   , setAccessKey
-  , selectSelector
-  , setSelectionRange_endSelector
+  , accessKeySelector
   , autofocusSelector
-  , setAutofocusSelector
+  , colsSelector
+  , defaultValueSelector
   , disabledSelector
-  , setDisabledSelector
   , formSelector
   , nameSelector
-  , setNameSelector
   , readOnlySelector
-  , setReadOnlySelector
   , rowsSelector
-  , setRowsSelector
-  , colsSelector
-  , setColsSelector
-  , typeSelector
-  , defaultValueSelector
-  , setDefaultValueSelector
-  , valueSelector
-  , setValueSelector
-  , willValidateSelector
-  , selectionStartSelector
-  , setSelectionStartSelector
+  , selectSelector
   , selectionEndSelector
-  , setSelectionEndSelector
-  , accessKeySelector
+  , selectionStartSelector
   , setAccessKeySelector
+  , setAutofocusSelector
+  , setColsSelector
+  , setDefaultValueSelector
+  , setDisabledSelector
+  , setNameSelector
+  , setReadOnlySelector
+  , setRowsSelector
+  , setSelectionEndSelector
+  , setSelectionRange_endSelector
+  , setSelectionStartSelector
+  , setValueSelector
+  , typeSelector
+  , valueSelector
+  , willValidateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,252 +78,248 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- select@
 select :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO ()
-select domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "select") retVoid []
+select domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement selectSelector
 
 -- | @- setSelectionRange:end:@
 setSelectionRange_end :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> CInt -> CInt -> IO ()
-setSelectionRange_end domhtmlTextAreaElement  start end =
-    sendMsg domhtmlTextAreaElement (mkSelector "setSelectionRange:end:") retVoid [argCInt start, argCInt end]
+setSelectionRange_end domhtmlTextAreaElement start end =
+  sendMessage domhtmlTextAreaElement setSelectionRange_endSelector start end
 
 -- | @- autofocus@
 autofocus :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO Bool
-autofocus domhtmlTextAreaElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlTextAreaElement (mkSelector "autofocus") retCULong []
+autofocus domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement autofocusSelector
 
 -- | @- setAutofocus:@
 setAutofocus :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> Bool -> IO ()
-setAutofocus domhtmlTextAreaElement  value =
-    sendMsg domhtmlTextAreaElement (mkSelector "setAutofocus:") retVoid [argCULong (if value then 1 else 0)]
+setAutofocus domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setAutofocusSelector value
 
 -- | @- disabled@
 disabled :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO Bool
-disabled domhtmlTextAreaElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlTextAreaElement (mkSelector "disabled") retCULong []
+disabled domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement disabledSelector
 
 -- | @- setDisabled:@
 setDisabled :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> Bool -> IO ()
-setDisabled domhtmlTextAreaElement  value =
-    sendMsg domhtmlTextAreaElement (mkSelector "setDisabled:") retVoid [argCULong (if value then 1 else 0)]
+setDisabled domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setDisabledSelector value
 
 -- | @- form@
 form :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO (Id DOMHTMLFormElement)
-form domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "form") (retPtr retVoid) [] >>= retainedObject . castPtr
+form domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement formSelector
 
 -- | @- name@
 name :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO (Id NSString)
-name domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLTextAreaElement domhtmlTextAreaElement, IsNSString value) => domhtmlTextAreaElement -> value -> IO ()
-setName domhtmlTextAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTextAreaElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setNameSelector (toNSString value)
 
 -- | @- readOnly@
 readOnly :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO Bool
-readOnly domhtmlTextAreaElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlTextAreaElement (mkSelector "readOnly") retCULong []
+readOnly domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement readOnlySelector
 
 -- | @- setReadOnly:@
 setReadOnly :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> Bool -> IO ()
-setReadOnly domhtmlTextAreaElement  value =
-    sendMsg domhtmlTextAreaElement (mkSelector "setReadOnly:") retVoid [argCULong (if value then 1 else 0)]
+setReadOnly domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setReadOnlySelector value
 
 -- | @- rows@
 rows :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO CInt
-rows domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "rows") retCInt []
+rows domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement rowsSelector
 
 -- | @- setRows:@
 setRows :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> CInt -> IO ()
-setRows domhtmlTextAreaElement  value =
-    sendMsg domhtmlTextAreaElement (mkSelector "setRows:") retVoid [argCInt value]
+setRows domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setRowsSelector value
 
 -- | @- cols@
 cols :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO CInt
-cols domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "cols") retCInt []
+cols domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement colsSelector
 
 -- | @- setCols:@
 setCols :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> CInt -> IO ()
-setCols domhtmlTextAreaElement  value =
-    sendMsg domhtmlTextAreaElement (mkSelector "setCols:") retVoid [argCInt value]
+setCols domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setColsSelector value
 
 -- | @- type@
 type_ :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO (Id NSString)
-type_ domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement typeSelector
 
 -- | @- defaultValue@
 defaultValue :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO (Id NSString)
-defaultValue domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "defaultValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultValue domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement defaultValueSelector
 
 -- | @- setDefaultValue:@
 setDefaultValue :: (IsDOMHTMLTextAreaElement domhtmlTextAreaElement, IsNSString value) => domhtmlTextAreaElement -> value -> IO ()
-setDefaultValue domhtmlTextAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTextAreaElement (mkSelector "setDefaultValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultValue domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setDefaultValueSelector (toNSString value)
 
 -- | @- value@
 value :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO (Id NSString)
-value domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement valueSelector
 
 -- | @- setValue:@
 setValue :: (IsDOMHTMLTextAreaElement domhtmlTextAreaElement, IsNSString value) => domhtmlTextAreaElement -> value -> IO ()
-setValue domhtmlTextAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTextAreaElement (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setValueSelector (toNSString value)
 
 -- | @- willValidate@
 willValidate :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO Bool
-willValidate domhtmlTextAreaElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlTextAreaElement (mkSelector "willValidate") retCULong []
+willValidate domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement willValidateSelector
 
 -- | @- selectionStart@
 selectionStart :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO CInt
-selectionStart domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "selectionStart") retCInt []
+selectionStart domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement selectionStartSelector
 
 -- | @- setSelectionStart:@
 setSelectionStart :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> CInt -> IO ()
-setSelectionStart domhtmlTextAreaElement  value =
-    sendMsg domhtmlTextAreaElement (mkSelector "setSelectionStart:") retVoid [argCInt value]
+setSelectionStart domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setSelectionStartSelector value
 
 -- | @- selectionEnd@
 selectionEnd :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO CInt
-selectionEnd domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "selectionEnd") retCInt []
+selectionEnd domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement selectionEndSelector
 
 -- | @- setSelectionEnd:@
 setSelectionEnd :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> CInt -> IO ()
-setSelectionEnd domhtmlTextAreaElement  value =
-    sendMsg domhtmlTextAreaElement (mkSelector "setSelectionEnd:") retVoid [argCInt value]
+setSelectionEnd domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setSelectionEndSelector value
 
 -- | @- accessKey@
 accessKey :: IsDOMHTMLTextAreaElement domhtmlTextAreaElement => domhtmlTextAreaElement -> IO (Id NSString)
-accessKey domhtmlTextAreaElement  =
-    sendMsg domhtmlTextAreaElement (mkSelector "accessKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessKey domhtmlTextAreaElement =
+  sendMessage domhtmlTextAreaElement accessKeySelector
 
 -- | @- setAccessKey:@
 setAccessKey :: (IsDOMHTMLTextAreaElement domhtmlTextAreaElement, IsNSString value) => domhtmlTextAreaElement -> value -> IO ()
-setAccessKey domhtmlTextAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTextAreaElement (mkSelector "setAccessKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessKey domhtmlTextAreaElement value =
+  sendMessage domhtmlTextAreaElement setAccessKeySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @select@
-selectSelector :: Selector
+selectSelector :: Selector '[] ()
 selectSelector = mkSelector "select"
 
 -- | @Selector@ for @setSelectionRange:end:@
-setSelectionRange_endSelector :: Selector
+setSelectionRange_endSelector :: Selector '[CInt, CInt] ()
 setSelectionRange_endSelector = mkSelector "setSelectionRange:end:"
 
 -- | @Selector@ for @autofocus@
-autofocusSelector :: Selector
+autofocusSelector :: Selector '[] Bool
 autofocusSelector = mkSelector "autofocus"
 
 -- | @Selector@ for @setAutofocus:@
-setAutofocusSelector :: Selector
+setAutofocusSelector :: Selector '[Bool] ()
 setAutofocusSelector = mkSelector "setAutofocus:"
 
 -- | @Selector@ for @disabled@
-disabledSelector :: Selector
+disabledSelector :: Selector '[] Bool
 disabledSelector = mkSelector "disabled"
 
 -- | @Selector@ for @setDisabled:@
-setDisabledSelector :: Selector
+setDisabledSelector :: Selector '[Bool] ()
 setDisabledSelector = mkSelector "setDisabled:"
 
 -- | @Selector@ for @form@
-formSelector :: Selector
+formSelector :: Selector '[] (Id DOMHTMLFormElement)
 formSelector = mkSelector "form"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @readOnly@
-readOnlySelector :: Selector
+readOnlySelector :: Selector '[] Bool
 readOnlySelector = mkSelector "readOnly"
 
 -- | @Selector@ for @setReadOnly:@
-setReadOnlySelector :: Selector
+setReadOnlySelector :: Selector '[Bool] ()
 setReadOnlySelector = mkSelector "setReadOnly:"
 
 -- | @Selector@ for @rows@
-rowsSelector :: Selector
+rowsSelector :: Selector '[] CInt
 rowsSelector = mkSelector "rows"
 
 -- | @Selector@ for @setRows:@
-setRowsSelector :: Selector
+setRowsSelector :: Selector '[CInt] ()
 setRowsSelector = mkSelector "setRows:"
 
 -- | @Selector@ for @cols@
-colsSelector :: Selector
+colsSelector :: Selector '[] CInt
 colsSelector = mkSelector "cols"
 
 -- | @Selector@ for @setCols:@
-setColsSelector :: Selector
+setColsSelector :: Selector '[CInt] ()
 setColsSelector = mkSelector "setCols:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @defaultValue@
-defaultValueSelector :: Selector
+defaultValueSelector :: Selector '[] (Id NSString)
 defaultValueSelector = mkSelector "defaultValue"
 
 -- | @Selector@ for @setDefaultValue:@
-setDefaultValueSelector :: Selector
+setDefaultValueSelector :: Selector '[Id NSString] ()
 setDefaultValueSelector = mkSelector "setDefaultValue:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @willValidate@
-willValidateSelector :: Selector
+willValidateSelector :: Selector '[] Bool
 willValidateSelector = mkSelector "willValidate"
 
 -- | @Selector@ for @selectionStart@
-selectionStartSelector :: Selector
+selectionStartSelector :: Selector '[] CInt
 selectionStartSelector = mkSelector "selectionStart"
 
 -- | @Selector@ for @setSelectionStart:@
-setSelectionStartSelector :: Selector
+setSelectionStartSelector :: Selector '[CInt] ()
 setSelectionStartSelector = mkSelector "setSelectionStart:"
 
 -- | @Selector@ for @selectionEnd@
-selectionEndSelector :: Selector
+selectionEndSelector :: Selector '[] CInt
 selectionEndSelector = mkSelector "selectionEnd"
 
 -- | @Selector@ for @setSelectionEnd:@
-setSelectionEndSelector :: Selector
+setSelectionEndSelector :: Selector '[CInt] ()
 setSelectionEndSelector = mkSelector "setSelectionEnd:"
 
 -- | @Selector@ for @accessKey@
-accessKeySelector :: Selector
+accessKeySelector :: Selector '[] (Id NSString)
 accessKeySelector = mkSelector "accessKey"
 
 -- | @Selector@ for @setAccessKey:@
-setAccessKeySelector :: Selector
+setAccessKeySelector :: Selector '[Id NSString] ()
 setAccessKeySelector = mkSelector "setAccessKey:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,15 +31,11 @@ module ObjC.SpriteKit.SKAttribute
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,42 +48,40 @@ attributeWithName_type :: IsNSString name => name -> SKAttributeType -> IO (Id S
 attributeWithName_type name type_ =
   do
     cls' <- getRequiredClass "SKAttribute"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "attributeWithName:type:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCLong (coerce type_)] >>= retainedObject . castPtr
+    sendClassMessage cls' attributeWithName_typeSelector (toNSString name) type_
 
 -- | @- initWithName:type:@
 initWithName_type :: (IsSKAttribute skAttribute, IsNSString name) => skAttribute -> name -> SKAttributeType -> IO (Id SKAttribute)
-initWithName_type skAttribute  name type_ =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skAttribute (mkSelector "initWithName:type:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCLong (coerce type_)] >>= ownedObject . castPtr
+initWithName_type skAttribute name type_ =
+  sendOwnedMessage skAttribute initWithName_typeSelector (toNSString name) type_
 
 -- | @- name@
 name :: IsSKAttribute skAttribute => skAttribute -> IO (Id NSString)
-name skAttribute  =
-    sendMsg skAttribute (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name skAttribute =
+  sendMessage skAttribute nameSelector
 
 -- | @- type@
 type_ :: IsSKAttribute skAttribute => skAttribute -> IO SKAttributeType
-type_ skAttribute  =
-    fmap (coerce :: CLong -> SKAttributeType) $ sendMsg skAttribute (mkSelector "type") retCLong []
+type_ skAttribute =
+  sendMessage skAttribute typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @attributeWithName:type:@
-attributeWithName_typeSelector :: Selector
+attributeWithName_typeSelector :: Selector '[Id NSString, SKAttributeType] (Id SKAttribute)
 attributeWithName_typeSelector = mkSelector "attributeWithName:type:"
 
 -- | @Selector@ for @initWithName:type:@
-initWithName_typeSelector :: Selector
+initWithName_typeSelector :: Selector '[Id NSString, SKAttributeType] (Id SKAttribute)
 initWithName_typeSelector = mkSelector "initWithName:type:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] SKAttributeType
 typeSelector = mkSelector "type"
 

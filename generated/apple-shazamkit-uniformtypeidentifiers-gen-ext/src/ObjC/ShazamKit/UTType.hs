@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.ShazamKit.UTType
   , IsUTType(..)
   , shSignatureContentType
   , shCustomCatalogContentType
-  , shSignatureContentTypeSelector
   , shCustomCatalogContentTypeSelector
+  , shSignatureContentTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,7 +41,7 @@ shSignatureContentType :: IO (Id UTType)
 shSignatureContentType  =
   do
     cls' <- getRequiredClass "UTType"
-    sendClassMsg cls' (mkSelector "SHSignatureContentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' shSignatureContentTypeSelector
 
 -- | A type representing the @SHCustomCatalog@ file format with the .shazamcatalog extension
 --
@@ -53,17 +50,17 @@ shCustomCatalogContentType :: IO (Id UTType)
 shCustomCatalogContentType  =
   do
     cls' <- getRequiredClass "UTType"
-    sendClassMsg cls' (mkSelector "SHCustomCatalogContentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' shCustomCatalogContentTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @SHSignatureContentType@
-shSignatureContentTypeSelector :: Selector
+shSignatureContentTypeSelector :: Selector '[] (Id UTType)
 shSignatureContentTypeSelector = mkSelector "SHSignatureContentType"
 
 -- | @Selector@ for @SHCustomCatalogContentType@
-shCustomCatalogContentTypeSelector :: Selector
+shCustomCatalogContentTypeSelector :: Selector '[] (Id UTType)
 shCustomCatalogContentTypeSelector = mkSelector "SHCustomCatalogContentType"
 

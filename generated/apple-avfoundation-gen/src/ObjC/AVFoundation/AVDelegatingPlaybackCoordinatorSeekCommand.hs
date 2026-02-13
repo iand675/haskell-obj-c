@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.AVFoundation.AVDelegatingPlaybackCoordinatorSeekCommand
   , shouldBufferInAnticipationOfPlayback
   , anticipatedPlaybackRate
   , completionDueDate
+  , anticipatedPlaybackRateSelector
+  , completionDueDateSelector
   , initSelector
   , newSelector
   , shouldBufferInAnticipationOfPlaybackSelector
-  , anticipatedPlaybackRateSelector
-  , completionDueDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVDelegatingPlaybackCoordinatorSeekCommand avDelegatingPlaybackCoordinatorSeekCommand => avDelegatingPlaybackCoordinatorSeekCommand -> IO (Id AVDelegatingPlaybackCoordinatorSeekCommand)
-init_ avDelegatingPlaybackCoordinatorSeekCommand  =
-    sendMsg avDelegatingPlaybackCoordinatorSeekCommand (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avDelegatingPlaybackCoordinatorSeekCommand =
+  sendOwnedMessage avDelegatingPlaybackCoordinatorSeekCommand initSelector
 
 -- | @+ new@
 new :: IO (Id AVDelegatingPlaybackCoordinatorSeekCommand)
 new  =
   do
     cls' <- getRequiredClass "AVDelegatingPlaybackCoordinatorSeekCommand"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Indicates that playback is anticipated and the player should begin buffering if necessary.
 --
@@ -57,15 +54,15 @@ new  =
 --
 -- ObjC selector: @- shouldBufferInAnticipationOfPlayback@
 shouldBufferInAnticipationOfPlayback :: IsAVDelegatingPlaybackCoordinatorSeekCommand avDelegatingPlaybackCoordinatorSeekCommand => avDelegatingPlaybackCoordinatorSeekCommand -> IO Bool
-shouldBufferInAnticipationOfPlayback avDelegatingPlaybackCoordinatorSeekCommand  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avDelegatingPlaybackCoordinatorSeekCommand (mkSelector "shouldBufferInAnticipationOfPlayback") retCULong []
+shouldBufferInAnticipationOfPlayback avDelegatingPlaybackCoordinatorSeekCommand =
+  sendMessage avDelegatingPlaybackCoordinatorSeekCommand shouldBufferInAnticipationOfPlaybackSelector
 
 -- | The rate to prepare for if shouldBufferInAnticipationOfPlayback is YES.
 --
 -- ObjC selector: @- anticipatedPlaybackRate@
 anticipatedPlaybackRate :: IsAVDelegatingPlaybackCoordinatorSeekCommand avDelegatingPlaybackCoordinatorSeekCommand => avDelegatingPlaybackCoordinatorSeekCommand -> IO CFloat
-anticipatedPlaybackRate avDelegatingPlaybackCoordinatorSeekCommand  =
-    sendMsg avDelegatingPlaybackCoordinatorSeekCommand (mkSelector "anticipatedPlaybackRate") retCFloat []
+anticipatedPlaybackRate avDelegatingPlaybackCoordinatorSeekCommand =
+  sendMessage avDelegatingPlaybackCoordinatorSeekCommand anticipatedPlaybackRateSelector
 
 -- | Communicates when the coordinator expects the command's completion handler at the latest.
 --
@@ -73,30 +70,30 @@ anticipatedPlaybackRate avDelegatingPlaybackCoordinatorSeekCommand  =
 --
 -- ObjC selector: @- completionDueDate@
 completionDueDate :: IsAVDelegatingPlaybackCoordinatorSeekCommand avDelegatingPlaybackCoordinatorSeekCommand => avDelegatingPlaybackCoordinatorSeekCommand -> IO (Id NSDate)
-completionDueDate avDelegatingPlaybackCoordinatorSeekCommand  =
-    sendMsg avDelegatingPlaybackCoordinatorSeekCommand (mkSelector "completionDueDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+completionDueDate avDelegatingPlaybackCoordinatorSeekCommand =
+  sendMessage avDelegatingPlaybackCoordinatorSeekCommand completionDueDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVDelegatingPlaybackCoordinatorSeekCommand)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVDelegatingPlaybackCoordinatorSeekCommand)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @shouldBufferInAnticipationOfPlayback@
-shouldBufferInAnticipationOfPlaybackSelector :: Selector
+shouldBufferInAnticipationOfPlaybackSelector :: Selector '[] Bool
 shouldBufferInAnticipationOfPlaybackSelector = mkSelector "shouldBufferInAnticipationOfPlayback"
 
 -- | @Selector@ for @anticipatedPlaybackRate@
-anticipatedPlaybackRateSelector :: Selector
+anticipatedPlaybackRateSelector :: Selector '[] CFloat
 anticipatedPlaybackRateSelector = mkSelector "anticipatedPlaybackRate"
 
 -- | @Selector@ for @completionDueDate@
-completionDueDateSelector :: Selector
+completionDueDateSelector :: Selector '[] (Id NSDate)
 completionDueDateSelector = mkSelector "completionDueDate"
 

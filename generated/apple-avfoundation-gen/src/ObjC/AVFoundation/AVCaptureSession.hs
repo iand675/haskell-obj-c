@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -67,74 +68,70 @@ module ObjC.AVFoundation.AVCaptureSession
   , setAutomaticallyRunsDeferredStart
   , deferredStartDelegate
   , deferredStartDelegateCallbackQueue
-  , canSetSessionPresetSelector
-  , canAddInputSelector
-  , addInputSelector
-  , removeInputSelector
-  , canAddOutputSelector
-  , addOutputSelector
-  , removeOutputSelector
-  , addInputWithNoConnectionsSelector
-  , addOutputWithNoConnectionsSelector
-  , canAddConnectionSelector
   , addConnectionSelector
-  , removeConnectionSelector
-  , setControlsDelegate_queueSelector
-  , canAddControlSelector
   , addControlSelector
-  , removeControlSelector
+  , addInputSelector
+  , addInputWithNoConnectionsSelector
+  , addOutputSelector
+  , addOutputWithNoConnectionsSelector
+  , automaticallyConfiguresApplicationAudioSessionSelector
+  , automaticallyConfiguresCaptureDeviceForWideColorSelector
+  , automaticallyRunsDeferredStartSelector
   , beginConfigurationSelector
+  , canAddConnectionSelector
+  , canAddControlSelector
+  , canAddInputSelector
+  , canAddOutputSelector
+  , canSetSessionPresetSelector
   , commitConfigurationSelector
+  , configuresApplicationAudioSessionForBluetoothHighQualityRecordingSelector
+  , configuresApplicationAudioSessionToMixWithOthersSelector
+  , connectionsSelector
+  , controlsDelegateCallbackQueueSelector
+  , controlsDelegateSelector
+  , controlsSelector
+  , deferredStartDelegateCallbackQueueSelector
+  , deferredStartDelegateSelector
+  , hardwareCostSelector
+  , inputsSelector
+  , interruptedSelector
+  , manualDeferredStartSupportedSelector
+  , masterClockSelector
+  , maxControlsCountSelector
+  , multitaskingCameraAccessEnabledSelector
+  , multitaskingCameraAccessSupportedSelector
+  , outputsSelector
+  , removeConnectionSelector
+  , removeControlSelector
+  , removeInputSelector
+  , removeOutputSelector
+  , runDeferredStartWhenNeededSelector
+  , runningSelector
+  , sessionPresetSelector
+  , setAutomaticallyConfiguresApplicationAudioSessionSelector
+  , setAutomaticallyConfiguresCaptureDeviceForWideColorSelector
+  , setAutomaticallyRunsDeferredStartSelector
+  , setConfiguresApplicationAudioSessionForBluetoothHighQualityRecordingSelector
+  , setConfiguresApplicationAudioSessionToMixWithOthersSelector
+  , setControlsDelegate_queueSelector
+  , setDeferredStartDelegate_deferredStartDelegateCallbackQueueSelector
+  , setMultitaskingCameraAccessEnabledSelector
+  , setSessionPresetSelector
+  , setUsesApplicationAudioSessionSelector
   , startRunningSelector
   , stopRunningSelector
-  , runDeferredStartWhenNeededSelector
-  , setDeferredStartDelegate_deferredStartDelegateCallbackQueueSelector
-  , sessionPresetSelector
-  , setSessionPresetSelector
-  , inputsSelector
-  , outputsSelector
-  , connectionsSelector
   , supportsControlsSelector
-  , maxControlsCountSelector
-  , controlsDelegateSelector
-  , controlsDelegateCallbackQueueSelector
-  , controlsSelector
-  , runningSelector
-  , interruptedSelector
-  , multitaskingCameraAccessSupportedSelector
-  , multitaskingCameraAccessEnabledSelector
-  , setMultitaskingCameraAccessEnabledSelector
-  , usesApplicationAudioSessionSelector
-  , setUsesApplicationAudioSessionSelector
-  , automaticallyConfiguresApplicationAudioSessionSelector
-  , setAutomaticallyConfiguresApplicationAudioSessionSelector
-  , configuresApplicationAudioSessionToMixWithOthersSelector
-  , setConfiguresApplicationAudioSessionToMixWithOthersSelector
-  , configuresApplicationAudioSessionForBluetoothHighQualityRecordingSelector
-  , setConfiguresApplicationAudioSessionForBluetoothHighQualityRecordingSelector
-  , automaticallyConfiguresCaptureDeviceForWideColorSelector
-  , setAutomaticallyConfiguresCaptureDeviceForWideColorSelector
   , synchronizationClockSelector
-  , masterClockSelector
-  , hardwareCostSelector
-  , manualDeferredStartSupportedSelector
-  , automaticallyRunsDeferredStartSelector
-  , setAutomaticallyRunsDeferredStartSelector
-  , deferredStartDelegateSelector
-  , deferredStartDelegateCallbackQueueSelector
+  , usesApplicationAudioSessionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -153,9 +150,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- canSetSessionPreset:@
 canSetSessionPreset :: (IsAVCaptureSession avCaptureSession, IsNSString preset) => avCaptureSession -> preset -> IO Bool
-canSetSessionPreset avCaptureSession  preset =
-  withObjCPtr preset $ \raw_preset ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "canSetSessionPreset:") retCULong [argPtr (castPtr raw_preset :: Ptr ())]
+canSetSessionPreset avCaptureSession preset =
+  sendMessage avCaptureSession canSetSessionPresetSelector (toNSString preset)
 
 -- | canAddInput:
 --
@@ -169,9 +165,8 @@ canSetSessionPreset avCaptureSession  preset =
 --
 -- ObjC selector: @- canAddInput:@
 canAddInput :: (IsAVCaptureSession avCaptureSession, IsAVCaptureInput input) => avCaptureSession -> input -> IO Bool
-canAddInput avCaptureSession  input =
-  withObjCPtr input $ \raw_input ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "canAddInput:") retCULong [argPtr (castPtr raw_input :: Ptr ())]
+canAddInput avCaptureSession input =
+  sendMessage avCaptureSession canAddInputSelector (toAVCaptureInput input)
 
 -- | addInput:
 --
@@ -183,9 +178,8 @@ canAddInput avCaptureSession  input =
 --
 -- ObjC selector: @- addInput:@
 addInput :: (IsAVCaptureSession avCaptureSession, IsAVCaptureInput input) => avCaptureSession -> input -> IO ()
-addInput avCaptureSession  input =
-  withObjCPtr input $ \raw_input ->
-      sendMsg avCaptureSession (mkSelector "addInput:") retVoid [argPtr (castPtr raw_input :: Ptr ())]
+addInput avCaptureSession input =
+  sendMessage avCaptureSession addInputSelector (toAVCaptureInput input)
 
 -- | removeInput:
 --
@@ -197,9 +191,8 @@ addInput avCaptureSession  input =
 --
 -- ObjC selector: @- removeInput:@
 removeInput :: (IsAVCaptureSession avCaptureSession, IsAVCaptureInput input) => avCaptureSession -> input -> IO ()
-removeInput avCaptureSession  input =
-  withObjCPtr input $ \raw_input ->
-      sendMsg avCaptureSession (mkSelector "removeInput:") retVoid [argPtr (castPtr raw_input :: Ptr ())]
+removeInput avCaptureSession input =
+  sendMessage avCaptureSession removeInputSelector (toAVCaptureInput input)
 
 -- | canAddOutput:
 --
@@ -215,9 +208,8 @@ removeInput avCaptureSession  input =
 --
 -- ObjC selector: @- canAddOutput:@
 canAddOutput :: (IsAVCaptureSession avCaptureSession, IsAVCaptureOutput output) => avCaptureSession -> output -> IO Bool
-canAddOutput avCaptureSession  output =
-  withObjCPtr output $ \raw_output ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "canAddOutput:") retCULong [argPtr (castPtr raw_output :: Ptr ())]
+canAddOutput avCaptureSession output =
+  sendMessage avCaptureSession canAddOutputSelector (toAVCaptureOutput output)
 
 -- | addOutput:
 --
@@ -229,9 +221,8 @@ canAddOutput avCaptureSession  output =
 --
 -- ObjC selector: @- addOutput:@
 addOutput :: (IsAVCaptureSession avCaptureSession, IsAVCaptureOutput output) => avCaptureSession -> output -> IO ()
-addOutput avCaptureSession  output =
-  withObjCPtr output $ \raw_output ->
-      sendMsg avCaptureSession (mkSelector "addOutput:") retVoid [argPtr (castPtr raw_output :: Ptr ())]
+addOutput avCaptureSession output =
+  sendMessage avCaptureSession addOutputSelector (toAVCaptureOutput output)
 
 -- | removeOutput:
 --
@@ -243,9 +234,8 @@ addOutput avCaptureSession  output =
 --
 -- ObjC selector: @- removeOutput:@
 removeOutput :: (IsAVCaptureSession avCaptureSession, IsAVCaptureOutput output) => avCaptureSession -> output -> IO ()
-removeOutput avCaptureSession  output =
-  withObjCPtr output $ \raw_output ->
-      sendMsg avCaptureSession (mkSelector "removeOutput:") retVoid [argPtr (castPtr raw_output :: Ptr ())]
+removeOutput avCaptureSession output =
+  sendMessage avCaptureSession removeOutputSelector (toAVCaptureOutput output)
 
 -- | addInputWithNoConnections:
 --
@@ -257,9 +247,8 @@ removeOutput avCaptureSession  output =
 --
 -- ObjC selector: @- addInputWithNoConnections:@
 addInputWithNoConnections :: (IsAVCaptureSession avCaptureSession, IsAVCaptureInput input) => avCaptureSession -> input -> IO ()
-addInputWithNoConnections avCaptureSession  input =
-  withObjCPtr input $ \raw_input ->
-      sendMsg avCaptureSession (mkSelector "addInputWithNoConnections:") retVoid [argPtr (castPtr raw_input :: Ptr ())]
+addInputWithNoConnections avCaptureSession input =
+  sendMessage avCaptureSession addInputWithNoConnectionsSelector (toAVCaptureInput input)
 
 -- | addOutputWithNoConnections:
 --
@@ -271,9 +260,8 @@ addInputWithNoConnections avCaptureSession  input =
 --
 -- ObjC selector: @- addOutputWithNoConnections:@
 addOutputWithNoConnections :: (IsAVCaptureSession avCaptureSession, IsAVCaptureOutput output) => avCaptureSession -> output -> IO ()
-addOutputWithNoConnections avCaptureSession  output =
-  withObjCPtr output $ \raw_output ->
-      sendMsg avCaptureSession (mkSelector "addOutputWithNoConnections:") retVoid [argPtr (castPtr raw_output :: Ptr ())]
+addOutputWithNoConnections avCaptureSession output =
+  sendMessage avCaptureSession addOutputWithNoConnectionsSelector (toAVCaptureOutput output)
 
 -- | canAddConnection:
 --
@@ -285,9 +273,8 @@ addOutputWithNoConnections avCaptureSession  output =
 --
 -- ObjC selector: @- canAddConnection:@
 canAddConnection :: (IsAVCaptureSession avCaptureSession, IsAVCaptureConnection connection) => avCaptureSession -> connection -> IO Bool
-canAddConnection avCaptureSession  connection =
-  withObjCPtr connection $ \raw_connection ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "canAddConnection:") retCULong [argPtr (castPtr raw_connection :: Ptr ())]
+canAddConnection avCaptureSession connection =
+  sendMessage avCaptureSession canAddConnectionSelector (toAVCaptureConnection connection)
 
 -- | addConnection:
 --
@@ -299,9 +286,8 @@ canAddConnection avCaptureSession  connection =
 --
 -- ObjC selector: @- addConnection:@
 addConnection :: (IsAVCaptureSession avCaptureSession, IsAVCaptureConnection connection) => avCaptureSession -> connection -> IO ()
-addConnection avCaptureSession  connection =
-  withObjCPtr connection $ \raw_connection ->
-      sendMsg avCaptureSession (mkSelector "addConnection:") retVoid [argPtr (castPtr raw_connection :: Ptr ())]
+addConnection avCaptureSession connection =
+  sendMessage avCaptureSession addConnectionSelector (toAVCaptureConnection connection)
 
 -- | removeConnection:
 --
@@ -313,9 +299,8 @@ addConnection avCaptureSession  connection =
 --
 -- ObjC selector: @- removeConnection:@
 removeConnection :: (IsAVCaptureSession avCaptureSession, IsAVCaptureConnection connection) => avCaptureSession -> connection -> IO ()
-removeConnection avCaptureSession  connection =
-  withObjCPtr connection $ \raw_connection ->
-      sendMsg avCaptureSession (mkSelector "removeConnection:") retVoid [argPtr (castPtr raw_connection :: Ptr ())]
+removeConnection avCaptureSession connection =
+  sendMessage avCaptureSession removeConnectionSelector (toAVCaptureConnection connection)
 
 -- | setControlsDelegate:queue:
 --
@@ -331,9 +316,8 @@ removeConnection avCaptureSession  connection =
 --
 -- ObjC selector: @- setControlsDelegate:queue:@
 setControlsDelegate_queue :: (IsAVCaptureSession avCaptureSession, IsNSObject controlsDelegateCallbackQueue) => avCaptureSession -> RawId -> controlsDelegateCallbackQueue -> IO ()
-setControlsDelegate_queue avCaptureSession  controlsDelegate controlsDelegateCallbackQueue =
-  withObjCPtr controlsDelegateCallbackQueue $ \raw_controlsDelegateCallbackQueue ->
-      sendMsg avCaptureSession (mkSelector "setControlsDelegate:queue:") retVoid [argPtr (castPtr (unRawId controlsDelegate) :: Ptr ()), argPtr (castPtr raw_controlsDelegateCallbackQueue :: Ptr ())]
+setControlsDelegate_queue avCaptureSession controlsDelegate controlsDelegateCallbackQueue =
+  sendMessage avCaptureSession setControlsDelegate_queueSelector controlsDelegate (toNSObject controlsDelegateCallbackQueue)
 
 -- | canAddControl:
 --
@@ -347,9 +331,8 @@ setControlsDelegate_queue avCaptureSession  controlsDelegate controlsDelegateCal
 --
 -- ObjC selector: @- canAddControl:@
 canAddControl :: (IsAVCaptureSession avCaptureSession, IsAVCaptureControl control) => avCaptureSession -> control -> IO Bool
-canAddControl avCaptureSession  control =
-  withObjCPtr control $ \raw_control ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "canAddControl:") retCULong [argPtr (castPtr raw_control :: Ptr ())]
+canAddControl avCaptureSession control =
+  sendMessage avCaptureSession canAddControlSelector (toAVCaptureControl control)
 
 -- | addControl:
 --
@@ -363,9 +346,8 @@ canAddControl avCaptureSession  control =
 --
 -- ObjC selector: @- addControl:@
 addControl :: (IsAVCaptureSession avCaptureSession, IsAVCaptureControl control) => avCaptureSession -> control -> IO ()
-addControl avCaptureSession  control =
-  withObjCPtr control $ \raw_control ->
-      sendMsg avCaptureSession (mkSelector "addControl:") retVoid [argPtr (castPtr raw_control :: Ptr ())]
+addControl avCaptureSession control =
+  sendMessage avCaptureSession addControlSelector (toAVCaptureControl control)
 
 -- | removeControl:
 --
@@ -377,9 +359,8 @@ addControl avCaptureSession  control =
 --
 -- ObjC selector: @- removeControl:@
 removeControl :: (IsAVCaptureSession avCaptureSession, IsAVCaptureControl control) => avCaptureSession -> control -> IO ()
-removeControl avCaptureSession  control =
-  withObjCPtr control $ \raw_control ->
-      sendMsg avCaptureSession (mkSelector "removeControl:") retVoid [argPtr (castPtr raw_control :: Ptr ())]
+removeControl avCaptureSession control =
+  sendMessage avCaptureSession removeControlSelector (toAVCaptureControl control)
 
 -- | beginConfiguration
 --
@@ -389,8 +370,8 @@ removeControl avCaptureSession  control =
 --
 -- ObjC selector: @- beginConfiguration@
 beginConfiguration :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO ()
-beginConfiguration avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "beginConfiguration") retVoid []
+beginConfiguration avCaptureSession =
+  sendMessage avCaptureSession beginConfigurationSelector
 
 -- | commitConfiguration
 --
@@ -400,8 +381,8 @@ beginConfiguration avCaptureSession  =
 --
 -- ObjC selector: @- commitConfiguration@
 commitConfiguration :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO ()
-commitConfiguration avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "commitConfiguration") retVoid []
+commitConfiguration avCaptureSession =
+  sendMessage avCaptureSession commitConfigurationSelector
 
 -- | startRunning
 --
@@ -411,8 +392,8 @@ commitConfiguration avCaptureSession  =
 --
 -- ObjC selector: @- startRunning@
 startRunning :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO ()
-startRunning avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "startRunning") retVoid []
+startRunning avCaptureSession =
+  sendMessage avCaptureSession startRunningSelector
 
 -- | stopRunning
 --
@@ -422,8 +403,8 @@ startRunning avCaptureSession  =
 --
 -- ObjC selector: @- stopRunning@
 stopRunning :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO ()
-stopRunning avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "stopRunning") retVoid []
+stopRunning avCaptureSession =
+  sendMessage avCaptureSession stopRunningSelector
 
 -- | Tells the session to run deferred start when appropriate.
 --
@@ -437,8 +418,8 @@ stopRunning avCaptureSession  =
 --
 -- ObjC selector: @- runDeferredStartWhenNeeded@
 runDeferredStartWhenNeeded :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO ()
-runDeferredStartWhenNeeded avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "runDeferredStartWhenNeeded") retVoid []
+runDeferredStartWhenNeeded avCaptureSession =
+  sendMessage avCaptureSession runDeferredStartWhenNeededSelector
 
 -- | Sets a delegate object for the session to call when performing deferred start.
 --
@@ -458,9 +439,8 @@ runDeferredStartWhenNeeded avCaptureSession  =
 --
 -- ObjC selector: @- setDeferredStartDelegate:deferredStartDelegateCallbackQueue:@
 setDeferredStartDelegate_deferredStartDelegateCallbackQueue :: (IsAVCaptureSession avCaptureSession, IsNSObject deferredStartDelegateCallbackQueue) => avCaptureSession -> RawId -> deferredStartDelegateCallbackQueue -> IO ()
-setDeferredStartDelegate_deferredStartDelegateCallbackQueue avCaptureSession  deferredStartDelegate deferredStartDelegateCallbackQueue =
-  withObjCPtr deferredStartDelegateCallbackQueue $ \raw_deferredStartDelegateCallbackQueue ->
-      sendMsg avCaptureSession (mkSelector "setDeferredStartDelegate:deferredStartDelegateCallbackQueue:") retVoid [argPtr (castPtr (unRawId deferredStartDelegate) :: Ptr ()), argPtr (castPtr raw_deferredStartDelegateCallbackQueue :: Ptr ())]
+setDeferredStartDelegate_deferredStartDelegateCallbackQueue avCaptureSession deferredStartDelegate deferredStartDelegateCallbackQueue =
+  sendMessage avCaptureSession setDeferredStartDelegate_deferredStartDelegateCallbackQueueSelector deferredStartDelegate (toNSObject deferredStartDelegateCallbackQueue)
 
 -- | sessionPreset
 --
@@ -470,8 +450,8 @@ setDeferredStartDelegate_deferredStartDelegateCallbackQueue avCaptureSession  de
 --
 -- ObjC selector: @- sessionPreset@
 sessionPreset :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSString)
-sessionPreset avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "sessionPreset") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionPreset avCaptureSession =
+  sendMessage avCaptureSession sessionPresetSelector
 
 -- | sessionPreset
 --
@@ -481,9 +461,8 @@ sessionPreset avCaptureSession  =
 --
 -- ObjC selector: @- setSessionPreset:@
 setSessionPreset :: (IsAVCaptureSession avCaptureSession, IsNSString value) => avCaptureSession -> value -> IO ()
-setSessionPreset avCaptureSession  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureSession (mkSelector "setSessionPreset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSessionPreset avCaptureSession value =
+  sendMessage avCaptureSession setSessionPresetSelector (toNSString value)
 
 -- | inputs
 --
@@ -493,8 +472,8 @@ setSessionPreset avCaptureSession  value =
 --
 -- ObjC selector: @- inputs@
 inputs :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSArray)
-inputs avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "inputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputs avCaptureSession =
+  sendMessage avCaptureSession inputsSelector
 
 -- | outputs
 --
@@ -504,8 +483,8 @@ inputs avCaptureSession  =
 --
 -- ObjC selector: @- outputs@
 outputs :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSArray)
-outputs avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "outputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputs avCaptureSession =
+  sendMessage avCaptureSession outputsSelector
 
 -- | connections
 --
@@ -515,8 +494,8 @@ outputs avCaptureSession  =
 --
 -- ObjC selector: @- connections@
 connections :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSArray)
-connections avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "connections") (retPtr retVoid) [] >>= retainedObject . castPtr
+connections avCaptureSession =
+  sendMessage avCaptureSession connectionsSelector
 
 -- | supportsControls
 --
@@ -526,8 +505,8 @@ connections avCaptureSession  =
 --
 -- ObjC selector: @- supportsControls@
 supportsControls :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-supportsControls avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "supportsControls") retCULong []
+supportsControls avCaptureSession =
+  sendMessage avCaptureSession supportsControlsSelector
 
 -- | maxControlsCount
 --
@@ -535,8 +514,8 @@ supportsControls avCaptureSession  =
 --
 -- ObjC selector: @- maxControlsCount@
 maxControlsCount :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO CLong
-maxControlsCount avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "maxControlsCount") retCLong []
+maxControlsCount avCaptureSession =
+  sendMessage avCaptureSession maxControlsCountSelector
 
 -- | controlsDelegate
 --
@@ -548,8 +527,8 @@ maxControlsCount avCaptureSession  =
 --
 -- ObjC selector: @- controlsDelegate@
 controlsDelegate :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO RawId
-controlsDelegate avCaptureSession  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureSession (mkSelector "controlsDelegate") (retPtr retVoid) []
+controlsDelegate avCaptureSession =
+  sendMessage avCaptureSession controlsDelegateSelector
 
 -- | controlsDelegateCallbackQueue
 --
@@ -559,8 +538,8 @@ controlsDelegate avCaptureSession  =
 --
 -- ObjC selector: @- controlsDelegateCallbackQueue@
 controlsDelegateCallbackQueue :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSObject)
-controlsDelegateCallbackQueue avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "controlsDelegateCallbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+controlsDelegateCallbackQueue avCaptureSession =
+  sendMessage avCaptureSession controlsDelegateCallbackQueueSelector
 
 -- | controls
 --
@@ -570,8 +549,8 @@ controlsDelegateCallbackQueue avCaptureSession  =
 --
 -- ObjC selector: @- controls@
 controls :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSArray)
-controls avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "controls") (retPtr retVoid) [] >>= retainedObject . castPtr
+controls avCaptureSession =
+  sendMessage avCaptureSession controlsSelector
 
 -- | running
 --
@@ -581,8 +560,8 @@ controls avCaptureSession  =
 --
 -- ObjC selector: @- running@
 running :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-running avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "running") retCULong []
+running avCaptureSession =
+  sendMessage avCaptureSession runningSelector
 
 -- | interrupted
 --
@@ -592,8 +571,8 @@ running avCaptureSession  =
 --
 -- ObjC selector: @- interrupted@
 interrupted :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-interrupted avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "interrupted") retCULong []
+interrupted avCaptureSession =
+  sendMessage avCaptureSession interruptedSelector
 
 -- | multitaskingCameraAccessSupported
 --
@@ -611,8 +590,8 @@ interrupted avCaptureSession  =
 --
 -- ObjC selector: @- multitaskingCameraAccessSupported@
 multitaskingCameraAccessSupported :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-multitaskingCameraAccessSupported avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "multitaskingCameraAccessSupported") retCULong []
+multitaskingCameraAccessSupported avCaptureSession =
+  sendMessage avCaptureSession multitaskingCameraAccessSupportedSelector
 
 -- | multitaskingCameraAccessEnabled
 --
@@ -630,8 +609,8 @@ multitaskingCameraAccessSupported avCaptureSession  =
 --
 -- ObjC selector: @- multitaskingCameraAccessEnabled@
 multitaskingCameraAccessEnabled :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-multitaskingCameraAccessEnabled avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "multitaskingCameraAccessEnabled") retCULong []
+multitaskingCameraAccessEnabled avCaptureSession =
+  sendMessage avCaptureSession multitaskingCameraAccessEnabledSelector
 
 -- | multitaskingCameraAccessEnabled
 --
@@ -649,8 +628,8 @@ multitaskingCameraAccessEnabled avCaptureSession  =
 --
 -- ObjC selector: @- setMultitaskingCameraAccessEnabled:@
 setMultitaskingCameraAccessEnabled :: IsAVCaptureSession avCaptureSession => avCaptureSession -> Bool -> IO ()
-setMultitaskingCameraAccessEnabled avCaptureSession  value =
-    sendMsg avCaptureSession (mkSelector "setMultitaskingCameraAccessEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setMultitaskingCameraAccessEnabled avCaptureSession value =
+  sendMessage avCaptureSession setMultitaskingCameraAccessEnabledSelector value
 
 -- | usesApplicationAudioSession
 --
@@ -660,8 +639,8 @@ setMultitaskingCameraAccessEnabled avCaptureSession  value =
 --
 -- ObjC selector: @- usesApplicationAudioSession@
 usesApplicationAudioSession :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-usesApplicationAudioSession avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "usesApplicationAudioSession") retCULong []
+usesApplicationAudioSession avCaptureSession =
+  sendMessage avCaptureSession usesApplicationAudioSessionSelector
 
 -- | usesApplicationAudioSession
 --
@@ -671,8 +650,8 @@ usesApplicationAudioSession avCaptureSession  =
 --
 -- ObjC selector: @- setUsesApplicationAudioSession:@
 setUsesApplicationAudioSession :: IsAVCaptureSession avCaptureSession => avCaptureSession -> Bool -> IO ()
-setUsesApplicationAudioSession avCaptureSession  value =
-    sendMsg avCaptureSession (mkSelector "setUsesApplicationAudioSession:") retVoid [argCULong (if value then 1 else 0)]
+setUsesApplicationAudioSession avCaptureSession value =
+  sendMessage avCaptureSession setUsesApplicationAudioSessionSelector value
 
 -- | automaticallyConfiguresApplicationAudioSession
 --
@@ -682,8 +661,8 @@ setUsesApplicationAudioSession avCaptureSession  value =
 --
 -- ObjC selector: @- automaticallyConfiguresApplicationAudioSession@
 automaticallyConfiguresApplicationAudioSession :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-automaticallyConfiguresApplicationAudioSession avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "automaticallyConfiguresApplicationAudioSession") retCULong []
+automaticallyConfiguresApplicationAudioSession avCaptureSession =
+  sendMessage avCaptureSession automaticallyConfiguresApplicationAudioSessionSelector
 
 -- | automaticallyConfiguresApplicationAudioSession
 --
@@ -693,8 +672,8 @@ automaticallyConfiguresApplicationAudioSession avCaptureSession  =
 --
 -- ObjC selector: @- setAutomaticallyConfiguresApplicationAudioSession:@
 setAutomaticallyConfiguresApplicationAudioSession :: IsAVCaptureSession avCaptureSession => avCaptureSession -> Bool -> IO ()
-setAutomaticallyConfiguresApplicationAudioSession avCaptureSession  value =
-    sendMsg avCaptureSession (mkSelector "setAutomaticallyConfiguresApplicationAudioSession:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyConfiguresApplicationAudioSession avCaptureSession value =
+  sendMessage avCaptureSession setAutomaticallyConfiguresApplicationAudioSessionSelector value
 
 -- | configuresApplicationAudioSessionToMixWithOthers
 --
@@ -704,8 +683,8 @@ setAutomaticallyConfiguresApplicationAudioSession avCaptureSession  value =
 --
 -- ObjC selector: @- configuresApplicationAudioSessionToMixWithOthers@
 configuresApplicationAudioSessionToMixWithOthers :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-configuresApplicationAudioSessionToMixWithOthers avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "configuresApplicationAudioSessionToMixWithOthers") retCULong []
+configuresApplicationAudioSessionToMixWithOthers avCaptureSession =
+  sendMessage avCaptureSession configuresApplicationAudioSessionToMixWithOthersSelector
 
 -- | configuresApplicationAudioSessionToMixWithOthers
 --
@@ -715,8 +694,8 @@ configuresApplicationAudioSessionToMixWithOthers avCaptureSession  =
 --
 -- ObjC selector: @- setConfiguresApplicationAudioSessionToMixWithOthers:@
 setConfiguresApplicationAudioSessionToMixWithOthers :: IsAVCaptureSession avCaptureSession => avCaptureSession -> Bool -> IO ()
-setConfiguresApplicationAudioSessionToMixWithOthers avCaptureSession  value =
-    sendMsg avCaptureSession (mkSelector "setConfiguresApplicationAudioSessionToMixWithOthers:") retVoid [argCULong (if value then 1 else 0)]
+setConfiguresApplicationAudioSessionToMixWithOthers avCaptureSession value =
+  sendMessage avCaptureSession setConfiguresApplicationAudioSessionToMixWithOthersSelector value
 
 -- | Indicates whether the receiver should configure the application's audio session for bluetooth high quality recording.
 --
@@ -724,8 +703,8 @@ setConfiguresApplicationAudioSessionToMixWithOthers avCaptureSession  value =
 --
 -- ObjC selector: @- configuresApplicationAudioSessionForBluetoothHighQualityRecording@
 configuresApplicationAudioSessionForBluetoothHighQualityRecording :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-configuresApplicationAudioSessionForBluetoothHighQualityRecording avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "configuresApplicationAudioSessionForBluetoothHighQualityRecording") retCULong []
+configuresApplicationAudioSessionForBluetoothHighQualityRecording avCaptureSession =
+  sendMessage avCaptureSession configuresApplicationAudioSessionForBluetoothHighQualityRecordingSelector
 
 -- | Indicates whether the receiver should configure the application's audio session for bluetooth high quality recording.
 --
@@ -733,8 +712,8 @@ configuresApplicationAudioSessionForBluetoothHighQualityRecording avCaptureSessi
 --
 -- ObjC selector: @- setConfiguresApplicationAudioSessionForBluetoothHighQualityRecording:@
 setConfiguresApplicationAudioSessionForBluetoothHighQualityRecording :: IsAVCaptureSession avCaptureSession => avCaptureSession -> Bool -> IO ()
-setConfiguresApplicationAudioSessionForBluetoothHighQualityRecording avCaptureSession  value =
-    sendMsg avCaptureSession (mkSelector "setConfiguresApplicationAudioSessionForBluetoothHighQualityRecording:") retVoid [argCULong (if value then 1 else 0)]
+setConfiguresApplicationAudioSessionForBluetoothHighQualityRecording avCaptureSession value =
+  sendMessage avCaptureSession setConfiguresApplicationAudioSessionForBluetoothHighQualityRecordingSelector value
 
 -- | automaticallyConfiguresCaptureDeviceForWideColor
 --
@@ -744,8 +723,8 @@ setConfiguresApplicationAudioSessionForBluetoothHighQualityRecording avCaptureSe
 --
 -- ObjC selector: @- automaticallyConfiguresCaptureDeviceForWideColor@
 automaticallyConfiguresCaptureDeviceForWideColor :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-automaticallyConfiguresCaptureDeviceForWideColor avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "automaticallyConfiguresCaptureDeviceForWideColor") retCULong []
+automaticallyConfiguresCaptureDeviceForWideColor avCaptureSession =
+  sendMessage avCaptureSession automaticallyConfiguresCaptureDeviceForWideColorSelector
 
 -- | automaticallyConfiguresCaptureDeviceForWideColor
 --
@@ -755,8 +734,8 @@ automaticallyConfiguresCaptureDeviceForWideColor avCaptureSession  =
 --
 -- ObjC selector: @- setAutomaticallyConfiguresCaptureDeviceForWideColor:@
 setAutomaticallyConfiguresCaptureDeviceForWideColor :: IsAVCaptureSession avCaptureSession => avCaptureSession -> Bool -> IO ()
-setAutomaticallyConfiguresCaptureDeviceForWideColor avCaptureSession  value =
-    sendMsg avCaptureSession (mkSelector "setAutomaticallyConfiguresCaptureDeviceForWideColor:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyConfiguresCaptureDeviceForWideColor avCaptureSession value =
+  sendMessage avCaptureSession setAutomaticallyConfiguresCaptureDeviceForWideColorSelector value
 
 -- | synchronizationClock
 --
@@ -774,8 +753,8 @@ setAutomaticallyConfiguresCaptureDeviceForWideColor avCaptureSession  value =
 --
 -- ObjC selector: @- synchronizationClock@
 synchronizationClock :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Ptr ())
-synchronizationClock avCaptureSession  =
-    fmap castPtr $ sendMsg avCaptureSession (mkSelector "synchronizationClock") (retPtr retVoid) []
+synchronizationClock avCaptureSession =
+  sendMessage avCaptureSession synchronizationClockSelector
 
 -- | masterClock
 --
@@ -785,8 +764,8 @@ synchronizationClock avCaptureSession  =
 --
 -- ObjC selector: @- masterClock@
 masterClock :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Ptr ())
-masterClock avCaptureSession  =
-    fmap castPtr $ sendMsg avCaptureSession (mkSelector "masterClock") (retPtr retVoid) []
+masterClock avCaptureSession =
+  sendMessage avCaptureSession masterClockSelector
 
 -- | hardwareCost
 --
@@ -800,8 +779,8 @@ masterClock avCaptureSession  =
 --
 -- ObjC selector: @- hardwareCost@
 hardwareCost :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO CFloat
-hardwareCost avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "hardwareCost") retCFloat []
+hardwareCost avCaptureSession =
+  sendMessage avCaptureSession hardwareCostSelector
 
 -- | A @BOOL@ value that indicates whether the session supports manually running deferred start.
 --
@@ -811,8 +790,8 @@ hardwareCost avCaptureSession  =
 --
 -- ObjC selector: @- manualDeferredStartSupported@
 manualDeferredStartSupported :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-manualDeferredStartSupported avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "manualDeferredStartSupported") retCULong []
+manualDeferredStartSupported avCaptureSession =
+  sendMessage avCaptureSession manualDeferredStartSupportedSelector
 
 -- | A @BOOL@ value that indicates whether deferred start runs automatically.
 --
@@ -830,8 +809,8 @@ manualDeferredStartSupported avCaptureSession  =
 --
 -- ObjC selector: @- automaticallyRunsDeferredStart@
 automaticallyRunsDeferredStart :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO Bool
-automaticallyRunsDeferredStart avCaptureSession  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSession (mkSelector "automaticallyRunsDeferredStart") retCULong []
+automaticallyRunsDeferredStart avCaptureSession =
+  sendMessage avCaptureSession automaticallyRunsDeferredStartSelector
 
 -- | A @BOOL@ value that indicates whether deferred start runs automatically.
 --
@@ -849,8 +828,8 @@ automaticallyRunsDeferredStart avCaptureSession  =
 --
 -- ObjC selector: @- setAutomaticallyRunsDeferredStart:@
 setAutomaticallyRunsDeferredStart :: IsAVCaptureSession avCaptureSession => avCaptureSession -> Bool -> IO ()
-setAutomaticallyRunsDeferredStart avCaptureSession  value =
-    sendMsg avCaptureSession (mkSelector "setAutomaticallyRunsDeferredStart:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyRunsDeferredStart avCaptureSession value =
+  sendMessage avCaptureSession setAutomaticallyRunsDeferredStartSelector value
 
 -- | A delegate object that observes events about deferred start.
 --
@@ -858,8 +837,8 @@ setAutomaticallyRunsDeferredStart avCaptureSession  value =
 --
 -- ObjC selector: @- deferredStartDelegate@
 deferredStartDelegate :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO RawId
-deferredStartDelegate avCaptureSession  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureSession (mkSelector "deferredStartDelegate") (retPtr retVoid) []
+deferredStartDelegate avCaptureSession =
+  sendMessage avCaptureSession deferredStartDelegateSelector
 
 -- | The dispatch queue on which the session calls deferred start delegate methods.
 --
@@ -867,230 +846,230 @@ deferredStartDelegate avCaptureSession  =
 --
 -- ObjC selector: @- deferredStartDelegateCallbackQueue@
 deferredStartDelegateCallbackQueue :: IsAVCaptureSession avCaptureSession => avCaptureSession -> IO (Id NSObject)
-deferredStartDelegateCallbackQueue avCaptureSession  =
-    sendMsg avCaptureSession (mkSelector "deferredStartDelegateCallbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+deferredStartDelegateCallbackQueue avCaptureSession =
+  sendMessage avCaptureSession deferredStartDelegateCallbackQueueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @canSetSessionPreset:@
-canSetSessionPresetSelector :: Selector
+canSetSessionPresetSelector :: Selector '[Id NSString] Bool
 canSetSessionPresetSelector = mkSelector "canSetSessionPreset:"
 
 -- | @Selector@ for @canAddInput:@
-canAddInputSelector :: Selector
+canAddInputSelector :: Selector '[Id AVCaptureInput] Bool
 canAddInputSelector = mkSelector "canAddInput:"
 
 -- | @Selector@ for @addInput:@
-addInputSelector :: Selector
+addInputSelector :: Selector '[Id AVCaptureInput] ()
 addInputSelector = mkSelector "addInput:"
 
 -- | @Selector@ for @removeInput:@
-removeInputSelector :: Selector
+removeInputSelector :: Selector '[Id AVCaptureInput] ()
 removeInputSelector = mkSelector "removeInput:"
 
 -- | @Selector@ for @canAddOutput:@
-canAddOutputSelector :: Selector
+canAddOutputSelector :: Selector '[Id AVCaptureOutput] Bool
 canAddOutputSelector = mkSelector "canAddOutput:"
 
 -- | @Selector@ for @addOutput:@
-addOutputSelector :: Selector
+addOutputSelector :: Selector '[Id AVCaptureOutput] ()
 addOutputSelector = mkSelector "addOutput:"
 
 -- | @Selector@ for @removeOutput:@
-removeOutputSelector :: Selector
+removeOutputSelector :: Selector '[Id AVCaptureOutput] ()
 removeOutputSelector = mkSelector "removeOutput:"
 
 -- | @Selector@ for @addInputWithNoConnections:@
-addInputWithNoConnectionsSelector :: Selector
+addInputWithNoConnectionsSelector :: Selector '[Id AVCaptureInput] ()
 addInputWithNoConnectionsSelector = mkSelector "addInputWithNoConnections:"
 
 -- | @Selector@ for @addOutputWithNoConnections:@
-addOutputWithNoConnectionsSelector :: Selector
+addOutputWithNoConnectionsSelector :: Selector '[Id AVCaptureOutput] ()
 addOutputWithNoConnectionsSelector = mkSelector "addOutputWithNoConnections:"
 
 -- | @Selector@ for @canAddConnection:@
-canAddConnectionSelector :: Selector
+canAddConnectionSelector :: Selector '[Id AVCaptureConnection] Bool
 canAddConnectionSelector = mkSelector "canAddConnection:"
 
 -- | @Selector@ for @addConnection:@
-addConnectionSelector :: Selector
+addConnectionSelector :: Selector '[Id AVCaptureConnection] ()
 addConnectionSelector = mkSelector "addConnection:"
 
 -- | @Selector@ for @removeConnection:@
-removeConnectionSelector :: Selector
+removeConnectionSelector :: Selector '[Id AVCaptureConnection] ()
 removeConnectionSelector = mkSelector "removeConnection:"
 
 -- | @Selector@ for @setControlsDelegate:queue:@
-setControlsDelegate_queueSelector :: Selector
+setControlsDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setControlsDelegate_queueSelector = mkSelector "setControlsDelegate:queue:"
 
 -- | @Selector@ for @canAddControl:@
-canAddControlSelector :: Selector
+canAddControlSelector :: Selector '[Id AVCaptureControl] Bool
 canAddControlSelector = mkSelector "canAddControl:"
 
 -- | @Selector@ for @addControl:@
-addControlSelector :: Selector
+addControlSelector :: Selector '[Id AVCaptureControl] ()
 addControlSelector = mkSelector "addControl:"
 
 -- | @Selector@ for @removeControl:@
-removeControlSelector :: Selector
+removeControlSelector :: Selector '[Id AVCaptureControl] ()
 removeControlSelector = mkSelector "removeControl:"
 
 -- | @Selector@ for @beginConfiguration@
-beginConfigurationSelector :: Selector
+beginConfigurationSelector :: Selector '[] ()
 beginConfigurationSelector = mkSelector "beginConfiguration"
 
 -- | @Selector@ for @commitConfiguration@
-commitConfigurationSelector :: Selector
+commitConfigurationSelector :: Selector '[] ()
 commitConfigurationSelector = mkSelector "commitConfiguration"
 
 -- | @Selector@ for @startRunning@
-startRunningSelector :: Selector
+startRunningSelector :: Selector '[] ()
 startRunningSelector = mkSelector "startRunning"
 
 -- | @Selector@ for @stopRunning@
-stopRunningSelector :: Selector
+stopRunningSelector :: Selector '[] ()
 stopRunningSelector = mkSelector "stopRunning"
 
 -- | @Selector@ for @runDeferredStartWhenNeeded@
-runDeferredStartWhenNeededSelector :: Selector
+runDeferredStartWhenNeededSelector :: Selector '[] ()
 runDeferredStartWhenNeededSelector = mkSelector "runDeferredStartWhenNeeded"
 
 -- | @Selector@ for @setDeferredStartDelegate:deferredStartDelegateCallbackQueue:@
-setDeferredStartDelegate_deferredStartDelegateCallbackQueueSelector :: Selector
+setDeferredStartDelegate_deferredStartDelegateCallbackQueueSelector :: Selector '[RawId, Id NSObject] ()
 setDeferredStartDelegate_deferredStartDelegateCallbackQueueSelector = mkSelector "setDeferredStartDelegate:deferredStartDelegateCallbackQueue:"
 
 -- | @Selector@ for @sessionPreset@
-sessionPresetSelector :: Selector
+sessionPresetSelector :: Selector '[] (Id NSString)
 sessionPresetSelector = mkSelector "sessionPreset"
 
 -- | @Selector@ for @setSessionPreset:@
-setSessionPresetSelector :: Selector
+setSessionPresetSelector :: Selector '[Id NSString] ()
 setSessionPresetSelector = mkSelector "setSessionPreset:"
 
 -- | @Selector@ for @inputs@
-inputsSelector :: Selector
+inputsSelector :: Selector '[] (Id NSArray)
 inputsSelector = mkSelector "inputs"
 
 -- | @Selector@ for @outputs@
-outputsSelector :: Selector
+outputsSelector :: Selector '[] (Id NSArray)
 outputsSelector = mkSelector "outputs"
 
 -- | @Selector@ for @connections@
-connectionsSelector :: Selector
+connectionsSelector :: Selector '[] (Id NSArray)
 connectionsSelector = mkSelector "connections"
 
 -- | @Selector@ for @supportsControls@
-supportsControlsSelector :: Selector
+supportsControlsSelector :: Selector '[] Bool
 supportsControlsSelector = mkSelector "supportsControls"
 
 -- | @Selector@ for @maxControlsCount@
-maxControlsCountSelector :: Selector
+maxControlsCountSelector :: Selector '[] CLong
 maxControlsCountSelector = mkSelector "maxControlsCount"
 
 -- | @Selector@ for @controlsDelegate@
-controlsDelegateSelector :: Selector
+controlsDelegateSelector :: Selector '[] RawId
 controlsDelegateSelector = mkSelector "controlsDelegate"
 
 -- | @Selector@ for @controlsDelegateCallbackQueue@
-controlsDelegateCallbackQueueSelector :: Selector
+controlsDelegateCallbackQueueSelector :: Selector '[] (Id NSObject)
 controlsDelegateCallbackQueueSelector = mkSelector "controlsDelegateCallbackQueue"
 
 -- | @Selector@ for @controls@
-controlsSelector :: Selector
+controlsSelector :: Selector '[] (Id NSArray)
 controlsSelector = mkSelector "controls"
 
 -- | @Selector@ for @running@
-runningSelector :: Selector
+runningSelector :: Selector '[] Bool
 runningSelector = mkSelector "running"
 
 -- | @Selector@ for @interrupted@
-interruptedSelector :: Selector
+interruptedSelector :: Selector '[] Bool
 interruptedSelector = mkSelector "interrupted"
 
 -- | @Selector@ for @multitaskingCameraAccessSupported@
-multitaskingCameraAccessSupportedSelector :: Selector
+multitaskingCameraAccessSupportedSelector :: Selector '[] Bool
 multitaskingCameraAccessSupportedSelector = mkSelector "multitaskingCameraAccessSupported"
 
 -- | @Selector@ for @multitaskingCameraAccessEnabled@
-multitaskingCameraAccessEnabledSelector :: Selector
+multitaskingCameraAccessEnabledSelector :: Selector '[] Bool
 multitaskingCameraAccessEnabledSelector = mkSelector "multitaskingCameraAccessEnabled"
 
 -- | @Selector@ for @setMultitaskingCameraAccessEnabled:@
-setMultitaskingCameraAccessEnabledSelector :: Selector
+setMultitaskingCameraAccessEnabledSelector :: Selector '[Bool] ()
 setMultitaskingCameraAccessEnabledSelector = mkSelector "setMultitaskingCameraAccessEnabled:"
 
 -- | @Selector@ for @usesApplicationAudioSession@
-usesApplicationAudioSessionSelector :: Selector
+usesApplicationAudioSessionSelector :: Selector '[] Bool
 usesApplicationAudioSessionSelector = mkSelector "usesApplicationAudioSession"
 
 -- | @Selector@ for @setUsesApplicationAudioSession:@
-setUsesApplicationAudioSessionSelector :: Selector
+setUsesApplicationAudioSessionSelector :: Selector '[Bool] ()
 setUsesApplicationAudioSessionSelector = mkSelector "setUsesApplicationAudioSession:"
 
 -- | @Selector@ for @automaticallyConfiguresApplicationAudioSession@
-automaticallyConfiguresApplicationAudioSessionSelector :: Selector
+automaticallyConfiguresApplicationAudioSessionSelector :: Selector '[] Bool
 automaticallyConfiguresApplicationAudioSessionSelector = mkSelector "automaticallyConfiguresApplicationAudioSession"
 
 -- | @Selector@ for @setAutomaticallyConfiguresApplicationAudioSession:@
-setAutomaticallyConfiguresApplicationAudioSessionSelector :: Selector
+setAutomaticallyConfiguresApplicationAudioSessionSelector :: Selector '[Bool] ()
 setAutomaticallyConfiguresApplicationAudioSessionSelector = mkSelector "setAutomaticallyConfiguresApplicationAudioSession:"
 
 -- | @Selector@ for @configuresApplicationAudioSessionToMixWithOthers@
-configuresApplicationAudioSessionToMixWithOthersSelector :: Selector
+configuresApplicationAudioSessionToMixWithOthersSelector :: Selector '[] Bool
 configuresApplicationAudioSessionToMixWithOthersSelector = mkSelector "configuresApplicationAudioSessionToMixWithOthers"
 
 -- | @Selector@ for @setConfiguresApplicationAudioSessionToMixWithOthers:@
-setConfiguresApplicationAudioSessionToMixWithOthersSelector :: Selector
+setConfiguresApplicationAudioSessionToMixWithOthersSelector :: Selector '[Bool] ()
 setConfiguresApplicationAudioSessionToMixWithOthersSelector = mkSelector "setConfiguresApplicationAudioSessionToMixWithOthers:"
 
 -- | @Selector@ for @configuresApplicationAudioSessionForBluetoothHighQualityRecording@
-configuresApplicationAudioSessionForBluetoothHighQualityRecordingSelector :: Selector
+configuresApplicationAudioSessionForBluetoothHighQualityRecordingSelector :: Selector '[] Bool
 configuresApplicationAudioSessionForBluetoothHighQualityRecordingSelector = mkSelector "configuresApplicationAudioSessionForBluetoothHighQualityRecording"
 
 -- | @Selector@ for @setConfiguresApplicationAudioSessionForBluetoothHighQualityRecording:@
-setConfiguresApplicationAudioSessionForBluetoothHighQualityRecordingSelector :: Selector
+setConfiguresApplicationAudioSessionForBluetoothHighQualityRecordingSelector :: Selector '[Bool] ()
 setConfiguresApplicationAudioSessionForBluetoothHighQualityRecordingSelector = mkSelector "setConfiguresApplicationAudioSessionForBluetoothHighQualityRecording:"
 
 -- | @Selector@ for @automaticallyConfiguresCaptureDeviceForWideColor@
-automaticallyConfiguresCaptureDeviceForWideColorSelector :: Selector
+automaticallyConfiguresCaptureDeviceForWideColorSelector :: Selector '[] Bool
 automaticallyConfiguresCaptureDeviceForWideColorSelector = mkSelector "automaticallyConfiguresCaptureDeviceForWideColor"
 
 -- | @Selector@ for @setAutomaticallyConfiguresCaptureDeviceForWideColor:@
-setAutomaticallyConfiguresCaptureDeviceForWideColorSelector :: Selector
+setAutomaticallyConfiguresCaptureDeviceForWideColorSelector :: Selector '[Bool] ()
 setAutomaticallyConfiguresCaptureDeviceForWideColorSelector = mkSelector "setAutomaticallyConfiguresCaptureDeviceForWideColor:"
 
 -- | @Selector@ for @synchronizationClock@
-synchronizationClockSelector :: Selector
+synchronizationClockSelector :: Selector '[] (Ptr ())
 synchronizationClockSelector = mkSelector "synchronizationClock"
 
 -- | @Selector@ for @masterClock@
-masterClockSelector :: Selector
+masterClockSelector :: Selector '[] (Ptr ())
 masterClockSelector = mkSelector "masterClock"
 
 -- | @Selector@ for @hardwareCost@
-hardwareCostSelector :: Selector
+hardwareCostSelector :: Selector '[] CFloat
 hardwareCostSelector = mkSelector "hardwareCost"
 
 -- | @Selector@ for @manualDeferredStartSupported@
-manualDeferredStartSupportedSelector :: Selector
+manualDeferredStartSupportedSelector :: Selector '[] Bool
 manualDeferredStartSupportedSelector = mkSelector "manualDeferredStartSupported"
 
 -- | @Selector@ for @automaticallyRunsDeferredStart@
-automaticallyRunsDeferredStartSelector :: Selector
+automaticallyRunsDeferredStartSelector :: Selector '[] Bool
 automaticallyRunsDeferredStartSelector = mkSelector "automaticallyRunsDeferredStart"
 
 -- | @Selector@ for @setAutomaticallyRunsDeferredStart:@
-setAutomaticallyRunsDeferredStartSelector :: Selector
+setAutomaticallyRunsDeferredStartSelector :: Selector '[Bool] ()
 setAutomaticallyRunsDeferredStartSelector = mkSelector "setAutomaticallyRunsDeferredStart:"
 
 -- | @Selector@ for @deferredStartDelegate@
-deferredStartDelegateSelector :: Selector
+deferredStartDelegateSelector :: Selector '[] RawId
 deferredStartDelegateSelector = mkSelector "deferredStartDelegate"
 
 -- | @Selector@ for @deferredStartDelegateCallbackQueue@
-deferredStartDelegateCallbackQueueSelector :: Selector
+deferredStartDelegateCallbackQueueSelector :: Selector '[] (Id NSObject)
 deferredStartDelegateCallbackQueueSelector = mkSelector "deferredStartDelegateCallbackQueue"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,8 +17,8 @@ module ObjC.CoreMotion.CMFallDetectionEvent
   , init_
   , date
   , resolution
-  , initSelector
   , dateSelector
+  , initSelector
   , resolutionSelector
 
   -- * Enum types
@@ -29,15 +30,11 @@ module ObjC.CoreMotion.CMFallDetectionEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMFallDetectionEvent cmFallDetectionEvent => cmFallDetectionEvent -> IO (Id CMFallDetectionEvent)
-init_ cmFallDetectionEvent  =
-    sendMsg cmFallDetectionEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmFallDetectionEvent =
+  sendOwnedMessage cmFallDetectionEvent initSelector
 
 -- | date
 --
@@ -56,8 +53,8 @@ init_ cmFallDetectionEvent  =
 --
 -- ObjC selector: @- date@
 date :: IsCMFallDetectionEvent cmFallDetectionEvent => cmFallDetectionEvent -> IO (Id NSDate)
-date cmFallDetectionEvent  =
-    sendMsg cmFallDetectionEvent (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date cmFallDetectionEvent =
+  sendMessage cmFallDetectionEvent dateSelector
 
 -- | resolution
 --
@@ -67,22 +64,22 @@ date cmFallDetectionEvent  =
 --
 -- ObjC selector: @- resolution@
 resolution :: IsCMFallDetectionEvent cmFallDetectionEvent => cmFallDetectionEvent -> IO CMFallDetectionEventUserResolution
-resolution cmFallDetectionEvent  =
-    fmap (coerce :: CLong -> CMFallDetectionEventUserResolution) $ sendMsg cmFallDetectionEvent (mkSelector "resolution") retCLong []
+resolution cmFallDetectionEvent =
+  sendMessage cmFallDetectionEvent resolutionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMFallDetectionEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @resolution@
-resolutionSelector :: Selector
+resolutionSelector :: Selector '[] CMFallDetectionEventUserResolution
 resolutionSelector = mkSelector "resolution"
 

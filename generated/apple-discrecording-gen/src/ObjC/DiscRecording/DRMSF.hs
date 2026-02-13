@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.DiscRecording.DRMSF
   , description
   , descriptionWithFormat
   , isEqualToMSF
+  , descriptionSelector
+  , descriptionWithFormatSelector
+  , framesSelector
+  , initWithFramesSelector
+  , initWithStringSelector
+  , isEqualToMSFSelector
+  , minutesSelector
+  , msfByAddingSelector
+  , msfBySubtractingSelector
   , msfSelector
   , msfWithFramesSelector
   , msfWithStringSelector
-  , initWithFramesSelector
-  , initWithStringSelector
-  , minutesSelector
   , secondsSelector
-  , framesSelector
   , sectorsSelector
-  , msfByAddingSelector
-  , msfBySubtractingSelector
-  , descriptionSelector
-  , descriptionWithFormatSelector
-  , isEqualToMSFSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,7 +61,7 @@ msf :: IO (Id DRMSF)
 msf  =
   do
     cls' <- getRequiredClass "DRMSF"
-    sendClassMsg cls' (mkSelector "msf") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' msfSelector
 
 -- | msfWithFrames
 --
@@ -77,7 +74,7 @@ msfWithFrames :: CUInt -> IO (Id DRMSF)
 msfWithFrames frames =
   do
     cls' <- getRequiredClass "DRMSF"
-    sendClassMsg cls' (mkSelector "msfWithFrames:") (retPtr retVoid) [argCUInt frames] >>= retainedObject . castPtr
+    sendClassMessage cls' msfWithFramesSelector frames
 
 -- | msfWithString
 --
@@ -90,8 +87,7 @@ msfWithString :: IsNSString string => string -> IO (Id DRMSF)
 msfWithString string =
   do
     cls' <- getRequiredClass "DRMSF"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "msfWithString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' msfWithStringSelector (toNSString string)
 
 -- | initWithFrames
 --
@@ -101,8 +97,8 @@ msfWithString string =
 --
 -- ObjC selector: @- initWithFrames:@
 initWithFrames :: IsDRMSF drmsf => drmsf -> CUInt -> IO RawId
-initWithFrames drmsf  frames =
-    fmap (RawId . castPtr) $ sendMsg drmsf (mkSelector "initWithFrames:") (retPtr retVoid) [argCUInt frames]
+initWithFrames drmsf frames =
+  sendOwnedMessage drmsf initWithFramesSelector frames
 
 -- | initWithString
 --
@@ -112,9 +108,8 @@ initWithFrames drmsf  frames =
 --
 -- ObjC selector: @- initWithString:@
 initWithString :: (IsDRMSF drmsf, IsNSString string) => drmsf -> string -> IO RawId
-initWithString drmsf  string =
-  withObjCPtr string $ \raw_string ->
-      fmap (RawId . castPtr) $ sendMsg drmsf (mkSelector "initWithString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())]
+initWithString drmsf string =
+  sendOwnedMessage drmsf initWithStringSelector (toNSString string)
 
 -- | minutes
 --
@@ -128,8 +123,8 @@ initWithString drmsf  string =
 --
 -- ObjC selector: @- minutes@
 minutes :: IsDRMSF drmsf => drmsf -> IO CUInt
-minutes drmsf  =
-    sendMsg drmsf (mkSelector "minutes") retCUInt []
+minutes drmsf =
+  sendMessage drmsf minutesSelector
 
 -- | seconds
 --
@@ -143,8 +138,8 @@ minutes drmsf  =
 --
 -- ObjC selector: @- seconds@
 seconds :: IsDRMSF drmsf => drmsf -> IO CUInt
-seconds drmsf  =
-    sendMsg drmsf (mkSelector "seconds") retCUInt []
+seconds drmsf =
+  sendMessage drmsf secondsSelector
 
 -- | frames
 --
@@ -162,8 +157,8 @@ seconds drmsf  =
 --
 -- ObjC selector: @- frames@
 frames :: IsDRMSF drmsf => drmsf -> IO CUInt
-frames drmsf  =
-    sendMsg drmsf (mkSelector "frames") retCUInt []
+frames drmsf =
+  sendMessage drmsf framesSelector
 
 -- | sectors
 --
@@ -181,8 +176,8 @@ frames drmsf  =
 --
 -- ObjC selector: @- sectors@
 sectors :: IsDRMSF drmsf => drmsf -> IO CUInt
-sectors drmsf  =
-    sendMsg drmsf (mkSelector "sectors") retCUInt []
+sectors drmsf =
+  sendMessage drmsf sectorsSelector
 
 -- | msfByAdding
 --
@@ -194,9 +189,8 @@ sectors drmsf  =
 --
 -- ObjC selector: @- msfByAdding:@
 msfByAdding :: (IsDRMSF drmsf, IsDRMSF msf) => drmsf -> msf -> IO (Id DRMSF)
-msfByAdding drmsf  msf =
-  withObjCPtr msf $ \raw_msf ->
-      sendMsg drmsf (mkSelector "msfByAdding:") (retPtr retVoid) [argPtr (castPtr raw_msf :: Ptr ())] >>= retainedObject . castPtr
+msfByAdding drmsf msf =
+  sendMessage drmsf msfByAddingSelector (toDRMSF msf)
 
 -- | msfBySubtracting
 --
@@ -208,9 +202,8 @@ msfByAdding drmsf  msf =
 --
 -- ObjC selector: @- msfBySubtracting:@
 msfBySubtracting :: (IsDRMSF drmsf, IsDRMSF msf) => drmsf -> msf -> IO (Id DRMSF)
-msfBySubtracting drmsf  msf =
-  withObjCPtr msf $ \raw_msf ->
-      sendMsg drmsf (mkSelector "msfBySubtracting:") (retPtr retVoid) [argPtr (castPtr raw_msf :: Ptr ())] >>= retainedObject . castPtr
+msfBySubtracting drmsf msf =
+  sendMessage drmsf msfBySubtractingSelector (toDRMSF msf)
 
 -- | description
 --
@@ -220,8 +213,8 @@ msfBySubtracting drmsf  msf =
 --
 -- ObjC selector: @- description@
 description :: IsDRMSF drmsf => drmsf -> IO (Id NSString)
-description drmsf  =
-    sendMsg drmsf (mkSelector "description") (retPtr retVoid) [] >>= retainedObject . castPtr
+description drmsf =
+  sendMessage drmsf descriptionSelector
 
 -- | descriptionWithFormat
 --
@@ -241,9 +234,8 @@ description drmsf  =
 --
 -- ObjC selector: @- descriptionWithFormat:@
 descriptionWithFormat :: (IsDRMSF drmsf, IsNSString format) => drmsf -> format -> IO (Id NSString)
-descriptionWithFormat drmsf  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg drmsf (mkSelector "descriptionWithFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= retainedObject . castPtr
+descriptionWithFormat drmsf format =
+  sendMessage drmsf descriptionWithFormatSelector (toNSString format)
 
 -- | isEqualToMSF
 --
@@ -255,67 +247,66 @@ descriptionWithFormat drmsf  format =
 --
 -- ObjC selector: @- isEqualToMSF:@
 isEqualToMSF :: (IsDRMSF drmsf, IsDRMSF otherDRMSF) => drmsf -> otherDRMSF -> IO Bool
-isEqualToMSF drmsf  otherDRMSF =
-  withObjCPtr otherDRMSF $ \raw_otherDRMSF ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg drmsf (mkSelector "isEqualToMSF:") retCULong [argPtr (castPtr raw_otherDRMSF :: Ptr ())]
+isEqualToMSF drmsf otherDRMSF =
+  sendMessage drmsf isEqualToMSFSelector (toDRMSF otherDRMSF)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @msf@
-msfSelector :: Selector
+msfSelector :: Selector '[] (Id DRMSF)
 msfSelector = mkSelector "msf"
 
 -- | @Selector@ for @msfWithFrames:@
-msfWithFramesSelector :: Selector
+msfWithFramesSelector :: Selector '[CUInt] (Id DRMSF)
 msfWithFramesSelector = mkSelector "msfWithFrames:"
 
 -- | @Selector@ for @msfWithString:@
-msfWithStringSelector :: Selector
+msfWithStringSelector :: Selector '[Id NSString] (Id DRMSF)
 msfWithStringSelector = mkSelector "msfWithString:"
 
 -- | @Selector@ for @initWithFrames:@
-initWithFramesSelector :: Selector
+initWithFramesSelector :: Selector '[CUInt] RawId
 initWithFramesSelector = mkSelector "initWithFrames:"
 
 -- | @Selector@ for @initWithString:@
-initWithStringSelector :: Selector
+initWithStringSelector :: Selector '[Id NSString] RawId
 initWithStringSelector = mkSelector "initWithString:"
 
 -- | @Selector@ for @minutes@
-minutesSelector :: Selector
+minutesSelector :: Selector '[] CUInt
 minutesSelector = mkSelector "minutes"
 
 -- | @Selector@ for @seconds@
-secondsSelector :: Selector
+secondsSelector :: Selector '[] CUInt
 secondsSelector = mkSelector "seconds"
 
 -- | @Selector@ for @frames@
-framesSelector :: Selector
+framesSelector :: Selector '[] CUInt
 framesSelector = mkSelector "frames"
 
 -- | @Selector@ for @sectors@
-sectorsSelector :: Selector
+sectorsSelector :: Selector '[] CUInt
 sectorsSelector = mkSelector "sectors"
 
 -- | @Selector@ for @msfByAdding:@
-msfByAddingSelector :: Selector
+msfByAddingSelector :: Selector '[Id DRMSF] (Id DRMSF)
 msfByAddingSelector = mkSelector "msfByAdding:"
 
 -- | @Selector@ for @msfBySubtracting:@
-msfBySubtractingSelector :: Selector
+msfBySubtractingSelector :: Selector '[Id DRMSF] (Id DRMSF)
 msfBySubtractingSelector = mkSelector "msfBySubtracting:"
 
 -- | @Selector@ for @description@
-descriptionSelector :: Selector
+descriptionSelector :: Selector '[] (Id NSString)
 descriptionSelector = mkSelector "description"
 
 -- | @Selector@ for @descriptionWithFormat:@
-descriptionWithFormatSelector :: Selector
+descriptionWithFormatSelector :: Selector '[Id NSString] (Id NSString)
 descriptionWithFormatSelector = mkSelector "descriptionWithFormat:"
 
 -- | @Selector@ for @isEqualToMSF:@
-isEqualToMSFSelector :: Selector
+isEqualToMSFSelector :: Selector '[Id DRMSF] Bool
 isEqualToMSFSelector = mkSelector "isEqualToMSF:"
 

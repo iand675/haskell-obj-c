@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.CryptoTokenKit.TKTLVRecord
   , tag
   , value
   , data_
+  , dataSelector
+  , initSelector
   , recordFromDataSelector
   , sequenceOfRecordsFromDataSelector
-  , initSelector
   , tagSelector
   , valueSelector
-  , dataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,7 @@ recordFromData :: IsNSData data_ => data_ -> IO (Id TKTLVRecord)
 recordFromData data_ =
   do
     cls' <- getRequiredClass "TKTLVRecord"
-    withObjCPtr data_ $ \raw_data_ ->
-      sendClassMsg cls' (mkSelector "recordFromData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' recordFromDataSelector (toNSData data_)
 
 -- | Parses sequence of TLV records from data block. The amount of records is determined by the length of input data block.
 --
@@ -64,60 +60,59 @@ sequenceOfRecordsFromData :: IsNSData data_ => data_ -> IO (Id NSArray)
 sequenceOfRecordsFromData data_ =
   do
     cls' <- getRequiredClass "TKTLVRecord"
-    withObjCPtr data_ $ \raw_data_ ->
-      sendClassMsg cls' (mkSelector "sequenceOfRecordsFromData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sequenceOfRecordsFromDataSelector (toNSData data_)
 
 -- | @- init@
 init_ :: IsTKTLVRecord tktlvRecord => tktlvRecord -> IO (Id TKTLVRecord)
-init_ tktlvRecord  =
-    sendMsg tktlvRecord (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tktlvRecord =
+  sendOwnedMessage tktlvRecord initSelector
 
 -- | Tag value of the record.
 --
 -- ObjC selector: @- tag@
 tag :: IsTKTLVRecord tktlvRecord => tktlvRecord -> IO CULong
-tag tktlvRecord  =
-    sendMsg tktlvRecord (mkSelector "tag") retCULong []
+tag tktlvRecord =
+  sendMessage tktlvRecord tagSelector
 
 -- | Value field of the record.
 --
 -- ObjC selector: @- value@
 value :: IsTKTLVRecord tktlvRecord => tktlvRecord -> IO (Id NSData)
-value tktlvRecord  =
-    sendMsg tktlvRecord (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value tktlvRecord =
+  sendMessage tktlvRecord valueSelector
 
 -- | Data object containing whole encoded record, including tag, length and value.
 --
 -- ObjC selector: @- data@
 data_ :: IsTKTLVRecord tktlvRecord => tktlvRecord -> IO (Id NSData)
-data_ tktlvRecord  =
-    sendMsg tktlvRecord (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ tktlvRecord =
+  sendMessage tktlvRecord dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @recordFromData:@
-recordFromDataSelector :: Selector
+recordFromDataSelector :: Selector '[Id NSData] (Id TKTLVRecord)
 recordFromDataSelector = mkSelector "recordFromData:"
 
 -- | @Selector@ for @sequenceOfRecordsFromData:@
-sequenceOfRecordsFromDataSelector :: Selector
+sequenceOfRecordsFromDataSelector :: Selector '[Id NSData] (Id NSArray)
 sequenceOfRecordsFromDataSelector = mkSelector "sequenceOfRecordsFromData:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKTLVRecord)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @tag@
-tagSelector :: Selector
+tagSelector :: Selector '[] CULong
 tagSelector = mkSelector "tag"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSData)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 

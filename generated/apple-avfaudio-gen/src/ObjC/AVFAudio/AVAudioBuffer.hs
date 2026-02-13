@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.AVFAudio.AVAudioBuffer
   , format
   , audioBufferList
   , mutableAudioBufferList
-  , formatSelector
   , audioBufferListSelector
+  , formatSelector
   , mutableAudioBufferListSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- format@
 format :: IsAVAudioBuffer avAudioBuffer => avAudioBuffer -> IO (Id AVAudioFormat)
-format avAudioBuffer  =
-    sendMsg avAudioBuffer (mkSelector "format") (retPtr retVoid) [] >>= retainedObject . castPtr
+format avAudioBuffer =
+  sendMessage avAudioBuffer formatSelector
 
 -- | audioBufferList
 --
@@ -56,8 +53,8 @@ format avAudioBuffer  =
 --
 -- ObjC selector: @- audioBufferList@
 audioBufferList :: IsAVAudioBuffer avAudioBuffer => avAudioBuffer -> IO (Const RawId)
-audioBufferList avAudioBuffer  =
-    fmap Const $ fmap (RawId . castPtr) $ sendMsg avAudioBuffer (mkSelector "audioBufferList") (retPtr retVoid) []
+audioBufferList avAudioBuffer =
+  sendMessage avAudioBuffer audioBufferListSelector
 
 -- | mutableAudioBufferList
 --
@@ -69,22 +66,22 @@ audioBufferList avAudioBuffer  =
 --
 -- ObjC selector: @- mutableAudioBufferList@
 mutableAudioBufferList :: IsAVAudioBuffer avAudioBuffer => avAudioBuffer -> IO RawId
-mutableAudioBufferList avAudioBuffer  =
-    fmap (RawId . castPtr) $ sendMsg avAudioBuffer (mkSelector "mutableAudioBufferList") (retPtr retVoid) []
+mutableAudioBufferList avAudioBuffer =
+  sendMessage avAudioBuffer mutableAudioBufferListSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] (Id AVAudioFormat)
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @audioBufferList@
-audioBufferListSelector :: Selector
+audioBufferListSelector :: Selector '[] (Const RawId)
 audioBufferListSelector = mkSelector "audioBufferList"
 
 -- | @Selector@ for @mutableAudioBufferList@
-mutableAudioBufferListSelector :: Selector
+mutableAudioBufferListSelector :: Selector '[] RawId
 mutableAudioBufferListSelector = mkSelector "mutableAudioBufferList"
 

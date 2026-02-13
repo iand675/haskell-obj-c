@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,14 +18,14 @@ module ObjC.LocalAuthentication.LARight
   , state
   , tag
   , setTag
-  , initSelector
-  , initWithRequirementSelector
   , authorizeWithLocalizedReason_completionSelector
   , checkCanAuthorizeWithCompletionSelector
   , deauthorizeWithCompletionSelector
+  , initSelector
+  , initWithRequirementSelector
+  , setTagSelector
   , stateSelector
   , tagSelector
-  , setTagSelector
 
   -- * Enum types
   , LARightState(LARightState)
@@ -35,15 +36,11 @@ module ObjC.LocalAuthentication.LARight
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsLARight laRight => laRight -> IO (Id LARight)
-init_ laRight  =
-    sendMsg laRight (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laRight =
+  sendOwnedMessage laRight initSelector
 
 -- | Constructs a right that will be granted only when the given @LAAuthenticationRequirement@ is statisfied.
 --
@@ -70,9 +67,8 @@ init_ laRight  =
 --
 -- ObjC selector: @- initWithRequirement:@
 initWithRequirement :: (IsLARight laRight, IsLAAuthenticationRequirement requirement) => laRight -> requirement -> IO (Id LARight)
-initWithRequirement laRight  requirement =
-  withObjCPtr requirement $ \raw_requirement ->
-      sendMsg laRight (mkSelector "initWithRequirement:") (retPtr retVoid) [argPtr (castPtr raw_requirement :: Ptr ())] >>= ownedObject . castPtr
+initWithRequirement laRight requirement =
+  sendOwnedMessage laRight initWithRequirementSelector (toLAAuthenticationRequirement requirement)
 
 -- | Tries to authorize the right.
 --
@@ -82,9 +78,8 @@ initWithRequirement laRight  requirement =
 --
 -- ObjC selector: @- authorizeWithLocalizedReason:completion:@
 authorizeWithLocalizedReason_completion :: (IsLARight laRight, IsNSString localizedReason) => laRight -> localizedReason -> Ptr () -> IO ()
-authorizeWithLocalizedReason_completion laRight  localizedReason handler =
-  withObjCPtr localizedReason $ \raw_localizedReason ->
-      sendMsg laRight (mkSelector "authorizeWithLocalizedReason:completion:") retVoid [argPtr (castPtr raw_localizedReason :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+authorizeWithLocalizedReason_completion laRight localizedReason handler =
+  sendMessage laRight authorizeWithLocalizedReason_completionSelector (toNSString localizedReason) handler
 
 -- | Checks whether the client can eventually be granted the right.
 --
@@ -92,8 +87,8 @@ authorizeWithLocalizedReason_completion laRight  localizedReason handler =
 --
 -- ObjC selector: @- checkCanAuthorizeWithCompletion:@
 checkCanAuthorizeWithCompletion :: IsLARight laRight => laRight -> Ptr () -> IO ()
-checkCanAuthorizeWithCompletion laRight  handler =
-    sendMsg laRight (mkSelector "checkCanAuthorizeWithCompletion:") retVoid [argPtr (castPtr handler :: Ptr ())]
+checkCanAuthorizeWithCompletion laRight handler =
+  sendMessage laRight checkCanAuthorizeWithCompletionSelector handler
 
 -- | Invalidates a previously authorized right.
 --
@@ -101,63 +96,63 @@ checkCanAuthorizeWithCompletion laRight  handler =
 --
 -- ObjC selector: @- deauthorizeWithCompletion:@
 deauthorizeWithCompletion :: IsLARight laRight => laRight -> Ptr () -> IO ()
-deauthorizeWithCompletion laRight  handler =
-    sendMsg laRight (mkSelector "deauthorizeWithCompletion:") retVoid [argPtr (castPtr handler :: Ptr ())]
+deauthorizeWithCompletion laRight handler =
+  sendMessage laRight deauthorizeWithCompletionSelector handler
 
 -- | Provides the current authorization state of the @LARight@ instance
 --
 -- ObjC selector: @- state@
 state :: IsLARight laRight => laRight -> IO LARightState
-state laRight  =
-    fmap (coerce :: CLong -> LARightState) $ sendMsg laRight (mkSelector "state") retCLong []
+state laRight =
+  sendMessage laRight stateSelector
 
 -- | An application-supplied integer that can be used to identify right intances. The default value is @0.@
 --
 -- ObjC selector: @- tag@
 tag :: IsLARight laRight => laRight -> IO CLong
-tag laRight  =
-    sendMsg laRight (mkSelector "tag") retCLong []
+tag laRight =
+  sendMessage laRight tagSelector
 
 -- | An application-supplied integer that can be used to identify right intances. The default value is @0.@
 --
 -- ObjC selector: @- setTag:@
 setTag :: IsLARight laRight => laRight -> CLong -> IO ()
-setTag laRight  value =
-    sendMsg laRight (mkSelector "setTag:") retVoid [argCLong value]
+setTag laRight value =
+  sendMessage laRight setTagSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LARight)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRequirement:@
-initWithRequirementSelector :: Selector
+initWithRequirementSelector :: Selector '[Id LAAuthenticationRequirement] (Id LARight)
 initWithRequirementSelector = mkSelector "initWithRequirement:"
 
 -- | @Selector@ for @authorizeWithLocalizedReason:completion:@
-authorizeWithLocalizedReason_completionSelector :: Selector
+authorizeWithLocalizedReason_completionSelector :: Selector '[Id NSString, Ptr ()] ()
 authorizeWithLocalizedReason_completionSelector = mkSelector "authorizeWithLocalizedReason:completion:"
 
 -- | @Selector@ for @checkCanAuthorizeWithCompletion:@
-checkCanAuthorizeWithCompletionSelector :: Selector
+checkCanAuthorizeWithCompletionSelector :: Selector '[Ptr ()] ()
 checkCanAuthorizeWithCompletionSelector = mkSelector "checkCanAuthorizeWithCompletion:"
 
 -- | @Selector@ for @deauthorizeWithCompletion:@
-deauthorizeWithCompletionSelector :: Selector
+deauthorizeWithCompletionSelector :: Selector '[Ptr ()] ()
 deauthorizeWithCompletionSelector = mkSelector "deauthorizeWithCompletion:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] LARightState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @tag@
-tagSelector :: Selector
+tagSelector :: Selector '[] CLong
 tagSelector = mkSelector "tag"
 
 -- | @Selector@ for @setTag:@
-setTagSelector :: Selector
+setTagSelector :: Selector '[CLong] ()
 setTagSelector = mkSelector "setTag:"
 

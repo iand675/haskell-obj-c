@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.MLCompute.MLCYOLOLossLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,7 @@ layerWithDescriptor :: IsMLCYOLOLossDescriptor lossDescriptor => lossDescriptor 
 layerWithDescriptor lossDescriptor =
   do
     cls' <- getRequiredClass "MLCYOLOLossLayer"
-    withObjCPtr lossDescriptor $ \raw_lossDescriptor ->
-      sendClassMsg cls' (mkSelector "layerWithDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_lossDescriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptorSelector (toMLCYOLOLossDescriptor lossDescriptor)
 
 -- | yoloLossDescriptor
 --
@@ -53,18 +49,18 @@ layerWithDescriptor lossDescriptor =
 --
 -- ObjC selector: @- yoloLossDescriptor@
 yoloLossDescriptor :: IsMLCYOLOLossLayer mlcyoloLossLayer => mlcyoloLossLayer -> IO (Id MLCYOLOLossDescriptor)
-yoloLossDescriptor mlcyoloLossLayer  =
-    sendMsg mlcyoloLossLayer (mkSelector "yoloLossDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+yoloLossDescriptor mlcyoloLossLayer =
+  sendMessage mlcyoloLossLayer yoloLossDescriptorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDescriptor:@
-layerWithDescriptorSelector :: Selector
+layerWithDescriptorSelector :: Selector '[Id MLCYOLOLossDescriptor] (Id MLCYOLOLossLayer)
 layerWithDescriptorSelector = mkSelector "layerWithDescriptor:"
 
 -- | @Selector@ for @yoloLossDescriptor@
-yoloLossDescriptorSelector :: Selector
+yoloLossDescriptorSelector :: Selector '[] (Id MLCYOLOLossDescriptor)
 yoloLossDescriptorSelector = mkSelector "yoloLossDescriptor"
 

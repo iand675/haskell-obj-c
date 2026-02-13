@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRElectricalEnergyMeasurementClusterCumulativeEnergyResetStr
   , setImportedResetSystime
   , exportedResetSystime
   , setExportedResetSystime
-  , importedResetTimestampSelector
-  , setImportedResetTimestampSelector
-  , exportedResetTimestampSelector
-  , setExportedResetTimestampSelector
-  , importedResetSystimeSelector
-  , setImportedResetSystimeSelector
   , exportedResetSystimeSelector
+  , exportedResetTimestampSelector
+  , importedResetSystimeSelector
+  , importedResetTimestampSelector
   , setExportedResetSystimeSelector
+  , setExportedResetTimestampSelector
+  , setImportedResetSystimeSelector
+  , setImportedResetTimestampSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- importedResetTimestamp@
 importedResetTimestamp :: IsMTRElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct => mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct -> IO (Id NSNumber)
-importedResetTimestamp mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct (mkSelector "importedResetTimestamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+importedResetTimestamp mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct importedResetTimestampSelector
 
 -- | @- setImportedResetTimestamp:@
 setImportedResetTimestamp :: (IsMTRElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct -> value -> IO ()
-setImportedResetTimestamp mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct (mkSelector "setImportedResetTimestamp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImportedResetTimestamp mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct setImportedResetTimestampSelector (toNSNumber value)
 
 -- | @- exportedResetTimestamp@
 exportedResetTimestamp :: IsMTRElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct => mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct -> IO (Id NSNumber)
-exportedResetTimestamp mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct (mkSelector "exportedResetTimestamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+exportedResetTimestamp mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct exportedResetTimestampSelector
 
 -- | @- setExportedResetTimestamp:@
 setExportedResetTimestamp :: (IsMTRElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct -> value -> IO ()
-setExportedResetTimestamp mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct (mkSelector "setExportedResetTimestamp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExportedResetTimestamp mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct setExportedResetTimestampSelector (toNSNumber value)
 
 -- | @- importedResetSystime@
 importedResetSystime :: IsMTRElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct => mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct -> IO (Id NSNumber)
-importedResetSystime mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct (mkSelector "importedResetSystime") (retPtr retVoid) [] >>= retainedObject . castPtr
+importedResetSystime mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct importedResetSystimeSelector
 
 -- | @- setImportedResetSystime:@
 setImportedResetSystime :: (IsMTRElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct -> value -> IO ()
-setImportedResetSystime mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct (mkSelector "setImportedResetSystime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImportedResetSystime mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct setImportedResetSystimeSelector (toNSNumber value)
 
 -- | @- exportedResetSystime@
 exportedResetSystime :: IsMTRElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct => mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct -> IO (Id NSNumber)
-exportedResetSystime mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct  =
-    sendMsg mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct (mkSelector "exportedResetSystime") (retPtr retVoid) [] >>= retainedObject . castPtr
+exportedResetSystime mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct =
+  sendMessage mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct exportedResetSystimeSelector
 
 -- | @- setExportedResetSystime:@
 setExportedResetSystime :: (IsMTRElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct, IsNSNumber value) => mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct -> value -> IO ()
-setExportedResetSystime mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct (mkSelector "setExportedResetSystime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExportedResetSystime mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct value =
+  sendMessage mtrElectricalEnergyMeasurementClusterCumulativeEnergyResetStruct setExportedResetSystimeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @importedResetTimestamp@
-importedResetTimestampSelector :: Selector
+importedResetTimestampSelector :: Selector '[] (Id NSNumber)
 importedResetTimestampSelector = mkSelector "importedResetTimestamp"
 
 -- | @Selector@ for @setImportedResetTimestamp:@
-setImportedResetTimestampSelector :: Selector
+setImportedResetTimestampSelector :: Selector '[Id NSNumber] ()
 setImportedResetTimestampSelector = mkSelector "setImportedResetTimestamp:"
 
 -- | @Selector@ for @exportedResetTimestamp@
-exportedResetTimestampSelector :: Selector
+exportedResetTimestampSelector :: Selector '[] (Id NSNumber)
 exportedResetTimestampSelector = mkSelector "exportedResetTimestamp"
 
 -- | @Selector@ for @setExportedResetTimestamp:@
-setExportedResetTimestampSelector :: Selector
+setExportedResetTimestampSelector :: Selector '[Id NSNumber] ()
 setExportedResetTimestampSelector = mkSelector "setExportedResetTimestamp:"
 
 -- | @Selector@ for @importedResetSystime@
-importedResetSystimeSelector :: Selector
+importedResetSystimeSelector :: Selector '[] (Id NSNumber)
 importedResetSystimeSelector = mkSelector "importedResetSystime"
 
 -- | @Selector@ for @setImportedResetSystime:@
-setImportedResetSystimeSelector :: Selector
+setImportedResetSystimeSelector :: Selector '[Id NSNumber] ()
 setImportedResetSystimeSelector = mkSelector "setImportedResetSystime:"
 
 -- | @Selector@ for @exportedResetSystime@
-exportedResetSystimeSelector :: Selector
+exportedResetSystimeSelector :: Selector '[] (Id NSNumber)
 exportedResetSystimeSelector = mkSelector "exportedResetSystime"
 
 -- | @Selector@ for @setExportedResetSystime:@
-setExportedResetSystimeSelector :: Selector
+setExportedResetSystimeSelector :: Selector '[Id NSNumber] ()
 setExportedResetSystimeSelector = mkSelector "setExportedResetSystime:"
 

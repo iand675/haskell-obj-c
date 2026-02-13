@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,23 +21,19 @@ module ObjC.EventKit.EKRecurrenceEnd
   , recurrenceEndWithOccurrenceCount
   , endDate
   , occurrenceCount
-  , recurrenceEndWithEndDateSelector
-  , recurrenceEndWithOccurrenceCountSelector
   , endDateSelector
   , occurrenceCountSelector
+  , recurrenceEndWithEndDateSelector
+  , recurrenceEndWithOccurrenceCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,7 @@ recurrenceEndWithEndDate :: IsNSDate endDate => endDate -> IO (Id EKRecurrenceEn
 recurrenceEndWithEndDate endDate =
   do
     cls' <- getRequiredClass "EKRecurrenceEnd"
-    withObjCPtr endDate $ \raw_endDate ->
-      sendClassMsg cls' (mkSelector "recurrenceEndWithEndDate:") (retPtr retVoid) [argPtr (castPtr raw_endDate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' recurrenceEndWithEndDateSelector (toNSDate endDate)
 
 -- | recurrenceEndWithOccurrenceCount:
 --
@@ -64,7 +60,7 @@ recurrenceEndWithOccurrenceCount :: CULong -> IO (Id EKRecurrenceEnd)
 recurrenceEndWithOccurrenceCount occurrenceCount =
   do
     cls' <- getRequiredClass "EKRecurrenceEnd"
-    sendClassMsg cls' (mkSelector "recurrenceEndWithOccurrenceCount:") (retPtr retVoid) [argCULong occurrenceCount] >>= retainedObject . castPtr
+    sendClassMessage cls' recurrenceEndWithOccurrenceCountSelector occurrenceCount
 
 -- | endDate
 --
@@ -72,8 +68,8 @@ recurrenceEndWithOccurrenceCount occurrenceCount =
 --
 -- ObjC selector: @- endDate@
 endDate :: IsEKRecurrenceEnd ekRecurrenceEnd => ekRecurrenceEnd -> IO (Id NSDate)
-endDate ekRecurrenceEnd  =
-    sendMsg ekRecurrenceEnd (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate ekRecurrenceEnd =
+  sendMessage ekRecurrenceEnd endDateSelector
 
 -- | occurrenceCount
 --
@@ -81,26 +77,26 @@ endDate ekRecurrenceEnd  =
 --
 -- ObjC selector: @- occurrenceCount@
 occurrenceCount :: IsEKRecurrenceEnd ekRecurrenceEnd => ekRecurrenceEnd -> IO CULong
-occurrenceCount ekRecurrenceEnd  =
-    sendMsg ekRecurrenceEnd (mkSelector "occurrenceCount") retCULong []
+occurrenceCount ekRecurrenceEnd =
+  sendMessage ekRecurrenceEnd occurrenceCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @recurrenceEndWithEndDate:@
-recurrenceEndWithEndDateSelector :: Selector
+recurrenceEndWithEndDateSelector :: Selector '[Id NSDate] (Id EKRecurrenceEnd)
 recurrenceEndWithEndDateSelector = mkSelector "recurrenceEndWithEndDate:"
 
 -- | @Selector@ for @recurrenceEndWithOccurrenceCount:@
-recurrenceEndWithOccurrenceCountSelector :: Selector
+recurrenceEndWithOccurrenceCountSelector :: Selector '[CULong] (Id EKRecurrenceEnd)
 recurrenceEndWithOccurrenceCountSelector = mkSelector "recurrenceEndWithOccurrenceCount:"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @occurrenceCount@
-occurrenceCountSelector :: Selector
+occurrenceCountSelector :: Selector '[] CULong
 occurrenceCountSelector = mkSelector "occurrenceCount"
 

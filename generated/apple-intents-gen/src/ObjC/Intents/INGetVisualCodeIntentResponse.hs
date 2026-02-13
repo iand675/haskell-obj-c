@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,11 +13,11 @@ module ObjC.Intents.INGetVisualCodeIntentResponse
   , code
   , visualCodeImage
   , setVisualCodeImage
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
-  , visualCodeImageSelector
   , setVisualCodeImageSelector
+  , visualCodeImageSelector
 
   -- * Enum types
   , INGetVisualCodeIntentResponseCode(INGetVisualCodeIntentResponseCode)
@@ -31,15 +32,11 @@ module ObjC.Intents.INGetVisualCodeIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,52 +46,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINGetVisualCodeIntentResponse inGetVisualCodeIntentResponse => inGetVisualCodeIntentResponse -> IO RawId
-init_ inGetVisualCodeIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inGetVisualCodeIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inGetVisualCodeIntentResponse =
+  sendOwnedMessage inGetVisualCodeIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINGetVisualCodeIntentResponse inGetVisualCodeIntentResponse, IsNSUserActivity userActivity) => inGetVisualCodeIntentResponse -> INGetVisualCodeIntentResponseCode -> userActivity -> IO (Id INGetVisualCodeIntentResponse)
-initWithCode_userActivity inGetVisualCodeIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inGetVisualCodeIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inGetVisualCodeIntentResponse code userActivity =
+  sendOwnedMessage inGetVisualCodeIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINGetVisualCodeIntentResponse inGetVisualCodeIntentResponse => inGetVisualCodeIntentResponse -> IO INGetVisualCodeIntentResponseCode
-code inGetVisualCodeIntentResponse  =
-    fmap (coerce :: CLong -> INGetVisualCodeIntentResponseCode) $ sendMsg inGetVisualCodeIntentResponse (mkSelector "code") retCLong []
+code inGetVisualCodeIntentResponse =
+  sendMessage inGetVisualCodeIntentResponse codeSelector
 
 -- | @- visualCodeImage@
 visualCodeImage :: IsINGetVisualCodeIntentResponse inGetVisualCodeIntentResponse => inGetVisualCodeIntentResponse -> IO (Id INImage)
-visualCodeImage inGetVisualCodeIntentResponse  =
-    sendMsg inGetVisualCodeIntentResponse (mkSelector "visualCodeImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+visualCodeImage inGetVisualCodeIntentResponse =
+  sendMessage inGetVisualCodeIntentResponse visualCodeImageSelector
 
 -- | @- setVisualCodeImage:@
 setVisualCodeImage :: (IsINGetVisualCodeIntentResponse inGetVisualCodeIntentResponse, IsINImage value) => inGetVisualCodeIntentResponse -> value -> IO ()
-setVisualCodeImage inGetVisualCodeIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetVisualCodeIntentResponse (mkSelector "setVisualCodeImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVisualCodeImage inGetVisualCodeIntentResponse value =
+  sendMessage inGetVisualCodeIntentResponse setVisualCodeImageSelector (toINImage value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INGetVisualCodeIntentResponseCode, Id NSUserActivity] (Id INGetVisualCodeIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INGetVisualCodeIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @visualCodeImage@
-visualCodeImageSelector :: Selector
+visualCodeImageSelector :: Selector '[] (Id INImage)
 visualCodeImageSelector = mkSelector "visualCodeImage"
 
 -- | @Selector@ for @setVisualCodeImage:@
-setVisualCodeImageSelector :: Selector
+setVisualCodeImageSelector :: Selector '[Id INImage] ()
 setVisualCodeImageSelector = mkSelector "setVisualCodeImage:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,22 +18,18 @@ module ObjC.AudioVideoBridging.AVB17221AECPVendorMessage
   , protocolSpecificData
   , setProtocolSpecificData
   , protocolIDSelector
-  , setProtocolIDSelector
   , protocolSpecificDataSelector
+  , setProtocolIDSelector
   , setProtocolSpecificDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- protocolID@
 protocolID :: IsAVB17221AECPVendorMessage avB17221AECPVendorMessage => avB17221AECPVendorMessage -> IO CULong
-protocolID avB17221AECPVendorMessage  =
-    sendMsg avB17221AECPVendorMessage (mkSelector "protocolID") retCULong []
+protocolID avB17221AECPVendorMessage =
+  sendMessage avB17221AECPVendorMessage protocolIDSelector
 
 -- | protocolID
 --
@@ -54,8 +51,8 @@ protocolID avB17221AECPVendorMessage  =
 --
 -- ObjC selector: @- setProtocolID:@
 setProtocolID :: IsAVB17221AECPVendorMessage avB17221AECPVendorMessage => avB17221AECPVendorMessage -> CULong -> IO ()
-setProtocolID avB17221AECPVendorMessage  value =
-    sendMsg avB17221AECPVendorMessage (mkSelector "setProtocolID:") retVoid [argCULong value]
+setProtocolID avB17221AECPVendorMessage value =
+  sendMessage avB17221AECPVendorMessage setProtocolIDSelector value
 
 -- | protocolSpecificData
 --
@@ -63,8 +60,8 @@ setProtocolID avB17221AECPVendorMessage  value =
 --
 -- ObjC selector: @- protocolSpecificData@
 protocolSpecificData :: IsAVB17221AECPVendorMessage avB17221AECPVendorMessage => avB17221AECPVendorMessage -> IO (Id NSData)
-protocolSpecificData avB17221AECPVendorMessage  =
-    sendMsg avB17221AECPVendorMessage (mkSelector "protocolSpecificData") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocolSpecificData avB17221AECPVendorMessage =
+  sendMessage avB17221AECPVendorMessage protocolSpecificDataSelector
 
 -- | protocolSpecificData
 --
@@ -72,27 +69,26 @@ protocolSpecificData avB17221AECPVendorMessage  =
 --
 -- ObjC selector: @- setProtocolSpecificData:@
 setProtocolSpecificData :: (IsAVB17221AECPVendorMessage avB17221AECPVendorMessage, IsNSData value) => avB17221AECPVendorMessage -> value -> IO ()
-setProtocolSpecificData avB17221AECPVendorMessage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avB17221AECPVendorMessage (mkSelector "setProtocolSpecificData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProtocolSpecificData avB17221AECPVendorMessage value =
+  sendMessage avB17221AECPVendorMessage setProtocolSpecificDataSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @protocolID@
-protocolIDSelector :: Selector
+protocolIDSelector :: Selector '[] CULong
 protocolIDSelector = mkSelector "protocolID"
 
 -- | @Selector@ for @setProtocolID:@
-setProtocolIDSelector :: Selector
+setProtocolIDSelector :: Selector '[CULong] ()
 setProtocolIDSelector = mkSelector "setProtocolID:"
 
 -- | @Selector@ for @protocolSpecificData@
-protocolSpecificDataSelector :: Selector
+protocolSpecificDataSelector :: Selector '[] (Id NSData)
 protocolSpecificDataSelector = mkSelector "protocolSpecificData"
 
 -- | @Selector@ for @setProtocolSpecificData:@
-setProtocolSpecificDataSelector :: Selector
+setProtocolSpecificDataSelector :: Selector '[Id NSData] ()
 setProtocolSpecificDataSelector = mkSelector "setProtocolSpecificData:"
 

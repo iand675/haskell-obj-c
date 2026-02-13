@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTROperationalStateClusterOperationCompletionEvent
   , pausedTime
   , setPausedTime
   , completionErrorCodeSelector
-  , setCompletionErrorCodeSelector
-  , totalOperationalTimeSelector
-  , setTotalOperationalTimeSelector
   , pausedTimeSelector
+  , setCompletionErrorCodeSelector
   , setPausedTimeSelector
+  , setTotalOperationalTimeSelector
+  , totalOperationalTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- completionErrorCode@
 completionErrorCode :: IsMTROperationalStateClusterOperationCompletionEvent mtrOperationalStateClusterOperationCompletionEvent => mtrOperationalStateClusterOperationCompletionEvent -> IO (Id NSNumber)
-completionErrorCode mtrOperationalStateClusterOperationCompletionEvent  =
-    sendMsg mtrOperationalStateClusterOperationCompletionEvent (mkSelector "completionErrorCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+completionErrorCode mtrOperationalStateClusterOperationCompletionEvent =
+  sendMessage mtrOperationalStateClusterOperationCompletionEvent completionErrorCodeSelector
 
 -- | @- setCompletionErrorCode:@
 setCompletionErrorCode :: (IsMTROperationalStateClusterOperationCompletionEvent mtrOperationalStateClusterOperationCompletionEvent, IsNSNumber value) => mtrOperationalStateClusterOperationCompletionEvent -> value -> IO ()
-setCompletionErrorCode mtrOperationalStateClusterOperationCompletionEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalStateClusterOperationCompletionEvent (mkSelector "setCompletionErrorCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCompletionErrorCode mtrOperationalStateClusterOperationCompletionEvent value =
+  sendMessage mtrOperationalStateClusterOperationCompletionEvent setCompletionErrorCodeSelector (toNSNumber value)
 
 -- | @- totalOperationalTime@
 totalOperationalTime :: IsMTROperationalStateClusterOperationCompletionEvent mtrOperationalStateClusterOperationCompletionEvent => mtrOperationalStateClusterOperationCompletionEvent -> IO (Id NSNumber)
-totalOperationalTime mtrOperationalStateClusterOperationCompletionEvent  =
-    sendMsg mtrOperationalStateClusterOperationCompletionEvent (mkSelector "totalOperationalTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalOperationalTime mtrOperationalStateClusterOperationCompletionEvent =
+  sendMessage mtrOperationalStateClusterOperationCompletionEvent totalOperationalTimeSelector
 
 -- | @- setTotalOperationalTime:@
 setTotalOperationalTime :: (IsMTROperationalStateClusterOperationCompletionEvent mtrOperationalStateClusterOperationCompletionEvent, IsNSNumber value) => mtrOperationalStateClusterOperationCompletionEvent -> value -> IO ()
-setTotalOperationalTime mtrOperationalStateClusterOperationCompletionEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalStateClusterOperationCompletionEvent (mkSelector "setTotalOperationalTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTotalOperationalTime mtrOperationalStateClusterOperationCompletionEvent value =
+  sendMessage mtrOperationalStateClusterOperationCompletionEvent setTotalOperationalTimeSelector (toNSNumber value)
 
 -- | @- pausedTime@
 pausedTime :: IsMTROperationalStateClusterOperationCompletionEvent mtrOperationalStateClusterOperationCompletionEvent => mtrOperationalStateClusterOperationCompletionEvent -> IO (Id NSNumber)
-pausedTime mtrOperationalStateClusterOperationCompletionEvent  =
-    sendMsg mtrOperationalStateClusterOperationCompletionEvent (mkSelector "pausedTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+pausedTime mtrOperationalStateClusterOperationCompletionEvent =
+  sendMessage mtrOperationalStateClusterOperationCompletionEvent pausedTimeSelector
 
 -- | @- setPausedTime:@
 setPausedTime :: (IsMTROperationalStateClusterOperationCompletionEvent mtrOperationalStateClusterOperationCompletionEvent, IsNSNumber value) => mtrOperationalStateClusterOperationCompletionEvent -> value -> IO ()
-setPausedTime mtrOperationalStateClusterOperationCompletionEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalStateClusterOperationCompletionEvent (mkSelector "setPausedTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPausedTime mtrOperationalStateClusterOperationCompletionEvent value =
+  sendMessage mtrOperationalStateClusterOperationCompletionEvent setPausedTimeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @completionErrorCode@
-completionErrorCodeSelector :: Selector
+completionErrorCodeSelector :: Selector '[] (Id NSNumber)
 completionErrorCodeSelector = mkSelector "completionErrorCode"
 
 -- | @Selector@ for @setCompletionErrorCode:@
-setCompletionErrorCodeSelector :: Selector
+setCompletionErrorCodeSelector :: Selector '[Id NSNumber] ()
 setCompletionErrorCodeSelector = mkSelector "setCompletionErrorCode:"
 
 -- | @Selector@ for @totalOperationalTime@
-totalOperationalTimeSelector :: Selector
+totalOperationalTimeSelector :: Selector '[] (Id NSNumber)
 totalOperationalTimeSelector = mkSelector "totalOperationalTime"
 
 -- | @Selector@ for @setTotalOperationalTime:@
-setTotalOperationalTimeSelector :: Selector
+setTotalOperationalTimeSelector :: Selector '[Id NSNumber] ()
 setTotalOperationalTimeSelector = mkSelector "setTotalOperationalTime:"
 
 -- | @Selector@ for @pausedTime@
-pausedTimeSelector :: Selector
+pausedTimeSelector :: Selector '[] (Id NSNumber)
 pausedTimeSelector = mkSelector "pausedTime"
 
 -- | @Selector@ for @setPausedTime:@
-setPausedTimeSelector :: Selector
+setPausedTimeSelector :: Selector '[Id NSNumber] ()
 setPausedTimeSelector = mkSelector "setPausedTime:"
 

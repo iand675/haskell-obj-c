@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,11 +16,11 @@ module ObjC.Foundation.NSKeyValueSharedObservers
   , addSharedObserver_forKey_options_context
   , addObserver_forKeyPath_options_context
   , snapshot
-  , initWithObservableClassSelector
-  , initSelector
-  , newSelector
-  , addSharedObserver_forKey_options_contextSelector
   , addObserver_forKeyPath_options_contextSelector
+  , addSharedObserver_forKey_options_contextSelector
+  , initSelector
+  , initWithObservableClassSelector
+  , newSelector
   , snapshotSelector
 
   -- * Enum types
@@ -31,15 +32,11 @@ module ObjC.Foundation.NSKeyValueSharedObservers
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,20 +47,20 @@ import ObjC.Foundation.Internal.Enums
 --
 -- ObjC selector: @- initWithObservableClass:@
 initWithObservableClass :: IsNSKeyValueSharedObservers nsKeyValueSharedObservers => nsKeyValueSharedObservers -> Class -> IO RawId
-initWithObservableClass nsKeyValueSharedObservers  observableClass =
-    fmap (RawId . castPtr) $ sendMsg nsKeyValueSharedObservers (mkSelector "initWithObservableClass:") (retPtr retVoid) [argPtr (unClass observableClass)]
+initWithObservableClass nsKeyValueSharedObservers observableClass =
+  sendOwnedMessage nsKeyValueSharedObservers initWithObservableClassSelector observableClass
 
 -- | @- init@
 init_ :: IsNSKeyValueSharedObservers nsKeyValueSharedObservers => nsKeyValueSharedObservers -> IO RawId
-init_ nsKeyValueSharedObservers  =
-    fmap (RawId . castPtr) $ sendMsg nsKeyValueSharedObservers (mkSelector "init") (retPtr retVoid) []
+init_ nsKeyValueSharedObservers =
+  sendOwnedMessage nsKeyValueSharedObservers initSelector
 
 -- | @+ new@
 new :: IO RawId
 new  =
   do
     cls' <- getRequiredClass "NSKeyValueSharedObservers"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+    sendOwnedClassMessage cls' newSelector
 
 -- | Add a new observer to the collection.
 --
@@ -73,50 +70,46 @@ new  =
 --
 -- ObjC selector: @- addSharedObserver:forKey:options:context:@
 addSharedObserver_forKey_options_context :: (IsNSKeyValueSharedObservers nsKeyValueSharedObservers, IsNSObject observer, IsNSString key) => nsKeyValueSharedObservers -> observer -> key -> NSKeyValueObservingOptions -> Ptr () -> IO ()
-addSharedObserver_forKey_options_context nsKeyValueSharedObservers  observer key options context =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg nsKeyValueSharedObservers (mkSelector "addSharedObserver:forKey:options:context:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argCULong (coerce options), argPtr context]
+addSharedObserver_forKey_options_context nsKeyValueSharedObservers observer key options context =
+  sendMessage nsKeyValueSharedObservers addSharedObserver_forKey_options_contextSelector (toNSObject observer) (toNSString key) options context
 
 -- | @- addObserver:forKeyPath:options:context:@
 addObserver_forKeyPath_options_context :: (IsNSKeyValueSharedObservers nsKeyValueSharedObservers, IsNSObject observer, IsNSString keyPath) => nsKeyValueSharedObservers -> observer -> keyPath -> NSKeyValueObservingOptions -> Ptr () -> IO ()
-addObserver_forKeyPath_options_context nsKeyValueSharedObservers  observer keyPath options context =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr keyPath $ \raw_keyPath ->
-        sendMsg nsKeyValueSharedObservers (mkSelector "addObserver:forKeyPath:options:context:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ()), argCULong (coerce options), argPtr context]
+addObserver_forKeyPath_options_context nsKeyValueSharedObservers observer keyPath options context =
+  sendMessage nsKeyValueSharedObservers addObserver_forKeyPath_options_contextSelector (toNSObject observer) (toNSString keyPath) options context
 
 -- | A momentary snapshot of all observers added to the collection thus far, that can be assigned to an observable using ``-[NSObject setSharedObservers:]``
 --
 -- ObjC selector: @- snapshot@
 snapshot :: IsNSKeyValueSharedObservers nsKeyValueSharedObservers => nsKeyValueSharedObservers -> IO (Id NSKeyValueSharedObserversSnapshot)
-snapshot nsKeyValueSharedObservers  =
-    sendMsg nsKeyValueSharedObservers (mkSelector "snapshot") (retPtr retVoid) [] >>= retainedObject . castPtr
+snapshot nsKeyValueSharedObservers =
+  sendMessage nsKeyValueSharedObservers snapshotSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithObservableClass:@
-initWithObservableClassSelector :: Selector
+initWithObservableClassSelector :: Selector '[Class] RawId
 initWithObservableClassSelector = mkSelector "initWithObservableClass:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] RawId
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @addSharedObserver:forKey:options:context:@
-addSharedObserver_forKey_options_contextSelector :: Selector
+addSharedObserver_forKey_options_contextSelector :: Selector '[Id NSObject, Id NSString, NSKeyValueObservingOptions, Ptr ()] ()
 addSharedObserver_forKey_options_contextSelector = mkSelector "addSharedObserver:forKey:options:context:"
 
 -- | @Selector@ for @addObserver:forKeyPath:options:context:@
-addObserver_forKeyPath_options_contextSelector :: Selector
+addObserver_forKeyPath_options_contextSelector :: Selector '[Id NSObject, Id NSString, NSKeyValueObservingOptions, Ptr ()] ()
 addObserver_forKeyPath_options_contextSelector = mkSelector "addObserver:forKeyPath:options:context:"
 
 -- | @Selector@ for @snapshot@
-snapshotSelector :: Selector
+snapshotSelector :: Selector '[] (Id NSKeyValueSharedObserversSnapshot)
 snapshotSelector = mkSelector "snapshot"
 

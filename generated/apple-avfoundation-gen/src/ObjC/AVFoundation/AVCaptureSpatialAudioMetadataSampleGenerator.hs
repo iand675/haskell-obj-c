@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AVFoundation.AVCaptureSpatialAudioMetadataSampleGenerator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- analyzeAudioSample:@
 analyzeAudioSample :: IsAVCaptureSpatialAudioMetadataSampleGenerator avCaptureSpatialAudioMetadataSampleGenerator => avCaptureSpatialAudioMetadataSampleGenerator -> Ptr () -> IO CInt
-analyzeAudioSample avCaptureSpatialAudioMetadataSampleGenerator  sbuf =
-    sendMsg avCaptureSpatialAudioMetadataSampleGenerator (mkSelector "analyzeAudioSample:") retCInt [argPtr sbuf]
+analyzeAudioSample avCaptureSpatialAudioMetadataSampleGenerator sbuf =
+  sendMessage avCaptureSpatialAudioMetadataSampleGenerator analyzeAudioSampleSelector sbuf
 
 -- | Creates a sample buffer containing a spatial audio timed metadata sample computed from all analyzed audio buffers, and resets the analyzer to its initial state.
 --
@@ -56,8 +53,8 @@ analyzeAudioSample avCaptureSpatialAudioMetadataSampleGenerator  sbuf =
 --
 -- ObjC selector: @- newTimedMetadataSampleBufferAndResetAnalyzer@
 newTimedMetadataSampleBufferAndResetAnalyzer :: IsAVCaptureSpatialAudioMetadataSampleGenerator avCaptureSpatialAudioMetadataSampleGenerator => avCaptureSpatialAudioMetadataSampleGenerator -> IO (Ptr ())
-newTimedMetadataSampleBufferAndResetAnalyzer avCaptureSpatialAudioMetadataSampleGenerator  =
-    fmap castPtr $ sendMsg avCaptureSpatialAudioMetadataSampleGenerator (mkSelector "newTimedMetadataSampleBufferAndResetAnalyzer") (retPtr retVoid) []
+newTimedMetadataSampleBufferAndResetAnalyzer avCaptureSpatialAudioMetadataSampleGenerator =
+  sendOwnedMessage avCaptureSpatialAudioMetadataSampleGenerator newTimedMetadataSampleBufferAndResetAnalyzerSelector
 
 -- | Calling this method resets the analyzer to its initial state so that a new run of audio sample buffers can be analyzed.
 --
@@ -65,8 +62,8 @@ newTimedMetadataSampleBufferAndResetAnalyzer avCaptureSpatialAudioMetadataSample
 --
 -- ObjC selector: @- resetAnalyzer@
 resetAnalyzer :: IsAVCaptureSpatialAudioMetadataSampleGenerator avCaptureSpatialAudioMetadataSampleGenerator => avCaptureSpatialAudioMetadataSampleGenerator -> IO ()
-resetAnalyzer avCaptureSpatialAudioMetadataSampleGenerator  =
-    sendMsg avCaptureSpatialAudioMetadataSampleGenerator (mkSelector "resetAnalyzer") retVoid []
+resetAnalyzer avCaptureSpatialAudioMetadataSampleGenerator =
+  sendMessage avCaptureSpatialAudioMetadataSampleGenerator resetAnalyzerSelector
 
 -- | Returns the format description of the sample buffer returned from the ``newTimedMetadataSampleBufferAndResetAnalyzer`` method.
 --
@@ -74,26 +71,26 @@ resetAnalyzer avCaptureSpatialAudioMetadataSampleGenerator  =
 --
 -- ObjC selector: @- timedMetadataSampleBufferFormatDescription@
 timedMetadataSampleBufferFormatDescription :: IsAVCaptureSpatialAudioMetadataSampleGenerator avCaptureSpatialAudioMetadataSampleGenerator => avCaptureSpatialAudioMetadataSampleGenerator -> IO RawId
-timedMetadataSampleBufferFormatDescription avCaptureSpatialAudioMetadataSampleGenerator  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureSpatialAudioMetadataSampleGenerator (mkSelector "timedMetadataSampleBufferFormatDescription") (retPtr retVoid) []
+timedMetadataSampleBufferFormatDescription avCaptureSpatialAudioMetadataSampleGenerator =
+  sendMessage avCaptureSpatialAudioMetadataSampleGenerator timedMetadataSampleBufferFormatDescriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @analyzeAudioSample:@
-analyzeAudioSampleSelector :: Selector
+analyzeAudioSampleSelector :: Selector '[Ptr ()] CInt
 analyzeAudioSampleSelector = mkSelector "analyzeAudioSample:"
 
 -- | @Selector@ for @newTimedMetadataSampleBufferAndResetAnalyzer@
-newTimedMetadataSampleBufferAndResetAnalyzerSelector :: Selector
+newTimedMetadataSampleBufferAndResetAnalyzerSelector :: Selector '[] (Ptr ())
 newTimedMetadataSampleBufferAndResetAnalyzerSelector = mkSelector "newTimedMetadataSampleBufferAndResetAnalyzer"
 
 -- | @Selector@ for @resetAnalyzer@
-resetAnalyzerSelector :: Selector
+resetAnalyzerSelector :: Selector '[] ()
 resetAnalyzerSelector = mkSelector "resetAnalyzer"
 
 -- | @Selector@ for @timedMetadataSampleBufferFormatDescription@
-timedMetadataSampleBufferFormatDescriptionSelector :: Selector
+timedMetadataSampleBufferFormatDescriptionSelector :: Selector '[] RawId
 timedMetadataSampleBufferFormatDescriptionSelector = mkSelector "timedMetadataSampleBufferFormatDescription"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.AVFoundation.AVPlayerVideoOutput
   , new
   , initWithSpecification
   , initSelector
-  , newSelector
   , initWithSpecificationSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerVideoOutput avPlayerVideoOutput => avPlayerVideoOutput -> IO (Id AVPlayerVideoOutput)
-init_ avPlayerVideoOutput  =
-    sendMsg avPlayerVideoOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerVideoOutput =
+  sendOwnedMessage avPlayerVideoOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerVideoOutput)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerVideoOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithSpecification:
 --
@@ -61,23 +58,22 @@ new  =
 --
 -- ObjC selector: @- initWithSpecification:@
 initWithSpecification :: (IsAVPlayerVideoOutput avPlayerVideoOutput, IsAVVideoOutputSpecification specification) => avPlayerVideoOutput -> specification -> IO (Id AVPlayerVideoOutput)
-initWithSpecification avPlayerVideoOutput  specification =
-  withObjCPtr specification $ \raw_specification ->
-      sendMsg avPlayerVideoOutput (mkSelector "initWithSpecification:") (retPtr retVoid) [argPtr (castPtr raw_specification :: Ptr ())] >>= ownedObject . castPtr
+initWithSpecification avPlayerVideoOutput specification =
+  sendOwnedMessage avPlayerVideoOutput initWithSpecificationSelector (toAVVideoOutputSpecification specification)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerVideoOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerVideoOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithSpecification:@
-initWithSpecificationSelector :: Selector
+initWithSpecificationSelector :: Selector '[Id AVVideoOutputSpecification] (Id AVPlayerVideoOutput)
 initWithSpecificationSelector = mkSelector "initWithSpecification:"
 

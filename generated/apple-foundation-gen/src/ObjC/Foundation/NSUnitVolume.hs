@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,50 +38,46 @@ module ObjC.Foundation.NSUnitVolume
   , imperialQuarts
   , imperialGallons
   , metricCups
-  , megalitersSelector
-  , kilolitersSelector
-  , litersSelector
-  , decilitersSelector
-  , centilitersSelector
-  , millilitersSelector
-  , cubicKilometersSelector
-  , cubicMetersSelector
-  , cubicDecimetersSelector
-  , cubicCentimetersSelector
-  , cubicMillimetersSelector
-  , cubicInchesSelector
-  , cubicFeetSelector
-  , cubicYardsSelector
-  , cubicMilesSelector
   , acreFeetSelector
   , bushelsSelector
-  , teaspoonsSelector
-  , tablespoonsSelector
-  , fluidOuncesSelector
+  , centilitersSelector
+  , cubicCentimetersSelector
+  , cubicDecimetersSelector
+  , cubicFeetSelector
+  , cubicInchesSelector
+  , cubicKilometersSelector
+  , cubicMetersSelector
+  , cubicMilesSelector
+  , cubicMillimetersSelector
+  , cubicYardsSelector
   , cupsSelector
-  , pintsSelector
-  , quartsSelector
+  , decilitersSelector
+  , fluidOuncesSelector
   , gallonsSelector
-  , imperialTeaspoonsSelector
-  , imperialTablespoonsSelector
   , imperialFluidOuncesSelector
+  , imperialGallonsSelector
   , imperialPintsSelector
   , imperialQuartsSelector
-  , imperialGallonsSelector
+  , imperialTablespoonsSelector
+  , imperialTeaspoonsSelector
+  , kilolitersSelector
+  , litersSelector
+  , megalitersSelector
   , metricCupsSelector
+  , millilitersSelector
+  , pintsSelector
+  , quartsSelector
+  , tablespoonsSelector
+  , teaspoonsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -91,343 +88,343 @@ megaliters :: IO (Id NSUnitVolume)
 megaliters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "megaliters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' megalitersSelector
 
 -- | @+ kiloliters@
 kiloliters :: IO (Id NSUnitVolume)
 kiloliters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "kiloliters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilolitersSelector
 
 -- | @+ liters@
 liters :: IO (Id NSUnitVolume)
 liters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "liters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' litersSelector
 
 -- | @+ deciliters@
 deciliters :: IO (Id NSUnitVolume)
 deciliters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "deciliters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' decilitersSelector
 
 -- | @+ centiliters@
 centiliters :: IO (Id NSUnitVolume)
 centiliters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "centiliters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' centilitersSelector
 
 -- | @+ milliliters@
 milliliters :: IO (Id NSUnitVolume)
 milliliters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "milliliters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' millilitersSelector
 
 -- | @+ cubicKilometers@
 cubicKilometers :: IO (Id NSUnitVolume)
 cubicKilometers  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cubicKilometers") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cubicKilometersSelector
 
 -- | @+ cubicMeters@
 cubicMeters :: IO (Id NSUnitVolume)
 cubicMeters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cubicMeters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cubicMetersSelector
 
 -- | @+ cubicDecimeters@
 cubicDecimeters :: IO (Id NSUnitVolume)
 cubicDecimeters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cubicDecimeters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cubicDecimetersSelector
 
 -- | @+ cubicCentimeters@
 cubicCentimeters :: IO (Id NSUnitVolume)
 cubicCentimeters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cubicCentimeters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cubicCentimetersSelector
 
 -- | @+ cubicMillimeters@
 cubicMillimeters :: IO (Id NSUnitVolume)
 cubicMillimeters  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cubicMillimeters") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cubicMillimetersSelector
 
 -- | @+ cubicInches@
 cubicInches :: IO (Id NSUnitVolume)
 cubicInches  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cubicInches") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cubicInchesSelector
 
 -- | @+ cubicFeet@
 cubicFeet :: IO (Id NSUnitVolume)
 cubicFeet  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cubicFeet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cubicFeetSelector
 
 -- | @+ cubicYards@
 cubicYards :: IO (Id NSUnitVolume)
 cubicYards  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cubicYards") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cubicYardsSelector
 
 -- | @+ cubicMiles@
 cubicMiles :: IO (Id NSUnitVolume)
 cubicMiles  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cubicMiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cubicMilesSelector
 
 -- | @+ acreFeet@
 acreFeet :: IO (Id NSUnitVolume)
 acreFeet  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "acreFeet") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' acreFeetSelector
 
 -- | @+ bushels@
 bushels :: IO (Id NSUnitVolume)
 bushels  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "bushels") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' bushelsSelector
 
 -- | @+ teaspoons@
 teaspoons :: IO (Id NSUnitVolume)
 teaspoons  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "teaspoons") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' teaspoonsSelector
 
 -- | @+ tablespoons@
 tablespoons :: IO (Id NSUnitVolume)
 tablespoons  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "tablespoons") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' tablespoonsSelector
 
 -- | @+ fluidOunces@
 fluidOunces :: IO (Id NSUnitVolume)
 fluidOunces  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "fluidOunces") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fluidOuncesSelector
 
 -- | @+ cups@
 cups :: IO (Id NSUnitVolume)
 cups  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "cups") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' cupsSelector
 
 -- | @+ pints@
 pints :: IO (Id NSUnitVolume)
 pints  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "pints") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pintsSelector
 
 -- | @+ quarts@
 quarts :: IO (Id NSUnitVolume)
 quarts  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "quarts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' quartsSelector
 
 -- | @+ gallons@
 gallons :: IO (Id NSUnitVolume)
 gallons  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "gallons") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gallonsSelector
 
 -- | @+ imperialTeaspoons@
 imperialTeaspoons :: IO (Id NSUnitVolume)
 imperialTeaspoons  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "imperialTeaspoons") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imperialTeaspoonsSelector
 
 -- | @+ imperialTablespoons@
 imperialTablespoons :: IO (Id NSUnitVolume)
 imperialTablespoons  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "imperialTablespoons") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imperialTablespoonsSelector
 
 -- | @+ imperialFluidOunces@
 imperialFluidOunces :: IO (Id NSUnitVolume)
 imperialFluidOunces  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "imperialFluidOunces") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imperialFluidOuncesSelector
 
 -- | @+ imperialPints@
 imperialPints :: IO (Id NSUnitVolume)
 imperialPints  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "imperialPints") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imperialPintsSelector
 
 -- | @+ imperialQuarts@
 imperialQuarts :: IO (Id NSUnitVolume)
 imperialQuarts  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "imperialQuarts") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imperialQuartsSelector
 
 -- | @+ imperialGallons@
 imperialGallons :: IO (Id NSUnitVolume)
 imperialGallons  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "imperialGallons") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' imperialGallonsSelector
 
 -- | @+ metricCups@
 metricCups :: IO (Id NSUnitVolume)
 metricCups  =
   do
     cls' <- getRequiredClass "NSUnitVolume"
-    sendClassMsg cls' (mkSelector "metricCups") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' metricCupsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @megaliters@
-megalitersSelector :: Selector
+megalitersSelector :: Selector '[] (Id NSUnitVolume)
 megalitersSelector = mkSelector "megaliters"
 
 -- | @Selector@ for @kiloliters@
-kilolitersSelector :: Selector
+kilolitersSelector :: Selector '[] (Id NSUnitVolume)
 kilolitersSelector = mkSelector "kiloliters"
 
 -- | @Selector@ for @liters@
-litersSelector :: Selector
+litersSelector :: Selector '[] (Id NSUnitVolume)
 litersSelector = mkSelector "liters"
 
 -- | @Selector@ for @deciliters@
-decilitersSelector :: Selector
+decilitersSelector :: Selector '[] (Id NSUnitVolume)
 decilitersSelector = mkSelector "deciliters"
 
 -- | @Selector@ for @centiliters@
-centilitersSelector :: Selector
+centilitersSelector :: Selector '[] (Id NSUnitVolume)
 centilitersSelector = mkSelector "centiliters"
 
 -- | @Selector@ for @milliliters@
-millilitersSelector :: Selector
+millilitersSelector :: Selector '[] (Id NSUnitVolume)
 millilitersSelector = mkSelector "milliliters"
 
 -- | @Selector@ for @cubicKilometers@
-cubicKilometersSelector :: Selector
+cubicKilometersSelector :: Selector '[] (Id NSUnitVolume)
 cubicKilometersSelector = mkSelector "cubicKilometers"
 
 -- | @Selector@ for @cubicMeters@
-cubicMetersSelector :: Selector
+cubicMetersSelector :: Selector '[] (Id NSUnitVolume)
 cubicMetersSelector = mkSelector "cubicMeters"
 
 -- | @Selector@ for @cubicDecimeters@
-cubicDecimetersSelector :: Selector
+cubicDecimetersSelector :: Selector '[] (Id NSUnitVolume)
 cubicDecimetersSelector = mkSelector "cubicDecimeters"
 
 -- | @Selector@ for @cubicCentimeters@
-cubicCentimetersSelector :: Selector
+cubicCentimetersSelector :: Selector '[] (Id NSUnitVolume)
 cubicCentimetersSelector = mkSelector "cubicCentimeters"
 
 -- | @Selector@ for @cubicMillimeters@
-cubicMillimetersSelector :: Selector
+cubicMillimetersSelector :: Selector '[] (Id NSUnitVolume)
 cubicMillimetersSelector = mkSelector "cubicMillimeters"
 
 -- | @Selector@ for @cubicInches@
-cubicInchesSelector :: Selector
+cubicInchesSelector :: Selector '[] (Id NSUnitVolume)
 cubicInchesSelector = mkSelector "cubicInches"
 
 -- | @Selector@ for @cubicFeet@
-cubicFeetSelector :: Selector
+cubicFeetSelector :: Selector '[] (Id NSUnitVolume)
 cubicFeetSelector = mkSelector "cubicFeet"
 
 -- | @Selector@ for @cubicYards@
-cubicYardsSelector :: Selector
+cubicYardsSelector :: Selector '[] (Id NSUnitVolume)
 cubicYardsSelector = mkSelector "cubicYards"
 
 -- | @Selector@ for @cubicMiles@
-cubicMilesSelector :: Selector
+cubicMilesSelector :: Selector '[] (Id NSUnitVolume)
 cubicMilesSelector = mkSelector "cubicMiles"
 
 -- | @Selector@ for @acreFeet@
-acreFeetSelector :: Selector
+acreFeetSelector :: Selector '[] (Id NSUnitVolume)
 acreFeetSelector = mkSelector "acreFeet"
 
 -- | @Selector@ for @bushels@
-bushelsSelector :: Selector
+bushelsSelector :: Selector '[] (Id NSUnitVolume)
 bushelsSelector = mkSelector "bushels"
 
 -- | @Selector@ for @teaspoons@
-teaspoonsSelector :: Selector
+teaspoonsSelector :: Selector '[] (Id NSUnitVolume)
 teaspoonsSelector = mkSelector "teaspoons"
 
 -- | @Selector@ for @tablespoons@
-tablespoonsSelector :: Selector
+tablespoonsSelector :: Selector '[] (Id NSUnitVolume)
 tablespoonsSelector = mkSelector "tablespoons"
 
 -- | @Selector@ for @fluidOunces@
-fluidOuncesSelector :: Selector
+fluidOuncesSelector :: Selector '[] (Id NSUnitVolume)
 fluidOuncesSelector = mkSelector "fluidOunces"
 
 -- | @Selector@ for @cups@
-cupsSelector :: Selector
+cupsSelector :: Selector '[] (Id NSUnitVolume)
 cupsSelector = mkSelector "cups"
 
 -- | @Selector@ for @pints@
-pintsSelector :: Selector
+pintsSelector :: Selector '[] (Id NSUnitVolume)
 pintsSelector = mkSelector "pints"
 
 -- | @Selector@ for @quarts@
-quartsSelector :: Selector
+quartsSelector :: Selector '[] (Id NSUnitVolume)
 quartsSelector = mkSelector "quarts"
 
 -- | @Selector@ for @gallons@
-gallonsSelector :: Selector
+gallonsSelector :: Selector '[] (Id NSUnitVolume)
 gallonsSelector = mkSelector "gallons"
 
 -- | @Selector@ for @imperialTeaspoons@
-imperialTeaspoonsSelector :: Selector
+imperialTeaspoonsSelector :: Selector '[] (Id NSUnitVolume)
 imperialTeaspoonsSelector = mkSelector "imperialTeaspoons"
 
 -- | @Selector@ for @imperialTablespoons@
-imperialTablespoonsSelector :: Selector
+imperialTablespoonsSelector :: Selector '[] (Id NSUnitVolume)
 imperialTablespoonsSelector = mkSelector "imperialTablespoons"
 
 -- | @Selector@ for @imperialFluidOunces@
-imperialFluidOuncesSelector :: Selector
+imperialFluidOuncesSelector :: Selector '[] (Id NSUnitVolume)
 imperialFluidOuncesSelector = mkSelector "imperialFluidOunces"
 
 -- | @Selector@ for @imperialPints@
-imperialPintsSelector :: Selector
+imperialPintsSelector :: Selector '[] (Id NSUnitVolume)
 imperialPintsSelector = mkSelector "imperialPints"
 
 -- | @Selector@ for @imperialQuarts@
-imperialQuartsSelector :: Selector
+imperialQuartsSelector :: Selector '[] (Id NSUnitVolume)
 imperialQuartsSelector = mkSelector "imperialQuarts"
 
 -- | @Selector@ for @imperialGallons@
-imperialGallonsSelector :: Selector
+imperialGallonsSelector :: Selector '[] (Id NSUnitVolume)
 imperialGallonsSelector = mkSelector "imperialGallons"
 
 -- | @Selector@ for @metricCups@
-metricCupsSelector :: Selector
+metricCupsSelector :: Selector '[] (Id NSUnitVolume)
 metricCupsSelector = mkSelector "metricCups"
 

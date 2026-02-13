@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AppKit.NSMovie
   , init_
   , initWithMovie
   , qtMovie
-  , initWithCoderSelector
   , initSelector
+  , initWithCoderSelector
   , initWithMovieSelector
   , qtMovieSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,42 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSMovie nsMovie, IsNSCoder coder) => nsMovie -> coder -> IO (Id NSMovie)
-initWithCoder nsMovie  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsMovie (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsMovie coder =
+  sendOwnedMessage nsMovie initWithCoderSelector (toNSCoder coder)
 
 -- | @- init@
 init_ :: IsNSMovie nsMovie => nsMovie -> IO (Id NSMovie)
-init_ nsMovie  =
-    sendMsg nsMovie (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsMovie =
+  sendOwnedMessage nsMovie initSelector
 
 -- | @- initWithMovie:@
 initWithMovie :: IsNSMovie nsMovie => nsMovie -> RawId -> IO (Id NSMovie)
-initWithMovie nsMovie  movie =
-    sendMsg nsMovie (mkSelector "initWithMovie:") (retPtr retVoid) [argPtr (castPtr (unRawId movie) :: Ptr ())] >>= ownedObject . castPtr
+initWithMovie nsMovie movie =
+  sendOwnedMessage nsMovie initWithMovieSelector movie
 
 -- | @- QTMovie@
 qtMovie :: IsNSMovie nsMovie => nsMovie -> IO RawId
-qtMovie nsMovie  =
-    fmap (RawId . castPtr) $ sendMsg nsMovie (mkSelector "QTMovie") (retPtr retVoid) []
+qtMovie nsMovie =
+  sendMessage nsMovie qtMovieSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSMovie)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSMovie)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithMovie:@
-initWithMovieSelector :: Selector
+initWithMovieSelector :: Selector '[RawId] (Id NSMovie)
 initWithMovieSelector = mkSelector "initWithMovie:"
 
 -- | @Selector@ for @QTMovie@
-qtMovieSelector :: Selector
+qtMovieSelector :: Selector '[] RawId
 qtMovieSelector = mkSelector "QTMovie"
 

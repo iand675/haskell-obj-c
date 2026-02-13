@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTREnergyEVSEClusterEnableDischargingParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , dischargingEnabledUntilSelector
-  , setDischargingEnabledUntilSelector
   , maximumDischargeCurrentSelector
-  , setMaximumDischargeCurrentSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setDischargingEnabledUntilSelector
+  , setMaximumDischargeCurrentSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- dischargingEnabledUntil@
 dischargingEnabledUntil :: IsMTREnergyEVSEClusterEnableDischargingParams mtrEnergyEVSEClusterEnableDischargingParams => mtrEnergyEVSEClusterEnableDischargingParams -> IO (Id NSNumber)
-dischargingEnabledUntil mtrEnergyEVSEClusterEnableDischargingParams  =
-    sendMsg mtrEnergyEVSEClusterEnableDischargingParams (mkSelector "dischargingEnabledUntil") (retPtr retVoid) [] >>= retainedObject . castPtr
+dischargingEnabledUntil mtrEnergyEVSEClusterEnableDischargingParams =
+  sendMessage mtrEnergyEVSEClusterEnableDischargingParams dischargingEnabledUntilSelector
 
 -- | @- setDischargingEnabledUntil:@
 setDischargingEnabledUntil :: (IsMTREnergyEVSEClusterEnableDischargingParams mtrEnergyEVSEClusterEnableDischargingParams, IsNSNumber value) => mtrEnergyEVSEClusterEnableDischargingParams -> value -> IO ()
-setDischargingEnabledUntil mtrEnergyEVSEClusterEnableDischargingParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEnableDischargingParams (mkSelector "setDischargingEnabledUntil:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDischargingEnabledUntil mtrEnergyEVSEClusterEnableDischargingParams value =
+  sendMessage mtrEnergyEVSEClusterEnableDischargingParams setDischargingEnabledUntilSelector (toNSNumber value)
 
 -- | @- maximumDischargeCurrent@
 maximumDischargeCurrent :: IsMTREnergyEVSEClusterEnableDischargingParams mtrEnergyEVSEClusterEnableDischargingParams => mtrEnergyEVSEClusterEnableDischargingParams -> IO (Id NSNumber)
-maximumDischargeCurrent mtrEnergyEVSEClusterEnableDischargingParams  =
-    sendMsg mtrEnergyEVSEClusterEnableDischargingParams (mkSelector "maximumDischargeCurrent") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumDischargeCurrent mtrEnergyEVSEClusterEnableDischargingParams =
+  sendMessage mtrEnergyEVSEClusterEnableDischargingParams maximumDischargeCurrentSelector
 
 -- | @- setMaximumDischargeCurrent:@
 setMaximumDischargeCurrent :: (IsMTREnergyEVSEClusterEnableDischargingParams mtrEnergyEVSEClusterEnableDischargingParams, IsNSNumber value) => mtrEnergyEVSEClusterEnableDischargingParams -> value -> IO ()
-setMaximumDischargeCurrent mtrEnergyEVSEClusterEnableDischargingParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEnableDischargingParams (mkSelector "setMaximumDischargeCurrent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaximumDischargeCurrent mtrEnergyEVSEClusterEnableDischargingParams value =
+  sendMessage mtrEnergyEVSEClusterEnableDischargingParams setMaximumDischargeCurrentSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setMaximumDischargeCurrent mtrEnergyEVSEClusterEnableDischargingParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTREnergyEVSEClusterEnableDischargingParams mtrEnergyEVSEClusterEnableDischargingParams => mtrEnergyEVSEClusterEnableDischargingParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrEnergyEVSEClusterEnableDischargingParams  =
-    sendMsg mtrEnergyEVSEClusterEnableDischargingParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrEnergyEVSEClusterEnableDischargingParams =
+  sendMessage mtrEnergyEVSEClusterEnableDischargingParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrEnergyEVSEClusterEnableDischargingParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTREnergyEVSEClusterEnableDischargingParams mtrEnergyEVSEClusterEnableDischargingParams, IsNSNumber value) => mtrEnergyEVSEClusterEnableDischargingParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrEnergyEVSEClusterEnableDischargingParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEnableDischargingParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrEnergyEVSEClusterEnableDischargingParams value =
+  sendMessage mtrEnergyEVSEClusterEnableDischargingParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrEnergyEVSEClusterEnableDischargingParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTREnergyEVSEClusterEnableDischargingParams mtrEnergyEVSEClusterEnableDischargingParams => mtrEnergyEVSEClusterEnableDischargingParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrEnergyEVSEClusterEnableDischargingParams  =
-    sendMsg mtrEnergyEVSEClusterEnableDischargingParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrEnergyEVSEClusterEnableDischargingParams =
+  sendMessage mtrEnergyEVSEClusterEnableDischargingParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrEnergyEVSEClusterEnableDischargingParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTREnergyEVSEClusterEnableDischargingParams mtrEnergyEVSEClusterEnableDischargingParams, IsNSNumber value) => mtrEnergyEVSEClusterEnableDischargingParams -> value -> IO ()
-setServerSideProcessingTimeout mtrEnergyEVSEClusterEnableDischargingParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterEnableDischargingParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrEnergyEVSEClusterEnableDischargingParams value =
+  sendMessage mtrEnergyEVSEClusterEnableDischargingParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dischargingEnabledUntil@
-dischargingEnabledUntilSelector :: Selector
+dischargingEnabledUntilSelector :: Selector '[] (Id NSNumber)
 dischargingEnabledUntilSelector = mkSelector "dischargingEnabledUntil"
 
 -- | @Selector@ for @setDischargingEnabledUntil:@
-setDischargingEnabledUntilSelector :: Selector
+setDischargingEnabledUntilSelector :: Selector '[Id NSNumber] ()
 setDischargingEnabledUntilSelector = mkSelector "setDischargingEnabledUntil:"
 
 -- | @Selector@ for @maximumDischargeCurrent@
-maximumDischargeCurrentSelector :: Selector
+maximumDischargeCurrentSelector :: Selector '[] (Id NSNumber)
 maximumDischargeCurrentSelector = mkSelector "maximumDischargeCurrent"
 
 -- | @Selector@ for @setMaximumDischargeCurrent:@
-setMaximumDischargeCurrentSelector :: Selector
+setMaximumDischargeCurrentSelector :: Selector '[Id NSNumber] ()
 setMaximumDischargeCurrentSelector = mkSelector "setMaximumDischargeCurrent:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

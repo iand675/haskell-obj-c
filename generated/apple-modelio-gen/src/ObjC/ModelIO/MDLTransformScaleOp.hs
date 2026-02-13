@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.ModelIO.MDLTransformScaleOp
   , IsMDLTransformScaleOp(..)
   , name
   , animatedValue
-  , nameSelector
   , animatedValueSelector
+  , nameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMDLTransformScaleOp mdlTransformScaleOp => mdlTransformScaleOp -> IO (Id NSString)
-name mdlTransformScaleOp  =
-    sendMsg mdlTransformScaleOp (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mdlTransformScaleOp =
+  sendMessage mdlTransformScaleOp nameSelector
 
 -- | @- animatedValue@
 animatedValue :: IsMDLTransformScaleOp mdlTransformScaleOp => mdlTransformScaleOp -> IO (Id MDLAnimatedVector3)
-animatedValue mdlTransformScaleOp  =
-    sendMsg mdlTransformScaleOp (mkSelector "animatedValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+animatedValue mdlTransformScaleOp =
+  sendMessage mdlTransformScaleOp animatedValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @animatedValue@
-animatedValueSelector :: Selector
+animatedValueSelector :: Selector '[] (Id MDLAnimatedVector3)
 animatedValueSelector = mkSelector "animatedValue"
 

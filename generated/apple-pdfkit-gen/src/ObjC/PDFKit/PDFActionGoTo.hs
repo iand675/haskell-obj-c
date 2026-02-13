@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.PDFKit.PDFActionGoTo
   , initWithDestination
   , destination
   , setDestination
-  , initWithDestinationSelector
   , destinationSelector
+  , initWithDestinationSelector
   , setDestinationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,34 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDestination:@
 initWithDestination :: (IsPDFActionGoTo pdfActionGoTo, IsPDFDestination destination) => pdfActionGoTo -> destination -> IO (Id PDFActionGoTo)
-initWithDestination pdfActionGoTo  destination =
-  withObjCPtr destination $ \raw_destination ->
-      sendMsg pdfActionGoTo (mkSelector "initWithDestination:") (retPtr retVoid) [argPtr (castPtr raw_destination :: Ptr ())] >>= ownedObject . castPtr
+initWithDestination pdfActionGoTo destination =
+  sendOwnedMessage pdfActionGoTo initWithDestinationSelector (toPDFDestination destination)
 
 -- | @- destination@
 destination :: IsPDFActionGoTo pdfActionGoTo => pdfActionGoTo -> IO (Id PDFDestination)
-destination pdfActionGoTo  =
-    sendMsg pdfActionGoTo (mkSelector "destination") (retPtr retVoid) [] >>= retainedObject . castPtr
+destination pdfActionGoTo =
+  sendMessage pdfActionGoTo destinationSelector
 
 -- | @- setDestination:@
 setDestination :: (IsPDFActionGoTo pdfActionGoTo, IsPDFDestination value) => pdfActionGoTo -> value -> IO ()
-setDestination pdfActionGoTo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfActionGoTo (mkSelector "setDestination:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDestination pdfActionGoTo value =
+  sendMessage pdfActionGoTo setDestinationSelector (toPDFDestination value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDestination:@
-initWithDestinationSelector :: Selector
+initWithDestinationSelector :: Selector '[Id PDFDestination] (Id PDFActionGoTo)
 initWithDestinationSelector = mkSelector "initWithDestination:"
 
 -- | @Selector@ for @destination@
-destinationSelector :: Selector
+destinationSelector :: Selector '[] (Id PDFDestination)
 destinationSelector = mkSelector "destination"
 
 -- | @Selector@ for @setDestination:@
-setDestinationSelector :: Selector
+setDestinationSelector :: Selector '[Id PDFDestination] ()
 setDestinationSelector = mkSelector "setDestination:"
 

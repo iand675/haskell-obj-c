@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,15 +33,11 @@ module ObjC.Speech.SFSpeechURLRecognitionRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSFSpeechURLRecognitionRequest sfSpeechURLRecognitionRequest => sfSpeechURLRecognitionRequest -> IO (Id SFSpeechURLRecognitionRequest)
-init_ sfSpeechURLRecognitionRequest  =
-    sendMsg sfSpeechURLRecognitionRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ sfSpeechURLRecognitionRequest =
+  sendOwnedMessage sfSpeechURLRecognitionRequest initSelector
 
 -- | Creates a speech recognition request, initialized with the specified URL.
 --
@@ -58,30 +55,29 @@ init_ sfSpeechURLRecognitionRequest  =
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsSFSpeechURLRecognitionRequest sfSpeechURLRecognitionRequest, IsNSURL url) => sfSpeechURLRecognitionRequest -> url -> IO (Id SFSpeechURLRecognitionRequest)
-initWithURL sfSpeechURLRecognitionRequest  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg sfSpeechURLRecognitionRequest (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL sfSpeechURLRecognitionRequest url =
+  sendOwnedMessage sfSpeechURLRecognitionRequest initWithURLSelector (toNSURL url)
 
 -- | The URL of the audio file.
 --
 -- ObjC selector: @- URL@
 url :: IsSFSpeechURLRecognitionRequest sfSpeechURLRecognitionRequest => sfSpeechURLRecognitionRequest -> IO (Id NSURL)
-url sfSpeechURLRecognitionRequest  =
-    sendMsg sfSpeechURLRecognitionRequest (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url sfSpeechURLRecognitionRequest =
+  sendMessage sfSpeechURLRecognitionRequest urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SFSpeechURLRecognitionRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id SFSpeechURLRecognitionRequest)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

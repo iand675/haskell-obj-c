@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,13 +19,13 @@ module ObjC.MetalPerformanceShaders.MPSMatrixCopyToImage
   , sourceMatrixBatchIndex
   , setSourceMatrixBatchIndex
   , dataLayout
-  , initWithDevice_dataLayoutSelector
-  , initWithCoder_deviceSelector
-  , encodeToCommandBuffer_sourceMatrix_destinationImageSelector
-  , encodeBatchToCommandBuffer_sourceMatrix_destinationImagesSelector
-  , sourceMatrixBatchIndexSelector
-  , setSourceMatrixBatchIndexSelector
   , dataLayoutSelector
+  , encodeBatchToCommandBuffer_sourceMatrix_destinationImagesSelector
+  , encodeToCommandBuffer_sourceMatrix_destinationImageSelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_dataLayoutSelector
+  , setSourceMatrixBatchIndexSelector
+  , sourceMatrixBatchIndexSelector
 
   -- * Enum types
   , MPSDataLayout(MPSDataLayout)
@@ -33,15 +34,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixCopyToImage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:dataLayout:@
 initWithDevice_dataLayout :: IsMPSMatrixCopyToImage mpsMatrixCopyToImage => mpsMatrixCopyToImage -> RawId -> MPSDataLayout -> IO (Id MPSMatrixCopyToImage)
-initWithDevice_dataLayout mpsMatrixCopyToImage  device dataLayout =
-    sendMsg mpsMatrixCopyToImage (mkSelector "initWithDevice:dataLayout:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong (coerce dataLayout)] >>= ownedObject . castPtr
+initWithDevice_dataLayout mpsMatrixCopyToImage device dataLayout =
+  sendOwnedMessage mpsMatrixCopyToImage initWithDevice_dataLayoutSelector device dataLayout
 
 -- | NSSecureCoding compatability
 --
@@ -74,9 +71,8 @@ initWithDevice_dataLayout mpsMatrixCopyToImage  device dataLayout =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixCopyToImage mpsMatrixCopyToImage, IsNSCoder aDecoder) => mpsMatrixCopyToImage -> aDecoder -> RawId -> IO (Id MPSMatrixCopyToImage)
-initWithCoder_device mpsMatrixCopyToImage  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixCopyToImage (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixCopyToImage aDecoder device =
+  sendOwnedMessage mpsMatrixCopyToImage initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode a kernel that copies a MPSMatrix to a MPSImage into a command buffer            using a MTLComputeCommandEncoder.
 --
@@ -92,10 +88,8 @@ initWithCoder_device mpsMatrixCopyToImage  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceMatrix:destinationImage:@
 encodeToCommandBuffer_sourceMatrix_destinationImage :: (IsMPSMatrixCopyToImage mpsMatrixCopyToImage, IsMPSMatrix sourceMatrix, IsMPSImage destinationImage) => mpsMatrixCopyToImage -> RawId -> sourceMatrix -> destinationImage -> IO ()
-encodeToCommandBuffer_sourceMatrix_destinationImage mpsMatrixCopyToImage  commandBuffer sourceMatrix destinationImage =
-  withObjCPtr sourceMatrix $ \raw_sourceMatrix ->
-    withObjCPtr destinationImage $ \raw_destinationImage ->
-        sendMsg mpsMatrixCopyToImage (mkSelector "encodeToCommandBuffer:sourceMatrix:destinationImage:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrix :: Ptr ()), argPtr (castPtr raw_destinationImage :: Ptr ())]
+encodeToCommandBuffer_sourceMatrix_destinationImage mpsMatrixCopyToImage commandBuffer sourceMatrix destinationImage =
+  sendMessage mpsMatrixCopyToImage encodeToCommandBuffer_sourceMatrix_destinationImageSelector commandBuffer (toMPSMatrix sourceMatrix) (toMPSImage destinationImage)
 
 -- | Encode a kernel that copies a MPSMatrix to a MPSImageBatch into a command buffer            using a MTLComputeCommandEncoder.
 --
@@ -111,9 +105,8 @@ encodeToCommandBuffer_sourceMatrix_destinationImage mpsMatrixCopyToImage  comman
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceMatrix:destinationImages:@
 encodeBatchToCommandBuffer_sourceMatrix_destinationImages :: (IsMPSMatrixCopyToImage mpsMatrixCopyToImage, IsMPSMatrix sourceMatrix) => mpsMatrixCopyToImage -> RawId -> sourceMatrix -> RawId -> IO ()
-encodeBatchToCommandBuffer_sourceMatrix_destinationImages mpsMatrixCopyToImage  commandBuffer sourceMatrix destinationImages =
-  withObjCPtr sourceMatrix $ \raw_sourceMatrix ->
-      sendMsg mpsMatrixCopyToImage (mkSelector "encodeBatchToCommandBuffer:sourceMatrix:destinationImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrix :: Ptr ()), argPtr (castPtr (unRawId destinationImages) :: Ptr ())]
+encodeBatchToCommandBuffer_sourceMatrix_destinationImages mpsMatrixCopyToImage commandBuffer sourceMatrix destinationImages =
+  sendMessage mpsMatrixCopyToImage encodeBatchToCommandBuffer_sourceMatrix_destinationImagesSelector commandBuffer (toMPSMatrix sourceMatrix) destinationImages
 
 -- | sourceMatrixBatchIndex
 --
@@ -121,8 +114,8 @@ encodeBatchToCommandBuffer_sourceMatrix_destinationImages mpsMatrixCopyToImage  
 --
 -- ObjC selector: @- sourceMatrixBatchIndex@
 sourceMatrixBatchIndex :: IsMPSMatrixCopyToImage mpsMatrixCopyToImage => mpsMatrixCopyToImage -> IO CULong
-sourceMatrixBatchIndex mpsMatrixCopyToImage  =
-    sendMsg mpsMatrixCopyToImage (mkSelector "sourceMatrixBatchIndex") retCULong []
+sourceMatrixBatchIndex mpsMatrixCopyToImage =
+  sendMessage mpsMatrixCopyToImage sourceMatrixBatchIndexSelector
 
 -- | sourceMatrixBatchIndex
 --
@@ -130,8 +123,8 @@ sourceMatrixBatchIndex mpsMatrixCopyToImage  =
 --
 -- ObjC selector: @- setSourceMatrixBatchIndex:@
 setSourceMatrixBatchIndex :: IsMPSMatrixCopyToImage mpsMatrixCopyToImage => mpsMatrixCopyToImage -> CULong -> IO ()
-setSourceMatrixBatchIndex mpsMatrixCopyToImage  value =
-    sendMsg mpsMatrixCopyToImage (mkSelector "setSourceMatrixBatchIndex:") retVoid [argCULong value]
+setSourceMatrixBatchIndex mpsMatrixCopyToImage value =
+  sendMessage mpsMatrixCopyToImage setSourceMatrixBatchIndexSelector value
 
 -- | dataLayout
 --
@@ -141,38 +134,38 @@ setSourceMatrixBatchIndex mpsMatrixCopyToImage  value =
 --
 -- ObjC selector: @- dataLayout@
 dataLayout :: IsMPSMatrixCopyToImage mpsMatrixCopyToImage => mpsMatrixCopyToImage -> IO MPSDataLayout
-dataLayout mpsMatrixCopyToImage  =
-    fmap (coerce :: CULong -> MPSDataLayout) $ sendMsg mpsMatrixCopyToImage (mkSelector "dataLayout") retCULong []
+dataLayout mpsMatrixCopyToImage =
+  sendMessage mpsMatrixCopyToImage dataLayoutSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:dataLayout:@
-initWithDevice_dataLayoutSelector :: Selector
+initWithDevice_dataLayoutSelector :: Selector '[RawId, MPSDataLayout] (Id MPSMatrixCopyToImage)
 initWithDevice_dataLayoutSelector = mkSelector "initWithDevice:dataLayout:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixCopyToImage)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceMatrix:destinationImage:@
-encodeToCommandBuffer_sourceMatrix_destinationImageSelector :: Selector
+encodeToCommandBuffer_sourceMatrix_destinationImageSelector :: Selector '[RawId, Id MPSMatrix, Id MPSImage] ()
 encodeToCommandBuffer_sourceMatrix_destinationImageSelector = mkSelector "encodeToCommandBuffer:sourceMatrix:destinationImage:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceMatrix:destinationImages:@
-encodeBatchToCommandBuffer_sourceMatrix_destinationImagesSelector :: Selector
+encodeBatchToCommandBuffer_sourceMatrix_destinationImagesSelector :: Selector '[RawId, Id MPSMatrix, RawId] ()
 encodeBatchToCommandBuffer_sourceMatrix_destinationImagesSelector = mkSelector "encodeBatchToCommandBuffer:sourceMatrix:destinationImages:"
 
 -- | @Selector@ for @sourceMatrixBatchIndex@
-sourceMatrixBatchIndexSelector :: Selector
+sourceMatrixBatchIndexSelector :: Selector '[] CULong
 sourceMatrixBatchIndexSelector = mkSelector "sourceMatrixBatchIndex"
 
 -- | @Selector@ for @setSourceMatrixBatchIndex:@
-setSourceMatrixBatchIndexSelector :: Selector
+setSourceMatrixBatchIndexSelector :: Selector '[CULong] ()
 setSourceMatrixBatchIndexSelector = mkSelector "setSourceMatrixBatchIndex:"
 
 -- | @Selector@ for @dataLayout@
-dataLayoutSelector :: Selector
+dataLayoutSelector :: Selector '[] MPSDataLayout
 dataLayoutSelector = mkSelector "dataLayout"
 

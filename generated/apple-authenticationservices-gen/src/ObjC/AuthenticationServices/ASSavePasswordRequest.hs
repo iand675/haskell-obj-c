@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.AuthenticationServices.ASSavePasswordRequest
   , sessionID
   , event
   , passwordKind
-  , initSelector
-  , newSelector
-  , initWithServiceIdentifier_credential_sessionID_eventSelector
-  , initWithServiceIdentifier_credential_title_sessionID_eventSelector
-  , initWithServiceIdentifier_credential_sessionID_event_passwordKindSelector
-  , initWithServiceIdentifier_credential_title_sessionID_event_passwordKindSelector
-  , serviceIdentifierSelector
   , credentialSelector
-  , titleSelector
-  , sessionIDSelector
   , eventSelector
+  , initSelector
+  , initWithServiceIdentifier_credential_sessionID_eventSelector
+  , initWithServiceIdentifier_credential_sessionID_event_passwordKindSelector
+  , initWithServiceIdentifier_credential_title_sessionID_eventSelector
+  , initWithServiceIdentifier_credential_title_sessionID_event_passwordKindSelector
+  , newSelector
   , passwordKindSelector
+  , serviceIdentifierSelector
+  , sessionIDSelector
+  , titleSelector
 
   -- * Enum types
   , ASSavePasswordRequestEvent(ASSavePasswordRequestEvent)
@@ -40,15 +41,11 @@ module ObjC.AuthenticationServices.ASSavePasswordRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,65 +55,49 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASSavePasswordRequest asSavePasswordRequest => asSavePasswordRequest -> IO (Id ASSavePasswordRequest)
-init_ asSavePasswordRequest  =
-    sendMsg asSavePasswordRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asSavePasswordRequest =
+  sendOwnedMessage asSavePasswordRequest initSelector
 
 -- | @+ new@
 new :: IO (Id ASSavePasswordRequest)
 new  =
   do
     cls' <- getRequiredClass "ASSavePasswordRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithServiceIdentifier:credential:sessionID:event:@
 initWithServiceIdentifier_credential_sessionID_event :: (IsASSavePasswordRequest asSavePasswordRequest, IsASCredentialServiceIdentifier serviceIdentifier, IsASPasswordCredential credential, IsNSString sessionID) => asSavePasswordRequest -> serviceIdentifier -> credential -> sessionID -> ASSavePasswordRequestEvent -> IO (Id ASSavePasswordRequest)
-initWithServiceIdentifier_credential_sessionID_event asSavePasswordRequest  serviceIdentifier credential sessionID event =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr credential $ \raw_credential ->
-      withObjCPtr sessionID $ \raw_sessionID ->
-          sendMsg asSavePasswordRequest (mkSelector "initWithServiceIdentifier:credential:sessionID:event:") (retPtr retVoid) [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_credential :: Ptr ()), argPtr (castPtr raw_sessionID :: Ptr ()), argCLong (coerce event)] >>= ownedObject . castPtr
+initWithServiceIdentifier_credential_sessionID_event asSavePasswordRequest serviceIdentifier credential sessionID event =
+  sendOwnedMessage asSavePasswordRequest initWithServiceIdentifier_credential_sessionID_eventSelector (toASCredentialServiceIdentifier serviceIdentifier) (toASPasswordCredential credential) (toNSString sessionID) event
 
 -- | @- initWithServiceIdentifier:credential:title:sessionID:event:@
 initWithServiceIdentifier_credential_title_sessionID_event :: (IsASSavePasswordRequest asSavePasswordRequest, IsASCredentialServiceIdentifier serviceIdentifier, IsASPasswordCredential credential, IsNSString title, IsNSString sessionID) => asSavePasswordRequest -> serviceIdentifier -> credential -> title -> sessionID -> ASSavePasswordRequestEvent -> IO (Id ASSavePasswordRequest)
-initWithServiceIdentifier_credential_title_sessionID_event asSavePasswordRequest  serviceIdentifier credential title sessionID event =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr credential $ \raw_credential ->
-      withObjCPtr title $ \raw_title ->
-        withObjCPtr sessionID $ \raw_sessionID ->
-            sendMsg asSavePasswordRequest (mkSelector "initWithServiceIdentifier:credential:title:sessionID:event:") (retPtr retVoid) [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_credential :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_sessionID :: Ptr ()), argCLong (coerce event)] >>= ownedObject . castPtr
+initWithServiceIdentifier_credential_title_sessionID_event asSavePasswordRequest serviceIdentifier credential title sessionID event =
+  sendOwnedMessage asSavePasswordRequest initWithServiceIdentifier_credential_title_sessionID_eventSelector (toASCredentialServiceIdentifier serviceIdentifier) (toASPasswordCredential credential) (toNSString title) (toNSString sessionID) event
 
 -- | @- initWithServiceIdentifier:credential:sessionID:event:passwordKind:@
 initWithServiceIdentifier_credential_sessionID_event_passwordKind :: (IsASSavePasswordRequest asSavePasswordRequest, IsASCredentialServiceIdentifier serviceIdentifier, IsASPasswordCredential credential, IsNSString sessionID, IsNSString passwordKind) => asSavePasswordRequest -> serviceIdentifier -> credential -> sessionID -> ASSavePasswordRequestEvent -> passwordKind -> IO (Id ASSavePasswordRequest)
-initWithServiceIdentifier_credential_sessionID_event_passwordKind asSavePasswordRequest  serviceIdentifier credential sessionID event passwordKind =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr credential $ \raw_credential ->
-      withObjCPtr sessionID $ \raw_sessionID ->
-        withObjCPtr passwordKind $ \raw_passwordKind ->
-            sendMsg asSavePasswordRequest (mkSelector "initWithServiceIdentifier:credential:sessionID:event:passwordKind:") (retPtr retVoid) [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_credential :: Ptr ()), argPtr (castPtr raw_sessionID :: Ptr ()), argCLong (coerce event), argPtr (castPtr raw_passwordKind :: Ptr ())] >>= ownedObject . castPtr
+initWithServiceIdentifier_credential_sessionID_event_passwordKind asSavePasswordRequest serviceIdentifier credential sessionID event passwordKind =
+  sendOwnedMessage asSavePasswordRequest initWithServiceIdentifier_credential_sessionID_event_passwordKindSelector (toASCredentialServiceIdentifier serviceIdentifier) (toASPasswordCredential credential) (toNSString sessionID) event (toNSString passwordKind)
 
 -- | @- initWithServiceIdentifier:credential:title:sessionID:event:passwordKind:@
 initWithServiceIdentifier_credential_title_sessionID_event_passwordKind :: (IsASSavePasswordRequest asSavePasswordRequest, IsASCredentialServiceIdentifier serviceIdentifier, IsASPasswordCredential credential, IsNSString title, IsNSString sessionID, IsNSString passwordKind) => asSavePasswordRequest -> serviceIdentifier -> credential -> title -> sessionID -> ASSavePasswordRequestEvent -> passwordKind -> IO (Id ASSavePasswordRequest)
-initWithServiceIdentifier_credential_title_sessionID_event_passwordKind asSavePasswordRequest  serviceIdentifier credential title sessionID event passwordKind =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr credential $ \raw_credential ->
-      withObjCPtr title $ \raw_title ->
-        withObjCPtr sessionID $ \raw_sessionID ->
-          withObjCPtr passwordKind $ \raw_passwordKind ->
-              sendMsg asSavePasswordRequest (mkSelector "initWithServiceIdentifier:credential:title:sessionID:event:passwordKind:") (retPtr retVoid) [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_credential :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_sessionID :: Ptr ()), argCLong (coerce event), argPtr (castPtr raw_passwordKind :: Ptr ())] >>= ownedObject . castPtr
+initWithServiceIdentifier_credential_title_sessionID_event_passwordKind asSavePasswordRequest serviceIdentifier credential title sessionID event passwordKind =
+  sendOwnedMessage asSavePasswordRequest initWithServiceIdentifier_credential_title_sessionID_event_passwordKindSelector (toASCredentialServiceIdentifier serviceIdentifier) (toASPasswordCredential credential) (toNSString title) (toNSString sessionID) event (toNSString passwordKind)
 
 -- | The identifier of the service for which the the credential should be associated.
 --
 -- ObjC selector: @- serviceIdentifier@
 serviceIdentifier :: IsASSavePasswordRequest asSavePasswordRequest => asSavePasswordRequest -> IO (Id ASCredentialServiceIdentifier)
-serviceIdentifier asSavePasswordRequest  =
-    sendMsg asSavePasswordRequest (mkSelector "serviceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+serviceIdentifier asSavePasswordRequest =
+  sendMessage asSavePasswordRequest serviceIdentifierSelector
 
 -- | The credential to save.
 --
 -- ObjC selector: @- credential@
 credential :: IsASSavePasswordRequest asSavePasswordRequest => asSavePasswordRequest -> IO (Id ASPasswordCredential)
-credential asSavePasswordRequest  =
-    sendMsg asSavePasswordRequest (mkSelector "credential") (retPtr retVoid) [] >>= retainedObject . castPtr
+credential asSavePasswordRequest =
+  sendMessage asSavePasswordRequest credentialSelector
 
 -- | A user-displayable name for the password credential to be saved.
 --
@@ -124,79 +105,79 @@ credential asSavePasswordRequest  =
 --
 -- ObjC selector: @- title@
 title :: IsASSavePasswordRequest asSavePasswordRequest => asSavePasswordRequest -> IO (Id NSString)
-title asSavePasswordRequest  =
-    sendMsg asSavePasswordRequest (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title asSavePasswordRequest =
+  sendMessage asSavePasswordRequest titleSelector
 
 -- | An ID that represents a form's session.
 --
 -- ObjC selector: @- sessionID@
 sessionID :: IsASSavePasswordRequest asSavePasswordRequest => asSavePasswordRequest -> IO (Id NSString)
-sessionID asSavePasswordRequest  =
-    sendMsg asSavePasswordRequest (mkSelector "sessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionID asSavePasswordRequest =
+  sendMessage asSavePasswordRequest sessionIDSelector
 
 -- | The type of event that the save request represents.
 --
 -- ObjC selector: @- event@
 event :: IsASSavePasswordRequest asSavePasswordRequest => asSavePasswordRequest -> IO ASSavePasswordRequestEvent
-event asSavePasswordRequest  =
-    fmap (coerce :: CLong -> ASSavePasswordRequestEvent) $ sendMsg asSavePasswordRequest (mkSelector "event") retCLong []
+event asSavePasswordRequest =
+  sendMessage asSavePasswordRequest eventSelector
 
 -- | For passwordFilled events, this is the kind of password that was created.
 --
 -- ObjC selector: @- passwordKind@
 passwordKind :: IsASSavePasswordRequest asSavePasswordRequest => asSavePasswordRequest -> IO (Id NSString)
-passwordKind asSavePasswordRequest  =
-    sendMsg asSavePasswordRequest (mkSelector "passwordKind") (retPtr retVoid) [] >>= retainedObject . castPtr
+passwordKind asSavePasswordRequest =
+  sendMessage asSavePasswordRequest passwordKindSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASSavePasswordRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASSavePasswordRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithServiceIdentifier:credential:sessionID:event:@
-initWithServiceIdentifier_credential_sessionID_eventSelector :: Selector
+initWithServiceIdentifier_credential_sessionID_eventSelector :: Selector '[Id ASCredentialServiceIdentifier, Id ASPasswordCredential, Id NSString, ASSavePasswordRequestEvent] (Id ASSavePasswordRequest)
 initWithServiceIdentifier_credential_sessionID_eventSelector = mkSelector "initWithServiceIdentifier:credential:sessionID:event:"
 
 -- | @Selector@ for @initWithServiceIdentifier:credential:title:sessionID:event:@
-initWithServiceIdentifier_credential_title_sessionID_eventSelector :: Selector
+initWithServiceIdentifier_credential_title_sessionID_eventSelector :: Selector '[Id ASCredentialServiceIdentifier, Id ASPasswordCredential, Id NSString, Id NSString, ASSavePasswordRequestEvent] (Id ASSavePasswordRequest)
 initWithServiceIdentifier_credential_title_sessionID_eventSelector = mkSelector "initWithServiceIdentifier:credential:title:sessionID:event:"
 
 -- | @Selector@ for @initWithServiceIdentifier:credential:sessionID:event:passwordKind:@
-initWithServiceIdentifier_credential_sessionID_event_passwordKindSelector :: Selector
+initWithServiceIdentifier_credential_sessionID_event_passwordKindSelector :: Selector '[Id ASCredentialServiceIdentifier, Id ASPasswordCredential, Id NSString, ASSavePasswordRequestEvent, Id NSString] (Id ASSavePasswordRequest)
 initWithServiceIdentifier_credential_sessionID_event_passwordKindSelector = mkSelector "initWithServiceIdentifier:credential:sessionID:event:passwordKind:"
 
 -- | @Selector@ for @initWithServiceIdentifier:credential:title:sessionID:event:passwordKind:@
-initWithServiceIdentifier_credential_title_sessionID_event_passwordKindSelector :: Selector
+initWithServiceIdentifier_credential_title_sessionID_event_passwordKindSelector :: Selector '[Id ASCredentialServiceIdentifier, Id ASPasswordCredential, Id NSString, Id NSString, ASSavePasswordRequestEvent, Id NSString] (Id ASSavePasswordRequest)
 initWithServiceIdentifier_credential_title_sessionID_event_passwordKindSelector = mkSelector "initWithServiceIdentifier:credential:title:sessionID:event:passwordKind:"
 
 -- | @Selector@ for @serviceIdentifier@
-serviceIdentifierSelector :: Selector
+serviceIdentifierSelector :: Selector '[] (Id ASCredentialServiceIdentifier)
 serviceIdentifierSelector = mkSelector "serviceIdentifier"
 
 -- | @Selector@ for @credential@
-credentialSelector :: Selector
+credentialSelector :: Selector '[] (Id ASPasswordCredential)
 credentialSelector = mkSelector "credential"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @sessionID@
-sessionIDSelector :: Selector
+sessionIDSelector :: Selector '[] (Id NSString)
 sessionIDSelector = mkSelector "sessionID"
 
 -- | @Selector@ for @event@
-eventSelector :: Selector
+eventSelector :: Selector '[] ASSavePasswordRequestEvent
 eventSelector = mkSelector "event"
 
 -- | @Selector@ for @passwordKind@
-passwordKindSelector :: Selector
+passwordKindSelector :: Selector '[] (Id NSString)
 passwordKindSelector = mkSelector "passwordKind"
 

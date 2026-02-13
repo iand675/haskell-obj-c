@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,32 +37,28 @@ module ObjC.MetalPerformanceShaders.MPSCNNLocalContrastNormalizationNode
   , setKernelWidth
   , kernelHeight
   , setKernelHeight
-  , nodeWithSource_kernelSizeSelector
-  , initWithSource_kernelSizeSelector
   , initWithSourceSelector
-  , pmSelector
-  , setPmSelector
-  , psSelector
-  , setPsSelector
-  , p0Selector
-  , setP0Selector
-  , kernelWidthSelector
-  , setKernelWidthSelector
+  , initWithSource_kernelSizeSelector
   , kernelHeightSelector
+  , kernelWidthSelector
+  , nodeWithSource_kernelSizeSelector
+  , p0Selector
+  , pmSelector
+  , psSelector
   , setKernelHeightSelector
+  , setKernelWidthSelector
+  , setP0Selector
+  , setPmSelector
+  , setPsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,124 +70,121 @@ nodeWithSource_kernelSize :: IsMPSNNImageNode sourceNode => sourceNode -> CULong
 nodeWithSource_kernelSize sourceNode kernelSize =
   do
     cls' <- getRequiredClass "MPSCNNLocalContrastNormalizationNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:kernelSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong kernelSize] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_kernelSizeSelector (toMPSNNImageNode sourceNode) kernelSize
 
 -- | @- initWithSource:kernelSize:@
 initWithSource_kernelSize :: (IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode, IsMPSNNImageNode sourceNode) => mpscnnLocalContrastNormalizationNode -> sourceNode -> CULong -> IO (Id MPSCNNLocalContrastNormalizationNode)
-initWithSource_kernelSize mpscnnLocalContrastNormalizationNode  sourceNode kernelSize =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "initWithSource:kernelSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong kernelSize] >>= ownedObject . castPtr
+initWithSource_kernelSize mpscnnLocalContrastNormalizationNode sourceNode kernelSize =
+  sendOwnedMessage mpscnnLocalContrastNormalizationNode initWithSource_kernelSizeSelector (toMPSNNImageNode sourceNode) kernelSize
 
 -- | @- initWithSource:@
 initWithSource :: (IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode, IsMPSNNImageNode sourceNode) => mpscnnLocalContrastNormalizationNode -> sourceNode -> IO (Id MPSCNNLocalContrastNormalizationNode)
-initWithSource mpscnnLocalContrastNormalizationNode  sourceNode =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= ownedObject . castPtr
+initWithSource mpscnnLocalContrastNormalizationNode sourceNode =
+  sendOwnedMessage mpscnnLocalContrastNormalizationNode initWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- | @- pm@
 pm :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> IO CFloat
-pm mpscnnLocalContrastNormalizationNode  =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "pm") retCFloat []
+pm mpscnnLocalContrastNormalizationNode =
+  sendMessage mpscnnLocalContrastNormalizationNode pmSelector
 
 -- | @- setPm:@
 setPm :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> CFloat -> IO ()
-setPm mpscnnLocalContrastNormalizationNode  value =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "setPm:") retVoid [argCFloat value]
+setPm mpscnnLocalContrastNormalizationNode value =
+  sendMessage mpscnnLocalContrastNormalizationNode setPmSelector value
 
 -- | @- ps@
 ps :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> IO CFloat
-ps mpscnnLocalContrastNormalizationNode  =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "ps") retCFloat []
+ps mpscnnLocalContrastNormalizationNode =
+  sendMessage mpscnnLocalContrastNormalizationNode psSelector
 
 -- | @- setPs:@
 setPs :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> CFloat -> IO ()
-setPs mpscnnLocalContrastNormalizationNode  value =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "setPs:") retVoid [argCFloat value]
+setPs mpscnnLocalContrastNormalizationNode value =
+  sendMessage mpscnnLocalContrastNormalizationNode setPsSelector value
 
 -- | @- p0@
 p0 :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> IO CFloat
-p0 mpscnnLocalContrastNormalizationNode  =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "p0") retCFloat []
+p0 mpscnnLocalContrastNormalizationNode =
+  sendMessage mpscnnLocalContrastNormalizationNode p0Selector
 
 -- | @- setP0:@
 setP0 :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> CFloat -> IO ()
-setP0 mpscnnLocalContrastNormalizationNode  value =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "setP0:") retVoid [argCFloat value]
+setP0 mpscnnLocalContrastNormalizationNode value =
+  sendMessage mpscnnLocalContrastNormalizationNode setP0Selector value
 
 -- | @- kernelWidth@
 kernelWidth :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> IO CULong
-kernelWidth mpscnnLocalContrastNormalizationNode  =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "kernelWidth") retCULong []
+kernelWidth mpscnnLocalContrastNormalizationNode =
+  sendMessage mpscnnLocalContrastNormalizationNode kernelWidthSelector
 
 -- | @- setKernelWidth:@
 setKernelWidth :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> CULong -> IO ()
-setKernelWidth mpscnnLocalContrastNormalizationNode  value =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "setKernelWidth:") retVoid [argCULong value]
+setKernelWidth mpscnnLocalContrastNormalizationNode value =
+  sendMessage mpscnnLocalContrastNormalizationNode setKernelWidthSelector value
 
 -- | @- kernelHeight@
 kernelHeight :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> IO CULong
-kernelHeight mpscnnLocalContrastNormalizationNode  =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "kernelHeight") retCULong []
+kernelHeight mpscnnLocalContrastNormalizationNode =
+  sendMessage mpscnnLocalContrastNormalizationNode kernelHeightSelector
 
 -- | @- setKernelHeight:@
 setKernelHeight :: IsMPSCNNLocalContrastNormalizationNode mpscnnLocalContrastNormalizationNode => mpscnnLocalContrastNormalizationNode -> CULong -> IO ()
-setKernelHeight mpscnnLocalContrastNormalizationNode  value =
-    sendMsg mpscnnLocalContrastNormalizationNode (mkSelector "setKernelHeight:") retVoid [argCULong value]
+setKernelHeight mpscnnLocalContrastNormalizationNode value =
+  sendMessage mpscnnLocalContrastNormalizationNode setKernelHeightSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:kernelSize:@
-nodeWithSource_kernelSizeSelector :: Selector
+nodeWithSource_kernelSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNLocalContrastNormalizationNode)
 nodeWithSource_kernelSizeSelector = mkSelector "nodeWithSource:kernelSize:"
 
 -- | @Selector@ for @initWithSource:kernelSize:@
-initWithSource_kernelSizeSelector :: Selector
+initWithSource_kernelSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNLocalContrastNormalizationNode)
 initWithSource_kernelSizeSelector = mkSelector "initWithSource:kernelSize:"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSCNNLocalContrastNormalizationNode)
 initWithSourceSelector = mkSelector "initWithSource:"
 
 -- | @Selector@ for @pm@
-pmSelector :: Selector
+pmSelector :: Selector '[] CFloat
 pmSelector = mkSelector "pm"
 
 -- | @Selector@ for @setPm:@
-setPmSelector :: Selector
+setPmSelector :: Selector '[CFloat] ()
 setPmSelector = mkSelector "setPm:"
 
 -- | @Selector@ for @ps@
-psSelector :: Selector
+psSelector :: Selector '[] CFloat
 psSelector = mkSelector "ps"
 
 -- | @Selector@ for @setPs:@
-setPsSelector :: Selector
+setPsSelector :: Selector '[CFloat] ()
 setPsSelector = mkSelector "setPs:"
 
 -- | @Selector@ for @p0@
-p0Selector :: Selector
+p0Selector :: Selector '[] CFloat
 p0Selector = mkSelector "p0"
 
 -- | @Selector@ for @setP0:@
-setP0Selector :: Selector
+setP0Selector :: Selector '[CFloat] ()
 setP0Selector = mkSelector "setP0:"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 
 -- | @Selector@ for @setKernelWidth:@
-setKernelWidthSelector :: Selector
+setKernelWidthSelector :: Selector '[CULong] ()
 setKernelWidthSelector = mkSelector "setKernelWidth:"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @setKernelHeight:@
-setKernelHeightSelector :: Selector
+setKernelHeightSelector :: Selector '[CULong] ()
 setKernelHeightSelector = mkSelector "setKernelHeight:"
 

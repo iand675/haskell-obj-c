@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,32 +24,28 @@ module ObjC.SceneKit.SCNPyramid
   , setHeightSegmentCount
   , lengthSegmentCount
   , setLengthSegmentCount
-  , pyramidWithWidth_height_lengthSelector
-  , widthSelector
-  , setWidthSelector
-  , heightSelector
-  , setHeightSelector
-  , lengthSelector
-  , setLengthSelector
-  , widthSegmentCountSelector
-  , setWidthSegmentCountSelector
   , heightSegmentCountSelector
-  , setHeightSegmentCountSelector
+  , heightSelector
   , lengthSegmentCountSelector
+  , lengthSelector
+  , pyramidWithWidth_height_lengthSelector
+  , setHeightSegmentCountSelector
+  , setHeightSelector
   , setLengthSegmentCountSelector
+  , setLengthSelector
+  , setWidthSegmentCountSelector
+  , setWidthSelector
+  , widthSegmentCountSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,7 +67,7 @@ pyramidWithWidth_height_length :: CDouble -> CDouble -> CDouble -> IO (Id SCNPyr
 pyramidWithWidth_height_length width height length_ =
   do
     cls' <- getRequiredClass "SCNPyramid"
-    sendClassMsg cls' (mkSelector "pyramidWithWidth:height:length:") (retPtr retVoid) [argCDouble width, argCDouble height, argCDouble length_] >>= retainedObject . castPtr
+    sendClassMessage cls' pyramidWithWidth_height_lengthSelector width height length_
 
 -- | width
 --
@@ -80,8 +77,8 @@ pyramidWithWidth_height_length width height length_ =
 --
 -- ObjC selector: @- width@
 width :: IsSCNPyramid scnPyramid => scnPyramid -> IO CDouble
-width scnPyramid  =
-    sendMsg scnPyramid (mkSelector "width") retCDouble []
+width scnPyramid =
+  sendMessage scnPyramid widthSelector
 
 -- | width
 --
@@ -91,8 +88,8 @@ width scnPyramid  =
 --
 -- ObjC selector: @- setWidth:@
 setWidth :: IsSCNPyramid scnPyramid => scnPyramid -> CDouble -> IO ()
-setWidth scnPyramid  value =
-    sendMsg scnPyramid (mkSelector "setWidth:") retVoid [argCDouble value]
+setWidth scnPyramid value =
+  sendMessage scnPyramid setWidthSelector value
 
 -- | height
 --
@@ -102,8 +99,8 @@ setWidth scnPyramid  value =
 --
 -- ObjC selector: @- height@
 height :: IsSCNPyramid scnPyramid => scnPyramid -> IO CDouble
-height scnPyramid  =
-    sendMsg scnPyramid (mkSelector "height") retCDouble []
+height scnPyramid =
+  sendMessage scnPyramid heightSelector
 
 -- | height
 --
@@ -113,8 +110,8 @@ height scnPyramid  =
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsSCNPyramid scnPyramid => scnPyramid -> CDouble -> IO ()
-setHeight scnPyramid  value =
-    sendMsg scnPyramid (mkSelector "setHeight:") retVoid [argCDouble value]
+setHeight scnPyramid value =
+  sendMessage scnPyramid setHeightSelector value
 
 -- | length
 --
@@ -124,8 +121,8 @@ setHeight scnPyramid  value =
 --
 -- ObjC selector: @- length@
 length_ :: IsSCNPyramid scnPyramid => scnPyramid -> IO CDouble
-length_ scnPyramid  =
-    sendMsg scnPyramid (mkSelector "length") retCDouble []
+length_ scnPyramid =
+  sendMessage scnPyramid lengthSelector
 
 -- | length
 --
@@ -135,8 +132,8 @@ length_ scnPyramid  =
 --
 -- ObjC selector: @- setLength:@
 setLength :: IsSCNPyramid scnPyramid => scnPyramid -> CDouble -> IO ()
-setLength scnPyramid  value =
-    sendMsg scnPyramid (mkSelector "setLength:") retVoid [argCDouble value]
+setLength scnPyramid value =
+  sendMessage scnPyramid setLengthSelector value
 
 -- | widthSegmentCount
 --
@@ -146,8 +143,8 @@ setLength scnPyramid  value =
 --
 -- ObjC selector: @- widthSegmentCount@
 widthSegmentCount :: IsSCNPyramid scnPyramid => scnPyramid -> IO CLong
-widthSegmentCount scnPyramid  =
-    sendMsg scnPyramid (mkSelector "widthSegmentCount") retCLong []
+widthSegmentCount scnPyramid =
+  sendMessage scnPyramid widthSegmentCountSelector
 
 -- | widthSegmentCount
 --
@@ -157,8 +154,8 @@ widthSegmentCount scnPyramid  =
 --
 -- ObjC selector: @- setWidthSegmentCount:@
 setWidthSegmentCount :: IsSCNPyramid scnPyramid => scnPyramid -> CLong -> IO ()
-setWidthSegmentCount scnPyramid  value =
-    sendMsg scnPyramid (mkSelector "setWidthSegmentCount:") retVoid [argCLong value]
+setWidthSegmentCount scnPyramid value =
+  sendMessage scnPyramid setWidthSegmentCountSelector value
 
 -- | heightSegmentCount
 --
@@ -168,8 +165,8 @@ setWidthSegmentCount scnPyramid  value =
 --
 -- ObjC selector: @- heightSegmentCount@
 heightSegmentCount :: IsSCNPyramid scnPyramid => scnPyramid -> IO CLong
-heightSegmentCount scnPyramid  =
-    sendMsg scnPyramid (mkSelector "heightSegmentCount") retCLong []
+heightSegmentCount scnPyramid =
+  sendMessage scnPyramid heightSegmentCountSelector
 
 -- | heightSegmentCount
 --
@@ -179,8 +176,8 @@ heightSegmentCount scnPyramid  =
 --
 -- ObjC selector: @- setHeightSegmentCount:@
 setHeightSegmentCount :: IsSCNPyramid scnPyramid => scnPyramid -> CLong -> IO ()
-setHeightSegmentCount scnPyramid  value =
-    sendMsg scnPyramid (mkSelector "setHeightSegmentCount:") retVoid [argCLong value]
+setHeightSegmentCount scnPyramid value =
+  sendMessage scnPyramid setHeightSegmentCountSelector value
 
 -- | lengthSegmentCount
 --
@@ -190,8 +187,8 @@ setHeightSegmentCount scnPyramid  value =
 --
 -- ObjC selector: @- lengthSegmentCount@
 lengthSegmentCount :: IsSCNPyramid scnPyramid => scnPyramid -> IO CLong
-lengthSegmentCount scnPyramid  =
-    sendMsg scnPyramid (mkSelector "lengthSegmentCount") retCLong []
+lengthSegmentCount scnPyramid =
+  sendMessage scnPyramid lengthSegmentCountSelector
 
 -- | lengthSegmentCount
 --
@@ -201,62 +198,62 @@ lengthSegmentCount scnPyramid  =
 --
 -- ObjC selector: @- setLengthSegmentCount:@
 setLengthSegmentCount :: IsSCNPyramid scnPyramid => scnPyramid -> CLong -> IO ()
-setLengthSegmentCount scnPyramid  value =
-    sendMsg scnPyramid (mkSelector "setLengthSegmentCount:") retVoid [argCLong value]
+setLengthSegmentCount scnPyramid value =
+  sendMessage scnPyramid setLengthSegmentCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pyramidWithWidth:height:length:@
-pyramidWithWidth_height_lengthSelector :: Selector
+pyramidWithWidth_height_lengthSelector :: Selector '[CDouble, CDouble, CDouble] (Id SCNPyramid)
 pyramidWithWidth_height_lengthSelector = mkSelector "pyramidWithWidth:height:length:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CDouble
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CDouble] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CDouble
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CDouble] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CDouble
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @setLength:@
-setLengthSelector :: Selector
+setLengthSelector :: Selector '[CDouble] ()
 setLengthSelector = mkSelector "setLength:"
 
 -- | @Selector@ for @widthSegmentCount@
-widthSegmentCountSelector :: Selector
+widthSegmentCountSelector :: Selector '[] CLong
 widthSegmentCountSelector = mkSelector "widthSegmentCount"
 
 -- | @Selector@ for @setWidthSegmentCount:@
-setWidthSegmentCountSelector :: Selector
+setWidthSegmentCountSelector :: Selector '[CLong] ()
 setWidthSegmentCountSelector = mkSelector "setWidthSegmentCount:"
 
 -- | @Selector@ for @heightSegmentCount@
-heightSegmentCountSelector :: Selector
+heightSegmentCountSelector :: Selector '[] CLong
 heightSegmentCountSelector = mkSelector "heightSegmentCount"
 
 -- | @Selector@ for @setHeightSegmentCount:@
-setHeightSegmentCountSelector :: Selector
+setHeightSegmentCountSelector :: Selector '[CLong] ()
 setHeightSegmentCountSelector = mkSelector "setHeightSegmentCount:"
 
 -- | @Selector@ for @lengthSegmentCount@
-lengthSegmentCountSelector :: Selector
+lengthSegmentCountSelector :: Selector '[] CLong
 lengthSegmentCountSelector = mkSelector "lengthSegmentCount"
 
 -- | @Selector@ for @setLengthSegmentCount:@
-setLengthSegmentCountSelector :: Selector
+setLengthSegmentCountSelector :: Selector '[CLong] ()
 setLengthSegmentCountSelector = mkSelector "setLengthSegmentCount:"
 

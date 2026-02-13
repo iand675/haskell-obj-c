@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.Metal.MTLFunctionStitchingInputNode
   , initWithArgumentIndex
   , argumentIndex
   , setArgumentIndex
-  , initWithArgumentIndexSelector
   , argumentIndexSelector
+  , initWithArgumentIndexSelector
   , setArgumentIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,32 +34,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithArgumentIndex:@
 initWithArgumentIndex :: IsMTLFunctionStitchingInputNode mtlFunctionStitchingInputNode => mtlFunctionStitchingInputNode -> CULong -> IO (Id MTLFunctionStitchingInputNode)
-initWithArgumentIndex mtlFunctionStitchingInputNode  argument =
-    sendMsg mtlFunctionStitchingInputNode (mkSelector "initWithArgumentIndex:") (retPtr retVoid) [argCULong argument] >>= ownedObject . castPtr
+initWithArgumentIndex mtlFunctionStitchingInputNode argument =
+  sendOwnedMessage mtlFunctionStitchingInputNode initWithArgumentIndexSelector argument
 
 -- | @- argumentIndex@
 argumentIndex :: IsMTLFunctionStitchingInputNode mtlFunctionStitchingInputNode => mtlFunctionStitchingInputNode -> IO CULong
-argumentIndex mtlFunctionStitchingInputNode  =
-    sendMsg mtlFunctionStitchingInputNode (mkSelector "argumentIndex") retCULong []
+argumentIndex mtlFunctionStitchingInputNode =
+  sendMessage mtlFunctionStitchingInputNode argumentIndexSelector
 
 -- | @- setArgumentIndex:@
 setArgumentIndex :: IsMTLFunctionStitchingInputNode mtlFunctionStitchingInputNode => mtlFunctionStitchingInputNode -> CULong -> IO ()
-setArgumentIndex mtlFunctionStitchingInputNode  value =
-    sendMsg mtlFunctionStitchingInputNode (mkSelector "setArgumentIndex:") retVoid [argCULong value]
+setArgumentIndex mtlFunctionStitchingInputNode value =
+  sendMessage mtlFunctionStitchingInputNode setArgumentIndexSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithArgumentIndex:@
-initWithArgumentIndexSelector :: Selector
+initWithArgumentIndexSelector :: Selector '[CULong] (Id MTLFunctionStitchingInputNode)
 initWithArgumentIndexSelector = mkSelector "initWithArgumentIndex:"
 
 -- | @Selector@ for @argumentIndex@
-argumentIndexSelector :: Selector
+argumentIndexSelector :: Selector '[] CULong
 argumentIndexSelector = mkSelector "argumentIndex"
 
 -- | @Selector@ for @setArgumentIndex:@
-setArgumentIndexSelector :: Selector
+setArgumentIndexSelector :: Selector '[CULong] ()
 setArgumentIndexSelector = mkSelector "setArgumentIndex:"
 

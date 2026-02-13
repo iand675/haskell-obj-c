@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.AppKit.NSTextContentManager
   , setAutomaticallySynchronizesTextLayoutManagers
   , automaticallySynchronizesToBackingStore
   , setAutomaticallySynchronizesToBackingStore
+  , addTextLayoutManagerSelector
+  , automaticallySynchronizesTextLayoutManagersSelector
+  , automaticallySynchronizesToBackingStoreSelector
+  , delegateSelector
+  , hasEditingTransactionSelector
   , initSelector
   , initWithCoderSelector
-  , addTextLayoutManagerSelector
+  , performEditingTransactionUsingBlockSelector
+  , primaryTextLayoutManagerSelector
+  , recordEditActionInRange_newTextRangeSelector
   , removeTextLayoutManagerSelector
+  , setAutomaticallySynchronizesTextLayoutManagersSelector
+  , setAutomaticallySynchronizesToBackingStoreSelector
+  , setDelegateSelector
+  , setPrimaryTextLayoutManagerSelector
   , synchronizeTextLayoutManagersSelector
   , textElementsForRangeSelector
-  , performEditingTransactionUsingBlockSelector
-  , recordEditActionInRange_newTextRangeSelector
-  , delegateSelector
-  , setDelegateSelector
   , textLayoutManagersSelector
-  , primaryTextLayoutManagerSelector
-  , setPrimaryTextLayoutManagerSelector
-  , hasEditingTransactionSelector
-  , automaticallySynchronizesTextLayoutManagersSelector
-  , setAutomaticallySynchronizesTextLayoutManagersSelector
-  , automaticallySynchronizesToBackingStoreSelector
-  , setAutomaticallySynchronizesToBackingStoreSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,174 +60,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> IO (Id NSTextContentManager)
-init_ nsTextContentManager  =
-    sendMsg nsTextContentManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextContentManager =
+  sendOwnedMessage nsTextContentManager initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSTextContentManager nsTextContentManager, IsNSCoder coder) => nsTextContentManager -> coder -> IO (Id NSTextContentManager)
-initWithCoder nsTextContentManager  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsTextContentManager (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsTextContentManager coder =
+  sendOwnedMessage nsTextContentManager initWithCoderSelector (toNSCoder coder)
 
 -- | @- addTextLayoutManager:@
 addTextLayoutManager :: (IsNSTextContentManager nsTextContentManager, IsNSTextLayoutManager textLayoutManager) => nsTextContentManager -> textLayoutManager -> IO ()
-addTextLayoutManager nsTextContentManager  textLayoutManager =
-  withObjCPtr textLayoutManager $ \raw_textLayoutManager ->
-      sendMsg nsTextContentManager (mkSelector "addTextLayoutManager:") retVoid [argPtr (castPtr raw_textLayoutManager :: Ptr ())]
+addTextLayoutManager nsTextContentManager textLayoutManager =
+  sendMessage nsTextContentManager addTextLayoutManagerSelector (toNSTextLayoutManager textLayoutManager)
 
 -- | @- removeTextLayoutManager:@
 removeTextLayoutManager :: (IsNSTextContentManager nsTextContentManager, IsNSTextLayoutManager textLayoutManager) => nsTextContentManager -> textLayoutManager -> IO ()
-removeTextLayoutManager nsTextContentManager  textLayoutManager =
-  withObjCPtr textLayoutManager $ \raw_textLayoutManager ->
-      sendMsg nsTextContentManager (mkSelector "removeTextLayoutManager:") retVoid [argPtr (castPtr raw_textLayoutManager :: Ptr ())]
+removeTextLayoutManager nsTextContentManager textLayoutManager =
+  sendMessage nsTextContentManager removeTextLayoutManagerSelector (toNSTextLayoutManager textLayoutManager)
 
 -- | @- synchronizeTextLayoutManagers:@
 synchronizeTextLayoutManagers :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> Ptr () -> IO ()
-synchronizeTextLayoutManagers nsTextContentManager  completionHandler =
-    sendMsg nsTextContentManager (mkSelector "synchronizeTextLayoutManagers:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+synchronizeTextLayoutManagers nsTextContentManager completionHandler =
+  sendMessage nsTextContentManager synchronizeTextLayoutManagersSelector completionHandler
 
 -- | @- textElementsForRange:@
 textElementsForRange :: (IsNSTextContentManager nsTextContentManager, IsNSTextRange range) => nsTextContentManager -> range -> IO (Id NSArray)
-textElementsForRange nsTextContentManager  range =
-  withObjCPtr range $ \raw_range ->
-      sendMsg nsTextContentManager (mkSelector "textElementsForRange:") (retPtr retVoid) [argPtr (castPtr raw_range :: Ptr ())] >>= retainedObject . castPtr
+textElementsForRange nsTextContentManager range =
+  sendMessage nsTextContentManager textElementsForRangeSelector (toNSTextRange range)
 
 -- | @- performEditingTransactionUsingBlock:@
 performEditingTransactionUsingBlock :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> Ptr () -> IO ()
-performEditingTransactionUsingBlock nsTextContentManager  transaction =
-    sendMsg nsTextContentManager (mkSelector "performEditingTransactionUsingBlock:") retVoid [argPtr (castPtr transaction :: Ptr ())]
+performEditingTransactionUsingBlock nsTextContentManager transaction =
+  sendMessage nsTextContentManager performEditingTransactionUsingBlockSelector transaction
 
 -- | @- recordEditActionInRange:newTextRange:@
 recordEditActionInRange_newTextRange :: (IsNSTextContentManager nsTextContentManager, IsNSTextRange originalTextRange, IsNSTextRange newTextRange) => nsTextContentManager -> originalTextRange -> newTextRange -> IO ()
-recordEditActionInRange_newTextRange nsTextContentManager  originalTextRange newTextRange =
-  withObjCPtr originalTextRange $ \raw_originalTextRange ->
-    withObjCPtr newTextRange $ \raw_newTextRange ->
-        sendMsg nsTextContentManager (mkSelector "recordEditActionInRange:newTextRange:") retVoid [argPtr (castPtr raw_originalTextRange :: Ptr ()), argPtr (castPtr raw_newTextRange :: Ptr ())]
+recordEditActionInRange_newTextRange nsTextContentManager originalTextRange newTextRange =
+  sendMessage nsTextContentManager recordEditActionInRange_newTextRangeSelector (toNSTextRange originalTextRange) (toNSTextRange newTextRange)
 
 -- | @- delegate@
 delegate :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> IO RawId
-delegate nsTextContentManager  =
-    fmap (RawId . castPtr) $ sendMsg nsTextContentManager (mkSelector "delegate") (retPtr retVoid) []
+delegate nsTextContentManager =
+  sendMessage nsTextContentManager delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> RawId -> IO ()
-setDelegate nsTextContentManager  value =
-    sendMsg nsTextContentManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsTextContentManager value =
+  sendMessage nsTextContentManager setDelegateSelector value
 
 -- | @- textLayoutManagers@
 textLayoutManagers :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> IO (Id NSArray)
-textLayoutManagers nsTextContentManager  =
-    sendMsg nsTextContentManager (mkSelector "textLayoutManagers") (retPtr retVoid) [] >>= retainedObject . castPtr
+textLayoutManagers nsTextContentManager =
+  sendMessage nsTextContentManager textLayoutManagersSelector
 
 -- | @- primaryTextLayoutManager@
 primaryTextLayoutManager :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> IO (Id NSTextLayoutManager)
-primaryTextLayoutManager nsTextContentManager  =
-    sendMsg nsTextContentManager (mkSelector "primaryTextLayoutManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryTextLayoutManager nsTextContentManager =
+  sendMessage nsTextContentManager primaryTextLayoutManagerSelector
 
 -- | @- setPrimaryTextLayoutManager:@
 setPrimaryTextLayoutManager :: (IsNSTextContentManager nsTextContentManager, IsNSTextLayoutManager value) => nsTextContentManager -> value -> IO ()
-setPrimaryTextLayoutManager nsTextContentManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextContentManager (mkSelector "setPrimaryTextLayoutManager:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrimaryTextLayoutManager nsTextContentManager value =
+  sendMessage nsTextContentManager setPrimaryTextLayoutManagerSelector (toNSTextLayoutManager value)
 
 -- | @- hasEditingTransaction@
 hasEditingTransaction :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> IO Bool
-hasEditingTransaction nsTextContentManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextContentManager (mkSelector "hasEditingTransaction") retCULong []
+hasEditingTransaction nsTextContentManager =
+  sendMessage nsTextContentManager hasEditingTransactionSelector
 
 -- | @- automaticallySynchronizesTextLayoutManagers@
 automaticallySynchronizesTextLayoutManagers :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> IO Bool
-automaticallySynchronizesTextLayoutManagers nsTextContentManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextContentManager (mkSelector "automaticallySynchronizesTextLayoutManagers") retCULong []
+automaticallySynchronizesTextLayoutManagers nsTextContentManager =
+  sendMessage nsTextContentManager automaticallySynchronizesTextLayoutManagersSelector
 
 -- | @- setAutomaticallySynchronizesTextLayoutManagers:@
 setAutomaticallySynchronizesTextLayoutManagers :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> Bool -> IO ()
-setAutomaticallySynchronizesTextLayoutManagers nsTextContentManager  value =
-    sendMsg nsTextContentManager (mkSelector "setAutomaticallySynchronizesTextLayoutManagers:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallySynchronizesTextLayoutManagers nsTextContentManager value =
+  sendMessage nsTextContentManager setAutomaticallySynchronizesTextLayoutManagersSelector value
 
 -- | @- automaticallySynchronizesToBackingStore@
 automaticallySynchronizesToBackingStore :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> IO Bool
-automaticallySynchronizesToBackingStore nsTextContentManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextContentManager (mkSelector "automaticallySynchronizesToBackingStore") retCULong []
+automaticallySynchronizesToBackingStore nsTextContentManager =
+  sendMessage nsTextContentManager automaticallySynchronizesToBackingStoreSelector
 
 -- | @- setAutomaticallySynchronizesToBackingStore:@
 setAutomaticallySynchronizesToBackingStore :: IsNSTextContentManager nsTextContentManager => nsTextContentManager -> Bool -> IO ()
-setAutomaticallySynchronizesToBackingStore nsTextContentManager  value =
-    sendMsg nsTextContentManager (mkSelector "setAutomaticallySynchronizesToBackingStore:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallySynchronizesToBackingStore nsTextContentManager value =
+  sendMessage nsTextContentManager setAutomaticallySynchronizesToBackingStoreSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextContentManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSTextContentManager)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @addTextLayoutManager:@
-addTextLayoutManagerSelector :: Selector
+addTextLayoutManagerSelector :: Selector '[Id NSTextLayoutManager] ()
 addTextLayoutManagerSelector = mkSelector "addTextLayoutManager:"
 
 -- | @Selector@ for @removeTextLayoutManager:@
-removeTextLayoutManagerSelector :: Selector
+removeTextLayoutManagerSelector :: Selector '[Id NSTextLayoutManager] ()
 removeTextLayoutManagerSelector = mkSelector "removeTextLayoutManager:"
 
 -- | @Selector@ for @synchronizeTextLayoutManagers:@
-synchronizeTextLayoutManagersSelector :: Selector
+synchronizeTextLayoutManagersSelector :: Selector '[Ptr ()] ()
 synchronizeTextLayoutManagersSelector = mkSelector "synchronizeTextLayoutManagers:"
 
 -- | @Selector@ for @textElementsForRange:@
-textElementsForRangeSelector :: Selector
+textElementsForRangeSelector :: Selector '[Id NSTextRange] (Id NSArray)
 textElementsForRangeSelector = mkSelector "textElementsForRange:"
 
 -- | @Selector@ for @performEditingTransactionUsingBlock:@
-performEditingTransactionUsingBlockSelector :: Selector
+performEditingTransactionUsingBlockSelector :: Selector '[Ptr ()] ()
 performEditingTransactionUsingBlockSelector = mkSelector "performEditingTransactionUsingBlock:"
 
 -- | @Selector@ for @recordEditActionInRange:newTextRange:@
-recordEditActionInRange_newTextRangeSelector :: Selector
+recordEditActionInRange_newTextRangeSelector :: Selector '[Id NSTextRange, Id NSTextRange] ()
 recordEditActionInRange_newTextRangeSelector = mkSelector "recordEditActionInRange:newTextRange:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @textLayoutManagers@
-textLayoutManagersSelector :: Selector
+textLayoutManagersSelector :: Selector '[] (Id NSArray)
 textLayoutManagersSelector = mkSelector "textLayoutManagers"
 
 -- | @Selector@ for @primaryTextLayoutManager@
-primaryTextLayoutManagerSelector :: Selector
+primaryTextLayoutManagerSelector :: Selector '[] (Id NSTextLayoutManager)
 primaryTextLayoutManagerSelector = mkSelector "primaryTextLayoutManager"
 
 -- | @Selector@ for @setPrimaryTextLayoutManager:@
-setPrimaryTextLayoutManagerSelector :: Selector
+setPrimaryTextLayoutManagerSelector :: Selector '[Id NSTextLayoutManager] ()
 setPrimaryTextLayoutManagerSelector = mkSelector "setPrimaryTextLayoutManager:"
 
 -- | @Selector@ for @hasEditingTransaction@
-hasEditingTransactionSelector :: Selector
+hasEditingTransactionSelector :: Selector '[] Bool
 hasEditingTransactionSelector = mkSelector "hasEditingTransaction"
 
 -- | @Selector@ for @automaticallySynchronizesTextLayoutManagers@
-automaticallySynchronizesTextLayoutManagersSelector :: Selector
+automaticallySynchronizesTextLayoutManagersSelector :: Selector '[] Bool
 automaticallySynchronizesTextLayoutManagersSelector = mkSelector "automaticallySynchronizesTextLayoutManagers"
 
 -- | @Selector@ for @setAutomaticallySynchronizesTextLayoutManagers:@
-setAutomaticallySynchronizesTextLayoutManagersSelector :: Selector
+setAutomaticallySynchronizesTextLayoutManagersSelector :: Selector '[Bool] ()
 setAutomaticallySynchronizesTextLayoutManagersSelector = mkSelector "setAutomaticallySynchronizesTextLayoutManagers:"
 
 -- | @Selector@ for @automaticallySynchronizesToBackingStore@
-automaticallySynchronizesToBackingStoreSelector :: Selector
+automaticallySynchronizesToBackingStoreSelector :: Selector '[] Bool
 automaticallySynchronizesToBackingStoreSelector = mkSelector "automaticallySynchronizesToBackingStore"
 
 -- | @Selector@ for @setAutomaticallySynchronizesToBackingStore:@
-setAutomaticallySynchronizesToBackingStoreSelector :: Selector
+setAutomaticallySynchronizesToBackingStoreSelector :: Selector '[Bool] ()
 setAutomaticallySynchronizesToBackingStoreSelector = mkSelector "setAutomaticallySynchronizesToBackingStore:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,30 +32,30 @@ module ObjC.CoreImage.CIRenderDestination
   , setBlendsInDestinationColorSpace
   , captureTraceURL
   , setCaptureTraceURL
-  , initWithPixelBufferSelector
+  , alphaModeSelector
+  , blendKernelSelector
+  , blendsInDestinationColorSpaceSelector
+  , captureTraceURLSelector
+  , clampedSelector
+  , colorSpaceSelector
+  , ditheredSelector
+  , flippedSelector
+  , heightSelector
+  , initWithBitmapData_width_height_bytesPerRow_formatSelector
+  , initWithGLTexture_target_width_heightSelector
   , initWithIOSurfaceSelector
   , initWithMTLTexture_commandBufferSelector
+  , initWithPixelBufferSelector
   , initWithWidth_height_pixelFormat_commandBuffer_mtlTextureProviderSelector
-  , initWithGLTexture_target_width_heightSelector
-  , initWithBitmapData_width_height_bytesPerRow_formatSelector
-  , widthSelector
-  , heightSelector
-  , alphaModeSelector
   , setAlphaModeSelector
-  , flippedSelector
-  , setFlippedSelector
-  , ditheredSelector
-  , setDitheredSelector
-  , clampedSelector
-  , setClampedSelector
-  , colorSpaceSelector
-  , setColorSpaceSelector
-  , blendKernelSelector
   , setBlendKernelSelector
-  , blendsInDestinationColorSpaceSelector
   , setBlendsInDestinationColorSpaceSelector
-  , captureTraceURLSelector
   , setCaptureTraceURLSelector
+  , setClampedSelector
+  , setColorSpaceSelector
+  , setDitheredSelector
+  , setFlippedSelector
+  , widthSelector
 
   -- * Enum types
   , CIRenderDestinationAlphaMode(CIRenderDestinationAlphaMode)
@@ -64,15 +65,11 @@ module ObjC.CoreImage.CIRenderDestination
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,115 +80,113 @@ import ObjC.IOSurface.Internal.Classes
 
 -- | @- initWithPixelBuffer:@
 initWithPixelBuffer :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> Ptr () -> IO (Id CIRenderDestination)
-initWithPixelBuffer ciRenderDestination  pixelBuffer =
-    sendMsg ciRenderDestination (mkSelector "initWithPixelBuffer:") (retPtr retVoid) [argPtr pixelBuffer] >>= ownedObject . castPtr
+initWithPixelBuffer ciRenderDestination pixelBuffer =
+  sendOwnedMessage ciRenderDestination initWithPixelBufferSelector pixelBuffer
 
 -- | @- initWithIOSurface:@
 initWithIOSurface :: (IsCIRenderDestination ciRenderDestination, IsIOSurface surface) => ciRenderDestination -> surface -> IO (Id CIRenderDestination)
-initWithIOSurface ciRenderDestination  surface =
-  withObjCPtr surface $ \raw_surface ->
-      sendMsg ciRenderDestination (mkSelector "initWithIOSurface:") (retPtr retVoid) [argPtr (castPtr raw_surface :: Ptr ())] >>= ownedObject . castPtr
+initWithIOSurface ciRenderDestination surface =
+  sendOwnedMessage ciRenderDestination initWithIOSurfaceSelector (toIOSurface surface)
 
 -- | @- initWithMTLTexture:commandBuffer:@
 initWithMTLTexture_commandBuffer :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> RawId -> RawId -> IO (Id CIRenderDestination)
-initWithMTLTexture_commandBuffer ciRenderDestination  texture commandBuffer =
-    sendMsg ciRenderDestination (mkSelector "initWithMTLTexture:commandBuffer:") (retPtr retVoid) [argPtr (castPtr (unRawId texture) :: Ptr ()), argPtr (castPtr (unRawId commandBuffer) :: Ptr ())] >>= ownedObject . castPtr
+initWithMTLTexture_commandBuffer ciRenderDestination texture commandBuffer =
+  sendOwnedMessage ciRenderDestination initWithMTLTexture_commandBufferSelector texture commandBuffer
 
 -- | @- initWithWidth:height:pixelFormat:commandBuffer:mtlTextureProvider:@
 initWithWidth_height_pixelFormat_commandBuffer_mtlTextureProvider :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> CULong -> CULong -> CInt -> RawId -> RawId -> IO (Id CIRenderDestination)
-initWithWidth_height_pixelFormat_commandBuffer_mtlTextureProvider ciRenderDestination  width height pixelFormat commandBuffer block =
-    sendMsg ciRenderDestination (mkSelector "initWithWidth:height:pixelFormat:commandBuffer:mtlTextureProvider:") (retPtr retVoid) [argCULong width, argCULong height, argCInt (fromIntegral pixelFormat), argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId block) :: Ptr ())] >>= ownedObject . castPtr
+initWithWidth_height_pixelFormat_commandBuffer_mtlTextureProvider ciRenderDestination width height pixelFormat commandBuffer block =
+  sendOwnedMessage ciRenderDestination initWithWidth_height_pixelFormat_commandBuffer_mtlTextureProviderSelector width height pixelFormat commandBuffer block
 
 -- | @- initWithGLTexture:target:width:height:@
 initWithGLTexture_target_width_height :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> CUInt -> CUInt -> CULong -> CULong -> IO (Id CIRenderDestination)
-initWithGLTexture_target_width_height ciRenderDestination  texture target width height =
-    sendMsg ciRenderDestination (mkSelector "initWithGLTexture:target:width:height:") (retPtr retVoid) [argCUInt texture, argCUInt target, argCULong width, argCULong height] >>= ownedObject . castPtr
+initWithGLTexture_target_width_height ciRenderDestination texture target width height =
+  sendOwnedMessage ciRenderDestination initWithGLTexture_target_width_heightSelector texture target width height
 
 -- | @- initWithBitmapData:width:height:bytesPerRow:format:@
 initWithBitmapData_width_height_bytesPerRow_format :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> Ptr () -> CULong -> CULong -> CULong -> CInt -> IO (Id CIRenderDestination)
-initWithBitmapData_width_height_bytesPerRow_format ciRenderDestination  data_ width height bytesPerRow format =
-    sendMsg ciRenderDestination (mkSelector "initWithBitmapData:width:height:bytesPerRow:format:") (retPtr retVoid) [argPtr data_, argCULong width, argCULong height, argCULong bytesPerRow, argCInt format] >>= ownedObject . castPtr
+initWithBitmapData_width_height_bytesPerRow_format ciRenderDestination data_ width height bytesPerRow format =
+  sendOwnedMessage ciRenderDestination initWithBitmapData_width_height_bytesPerRow_formatSelector data_ width height bytesPerRow format
 
 -- | @- width@
 width :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO CULong
-width ciRenderDestination  =
-    sendMsg ciRenderDestination (mkSelector "width") retCULong []
+width ciRenderDestination =
+  sendMessage ciRenderDestination widthSelector
 
 -- | @- height@
 height :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO CULong
-height ciRenderDestination  =
-    sendMsg ciRenderDestination (mkSelector "height") retCULong []
+height ciRenderDestination =
+  sendMessage ciRenderDestination heightSelector
 
 -- | @- alphaMode@
 alphaMode :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO CIRenderDestinationAlphaMode
-alphaMode ciRenderDestination  =
-    fmap (coerce :: CULong -> CIRenderDestinationAlphaMode) $ sendMsg ciRenderDestination (mkSelector "alphaMode") retCULong []
+alphaMode ciRenderDestination =
+  sendMessage ciRenderDestination alphaModeSelector
 
 -- | @- setAlphaMode:@
 setAlphaMode :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> CIRenderDestinationAlphaMode -> IO ()
-setAlphaMode ciRenderDestination  value =
-    sendMsg ciRenderDestination (mkSelector "setAlphaMode:") retVoid [argCULong (coerce value)]
+setAlphaMode ciRenderDestination value =
+  sendMessage ciRenderDestination setAlphaModeSelector value
 
 -- | @- flipped@
 flipped :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO Bool
-flipped ciRenderDestination  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciRenderDestination (mkSelector "flipped") retCULong []
+flipped ciRenderDestination =
+  sendMessage ciRenderDestination flippedSelector
 
 -- | @- setFlipped:@
 setFlipped :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> Bool -> IO ()
-setFlipped ciRenderDestination  value =
-    sendMsg ciRenderDestination (mkSelector "setFlipped:") retVoid [argCULong (if value then 1 else 0)]
+setFlipped ciRenderDestination value =
+  sendMessage ciRenderDestination setFlippedSelector value
 
 -- | @- dithered@
 dithered :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO Bool
-dithered ciRenderDestination  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciRenderDestination (mkSelector "dithered") retCULong []
+dithered ciRenderDestination =
+  sendMessage ciRenderDestination ditheredSelector
 
 -- | @- setDithered:@
 setDithered :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> Bool -> IO ()
-setDithered ciRenderDestination  value =
-    sendMsg ciRenderDestination (mkSelector "setDithered:") retVoid [argCULong (if value then 1 else 0)]
+setDithered ciRenderDestination value =
+  sendMessage ciRenderDestination setDitheredSelector value
 
 -- | @- clamped@
 clamped :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO Bool
-clamped ciRenderDestination  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciRenderDestination (mkSelector "clamped") retCULong []
+clamped ciRenderDestination =
+  sendMessage ciRenderDestination clampedSelector
 
 -- | @- setClamped:@
 setClamped :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> Bool -> IO ()
-setClamped ciRenderDestination  value =
-    sendMsg ciRenderDestination (mkSelector "setClamped:") retVoid [argCULong (if value then 1 else 0)]
+setClamped ciRenderDestination value =
+  sendMessage ciRenderDestination setClampedSelector value
 
 -- | @- colorSpace@
 colorSpace :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO (Ptr ())
-colorSpace ciRenderDestination  =
-    fmap castPtr $ sendMsg ciRenderDestination (mkSelector "colorSpace") (retPtr retVoid) []
+colorSpace ciRenderDestination =
+  sendMessage ciRenderDestination colorSpaceSelector
 
 -- | @- setColorSpace:@
 setColorSpace :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> Ptr () -> IO ()
-setColorSpace ciRenderDestination  value =
-    sendMsg ciRenderDestination (mkSelector "setColorSpace:") retVoid [argPtr value]
+setColorSpace ciRenderDestination value =
+  sendMessage ciRenderDestination setColorSpaceSelector value
 
 -- | @- blendKernel@
 blendKernel :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO (Id CIBlendKernel)
-blendKernel ciRenderDestination  =
-    sendMsg ciRenderDestination (mkSelector "blendKernel") (retPtr retVoid) [] >>= retainedObject . castPtr
+blendKernel ciRenderDestination =
+  sendMessage ciRenderDestination blendKernelSelector
 
 -- | @- setBlendKernel:@
 setBlendKernel :: (IsCIRenderDestination ciRenderDestination, IsCIBlendKernel value) => ciRenderDestination -> value -> IO ()
-setBlendKernel ciRenderDestination  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ciRenderDestination (mkSelector "setBlendKernel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBlendKernel ciRenderDestination value =
+  sendMessage ciRenderDestination setBlendKernelSelector (toCIBlendKernel value)
 
 -- | @- blendsInDestinationColorSpace@
 blendsInDestinationColorSpace :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO Bool
-blendsInDestinationColorSpace ciRenderDestination  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciRenderDestination (mkSelector "blendsInDestinationColorSpace") retCULong []
+blendsInDestinationColorSpace ciRenderDestination =
+  sendMessage ciRenderDestination blendsInDestinationColorSpaceSelector
 
 -- | @- setBlendsInDestinationColorSpace:@
 setBlendsInDestinationColorSpace :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> Bool -> IO ()
-setBlendsInDestinationColorSpace ciRenderDestination  value =
-    sendMsg ciRenderDestination (mkSelector "setBlendsInDestinationColorSpace:") retVoid [argCULong (if value then 1 else 0)]
+setBlendsInDestinationColorSpace ciRenderDestination value =
+  sendMessage ciRenderDestination setBlendsInDestinationColorSpaceSelector value
 
 -- | Tell the next render using this destination to capture a Metal trace.
 --
@@ -199,8 +194,8 @@ setBlendsInDestinationColorSpace ciRenderDestination  value =
 --
 -- ObjC selector: @- captureTraceURL@
 captureTraceURL :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> IO RawId
-captureTraceURL ciRenderDestination  =
-    fmap (RawId . castPtr) $ sendMsg ciRenderDestination (mkSelector "captureTraceURL") (retPtr retVoid) []
+captureTraceURL ciRenderDestination =
+  sendMessage ciRenderDestination captureTraceURLSelector
 
 -- | Tell the next render using this destination to capture a Metal trace.
 --
@@ -208,106 +203,106 @@ captureTraceURL ciRenderDestination  =
 --
 -- ObjC selector: @- setCaptureTraceURL:@
 setCaptureTraceURL :: IsCIRenderDestination ciRenderDestination => ciRenderDestination -> RawId -> IO ()
-setCaptureTraceURL ciRenderDestination  value =
-    sendMsg ciRenderDestination (mkSelector "setCaptureTraceURL:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setCaptureTraceURL ciRenderDestination value =
+  sendMessage ciRenderDestination setCaptureTraceURLSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPixelBuffer:@
-initWithPixelBufferSelector :: Selector
+initWithPixelBufferSelector :: Selector '[Ptr ()] (Id CIRenderDestination)
 initWithPixelBufferSelector = mkSelector "initWithPixelBuffer:"
 
 -- | @Selector@ for @initWithIOSurface:@
-initWithIOSurfaceSelector :: Selector
+initWithIOSurfaceSelector :: Selector '[Id IOSurface] (Id CIRenderDestination)
 initWithIOSurfaceSelector = mkSelector "initWithIOSurface:"
 
 -- | @Selector@ for @initWithMTLTexture:commandBuffer:@
-initWithMTLTexture_commandBufferSelector :: Selector
+initWithMTLTexture_commandBufferSelector :: Selector '[RawId, RawId] (Id CIRenderDestination)
 initWithMTLTexture_commandBufferSelector = mkSelector "initWithMTLTexture:commandBuffer:"
 
 -- | @Selector@ for @initWithWidth:height:pixelFormat:commandBuffer:mtlTextureProvider:@
-initWithWidth_height_pixelFormat_commandBuffer_mtlTextureProviderSelector :: Selector
+initWithWidth_height_pixelFormat_commandBuffer_mtlTextureProviderSelector :: Selector '[CULong, CULong, CInt, RawId, RawId] (Id CIRenderDestination)
 initWithWidth_height_pixelFormat_commandBuffer_mtlTextureProviderSelector = mkSelector "initWithWidth:height:pixelFormat:commandBuffer:mtlTextureProvider:"
 
 -- | @Selector@ for @initWithGLTexture:target:width:height:@
-initWithGLTexture_target_width_heightSelector :: Selector
+initWithGLTexture_target_width_heightSelector :: Selector '[CUInt, CUInt, CULong, CULong] (Id CIRenderDestination)
 initWithGLTexture_target_width_heightSelector = mkSelector "initWithGLTexture:target:width:height:"
 
 -- | @Selector@ for @initWithBitmapData:width:height:bytesPerRow:format:@
-initWithBitmapData_width_height_bytesPerRow_formatSelector :: Selector
+initWithBitmapData_width_height_bytesPerRow_formatSelector :: Selector '[Ptr (), CULong, CULong, CULong, CInt] (Id CIRenderDestination)
 initWithBitmapData_width_height_bytesPerRow_formatSelector = mkSelector "initWithBitmapData:width:height:bytesPerRow:format:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CULong
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CULong
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @alphaMode@
-alphaModeSelector :: Selector
+alphaModeSelector :: Selector '[] CIRenderDestinationAlphaMode
 alphaModeSelector = mkSelector "alphaMode"
 
 -- | @Selector@ for @setAlphaMode:@
-setAlphaModeSelector :: Selector
+setAlphaModeSelector :: Selector '[CIRenderDestinationAlphaMode] ()
 setAlphaModeSelector = mkSelector "setAlphaMode:"
 
 -- | @Selector@ for @flipped@
-flippedSelector :: Selector
+flippedSelector :: Selector '[] Bool
 flippedSelector = mkSelector "flipped"
 
 -- | @Selector@ for @setFlipped:@
-setFlippedSelector :: Selector
+setFlippedSelector :: Selector '[Bool] ()
 setFlippedSelector = mkSelector "setFlipped:"
 
 -- | @Selector@ for @dithered@
-ditheredSelector :: Selector
+ditheredSelector :: Selector '[] Bool
 ditheredSelector = mkSelector "dithered"
 
 -- | @Selector@ for @setDithered:@
-setDitheredSelector :: Selector
+setDitheredSelector :: Selector '[Bool] ()
 setDitheredSelector = mkSelector "setDithered:"
 
 -- | @Selector@ for @clamped@
-clampedSelector :: Selector
+clampedSelector :: Selector '[] Bool
 clampedSelector = mkSelector "clamped"
 
 -- | @Selector@ for @setClamped:@
-setClampedSelector :: Selector
+setClampedSelector :: Selector '[Bool] ()
 setClampedSelector = mkSelector "setClamped:"
 
 -- | @Selector@ for @colorSpace@
-colorSpaceSelector :: Selector
+colorSpaceSelector :: Selector '[] (Ptr ())
 colorSpaceSelector = mkSelector "colorSpace"
 
 -- | @Selector@ for @setColorSpace:@
-setColorSpaceSelector :: Selector
+setColorSpaceSelector :: Selector '[Ptr ()] ()
 setColorSpaceSelector = mkSelector "setColorSpace:"
 
 -- | @Selector@ for @blendKernel@
-blendKernelSelector :: Selector
+blendKernelSelector :: Selector '[] (Id CIBlendKernel)
 blendKernelSelector = mkSelector "blendKernel"
 
 -- | @Selector@ for @setBlendKernel:@
-setBlendKernelSelector :: Selector
+setBlendKernelSelector :: Selector '[Id CIBlendKernel] ()
 setBlendKernelSelector = mkSelector "setBlendKernel:"
 
 -- | @Selector@ for @blendsInDestinationColorSpace@
-blendsInDestinationColorSpaceSelector :: Selector
+blendsInDestinationColorSpaceSelector :: Selector '[] Bool
 blendsInDestinationColorSpaceSelector = mkSelector "blendsInDestinationColorSpace"
 
 -- | @Selector@ for @setBlendsInDestinationColorSpace:@
-setBlendsInDestinationColorSpaceSelector :: Selector
+setBlendsInDestinationColorSpaceSelector :: Selector '[Bool] ()
 setBlendsInDestinationColorSpaceSelector = mkSelector "setBlendsInDestinationColorSpace:"
 
 -- | @Selector@ for @captureTraceURL@
-captureTraceURLSelector :: Selector
+captureTraceURLSelector :: Selector '[] RawId
 captureTraceURLSelector = mkSelector "captureTraceURL"
 
 -- | @Selector@ for @setCaptureTraceURL:@
-setCaptureTraceURLSelector :: Selector
+setCaptureTraceURLSelector :: Selector '[RawId] ()
 setCaptureTraceURLSelector = mkSelector "setCaptureTraceURL:"
 

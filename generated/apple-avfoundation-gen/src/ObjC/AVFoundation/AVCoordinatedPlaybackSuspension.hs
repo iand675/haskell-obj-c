@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVCoordinatedPlaybackSuspension
   , end
   , reason
   , beginDate
+  , beginDateSelector
+  , endSelector
   , initSelector
   , newSelector
-  , endSelector
   , reasonSelector
-  , beginDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCoordinatedPlaybackSuspension avCoordinatedPlaybackSuspension => avCoordinatedPlaybackSuspension -> IO (Id AVCoordinatedPlaybackSuspension)
-init_ avCoordinatedPlaybackSuspension  =
-    sendMsg avCoordinatedPlaybackSuspension (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCoordinatedPlaybackSuspension =
+  sendOwnedMessage avCoordinatedPlaybackSuspension initSelector
 
 -- | @+ new@
 new :: IO (Id AVCoordinatedPlaybackSuspension)
 new  =
   do
     cls' <- getRequiredClass "AVCoordinatedPlaybackSuspension"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Ends the suspension.
 --
@@ -59,44 +56,44 @@ new  =
 --
 -- ObjC selector: @- end@
 end :: IsAVCoordinatedPlaybackSuspension avCoordinatedPlaybackSuspension => avCoordinatedPlaybackSuspension -> IO ()
-end avCoordinatedPlaybackSuspension  =
-    sendMsg avCoordinatedPlaybackSuspension (mkSelector "end") retVoid []
+end avCoordinatedPlaybackSuspension =
+  sendMessage avCoordinatedPlaybackSuspension endSelector
 
 -- | The reason for the suspension. This will be communicated to other participants while coordination is suspended.
 --
 -- ObjC selector: @- reason@
 reason :: IsAVCoordinatedPlaybackSuspension avCoordinatedPlaybackSuspension => avCoordinatedPlaybackSuspension -> IO (Id NSString)
-reason avCoordinatedPlaybackSuspension  =
-    sendMsg avCoordinatedPlaybackSuspension (mkSelector "reason") (retPtr retVoid) [] >>= retainedObject . castPtr
+reason avCoordinatedPlaybackSuspension =
+  sendMessage avCoordinatedPlaybackSuspension reasonSelector
 
 -- | The begin time of the suspension.
 --
 -- ObjC selector: @- beginDate@
 beginDate :: IsAVCoordinatedPlaybackSuspension avCoordinatedPlaybackSuspension => avCoordinatedPlaybackSuspension -> IO (Id NSDate)
-beginDate avCoordinatedPlaybackSuspension  =
-    sendMsg avCoordinatedPlaybackSuspension (mkSelector "beginDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+beginDate avCoordinatedPlaybackSuspension =
+  sendMessage avCoordinatedPlaybackSuspension beginDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCoordinatedPlaybackSuspension)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCoordinatedPlaybackSuspension)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @end@
-endSelector :: Selector
+endSelector :: Selector '[] ()
 endSelector = mkSelector "end"
 
 -- | @Selector@ for @reason@
-reasonSelector :: Selector
+reasonSelector :: Selector '[] (Id NSString)
 reasonSelector = mkSelector "reason"
 
 -- | @Selector@ for @beginDate@
-beginDateSelector :: Selector
+beginDateSelector :: Selector '[] (Id NSDate)
 beginDateSelector = mkSelector "beginDate"
 

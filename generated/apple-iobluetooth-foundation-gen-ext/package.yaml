@@ -18,4 +18,3 @@ library:
   source-dirs: src
   exposed-modules:
   - ObjC.IOBluetooth.NSMutableDictionary
-  - ObjC.IOBluetooth.NSObject

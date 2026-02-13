@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.QuartzCore.CAGradientLayer
   , type_
   , setType
   , colorsSelector
-  , setColorsSelector
   , locationsSelector
+  , setColorsSelector
   , setLocationsSelector
-  , typeSelector
   , setTypeSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- colors@
 colors :: IsCAGradientLayer caGradientLayer => caGradientLayer -> IO (Id NSArray)
-colors caGradientLayer  =
-    sendMsg caGradientLayer (mkSelector "colors") (retPtr retVoid) [] >>= retainedObject . castPtr
+colors caGradientLayer =
+  sendMessage caGradientLayer colorsSelector
 
 -- | @- setColors:@
 setColors :: (IsCAGradientLayer caGradientLayer, IsNSArray value) => caGradientLayer -> value -> IO ()
-setColors caGradientLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caGradientLayer (mkSelector "setColors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColors caGradientLayer value =
+  sendMessage caGradientLayer setColorsSelector (toNSArray value)
 
 -- | @- locations@
 locations :: IsCAGradientLayer caGradientLayer => caGradientLayer -> IO (Id NSArray)
-locations caGradientLayer  =
-    sendMsg caGradientLayer (mkSelector "locations") (retPtr retVoid) [] >>= retainedObject . castPtr
+locations caGradientLayer =
+  sendMessage caGradientLayer locationsSelector
 
 -- | @- setLocations:@
 setLocations :: (IsCAGradientLayer caGradientLayer, IsNSArray value) => caGradientLayer -> value -> IO ()
-setLocations caGradientLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caGradientLayer (mkSelector "setLocations:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocations caGradientLayer value =
+  sendMessage caGradientLayer setLocationsSelector (toNSArray value)
 
 -- | @- type@
 type_ :: IsCAGradientLayer caGradientLayer => caGradientLayer -> IO (Id NSString)
-type_ caGradientLayer  =
-    sendMsg caGradientLayer (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ caGradientLayer =
+  sendMessage caGradientLayer typeSelector
 
 -- | @- setType:@
 setType :: (IsCAGradientLayer caGradientLayer, IsNSString value) => caGradientLayer -> value -> IO ()
-setType caGradientLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caGradientLayer (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType caGradientLayer value =
+  sendMessage caGradientLayer setTypeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @colors@
-colorsSelector :: Selector
+colorsSelector :: Selector '[] (Id NSArray)
 colorsSelector = mkSelector "colors"
 
 -- | @Selector@ for @setColors:@
-setColorsSelector :: Selector
+setColorsSelector :: Selector '[Id NSArray] ()
 setColorsSelector = mkSelector "setColors:"
 
 -- | @Selector@ for @locations@
-locationsSelector :: Selector
+locationsSelector :: Selector '[] (Id NSArray)
 locationsSelector = mkSelector "locations"
 
 -- | @Selector@ for @setLocations:@
-setLocationsSelector :: Selector
+setLocationsSelector :: Selector '[Id NSArray] ()
 setLocationsSelector = mkSelector "setLocations:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,26 +32,26 @@ module ObjC.CoreBluetooth.CBPeripheral
   , services
   , canSendWriteWithoutResponse
   , ancsAuthorized
-  , readRSSISelector
-  , discoverServicesSelector
-  , discoverIncludedServices_forServiceSelector
-  , discoverCharacteristics_forServiceSelector
-  , readValueForCharacteristicSelector
-  , maximumWriteValueLengthForTypeSelector
-  , writeValue_forCharacteristic_typeSelector
-  , setNotifyValue_forCharacteristicSelector
-  , discoverDescriptorsForCharacteristicSelector
-  , readValueForDescriptorSelector
-  , writeValue_forDescriptorSelector
-  , openL2CAPChannelSelector
-  , delegateSelector
-  , setDelegateSelector
-  , nameSelector
-  , rssiSelector
-  , stateSelector
-  , servicesSelector
-  , canSendWriteWithoutResponseSelector
   , ancsAuthorizedSelector
+  , canSendWriteWithoutResponseSelector
+  , delegateSelector
+  , discoverCharacteristics_forServiceSelector
+  , discoverDescriptorsForCharacteristicSelector
+  , discoverIncludedServices_forServiceSelector
+  , discoverServicesSelector
+  , maximumWriteValueLengthForTypeSelector
+  , nameSelector
+  , openL2CAPChannelSelector
+  , readRSSISelector
+  , readValueForCharacteristicSelector
+  , readValueForDescriptorSelector
+  , rssiSelector
+  , servicesSelector
+  , setDelegateSelector
+  , setNotifyValue_forCharacteristicSelector
+  , stateSelector
+  , writeValue_forCharacteristic_typeSelector
+  , writeValue_forDescriptorSelector
 
   -- * Enum types
   , CBCharacteristicWriteType(CBCharacteristicWriteType)
@@ -64,15 +65,11 @@ module ObjC.CoreBluetooth.CBPeripheral
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -88,8 +85,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- readRSSI@
 readRSSI :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO ()
-readRSSI cbPeripheral  =
-    sendMsg cbPeripheral (mkSelector "readRSSI") retVoid []
+readRSSI cbPeripheral =
+  sendMessage cbPeripheral readRSSISelector
 
 -- | discoverServices:
 --
@@ -101,9 +98,8 @@ readRSSI cbPeripheral  =
 --
 -- ObjC selector: @- discoverServices:@
 discoverServices :: (IsCBPeripheral cbPeripheral, IsNSArray serviceUUIDs) => cbPeripheral -> serviceUUIDs -> IO ()
-discoverServices cbPeripheral  serviceUUIDs =
-  withObjCPtr serviceUUIDs $ \raw_serviceUUIDs ->
-      sendMsg cbPeripheral (mkSelector "discoverServices:") retVoid [argPtr (castPtr raw_serviceUUIDs :: Ptr ())]
+discoverServices cbPeripheral serviceUUIDs =
+  sendMessage cbPeripheral discoverServicesSelector (toNSArray serviceUUIDs)
 
 -- | discoverIncludedServices:forService:
 --
@@ -117,10 +113,8 @@ discoverServices cbPeripheral  serviceUUIDs =
 --
 -- ObjC selector: @- discoverIncludedServices:forService:@
 discoverIncludedServices_forService :: (IsCBPeripheral cbPeripheral, IsNSArray includedServiceUUIDs, IsCBService service) => cbPeripheral -> includedServiceUUIDs -> service -> IO ()
-discoverIncludedServices_forService cbPeripheral  includedServiceUUIDs service =
-  withObjCPtr includedServiceUUIDs $ \raw_includedServiceUUIDs ->
-    withObjCPtr service $ \raw_service ->
-        sendMsg cbPeripheral (mkSelector "discoverIncludedServices:forService:") retVoid [argPtr (castPtr raw_includedServiceUUIDs :: Ptr ()), argPtr (castPtr raw_service :: Ptr ())]
+discoverIncludedServices_forService cbPeripheral includedServiceUUIDs service =
+  sendMessage cbPeripheral discoverIncludedServices_forServiceSelector (toNSArray includedServiceUUIDs) (toCBService service)
 
 -- | discoverCharacteristics:forService:
 --
@@ -134,10 +128,8 @@ discoverIncludedServices_forService cbPeripheral  includedServiceUUIDs service =
 --
 -- ObjC selector: @- discoverCharacteristics:forService:@
 discoverCharacteristics_forService :: (IsCBPeripheral cbPeripheral, IsNSArray characteristicUUIDs, IsCBService service) => cbPeripheral -> characteristicUUIDs -> service -> IO ()
-discoverCharacteristics_forService cbPeripheral  characteristicUUIDs service =
-  withObjCPtr characteristicUUIDs $ \raw_characteristicUUIDs ->
-    withObjCPtr service $ \raw_service ->
-        sendMsg cbPeripheral (mkSelector "discoverCharacteristics:forService:") retVoid [argPtr (castPtr raw_characteristicUUIDs :: Ptr ()), argPtr (castPtr raw_service :: Ptr ())]
+discoverCharacteristics_forService cbPeripheral characteristicUUIDs service =
+  sendMessage cbPeripheral discoverCharacteristics_forServiceSelector (toNSArray characteristicUUIDs) (toCBService service)
 
 -- | readValueForCharacteristic:
 --
@@ -149,9 +141,8 @@ discoverCharacteristics_forService cbPeripheral  characteristicUUIDs service =
 --
 -- ObjC selector: @- readValueForCharacteristic:@
 readValueForCharacteristic :: (IsCBPeripheral cbPeripheral, IsCBCharacteristic characteristic) => cbPeripheral -> characteristic -> IO ()
-readValueForCharacteristic cbPeripheral  characteristic =
-  withObjCPtr characteristic $ \raw_characteristic ->
-      sendMsg cbPeripheral (mkSelector "readValueForCharacteristic:") retVoid [argPtr (castPtr raw_characteristic :: Ptr ())]
+readValueForCharacteristic cbPeripheral characteristic =
+  sendMessage cbPeripheral readValueForCharacteristicSelector (toCBCharacteristic characteristic)
 
 -- | maximumWriteValueLengthForType:
 --
@@ -161,8 +152,8 @@ readValueForCharacteristic cbPeripheral  characteristic =
 --
 -- ObjC selector: @- maximumWriteValueLengthForType:@
 maximumWriteValueLengthForType :: IsCBPeripheral cbPeripheral => cbPeripheral -> CBCharacteristicWriteType -> IO CULong
-maximumWriteValueLengthForType cbPeripheral  type_ =
-    sendMsg cbPeripheral (mkSelector "maximumWriteValueLengthForType:") retCULong [argCLong (coerce type_)]
+maximumWriteValueLengthForType cbPeripheral type_ =
+  sendMessage cbPeripheral maximumWriteValueLengthForTypeSelector type_
 
 -- | writeValue:forCharacteristic:type:
 --
@@ -186,10 +177,8 @@ maximumWriteValueLengthForType cbPeripheral  type_ =
 --
 -- ObjC selector: @- writeValue:forCharacteristic:type:@
 writeValue_forCharacteristic_type :: (IsCBPeripheral cbPeripheral, IsNSData data_, IsCBCharacteristic characteristic) => cbPeripheral -> data_ -> characteristic -> CBCharacteristicWriteType -> IO ()
-writeValue_forCharacteristic_type cbPeripheral  data_ characteristic type_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr characteristic $ \raw_characteristic ->
-        sendMsg cbPeripheral (mkSelector "writeValue:forCharacteristic:type:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_characteristic :: Ptr ()), argCLong (coerce type_)]
+writeValue_forCharacteristic_type cbPeripheral data_ characteristic type_ =
+  sendMessage cbPeripheral writeValue_forCharacteristic_typeSelector (toNSData data_) (toCBCharacteristic characteristic) type_
 
 -- | setNotifyValue:forCharacteristic:
 --
@@ -209,9 +198,8 @@ writeValue_forCharacteristic_type cbPeripheral  data_ characteristic type_ =
 --
 -- ObjC selector: @- setNotifyValue:forCharacteristic:@
 setNotifyValue_forCharacteristic :: (IsCBPeripheral cbPeripheral, IsCBCharacteristic characteristic) => cbPeripheral -> Bool -> characteristic -> IO ()
-setNotifyValue_forCharacteristic cbPeripheral  enabled characteristic =
-  withObjCPtr characteristic $ \raw_characteristic ->
-      sendMsg cbPeripheral (mkSelector "setNotifyValue:forCharacteristic:") retVoid [argCULong (if enabled then 1 else 0), argPtr (castPtr raw_characteristic :: Ptr ())]
+setNotifyValue_forCharacteristic cbPeripheral enabled characteristic =
+  sendMessage cbPeripheral setNotifyValue_forCharacteristicSelector enabled (toCBCharacteristic characteristic)
 
 -- | discoverDescriptorsForCharacteristic:
 --
@@ -223,9 +211,8 @@ setNotifyValue_forCharacteristic cbPeripheral  enabled characteristic =
 --
 -- ObjC selector: @- discoverDescriptorsForCharacteristic:@
 discoverDescriptorsForCharacteristic :: (IsCBPeripheral cbPeripheral, IsCBCharacteristic characteristic) => cbPeripheral -> characteristic -> IO ()
-discoverDescriptorsForCharacteristic cbPeripheral  characteristic =
-  withObjCPtr characteristic $ \raw_characteristic ->
-      sendMsg cbPeripheral (mkSelector "discoverDescriptorsForCharacteristic:") retVoid [argPtr (castPtr raw_characteristic :: Ptr ())]
+discoverDescriptorsForCharacteristic cbPeripheral characteristic =
+  sendMessage cbPeripheral discoverDescriptorsForCharacteristicSelector (toCBCharacteristic characteristic)
 
 -- | readValueForDescriptor:
 --
@@ -237,9 +224,8 @@ discoverDescriptorsForCharacteristic cbPeripheral  characteristic =
 --
 -- ObjC selector: @- readValueForDescriptor:@
 readValueForDescriptor :: (IsCBPeripheral cbPeripheral, IsCBDescriptor descriptor) => cbPeripheral -> descriptor -> IO ()
-readValueForDescriptor cbPeripheral  descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg cbPeripheral (mkSelector "readValueForDescriptor:") retVoid [argPtr (castPtr raw_descriptor :: Ptr ())]
+readValueForDescriptor cbPeripheral descriptor =
+  sendMessage cbPeripheral readValueForDescriptorSelector (toCBDescriptor descriptor)
 
 -- | writeValue:forDescriptor:
 --
@@ -257,10 +243,8 @@ readValueForDescriptor cbPeripheral  descriptor =
 --
 -- ObjC selector: @- writeValue:forDescriptor:@
 writeValue_forDescriptor :: (IsCBPeripheral cbPeripheral, IsNSData data_, IsCBDescriptor descriptor) => cbPeripheral -> data_ -> descriptor -> IO ()
-writeValue_forDescriptor cbPeripheral  data_ descriptor =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr descriptor $ \raw_descriptor ->
-        sendMsg cbPeripheral (mkSelector "writeValue:forDescriptor:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())]
+writeValue_forDescriptor cbPeripheral data_ descriptor =
+  sendMessage cbPeripheral writeValue_forDescriptorSelector (toNSData data_) (toCBDescriptor descriptor)
 
 -- | openL2CAPChannel:
 --
@@ -272,8 +256,8 @@ writeValue_forDescriptor cbPeripheral  data_ descriptor =
 --
 -- ObjC selector: @- openL2CAPChannel:@
 openL2CAPChannel :: IsCBPeripheral cbPeripheral => cbPeripheral -> CUShort -> IO ()
-openL2CAPChannel cbPeripheral  psm =
-    sendMsg cbPeripheral (mkSelector "openL2CAPChannel:") retVoid [argCUInt (fromIntegral psm)]
+openL2CAPChannel cbPeripheral psm =
+  sendMessage cbPeripheral openL2CAPChannelSelector psm
 
 -- | delegate
 --
@@ -281,8 +265,8 @@ openL2CAPChannel cbPeripheral  psm =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO RawId
-delegate cbPeripheral  =
-    fmap (RawId . castPtr) $ sendMsg cbPeripheral (mkSelector "delegate") (retPtr retVoid) []
+delegate cbPeripheral =
+  sendMessage cbPeripheral delegateSelector
 
 -- | delegate
 --
@@ -290,8 +274,8 @@ delegate cbPeripheral  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsCBPeripheral cbPeripheral => cbPeripheral -> RawId -> IO ()
-setDelegate cbPeripheral  value =
-    sendMsg cbPeripheral (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate cbPeripheral value =
+  sendMessage cbPeripheral setDelegateSelector value
 
 -- | name
 --
@@ -299,8 +283,8 @@ setDelegate cbPeripheral  value =
 --
 -- ObjC selector: @- name@
 name :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO (Id NSString)
-name cbPeripheral  =
-    sendMsg cbPeripheral (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name cbPeripheral =
+  sendMessage cbPeripheral nameSelector
 
 -- | RSSI
 --
@@ -312,8 +296,8 @@ name cbPeripheral  =
 --
 -- ObjC selector: @- RSSI@
 rssi :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO RawId
-rssi cbPeripheral  =
-    fmap (RawId . castPtr) $ sendMsg cbPeripheral (mkSelector "RSSI") (retPtr retVoid) []
+rssi cbPeripheral =
+  sendMessage cbPeripheral rssiSelector
 
 -- | state
 --
@@ -321,8 +305,8 @@ rssi cbPeripheral  =
 --
 -- ObjC selector: @- state@
 state :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO CBPeripheralState
-state cbPeripheral  =
-    fmap (coerce :: CLong -> CBPeripheralState) $ sendMsg cbPeripheral (mkSelector "state") retCLong []
+state cbPeripheral =
+  sendMessage cbPeripheral stateSelector
 
 -- | services
 --
@@ -330,8 +314,8 @@ state cbPeripheral  =
 --
 -- ObjC selector: @- services@
 services :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO (Id NSArray)
-services cbPeripheral  =
-    sendMsg cbPeripheral (mkSelector "services") (retPtr retVoid) [] >>= retainedObject . castPtr
+services cbPeripheral =
+  sendMessage cbPeripheral servicesSelector
 
 -- | canSendWriteWithoutResponse
 --
@@ -339,8 +323,8 @@ services cbPeripheral  =
 --
 -- ObjC selector: @- canSendWriteWithoutResponse@
 canSendWriteWithoutResponse :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO Bool
-canSendWriteWithoutResponse cbPeripheral  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbPeripheral (mkSelector "canSendWriteWithoutResponse") retCULong []
+canSendWriteWithoutResponse cbPeripheral =
+  sendMessage cbPeripheral canSendWriteWithoutResponseSelector
 
 -- | ancsAuthorized
 --
@@ -348,90 +332,90 @@ canSendWriteWithoutResponse cbPeripheral  =
 --
 -- ObjC selector: @- ancsAuthorized@
 ancsAuthorized :: IsCBPeripheral cbPeripheral => cbPeripheral -> IO Bool
-ancsAuthorized cbPeripheral  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbPeripheral (mkSelector "ancsAuthorized") retCULong []
+ancsAuthorized cbPeripheral =
+  sendMessage cbPeripheral ancsAuthorizedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readRSSI@
-readRSSISelector :: Selector
+readRSSISelector :: Selector '[] ()
 readRSSISelector = mkSelector "readRSSI"
 
 -- | @Selector@ for @discoverServices:@
-discoverServicesSelector :: Selector
+discoverServicesSelector :: Selector '[Id NSArray] ()
 discoverServicesSelector = mkSelector "discoverServices:"
 
 -- | @Selector@ for @discoverIncludedServices:forService:@
-discoverIncludedServices_forServiceSelector :: Selector
+discoverIncludedServices_forServiceSelector :: Selector '[Id NSArray, Id CBService] ()
 discoverIncludedServices_forServiceSelector = mkSelector "discoverIncludedServices:forService:"
 
 -- | @Selector@ for @discoverCharacteristics:forService:@
-discoverCharacteristics_forServiceSelector :: Selector
+discoverCharacteristics_forServiceSelector :: Selector '[Id NSArray, Id CBService] ()
 discoverCharacteristics_forServiceSelector = mkSelector "discoverCharacteristics:forService:"
 
 -- | @Selector@ for @readValueForCharacteristic:@
-readValueForCharacteristicSelector :: Selector
+readValueForCharacteristicSelector :: Selector '[Id CBCharacteristic] ()
 readValueForCharacteristicSelector = mkSelector "readValueForCharacteristic:"
 
 -- | @Selector@ for @maximumWriteValueLengthForType:@
-maximumWriteValueLengthForTypeSelector :: Selector
+maximumWriteValueLengthForTypeSelector :: Selector '[CBCharacteristicWriteType] CULong
 maximumWriteValueLengthForTypeSelector = mkSelector "maximumWriteValueLengthForType:"
 
 -- | @Selector@ for @writeValue:forCharacteristic:type:@
-writeValue_forCharacteristic_typeSelector :: Selector
+writeValue_forCharacteristic_typeSelector :: Selector '[Id NSData, Id CBCharacteristic, CBCharacteristicWriteType] ()
 writeValue_forCharacteristic_typeSelector = mkSelector "writeValue:forCharacteristic:type:"
 
 -- | @Selector@ for @setNotifyValue:forCharacteristic:@
-setNotifyValue_forCharacteristicSelector :: Selector
+setNotifyValue_forCharacteristicSelector :: Selector '[Bool, Id CBCharacteristic] ()
 setNotifyValue_forCharacteristicSelector = mkSelector "setNotifyValue:forCharacteristic:"
 
 -- | @Selector@ for @discoverDescriptorsForCharacteristic:@
-discoverDescriptorsForCharacteristicSelector :: Selector
+discoverDescriptorsForCharacteristicSelector :: Selector '[Id CBCharacteristic] ()
 discoverDescriptorsForCharacteristicSelector = mkSelector "discoverDescriptorsForCharacteristic:"
 
 -- | @Selector@ for @readValueForDescriptor:@
-readValueForDescriptorSelector :: Selector
+readValueForDescriptorSelector :: Selector '[Id CBDescriptor] ()
 readValueForDescriptorSelector = mkSelector "readValueForDescriptor:"
 
 -- | @Selector@ for @writeValue:forDescriptor:@
-writeValue_forDescriptorSelector :: Selector
+writeValue_forDescriptorSelector :: Selector '[Id NSData, Id CBDescriptor] ()
 writeValue_forDescriptorSelector = mkSelector "writeValue:forDescriptor:"
 
 -- | @Selector@ for @openL2CAPChannel:@
-openL2CAPChannelSelector :: Selector
+openL2CAPChannelSelector :: Selector '[CUShort] ()
 openL2CAPChannelSelector = mkSelector "openL2CAPChannel:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @RSSI@
-rssiSelector :: Selector
+rssiSelector :: Selector '[] RawId
 rssiSelector = mkSelector "RSSI"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] CBPeripheralState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @services@
-servicesSelector :: Selector
+servicesSelector :: Selector '[] (Id NSArray)
 servicesSelector = mkSelector "services"
 
 -- | @Selector@ for @canSendWriteWithoutResponse@
-canSendWriteWithoutResponseSelector :: Selector
+canSendWriteWithoutResponseSelector :: Selector '[] Bool
 canSendWriteWithoutResponseSelector = mkSelector "canSendWriteWithoutResponse"
 
 -- | @Selector@ for @ancsAuthorized@
-ancsAuthorizedSelector :: Selector
+ancsAuthorizedSelector :: Selector '[] Bool
 ancsAuthorizedSelector = mkSelector "ancsAuthorized"
 

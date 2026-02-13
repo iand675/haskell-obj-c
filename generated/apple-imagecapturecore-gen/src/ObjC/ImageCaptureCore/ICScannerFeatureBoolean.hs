@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.ImageCaptureCore.ICScannerFeatureBoolean
   , IsICScannerFeatureBoolean(..)
   , value
   , setValue
-  , valueSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- value@
 value :: IsICScannerFeatureBoolean icScannerFeatureBoolean => icScannerFeatureBoolean -> IO Bool
-value icScannerFeatureBoolean  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFeatureBoolean (mkSelector "value") retCULong []
+value icScannerFeatureBoolean =
+  sendMessage icScannerFeatureBoolean valueSelector
 
 -- | value
 --
@@ -48,18 +45,18 @@ value icScannerFeatureBoolean  =
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsICScannerFeatureBoolean icScannerFeatureBoolean => icScannerFeatureBoolean -> Bool -> IO ()
-setValue icScannerFeatureBoolean  value =
-    sendMsg icScannerFeatureBoolean (mkSelector "setValue:") retVoid [argCULong (if value then 1 else 0)]
+setValue icScannerFeatureBoolean value =
+  sendMessage icScannerFeatureBoolean setValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] Bool
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Bool] ()
 setValueSelector = mkSelector "setValue:"
 

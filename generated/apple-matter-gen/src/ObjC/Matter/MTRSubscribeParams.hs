@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,36 +26,32 @@ module ObjC.Matter.MTRSubscribeParams
   , setKeepPreviousSubscriptions
   , autoResubscribe
   , setAutoResubscribe
-  , initWithMinInterval_maxIntervalSelector
+  , autoResubscribeSelector
   , initSelector
+  , initWithMinInterval_maxIntervalSelector
+  , keepPreviousSubscriptionsSelector
+  , maxIntervalSelector
+  , minIntervalSelector
   , newSelector
   , replaceExistingSubscriptionsSelector
-  , setReplaceExistingSubscriptionsSelector
-  , resubscribeAutomaticallySelector
-  , setResubscribeAutomaticallySelector
-  , minIntervalSelector
-  , setMinIntervalSelector
-  , maxIntervalSelector
-  , setMaxIntervalSelector
   , reportEventsUrgentlySelector
-  , setReportEventsUrgentlySelector
-  , keepPreviousSubscriptionsSelector
-  , setKeepPreviousSubscriptionsSelector
-  , autoResubscribeSelector
+  , resubscribeAutomaticallySelector
   , setAutoResubscribeSelector
+  , setKeepPreviousSubscriptionsSelector
+  , setMaxIntervalSelector
+  , setMinIntervalSelector
+  , setReplaceExistingSubscriptionsSelector
+  , setReportEventsUrgentlySelector
+  , setResubscribeAutomaticallySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,24 +62,22 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithMinInterval:maxInterval:@
 initWithMinInterval_maxInterval :: (IsMTRSubscribeParams mtrSubscribeParams, IsNSNumber minInterval, IsNSNumber maxInterval) => mtrSubscribeParams -> minInterval -> maxInterval -> IO (Id MTRSubscribeParams)
-initWithMinInterval_maxInterval mtrSubscribeParams  minInterval maxInterval =
-  withObjCPtr minInterval $ \raw_minInterval ->
-    withObjCPtr maxInterval $ \raw_maxInterval ->
-        sendMsg mtrSubscribeParams (mkSelector "initWithMinInterval:maxInterval:") (retPtr retVoid) [argPtr (castPtr raw_minInterval :: Ptr ()), argPtr (castPtr raw_maxInterval :: Ptr ())] >>= ownedObject . castPtr
+initWithMinInterval_maxInterval mtrSubscribeParams minInterval maxInterval =
+  sendOwnedMessage mtrSubscribeParams initWithMinInterval_maxIntervalSelector (toNSNumber minInterval) (toNSNumber maxInterval)
 
 -- | init and new exist for now, for backwards compatibility, and initialize with minInterval set to 1 and maxInterval set to 0, which will not work on its own.  Uses of MTRSubscribeParams that rely on init must all be using (deprecated) APIs that pass in a separate minInterval and maxInterval.
 --
 -- ObjC selector: @- init@
 init_ :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> IO (Id MTRSubscribeParams)
-init_ mtrSubscribeParams  =
-    sendMsg mtrSubscribeParams (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrSubscribeParams =
+  sendOwnedMessage mtrSubscribeParams initSelector
 
 -- | @+ new@
 new :: IO (Id MTRSubscribeParams)
 new  =
   do
     cls' <- getRequiredClass "MTRSubscribeParams"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Whether the subscribe should replace already-existing subscriptions.  The default value is YES.
 --
@@ -92,8 +87,8 @@ new  =
 --
 -- ObjC selector: @- replaceExistingSubscriptions@
 replaceExistingSubscriptions :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> IO Bool
-replaceExistingSubscriptions mtrSubscribeParams  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrSubscribeParams (mkSelector "replaceExistingSubscriptions") retCULong []
+replaceExistingSubscriptions mtrSubscribeParams =
+  sendMessage mtrSubscribeParams replaceExistingSubscriptionsSelector
 
 -- | Whether the subscribe should replace already-existing subscriptions.  The default value is YES.
 --
@@ -103,8 +98,8 @@ replaceExistingSubscriptions mtrSubscribeParams  =
 --
 -- ObjC selector: @- setReplaceExistingSubscriptions:@
 setReplaceExistingSubscriptions :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> Bool -> IO ()
-setReplaceExistingSubscriptions mtrSubscribeParams  value =
-    sendMsg mtrSubscribeParams (mkSelector "setReplaceExistingSubscriptions:") retVoid [argCULong (if value then 1 else 0)]
+setReplaceExistingSubscriptions mtrSubscribeParams value =
+  sendMessage mtrSubscribeParams setReplaceExistingSubscriptionsSelector value
 
 -- | Whether the subscription should automatically try to re-establish if it drops.  The default value is YES.
 --
@@ -114,8 +109,8 @@ setReplaceExistingSubscriptions mtrSubscribeParams  value =
 --
 -- ObjC selector: @- resubscribeAutomatically@
 resubscribeAutomatically :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> IO Bool
-resubscribeAutomatically mtrSubscribeParams  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrSubscribeParams (mkSelector "resubscribeAutomatically") retCULong []
+resubscribeAutomatically mtrSubscribeParams =
+  sendMessage mtrSubscribeParams resubscribeAutomaticallySelector
 
 -- | Whether the subscription should automatically try to re-establish if it drops.  The default value is YES.
 --
@@ -125,38 +120,36 @@ resubscribeAutomatically mtrSubscribeParams  =
 --
 -- ObjC selector: @- setResubscribeAutomatically:@
 setResubscribeAutomatically :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> Bool -> IO ()
-setResubscribeAutomatically mtrSubscribeParams  value =
-    sendMsg mtrSubscribeParams (mkSelector "setResubscribeAutomatically:") retVoid [argCULong (if value then 1 else 0)]
+setResubscribeAutomatically mtrSubscribeParams value =
+  sendMessage mtrSubscribeParams setResubscribeAutomaticallySelector value
 
 -- | The minimum time, in seconds, between consecutive reports a server will send for this subscription.  This can be used to rate-limit the subscription traffic.  Any non-negative value is allowed, including 0.
 --
 -- ObjC selector: @- minInterval@
 minInterval :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> IO (Id NSNumber)
-minInterval mtrSubscribeParams  =
-    sendMsg mtrSubscribeParams (mkSelector "minInterval") (retPtr retVoid) [] >>= retainedObject . castPtr
+minInterval mtrSubscribeParams =
+  sendMessage mtrSubscribeParams minIntervalSelector
 
 -- | The minimum time, in seconds, between consecutive reports a server will send for this subscription.  This can be used to rate-limit the subscription traffic.  Any non-negative value is allowed, including 0.
 --
 -- ObjC selector: @- setMinInterval:@
 setMinInterval :: (IsMTRSubscribeParams mtrSubscribeParams, IsNSNumber value) => mtrSubscribeParams -> value -> IO ()
-setMinInterval mtrSubscribeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSubscribeParams (mkSelector "setMinInterval:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinInterval mtrSubscribeParams value =
+  sendMessage mtrSubscribeParams setMinIntervalSelector (toNSNumber value)
 
 -- | The suggested maximum time, in seconds, during which the server is allowed to send no reports at all for this subscription.  Must be at least as large as minInterval.  The server is allowed to use a larger time than this as the maxInterval it selects if it needs to (e.g. to meet its power budget).
 --
 -- ObjC selector: @- maxInterval@
 maxInterval :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> IO (Id NSNumber)
-maxInterval mtrSubscribeParams  =
-    sendMsg mtrSubscribeParams (mkSelector "maxInterval") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxInterval mtrSubscribeParams =
+  sendMessage mtrSubscribeParams maxIntervalSelector
 
 -- | The suggested maximum time, in seconds, during which the server is allowed to send no reports at all for this subscription.  Must be at least as large as minInterval.  The server is allowed to use a larger time than this as the maxInterval it selects if it needs to (e.g. to meet its power budget).
 --
 -- ObjC selector: @- setMaxInterval:@
 setMaxInterval :: (IsMTRSubscribeParams mtrSubscribeParams, IsNSNumber value) => mtrSubscribeParams -> value -> IO ()
-setMaxInterval mtrSubscribeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSubscribeParams (mkSelector "setMaxInterval:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxInterval mtrSubscribeParams value =
+  sendMessage mtrSubscribeParams setMaxIntervalSelector (toNSNumber value)
 
 -- | Controls whether events will be reported urgently. The default value is YES.
 --
@@ -166,8 +159,8 @@ setMaxInterval mtrSubscribeParams  value =
 --
 -- ObjC selector: @- reportEventsUrgently@
 reportEventsUrgently :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> IO Bool
-reportEventsUrgently mtrSubscribeParams  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrSubscribeParams (mkSelector "reportEventsUrgently") retCULong []
+reportEventsUrgently mtrSubscribeParams =
+  sendMessage mtrSubscribeParams reportEventsUrgentlySelector
 
 -- | Controls whether events will be reported urgently. The default value is YES.
 --
@@ -177,100 +170,98 @@ reportEventsUrgently mtrSubscribeParams  =
 --
 -- ObjC selector: @- setReportEventsUrgently:@
 setReportEventsUrgently :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> Bool -> IO ()
-setReportEventsUrgently mtrSubscribeParams  value =
-    sendMsg mtrSubscribeParams (mkSelector "setReportEventsUrgently:") retVoid [argCULong (if value then 1 else 0)]
+setReportEventsUrgently mtrSubscribeParams value =
+  sendMessage mtrSubscribeParams setReportEventsUrgentlySelector value
 
 -- | @- keepPreviousSubscriptions@
 keepPreviousSubscriptions :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> IO (Id NSNumber)
-keepPreviousSubscriptions mtrSubscribeParams  =
-    sendMsg mtrSubscribeParams (mkSelector "keepPreviousSubscriptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+keepPreviousSubscriptions mtrSubscribeParams =
+  sendMessage mtrSubscribeParams keepPreviousSubscriptionsSelector
 
 -- | @- setKeepPreviousSubscriptions:@
 setKeepPreviousSubscriptions :: (IsMTRSubscribeParams mtrSubscribeParams, IsNSNumber value) => mtrSubscribeParams -> value -> IO ()
-setKeepPreviousSubscriptions mtrSubscribeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSubscribeParams (mkSelector "setKeepPreviousSubscriptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeepPreviousSubscriptions mtrSubscribeParams value =
+  sendMessage mtrSubscribeParams setKeepPreviousSubscriptionsSelector (toNSNumber value)
 
 -- | @- autoResubscribe@
 autoResubscribe :: IsMTRSubscribeParams mtrSubscribeParams => mtrSubscribeParams -> IO (Id NSNumber)
-autoResubscribe mtrSubscribeParams  =
-    sendMsg mtrSubscribeParams (mkSelector "autoResubscribe") (retPtr retVoid) [] >>= retainedObject . castPtr
+autoResubscribe mtrSubscribeParams =
+  sendMessage mtrSubscribeParams autoResubscribeSelector
 
 -- | @- setAutoResubscribe:@
 setAutoResubscribe :: (IsMTRSubscribeParams mtrSubscribeParams, IsNSNumber value) => mtrSubscribeParams -> value -> IO ()
-setAutoResubscribe mtrSubscribeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrSubscribeParams (mkSelector "setAutoResubscribe:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAutoResubscribe mtrSubscribeParams value =
+  sendMessage mtrSubscribeParams setAutoResubscribeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMinInterval:maxInterval:@
-initWithMinInterval_maxIntervalSelector :: Selector
+initWithMinInterval_maxIntervalSelector :: Selector '[Id NSNumber, Id NSNumber] (Id MTRSubscribeParams)
 initWithMinInterval_maxIntervalSelector = mkSelector "initWithMinInterval:maxInterval:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRSubscribeParams)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRSubscribeParams)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @replaceExistingSubscriptions@
-replaceExistingSubscriptionsSelector :: Selector
+replaceExistingSubscriptionsSelector :: Selector '[] Bool
 replaceExistingSubscriptionsSelector = mkSelector "replaceExistingSubscriptions"
 
 -- | @Selector@ for @setReplaceExistingSubscriptions:@
-setReplaceExistingSubscriptionsSelector :: Selector
+setReplaceExistingSubscriptionsSelector :: Selector '[Bool] ()
 setReplaceExistingSubscriptionsSelector = mkSelector "setReplaceExistingSubscriptions:"
 
 -- | @Selector@ for @resubscribeAutomatically@
-resubscribeAutomaticallySelector :: Selector
+resubscribeAutomaticallySelector :: Selector '[] Bool
 resubscribeAutomaticallySelector = mkSelector "resubscribeAutomatically"
 
 -- | @Selector@ for @setResubscribeAutomatically:@
-setResubscribeAutomaticallySelector :: Selector
+setResubscribeAutomaticallySelector :: Selector '[Bool] ()
 setResubscribeAutomaticallySelector = mkSelector "setResubscribeAutomatically:"
 
 -- | @Selector@ for @minInterval@
-minIntervalSelector :: Selector
+minIntervalSelector :: Selector '[] (Id NSNumber)
 minIntervalSelector = mkSelector "minInterval"
 
 -- | @Selector@ for @setMinInterval:@
-setMinIntervalSelector :: Selector
+setMinIntervalSelector :: Selector '[Id NSNumber] ()
 setMinIntervalSelector = mkSelector "setMinInterval:"
 
 -- | @Selector@ for @maxInterval@
-maxIntervalSelector :: Selector
+maxIntervalSelector :: Selector '[] (Id NSNumber)
 maxIntervalSelector = mkSelector "maxInterval"
 
 -- | @Selector@ for @setMaxInterval:@
-setMaxIntervalSelector :: Selector
+setMaxIntervalSelector :: Selector '[Id NSNumber] ()
 setMaxIntervalSelector = mkSelector "setMaxInterval:"
 
 -- | @Selector@ for @reportEventsUrgently@
-reportEventsUrgentlySelector :: Selector
+reportEventsUrgentlySelector :: Selector '[] Bool
 reportEventsUrgentlySelector = mkSelector "reportEventsUrgently"
 
 -- | @Selector@ for @setReportEventsUrgently:@
-setReportEventsUrgentlySelector :: Selector
+setReportEventsUrgentlySelector :: Selector '[Bool] ()
 setReportEventsUrgentlySelector = mkSelector "setReportEventsUrgently:"
 
 -- | @Selector@ for @keepPreviousSubscriptions@
-keepPreviousSubscriptionsSelector :: Selector
+keepPreviousSubscriptionsSelector :: Selector '[] (Id NSNumber)
 keepPreviousSubscriptionsSelector = mkSelector "keepPreviousSubscriptions"
 
 -- | @Selector@ for @setKeepPreviousSubscriptions:@
-setKeepPreviousSubscriptionsSelector :: Selector
+setKeepPreviousSubscriptionsSelector :: Selector '[Id NSNumber] ()
 setKeepPreviousSubscriptionsSelector = mkSelector "setKeepPreviousSubscriptions:"
 
 -- | @Selector@ for @autoResubscribe@
-autoResubscribeSelector :: Selector
+autoResubscribeSelector :: Selector '[] (Id NSNumber)
 autoResubscribeSelector = mkSelector "autoResubscribe"
 
 -- | @Selector@ for @setAutoResubscribe:@
-setAutoResubscribeSelector :: Selector
+setAutoResubscribeSelector :: Selector '[Id NSNumber] ()
 setAutoResubscribeSelector = mkSelector "setAutoResubscribe:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Intents.INSpeakableString
   , initWithIdentifier_spokenPhrase_pronunciationHint
   , initWithSpokenPhrase
   , initSelector
-  , initWithVocabularyIdentifier_spokenPhrase_pronunciationHintSelector
   , initWithIdentifier_spokenPhrase_pronunciationHintSelector
   , initWithSpokenPhraseSelector
+  , initWithVocabularyIdentifier_spokenPhrase_pronunciationHintSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,48 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSpeakableString inSpeakableString => inSpeakableString -> IO (Id INSpeakableString)
-init_ inSpeakableString  =
-    sendMsg inSpeakableString (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inSpeakableString =
+  sendOwnedMessage inSpeakableString initSelector
 
 -- | @- initWithVocabularyIdentifier:spokenPhrase:pronunciationHint:@
 initWithVocabularyIdentifier_spokenPhrase_pronunciationHint :: (IsINSpeakableString inSpeakableString, IsNSString vocabularyIdentifier, IsNSString spokenPhrase, IsNSString pronunciationHint) => inSpeakableString -> vocabularyIdentifier -> spokenPhrase -> pronunciationHint -> IO (Id INSpeakableString)
-initWithVocabularyIdentifier_spokenPhrase_pronunciationHint inSpeakableString  vocabularyIdentifier spokenPhrase pronunciationHint =
-  withObjCPtr vocabularyIdentifier $ \raw_vocabularyIdentifier ->
-    withObjCPtr spokenPhrase $ \raw_spokenPhrase ->
-      withObjCPtr pronunciationHint $ \raw_pronunciationHint ->
-          sendMsg inSpeakableString (mkSelector "initWithVocabularyIdentifier:spokenPhrase:pronunciationHint:") (retPtr retVoid) [argPtr (castPtr raw_vocabularyIdentifier :: Ptr ()), argPtr (castPtr raw_spokenPhrase :: Ptr ()), argPtr (castPtr raw_pronunciationHint :: Ptr ())] >>= ownedObject . castPtr
+initWithVocabularyIdentifier_spokenPhrase_pronunciationHint inSpeakableString vocabularyIdentifier spokenPhrase pronunciationHint =
+  sendOwnedMessage inSpeakableString initWithVocabularyIdentifier_spokenPhrase_pronunciationHintSelector (toNSString vocabularyIdentifier) (toNSString spokenPhrase) (toNSString pronunciationHint)
 
 -- | @- initWithIdentifier:spokenPhrase:pronunciationHint:@
 initWithIdentifier_spokenPhrase_pronunciationHint :: (IsINSpeakableString inSpeakableString, IsNSString identifier, IsNSString spokenPhrase, IsNSString pronunciationHint) => inSpeakableString -> identifier -> spokenPhrase -> pronunciationHint -> IO (Id INSpeakableString)
-initWithIdentifier_spokenPhrase_pronunciationHint inSpeakableString  identifier spokenPhrase pronunciationHint =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr spokenPhrase $ \raw_spokenPhrase ->
-      withObjCPtr pronunciationHint $ \raw_pronunciationHint ->
-          sendMsg inSpeakableString (mkSelector "initWithIdentifier:spokenPhrase:pronunciationHint:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_spokenPhrase :: Ptr ()), argPtr (castPtr raw_pronunciationHint :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_spokenPhrase_pronunciationHint inSpeakableString identifier spokenPhrase pronunciationHint =
+  sendOwnedMessage inSpeakableString initWithIdentifier_spokenPhrase_pronunciationHintSelector (toNSString identifier) (toNSString spokenPhrase) (toNSString pronunciationHint)
 
 -- | @- initWithSpokenPhrase:@
 initWithSpokenPhrase :: (IsINSpeakableString inSpeakableString, IsNSString spokenPhrase) => inSpeakableString -> spokenPhrase -> IO (Id INSpeakableString)
-initWithSpokenPhrase inSpeakableString  spokenPhrase =
-  withObjCPtr spokenPhrase $ \raw_spokenPhrase ->
-      sendMsg inSpeakableString (mkSelector "initWithSpokenPhrase:") (retPtr retVoid) [argPtr (castPtr raw_spokenPhrase :: Ptr ())] >>= ownedObject . castPtr
+initWithSpokenPhrase inSpeakableString spokenPhrase =
+  sendOwnedMessage inSpeakableString initWithSpokenPhraseSelector (toNSString spokenPhrase)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INSpeakableString)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithVocabularyIdentifier:spokenPhrase:pronunciationHint:@
-initWithVocabularyIdentifier_spokenPhrase_pronunciationHintSelector :: Selector
+initWithVocabularyIdentifier_spokenPhrase_pronunciationHintSelector :: Selector '[Id NSString, Id NSString, Id NSString] (Id INSpeakableString)
 initWithVocabularyIdentifier_spokenPhrase_pronunciationHintSelector = mkSelector "initWithVocabularyIdentifier:spokenPhrase:pronunciationHint:"
 
 -- | @Selector@ for @initWithIdentifier:spokenPhrase:pronunciationHint:@
-initWithIdentifier_spokenPhrase_pronunciationHintSelector :: Selector
+initWithIdentifier_spokenPhrase_pronunciationHintSelector :: Selector '[Id NSString, Id NSString, Id NSString] (Id INSpeakableString)
 initWithIdentifier_spokenPhrase_pronunciationHintSelector = mkSelector "initWithIdentifier:spokenPhrase:pronunciationHint:"
 
 -- | @Selector@ for @initWithSpokenPhrase:@
-initWithSpokenPhraseSelector :: Selector
+initWithSpokenPhraseSelector :: Selector '[Id NSString] (Id INSpeakableString)
 initWithSpokenPhraseSelector = mkSelector "initWithSpokenPhrase:"
 

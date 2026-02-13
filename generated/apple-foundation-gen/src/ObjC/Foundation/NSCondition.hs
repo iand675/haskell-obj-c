@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Foundation.NSCondition
   , broadcast
   , name
   , setName
-  , waitSelector
-  , waitUntilDateSelector
-  , signalSelector
   , broadcastSelector
   , nameSelector
   , setNameSelector
+  , signalSelector
+  , waitSelector
+  , waitUntilDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,61 +35,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- wait@
 wait :: IsNSCondition nsCondition => nsCondition -> IO ()
-wait nsCondition  =
-    sendMsg nsCondition (mkSelector "wait") retVoid []
+wait nsCondition =
+  sendMessage nsCondition waitSelector
 
 -- | @- waitUntilDate:@
 waitUntilDate :: (IsNSCondition nsCondition, IsNSDate limit) => nsCondition -> limit -> IO Bool
-waitUntilDate nsCondition  limit =
-  withObjCPtr limit $ \raw_limit ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCondition (mkSelector "waitUntilDate:") retCULong [argPtr (castPtr raw_limit :: Ptr ())]
+waitUntilDate nsCondition limit =
+  sendMessage nsCondition waitUntilDateSelector (toNSDate limit)
 
 -- | @- signal@
 signal :: IsNSCondition nsCondition => nsCondition -> IO ()
-signal nsCondition  =
-    sendMsg nsCondition (mkSelector "signal") retVoid []
+signal nsCondition =
+  sendMessage nsCondition signalSelector
 
 -- | @- broadcast@
 broadcast :: IsNSCondition nsCondition => nsCondition -> IO ()
-broadcast nsCondition  =
-    sendMsg nsCondition (mkSelector "broadcast") retVoid []
+broadcast nsCondition =
+  sendMessage nsCondition broadcastSelector
 
 -- | @- name@
 name :: IsNSCondition nsCondition => nsCondition -> IO (Id NSString)
-name nsCondition  =
-    sendMsg nsCondition (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsCondition =
+  sendMessage nsCondition nameSelector
 
 -- | @- setName:@
 setName :: (IsNSCondition nsCondition, IsNSString value) => nsCondition -> value -> IO ()
-setName nsCondition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCondition (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsCondition value =
+  sendMessage nsCondition setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @wait@
-waitSelector :: Selector
+waitSelector :: Selector '[] ()
 waitSelector = mkSelector "wait"
 
 -- | @Selector@ for @waitUntilDate:@
-waitUntilDateSelector :: Selector
+waitUntilDateSelector :: Selector '[Id NSDate] Bool
 waitUntilDateSelector = mkSelector "waitUntilDate:"
 
 -- | @Selector@ for @signal@
-signalSelector :: Selector
+signalSelector :: Selector '[] ()
 signalSelector = mkSelector "signal"
 
 -- | @Selector@ for @broadcast@
-broadcastSelector :: Selector
+broadcastSelector :: Selector '[] ()
 broadcastSelector = mkSelector "broadcast"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

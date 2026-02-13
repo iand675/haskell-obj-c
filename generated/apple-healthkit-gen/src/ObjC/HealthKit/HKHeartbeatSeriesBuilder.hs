@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.HealthKit.HKHeartbeatSeriesBuilder
   , addMetadata_completion
   , finishSeriesWithCompletion
   , maximumCount
-  , initWithHealthStore_device_startDateSelector
   , addHeartbeatWithTimeIntervalSinceSeriesStartDate_precededByGap_completionSelector
   , addMetadata_completionSelector
   , finishSeriesWithCompletionSelector
+  , initWithHealthStore_device_startDateSelector
   , maximumCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,11 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithHealthStore:device:startDate:@
 initWithHealthStore_device_startDate :: (IsHKHeartbeatSeriesBuilder hkHeartbeatSeriesBuilder, IsHKHealthStore healthStore, IsHKDevice device, IsNSDate startDate) => hkHeartbeatSeriesBuilder -> healthStore -> device -> startDate -> IO (Id HKHeartbeatSeriesBuilder)
-initWithHealthStore_device_startDate hkHeartbeatSeriesBuilder  healthStore device startDate =
-  withObjCPtr healthStore $ \raw_healthStore ->
-    withObjCPtr device $ \raw_device ->
-      withObjCPtr startDate $ \raw_startDate ->
-          sendMsg hkHeartbeatSeriesBuilder (mkSelector "initWithHealthStore:device:startDate:") (retPtr retVoid) [argPtr (castPtr raw_healthStore :: Ptr ()), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ())] >>= ownedObject . castPtr
+initWithHealthStore_device_startDate hkHeartbeatSeriesBuilder healthStore device startDate =
+  sendOwnedMessage hkHeartbeatSeriesBuilder initWithHealthStore_device_startDateSelector (toHKHealthStore healthStore) (toHKDevice device) (toNSDate startDate)
 
 -- | addHeartbeatWithTimeIntervalSinceSeriesStartDate:precededByGap:completion:
 --
@@ -75,8 +69,8 @@ initWithHealthStore_device_startDate hkHeartbeatSeriesBuilder  healthStore devic
 --
 -- ObjC selector: @- addHeartbeatWithTimeIntervalSinceSeriesStartDate:precededByGap:completion:@
 addHeartbeatWithTimeIntervalSinceSeriesStartDate_precededByGap_completion :: IsHKHeartbeatSeriesBuilder hkHeartbeatSeriesBuilder => hkHeartbeatSeriesBuilder -> CDouble -> Bool -> Ptr () -> IO ()
-addHeartbeatWithTimeIntervalSinceSeriesStartDate_precededByGap_completion hkHeartbeatSeriesBuilder  timeIntervalSinceStart precededByGap completion =
-    sendMsg hkHeartbeatSeriesBuilder (mkSelector "addHeartbeatWithTimeIntervalSinceSeriesStartDate:precededByGap:completion:") retVoid [argCDouble timeIntervalSinceStart, argCULong (if precededByGap then 1 else 0), argPtr (castPtr completion :: Ptr ())]
+addHeartbeatWithTimeIntervalSinceSeriesStartDate_precededByGap_completion hkHeartbeatSeriesBuilder timeIntervalSinceStart precededByGap completion =
+  sendMessage hkHeartbeatSeriesBuilder addHeartbeatWithTimeIntervalSinceSeriesStartDate_precededByGap_completionSelector timeIntervalSinceStart precededByGap completion
 
 -- | addMetadata:completion:
 --
@@ -88,9 +82,8 @@ addHeartbeatWithTimeIntervalSinceSeriesStartDate_precededByGap_completion hkHear
 --
 -- ObjC selector: @- addMetadata:completion:@
 addMetadata_completion :: (IsHKHeartbeatSeriesBuilder hkHeartbeatSeriesBuilder, IsNSDictionary metadata) => hkHeartbeatSeriesBuilder -> metadata -> Ptr () -> IO ()
-addMetadata_completion hkHeartbeatSeriesBuilder  metadata completion =
-  withObjCPtr metadata $ \raw_metadata ->
-      sendMsg hkHeartbeatSeriesBuilder (mkSelector "addMetadata:completion:") retVoid [argPtr (castPtr raw_metadata :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addMetadata_completion hkHeartbeatSeriesBuilder metadata completion =
+  sendMessage hkHeartbeatSeriesBuilder addMetadata_completionSelector (toNSDictionary metadata) completion
 
 -- | finishSeriesWithCompletion:
 --
@@ -102,8 +95,8 @@ addMetadata_completion hkHeartbeatSeriesBuilder  metadata completion =
 --
 -- ObjC selector: @- finishSeriesWithCompletion:@
 finishSeriesWithCompletion :: IsHKHeartbeatSeriesBuilder hkHeartbeatSeriesBuilder => hkHeartbeatSeriesBuilder -> Ptr () -> IO ()
-finishSeriesWithCompletion hkHeartbeatSeriesBuilder  completion =
-    sendMsg hkHeartbeatSeriesBuilder (mkSelector "finishSeriesWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+finishSeriesWithCompletion hkHeartbeatSeriesBuilder completion =
+  sendMessage hkHeartbeatSeriesBuilder finishSeriesWithCompletionSelector completion
 
 -- | maximumCount
 --
@@ -116,29 +109,29 @@ maximumCount :: IO CULong
 maximumCount  =
   do
     cls' <- getRequiredClass "HKHeartbeatSeriesBuilder"
-    sendClassMsg cls' (mkSelector "maximumCount") retCULong []
+    sendClassMessage cls' maximumCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHealthStore:device:startDate:@
-initWithHealthStore_device_startDateSelector :: Selector
+initWithHealthStore_device_startDateSelector :: Selector '[Id HKHealthStore, Id HKDevice, Id NSDate] (Id HKHeartbeatSeriesBuilder)
 initWithHealthStore_device_startDateSelector = mkSelector "initWithHealthStore:device:startDate:"
 
 -- | @Selector@ for @addHeartbeatWithTimeIntervalSinceSeriesStartDate:precededByGap:completion:@
-addHeartbeatWithTimeIntervalSinceSeriesStartDate_precededByGap_completionSelector :: Selector
+addHeartbeatWithTimeIntervalSinceSeriesStartDate_precededByGap_completionSelector :: Selector '[CDouble, Bool, Ptr ()] ()
 addHeartbeatWithTimeIntervalSinceSeriesStartDate_precededByGap_completionSelector = mkSelector "addHeartbeatWithTimeIntervalSinceSeriesStartDate:precededByGap:completion:"
 
 -- | @Selector@ for @addMetadata:completion:@
-addMetadata_completionSelector :: Selector
+addMetadata_completionSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 addMetadata_completionSelector = mkSelector "addMetadata:completion:"
 
 -- | @Selector@ for @finishSeriesWithCompletion:@
-finishSeriesWithCompletionSelector :: Selector
+finishSeriesWithCompletionSelector :: Selector '[Ptr ()] ()
 finishSeriesWithCompletionSelector = mkSelector "finishSeriesWithCompletion:"
 
 -- | @Selector@ for @maximumCount@
-maximumCountSelector :: Selector
+maximumCountSelector :: Selector '[] CULong
 maximumCountSelector = mkSelector "maximumCount"
 

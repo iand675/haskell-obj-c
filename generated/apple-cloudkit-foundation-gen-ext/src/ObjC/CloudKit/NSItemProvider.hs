@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.CloudKit.NSItemProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,30 +30,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- registerCKShareWithContainer:allowedSharingOptions:preparationHandler:@
 registerCKShareWithContainer_allowedSharingOptions_preparationHandler :: (IsNSItemProvider nsItemProvider, IsCKContainer container, IsCKAllowedSharingOptions allowedOptions) => nsItemProvider -> container -> allowedOptions -> Ptr () -> IO ()
-registerCKShareWithContainer_allowedSharingOptions_preparationHandler nsItemProvider  container allowedOptions preparationHandler =
-  withObjCPtr container $ \raw_container ->
-    withObjCPtr allowedOptions $ \raw_allowedOptions ->
-        sendMsg nsItemProvider (mkSelector "registerCKShareWithContainer:allowedSharingOptions:preparationHandler:") retVoid [argPtr (castPtr raw_container :: Ptr ()), argPtr (castPtr raw_allowedOptions :: Ptr ()), argPtr (castPtr preparationHandler :: Ptr ())]
+registerCKShareWithContainer_allowedSharingOptions_preparationHandler nsItemProvider container allowedOptions preparationHandler =
+  sendMessage nsItemProvider registerCKShareWithContainer_allowedSharingOptions_preparationHandlerSelector (toCKContainer container) (toCKAllowedSharingOptions allowedOptions) preparationHandler
 
 -- | Use this method when you have a @CKShare@ that is already saved to the server. Invoking the share sheet with a @CKShare@ registered with this method will allow the owner to make modifications to the share settings, or will allow a participant to view the share settings.
 --
 -- ObjC selector: @- registerCKShare:container:allowedSharingOptions:@
 registerCKShare_container_allowedSharingOptions :: (IsNSItemProvider nsItemProvider, IsCKShare share, IsCKContainer container, IsCKAllowedSharingOptions allowedOptions) => nsItemProvider -> share -> container -> allowedOptions -> IO ()
-registerCKShare_container_allowedSharingOptions nsItemProvider  share container allowedOptions =
-  withObjCPtr share $ \raw_share ->
-    withObjCPtr container $ \raw_container ->
-      withObjCPtr allowedOptions $ \raw_allowedOptions ->
-          sendMsg nsItemProvider (mkSelector "registerCKShare:container:allowedSharingOptions:") retVoid [argPtr (castPtr raw_share :: Ptr ()), argPtr (castPtr raw_container :: Ptr ()), argPtr (castPtr raw_allowedOptions :: Ptr ())]
+registerCKShare_container_allowedSharingOptions nsItemProvider share container allowedOptions =
+  sendMessage nsItemProvider registerCKShare_container_allowedSharingOptionsSelector (toCKShare share) (toCKContainer container) (toCKAllowedSharingOptions allowedOptions)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registerCKShareWithContainer:allowedSharingOptions:preparationHandler:@
-registerCKShareWithContainer_allowedSharingOptions_preparationHandlerSelector :: Selector
+registerCKShareWithContainer_allowedSharingOptions_preparationHandlerSelector :: Selector '[Id CKContainer, Id CKAllowedSharingOptions, Ptr ()] ()
 registerCKShareWithContainer_allowedSharingOptions_preparationHandlerSelector = mkSelector "registerCKShareWithContainer:allowedSharingOptions:preparationHandler:"
 
 -- | @Selector@ for @registerCKShare:container:allowedSharingOptions:@
-registerCKShare_container_allowedSharingOptionsSelector :: Selector
+registerCKShare_container_allowedSharingOptionsSelector :: Selector '[Id CKShare, Id CKContainer, Id CKAllowedSharingOptions] ()
 registerCKShare_container_allowedSharingOptionsSelector = mkSelector "registerCKShare:container:allowedSharingOptions:"
 

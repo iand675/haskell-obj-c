@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,20 +28,20 @@ module ObjC.MetalPerformanceShaders.MPSMatrixRandomDistributionDescriptor
   , setMean
   , standardDeviation
   , setStandardDeviation
-  , uniformDistributionDescriptorWithMinimum_maximumSelector
-  , normalDistributionDescriptorWithMean_standardDeviationSelector
-  , normalDistributionDescriptorWithMean_standardDeviation_minimum_maximumSelector
   , defaultDistributionDescriptorSelector
   , distributionTypeSelector
-  , setDistributionTypeSelector
-  , minimumSelector
-  , setMinimumSelector
   , maximumSelector
-  , setMaximumSelector
   , meanSelector
+  , minimumSelector
+  , normalDistributionDescriptorWithMean_standardDeviationSelector
+  , normalDistributionDescriptorWithMean_standardDeviation_minimum_maximumSelector
+  , setDistributionTypeSelector
+  , setMaximumSelector
   , setMeanSelector
-  , standardDeviationSelector
+  , setMinimumSelector
   , setStandardDeviationSelector
+  , standardDeviationSelector
+  , uniformDistributionDescriptorWithMinimum_maximumSelector
 
   -- * Enum types
   , MPSMatrixRandomDistribution(MPSMatrixRandomDistribution)
@@ -50,15 +51,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixRandomDistributionDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,7 +76,7 @@ uniformDistributionDescriptorWithMinimum_maximum :: CFloat -> CFloat -> IO (Id M
 uniformDistributionDescriptorWithMinimum_maximum minimum_ maximum_ =
   do
     cls' <- getRequiredClass "MPSMatrixRandomDistributionDescriptor"
-    sendClassMsg cls' (mkSelector "uniformDistributionDescriptorWithMinimum:maximum:") (retPtr retVoid) [argCFloat minimum_, argCFloat maximum_] >>= retainedObject . castPtr
+    sendClassMessage cls' uniformDistributionDescriptorWithMinimum_maximumSelector minimum_ maximum_
 
 -- | Make a descriptor for a normal distribution of floating point values.
 --
@@ -94,7 +91,7 @@ normalDistributionDescriptorWithMean_standardDeviation :: CFloat -> CFloat -> IO
 normalDistributionDescriptorWithMean_standardDeviation mean standardDeviation =
   do
     cls' <- getRequiredClass "MPSMatrixRandomDistributionDescriptor"
-    sendClassMsg cls' (mkSelector "normalDistributionDescriptorWithMean:standardDeviation:") (retPtr retVoid) [argCFloat mean, argCFloat standardDeviation] >>= retainedObject . castPtr
+    sendClassMessage cls' normalDistributionDescriptorWithMean_standardDeviationSelector mean standardDeviation
 
 -- | Make a descriptor for a truncated normal distribution of floating point values.
 --
@@ -113,7 +110,7 @@ normalDistributionDescriptorWithMean_standardDeviation_minimum_maximum :: CFloat
 normalDistributionDescriptorWithMean_standardDeviation_minimum_maximum mean standardDeviation minimum_ maximum_ =
   do
     cls' <- getRequiredClass "MPSMatrixRandomDistributionDescriptor"
-    sendClassMsg cls' (mkSelector "normalDistributionDescriptorWithMean:standardDeviation:minimum:maximum:") (retPtr retVoid) [argCFloat mean, argCFloat standardDeviation, argCFloat minimum_, argCFloat maximum_] >>= retainedObject . castPtr
+    sendClassMessage cls' normalDistributionDescriptorWithMean_standardDeviation_minimum_maximumSelector mean standardDeviation minimum_ maximum_
 
 -- | Make a descriptor for a default distribution.
 --
@@ -124,7 +121,7 @@ defaultDistributionDescriptor :: IO (Id MPSMatrixRandomDistributionDescriptor)
 defaultDistributionDescriptor  =
   do
     cls' <- getRequiredClass "MPSMatrixRandomDistributionDescriptor"
-    sendClassMsg cls' (mkSelector "defaultDistributionDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultDistributionDescriptorSelector
 
 -- | distributionType
 --
@@ -132,8 +129,8 @@ defaultDistributionDescriptor  =
 --
 -- ObjC selector: @- distributionType@
 distributionType :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> IO MPSMatrixRandomDistribution
-distributionType mpsMatrixRandomDistributionDescriptor  =
-    fmap (coerce :: CULong -> MPSMatrixRandomDistribution) $ sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "distributionType") retCULong []
+distributionType mpsMatrixRandomDistributionDescriptor =
+  sendMessage mpsMatrixRandomDistributionDescriptor distributionTypeSelector
 
 -- | distributionType
 --
@@ -141,8 +138,8 @@ distributionType mpsMatrixRandomDistributionDescriptor  =
 --
 -- ObjC selector: @- setDistributionType:@
 setDistributionType :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> MPSMatrixRandomDistribution -> IO ()
-setDistributionType mpsMatrixRandomDistributionDescriptor  value =
-    sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "setDistributionType:") retVoid [argCULong (coerce value)]
+setDistributionType mpsMatrixRandomDistributionDescriptor value =
+  sendMessage mpsMatrixRandomDistributionDescriptor setDistributionTypeSelector value
 
 -- | minimum
 --
@@ -150,8 +147,8 @@ setDistributionType mpsMatrixRandomDistributionDescriptor  value =
 --
 -- ObjC selector: @- minimum@
 minimum_ :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> IO CFloat
-minimum_ mpsMatrixRandomDistributionDescriptor  =
-    sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "minimum") retCFloat []
+minimum_ mpsMatrixRandomDistributionDescriptor =
+  sendMessage mpsMatrixRandomDistributionDescriptor minimumSelector
 
 -- | minimum
 --
@@ -159,8 +156,8 @@ minimum_ mpsMatrixRandomDistributionDescriptor  =
 --
 -- ObjC selector: @- setMinimum:@
 setMinimum :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> CFloat -> IO ()
-setMinimum mpsMatrixRandomDistributionDescriptor  value =
-    sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "setMinimum:") retVoid [argCFloat value]
+setMinimum mpsMatrixRandomDistributionDescriptor value =
+  sendMessage mpsMatrixRandomDistributionDescriptor setMinimumSelector value
 
 -- | maximum
 --
@@ -168,8 +165,8 @@ setMinimum mpsMatrixRandomDistributionDescriptor  value =
 --
 -- ObjC selector: @- maximum@
 maximum_ :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> IO CFloat
-maximum_ mpsMatrixRandomDistributionDescriptor  =
-    sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "maximum") retCFloat []
+maximum_ mpsMatrixRandomDistributionDescriptor =
+  sendMessage mpsMatrixRandomDistributionDescriptor maximumSelector
 
 -- | maximum
 --
@@ -177,8 +174,8 @@ maximum_ mpsMatrixRandomDistributionDescriptor  =
 --
 -- ObjC selector: @- setMaximum:@
 setMaximum :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> CFloat -> IO ()
-setMaximum mpsMatrixRandomDistributionDescriptor  value =
-    sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "setMaximum:") retVoid [argCFloat value]
+setMaximum mpsMatrixRandomDistributionDescriptor value =
+  sendMessage mpsMatrixRandomDistributionDescriptor setMaximumSelector value
 
 -- | mean
 --
@@ -186,8 +183,8 @@ setMaximum mpsMatrixRandomDistributionDescriptor  value =
 --
 -- ObjC selector: @- mean@
 mean :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> IO CFloat
-mean mpsMatrixRandomDistributionDescriptor  =
-    sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "mean") retCFloat []
+mean mpsMatrixRandomDistributionDescriptor =
+  sendMessage mpsMatrixRandomDistributionDescriptor meanSelector
 
 -- | mean
 --
@@ -195,8 +192,8 @@ mean mpsMatrixRandomDistributionDescriptor  =
 --
 -- ObjC selector: @- setMean:@
 setMean :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> CFloat -> IO ()
-setMean mpsMatrixRandomDistributionDescriptor  value =
-    sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "setMean:") retVoid [argCFloat value]
+setMean mpsMatrixRandomDistributionDescriptor value =
+  sendMessage mpsMatrixRandomDistributionDescriptor setMeanSelector value
 
 -- | standardDeviation
 --
@@ -204,8 +201,8 @@ setMean mpsMatrixRandomDistributionDescriptor  value =
 --
 -- ObjC selector: @- standardDeviation@
 standardDeviation :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> IO CFloat
-standardDeviation mpsMatrixRandomDistributionDescriptor  =
-    sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "standardDeviation") retCFloat []
+standardDeviation mpsMatrixRandomDistributionDescriptor =
+  sendMessage mpsMatrixRandomDistributionDescriptor standardDeviationSelector
 
 -- | standardDeviation
 --
@@ -213,66 +210,66 @@ standardDeviation mpsMatrixRandomDistributionDescriptor  =
 --
 -- ObjC selector: @- setStandardDeviation:@
 setStandardDeviation :: IsMPSMatrixRandomDistributionDescriptor mpsMatrixRandomDistributionDescriptor => mpsMatrixRandomDistributionDescriptor -> CFloat -> IO ()
-setStandardDeviation mpsMatrixRandomDistributionDescriptor  value =
-    sendMsg mpsMatrixRandomDistributionDescriptor (mkSelector "setStandardDeviation:") retVoid [argCFloat value]
+setStandardDeviation mpsMatrixRandomDistributionDescriptor value =
+  sendMessage mpsMatrixRandomDistributionDescriptor setStandardDeviationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @uniformDistributionDescriptorWithMinimum:maximum:@
-uniformDistributionDescriptorWithMinimum_maximumSelector :: Selector
+uniformDistributionDescriptorWithMinimum_maximumSelector :: Selector '[CFloat, CFloat] (Id MPSMatrixRandomDistributionDescriptor)
 uniformDistributionDescriptorWithMinimum_maximumSelector = mkSelector "uniformDistributionDescriptorWithMinimum:maximum:"
 
 -- | @Selector@ for @normalDistributionDescriptorWithMean:standardDeviation:@
-normalDistributionDescriptorWithMean_standardDeviationSelector :: Selector
+normalDistributionDescriptorWithMean_standardDeviationSelector :: Selector '[CFloat, CFloat] (Id MPSMatrixRandomDistributionDescriptor)
 normalDistributionDescriptorWithMean_standardDeviationSelector = mkSelector "normalDistributionDescriptorWithMean:standardDeviation:"
 
 -- | @Selector@ for @normalDistributionDescriptorWithMean:standardDeviation:minimum:maximum:@
-normalDistributionDescriptorWithMean_standardDeviation_minimum_maximumSelector :: Selector
+normalDistributionDescriptorWithMean_standardDeviation_minimum_maximumSelector :: Selector '[CFloat, CFloat, CFloat, CFloat] (Id MPSMatrixRandomDistributionDescriptor)
 normalDistributionDescriptorWithMean_standardDeviation_minimum_maximumSelector = mkSelector "normalDistributionDescriptorWithMean:standardDeviation:minimum:maximum:"
 
 -- | @Selector@ for @defaultDistributionDescriptor@
-defaultDistributionDescriptorSelector :: Selector
+defaultDistributionDescriptorSelector :: Selector '[] (Id MPSMatrixRandomDistributionDescriptor)
 defaultDistributionDescriptorSelector = mkSelector "defaultDistributionDescriptor"
 
 -- | @Selector@ for @distributionType@
-distributionTypeSelector :: Selector
+distributionTypeSelector :: Selector '[] MPSMatrixRandomDistribution
 distributionTypeSelector = mkSelector "distributionType"
 
 -- | @Selector@ for @setDistributionType:@
-setDistributionTypeSelector :: Selector
+setDistributionTypeSelector :: Selector '[MPSMatrixRandomDistribution] ()
 setDistributionTypeSelector = mkSelector "setDistributionType:"
 
 -- | @Selector@ for @minimum@
-minimumSelector :: Selector
+minimumSelector :: Selector '[] CFloat
 minimumSelector = mkSelector "minimum"
 
 -- | @Selector@ for @setMinimum:@
-setMinimumSelector :: Selector
+setMinimumSelector :: Selector '[CFloat] ()
 setMinimumSelector = mkSelector "setMinimum:"
 
 -- | @Selector@ for @maximum@
-maximumSelector :: Selector
+maximumSelector :: Selector '[] CFloat
 maximumSelector = mkSelector "maximum"
 
 -- | @Selector@ for @setMaximum:@
-setMaximumSelector :: Selector
+setMaximumSelector :: Selector '[CFloat] ()
 setMaximumSelector = mkSelector "setMaximum:"
 
 -- | @Selector@ for @mean@
-meanSelector :: Selector
+meanSelector :: Selector '[] CFloat
 meanSelector = mkSelector "mean"
 
 -- | @Selector@ for @setMean:@
-setMeanSelector :: Selector
+setMeanSelector :: Selector '[CFloat] ()
 setMeanSelector = mkSelector "setMean:"
 
 -- | @Selector@ for @standardDeviation@
-standardDeviationSelector :: Selector
+standardDeviationSelector :: Selector '[] CFloat
 standardDeviationSelector = mkSelector "standardDeviation"
 
 -- | @Selector@ for @setStandardDeviation:@
-setStandardDeviationSelector :: Selector
+setStandardDeviationSelector :: Selector '[CFloat] ()
 setStandardDeviationSelector = mkSelector "setStandardDeviation:"
 

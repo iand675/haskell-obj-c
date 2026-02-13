@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Foundation.NSXPCInterface
   , xpcTypeForSelector_argumentIndex_ofReply
   , protocol
   , setProtocol
-  , interfaceWithProtocolSelector
-  , setClasses_forSelector_argumentIndex_ofReplySelector
   , classesForSelector_argumentIndex_ofReplySelector
-  , setInterface_forSelector_argumentIndex_ofReplySelector
   , interfaceForSelector_argumentIndex_ofReplySelector
+  , interfaceWithProtocolSelector
+  , protocolSelector
+  , setClasses_forSelector_argumentIndex_ofReplySelector
+  , setInterface_forSelector_argumentIndex_ofReplySelector
+  , setProtocolSelector
   , setXPCType_forSelector_argumentIndex_ofReplySelector
   , xpcTypeForSelector_argumentIndex_ofReplySelector
-  , protocolSelector
-  , setProtocolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,87 +44,85 @@ interfaceWithProtocol :: RawId -> IO (Id NSXPCInterface)
 interfaceWithProtocol protocol =
   do
     cls' <- getRequiredClass "NSXPCInterface"
-    sendClassMsg cls' (mkSelector "interfaceWithProtocol:") (retPtr retVoid) [argPtr (castPtr (unRawId protocol) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' interfaceWithProtocolSelector protocol
 
 -- | @- setClasses:forSelector:argumentIndex:ofReply:@
-setClasses_forSelector_argumentIndex_ofReply :: (IsNSXPCInterface nsxpcInterface, IsNSSet classes) => nsxpcInterface -> classes -> Selector -> CULong -> Bool -> IO ()
-setClasses_forSelector_argumentIndex_ofReply nsxpcInterface  classes sel arg ofReply =
-  withObjCPtr classes $ \raw_classes ->
-      sendMsg nsxpcInterface (mkSelector "setClasses:forSelector:argumentIndex:ofReply:") retVoid [argPtr (castPtr raw_classes :: Ptr ()), argPtr (unSelector sel), argCULong arg, argCULong (if ofReply then 1 else 0)]
+setClasses_forSelector_argumentIndex_ofReply :: (IsNSXPCInterface nsxpcInterface, IsNSSet classes) => nsxpcInterface -> classes -> Sel -> CULong -> Bool -> IO ()
+setClasses_forSelector_argumentIndex_ofReply nsxpcInterface classes sel arg ofReply =
+  sendMessage nsxpcInterface setClasses_forSelector_argumentIndex_ofReplySelector (toNSSet classes) sel arg ofReply
 
 -- | @- classesForSelector:argumentIndex:ofReply:@
-classesForSelector_argumentIndex_ofReply :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> Selector -> CULong -> Bool -> IO (Id NSSet)
-classesForSelector_argumentIndex_ofReply nsxpcInterface  sel arg ofReply =
-    sendMsg nsxpcInterface (mkSelector "classesForSelector:argumentIndex:ofReply:") (retPtr retVoid) [argPtr (unSelector sel), argCULong arg, argCULong (if ofReply then 1 else 0)] >>= retainedObject . castPtr
+classesForSelector_argumentIndex_ofReply :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> Sel -> CULong -> Bool -> IO (Id NSSet)
+classesForSelector_argumentIndex_ofReply nsxpcInterface sel arg ofReply =
+  sendMessage nsxpcInterface classesForSelector_argumentIndex_ofReplySelector sel arg ofReply
 
 -- | @- setInterface:forSelector:argumentIndex:ofReply:@
-setInterface_forSelector_argumentIndex_ofReply :: (IsNSXPCInterface nsxpcInterface, IsNSXPCInterface ifc) => nsxpcInterface -> ifc -> Selector -> CULong -> Bool -> IO ()
-setInterface_forSelector_argumentIndex_ofReply nsxpcInterface  ifc sel arg ofReply =
-  withObjCPtr ifc $ \raw_ifc ->
-      sendMsg nsxpcInterface (mkSelector "setInterface:forSelector:argumentIndex:ofReply:") retVoid [argPtr (castPtr raw_ifc :: Ptr ()), argPtr (unSelector sel), argCULong arg, argCULong (if ofReply then 1 else 0)]
+setInterface_forSelector_argumentIndex_ofReply :: (IsNSXPCInterface nsxpcInterface, IsNSXPCInterface ifc) => nsxpcInterface -> ifc -> Sel -> CULong -> Bool -> IO ()
+setInterface_forSelector_argumentIndex_ofReply nsxpcInterface ifc sel arg ofReply =
+  sendMessage nsxpcInterface setInterface_forSelector_argumentIndex_ofReplySelector (toNSXPCInterface ifc) sel arg ofReply
 
 -- | @- interfaceForSelector:argumentIndex:ofReply:@
-interfaceForSelector_argumentIndex_ofReply :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> Selector -> CULong -> Bool -> IO (Id NSXPCInterface)
-interfaceForSelector_argumentIndex_ofReply nsxpcInterface  sel arg ofReply =
-    sendMsg nsxpcInterface (mkSelector "interfaceForSelector:argumentIndex:ofReply:") (retPtr retVoid) [argPtr (unSelector sel), argCULong arg, argCULong (if ofReply then 1 else 0)] >>= retainedObject . castPtr
+interfaceForSelector_argumentIndex_ofReply :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> Sel -> CULong -> Bool -> IO (Id NSXPCInterface)
+interfaceForSelector_argumentIndex_ofReply nsxpcInterface sel arg ofReply =
+  sendMessage nsxpcInterface interfaceForSelector_argumentIndex_ofReplySelector sel arg ofReply
 
 -- | @- setXPCType:forSelector:argumentIndex:ofReply:@
-setXPCType_forSelector_argumentIndex_ofReply :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> RawId -> Selector -> CULong -> Bool -> IO ()
-setXPCType_forSelector_argumentIndex_ofReply nsxpcInterface  type_ sel arg ofReply =
-    sendMsg nsxpcInterface (mkSelector "setXPCType:forSelector:argumentIndex:ofReply:") retVoid [argPtr (castPtr (unRawId type_) :: Ptr ()), argPtr (unSelector sel), argCULong arg, argCULong (if ofReply then 1 else 0)]
+setXPCType_forSelector_argumentIndex_ofReply :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> RawId -> Sel -> CULong -> Bool -> IO ()
+setXPCType_forSelector_argumentIndex_ofReply nsxpcInterface type_ sel arg ofReply =
+  sendMessage nsxpcInterface setXPCType_forSelector_argumentIndex_ofReplySelector type_ sel arg ofReply
 
 -- | @- XPCTypeForSelector:argumentIndex:ofReply:@
-xpcTypeForSelector_argumentIndex_ofReply :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> Selector -> CULong -> Bool -> IO RawId
-xpcTypeForSelector_argumentIndex_ofReply nsxpcInterface  sel arg ofReply =
-    fmap (RawId . castPtr) $ sendMsg nsxpcInterface (mkSelector "XPCTypeForSelector:argumentIndex:ofReply:") (retPtr retVoid) [argPtr (unSelector sel), argCULong arg, argCULong (if ofReply then 1 else 0)]
+xpcTypeForSelector_argumentIndex_ofReply :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> Sel -> CULong -> Bool -> IO RawId
+xpcTypeForSelector_argumentIndex_ofReply nsxpcInterface sel arg ofReply =
+  sendMessage nsxpcInterface xpcTypeForSelector_argumentIndex_ofReplySelector sel arg ofReply
 
 -- | @- protocol@
 protocol :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> IO RawId
-protocol nsxpcInterface  =
-    fmap (RawId . castPtr) $ sendMsg nsxpcInterface (mkSelector "protocol") (retPtr retVoid) []
+protocol nsxpcInterface =
+  sendMessage nsxpcInterface protocolSelector
 
 -- | @- setProtocol:@
 setProtocol :: IsNSXPCInterface nsxpcInterface => nsxpcInterface -> RawId -> IO ()
-setProtocol nsxpcInterface  value =
-    sendMsg nsxpcInterface (mkSelector "setProtocol:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setProtocol nsxpcInterface value =
+  sendMessage nsxpcInterface setProtocolSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @interfaceWithProtocol:@
-interfaceWithProtocolSelector :: Selector
+interfaceWithProtocolSelector :: Selector '[RawId] (Id NSXPCInterface)
 interfaceWithProtocolSelector = mkSelector "interfaceWithProtocol:"
 
 -- | @Selector@ for @setClasses:forSelector:argumentIndex:ofReply:@
-setClasses_forSelector_argumentIndex_ofReplySelector :: Selector
+setClasses_forSelector_argumentIndex_ofReplySelector :: Selector '[Id NSSet, Sel, CULong, Bool] ()
 setClasses_forSelector_argumentIndex_ofReplySelector = mkSelector "setClasses:forSelector:argumentIndex:ofReply:"
 
 -- | @Selector@ for @classesForSelector:argumentIndex:ofReply:@
-classesForSelector_argumentIndex_ofReplySelector :: Selector
+classesForSelector_argumentIndex_ofReplySelector :: Selector '[Sel, CULong, Bool] (Id NSSet)
 classesForSelector_argumentIndex_ofReplySelector = mkSelector "classesForSelector:argumentIndex:ofReply:"
 
 -- | @Selector@ for @setInterface:forSelector:argumentIndex:ofReply:@
-setInterface_forSelector_argumentIndex_ofReplySelector :: Selector
+setInterface_forSelector_argumentIndex_ofReplySelector :: Selector '[Id NSXPCInterface, Sel, CULong, Bool] ()
 setInterface_forSelector_argumentIndex_ofReplySelector = mkSelector "setInterface:forSelector:argumentIndex:ofReply:"
 
 -- | @Selector@ for @interfaceForSelector:argumentIndex:ofReply:@
-interfaceForSelector_argumentIndex_ofReplySelector :: Selector
+interfaceForSelector_argumentIndex_ofReplySelector :: Selector '[Sel, CULong, Bool] (Id NSXPCInterface)
 interfaceForSelector_argumentIndex_ofReplySelector = mkSelector "interfaceForSelector:argumentIndex:ofReply:"
 
 -- | @Selector@ for @setXPCType:forSelector:argumentIndex:ofReply:@
-setXPCType_forSelector_argumentIndex_ofReplySelector :: Selector
+setXPCType_forSelector_argumentIndex_ofReplySelector :: Selector '[RawId, Sel, CULong, Bool] ()
 setXPCType_forSelector_argumentIndex_ofReplySelector = mkSelector "setXPCType:forSelector:argumentIndex:ofReply:"
 
 -- | @Selector@ for @XPCTypeForSelector:argumentIndex:ofReply:@
-xpcTypeForSelector_argumentIndex_ofReplySelector :: Selector
+xpcTypeForSelector_argumentIndex_ofReplySelector :: Selector '[Sel, CULong, Bool] RawId
 xpcTypeForSelector_argumentIndex_ofReplySelector = mkSelector "XPCTypeForSelector:argumentIndex:ofReply:"
 
 -- | @Selector@ for @protocol@
-protocolSelector :: Selector
+protocolSelector :: Selector '[] RawId
 protocolSelector = mkSelector "protocol"
 
 -- | @Selector@ for @setProtocol:@
-setProtocolSelector :: Selector
+setProtocolSelector :: Selector '[RawId] ()
 setProtocolSelector = mkSelector "setProtocol:"
 

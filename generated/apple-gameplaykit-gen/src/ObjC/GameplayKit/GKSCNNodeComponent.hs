@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.GameplayKit.GKSCNNodeComponent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,7 @@ componentWithNode :: IsSCNNode node => node -> IO (Id GKSCNNodeComponent)
 componentWithNode node =
   do
     cls' <- getRequiredClass "GKSCNNodeComponent"
-    withObjCPtr node $ \raw_node ->
-      sendClassMsg cls' (mkSelector "componentWithNode:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' componentWithNodeSelector (toSCNNode node)
 
 -- | Initializes component to encapsulate the given SceneKit node. When the component is added to an entity, the SCNNode's entity property will be set.
 --
@@ -56,30 +52,29 @@ componentWithNode node =
 --
 -- ObjC selector: @- initWithNode:@
 initWithNode :: (IsGKSCNNodeComponent gkscnNodeComponent, IsSCNNode node) => gkscnNodeComponent -> node -> IO (Id GKSCNNodeComponent)
-initWithNode gkscnNodeComponent  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg gkscnNodeComponent (mkSelector "initWithNode:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ())] >>= ownedObject . castPtr
+initWithNode gkscnNodeComponent node =
+  sendOwnedMessage gkscnNodeComponent initWithNodeSelector (toSCNNode node)
 
 -- | The SceneKit node this component encapsulates.
 --
 -- ObjC selector: @- node@
 node :: IsGKSCNNodeComponent gkscnNodeComponent => gkscnNodeComponent -> IO (Id SCNNode)
-node gkscnNodeComponent  =
-    sendMsg gkscnNodeComponent (mkSelector "node") (retPtr retVoid) [] >>= retainedObject . castPtr
+node gkscnNodeComponent =
+  sendMessage gkscnNodeComponent nodeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @componentWithNode:@
-componentWithNodeSelector :: Selector
+componentWithNodeSelector :: Selector '[Id SCNNode] (Id GKSCNNodeComponent)
 componentWithNodeSelector = mkSelector "componentWithNode:"
 
 -- | @Selector@ for @initWithNode:@
-initWithNodeSelector :: Selector
+initWithNodeSelector :: Selector '[Id SCNNode] (Id GKSCNNodeComponent)
 initWithNodeSelector = mkSelector "initWithNode:"
 
 -- | @Selector@ for @node@
-nodeSelector :: Selector
+nodeSelector :: Selector '[] (Id SCNNode)
 nodeSelector = mkSelector "node"
 

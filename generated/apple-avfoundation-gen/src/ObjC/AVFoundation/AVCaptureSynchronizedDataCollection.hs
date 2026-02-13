@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVCaptureSynchronizedDataCollection
   , synchronizedDataForCaptureOutput
   , objectForKeyedSubscript
   , count
+  , countSelector
   , initSelector
   , newSelector
-  , synchronizedDataForCaptureOutputSelector
   , objectForKeyedSubscriptSelector
-  , countSelector
+  , synchronizedDataForCaptureOutputSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureSynchronizedDataCollection avCaptureSynchronizedDataCollection => avCaptureSynchronizedDataCollection -> IO (Id AVCaptureSynchronizedDataCollection)
-init_ avCaptureSynchronizedDataCollection  =
-    sendMsg avCaptureSynchronizedDataCollection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureSynchronizedDataCollection =
+  sendOwnedMessage avCaptureSynchronizedDataCollection initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureSynchronizedDataCollection)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureSynchronizedDataCollection"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | synchronizedDataForCaptureOutput:
 --
@@ -63,9 +60,8 @@ new  =
 --
 -- ObjC selector: @- synchronizedDataForCaptureOutput:@
 synchronizedDataForCaptureOutput :: (IsAVCaptureSynchronizedDataCollection avCaptureSynchronizedDataCollection, IsAVCaptureOutput captureOutput) => avCaptureSynchronizedDataCollection -> captureOutput -> IO (Id AVCaptureSynchronizedData)
-synchronizedDataForCaptureOutput avCaptureSynchronizedDataCollection  captureOutput =
-  withObjCPtr captureOutput $ \raw_captureOutput ->
-      sendMsg avCaptureSynchronizedDataCollection (mkSelector "synchronizedDataForCaptureOutput:") (retPtr retVoid) [argPtr (castPtr raw_captureOutput :: Ptr ())] >>= retainedObject . castPtr
+synchronizedDataForCaptureOutput avCaptureSynchronizedDataCollection captureOutput =
+  sendMessage avCaptureSynchronizedDataCollection synchronizedDataForCaptureOutputSelector (toAVCaptureOutput captureOutput)
 
 -- | objectForKeyedSubscript:
 --
@@ -79,9 +75,8 @@ synchronizedDataForCaptureOutput avCaptureSynchronizedDataCollection  captureOut
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsAVCaptureSynchronizedDataCollection avCaptureSynchronizedDataCollection, IsAVCaptureOutput key) => avCaptureSynchronizedDataCollection -> key -> IO (Id AVCaptureSynchronizedData)
-objectForKeyedSubscript avCaptureSynchronizedDataCollection  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg avCaptureSynchronizedDataCollection (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript avCaptureSynchronizedDataCollection key =
+  sendMessage avCaptureSynchronizedDataCollection objectForKeyedSubscriptSelector (toAVCaptureOutput key)
 
 -- | count
 --
@@ -91,30 +86,30 @@ objectForKeyedSubscript avCaptureSynchronizedDataCollection  key =
 --
 -- ObjC selector: @- count@
 count :: IsAVCaptureSynchronizedDataCollection avCaptureSynchronizedDataCollection => avCaptureSynchronizedDataCollection -> IO CULong
-count avCaptureSynchronizedDataCollection  =
-    sendMsg avCaptureSynchronizedDataCollection (mkSelector "count") retCULong []
+count avCaptureSynchronizedDataCollection =
+  sendMessage avCaptureSynchronizedDataCollection countSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureSynchronizedDataCollection)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureSynchronizedDataCollection)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @synchronizedDataForCaptureOutput:@
-synchronizedDataForCaptureOutputSelector :: Selector
+synchronizedDataForCaptureOutputSelector :: Selector '[Id AVCaptureOutput] (Id AVCaptureSynchronizedData)
 synchronizedDataForCaptureOutputSelector = mkSelector "synchronizedDataForCaptureOutput:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id AVCaptureOutput] (Id AVCaptureSynchronizedData)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 

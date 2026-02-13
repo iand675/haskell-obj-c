@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.NetworkExtension.NEPrivateLTENetwork
   , trackingAreaCode
   , setTrackingAreaCode
   , mobileCountryCodeSelector
-  , setMobileCountryCodeSelector
   , mobileNetworkCodeSelector
+  , setMobileCountryCodeSelector
   , setMobileNetworkCodeSelector
-  , trackingAreaCodeSelector
   , setTrackingAreaCodeSelector
+  , trackingAreaCodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- mobileCountryCode@
 mobileCountryCode :: IsNEPrivateLTENetwork nePrivateLTENetwork => nePrivateLTENetwork -> IO (Id NSString)
-mobileCountryCode nePrivateLTENetwork  =
-    sendMsg nePrivateLTENetwork (mkSelector "mobileCountryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+mobileCountryCode nePrivateLTENetwork =
+  sendMessage nePrivateLTENetwork mobileCountryCodeSelector
 
 -- | mobileCountryCode
 --
@@ -56,9 +53,8 @@ mobileCountryCode nePrivateLTENetwork  =
 --
 -- ObjC selector: @- setMobileCountryCode:@
 setMobileCountryCode :: (IsNEPrivateLTENetwork nePrivateLTENetwork, IsNSString value) => nePrivateLTENetwork -> value -> IO ()
-setMobileCountryCode nePrivateLTENetwork  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nePrivateLTENetwork (mkSelector "setMobileCountryCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMobileCountryCode nePrivateLTENetwork value =
+  sendMessage nePrivateLTENetwork setMobileCountryCodeSelector (toNSString value)
 
 -- | mobileNetworkCode
 --
@@ -66,8 +62,8 @@ setMobileCountryCode nePrivateLTENetwork  value =
 --
 -- ObjC selector: @- mobileNetworkCode@
 mobileNetworkCode :: IsNEPrivateLTENetwork nePrivateLTENetwork => nePrivateLTENetwork -> IO (Id NSString)
-mobileNetworkCode nePrivateLTENetwork  =
-    sendMsg nePrivateLTENetwork (mkSelector "mobileNetworkCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+mobileNetworkCode nePrivateLTENetwork =
+  sendMessage nePrivateLTENetwork mobileNetworkCodeSelector
 
 -- | mobileNetworkCode
 --
@@ -75,9 +71,8 @@ mobileNetworkCode nePrivateLTENetwork  =
 --
 -- ObjC selector: @- setMobileNetworkCode:@
 setMobileNetworkCode :: (IsNEPrivateLTENetwork nePrivateLTENetwork, IsNSString value) => nePrivateLTENetwork -> value -> IO ()
-setMobileNetworkCode nePrivateLTENetwork  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nePrivateLTENetwork (mkSelector "setMobileNetworkCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMobileNetworkCode nePrivateLTENetwork value =
+  sendMessage nePrivateLTENetwork setMobileNetworkCodeSelector (toNSString value)
 
 -- | trackingAreaCode
 --
@@ -85,8 +80,8 @@ setMobileNetworkCode nePrivateLTENetwork  value =
 --
 -- ObjC selector: @- trackingAreaCode@
 trackingAreaCode :: IsNEPrivateLTENetwork nePrivateLTENetwork => nePrivateLTENetwork -> IO (Id NSString)
-trackingAreaCode nePrivateLTENetwork  =
-    sendMsg nePrivateLTENetwork (mkSelector "trackingAreaCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackingAreaCode nePrivateLTENetwork =
+  sendMessage nePrivateLTENetwork trackingAreaCodeSelector
 
 -- | trackingAreaCode
 --
@@ -94,35 +89,34 @@ trackingAreaCode nePrivateLTENetwork  =
 --
 -- ObjC selector: @- setTrackingAreaCode:@
 setTrackingAreaCode :: (IsNEPrivateLTENetwork nePrivateLTENetwork, IsNSString value) => nePrivateLTENetwork -> value -> IO ()
-setTrackingAreaCode nePrivateLTENetwork  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nePrivateLTENetwork (mkSelector "setTrackingAreaCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTrackingAreaCode nePrivateLTENetwork value =
+  sendMessage nePrivateLTENetwork setTrackingAreaCodeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mobileCountryCode@
-mobileCountryCodeSelector :: Selector
+mobileCountryCodeSelector :: Selector '[] (Id NSString)
 mobileCountryCodeSelector = mkSelector "mobileCountryCode"
 
 -- | @Selector@ for @setMobileCountryCode:@
-setMobileCountryCodeSelector :: Selector
+setMobileCountryCodeSelector :: Selector '[Id NSString] ()
 setMobileCountryCodeSelector = mkSelector "setMobileCountryCode:"
 
 -- | @Selector@ for @mobileNetworkCode@
-mobileNetworkCodeSelector :: Selector
+mobileNetworkCodeSelector :: Selector '[] (Id NSString)
 mobileNetworkCodeSelector = mkSelector "mobileNetworkCode"
 
 -- | @Selector@ for @setMobileNetworkCode:@
-setMobileNetworkCodeSelector :: Selector
+setMobileNetworkCodeSelector :: Selector '[Id NSString] ()
 setMobileNetworkCodeSelector = mkSelector "setMobileNetworkCode:"
 
 -- | @Selector@ for @trackingAreaCode@
-trackingAreaCodeSelector :: Selector
+trackingAreaCodeSelector :: Selector '[] (Id NSString)
 trackingAreaCodeSelector = mkSelector "trackingAreaCode"
 
 -- | @Selector@ for @setTrackingAreaCode:@
-setTrackingAreaCodeSelector :: Selector
+setTrackingAreaCodeSelector :: Selector '[Id NSString] ()
 setTrackingAreaCodeSelector = mkSelector "setTrackingAreaCode:"
 

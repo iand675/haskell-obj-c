@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.Metal.MTL4RenderPipelineBinaryFunctionsDescriptor
   , setObjectAdditionalBinaryFunctions
   , meshAdditionalBinaryFunctions
   , setMeshAdditionalBinaryFunctions
-  , resetSelector
-  , vertexAdditionalBinaryFunctionsSelector
-  , setVertexAdditionalBinaryFunctionsSelector
   , fragmentAdditionalBinaryFunctionsSelector
-  , setFragmentAdditionalBinaryFunctionsSelector
-  , tileAdditionalBinaryFunctionsSelector
-  , setTileAdditionalBinaryFunctionsSelector
-  , objectAdditionalBinaryFunctionsSelector
-  , setObjectAdditionalBinaryFunctionsSelector
   , meshAdditionalBinaryFunctionsSelector
+  , objectAdditionalBinaryFunctionsSelector
+  , resetSelector
+  , setFragmentAdditionalBinaryFunctionsSelector
   , setMeshAdditionalBinaryFunctionsSelector
+  , setObjectAdditionalBinaryFunctionsSelector
+  , setTileAdditionalBinaryFunctionsSelector
+  , setVertexAdditionalBinaryFunctionsSelector
+  , tileAdditionalBinaryFunctionsSelector
+  , vertexAdditionalBinaryFunctionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,129 +50,124 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reset@
 reset :: IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor => mtL4RenderPipelineBinaryFunctionsDescriptor -> IO ()
-reset mtL4RenderPipelineBinaryFunctionsDescriptor  =
-    sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "reset") retVoid []
+reset mtL4RenderPipelineBinaryFunctionsDescriptor =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor resetSelector
 
 -- | Provides an array of binary functions representing additional binary vertex shader functions.
 --
 -- ObjC selector: @- vertexAdditionalBinaryFunctions@
 vertexAdditionalBinaryFunctions :: IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor => mtL4RenderPipelineBinaryFunctionsDescriptor -> IO (Id NSArray)
-vertexAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  =
-    sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "vertexAdditionalBinaryFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor vertexAdditionalBinaryFunctionsSelector
 
 -- | Provides an array of binary functions representing additional binary vertex shader functions.
 --
 -- ObjC selector: @- setVertexAdditionalBinaryFunctions:@
 setVertexAdditionalBinaryFunctions :: (IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor, IsNSArray value) => mtL4RenderPipelineBinaryFunctionsDescriptor -> value -> IO ()
-setVertexAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "setVertexAdditionalBinaryFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVertexAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor value =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor setVertexAdditionalBinaryFunctionsSelector (toNSArray value)
 
 -- | Provides an array of binary functions representing additional binary fragment shader functions.
 --
 -- ObjC selector: @- fragmentAdditionalBinaryFunctions@
 fragmentAdditionalBinaryFunctions :: IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor => mtL4RenderPipelineBinaryFunctionsDescriptor -> IO (Id NSArray)
-fragmentAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  =
-    sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "fragmentAdditionalBinaryFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragmentAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor fragmentAdditionalBinaryFunctionsSelector
 
 -- | Provides an array of binary functions representing additional binary fragment shader functions.
 --
 -- ObjC selector: @- setFragmentAdditionalBinaryFunctions:@
 setFragmentAdditionalBinaryFunctions :: (IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor, IsNSArray value) => mtL4RenderPipelineBinaryFunctionsDescriptor -> value -> IO ()
-setFragmentAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "setFragmentAdditionalBinaryFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFragmentAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor value =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor setFragmentAdditionalBinaryFunctionsSelector (toNSArray value)
 
 -- | Provides an array of binary functions representing additional binary tile shader functions.
 --
 -- ObjC selector: @- tileAdditionalBinaryFunctions@
 tileAdditionalBinaryFunctions :: IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor => mtL4RenderPipelineBinaryFunctionsDescriptor -> IO (Id NSArray)
-tileAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  =
-    sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "tileAdditionalBinaryFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+tileAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor tileAdditionalBinaryFunctionsSelector
 
 -- | Provides an array of binary functions representing additional binary tile shader functions.
 --
 -- ObjC selector: @- setTileAdditionalBinaryFunctions:@
 setTileAdditionalBinaryFunctions :: (IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor, IsNSArray value) => mtL4RenderPipelineBinaryFunctionsDescriptor -> value -> IO ()
-setTileAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "setTileAdditionalBinaryFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTileAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor value =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor setTileAdditionalBinaryFunctionsSelector (toNSArray value)
 
 -- | Provides an array of binary functions representing additional binary object shader functions.
 --
 -- ObjC selector: @- objectAdditionalBinaryFunctions@
 objectAdditionalBinaryFunctions :: IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor => mtL4RenderPipelineBinaryFunctionsDescriptor -> IO (Id NSArray)
-objectAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  =
-    sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "objectAdditionalBinaryFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor objectAdditionalBinaryFunctionsSelector
 
 -- | Provides an array of binary functions representing additional binary object shader functions.
 --
 -- ObjC selector: @- setObjectAdditionalBinaryFunctions:@
 setObjectAdditionalBinaryFunctions :: (IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor, IsNSArray value) => mtL4RenderPipelineBinaryFunctionsDescriptor -> value -> IO ()
-setObjectAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "setObjectAdditionalBinaryFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setObjectAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor value =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor setObjectAdditionalBinaryFunctionsSelector (toNSArray value)
 
 -- | Provides an array of binary functions representing additional binary mesh shader functions.
 --
 -- ObjC selector: @- meshAdditionalBinaryFunctions@
 meshAdditionalBinaryFunctions :: IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor => mtL4RenderPipelineBinaryFunctionsDescriptor -> IO (Id NSArray)
-meshAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  =
-    sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "meshAdditionalBinaryFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+meshAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor meshAdditionalBinaryFunctionsSelector
 
 -- | Provides an array of binary functions representing additional binary mesh shader functions.
 --
 -- ObjC selector: @- setMeshAdditionalBinaryFunctions:@
 setMeshAdditionalBinaryFunctions :: (IsMTL4RenderPipelineBinaryFunctionsDescriptor mtL4RenderPipelineBinaryFunctionsDescriptor, IsNSArray value) => mtL4RenderPipelineBinaryFunctionsDescriptor -> value -> IO ()
-setMeshAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4RenderPipelineBinaryFunctionsDescriptor (mkSelector "setMeshAdditionalBinaryFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMeshAdditionalBinaryFunctions mtL4RenderPipelineBinaryFunctionsDescriptor value =
+  sendMessage mtL4RenderPipelineBinaryFunctionsDescriptor setMeshAdditionalBinaryFunctionsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @vertexAdditionalBinaryFunctions@
-vertexAdditionalBinaryFunctionsSelector :: Selector
+vertexAdditionalBinaryFunctionsSelector :: Selector '[] (Id NSArray)
 vertexAdditionalBinaryFunctionsSelector = mkSelector "vertexAdditionalBinaryFunctions"
 
 -- | @Selector@ for @setVertexAdditionalBinaryFunctions:@
-setVertexAdditionalBinaryFunctionsSelector :: Selector
+setVertexAdditionalBinaryFunctionsSelector :: Selector '[Id NSArray] ()
 setVertexAdditionalBinaryFunctionsSelector = mkSelector "setVertexAdditionalBinaryFunctions:"
 
 -- | @Selector@ for @fragmentAdditionalBinaryFunctions@
-fragmentAdditionalBinaryFunctionsSelector :: Selector
+fragmentAdditionalBinaryFunctionsSelector :: Selector '[] (Id NSArray)
 fragmentAdditionalBinaryFunctionsSelector = mkSelector "fragmentAdditionalBinaryFunctions"
 
 -- | @Selector@ for @setFragmentAdditionalBinaryFunctions:@
-setFragmentAdditionalBinaryFunctionsSelector :: Selector
+setFragmentAdditionalBinaryFunctionsSelector :: Selector '[Id NSArray] ()
 setFragmentAdditionalBinaryFunctionsSelector = mkSelector "setFragmentAdditionalBinaryFunctions:"
 
 -- | @Selector@ for @tileAdditionalBinaryFunctions@
-tileAdditionalBinaryFunctionsSelector :: Selector
+tileAdditionalBinaryFunctionsSelector :: Selector '[] (Id NSArray)
 tileAdditionalBinaryFunctionsSelector = mkSelector "tileAdditionalBinaryFunctions"
 
 -- | @Selector@ for @setTileAdditionalBinaryFunctions:@
-setTileAdditionalBinaryFunctionsSelector :: Selector
+setTileAdditionalBinaryFunctionsSelector :: Selector '[Id NSArray] ()
 setTileAdditionalBinaryFunctionsSelector = mkSelector "setTileAdditionalBinaryFunctions:"
 
 -- | @Selector@ for @objectAdditionalBinaryFunctions@
-objectAdditionalBinaryFunctionsSelector :: Selector
+objectAdditionalBinaryFunctionsSelector :: Selector '[] (Id NSArray)
 objectAdditionalBinaryFunctionsSelector = mkSelector "objectAdditionalBinaryFunctions"
 
 -- | @Selector@ for @setObjectAdditionalBinaryFunctions:@
-setObjectAdditionalBinaryFunctionsSelector :: Selector
+setObjectAdditionalBinaryFunctionsSelector :: Selector '[Id NSArray] ()
 setObjectAdditionalBinaryFunctionsSelector = mkSelector "setObjectAdditionalBinaryFunctions:"
 
 -- | @Selector@ for @meshAdditionalBinaryFunctions@
-meshAdditionalBinaryFunctionsSelector :: Selector
+meshAdditionalBinaryFunctionsSelector :: Selector '[] (Id NSArray)
 meshAdditionalBinaryFunctionsSelector = mkSelector "meshAdditionalBinaryFunctions"
 
 -- | @Selector@ for @setMeshAdditionalBinaryFunctions:@
-setMeshAdditionalBinaryFunctionsSelector :: Selector
+setMeshAdditionalBinaryFunctionsSelector :: Selector '[Id NSArray] ()
 setMeshAdditionalBinaryFunctionsSelector = mkSelector "setMeshAdditionalBinaryFunctions:"
 

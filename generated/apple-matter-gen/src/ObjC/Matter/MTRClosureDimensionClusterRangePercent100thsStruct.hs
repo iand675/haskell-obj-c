@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRClosureDimensionClusterRangePercent100thsStruct
   , setMin
   , max_
   , setMax
-  , minSelector
-  , setMinSelector
   , maxSelector
+  , minSelector
   , setMaxSelector
+  , setMinSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- min@
 min_ :: IsMTRClosureDimensionClusterRangePercent100thsStruct mtrClosureDimensionClusterRangePercent100thsStruct => mtrClosureDimensionClusterRangePercent100thsStruct -> IO (Id NSNumber)
-min_ mtrClosureDimensionClusterRangePercent100thsStruct  =
-    sendMsg mtrClosureDimensionClusterRangePercent100thsStruct (mkSelector "min") (retPtr retVoid) [] >>= retainedObject . castPtr
+min_ mtrClosureDimensionClusterRangePercent100thsStruct =
+  sendMessage mtrClosureDimensionClusterRangePercent100thsStruct minSelector
 
 -- | @- setMin:@
 setMin :: (IsMTRClosureDimensionClusterRangePercent100thsStruct mtrClosureDimensionClusterRangePercent100thsStruct, IsNSNumber value) => mtrClosureDimensionClusterRangePercent100thsStruct -> value -> IO ()
-setMin mtrClosureDimensionClusterRangePercent100thsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureDimensionClusterRangePercent100thsStruct (mkSelector "setMin:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMin mtrClosureDimensionClusterRangePercent100thsStruct value =
+  sendMessage mtrClosureDimensionClusterRangePercent100thsStruct setMinSelector (toNSNumber value)
 
 -- | @- max@
 max_ :: IsMTRClosureDimensionClusterRangePercent100thsStruct mtrClosureDimensionClusterRangePercent100thsStruct => mtrClosureDimensionClusterRangePercent100thsStruct -> IO (Id NSNumber)
-max_ mtrClosureDimensionClusterRangePercent100thsStruct  =
-    sendMsg mtrClosureDimensionClusterRangePercent100thsStruct (mkSelector "max") (retPtr retVoid) [] >>= retainedObject . castPtr
+max_ mtrClosureDimensionClusterRangePercent100thsStruct =
+  sendMessage mtrClosureDimensionClusterRangePercent100thsStruct maxSelector
 
 -- | @- setMax:@
 setMax :: (IsMTRClosureDimensionClusterRangePercent100thsStruct mtrClosureDimensionClusterRangePercent100thsStruct, IsNSNumber value) => mtrClosureDimensionClusterRangePercent100thsStruct -> value -> IO ()
-setMax mtrClosureDimensionClusterRangePercent100thsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureDimensionClusterRangePercent100thsStruct (mkSelector "setMax:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMax mtrClosureDimensionClusterRangePercent100thsStruct value =
+  sendMessage mtrClosureDimensionClusterRangePercent100thsStruct setMaxSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @min@
-minSelector :: Selector
+minSelector :: Selector '[] (Id NSNumber)
 minSelector = mkSelector "min"
 
 -- | @Selector@ for @setMin:@
-setMinSelector :: Selector
+setMinSelector :: Selector '[Id NSNumber] ()
 setMinSelector = mkSelector "setMin:"
 
 -- | @Selector@ for @max@
-maxSelector :: Selector
+maxSelector :: Selector '[] (Id NSNumber)
 maxSelector = mkSelector "max"
 
 -- | @Selector@ for @setMax:@
-setMaxSelector :: Selector
+setMaxSelector :: Selector '[Id NSNumber] ()
 setMaxSelector = mkSelector "setMax:"
 

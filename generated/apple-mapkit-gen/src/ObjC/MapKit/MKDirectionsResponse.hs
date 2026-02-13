@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.MapKit.MKDirectionsResponse
   , source
   , destination
   , routes
-  , sourceSelector
   , destinationSelector
   , routesSelector
+  , sourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- source@
 source :: IsMKDirectionsResponse mkDirectionsResponse => mkDirectionsResponse -> IO (Id MKMapItem)
-source mkDirectionsResponse  =
-    sendMsg mkDirectionsResponse (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+source mkDirectionsResponse =
+  sendMessage mkDirectionsResponse sourceSelector
 
 -- | @- destination@
 destination :: IsMKDirectionsResponse mkDirectionsResponse => mkDirectionsResponse -> IO (Id MKMapItem)
-destination mkDirectionsResponse  =
-    sendMsg mkDirectionsResponse (mkSelector "destination") (retPtr retVoid) [] >>= retainedObject . castPtr
+destination mkDirectionsResponse =
+  sendMessage mkDirectionsResponse destinationSelector
 
 -- | @- routes@
 routes :: IsMKDirectionsResponse mkDirectionsResponse => mkDirectionsResponse -> IO (Id NSArray)
-routes mkDirectionsResponse  =
-    sendMsg mkDirectionsResponse (mkSelector "routes") (retPtr retVoid) [] >>= retainedObject . castPtr
+routes mkDirectionsResponse =
+  sendMessage mkDirectionsResponse routesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id MKMapItem)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @destination@
-destinationSelector :: Selector
+destinationSelector :: Selector '[] (Id MKMapItem)
 destinationSelector = mkSelector "destination"
 
 -- | @Selector@ for @routes@
-routesSelector :: Selector
+routesSelector :: Selector '[] (Id NSArray)
 routesSelector = mkSelector "routes"
 

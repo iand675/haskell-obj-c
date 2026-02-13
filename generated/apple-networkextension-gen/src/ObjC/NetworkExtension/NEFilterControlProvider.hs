@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.NetworkExtension.NEFilterControlProvider
   , setRemediationMap
   , urlAppendStringMap
   , setURLAppendStringMap
-  , handleRemediationForFlow_completionHandlerSelector
   , handleNewFlow_completionHandlerSelector
+  , handleRemediationForFlow_completionHandlerSelector
   , notifyRulesChangedSelector
   , remediationMapSelector
   , setRemediationMapSelector
-  , urlAppendStringMapSelector
   , setURLAppendStringMapSelector
+  , urlAppendStringMapSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- handleRemediationForFlow:completionHandler:@
 handleRemediationForFlow_completionHandler :: (IsNEFilterControlProvider neFilterControlProvider, IsNEFilterFlow flow) => neFilterControlProvider -> flow -> Ptr () -> IO ()
-handleRemediationForFlow_completionHandler neFilterControlProvider  flow completionHandler =
-  withObjCPtr flow $ \raw_flow ->
-      sendMsg neFilterControlProvider (mkSelector "handleRemediationForFlow:completionHandler:") retVoid [argPtr (castPtr raw_flow :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+handleRemediationForFlow_completionHandler neFilterControlProvider flow completionHandler =
+  sendMessage neFilterControlProvider handleRemediationForFlow_completionHandlerSelector (toNEFilterFlow flow) completionHandler
 
 -- | handleNewFlow:completionHandler:
 --
@@ -67,9 +63,8 @@ handleRemediationForFlow_completionHandler neFilterControlProvider  flow complet
 --
 -- ObjC selector: @- handleNewFlow:completionHandler:@
 handleNewFlow_completionHandler :: (IsNEFilterControlProvider neFilterControlProvider, IsNEFilterFlow flow) => neFilterControlProvider -> flow -> Ptr () -> IO ()
-handleNewFlow_completionHandler neFilterControlProvider  flow completionHandler =
-  withObjCPtr flow $ \raw_flow ->
-      sendMsg neFilterControlProvider (mkSelector "handleNewFlow:completionHandler:") retVoid [argPtr (castPtr raw_flow :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+handleNewFlow_completionHandler neFilterControlProvider flow completionHandler =
+  sendMessage neFilterControlProvider handleNewFlow_completionHandlerSelector (toNEFilterFlow flow) completionHandler
 
 -- | notifyRulesChanged
 --
@@ -77,8 +72,8 @@ handleNewFlow_completionHandler neFilterControlProvider  flow completionHandler 
 --
 -- ObjC selector: @- notifyRulesChanged@
 notifyRulesChanged :: IsNEFilterControlProvider neFilterControlProvider => neFilterControlProvider -> IO ()
-notifyRulesChanged neFilterControlProvider  =
-    sendMsg neFilterControlProvider (mkSelector "notifyRulesChanged") retVoid []
+notifyRulesChanged neFilterControlProvider =
+  sendMessage neFilterControlProvider notifyRulesChangedSelector
 
 -- | remediationMap
 --
@@ -90,8 +85,8 @@ notifyRulesChanged neFilterControlProvider  =
 --
 -- ObjC selector: @- remediationMap@
 remediationMap :: IsNEFilterControlProvider neFilterControlProvider => neFilterControlProvider -> IO (Id NSDictionary)
-remediationMap neFilterControlProvider  =
-    sendMsg neFilterControlProvider (mkSelector "remediationMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+remediationMap neFilterControlProvider =
+  sendMessage neFilterControlProvider remediationMapSelector
 
 -- | remediationMap
 --
@@ -103,9 +98,8 @@ remediationMap neFilterControlProvider  =
 --
 -- ObjC selector: @- setRemediationMap:@
 setRemediationMap :: (IsNEFilterControlProvider neFilterControlProvider, IsNSDictionary value) => neFilterControlProvider -> value -> IO ()
-setRemediationMap neFilterControlProvider  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterControlProvider (mkSelector "setRemediationMap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRemediationMap neFilterControlProvider value =
+  sendMessage neFilterControlProvider setRemediationMapSelector (toNSDictionary value)
 
 -- | URLAppendStringMap
 --
@@ -113,8 +107,8 @@ setRemediationMap neFilterControlProvider  value =
 --
 -- ObjC selector: @- URLAppendStringMap@
 urlAppendStringMap :: IsNEFilterControlProvider neFilterControlProvider => neFilterControlProvider -> IO (Id NSDictionary)
-urlAppendStringMap neFilterControlProvider  =
-    sendMsg neFilterControlProvider (mkSelector "URLAppendStringMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlAppendStringMap neFilterControlProvider =
+  sendMessage neFilterControlProvider urlAppendStringMapSelector
 
 -- | URLAppendStringMap
 --
@@ -122,39 +116,38 @@ urlAppendStringMap neFilterControlProvider  =
 --
 -- ObjC selector: @- setURLAppendStringMap:@
 setURLAppendStringMap :: (IsNEFilterControlProvider neFilterControlProvider, IsNSDictionary value) => neFilterControlProvider -> value -> IO ()
-setURLAppendStringMap neFilterControlProvider  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neFilterControlProvider (mkSelector "setURLAppendStringMap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURLAppendStringMap neFilterControlProvider value =
+  sendMessage neFilterControlProvider setURLAppendStringMapSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @handleRemediationForFlow:completionHandler:@
-handleRemediationForFlow_completionHandlerSelector :: Selector
+handleRemediationForFlow_completionHandlerSelector :: Selector '[Id NEFilterFlow, Ptr ()] ()
 handleRemediationForFlow_completionHandlerSelector = mkSelector "handleRemediationForFlow:completionHandler:"
 
 -- | @Selector@ for @handleNewFlow:completionHandler:@
-handleNewFlow_completionHandlerSelector :: Selector
+handleNewFlow_completionHandlerSelector :: Selector '[Id NEFilterFlow, Ptr ()] ()
 handleNewFlow_completionHandlerSelector = mkSelector "handleNewFlow:completionHandler:"
 
 -- | @Selector@ for @notifyRulesChanged@
-notifyRulesChangedSelector :: Selector
+notifyRulesChangedSelector :: Selector '[] ()
 notifyRulesChangedSelector = mkSelector "notifyRulesChanged"
 
 -- | @Selector@ for @remediationMap@
-remediationMapSelector :: Selector
+remediationMapSelector :: Selector '[] (Id NSDictionary)
 remediationMapSelector = mkSelector "remediationMap"
 
 -- | @Selector@ for @setRemediationMap:@
-setRemediationMapSelector :: Selector
+setRemediationMapSelector :: Selector '[Id NSDictionary] ()
 setRemediationMapSelector = mkSelector "setRemediationMap:"
 
 -- | @Selector@ for @URLAppendStringMap@
-urlAppendStringMapSelector :: Selector
+urlAppendStringMapSelector :: Selector '[] (Id NSDictionary)
 urlAppendStringMapSelector = mkSelector "URLAppendStringMap"
 
 -- | @Selector@ for @setURLAppendStringMap:@
-setURLAppendStringMapSelector :: Selector
+setURLAppendStringMapSelector :: Selector '[Id NSDictionary] ()
 setURLAppendStringMapSelector = mkSelector "setURLAppendStringMap:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.Vision.VNRecognizedPoint3D
   , new
   , init_
   , identifier
-  , newSelector
-  , initSelector
   , identifierSelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,12 +39,12 @@ new :: IO (Id VNRecognizedPoint3D)
 new  =
   do
     cls' <- getRequiredClass "VNRecognizedPoint3D"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVNRecognizedPoint3D vnRecognizedPoint3D => vnRecognizedPoint3D -> IO (Id VNRecognizedPoint3D)
-init_ vnRecognizedPoint3D  =
-    sendMsg vnRecognizedPoint3D (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnRecognizedPoint3D =
+  sendOwnedMessage vnRecognizedPoint3D initSelector
 
 -- | The is the identifier that provides context as to the kind of point that was recognized.
 --
@@ -55,22 +52,22 @@ init_ vnRecognizedPoint3D  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsVNRecognizedPoint3D vnRecognizedPoint3D => vnRecognizedPoint3D -> IO (Id NSString)
-identifier vnRecognizedPoint3D  =
-    sendMsg vnRecognizedPoint3D (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier vnRecognizedPoint3D =
+  sendMessage vnRecognizedPoint3D identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VNRecognizedPoint3D)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNRecognizedPoint3D)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 

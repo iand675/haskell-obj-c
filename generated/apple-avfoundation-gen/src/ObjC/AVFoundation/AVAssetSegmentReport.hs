@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,15 +30,11 @@ module ObjC.AVFoundation.AVAssetSegmentReport
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetSegmentReport avAssetSegmentReport => avAssetSegmentReport -> IO (Id AVAssetSegmentReport)
-init_ avAssetSegmentReport  =
-    sendMsg avAssetSegmentReport (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetSegmentReport =
+  sendOwnedMessage avAssetSegmentReport initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetSegmentReport)
 new  =
   do
     cls' <- getRequiredClass "AVAssetSegmentReport"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | segmentType
 --
@@ -63,8 +60,8 @@ new  =
 --
 -- ObjC selector: @- segmentType@
 segmentType :: IsAVAssetSegmentReport avAssetSegmentReport => avAssetSegmentReport -> IO AVAssetSegmentType
-segmentType avAssetSegmentReport  =
-    fmap (coerce :: CLong -> AVAssetSegmentType) $ sendMsg avAssetSegmentReport (mkSelector "segmentType") retCLong []
+segmentType avAssetSegmentReport =
+  sendMessage avAssetSegmentReport segmentTypeSelector
 
 -- | trackReports
 --
@@ -72,26 +69,26 @@ segmentType avAssetSegmentReport  =
 --
 -- ObjC selector: @- trackReports@
 trackReports :: IsAVAssetSegmentReport avAssetSegmentReport => avAssetSegmentReport -> IO (Id NSArray)
-trackReports avAssetSegmentReport  =
-    sendMsg avAssetSegmentReport (mkSelector "trackReports") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackReports avAssetSegmentReport =
+  sendMessage avAssetSegmentReport trackReportsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetSegmentReport)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetSegmentReport)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @segmentType@
-segmentTypeSelector :: Selector
+segmentTypeSelector :: Selector '[] AVAssetSegmentType
 segmentTypeSelector = mkSelector "segmentType"
 
 -- | @Selector@ for @trackReports@
-trackReportsSelector :: Selector
+trackReportsSelector :: Selector '[] (Id NSArray)
 trackReportsSelector = mkSelector "trackReports"
 

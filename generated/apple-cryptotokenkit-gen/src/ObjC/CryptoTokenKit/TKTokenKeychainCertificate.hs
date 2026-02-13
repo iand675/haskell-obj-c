@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.CryptoTokenKit.TKTokenKeychainCertificate
   , initWithCertificate_objectID
   , initWithObjectID
   , data_
+  , dataSelector
   , initWithCertificate_objectIDSelector
   , initWithObjectIDSelector
-  , dataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,34 +36,34 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithCertificate:objectID:@
 initWithCertificate_objectID :: IsTKTokenKeychainCertificate tkTokenKeychainCertificate => tkTokenKeychainCertificate -> Ptr () -> RawId -> IO (Id TKTokenKeychainCertificate)
-initWithCertificate_objectID tkTokenKeychainCertificate  certificateRef objectID =
-    sendMsg tkTokenKeychainCertificate (mkSelector "initWithCertificate:objectID:") (retPtr retVoid) [argPtr certificateRef, argPtr (castPtr (unRawId objectID) :: Ptr ())] >>= ownedObject . castPtr
+initWithCertificate_objectID tkTokenKeychainCertificate certificateRef objectID =
+  sendOwnedMessage tkTokenKeychainCertificate initWithCertificate_objectIDSelector certificateRef objectID
 
 -- | @- initWithObjectID:@
 initWithObjectID :: IsTKTokenKeychainCertificate tkTokenKeychainCertificate => tkTokenKeychainCertificate -> RawId -> IO (Id TKTokenKeychainCertificate)
-initWithObjectID tkTokenKeychainCertificate  objectID =
-    sendMsg tkTokenKeychainCertificate (mkSelector "initWithObjectID:") (retPtr retVoid) [argPtr (castPtr (unRawId objectID) :: Ptr ())] >>= ownedObject . castPtr
+initWithObjectID tkTokenKeychainCertificate objectID =
+  sendOwnedMessage tkTokenKeychainCertificate initWithObjectIDSelector objectID
 
 -- | Contains DER-encoded representation of an X.509 certificate.
 --
 -- ObjC selector: @- data@
 data_ :: IsTKTokenKeychainCertificate tkTokenKeychainCertificate => tkTokenKeychainCertificate -> IO (Id NSData)
-data_ tkTokenKeychainCertificate  =
-    sendMsg tkTokenKeychainCertificate (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ tkTokenKeychainCertificate =
+  sendMessage tkTokenKeychainCertificate dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCertificate:objectID:@
-initWithCertificate_objectIDSelector :: Selector
+initWithCertificate_objectIDSelector :: Selector '[Ptr (), RawId] (Id TKTokenKeychainCertificate)
 initWithCertificate_objectIDSelector = mkSelector "initWithCertificate:objectID:"
 
 -- | @Selector@ for @initWithObjectID:@
-initWithObjectIDSelector :: Selector
+initWithObjectIDSelector :: Selector '[RawId] (Id TKTokenKeychainCertificate)
 initWithObjectIDSelector = mkSelector "initWithObjectID:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 

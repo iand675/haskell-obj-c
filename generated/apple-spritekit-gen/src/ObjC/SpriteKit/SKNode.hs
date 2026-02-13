@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -85,84 +86,84 @@ module ObjC.SpriteKit.SKNode
   , setAccessibilityLabel
   , accessibilityEnabled
   , setAccessibilityEnabled
+  , accessibilityChildrenSelector
+  , accessibilityElementSelector
+  , accessibilityEnabledSelector
+  , accessibilityHelpSelector
+  , accessibilityLabelSelector
+  , accessibilityParentSelector
+  , accessibilityRoleDescriptionSelector
+  , accessibilityRoleSelector
+  , accessibilitySubroleSelector
+  , actionForKeySelector
+  , addChildSelector
+  , alphaSelector
+  , childNodeWithNameSelector
+  , childrenSelector
+  , constraintsSelector
+  , enumerateChildNodesWithName_usingBlockSelector
+  , focusBehaviorSelector
+  , hasActionsSelector
+  , hiddenSelector
+  , inParentHierarchySelector
   , initSelector
   , initWithCoderSelector
+  , insertChild_atIndexSelector
+  , intersectsNodeSelector
+  , isEqualToNodeSelector
+  , moveToParentSelector
+  , nameSelector
   , nodeSelector
   , nodeWithFileNamedSelector
   , nodeWithFileNamed_securelyWithClasses_andErrorSelector
-  , valueForAttributeNamedSelector
-  , setValue_forAttributeNamedSelector
-  , setScaleSelector
-  , addChildSelector
-  , insertChild_atIndexSelector
-  , removeChildrenInArraySelector
-  , removeAllChildrenSelector
-  , removeFromParentSelector
-  , moveToParentSelector
-  , childNodeWithNameSelector
-  , enumerateChildNodesWithName_usingBlockSelector
   , objectForKeyedSubscriptSelector
-  , inParentHierarchySelector
+  , parentSelector
+  , pausedSelector
+  , physicsBodySelector
+  , reachConstraintsSelector
+  , removeActionForKeySelector
+  , removeAllActionsSelector
+  , removeAllChildrenSelector
+  , removeChildrenInArraySelector
+  , removeFromParentSelector
   , runActionSelector
   , runAction_completionSelector
   , runAction_withKeySelector
-  , hasActionsSelector
-  , actionForKeySelector
-  , removeActionForKeySelector
-  , removeAllActionsSelector
-  , intersectsNodeSelector
-  , isEqualToNodeSelector
-  , zPositionSelector
-  , setZPositionSelector
-  , zRotationSelector
-  , setZRotationSelector
-  , xScaleSelector
-  , setXScaleSelector
-  , yScaleSelector
-  , setYScaleSelector
-  , speedSelector
-  , setSpeedSelector
-  , alphaSelector
-  , setAlphaSelector
-  , pausedSelector
-  , setPausedSelector
-  , hiddenSelector
-  , setHiddenSelector
-  , userInteractionEnabledSelector
-  , setUserInteractionEnabledSelector
-  , focusBehaviorSelector
-  , setFocusBehaviorSelector
-  , parentSelector
-  , childrenSelector
-  , nameSelector
-  , setNameSelector
   , sceneSelector
-  , physicsBodySelector
-  , setPhysicsBodySelector
-  , userDataSelector
-  , setUserDataSelector
-  , reachConstraintsSelector
-  , setReachConstraintsSelector
-  , constraintsSelector
-  , setConstraintsSelector
-  , accessibilityElementSelector
-  , setAccessibilityElementSelector
-  , accessibilityRoleSelector
-  , setAccessibilityRoleSelector
-  , accessibilityRoleDescriptionSelector
-  , setAccessibilityRoleDescriptionSelector
-  , accessibilitySubroleSelector
-  , setAccessibilitySubroleSelector
-  , accessibilityParentSelector
-  , setAccessibilityParentSelector
-  , accessibilityChildrenSelector
   , setAccessibilityChildrenSelector
-  , accessibilityHelpSelector
-  , setAccessibilityHelpSelector
-  , accessibilityLabelSelector
-  , setAccessibilityLabelSelector
-  , accessibilityEnabledSelector
+  , setAccessibilityElementSelector
   , setAccessibilityEnabledSelector
+  , setAccessibilityHelpSelector
+  , setAccessibilityLabelSelector
+  , setAccessibilityParentSelector
+  , setAccessibilityRoleDescriptionSelector
+  , setAccessibilityRoleSelector
+  , setAccessibilitySubroleSelector
+  , setAlphaSelector
+  , setConstraintsSelector
+  , setFocusBehaviorSelector
+  , setHiddenSelector
+  , setNameSelector
+  , setPausedSelector
+  , setPhysicsBodySelector
+  , setReachConstraintsSelector
+  , setScaleSelector
+  , setSpeedSelector
+  , setUserDataSelector
+  , setUserInteractionEnabledSelector
+  , setValue_forAttributeNamedSelector
+  , setXScaleSelector
+  , setYScaleSelector
+  , setZPositionSelector
+  , setZRotationSelector
+  , speedSelector
+  , userDataSelector
+  , userInteractionEnabledSelector
+  , valueForAttributeNamedSelector
+  , xScaleSelector
+  , yScaleSelector
+  , zPositionSelector
+  , zRotationSelector
 
   -- * Enum types
   , SKNodeFocusBehavior(SKNodeFocusBehavior)
@@ -172,15 +173,11 @@ module ObjC.SpriteKit.SKNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -191,54 +188,46 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSKNode skNode => skNode -> IO (Id SKNode)
-init_ skNode  =
-    sendMsg skNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ skNode =
+  sendOwnedMessage skNode initSelector
 
 -- | Support coding and decoding via NSKeyedArchiver.
 --
 -- ObjC selector: @- initWithCoder:@
 initWithCoder :: (IsSKNode skNode, IsNSCoder aDecoder) => skNode -> aDecoder -> IO (Id SKNode)
-initWithCoder skNode  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg skNode (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder skNode aDecoder =
+  sendOwnedMessage skNode initWithCoderSelector (toNSCoder aDecoder)
 
 -- | @+ node@
 node :: IO (Id SKNode)
 node  =
   do
     cls' <- getRequiredClass "SKNode"
-    sendClassMsg cls' (mkSelector "node") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeSelector
 
 -- | @+ nodeWithFileNamed:@
 nodeWithFileNamed :: IsNSString filename => filename -> IO (Id SKNode)
 nodeWithFileNamed filename =
   do
     cls' <- getRequiredClass "SKNode"
-    withObjCPtr filename $ \raw_filename ->
-      sendClassMsg cls' (mkSelector "nodeWithFileNamed:") (retPtr retVoid) [argPtr (castPtr raw_filename :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithFileNamedSelector (toNSString filename)
 
 -- | @+ nodeWithFileNamed:securelyWithClasses:andError:@
 nodeWithFileNamed_securelyWithClasses_andError :: (IsNSString filename, IsNSSet classes, IsNSError error_) => filename -> classes -> error_ -> IO (Id SKNode)
 nodeWithFileNamed_securelyWithClasses_andError filename classes error_ =
   do
     cls' <- getRequiredClass "SKNode"
-    withObjCPtr filename $ \raw_filename ->
-      withObjCPtr classes $ \raw_classes ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "nodeWithFileNamed:securelyWithClasses:andError:") (retPtr retVoid) [argPtr (castPtr raw_filename :: Ptr ()), argPtr (castPtr raw_classes :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithFileNamed_securelyWithClasses_andErrorSelector (toNSString filename) (toNSSet classes) (toNSError error_)
 
 -- | @- valueForAttributeNamed:@
 valueForAttributeNamed :: (IsSKNode skNode, IsNSString key) => skNode -> key -> IO (Id SKAttributeValue)
-valueForAttributeNamed skNode  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg skNode (mkSelector "valueForAttributeNamed:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+valueForAttributeNamed skNode key =
+  sendMessage skNode valueForAttributeNamedSelector (toNSString key)
 
 -- | @- setValue:forAttributeNamed:@
 setValue_forAttributeNamed :: (IsSKNode skNode, IsSKAttributeValue value, IsNSString key) => skNode -> value -> key -> IO ()
-setValue_forAttributeNamed skNode  value key =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg skNode (mkSelector "setValue:forAttributeNamed:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forAttributeNamed skNode value key =
+  sendMessage skNode setValue_forAttributeNamedSelector (toSKAttributeValue value) (toNSString key)
 
 -- | Sets both the x & y scale
 --
@@ -246,8 +235,8 @@ setValue_forAttributeNamed skNode  value key =
 --
 -- ObjC selector: @- setScale:@
 setScale :: IsSKNode skNode => skNode -> CDouble -> IO ()
-setScale skNode  scale =
-    sendMsg skNode (mkSelector "setScale:") retVoid [argCDouble scale]
+setScale skNode scale =
+  sendMessage skNode setScaleSelector scale
 
 -- | Adds a node as a child node of this node
 --
@@ -257,49 +246,43 @@ setScale skNode  scale =
 --
 -- ObjC selector: @- addChild:@
 addChild :: (IsSKNode skNode, IsSKNode node) => skNode -> node -> IO ()
-addChild skNode  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg skNode (mkSelector "addChild:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+addChild skNode node =
+  sendMessage skNode addChildSelector (toSKNode node)
 
 -- | @- insertChild:atIndex:@
 insertChild_atIndex :: (IsSKNode skNode, IsSKNode node) => skNode -> node -> CLong -> IO ()
-insertChild_atIndex skNode  node index =
-  withObjCPtr node $ \raw_node ->
-      sendMsg skNode (mkSelector "insertChild:atIndex:") retVoid [argPtr (castPtr raw_node :: Ptr ()), argCLong index]
+insertChild_atIndex skNode node index =
+  sendMessage skNode insertChild_atIndexSelector (toSKNode node) index
 
 -- | @- removeChildrenInArray:@
 removeChildrenInArray :: (IsSKNode skNode, IsNSArray nodes) => skNode -> nodes -> IO ()
-removeChildrenInArray skNode  nodes =
-  withObjCPtr nodes $ \raw_nodes ->
-      sendMsg skNode (mkSelector "removeChildrenInArray:") retVoid [argPtr (castPtr raw_nodes :: Ptr ())]
+removeChildrenInArray skNode nodes =
+  sendMessage skNode removeChildrenInArraySelector (toNSArray nodes)
 
 -- | @- removeAllChildren@
 removeAllChildren :: IsSKNode skNode => skNode -> IO ()
-removeAllChildren skNode  =
-    sendMsg skNode (mkSelector "removeAllChildren") retVoid []
+removeAllChildren skNode =
+  sendMessage skNode removeAllChildrenSelector
 
 -- | @- removeFromParent@
 removeFromParent :: IsSKNode skNode => skNode -> IO ()
-removeFromParent skNode  =
-    sendMsg skNode (mkSelector "removeFromParent") retVoid []
+removeFromParent skNode =
+  sendMessage skNode removeFromParentSelector
 
 -- | @- moveToParent:@
 moveToParent :: (IsSKNode skNode, IsSKNode parent) => skNode -> parent -> IO ()
-moveToParent skNode  parent =
-  withObjCPtr parent $ \raw_parent ->
-      sendMsg skNode (mkSelector "moveToParent:") retVoid [argPtr (castPtr raw_parent :: Ptr ())]
+moveToParent skNode parent =
+  sendMessage skNode moveToParentSelector (toSKNode parent)
 
 -- | @- childNodeWithName:@
 childNodeWithName :: (IsSKNode skNode, IsNSString name) => skNode -> name -> IO (Id SKNode)
-childNodeWithName skNode  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skNode (mkSelector "childNodeWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+childNodeWithName skNode name =
+  sendMessage skNode childNodeWithNameSelector (toNSString name)
 
 -- | @- enumerateChildNodesWithName:usingBlock:@
 enumerateChildNodesWithName_usingBlock :: (IsSKNode skNode, IsNSString name) => skNode -> name -> Ptr () -> IO ()
-enumerateChildNodesWithName_usingBlock skNode  name block =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skNode (mkSelector "enumerateChildNodesWithName:usingBlock:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+enumerateChildNodesWithName_usingBlock skNode name block =
+  sendMessage skNode enumerateChildNodesWithName_usingBlockSelector (toNSString name) block
 
 -- | Simplified shorthand for enumerateChildNodesWithName that returns an array of the matching nodes. This allows subscripting of the form:      NSArray *childrenMatchingName = node["name"]
 --
@@ -311,208 +294,198 @@ enumerateChildNodesWithName_usingBlock skNode  name block =
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsSKNode skNode, IsNSString name) => skNode -> name -> IO (Id NSArray)
-objectForKeyedSubscript skNode  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg skNode (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+objectForKeyedSubscript skNode name =
+  sendMessage skNode objectForKeyedSubscriptSelector (toNSString name)
 
 -- | @- inParentHierarchy:@
 inParentHierarchy :: (IsSKNode skNode, IsSKNode parent) => skNode -> parent -> IO Bool
-inParentHierarchy skNode  parent =
-  withObjCPtr parent $ \raw_parent ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg skNode (mkSelector "inParentHierarchy:") retCULong [argPtr (castPtr raw_parent :: Ptr ())]
+inParentHierarchy skNode parent =
+  sendMessage skNode inParentHierarchySelector (toSKNode parent)
 
 -- | @- runAction:@
 runAction :: (IsSKNode skNode, IsSKAction action) => skNode -> action -> IO ()
-runAction skNode  action =
-  withObjCPtr action $ \raw_action ->
-      sendMsg skNode (mkSelector "runAction:") retVoid [argPtr (castPtr raw_action :: Ptr ())]
+runAction skNode action =
+  sendMessage skNode runActionSelector (toSKAction action)
 
 -- | @- runAction:completion:@
 runAction_completion :: (IsSKNode skNode, IsSKAction action) => skNode -> action -> Ptr () -> IO ()
-runAction_completion skNode  action block =
-  withObjCPtr action $ \raw_action ->
-      sendMsg skNode (mkSelector "runAction:completion:") retVoid [argPtr (castPtr raw_action :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+runAction_completion skNode action block =
+  sendMessage skNode runAction_completionSelector (toSKAction action) block
 
 -- | @- runAction:withKey:@
 runAction_withKey :: (IsSKNode skNode, IsSKAction action, IsNSString key) => skNode -> action -> key -> IO ()
-runAction_withKey skNode  action key =
-  withObjCPtr action $ \raw_action ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg skNode (mkSelector "runAction:withKey:") retVoid [argPtr (castPtr raw_action :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+runAction_withKey skNode action key =
+  sendMessage skNode runAction_withKeySelector (toSKAction action) (toNSString key)
 
 -- | @- hasActions@
 hasActions :: IsSKNode skNode => skNode -> IO Bool
-hasActions skNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skNode (mkSelector "hasActions") retCULong []
+hasActions skNode =
+  sendMessage skNode hasActionsSelector
 
 -- | @- actionForKey:@
 actionForKey :: (IsSKNode skNode, IsNSString key) => skNode -> key -> IO (Id SKAction)
-actionForKey skNode  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg skNode (mkSelector "actionForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+actionForKey skNode key =
+  sendMessage skNode actionForKeySelector (toNSString key)
 
 -- | @- removeActionForKey:@
 removeActionForKey :: (IsSKNode skNode, IsNSString key) => skNode -> key -> IO ()
-removeActionForKey skNode  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg skNode (mkSelector "removeActionForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+removeActionForKey skNode key =
+  sendMessage skNode removeActionForKeySelector (toNSString key)
 
 -- | @- removeAllActions@
 removeAllActions :: IsSKNode skNode => skNode -> IO ()
-removeAllActions skNode  =
-    sendMsg skNode (mkSelector "removeAllActions") retVoid []
+removeAllActions skNode =
+  sendMessage skNode removeAllActionsSelector
 
 -- | @- intersectsNode:@
 intersectsNode :: (IsSKNode skNode, IsSKNode node) => skNode -> node -> IO Bool
-intersectsNode skNode  node =
-  withObjCPtr node $ \raw_node ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg skNode (mkSelector "intersectsNode:") retCULong [argPtr (castPtr raw_node :: Ptr ())]
+intersectsNode skNode node =
+  sendMessage skNode intersectsNodeSelector (toSKNode node)
 
 -- | @- isEqualToNode:@
 isEqualToNode :: (IsSKNode skNode, IsSKNode node) => skNode -> node -> IO Bool
-isEqualToNode skNode  node =
-  withObjCPtr node $ \raw_node ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg skNode (mkSelector "isEqualToNode:") retCULong [argPtr (castPtr raw_node :: Ptr ())]
+isEqualToNode skNode node =
+  sendMessage skNode isEqualToNodeSelector (toSKNode node)
 
 -- | The z-order of the node (used for ordering). Negative z is "into" the screen, Positive z is "out" of the screen. A greater zPosition will sort in front of a lesser zPosition.
 --
 -- ObjC selector: @- zPosition@
 zPosition :: IsSKNode skNode => skNode -> IO CDouble
-zPosition skNode  =
-    sendMsg skNode (mkSelector "zPosition") retCDouble []
+zPosition skNode =
+  sendMessage skNode zPositionSelector
 
 -- | The z-order of the node (used for ordering). Negative z is "into" the screen, Positive z is "out" of the screen. A greater zPosition will sort in front of a lesser zPosition.
 --
 -- ObjC selector: @- setZPosition:@
 setZPosition :: IsSKNode skNode => skNode -> CDouble -> IO ()
-setZPosition skNode  value =
-    sendMsg skNode (mkSelector "setZPosition:") retVoid [argCDouble value]
+setZPosition skNode value =
+  sendMessage skNode setZPositionSelector value
 
 -- | The Euler rotation about the z axis (in radians)
 --
 -- ObjC selector: @- zRotation@
 zRotation :: IsSKNode skNode => skNode -> IO CDouble
-zRotation skNode  =
-    sendMsg skNode (mkSelector "zRotation") retCDouble []
+zRotation skNode =
+  sendMessage skNode zRotationSelector
 
 -- | The Euler rotation about the z axis (in radians)
 --
 -- ObjC selector: @- setZRotation:@
 setZRotation :: IsSKNode skNode => skNode -> CDouble -> IO ()
-setZRotation skNode  value =
-    sendMsg skNode (mkSelector "setZRotation:") retVoid [argCDouble value]
+setZRotation skNode value =
+  sendMessage skNode setZRotationSelector value
 
 -- | The scaling in the X axis
 --
 -- ObjC selector: @- xScale@
 xScale :: IsSKNode skNode => skNode -> IO CDouble
-xScale skNode  =
-    sendMsg skNode (mkSelector "xScale") retCDouble []
+xScale skNode =
+  sendMessage skNode xScaleSelector
 
 -- | The scaling in the X axis
 --
 -- ObjC selector: @- setXScale:@
 setXScale :: IsSKNode skNode => skNode -> CDouble -> IO ()
-setXScale skNode  value =
-    sendMsg skNode (mkSelector "setXScale:") retVoid [argCDouble value]
+setXScale skNode value =
+  sendMessage skNode setXScaleSelector value
 
 -- | The scaling in the Y axis
 --
 -- ObjC selector: @- yScale@
 yScale :: IsSKNode skNode => skNode -> IO CDouble
-yScale skNode  =
-    sendMsg skNode (mkSelector "yScale") retCDouble []
+yScale skNode =
+  sendMessage skNode yScaleSelector
 
 -- | The scaling in the Y axis
 --
 -- ObjC selector: @- setYScale:@
 setYScale :: IsSKNode skNode => skNode -> CDouble -> IO ()
-setYScale skNode  value =
-    sendMsg skNode (mkSelector "setYScale:") retVoid [argCDouble value]
+setYScale skNode value =
+  sendMessage skNode setYScaleSelector value
 
 -- | The speed multiplier applied to all actions run on this node. Inherited by its children.
 --
 -- ObjC selector: @- speed@
 speed :: IsSKNode skNode => skNode -> IO CDouble
-speed skNode  =
-    sendMsg skNode (mkSelector "speed") retCDouble []
+speed skNode =
+  sendMessage skNode speedSelector
 
 -- | The speed multiplier applied to all actions run on this node. Inherited by its children.
 --
 -- ObjC selector: @- setSpeed:@
 setSpeed :: IsSKNode skNode => skNode -> CDouble -> IO ()
-setSpeed skNode  value =
-    sendMsg skNode (mkSelector "setSpeed:") retVoid [argCDouble value]
+setSpeed skNode value =
+  sendMessage skNode setSpeedSelector value
 
 -- | Alpha of this node (multiplied by the output color to give the final result)
 --
 -- ObjC selector: @- alpha@
 alpha :: IsSKNode skNode => skNode -> IO CDouble
-alpha skNode  =
-    sendMsg skNode (mkSelector "alpha") retCDouble []
+alpha skNode =
+  sendMessage skNode alphaSelector
 
 -- | Alpha of this node (multiplied by the output color to give the final result)
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsSKNode skNode => skNode -> CDouble -> IO ()
-setAlpha skNode  value =
-    sendMsg skNode (mkSelector "setAlpha:") retVoid [argCDouble value]
+setAlpha skNode value =
+  sendMessage skNode setAlphaSelector value
 
 -- | Controls whether or not the node's actions is updated or paused.
 --
 -- ObjC selector: @- paused@
 paused :: IsSKNode skNode => skNode -> IO Bool
-paused skNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skNode (mkSelector "paused") retCULong []
+paused skNode =
+  sendMessage skNode pausedSelector
 
 -- | Controls whether or not the node's actions is updated or paused.
 --
 -- ObjC selector: @- setPaused:@
 setPaused :: IsSKNode skNode => skNode -> Bool -> IO ()
-setPaused skNode  value =
-    sendMsg skNode (mkSelector "setPaused:") retVoid [argCULong (if value then 1 else 0)]
+setPaused skNode value =
+  sendMessage skNode setPausedSelector value
 
 -- | Controls whether or not the node and its children are rendered.
 --
 -- ObjC selector: @- hidden@
 hidden :: IsSKNode skNode => skNode -> IO Bool
-hidden skNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skNode (mkSelector "hidden") retCULong []
+hidden skNode =
+  sendMessage skNode hiddenSelector
 
 -- | Controls whether or not the node and its children are rendered.
 --
 -- ObjC selector: @- setHidden:@
 setHidden :: IsSKNode skNode => skNode -> Bool -> IO ()
-setHidden skNode  value =
-    sendMsg skNode (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden skNode value =
+  sendMessage skNode setHiddenSelector value
 
 -- | Controls whether or not the node receives touch events
 --
 -- ObjC selector: @- userInteractionEnabled@
 userInteractionEnabled :: IsSKNode skNode => skNode -> IO Bool
-userInteractionEnabled skNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skNode (mkSelector "userInteractionEnabled") retCULong []
+userInteractionEnabled skNode =
+  sendMessage skNode userInteractionEnabledSelector
 
 -- | Controls whether or not the node receives touch events
 --
 -- ObjC selector: @- setUserInteractionEnabled:@
 setUserInteractionEnabled :: IsSKNode skNode => skNode -> Bool -> IO ()
-setUserInteractionEnabled skNode  value =
-    sendMsg skNode (mkSelector "setUserInteractionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setUserInteractionEnabled skNode value =
+  sendMessage skNode setUserInteractionEnabledSelector value
 
 -- | Determines how this node participates in the focus system.  The default is SKNodeFocusBehaviorNone.
 --
 -- ObjC selector: @- focusBehavior@
 focusBehavior :: IsSKNode skNode => skNode -> IO SKNodeFocusBehavior
-focusBehavior skNode  =
-    fmap (coerce :: CLong -> SKNodeFocusBehavior) $ sendMsg skNode (mkSelector "focusBehavior") retCLong []
+focusBehavior skNode =
+  sendMessage skNode focusBehaviorSelector
 
 -- | Determines how this node participates in the focus system.  The default is SKNodeFocusBehaviorNone.
 --
 -- ObjC selector: @- setFocusBehavior:@
 setFocusBehavior :: IsSKNode skNode => skNode -> SKNodeFocusBehavior -> IO ()
-setFocusBehavior skNode  value =
-    sendMsg skNode (mkSelector "setFocusBehavior:") retVoid [argCLong (coerce value)]
+setFocusBehavior skNode value =
+  sendMessage skNode setFocusBehaviorSelector value
 
 -- | The parent of the node.
 --
@@ -520,15 +493,15 @@ setFocusBehavior skNode  value =
 --
 -- ObjC selector: @- parent@
 parent :: IsSKNode skNode => skNode -> IO (Id SKNode)
-parent skNode  =
-    sendMsg skNode (mkSelector "parent") (retPtr retVoid) [] >>= retainedObject . castPtr
+parent skNode =
+  sendMessage skNode parentSelector
 
 -- | The children of this node.
 --
 -- ObjC selector: @- children@
 children :: IsSKNode skNode => skNode -> IO (Id NSArray)
-children skNode  =
-    sendMsg skNode (mkSelector "children") (retPtr retVoid) [] >>= retainedObject . castPtr
+children skNode =
+  sendMessage skNode childrenSelector
 
 -- | The client assignable name.
 --
@@ -536,8 +509,8 @@ children skNode  =
 --
 -- ObjC selector: @- name@
 name :: IsSKNode skNode => skNode -> IO (Id NSString)
-name skNode  =
-    sendMsg skNode (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name skNode =
+  sendMessage skNode nameSelector
 
 -- | The client assignable name.
 --
@@ -545,486 +518,475 @@ name skNode  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsSKNode skNode, IsNSString value) => skNode -> value -> IO ()
-setName skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName skNode value =
+  sendMessage skNode setNameSelector (toNSString value)
 
 -- | The scene that the node is currently in.
 --
 -- ObjC selector: @- scene@
 scene :: IsSKNode skNode => skNode -> IO (Id SKScene)
-scene skNode  =
-    sendMsg skNode (mkSelector "scene") (retPtr retVoid) [] >>= retainedObject . castPtr
+scene skNode =
+  sendMessage skNode sceneSelector
 
 -- | Physics body attached to the node, with synchronized scale, rotation, and position
 --
 -- ObjC selector: @- physicsBody@
 physicsBody :: IsSKNode skNode => skNode -> IO (Id SKPhysicsBody)
-physicsBody skNode  =
-    sendMsg skNode (mkSelector "physicsBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+physicsBody skNode =
+  sendMessage skNode physicsBodySelector
 
 -- | Physics body attached to the node, with synchronized scale, rotation, and position
 --
 -- ObjC selector: @- setPhysicsBody:@
 setPhysicsBody :: (IsSKNode skNode, IsSKPhysicsBody value) => skNode -> value -> IO ()
-setPhysicsBody skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setPhysicsBody:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPhysicsBody skNode value =
+  sendMessage skNode setPhysicsBodySelector (toSKPhysicsBody value)
 
 -- | An optional dictionary that can be used to store your own data in a node. Defaults to nil.
 --
 -- ObjC selector: @- userData@
 userData :: IsSKNode skNode => skNode -> IO (Id NSMutableDictionary)
-userData skNode  =
-    sendMsg skNode (mkSelector "userData") (retPtr retVoid) [] >>= retainedObject . castPtr
+userData skNode =
+  sendMessage skNode userDataSelector
 
 -- | An optional dictionary that can be used to store your own data in a node. Defaults to nil.
 --
 -- ObjC selector: @- setUserData:@
 setUserData :: (IsSKNode skNode, IsNSMutableDictionary value) => skNode -> value -> IO ()
-setUserData skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setUserData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserData skNode value =
+  sendMessage skNode setUserDataSelector (toNSMutableDictionary value)
 
 -- | Kinematic constraints, used in IK solving
 --
 -- ObjC selector: @- reachConstraints@
 reachConstraints :: IsSKNode skNode => skNode -> IO (Id SKReachConstraints)
-reachConstraints skNode  =
-    sendMsg skNode (mkSelector "reachConstraints") (retPtr retVoid) [] >>= retainedObject . castPtr
+reachConstraints skNode =
+  sendMessage skNode reachConstraintsSelector
 
 -- | Kinematic constraints, used in IK solving
 --
 -- ObjC selector: @- setReachConstraints:@
 setReachConstraints :: (IsSKNode skNode, IsSKReachConstraints value) => skNode -> value -> IO ()
-setReachConstraints skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setReachConstraints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReachConstraints skNode value =
+  sendMessage skNode setReachConstraintsSelector (toSKReachConstraints value)
 
 -- | Optional array of SKConstraints Constraints are evaluated each frame after actions and physics. The node's transform will be changed to satisfy the constraint.
 --
 -- ObjC selector: @- constraints@
 constraints :: IsSKNode skNode => skNode -> IO (Id NSArray)
-constraints skNode  =
-    sendMsg skNode (mkSelector "constraints") (retPtr retVoid) [] >>= retainedObject . castPtr
+constraints skNode =
+  sendMessage skNode constraintsSelector
 
 -- | Optional array of SKConstraints Constraints are evaluated each frame after actions and physics. The node's transform will be changed to satisfy the constraint.
 --
 -- ObjC selector: @- setConstraints:@
 setConstraints :: (IsSKNode skNode, IsNSArray value) => skNode -> value -> IO ()
-setConstraints skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setConstraints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConstraints skNode value =
+  sendMessage skNode setConstraintsSelector (toNSArray value)
 
 -- | @- accessibilityElement@
 accessibilityElement :: IsSKNode skNode => skNode -> IO Bool
-accessibilityElement skNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skNode (mkSelector "accessibilityElement") retCULong []
+accessibilityElement skNode =
+  sendMessage skNode accessibilityElementSelector
 
 -- | @- setAccessibilityElement:@
 setAccessibilityElement :: IsSKNode skNode => skNode -> Bool -> IO ()
-setAccessibilityElement skNode  value =
-    sendMsg skNode (mkSelector "setAccessibilityElement:") retVoid [argCULong (if value then 1 else 0)]
+setAccessibilityElement skNode value =
+  sendMessage skNode setAccessibilityElementSelector value
 
 -- | @- accessibilityRole@
 accessibilityRole :: IsSKNode skNode => skNode -> IO (Id NSString)
-accessibilityRole skNode  =
-    sendMsg skNode (mkSelector "accessibilityRole") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessibilityRole skNode =
+  sendMessage skNode accessibilityRoleSelector
 
 -- | @- setAccessibilityRole:@
 setAccessibilityRole :: (IsSKNode skNode, IsNSString value) => skNode -> value -> IO ()
-setAccessibilityRole skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setAccessibilityRole:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessibilityRole skNode value =
+  sendMessage skNode setAccessibilityRoleSelector (toNSString value)
 
 -- | @- accessibilityRoleDescription@
 accessibilityRoleDescription :: IsSKNode skNode => skNode -> IO (Id NSString)
-accessibilityRoleDescription skNode  =
-    sendMsg skNode (mkSelector "accessibilityRoleDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessibilityRoleDescription skNode =
+  sendMessage skNode accessibilityRoleDescriptionSelector
 
 -- | @- setAccessibilityRoleDescription:@
 setAccessibilityRoleDescription :: (IsSKNode skNode, IsNSString value) => skNode -> value -> IO ()
-setAccessibilityRoleDescription skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setAccessibilityRoleDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessibilityRoleDescription skNode value =
+  sendMessage skNode setAccessibilityRoleDescriptionSelector (toNSString value)
 
 -- | @- accessibilitySubrole@
 accessibilitySubrole :: IsSKNode skNode => skNode -> IO (Id NSString)
-accessibilitySubrole skNode  =
-    sendMsg skNode (mkSelector "accessibilitySubrole") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessibilitySubrole skNode =
+  sendMessage skNode accessibilitySubroleSelector
 
 -- | @- setAccessibilitySubrole:@
 setAccessibilitySubrole :: (IsSKNode skNode, IsNSString value) => skNode -> value -> IO ()
-setAccessibilitySubrole skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setAccessibilitySubrole:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessibilitySubrole skNode value =
+  sendMessage skNode setAccessibilitySubroleSelector (toNSString value)
 
 -- | @- accessibilityParent@
 accessibilityParent :: IsSKNode skNode => skNode -> IO RawId
-accessibilityParent skNode  =
-    fmap (RawId . castPtr) $ sendMsg skNode (mkSelector "accessibilityParent") (retPtr retVoid) []
+accessibilityParent skNode =
+  sendMessage skNode accessibilityParentSelector
 
 -- | @- setAccessibilityParent:@
 setAccessibilityParent :: IsSKNode skNode => skNode -> RawId -> IO ()
-setAccessibilityParent skNode  value =
-    sendMsg skNode (mkSelector "setAccessibilityParent:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setAccessibilityParent skNode value =
+  sendMessage skNode setAccessibilityParentSelector value
 
 -- | @- accessibilityChildren@
 accessibilityChildren :: IsSKNode skNode => skNode -> IO (Id NSArray)
-accessibilityChildren skNode  =
-    sendMsg skNode (mkSelector "accessibilityChildren") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessibilityChildren skNode =
+  sendMessage skNode accessibilityChildrenSelector
 
 -- | @- setAccessibilityChildren:@
 setAccessibilityChildren :: (IsSKNode skNode, IsNSArray value) => skNode -> value -> IO ()
-setAccessibilityChildren skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setAccessibilityChildren:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessibilityChildren skNode value =
+  sendMessage skNode setAccessibilityChildrenSelector (toNSArray value)
 
 -- | @- accessibilityHelp@
 accessibilityHelp :: IsSKNode skNode => skNode -> IO (Id NSString)
-accessibilityHelp skNode  =
-    sendMsg skNode (mkSelector "accessibilityHelp") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessibilityHelp skNode =
+  sendMessage skNode accessibilityHelpSelector
 
 -- | @- setAccessibilityHelp:@
 setAccessibilityHelp :: (IsSKNode skNode, IsNSString value) => skNode -> value -> IO ()
-setAccessibilityHelp skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setAccessibilityHelp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessibilityHelp skNode value =
+  sendMessage skNode setAccessibilityHelpSelector (toNSString value)
 
 -- | @- accessibilityLabel@
 accessibilityLabel :: IsSKNode skNode => skNode -> IO (Id NSString)
-accessibilityLabel skNode  =
-    sendMsg skNode (mkSelector "accessibilityLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessibilityLabel skNode =
+  sendMessage skNode accessibilityLabelSelector
 
 -- | @- setAccessibilityLabel:@
 setAccessibilityLabel :: (IsSKNode skNode, IsNSString value) => skNode -> value -> IO ()
-setAccessibilityLabel skNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg skNode (mkSelector "setAccessibilityLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessibilityLabel skNode value =
+  sendMessage skNode setAccessibilityLabelSelector (toNSString value)
 
 -- | @- accessibilityEnabled@
 accessibilityEnabled :: IsSKNode skNode => skNode -> IO Bool
-accessibilityEnabled skNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skNode (mkSelector "accessibilityEnabled") retCULong []
+accessibilityEnabled skNode =
+  sendMessage skNode accessibilityEnabledSelector
 
 -- | @- setAccessibilityEnabled:@
 setAccessibilityEnabled :: IsSKNode skNode => skNode -> Bool -> IO ()
-setAccessibilityEnabled skNode  value =
-    sendMsg skNode (mkSelector "setAccessibilityEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAccessibilityEnabled skNode value =
+  sendMessage skNode setAccessibilityEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SKNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id SKNode)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @node@
-nodeSelector :: Selector
+nodeSelector :: Selector '[] (Id SKNode)
 nodeSelector = mkSelector "node"
 
 -- | @Selector@ for @nodeWithFileNamed:@
-nodeWithFileNamedSelector :: Selector
+nodeWithFileNamedSelector :: Selector '[Id NSString] (Id SKNode)
 nodeWithFileNamedSelector = mkSelector "nodeWithFileNamed:"
 
 -- | @Selector@ for @nodeWithFileNamed:securelyWithClasses:andError:@
-nodeWithFileNamed_securelyWithClasses_andErrorSelector :: Selector
+nodeWithFileNamed_securelyWithClasses_andErrorSelector :: Selector '[Id NSString, Id NSSet, Id NSError] (Id SKNode)
 nodeWithFileNamed_securelyWithClasses_andErrorSelector = mkSelector "nodeWithFileNamed:securelyWithClasses:andError:"
 
 -- | @Selector@ for @valueForAttributeNamed:@
-valueForAttributeNamedSelector :: Selector
+valueForAttributeNamedSelector :: Selector '[Id NSString] (Id SKAttributeValue)
 valueForAttributeNamedSelector = mkSelector "valueForAttributeNamed:"
 
 -- | @Selector@ for @setValue:forAttributeNamed:@
-setValue_forAttributeNamedSelector :: Selector
+setValue_forAttributeNamedSelector :: Selector '[Id SKAttributeValue, Id NSString] ()
 setValue_forAttributeNamedSelector = mkSelector "setValue:forAttributeNamed:"
 
 -- | @Selector@ for @setScale:@
-setScaleSelector :: Selector
+setScaleSelector :: Selector '[CDouble] ()
 setScaleSelector = mkSelector "setScale:"
 
 -- | @Selector@ for @addChild:@
-addChildSelector :: Selector
+addChildSelector :: Selector '[Id SKNode] ()
 addChildSelector = mkSelector "addChild:"
 
 -- | @Selector@ for @insertChild:atIndex:@
-insertChild_atIndexSelector :: Selector
+insertChild_atIndexSelector :: Selector '[Id SKNode, CLong] ()
 insertChild_atIndexSelector = mkSelector "insertChild:atIndex:"
 
 -- | @Selector@ for @removeChildrenInArray:@
-removeChildrenInArraySelector :: Selector
+removeChildrenInArraySelector :: Selector '[Id NSArray] ()
 removeChildrenInArraySelector = mkSelector "removeChildrenInArray:"
 
 -- | @Selector@ for @removeAllChildren@
-removeAllChildrenSelector :: Selector
+removeAllChildrenSelector :: Selector '[] ()
 removeAllChildrenSelector = mkSelector "removeAllChildren"
 
 -- | @Selector@ for @removeFromParent@
-removeFromParentSelector :: Selector
+removeFromParentSelector :: Selector '[] ()
 removeFromParentSelector = mkSelector "removeFromParent"
 
 -- | @Selector@ for @moveToParent:@
-moveToParentSelector :: Selector
+moveToParentSelector :: Selector '[Id SKNode] ()
 moveToParentSelector = mkSelector "moveToParent:"
 
 -- | @Selector@ for @childNodeWithName:@
-childNodeWithNameSelector :: Selector
+childNodeWithNameSelector :: Selector '[Id NSString] (Id SKNode)
 childNodeWithNameSelector = mkSelector "childNodeWithName:"
 
 -- | @Selector@ for @enumerateChildNodesWithName:usingBlock:@
-enumerateChildNodesWithName_usingBlockSelector :: Selector
+enumerateChildNodesWithName_usingBlockSelector :: Selector '[Id NSString, Ptr ()] ()
 enumerateChildNodesWithName_usingBlockSelector = mkSelector "enumerateChildNodesWithName:usingBlock:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id NSString] (Id NSArray)
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @inParentHierarchy:@
-inParentHierarchySelector :: Selector
+inParentHierarchySelector :: Selector '[Id SKNode] Bool
 inParentHierarchySelector = mkSelector "inParentHierarchy:"
 
 -- | @Selector@ for @runAction:@
-runActionSelector :: Selector
+runActionSelector :: Selector '[Id SKAction] ()
 runActionSelector = mkSelector "runAction:"
 
 -- | @Selector@ for @runAction:completion:@
-runAction_completionSelector :: Selector
+runAction_completionSelector :: Selector '[Id SKAction, Ptr ()] ()
 runAction_completionSelector = mkSelector "runAction:completion:"
 
 -- | @Selector@ for @runAction:withKey:@
-runAction_withKeySelector :: Selector
+runAction_withKeySelector :: Selector '[Id SKAction, Id NSString] ()
 runAction_withKeySelector = mkSelector "runAction:withKey:"
 
 -- | @Selector@ for @hasActions@
-hasActionsSelector :: Selector
+hasActionsSelector :: Selector '[] Bool
 hasActionsSelector = mkSelector "hasActions"
 
 -- | @Selector@ for @actionForKey:@
-actionForKeySelector :: Selector
+actionForKeySelector :: Selector '[Id NSString] (Id SKAction)
 actionForKeySelector = mkSelector "actionForKey:"
 
 -- | @Selector@ for @removeActionForKey:@
-removeActionForKeySelector :: Selector
+removeActionForKeySelector :: Selector '[Id NSString] ()
 removeActionForKeySelector = mkSelector "removeActionForKey:"
 
 -- | @Selector@ for @removeAllActions@
-removeAllActionsSelector :: Selector
+removeAllActionsSelector :: Selector '[] ()
 removeAllActionsSelector = mkSelector "removeAllActions"
 
 -- | @Selector@ for @intersectsNode:@
-intersectsNodeSelector :: Selector
+intersectsNodeSelector :: Selector '[Id SKNode] Bool
 intersectsNodeSelector = mkSelector "intersectsNode:"
 
 -- | @Selector@ for @isEqualToNode:@
-isEqualToNodeSelector :: Selector
+isEqualToNodeSelector :: Selector '[Id SKNode] Bool
 isEqualToNodeSelector = mkSelector "isEqualToNode:"
 
 -- | @Selector@ for @zPosition@
-zPositionSelector :: Selector
+zPositionSelector :: Selector '[] CDouble
 zPositionSelector = mkSelector "zPosition"
 
 -- | @Selector@ for @setZPosition:@
-setZPositionSelector :: Selector
+setZPositionSelector :: Selector '[CDouble] ()
 setZPositionSelector = mkSelector "setZPosition:"
 
 -- | @Selector@ for @zRotation@
-zRotationSelector :: Selector
+zRotationSelector :: Selector '[] CDouble
 zRotationSelector = mkSelector "zRotation"
 
 -- | @Selector@ for @setZRotation:@
-setZRotationSelector :: Selector
+setZRotationSelector :: Selector '[CDouble] ()
 setZRotationSelector = mkSelector "setZRotation:"
 
 -- | @Selector@ for @xScale@
-xScaleSelector :: Selector
+xScaleSelector :: Selector '[] CDouble
 xScaleSelector = mkSelector "xScale"
 
 -- | @Selector@ for @setXScale:@
-setXScaleSelector :: Selector
+setXScaleSelector :: Selector '[CDouble] ()
 setXScaleSelector = mkSelector "setXScale:"
 
 -- | @Selector@ for @yScale@
-yScaleSelector :: Selector
+yScaleSelector :: Selector '[] CDouble
 yScaleSelector = mkSelector "yScale"
 
 -- | @Selector@ for @setYScale:@
-setYScaleSelector :: Selector
+setYScaleSelector :: Selector '[CDouble] ()
 setYScaleSelector = mkSelector "setYScale:"
 
 -- | @Selector@ for @speed@
-speedSelector :: Selector
+speedSelector :: Selector '[] CDouble
 speedSelector = mkSelector "speed"
 
 -- | @Selector@ for @setSpeed:@
-setSpeedSelector :: Selector
+setSpeedSelector :: Selector '[CDouble] ()
 setSpeedSelector = mkSelector "setSpeed:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CDouble
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CDouble] ()
 setAlphaSelector = mkSelector "setAlpha:"
 
 -- | @Selector@ for @paused@
-pausedSelector :: Selector
+pausedSelector :: Selector '[] Bool
 pausedSelector = mkSelector "paused"
 
 -- | @Selector@ for @setPaused:@
-setPausedSelector :: Selector
+setPausedSelector :: Selector '[Bool] ()
 setPausedSelector = mkSelector "setPaused:"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 
 -- | @Selector@ for @userInteractionEnabled@
-userInteractionEnabledSelector :: Selector
+userInteractionEnabledSelector :: Selector '[] Bool
 userInteractionEnabledSelector = mkSelector "userInteractionEnabled"
 
 -- | @Selector@ for @setUserInteractionEnabled:@
-setUserInteractionEnabledSelector :: Selector
+setUserInteractionEnabledSelector :: Selector '[Bool] ()
 setUserInteractionEnabledSelector = mkSelector "setUserInteractionEnabled:"
 
 -- | @Selector@ for @focusBehavior@
-focusBehaviorSelector :: Selector
+focusBehaviorSelector :: Selector '[] SKNodeFocusBehavior
 focusBehaviorSelector = mkSelector "focusBehavior"
 
 -- | @Selector@ for @setFocusBehavior:@
-setFocusBehaviorSelector :: Selector
+setFocusBehaviorSelector :: Selector '[SKNodeFocusBehavior] ()
 setFocusBehaviorSelector = mkSelector "setFocusBehavior:"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] (Id SKNode)
 parentSelector = mkSelector "parent"
 
 -- | @Selector@ for @children@
-childrenSelector :: Selector
+childrenSelector :: Selector '[] (Id NSArray)
 childrenSelector = mkSelector "children"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @scene@
-sceneSelector :: Selector
+sceneSelector :: Selector '[] (Id SKScene)
 sceneSelector = mkSelector "scene"
 
 -- | @Selector@ for @physicsBody@
-physicsBodySelector :: Selector
+physicsBodySelector :: Selector '[] (Id SKPhysicsBody)
 physicsBodySelector = mkSelector "physicsBody"
 
 -- | @Selector@ for @setPhysicsBody:@
-setPhysicsBodySelector :: Selector
+setPhysicsBodySelector :: Selector '[Id SKPhysicsBody] ()
 setPhysicsBodySelector = mkSelector "setPhysicsBody:"
 
 -- | @Selector@ for @userData@
-userDataSelector :: Selector
+userDataSelector :: Selector '[] (Id NSMutableDictionary)
 userDataSelector = mkSelector "userData"
 
 -- | @Selector@ for @setUserData:@
-setUserDataSelector :: Selector
+setUserDataSelector :: Selector '[Id NSMutableDictionary] ()
 setUserDataSelector = mkSelector "setUserData:"
 
 -- | @Selector@ for @reachConstraints@
-reachConstraintsSelector :: Selector
+reachConstraintsSelector :: Selector '[] (Id SKReachConstraints)
 reachConstraintsSelector = mkSelector "reachConstraints"
 
 -- | @Selector@ for @setReachConstraints:@
-setReachConstraintsSelector :: Selector
+setReachConstraintsSelector :: Selector '[Id SKReachConstraints] ()
 setReachConstraintsSelector = mkSelector "setReachConstraints:"
 
 -- | @Selector@ for @constraints@
-constraintsSelector :: Selector
+constraintsSelector :: Selector '[] (Id NSArray)
 constraintsSelector = mkSelector "constraints"
 
 -- | @Selector@ for @setConstraints:@
-setConstraintsSelector :: Selector
+setConstraintsSelector :: Selector '[Id NSArray] ()
 setConstraintsSelector = mkSelector "setConstraints:"
 
 -- | @Selector@ for @accessibilityElement@
-accessibilityElementSelector :: Selector
+accessibilityElementSelector :: Selector '[] Bool
 accessibilityElementSelector = mkSelector "accessibilityElement"
 
 -- | @Selector@ for @setAccessibilityElement:@
-setAccessibilityElementSelector :: Selector
+setAccessibilityElementSelector :: Selector '[Bool] ()
 setAccessibilityElementSelector = mkSelector "setAccessibilityElement:"
 
 -- | @Selector@ for @accessibilityRole@
-accessibilityRoleSelector :: Selector
+accessibilityRoleSelector :: Selector '[] (Id NSString)
 accessibilityRoleSelector = mkSelector "accessibilityRole"
 
 -- | @Selector@ for @setAccessibilityRole:@
-setAccessibilityRoleSelector :: Selector
+setAccessibilityRoleSelector :: Selector '[Id NSString] ()
 setAccessibilityRoleSelector = mkSelector "setAccessibilityRole:"
 
 -- | @Selector@ for @accessibilityRoleDescription@
-accessibilityRoleDescriptionSelector :: Selector
+accessibilityRoleDescriptionSelector :: Selector '[] (Id NSString)
 accessibilityRoleDescriptionSelector = mkSelector "accessibilityRoleDescription"
 
 -- | @Selector@ for @setAccessibilityRoleDescription:@
-setAccessibilityRoleDescriptionSelector :: Selector
+setAccessibilityRoleDescriptionSelector :: Selector '[Id NSString] ()
 setAccessibilityRoleDescriptionSelector = mkSelector "setAccessibilityRoleDescription:"
 
 -- | @Selector@ for @accessibilitySubrole@
-accessibilitySubroleSelector :: Selector
+accessibilitySubroleSelector :: Selector '[] (Id NSString)
 accessibilitySubroleSelector = mkSelector "accessibilitySubrole"
 
 -- | @Selector@ for @setAccessibilitySubrole:@
-setAccessibilitySubroleSelector :: Selector
+setAccessibilitySubroleSelector :: Selector '[Id NSString] ()
 setAccessibilitySubroleSelector = mkSelector "setAccessibilitySubrole:"
 
 -- | @Selector@ for @accessibilityParent@
-accessibilityParentSelector :: Selector
+accessibilityParentSelector :: Selector '[] RawId
 accessibilityParentSelector = mkSelector "accessibilityParent"
 
 -- | @Selector@ for @setAccessibilityParent:@
-setAccessibilityParentSelector :: Selector
+setAccessibilityParentSelector :: Selector '[RawId] ()
 setAccessibilityParentSelector = mkSelector "setAccessibilityParent:"
 
 -- | @Selector@ for @accessibilityChildren@
-accessibilityChildrenSelector :: Selector
+accessibilityChildrenSelector :: Selector '[] (Id NSArray)
 accessibilityChildrenSelector = mkSelector "accessibilityChildren"
 
 -- | @Selector@ for @setAccessibilityChildren:@
-setAccessibilityChildrenSelector :: Selector
+setAccessibilityChildrenSelector :: Selector '[Id NSArray] ()
 setAccessibilityChildrenSelector = mkSelector "setAccessibilityChildren:"
 
 -- | @Selector@ for @accessibilityHelp@
-accessibilityHelpSelector :: Selector
+accessibilityHelpSelector :: Selector '[] (Id NSString)
 accessibilityHelpSelector = mkSelector "accessibilityHelp"
 
 -- | @Selector@ for @setAccessibilityHelp:@
-setAccessibilityHelpSelector :: Selector
+setAccessibilityHelpSelector :: Selector '[Id NSString] ()
 setAccessibilityHelpSelector = mkSelector "setAccessibilityHelp:"
 
 -- | @Selector@ for @accessibilityLabel@
-accessibilityLabelSelector :: Selector
+accessibilityLabelSelector :: Selector '[] (Id NSString)
 accessibilityLabelSelector = mkSelector "accessibilityLabel"
 
 -- | @Selector@ for @setAccessibilityLabel:@
-setAccessibilityLabelSelector :: Selector
+setAccessibilityLabelSelector :: Selector '[Id NSString] ()
 setAccessibilityLabelSelector = mkSelector "setAccessibilityLabel:"
 
 -- | @Selector@ for @accessibilityEnabled@
-accessibilityEnabledSelector :: Selector
+accessibilityEnabledSelector :: Selector '[] Bool
 accessibilityEnabledSelector = mkSelector "accessibilityEnabled"
 
 -- | @Selector@ for @setAccessibilityEnabled:@
-setAccessibilityEnabledSelector :: Selector
+setAccessibilityEnabledSelector :: Selector '[Bool] ()
 setAccessibilityEnabledSelector = mkSelector "setAccessibilityEnabled:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,49 +43,45 @@ module ObjC.AVFoundation.AVAssetTrack
   , enabled
   , selfContained
   , totalSampleDataLength
-  , initSelector
-  , newSelector
-  , makeSampleCursorAtFirstSampleInDecodeOrderSelector
-  , makeSampleCursorAtLastSampleInDecodeOrderSelector
-  , associatedTracksOfTypeSelector
-  , metadataForFormatSelector
-  , hasMediaCharacteristicSelector
   , assetSelector
-  , trackIDSelector
-  , canProvideSampleCursorsSelector
-  , availableTrackAssociationTypesSelector
-  , commonMetadataSelector
-  , metadataSelector
+  , associatedTracksOfTypeSelector
   , availableMetadataFormatsSelector
-  , segmentsSelector
-  , nominalFrameRateSelector
-  , requiresFrameReorderingSelector
-  , preferredVolumeSelector
-  , hasAudioSampleDependenciesSelector
-  , languageCodeSelector
-  , extendedLanguageTagSelector
-  , naturalTimeScaleSelector
-  , estimatedDataRateSelector
-  , mediaTypeSelector
-  , formatDescriptionsSelector
-  , playableSelector
+  , availableTrackAssociationTypesSelector
+  , canProvideSampleCursorsSelector
+  , commonMetadataSelector
   , decodableSelector
   , enabledSelector
+  , estimatedDataRateSelector
+  , extendedLanguageTagSelector
+  , formatDescriptionsSelector
+  , hasAudioSampleDependenciesSelector
+  , hasMediaCharacteristicSelector
+  , initSelector
+  , languageCodeSelector
+  , makeSampleCursorAtFirstSampleInDecodeOrderSelector
+  , makeSampleCursorAtLastSampleInDecodeOrderSelector
+  , mediaTypeSelector
+  , metadataForFormatSelector
+  , metadataSelector
+  , naturalTimeScaleSelector
+  , newSelector
+  , nominalFrameRateSelector
+  , playableSelector
+  , preferredVolumeSelector
+  , requiresFrameReorderingSelector
+  , segmentsSelector
   , selfContainedSelector
   , totalSampleDataLengthSelector
+  , trackIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -93,15 +90,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id AVAssetTrack)
-init_ avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetTrack =
+  sendOwnedMessage avAssetTrack initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetTrack)
 new  =
   do
     cls' <- getRequiredClass "AVAssetTrack"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates an instance of AVSampleCursor and positions it at the receiver's first media sample in decode order.
 --
@@ -111,8 +108,8 @@ new  =
 --
 -- ObjC selector: @- makeSampleCursorAtFirstSampleInDecodeOrder@
 makeSampleCursorAtFirstSampleInDecodeOrder :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id AVSampleCursor)
-makeSampleCursorAtFirstSampleInDecodeOrder avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "makeSampleCursorAtFirstSampleInDecodeOrder") (retPtr retVoid) [] >>= retainedObject . castPtr
+makeSampleCursorAtFirstSampleInDecodeOrder avAssetTrack =
+  sendMessage avAssetTrack makeSampleCursorAtFirstSampleInDecodeOrderSelector
 
 -- | Creates an instance of AVSampleCursor and positions it at the receiver's last media sample in decode order.
 --
@@ -122,8 +119,8 @@ makeSampleCursorAtFirstSampleInDecodeOrder avAssetTrack  =
 --
 -- ObjC selector: @- makeSampleCursorAtLastSampleInDecodeOrder@
 makeSampleCursorAtLastSampleInDecodeOrder :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id AVSampleCursor)
-makeSampleCursorAtLastSampleInDecodeOrder avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "makeSampleCursorAtLastSampleInDecodeOrder") (retPtr retVoid) [] >>= retainedObject . castPtr
+makeSampleCursorAtLastSampleInDecodeOrder avAssetTrack =
+  sendMessage avAssetTrack makeSampleCursorAtLastSampleInDecodeOrderSelector
 
 -- | Provides an NSArray of AVAssetTracks, one for each track associated with the receiver with the specified type of track association.
 --
@@ -135,9 +132,8 @@ makeSampleCursorAtLastSampleInDecodeOrder avAssetTrack  =
 --
 -- ObjC selector: @- associatedTracksOfType:@
 associatedTracksOfType :: (IsAVAssetTrack avAssetTrack, IsNSString trackAssociationType) => avAssetTrack -> trackAssociationType -> IO (Id NSArray)
-associatedTracksOfType avAssetTrack  trackAssociationType =
-  withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
-      sendMsg avAssetTrack (mkSelector "associatedTracksOfType:") (retPtr retVoid) [argPtr (castPtr raw_trackAssociationType :: Ptr ())] >>= retainedObject . castPtr
+associatedTracksOfType avAssetTrack trackAssociationType =
+  sendMessage avAssetTrack associatedTracksOfTypeSelector (toNSString trackAssociationType)
 
 -- | Provides an NSArray of AVMetadataItems, one for each metadata item in the container of the specified format.
 --
@@ -149,9 +145,8 @@ associatedTracksOfType avAssetTrack  trackAssociationType =
 --
 -- ObjC selector: @- metadataForFormat:@
 metadataForFormat :: (IsAVAssetTrack avAssetTrack, IsNSString format) => avAssetTrack -> format -> IO (Id NSArray)
-metadataForFormat avAssetTrack  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avAssetTrack (mkSelector "metadataForFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= retainedObject . castPtr
+metadataForFormat avAssetTrack format =
+  sendMessage avAssetTrack metadataForFormatSelector (toNSString format)
 
 -- | Reports whether the track references media with the specified media characteristic.
 --
@@ -161,65 +156,64 @@ metadataForFormat avAssetTrack  format =
 --
 -- ObjC selector: @- hasMediaCharacteristic:@
 hasMediaCharacteristic :: (IsAVAssetTrack avAssetTrack, IsNSString mediaCharacteristic) => avAssetTrack -> mediaCharacteristic -> IO Bool
-hasMediaCharacteristic avAssetTrack  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetTrack (mkSelector "hasMediaCharacteristic:") retCULong [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())]
+hasMediaCharacteristic avAssetTrack mediaCharacteristic =
+  sendMessage avAssetTrack hasMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | Provides a reference to the AVAsset of which the AVAssetTrack is a part
 --
 -- ObjC selector: @- asset@
 asset :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id AVAsset)
-asset avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "asset") (retPtr retVoid) [] >>= retainedObject . castPtr
+asset avAssetTrack =
+  sendMessage avAssetTrack assetSelector
 
 -- | Indicates the persistent unique identifier for this track of the asset
 --
 -- ObjC selector: @- trackID@
 trackID :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO CInt
-trackID avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "trackID") retCInt []
+trackID avAssetTrack =
+  sendMessage avAssetTrack trackIDSelector
 
 -- | Indicates whether the receiver can provide instances of AVSampleCursor for traversing its media samples and discovering information about them.
 --
 -- ObjC selector: @- canProvideSampleCursors@
 canProvideSampleCursors :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO Bool
-canProvideSampleCursors avAssetTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetTrack (mkSelector "canProvideSampleCursors") retCULong []
+canProvideSampleCursors avAssetTrack =
+  sendMessage avAssetTrack canProvideSampleCursorsSelector
 
 -- | Provides an NSArray of NSStrings, each representing a type of track association that the receiver has with one or more of the other tracks of the asset (e.g. AVTrackAssociationTypeChapterList, AVTrackAssociationTypeTimecode, etc.). Track association types are defined immediately above.
 --
 -- ObjC selector: @- availableTrackAssociationTypes@
 availableTrackAssociationTypes :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id NSArray)
-availableTrackAssociationTypes avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "availableTrackAssociationTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableTrackAssociationTypes avAssetTrack =
+  sendMessage avAssetTrack availableTrackAssociationTypesSelector
 
 -- | Provides access to an array of AVMetadataItems for each common metadata key for which a value is available
 --
 -- ObjC selector: @- commonMetadata@
 commonMetadata :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id NSArray)
-commonMetadata avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "commonMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+commonMetadata avAssetTrack =
+  sendMessage avAssetTrack commonMetadataSelector
 
 -- | Provides access to an array of AVMetadataItems for all metadata identifiers for which a value is available; items can be filtered according to language via +[AVMetadataItem metadataItemsFromArray:filteredAndSortedAccordingToPreferredLanguages:] and according to identifier via +[AVMetadataItem metadataItemsFromArray:filteredByIdentifier:].
 --
 -- ObjC selector: @- metadata@
 metadata :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id NSArray)
-metadata avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avAssetTrack =
+  sendMessage avAssetTrack metadataSelector
 
 -- | Provides an NSArray of NSStrings, each representing a format of metadata that's available for the track (e.g. QuickTime userdata, etc.) Metadata formats are defined in AVMetadataItem.h.
 --
 -- ObjC selector: @- availableMetadataFormats@
 availableMetadataFormats :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id NSArray)
-availableMetadataFormats avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "availableMetadataFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableMetadataFormats avAssetTrack =
+  sendMessage avAssetTrack availableMetadataFormatsSelector
 
 -- | Provides an array of AVAssetTrackSegments with time mappings from the timeline of the track's media samples to the timeline of the track. Empty edits, i.e. timeRanges for which no media data is available to be presented, have a value of AVAssetTrackSegment.empty equal to YES.
 --
 -- ObjC selector: @- segments@
 segments :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id NSArray)
-segments avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "segments") (retPtr retVoid) [] >>= retainedObject . castPtr
+segments avAssetTrack =
+  sendMessage avAssetTrack segmentsSelector
 
 -- | For tracks that carry a full frame per media sample, indicates the frame rate of the track in units of frames per second.
 --
@@ -227,228 +221,228 @@ segments avAssetTrack  =
 --
 -- ObjC selector: @- nominalFrameRate@
 nominalFrameRate :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO CFloat
-nominalFrameRate avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "nominalFrameRate") retCFloat []
+nominalFrameRate avAssetTrack =
+  sendMessage avAssetTrack nominalFrameRateSelector
 
 -- | Indicates whether samples in the track may have different values for their presentation and decode timestamps.
 --
 -- ObjC selector: @- requiresFrameReordering@
 requiresFrameReordering :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO Bool
-requiresFrameReordering avAssetTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetTrack (mkSelector "requiresFrameReordering") retCULong []
+requiresFrameReordering avAssetTrack =
+  sendMessage avAssetTrack requiresFrameReorderingSelector
 
 -- | Indicates the volume specified in the track's storage container as the preferred volume of the audible media data
 --
 -- ObjC selector: @- preferredVolume@
 preferredVolume :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO CFloat
-preferredVolume avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "preferredVolume") retCFloat []
+preferredVolume avAssetTrack =
+  sendMessage avAssetTrack preferredVolumeSelector
 
 -- | Indicates whether this audio track has dependencies (e.g. kAudioFormatMPEGD_USAC)
 --
 -- ObjC selector: @- hasAudioSampleDependencies@
 hasAudioSampleDependencies :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO Bool
-hasAudioSampleDependencies avAssetTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetTrack (mkSelector "hasAudioSampleDependencies") retCULong []
+hasAudioSampleDependencies avAssetTrack =
+  sendMessage avAssetTrack hasAudioSampleDependenciesSelector
 
 -- | Indicates the language associated with the track, as an ISO 639-2/T language code; may be nil if no language is indicated
 --
 -- ObjC selector: @- languageCode@
 languageCode :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id NSString)
-languageCode avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "languageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageCode avAssetTrack =
+  sendMessage avAssetTrack languageCodeSelector
 
 -- | Indicates the language tag associated with the track, as an IETF BCP 47 (RFC 4646) language identifier; may be nil if no language tag is indicated
 --
 -- ObjC selector: @- extendedLanguageTag@
 extendedLanguageTag :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id NSString)
-extendedLanguageTag avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "extendedLanguageTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedLanguageTag avAssetTrack =
+  sendMessage avAssetTrack extendedLanguageTagSelector
 
 -- | Indicates a timescale in which time values for the track can be operated upon without extraneous numerical conversion
 --
 -- ObjC selector: @- naturalTimeScale@
 naturalTimeScale :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO CInt
-naturalTimeScale avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "naturalTimeScale") retCInt []
+naturalTimeScale avAssetTrack =
+  sendMessage avAssetTrack naturalTimeScaleSelector
 
 -- | Indicates the estimated data rate of the media data referenced by the track, in units of bits per second
 --
 -- ObjC selector: @- estimatedDataRate@
 estimatedDataRate :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO CFloat
-estimatedDataRate avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "estimatedDataRate") retCFloat []
+estimatedDataRate avAssetTrack =
+  sendMessage avAssetTrack estimatedDataRateSelector
 
 -- | Indicates the media type for this track, e.g. AVMediaTypeVideo, AVMediaTypeAudio, etc., as defined in AVMediaFormat.h.
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id NSString)
-mediaType avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avAssetTrack =
+  sendMessage avAssetTrack mediaTypeSelector
 
 -- | Provides an array of CMFormatDescriptions each of which indicates the format of media samples referenced by the track; a track that presents uniform media, e.g. encoded according to the same encoding settings, will provide an array with a count of 1.
 --
 -- ObjC selector: @- formatDescriptions@
 formatDescriptions :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO (Id NSArray)
-formatDescriptions avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "formatDescriptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+formatDescriptions avAssetTrack =
+  sendMessage avAssetTrack formatDescriptionsSelector
 
 -- | Indicates whether the receiver is playable in the current environment; if YES, an AVPlayerItemTrack of an AVPlayerItem initialized with the receiver's asset can be enabled for playback.
 --
 -- ObjC selector: @- playable@
 playable :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO Bool
-playable avAssetTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetTrack (mkSelector "playable") retCULong []
+playable avAssetTrack =
+  sendMessage avAssetTrack playableSelector
 
 -- | Indicates whether the receiver is decodable in the current environment; if YES, the track can be decoded even though decoding may be too slow for real time playback.
 --
 -- ObjC selector: @- decodable@
 decodable :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO Bool
-decodable avAssetTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetTrack (mkSelector "decodable") retCULong []
+decodable avAssetTrack =
+  sendMessage avAssetTrack decodableSelector
 
 -- | Indicates whether the track is enabled according to state stored in its container or construct; note that its presentation state can be changed from this default via AVPlayerItemTrack
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO Bool
-enabled avAssetTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetTrack (mkSelector "enabled") retCULong []
+enabled avAssetTrack =
+  sendMessage avAssetTrack enabledSelector
 
 -- | Indicates whether the track references sample data only within its storage container
 --
 -- ObjC selector: @- selfContained@
 selfContained :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO Bool
-selfContained avAssetTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetTrack (mkSelector "selfContained") retCULong []
+selfContained avAssetTrack =
+  sendMessage avAssetTrack selfContainedSelector
 
 -- | Indicates the total number of bytes of sample data required by the track
 --
 -- ObjC selector: @- totalSampleDataLength@
 totalSampleDataLength :: IsAVAssetTrack avAssetTrack => avAssetTrack -> IO CLong
-totalSampleDataLength avAssetTrack  =
-    sendMsg avAssetTrack (mkSelector "totalSampleDataLength") retCLong []
+totalSampleDataLength avAssetTrack =
+  sendMessage avAssetTrack totalSampleDataLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetTrack)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetTrack)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @makeSampleCursorAtFirstSampleInDecodeOrder@
-makeSampleCursorAtFirstSampleInDecodeOrderSelector :: Selector
+makeSampleCursorAtFirstSampleInDecodeOrderSelector :: Selector '[] (Id AVSampleCursor)
 makeSampleCursorAtFirstSampleInDecodeOrderSelector = mkSelector "makeSampleCursorAtFirstSampleInDecodeOrder"
 
 -- | @Selector@ for @makeSampleCursorAtLastSampleInDecodeOrder@
-makeSampleCursorAtLastSampleInDecodeOrderSelector :: Selector
+makeSampleCursorAtLastSampleInDecodeOrderSelector :: Selector '[] (Id AVSampleCursor)
 makeSampleCursorAtLastSampleInDecodeOrderSelector = mkSelector "makeSampleCursorAtLastSampleInDecodeOrder"
 
 -- | @Selector@ for @associatedTracksOfType:@
-associatedTracksOfTypeSelector :: Selector
+associatedTracksOfTypeSelector :: Selector '[Id NSString] (Id NSArray)
 associatedTracksOfTypeSelector = mkSelector "associatedTracksOfType:"
 
 -- | @Selector@ for @metadataForFormat:@
-metadataForFormatSelector :: Selector
+metadataForFormatSelector :: Selector '[Id NSString] (Id NSArray)
 metadataForFormatSelector = mkSelector "metadataForFormat:"
 
 -- | @Selector@ for @hasMediaCharacteristic:@
-hasMediaCharacteristicSelector :: Selector
+hasMediaCharacteristicSelector :: Selector '[Id NSString] Bool
 hasMediaCharacteristicSelector = mkSelector "hasMediaCharacteristic:"
 
 -- | @Selector@ for @asset@
-assetSelector :: Selector
+assetSelector :: Selector '[] (Id AVAsset)
 assetSelector = mkSelector "asset"
 
 -- | @Selector@ for @trackID@
-trackIDSelector :: Selector
+trackIDSelector :: Selector '[] CInt
 trackIDSelector = mkSelector "trackID"
 
 -- | @Selector@ for @canProvideSampleCursors@
-canProvideSampleCursorsSelector :: Selector
+canProvideSampleCursorsSelector :: Selector '[] Bool
 canProvideSampleCursorsSelector = mkSelector "canProvideSampleCursors"
 
 -- | @Selector@ for @availableTrackAssociationTypes@
-availableTrackAssociationTypesSelector :: Selector
+availableTrackAssociationTypesSelector :: Selector '[] (Id NSArray)
 availableTrackAssociationTypesSelector = mkSelector "availableTrackAssociationTypes"
 
 -- | @Selector@ for @commonMetadata@
-commonMetadataSelector :: Selector
+commonMetadataSelector :: Selector '[] (Id NSArray)
 commonMetadataSelector = mkSelector "commonMetadata"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSArray)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @availableMetadataFormats@
-availableMetadataFormatsSelector :: Selector
+availableMetadataFormatsSelector :: Selector '[] (Id NSArray)
 availableMetadataFormatsSelector = mkSelector "availableMetadataFormats"
 
 -- | @Selector@ for @segments@
-segmentsSelector :: Selector
+segmentsSelector :: Selector '[] (Id NSArray)
 segmentsSelector = mkSelector "segments"
 
 -- | @Selector@ for @nominalFrameRate@
-nominalFrameRateSelector :: Selector
+nominalFrameRateSelector :: Selector '[] CFloat
 nominalFrameRateSelector = mkSelector "nominalFrameRate"
 
 -- | @Selector@ for @requiresFrameReordering@
-requiresFrameReorderingSelector :: Selector
+requiresFrameReorderingSelector :: Selector '[] Bool
 requiresFrameReorderingSelector = mkSelector "requiresFrameReordering"
 
 -- | @Selector@ for @preferredVolume@
-preferredVolumeSelector :: Selector
+preferredVolumeSelector :: Selector '[] CFloat
 preferredVolumeSelector = mkSelector "preferredVolume"
 
 -- | @Selector@ for @hasAudioSampleDependencies@
-hasAudioSampleDependenciesSelector :: Selector
+hasAudioSampleDependenciesSelector :: Selector '[] Bool
 hasAudioSampleDependenciesSelector = mkSelector "hasAudioSampleDependencies"
 
 -- | @Selector@ for @languageCode@
-languageCodeSelector :: Selector
+languageCodeSelector :: Selector '[] (Id NSString)
 languageCodeSelector = mkSelector "languageCode"
 
 -- | @Selector@ for @extendedLanguageTag@
-extendedLanguageTagSelector :: Selector
+extendedLanguageTagSelector :: Selector '[] (Id NSString)
 extendedLanguageTagSelector = mkSelector "extendedLanguageTag"
 
 -- | @Selector@ for @naturalTimeScale@
-naturalTimeScaleSelector :: Selector
+naturalTimeScaleSelector :: Selector '[] CInt
 naturalTimeScaleSelector = mkSelector "naturalTimeScale"
 
 -- | @Selector@ for @estimatedDataRate@
-estimatedDataRateSelector :: Selector
+estimatedDataRateSelector :: Selector '[] CFloat
 estimatedDataRateSelector = mkSelector "estimatedDataRate"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @formatDescriptions@
-formatDescriptionsSelector :: Selector
+formatDescriptionsSelector :: Selector '[] (Id NSArray)
 formatDescriptionsSelector = mkSelector "formatDescriptions"
 
 -- | @Selector@ for @playable@
-playableSelector :: Selector
+playableSelector :: Selector '[] Bool
 playableSelector = mkSelector "playable"
 
 -- | @Selector@ for @decodable@
-decodableSelector :: Selector
+decodableSelector :: Selector '[] Bool
 decodableSelector = mkSelector "decodable"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @selfContained@
-selfContainedSelector :: Selector
+selfContainedSelector :: Selector '[] Bool
 selfContainedSelector = mkSelector "selfContained"
 
 -- | @Selector@ for @totalSampleDataLength@
-totalSampleDataLengthSelector :: Selector
+totalSampleDataLengthSelector :: Selector '[] CLong
 totalSampleDataLengthSelector = mkSelector "totalSampleDataLength"
 

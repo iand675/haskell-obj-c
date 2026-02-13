@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,27 +25,23 @@ module ObjC.AVFoundation.AVCaptureOutput
   , deferredStartSupported
   , deferredStartEnabled
   , setDeferredStartEnabled
+  , connectionWithMediaTypeSelector
+  , connectionsSelector
+  , deferredStartEnabledSelector
+  , deferredStartSupportedSelector
   , initSelector
   , newSelector
-  , connectionWithMediaTypeSelector
-  , transformedMetadataObjectForMetadataObject_connectionSelector
-  , connectionsSelector
-  , deferredStartSupportedSelector
-  , deferredStartEnabledSelector
   , setDeferredStartEnabledSelector
+  , transformedMetadataObjectForMetadataObject_connectionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureOutput avCaptureOutput => avCaptureOutput -> IO (Id AVCaptureOutput)
-init_ avCaptureOutput  =
-    sendMsg avCaptureOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureOutput =
+  sendOwnedMessage avCaptureOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | connectionWithMediaType:
 --
@@ -73,9 +70,8 @@ new  =
 --
 -- ObjC selector: @- connectionWithMediaType:@
 connectionWithMediaType :: (IsAVCaptureOutput avCaptureOutput, IsNSString mediaType) => avCaptureOutput -> mediaType -> IO (Id AVCaptureConnection)
-connectionWithMediaType avCaptureOutput  mediaType =
-  withObjCPtr mediaType $ \raw_mediaType ->
-      sendMsg avCaptureOutput (mkSelector "connectionWithMediaType:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ())] >>= retainedObject . castPtr
+connectionWithMediaType avCaptureOutput mediaType =
+  sendMessage avCaptureOutput connectionWithMediaTypeSelector (toNSString mediaType)
 
 -- | transformedMetadataObjectForMetadataObject:connection:
 --
@@ -95,10 +91,8 @@ connectionWithMediaType avCaptureOutput  mediaType =
 --
 -- ObjC selector: @- transformedMetadataObjectForMetadataObject:connection:@
 transformedMetadataObjectForMetadataObject_connection :: (IsAVCaptureOutput avCaptureOutput, IsAVMetadataObject metadataObject, IsAVCaptureConnection connection) => avCaptureOutput -> metadataObject -> connection -> IO (Id AVMetadataObject)
-transformedMetadataObjectForMetadataObject_connection avCaptureOutput  metadataObject connection =
-  withObjCPtr metadataObject $ \raw_metadataObject ->
-    withObjCPtr connection $ \raw_connection ->
-        sendMsg avCaptureOutput (mkSelector "transformedMetadataObjectForMetadataObject:connection:") (retPtr retVoid) [argPtr (castPtr raw_metadataObject :: Ptr ()), argPtr (castPtr raw_connection :: Ptr ())] >>= retainedObject . castPtr
+transformedMetadataObjectForMetadataObject_connection avCaptureOutput metadataObject connection =
+  sendMessage avCaptureOutput transformedMetadataObjectForMetadataObject_connectionSelector (toAVMetadataObject metadataObject) (toAVCaptureConnection connection)
 
 -- | connections
 --
@@ -108,8 +102,8 @@ transformedMetadataObjectForMetadataObject_connection avCaptureOutput  metadataO
 --
 -- ObjC selector: @- connections@
 connections :: IsAVCaptureOutput avCaptureOutput => avCaptureOutput -> IO (Id NSArray)
-connections avCaptureOutput  =
-    sendMsg avCaptureOutput (mkSelector "connections") (retPtr retVoid) [] >>= retainedObject . castPtr
+connections avCaptureOutput =
+  sendMessage avCaptureOutput connectionsSelector
 
 -- | A @BOOL@ value that indicates whether the output supports deferred start.
 --
@@ -117,8 +111,8 @@ connections avCaptureOutput  =
 --
 -- ObjC selector: @- deferredStartSupported@
 deferredStartSupported :: IsAVCaptureOutput avCaptureOutput => avCaptureOutput -> IO Bool
-deferredStartSupported avCaptureOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureOutput (mkSelector "deferredStartSupported") retCULong []
+deferredStartSupported avCaptureOutput =
+  sendMessage avCaptureOutput deferredStartSupportedSelector
 
 -- | A @BOOL@ value that indicates whether to defer starting this capture output.
 --
@@ -132,8 +126,8 @@ deferredStartSupported avCaptureOutput  =
 --
 -- ObjC selector: @- deferredStartEnabled@
 deferredStartEnabled :: IsAVCaptureOutput avCaptureOutput => avCaptureOutput -> IO Bool
-deferredStartEnabled avCaptureOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureOutput (mkSelector "deferredStartEnabled") retCULong []
+deferredStartEnabled avCaptureOutput =
+  sendMessage avCaptureOutput deferredStartEnabledSelector
 
 -- | A @BOOL@ value that indicates whether to defer starting this capture output.
 --
@@ -147,42 +141,42 @@ deferredStartEnabled avCaptureOutput  =
 --
 -- ObjC selector: @- setDeferredStartEnabled:@
 setDeferredStartEnabled :: IsAVCaptureOutput avCaptureOutput => avCaptureOutput -> Bool -> IO ()
-setDeferredStartEnabled avCaptureOutput  value =
-    sendMsg avCaptureOutput (mkSelector "setDeferredStartEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setDeferredStartEnabled avCaptureOutput value =
+  sendMessage avCaptureOutput setDeferredStartEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @connectionWithMediaType:@
-connectionWithMediaTypeSelector :: Selector
+connectionWithMediaTypeSelector :: Selector '[Id NSString] (Id AVCaptureConnection)
 connectionWithMediaTypeSelector = mkSelector "connectionWithMediaType:"
 
 -- | @Selector@ for @transformedMetadataObjectForMetadataObject:connection:@
-transformedMetadataObjectForMetadataObject_connectionSelector :: Selector
+transformedMetadataObjectForMetadataObject_connectionSelector :: Selector '[Id AVMetadataObject, Id AVCaptureConnection] (Id AVMetadataObject)
 transformedMetadataObjectForMetadataObject_connectionSelector = mkSelector "transformedMetadataObjectForMetadataObject:connection:"
 
 -- | @Selector@ for @connections@
-connectionsSelector :: Selector
+connectionsSelector :: Selector '[] (Id NSArray)
 connectionsSelector = mkSelector "connections"
 
 -- | @Selector@ for @deferredStartSupported@
-deferredStartSupportedSelector :: Selector
+deferredStartSupportedSelector :: Selector '[] Bool
 deferredStartSupportedSelector = mkSelector "deferredStartSupported"
 
 -- | @Selector@ for @deferredStartEnabled@
-deferredStartEnabledSelector :: Selector
+deferredStartEnabledSelector :: Selector '[] Bool
 deferredStartEnabledSelector = mkSelector "deferredStartEnabled"
 
 -- | @Selector@ for @setDeferredStartEnabled:@
-setDeferredStartEnabledSelector :: Selector
+setDeferredStartEnabledSelector :: Selector '[Bool] ()
 setDeferredStartEnabledSelector = mkSelector "setDeferredStartEnabled:"
 

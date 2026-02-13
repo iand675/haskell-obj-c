@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.AppKit.NSTextPreview
   , previewImage
   , presentationFrame
   , candidateRects
-  , initWithSnapshotImage_presentationFrame_candidateRectsSelector
-  , initWithSnapshotImage_presentationFrameSelector
-  , initSelector
-  , previewImageSelector
-  , presentationFrameSelector
   , candidateRectsSelector
+  , initSelector
+  , initWithSnapshotImage_presentationFrameSelector
+  , initWithSnapshotImage_presentationFrame_candidateRectsSelector
+  , presentationFrameSelector
+  , previewImageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,9 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSnapshotImage:presentationFrame:candidateRects:@
 initWithSnapshotImage_presentationFrame_candidateRects :: (IsNSTextPreview nsTextPreview, IsNSArray candidateRects) => nsTextPreview -> Ptr () -> NSRect -> candidateRects -> IO (Id NSTextPreview)
-initWithSnapshotImage_presentationFrame_candidateRects nsTextPreview  snapshotImage presentationFrame candidateRects =
-  withObjCPtr candidateRects $ \raw_candidateRects ->
-      sendMsg nsTextPreview (mkSelector "initWithSnapshotImage:presentationFrame:candidateRects:") (retPtr retVoid) [argPtr snapshotImage, argNSRect presentationFrame, argPtr (castPtr raw_candidateRects :: Ptr ())] >>= ownedObject . castPtr
+initWithSnapshotImage_presentationFrame_candidateRects nsTextPreview snapshotImage presentationFrame candidateRects =
+  sendOwnedMessage nsTextPreview initWithSnapshotImage_presentationFrame_candidateRectsSelector snapshotImage presentationFrame (toNSArray candidateRects)
 
 -- | Creates a text preview using the specified image.
 --
@@ -60,13 +56,13 @@ initWithSnapshotImage_presentationFrame_candidateRects nsTextPreview  snapshotIm
 --
 -- ObjC selector: @- initWithSnapshotImage:presentationFrame:@
 initWithSnapshotImage_presentationFrame :: IsNSTextPreview nsTextPreview => nsTextPreview -> Ptr () -> NSRect -> IO (Id NSTextPreview)
-initWithSnapshotImage_presentationFrame nsTextPreview  snapshotImage presentationFrame =
-    sendMsg nsTextPreview (mkSelector "initWithSnapshotImage:presentationFrame:") (retPtr retVoid) [argPtr snapshotImage, argNSRect presentationFrame] >>= ownedObject . castPtr
+initWithSnapshotImage_presentationFrame nsTextPreview snapshotImage presentationFrame =
+  sendOwnedMessage nsTextPreview initWithSnapshotImage_presentationFrameSelector snapshotImage presentationFrame
 
 -- | @- init@
 init_ :: IsNSTextPreview nsTextPreview => nsTextPreview -> IO (Id NSTextPreview)
-init_ nsTextPreview  =
-    sendMsg nsTextPreview (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextPreview =
+  sendOwnedMessage nsTextPreview initSelector
 
 -- | The image that contains the requested text from your view.
 --
@@ -74,8 +70,8 @@ init_ nsTextPreview  =
 --
 -- ObjC selector: @- previewImage@
 previewImage :: IsNSTextPreview nsTextPreview => nsTextPreview -> IO (Ptr ())
-previewImage nsTextPreview  =
-    fmap castPtr $ sendMsg nsTextPreview (mkSelector "previewImage") (retPtr retVoid) []
+previewImage nsTextPreview =
+  sendMessage nsTextPreview previewImageSelector
 
 -- | The frame rectangle that places the preview image directly over the matching text.
 --
@@ -83,8 +79,8 @@ previewImage nsTextPreview  =
 --
 -- ObjC selector: @- presentationFrame@
 presentationFrame :: IsNSTextPreview nsTextPreview => nsTextPreview -> IO NSRect
-presentationFrame nsTextPreview  =
-    sendMsgStret nsTextPreview (mkSelector "presentationFrame") retNSRect []
+presentationFrame nsTextPreview =
+  sendMessage nsTextPreview presentationFrameSelector
 
 -- | Rectangles that define the specific portions of text to highlight.
 --
@@ -92,34 +88,34 @@ presentationFrame nsTextPreview  =
 --
 -- ObjC selector: @- candidateRects@
 candidateRects :: IsNSTextPreview nsTextPreview => nsTextPreview -> IO (Id NSArray)
-candidateRects nsTextPreview  =
-    sendMsg nsTextPreview (mkSelector "candidateRects") (retPtr retVoid) [] >>= retainedObject . castPtr
+candidateRects nsTextPreview =
+  sendMessage nsTextPreview candidateRectsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSnapshotImage:presentationFrame:candidateRects:@
-initWithSnapshotImage_presentationFrame_candidateRectsSelector :: Selector
+initWithSnapshotImage_presentationFrame_candidateRectsSelector :: Selector '[Ptr (), NSRect, Id NSArray] (Id NSTextPreview)
 initWithSnapshotImage_presentationFrame_candidateRectsSelector = mkSelector "initWithSnapshotImage:presentationFrame:candidateRects:"
 
 -- | @Selector@ for @initWithSnapshotImage:presentationFrame:@
-initWithSnapshotImage_presentationFrameSelector :: Selector
+initWithSnapshotImage_presentationFrameSelector :: Selector '[Ptr (), NSRect] (Id NSTextPreview)
 initWithSnapshotImage_presentationFrameSelector = mkSelector "initWithSnapshotImage:presentationFrame:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextPreview)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @previewImage@
-previewImageSelector :: Selector
+previewImageSelector :: Selector '[] (Ptr ())
 previewImageSelector = mkSelector "previewImage"
 
 -- | @Selector@ for @presentationFrame@
-presentationFrameSelector :: Selector
+presentationFrameSelector :: Selector '[] NSRect
 presentationFrameSelector = mkSelector "presentationFrame"
 
 -- | @Selector@ for @candidateRects@
-candidateRectsSelector :: Selector
+candidateRectsSelector :: Selector '[] (Id NSArray)
 candidateRectsSelector = mkSelector "candidateRects"
 

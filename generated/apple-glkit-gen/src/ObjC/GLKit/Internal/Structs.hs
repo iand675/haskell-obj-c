@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | GLKVertexAttributeParameters
 --
@@ -42,3 +44,13 @@ argGLKVertexAttributeParameters = mkStorableArg glkVertexAttributeParametersStru
 
 retGLKVertexAttributeParameters :: RetType GLKVertexAttributeParameters
 retGLKVertexAttributeParameters = mkStorableRetType glkVertexAttributeParametersStructType
+
+instance ObjCArgument GLKVertexAttributeParameters where
+  withObjCArg x k = k (argGLKVertexAttributeParameters x)
+
+instance ObjCReturn GLKVertexAttributeParameters where
+  type RawReturn GLKVertexAttributeParameters = GLKVertexAttributeParameters
+  objcRetType = retGLKVertexAttributeParameters
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,43 +45,43 @@ module ObjC.AppKit.NSStatusItem
   , setToolTip
   , view
   , setView
-  , sendActionOnSelector
-  , drawStatusBarBackgroundInRect_withHighlightSelector
-  , popUpStatusItemMenuSelector
-  , statusBarSelector
-  , lengthSelector
-  , setLengthSelector
-  , menuSelector
-  , setMenuSelector
-  , buttonSelector
-  , behaviorSelector
-  , setBehaviorSelector
-  , visibleSelector
-  , setVisibleSelector
-  , autosaveNameSelector
-  , setAutosaveNameSelector
   , actionSelector
-  , setActionSelector
-  , doubleActionSelector
-  , setDoubleActionSelector
-  , targetSelector
-  , setTargetSelector
-  , titleSelector
-  , setTitleSelector
-  , attributedTitleSelector
-  , setAttributedTitleSelector
-  , imageSelector
-  , setImageSelector
   , alternateImageSelector
-  , setAlternateImageSelector
+  , attributedTitleSelector
+  , autosaveNameSelector
+  , behaviorSelector
+  , buttonSelector
+  , doubleActionSelector
+  , drawStatusBarBackgroundInRect_withHighlightSelector
   , enabledSelector
-  , setEnabledSelector
   , highlightModeSelector
+  , imageSelector
+  , lengthSelector
+  , menuSelector
+  , popUpStatusItemMenuSelector
+  , sendActionOnSelector
+  , setActionSelector
+  , setAlternateImageSelector
+  , setAttributedTitleSelector
+  , setAutosaveNameSelector
+  , setBehaviorSelector
+  , setDoubleActionSelector
+  , setEnabledSelector
   , setHighlightModeSelector
-  , toolTipSelector
+  , setImageSelector
+  , setLengthSelector
+  , setMenuSelector
+  , setTargetSelector
+  , setTitleSelector
   , setToolTipSelector
-  , viewSelector
   , setViewSelector
+  , setVisibleSelector
+  , statusBarSelector
+  , targetSelector
+  , titleSelector
+  , toolTipSelector
+  , viewSelector
+  , visibleSelector
 
   -- * Enum types
   , NSEventMask(NSEventMask)
@@ -125,15 +126,11 @@ module ObjC.AppKit.NSStatusItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -144,347 +141,338 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- sendActionOn:@
 sendActionOn :: IsNSStatusItem nsStatusItem => nsStatusItem -> NSEventMask -> IO CLong
-sendActionOn nsStatusItem  mask =
-    sendMsg nsStatusItem (mkSelector "sendActionOn:") retCLong [argCULong (coerce mask)]
+sendActionOn nsStatusItem mask =
+  sendMessage nsStatusItem sendActionOnSelector mask
 
 -- | @- drawStatusBarBackgroundInRect:withHighlight:@
 drawStatusBarBackgroundInRect_withHighlight :: IsNSStatusItem nsStatusItem => nsStatusItem -> NSRect -> Bool -> IO ()
-drawStatusBarBackgroundInRect_withHighlight nsStatusItem  rect highlight =
-    sendMsg nsStatusItem (mkSelector "drawStatusBarBackgroundInRect:withHighlight:") retVoid [argNSRect rect, argCULong (if highlight then 1 else 0)]
+drawStatusBarBackgroundInRect_withHighlight nsStatusItem rect highlight =
+  sendMessage nsStatusItem drawStatusBarBackgroundInRect_withHighlightSelector rect highlight
 
 -- | @- popUpStatusItemMenu:@
 popUpStatusItemMenu :: (IsNSStatusItem nsStatusItem, IsNSMenu menu) => nsStatusItem -> menu -> IO ()
-popUpStatusItemMenu nsStatusItem  menu =
-  withObjCPtr menu $ \raw_menu ->
-      sendMsg nsStatusItem (mkSelector "popUpStatusItemMenu:") retVoid [argPtr (castPtr raw_menu :: Ptr ())]
+popUpStatusItemMenu nsStatusItem menu =
+  sendMessage nsStatusItem popUpStatusItemMenuSelector (toNSMenu menu)
 
 -- | @- statusBar@
 statusBar :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSStatusBar)
-statusBar nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "statusBar") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusBar nsStatusItem =
+  sendMessage nsStatusItem statusBarSelector
 
 -- | @- length@
 length_ :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO CDouble
-length_ nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "length") retCDouble []
+length_ nsStatusItem =
+  sendMessage nsStatusItem lengthSelector
 
 -- | @- setLength:@
 setLength :: IsNSStatusItem nsStatusItem => nsStatusItem -> CDouble -> IO ()
-setLength nsStatusItem  value =
-    sendMsg nsStatusItem (mkSelector "setLength:") retVoid [argCDouble value]
+setLength nsStatusItem value =
+  sendMessage nsStatusItem setLengthSelector value
 
 -- | @- menu@
 menu :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSMenu)
-menu nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "menu") (retPtr retVoid) [] >>= retainedObject . castPtr
+menu nsStatusItem =
+  sendMessage nsStatusItem menuSelector
 
 -- | @- setMenu:@
 setMenu :: (IsNSStatusItem nsStatusItem, IsNSMenu value) => nsStatusItem -> value -> IO ()
-setMenu nsStatusItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsStatusItem (mkSelector "setMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMenu nsStatusItem value =
+  sendMessage nsStatusItem setMenuSelector (toNSMenu value)
 
 -- | @- button@
 button :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSStatusBarButton)
-button nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "button") (retPtr retVoid) [] >>= retainedObject . castPtr
+button nsStatusItem =
+  sendMessage nsStatusItem buttonSelector
 
 -- | @- behavior@
 behavior :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO NSStatusItemBehavior
-behavior nsStatusItem  =
-    fmap (coerce :: CULong -> NSStatusItemBehavior) $ sendMsg nsStatusItem (mkSelector "behavior") retCULong []
+behavior nsStatusItem =
+  sendMessage nsStatusItem behaviorSelector
 
 -- | @- setBehavior:@
 setBehavior :: IsNSStatusItem nsStatusItem => nsStatusItem -> NSStatusItemBehavior -> IO ()
-setBehavior nsStatusItem  value =
-    sendMsg nsStatusItem (mkSelector "setBehavior:") retVoid [argCULong (coerce value)]
+setBehavior nsStatusItem value =
+  sendMessage nsStatusItem setBehaviorSelector value
 
 -- | @- visible@
 visible :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO Bool
-visible nsStatusItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsStatusItem (mkSelector "visible") retCULong []
+visible nsStatusItem =
+  sendMessage nsStatusItem visibleSelector
 
 -- | @- setVisible:@
 setVisible :: IsNSStatusItem nsStatusItem => nsStatusItem -> Bool -> IO ()
-setVisible nsStatusItem  value =
-    sendMsg nsStatusItem (mkSelector "setVisible:") retVoid [argCULong (if value then 1 else 0)]
+setVisible nsStatusItem value =
+  sendMessage nsStatusItem setVisibleSelector value
 
 -- | @- autosaveName@
 autosaveName :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSString)
-autosaveName nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "autosaveName") (retPtr retVoid) [] >>= retainedObject . castPtr
+autosaveName nsStatusItem =
+  sendMessage nsStatusItem autosaveNameSelector
 
 -- | @- setAutosaveName:@
 setAutosaveName :: (IsNSStatusItem nsStatusItem, IsNSString value) => nsStatusItem -> value -> IO ()
-setAutosaveName nsStatusItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsStatusItem (mkSelector "setAutosaveName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAutosaveName nsStatusItem value =
+  sendMessage nsStatusItem setAutosaveNameSelector (toNSString value)
 
 -- | @- action@
-action :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO Selector
-action nsStatusItem  =
-    fmap (Selector . castPtr) $ sendMsg nsStatusItem (mkSelector "action") (retPtr retVoid) []
+action :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO Sel
+action nsStatusItem =
+  sendMessage nsStatusItem actionSelector
 
 -- | @- setAction:@
-setAction :: IsNSStatusItem nsStatusItem => nsStatusItem -> Selector -> IO ()
-setAction nsStatusItem  value =
-    sendMsg nsStatusItem (mkSelector "setAction:") retVoid [argPtr (unSelector value)]
+setAction :: IsNSStatusItem nsStatusItem => nsStatusItem -> Sel -> IO ()
+setAction nsStatusItem value =
+  sendMessage nsStatusItem setActionSelector value
 
 -- | @- doubleAction@
-doubleAction :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO Selector
-doubleAction nsStatusItem  =
-    fmap (Selector . castPtr) $ sendMsg nsStatusItem (mkSelector "doubleAction") (retPtr retVoid) []
+doubleAction :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO Sel
+doubleAction nsStatusItem =
+  sendMessage nsStatusItem doubleActionSelector
 
 -- | @- setDoubleAction:@
-setDoubleAction :: IsNSStatusItem nsStatusItem => nsStatusItem -> Selector -> IO ()
-setDoubleAction nsStatusItem  value =
-    sendMsg nsStatusItem (mkSelector "setDoubleAction:") retVoid [argPtr (unSelector value)]
+setDoubleAction :: IsNSStatusItem nsStatusItem => nsStatusItem -> Sel -> IO ()
+setDoubleAction nsStatusItem value =
+  sendMessage nsStatusItem setDoubleActionSelector value
 
 -- | @- target@
 target :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO RawId
-target nsStatusItem  =
-    fmap (RawId . castPtr) $ sendMsg nsStatusItem (mkSelector "target") (retPtr retVoid) []
+target nsStatusItem =
+  sendMessage nsStatusItem targetSelector
 
 -- | @- setTarget:@
 setTarget :: IsNSStatusItem nsStatusItem => nsStatusItem -> RawId -> IO ()
-setTarget nsStatusItem  value =
-    sendMsg nsStatusItem (mkSelector "setTarget:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTarget nsStatusItem value =
+  sendMessage nsStatusItem setTargetSelector value
 
 -- | @- title@
 title :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSString)
-title nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsStatusItem =
+  sendMessage nsStatusItem titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSStatusItem nsStatusItem, IsNSString value) => nsStatusItem -> value -> IO ()
-setTitle nsStatusItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsStatusItem (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsStatusItem value =
+  sendMessage nsStatusItem setTitleSelector (toNSString value)
 
 -- | @- attributedTitle@
 attributedTitle :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSAttributedString)
-attributedTitle nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "attributedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedTitle nsStatusItem =
+  sendMessage nsStatusItem attributedTitleSelector
 
 -- | @- setAttributedTitle:@
 setAttributedTitle :: (IsNSStatusItem nsStatusItem, IsNSAttributedString value) => nsStatusItem -> value -> IO ()
-setAttributedTitle nsStatusItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsStatusItem (mkSelector "setAttributedTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedTitle nsStatusItem value =
+  sendMessage nsStatusItem setAttributedTitleSelector (toNSAttributedString value)
 
 -- | @- image@
 image :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSImage)
-image nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image nsStatusItem =
+  sendMessage nsStatusItem imageSelector
 
 -- | @- setImage:@
 setImage :: (IsNSStatusItem nsStatusItem, IsNSImage value) => nsStatusItem -> value -> IO ()
-setImage nsStatusItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsStatusItem (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImage nsStatusItem value =
+  sendMessage nsStatusItem setImageSelector (toNSImage value)
 
 -- | @- alternateImage@
 alternateImage :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSImage)
-alternateImage nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "alternateImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateImage nsStatusItem =
+  sendMessage nsStatusItem alternateImageSelector
 
 -- | @- setAlternateImage:@
 setAlternateImage :: (IsNSStatusItem nsStatusItem, IsNSImage value) => nsStatusItem -> value -> IO ()
-setAlternateImage nsStatusItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsStatusItem (mkSelector "setAlternateImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlternateImage nsStatusItem value =
+  sendMessage nsStatusItem setAlternateImageSelector (toNSImage value)
 
 -- | @- enabled@
 enabled :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO Bool
-enabled nsStatusItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsStatusItem (mkSelector "enabled") retCULong []
+enabled nsStatusItem =
+  sendMessage nsStatusItem enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsNSStatusItem nsStatusItem => nsStatusItem -> Bool -> IO ()
-setEnabled nsStatusItem  value =
-    sendMsg nsStatusItem (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled nsStatusItem value =
+  sendMessage nsStatusItem setEnabledSelector value
 
 -- | @- highlightMode@
 highlightMode :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO Bool
-highlightMode nsStatusItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsStatusItem (mkSelector "highlightMode") retCULong []
+highlightMode nsStatusItem =
+  sendMessage nsStatusItem highlightModeSelector
 
 -- | @- setHighlightMode:@
 setHighlightMode :: IsNSStatusItem nsStatusItem => nsStatusItem -> Bool -> IO ()
-setHighlightMode nsStatusItem  value =
-    sendMsg nsStatusItem (mkSelector "setHighlightMode:") retVoid [argCULong (if value then 1 else 0)]
+setHighlightMode nsStatusItem value =
+  sendMessage nsStatusItem setHighlightModeSelector value
 
 -- | @- toolTip@
 toolTip :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSString)
-toolTip nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "toolTip") (retPtr retVoid) [] >>= retainedObject . castPtr
+toolTip nsStatusItem =
+  sendMessage nsStatusItem toolTipSelector
 
 -- | @- setToolTip:@
 setToolTip :: (IsNSStatusItem nsStatusItem, IsNSString value) => nsStatusItem -> value -> IO ()
-setToolTip nsStatusItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsStatusItem (mkSelector "setToolTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setToolTip nsStatusItem value =
+  sendMessage nsStatusItem setToolTipSelector (toNSString value)
 
 -- | @- view@
 view :: IsNSStatusItem nsStatusItem => nsStatusItem -> IO (Id NSView)
-view nsStatusItem  =
-    sendMsg nsStatusItem (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+view nsStatusItem =
+  sendMessage nsStatusItem viewSelector
 
 -- | @- setView:@
 setView :: (IsNSStatusItem nsStatusItem, IsNSView value) => nsStatusItem -> value -> IO ()
-setView nsStatusItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsStatusItem (mkSelector "setView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setView nsStatusItem value =
+  sendMessage nsStatusItem setViewSelector (toNSView value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sendActionOn:@
-sendActionOnSelector :: Selector
+sendActionOnSelector :: Selector '[NSEventMask] CLong
 sendActionOnSelector = mkSelector "sendActionOn:"
 
 -- | @Selector@ for @drawStatusBarBackgroundInRect:withHighlight:@
-drawStatusBarBackgroundInRect_withHighlightSelector :: Selector
+drawStatusBarBackgroundInRect_withHighlightSelector :: Selector '[NSRect, Bool] ()
 drawStatusBarBackgroundInRect_withHighlightSelector = mkSelector "drawStatusBarBackgroundInRect:withHighlight:"
 
 -- | @Selector@ for @popUpStatusItemMenu:@
-popUpStatusItemMenuSelector :: Selector
+popUpStatusItemMenuSelector :: Selector '[Id NSMenu] ()
 popUpStatusItemMenuSelector = mkSelector "popUpStatusItemMenu:"
 
 -- | @Selector@ for @statusBar@
-statusBarSelector :: Selector
+statusBarSelector :: Selector '[] (Id NSStatusBar)
 statusBarSelector = mkSelector "statusBar"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CDouble
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @setLength:@
-setLengthSelector :: Selector
+setLengthSelector :: Selector '[CDouble] ()
 setLengthSelector = mkSelector "setLength:"
 
 -- | @Selector@ for @menu@
-menuSelector :: Selector
+menuSelector :: Selector '[] (Id NSMenu)
 menuSelector = mkSelector "menu"
 
 -- | @Selector@ for @setMenu:@
-setMenuSelector :: Selector
+setMenuSelector :: Selector '[Id NSMenu] ()
 setMenuSelector = mkSelector "setMenu:"
 
 -- | @Selector@ for @button@
-buttonSelector :: Selector
+buttonSelector :: Selector '[] (Id NSStatusBarButton)
 buttonSelector = mkSelector "button"
 
 -- | @Selector@ for @behavior@
-behaviorSelector :: Selector
+behaviorSelector :: Selector '[] NSStatusItemBehavior
 behaviorSelector = mkSelector "behavior"
 
 -- | @Selector@ for @setBehavior:@
-setBehaviorSelector :: Selector
+setBehaviorSelector :: Selector '[NSStatusItemBehavior] ()
 setBehaviorSelector = mkSelector "setBehavior:"
 
 -- | @Selector@ for @visible@
-visibleSelector :: Selector
+visibleSelector :: Selector '[] Bool
 visibleSelector = mkSelector "visible"
 
 -- | @Selector@ for @setVisible:@
-setVisibleSelector :: Selector
+setVisibleSelector :: Selector '[Bool] ()
 setVisibleSelector = mkSelector "setVisible:"
 
 -- | @Selector@ for @autosaveName@
-autosaveNameSelector :: Selector
+autosaveNameSelector :: Selector '[] (Id NSString)
 autosaveNameSelector = mkSelector "autosaveName"
 
 -- | @Selector@ for @setAutosaveName:@
-setAutosaveNameSelector :: Selector
+setAutosaveNameSelector :: Selector '[Id NSString] ()
 setAutosaveNameSelector = mkSelector "setAutosaveName:"
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] Sel
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[Sel] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @doubleAction@
-doubleActionSelector :: Selector
+doubleActionSelector :: Selector '[] Sel
 doubleActionSelector = mkSelector "doubleAction"
 
 -- | @Selector@ for @setDoubleAction:@
-setDoubleActionSelector :: Selector
+setDoubleActionSelector :: Selector '[Sel] ()
 setDoubleActionSelector = mkSelector "setDoubleAction:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] RawId
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[RawId] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @attributedTitle@
-attributedTitleSelector :: Selector
+attributedTitleSelector :: Selector '[] (Id NSAttributedString)
 attributedTitleSelector = mkSelector "attributedTitle"
 
 -- | @Selector@ for @setAttributedTitle:@
-setAttributedTitleSelector :: Selector
+setAttributedTitleSelector :: Selector '[Id NSAttributedString] ()
 setAttributedTitleSelector = mkSelector "setAttributedTitle:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @alternateImage@
-alternateImageSelector :: Selector
+alternateImageSelector :: Selector '[] (Id NSImage)
 alternateImageSelector = mkSelector "alternateImage"
 
 -- | @Selector@ for @setAlternateImage:@
-setAlternateImageSelector :: Selector
+setAlternateImageSelector :: Selector '[Id NSImage] ()
 setAlternateImageSelector = mkSelector "setAlternateImage:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @highlightMode@
-highlightModeSelector :: Selector
+highlightModeSelector :: Selector '[] Bool
 highlightModeSelector = mkSelector "highlightMode"
 
 -- | @Selector@ for @setHighlightMode:@
-setHighlightModeSelector :: Selector
+setHighlightModeSelector :: Selector '[Bool] ()
 setHighlightModeSelector = mkSelector "setHighlightMode:"
 
 -- | @Selector@ for @toolTip@
-toolTipSelector :: Selector
+toolTipSelector :: Selector '[] (Id NSString)
 toolTipSelector = mkSelector "toolTip"
 
 -- | @Selector@ for @setToolTip:@
-setToolTipSelector :: Selector
+setToolTipSelector :: Selector '[Id NSString] ()
 setToolTipSelector = mkSelector "setToolTip:"
 
 -- | @Selector@ for @view@
-viewSelector :: Selector
+viewSelector :: Selector '[] (Id NSView)
 viewSelector = mkSelector "view"
 
 -- | @Selector@ for @setView:@
-setViewSelector :: Selector
+setViewSelector :: Selector '[Id NSView] ()
 setViewSelector = mkSelector "setView:"
 

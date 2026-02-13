@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.CallKit.CXAction
   , uuid
   , complete
   , timeoutDate
+  , completeSelector
+  , failSelector
+  , fulfillSelector
   , initSelector
   , initWithCoderSelector
-  , fulfillSelector
-  , failSelector
-  , uuidSelector
-  , completeSelector
   , timeoutDateSelector
+  , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,77 +38,76 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCXAction cxAction => cxAction -> IO (Id CXAction)
-init_ cxAction  =
-    sendMsg cxAction (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cxAction =
+  sendOwnedMessage cxAction initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsCXAction cxAction, IsNSCoder aDecoder) => cxAction -> aDecoder -> IO (Id CXAction)
-initWithCoder cxAction  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg cxAction (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder cxAction aDecoder =
+  sendOwnedMessage cxAction initWithCoderSelector (toNSCoder aDecoder)
 
 -- | Report successful execution of the receiver.
 --
 -- ObjC selector: @- fulfill@
 fulfill :: IsCXAction cxAction => cxAction -> IO ()
-fulfill cxAction  =
-    sendMsg cxAction (mkSelector "fulfill") retVoid []
+fulfill cxAction =
+  sendMessage cxAction fulfillSelector
 
 -- | Report failed execution of the receiver.
 --
 -- ObjC selector: @- fail@
 fail_ :: IsCXAction cxAction => cxAction -> IO ()
-fail_ cxAction  =
-    sendMsg cxAction (mkSelector "fail") retVoid []
+fail_ cxAction =
+  sendMessage cxAction failSelector
 
 -- | Unique ID
 --
 -- ObjC selector: @- UUID@
 uuid :: IsCXAction cxAction => cxAction -> IO (Id NSUUID)
-uuid cxAction  =
-    sendMsg cxAction (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid cxAction =
+  sendMessage cxAction uuidSelector
 
 -- | Whether all actions are either fulfilled or failed
 --
 -- ObjC selector: @- complete@
 complete :: IsCXAction cxAction => cxAction -> IO Bool
-complete cxAction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxAction (mkSelector "complete") retCULong []
+complete cxAction =
+  sendMessage cxAction completeSelector
 
 -- | @- timeoutDate@
 timeoutDate :: IsCXAction cxAction => cxAction -> IO (Id NSDate)
-timeoutDate cxAction  =
-    sendMsg cxAction (mkSelector "timeoutDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeoutDate cxAction =
+  sendMessage cxAction timeoutDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CXAction)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id CXAction)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @fulfill@
-fulfillSelector :: Selector
+fulfillSelector :: Selector '[] ()
 fulfillSelector = mkSelector "fulfill"
 
 -- | @Selector@ for @fail@
-failSelector :: Selector
+failSelector :: Selector '[] ()
 failSelector = mkSelector "fail"
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "UUID"
 
 -- | @Selector@ for @complete@
-completeSelector :: Selector
+completeSelector :: Selector '[] Bool
 completeSelector = mkSelector "complete"
 
 -- | @Selector@ for @timeoutDate@
-timeoutDateSelector :: Selector
+timeoutDateSelector :: Selector '[] (Id NSDate)
 timeoutDateSelector = mkSelector "timeoutDate"
 

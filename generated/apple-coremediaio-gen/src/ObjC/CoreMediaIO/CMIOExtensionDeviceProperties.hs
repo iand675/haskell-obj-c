@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,34 +26,30 @@ module ObjC.CoreMediaIO.CMIOExtensionDeviceProperties
   , setLinkedCoreAudioDeviceUID
   , propertiesDictionary
   , setPropertiesDictionary
-  , initSelector
-  , newSelector
   , devicePropertiesWithDictionarySelector
+  , initSelector
   , initWithDictionarySelector
-  , setPropertyState_forPropertySelector
-  , modelSelector
-  , setModelSelector
-  , suspendedSelector
-  , setSuspendedSelector
-  , transportTypeSelector
-  , setTransportTypeSelector
   , linkedCoreAudioDeviceUIDSelector
-  , setLinkedCoreAudioDeviceUIDSelector
+  , modelSelector
+  , newSelector
   , propertiesDictionarySelector
+  , setLinkedCoreAudioDeviceUIDSelector
+  , setModelSelector
   , setPropertiesDictionarySelector
+  , setPropertyState_forPropertySelector
+  , setSuspendedSelector
+  , setTransportTypeSelector
+  , suspendedSelector
+  , transportTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,15 +58,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties => cmioExtensionDeviceProperties -> IO (Id CMIOExtensionDeviceProperties)
-init_ cmioExtensionDeviceProperties  =
-    sendMsg cmioExtensionDeviceProperties (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionDeviceProperties =
+  sendOwnedMessage cmioExtensionDeviceProperties initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionDeviceProperties)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionDeviceProperties"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | devicePropertiesWithDictionary:
 --
@@ -84,8 +81,7 @@ devicePropertiesWithDictionary :: IsNSDictionary propertiesDictionary => propert
 devicePropertiesWithDictionary propertiesDictionary =
   do
     cls' <- getRequiredClass "CMIOExtensionDeviceProperties"
-    withObjCPtr propertiesDictionary $ \raw_propertiesDictionary ->
-      sendClassMsg cls' (mkSelector "devicePropertiesWithDictionary:") (retPtr retVoid) [argPtr (castPtr raw_propertiesDictionary :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' devicePropertiesWithDictionarySelector (toNSDictionary propertiesDictionary)
 
 -- | initWithDictionary:
 --
@@ -97,9 +93,8 @@ devicePropertiesWithDictionary propertiesDictionary =
 --
 -- ObjC selector: @- initWithDictionary:@
 initWithDictionary :: (IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties, IsNSDictionary propertiesDictionary) => cmioExtensionDeviceProperties -> propertiesDictionary -> IO (Id CMIOExtensionDeviceProperties)
-initWithDictionary cmioExtensionDeviceProperties  propertiesDictionary =
-  withObjCPtr propertiesDictionary $ \raw_propertiesDictionary ->
-      sendMsg cmioExtensionDeviceProperties (mkSelector "initWithDictionary:") (retPtr retVoid) [argPtr (castPtr raw_propertiesDictionary :: Ptr ())] >>= ownedObject . castPtr
+initWithDictionary cmioExtensionDeviceProperties propertiesDictionary =
+  sendOwnedMessage cmioExtensionDeviceProperties initWithDictionarySelector (toNSDictionary propertiesDictionary)
 
 -- | setPropertyState:forProperty:
 --
@@ -113,10 +108,8 @@ initWithDictionary cmioExtensionDeviceProperties  propertiesDictionary =
 --
 -- ObjC selector: @- setPropertyState:forProperty:@
 setPropertyState_forProperty :: (IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties, IsCMIOExtensionPropertyState propertyState, IsNSString property) => cmioExtensionDeviceProperties -> propertyState -> property -> IO ()
-setPropertyState_forProperty cmioExtensionDeviceProperties  propertyState property =
-  withObjCPtr propertyState $ \raw_propertyState ->
-    withObjCPtr property $ \raw_property ->
-        sendMsg cmioExtensionDeviceProperties (mkSelector "setPropertyState:forProperty:") retVoid [argPtr (castPtr raw_propertyState :: Ptr ()), argPtr (castPtr raw_property :: Ptr ())]
+setPropertyState_forProperty cmioExtensionDeviceProperties propertyState property =
+  sendMessage cmioExtensionDeviceProperties setPropertyState_forPropertySelector (toCMIOExtensionPropertyState propertyState) (toNSString property)
 
 -- | model
 --
@@ -126,8 +119,8 @@ setPropertyState_forProperty cmioExtensionDeviceProperties  propertyState proper
 --
 -- ObjC selector: @- model@
 model :: IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties => cmioExtensionDeviceProperties -> IO (Id NSString)
-model cmioExtensionDeviceProperties  =
-    sendMsg cmioExtensionDeviceProperties (mkSelector "model") (retPtr retVoid) [] >>= retainedObject . castPtr
+model cmioExtensionDeviceProperties =
+  sendMessage cmioExtensionDeviceProperties modelSelector
 
 -- | model
 --
@@ -137,9 +130,8 @@ model cmioExtensionDeviceProperties  =
 --
 -- ObjC selector: @- setModel:@
 setModel :: (IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties, IsNSString value) => cmioExtensionDeviceProperties -> value -> IO ()
-setModel cmioExtensionDeviceProperties  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cmioExtensionDeviceProperties (mkSelector "setModel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setModel cmioExtensionDeviceProperties value =
+  sendMessage cmioExtensionDeviceProperties setModelSelector (toNSString value)
 
 -- | suspended
 --
@@ -149,8 +141,8 @@ setModel cmioExtensionDeviceProperties  value =
 --
 -- ObjC selector: @- suspended@
 suspended :: IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties => cmioExtensionDeviceProperties -> IO (Id NSNumber)
-suspended cmioExtensionDeviceProperties  =
-    sendMsg cmioExtensionDeviceProperties (mkSelector "suspended") (retPtr retVoid) [] >>= retainedObject . castPtr
+suspended cmioExtensionDeviceProperties =
+  sendMessage cmioExtensionDeviceProperties suspendedSelector
 
 -- | suspended
 --
@@ -160,9 +152,8 @@ suspended cmioExtensionDeviceProperties  =
 --
 -- ObjC selector: @- setSuspended:@
 setSuspended :: (IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties, IsNSNumber value) => cmioExtensionDeviceProperties -> value -> IO ()
-setSuspended cmioExtensionDeviceProperties  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cmioExtensionDeviceProperties (mkSelector "setSuspended:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSuspended cmioExtensionDeviceProperties value =
+  sendMessage cmioExtensionDeviceProperties setSuspendedSelector (toNSNumber value)
 
 -- | transportType
 --
@@ -172,8 +163,8 @@ setSuspended cmioExtensionDeviceProperties  value =
 --
 -- ObjC selector: @- transportType@
 transportType :: IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties => cmioExtensionDeviceProperties -> IO (Id NSNumber)
-transportType cmioExtensionDeviceProperties  =
-    sendMsg cmioExtensionDeviceProperties (mkSelector "transportType") (retPtr retVoid) [] >>= retainedObject . castPtr
+transportType cmioExtensionDeviceProperties =
+  sendMessage cmioExtensionDeviceProperties transportTypeSelector
 
 -- | transportType
 --
@@ -183,9 +174,8 @@ transportType cmioExtensionDeviceProperties  =
 --
 -- ObjC selector: @- setTransportType:@
 setTransportType :: (IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties, IsNSNumber value) => cmioExtensionDeviceProperties -> value -> IO ()
-setTransportType cmioExtensionDeviceProperties  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cmioExtensionDeviceProperties (mkSelector "setTransportType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransportType cmioExtensionDeviceProperties value =
+  sendMessage cmioExtensionDeviceProperties setTransportTypeSelector (toNSNumber value)
 
 -- | linkedCoreAudioDeviceUID
 --
@@ -195,8 +185,8 @@ setTransportType cmioExtensionDeviceProperties  value =
 --
 -- ObjC selector: @- linkedCoreAudioDeviceUID@
 linkedCoreAudioDeviceUID :: IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties => cmioExtensionDeviceProperties -> IO (Id NSString)
-linkedCoreAudioDeviceUID cmioExtensionDeviceProperties  =
-    sendMsg cmioExtensionDeviceProperties (mkSelector "linkedCoreAudioDeviceUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+linkedCoreAudioDeviceUID cmioExtensionDeviceProperties =
+  sendMessage cmioExtensionDeviceProperties linkedCoreAudioDeviceUIDSelector
 
 -- | linkedCoreAudioDeviceUID
 --
@@ -206,9 +196,8 @@ linkedCoreAudioDeviceUID cmioExtensionDeviceProperties  =
 --
 -- ObjC selector: @- setLinkedCoreAudioDeviceUID:@
 setLinkedCoreAudioDeviceUID :: (IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties, IsNSString value) => cmioExtensionDeviceProperties -> value -> IO ()
-setLinkedCoreAudioDeviceUID cmioExtensionDeviceProperties  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cmioExtensionDeviceProperties (mkSelector "setLinkedCoreAudioDeviceUID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLinkedCoreAudioDeviceUID cmioExtensionDeviceProperties value =
+  sendMessage cmioExtensionDeviceProperties setLinkedCoreAudioDeviceUIDSelector (toNSString value)
 
 -- | propertiesDictionary
 --
@@ -218,8 +207,8 @@ setLinkedCoreAudioDeviceUID cmioExtensionDeviceProperties  value =
 --
 -- ObjC selector: @- propertiesDictionary@
 propertiesDictionary :: IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties => cmioExtensionDeviceProperties -> IO (Id NSDictionary)
-propertiesDictionary cmioExtensionDeviceProperties  =
-    sendMsg cmioExtensionDeviceProperties (mkSelector "propertiesDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+propertiesDictionary cmioExtensionDeviceProperties =
+  sendMessage cmioExtensionDeviceProperties propertiesDictionarySelector
 
 -- | propertiesDictionary
 --
@@ -229,71 +218,70 @@ propertiesDictionary cmioExtensionDeviceProperties  =
 --
 -- ObjC selector: @- setPropertiesDictionary:@
 setPropertiesDictionary :: (IsCMIOExtensionDeviceProperties cmioExtensionDeviceProperties, IsNSDictionary value) => cmioExtensionDeviceProperties -> value -> IO ()
-setPropertiesDictionary cmioExtensionDeviceProperties  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cmioExtensionDeviceProperties (mkSelector "setPropertiesDictionary:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPropertiesDictionary cmioExtensionDeviceProperties value =
+  sendMessage cmioExtensionDeviceProperties setPropertiesDictionarySelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionDeviceProperties)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionDeviceProperties)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @devicePropertiesWithDictionary:@
-devicePropertiesWithDictionarySelector :: Selector
+devicePropertiesWithDictionarySelector :: Selector '[Id NSDictionary] (Id CMIOExtensionDeviceProperties)
 devicePropertiesWithDictionarySelector = mkSelector "devicePropertiesWithDictionary:"
 
 -- | @Selector@ for @initWithDictionary:@
-initWithDictionarySelector :: Selector
+initWithDictionarySelector :: Selector '[Id NSDictionary] (Id CMIOExtensionDeviceProperties)
 initWithDictionarySelector = mkSelector "initWithDictionary:"
 
 -- | @Selector@ for @setPropertyState:forProperty:@
-setPropertyState_forPropertySelector :: Selector
+setPropertyState_forPropertySelector :: Selector '[Id CMIOExtensionPropertyState, Id NSString] ()
 setPropertyState_forPropertySelector = mkSelector "setPropertyState:forProperty:"
 
 -- | @Selector@ for @model@
-modelSelector :: Selector
+modelSelector :: Selector '[] (Id NSString)
 modelSelector = mkSelector "model"
 
 -- | @Selector@ for @setModel:@
-setModelSelector :: Selector
+setModelSelector :: Selector '[Id NSString] ()
 setModelSelector = mkSelector "setModel:"
 
 -- | @Selector@ for @suspended@
-suspendedSelector :: Selector
+suspendedSelector :: Selector '[] (Id NSNumber)
 suspendedSelector = mkSelector "suspended"
 
 -- | @Selector@ for @setSuspended:@
-setSuspendedSelector :: Selector
+setSuspendedSelector :: Selector '[Id NSNumber] ()
 setSuspendedSelector = mkSelector "setSuspended:"
 
 -- | @Selector@ for @transportType@
-transportTypeSelector :: Selector
+transportTypeSelector :: Selector '[] (Id NSNumber)
 transportTypeSelector = mkSelector "transportType"
 
 -- | @Selector@ for @setTransportType:@
-setTransportTypeSelector :: Selector
+setTransportTypeSelector :: Selector '[Id NSNumber] ()
 setTransportTypeSelector = mkSelector "setTransportType:"
 
 -- | @Selector@ for @linkedCoreAudioDeviceUID@
-linkedCoreAudioDeviceUIDSelector :: Selector
+linkedCoreAudioDeviceUIDSelector :: Selector '[] (Id NSString)
 linkedCoreAudioDeviceUIDSelector = mkSelector "linkedCoreAudioDeviceUID"
 
 -- | @Selector@ for @setLinkedCoreAudioDeviceUID:@
-setLinkedCoreAudioDeviceUIDSelector :: Selector
+setLinkedCoreAudioDeviceUIDSelector :: Selector '[Id NSString] ()
 setLinkedCoreAudioDeviceUIDSelector = mkSelector "setLinkedCoreAudioDeviceUID:"
 
 -- | @Selector@ for @propertiesDictionary@
-propertiesDictionarySelector :: Selector
+propertiesDictionarySelector :: Selector '[] (Id NSDictionary)
 propertiesDictionarySelector = mkSelector "propertiesDictionary"
 
 -- | @Selector@ for @setPropertiesDictionary:@
-setPropertiesDictionarySelector :: Selector
+setPropertiesDictionarySelector :: Selector '[Id NSDictionary] ()
 setPropertiesDictionarySelector = mkSelector "setPropertiesDictionary:"
 

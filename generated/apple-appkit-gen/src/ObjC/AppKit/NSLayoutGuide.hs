@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,23 +25,23 @@ module ObjC.AppKit.NSLayoutGuide
   , centerXAnchor
   , centerYAnchor
   , hasAmbiguousLayout
-  , constraintsAffectingLayoutForOrientationSelector
-  , frameSelector
-  , owningViewSelector
-  , setOwningViewSelector
-  , identifierSelector
-  , setIdentifierSelector
-  , leadingAnchorSelector
-  , trailingAnchorSelector
-  , leftAnchorSelector
-  , rightAnchorSelector
-  , topAnchorSelector
   , bottomAnchorSelector
-  , widthAnchorSelector
-  , heightAnchorSelector
   , centerXAnchorSelector
   , centerYAnchorSelector
+  , constraintsAffectingLayoutForOrientationSelector
+  , frameSelector
   , hasAmbiguousLayoutSelector
+  , heightAnchorSelector
+  , identifierSelector
+  , leadingAnchorSelector
+  , leftAnchorSelector
+  , owningViewSelector
+  , rightAnchorSelector
+  , setIdentifierSelector
+  , setOwningViewSelector
+  , topAnchorSelector
+  , trailingAnchorSelector
+  , widthAnchorSelector
 
   -- * Enum types
   , NSLayoutConstraintOrientation(NSLayoutConstraintOrientation)
@@ -49,15 +50,11 @@ module ObjC.AppKit.NSLayoutGuide
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,160 +65,158 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- constraintsAffectingLayoutForOrientation:@
 constraintsAffectingLayoutForOrientation :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> NSLayoutConstraintOrientation -> IO (Id NSArray)
-constraintsAffectingLayoutForOrientation nsLayoutGuide  orientation =
-    sendMsg nsLayoutGuide (mkSelector "constraintsAffectingLayoutForOrientation:") (retPtr retVoid) [argCLong (coerce orientation)] >>= retainedObject . castPtr
+constraintsAffectingLayoutForOrientation nsLayoutGuide orientation =
+  sendMessage nsLayoutGuide constraintsAffectingLayoutForOrientationSelector orientation
 
 -- | @- frame@
 frame :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO NSRect
-frame nsLayoutGuide  =
-    sendMsgStret nsLayoutGuide (mkSelector "frame") retNSRect []
+frame nsLayoutGuide =
+  sendMessage nsLayoutGuide frameSelector
 
 -- | @- owningView@
 owningView :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSView)
-owningView nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "owningView") (retPtr retVoid) [] >>= retainedObject . castPtr
+owningView nsLayoutGuide =
+  sendMessage nsLayoutGuide owningViewSelector
 
 -- | @- setOwningView:@
 setOwningView :: (IsNSLayoutGuide nsLayoutGuide, IsNSView value) => nsLayoutGuide -> value -> IO ()
-setOwningView nsLayoutGuide  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLayoutGuide (mkSelector "setOwningView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOwningView nsLayoutGuide value =
+  sendMessage nsLayoutGuide setOwningViewSelector (toNSView value)
 
 -- | @- identifier@
 identifier :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSString)
-identifier nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsLayoutGuide =
+  sendMessage nsLayoutGuide identifierSelector
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsNSLayoutGuide nsLayoutGuide, IsNSString value) => nsLayoutGuide -> value -> IO ()
-setIdentifier nsLayoutGuide  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsLayoutGuide (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier nsLayoutGuide value =
+  sendMessage nsLayoutGuide setIdentifierSelector (toNSString value)
 
 -- | @- leadingAnchor@
 leadingAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutXAxisAnchor)
-leadingAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "leadingAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+leadingAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide leadingAnchorSelector
 
 -- | @- trailingAnchor@
 trailingAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutXAxisAnchor)
-trailingAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "trailingAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+trailingAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide trailingAnchorSelector
 
 -- | @- leftAnchor@
 leftAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutXAxisAnchor)
-leftAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "leftAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+leftAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide leftAnchorSelector
 
 -- | @- rightAnchor@
 rightAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutXAxisAnchor)
-rightAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "rightAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+rightAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide rightAnchorSelector
 
 -- | @- topAnchor@
 topAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutYAxisAnchor)
-topAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "topAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+topAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide topAnchorSelector
 
 -- | @- bottomAnchor@
 bottomAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutYAxisAnchor)
-bottomAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "bottomAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+bottomAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide bottomAnchorSelector
 
 -- | @- widthAnchor@
 widthAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutDimension)
-widthAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "widthAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+widthAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide widthAnchorSelector
 
 -- | @- heightAnchor@
 heightAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutDimension)
-heightAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "heightAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+heightAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide heightAnchorSelector
 
 -- | @- centerXAnchor@
 centerXAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutXAxisAnchor)
-centerXAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "centerXAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+centerXAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide centerXAnchorSelector
 
 -- | @- centerYAnchor@
 centerYAnchor :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO (Id NSLayoutYAxisAnchor)
-centerYAnchor nsLayoutGuide  =
-    sendMsg nsLayoutGuide (mkSelector "centerYAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+centerYAnchor nsLayoutGuide =
+  sendMessage nsLayoutGuide centerYAnchorSelector
 
 -- | @- hasAmbiguousLayout@
 hasAmbiguousLayout :: IsNSLayoutGuide nsLayoutGuide => nsLayoutGuide -> IO Bool
-hasAmbiguousLayout nsLayoutGuide  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutGuide (mkSelector "hasAmbiguousLayout") retCULong []
+hasAmbiguousLayout nsLayoutGuide =
+  sendMessage nsLayoutGuide hasAmbiguousLayoutSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @constraintsAffectingLayoutForOrientation:@
-constraintsAffectingLayoutForOrientationSelector :: Selector
+constraintsAffectingLayoutForOrientationSelector :: Selector '[NSLayoutConstraintOrientation] (Id NSArray)
 constraintsAffectingLayoutForOrientationSelector = mkSelector "constraintsAffectingLayoutForOrientation:"
 
 -- | @Selector@ for @frame@
-frameSelector :: Selector
+frameSelector :: Selector '[] NSRect
 frameSelector = mkSelector "frame"
 
 -- | @Selector@ for @owningView@
-owningViewSelector :: Selector
+owningViewSelector :: Selector '[] (Id NSView)
 owningViewSelector = mkSelector "owningView"
 
 -- | @Selector@ for @setOwningView:@
-setOwningViewSelector :: Selector
+setOwningViewSelector :: Selector '[Id NSView] ()
 setOwningViewSelector = mkSelector "setOwningView:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @leadingAnchor@
-leadingAnchorSelector :: Selector
+leadingAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 leadingAnchorSelector = mkSelector "leadingAnchor"
 
 -- | @Selector@ for @trailingAnchor@
-trailingAnchorSelector :: Selector
+trailingAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 trailingAnchorSelector = mkSelector "trailingAnchor"
 
 -- | @Selector@ for @leftAnchor@
-leftAnchorSelector :: Selector
+leftAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 leftAnchorSelector = mkSelector "leftAnchor"
 
 -- | @Selector@ for @rightAnchor@
-rightAnchorSelector :: Selector
+rightAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 rightAnchorSelector = mkSelector "rightAnchor"
 
 -- | @Selector@ for @topAnchor@
-topAnchorSelector :: Selector
+topAnchorSelector :: Selector '[] (Id NSLayoutYAxisAnchor)
 topAnchorSelector = mkSelector "topAnchor"
 
 -- | @Selector@ for @bottomAnchor@
-bottomAnchorSelector :: Selector
+bottomAnchorSelector :: Selector '[] (Id NSLayoutYAxisAnchor)
 bottomAnchorSelector = mkSelector "bottomAnchor"
 
 -- | @Selector@ for @widthAnchor@
-widthAnchorSelector :: Selector
+widthAnchorSelector :: Selector '[] (Id NSLayoutDimension)
 widthAnchorSelector = mkSelector "widthAnchor"
 
 -- | @Selector@ for @heightAnchor@
-heightAnchorSelector :: Selector
+heightAnchorSelector :: Selector '[] (Id NSLayoutDimension)
 heightAnchorSelector = mkSelector "heightAnchor"
 
 -- | @Selector@ for @centerXAnchor@
-centerXAnchorSelector :: Selector
+centerXAnchorSelector :: Selector '[] (Id NSLayoutXAxisAnchor)
 centerXAnchorSelector = mkSelector "centerXAnchor"
 
 -- | @Selector@ for @centerYAnchor@
-centerYAnchorSelector :: Selector
+centerYAnchorSelector :: Selector '[] (Id NSLayoutYAxisAnchor)
 centerYAnchorSelector = mkSelector "centerYAnchor"
 
 -- | @Selector@ for @hasAmbiguousLayout@
-hasAmbiguousLayoutSelector :: Selector
+hasAmbiguousLayoutSelector :: Selector '[] Bool
 hasAmbiguousLayoutSelector = mkSelector "hasAmbiguousLayout"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.Intents.INGetVisualCodeIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,23 +39,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithVisualCodeType:@
 initWithVisualCodeType :: IsINGetVisualCodeIntent inGetVisualCodeIntent => inGetVisualCodeIntent -> INVisualCodeType -> IO (Id INGetVisualCodeIntent)
-initWithVisualCodeType inGetVisualCodeIntent  visualCodeType =
-    sendMsg inGetVisualCodeIntent (mkSelector "initWithVisualCodeType:") (retPtr retVoid) [argCLong (coerce visualCodeType)] >>= ownedObject . castPtr
+initWithVisualCodeType inGetVisualCodeIntent visualCodeType =
+  sendOwnedMessage inGetVisualCodeIntent initWithVisualCodeTypeSelector visualCodeType
 
 -- | @- visualCodeType@
 visualCodeType :: IsINGetVisualCodeIntent inGetVisualCodeIntent => inGetVisualCodeIntent -> IO INVisualCodeType
-visualCodeType inGetVisualCodeIntent  =
-    fmap (coerce :: CLong -> INVisualCodeType) $ sendMsg inGetVisualCodeIntent (mkSelector "visualCodeType") retCLong []
+visualCodeType inGetVisualCodeIntent =
+  sendMessage inGetVisualCodeIntent visualCodeTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithVisualCodeType:@
-initWithVisualCodeTypeSelector :: Selector
+initWithVisualCodeTypeSelector :: Selector '[INVisualCodeType] (Id INGetVisualCodeIntent)
 initWithVisualCodeTypeSelector = mkSelector "initWithVisualCodeType:"
 
 -- | @Selector@ for @visualCodeType@
-visualCodeTypeSelector :: Selector
+visualCodeTypeSelector :: Selector '[] INVisualCodeType
 visualCodeTypeSelector = mkSelector "visualCodeType"
 

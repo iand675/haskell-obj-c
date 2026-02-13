@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.AVFoundation.AVMediaSelectionOption
   , commonMetadata
   , availableMetadataFormats
   , displayName
-  , hasMediaCharacteristicSelector
-  , metadataForFormatSelector
   , associatedMediaSelectionOptionInMediaSelectionGroupSelector
-  , propertyListSelector
-  , displayNameWithLocaleSelector
-  , mediaTypeSelector
-  , mediaSubTypesSelector
-  , playableSelector
-  , extendedLanguageTagSelector
-  , localeSelector
-  , commonMetadataSelector
   , availableMetadataFormatsSelector
+  , commonMetadataSelector
   , displayNameSelector
+  , displayNameWithLocaleSelector
+  , extendedLanguageTagSelector
+  , hasMediaCharacteristicSelector
+  , localeSelector
+  , mediaSubTypesSelector
+  , mediaTypeSelector
+  , metadataForFormatSelector
+  , playableSelector
+  , propertyListSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,9 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- hasMediaCharacteristic:@
 hasMediaCharacteristic :: (IsAVMediaSelectionOption avMediaSelectionOption, IsNSString mediaCharacteristic) => avMediaSelectionOption -> mediaCharacteristic -> IO Bool
-hasMediaCharacteristic avMediaSelectionOption  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMediaSelectionOption (mkSelector "hasMediaCharacteristic:") retCULong [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())]
+hasMediaCharacteristic avMediaSelectionOption mediaCharacteristic =
+  sendMessage avMediaSelectionOption hasMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | Provides an NSArray of AVMetadataItems, one for each metadata item in the container of the specified format.
 --
@@ -73,9 +69,8 @@ hasMediaCharacteristic avMediaSelectionOption  mediaCharacteristic =
 --
 -- ObjC selector: @- metadataForFormat:@
 metadataForFormat :: (IsAVMediaSelectionOption avMediaSelectionOption, IsNSString format) => avMediaSelectionOption -> format -> IO (Id NSArray)
-metadataForFormat avMediaSelectionOption  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avMediaSelectionOption (mkSelector "metadataForFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= retainedObject . castPtr
+metadataForFormat avMediaSelectionOption format =
+  sendMessage avMediaSelectionOption metadataForFormatSelector (toNSString format)
 
 -- | If a media selection option in another group is associated with the specified option, returns a reference to the associated option.
 --
@@ -87,9 +82,8 @@ metadataForFormat avMediaSelectionOption  format =
 --
 -- ObjC selector: @- associatedMediaSelectionOptionInMediaSelectionGroup:@
 associatedMediaSelectionOptionInMediaSelectionGroup :: (IsAVMediaSelectionOption avMediaSelectionOption, IsAVMediaSelectionGroup mediaSelectionGroup) => avMediaSelectionOption -> mediaSelectionGroup -> IO (Id AVMediaSelectionOption)
-associatedMediaSelectionOptionInMediaSelectionGroup avMediaSelectionOption  mediaSelectionGroup =
-  withObjCPtr mediaSelectionGroup $ \raw_mediaSelectionGroup ->
-      sendMsg avMediaSelectionOption (mkSelector "associatedMediaSelectionOptionInMediaSelectionGroup:") (retPtr retVoid) [argPtr (castPtr raw_mediaSelectionGroup :: Ptr ())] >>= retainedObject . castPtr
+associatedMediaSelectionOptionInMediaSelectionGroup avMediaSelectionOption mediaSelectionGroup =
+  sendMessage avMediaSelectionOption associatedMediaSelectionOptionInMediaSelectionGroupSelector (toAVMediaSelectionGroup mediaSelectionGroup)
 
 -- | Returns a serializable property list that can be used to obtain an instance of AVMediaSelectionOption representing the same option as the receiver via -[AVMediaSelectionGroup mediaSelectionOptionWithPropertyList:].
 --
@@ -97,8 +91,8 @@ associatedMediaSelectionOptionInMediaSelectionGroup avMediaSelectionOption  medi
 --
 -- ObjC selector: @- propertyList@
 propertyList :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO RawId
-propertyList avMediaSelectionOption  =
-    fmap (RawId . castPtr) $ sendMsg avMediaSelectionOption (mkSelector "propertyList") (retPtr retVoid) []
+propertyList avMediaSelectionOption =
+  sendMessage avMediaSelectionOption propertyListSelector
 
 -- | Provides an NSString suitable for display.
 --
@@ -108,16 +102,15 @@ propertyList avMediaSelectionOption  =
 --
 -- ObjC selector: @- displayNameWithLocale:@
 displayNameWithLocale :: (IsAVMediaSelectionOption avMediaSelectionOption, IsNSLocale locale) => avMediaSelectionOption -> locale -> IO (Id NSString)
-displayNameWithLocale avMediaSelectionOption  locale =
-  withObjCPtr locale $ \raw_locale ->
-      sendMsg avMediaSelectionOption (mkSelector "displayNameWithLocale:") (retPtr retVoid) [argPtr (castPtr raw_locale :: Ptr ())] >>= retainedObject . castPtr
+displayNameWithLocale avMediaSelectionOption locale =
+  sendMessage avMediaSelectionOption displayNameWithLocaleSelector (toNSLocale locale)
 
 -- | The media type of the media data, e.g. AVMediaTypeAudio, AVMediaTypeSubtitle, etc.
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO (Id NSString)
-mediaType avMediaSelectionOption  =
-    sendMsg avMediaSelectionOption (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avMediaSelectionOption =
+  sendMessage avMediaSelectionOption mediaTypeSelector
 
 -- | The mediaSubTypes of the media data associated with the option.
 --
@@ -127,8 +120,8 @@ mediaType avMediaSelectionOption  =
 --
 -- ObjC selector: @- mediaSubTypes@
 mediaSubTypes :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO (Id NSArray)
-mediaSubTypes avMediaSelectionOption  =
-    sendMsg avMediaSelectionOption (mkSelector "mediaSubTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaSubTypes avMediaSelectionOption =
+  sendMessage avMediaSelectionOption mediaSubTypesSelector
 
 -- | Indicates whether a media selection option is playable.
 --
@@ -136,15 +129,15 @@ mediaSubTypes avMediaSelectionOption  =
 --
 -- ObjC selector: @- playable@
 playable :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO Bool
-playable avMediaSelectionOption  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMediaSelectionOption (mkSelector "playable") retCULong []
+playable avMediaSelectionOption =
+  sendMessage avMediaSelectionOption playableSelector
 
 -- | Indicates the RFC 4646 language tag associated with the option. May be nil.
 --
 -- ObjC selector: @- extendedLanguageTag@
 extendedLanguageTag :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO (Id NSString)
-extendedLanguageTag avMediaSelectionOption  =
-    sendMsg avMediaSelectionOption (mkSelector "extendedLanguageTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedLanguageTag avMediaSelectionOption =
+  sendMessage avMediaSelectionOption extendedLanguageTagSelector
 
 -- | Indicates the locale for which the media option was authored.
 --
@@ -152,8 +145,8 @@ extendedLanguageTag avMediaSelectionOption  =
 --
 -- ObjC selector: @- locale@
 locale :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO (Id NSLocale)
-locale avMediaSelectionOption  =
-    sendMsg avMediaSelectionOption (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale avMediaSelectionOption =
+  sendMessage avMediaSelectionOption localeSelector
 
 -- | Provides an array of AVMetadataItems for each common metadata key for which a value is available.
 --
@@ -163,8 +156,8 @@ locale avMediaSelectionOption  =
 --
 -- ObjC selector: @- commonMetadata@
 commonMetadata :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO (Id NSArray)
-commonMetadata avMediaSelectionOption  =
-    sendMsg avMediaSelectionOption (mkSelector "commonMetadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+commonMetadata avMediaSelectionOption =
+  sendMessage avMediaSelectionOption commonMetadataSelector
 
 -- | Provides an NSArray of NSStrings, each representing a metadata format that contains metadata associated with the option (e.g. ID3, iTunes metadata, etc.).
 --
@@ -172,8 +165,8 @@ commonMetadata avMediaSelectionOption  =
 --
 -- ObjC selector: @- availableMetadataFormats@
 availableMetadataFormats :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO (Id NSArray)
-availableMetadataFormats avMediaSelectionOption  =
-    sendMsg avMediaSelectionOption (mkSelector "availableMetadataFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableMetadataFormats avMediaSelectionOption =
+  sendMessage avMediaSelectionOption availableMetadataFormatsSelector
 
 -- | Provides an NSString suitable for display using the current system locale.
 --
@@ -181,62 +174,62 @@ availableMetadataFormats avMediaSelectionOption  =
 --
 -- ObjC selector: @- displayName@
 displayName :: IsAVMediaSelectionOption avMediaSelectionOption => avMediaSelectionOption -> IO (Id NSString)
-displayName avMediaSelectionOption  =
-    sendMsg avMediaSelectionOption (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName avMediaSelectionOption =
+  sendMessage avMediaSelectionOption displayNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @hasMediaCharacteristic:@
-hasMediaCharacteristicSelector :: Selector
+hasMediaCharacteristicSelector :: Selector '[Id NSString] Bool
 hasMediaCharacteristicSelector = mkSelector "hasMediaCharacteristic:"
 
 -- | @Selector@ for @metadataForFormat:@
-metadataForFormatSelector :: Selector
+metadataForFormatSelector :: Selector '[Id NSString] (Id NSArray)
 metadataForFormatSelector = mkSelector "metadataForFormat:"
 
 -- | @Selector@ for @associatedMediaSelectionOptionInMediaSelectionGroup:@
-associatedMediaSelectionOptionInMediaSelectionGroupSelector :: Selector
+associatedMediaSelectionOptionInMediaSelectionGroupSelector :: Selector '[Id AVMediaSelectionGroup] (Id AVMediaSelectionOption)
 associatedMediaSelectionOptionInMediaSelectionGroupSelector = mkSelector "associatedMediaSelectionOptionInMediaSelectionGroup:"
 
 -- | @Selector@ for @propertyList@
-propertyListSelector :: Selector
+propertyListSelector :: Selector '[] RawId
 propertyListSelector = mkSelector "propertyList"
 
 -- | @Selector@ for @displayNameWithLocale:@
-displayNameWithLocaleSelector :: Selector
+displayNameWithLocaleSelector :: Selector '[Id NSLocale] (Id NSString)
 displayNameWithLocaleSelector = mkSelector "displayNameWithLocale:"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @mediaSubTypes@
-mediaSubTypesSelector :: Selector
+mediaSubTypesSelector :: Selector '[] (Id NSArray)
 mediaSubTypesSelector = mkSelector "mediaSubTypes"
 
 -- | @Selector@ for @playable@
-playableSelector :: Selector
+playableSelector :: Selector '[] Bool
 playableSelector = mkSelector "playable"
 
 -- | @Selector@ for @extendedLanguageTag@
-extendedLanguageTagSelector :: Selector
+extendedLanguageTagSelector :: Selector '[] (Id NSString)
 extendedLanguageTagSelector = mkSelector "extendedLanguageTag"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @commonMetadata@
-commonMetadataSelector :: Selector
+commonMetadataSelector :: Selector '[] (Id NSArray)
 commonMetadataSelector = mkSelector "commonMetadata"
 
 -- | @Selector@ for @availableMetadataFormats@
-availableMetadataFormatsSelector :: Selector
+availableMetadataFormatsSelector :: Selector '[] (Id NSArray)
 availableMetadataFormatsSelector = mkSelector "availableMetadataFormats"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 

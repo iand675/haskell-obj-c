@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.AppKit.NSSliderAccessory
   , setEnabled
   , accessoryWithImageSelector
   , behaviorSelector
-  , setBehaviorSelector
   , enabledSelector
+  , setBehaviorSelector
   , setEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,59 +37,57 @@ accessoryWithImage :: IsNSImage image => image -> IO (Id NSSliderAccessory)
 accessoryWithImage image =
   do
     cls' <- getRequiredClass "NSSliderAccessory"
-    withObjCPtr image $ \raw_image ->
-      sendClassMsg cls' (mkSelector "accessoryWithImage:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' accessoryWithImageSelector (toNSImage image)
 
 -- | The effect on interaction with the accessory. Defaults to @automaticBehavior@
 --
 -- ObjC selector: @- behavior@
 behavior :: IsNSSliderAccessory nsSliderAccessory => nsSliderAccessory -> IO (Id NSSliderAccessoryBehavior)
-behavior nsSliderAccessory  =
-    sendMsg nsSliderAccessory (mkSelector "behavior") (retPtr retVoid) [] >>= retainedObject . castPtr
+behavior nsSliderAccessory =
+  sendMessage nsSliderAccessory behaviorSelector
 
 -- | The effect on interaction with the accessory. Defaults to @automaticBehavior@
 --
 -- ObjC selector: @- setBehavior:@
 setBehavior :: (IsNSSliderAccessory nsSliderAccessory, IsNSSliderAccessoryBehavior value) => nsSliderAccessory -> value -> IO ()
-setBehavior nsSliderAccessory  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSliderAccessory (mkSelector "setBehavior:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBehavior nsSliderAccessory value =
+  sendMessage nsSliderAccessory setBehaviorSelector (toNSSliderAccessoryBehavior value)
 
 -- | Whether or not the accessory is interactive and draws with an enabled appearance. Defaults to YES.
 --
 -- ObjC selector: @- enabled@
 enabled :: IsNSSliderAccessory nsSliderAccessory => nsSliderAccessory -> IO Bool
-enabled nsSliderAccessory  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSliderAccessory (mkSelector "enabled") retCULong []
+enabled nsSliderAccessory =
+  sendMessage nsSliderAccessory enabledSelector
 
 -- | Whether or not the accessory is interactive and draws with an enabled appearance. Defaults to YES.
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsNSSliderAccessory nsSliderAccessory => nsSliderAccessory -> Bool -> IO ()
-setEnabled nsSliderAccessory  value =
-    sendMsg nsSliderAccessory (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled nsSliderAccessory value =
+  sendMessage nsSliderAccessory setEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @accessoryWithImage:@
-accessoryWithImageSelector :: Selector
+accessoryWithImageSelector :: Selector '[Id NSImage] (Id NSSliderAccessory)
 accessoryWithImageSelector = mkSelector "accessoryWithImage:"
 
 -- | @Selector@ for @behavior@
-behaviorSelector :: Selector
+behaviorSelector :: Selector '[] (Id NSSliderAccessoryBehavior)
 behaviorSelector = mkSelector "behavior"
 
 -- | @Selector@ for @setBehavior:@
-setBehaviorSelector :: Selector
+setBehaviorSelector :: Selector '[Id NSSliderAccessoryBehavior] ()
 setBehaviorSelector = mkSelector "setBehavior:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 

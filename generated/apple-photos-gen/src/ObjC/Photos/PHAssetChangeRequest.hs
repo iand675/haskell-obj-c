@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.Photos.PHAssetChangeRequest
   , setHidden
   , contentEditingOutput
   , setContentEditingOutput
-  , creationRequestForAssetFromImageSelector
+  , changeRequestForAssetSelector
+  , contentEditingOutputSelector
+  , creationDateSelector
   , creationRequestForAssetFromImageAtFileURLSelector
+  , creationRequestForAssetFromImageSelector
   , creationRequestForAssetFromVideoAtFileURLSelector
   , deleteAssetsSelector
-  , changeRequestForAssetSelector
-  , revertAssetContentToOriginalSelector
-  , placeholderForCreatedAssetSelector
-  , creationDateSelector
-  , setCreationDateSelector
   , favoriteSelector
-  , setFavoriteSelector
   , hiddenSelector
-  , setHiddenSelector
-  , contentEditingOutputSelector
+  , placeholderForCreatedAssetSelector
+  , revertAssetContentToOriginalSelector
   , setContentEditingOutputSelector
+  , setCreationDateSelector
+  , setFavoriteSelector
+  , setHiddenSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,153 +58,147 @@ creationRequestForAssetFromImage :: IsNSImage image => image -> IO (Id PHAssetCh
 creationRequestForAssetFromImage image =
   do
     cls' <- getRequiredClass "PHAssetChangeRequest"
-    withObjCPtr image $ \raw_image ->
-      sendClassMsg cls' (mkSelector "creationRequestForAssetFromImage:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' creationRequestForAssetFromImageSelector (toNSImage image)
 
 -- | @+ creationRequestForAssetFromImageAtFileURL:@
 creationRequestForAssetFromImageAtFileURL :: IsNSURL fileURL => fileURL -> IO (Id PHAssetChangeRequest)
 creationRequestForAssetFromImageAtFileURL fileURL =
   do
     cls' <- getRequiredClass "PHAssetChangeRequest"
-    withObjCPtr fileURL $ \raw_fileURL ->
-      sendClassMsg cls' (mkSelector "creationRequestForAssetFromImageAtFileURL:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' creationRequestForAssetFromImageAtFileURLSelector (toNSURL fileURL)
 
 -- | @+ creationRequestForAssetFromVideoAtFileURL:@
 creationRequestForAssetFromVideoAtFileURL :: IsNSURL fileURL => fileURL -> IO (Id PHAssetChangeRequest)
 creationRequestForAssetFromVideoAtFileURL fileURL =
   do
     cls' <- getRequiredClass "PHAssetChangeRequest"
-    withObjCPtr fileURL $ \raw_fileURL ->
-      sendClassMsg cls' (mkSelector "creationRequestForAssetFromVideoAtFileURL:") (retPtr retVoid) [argPtr (castPtr raw_fileURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' creationRequestForAssetFromVideoAtFileURLSelector (toNSURL fileURL)
 
 -- | @+ deleteAssets:@
 deleteAssets :: RawId -> IO ()
 deleteAssets assets =
   do
     cls' <- getRequiredClass "PHAssetChangeRequest"
-    sendClassMsg cls' (mkSelector "deleteAssets:") retVoid [argPtr (castPtr (unRawId assets) :: Ptr ())]
+    sendClassMessage cls' deleteAssetsSelector assets
 
 -- | @+ changeRequestForAsset:@
 changeRequestForAsset :: IsPHAsset asset => asset -> IO (Id PHAssetChangeRequest)
 changeRequestForAsset asset =
   do
     cls' <- getRequiredClass "PHAssetChangeRequest"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "changeRequestForAsset:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' changeRequestForAssetSelector (toPHAsset asset)
 
 -- | @- revertAssetContentToOriginal@
 revertAssetContentToOriginal :: IsPHAssetChangeRequest phAssetChangeRequest => phAssetChangeRequest -> IO ()
-revertAssetContentToOriginal phAssetChangeRequest  =
-    sendMsg phAssetChangeRequest (mkSelector "revertAssetContentToOriginal") retVoid []
+revertAssetContentToOriginal phAssetChangeRequest =
+  sendMessage phAssetChangeRequest revertAssetContentToOriginalSelector
 
 -- | @- placeholderForCreatedAsset@
 placeholderForCreatedAsset :: IsPHAssetChangeRequest phAssetChangeRequest => phAssetChangeRequest -> IO (Id PHObjectPlaceholder)
-placeholderForCreatedAsset phAssetChangeRequest  =
-    sendMsg phAssetChangeRequest (mkSelector "placeholderForCreatedAsset") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderForCreatedAsset phAssetChangeRequest =
+  sendMessage phAssetChangeRequest placeholderForCreatedAssetSelector
 
 -- | @- creationDate@
 creationDate :: IsPHAssetChangeRequest phAssetChangeRequest => phAssetChangeRequest -> IO (Id NSDate)
-creationDate phAssetChangeRequest  =
-    sendMsg phAssetChangeRequest (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate phAssetChangeRequest =
+  sendMessage phAssetChangeRequest creationDateSelector
 
 -- | @- setCreationDate:@
 setCreationDate :: (IsPHAssetChangeRequest phAssetChangeRequest, IsNSDate value) => phAssetChangeRequest -> value -> IO ()
-setCreationDate phAssetChangeRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phAssetChangeRequest (mkSelector "setCreationDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCreationDate phAssetChangeRequest value =
+  sendMessage phAssetChangeRequest setCreationDateSelector (toNSDate value)
 
 -- | @- favorite@
 favorite :: IsPHAssetChangeRequest phAssetChangeRequest => phAssetChangeRequest -> IO Bool
-favorite phAssetChangeRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAssetChangeRequest (mkSelector "favorite") retCULong []
+favorite phAssetChangeRequest =
+  sendMessage phAssetChangeRequest favoriteSelector
 
 -- | @- setFavorite:@
 setFavorite :: IsPHAssetChangeRequest phAssetChangeRequest => phAssetChangeRequest -> Bool -> IO ()
-setFavorite phAssetChangeRequest  value =
-    sendMsg phAssetChangeRequest (mkSelector "setFavorite:") retVoid [argCULong (if value then 1 else 0)]
+setFavorite phAssetChangeRequest value =
+  sendMessage phAssetChangeRequest setFavoriteSelector value
 
 -- | @- hidden@
 hidden :: IsPHAssetChangeRequest phAssetChangeRequest => phAssetChangeRequest -> IO Bool
-hidden phAssetChangeRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phAssetChangeRequest (mkSelector "hidden") retCULong []
+hidden phAssetChangeRequest =
+  sendMessage phAssetChangeRequest hiddenSelector
 
 -- | @- setHidden:@
 setHidden :: IsPHAssetChangeRequest phAssetChangeRequest => phAssetChangeRequest -> Bool -> IO ()
-setHidden phAssetChangeRequest  value =
-    sendMsg phAssetChangeRequest (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden phAssetChangeRequest value =
+  sendMessage phAssetChangeRequest setHiddenSelector value
 
 -- | @- contentEditingOutput@
 contentEditingOutput :: IsPHAssetChangeRequest phAssetChangeRequest => phAssetChangeRequest -> IO (Id PHContentEditingOutput)
-contentEditingOutput phAssetChangeRequest  =
-    sendMsg phAssetChangeRequest (mkSelector "contentEditingOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentEditingOutput phAssetChangeRequest =
+  sendMessage phAssetChangeRequest contentEditingOutputSelector
 
 -- | @- setContentEditingOutput:@
 setContentEditingOutput :: (IsPHAssetChangeRequest phAssetChangeRequest, IsPHContentEditingOutput value) => phAssetChangeRequest -> value -> IO ()
-setContentEditingOutput phAssetChangeRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phAssetChangeRequest (mkSelector "setContentEditingOutput:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentEditingOutput phAssetChangeRequest value =
+  sendMessage phAssetChangeRequest setContentEditingOutputSelector (toPHContentEditingOutput value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @creationRequestForAssetFromImage:@
-creationRequestForAssetFromImageSelector :: Selector
+creationRequestForAssetFromImageSelector :: Selector '[Id NSImage] (Id PHAssetChangeRequest)
 creationRequestForAssetFromImageSelector = mkSelector "creationRequestForAssetFromImage:"
 
 -- | @Selector@ for @creationRequestForAssetFromImageAtFileURL:@
-creationRequestForAssetFromImageAtFileURLSelector :: Selector
+creationRequestForAssetFromImageAtFileURLSelector :: Selector '[Id NSURL] (Id PHAssetChangeRequest)
 creationRequestForAssetFromImageAtFileURLSelector = mkSelector "creationRequestForAssetFromImageAtFileURL:"
 
 -- | @Selector@ for @creationRequestForAssetFromVideoAtFileURL:@
-creationRequestForAssetFromVideoAtFileURLSelector :: Selector
+creationRequestForAssetFromVideoAtFileURLSelector :: Selector '[Id NSURL] (Id PHAssetChangeRequest)
 creationRequestForAssetFromVideoAtFileURLSelector = mkSelector "creationRequestForAssetFromVideoAtFileURL:"
 
 -- | @Selector@ for @deleteAssets:@
-deleteAssetsSelector :: Selector
+deleteAssetsSelector :: Selector '[RawId] ()
 deleteAssetsSelector = mkSelector "deleteAssets:"
 
 -- | @Selector@ for @changeRequestForAsset:@
-changeRequestForAssetSelector :: Selector
+changeRequestForAssetSelector :: Selector '[Id PHAsset] (Id PHAssetChangeRequest)
 changeRequestForAssetSelector = mkSelector "changeRequestForAsset:"
 
 -- | @Selector@ for @revertAssetContentToOriginal@
-revertAssetContentToOriginalSelector :: Selector
+revertAssetContentToOriginalSelector :: Selector '[] ()
 revertAssetContentToOriginalSelector = mkSelector "revertAssetContentToOriginal"
 
 -- | @Selector@ for @placeholderForCreatedAsset@
-placeholderForCreatedAssetSelector :: Selector
+placeholderForCreatedAssetSelector :: Selector '[] (Id PHObjectPlaceholder)
 placeholderForCreatedAssetSelector = mkSelector "placeholderForCreatedAsset"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @setCreationDate:@
-setCreationDateSelector :: Selector
+setCreationDateSelector :: Selector '[Id NSDate] ()
 setCreationDateSelector = mkSelector "setCreationDate:"
 
 -- | @Selector@ for @favorite@
-favoriteSelector :: Selector
+favoriteSelector :: Selector '[] Bool
 favoriteSelector = mkSelector "favorite"
 
 -- | @Selector@ for @setFavorite:@
-setFavoriteSelector :: Selector
+setFavoriteSelector :: Selector '[Bool] ()
 setFavoriteSelector = mkSelector "setFavorite:"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 
 -- | @Selector@ for @contentEditingOutput@
-contentEditingOutputSelector :: Selector
+contentEditingOutputSelector :: Selector '[] (Id PHContentEditingOutput)
 contentEditingOutputSelector = mkSelector "contentEditingOutput"
 
 -- | @Selector@ for @setContentEditingOutput:@
-setContentEditingOutputSelector :: Selector
+setContentEditingOutputSelector :: Selector '[Id PHContentEditingOutput] ()
 setContentEditingOutputSelector = mkSelector "setContentEditingOutput:"
 

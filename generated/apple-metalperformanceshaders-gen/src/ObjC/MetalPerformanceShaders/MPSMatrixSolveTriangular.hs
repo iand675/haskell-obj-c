@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,21 +21,17 @@ module ObjC.MetalPerformanceShaders.MPSMatrixSolveTriangular
   , IsMPSMatrixSolveTriangular(..)
   , initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alpha
   , encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrix
-  , initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alphaSelector
   , encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector
+  , initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alphaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:right:upper:transpose:unit:order:numberOfRightHandSides:alpha:@
 initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alpha :: IsMPSMatrixSolveTriangular mpsMatrixSolveTriangular => mpsMatrixSolveTriangular -> RawId -> Bool -> Bool -> Bool -> Bool -> CULong -> CULong -> CDouble -> IO (Id MPSMatrixSolveTriangular)
-initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alpha mpsMatrixSolveTriangular  device right upper transpose unit order numberOfRightHandSides alpha =
-    sendMsg mpsMatrixSolveTriangular (mkSelector "initWithDevice:right:upper:transpose:unit:order:numberOfRightHandSides:alpha:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong (if right then 1 else 0), argCULong (if upper then 1 else 0), argCULong (if transpose then 1 else 0), argCULong (if unit then 1 else 0), argCULong order, argCULong numberOfRightHandSides, argCDouble alpha] >>= ownedObject . castPtr
+initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alpha mpsMatrixSolveTriangular device right upper transpose unit order numberOfRightHandSides alpha =
+  sendOwnedMessage mpsMatrixSolveTriangular initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alphaSelector device right upper transpose unit order numberOfRightHandSides alpha
 
 -- | Encode a MPSMatrixSolveTriangular kernel into a command Buffer.
 --
@@ -86,21 +83,18 @@ initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alpha mps
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:solutionMatrix:@
 encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrix :: (IsMPSMatrixSolveTriangular mpsMatrixSolveTriangular, IsMPSMatrix sourceMatrix, IsMPSMatrix rightHandSideMatrix, IsMPSMatrix solutionMatrix) => mpsMatrixSolveTriangular -> RawId -> sourceMatrix -> rightHandSideMatrix -> solutionMatrix -> IO ()
-encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrix mpsMatrixSolveTriangular  commandBuffer sourceMatrix rightHandSideMatrix solutionMatrix =
-  withObjCPtr sourceMatrix $ \raw_sourceMatrix ->
-    withObjCPtr rightHandSideMatrix $ \raw_rightHandSideMatrix ->
-      withObjCPtr solutionMatrix $ \raw_solutionMatrix ->
-          sendMsg mpsMatrixSolveTriangular (mkSelector "encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:solutionMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrix :: Ptr ()), argPtr (castPtr raw_rightHandSideMatrix :: Ptr ()), argPtr (castPtr raw_solutionMatrix :: Ptr ())]
+encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrix mpsMatrixSolveTriangular commandBuffer sourceMatrix rightHandSideMatrix solutionMatrix =
+  sendMessage mpsMatrixSolveTriangular encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector commandBuffer (toMPSMatrix sourceMatrix) (toMPSMatrix rightHandSideMatrix) (toMPSMatrix solutionMatrix)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:right:upper:transpose:unit:order:numberOfRightHandSides:alpha:@
-initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alphaSelector :: Selector
+initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alphaSelector :: Selector '[RawId, Bool, Bool, Bool, Bool, CULong, CULong, CDouble] (Id MPSMatrixSolveTriangular)
 initWithDevice_right_upper_transpose_unit_order_numberOfRightHandSides_alphaSelector = mkSelector "initWithDevice:right:upper:transpose:unit:order:numberOfRightHandSides:alpha:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:solutionMatrix:@
-encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector :: Selector
+encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix] ()
 encodeToCommandBuffer_sourceMatrix_rightHandSideMatrix_solutionMatrixSelector = mkSelector "encodeToCommandBuffer:sourceMatrix:rightHandSideMatrix:solutionMatrix:"
 

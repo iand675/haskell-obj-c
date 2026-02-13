@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AVFoundation.AVSampleBufferGenerator
   , makeBatch
   , createSampleBufferForRequest_addingToBatch_error
   , notifyOfDataReadyForSampleBuffer_completionHandler
-  , initSelector
-  , newSelector
-  , initWithAsset_timebaseSelector
-  , createSampleBufferForRequest_errorSelector
   , createSampleBufferForRequestSelector
-  , makeBatchSelector
   , createSampleBufferForRequest_addingToBatch_errorSelector
+  , createSampleBufferForRequest_errorSelector
+  , initSelector
+  , initWithAsset_timebaseSelector
+  , makeBatchSelector
+  , newSelector
   , notifyOfDataReadyForSampleBuffer_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVSampleBufferGenerator avSampleBufferGenerator => avSampleBufferGenerator -> IO (Id AVSampleBufferGenerator)
-init_ avSampleBufferGenerator  =
-    sendMsg avSampleBufferGenerator (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avSampleBufferGenerator =
+  sendOwnedMessage avSampleBufferGenerator initSelector
 
 -- | @+ new@
 new :: IO (Id AVSampleBufferGenerator)
 new  =
   do
     cls' <- getRequiredClass "AVSampleBufferGenerator"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithAsset: timebase:
 --
@@ -67,9 +64,8 @@ new  =
 --
 -- ObjC selector: @- initWithAsset:timebase:@
 initWithAsset_timebase :: (IsAVSampleBufferGenerator avSampleBufferGenerator, IsAVAsset asset) => avSampleBufferGenerator -> asset -> Ptr () -> IO (Id AVSampleBufferGenerator)
-initWithAsset_timebase avSampleBufferGenerator  asset timebase =
-  withObjCPtr asset $ \raw_asset ->
-      sendMsg avSampleBufferGenerator (mkSelector "initWithAsset:timebase:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ()), argPtr timebase] >>= ownedObject . castPtr
+initWithAsset_timebase avSampleBufferGenerator asset timebase =
+  sendOwnedMessage avSampleBufferGenerator initWithAsset_timebaseSelector (toAVAsset asset) timebase
 
 -- | createSampleBufferForRequest: error:
 --
@@ -85,16 +81,13 @@ initWithAsset_timebase avSampleBufferGenerator  asset timebase =
 --
 -- ObjC selector: @- createSampleBufferForRequest:error:@
 createSampleBufferForRequest_error :: (IsAVSampleBufferGenerator avSampleBufferGenerator, IsAVSampleBufferRequest request, IsNSError outError) => avSampleBufferGenerator -> request -> outError -> IO (Ptr ())
-createSampleBufferForRequest_error avSampleBufferGenerator  request outError =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap castPtr $ sendMsg avSampleBufferGenerator (mkSelector "createSampleBufferForRequest:error:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+createSampleBufferForRequest_error avSampleBufferGenerator request outError =
+  sendMessage avSampleBufferGenerator createSampleBufferForRequest_errorSelector (toAVSampleBufferRequest request) (toNSError outError)
 
 -- | @- createSampleBufferForRequest:@
 createSampleBufferForRequest :: (IsAVSampleBufferGenerator avSampleBufferGenerator, IsAVSampleBufferRequest request) => avSampleBufferGenerator -> request -> IO (Ptr ())
-createSampleBufferForRequest avSampleBufferGenerator  request =
-  withObjCPtr request $ \raw_request ->
-      fmap castPtr $ sendMsg avSampleBufferGenerator (mkSelector "createSampleBufferForRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())]
+createSampleBufferForRequest avSampleBufferGenerator request =
+  sendMessage avSampleBufferGenerator createSampleBufferForRequestSelector (toAVSampleBufferRequest request)
 
 -- | makeBatch
 --
@@ -104,8 +97,8 @@ createSampleBufferForRequest avSampleBufferGenerator  request =
 --
 -- ObjC selector: @- makeBatch@
 makeBatch :: IsAVSampleBufferGenerator avSampleBufferGenerator => avSampleBufferGenerator -> IO (Id AVSampleBufferGeneratorBatch)
-makeBatch avSampleBufferGenerator  =
-    sendMsg avSampleBufferGenerator (mkSelector "makeBatch") (retPtr retVoid) [] >>= retainedObject . castPtr
+makeBatch avSampleBufferGenerator =
+  sendMessage avSampleBufferGenerator makeBatchSelector
 
 -- | createSampleBufferForRequest: addingToBatch: error:
 --
@@ -121,11 +114,8 @@ makeBatch avSampleBufferGenerator  =
 --
 -- ObjC selector: @- createSampleBufferForRequest:addingToBatch:error:@
 createSampleBufferForRequest_addingToBatch_error :: (IsAVSampleBufferGenerator avSampleBufferGenerator, IsAVSampleBufferRequest request, IsAVSampleBufferGeneratorBatch batch, IsNSError outError) => avSampleBufferGenerator -> request -> batch -> outError -> IO (Ptr ())
-createSampleBufferForRequest_addingToBatch_error avSampleBufferGenerator  request batch outError =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr batch $ \raw_batch ->
-      withObjCPtr outError $ \raw_outError ->
-          fmap castPtr $ sendMsg avSampleBufferGenerator (mkSelector "createSampleBufferForRequest:addingToBatch:error:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_batch :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+createSampleBufferForRequest_addingToBatch_error avSampleBufferGenerator request batch outError =
+  sendMessage avSampleBufferGenerator createSampleBufferForRequest_addingToBatch_errorSelector (toAVSampleBufferRequest request) (toAVSampleBufferGeneratorBatch batch) (toNSError outError)
 
 -- | notifyOfDataReadyForSampleBuffer: completionHandler:
 --
@@ -138,41 +128,41 @@ notifyOfDataReadyForSampleBuffer_completionHandler :: Ptr () -> Ptr () -> IO ()
 notifyOfDataReadyForSampleBuffer_completionHandler sbuf completionHandler =
   do
     cls' <- getRequiredClass "AVSampleBufferGenerator"
-    sendClassMsg cls' (mkSelector "notifyOfDataReadyForSampleBuffer:completionHandler:") retVoid [argPtr sbuf, argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' notifyOfDataReadyForSampleBuffer_completionHandlerSelector sbuf completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVSampleBufferGenerator)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVSampleBufferGenerator)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithAsset:timebase:@
-initWithAsset_timebaseSelector :: Selector
+initWithAsset_timebaseSelector :: Selector '[Id AVAsset, Ptr ()] (Id AVSampleBufferGenerator)
 initWithAsset_timebaseSelector = mkSelector "initWithAsset:timebase:"
 
 -- | @Selector@ for @createSampleBufferForRequest:error:@
-createSampleBufferForRequest_errorSelector :: Selector
+createSampleBufferForRequest_errorSelector :: Selector '[Id AVSampleBufferRequest, Id NSError] (Ptr ())
 createSampleBufferForRequest_errorSelector = mkSelector "createSampleBufferForRequest:error:"
 
 -- | @Selector@ for @createSampleBufferForRequest:@
-createSampleBufferForRequestSelector :: Selector
+createSampleBufferForRequestSelector :: Selector '[Id AVSampleBufferRequest] (Ptr ())
 createSampleBufferForRequestSelector = mkSelector "createSampleBufferForRequest:"
 
 -- | @Selector@ for @makeBatch@
-makeBatchSelector :: Selector
+makeBatchSelector :: Selector '[] (Id AVSampleBufferGeneratorBatch)
 makeBatchSelector = mkSelector "makeBatch"
 
 -- | @Selector@ for @createSampleBufferForRequest:addingToBatch:error:@
-createSampleBufferForRequest_addingToBatch_errorSelector :: Selector
+createSampleBufferForRequest_addingToBatch_errorSelector :: Selector '[Id AVSampleBufferRequest, Id AVSampleBufferGeneratorBatch, Id NSError] (Ptr ())
 createSampleBufferForRequest_addingToBatch_errorSelector = mkSelector "createSampleBufferForRequest:addingToBatch:error:"
 
 -- | @Selector@ for @notifyOfDataReadyForSampleBuffer:completionHandler:@
-notifyOfDataReadyForSampleBuffer_completionHandlerSelector :: Selector
+notifyOfDataReadyForSampleBuffer_completionHandlerSelector :: Selector '[Ptr (), Ptr ()] ()
 notifyOfDataReadyForSampleBuffer_completionHandlerSelector = mkSelector "notifyOfDataReadyForSampleBuffer:completionHandler:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,15 +22,11 @@ module ObjC.Metal.MTL4PipelineDataSetSerializerDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- configuration@
 configuration :: IsMTL4PipelineDataSetSerializerDescriptor mtL4PipelineDataSetSerializerDescriptor => mtL4PipelineDataSetSerializerDescriptor -> IO MTL4PipelineDataSetSerializerConfiguration
-configuration mtL4PipelineDataSetSerializerDescriptor  =
-    fmap (coerce :: CULong -> MTL4PipelineDataSetSerializerConfiguration) $ sendMsg mtL4PipelineDataSetSerializerDescriptor (mkSelector "configuration") retCULong []
+configuration mtL4PipelineDataSetSerializerDescriptor =
+  sendMessage mtL4PipelineDataSetSerializerDescriptor configurationSelector
 
 -- | Specifies the configuration of the serialization process.
 --
@@ -60,18 +57,18 @@ configuration mtL4PipelineDataSetSerializerDescriptor  =
 --
 -- ObjC selector: @- setConfiguration:@
 setConfiguration :: IsMTL4PipelineDataSetSerializerDescriptor mtL4PipelineDataSetSerializerDescriptor => mtL4PipelineDataSetSerializerDescriptor -> MTL4PipelineDataSetSerializerConfiguration -> IO ()
-setConfiguration mtL4PipelineDataSetSerializerDescriptor  value =
-    sendMsg mtL4PipelineDataSetSerializerDescriptor (mkSelector "setConfiguration:") retVoid [argCULong (coerce value)]
+setConfiguration mtL4PipelineDataSetSerializerDescriptor value =
+  sendMessage mtL4PipelineDataSetSerializerDescriptor setConfigurationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] MTL4PipelineDataSetSerializerConfiguration
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @setConfiguration:@
-setConfigurationSelector :: Selector
+setConfigurationSelector :: Selector '[MTL4PipelineDataSetSerializerConfiguration] ()
 setConfigurationSelector = mkSelector "setConfiguration:"
 

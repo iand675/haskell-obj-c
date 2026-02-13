@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.Metal.MTLArrayType
   , arrayLength
   , stride
   , argumentIndexStride
-  , elementStructTypeSelector
-  , elementArrayTypeSelector
-  , elementTextureReferenceTypeSelector
-  , elementPointerTypeSelector
-  , elementTensorReferenceTypeSelector
-  , elementTypeSelector
-  , arrayLengthSelector
-  , strideSelector
   , argumentIndexStrideSelector
+  , arrayLengthSelector
+  , elementArrayTypeSelector
+  , elementPointerTypeSelector
+  , elementStructTypeSelector
+  , elementTensorReferenceTypeSelector
+  , elementTextureReferenceTypeSelector
+  , elementTypeSelector
+  , strideSelector
 
   -- * Enum types
   , MTLDataType(MTLDataType)
@@ -128,15 +129,11 @@ module ObjC.Metal.MTLArrayType
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -146,23 +143,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- elementStructType@
 elementStructType :: IsMTLArrayType mtlArrayType => mtlArrayType -> IO (Id MTLStructType)
-elementStructType mtlArrayType  =
-    sendMsg mtlArrayType (mkSelector "elementStructType") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementStructType mtlArrayType =
+  sendMessage mtlArrayType elementStructTypeSelector
 
 -- | @- elementArrayType@
 elementArrayType :: IsMTLArrayType mtlArrayType => mtlArrayType -> IO (Id MTLArrayType)
-elementArrayType mtlArrayType  =
-    sendMsg mtlArrayType (mkSelector "elementArrayType") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementArrayType mtlArrayType =
+  sendMessage mtlArrayType elementArrayTypeSelector
 
 -- | @- elementTextureReferenceType@
 elementTextureReferenceType :: IsMTLArrayType mtlArrayType => mtlArrayType -> IO (Id MTLTextureReferenceType)
-elementTextureReferenceType mtlArrayType  =
-    sendMsg mtlArrayType (mkSelector "elementTextureReferenceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementTextureReferenceType mtlArrayType =
+  sendMessage mtlArrayType elementTextureReferenceTypeSelector
 
 -- | @- elementPointerType@
 elementPointerType :: IsMTLArrayType mtlArrayType => mtlArrayType -> IO (Id MTLPointerType)
-elementPointerType mtlArrayType  =
-    sendMsg mtlArrayType (mkSelector "elementPointerType") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementPointerType mtlArrayType =
+  sendMessage mtlArrayType elementPointerTypeSelector
 
 -- | Provides a description of the underlying tensor type when this array holds tensors as its elements.
 --
@@ -170,66 +167,66 @@ elementPointerType mtlArrayType  =
 --
 -- ObjC selector: @- elementTensorReferenceType@
 elementTensorReferenceType :: IsMTLArrayType mtlArrayType => mtlArrayType -> IO (Id MTLTensorReferenceType)
-elementTensorReferenceType mtlArrayType  =
-    sendMsg mtlArrayType (mkSelector "elementTensorReferenceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementTensorReferenceType mtlArrayType =
+  sendMessage mtlArrayType elementTensorReferenceTypeSelector
 
 -- | @- elementType@
 elementType :: IsMTLArrayType mtlArrayType => mtlArrayType -> IO MTLDataType
-elementType mtlArrayType  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlArrayType (mkSelector "elementType") retCULong []
+elementType mtlArrayType =
+  sendMessage mtlArrayType elementTypeSelector
 
 -- | @- arrayLength@
 arrayLength :: IsMTLArrayType mtlArrayType => mtlArrayType -> IO CULong
-arrayLength mtlArrayType  =
-    sendMsg mtlArrayType (mkSelector "arrayLength") retCULong []
+arrayLength mtlArrayType =
+  sendMessage mtlArrayType arrayLengthSelector
 
 -- | @- stride@
 stride :: IsMTLArrayType mtlArrayType => mtlArrayType -> IO CULong
-stride mtlArrayType  =
-    sendMsg mtlArrayType (mkSelector "stride") retCULong []
+stride mtlArrayType =
+  sendMessage mtlArrayType strideSelector
 
 -- | @- argumentIndexStride@
 argumentIndexStride :: IsMTLArrayType mtlArrayType => mtlArrayType -> IO CULong
-argumentIndexStride mtlArrayType  =
-    sendMsg mtlArrayType (mkSelector "argumentIndexStride") retCULong []
+argumentIndexStride mtlArrayType =
+  sendMessage mtlArrayType argumentIndexStrideSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @elementStructType@
-elementStructTypeSelector :: Selector
+elementStructTypeSelector :: Selector '[] (Id MTLStructType)
 elementStructTypeSelector = mkSelector "elementStructType"
 
 -- | @Selector@ for @elementArrayType@
-elementArrayTypeSelector :: Selector
+elementArrayTypeSelector :: Selector '[] (Id MTLArrayType)
 elementArrayTypeSelector = mkSelector "elementArrayType"
 
 -- | @Selector@ for @elementTextureReferenceType@
-elementTextureReferenceTypeSelector :: Selector
+elementTextureReferenceTypeSelector :: Selector '[] (Id MTLTextureReferenceType)
 elementTextureReferenceTypeSelector = mkSelector "elementTextureReferenceType"
 
 -- | @Selector@ for @elementPointerType@
-elementPointerTypeSelector :: Selector
+elementPointerTypeSelector :: Selector '[] (Id MTLPointerType)
 elementPointerTypeSelector = mkSelector "elementPointerType"
 
 -- | @Selector@ for @elementTensorReferenceType@
-elementTensorReferenceTypeSelector :: Selector
+elementTensorReferenceTypeSelector :: Selector '[] (Id MTLTensorReferenceType)
 elementTensorReferenceTypeSelector = mkSelector "elementTensorReferenceType"
 
 -- | @Selector@ for @elementType@
-elementTypeSelector :: Selector
+elementTypeSelector :: Selector '[] MTLDataType
 elementTypeSelector = mkSelector "elementType"
 
 -- | @Selector@ for @arrayLength@
-arrayLengthSelector :: Selector
+arrayLengthSelector :: Selector '[] CULong
 arrayLengthSelector = mkSelector "arrayLength"
 
 -- | @Selector@ for @stride@
-strideSelector :: Selector
+strideSelector :: Selector '[] CULong
 strideSelector = mkSelector "stride"
 
 -- | @Selector@ for @argumentIndexStride@
-argumentIndexStrideSelector :: Selector
+argumentIndexStrideSelector :: Selector '[] CULong
 argumentIndexStrideSelector = mkSelector "argumentIndexStride"
 

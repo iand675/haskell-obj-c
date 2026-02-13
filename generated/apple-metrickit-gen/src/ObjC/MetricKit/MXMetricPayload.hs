@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,41 +41,37 @@ module ObjC.MetricKit.MXMetricPayload
   , diskSpaceUsageMetrics
   , signpostMetrics
   , metaData
-  , jsonRepresentationSelector
-  , dictionaryRepresentationSelector
-  , latestApplicationVersionSelector
-  , includesMultipleApplicationVersionsSelector
-  , timeStampBeginSelector
-  , timeStampEndSelector
-  , cpuMetricsSelector
-  , gpuMetricsSelector
-  , cellularConditionMetricsSelector
-  , applicationTimeMetricsSelector
-  , locationActivityMetricsSelector
-  , networkTransferMetricsSelector
-  , applicationLaunchMetricsSelector
-  , applicationResponsivenessMetricsSelector
-  , diskIOMetricsSelector
-  , memoryMetricsSelector
-  , displayMetricsSelector
   , animationMetricsSelector
   , applicationExitMetricsSelector
+  , applicationLaunchMetricsSelector
+  , applicationResponsivenessMetricsSelector
+  , applicationTimeMetricsSelector
+  , cellularConditionMetricsSelector
+  , cpuMetricsSelector
+  , dictionaryRepresentationSelector
+  , diskIOMetricsSelector
   , diskSpaceUsageMetricsSelector
-  , signpostMetricsSelector
+  , displayMetricsSelector
+  , gpuMetricsSelector
+  , includesMultipleApplicationVersionsSelector
+  , jsonRepresentationSelector
+  , latestApplicationVersionSelector
+  , locationActivityMetricsSelector
+  , memoryMetricsSelector
   , metaDataSelector
+  , networkTransferMetricsSelector
+  , signpostMetricsSelector
+  , timeStampBeginSelector
+  , timeStampEndSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,8 +86,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- JSONRepresentation@
 jsonRepresentation :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id NSData)
-jsonRepresentation mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "JSONRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+jsonRepresentation mxMetricPayload =
+  sendMessage mxMetricPayload jsonRepresentationSelector
 
 -- | DictionaryRepresentation
 --
@@ -100,8 +97,8 @@ jsonRepresentation mxMetricPayload  =
 --
 -- ObjC selector: @- DictionaryRepresentation@
 dictionaryRepresentation :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id NSDictionary)
-dictionaryRepresentation mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "DictionaryRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryRepresentation mxMetricPayload =
+  sendMessage mxMetricPayload dictionaryRepresentationSelector
 
 -- | latestApplicationVersion
 --
@@ -111,8 +108,8 @@ dictionaryRepresentation mxMetricPayload  =
 --
 -- ObjC selector: @- latestApplicationVersion@
 latestApplicationVersion :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id NSString)
-latestApplicationVersion mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "latestApplicationVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+latestApplicationVersion mxMetricPayload =
+  sendMessage mxMetricPayload latestApplicationVersionSelector
 
 -- | includesMultipleApplicationVersions
 --
@@ -124,8 +121,8 @@ latestApplicationVersion mxMetricPayload  =
 --
 -- ObjC selector: @- includesMultipleApplicationVersions@
 includesMultipleApplicationVersions :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO Bool
-includesMultipleApplicationVersions mxMetricPayload  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mxMetricPayload (mkSelector "includesMultipleApplicationVersions") retCULong []
+includesMultipleApplicationVersions mxMetricPayload =
+  sendMessage mxMetricPayload includesMultipleApplicationVersionsSelector
 
 -- | timeStampBegin
 --
@@ -133,8 +130,8 @@ includesMultipleApplicationVersions mxMetricPayload  =
 --
 -- ObjC selector: @- timeStampBegin@
 timeStampBegin :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id NSDate)
-timeStampBegin mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "timeStampBegin") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeStampBegin mxMetricPayload =
+  sendMessage mxMetricPayload timeStampBeginSelector
 
 -- | timeStampEnd
 --
@@ -142,8 +139,8 @@ timeStampBegin mxMetricPayload  =
 --
 -- ObjC selector: @- timeStampEnd@
 timeStampEnd :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id NSDate)
-timeStampEnd mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "timeStampEnd") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeStampEnd mxMetricPayload =
+  sendMessage mxMetricPayload timeStampEndSelector
 
 -- | cpuMetrics
 --
@@ -151,8 +148,8 @@ timeStampEnd mxMetricPayload  =
 --
 -- ObjC selector: @- cpuMetrics@
 cpuMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXCPUMetric)
-cpuMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "cpuMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+cpuMetrics mxMetricPayload =
+  sendMessage mxMetricPayload cpuMetricsSelector
 
 -- | gpuMetrics
 --
@@ -160,8 +157,8 @@ cpuMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- gpuMetrics@
 gpuMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXGPUMetric)
-gpuMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "gpuMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpuMetrics mxMetricPayload =
+  sendMessage mxMetricPayload gpuMetricsSelector
 
 -- | cellularConditionMetrics
 --
@@ -169,8 +166,8 @@ gpuMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- cellularConditionMetrics@
 cellularConditionMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXCellularConditionMetric)
-cellularConditionMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "cellularConditionMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+cellularConditionMetrics mxMetricPayload =
+  sendMessage mxMetricPayload cellularConditionMetricsSelector
 
 -- | applicationTimeMetrics
 --
@@ -178,8 +175,8 @@ cellularConditionMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- applicationTimeMetrics@
 applicationTimeMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXAppRunTimeMetric)
-applicationTimeMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "applicationTimeMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationTimeMetrics mxMetricPayload =
+  sendMessage mxMetricPayload applicationTimeMetricsSelector
 
 -- | locationActivityMetrics
 --
@@ -187,8 +184,8 @@ applicationTimeMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- locationActivityMetrics@
 locationActivityMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXLocationActivityMetric)
-locationActivityMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "locationActivityMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+locationActivityMetrics mxMetricPayload =
+  sendMessage mxMetricPayload locationActivityMetricsSelector
 
 -- | networkTransferMetrics
 --
@@ -196,8 +193,8 @@ locationActivityMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- networkTransferMetrics@
 networkTransferMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXNetworkTransferMetric)
-networkTransferMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "networkTransferMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkTransferMetrics mxMetricPayload =
+  sendMessage mxMetricPayload networkTransferMetricsSelector
 
 -- | applicationLaunchMetrics
 --
@@ -205,8 +202,8 @@ networkTransferMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- applicationLaunchMetrics@
 applicationLaunchMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXAppLaunchMetric)
-applicationLaunchMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "applicationLaunchMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationLaunchMetrics mxMetricPayload =
+  sendMessage mxMetricPayload applicationLaunchMetricsSelector
 
 -- | applicationResponsivenessMetrics
 --
@@ -214,8 +211,8 @@ applicationLaunchMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- applicationResponsivenessMetrics@
 applicationResponsivenessMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXAppResponsivenessMetric)
-applicationResponsivenessMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "applicationResponsivenessMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationResponsivenessMetrics mxMetricPayload =
+  sendMessage mxMetricPayload applicationResponsivenessMetricsSelector
 
 -- | diskIOMetrics
 --
@@ -223,8 +220,8 @@ applicationResponsivenessMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- diskIOMetrics@
 diskIOMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXDiskIOMetric)
-diskIOMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "diskIOMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+diskIOMetrics mxMetricPayload =
+  sendMessage mxMetricPayload diskIOMetricsSelector
 
 -- | memoryMetrics
 --
@@ -232,8 +229,8 @@ diskIOMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- memoryMetrics@
 memoryMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXMemoryMetric)
-memoryMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "memoryMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+memoryMetrics mxMetricPayload =
+  sendMessage mxMetricPayload memoryMetricsSelector
 
 -- | displayMetrics
 --
@@ -241,8 +238,8 @@ memoryMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- displayMetrics@
 displayMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXDisplayMetric)
-displayMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "displayMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayMetrics mxMetricPayload =
+  sendMessage mxMetricPayload displayMetricsSelector
 
 -- | animationMetrics
 --
@@ -250,8 +247,8 @@ displayMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- animationMetrics@
 animationMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXAnimationMetric)
-animationMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "animationMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+animationMetrics mxMetricPayload =
+  sendMessage mxMetricPayload animationMetricsSelector
 
 -- | applicationExitMetrics
 --
@@ -259,8 +256,8 @@ animationMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- applicationExitMetrics@
 applicationExitMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXAppExitMetric)
-applicationExitMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "applicationExitMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationExitMetrics mxMetricPayload =
+  sendMessage mxMetricPayload applicationExitMetricsSelector
 
 -- | diskSpaceUsageMetrics
 --
@@ -268,8 +265,8 @@ applicationExitMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- diskSpaceUsageMetrics@
 diskSpaceUsageMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXDiskSpaceUsageMetric)
-diskSpaceUsageMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "diskSpaceUsageMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+diskSpaceUsageMetrics mxMetricPayload =
+  sendMessage mxMetricPayload diskSpaceUsageMetricsSelector
 
 -- | signpostMetrics
 --
@@ -277,8 +274,8 @@ diskSpaceUsageMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- signpostMetrics@
 signpostMetrics :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id NSArray)
-signpostMetrics mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "signpostMetrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+signpostMetrics mxMetricPayload =
+  sendMessage mxMetricPayload signpostMetricsSelector
 
 -- | metaData
 --
@@ -286,98 +283,98 @@ signpostMetrics mxMetricPayload  =
 --
 -- ObjC selector: @- metaData@
 metaData :: IsMXMetricPayload mxMetricPayload => mxMetricPayload -> IO (Id MXMetaData)
-metaData mxMetricPayload  =
-    sendMsg mxMetricPayload (mkSelector "metaData") (retPtr retVoid) [] >>= retainedObject . castPtr
+metaData mxMetricPayload =
+  sendMessage mxMetricPayload metaDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @JSONRepresentation@
-jsonRepresentationSelector :: Selector
+jsonRepresentationSelector :: Selector '[] (Id NSData)
 jsonRepresentationSelector = mkSelector "JSONRepresentation"
 
 -- | @Selector@ for @DictionaryRepresentation@
-dictionaryRepresentationSelector :: Selector
+dictionaryRepresentationSelector :: Selector '[] (Id NSDictionary)
 dictionaryRepresentationSelector = mkSelector "DictionaryRepresentation"
 
 -- | @Selector@ for @latestApplicationVersion@
-latestApplicationVersionSelector :: Selector
+latestApplicationVersionSelector :: Selector '[] (Id NSString)
 latestApplicationVersionSelector = mkSelector "latestApplicationVersion"
 
 -- | @Selector@ for @includesMultipleApplicationVersions@
-includesMultipleApplicationVersionsSelector :: Selector
+includesMultipleApplicationVersionsSelector :: Selector '[] Bool
 includesMultipleApplicationVersionsSelector = mkSelector "includesMultipleApplicationVersions"
 
 -- | @Selector@ for @timeStampBegin@
-timeStampBeginSelector :: Selector
+timeStampBeginSelector :: Selector '[] (Id NSDate)
 timeStampBeginSelector = mkSelector "timeStampBegin"
 
 -- | @Selector@ for @timeStampEnd@
-timeStampEndSelector :: Selector
+timeStampEndSelector :: Selector '[] (Id NSDate)
 timeStampEndSelector = mkSelector "timeStampEnd"
 
 -- | @Selector@ for @cpuMetrics@
-cpuMetricsSelector :: Selector
+cpuMetricsSelector :: Selector '[] (Id MXCPUMetric)
 cpuMetricsSelector = mkSelector "cpuMetrics"
 
 -- | @Selector@ for @gpuMetrics@
-gpuMetricsSelector :: Selector
+gpuMetricsSelector :: Selector '[] (Id MXGPUMetric)
 gpuMetricsSelector = mkSelector "gpuMetrics"
 
 -- | @Selector@ for @cellularConditionMetrics@
-cellularConditionMetricsSelector :: Selector
+cellularConditionMetricsSelector :: Selector '[] (Id MXCellularConditionMetric)
 cellularConditionMetricsSelector = mkSelector "cellularConditionMetrics"
 
 -- | @Selector@ for @applicationTimeMetrics@
-applicationTimeMetricsSelector :: Selector
+applicationTimeMetricsSelector :: Selector '[] (Id MXAppRunTimeMetric)
 applicationTimeMetricsSelector = mkSelector "applicationTimeMetrics"
 
 -- | @Selector@ for @locationActivityMetrics@
-locationActivityMetricsSelector :: Selector
+locationActivityMetricsSelector :: Selector '[] (Id MXLocationActivityMetric)
 locationActivityMetricsSelector = mkSelector "locationActivityMetrics"
 
 -- | @Selector@ for @networkTransferMetrics@
-networkTransferMetricsSelector :: Selector
+networkTransferMetricsSelector :: Selector '[] (Id MXNetworkTransferMetric)
 networkTransferMetricsSelector = mkSelector "networkTransferMetrics"
 
 -- | @Selector@ for @applicationLaunchMetrics@
-applicationLaunchMetricsSelector :: Selector
+applicationLaunchMetricsSelector :: Selector '[] (Id MXAppLaunchMetric)
 applicationLaunchMetricsSelector = mkSelector "applicationLaunchMetrics"
 
 -- | @Selector@ for @applicationResponsivenessMetrics@
-applicationResponsivenessMetricsSelector :: Selector
+applicationResponsivenessMetricsSelector :: Selector '[] (Id MXAppResponsivenessMetric)
 applicationResponsivenessMetricsSelector = mkSelector "applicationResponsivenessMetrics"
 
 -- | @Selector@ for @diskIOMetrics@
-diskIOMetricsSelector :: Selector
+diskIOMetricsSelector :: Selector '[] (Id MXDiskIOMetric)
 diskIOMetricsSelector = mkSelector "diskIOMetrics"
 
 -- | @Selector@ for @memoryMetrics@
-memoryMetricsSelector :: Selector
+memoryMetricsSelector :: Selector '[] (Id MXMemoryMetric)
 memoryMetricsSelector = mkSelector "memoryMetrics"
 
 -- | @Selector@ for @displayMetrics@
-displayMetricsSelector :: Selector
+displayMetricsSelector :: Selector '[] (Id MXDisplayMetric)
 displayMetricsSelector = mkSelector "displayMetrics"
 
 -- | @Selector@ for @animationMetrics@
-animationMetricsSelector :: Selector
+animationMetricsSelector :: Selector '[] (Id MXAnimationMetric)
 animationMetricsSelector = mkSelector "animationMetrics"
 
 -- | @Selector@ for @applicationExitMetrics@
-applicationExitMetricsSelector :: Selector
+applicationExitMetricsSelector :: Selector '[] (Id MXAppExitMetric)
 applicationExitMetricsSelector = mkSelector "applicationExitMetrics"
 
 -- | @Selector@ for @diskSpaceUsageMetrics@
-diskSpaceUsageMetricsSelector :: Selector
+diskSpaceUsageMetricsSelector :: Selector '[] (Id MXDiskSpaceUsageMetric)
 diskSpaceUsageMetricsSelector = mkSelector "diskSpaceUsageMetrics"
 
 -- | @Selector@ for @signpostMetrics@
-signpostMetricsSelector :: Selector
+signpostMetricsSelector :: Selector '[] (Id NSArray)
 signpostMetricsSelector = mkSelector "signpostMetrics"
 
 -- | @Selector@ for @metaData@
-metaDataSelector :: Selector
+metaDataSelector :: Selector '[] (Id MXMetaData)
 metaDataSelector = mkSelector "metaData"
 

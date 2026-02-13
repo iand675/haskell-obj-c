@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.MetalPerformanceShaders.MPSCNNFullyConnectedNode
   , IsMPSCNNFullyConnectedNode(..)
   , nodeWithSource_weights
   , initWithSource_weights
-  , nodeWithSource_weightsSelector
   , initWithSource_weightsSelector
+  , nodeWithSource_weightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,7 @@ nodeWithSource_weights :: IsMPSNNImageNode sourceNode => sourceNode -> RawId -> 
 nodeWithSource_weights sourceNode weights =
   do
     cls' <- getRequiredClass "MPSCNNFullyConnectedNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:weights:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_weightsSelector (toMPSNNImageNode sourceNode) weights
 
 -- | Init a node representing a MPSCNNFullyConnected kernel
 --
@@ -57,19 +53,18 @@ nodeWithSource_weights sourceNode weights =
 --
 -- ObjC selector: @- initWithSource:weights:@
 initWithSource_weights :: (IsMPSCNNFullyConnectedNode mpscnnFullyConnectedNode, IsMPSNNImageNode sourceNode) => mpscnnFullyConnectedNode -> sourceNode -> RawId -> IO (Id MPSCNNFullyConnectedNode)
-initWithSource_weights mpscnnFullyConnectedNode  sourceNode weights =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnFullyConnectedNode (mkSelector "initWithSource:weights:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_weights mpscnnFullyConnectedNode sourceNode weights =
+  sendOwnedMessage mpscnnFullyConnectedNode initWithSource_weightsSelector (toMPSNNImageNode sourceNode) weights
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:weights:@
-nodeWithSource_weightsSelector :: Selector
+nodeWithSource_weightsSelector :: Selector '[Id MPSNNImageNode, RawId] (Id MPSCNNFullyConnectedNode)
 nodeWithSource_weightsSelector = mkSelector "nodeWithSource:weights:"
 
 -- | @Selector@ for @initWithSource:weights:@
-initWithSource_weightsSelector :: Selector
+initWithSource_weightsSelector :: Selector '[Id MPSNNImageNode, RawId] (Id MPSCNNFullyConnectedNode)
 initWithSource_weightsSelector = mkSelector "initWithSource:weights:"
 

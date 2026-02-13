@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,43 +31,39 @@ module ObjC.CoreData.NSPersistentStoreDescription
   , setShouldInferMappingModelAutomatically
   , cloudKitContainerOptions
   , setCloudKitContainerOptions
-  , persistentStoreDescriptionWithURLSelector
-  , setOption_forKeySelector
-  , setValue_forPragmaNamedSelector
-  , initWithURLSelector
-  , typeSelector
-  , setTypeSelector
-  , configurationSelector
-  , setConfigurationSelector
-  , urlSelector
-  , setURLSelector
-  , optionsSelector
-  , readOnlySelector
-  , setReadOnlySelector
-  , timeoutSelector
-  , setTimeoutSelector
-  , sqlitePragmasSelector
-  , shouldAddStoreAsynchronouslySelector
-  , setShouldAddStoreAsynchronouslySelector
-  , shouldMigrateStoreAutomaticallySelector
-  , setShouldMigrateStoreAutomaticallySelector
-  , shouldInferMappingModelAutomaticallySelector
-  , setShouldInferMappingModelAutomaticallySelector
   , cloudKitContainerOptionsSelector
+  , configurationSelector
+  , initWithURLSelector
+  , optionsSelector
+  , persistentStoreDescriptionWithURLSelector
+  , readOnlySelector
   , setCloudKitContainerOptionsSelector
+  , setConfigurationSelector
+  , setOption_forKeySelector
+  , setReadOnlySelector
+  , setShouldAddStoreAsynchronouslySelector
+  , setShouldInferMappingModelAutomaticallySelector
+  , setShouldMigrateStoreAutomaticallySelector
+  , setTimeoutSelector
+  , setTypeSelector
+  , setURLSelector
+  , setValue_forPragmaNamedSelector
+  , shouldAddStoreAsynchronouslySelector
+  , shouldInferMappingModelAutomaticallySelector
+  , shouldMigrateStoreAutomaticallySelector
+  , sqlitePragmasSelector
+  , timeoutSelector
+  , typeSelector
+  , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,234 +75,224 @@ persistentStoreDescriptionWithURL :: IsNSURL url => url -> IO (Id NSPersistentSt
 persistentStoreDescriptionWithURL url =
   do
     cls' <- getRequiredClass "NSPersistentStoreDescription"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "persistentStoreDescriptionWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' persistentStoreDescriptionWithURLSelector (toNSURL url)
 
 -- | @- setOption:forKey:@
 setOption_forKey :: (IsNSPersistentStoreDescription nsPersistentStoreDescription, IsNSObject option, IsNSString key) => nsPersistentStoreDescription -> option -> key -> IO ()
-setOption_forKey nsPersistentStoreDescription  option key =
-  withObjCPtr option $ \raw_option ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg nsPersistentStoreDescription (mkSelector "setOption:forKey:") retVoid [argPtr (castPtr raw_option :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setOption_forKey nsPersistentStoreDescription option key =
+  sendMessage nsPersistentStoreDescription setOption_forKeySelector (toNSObject option) (toNSString key)
 
 -- | @- setValue:forPragmaNamed:@
 setValue_forPragmaNamed :: (IsNSPersistentStoreDescription nsPersistentStoreDescription, IsNSObject value, IsNSString name) => nsPersistentStoreDescription -> value -> name -> IO ()
-setValue_forPragmaNamed nsPersistentStoreDescription  value name =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr name $ \raw_name ->
-        sendMsg nsPersistentStoreDescription (mkSelector "setValue:forPragmaNamed:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())]
+setValue_forPragmaNamed nsPersistentStoreDescription value name =
+  sendMessage nsPersistentStoreDescription setValue_forPragmaNamedSelector (toNSObject value) (toNSString name)
 
 -- | @- initWithURL:@
 initWithURL :: (IsNSPersistentStoreDescription nsPersistentStoreDescription, IsNSURL url) => nsPersistentStoreDescription -> url -> IO (Id NSPersistentStoreDescription)
-initWithURL nsPersistentStoreDescription  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsPersistentStoreDescription (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL nsPersistentStoreDescription url =
+  sendOwnedMessage nsPersistentStoreDescription initWithURLSelector (toNSURL url)
 
 -- | @- type@
 type_ :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO (Id NSString)
-type_ nsPersistentStoreDescription  =
-    sendMsg nsPersistentStoreDescription (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription typeSelector
 
 -- | @- setType:@
 setType :: (IsNSPersistentStoreDescription nsPersistentStoreDescription, IsNSString value) => nsPersistentStoreDescription -> value -> IO ()
-setType nsPersistentStoreDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersistentStoreDescription (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType nsPersistentStoreDescription value =
+  sendMessage nsPersistentStoreDescription setTypeSelector (toNSString value)
 
 -- | @- configuration@
 configuration :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO (Id NSString)
-configuration nsPersistentStoreDescription  =
-    sendMsg nsPersistentStoreDescription (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription configurationSelector
 
 -- | @- setConfiguration:@
 setConfiguration :: (IsNSPersistentStoreDescription nsPersistentStoreDescription, IsNSString value) => nsPersistentStoreDescription -> value -> IO ()
-setConfiguration nsPersistentStoreDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersistentStoreDescription (mkSelector "setConfiguration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConfiguration nsPersistentStoreDescription value =
+  sendMessage nsPersistentStoreDescription setConfigurationSelector (toNSString value)
 
 -- | @- URL@
 url :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO (Id NSURL)
-url nsPersistentStoreDescription  =
-    sendMsg nsPersistentStoreDescription (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription urlSelector
 
 -- | @- setURL:@
 setURL :: (IsNSPersistentStoreDescription nsPersistentStoreDescription, IsNSURL value) => nsPersistentStoreDescription -> value -> IO ()
-setURL nsPersistentStoreDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersistentStoreDescription (mkSelector "setURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURL nsPersistentStoreDescription value =
+  sendMessage nsPersistentStoreDescription setURLSelector (toNSURL value)
 
 -- | @- options@
 options :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO (Id NSDictionary)
-options nsPersistentStoreDescription  =
-    sendMsg nsPersistentStoreDescription (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+options nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription optionsSelector
 
 -- | @- readOnly@
 readOnly :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO Bool
-readOnly nsPersistentStoreDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentStoreDescription (mkSelector "readOnly") retCULong []
+readOnly nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription readOnlySelector
 
 -- | @- setReadOnly:@
 setReadOnly :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> Bool -> IO ()
-setReadOnly nsPersistentStoreDescription  value =
-    sendMsg nsPersistentStoreDescription (mkSelector "setReadOnly:") retVoid [argCULong (if value then 1 else 0)]
+setReadOnly nsPersistentStoreDescription value =
+  sendMessage nsPersistentStoreDescription setReadOnlySelector value
 
 -- | @- timeout@
 timeout :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO CDouble
-timeout nsPersistentStoreDescription  =
-    sendMsg nsPersistentStoreDescription (mkSelector "timeout") retCDouble []
+timeout nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription timeoutSelector
 
 -- | @- setTimeout:@
 setTimeout :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> CDouble -> IO ()
-setTimeout nsPersistentStoreDescription  value =
-    sendMsg nsPersistentStoreDescription (mkSelector "setTimeout:") retVoid [argCDouble value]
+setTimeout nsPersistentStoreDescription value =
+  sendMessage nsPersistentStoreDescription setTimeoutSelector value
 
 -- | @- sqlitePragmas@
 sqlitePragmas :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO (Id NSDictionary)
-sqlitePragmas nsPersistentStoreDescription  =
-    sendMsg nsPersistentStoreDescription (mkSelector "sqlitePragmas") (retPtr retVoid) [] >>= retainedObject . castPtr
+sqlitePragmas nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription sqlitePragmasSelector
 
 -- | @- shouldAddStoreAsynchronously@
 shouldAddStoreAsynchronously :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO Bool
-shouldAddStoreAsynchronously nsPersistentStoreDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentStoreDescription (mkSelector "shouldAddStoreAsynchronously") retCULong []
+shouldAddStoreAsynchronously nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription shouldAddStoreAsynchronouslySelector
 
 -- | @- setShouldAddStoreAsynchronously:@
 setShouldAddStoreAsynchronously :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> Bool -> IO ()
-setShouldAddStoreAsynchronously nsPersistentStoreDescription  value =
-    sendMsg nsPersistentStoreDescription (mkSelector "setShouldAddStoreAsynchronously:") retVoid [argCULong (if value then 1 else 0)]
+setShouldAddStoreAsynchronously nsPersistentStoreDescription value =
+  sendMessage nsPersistentStoreDescription setShouldAddStoreAsynchronouslySelector value
 
 -- | @- shouldMigrateStoreAutomatically@
 shouldMigrateStoreAutomatically :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO Bool
-shouldMigrateStoreAutomatically nsPersistentStoreDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentStoreDescription (mkSelector "shouldMigrateStoreAutomatically") retCULong []
+shouldMigrateStoreAutomatically nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription shouldMigrateStoreAutomaticallySelector
 
 -- | @- setShouldMigrateStoreAutomatically:@
 setShouldMigrateStoreAutomatically :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> Bool -> IO ()
-setShouldMigrateStoreAutomatically nsPersistentStoreDescription  value =
-    sendMsg nsPersistentStoreDescription (mkSelector "setShouldMigrateStoreAutomatically:") retVoid [argCULong (if value then 1 else 0)]
+setShouldMigrateStoreAutomatically nsPersistentStoreDescription value =
+  sendMessage nsPersistentStoreDescription setShouldMigrateStoreAutomaticallySelector value
 
 -- | @- shouldInferMappingModelAutomatically@
 shouldInferMappingModelAutomatically :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO Bool
-shouldInferMappingModelAutomatically nsPersistentStoreDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentStoreDescription (mkSelector "shouldInferMappingModelAutomatically") retCULong []
+shouldInferMappingModelAutomatically nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription shouldInferMappingModelAutomaticallySelector
 
 -- | @- setShouldInferMappingModelAutomatically:@
 setShouldInferMappingModelAutomatically :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> Bool -> IO ()
-setShouldInferMappingModelAutomatically nsPersistentStoreDescription  value =
-    sendMsg nsPersistentStoreDescription (mkSelector "setShouldInferMappingModelAutomatically:") retVoid [argCULong (if value then 1 else 0)]
+setShouldInferMappingModelAutomatically nsPersistentStoreDescription value =
+  sendMessage nsPersistentStoreDescription setShouldInferMappingModelAutomaticallySelector value
 
 -- | Use this property to apply customized instances of NSPersistentCloudKitContainerOptions to a store description you wish to use with CloudKit.
 --
 -- ObjC selector: @- cloudKitContainerOptions@
 cloudKitContainerOptions :: IsNSPersistentStoreDescription nsPersistentStoreDescription => nsPersistentStoreDescription -> IO (Id NSPersistentCloudKitContainerOptions)
-cloudKitContainerOptions nsPersistentStoreDescription  =
-    sendMsg nsPersistentStoreDescription (mkSelector "cloudKitContainerOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+cloudKitContainerOptions nsPersistentStoreDescription =
+  sendMessage nsPersistentStoreDescription cloudKitContainerOptionsSelector
 
 -- | Use this property to apply customized instances of NSPersistentCloudKitContainerOptions to a store description you wish to use with CloudKit.
 --
 -- ObjC selector: @- setCloudKitContainerOptions:@
 setCloudKitContainerOptions :: (IsNSPersistentStoreDescription nsPersistentStoreDescription, IsNSPersistentCloudKitContainerOptions value) => nsPersistentStoreDescription -> value -> IO ()
-setCloudKitContainerOptions nsPersistentStoreDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPersistentStoreDescription (mkSelector "setCloudKitContainerOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCloudKitContainerOptions nsPersistentStoreDescription value =
+  sendMessage nsPersistentStoreDescription setCloudKitContainerOptionsSelector (toNSPersistentCloudKitContainerOptions value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @persistentStoreDescriptionWithURL:@
-persistentStoreDescriptionWithURLSelector :: Selector
+persistentStoreDescriptionWithURLSelector :: Selector '[Id NSURL] (Id NSPersistentStoreDescription)
 persistentStoreDescriptionWithURLSelector = mkSelector "persistentStoreDescriptionWithURL:"
 
 -- | @Selector@ for @setOption:forKey:@
-setOption_forKeySelector :: Selector
+setOption_forKeySelector :: Selector '[Id NSObject, Id NSString] ()
 setOption_forKeySelector = mkSelector "setOption:forKey:"
 
 -- | @Selector@ for @setValue:forPragmaNamed:@
-setValue_forPragmaNamedSelector :: Selector
+setValue_forPragmaNamedSelector :: Selector '[Id NSObject, Id NSString] ()
 setValue_forPragmaNamedSelector = mkSelector "setValue:forPragmaNamed:"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id NSPersistentStoreDescription)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id NSString)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @setConfiguration:@
-setConfigurationSelector :: Selector
+setConfigurationSelector :: Selector '[Id NSString] ()
 setConfigurationSelector = mkSelector "setConfiguration:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @setURL:@
-setURLSelector :: Selector
+setURLSelector :: Selector '[Id NSURL] ()
 setURLSelector = mkSelector "setURL:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] (Id NSDictionary)
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @readOnly@
-readOnlySelector :: Selector
+readOnlySelector :: Selector '[] Bool
 readOnlySelector = mkSelector "readOnly"
 
 -- | @Selector@ for @setReadOnly:@
-setReadOnlySelector :: Selector
+setReadOnlySelector :: Selector '[Bool] ()
 setReadOnlySelector = mkSelector "setReadOnly:"
 
 -- | @Selector@ for @timeout@
-timeoutSelector :: Selector
+timeoutSelector :: Selector '[] CDouble
 timeoutSelector = mkSelector "timeout"
 
 -- | @Selector@ for @setTimeout:@
-setTimeoutSelector :: Selector
+setTimeoutSelector :: Selector '[CDouble] ()
 setTimeoutSelector = mkSelector "setTimeout:"
 
 -- | @Selector@ for @sqlitePragmas@
-sqlitePragmasSelector :: Selector
+sqlitePragmasSelector :: Selector '[] (Id NSDictionary)
 sqlitePragmasSelector = mkSelector "sqlitePragmas"
 
 -- | @Selector@ for @shouldAddStoreAsynchronously@
-shouldAddStoreAsynchronouslySelector :: Selector
+shouldAddStoreAsynchronouslySelector :: Selector '[] Bool
 shouldAddStoreAsynchronouslySelector = mkSelector "shouldAddStoreAsynchronously"
 
 -- | @Selector@ for @setShouldAddStoreAsynchronously:@
-setShouldAddStoreAsynchronouslySelector :: Selector
+setShouldAddStoreAsynchronouslySelector :: Selector '[Bool] ()
 setShouldAddStoreAsynchronouslySelector = mkSelector "setShouldAddStoreAsynchronously:"
 
 -- | @Selector@ for @shouldMigrateStoreAutomatically@
-shouldMigrateStoreAutomaticallySelector :: Selector
+shouldMigrateStoreAutomaticallySelector :: Selector '[] Bool
 shouldMigrateStoreAutomaticallySelector = mkSelector "shouldMigrateStoreAutomatically"
 
 -- | @Selector@ for @setShouldMigrateStoreAutomatically:@
-setShouldMigrateStoreAutomaticallySelector :: Selector
+setShouldMigrateStoreAutomaticallySelector :: Selector '[Bool] ()
 setShouldMigrateStoreAutomaticallySelector = mkSelector "setShouldMigrateStoreAutomatically:"
 
 -- | @Selector@ for @shouldInferMappingModelAutomatically@
-shouldInferMappingModelAutomaticallySelector :: Selector
+shouldInferMappingModelAutomaticallySelector :: Selector '[] Bool
 shouldInferMappingModelAutomaticallySelector = mkSelector "shouldInferMappingModelAutomatically"
 
 -- | @Selector@ for @setShouldInferMappingModelAutomatically:@
-setShouldInferMappingModelAutomaticallySelector :: Selector
+setShouldInferMappingModelAutomaticallySelector :: Selector '[Bool] ()
 setShouldInferMappingModelAutomaticallySelector = mkSelector "setShouldInferMappingModelAutomatically:"
 
 -- | @Selector@ for @cloudKitContainerOptions@
-cloudKitContainerOptionsSelector :: Selector
+cloudKitContainerOptionsSelector :: Selector '[] (Id NSPersistentCloudKitContainerOptions)
 cloudKitContainerOptionsSelector = mkSelector "cloudKitContainerOptions"
 
 -- | @Selector@ for @setCloudKitContainerOptions:@
-setCloudKitContainerOptionsSelector :: Selector
+setCloudKitContainerOptionsSelector :: Selector '[Id NSPersistentCloudKitContainerOptions] ()
 setCloudKitContainerOptionsSelector = mkSelector "setCloudKitContainerOptions:"
 

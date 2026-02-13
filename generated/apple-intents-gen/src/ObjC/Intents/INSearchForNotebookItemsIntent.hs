@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.Intents.INSearchForNotebookItemsIntent
   , temporalEventTriggerTypes
   , taskPriority
   , notebookItemIdentifier
-  , initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_temporalEventTriggerTypes_taskPriority_notebookItemIdentifierSelector
+  , contentSelector
+  , dateSearchTypeSelector
+  , dateTimeSelector
   , initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchTypeSelector
   , initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_notebookItemIdentifierSelector
-  , titleSelector
-  , contentSelector
+  , initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_temporalEventTriggerTypes_taskPriority_notebookItemIdentifierSelector
   , itemTypeSelector
-  , statusSelector
-  , locationSelector
   , locationSearchTypeSelector
-  , dateTimeSelector
-  , dateSearchTypeSelector
-  , temporalEventTriggerTypesSelector
-  , taskPrioritySelector
+  , locationSelector
   , notebookItemIdentifierSelector
+  , statusSelector
+  , taskPrioritySelector
+  , temporalEventTriggerTypesSelector
+  , titleSelector
 
   -- * Enum types
   , INDateSearchType(INDateSearchType)
@@ -65,15 +66,11 @@ module ObjC.Intents.INSearchForNotebookItemsIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -84,145 +81,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:temporalEventTriggerTypes:taskPriority:notebookItemIdentifier:@
 initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_temporalEventTriggerTypes_taskPriority_notebookItemIdentifier :: (IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent, IsINSpeakableString title, IsNSString content, IsCLPlacemark location, IsINDateComponentsRange dateTime, IsNSString notebookItemIdentifier) => inSearchForNotebookItemsIntent -> title -> content -> INNotebookItemType -> INTaskStatus -> location -> INLocationSearchType -> dateTime -> INDateSearchType -> INTemporalEventTriggerTypeOptions -> INTaskPriority -> notebookItemIdentifier -> IO (Id INSearchForNotebookItemsIntent)
-initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_temporalEventTriggerTypes_taskPriority_notebookItemIdentifier inSearchForNotebookItemsIntent  title content itemType status location locationSearchType dateTime dateSearchType temporalEventTriggerTypes taskPriority notebookItemIdentifier =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr content $ \raw_content ->
-      withObjCPtr location $ \raw_location ->
-        withObjCPtr dateTime $ \raw_dateTime ->
-          withObjCPtr notebookItemIdentifier $ \raw_notebookItemIdentifier ->
-              sendMsg inSearchForNotebookItemsIntent (mkSelector "initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:temporalEventTriggerTypes:taskPriority:notebookItemIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_content :: Ptr ()), argCLong (coerce itemType), argCLong (coerce status), argPtr (castPtr raw_location :: Ptr ()), argCLong (coerce locationSearchType), argPtr (castPtr raw_dateTime :: Ptr ()), argCLong (coerce dateSearchType), argCULong (coerce temporalEventTriggerTypes), argCLong (coerce taskPriority), argPtr (castPtr raw_notebookItemIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_temporalEventTriggerTypes_taskPriority_notebookItemIdentifier inSearchForNotebookItemsIntent title content itemType status location locationSearchType dateTime dateSearchType temporalEventTriggerTypes taskPriority notebookItemIdentifier =
+  sendOwnedMessage inSearchForNotebookItemsIntent initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_temporalEventTriggerTypes_taskPriority_notebookItemIdentifierSelector (toINSpeakableString title) (toNSString content) itemType status (toCLPlacemark location) locationSearchType (toINDateComponentsRange dateTime) dateSearchType temporalEventTriggerTypes taskPriority (toNSString notebookItemIdentifier)
 
 -- | @- initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:@
 initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType :: (IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent, IsINSpeakableString title, IsNSString content, IsCLPlacemark location, IsINDateComponentsRange dateTime) => inSearchForNotebookItemsIntent -> title -> content -> INNotebookItemType -> INTaskStatus -> location -> INLocationSearchType -> dateTime -> INDateSearchType -> IO (Id INSearchForNotebookItemsIntent)
-initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType inSearchForNotebookItemsIntent  title content itemType status location locationSearchType dateTime dateSearchType =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr content $ \raw_content ->
-      withObjCPtr location $ \raw_location ->
-        withObjCPtr dateTime $ \raw_dateTime ->
-            sendMsg inSearchForNotebookItemsIntent (mkSelector "initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_content :: Ptr ()), argCLong (coerce itemType), argCLong (coerce status), argPtr (castPtr raw_location :: Ptr ()), argCLong (coerce locationSearchType), argPtr (castPtr raw_dateTime :: Ptr ()), argCLong (coerce dateSearchType)] >>= ownedObject . castPtr
+initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType inSearchForNotebookItemsIntent title content itemType status location locationSearchType dateTime dateSearchType =
+  sendOwnedMessage inSearchForNotebookItemsIntent initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchTypeSelector (toINSpeakableString title) (toNSString content) itemType status (toCLPlacemark location) locationSearchType (toINDateComponentsRange dateTime) dateSearchType
 
 -- | @- initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:notebookItemIdentifier:@
 initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_notebookItemIdentifier :: (IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent, IsINSpeakableString title, IsNSString content, IsCLPlacemark location, IsINDateComponentsRange dateTime, IsNSString notebookItemIdentifier) => inSearchForNotebookItemsIntent -> title -> content -> INNotebookItemType -> INTaskStatus -> location -> INLocationSearchType -> dateTime -> INDateSearchType -> notebookItemIdentifier -> IO (Id INSearchForNotebookItemsIntent)
-initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_notebookItemIdentifier inSearchForNotebookItemsIntent  title content itemType status location locationSearchType dateTime dateSearchType notebookItemIdentifier =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr content $ \raw_content ->
-      withObjCPtr location $ \raw_location ->
-        withObjCPtr dateTime $ \raw_dateTime ->
-          withObjCPtr notebookItemIdentifier $ \raw_notebookItemIdentifier ->
-              sendMsg inSearchForNotebookItemsIntent (mkSelector "initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:notebookItemIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_content :: Ptr ()), argCLong (coerce itemType), argCLong (coerce status), argPtr (castPtr raw_location :: Ptr ()), argCLong (coerce locationSearchType), argPtr (castPtr raw_dateTime :: Ptr ()), argCLong (coerce dateSearchType), argPtr (castPtr raw_notebookItemIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_notebookItemIdentifier inSearchForNotebookItemsIntent title content itemType status location locationSearchType dateTime dateSearchType notebookItemIdentifier =
+  sendOwnedMessage inSearchForNotebookItemsIntent initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_notebookItemIdentifierSelector (toINSpeakableString title) (toNSString content) itemType status (toCLPlacemark location) locationSearchType (toINDateComponentsRange dateTime) dateSearchType (toNSString notebookItemIdentifier)
 
 -- | @- title@
 title :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO (Id INSpeakableString)
-title inSearchForNotebookItemsIntent  =
-    sendMsg inSearchForNotebookItemsIntent (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent titleSelector
 
 -- | @- content@
 content :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO (Id NSString)
-content inSearchForNotebookItemsIntent  =
-    sendMsg inSearchForNotebookItemsIntent (mkSelector "content") (retPtr retVoid) [] >>= retainedObject . castPtr
+content inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent contentSelector
 
 -- | @- itemType@
 itemType :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO INNotebookItemType
-itemType inSearchForNotebookItemsIntent  =
-    fmap (coerce :: CLong -> INNotebookItemType) $ sendMsg inSearchForNotebookItemsIntent (mkSelector "itemType") retCLong []
+itemType inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent itemTypeSelector
 
 -- | @- status@
 status :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO INTaskStatus
-status inSearchForNotebookItemsIntent  =
-    fmap (coerce :: CLong -> INTaskStatus) $ sendMsg inSearchForNotebookItemsIntent (mkSelector "status") retCLong []
+status inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent statusSelector
 
 -- | @- location@
 location :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO (Id CLPlacemark)
-location inSearchForNotebookItemsIntent  =
-    sendMsg inSearchForNotebookItemsIntent (mkSelector "location") (retPtr retVoid) [] >>= retainedObject . castPtr
+location inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent locationSelector
 
 -- | @- locationSearchType@
 locationSearchType :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO INLocationSearchType
-locationSearchType inSearchForNotebookItemsIntent  =
-    fmap (coerce :: CLong -> INLocationSearchType) $ sendMsg inSearchForNotebookItemsIntent (mkSelector "locationSearchType") retCLong []
+locationSearchType inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent locationSearchTypeSelector
 
 -- | @- dateTime@
 dateTime :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO (Id INDateComponentsRange)
-dateTime inSearchForNotebookItemsIntent  =
-    sendMsg inSearchForNotebookItemsIntent (mkSelector "dateTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateTime inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent dateTimeSelector
 
 -- | @- dateSearchType@
 dateSearchType :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO INDateSearchType
-dateSearchType inSearchForNotebookItemsIntent  =
-    fmap (coerce :: CLong -> INDateSearchType) $ sendMsg inSearchForNotebookItemsIntent (mkSelector "dateSearchType") retCLong []
+dateSearchType inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent dateSearchTypeSelector
 
 -- | @- temporalEventTriggerTypes@
 temporalEventTriggerTypes :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO INTemporalEventTriggerTypeOptions
-temporalEventTriggerTypes inSearchForNotebookItemsIntent  =
-    fmap (coerce :: CULong -> INTemporalEventTriggerTypeOptions) $ sendMsg inSearchForNotebookItemsIntent (mkSelector "temporalEventTriggerTypes") retCULong []
+temporalEventTriggerTypes inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent temporalEventTriggerTypesSelector
 
 -- | @- taskPriority@
 taskPriority :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO INTaskPriority
-taskPriority inSearchForNotebookItemsIntent  =
-    fmap (coerce :: CLong -> INTaskPriority) $ sendMsg inSearchForNotebookItemsIntent (mkSelector "taskPriority") retCLong []
+taskPriority inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent taskPrioritySelector
 
 -- | @- notebookItemIdentifier@
 notebookItemIdentifier :: IsINSearchForNotebookItemsIntent inSearchForNotebookItemsIntent => inSearchForNotebookItemsIntent -> IO (Id NSString)
-notebookItemIdentifier inSearchForNotebookItemsIntent  =
-    sendMsg inSearchForNotebookItemsIntent (mkSelector "notebookItemIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+notebookItemIdentifier inSearchForNotebookItemsIntent =
+  sendMessage inSearchForNotebookItemsIntent notebookItemIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:temporalEventTriggerTypes:taskPriority:notebookItemIdentifier:@
-initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_temporalEventTriggerTypes_taskPriority_notebookItemIdentifierSelector :: Selector
+initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_temporalEventTriggerTypes_taskPriority_notebookItemIdentifierSelector :: Selector '[Id INSpeakableString, Id NSString, INNotebookItemType, INTaskStatus, Id CLPlacemark, INLocationSearchType, Id INDateComponentsRange, INDateSearchType, INTemporalEventTriggerTypeOptions, INTaskPriority, Id NSString] (Id INSearchForNotebookItemsIntent)
 initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_temporalEventTriggerTypes_taskPriority_notebookItemIdentifierSelector = mkSelector "initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:temporalEventTriggerTypes:taskPriority:notebookItemIdentifier:"
 
 -- | @Selector@ for @initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:@
-initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchTypeSelector :: Selector
+initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchTypeSelector :: Selector '[Id INSpeakableString, Id NSString, INNotebookItemType, INTaskStatus, Id CLPlacemark, INLocationSearchType, Id INDateComponentsRange, INDateSearchType] (Id INSearchForNotebookItemsIntent)
 initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchTypeSelector = mkSelector "initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:"
 
 -- | @Selector@ for @initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:notebookItemIdentifier:@
-initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_notebookItemIdentifierSelector :: Selector
+initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_notebookItemIdentifierSelector :: Selector '[Id INSpeakableString, Id NSString, INNotebookItemType, INTaskStatus, Id CLPlacemark, INLocationSearchType, Id INDateComponentsRange, INDateSearchType, Id NSString] (Id INSearchForNotebookItemsIntent)
 initWithTitle_content_itemType_status_location_locationSearchType_dateTime_dateSearchType_notebookItemIdentifierSelector = mkSelector "initWithTitle:content:itemType:status:location:locationSearchType:dateTime:dateSearchType:notebookItemIdentifier:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id INSpeakableString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @content@
-contentSelector :: Selector
+contentSelector :: Selector '[] (Id NSString)
 contentSelector = mkSelector "content"
 
 -- | @Selector@ for @itemType@
-itemTypeSelector :: Selector
+itemTypeSelector :: Selector '[] INNotebookItemType
 itemTypeSelector = mkSelector "itemType"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] INTaskStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @location@
-locationSelector :: Selector
+locationSelector :: Selector '[] (Id CLPlacemark)
 locationSelector = mkSelector "location"
 
 -- | @Selector@ for @locationSearchType@
-locationSearchTypeSelector :: Selector
+locationSearchTypeSelector :: Selector '[] INLocationSearchType
 locationSearchTypeSelector = mkSelector "locationSearchType"
 
 -- | @Selector@ for @dateTime@
-dateTimeSelector :: Selector
+dateTimeSelector :: Selector '[] (Id INDateComponentsRange)
 dateTimeSelector = mkSelector "dateTime"
 
 -- | @Selector@ for @dateSearchType@
-dateSearchTypeSelector :: Selector
+dateSearchTypeSelector :: Selector '[] INDateSearchType
 dateSearchTypeSelector = mkSelector "dateSearchType"
 
 -- | @Selector@ for @temporalEventTriggerTypes@
-temporalEventTriggerTypesSelector :: Selector
+temporalEventTriggerTypesSelector :: Selector '[] INTemporalEventTriggerTypeOptions
 temporalEventTriggerTypesSelector = mkSelector "temporalEventTriggerTypes"
 
 -- | @Selector@ for @taskPriority@
-taskPrioritySelector :: Selector
+taskPrioritySelector :: Selector '[] INTaskPriority
 taskPrioritySelector = mkSelector "taskPriority"
 
 -- | @Selector@ for @notebookItemIdentifier@
-notebookItemIdentifierSelector :: Selector
+notebookItemIdentifierSelector :: Selector '[] (Id NSString)
 notebookItemIdentifierSelector = mkSelector "notebookItemIdentifier"
 

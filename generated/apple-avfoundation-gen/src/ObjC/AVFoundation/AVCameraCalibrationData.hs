@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.AVFoundation.AVCameraCalibrationData
   , lensDistortionLookupTable
   , inverseLensDistortionLookupTable
   , initSelector
+  , inverseLensDistortionLookupTableSelector
+  , lensDistortionLookupTableSelector
   , newSelector
   , pixelSizeSelector
-  , lensDistortionLookupTableSelector
-  , inverseLensDistortionLookupTableSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,15 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCameraCalibrationData avCameraCalibrationData => avCameraCalibrationData -> IO (Id AVCameraCalibrationData)
-init_ avCameraCalibrationData  =
-    sendMsg avCameraCalibrationData (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCameraCalibrationData =
+  sendOwnedMessage avCameraCalibrationData initSelector
 
 -- | @+ new@
 new :: IO (Id AVCameraCalibrationData)
 new  =
   do
     cls' <- getRequiredClass "AVCameraCalibrationData"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | pixelSize
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- pixelSize@
 pixelSize :: IsAVCameraCalibrationData avCameraCalibrationData => avCameraCalibrationData -> IO CFloat
-pixelSize avCameraCalibrationData  =
-    sendMsg avCameraCalibrationData (mkSelector "pixelSize") retCFloat []
+pixelSize avCameraCalibrationData =
+  sendMessage avCameraCalibrationData pixelSizeSelector
 
 -- | lensDistortionLookupTable
 --
@@ -72,8 +69,8 @@ pixelSize avCameraCalibrationData  =
 --
 -- ObjC selector: @- lensDistortionLookupTable@
 lensDistortionLookupTable :: IsAVCameraCalibrationData avCameraCalibrationData => avCameraCalibrationData -> IO (Id NSData)
-lensDistortionLookupTable avCameraCalibrationData  =
-    sendMsg avCameraCalibrationData (mkSelector "lensDistortionLookupTable") (retPtr retVoid) [] >>= retainedObject . castPtr
+lensDistortionLookupTable avCameraCalibrationData =
+  sendMessage avCameraCalibrationData lensDistortionLookupTableSelector
 
 -- | inverseLensDistortionLookupTable
 --
@@ -85,30 +82,30 @@ lensDistortionLookupTable avCameraCalibrationData  =
 --
 -- ObjC selector: @- inverseLensDistortionLookupTable@
 inverseLensDistortionLookupTable :: IsAVCameraCalibrationData avCameraCalibrationData => avCameraCalibrationData -> IO (Id NSData)
-inverseLensDistortionLookupTable avCameraCalibrationData  =
-    sendMsg avCameraCalibrationData (mkSelector "inverseLensDistortionLookupTable") (retPtr retVoid) [] >>= retainedObject . castPtr
+inverseLensDistortionLookupTable avCameraCalibrationData =
+  sendMessage avCameraCalibrationData inverseLensDistortionLookupTableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCameraCalibrationData)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCameraCalibrationData)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @pixelSize@
-pixelSizeSelector :: Selector
+pixelSizeSelector :: Selector '[] CFloat
 pixelSizeSelector = mkSelector "pixelSize"
 
 -- | @Selector@ for @lensDistortionLookupTable@
-lensDistortionLookupTableSelector :: Selector
+lensDistortionLookupTableSelector :: Selector '[] (Id NSData)
 lensDistortionLookupTableSelector = mkSelector "lensDistortionLookupTable"
 
 -- | @Selector@ for @inverseLensDistortionLookupTable@
-inverseLensDistortionLookupTableSelector :: Selector
+inverseLensDistortionLookupTableSelector :: Selector '[] (Id NSData)
 inverseLensDistortionLookupTableSelector = mkSelector "inverseLensDistortionLookupTable"
 

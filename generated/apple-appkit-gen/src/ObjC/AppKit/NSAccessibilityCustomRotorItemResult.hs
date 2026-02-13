@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.AppKit.NSAccessibilityCustomRotorItemResult
   , setTargetRange
   , customLabel
   , setCustomLabel
-  , newSelector
+  , customLabelSelector
   , initSelector
   , initWithTargetElementSelector
+  , newSelector
+  , setCustomLabelSelector
+  , setTargetRangeSelector
   , targetElementSelector
   , targetRangeSelector
-  , setTargetRangeSelector
-  , customLabelSelector
-  , setCustomLabelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,40 +46,40 @@ new :: IO (Id NSAccessibilityCustomRotorItemResult)
 new  =
   do
     cls' <- getRequiredClass "NSAccessibilityCustomRotorItemResult"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSAccessibilityCustomRotorItemResult nsAccessibilityCustomRotorItemResult => nsAccessibilityCustomRotorItemResult -> IO (Id NSAccessibilityCustomRotorItemResult)
-init_ nsAccessibilityCustomRotorItemResult  =
-    sendMsg nsAccessibilityCustomRotorItemResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsAccessibilityCustomRotorItemResult =
+  sendOwnedMessage nsAccessibilityCustomRotorItemResult initSelector
 
 -- | Creates an item result with a given target element. Assistive technologies may try to set accessibility focus on the element.
 --
 -- ObjC selector: @- initWithTargetElement:@
 initWithTargetElement :: IsNSAccessibilityCustomRotorItemResult nsAccessibilityCustomRotorItemResult => nsAccessibilityCustomRotorItemResult -> RawId -> IO (Id NSAccessibilityCustomRotorItemResult)
-initWithTargetElement nsAccessibilityCustomRotorItemResult  targetElement =
-    sendMsg nsAccessibilityCustomRotorItemResult (mkSelector "initWithTargetElement:") (retPtr retVoid) [argPtr (castPtr (unRawId targetElement) :: Ptr ())] >>= ownedObject . castPtr
+initWithTargetElement nsAccessibilityCustomRotorItemResult targetElement =
+  sendOwnedMessage nsAccessibilityCustomRotorItemResult initWithTargetElementSelector targetElement
 
 -- | A target element references an element that will be messaged for other accessibility properties. If it is not nil, assistive technologies may try to set accessibility focus on it.
 --
 -- ObjC selector: @- targetElement@
 targetElement :: IsNSAccessibilityCustomRotorItemResult nsAccessibilityCustomRotorItemResult => nsAccessibilityCustomRotorItemResult -> IO RawId
-targetElement nsAccessibilityCustomRotorItemResult  =
-    fmap (RawId . castPtr) $ sendMsg nsAccessibilityCustomRotorItemResult (mkSelector "targetElement") (retPtr retVoid) []
+targetElement nsAccessibilityCustomRotorItemResult =
+  sendMessage nsAccessibilityCustomRotorItemResult targetElementSelector
 
 -- | For text-based elements such as an NSTextView, this is an NSRange that specifies the area of interest. If the target range has NSNotFound for the location, the search should begin from the first or last character of the text element, depending on the search direction.
 --
 -- ObjC selector: @- targetRange@
 targetRange :: IsNSAccessibilityCustomRotorItemResult nsAccessibilityCustomRotorItemResult => nsAccessibilityCustomRotorItemResult -> IO NSRange
-targetRange nsAccessibilityCustomRotorItemResult  =
-    sendMsgStret nsAccessibilityCustomRotorItemResult (mkSelector "targetRange") retNSRange []
+targetRange nsAccessibilityCustomRotorItemResult =
+  sendMessage nsAccessibilityCustomRotorItemResult targetRangeSelector
 
 -- | For text-based elements such as an NSTextView, this is an NSRange that specifies the area of interest. If the target range has NSNotFound for the location, the search should begin from the first or last character of the text element, depending on the search direction.
 --
 -- ObjC selector: @- setTargetRange:@
 setTargetRange :: IsNSAccessibilityCustomRotorItemResult nsAccessibilityCustomRotorItemResult => nsAccessibilityCustomRotorItemResult -> NSRange -> IO ()
-setTargetRange nsAccessibilityCustomRotorItemResult  value =
-    sendMsg nsAccessibilityCustomRotorItemResult (mkSelector "setTargetRange:") retVoid [argNSRange value]
+setTargetRange nsAccessibilityCustomRotorItemResult value =
+  sendMessage nsAccessibilityCustomRotorItemResult setTargetRangeSelector value
 
 -- | A localized label that can be used instead of the default item  label to describe the item result.
 --
@@ -90,8 +87,8 @@ setTargetRange nsAccessibilityCustomRotorItemResult  value =
 --
 -- ObjC selector: @- customLabel@
 customLabel :: IsNSAccessibilityCustomRotorItemResult nsAccessibilityCustomRotorItemResult => nsAccessibilityCustomRotorItemResult -> IO (Id NSString)
-customLabel nsAccessibilityCustomRotorItemResult  =
-    sendMsg nsAccessibilityCustomRotorItemResult (mkSelector "customLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+customLabel nsAccessibilityCustomRotorItemResult =
+  sendMessage nsAccessibilityCustomRotorItemResult customLabelSelector
 
 -- | A localized label that can be used instead of the default item  label to describe the item result.
 --
@@ -99,43 +96,42 @@ customLabel nsAccessibilityCustomRotorItemResult  =
 --
 -- ObjC selector: @- setCustomLabel:@
 setCustomLabel :: (IsNSAccessibilityCustomRotorItemResult nsAccessibilityCustomRotorItemResult, IsNSString value) => nsAccessibilityCustomRotorItemResult -> value -> IO ()
-setCustomLabel nsAccessibilityCustomRotorItemResult  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsAccessibilityCustomRotorItemResult (mkSelector "setCustomLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomLabel nsAccessibilityCustomRotorItemResult value =
+  sendMessage nsAccessibilityCustomRotorItemResult setCustomLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSAccessibilityCustomRotorItemResult)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSAccessibilityCustomRotorItemResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithTargetElement:@
-initWithTargetElementSelector :: Selector
+initWithTargetElementSelector :: Selector '[RawId] (Id NSAccessibilityCustomRotorItemResult)
 initWithTargetElementSelector = mkSelector "initWithTargetElement:"
 
 -- | @Selector@ for @targetElement@
-targetElementSelector :: Selector
+targetElementSelector :: Selector '[] RawId
 targetElementSelector = mkSelector "targetElement"
 
 -- | @Selector@ for @targetRange@
-targetRangeSelector :: Selector
+targetRangeSelector :: Selector '[] NSRange
 targetRangeSelector = mkSelector "targetRange"
 
 -- | @Selector@ for @setTargetRange:@
-setTargetRangeSelector :: Selector
+setTargetRangeSelector :: Selector '[NSRange] ()
 setTargetRangeSelector = mkSelector "setTargetRange:"
 
 -- | @Selector@ for @customLabel@
-customLabelSelector :: Selector
+customLabelSelector :: Selector '[] (Id NSString)
 customLabelSelector = mkSelector "customLabel"
 
 -- | @Selector@ for @setCustomLabel:@
-setCustomLabelSelector :: Selector
+setCustomLabelSelector :: Selector '[Id NSString] ()
 setCustomLabelSelector = mkSelector "setCustomLabel:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.Matter.MTRUnitTestingClusterTestAddArgumentsResponseParams
   , initWithResponseValue_errorSelector
   , returnValueSelector
   , setReturnValueSelector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,21 +40,18 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRUnitTestingClusterTestAddArgumentsResponseParams mtrUnitTestingClusterTestAddArgumentsResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrUnitTestingClusterTestAddArgumentsResponseParams -> responseValue -> error_ -> IO (Id MTRUnitTestingClusterTestAddArgumentsResponseParams)
-initWithResponseValue_error mtrUnitTestingClusterTestAddArgumentsResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrUnitTestingClusterTestAddArgumentsResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrUnitTestingClusterTestAddArgumentsResponseParams responseValue error_ =
+  sendOwnedMessage mtrUnitTestingClusterTestAddArgumentsResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- returnValue@
 returnValue :: IsMTRUnitTestingClusterTestAddArgumentsResponseParams mtrUnitTestingClusterTestAddArgumentsResponseParams => mtrUnitTestingClusterTestAddArgumentsResponseParams -> IO (Id NSNumber)
-returnValue mtrUnitTestingClusterTestAddArgumentsResponseParams  =
-    sendMsg mtrUnitTestingClusterTestAddArgumentsResponseParams (mkSelector "returnValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+returnValue mtrUnitTestingClusterTestAddArgumentsResponseParams =
+  sendMessage mtrUnitTestingClusterTestAddArgumentsResponseParams returnValueSelector
 
 -- | @- setReturnValue:@
 setReturnValue :: (IsMTRUnitTestingClusterTestAddArgumentsResponseParams mtrUnitTestingClusterTestAddArgumentsResponseParams, IsNSNumber value) => mtrUnitTestingClusterTestAddArgumentsResponseParams -> value -> IO ()
-setReturnValue mtrUnitTestingClusterTestAddArgumentsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestAddArgumentsResponseParams (mkSelector "setReturnValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReturnValue mtrUnitTestingClusterTestAddArgumentsResponseParams value =
+  sendMessage mtrUnitTestingClusterTestAddArgumentsResponseParams setReturnValueSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,8 +61,8 @@ setReturnValue mtrUnitTestingClusterTestAddArgumentsResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRUnitTestingClusterTestAddArgumentsResponseParams mtrUnitTestingClusterTestAddArgumentsResponseParams => mtrUnitTestingClusterTestAddArgumentsResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrUnitTestingClusterTestAddArgumentsResponseParams  =
-    sendMsg mtrUnitTestingClusterTestAddArgumentsResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrUnitTestingClusterTestAddArgumentsResponseParams =
+  sendMessage mtrUnitTestingClusterTestAddArgumentsResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -78,31 +72,30 @@ timedInvokeTimeoutMs mtrUnitTestingClusterTestAddArgumentsResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRUnitTestingClusterTestAddArgumentsResponseParams mtrUnitTestingClusterTestAddArgumentsResponseParams, IsNSNumber value) => mtrUnitTestingClusterTestAddArgumentsResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrUnitTestingClusterTestAddArgumentsResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestAddArgumentsResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrUnitTestingClusterTestAddArgumentsResponseParams value =
+  sendMessage mtrUnitTestingClusterTestAddArgumentsResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRUnitTestingClusterTestAddArgumentsResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @returnValue@
-returnValueSelector :: Selector
+returnValueSelector :: Selector '[] (Id NSNumber)
 returnValueSelector = mkSelector "returnValue"
 
 -- | @Selector@ for @setReturnValue:@
-setReturnValueSelector :: Selector
+setReturnValueSelector :: Selector '[Id NSNumber] ()
 setReturnValueSelector = mkSelector "setReturnValue:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

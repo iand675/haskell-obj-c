@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.Vision.VNContour
   , normalizedPoints
   , normalizedPath
   , aspectRatio
-  , newSelector
-  , initSelector
+  , aspectRatioSelector
   , childContourAtIndex_errorSelector
-  , polygonApproximationWithEpsilon_errorSelector
-  , indexPathSelector
   , childContourCountSelector
   , childContoursSelector
-  , pointCountSelector
-  , normalizedPointsSelector
+  , indexPathSelector
+  , initSelector
+  , newSelector
   , normalizedPathSelector
-  , aspectRatioSelector
+  , normalizedPointsSelector
+  , pointCountSelector
+  , polygonApproximationWithEpsilon_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,12 +53,12 @@ new :: IO (Id VNContour)
 new  =
   do
     cls' <- getRequiredClass "VNContour"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVNContour vnContour => vnContour -> IO (Id VNContour)
-init_ vnContour  =
-    sendMsg vnContour (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnContour =
+  sendOwnedMessage vnContour initSelector
 
 -- | Returns a VNContour object that is a child of this VNContour at the specified index.
 --
@@ -73,9 +70,8 @@ init_ vnContour  =
 --
 -- ObjC selector: @- childContourAtIndex:error:@
 childContourAtIndex_error :: (IsVNContour vnContour, IsNSError error_) => vnContour -> CULong -> error_ -> IO (Id VNContour)
-childContourAtIndex_error vnContour  childContourIndex error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnContour (mkSelector "childContourAtIndex:error:") (retPtr retVoid) [argCULong childContourIndex, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+childContourAtIndex_error vnContour childContourIndex error_ =
+  sendMessage vnContour childContourAtIndex_errorSelector childContourIndex (toNSError error_)
 
 -- | Simplifies the contour's collection of points into a polygon using the Ramer Douglas Peucker Algorithm.
 --
@@ -89,16 +85,15 @@ childContourAtIndex_error vnContour  childContourIndex error_ =
 --
 -- ObjC selector: @- polygonApproximationWithEpsilon:error:@
 polygonApproximationWithEpsilon_error :: (IsVNContour vnContour, IsNSError error_) => vnContour -> CFloat -> error_ -> IO (Id VNContour)
-polygonApproximationWithEpsilon_error vnContour  epsilon error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnContour (mkSelector "polygonApproximationWithEpsilon:error:") (retPtr retVoid) [argCFloat epsilon, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+polygonApproximationWithEpsilon_error vnContour epsilon error_ =
+  sendMessage vnContour polygonApproximationWithEpsilon_errorSelector epsilon (toNSError error_)
 
 -- | The path to the target VNContour as it is stored in the owning VNContoursObservation's hierarchy of contours.
 --
 -- ObjC selector: @- indexPath@
 indexPath :: IsVNContour vnContour => vnContour -> IO (Id NSIndexPath)
-indexPath vnContour  =
-    sendMsg vnContour (mkSelector "indexPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+indexPath vnContour =
+  sendMessage vnContour indexPathSelector
 
 -- | The total number of child contours in the target contour.
 --
@@ -106,8 +101,8 @@ indexPath vnContour  =
 --
 -- ObjC selector: @- childContourCount@
 childContourCount :: IsVNContour vnContour => vnContour -> IO CLong
-childContourCount vnContour  =
-    sendMsg vnContour (mkSelector "childContourCount") retCLong []
+childContourCount vnContour =
+  sendMessage vnContour childContourCountSelector
 
 -- | The array of the contours enclosed by the target contour.
 --
@@ -115,15 +110,15 @@ childContourCount vnContour  =
 --
 -- ObjC selector: @- childContours@
 childContours :: IsVNContour vnContour => vnContour -> IO (Id NSArray)
-childContours vnContour  =
-    sendMsg vnContour (mkSelector "childContours") (retPtr retVoid) [] >>= retainedObject . castPtr
+childContours vnContour =
+  sendMessage vnContour childContoursSelector
 
 -- | The number of points that describe the contour.
 --
 -- ObjC selector: @- pointCount@
 pointCount :: IsVNContour vnContour => vnContour -> IO CLong
-pointCount vnContour  =
-    sendMsg vnContour (mkSelector "pointCount") retCLong []
+pointCount vnContour =
+  sendMessage vnContour pointCountSelector
 
 -- | The array of points in normalized coordinates that describe the contour.
 --
@@ -131,8 +126,8 @@ pointCount vnContour  =
 --
 -- ObjC selector: @- normalizedPoints@
 normalizedPoints :: IsVNContour vnContour => vnContour -> IO RawId
-normalizedPoints vnContour  =
-    fmap (RawId . castPtr) $ sendMsg vnContour (mkSelector "normalizedPoints") (retPtr retVoid) []
+normalizedPoints vnContour =
+  sendMessage vnContour normalizedPointsSelector
 
 -- | The contour represented as a CGPath in normalized coordinates.
 --
@@ -140,61 +135,61 @@ normalizedPoints vnContour  =
 --
 -- ObjC selector: @- normalizedPath@
 normalizedPath :: IsVNContour vnContour => vnContour -> IO RawId
-normalizedPath vnContour  =
-    fmap (RawId . castPtr) $ sendMsg vnContour (mkSelector "normalizedPath") (retPtr retVoid) []
+normalizedPath vnContour =
+  sendMessage vnContour normalizedPathSelector
 
 -- | The aspect ratio of the contour from the original image aspect ratio expressed as width/height
 --
 -- ObjC selector: @- aspectRatio@
 aspectRatio :: IsVNContour vnContour => vnContour -> IO CFloat
-aspectRatio vnContour  =
-    sendMsg vnContour (mkSelector "aspectRatio") retCFloat []
+aspectRatio vnContour =
+  sendMessage vnContour aspectRatioSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VNContour)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNContour)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @childContourAtIndex:error:@
-childContourAtIndex_errorSelector :: Selector
+childContourAtIndex_errorSelector :: Selector '[CULong, Id NSError] (Id VNContour)
 childContourAtIndex_errorSelector = mkSelector "childContourAtIndex:error:"
 
 -- | @Selector@ for @polygonApproximationWithEpsilon:error:@
-polygonApproximationWithEpsilon_errorSelector :: Selector
+polygonApproximationWithEpsilon_errorSelector :: Selector '[CFloat, Id NSError] (Id VNContour)
 polygonApproximationWithEpsilon_errorSelector = mkSelector "polygonApproximationWithEpsilon:error:"
 
 -- | @Selector@ for @indexPath@
-indexPathSelector :: Selector
+indexPathSelector :: Selector '[] (Id NSIndexPath)
 indexPathSelector = mkSelector "indexPath"
 
 -- | @Selector@ for @childContourCount@
-childContourCountSelector :: Selector
+childContourCountSelector :: Selector '[] CLong
 childContourCountSelector = mkSelector "childContourCount"
 
 -- | @Selector@ for @childContours@
-childContoursSelector :: Selector
+childContoursSelector :: Selector '[] (Id NSArray)
 childContoursSelector = mkSelector "childContours"
 
 -- | @Selector@ for @pointCount@
-pointCountSelector :: Selector
+pointCountSelector :: Selector '[] CLong
 pointCountSelector = mkSelector "pointCount"
 
 -- | @Selector@ for @normalizedPoints@
-normalizedPointsSelector :: Selector
+normalizedPointsSelector :: Selector '[] RawId
 normalizedPointsSelector = mkSelector "normalizedPoints"
 
 -- | @Selector@ for @normalizedPath@
-normalizedPathSelector :: Selector
+normalizedPathSelector :: Selector '[] RawId
 normalizedPathSelector = mkSelector "normalizedPath"
 
 -- | @Selector@ for @aspectRatio@
-aspectRatioSelector :: Selector
+aspectRatioSelector :: Selector '[] CFloat
 aspectRatioSelector = mkSelector "aspectRatio"
 

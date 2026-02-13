@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRTimeSynchronizationClusterSetDSTOffsetParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , dstOffsetSelector
-  , setDstOffsetSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setDstOffsetSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- dstOffset@
 dstOffset :: IsMTRTimeSynchronizationClusterSetDSTOffsetParams mtrTimeSynchronizationClusterSetDSTOffsetParams => mtrTimeSynchronizationClusterSetDSTOffsetParams -> IO (Id NSArray)
-dstOffset mtrTimeSynchronizationClusterSetDSTOffsetParams  =
-    sendMsg mtrTimeSynchronizationClusterSetDSTOffsetParams (mkSelector "dstOffset") (retPtr retVoid) [] >>= retainedObject . castPtr
+dstOffset mtrTimeSynchronizationClusterSetDSTOffsetParams =
+  sendMessage mtrTimeSynchronizationClusterSetDSTOffsetParams dstOffsetSelector
 
 -- | @- setDstOffset:@
 setDstOffset :: (IsMTRTimeSynchronizationClusterSetDSTOffsetParams mtrTimeSynchronizationClusterSetDSTOffsetParams, IsNSArray value) => mtrTimeSynchronizationClusterSetDSTOffsetParams -> value -> IO ()
-setDstOffset mtrTimeSynchronizationClusterSetDSTOffsetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetDSTOffsetParams (mkSelector "setDstOffset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDstOffset mtrTimeSynchronizationClusterSetDSTOffsetParams value =
+  sendMessage mtrTimeSynchronizationClusterSetDSTOffsetParams setDstOffsetSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setDstOffset mtrTimeSynchronizationClusterSetDSTOffsetParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTimeSynchronizationClusterSetDSTOffsetParams mtrTimeSynchronizationClusterSetDSTOffsetParams => mtrTimeSynchronizationClusterSetDSTOffsetParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDSTOffsetParams  =
-    sendMsg mtrTimeSynchronizationClusterSetDSTOffsetParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDSTOffsetParams =
+  sendMessage mtrTimeSynchronizationClusterSetDSTOffsetParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDSTOffsetParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTimeSynchronizationClusterSetDSTOffsetParams mtrTimeSynchronizationClusterSetDSTOffsetParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetDSTOffsetParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDSTOffsetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetDSTOffsetParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDSTOffsetParams value =
+  sendMessage mtrTimeSynchronizationClusterSetDSTOffsetParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetDSTOffsetParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRTimeSynchronizationClusterSetDSTOffsetParams mtrTimeSynchronizationClusterSetDSTOffsetParams => mtrTimeSynchronizationClusterSetDSTOffsetParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrTimeSynchronizationClusterSetDSTOffsetParams  =
-    sendMsg mtrTimeSynchronizationClusterSetDSTOffsetParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrTimeSynchronizationClusterSetDSTOffsetParams =
+  sendMessage mtrTimeSynchronizationClusterSetDSTOffsetParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrTimeSynchronizationClusterSetDSTOffsetParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRTimeSynchronizationClusterSetDSTOffsetParams mtrTimeSynchronizationClusterSetDSTOffsetParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetDSTOffsetParams -> value -> IO ()
-setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetDSTOffsetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetDSTOffsetParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetDSTOffsetParams value =
+  sendMessage mtrTimeSynchronizationClusterSetDSTOffsetParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dstOffset@
-dstOffsetSelector :: Selector
+dstOffsetSelector :: Selector '[] (Id NSArray)
 dstOffsetSelector = mkSelector "dstOffset"
 
 -- | @Selector@ for @setDstOffset:@
-setDstOffsetSelector :: Selector
+setDstOffsetSelector :: Selector '[Id NSArray] ()
 setDstOffsetSelector = mkSelector "setDstOffset:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

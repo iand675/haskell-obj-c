@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,40 +44,36 @@ module ObjC.ShazamKit.SHMediaItem
   , timeRanges
   , frequencySkewRanges
   , creationDate
-  , mediaItemWithPropertiesSelector
-  , fetchMediaItemWithShazamID_completionHandlerSelector
-  , valueForPropertySelector
-  , objectForKeyedSubscriptSelector
-  , newSelector
-  , initSelector
-  , shazamIDSelector
-  , titleSelector
-  , subtitleSelector
-  , artistSelector
-  , genresSelector
   , appleMusicIDSelector
   , appleMusicURLSelector
-  , webURLSelector
+  , artistSelector
   , artworkURLSelector
-  , videoURLSelector
-  , explicitContentSelector
-  , isrcSelector
-  , timeRangesSelector
-  , frequencySkewRangesSelector
   , creationDateSelector
+  , explicitContentSelector
+  , fetchMediaItemWithShazamID_completionHandlerSelector
+  , frequencySkewRangesSelector
+  , genresSelector
+  , initSelector
+  , isrcSelector
+  , mediaItemWithPropertiesSelector
+  , newSelector
+  , objectForKeyedSubscriptSelector
+  , shazamIDSelector
+  , subtitleSelector
+  , timeRangesSelector
+  , titleSelector
+  , valueForPropertySelector
+  , videoURLSelector
+  , webURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,8 +89,7 @@ mediaItemWithProperties :: IsNSDictionary properties => properties -> IO (Id SHM
 mediaItemWithProperties properties =
   do
     cls' <- getRequiredClass "SHMediaItem"
-    withObjCPtr properties $ \raw_properties ->
-      sendClassMsg cls' (mkSelector "mediaItemWithProperties:") (retPtr retVoid) [argPtr (castPtr raw_properties :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' mediaItemWithPropertiesSelector (toNSDictionary properties)
 
 -- | Requests the media item for the song with the specified Shazam ID.
 --
@@ -110,8 +106,7 @@ fetchMediaItemWithShazamID_completionHandler :: IsNSString shazamID => shazamID 
 fetchMediaItemWithShazamID_completionHandler shazamID completionHandler =
   do
     cls' <- getRequiredClass "SHMediaItem"
-    withObjCPtr shazamID $ \raw_shazamID ->
-      sendClassMsg cls' (mkSelector "fetchMediaItemWithShazamID:completionHandler:") retVoid [argPtr (castPtr raw_shazamID :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' fetchMediaItemWithShazamID_completionHandlerSelector (toNSString shazamID) completionHandler
 
 -- | Accesses the property for the specified key for reading.
 --
@@ -121,9 +116,8 @@ fetchMediaItemWithShazamID_completionHandler shazamID completionHandler =
 --
 -- ObjC selector: @- valueForProperty:@
 valueForProperty :: (IsSHMediaItem shMediaItem, IsNSString property) => shMediaItem -> property -> IO RawId
-valueForProperty shMediaItem  property =
-  withObjCPtr property $ \raw_property ->
-      fmap (RawId . castPtr) $ sendMsg shMediaItem (mkSelector "valueForProperty:") (retPtr retVoid) [argPtr (castPtr raw_property :: Ptr ())]
+valueForProperty shMediaItem property =
+  sendMessage shMediaItem valueForPropertySelector (toNSString property)
 
 -- | Accesses the property for the specified key for reading.
 --
@@ -133,49 +127,48 @@ valueForProperty shMediaItem  property =
 --
 -- ObjC selector: @- objectForKeyedSubscript:@
 objectForKeyedSubscript :: (IsSHMediaItem shMediaItem, IsNSString key) => shMediaItem -> key -> IO RawId
-objectForKeyedSubscript shMediaItem  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg shMediaItem (mkSelector "objectForKeyedSubscript:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+objectForKeyedSubscript shMediaItem key =
+  sendMessage shMediaItem objectForKeyedSubscriptSelector (toNSString key)
 
 -- | @+ new@
 new :: IO (Id SHMediaItem)
 new  =
   do
     cls' <- getRequiredClass "SHMediaItem"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id SHMediaItem)
-init_ shMediaItem  =
-    sendMsg shMediaItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ shMediaItem =
+  sendOwnedMessage shMediaItem initSelector
 
 -- | The Shazam ID for the song.
 --
 -- ObjC selector: @- shazamID@
 shazamID :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSString)
-shazamID shMediaItem  =
-    sendMsg shMediaItem (mkSelector "shazamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+shazamID shMediaItem =
+  sendMessage shMediaItem shazamIDSelector
 
 -- | A title for the media item.
 --
 -- ObjC selector: @- title@
 title :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSString)
-title shMediaItem  =
-    sendMsg shMediaItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title shMediaItem =
+  sendMessage shMediaItem titleSelector
 
 -- | A subtitle for the media item.
 --
 -- ObjC selector: @- subtitle@
 subtitle :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSString)
-subtitle shMediaItem  =
-    sendMsg shMediaItem (mkSelector "subtitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+subtitle shMediaItem =
+  sendMessage shMediaItem subtitleSelector
 
 -- | The name of the artist for the media item, such as the performer of a song.
 --
 -- ObjC selector: @- artist@
 artist :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSString)
-artist shMediaItem  =
-    sendMsg shMediaItem (mkSelector "artist") (retPtr retVoid) [] >>= retainedObject . castPtr
+artist shMediaItem =
+  sendMessage shMediaItem artistSelector
 
 -- | An array of genre names for the media item.
 --
@@ -183,22 +176,22 @@ artist shMediaItem  =
 --
 -- ObjC selector: @- genres@
 genres :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSArray)
-genres shMediaItem  =
-    sendMsg shMediaItem (mkSelector "genres") (retPtr retVoid) [] >>= retainedObject . castPtr
+genres shMediaItem =
+  sendMessage shMediaItem genresSelector
 
 -- | The Apple Music ID for the song.
 --
 -- ObjC selector: @- appleMusicID@
 appleMusicID :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSString)
-appleMusicID shMediaItem  =
-    sendMsg shMediaItem (mkSelector "appleMusicID") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleMusicID shMediaItem =
+  sendMessage shMediaItem appleMusicIDSelector
 
 -- | A link to the Apple Music page that contains the full information for the song.
 --
 -- ObjC selector: @- appleMusicURL@
 appleMusicURL :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSURL)
-appleMusicURL shMediaItem  =
-    sendMsg shMediaItem (mkSelector "appleMusicURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleMusicURL shMediaItem =
+  sendMessage shMediaItem appleMusicURLSelector
 
 -- | A link to the Shazam Music catalog page that contains the full information for the song.
 --
@@ -206,143 +199,143 @@ appleMusicURL shMediaItem  =
 --
 -- ObjC selector: @- webURL@
 webURL :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSURL)
-webURL shMediaItem  =
-    sendMsg shMediaItem (mkSelector "webURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+webURL shMediaItem =
+  sendMessage shMediaItem webURLSelector
 
 -- | The URL for artwork for the media item, such as an album cover.
 --
 -- ObjC selector: @- artworkURL@
 artworkURL :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSURL)
-artworkURL shMediaItem  =
-    sendMsg shMediaItem (mkSelector "artworkURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+artworkURL shMediaItem =
+  sendMessage shMediaItem artworkURLSelector
 
 -- | The URL for a video for the media item, such as a music video.
 --
 -- ObjC selector: @- videoURL@
 videoURL :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSURL)
-videoURL shMediaItem  =
-    sendMsg shMediaItem (mkSelector "videoURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoURL shMediaItem =
+  sendMessage shMediaItem videoURLSelector
 
 -- | A Boolean value that indicates whether the media item contains explicit content.
 --
 -- ObjC selector: @- explicitContent@
 explicitContent :: IsSHMediaItem shMediaItem => shMediaItem -> IO Bool
-explicitContent shMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg shMediaItem (mkSelector "explicitContent") retCULong []
+explicitContent shMediaItem =
+  sendMessage shMediaItem explicitContentSelector
 
 -- | The International Standard Recording Code (ISRC) for the media item.
 --
 -- ObjC selector: @- isrc@
 isrc :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSString)
-isrc shMediaItem  =
-    sendMsg shMediaItem (mkSelector "isrc") (retPtr retVoid) [] >>= retainedObject . castPtr
+isrc shMediaItem =
+  sendMessage shMediaItem isrcSelector
 
 -- | An array of ranges that indicate the offsets within the reference signature that this media item describes.
 --
 -- ObjC selector: @- timeRanges@
 timeRanges :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSArray)
-timeRanges shMediaItem  =
-    sendMsg shMediaItem (mkSelector "timeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeRanges shMediaItem =
+  sendMessage shMediaItem timeRangesSelector
 
 -- | An array of ranges that indicate the frequency skews in the reference signature that this media item describes.
 --
 -- ObjC selector: @- frequencySkewRanges@
 frequencySkewRanges :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSArray)
-frequencySkewRanges shMediaItem  =
-    sendMsg shMediaItem (mkSelector "frequencySkewRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+frequencySkewRanges shMediaItem =
+  sendMessage shMediaItem frequencySkewRangesSelector
 
 -- | The date the media item was created.
 --
 -- ObjC selector: @- creationDate@
 creationDate :: IsSHMediaItem shMediaItem => shMediaItem -> IO (Id NSDate)
-creationDate shMediaItem  =
-    sendMsg shMediaItem (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate shMediaItem =
+  sendMessage shMediaItem creationDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mediaItemWithProperties:@
-mediaItemWithPropertiesSelector :: Selector
+mediaItemWithPropertiesSelector :: Selector '[Id NSDictionary] (Id SHMediaItem)
 mediaItemWithPropertiesSelector = mkSelector "mediaItemWithProperties:"
 
 -- | @Selector@ for @fetchMediaItemWithShazamID:completionHandler:@
-fetchMediaItemWithShazamID_completionHandlerSelector :: Selector
+fetchMediaItemWithShazamID_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 fetchMediaItemWithShazamID_completionHandlerSelector = mkSelector "fetchMediaItemWithShazamID:completionHandler:"
 
 -- | @Selector@ for @valueForProperty:@
-valueForPropertySelector :: Selector
+valueForPropertySelector :: Selector '[Id NSString] RawId
 valueForPropertySelector = mkSelector "valueForProperty:"
 
 -- | @Selector@ for @objectForKeyedSubscript:@
-objectForKeyedSubscriptSelector :: Selector
+objectForKeyedSubscriptSelector :: Selector '[Id NSString] RawId
 objectForKeyedSubscriptSelector = mkSelector "objectForKeyedSubscript:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SHMediaItem)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SHMediaItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @shazamID@
-shazamIDSelector :: Selector
+shazamIDSelector :: Selector '[] (Id NSString)
 shazamIDSelector = mkSelector "shazamID"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @subtitle@
-subtitleSelector :: Selector
+subtitleSelector :: Selector '[] (Id NSString)
 subtitleSelector = mkSelector "subtitle"
 
 -- | @Selector@ for @artist@
-artistSelector :: Selector
+artistSelector :: Selector '[] (Id NSString)
 artistSelector = mkSelector "artist"
 
 -- | @Selector@ for @genres@
-genresSelector :: Selector
+genresSelector :: Selector '[] (Id NSArray)
 genresSelector = mkSelector "genres"
 
 -- | @Selector@ for @appleMusicID@
-appleMusicIDSelector :: Selector
+appleMusicIDSelector :: Selector '[] (Id NSString)
 appleMusicIDSelector = mkSelector "appleMusicID"
 
 -- | @Selector@ for @appleMusicURL@
-appleMusicURLSelector :: Selector
+appleMusicURLSelector :: Selector '[] (Id NSURL)
 appleMusicURLSelector = mkSelector "appleMusicURL"
 
 -- | @Selector@ for @webURL@
-webURLSelector :: Selector
+webURLSelector :: Selector '[] (Id NSURL)
 webURLSelector = mkSelector "webURL"
 
 -- | @Selector@ for @artworkURL@
-artworkURLSelector :: Selector
+artworkURLSelector :: Selector '[] (Id NSURL)
 artworkURLSelector = mkSelector "artworkURL"
 
 -- | @Selector@ for @videoURL@
-videoURLSelector :: Selector
+videoURLSelector :: Selector '[] (Id NSURL)
 videoURLSelector = mkSelector "videoURL"
 
 -- | @Selector@ for @explicitContent@
-explicitContentSelector :: Selector
+explicitContentSelector :: Selector '[] Bool
 explicitContentSelector = mkSelector "explicitContent"
 
 -- | @Selector@ for @isrc@
-isrcSelector :: Selector
+isrcSelector :: Selector '[] (Id NSString)
 isrcSelector = mkSelector "isrc"
 
 -- | @Selector@ for @timeRanges@
-timeRangesSelector :: Selector
+timeRangesSelector :: Selector '[] (Id NSArray)
 timeRangesSelector = mkSelector "timeRanges"
 
 -- | @Selector@ for @frequencySkewRanges@
-frequencySkewRangesSelector :: Selector
+frequencySkewRangesSelector :: Selector '[] (Id NSArray)
 frequencySkewRangesSelector = mkSelector "frequencySkewRanges"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 

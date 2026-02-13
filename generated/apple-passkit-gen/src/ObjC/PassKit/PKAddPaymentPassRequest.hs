@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.PassKit.PKAddPaymentPassRequest
   , setEphemeralPublicKey
   , wrappedKey
   , setWrappedKey
-  , initSelector
-  , encryptedPassDataSelector
-  , setEncryptedPassDataSelector
   , activationDataSelector
-  , setActivationDataSelector
+  , encryptedPassDataSelector
   , ephemeralPublicKeySelector
+  , initSelector
+  , setActivationDataSelector
+  , setEncryptedPassDataSelector
   , setEphemeralPublicKeySelector
-  , wrappedKeySelector
   , setWrappedKeySelector
+  , wrappedKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,90 +42,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPKAddPaymentPassRequest pkAddPaymentPassRequest => pkAddPaymentPassRequest -> IO (Id PKAddPaymentPassRequest)
-init_ pkAddPaymentPassRequest  =
-    sendMsg pkAddPaymentPassRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkAddPaymentPassRequest =
+  sendOwnedMessage pkAddPaymentPassRequest initSelector
 
 -- | @- encryptedPassData@
 encryptedPassData :: IsPKAddPaymentPassRequest pkAddPaymentPassRequest => pkAddPaymentPassRequest -> IO (Id NSData)
-encryptedPassData pkAddPaymentPassRequest  =
-    sendMsg pkAddPaymentPassRequest (mkSelector "encryptedPassData") (retPtr retVoid) [] >>= retainedObject . castPtr
+encryptedPassData pkAddPaymentPassRequest =
+  sendMessage pkAddPaymentPassRequest encryptedPassDataSelector
 
 -- | @- setEncryptedPassData:@
 setEncryptedPassData :: (IsPKAddPaymentPassRequest pkAddPaymentPassRequest, IsNSData value) => pkAddPaymentPassRequest -> value -> IO ()
-setEncryptedPassData pkAddPaymentPassRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequest (mkSelector "setEncryptedPassData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEncryptedPassData pkAddPaymentPassRequest value =
+  sendMessage pkAddPaymentPassRequest setEncryptedPassDataSelector (toNSData value)
 
 -- | @- activationData@
 activationData :: IsPKAddPaymentPassRequest pkAddPaymentPassRequest => pkAddPaymentPassRequest -> IO (Id NSData)
-activationData pkAddPaymentPassRequest  =
-    sendMsg pkAddPaymentPassRequest (mkSelector "activationData") (retPtr retVoid) [] >>= retainedObject . castPtr
+activationData pkAddPaymentPassRequest =
+  sendMessage pkAddPaymentPassRequest activationDataSelector
 
 -- | @- setActivationData:@
 setActivationData :: (IsPKAddPaymentPassRequest pkAddPaymentPassRequest, IsNSData value) => pkAddPaymentPassRequest -> value -> IO ()
-setActivationData pkAddPaymentPassRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequest (mkSelector "setActivationData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActivationData pkAddPaymentPassRequest value =
+  sendMessage pkAddPaymentPassRequest setActivationDataSelector (toNSData value)
 
 -- | @- ephemeralPublicKey@
 ephemeralPublicKey :: IsPKAddPaymentPassRequest pkAddPaymentPassRequest => pkAddPaymentPassRequest -> IO (Id NSData)
-ephemeralPublicKey pkAddPaymentPassRequest  =
-    sendMsg pkAddPaymentPassRequest (mkSelector "ephemeralPublicKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+ephemeralPublicKey pkAddPaymentPassRequest =
+  sendMessage pkAddPaymentPassRequest ephemeralPublicKeySelector
 
 -- | @- setEphemeralPublicKey:@
 setEphemeralPublicKey :: (IsPKAddPaymentPassRequest pkAddPaymentPassRequest, IsNSData value) => pkAddPaymentPassRequest -> value -> IO ()
-setEphemeralPublicKey pkAddPaymentPassRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequest (mkSelector "setEphemeralPublicKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEphemeralPublicKey pkAddPaymentPassRequest value =
+  sendMessage pkAddPaymentPassRequest setEphemeralPublicKeySelector (toNSData value)
 
 -- | @- wrappedKey@
 wrappedKey :: IsPKAddPaymentPassRequest pkAddPaymentPassRequest => pkAddPaymentPassRequest -> IO (Id NSData)
-wrappedKey pkAddPaymentPassRequest  =
-    sendMsg pkAddPaymentPassRequest (mkSelector "wrappedKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+wrappedKey pkAddPaymentPassRequest =
+  sendMessage pkAddPaymentPassRequest wrappedKeySelector
 
 -- | @- setWrappedKey:@
 setWrappedKey :: (IsPKAddPaymentPassRequest pkAddPaymentPassRequest, IsNSData value) => pkAddPaymentPassRequest -> value -> IO ()
-setWrappedKey pkAddPaymentPassRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddPaymentPassRequest (mkSelector "setWrappedKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWrappedKey pkAddPaymentPassRequest value =
+  sendMessage pkAddPaymentPassRequest setWrappedKeySelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKAddPaymentPassRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @encryptedPassData@
-encryptedPassDataSelector :: Selector
+encryptedPassDataSelector :: Selector '[] (Id NSData)
 encryptedPassDataSelector = mkSelector "encryptedPassData"
 
 -- | @Selector@ for @setEncryptedPassData:@
-setEncryptedPassDataSelector :: Selector
+setEncryptedPassDataSelector :: Selector '[Id NSData] ()
 setEncryptedPassDataSelector = mkSelector "setEncryptedPassData:"
 
 -- | @Selector@ for @activationData@
-activationDataSelector :: Selector
+activationDataSelector :: Selector '[] (Id NSData)
 activationDataSelector = mkSelector "activationData"
 
 -- | @Selector@ for @setActivationData:@
-setActivationDataSelector :: Selector
+setActivationDataSelector :: Selector '[Id NSData] ()
 setActivationDataSelector = mkSelector "setActivationData:"
 
 -- | @Selector@ for @ephemeralPublicKey@
-ephemeralPublicKeySelector :: Selector
+ephemeralPublicKeySelector :: Selector '[] (Id NSData)
 ephemeralPublicKeySelector = mkSelector "ephemeralPublicKey"
 
 -- | @Selector@ for @setEphemeralPublicKey:@
-setEphemeralPublicKeySelector :: Selector
+setEphemeralPublicKeySelector :: Selector '[Id NSData] ()
 setEphemeralPublicKeySelector = mkSelector "setEphemeralPublicKey:"
 
 -- | @Selector@ for @wrappedKey@
-wrappedKeySelector :: Selector
+wrappedKeySelector :: Selector '[] (Id NSData)
 wrappedKeySelector = mkSelector "wrappedKey"
 
 -- | @Selector@ for @setWrappedKey:@
-setWrappedKeySelector :: Selector
+setWrappedKeySelector :: Selector '[Id NSData] ()
 setWrappedKeySelector = mkSelector "setWrappedKey:"
 

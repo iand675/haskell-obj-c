@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.CryptoTokenKit.TKBERTLVRecord
   , initWithTag_value
   , initWithTag_records
   , dataForTagSelector
-  , initWithTag_valueSelector
   , initWithTag_recordsSelector
+  , initWithTag_valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,7 +41,7 @@ dataForTag :: CULong -> IO (Id NSData)
 dataForTag tag =
   do
     cls' <- getRequiredClass "TKBERTLVRecord"
-    sendClassMsg cls' (mkSelector "dataForTag:") (retPtr retVoid) [argCULong tag] >>= retainedObject . castPtr
+    sendClassMessage cls' dataForTagSelector tag
 
 -- | Creates TLV record with specified tag and value.
 --
@@ -56,9 +53,8 @@ dataForTag tag =
 --
 -- ObjC selector: @- initWithTag:value:@
 initWithTag_value :: (IsTKBERTLVRecord tkbertlvRecord, IsNSData value) => tkbertlvRecord -> CULong -> value -> IO (Id TKBERTLVRecord)
-initWithTag_value tkbertlvRecord  tag value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkbertlvRecord (mkSelector "initWithTag:value:") (retPtr retVoid) [argCULong tag, argPtr (castPtr raw_value :: Ptr ())] >>= ownedObject . castPtr
+initWithTag_value tkbertlvRecord tag value =
+  sendOwnedMessage tkbertlvRecord initWithTag_valueSelector tag (toNSData value)
 
 -- | Creates TKBERTLVRecord with specified tag and array of children TKTLVRecord instances as subrecords.
 --
@@ -70,23 +66,22 @@ initWithTag_value tkbertlvRecord  tag value =
 --
 -- ObjC selector: @- initWithTag:records:@
 initWithTag_records :: (IsTKBERTLVRecord tkbertlvRecord, IsNSArray records) => tkbertlvRecord -> CULong -> records -> IO (Id TKBERTLVRecord)
-initWithTag_records tkbertlvRecord  tag records =
-  withObjCPtr records $ \raw_records ->
-      sendMsg tkbertlvRecord (mkSelector "initWithTag:records:") (retPtr retVoid) [argCULong tag, argPtr (castPtr raw_records :: Ptr ())] >>= ownedObject . castPtr
+initWithTag_records tkbertlvRecord tag records =
+  sendOwnedMessage tkbertlvRecord initWithTag_recordsSelector tag (toNSArray records)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dataForTag:@
-dataForTagSelector :: Selector
+dataForTagSelector :: Selector '[CULong] (Id NSData)
 dataForTagSelector = mkSelector "dataForTag:"
 
 -- | @Selector@ for @initWithTag:value:@
-initWithTag_valueSelector :: Selector
+initWithTag_valueSelector :: Selector '[CULong, Id NSData] (Id TKBERTLVRecord)
 initWithTag_valueSelector = mkSelector "initWithTag:value:"
 
 -- | @Selector@ for @initWithTag:records:@
-initWithTag_recordsSelector :: Selector
+initWithTag_recordsSelector :: Selector '[CULong, Id NSArray] (Id TKBERTLVRecord)
 initWithTag_recordsSelector = mkSelector "initWithTag:records:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.AVFoundation.AVSampleBufferGeneratorBatch
   , new
   , makeDataReadyWithCompletionHandler
   , cancel
-  , initSelector
-  , newSelector
-  , makeDataReadyWithCompletionHandlerSelector
   , cancelSelector
+  , initSelector
+  , makeDataReadyWithCompletionHandlerSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVSampleBufferGeneratorBatch avSampleBufferGeneratorBatch => avSampleBufferGeneratorBatch -> IO (Id AVSampleBufferGeneratorBatch)
-init_ avSampleBufferGeneratorBatch  =
-    sendMsg avSampleBufferGeneratorBatch (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avSampleBufferGeneratorBatch =
+  sendOwnedMessage avSampleBufferGeneratorBatch initSelector
 
 -- | @+ new@
 new :: IO (Id AVSampleBufferGeneratorBatch)
 new  =
   do
     cls' <- getRequiredClass "AVSampleBufferGeneratorBatch"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | makeDataReadyWithCompletionHandler:
 --
@@ -59,8 +56,8 @@ new  =
 --
 -- ObjC selector: @- makeDataReadyWithCompletionHandler:@
 makeDataReadyWithCompletionHandler :: IsAVSampleBufferGeneratorBatch avSampleBufferGeneratorBatch => avSampleBufferGeneratorBatch -> Ptr () -> IO ()
-makeDataReadyWithCompletionHandler avSampleBufferGeneratorBatch  completionHandler =
-    sendMsg avSampleBufferGeneratorBatch (mkSelector "makeDataReadyWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+makeDataReadyWithCompletionHandler avSampleBufferGeneratorBatch completionHandler =
+  sendMessage avSampleBufferGeneratorBatch makeDataReadyWithCompletionHandlerSelector completionHandler
 
 -- | cancel
 --
@@ -68,26 +65,26 @@ makeDataReadyWithCompletionHandler avSampleBufferGeneratorBatch  completionHandl
 --
 -- ObjC selector: @- cancel@
 cancel :: IsAVSampleBufferGeneratorBatch avSampleBufferGeneratorBatch => avSampleBufferGeneratorBatch -> IO ()
-cancel avSampleBufferGeneratorBatch  =
-    sendMsg avSampleBufferGeneratorBatch (mkSelector "cancel") retVoid []
+cancel avSampleBufferGeneratorBatch =
+  sendMessage avSampleBufferGeneratorBatch cancelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVSampleBufferGeneratorBatch)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVSampleBufferGeneratorBatch)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @makeDataReadyWithCompletionHandler:@
-makeDataReadyWithCompletionHandlerSelector :: Selector
+makeDataReadyWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 makeDataReadyWithCompletionHandlerSelector = mkSelector "makeDataReadyWithCompletionHandler:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 

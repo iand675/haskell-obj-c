@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,41 +31,37 @@ module ObjC.Matter.MTRClusterZoneManagement
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , createTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector
-  , updateTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector
-  , removeZoneWithParams_expectedValues_expectedValueInterval_completionSelector
   , createOrUpdateTriggerWithParams_expectedValues_expectedValueInterval_completionSelector
-  , removeTriggerWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeMaxUserDefinedZonesWithParamsSelector
-  , readAttributeMaxZonesWithParamsSelector
-  , readAttributeZonesWithParamsSelector
-  , readAttributeTriggersWithParamsSelector
-  , readAttributeSensitivityMaxWithParamsSelector
-  , readAttributeSensitivityWithParamsSelector
-  , writeAttributeSensitivityWithValue_expectedValueIntervalSelector
-  , writeAttributeSensitivityWithValue_expectedValueInterval_paramsSelector
-  , readAttributeTwoDCartesianMaxWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , createTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeMaxUserDefinedZonesWithParamsSelector
+  , readAttributeMaxZonesWithParamsSelector
+  , readAttributeSensitivityMaxWithParamsSelector
+  , readAttributeSensitivityWithParamsSelector
+  , readAttributeTriggersWithParamsSelector
+  , readAttributeTwoDCartesianMaxWithParamsSelector
+  , readAttributeZonesWithParamsSelector
+  , removeTriggerWithParams_expectedValues_expectedValueInterval_completionSelector
+  , removeZoneWithParams_expectedValues_expectedValueInterval_completionSelector
+  , updateTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector
+  , writeAttributeSensitivityWithValue_expectedValueIntervalSelector
+  , writeAttributeSensitivityWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,242 +70,207 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- createTwoDCartesianZoneWithParams:expectedValues:expectedValueInterval:completion:@
 createTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRZoneManagementClusterCreateTwoDCartesianZoneParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterZoneManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-createTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterZoneManagement (mkSelector "createTwoDCartesianZoneWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+createTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterZoneManagement createTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRZoneManagementClusterCreateTwoDCartesianZoneParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- updateTwoDCartesianZoneWithParams:expectedValues:expectedValueInterval:completion:@
 updateTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRZoneManagementClusterUpdateTwoDCartesianZoneParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterZoneManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-updateTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterZoneManagement (mkSelector "updateTwoDCartesianZoneWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+updateTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterZoneManagement updateTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRZoneManagementClusterUpdateTwoDCartesianZoneParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- removeZoneWithParams:expectedValues:expectedValueInterval:completion:@
 removeZoneWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRZoneManagementClusterRemoveZoneParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterZoneManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-removeZoneWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterZoneManagement (mkSelector "removeZoneWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeZoneWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterZoneManagement removeZoneWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRZoneManagementClusterRemoveZoneParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- createOrUpdateTriggerWithParams:expectedValues:expectedValueInterval:completion:@
 createOrUpdateTriggerWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRZoneManagementClusterCreateOrUpdateTriggerParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterZoneManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-createOrUpdateTriggerWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterZoneManagement (mkSelector "createOrUpdateTriggerWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+createOrUpdateTriggerWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterZoneManagement createOrUpdateTriggerWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRZoneManagementClusterCreateOrUpdateTriggerParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- removeTriggerWithParams:expectedValues:expectedValueInterval:completion:@
 removeTriggerWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRZoneManagementClusterRemoveTriggerParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterZoneManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-removeTriggerWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterZoneManagement (mkSelector "removeTriggerWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeTriggerWithParams_expectedValues_expectedValueInterval_completion mtrClusterZoneManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterZoneManagement removeTriggerWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRZoneManagementClusterRemoveTriggerParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeMaxUserDefinedZonesWithParams:@
 readAttributeMaxUserDefinedZonesWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeMaxUserDefinedZonesWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeMaxUserDefinedZonesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxUserDefinedZonesWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeMaxUserDefinedZonesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaxZonesWithParams:@
 readAttributeMaxZonesWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeMaxZonesWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeMaxZonesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxZonesWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeMaxZonesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeZonesWithParams:@
 readAttributeZonesWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeZonesWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeZonesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeZonesWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeZonesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeTriggersWithParams:@
 readAttributeTriggersWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeTriggersWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeTriggersWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTriggersWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeTriggersWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSensitivityMaxWithParams:@
 readAttributeSensitivityMaxWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeSensitivityMaxWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeSensitivityMaxWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSensitivityMaxWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeSensitivityMaxWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSensitivityWithParams:@
 readAttributeSensitivityWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeSensitivityWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeSensitivityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSensitivityWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeSensitivityWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeSensitivityWithValue:expectedValueInterval:@
 writeAttributeSensitivityWithValue_expectedValueInterval :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterZoneManagement -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeSensitivityWithValue_expectedValueInterval mtrClusterZoneManagement  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterZoneManagement (mkSelector "writeAttributeSensitivityWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeSensitivityWithValue_expectedValueInterval mtrClusterZoneManagement dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterZoneManagement writeAttributeSensitivityWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeSensitivityWithValue:expectedValueInterval:params:@
 writeAttributeSensitivityWithValue_expectedValueInterval_params :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterZoneManagement -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeSensitivityWithValue_expectedValueInterval_params mtrClusterZoneManagement  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterZoneManagement (mkSelector "writeAttributeSensitivityWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeSensitivityWithValue_expectedValueInterval_params mtrClusterZoneManagement dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterZoneManagement writeAttributeSensitivityWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeTwoDCartesianMaxWithParams:@
 readAttributeTwoDCartesianMaxWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeTwoDCartesianMaxWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeTwoDCartesianMaxWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTwoDCartesianMaxWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeTwoDCartesianMaxWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRReadParams params) => mtrClusterZoneManagement -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterZoneManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterZoneManagement (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterZoneManagement params =
+  sendMessage mtrClusterZoneManagement readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterZoneManagement mtrClusterZoneManagement => mtrClusterZoneManagement -> IO (Id MTRClusterZoneManagement)
-init_ mtrClusterZoneManagement  =
-    sendMsg mtrClusterZoneManagement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterZoneManagement =
+  sendOwnedMessage mtrClusterZoneManagement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterZoneManagement)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterZoneManagement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterZoneManagement mtrClusterZoneManagement, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterZoneManagement -> device -> endpointID -> queue -> IO (Id MTRClusterZoneManagement)
-initWithDevice_endpointID_queue mtrClusterZoneManagement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterZoneManagement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterZoneManagement device endpointID queue =
+  sendOwnedMessage mtrClusterZoneManagement initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createTwoDCartesianZoneWithParams:expectedValues:expectedValueInterval:completion:@
-createTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+createTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRZoneManagementClusterCreateTwoDCartesianZoneParams, Id NSArray, Id NSNumber, Ptr ()] ()
 createTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "createTwoDCartesianZoneWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @updateTwoDCartesianZoneWithParams:expectedValues:expectedValueInterval:completion:@
-updateTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+updateTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRZoneManagementClusterUpdateTwoDCartesianZoneParams, Id NSArray, Id NSNumber, Ptr ()] ()
 updateTwoDCartesianZoneWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "updateTwoDCartesianZoneWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @removeZoneWithParams:expectedValues:expectedValueInterval:completion:@
-removeZoneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+removeZoneWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRZoneManagementClusterRemoveZoneParams, Id NSArray, Id NSNumber, Ptr ()] ()
 removeZoneWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "removeZoneWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @createOrUpdateTriggerWithParams:expectedValues:expectedValueInterval:completion:@
-createOrUpdateTriggerWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+createOrUpdateTriggerWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRZoneManagementClusterCreateOrUpdateTriggerParams, Id NSArray, Id NSNumber, Ptr ()] ()
 createOrUpdateTriggerWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "createOrUpdateTriggerWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @removeTriggerWithParams:expectedValues:expectedValueInterval:completion:@
-removeTriggerWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+removeTriggerWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRZoneManagementClusterRemoveTriggerParams, Id NSArray, Id NSNumber, Ptr ()] ()
 removeTriggerWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "removeTriggerWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeMaxUserDefinedZonesWithParams:@
-readAttributeMaxUserDefinedZonesWithParamsSelector :: Selector
+readAttributeMaxUserDefinedZonesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxUserDefinedZonesWithParamsSelector = mkSelector "readAttributeMaxUserDefinedZonesWithParams:"
 
 -- | @Selector@ for @readAttributeMaxZonesWithParams:@
-readAttributeMaxZonesWithParamsSelector :: Selector
+readAttributeMaxZonesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxZonesWithParamsSelector = mkSelector "readAttributeMaxZonesWithParams:"
 
 -- | @Selector@ for @readAttributeZonesWithParams:@
-readAttributeZonesWithParamsSelector :: Selector
+readAttributeZonesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeZonesWithParamsSelector = mkSelector "readAttributeZonesWithParams:"
 
 -- | @Selector@ for @readAttributeTriggersWithParams:@
-readAttributeTriggersWithParamsSelector :: Selector
+readAttributeTriggersWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTriggersWithParamsSelector = mkSelector "readAttributeTriggersWithParams:"
 
 -- | @Selector@ for @readAttributeSensitivityMaxWithParams:@
-readAttributeSensitivityMaxWithParamsSelector :: Selector
+readAttributeSensitivityMaxWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSensitivityMaxWithParamsSelector = mkSelector "readAttributeSensitivityMaxWithParams:"
 
 -- | @Selector@ for @readAttributeSensitivityWithParams:@
-readAttributeSensitivityWithParamsSelector :: Selector
+readAttributeSensitivityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSensitivityWithParamsSelector = mkSelector "readAttributeSensitivityWithParams:"
 
 -- | @Selector@ for @writeAttributeSensitivityWithValue:expectedValueInterval:@
-writeAttributeSensitivityWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeSensitivityWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeSensitivityWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeSensitivityWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeSensitivityWithValue:expectedValueInterval:params:@
-writeAttributeSensitivityWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeSensitivityWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeSensitivityWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeSensitivityWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeTwoDCartesianMaxWithParams:@
-readAttributeTwoDCartesianMaxWithParamsSelector :: Selector
+readAttributeTwoDCartesianMaxWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTwoDCartesianMaxWithParamsSelector = mkSelector "readAttributeTwoDCartesianMaxWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterZoneManagement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterZoneManagement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterZoneManagement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

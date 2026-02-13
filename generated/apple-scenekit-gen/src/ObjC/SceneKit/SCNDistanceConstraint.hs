@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.SceneKit.SCNDistanceConstraint
   , maximumDistance
   , setMaximumDistance
   , distanceConstraintWithTargetSelector
-  , targetSelector
-  , setTargetSelector
-  , minimumDistanceSelector
-  , setMinimumDistanceSelector
   , maximumDistanceSelector
+  , minimumDistanceSelector
   , setMaximumDistanceSelector
+  , setMinimumDistanceSelector
+  , setTargetSelector
+  , targetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,8 +49,7 @@ distanceConstraintWithTarget :: IsSCNNode target => target -> IO (Id SCNDistance
 distanceConstraintWithTarget target =
   do
     cls' <- getRequiredClass "SCNDistanceConstraint"
-    withObjCPtr target $ \raw_target ->
-      sendClassMsg cls' (mkSelector "distanceConstraintWithTarget:") (retPtr retVoid) [argPtr (castPtr raw_target :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' distanceConstraintWithTargetSelector (toSCNNode target)
 
 -- | target
 --
@@ -61,8 +57,8 @@ distanceConstraintWithTarget target =
 --
 -- ObjC selector: @- target@
 target :: IsSCNDistanceConstraint scnDistanceConstraint => scnDistanceConstraint -> IO (Id SCNNode)
-target scnDistanceConstraint  =
-    sendMsg scnDistanceConstraint (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target scnDistanceConstraint =
+  sendMessage scnDistanceConstraint targetSelector
 
 -- | target
 --
@@ -70,9 +66,8 @@ target scnDistanceConstraint  =
 --
 -- ObjC selector: @- setTarget:@
 setTarget :: (IsSCNDistanceConstraint scnDistanceConstraint, IsSCNNode value) => scnDistanceConstraint -> value -> IO ()
-setTarget scnDistanceConstraint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnDistanceConstraint (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTarget scnDistanceConstraint value =
+  sendMessage scnDistanceConstraint setTargetSelector (toSCNNode value)
 
 -- | minimumDistance
 --
@@ -80,8 +75,8 @@ setTarget scnDistanceConstraint  value =
 --
 -- ObjC selector: @- minimumDistance@
 minimumDistance :: IsSCNDistanceConstraint scnDistanceConstraint => scnDistanceConstraint -> IO CDouble
-minimumDistance scnDistanceConstraint  =
-    sendMsg scnDistanceConstraint (mkSelector "minimumDistance") retCDouble []
+minimumDistance scnDistanceConstraint =
+  sendMessage scnDistanceConstraint minimumDistanceSelector
 
 -- | minimumDistance
 --
@@ -89,8 +84,8 @@ minimumDistance scnDistanceConstraint  =
 --
 -- ObjC selector: @- setMinimumDistance:@
 setMinimumDistance :: IsSCNDistanceConstraint scnDistanceConstraint => scnDistanceConstraint -> CDouble -> IO ()
-setMinimumDistance scnDistanceConstraint  value =
-    sendMsg scnDistanceConstraint (mkSelector "setMinimumDistance:") retVoid [argCDouble value]
+setMinimumDistance scnDistanceConstraint value =
+  sendMessage scnDistanceConstraint setMinimumDistanceSelector value
 
 -- | maximumDistance
 --
@@ -98,8 +93,8 @@ setMinimumDistance scnDistanceConstraint  value =
 --
 -- ObjC selector: @- maximumDistance@
 maximumDistance :: IsSCNDistanceConstraint scnDistanceConstraint => scnDistanceConstraint -> IO CDouble
-maximumDistance scnDistanceConstraint  =
-    sendMsg scnDistanceConstraint (mkSelector "maximumDistance") retCDouble []
+maximumDistance scnDistanceConstraint =
+  sendMessage scnDistanceConstraint maximumDistanceSelector
 
 -- | maximumDistance
 --
@@ -107,38 +102,38 @@ maximumDistance scnDistanceConstraint  =
 --
 -- ObjC selector: @- setMaximumDistance:@
 setMaximumDistance :: IsSCNDistanceConstraint scnDistanceConstraint => scnDistanceConstraint -> CDouble -> IO ()
-setMaximumDistance scnDistanceConstraint  value =
-    sendMsg scnDistanceConstraint (mkSelector "setMaximumDistance:") retVoid [argCDouble value]
+setMaximumDistance scnDistanceConstraint value =
+  sendMessage scnDistanceConstraint setMaximumDistanceSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @distanceConstraintWithTarget:@
-distanceConstraintWithTargetSelector :: Selector
+distanceConstraintWithTargetSelector :: Selector '[Id SCNNode] (Id SCNDistanceConstraint)
 distanceConstraintWithTargetSelector = mkSelector "distanceConstraintWithTarget:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id SCNNode)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id SCNNode] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @minimumDistance@
-minimumDistanceSelector :: Selector
+minimumDistanceSelector :: Selector '[] CDouble
 minimumDistanceSelector = mkSelector "minimumDistance"
 
 -- | @Selector@ for @setMinimumDistance:@
-setMinimumDistanceSelector :: Selector
+setMinimumDistanceSelector :: Selector '[CDouble] ()
 setMinimumDistanceSelector = mkSelector "setMinimumDistance:"
 
 -- | @Selector@ for @maximumDistance@
-maximumDistanceSelector :: Selector
+maximumDistanceSelector :: Selector '[] CDouble
 maximumDistanceSelector = mkSelector "maximumDistance"
 
 -- | @Selector@ for @setMaximumDistance:@
-setMaximumDistanceSelector :: Selector
+setMaximumDistanceSelector :: Selector '[CDouble] ()
 setMaximumDistanceSelector = mkSelector "setMaximumDistance:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,23 +43,23 @@ module ObjC.MetalPerformanceShaders.MPSRNNMatrixInferenceLayer
   , setStoreAllIntermediateStates
   , bidirectionalCombineMode
   , setBidirectionalCombineMode
+  , bidirectionalCombineModeSelector
+  , copyWithZone_deviceSelector
+  , encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatrices_destinationBackwardMatricesSelector
+  , encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputState_recurrentOutputStatesSelector
+  , encodeSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_recurrentInputState_recurrentOutputStatesSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , initWithDevice_rnnDescriptorSelector
   , initWithDevice_rnnDescriptorsSelector
-  , initWithDeviceSelector
-  , encodeSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_recurrentInputState_recurrentOutputStatesSelector
-  , encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputState_recurrentOutputStatesSelector
-  , encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatrices_destinationBackwardMatricesSelector
-  , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
   , inputFeatureChannelsSelector
-  , outputFeatureChannelsSelector
   , numberOfLayersSelector
+  , outputFeatureChannelsSelector
   , recurrentOutputIsTemporarySelector
-  , setRecurrentOutputIsTemporarySelector
-  , storeAllIntermediateStatesSelector
-  , setStoreAllIntermediateStatesSelector
-  , bidirectionalCombineModeSelector
   , setBidirectionalCombineModeSelector
+  , setRecurrentOutputIsTemporarySelector
+  , setStoreAllIntermediateStatesSelector
+  , storeAllIntermediateStatesSelector
 
   -- * Enum types
   , MPSRNNBidirectionalCombineMode(MPSRNNBidirectionalCombineMode)
@@ -68,15 +69,11 @@ module ObjC.MetalPerformanceShaders.MPSRNNMatrixInferenceLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -94,9 +91,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:rnnDescriptor:@
 initWithDevice_rnnDescriptor :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> RawId -> Const (Id MPSRNNDescriptor) -> IO (Id MPSRNNMatrixInferenceLayer)
-initWithDevice_rnnDescriptor mpsrnnMatrixInferenceLayer  device rnnDescriptor =
-  withObjCPtr rnnDescriptor $ \raw_rnnDescriptor ->
-      sendMsg mpsrnnMatrixInferenceLayer (mkSelector "initWithDevice:rnnDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_rnnDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_rnnDescriptor mpsrnnMatrixInferenceLayer device rnnDescriptor =
+  sendOwnedMessage mpsrnnMatrixInferenceLayer initWithDevice_rnnDescriptorSelector device rnnDescriptor
 
 -- | Initializes a kernel that implements a stack of linear (fully connected) RNN layers
 --
@@ -108,14 +104,13 @@ initWithDevice_rnnDescriptor mpsrnnMatrixInferenceLayer  device rnnDescriptor =
 --
 -- ObjC selector: @- initWithDevice:rnnDescriptors:@
 initWithDevice_rnnDescriptors :: (IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer, IsNSArray rnnDescriptors) => mpsrnnMatrixInferenceLayer -> RawId -> rnnDescriptors -> IO (Id MPSRNNMatrixInferenceLayer)
-initWithDevice_rnnDescriptors mpsrnnMatrixInferenceLayer  device rnnDescriptors =
-  withObjCPtr rnnDescriptors $ \raw_rnnDescriptors ->
-      sendMsg mpsrnnMatrixInferenceLayer (mkSelector "initWithDevice:rnnDescriptors:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_rnnDescriptors :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_rnnDescriptors mpsrnnMatrixInferenceLayer device rnnDescriptors =
+  sendOwnedMessage mpsrnnMatrixInferenceLayer initWithDevice_rnnDescriptorsSelector device (toNSArray rnnDescriptors)
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> RawId -> IO (Id MPSRNNMatrixInferenceLayer)
-initWithDevice mpsrnnMatrixInferenceLayer  device =
-    sendMsg mpsrnnMatrixInferenceLayer (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsrnnMatrixInferenceLayer device =
+  sendOwnedMessage mpsrnnMatrixInferenceLayer initWithDeviceSelector device
 
 -- | Encode an MPSRNNMatrixInferenceLayer kernel (stack) for a sequence of inputs into a command buffer.                  Note that when encoding using this function the
 --
@@ -162,21 +157,13 @@ initWithDevice mpsrnnMatrixInferenceLayer  device =
 --
 -- ObjC selector: @- encodeSequenceToCommandBuffer:sourceMatrices:sourceOffsets:destinationMatrices:destinationOffsets:recurrentInputState:recurrentOutputStates:@
 encodeSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_recurrentInputState_recurrentOutputStates :: (IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer, IsNSArray sourceMatrices, IsNSArray destinationMatrices, IsMPSRNNRecurrentMatrixState recurrentInputState, IsNSMutableArray recurrentOutputStates) => mpsrnnMatrixInferenceLayer -> RawId -> sourceMatrices -> Ptr CULong -> destinationMatrices -> Ptr CULong -> recurrentInputState -> recurrentOutputStates -> IO ()
-encodeSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_recurrentInputState_recurrentOutputStates mpsrnnMatrixInferenceLayer  commandBuffer sourceMatrices sourceOffsets destinationMatrices destinationOffsets recurrentInputState recurrentOutputStates =
-  withObjCPtr sourceMatrices $ \raw_sourceMatrices ->
-    withObjCPtr destinationMatrices $ \raw_destinationMatrices ->
-      withObjCPtr recurrentInputState $ \raw_recurrentInputState ->
-        withObjCPtr recurrentOutputStates $ \raw_recurrentOutputStates ->
-            sendMsg mpsrnnMatrixInferenceLayer (mkSelector "encodeSequenceToCommandBuffer:sourceMatrices:sourceOffsets:destinationMatrices:destinationOffsets:recurrentInputState:recurrentOutputStates:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrices :: Ptr ()), argPtr sourceOffsets, argPtr (castPtr raw_destinationMatrices :: Ptr ()), argPtr destinationOffsets, argPtr (castPtr raw_recurrentInputState :: Ptr ()), argPtr (castPtr raw_recurrentOutputStates :: Ptr ())]
+encodeSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_recurrentInputState_recurrentOutputStates mpsrnnMatrixInferenceLayer commandBuffer sourceMatrices sourceOffsets destinationMatrices destinationOffsets recurrentInputState recurrentOutputStates =
+  sendMessage mpsrnnMatrixInferenceLayer encodeSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_recurrentInputState_recurrentOutputStatesSelector commandBuffer (toNSArray sourceMatrices) sourceOffsets (toNSArray destinationMatrices) destinationOffsets (toMPSRNNRecurrentMatrixState recurrentInputState) (toNSMutableArray recurrentOutputStates)
 
 -- | @- encodeSequenceToCommandBuffer:sourceMatrices:destinationMatrices:recurrentInputState:recurrentOutputStates:@
 encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputState_recurrentOutputStates :: (IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer, IsNSArray sourceMatrices, IsNSArray destinationMatrices, IsMPSRNNRecurrentMatrixState recurrentInputState, IsNSMutableArray recurrentOutputStates) => mpsrnnMatrixInferenceLayer -> RawId -> sourceMatrices -> destinationMatrices -> recurrentInputState -> recurrentOutputStates -> IO ()
-encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputState_recurrentOutputStates mpsrnnMatrixInferenceLayer  commandBuffer sourceMatrices destinationMatrices recurrentInputState recurrentOutputStates =
-  withObjCPtr sourceMatrices $ \raw_sourceMatrices ->
-    withObjCPtr destinationMatrices $ \raw_destinationMatrices ->
-      withObjCPtr recurrentInputState $ \raw_recurrentInputState ->
-        withObjCPtr recurrentOutputStates $ \raw_recurrentOutputStates ->
-            sendMsg mpsrnnMatrixInferenceLayer (mkSelector "encodeSequenceToCommandBuffer:sourceMatrices:destinationMatrices:recurrentInputState:recurrentOutputStates:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrices :: Ptr ()), argPtr (castPtr raw_destinationMatrices :: Ptr ()), argPtr (castPtr raw_recurrentInputState :: Ptr ()), argPtr (castPtr raw_recurrentOutputStates :: Ptr ())]
+encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputState_recurrentOutputStates mpsrnnMatrixInferenceLayer commandBuffer sourceMatrices destinationMatrices recurrentInputState recurrentOutputStates =
+  sendMessage mpsrnnMatrixInferenceLayer encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputState_recurrentOutputStatesSelector commandBuffer (toNSArray sourceMatrices) (toNSArray destinationMatrices) (toMPSRNNRecurrentMatrixState recurrentInputState) (toNSMutableArray recurrentOutputStates)
 
 -- | Encode an MPSRNNMatrixInferenceLayer kernel stack for an input matrix sequences into a command buffer bidirectionally.                  The operation proceeds as follows: The first source matrix x0 is passed through all forward traversing layers in the stack,                  ie. those that were initialized with MPSRNNSequenceDirectionForward, recurrent input is assumed zero.                  This produces forward output yf0 and recurrent states hf00, hf01, hf02, ... hf0n, one for each forward layer in the stack.                  Then x1 is passed to forward layers together with recurrent state hf00, hf01, ..., hf0n, which produces yf1, and hf10,...                  This procedure is iterated until the last matrix in the input sequence x_(N-1), which produces forward output yf(N-1).                  The backwards layers iterate the same sequence backwards, starting from input x_(N-1) (recurrent state zero),                  that produces yb(N-1) and recurrent output hb(N-1)0, hf(N-1)1, ... hb(N-1)m, one for each backwards traversing layer.                  Then the backwards layers handle input x_(N-2) using recurrent state hb(N-1)0, ..., et cetera, until the                  first matrix of the sequence is computed, producing output yb0. The result of the operation is either pair of sequences                  ({yf0, yf1, ... , yf(N-1)},  {yb0, yb1, ... , yb(N-1)}) or a combined sequence, {(yf0 + yb0), ... , (yf(N-1) + yb(N-1)) },                  where '+' stands either for sum, or concatenation along feature channels, as specified by bidirectionalCombineMode.
 --
@@ -190,11 +177,8 @@ encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputS
 --
 -- ObjC selector: @- encodeBidirectionalSequenceToCommandBuffer:sourceSequence:destinationForwardMatrices:destinationBackwardMatrices:@
 encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatrices_destinationBackwardMatrices :: (IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer, IsNSArray sourceSequence, IsNSArray destinationForwardMatrices, IsNSArray destinationBackwardMatrices) => mpsrnnMatrixInferenceLayer -> RawId -> sourceSequence -> destinationForwardMatrices -> destinationBackwardMatrices -> IO ()
-encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatrices_destinationBackwardMatrices mpsrnnMatrixInferenceLayer  commandBuffer sourceSequence destinationForwardMatrices destinationBackwardMatrices =
-  withObjCPtr sourceSequence $ \raw_sourceSequence ->
-    withObjCPtr destinationForwardMatrices $ \raw_destinationForwardMatrices ->
-      withObjCPtr destinationBackwardMatrices $ \raw_destinationBackwardMatrices ->
-          sendMsg mpsrnnMatrixInferenceLayer (mkSelector "encodeBidirectionalSequenceToCommandBuffer:sourceSequence:destinationForwardMatrices:destinationBackwardMatrices:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceSequence :: Ptr ()), argPtr (castPtr raw_destinationForwardMatrices :: Ptr ()), argPtr (castPtr raw_destinationBackwardMatrices :: Ptr ())]
+encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatrices_destinationBackwardMatrices mpsrnnMatrixInferenceLayer commandBuffer sourceSequence destinationForwardMatrices destinationBackwardMatrices =
+  sendMessage mpsrnnMatrixInferenceLayer encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatrices_destinationBackwardMatricesSelector commandBuffer (toNSArray sourceSequence) (toNSArray destinationForwardMatrices) (toNSArray destinationBackwardMatrices)
 
 -- | NSSecureCoding compatability
 --
@@ -208,9 +192,8 @@ encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatr
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer, IsNSCoder aDecoder) => mpsrnnMatrixInferenceLayer -> aDecoder -> RawId -> IO (Id MPSRNNMatrixInferenceLayer)
-initWithCoder_device mpsrnnMatrixInferenceLayer  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsrnnMatrixInferenceLayer (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsrnnMatrixInferenceLayer aDecoder device =
+  sendOwnedMessage mpsrnnMatrixInferenceLayer initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Make a copy of this kernel for a new device -
 --
@@ -224,8 +207,8 @@ initWithCoder_device mpsrnnMatrixInferenceLayer  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> Ptr () -> RawId -> IO (Id MPSRNNMatrixInferenceLayer)
-copyWithZone_device mpsrnnMatrixInferenceLayer  zone device =
-    sendMsg mpsrnnMatrixInferenceLayer (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsrnnMatrixInferenceLayer zone device =
+  sendOwnedMessage mpsrnnMatrixInferenceLayer copyWithZone_deviceSelector zone device
 
 -- | inputFeatureChannels
 --
@@ -233,8 +216,8 @@ copyWithZone_device mpsrnnMatrixInferenceLayer  zone device =
 --
 -- ObjC selector: @- inputFeatureChannels@
 inputFeatureChannels :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> IO CULong
-inputFeatureChannels mpsrnnMatrixInferenceLayer  =
-    sendMsg mpsrnnMatrixInferenceLayer (mkSelector "inputFeatureChannels") retCULong []
+inputFeatureChannels mpsrnnMatrixInferenceLayer =
+  sendMessage mpsrnnMatrixInferenceLayer inputFeatureChannelsSelector
 
 -- | outputFeatureChannels
 --
@@ -242,8 +225,8 @@ inputFeatureChannels mpsrnnMatrixInferenceLayer  =
 --
 -- ObjC selector: @- outputFeatureChannels@
 outputFeatureChannels :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> IO CULong
-outputFeatureChannels mpsrnnMatrixInferenceLayer  =
-    sendMsg mpsrnnMatrixInferenceLayer (mkSelector "outputFeatureChannels") retCULong []
+outputFeatureChannels mpsrnnMatrixInferenceLayer =
+  sendMessage mpsrnnMatrixInferenceLayer outputFeatureChannelsSelector
 
 -- | numberOfLayers
 --
@@ -251,8 +234,8 @@ outputFeatureChannels mpsrnnMatrixInferenceLayer  =
 --
 -- ObjC selector: @- numberOfLayers@
 numberOfLayers :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> IO CULong
-numberOfLayers mpsrnnMatrixInferenceLayer  =
-    sendMsg mpsrnnMatrixInferenceLayer (mkSelector "numberOfLayers") retCULong []
+numberOfLayers mpsrnnMatrixInferenceLayer =
+  sendMessage mpsrnnMatrixInferenceLayer numberOfLayersSelector
 
 -- | recurrentOutputIsTemporary
 --
@@ -262,8 +245,8 @@ numberOfLayers mpsrnnMatrixInferenceLayer  =
 --
 -- ObjC selector: @- recurrentOutputIsTemporary@
 recurrentOutputIsTemporary :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> IO Bool
-recurrentOutputIsTemporary mpsrnnMatrixInferenceLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnMatrixInferenceLayer (mkSelector "recurrentOutputIsTemporary") retCULong []
+recurrentOutputIsTemporary mpsrnnMatrixInferenceLayer =
+  sendMessage mpsrnnMatrixInferenceLayer recurrentOutputIsTemporarySelector
 
 -- | recurrentOutputIsTemporary
 --
@@ -273,8 +256,8 @@ recurrentOutputIsTemporary mpsrnnMatrixInferenceLayer  =
 --
 -- ObjC selector: @- setRecurrentOutputIsTemporary:@
 setRecurrentOutputIsTemporary :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> Bool -> IO ()
-setRecurrentOutputIsTemporary mpsrnnMatrixInferenceLayer  value =
-    sendMsg mpsrnnMatrixInferenceLayer (mkSelector "setRecurrentOutputIsTemporary:") retVoid [argCULong (if value then 1 else 0)]
+setRecurrentOutputIsTemporary mpsrnnMatrixInferenceLayer value =
+  sendMessage mpsrnnMatrixInferenceLayer setRecurrentOutputIsTemporarySelector value
 
 -- | storeAllIntermediateStates
 --
@@ -282,8 +265,8 @@ setRecurrentOutputIsTemporary mpsrnnMatrixInferenceLayer  value =
 --
 -- ObjC selector: @- storeAllIntermediateStates@
 storeAllIntermediateStates :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> IO Bool
-storeAllIntermediateStates mpsrnnMatrixInferenceLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnMatrixInferenceLayer (mkSelector "storeAllIntermediateStates") retCULong []
+storeAllIntermediateStates mpsrnnMatrixInferenceLayer =
+  sendMessage mpsrnnMatrixInferenceLayer storeAllIntermediateStatesSelector
 
 -- | storeAllIntermediateStates
 --
@@ -291,8 +274,8 @@ storeAllIntermediateStates mpsrnnMatrixInferenceLayer  =
 --
 -- ObjC selector: @- setStoreAllIntermediateStates:@
 setStoreAllIntermediateStates :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> Bool -> IO ()
-setStoreAllIntermediateStates mpsrnnMatrixInferenceLayer  value =
-    sendMsg mpsrnnMatrixInferenceLayer (mkSelector "setStoreAllIntermediateStates:") retVoid [argCULong (if value then 1 else 0)]
+setStoreAllIntermediateStates mpsrnnMatrixInferenceLayer value =
+  sendMessage mpsrnnMatrixInferenceLayer setStoreAllIntermediateStatesSelector value
 
 -- | bidirectionalCombineMode
 --
@@ -300,8 +283,8 @@ setStoreAllIntermediateStates mpsrnnMatrixInferenceLayer  value =
 --
 -- ObjC selector: @- bidirectionalCombineMode@
 bidirectionalCombineMode :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> IO MPSRNNBidirectionalCombineMode
-bidirectionalCombineMode mpsrnnMatrixInferenceLayer  =
-    fmap (coerce :: CULong -> MPSRNNBidirectionalCombineMode) $ sendMsg mpsrnnMatrixInferenceLayer (mkSelector "bidirectionalCombineMode") retCULong []
+bidirectionalCombineMode mpsrnnMatrixInferenceLayer =
+  sendMessage mpsrnnMatrixInferenceLayer bidirectionalCombineModeSelector
 
 -- | bidirectionalCombineMode
 --
@@ -309,78 +292,78 @@ bidirectionalCombineMode mpsrnnMatrixInferenceLayer  =
 --
 -- ObjC selector: @- setBidirectionalCombineMode:@
 setBidirectionalCombineMode :: IsMPSRNNMatrixInferenceLayer mpsrnnMatrixInferenceLayer => mpsrnnMatrixInferenceLayer -> MPSRNNBidirectionalCombineMode -> IO ()
-setBidirectionalCombineMode mpsrnnMatrixInferenceLayer  value =
-    sendMsg mpsrnnMatrixInferenceLayer (mkSelector "setBidirectionalCombineMode:") retVoid [argCULong (coerce value)]
+setBidirectionalCombineMode mpsrnnMatrixInferenceLayer value =
+  sendMessage mpsrnnMatrixInferenceLayer setBidirectionalCombineModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:rnnDescriptor:@
-initWithDevice_rnnDescriptorSelector :: Selector
+initWithDevice_rnnDescriptorSelector :: Selector '[RawId, Const (Id MPSRNNDescriptor)] (Id MPSRNNMatrixInferenceLayer)
 initWithDevice_rnnDescriptorSelector = mkSelector "initWithDevice:rnnDescriptor:"
 
 -- | @Selector@ for @initWithDevice:rnnDescriptors:@
-initWithDevice_rnnDescriptorsSelector :: Selector
+initWithDevice_rnnDescriptorsSelector :: Selector '[RawId, Id NSArray] (Id MPSRNNMatrixInferenceLayer)
 initWithDevice_rnnDescriptorsSelector = mkSelector "initWithDevice:rnnDescriptors:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSRNNMatrixInferenceLayer)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeSequenceToCommandBuffer:sourceMatrices:sourceOffsets:destinationMatrices:destinationOffsets:recurrentInputState:recurrentOutputStates:@
-encodeSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_recurrentInputState_recurrentOutputStatesSelector :: Selector
+encodeSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_recurrentInputState_recurrentOutputStatesSelector :: Selector '[RawId, Id NSArray, Ptr CULong, Id NSArray, Ptr CULong, Id MPSRNNRecurrentMatrixState, Id NSMutableArray] ()
 encodeSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_recurrentInputState_recurrentOutputStatesSelector = mkSelector "encodeSequenceToCommandBuffer:sourceMatrices:sourceOffsets:destinationMatrices:destinationOffsets:recurrentInputState:recurrentOutputStates:"
 
 -- | @Selector@ for @encodeSequenceToCommandBuffer:sourceMatrices:destinationMatrices:recurrentInputState:recurrentOutputStates:@
-encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputState_recurrentOutputStatesSelector :: Selector
+encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputState_recurrentOutputStatesSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id MPSRNNRecurrentMatrixState, Id NSMutableArray] ()
 encodeSequenceToCommandBuffer_sourceMatrices_destinationMatrices_recurrentInputState_recurrentOutputStatesSelector = mkSelector "encodeSequenceToCommandBuffer:sourceMatrices:destinationMatrices:recurrentInputState:recurrentOutputStates:"
 
 -- | @Selector@ for @encodeBidirectionalSequenceToCommandBuffer:sourceSequence:destinationForwardMatrices:destinationBackwardMatrices:@
-encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatrices_destinationBackwardMatricesSelector :: Selector
+encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatrices_destinationBackwardMatricesSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id NSArray] ()
 encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardMatrices_destinationBackwardMatricesSelector = mkSelector "encodeBidirectionalSequenceToCommandBuffer:sourceSequence:destinationForwardMatrices:destinationBackwardMatrices:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSRNNMatrixInferenceLayer)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSRNNMatrixInferenceLayer)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @inputFeatureChannels@
-inputFeatureChannelsSelector :: Selector
+inputFeatureChannelsSelector :: Selector '[] CULong
 inputFeatureChannelsSelector = mkSelector "inputFeatureChannels"
 
 -- | @Selector@ for @outputFeatureChannels@
-outputFeatureChannelsSelector :: Selector
+outputFeatureChannelsSelector :: Selector '[] CULong
 outputFeatureChannelsSelector = mkSelector "outputFeatureChannels"
 
 -- | @Selector@ for @numberOfLayers@
-numberOfLayersSelector :: Selector
+numberOfLayersSelector :: Selector '[] CULong
 numberOfLayersSelector = mkSelector "numberOfLayers"
 
 -- | @Selector@ for @recurrentOutputIsTemporary@
-recurrentOutputIsTemporarySelector :: Selector
+recurrentOutputIsTemporarySelector :: Selector '[] Bool
 recurrentOutputIsTemporarySelector = mkSelector "recurrentOutputIsTemporary"
 
 -- | @Selector@ for @setRecurrentOutputIsTemporary:@
-setRecurrentOutputIsTemporarySelector :: Selector
+setRecurrentOutputIsTemporarySelector :: Selector '[Bool] ()
 setRecurrentOutputIsTemporarySelector = mkSelector "setRecurrentOutputIsTemporary:"
 
 -- | @Selector@ for @storeAllIntermediateStates@
-storeAllIntermediateStatesSelector :: Selector
+storeAllIntermediateStatesSelector :: Selector '[] Bool
 storeAllIntermediateStatesSelector = mkSelector "storeAllIntermediateStates"
 
 -- | @Selector@ for @setStoreAllIntermediateStates:@
-setStoreAllIntermediateStatesSelector :: Selector
+setStoreAllIntermediateStatesSelector :: Selector '[Bool] ()
 setStoreAllIntermediateStatesSelector = mkSelector "setStoreAllIntermediateStates:"
 
 -- | @Selector@ for @bidirectionalCombineMode@
-bidirectionalCombineModeSelector :: Selector
+bidirectionalCombineModeSelector :: Selector '[] MPSRNNBidirectionalCombineMode
 bidirectionalCombineModeSelector = mkSelector "bidirectionalCombineMode"
 
 -- | @Selector@ for @setBidirectionalCombineMode:@
-setBidirectionalCombineModeSelector :: Selector
+setBidirectionalCombineModeSelector :: Selector '[MPSRNNBidirectionalCombineMode] ()
 setBidirectionalCombineModeSelector = mkSelector "setBidirectionalCombineMode:"
 

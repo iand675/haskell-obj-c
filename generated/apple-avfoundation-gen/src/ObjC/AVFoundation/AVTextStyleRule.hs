@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.AVFoundation.AVTextStyleRule
   , textMarkupAttributes
   , textSelector
   , initSelector
-  , newSelector
-  , propertyListForTextStyleRulesSelector
-  , textStyleRulesFromPropertyListSelector
-  , textStyleRuleWithTextMarkupAttributesSelector
-  , textStyleRuleWithTextMarkupAttributes_textSelectorSelector
   , initWithTextMarkupAttributesSelector
   , initWithTextMarkupAttributes_textSelectorSelector
+  , newSelector
+  , propertyListForTextStyleRulesSelector
   , textMarkupAttributesSelector
   , textSelectorSelector
+  , textStyleRuleWithTextMarkupAttributesSelector
+  , textStyleRuleWithTextMarkupAttributes_textSelectorSelector
+  , textStyleRulesFromPropertyListSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVTextStyleRule avTextStyleRule => avTextStyleRule -> IO (Id AVTextStyleRule)
-init_ avTextStyleRule  =
-    sendMsg avTextStyleRule (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avTextStyleRule =
+  sendOwnedMessage avTextStyleRule initSelector
 
 -- | @+ new@
 new :: IO (Id AVTextStyleRule)
 new  =
   do
     cls' <- getRequiredClass "AVTextStyleRule"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | propertyListForTextStyleRules:
 --
@@ -72,8 +69,7 @@ propertyListForTextStyleRules :: IsNSArray textStyleRules => textStyleRules -> I
 propertyListForTextStyleRules textStyleRules =
   do
     cls' <- getRequiredClass "AVTextStyleRule"
-    withObjCPtr textStyleRules $ \raw_textStyleRules ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "propertyListForTextStyleRules:") (retPtr retVoid) [argPtr (castPtr raw_textStyleRules :: Ptr ())]
+    sendClassMessage cls' propertyListForTextStyleRulesSelector (toNSArray textStyleRules)
 
 -- | textStyleRulesFromPropertyList:
 --
@@ -88,7 +84,7 @@ textStyleRulesFromPropertyList :: RawId -> IO (Id NSArray)
 textStyleRulesFromPropertyList plist =
   do
     cls' <- getRequiredClass "AVTextStyleRule"
-    sendClassMsg cls' (mkSelector "textStyleRulesFromPropertyList:") (retPtr retVoid) [argPtr (castPtr (unRawId plist) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textStyleRulesFromPropertyListSelector plist
 
 -- | textStyleRuleWithTextMarkupAttributes:
 --
@@ -105,8 +101,7 @@ textStyleRuleWithTextMarkupAttributes :: IsNSDictionary textMarkupAttributes => 
 textStyleRuleWithTextMarkupAttributes textMarkupAttributes =
   do
     cls' <- getRequiredClass "AVTextStyleRule"
-    withObjCPtr textMarkupAttributes $ \raw_textMarkupAttributes ->
-      sendClassMsg cls' (mkSelector "textStyleRuleWithTextMarkupAttributes:") (retPtr retVoid) [argPtr (castPtr raw_textMarkupAttributes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textStyleRuleWithTextMarkupAttributesSelector (toNSDictionary textMarkupAttributes)
 
 -- | textStyleRuleWithTextMarkupAttributes:textSelector:
 --
@@ -123,9 +118,7 @@ textStyleRuleWithTextMarkupAttributes_textSelector :: (IsNSDictionary textMarkup
 textStyleRuleWithTextMarkupAttributes_textSelector textMarkupAttributes textSelector =
   do
     cls' <- getRequiredClass "AVTextStyleRule"
-    withObjCPtr textMarkupAttributes $ \raw_textMarkupAttributes ->
-      withObjCPtr textSelector $ \raw_textSelector ->
-        sendClassMsg cls' (mkSelector "textStyleRuleWithTextMarkupAttributes:textSelector:") (retPtr retVoid) [argPtr (castPtr raw_textMarkupAttributes :: Ptr ()), argPtr (castPtr raw_textSelector :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textStyleRuleWithTextMarkupAttributes_textSelectorSelector (toNSDictionary textMarkupAttributes) (toNSString textSelector)
 
 -- | initWithTextMarkupAttributes:
 --
@@ -139,9 +132,8 @@ textStyleRuleWithTextMarkupAttributes_textSelector textMarkupAttributes textSele
 --
 -- ObjC selector: @- initWithTextMarkupAttributes:@
 initWithTextMarkupAttributes :: (IsAVTextStyleRule avTextStyleRule, IsNSDictionary textMarkupAttributes) => avTextStyleRule -> textMarkupAttributes -> IO (Id AVTextStyleRule)
-initWithTextMarkupAttributes avTextStyleRule  textMarkupAttributes =
-  withObjCPtr textMarkupAttributes $ \raw_textMarkupAttributes ->
-      sendMsg avTextStyleRule (mkSelector "initWithTextMarkupAttributes:") (retPtr retVoid) [argPtr (castPtr raw_textMarkupAttributes :: Ptr ())] >>= ownedObject . castPtr
+initWithTextMarkupAttributes avTextStyleRule textMarkupAttributes =
+  sendOwnedMessage avTextStyleRule initWithTextMarkupAttributesSelector (toNSDictionary textMarkupAttributes)
 
 -- | initWithTextMarkupAttributes:textSelector:
 --
@@ -155,10 +147,8 @@ initWithTextMarkupAttributes avTextStyleRule  textMarkupAttributes =
 --
 -- ObjC selector: @- initWithTextMarkupAttributes:textSelector:@
 initWithTextMarkupAttributes_textSelector :: (IsAVTextStyleRule avTextStyleRule, IsNSDictionary textMarkupAttributes, IsNSString textSelector) => avTextStyleRule -> textMarkupAttributes -> textSelector -> IO (Id AVTextStyleRule)
-initWithTextMarkupAttributes_textSelector avTextStyleRule  textMarkupAttributes textSelector =
-  withObjCPtr textMarkupAttributes $ \raw_textMarkupAttributes ->
-    withObjCPtr textSelector $ \raw_textSelector ->
-        sendMsg avTextStyleRule (mkSelector "initWithTextMarkupAttributes:textSelector:") (retPtr retVoid) [argPtr (castPtr raw_textMarkupAttributes :: Ptr ()), argPtr (castPtr raw_textSelector :: Ptr ())] >>= ownedObject . castPtr
+initWithTextMarkupAttributes_textSelector avTextStyleRule textMarkupAttributes textSelector =
+  sendOwnedMessage avTextStyleRule initWithTextMarkupAttributes_textSelectorSelector (toNSDictionary textMarkupAttributes) (toNSString textSelector)
 
 -- | textMarkupAttributes
 --
@@ -166,8 +156,8 @@ initWithTextMarkupAttributes_textSelector avTextStyleRule  textMarkupAttributes 
 --
 -- ObjC selector: @- textMarkupAttributes@
 textMarkupAttributes :: IsAVTextStyleRule avTextStyleRule => avTextStyleRule -> IO (Id NSDictionary)
-textMarkupAttributes avTextStyleRule  =
-    sendMsg avTextStyleRule (mkSelector "textMarkupAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+textMarkupAttributes avTextStyleRule =
+  sendMessage avTextStyleRule textMarkupAttributesSelector
 
 -- | textSelector
 --
@@ -177,50 +167,50 @@ textMarkupAttributes avTextStyleRule  =
 --
 -- ObjC selector: @- textSelector@
 textSelector :: IsAVTextStyleRule avTextStyleRule => avTextStyleRule -> IO (Id NSString)
-textSelector avTextStyleRule  =
-    sendMsg avTextStyleRule (mkSelector "textSelector") (retPtr retVoid) [] >>= retainedObject . castPtr
+textSelector avTextStyleRule =
+  sendMessage avTextStyleRule textSelectorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVTextStyleRule)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVTextStyleRule)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @propertyListForTextStyleRules:@
-propertyListForTextStyleRulesSelector :: Selector
+propertyListForTextStyleRulesSelector :: Selector '[Id NSArray] RawId
 propertyListForTextStyleRulesSelector = mkSelector "propertyListForTextStyleRules:"
 
 -- | @Selector@ for @textStyleRulesFromPropertyList:@
-textStyleRulesFromPropertyListSelector :: Selector
+textStyleRulesFromPropertyListSelector :: Selector '[RawId] (Id NSArray)
 textStyleRulesFromPropertyListSelector = mkSelector "textStyleRulesFromPropertyList:"
 
 -- | @Selector@ for @textStyleRuleWithTextMarkupAttributes:@
-textStyleRuleWithTextMarkupAttributesSelector :: Selector
+textStyleRuleWithTextMarkupAttributesSelector :: Selector '[Id NSDictionary] (Id AVTextStyleRule)
 textStyleRuleWithTextMarkupAttributesSelector = mkSelector "textStyleRuleWithTextMarkupAttributes:"
 
 -- | @Selector@ for @textStyleRuleWithTextMarkupAttributes:textSelector:@
-textStyleRuleWithTextMarkupAttributes_textSelectorSelector :: Selector
+textStyleRuleWithTextMarkupAttributes_textSelectorSelector :: Selector '[Id NSDictionary, Id NSString] (Id AVTextStyleRule)
 textStyleRuleWithTextMarkupAttributes_textSelectorSelector = mkSelector "textStyleRuleWithTextMarkupAttributes:textSelector:"
 
 -- | @Selector@ for @initWithTextMarkupAttributes:@
-initWithTextMarkupAttributesSelector :: Selector
+initWithTextMarkupAttributesSelector :: Selector '[Id NSDictionary] (Id AVTextStyleRule)
 initWithTextMarkupAttributesSelector = mkSelector "initWithTextMarkupAttributes:"
 
 -- | @Selector@ for @initWithTextMarkupAttributes:textSelector:@
-initWithTextMarkupAttributes_textSelectorSelector :: Selector
+initWithTextMarkupAttributes_textSelectorSelector :: Selector '[Id NSDictionary, Id NSString] (Id AVTextStyleRule)
 initWithTextMarkupAttributes_textSelectorSelector = mkSelector "initWithTextMarkupAttributes:textSelector:"
 
 -- | @Selector@ for @textMarkupAttributes@
-textMarkupAttributesSelector :: Selector
+textMarkupAttributesSelector :: Selector '[] (Id NSDictionary)
 textMarkupAttributesSelector = mkSelector "textMarkupAttributes"
 
 -- | @Selector@ for @textSelector@
-textSelectorSelector :: Selector
+textSelectorSelector :: Selector '[] (Id NSString)
 textSelectorSelector = mkSelector "textSelector"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.AVFAudio.AVAudioUnitMIDIInstrument
   , sendMIDIEvent_data1
   , sendMIDISysExEvent
   , initWithAudioComponentDescriptionSelector
+  , sendController_withValue_onChannelSelector
+  , sendMIDIEvent_data1Selector
+  , sendMIDIEvent_data1_data2Selector
+  , sendMIDISysExEventSelector
+  , sendPitchBend_onChannelSelector
+  , sendPressureForKey_withValue_onChannelSelector
+  , sendPressure_onChannelSelector
+  , sendProgramChange_bankMSB_bankLSB_onChannelSelector
+  , sendProgramChange_onChannelSelector
   , startNote_withVelocity_onChannelSelector
   , stopNote_onChannelSelector
-  , sendController_withValue_onChannelSelector
-  , sendPitchBend_onChannelSelector
-  , sendPressure_onChannelSelector
-  , sendPressureForKey_withValue_onChannelSelector
-  , sendProgramChange_onChannelSelector
-  , sendProgramChange_bankMSB_bankLSB_onChannelSelector
-  , sendMIDIEvent_data1_data2Selector
-  , sendMIDIEvent_data1Selector
-  , sendMIDISysExEventSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAudioComponentDescription:@
 initWithAudioComponentDescription :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> AudioComponentDescription -> IO (Id AVAudioUnitMIDIInstrument)
-initWithAudioComponentDescription avAudioUnitMIDIInstrument  description =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "initWithAudioComponentDescription:") (retPtr retVoid) [argAudioComponentDescription description] >>= ownedObject . castPtr
+initWithAudioComponentDescription avAudioUnitMIDIInstrument description =
+  sendOwnedMessage avAudioUnitMIDIInstrument initWithAudioComponentDescriptionSelector description
 
 -- | Sends a MIDI Note On event to the instrument
 --
@@ -69,8 +66,8 @@ initWithAudioComponentDescription avAudioUnitMIDIInstrument  description =
 --
 -- ObjC selector: @- startNote:withVelocity:onChannel:@
 startNote_withVelocity_onChannel :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUChar -> CUChar -> CUChar -> IO ()
-startNote_withVelocity_onChannel avAudioUnitMIDIInstrument  note velocity channel =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "startNote:withVelocity:onChannel:") retVoid [argCUChar note, argCUChar velocity, argCUChar channel]
+startNote_withVelocity_onChannel avAudioUnitMIDIInstrument note velocity channel =
+  sendMessage avAudioUnitMIDIInstrument startNote_withVelocity_onChannelSelector note velocity channel
 
 -- | Sends a MIDI Note Off event to the instrument
 --
@@ -78,8 +75,8 @@ startNote_withVelocity_onChannel avAudioUnitMIDIInstrument  note velocity channe
 --
 -- ObjC selector: @- stopNote:onChannel:@
 stopNote_onChannel :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUChar -> CUChar -> IO ()
-stopNote_onChannel avAudioUnitMIDIInstrument  note channel =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "stopNote:onChannel:") retVoid [argCUChar note, argCUChar channel]
+stopNote_onChannel avAudioUnitMIDIInstrument note channel =
+  sendMessage avAudioUnitMIDIInstrument stopNote_onChannelSelector note channel
 
 -- | Sends a MIDI controller event to the instrument.
 --
@@ -87,8 +84,8 @@ stopNote_onChannel avAudioUnitMIDIInstrument  note channel =
 --
 -- ObjC selector: @- sendController:withValue:onChannel:@
 sendController_withValue_onChannel :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUChar -> CUChar -> CUChar -> IO ()
-sendController_withValue_onChannel avAudioUnitMIDIInstrument  controller value channel =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "sendController:withValue:onChannel:") retVoid [argCUChar controller, argCUChar value, argCUChar channel]
+sendController_withValue_onChannel avAudioUnitMIDIInstrument controller value channel =
+  sendMessage avAudioUnitMIDIInstrument sendController_withValue_onChannelSelector controller value channel
 
 -- | Sends a MIDI controller event to the instrument.
 --
@@ -96,8 +93,8 @@ sendController_withValue_onChannel avAudioUnitMIDIInstrument  controller value c
 --
 -- ObjC selector: @- sendPitchBend:onChannel:@
 sendPitchBend_onChannel :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUShort -> CUChar -> IO ()
-sendPitchBend_onChannel avAudioUnitMIDIInstrument  pitchbend channel =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "sendPitchBend:onChannel:") retVoid [argCUInt (fromIntegral pitchbend), argCUChar channel]
+sendPitchBend_onChannel avAudioUnitMIDIInstrument pitchbend channel =
+  sendMessage avAudioUnitMIDIInstrument sendPitchBend_onChannelSelector pitchbend channel
 
 -- | Sends MIDI channel pressure event to the instrument.
 --
@@ -105,8 +102,8 @@ sendPitchBend_onChannel avAudioUnitMIDIInstrument  pitchbend channel =
 --
 -- ObjC selector: @- sendPressure:onChannel:@
 sendPressure_onChannel :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUChar -> CUChar -> IO ()
-sendPressure_onChannel avAudioUnitMIDIInstrument  pressure channel =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "sendPressure:onChannel:") retVoid [argCUChar pressure, argCUChar channel]
+sendPressure_onChannel avAudioUnitMIDIInstrument pressure channel =
+  sendMessage avAudioUnitMIDIInstrument sendPressure_onChannelSelector pressure channel
 
 -- | Sends MIDI Polyphonic key pressure event to the instrument
 --
@@ -114,8 +111,8 @@ sendPressure_onChannel avAudioUnitMIDIInstrument  pressure channel =
 --
 -- ObjC selector: @- sendPressureForKey:withValue:onChannel:@
 sendPressureForKey_withValue_onChannel :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUChar -> CUChar -> CUChar -> IO ()
-sendPressureForKey_withValue_onChannel avAudioUnitMIDIInstrument  key value channel =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "sendPressureForKey:withValue:onChannel:") retVoid [argCUChar key, argCUChar value, argCUChar channel]
+sendPressureForKey_withValue_onChannel avAudioUnitMIDIInstrument key value channel =
+  sendMessage avAudioUnitMIDIInstrument sendPressureForKey_withValue_onChannelSelector key value channel
 
 -- | Sends MIDI Program Change event to the instrument
 --
@@ -123,8 +120,8 @@ sendPressureForKey_withValue_onChannel avAudioUnitMIDIInstrument  key value chan
 --
 -- ObjC selector: @- sendProgramChange:onChannel:@
 sendProgramChange_onChannel :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUChar -> CUChar -> IO ()
-sendProgramChange_onChannel avAudioUnitMIDIInstrument  program channel =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "sendProgramChange:onChannel:") retVoid [argCUChar program, argCUChar channel]
+sendProgramChange_onChannel avAudioUnitMIDIInstrument program channel =
+  sendMessage avAudioUnitMIDIInstrument sendProgramChange_onChannelSelector program channel
 
 -- | Sends a MIDI Program Change and Bank Select events to the instrument
 --
@@ -132,8 +129,8 @@ sendProgramChange_onChannel avAudioUnitMIDIInstrument  program channel =
 --
 -- ObjC selector: @- sendProgramChange:bankMSB:bankLSB:onChannel:@
 sendProgramChange_bankMSB_bankLSB_onChannel :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUChar -> CUChar -> CUChar -> CUChar -> IO ()
-sendProgramChange_bankMSB_bankLSB_onChannel avAudioUnitMIDIInstrument  program bankMSB bankLSB channel =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "sendProgramChange:bankMSB:bankLSB:onChannel:") retVoid [argCUChar program, argCUChar bankMSB, argCUChar bankLSB, argCUChar channel]
+sendProgramChange_bankMSB_bankLSB_onChannel avAudioUnitMIDIInstrument program bankMSB bankLSB channel =
+  sendMessage avAudioUnitMIDIInstrument sendProgramChange_bankMSB_bankLSB_onChannelSelector program bankMSB bankLSB channel
 
 -- | Sends a MIDI event which contains two data bytes to the instrument.
 --
@@ -141,8 +138,8 @@ sendProgramChange_bankMSB_bankLSB_onChannel avAudioUnitMIDIInstrument  program b
 --
 -- ObjC selector: @- sendMIDIEvent:data1:data2:@
 sendMIDIEvent_data1_data2 :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUChar -> CUChar -> CUChar -> IO ()
-sendMIDIEvent_data1_data2 avAudioUnitMIDIInstrument  midiStatus data1 data2 =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "sendMIDIEvent:data1:data2:") retVoid [argCUChar midiStatus, argCUChar data1, argCUChar data2]
+sendMIDIEvent_data1_data2 avAudioUnitMIDIInstrument midiStatus data1 data2 =
+  sendMessage avAudioUnitMIDIInstrument sendMIDIEvent_data1_data2Selector midiStatus data1 data2
 
 -- | Sends a MIDI event which contains one data byte to the instrument.
 --
@@ -150,8 +147,8 @@ sendMIDIEvent_data1_data2 avAudioUnitMIDIInstrument  midiStatus data1 data2 =
 --
 -- ObjC selector: @- sendMIDIEvent:data1:@
 sendMIDIEvent_data1 :: IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument => avAudioUnitMIDIInstrument -> CUChar -> CUChar -> IO ()
-sendMIDIEvent_data1 avAudioUnitMIDIInstrument  midiStatus data1 =
-    sendMsg avAudioUnitMIDIInstrument (mkSelector "sendMIDIEvent:data1:") retVoid [argCUChar midiStatus, argCUChar data1]
+sendMIDIEvent_data1 avAudioUnitMIDIInstrument midiStatus data1 =
+  sendMessage avAudioUnitMIDIInstrument sendMIDIEvent_data1Selector midiStatus data1
 
 -- | Sends a MIDI System Exclusive event to the instrument.
 --
@@ -159,59 +156,58 @@ sendMIDIEvent_data1 avAudioUnitMIDIInstrument  midiStatus data1 =
 --
 -- ObjC selector: @- sendMIDISysExEvent:@
 sendMIDISysExEvent :: (IsAVAudioUnitMIDIInstrument avAudioUnitMIDIInstrument, IsNSData midiData) => avAudioUnitMIDIInstrument -> midiData -> IO ()
-sendMIDISysExEvent avAudioUnitMIDIInstrument  midiData =
-  withObjCPtr midiData $ \raw_midiData ->
-      sendMsg avAudioUnitMIDIInstrument (mkSelector "sendMIDISysExEvent:") retVoid [argPtr (castPtr raw_midiData :: Ptr ())]
+sendMIDISysExEvent avAudioUnitMIDIInstrument midiData =
+  sendMessage avAudioUnitMIDIInstrument sendMIDISysExEventSelector (toNSData midiData)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAudioComponentDescription:@
-initWithAudioComponentDescriptionSelector :: Selector
+initWithAudioComponentDescriptionSelector :: Selector '[AudioComponentDescription] (Id AVAudioUnitMIDIInstrument)
 initWithAudioComponentDescriptionSelector = mkSelector "initWithAudioComponentDescription:"
 
 -- | @Selector@ for @startNote:withVelocity:onChannel:@
-startNote_withVelocity_onChannelSelector :: Selector
+startNote_withVelocity_onChannelSelector :: Selector '[CUChar, CUChar, CUChar] ()
 startNote_withVelocity_onChannelSelector = mkSelector "startNote:withVelocity:onChannel:"
 
 -- | @Selector@ for @stopNote:onChannel:@
-stopNote_onChannelSelector :: Selector
+stopNote_onChannelSelector :: Selector '[CUChar, CUChar] ()
 stopNote_onChannelSelector = mkSelector "stopNote:onChannel:"
 
 -- | @Selector@ for @sendController:withValue:onChannel:@
-sendController_withValue_onChannelSelector :: Selector
+sendController_withValue_onChannelSelector :: Selector '[CUChar, CUChar, CUChar] ()
 sendController_withValue_onChannelSelector = mkSelector "sendController:withValue:onChannel:"
 
 -- | @Selector@ for @sendPitchBend:onChannel:@
-sendPitchBend_onChannelSelector :: Selector
+sendPitchBend_onChannelSelector :: Selector '[CUShort, CUChar] ()
 sendPitchBend_onChannelSelector = mkSelector "sendPitchBend:onChannel:"
 
 -- | @Selector@ for @sendPressure:onChannel:@
-sendPressure_onChannelSelector :: Selector
+sendPressure_onChannelSelector :: Selector '[CUChar, CUChar] ()
 sendPressure_onChannelSelector = mkSelector "sendPressure:onChannel:"
 
 -- | @Selector@ for @sendPressureForKey:withValue:onChannel:@
-sendPressureForKey_withValue_onChannelSelector :: Selector
+sendPressureForKey_withValue_onChannelSelector :: Selector '[CUChar, CUChar, CUChar] ()
 sendPressureForKey_withValue_onChannelSelector = mkSelector "sendPressureForKey:withValue:onChannel:"
 
 -- | @Selector@ for @sendProgramChange:onChannel:@
-sendProgramChange_onChannelSelector :: Selector
+sendProgramChange_onChannelSelector :: Selector '[CUChar, CUChar] ()
 sendProgramChange_onChannelSelector = mkSelector "sendProgramChange:onChannel:"
 
 -- | @Selector@ for @sendProgramChange:bankMSB:bankLSB:onChannel:@
-sendProgramChange_bankMSB_bankLSB_onChannelSelector :: Selector
+sendProgramChange_bankMSB_bankLSB_onChannelSelector :: Selector '[CUChar, CUChar, CUChar, CUChar] ()
 sendProgramChange_bankMSB_bankLSB_onChannelSelector = mkSelector "sendProgramChange:bankMSB:bankLSB:onChannel:"
 
 -- | @Selector@ for @sendMIDIEvent:data1:data2:@
-sendMIDIEvent_data1_data2Selector :: Selector
+sendMIDIEvent_data1_data2Selector :: Selector '[CUChar, CUChar, CUChar] ()
 sendMIDIEvent_data1_data2Selector = mkSelector "sendMIDIEvent:data1:data2:"
 
 -- | @Selector@ for @sendMIDIEvent:data1:@
-sendMIDIEvent_data1Selector :: Selector
+sendMIDIEvent_data1Selector :: Selector '[CUChar, CUChar] ()
 sendMIDIEvent_data1Selector = mkSelector "sendMIDIEvent:data1:"
 
 -- | @Selector@ for @sendMIDISysExEvent:@
-sendMIDISysExEventSelector :: Selector
+sendMIDISysExEventSelector :: Selector '[Id NSData] ()
 sendMIDISysExEventSelector = mkSelector "sendMIDISysExEvent:"
 

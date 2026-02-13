@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Quartz.QCCompositionParameterView
   , drawsBackground
   , setDelegate
   , delegate
-  , setCompositionRendererSelector
+  , backgroundColorSelector
   , compositionRendererSelector
+  , delegateSelector
+  , drawsBackgroundSelector
   , hasParametersSelector
   , setBackgroundColorSelector
-  , backgroundColorSelector
-  , setDrawsBackgroundSelector
-  , drawsBackgroundSelector
+  , setCompositionRendererSelector
   , setDelegateSelector
-  , delegateSelector
+  , setDrawsBackgroundSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,87 +43,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setCompositionRenderer:@
 setCompositionRenderer :: IsQCCompositionParameterView qcCompositionParameterView => qcCompositionParameterView -> RawId -> IO ()
-setCompositionRenderer qcCompositionParameterView  renderer =
-    sendMsg qcCompositionParameterView (mkSelector "setCompositionRenderer:") retVoid [argPtr (castPtr (unRawId renderer) :: Ptr ())]
+setCompositionRenderer qcCompositionParameterView renderer =
+  sendMessage qcCompositionParameterView setCompositionRendererSelector renderer
 
 -- | @- compositionRenderer@
 compositionRenderer :: IsQCCompositionParameterView qcCompositionParameterView => qcCompositionParameterView -> IO RawId
-compositionRenderer qcCompositionParameterView  =
-    fmap (RawId . castPtr) $ sendMsg qcCompositionParameterView (mkSelector "compositionRenderer") (retPtr retVoid) []
+compositionRenderer qcCompositionParameterView =
+  sendMessage qcCompositionParameterView compositionRendererSelector
 
 -- | @- hasParameters@
 hasParameters :: IsQCCompositionParameterView qcCompositionParameterView => qcCompositionParameterView -> IO Bool
-hasParameters qcCompositionParameterView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcCompositionParameterView (mkSelector "hasParameters") retCULong []
+hasParameters qcCompositionParameterView =
+  sendMessage qcCompositionParameterView hasParametersSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsQCCompositionParameterView qcCompositionParameterView, IsNSColor color) => qcCompositionParameterView -> color -> IO ()
-setBackgroundColor qcCompositionParameterView  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg qcCompositionParameterView (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setBackgroundColor qcCompositionParameterView color =
+  sendMessage qcCompositionParameterView setBackgroundColorSelector (toNSColor color)
 
 -- | @- backgroundColor@
 backgroundColor :: IsQCCompositionParameterView qcCompositionParameterView => qcCompositionParameterView -> IO (Id NSColor)
-backgroundColor qcCompositionParameterView  =
-    sendMsg qcCompositionParameterView (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor qcCompositionParameterView =
+  sendMessage qcCompositionParameterView backgroundColorSelector
 
 -- | @- setDrawsBackground:@
 setDrawsBackground :: IsQCCompositionParameterView qcCompositionParameterView => qcCompositionParameterView -> Bool -> IO ()
-setDrawsBackground qcCompositionParameterView  flag =
-    sendMsg qcCompositionParameterView (mkSelector "setDrawsBackground:") retVoid [argCULong (if flag then 1 else 0)]
+setDrawsBackground qcCompositionParameterView flag =
+  sendMessage qcCompositionParameterView setDrawsBackgroundSelector flag
 
 -- | @- drawsBackground@
 drawsBackground :: IsQCCompositionParameterView qcCompositionParameterView => qcCompositionParameterView -> IO Bool
-drawsBackground qcCompositionParameterView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcCompositionParameterView (mkSelector "drawsBackground") retCULong []
+drawsBackground qcCompositionParameterView =
+  sendMessage qcCompositionParameterView drawsBackgroundSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsQCCompositionParameterView qcCompositionParameterView => qcCompositionParameterView -> RawId -> IO ()
-setDelegate qcCompositionParameterView  delegate =
-    sendMsg qcCompositionParameterView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ())]
+setDelegate qcCompositionParameterView delegate =
+  sendMessage qcCompositionParameterView setDelegateSelector delegate
 
 -- | @- delegate@
 delegate :: IsQCCompositionParameterView qcCompositionParameterView => qcCompositionParameterView -> IO RawId
-delegate qcCompositionParameterView  =
-    fmap (RawId . castPtr) $ sendMsg qcCompositionParameterView (mkSelector "delegate") (retPtr retVoid) []
+delegate qcCompositionParameterView =
+  sendMessage qcCompositionParameterView delegateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setCompositionRenderer:@
-setCompositionRendererSelector :: Selector
+setCompositionRendererSelector :: Selector '[RawId] ()
 setCompositionRendererSelector = mkSelector "setCompositionRenderer:"
 
 -- | @Selector@ for @compositionRenderer@
-compositionRendererSelector :: Selector
+compositionRendererSelector :: Selector '[] RawId
 compositionRendererSelector = mkSelector "compositionRenderer"
 
 -- | @Selector@ for @hasParameters@
-hasParametersSelector :: Selector
+hasParametersSelector :: Selector '[] Bool
 hasParametersSelector = mkSelector "hasParameters"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setDrawsBackground:@
-setDrawsBackgroundSelector :: Selector
+setDrawsBackgroundSelector :: Selector '[Bool] ()
 setDrawsBackgroundSelector = mkSelector "setDrawsBackground:"
 
 -- | @Selector@ for @drawsBackground@
-drawsBackgroundSelector :: Selector
+drawsBackgroundSelector :: Selector '[] Bool
 drawsBackgroundSelector = mkSelector "drawsBackground"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 

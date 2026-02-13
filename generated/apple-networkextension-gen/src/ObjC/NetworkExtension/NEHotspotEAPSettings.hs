@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,24 +30,24 @@ module ObjC.NetworkExtension.NEHotspotEAPSettings
   , setTlsClientCertificateRequired
   , preferredTLSVersion
   , setPreferredTLSVersion
-  , setIdentitySelector
-  , setTrustedServerCertificatesSelector
-  , supportedEAPTypesSelector
-  , setSupportedEAPTypesSelector
-  , usernameSelector
-  , setUsernameSelector
   , outerIdentitySelector
-  , setOuterIdentitySelector
-  , ttlsInnerAuthenticationTypeSelector
-  , setTtlsInnerAuthenticationTypeSelector
   , passwordSelector
-  , setPasswordSelector
-  , trustedServerNamesSelector
-  , setTrustedServerNamesSelector
-  , tlsClientCertificateRequiredSelector
-  , setTlsClientCertificateRequiredSelector
   , preferredTLSVersionSelector
+  , setIdentitySelector
+  , setOuterIdentitySelector
+  , setPasswordSelector
   , setPreferredTLSVersionSelector
+  , setSupportedEAPTypesSelector
+  , setTlsClientCertificateRequiredSelector
+  , setTrustedServerCertificatesSelector
+  , setTrustedServerNamesSelector
+  , setTtlsInnerAuthenticationTypeSelector
+  , setUsernameSelector
+  , supportedEAPTypesSelector
+  , tlsClientCertificateRequiredSelector
+  , trustedServerNamesSelector
+  , ttlsInnerAuthenticationTypeSelector
+  , usernameSelector
 
   -- * Enum types
   , NEHotspotConfigurationEAPTLSVersion(NEHotspotConfigurationEAPTLSVersion)
@@ -62,15 +63,11 @@ module ObjC.NetworkExtension.NEHotspotEAPSettings
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -88,8 +85,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setIdentity:@
 setIdentity :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> Ptr () -> IO Bool
-setIdentity neHotspotEAPSettings  identity =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotEAPSettings (mkSelector "setIdentity:") retCULong [argPtr identity]
+setIdentity neHotspotEAPSettings identity =
+  sendMessage neHotspotEAPSettings setIdentitySelector identity
 
 -- | setTrustedServerCertificates
 --
@@ -101,9 +98,8 @@ setIdentity neHotspotEAPSettings  identity =
 --
 -- ObjC selector: @- setTrustedServerCertificates:@
 setTrustedServerCertificates :: (IsNEHotspotEAPSettings neHotspotEAPSettings, IsNSArray certificates) => neHotspotEAPSettings -> certificates -> IO Bool
-setTrustedServerCertificates neHotspotEAPSettings  certificates =
-  withObjCPtr certificates $ \raw_certificates ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotEAPSettings (mkSelector "setTrustedServerCertificates:") retCULong [argPtr (castPtr raw_certificates :: Ptr ())]
+setTrustedServerCertificates neHotspotEAPSettings certificates =
+  sendMessage neHotspotEAPSettings setTrustedServerCertificatesSelector (toNSArray certificates)
 
 -- | supportedEAPTypes
 --
@@ -111,8 +107,8 @@ setTrustedServerCertificates neHotspotEAPSettings  certificates =
 --
 -- ObjC selector: @- supportedEAPTypes@
 supportedEAPTypes :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> IO (Id NSArray)
-supportedEAPTypes neHotspotEAPSettings  =
-    sendMsg neHotspotEAPSettings (mkSelector "supportedEAPTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedEAPTypes neHotspotEAPSettings =
+  sendMessage neHotspotEAPSettings supportedEAPTypesSelector
 
 -- | supportedEAPTypes
 --
@@ -120,9 +116,8 @@ supportedEAPTypes neHotspotEAPSettings  =
 --
 -- ObjC selector: @- setSupportedEAPTypes:@
 setSupportedEAPTypes :: (IsNEHotspotEAPSettings neHotspotEAPSettings, IsNSArray value) => neHotspotEAPSettings -> value -> IO ()
-setSupportedEAPTypes neHotspotEAPSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neHotspotEAPSettings (mkSelector "setSupportedEAPTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedEAPTypes neHotspotEAPSettings value =
+  sendMessage neHotspotEAPSettings setSupportedEAPTypesSelector (toNSArray value)
 
 -- | username
 --
@@ -130,8 +125,8 @@ setSupportedEAPTypes neHotspotEAPSettings  value =
 --
 -- ObjC selector: @- username@
 username :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> IO (Id NSString)
-username neHotspotEAPSettings  =
-    sendMsg neHotspotEAPSettings (mkSelector "username") (retPtr retVoid) [] >>= retainedObject . castPtr
+username neHotspotEAPSettings =
+  sendMessage neHotspotEAPSettings usernameSelector
 
 -- | username
 --
@@ -139,9 +134,8 @@ username neHotspotEAPSettings  =
 --
 -- ObjC selector: @- setUsername:@
 setUsername :: (IsNEHotspotEAPSettings neHotspotEAPSettings, IsNSString value) => neHotspotEAPSettings -> value -> IO ()
-setUsername neHotspotEAPSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neHotspotEAPSettings (mkSelector "setUsername:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUsername neHotspotEAPSettings value =
+  sendMessage neHotspotEAPSettings setUsernameSelector (toNSString value)
 
 -- | outerIdentity
 --
@@ -149,8 +143,8 @@ setUsername neHotspotEAPSettings  value =
 --
 -- ObjC selector: @- outerIdentity@
 outerIdentity :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> IO (Id NSString)
-outerIdentity neHotspotEAPSettings  =
-    sendMsg neHotspotEAPSettings (mkSelector "outerIdentity") (retPtr retVoid) [] >>= retainedObject . castPtr
+outerIdentity neHotspotEAPSettings =
+  sendMessage neHotspotEAPSettings outerIdentitySelector
 
 -- | outerIdentity
 --
@@ -158,9 +152,8 @@ outerIdentity neHotspotEAPSettings  =
 --
 -- ObjC selector: @- setOuterIdentity:@
 setOuterIdentity :: (IsNEHotspotEAPSettings neHotspotEAPSettings, IsNSString value) => neHotspotEAPSettings -> value -> IO ()
-setOuterIdentity neHotspotEAPSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neHotspotEAPSettings (mkSelector "setOuterIdentity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOuterIdentity neHotspotEAPSettings value =
+  sendMessage neHotspotEAPSettings setOuterIdentitySelector (toNSString value)
 
 -- | ttlsInnerAuthentication
 --
@@ -168,8 +161,8 @@ setOuterIdentity neHotspotEAPSettings  value =
 --
 -- ObjC selector: @- ttlsInnerAuthenticationType@
 ttlsInnerAuthenticationType :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> IO NEHotspotConfigurationTTLSInnerAuthenticationType
-ttlsInnerAuthenticationType neHotspotEAPSettings  =
-    fmap (coerce :: CLong -> NEHotspotConfigurationTTLSInnerAuthenticationType) $ sendMsg neHotspotEAPSettings (mkSelector "ttlsInnerAuthenticationType") retCLong []
+ttlsInnerAuthenticationType neHotspotEAPSettings =
+  sendMessage neHotspotEAPSettings ttlsInnerAuthenticationTypeSelector
 
 -- | ttlsInnerAuthentication
 --
@@ -177,8 +170,8 @@ ttlsInnerAuthenticationType neHotspotEAPSettings  =
 --
 -- ObjC selector: @- setTtlsInnerAuthenticationType:@
 setTtlsInnerAuthenticationType :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> NEHotspotConfigurationTTLSInnerAuthenticationType -> IO ()
-setTtlsInnerAuthenticationType neHotspotEAPSettings  value =
-    sendMsg neHotspotEAPSettings (mkSelector "setTtlsInnerAuthenticationType:") retVoid [argCLong (coerce value)]
+setTtlsInnerAuthenticationType neHotspotEAPSettings value =
+  sendMessage neHotspotEAPSettings setTtlsInnerAuthenticationTypeSelector value
 
 -- | password
 --
@@ -186,8 +179,8 @@ setTtlsInnerAuthenticationType neHotspotEAPSettings  value =
 --
 -- ObjC selector: @- password@
 password :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> IO (Id NSString)
-password neHotspotEAPSettings  =
-    sendMsg neHotspotEAPSettings (mkSelector "password") (retPtr retVoid) [] >>= retainedObject . castPtr
+password neHotspotEAPSettings =
+  sendMessage neHotspotEAPSettings passwordSelector
 
 -- | password
 --
@@ -195,9 +188,8 @@ password neHotspotEAPSettings  =
 --
 -- ObjC selector: @- setPassword:@
 setPassword :: (IsNEHotspotEAPSettings neHotspotEAPSettings, IsNSString value) => neHotspotEAPSettings -> value -> IO ()
-setPassword neHotspotEAPSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neHotspotEAPSettings (mkSelector "setPassword:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPassword neHotspotEAPSettings value =
+  sendMessage neHotspotEAPSettings setPasswordSelector (toNSString value)
 
 -- | trustedServerNames
 --
@@ -205,8 +197,8 @@ setPassword neHotspotEAPSettings  value =
 --
 -- ObjC selector: @- trustedServerNames@
 trustedServerNames :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> IO (Id NSArray)
-trustedServerNames neHotspotEAPSettings  =
-    sendMsg neHotspotEAPSettings (mkSelector "trustedServerNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+trustedServerNames neHotspotEAPSettings =
+  sendMessage neHotspotEAPSettings trustedServerNamesSelector
 
 -- | trustedServerNames
 --
@@ -214,9 +206,8 @@ trustedServerNames neHotspotEAPSettings  =
 --
 -- ObjC selector: @- setTrustedServerNames:@
 setTrustedServerNames :: (IsNEHotspotEAPSettings neHotspotEAPSettings, IsNSArray value) => neHotspotEAPSettings -> value -> IO ()
-setTrustedServerNames neHotspotEAPSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neHotspotEAPSettings (mkSelector "setTrustedServerNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTrustedServerNames neHotspotEAPSettings value =
+  sendMessage neHotspotEAPSettings setTrustedServerNamesSelector (toNSArray value)
 
 -- | isTLSClientCertificateRequired
 --
@@ -224,8 +215,8 @@ setTrustedServerNames neHotspotEAPSettings  value =
 --
 -- ObjC selector: @- tlsClientCertificateRequired@
 tlsClientCertificateRequired :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> IO Bool
-tlsClientCertificateRequired neHotspotEAPSettings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotEAPSettings (mkSelector "tlsClientCertificateRequired") retCULong []
+tlsClientCertificateRequired neHotspotEAPSettings =
+  sendMessage neHotspotEAPSettings tlsClientCertificateRequiredSelector
 
 -- | isTLSClientCertificateRequired
 --
@@ -233,8 +224,8 @@ tlsClientCertificateRequired neHotspotEAPSettings  =
 --
 -- ObjC selector: @- setTlsClientCertificateRequired:@
 setTlsClientCertificateRequired :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> Bool -> IO ()
-setTlsClientCertificateRequired neHotspotEAPSettings  value =
-    sendMsg neHotspotEAPSettings (mkSelector "setTlsClientCertificateRequired:") retVoid [argCULong (if value then 1 else 0)]
+setTlsClientCertificateRequired neHotspotEAPSettings value =
+  sendMessage neHotspotEAPSettings setTlsClientCertificateRequiredSelector value
 
 -- | preferredTLSVersion
 --
@@ -242,8 +233,8 @@ setTlsClientCertificateRequired neHotspotEAPSettings  value =
 --
 -- ObjC selector: @- preferredTLSVersion@
 preferredTLSVersion :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> IO NEHotspotConfigurationEAPTLSVersion
-preferredTLSVersion neHotspotEAPSettings  =
-    fmap (coerce :: CLong -> NEHotspotConfigurationEAPTLSVersion) $ sendMsg neHotspotEAPSettings (mkSelector "preferredTLSVersion") retCLong []
+preferredTLSVersion neHotspotEAPSettings =
+  sendMessage neHotspotEAPSettings preferredTLSVersionSelector
 
 -- | preferredTLSVersion
 --
@@ -251,82 +242,82 @@ preferredTLSVersion neHotspotEAPSettings  =
 --
 -- ObjC selector: @- setPreferredTLSVersion:@
 setPreferredTLSVersion :: IsNEHotspotEAPSettings neHotspotEAPSettings => neHotspotEAPSettings -> NEHotspotConfigurationEAPTLSVersion -> IO ()
-setPreferredTLSVersion neHotspotEAPSettings  value =
-    sendMsg neHotspotEAPSettings (mkSelector "setPreferredTLSVersion:") retVoid [argCLong (coerce value)]
+setPreferredTLSVersion neHotspotEAPSettings value =
+  sendMessage neHotspotEAPSettings setPreferredTLSVersionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setIdentity:@
-setIdentitySelector :: Selector
+setIdentitySelector :: Selector '[Ptr ()] Bool
 setIdentitySelector = mkSelector "setIdentity:"
 
 -- | @Selector@ for @setTrustedServerCertificates:@
-setTrustedServerCertificatesSelector :: Selector
+setTrustedServerCertificatesSelector :: Selector '[Id NSArray] Bool
 setTrustedServerCertificatesSelector = mkSelector "setTrustedServerCertificates:"
 
 -- | @Selector@ for @supportedEAPTypes@
-supportedEAPTypesSelector :: Selector
+supportedEAPTypesSelector :: Selector '[] (Id NSArray)
 supportedEAPTypesSelector = mkSelector "supportedEAPTypes"
 
 -- | @Selector@ for @setSupportedEAPTypes:@
-setSupportedEAPTypesSelector :: Selector
+setSupportedEAPTypesSelector :: Selector '[Id NSArray] ()
 setSupportedEAPTypesSelector = mkSelector "setSupportedEAPTypes:"
 
 -- | @Selector@ for @username@
-usernameSelector :: Selector
+usernameSelector :: Selector '[] (Id NSString)
 usernameSelector = mkSelector "username"
 
 -- | @Selector@ for @setUsername:@
-setUsernameSelector :: Selector
+setUsernameSelector :: Selector '[Id NSString] ()
 setUsernameSelector = mkSelector "setUsername:"
 
 -- | @Selector@ for @outerIdentity@
-outerIdentitySelector :: Selector
+outerIdentitySelector :: Selector '[] (Id NSString)
 outerIdentitySelector = mkSelector "outerIdentity"
 
 -- | @Selector@ for @setOuterIdentity:@
-setOuterIdentitySelector :: Selector
+setOuterIdentitySelector :: Selector '[Id NSString] ()
 setOuterIdentitySelector = mkSelector "setOuterIdentity:"
 
 -- | @Selector@ for @ttlsInnerAuthenticationType@
-ttlsInnerAuthenticationTypeSelector :: Selector
+ttlsInnerAuthenticationTypeSelector :: Selector '[] NEHotspotConfigurationTTLSInnerAuthenticationType
 ttlsInnerAuthenticationTypeSelector = mkSelector "ttlsInnerAuthenticationType"
 
 -- | @Selector@ for @setTtlsInnerAuthenticationType:@
-setTtlsInnerAuthenticationTypeSelector :: Selector
+setTtlsInnerAuthenticationTypeSelector :: Selector '[NEHotspotConfigurationTTLSInnerAuthenticationType] ()
 setTtlsInnerAuthenticationTypeSelector = mkSelector "setTtlsInnerAuthenticationType:"
 
 -- | @Selector@ for @password@
-passwordSelector :: Selector
+passwordSelector :: Selector '[] (Id NSString)
 passwordSelector = mkSelector "password"
 
 -- | @Selector@ for @setPassword:@
-setPasswordSelector :: Selector
+setPasswordSelector :: Selector '[Id NSString] ()
 setPasswordSelector = mkSelector "setPassword:"
 
 -- | @Selector@ for @trustedServerNames@
-trustedServerNamesSelector :: Selector
+trustedServerNamesSelector :: Selector '[] (Id NSArray)
 trustedServerNamesSelector = mkSelector "trustedServerNames"
 
 -- | @Selector@ for @setTrustedServerNames:@
-setTrustedServerNamesSelector :: Selector
+setTrustedServerNamesSelector :: Selector '[Id NSArray] ()
 setTrustedServerNamesSelector = mkSelector "setTrustedServerNames:"
 
 -- | @Selector@ for @tlsClientCertificateRequired@
-tlsClientCertificateRequiredSelector :: Selector
+tlsClientCertificateRequiredSelector :: Selector '[] Bool
 tlsClientCertificateRequiredSelector = mkSelector "tlsClientCertificateRequired"
 
 -- | @Selector@ for @setTlsClientCertificateRequired:@
-setTlsClientCertificateRequiredSelector :: Selector
+setTlsClientCertificateRequiredSelector :: Selector '[Bool] ()
 setTlsClientCertificateRequiredSelector = mkSelector "setTlsClientCertificateRequired:"
 
 -- | @Selector@ for @preferredTLSVersion@
-preferredTLSVersionSelector :: Selector
+preferredTLSVersionSelector :: Selector '[] NEHotspotConfigurationEAPTLSVersion
 preferredTLSVersionSelector = mkSelector "preferredTLSVersion"
 
 -- | @Selector@ for @setPreferredTLSVersion:@
-setPreferredTLSVersionSelector :: Selector
+setPreferredTLSVersionSelector :: Selector '[NEHotspotConfigurationEAPTLSVersion] ()
 setPreferredTLSVersionSelector = mkSelector "setPreferredTLSVersion:"
 

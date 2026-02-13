@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,10 +17,10 @@ module ObjC.HealthKit.HKElectrocardiogram
   , classification
   , averageHeartRate
   , symptomsStatus
+  , averageHeartRateSelector
+  , classificationSelector
   , numberOfVoltageMeasurementsSelector
   , samplingFrequencySelector
-  , classificationSelector
-  , averageHeartRateSelector
   , symptomsStatusSelector
 
   -- * Enum types
@@ -39,15 +40,11 @@ module ObjC.HealthKit.HKElectrocardiogram
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,58 +56,58 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- numberOfVoltageMeasurements@
 numberOfVoltageMeasurements :: IsHKElectrocardiogram hkElectrocardiogram => hkElectrocardiogram -> IO CLong
-numberOfVoltageMeasurements hkElectrocardiogram  =
-    sendMsg hkElectrocardiogram (mkSelector "numberOfVoltageMeasurements") retCLong []
+numberOfVoltageMeasurements hkElectrocardiogram =
+  sendMessage hkElectrocardiogram numberOfVoltageMeasurementsSelector
 
 -- | The frequency at which the data was sampled. This is reported in [HKUnit hertzUnit].
 --
 -- ObjC selector: @- samplingFrequency@
 samplingFrequency :: IsHKElectrocardiogram hkElectrocardiogram => hkElectrocardiogram -> IO (Id HKQuantity)
-samplingFrequency hkElectrocardiogram  =
-    sendMsg hkElectrocardiogram (mkSelector "samplingFrequency") (retPtr retVoid) [] >>= retainedObject . castPtr
+samplingFrequency hkElectrocardiogram =
+  sendMessage hkElectrocardiogram samplingFrequencySelector
 
 -- | The classification of this electrocardiogram sample.
 --
 -- ObjC selector: @- classification@
 classification :: IsHKElectrocardiogram hkElectrocardiogram => hkElectrocardiogram -> IO HKElectrocardiogramClassification
-classification hkElectrocardiogram  =
-    fmap (coerce :: CLong -> HKElectrocardiogramClassification) $ sendMsg hkElectrocardiogram (mkSelector "classification") retCLong []
+classification hkElectrocardiogram =
+  sendMessage hkElectrocardiogram classificationSelector
 
 -- | The average heart rate of the user while the electrocardiogram was recorded.
 --
 -- ObjC selector: @- averageHeartRate@
 averageHeartRate :: IsHKElectrocardiogram hkElectrocardiogram => hkElectrocardiogram -> IO (Id HKQuantity)
-averageHeartRate hkElectrocardiogram  =
-    sendMsg hkElectrocardiogram (mkSelector "averageHeartRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+averageHeartRate hkElectrocardiogram =
+  sendMessage hkElectrocardiogram averageHeartRateSelector
 
 -- | Whether the user experienced symptoms during this electrocardiogram.
 --
 -- ObjC selector: @- symptomsStatus@
 symptomsStatus :: IsHKElectrocardiogram hkElectrocardiogram => hkElectrocardiogram -> IO HKElectrocardiogramSymptomsStatus
-symptomsStatus hkElectrocardiogram  =
-    fmap (coerce :: CLong -> HKElectrocardiogramSymptomsStatus) $ sendMsg hkElectrocardiogram (mkSelector "symptomsStatus") retCLong []
+symptomsStatus hkElectrocardiogram =
+  sendMessage hkElectrocardiogram symptomsStatusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @numberOfVoltageMeasurements@
-numberOfVoltageMeasurementsSelector :: Selector
+numberOfVoltageMeasurementsSelector :: Selector '[] CLong
 numberOfVoltageMeasurementsSelector = mkSelector "numberOfVoltageMeasurements"
 
 -- | @Selector@ for @samplingFrequency@
-samplingFrequencySelector :: Selector
+samplingFrequencySelector :: Selector '[] (Id HKQuantity)
 samplingFrequencySelector = mkSelector "samplingFrequency"
 
 -- | @Selector@ for @classification@
-classificationSelector :: Selector
+classificationSelector :: Selector '[] HKElectrocardiogramClassification
 classificationSelector = mkSelector "classification"
 
 -- | @Selector@ for @averageHeartRate@
-averageHeartRateSelector :: Selector
+averageHeartRateSelector :: Selector '[] (Id HKQuantity)
 averageHeartRateSelector = mkSelector "averageHeartRate"
 
 -- | @Selector@ for @symptomsStatus@
-symptomsStatusSelector :: Selector
+symptomsStatusSelector :: Selector '[] HKElectrocardiogramSymptomsStatus
 symptomsStatusSelector = mkSelector "symptomsStatus"
 

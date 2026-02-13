@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.AVFoundation.AVExternalSyncDeviceDiscoverySession
   , sharedSession
   , supported
   , devices
+  , devicesSelector
   , initSelector
   , newSelector
   , sharedSessionSelector
   , supportedSelector
-  , devicesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVExternalSyncDeviceDiscoverySession avExternalSyncDeviceDiscoverySession => avExternalSyncDeviceDiscoverySession -> IO (Id AVExternalSyncDeviceDiscoverySession)
-init_ avExternalSyncDeviceDiscoverySession  =
-    sendMsg avExternalSyncDeviceDiscoverySession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avExternalSyncDeviceDiscoverySession =
+  sendOwnedMessage avExternalSyncDeviceDiscoverySession initSelector
 
 -- | @+ new@
 new :: IO (Id AVExternalSyncDeviceDiscoverySession)
 new  =
   do
     cls' <- getRequiredClass "AVExternalSyncDeviceDiscoverySession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The singleton instance of the external sync source device discovery session.
 --
@@ -60,7 +57,7 @@ sharedSession :: IO (Id AVExternalSyncDeviceDiscoverySession)
 sharedSession  =
   do
     cls' <- getRequiredClass "AVExternalSyncDeviceDiscoverySession"
-    sendClassMsg cls' (mkSelector "sharedSession") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedSessionSelector
 
 -- | Whether external sync devices are supported by this device.
 --
@@ -71,7 +68,7 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "AVExternalSyncDeviceDiscoverySession"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- | An array of external sync devices connected to this host.
 --
@@ -79,30 +76,30 @@ supported  =
 --
 -- ObjC selector: @- devices@
 devices :: IsAVExternalSyncDeviceDiscoverySession avExternalSyncDeviceDiscoverySession => avExternalSyncDeviceDiscoverySession -> IO (Id NSArray)
-devices avExternalSyncDeviceDiscoverySession  =
-    sendMsg avExternalSyncDeviceDiscoverySession (mkSelector "devices") (retPtr retVoid) [] >>= retainedObject . castPtr
+devices avExternalSyncDeviceDiscoverySession =
+  sendMessage avExternalSyncDeviceDiscoverySession devicesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVExternalSyncDeviceDiscoverySession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVExternalSyncDeviceDiscoverySession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sharedSession@
-sharedSessionSelector :: Selector
+sharedSessionSelector :: Selector '[] (Id AVExternalSyncDeviceDiscoverySession)
 sharedSessionSelector = mkSelector "sharedSession"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 
 -- | @Selector@ for @devices@
-devicesSelector :: Selector
+devicesSelector :: Selector '[] (Id NSArray)
 devicesSelector = mkSelector "devices"
 

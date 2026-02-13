@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,33 +35,33 @@ module ObjC.AppKit.NSPathControl
   , setDelegate
   , menu
   , setMenu
-  , setDraggingSourceOperationMask_forLocalSelector
-  , clickedPathComponentCellSelector
-  , pathComponentCellsSelector
-  , setPathComponentCellsSelector
-  , editableSelector
-  , setEditableSelector
   , allowedTypesSelector
-  , setAllowedTypesSelector
-  , placeholderStringSelector
-  , setPlaceholderStringSelector
-  , placeholderAttributedStringSelector
-  , setPlaceholderAttributedStringSelector
-  , urlSelector
-  , setURLSelector
-  , doubleActionSelector
-  , setDoubleActionSelector
-  , pathStyleSelector
-  , setPathStyleSelector
-  , clickedPathItemSelector
-  , pathItemsSelector
-  , setPathItemsSelector
   , backgroundColorSelector
-  , setBackgroundColorSelector
+  , clickedPathComponentCellSelector
+  , clickedPathItemSelector
   , delegateSelector
-  , setDelegateSelector
+  , doubleActionSelector
+  , editableSelector
   , menuSelector
+  , pathComponentCellsSelector
+  , pathItemsSelector
+  , pathStyleSelector
+  , placeholderAttributedStringSelector
+  , placeholderStringSelector
+  , setAllowedTypesSelector
+  , setBackgroundColorSelector
+  , setDelegateSelector
+  , setDoubleActionSelector
+  , setDraggingSourceOperationMask_forLocalSelector
+  , setEditableSelector
   , setMenuSelector
+  , setPathComponentCellsSelector
+  , setPathItemsSelector
+  , setPathStyleSelector
+  , setPlaceholderAttributedStringSelector
+  , setPlaceholderStringSelector
+  , setURLSelector
+  , urlSelector
 
   -- * Enum types
   , NSDragOperation(NSDragOperation)
@@ -81,15 +82,11 @@ module ObjC.AppKit.NSPathControl
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,256 +96,248 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setDraggingSourceOperationMask:forLocal:@
 setDraggingSourceOperationMask_forLocal :: IsNSPathControl nsPathControl => nsPathControl -> NSDragOperation -> Bool -> IO ()
-setDraggingSourceOperationMask_forLocal nsPathControl  mask isLocal =
-    sendMsg nsPathControl (mkSelector "setDraggingSourceOperationMask:forLocal:") retVoid [argCULong (coerce mask), argCULong (if isLocal then 1 else 0)]
+setDraggingSourceOperationMask_forLocal nsPathControl mask isLocal =
+  sendMessage nsPathControl setDraggingSourceOperationMask_forLocalSelector mask isLocal
 
 -- | @- clickedPathComponentCell@
 clickedPathComponentCell :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSPathComponentCell)
-clickedPathComponentCell nsPathControl  =
-    sendMsg nsPathControl (mkSelector "clickedPathComponentCell") (retPtr retVoid) [] >>= retainedObject . castPtr
+clickedPathComponentCell nsPathControl =
+  sendMessage nsPathControl clickedPathComponentCellSelector
 
 -- | @- pathComponentCells@
 pathComponentCells :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSArray)
-pathComponentCells nsPathControl  =
-    sendMsg nsPathControl (mkSelector "pathComponentCells") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathComponentCells nsPathControl =
+  sendMessage nsPathControl pathComponentCellsSelector
 
 -- | @- setPathComponentCells:@
 setPathComponentCells :: (IsNSPathControl nsPathControl, IsNSArray cells) => nsPathControl -> cells -> IO ()
-setPathComponentCells nsPathControl  cells =
-  withObjCPtr cells $ \raw_cells ->
-      sendMsg nsPathControl (mkSelector "setPathComponentCells:") retVoid [argPtr (castPtr raw_cells :: Ptr ())]
+setPathComponentCells nsPathControl cells =
+  sendMessage nsPathControl setPathComponentCellsSelector (toNSArray cells)
 
 -- | @- editable@
 editable :: IsNSPathControl nsPathControl => nsPathControl -> IO Bool
-editable nsPathControl  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPathControl (mkSelector "editable") retCULong []
+editable nsPathControl =
+  sendMessage nsPathControl editableSelector
 
 -- | @- setEditable:@
 setEditable :: IsNSPathControl nsPathControl => nsPathControl -> Bool -> IO ()
-setEditable nsPathControl  value =
-    sendMsg nsPathControl (mkSelector "setEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEditable nsPathControl value =
+  sendMessage nsPathControl setEditableSelector value
 
 -- | @- allowedTypes@
 allowedTypes :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSArray)
-allowedTypes nsPathControl  =
-    sendMsg nsPathControl (mkSelector "allowedTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+allowedTypes nsPathControl =
+  sendMessage nsPathControl allowedTypesSelector
 
 -- | @- setAllowedTypes:@
 setAllowedTypes :: (IsNSPathControl nsPathControl, IsNSArray value) => nsPathControl -> value -> IO ()
-setAllowedTypes nsPathControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControl (mkSelector "setAllowedTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAllowedTypes nsPathControl value =
+  sendMessage nsPathControl setAllowedTypesSelector (toNSArray value)
 
 -- | @- placeholderString@
 placeholderString :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSString)
-placeholderString nsPathControl  =
-    sendMsg nsPathControl (mkSelector "placeholderString") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderString nsPathControl =
+  sendMessage nsPathControl placeholderStringSelector
 
 -- | @- setPlaceholderString:@
 setPlaceholderString :: (IsNSPathControl nsPathControl, IsNSString value) => nsPathControl -> value -> IO ()
-setPlaceholderString nsPathControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControl (mkSelector "setPlaceholderString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaceholderString nsPathControl value =
+  sendMessage nsPathControl setPlaceholderStringSelector (toNSString value)
 
 -- | @- placeholderAttributedString@
 placeholderAttributedString :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSAttributedString)
-placeholderAttributedString nsPathControl  =
-    sendMsg nsPathControl (mkSelector "placeholderAttributedString") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderAttributedString nsPathControl =
+  sendMessage nsPathControl placeholderAttributedStringSelector
 
 -- | @- setPlaceholderAttributedString:@
 setPlaceholderAttributedString :: (IsNSPathControl nsPathControl, IsNSAttributedString value) => nsPathControl -> value -> IO ()
-setPlaceholderAttributedString nsPathControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControl (mkSelector "setPlaceholderAttributedString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaceholderAttributedString nsPathControl value =
+  sendMessage nsPathControl setPlaceholderAttributedStringSelector (toNSAttributedString value)
 
 -- | @- URL@
 url :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSURL)
-url nsPathControl  =
-    sendMsg nsPathControl (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url nsPathControl =
+  sendMessage nsPathControl urlSelector
 
 -- | @- setURL:@
 setURL :: (IsNSPathControl nsPathControl, IsNSURL value) => nsPathControl -> value -> IO ()
-setURL nsPathControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControl (mkSelector "setURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setURL nsPathControl value =
+  sendMessage nsPathControl setURLSelector (toNSURL value)
 
 -- | @- doubleAction@
-doubleAction :: IsNSPathControl nsPathControl => nsPathControl -> IO Selector
-doubleAction nsPathControl  =
-    fmap (Selector . castPtr) $ sendMsg nsPathControl (mkSelector "doubleAction") (retPtr retVoid) []
+doubleAction :: IsNSPathControl nsPathControl => nsPathControl -> IO Sel
+doubleAction nsPathControl =
+  sendMessage nsPathControl doubleActionSelector
 
 -- | @- setDoubleAction:@
-setDoubleAction :: IsNSPathControl nsPathControl => nsPathControl -> Selector -> IO ()
-setDoubleAction nsPathControl  value =
-    sendMsg nsPathControl (mkSelector "setDoubleAction:") retVoid [argPtr (unSelector value)]
+setDoubleAction :: IsNSPathControl nsPathControl => nsPathControl -> Sel -> IO ()
+setDoubleAction nsPathControl value =
+  sendMessage nsPathControl setDoubleActionSelector value
 
 -- | @- pathStyle@
 pathStyle :: IsNSPathControl nsPathControl => nsPathControl -> IO NSPathStyle
-pathStyle nsPathControl  =
-    fmap (coerce :: CLong -> NSPathStyle) $ sendMsg nsPathControl (mkSelector "pathStyle") retCLong []
+pathStyle nsPathControl =
+  sendMessage nsPathControl pathStyleSelector
 
 -- | @- setPathStyle:@
 setPathStyle :: IsNSPathControl nsPathControl => nsPathControl -> NSPathStyle -> IO ()
-setPathStyle nsPathControl  value =
-    sendMsg nsPathControl (mkSelector "setPathStyle:") retVoid [argCLong (coerce value)]
+setPathStyle nsPathControl value =
+  sendMessage nsPathControl setPathStyleSelector value
 
 -- | @- clickedPathItem@
 clickedPathItem :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSPathControlItem)
-clickedPathItem nsPathControl  =
-    sendMsg nsPathControl (mkSelector "clickedPathItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+clickedPathItem nsPathControl =
+  sendMessage nsPathControl clickedPathItemSelector
 
 -- | @- pathItems@
 pathItems :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSArray)
-pathItems nsPathControl  =
-    sendMsg nsPathControl (mkSelector "pathItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathItems nsPathControl =
+  sendMessage nsPathControl pathItemsSelector
 
 -- | @- setPathItems:@
 setPathItems :: (IsNSPathControl nsPathControl, IsNSArray value) => nsPathControl -> value -> IO ()
-setPathItems nsPathControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControl (mkSelector "setPathItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPathItems nsPathControl value =
+  sendMessage nsPathControl setPathItemsSelector (toNSArray value)
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSColor)
-backgroundColor nsPathControl  =
-    sendMsg nsPathControl (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsPathControl =
+  sendMessage nsPathControl backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSPathControl nsPathControl, IsNSColor value) => nsPathControl -> value -> IO ()
-setBackgroundColor nsPathControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControl (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsPathControl value =
+  sendMessage nsPathControl setBackgroundColorSelector (toNSColor value)
 
 -- | @- delegate@
 delegate :: IsNSPathControl nsPathControl => nsPathControl -> IO RawId
-delegate nsPathControl  =
-    fmap (RawId . castPtr) $ sendMsg nsPathControl (mkSelector "delegate") (retPtr retVoid) []
+delegate nsPathControl =
+  sendMessage nsPathControl delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSPathControl nsPathControl => nsPathControl -> RawId -> IO ()
-setDelegate nsPathControl  value =
-    sendMsg nsPathControl (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsPathControl value =
+  sendMessage nsPathControl setDelegateSelector value
 
 -- | @- menu@
 menu :: IsNSPathControl nsPathControl => nsPathControl -> IO (Id NSMenu)
-menu nsPathControl  =
-    sendMsg nsPathControl (mkSelector "menu") (retPtr retVoid) [] >>= retainedObject . castPtr
+menu nsPathControl =
+  sendMessage nsPathControl menuSelector
 
 -- | @- setMenu:@
 setMenu :: (IsNSPathControl nsPathControl, IsNSMenu value) => nsPathControl -> value -> IO ()
-setMenu nsPathControl  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPathControl (mkSelector "setMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMenu nsPathControl value =
+  sendMessage nsPathControl setMenuSelector (toNSMenu value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setDraggingSourceOperationMask:forLocal:@
-setDraggingSourceOperationMask_forLocalSelector :: Selector
+setDraggingSourceOperationMask_forLocalSelector :: Selector '[NSDragOperation, Bool] ()
 setDraggingSourceOperationMask_forLocalSelector = mkSelector "setDraggingSourceOperationMask:forLocal:"
 
 -- | @Selector@ for @clickedPathComponentCell@
-clickedPathComponentCellSelector :: Selector
+clickedPathComponentCellSelector :: Selector '[] (Id NSPathComponentCell)
 clickedPathComponentCellSelector = mkSelector "clickedPathComponentCell"
 
 -- | @Selector@ for @pathComponentCells@
-pathComponentCellsSelector :: Selector
+pathComponentCellsSelector :: Selector '[] (Id NSArray)
 pathComponentCellsSelector = mkSelector "pathComponentCells"
 
 -- | @Selector@ for @setPathComponentCells:@
-setPathComponentCellsSelector :: Selector
+setPathComponentCellsSelector :: Selector '[Id NSArray] ()
 setPathComponentCellsSelector = mkSelector "setPathComponentCells:"
 
 -- | @Selector@ for @editable@
-editableSelector :: Selector
+editableSelector :: Selector '[] Bool
 editableSelector = mkSelector "editable"
 
 -- | @Selector@ for @setEditable:@
-setEditableSelector :: Selector
+setEditableSelector :: Selector '[Bool] ()
 setEditableSelector = mkSelector "setEditable:"
 
 -- | @Selector@ for @allowedTypes@
-allowedTypesSelector :: Selector
+allowedTypesSelector :: Selector '[] (Id NSArray)
 allowedTypesSelector = mkSelector "allowedTypes"
 
 -- | @Selector@ for @setAllowedTypes:@
-setAllowedTypesSelector :: Selector
+setAllowedTypesSelector :: Selector '[Id NSArray] ()
 setAllowedTypesSelector = mkSelector "setAllowedTypes:"
 
 -- | @Selector@ for @placeholderString@
-placeholderStringSelector :: Selector
+placeholderStringSelector :: Selector '[] (Id NSString)
 placeholderStringSelector = mkSelector "placeholderString"
 
 -- | @Selector@ for @setPlaceholderString:@
-setPlaceholderStringSelector :: Selector
+setPlaceholderStringSelector :: Selector '[Id NSString] ()
 setPlaceholderStringSelector = mkSelector "setPlaceholderString:"
 
 -- | @Selector@ for @placeholderAttributedString@
-placeholderAttributedStringSelector :: Selector
+placeholderAttributedStringSelector :: Selector '[] (Id NSAttributedString)
 placeholderAttributedStringSelector = mkSelector "placeholderAttributedString"
 
 -- | @Selector@ for @setPlaceholderAttributedString:@
-setPlaceholderAttributedStringSelector :: Selector
+setPlaceholderAttributedStringSelector :: Selector '[Id NSAttributedString] ()
 setPlaceholderAttributedStringSelector = mkSelector "setPlaceholderAttributedString:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @setURL:@
-setURLSelector :: Selector
+setURLSelector :: Selector '[Id NSURL] ()
 setURLSelector = mkSelector "setURL:"
 
 -- | @Selector@ for @doubleAction@
-doubleActionSelector :: Selector
+doubleActionSelector :: Selector '[] Sel
 doubleActionSelector = mkSelector "doubleAction"
 
 -- | @Selector@ for @setDoubleAction:@
-setDoubleActionSelector :: Selector
+setDoubleActionSelector :: Selector '[Sel] ()
 setDoubleActionSelector = mkSelector "setDoubleAction:"
 
 -- | @Selector@ for @pathStyle@
-pathStyleSelector :: Selector
+pathStyleSelector :: Selector '[] NSPathStyle
 pathStyleSelector = mkSelector "pathStyle"
 
 -- | @Selector@ for @setPathStyle:@
-setPathStyleSelector :: Selector
+setPathStyleSelector :: Selector '[NSPathStyle] ()
 setPathStyleSelector = mkSelector "setPathStyle:"
 
 -- | @Selector@ for @clickedPathItem@
-clickedPathItemSelector :: Selector
+clickedPathItemSelector :: Selector '[] (Id NSPathControlItem)
 clickedPathItemSelector = mkSelector "clickedPathItem"
 
 -- | @Selector@ for @pathItems@
-pathItemsSelector :: Selector
+pathItemsSelector :: Selector '[] (Id NSArray)
 pathItemsSelector = mkSelector "pathItems"
 
 -- | @Selector@ for @setPathItems:@
-setPathItemsSelector :: Selector
+setPathItemsSelector :: Selector '[Id NSArray] ()
 setPathItemsSelector = mkSelector "setPathItems:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @menu@
-menuSelector :: Selector
+menuSelector :: Selector '[] (Id NSMenu)
 menuSelector = mkSelector "menu"
 
 -- | @Selector@ for @setMenu:@
-setMenuSelector :: Selector
+setMenuSelector :: Selector '[Id NSMenu] ()
 setMenuSelector = mkSelector "setMenu:"
 

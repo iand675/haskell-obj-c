@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,30 +44,30 @@ module ObjC.FileProvider.NSFileProviderDomain
   , setSupportedKnownFolders
   , supportsStringSearchRequest
   , setSupportsStringSearchRequest
-  , initWithIdentifier_displayName_pathRelativeToDocumentStorageSelector
-  , initWithIdentifier_displayNameSelector
-  , initWithDisplayName_userInfo_volumeURLSelector
-  , identifierSelector
-  , displayNameSelector
-  , pathRelativeToDocumentStorageSelector
-  , disconnectedSelector
-  , userEnabledSelector
-  , hiddenSelector
-  , setHiddenSelector
-  , replicatedSelector
-  , testingModesSelector
-  , setTestingModesSelector
   , backingStoreIdentitySelector
-  , supportsSyncingTrashSelector
-  , setSupportsSyncingTrashSelector
-  , volumeUUIDSelector
-  , userInfoSelector
-  , setUserInfoSelector
+  , disconnectedSelector
+  , displayNameSelector
+  , hiddenSelector
+  , identifierSelector
+  , initWithDisplayName_userInfo_volumeURLSelector
+  , initWithIdentifier_displayNameSelector
+  , initWithIdentifier_displayName_pathRelativeToDocumentStorageSelector
+  , pathRelativeToDocumentStorageSelector
   , replicatedKnownFoldersSelector
-  , supportedKnownFoldersSelector
+  , replicatedSelector
+  , setHiddenSelector
   , setSupportedKnownFoldersSelector
-  , supportsStringSearchRequestSelector
   , setSupportsStringSearchRequestSelector
+  , setSupportsSyncingTrashSelector
+  , setTestingModesSelector
+  , setUserInfoSelector
+  , supportedKnownFoldersSelector
+  , supportsStringSearchRequestSelector
+  , supportsSyncingTrashSelector
+  , testingModesSelector
+  , userEnabledSelector
+  , userInfoSelector
+  , volumeUUIDSelector
 
   -- * Enum types
   , NSFileProviderDomainTestingModes(NSFileProviderDomainTestingModes)
@@ -78,15 +79,11 @@ module ObjC.FileProvider.NSFileProviderDomain
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -106,11 +103,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifier:displayName:pathRelativeToDocumentStorage:@
 initWithIdentifier_displayName_pathRelativeToDocumentStorage :: (IsNSFileProviderDomain nsFileProviderDomain, IsNSString identifier, IsNSString displayName, IsNSString pathRelativeToDocumentStorage) => nsFileProviderDomain -> identifier -> displayName -> pathRelativeToDocumentStorage -> IO (Id NSFileProviderDomain)
-initWithIdentifier_displayName_pathRelativeToDocumentStorage nsFileProviderDomain  identifier displayName pathRelativeToDocumentStorage =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr displayName $ \raw_displayName ->
-      withObjCPtr pathRelativeToDocumentStorage $ \raw_pathRelativeToDocumentStorage ->
-          sendMsg nsFileProviderDomain (mkSelector "initWithIdentifier:displayName:pathRelativeToDocumentStorage:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_pathRelativeToDocumentStorage :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_displayName_pathRelativeToDocumentStorage nsFileProviderDomain identifier displayName pathRelativeToDocumentStorage =
+  sendOwnedMessage nsFileProviderDomain initWithIdentifier_displayName_pathRelativeToDocumentStorageSelector (toNSString identifier) (toNSString displayName) (toNSString pathRelativeToDocumentStorage)
 
 -- | Initialize a new replicated NSFileProviderDomain
 --
@@ -128,10 +122,8 @@ initWithIdentifier_displayName_pathRelativeToDocumentStorage nsFileProviderDomai
 --
 -- ObjC selector: @- initWithIdentifier:displayName:@
 initWithIdentifier_displayName :: (IsNSFileProviderDomain nsFileProviderDomain, IsNSString identifier, IsNSString displayName) => nsFileProviderDomain -> identifier -> displayName -> IO (Id NSFileProviderDomain)
-initWithIdentifier_displayName nsFileProviderDomain  identifier displayName =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr displayName $ \raw_displayName ->
-        sendMsg nsFileProviderDomain (mkSelector "initWithIdentifier:displayName:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_displayName :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_displayName nsFileProviderDomain identifier displayName =
+  sendOwnedMessage nsFileProviderDomain initWithIdentifier_displayNameSelector (toNSString identifier) (toNSString displayName)
 
 -- | Initialize a new replicated NSFileProviderDomain on a specific volume.
 --
@@ -141,32 +133,29 @@ initWithIdentifier_displayName nsFileProviderDomain  identifier displayName =
 --
 -- ObjC selector: @- initWithDisplayName:userInfo:volumeURL:@
 initWithDisplayName_userInfo_volumeURL :: (IsNSFileProviderDomain nsFileProviderDomain, IsNSString displayName, IsNSDictionary userInfo, IsNSURL volumeURL) => nsFileProviderDomain -> displayName -> userInfo -> volumeURL -> IO (Id NSFileProviderDomain)
-initWithDisplayName_userInfo_volumeURL nsFileProviderDomain  displayName userInfo volumeURL =
-  withObjCPtr displayName $ \raw_displayName ->
-    withObjCPtr userInfo $ \raw_userInfo ->
-      withObjCPtr volumeURL $ \raw_volumeURL ->
-          sendMsg nsFileProviderDomain (mkSelector "initWithDisplayName:userInfo:volumeURL:") (retPtr retVoid) [argPtr (castPtr raw_displayName :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ()), argPtr (castPtr raw_volumeURL :: Ptr ())] >>= ownedObject . castPtr
+initWithDisplayName_userInfo_volumeURL nsFileProviderDomain displayName userInfo volumeURL =
+  sendOwnedMessage nsFileProviderDomain initWithDisplayName_userInfo_volumeURLSelector (toNSString displayName) (toNSDictionary userInfo) (toNSURL volumeURL)
 
 -- | The identifier - as provided by the file provider extension.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO (Id NSString)
-identifier nsFileProviderDomain  =
-    sendMsg nsFileProviderDomain (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsFileProviderDomain =
+  sendMessage nsFileProviderDomain identifierSelector
 
 -- | The display name shown by the system to represent this domain.
 --
 -- ObjC selector: @- displayName@
 displayName :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO (Id NSString)
-displayName nsFileProviderDomain  =
-    sendMsg nsFileProviderDomain (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName nsFileProviderDomain =
+  sendMessage nsFileProviderDomain displayNameSelector
 
 -- | The path relative to the document storage of the file provider extension. Files belonging to this domains should be stored under this path.
 --
 -- ObjC selector: @- pathRelativeToDocumentStorage@
 pathRelativeToDocumentStorage :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO (Id NSString)
-pathRelativeToDocumentStorage nsFileProviderDomain  =
-    sendMsg nsFileProviderDomain (mkSelector "pathRelativeToDocumentStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathRelativeToDocumentStorage nsFileProviderDomain =
+  sendMessage nsFileProviderDomain pathRelativeToDocumentStorageSelector
 
 -- | If set, the domain is present, but disconnected from its extension. In this state, the user continues to be able to browse the domain's contents, but the extension doesn't receive updates on modifications to the files, nor is it consulted to update folder's contents.
 --
@@ -174,15 +163,15 @@ pathRelativeToDocumentStorage nsFileProviderDomain  =
 --
 -- ObjC selector: @- disconnected@
 disconnected :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO Bool
-disconnected nsFileProviderDomain  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderDomain (mkSelector "disconnected") retCULong []
+disconnected nsFileProviderDomain =
+  sendMessage nsFileProviderDomain disconnectedSelector
 
 -- | If user has disabled this domain from Files.app on iOS or System Settings on macOS, this will be set to NO.
 --
 -- ObjC selector: @- userEnabled@
 userEnabled :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO Bool
-userEnabled nsFileProviderDomain  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderDomain (mkSelector "userEnabled") retCULong []
+userEnabled nsFileProviderDomain =
+  sendMessage nsFileProviderDomain userEnabledSelector
 
 -- | If this domain is not user visible.
 --
@@ -190,8 +179,8 @@ userEnabled nsFileProviderDomain  =
 --
 -- ObjC selector: @- hidden@
 hidden :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO Bool
-hidden nsFileProviderDomain  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderDomain (mkSelector "hidden") retCULong []
+hidden nsFileProviderDomain =
+  sendMessage nsFileProviderDomain hiddenSelector
 
 -- | If this domain is not user visible.
 --
@@ -199,8 +188,8 @@ hidden nsFileProviderDomain  =
 --
 -- ObjC selector: @- setHidden:@
 setHidden :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> Bool -> IO ()
-setHidden nsFileProviderDomain  value =
-    sendMsg nsFileProviderDomain (mkSelector "setHidden:") retVoid [argCULong (if value then 1 else 0)]
+setHidden nsFileProviderDomain value =
+  sendMessage nsFileProviderDomain setHiddenSelector value
 
 -- | If the domain is a replicated domain.
 --
@@ -212,8 +201,8 @@ setHidden nsFileProviderDomain  value =
 --
 -- ObjC selector: @- replicated@
 replicated :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO Bool
-replicated nsFileProviderDomain  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderDomain (mkSelector "replicated") retCULong []
+replicated nsFileProviderDomain =
+  sendMessage nsFileProviderDomain replicatedSelector
 
 -- | Testing modes.
 --
@@ -223,8 +212,8 @@ replicated nsFileProviderDomain  =
 --
 -- ObjC selector: @- testingModes@
 testingModes :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO NSFileProviderDomainTestingModes
-testingModes nsFileProviderDomain  =
-    fmap (coerce :: CULong -> NSFileProviderDomainTestingModes) $ sendMsg nsFileProviderDomain (mkSelector "testingModes") retCULong []
+testingModes nsFileProviderDomain =
+  sendMessage nsFileProviderDomain testingModesSelector
 
 -- | Testing modes.
 --
@@ -234,8 +223,8 @@ testingModes nsFileProviderDomain  =
 --
 -- ObjC selector: @- setTestingModes:@
 setTestingModes :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> NSFileProviderDomainTestingModes -> IO ()
-setTestingModes nsFileProviderDomain  value =
-    sendMsg nsFileProviderDomain (mkSelector "setTestingModes:") retVoid [argCULong (coerce value)]
+setTestingModes nsFileProviderDomain value =
+  sendMessage nsFileProviderDomain setTestingModesSelector value
 
 -- | Identity of the backing store of the domain on the system.
 --
@@ -249,8 +238,8 @@ setTestingModes nsFileProviderDomain  value =
 --
 -- ObjC selector: @- backingStoreIdentity@
 backingStoreIdentity :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO (Id NSData)
-backingStoreIdentity nsFileProviderDomain  =
-    sendMsg nsFileProviderDomain (mkSelector "backingStoreIdentity") (retPtr retVoid) [] >>= retainedObject . castPtr
+backingStoreIdentity nsFileProviderDomain =
+  sendMessage nsFileProviderDomain backingStoreIdentitySelector
 
 -- | Whether the domain supports syncing the trash.
 --
@@ -264,8 +253,8 @@ backingStoreIdentity nsFileProviderDomain  =
 --
 -- ObjC selector: @- supportsSyncingTrash@
 supportsSyncingTrash :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO Bool
-supportsSyncingTrash nsFileProviderDomain  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderDomain (mkSelector "supportsSyncingTrash") retCULong []
+supportsSyncingTrash nsFileProviderDomain =
+  sendMessage nsFileProviderDomain supportsSyncingTrashSelector
 
 -- | Whether the domain supports syncing the trash.
 --
@@ -279,49 +268,48 @@ supportsSyncingTrash nsFileProviderDomain  =
 --
 -- ObjC selector: @- setSupportsSyncingTrash:@
 setSupportsSyncingTrash :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> Bool -> IO ()
-setSupportsSyncingTrash nsFileProviderDomain  value =
-    sendMsg nsFileProviderDomain (mkSelector "setSupportsSyncingTrash:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsSyncingTrash nsFileProviderDomain value =
+  sendMessage nsFileProviderDomain setSupportsSyncingTrashSelector value
 
 -- | @- volumeUUID@
 volumeUUID :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO (Id NSUUID)
-volumeUUID nsFileProviderDomain  =
-    sendMsg nsFileProviderDomain (mkSelector "volumeUUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+volumeUUID nsFileProviderDomain =
+  sendMessage nsFileProviderDomain volumeUUIDSelector
 
 -- | A dictionary set by the client app. Keys must be strings, values must be [String, Number, Date, Data]
 --
 -- ObjC selector: @- userInfo@
 userInfo :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO (Id NSDictionary)
-userInfo nsFileProviderDomain  =
-    sendMsg nsFileProviderDomain (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsFileProviderDomain =
+  sendMessage nsFileProviderDomain userInfoSelector
 
 -- | A dictionary set by the client app. Keys must be strings, values must be [String, Number, Date, Data]
 --
 -- ObjC selector: @- setUserInfo:@
 setUserInfo :: (IsNSFileProviderDomain nsFileProviderDomain, IsNSDictionary value) => nsFileProviderDomain -> value -> IO ()
-setUserInfo nsFileProviderDomain  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFileProviderDomain (mkSelector "setUserInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserInfo nsFileProviderDomain value =
+  sendMessage nsFileProviderDomain setUserInfoSelector (toNSDictionary value)
 
 -- | List of known folders that are currently replicated by this domain.
 --
 -- ObjC selector: @- replicatedKnownFolders@
 replicatedKnownFolders :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO NSFileProviderKnownFolders
-replicatedKnownFolders nsFileProviderDomain  =
-    fmap (coerce :: CULong -> NSFileProviderKnownFolders) $ sendMsg nsFileProviderDomain (mkSelector "replicatedKnownFolders") retCULong []
+replicatedKnownFolders nsFileProviderDomain =
+  sendMessage nsFileProviderDomain replicatedKnownFoldersSelector
 
 -- | List known folders that can be replicated by this domain.
 --
 -- ObjC selector: @- supportedKnownFolders@
 supportedKnownFolders :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO NSFileProviderKnownFolders
-supportedKnownFolders nsFileProviderDomain  =
-    fmap (coerce :: CULong -> NSFileProviderKnownFolders) $ sendMsg nsFileProviderDomain (mkSelector "supportedKnownFolders") retCULong []
+supportedKnownFolders nsFileProviderDomain =
+  sendMessage nsFileProviderDomain supportedKnownFoldersSelector
 
 -- | List known folders that can be replicated by this domain.
 --
 -- ObjC selector: @- setSupportedKnownFolders:@
 setSupportedKnownFolders :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> NSFileProviderKnownFolders -> IO ()
-setSupportedKnownFolders nsFileProviderDomain  value =
-    sendMsg nsFileProviderDomain (mkSelector "setSupportedKnownFolders:") retVoid [argCULong (coerce value)]
+setSupportedKnownFolders nsFileProviderDomain value =
+  sendMessage nsFileProviderDomain setSupportedKnownFoldersSelector value
 
 -- | Whether the system should use this domain's  @NSFileProviderSearching@ implementation to support  search experiences.
 --
@@ -329,8 +317,8 @@ setSupportedKnownFolders nsFileProviderDomain  value =
 --
 -- ObjC selector: @- supportsStringSearchRequest@
 supportsStringSearchRequest :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> IO Bool
-supportsStringSearchRequest nsFileProviderDomain  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFileProviderDomain (mkSelector "supportsStringSearchRequest") retCULong []
+supportsStringSearchRequest nsFileProviderDomain =
+  sendMessage nsFileProviderDomain supportsStringSearchRequestSelector
 
 -- | Whether the system should use this domain's  @NSFileProviderSearching@ implementation to support  search experiences.
 --
@@ -338,106 +326,106 @@ supportsStringSearchRequest nsFileProviderDomain  =
 --
 -- ObjC selector: @- setSupportsStringSearchRequest:@
 setSupportsStringSearchRequest :: IsNSFileProviderDomain nsFileProviderDomain => nsFileProviderDomain -> Bool -> IO ()
-setSupportsStringSearchRequest nsFileProviderDomain  value =
-    sendMsg nsFileProviderDomain (mkSelector "setSupportsStringSearchRequest:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsStringSearchRequest nsFileProviderDomain value =
+  sendMessage nsFileProviderDomain setSupportsStringSearchRequestSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:displayName:pathRelativeToDocumentStorage:@
-initWithIdentifier_displayName_pathRelativeToDocumentStorageSelector :: Selector
+initWithIdentifier_displayName_pathRelativeToDocumentStorageSelector :: Selector '[Id NSString, Id NSString, Id NSString] (Id NSFileProviderDomain)
 initWithIdentifier_displayName_pathRelativeToDocumentStorageSelector = mkSelector "initWithIdentifier:displayName:pathRelativeToDocumentStorage:"
 
 -- | @Selector@ for @initWithIdentifier:displayName:@
-initWithIdentifier_displayNameSelector :: Selector
+initWithIdentifier_displayNameSelector :: Selector '[Id NSString, Id NSString] (Id NSFileProviderDomain)
 initWithIdentifier_displayNameSelector = mkSelector "initWithIdentifier:displayName:"
 
 -- | @Selector@ for @initWithDisplayName:userInfo:volumeURL:@
-initWithDisplayName_userInfo_volumeURLSelector :: Selector
+initWithDisplayName_userInfo_volumeURLSelector :: Selector '[Id NSString, Id NSDictionary, Id NSURL] (Id NSFileProviderDomain)
 initWithDisplayName_userInfo_volumeURLSelector = mkSelector "initWithDisplayName:userInfo:volumeURL:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @pathRelativeToDocumentStorage@
-pathRelativeToDocumentStorageSelector :: Selector
+pathRelativeToDocumentStorageSelector :: Selector '[] (Id NSString)
 pathRelativeToDocumentStorageSelector = mkSelector "pathRelativeToDocumentStorage"
 
 -- | @Selector@ for @disconnected@
-disconnectedSelector :: Selector
+disconnectedSelector :: Selector '[] Bool
 disconnectedSelector = mkSelector "disconnected"
 
 -- | @Selector@ for @userEnabled@
-userEnabledSelector :: Selector
+userEnabledSelector :: Selector '[] Bool
 userEnabledSelector = mkSelector "userEnabled"
 
 -- | @Selector@ for @hidden@
-hiddenSelector :: Selector
+hiddenSelector :: Selector '[] Bool
 hiddenSelector = mkSelector "hidden"
 
 -- | @Selector@ for @setHidden:@
-setHiddenSelector :: Selector
+setHiddenSelector :: Selector '[Bool] ()
 setHiddenSelector = mkSelector "setHidden:"
 
 -- | @Selector@ for @replicated@
-replicatedSelector :: Selector
+replicatedSelector :: Selector '[] Bool
 replicatedSelector = mkSelector "replicated"
 
 -- | @Selector@ for @testingModes@
-testingModesSelector :: Selector
+testingModesSelector :: Selector '[] NSFileProviderDomainTestingModes
 testingModesSelector = mkSelector "testingModes"
 
 -- | @Selector@ for @setTestingModes:@
-setTestingModesSelector :: Selector
+setTestingModesSelector :: Selector '[NSFileProviderDomainTestingModes] ()
 setTestingModesSelector = mkSelector "setTestingModes:"
 
 -- | @Selector@ for @backingStoreIdentity@
-backingStoreIdentitySelector :: Selector
+backingStoreIdentitySelector :: Selector '[] (Id NSData)
 backingStoreIdentitySelector = mkSelector "backingStoreIdentity"
 
 -- | @Selector@ for @supportsSyncingTrash@
-supportsSyncingTrashSelector :: Selector
+supportsSyncingTrashSelector :: Selector '[] Bool
 supportsSyncingTrashSelector = mkSelector "supportsSyncingTrash"
 
 -- | @Selector@ for @setSupportsSyncingTrash:@
-setSupportsSyncingTrashSelector :: Selector
+setSupportsSyncingTrashSelector :: Selector '[Bool] ()
 setSupportsSyncingTrashSelector = mkSelector "setSupportsSyncingTrash:"
 
 -- | @Selector@ for @volumeUUID@
-volumeUUIDSelector :: Selector
+volumeUUIDSelector :: Selector '[] (Id NSUUID)
 volumeUUIDSelector = mkSelector "volumeUUID"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @setUserInfo:@
-setUserInfoSelector :: Selector
+setUserInfoSelector :: Selector '[Id NSDictionary] ()
 setUserInfoSelector = mkSelector "setUserInfo:"
 
 -- | @Selector@ for @replicatedKnownFolders@
-replicatedKnownFoldersSelector :: Selector
+replicatedKnownFoldersSelector :: Selector '[] NSFileProviderKnownFolders
 replicatedKnownFoldersSelector = mkSelector "replicatedKnownFolders"
 
 -- | @Selector@ for @supportedKnownFolders@
-supportedKnownFoldersSelector :: Selector
+supportedKnownFoldersSelector :: Selector '[] NSFileProviderKnownFolders
 supportedKnownFoldersSelector = mkSelector "supportedKnownFolders"
 
 -- | @Selector@ for @setSupportedKnownFolders:@
-setSupportedKnownFoldersSelector :: Selector
+setSupportedKnownFoldersSelector :: Selector '[NSFileProviderKnownFolders] ()
 setSupportedKnownFoldersSelector = mkSelector "setSupportedKnownFolders:"
 
 -- | @Selector@ for @supportsStringSearchRequest@
-supportsStringSearchRequestSelector :: Selector
+supportsStringSearchRequestSelector :: Selector '[] Bool
 supportsStringSearchRequestSelector = mkSelector "supportsStringSearchRequest"
 
 -- | @Selector@ for @setSupportsStringSearchRequest:@
-setSupportsStringSearchRequestSelector :: Selector
+setSupportsStringSearchRequestSelector :: Selector '[Bool] ()
 setSupportsStringSearchRequestSelector = mkSelector "setSupportsStringSearchRequest:"
 

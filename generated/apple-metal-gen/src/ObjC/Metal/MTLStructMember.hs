@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.Metal.MTLStructMember
   , offset
   , dataType
   , argumentIndex
-  , structTypeSelector
+  , argumentIndexSelector
   , arrayTypeSelector
-  , textureReferenceTypeSelector
-  , pointerTypeSelector
-  , tensorReferenceTypeSelector
+  , dataTypeSelector
   , nameSelector
   , offsetSelector
-  , dataTypeSelector
-  , argumentIndexSelector
+  , pointerTypeSelector
+  , structTypeSelector
+  , tensorReferenceTypeSelector
+  , textureReferenceTypeSelector
 
   -- * Enum types
   , MTLDataType(MTLDataType)
@@ -128,15 +129,11 @@ module ObjC.Metal.MTLStructMember
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -146,23 +143,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- structType@
 structType :: IsMTLStructMember mtlStructMember => mtlStructMember -> IO (Id MTLStructType)
-structType mtlStructMember  =
-    sendMsg mtlStructMember (mkSelector "structType") (retPtr retVoid) [] >>= retainedObject . castPtr
+structType mtlStructMember =
+  sendMessage mtlStructMember structTypeSelector
 
 -- | @- arrayType@
 arrayType :: IsMTLStructMember mtlStructMember => mtlStructMember -> IO (Id MTLArrayType)
-arrayType mtlStructMember  =
-    sendMsg mtlStructMember (mkSelector "arrayType") (retPtr retVoid) [] >>= retainedObject . castPtr
+arrayType mtlStructMember =
+  sendMessage mtlStructMember arrayTypeSelector
 
 -- | @- textureReferenceType@
 textureReferenceType :: IsMTLStructMember mtlStructMember => mtlStructMember -> IO (Id MTLTextureReferenceType)
-textureReferenceType mtlStructMember  =
-    sendMsg mtlStructMember (mkSelector "textureReferenceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+textureReferenceType mtlStructMember =
+  sendMessage mtlStructMember textureReferenceTypeSelector
 
 -- | @- pointerType@
 pointerType :: IsMTLStructMember mtlStructMember => mtlStructMember -> IO (Id MTLPointerType)
-pointerType mtlStructMember  =
-    sendMsg mtlStructMember (mkSelector "pointerType") (retPtr retVoid) [] >>= retainedObject . castPtr
+pointerType mtlStructMember =
+  sendMessage mtlStructMember pointerTypeSelector
 
 -- | Provides a description of the underlying tensor type when this struct member holds a tensor.
 --
@@ -170,66 +167,66 @@ pointerType mtlStructMember  =
 --
 -- ObjC selector: @- tensorReferenceType@
 tensorReferenceType :: IsMTLStructMember mtlStructMember => mtlStructMember -> IO (Id MTLTensorReferenceType)
-tensorReferenceType mtlStructMember  =
-    sendMsg mtlStructMember (mkSelector "tensorReferenceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+tensorReferenceType mtlStructMember =
+  sendMessage mtlStructMember tensorReferenceTypeSelector
 
 -- | @- name@
 name :: IsMTLStructMember mtlStructMember => mtlStructMember -> IO (Id NSString)
-name mtlStructMember  =
-    sendMsg mtlStructMember (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtlStructMember =
+  sendMessage mtlStructMember nameSelector
 
 -- | @- offset@
 offset :: IsMTLStructMember mtlStructMember => mtlStructMember -> IO CULong
-offset mtlStructMember  =
-    sendMsg mtlStructMember (mkSelector "offset") retCULong []
+offset mtlStructMember =
+  sendMessage mtlStructMember offsetSelector
 
 -- | @- dataType@
 dataType :: IsMTLStructMember mtlStructMember => mtlStructMember -> IO MTLDataType
-dataType mtlStructMember  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlStructMember (mkSelector "dataType") retCULong []
+dataType mtlStructMember =
+  sendMessage mtlStructMember dataTypeSelector
 
 -- | @- argumentIndex@
 argumentIndex :: IsMTLStructMember mtlStructMember => mtlStructMember -> IO CULong
-argumentIndex mtlStructMember  =
-    sendMsg mtlStructMember (mkSelector "argumentIndex") retCULong []
+argumentIndex mtlStructMember =
+  sendMessage mtlStructMember argumentIndexSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @structType@
-structTypeSelector :: Selector
+structTypeSelector :: Selector '[] (Id MTLStructType)
 structTypeSelector = mkSelector "structType"
 
 -- | @Selector@ for @arrayType@
-arrayTypeSelector :: Selector
+arrayTypeSelector :: Selector '[] (Id MTLArrayType)
 arrayTypeSelector = mkSelector "arrayType"
 
 -- | @Selector@ for @textureReferenceType@
-textureReferenceTypeSelector :: Selector
+textureReferenceTypeSelector :: Selector '[] (Id MTLTextureReferenceType)
 textureReferenceTypeSelector = mkSelector "textureReferenceType"
 
 -- | @Selector@ for @pointerType@
-pointerTypeSelector :: Selector
+pointerTypeSelector :: Selector '[] (Id MTLPointerType)
 pointerTypeSelector = mkSelector "pointerType"
 
 -- | @Selector@ for @tensorReferenceType@
-tensorReferenceTypeSelector :: Selector
+tensorReferenceTypeSelector :: Selector '[] (Id MTLTensorReferenceType)
 tensorReferenceTypeSelector = mkSelector "tensorReferenceType"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] CULong
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MTLDataType
 dataTypeSelector = mkSelector "dataType"
 
 -- | @Selector@ for @argumentIndex@
-argumentIndexSelector :: Selector
+argumentIndexSelector :: Selector '[] CULong
 argumentIndexSelector = mkSelector "argumentIndex"
 

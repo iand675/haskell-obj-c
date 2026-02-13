@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,40 +42,40 @@ module ObjC.IOSurface.IOSurface
   , inUse
   , localUseCount
   , allowsPixelSizeCasting
+  , allAttachmentsSelector
+  , allocationSizeSelector
+  , allowsPixelSizeCastingSelector
+  , attachmentForKeySelector
+  , baseAddressOfPlaneAtIndexSelector
+  , baseAddressSelector
+  , bytesPerElementOfPlaneAtIndexSelector
+  , bytesPerElementSelector
+  , bytesPerRowOfPlaneAtIndexSelector
+  , bytesPerRowSelector
+  , decrementUseCountSelector
+  , elementHeightOfPlaneAtIndexSelector
+  , elementHeightSelector
+  , elementWidthOfPlaneAtIndexSelector
+  , elementWidthSelector
+  , heightOfPlaneAtIndexSelector
+  , heightSelector
+  , inUseSelector
+  , incrementUseCountSelector
   , initWithPropertiesSelector
+  , localUseCountSelector
   , lockWithOptions_seedSelector
+  , pixelFormatSelector
+  , planeCountSelector
+  , removeAllAttachmentsSelector
+  , removeAttachmentForKeySelector
+  , seedSelector
+  , setAllAttachmentsSelector
+  , setAttachment_forKeySelector
+  , setPurgeable_oldStateSelector
+  , surfaceIDSelector
   , unlockWithOptions_seedSelector
   , widthOfPlaneAtIndexSelector
-  , heightOfPlaneAtIndexSelector
-  , bytesPerRowOfPlaneAtIndexSelector
-  , bytesPerElementOfPlaneAtIndexSelector
-  , elementWidthOfPlaneAtIndexSelector
-  , elementHeightOfPlaneAtIndexSelector
-  , baseAddressOfPlaneAtIndexSelector
-  , setAttachment_forKeySelector
-  , attachmentForKeySelector
-  , removeAttachmentForKeySelector
-  , setAllAttachmentsSelector
-  , allAttachmentsSelector
-  , removeAllAttachmentsSelector
-  , incrementUseCountSelector
-  , decrementUseCountSelector
-  , setPurgeable_oldStateSelector
-  , allocationSizeSelector
   , widthSelector
-  , heightSelector
-  , baseAddressSelector
-  , pixelFormatSelector
-  , bytesPerRowSelector
-  , bytesPerElementSelector
-  , elementWidthSelector
-  , elementHeightSelector
-  , surfaceIDSelector
-  , seedSelector
-  , planeCountSelector
-  , inUseSelector
-  , localUseCountSelector
-  , allowsPixelSizeCastingSelector
 
   -- * Enum types
   , IOSurfaceLockOptions(IOSurfaceLockOptions)
@@ -88,15 +89,11 @@ module ObjC.IOSurface.IOSurface
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -106,316 +103,311 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithProperties:@
 initWithProperties :: (IsIOSurface ioSurface, IsNSDictionary properties) => ioSurface -> properties -> IO (Id IOSurface)
-initWithProperties ioSurface  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg ioSurface (mkSelector "initWithProperties:") (retPtr retVoid) [argPtr (castPtr raw_properties :: Ptr ())] >>= ownedObject . castPtr
+initWithProperties ioSurface properties =
+  sendOwnedMessage ioSurface initWithPropertiesSelector (toNSDictionary properties)
 
 -- | @- lockWithOptions:seed:@
 lockWithOptions_seed :: IsIOSurface ioSurface => ioSurface -> IOSurfaceLockOptions -> Ptr CUInt -> IO CInt
-lockWithOptions_seed ioSurface  options seed =
-    sendMsg ioSurface (mkSelector "lockWithOptions:seed:") retCInt [argCUInt (coerce options), argPtr seed]
+lockWithOptions_seed ioSurface options seed =
+  sendMessage ioSurface lockWithOptions_seedSelector options seed
 
 -- | @- unlockWithOptions:seed:@
 unlockWithOptions_seed :: IsIOSurface ioSurface => ioSurface -> IOSurfaceLockOptions -> Ptr CUInt -> IO CInt
-unlockWithOptions_seed ioSurface  options seed =
-    sendMsg ioSurface (mkSelector "unlockWithOptions:seed:") retCInt [argCUInt (coerce options), argPtr seed]
+unlockWithOptions_seed ioSurface options seed =
+  sendMessage ioSurface unlockWithOptions_seedSelector options seed
 
 -- | @- widthOfPlaneAtIndex:@
 widthOfPlaneAtIndex :: IsIOSurface ioSurface => ioSurface -> CULong -> IO CLong
-widthOfPlaneAtIndex ioSurface  planeIndex =
-    sendMsg ioSurface (mkSelector "widthOfPlaneAtIndex:") retCLong [argCULong planeIndex]
+widthOfPlaneAtIndex ioSurface planeIndex =
+  sendMessage ioSurface widthOfPlaneAtIndexSelector planeIndex
 
 -- | @- heightOfPlaneAtIndex:@
 heightOfPlaneAtIndex :: IsIOSurface ioSurface => ioSurface -> CULong -> IO CLong
-heightOfPlaneAtIndex ioSurface  planeIndex =
-    sendMsg ioSurface (mkSelector "heightOfPlaneAtIndex:") retCLong [argCULong planeIndex]
+heightOfPlaneAtIndex ioSurface planeIndex =
+  sendMessage ioSurface heightOfPlaneAtIndexSelector planeIndex
 
 -- | @- bytesPerRowOfPlaneAtIndex:@
 bytesPerRowOfPlaneAtIndex :: IsIOSurface ioSurface => ioSurface -> CULong -> IO CLong
-bytesPerRowOfPlaneAtIndex ioSurface  planeIndex =
-    sendMsg ioSurface (mkSelector "bytesPerRowOfPlaneAtIndex:") retCLong [argCULong planeIndex]
+bytesPerRowOfPlaneAtIndex ioSurface planeIndex =
+  sendMessage ioSurface bytesPerRowOfPlaneAtIndexSelector planeIndex
 
 -- | @- bytesPerElementOfPlaneAtIndex:@
 bytesPerElementOfPlaneAtIndex :: IsIOSurface ioSurface => ioSurface -> CULong -> IO CLong
-bytesPerElementOfPlaneAtIndex ioSurface  planeIndex =
-    sendMsg ioSurface (mkSelector "bytesPerElementOfPlaneAtIndex:") retCLong [argCULong planeIndex]
+bytesPerElementOfPlaneAtIndex ioSurface planeIndex =
+  sendMessage ioSurface bytesPerElementOfPlaneAtIndexSelector planeIndex
 
 -- | @- elementWidthOfPlaneAtIndex:@
 elementWidthOfPlaneAtIndex :: IsIOSurface ioSurface => ioSurface -> CULong -> IO CLong
-elementWidthOfPlaneAtIndex ioSurface  planeIndex =
-    sendMsg ioSurface (mkSelector "elementWidthOfPlaneAtIndex:") retCLong [argCULong planeIndex]
+elementWidthOfPlaneAtIndex ioSurface planeIndex =
+  sendMessage ioSurface elementWidthOfPlaneAtIndexSelector planeIndex
 
 -- | @- elementHeightOfPlaneAtIndex:@
 elementHeightOfPlaneAtIndex :: IsIOSurface ioSurface => ioSurface -> CULong -> IO CLong
-elementHeightOfPlaneAtIndex ioSurface  planeIndex =
-    sendMsg ioSurface (mkSelector "elementHeightOfPlaneAtIndex:") retCLong [argCULong planeIndex]
+elementHeightOfPlaneAtIndex ioSurface planeIndex =
+  sendMessage ioSurface elementHeightOfPlaneAtIndexSelector planeIndex
 
 -- | @- baseAddressOfPlaneAtIndex:@
 baseAddressOfPlaneAtIndex :: IsIOSurface ioSurface => ioSurface -> CULong -> IO (Ptr ())
-baseAddressOfPlaneAtIndex ioSurface  planeIndex =
-    fmap castPtr $ sendMsg ioSurface (mkSelector "baseAddressOfPlaneAtIndex:") (retPtr retVoid) [argCULong planeIndex]
+baseAddressOfPlaneAtIndex ioSurface planeIndex =
+  sendMessage ioSurface baseAddressOfPlaneAtIndexSelector planeIndex
 
 -- | @- setAttachment:forKey:@
 setAttachment_forKey :: (IsIOSurface ioSurface, IsNSString key) => ioSurface -> RawId -> key -> IO ()
-setAttachment_forKey ioSurface  anObject key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg ioSurface (mkSelector "setAttachment:forKey:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setAttachment_forKey ioSurface anObject key =
+  sendMessage ioSurface setAttachment_forKeySelector anObject (toNSString key)
 
 -- | @- attachmentForKey:@
 attachmentForKey :: (IsIOSurface ioSurface, IsNSString key) => ioSurface -> key -> IO RawId
-attachmentForKey ioSurface  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg ioSurface (mkSelector "attachmentForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+attachmentForKey ioSurface key =
+  sendMessage ioSurface attachmentForKeySelector (toNSString key)
 
 -- | @- removeAttachmentForKey:@
 removeAttachmentForKey :: (IsIOSurface ioSurface, IsNSString key) => ioSurface -> key -> IO ()
-removeAttachmentForKey ioSurface  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg ioSurface (mkSelector "removeAttachmentForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+removeAttachmentForKey ioSurface key =
+  sendMessage ioSurface removeAttachmentForKeySelector (toNSString key)
 
 -- | @- setAllAttachments:@
 setAllAttachments :: (IsIOSurface ioSurface, IsNSDictionary dict) => ioSurface -> dict -> IO ()
-setAllAttachments ioSurface  dict =
-  withObjCPtr dict $ \raw_dict ->
-      sendMsg ioSurface (mkSelector "setAllAttachments:") retVoid [argPtr (castPtr raw_dict :: Ptr ())]
+setAllAttachments ioSurface dict =
+  sendMessage ioSurface setAllAttachmentsSelector (toNSDictionary dict)
 
 -- | @- allAttachments@
 allAttachments :: IsIOSurface ioSurface => ioSurface -> IO (Id NSDictionary)
-allAttachments ioSurface  =
-    sendMsg ioSurface (mkSelector "allAttachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+allAttachments ioSurface =
+  sendMessage ioSurface allAttachmentsSelector
 
 -- | @- removeAllAttachments@
 removeAllAttachments :: IsIOSurface ioSurface => ioSurface -> IO ()
-removeAllAttachments ioSurface  =
-    sendMsg ioSurface (mkSelector "removeAllAttachments") retVoid []
+removeAllAttachments ioSurface =
+  sendMessage ioSurface removeAllAttachmentsSelector
 
 -- | @- incrementUseCount@
 incrementUseCount :: IsIOSurface ioSurface => ioSurface -> IO ()
-incrementUseCount ioSurface  =
-    sendMsg ioSurface (mkSelector "incrementUseCount") retVoid []
+incrementUseCount ioSurface =
+  sendMessage ioSurface incrementUseCountSelector
 
 -- | @- decrementUseCount@
 decrementUseCount :: IsIOSurface ioSurface => ioSurface -> IO ()
-decrementUseCount ioSurface  =
-    sendMsg ioSurface (mkSelector "decrementUseCount") retVoid []
+decrementUseCount ioSurface =
+  sendMessage ioSurface decrementUseCountSelector
 
 -- | @- setPurgeable:oldState:@
 setPurgeable_oldState :: IsIOSurface ioSurface => ioSurface -> IOSurfacePurgeabilityState -> Ptr IOSurfacePurgeabilityState -> IO CInt
-setPurgeable_oldState ioSurface  newState oldState =
-    sendMsg ioSurface (mkSelector "setPurgeable:oldState:") retCInt [argCUInt (coerce newState), argPtr oldState]
+setPurgeable_oldState ioSurface newState oldState =
+  sendMessage ioSurface setPurgeable_oldStateSelector newState oldState
 
 -- | @- allocationSize@
 allocationSize :: IsIOSurface ioSurface => ioSurface -> IO CLong
-allocationSize ioSurface  =
-    sendMsg ioSurface (mkSelector "allocationSize") retCLong []
+allocationSize ioSurface =
+  sendOwnedMessage ioSurface allocationSizeSelector
 
 -- | @- width@
 width :: IsIOSurface ioSurface => ioSurface -> IO CLong
-width ioSurface  =
-    sendMsg ioSurface (mkSelector "width") retCLong []
+width ioSurface =
+  sendMessage ioSurface widthSelector
 
 -- | @- height@
 height :: IsIOSurface ioSurface => ioSurface -> IO CLong
-height ioSurface  =
-    sendMsg ioSurface (mkSelector "height") retCLong []
+height ioSurface =
+  sendMessage ioSurface heightSelector
 
 -- | @- baseAddress@
 baseAddress :: IsIOSurface ioSurface => ioSurface -> IO (Ptr ())
-baseAddress ioSurface  =
-    fmap castPtr $ sendMsg ioSurface (mkSelector "baseAddress") (retPtr retVoid) []
+baseAddress ioSurface =
+  sendMessage ioSurface baseAddressSelector
 
 -- | @- pixelFormat@
 pixelFormat :: IsIOSurface ioSurface => ioSurface -> IO CUInt
-pixelFormat ioSurface  =
-    sendMsg ioSurface (mkSelector "pixelFormat") retCUInt []
+pixelFormat ioSurface =
+  sendMessage ioSurface pixelFormatSelector
 
 -- | @- bytesPerRow@
 bytesPerRow :: IsIOSurface ioSurface => ioSurface -> IO CLong
-bytesPerRow ioSurface  =
-    sendMsg ioSurface (mkSelector "bytesPerRow") retCLong []
+bytesPerRow ioSurface =
+  sendMessage ioSurface bytesPerRowSelector
 
 -- | @- bytesPerElement@
 bytesPerElement :: IsIOSurface ioSurface => ioSurface -> IO CLong
-bytesPerElement ioSurface  =
-    sendMsg ioSurface (mkSelector "bytesPerElement") retCLong []
+bytesPerElement ioSurface =
+  sendMessage ioSurface bytesPerElementSelector
 
 -- | @- elementWidth@
 elementWidth :: IsIOSurface ioSurface => ioSurface -> IO CLong
-elementWidth ioSurface  =
-    sendMsg ioSurface (mkSelector "elementWidth") retCLong []
+elementWidth ioSurface =
+  sendMessage ioSurface elementWidthSelector
 
 -- | @- elementHeight@
 elementHeight :: IsIOSurface ioSurface => ioSurface -> IO CLong
-elementHeight ioSurface  =
-    sendMsg ioSurface (mkSelector "elementHeight") retCLong []
+elementHeight ioSurface =
+  sendMessage ioSurface elementHeightSelector
 
 -- | @- surfaceID@
 surfaceID :: IsIOSurface ioSurface => ioSurface -> IO CUInt
-surfaceID ioSurface  =
-    sendMsg ioSurface (mkSelector "surfaceID") retCUInt []
+surfaceID ioSurface =
+  sendMessage ioSurface surfaceIDSelector
 
 -- | @- seed@
 seed :: IsIOSurface ioSurface => ioSurface -> IO CUInt
-seed ioSurface  =
-    sendMsg ioSurface (mkSelector "seed") retCUInt []
+seed ioSurface =
+  sendMessage ioSurface seedSelector
 
 -- | @- planeCount@
 planeCount :: IsIOSurface ioSurface => ioSurface -> IO CULong
-planeCount ioSurface  =
-    sendMsg ioSurface (mkSelector "planeCount") retCULong []
+planeCount ioSurface =
+  sendMessage ioSurface planeCountSelector
 
 -- | @- inUse@
 inUse :: IsIOSurface ioSurface => ioSurface -> IO Bool
-inUse ioSurface  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioSurface (mkSelector "inUse") retCULong []
+inUse ioSurface =
+  sendMessage ioSurface inUseSelector
 
 -- | @- localUseCount@
 localUseCount :: IsIOSurface ioSurface => ioSurface -> IO CInt
-localUseCount ioSurface  =
-    sendMsg ioSurface (mkSelector "localUseCount") retCInt []
+localUseCount ioSurface =
+  sendMessage ioSurface localUseCountSelector
 
 -- | @- allowsPixelSizeCasting@
 allowsPixelSizeCasting :: IsIOSurface ioSurface => ioSurface -> IO Bool
-allowsPixelSizeCasting ioSurface  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioSurface (mkSelector "allowsPixelSizeCasting") retCULong []
+allowsPixelSizeCasting ioSurface =
+  sendMessage ioSurface allowsPixelSizeCastingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithProperties:@
-initWithPropertiesSelector :: Selector
+initWithPropertiesSelector :: Selector '[Id NSDictionary] (Id IOSurface)
 initWithPropertiesSelector = mkSelector "initWithProperties:"
 
 -- | @Selector@ for @lockWithOptions:seed:@
-lockWithOptions_seedSelector :: Selector
+lockWithOptions_seedSelector :: Selector '[IOSurfaceLockOptions, Ptr CUInt] CInt
 lockWithOptions_seedSelector = mkSelector "lockWithOptions:seed:"
 
 -- | @Selector@ for @unlockWithOptions:seed:@
-unlockWithOptions_seedSelector :: Selector
+unlockWithOptions_seedSelector :: Selector '[IOSurfaceLockOptions, Ptr CUInt] CInt
 unlockWithOptions_seedSelector = mkSelector "unlockWithOptions:seed:"
 
 -- | @Selector@ for @widthOfPlaneAtIndex:@
-widthOfPlaneAtIndexSelector :: Selector
+widthOfPlaneAtIndexSelector :: Selector '[CULong] CLong
 widthOfPlaneAtIndexSelector = mkSelector "widthOfPlaneAtIndex:"
 
 -- | @Selector@ for @heightOfPlaneAtIndex:@
-heightOfPlaneAtIndexSelector :: Selector
+heightOfPlaneAtIndexSelector :: Selector '[CULong] CLong
 heightOfPlaneAtIndexSelector = mkSelector "heightOfPlaneAtIndex:"
 
 -- | @Selector@ for @bytesPerRowOfPlaneAtIndex:@
-bytesPerRowOfPlaneAtIndexSelector :: Selector
+bytesPerRowOfPlaneAtIndexSelector :: Selector '[CULong] CLong
 bytesPerRowOfPlaneAtIndexSelector = mkSelector "bytesPerRowOfPlaneAtIndex:"
 
 -- | @Selector@ for @bytesPerElementOfPlaneAtIndex:@
-bytesPerElementOfPlaneAtIndexSelector :: Selector
+bytesPerElementOfPlaneAtIndexSelector :: Selector '[CULong] CLong
 bytesPerElementOfPlaneAtIndexSelector = mkSelector "bytesPerElementOfPlaneAtIndex:"
 
 -- | @Selector@ for @elementWidthOfPlaneAtIndex:@
-elementWidthOfPlaneAtIndexSelector :: Selector
+elementWidthOfPlaneAtIndexSelector :: Selector '[CULong] CLong
 elementWidthOfPlaneAtIndexSelector = mkSelector "elementWidthOfPlaneAtIndex:"
 
 -- | @Selector@ for @elementHeightOfPlaneAtIndex:@
-elementHeightOfPlaneAtIndexSelector :: Selector
+elementHeightOfPlaneAtIndexSelector :: Selector '[CULong] CLong
 elementHeightOfPlaneAtIndexSelector = mkSelector "elementHeightOfPlaneAtIndex:"
 
 -- | @Selector@ for @baseAddressOfPlaneAtIndex:@
-baseAddressOfPlaneAtIndexSelector :: Selector
+baseAddressOfPlaneAtIndexSelector :: Selector '[CULong] (Ptr ())
 baseAddressOfPlaneAtIndexSelector = mkSelector "baseAddressOfPlaneAtIndex:"
 
 -- | @Selector@ for @setAttachment:forKey:@
-setAttachment_forKeySelector :: Selector
+setAttachment_forKeySelector :: Selector '[RawId, Id NSString] ()
 setAttachment_forKeySelector = mkSelector "setAttachment:forKey:"
 
 -- | @Selector@ for @attachmentForKey:@
-attachmentForKeySelector :: Selector
+attachmentForKeySelector :: Selector '[Id NSString] RawId
 attachmentForKeySelector = mkSelector "attachmentForKey:"
 
 -- | @Selector@ for @removeAttachmentForKey:@
-removeAttachmentForKeySelector :: Selector
+removeAttachmentForKeySelector :: Selector '[Id NSString] ()
 removeAttachmentForKeySelector = mkSelector "removeAttachmentForKey:"
 
 -- | @Selector@ for @setAllAttachments:@
-setAllAttachmentsSelector :: Selector
+setAllAttachmentsSelector :: Selector '[Id NSDictionary] ()
 setAllAttachmentsSelector = mkSelector "setAllAttachments:"
 
 -- | @Selector@ for @allAttachments@
-allAttachmentsSelector :: Selector
+allAttachmentsSelector :: Selector '[] (Id NSDictionary)
 allAttachmentsSelector = mkSelector "allAttachments"
 
 -- | @Selector@ for @removeAllAttachments@
-removeAllAttachmentsSelector :: Selector
+removeAllAttachmentsSelector :: Selector '[] ()
 removeAllAttachmentsSelector = mkSelector "removeAllAttachments"
 
 -- | @Selector@ for @incrementUseCount@
-incrementUseCountSelector :: Selector
+incrementUseCountSelector :: Selector '[] ()
 incrementUseCountSelector = mkSelector "incrementUseCount"
 
 -- | @Selector@ for @decrementUseCount@
-decrementUseCountSelector :: Selector
+decrementUseCountSelector :: Selector '[] ()
 decrementUseCountSelector = mkSelector "decrementUseCount"
 
 -- | @Selector@ for @setPurgeable:oldState:@
-setPurgeable_oldStateSelector :: Selector
+setPurgeable_oldStateSelector :: Selector '[IOSurfacePurgeabilityState, Ptr IOSurfacePurgeabilityState] CInt
 setPurgeable_oldStateSelector = mkSelector "setPurgeable:oldState:"
 
 -- | @Selector@ for @allocationSize@
-allocationSizeSelector :: Selector
+allocationSizeSelector :: Selector '[] CLong
 allocationSizeSelector = mkSelector "allocationSize"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CLong
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CLong
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @baseAddress@
-baseAddressSelector :: Selector
+baseAddressSelector :: Selector '[] (Ptr ())
 baseAddressSelector = mkSelector "baseAddress"
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] CUInt
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @bytesPerRow@
-bytesPerRowSelector :: Selector
+bytesPerRowSelector :: Selector '[] CLong
 bytesPerRowSelector = mkSelector "bytesPerRow"
 
 -- | @Selector@ for @bytesPerElement@
-bytesPerElementSelector :: Selector
+bytesPerElementSelector :: Selector '[] CLong
 bytesPerElementSelector = mkSelector "bytesPerElement"
 
 -- | @Selector@ for @elementWidth@
-elementWidthSelector :: Selector
+elementWidthSelector :: Selector '[] CLong
 elementWidthSelector = mkSelector "elementWidth"
 
 -- | @Selector@ for @elementHeight@
-elementHeightSelector :: Selector
+elementHeightSelector :: Selector '[] CLong
 elementHeightSelector = mkSelector "elementHeight"
 
 -- | @Selector@ for @surfaceID@
-surfaceIDSelector :: Selector
+surfaceIDSelector :: Selector '[] CUInt
 surfaceIDSelector = mkSelector "surfaceID"
 
 -- | @Selector@ for @seed@
-seedSelector :: Selector
+seedSelector :: Selector '[] CUInt
 seedSelector = mkSelector "seed"
 
 -- | @Selector@ for @planeCount@
-planeCountSelector :: Selector
+planeCountSelector :: Selector '[] CULong
 planeCountSelector = mkSelector "planeCount"
 
 -- | @Selector@ for @inUse@
-inUseSelector :: Selector
+inUseSelector :: Selector '[] Bool
 inUseSelector = mkSelector "inUse"
 
 -- | @Selector@ for @localUseCount@
-localUseCountSelector :: Selector
+localUseCountSelector :: Selector '[] CInt
 localUseCountSelector = mkSelector "localUseCount"
 
 -- | @Selector@ for @allowsPixelSizeCasting@
-allowsPixelSizeCastingSelector :: Selector
+allowsPixelSizeCastingSelector :: Selector '[] Bool
 allowsPixelSizeCastingSelector = mkSelector "allowsPixelSizeCasting"
 

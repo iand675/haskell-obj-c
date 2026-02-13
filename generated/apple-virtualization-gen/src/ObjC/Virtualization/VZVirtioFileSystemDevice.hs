@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,22 +22,18 @@ module ObjC.Virtualization.VZVirtioFileSystemDevice
   , tag
   , share
   , setShare
-  , tagSelector
-  , shareSelector
   , setShareSelector
+  , shareSelector
+  , tagSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- tag@
 tag :: IsVZVirtioFileSystemDevice vzVirtioFileSystemDevice => vzVirtioFileSystemDevice -> IO (Id NSString)
-tag vzVirtioFileSystemDevice  =
-    sendMsg vzVirtioFileSystemDevice (mkSelector "tag") (retPtr retVoid) [] >>= retainedObject . castPtr
+tag vzVirtioFileSystemDevice =
+  sendMessage vzVirtioFileSystemDevice tagSelector
 
 -- | Directory share. Defines how host resources are exposed to the guest virtual machine.
 --
@@ -62,8 +59,8 @@ tag vzVirtioFileSystemDevice  =
 --
 -- ObjC selector: @- share@
 share :: IsVZVirtioFileSystemDevice vzVirtioFileSystemDevice => vzVirtioFileSystemDevice -> IO (Id VZDirectoryShare)
-share vzVirtioFileSystemDevice  =
-    sendMsg vzVirtioFileSystemDevice (mkSelector "share") (retPtr retVoid) [] >>= retainedObject . castPtr
+share vzVirtioFileSystemDevice =
+  sendMessage vzVirtioFileSystemDevice shareSelector
 
 -- | Directory share. Defines how host resources are exposed to the guest virtual machine.
 --
@@ -75,23 +72,22 @@ share vzVirtioFileSystemDevice  =
 --
 -- ObjC selector: @- setShare:@
 setShare :: (IsVZVirtioFileSystemDevice vzVirtioFileSystemDevice, IsVZDirectoryShare value) => vzVirtioFileSystemDevice -> value -> IO ()
-setShare vzVirtioFileSystemDevice  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzVirtioFileSystemDevice (mkSelector "setShare:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShare vzVirtioFileSystemDevice value =
+  sendMessage vzVirtioFileSystemDevice setShareSelector (toVZDirectoryShare value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tag@
-tagSelector :: Selector
+tagSelector :: Selector '[] (Id NSString)
 tagSelector = mkSelector "tag"
 
 -- | @Selector@ for @share@
-shareSelector :: Selector
+shareSelector :: Selector '[] (Id VZDirectoryShare)
 shareSelector = mkSelector "share"
 
 -- | @Selector@ for @setShare:@
-setShareSelector :: Selector
+setShareSelector :: Selector '[Id VZDirectoryShare] ()
 setShareSelector = mkSelector "setShare:"
 

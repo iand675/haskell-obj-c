@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,9 +12,9 @@ module ObjC.LocalAuthentication.LADomainStateBiometry
   , init_
   , biometryType
   , stateHash
-  , newSelector
-  , initSelector
   , biometryTypeSelector
+  , initSelector
+  , newSelector
   , stateHashSelector
 
   -- * Enum types
@@ -26,15 +27,11 @@ module ObjC.LocalAuthentication.LADomainStateBiometry
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,19 +44,19 @@ new :: IO (Id LADomainStateBiometry)
 new  =
   do
     cls' <- getRequiredClass "LADomainStateBiometry"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsLADomainStateBiometry laDomainStateBiometry => laDomainStateBiometry -> IO (Id LADomainStateBiometry)
-init_ laDomainStateBiometry  =
-    sendMsg laDomainStateBiometry (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laDomainStateBiometry =
+  sendOwnedMessage laDomainStateBiometry initSelector
 
 -- | Indicates biometry type available on the device.
 --
 -- ObjC selector: @- biometryType@
 biometryType :: IsLADomainStateBiometry laDomainStateBiometry => laDomainStateBiometry -> IO LABiometryType
-biometryType laDomainStateBiometry  =
-    fmap (coerce :: CLong -> LABiometryType) $ sendMsg laDomainStateBiometry (mkSelector "biometryType") retCLong []
+biometryType laDomainStateBiometry =
+  sendMessage laDomainStateBiometry biometryTypeSelector
 
 -- | Contains state hash data for the available biometry type. Returns @nil@ if no biometry entities are enrolled.
 --
@@ -69,26 +66,26 @@ biometryType laDomainStateBiometry  =
 --
 -- ObjC selector: @- stateHash@
 stateHash :: IsLADomainStateBiometry laDomainStateBiometry => laDomainStateBiometry -> IO (Id NSData)
-stateHash laDomainStateBiometry  =
-    sendMsg laDomainStateBiometry (mkSelector "stateHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+stateHash laDomainStateBiometry =
+  sendMessage laDomainStateBiometry stateHashSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LADomainStateBiometry)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LADomainStateBiometry)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @biometryType@
-biometryTypeSelector :: Selector
+biometryTypeSelector :: Selector '[] LABiometryType
 biometryTypeSelector = mkSelector "biometryType"
 
 -- | @Selector@ for @stateHash@
-stateHashSelector :: Selector
+stateHashSelector :: Selector '[] (Id NSData)
 stateHashSelector = mkSelector "stateHash"
 

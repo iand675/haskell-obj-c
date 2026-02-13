@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -76,75 +77,75 @@ module ObjC.Foundation.NSCalendar
   , shortStandaloneQuarterSymbols
   , amSymbol
   , pmSymbol
-  , calendarWithIdentifierSelector
-  , initSelector
-  , initWithCalendarIdentifierSelector
-  , minimumRangeOfUnitSelector
-  , maximumRangeOfUnitSelector
-  , rangeOfUnit_inUnit_forDateSelector
-  , ordinalityOfUnit_inUnit_forDateSelector
-  , rangeOfUnit_startDate_interval_forDateSelector
-  , dateFromComponentsSelector
-  , components_fromDateSelector
-  , dateByAddingComponents_toDate_optionsSelector
-  , components_fromDate_toDate_optionsSelector
-  , getEra_year_month_day_fromDateSelector
-  , getEra_yearForWeekOfYear_weekOfYear_weekday_fromDateSelector
-  , getHour_minute_second_nanosecond_fromDateSelector
-  , component_fromDateSelector
-  , dateWithEra_year_month_day_hour_minute_second_nanosecondSelector
-  , dateWithEra_yearForWeekOfYear_weekOfYear_weekday_hour_minute_second_nanosecondSelector
-  , startOfDayForDateSelector
-  , componentsInTimeZone_fromDateSelector
-  , compareDate_toDate_toUnitGranularitySelector
-  , isDate_equalToDate_toUnitGranularitySelector
-  , isDate_inSameDayAsDateSelector
-  , isDateInTodaySelector
-  , isDateInYesterdaySelector
-  , isDateInTomorrowSelector
-  , isDateInWeekendSelector
-  , rangeOfWeekendStartDate_interval_containingDateSelector
-  , nextWeekendStartDate_interval_options_afterDateSelector
-  , components_fromDateComponents_toDateComponents_optionsSelector
-  , dateByAddingUnit_value_toDate_optionsSelector
-  , enumerateDatesStartingAfterDate_matchingComponents_options_usingBlockSelector
-  , nextDateAfterDate_matchingComponents_optionsSelector
-  , nextDateAfterDate_matchingUnit_value_optionsSelector
-  , nextDateAfterDate_matchingHour_minute_second_optionsSelector
-  , dateBySettingUnit_value_ofDate_optionsSelector
-  , dateBySettingHour_minute_second_ofDate_optionsSelector
-  , date_matchesComponentsSelector
-  , currentCalendarSelector
+  , amSymbolSelector
   , autoupdatingCurrentCalendarSelector
   , calendarIdentifierSelector
-  , localeSelector
-  , setLocaleSelector
-  , timeZoneSelector
-  , setTimeZoneSelector
-  , firstWeekdaySelector
-  , setFirstWeekdaySelector
-  , minimumDaysInFirstWeekSelector
-  , setMinimumDaysInFirstWeekSelector
+  , calendarWithIdentifierSelector
+  , compareDate_toDate_toUnitGranularitySelector
+  , component_fromDateSelector
+  , componentsInTimeZone_fromDateSelector
+  , components_fromDateComponents_toDateComponents_optionsSelector
+  , components_fromDateSelector
+  , components_fromDate_toDate_optionsSelector
+  , currentCalendarSelector
+  , dateByAddingComponents_toDate_optionsSelector
+  , dateByAddingUnit_value_toDate_optionsSelector
+  , dateBySettingHour_minute_second_ofDate_optionsSelector
+  , dateBySettingUnit_value_ofDate_optionsSelector
+  , dateFromComponentsSelector
+  , dateWithEra_yearForWeekOfYear_weekOfYear_weekday_hour_minute_second_nanosecondSelector
+  , dateWithEra_year_month_day_hour_minute_second_nanosecondSelector
+  , date_matchesComponentsSelector
+  , enumerateDatesStartingAfterDate_matchingComponents_options_usingBlockSelector
   , eraSymbolsSelector
+  , firstWeekdaySelector
+  , getEra_yearForWeekOfYear_weekOfYear_weekday_fromDateSelector
+  , getEra_year_month_day_fromDateSelector
+  , getHour_minute_second_nanosecond_fromDateSelector
+  , initSelector
+  , initWithCalendarIdentifierSelector
+  , isDateInTodaySelector
+  , isDateInTomorrowSelector
+  , isDateInWeekendSelector
+  , isDateInYesterdaySelector
+  , isDate_equalToDate_toUnitGranularitySelector
+  , isDate_inSameDayAsDateSelector
+  , localeSelector
   , longEraSymbolsSelector
+  , maximumRangeOfUnitSelector
+  , minimumDaysInFirstWeekSelector
+  , minimumRangeOfUnitSelector
   , monthSymbolsSelector
-  , shortMonthSymbolsSelector
-  , veryShortMonthSymbolsSelector
-  , standaloneMonthSymbolsSelector
-  , shortStandaloneMonthSymbolsSelector
-  , veryShortStandaloneMonthSymbolsSelector
-  , weekdaySymbolsSelector
-  , shortWeekdaySymbolsSelector
-  , veryShortWeekdaySymbolsSelector
-  , standaloneWeekdaySymbolsSelector
-  , shortStandaloneWeekdaySymbolsSelector
-  , veryShortStandaloneWeekdaySymbolsSelector
-  , quarterSymbolsSelector
-  , shortQuarterSymbolsSelector
-  , standaloneQuarterSymbolsSelector
-  , shortStandaloneQuarterSymbolsSelector
-  , amSymbolSelector
+  , nextDateAfterDate_matchingComponents_optionsSelector
+  , nextDateAfterDate_matchingHour_minute_second_optionsSelector
+  , nextDateAfterDate_matchingUnit_value_optionsSelector
+  , nextWeekendStartDate_interval_options_afterDateSelector
+  , ordinalityOfUnit_inUnit_forDateSelector
   , pmSymbolSelector
+  , quarterSymbolsSelector
+  , rangeOfUnit_inUnit_forDateSelector
+  , rangeOfUnit_startDate_interval_forDateSelector
+  , rangeOfWeekendStartDate_interval_containingDateSelector
+  , setFirstWeekdaySelector
+  , setLocaleSelector
+  , setMinimumDaysInFirstWeekSelector
+  , setTimeZoneSelector
+  , shortMonthSymbolsSelector
+  , shortQuarterSymbolsSelector
+  , shortStandaloneMonthSymbolsSelector
+  , shortStandaloneQuarterSymbolsSelector
+  , shortStandaloneWeekdaySymbolsSelector
+  , shortWeekdaySymbolsSelector
+  , standaloneMonthSymbolsSelector
+  , standaloneQuarterSymbolsSelector
+  , standaloneWeekdaySymbolsSelector
+  , startOfDayForDateSelector
+  , timeZoneSelector
+  , veryShortMonthSymbolsSelector
+  , veryShortStandaloneMonthSymbolsSelector
+  , veryShortStandaloneWeekdaySymbolsSelector
+  , veryShortWeekdaySymbolsSelector
+  , weekdaySymbolsSelector
 
   -- * Enum types
   , NSCalendarOptions(NSCalendarOptions)
@@ -199,15 +200,11 @@ module ObjC.Foundation.NSCalendar
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -220,677 +217,629 @@ calendarWithIdentifier :: IsNSString calendarIdentifierConstant => calendarIdent
 calendarWithIdentifier calendarIdentifierConstant =
   do
     cls' <- getRequiredClass "NSCalendar"
-    withObjCPtr calendarIdentifierConstant $ \raw_calendarIdentifierConstant ->
-      sendClassMsg cls' (mkSelector "calendarWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_calendarIdentifierConstant :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' calendarWithIdentifierSelector (toNSString calendarIdentifierConstant)
 
 -- | @- init@
 init_ :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSCalendar)
-init_ nsCalendar  =
-    sendMsg nsCalendar (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCalendar =
+  sendOwnedMessage nsCalendar initSelector
 
 -- | @- initWithCalendarIdentifier:@
 initWithCalendarIdentifier :: (IsNSCalendar nsCalendar, IsNSString ident) => nsCalendar -> ident -> IO RawId
-initWithCalendarIdentifier nsCalendar  ident =
-  withObjCPtr ident $ \raw_ident ->
-      fmap (RawId . castPtr) $ sendMsg nsCalendar (mkSelector "initWithCalendarIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_ident :: Ptr ())]
+initWithCalendarIdentifier nsCalendar ident =
+  sendOwnedMessage nsCalendar initWithCalendarIdentifierSelector (toNSString ident)
 
 -- | @- minimumRangeOfUnit:@
 minimumRangeOfUnit :: IsNSCalendar nsCalendar => nsCalendar -> NSCalendarUnit -> IO NSRange
-minimumRangeOfUnit nsCalendar  unit =
-    sendMsgStret nsCalendar (mkSelector "minimumRangeOfUnit:") retNSRange [argCULong (coerce unit)]
+minimumRangeOfUnit nsCalendar unit =
+  sendMessage nsCalendar minimumRangeOfUnitSelector unit
 
 -- | @- maximumRangeOfUnit:@
 maximumRangeOfUnit :: IsNSCalendar nsCalendar => nsCalendar -> NSCalendarUnit -> IO NSRange
-maximumRangeOfUnit nsCalendar  unit =
-    sendMsgStret nsCalendar (mkSelector "maximumRangeOfUnit:") retNSRange [argCULong (coerce unit)]
+maximumRangeOfUnit nsCalendar unit =
+  sendMessage nsCalendar maximumRangeOfUnitSelector unit
 
 -- | @- rangeOfUnit:inUnit:forDate:@
 rangeOfUnit_inUnit_forDate :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> NSCalendarUnit -> NSCalendarUnit -> date -> IO NSRange
-rangeOfUnit_inUnit_forDate nsCalendar  smaller larger date =
-  withObjCPtr date $ \raw_date ->
-      sendMsgStret nsCalendar (mkSelector "rangeOfUnit:inUnit:forDate:") retNSRange [argCULong (coerce smaller), argCULong (coerce larger), argPtr (castPtr raw_date :: Ptr ())]
+rangeOfUnit_inUnit_forDate nsCalendar smaller larger date =
+  sendMessage nsCalendar rangeOfUnit_inUnit_forDateSelector smaller larger (toNSDate date)
 
 -- | @- ordinalityOfUnit:inUnit:forDate:@
 ordinalityOfUnit_inUnit_forDate :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> NSCalendarUnit -> NSCalendarUnit -> date -> IO CULong
-ordinalityOfUnit_inUnit_forDate nsCalendar  smaller larger date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "ordinalityOfUnit:inUnit:forDate:") retCULong [argCULong (coerce smaller), argCULong (coerce larger), argPtr (castPtr raw_date :: Ptr ())]
+ordinalityOfUnit_inUnit_forDate nsCalendar smaller larger date =
+  sendMessage nsCalendar ordinalityOfUnit_inUnit_forDateSelector smaller larger (toNSDate date)
 
 -- | @- rangeOfUnit:startDate:interval:forDate:@
 rangeOfUnit_startDate_interval_forDate :: (IsNSCalendar nsCalendar, IsNSDate datep, IsNSDate date) => nsCalendar -> NSCalendarUnit -> datep -> Ptr CDouble -> date -> IO Bool
-rangeOfUnit_startDate_interval_forDate nsCalendar  unit datep tip date =
-  withObjCPtr datep $ \raw_datep ->
-    withObjCPtr date $ \raw_date ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "rangeOfUnit:startDate:interval:forDate:") retCULong [argCULong (coerce unit), argPtr (castPtr raw_datep :: Ptr ()), argPtr tip, argPtr (castPtr raw_date :: Ptr ())]
+rangeOfUnit_startDate_interval_forDate nsCalendar unit datep tip date =
+  sendMessage nsCalendar rangeOfUnit_startDate_interval_forDateSelector unit (toNSDate datep) tip (toNSDate date)
 
 -- | @- dateFromComponents:@
 dateFromComponents :: (IsNSCalendar nsCalendar, IsNSDateComponents comps) => nsCalendar -> comps -> IO (Id NSDate)
-dateFromComponents nsCalendar  comps =
-  withObjCPtr comps $ \raw_comps ->
-      sendMsg nsCalendar (mkSelector "dateFromComponents:") (retPtr retVoid) [argPtr (castPtr raw_comps :: Ptr ())] >>= retainedObject . castPtr
+dateFromComponents nsCalendar comps =
+  sendMessage nsCalendar dateFromComponentsSelector (toNSDateComponents comps)
 
 -- | @- components:fromDate:@
 components_fromDate :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> NSCalendarUnit -> date -> IO (Id NSDateComponents)
-components_fromDate nsCalendar  unitFlags date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "components:fromDate:") (retPtr retVoid) [argCULong (coerce unitFlags), argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+components_fromDate nsCalendar unitFlags date =
+  sendMessage nsCalendar components_fromDateSelector unitFlags (toNSDate date)
 
 -- | @- dateByAddingComponents:toDate:options:@
 dateByAddingComponents_toDate_options :: (IsNSCalendar nsCalendar, IsNSDateComponents comps, IsNSDate date) => nsCalendar -> comps -> date -> NSCalendarOptions -> IO (Id NSDate)
-dateByAddingComponents_toDate_options nsCalendar  comps date opts =
-  withObjCPtr comps $ \raw_comps ->
-    withObjCPtr date $ \raw_date ->
-        sendMsg nsCalendar (mkSelector "dateByAddingComponents:toDate:options:") (retPtr retVoid) [argPtr (castPtr raw_comps :: Ptr ()), argPtr (castPtr raw_date :: Ptr ()), argCULong (coerce opts)] >>= retainedObject . castPtr
+dateByAddingComponents_toDate_options nsCalendar comps date opts =
+  sendMessage nsCalendar dateByAddingComponents_toDate_optionsSelector (toNSDateComponents comps) (toNSDate date) opts
 
 -- | @- components:fromDate:toDate:options:@
 components_fromDate_toDate_options :: (IsNSCalendar nsCalendar, IsNSDate startingDate, IsNSDate resultDate) => nsCalendar -> NSCalendarUnit -> startingDate -> resultDate -> NSCalendarOptions -> IO (Id NSDateComponents)
-components_fromDate_toDate_options nsCalendar  unitFlags startingDate resultDate opts =
-  withObjCPtr startingDate $ \raw_startingDate ->
-    withObjCPtr resultDate $ \raw_resultDate ->
-        sendMsg nsCalendar (mkSelector "components:fromDate:toDate:options:") (retPtr retVoid) [argCULong (coerce unitFlags), argPtr (castPtr raw_startingDate :: Ptr ()), argPtr (castPtr raw_resultDate :: Ptr ()), argCULong (coerce opts)] >>= retainedObject . castPtr
+components_fromDate_toDate_options nsCalendar unitFlags startingDate resultDate opts =
+  sendMessage nsCalendar components_fromDate_toDate_optionsSelector unitFlags (toNSDate startingDate) (toNSDate resultDate) opts
 
 -- | @- getEra:year:month:day:fromDate:@
 getEra_year_month_day_fromDate :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> Ptr CLong -> Ptr CLong -> Ptr CLong -> Ptr CLong -> date -> IO ()
-getEra_year_month_day_fromDate nsCalendar  eraValuePointer yearValuePointer monthValuePointer dayValuePointer date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "getEra:year:month:day:fromDate:") retVoid [argPtr eraValuePointer, argPtr yearValuePointer, argPtr monthValuePointer, argPtr dayValuePointer, argPtr (castPtr raw_date :: Ptr ())]
+getEra_year_month_day_fromDate nsCalendar eraValuePointer yearValuePointer monthValuePointer dayValuePointer date =
+  sendMessage nsCalendar getEra_year_month_day_fromDateSelector eraValuePointer yearValuePointer monthValuePointer dayValuePointer (toNSDate date)
 
 -- | @- getEra:yearForWeekOfYear:weekOfYear:weekday:fromDate:@
 getEra_yearForWeekOfYear_weekOfYear_weekday_fromDate :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> Ptr CLong -> Ptr CLong -> Ptr CLong -> Ptr CLong -> date -> IO ()
-getEra_yearForWeekOfYear_weekOfYear_weekday_fromDate nsCalendar  eraValuePointer yearValuePointer weekValuePointer weekdayValuePointer date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "getEra:yearForWeekOfYear:weekOfYear:weekday:fromDate:") retVoid [argPtr eraValuePointer, argPtr yearValuePointer, argPtr weekValuePointer, argPtr weekdayValuePointer, argPtr (castPtr raw_date :: Ptr ())]
+getEra_yearForWeekOfYear_weekOfYear_weekday_fromDate nsCalendar eraValuePointer yearValuePointer weekValuePointer weekdayValuePointer date =
+  sendMessage nsCalendar getEra_yearForWeekOfYear_weekOfYear_weekday_fromDateSelector eraValuePointer yearValuePointer weekValuePointer weekdayValuePointer (toNSDate date)
 
 -- | @- getHour:minute:second:nanosecond:fromDate:@
 getHour_minute_second_nanosecond_fromDate :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> Ptr CLong -> Ptr CLong -> Ptr CLong -> Ptr CLong -> date -> IO ()
-getHour_minute_second_nanosecond_fromDate nsCalendar  hourValuePointer minuteValuePointer secondValuePointer nanosecondValuePointer date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "getHour:minute:second:nanosecond:fromDate:") retVoid [argPtr hourValuePointer, argPtr minuteValuePointer, argPtr secondValuePointer, argPtr nanosecondValuePointer, argPtr (castPtr raw_date :: Ptr ())]
+getHour_minute_second_nanosecond_fromDate nsCalendar hourValuePointer minuteValuePointer secondValuePointer nanosecondValuePointer date =
+  sendMessage nsCalendar getHour_minute_second_nanosecond_fromDateSelector hourValuePointer minuteValuePointer secondValuePointer nanosecondValuePointer (toNSDate date)
 
 -- | @- component:fromDate:@
 component_fromDate :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> NSCalendarUnit -> date -> IO CLong
-component_fromDate nsCalendar  unit date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "component:fromDate:") retCLong [argCULong (coerce unit), argPtr (castPtr raw_date :: Ptr ())]
+component_fromDate nsCalendar unit date =
+  sendMessage nsCalendar component_fromDateSelector unit (toNSDate date)
 
 -- | @- dateWithEra:year:month:day:hour:minute:second:nanosecond:@
 dateWithEra_year_month_day_hour_minute_second_nanosecond :: IsNSCalendar nsCalendar => nsCalendar -> CLong -> CLong -> CLong -> CLong -> CLong -> CLong -> CLong -> CLong -> IO (Id NSDate)
-dateWithEra_year_month_day_hour_minute_second_nanosecond nsCalendar  eraValue yearValue monthValue dayValue hourValue minuteValue secondValue nanosecondValue =
-    sendMsg nsCalendar (mkSelector "dateWithEra:year:month:day:hour:minute:second:nanosecond:") (retPtr retVoid) [argCLong eraValue, argCLong yearValue, argCLong monthValue, argCLong dayValue, argCLong hourValue, argCLong minuteValue, argCLong secondValue, argCLong nanosecondValue] >>= retainedObject . castPtr
+dateWithEra_year_month_day_hour_minute_second_nanosecond nsCalendar eraValue yearValue monthValue dayValue hourValue minuteValue secondValue nanosecondValue =
+  sendMessage nsCalendar dateWithEra_year_month_day_hour_minute_second_nanosecondSelector eraValue yearValue monthValue dayValue hourValue minuteValue secondValue nanosecondValue
 
 -- | @- dateWithEra:yearForWeekOfYear:weekOfYear:weekday:hour:minute:second:nanosecond:@
 dateWithEra_yearForWeekOfYear_weekOfYear_weekday_hour_minute_second_nanosecond :: IsNSCalendar nsCalendar => nsCalendar -> CLong -> CLong -> CLong -> CLong -> CLong -> CLong -> CLong -> CLong -> IO (Id NSDate)
-dateWithEra_yearForWeekOfYear_weekOfYear_weekday_hour_minute_second_nanosecond nsCalendar  eraValue yearValue weekValue weekdayValue hourValue minuteValue secondValue nanosecondValue =
-    sendMsg nsCalendar (mkSelector "dateWithEra:yearForWeekOfYear:weekOfYear:weekday:hour:minute:second:nanosecond:") (retPtr retVoid) [argCLong eraValue, argCLong yearValue, argCLong weekValue, argCLong weekdayValue, argCLong hourValue, argCLong minuteValue, argCLong secondValue, argCLong nanosecondValue] >>= retainedObject . castPtr
+dateWithEra_yearForWeekOfYear_weekOfYear_weekday_hour_minute_second_nanosecond nsCalendar eraValue yearValue weekValue weekdayValue hourValue minuteValue secondValue nanosecondValue =
+  sendMessage nsCalendar dateWithEra_yearForWeekOfYear_weekOfYear_weekday_hour_minute_second_nanosecondSelector eraValue yearValue weekValue weekdayValue hourValue minuteValue secondValue nanosecondValue
 
 -- | @- startOfDayForDate:@
 startOfDayForDate :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> date -> IO (Id NSDate)
-startOfDayForDate nsCalendar  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "startOfDayForDate:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+startOfDayForDate nsCalendar date =
+  sendMessage nsCalendar startOfDayForDateSelector (toNSDate date)
 
 -- | @- componentsInTimeZone:fromDate:@
 componentsInTimeZone_fromDate :: (IsNSCalendar nsCalendar, IsNSTimeZone timezone, IsNSDate date) => nsCalendar -> timezone -> date -> IO (Id NSDateComponents)
-componentsInTimeZone_fromDate nsCalendar  timezone date =
-  withObjCPtr timezone $ \raw_timezone ->
-    withObjCPtr date $ \raw_date ->
-        sendMsg nsCalendar (mkSelector "componentsInTimeZone:fromDate:") (retPtr retVoid) [argPtr (castPtr raw_timezone :: Ptr ()), argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+componentsInTimeZone_fromDate nsCalendar timezone date =
+  sendMessage nsCalendar componentsInTimeZone_fromDateSelector (toNSTimeZone timezone) (toNSDate date)
 
 -- | @- compareDate:toDate:toUnitGranularity:@
 compareDate_toDate_toUnitGranularity :: (IsNSCalendar nsCalendar, IsNSDate date1, IsNSDate date2) => nsCalendar -> date1 -> date2 -> NSCalendarUnit -> IO NSComparisonResult
-compareDate_toDate_toUnitGranularity nsCalendar  date1 date2 unit =
-  withObjCPtr date1 $ \raw_date1 ->
-    withObjCPtr date2 $ \raw_date2 ->
-        fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg nsCalendar (mkSelector "compareDate:toDate:toUnitGranularity:") retCLong [argPtr (castPtr raw_date1 :: Ptr ()), argPtr (castPtr raw_date2 :: Ptr ()), argCULong (coerce unit)]
+compareDate_toDate_toUnitGranularity nsCalendar date1 date2 unit =
+  sendMessage nsCalendar compareDate_toDate_toUnitGranularitySelector (toNSDate date1) (toNSDate date2) unit
 
 -- | @- isDate:equalToDate:toUnitGranularity:@
 isDate_equalToDate_toUnitGranularity :: (IsNSCalendar nsCalendar, IsNSDate date1, IsNSDate date2) => nsCalendar -> date1 -> date2 -> NSCalendarUnit -> IO Bool
-isDate_equalToDate_toUnitGranularity nsCalendar  date1 date2 unit =
-  withObjCPtr date1 $ \raw_date1 ->
-    withObjCPtr date2 $ \raw_date2 ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "isDate:equalToDate:toUnitGranularity:") retCULong [argPtr (castPtr raw_date1 :: Ptr ()), argPtr (castPtr raw_date2 :: Ptr ()), argCULong (coerce unit)]
+isDate_equalToDate_toUnitGranularity nsCalendar date1 date2 unit =
+  sendMessage nsCalendar isDate_equalToDate_toUnitGranularitySelector (toNSDate date1) (toNSDate date2) unit
 
 -- | @- isDate:inSameDayAsDate:@
 isDate_inSameDayAsDate :: (IsNSCalendar nsCalendar, IsNSDate date1, IsNSDate date2) => nsCalendar -> date1 -> date2 -> IO Bool
-isDate_inSameDayAsDate nsCalendar  date1 date2 =
-  withObjCPtr date1 $ \raw_date1 ->
-    withObjCPtr date2 $ \raw_date2 ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "isDate:inSameDayAsDate:") retCULong [argPtr (castPtr raw_date1 :: Ptr ()), argPtr (castPtr raw_date2 :: Ptr ())]
+isDate_inSameDayAsDate nsCalendar date1 date2 =
+  sendMessage nsCalendar isDate_inSameDayAsDateSelector (toNSDate date1) (toNSDate date2)
 
 -- | @- isDateInToday:@
 isDateInToday :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> date -> IO Bool
-isDateInToday nsCalendar  date =
-  withObjCPtr date $ \raw_date ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "isDateInToday:") retCULong [argPtr (castPtr raw_date :: Ptr ())]
+isDateInToday nsCalendar date =
+  sendMessage nsCalendar isDateInTodaySelector (toNSDate date)
 
 -- | @- isDateInYesterday:@
 isDateInYesterday :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> date -> IO Bool
-isDateInYesterday nsCalendar  date =
-  withObjCPtr date $ \raw_date ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "isDateInYesterday:") retCULong [argPtr (castPtr raw_date :: Ptr ())]
+isDateInYesterday nsCalendar date =
+  sendMessage nsCalendar isDateInYesterdaySelector (toNSDate date)
 
 -- | @- isDateInTomorrow:@
 isDateInTomorrow :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> date -> IO Bool
-isDateInTomorrow nsCalendar  date =
-  withObjCPtr date $ \raw_date ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "isDateInTomorrow:") retCULong [argPtr (castPtr raw_date :: Ptr ())]
+isDateInTomorrow nsCalendar date =
+  sendMessage nsCalendar isDateInTomorrowSelector (toNSDate date)
 
 -- | @- isDateInWeekend:@
 isDateInWeekend :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> date -> IO Bool
-isDateInWeekend nsCalendar  date =
-  withObjCPtr date $ \raw_date ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "isDateInWeekend:") retCULong [argPtr (castPtr raw_date :: Ptr ())]
+isDateInWeekend nsCalendar date =
+  sendMessage nsCalendar isDateInWeekendSelector (toNSDate date)
 
 -- | @- rangeOfWeekendStartDate:interval:containingDate:@
 rangeOfWeekendStartDate_interval_containingDate :: (IsNSCalendar nsCalendar, IsNSDate datep, IsNSDate date) => nsCalendar -> datep -> Ptr CDouble -> date -> IO Bool
-rangeOfWeekendStartDate_interval_containingDate nsCalendar  datep tip date =
-  withObjCPtr datep $ \raw_datep ->
-    withObjCPtr date $ \raw_date ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "rangeOfWeekendStartDate:interval:containingDate:") retCULong [argPtr (castPtr raw_datep :: Ptr ()), argPtr tip, argPtr (castPtr raw_date :: Ptr ())]
+rangeOfWeekendStartDate_interval_containingDate nsCalendar datep tip date =
+  sendMessage nsCalendar rangeOfWeekendStartDate_interval_containingDateSelector (toNSDate datep) tip (toNSDate date)
 
 -- | @- nextWeekendStartDate:interval:options:afterDate:@
 nextWeekendStartDate_interval_options_afterDate :: (IsNSCalendar nsCalendar, IsNSDate datep, IsNSDate date) => nsCalendar -> datep -> Ptr CDouble -> NSCalendarOptions -> date -> IO Bool
-nextWeekendStartDate_interval_options_afterDate nsCalendar  datep tip options date =
-  withObjCPtr datep $ \raw_datep ->
-    withObjCPtr date $ \raw_date ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "nextWeekendStartDate:interval:options:afterDate:") retCULong [argPtr (castPtr raw_datep :: Ptr ()), argPtr tip, argCULong (coerce options), argPtr (castPtr raw_date :: Ptr ())]
+nextWeekendStartDate_interval_options_afterDate nsCalendar datep tip options date =
+  sendMessage nsCalendar nextWeekendStartDate_interval_options_afterDateSelector (toNSDate datep) tip options (toNSDate date)
 
 -- | @- components:fromDateComponents:toDateComponents:options:@
 components_fromDateComponents_toDateComponents_options :: (IsNSCalendar nsCalendar, IsNSDateComponents startingDateComp, IsNSDateComponents resultDateComp) => nsCalendar -> NSCalendarUnit -> startingDateComp -> resultDateComp -> NSCalendarOptions -> IO (Id NSDateComponents)
-components_fromDateComponents_toDateComponents_options nsCalendar  unitFlags startingDateComp resultDateComp options =
-  withObjCPtr startingDateComp $ \raw_startingDateComp ->
-    withObjCPtr resultDateComp $ \raw_resultDateComp ->
-        sendMsg nsCalendar (mkSelector "components:fromDateComponents:toDateComponents:options:") (retPtr retVoid) [argCULong (coerce unitFlags), argPtr (castPtr raw_startingDateComp :: Ptr ()), argPtr (castPtr raw_resultDateComp :: Ptr ()), argCULong (coerce options)] >>= retainedObject . castPtr
+components_fromDateComponents_toDateComponents_options nsCalendar unitFlags startingDateComp resultDateComp options =
+  sendMessage nsCalendar components_fromDateComponents_toDateComponents_optionsSelector unitFlags (toNSDateComponents startingDateComp) (toNSDateComponents resultDateComp) options
 
 -- | @- dateByAddingUnit:value:toDate:options:@
 dateByAddingUnit_value_toDate_options :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> NSCalendarUnit -> CLong -> date -> NSCalendarOptions -> IO (Id NSDate)
-dateByAddingUnit_value_toDate_options nsCalendar  unit value date options =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "dateByAddingUnit:value:toDate:options:") (retPtr retVoid) [argCULong (coerce unit), argCLong value, argPtr (castPtr raw_date :: Ptr ()), argCULong (coerce options)] >>= retainedObject . castPtr
+dateByAddingUnit_value_toDate_options nsCalendar unit value date options =
+  sendMessage nsCalendar dateByAddingUnit_value_toDate_optionsSelector unit value (toNSDate date) options
 
 -- | @- enumerateDatesStartingAfterDate:matchingComponents:options:usingBlock:@
 enumerateDatesStartingAfterDate_matchingComponents_options_usingBlock :: (IsNSCalendar nsCalendar, IsNSDate start, IsNSDateComponents comps) => nsCalendar -> start -> comps -> NSCalendarOptions -> Ptr () -> IO ()
-enumerateDatesStartingAfterDate_matchingComponents_options_usingBlock nsCalendar  start comps opts block =
-  withObjCPtr start $ \raw_start ->
-    withObjCPtr comps $ \raw_comps ->
-        sendMsg nsCalendar (mkSelector "enumerateDatesStartingAfterDate:matchingComponents:options:usingBlock:") retVoid [argPtr (castPtr raw_start :: Ptr ()), argPtr (castPtr raw_comps :: Ptr ()), argCULong (coerce opts), argPtr (castPtr block :: Ptr ())]
+enumerateDatesStartingAfterDate_matchingComponents_options_usingBlock nsCalendar start comps opts block =
+  sendMessage nsCalendar enumerateDatesStartingAfterDate_matchingComponents_options_usingBlockSelector (toNSDate start) (toNSDateComponents comps) opts block
 
 -- | @- nextDateAfterDate:matchingComponents:options:@
 nextDateAfterDate_matchingComponents_options :: (IsNSCalendar nsCalendar, IsNSDate date, IsNSDateComponents comps) => nsCalendar -> date -> comps -> NSCalendarOptions -> IO (Id NSDate)
-nextDateAfterDate_matchingComponents_options nsCalendar  date comps options =
-  withObjCPtr date $ \raw_date ->
-    withObjCPtr comps $ \raw_comps ->
-        sendMsg nsCalendar (mkSelector "nextDateAfterDate:matchingComponents:options:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr raw_comps :: Ptr ()), argCULong (coerce options)] >>= retainedObject . castPtr
+nextDateAfterDate_matchingComponents_options nsCalendar date comps options =
+  sendMessage nsCalendar nextDateAfterDate_matchingComponents_optionsSelector (toNSDate date) (toNSDateComponents comps) options
 
 -- | @- nextDateAfterDate:matchingUnit:value:options:@
 nextDateAfterDate_matchingUnit_value_options :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> date -> NSCalendarUnit -> CLong -> NSCalendarOptions -> IO (Id NSDate)
-nextDateAfterDate_matchingUnit_value_options nsCalendar  date unit value options =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "nextDateAfterDate:matchingUnit:value:options:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ()), argCULong (coerce unit), argCLong value, argCULong (coerce options)] >>= retainedObject . castPtr
+nextDateAfterDate_matchingUnit_value_options nsCalendar date unit value options =
+  sendMessage nsCalendar nextDateAfterDate_matchingUnit_value_optionsSelector (toNSDate date) unit value options
 
 -- | @- nextDateAfterDate:matchingHour:minute:second:options:@
 nextDateAfterDate_matchingHour_minute_second_options :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> date -> CLong -> CLong -> CLong -> NSCalendarOptions -> IO (Id NSDate)
-nextDateAfterDate_matchingHour_minute_second_options nsCalendar  date hourValue minuteValue secondValue options =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "nextDateAfterDate:matchingHour:minute:second:options:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ()), argCLong hourValue, argCLong minuteValue, argCLong secondValue, argCULong (coerce options)] >>= retainedObject . castPtr
+nextDateAfterDate_matchingHour_minute_second_options nsCalendar date hourValue minuteValue secondValue options =
+  sendMessage nsCalendar nextDateAfterDate_matchingHour_minute_second_optionsSelector (toNSDate date) hourValue minuteValue secondValue options
 
 -- | @- dateBySettingUnit:value:ofDate:options:@
 dateBySettingUnit_value_ofDate_options :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> NSCalendarUnit -> CLong -> date -> NSCalendarOptions -> IO (Id NSDate)
-dateBySettingUnit_value_ofDate_options nsCalendar  unit v date opts =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "dateBySettingUnit:value:ofDate:options:") (retPtr retVoid) [argCULong (coerce unit), argCLong v, argPtr (castPtr raw_date :: Ptr ()), argCULong (coerce opts)] >>= retainedObject . castPtr
+dateBySettingUnit_value_ofDate_options nsCalendar unit v date opts =
+  sendMessage nsCalendar dateBySettingUnit_value_ofDate_optionsSelector unit v (toNSDate date) opts
 
 -- | @- dateBySettingHour:minute:second:ofDate:options:@
 dateBySettingHour_minute_second_ofDate_options :: (IsNSCalendar nsCalendar, IsNSDate date) => nsCalendar -> CLong -> CLong -> CLong -> date -> NSCalendarOptions -> IO (Id NSDate)
-dateBySettingHour_minute_second_ofDate_options nsCalendar  h m s date opts =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsCalendar (mkSelector "dateBySettingHour:minute:second:ofDate:options:") (retPtr retVoid) [argCLong h, argCLong m, argCLong s, argPtr (castPtr raw_date :: Ptr ()), argCULong (coerce opts)] >>= retainedObject . castPtr
+dateBySettingHour_minute_second_ofDate_options nsCalendar h m s date opts =
+  sendMessage nsCalendar dateBySettingHour_minute_second_ofDate_optionsSelector h m s (toNSDate date) opts
 
 -- | @- date:matchesComponents:@
 date_matchesComponents :: (IsNSCalendar nsCalendar, IsNSDate date, IsNSDateComponents components) => nsCalendar -> date -> components -> IO Bool
-date_matchesComponents nsCalendar  date components =
-  withObjCPtr date $ \raw_date ->
-    withObjCPtr components $ \raw_components ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCalendar (mkSelector "date:matchesComponents:") retCULong [argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr raw_components :: Ptr ())]
+date_matchesComponents nsCalendar date components =
+  sendMessage nsCalendar date_matchesComponentsSelector (toNSDate date) (toNSDateComponents components)
 
 -- | @+ currentCalendar@
 currentCalendar :: IO (Id NSCalendar)
 currentCalendar  =
   do
     cls' <- getRequiredClass "NSCalendar"
-    sendClassMsg cls' (mkSelector "currentCalendar") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentCalendarSelector
 
 -- | @+ autoupdatingCurrentCalendar@
 autoupdatingCurrentCalendar :: IO (Id NSCalendar)
 autoupdatingCurrentCalendar  =
   do
     cls' <- getRequiredClass "NSCalendar"
-    sendClassMsg cls' (mkSelector "autoupdatingCurrentCalendar") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' autoupdatingCurrentCalendarSelector
 
 -- | @- calendarIdentifier@
 calendarIdentifier :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSString)
-calendarIdentifier nsCalendar  =
-    sendMsg nsCalendar (mkSelector "calendarIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendarIdentifier nsCalendar =
+  sendMessage nsCalendar calendarIdentifierSelector
 
 -- | @- locale@
 locale :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSLocale)
-locale nsCalendar  =
-    sendMsg nsCalendar (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale nsCalendar =
+  sendMessage nsCalendar localeSelector
 
 -- | @- setLocale:@
 setLocale :: (IsNSCalendar nsCalendar, IsNSLocale value) => nsCalendar -> value -> IO ()
-setLocale nsCalendar  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCalendar (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale nsCalendar value =
+  sendMessage nsCalendar setLocaleSelector (toNSLocale value)
 
 -- | @- timeZone@
 timeZone :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSTimeZone)
-timeZone nsCalendar  =
-    sendMsg nsCalendar (mkSelector "timeZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeZone nsCalendar =
+  sendMessage nsCalendar timeZoneSelector
 
 -- | @- setTimeZone:@
 setTimeZone :: (IsNSCalendar nsCalendar, IsNSTimeZone value) => nsCalendar -> value -> IO ()
-setTimeZone nsCalendar  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCalendar (mkSelector "setTimeZone:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeZone nsCalendar value =
+  sendMessage nsCalendar setTimeZoneSelector (toNSTimeZone value)
 
 -- | @- firstWeekday@
 firstWeekday :: IsNSCalendar nsCalendar => nsCalendar -> IO CULong
-firstWeekday nsCalendar  =
-    sendMsg nsCalendar (mkSelector "firstWeekday") retCULong []
+firstWeekday nsCalendar =
+  sendMessage nsCalendar firstWeekdaySelector
 
 -- | @- setFirstWeekday:@
 setFirstWeekday :: IsNSCalendar nsCalendar => nsCalendar -> CULong -> IO ()
-setFirstWeekday nsCalendar  value =
-    sendMsg nsCalendar (mkSelector "setFirstWeekday:") retVoid [argCULong value]
+setFirstWeekday nsCalendar value =
+  sendMessage nsCalendar setFirstWeekdaySelector value
 
 -- | @- minimumDaysInFirstWeek@
 minimumDaysInFirstWeek :: IsNSCalendar nsCalendar => nsCalendar -> IO CULong
-minimumDaysInFirstWeek nsCalendar  =
-    sendMsg nsCalendar (mkSelector "minimumDaysInFirstWeek") retCULong []
+minimumDaysInFirstWeek nsCalendar =
+  sendMessage nsCalendar minimumDaysInFirstWeekSelector
 
 -- | @- setMinimumDaysInFirstWeek:@
 setMinimumDaysInFirstWeek :: IsNSCalendar nsCalendar => nsCalendar -> CULong -> IO ()
-setMinimumDaysInFirstWeek nsCalendar  value =
-    sendMsg nsCalendar (mkSelector "setMinimumDaysInFirstWeek:") retVoid [argCULong value]
+setMinimumDaysInFirstWeek nsCalendar value =
+  sendMessage nsCalendar setMinimumDaysInFirstWeekSelector value
 
 -- | @- eraSymbols@
 eraSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-eraSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "eraSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+eraSymbols nsCalendar =
+  sendMessage nsCalendar eraSymbolsSelector
 
 -- | @- longEraSymbols@
 longEraSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-longEraSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "longEraSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+longEraSymbols nsCalendar =
+  sendMessage nsCalendar longEraSymbolsSelector
 
 -- | @- monthSymbols@
 monthSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-monthSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "monthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+monthSymbols nsCalendar =
+  sendMessage nsCalendar monthSymbolsSelector
 
 -- | @- shortMonthSymbols@
 shortMonthSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-shortMonthSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "shortMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortMonthSymbols nsCalendar =
+  sendMessage nsCalendar shortMonthSymbolsSelector
 
 -- | @- veryShortMonthSymbols@
 veryShortMonthSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-veryShortMonthSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "veryShortMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+veryShortMonthSymbols nsCalendar =
+  sendMessage nsCalendar veryShortMonthSymbolsSelector
 
 -- | @- standaloneMonthSymbols@
 standaloneMonthSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-standaloneMonthSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "standaloneMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+standaloneMonthSymbols nsCalendar =
+  sendMessage nsCalendar standaloneMonthSymbolsSelector
 
 -- | @- shortStandaloneMonthSymbols@
 shortStandaloneMonthSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-shortStandaloneMonthSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "shortStandaloneMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortStandaloneMonthSymbols nsCalendar =
+  sendMessage nsCalendar shortStandaloneMonthSymbolsSelector
 
 -- | @- veryShortStandaloneMonthSymbols@
 veryShortStandaloneMonthSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-veryShortStandaloneMonthSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "veryShortStandaloneMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+veryShortStandaloneMonthSymbols nsCalendar =
+  sendMessage nsCalendar veryShortStandaloneMonthSymbolsSelector
 
 -- | @- weekdaySymbols@
 weekdaySymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-weekdaySymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "weekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+weekdaySymbols nsCalendar =
+  sendMessage nsCalendar weekdaySymbolsSelector
 
 -- | @- shortWeekdaySymbols@
 shortWeekdaySymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-shortWeekdaySymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "shortWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortWeekdaySymbols nsCalendar =
+  sendMessage nsCalendar shortWeekdaySymbolsSelector
 
 -- | @- veryShortWeekdaySymbols@
 veryShortWeekdaySymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-veryShortWeekdaySymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "veryShortWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+veryShortWeekdaySymbols nsCalendar =
+  sendMessage nsCalendar veryShortWeekdaySymbolsSelector
 
 -- | @- standaloneWeekdaySymbols@
 standaloneWeekdaySymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-standaloneWeekdaySymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "standaloneWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+standaloneWeekdaySymbols nsCalendar =
+  sendMessage nsCalendar standaloneWeekdaySymbolsSelector
 
 -- | @- shortStandaloneWeekdaySymbols@
 shortStandaloneWeekdaySymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-shortStandaloneWeekdaySymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "shortStandaloneWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortStandaloneWeekdaySymbols nsCalendar =
+  sendMessage nsCalendar shortStandaloneWeekdaySymbolsSelector
 
 -- | @- veryShortStandaloneWeekdaySymbols@
 veryShortStandaloneWeekdaySymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-veryShortStandaloneWeekdaySymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "veryShortStandaloneWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+veryShortStandaloneWeekdaySymbols nsCalendar =
+  sendMessage nsCalendar veryShortStandaloneWeekdaySymbolsSelector
 
 -- | @- quarterSymbols@
 quarterSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-quarterSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "quarterSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+quarterSymbols nsCalendar =
+  sendMessage nsCalendar quarterSymbolsSelector
 
 -- | @- shortQuarterSymbols@
 shortQuarterSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-shortQuarterSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "shortQuarterSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortQuarterSymbols nsCalendar =
+  sendMessage nsCalendar shortQuarterSymbolsSelector
 
 -- | @- standaloneQuarterSymbols@
 standaloneQuarterSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-standaloneQuarterSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "standaloneQuarterSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+standaloneQuarterSymbols nsCalendar =
+  sendMessage nsCalendar standaloneQuarterSymbolsSelector
 
 -- | @- shortStandaloneQuarterSymbols@
 shortStandaloneQuarterSymbols :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSArray)
-shortStandaloneQuarterSymbols nsCalendar  =
-    sendMsg nsCalendar (mkSelector "shortStandaloneQuarterSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortStandaloneQuarterSymbols nsCalendar =
+  sendMessage nsCalendar shortStandaloneQuarterSymbolsSelector
 
 -- | @- AMSymbol@
 amSymbol :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSString)
-amSymbol nsCalendar  =
-    sendMsg nsCalendar (mkSelector "AMSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+amSymbol nsCalendar =
+  sendMessage nsCalendar amSymbolSelector
 
 -- | @- PMSymbol@
 pmSymbol :: IsNSCalendar nsCalendar => nsCalendar -> IO (Id NSString)
-pmSymbol nsCalendar  =
-    sendMsg nsCalendar (mkSelector "PMSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+pmSymbol nsCalendar =
+  sendMessage nsCalendar pmSymbolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @calendarWithIdentifier:@
-calendarWithIdentifierSelector :: Selector
+calendarWithIdentifierSelector :: Selector '[Id NSString] (Id NSCalendar)
 calendarWithIdentifierSelector = mkSelector "calendarWithIdentifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCalendar)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCalendarIdentifier:@
-initWithCalendarIdentifierSelector :: Selector
+initWithCalendarIdentifierSelector :: Selector '[Id NSString] RawId
 initWithCalendarIdentifierSelector = mkSelector "initWithCalendarIdentifier:"
 
 -- | @Selector@ for @minimumRangeOfUnit:@
-minimumRangeOfUnitSelector :: Selector
+minimumRangeOfUnitSelector :: Selector '[NSCalendarUnit] NSRange
 minimumRangeOfUnitSelector = mkSelector "minimumRangeOfUnit:"
 
 -- | @Selector@ for @maximumRangeOfUnit:@
-maximumRangeOfUnitSelector :: Selector
+maximumRangeOfUnitSelector :: Selector '[NSCalendarUnit] NSRange
 maximumRangeOfUnitSelector = mkSelector "maximumRangeOfUnit:"
 
 -- | @Selector@ for @rangeOfUnit:inUnit:forDate:@
-rangeOfUnit_inUnit_forDateSelector :: Selector
+rangeOfUnit_inUnit_forDateSelector :: Selector '[NSCalendarUnit, NSCalendarUnit, Id NSDate] NSRange
 rangeOfUnit_inUnit_forDateSelector = mkSelector "rangeOfUnit:inUnit:forDate:"
 
 -- | @Selector@ for @ordinalityOfUnit:inUnit:forDate:@
-ordinalityOfUnit_inUnit_forDateSelector :: Selector
+ordinalityOfUnit_inUnit_forDateSelector :: Selector '[NSCalendarUnit, NSCalendarUnit, Id NSDate] CULong
 ordinalityOfUnit_inUnit_forDateSelector = mkSelector "ordinalityOfUnit:inUnit:forDate:"
 
 -- | @Selector@ for @rangeOfUnit:startDate:interval:forDate:@
-rangeOfUnit_startDate_interval_forDateSelector :: Selector
+rangeOfUnit_startDate_interval_forDateSelector :: Selector '[NSCalendarUnit, Id NSDate, Ptr CDouble, Id NSDate] Bool
 rangeOfUnit_startDate_interval_forDateSelector = mkSelector "rangeOfUnit:startDate:interval:forDate:"
 
 -- | @Selector@ for @dateFromComponents:@
-dateFromComponentsSelector :: Selector
+dateFromComponentsSelector :: Selector '[Id NSDateComponents] (Id NSDate)
 dateFromComponentsSelector = mkSelector "dateFromComponents:"
 
 -- | @Selector@ for @components:fromDate:@
-components_fromDateSelector :: Selector
+components_fromDateSelector :: Selector '[NSCalendarUnit, Id NSDate] (Id NSDateComponents)
 components_fromDateSelector = mkSelector "components:fromDate:"
 
 -- | @Selector@ for @dateByAddingComponents:toDate:options:@
-dateByAddingComponents_toDate_optionsSelector :: Selector
+dateByAddingComponents_toDate_optionsSelector :: Selector '[Id NSDateComponents, Id NSDate, NSCalendarOptions] (Id NSDate)
 dateByAddingComponents_toDate_optionsSelector = mkSelector "dateByAddingComponents:toDate:options:"
 
 -- | @Selector@ for @components:fromDate:toDate:options:@
-components_fromDate_toDate_optionsSelector :: Selector
+components_fromDate_toDate_optionsSelector :: Selector '[NSCalendarUnit, Id NSDate, Id NSDate, NSCalendarOptions] (Id NSDateComponents)
 components_fromDate_toDate_optionsSelector = mkSelector "components:fromDate:toDate:options:"
 
 -- | @Selector@ for @getEra:year:month:day:fromDate:@
-getEra_year_month_day_fromDateSelector :: Selector
+getEra_year_month_day_fromDateSelector :: Selector '[Ptr CLong, Ptr CLong, Ptr CLong, Ptr CLong, Id NSDate] ()
 getEra_year_month_day_fromDateSelector = mkSelector "getEra:year:month:day:fromDate:"
 
 -- | @Selector@ for @getEra:yearForWeekOfYear:weekOfYear:weekday:fromDate:@
-getEra_yearForWeekOfYear_weekOfYear_weekday_fromDateSelector :: Selector
+getEra_yearForWeekOfYear_weekOfYear_weekday_fromDateSelector :: Selector '[Ptr CLong, Ptr CLong, Ptr CLong, Ptr CLong, Id NSDate] ()
 getEra_yearForWeekOfYear_weekOfYear_weekday_fromDateSelector = mkSelector "getEra:yearForWeekOfYear:weekOfYear:weekday:fromDate:"
 
 -- | @Selector@ for @getHour:minute:second:nanosecond:fromDate:@
-getHour_minute_second_nanosecond_fromDateSelector :: Selector
+getHour_minute_second_nanosecond_fromDateSelector :: Selector '[Ptr CLong, Ptr CLong, Ptr CLong, Ptr CLong, Id NSDate] ()
 getHour_minute_second_nanosecond_fromDateSelector = mkSelector "getHour:minute:second:nanosecond:fromDate:"
 
 -- | @Selector@ for @component:fromDate:@
-component_fromDateSelector :: Selector
+component_fromDateSelector :: Selector '[NSCalendarUnit, Id NSDate] CLong
 component_fromDateSelector = mkSelector "component:fromDate:"
 
 -- | @Selector@ for @dateWithEra:year:month:day:hour:minute:second:nanosecond:@
-dateWithEra_year_month_day_hour_minute_second_nanosecondSelector :: Selector
+dateWithEra_year_month_day_hour_minute_second_nanosecondSelector :: Selector '[CLong, CLong, CLong, CLong, CLong, CLong, CLong, CLong] (Id NSDate)
 dateWithEra_year_month_day_hour_minute_second_nanosecondSelector = mkSelector "dateWithEra:year:month:day:hour:minute:second:nanosecond:"
 
 -- | @Selector@ for @dateWithEra:yearForWeekOfYear:weekOfYear:weekday:hour:minute:second:nanosecond:@
-dateWithEra_yearForWeekOfYear_weekOfYear_weekday_hour_minute_second_nanosecondSelector :: Selector
+dateWithEra_yearForWeekOfYear_weekOfYear_weekday_hour_minute_second_nanosecondSelector :: Selector '[CLong, CLong, CLong, CLong, CLong, CLong, CLong, CLong] (Id NSDate)
 dateWithEra_yearForWeekOfYear_weekOfYear_weekday_hour_minute_second_nanosecondSelector = mkSelector "dateWithEra:yearForWeekOfYear:weekOfYear:weekday:hour:minute:second:nanosecond:"
 
 -- | @Selector@ for @startOfDayForDate:@
-startOfDayForDateSelector :: Selector
+startOfDayForDateSelector :: Selector '[Id NSDate] (Id NSDate)
 startOfDayForDateSelector = mkSelector "startOfDayForDate:"
 
 -- | @Selector@ for @componentsInTimeZone:fromDate:@
-componentsInTimeZone_fromDateSelector :: Selector
+componentsInTimeZone_fromDateSelector :: Selector '[Id NSTimeZone, Id NSDate] (Id NSDateComponents)
 componentsInTimeZone_fromDateSelector = mkSelector "componentsInTimeZone:fromDate:"
 
 -- | @Selector@ for @compareDate:toDate:toUnitGranularity:@
-compareDate_toDate_toUnitGranularitySelector :: Selector
+compareDate_toDate_toUnitGranularitySelector :: Selector '[Id NSDate, Id NSDate, NSCalendarUnit] NSComparisonResult
 compareDate_toDate_toUnitGranularitySelector = mkSelector "compareDate:toDate:toUnitGranularity:"
 
 -- | @Selector@ for @isDate:equalToDate:toUnitGranularity:@
-isDate_equalToDate_toUnitGranularitySelector :: Selector
+isDate_equalToDate_toUnitGranularitySelector :: Selector '[Id NSDate, Id NSDate, NSCalendarUnit] Bool
 isDate_equalToDate_toUnitGranularitySelector = mkSelector "isDate:equalToDate:toUnitGranularity:"
 
 -- | @Selector@ for @isDate:inSameDayAsDate:@
-isDate_inSameDayAsDateSelector :: Selector
+isDate_inSameDayAsDateSelector :: Selector '[Id NSDate, Id NSDate] Bool
 isDate_inSameDayAsDateSelector = mkSelector "isDate:inSameDayAsDate:"
 
 -- | @Selector@ for @isDateInToday:@
-isDateInTodaySelector :: Selector
+isDateInTodaySelector :: Selector '[Id NSDate] Bool
 isDateInTodaySelector = mkSelector "isDateInToday:"
 
 -- | @Selector@ for @isDateInYesterday:@
-isDateInYesterdaySelector :: Selector
+isDateInYesterdaySelector :: Selector '[Id NSDate] Bool
 isDateInYesterdaySelector = mkSelector "isDateInYesterday:"
 
 -- | @Selector@ for @isDateInTomorrow:@
-isDateInTomorrowSelector :: Selector
+isDateInTomorrowSelector :: Selector '[Id NSDate] Bool
 isDateInTomorrowSelector = mkSelector "isDateInTomorrow:"
 
 -- | @Selector@ for @isDateInWeekend:@
-isDateInWeekendSelector :: Selector
+isDateInWeekendSelector :: Selector '[Id NSDate] Bool
 isDateInWeekendSelector = mkSelector "isDateInWeekend:"
 
 -- | @Selector@ for @rangeOfWeekendStartDate:interval:containingDate:@
-rangeOfWeekendStartDate_interval_containingDateSelector :: Selector
+rangeOfWeekendStartDate_interval_containingDateSelector :: Selector '[Id NSDate, Ptr CDouble, Id NSDate] Bool
 rangeOfWeekendStartDate_interval_containingDateSelector = mkSelector "rangeOfWeekendStartDate:interval:containingDate:"
 
 -- | @Selector@ for @nextWeekendStartDate:interval:options:afterDate:@
-nextWeekendStartDate_interval_options_afterDateSelector :: Selector
+nextWeekendStartDate_interval_options_afterDateSelector :: Selector '[Id NSDate, Ptr CDouble, NSCalendarOptions, Id NSDate] Bool
 nextWeekendStartDate_interval_options_afterDateSelector = mkSelector "nextWeekendStartDate:interval:options:afterDate:"
 
 -- | @Selector@ for @components:fromDateComponents:toDateComponents:options:@
-components_fromDateComponents_toDateComponents_optionsSelector :: Selector
+components_fromDateComponents_toDateComponents_optionsSelector :: Selector '[NSCalendarUnit, Id NSDateComponents, Id NSDateComponents, NSCalendarOptions] (Id NSDateComponents)
 components_fromDateComponents_toDateComponents_optionsSelector = mkSelector "components:fromDateComponents:toDateComponents:options:"
 
 -- | @Selector@ for @dateByAddingUnit:value:toDate:options:@
-dateByAddingUnit_value_toDate_optionsSelector :: Selector
+dateByAddingUnit_value_toDate_optionsSelector :: Selector '[NSCalendarUnit, CLong, Id NSDate, NSCalendarOptions] (Id NSDate)
 dateByAddingUnit_value_toDate_optionsSelector = mkSelector "dateByAddingUnit:value:toDate:options:"
 
 -- | @Selector@ for @enumerateDatesStartingAfterDate:matchingComponents:options:usingBlock:@
-enumerateDatesStartingAfterDate_matchingComponents_options_usingBlockSelector :: Selector
+enumerateDatesStartingAfterDate_matchingComponents_options_usingBlockSelector :: Selector '[Id NSDate, Id NSDateComponents, NSCalendarOptions, Ptr ()] ()
 enumerateDatesStartingAfterDate_matchingComponents_options_usingBlockSelector = mkSelector "enumerateDatesStartingAfterDate:matchingComponents:options:usingBlock:"
 
 -- | @Selector@ for @nextDateAfterDate:matchingComponents:options:@
-nextDateAfterDate_matchingComponents_optionsSelector :: Selector
+nextDateAfterDate_matchingComponents_optionsSelector :: Selector '[Id NSDate, Id NSDateComponents, NSCalendarOptions] (Id NSDate)
 nextDateAfterDate_matchingComponents_optionsSelector = mkSelector "nextDateAfterDate:matchingComponents:options:"
 
 -- | @Selector@ for @nextDateAfterDate:matchingUnit:value:options:@
-nextDateAfterDate_matchingUnit_value_optionsSelector :: Selector
+nextDateAfterDate_matchingUnit_value_optionsSelector :: Selector '[Id NSDate, NSCalendarUnit, CLong, NSCalendarOptions] (Id NSDate)
 nextDateAfterDate_matchingUnit_value_optionsSelector = mkSelector "nextDateAfterDate:matchingUnit:value:options:"
 
 -- | @Selector@ for @nextDateAfterDate:matchingHour:minute:second:options:@
-nextDateAfterDate_matchingHour_minute_second_optionsSelector :: Selector
+nextDateAfterDate_matchingHour_minute_second_optionsSelector :: Selector '[Id NSDate, CLong, CLong, CLong, NSCalendarOptions] (Id NSDate)
 nextDateAfterDate_matchingHour_minute_second_optionsSelector = mkSelector "nextDateAfterDate:matchingHour:minute:second:options:"
 
 -- | @Selector@ for @dateBySettingUnit:value:ofDate:options:@
-dateBySettingUnit_value_ofDate_optionsSelector :: Selector
+dateBySettingUnit_value_ofDate_optionsSelector :: Selector '[NSCalendarUnit, CLong, Id NSDate, NSCalendarOptions] (Id NSDate)
 dateBySettingUnit_value_ofDate_optionsSelector = mkSelector "dateBySettingUnit:value:ofDate:options:"
 
 -- | @Selector@ for @dateBySettingHour:minute:second:ofDate:options:@
-dateBySettingHour_minute_second_ofDate_optionsSelector :: Selector
+dateBySettingHour_minute_second_ofDate_optionsSelector :: Selector '[CLong, CLong, CLong, Id NSDate, NSCalendarOptions] (Id NSDate)
 dateBySettingHour_minute_second_ofDate_optionsSelector = mkSelector "dateBySettingHour:minute:second:ofDate:options:"
 
 -- | @Selector@ for @date:matchesComponents:@
-date_matchesComponentsSelector :: Selector
+date_matchesComponentsSelector :: Selector '[Id NSDate, Id NSDateComponents] Bool
 date_matchesComponentsSelector = mkSelector "date:matchesComponents:"
 
 -- | @Selector@ for @currentCalendar@
-currentCalendarSelector :: Selector
+currentCalendarSelector :: Selector '[] (Id NSCalendar)
 currentCalendarSelector = mkSelector "currentCalendar"
 
 -- | @Selector@ for @autoupdatingCurrentCalendar@
-autoupdatingCurrentCalendarSelector :: Selector
+autoupdatingCurrentCalendarSelector :: Selector '[] (Id NSCalendar)
 autoupdatingCurrentCalendarSelector = mkSelector "autoupdatingCurrentCalendar"
 
 -- | @Selector@ for @calendarIdentifier@
-calendarIdentifierSelector :: Selector
+calendarIdentifierSelector :: Selector '[] (Id NSString)
 calendarIdentifierSelector = mkSelector "calendarIdentifier"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 
 -- | @Selector@ for @timeZone@
-timeZoneSelector :: Selector
+timeZoneSelector :: Selector '[] (Id NSTimeZone)
 timeZoneSelector = mkSelector "timeZone"
 
 -- | @Selector@ for @setTimeZone:@
-setTimeZoneSelector :: Selector
+setTimeZoneSelector :: Selector '[Id NSTimeZone] ()
 setTimeZoneSelector = mkSelector "setTimeZone:"
 
 -- | @Selector@ for @firstWeekday@
-firstWeekdaySelector :: Selector
+firstWeekdaySelector :: Selector '[] CULong
 firstWeekdaySelector = mkSelector "firstWeekday"
 
 -- | @Selector@ for @setFirstWeekday:@
-setFirstWeekdaySelector :: Selector
+setFirstWeekdaySelector :: Selector '[CULong] ()
 setFirstWeekdaySelector = mkSelector "setFirstWeekday:"
 
 -- | @Selector@ for @minimumDaysInFirstWeek@
-minimumDaysInFirstWeekSelector :: Selector
+minimumDaysInFirstWeekSelector :: Selector '[] CULong
 minimumDaysInFirstWeekSelector = mkSelector "minimumDaysInFirstWeek"
 
 -- | @Selector@ for @setMinimumDaysInFirstWeek:@
-setMinimumDaysInFirstWeekSelector :: Selector
+setMinimumDaysInFirstWeekSelector :: Selector '[CULong] ()
 setMinimumDaysInFirstWeekSelector = mkSelector "setMinimumDaysInFirstWeek:"
 
 -- | @Selector@ for @eraSymbols@
-eraSymbolsSelector :: Selector
+eraSymbolsSelector :: Selector '[] (Id NSArray)
 eraSymbolsSelector = mkSelector "eraSymbols"
 
 -- | @Selector@ for @longEraSymbols@
-longEraSymbolsSelector :: Selector
+longEraSymbolsSelector :: Selector '[] (Id NSArray)
 longEraSymbolsSelector = mkSelector "longEraSymbols"
 
 -- | @Selector@ for @monthSymbols@
-monthSymbolsSelector :: Selector
+monthSymbolsSelector :: Selector '[] (Id NSArray)
 monthSymbolsSelector = mkSelector "monthSymbols"
 
 -- | @Selector@ for @shortMonthSymbols@
-shortMonthSymbolsSelector :: Selector
+shortMonthSymbolsSelector :: Selector '[] (Id NSArray)
 shortMonthSymbolsSelector = mkSelector "shortMonthSymbols"
 
 -- | @Selector@ for @veryShortMonthSymbols@
-veryShortMonthSymbolsSelector :: Selector
+veryShortMonthSymbolsSelector :: Selector '[] (Id NSArray)
 veryShortMonthSymbolsSelector = mkSelector "veryShortMonthSymbols"
 
 -- | @Selector@ for @standaloneMonthSymbols@
-standaloneMonthSymbolsSelector :: Selector
+standaloneMonthSymbolsSelector :: Selector '[] (Id NSArray)
 standaloneMonthSymbolsSelector = mkSelector "standaloneMonthSymbols"
 
 -- | @Selector@ for @shortStandaloneMonthSymbols@
-shortStandaloneMonthSymbolsSelector :: Selector
+shortStandaloneMonthSymbolsSelector :: Selector '[] (Id NSArray)
 shortStandaloneMonthSymbolsSelector = mkSelector "shortStandaloneMonthSymbols"
 
 -- | @Selector@ for @veryShortStandaloneMonthSymbols@
-veryShortStandaloneMonthSymbolsSelector :: Selector
+veryShortStandaloneMonthSymbolsSelector :: Selector '[] (Id NSArray)
 veryShortStandaloneMonthSymbolsSelector = mkSelector "veryShortStandaloneMonthSymbols"
 
 -- | @Selector@ for @weekdaySymbols@
-weekdaySymbolsSelector :: Selector
+weekdaySymbolsSelector :: Selector '[] (Id NSArray)
 weekdaySymbolsSelector = mkSelector "weekdaySymbols"
 
 -- | @Selector@ for @shortWeekdaySymbols@
-shortWeekdaySymbolsSelector :: Selector
+shortWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 shortWeekdaySymbolsSelector = mkSelector "shortWeekdaySymbols"
 
 -- | @Selector@ for @veryShortWeekdaySymbols@
-veryShortWeekdaySymbolsSelector :: Selector
+veryShortWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 veryShortWeekdaySymbolsSelector = mkSelector "veryShortWeekdaySymbols"
 
 -- | @Selector@ for @standaloneWeekdaySymbols@
-standaloneWeekdaySymbolsSelector :: Selector
+standaloneWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 standaloneWeekdaySymbolsSelector = mkSelector "standaloneWeekdaySymbols"
 
 -- | @Selector@ for @shortStandaloneWeekdaySymbols@
-shortStandaloneWeekdaySymbolsSelector :: Selector
+shortStandaloneWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 shortStandaloneWeekdaySymbolsSelector = mkSelector "shortStandaloneWeekdaySymbols"
 
 -- | @Selector@ for @veryShortStandaloneWeekdaySymbols@
-veryShortStandaloneWeekdaySymbolsSelector :: Selector
+veryShortStandaloneWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 veryShortStandaloneWeekdaySymbolsSelector = mkSelector "veryShortStandaloneWeekdaySymbols"
 
 -- | @Selector@ for @quarterSymbols@
-quarterSymbolsSelector :: Selector
+quarterSymbolsSelector :: Selector '[] (Id NSArray)
 quarterSymbolsSelector = mkSelector "quarterSymbols"
 
 -- | @Selector@ for @shortQuarterSymbols@
-shortQuarterSymbolsSelector :: Selector
+shortQuarterSymbolsSelector :: Selector '[] (Id NSArray)
 shortQuarterSymbolsSelector = mkSelector "shortQuarterSymbols"
 
 -- | @Selector@ for @standaloneQuarterSymbols@
-standaloneQuarterSymbolsSelector :: Selector
+standaloneQuarterSymbolsSelector :: Selector '[] (Id NSArray)
 standaloneQuarterSymbolsSelector = mkSelector "standaloneQuarterSymbols"
 
 -- | @Selector@ for @shortStandaloneQuarterSymbols@
-shortStandaloneQuarterSymbolsSelector :: Selector
+shortStandaloneQuarterSymbolsSelector :: Selector '[] (Id NSArray)
 shortStandaloneQuarterSymbolsSelector = mkSelector "shortStandaloneQuarterSymbols"
 
 -- | @Selector@ for @AMSymbol@
-amSymbolSelector :: Selector
+amSymbolSelector :: Selector '[] (Id NSString)
 amSymbolSelector = mkSelector "AMSymbol"
 
 -- | @Selector@ for @PMSymbol@
-pmSymbolSelector :: Selector
+pmSymbolSelector :: Selector '[] (Id NSString)
 pmSymbolSelector = mkSelector "PMSymbol"
 

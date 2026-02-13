@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.SpriteKit.SKPhysicsJointSliding
   , setLowerDistanceLimit
   , upperDistanceLimit
   , setUpperDistanceLimit
-  , shouldEnableLimitsSelector
-  , setShouldEnableLimitsSelector
   , lowerDistanceLimitSelector
   , setLowerDistanceLimitSelector
-  , upperDistanceLimitSelector
+  , setShouldEnableLimitsSelector
   , setUpperDistanceLimitSelector
+  , shouldEnableLimitsSelector
+  , upperDistanceLimitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,59 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- shouldEnableLimits@
 shouldEnableLimits :: IsSKPhysicsJointSliding skPhysicsJointSliding => skPhysicsJointSliding -> IO Bool
-shouldEnableLimits skPhysicsJointSliding  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skPhysicsJointSliding (mkSelector "shouldEnableLimits") retCULong []
+shouldEnableLimits skPhysicsJointSliding =
+  sendMessage skPhysicsJointSliding shouldEnableLimitsSelector
 
 -- | @- setShouldEnableLimits:@
 setShouldEnableLimits :: IsSKPhysicsJointSliding skPhysicsJointSliding => skPhysicsJointSliding -> Bool -> IO ()
-setShouldEnableLimits skPhysicsJointSliding  value =
-    sendMsg skPhysicsJointSliding (mkSelector "setShouldEnableLimits:") retVoid [argCULong (if value then 1 else 0)]
+setShouldEnableLimits skPhysicsJointSliding value =
+  sendMessage skPhysicsJointSliding setShouldEnableLimitsSelector value
 
 -- | @- lowerDistanceLimit@
 lowerDistanceLimit :: IsSKPhysicsJointSliding skPhysicsJointSliding => skPhysicsJointSliding -> IO CDouble
-lowerDistanceLimit skPhysicsJointSliding  =
-    sendMsg skPhysicsJointSliding (mkSelector "lowerDistanceLimit") retCDouble []
+lowerDistanceLimit skPhysicsJointSliding =
+  sendMessage skPhysicsJointSliding lowerDistanceLimitSelector
 
 -- | @- setLowerDistanceLimit:@
 setLowerDistanceLimit :: IsSKPhysicsJointSliding skPhysicsJointSliding => skPhysicsJointSliding -> CDouble -> IO ()
-setLowerDistanceLimit skPhysicsJointSliding  value =
-    sendMsg skPhysicsJointSliding (mkSelector "setLowerDistanceLimit:") retVoid [argCDouble value]
+setLowerDistanceLimit skPhysicsJointSliding value =
+  sendMessage skPhysicsJointSliding setLowerDistanceLimitSelector value
 
 -- | @- upperDistanceLimit@
 upperDistanceLimit :: IsSKPhysicsJointSliding skPhysicsJointSliding => skPhysicsJointSliding -> IO CDouble
-upperDistanceLimit skPhysicsJointSliding  =
-    sendMsg skPhysicsJointSliding (mkSelector "upperDistanceLimit") retCDouble []
+upperDistanceLimit skPhysicsJointSliding =
+  sendMessage skPhysicsJointSliding upperDistanceLimitSelector
 
 -- | @- setUpperDistanceLimit:@
 setUpperDistanceLimit :: IsSKPhysicsJointSliding skPhysicsJointSliding => skPhysicsJointSliding -> CDouble -> IO ()
-setUpperDistanceLimit skPhysicsJointSliding  value =
-    sendMsg skPhysicsJointSliding (mkSelector "setUpperDistanceLimit:") retVoid [argCDouble value]
+setUpperDistanceLimit skPhysicsJointSliding value =
+  sendMessage skPhysicsJointSliding setUpperDistanceLimitSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @shouldEnableLimits@
-shouldEnableLimitsSelector :: Selector
+shouldEnableLimitsSelector :: Selector '[] Bool
 shouldEnableLimitsSelector = mkSelector "shouldEnableLimits"
 
 -- | @Selector@ for @setShouldEnableLimits:@
-setShouldEnableLimitsSelector :: Selector
+setShouldEnableLimitsSelector :: Selector '[Bool] ()
 setShouldEnableLimitsSelector = mkSelector "setShouldEnableLimits:"
 
 -- | @Selector@ for @lowerDistanceLimit@
-lowerDistanceLimitSelector :: Selector
+lowerDistanceLimitSelector :: Selector '[] CDouble
 lowerDistanceLimitSelector = mkSelector "lowerDistanceLimit"
 
 -- | @Selector@ for @setLowerDistanceLimit:@
-setLowerDistanceLimitSelector :: Selector
+setLowerDistanceLimitSelector :: Selector '[CDouble] ()
 setLowerDistanceLimitSelector = mkSelector "setLowerDistanceLimit:"
 
 -- | @Selector@ for @upperDistanceLimit@
-upperDistanceLimitSelector :: Selector
+upperDistanceLimitSelector :: Selector '[] CDouble
 upperDistanceLimitSelector = mkSelector "upperDistanceLimit"
 
 -- | @Selector@ for @setUpperDistanceLimit:@
-setUpperDistanceLimitSelector :: Selector
+setUpperDistanceLimitSelector :: Selector '[CDouble] ()
 setUpperDistanceLimitSelector = mkSelector "setUpperDistanceLimit:"
 

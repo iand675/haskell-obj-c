@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,26 +36,22 @@ module ObjC.LinkPresentation.LPMetadataProvider
   , setShouldFetchSubresources
   , timeout
   , setTimeout
-  , startFetchingMetadataForURL_completionHandlerSelector
-  , startFetchingMetadataForRequest_completionHandlerSelector
   , cancelSelector
-  , shouldFetchSubresourcesSelector
   , setShouldFetchSubresourcesSelector
-  , timeoutSelector
   , setTimeoutSelector
+  , shouldFetchSubresourcesSelector
+  , startFetchingMetadataForRequest_completionHandlerSelector
+  , startFetchingMetadataForURL_completionHandlerSelector
+  , timeoutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,9 +68,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startFetchingMetadataForURL:completionHandler:@
 startFetchingMetadataForURL_completionHandler :: (IsLPMetadataProvider lpMetadataProvider, IsNSURL url) => lpMetadataProvider -> url -> Ptr () -> IO ()
-startFetchingMetadataForURL_completionHandler lpMetadataProvider  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg lpMetadataProvider (mkSelector "startFetchingMetadataForURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+startFetchingMetadataForURL_completionHandler lpMetadataProvider url completionHandler =
+  sendMessage lpMetadataProvider startFetchingMetadataForURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | Fetches metadata for the given ``NSURLRequest``.
 --
@@ -85,9 +81,8 @@ startFetchingMetadataForURL_completionHandler lpMetadataProvider  url completion
 --
 -- ObjC selector: @- startFetchingMetadataForRequest:completionHandler:@
 startFetchingMetadataForRequest_completionHandler :: (IsLPMetadataProvider lpMetadataProvider, IsNSURLRequest request) => lpMetadataProvider -> request -> Ptr () -> IO ()
-startFetchingMetadataForRequest_completionHandler lpMetadataProvider  request completionHandler =
-  withObjCPtr request $ \raw_request ->
-      sendMsg lpMetadataProvider (mkSelector "startFetchingMetadataForRequest:completionHandler:") retVoid [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+startFetchingMetadataForRequest_completionHandler lpMetadataProvider request completionHandler =
+  sendMessage lpMetadataProvider startFetchingMetadataForRequest_completionHandlerSelector (toNSURLRequest request) completionHandler
 
 -- | Cancels a metadata request.
 --
@@ -95,8 +90,8 @@ startFetchingMetadataForRequest_completionHandler lpMetadataProvider  request co
 --
 -- ObjC selector: @- cancel@
 cancel :: IsLPMetadataProvider lpMetadataProvider => lpMetadataProvider -> IO ()
-cancel lpMetadataProvider  =
-    sendMsg lpMetadataProvider (mkSelector "cancel") retVoid []
+cancel lpMetadataProvider =
+  sendMessage lpMetadataProvider cancelSelector
 
 -- | A Boolean value indicating whether to download subresources specified by the metadata.
 --
@@ -106,8 +101,8 @@ cancel lpMetadataProvider  =
 --
 -- ObjC selector: @- shouldFetchSubresources@
 shouldFetchSubresources :: IsLPMetadataProvider lpMetadataProvider => lpMetadataProvider -> IO Bool
-shouldFetchSubresources lpMetadataProvider  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg lpMetadataProvider (mkSelector "shouldFetchSubresources") retCULong []
+shouldFetchSubresources lpMetadataProvider =
+  sendMessage lpMetadataProvider shouldFetchSubresourcesSelector
 
 -- | A Boolean value indicating whether to download subresources specified by the metadata.
 --
@@ -117,8 +112,8 @@ shouldFetchSubresources lpMetadataProvider  =
 --
 -- ObjC selector: @- setShouldFetchSubresources:@
 setShouldFetchSubresources :: IsLPMetadataProvider lpMetadataProvider => lpMetadataProvider -> Bool -> IO ()
-setShouldFetchSubresources lpMetadataProvider  value =
-    sendMsg lpMetadataProvider (mkSelector "setShouldFetchSubresources:") retVoid [argCULong (if value then 1 else 0)]
+setShouldFetchSubresources lpMetadataProvider value =
+  sendMessage lpMetadataProvider setShouldFetchSubresourcesSelector value
 
 -- | The time interval after which the request automatically fails if it hasn’t already completed.
 --
@@ -126,8 +121,8 @@ setShouldFetchSubresources lpMetadataProvider  value =
 --
 -- ObjC selector: @- timeout@
 timeout :: IsLPMetadataProvider lpMetadataProvider => lpMetadataProvider -> IO CDouble
-timeout lpMetadataProvider  =
-    sendMsg lpMetadataProvider (mkSelector "timeout") retCDouble []
+timeout lpMetadataProvider =
+  sendMessage lpMetadataProvider timeoutSelector
 
 -- | The time interval after which the request automatically fails if it hasn’t already completed.
 --
@@ -135,38 +130,38 @@ timeout lpMetadataProvider  =
 --
 -- ObjC selector: @- setTimeout:@
 setTimeout :: IsLPMetadataProvider lpMetadataProvider => lpMetadataProvider -> CDouble -> IO ()
-setTimeout lpMetadataProvider  value =
-    sendMsg lpMetadataProvider (mkSelector "setTimeout:") retVoid [argCDouble value]
+setTimeout lpMetadataProvider value =
+  sendMessage lpMetadataProvider setTimeoutSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startFetchingMetadataForURL:completionHandler:@
-startFetchingMetadataForURL_completionHandlerSelector :: Selector
+startFetchingMetadataForURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 startFetchingMetadataForURL_completionHandlerSelector = mkSelector "startFetchingMetadataForURL:completionHandler:"
 
 -- | @Selector@ for @startFetchingMetadataForRequest:completionHandler:@
-startFetchingMetadataForRequest_completionHandlerSelector :: Selector
+startFetchingMetadataForRequest_completionHandlerSelector :: Selector '[Id NSURLRequest, Ptr ()] ()
 startFetchingMetadataForRequest_completionHandlerSelector = mkSelector "startFetchingMetadataForRequest:completionHandler:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @shouldFetchSubresources@
-shouldFetchSubresourcesSelector :: Selector
+shouldFetchSubresourcesSelector :: Selector '[] Bool
 shouldFetchSubresourcesSelector = mkSelector "shouldFetchSubresources"
 
 -- | @Selector@ for @setShouldFetchSubresources:@
-setShouldFetchSubresourcesSelector :: Selector
+setShouldFetchSubresourcesSelector :: Selector '[Bool] ()
 setShouldFetchSubresourcesSelector = mkSelector "setShouldFetchSubresources:"
 
 -- | @Selector@ for @timeout@
-timeoutSelector :: Selector
+timeoutSelector :: Selector '[] CDouble
 timeoutSelector = mkSelector "timeout"
 
 -- | @Selector@ for @setTimeout:@
-setTimeoutSelector :: Selector
+setTimeoutSelector :: Selector '[CDouble] ()
 setTimeoutSelector = mkSelector "setTimeout:"
 

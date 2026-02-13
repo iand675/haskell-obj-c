@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.BackgroundTasks.BGProcessingTaskRequest
   , requiresExternalPower
   , setRequiresExternalPower
   , initWithIdentifierSelector
-  , requiresNetworkConnectivitySelector
-  , setRequiresNetworkConnectivitySelector
   , requiresExternalPowerSelector
+  , requiresNetworkConnectivitySelector
   , setRequiresExternalPowerSelector
+  , setRequiresNetworkConnectivitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,9 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifier:@
 initWithIdentifier :: (IsBGProcessingTaskRequest bgProcessingTaskRequest, IsNSString identifier) => bgProcessingTaskRequest -> identifier -> IO (Id BGProcessingTaskRequest)
-initWithIdentifier bgProcessingTaskRequest  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg bgProcessingTaskRequest (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier bgProcessingTaskRequest identifier =
+  sendOwnedMessage bgProcessingTaskRequest initWithIdentifierSelector (toNSString identifier)
 
 -- | A Boolean specifying if the processing task requires network connectivity.
 --
@@ -55,8 +51,8 @@ initWithIdentifier bgProcessingTaskRequest  identifier =
 --
 -- ObjC selector: @- requiresNetworkConnectivity@
 requiresNetworkConnectivity :: IsBGProcessingTaskRequest bgProcessingTaskRequest => bgProcessingTaskRequest -> IO Bool
-requiresNetworkConnectivity bgProcessingTaskRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg bgProcessingTaskRequest (mkSelector "requiresNetworkConnectivity") retCULong []
+requiresNetworkConnectivity bgProcessingTaskRequest =
+  sendMessage bgProcessingTaskRequest requiresNetworkConnectivitySelector
 
 -- | A Boolean specifying if the processing task requires network connectivity.
 --
@@ -64,8 +60,8 @@ requiresNetworkConnectivity bgProcessingTaskRequest  =
 --
 -- ObjC selector: @- setRequiresNetworkConnectivity:@
 setRequiresNetworkConnectivity :: IsBGProcessingTaskRequest bgProcessingTaskRequest => bgProcessingTaskRequest -> Bool -> IO ()
-setRequiresNetworkConnectivity bgProcessingTaskRequest  value =
-    sendMsg bgProcessingTaskRequest (mkSelector "setRequiresNetworkConnectivity:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresNetworkConnectivity bgProcessingTaskRequest value =
+  sendMessage bgProcessingTaskRequest setRequiresNetworkConnectivitySelector value
 
 -- | Whether the background task represented by this request should only be done while the device is connected to external power.
 --
@@ -73,8 +69,8 @@ setRequiresNetworkConnectivity bgProcessingTaskRequest  value =
 --
 -- ObjC selector: @- requiresExternalPower@
 requiresExternalPower :: IsBGProcessingTaskRequest bgProcessingTaskRequest => bgProcessingTaskRequest -> IO Bool
-requiresExternalPower bgProcessingTaskRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg bgProcessingTaskRequest (mkSelector "requiresExternalPower") retCULong []
+requiresExternalPower bgProcessingTaskRequest =
+  sendMessage bgProcessingTaskRequest requiresExternalPowerSelector
 
 -- | Whether the background task represented by this request should only be done while the device is connected to external power.
 --
@@ -82,30 +78,30 @@ requiresExternalPower bgProcessingTaskRequest  =
 --
 -- ObjC selector: @- setRequiresExternalPower:@
 setRequiresExternalPower :: IsBGProcessingTaskRequest bgProcessingTaskRequest => bgProcessingTaskRequest -> Bool -> IO ()
-setRequiresExternalPower bgProcessingTaskRequest  value =
-    sendMsg bgProcessingTaskRequest (mkSelector "setRequiresExternalPower:") retVoid [argCULong (if value then 1 else 0)]
+setRequiresExternalPower bgProcessingTaskRequest value =
+  sendMessage bgProcessingTaskRequest setRequiresExternalPowerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[Id NSString] (Id BGProcessingTaskRequest)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @requiresNetworkConnectivity@
-requiresNetworkConnectivitySelector :: Selector
+requiresNetworkConnectivitySelector :: Selector '[] Bool
 requiresNetworkConnectivitySelector = mkSelector "requiresNetworkConnectivity"
 
 -- | @Selector@ for @setRequiresNetworkConnectivity:@
-setRequiresNetworkConnectivitySelector :: Selector
+setRequiresNetworkConnectivitySelector :: Selector '[Bool] ()
 setRequiresNetworkConnectivitySelector = mkSelector "setRequiresNetworkConnectivity:"
 
 -- | @Selector@ for @requiresExternalPower@
-requiresExternalPowerSelector :: Selector
+requiresExternalPowerSelector :: Selector '[] Bool
 requiresExternalPowerSelector = mkSelector "requiresExternalPower"
 
 -- | @Selector@ for @setRequiresExternalPower:@
-setRequiresExternalPowerSelector :: Selector
+setRequiresExternalPowerSelector :: Selector '[Bool] ()
 setRequiresExternalPowerSelector = mkSelector "setRequiresExternalPower:"
 

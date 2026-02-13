@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.CoreML.MLComputePlanDeviceUsage
   , preferredComputeDevice
   , initSelector
   , newSelector
-  , supportedComputeDevicesSelector
   , preferredComputeDeviceSelector
+  , supportedComputeDevicesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,47 +34,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLComputePlanDeviceUsage mlComputePlanDeviceUsage => mlComputePlanDeviceUsage -> IO (Id MLComputePlanDeviceUsage)
-init_ mlComputePlanDeviceUsage  =
-    sendMsg mlComputePlanDeviceUsage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlComputePlanDeviceUsage =
+  sendOwnedMessage mlComputePlanDeviceUsage initSelector
 
 -- | @+ new@
 new :: IO (Id MLComputePlanDeviceUsage)
 new  =
   do
     cls' <- getRequiredClass "MLComputePlanDeviceUsage"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The compute devices that can execute the layer/operation.
 --
 -- ObjC selector: @- supportedComputeDevices@
 supportedComputeDevices :: IsMLComputePlanDeviceUsage mlComputePlanDeviceUsage => mlComputePlanDeviceUsage -> IO (Id NSArray)
-supportedComputeDevices mlComputePlanDeviceUsage  =
-    sendMsg mlComputePlanDeviceUsage (mkSelector "supportedComputeDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedComputeDevices mlComputePlanDeviceUsage =
+  sendMessage mlComputePlanDeviceUsage supportedComputeDevicesSelector
 
 -- | The compute device that the framework prefers to execute the layer/operation.
 --
 -- ObjC selector: @- preferredComputeDevice@
 preferredComputeDevice :: IsMLComputePlanDeviceUsage mlComputePlanDeviceUsage => mlComputePlanDeviceUsage -> IO RawId
-preferredComputeDevice mlComputePlanDeviceUsage  =
-    fmap (RawId . castPtr) $ sendMsg mlComputePlanDeviceUsage (mkSelector "preferredComputeDevice") (retPtr retVoid) []
+preferredComputeDevice mlComputePlanDeviceUsage =
+  sendMessage mlComputePlanDeviceUsage preferredComputeDeviceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLComputePlanDeviceUsage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLComputePlanDeviceUsage)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @supportedComputeDevices@
-supportedComputeDevicesSelector :: Selector
+supportedComputeDevicesSelector :: Selector '[] (Id NSArray)
 supportedComputeDevicesSelector = mkSelector "supportedComputeDevices"
 
 -- | @Selector@ for @preferredComputeDevice@
-preferredComputeDeviceSelector :: Selector
+preferredComputeDeviceSelector :: Selector '[] RawId
 preferredComputeDeviceSelector = mkSelector "preferredComputeDevice"
 

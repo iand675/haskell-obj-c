@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.Symbols.NSSymbolRotateEffect
   , effectWithByLayer
   , effectWithWholeSymbol
   , effectSelector
-  , rotateClockwiseEffectSelector
-  , rotateCounterClockwiseEffectSelector
   , effectWithByLayerSelector
   , effectWithWholeSymbolSelector
+  , rotateClockwiseEffectSelector
+  , rotateCounterClockwiseEffectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,7 +43,7 @@ effect :: IO (Id NSSymbolRotateEffect)
 effect  =
   do
     cls' <- getRequiredClass "NSSymbolRotateEffect"
-    sendClassMsg cls' (mkSelector "effect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' effectSelector
 
 -- | Convenience initializer for a rotate effect that rotates clockwise.
 --
@@ -55,7 +52,7 @@ rotateClockwiseEffect :: IO (Id NSSymbolRotateEffect)
 rotateClockwiseEffect  =
   do
     cls' <- getRequiredClass "NSSymbolRotateEffect"
-    sendClassMsg cls' (mkSelector "rotateClockwiseEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateClockwiseEffectSelector
 
 -- | Convenience initializer for a rotate effect that rotates counter-clockwise.
 --
@@ -64,43 +61,43 @@ rotateCounterClockwiseEffect :: IO (Id NSSymbolRotateEffect)
 rotateCounterClockwiseEffect  =
   do
     cls' <- getRequiredClass "NSSymbolRotateEffect"
-    sendClassMsg cls' (mkSelector "rotateCounterClockwiseEffect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateCounterClockwiseEffectSelector
 
 -- | Returns a copy of the effect that animates incrementally, by layer.
 --
 -- ObjC selector: @- effectWithByLayer@
 effectWithByLayer :: IsNSSymbolRotateEffect nsSymbolRotateEffect => nsSymbolRotateEffect -> IO (Id NSSymbolRotateEffect)
-effectWithByLayer nsSymbolRotateEffect  =
-    sendMsg nsSymbolRotateEffect (mkSelector "effectWithByLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithByLayer nsSymbolRotateEffect =
+  sendMessage nsSymbolRotateEffect effectWithByLayerSelector
 
 -- | Returns a copy of the effect that animates all layers of the symbol simultaneously.
 --
 -- ObjC selector: @- effectWithWholeSymbol@
 effectWithWholeSymbol :: IsNSSymbolRotateEffect nsSymbolRotateEffect => nsSymbolRotateEffect -> IO (Id NSSymbolRotateEffect)
-effectWithWholeSymbol nsSymbolRotateEffect  =
-    sendMsg nsSymbolRotateEffect (mkSelector "effectWithWholeSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithWholeSymbol nsSymbolRotateEffect =
+  sendMessage nsSymbolRotateEffect effectWithWholeSymbolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effect@
-effectSelector :: Selector
+effectSelector :: Selector '[] (Id NSSymbolRotateEffect)
 effectSelector = mkSelector "effect"
 
 -- | @Selector@ for @rotateClockwiseEffect@
-rotateClockwiseEffectSelector :: Selector
+rotateClockwiseEffectSelector :: Selector '[] (Id NSSymbolRotateEffect)
 rotateClockwiseEffectSelector = mkSelector "rotateClockwiseEffect"
 
 -- | @Selector@ for @rotateCounterClockwiseEffect@
-rotateCounterClockwiseEffectSelector :: Selector
+rotateCounterClockwiseEffectSelector :: Selector '[] (Id NSSymbolRotateEffect)
 rotateCounterClockwiseEffectSelector = mkSelector "rotateCounterClockwiseEffect"
 
 -- | @Selector@ for @effectWithByLayer@
-effectWithByLayerSelector :: Selector
+effectWithByLayerSelector :: Selector '[] (Id NSSymbolRotateEffect)
 effectWithByLayerSelector = mkSelector "effectWithByLayer"
 
 -- | @Selector@ for @effectWithWholeSymbol@
-effectWithWholeSymbolSelector :: Selector
+effectWithWholeSymbolSelector :: Selector '[] (Id NSSymbolRotateEffect)
 effectWithWholeSymbolSelector = mkSelector "effectWithWholeSymbol"
 

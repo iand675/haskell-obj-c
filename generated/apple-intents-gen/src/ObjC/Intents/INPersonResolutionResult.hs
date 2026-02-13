@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INPersonResolutionResult
   , successWithResolvedPerson
   , disambiguationWithPeopleToDisambiguate
   , confirmationRequiredWithPersonToConfirm
-  , successWithResolvedPersonSelector
-  , disambiguationWithPeopleToDisambiguateSelector
   , confirmationRequiredWithPersonToConfirmSelector
+  , disambiguationWithPeopleToDisambiguateSelector
+  , successWithResolvedPersonSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedPerson :: IsINPerson resolvedPerson => resolvedPerson -> IO (
 successWithResolvedPerson resolvedPerson =
   do
     cls' <- getRequiredClass "INPersonResolutionResult"
-    withObjCPtr resolvedPerson $ \raw_resolvedPerson ->
-      sendClassMsg cls' (mkSelector "successWithResolvedPerson:") (retPtr retVoid) [argPtr (castPtr raw_resolvedPerson :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedPersonSelector (toINPerson resolvedPerson)
 
 -- | @+ disambiguationWithPeopleToDisambiguate:@
 disambiguationWithPeopleToDisambiguate :: IsNSArray peopleToDisambiguate => peopleToDisambiguate -> IO (Id INPersonResolutionResult)
 disambiguationWithPeopleToDisambiguate peopleToDisambiguate =
   do
     cls' <- getRequiredClass "INPersonResolutionResult"
-    withObjCPtr peopleToDisambiguate $ \raw_peopleToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithPeopleToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_peopleToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithPeopleToDisambiguateSelector (toNSArray peopleToDisambiguate)
 
 -- | @+ confirmationRequiredWithPersonToConfirm:@
 confirmationRequiredWithPersonToConfirm :: IsINPerson personToConfirm => personToConfirm -> IO (Id INPersonResolutionResult)
 confirmationRequiredWithPersonToConfirm personToConfirm =
   do
     cls' <- getRequiredClass "INPersonResolutionResult"
-    withObjCPtr personToConfirm $ \raw_personToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithPersonToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_personToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithPersonToConfirmSelector (toINPerson personToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedPerson:@
-successWithResolvedPersonSelector :: Selector
+successWithResolvedPersonSelector :: Selector '[Id INPerson] (Id INPersonResolutionResult)
 successWithResolvedPersonSelector = mkSelector "successWithResolvedPerson:"
 
 -- | @Selector@ for @disambiguationWithPeopleToDisambiguate:@
-disambiguationWithPeopleToDisambiguateSelector :: Selector
+disambiguationWithPeopleToDisambiguateSelector :: Selector '[Id NSArray] (Id INPersonResolutionResult)
 disambiguationWithPeopleToDisambiguateSelector = mkSelector "disambiguationWithPeopleToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithPersonToConfirm:@
-confirmationRequiredWithPersonToConfirmSelector :: Selector
+confirmationRequiredWithPersonToConfirmSelector :: Selector '[Id INPerson] (Id INPersonResolutionResult)
 confirmationRequiredWithPersonToConfirmSelector = mkSelector "confirmationRequiredWithPersonToConfirm:"
 

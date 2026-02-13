@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.AppKit.NSCollectionLayoutDecorationItem
   , setZIndex
   , elementKind
   , backgroundDecorationItemWithElementKindSelector
+  , elementKindSelector
   , initSelector
   , newSelector
-  , zIndexSelector
   , setZIndexSelector
-  , elementKindSelector
+  , zIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,61 +39,60 @@ backgroundDecorationItemWithElementKind :: IsNSString elementKind => elementKind
 backgroundDecorationItemWithElementKind elementKind =
   do
     cls' <- getRequiredClass "NSCollectionLayoutDecorationItem"
-    withObjCPtr elementKind $ \raw_elementKind ->
-      sendClassMsg cls' (mkSelector "backgroundDecorationItemWithElementKind:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' backgroundDecorationItemWithElementKindSelector (toNSString elementKind)
 
 -- | @- init@
 init_ :: IsNSCollectionLayoutDecorationItem nsCollectionLayoutDecorationItem => nsCollectionLayoutDecorationItem -> IO (Id NSCollectionLayoutDecorationItem)
-init_ nsCollectionLayoutDecorationItem  =
-    sendMsg nsCollectionLayoutDecorationItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionLayoutDecorationItem =
+  sendOwnedMessage nsCollectionLayoutDecorationItem initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionLayoutDecorationItem)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionLayoutDecorationItem"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- zIndex@
 zIndex :: IsNSCollectionLayoutDecorationItem nsCollectionLayoutDecorationItem => nsCollectionLayoutDecorationItem -> IO CLong
-zIndex nsCollectionLayoutDecorationItem  =
-    sendMsg nsCollectionLayoutDecorationItem (mkSelector "zIndex") retCLong []
+zIndex nsCollectionLayoutDecorationItem =
+  sendMessage nsCollectionLayoutDecorationItem zIndexSelector
 
 -- | @- setZIndex:@
 setZIndex :: IsNSCollectionLayoutDecorationItem nsCollectionLayoutDecorationItem => nsCollectionLayoutDecorationItem -> CLong -> IO ()
-setZIndex nsCollectionLayoutDecorationItem  value =
-    sendMsg nsCollectionLayoutDecorationItem (mkSelector "setZIndex:") retVoid [argCLong value]
+setZIndex nsCollectionLayoutDecorationItem value =
+  sendMessage nsCollectionLayoutDecorationItem setZIndexSelector value
 
 -- | @- elementKind@
 elementKind :: IsNSCollectionLayoutDecorationItem nsCollectionLayoutDecorationItem => nsCollectionLayoutDecorationItem -> IO (Id NSString)
-elementKind nsCollectionLayoutDecorationItem  =
-    sendMsg nsCollectionLayoutDecorationItem (mkSelector "elementKind") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementKind nsCollectionLayoutDecorationItem =
+  sendMessage nsCollectionLayoutDecorationItem elementKindSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @backgroundDecorationItemWithElementKind:@
-backgroundDecorationItemWithElementKindSelector :: Selector
+backgroundDecorationItemWithElementKindSelector :: Selector '[Id NSString] (Id NSCollectionLayoutDecorationItem)
 backgroundDecorationItemWithElementKindSelector = mkSelector "backgroundDecorationItemWithElementKind:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionLayoutDecorationItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionLayoutDecorationItem)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @zIndex@
-zIndexSelector :: Selector
+zIndexSelector :: Selector '[] CLong
 zIndexSelector = mkSelector "zIndex"
 
 -- | @Selector@ for @setZIndex:@
-setZIndexSelector :: Selector
+setZIndexSelector :: Selector '[CLong] ()
 setZIndexSelector = mkSelector "setZIndex:"
 
 -- | @Selector@ for @elementKind@
-elementKindSelector :: Selector
+elementKindSelector :: Selector '[] (Id NSString)
 elementKindSelector = mkSelector "elementKind"
 

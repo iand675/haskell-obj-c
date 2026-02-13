@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.Intents.INSetTaskAttributeIntentResponse
   , code
   , modifiedTask
   , setModifiedTask
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
   , modifiedTaskSelector
   , setModifiedTaskSelector
 
@@ -29,15 +30,11 @@ module ObjC.Intents.INSetTaskAttributeIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,52 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSetTaskAttributeIntentResponse inSetTaskAttributeIntentResponse => inSetTaskAttributeIntentResponse -> IO RawId
-init_ inSetTaskAttributeIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inSetTaskAttributeIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inSetTaskAttributeIntentResponse =
+  sendOwnedMessage inSetTaskAttributeIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINSetTaskAttributeIntentResponse inSetTaskAttributeIntentResponse, IsNSUserActivity userActivity) => inSetTaskAttributeIntentResponse -> INSetTaskAttributeIntentResponseCode -> userActivity -> IO (Id INSetTaskAttributeIntentResponse)
-initWithCode_userActivity inSetTaskAttributeIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inSetTaskAttributeIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inSetTaskAttributeIntentResponse code userActivity =
+  sendOwnedMessage inSetTaskAttributeIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINSetTaskAttributeIntentResponse inSetTaskAttributeIntentResponse => inSetTaskAttributeIntentResponse -> IO INSetTaskAttributeIntentResponseCode
-code inSetTaskAttributeIntentResponse  =
-    fmap (coerce :: CLong -> INSetTaskAttributeIntentResponseCode) $ sendMsg inSetTaskAttributeIntentResponse (mkSelector "code") retCLong []
+code inSetTaskAttributeIntentResponse =
+  sendMessage inSetTaskAttributeIntentResponse codeSelector
 
 -- | @- modifiedTask@
 modifiedTask :: IsINSetTaskAttributeIntentResponse inSetTaskAttributeIntentResponse => inSetTaskAttributeIntentResponse -> IO (Id INTask)
-modifiedTask inSetTaskAttributeIntentResponse  =
-    sendMsg inSetTaskAttributeIntentResponse (mkSelector "modifiedTask") (retPtr retVoid) [] >>= retainedObject . castPtr
+modifiedTask inSetTaskAttributeIntentResponse =
+  sendMessage inSetTaskAttributeIntentResponse modifiedTaskSelector
 
 -- | @- setModifiedTask:@
 setModifiedTask :: (IsINSetTaskAttributeIntentResponse inSetTaskAttributeIntentResponse, IsINTask value) => inSetTaskAttributeIntentResponse -> value -> IO ()
-setModifiedTask inSetTaskAttributeIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSetTaskAttributeIntentResponse (mkSelector "setModifiedTask:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setModifiedTask inSetTaskAttributeIntentResponse value =
+  sendMessage inSetTaskAttributeIntentResponse setModifiedTaskSelector (toINTask value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INSetTaskAttributeIntentResponseCode, Id NSUserActivity] (Id INSetTaskAttributeIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INSetTaskAttributeIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @modifiedTask@
-modifiedTaskSelector :: Selector
+modifiedTaskSelector :: Selector '[] (Id INTask)
 modifiedTaskSelector = mkSelector "modifiedTask"
 
 -- | @Selector@ for @setModifiedTask:@
-setModifiedTaskSelector :: Selector
+setModifiedTaskSelector :: Selector '[Id INTask] ()
 setModifiedTaskSelector = mkSelector "setModifiedTask:"
 

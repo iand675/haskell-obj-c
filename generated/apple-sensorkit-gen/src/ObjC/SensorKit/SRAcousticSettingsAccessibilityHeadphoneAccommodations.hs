@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.SensorKit.SRAcousticSettingsAccessibilityHeadphoneAccommodations
   , mediaEnhanceBoosting
   , mediaEnhanceApplication
   , enabledSelector
-  , mediaEnhanceTuningSelector
-  , mediaEnhanceBoostingSelector
   , mediaEnhanceApplicationSelector
+  , mediaEnhanceBoostingSelector
+  , mediaEnhanceTuningSelector
 
   -- * Enum types
   , SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication(SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication)
@@ -33,15 +34,11 @@ module ObjC.SensorKit.SRAcousticSettingsAccessibilityHeadphoneAccommodations
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- enabled@
 enabled :: IsSRAcousticSettingsAccessibilityHeadphoneAccommodations srAcousticSettingsAccessibilityHeadphoneAccommodations => srAcousticSettingsAccessibilityHeadphoneAccommodations -> IO Bool
-enabled srAcousticSettingsAccessibilityHeadphoneAccommodations  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg srAcousticSettingsAccessibilityHeadphoneAccommodations (mkSelector "enabled") retCULong []
+enabled srAcousticSettingsAccessibilityHeadphoneAccommodations =
+  sendMessage srAcousticSettingsAccessibilityHeadphoneAccommodations enabledSelector
 
 -- | mediaEnhanceTuning
 --
@@ -66,8 +63,8 @@ enabled srAcousticSettingsAccessibilityHeadphoneAccommodations  =
 --
 -- ObjC selector: @- mediaEnhanceTuning@
 mediaEnhanceTuning :: IsSRAcousticSettingsAccessibilityHeadphoneAccommodations srAcousticSettingsAccessibilityHeadphoneAccommodations => srAcousticSettingsAccessibilityHeadphoneAccommodations -> IO SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning
-mediaEnhanceTuning srAcousticSettingsAccessibilityHeadphoneAccommodations  =
-    fmap (coerce :: CLong -> SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning) $ sendMsg srAcousticSettingsAccessibilityHeadphoneAccommodations (mkSelector "mediaEnhanceTuning") retCLong []
+mediaEnhanceTuning srAcousticSettingsAccessibilityHeadphoneAccommodations =
+  sendMessage srAcousticSettingsAccessibilityHeadphoneAccommodations mediaEnhanceTuningSelector
 
 -- | mediaEnhanceBoosting
 --
@@ -77,8 +74,8 @@ mediaEnhanceTuning srAcousticSettingsAccessibilityHeadphoneAccommodations  =
 --
 -- ObjC selector: @- mediaEnhanceBoosting@
 mediaEnhanceBoosting :: IsSRAcousticSettingsAccessibilityHeadphoneAccommodations srAcousticSettingsAccessibilityHeadphoneAccommodations => srAcousticSettingsAccessibilityHeadphoneAccommodations -> IO SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting
-mediaEnhanceBoosting srAcousticSettingsAccessibilityHeadphoneAccommodations  =
-    fmap (coerce :: CLong -> SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting) $ sendMsg srAcousticSettingsAccessibilityHeadphoneAccommodations (mkSelector "mediaEnhanceBoosting") retCLong []
+mediaEnhanceBoosting srAcousticSettingsAccessibilityHeadphoneAccommodations =
+  sendMessage srAcousticSettingsAccessibilityHeadphoneAccommodations mediaEnhanceBoostingSelector
 
 -- | mediaEnhanceApplication
 --
@@ -88,26 +85,26 @@ mediaEnhanceBoosting srAcousticSettingsAccessibilityHeadphoneAccommodations  =
 --
 -- ObjC selector: @- mediaEnhanceApplication@
 mediaEnhanceApplication :: IsSRAcousticSettingsAccessibilityHeadphoneAccommodations srAcousticSettingsAccessibilityHeadphoneAccommodations => srAcousticSettingsAccessibilityHeadphoneAccommodations -> IO SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication
-mediaEnhanceApplication srAcousticSettingsAccessibilityHeadphoneAccommodations  =
-    fmap (coerce :: CLong -> SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication) $ sendMsg srAcousticSettingsAccessibilityHeadphoneAccommodations (mkSelector "mediaEnhanceApplication") retCLong []
+mediaEnhanceApplication srAcousticSettingsAccessibilityHeadphoneAccommodations =
+  sendMessage srAcousticSettingsAccessibilityHeadphoneAccommodations mediaEnhanceApplicationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @mediaEnhanceTuning@
-mediaEnhanceTuningSelector :: Selector
+mediaEnhanceTuningSelector :: Selector '[] SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceTuning
 mediaEnhanceTuningSelector = mkSelector "mediaEnhanceTuning"
 
 -- | @Selector@ for @mediaEnhanceBoosting@
-mediaEnhanceBoostingSelector :: Selector
+mediaEnhanceBoostingSelector :: Selector '[] SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceBoosting
 mediaEnhanceBoostingSelector = mkSelector "mediaEnhanceBoosting"
 
 -- | @Selector@ for @mediaEnhanceApplication@
-mediaEnhanceApplicationSelector :: Selector
+mediaEnhanceApplicationSelector :: Selector '[] SRAcousticSettingsAccessibilityHeadphoneAccommodationsMediaEnhanceApplication
 mediaEnhanceApplicationSelector = mkSelector "mediaEnhanceApplication"
 

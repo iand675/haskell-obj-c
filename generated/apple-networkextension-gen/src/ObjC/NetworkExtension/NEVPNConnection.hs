@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,13 +21,13 @@ module ObjC.NetworkExtension.NEVPNConnection
   , status
   , connectedDate
   , manager
+  , connectedDateSelector
+  , fetchLastDisconnectErrorWithCompletionHandlerSelector
+  , managerSelector
   , startVPNTunnelAndReturnErrorSelector
   , startVPNTunnelWithOptions_andReturnErrorSelector
-  , stopVPNTunnelSelector
-  , fetchLastDisconnectErrorWithCompletionHandlerSelector
   , statusSelector
-  , connectedDateSelector
-  , managerSelector
+  , stopVPNTunnelSelector
 
   -- * Enum types
   , NEVPNStatus(NEVPNStatus)
@@ -39,15 +40,11 @@ module ObjC.NetworkExtension.NEVPNConnection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,9 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startVPNTunnelAndReturnError:@
 startVPNTunnelAndReturnError :: (IsNEVPNConnection nevpnConnection, IsNSError error_) => nevpnConnection -> error_ -> IO Bool
-startVPNTunnelAndReturnError nevpnConnection  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnConnection (mkSelector "startVPNTunnelAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+startVPNTunnelAndReturnError nevpnConnection error_ =
+  sendMessage nevpnConnection startVPNTunnelAndReturnErrorSelector (toNSError error_)
 
 -- | startVPNTunnelWithOptions:andReturnError:
 --
@@ -81,10 +77,8 @@ startVPNTunnelAndReturnError nevpnConnection  error_ =
 --
 -- ObjC selector: @- startVPNTunnelWithOptions:andReturnError:@
 startVPNTunnelWithOptions_andReturnError :: (IsNEVPNConnection nevpnConnection, IsNSDictionary options, IsNSError error_) => nevpnConnection -> options -> error_ -> IO Bool
-startVPNTunnelWithOptions_andReturnError nevpnConnection  options error_ =
-  withObjCPtr options $ \raw_options ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnConnection (mkSelector "startVPNTunnelWithOptions:andReturnError:") retCULong [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+startVPNTunnelWithOptions_andReturnError nevpnConnection options error_ =
+  sendMessage nevpnConnection startVPNTunnelWithOptions_andReturnErrorSelector (toNSDictionary options) (toNSError error_)
 
 -- | stopVPNTunnel:
 --
@@ -92,8 +86,8 @@ startVPNTunnelWithOptions_andReturnError nevpnConnection  options error_ =
 --
 -- ObjC selector: @- stopVPNTunnel@
 stopVPNTunnel :: IsNEVPNConnection nevpnConnection => nevpnConnection -> IO ()
-stopVPNTunnel nevpnConnection  =
-    sendMsg nevpnConnection (mkSelector "stopVPNTunnel") retVoid []
+stopVPNTunnel nevpnConnection =
+  sendMessage nevpnConnection stopVPNTunnelSelector
 
 -- | fetchLastDisconnectErrorWithCompletionHandler:
 --
@@ -103,8 +97,8 @@ stopVPNTunnel nevpnConnection  =
 --
 -- ObjC selector: @- fetchLastDisconnectErrorWithCompletionHandler:@
 fetchLastDisconnectErrorWithCompletionHandler :: IsNEVPNConnection nevpnConnection => nevpnConnection -> Ptr () -> IO ()
-fetchLastDisconnectErrorWithCompletionHandler nevpnConnection  handler =
-    sendMsg nevpnConnection (mkSelector "fetchLastDisconnectErrorWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+fetchLastDisconnectErrorWithCompletionHandler nevpnConnection handler =
+  sendMessage nevpnConnection fetchLastDisconnectErrorWithCompletionHandlerSelector handler
 
 -- | status
 --
@@ -112,8 +106,8 @@ fetchLastDisconnectErrorWithCompletionHandler nevpnConnection  handler =
 --
 -- ObjC selector: @- status@
 status :: IsNEVPNConnection nevpnConnection => nevpnConnection -> IO NEVPNStatus
-status nevpnConnection  =
-    fmap (coerce :: CLong -> NEVPNStatus) $ sendMsg nevpnConnection (mkSelector "status") retCLong []
+status nevpnConnection =
+  sendMessage nevpnConnection statusSelector
 
 -- | connectedDate
 --
@@ -121,8 +115,8 @@ status nevpnConnection  =
 --
 -- ObjC selector: @- connectedDate@
 connectedDate :: IsNEVPNConnection nevpnConnection => nevpnConnection -> IO (Id NSDate)
-connectedDate nevpnConnection  =
-    sendMsg nevpnConnection (mkSelector "connectedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+connectedDate nevpnConnection =
+  sendMessage nevpnConnection connectedDateSelector
 
 -- | manager
 --
@@ -130,38 +124,38 @@ connectedDate nevpnConnection  =
 --
 -- ObjC selector: @- manager@
 manager :: IsNEVPNConnection nevpnConnection => nevpnConnection -> IO (Id NEVPNManager)
-manager nevpnConnection  =
-    sendMsg nevpnConnection (mkSelector "manager") (retPtr retVoid) [] >>= retainedObject . castPtr
+manager nevpnConnection =
+  sendMessage nevpnConnection managerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startVPNTunnelAndReturnError:@
-startVPNTunnelAndReturnErrorSelector :: Selector
+startVPNTunnelAndReturnErrorSelector :: Selector '[Id NSError] Bool
 startVPNTunnelAndReturnErrorSelector = mkSelector "startVPNTunnelAndReturnError:"
 
 -- | @Selector@ for @startVPNTunnelWithOptions:andReturnError:@
-startVPNTunnelWithOptions_andReturnErrorSelector :: Selector
+startVPNTunnelWithOptions_andReturnErrorSelector :: Selector '[Id NSDictionary, Id NSError] Bool
 startVPNTunnelWithOptions_andReturnErrorSelector = mkSelector "startVPNTunnelWithOptions:andReturnError:"
 
 -- | @Selector@ for @stopVPNTunnel@
-stopVPNTunnelSelector :: Selector
+stopVPNTunnelSelector :: Selector '[] ()
 stopVPNTunnelSelector = mkSelector "stopVPNTunnel"
 
 -- | @Selector@ for @fetchLastDisconnectErrorWithCompletionHandler:@
-fetchLastDisconnectErrorWithCompletionHandlerSelector :: Selector
+fetchLastDisconnectErrorWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 fetchLastDisconnectErrorWithCompletionHandlerSelector = mkSelector "fetchLastDisconnectErrorWithCompletionHandler:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] NEVPNStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @connectedDate@
-connectedDateSelector :: Selector
+connectedDateSelector :: Selector '[] (Id NSDate)
 connectedDateSelector = mkSelector "connectedDate"
 
 -- | @Selector@ for @manager@
-managerSelector :: Selector
+managerSelector :: Selector '[] (Id NEVPNManager)
 managerSelector = mkSelector "manager"
 

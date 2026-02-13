@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,10 +15,10 @@ module ObjC.Matter.MTRNetworkInterfaceInfo
   , endpointID
   , featureMap
   , type_
-  , initSelector
-  , newSelector
   , endpointIDSelector
   , featureMapSelector
+  , initSelector
+  , newSelector
   , typeSelector
 
   -- * Enum types
@@ -29,15 +30,11 @@ module ObjC.Matter.MTRNetworkInterfaceInfo
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,58 +44,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRNetworkInterfaceInfo mtrNetworkInterfaceInfo => mtrNetworkInterfaceInfo -> IO (Id MTRNetworkInterfaceInfo)
-init_ mtrNetworkInterfaceInfo  =
-    sendMsg mtrNetworkInterfaceInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrNetworkInterfaceInfo =
+  sendOwnedMessage mtrNetworkInterfaceInfo initSelector
 
 -- | @+ new@
 new :: IO (Id MTRNetworkInterfaceInfo)
 new  =
   do
     cls' <- getRequiredClass "MTRNetworkInterfaceInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The endpoint this network interface is exposed on (i.e. the endpoint its corresponding Network Commissioning server cluster instance is on).
 --
 -- ObjC selector: @- endpointID@
 endpointID :: IsMTRNetworkInterfaceInfo mtrNetworkInterfaceInfo => mtrNetworkInterfaceInfo -> IO (Id NSNumber)
-endpointID mtrNetworkInterfaceInfo  =
-    sendMsg mtrNetworkInterfaceInfo (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointID mtrNetworkInterfaceInfo =
+  sendMessage mtrNetworkInterfaceInfo endpointIDSelector
 
 -- | The value of the FeatureMap attribute of the corresponding Network Commissioning cluster instance.
 --
 -- ObjC selector: @- featureMap@
 featureMap :: IsMTRNetworkInterfaceInfo mtrNetworkInterfaceInfo => mtrNetworkInterfaceInfo -> IO (Id NSNumber)
-featureMap mtrNetworkInterfaceInfo  =
-    sendMsg mtrNetworkInterfaceInfo (mkSelector "featureMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+featureMap mtrNetworkInterfaceInfo =
+  sendMessage mtrNetworkInterfaceInfo featureMapSelector
 
 -- | The network technology used by the interface.  This will be one of the MTRNetworkCommissioningFeature*NetworkInterface values (exactly one bit).
 --
 -- ObjC selector: @- type@
 type_ :: IsMTRNetworkInterfaceInfo mtrNetworkInterfaceInfo => mtrNetworkInterfaceInfo -> IO MTRNetworkCommissioningFeature
-type_ mtrNetworkInterfaceInfo  =
-    fmap (coerce :: CUInt -> MTRNetworkCommissioningFeature) $ sendMsg mtrNetworkInterfaceInfo (mkSelector "type") retCUInt []
+type_ mtrNetworkInterfaceInfo =
+  sendMessage mtrNetworkInterfaceInfo typeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRNetworkInterfaceInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRNetworkInterfaceInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @endpointID@
-endpointIDSelector :: Selector
+endpointIDSelector :: Selector '[] (Id NSNumber)
 endpointIDSelector = mkSelector "endpointID"
 
 -- | @Selector@ for @featureMap@
-featureMapSelector :: Selector
+featureMapSelector :: Selector '[] (Id NSNumber)
 featureMapSelector = mkSelector "featureMap"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MTRNetworkCommissioningFeature
 typeSelector = mkSelector "type"
 

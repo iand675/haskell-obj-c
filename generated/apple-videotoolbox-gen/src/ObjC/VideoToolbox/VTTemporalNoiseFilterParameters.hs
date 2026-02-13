@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.VideoToolbox.VTTemporalNoiseFilterParameters
   , hasDiscontinuity
   , setHasDiscontinuity
   , destinationFrame
-  , initWithSourceFrame_nextFrames_previousFrames_destinationFrame_filterStrength_hasDiscontinuitySelector
+  , destinationFrameSelector
+  , filterStrengthSelector
+  , hasDiscontinuitySelector
   , initSelector
+  , initWithSourceFrame_nextFrames_previousFrames_destinationFrame_filterStrength_hasDiscontinuitySelector
   , newSelector
-  , sourceFrameSelector
   , nextFramesSelector
   , previousFramesSelector
-  , filterStrengthSelector
   , setFilterStrengthSelector
-  , hasDiscontinuitySelector
   , setHasDiscontinuitySelector
-  , destinationFrameSelector
+  , sourceFrameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,31 +54,27 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSourceFrame:nextFrames:previousFrames:destinationFrame:filterStrength:hasDiscontinuity:@
 initWithSourceFrame_nextFrames_previousFrames_destinationFrame_filterStrength_hasDiscontinuity :: (IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters, IsVTFrameProcessorFrame sourceFrame, IsNSArray nextFrames, IsNSArray previousFrames, IsVTFrameProcessorFrame destinationFrame) => vtTemporalNoiseFilterParameters -> sourceFrame -> nextFrames -> previousFrames -> destinationFrame -> CFloat -> CUChar -> IO (Id VTTemporalNoiseFilterParameters)
-initWithSourceFrame_nextFrames_previousFrames_destinationFrame_filterStrength_hasDiscontinuity vtTemporalNoiseFilterParameters  sourceFrame nextFrames previousFrames destinationFrame filterStrength hasDiscontinuity =
-  withObjCPtr sourceFrame $ \raw_sourceFrame ->
-    withObjCPtr nextFrames $ \raw_nextFrames ->
-      withObjCPtr previousFrames $ \raw_previousFrames ->
-        withObjCPtr destinationFrame $ \raw_destinationFrame ->
-            sendMsg vtTemporalNoiseFilterParameters (mkSelector "initWithSourceFrame:nextFrames:previousFrames:destinationFrame:filterStrength:hasDiscontinuity:") (retPtr retVoid) [argPtr (castPtr raw_sourceFrame :: Ptr ()), argPtr (castPtr raw_nextFrames :: Ptr ()), argPtr (castPtr raw_previousFrames :: Ptr ()), argPtr (castPtr raw_destinationFrame :: Ptr ()), argCFloat filterStrength, argCUChar hasDiscontinuity] >>= ownedObject . castPtr
+initWithSourceFrame_nextFrames_previousFrames_destinationFrame_filterStrength_hasDiscontinuity vtTemporalNoiseFilterParameters sourceFrame nextFrames previousFrames destinationFrame filterStrength hasDiscontinuity =
+  sendOwnedMessage vtTemporalNoiseFilterParameters initWithSourceFrame_nextFrames_previousFrames_destinationFrame_filterStrength_hasDiscontinuitySelector (toVTFrameProcessorFrame sourceFrame) (toNSArray nextFrames) (toNSArray previousFrames) (toVTFrameProcessorFrame destinationFrame) filterStrength hasDiscontinuity
 
 -- | @- init@
 init_ :: IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters => vtTemporalNoiseFilterParameters -> IO (Id VTTemporalNoiseFilterParameters)
-init_ vtTemporalNoiseFilterParameters  =
-    sendMsg vtTemporalNoiseFilterParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtTemporalNoiseFilterParameters =
+  sendOwnedMessage vtTemporalNoiseFilterParameters initSelector
 
 -- | @+ new@
 new :: IO (Id VTTemporalNoiseFilterParameters)
 new  =
   do
     cls' <- getRequiredClass "VTTemporalNoiseFilterParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Current source frame; must be non @nil@.
 --
 -- ObjC selector: @- sourceFrame@
 sourceFrame :: IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters => vtTemporalNoiseFilterParameters -> IO (Id VTFrameProcessorFrame)
-sourceFrame vtTemporalNoiseFilterParameters  =
-    sendMsg vtTemporalNoiseFilterParameters (mkSelector "sourceFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceFrame vtTemporalNoiseFilterParameters =
+  sendMessage vtTemporalNoiseFilterParameters sourceFrameSelector
 
 -- | Future reference frames in presentation time order that you use to process the source frame.
 --
@@ -89,8 +82,8 @@ sourceFrame vtTemporalNoiseFilterParameters  =
 --
 -- ObjC selector: @- nextFrames@
 nextFrames :: IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters => vtTemporalNoiseFilterParameters -> IO (Id NSArray)
-nextFrames vtTemporalNoiseFilterParameters  =
-    sendMsg vtTemporalNoiseFilterParameters (mkSelector "nextFrames") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextFrames vtTemporalNoiseFilterParameters =
+  sendMessage vtTemporalNoiseFilterParameters nextFramesSelector
 
 -- | Past reference frames in presentation time order that you use to process the source frame.
 --
@@ -98,89 +91,89 @@ nextFrames vtTemporalNoiseFilterParameters  =
 --
 -- ObjC selector: @- previousFrames@
 previousFrames :: IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters => vtTemporalNoiseFilterParameters -> IO (Id NSArray)
-previousFrames vtTemporalNoiseFilterParameters  =
-    sendMsg vtTemporalNoiseFilterParameters (mkSelector "previousFrames") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousFrames vtTemporalNoiseFilterParameters =
+  sendMessage vtTemporalNoiseFilterParameters previousFramesSelector
 
 -- | A parameter to control the strength of noise-filtering. The value can range from the minimum strength of 0.0 to the maximum strength of 1.0. Change in filter strength causes the processor to flush all frames in the queue prior to processing the source frame.
 --
 -- ObjC selector: @- filterStrength@
 filterStrength :: IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters => vtTemporalNoiseFilterParameters -> IO CFloat
-filterStrength vtTemporalNoiseFilterParameters  =
-    sendMsg vtTemporalNoiseFilterParameters (mkSelector "filterStrength") retCFloat []
+filterStrength vtTemporalNoiseFilterParameters =
+  sendMessage vtTemporalNoiseFilterParameters filterStrengthSelector
 
 -- | A parameter to control the strength of noise-filtering. The value can range from the minimum strength of 0.0 to the maximum strength of 1.0. Change in filter strength causes the processor to flush all frames in the queue prior to processing the source frame.
 --
 -- ObjC selector: @- setFilterStrength:@
 setFilterStrength :: IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters => vtTemporalNoiseFilterParameters -> CFloat -> IO ()
-setFilterStrength vtTemporalNoiseFilterParameters  value =
-    sendMsg vtTemporalNoiseFilterParameters (mkSelector "setFilterStrength:") retVoid [argCFloat value]
+setFilterStrength vtTemporalNoiseFilterParameters value =
+  sendMessage vtTemporalNoiseFilterParameters setFilterStrengthSelector value
 
 -- | A Boolean that indicates sequence discontinuity, forcing the processor to reset prior to processing the source frame.
 --
 -- ObjC selector: @- hasDiscontinuity@
 hasDiscontinuity :: IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters => vtTemporalNoiseFilterParameters -> IO Bool
-hasDiscontinuity vtTemporalNoiseFilterParameters  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vtTemporalNoiseFilterParameters (mkSelector "hasDiscontinuity") retCULong []
+hasDiscontinuity vtTemporalNoiseFilterParameters =
+  sendMessage vtTemporalNoiseFilterParameters hasDiscontinuitySelector
 
 -- | A Boolean that indicates sequence discontinuity, forcing the processor to reset prior to processing the source frame.
 --
 -- ObjC selector: @- setHasDiscontinuity:@
 setHasDiscontinuity :: IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters => vtTemporalNoiseFilterParameters -> Bool -> IO ()
-setHasDiscontinuity vtTemporalNoiseFilterParameters  value =
-    sendMsg vtTemporalNoiseFilterParameters (mkSelector "setHasDiscontinuity:") retVoid [argCULong (if value then 1 else 0)]
+setHasDiscontinuity vtTemporalNoiseFilterParameters value =
+  sendMessage vtTemporalNoiseFilterParameters setHasDiscontinuitySelector value
 
 -- | Destination frame that contains a user-allocated pixel buffer that receives the output frame.
 --
 -- ObjC selector: @- destinationFrame@
 destinationFrame :: IsVTTemporalNoiseFilterParameters vtTemporalNoiseFilterParameters => vtTemporalNoiseFilterParameters -> IO (Id VTFrameProcessorFrame)
-destinationFrame vtTemporalNoiseFilterParameters  =
-    sendMsg vtTemporalNoiseFilterParameters (mkSelector "destinationFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationFrame vtTemporalNoiseFilterParameters =
+  sendMessage vtTemporalNoiseFilterParameters destinationFrameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSourceFrame:nextFrames:previousFrames:destinationFrame:filterStrength:hasDiscontinuity:@
-initWithSourceFrame_nextFrames_previousFrames_destinationFrame_filterStrength_hasDiscontinuitySelector :: Selector
+initWithSourceFrame_nextFrames_previousFrames_destinationFrame_filterStrength_hasDiscontinuitySelector :: Selector '[Id VTFrameProcessorFrame, Id NSArray, Id NSArray, Id VTFrameProcessorFrame, CFloat, CUChar] (Id VTTemporalNoiseFilterParameters)
 initWithSourceFrame_nextFrames_previousFrames_destinationFrame_filterStrength_hasDiscontinuitySelector = mkSelector "initWithSourceFrame:nextFrames:previousFrames:destinationFrame:filterStrength:hasDiscontinuity:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTTemporalNoiseFilterParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTTemporalNoiseFilterParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sourceFrame@
-sourceFrameSelector :: Selector
+sourceFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 sourceFrameSelector = mkSelector "sourceFrame"
 
 -- | @Selector@ for @nextFrames@
-nextFramesSelector :: Selector
+nextFramesSelector :: Selector '[] (Id NSArray)
 nextFramesSelector = mkSelector "nextFrames"
 
 -- | @Selector@ for @previousFrames@
-previousFramesSelector :: Selector
+previousFramesSelector :: Selector '[] (Id NSArray)
 previousFramesSelector = mkSelector "previousFrames"
 
 -- | @Selector@ for @filterStrength@
-filterStrengthSelector :: Selector
+filterStrengthSelector :: Selector '[] CFloat
 filterStrengthSelector = mkSelector "filterStrength"
 
 -- | @Selector@ for @setFilterStrength:@
-setFilterStrengthSelector :: Selector
+setFilterStrengthSelector :: Selector '[CFloat] ()
 setFilterStrengthSelector = mkSelector "setFilterStrength:"
 
 -- | @Selector@ for @hasDiscontinuity@
-hasDiscontinuitySelector :: Selector
+hasDiscontinuitySelector :: Selector '[] Bool
 hasDiscontinuitySelector = mkSelector "hasDiscontinuity"
 
 -- | @Selector@ for @setHasDiscontinuity:@
-setHasDiscontinuitySelector :: Selector
+setHasDiscontinuitySelector :: Selector '[Bool] ()
 setHasDiscontinuitySelector = mkSelector "setHasDiscontinuity:"
 
 -- | @Selector@ for @destinationFrame@
-destinationFrameSelector :: Selector
+destinationFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 destinationFrameSelector = mkSelector "destinationFrame"
 

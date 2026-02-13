@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -46,57 +47,53 @@ module ObjC.Foundation.NSUndoManager
   , undoMenuItemTitle
   , redoMenuItemTitle
   , beginUndoGroupingSelector
-  , endUndoGroupingSelector
+  , canRedoSelector
+  , canUndoSelector
   , disableUndoRegistrationSelector
   , enableUndoRegistrationSelector
-  , undoSelector
+  , endUndoGroupingSelector
+  , groupingLevelSelector
+  , groupsByEventSelector
+  , levelsOfUndoSelector
+  , prepareWithInvocationTargetSelector
+  , redoActionIsDiscardableSelector
+  , redoActionNameSelector
+  , redoActionUserInfoValueForKeySelector
+  , redoCountSelector
+  , redoMenuItemTitleSelector
+  , redoMenuTitleForUndoActionNameSelector
   , redoSelector
-  , undoNestedGroupSelector
+  , redoingSelector
+  , registerUndoWithTarget_handlerSelector
+  , registerUndoWithTarget_selector_objectSelector
   , removeAllActionsSelector
   , removeAllActionsWithTargetSelector
-  , registerUndoWithTarget_selector_objectSelector
-  , prepareWithInvocationTargetSelector
-  , registerUndoWithTarget_handlerSelector
+  , runLoopModesSelector
   , setActionIsDiscardableSelector
   , setActionNameSelector
-  , undoActionUserInfoValueForKeySelector
-  , redoActionUserInfoValueForKeySelector
   , setActionUserInfoValue_forKeySelector
-  , undoMenuTitleForUndoActionNameSelector
-  , redoMenuTitleForUndoActionNameSelector
-  , groupingLevelSelector
-  , undoRegistrationEnabledSelector
-  , groupsByEventSelector
   , setGroupsByEventSelector
-  , levelsOfUndoSelector
   , setLevelsOfUndoSelector
-  , runLoopModesSelector
   , setRunLoopModesSelector
-  , canUndoSelector
-  , canRedoSelector
-  , undoCountSelector
-  , redoCountSelector
-  , undoingSelector
-  , redoingSelector
   , undoActionIsDiscardableSelector
-  , redoActionIsDiscardableSelector
   , undoActionNameSelector
-  , redoActionNameSelector
+  , undoActionUserInfoValueForKeySelector
+  , undoCountSelector
   , undoMenuItemTitleSelector
-  , redoMenuItemTitleSelector
+  , undoMenuTitleForUndoActionNameSelector
+  , undoNestedGroupSelector
+  , undoRegistrationEnabledSelector
+  , undoSelector
+  , undoingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -110,8 +107,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- beginUndoGrouping@
 beginUndoGrouping :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO ()
-beginUndoGrouping nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "beginUndoGrouping") retVoid []
+beginUndoGrouping nsUndoManager =
+  sendMessage nsUndoManager beginUndoGroupingSelector
 
 -- | Marks the end of an undo group.
 --
@@ -121,8 +118,8 @@ beginUndoGrouping nsUndoManager  =
 --
 -- ObjC selector: @- endUndoGrouping@
 endUndoGrouping :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO ()
-endUndoGrouping nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "endUndoGrouping") retVoid []
+endUndoGrouping nsUndoManager =
+  sendMessage nsUndoManager endUndoGroupingSelector
 
 -- | Disables the recording of undo operations, whether by ``registerUndoWithTarget:selector:object:`` or by invocation-based undo.
 --
@@ -130,8 +127,8 @@ endUndoGrouping nsUndoManager  =
 --
 -- ObjC selector: @- disableUndoRegistration@
 disableUndoRegistration :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO ()
-disableUndoRegistration nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "disableUndoRegistration") retVoid []
+disableUndoRegistration nsUndoManager =
+  sendMessage nsUndoManager disableUndoRegistrationSelector
 
 -- | Enables the recording of undo operations.
 --
@@ -139,8 +136,8 @@ disableUndoRegistration nsUndoManager  =
 --
 -- ObjC selector: @- enableUndoRegistration@
 enableUndoRegistration :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO ()
-enableUndoRegistration nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "enableUndoRegistration") retVoid []
+enableUndoRegistration nsUndoManager =
+  sendMessage nsUndoManager enableUndoRegistrationSelector
 
 -- | Closes the top-level undo group if necessary and invokes ``undoNestedGroup``.
 --
@@ -148,8 +145,8 @@ enableUndoRegistration nsUndoManager  =
 --
 -- ObjC selector: @- undo@
 undo :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO ()
-undo nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "undo") retVoid []
+undo nsUndoManager =
+  sendMessage nsUndoManager undoSelector
 
 -- | Performs the operations in the last group on the redo stack, if there are any, recording them on the undo stack as a single group.
 --
@@ -157,8 +154,8 @@ undo nsUndoManager  =
 --
 -- ObjC selector: @- redo@
 redo :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO ()
-redo nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "redo") retVoid []
+redo nsUndoManager =
+  sendMessage nsUndoManager redoSelector
 
 -- | Performs the undo operations in the last undo group (whether top-level or nested), recording the operations on the redo stack as a single group.
 --
@@ -166,15 +163,15 @@ redo nsUndoManager  =
 --
 -- ObjC selector: @- undoNestedGroup@
 undoNestedGroup :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO ()
-undoNestedGroup nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "undoNestedGroup") retVoid []
+undoNestedGroup nsUndoManager =
+  sendMessage nsUndoManager undoNestedGroupSelector
 
 -- | Clears the undo and redo stacks and re-enables the receiver.
 --
 -- ObjC selector: @- removeAllActions@
 removeAllActions :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO ()
-removeAllActions nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "removeAllActions") retVoid []
+removeAllActions nsUndoManager =
+  sendMessage nsUndoManager removeAllActionsSelector
 
 -- | Clears the undo and redo stacks of all operations involving the specified target as the recipient of the undo message.
 --
@@ -184,17 +181,17 @@ removeAllActions nsUndoManager  =
 --
 -- ObjC selector: @- removeAllActionsWithTarget:@
 removeAllActionsWithTarget :: IsNSUndoManager nsUndoManager => nsUndoManager -> RawId -> IO ()
-removeAllActionsWithTarget nsUndoManager  target =
-    sendMsg nsUndoManager (mkSelector "removeAllActionsWithTarget:") retVoid [argPtr (castPtr (unRawId target) :: Ptr ())]
+removeAllActionsWithTarget nsUndoManager target =
+  sendMessage nsUndoManager removeAllActionsWithTargetSelector target
 
 -- | Registers the selector of the specified target to implement a single undo operation that the target receives.
 --
 -- - Parameter target: The target of the undo operation. The undo manager maintains an unowned reference to @target@ to prevent retain cycles. - Parameter selector: The selector for the undo operation. - Parameter object: The argument sent with the selector. The undo manager maintains a strong reference to @object@
 --
 -- ObjC selector: @- registerUndoWithTarget:selector:object:@
-registerUndoWithTarget_selector_object :: IsNSUndoManager nsUndoManager => nsUndoManager -> RawId -> Selector -> RawId -> IO ()
-registerUndoWithTarget_selector_object nsUndoManager  target selector object =
-    sendMsg nsUndoManager (mkSelector "registerUndoWithTarget:selector:object:") retVoid [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (unSelector selector), argPtr (castPtr (unRawId object) :: Ptr ())]
+registerUndoWithTarget_selector_object :: IsNSUndoManager nsUndoManager => nsUndoManager -> RawId -> Sel -> RawId -> IO ()
+registerUndoWithTarget_selector_object nsUndoManager target selector object =
+  sendMessage nsUndoManager registerUndoWithTarget_selector_objectSelector target selector object
 
 -- | Prepares the undo manager for invocation-based undo with the given target as the subject of the next undo operation.
 --
@@ -210,8 +207,8 @@ registerUndoWithTarget_selector_object nsUndoManager  target selector object =
 --
 -- ObjC selector: @- prepareWithInvocationTarget:@
 prepareWithInvocationTarget :: IsNSUndoManager nsUndoManager => nsUndoManager -> RawId -> IO RawId
-prepareWithInvocationTarget nsUndoManager  target =
-    fmap (RawId . castPtr) $ sendMsg nsUndoManager (mkSelector "prepareWithInvocationTarget:") (retPtr retVoid) [argPtr (castPtr (unRawId target) :: Ptr ())]
+prepareWithInvocationTarget nsUndoManager target =
+  sendMessage nsUndoManager prepareWithInvocationTargetSelector target
 
 -- | Records a single undo operation for a given target so that when an undo is performed, it executes the specified block.
 --
@@ -221,8 +218,8 @@ prepareWithInvocationTarget nsUndoManager  target =
 --
 -- ObjC selector: @- registerUndoWithTarget:handler:@
 registerUndoWithTarget_handler :: IsNSUndoManager nsUndoManager => nsUndoManager -> RawId -> Ptr () -> IO ()
-registerUndoWithTarget_handler nsUndoManager  target undoHandler =
-    sendMsg nsUndoManager (mkSelector "registerUndoWithTarget:handler:") retVoid [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr undoHandler :: Ptr ())]
+registerUndoWithTarget_handler nsUndoManager target undoHandler =
+  sendMessage nsUndoManager registerUndoWithTarget_handlerSelector target undoHandler
 
 -- | Sets whether the next undo or redo action is discardable.
 --
@@ -232,8 +229,8 @@ registerUndoWithTarget_handler nsUndoManager  target undoHandler =
 --
 -- ObjC selector: @- setActionIsDiscardable:@
 setActionIsDiscardable :: IsNSUndoManager nsUndoManager => nsUndoManager -> Bool -> IO ()
-setActionIsDiscardable nsUndoManager  discardable =
-    sendMsg nsUndoManager (mkSelector "setActionIsDiscardable:") retVoid [argCULong (if discardable then 1 else 0)]
+setActionIsDiscardable nsUndoManager discardable =
+  sendMessage nsUndoManager setActionIsDiscardableSelector discardable
 
 -- | Sets the name of the action associated with the Undo or Redo command.
 --
@@ -243,9 +240,8 @@ setActionIsDiscardable nsUndoManager  discardable =
 --
 -- ObjC selector: @- setActionName:@
 setActionName :: (IsNSUndoManager nsUndoManager, IsNSString actionName) => nsUndoManager -> actionName -> IO ()
-setActionName nsUndoManager  actionName =
-  withObjCPtr actionName $ \raw_actionName ->
-      sendMsg nsUndoManager (mkSelector "setActionName:") retVoid [argPtr (castPtr raw_actionName :: Ptr ())]
+setActionName nsUndoManager actionName =
+  sendMessage nsUndoManager setActionNameSelector (toNSString actionName)
 
 -- | Get a value from the undo action's user info
 --
@@ -253,9 +249,8 @@ setActionName nsUndoManager  actionName =
 --
 -- ObjC selector: @- undoActionUserInfoValueForKey:@
 undoActionUserInfoValueForKey :: (IsNSUndoManager nsUndoManager, IsNSString key) => nsUndoManager -> key -> IO RawId
-undoActionUserInfoValueForKey nsUndoManager  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsUndoManager (mkSelector "undoActionUserInfoValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+undoActionUserInfoValueForKey nsUndoManager key =
+  sendMessage nsUndoManager undoActionUserInfoValueForKeySelector (toNSString key)
 
 -- | Get a value from the redo action's user info
 --
@@ -263,17 +258,15 @@ undoActionUserInfoValueForKey nsUndoManager  key =
 --
 -- ObjC selector: @- redoActionUserInfoValueForKey:@
 redoActionUserInfoValueForKey :: (IsNSUndoManager nsUndoManager, IsNSString key) => nsUndoManager -> key -> IO RawId
-redoActionUserInfoValueForKey nsUndoManager  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsUndoManager (mkSelector "redoActionUserInfoValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+redoActionUserInfoValueForKey nsUndoManager key =
+  sendMessage nsUndoManager redoActionUserInfoValueForKeySelector (toNSString key)
 
 -- | Set user info for the Undo or Redo command. - Parameter info: Value to be saved in the user info - Parameter key: Key at which the object should be saved
 --
 -- ObjC selector: @- setActionUserInfoValue:forKey:@
 setActionUserInfoValue_forKey :: (IsNSUndoManager nsUndoManager, IsNSString key) => nsUndoManager -> RawId -> key -> IO ()
-setActionUserInfoValue_forKey nsUndoManager  info key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsUndoManager (mkSelector "setActionUserInfoValue:forKey:") retVoid [argPtr (castPtr (unRawId info) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setActionUserInfoValue_forKey nsUndoManager info key =
+  sendMessage nsUndoManager setActionUserInfoValue_forKeySelector info (toNSString key)
 
 -- | Returns the complete, localized title of the Undo menu command for the action identified by the given name.
 --
@@ -283,9 +276,8 @@ setActionUserInfoValue_forKey nsUndoManager  info key =
 --
 -- ObjC selector: @- undoMenuTitleForUndoActionName:@
 undoMenuTitleForUndoActionName :: (IsNSUndoManager nsUndoManager, IsNSString actionName) => nsUndoManager -> actionName -> IO (Id NSString)
-undoMenuTitleForUndoActionName nsUndoManager  actionName =
-  withObjCPtr actionName $ \raw_actionName ->
-      sendMsg nsUndoManager (mkSelector "undoMenuTitleForUndoActionName:") (retPtr retVoid) [argPtr (castPtr raw_actionName :: Ptr ())] >>= retainedObject . castPtr
+undoMenuTitleForUndoActionName nsUndoManager actionName =
+  sendMessage nsUndoManager undoMenuTitleForUndoActionNameSelector (toNSString actionName)
 
 -- | Returns the complete, localized title of the Redo menu command for the action identified by the given name.
 --
@@ -295,9 +287,8 @@ undoMenuTitleForUndoActionName nsUndoManager  actionName =
 --
 -- ObjC selector: @- redoMenuTitleForUndoActionName:@
 redoMenuTitleForUndoActionName :: (IsNSUndoManager nsUndoManager, IsNSString actionName) => nsUndoManager -> actionName -> IO (Id NSString)
-redoMenuTitleForUndoActionName nsUndoManager  actionName =
-  withObjCPtr actionName $ \raw_actionName ->
-      sendMsg nsUndoManager (mkSelector "redoMenuTitleForUndoActionName:") (retPtr retVoid) [argPtr (castPtr raw_actionName :: Ptr ())] >>= retainedObject . castPtr
+redoMenuTitleForUndoActionName nsUndoManager actionName =
+  sendMessage nsUndoManager redoMenuTitleForUndoActionNameSelector (toNSString actionName)
 
 -- | The number of nested undo groups (or redo groups, if Redo was invoked last) in the current event loop.
 --
@@ -305,15 +296,15 @@ redoMenuTitleForUndoActionName nsUndoManager  actionName =
 --
 -- ObjC selector: @- groupingLevel@
 groupingLevel :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO CLong
-groupingLevel nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "groupingLevel") retCLong []
+groupingLevel nsUndoManager =
+  sendMessage nsUndoManager groupingLevelSelector
 
 -- | Whether the recording of undo operations is enabled.
 --
 -- ObjC selector: @- undoRegistrationEnabled@
 undoRegistrationEnabled :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO Bool
-undoRegistrationEnabled nsUndoManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUndoManager (mkSelector "undoRegistrationEnabled") retCULong []
+undoRegistrationEnabled nsUndoManager =
+  sendMessage nsUndoManager undoRegistrationEnabledSelector
 
 -- | A Boolean value that indicates whether the receiver automatically creates undo groups around each pass of the run loop.
 --
@@ -321,8 +312,8 @@ undoRegistrationEnabled nsUndoManager  =
 --
 -- ObjC selector: @- groupsByEvent@
 groupsByEvent :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO Bool
-groupsByEvent nsUndoManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUndoManager (mkSelector "groupsByEvent") retCULong []
+groupsByEvent nsUndoManager =
+  sendMessage nsUndoManager groupsByEventSelector
 
 -- | A Boolean value that indicates whether the receiver automatically creates undo groups around each pass of the run loop.
 --
@@ -330,8 +321,8 @@ groupsByEvent nsUndoManager  =
 --
 -- ObjC selector: @- setGroupsByEvent:@
 setGroupsByEvent :: IsNSUndoManager nsUndoManager => nsUndoManager -> Bool -> IO ()
-setGroupsByEvent nsUndoManager  value =
-    sendMsg nsUndoManager (mkSelector "setGroupsByEvent:") retVoid [argCULong (if value then 1 else 0)]
+setGroupsByEvent nsUndoManager value =
+  sendMessage nsUndoManager setGroupsByEventSelector value
 
 -- | The maximum number of top-level undo groups the receiver holds.
 --
@@ -339,8 +330,8 @@ setGroupsByEvent nsUndoManager  value =
 --
 -- ObjC selector: @- levelsOfUndo@
 levelsOfUndo :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO CULong
-levelsOfUndo nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "levelsOfUndo") retCULong []
+levelsOfUndo nsUndoManager =
+  sendMessage nsUndoManager levelsOfUndoSelector
 
 -- | The maximum number of top-level undo groups the receiver holds.
 --
@@ -348,8 +339,8 @@ levelsOfUndo nsUndoManager  =
 --
 -- ObjC selector: @- setLevelsOfUndo:@
 setLevelsOfUndo :: IsNSUndoManager nsUndoManager => nsUndoManager -> CULong -> IO ()
-setLevelsOfUndo nsUndoManager  value =
-    sendMsg nsUndoManager (mkSelector "setLevelsOfUndo:") retVoid [argCULong value]
+setLevelsOfUndo nsUndoManager value =
+  sendMessage nsUndoManager setLevelsOfUndoSelector value
 
 -- | The modes governing the types of input handled during a cycle of the run loop.
 --
@@ -357,8 +348,8 @@ setLevelsOfUndo nsUndoManager  value =
 --
 -- ObjC selector: @- runLoopModes@
 runLoopModes :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO (Id NSArray)
-runLoopModes nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "runLoopModes") (retPtr retVoid) [] >>= retainedObject . castPtr
+runLoopModes nsUndoManager =
+  sendMessage nsUndoManager runLoopModesSelector
 
 -- | The modes governing the types of input handled during a cycle of the run loop.
 --
@@ -366,9 +357,8 @@ runLoopModes nsUndoManager  =
 --
 -- ObjC selector: @- setRunLoopModes:@
 setRunLoopModes :: (IsNSUndoManager nsUndoManager, IsNSArray value) => nsUndoManager -> value -> IO ()
-setRunLoopModes nsUndoManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsUndoManager (mkSelector "setRunLoopModes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRunLoopModes nsUndoManager value =
+  sendMessage nsUndoManager setRunLoopModesSelector (toNSArray value)
 
 -- | Whether the receiver has any actions to undo.
 --
@@ -376,8 +366,8 @@ setRunLoopModes nsUndoManager  value =
 --
 -- ObjC selector: @- canUndo@
 canUndo :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO Bool
-canUndo nsUndoManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUndoManager (mkSelector "canUndo") retCULong []
+canUndo nsUndoManager =
+  sendMessage nsUndoManager canUndoSelector
 
 -- | Whether the receiver has any actions to redo.
 --
@@ -385,36 +375,36 @@ canUndo nsUndoManager  =
 --
 -- ObjC selector: @- canRedo@
 canRedo :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO Bool
-canRedo nsUndoManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUndoManager (mkSelector "canRedo") retCULong []
+canRedo nsUndoManager =
+  sendMessage nsUndoManager canRedoSelector
 
 -- | How many times @undo@ can be invoked before there are no more actions left to be undone
 --
 -- ObjC selector: @- undoCount@
 undoCount :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO CULong
-undoCount nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "undoCount") retCULong []
+undoCount nsUndoManager =
+  sendMessage nsUndoManager undoCountSelector
 
 -- | How many times @redo@ can be invoked before there are no more actions left to be redone
 --
 -- ObjC selector: @- redoCount@
 redoCount :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO CULong
-redoCount nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "redoCount") retCULong []
+redoCount nsUndoManager =
+  sendMessage nsUndoManager redoCountSelector
 
 -- | Whether the receiver is in the process of performing its ``undo`` or ``undoNestedGroup`` method.
 --
 -- ObjC selector: @- undoing@
 undoing :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO Bool
-undoing nsUndoManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUndoManager (mkSelector "undoing") retCULong []
+undoing nsUndoManager =
+  sendMessage nsUndoManager undoingSelector
 
 -- | Whether the receiver is in the process of performing its ``redo`` method.
 --
 -- ObjC selector: @- redoing@
 redoing :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO Bool
-redoing nsUndoManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUndoManager (mkSelector "redoing") retCULong []
+redoing nsUndoManager =
+  sendMessage nsUndoManager redoingSelector
 
 -- | Whether the next undo action is discardable.
 --
@@ -422,8 +412,8 @@ redoing nsUndoManager  =
 --
 -- ObjC selector: @- undoActionIsDiscardable@
 undoActionIsDiscardable :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO Bool
-undoActionIsDiscardable nsUndoManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUndoManager (mkSelector "undoActionIsDiscardable") retCULong []
+undoActionIsDiscardable nsUndoManager =
+  sendMessage nsUndoManager undoActionIsDiscardableSelector
 
 -- | Whether the next redo action is discardable.
 --
@@ -431,8 +421,8 @@ undoActionIsDiscardable nsUndoManager  =
 --
 -- ObjC selector: @- redoActionIsDiscardable@
 redoActionIsDiscardable :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO Bool
-redoActionIsDiscardable nsUndoManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUndoManager (mkSelector "redoActionIsDiscardable") retCULong []
+redoActionIsDiscardable nsUndoManager =
+  sendMessage nsUndoManager redoActionIsDiscardableSelector
 
 -- | The name identifying the undo action.
 --
@@ -440,8 +430,8 @@ redoActionIsDiscardable nsUndoManager  =
 --
 -- ObjC selector: @- undoActionName@
 undoActionName :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO (Id NSString)
-undoActionName nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "undoActionName") (retPtr retVoid) [] >>= retainedObject . castPtr
+undoActionName nsUndoManager =
+  sendMessage nsUndoManager undoActionNameSelector
 
 -- | The name identifying the redo action.
 --
@@ -449,8 +439,8 @@ undoActionName nsUndoManager  =
 --
 -- ObjC selector: @- redoActionName@
 redoActionName :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO (Id NSString)
-redoActionName nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "redoActionName") (retPtr retVoid) [] >>= retainedObject . castPtr
+redoActionName nsUndoManager =
+  sendMessage nsUndoManager redoActionNameSelector
 
 -- | The complete title of the Undo menu command, for example, “Undo Paste.”
 --
@@ -458,8 +448,8 @@ redoActionName nsUndoManager  =
 --
 -- ObjC selector: @- undoMenuItemTitle@
 undoMenuItemTitle :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO (Id NSString)
-undoMenuItemTitle nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "undoMenuItemTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+undoMenuItemTitle nsUndoManager =
+  sendMessage nsUndoManager undoMenuItemTitleSelector
 
 -- | The complete title of the Redo menu command, for example, “Redo Paste.”
 --
@@ -467,166 +457,166 @@ undoMenuItemTitle nsUndoManager  =
 --
 -- ObjC selector: @- redoMenuItemTitle@
 redoMenuItemTitle :: IsNSUndoManager nsUndoManager => nsUndoManager -> IO (Id NSString)
-redoMenuItemTitle nsUndoManager  =
-    sendMsg nsUndoManager (mkSelector "redoMenuItemTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+redoMenuItemTitle nsUndoManager =
+  sendMessage nsUndoManager redoMenuItemTitleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @beginUndoGrouping@
-beginUndoGroupingSelector :: Selector
+beginUndoGroupingSelector :: Selector '[] ()
 beginUndoGroupingSelector = mkSelector "beginUndoGrouping"
 
 -- | @Selector@ for @endUndoGrouping@
-endUndoGroupingSelector :: Selector
+endUndoGroupingSelector :: Selector '[] ()
 endUndoGroupingSelector = mkSelector "endUndoGrouping"
 
 -- | @Selector@ for @disableUndoRegistration@
-disableUndoRegistrationSelector :: Selector
+disableUndoRegistrationSelector :: Selector '[] ()
 disableUndoRegistrationSelector = mkSelector "disableUndoRegistration"
 
 -- | @Selector@ for @enableUndoRegistration@
-enableUndoRegistrationSelector :: Selector
+enableUndoRegistrationSelector :: Selector '[] ()
 enableUndoRegistrationSelector = mkSelector "enableUndoRegistration"
 
 -- | @Selector@ for @undo@
-undoSelector :: Selector
+undoSelector :: Selector '[] ()
 undoSelector = mkSelector "undo"
 
 -- | @Selector@ for @redo@
-redoSelector :: Selector
+redoSelector :: Selector '[] ()
 redoSelector = mkSelector "redo"
 
 -- | @Selector@ for @undoNestedGroup@
-undoNestedGroupSelector :: Selector
+undoNestedGroupSelector :: Selector '[] ()
 undoNestedGroupSelector = mkSelector "undoNestedGroup"
 
 -- | @Selector@ for @removeAllActions@
-removeAllActionsSelector :: Selector
+removeAllActionsSelector :: Selector '[] ()
 removeAllActionsSelector = mkSelector "removeAllActions"
 
 -- | @Selector@ for @removeAllActionsWithTarget:@
-removeAllActionsWithTargetSelector :: Selector
+removeAllActionsWithTargetSelector :: Selector '[RawId] ()
 removeAllActionsWithTargetSelector = mkSelector "removeAllActionsWithTarget:"
 
 -- | @Selector@ for @registerUndoWithTarget:selector:object:@
-registerUndoWithTarget_selector_objectSelector :: Selector
+registerUndoWithTarget_selector_objectSelector :: Selector '[RawId, Sel, RawId] ()
 registerUndoWithTarget_selector_objectSelector = mkSelector "registerUndoWithTarget:selector:object:"
 
 -- | @Selector@ for @prepareWithInvocationTarget:@
-prepareWithInvocationTargetSelector :: Selector
+prepareWithInvocationTargetSelector :: Selector '[RawId] RawId
 prepareWithInvocationTargetSelector = mkSelector "prepareWithInvocationTarget:"
 
 -- | @Selector@ for @registerUndoWithTarget:handler:@
-registerUndoWithTarget_handlerSelector :: Selector
+registerUndoWithTarget_handlerSelector :: Selector '[RawId, Ptr ()] ()
 registerUndoWithTarget_handlerSelector = mkSelector "registerUndoWithTarget:handler:"
 
 -- | @Selector@ for @setActionIsDiscardable:@
-setActionIsDiscardableSelector :: Selector
+setActionIsDiscardableSelector :: Selector '[Bool] ()
 setActionIsDiscardableSelector = mkSelector "setActionIsDiscardable:"
 
 -- | @Selector@ for @setActionName:@
-setActionNameSelector :: Selector
+setActionNameSelector :: Selector '[Id NSString] ()
 setActionNameSelector = mkSelector "setActionName:"
 
 -- | @Selector@ for @undoActionUserInfoValueForKey:@
-undoActionUserInfoValueForKeySelector :: Selector
+undoActionUserInfoValueForKeySelector :: Selector '[Id NSString] RawId
 undoActionUserInfoValueForKeySelector = mkSelector "undoActionUserInfoValueForKey:"
 
 -- | @Selector@ for @redoActionUserInfoValueForKey:@
-redoActionUserInfoValueForKeySelector :: Selector
+redoActionUserInfoValueForKeySelector :: Selector '[Id NSString] RawId
 redoActionUserInfoValueForKeySelector = mkSelector "redoActionUserInfoValueForKey:"
 
 -- | @Selector@ for @setActionUserInfoValue:forKey:@
-setActionUserInfoValue_forKeySelector :: Selector
+setActionUserInfoValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 setActionUserInfoValue_forKeySelector = mkSelector "setActionUserInfoValue:forKey:"
 
 -- | @Selector@ for @undoMenuTitleForUndoActionName:@
-undoMenuTitleForUndoActionNameSelector :: Selector
+undoMenuTitleForUndoActionNameSelector :: Selector '[Id NSString] (Id NSString)
 undoMenuTitleForUndoActionNameSelector = mkSelector "undoMenuTitleForUndoActionName:"
 
 -- | @Selector@ for @redoMenuTitleForUndoActionName:@
-redoMenuTitleForUndoActionNameSelector :: Selector
+redoMenuTitleForUndoActionNameSelector :: Selector '[Id NSString] (Id NSString)
 redoMenuTitleForUndoActionNameSelector = mkSelector "redoMenuTitleForUndoActionName:"
 
 -- | @Selector@ for @groupingLevel@
-groupingLevelSelector :: Selector
+groupingLevelSelector :: Selector '[] CLong
 groupingLevelSelector = mkSelector "groupingLevel"
 
 -- | @Selector@ for @undoRegistrationEnabled@
-undoRegistrationEnabledSelector :: Selector
+undoRegistrationEnabledSelector :: Selector '[] Bool
 undoRegistrationEnabledSelector = mkSelector "undoRegistrationEnabled"
 
 -- | @Selector@ for @groupsByEvent@
-groupsByEventSelector :: Selector
+groupsByEventSelector :: Selector '[] Bool
 groupsByEventSelector = mkSelector "groupsByEvent"
 
 -- | @Selector@ for @setGroupsByEvent:@
-setGroupsByEventSelector :: Selector
+setGroupsByEventSelector :: Selector '[Bool] ()
 setGroupsByEventSelector = mkSelector "setGroupsByEvent:"
 
 -- | @Selector@ for @levelsOfUndo@
-levelsOfUndoSelector :: Selector
+levelsOfUndoSelector :: Selector '[] CULong
 levelsOfUndoSelector = mkSelector "levelsOfUndo"
 
 -- | @Selector@ for @setLevelsOfUndo:@
-setLevelsOfUndoSelector :: Selector
+setLevelsOfUndoSelector :: Selector '[CULong] ()
 setLevelsOfUndoSelector = mkSelector "setLevelsOfUndo:"
 
 -- | @Selector@ for @runLoopModes@
-runLoopModesSelector :: Selector
+runLoopModesSelector :: Selector '[] (Id NSArray)
 runLoopModesSelector = mkSelector "runLoopModes"
 
 -- | @Selector@ for @setRunLoopModes:@
-setRunLoopModesSelector :: Selector
+setRunLoopModesSelector :: Selector '[Id NSArray] ()
 setRunLoopModesSelector = mkSelector "setRunLoopModes:"
 
 -- | @Selector@ for @canUndo@
-canUndoSelector :: Selector
+canUndoSelector :: Selector '[] Bool
 canUndoSelector = mkSelector "canUndo"
 
 -- | @Selector@ for @canRedo@
-canRedoSelector :: Selector
+canRedoSelector :: Selector '[] Bool
 canRedoSelector = mkSelector "canRedo"
 
 -- | @Selector@ for @undoCount@
-undoCountSelector :: Selector
+undoCountSelector :: Selector '[] CULong
 undoCountSelector = mkSelector "undoCount"
 
 -- | @Selector@ for @redoCount@
-redoCountSelector :: Selector
+redoCountSelector :: Selector '[] CULong
 redoCountSelector = mkSelector "redoCount"
 
 -- | @Selector@ for @undoing@
-undoingSelector :: Selector
+undoingSelector :: Selector '[] Bool
 undoingSelector = mkSelector "undoing"
 
 -- | @Selector@ for @redoing@
-redoingSelector :: Selector
+redoingSelector :: Selector '[] Bool
 redoingSelector = mkSelector "redoing"
 
 -- | @Selector@ for @undoActionIsDiscardable@
-undoActionIsDiscardableSelector :: Selector
+undoActionIsDiscardableSelector :: Selector '[] Bool
 undoActionIsDiscardableSelector = mkSelector "undoActionIsDiscardable"
 
 -- | @Selector@ for @redoActionIsDiscardable@
-redoActionIsDiscardableSelector :: Selector
+redoActionIsDiscardableSelector :: Selector '[] Bool
 redoActionIsDiscardableSelector = mkSelector "redoActionIsDiscardable"
 
 -- | @Selector@ for @undoActionName@
-undoActionNameSelector :: Selector
+undoActionNameSelector :: Selector '[] (Id NSString)
 undoActionNameSelector = mkSelector "undoActionName"
 
 -- | @Selector@ for @redoActionName@
-redoActionNameSelector :: Selector
+redoActionNameSelector :: Selector '[] (Id NSString)
 redoActionNameSelector = mkSelector "redoActionName"
 
 -- | @Selector@ for @undoMenuItemTitle@
-undoMenuItemTitleSelector :: Selector
+undoMenuItemTitleSelector :: Selector '[] (Id NSString)
 undoMenuItemTitleSelector = mkSelector "undoMenuItemTitle"
 
 -- | @Selector@ for @redoMenuItemTitle@
-redoMenuItemTitleSelector :: Selector
+redoMenuItemTitleSelector :: Selector '[] (Id NSString)
 redoMenuItemTitleSelector = mkSelector "redoMenuItemTitle"
 

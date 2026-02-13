@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,32 +38,32 @@ module ObjC.MLCompute.MLCTrainingGraph
   , bindOptimizerData_deviceData_withTensor
   , optimizer
   , deviceMemorySize
-  , graphWithGraphObjects_lossLayer_optimizerSelector
   , addInputs_lossLabelsSelector
   , addInputs_lossLabels_lossLabelWeightsSelector
   , addOutputsSelector
-  , stopGradientForTensorsSelector
+  , allocateUserGradientForTensorSelector
+  , bindOptimizerData_deviceData_withTensorSelector
+  , compileOptimizerSelector
   , compileWithOptions_deviceSelector
   , compileWithOptions_device_inputTensors_inputTensorsDataSelector
-  , compileOptimizerSelector
-  , linkWithGraphsSelector
-  , gradientTensorForInputSelector
-  , sourceGradientTensorsForLayerSelector
-  , resultGradientTensorsForLayerSelector
-  , gradientDataForParameter_layerSelector
-  , allocateUserGradientForTensorSelector
-  , executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector
-  , executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector
+  , deviceMemorySizeSelector
   , executeForwardWithBatchSize_options_completionHandlerSelector
   , executeForwardWithBatchSize_options_outputsData_completionHandlerSelector
   , executeGradientWithBatchSize_options_completionHandlerSelector
   , executeGradientWithBatchSize_options_outputsData_completionHandlerSelector
   , executeOptimizerUpdateWithOptions_completionHandlerSelector
-  , synchronizeUpdatesSelector
-  , setTrainingTensorParametersSelector
-  , bindOptimizerData_deviceData_withTensorSelector
+  , executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector
+  , executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector
+  , gradientDataForParameter_layerSelector
+  , gradientTensorForInputSelector
+  , graphWithGraphObjects_lossLayer_optimizerSelector
+  , linkWithGraphsSelector
   , optimizerSelector
-  , deviceMemorySizeSelector
+  , resultGradientTensorsForLayerSelector
+  , setTrainingTensorParametersSelector
+  , sourceGradientTensorsForLayerSelector
+  , stopGradientForTensorsSelector
+  , synchronizeUpdatesSelector
 
   -- * Enum types
   , MLCExecutionOptions(MLCExecutionOptions)
@@ -81,15 +82,11 @@ module ObjC.MLCompute.MLCTrainingGraph
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -112,10 +109,7 @@ graphWithGraphObjects_lossLayer_optimizer :: (IsNSArray graphObjects, IsMLCLayer
 graphWithGraphObjects_lossLayer_optimizer graphObjects lossLayer optimizer =
   do
     cls' <- getRequiredClass "MLCTrainingGraph"
-    withObjCPtr graphObjects $ \raw_graphObjects ->
-      withObjCPtr lossLayer $ \raw_lossLayer ->
-        withObjCPtr optimizer $ \raw_optimizer ->
-          sendClassMsg cls' (mkSelector "graphWithGraphObjects:lossLayer:optimizer:") (retPtr retVoid) [argPtr (castPtr raw_graphObjects :: Ptr ()), argPtr (castPtr raw_lossLayer :: Ptr ()), argPtr (castPtr raw_optimizer :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' graphWithGraphObjects_lossLayer_optimizerSelector (toNSArray graphObjects) (toMLCLayer lossLayer) (toMLCOptimizer optimizer)
 
 -- | Add the list of inputs to the training graph
 --
@@ -127,10 +121,8 @@ graphWithGraphObjects_lossLayer_optimizer graphObjects lossLayer optimizer =
 --
 -- ObjC selector: @- addInputs:lossLabels:@
 addInputs_lossLabels :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSDictionary inputs, IsNSDictionary lossLabels) => mlcTrainingGraph -> inputs -> lossLabels -> IO Bool
-addInputs_lossLabels mlcTrainingGraph  inputs lossLabels =
-  withObjCPtr inputs $ \raw_inputs ->
-    withObjCPtr lossLabels $ \raw_lossLabels ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "addInputs:lossLabels:") retCULong [argPtr (castPtr raw_inputs :: Ptr ()), argPtr (castPtr raw_lossLabels :: Ptr ())]
+addInputs_lossLabels mlcTrainingGraph inputs lossLabels =
+  sendMessage mlcTrainingGraph addInputs_lossLabelsSelector (toNSDictionary inputs) (toNSDictionary lossLabels)
 
 -- | Add the list of inputs to the training graph
 --
@@ -146,11 +138,8 @@ addInputs_lossLabels mlcTrainingGraph  inputs lossLabels =
 --
 -- ObjC selector: @- addInputs:lossLabels:lossLabelWeights:@
 addInputs_lossLabels_lossLabelWeights :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSDictionary inputs, IsNSDictionary lossLabels, IsNSDictionary lossLabelWeights) => mlcTrainingGraph -> inputs -> lossLabels -> lossLabelWeights -> IO Bool
-addInputs_lossLabels_lossLabelWeights mlcTrainingGraph  inputs lossLabels lossLabelWeights =
-  withObjCPtr inputs $ \raw_inputs ->
-    withObjCPtr lossLabels $ \raw_lossLabels ->
-      withObjCPtr lossLabelWeights $ \raw_lossLabelWeights ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "addInputs:lossLabels:lossLabelWeights:") retCULong [argPtr (castPtr raw_inputs :: Ptr ()), argPtr (castPtr raw_lossLabels :: Ptr ()), argPtr (castPtr raw_lossLabelWeights :: Ptr ())]
+addInputs_lossLabels_lossLabelWeights mlcTrainingGraph inputs lossLabels lossLabelWeights =
+  sendMessage mlcTrainingGraph addInputs_lossLabels_lossLabelWeightsSelector (toNSDictionary inputs) (toNSDictionary lossLabels) (toNSDictionary lossLabelWeights)
 
 -- | Add the list of outputs to the training graph
 --
@@ -160,9 +149,8 @@ addInputs_lossLabels_lossLabelWeights mlcTrainingGraph  inputs lossLabels lossLa
 --
 -- ObjC selector: @- addOutputs:@
 addOutputs :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSDictionary outputs) => mlcTrainingGraph -> outputs -> IO Bool
-addOutputs mlcTrainingGraph  outputs =
-  withObjCPtr outputs $ \raw_outputs ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "addOutputs:") retCULong [argPtr (castPtr raw_outputs :: Ptr ())]
+addOutputs mlcTrainingGraph outputs =
+  sendMessage mlcTrainingGraph addOutputsSelector (toNSDictionary outputs)
 
 -- | Add the list of tensors whose contributions are not to be taken when computing gradients during gradient pass
 --
@@ -172,9 +160,8 @@ addOutputs mlcTrainingGraph  outputs =
 --
 -- ObjC selector: @- stopGradientForTensors:@
 stopGradientForTensors :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSArray tensors) => mlcTrainingGraph -> tensors -> IO Bool
-stopGradientForTensors mlcTrainingGraph  tensors =
-  withObjCPtr tensors $ \raw_tensors ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "stopGradientForTensors:") retCULong [argPtr (castPtr raw_tensors :: Ptr ())]
+stopGradientForTensors mlcTrainingGraph tensors =
+  sendMessage mlcTrainingGraph stopGradientForTensorsSelector (toNSArray tensors)
 
 -- | Compile the training graph for a device.
 --
@@ -186,9 +173,8 @@ stopGradientForTensors mlcTrainingGraph  tensors =
 --
 -- ObjC selector: @- compileWithOptions:device:@
 compileWithOptions_device :: (IsMLCTrainingGraph mlcTrainingGraph, IsMLCDevice device) => mlcTrainingGraph -> MLCGraphCompilationOptions -> device -> IO Bool
-compileWithOptions_device mlcTrainingGraph  options device =
-  withObjCPtr device $ \raw_device ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "compileWithOptions:device:") retCULong [argCULong (coerce options), argPtr (castPtr raw_device :: Ptr ())]
+compileWithOptions_device mlcTrainingGraph options device =
+  sendMessage mlcTrainingGraph compileWithOptions_deviceSelector options (toMLCDevice device)
 
 -- | Compile the training graph for a device.
 --
@@ -206,11 +192,8 @@ compileWithOptions_device mlcTrainingGraph  options device =
 --
 -- ObjC selector: @- compileWithOptions:device:inputTensors:inputTensorsData:@
 compileWithOptions_device_inputTensors_inputTensorsData :: (IsMLCTrainingGraph mlcTrainingGraph, IsMLCDevice device, IsNSDictionary inputTensors, IsNSDictionary inputTensorsData) => mlcTrainingGraph -> MLCGraphCompilationOptions -> device -> inputTensors -> inputTensorsData -> IO Bool
-compileWithOptions_device_inputTensors_inputTensorsData mlcTrainingGraph  options device inputTensors inputTensorsData =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr inputTensors $ \raw_inputTensors ->
-      withObjCPtr inputTensorsData $ \raw_inputTensorsData ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "compileWithOptions:device:inputTensors:inputTensorsData:") retCULong [argCULong (coerce options), argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_inputTensors :: Ptr ()), argPtr (castPtr raw_inputTensorsData :: Ptr ())]
+compileWithOptions_device_inputTensors_inputTensorsData mlcTrainingGraph options device inputTensors inputTensorsData =
+  sendMessage mlcTrainingGraph compileWithOptions_device_inputTensors_inputTensorsDataSelector options (toMLCDevice device) (toNSDictionary inputTensors) (toNSDictionary inputTensorsData)
 
 -- | Compile the optimizer to be used with a training graph.
 --
@@ -222,9 +205,8 @@ compileWithOptions_device_inputTensors_inputTensorsData mlcTrainingGraph  option
 --
 -- ObjC selector: @- compileOptimizer:@
 compileOptimizer :: (IsMLCTrainingGraph mlcTrainingGraph, IsMLCOptimizer optimizer) => mlcTrainingGraph -> optimizer -> IO Bool
-compileOptimizer mlcTrainingGraph  optimizer =
-  withObjCPtr optimizer $ \raw_optimizer ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "compileOptimizer:") retCULong [argPtr (castPtr raw_optimizer :: Ptr ())]
+compileOptimizer mlcTrainingGraph optimizer =
+  sendMessage mlcTrainingGraph compileOptimizerSelector (toMLCOptimizer optimizer)
 
 -- | Link mutiple training graphs
 --
@@ -236,9 +218,8 @@ compileOptimizer mlcTrainingGraph  optimizer =
 --
 -- ObjC selector: @- linkWithGraphs:@
 linkWithGraphs :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSArray graphs) => mlcTrainingGraph -> graphs -> IO Bool
-linkWithGraphs mlcTrainingGraph  graphs =
-  withObjCPtr graphs $ \raw_graphs ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "linkWithGraphs:") retCULong [argPtr (castPtr raw_graphs :: Ptr ())]
+linkWithGraphs mlcTrainingGraph graphs =
+  sendMessage mlcTrainingGraph linkWithGraphsSelector (toNSArray graphs)
 
 -- | Get the gradient tensor for an input tensor
 --
@@ -248,9 +229,8 @@ linkWithGraphs mlcTrainingGraph  graphs =
 --
 -- ObjC selector: @- gradientTensorForInput:@
 gradientTensorForInput :: (IsMLCTrainingGraph mlcTrainingGraph, IsMLCTensor input) => mlcTrainingGraph -> input -> IO (Id MLCTensor)
-gradientTensorForInput mlcTrainingGraph  input =
-  withObjCPtr input $ \raw_input ->
-      sendMsg mlcTrainingGraph (mkSelector "gradientTensorForInput:") (retPtr retVoid) [argPtr (castPtr raw_input :: Ptr ())] >>= retainedObject . castPtr
+gradientTensorForInput mlcTrainingGraph input =
+  sendMessage mlcTrainingGraph gradientTensorForInputSelector (toMLCTensor input)
 
 -- | Get the source gradient tensors for a layer in the training graph
 --
@@ -260,9 +240,8 @@ gradientTensorForInput mlcTrainingGraph  input =
 --
 -- ObjC selector: @- sourceGradientTensorsForLayer:@
 sourceGradientTensorsForLayer :: (IsMLCTrainingGraph mlcTrainingGraph, IsMLCLayer layer) => mlcTrainingGraph -> layer -> IO (Id NSArray)
-sourceGradientTensorsForLayer mlcTrainingGraph  layer =
-  withObjCPtr layer $ \raw_layer ->
-      sendMsg mlcTrainingGraph (mkSelector "sourceGradientTensorsForLayer:") (retPtr retVoid) [argPtr (castPtr raw_layer :: Ptr ())] >>= retainedObject . castPtr
+sourceGradientTensorsForLayer mlcTrainingGraph layer =
+  sendMessage mlcTrainingGraph sourceGradientTensorsForLayerSelector (toMLCLayer layer)
 
 -- | Get the result gradient tensors for a layer in the training graph
 --
@@ -272,9 +251,8 @@ sourceGradientTensorsForLayer mlcTrainingGraph  layer =
 --
 -- ObjC selector: @- resultGradientTensorsForLayer:@
 resultGradientTensorsForLayer :: (IsMLCTrainingGraph mlcTrainingGraph, IsMLCLayer layer) => mlcTrainingGraph -> layer -> IO (Id NSArray)
-resultGradientTensorsForLayer mlcTrainingGraph  layer =
-  withObjCPtr layer $ \raw_layer ->
-      sendMsg mlcTrainingGraph (mkSelector "resultGradientTensorsForLayer:") (retPtr retVoid) [argPtr (castPtr raw_layer :: Ptr ())] >>= retainedObject . castPtr
+resultGradientTensorsForLayer mlcTrainingGraph layer =
+  sendMessage mlcTrainingGraph resultGradientTensorsForLayerSelector (toMLCLayer layer)
 
 -- | Get the gradient data for a trainable parameter associated with a layer
 --
@@ -288,10 +266,8 @@ resultGradientTensorsForLayer mlcTrainingGraph  layer =
 --
 -- ObjC selector: @- gradientDataForParameter:layer:@
 gradientDataForParameter_layer :: (IsMLCTrainingGraph mlcTrainingGraph, IsMLCTensor parameter, IsMLCLayer layer) => mlcTrainingGraph -> parameter -> layer -> IO (Id NSData)
-gradientDataForParameter_layer mlcTrainingGraph  parameter layer =
-  withObjCPtr parameter $ \raw_parameter ->
-    withObjCPtr layer $ \raw_layer ->
-        sendMsg mlcTrainingGraph (mkSelector "gradientDataForParameter:layer:") (retPtr retVoid) [argPtr (castPtr raw_parameter :: Ptr ()), argPtr (castPtr raw_layer :: Ptr ())] >>= retainedObject . castPtr
+gradientDataForParameter_layer mlcTrainingGraph parameter layer =
+  sendMessage mlcTrainingGraph gradientDataForParameter_layerSelector (toMLCTensor parameter) (toMLCLayer layer)
 
 -- | Allocate an entry for a user specified gradient for a tensor
 --
@@ -301,9 +277,8 @@ gradientDataForParameter_layer mlcTrainingGraph  parameter layer =
 --
 -- ObjC selector: @- allocateUserGradientForTensor:@
 allocateUserGradientForTensor :: (IsMLCTrainingGraph mlcTrainingGraph, IsMLCTensor tensor) => mlcTrainingGraph -> tensor -> IO (Id MLCTensor)
-allocateUserGradientForTensor mlcTrainingGraph  tensor =
-  withObjCPtr tensor $ \raw_tensor ->
-      sendMsg mlcTrainingGraph (mkSelector "allocateUserGradientForTensor:") (retPtr retVoid) [argPtr (castPtr raw_tensor :: Ptr ())] >>= ownedObject . castPtr
+allocateUserGradientForTensor mlcTrainingGraph tensor =
+  sendOwnedMessage mlcTrainingGraph allocateUserGradientForTensorSelector (toMLCTensor tensor)
 
 -- | Execute the training graph (forward, gradient and optimizer update) with given source and label data
 --
@@ -325,11 +300,8 @@ allocateUserGradientForTensor mlcTrainingGraph  tensor =
 --
 -- ObjC selector: @- executeWithInputsData:lossLabelsData:lossLabelWeightsData:batchSize:options:completionHandler:@
 executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandler :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSDictionary inputsData, IsNSDictionary lossLabelsData, IsNSDictionary lossLabelWeightsData) => mlcTrainingGraph -> inputsData -> lossLabelsData -> lossLabelWeightsData -> CULong -> MLCExecutionOptions -> Ptr () -> IO Bool
-executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandler mlcTrainingGraph  inputsData lossLabelsData lossLabelWeightsData batchSize options completionHandler =
-  withObjCPtr inputsData $ \raw_inputsData ->
-    withObjCPtr lossLabelsData $ \raw_lossLabelsData ->
-      withObjCPtr lossLabelWeightsData $ \raw_lossLabelWeightsData ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "executeWithInputsData:lossLabelsData:lossLabelWeightsData:batchSize:options:completionHandler:") retCULong [argPtr (castPtr raw_inputsData :: Ptr ()), argPtr (castPtr raw_lossLabelsData :: Ptr ()), argPtr (castPtr raw_lossLabelWeightsData :: Ptr ()), argCULong batchSize, argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandler mlcTrainingGraph inputsData lossLabelsData lossLabelWeightsData batchSize options completionHandler =
+  sendMessage mlcTrainingGraph executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector (toNSDictionary inputsData) (toNSDictionary lossLabelsData) (toNSDictionary lossLabelWeightsData) batchSize options completionHandler
 
 -- | Execute the training graph (forward, gradient and optimizer update) with given source and label data
 --
@@ -351,12 +323,8 @@ executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_comp
 --
 -- ObjC selector: @- executeWithInputsData:lossLabelsData:lossLabelWeightsData:outputsData:batchSize:options:completionHandler:@
 executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandler :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSDictionary inputsData, IsNSDictionary lossLabelsData, IsNSDictionary lossLabelWeightsData, IsNSDictionary outputsData) => mlcTrainingGraph -> inputsData -> lossLabelsData -> lossLabelWeightsData -> outputsData -> CULong -> MLCExecutionOptions -> Ptr () -> IO Bool
-executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandler mlcTrainingGraph  inputsData lossLabelsData lossLabelWeightsData outputsData batchSize options completionHandler =
-  withObjCPtr inputsData $ \raw_inputsData ->
-    withObjCPtr lossLabelsData $ \raw_lossLabelsData ->
-      withObjCPtr lossLabelWeightsData $ \raw_lossLabelWeightsData ->
-        withObjCPtr outputsData $ \raw_outputsData ->
-            fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "executeWithInputsData:lossLabelsData:lossLabelWeightsData:outputsData:batchSize:options:completionHandler:") retCULong [argPtr (castPtr raw_inputsData :: Ptr ()), argPtr (castPtr raw_lossLabelsData :: Ptr ()), argPtr (castPtr raw_lossLabelWeightsData :: Ptr ()), argPtr (castPtr raw_outputsData :: Ptr ()), argCULong batchSize, argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandler mlcTrainingGraph inputsData lossLabelsData lossLabelWeightsData outputsData batchSize options completionHandler =
+  sendMessage mlcTrainingGraph executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector (toNSDictionary inputsData) (toNSDictionary lossLabelsData) (toNSDictionary lossLabelWeightsData) (toNSDictionary outputsData) batchSize options completionHandler
 
 -- | Execute the forward pass of the training graph
 --
@@ -370,8 +338,8 @@ executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_
 --
 -- ObjC selector: @- executeForwardWithBatchSize:options:completionHandler:@
 executeForwardWithBatchSize_options_completionHandler :: IsMLCTrainingGraph mlcTrainingGraph => mlcTrainingGraph -> CULong -> MLCExecutionOptions -> Ptr () -> IO Bool
-executeForwardWithBatchSize_options_completionHandler mlcTrainingGraph  batchSize options completionHandler =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "executeForwardWithBatchSize:options:completionHandler:") retCULong [argCULong batchSize, argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+executeForwardWithBatchSize_options_completionHandler mlcTrainingGraph batchSize options completionHandler =
+  sendMessage mlcTrainingGraph executeForwardWithBatchSize_options_completionHandlerSelector batchSize options completionHandler
 
 -- | Execute the forward pass for the training graph
 --
@@ -387,9 +355,8 @@ executeForwardWithBatchSize_options_completionHandler mlcTrainingGraph  batchSiz
 --
 -- ObjC selector: @- executeForwardWithBatchSize:options:outputsData:completionHandler:@
 executeForwardWithBatchSize_options_outputsData_completionHandler :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSDictionary outputsData) => mlcTrainingGraph -> CULong -> MLCExecutionOptions -> outputsData -> Ptr () -> IO Bool
-executeForwardWithBatchSize_options_outputsData_completionHandler mlcTrainingGraph  batchSize options outputsData completionHandler =
-  withObjCPtr outputsData $ \raw_outputsData ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "executeForwardWithBatchSize:options:outputsData:completionHandler:") retCULong [argCULong batchSize, argCULong (coerce options), argPtr (castPtr raw_outputsData :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+executeForwardWithBatchSize_options_outputsData_completionHandler mlcTrainingGraph batchSize options outputsData completionHandler =
+  sendMessage mlcTrainingGraph executeForwardWithBatchSize_options_outputsData_completionHandlerSelector batchSize options (toNSDictionary outputsData) completionHandler
 
 -- | Execute the gradient pass of the training graph
 --
@@ -403,8 +370,8 @@ executeForwardWithBatchSize_options_outputsData_completionHandler mlcTrainingGra
 --
 -- ObjC selector: @- executeGradientWithBatchSize:options:completionHandler:@
 executeGradientWithBatchSize_options_completionHandler :: IsMLCTrainingGraph mlcTrainingGraph => mlcTrainingGraph -> CULong -> MLCExecutionOptions -> Ptr () -> IO Bool
-executeGradientWithBatchSize_options_completionHandler mlcTrainingGraph  batchSize options completionHandler =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "executeGradientWithBatchSize:options:completionHandler:") retCULong [argCULong batchSize, argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+executeGradientWithBatchSize_options_completionHandler mlcTrainingGraph batchSize options completionHandler =
+  sendMessage mlcTrainingGraph executeGradientWithBatchSize_options_completionHandlerSelector batchSize options completionHandler
 
 -- | Execute the gradient pass of the training graph
 --
@@ -420,9 +387,8 @@ executeGradientWithBatchSize_options_completionHandler mlcTrainingGraph  batchSi
 --
 -- ObjC selector: @- executeGradientWithBatchSize:options:outputsData:completionHandler:@
 executeGradientWithBatchSize_options_outputsData_completionHandler :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSDictionary outputsData) => mlcTrainingGraph -> CULong -> MLCExecutionOptions -> outputsData -> Ptr () -> IO Bool
-executeGradientWithBatchSize_options_outputsData_completionHandler mlcTrainingGraph  batchSize options outputsData completionHandler =
-  withObjCPtr outputsData $ \raw_outputsData ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "executeGradientWithBatchSize:options:outputsData:completionHandler:") retCULong [argCULong batchSize, argCULong (coerce options), argPtr (castPtr raw_outputsData :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+executeGradientWithBatchSize_options_outputsData_completionHandler mlcTrainingGraph batchSize options outputsData completionHandler =
+  sendMessage mlcTrainingGraph executeGradientWithBatchSize_options_outputsData_completionHandlerSelector batchSize options (toNSDictionary outputsData) completionHandler
 
 -- | Execute the optimizer update pass of the training graph
 --
@@ -434,15 +400,15 @@ executeGradientWithBatchSize_options_outputsData_completionHandler mlcTrainingGr
 --
 -- ObjC selector: @- executeOptimizerUpdateWithOptions:completionHandler:@
 executeOptimizerUpdateWithOptions_completionHandler :: IsMLCTrainingGraph mlcTrainingGraph => mlcTrainingGraph -> MLCExecutionOptions -> Ptr () -> IO Bool
-executeOptimizerUpdateWithOptions_completionHandler mlcTrainingGraph  options completionHandler =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "executeOptimizerUpdateWithOptions:completionHandler:") retCULong [argCULong (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+executeOptimizerUpdateWithOptions_completionHandler mlcTrainingGraph options completionHandler =
+  sendMessage mlcTrainingGraph executeOptimizerUpdateWithOptions_completionHandlerSelector options completionHandler
 
 -- | Synchronize updates (weights/biases from convolution, fully connected and LSTM layers, tensor parameters)                from device memory to host memory.
 --
 -- ObjC selector: @- synchronizeUpdates@
 synchronizeUpdates :: IsMLCTrainingGraph mlcTrainingGraph => mlcTrainingGraph -> IO ()
-synchronizeUpdates mlcTrainingGraph  =
-    sendMsg mlcTrainingGraph (mkSelector "synchronizeUpdates") retVoid []
+synchronizeUpdates mlcTrainingGraph =
+  sendMessage mlcTrainingGraph synchronizeUpdatesSelector
 
 -- | Set the input tensor parameters that also will be updated by the optimizer
 --
@@ -454,9 +420,8 @@ synchronizeUpdates mlcTrainingGraph  =
 --
 -- ObjC selector: @- setTrainingTensorParameters:@
 setTrainingTensorParameters :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSArray parameters) => mlcTrainingGraph -> parameters -> IO Bool
-setTrainingTensorParameters mlcTrainingGraph  parameters =
-  withObjCPtr parameters $ \raw_parameters ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "setTrainingTensorParameters:") retCULong [argPtr (castPtr raw_parameters :: Ptr ())]
+setTrainingTensorParameters mlcTrainingGraph parameters =
+  sendMessage mlcTrainingGraph setTrainingTensorParametersSelector (toNSArray parameters)
 
 -- | Associates the given optimizer data and device data buffers with the tensor.                Returns true if the data is successfully associated with the tensor and copied to the device.
 --
@@ -472,11 +437,8 @@ setTrainingTensorParameters mlcTrainingGraph  parameters =
 --
 -- ObjC selector: @- bindOptimizerData:deviceData:withTensor:@
 bindOptimizerData_deviceData_withTensor :: (IsMLCTrainingGraph mlcTrainingGraph, IsNSArray data_, IsNSArray deviceData, IsMLCTensor tensor) => mlcTrainingGraph -> data_ -> deviceData -> tensor -> IO Bool
-bindOptimizerData_deviceData_withTensor mlcTrainingGraph  data_ deviceData tensor =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr deviceData $ \raw_deviceData ->
-      withObjCPtr tensor $ \raw_tensor ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcTrainingGraph (mkSelector "bindOptimizerData:deviceData:withTensor:") retCULong [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_deviceData :: Ptr ()), argPtr (castPtr raw_tensor :: Ptr ())]
+bindOptimizerData_deviceData_withTensor mlcTrainingGraph data_ deviceData tensor =
+  sendMessage mlcTrainingGraph bindOptimizerData_deviceData_withTensorSelector (toNSArray data_) (toNSArray deviceData) (toMLCTensor tensor)
 
 -- | optimizer
 --
@@ -484,8 +446,8 @@ bindOptimizerData_deviceData_withTensor mlcTrainingGraph  data_ deviceData tenso
 --
 -- ObjC selector: @- optimizer@
 optimizer :: IsMLCTrainingGraph mlcTrainingGraph => mlcTrainingGraph -> IO (Id MLCOptimizer)
-optimizer mlcTrainingGraph  =
-    sendMsg mlcTrainingGraph (mkSelector "optimizer") (retPtr retVoid) [] >>= retainedObject . castPtr
+optimizer mlcTrainingGraph =
+  sendMessage mlcTrainingGraph optimizerSelector
 
 -- | The device memory size used by the training graph
 --
@@ -495,114 +457,114 @@ optimizer mlcTrainingGraph  =
 --
 -- ObjC selector: @- deviceMemorySize@
 deviceMemorySize :: IsMLCTrainingGraph mlcTrainingGraph => mlcTrainingGraph -> IO CULong
-deviceMemorySize mlcTrainingGraph  =
-    sendMsg mlcTrainingGraph (mkSelector "deviceMemorySize") retCULong []
+deviceMemorySize mlcTrainingGraph =
+  sendMessage mlcTrainingGraph deviceMemorySizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @graphWithGraphObjects:lossLayer:optimizer:@
-graphWithGraphObjects_lossLayer_optimizerSelector :: Selector
+graphWithGraphObjects_lossLayer_optimizerSelector :: Selector '[Id NSArray, Id MLCLayer, Id MLCOptimizer] (Id MLCTrainingGraph)
 graphWithGraphObjects_lossLayer_optimizerSelector = mkSelector "graphWithGraphObjects:lossLayer:optimizer:"
 
 -- | @Selector@ for @addInputs:lossLabels:@
-addInputs_lossLabelsSelector :: Selector
+addInputs_lossLabelsSelector :: Selector '[Id NSDictionary, Id NSDictionary] Bool
 addInputs_lossLabelsSelector = mkSelector "addInputs:lossLabels:"
 
 -- | @Selector@ for @addInputs:lossLabels:lossLabelWeights:@
-addInputs_lossLabels_lossLabelWeightsSelector :: Selector
+addInputs_lossLabels_lossLabelWeightsSelector :: Selector '[Id NSDictionary, Id NSDictionary, Id NSDictionary] Bool
 addInputs_lossLabels_lossLabelWeightsSelector = mkSelector "addInputs:lossLabels:lossLabelWeights:"
 
 -- | @Selector@ for @addOutputs:@
-addOutputsSelector :: Selector
+addOutputsSelector :: Selector '[Id NSDictionary] Bool
 addOutputsSelector = mkSelector "addOutputs:"
 
 -- | @Selector@ for @stopGradientForTensors:@
-stopGradientForTensorsSelector :: Selector
+stopGradientForTensorsSelector :: Selector '[Id NSArray] Bool
 stopGradientForTensorsSelector = mkSelector "stopGradientForTensors:"
 
 -- | @Selector@ for @compileWithOptions:device:@
-compileWithOptions_deviceSelector :: Selector
+compileWithOptions_deviceSelector :: Selector '[MLCGraphCompilationOptions, Id MLCDevice] Bool
 compileWithOptions_deviceSelector = mkSelector "compileWithOptions:device:"
 
 -- | @Selector@ for @compileWithOptions:device:inputTensors:inputTensorsData:@
-compileWithOptions_device_inputTensors_inputTensorsDataSelector :: Selector
+compileWithOptions_device_inputTensors_inputTensorsDataSelector :: Selector '[MLCGraphCompilationOptions, Id MLCDevice, Id NSDictionary, Id NSDictionary] Bool
 compileWithOptions_device_inputTensors_inputTensorsDataSelector = mkSelector "compileWithOptions:device:inputTensors:inputTensorsData:"
 
 -- | @Selector@ for @compileOptimizer:@
-compileOptimizerSelector :: Selector
+compileOptimizerSelector :: Selector '[Id MLCOptimizer] Bool
 compileOptimizerSelector = mkSelector "compileOptimizer:"
 
 -- | @Selector@ for @linkWithGraphs:@
-linkWithGraphsSelector :: Selector
+linkWithGraphsSelector :: Selector '[Id NSArray] Bool
 linkWithGraphsSelector = mkSelector "linkWithGraphs:"
 
 -- | @Selector@ for @gradientTensorForInput:@
-gradientTensorForInputSelector :: Selector
+gradientTensorForInputSelector :: Selector '[Id MLCTensor] (Id MLCTensor)
 gradientTensorForInputSelector = mkSelector "gradientTensorForInput:"
 
 -- | @Selector@ for @sourceGradientTensorsForLayer:@
-sourceGradientTensorsForLayerSelector :: Selector
+sourceGradientTensorsForLayerSelector :: Selector '[Id MLCLayer] (Id NSArray)
 sourceGradientTensorsForLayerSelector = mkSelector "sourceGradientTensorsForLayer:"
 
 -- | @Selector@ for @resultGradientTensorsForLayer:@
-resultGradientTensorsForLayerSelector :: Selector
+resultGradientTensorsForLayerSelector :: Selector '[Id MLCLayer] (Id NSArray)
 resultGradientTensorsForLayerSelector = mkSelector "resultGradientTensorsForLayer:"
 
 -- | @Selector@ for @gradientDataForParameter:layer:@
-gradientDataForParameter_layerSelector :: Selector
+gradientDataForParameter_layerSelector :: Selector '[Id MLCTensor, Id MLCLayer] (Id NSData)
 gradientDataForParameter_layerSelector = mkSelector "gradientDataForParameter:layer:"
 
 -- | @Selector@ for @allocateUserGradientForTensor:@
-allocateUserGradientForTensorSelector :: Selector
+allocateUserGradientForTensorSelector :: Selector '[Id MLCTensor] (Id MLCTensor)
 allocateUserGradientForTensorSelector = mkSelector "allocateUserGradientForTensor:"
 
 -- | @Selector@ for @executeWithInputsData:lossLabelsData:lossLabelWeightsData:batchSize:options:completionHandler:@
-executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector :: Selector
+executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector :: Selector '[Id NSDictionary, Id NSDictionary, Id NSDictionary, CULong, MLCExecutionOptions, Ptr ()] Bool
 executeWithInputsData_lossLabelsData_lossLabelWeightsData_batchSize_options_completionHandlerSelector = mkSelector "executeWithInputsData:lossLabelsData:lossLabelWeightsData:batchSize:options:completionHandler:"
 
 -- | @Selector@ for @executeWithInputsData:lossLabelsData:lossLabelWeightsData:outputsData:batchSize:options:completionHandler:@
-executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector :: Selector
+executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector :: Selector '[Id NSDictionary, Id NSDictionary, Id NSDictionary, Id NSDictionary, CULong, MLCExecutionOptions, Ptr ()] Bool
 executeWithInputsData_lossLabelsData_lossLabelWeightsData_outputsData_batchSize_options_completionHandlerSelector = mkSelector "executeWithInputsData:lossLabelsData:lossLabelWeightsData:outputsData:batchSize:options:completionHandler:"
 
 -- | @Selector@ for @executeForwardWithBatchSize:options:completionHandler:@
-executeForwardWithBatchSize_options_completionHandlerSelector :: Selector
+executeForwardWithBatchSize_options_completionHandlerSelector :: Selector '[CULong, MLCExecutionOptions, Ptr ()] Bool
 executeForwardWithBatchSize_options_completionHandlerSelector = mkSelector "executeForwardWithBatchSize:options:completionHandler:"
 
 -- | @Selector@ for @executeForwardWithBatchSize:options:outputsData:completionHandler:@
-executeForwardWithBatchSize_options_outputsData_completionHandlerSelector :: Selector
+executeForwardWithBatchSize_options_outputsData_completionHandlerSelector :: Selector '[CULong, MLCExecutionOptions, Id NSDictionary, Ptr ()] Bool
 executeForwardWithBatchSize_options_outputsData_completionHandlerSelector = mkSelector "executeForwardWithBatchSize:options:outputsData:completionHandler:"
 
 -- | @Selector@ for @executeGradientWithBatchSize:options:completionHandler:@
-executeGradientWithBatchSize_options_completionHandlerSelector :: Selector
+executeGradientWithBatchSize_options_completionHandlerSelector :: Selector '[CULong, MLCExecutionOptions, Ptr ()] Bool
 executeGradientWithBatchSize_options_completionHandlerSelector = mkSelector "executeGradientWithBatchSize:options:completionHandler:"
 
 -- | @Selector@ for @executeGradientWithBatchSize:options:outputsData:completionHandler:@
-executeGradientWithBatchSize_options_outputsData_completionHandlerSelector :: Selector
+executeGradientWithBatchSize_options_outputsData_completionHandlerSelector :: Selector '[CULong, MLCExecutionOptions, Id NSDictionary, Ptr ()] Bool
 executeGradientWithBatchSize_options_outputsData_completionHandlerSelector = mkSelector "executeGradientWithBatchSize:options:outputsData:completionHandler:"
 
 -- | @Selector@ for @executeOptimizerUpdateWithOptions:completionHandler:@
-executeOptimizerUpdateWithOptions_completionHandlerSelector :: Selector
+executeOptimizerUpdateWithOptions_completionHandlerSelector :: Selector '[MLCExecutionOptions, Ptr ()] Bool
 executeOptimizerUpdateWithOptions_completionHandlerSelector = mkSelector "executeOptimizerUpdateWithOptions:completionHandler:"
 
 -- | @Selector@ for @synchronizeUpdates@
-synchronizeUpdatesSelector :: Selector
+synchronizeUpdatesSelector :: Selector '[] ()
 synchronizeUpdatesSelector = mkSelector "synchronizeUpdates"
 
 -- | @Selector@ for @setTrainingTensorParameters:@
-setTrainingTensorParametersSelector :: Selector
+setTrainingTensorParametersSelector :: Selector '[Id NSArray] Bool
 setTrainingTensorParametersSelector = mkSelector "setTrainingTensorParameters:"
 
 -- | @Selector@ for @bindOptimizerData:deviceData:withTensor:@
-bindOptimizerData_deviceData_withTensorSelector :: Selector
+bindOptimizerData_deviceData_withTensorSelector :: Selector '[Id NSArray, Id NSArray, Id MLCTensor] Bool
 bindOptimizerData_deviceData_withTensorSelector = mkSelector "bindOptimizerData:deviceData:withTensor:"
 
 -- | @Selector@ for @optimizer@
-optimizerSelector :: Selector
+optimizerSelector :: Selector '[] (Id MLCOptimizer)
 optimizerSelector = mkSelector "optimizer"
 
 -- | @Selector@ for @deviceMemorySize@
-deviceMemorySizeSelector :: Selector
+deviceMemorySizeSelector :: Selector '[] CULong
 deviceMemorySizeSelector = mkSelector "deviceMemorySize"
 

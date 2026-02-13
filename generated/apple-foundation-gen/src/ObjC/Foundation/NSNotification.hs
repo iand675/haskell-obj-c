@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.Foundation.NSNotification
   , name
   , object
   , userInfo
-  , initWithName_object_userInfoSelector
+  , initSelector
   , initWithCoderSelector
+  , initWithName_object_userInfoSelector
+  , nameSelector
   , notificationWithName_objectSelector
   , notificationWithName_object_userInfoSelector
-  , initSelector
-  , nameSelector
   , objectSelector
   , userInfoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,87 +41,81 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithName:object:userInfo:@
 initWithName_object_userInfo :: (IsNSNotification nsNotification, IsNSString name, IsNSDictionary userInfo) => nsNotification -> name -> RawId -> userInfo -> IO (Id NSNotification)
-initWithName_object_userInfo nsNotification  name object userInfo =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr userInfo $ \raw_userInfo ->
-        sendMsg nsNotification (mkSelector "initWithName:object:userInfo:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ())] >>= ownedObject . castPtr
+initWithName_object_userInfo nsNotification name object userInfo =
+  sendOwnedMessage nsNotification initWithName_object_userInfoSelector (toNSString name) object (toNSDictionary userInfo)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSNotification nsNotification, IsNSCoder coder) => nsNotification -> coder -> IO (Id NSNotification)
-initWithCoder nsNotification  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsNotification (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsNotification coder =
+  sendOwnedMessage nsNotification initWithCoderSelector (toNSCoder coder)
 
 -- | @+ notificationWithName:object:@
 notificationWithName_object :: IsNSString aName => aName -> RawId -> IO (Id NSNotification)
 notificationWithName_object aName anObject =
   do
     cls' <- getRequiredClass "NSNotification"
-    withObjCPtr aName $ \raw_aName ->
-      sendClassMsg cls' (mkSelector "notificationWithName:object:") (retPtr retVoid) [argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr (unRawId anObject) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' notificationWithName_objectSelector (toNSString aName) anObject
 
 -- | @+ notificationWithName:object:userInfo:@
 notificationWithName_object_userInfo :: (IsNSString aName, IsNSDictionary aUserInfo) => aName -> RawId -> aUserInfo -> IO (Id NSNotification)
 notificationWithName_object_userInfo aName anObject aUserInfo =
   do
     cls' <- getRequiredClass "NSNotification"
-    withObjCPtr aName $ \raw_aName ->
-      withObjCPtr aUserInfo $ \raw_aUserInfo ->
-        sendClassMsg cls' (mkSelector "notificationWithName:object:userInfo:") (retPtr retVoid) [argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr (unRawId anObject) :: Ptr ()), argPtr (castPtr raw_aUserInfo :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' notificationWithName_object_userInfoSelector (toNSString aName) anObject (toNSDictionary aUserInfo)
 
 -- | @- init@
 init_ :: IsNSNotification nsNotification => nsNotification -> IO (Id NSNotification)
-init_ nsNotification  =
-    sendMsg nsNotification (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsNotification =
+  sendOwnedMessage nsNotification initSelector
 
 -- | @- name@
 name :: IsNSNotification nsNotification => nsNotification -> IO (Id NSString)
-name nsNotification  =
-    sendMsg nsNotification (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsNotification =
+  sendMessage nsNotification nameSelector
 
 -- | @- object@
 object :: IsNSNotification nsNotification => nsNotification -> IO RawId
-object nsNotification  =
-    fmap (RawId . castPtr) $ sendMsg nsNotification (mkSelector "object") (retPtr retVoid) []
+object nsNotification =
+  sendMessage nsNotification objectSelector
 
 -- | @- userInfo@
 userInfo :: IsNSNotification nsNotification => nsNotification -> IO (Id NSDictionary)
-userInfo nsNotification  =
-    sendMsg nsNotification (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsNotification =
+  sendMessage nsNotification userInfoSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:object:userInfo:@
-initWithName_object_userInfoSelector :: Selector
+initWithName_object_userInfoSelector :: Selector '[Id NSString, RawId, Id NSDictionary] (Id NSNotification)
 initWithName_object_userInfoSelector = mkSelector "initWithName:object:userInfo:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSNotification)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @notificationWithName:object:@
-notificationWithName_objectSelector :: Selector
+notificationWithName_objectSelector :: Selector '[Id NSString, RawId] (Id NSNotification)
 notificationWithName_objectSelector = mkSelector "notificationWithName:object:"
 
 -- | @Selector@ for @notificationWithName:object:userInfo:@
-notificationWithName_object_userInfoSelector :: Selector
+notificationWithName_object_userInfoSelector :: Selector '[Id NSString, RawId, Id NSDictionary] (Id NSNotification)
 notificationWithName_object_userInfoSelector = mkSelector "notificationWithName:object:userInfo:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSNotification)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @object@
-objectSelector :: Selector
+objectSelector :: Selector '[] RawId
 objectSelector = mkSelector "object"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 

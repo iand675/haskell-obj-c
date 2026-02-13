@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,12 +17,12 @@ module ObjC.CoreData.NSPersistentHistoryChange
   , tombstone
   , transaction
   , updatedProperties
-  , entityDescriptionWithContextSelector
-  , entityDescriptionSelector
-  , fetchRequestSelector
   , changeIDSelector
-  , changedObjectIDSelector
   , changeTypeSelector
+  , changedObjectIDSelector
+  , entityDescriptionSelector
+  , entityDescriptionWithContextSelector
+  , fetchRequestSelector
   , tombstoneSelector
   , transactionSelector
   , updatedPropertiesSelector
@@ -34,15 +35,11 @@ module ObjC.CoreData.NSPersistentHistoryChange
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,90 +52,89 @@ entityDescriptionWithContext :: IsNSManagedObjectContext context => context -> I
 entityDescriptionWithContext context =
   do
     cls' <- getRequiredClass "NSPersistentHistoryChange"
-    withObjCPtr context $ \raw_context ->
-      sendClassMsg cls' (mkSelector "entityDescriptionWithContext:") (retPtr retVoid) [argPtr (castPtr raw_context :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' entityDescriptionWithContextSelector (toNSManagedObjectContext context)
 
 -- | @+ entityDescription@
 entityDescription :: IO (Id NSEntityDescription)
 entityDescription  =
   do
     cls' <- getRequiredClass "NSPersistentHistoryChange"
-    sendClassMsg cls' (mkSelector "entityDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' entityDescriptionSelector
 
 -- | @+ fetchRequest@
 fetchRequest :: IO (Id NSFetchRequest)
 fetchRequest  =
   do
     cls' <- getRequiredClass "NSPersistentHistoryChange"
-    sendClassMsg cls' (mkSelector "fetchRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchRequestSelector
 
 -- | @- changeID@
 changeID :: IsNSPersistentHistoryChange nsPersistentHistoryChange => nsPersistentHistoryChange -> IO CLong
-changeID nsPersistentHistoryChange  =
-    sendMsg nsPersistentHistoryChange (mkSelector "changeID") retCLong []
+changeID nsPersistentHistoryChange =
+  sendMessage nsPersistentHistoryChange changeIDSelector
 
 -- | @- changedObjectID@
 changedObjectID :: IsNSPersistentHistoryChange nsPersistentHistoryChange => nsPersistentHistoryChange -> IO (Id NSManagedObjectID)
-changedObjectID nsPersistentHistoryChange  =
-    sendMsg nsPersistentHistoryChange (mkSelector "changedObjectID") (retPtr retVoid) [] >>= retainedObject . castPtr
+changedObjectID nsPersistentHistoryChange =
+  sendMessage nsPersistentHistoryChange changedObjectIDSelector
 
 -- | @- changeType@
 changeType :: IsNSPersistentHistoryChange nsPersistentHistoryChange => nsPersistentHistoryChange -> IO NSPersistentHistoryChangeType
-changeType nsPersistentHistoryChange  =
-    fmap (coerce :: CLong -> NSPersistentHistoryChangeType) $ sendMsg nsPersistentHistoryChange (mkSelector "changeType") retCLong []
+changeType nsPersistentHistoryChange =
+  sendMessage nsPersistentHistoryChange changeTypeSelector
 
 -- | @- tombstone@
 tombstone :: IsNSPersistentHistoryChange nsPersistentHistoryChange => nsPersistentHistoryChange -> IO (Id NSDictionary)
-tombstone nsPersistentHistoryChange  =
-    sendMsg nsPersistentHistoryChange (mkSelector "tombstone") (retPtr retVoid) [] >>= retainedObject . castPtr
+tombstone nsPersistentHistoryChange =
+  sendMessage nsPersistentHistoryChange tombstoneSelector
 
 -- | @- transaction@
 transaction :: IsNSPersistentHistoryChange nsPersistentHistoryChange => nsPersistentHistoryChange -> IO (Id NSPersistentHistoryTransaction)
-transaction nsPersistentHistoryChange  =
-    sendMsg nsPersistentHistoryChange (mkSelector "transaction") (retPtr retVoid) [] >>= retainedObject . castPtr
+transaction nsPersistentHistoryChange =
+  sendMessage nsPersistentHistoryChange transactionSelector
 
 -- | @- updatedProperties@
 updatedProperties :: IsNSPersistentHistoryChange nsPersistentHistoryChange => nsPersistentHistoryChange -> IO (Id NSSet)
-updatedProperties nsPersistentHistoryChange  =
-    sendMsg nsPersistentHistoryChange (mkSelector "updatedProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+updatedProperties nsPersistentHistoryChange =
+  sendMessage nsPersistentHistoryChange updatedPropertiesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @entityDescriptionWithContext:@
-entityDescriptionWithContextSelector :: Selector
+entityDescriptionWithContextSelector :: Selector '[Id NSManagedObjectContext] (Id NSEntityDescription)
 entityDescriptionWithContextSelector = mkSelector "entityDescriptionWithContext:"
 
 -- | @Selector@ for @entityDescription@
-entityDescriptionSelector :: Selector
+entityDescriptionSelector :: Selector '[] (Id NSEntityDescription)
 entityDescriptionSelector = mkSelector "entityDescription"
 
 -- | @Selector@ for @fetchRequest@
-fetchRequestSelector :: Selector
+fetchRequestSelector :: Selector '[] (Id NSFetchRequest)
 fetchRequestSelector = mkSelector "fetchRequest"
 
 -- | @Selector@ for @changeID@
-changeIDSelector :: Selector
+changeIDSelector :: Selector '[] CLong
 changeIDSelector = mkSelector "changeID"
 
 -- | @Selector@ for @changedObjectID@
-changedObjectIDSelector :: Selector
+changedObjectIDSelector :: Selector '[] (Id NSManagedObjectID)
 changedObjectIDSelector = mkSelector "changedObjectID"
 
 -- | @Selector@ for @changeType@
-changeTypeSelector :: Selector
+changeTypeSelector :: Selector '[] NSPersistentHistoryChangeType
 changeTypeSelector = mkSelector "changeType"
 
 -- | @Selector@ for @tombstone@
-tombstoneSelector :: Selector
+tombstoneSelector :: Selector '[] (Id NSDictionary)
 tombstoneSelector = mkSelector "tombstone"
 
 -- | @Selector@ for @transaction@
-transactionSelector :: Selector
+transactionSelector :: Selector '[] (Id NSPersistentHistoryTransaction)
 transactionSelector = mkSelector "transaction"
 
 -- | @Selector@ for @updatedProperties@
-updatedPropertiesSelector :: Selector
+updatedPropertiesSelector :: Selector '[] (Id NSSet)
 updatedPropertiesSelector = mkSelector "updatedProperties"
 

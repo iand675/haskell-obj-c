@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.GameController.GCRacingWheelInput
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,23 +30,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- capture@
 capture :: IsGCRacingWheelInput gcRacingWheelInput => gcRacingWheelInput -> IO (Id GCRacingWheelInputState)
-capture gcRacingWheelInput  =
-    sendMsg gcRacingWheelInput (mkSelector "capture") (retPtr retVoid) [] >>= retainedObject . castPtr
+capture gcRacingWheelInput =
+  sendMessage gcRacingWheelInput captureSelector
 
 -- | @- nextInputState@
 nextInputState :: IsGCRacingWheelInput gcRacingWheelInput => gcRacingWheelInput -> IO (Id GCRacingWheelInputState)
-nextInputState gcRacingWheelInput  =
-    sendMsg gcRacingWheelInput (mkSelector "nextInputState") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextInputState gcRacingWheelInput =
+  sendMessage gcRacingWheelInput nextInputStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @capture@
-captureSelector :: Selector
+captureSelector :: Selector '[] (Id GCRacingWheelInputState)
 captureSelector = mkSelector "capture"
 
 -- | @Selector@ for @nextInputState@
-nextInputStateSelector :: Selector
+nextInputStateSelector :: Selector '[] (Id GCRacingWheelInputState)
 nextInputStateSelector = mkSelector "nextInputState"
 

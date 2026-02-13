@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.WebKit.DOMHTMLBaseElement
   , setTarget
   , hrefSelector
   , setHrefSelector
-  , targetSelector
   , setTargetSelector
+  , targetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- href@
 href :: IsDOMHTMLBaseElement domhtmlBaseElement => domhtmlBaseElement -> IO (Id NSString)
-href domhtmlBaseElement  =
-    sendMsg domhtmlBaseElement (mkSelector "href") (retPtr retVoid) [] >>= retainedObject . castPtr
+href domhtmlBaseElement =
+  sendMessage domhtmlBaseElement hrefSelector
 
 -- | @- setHref:@
 setHref :: (IsDOMHTMLBaseElement domhtmlBaseElement, IsNSString value) => domhtmlBaseElement -> value -> IO ()
-setHref domhtmlBaseElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBaseElement (mkSelector "setHref:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHref domhtmlBaseElement value =
+  sendMessage domhtmlBaseElement setHrefSelector (toNSString value)
 
 -- | @- target@
 target :: IsDOMHTMLBaseElement domhtmlBaseElement => domhtmlBaseElement -> IO (Id NSString)
-target domhtmlBaseElement  =
-    sendMsg domhtmlBaseElement (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target domhtmlBaseElement =
+  sendMessage domhtmlBaseElement targetSelector
 
 -- | @- setTarget:@
 setTarget :: (IsDOMHTMLBaseElement domhtmlBaseElement, IsNSString value) => domhtmlBaseElement -> value -> IO ()
-setTarget domhtmlBaseElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBaseElement (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTarget domhtmlBaseElement value =
+  sendMessage domhtmlBaseElement setTargetSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @href@
-hrefSelector :: Selector
+hrefSelector :: Selector '[] (Id NSString)
 hrefSelector = mkSelector "href"
 
 -- | @Selector@ for @setHref:@
-setHrefSelector :: Selector
+setHrefSelector :: Selector '[Id NSString] ()
 setHrefSelector = mkSelector "setHref:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id NSString)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id NSString] ()
 setTargetSelector = mkSelector "setTarget:"
 

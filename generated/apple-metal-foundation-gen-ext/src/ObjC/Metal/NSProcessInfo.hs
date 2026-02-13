@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Metal.NSProcessInfo
   , IsNSProcessInfo(..)
   , isDeviceCertifiedFor
   , hasPerformanceProfile
-  , isDeviceCertifiedForSelector
   , hasPerformanceProfileSelector
+  , isDeviceCertifiedForSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- isDeviceCertifiedFor:@
 isDeviceCertifiedFor :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> CLong -> IO Bool
-isDeviceCertifiedFor nsProcessInfo  performanceTier =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProcessInfo (mkSelector "isDeviceCertifiedFor:") retCULong [argCLong performanceTier]
+isDeviceCertifiedFor nsProcessInfo performanceTier =
+  sendMessage nsProcessInfo isDeviceCertifiedForSelector performanceTier
 
 -- | @- hasPerformanceProfile:@
 hasPerformanceProfile :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> CLong -> IO Bool
-hasPerformanceProfile nsProcessInfo  performanceProfile =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProcessInfo (mkSelector "hasPerformanceProfile:") retCULong [argCLong performanceProfile]
+hasPerformanceProfile nsProcessInfo performanceProfile =
+  sendMessage nsProcessInfo hasPerformanceProfileSelector performanceProfile
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isDeviceCertifiedFor:@
-isDeviceCertifiedForSelector :: Selector
+isDeviceCertifiedForSelector :: Selector '[CLong] Bool
 isDeviceCertifiedForSelector = mkSelector "isDeviceCertifiedFor:"
 
 -- | @Selector@ for @hasPerformanceProfile:@
-hasPerformanceProfileSelector :: Selector
+hasPerformanceProfileSelector :: Selector '[CLong] Bool
 hasPerformanceProfileSelector = mkSelector "hasPerformanceProfile:"
 

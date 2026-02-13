@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,37 +31,33 @@ module ObjC.NetworkExtension.NERelay
   , setIdentityData
   , identityDataPassword
   , setIdentityDataPassword
-  , httP3RelayURLSelector
-  , setHTTP3RelayURLSelector
-  , httP2RelayURLSelector
-  , setHTTP2RelayURLSelector
-  , dnsOverHTTPSURLSelector
-  , setDnsOverHTTPSURLSelector
-  , syntheticDNSAnswerIPv4PrefixSelector
-  , setSyntheticDNSAnswerIPv4PrefixSelector
-  , syntheticDNSAnswerIPv6PrefixSelector
-  , setSyntheticDNSAnswerIPv6PrefixSelector
   , additionalHTTPHeaderFieldsSelector
-  , setAdditionalHTTPHeaderFieldsSelector
-  , rawPublicKeysSelector
-  , setRawPublicKeysSelector
-  , identityDataSelector
-  , setIdentityDataSelector
+  , dnsOverHTTPSURLSelector
+  , httP2RelayURLSelector
+  , httP3RelayURLSelector
   , identityDataPasswordSelector
+  , identityDataSelector
+  , rawPublicKeysSelector
+  , setAdditionalHTTPHeaderFieldsSelector
+  , setDnsOverHTTPSURLSelector
+  , setHTTP2RelayURLSelector
+  , setHTTP3RelayURLSelector
   , setIdentityDataPasswordSelector
+  , setIdentityDataSelector
+  , setRawPublicKeysSelector
+  , setSyntheticDNSAnswerIPv4PrefixSelector
+  , setSyntheticDNSAnswerIPv6PrefixSelector
+  , syntheticDNSAnswerIPv4PrefixSelector
+  , syntheticDNSAnswerIPv6PrefixSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,8 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- HTTP3RelayURL@
 httP3RelayURL :: IsNERelay neRelay => neRelay -> IO (Id NSURL)
-httP3RelayURL neRelay  =
-    sendMsg neRelay (mkSelector "HTTP3RelayURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+httP3RelayURL neRelay =
+  sendMessage neRelay httP3RelayURLSelector
 
 -- | HTTP3RelayURL
 --
@@ -82,9 +79,8 @@ httP3RelayURL neRelay  =
 --
 -- ObjC selector: @- setHTTP3RelayURL:@
 setHTTP3RelayURL :: (IsNERelay neRelay, IsNSURL value) => neRelay -> value -> IO ()
-setHTTP3RelayURL neRelay  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelay (mkSelector "setHTTP3RelayURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHTTP3RelayURL neRelay value =
+  sendMessage neRelay setHTTP3RelayURLSelector (toNSURL value)
 
 -- | HTTP2RelayURL
 --
@@ -92,8 +88,8 @@ setHTTP3RelayURL neRelay  value =
 --
 -- ObjC selector: @- HTTP2RelayURL@
 httP2RelayURL :: IsNERelay neRelay => neRelay -> IO (Id NSURL)
-httP2RelayURL neRelay  =
-    sendMsg neRelay (mkSelector "HTTP2RelayURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+httP2RelayURL neRelay =
+  sendMessage neRelay httP2RelayURLSelector
 
 -- | HTTP2RelayURL
 --
@@ -101,9 +97,8 @@ httP2RelayURL neRelay  =
 --
 -- ObjC selector: @- setHTTP2RelayURL:@
 setHTTP2RelayURL :: (IsNERelay neRelay, IsNSURL value) => neRelay -> value -> IO ()
-setHTTP2RelayURL neRelay  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelay (mkSelector "setHTTP2RelayURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHTTP2RelayURL neRelay value =
+  sendMessage neRelay setHTTP2RelayURLSelector (toNSURL value)
 
 -- | dnsOverHTTPSURL
 --
@@ -111,8 +106,8 @@ setHTTP2RelayURL neRelay  value =
 --
 -- ObjC selector: @- dnsOverHTTPSURL@
 dnsOverHTTPSURL :: IsNERelay neRelay => neRelay -> IO (Id NSURL)
-dnsOverHTTPSURL neRelay  =
-    sendMsg neRelay (mkSelector "dnsOverHTTPSURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+dnsOverHTTPSURL neRelay =
+  sendMessage neRelay dnsOverHTTPSURLSelector
 
 -- | dnsOverHTTPSURL
 --
@@ -120,9 +115,8 @@ dnsOverHTTPSURL neRelay  =
 --
 -- ObjC selector: @- setDnsOverHTTPSURL:@
 setDnsOverHTTPSURL :: (IsNERelay neRelay, IsNSURL value) => neRelay -> value -> IO ()
-setDnsOverHTTPSURL neRelay  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelay (mkSelector "setDnsOverHTTPSURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDnsOverHTTPSURL neRelay value =
+  sendMessage neRelay setDnsOverHTTPSURLSelector (toNSURL value)
 
 -- | syntheticDNSAnswerIPv4Prefix
 --
@@ -130,8 +124,8 @@ setDnsOverHTTPSURL neRelay  value =
 --
 -- ObjC selector: @- syntheticDNSAnswerIPv4Prefix@
 syntheticDNSAnswerIPv4Prefix :: IsNERelay neRelay => neRelay -> IO (Id NSString)
-syntheticDNSAnswerIPv4Prefix neRelay  =
-    sendMsg neRelay (mkSelector "syntheticDNSAnswerIPv4Prefix") (retPtr retVoid) [] >>= retainedObject . castPtr
+syntheticDNSAnswerIPv4Prefix neRelay =
+  sendMessage neRelay syntheticDNSAnswerIPv4PrefixSelector
 
 -- | syntheticDNSAnswerIPv4Prefix
 --
@@ -139,9 +133,8 @@ syntheticDNSAnswerIPv4Prefix neRelay  =
 --
 -- ObjC selector: @- setSyntheticDNSAnswerIPv4Prefix:@
 setSyntheticDNSAnswerIPv4Prefix :: (IsNERelay neRelay, IsNSString value) => neRelay -> value -> IO ()
-setSyntheticDNSAnswerIPv4Prefix neRelay  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelay (mkSelector "setSyntheticDNSAnswerIPv4Prefix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSyntheticDNSAnswerIPv4Prefix neRelay value =
+  sendMessage neRelay setSyntheticDNSAnswerIPv4PrefixSelector (toNSString value)
 
 -- | syntheticDNSAnswerIPv6Prefix
 --
@@ -149,8 +142,8 @@ setSyntheticDNSAnswerIPv4Prefix neRelay  value =
 --
 -- ObjC selector: @- syntheticDNSAnswerIPv6Prefix@
 syntheticDNSAnswerIPv6Prefix :: IsNERelay neRelay => neRelay -> IO (Id NSString)
-syntheticDNSAnswerIPv6Prefix neRelay  =
-    sendMsg neRelay (mkSelector "syntheticDNSAnswerIPv6Prefix") (retPtr retVoid) [] >>= retainedObject . castPtr
+syntheticDNSAnswerIPv6Prefix neRelay =
+  sendMessage neRelay syntheticDNSAnswerIPv6PrefixSelector
 
 -- | syntheticDNSAnswerIPv6Prefix
 --
@@ -158,9 +151,8 @@ syntheticDNSAnswerIPv6Prefix neRelay  =
 --
 -- ObjC selector: @- setSyntheticDNSAnswerIPv6Prefix:@
 setSyntheticDNSAnswerIPv6Prefix :: (IsNERelay neRelay, IsNSString value) => neRelay -> value -> IO ()
-setSyntheticDNSAnswerIPv6Prefix neRelay  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelay (mkSelector "setSyntheticDNSAnswerIPv6Prefix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSyntheticDNSAnswerIPv6Prefix neRelay value =
+  sendMessage neRelay setSyntheticDNSAnswerIPv6PrefixSelector (toNSString value)
 
 -- | additionalHTTPHeaderFields
 --
@@ -168,8 +160,8 @@ setSyntheticDNSAnswerIPv6Prefix neRelay  value =
 --
 -- ObjC selector: @- additionalHTTPHeaderFields@
 additionalHTTPHeaderFields :: IsNERelay neRelay => neRelay -> IO (Id NSDictionary)
-additionalHTTPHeaderFields neRelay  =
-    sendMsg neRelay (mkSelector "additionalHTTPHeaderFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+additionalHTTPHeaderFields neRelay =
+  sendMessage neRelay additionalHTTPHeaderFieldsSelector
 
 -- | additionalHTTPHeaderFields
 --
@@ -177,9 +169,8 @@ additionalHTTPHeaderFields neRelay  =
 --
 -- ObjC selector: @- setAdditionalHTTPHeaderFields:@
 setAdditionalHTTPHeaderFields :: (IsNERelay neRelay, IsNSDictionary value) => neRelay -> value -> IO ()
-setAdditionalHTTPHeaderFields neRelay  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelay (mkSelector "setAdditionalHTTPHeaderFields:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdditionalHTTPHeaderFields neRelay value =
+  sendMessage neRelay setAdditionalHTTPHeaderFieldsSelector (toNSDictionary value)
 
 -- | rawPublicKeys
 --
@@ -187,8 +178,8 @@ setAdditionalHTTPHeaderFields neRelay  value =
 --
 -- ObjC selector: @- rawPublicKeys@
 rawPublicKeys :: IsNERelay neRelay => neRelay -> IO (Id NSArray)
-rawPublicKeys neRelay  =
-    sendMsg neRelay (mkSelector "rawPublicKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+rawPublicKeys neRelay =
+  sendMessage neRelay rawPublicKeysSelector
 
 -- | rawPublicKeys
 --
@@ -196,9 +187,8 @@ rawPublicKeys neRelay  =
 --
 -- ObjC selector: @- setRawPublicKeys:@
 setRawPublicKeys :: (IsNERelay neRelay, IsNSArray value) => neRelay -> value -> IO ()
-setRawPublicKeys neRelay  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelay (mkSelector "setRawPublicKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRawPublicKeys neRelay value =
+  sendMessage neRelay setRawPublicKeysSelector (toNSArray value)
 
 -- | identityData
 --
@@ -206,8 +196,8 @@ setRawPublicKeys neRelay  value =
 --
 -- ObjC selector: @- identityData@
 identityData :: IsNERelay neRelay => neRelay -> IO (Id NSData)
-identityData neRelay  =
-    sendMsg neRelay (mkSelector "identityData") (retPtr retVoid) [] >>= retainedObject . castPtr
+identityData neRelay =
+  sendMessage neRelay identityDataSelector
 
 -- | identityData
 --
@@ -215,9 +205,8 @@ identityData neRelay  =
 --
 -- ObjC selector: @- setIdentityData:@
 setIdentityData :: (IsNERelay neRelay, IsNSData value) => neRelay -> value -> IO ()
-setIdentityData neRelay  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelay (mkSelector "setIdentityData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentityData neRelay value =
+  sendMessage neRelay setIdentityDataSelector (toNSData value)
 
 -- | identityDataPassword
 --
@@ -225,8 +214,8 @@ setIdentityData neRelay  value =
 --
 -- ObjC selector: @- identityDataPassword@
 identityDataPassword :: IsNERelay neRelay => neRelay -> IO (Id NSString)
-identityDataPassword neRelay  =
-    sendMsg neRelay (mkSelector "identityDataPassword") (retPtr retVoid) [] >>= retainedObject . castPtr
+identityDataPassword neRelay =
+  sendMessage neRelay identityDataPasswordSelector
 
 -- | identityDataPassword
 --
@@ -234,83 +223,82 @@ identityDataPassword neRelay  =
 --
 -- ObjC selector: @- setIdentityDataPassword:@
 setIdentityDataPassword :: (IsNERelay neRelay, IsNSString value) => neRelay -> value -> IO ()
-setIdentityDataPassword neRelay  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelay (mkSelector "setIdentityDataPassword:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentityDataPassword neRelay value =
+  sendMessage neRelay setIdentityDataPasswordSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @HTTP3RelayURL@
-httP3RelayURLSelector :: Selector
+httP3RelayURLSelector :: Selector '[] (Id NSURL)
 httP3RelayURLSelector = mkSelector "HTTP3RelayURL"
 
 -- | @Selector@ for @setHTTP3RelayURL:@
-setHTTP3RelayURLSelector :: Selector
+setHTTP3RelayURLSelector :: Selector '[Id NSURL] ()
 setHTTP3RelayURLSelector = mkSelector "setHTTP3RelayURL:"
 
 -- | @Selector@ for @HTTP2RelayURL@
-httP2RelayURLSelector :: Selector
+httP2RelayURLSelector :: Selector '[] (Id NSURL)
 httP2RelayURLSelector = mkSelector "HTTP2RelayURL"
 
 -- | @Selector@ for @setHTTP2RelayURL:@
-setHTTP2RelayURLSelector :: Selector
+setHTTP2RelayURLSelector :: Selector '[Id NSURL] ()
 setHTTP2RelayURLSelector = mkSelector "setHTTP2RelayURL:"
 
 -- | @Selector@ for @dnsOverHTTPSURL@
-dnsOverHTTPSURLSelector :: Selector
+dnsOverHTTPSURLSelector :: Selector '[] (Id NSURL)
 dnsOverHTTPSURLSelector = mkSelector "dnsOverHTTPSURL"
 
 -- | @Selector@ for @setDnsOverHTTPSURL:@
-setDnsOverHTTPSURLSelector :: Selector
+setDnsOverHTTPSURLSelector :: Selector '[Id NSURL] ()
 setDnsOverHTTPSURLSelector = mkSelector "setDnsOverHTTPSURL:"
 
 -- | @Selector@ for @syntheticDNSAnswerIPv4Prefix@
-syntheticDNSAnswerIPv4PrefixSelector :: Selector
+syntheticDNSAnswerIPv4PrefixSelector :: Selector '[] (Id NSString)
 syntheticDNSAnswerIPv4PrefixSelector = mkSelector "syntheticDNSAnswerIPv4Prefix"
 
 -- | @Selector@ for @setSyntheticDNSAnswerIPv4Prefix:@
-setSyntheticDNSAnswerIPv4PrefixSelector :: Selector
+setSyntheticDNSAnswerIPv4PrefixSelector :: Selector '[Id NSString] ()
 setSyntheticDNSAnswerIPv4PrefixSelector = mkSelector "setSyntheticDNSAnswerIPv4Prefix:"
 
 -- | @Selector@ for @syntheticDNSAnswerIPv6Prefix@
-syntheticDNSAnswerIPv6PrefixSelector :: Selector
+syntheticDNSAnswerIPv6PrefixSelector :: Selector '[] (Id NSString)
 syntheticDNSAnswerIPv6PrefixSelector = mkSelector "syntheticDNSAnswerIPv6Prefix"
 
 -- | @Selector@ for @setSyntheticDNSAnswerIPv6Prefix:@
-setSyntheticDNSAnswerIPv6PrefixSelector :: Selector
+setSyntheticDNSAnswerIPv6PrefixSelector :: Selector '[Id NSString] ()
 setSyntheticDNSAnswerIPv6PrefixSelector = mkSelector "setSyntheticDNSAnswerIPv6Prefix:"
 
 -- | @Selector@ for @additionalHTTPHeaderFields@
-additionalHTTPHeaderFieldsSelector :: Selector
+additionalHTTPHeaderFieldsSelector :: Selector '[] (Id NSDictionary)
 additionalHTTPHeaderFieldsSelector = mkSelector "additionalHTTPHeaderFields"
 
 -- | @Selector@ for @setAdditionalHTTPHeaderFields:@
-setAdditionalHTTPHeaderFieldsSelector :: Selector
+setAdditionalHTTPHeaderFieldsSelector :: Selector '[Id NSDictionary] ()
 setAdditionalHTTPHeaderFieldsSelector = mkSelector "setAdditionalHTTPHeaderFields:"
 
 -- | @Selector@ for @rawPublicKeys@
-rawPublicKeysSelector :: Selector
+rawPublicKeysSelector :: Selector '[] (Id NSArray)
 rawPublicKeysSelector = mkSelector "rawPublicKeys"
 
 -- | @Selector@ for @setRawPublicKeys:@
-setRawPublicKeysSelector :: Selector
+setRawPublicKeysSelector :: Selector '[Id NSArray] ()
 setRawPublicKeysSelector = mkSelector "setRawPublicKeys:"
 
 -- | @Selector@ for @identityData@
-identityDataSelector :: Selector
+identityDataSelector :: Selector '[] (Id NSData)
 identityDataSelector = mkSelector "identityData"
 
 -- | @Selector@ for @setIdentityData:@
-setIdentityDataSelector :: Selector
+setIdentityDataSelector :: Selector '[Id NSData] ()
 setIdentityDataSelector = mkSelector "setIdentityData:"
 
 -- | @Selector@ for @identityDataPassword@
-identityDataPasswordSelector :: Selector
+identityDataPasswordSelector :: Selector '[] (Id NSString)
 identityDataPasswordSelector = mkSelector "identityDataPassword"
 
 -- | @Selector@ for @setIdentityDataPassword:@
-setIdentityDataPasswordSelector :: Selector
+setIdentityDataPasswordSelector :: Selector '[Id NSString] ()
 setIdentityDataPasswordSelector = mkSelector "setIdentityDataPassword:"
 

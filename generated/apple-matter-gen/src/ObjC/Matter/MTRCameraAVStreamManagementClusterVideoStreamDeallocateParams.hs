@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterVideoStreamDeallocateParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , videoStreamIDSelector
-  , setVideoStreamIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setVideoStreamIDSelector
+  , timedInvokeTimeoutMsSelector
+  , videoStreamIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- videoStreamID@
 videoStreamID :: IsMTRCameraAVStreamManagementClusterVideoStreamDeallocateParams mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams => mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams -> IO (Id NSNumber)
-videoStreamID mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams (mkSelector "videoStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoStreamID mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams videoStreamIDSelector
 
 -- | @- setVideoStreamID:@
 setVideoStreamID :: (IsMTRCameraAVStreamManagementClusterVideoStreamDeallocateParams mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams -> value -> IO ()
-setVideoStreamID mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams (mkSelector "setVideoStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoStreamID mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams setVideoStreamIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setVideoStreamID mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams  
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCameraAVStreamManagementClusterVideoStreamDeallocateParams mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams => mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamDeallocatePara
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCameraAVStreamManagementClusterVideoStreamDeallocateParams mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterVideoStreamDeallocateP
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCameraAVStreamManagementClusterVideoStreamDeallocateParams mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams => mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams  =
-    sendMsg mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamDealloc
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCameraAVStreamManagementClusterVideoStreamDeallocateParams mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams value =
+  sendMessage mtrCameraAVStreamManagementClusterVideoStreamDeallocateParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @videoStreamID@
-videoStreamIDSelector :: Selector
+videoStreamIDSelector :: Selector '[] (Id NSNumber)
 videoStreamIDSelector = mkSelector "videoStreamID"
 
 -- | @Selector@ for @setVideoStreamID:@
-setVideoStreamIDSelector :: Selector
+setVideoStreamIDSelector :: Selector '[Id NSNumber] ()
 setVideoStreamIDSelector = mkSelector "setVideoStreamID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

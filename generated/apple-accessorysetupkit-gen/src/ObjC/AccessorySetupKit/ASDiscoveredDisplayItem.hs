@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.AccessorySetupKit.ASDiscoveredDisplayItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,27 +34,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithName:productImage:accessory:@
 initWithName_productImage_accessory :: (IsASDiscoveredDisplayItem asDiscoveredDisplayItem, IsNSString name, IsASDiscoveredAccessory accessory) => asDiscoveredDisplayItem -> name -> RawId -> accessory -> IO (Id ASDiscoveredDisplayItem)
-initWithName_productImage_accessory asDiscoveredDisplayItem  name productImage accessory =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr accessory $ \raw_accessory ->
-        sendMsg asDiscoveredDisplayItem (mkSelector "initWithName:productImage:accessory:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId productImage) :: Ptr ()), argPtr (castPtr raw_accessory :: Ptr ())] >>= ownedObject . castPtr
+initWithName_productImage_accessory asDiscoveredDisplayItem name productImage accessory =
+  sendOwnedMessage asDiscoveredDisplayItem initWithName_productImage_accessorySelector (toNSString name) productImage (toASDiscoveredAccessory accessory)
 
 -- | @- initWithName:productImage:descriptor:@
 initWithName_productImage_descriptor :: (IsASDiscoveredDisplayItem asDiscoveredDisplayItem, IsNSString name, IsASDiscoveryDescriptor descriptor) => asDiscoveredDisplayItem -> name -> RawId -> descriptor -> IO (Id ASDiscoveredDisplayItem)
-initWithName_productImage_descriptor asDiscoveredDisplayItem  name productImage descriptor =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr descriptor $ \raw_descriptor ->
-        sendMsg asDiscoveredDisplayItem (mkSelector "initWithName:productImage:descriptor:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId productImage) :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithName_productImage_descriptor asDiscoveredDisplayItem name productImage descriptor =
+  sendOwnedMessage asDiscoveredDisplayItem initWithName_productImage_descriptorSelector (toNSString name) productImage (toASDiscoveryDescriptor descriptor)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:productImage:accessory:@
-initWithName_productImage_accessorySelector :: Selector
+initWithName_productImage_accessorySelector :: Selector '[Id NSString, RawId, Id ASDiscoveredAccessory] (Id ASDiscoveredDisplayItem)
 initWithName_productImage_accessorySelector = mkSelector "initWithName:productImage:accessory:"
 
 -- | @Selector@ for @initWithName:productImage:descriptor:@
-initWithName_productImage_descriptorSelector :: Selector
+initWithName_productImage_descriptorSelector :: Selector '[Id NSString, RawId, Id ASDiscoveryDescriptor] (Id ASDiscoveredDisplayItem)
 initWithName_productImage_descriptorSelector = mkSelector "initWithName:productImage:descriptor:"
 

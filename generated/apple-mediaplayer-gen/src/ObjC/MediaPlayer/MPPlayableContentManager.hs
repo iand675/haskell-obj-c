@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.MediaPlayer.MPPlayableContentManager
   , context
   , nowPlayingIdentifiers
   , setNowPlayingIdentifiers
-  , sharedContentManagerSelector
-  , reloadDataSelector
   , beginUpdatesSelector
-  , endUpdatesSelector
-  , dataSourceSelector
-  , setDataSourceSelector
-  , delegateSelector
-  , setDelegateSelector
   , contextSelector
+  , dataSourceSelector
+  , delegateSelector
+  , endUpdatesSelector
   , nowPlayingIdentifiersSelector
+  , reloadDataSelector
+  , setDataSourceSelector
+  , setDelegateSelector
   , setNowPlayingIdentifiersSelector
+  , sharedContentManagerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,114 +53,113 @@ sharedContentManager :: IO (Id MPPlayableContentManager)
 sharedContentManager  =
   do
     cls' <- getRequiredClass "MPPlayableContentManager"
-    sendClassMsg cls' (mkSelector "sharedContentManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedContentManagerSelector
 
 -- | Tells the content manager that the data source has changed and that we need to reload data from the data source.
 --
 -- ObjC selector: @- reloadData@
 reloadData :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO ()
-reloadData mpPlayableContentManager  =
-    sendMsg mpPlayableContentManager (mkSelector "reloadData") retVoid []
+reloadData mpPlayableContentManager =
+  sendMessage mpPlayableContentManager reloadDataSelector
 
 -- | Used to begin a synchronized update to multiple MPContentItems at once.
 --
 -- ObjC selector: @- beginUpdates@
 beginUpdates :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO ()
-beginUpdates mpPlayableContentManager  =
-    sendMsg mpPlayableContentManager (mkSelector "beginUpdates") retVoid []
+beginUpdates mpPlayableContentManager =
+  sendMessage mpPlayableContentManager beginUpdatesSelector
 
 -- | Ends a synchronized update.
 --
 -- ObjC selector: @- endUpdates@
 endUpdates :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO ()
-endUpdates mpPlayableContentManager  =
-    sendMsg mpPlayableContentManager (mkSelector "endUpdates") retVoid []
+endUpdates mpPlayableContentManager =
+  sendMessage mpPlayableContentManager endUpdatesSelector
 
 -- | @- dataSource@
 dataSource :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO RawId
-dataSource mpPlayableContentManager  =
-    fmap (RawId . castPtr) $ sendMsg mpPlayableContentManager (mkSelector "dataSource") (retPtr retVoid) []
+dataSource mpPlayableContentManager =
+  sendMessage mpPlayableContentManager dataSourceSelector
 
 -- | @- setDataSource:@
 setDataSource :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> RawId -> IO ()
-setDataSource mpPlayableContentManager  value =
-    sendMsg mpPlayableContentManager (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDataSource mpPlayableContentManager value =
+  sendMessage mpPlayableContentManager setDataSourceSelector value
 
 -- | @- delegate@
 delegate :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO RawId
-delegate mpPlayableContentManager  =
-    fmap (RawId . castPtr) $ sendMsg mpPlayableContentManager (mkSelector "delegate") (retPtr retVoid) []
+delegate mpPlayableContentManager =
+  sendMessage mpPlayableContentManager delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> RawId -> IO ()
-setDelegate mpPlayableContentManager  value =
-    sendMsg mpPlayableContentManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate mpPlayableContentManager value =
+  sendMessage mpPlayableContentManager setDelegateSelector value
 
 -- | @- context@
 context :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO (Id MPPlayableContentManagerContext)
-context mpPlayableContentManager  =
-    sendMsg mpPlayableContentManager (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
+context mpPlayableContentManager =
+  sendMessage mpPlayableContentManager contextSelector
 
 -- | Tells the content manager which MPContentItems are currently playing based on their identifiers.
 --
 -- ObjC selector: @- nowPlayingIdentifiers@
 nowPlayingIdentifiers :: IsMPPlayableContentManager mpPlayableContentManager => mpPlayableContentManager -> IO (Id NSArray)
-nowPlayingIdentifiers mpPlayableContentManager  =
-    sendMsg mpPlayableContentManager (mkSelector "nowPlayingIdentifiers") (retPtr retVoid) [] >>= retainedObject . castPtr
+nowPlayingIdentifiers mpPlayableContentManager =
+  sendMessage mpPlayableContentManager nowPlayingIdentifiersSelector
 
 -- | Tells the content manager which MPContentItems are currently playing based on their identifiers.
 --
 -- ObjC selector: @- setNowPlayingIdentifiers:@
 setNowPlayingIdentifiers :: (IsMPPlayableContentManager mpPlayableContentManager, IsNSArray value) => mpPlayableContentManager -> value -> IO ()
-setNowPlayingIdentifiers mpPlayableContentManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpPlayableContentManager (mkSelector "setNowPlayingIdentifiers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNowPlayingIdentifiers mpPlayableContentManager value =
+  sendMessage mpPlayableContentManager setNowPlayingIdentifiersSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedContentManager@
-sharedContentManagerSelector :: Selector
+sharedContentManagerSelector :: Selector '[] (Id MPPlayableContentManager)
 sharedContentManagerSelector = mkSelector "sharedContentManager"
 
 -- | @Selector@ for @reloadData@
-reloadDataSelector :: Selector
+reloadDataSelector :: Selector '[] ()
 reloadDataSelector = mkSelector "reloadData"
 
 -- | @Selector@ for @beginUpdates@
-beginUpdatesSelector :: Selector
+beginUpdatesSelector :: Selector '[] ()
 beginUpdatesSelector = mkSelector "beginUpdates"
 
 -- | @Selector@ for @endUpdates@
-endUpdatesSelector :: Selector
+endUpdatesSelector :: Selector '[] ()
 endUpdatesSelector = mkSelector "endUpdates"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] RawId
 dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @setDataSource:@
-setDataSourceSelector :: Selector
+setDataSourceSelector :: Selector '[RawId] ()
 setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @context@
-contextSelector :: Selector
+contextSelector :: Selector '[] (Id MPPlayableContentManagerContext)
 contextSelector = mkSelector "context"
 
 -- | @Selector@ for @nowPlayingIdentifiers@
-nowPlayingIdentifiersSelector :: Selector
+nowPlayingIdentifiersSelector :: Selector '[] (Id NSArray)
 nowPlayingIdentifiersSelector = mkSelector "nowPlayingIdentifiers"
 
 -- | @Selector@ for @setNowPlayingIdentifiers:@
-setNowPlayingIdentifiersSelector :: Selector
+setNowPlayingIdentifiersSelector :: Selector '[Id NSArray] ()
 setNowPlayingIdentifiersSelector = mkSelector "setNowPlayingIdentifiers:"
 

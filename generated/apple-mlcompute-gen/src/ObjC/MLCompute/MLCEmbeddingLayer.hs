@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MLCompute.MLCEmbeddingLayer
   , descriptor
   , weights
   , weightsParameter
-  , layerWithDescriptor_weightsSelector
   , descriptorSelector
-  , weightsSelector
+  , layerWithDescriptor_weightsSelector
   , weightsParameterSelector
+  , weightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,14 +41,12 @@ layerWithDescriptor_weights :: (IsMLCEmbeddingDescriptor descriptor, IsMLCTensor
 layerWithDescriptor_weights descriptor weights =
   do
     cls' <- getRequiredClass "MLCEmbeddingLayer"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      withObjCPtr weights $ \raw_weights ->
-        sendClassMsg cls' (mkSelector "layerWithDescriptor:weights:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptor_weightsSelector (toMLCEmbeddingDescriptor descriptor) (toMLCTensor weights)
 
 -- | @- descriptor@
 descriptor :: IsMLCEmbeddingLayer mlcEmbeddingLayer => mlcEmbeddingLayer -> IO (Id MLCEmbeddingDescriptor)
-descriptor mlcEmbeddingLayer  =
-    sendMsg mlcEmbeddingLayer (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mlcEmbeddingLayer =
+  sendMessage mlcEmbeddingLayer descriptorSelector
 
 -- | weights
 --
@@ -59,8 +54,8 @@ descriptor mlcEmbeddingLayer  =
 --
 -- ObjC selector: @- weights@
 weights :: IsMLCEmbeddingLayer mlcEmbeddingLayer => mlcEmbeddingLayer -> IO (Id MLCTensor)
-weights mlcEmbeddingLayer  =
-    sendMsg mlcEmbeddingLayer (mkSelector "weights") (retPtr retVoid) [] >>= retainedObject . castPtr
+weights mlcEmbeddingLayer =
+  sendMessage mlcEmbeddingLayer weightsSelector
 
 -- | weightsParameter
 --
@@ -68,26 +63,26 @@ weights mlcEmbeddingLayer  =
 --
 -- ObjC selector: @- weightsParameter@
 weightsParameter :: IsMLCEmbeddingLayer mlcEmbeddingLayer => mlcEmbeddingLayer -> IO (Id MLCTensorParameter)
-weightsParameter mlcEmbeddingLayer  =
-    sendMsg mlcEmbeddingLayer (mkSelector "weightsParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+weightsParameter mlcEmbeddingLayer =
+  sendMessage mlcEmbeddingLayer weightsParameterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDescriptor:weights:@
-layerWithDescriptor_weightsSelector :: Selector
+layerWithDescriptor_weightsSelector :: Selector '[Id MLCEmbeddingDescriptor, Id MLCTensor] (Id MLCEmbeddingLayer)
 layerWithDescriptor_weightsSelector = mkSelector "layerWithDescriptor:weights:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MLCEmbeddingDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @weights@
-weightsSelector :: Selector
+weightsSelector :: Selector '[] (Id MLCTensor)
 weightsSelector = mkSelector "weights"
 
 -- | @Selector@ for @weightsParameter@
-weightsParameterSelector :: Selector
+weightsParameterSelector :: Selector '[] (Id MLCTensorParameter)
 weightsParameterSelector = mkSelector "weightsParameter"
 

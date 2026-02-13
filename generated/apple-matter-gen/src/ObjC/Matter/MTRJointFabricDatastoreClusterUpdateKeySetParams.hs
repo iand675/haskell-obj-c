@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterUpdateKeySetParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , groupKeySetSelector
-  , setGroupKeySetSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setGroupKeySetSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupKeySet@
 groupKeySet :: IsMTRJointFabricDatastoreClusterUpdateKeySetParams mtrJointFabricDatastoreClusterUpdateKeySetParams => mtrJointFabricDatastoreClusterUpdateKeySetParams -> IO (Id MTRJointFabricDatastoreClusterDatastoreGroupKeySetStruct)
-groupKeySet mtrJointFabricDatastoreClusterUpdateKeySetParams  =
-    sendMsg mtrJointFabricDatastoreClusterUpdateKeySetParams (mkSelector "groupKeySet") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupKeySet mtrJointFabricDatastoreClusterUpdateKeySetParams =
+  sendMessage mtrJointFabricDatastoreClusterUpdateKeySetParams groupKeySetSelector
 
 -- | @- setGroupKeySet:@
 setGroupKeySet :: (IsMTRJointFabricDatastoreClusterUpdateKeySetParams mtrJointFabricDatastoreClusterUpdateKeySetParams, IsMTRJointFabricDatastoreClusterDatastoreGroupKeySetStruct value) => mtrJointFabricDatastoreClusterUpdateKeySetParams -> value -> IO ()
-setGroupKeySet mtrJointFabricDatastoreClusterUpdateKeySetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterUpdateKeySetParams (mkSelector "setGroupKeySet:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupKeySet mtrJointFabricDatastoreClusterUpdateKeySetParams value =
+  sendMessage mtrJointFabricDatastoreClusterUpdateKeySetParams setGroupKeySetSelector (toMTRJointFabricDatastoreClusterDatastoreGroupKeySetStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setGroupKeySet mtrJointFabricDatastoreClusterUpdateKeySetParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricDatastoreClusterUpdateKeySetParams mtrJointFabricDatastoreClusterUpdateKeySetParams => mtrJointFabricDatastoreClusterUpdateKeySetParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricDatastoreClusterUpdateKeySetParams  =
-    sendMsg mtrJointFabricDatastoreClusterUpdateKeySetParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricDatastoreClusterUpdateKeySetParams =
+  sendMessage mtrJointFabricDatastoreClusterUpdateKeySetParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrJointFabricDatastoreClusterUpdateKeySetParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricDatastoreClusterUpdateKeySetParams mtrJointFabricDatastoreClusterUpdateKeySetParams, IsNSNumber value) => mtrJointFabricDatastoreClusterUpdateKeySetParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterUpdateKeySetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterUpdateKeySetParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterUpdateKeySetParams value =
+  sendMessage mtrJointFabricDatastoreClusterUpdateKeySetParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrJointFabricDatastoreClusterUpdateKeySetParams  value 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricDatastoreClusterUpdateKeySetParams mtrJointFabricDatastoreClusterUpdateKeySetParams => mtrJointFabricDatastoreClusterUpdateKeySetParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricDatastoreClusterUpdateKeySetParams  =
-    sendMsg mtrJointFabricDatastoreClusterUpdateKeySetParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricDatastoreClusterUpdateKeySetParams =
+  sendMessage mtrJointFabricDatastoreClusterUpdateKeySetParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrJointFabricDatastoreClusterUpdateKeySetParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricDatastoreClusterUpdateKeySetParams mtrJointFabricDatastoreClusterUpdateKeySetParams, IsNSNumber value) => mtrJointFabricDatastoreClusterUpdateKeySetParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricDatastoreClusterUpdateKeySetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterUpdateKeySetParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricDatastoreClusterUpdateKeySetParams value =
+  sendMessage mtrJointFabricDatastoreClusterUpdateKeySetParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupKeySet@
-groupKeySetSelector :: Selector
+groupKeySetSelector :: Selector '[] (Id MTRJointFabricDatastoreClusterDatastoreGroupKeySetStruct)
 groupKeySetSelector = mkSelector "groupKeySet"
 
 -- | @Selector@ for @setGroupKeySet:@
-setGroupKeySetSelector :: Selector
+setGroupKeySetSelector :: Selector '[Id MTRJointFabricDatastoreClusterDatastoreGroupKeySetStruct] ()
 setGroupKeySetSelector = mkSelector "setGroupKeySet:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

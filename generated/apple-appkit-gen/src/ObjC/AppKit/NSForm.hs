@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,27 +29,27 @@ module ObjC.AppKit.NSForm
   , setTextBaseWritingDirection
   , setPreferredTextFieldWidth
   , preferredTextFieldWidth
-  , indexOfSelectedItemSelector
-  , setEntryWidthSelector
-  , setInterlineSpacingSelector
-  , setBorderedSelector
-  , setBezeledSelector
-  , setTitleAlignmentSelector
-  , setTextAlignmentSelector
-  , setTitleFontSelector
-  , setTextFontSelector
+  , addEntrySelector
   , cellAtIndexSelector
   , drawCellAtIndexSelector
-  , addEntrySelector
-  , insertEntry_atIndexSelector
-  , removeEntryAtIndexSelector
   , indexOfCellWithTagSelector
-  , selectTextAtIndexSelector
-  , setFrameSizeSelector
-  , setTitleBaseWritingDirectionSelector
-  , setTextBaseWritingDirectionSelector
-  , setPreferredTextFieldWidthSelector
+  , indexOfSelectedItemSelector
+  , insertEntry_atIndexSelector
   , preferredTextFieldWidthSelector
+  , removeEntryAtIndexSelector
+  , selectTextAtIndexSelector
+  , setBezeledSelector
+  , setBorderedSelector
+  , setEntryWidthSelector
+  , setFrameSizeSelector
+  , setInterlineSpacingSelector
+  , setPreferredTextFieldWidthSelector
+  , setTextAlignmentSelector
+  , setTextBaseWritingDirectionSelector
+  , setTextFontSelector
+  , setTitleAlignmentSelector
+  , setTitleBaseWritingDirectionSelector
+  , setTitleFontSelector
 
   -- * Enum types
   , NSTextAlignment(NSTextAlignment)
@@ -64,15 +65,11 @@ module ObjC.AppKit.NSForm
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,198 +80,194 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- indexOfSelectedItem@
 indexOfSelectedItem :: IsNSForm nsForm => nsForm -> IO CLong
-indexOfSelectedItem nsForm  =
-    sendMsg nsForm (mkSelector "indexOfSelectedItem") retCLong []
+indexOfSelectedItem nsForm =
+  sendMessage nsForm indexOfSelectedItemSelector
 
 -- | @- setEntryWidth:@
 setEntryWidth :: IsNSForm nsForm => nsForm -> CDouble -> IO ()
-setEntryWidth nsForm  width =
-    sendMsg nsForm (mkSelector "setEntryWidth:") retVoid [argCDouble width]
+setEntryWidth nsForm width =
+  sendMessage nsForm setEntryWidthSelector width
 
 -- | @- setInterlineSpacing:@
 setInterlineSpacing :: IsNSForm nsForm => nsForm -> CDouble -> IO ()
-setInterlineSpacing nsForm  spacing =
-    sendMsg nsForm (mkSelector "setInterlineSpacing:") retVoid [argCDouble spacing]
+setInterlineSpacing nsForm spacing =
+  sendMessage nsForm setInterlineSpacingSelector spacing
 
 -- | @- setBordered:@
 setBordered :: IsNSForm nsForm => nsForm -> Bool -> IO ()
-setBordered nsForm  flag =
-    sendMsg nsForm (mkSelector "setBordered:") retVoid [argCULong (if flag then 1 else 0)]
+setBordered nsForm flag =
+  sendMessage nsForm setBorderedSelector flag
 
 -- | @- setBezeled:@
 setBezeled :: IsNSForm nsForm => nsForm -> Bool -> IO ()
-setBezeled nsForm  flag =
-    sendMsg nsForm (mkSelector "setBezeled:") retVoid [argCULong (if flag then 1 else 0)]
+setBezeled nsForm flag =
+  sendMessage nsForm setBezeledSelector flag
 
 -- | @- setTitleAlignment:@
 setTitleAlignment :: IsNSForm nsForm => nsForm -> NSTextAlignment -> IO ()
-setTitleAlignment nsForm  mode =
-    sendMsg nsForm (mkSelector "setTitleAlignment:") retVoid [argCLong (coerce mode)]
+setTitleAlignment nsForm mode =
+  sendMessage nsForm setTitleAlignmentSelector mode
 
 -- | @- setTextAlignment:@
 setTextAlignment :: IsNSForm nsForm => nsForm -> NSTextAlignment -> IO ()
-setTextAlignment nsForm  mode =
-    sendMsg nsForm (mkSelector "setTextAlignment:") retVoid [argCLong (coerce mode)]
+setTextAlignment nsForm mode =
+  sendMessage nsForm setTextAlignmentSelector mode
 
 -- | @- setTitleFont:@
 setTitleFont :: (IsNSForm nsForm, IsNSFont fontObj) => nsForm -> fontObj -> IO ()
-setTitleFont nsForm  fontObj =
-  withObjCPtr fontObj $ \raw_fontObj ->
-      sendMsg nsForm (mkSelector "setTitleFont:") retVoid [argPtr (castPtr raw_fontObj :: Ptr ())]
+setTitleFont nsForm fontObj =
+  sendMessage nsForm setTitleFontSelector (toNSFont fontObj)
 
 -- | @- setTextFont:@
 setTextFont :: (IsNSForm nsForm, IsNSFont fontObj) => nsForm -> fontObj -> IO ()
-setTextFont nsForm  fontObj =
-  withObjCPtr fontObj $ \raw_fontObj ->
-      sendMsg nsForm (mkSelector "setTextFont:") retVoid [argPtr (castPtr raw_fontObj :: Ptr ())]
+setTextFont nsForm fontObj =
+  sendMessage nsForm setTextFontSelector (toNSFont fontObj)
 
 -- | @- cellAtIndex:@
 cellAtIndex :: IsNSForm nsForm => nsForm -> CLong -> IO RawId
-cellAtIndex nsForm  index =
-    fmap (RawId . castPtr) $ sendMsg nsForm (mkSelector "cellAtIndex:") (retPtr retVoid) [argCLong index]
+cellAtIndex nsForm index =
+  sendMessage nsForm cellAtIndexSelector index
 
 -- | @- drawCellAtIndex:@
 drawCellAtIndex :: IsNSForm nsForm => nsForm -> CLong -> IO ()
-drawCellAtIndex nsForm  index =
-    sendMsg nsForm (mkSelector "drawCellAtIndex:") retVoid [argCLong index]
+drawCellAtIndex nsForm index =
+  sendMessage nsForm drawCellAtIndexSelector index
 
 -- | @- addEntry:@
 addEntry :: (IsNSForm nsForm, IsNSString title) => nsForm -> title -> IO (Id NSFormCell)
-addEntry nsForm  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg nsForm (mkSelector "addEntry:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ())] >>= retainedObject . castPtr
+addEntry nsForm title =
+  sendMessage nsForm addEntrySelector (toNSString title)
 
 -- | @- insertEntry:atIndex:@
 insertEntry_atIndex :: (IsNSForm nsForm, IsNSString title) => nsForm -> title -> CLong -> IO (Id NSFormCell)
-insertEntry_atIndex nsForm  title index =
-  withObjCPtr title $ \raw_title ->
-      sendMsg nsForm (mkSelector "insertEntry:atIndex:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argCLong index] >>= retainedObject . castPtr
+insertEntry_atIndex nsForm title index =
+  sendMessage nsForm insertEntry_atIndexSelector (toNSString title) index
 
 -- | @- removeEntryAtIndex:@
 removeEntryAtIndex :: IsNSForm nsForm => nsForm -> CLong -> IO ()
-removeEntryAtIndex nsForm  index =
-    sendMsg nsForm (mkSelector "removeEntryAtIndex:") retVoid [argCLong index]
+removeEntryAtIndex nsForm index =
+  sendMessage nsForm removeEntryAtIndexSelector index
 
 -- | @- indexOfCellWithTag:@
 indexOfCellWithTag :: IsNSForm nsForm => nsForm -> CLong -> IO CLong
-indexOfCellWithTag nsForm  tag =
-    sendMsg nsForm (mkSelector "indexOfCellWithTag:") retCLong [argCLong tag]
+indexOfCellWithTag nsForm tag =
+  sendMessage nsForm indexOfCellWithTagSelector tag
 
 -- | @- selectTextAtIndex:@
 selectTextAtIndex :: IsNSForm nsForm => nsForm -> CLong -> IO ()
-selectTextAtIndex nsForm  index =
-    sendMsg nsForm (mkSelector "selectTextAtIndex:") retVoid [argCLong index]
+selectTextAtIndex nsForm index =
+  sendMessage nsForm selectTextAtIndexSelector index
 
 -- | @- setFrameSize:@
 setFrameSize :: IsNSForm nsForm => nsForm -> NSSize -> IO ()
-setFrameSize nsForm  newSize =
-    sendMsg nsForm (mkSelector "setFrameSize:") retVoid [argNSSize newSize]
+setFrameSize nsForm newSize =
+  sendMessage nsForm setFrameSizeSelector newSize
 
 -- | @- setTitleBaseWritingDirection:@
 setTitleBaseWritingDirection :: IsNSForm nsForm => nsForm -> NSWritingDirection -> IO ()
-setTitleBaseWritingDirection nsForm  writingDirection =
-    sendMsg nsForm (mkSelector "setTitleBaseWritingDirection:") retVoid [argCLong (coerce writingDirection)]
+setTitleBaseWritingDirection nsForm writingDirection =
+  sendMessage nsForm setTitleBaseWritingDirectionSelector writingDirection
 
 -- | @- setTextBaseWritingDirection:@
 setTextBaseWritingDirection :: IsNSForm nsForm => nsForm -> NSWritingDirection -> IO ()
-setTextBaseWritingDirection nsForm  writingDirection =
-    sendMsg nsForm (mkSelector "setTextBaseWritingDirection:") retVoid [argCLong (coerce writingDirection)]
+setTextBaseWritingDirection nsForm writingDirection =
+  sendMessage nsForm setTextBaseWritingDirectionSelector writingDirection
 
 -- | @- setPreferredTextFieldWidth:@
 setPreferredTextFieldWidth :: IsNSForm nsForm => nsForm -> CDouble -> IO ()
-setPreferredTextFieldWidth nsForm  preferredWidth =
-    sendMsg nsForm (mkSelector "setPreferredTextFieldWidth:") retVoid [argCDouble preferredWidth]
+setPreferredTextFieldWidth nsForm preferredWidth =
+  sendMessage nsForm setPreferredTextFieldWidthSelector preferredWidth
 
 -- | @- preferredTextFieldWidth@
 preferredTextFieldWidth :: IsNSForm nsForm => nsForm -> IO CDouble
-preferredTextFieldWidth nsForm  =
-    sendMsg nsForm (mkSelector "preferredTextFieldWidth") retCDouble []
+preferredTextFieldWidth nsForm =
+  sendMessage nsForm preferredTextFieldWidthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @indexOfSelectedItem@
-indexOfSelectedItemSelector :: Selector
+indexOfSelectedItemSelector :: Selector '[] CLong
 indexOfSelectedItemSelector = mkSelector "indexOfSelectedItem"
 
 -- | @Selector@ for @setEntryWidth:@
-setEntryWidthSelector :: Selector
+setEntryWidthSelector :: Selector '[CDouble] ()
 setEntryWidthSelector = mkSelector "setEntryWidth:"
 
 -- | @Selector@ for @setInterlineSpacing:@
-setInterlineSpacingSelector :: Selector
+setInterlineSpacingSelector :: Selector '[CDouble] ()
 setInterlineSpacingSelector = mkSelector "setInterlineSpacing:"
 
 -- | @Selector@ for @setBordered:@
-setBorderedSelector :: Selector
+setBorderedSelector :: Selector '[Bool] ()
 setBorderedSelector = mkSelector "setBordered:"
 
 -- | @Selector@ for @setBezeled:@
-setBezeledSelector :: Selector
+setBezeledSelector :: Selector '[Bool] ()
 setBezeledSelector = mkSelector "setBezeled:"
 
 -- | @Selector@ for @setTitleAlignment:@
-setTitleAlignmentSelector :: Selector
+setTitleAlignmentSelector :: Selector '[NSTextAlignment] ()
 setTitleAlignmentSelector = mkSelector "setTitleAlignment:"
 
 -- | @Selector@ for @setTextAlignment:@
-setTextAlignmentSelector :: Selector
+setTextAlignmentSelector :: Selector '[NSTextAlignment] ()
 setTextAlignmentSelector = mkSelector "setTextAlignment:"
 
 -- | @Selector@ for @setTitleFont:@
-setTitleFontSelector :: Selector
+setTitleFontSelector :: Selector '[Id NSFont] ()
 setTitleFontSelector = mkSelector "setTitleFont:"
 
 -- | @Selector@ for @setTextFont:@
-setTextFontSelector :: Selector
+setTextFontSelector :: Selector '[Id NSFont] ()
 setTextFontSelector = mkSelector "setTextFont:"
 
 -- | @Selector@ for @cellAtIndex:@
-cellAtIndexSelector :: Selector
+cellAtIndexSelector :: Selector '[CLong] RawId
 cellAtIndexSelector = mkSelector "cellAtIndex:"
 
 -- | @Selector@ for @drawCellAtIndex:@
-drawCellAtIndexSelector :: Selector
+drawCellAtIndexSelector :: Selector '[CLong] ()
 drawCellAtIndexSelector = mkSelector "drawCellAtIndex:"
 
 -- | @Selector@ for @addEntry:@
-addEntrySelector :: Selector
+addEntrySelector :: Selector '[Id NSString] (Id NSFormCell)
 addEntrySelector = mkSelector "addEntry:"
 
 -- | @Selector@ for @insertEntry:atIndex:@
-insertEntry_atIndexSelector :: Selector
+insertEntry_atIndexSelector :: Selector '[Id NSString, CLong] (Id NSFormCell)
 insertEntry_atIndexSelector = mkSelector "insertEntry:atIndex:"
 
 -- | @Selector@ for @removeEntryAtIndex:@
-removeEntryAtIndexSelector :: Selector
+removeEntryAtIndexSelector :: Selector '[CLong] ()
 removeEntryAtIndexSelector = mkSelector "removeEntryAtIndex:"
 
 -- | @Selector@ for @indexOfCellWithTag:@
-indexOfCellWithTagSelector :: Selector
+indexOfCellWithTagSelector :: Selector '[CLong] CLong
 indexOfCellWithTagSelector = mkSelector "indexOfCellWithTag:"
 
 -- | @Selector@ for @selectTextAtIndex:@
-selectTextAtIndexSelector :: Selector
+selectTextAtIndexSelector :: Selector '[CLong] ()
 selectTextAtIndexSelector = mkSelector "selectTextAtIndex:"
 
 -- | @Selector@ for @setFrameSize:@
-setFrameSizeSelector :: Selector
+setFrameSizeSelector :: Selector '[NSSize] ()
 setFrameSizeSelector = mkSelector "setFrameSize:"
 
 -- | @Selector@ for @setTitleBaseWritingDirection:@
-setTitleBaseWritingDirectionSelector :: Selector
+setTitleBaseWritingDirectionSelector :: Selector '[NSWritingDirection] ()
 setTitleBaseWritingDirectionSelector = mkSelector "setTitleBaseWritingDirection:"
 
 -- | @Selector@ for @setTextBaseWritingDirection:@
-setTextBaseWritingDirectionSelector :: Selector
+setTextBaseWritingDirectionSelector :: Selector '[NSWritingDirection] ()
 setTextBaseWritingDirectionSelector = mkSelector "setTextBaseWritingDirection:"
 
 -- | @Selector@ for @setPreferredTextFieldWidth:@
-setPreferredTextFieldWidthSelector :: Selector
+setPreferredTextFieldWidthSelector :: Selector '[CDouble] ()
 setPreferredTextFieldWidthSelector = mkSelector "setPreferredTextFieldWidth:"
 
 -- | @Selector@ for @preferredTextFieldWidth@
-preferredTextFieldWidthSelector :: Selector
+preferredTextFieldWidthSelector :: Selector '[] CDouble
 preferredTextFieldWidthSelector = mkSelector "preferredTextFieldWidth"
 

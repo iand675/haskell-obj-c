@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MLCompute.MLCPlatform
   , IsMLCPlatform(..)
   , setRNGSeedTo
   , getRNGseed
-  , setRNGSeedToSelector
   , getRNGseedSelector
+  , setRNGSeedToSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,8 +39,7 @@ setRNGSeedTo :: IsNSNumber seed => seed -> IO ()
 setRNGSeedTo seed =
   do
     cls' <- getRequiredClass "MLCPlatform"
-    withObjCPtr seed $ \raw_seed ->
-      sendClassMsg cls' (mkSelector "setRNGSeedTo:") retVoid [argPtr (castPtr raw_seed :: Ptr ())]
+    sendClassMessage cls' setRNGSeedToSelector (toNSNumber seed)
 
 -- | getRNGseed
 --
@@ -54,17 +50,17 @@ getRNGseed :: IO (Id NSNumber)
 getRNGseed  =
   do
     cls' <- getRequiredClass "MLCPlatform"
-    sendClassMsg cls' (mkSelector "getRNGseed") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' getRNGseedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setRNGSeedTo:@
-setRNGSeedToSelector :: Selector
+setRNGSeedToSelector :: Selector '[Id NSNumber] ()
 setRNGSeedToSelector = mkSelector "setRNGSeedTo:"
 
 -- | @Selector@ for @getRNGseed@
-getRNGseedSelector :: Selector
+getRNGseedSelector :: Selector '[] (Id NSNumber)
 getRNGseedSelector = mkSelector "getRNGseed"
 

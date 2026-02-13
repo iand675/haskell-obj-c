@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEv
   , setEnergyImported
   , energyExported
   , setEnergyExported
-  , energyImportedSelector
-  , setEnergyImportedSelector
   , energyExportedSelector
+  , energyImportedSelector
   , setEnergyExportedSelector
+  , setEnergyImportedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- energyImported@
 energyImported :: IsMTRElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent => mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent -> IO (Id MTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct)
-energyImported mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent  =
-    sendMsg mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent (mkSelector "energyImported") (retPtr retVoid) [] >>= retainedObject . castPtr
+energyImported mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent =
+  sendMessage mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent energyImportedSelector
 
 -- | @- setEnergyImported:@
 setEnergyImported :: (IsMTRElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent, IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct value) => mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent -> value -> IO ()
-setEnergyImported mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent (mkSelector "setEnergyImported:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEnergyImported mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent value =
+  sendMessage mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent setEnergyImportedSelector (toMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct value)
 
 -- | @- energyExported@
 energyExported :: IsMTRElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent => mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent -> IO (Id MTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct)
-energyExported mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent  =
-    sendMsg mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent (mkSelector "energyExported") (retPtr retVoid) [] >>= retainedObject . castPtr
+energyExported mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent =
+  sendMessage mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent energyExportedSelector
 
 -- | @- setEnergyExported:@
 setEnergyExported :: (IsMTRElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent, IsMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct value) => mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent -> value -> IO ()
-setEnergyExported mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent (mkSelector "setEnergyExported:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEnergyExported mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent value =
+  sendMessage mtrElectricalEnergyMeasurementClusterPeriodicEnergyMeasuredEvent setEnergyExportedSelector (toMTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @energyImported@
-energyImportedSelector :: Selector
+energyImportedSelector :: Selector '[] (Id MTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct)
 energyImportedSelector = mkSelector "energyImported"
 
 -- | @Selector@ for @setEnergyImported:@
-setEnergyImportedSelector :: Selector
+setEnergyImportedSelector :: Selector '[Id MTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct] ()
 setEnergyImportedSelector = mkSelector "setEnergyImported:"
 
 -- | @Selector@ for @energyExported@
-energyExportedSelector :: Selector
+energyExportedSelector :: Selector '[] (Id MTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct)
 energyExportedSelector = mkSelector "energyExported"
 
 -- | @Selector@ for @setEnergyExported:@
-setEnergyExportedSelector :: Selector
+setEnergyExportedSelector :: Selector '[Id MTRElectricalEnergyMeasurementClusterEnergyMeasurementStruct] ()
 setEnergyExportedSelector = mkSelector "setEnergyExported:"
 

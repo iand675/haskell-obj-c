@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.UserNotifications.UNTimeIntervalNotificationTrigger
   , triggerWithTimeInterval_repeats
   , nextTriggerDate
   , timeInterval
-  , triggerWithTimeInterval_repeatsSelector
   , nextTriggerDateSelector
   , timeIntervalSelector
+  , triggerWithTimeInterval_repeatsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,31 +33,31 @@ triggerWithTimeInterval_repeats :: CDouble -> Bool -> IO (Id UNTimeIntervalNotif
 triggerWithTimeInterval_repeats timeInterval repeats =
   do
     cls' <- getRequiredClass "UNTimeIntervalNotificationTrigger"
-    sendClassMsg cls' (mkSelector "triggerWithTimeInterval:repeats:") (retPtr retVoid) [argCDouble timeInterval, argCULong (if repeats then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' triggerWithTimeInterval_repeatsSelector timeInterval repeats
 
 -- | @- nextTriggerDate@
 nextTriggerDate :: IsUNTimeIntervalNotificationTrigger unTimeIntervalNotificationTrigger => unTimeIntervalNotificationTrigger -> IO (Id NSDate)
-nextTriggerDate unTimeIntervalNotificationTrigger  =
-    sendMsg unTimeIntervalNotificationTrigger (mkSelector "nextTriggerDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextTriggerDate unTimeIntervalNotificationTrigger =
+  sendMessage unTimeIntervalNotificationTrigger nextTriggerDateSelector
 
 -- | @- timeInterval@
 timeInterval :: IsUNTimeIntervalNotificationTrigger unTimeIntervalNotificationTrigger => unTimeIntervalNotificationTrigger -> IO CDouble
-timeInterval unTimeIntervalNotificationTrigger  =
-    sendMsg unTimeIntervalNotificationTrigger (mkSelector "timeInterval") retCDouble []
+timeInterval unTimeIntervalNotificationTrigger =
+  sendMessage unTimeIntervalNotificationTrigger timeIntervalSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @triggerWithTimeInterval:repeats:@
-triggerWithTimeInterval_repeatsSelector :: Selector
+triggerWithTimeInterval_repeatsSelector :: Selector '[CDouble, Bool] (Id UNTimeIntervalNotificationTrigger)
 triggerWithTimeInterval_repeatsSelector = mkSelector "triggerWithTimeInterval:repeats:"
 
 -- | @Selector@ for @nextTriggerDate@
-nextTriggerDateSelector :: Selector
+nextTriggerDateSelector :: Selector '[] (Id NSDate)
 nextTriggerDateSelector = mkSelector "nextTriggerDate"
 
 -- | @Selector@ for @timeInterval@
-timeIntervalSelector :: Selector
+timeIntervalSelector :: Selector '[] CDouble
 timeIntervalSelector = mkSelector "timeInterval"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Foundation.NSUnit
   , initWithSymbol
   , symbol
   , initSelector
-  , newSelector
   , initWithSymbolSelector
+  , newSelector
   , symbolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,44 +31,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSUnit nsUnit => nsUnit -> IO (Id NSUnit)
-init_ nsUnit  =
-    sendMsg nsUnit (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsUnit =
+  sendOwnedMessage nsUnit initSelector
 
 -- | @+ new@
 new :: IO (Id NSUnit)
 new  =
   do
     cls' <- getRequiredClass "NSUnit"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithSymbol:@
 initWithSymbol :: (IsNSUnit nsUnit, IsNSString symbol) => nsUnit -> symbol -> IO (Id NSUnit)
-initWithSymbol nsUnit  symbol =
-  withObjCPtr symbol $ \raw_symbol ->
-      sendMsg nsUnit (mkSelector "initWithSymbol:") (retPtr retVoid) [argPtr (castPtr raw_symbol :: Ptr ())] >>= ownedObject . castPtr
+initWithSymbol nsUnit symbol =
+  sendOwnedMessage nsUnit initWithSymbolSelector (toNSString symbol)
 
 -- | @- symbol@
 symbol :: IsNSUnit nsUnit => nsUnit -> IO (Id NSString)
-symbol nsUnit  =
-    sendMsg nsUnit (mkSelector "symbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+symbol nsUnit =
+  sendMessage nsUnit symbolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSUnit)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSUnit)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithSymbol:@
-initWithSymbolSelector :: Selector
+initWithSymbolSelector :: Selector '[Id NSString] (Id NSUnit)
 initWithSymbolSelector = mkSelector "initWithSymbol:"
 
 -- | @Selector@ for @symbol@
-symbolSelector :: Selector
+symbolSelector :: Selector '[] (Id NSString)
 symbolSelector = mkSelector "symbol"
 

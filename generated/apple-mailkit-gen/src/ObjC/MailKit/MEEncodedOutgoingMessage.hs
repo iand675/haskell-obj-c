@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.MailKit.MEEncodedOutgoingMessage
   , isSigned
   , isEncrypted
   , initWithRawData_isSigned_isEncryptedSelector
-  , rawDataSelector
-  , isSignedSelector
   , isEncryptedSelector
+  , isSignedSelector
+  , rawDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,48 +32,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRawData:isSigned:isEncrypted:@
 initWithRawData_isSigned_isEncrypted :: (IsMEEncodedOutgoingMessage meEncodedOutgoingMessage, IsNSData rawData) => meEncodedOutgoingMessage -> rawData -> Bool -> Bool -> IO (Id MEEncodedOutgoingMessage)
-initWithRawData_isSigned_isEncrypted meEncodedOutgoingMessage  rawData isSigned isEncrypted =
-  withObjCPtr rawData $ \raw_rawData ->
-      sendMsg meEncodedOutgoingMessage (mkSelector "initWithRawData:isSigned:isEncrypted:") (retPtr retVoid) [argPtr (castPtr raw_rawData :: Ptr ()), argCULong (if isSigned then 1 else 0), argCULong (if isEncrypted then 1 else 0)] >>= ownedObject . castPtr
+initWithRawData_isSigned_isEncrypted meEncodedOutgoingMessage rawData isSigned isEncrypted =
+  sendOwnedMessage meEncodedOutgoingMessage initWithRawData_isSigned_isEncryptedSelector (toNSData rawData) isSigned isEncrypted
 
 -- | The full encoded RFC822 message including headers and body.
 --
 -- ObjC selector: @- rawData@
 rawData :: IsMEEncodedOutgoingMessage meEncodedOutgoingMessage => meEncodedOutgoingMessage -> IO (Id NSData)
-rawData meEncodedOutgoingMessage  =
-    sendMsg meEncodedOutgoingMessage (mkSelector "rawData") (retPtr retVoid) [] >>= retainedObject . castPtr
+rawData meEncodedOutgoingMessage =
+  sendMessage meEncodedOutgoingMessage rawDataSelector
 
 -- | Whether or not the encoded message is signed
 --
 -- ObjC selector: @- isSigned@
 isSigned :: IsMEEncodedOutgoingMessage meEncodedOutgoingMessage => meEncodedOutgoingMessage -> IO Bool
-isSigned meEncodedOutgoingMessage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meEncodedOutgoingMessage (mkSelector "isSigned") retCULong []
+isSigned meEncodedOutgoingMessage =
+  sendMessage meEncodedOutgoingMessage isSignedSelector
 
 -- | Whether or not the encoded message is encrypted
 --
 -- ObjC selector: @- isEncrypted@
 isEncrypted :: IsMEEncodedOutgoingMessage meEncodedOutgoingMessage => meEncodedOutgoingMessage -> IO Bool
-isEncrypted meEncodedOutgoingMessage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg meEncodedOutgoingMessage (mkSelector "isEncrypted") retCULong []
+isEncrypted meEncodedOutgoingMessage =
+  sendMessage meEncodedOutgoingMessage isEncryptedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRawData:isSigned:isEncrypted:@
-initWithRawData_isSigned_isEncryptedSelector :: Selector
+initWithRawData_isSigned_isEncryptedSelector :: Selector '[Id NSData, Bool, Bool] (Id MEEncodedOutgoingMessage)
 initWithRawData_isSigned_isEncryptedSelector = mkSelector "initWithRawData:isSigned:isEncrypted:"
 
 -- | @Selector@ for @rawData@
-rawDataSelector :: Selector
+rawDataSelector :: Selector '[] (Id NSData)
 rawDataSelector = mkSelector "rawData"
 
 -- | @Selector@ for @isSigned@
-isSignedSelector :: Selector
+isSignedSelector :: Selector '[] Bool
 isSignedSelector = mkSelector "isSigned"
 
 -- | @Selector@ for @isEncrypted@
-isEncryptedSelector :: Selector
+isEncryptedSelector :: Selector '[] Bool
 isEncryptedSelector = mkSelector "isEncrypted"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVRouting.AVCustomRoutingActionItem
   , setType
   , overrideTitle
   , setOverrideTitle
-  , typeSelector
-  , setTypeSelector
   , overrideTitleSelector
   , setOverrideTitleSelector
+  , setTypeSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- type@
 type_ :: IsAVCustomRoutingActionItem avCustomRoutingActionItem => avCustomRoutingActionItem -> IO RawId
-type_ avCustomRoutingActionItem  =
-    fmap (RawId . castPtr) $ sendMsg avCustomRoutingActionItem (mkSelector "type") (retPtr retVoid) []
+type_ avCustomRoutingActionItem =
+  sendMessage avCustomRoutingActionItem typeSelector
 
 -- | A type with an identifier that matches a value in the app’s configuration.
 --
@@ -52,8 +49,8 @@ type_ avCustomRoutingActionItem  =
 --
 -- ObjC selector: @- setType:@
 setType :: IsAVCustomRoutingActionItem avCustomRoutingActionItem => avCustomRoutingActionItem -> RawId -> IO ()
-setType avCustomRoutingActionItem  value =
-    sendMsg avCustomRoutingActionItem (mkSelector "setType:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setType avCustomRoutingActionItem value =
+  sendMessage avCustomRoutingActionItem setTypeSelector value
 
 -- | A string to use to override the title of the item’s type.
 --
@@ -61,8 +58,8 @@ setType avCustomRoutingActionItem  value =
 --
 -- ObjC selector: @- overrideTitle@
 overrideTitle :: IsAVCustomRoutingActionItem avCustomRoutingActionItem => avCustomRoutingActionItem -> IO (Id NSString)
-overrideTitle avCustomRoutingActionItem  =
-    sendMsg avCustomRoutingActionItem (mkSelector "overrideTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+overrideTitle avCustomRoutingActionItem =
+  sendMessage avCustomRoutingActionItem overrideTitleSelector
 
 -- | A string to use to override the title of the item’s type.
 --
@@ -70,27 +67,26 @@ overrideTitle avCustomRoutingActionItem  =
 --
 -- ObjC selector: @- setOverrideTitle:@
 setOverrideTitle :: (IsAVCustomRoutingActionItem avCustomRoutingActionItem, IsNSString value) => avCustomRoutingActionItem -> value -> IO ()
-setOverrideTitle avCustomRoutingActionItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCustomRoutingActionItem (mkSelector "setOverrideTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOverrideTitle avCustomRoutingActionItem value =
+  sendMessage avCustomRoutingActionItem setOverrideTitleSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] RawId
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[RawId] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @overrideTitle@
-overrideTitleSelector :: Selector
+overrideTitleSelector :: Selector '[] (Id NSString)
 overrideTitleSelector = mkSelector "overrideTitle"
 
 -- | @Selector@ for @setOverrideTitle:@
-setOverrideTitleSelector :: Selector
+setOverrideTitleSelector :: Selector '[Id NSString] ()
 setOverrideTitleSelector = mkSelector "setOverrideTitle:"
 

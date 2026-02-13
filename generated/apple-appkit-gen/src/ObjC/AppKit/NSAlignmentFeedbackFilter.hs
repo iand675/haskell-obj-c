@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.AppKit.NSAlignmentFeedbackFilter
   , alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultY
   , performFeedback_performanceTime
   , inputEventMask
+  , alignmentFeedbackTokenForHorizontalMovementInView_previousX_alignedX_defaultXSelector
+  , alignmentFeedbackTokenForMovementInView_previousPoint_alignedPoint_defaultPointSelector
+  , alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultYSelector
+  , inputEventMaskSelector
+  , performFeedback_performanceTimeSelector
   , updateWithEventSelector
   , updateWithPanRecognizerSelector
-  , alignmentFeedbackTokenForMovementInView_previousPoint_alignedPoint_defaultPointSelector
-  , alignmentFeedbackTokenForHorizontalMovementInView_previousX_alignedX_defaultXSelector
-  , alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultYSelector
-  , performFeedback_performanceTimeSelector
-  , inputEventMaskSelector
 
   -- * Enum types
   , NSEventMask(NSEventMask)
@@ -66,15 +67,11 @@ module ObjC.AppKit.NSAlignmentFeedbackFilter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,76 +82,70 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- updateWithEvent:@
 updateWithEvent :: (IsNSAlignmentFeedbackFilter nsAlignmentFeedbackFilter, IsNSEvent event) => nsAlignmentFeedbackFilter -> event -> IO ()
-updateWithEvent nsAlignmentFeedbackFilter  event =
-  withObjCPtr event $ \raw_event ->
-      sendMsg nsAlignmentFeedbackFilter (mkSelector "updateWithEvent:") retVoid [argPtr (castPtr raw_event :: Ptr ())]
+updateWithEvent nsAlignmentFeedbackFilter event =
+  sendMessage nsAlignmentFeedbackFilter updateWithEventSelector (toNSEvent event)
 
 -- | @- updateWithPanRecognizer:@
 updateWithPanRecognizer :: (IsNSAlignmentFeedbackFilter nsAlignmentFeedbackFilter, IsNSPanGestureRecognizer panRecognizer) => nsAlignmentFeedbackFilter -> panRecognizer -> IO ()
-updateWithPanRecognizer nsAlignmentFeedbackFilter  panRecognizer =
-  withObjCPtr panRecognizer $ \raw_panRecognizer ->
-      sendMsg nsAlignmentFeedbackFilter (mkSelector "updateWithPanRecognizer:") retVoid [argPtr (castPtr raw_panRecognizer :: Ptr ())]
+updateWithPanRecognizer nsAlignmentFeedbackFilter panRecognizer =
+  sendMessage nsAlignmentFeedbackFilter updateWithPanRecognizerSelector (toNSPanGestureRecognizer panRecognizer)
 
 -- | @- alignmentFeedbackTokenForMovementInView:previousPoint:alignedPoint:defaultPoint:@
 alignmentFeedbackTokenForMovementInView_previousPoint_alignedPoint_defaultPoint :: (IsNSAlignmentFeedbackFilter nsAlignmentFeedbackFilter, IsNSView view) => nsAlignmentFeedbackFilter -> view -> NSPoint -> NSPoint -> NSPoint -> IO RawId
-alignmentFeedbackTokenForMovementInView_previousPoint_alignedPoint_defaultPoint nsAlignmentFeedbackFilter  view previousPoint alignedPoint defaultPoint =
-  withObjCPtr view $ \raw_view ->
-      fmap (RawId . castPtr) $ sendMsg nsAlignmentFeedbackFilter (mkSelector "alignmentFeedbackTokenForMovementInView:previousPoint:alignedPoint:defaultPoint:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argNSPoint previousPoint, argNSPoint alignedPoint, argNSPoint defaultPoint]
+alignmentFeedbackTokenForMovementInView_previousPoint_alignedPoint_defaultPoint nsAlignmentFeedbackFilter view previousPoint alignedPoint defaultPoint =
+  sendMessage nsAlignmentFeedbackFilter alignmentFeedbackTokenForMovementInView_previousPoint_alignedPoint_defaultPointSelector (toNSView view) previousPoint alignedPoint defaultPoint
 
 -- | @- alignmentFeedbackTokenForHorizontalMovementInView:previousX:alignedX:defaultX:@
 alignmentFeedbackTokenForHorizontalMovementInView_previousX_alignedX_defaultX :: (IsNSAlignmentFeedbackFilter nsAlignmentFeedbackFilter, IsNSView view) => nsAlignmentFeedbackFilter -> view -> CDouble -> CDouble -> CDouble -> IO RawId
-alignmentFeedbackTokenForHorizontalMovementInView_previousX_alignedX_defaultX nsAlignmentFeedbackFilter  view previousX alignedX defaultX =
-  withObjCPtr view $ \raw_view ->
-      fmap (RawId . castPtr) $ sendMsg nsAlignmentFeedbackFilter (mkSelector "alignmentFeedbackTokenForHorizontalMovementInView:previousX:alignedX:defaultX:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argCDouble previousX, argCDouble alignedX, argCDouble defaultX]
+alignmentFeedbackTokenForHorizontalMovementInView_previousX_alignedX_defaultX nsAlignmentFeedbackFilter view previousX alignedX defaultX =
+  sendMessage nsAlignmentFeedbackFilter alignmentFeedbackTokenForHorizontalMovementInView_previousX_alignedX_defaultXSelector (toNSView view) previousX alignedX defaultX
 
 -- | @- alignmentFeedbackTokenForVerticalMovementInView:previousY:alignedY:defaultY:@
 alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultY :: (IsNSAlignmentFeedbackFilter nsAlignmentFeedbackFilter, IsNSView view) => nsAlignmentFeedbackFilter -> view -> CDouble -> CDouble -> CDouble -> IO RawId
-alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultY nsAlignmentFeedbackFilter  view previousY alignedY defaultY =
-  withObjCPtr view $ \raw_view ->
-      fmap (RawId . castPtr) $ sendMsg nsAlignmentFeedbackFilter (mkSelector "alignmentFeedbackTokenForVerticalMovementInView:previousY:alignedY:defaultY:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argCDouble previousY, argCDouble alignedY, argCDouble defaultY]
+alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultY nsAlignmentFeedbackFilter view previousY alignedY defaultY =
+  sendMessage nsAlignmentFeedbackFilter alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultYSelector (toNSView view) previousY alignedY defaultY
 
 -- | @- performFeedback:performanceTime:@
 performFeedback_performanceTime :: (IsNSAlignmentFeedbackFilter nsAlignmentFeedbackFilter, IsNSArray alignmentFeedbackTokens) => nsAlignmentFeedbackFilter -> alignmentFeedbackTokens -> NSHapticFeedbackPerformanceTime -> IO ()
-performFeedback_performanceTime nsAlignmentFeedbackFilter  alignmentFeedbackTokens performanceTime =
-  withObjCPtr alignmentFeedbackTokens $ \raw_alignmentFeedbackTokens ->
-      sendMsg nsAlignmentFeedbackFilter (mkSelector "performFeedback:performanceTime:") retVoid [argPtr (castPtr raw_alignmentFeedbackTokens :: Ptr ()), argCULong (coerce performanceTime)]
+performFeedback_performanceTime nsAlignmentFeedbackFilter alignmentFeedbackTokens performanceTime =
+  sendMessage nsAlignmentFeedbackFilter performFeedback_performanceTimeSelector (toNSArray alignmentFeedbackTokens) performanceTime
 
 -- | @+ inputEventMask@
 inputEventMask :: IO NSEventMask
 inputEventMask  =
   do
     cls' <- getRequiredClass "NSAlignmentFeedbackFilter"
-    fmap (coerce :: CULong -> NSEventMask) $ sendClassMsg cls' (mkSelector "inputEventMask") retCULong []
+    sendClassMessage cls' inputEventMaskSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateWithEvent:@
-updateWithEventSelector :: Selector
+updateWithEventSelector :: Selector '[Id NSEvent] ()
 updateWithEventSelector = mkSelector "updateWithEvent:"
 
 -- | @Selector@ for @updateWithPanRecognizer:@
-updateWithPanRecognizerSelector :: Selector
+updateWithPanRecognizerSelector :: Selector '[Id NSPanGestureRecognizer] ()
 updateWithPanRecognizerSelector = mkSelector "updateWithPanRecognizer:"
 
 -- | @Selector@ for @alignmentFeedbackTokenForMovementInView:previousPoint:alignedPoint:defaultPoint:@
-alignmentFeedbackTokenForMovementInView_previousPoint_alignedPoint_defaultPointSelector :: Selector
+alignmentFeedbackTokenForMovementInView_previousPoint_alignedPoint_defaultPointSelector :: Selector '[Id NSView, NSPoint, NSPoint, NSPoint] RawId
 alignmentFeedbackTokenForMovementInView_previousPoint_alignedPoint_defaultPointSelector = mkSelector "alignmentFeedbackTokenForMovementInView:previousPoint:alignedPoint:defaultPoint:"
 
 -- | @Selector@ for @alignmentFeedbackTokenForHorizontalMovementInView:previousX:alignedX:defaultX:@
-alignmentFeedbackTokenForHorizontalMovementInView_previousX_alignedX_defaultXSelector :: Selector
+alignmentFeedbackTokenForHorizontalMovementInView_previousX_alignedX_defaultXSelector :: Selector '[Id NSView, CDouble, CDouble, CDouble] RawId
 alignmentFeedbackTokenForHorizontalMovementInView_previousX_alignedX_defaultXSelector = mkSelector "alignmentFeedbackTokenForHorizontalMovementInView:previousX:alignedX:defaultX:"
 
 -- | @Selector@ for @alignmentFeedbackTokenForVerticalMovementInView:previousY:alignedY:defaultY:@
-alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultYSelector :: Selector
+alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultYSelector :: Selector '[Id NSView, CDouble, CDouble, CDouble] RawId
 alignmentFeedbackTokenForVerticalMovementInView_previousY_alignedY_defaultYSelector = mkSelector "alignmentFeedbackTokenForVerticalMovementInView:previousY:alignedY:defaultY:"
 
 -- | @Selector@ for @performFeedback:performanceTime:@
-performFeedback_performanceTimeSelector :: Selector
+performFeedback_performanceTimeSelector :: Selector '[Id NSArray, NSHapticFeedbackPerformanceTime] ()
 performFeedback_performanceTimeSelector = mkSelector "performFeedback:performanceTime:"
 
 -- | @Selector@ for @inputEventMask@
-inputEventMaskSelector :: Selector
+inputEventMaskSelector :: Selector '[] NSEventMask
 inputEventMaskSelector = mkSelector "inputEventMask"
 

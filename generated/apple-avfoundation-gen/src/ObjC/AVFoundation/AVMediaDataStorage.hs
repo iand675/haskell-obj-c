@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,22 +18,18 @@ module ObjC.AVFoundation.AVMediaDataStorage
   , initWithURL_options
   , url
   , initSelector
-  , newSelector
   , initWithURL_optionsSelector
+  , newSelector
   , urlSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,15 +38,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMediaDataStorage avMediaDataStorage => avMediaDataStorage -> IO (Id AVMediaDataStorage)
-init_ avMediaDataStorage  =
-    sendMsg avMediaDataStorage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMediaDataStorage =
+  sendOwnedMessage avMediaDataStorage initSelector
 
 -- | @+ new@
 new :: IO (Id AVMediaDataStorage)
 new  =
   do
     cls' <- getRequiredClass "AVMediaDataStorage"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithURL:options:
 --
@@ -63,10 +60,8 @@ new  =
 --
 -- ObjC selector: @- initWithURL:options:@
 initWithURL_options :: (IsAVMediaDataStorage avMediaDataStorage, IsNSURL url, IsNSDictionary options) => avMediaDataStorage -> url -> options -> IO (Id AVMediaDataStorage)
-initWithURL_options avMediaDataStorage  url options =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg avMediaDataStorage (mkSelector "initWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_options avMediaDataStorage url options =
+  sendOwnedMessage avMediaDataStorage initWithURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | URL
 --
@@ -74,26 +69,26 @@ initWithURL_options avMediaDataStorage  url options =
 --
 -- ObjC selector: @- URL@
 url :: IsAVMediaDataStorage avMediaDataStorage => avMediaDataStorage -> IO (Id NSURL)
-url avMediaDataStorage  =
-    sendMsg avMediaDataStorage (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url avMediaDataStorage =
+  sendMessage avMediaDataStorage urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMediaDataStorage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMediaDataStorage)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithURL:options:@
-initWithURL_optionsSelector :: Selector
+initWithURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id AVMediaDataStorage)
 initWithURL_optionsSelector = mkSelector "initWithURL:options:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INPaymentStatusResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithPaymentStatusToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedPaymentStatusSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithPaymentStatusToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedPaymentStatusSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INPaymentStatus(INPaymentStatus)
@@ -27,15 +28,11 @@ module ObjC.Intents.INPaymentStatusResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,46 +45,46 @@ successWithResolvedPaymentStatus :: INPaymentStatus -> IO (Id INPaymentStatusRes
 successWithResolvedPaymentStatus resolvedPaymentStatus =
   do
     cls' <- getRequiredClass "INPaymentStatusResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedPaymentStatus:") (retPtr retVoid) [argCLong (coerce resolvedPaymentStatus)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedPaymentStatusSelector resolvedPaymentStatus
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INPaymentStatus -> IO (Id INPaymentStatusResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INPaymentStatusResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithPaymentStatusToConfirm:@
 confirmationRequiredWithPaymentStatusToConfirm :: INPaymentStatus -> IO (Id INPaymentStatusResolutionResult)
 confirmationRequiredWithPaymentStatusToConfirm paymentStatusToConfirm =
   do
     cls' <- getRequiredClass "INPaymentStatusResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithPaymentStatusToConfirm:") (retPtr retVoid) [argCLong (coerce paymentStatusToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithPaymentStatusToConfirmSelector paymentStatusToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INPaymentStatus -> IO (Id INPaymentStatusResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INPaymentStatusResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedPaymentStatus:@
-successWithResolvedPaymentStatusSelector :: Selector
+successWithResolvedPaymentStatusSelector :: Selector '[INPaymentStatus] (Id INPaymentStatusResolutionResult)
 successWithResolvedPaymentStatusSelector = mkSelector "successWithResolvedPaymentStatus:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INPaymentStatus] (Id INPaymentStatusResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithPaymentStatusToConfirm:@
-confirmationRequiredWithPaymentStatusToConfirmSelector :: Selector
+confirmationRequiredWithPaymentStatusToConfirmSelector :: Selector '[INPaymentStatus] (Id INPaymentStatusResolutionResult)
 confirmationRequiredWithPaymentStatusToConfirmSelector = mkSelector "confirmationRequiredWithPaymentStatusToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INPaymentStatus] (Id INPaymentStatusResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.CryptoTokenKit.TKSmartCardSlotNFCSession
   , updateWithMessage_error
   , endSession
   , slotName
-  , initSelector
-  , updateWithMessage_errorSelector
   , endSessionSelector
+  , initSelector
   , slotNameSelector
+  , updateWithMessage_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsTKSmartCardSlotNFCSession tkSmartCardSlotNFCSession => tkSmartCardSlotNFCSession -> IO (Id TKSmartCardSlotNFCSession)
-init_ tkSmartCardSlotNFCSession  =
-    sendMsg tkSmartCardSlotNFCSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkSmartCardSlotNFCSession =
+  sendOwnedMessage tkSmartCardSlotNFCSession initSelector
 
 -- | Updates the message of the system-presented NFC UI.
 --
@@ -54,42 +51,40 @@ init_ tkSmartCardSlotNFCSession  =
 --
 -- ObjC selector: @- updateWithMessage:error:@
 updateWithMessage_error :: (IsTKSmartCardSlotNFCSession tkSmartCardSlotNFCSession, IsNSString message, IsNSError error_) => tkSmartCardSlotNFCSession -> message -> error_ -> IO Bool
-updateWithMessage_error tkSmartCardSlotNFCSession  message error_ =
-  withObjCPtr message $ \raw_message ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkSmartCardSlotNFCSession (mkSelector "updateWithMessage:error:") retCULong [argPtr (castPtr raw_message :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+updateWithMessage_error tkSmartCardSlotNFCSession message error_ =
+  sendMessage tkSmartCardSlotNFCSession updateWithMessage_errorSelector (toNSString message) (toNSError error_)
 
 -- | Ends the NFC slot session and dismisses the system-presented NFC UI (if present).
 --
 -- ObjC selector: @- endSession@
 endSession :: IsTKSmartCardSlotNFCSession tkSmartCardSlotNFCSession => tkSmartCardSlotNFCSession -> IO ()
-endSession tkSmartCardSlotNFCSession  =
-    sendMsg tkSmartCardSlotNFCSession (mkSelector "endSession") retVoid []
+endSession tkSmartCardSlotNFCSession =
+  sendMessage tkSmartCardSlotNFCSession endSessionSelector
 
 -- | Smart card slot name of the NFC slot that was created together with this session.
 --
 -- ObjC selector: @- slotName@
 slotName :: IsTKSmartCardSlotNFCSession tkSmartCardSlotNFCSession => tkSmartCardSlotNFCSession -> IO (Id NSString)
-slotName tkSmartCardSlotNFCSession  =
-    sendMsg tkSmartCardSlotNFCSession (mkSelector "slotName") (retPtr retVoid) [] >>= retainedObject . castPtr
+slotName tkSmartCardSlotNFCSession =
+  sendMessage tkSmartCardSlotNFCSession slotNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKSmartCardSlotNFCSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @updateWithMessage:error:@
-updateWithMessage_errorSelector :: Selector
+updateWithMessage_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 updateWithMessage_errorSelector = mkSelector "updateWithMessage:error:"
 
 -- | @Selector@ for @endSession@
-endSessionSelector :: Selector
+endSessionSelector :: Selector '[] ()
 endSessionSelector = mkSelector "endSession"
 
 -- | @Selector@ for @slotName@
-slotNameSelector :: Selector
+slotNameSelector :: Selector '[] (Id NSString)
 slotNameSelector = mkSelector "slotName"
 

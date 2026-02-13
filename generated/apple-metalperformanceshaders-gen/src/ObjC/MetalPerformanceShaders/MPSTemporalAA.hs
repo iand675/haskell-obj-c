@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,26 +22,22 @@ module ObjC.MetalPerformanceShaders.MPSTemporalAA
   , encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTexture
   , blendFactor
   , setBlendFactor
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
-  , encodeWithCoderSelector
-  , encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTextureSelector
   , blendFactorSelector
+  , copyWithZone_deviceSelector
+  , encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTextureSelector
+  , encodeWithCoderSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , setBlendFactorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,25 +46,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSTemporalAA mpsTemporalAA => mpsTemporalAA -> RawId -> IO (Id MPSTemporalAA)
-initWithDevice mpsTemporalAA  device =
-    sendMsg mpsTemporalAA (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsTemporalAA device =
+  sendOwnedMessage mpsTemporalAA initWithDeviceSelector device
 
 -- | @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSTemporalAA mpsTemporalAA, IsNSCoder aDecoder) => mpsTemporalAA -> aDecoder -> RawId -> IO (Id MPSTemporalAA)
-initWithCoder_device mpsTemporalAA  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsTemporalAA (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsTemporalAA aDecoder device =
+  sendOwnedMessage mpsTemporalAA initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- copyWithZone:device:@
 copyWithZone_device :: IsMPSTemporalAA mpsTemporalAA => mpsTemporalAA -> Ptr () -> RawId -> IO (Id MPSTemporalAA)
-copyWithZone_device mpsTemporalAA  zone device =
-    sendMsg mpsTemporalAA (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsTemporalAA zone device =
+  sendOwnedMessage mpsTemporalAA copyWithZone_deviceSelector zone device
 
 -- | @- encodeWithCoder:@
 encodeWithCoder :: (IsMPSTemporalAA mpsTemporalAA, IsNSCoder coder) => mpsTemporalAA -> coder -> IO ()
-encodeWithCoder mpsTemporalAA  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg mpsTemporalAA (mkSelector "encodeWithCoder:") retVoid [argPtr (castPtr raw_coder :: Ptr ())]
+encodeWithCoder mpsTemporalAA coder =
+  sendMessage mpsTemporalAA encodeWithCoderSelector (toNSCoder coder)
 
 -- | Encode temporal antialiasing a command buffer
 --
@@ -91,52 +86,52 @@ encodeWithCoder mpsTemporalAA  coder =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceTexture:previousTexture:destinationTexture:motionVectorTexture:depthTexture:@
 encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTexture :: IsMPSTemporalAA mpsTemporalAA => mpsTemporalAA -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTexture mpsTemporalAA  commandBuffer sourceTexture previousTexture destinationTexture motionVectorTexture depthTexture =
-    sendMsg mpsTemporalAA (mkSelector "encodeToCommandBuffer:sourceTexture:previousTexture:destinationTexture:motionVectorTexture:depthTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId previousTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ()), argPtr (castPtr (unRawId motionVectorTexture) :: Ptr ()), argPtr (castPtr (unRawId depthTexture) :: Ptr ())]
+encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTexture mpsTemporalAA commandBuffer sourceTexture previousTexture destinationTexture motionVectorTexture depthTexture =
+  sendMessage mpsTemporalAA encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTextureSelector commandBuffer sourceTexture previousTexture destinationTexture motionVectorTexture depthTexture
 
 -- | How much to blend the current frame with the previous frame during temporal antialiasing. The final value is given by current * blendFactor + previous * (1 - blendFactor). Must be between zero and one, inclusive. Defaults to 0.1.
 --
 -- ObjC selector: @- blendFactor@
 blendFactor :: IsMPSTemporalAA mpsTemporalAA => mpsTemporalAA -> IO CFloat
-blendFactor mpsTemporalAA  =
-    sendMsg mpsTemporalAA (mkSelector "blendFactor") retCFloat []
+blendFactor mpsTemporalAA =
+  sendMessage mpsTemporalAA blendFactorSelector
 
 -- | How much to blend the current frame with the previous frame during temporal antialiasing. The final value is given by current * blendFactor + previous * (1 - blendFactor). Must be between zero and one, inclusive. Defaults to 0.1.
 --
 -- ObjC selector: @- setBlendFactor:@
 setBlendFactor :: IsMPSTemporalAA mpsTemporalAA => mpsTemporalAA -> CFloat -> IO ()
-setBlendFactor mpsTemporalAA  value =
-    sendMsg mpsTemporalAA (mkSelector "setBlendFactor:") retVoid [argCFloat value]
+setBlendFactor mpsTemporalAA value =
+  sendMessage mpsTemporalAA setBlendFactorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSTemporalAA)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSTemporalAA)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSTemporalAA)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @encodeWithCoder:@
-encodeWithCoderSelector :: Selector
+encodeWithCoderSelector :: Selector '[Id NSCoder] ()
 encodeWithCoderSelector = mkSelector "encodeWithCoder:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceTexture:previousTexture:destinationTexture:motionVectorTexture:depthTexture:@
-encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTextureSelector :: Selector
+encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTextureSelector :: Selector '[RawId, RawId, RawId, RawId, RawId, RawId] ()
 encodeToCommandBuffer_sourceTexture_previousTexture_destinationTexture_motionVectorTexture_depthTextureSelector = mkSelector "encodeToCommandBuffer:sourceTexture:previousTexture:destinationTexture:motionVectorTexture:depthTexture:"
 
 -- | @Selector@ for @blendFactor@
-blendFactorSelector :: Selector
+blendFactorSelector :: Selector '[] CFloat
 blendFactorSelector = mkSelector "blendFactor"
 
 -- | @Selector@ for @setBlendFactor:@
-setBlendFactorSelector :: Selector
+setBlendFactorSelector :: Selector '[CFloat] ()
 setBlendFactorSelector = mkSelector "setBlendFactor:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.MapKit.MKDirections
   , calculateETAWithCompletionHandler
   , cancel
   , calculating
-  , initWithRequestSelector
   , calculateDirectionsWithCompletionHandlerSelector
   , calculateETAWithCompletionHandlerSelector
-  , cancelSelector
   , calculatingSelector
+  , cancelSelector
+  , initWithRequestSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,51 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithRequest:@
 initWithRequest :: (IsMKDirections mkDirections, IsMKDirectionsRequest request) => mkDirections -> request -> IO (Id MKDirections)
-initWithRequest mkDirections  request =
-  withObjCPtr request $ \raw_request ->
-      sendMsg mkDirections (mkSelector "initWithRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())] >>= ownedObject . castPtr
+initWithRequest mkDirections request =
+  sendOwnedMessage mkDirections initWithRequestSelector (toMKDirectionsRequest request)
 
 -- | @- calculateDirectionsWithCompletionHandler:@
 calculateDirectionsWithCompletionHandler :: IsMKDirections mkDirections => mkDirections -> Ptr () -> IO ()
-calculateDirectionsWithCompletionHandler mkDirections  completionHandler =
-    sendMsg mkDirections (mkSelector "calculateDirectionsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+calculateDirectionsWithCompletionHandler mkDirections completionHandler =
+  sendMessage mkDirections calculateDirectionsWithCompletionHandlerSelector completionHandler
 
 -- | @- calculateETAWithCompletionHandler:@
 calculateETAWithCompletionHandler :: IsMKDirections mkDirections => mkDirections -> Ptr () -> IO ()
-calculateETAWithCompletionHandler mkDirections  completionHandler =
-    sendMsg mkDirections (mkSelector "calculateETAWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+calculateETAWithCompletionHandler mkDirections completionHandler =
+  sendMessage mkDirections calculateETAWithCompletionHandlerSelector completionHandler
 
 -- | @- cancel@
 cancel :: IsMKDirections mkDirections => mkDirections -> IO ()
-cancel mkDirections  =
-    sendMsg mkDirections (mkSelector "cancel") retVoid []
+cancel mkDirections =
+  sendMessage mkDirections cancelSelector
 
 -- | @- calculating@
 calculating :: IsMKDirections mkDirections => mkDirections -> IO Bool
-calculating mkDirections  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkDirections (mkSelector "calculating") retCULong []
+calculating mkDirections =
+  sendMessage mkDirections calculatingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRequest:@
-initWithRequestSelector :: Selector
+initWithRequestSelector :: Selector '[Id MKDirectionsRequest] (Id MKDirections)
 initWithRequestSelector = mkSelector "initWithRequest:"
 
 -- | @Selector@ for @calculateDirectionsWithCompletionHandler:@
-calculateDirectionsWithCompletionHandlerSelector :: Selector
+calculateDirectionsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 calculateDirectionsWithCompletionHandlerSelector = mkSelector "calculateDirectionsWithCompletionHandler:"
 
 -- | @Selector@ for @calculateETAWithCompletionHandler:@
-calculateETAWithCompletionHandlerSelector :: Selector
+calculateETAWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 calculateETAWithCompletionHandlerSelector = mkSelector "calculateETAWithCompletionHandler:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @calculating@
-calculatingSelector :: Selector
+calculatingSelector :: Selector '[] Bool
 calculatingSelector = mkSelector "calculating"
 

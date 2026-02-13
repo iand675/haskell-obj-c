@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,12 +15,12 @@ module ObjC.AppKit.NSSharingServicePicker
   , delegate
   , setDelegate
   , standardShareMenuItem
-  , initWithItemsSelector
-  , initSelector
-  , showRelativeToRect_ofView_preferredEdgeSelector
   , closeSelector
   , delegateSelector
+  , initSelector
+  , initWithItemsSelector
   , setDelegateSelector
+  , showRelativeToRect_ofView_preferredEdgeSelector
   , standardShareMenuItemSelector
 
   -- * Enum types
@@ -35,15 +36,11 @@ module ObjC.AppKit.NSSharingServicePicker
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,78 +53,76 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithItems:@
 initWithItems :: (IsNSSharingServicePicker nsSharingServicePicker, IsNSArray items) => nsSharingServicePicker -> items -> IO (Id NSSharingServicePicker)
-initWithItems nsSharingServicePicker  items =
-  withObjCPtr items $ \raw_items ->
-      sendMsg nsSharingServicePicker (mkSelector "initWithItems:") (retPtr retVoid) [argPtr (castPtr raw_items :: Ptr ())] >>= ownedObject . castPtr
+initWithItems nsSharingServicePicker items =
+  sendOwnedMessage nsSharingServicePicker initWithItemsSelector (toNSArray items)
 
 -- | Use initWithItems: instead.
 --
 -- ObjC selector: @- init@
 init_ :: IsNSSharingServicePicker nsSharingServicePicker => nsSharingServicePicker -> IO (Id NSSharingServicePicker)
-init_ nsSharingServicePicker  =
-    sendMsg nsSharingServicePicker (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsSharingServicePicker =
+  sendOwnedMessage nsSharingServicePicker initSelector
 
 -- | Shows the picker, populated with sharing services related to the instance items. When the user selects one of the sharing services, the sharing service will be performed. Note that this method must be called on mouseDown.
 --
 -- ObjC selector: @- showRelativeToRect:ofView:preferredEdge:@
 showRelativeToRect_ofView_preferredEdge :: (IsNSSharingServicePicker nsSharingServicePicker, IsNSView view) => nsSharingServicePicker -> NSRect -> view -> NSRectEdge -> IO ()
-showRelativeToRect_ofView_preferredEdge nsSharingServicePicker  rect view preferredEdge =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsSharingServicePicker (mkSelector "showRelativeToRect:ofView:preferredEdge:") retVoid [argNSRect rect, argPtr (castPtr raw_view :: Ptr ()), argCULong (coerce preferredEdge)]
+showRelativeToRect_ofView_preferredEdge nsSharingServicePicker rect view preferredEdge =
+  sendMessage nsSharingServicePicker showRelativeToRect_ofView_preferredEdgeSelector rect (toNSView view) preferredEdge
 
 -- | Closes the picker UI. @-[NSSharingServicePickerDelegate sharingServicePicker:didChooseSharingService:]@ will be invoked if @delegate@ is set, with a @nil@ service.
 --
 -- ObjC selector: @- close@
 close :: IsNSSharingServicePicker nsSharingServicePicker => nsSharingServicePicker -> IO ()
-close nsSharingServicePicker  =
-    sendMsg nsSharingServicePicker (mkSelector "close") retVoid []
+close nsSharingServicePicker =
+  sendMessage nsSharingServicePicker closeSelector
 
 -- | @- delegate@
 delegate :: IsNSSharingServicePicker nsSharingServicePicker => nsSharingServicePicker -> IO RawId
-delegate nsSharingServicePicker  =
-    fmap (RawId . castPtr) $ sendMsg nsSharingServicePicker (mkSelector "delegate") (retPtr retVoid) []
+delegate nsSharingServicePicker =
+  sendMessage nsSharingServicePicker delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSSharingServicePicker nsSharingServicePicker => nsSharingServicePicker -> RawId -> IO ()
-setDelegate nsSharingServicePicker  value =
-    sendMsg nsSharingServicePicker (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsSharingServicePicker value =
+  sendMessage nsSharingServicePicker setDelegateSelector value
 
 -- | Returns a menu item suitable to display the picker for the given items.
 --
 -- ObjC selector: @- standardShareMenuItem@
 standardShareMenuItem :: IsNSSharingServicePicker nsSharingServicePicker => nsSharingServicePicker -> IO (Id NSMenuItem)
-standardShareMenuItem nsSharingServicePicker  =
-    sendMsg nsSharingServicePicker (mkSelector "standardShareMenuItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+standardShareMenuItem nsSharingServicePicker =
+  sendMessage nsSharingServicePicker standardShareMenuItemSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithItems:@
-initWithItemsSelector :: Selector
+initWithItemsSelector :: Selector '[Id NSArray] (Id NSSharingServicePicker)
 initWithItemsSelector = mkSelector "initWithItems:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSSharingServicePicker)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @showRelativeToRect:ofView:preferredEdge:@
-showRelativeToRect_ofView_preferredEdgeSelector :: Selector
+showRelativeToRect_ofView_preferredEdgeSelector :: Selector '[NSRect, Id NSView, NSRectEdge] ()
 showRelativeToRect_ofView_preferredEdgeSelector = mkSelector "showRelativeToRect:ofView:preferredEdge:"
 
 -- | @Selector@ for @close@
-closeSelector :: Selector
+closeSelector :: Selector '[] ()
 closeSelector = mkSelector "close"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @standardShareMenuItem@
-standardShareMenuItemSelector :: Selector
+standardShareMenuItemSelector :: Selector '[] (Id NSMenuItem)
 standardShareMenuItemSelector = mkSelector "standardShareMenuItem"
 

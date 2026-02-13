@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,14 +17,14 @@ module ObjC.Intents.INPaymentAccount
   , organizationName
   , balance
   , secondaryBalance
-  , initSelector
-  , initWithNickname_number_accountType_organizationName_balance_secondaryBalanceSelector
-  , initWithNickname_number_accountType_organizationNameSelector
-  , nicknameSelector
   , accountNumberSelector
   , accountTypeSelector
-  , organizationNameSelector
   , balanceSelector
+  , initSelector
+  , initWithNickname_number_accountType_organizationNameSelector
+  , initWithNickname_number_accountType_organizationName_balance_secondaryBalanceSelector
+  , nicknameSelector
+  , organizationNameSelector
   , secondaryBalanceSelector
 
   -- * Enum types
@@ -39,15 +40,11 @@ module ObjC.Intents.INPaymentAccount
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,94 +54,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINPaymentAccount inPaymentAccount => inPaymentAccount -> IO (Id INPaymentAccount)
-init_ inPaymentAccount  =
-    sendMsg inPaymentAccount (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inPaymentAccount =
+  sendOwnedMessage inPaymentAccount initSelector
 
 -- | @- initWithNickname:number:accountType:organizationName:balance:secondaryBalance:@
 initWithNickname_number_accountType_organizationName_balance_secondaryBalance :: (IsINPaymentAccount inPaymentAccount, IsINSpeakableString nickname, IsNSString number, IsINSpeakableString organizationName, IsINBalanceAmount balance, IsINBalanceAmount secondaryBalance) => inPaymentAccount -> nickname -> number -> INAccountType -> organizationName -> balance -> secondaryBalance -> IO (Id INPaymentAccount)
-initWithNickname_number_accountType_organizationName_balance_secondaryBalance inPaymentAccount  nickname number accountType organizationName balance secondaryBalance =
-  withObjCPtr nickname $ \raw_nickname ->
-    withObjCPtr number $ \raw_number ->
-      withObjCPtr organizationName $ \raw_organizationName ->
-        withObjCPtr balance $ \raw_balance ->
-          withObjCPtr secondaryBalance $ \raw_secondaryBalance ->
-              sendMsg inPaymentAccount (mkSelector "initWithNickname:number:accountType:organizationName:balance:secondaryBalance:") (retPtr retVoid) [argPtr (castPtr raw_nickname :: Ptr ()), argPtr (castPtr raw_number :: Ptr ()), argCLong (coerce accountType), argPtr (castPtr raw_organizationName :: Ptr ()), argPtr (castPtr raw_balance :: Ptr ()), argPtr (castPtr raw_secondaryBalance :: Ptr ())] >>= ownedObject . castPtr
+initWithNickname_number_accountType_organizationName_balance_secondaryBalance inPaymentAccount nickname number accountType organizationName balance secondaryBalance =
+  sendOwnedMessage inPaymentAccount initWithNickname_number_accountType_organizationName_balance_secondaryBalanceSelector (toINSpeakableString nickname) (toNSString number) accountType (toINSpeakableString organizationName) (toINBalanceAmount balance) (toINBalanceAmount secondaryBalance)
 
 -- | @- initWithNickname:number:accountType:organizationName:@
 initWithNickname_number_accountType_organizationName :: (IsINPaymentAccount inPaymentAccount, IsINSpeakableString nickname, IsNSString number, IsINSpeakableString organizationName) => inPaymentAccount -> nickname -> number -> INAccountType -> organizationName -> IO (Id INPaymentAccount)
-initWithNickname_number_accountType_organizationName inPaymentAccount  nickname number accountType organizationName =
-  withObjCPtr nickname $ \raw_nickname ->
-    withObjCPtr number $ \raw_number ->
-      withObjCPtr organizationName $ \raw_organizationName ->
-          sendMsg inPaymentAccount (mkSelector "initWithNickname:number:accountType:organizationName:") (retPtr retVoid) [argPtr (castPtr raw_nickname :: Ptr ()), argPtr (castPtr raw_number :: Ptr ()), argCLong (coerce accountType), argPtr (castPtr raw_organizationName :: Ptr ())] >>= ownedObject . castPtr
+initWithNickname_number_accountType_organizationName inPaymentAccount nickname number accountType organizationName =
+  sendOwnedMessage inPaymentAccount initWithNickname_number_accountType_organizationNameSelector (toINSpeakableString nickname) (toNSString number) accountType (toINSpeakableString organizationName)
 
 -- | @- nickname@
 nickname :: IsINPaymentAccount inPaymentAccount => inPaymentAccount -> IO (Id INSpeakableString)
-nickname inPaymentAccount  =
-    sendMsg inPaymentAccount (mkSelector "nickname") (retPtr retVoid) [] >>= retainedObject . castPtr
+nickname inPaymentAccount =
+  sendMessage inPaymentAccount nicknameSelector
 
 -- | @- accountNumber@
 accountNumber :: IsINPaymentAccount inPaymentAccount => inPaymentAccount -> IO (Id NSString)
-accountNumber inPaymentAccount  =
-    sendMsg inPaymentAccount (mkSelector "accountNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountNumber inPaymentAccount =
+  sendMessage inPaymentAccount accountNumberSelector
 
 -- | @- accountType@
 accountType :: IsINPaymentAccount inPaymentAccount => inPaymentAccount -> IO INAccountType
-accountType inPaymentAccount  =
-    fmap (coerce :: CLong -> INAccountType) $ sendMsg inPaymentAccount (mkSelector "accountType") retCLong []
+accountType inPaymentAccount =
+  sendMessage inPaymentAccount accountTypeSelector
 
 -- | @- organizationName@
 organizationName :: IsINPaymentAccount inPaymentAccount => inPaymentAccount -> IO (Id INSpeakableString)
-organizationName inPaymentAccount  =
-    sendMsg inPaymentAccount (mkSelector "organizationName") (retPtr retVoid) [] >>= retainedObject . castPtr
+organizationName inPaymentAccount =
+  sendMessage inPaymentAccount organizationNameSelector
 
 -- | @- balance@
 balance :: IsINPaymentAccount inPaymentAccount => inPaymentAccount -> IO (Id INBalanceAmount)
-balance inPaymentAccount  =
-    sendMsg inPaymentAccount (mkSelector "balance") (retPtr retVoid) [] >>= retainedObject . castPtr
+balance inPaymentAccount =
+  sendMessage inPaymentAccount balanceSelector
 
 -- | @- secondaryBalance@
 secondaryBalance :: IsINPaymentAccount inPaymentAccount => inPaymentAccount -> IO (Id INBalanceAmount)
-secondaryBalance inPaymentAccount  =
-    sendMsg inPaymentAccount (mkSelector "secondaryBalance") (retPtr retVoid) [] >>= retainedObject . castPtr
+secondaryBalance inPaymentAccount =
+  sendMessage inPaymentAccount secondaryBalanceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INPaymentAccount)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithNickname:number:accountType:organizationName:balance:secondaryBalance:@
-initWithNickname_number_accountType_organizationName_balance_secondaryBalanceSelector :: Selector
+initWithNickname_number_accountType_organizationName_balance_secondaryBalanceSelector :: Selector '[Id INSpeakableString, Id NSString, INAccountType, Id INSpeakableString, Id INBalanceAmount, Id INBalanceAmount] (Id INPaymentAccount)
 initWithNickname_number_accountType_organizationName_balance_secondaryBalanceSelector = mkSelector "initWithNickname:number:accountType:organizationName:balance:secondaryBalance:"
 
 -- | @Selector@ for @initWithNickname:number:accountType:organizationName:@
-initWithNickname_number_accountType_organizationNameSelector :: Selector
+initWithNickname_number_accountType_organizationNameSelector :: Selector '[Id INSpeakableString, Id NSString, INAccountType, Id INSpeakableString] (Id INPaymentAccount)
 initWithNickname_number_accountType_organizationNameSelector = mkSelector "initWithNickname:number:accountType:organizationName:"
 
 -- | @Selector@ for @nickname@
-nicknameSelector :: Selector
+nicknameSelector :: Selector '[] (Id INSpeakableString)
 nicknameSelector = mkSelector "nickname"
 
 -- | @Selector@ for @accountNumber@
-accountNumberSelector :: Selector
+accountNumberSelector :: Selector '[] (Id NSString)
 accountNumberSelector = mkSelector "accountNumber"
 
 -- | @Selector@ for @accountType@
-accountTypeSelector :: Selector
+accountTypeSelector :: Selector '[] INAccountType
 accountTypeSelector = mkSelector "accountType"
 
 -- | @Selector@ for @organizationName@
-organizationNameSelector :: Selector
+organizationNameSelector :: Selector '[] (Id INSpeakableString)
 organizationNameSelector = mkSelector "organizationName"
 
 -- | @Selector@ for @balance@
-balanceSelector :: Selector
+balanceSelector :: Selector '[] (Id INBalanceAmount)
 balanceSelector = mkSelector "balance"
 
 -- | @Selector@ for @secondaryBalance@
-secondaryBalanceSelector :: Selector
+secondaryBalanceSelector :: Selector '[] (Id INBalanceAmount)
 secondaryBalanceSelector = mkSelector "secondaryBalance"
 

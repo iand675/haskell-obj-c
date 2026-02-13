@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.OpenDirectory.ODSession
   , deleteConfigurationWithNodename_authorization_error
   , configurationTemplateNames
   , mappingTemplateNames
-  , defaultSessionSelector
-  , sessionWithOptions_errorSelector
-  , initWithOptions_errorSelector
-  , nodeNamesAndReturnErrorSelector
+  , addConfiguration_authorization_errorSelector
   , configurationAuthorizationAllowingUserInteraction_errorSelector
   , configurationForNodenameSelector
-  , addConfiguration_authorization_errorSelector
-  , deleteConfiguration_authorization_errorSelector
-  , deleteConfigurationWithNodename_authorization_errorSelector
   , configurationTemplateNamesSelector
+  , defaultSessionSelector
+  , deleteConfigurationWithNodename_authorization_errorSelector
+  , deleteConfiguration_authorization_errorSelector
+  , initWithOptions_errorSelector
   , mappingTemplateNamesSelector
+  , nodeNamesAndReturnErrorSelector
+  , sessionWithOptions_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,7 +62,7 @@ defaultSession :: IO (Id ODSession)
 defaultSession  =
   do
     cls' <- getRequiredClass "ODSession"
-    sendClassMsg cls' (mkSelector "defaultSession") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultSessionSelector
 
 -- | sessionWithOptions:error:
 --
@@ -80,9 +77,7 @@ sessionWithOptions_error :: (IsNSDictionary inOptions, IsNSError outError) => in
 sessionWithOptions_error inOptions outError =
   do
     cls' <- getRequiredClass "ODSession"
-    withObjCPtr inOptions $ \raw_inOptions ->
-      withObjCPtr outError $ \raw_outError ->
-        sendClassMsg cls' (mkSelector "sessionWithOptions:error:") (retPtr retVoid) [argPtr (castPtr raw_inOptions :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sessionWithOptions_errorSelector (toNSDictionary inOptions) (toNSError outError)
 
 -- | initWithOptions:error:
 --
@@ -94,10 +89,8 @@ sessionWithOptions_error inOptions outError =
 --
 -- ObjC selector: @- initWithOptions:error:@
 initWithOptions_error :: (IsODSession odSession, IsNSDictionary inOptions, IsNSError outError) => odSession -> inOptions -> outError -> IO (Id ODSession)
-initWithOptions_error odSession  inOptions outError =
-  withObjCPtr inOptions $ \raw_inOptions ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg odSession (mkSelector "initWithOptions:error:") (retPtr retVoid) [argPtr (castPtr raw_inOptions :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithOptions_error odSession inOptions outError =
+  sendOwnedMessage odSession initWithOptions_errorSelector (toNSDictionary inOptions) (toNSError outError)
 
 -- | nodeNamesAndReturnError:
 --
@@ -107,9 +100,8 @@ initWithOptions_error odSession  inOptions outError =
 --
 -- ObjC selector: @- nodeNamesAndReturnError:@
 nodeNamesAndReturnError :: (IsODSession odSession, IsNSError outError) => odSession -> outError -> IO (Id NSArray)
-nodeNamesAndReturnError odSession  outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg odSession (mkSelector "nodeNamesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+nodeNamesAndReturnError odSession outError =
+  sendMessage odSession nodeNamesAndReturnErrorSelector (toNSError outError)
 
 -- | configurationAuthorizationAllowingUserInteraction:
 --
@@ -119,9 +111,8 @@ nodeNamesAndReturnError odSession  outError =
 --
 -- ObjC selector: @- configurationAuthorizationAllowingUserInteraction:error:@
 configurationAuthorizationAllowingUserInteraction_error :: (IsODSession odSession, IsNSError error_) => odSession -> Bool -> error_ -> IO (Id SFAuthorization)
-configurationAuthorizationAllowingUserInteraction_error odSession  allowInteraction error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg odSession (mkSelector "configurationAuthorizationAllowingUserInteraction:error:") (retPtr retVoid) [argCULong (if allowInteraction then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+configurationAuthorizationAllowingUserInteraction_error odSession allowInteraction error_ =
+  sendMessage odSession configurationAuthorizationAllowingUserInteraction_errorSelector allowInteraction (toNSError error_)
 
 -- | configurationForNodename:
 --
@@ -131,9 +122,8 @@ configurationAuthorizationAllowingUserInteraction_error odSession  allowInteract
 --
 -- ObjC selector: @- configurationForNodename:@
 configurationForNodename :: (IsODSession odSession, IsNSString nodename) => odSession -> nodename -> IO (Id ODConfiguration)
-configurationForNodename odSession  nodename =
-  withObjCPtr nodename $ \raw_nodename ->
-      sendMsg odSession (mkSelector "configurationForNodename:") (retPtr retVoid) [argPtr (castPtr raw_nodename :: Ptr ())] >>= retainedObject . castPtr
+configurationForNodename odSession nodename =
+  sendMessage odSession configurationForNodenameSelector (toNSString nodename)
 
 -- | addConfiguration:authorization:error:
 --
@@ -143,11 +133,8 @@ configurationForNodename odSession  nodename =
 --
 -- ObjC selector: @- addConfiguration:authorization:error:@
 addConfiguration_authorization_error :: (IsODSession odSession, IsODConfiguration configuration, IsSFAuthorization authorization, IsNSError error_) => odSession -> configuration -> authorization -> error_ -> IO Bool
-addConfiguration_authorization_error odSession  configuration authorization error_ =
-  withObjCPtr configuration $ \raw_configuration ->
-    withObjCPtr authorization $ \raw_authorization ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg odSession (mkSelector "addConfiguration:authorization:error:") retCULong [argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_authorization :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addConfiguration_authorization_error odSession configuration authorization error_ =
+  sendMessage odSession addConfiguration_authorization_errorSelector (toODConfiguration configuration) (toSFAuthorization authorization) (toNSError error_)
 
 -- | deleteConfiguration:authorization:error:
 --
@@ -157,11 +144,8 @@ addConfiguration_authorization_error odSession  configuration authorization erro
 --
 -- ObjC selector: @- deleteConfiguration:authorization:error:@
 deleteConfiguration_authorization_error :: (IsODSession odSession, IsODConfiguration configuration, IsSFAuthorization authorization, IsNSError error_) => odSession -> configuration -> authorization -> error_ -> IO Bool
-deleteConfiguration_authorization_error odSession  configuration authorization error_ =
-  withObjCPtr configuration $ \raw_configuration ->
-    withObjCPtr authorization $ \raw_authorization ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg odSession (mkSelector "deleteConfiguration:authorization:error:") retCULong [argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_authorization :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+deleteConfiguration_authorization_error odSession configuration authorization error_ =
+  sendMessage odSession deleteConfiguration_authorization_errorSelector (toODConfiguration configuration) (toSFAuthorization authorization) (toNSError error_)
 
 -- | deleteConfigurationWithNodename:authorization:error:
 --
@@ -171,11 +155,8 @@ deleteConfiguration_authorization_error odSession  configuration authorization e
 --
 -- ObjC selector: @- deleteConfigurationWithNodename:authorization:error:@
 deleteConfigurationWithNodename_authorization_error :: (IsODSession odSession, IsNSString nodename, IsSFAuthorization authorization, IsNSError error_) => odSession -> nodename -> authorization -> error_ -> IO Bool
-deleteConfigurationWithNodename_authorization_error odSession  nodename authorization error_ =
-  withObjCPtr nodename $ \raw_nodename ->
-    withObjCPtr authorization $ \raw_authorization ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg odSession (mkSelector "deleteConfigurationWithNodename:authorization:error:") retCULong [argPtr (castPtr raw_nodename :: Ptr ()), argPtr (castPtr raw_authorization :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+deleteConfigurationWithNodename_authorization_error odSession nodename authorization error_ =
+  sendMessage odSession deleteConfigurationWithNodename_authorization_errorSelector (toNSString nodename) (toSFAuthorization authorization) (toNSError error_)
 
 -- | configurationTemplateNames
 --
@@ -185,8 +166,8 @@ deleteConfigurationWithNodename_authorization_error odSession  nodename authoriz
 --
 -- ObjC selector: @- configurationTemplateNames@
 configurationTemplateNames :: IsODSession odSession => odSession -> IO (Id NSArray)
-configurationTemplateNames odSession  =
-    sendMsg odSession (mkSelector "configurationTemplateNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+configurationTemplateNames odSession =
+  sendMessage odSession configurationTemplateNamesSelector
 
 -- | mappingTemplateNames
 --
@@ -196,54 +177,54 @@ configurationTemplateNames odSession  =
 --
 -- ObjC selector: @- mappingTemplateNames@
 mappingTemplateNames :: IsODSession odSession => odSession -> IO (Id NSArray)
-mappingTemplateNames odSession  =
-    sendMsg odSession (mkSelector "mappingTemplateNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+mappingTemplateNames odSession =
+  sendMessage odSession mappingTemplateNamesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultSession@
-defaultSessionSelector :: Selector
+defaultSessionSelector :: Selector '[] (Id ODSession)
 defaultSessionSelector = mkSelector "defaultSession"
 
 -- | @Selector@ for @sessionWithOptions:error:@
-sessionWithOptions_errorSelector :: Selector
+sessionWithOptions_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id ODSession)
 sessionWithOptions_errorSelector = mkSelector "sessionWithOptions:error:"
 
 -- | @Selector@ for @initWithOptions:error:@
-initWithOptions_errorSelector :: Selector
+initWithOptions_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id ODSession)
 initWithOptions_errorSelector = mkSelector "initWithOptions:error:"
 
 -- | @Selector@ for @nodeNamesAndReturnError:@
-nodeNamesAndReturnErrorSelector :: Selector
+nodeNamesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSArray)
 nodeNamesAndReturnErrorSelector = mkSelector "nodeNamesAndReturnError:"
 
 -- | @Selector@ for @configurationAuthorizationAllowingUserInteraction:error:@
-configurationAuthorizationAllowingUserInteraction_errorSelector :: Selector
+configurationAuthorizationAllowingUserInteraction_errorSelector :: Selector '[Bool, Id NSError] (Id SFAuthorization)
 configurationAuthorizationAllowingUserInteraction_errorSelector = mkSelector "configurationAuthorizationAllowingUserInteraction:error:"
 
 -- | @Selector@ for @configurationForNodename:@
-configurationForNodenameSelector :: Selector
+configurationForNodenameSelector :: Selector '[Id NSString] (Id ODConfiguration)
 configurationForNodenameSelector = mkSelector "configurationForNodename:"
 
 -- | @Selector@ for @addConfiguration:authorization:error:@
-addConfiguration_authorization_errorSelector :: Selector
+addConfiguration_authorization_errorSelector :: Selector '[Id ODConfiguration, Id SFAuthorization, Id NSError] Bool
 addConfiguration_authorization_errorSelector = mkSelector "addConfiguration:authorization:error:"
 
 -- | @Selector@ for @deleteConfiguration:authorization:error:@
-deleteConfiguration_authorization_errorSelector :: Selector
+deleteConfiguration_authorization_errorSelector :: Selector '[Id ODConfiguration, Id SFAuthorization, Id NSError] Bool
 deleteConfiguration_authorization_errorSelector = mkSelector "deleteConfiguration:authorization:error:"
 
 -- | @Selector@ for @deleteConfigurationWithNodename:authorization:error:@
-deleteConfigurationWithNodename_authorization_errorSelector :: Selector
+deleteConfigurationWithNodename_authorization_errorSelector :: Selector '[Id NSString, Id SFAuthorization, Id NSError] Bool
 deleteConfigurationWithNodename_authorization_errorSelector = mkSelector "deleteConfigurationWithNodename:authorization:error:"
 
 -- | @Selector@ for @configurationTemplateNames@
-configurationTemplateNamesSelector :: Selector
+configurationTemplateNamesSelector :: Selector '[] (Id NSArray)
 configurationTemplateNamesSelector = mkSelector "configurationTemplateNames"
 
 -- | @Selector@ for @mappingTemplateNames@
-mappingTemplateNamesSelector :: Selector
+mappingTemplateNamesSelector :: Selector '[] (Id NSArray)
 mappingTemplateNamesSelector = mkSelector "mappingTemplateNames"
 

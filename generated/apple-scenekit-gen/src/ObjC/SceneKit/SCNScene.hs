@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,52 +44,48 @@ module ObjC.SceneKit.SCNScene
   , paused
   , setPaused
   , particleSystems
-  , sceneSelector
-  , attributeForKeySelector
-  , setAttribute_forKeySelector
-  , sceneNamedSelector
-  , sceneNamed_inDirectory_optionsSelector
-  , sceneWithURL_options_errorSelector
-  , writeToURL_options_delegate_progressHandlerSelector
   , addParticleSystem_withTransformSelector
+  , attributeForKeySelector
+  , backgroundSelector
+  , fogColorSelector
+  , fogDensityExponentSelector
+  , fogEndDistanceSelector
+  , fogStartDistanceSelector
+  , lightingEnvironmentSelector
+  , particleSystemsSelector
+  , pausedSelector
+  , physicsWorldSelector
   , removeAllParticleSystemsSelector
   , removeParticleSystemSelector
   , rootNodeSelector
-  , physicsWorldSelector
-  , backgroundSelector
-  , lightingEnvironmentSelector
-  , fogStartDistanceSelector
-  , setFogStartDistanceSelector
-  , fogEndDistanceSelector
-  , setFogEndDistanceSelector
-  , fogDensityExponentSelector
-  , setFogDensityExponentSelector
-  , fogColorSelector
-  , setFogColorSelector
-  , wantsScreenSpaceReflectionSelector
-  , setWantsScreenSpaceReflectionSelector
-  , screenSpaceReflectionSampleCountSelector
-  , setScreenSpaceReflectionSampleCountSelector
+  , sceneNamedSelector
+  , sceneNamed_inDirectory_optionsSelector
+  , sceneSelector
+  , sceneWithURL_options_errorSelector
   , screenSpaceReflectionMaximumDistanceSelector
-  , setScreenSpaceReflectionMaximumDistanceSelector
+  , screenSpaceReflectionSampleCountSelector
   , screenSpaceReflectionStrideSelector
-  , setScreenSpaceReflectionStrideSelector
-  , pausedSelector
+  , setAttribute_forKeySelector
+  , setFogColorSelector
+  , setFogDensityExponentSelector
+  , setFogEndDistanceSelector
+  , setFogStartDistanceSelector
   , setPausedSelector
-  , particleSystemsSelector
+  , setScreenSpaceReflectionMaximumDistanceSelector
+  , setScreenSpaceReflectionSampleCountSelector
+  , setScreenSpaceReflectionStrideSelector
+  , setWantsScreenSpaceReflectionSelector
+  , wantsScreenSpaceReflectionSelector
+  , writeToURL_options_delegate_progressHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,7 +98,7 @@ scene :: IO (Id SCNScene)
 scene  =
   do
     cls' <- getRequiredClass "SCNScene"
-    sendClassMsg cls' (mkSelector "scene") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sceneSelector
 
 -- | attributeForKey:
 --
@@ -113,9 +110,8 @@ scene  =
 --
 -- ObjC selector: @- attributeForKey:@
 attributeForKey :: (IsSCNScene scnScene, IsNSString key) => scnScene -> key -> IO RawId
-attributeForKey scnScene  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg scnScene (mkSelector "attributeForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+attributeForKey scnScene key =
+  sendMessage scnScene attributeForKeySelector (toNSString key)
 
 -- | setAttribute:forKey:
 --
@@ -129,9 +125,8 @@ attributeForKey scnScene  key =
 --
 -- ObjC selector: @- setAttribute:forKey:@
 setAttribute_forKey :: (IsSCNScene scnScene, IsNSString key) => scnScene -> RawId -> key -> IO ()
-setAttribute_forKey scnScene  attribute key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg scnScene (mkSelector "setAttribute:forKey:") retVoid [argPtr (castPtr (unRawId attribute) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setAttribute_forKey scnScene attribute key =
+  sendMessage scnScene setAttribute_forKeySelector attribute (toNSString key)
 
 -- | sceneNamed:
 --
@@ -146,8 +141,7 @@ sceneNamed :: IsNSString name => name -> IO (Id SCNScene)
 sceneNamed name =
   do
     cls' <- getRequiredClass "SCNScene"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "sceneNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sceneNamedSelector (toNSString name)
 
 -- | sceneNamed:options:
 --
@@ -166,10 +160,7 @@ sceneNamed_inDirectory_options :: (IsNSString name, IsNSString directory, IsNSDi
 sceneNamed_inDirectory_options name directory options =
   do
     cls' <- getRequiredClass "SCNScene"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr directory $ \raw_directory ->
-        withObjCPtr options $ \raw_options ->
-          sendClassMsg cls' (mkSelector "sceneNamed:inDirectory:options:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_directory :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sceneNamed_inDirectory_optionsSelector (toNSString name) (toNSString directory) (toNSDictionary options)
 
 -- | sceneWithURL:options:error:
 --
@@ -188,10 +179,7 @@ sceneWithURL_options_error :: (IsNSURL url, IsNSDictionary options, IsNSError er
 sceneWithURL_options_error url options error_ =
   do
     cls' <- getRequiredClass "SCNScene"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        withObjCPtr error_ $ \raw_error_ ->
-          sendClassMsg cls' (mkSelector "sceneWithURL:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sceneWithURL_options_errorSelector (toNSURL url) (toNSDictionary options) (toNSError error_)
 
 -- | writeToURL:options:delegate:progressHandler:
 --
@@ -211,27 +199,23 @@ sceneWithURL_options_error url options error_ =
 --
 -- ObjC selector: @- writeToURL:options:delegate:progressHandler:@
 writeToURL_options_delegate_progressHandler :: (IsSCNScene scnScene, IsNSURL url, IsNSDictionary options) => scnScene -> url -> options -> RawId -> Ptr () -> IO Bool
-writeToURL_options_delegate_progressHandler scnScene  url options delegate progressHandler =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnScene (mkSelector "writeToURL:options:delegate:progressHandler:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr progressHandler :: Ptr ())]
+writeToURL_options_delegate_progressHandler scnScene url options delegate progressHandler =
+  sendMessage scnScene writeToURL_options_delegate_progressHandlerSelector (toNSURL url) (toNSDictionary options) delegate progressHandler
 
 -- | @- addParticleSystem:withTransform:@
 addParticleSystem_withTransform :: (IsSCNScene scnScene, IsSCNParticleSystem system) => scnScene -> system -> SCNMatrix4 -> IO ()
-addParticleSystem_withTransform scnScene  system transform =
-  withObjCPtr system $ \raw_system ->
-      sendMsg scnScene (mkSelector "addParticleSystem:withTransform:") retVoid [argPtr (castPtr raw_system :: Ptr ()), argSCNMatrix4 transform]
+addParticleSystem_withTransform scnScene system transform =
+  sendMessage scnScene addParticleSystem_withTransformSelector (toSCNParticleSystem system) transform
 
 -- | @- removeAllParticleSystems@
 removeAllParticleSystems :: IsSCNScene scnScene => scnScene -> IO ()
-removeAllParticleSystems scnScene  =
-    sendMsg scnScene (mkSelector "removeAllParticleSystems") retVoid []
+removeAllParticleSystems scnScene =
+  sendMessage scnScene removeAllParticleSystemsSelector
 
 -- | @- removeParticleSystem:@
 removeParticleSystem :: (IsSCNScene scnScene, IsSCNParticleSystem system) => scnScene -> system -> IO ()
-removeParticleSystem scnScene  system =
-  withObjCPtr system $ \raw_system ->
-      sendMsg scnScene (mkSelector "removeParticleSystem:") retVoid [argPtr (castPtr raw_system :: Ptr ())]
+removeParticleSystem scnScene system =
+  sendMessage scnScene removeParticleSystemSelector (toSCNParticleSystem system)
 
 -- | root
 --
@@ -241,8 +225,8 @@ removeParticleSystem scnScene  system =
 --
 -- ObjC selector: @- rootNode@
 rootNode :: IsSCNScene scnScene => scnScene -> IO (Id SCNNode)
-rootNode scnScene  =
-    sendMsg scnScene (mkSelector "rootNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootNode scnScene =
+  sendMessage scnScene rootNodeSelector
 
 -- | physicsWorld
 --
@@ -252,8 +236,8 @@ rootNode scnScene  =
 --
 -- ObjC selector: @- physicsWorld@
 physicsWorld :: IsSCNScene scnScene => scnScene -> IO (Id SCNPhysicsWorld)
-physicsWorld scnScene  =
-    sendMsg scnScene (mkSelector "physicsWorld") (retPtr retVoid) [] >>= retainedObject . castPtr
+physicsWorld scnScene =
+  sendMessage scnScene physicsWorldSelector
 
 -- | background
 --
@@ -263,8 +247,8 @@ physicsWorld scnScene  =
 --
 -- ObjC selector: @- background@
 background :: IsSCNScene scnScene => scnScene -> IO (Id SCNMaterialProperty)
-background scnScene  =
-    sendMsg scnScene (mkSelector "background") (retPtr retVoid) [] >>= retainedObject . castPtr
+background scnScene =
+  sendMessage scnScene backgroundSelector
 
 -- | lightingEnvironment
 --
@@ -274,8 +258,8 @@ background scnScene  =
 --
 -- ObjC selector: @- lightingEnvironment@
 lightingEnvironment :: IsSCNScene scnScene => scnScene -> IO (Id SCNMaterialProperty)
-lightingEnvironment scnScene  =
-    sendMsg scnScene (mkSelector "lightingEnvironment") (retPtr retVoid) [] >>= retainedObject . castPtr
+lightingEnvironment scnScene =
+  sendMessage scnScene lightingEnvironmentSelector
 
 -- | fogStartDistance
 --
@@ -283,8 +267,8 @@ lightingEnvironment scnScene  =
 --
 -- ObjC selector: @- fogStartDistance@
 fogStartDistance :: IsSCNScene scnScene => scnScene -> IO CDouble
-fogStartDistance scnScene  =
-    sendMsg scnScene (mkSelector "fogStartDistance") retCDouble []
+fogStartDistance scnScene =
+  sendMessage scnScene fogStartDistanceSelector
 
 -- | fogStartDistance
 --
@@ -292,8 +276,8 @@ fogStartDistance scnScene  =
 --
 -- ObjC selector: @- setFogStartDistance:@
 setFogStartDistance :: IsSCNScene scnScene => scnScene -> CDouble -> IO ()
-setFogStartDistance scnScene  value =
-    sendMsg scnScene (mkSelector "setFogStartDistance:") retVoid [argCDouble value]
+setFogStartDistance scnScene value =
+  sendMessage scnScene setFogStartDistanceSelector value
 
 -- | fogEndDistance
 --
@@ -301,8 +285,8 @@ setFogStartDistance scnScene  value =
 --
 -- ObjC selector: @- fogEndDistance@
 fogEndDistance :: IsSCNScene scnScene => scnScene -> IO CDouble
-fogEndDistance scnScene  =
-    sendMsg scnScene (mkSelector "fogEndDistance") retCDouble []
+fogEndDistance scnScene =
+  sendMessage scnScene fogEndDistanceSelector
 
 -- | fogEndDistance
 --
@@ -310,8 +294,8 @@ fogEndDistance scnScene  =
 --
 -- ObjC selector: @- setFogEndDistance:@
 setFogEndDistance :: IsSCNScene scnScene => scnScene -> CDouble -> IO ()
-setFogEndDistance scnScene  value =
-    sendMsg scnScene (mkSelector "setFogEndDistance:") retVoid [argCDouble value]
+setFogEndDistance scnScene value =
+  sendMessage scnScene setFogEndDistanceSelector value
 
 -- | fogDensityExponent
 --
@@ -321,8 +305,8 @@ setFogEndDistance scnScene  value =
 --
 -- ObjC selector: @- fogDensityExponent@
 fogDensityExponent :: IsSCNScene scnScene => scnScene -> IO CDouble
-fogDensityExponent scnScene  =
-    sendMsg scnScene (mkSelector "fogDensityExponent") retCDouble []
+fogDensityExponent scnScene =
+  sendMessage scnScene fogDensityExponentSelector
 
 -- | fogDensityExponent
 --
@@ -332,8 +316,8 @@ fogDensityExponent scnScene  =
 --
 -- ObjC selector: @- setFogDensityExponent:@
 setFogDensityExponent :: IsSCNScene scnScene => scnScene -> CDouble -> IO ()
-setFogDensityExponent scnScene  value =
-    sendMsg scnScene (mkSelector "setFogDensityExponent:") retVoid [argCDouble value]
+setFogDensityExponent scnScene value =
+  sendMessage scnScene setFogDensityExponentSelector value
 
 -- | fogColor
 --
@@ -343,8 +327,8 @@ setFogDensityExponent scnScene  value =
 --
 -- ObjC selector: @- fogColor@
 fogColor :: IsSCNScene scnScene => scnScene -> IO RawId
-fogColor scnScene  =
-    fmap (RawId . castPtr) $ sendMsg scnScene (mkSelector "fogColor") (retPtr retVoid) []
+fogColor scnScene =
+  sendMessage scnScene fogColorSelector
 
 -- | fogColor
 --
@@ -354,8 +338,8 @@ fogColor scnScene  =
 --
 -- ObjC selector: @- setFogColor:@
 setFogColor :: IsSCNScene scnScene => scnScene -> RawId -> IO ()
-setFogColor scnScene  value =
-    sendMsg scnScene (mkSelector "setFogColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setFogColor scnScene value =
+  sendMessage scnScene setFogColorSelector value
 
 -- | wantsScreenSpaceReflection
 --
@@ -365,8 +349,8 @@ setFogColor scnScene  value =
 --
 -- ObjC selector: @- wantsScreenSpaceReflection@
 wantsScreenSpaceReflection :: IsSCNScene scnScene => scnScene -> IO Bool
-wantsScreenSpaceReflection scnScene  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnScene (mkSelector "wantsScreenSpaceReflection") retCULong []
+wantsScreenSpaceReflection scnScene =
+  sendMessage scnScene wantsScreenSpaceReflectionSelector
 
 -- | wantsScreenSpaceReflection
 --
@@ -376,8 +360,8 @@ wantsScreenSpaceReflection scnScene  =
 --
 -- ObjC selector: @- setWantsScreenSpaceReflection:@
 setWantsScreenSpaceReflection :: IsSCNScene scnScene => scnScene -> Bool -> IO ()
-setWantsScreenSpaceReflection scnScene  value =
-    sendMsg scnScene (mkSelector "setWantsScreenSpaceReflection:") retVoid [argCULong (if value then 1 else 0)]
+setWantsScreenSpaceReflection scnScene value =
+  sendMessage scnScene setWantsScreenSpaceReflectionSelector value
 
 -- | screenSpaceReflectionSampleCount
 --
@@ -387,8 +371,8 @@ setWantsScreenSpaceReflection scnScene  value =
 --
 -- ObjC selector: @- screenSpaceReflectionSampleCount@
 screenSpaceReflectionSampleCount :: IsSCNScene scnScene => scnScene -> IO CLong
-screenSpaceReflectionSampleCount scnScene  =
-    sendMsg scnScene (mkSelector "screenSpaceReflectionSampleCount") retCLong []
+screenSpaceReflectionSampleCount scnScene =
+  sendMessage scnScene screenSpaceReflectionSampleCountSelector
 
 -- | screenSpaceReflectionSampleCount
 --
@@ -398,8 +382,8 @@ screenSpaceReflectionSampleCount scnScene  =
 --
 -- ObjC selector: @- setScreenSpaceReflectionSampleCount:@
 setScreenSpaceReflectionSampleCount :: IsSCNScene scnScene => scnScene -> CLong -> IO ()
-setScreenSpaceReflectionSampleCount scnScene  value =
-    sendMsg scnScene (mkSelector "setScreenSpaceReflectionSampleCount:") retVoid [argCLong value]
+setScreenSpaceReflectionSampleCount scnScene value =
+  sendMessage scnScene setScreenSpaceReflectionSampleCountSelector value
 
 -- | screenSpaceReflectionMaximumDistance
 --
@@ -409,8 +393,8 @@ setScreenSpaceReflectionSampleCount scnScene  value =
 --
 -- ObjC selector: @- screenSpaceReflectionMaximumDistance@
 screenSpaceReflectionMaximumDistance :: IsSCNScene scnScene => scnScene -> IO CDouble
-screenSpaceReflectionMaximumDistance scnScene  =
-    sendMsg scnScene (mkSelector "screenSpaceReflectionMaximumDistance") retCDouble []
+screenSpaceReflectionMaximumDistance scnScene =
+  sendMessage scnScene screenSpaceReflectionMaximumDistanceSelector
 
 -- | screenSpaceReflectionMaximumDistance
 --
@@ -420,8 +404,8 @@ screenSpaceReflectionMaximumDistance scnScene  =
 --
 -- ObjC selector: @- setScreenSpaceReflectionMaximumDistance:@
 setScreenSpaceReflectionMaximumDistance :: IsSCNScene scnScene => scnScene -> CDouble -> IO ()
-setScreenSpaceReflectionMaximumDistance scnScene  value =
-    sendMsg scnScene (mkSelector "setScreenSpaceReflectionMaximumDistance:") retVoid [argCDouble value]
+setScreenSpaceReflectionMaximumDistance scnScene value =
+  sendMessage scnScene setScreenSpaceReflectionMaximumDistanceSelector value
 
 -- | screenSpaceReflectionStride
 --
@@ -431,8 +415,8 @@ setScreenSpaceReflectionMaximumDistance scnScene  value =
 --
 -- ObjC selector: @- screenSpaceReflectionStride@
 screenSpaceReflectionStride :: IsSCNScene scnScene => scnScene -> IO CDouble
-screenSpaceReflectionStride scnScene  =
-    sendMsg scnScene (mkSelector "screenSpaceReflectionStride") retCDouble []
+screenSpaceReflectionStride scnScene =
+  sendMessage scnScene screenSpaceReflectionStrideSelector
 
 -- | screenSpaceReflectionStride
 --
@@ -442,8 +426,8 @@ screenSpaceReflectionStride scnScene  =
 --
 -- ObjC selector: @- setScreenSpaceReflectionStride:@
 setScreenSpaceReflectionStride :: IsSCNScene scnScene => scnScene -> CDouble -> IO ()
-setScreenSpaceReflectionStride scnScene  value =
-    sendMsg scnScene (mkSelector "setScreenSpaceReflectionStride:") retVoid [argCDouble value]
+setScreenSpaceReflectionStride scnScene value =
+  sendMessage scnScene setScreenSpaceReflectionStrideSelector value
 
 -- | paused
 --
@@ -453,8 +437,8 @@ setScreenSpaceReflectionStride scnScene  value =
 --
 -- ObjC selector: @- paused@
 paused :: IsSCNScene scnScene => scnScene -> IO Bool
-paused scnScene  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnScene (mkSelector "paused") retCULong []
+paused scnScene =
+  sendMessage scnScene pausedSelector
 
 -- | paused
 --
@@ -464,147 +448,147 @@ paused scnScene  =
 --
 -- ObjC selector: @- setPaused:@
 setPaused :: IsSCNScene scnScene => scnScene -> Bool -> IO ()
-setPaused scnScene  value =
-    sendMsg scnScene (mkSelector "setPaused:") retVoid [argCULong (if value then 1 else 0)]
+setPaused scnScene value =
+  sendMessage scnScene setPausedSelector value
 
 -- | @- particleSystems@
 particleSystems :: IsSCNScene scnScene => scnScene -> IO (Id NSArray)
-particleSystems scnScene  =
-    sendMsg scnScene (mkSelector "particleSystems") (retPtr retVoid) [] >>= retainedObject . castPtr
+particleSystems scnScene =
+  sendMessage scnScene particleSystemsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scene@
-sceneSelector :: Selector
+sceneSelector :: Selector '[] (Id SCNScene)
 sceneSelector = mkSelector "scene"
 
 -- | @Selector@ for @attributeForKey:@
-attributeForKeySelector :: Selector
+attributeForKeySelector :: Selector '[Id NSString] RawId
 attributeForKeySelector = mkSelector "attributeForKey:"
 
 -- | @Selector@ for @setAttribute:forKey:@
-setAttribute_forKeySelector :: Selector
+setAttribute_forKeySelector :: Selector '[RawId, Id NSString] ()
 setAttribute_forKeySelector = mkSelector "setAttribute:forKey:"
 
 -- | @Selector@ for @sceneNamed:@
-sceneNamedSelector :: Selector
+sceneNamedSelector :: Selector '[Id NSString] (Id SCNScene)
 sceneNamedSelector = mkSelector "sceneNamed:"
 
 -- | @Selector@ for @sceneNamed:inDirectory:options:@
-sceneNamed_inDirectory_optionsSelector :: Selector
+sceneNamed_inDirectory_optionsSelector :: Selector '[Id NSString, Id NSString, Id NSDictionary] (Id SCNScene)
 sceneNamed_inDirectory_optionsSelector = mkSelector "sceneNamed:inDirectory:options:"
 
 -- | @Selector@ for @sceneWithURL:options:error:@
-sceneWithURL_options_errorSelector :: Selector
+sceneWithURL_options_errorSelector :: Selector '[Id NSURL, Id NSDictionary, Id NSError] (Id SCNScene)
 sceneWithURL_options_errorSelector = mkSelector "sceneWithURL:options:error:"
 
 -- | @Selector@ for @writeToURL:options:delegate:progressHandler:@
-writeToURL_options_delegate_progressHandlerSelector :: Selector
+writeToURL_options_delegate_progressHandlerSelector :: Selector '[Id NSURL, Id NSDictionary, RawId, Ptr ()] Bool
 writeToURL_options_delegate_progressHandlerSelector = mkSelector "writeToURL:options:delegate:progressHandler:"
 
 -- | @Selector@ for @addParticleSystem:withTransform:@
-addParticleSystem_withTransformSelector :: Selector
+addParticleSystem_withTransformSelector :: Selector '[Id SCNParticleSystem, SCNMatrix4] ()
 addParticleSystem_withTransformSelector = mkSelector "addParticleSystem:withTransform:"
 
 -- | @Selector@ for @removeAllParticleSystems@
-removeAllParticleSystemsSelector :: Selector
+removeAllParticleSystemsSelector :: Selector '[] ()
 removeAllParticleSystemsSelector = mkSelector "removeAllParticleSystems"
 
 -- | @Selector@ for @removeParticleSystem:@
-removeParticleSystemSelector :: Selector
+removeParticleSystemSelector :: Selector '[Id SCNParticleSystem] ()
 removeParticleSystemSelector = mkSelector "removeParticleSystem:"
 
 -- | @Selector@ for @rootNode@
-rootNodeSelector :: Selector
+rootNodeSelector :: Selector '[] (Id SCNNode)
 rootNodeSelector = mkSelector "rootNode"
 
 -- | @Selector@ for @physicsWorld@
-physicsWorldSelector :: Selector
+physicsWorldSelector :: Selector '[] (Id SCNPhysicsWorld)
 physicsWorldSelector = mkSelector "physicsWorld"
 
 -- | @Selector@ for @background@
-backgroundSelector :: Selector
+backgroundSelector :: Selector '[] (Id SCNMaterialProperty)
 backgroundSelector = mkSelector "background"
 
 -- | @Selector@ for @lightingEnvironment@
-lightingEnvironmentSelector :: Selector
+lightingEnvironmentSelector :: Selector '[] (Id SCNMaterialProperty)
 lightingEnvironmentSelector = mkSelector "lightingEnvironment"
 
 -- | @Selector@ for @fogStartDistance@
-fogStartDistanceSelector :: Selector
+fogStartDistanceSelector :: Selector '[] CDouble
 fogStartDistanceSelector = mkSelector "fogStartDistance"
 
 -- | @Selector@ for @setFogStartDistance:@
-setFogStartDistanceSelector :: Selector
+setFogStartDistanceSelector :: Selector '[CDouble] ()
 setFogStartDistanceSelector = mkSelector "setFogStartDistance:"
 
 -- | @Selector@ for @fogEndDistance@
-fogEndDistanceSelector :: Selector
+fogEndDistanceSelector :: Selector '[] CDouble
 fogEndDistanceSelector = mkSelector "fogEndDistance"
 
 -- | @Selector@ for @setFogEndDistance:@
-setFogEndDistanceSelector :: Selector
+setFogEndDistanceSelector :: Selector '[CDouble] ()
 setFogEndDistanceSelector = mkSelector "setFogEndDistance:"
 
 -- | @Selector@ for @fogDensityExponent@
-fogDensityExponentSelector :: Selector
+fogDensityExponentSelector :: Selector '[] CDouble
 fogDensityExponentSelector = mkSelector "fogDensityExponent"
 
 -- | @Selector@ for @setFogDensityExponent:@
-setFogDensityExponentSelector :: Selector
+setFogDensityExponentSelector :: Selector '[CDouble] ()
 setFogDensityExponentSelector = mkSelector "setFogDensityExponent:"
 
 -- | @Selector@ for @fogColor@
-fogColorSelector :: Selector
+fogColorSelector :: Selector '[] RawId
 fogColorSelector = mkSelector "fogColor"
 
 -- | @Selector@ for @setFogColor:@
-setFogColorSelector :: Selector
+setFogColorSelector :: Selector '[RawId] ()
 setFogColorSelector = mkSelector "setFogColor:"
 
 -- | @Selector@ for @wantsScreenSpaceReflection@
-wantsScreenSpaceReflectionSelector :: Selector
+wantsScreenSpaceReflectionSelector :: Selector '[] Bool
 wantsScreenSpaceReflectionSelector = mkSelector "wantsScreenSpaceReflection"
 
 -- | @Selector@ for @setWantsScreenSpaceReflection:@
-setWantsScreenSpaceReflectionSelector :: Selector
+setWantsScreenSpaceReflectionSelector :: Selector '[Bool] ()
 setWantsScreenSpaceReflectionSelector = mkSelector "setWantsScreenSpaceReflection:"
 
 -- | @Selector@ for @screenSpaceReflectionSampleCount@
-screenSpaceReflectionSampleCountSelector :: Selector
+screenSpaceReflectionSampleCountSelector :: Selector '[] CLong
 screenSpaceReflectionSampleCountSelector = mkSelector "screenSpaceReflectionSampleCount"
 
 -- | @Selector@ for @setScreenSpaceReflectionSampleCount:@
-setScreenSpaceReflectionSampleCountSelector :: Selector
+setScreenSpaceReflectionSampleCountSelector :: Selector '[CLong] ()
 setScreenSpaceReflectionSampleCountSelector = mkSelector "setScreenSpaceReflectionSampleCount:"
 
 -- | @Selector@ for @screenSpaceReflectionMaximumDistance@
-screenSpaceReflectionMaximumDistanceSelector :: Selector
+screenSpaceReflectionMaximumDistanceSelector :: Selector '[] CDouble
 screenSpaceReflectionMaximumDistanceSelector = mkSelector "screenSpaceReflectionMaximumDistance"
 
 -- | @Selector@ for @setScreenSpaceReflectionMaximumDistance:@
-setScreenSpaceReflectionMaximumDistanceSelector :: Selector
+setScreenSpaceReflectionMaximumDistanceSelector :: Selector '[CDouble] ()
 setScreenSpaceReflectionMaximumDistanceSelector = mkSelector "setScreenSpaceReflectionMaximumDistance:"
 
 -- | @Selector@ for @screenSpaceReflectionStride@
-screenSpaceReflectionStrideSelector :: Selector
+screenSpaceReflectionStrideSelector :: Selector '[] CDouble
 screenSpaceReflectionStrideSelector = mkSelector "screenSpaceReflectionStride"
 
 -- | @Selector@ for @setScreenSpaceReflectionStride:@
-setScreenSpaceReflectionStrideSelector :: Selector
+setScreenSpaceReflectionStrideSelector :: Selector '[CDouble] ()
 setScreenSpaceReflectionStrideSelector = mkSelector "setScreenSpaceReflectionStride:"
 
 -- | @Selector@ for @paused@
-pausedSelector :: Selector
+pausedSelector :: Selector '[] Bool
 pausedSelector = mkSelector "paused"
 
 -- | @Selector@ for @setPaused:@
-setPausedSelector :: Selector
+setPausedSelector :: Selector '[Bool] ()
 setPausedSelector = mkSelector "setPaused:"
 
 -- | @Selector@ for @particleSystems@
-particleSystemsSelector :: Selector
+particleSystemsSelector :: Selector '[] (Id NSArray)
 particleSystemsSelector = mkSelector "particleSystems"
 

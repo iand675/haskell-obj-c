@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,15 +28,11 @@ module ObjC.OSLog.OSLogEntrySignpost
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- signpostIdentifier@
 signpostIdentifier :: IsOSLogEntrySignpost osLogEntrySignpost => osLogEntrySignpost -> IO CULong
-signpostIdentifier osLogEntrySignpost  =
-    sendMsg osLogEntrySignpost (mkSelector "signpostIdentifier") retCULong []
+signpostIdentifier osLogEntrySignpost =
+  sendMessage osLogEntrySignpost signpostIdentifierSelector
 
 -- | signpostName
 --
@@ -58,8 +55,8 @@ signpostIdentifier osLogEntrySignpost  =
 --
 -- ObjC selector: @- signpostName@
 signpostName :: IsOSLogEntrySignpost osLogEntrySignpost => osLogEntrySignpost -> IO (Id NSString)
-signpostName osLogEntrySignpost  =
-    sendMsg osLogEntrySignpost (mkSelector "signpostName") (retPtr retVoid) [] >>= retainedObject . castPtr
+signpostName osLogEntrySignpost =
+  sendMessage osLogEntrySignpost signpostNameSelector
 
 -- | signpostType
 --
@@ -67,22 +64,22 @@ signpostName osLogEntrySignpost  =
 --
 -- ObjC selector: @- signpostType@
 signpostType :: IsOSLogEntrySignpost osLogEntrySignpost => osLogEntrySignpost -> IO OSLogEntrySignpostType
-signpostType osLogEntrySignpost  =
-    fmap (coerce :: CLong -> OSLogEntrySignpostType) $ sendMsg osLogEntrySignpost (mkSelector "signpostType") retCLong []
+signpostType osLogEntrySignpost =
+  sendMessage osLogEntrySignpost signpostTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @signpostIdentifier@
-signpostIdentifierSelector :: Selector
+signpostIdentifierSelector :: Selector '[] CULong
 signpostIdentifierSelector = mkSelector "signpostIdentifier"
 
 -- | @Selector@ for @signpostName@
-signpostNameSelector :: Selector
+signpostNameSelector :: Selector '[] (Id NSString)
 signpostNameSelector = mkSelector "signpostName"
 
 -- | @Selector@ for @signpostType@
-signpostTypeSelector :: Selector
+signpostTypeSelector :: Selector '[] OSLogEntrySignpostType
 signpostTypeSelector = mkSelector "signpostType"
 

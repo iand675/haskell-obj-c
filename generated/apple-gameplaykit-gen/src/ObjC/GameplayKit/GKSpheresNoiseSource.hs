@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.GameplayKit.GKSpheresNoiseSource
   , initWithFrequency
   , frequency
   , setFrequency
-  , spheresNoiseWithFrequencySelector
-  , initWithFrequencySelector
   , frequencySelector
+  , initWithFrequencySelector
   , setFrequencySelector
+  , spheresNoiseWithFrequencySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,40 +37,40 @@ spheresNoiseWithFrequency :: CDouble -> IO (Id GKSpheresNoiseSource)
 spheresNoiseWithFrequency frequency =
   do
     cls' <- getRequiredClass "GKSpheresNoiseSource"
-    sendClassMsg cls' (mkSelector "spheresNoiseWithFrequency:") (retPtr retVoid) [argCDouble frequency] >>= retainedObject . castPtr
+    sendClassMessage cls' spheresNoiseWithFrequencySelector frequency
 
 -- | @- initWithFrequency:@
 initWithFrequency :: IsGKSpheresNoiseSource gkSpheresNoiseSource => gkSpheresNoiseSource -> CDouble -> IO (Id GKSpheresNoiseSource)
-initWithFrequency gkSpheresNoiseSource  frequency =
-    sendMsg gkSpheresNoiseSource (mkSelector "initWithFrequency:") (retPtr retVoid) [argCDouble frequency] >>= ownedObject . castPtr
+initWithFrequency gkSpheresNoiseSource frequency =
+  sendOwnedMessage gkSpheresNoiseSource initWithFrequencySelector frequency
 
 -- | @- frequency@
 frequency :: IsGKSpheresNoiseSource gkSpheresNoiseSource => gkSpheresNoiseSource -> IO CDouble
-frequency gkSpheresNoiseSource  =
-    sendMsg gkSpheresNoiseSource (mkSelector "frequency") retCDouble []
+frequency gkSpheresNoiseSource =
+  sendMessage gkSpheresNoiseSource frequencySelector
 
 -- | @- setFrequency:@
 setFrequency :: IsGKSpheresNoiseSource gkSpheresNoiseSource => gkSpheresNoiseSource -> CDouble -> IO ()
-setFrequency gkSpheresNoiseSource  value =
-    sendMsg gkSpheresNoiseSource (mkSelector "setFrequency:") retVoid [argCDouble value]
+setFrequency gkSpheresNoiseSource value =
+  sendMessage gkSpheresNoiseSource setFrequencySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @spheresNoiseWithFrequency:@
-spheresNoiseWithFrequencySelector :: Selector
+spheresNoiseWithFrequencySelector :: Selector '[CDouble] (Id GKSpheresNoiseSource)
 spheresNoiseWithFrequencySelector = mkSelector "spheresNoiseWithFrequency:"
 
 -- | @Selector@ for @initWithFrequency:@
-initWithFrequencySelector :: Selector
+initWithFrequencySelector :: Selector '[CDouble] (Id GKSpheresNoiseSource)
 initWithFrequencySelector = mkSelector "initWithFrequency:"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] CDouble
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @setFrequency:@
-setFrequencySelector :: Selector
+setFrequencySelector :: Selector '[CDouble] ()
 setFrequencySelector = mkSelector "setFrequency:"
 

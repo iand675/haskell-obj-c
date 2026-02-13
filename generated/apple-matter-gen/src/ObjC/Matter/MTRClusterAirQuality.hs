@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Matter.MTRClusterAirQuality
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , readAttributeAirQualityWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
   , initSelector
-  , newSelector
   , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
+  , readAttributeAirQualityWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,99 +44,90 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeAirQualityWithParams:@
 readAttributeAirQualityWithParams :: (IsMTRClusterAirQuality mtrClusterAirQuality, IsMTRReadParams params) => mtrClusterAirQuality -> params -> IO (Id NSDictionary)
-readAttributeAirQualityWithParams mtrClusterAirQuality  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAirQuality (mkSelector "readAttributeAirQualityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAirQualityWithParams mtrClusterAirQuality params =
+  sendMessage mtrClusterAirQuality readAttributeAirQualityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterAirQuality mtrClusterAirQuality, IsMTRReadParams params) => mtrClusterAirQuality -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterAirQuality  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAirQuality (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterAirQuality params =
+  sendMessage mtrClusterAirQuality readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterAirQuality mtrClusterAirQuality, IsMTRReadParams params) => mtrClusterAirQuality -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterAirQuality  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAirQuality (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterAirQuality params =
+  sendMessage mtrClusterAirQuality readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterAirQuality mtrClusterAirQuality, IsMTRReadParams params) => mtrClusterAirQuality -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterAirQuality  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAirQuality (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterAirQuality params =
+  sendMessage mtrClusterAirQuality readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterAirQuality mtrClusterAirQuality, IsMTRReadParams params) => mtrClusterAirQuality -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterAirQuality  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAirQuality (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterAirQuality params =
+  sendMessage mtrClusterAirQuality readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterAirQuality mtrClusterAirQuality, IsMTRReadParams params) => mtrClusterAirQuality -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterAirQuality  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterAirQuality (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterAirQuality params =
+  sendMessage mtrClusterAirQuality readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterAirQuality mtrClusterAirQuality => mtrClusterAirQuality -> IO (Id MTRClusterAirQuality)
-init_ mtrClusterAirQuality  =
-    sendMsg mtrClusterAirQuality (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterAirQuality =
+  sendOwnedMessage mtrClusterAirQuality initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterAirQuality)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterAirQuality"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterAirQuality mtrClusterAirQuality, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterAirQuality -> device -> endpointID -> queue -> IO (Id MTRClusterAirQuality)
-initWithDevice_endpointID_queue mtrClusterAirQuality  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterAirQuality (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterAirQuality device endpointID queue =
+  sendOwnedMessage mtrClusterAirQuality initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeAirQualityWithParams:@
-readAttributeAirQualityWithParamsSelector :: Selector
+readAttributeAirQualityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAirQualityWithParamsSelector = mkSelector "readAttributeAirQualityWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterAirQuality)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterAirQuality)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterAirQuality)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

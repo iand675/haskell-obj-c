@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,35 +39,35 @@ module ObjC.Foundation.NSURLSessionTask
   , prefersIncrementalDelivery
   , setPrefersIncrementalDelivery
   , cancelSelector
-  , suspendSelector
-  , resumeSelector
+  , countOfBytesClientExpectsToReceiveSelector
+  , countOfBytesClientExpectsToSendSelector
+  , countOfBytesExpectedToReceiveSelector
+  , countOfBytesExpectedToSendSelector
+  , countOfBytesReceivedSelector
+  , countOfBytesSentSelector
+  , currentRequestSelector
+  , delegateSelector
+  , earliestBeginDateSelector
+  , errorSelector
   , initSelector
   , newSelector
-  , taskIdentifierSelector
   , originalRequestSelector
-  , currentRequestSelector
-  , responseSelector
-  , delegateSelector
-  , setDelegateSelector
+  , prefersIncrementalDeliverySelector
+  , prioritySelector
   , progressSelector
-  , earliestBeginDateSelector
-  , setEarliestBeginDateSelector
-  , countOfBytesClientExpectsToSendSelector
-  , setCountOfBytesClientExpectsToSendSelector
-  , countOfBytesClientExpectsToReceiveSelector
+  , responseSelector
+  , resumeSelector
   , setCountOfBytesClientExpectsToReceiveSelector
-  , countOfBytesSentSelector
-  , countOfBytesReceivedSelector
-  , countOfBytesExpectedToSendSelector
-  , countOfBytesExpectedToReceiveSelector
-  , taskDescriptionSelector
+  , setCountOfBytesClientExpectsToSendSelector
+  , setDelegateSelector
+  , setEarliestBeginDateSelector
+  , setPrefersIncrementalDeliverySelector
+  , setPrioritySelector
   , setTaskDescriptionSelector
   , stateSelector
-  , errorSelector
-  , prioritySelector
-  , setPrioritySelector
-  , prefersIncrementalDeliverySelector
-  , setPrefersIncrementalDeliverySelector
+  , suspendSelector
+  , taskDescriptionSelector
+  , taskIdentifierSelector
 
   -- * Enum types
   , NSURLSessionTaskState(NSURLSessionTaskState)
@@ -77,15 +78,11 @@ module ObjC.Foundation.NSURLSessionTask
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -94,279 +91,277 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- cancel@
 cancel :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO ()
-cancel nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "cancel") retVoid []
+cancel nsurlSessionTask =
+  sendMessage nsurlSessionTask cancelSelector
 
 -- | @- suspend@
 suspend :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO ()
-suspend nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "suspend") retVoid []
+suspend nsurlSessionTask =
+  sendMessage nsurlSessionTask suspendSelector
 
 -- | @- resume@
 resume :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO ()
-resume nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "resume") retVoid []
+resume nsurlSessionTask =
+  sendMessage nsurlSessionTask resumeSelector
 
 -- | @- init@
 init_ :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSURLSessionTask)
-init_ nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsurlSessionTask =
+  sendOwnedMessage nsurlSessionTask initSelector
 
 -- | @+ new@
 new :: IO (Id NSURLSessionTask)
 new  =
   do
     cls' <- getRequiredClass "NSURLSessionTask"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- taskIdentifier@
 taskIdentifier :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO CULong
-taskIdentifier nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "taskIdentifier") retCULong []
+taskIdentifier nsurlSessionTask =
+  sendMessage nsurlSessionTask taskIdentifierSelector
 
 -- | @- originalRequest@
 originalRequest :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSURLRequest)
-originalRequest nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "originalRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalRequest nsurlSessionTask =
+  sendMessage nsurlSessionTask originalRequestSelector
 
 -- | @- currentRequest@
 currentRequest :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSURLRequest)
-currentRequest nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "currentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentRequest nsurlSessionTask =
+  sendMessage nsurlSessionTask currentRequestSelector
 
 -- | @- response@
 response :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSURLResponse)
-response nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "response") (retPtr retVoid) [] >>= retainedObject . castPtr
+response nsurlSessionTask =
+  sendMessage nsurlSessionTask responseSelector
 
 -- | @- delegate@
 delegate :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO RawId
-delegate nsurlSessionTask  =
-    fmap (RawId . castPtr) $ sendMsg nsurlSessionTask (mkSelector "delegate") (retPtr retVoid) []
+delegate nsurlSessionTask =
+  sendMessage nsurlSessionTask delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> RawId -> IO ()
-setDelegate nsurlSessionTask  value =
-    sendMsg nsurlSessionTask (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsurlSessionTask value =
+  sendMessage nsurlSessionTask setDelegateSelector value
 
 -- | @- progress@
 progress :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSProgress)
-progress nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "progress") (retPtr retVoid) [] >>= retainedObject . castPtr
+progress nsurlSessionTask =
+  sendMessage nsurlSessionTask progressSelector
 
 -- | @- earliestBeginDate@
 earliestBeginDate :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSDate)
-earliestBeginDate nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "earliestBeginDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+earliestBeginDate nsurlSessionTask =
+  sendMessage nsurlSessionTask earliestBeginDateSelector
 
 -- | @- setEarliestBeginDate:@
 setEarliestBeginDate :: (IsNSURLSessionTask nsurlSessionTask, IsNSDate value) => nsurlSessionTask -> value -> IO ()
-setEarliestBeginDate nsurlSessionTask  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSessionTask (mkSelector "setEarliestBeginDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEarliestBeginDate nsurlSessionTask value =
+  sendMessage nsurlSessionTask setEarliestBeginDateSelector (toNSDate value)
 
 -- | @- countOfBytesClientExpectsToSend@
 countOfBytesClientExpectsToSend :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO CLong
-countOfBytesClientExpectsToSend nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "countOfBytesClientExpectsToSend") retCLong []
+countOfBytesClientExpectsToSend nsurlSessionTask =
+  sendMessage nsurlSessionTask countOfBytesClientExpectsToSendSelector
 
 -- | @- setCountOfBytesClientExpectsToSend:@
 setCountOfBytesClientExpectsToSend :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> CLong -> IO ()
-setCountOfBytesClientExpectsToSend nsurlSessionTask  value =
-    sendMsg nsurlSessionTask (mkSelector "setCountOfBytesClientExpectsToSend:") retVoid [argCLong value]
+setCountOfBytesClientExpectsToSend nsurlSessionTask value =
+  sendMessage nsurlSessionTask setCountOfBytesClientExpectsToSendSelector value
 
 -- | @- countOfBytesClientExpectsToReceive@
 countOfBytesClientExpectsToReceive :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO CLong
-countOfBytesClientExpectsToReceive nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "countOfBytesClientExpectsToReceive") retCLong []
+countOfBytesClientExpectsToReceive nsurlSessionTask =
+  sendMessage nsurlSessionTask countOfBytesClientExpectsToReceiveSelector
 
 -- | @- setCountOfBytesClientExpectsToReceive:@
 setCountOfBytesClientExpectsToReceive :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> CLong -> IO ()
-setCountOfBytesClientExpectsToReceive nsurlSessionTask  value =
-    sendMsg nsurlSessionTask (mkSelector "setCountOfBytesClientExpectsToReceive:") retVoid [argCLong value]
+setCountOfBytesClientExpectsToReceive nsurlSessionTask value =
+  sendMessage nsurlSessionTask setCountOfBytesClientExpectsToReceiveSelector value
 
 -- | @- countOfBytesSent@
 countOfBytesSent :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO CLong
-countOfBytesSent nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "countOfBytesSent") retCLong []
+countOfBytesSent nsurlSessionTask =
+  sendMessage nsurlSessionTask countOfBytesSentSelector
 
 -- | @- countOfBytesReceived@
 countOfBytesReceived :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO CLong
-countOfBytesReceived nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "countOfBytesReceived") retCLong []
+countOfBytesReceived nsurlSessionTask =
+  sendMessage nsurlSessionTask countOfBytesReceivedSelector
 
 -- | @- countOfBytesExpectedToSend@
 countOfBytesExpectedToSend :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO CLong
-countOfBytesExpectedToSend nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "countOfBytesExpectedToSend") retCLong []
+countOfBytesExpectedToSend nsurlSessionTask =
+  sendMessage nsurlSessionTask countOfBytesExpectedToSendSelector
 
 -- | @- countOfBytesExpectedToReceive@
 countOfBytesExpectedToReceive :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO CLong
-countOfBytesExpectedToReceive nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "countOfBytesExpectedToReceive") retCLong []
+countOfBytesExpectedToReceive nsurlSessionTask =
+  sendMessage nsurlSessionTask countOfBytesExpectedToReceiveSelector
 
 -- | @- taskDescription@
 taskDescription :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSString)
-taskDescription nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "taskDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+taskDescription nsurlSessionTask =
+  sendMessage nsurlSessionTask taskDescriptionSelector
 
 -- | @- setTaskDescription:@
 setTaskDescription :: (IsNSURLSessionTask nsurlSessionTask, IsNSString value) => nsurlSessionTask -> value -> IO ()
-setTaskDescription nsurlSessionTask  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlSessionTask (mkSelector "setTaskDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTaskDescription nsurlSessionTask value =
+  sendMessage nsurlSessionTask setTaskDescriptionSelector (toNSString value)
 
 -- | @- state@
 state :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO NSURLSessionTaskState
-state nsurlSessionTask  =
-    fmap (coerce :: CLong -> NSURLSessionTaskState) $ sendMsg nsurlSessionTask (mkSelector "state") retCLong []
+state nsurlSessionTask =
+  sendMessage nsurlSessionTask stateSelector
 
 -- | @- error@
 error_ :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO (Id NSError)
-error_ nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ nsurlSessionTask =
+  sendMessage nsurlSessionTask errorSelector
 
 -- | @- priority@
 priority :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO CFloat
-priority nsurlSessionTask  =
-    sendMsg nsurlSessionTask (mkSelector "priority") retCFloat []
+priority nsurlSessionTask =
+  sendMessage nsurlSessionTask prioritySelector
 
 -- | @- setPriority:@
 setPriority :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> CFloat -> IO ()
-setPriority nsurlSessionTask  value =
-    sendMsg nsurlSessionTask (mkSelector "setPriority:") retVoid [argCFloat value]
+setPriority nsurlSessionTask value =
+  sendMessage nsurlSessionTask setPrioritySelector value
 
 -- | @- prefersIncrementalDelivery@
 prefersIncrementalDelivery :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> IO Bool
-prefersIncrementalDelivery nsurlSessionTask  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsurlSessionTask (mkSelector "prefersIncrementalDelivery") retCULong []
+prefersIncrementalDelivery nsurlSessionTask =
+  sendMessage nsurlSessionTask prefersIncrementalDeliverySelector
 
 -- | @- setPrefersIncrementalDelivery:@
 setPrefersIncrementalDelivery :: IsNSURLSessionTask nsurlSessionTask => nsurlSessionTask -> Bool -> IO ()
-setPrefersIncrementalDelivery nsurlSessionTask  value =
-    sendMsg nsurlSessionTask (mkSelector "setPrefersIncrementalDelivery:") retVoid [argCULong (if value then 1 else 0)]
+setPrefersIncrementalDelivery nsurlSessionTask value =
+  sendMessage nsurlSessionTask setPrefersIncrementalDeliverySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @suspend@
-suspendSelector :: Selector
+suspendSelector :: Selector '[] ()
 suspendSelector = mkSelector "suspend"
 
 -- | @Selector@ for @resume@
-resumeSelector :: Selector
+resumeSelector :: Selector '[] ()
 resumeSelector = mkSelector "resume"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSURLSessionTask)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSURLSessionTask)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @taskIdentifier@
-taskIdentifierSelector :: Selector
+taskIdentifierSelector :: Selector '[] CULong
 taskIdentifierSelector = mkSelector "taskIdentifier"
 
 -- | @Selector@ for @originalRequest@
-originalRequestSelector :: Selector
+originalRequestSelector :: Selector '[] (Id NSURLRequest)
 originalRequestSelector = mkSelector "originalRequest"
 
 -- | @Selector@ for @currentRequest@
-currentRequestSelector :: Selector
+currentRequestSelector :: Selector '[] (Id NSURLRequest)
 currentRequestSelector = mkSelector "currentRequest"
 
 -- | @Selector@ for @response@
-responseSelector :: Selector
+responseSelector :: Selector '[] (Id NSURLResponse)
 responseSelector = mkSelector "response"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @progress@
-progressSelector :: Selector
+progressSelector :: Selector '[] (Id NSProgress)
 progressSelector = mkSelector "progress"
 
 -- | @Selector@ for @earliestBeginDate@
-earliestBeginDateSelector :: Selector
+earliestBeginDateSelector :: Selector '[] (Id NSDate)
 earliestBeginDateSelector = mkSelector "earliestBeginDate"
 
 -- | @Selector@ for @setEarliestBeginDate:@
-setEarliestBeginDateSelector :: Selector
+setEarliestBeginDateSelector :: Selector '[Id NSDate] ()
 setEarliestBeginDateSelector = mkSelector "setEarliestBeginDate:"
 
 -- | @Selector@ for @countOfBytesClientExpectsToSend@
-countOfBytesClientExpectsToSendSelector :: Selector
+countOfBytesClientExpectsToSendSelector :: Selector '[] CLong
 countOfBytesClientExpectsToSendSelector = mkSelector "countOfBytesClientExpectsToSend"
 
 -- | @Selector@ for @setCountOfBytesClientExpectsToSend:@
-setCountOfBytesClientExpectsToSendSelector :: Selector
+setCountOfBytesClientExpectsToSendSelector :: Selector '[CLong] ()
 setCountOfBytesClientExpectsToSendSelector = mkSelector "setCountOfBytesClientExpectsToSend:"
 
 -- | @Selector@ for @countOfBytesClientExpectsToReceive@
-countOfBytesClientExpectsToReceiveSelector :: Selector
+countOfBytesClientExpectsToReceiveSelector :: Selector '[] CLong
 countOfBytesClientExpectsToReceiveSelector = mkSelector "countOfBytesClientExpectsToReceive"
 
 -- | @Selector@ for @setCountOfBytesClientExpectsToReceive:@
-setCountOfBytesClientExpectsToReceiveSelector :: Selector
+setCountOfBytesClientExpectsToReceiveSelector :: Selector '[CLong] ()
 setCountOfBytesClientExpectsToReceiveSelector = mkSelector "setCountOfBytesClientExpectsToReceive:"
 
 -- | @Selector@ for @countOfBytesSent@
-countOfBytesSentSelector :: Selector
+countOfBytesSentSelector :: Selector '[] CLong
 countOfBytesSentSelector = mkSelector "countOfBytesSent"
 
 -- | @Selector@ for @countOfBytesReceived@
-countOfBytesReceivedSelector :: Selector
+countOfBytesReceivedSelector :: Selector '[] CLong
 countOfBytesReceivedSelector = mkSelector "countOfBytesReceived"
 
 -- | @Selector@ for @countOfBytesExpectedToSend@
-countOfBytesExpectedToSendSelector :: Selector
+countOfBytesExpectedToSendSelector :: Selector '[] CLong
 countOfBytesExpectedToSendSelector = mkSelector "countOfBytesExpectedToSend"
 
 -- | @Selector@ for @countOfBytesExpectedToReceive@
-countOfBytesExpectedToReceiveSelector :: Selector
+countOfBytesExpectedToReceiveSelector :: Selector '[] CLong
 countOfBytesExpectedToReceiveSelector = mkSelector "countOfBytesExpectedToReceive"
 
 -- | @Selector@ for @taskDescription@
-taskDescriptionSelector :: Selector
+taskDescriptionSelector :: Selector '[] (Id NSString)
 taskDescriptionSelector = mkSelector "taskDescription"
 
 -- | @Selector@ for @setTaskDescription:@
-setTaskDescriptionSelector :: Selector
+setTaskDescriptionSelector :: Selector '[Id NSString] ()
 setTaskDescriptionSelector = mkSelector "setTaskDescription:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] NSURLSessionTaskState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @priority@
-prioritySelector :: Selector
+prioritySelector :: Selector '[] CFloat
 prioritySelector = mkSelector "priority"
 
 -- | @Selector@ for @setPriority:@
-setPrioritySelector :: Selector
+setPrioritySelector :: Selector '[CFloat] ()
 setPrioritySelector = mkSelector "setPriority:"
 
 -- | @Selector@ for @prefersIncrementalDelivery@
-prefersIncrementalDeliverySelector :: Selector
+prefersIncrementalDeliverySelector :: Selector '[] Bool
 prefersIncrementalDeliverySelector = mkSelector "prefersIncrementalDelivery"
 
 -- | @Selector@ for @setPrefersIncrementalDelivery:@
-setPrefersIncrementalDeliverySelector :: Selector
+setPrefersIncrementalDeliverySelector :: Selector '[Bool] ()
 setPrefersIncrementalDeliverySelector = mkSelector "setPrefersIncrementalDelivery:"
 

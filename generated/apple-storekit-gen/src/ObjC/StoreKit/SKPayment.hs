@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.StoreKit.SKPayment
   , applicationUsername
   , simulatesAskToBuyInSandbox
   , paymentDiscount
-  , paymentWithProductSelector
-  , paymentWithProductIdentifierSelector
-  , productIdentifierSelector
-  , requestDataSelector
-  , quantitySelector
   , applicationUsernameSelector
-  , simulatesAskToBuyInSandboxSelector
   , paymentDiscountSelector
+  , paymentWithProductIdentifierSelector
+  , paymentWithProductSelector
+  , productIdentifierSelector
+  , quantitySelector
+  , requestDataSelector
+  , simulatesAskToBuyInSandboxSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,80 +43,78 @@ paymentWithProduct :: IsSKProduct product_ => product_ -> IO (Id SKPayment)
 paymentWithProduct product_ =
   do
     cls' <- getRequiredClass "SKPayment"
-    withObjCPtr product_ $ \raw_product_ ->
-      sendClassMsg cls' (mkSelector "paymentWithProduct:") (retPtr retVoid) [argPtr (castPtr raw_product_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' paymentWithProductSelector (toSKProduct product_)
 
 -- | @+ paymentWithProductIdentifier:@
 paymentWithProductIdentifier :: IsNSString identifier => identifier -> IO RawId
 paymentWithProductIdentifier identifier =
   do
     cls' <- getRequiredClass "SKPayment"
-    withObjCPtr identifier $ \raw_identifier ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "paymentWithProductIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())]
+    sendClassMessage cls' paymentWithProductIdentifierSelector (toNSString identifier)
 
 -- | @- productIdentifier@
 productIdentifier :: IsSKPayment skPayment => skPayment -> IO (Id NSString)
-productIdentifier skPayment  =
-    sendMsg skPayment (mkSelector "productIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+productIdentifier skPayment =
+  sendMessage skPayment productIdentifierSelector
 
 -- | @- requestData@
 requestData :: IsSKPayment skPayment => skPayment -> IO (Id NSData)
-requestData skPayment  =
-    sendMsg skPayment (mkSelector "requestData") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestData skPayment =
+  sendMessage skPayment requestDataSelector
 
 -- | @- quantity@
 quantity :: IsSKPayment skPayment => skPayment -> IO CLong
-quantity skPayment  =
-    sendMsg skPayment (mkSelector "quantity") retCLong []
+quantity skPayment =
+  sendMessage skPayment quantitySelector
 
 -- | @- applicationUsername@
 applicationUsername :: IsSKPayment skPayment => skPayment -> IO (Id NSString)
-applicationUsername skPayment  =
-    sendMsg skPayment (mkSelector "applicationUsername") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationUsername skPayment =
+  sendMessage skPayment applicationUsernameSelector
 
 -- | @- simulatesAskToBuyInSandbox@
 simulatesAskToBuyInSandbox :: IsSKPayment skPayment => skPayment -> IO Bool
-simulatesAskToBuyInSandbox skPayment  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skPayment (mkSelector "simulatesAskToBuyInSandbox") retCULong []
+simulatesAskToBuyInSandbox skPayment =
+  sendMessage skPayment simulatesAskToBuyInSandboxSelector
 
 -- | @- paymentDiscount@
 paymentDiscount :: IsSKPayment skPayment => skPayment -> IO (Id SKPaymentDiscount)
-paymentDiscount skPayment  =
-    sendMsg skPayment (mkSelector "paymentDiscount") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentDiscount skPayment =
+  sendMessage skPayment paymentDiscountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @paymentWithProduct:@
-paymentWithProductSelector :: Selector
+paymentWithProductSelector :: Selector '[Id SKProduct] (Id SKPayment)
 paymentWithProductSelector = mkSelector "paymentWithProduct:"
 
 -- | @Selector@ for @paymentWithProductIdentifier:@
-paymentWithProductIdentifierSelector :: Selector
+paymentWithProductIdentifierSelector :: Selector '[Id NSString] RawId
 paymentWithProductIdentifierSelector = mkSelector "paymentWithProductIdentifier:"
 
 -- | @Selector@ for @productIdentifier@
-productIdentifierSelector :: Selector
+productIdentifierSelector :: Selector '[] (Id NSString)
 productIdentifierSelector = mkSelector "productIdentifier"
 
 -- | @Selector@ for @requestData@
-requestDataSelector :: Selector
+requestDataSelector :: Selector '[] (Id NSData)
 requestDataSelector = mkSelector "requestData"
 
 -- | @Selector@ for @quantity@
-quantitySelector :: Selector
+quantitySelector :: Selector '[] CLong
 quantitySelector = mkSelector "quantity"
 
 -- | @Selector@ for @applicationUsername@
-applicationUsernameSelector :: Selector
+applicationUsernameSelector :: Selector '[] (Id NSString)
 applicationUsernameSelector = mkSelector "applicationUsername"
 
 -- | @Selector@ for @simulatesAskToBuyInSandbox@
-simulatesAskToBuyInSandboxSelector :: Selector
+simulatesAskToBuyInSandboxSelector :: Selector '[] Bool
 simulatesAskToBuyInSandboxSelector = mkSelector "simulatesAskToBuyInSandbox"
 
 -- | @Selector@ for @paymentDiscount@
-paymentDiscountSelector :: Selector
+paymentDiscountSelector :: Selector '[] (Id SKPaymentDiscount)
 paymentDiscountSelector = mkSelector "paymentDiscount"
 

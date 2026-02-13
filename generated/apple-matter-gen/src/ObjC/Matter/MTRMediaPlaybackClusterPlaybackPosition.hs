@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRMediaPlaybackClusterPlaybackPosition
   , setUpdatedAt
   , position
   , setPosition
-  , updatedAtSelector
-  , setUpdatedAtSelector
   , positionSelector
   , setPositionSelector
+  , setUpdatedAtSelector
+  , updatedAtSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- updatedAt@
 updatedAt :: IsMTRMediaPlaybackClusterPlaybackPosition mtrMediaPlaybackClusterPlaybackPosition => mtrMediaPlaybackClusterPlaybackPosition -> IO (Id NSNumber)
-updatedAt mtrMediaPlaybackClusterPlaybackPosition  =
-    sendMsg mtrMediaPlaybackClusterPlaybackPosition (mkSelector "updatedAt") (retPtr retVoid) [] >>= retainedObject . castPtr
+updatedAt mtrMediaPlaybackClusterPlaybackPosition =
+  sendMessage mtrMediaPlaybackClusterPlaybackPosition updatedAtSelector
 
 -- | @- setUpdatedAt:@
 setUpdatedAt :: (IsMTRMediaPlaybackClusterPlaybackPosition mtrMediaPlaybackClusterPlaybackPosition, IsNSNumber value) => mtrMediaPlaybackClusterPlaybackPosition -> value -> IO ()
-setUpdatedAt mtrMediaPlaybackClusterPlaybackPosition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterPlaybackPosition (mkSelector "setUpdatedAt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUpdatedAt mtrMediaPlaybackClusterPlaybackPosition value =
+  sendMessage mtrMediaPlaybackClusterPlaybackPosition setUpdatedAtSelector (toNSNumber value)
 
 -- | @- position@
 position :: IsMTRMediaPlaybackClusterPlaybackPosition mtrMediaPlaybackClusterPlaybackPosition => mtrMediaPlaybackClusterPlaybackPosition -> IO (Id NSNumber)
-position mtrMediaPlaybackClusterPlaybackPosition  =
-    sendMsg mtrMediaPlaybackClusterPlaybackPosition (mkSelector "position") (retPtr retVoid) [] >>= retainedObject . castPtr
+position mtrMediaPlaybackClusterPlaybackPosition =
+  sendMessage mtrMediaPlaybackClusterPlaybackPosition positionSelector
 
 -- | @- setPosition:@
 setPosition :: (IsMTRMediaPlaybackClusterPlaybackPosition mtrMediaPlaybackClusterPlaybackPosition, IsNSNumber value) => mtrMediaPlaybackClusterPlaybackPosition -> value -> IO ()
-setPosition mtrMediaPlaybackClusterPlaybackPosition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterPlaybackPosition (mkSelector "setPosition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPosition mtrMediaPlaybackClusterPlaybackPosition value =
+  sendMessage mtrMediaPlaybackClusterPlaybackPosition setPositionSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updatedAt@
-updatedAtSelector :: Selector
+updatedAtSelector :: Selector '[] (Id NSNumber)
 updatedAtSelector = mkSelector "updatedAt"
 
 -- | @Selector@ for @setUpdatedAt:@
-setUpdatedAtSelector :: Selector
+setUpdatedAtSelector :: Selector '[Id NSNumber] ()
 setUpdatedAtSelector = mkSelector "setUpdatedAt:"
 
 -- | @Selector@ for @position@
-positionSelector :: Selector
+positionSelector :: Selector '[] (Id NSNumber)
 positionSelector = mkSelector "position"
 
 -- | @Selector@ for @setPosition:@
-setPositionSelector :: Selector
+setPositionSelector :: Selector '[Id NSNumber] ()
 setPositionSelector = mkSelector "setPosition:"
 

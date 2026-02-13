@@ -10,8 +10,10 @@ module ObjC.CodeGen.Generate.Naming
     -- * ObjC → Haskell name mapping
   , methodHaskellName
   , selectorHaskellName
+  , methodSelectorName
   , instanceMethodNameSet
   , sanitizeParamName
+  , dedupParamNames
     -- * Reserved words
   , escapeReserved
   , reservedNames
@@ -21,6 +23,7 @@ module ObjC.CodeGen.Generate.Naming
 
 import Data.Char (isUpper)
 import qualified Data.Char as Char
+import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Text (Text)
@@ -87,6 +90,27 @@ selectorHaskellName sel =
   let baseName = T.replace ":" "_" (T.dropWhileEnd (== ':') sel)
   in escapeReserved (lowerFirst baseName <> "Selector")
 
+-- | Compute the Haskell name for a top-level @Selector@ binding
+-- associated with a specific method.
+--
+-- For methods that don't collide, this produces the same name as
+-- 'selectorHaskellName'.  For class methods that collide with an
+-- instance method of the same name, the binding gets prefixed with
+-- the lowercased class name (mirroring 'methodHaskellName').
+--
+-- >>> methodSelectorName cls instNames instanceMethod  -- "setThreadPrioritySelector"
+-- >>> methodSelectorName cls instNames classMtdCollision -- "nsThreadSetThreadPrioritySelector"
+methodSelectorName :: ObjCClass -> Set Text -> ObjCMethod -> Text
+methodSelectorName cls instanceMethodNames method =
+  let sel = methodSelector method
+      baseName = T.replace ":" "_" (T.dropWhileEnd (== ':') sel)
+      raw = lowerFirst baseName
+      isClassMethod_ = methodIsClass method
+      collides = isClassMethod_ && Set.member (escapeReserved raw) instanceMethodNames
+  in if collides
+     then lowerFirst (className cls) <> upperFirst raw <> "Selector"
+     else raw <> "Selector"
+
 -- | Compute the set of instance method Haskell names for collision detection.
 instanceMethodNameSet :: ObjCClass -> [ObjCMethod] -> Set Text
 instanceMethodNameSet _cls methods =
@@ -103,6 +127,22 @@ sanitizeParamName name
   | isUpper (T.head name) = sanitizeParamName (lowerFirst name)
   | Set.member name reservedNames || name == "obj" || name == "pure" = name <> "_"
   | otherwise = name
+
+-- | Disambiguate duplicate parameter names by appending numeric suffixes.
+--
+-- >>> dedupParamNames [("x", t), ("y", t), ("x", t)]
+-- [("x", t), ("y", t), ("x2", t)]
+dedupParamNames :: [(Text, a)] -> [(Text, a)]
+dedupParamNames = go Map.empty
+  where
+    go _ [] = []
+    go seen ((n, ty) : rest) =
+      let sanitized = sanitizeParamName n
+          count = Map.findWithDefault (0 :: Int) sanitized seen
+          seen' = Map.insertWith (+) sanitized 1 seen
+          final = if count == 0 then sanitized
+                  else sanitized <> T.pack (show (count + 1))
+      in (final, ty) : go seen' rest
 
 -- ---------------------------------------------------------------------------
 -- Reserved words

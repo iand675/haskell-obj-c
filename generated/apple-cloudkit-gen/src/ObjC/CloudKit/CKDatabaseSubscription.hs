@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.CloudKit.CKDatabaseSubscription
   , recordType
   , setRecordType
   , initSelector
-  , newSelector
-  , initWithSubscriptionIDSelector
   , initWithCoderSelector
+  , initWithSubscriptionIDSelector
+  , newSelector
   , recordTypeSelector
   , setRecordTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,68 +42,65 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKDatabaseSubscription ckDatabaseSubscription => ckDatabaseSubscription -> IO (Id CKDatabaseSubscription)
-init_ ckDatabaseSubscription  =
-    sendMsg ckDatabaseSubscription (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckDatabaseSubscription =
+  sendOwnedMessage ckDatabaseSubscription initSelector
 
 -- | @+ new@
 new :: IO (Id CKDatabaseSubscription)
 new  =
   do
     cls' <- getRequiredClass "CKDatabaseSubscription"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithSubscriptionID:@
 initWithSubscriptionID :: (IsCKDatabaseSubscription ckDatabaseSubscription, IsNSString subscriptionID) => ckDatabaseSubscription -> subscriptionID -> IO (Id CKDatabaseSubscription)
-initWithSubscriptionID ckDatabaseSubscription  subscriptionID =
-  withObjCPtr subscriptionID $ \raw_subscriptionID ->
-      sendMsg ckDatabaseSubscription (mkSelector "initWithSubscriptionID:") (retPtr retVoid) [argPtr (castPtr raw_subscriptionID :: Ptr ())] >>= ownedObject . castPtr
+initWithSubscriptionID ckDatabaseSubscription subscriptionID =
+  sendOwnedMessage ckDatabaseSubscription initWithSubscriptionIDSelector (toNSString subscriptionID)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsCKDatabaseSubscription ckDatabaseSubscription, IsNSCoder aDecoder) => ckDatabaseSubscription -> aDecoder -> IO (Id CKDatabaseSubscription)
-initWithCoder ckDatabaseSubscription  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg ckDatabaseSubscription (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder ckDatabaseSubscription aDecoder =
+  sendOwnedMessage ckDatabaseSubscription initWithCoderSelector (toNSCoder aDecoder)
 
 -- | Optional property. If set, a database subscription is scoped to record changes for this record type
 --
 -- ObjC selector: @- recordType@
 recordType :: IsCKDatabaseSubscription ckDatabaseSubscription => ckDatabaseSubscription -> IO (Id NSString)
-recordType ckDatabaseSubscription  =
-    sendMsg ckDatabaseSubscription (mkSelector "recordType") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordType ckDatabaseSubscription =
+  sendMessage ckDatabaseSubscription recordTypeSelector
 
 -- | Optional property. If set, a database subscription is scoped to record changes for this record type
 --
 -- ObjC selector: @- setRecordType:@
 setRecordType :: (IsCKDatabaseSubscription ckDatabaseSubscription, IsNSString value) => ckDatabaseSubscription -> value -> IO ()
-setRecordType ckDatabaseSubscription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckDatabaseSubscription (mkSelector "setRecordType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordType ckDatabaseSubscription value =
+  sendMessage ckDatabaseSubscription setRecordTypeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKDatabaseSubscription)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKDatabaseSubscription)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithSubscriptionID:@
-initWithSubscriptionIDSelector :: Selector
+initWithSubscriptionIDSelector :: Selector '[Id NSString] (Id CKDatabaseSubscription)
 initWithSubscriptionIDSelector = mkSelector "initWithSubscriptionID:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id CKDatabaseSubscription)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @recordType@
-recordTypeSelector :: Selector
+recordTypeSelector :: Selector '[] (Id NSString)
 recordTypeSelector = mkSelector "recordType"
 
 -- | @Selector@ for @setRecordType:@
-setRecordTypeSelector :: Selector
+setRecordTypeSelector :: Selector '[Id NSString] ()
 setRecordTypeSelector = mkSelector "setRecordType:"
 

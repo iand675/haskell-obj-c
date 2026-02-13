@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data CFHostClientContext = CFHostClientContext
   { cfHostClientContextVersion :: !CLong
@@ -46,6 +48,16 @@ argCFHostClientContext = mkStorableArg cfHostClientContextStructType
 retCFHostClientContext :: RetType CFHostClientContext
 retCFHostClientContext = mkStorableRetType cfHostClientContextStructType
 
+instance ObjCArgument CFHostClientContext where
+  withObjCArg x k = k (argCFHostClientContext x)
+
+instance ObjCReturn CFHostClientContext where
+  type RawReturn CFHostClientContext = CFHostClientContext
+  objcRetType = retCFHostClientContext
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CFNetServiceClientContext = CFNetServiceClientContext
   { cfNetServiceClientContextVersion :: !CLong
   , cfNetServiceClientContextInfo :: !(Ptr ())
@@ -78,3 +90,13 @@ argCFNetServiceClientContext = mkStorableArg cfNetServiceClientContextStructType
 
 retCFNetServiceClientContext :: RetType CFNetServiceClientContext
 retCFNetServiceClientContext = mkStorableRetType cfNetServiceClientContextStructType
+
+instance ObjCArgument CFNetServiceClientContext where
+  withObjCArg x k = k (argCFNetServiceClientContext x)
+
+instance ObjCReturn CFNetServiceClientContext where
+  type RawReturn CFNetServiceClientContext = CFNetServiceClientContext
+  objcRetType = retCFNetServiceClientContext
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

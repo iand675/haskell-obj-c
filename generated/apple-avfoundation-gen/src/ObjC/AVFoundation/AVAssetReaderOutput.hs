@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,27 +23,23 @@ module ObjC.AVFoundation.AVAssetReaderOutput
   , setAlwaysCopiesSampleData
   , supportsRandomAccess
   , setSupportsRandomAccess
+  , alwaysCopiesSampleDataSelector
   , copyNextSampleBufferSelector
-  , resetForReadingTimeRangesSelector
   , markConfigurationAsFinalSelector
   , mediaTypeSelector
-  , alwaysCopiesSampleDataSelector
+  , resetForReadingTimeRangesSelector
   , setAlwaysCopiesSampleDataSelector
-  , supportsRandomAccessSelector
   , setSupportsRandomAccessSelector
+  , supportsRandomAccessSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- copyNextSampleBuffer@
 copyNextSampleBuffer :: IsAVAssetReaderOutput avAssetReaderOutput => avAssetReaderOutput -> IO (Ptr ())
-copyNextSampleBuffer avAssetReaderOutput  =
-    fmap castPtr $ sendMsg avAssetReaderOutput (mkSelector "copyNextSampleBuffer") (retPtr retVoid) []
+copyNextSampleBuffer avAssetReaderOutput =
+  sendOwnedMessage avAssetReaderOutput copyNextSampleBufferSelector
 
 -- | resetForReadingTimeRanges:
 --
@@ -84,9 +81,8 @@ copyNextSampleBuffer avAssetReaderOutput  =
 --
 -- ObjC selector: @- resetForReadingTimeRanges:@
 resetForReadingTimeRanges :: (IsAVAssetReaderOutput avAssetReaderOutput, IsNSArray timeRanges) => avAssetReaderOutput -> timeRanges -> IO ()
-resetForReadingTimeRanges avAssetReaderOutput  timeRanges =
-  withObjCPtr timeRanges $ \raw_timeRanges ->
-      sendMsg avAssetReaderOutput (mkSelector "resetForReadingTimeRanges:") retVoid [argPtr (castPtr raw_timeRanges :: Ptr ())]
+resetForReadingTimeRanges avAssetReaderOutput timeRanges =
+  sendMessage avAssetReaderOutput resetForReadingTimeRangesSelector (toNSArray timeRanges)
 
 -- | markConfigurationAsFinal
 --
@@ -100,8 +96,8 @@ resetForReadingTimeRanges avAssetReaderOutput  timeRanges =
 --
 -- ObjC selector: @- markConfigurationAsFinal@
 markConfigurationAsFinal :: IsAVAssetReaderOutput avAssetReaderOutput => avAssetReaderOutput -> IO ()
-markConfigurationAsFinal avAssetReaderOutput  =
-    sendMsg avAssetReaderOutput (mkSelector "markConfigurationAsFinal") retVoid []
+markConfigurationAsFinal avAssetReaderOutput =
+  sendMessage avAssetReaderOutput markConfigurationAsFinalSelector
 
 -- | mediaType
 --
@@ -111,8 +107,8 @@ markConfigurationAsFinal avAssetReaderOutput  =
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVAssetReaderOutput avAssetReaderOutput => avAssetReaderOutput -> IO (Id NSString)
-mediaType avAssetReaderOutput  =
-    sendMsg avAssetReaderOutput (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avAssetReaderOutput =
+  sendMessage avAssetReaderOutput mediaTypeSelector
 
 -- | alwaysCopiesSampleData
 --
@@ -126,8 +122,8 @@ mediaType avAssetReaderOutput  =
 --
 -- ObjC selector: @- alwaysCopiesSampleData@
 alwaysCopiesSampleData :: IsAVAssetReaderOutput avAssetReaderOutput => avAssetReaderOutput -> IO Bool
-alwaysCopiesSampleData avAssetReaderOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetReaderOutput (mkSelector "alwaysCopiesSampleData") retCULong []
+alwaysCopiesSampleData avAssetReaderOutput =
+  sendMessage avAssetReaderOutput alwaysCopiesSampleDataSelector
 
 -- | alwaysCopiesSampleData
 --
@@ -141,8 +137,8 @@ alwaysCopiesSampleData avAssetReaderOutput  =
 --
 -- ObjC selector: @- setAlwaysCopiesSampleData:@
 setAlwaysCopiesSampleData :: IsAVAssetReaderOutput avAssetReaderOutput => avAssetReaderOutput -> Bool -> IO ()
-setAlwaysCopiesSampleData avAssetReaderOutput  value =
-    sendMsg avAssetReaderOutput (mkSelector "setAlwaysCopiesSampleData:") retVoid [argCULong (if value then 1 else 0)]
+setAlwaysCopiesSampleData avAssetReaderOutput value =
+  sendMessage avAssetReaderOutput setAlwaysCopiesSampleDataSelector value
 
 -- | supportsRandomAccess
 --
@@ -156,8 +152,8 @@ setAlwaysCopiesSampleData avAssetReaderOutput  value =
 --
 -- ObjC selector: @- supportsRandomAccess@
 supportsRandomAccess :: IsAVAssetReaderOutput avAssetReaderOutput => avAssetReaderOutput -> IO Bool
-supportsRandomAccess avAssetReaderOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetReaderOutput (mkSelector "supportsRandomAccess") retCULong []
+supportsRandomAccess avAssetReaderOutput =
+  sendMessage avAssetReaderOutput supportsRandomAccessSelector
 
 -- | supportsRandomAccess
 --
@@ -171,42 +167,42 @@ supportsRandomAccess avAssetReaderOutput  =
 --
 -- ObjC selector: @- setSupportsRandomAccess:@
 setSupportsRandomAccess :: IsAVAssetReaderOutput avAssetReaderOutput => avAssetReaderOutput -> Bool -> IO ()
-setSupportsRandomAccess avAssetReaderOutput  value =
-    sendMsg avAssetReaderOutput (mkSelector "setSupportsRandomAccess:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsRandomAccess avAssetReaderOutput value =
+  sendMessage avAssetReaderOutput setSupportsRandomAccessSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @copyNextSampleBuffer@
-copyNextSampleBufferSelector :: Selector
+copyNextSampleBufferSelector :: Selector '[] (Ptr ())
 copyNextSampleBufferSelector = mkSelector "copyNextSampleBuffer"
 
 -- | @Selector@ for @resetForReadingTimeRanges:@
-resetForReadingTimeRangesSelector :: Selector
+resetForReadingTimeRangesSelector :: Selector '[Id NSArray] ()
 resetForReadingTimeRangesSelector = mkSelector "resetForReadingTimeRanges:"
 
 -- | @Selector@ for @markConfigurationAsFinal@
-markConfigurationAsFinalSelector :: Selector
+markConfigurationAsFinalSelector :: Selector '[] ()
 markConfigurationAsFinalSelector = mkSelector "markConfigurationAsFinal"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @alwaysCopiesSampleData@
-alwaysCopiesSampleDataSelector :: Selector
+alwaysCopiesSampleDataSelector :: Selector '[] Bool
 alwaysCopiesSampleDataSelector = mkSelector "alwaysCopiesSampleData"
 
 -- | @Selector@ for @setAlwaysCopiesSampleData:@
-setAlwaysCopiesSampleDataSelector :: Selector
+setAlwaysCopiesSampleDataSelector :: Selector '[Bool] ()
 setAlwaysCopiesSampleDataSelector = mkSelector "setAlwaysCopiesSampleData:"
 
 -- | @Selector@ for @supportsRandomAccess@
-supportsRandomAccessSelector :: Selector
+supportsRandomAccessSelector :: Selector '[] Bool
 supportsRandomAccessSelector = mkSelector "supportsRandomAccess"
 
 -- | @Selector@ for @setSupportsRandomAccess:@
-setSupportsRandomAccessSelector :: Selector
+setSupportsRandomAccessSelector :: Selector '[Bool] ()
 setSupportsRandomAccessSelector = mkSelector "setSupportsRandomAccess:"
 

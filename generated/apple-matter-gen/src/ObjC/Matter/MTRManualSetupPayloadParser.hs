@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.Matter.MTRManualSetupPayloadParser
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,25 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDecimalStringRepresentation:@
 initWithDecimalStringRepresentation :: (IsMTRManualSetupPayloadParser mtrManualSetupPayloadParser, IsNSString decimalStringRepresentation) => mtrManualSetupPayloadParser -> decimalStringRepresentation -> IO (Id MTRManualSetupPayloadParser)
-initWithDecimalStringRepresentation mtrManualSetupPayloadParser  decimalStringRepresentation =
-  withObjCPtr decimalStringRepresentation $ \raw_decimalStringRepresentation ->
-      sendMsg mtrManualSetupPayloadParser (mkSelector "initWithDecimalStringRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_decimalStringRepresentation :: Ptr ())] >>= ownedObject . castPtr
+initWithDecimalStringRepresentation mtrManualSetupPayloadParser decimalStringRepresentation =
+  sendOwnedMessage mtrManualSetupPayloadParser initWithDecimalStringRepresentationSelector (toNSString decimalStringRepresentation)
 
 -- | @- populatePayload:@
 populatePayload :: (IsMTRManualSetupPayloadParser mtrManualSetupPayloadParser, IsNSError error_) => mtrManualSetupPayloadParser -> error_ -> IO (Id MTRSetupPayload)
-populatePayload mtrManualSetupPayloadParser  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg mtrManualSetupPayloadParser (mkSelector "populatePayload:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+populatePayload mtrManualSetupPayloadParser error_ =
+  sendMessage mtrManualSetupPayloadParser populatePayloadSelector (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDecimalStringRepresentation:@
-initWithDecimalStringRepresentationSelector :: Selector
+initWithDecimalStringRepresentationSelector :: Selector '[Id NSString] (Id MTRManualSetupPayloadParser)
 initWithDecimalStringRepresentationSelector = mkSelector "initWithDecimalStringRepresentation:"
 
 -- | @Selector@ for @populatePayload:@
-populatePayloadSelector :: Selector
+populatePayloadSelector :: Selector '[Id NSError] (Id MTRSetupPayload)
 populatePayloadSelector = mkSelector "populatePayload:"
 

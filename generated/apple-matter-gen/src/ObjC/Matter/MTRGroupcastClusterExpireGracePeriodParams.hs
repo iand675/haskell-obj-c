@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRGroupcastClusterExpireGracePeriodParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , groupIDSelector
-  , setGroupIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setGroupIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupID@
 groupID :: IsMTRGroupcastClusterExpireGracePeriodParams mtrGroupcastClusterExpireGracePeriodParams => mtrGroupcastClusterExpireGracePeriodParams -> IO (Id NSNumber)
-groupID mtrGroupcastClusterExpireGracePeriodParams  =
-    sendMsg mtrGroupcastClusterExpireGracePeriodParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrGroupcastClusterExpireGracePeriodParams =
+  sendMessage mtrGroupcastClusterExpireGracePeriodParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRGroupcastClusterExpireGracePeriodParams mtrGroupcastClusterExpireGracePeriodParams, IsNSNumber value) => mtrGroupcastClusterExpireGracePeriodParams -> value -> IO ()
-setGroupID mtrGroupcastClusterExpireGracePeriodParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterExpireGracePeriodParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrGroupcastClusterExpireGracePeriodParams value =
+  sendMessage mtrGroupcastClusterExpireGracePeriodParams setGroupIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setGroupID mtrGroupcastClusterExpireGracePeriodParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGroupcastClusterExpireGracePeriodParams mtrGroupcastClusterExpireGracePeriodParams => mtrGroupcastClusterExpireGracePeriodParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGroupcastClusterExpireGracePeriodParams  =
-    sendMsg mtrGroupcastClusterExpireGracePeriodParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGroupcastClusterExpireGracePeriodParams =
+  sendMessage mtrGroupcastClusterExpireGracePeriodParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrGroupcastClusterExpireGracePeriodParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGroupcastClusterExpireGracePeriodParams mtrGroupcastClusterExpireGracePeriodParams, IsNSNumber value) => mtrGroupcastClusterExpireGracePeriodParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGroupcastClusterExpireGracePeriodParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterExpireGracePeriodParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGroupcastClusterExpireGracePeriodParams value =
+  sendMessage mtrGroupcastClusterExpireGracePeriodParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrGroupcastClusterExpireGracePeriodParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRGroupcastClusterExpireGracePeriodParams mtrGroupcastClusterExpireGracePeriodParams => mtrGroupcastClusterExpireGracePeriodParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrGroupcastClusterExpireGracePeriodParams  =
-    sendMsg mtrGroupcastClusterExpireGracePeriodParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrGroupcastClusterExpireGracePeriodParams =
+  sendMessage mtrGroupcastClusterExpireGracePeriodParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrGroupcastClusterExpireGracePeriodParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRGroupcastClusterExpireGracePeriodParams mtrGroupcastClusterExpireGracePeriodParams, IsNSNumber value) => mtrGroupcastClusterExpireGracePeriodParams -> value -> IO ()
-setServerSideProcessingTimeout mtrGroupcastClusterExpireGracePeriodParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterExpireGracePeriodParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrGroupcastClusterExpireGracePeriodParams value =
+  sendMessage mtrGroupcastClusterExpireGracePeriodParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

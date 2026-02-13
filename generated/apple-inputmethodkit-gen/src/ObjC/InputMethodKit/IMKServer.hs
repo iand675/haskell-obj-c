@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,24 +20,20 @@ module ObjC.InputMethodKit.IMKServer
   , bundle
   , paletteWillTerminate
   , lastKeyEventWasDeadKey
+  , bundleSelector
   , initWithName_bundleIdentifierSelector
   , initWithName_controllerClass_delegateClassSelector
-  , bundleSelector
-  , paletteWillTerminateSelector
   , lastKeyEventWasDeadKeySelector
+  , paletteWillTerminateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,10 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithName:bundleIdentifier:@
 initWithName_bundleIdentifier :: (IsIMKServer imkServer, IsNSString name, IsNSString bundleIdentifier) => imkServer -> name -> bundleIdentifier -> IO RawId
-initWithName_bundleIdentifier imkServer  name bundleIdentifier =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr bundleIdentifier $ \raw_bundleIdentifier ->
-        fmap (RawId . castPtr) $ sendMsg imkServer (mkSelector "initWithName:bundleIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_bundleIdentifier :: Ptr ())]
+initWithName_bundleIdentifier imkServer name bundleIdentifier =
+  sendOwnedMessage imkServer initWithName_bundleIdentifierSelector (toNSString name) (toNSString bundleIdentifier)
 
 -- | Creates an IMKServer using the parameters.
 --
@@ -60,9 +55,8 @@ initWithName_bundleIdentifier imkServer  name bundleIdentifier =
 --
 -- ObjC selector: @- initWithName:controllerClass:delegateClass:@
 initWithName_controllerClass_delegateClass :: (IsIMKServer imkServer, IsNSString name) => imkServer -> name -> Class -> Class -> IO RawId
-initWithName_controllerClass_delegateClass imkServer  name controllerClassID delegateClassID =
-  withObjCPtr name $ \raw_name ->
-      fmap (RawId . castPtr) $ sendMsg imkServer (mkSelector "initWithName:controllerClass:delegateClass:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (unClass controllerClassID), argPtr (unClass delegateClassID)]
+initWithName_controllerClass_delegateClass imkServer name controllerClassID delegateClassID =
+  sendOwnedMessage imkServer initWithName_controllerClass_delegateClassSelector (toNSString name) controllerClassID delegateClassID
 
 -- | Returns an NSBundle for the input method.
 --
@@ -70,8 +64,8 @@ initWithName_controllerClass_delegateClass imkServer  name controllerClassID del
 --
 -- ObjC selector: @- bundle@
 bundle :: IsIMKServer imkServer => imkServer -> IO (Id NSBundle)
-bundle imkServer  =
-    sendMsg imkServer (mkSelector "bundle") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundle imkServer =
+  sendMessage imkServer bundleSelector
 
 -- | Call this before terminating a palette IM.
 --
@@ -81,37 +75,37 @@ bundle imkServer  =
 --
 -- ObjC selector: @- paletteWillTerminate@
 paletteWillTerminate :: IsIMKServer imkServer => imkServer -> IO Bool
-paletteWillTerminate imkServer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg imkServer (mkSelector "paletteWillTerminate") retCULong []
+paletteWillTerminate imkServer =
+  sendMessage imkServer paletteWillTerminateSelector
 
 -- | Returns a BOOL indicating whether or not the last key press was a dead key.
 --
 -- ObjC selector: @- lastKeyEventWasDeadKey@
 lastKeyEventWasDeadKey :: IsIMKServer imkServer => imkServer -> IO Bool
-lastKeyEventWasDeadKey imkServer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg imkServer (mkSelector "lastKeyEventWasDeadKey") retCULong []
+lastKeyEventWasDeadKey imkServer =
+  sendMessage imkServer lastKeyEventWasDeadKeySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:bundleIdentifier:@
-initWithName_bundleIdentifierSelector :: Selector
+initWithName_bundleIdentifierSelector :: Selector '[Id NSString, Id NSString] RawId
 initWithName_bundleIdentifierSelector = mkSelector "initWithName:bundleIdentifier:"
 
 -- | @Selector@ for @initWithName:controllerClass:delegateClass:@
-initWithName_controllerClass_delegateClassSelector :: Selector
+initWithName_controllerClass_delegateClassSelector :: Selector '[Id NSString, Class, Class] RawId
 initWithName_controllerClass_delegateClassSelector = mkSelector "initWithName:controllerClass:delegateClass:"
 
 -- | @Selector@ for @bundle@
-bundleSelector :: Selector
+bundleSelector :: Selector '[] (Id NSBundle)
 bundleSelector = mkSelector "bundle"
 
 -- | @Selector@ for @paletteWillTerminate@
-paletteWillTerminateSelector :: Selector
+paletteWillTerminateSelector :: Selector '[] Bool
 paletteWillTerminateSelector = mkSelector "paletteWillTerminate"
 
 -- | @Selector@ for @lastKeyEventWasDeadKey@
-lastKeyEventWasDeadKeySelector :: Selector
+lastKeyEventWasDeadKeySelector :: Selector '[] Bool
 lastKeyEventWasDeadKeySelector = mkSelector "lastKeyEventWasDeadKey"
 

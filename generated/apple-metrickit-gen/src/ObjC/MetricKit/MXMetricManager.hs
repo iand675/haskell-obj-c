@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,25 +23,21 @@ module ObjC.MetricKit.MXMetricManager
   , pastPayloads
   , pastDiagnosticPayloads
   , sharedManager
-  , makeLogHandleWithCategorySelector
   , addSubscriberSelector
-  , removeSubscriberSelector
-  , pastPayloadsSelector
+  , makeLogHandleWithCategorySelector
   , pastDiagnosticPayloadsSelector
+  , pastPayloadsSelector
+  , removeSubscriberSelector
   , sharedManagerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,8 +59,7 @@ makeLogHandleWithCategory :: IsNSString category => category -> IO (Id NSObject)
 makeLogHandleWithCategory category =
   do
     cls' <- getRequiredClass "MXMetricManager"
-    withObjCPtr category $ \raw_category ->
-      sendClassMsg cls' (mkSelector "makeLogHandleWithCategory:") (retPtr retVoid) [argPtr (castPtr raw_category :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' makeLogHandleWithCategorySelector (toNSString category)
 
 -- | addSubscriber:subscriber
 --
@@ -75,8 +71,8 @@ makeLogHandleWithCategory category =
 --
 -- ObjC selector: @- addSubscriber:@
 addSubscriber :: IsMXMetricManager mxMetricManager => mxMetricManager -> RawId -> IO ()
-addSubscriber mxMetricManager  subscriber =
-    sendMsg mxMetricManager (mkSelector "addSubscriber:") retVoid [argPtr (castPtr (unRawId subscriber) :: Ptr ())]
+addSubscriber mxMetricManager subscriber =
+  sendMessage mxMetricManager addSubscriberSelector subscriber
 
 -- | removeSubscriber:subscriber
 --
@@ -88,8 +84,8 @@ addSubscriber mxMetricManager  subscriber =
 --
 -- ObjC selector: @- removeSubscriber:@
 removeSubscriber :: IsMXMetricManager mxMetricManager => mxMetricManager -> RawId -> IO ()
-removeSubscriber mxMetricManager  subscriber =
-    sendMsg mxMetricManager (mkSelector "removeSubscriber:") retVoid [argPtr (castPtr (unRawId subscriber) :: Ptr ())]
+removeSubscriber mxMetricManager subscriber =
+  sendMessage mxMetricManager removeSubscriberSelector subscriber
 
 -- | pastPayloads
 --
@@ -97,8 +93,8 @@ removeSubscriber mxMetricManager  subscriber =
 --
 -- ObjC selector: @- pastPayloads@
 pastPayloads :: IsMXMetricManager mxMetricManager => mxMetricManager -> IO (Id NSArray)
-pastPayloads mxMetricManager  =
-    sendMsg mxMetricManager (mkSelector "pastPayloads") (retPtr retVoid) [] >>= retainedObject . castPtr
+pastPayloads mxMetricManager =
+  sendMessage mxMetricManager pastPayloadsSelector
 
 -- | pastDiagnosticPayloads
 --
@@ -106,8 +102,8 @@ pastPayloads mxMetricManager  =
 --
 -- ObjC selector: @- pastDiagnosticPayloads@
 pastDiagnosticPayloads :: IsMXMetricManager mxMetricManager => mxMetricManager -> IO (Id NSArray)
-pastDiagnosticPayloads mxMetricManager  =
-    sendMsg mxMetricManager (mkSelector "pastDiagnosticPayloads") (retPtr retVoid) [] >>= retainedObject . castPtr
+pastDiagnosticPayloads mxMetricManager =
+  sendMessage mxMetricManager pastDiagnosticPayloadsSelector
 
 -- | sharedManager
 --
@@ -118,33 +114,33 @@ sharedManager :: IO (Id MXMetricManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "MXMetricManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @makeLogHandleWithCategory:@
-makeLogHandleWithCategorySelector :: Selector
+makeLogHandleWithCategorySelector :: Selector '[Id NSString] (Id NSObject)
 makeLogHandleWithCategorySelector = mkSelector "makeLogHandleWithCategory:"
 
 -- | @Selector@ for @addSubscriber:@
-addSubscriberSelector :: Selector
+addSubscriberSelector :: Selector '[RawId] ()
 addSubscriberSelector = mkSelector "addSubscriber:"
 
 -- | @Selector@ for @removeSubscriber:@
-removeSubscriberSelector :: Selector
+removeSubscriberSelector :: Selector '[RawId] ()
 removeSubscriberSelector = mkSelector "removeSubscriber:"
 
 -- | @Selector@ for @pastPayloads@
-pastPayloadsSelector :: Selector
+pastPayloadsSelector :: Selector '[] (Id NSArray)
 pastPayloadsSelector = mkSelector "pastPayloads"
 
 -- | @Selector@ for @pastDiagnosticPayloads@
-pastDiagnosticPayloadsSelector :: Selector
+pastDiagnosticPayloadsSelector :: Selector '[] (Id NSArray)
 pastDiagnosticPayloadsSelector = mkSelector "pastDiagnosticPayloads"
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id MXMetricManager)
 sharedManagerSelector = mkSelector "sharedManager"
 

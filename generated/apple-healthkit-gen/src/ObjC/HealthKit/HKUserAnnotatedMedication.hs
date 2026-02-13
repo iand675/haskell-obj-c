@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.HealthKit.HKUserAnnotatedMedication
   , isArchived
   , hasSchedule
   , medication
-  , initSelector
-  , nicknameSelector
-  , isArchivedSelector
   , hasScheduleSelector
+  , initSelector
+  , isArchivedSelector
   , medicationSelector
+  , nicknameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKUserAnnotatedMedication hkUserAnnotatedMedication => hkUserAnnotatedMedication -> IO (Id HKUserAnnotatedMedication)
-init_ hkUserAnnotatedMedication  =
-    sendMsg hkUserAnnotatedMedication (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkUserAnnotatedMedication =
+  sendOwnedMessage hkUserAnnotatedMedication initSelector
 
 -- | The nickname that a person added to a medication during the entry experience.
 --
@@ -50,8 +47,8 @@ init_ hkUserAnnotatedMedication  =
 --
 -- ObjC selector: @- nickname@
 nickname :: IsHKUserAnnotatedMedication hkUserAnnotatedMedication => hkUserAnnotatedMedication -> IO (Id NSString)
-nickname hkUserAnnotatedMedication  =
-    sendMsg hkUserAnnotatedMedication (mkSelector "nickname") (retPtr retVoid) [] >>= retainedObject . castPtr
+nickname hkUserAnnotatedMedication =
+  sendMessage hkUserAnnotatedMedication nicknameSelector
 
 -- | A Boolean value that indicates whether a medication is archived.
 --
@@ -59,8 +56,8 @@ nickname hkUserAnnotatedMedication  =
 --
 -- ObjC selector: @- isArchived@
 isArchived :: IsHKUserAnnotatedMedication hkUserAnnotatedMedication => hkUserAnnotatedMedication -> IO Bool
-isArchived hkUserAnnotatedMedication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkUserAnnotatedMedication (mkSelector "isArchived") retCULong []
+isArchived hkUserAnnotatedMedication =
+  sendMessage hkUserAnnotatedMedication isArchivedSelector
 
 -- | A Boolean value that indicates whether a medication has a schedule set up.
 --
@@ -68,8 +65,8 @@ isArchived hkUserAnnotatedMedication  =
 --
 -- ObjC selector: @- hasSchedule@
 hasSchedule :: IsHKUserAnnotatedMedication hkUserAnnotatedMedication => hkUserAnnotatedMedication -> IO Bool
-hasSchedule hkUserAnnotatedMedication  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkUserAnnotatedMedication (mkSelector "hasSchedule") retCULong []
+hasSchedule hkUserAnnotatedMedication =
+  sendMessage hkUserAnnotatedMedication hasScheduleSelector
 
 -- | A reference to the specific medication a person is tracking.
 --
@@ -77,30 +74,30 @@ hasSchedule hkUserAnnotatedMedication  =
 --
 -- ObjC selector: @- medication@
 medication :: IsHKUserAnnotatedMedication hkUserAnnotatedMedication => hkUserAnnotatedMedication -> IO (Id HKMedicationConcept)
-medication hkUserAnnotatedMedication  =
-    sendMsg hkUserAnnotatedMedication (mkSelector "medication") (retPtr retVoid) [] >>= retainedObject . castPtr
+medication hkUserAnnotatedMedication =
+  sendMessage hkUserAnnotatedMedication medicationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKUserAnnotatedMedication)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @nickname@
-nicknameSelector :: Selector
+nicknameSelector :: Selector '[] (Id NSString)
 nicknameSelector = mkSelector "nickname"
 
 -- | @Selector@ for @isArchived@
-isArchivedSelector :: Selector
+isArchivedSelector :: Selector '[] Bool
 isArchivedSelector = mkSelector "isArchived"
 
 -- | @Selector@ for @hasSchedule@
-hasScheduleSelector :: Selector
+hasScheduleSelector :: Selector '[] Bool
 hasScheduleSelector = mkSelector "hasSchedule"
 
 -- | @Selector@ for @medication@
-medicationSelector :: Selector
+medicationSelector :: Selector '[] (Id HKMedicationConcept)
 medicationSelector = mkSelector "medication"
 

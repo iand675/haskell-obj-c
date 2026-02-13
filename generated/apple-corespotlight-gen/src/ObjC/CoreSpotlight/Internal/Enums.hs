@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreSpotlight.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CSIndexErrorCode@
 newtype CSIndexErrorCode = CSIndexErrorCode CLong
@@ -40,6 +43,16 @@ pattern CSIndexErrorCodeIndexingUnsupported = CSIndexErrorCode (-1005)
 pattern CSIndexErrorCodeMismatchedClientState :: CSIndexErrorCode
 pattern CSIndexErrorCodeMismatchedClientState = CSIndexErrorCode (-1006)
 
+instance ObjCArgument CSIndexErrorCode where
+  withObjCArg (CSIndexErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn CSIndexErrorCode where
+  type RawReturn CSIndexErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CSIndexErrorCode x)
+  fromOwned x = pure (CSIndexErrorCode x)
+
 -- | @CSSearchQueryErrorCode@
 newtype CSSearchQueryErrorCode = CSSearchQueryErrorCode CLong
   deriving stock (Eq, Ord, Show)
@@ -57,6 +70,16 @@ pattern CSSearchQueryErrorCodeInvalidQuery = CSSearchQueryErrorCode (-2002)
 pattern CSSearchQueryErrorCodeCancelled :: CSSearchQueryErrorCode
 pattern CSSearchQueryErrorCodeCancelled = CSSearchQueryErrorCode (-2003)
 
+instance ObjCArgument CSSearchQueryErrorCode where
+  withObjCArg (CSSearchQueryErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn CSSearchQueryErrorCode where
+  type RawReturn CSSearchQueryErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CSSearchQueryErrorCode x)
+  fromOwned x = pure (CSSearchQueryErrorCode x)
+
 -- | @CSSearchQuerySourceOptions@ (bitmask)
 newtype CSSearchQuerySourceOptions = CSSearchQuerySourceOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -73,6 +96,16 @@ pattern CSSearchQuerySourceOptionDefault = CSSearchQuerySourceOptions 0
 
 pattern CSSearchQuerySourceOptionAllowMail :: CSSearchQuerySourceOptions
 pattern CSSearchQuerySourceOptionAllowMail = CSSearchQuerySourceOptions 1
+
+instance ObjCArgument CSSearchQuerySourceOptions where
+  withObjCArg (CSSearchQuerySourceOptions x) k = k (argCULong x)
+
+instance ObjCReturn CSSearchQuerySourceOptions where
+  type RawReturn CSSearchQuerySourceOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CSSearchQuerySourceOptions x)
+  fromOwned x = pure (CSSearchQuerySourceOptions x)
 
 -- | @CSSearchableItemUpdateListenerOptions@ (bitmask)
 newtype CSSearchableItemUpdateListenerOptions = CSSearchableItemUpdateListenerOptions CULong
@@ -94,6 +127,16 @@ pattern CSSearchableItemUpdateListenerOptionSummarization = CSSearchableItemUpda
 pattern CSSearchableItemUpdateListenerOptionPriority :: CSSearchableItemUpdateListenerOptions
 pattern CSSearchableItemUpdateListenerOptionPriority = CSSearchableItemUpdateListenerOptions 4
 
+instance ObjCArgument CSSearchableItemUpdateListenerOptions where
+  withObjCArg (CSSearchableItemUpdateListenerOptions x) k = k (argCULong x)
+
+instance ObjCReturn CSSearchableItemUpdateListenerOptions where
+  type RawReturn CSSearchableItemUpdateListenerOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CSSearchableItemUpdateListenerOptions x)
+  fromOwned x = pure (CSSearchableItemUpdateListenerOptions x)
+
 -- | @CSSuggestionKind@
 newtype CSSuggestionKind = CSSuggestionKind CLong
   deriving stock (Eq, Ord, Show)
@@ -108,6 +151,16 @@ pattern CSSuggestionKindCustom = CSSuggestionKind 1
 pattern CSSuggestionKindDefault :: CSSuggestionKind
 pattern CSSuggestionKindDefault = CSSuggestionKind 2
 
+instance ObjCArgument CSSuggestionKind where
+  withObjCArg (CSSuggestionKind x) k = k (argCLong x)
+
+instance ObjCReturn CSSuggestionKind where
+  type RawReturn CSSuggestionKind = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CSSuggestionKind x)
+  fromOwned x = pure (CSSuggestionKind x)
+
 -- | @CSUserInteraction@
 newtype CSUserInteraction = CSUserInteraction CLong
   deriving stock (Eq, Ord, Show)
@@ -121,3 +174,13 @@ pattern CSUserInteractionDefault = CSUserInteraction 0
 
 pattern CSUserInteractionFocus :: CSUserInteraction
 pattern CSUserInteractionFocus = CSUserInteraction 1
+
+instance ObjCArgument CSUserInteraction where
+  withObjCArg (CSUserInteraction x) k = k (argCLong x)
+
+instance ObjCReturn CSUserInteraction where
+  type RawReturn CSUserInteraction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CSUserInteraction x)
+  fromOwned x = pure (CSUserInteraction x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,33 +31,29 @@ module ObjC.AVFoundation.AVCaptureFileOutput
   , setMaxRecordedFileSize
   , minFreeDiskSpaceLimit
   , setMinFreeDiskSpaceLimit
+  , delegateSelector
+  , maxRecordedFileSizeSelector
+  , minFreeDiskSpaceLimitSelector
+  , outputFileURLSelector
+  , pauseRecordingSelector
+  , recordedFileSizeSelector
+  , recordingPausedSelector
+  , recordingSelector
+  , resumeRecordingSelector
+  , setDelegateSelector
+  , setMaxRecordedFileSizeSelector
+  , setMinFreeDiskSpaceLimitSelector
   , startRecordingToOutputFileURL_recordingDelegateSelector
   , stopRecordingSelector
-  , pauseRecordingSelector
-  , resumeRecordingSelector
-  , delegateSelector
-  , setDelegateSelector
-  , outputFileURLSelector
-  , recordingSelector
-  , recordingPausedSelector
-  , recordedFileSizeSelector
-  , maxRecordedFileSizeSelector
-  , setMaxRecordedFileSizeSelector
-  , minFreeDiskSpaceLimitSelector
-  , setMinFreeDiskSpaceLimitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,9 +80,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startRecordingToOutputFileURL:recordingDelegate:@
 startRecordingToOutputFileURL_recordingDelegate :: (IsAVCaptureFileOutput avCaptureFileOutput, IsNSURL outputFileURL) => avCaptureFileOutput -> outputFileURL -> RawId -> IO ()
-startRecordingToOutputFileURL_recordingDelegate avCaptureFileOutput  outputFileURL delegate =
-  withObjCPtr outputFileURL $ \raw_outputFileURL ->
-      sendMsg avCaptureFileOutput (mkSelector "startRecordingToOutputFileURL:recordingDelegate:") retVoid [argPtr (castPtr raw_outputFileURL :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())]
+startRecordingToOutputFileURL_recordingDelegate avCaptureFileOutput outputFileURL delegate =
+  sendMessage avCaptureFileOutput startRecordingToOutputFileURL_recordingDelegateSelector (toNSURL outputFileURL) delegate
 
 -- | stopRecording
 --
@@ -99,8 +95,8 @@ startRecordingToOutputFileURL_recordingDelegate avCaptureFileOutput  outputFileU
 --
 -- ObjC selector: @- stopRecording@
 stopRecording :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO ()
-stopRecording avCaptureFileOutput  =
-    sendMsg avCaptureFileOutput (mkSelector "stopRecording") retVoid []
+stopRecording avCaptureFileOutput =
+  sendMessage avCaptureFileOutput stopRecordingSelector
 
 -- | pauseRecording
 --
@@ -116,8 +112,8 @@ stopRecording avCaptureFileOutput  =
 --
 -- ObjC selector: @- pauseRecording@
 pauseRecording :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO ()
-pauseRecording avCaptureFileOutput  =
-    sendMsg avCaptureFileOutput (mkSelector "pauseRecording") retVoid []
+pauseRecording avCaptureFileOutput =
+  sendMessage avCaptureFileOutput pauseRecordingSelector
 
 -- | resumeRecording
 --
@@ -129,8 +125,8 @@ pauseRecording avCaptureFileOutput  =
 --
 -- ObjC selector: @- resumeRecording@
 resumeRecording :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO ()
-resumeRecording avCaptureFileOutput  =
-    sendMsg avCaptureFileOutput (mkSelector "resumeRecording") retVoid []
+resumeRecording avCaptureFileOutput =
+  sendMessage avCaptureFileOutput resumeRecordingSelector
 
 -- | delegate
 --
@@ -140,8 +136,8 @@ resumeRecording avCaptureFileOutput  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO RawId
-delegate avCaptureFileOutput  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureFileOutput (mkSelector "delegate") (retPtr retVoid) []
+delegate avCaptureFileOutput =
+  sendMessage avCaptureFileOutput delegateSelector
 
 -- | delegate
 --
@@ -151,8 +147,8 @@ delegate avCaptureFileOutput  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> RawId -> IO ()
-setDelegate avCaptureFileOutput  value =
-    sendMsg avCaptureFileOutput (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avCaptureFileOutput value =
+  sendMessage avCaptureFileOutput setDelegateSelector value
 
 -- | outputFileURL
 --
@@ -162,8 +158,8 @@ setDelegate avCaptureFileOutput  value =
 --
 -- ObjC selector: @- outputFileURL@
 outputFileURL :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO (Id NSURL)
-outputFileURL avCaptureFileOutput  =
-    sendMsg avCaptureFileOutput (mkSelector "outputFileURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputFileURL avCaptureFileOutput =
+  sendMessage avCaptureFileOutput outputFileURLSelector
 
 -- | recording
 --
@@ -173,8 +169,8 @@ outputFileURL avCaptureFileOutput  =
 --
 -- ObjC selector: @- recording@
 recording :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO Bool
-recording avCaptureFileOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureFileOutput (mkSelector "recording") retCULong []
+recording avCaptureFileOutput =
+  sendMessage avCaptureFileOutput recordingSelector
 
 -- | recordingPaused
 --
@@ -184,8 +180,8 @@ recording avCaptureFileOutput  =
 --
 -- ObjC selector: @- recordingPaused@
 recordingPaused :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO Bool
-recordingPaused avCaptureFileOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureFileOutput (mkSelector "recordingPaused") retCULong []
+recordingPaused avCaptureFileOutput =
+  sendMessage avCaptureFileOutput recordingPausedSelector
 
 -- | recordedFileSize
 --
@@ -195,8 +191,8 @@ recordingPaused avCaptureFileOutput  =
 --
 -- ObjC selector: @- recordedFileSize@
 recordedFileSize :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO CLong
-recordedFileSize avCaptureFileOutput  =
-    sendMsg avCaptureFileOutput (mkSelector "recordedFileSize") retCLong []
+recordedFileSize avCaptureFileOutput =
+  sendMessage avCaptureFileOutput recordedFileSizeSelector
 
 -- | maxRecordedFileSize
 --
@@ -206,8 +202,8 @@ recordedFileSize avCaptureFileOutput  =
 --
 -- ObjC selector: @- maxRecordedFileSize@
 maxRecordedFileSize :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO CLong
-maxRecordedFileSize avCaptureFileOutput  =
-    sendMsg avCaptureFileOutput (mkSelector "maxRecordedFileSize") retCLong []
+maxRecordedFileSize avCaptureFileOutput =
+  sendMessage avCaptureFileOutput maxRecordedFileSizeSelector
 
 -- | maxRecordedFileSize
 --
@@ -217,8 +213,8 @@ maxRecordedFileSize avCaptureFileOutput  =
 --
 -- ObjC selector: @- setMaxRecordedFileSize:@
 setMaxRecordedFileSize :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> CLong -> IO ()
-setMaxRecordedFileSize avCaptureFileOutput  value =
-    sendMsg avCaptureFileOutput (mkSelector "setMaxRecordedFileSize:") retVoid [argCLong value]
+setMaxRecordedFileSize avCaptureFileOutput value =
+  sendMessage avCaptureFileOutput setMaxRecordedFileSizeSelector value
 
 -- | minFreeDiskSpaceLimit
 --
@@ -228,8 +224,8 @@ setMaxRecordedFileSize avCaptureFileOutput  value =
 --
 -- ObjC selector: @- minFreeDiskSpaceLimit@
 minFreeDiskSpaceLimit :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> IO CLong
-minFreeDiskSpaceLimit avCaptureFileOutput  =
-    sendMsg avCaptureFileOutput (mkSelector "minFreeDiskSpaceLimit") retCLong []
+minFreeDiskSpaceLimit avCaptureFileOutput =
+  sendMessage avCaptureFileOutput minFreeDiskSpaceLimitSelector
 
 -- | minFreeDiskSpaceLimit
 --
@@ -239,66 +235,66 @@ minFreeDiskSpaceLimit avCaptureFileOutput  =
 --
 -- ObjC selector: @- setMinFreeDiskSpaceLimit:@
 setMinFreeDiskSpaceLimit :: IsAVCaptureFileOutput avCaptureFileOutput => avCaptureFileOutput -> CLong -> IO ()
-setMinFreeDiskSpaceLimit avCaptureFileOutput  value =
-    sendMsg avCaptureFileOutput (mkSelector "setMinFreeDiskSpaceLimit:") retVoid [argCLong value]
+setMinFreeDiskSpaceLimit avCaptureFileOutput value =
+  sendMessage avCaptureFileOutput setMinFreeDiskSpaceLimitSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startRecordingToOutputFileURL:recordingDelegate:@
-startRecordingToOutputFileURL_recordingDelegateSelector :: Selector
+startRecordingToOutputFileURL_recordingDelegateSelector :: Selector '[Id NSURL, RawId] ()
 startRecordingToOutputFileURL_recordingDelegateSelector = mkSelector "startRecordingToOutputFileURL:recordingDelegate:"
 
 -- | @Selector@ for @stopRecording@
-stopRecordingSelector :: Selector
+stopRecordingSelector :: Selector '[] ()
 stopRecordingSelector = mkSelector "stopRecording"
 
 -- | @Selector@ for @pauseRecording@
-pauseRecordingSelector :: Selector
+pauseRecordingSelector :: Selector '[] ()
 pauseRecordingSelector = mkSelector "pauseRecording"
 
 -- | @Selector@ for @resumeRecording@
-resumeRecordingSelector :: Selector
+resumeRecordingSelector :: Selector '[] ()
 resumeRecordingSelector = mkSelector "resumeRecording"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @outputFileURL@
-outputFileURLSelector :: Selector
+outputFileURLSelector :: Selector '[] (Id NSURL)
 outputFileURLSelector = mkSelector "outputFileURL"
 
 -- | @Selector@ for @recording@
-recordingSelector :: Selector
+recordingSelector :: Selector '[] Bool
 recordingSelector = mkSelector "recording"
 
 -- | @Selector@ for @recordingPaused@
-recordingPausedSelector :: Selector
+recordingPausedSelector :: Selector '[] Bool
 recordingPausedSelector = mkSelector "recordingPaused"
 
 -- | @Selector@ for @recordedFileSize@
-recordedFileSizeSelector :: Selector
+recordedFileSizeSelector :: Selector '[] CLong
 recordedFileSizeSelector = mkSelector "recordedFileSize"
 
 -- | @Selector@ for @maxRecordedFileSize@
-maxRecordedFileSizeSelector :: Selector
+maxRecordedFileSizeSelector :: Selector '[] CLong
 maxRecordedFileSizeSelector = mkSelector "maxRecordedFileSize"
 
 -- | @Selector@ for @setMaxRecordedFileSize:@
-setMaxRecordedFileSizeSelector :: Selector
+setMaxRecordedFileSizeSelector :: Selector '[CLong] ()
 setMaxRecordedFileSizeSelector = mkSelector "setMaxRecordedFileSize:"
 
 -- | @Selector@ for @minFreeDiskSpaceLimit@
-minFreeDiskSpaceLimitSelector :: Selector
+minFreeDiskSpaceLimitSelector :: Selector '[] CLong
 minFreeDiskSpaceLimitSelector = mkSelector "minFreeDiskSpaceLimit"
 
 -- | @Selector@ for @setMinFreeDiskSpaceLimit:@
-setMinFreeDiskSpaceLimitSelector :: Selector
+setMinFreeDiskSpaceLimitSelector :: Selector '[CLong] ()
 setMinFreeDiskSpaceLimitSelector = mkSelector "setMinFreeDiskSpaceLimit:"
 

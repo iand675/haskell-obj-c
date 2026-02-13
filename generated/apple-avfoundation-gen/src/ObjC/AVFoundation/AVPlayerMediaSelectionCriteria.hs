@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,15 +27,11 @@ module ObjC.AVFoundation.AVPlayerMediaSelectionCriteria
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,10 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPreferredLanguages:preferredMediaCharacteristics:@
 initWithPreferredLanguages_preferredMediaCharacteristics :: (IsAVPlayerMediaSelectionCriteria avPlayerMediaSelectionCriteria, IsNSArray preferredLanguages, IsNSArray preferredMediaCharacteristics) => avPlayerMediaSelectionCriteria -> preferredLanguages -> preferredMediaCharacteristics -> IO (Id AVPlayerMediaSelectionCriteria)
-initWithPreferredLanguages_preferredMediaCharacteristics avPlayerMediaSelectionCriteria  preferredLanguages preferredMediaCharacteristics =
-  withObjCPtr preferredLanguages $ \raw_preferredLanguages ->
-    withObjCPtr preferredMediaCharacteristics $ \raw_preferredMediaCharacteristics ->
-        sendMsg avPlayerMediaSelectionCriteria (mkSelector "initWithPreferredLanguages:preferredMediaCharacteristics:") (retPtr retVoid) [argPtr (castPtr raw_preferredLanguages :: Ptr ()), argPtr (castPtr raw_preferredMediaCharacteristics :: Ptr ())] >>= ownedObject . castPtr
+initWithPreferredLanguages_preferredMediaCharacteristics avPlayerMediaSelectionCriteria preferredLanguages preferredMediaCharacteristics =
+  sendOwnedMessage avPlayerMediaSelectionCriteria initWithPreferredLanguages_preferredMediaCharacteristicsSelector (toNSArray preferredLanguages) (toNSArray preferredMediaCharacteristics)
 
 -- | initWithPrincipalMediaCharacteristics:principalMediaCharacteristics:preferredLanguages:preferredMediaCharacteristics:
 --
@@ -74,48 +69,45 @@ initWithPreferredLanguages_preferredMediaCharacteristics avPlayerMediaSelectionC
 --
 -- ObjC selector: @- initWithPrincipalMediaCharacteristics:preferredLanguages:preferredMediaCharacteristics:@
 initWithPrincipalMediaCharacteristics_preferredLanguages_preferredMediaCharacteristics :: (IsAVPlayerMediaSelectionCriteria avPlayerMediaSelectionCriteria, IsNSArray principalMediaCharacteristics, IsNSArray preferredLanguages, IsNSArray preferredMediaCharacteristics) => avPlayerMediaSelectionCriteria -> principalMediaCharacteristics -> preferredLanguages -> preferredMediaCharacteristics -> IO (Id AVPlayerMediaSelectionCriteria)
-initWithPrincipalMediaCharacteristics_preferredLanguages_preferredMediaCharacteristics avPlayerMediaSelectionCriteria  principalMediaCharacteristics preferredLanguages preferredMediaCharacteristics =
-  withObjCPtr principalMediaCharacteristics $ \raw_principalMediaCharacteristics ->
-    withObjCPtr preferredLanguages $ \raw_preferredLanguages ->
-      withObjCPtr preferredMediaCharacteristics $ \raw_preferredMediaCharacteristics ->
-          sendMsg avPlayerMediaSelectionCriteria (mkSelector "initWithPrincipalMediaCharacteristics:preferredLanguages:preferredMediaCharacteristics:") (retPtr retVoid) [argPtr (castPtr raw_principalMediaCharacteristics :: Ptr ()), argPtr (castPtr raw_preferredLanguages :: Ptr ()), argPtr (castPtr raw_preferredMediaCharacteristics :: Ptr ())] >>= ownedObject . castPtr
+initWithPrincipalMediaCharacteristics_preferredLanguages_preferredMediaCharacteristics avPlayerMediaSelectionCriteria principalMediaCharacteristics preferredLanguages preferredMediaCharacteristics =
+  sendOwnedMessage avPlayerMediaSelectionCriteria initWithPrincipalMediaCharacteristics_preferredLanguages_preferredMediaCharacteristicsSelector (toNSArray principalMediaCharacteristics) (toNSArray preferredLanguages) (toNSArray preferredMediaCharacteristics)
 
 -- | @- preferredLanguages@
 preferredLanguages :: IsAVPlayerMediaSelectionCriteria avPlayerMediaSelectionCriteria => avPlayerMediaSelectionCriteria -> IO (Id NSArray)
-preferredLanguages avPlayerMediaSelectionCriteria  =
-    sendMsg avPlayerMediaSelectionCriteria (mkSelector "preferredLanguages") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredLanguages avPlayerMediaSelectionCriteria =
+  sendMessage avPlayerMediaSelectionCriteria preferredLanguagesSelector
 
 -- | @- preferredMediaCharacteristics@
 preferredMediaCharacteristics :: IsAVPlayerMediaSelectionCriteria avPlayerMediaSelectionCriteria => avPlayerMediaSelectionCriteria -> IO (Id NSArray)
-preferredMediaCharacteristics avPlayerMediaSelectionCriteria  =
-    sendMsg avPlayerMediaSelectionCriteria (mkSelector "preferredMediaCharacteristics") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredMediaCharacteristics avPlayerMediaSelectionCriteria =
+  sendMessage avPlayerMediaSelectionCriteria preferredMediaCharacteristicsSelector
 
 -- | @- principalMediaCharacteristics@
 principalMediaCharacteristics :: IsAVPlayerMediaSelectionCriteria avPlayerMediaSelectionCriteria => avPlayerMediaSelectionCriteria -> IO (Id NSArray)
-principalMediaCharacteristics avPlayerMediaSelectionCriteria  =
-    sendMsg avPlayerMediaSelectionCriteria (mkSelector "principalMediaCharacteristics") (retPtr retVoid) [] >>= retainedObject . castPtr
+principalMediaCharacteristics avPlayerMediaSelectionCriteria =
+  sendMessage avPlayerMediaSelectionCriteria principalMediaCharacteristicsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPreferredLanguages:preferredMediaCharacteristics:@
-initWithPreferredLanguages_preferredMediaCharacteristicsSelector :: Selector
+initWithPreferredLanguages_preferredMediaCharacteristicsSelector :: Selector '[Id NSArray, Id NSArray] (Id AVPlayerMediaSelectionCriteria)
 initWithPreferredLanguages_preferredMediaCharacteristicsSelector = mkSelector "initWithPreferredLanguages:preferredMediaCharacteristics:"
 
 -- | @Selector@ for @initWithPrincipalMediaCharacteristics:preferredLanguages:preferredMediaCharacteristics:@
-initWithPrincipalMediaCharacteristics_preferredLanguages_preferredMediaCharacteristicsSelector :: Selector
+initWithPrincipalMediaCharacteristics_preferredLanguages_preferredMediaCharacteristicsSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray] (Id AVPlayerMediaSelectionCriteria)
 initWithPrincipalMediaCharacteristics_preferredLanguages_preferredMediaCharacteristicsSelector = mkSelector "initWithPrincipalMediaCharacteristics:preferredLanguages:preferredMediaCharacteristics:"
 
 -- | @Selector@ for @preferredLanguages@
-preferredLanguagesSelector :: Selector
+preferredLanguagesSelector :: Selector '[] (Id NSArray)
 preferredLanguagesSelector = mkSelector "preferredLanguages"
 
 -- | @Selector@ for @preferredMediaCharacteristics@
-preferredMediaCharacteristicsSelector :: Selector
+preferredMediaCharacteristicsSelector :: Selector '[] (Id NSArray)
 preferredMediaCharacteristicsSelector = mkSelector "preferredMediaCharacteristics"
 
 -- | @Selector@ for @principalMediaCharacteristics@
-principalMediaCharacteristicsSelector :: Selector
+principalMediaCharacteristicsSelector :: Selector '[] (Id NSArray)
 principalMediaCharacteristicsSelector = mkSelector "principalMediaCharacteristics"
 

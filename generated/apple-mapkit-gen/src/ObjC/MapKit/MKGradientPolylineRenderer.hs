@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.MapKit.MKGradientPolylineRenderer
   , setColors_atLocations
   , locations
   , colors
-  , setColors_atLocationsSelector
-  , locationsSelector
   , colorsSelector
+  , locationsSelector
+  , setColors_atLocationsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,34 +31,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setColors:atLocations:@
 setColors_atLocations :: (IsMKGradientPolylineRenderer mkGradientPolylineRenderer, IsNSArray colors, IsNSArray locations) => mkGradientPolylineRenderer -> colors -> locations -> IO ()
-setColors_atLocations mkGradientPolylineRenderer  colors locations =
-  withObjCPtr colors $ \raw_colors ->
-    withObjCPtr locations $ \raw_locations ->
-        sendMsg mkGradientPolylineRenderer (mkSelector "setColors:atLocations:") retVoid [argPtr (castPtr raw_colors :: Ptr ()), argPtr (castPtr raw_locations :: Ptr ())]
+setColors_atLocations mkGradientPolylineRenderer colors locations =
+  sendMessage mkGradientPolylineRenderer setColors_atLocationsSelector (toNSArray colors) (toNSArray locations)
 
 -- | @- locations@
 locations :: IsMKGradientPolylineRenderer mkGradientPolylineRenderer => mkGradientPolylineRenderer -> IO (Id NSArray)
-locations mkGradientPolylineRenderer  =
-    sendMsg mkGradientPolylineRenderer (mkSelector "locations") (retPtr retVoid) [] >>= retainedObject . castPtr
+locations mkGradientPolylineRenderer =
+  sendMessage mkGradientPolylineRenderer locationsSelector
 
 -- | @- colors@
 colors :: IsMKGradientPolylineRenderer mkGradientPolylineRenderer => mkGradientPolylineRenderer -> IO (Id NSArray)
-colors mkGradientPolylineRenderer  =
-    sendMsg mkGradientPolylineRenderer (mkSelector "colors") (retPtr retVoid) [] >>= retainedObject . castPtr
+colors mkGradientPolylineRenderer =
+  sendMessage mkGradientPolylineRenderer colorsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setColors:atLocations:@
-setColors_atLocationsSelector :: Selector
+setColors_atLocationsSelector :: Selector '[Id NSArray, Id NSArray] ()
 setColors_atLocationsSelector = mkSelector "setColors:atLocations:"
 
 -- | @Selector@ for @locations@
-locationsSelector :: Selector
+locationsSelector :: Selector '[] (Id NSArray)
 locationsSelector = mkSelector "locations"
 
 -- | @Selector@ for @colors@
-colorsSelector :: Selector
+colorsSelector :: Selector '[] (Id NSArray)
 colorsSelector = mkSelector "colors"
 

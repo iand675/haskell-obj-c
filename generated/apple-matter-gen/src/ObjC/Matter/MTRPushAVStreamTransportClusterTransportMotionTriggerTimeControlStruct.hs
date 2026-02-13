@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRPushAVStreamTransportClusterTransportMotionTriggerTimeCont
   , setMaxDuration
   , blindDuration
   , setBlindDuration
-  , initialDurationSelector
-  , setInitialDurationSelector
   , augmentationDurationSelector
-  , setAugmentationDurationSelector
-  , maxDurationSelector
-  , setMaxDurationSelector
   , blindDurationSelector
+  , initialDurationSelector
+  , maxDurationSelector
+  , setAugmentationDurationSelector
   , setBlindDurationSelector
+  , setInitialDurationSelector
+  , setMaxDurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initialDuration@
 initialDuration :: IsMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct => mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct -> IO (Id NSNumber)
-initialDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct (mkSelector "initialDuration") (retPtr retVoid) [] >>= ownedObject . castPtr
+initialDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct =
+  sendOwnedMessage mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct initialDurationSelector
 
 -- | @- setInitialDuration:@
 setInitialDuration :: (IsMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct -> value -> IO ()
-setInitialDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct (mkSelector "setInitialDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInitialDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct setInitialDurationSelector (toNSNumber value)
 
 -- | @- augmentationDuration@
 augmentationDuration :: IsMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct => mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct -> IO (Id NSNumber)
-augmentationDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct (mkSelector "augmentationDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+augmentationDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct augmentationDurationSelector
 
 -- | @- setAugmentationDuration:@
 setAugmentationDuration :: (IsMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct -> value -> IO ()
-setAugmentationDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct (mkSelector "setAugmentationDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAugmentationDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct setAugmentationDurationSelector (toNSNumber value)
 
 -- | @- maxDuration@
 maxDuration :: IsMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct => mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct -> IO (Id NSNumber)
-maxDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct (mkSelector "maxDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct maxDurationSelector
 
 -- | @- setMaxDuration:@
 setMaxDuration :: (IsMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct -> value -> IO ()
-setMaxDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct (mkSelector "setMaxDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct setMaxDurationSelector (toNSNumber value)
 
 -- | @- blindDuration@
 blindDuration :: IsMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct => mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct -> IO (Id NSNumber)
-blindDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct  =
-    sendMsg mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct (mkSelector "blindDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+blindDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct =
+  sendMessage mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct blindDurationSelector
 
 -- | @- setBlindDuration:@
 setBlindDuration :: (IsMTRPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct, IsNSNumber value) => mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct -> value -> IO ()
-setBlindDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct (mkSelector "setBlindDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBlindDuration mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct value =
+  sendMessage mtrPushAVStreamTransportClusterTransportMotionTriggerTimeControlStruct setBlindDurationSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initialDuration@
-initialDurationSelector :: Selector
+initialDurationSelector :: Selector '[] (Id NSNumber)
 initialDurationSelector = mkSelector "initialDuration"
 
 -- | @Selector@ for @setInitialDuration:@
-setInitialDurationSelector :: Selector
+setInitialDurationSelector :: Selector '[Id NSNumber] ()
 setInitialDurationSelector = mkSelector "setInitialDuration:"
 
 -- | @Selector@ for @augmentationDuration@
-augmentationDurationSelector :: Selector
+augmentationDurationSelector :: Selector '[] (Id NSNumber)
 augmentationDurationSelector = mkSelector "augmentationDuration"
 
 -- | @Selector@ for @setAugmentationDuration:@
-setAugmentationDurationSelector :: Selector
+setAugmentationDurationSelector :: Selector '[Id NSNumber] ()
 setAugmentationDurationSelector = mkSelector "setAugmentationDuration:"
 
 -- | @Selector@ for @maxDuration@
-maxDurationSelector :: Selector
+maxDurationSelector :: Selector '[] (Id NSNumber)
 maxDurationSelector = mkSelector "maxDuration"
 
 -- | @Selector@ for @setMaxDuration:@
-setMaxDurationSelector :: Selector
+setMaxDurationSelector :: Selector '[Id NSNumber] ()
 setMaxDurationSelector = mkSelector "setMaxDuration:"
 
 -- | @Selector@ for @blindDuration@
-blindDurationSelector :: Selector
+blindDurationSelector :: Selector '[] (Id NSNumber)
 blindDurationSelector = mkSelector "blindDuration"
 
 -- | @Selector@ for @setBlindDuration:@
-setBlindDurationSelector :: Selector
+setBlindDurationSelector :: Selector '[Id NSNumber] ()
 setBlindDurationSelector = mkSelector "setBlindDuration:"
 

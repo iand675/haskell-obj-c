@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,27 +33,27 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphLSTMDescriptor
   , setOutputGateActivation
   , activation
   , setActivation
-  , descriptorSelector
-  , reverseSelector
-  , setReverseSelector
-  , bidirectionalSelector
-  , setBidirectionalSelector
-  , produceCellSelector
-  , setProduceCellSelector
-  , trainingSelector
-  , setTrainingSelector
-  , forgetGateLastSelector
-  , setForgetGateLastSelector
-  , inputGateActivationSelector
-  , setInputGateActivationSelector
-  , forgetGateActivationSelector
-  , setForgetGateActivationSelector
-  , cellGateActivationSelector
-  , setCellGateActivationSelector
-  , outputGateActivationSelector
-  , setOutputGateActivationSelector
   , activationSelector
+  , bidirectionalSelector
+  , cellGateActivationSelector
+  , descriptorSelector
+  , forgetGateActivationSelector
+  , forgetGateLastSelector
+  , inputGateActivationSelector
+  , outputGateActivationSelector
+  , produceCellSelector
+  , reverseSelector
   , setActivationSelector
+  , setBidirectionalSelector
+  , setCellGateActivationSelector
+  , setForgetGateActivationSelector
+  , setForgetGateLastSelector
+  , setInputGateActivationSelector
+  , setOutputGateActivationSelector
+  , setProduceCellSelector
+  , setReverseSelector
+  , setTrainingSelector
+  , trainingSelector
 
   -- * Enum types
   , MPSGraphRNNActivation(MPSGraphRNNActivation)
@@ -64,15 +65,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphLSTMDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -87,7 +84,7 @@ descriptor :: IO (Id MPSGraphLSTMDescriptor)
 descriptor  =
   do
     cls' <- getRequiredClass "MPSGraphLSTMDescriptor"
-    sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorSelector
 
 -- | A parameter that defines time direction of the input sequence.
 --
@@ -95,8 +92,8 @@ descriptor  =
 --
 -- ObjC selector: @- reverse@
 reverse_ :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO Bool
-reverse_ mpsGraphLSTMDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "reverse") retCULong []
+reverse_ mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor reverseSelector
 
 -- | A parameter that defines time direction of the input sequence.
 --
@@ -104,8 +101,8 @@ reverse_ mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setReverse:@
 setReverse :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> Bool -> IO ()
-setReverse mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setReverse:") retVoid [argCULong (if value then 1 else 0)]
+setReverse mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setReverseSelector value
 
 -- | A parameter that defines a bidirectional LSTM layer.
 --
@@ -113,8 +110,8 @@ setReverse mpsGraphLSTMDescriptor  value =
 --
 -- ObjC selector: @- bidirectional@
 bidirectional :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO Bool
-bidirectional mpsGraphLSTMDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "bidirectional") retCULong []
+bidirectional mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor bidirectionalSelector
 
 -- | A parameter that defines a bidirectional LSTM layer.
 --
@@ -122,8 +119,8 @@ bidirectional mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setBidirectional:@
 setBidirectional :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> Bool -> IO ()
-setBidirectional mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setBidirectional:") retVoid [argCULong (if value then 1 else 0)]
+setBidirectional mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setBidirectionalSelector value
 
 -- | A parameter that controls whether or not to return the output cell from the LSTM layer.
 --
@@ -131,8 +128,8 @@ setBidirectional mpsGraphLSTMDescriptor  value =
 --
 -- ObjC selector: @- produceCell@
 produceCell :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO Bool
-produceCell mpsGraphLSTMDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "produceCell") retCULong []
+produceCell mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor produceCellSelector
 
 -- | A parameter that controls whether or not to return the output cell from the LSTM layer.
 --
@@ -140,8 +137,8 @@ produceCell mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setProduceCell:@
 setProduceCell :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> Bool -> IO ()
-setProduceCell mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setProduceCell:") retVoid [argCULong (if value then 1 else 0)]
+setProduceCell mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setProduceCellSelector value
 
 -- | A parameter that enables the LSTM layer to support training.
 --
@@ -149,8 +146,8 @@ setProduceCell mpsGraphLSTMDescriptor  value =
 --
 -- ObjC selector: @- training@
 training :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO Bool
-training mpsGraphLSTMDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "training") retCULong []
+training mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor trainingSelector
 
 -- | A parameter that enables the LSTM layer to support training.
 --
@@ -158,8 +155,8 @@ training mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setTraining:@
 setTraining :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> Bool -> IO ()
-setTraining mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setTraining:") retVoid [argCULong (if value then 1 else 0)]
+setTraining mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setTrainingSelector value
 
 -- | A parameter that controls the internal order of the LSTM gates.
 --
@@ -167,8 +164,8 @@ setTraining mpsGraphLSTMDescriptor  value =
 --
 -- ObjC selector: @- forgetGateLast@
 forgetGateLast :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO Bool
-forgetGateLast mpsGraphLSTMDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "forgetGateLast") retCULong []
+forgetGateLast mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor forgetGateLastSelector
 
 -- | A parameter that controls the internal order of the LSTM gates.
 --
@@ -176,8 +173,8 @@ forgetGateLast mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setForgetGateLast:@
 setForgetGateLast :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> Bool -> IO ()
-setForgetGateLast mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setForgetGateLast:") retVoid [argCULong (if value then 1 else 0)]
+setForgetGateLast mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setForgetGateLastSelector value
 
 -- | A parameter that defines the activation function used with the input gate of the LSTM operation.
 --
@@ -185,8 +182,8 @@ setForgetGateLast mpsGraphLSTMDescriptor  value =
 --
 -- ObjC selector: @- inputGateActivation@
 inputGateActivation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO MPSGraphRNNActivation
-inputGateActivation mpsGraphLSTMDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRNNActivation) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "inputGateActivation") retCULong []
+inputGateActivation mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor inputGateActivationSelector
 
 -- | A parameter that defines the activation function used with the input gate of the LSTM operation.
 --
@@ -194,8 +191,8 @@ inputGateActivation mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setInputGateActivation:@
 setInputGateActivation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> MPSGraphRNNActivation -> IO ()
-setInputGateActivation mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setInputGateActivation:") retVoid [argCULong (coerce value)]
+setInputGateActivation mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setInputGateActivationSelector value
 
 -- | A parameter that defines the activation function used with the forget gate of the LSTM operation.
 --
@@ -203,8 +200,8 @@ setInputGateActivation mpsGraphLSTMDescriptor  value =
 --
 -- ObjC selector: @- forgetGateActivation@
 forgetGateActivation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO MPSGraphRNNActivation
-forgetGateActivation mpsGraphLSTMDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRNNActivation) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "forgetGateActivation") retCULong []
+forgetGateActivation mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor forgetGateActivationSelector
 
 -- | A parameter that defines the activation function used with the forget gate of the LSTM operation.
 --
@@ -212,8 +209,8 @@ forgetGateActivation mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setForgetGateActivation:@
 setForgetGateActivation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> MPSGraphRNNActivation -> IO ()
-setForgetGateActivation mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setForgetGateActivation:") retVoid [argCULong (coerce value)]
+setForgetGateActivation mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setForgetGateActivationSelector value
 
 -- | A parameter that defines the activation function used with the cell gate of the LSTM operation.
 --
@@ -221,8 +218,8 @@ setForgetGateActivation mpsGraphLSTMDescriptor  value =
 --
 -- ObjC selector: @- cellGateActivation@
 cellGateActivation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO MPSGraphRNNActivation
-cellGateActivation mpsGraphLSTMDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRNNActivation) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "cellGateActivation") retCULong []
+cellGateActivation mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor cellGateActivationSelector
 
 -- | A parameter that defines the activation function used with the cell gate of the LSTM operation.
 --
@@ -230,8 +227,8 @@ cellGateActivation mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setCellGateActivation:@
 setCellGateActivation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> MPSGraphRNNActivation -> IO ()
-setCellGateActivation mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setCellGateActivation:") retVoid [argCULong (coerce value)]
+setCellGateActivation mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setCellGateActivationSelector value
 
 -- | A parameter that defines the activation function used with the output gate of the LSTM operation.
 --
@@ -239,8 +236,8 @@ setCellGateActivation mpsGraphLSTMDescriptor  value =
 --
 -- ObjC selector: @- outputGateActivation@
 outputGateActivation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO MPSGraphRNNActivation
-outputGateActivation mpsGraphLSTMDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRNNActivation) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "outputGateActivation") retCULong []
+outputGateActivation mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor outputGateActivationSelector
 
 -- | A parameter that defines the activation function used with the output gate of the LSTM operation.
 --
@@ -248,8 +245,8 @@ outputGateActivation mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setOutputGateActivation:@
 setOutputGateActivation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> MPSGraphRNNActivation -> IO ()
-setOutputGateActivation mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setOutputGateActivation:") retVoid [argCULong (coerce value)]
+setOutputGateActivation mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setOutputGateActivationSelector value
 
 -- | A parameter that defines the activation function used with the current cell value of the LSTM operation.
 --
@@ -257,8 +254,8 @@ setOutputGateActivation mpsGraphLSTMDescriptor  value =
 --
 -- ObjC selector: @- activation@
 activation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> IO MPSGraphRNNActivation
-activation mpsGraphLSTMDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRNNActivation) $ sendMsg mpsGraphLSTMDescriptor (mkSelector "activation") retCULong []
+activation mpsGraphLSTMDescriptor =
+  sendMessage mpsGraphLSTMDescriptor activationSelector
 
 -- | A parameter that defines the activation function used with the current cell value of the LSTM operation.
 --
@@ -266,94 +263,94 @@ activation mpsGraphLSTMDescriptor  =
 --
 -- ObjC selector: @- setActivation:@
 setActivation :: IsMPSGraphLSTMDescriptor mpsGraphLSTMDescriptor => mpsGraphLSTMDescriptor -> MPSGraphRNNActivation -> IO ()
-setActivation mpsGraphLSTMDescriptor  value =
-    sendMsg mpsGraphLSTMDescriptor (mkSelector "setActivation:") retVoid [argCULong (coerce value)]
+setActivation mpsGraphLSTMDescriptor value =
+  sendMessage mpsGraphLSTMDescriptor setActivationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MPSGraphLSTMDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @reverse@
-reverseSelector :: Selector
+reverseSelector :: Selector '[] Bool
 reverseSelector = mkSelector "reverse"
 
 -- | @Selector@ for @setReverse:@
-setReverseSelector :: Selector
+setReverseSelector :: Selector '[Bool] ()
 setReverseSelector = mkSelector "setReverse:"
 
 -- | @Selector@ for @bidirectional@
-bidirectionalSelector :: Selector
+bidirectionalSelector :: Selector '[] Bool
 bidirectionalSelector = mkSelector "bidirectional"
 
 -- | @Selector@ for @setBidirectional:@
-setBidirectionalSelector :: Selector
+setBidirectionalSelector :: Selector '[Bool] ()
 setBidirectionalSelector = mkSelector "setBidirectional:"
 
 -- | @Selector@ for @produceCell@
-produceCellSelector :: Selector
+produceCellSelector :: Selector '[] Bool
 produceCellSelector = mkSelector "produceCell"
 
 -- | @Selector@ for @setProduceCell:@
-setProduceCellSelector :: Selector
+setProduceCellSelector :: Selector '[Bool] ()
 setProduceCellSelector = mkSelector "setProduceCell:"
 
 -- | @Selector@ for @training@
-trainingSelector :: Selector
+trainingSelector :: Selector '[] Bool
 trainingSelector = mkSelector "training"
 
 -- | @Selector@ for @setTraining:@
-setTrainingSelector :: Selector
+setTrainingSelector :: Selector '[Bool] ()
 setTrainingSelector = mkSelector "setTraining:"
 
 -- | @Selector@ for @forgetGateLast@
-forgetGateLastSelector :: Selector
+forgetGateLastSelector :: Selector '[] Bool
 forgetGateLastSelector = mkSelector "forgetGateLast"
 
 -- | @Selector@ for @setForgetGateLast:@
-setForgetGateLastSelector :: Selector
+setForgetGateLastSelector :: Selector '[Bool] ()
 setForgetGateLastSelector = mkSelector "setForgetGateLast:"
 
 -- | @Selector@ for @inputGateActivation@
-inputGateActivationSelector :: Selector
+inputGateActivationSelector :: Selector '[] MPSGraphRNNActivation
 inputGateActivationSelector = mkSelector "inputGateActivation"
 
 -- | @Selector@ for @setInputGateActivation:@
-setInputGateActivationSelector :: Selector
+setInputGateActivationSelector :: Selector '[MPSGraphRNNActivation] ()
 setInputGateActivationSelector = mkSelector "setInputGateActivation:"
 
 -- | @Selector@ for @forgetGateActivation@
-forgetGateActivationSelector :: Selector
+forgetGateActivationSelector :: Selector '[] MPSGraphRNNActivation
 forgetGateActivationSelector = mkSelector "forgetGateActivation"
 
 -- | @Selector@ for @setForgetGateActivation:@
-setForgetGateActivationSelector :: Selector
+setForgetGateActivationSelector :: Selector '[MPSGraphRNNActivation] ()
 setForgetGateActivationSelector = mkSelector "setForgetGateActivation:"
 
 -- | @Selector@ for @cellGateActivation@
-cellGateActivationSelector :: Selector
+cellGateActivationSelector :: Selector '[] MPSGraphRNNActivation
 cellGateActivationSelector = mkSelector "cellGateActivation"
 
 -- | @Selector@ for @setCellGateActivation:@
-setCellGateActivationSelector :: Selector
+setCellGateActivationSelector :: Selector '[MPSGraphRNNActivation] ()
 setCellGateActivationSelector = mkSelector "setCellGateActivation:"
 
 -- | @Selector@ for @outputGateActivation@
-outputGateActivationSelector :: Selector
+outputGateActivationSelector :: Selector '[] MPSGraphRNNActivation
 outputGateActivationSelector = mkSelector "outputGateActivation"
 
 -- | @Selector@ for @setOutputGateActivation:@
-setOutputGateActivationSelector :: Selector
+setOutputGateActivationSelector :: Selector '[MPSGraphRNNActivation] ()
 setOutputGateActivationSelector = mkSelector "setOutputGateActivation:"
 
 -- | @Selector@ for @activation@
-activationSelector :: Selector
+activationSelector :: Selector '[] MPSGraphRNNActivation
 activationSelector = mkSelector "activation"
 
 -- | @Selector@ for @setActivation:@
-setActivationSelector :: Selector
+setActivationSelector :: Selector '[MPSGraphRNNActivation] ()
 setActivationSelector = mkSelector "setActivation:"
 

@@ -1,6 +1,9 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -31,6 +34,8 @@ module ObjC.Runtime.Types
   , ownedObject
   , retainedObject
   , unmanagedObject
+  , nilId
+  , retainAutorelease
 
     -- * Helpers for generated IsObjCObject instances
   , idToRawId
@@ -44,6 +49,7 @@ module ObjC.Runtime.Types
     -- * Selector types
   , ObjCSel
   , Selector(..)
+  , Sel
   , nilSelector
 
     -- * Method types
@@ -102,6 +108,7 @@ module ObjC.Runtime.Types
   ) where
 
 import Data.Bits (Bits, (.&.))
+import Data.Kind (Type)
 import Data.Proxy (Proxy)
 import Data.String (IsString(..))
 import Foreign.Ptr (Ptr, FunPtr, nullPtr)
@@ -226,6 +233,14 @@ instance IsObjCObject RawId where
   withObjCPtr (RawId ptr) f = f ptr
   staticClass _ = error "staticClass: RawId has no static class"
 
+-- | Lift 'IsObjCObject' through 'Const'.
+-- This allows @withObjCPtr@ on @Const (Id Foo)@ parameters generated from
+-- @const@-qualified ObjC method arguments.
+instance IsObjCObject a => IsObjCObject (Const a) where
+  toRawId (Const x) = toRawId x
+  withObjCPtr (Const x) f = withObjCPtr x f
+  staticClass _ = error "staticClass: Const wrapper has no single static class"
+
 -- | Extract the raw pointer from an 'Id'.  Unsafe: the pointer is only valid
 -- as long as the 'ForeignPtr' is alive.  Intended for generated
 -- 'IsObjCObject' instances.
@@ -244,6 +259,9 @@ withIdObjCPtr (Id fp) f = withForeignPtr fp f
 
 foreign import ccall unsafe "hs_objc_retain"
   c_objc_retain :: Ptr ObjCObject -> IO (Ptr ObjCObject)
+
+foreign import ccall unsafe "hs_objc_autorelease"
+  c_objc_autorelease :: Ptr ObjCObject -> IO (Ptr ObjCObject)
 
 -- | Function pointer to @hs_objc_release@, suitable for use as a
 -- 'ForeignPtr' finalizer.
@@ -276,6 +294,38 @@ retainedObject ptr = do
 unmanagedObject :: Ptr ObjCObject -> IO (Id a)
 unmanagedObject ptr = Id <$> newForeignPtr_ ptr
 
+-- | The nil object as a managed 'Id'.
+--
+-- Wraps 'nullPtr' in a 'ForeignPtr' with no finalizer.  Safe because
+-- Objective-C's @release(nil)@ is a no-op, and 'withForeignPtr' on it
+-- yields 'nullPtr'.
+--
+-- Useful for passing @nil@ to typed API functions:
+--
+-- @
+-- TV.setHeaderView tableView nilId   -- removes the header view
+-- @
+nilId :: Id a
+nilId = Id (unsafePerformIO (newForeignPtr_ nullPtr))
+{-# NOINLINE nilId #-}
+
+-- | Retain and autorelease an 'Id', returning the raw pointer.
+--
+-- Follows the standard Objective-C @+0@ return convention: the object's
+-- retain count is bumped and then placed in the current autorelease pool.
+-- This is the correct way to hand a Haskell-managed 'Id' back to
+-- Objective-C as a @+0@ return value (e.g., from delegate callbacks).
+--
+-- @
+-- returnId :: Id a -> IO RawId
+-- returnId obj = retainAutorelease obj
+-- @
+retainAutorelease :: Id a -> IO RawId
+retainAutorelease (Id fp) = withForeignPtr fp $ \ptr -> do
+  _ <- c_objc_retain ptr
+  _ <- c_objc_autorelease ptr
+  pure (RawId ptr)
+
 -- ---------------------------------------------------------------------------
 -- Class, Selector, Method, Ivar, etc. — unchanged
 -- ---------------------------------------------------------------------------
@@ -289,24 +339,33 @@ newtype Class = Class { unClass :: Ptr ObjCClass }
 nilClass :: Class
 nilClass = Class nullPtr
 
--- | An Objective-C selector (@SEL@).
-newtype Selector = Selector { unSelector :: Ptr ObjCSel }
+-- | An Objective-C selector (@SEL@), optionally carrying phantom type
+-- information about the method's parameter types and return type.
+--
+-- The phantom parameters exist for documentation and future type-safe
+-- dispatch; they do not affect runtime representation.
+type role Selector phantom phantom
+newtype Selector (args :: [Type]) (ret :: Type) = Selector { unSelector :: Ptr ObjCSel }
   deriving stock (Eq, Ord, Show)
   deriving newtype (Storable)
 
+-- | Untyped selector alias.  Use this in contexts where the selector's
+-- method signature is unknown or irrelevant (FFI, runtime introspection).
+type Sel = Selector '[] ()
+
 -- | Nil selector.
-nilSelector :: Selector
+nilSelector :: Sel
 nilSelector = Selector nullPtr
 
 foreign import ccall unsafe "sel_registerName"
-  c_sel_registerName :: CString -> IO Selector
+  c_sel_registerName :: CString -> IO (Ptr ObjCSel)
 
 -- | @Selector@ can be created from a string literal via @OverloadedStrings@.
 --
 -- @sel_registerName@ is idempotent and thread-safe, so 'unsafePerformIO'
 -- is safe here.
-instance IsString Selector where
-  fromString s = unsafePerformIO (withCString s c_sel_registerName)
+instance IsString (Selector args ret) where
+  fromString s = Selector (unsafePerformIO (withCString s c_sel_registerName))
   {-# NOINLINE fromString #-}
 
 -- | An Objective-C method (@Method@).
@@ -368,7 +427,7 @@ toObjCBool False = objcFalse
 
 -- | @struct objc_method_description@ — describes a method's selector and type encoding.
 data ObjCMethodDescription = ObjCMethodDescription
-  { methodDescName  :: !Selector
+  { methodDescName  :: !Sel
   , methodDescTypes :: !CString
   } deriving (Eq, Show)
 

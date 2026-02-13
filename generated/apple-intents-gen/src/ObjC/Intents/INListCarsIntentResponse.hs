@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,10 +13,10 @@ module ObjC.Intents.INListCarsIntentResponse
   , code
   , cars
   , setCars
+  , carsSelector
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
-  , carsSelector
   , setCarsSelector
 
   -- * Enum types
@@ -29,15 +30,11 @@ module ObjC.Intents.INListCarsIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,52 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINListCarsIntentResponse inListCarsIntentResponse => inListCarsIntentResponse -> IO RawId
-init_ inListCarsIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inListCarsIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inListCarsIntentResponse =
+  sendOwnedMessage inListCarsIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINListCarsIntentResponse inListCarsIntentResponse, IsNSUserActivity userActivity) => inListCarsIntentResponse -> INListCarsIntentResponseCode -> userActivity -> IO (Id INListCarsIntentResponse)
-initWithCode_userActivity inListCarsIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inListCarsIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inListCarsIntentResponse code userActivity =
+  sendOwnedMessage inListCarsIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINListCarsIntentResponse inListCarsIntentResponse => inListCarsIntentResponse -> IO INListCarsIntentResponseCode
-code inListCarsIntentResponse  =
-    fmap (coerce :: CLong -> INListCarsIntentResponseCode) $ sendMsg inListCarsIntentResponse (mkSelector "code") retCLong []
+code inListCarsIntentResponse =
+  sendMessage inListCarsIntentResponse codeSelector
 
 -- | @- cars@
 cars :: IsINListCarsIntentResponse inListCarsIntentResponse => inListCarsIntentResponse -> IO (Id NSArray)
-cars inListCarsIntentResponse  =
-    sendMsg inListCarsIntentResponse (mkSelector "cars") (retPtr retVoid) [] >>= retainedObject . castPtr
+cars inListCarsIntentResponse =
+  sendMessage inListCarsIntentResponse carsSelector
 
 -- | @- setCars:@
 setCars :: (IsINListCarsIntentResponse inListCarsIntentResponse, IsNSArray value) => inListCarsIntentResponse -> value -> IO ()
-setCars inListCarsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inListCarsIntentResponse (mkSelector "setCars:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCars inListCarsIntentResponse value =
+  sendMessage inListCarsIntentResponse setCarsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INListCarsIntentResponseCode, Id NSUserActivity] (Id INListCarsIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INListCarsIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @cars@
-carsSelector :: Selector
+carsSelector :: Selector '[] (Id NSArray)
 carsSelector = mkSelector "cars"
 
 -- | @Selector@ for @setCars:@
-setCarsSelector :: Selector
+setCarsSelector :: Selector '[Id NSArray] ()
 setCarsSelector = mkSelector "setCars:"
 

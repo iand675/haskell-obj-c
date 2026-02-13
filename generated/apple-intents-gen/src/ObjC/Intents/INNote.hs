@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Intents.INNote
   , createdDateComponents
   , modifiedDateComponents
   , identifier
-  , initWithTitle_contents_groupName_createdDateComponents_modifiedDateComponents_identifierSelector
-  , titleSelector
   , contentsSelector
-  , groupNameSelector
   , createdDateComponentsSelector
-  , modifiedDateComponentsSelector
+  , groupNameSelector
   , identifierSelector
+  , initWithTitle_contents_groupName_createdDateComponents_modifiedDateComponents_identifierSelector
+  , modifiedDateComponentsSelector
+  , titleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,74 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTitle:contents:groupName:createdDateComponents:modifiedDateComponents:identifier:@
 initWithTitle_contents_groupName_createdDateComponents_modifiedDateComponents_identifier :: (IsINNote inNote, IsINSpeakableString title, IsNSArray contents, IsINSpeakableString groupName, IsNSDateComponents createdDateComponents, IsNSDateComponents modifiedDateComponents, IsNSString identifier) => inNote -> title -> contents -> groupName -> createdDateComponents -> modifiedDateComponents -> identifier -> IO (Id INNote)
-initWithTitle_contents_groupName_createdDateComponents_modifiedDateComponents_identifier inNote  title contents groupName createdDateComponents modifiedDateComponents identifier =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr contents $ \raw_contents ->
-      withObjCPtr groupName $ \raw_groupName ->
-        withObjCPtr createdDateComponents $ \raw_createdDateComponents ->
-          withObjCPtr modifiedDateComponents $ \raw_modifiedDateComponents ->
-            withObjCPtr identifier $ \raw_identifier ->
-                sendMsg inNote (mkSelector "initWithTitle:contents:groupName:createdDateComponents:modifiedDateComponents:identifier:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_contents :: Ptr ()), argPtr (castPtr raw_groupName :: Ptr ()), argPtr (castPtr raw_createdDateComponents :: Ptr ()), argPtr (castPtr raw_modifiedDateComponents :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_contents_groupName_createdDateComponents_modifiedDateComponents_identifier inNote title contents groupName createdDateComponents modifiedDateComponents identifier =
+  sendOwnedMessage inNote initWithTitle_contents_groupName_createdDateComponents_modifiedDateComponents_identifierSelector (toINSpeakableString title) (toNSArray contents) (toINSpeakableString groupName) (toNSDateComponents createdDateComponents) (toNSDateComponents modifiedDateComponents) (toNSString identifier)
 
 -- | @- title@
 title :: IsINNote inNote => inNote -> IO (Id INSpeakableString)
-title inNote  =
-    sendMsg inNote (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title inNote =
+  sendMessage inNote titleSelector
 
 -- | @- contents@
 contents :: IsINNote inNote => inNote -> IO (Id NSArray)
-contents inNote  =
-    sendMsg inNote (mkSelector "contents") (retPtr retVoid) [] >>= retainedObject . castPtr
+contents inNote =
+  sendMessage inNote contentsSelector
 
 -- | @- groupName@
 groupName :: IsINNote inNote => inNote -> IO (Id INSpeakableString)
-groupName inNote  =
-    sendMsg inNote (mkSelector "groupName") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupName inNote =
+  sendMessage inNote groupNameSelector
 
 -- | @- createdDateComponents@
 createdDateComponents :: IsINNote inNote => inNote -> IO (Id NSDateComponents)
-createdDateComponents inNote  =
-    sendMsg inNote (mkSelector "createdDateComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+createdDateComponents inNote =
+  sendMessage inNote createdDateComponentsSelector
 
 -- | @- modifiedDateComponents@
 modifiedDateComponents :: IsINNote inNote => inNote -> IO (Id NSDateComponents)
-modifiedDateComponents inNote  =
-    sendMsg inNote (mkSelector "modifiedDateComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+modifiedDateComponents inNote =
+  sendMessage inNote modifiedDateComponentsSelector
 
 -- | @- identifier@
 identifier :: IsINNote inNote => inNote -> IO (Id NSString)
-identifier inNote  =
-    sendMsg inNote (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier inNote =
+  sendMessage inNote identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTitle:contents:groupName:createdDateComponents:modifiedDateComponents:identifier:@
-initWithTitle_contents_groupName_createdDateComponents_modifiedDateComponents_identifierSelector :: Selector
+initWithTitle_contents_groupName_createdDateComponents_modifiedDateComponents_identifierSelector :: Selector '[Id INSpeakableString, Id NSArray, Id INSpeakableString, Id NSDateComponents, Id NSDateComponents, Id NSString] (Id INNote)
 initWithTitle_contents_groupName_createdDateComponents_modifiedDateComponents_identifierSelector = mkSelector "initWithTitle:contents:groupName:createdDateComponents:modifiedDateComponents:identifier:"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id INSpeakableString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @contents@
-contentsSelector :: Selector
+contentsSelector :: Selector '[] (Id NSArray)
 contentsSelector = mkSelector "contents"
 
 -- | @Selector@ for @groupName@
-groupNameSelector :: Selector
+groupNameSelector :: Selector '[] (Id INSpeakableString)
 groupNameSelector = mkSelector "groupName"
 
 -- | @Selector@ for @createdDateComponents@
-createdDateComponentsSelector :: Selector
+createdDateComponentsSelector :: Selector '[] (Id NSDateComponents)
 createdDateComponentsSelector = mkSelector "createdDateComponents"
 
 -- | @Selector@ for @modifiedDateComponents@
-modifiedDateComponentsSelector :: Selector
+modifiedDateComponentsSelector :: Selector '[] (Id NSDateComponents)
 modifiedDateComponentsSelector = mkSelector "modifiedDateComponents"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 

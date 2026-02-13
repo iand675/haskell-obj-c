@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.VideoSubscriberAccount.VSAccountApplicationProvider
   , initWithLocalizedDisplayName_identifier
   , localizedDisplayName
   , identifier
+  , identifierSelector
   , initSelector
-  , newSelector
   , initWithLocalizedDisplayName_identifierSelector
   , localizedDisplayNameSelector
-  , identifierSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVSAccountApplicationProvider vsAccountApplicationProvider => vsAccountApplicationProvider -> IO (Id VSAccountApplicationProvider)
-init_ vsAccountApplicationProvider  =
-    sendMsg vsAccountApplicationProvider (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vsAccountApplicationProvider =
+  sendOwnedMessage vsAccountApplicationProvider initSelector
 
 -- | Unavailable for this class.
 --
@@ -51,52 +48,50 @@ new :: IO (Id VSAccountApplicationProvider)
 new  =
   do
     cls' <- getRequiredClass "VSAccountApplicationProvider"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns an application provider using a given display name and identifier. Both the localizedDisplayName and identifier parameters must be non-empty strings.
 --
 -- ObjC selector: @- initWithLocalizedDisplayName:identifier:@
 initWithLocalizedDisplayName_identifier :: (IsVSAccountApplicationProvider vsAccountApplicationProvider, IsNSString localizedDisplayName, IsNSString identifier) => vsAccountApplicationProvider -> localizedDisplayName -> identifier -> IO (Id VSAccountApplicationProvider)
-initWithLocalizedDisplayName_identifier vsAccountApplicationProvider  localizedDisplayName identifier =
-  withObjCPtr localizedDisplayName $ \raw_localizedDisplayName ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg vsAccountApplicationProvider (mkSelector "initWithLocalizedDisplayName:identifier:") (retPtr retVoid) [argPtr (castPtr raw_localizedDisplayName :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalizedDisplayName_identifier vsAccountApplicationProvider localizedDisplayName identifier =
+  sendOwnedMessage vsAccountApplicationProvider initWithLocalizedDisplayName_identifierSelector (toNSString localizedDisplayName) (toNSString identifier)
 
 -- | The display name of the provider as it will appear in the list of providers.
 --
 -- ObjC selector: @- localizedDisplayName@
 localizedDisplayName :: IsVSAccountApplicationProvider vsAccountApplicationProvider => vsAccountApplicationProvider -> IO (Id NSString)
-localizedDisplayName vsAccountApplicationProvider  =
-    sendMsg vsAccountApplicationProvider (mkSelector "localizedDisplayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDisplayName vsAccountApplicationProvider =
+  sendMessage vsAccountApplicationProvider localizedDisplayNameSelector
 
 -- | The identifier of the provider. If selected, this value is returned to your application.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsVSAccountApplicationProvider vsAccountApplicationProvider => vsAccountApplicationProvider -> IO (Id NSString)
-identifier vsAccountApplicationProvider  =
-    sendMsg vsAccountApplicationProvider (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier vsAccountApplicationProvider =
+  sendMessage vsAccountApplicationProvider identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VSAccountApplicationProvider)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VSAccountApplicationProvider)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithLocalizedDisplayName:identifier:@
-initWithLocalizedDisplayName_identifierSelector :: Selector
+initWithLocalizedDisplayName_identifierSelector :: Selector '[Id NSString, Id NSString] (Id VSAccountApplicationProvider)
 initWithLocalizedDisplayName_identifierSelector = mkSelector "initWithLocalizedDisplayName:identifier:"
 
 -- | @Selector@ for @localizedDisplayName@
-localizedDisplayNameSelector :: Selector
+localizedDisplayNameSelector :: Selector '[] (Id NSString)
 localizedDisplayNameSelector = mkSelector "localizedDisplayName"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 

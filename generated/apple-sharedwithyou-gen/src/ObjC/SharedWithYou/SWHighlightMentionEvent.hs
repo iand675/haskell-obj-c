@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.SharedWithYou.SWHighlightMentionEvent
   , init_
   , new
   , mentionedPersonHandle
+  , initSelector
   , initWithHighlight_mentionedPersonCloudKitShareHandleSelector
   , initWithHighlight_mentionedPersonIdentitySelector
-  , initSelector
-  , newSelector
   , mentionedPersonHandleSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,10 +45,8 @@ import ObjC.SharedWithYouCore.Internal.Classes
 --
 -- ObjC selector: @- initWithHighlight:mentionedPersonCloudKitShareHandle:@
 initWithHighlight_mentionedPersonCloudKitShareHandle :: (IsSWHighlightMentionEvent swHighlightMentionEvent, IsSWHighlight highlight, IsNSString handle) => swHighlightMentionEvent -> highlight -> handle -> IO (Id SWHighlightMentionEvent)
-initWithHighlight_mentionedPersonCloudKitShareHandle swHighlightMentionEvent  highlight handle =
-  withObjCPtr highlight $ \raw_highlight ->
-    withObjCPtr handle $ \raw_handle ->
-        sendMsg swHighlightMentionEvent (mkSelector "initWithHighlight:mentionedPersonCloudKitShareHandle:") (retPtr retVoid) [argPtr (castPtr raw_highlight :: Ptr ()), argPtr (castPtr raw_handle :: Ptr ())] >>= ownedObject . castPtr
+initWithHighlight_mentionedPersonCloudKitShareHandle swHighlightMentionEvent highlight handle =
+  sendOwnedMessage swHighlightMentionEvent initWithHighlight_mentionedPersonCloudKitShareHandleSelector (toSWHighlight highlight) (toNSString handle)
 
 -- | Initializes a highlight mention event object when the sender mentions another participant.
 --
@@ -61,51 +56,49 @@ initWithHighlight_mentionedPersonCloudKitShareHandle swHighlightMentionEvent  hi
 --
 -- ObjC selector: @- initWithHighlight:mentionedPersonIdentity:@
 initWithHighlight_mentionedPersonIdentity :: (IsSWHighlightMentionEvent swHighlightMentionEvent, IsSWHighlight highlight, IsSWPersonIdentity identity) => swHighlightMentionEvent -> highlight -> identity -> IO (Id SWHighlightMentionEvent)
-initWithHighlight_mentionedPersonIdentity swHighlightMentionEvent  highlight identity =
-  withObjCPtr highlight $ \raw_highlight ->
-    withObjCPtr identity $ \raw_identity ->
-        sendMsg swHighlightMentionEvent (mkSelector "initWithHighlight:mentionedPersonIdentity:") (retPtr retVoid) [argPtr (castPtr raw_highlight :: Ptr ()), argPtr (castPtr raw_identity :: Ptr ())] >>= ownedObject . castPtr
+initWithHighlight_mentionedPersonIdentity swHighlightMentionEvent highlight identity =
+  sendOwnedMessage swHighlightMentionEvent initWithHighlight_mentionedPersonIdentitySelector (toSWHighlight highlight) (toSWPersonIdentity identity)
 
 -- | @- init@
 init_ :: IsSWHighlightMentionEvent swHighlightMentionEvent => swHighlightMentionEvent -> IO (Id SWHighlightMentionEvent)
-init_ swHighlightMentionEvent  =
-    sendMsg swHighlightMentionEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ swHighlightMentionEvent =
+  sendOwnedMessage swHighlightMentionEvent initSelector
 
 -- | @+ new@
 new :: IO (Id SWHighlightMentionEvent)
 new  =
   do
     cls' <- getRequiredClass "SWHighlightMentionEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The person being mentioned by the sender.
 --
 -- ObjC selector: @- mentionedPersonHandle@
 mentionedPersonHandle :: IsSWHighlightMentionEvent swHighlightMentionEvent => swHighlightMentionEvent -> IO (Id NSString)
-mentionedPersonHandle swHighlightMentionEvent  =
-    sendMsg swHighlightMentionEvent (mkSelector "mentionedPersonHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+mentionedPersonHandle swHighlightMentionEvent =
+  sendMessage swHighlightMentionEvent mentionedPersonHandleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHighlight:mentionedPersonCloudKitShareHandle:@
-initWithHighlight_mentionedPersonCloudKitShareHandleSelector :: Selector
+initWithHighlight_mentionedPersonCloudKitShareHandleSelector :: Selector '[Id SWHighlight, Id NSString] (Id SWHighlightMentionEvent)
 initWithHighlight_mentionedPersonCloudKitShareHandleSelector = mkSelector "initWithHighlight:mentionedPersonCloudKitShareHandle:"
 
 -- | @Selector@ for @initWithHighlight:mentionedPersonIdentity:@
-initWithHighlight_mentionedPersonIdentitySelector :: Selector
+initWithHighlight_mentionedPersonIdentitySelector :: Selector '[Id SWHighlight, Id SWPersonIdentity] (Id SWHighlightMentionEvent)
 initWithHighlight_mentionedPersonIdentitySelector = mkSelector "initWithHighlight:mentionedPersonIdentity:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SWHighlightMentionEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SWHighlightMentionEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @mentionedPersonHandle@
-mentionedPersonHandleSelector :: Selector
+mentionedPersonHandleSelector :: Selector '[] (Id NSString)
 mentionedPersonHandleSelector = mkSelector "mentionedPersonHandle"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,27 +33,27 @@ module ObjC.EventKit.EKEvent
   , birthdayContactIdentifier
   , birthdayPersonID
   , birthdayPersonUniqueID
-  , eventWithEventStoreSelector
-  , compareStartDateWithEventSelector
-  , refreshSelector
-  , eventIdentifierSelector
   , allDaySelector
-  , setAllDaySelector
-  , startDateSelector
-  , setStartDateSelector
-  , endDateSelector
-  , setEndDateSelector
-  , structuredLocationSelector
-  , setStructuredLocationSelector
-  , organizerSelector
   , availabilitySelector
-  , setAvailabilitySelector
-  , statusSelector
-  , isDetachedSelector
-  , occurrenceDateSelector
   , birthdayContactIdentifierSelector
   , birthdayPersonIDSelector
   , birthdayPersonUniqueIDSelector
+  , compareStartDateWithEventSelector
+  , endDateSelector
+  , eventIdentifierSelector
+  , eventWithEventStoreSelector
+  , isDetachedSelector
+  , occurrenceDateSelector
+  , organizerSelector
+  , refreshSelector
+  , setAllDaySelector
+  , setAvailabilitySelector
+  , setEndDateSelector
+  , setStartDateSelector
+  , setStructuredLocationSelector
+  , startDateSelector
+  , statusSelector
+  , structuredLocationSelector
 
   -- * Enum types
   , EKEventAvailability(EKEventAvailability)
@@ -73,15 +74,11 @@ module ObjC.EventKit.EKEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,8 +96,7 @@ eventWithEventStore :: IsEKEventStore eventStore => eventStore -> IO (Id EKEvent
 eventWithEventStore eventStore =
   do
     cls' <- getRequiredClass "EKEvent"
-    withObjCPtr eventStore $ \raw_eventStore ->
-      sendClassMsg cls' (mkSelector "eventWithEventStore:") (retPtr retVoid) [argPtr (castPtr raw_eventStore :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' eventWithEventStoreSelector (toEKEventStore eventStore)
 
 -- | compareStartDateWithEvent
 --
@@ -108,9 +104,8 @@ eventWithEventStore eventStore =
 --
 -- ObjC selector: @- compareStartDateWithEvent:@
 compareStartDateWithEvent :: (IsEKEvent ekEvent, IsEKEvent other) => ekEvent -> other -> IO NSComparisonResult
-compareStartDateWithEvent ekEvent  other =
-  withObjCPtr other $ \raw_other ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg ekEvent (mkSelector "compareStartDateWithEvent:") retCLong [argPtr (castPtr raw_other :: Ptr ())]
+compareStartDateWithEvent ekEvent other =
+  sendMessage ekEvent compareStartDateWithEventSelector (toEKEvent other)
 
 -- | refresh
 --
@@ -120,8 +115,8 @@ compareStartDateWithEvent ekEvent  other =
 --
 -- ObjC selector: @- refresh@
 refresh :: IsEKEvent ekEvent => ekEvent -> IO Bool
-refresh ekEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEvent (mkSelector "refresh") retCULong []
+refresh ekEvent =
+  sendMessage ekEvent refreshSelector
 
 -- | eventIdentifier
 --
@@ -135,8 +130,8 @@ refresh ekEvent  =
 --
 -- ObjC selector: @- eventIdentifier@
 eventIdentifier :: IsEKEvent ekEvent => ekEvent -> IO (Id NSString)
-eventIdentifier ekEvent  =
-    sendMsg ekEvent (mkSelector "eventIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+eventIdentifier ekEvent =
+  sendMessage ekEvent eventIdentifierSelector
 
 -- | allDay
 --
@@ -144,8 +139,8 @@ eventIdentifier ekEvent  =
 --
 -- ObjC selector: @- allDay@
 allDay :: IsEKEvent ekEvent => ekEvent -> IO Bool
-allDay ekEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEvent (mkSelector "allDay") retCULong []
+allDay ekEvent =
+  sendMessage ekEvent allDaySelector
 
 -- | allDay
 --
@@ -153,8 +148,8 @@ allDay ekEvent  =
 --
 -- ObjC selector: @- setAllDay:@
 setAllDay :: IsEKEvent ekEvent => ekEvent -> Bool -> IO ()
-setAllDay ekEvent  value =
-    sendMsg ekEvent (mkSelector "setAllDay:") retVoid [argCULong (if value then 1 else 0)]
+setAllDay ekEvent value =
+  sendMessage ekEvent setAllDaySelector value
 
 -- | startDate
 --
@@ -166,8 +161,8 @@ setAllDay ekEvent  value =
 --
 -- ObjC selector: @- startDate@
 startDate :: IsEKEvent ekEvent => ekEvent -> IO (Id NSDate)
-startDate ekEvent  =
-    sendMsg ekEvent (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate ekEvent =
+  sendMessage ekEvent startDateSelector
 
 -- | startDate
 --
@@ -179,9 +174,8 @@ startDate ekEvent  =
 --
 -- ObjC selector: @- setStartDate:@
 setStartDate :: (IsEKEvent ekEvent, IsNSDate value) => ekEvent -> value -> IO ()
-setStartDate ekEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekEvent (mkSelector "setStartDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartDate ekEvent value =
+  sendMessage ekEvent setStartDateSelector (toNSDate value)
 
 -- | endDate
 --
@@ -191,8 +185,8 @@ setStartDate ekEvent  value =
 --
 -- ObjC selector: @- endDate@
 endDate :: IsEKEvent ekEvent => ekEvent -> IO (Id NSDate)
-endDate ekEvent  =
-    sendMsg ekEvent (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate ekEvent =
+  sendMessage ekEvent endDateSelector
 
 -- | endDate
 --
@@ -202,9 +196,8 @@ endDate ekEvent  =
 --
 -- ObjC selector: @- setEndDate:@
 setEndDate :: (IsEKEvent ekEvent, IsNSDate value) => ekEvent -> value -> IO ()
-setEndDate ekEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ekEvent (mkSelector "setEndDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndDate ekEvent value =
+  sendMessage ekEvent setEndDateSelector (toNSDate value)
 
 -- | structuredLocation
 --
@@ -212,8 +205,8 @@ setEndDate ekEvent  value =
 --
 -- ObjC selector: @- structuredLocation@
 structuredLocation :: IsEKEvent ekEvent => ekEvent -> IO RawId
-structuredLocation ekEvent  =
-    fmap (RawId . castPtr) $ sendMsg ekEvent (mkSelector "structuredLocation") (retPtr retVoid) []
+structuredLocation ekEvent =
+  sendMessage ekEvent structuredLocationSelector
 
 -- | structuredLocation
 --
@@ -221,8 +214,8 @@ structuredLocation ekEvent  =
 --
 -- ObjC selector: @- setStructuredLocation:@
 setStructuredLocation :: IsEKEvent ekEvent => ekEvent -> RawId -> IO ()
-setStructuredLocation ekEvent  value =
-    sendMsg ekEvent (mkSelector "setStructuredLocation:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setStructuredLocation ekEvent value =
+  sendMessage ekEvent setStructuredLocationSelector value
 
 -- | organizer
 --
@@ -230,8 +223,8 @@ setStructuredLocation ekEvent  value =
 --
 -- ObjC selector: @- organizer@
 organizer :: IsEKEvent ekEvent => ekEvent -> IO (Id EKParticipant)
-organizer ekEvent  =
-    sendMsg ekEvent (mkSelector "organizer") (retPtr retVoid) [] >>= retainedObject . castPtr
+organizer ekEvent =
+  sendMessage ekEvent organizerSelector
 
 -- | availability
 --
@@ -241,8 +234,8 @@ organizer ekEvent  =
 --
 -- ObjC selector: @- availability@
 availability :: IsEKEvent ekEvent => ekEvent -> IO EKEventAvailability
-availability ekEvent  =
-    fmap (coerce :: CLong -> EKEventAvailability) $ sendMsg ekEvent (mkSelector "availability") retCLong []
+availability ekEvent =
+  sendMessage ekEvent availabilitySelector
 
 -- | availability
 --
@@ -252,8 +245,8 @@ availability ekEvent  =
 --
 -- ObjC selector: @- setAvailability:@
 setAvailability :: IsEKEvent ekEvent => ekEvent -> EKEventAvailability -> IO ()
-setAvailability ekEvent  value =
-    sendMsg ekEvent (mkSelector "setAvailability:") retVoid [argCLong (coerce value)]
+setAvailability ekEvent value =
+  sendMessage ekEvent setAvailabilitySelector value
 
 -- | status
 --
@@ -263,8 +256,8 @@ setAvailability ekEvent  value =
 --
 -- ObjC selector: @- status@
 status :: IsEKEvent ekEvent => ekEvent -> IO EKEventStatus
-status ekEvent  =
-    fmap (coerce :: CLong -> EKEventStatus) $ sendMsg ekEvent (mkSelector "status") retCLong []
+status ekEvent =
+  sendMessage ekEvent statusSelector
 
 -- | isDetached
 --
@@ -274,8 +267,8 @@ status ekEvent  =
 --
 -- ObjC selector: @- isDetached@
 isDetached :: IsEKEvent ekEvent => ekEvent -> IO Bool
-isDetached ekEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ekEvent (mkSelector "isDetached") retCULong []
+isDetached ekEvent =
+  sendMessage ekEvent isDetachedSelector
 
 -- | occurrenceDate:
 --
@@ -287,8 +280,8 @@ isDetached ekEvent  =
 --
 -- ObjC selector: @- occurrenceDate@
 occurrenceDate :: IsEKEvent ekEvent => ekEvent -> IO RawId
-occurrenceDate ekEvent  =
-    fmap (RawId . castPtr) $ sendMsg ekEvent (mkSelector "occurrenceDate") (retPtr retVoid) []
+occurrenceDate ekEvent =
+  sendMessage ekEvent occurrenceDateSelector
 
 -- | birthdayContactIdentifier
 --
@@ -298,8 +291,8 @@ occurrenceDate ekEvent  =
 --
 -- ObjC selector: @- birthdayContactIdentifier@
 birthdayContactIdentifier :: IsEKEvent ekEvent => ekEvent -> IO RawId
-birthdayContactIdentifier ekEvent  =
-    fmap (RawId . castPtr) $ sendMsg ekEvent (mkSelector "birthdayContactIdentifier") (retPtr retVoid) []
+birthdayContactIdentifier ekEvent =
+  sendMessage ekEvent birthdayContactIdentifierSelector
 
 -- | birthdayPersonID
 --
@@ -309,8 +302,8 @@ birthdayContactIdentifier ekEvent  =
 --
 -- ObjC selector: @- birthdayPersonID@
 birthdayPersonID :: IsEKEvent ekEvent => ekEvent -> IO CLong
-birthdayPersonID ekEvent  =
-    sendMsg ekEvent (mkSelector "birthdayPersonID") retCLong []
+birthdayPersonID ekEvent =
+  sendMessage ekEvent birthdayPersonIDSelector
 
 -- | birthdayPersonUniqueID
 --
@@ -320,94 +313,94 @@ birthdayPersonID ekEvent  =
 --
 -- ObjC selector: @- birthdayPersonUniqueID@
 birthdayPersonUniqueID :: IsEKEvent ekEvent => ekEvent -> IO RawId
-birthdayPersonUniqueID ekEvent  =
-    fmap (RawId . castPtr) $ sendMsg ekEvent (mkSelector "birthdayPersonUniqueID") (retPtr retVoid) []
+birthdayPersonUniqueID ekEvent =
+  sendMessage ekEvent birthdayPersonUniqueIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @eventWithEventStore:@
-eventWithEventStoreSelector :: Selector
+eventWithEventStoreSelector :: Selector '[Id EKEventStore] (Id EKEvent)
 eventWithEventStoreSelector = mkSelector "eventWithEventStore:"
 
 -- | @Selector@ for @compareStartDateWithEvent:@
-compareStartDateWithEventSelector :: Selector
+compareStartDateWithEventSelector :: Selector '[Id EKEvent] NSComparisonResult
 compareStartDateWithEventSelector = mkSelector "compareStartDateWithEvent:"
 
 -- | @Selector@ for @refresh@
-refreshSelector :: Selector
+refreshSelector :: Selector '[] Bool
 refreshSelector = mkSelector "refresh"
 
 -- | @Selector@ for @eventIdentifier@
-eventIdentifierSelector :: Selector
+eventIdentifierSelector :: Selector '[] (Id NSString)
 eventIdentifierSelector = mkSelector "eventIdentifier"
 
 -- | @Selector@ for @allDay@
-allDaySelector :: Selector
+allDaySelector :: Selector '[] Bool
 allDaySelector = mkSelector "allDay"
 
 -- | @Selector@ for @setAllDay:@
-setAllDaySelector :: Selector
+setAllDaySelector :: Selector '[Bool] ()
 setAllDaySelector = mkSelector "setAllDay:"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @setStartDate:@
-setStartDateSelector :: Selector
+setStartDateSelector :: Selector '[Id NSDate] ()
 setStartDateSelector = mkSelector "setStartDate:"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @setEndDate:@
-setEndDateSelector :: Selector
+setEndDateSelector :: Selector '[Id NSDate] ()
 setEndDateSelector = mkSelector "setEndDate:"
 
 -- | @Selector@ for @structuredLocation@
-structuredLocationSelector :: Selector
+structuredLocationSelector :: Selector '[] RawId
 structuredLocationSelector = mkSelector "structuredLocation"
 
 -- | @Selector@ for @setStructuredLocation:@
-setStructuredLocationSelector :: Selector
+setStructuredLocationSelector :: Selector '[RawId] ()
 setStructuredLocationSelector = mkSelector "setStructuredLocation:"
 
 -- | @Selector@ for @organizer@
-organizerSelector :: Selector
+organizerSelector :: Selector '[] (Id EKParticipant)
 organizerSelector = mkSelector "organizer"
 
 -- | @Selector@ for @availability@
-availabilitySelector :: Selector
+availabilitySelector :: Selector '[] EKEventAvailability
 availabilitySelector = mkSelector "availability"
 
 -- | @Selector@ for @setAvailability:@
-setAvailabilitySelector :: Selector
+setAvailabilitySelector :: Selector '[EKEventAvailability] ()
 setAvailabilitySelector = mkSelector "setAvailability:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] EKEventStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @isDetached@
-isDetachedSelector :: Selector
+isDetachedSelector :: Selector '[] Bool
 isDetachedSelector = mkSelector "isDetached"
 
 -- | @Selector@ for @occurrenceDate@
-occurrenceDateSelector :: Selector
+occurrenceDateSelector :: Selector '[] RawId
 occurrenceDateSelector = mkSelector "occurrenceDate"
 
 -- | @Selector@ for @birthdayContactIdentifier@
-birthdayContactIdentifierSelector :: Selector
+birthdayContactIdentifierSelector :: Selector '[] RawId
 birthdayContactIdentifierSelector = mkSelector "birthdayContactIdentifier"
 
 -- | @Selector@ for @birthdayPersonID@
-birthdayPersonIDSelector :: Selector
+birthdayPersonIDSelector :: Selector '[] CLong
 birthdayPersonIDSelector = mkSelector "birthdayPersonID"
 
 -- | @Selector@ for @birthdayPersonUniqueID@
-birthdayPersonUniqueIDSelector :: Selector
+birthdayPersonUniqueIDSelector :: Selector '[] RawId
 birthdayPersonUniqueIDSelector = mkSelector "birthdayPersonUniqueID"
 

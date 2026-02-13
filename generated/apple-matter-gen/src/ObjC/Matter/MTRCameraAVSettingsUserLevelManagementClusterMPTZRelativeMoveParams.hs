@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Matter.MTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMove
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , panDeltaSelector
-  , setPanDeltaSelector
-  , tiltDeltaSelector
-  , setTiltDeltaSelector
-  , zoomDeltaSelector
-  , setZoomDeltaSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setPanDeltaSelector
   , setServerSideProcessingTimeoutSelector
+  , setTiltDeltaSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setZoomDeltaSelector
+  , tiltDeltaSelector
+  , timedInvokeTimeoutMsSelector
+  , zoomDeltaSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- panDelta@
 panDelta :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> IO (Id NSNumber)
-panDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "panDelta") (retPtr retVoid) [] >>= retainedObject . castPtr
+panDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams panDeltaSelector
 
 -- | @- setPanDelta:@
 setPanDelta :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> value -> IO ()
-setPanDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "setPanDelta:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPanDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams setPanDeltaSelector (toNSNumber value)
 
 -- | @- tiltDelta@
 tiltDelta :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> IO (Id NSNumber)
-tiltDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "tiltDelta") (retPtr retVoid) [] >>= retainedObject . castPtr
+tiltDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams tiltDeltaSelector
 
 -- | @- setTiltDelta:@
 setTiltDelta :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> value -> IO ()
-setTiltDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "setTiltDelta:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTiltDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams setTiltDeltaSelector (toNSNumber value)
 
 -- | @- zoomDelta@
 zoomDelta :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> IO (Id NSNumber)
-zoomDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "zoomDelta") (retPtr retVoid) [] >>= retainedObject . castPtr
+zoomDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams zoomDeltaSelector
 
 -- | @- setZoomDelta:@
 setZoomDelta :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> value -> IO ()
-setZoomDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "setZoomDelta:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setZoomDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams setZoomDeltaSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setZoomDelta mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMo
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativ
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZRel
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZRelativeMoveParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @panDelta@
-panDeltaSelector :: Selector
+panDeltaSelector :: Selector '[] (Id NSNumber)
 panDeltaSelector = mkSelector "panDelta"
 
 -- | @Selector@ for @setPanDelta:@
-setPanDeltaSelector :: Selector
+setPanDeltaSelector :: Selector '[Id NSNumber] ()
 setPanDeltaSelector = mkSelector "setPanDelta:"
 
 -- | @Selector@ for @tiltDelta@
-tiltDeltaSelector :: Selector
+tiltDeltaSelector :: Selector '[] (Id NSNumber)
 tiltDeltaSelector = mkSelector "tiltDelta"
 
 -- | @Selector@ for @setTiltDelta:@
-setTiltDeltaSelector :: Selector
+setTiltDeltaSelector :: Selector '[Id NSNumber] ()
 setTiltDeltaSelector = mkSelector "setTiltDelta:"
 
 -- | @Selector@ for @zoomDelta@
-zoomDeltaSelector :: Selector
+zoomDeltaSelector :: Selector '[] (Id NSNumber)
 zoomDeltaSelector = mkSelector "zoomDelta"
 
 -- | @Selector@ for @setZoomDelta:@
-setZoomDeltaSelector :: Selector
+setZoomDeltaSelector :: Selector '[Id NSNumber] ()
 setZoomDeltaSelector = mkSelector "setZoomDelta:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

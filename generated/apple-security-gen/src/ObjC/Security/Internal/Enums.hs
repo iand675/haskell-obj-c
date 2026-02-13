@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Security.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Data produced as context during the authorization evaluation is tagged.      If data is set to be extractable (kAuthorizationContextFlagExtractable), it will be possible for the client of authorization to obtain the value of this attribute using AuthorizationCopyInfo().    If data is marked as volatile (kAuthorizationContextFlagVolatile), this value will not be remembered in the AuthorizationRef.    Sticky data (kAuthorizationContextFlagSticky) persists through a failed or interrupted evaluation. It can be used to propagate an error condition from a downstream plugin to an upstream one. It is not remembered in the AuthorizationRef.
 -- | @AuthorizationContextFlags@ (bitmask)
@@ -31,6 +34,16 @@ pattern KAuthorizationContextFlagVolatile = AuthorizationContextFlags 2
 
 pattern KAuthorizationContextFlagSticky :: AuthorizationContextFlags
 pattern KAuthorizationContextFlagSticky = AuthorizationContextFlags 4
+
+instance ObjCArgument AuthorizationContextFlags where
+  withObjCArg (AuthorizationContextFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AuthorizationContextFlags where
+  type RawReturn AuthorizationContextFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AuthorizationContextFlags x)
+  fromOwned x = pure (AuthorizationContextFlags x)
 
 -- | AuthorizationFlags
 --
@@ -70,6 +83,16 @@ pattern KAuthorizationFlagSkipInternalAuth = AuthorizationFlags 512
 pattern KAuthorizationFlagNoData :: AuthorizationFlags
 pattern KAuthorizationFlagNoData = AuthorizationFlags 1048576
 
+instance ObjCArgument AuthorizationFlags where
+  withObjCArg (AuthorizationFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AuthorizationFlags where
+  type RawReturn AuthorizationFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AuthorizationFlags x)
+  fromOwned x = pure (AuthorizationFlags x)
+
 -- | AuthorizationResult
 --
 -- Possible values for SetResult() in AuthorizationCallbacks.
@@ -98,6 +121,16 @@ pattern KAuthorizationResultUndefined = AuthorizationResult 2
 pattern KAuthorizationResultUserCanceled :: AuthorizationResult
 pattern KAuthorizationResultUserCanceled = AuthorizationResult 3
 
+instance ObjCArgument AuthorizationResult where
+  withObjCArg (AuthorizationResult x) k = k (argCUInt x)
+
+instance ObjCReturn AuthorizationResult where
+  type RawReturn AuthorizationResult = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AuthorizationResult x)
+  fromOwned x = pure (AuthorizationResult x)
+
 -- | @CMSCertificateChainMode@
 newtype CMSCertificateChainMode = CMSCertificateChainMode CUInt
   deriving stock (Eq, Ord, Show)
@@ -117,6 +150,16 @@ pattern KCMSCertificateChainWithRoot = CMSCertificateChainMode 3
 
 pattern KCMSCertificateChainWithRootOrFail :: CMSCertificateChainMode
 pattern KCMSCertificateChainWithRootOrFail = CMSCertificateChainMode 4
+
+instance ObjCArgument CMSCertificateChainMode where
+  withObjCArg (CMSCertificateChainMode x) k = k (argCUInt x)
+
+instance ObjCReturn CMSCertificateChainMode where
+  type RawReturn CMSCertificateChainMode = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMSCertificateChainMode x)
+  fromOwned x = pure (CMSCertificateChainMode x)
 
 -- | @CMSSignedAttributes@ (bitmask)
 newtype CMSSignedAttributes = CMSSignedAttributes CUInt
@@ -153,6 +196,16 @@ pattern KCMSAttrAppleCodesigningHashAgilityV2 = CMSSignedAttributes 32
 pattern KCMSAttrAppleExpirationTime :: CMSSignedAttributes
 pattern KCMSAttrAppleExpirationTime = CMSSignedAttributes 64
 
+instance ObjCArgument CMSSignedAttributes where
+  withObjCArg (CMSSignedAttributes x) k = k (argCUInt x)
+
+instance ObjCReturn CMSSignedAttributes where
+  type RawReturn CMSSignedAttributes = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMSSignedAttributes x)
+  fromOwned x = pure (CMSSignedAttributes x)
+
 -- | @CMSSignerStatus@
 newtype CMSSignerStatus = CMSSignerStatus CUInt
   deriving stock (Eq, Ord, Show)
@@ -176,6 +229,16 @@ pattern KCMSSignerInvalidCert = CMSSignerStatus 4
 pattern KCMSSignerInvalidIndex :: CMSSignerStatus
 pattern KCMSSignerInvalidIndex = CMSSignerStatus 5
 
+instance ObjCArgument CMSSignerStatus where
+  withObjCArg (CMSSignerStatus x) k = k (argCUInt x)
+
+instance ObjCReturn CMSSignerStatus where
+  type RawReturn CMSSignerStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMSSignerStatus x)
+  fromOwned x = pure (CMSSignerStatus x)
+
 -- | @SSLAuthenticate@
 newtype SSLAuthenticate = SSLAuthenticate CInt
   deriving stock (Eq, Ord, Show)
@@ -189,6 +252,16 @@ pattern KAlwaysAuthenticate = SSLAuthenticate 1
 
 pattern KTryAuthenticate :: SSLAuthenticate
 pattern KTryAuthenticate = SSLAuthenticate 2
+
+instance ObjCArgument SSLAuthenticate where
+  withObjCArg (SSLAuthenticate x) k = k (argCInt x)
+
+instance ObjCReturn SSLAuthenticate where
+  type RawReturn SSLAuthenticate = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SSLAuthenticate x)
+  fromOwned x = pure (SSLAuthenticate x)
 
 -- | @SSLCiphersuiteGroup@
 newtype SSLCiphersuiteGroup = SSLCiphersuiteGroup CInt
@@ -210,6 +283,16 @@ pattern KSSLCiphersuiteGroupATS = SSLCiphersuiteGroup 3
 pattern KSSLCiphersuiteGroupATSCompatibility :: SSLCiphersuiteGroup
 pattern KSSLCiphersuiteGroupATSCompatibility = SSLCiphersuiteGroup 4
 
+instance ObjCArgument SSLCiphersuiteGroup where
+  withObjCArg (SSLCiphersuiteGroup x) k = k (argCInt x)
+
+instance ObjCReturn SSLCiphersuiteGroup where
+  type RawReturn SSLCiphersuiteGroup = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SSLCiphersuiteGroup x)
+  fromOwned x = pure (SSLCiphersuiteGroup x)
+
 -- | @SSLClientCertificateState@
 newtype SSLClientCertificateState = SSLClientCertificateState CInt
   deriving stock (Eq, Ord, Show)
@@ -227,6 +310,16 @@ pattern KSSLClientCertSent = SSLClientCertificateState 2
 pattern KSSLClientCertRejected :: SSLClientCertificateState
 pattern KSSLClientCertRejected = SSLClientCertificateState 3
 
+instance ObjCArgument SSLClientCertificateState where
+  withObjCArg (SSLClientCertificateState x) k = k (argCInt x)
+
+instance ObjCReturn SSLClientCertificateState where
+  type RawReturn SSLClientCertificateState = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SSLClientCertificateState x)
+  fromOwned x = pure (SSLClientCertificateState x)
+
 -- | @SSLConnectionType@
 newtype SSLConnectionType = SSLConnectionType CInt
   deriving stock (Eq, Ord, Show)
@@ -237,6 +330,16 @@ pattern KSSLStreamType = SSLConnectionType 0
 
 pattern KSSLDatagramType :: SSLConnectionType
 pattern KSSLDatagramType = SSLConnectionType 1
+
+instance ObjCArgument SSLConnectionType where
+  withObjCArg (SSLConnectionType x) k = k (argCInt x)
+
+instance ObjCReturn SSLConnectionType where
+  type RawReturn SSLConnectionType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SSLConnectionType x)
+  fromOwned x = pure (SSLConnectionType x)
 
 -- | SSLProtocol enumeration
 --
@@ -287,6 +390,16 @@ pattern KTLSProtocol1Only = SSLProtocol 5
 pattern KSSLProtocolAll :: SSLProtocol
 pattern KSSLProtocolAll = SSLProtocol 6
 
+instance ObjCArgument SSLProtocol where
+  withObjCArg (SSLProtocol x) k = k (argCInt x)
+
+instance ObjCReturn SSLProtocol where
+  type RawReturn SSLProtocol = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SSLProtocol x)
+  fromOwned x = pure (SSLProtocol x)
+
 -- | @SSLProtocolSide@
 newtype SSLProtocolSide = SSLProtocolSide CInt
   deriving stock (Eq, Ord, Show)
@@ -297,6 +410,16 @@ pattern KSSLServerSide = SSLProtocolSide 0
 
 pattern KSSLClientSide :: SSLProtocolSide
 pattern KSSLClientSide = SSLProtocolSide 1
+
+instance ObjCArgument SSLProtocolSide where
+  withObjCArg (SSLProtocolSide x) k = k (argCInt x)
+
+instance ObjCReturn SSLProtocolSide where
+  type RawReturn SSLProtocolSide = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SSLProtocolSide x)
+  fromOwned x = pure (SSLProtocolSide x)
 
 -- | @SSLSessionOption@
 newtype SSLSessionOption = SSLSessionOption CInt
@@ -333,6 +456,16 @@ pattern KSSLSessionOptionAllowRenegotiation = SSLSessionOption 8
 pattern KSSLSessionOptionEnableSessionTickets :: SSLSessionOption
 pattern KSSLSessionOptionEnableSessionTickets = SSLSessionOption 9
 
+instance ObjCArgument SSLSessionOption where
+  withObjCArg (SSLSessionOption x) k = k (argCInt x)
+
+instance ObjCReturn SSLSessionOption where
+  type RawReturn SSLSessionOption = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SSLSessionOption x)
+  fromOwned x = pure (SSLSessionOption x)
+
 -- | @SSLSessionState@
 newtype SSLSessionState = SSLSessionState CInt
   deriving stock (Eq, Ord, Show)
@@ -352,6 +485,16 @@ pattern KSSLClosed = SSLSessionState 3
 
 pattern KSSLAborted :: SSLSessionState
 pattern KSSLAborted = SSLSessionState 4
+
+instance ObjCArgument SSLSessionState where
+  withObjCArg (SSLSessionState x) k = k (argCInt x)
+
+instance ObjCReturn SSLSessionState where
+  type RawReturn SSLSessionState = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SSLSessionState x)
+  fromOwned x = pure (SSLSessionState x)
 
 -- | SecAccessControlCreateFlags
 --
@@ -449,6 +592,16 @@ pattern KSecAccessControlPrivateKeyUsage = SecAccessControlCreateFlags 107374182
 pattern KSecAccessControlApplicationPassword :: SecAccessControlCreateFlags
 pattern KSecAccessControlApplicationPassword = SecAccessControlCreateFlags 2147483648
 
+instance ObjCArgument SecAccessControlCreateFlags where
+  withObjCArg (SecAccessControlCreateFlags x) k = k (argCULong x)
+
+instance ObjCReturn SecAccessControlCreateFlags where
+  type RawReturn SecAccessControlCreateFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecAccessControlCreateFlags x)
+  fromOwned x = pure (SecAccessControlCreateFlags x)
+
 -- | @SecAuthenticationType@
 newtype SecAuthenticationType = SecAuthenticationType CUInt
   deriving stock (Eq, Ord, Show)
@@ -481,6 +634,16 @@ pattern KSecAuthenticationTypeDefault = SecAuthenticationType 1953261156
 pattern KSecAuthenticationTypeAny :: SecAuthenticationType
 pattern KSecAuthenticationTypeAny = SecAuthenticationType 0
 
+instance ObjCArgument SecAuthenticationType where
+  withObjCArg (SecAuthenticationType x) k = k (argCUInt x)
+
+instance ObjCReturn SecAuthenticationType where
+  type RawReturn SecAuthenticationType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecAuthenticationType x)
+  fromOwned x = pure (SecAuthenticationType x)
+
 -- | Types of cryptographic digests (hashes) used to hold code signatures together.
 --
 -- Each combination of type, length, and other parameters is a separate hash type; we don't understand "families" here.
@@ -508,6 +671,16 @@ pattern KSecCodeSignatureHashSHA384 = SecCSDigestAlgorithm 4
 
 pattern KSecCodeSignatureHashSHA512 :: SecCSDigestAlgorithm
 pattern KSecCodeSignatureHashSHA512 = SecCSDigestAlgorithm 5
+
+instance ObjCArgument SecCSDigestAlgorithm where
+  withObjCArg (SecCSDigestAlgorithm x) k = k (argCUInt x)
+
+instance ObjCReturn SecCSDigestAlgorithm where
+  type RawReturn SecCSDigestAlgorithm = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecCSDigestAlgorithm x)
+  fromOwned x = pure (SecCSDigestAlgorithm x)
 
 -- | SecCSFlags
 --
@@ -566,6 +739,16 @@ pattern KSecCSStripDisallowedXattrs = SecCSFlags 16777216
 
 pattern KSecCSMatchGuestRequirementInKernel :: SecCSFlags
 pattern KSecCSMatchGuestRequirementInKernel = SecCSFlags 8388608
+
+instance ObjCArgument SecCSFlags where
+  withObjCArg (SecCSFlags x) k = k (argCUInt x)
+
+instance ObjCReturn SecCSFlags where
+  type RawReturn SecCSFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecCSFlags x)
+  fromOwned x = pure (SecCSFlags x)
 
 -- | SecCodeSignatureFlags
 --
@@ -639,6 +822,16 @@ pattern KSecCodeSignatureRuntime = SecCodeSignatureFlags 65536
 pattern KSecCodeSignatureLinkerSigned :: SecCodeSignatureFlags
 pattern KSecCodeSignatureLinkerSigned = SecCodeSignatureFlags 131072
 
+instance ObjCArgument SecCodeSignatureFlags where
+  withObjCArg (SecCodeSignatureFlags x) k = k (argCUInt x)
+
+instance ObjCReturn SecCodeSignatureFlags where
+  type RawReturn SecCodeSignatureFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecCodeSignatureFlags x)
+  fromOwned x = pure (SecCodeSignatureFlags x)
+
 -- | SecCodeStatus
 --
 -- The code signing system attaches a set of status flags to each running code.	These flags are maintained by the code's host, and can be read by anyone.	A code may change its own flags, a host may change its guests' flags,	and root may change anyone's flags.	However, these flags are sticky in that	each can change in only one direction (and never back, for the lifetime of the code).	Not even root can violate this restriction.
@@ -692,6 +885,16 @@ pattern KSecCodeStatusDebugged = SecCodeStatus 268435456
 pattern KSecCodeStatusPlatform :: SecCodeStatus
 pattern KSecCodeStatusPlatform = SecCodeStatus 67108864
 
+instance ObjCArgument SecCodeStatus where
+  withObjCArg (SecCodeStatus x) k = k (argCUInt x)
+
+instance ObjCReturn SecCodeStatus where
+  type RawReturn SecCodeStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecCodeStatus x)
+  fromOwned x = pure (SecCodeStatus x)
+
 -- | SecCredentialType
 --
 -- Determines the type of credential returned by SecKeyGetCredentials.
@@ -714,6 +917,16 @@ pattern KSecCredentialTypeWithUI = SecCredentialType 1
 
 pattern KSecCredentialTypeNoUI :: SecCredentialType
 pattern KSecCredentialTypeNoUI = SecCredentialType 2
+
+instance ObjCArgument SecCredentialType where
+  withObjCArg (SecCredentialType x) k = k (argCUInt x)
+
+instance ObjCReturn SecCredentialType where
+  type RawReturn SecCredentialType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecCredentialType x)
+  fromOwned x = pure (SecCredentialType x)
 
 -- | @SecExternalFormat@
 newtype SecExternalFormat = SecExternalFormat CUInt
@@ -765,6 +978,16 @@ pattern KSecFormatNetscapeCertSequence = SecExternalFormat 13
 pattern KSecFormatSSHv2 :: SecExternalFormat
 pattern KSecFormatSSHv2 = SecExternalFormat 14
 
+instance ObjCArgument SecExternalFormat where
+  withObjCArg (SecExternalFormat x) k = k (argCUInt x)
+
+instance ObjCReturn SecExternalFormat where
+  type RawReturn SecExternalFormat = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecExternalFormat x)
+  fromOwned x = pure (SecExternalFormat x)
+
 -- | @SecExternalItemType@
 newtype SecExternalItemType = SecExternalItemType CUInt
   deriving stock (Eq, Ord, Show)
@@ -787,6 +1010,16 @@ pattern KSecItemTypeCertificate = SecExternalItemType 4
 
 pattern KSecItemTypeAggregate :: SecExternalItemType
 pattern KSecItemTypeAggregate = SecExternalItemType 5
+
+instance ObjCArgument SecExternalItemType where
+  withObjCArg (SecExternalItemType x) k = k (argCUInt x)
+
+instance ObjCReturn SecExternalItemType where
+  type RawReturn SecExternalItemType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecExternalItemType x)
+  fromOwned x = pure (SecExternalItemType x)
 
 -- | ItemAttributeConstants
 --
@@ -938,6 +1171,16 @@ pattern KSecCrlEncoding = SecItemAttr 1668443747
 pattern KSecAlias :: SecItemAttr
 pattern KSecAlias = SecItemAttr 1634494835
 
+instance ObjCArgument SecItemAttr where
+  withObjCArg (SecItemAttr x) k = k (argCUInt x)
+
+instance ObjCReturn SecItemAttr where
+  type RawReturn SecItemAttr = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecItemAttr x)
+  fromOwned x = pure (SecItemAttr x)
+
 -- | ItemClassConstants
 --
 -- Specifies a keychain item's class code.
@@ -985,6 +1228,16 @@ pattern KSecPrivateKeyItemClass = SecItemClass 16
 pattern KSecSymmetricKeyItemClass :: SecItemClass
 pattern KSecSymmetricKeyItemClass = SecItemClass 17
 
+instance ObjCArgument SecItemClass where
+  withObjCArg (SecItemClass x) k = k (argCUInt x)
+
+instance ObjCReturn SecItemClass where
+  type RawReturn SecItemClass = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecItemClass x)
+  fromOwned x = pure (SecItemClass x)
+
 -- | @SecItemImportExportFlags@ (bitmask)
 newtype SecItemImportExportFlags = SecItemImportExportFlags CUInt
   deriving stock (Eq, Ord, Show)
@@ -998,6 +1251,16 @@ instance Monoid SecItemImportExportFlags where
 
 pattern KSecItemPemArmour :: SecItemImportExportFlags
 pattern KSecItemPemArmour = SecItemImportExportFlags 1
+
+instance ObjCArgument SecItemImportExportFlags where
+  withObjCArg (SecItemImportExportFlags x) k = k (argCUInt x)
+
+instance ObjCReturn SecItemImportExportFlags where
+  type RawReturn SecItemImportExportFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecItemImportExportFlags x)
+  fromOwned x = pure (SecItemImportExportFlags x)
 
 -- | @SecKeyImportExportFlags@ (bitmask)
 newtype SecKeyImportExportFlags = SecKeyImportExportFlags CUInt
@@ -1018,6 +1281,16 @@ pattern KSecKeySecurePassphrase = SecKeyImportExportFlags 2
 
 pattern KSecKeyNoAccessControl :: SecKeyImportExportFlags
 pattern KSecKeyNoAccessControl = SecKeyImportExportFlags 4
+
+instance ObjCArgument SecKeyImportExportFlags where
+  withObjCArg (SecKeyImportExportFlags x) k = k (argCUInt x)
+
+instance ObjCReturn SecKeyImportExportFlags where
+  type RawReturn SecKeyImportExportFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecKeyImportExportFlags x)
+  fromOwned x = pure (SecKeyImportExportFlags x)
 
 -- | SecKeyOperationType
 --
@@ -1062,6 +1335,16 @@ pattern KSecKeyOperationTypeDecrypt = SecKeyOperationType 3
 pattern KSecKeyOperationTypeKeyExchange :: SecKeyOperationType
 pattern KSecKeyOperationTypeKeyExchange = SecKeyOperationType 4
 
+instance ObjCArgument SecKeyOperationType where
+  withObjCArg (SecKeyOperationType x) k = k (argCLong x)
+
+instance ObjCReturn SecKeyOperationType where
+  type RawReturn SecKeyOperationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecKeyOperationType x)
+  fromOwned x = pure (SecKeyOperationType x)
+
 -- | SecKeySizes
 --
 -- Supported key lengths.
@@ -1102,6 +1385,16 @@ pattern KSecRSAMin = SecKeySizes 1024
 
 pattern KSecRSAMax :: SecKeySizes
 pattern KSecRSAMax = SecKeySizes 4096
+
+instance ObjCArgument SecKeySizes where
+  withObjCArg (SecKeySizes x) k = k (argCUInt x)
+
+instance ObjCReturn SecKeySizes where
+  type RawReturn SecKeySizes = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecKeySizes x)
+  fromOwned x = pure (SecKeySizes x)
 
 -- | SecKeyUsage
 --
@@ -1182,6 +1475,16 @@ pattern KSecKeyUsageCritical = SecKeyUsage 2147483648
 pattern KSecKeyUsageAll :: SecKeyUsage
 pattern KSecKeyUsageAll = SecKeyUsage 2147483647
 
+instance ObjCArgument SecKeyUsage where
+  withObjCArg (SecKeyUsage x) k = k (argCUInt x)
+
+instance ObjCReturn SecKeyUsage where
+  type RawReturn SecKeyUsage = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecKeyUsage x)
+  fromOwned x = pure (SecKeyUsage x)
+
 -- | KeychainEventConstants
 --
 -- Defines the keychain-related event.
@@ -1239,6 +1542,16 @@ pattern KSecKeychainListChangedEvent = SecKeychainEvent 11
 
 pattern KSecTrustSettingsChangedEvent :: SecKeychainEvent
 pattern KSecTrustSettingsChangedEvent = SecKeychainEvent 12
+
+instance ObjCArgument SecKeychainEvent where
+  withObjCArg (SecKeychainEvent x) k = k (argCUInt x)
+
+instance ObjCReturn SecKeychainEvent where
+  type RawReturn SecKeychainEvent = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecKeychainEvent x)
+  fromOwned x = pure (SecKeychainEvent x)
 
 -- | KeychainEventConstants
 --
@@ -1307,6 +1620,16 @@ pattern KSecTrustSettingsChangedEventMask = SecKeychainEventMask 4096
 pattern KSecEveryEventMask :: SecKeychainEventMask
 pattern KSecEveryEventMask = SecKeychainEventMask 4294967295
 
+instance ObjCArgument SecKeychainEventMask where
+  withObjCArg (SecKeychainEventMask x) k = k (argCUInt x)
+
+instance ObjCReturn SecKeychainEventMask where
+  type RawReturn SecKeychainEventMask = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecKeychainEventMask x)
+  fromOwned x = pure (SecKeychainEventMask x)
+
 -- | @SecKeychainPromptSelector@ (bitmask)
 newtype SecKeychainPromptSelector = SecKeychainPromptSelector CUShort
   deriving stock (Eq, Ord, Show)
@@ -1332,6 +1655,16 @@ pattern KSecKeychainPromptInvalid = SecKeychainPromptSelector 64
 
 pattern KSecKeychainPromptInvalidAct :: SecKeychainPromptSelector
 pattern KSecKeychainPromptInvalidAct = SecKeychainPromptSelector 128
+
+instance ObjCArgument SecKeychainPromptSelector where
+  withObjCArg (SecKeychainPromptSelector x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn SecKeychainPromptSelector where
+  type RawReturn SecKeychainPromptSelector = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecKeychainPromptSelector (fromIntegral x))
+  fromOwned x = pure (SecKeychainPromptSelector (fromIntegral x))
 
 -- | SecPadding
 --
@@ -1380,6 +1713,16 @@ pattern KSecPaddingPKCS1SHA384 = SecPadding 32773
 pattern KSecPaddingPKCS1SHA512 :: SecPadding
 pattern KSecPaddingPKCS1SHA512 = SecPadding 32774
 
+instance ObjCArgument SecPadding where
+  withObjCArg (SecPadding x) k = k (argCUInt x)
+
+instance ObjCReturn SecPadding where
+  type RawReturn SecPadding = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecPadding x)
+  fromOwned x = pure (SecPadding x)
+
 -- | @SecPreferencesDomain@
 newtype SecPreferencesDomain = SecPreferencesDomain CInt
   deriving stock (Eq, Ord, Show)
@@ -1396,6 +1739,16 @@ pattern KSecPreferencesDomainCommon = SecPreferencesDomain 2
 
 pattern KSecPreferencesDomainDynamic :: SecPreferencesDomain
 pattern KSecPreferencesDomainDynamic = SecPreferencesDomain 3
+
+instance ObjCArgument SecPreferencesDomain where
+  withObjCArg (SecPreferencesDomain x) k = k (argCInt x)
+
+instance ObjCReturn SecPreferencesDomain where
+  type RawReturn SecPreferencesDomain = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecPreferencesDomain x)
+  fromOwned x = pure (SecPreferencesDomain x)
 
 -- | ProtocolTypeConstants
 --
@@ -1578,6 +1931,16 @@ pattern KSecProtocolTypeSVN = SecProtocolType 1937141280
 pattern KSecProtocolTypeAny :: SecProtocolType
 pattern KSecProtocolTypeAny = SecProtocolType 0
 
+instance ObjCArgument SecProtocolType where
+  withObjCArg (SecProtocolType x) k = k (argCUInt x)
+
+instance ObjCReturn SecProtocolType where
+  type RawReturn SecProtocolType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecProtocolType x)
+  fromOwned x = pure (SecProtocolType x)
+
 -- | SecRequirementType
 --
 -- An enumeration indicating different types of internal requirements for code.
@@ -1606,6 +1969,16 @@ pattern KSecInvalidRequirementType = SecRequirementType 6
 
 pattern KSecRequirementTypeCount :: SecRequirementType
 pattern KSecRequirementTypeCount = SecRequirementType 6
+
+instance ObjCArgument SecRequirementType where
+  withObjCArg (SecRequirementType x) k = k (argCUInt x)
+
+instance ObjCReturn SecRequirementType where
+  type RawReturn SecRequirementType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecRequirementType x)
+  fromOwned x = pure (SecRequirementType x)
 
 -- | Custom Transform Attribute Metadata
 --
@@ -1692,6 +2065,16 @@ pattern KSecTransformMetaAttributeHasOutboundConnections = SecTransformMetaAttri
 pattern KSecTransformMetaAttributeHasInboundConnection :: SecTransformMetaAttributeType
 pattern KSecTransformMetaAttributeHasInboundConnection = SecTransformMetaAttributeType 10
 
+instance ObjCArgument SecTransformMetaAttributeType where
+  withObjCArg (SecTransformMetaAttributeType x) k = k (argCLong x)
+
+instance ObjCReturn SecTransformMetaAttributeType where
+  type RawReturn SecTransformMetaAttributeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecTransformMetaAttributeType x)
+  fromOwned x = pure (SecTransformMetaAttributeType x)
+
 -- | SecTrustOptionFlags
 --
 -- Options for customizing trust evaluation.
@@ -1746,6 +2129,16 @@ pattern KSecTrustOptionUseTrustSettings = SecTrustOptionFlags 32
 
 pattern KSecTrustOptionImplicitAnchors :: SecTrustOptionFlags
 pattern KSecTrustOptionImplicitAnchors = SecTrustOptionFlags 64
+
+instance ObjCArgument SecTrustOptionFlags where
+  withObjCArg (SecTrustOptionFlags x) k = k (argCUInt x)
+
+instance ObjCReturn SecTrustOptionFlags where
+  type RawReturn SecTrustOptionFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecTrustOptionFlags x)
+  fromOwned x = pure (SecTrustOptionFlags x)
 
 -- | SecTrustResultType
 --
@@ -1813,6 +2206,16 @@ pattern KSecTrustResultFatalTrustFailure = SecTrustResultType 6
 pattern KSecTrustResultOtherError :: SecTrustResultType
 pattern KSecTrustResultOtherError = SecTrustResultType 7
 
+instance ObjCArgument SecTrustResultType where
+  withObjCArg (SecTrustResultType x) k = k (argCUInt x)
+
+instance ObjCReturn SecTrustResultType where
+  type RawReturn SecTrustResultType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecTrustResultType x)
+  fromOwned x = pure (SecTrustResultType x)
+
 -- | @SecTrustSettingsDomain@
 newtype SecTrustSettingsDomain = SecTrustSettingsDomain CUInt
   deriving stock (Eq, Ord, Show)
@@ -1826,6 +2229,16 @@ pattern KSecTrustSettingsDomainAdmin = SecTrustSettingsDomain 1
 
 pattern KSecTrustSettingsDomainSystem :: SecTrustSettingsDomain
 pattern KSecTrustSettingsDomainSystem = SecTrustSettingsDomain 2
+
+instance ObjCArgument SecTrustSettingsDomain where
+  withObjCArg (SecTrustSettingsDomain x) k = k (argCUInt x)
+
+instance ObjCReturn SecTrustSettingsDomain where
+  type RawReturn SecTrustSettingsDomain = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecTrustSettingsDomain x)
+  fromOwned x = pure (SecTrustSettingsDomain x)
 
 -- | @SecTrustSettingsKeyUsage@ (bitmask)
 newtype SecTrustSettingsKeyUsage = SecTrustSettingsKeyUsage CUInt
@@ -1859,6 +2272,16 @@ pattern KSecTrustSettingsKeyUseKeyExchange = SecTrustSettingsKeyUsage 32
 pattern KSecTrustSettingsKeyUseAny :: SecTrustSettingsKeyUsage
 pattern KSecTrustSettingsKeyUseAny = SecTrustSettingsKeyUsage 4294967295
 
+instance ObjCArgument SecTrustSettingsKeyUsage where
+  withObjCArg (SecTrustSettingsKeyUsage x) k = k (argCUInt x)
+
+instance ObjCReturn SecTrustSettingsKeyUsage where
+  type RawReturn SecTrustSettingsKeyUsage = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecTrustSettingsKeyUsage x)
+  fromOwned x = pure (SecTrustSettingsKeyUsage x)
+
 -- | SecTrustSettingsResult
 --
 -- Result of a trust settings evaluation.
@@ -1881,6 +2304,16 @@ pattern KSecTrustSettingsResultDeny = SecTrustSettingsResult 3
 
 pattern KSecTrustSettingsResultUnspecified :: SecTrustSettingsResult
 pattern KSecTrustSettingsResultUnspecified = SecTrustSettingsResult 4
+
+instance ObjCArgument SecTrustSettingsResult where
+  withObjCArg (SecTrustSettingsResult x) k = k (argCUInt x)
+
+instance ObjCReturn SecTrustSettingsResult where
+  type RawReturn SecTrustSettingsResult = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SecTrustSettingsResult x)
+  fromOwned x = pure (SecTrustSettingsResult x)
 
 -- | SessionAttributeBits
 --
@@ -1908,6 +2341,16 @@ pattern SessionHasTTY = SessionAttributeBits 32
 pattern SessionIsRemote :: SessionAttributeBits
 pattern SessionIsRemote = SessionAttributeBits 4096
 
+instance ObjCArgument SessionAttributeBits where
+  withObjCArg (SessionAttributeBits x) k = k (argCUInt x)
+
+instance ObjCReturn SessionAttributeBits where
+  type RawReturn SessionAttributeBits = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SessionAttributeBits x)
+  fromOwned x = pure (SessionAttributeBits x)
+
 -- | SessionCreationFlags
 --
 -- These flags control how a new session is created by SessionCreate.        They have no permanent meaning beyond that.
@@ -1924,3 +2367,13 @@ instance Monoid SessionCreationFlags where
 
 pattern SessionKeepCurrentBootstrap :: SessionCreationFlags
 pattern SessionKeepCurrentBootstrap = SessionCreationFlags 32768
+
+instance ObjCArgument SessionCreationFlags where
+  withObjCArg (SessionCreationFlags x) k = k (argCUInt x)
+
+instance ObjCReturn SessionCreationFlags where
+  type RawReturn SessionCreationFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SessionCreationFlags x)
+  fromOwned x = pure (SessionCreationFlags x)

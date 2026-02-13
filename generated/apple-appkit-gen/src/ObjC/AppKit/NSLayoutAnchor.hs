@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.AppKit.NSLayoutAnchor
   , hasAmbiguousLayout
   , constraintsAffectingLayout
   , constraintEqualToAnchorSelector
-  , constraintGreaterThanOrEqualToAnchorSelector
-  , constraintLessThanOrEqualToAnchorSelector
   , constraintEqualToAnchor_constantSelector
+  , constraintGreaterThanOrEqualToAnchorSelector
   , constraintGreaterThanOrEqualToAnchor_constantSelector
+  , constraintLessThanOrEqualToAnchorSelector
   , constraintLessThanOrEqualToAnchor_constantSelector
-  , nameSelector
-  , itemSelector
-  , hasAmbiguousLayoutSelector
   , constraintsAffectingLayoutSelector
+  , hasAmbiguousLayoutSelector
+  , itemSelector
+  , nameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,101 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- constraintEqualToAnchor:@
 constraintEqualToAnchor :: (IsNSLayoutAnchor nsLayoutAnchor, IsNSLayoutAnchor anchor) => nsLayoutAnchor -> anchor -> IO (Id NSLayoutConstraint)
-constraintEqualToAnchor nsLayoutAnchor  anchor =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutAnchor (mkSelector "constraintEqualToAnchor:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ())] >>= retainedObject . castPtr
+constraintEqualToAnchor nsLayoutAnchor anchor =
+  sendMessage nsLayoutAnchor constraintEqualToAnchorSelector (toNSLayoutAnchor anchor)
 
 -- | @- constraintGreaterThanOrEqualToAnchor:@
 constraintGreaterThanOrEqualToAnchor :: (IsNSLayoutAnchor nsLayoutAnchor, IsNSLayoutAnchor anchor) => nsLayoutAnchor -> anchor -> IO (Id NSLayoutConstraint)
-constraintGreaterThanOrEqualToAnchor nsLayoutAnchor  anchor =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutAnchor (mkSelector "constraintGreaterThanOrEqualToAnchor:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ())] >>= retainedObject . castPtr
+constraintGreaterThanOrEqualToAnchor nsLayoutAnchor anchor =
+  sendMessage nsLayoutAnchor constraintGreaterThanOrEqualToAnchorSelector (toNSLayoutAnchor anchor)
 
 -- | @- constraintLessThanOrEqualToAnchor:@
 constraintLessThanOrEqualToAnchor :: (IsNSLayoutAnchor nsLayoutAnchor, IsNSLayoutAnchor anchor) => nsLayoutAnchor -> anchor -> IO (Id NSLayoutConstraint)
-constraintLessThanOrEqualToAnchor nsLayoutAnchor  anchor =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutAnchor (mkSelector "constraintLessThanOrEqualToAnchor:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ())] >>= retainedObject . castPtr
+constraintLessThanOrEqualToAnchor nsLayoutAnchor anchor =
+  sendMessage nsLayoutAnchor constraintLessThanOrEqualToAnchorSelector (toNSLayoutAnchor anchor)
 
 -- | @- constraintEqualToAnchor:constant:@
 constraintEqualToAnchor_constant :: (IsNSLayoutAnchor nsLayoutAnchor, IsNSLayoutAnchor anchor) => nsLayoutAnchor -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintEqualToAnchor_constant nsLayoutAnchor  anchor c =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutAnchor (mkSelector "constraintEqualToAnchor:constant:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble c] >>= retainedObject . castPtr
+constraintEqualToAnchor_constant nsLayoutAnchor anchor c =
+  sendMessage nsLayoutAnchor constraintEqualToAnchor_constantSelector (toNSLayoutAnchor anchor) c
 
 -- | @- constraintGreaterThanOrEqualToAnchor:constant:@
 constraintGreaterThanOrEqualToAnchor_constant :: (IsNSLayoutAnchor nsLayoutAnchor, IsNSLayoutAnchor anchor) => nsLayoutAnchor -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintGreaterThanOrEqualToAnchor_constant nsLayoutAnchor  anchor c =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutAnchor (mkSelector "constraintGreaterThanOrEqualToAnchor:constant:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble c] >>= retainedObject . castPtr
+constraintGreaterThanOrEqualToAnchor_constant nsLayoutAnchor anchor c =
+  sendMessage nsLayoutAnchor constraintGreaterThanOrEqualToAnchor_constantSelector (toNSLayoutAnchor anchor) c
 
 -- | @- constraintLessThanOrEqualToAnchor:constant:@
 constraintLessThanOrEqualToAnchor_constant :: (IsNSLayoutAnchor nsLayoutAnchor, IsNSLayoutAnchor anchor) => nsLayoutAnchor -> anchor -> CDouble -> IO (Id NSLayoutConstraint)
-constraintLessThanOrEqualToAnchor_constant nsLayoutAnchor  anchor c =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg nsLayoutAnchor (mkSelector "constraintLessThanOrEqualToAnchor:constant:") (retPtr retVoid) [argPtr (castPtr raw_anchor :: Ptr ()), argCDouble c] >>= retainedObject . castPtr
+constraintLessThanOrEqualToAnchor_constant nsLayoutAnchor anchor c =
+  sendMessage nsLayoutAnchor constraintLessThanOrEqualToAnchor_constantSelector (toNSLayoutAnchor anchor) c
 
 -- | @- name@
 name :: IsNSLayoutAnchor nsLayoutAnchor => nsLayoutAnchor -> IO (Id NSString)
-name nsLayoutAnchor  =
-    sendMsg nsLayoutAnchor (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsLayoutAnchor =
+  sendMessage nsLayoutAnchor nameSelector
 
 -- | @- item@
 item :: IsNSLayoutAnchor nsLayoutAnchor => nsLayoutAnchor -> IO RawId
-item nsLayoutAnchor  =
-    fmap (RawId . castPtr) $ sendMsg nsLayoutAnchor (mkSelector "item") (retPtr retVoid) []
+item nsLayoutAnchor =
+  sendMessage nsLayoutAnchor itemSelector
 
 -- | @- hasAmbiguousLayout@
 hasAmbiguousLayout :: IsNSLayoutAnchor nsLayoutAnchor => nsLayoutAnchor -> IO Bool
-hasAmbiguousLayout nsLayoutAnchor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsLayoutAnchor (mkSelector "hasAmbiguousLayout") retCULong []
+hasAmbiguousLayout nsLayoutAnchor =
+  sendMessage nsLayoutAnchor hasAmbiguousLayoutSelector
 
 -- | @- constraintsAffectingLayout@
 constraintsAffectingLayout :: IsNSLayoutAnchor nsLayoutAnchor => nsLayoutAnchor -> IO (Id NSArray)
-constraintsAffectingLayout nsLayoutAnchor  =
-    sendMsg nsLayoutAnchor (mkSelector "constraintsAffectingLayout") (retPtr retVoid) [] >>= retainedObject . castPtr
+constraintsAffectingLayout nsLayoutAnchor =
+  sendMessage nsLayoutAnchor constraintsAffectingLayoutSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @constraintEqualToAnchor:@
-constraintEqualToAnchorSelector :: Selector
+constraintEqualToAnchorSelector :: Selector '[Id NSLayoutAnchor] (Id NSLayoutConstraint)
 constraintEqualToAnchorSelector = mkSelector "constraintEqualToAnchor:"
 
 -- | @Selector@ for @constraintGreaterThanOrEqualToAnchor:@
-constraintGreaterThanOrEqualToAnchorSelector :: Selector
+constraintGreaterThanOrEqualToAnchorSelector :: Selector '[Id NSLayoutAnchor] (Id NSLayoutConstraint)
 constraintGreaterThanOrEqualToAnchorSelector = mkSelector "constraintGreaterThanOrEqualToAnchor:"
 
 -- | @Selector@ for @constraintLessThanOrEqualToAnchor:@
-constraintLessThanOrEqualToAnchorSelector :: Selector
+constraintLessThanOrEqualToAnchorSelector :: Selector '[Id NSLayoutAnchor] (Id NSLayoutConstraint)
 constraintLessThanOrEqualToAnchorSelector = mkSelector "constraintLessThanOrEqualToAnchor:"
 
 -- | @Selector@ for @constraintEqualToAnchor:constant:@
-constraintEqualToAnchor_constantSelector :: Selector
+constraintEqualToAnchor_constantSelector :: Selector '[Id NSLayoutAnchor, CDouble] (Id NSLayoutConstraint)
 constraintEqualToAnchor_constantSelector = mkSelector "constraintEqualToAnchor:constant:"
 
 -- | @Selector@ for @constraintGreaterThanOrEqualToAnchor:constant:@
-constraintGreaterThanOrEqualToAnchor_constantSelector :: Selector
+constraintGreaterThanOrEqualToAnchor_constantSelector :: Selector '[Id NSLayoutAnchor, CDouble] (Id NSLayoutConstraint)
 constraintGreaterThanOrEqualToAnchor_constantSelector = mkSelector "constraintGreaterThanOrEqualToAnchor:constant:"
 
 -- | @Selector@ for @constraintLessThanOrEqualToAnchor:constant:@
-constraintLessThanOrEqualToAnchor_constantSelector :: Selector
+constraintLessThanOrEqualToAnchor_constantSelector :: Selector '[Id NSLayoutAnchor, CDouble] (Id NSLayoutConstraint)
 constraintLessThanOrEqualToAnchor_constantSelector = mkSelector "constraintLessThanOrEqualToAnchor:constant:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @item@
-itemSelector :: Selector
+itemSelector :: Selector '[] RawId
 itemSelector = mkSelector "item"
 
 -- | @Selector@ for @hasAmbiguousLayout@
-hasAmbiguousLayoutSelector :: Selector
+hasAmbiguousLayoutSelector :: Selector '[] Bool
 hasAmbiguousLayoutSelector = mkSelector "hasAmbiguousLayout"
 
 -- | @Selector@ for @constraintsAffectingLayout@
-constraintsAffectingLayoutSelector :: Selector
+constraintsAffectingLayoutSelector :: Selector '[] (Id NSArray)
 constraintsAffectingLayoutSelector = mkSelector "constraintsAffectingLayout"
 

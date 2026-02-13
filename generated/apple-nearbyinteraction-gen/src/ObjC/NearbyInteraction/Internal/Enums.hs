@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.NearbyInteraction.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Expose algorithm state to make it possible for apps to coach users.
 -- | @NIAlgorithmConvergenceStatus@
@@ -26,6 +29,16 @@ pattern NIAlgorithmConvergenceStatusNotConverged = NIAlgorithmConvergenceStatus 
 pattern NIAlgorithmConvergenceStatusConverged :: NIAlgorithmConvergenceStatus
 pattern NIAlgorithmConvergenceStatusConverged = NIAlgorithmConvergenceStatus 2
 
+instance ObjCArgument NIAlgorithmConvergenceStatus where
+  withObjCArg (NIAlgorithmConvergenceStatus x) k = k (argCLong x)
+
+instance ObjCReturn NIAlgorithmConvergenceStatus where
+  type RawReturn NIAlgorithmConvergenceStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NIAlgorithmConvergenceStatus x)
+  fromOwned x = pure (NIAlgorithmConvergenceStatus x)
+
 -- | The coordinate types of DL-TDOA measurement updates that Nearby Interaction supports.
 -- | @NIDLTDOACoordinatesType@
 newtype NIDLTDOACoordinatesType = NIDLTDOACoordinatesType CLong
@@ -37,6 +50,16 @@ pattern NIDLTDOACoordinatesTypeGeodetic = NIDLTDOACoordinatesType 0
 
 pattern NIDLTDOACoordinatesTypeRelative :: NIDLTDOACoordinatesType
 pattern NIDLTDOACoordinatesTypeRelative = NIDLTDOACoordinatesType 1
+
+instance ObjCArgument NIDLTDOACoordinatesType where
+  withObjCArg (NIDLTDOACoordinatesType x) k = k (argCLong x)
+
+instance ObjCReturn NIDLTDOACoordinatesType where
+  type RawReturn NIDLTDOACoordinatesType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NIDLTDOACoordinatesType x)
+  fromOwned x = pure (NIDLTDOACoordinatesType x)
 
 -- | The measurement types of DL-TDOA measurement updates that Nearby Interaction supports.
 -- | @NIDLTDOAMeasurementType@
@@ -52,6 +75,16 @@ pattern NIDLTDOAMeasurementTypeResponse = NIDLTDOAMeasurementType 1
 
 pattern NIDLTDOAMeasurementTypeFinal :: NIDLTDOAMeasurementType
 pattern NIDLTDOAMeasurementTypeFinal = NIDLTDOAMeasurementType 2
+
+instance ObjCArgument NIDLTDOAMeasurementType where
+  withObjCArg (NIDLTDOAMeasurementType x) k = k (argCLong x)
+
+instance ObjCReturn NIDLTDOAMeasurementType where
+  type RawReturn NIDLTDOAMeasurementType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NIDLTDOAMeasurementType x)
+  fromOwned x = pure (NIDLTDOAMeasurementType x)
 
 -- | Error codes for nearby interaction session failures.
 -- | @NIErrorCode@
@@ -89,6 +122,16 @@ pattern NIErrorCodeIncompatiblePeerDevice = NIErrorCode (-5881)
 pattern NIErrorCodeActiveExtendedDistanceSessionsLimitExceeded :: NIErrorCode
 pattern NIErrorCodeActiveExtendedDistanceSessionsLimitExceeded = NIErrorCode (-5880)
 
+instance ObjCArgument NIErrorCode where
+  withObjCArg (NIErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn NIErrorCode where
+  type RawReturn NIErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NIErrorCode x)
+  fromOwned x = pure (NIErrorCode x)
+
 -- | Reasons to remove a nearby object.
 -- | @NINearbyObjectRemovalReason@
 newtype NINearbyObjectRemovalReason = NINearbyObjectRemovalReason CLong
@@ -100,6 +143,16 @@ pattern NINearbyObjectRemovalReasonTimeout = NINearbyObjectRemovalReason 0
 
 pattern NINearbyObjectRemovalReasonPeerEnded :: NINearbyObjectRemovalReason
 pattern NINearbyObjectRemovalReasonPeerEnded = NINearbyObjectRemovalReason 1
+
+instance ObjCArgument NINearbyObjectRemovalReason where
+  withObjCArg (NINearbyObjectRemovalReason x) k = k (argCLong x)
+
+instance ObjCReturn NINearbyObjectRemovalReason where
+  type RawReturn NINearbyObjectRemovalReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NINearbyObjectRemovalReason x)
+  fromOwned x = pure (NINearbyObjectRemovalReason x)
 
 -- | @NINearbyObjectVerticalDirectionEstimate@
 newtype NINearbyObjectVerticalDirectionEstimate = NINearbyObjectVerticalDirectionEstimate CLong
@@ -120,3 +173,13 @@ pattern NINearbyObjectVerticalDirectionEstimateBelow = NINearbyObjectVerticalDir
 
 pattern NINearbyObjectVerticalDirectionEstimateAboveOrBelow :: NINearbyObjectVerticalDirectionEstimate
 pattern NINearbyObjectVerticalDirectionEstimateAboveOrBelow = NINearbyObjectVerticalDirectionEstimate 4
+
+instance ObjCArgument NINearbyObjectVerticalDirectionEstimate where
+  withObjCArg (NINearbyObjectVerticalDirectionEstimate x) k = k (argCLong x)
+
+instance ObjCReturn NINearbyObjectVerticalDirectionEstimate where
+  type RawReturn NINearbyObjectVerticalDirectionEstimate = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NINearbyObjectVerticalDirectionEstimate x)
+  fromOwned x = pure (NINearbyObjectVerticalDirectionEstimate x)

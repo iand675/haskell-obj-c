@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.CryptoTokenKit.TKTokenKeychainContents
   , certificateForObjectID_error
   , init_
   , items
-  , fillWithItemsSelector
-  , keyForObjectID_errorSelector
   , certificateForObjectID_errorSelector
+  , fillWithItemsSelector
   , initSelector
   , itemsSelector
+  , keyForObjectID_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,59 +40,56 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- fillWithItems:@
 fillWithItems :: (IsTKTokenKeychainContents tkTokenKeychainContents, IsNSArray items) => tkTokenKeychainContents -> items -> IO ()
-fillWithItems tkTokenKeychainContents  items =
-  withObjCPtr items $ \raw_items ->
-      sendMsg tkTokenKeychainContents (mkSelector "fillWithItems:") retVoid [argPtr (castPtr raw_items :: Ptr ())]
+fillWithItems tkTokenKeychainContents items =
+  sendMessage tkTokenKeychainContents fillWithItemsSelector (toNSArray items)
 
 -- | Returns key with specified objectID.  Fills error with TKTokenErrorCodeObjectNotFound if no such key exists.
 --
 -- ObjC selector: @- keyForObjectID:error:@
 keyForObjectID_error :: (IsTKTokenKeychainContents tkTokenKeychainContents, IsNSError error_) => tkTokenKeychainContents -> RawId -> error_ -> IO (Id TKTokenKeychainKey)
-keyForObjectID_error tkTokenKeychainContents  objectID error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg tkTokenKeychainContents (mkSelector "keyForObjectID:error:") (retPtr retVoid) [argPtr (castPtr (unRawId objectID) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+keyForObjectID_error tkTokenKeychainContents objectID error_ =
+  sendMessage tkTokenKeychainContents keyForObjectID_errorSelector objectID (toNSError error_)
 
 -- | Returns certificate with specified objectID.  Fills error with TKTokenErrorCodeObjectNotFound if no such certificate exists.
 --
 -- ObjC selector: @- certificateForObjectID:error:@
 certificateForObjectID_error :: (IsTKTokenKeychainContents tkTokenKeychainContents, IsNSError error_) => tkTokenKeychainContents -> RawId -> error_ -> IO (Id TKTokenKeychainCertificate)
-certificateForObjectID_error tkTokenKeychainContents  objectID error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg tkTokenKeychainContents (mkSelector "certificateForObjectID:error:") (retPtr retVoid) [argPtr (castPtr (unRawId objectID) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+certificateForObjectID_error tkTokenKeychainContents objectID error_ =
+  sendMessage tkTokenKeychainContents certificateForObjectID_errorSelector objectID (toNSError error_)
 
 -- | @- init@
 init_ :: IsTKTokenKeychainContents tkTokenKeychainContents => tkTokenKeychainContents -> IO (Id TKTokenKeychainContents)
-init_ tkTokenKeychainContents  =
-    sendMsg tkTokenKeychainContents (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkTokenKeychainContents =
+  sendOwnedMessage tkTokenKeychainContents initSelector
 
 -- | All items related to this token in the keychain.
 --
 -- ObjC selector: @- items@
 items :: IsTKTokenKeychainContents tkTokenKeychainContents => tkTokenKeychainContents -> IO (Id NSArray)
-items tkTokenKeychainContents  =
-    sendMsg tkTokenKeychainContents (mkSelector "items") (retPtr retVoid) [] >>= retainedObject . castPtr
+items tkTokenKeychainContents =
+  sendMessage tkTokenKeychainContents itemsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fillWithItems:@
-fillWithItemsSelector :: Selector
+fillWithItemsSelector :: Selector '[Id NSArray] ()
 fillWithItemsSelector = mkSelector "fillWithItems:"
 
 -- | @Selector@ for @keyForObjectID:error:@
-keyForObjectID_errorSelector :: Selector
+keyForObjectID_errorSelector :: Selector '[RawId, Id NSError] (Id TKTokenKeychainKey)
 keyForObjectID_errorSelector = mkSelector "keyForObjectID:error:"
 
 -- | @Selector@ for @certificateForObjectID:error:@
-certificateForObjectID_errorSelector :: Selector
+certificateForObjectID_errorSelector :: Selector '[RawId, Id NSError] (Id TKTokenKeychainCertificate)
 certificateForObjectID_errorSelector = mkSelector "certificateForObjectID:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKTokenKeychainContents)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @items@
-itemsSelector :: Selector
+itemsSelector :: Selector '[] (Id NSArray)
 itemsSelector = mkSelector "items"
 

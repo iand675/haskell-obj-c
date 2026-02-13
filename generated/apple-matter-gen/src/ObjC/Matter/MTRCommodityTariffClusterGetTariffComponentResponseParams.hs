@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRCommodityTariffClusterGetTariffComponentResponseParams
   , setDayEntryIDs
   , tariffComponent
   , setTariffComponent
+  , dayEntryIDsSelector
   , initWithResponseValue_errorSelector
   , labelSelector
-  , setLabelSelector
-  , dayEntryIDsSelector
   , setDayEntryIDsSelector
-  , tariffComponentSelector
+  , setLabelSelector
   , setTariffComponentSelector
+  , tariffComponentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,73 +44,68 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRCommodityTariffClusterGetTariffComponentResponseParams mtrCommodityTariffClusterGetTariffComponentResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrCommodityTariffClusterGetTariffComponentResponseParams -> responseValue -> error_ -> IO (Id MTRCommodityTariffClusterGetTariffComponentResponseParams)
-initWithResponseValue_error mtrCommodityTariffClusterGetTariffComponentResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrCommodityTariffClusterGetTariffComponentResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrCommodityTariffClusterGetTariffComponentResponseParams responseValue error_ =
+  sendOwnedMessage mtrCommodityTariffClusterGetTariffComponentResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- label@
 label :: IsMTRCommodityTariffClusterGetTariffComponentResponseParams mtrCommodityTariffClusterGetTariffComponentResponseParams => mtrCommodityTariffClusterGetTariffComponentResponseParams -> IO (Id NSString)
-label mtrCommodityTariffClusterGetTariffComponentResponseParams  =
-    sendMsg mtrCommodityTariffClusterGetTariffComponentResponseParams (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtrCommodityTariffClusterGetTariffComponentResponseParams =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentResponseParams labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsMTRCommodityTariffClusterGetTariffComponentResponseParams mtrCommodityTariffClusterGetTariffComponentResponseParams, IsNSString value) => mtrCommodityTariffClusterGetTariffComponentResponseParams -> value -> IO ()
-setLabel mtrCommodityTariffClusterGetTariffComponentResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterGetTariffComponentResponseParams (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtrCommodityTariffClusterGetTariffComponentResponseParams value =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentResponseParams setLabelSelector (toNSString value)
 
 -- | @- dayEntryIDs@
 dayEntryIDs :: IsMTRCommodityTariffClusterGetTariffComponentResponseParams mtrCommodityTariffClusterGetTariffComponentResponseParams => mtrCommodityTariffClusterGetTariffComponentResponseParams -> IO (Id NSArray)
-dayEntryIDs mtrCommodityTariffClusterGetTariffComponentResponseParams  =
-    sendMsg mtrCommodityTariffClusterGetTariffComponentResponseParams (mkSelector "dayEntryIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+dayEntryIDs mtrCommodityTariffClusterGetTariffComponentResponseParams =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentResponseParams dayEntryIDsSelector
 
 -- | @- setDayEntryIDs:@
 setDayEntryIDs :: (IsMTRCommodityTariffClusterGetTariffComponentResponseParams mtrCommodityTariffClusterGetTariffComponentResponseParams, IsNSArray value) => mtrCommodityTariffClusterGetTariffComponentResponseParams -> value -> IO ()
-setDayEntryIDs mtrCommodityTariffClusterGetTariffComponentResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterGetTariffComponentResponseParams (mkSelector "setDayEntryIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDayEntryIDs mtrCommodityTariffClusterGetTariffComponentResponseParams value =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentResponseParams setDayEntryIDsSelector (toNSArray value)
 
 -- | @- tariffComponent@
 tariffComponent :: IsMTRCommodityTariffClusterGetTariffComponentResponseParams mtrCommodityTariffClusterGetTariffComponentResponseParams => mtrCommodityTariffClusterGetTariffComponentResponseParams -> IO (Id MTRCommodityTariffClusterTariffComponentStruct)
-tariffComponent mtrCommodityTariffClusterGetTariffComponentResponseParams  =
-    sendMsg mtrCommodityTariffClusterGetTariffComponentResponseParams (mkSelector "tariffComponent") (retPtr retVoid) [] >>= retainedObject . castPtr
+tariffComponent mtrCommodityTariffClusterGetTariffComponentResponseParams =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentResponseParams tariffComponentSelector
 
 -- | @- setTariffComponent:@
 setTariffComponent :: (IsMTRCommodityTariffClusterGetTariffComponentResponseParams mtrCommodityTariffClusterGetTariffComponentResponseParams, IsMTRCommodityTariffClusterTariffComponentStruct value) => mtrCommodityTariffClusterGetTariffComponentResponseParams -> value -> IO ()
-setTariffComponent mtrCommodityTariffClusterGetTariffComponentResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterGetTariffComponentResponseParams (mkSelector "setTariffComponent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTariffComponent mtrCommodityTariffClusterGetTariffComponentResponseParams value =
+  sendMessage mtrCommodityTariffClusterGetTariffComponentResponseParams setTariffComponentSelector (toMTRCommodityTariffClusterTariffComponentStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRCommodityTariffClusterGetTariffComponentResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @dayEntryIDs@
-dayEntryIDsSelector :: Selector
+dayEntryIDsSelector :: Selector '[] (Id NSArray)
 dayEntryIDsSelector = mkSelector "dayEntryIDs"
 
 -- | @Selector@ for @setDayEntryIDs:@
-setDayEntryIDsSelector :: Selector
+setDayEntryIDsSelector :: Selector '[Id NSArray] ()
 setDayEntryIDsSelector = mkSelector "setDayEntryIDs:"
 
 -- | @Selector@ for @tariffComponent@
-tariffComponentSelector :: Selector
+tariffComponentSelector :: Selector '[] (Id MTRCommodityTariffClusterTariffComponentStruct)
 tariffComponentSelector = mkSelector "tariffComponent"
 
 -- | @Selector@ for @setTariffComponent:@
-setTariffComponentSelector :: Selector
+setTariffComponentSelector :: Selector '[Id MTRCommodityTariffClusterTariffComponentStruct] ()
 setTariffComponentSelector = mkSelector "setTariffComponent:"
 

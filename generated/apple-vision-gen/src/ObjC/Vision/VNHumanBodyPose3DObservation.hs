@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.Vision.VNHumanBodyPose3DObservation
   , availableJointsGroupNames
   , availableJointNames
   , bodyHeight
-  , recognizedPointsForJointsGroupName_errorSelector
-  , recognizedPointForJointName_errorSelector
-  , pointInImageForJointName_errorSelector
-  , parentJointNameForJointNameSelector
-  , heightEstimationSelector
-  , availableJointsGroupNamesSelector
   , availableJointNamesSelector
+  , availableJointsGroupNamesSelector
   , bodyHeightSelector
+  , heightEstimationSelector
+  , parentJointNameForJointNameSelector
+  , pointInImageForJointName_errorSelector
+  , recognizedPointForJointName_errorSelector
+  , recognizedPointsForJointsGroupName_errorSelector
 
   -- * Enum types
   , VNHumanBodyPose3DObservationHeightEstimation(VNHumanBodyPose3DObservationHeightEstimation)
@@ -31,15 +32,11 @@ module ObjC.Vision.VNHumanBodyPose3DObservation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,10 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- recognizedPointsForJointsGroupName:error:@
 recognizedPointsForJointsGroupName_error :: (IsVNHumanBodyPose3DObservation vnHumanBodyPose3DObservation, IsNSString jointsGroupName, IsNSError error_) => vnHumanBodyPose3DObservation -> jointsGroupName -> error_ -> IO (Id NSDictionary)
-recognizedPointsForJointsGroupName_error vnHumanBodyPose3DObservation  jointsGroupName error_ =
-  withObjCPtr jointsGroupName $ \raw_jointsGroupName ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnHumanBodyPose3DObservation (mkSelector "recognizedPointsForJointsGroupName:error:") (retPtr retVoid) [argPtr (castPtr raw_jointsGroupName :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointsForJointsGroupName_error vnHumanBodyPose3DObservation jointsGroupName error_ =
+  sendMessage vnHumanBodyPose3DObservation recognizedPointsForJointsGroupName_errorSelector (toNSString jointsGroupName) (toNSError error_)
 
 -- | Obtain a specific point for a named human body joint.    Each returned @VNHumanBodyRecognizedPoint3D@ instance contains position relative to the model (@position@) and the parent joint (@localPosition@)    Model position is relative to root joint (hip) for a named human body joint in meters .    Local position is relative to parent joint for a named human body joint in meters.
 --
@@ -74,10 +69,8 @@ recognizedPointsForJointsGroupName_error vnHumanBodyPose3DObservation  jointsGro
 --
 -- ObjC selector: @- recognizedPointForJointName:error:@
 recognizedPointForJointName_error :: (IsVNHumanBodyPose3DObservation vnHumanBodyPose3DObservation, IsNSString jointName, IsNSError error_) => vnHumanBodyPose3DObservation -> jointName -> error_ -> IO (Id VNHumanBodyRecognizedPoint3D)
-recognizedPointForJointName_error vnHumanBodyPose3DObservation  jointName error_ =
-  withObjCPtr jointName $ \raw_jointName ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnHumanBodyPose3DObservation (mkSelector "recognizedPointForJointName:error:") (retPtr retVoid) [argPtr (castPtr raw_jointName :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointForJointName_error vnHumanBodyPose3DObservation jointName error_ =
+  sendMessage vnHumanBodyPose3DObservation recognizedPointForJointName_errorSelector (toNSString jointName) (toNSError error_)
 
 -- | Obtain 2D point relative to the input image for named human body joint
 --
@@ -87,10 +80,8 @@ recognizedPointForJointName_error vnHumanBodyPose3DObservation  jointName error_
 --
 -- ObjC selector: @- pointInImageForJointName:error:@
 pointInImageForJointName_error :: (IsVNHumanBodyPose3DObservation vnHumanBodyPose3DObservation, IsNSString jointName, IsNSError error_) => vnHumanBodyPose3DObservation -> jointName -> error_ -> IO (Id VNPoint)
-pointInImageForJointName_error vnHumanBodyPose3DObservation  jointName error_ =
-  withObjCPtr jointName $ \raw_jointName ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnHumanBodyPose3DObservation (mkSelector "pointInImageForJointName:error:") (retPtr retVoid) [argPtr (castPtr raw_jointName :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+pointInImageForJointName_error vnHumanBodyPose3DObservation jointName error_ =
+  sendMessage vnHumanBodyPose3DObservation pointInImageForJointName_errorSelector (toNSString jointName) (toNSError error_)
 
 -- | Obtain the parent joint of a specified joint
 --
@@ -100,30 +91,29 @@ pointInImageForJointName_error vnHumanBodyPose3DObservation  jointName error_ =
 --
 -- ObjC selector: @- parentJointNameForJointName:@
 parentJointNameForJointName :: (IsVNHumanBodyPose3DObservation vnHumanBodyPose3DObservation, IsNSString jointName) => vnHumanBodyPose3DObservation -> jointName -> IO (Id NSString)
-parentJointNameForJointName vnHumanBodyPose3DObservation  jointName =
-  withObjCPtr jointName $ \raw_jointName ->
-      sendMsg vnHumanBodyPose3DObservation (mkSelector "parentJointNameForJointName:") (retPtr retVoid) [argPtr (castPtr raw_jointName :: Ptr ())] >>= retainedObject . castPtr
+parentJointNameForJointName vnHumanBodyPose3DObservation jointName =
+  sendMessage vnHumanBodyPose3DObservation parentJointNameForJointNameSelector (toNSString jointName)
 
 -- | Technique used to estimate body height.   @VNHumanBodyPose3DObservationHeightEstimationMeasured@   indicates@bodyHeight@ returns measured height in meters more accurate to true world height. @VNHumanBodyPose3DObservationHeightEstimationReference@ indicates @bodyHeight@ returns reference height of 1.8 m
 --
 -- ObjC selector: @- heightEstimation@
 heightEstimation :: IsVNHumanBodyPose3DObservation vnHumanBodyPose3DObservation => vnHumanBodyPose3DObservation -> IO VNHumanBodyPose3DObservationHeightEstimation
-heightEstimation vnHumanBodyPose3DObservation  =
-    fmap (coerce :: CLong -> VNHumanBodyPose3DObservationHeightEstimation) $ sendMsg vnHumanBodyPose3DObservation (mkSelector "heightEstimation") retCLong []
+heightEstimation vnHumanBodyPose3DObservation =
+  sendMessage vnHumanBodyPose3DObservation heightEstimationSelector
 
 -- | All of the joints group names available in the observation.
 --
 -- ObjC selector: @- availableJointsGroupNames@
 availableJointsGroupNames :: IsVNHumanBodyPose3DObservation vnHumanBodyPose3DObservation => vnHumanBodyPose3DObservation -> IO (Id NSArray)
-availableJointsGroupNames vnHumanBodyPose3DObservation  =
-    sendMsg vnHumanBodyPose3DObservation (mkSelector "availableJointsGroupNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableJointsGroupNames vnHumanBodyPose3DObservation =
+  sendMessage vnHumanBodyPose3DObservation availableJointsGroupNamesSelector
 
 -- | All of the joint names available in the observation.
 --
 -- ObjC selector: @- availableJointNames@
 availableJointNames :: IsVNHumanBodyPose3DObservation vnHumanBodyPose3DObservation => vnHumanBodyPose3DObservation -> IO (Id NSArray)
-availableJointNames vnHumanBodyPose3DObservation  =
-    sendMsg vnHumanBodyPose3DObservation (mkSelector "availableJointNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableJointNames vnHumanBodyPose3DObservation =
+  sendMessage vnHumanBodyPose3DObservation availableJointNamesSelector
 
 -- | Estimated human height, in meters.
 --
@@ -131,42 +121,42 @@ availableJointNames vnHumanBodyPose3DObservation  =
 --
 -- ObjC selector: @- bodyHeight@
 bodyHeight :: IsVNHumanBodyPose3DObservation vnHumanBodyPose3DObservation => vnHumanBodyPose3DObservation -> IO CFloat
-bodyHeight vnHumanBodyPose3DObservation  =
-    sendMsg vnHumanBodyPose3DObservation (mkSelector "bodyHeight") retCFloat []
+bodyHeight vnHumanBodyPose3DObservation =
+  sendMessage vnHumanBodyPose3DObservation bodyHeightSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @recognizedPointsForJointsGroupName:error:@
-recognizedPointsForJointsGroupName_errorSelector :: Selector
+recognizedPointsForJointsGroupName_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSDictionary)
 recognizedPointsForJointsGroupName_errorSelector = mkSelector "recognizedPointsForJointsGroupName:error:"
 
 -- | @Selector@ for @recognizedPointForJointName:error:@
-recognizedPointForJointName_errorSelector :: Selector
+recognizedPointForJointName_errorSelector :: Selector '[Id NSString, Id NSError] (Id VNHumanBodyRecognizedPoint3D)
 recognizedPointForJointName_errorSelector = mkSelector "recognizedPointForJointName:error:"
 
 -- | @Selector@ for @pointInImageForJointName:error:@
-pointInImageForJointName_errorSelector :: Selector
+pointInImageForJointName_errorSelector :: Selector '[Id NSString, Id NSError] (Id VNPoint)
 pointInImageForJointName_errorSelector = mkSelector "pointInImageForJointName:error:"
 
 -- | @Selector@ for @parentJointNameForJointName:@
-parentJointNameForJointNameSelector :: Selector
+parentJointNameForJointNameSelector :: Selector '[Id NSString] (Id NSString)
 parentJointNameForJointNameSelector = mkSelector "parentJointNameForJointName:"
 
 -- | @Selector@ for @heightEstimation@
-heightEstimationSelector :: Selector
+heightEstimationSelector :: Selector '[] VNHumanBodyPose3DObservationHeightEstimation
 heightEstimationSelector = mkSelector "heightEstimation"
 
 -- | @Selector@ for @availableJointsGroupNames@
-availableJointsGroupNamesSelector :: Selector
+availableJointsGroupNamesSelector :: Selector '[] (Id NSArray)
 availableJointsGroupNamesSelector = mkSelector "availableJointsGroupNames"
 
 -- | @Selector@ for @availableJointNames@
-availableJointNamesSelector :: Selector
+availableJointNamesSelector :: Selector '[] (Id NSArray)
 availableJointNamesSelector = mkSelector "availableJointNames"
 
 -- | @Selector@ for @bodyHeight@
-bodyHeightSelector :: Selector
+bodyHeightSelector :: Selector '[] CFloat
 bodyHeightSelector = mkSelector "bodyHeight"
 

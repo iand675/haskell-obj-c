@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.CloudKit.CKFetchSubscriptionsOperation
   , fetchAllSubscriptionsOperationSelector
   , initSelector
   , initWithSubscriptionIDsSelector
-  , subscriptionIDsSelector
-  , setSubscriptionIDsSelector
   , perSubscriptionCompletionBlockSelector
   , setPerSubscriptionCompletionBlockSelector
+  , setSubscriptionIDsSelector
+  , subscriptionIDsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,29 +41,27 @@ fetchAllSubscriptionsOperation :: IO (Id CKFetchSubscriptionsOperation)
 fetchAllSubscriptionsOperation  =
   do
     cls' <- getRequiredClass "CKFetchSubscriptionsOperation"
-    sendClassMsg cls' (mkSelector "fetchAllSubscriptionsOperation") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fetchAllSubscriptionsOperationSelector
 
 -- | @- init@
 init_ :: IsCKFetchSubscriptionsOperation ckFetchSubscriptionsOperation => ckFetchSubscriptionsOperation -> IO (Id CKFetchSubscriptionsOperation)
-init_ ckFetchSubscriptionsOperation  =
-    sendMsg ckFetchSubscriptionsOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckFetchSubscriptionsOperation =
+  sendOwnedMessage ckFetchSubscriptionsOperation initSelector
 
 -- | @- initWithSubscriptionIDs:@
 initWithSubscriptionIDs :: (IsCKFetchSubscriptionsOperation ckFetchSubscriptionsOperation, IsNSArray subscriptionIDs) => ckFetchSubscriptionsOperation -> subscriptionIDs -> IO (Id CKFetchSubscriptionsOperation)
-initWithSubscriptionIDs ckFetchSubscriptionsOperation  subscriptionIDs =
-  withObjCPtr subscriptionIDs $ \raw_subscriptionIDs ->
-      sendMsg ckFetchSubscriptionsOperation (mkSelector "initWithSubscriptionIDs:") (retPtr retVoid) [argPtr (castPtr raw_subscriptionIDs :: Ptr ())] >>= ownedObject . castPtr
+initWithSubscriptionIDs ckFetchSubscriptionsOperation subscriptionIDs =
+  sendOwnedMessage ckFetchSubscriptionsOperation initWithSubscriptionIDsSelector (toNSArray subscriptionIDs)
 
 -- | @- subscriptionIDs@
 subscriptionIDs :: IsCKFetchSubscriptionsOperation ckFetchSubscriptionsOperation => ckFetchSubscriptionsOperation -> IO (Id NSArray)
-subscriptionIDs ckFetchSubscriptionsOperation  =
-    sendMsg ckFetchSubscriptionsOperation (mkSelector "subscriptionIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionIDs ckFetchSubscriptionsOperation =
+  sendMessage ckFetchSubscriptionsOperation subscriptionIDsSelector
 
 -- | @- setSubscriptionIDs:@
 setSubscriptionIDs :: (IsCKFetchSubscriptionsOperation ckFetchSubscriptionsOperation, IsNSArray value) => ckFetchSubscriptionsOperation -> value -> IO ()
-setSubscriptionIDs ckFetchSubscriptionsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchSubscriptionsOperation (mkSelector "setSubscriptionIDs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSubscriptionIDs ckFetchSubscriptionsOperation value =
+  sendMessage ckFetchSubscriptionsOperation setSubscriptionIDsSelector (toNSArray value)
 
 -- | Called on success or failure for each subscriptionID.
 --
@@ -74,8 +69,8 @@ setSubscriptionIDs ckFetchSubscriptionsOperation  value =
 --
 -- ObjC selector: @- perSubscriptionCompletionBlock@
 perSubscriptionCompletionBlock :: IsCKFetchSubscriptionsOperation ckFetchSubscriptionsOperation => ckFetchSubscriptionsOperation -> IO (Ptr ())
-perSubscriptionCompletionBlock ckFetchSubscriptionsOperation  =
-    fmap castPtr $ sendMsg ckFetchSubscriptionsOperation (mkSelector "perSubscriptionCompletionBlock") (retPtr retVoid) []
+perSubscriptionCompletionBlock ckFetchSubscriptionsOperation =
+  sendMessage ckFetchSubscriptionsOperation perSubscriptionCompletionBlockSelector
 
 -- | Called on success or failure for each subscriptionID.
 --
@@ -83,38 +78,38 @@ perSubscriptionCompletionBlock ckFetchSubscriptionsOperation  =
 --
 -- ObjC selector: @- setPerSubscriptionCompletionBlock:@
 setPerSubscriptionCompletionBlock :: IsCKFetchSubscriptionsOperation ckFetchSubscriptionsOperation => ckFetchSubscriptionsOperation -> Ptr () -> IO ()
-setPerSubscriptionCompletionBlock ckFetchSubscriptionsOperation  value =
-    sendMsg ckFetchSubscriptionsOperation (mkSelector "setPerSubscriptionCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerSubscriptionCompletionBlock ckFetchSubscriptionsOperation value =
+  sendMessage ckFetchSubscriptionsOperation setPerSubscriptionCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fetchAllSubscriptionsOperation@
-fetchAllSubscriptionsOperationSelector :: Selector
+fetchAllSubscriptionsOperationSelector :: Selector '[] (Id CKFetchSubscriptionsOperation)
 fetchAllSubscriptionsOperationSelector = mkSelector "fetchAllSubscriptionsOperation"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKFetchSubscriptionsOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithSubscriptionIDs:@
-initWithSubscriptionIDsSelector :: Selector
+initWithSubscriptionIDsSelector :: Selector '[Id NSArray] (Id CKFetchSubscriptionsOperation)
 initWithSubscriptionIDsSelector = mkSelector "initWithSubscriptionIDs:"
 
 -- | @Selector@ for @subscriptionIDs@
-subscriptionIDsSelector :: Selector
+subscriptionIDsSelector :: Selector '[] (Id NSArray)
 subscriptionIDsSelector = mkSelector "subscriptionIDs"
 
 -- | @Selector@ for @setSubscriptionIDs:@
-setSubscriptionIDsSelector :: Selector
+setSubscriptionIDsSelector :: Selector '[Id NSArray] ()
 setSubscriptionIDsSelector = mkSelector "setSubscriptionIDs:"
 
 -- | @Selector@ for @perSubscriptionCompletionBlock@
-perSubscriptionCompletionBlockSelector :: Selector
+perSubscriptionCompletionBlockSelector :: Selector '[] (Ptr ())
 perSubscriptionCompletionBlockSelector = mkSelector "perSubscriptionCompletionBlock"
 
 -- | @Selector@ for @setPerSubscriptionCompletionBlock:@
-setPerSubscriptionCompletionBlockSelector :: Selector
+setPerSubscriptionCompletionBlockSelector :: Selector '[Ptr ()] ()
 setPerSubscriptionCompletionBlockSelector = mkSelector "setPerSubscriptionCompletionBlock:"
 

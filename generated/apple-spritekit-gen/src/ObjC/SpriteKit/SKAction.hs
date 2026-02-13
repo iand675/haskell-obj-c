@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -103,100 +104,100 @@ module ObjC.SpriteKit.SKAction
   , setTimingFunction
   , speed
   , setSpeed
-  , reversedActionSelector
-  , stereoPanTo_durationSelector
-  , stereoPanBy_durationSelector
-  , changeReverbTo_durationSelector
-  , changeReverbBy_durationSelector
-  , changeObstructionTo_durationSelector
-  , changeObstructionBy_durationSelector
-  , changeOcclusionTo_durationSelector
-  , changeOcclusionBy_durationSelector
-  , warpTo_durationSelector
-  , animateWithWarps_timesSelector
-  , animateWithWarps_times_restoreSelector
-  , changeVolumeTo_durationSelector
-  , changeVolumeBy_durationSelector
-  , playSelector
-  , pauseSelector
-  , stopSelector
-  , changePlaybackRateTo_durationSelector
-  , changePlaybackRateBy_durationSelector
-  , changeChargeTo_durationSelector
-  , changeChargeBy_durationSelector
-  , changeMassTo_durationSelector
-  , changeMassBy_durationSelector
-  , applyTorque_durationSelector
-  , applyAngularImpulse_durationSelector
-  , moveByX_y_durationSelector
-  , moveToX_durationSelector
-  , moveToY_durationSelector
-  , rotateByAngle_durationSelector
-  , rotateToAngle_durationSelector
-  , rotateToAngle_duration_shortestUnitArcSelector
-  , resizeByWidth_height_durationSelector
-  , resizeToWidth_height_durationSelector
-  , resizeToWidth_durationSelector
-  , resizeToHeight_durationSelector
-  , scaleBy_durationSelector
-  , scaleXBy_y_durationSelector
-  , scaleTo_durationSelector
-  , scaleXTo_y_durationSelector
-  , scaleXTo_durationSelector
-  , scaleYTo_durationSelector
-  , sequenceSelector
-  , groupSelector
-  , repeatAction_countSelector
-  , repeatActionForeverSelector
-  , fadeInWithDurationSelector
-  , fadeOutWithDurationSelector
-  , fadeAlphaBy_durationSelector
-  , fadeAlphaTo_durationSelector
-  , hideSelector
-  , unhideSelector
-  , setTextureSelector
-  , setNormalTextureSelector
-  , setTexture_resizeSelector
-  , setNormalTexture_resizeSelector
-  , animateWithTextures_timePerFrameSelector
-  , animateWithNormalTextures_timePerFrameSelector
-  , animateWithTextures_timePerFrame_resize_restoreSelector
-  , animateWithNormalTextures_timePerFrame_resize_restoreSelector
-  , playSoundFileNamed_waitForCompletionSelector
-  , colorizeWithColor_colorBlendFactor_durationSelector
-  , colorizeWithColorBlendFactor_durationSelector
-  , falloffTo_durationSelector
-  , falloffBy_durationSelector
-  , followPath_durationSelector
-  , followPath_asOffset_orientToPath_durationSelector
-  , followPath_speedSelector
-  , followPath_asOffset_orientToPath_speedSelector
-  , speedBy_durationSelector
-  , speedTo_durationSelector
-  , reachToNode_rootNode_durationSelector
-  , reachToNode_rootNode_velocitySelector
-  , strengthTo_durationSelector
-  , strengthBy_durationSelector
-  , waitForDurationSelector
-  , waitForDuration_withRangeSelector
-  , removeFromParentSelector
-  , performSelector_onTargetSelector
-  , runBlockSelector
-  , runBlock_queueSelector
-  , runAction_onChildWithNameSelector
-  , customActionWithDuration_actionBlockSelector
   , actionNamedSelector
   , actionNamed_durationSelector
   , actionNamed_fromURLSelector
   , actionNamed_fromURL_durationSelector
+  , animateWithNormalTextures_timePerFrameSelector
+  , animateWithNormalTextures_timePerFrame_resize_restoreSelector
+  , animateWithTextures_timePerFrameSelector
+  , animateWithTextures_timePerFrame_resize_restoreSelector
+  , animateWithWarps_timesSelector
+  , animateWithWarps_times_restoreSelector
+  , applyAngularImpulse_durationSelector
+  , applyTorque_durationSelector
+  , changeChargeBy_durationSelector
+  , changeChargeTo_durationSelector
+  , changeMassBy_durationSelector
+  , changeMassTo_durationSelector
+  , changeObstructionBy_durationSelector
+  , changeObstructionTo_durationSelector
+  , changeOcclusionBy_durationSelector
+  , changeOcclusionTo_durationSelector
+  , changePlaybackRateBy_durationSelector
+  , changePlaybackRateTo_durationSelector
+  , changeReverbBy_durationSelector
+  , changeReverbTo_durationSelector
+  , changeVolumeBy_durationSelector
+  , changeVolumeTo_durationSelector
+  , colorizeWithColorBlendFactor_durationSelector
+  , colorizeWithColor_colorBlendFactor_durationSelector
+  , customActionWithDuration_actionBlockSelector
   , durationSelector
+  , fadeAlphaBy_durationSelector
+  , fadeAlphaTo_durationSelector
+  , fadeInWithDurationSelector
+  , fadeOutWithDurationSelector
+  , falloffBy_durationSelector
+  , falloffTo_durationSelector
+  , followPath_asOffset_orientToPath_durationSelector
+  , followPath_asOffset_orientToPath_speedSelector
+  , followPath_durationSelector
+  , followPath_speedSelector
+  , groupSelector
+  , hideSelector
+  , moveByX_y_durationSelector
+  , moveToX_durationSelector
+  , moveToY_durationSelector
+  , pauseSelector
+  , performSelector_onTargetSelector
+  , playSelector
+  , playSoundFileNamed_waitForCompletionSelector
+  , reachToNode_rootNode_durationSelector
+  , reachToNode_rootNode_velocitySelector
+  , removeFromParentSelector
+  , repeatActionForeverSelector
+  , repeatAction_countSelector
+  , resizeByWidth_height_durationSelector
+  , resizeToHeight_durationSelector
+  , resizeToWidth_durationSelector
+  , resizeToWidth_height_durationSelector
+  , reversedActionSelector
+  , rotateByAngle_durationSelector
+  , rotateToAngle_durationSelector
+  , rotateToAngle_duration_shortestUnitArcSelector
+  , runAction_onChildWithNameSelector
+  , runBlockSelector
+  , runBlock_queueSelector
+  , scaleBy_durationSelector
+  , scaleTo_durationSelector
+  , scaleXBy_y_durationSelector
+  , scaleXTo_durationSelector
+  , scaleXTo_y_durationSelector
+  , scaleYTo_durationSelector
+  , sequenceSelector
   , setDurationSelector
-  , timingModeSelector
-  , setTimingModeSelector
-  , timingFunctionSelector
-  , setTimingFunctionSelector
-  , speedSelector
+  , setNormalTextureSelector
+  , setNormalTexture_resizeSelector
   , setSpeedSelector
+  , setTextureSelector
+  , setTexture_resizeSelector
+  , setTimingFunctionSelector
+  , setTimingModeSelector
+  , speedBy_durationSelector
+  , speedSelector
+  , speedTo_durationSelector
+  , stereoPanBy_durationSelector
+  , stereoPanTo_durationSelector
+  , stopSelector
+  , strengthBy_durationSelector
+  , strengthTo_durationSelector
+  , timingFunctionSelector
+  , timingModeSelector
+  , unhideSelector
+  , waitForDurationSelector
+  , waitForDuration_withRangeSelector
+  , warpTo_durationSelector
 
   -- * Enum types
   , SKActionTimingMode(SKActionTimingMode)
@@ -207,15 +208,11 @@ module ObjC.SpriteKit.SKAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -230,202 +227,197 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reversedAction@
 reversedAction :: IsSKAction skAction => skAction -> IO (Id SKAction)
-reversedAction skAction  =
-    sendMsg skAction (mkSelector "reversedAction") (retPtr retVoid) [] >>= retainedObject . castPtr
+reversedAction skAction =
+  sendMessage skAction reversedActionSelector
 
 -- | @+ stereoPanTo:duration:@
 stereoPanTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 stereoPanTo_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "stereoPanTo:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' stereoPanTo_durationSelector v duration
 
 -- | @+ stereoPanBy:duration:@
 stereoPanBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 stereoPanBy_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "stereoPanBy:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' stereoPanBy_durationSelector v duration
 
 -- | @+ changeReverbTo:duration:@
 changeReverbTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeReverbTo_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeReverbTo:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeReverbTo_durationSelector v duration
 
 -- | @+ changeReverbBy:duration:@
 changeReverbBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeReverbBy_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeReverbBy:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeReverbBy_durationSelector v duration
 
 -- | @+ changeObstructionTo:duration:@
 changeObstructionTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeObstructionTo_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeObstructionTo:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeObstructionTo_durationSelector v duration
 
 -- | @+ changeObstructionBy:duration:@
 changeObstructionBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeObstructionBy_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeObstructionBy:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeObstructionBy_durationSelector v duration
 
 -- | @+ changeOcclusionTo:duration:@
 changeOcclusionTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeOcclusionTo_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeOcclusionTo:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeOcclusionTo_durationSelector v duration
 
 -- | @+ changeOcclusionBy:duration:@
 changeOcclusionBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeOcclusionBy_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeOcclusionBy:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeOcclusionBy_durationSelector v duration
 
 -- | @+ warpTo:duration:@
 warpTo_duration :: IsSKWarpGeometry warp => warp -> CDouble -> IO (Id SKAction)
 warpTo_duration warp duration =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr warp $ \raw_warp ->
-      sendClassMsg cls' (mkSelector "warpTo:duration:") (retPtr retVoid) [argPtr (castPtr raw_warp :: Ptr ()), argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' warpTo_durationSelector (toSKWarpGeometry warp) duration
 
 -- | @+ animateWithWarps:times:@
 animateWithWarps_times :: (IsNSArray warps, IsNSArray times) => warps -> times -> IO (Id SKAction)
 animateWithWarps_times warps times =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr warps $ \raw_warps ->
-      withObjCPtr times $ \raw_times ->
-        sendClassMsg cls' (mkSelector "animateWithWarps:times:") (retPtr retVoid) [argPtr (castPtr raw_warps :: Ptr ()), argPtr (castPtr raw_times :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' animateWithWarps_timesSelector (toNSArray warps) (toNSArray times)
 
 -- | @+ animateWithWarps:times:restore:@
 animateWithWarps_times_restore :: (IsNSArray warps, IsNSArray times) => warps -> times -> Bool -> IO (Id SKAction)
 animateWithWarps_times_restore warps times restore =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr warps $ \raw_warps ->
-      withObjCPtr times $ \raw_times ->
-        sendClassMsg cls' (mkSelector "animateWithWarps:times:restore:") (retPtr retVoid) [argPtr (castPtr raw_warps :: Ptr ()), argPtr (castPtr raw_times :: Ptr ()), argCULong (if restore then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' animateWithWarps_times_restoreSelector (toNSArray warps) (toNSArray times) restore
 
 -- | @+ changeVolumeTo:duration:@
 changeVolumeTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeVolumeTo_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeVolumeTo:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeVolumeTo_durationSelector v duration
 
 -- | @+ changeVolumeBy:duration:@
 changeVolumeBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeVolumeBy_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeVolumeBy:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeVolumeBy_durationSelector v duration
 
 -- | @+ play@
 play :: IO (Id SKAction)
 play  =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "play") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' playSelector
 
 -- | @+ pause@
 pause :: IO (Id SKAction)
 pause  =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "pause") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pauseSelector
 
 -- | @+ stop@
 stop :: IO (Id SKAction)
 stop  =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "stop") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' stopSelector
 
 -- | @+ changePlaybackRateTo:duration:@
 changePlaybackRateTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changePlaybackRateTo_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changePlaybackRateTo:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changePlaybackRateTo_durationSelector v duration
 
 -- | @+ changePlaybackRateBy:duration:@
 changePlaybackRateBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changePlaybackRateBy_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changePlaybackRateBy:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changePlaybackRateBy_durationSelector v duration
 
 -- | @+ changeChargeTo:duration:@
 changeChargeTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeChargeTo_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeChargeTo:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeChargeTo_durationSelector v duration
 
 -- | @+ changeChargeBy:duration:@
 changeChargeBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeChargeBy_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeChargeBy:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeChargeBy_durationSelector v duration
 
 -- | @+ changeMassTo:duration:@
 changeMassTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeMassTo_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeMassTo:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeMassTo_durationSelector v duration
 
 -- | @+ changeMassBy:duration:@
 changeMassBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 changeMassBy_duration v duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "changeMassBy:duration:") (retPtr retVoid) [argCFloat v, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' changeMassBy_durationSelector v duration
 
 -- | @+ applyTorque:duration:@
 applyTorque_duration :: CDouble -> CDouble -> IO (Id SKAction)
 applyTorque_duration torque duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "applyTorque:duration:") (retPtr retVoid) [argCDouble torque, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' applyTorque_durationSelector torque duration
 
 -- | @+ applyAngularImpulse:duration:@
 applyAngularImpulse_duration :: CDouble -> CDouble -> IO (Id SKAction)
 applyAngularImpulse_duration impulse duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "applyAngularImpulse:duration:") (retPtr retVoid) [argCDouble impulse, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' applyAngularImpulse_durationSelector impulse duration
 
 -- | @+ moveByX:y:duration:@
 moveByX_y_duration :: CDouble -> CDouble -> CDouble -> IO (Id SKAction)
 moveByX_y_duration deltaX deltaY duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "moveByX:y:duration:") (retPtr retVoid) [argCDouble deltaX, argCDouble deltaY, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' moveByX_y_durationSelector deltaX deltaY duration
 
 -- | @+ moveToX:duration:@
 moveToX_duration :: CDouble -> CDouble -> IO (Id SKAction)
 moveToX_duration x duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "moveToX:duration:") (retPtr retVoid) [argCDouble x, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' moveToX_durationSelector x duration
 
 -- | @+ moveToY:duration:@
 moveToY_duration :: CDouble -> CDouble -> IO (Id SKAction)
 moveToY_duration y duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "moveToY:duration:") (retPtr retVoid) [argCDouble y, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' moveToY_durationSelector y duration
 
 -- | Creates an action that rotates the node by a relative value
 --
@@ -438,7 +430,7 @@ rotateByAngle_duration :: CDouble -> CDouble -> IO (Id SKAction)
 rotateByAngle_duration radians duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "rotateByAngle:duration:") (retPtr retVoid) [argCDouble radians, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateByAngle_durationSelector radians duration
 
 -- | Creates an action that rotates the node counterclockwise to an absolute angle
 --
@@ -451,7 +443,7 @@ rotateToAngle_duration :: CDouble -> CDouble -> IO (Id SKAction)
 rotateToAngle_duration radians duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "rotateToAngle:duration:") (retPtr retVoid) [argCDouble radians, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateToAngle_durationSelector radians duration
 
 -- | Creates an action that rotates the node to an absolute value
 --
@@ -466,7 +458,7 @@ rotateToAngle_duration_shortestUnitArc :: CDouble -> CDouble -> Bool -> IO (Id S
 rotateToAngle_duration_shortestUnitArc radians duration shortestUnitArc =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "rotateToAngle:duration:shortestUnitArc:") (retPtr retVoid) [argCDouble radians, argCDouble duration, argCULong (if shortestUnitArc then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateToAngle_duration_shortestUnitArcSelector radians duration shortestUnitArc
 
 -- | Creates an action that adjusts the size of a sprite
 --
@@ -481,7 +473,7 @@ resizeByWidth_height_duration :: CDouble -> CDouble -> CDouble -> IO (Id SKActio
 resizeByWidth_height_duration width height duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "resizeByWidth:height:duration:") (retPtr retVoid) [argCDouble width, argCDouble height, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' resizeByWidth_height_durationSelector width height duration
 
 -- | Creates an action that changes the width and height of a sprite to a new absolute value
 --
@@ -496,21 +488,21 @@ resizeToWidth_height_duration :: CDouble -> CDouble -> CDouble -> IO (Id SKActio
 resizeToWidth_height_duration width height duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "resizeToWidth:height:duration:") (retPtr retVoid) [argCDouble width, argCDouble height, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' resizeToWidth_height_durationSelector width height duration
 
 -- | @+ resizeToWidth:duration:@
 resizeToWidth_duration :: CDouble -> CDouble -> IO (Id SKAction)
 resizeToWidth_duration width duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "resizeToWidth:duration:") (retPtr retVoid) [argCDouble width, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' resizeToWidth_durationSelector width duration
 
 -- | @+ resizeToHeight:duration:@
 resizeToHeight_duration :: CDouble -> CDouble -> IO (Id SKAction)
 resizeToHeight_duration height duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "resizeToHeight:duration:") (retPtr retVoid) [argCDouble height, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' resizeToHeight_durationSelector height duration
 
 -- | Creates an action that changes the x and y scale values of a node by a relative value
 --
@@ -523,14 +515,14 @@ scaleBy_duration :: CDouble -> CDouble -> IO (Id SKAction)
 scaleBy_duration scale duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "scaleBy:duration:") (retPtr retVoid) [argCDouble scale, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleBy_durationSelector scale duration
 
 -- | @+ scaleXBy:y:duration:@
 scaleXBy_y_duration :: CDouble -> CDouble -> CDouble -> IO (Id SKAction)
 scaleXBy_y_duration xScale yScale duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "scaleXBy:y:duration:") (retPtr retVoid) [argCDouble xScale, argCDouble yScale, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleXBy_y_durationSelector xScale yScale duration
 
 -- | Creates an action that changes the x and y scale values of a node by a relative value
 --
@@ -543,28 +535,28 @@ scaleTo_duration :: CDouble -> CDouble -> IO (Id SKAction)
 scaleTo_duration scale duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "scaleTo:duration:") (retPtr retVoid) [argCDouble scale, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleTo_durationSelector scale duration
 
 -- | @+ scaleXTo:y:duration:@
 scaleXTo_y_duration :: CDouble -> CDouble -> CDouble -> IO (Id SKAction)
 scaleXTo_y_duration xScale yScale duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "scaleXTo:y:duration:") (retPtr retVoid) [argCDouble xScale, argCDouble yScale, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleXTo_y_durationSelector xScale yScale duration
 
 -- | @+ scaleXTo:duration:@
 scaleXTo_duration :: CDouble -> CDouble -> IO (Id SKAction)
 scaleXTo_duration scale duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "scaleXTo:duration:") (retPtr retVoid) [argCDouble scale, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleXTo_durationSelector scale duration
 
 -- | @+ scaleYTo:duration:@
 scaleYTo_duration :: CDouble -> CDouble -> IO (Id SKAction)
 scaleYTo_duration scale duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "scaleYTo:duration:") (retPtr retVoid) [argCDouble scale, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleYTo_durationSelector scale duration
 
 -- | Creates an action that runs a collection of actions sequentially
 --
@@ -579,8 +571,7 @@ sequence_ :: IsNSArray actions => actions -> IO (Id SKAction)
 sequence_ actions =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr actions $ \raw_actions ->
-      sendClassMsg cls' (mkSelector "sequence:") (retPtr retVoid) [argPtr (castPtr raw_actions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sequenceSelector (toNSArray actions)
 
 -- | Creates an action that runs a collection of actions concurrently
 --
@@ -593,8 +584,7 @@ group :: IsNSArray actions => actions -> IO (Id SKAction)
 group actions =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr actions $ \raw_actions ->
-      sendClassMsg cls' (mkSelector "group:") (retPtr retVoid) [argPtr (castPtr raw_actions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' groupSelector (toNSArray actions)
 
 -- | Creates an action that repeats another action a specified number of times
 --
@@ -607,8 +597,7 @@ repeatAction_count :: IsSKAction action => action -> CULong -> IO (Id SKAction)
 repeatAction_count action count =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr action $ \raw_action ->
-      sendClassMsg cls' (mkSelector "repeatAction:count:") (retPtr retVoid) [argPtr (castPtr raw_action :: Ptr ()), argCULong count] >>= retainedObject . castPtr
+    sendClassMessage cls' repeatAction_countSelector (toSKAction action) count
 
 -- | Creates an action that repeats forever
 --
@@ -619,8 +608,7 @@ repeatActionForever :: IsSKAction action => action -> IO (Id SKAction)
 repeatActionForever action =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr action $ \raw_action ->
-      sendClassMsg cls' (mkSelector "repeatActionForever:") (retPtr retVoid) [argPtr (castPtr raw_action :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' repeatActionForeverSelector (toSKAction action)
 
 -- | Creates an action that changes the alpha value of the node to 1.0
 --
@@ -631,7 +619,7 @@ fadeInWithDuration :: CDouble -> IO (Id SKAction)
 fadeInWithDuration duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "fadeInWithDuration:") (retPtr retVoid) [argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' fadeInWithDurationSelector duration
 
 -- | Creates an action that changes the alpha value of the node to 0.0
 --
@@ -642,7 +630,7 @@ fadeOutWithDuration :: CDouble -> IO (Id SKAction)
 fadeOutWithDuration duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "fadeOutWithDuration:") (retPtr retVoid) [argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' fadeOutWithDurationSelector duration
 
 -- | Creates an action that adjusts the alpha value of a node by a relative value
 --
@@ -655,7 +643,7 @@ fadeAlphaBy_duration :: CDouble -> CDouble -> IO (Id SKAction)
 fadeAlphaBy_duration factor duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "fadeAlphaBy:duration:") (retPtr retVoid) [argCDouble factor, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' fadeAlphaBy_durationSelector factor duration
 
 -- | Creates an action that adjusts the alpha value of a node to a new value
 --
@@ -668,7 +656,7 @@ fadeAlphaTo_duration :: CDouble -> CDouble -> IO (Id SKAction)
 fadeAlphaTo_duration alpha duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "fadeAlphaTo:duration:") (retPtr retVoid) [argCDouble alpha, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' fadeAlphaTo_durationSelector alpha duration
 
 -- | Creates an action that hides a node
 --
@@ -677,7 +665,7 @@ hide :: IO (Id SKAction)
 hide  =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "hide") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hideSelector
 
 -- | Creates an action that unhides a node
 --
@@ -686,7 +674,7 @@ unhide :: IO (Id SKAction)
 unhide  =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "unhide") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' unhideSelector
 
 -- | Creates an action that changes a sprite’s texture
 --
@@ -697,16 +685,14 @@ setTexture :: IsSKTexture texture => texture -> IO (Id SKAction)
 setTexture texture =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr texture $ \raw_texture ->
-      sendClassMsg cls' (mkSelector "setTexture:") (retPtr retVoid) [argPtr (castPtr raw_texture :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' setTextureSelector (toSKTexture texture)
 
 -- | @+ setNormalTexture:@
 setNormalTexture :: IsSKTexture texture => texture -> IO (Id SKAction)
 setNormalTexture texture =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr texture $ \raw_texture ->
-      sendClassMsg cls' (mkSelector "setNormalTexture:") (retPtr retVoid) [argPtr (castPtr raw_texture :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' setNormalTextureSelector (toSKTexture texture)
 
 -- | Creates an action that changes a sprite’s texture, possibly resizing the sprite
 --
@@ -719,16 +705,14 @@ setTexture_resize :: IsSKTexture texture => texture -> Bool -> IO (Id SKAction)
 setTexture_resize texture resize =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr texture $ \raw_texture ->
-      sendClassMsg cls' (mkSelector "setTexture:resize:") (retPtr retVoid) [argPtr (castPtr raw_texture :: Ptr ()), argCULong (if resize then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' setTexture_resizeSelector (toSKTexture texture) resize
 
 -- | @+ setNormalTexture:resize:@
 setNormalTexture_resize :: IsSKTexture texture => texture -> Bool -> IO (Id SKAction)
 setNormalTexture_resize texture resize =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr texture $ \raw_texture ->
-      sendClassMsg cls' (mkSelector "setNormalTexture:resize:") (retPtr retVoid) [argPtr (castPtr raw_texture :: Ptr ()), argCULong (if resize then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' setNormalTexture_resizeSelector (toSKTexture texture) resize
 
 -- | Creates an action that animates changes to a sprite’s texture
 --
@@ -741,16 +725,14 @@ animateWithTextures_timePerFrame :: IsNSArray textures => textures -> CDouble ->
 animateWithTextures_timePerFrame textures sec =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr textures $ \raw_textures ->
-      sendClassMsg cls' (mkSelector "animateWithTextures:timePerFrame:") (retPtr retVoid) [argPtr (castPtr raw_textures :: Ptr ()), argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' animateWithTextures_timePerFrameSelector (toNSArray textures) sec
 
 -- | @+ animateWithNormalTextures:timePerFrame:@
 animateWithNormalTextures_timePerFrame :: IsNSArray textures => textures -> CDouble -> IO (Id SKAction)
 animateWithNormalTextures_timePerFrame textures sec =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr textures $ \raw_textures ->
-      sendClassMsg cls' (mkSelector "animateWithNormalTextures:timePerFrame:") (retPtr retVoid) [argPtr (castPtr raw_textures :: Ptr ()), argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' animateWithNormalTextures_timePerFrameSelector (toNSArray textures) sec
 
 -- | Creates an action that animates changes to a sprite’s texture
 --
@@ -767,16 +749,14 @@ animateWithTextures_timePerFrame_resize_restore :: IsNSArray textures => texture
 animateWithTextures_timePerFrame_resize_restore textures sec resize restore =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr textures $ \raw_textures ->
-      sendClassMsg cls' (mkSelector "animateWithTextures:timePerFrame:resize:restore:") (retPtr retVoid) [argPtr (castPtr raw_textures :: Ptr ()), argCDouble sec, argCULong (if resize then 1 else 0), argCULong (if restore then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' animateWithTextures_timePerFrame_resize_restoreSelector (toNSArray textures) sec resize restore
 
 -- | @+ animateWithNormalTextures:timePerFrame:resize:restore:@
 animateWithNormalTextures_timePerFrame_resize_restore :: IsNSArray textures => textures -> CDouble -> Bool -> Bool -> IO (Id SKAction)
 animateWithNormalTextures_timePerFrame_resize_restore textures sec resize restore =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr textures $ \raw_textures ->
-      sendClassMsg cls' (mkSelector "animateWithNormalTextures:timePerFrame:resize:restore:") (retPtr retVoid) [argPtr (castPtr raw_textures :: Ptr ()), argCDouble sec, argCULong (if resize then 1 else 0), argCULong (if restore then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' animateWithNormalTextures_timePerFrame_resize_restoreSelector (toNSArray textures) sec resize restore
 
 -- | Creates an action that plays a sound
 --
@@ -791,8 +771,7 @@ playSoundFileNamed_waitForCompletion :: IsNSString soundFile => soundFile -> Boo
 playSoundFileNamed_waitForCompletion soundFile wait =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr soundFile $ \raw_soundFile ->
-      sendClassMsg cls' (mkSelector "playSoundFileNamed:waitForCompletion:") (retPtr retVoid) [argPtr (castPtr raw_soundFile :: Ptr ()), argCULong (if wait then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' playSoundFileNamed_waitForCompletionSelector (toNSString soundFile) wait
 
 -- | Creates an animation that animates a sprite’s color and blend factor
 --
@@ -807,15 +786,14 @@ colorizeWithColor_colorBlendFactor_duration :: IsNSColor color => color -> CDoub
 colorizeWithColor_colorBlendFactor_duration color colorBlendFactor duration =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr color $ \raw_color ->
-      sendClassMsg cls' (mkSelector "colorizeWithColor:colorBlendFactor:duration:") (retPtr retVoid) [argPtr (castPtr raw_color :: Ptr ()), argCDouble colorBlendFactor, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' colorizeWithColor_colorBlendFactor_durationSelector (toNSColor color) colorBlendFactor duration
 
 -- | @+ colorizeWithColorBlendFactor:duration:@
 colorizeWithColorBlendFactor_duration :: CDouble -> CDouble -> IO (Id SKAction)
 colorizeWithColorBlendFactor_duration colorBlendFactor sec =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "colorizeWithColorBlendFactor:duration:") (retPtr retVoid) [argCDouble colorBlendFactor, argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' colorizeWithColorBlendFactor_durationSelector colorBlendFactor sec
 
 -- | Creates an action that sets the falloff of a field
 --
@@ -830,7 +808,7 @@ falloffTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 falloffTo_duration falloff duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "falloffTo:duration:") (retPtr retVoid) [argCFloat falloff, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' falloffTo_durationSelector falloff duration
 
 -- | Creates an action that sets the falloff of a field
 --
@@ -845,7 +823,7 @@ falloffBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 falloffBy_duration falloff duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "falloffBy:duration:") (retPtr retVoid) [argCFloat falloff, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' falloffBy_durationSelector falloff duration
 
 -- | Creates an action that moves the node along a relative path, orienting the node to the path
 --
@@ -858,7 +836,7 @@ followPath_duration :: RawId -> CDouble -> IO (Id SKAction)
 followPath_duration path duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "followPath:duration:") (retPtr retVoid) [argPtr (castPtr (unRawId path) :: Ptr ()), argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' followPath_durationSelector path duration
 
 -- | Creates an action that moves the node along a path
 --
@@ -875,7 +853,7 @@ followPath_asOffset_orientToPath_duration :: RawId -> Bool -> Bool -> CDouble ->
 followPath_asOffset_orientToPath_duration path offset orient duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "followPath:asOffset:orientToPath:duration:") (retPtr retVoid) [argPtr (castPtr (unRawId path) :: Ptr ()), argCULong (if offset then 1 else 0), argCULong (if orient then 1 else 0), argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' followPath_asOffset_orientToPath_durationSelector path offset orient duration
 
 -- | Creates an action that moves the node along a relative path, orienting the node to the path
 --
@@ -888,14 +866,14 @@ followPath_speed :: RawId -> CDouble -> IO (Id SKAction)
 followPath_speed path speed =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "followPath:speed:") (retPtr retVoid) [argPtr (castPtr (unRawId path) :: Ptr ()), argCDouble speed] >>= retainedObject . castPtr
+    sendClassMessage cls' followPath_speedSelector path speed
 
 -- | @+ followPath:asOffset:orientToPath:speed:@
 followPath_asOffset_orientToPath_speed :: RawId -> Bool -> Bool -> CDouble -> IO (Id SKAction)
 followPath_asOffset_orientToPath_speed path offset orient speed =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "followPath:asOffset:orientToPath:speed:") (retPtr retVoid) [argPtr (castPtr (unRawId path) :: Ptr ()), argCULong (if offset then 1 else 0), argCULong (if orient then 1 else 0), argCDouble speed] >>= retainedObject . castPtr
+    sendClassMessage cls' followPath_asOffset_orientToPath_speedSelector path offset orient speed
 
 -- | Creates an action that changes how fast the node executes actions by a relative value
 --
@@ -908,7 +886,7 @@ speedBy_duration :: CDouble -> CDouble -> IO (Id SKAction)
 speedBy_duration speed duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "speedBy:duration:") (retPtr retVoid) [argCDouble speed, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' speedBy_durationSelector speed duration
 
 -- | Creates an action that changes how fast the node executes actions
 --
@@ -921,7 +899,7 @@ speedTo_duration :: CDouble -> CDouble -> IO (Id SKAction)
 speedTo_duration speed duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "speedTo:duration:") (retPtr retVoid) [argCDouble speed, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' speedTo_durationSelector speed duration
 
 -- | Creates an action that performs an inverse kinematic reach. This action must be run on a descendent of the rootNode for animation to occur. Running this action on the rootNode itself will not cause any animation to occur.
 --
@@ -936,9 +914,7 @@ reachToNode_rootNode_duration :: (IsSKNode node, IsSKNode root) => node -> root 
 reachToNode_rootNode_duration node root sec =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr node $ \raw_node ->
-      withObjCPtr root $ \raw_root ->
-        sendClassMsg cls' (mkSelector "reachToNode:rootNode:duration:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ()), argPtr (castPtr raw_root :: Ptr ()), argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' reachToNode_rootNode_durationSelector (toSKNode node) (toSKNode root) sec
 
 -- | Creates an action that performs an inverse kinematic reach. This action must be run on a descendent of the rootNode for animation to occur. Running this action on the rootNode itself will not cause any animation to occur.
 --
@@ -953,9 +929,7 @@ reachToNode_rootNode_velocity :: (IsSKNode node, IsSKNode root) => node -> root 
 reachToNode_rootNode_velocity node root velocity =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr node $ \raw_node ->
-      withObjCPtr root $ \raw_root ->
-        sendClassMsg cls' (mkSelector "reachToNode:rootNode:velocity:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ()), argPtr (castPtr raw_root :: Ptr ()), argCDouble velocity] >>= retainedObject . castPtr
+    sendClassMessage cls' reachToNode_rootNode_velocitySelector (toSKNode node) (toSKNode root) velocity
 
 -- | Creates an action that sets the strength of a field
 --
@@ -970,7 +944,7 @@ strengthTo_duration :: CFloat -> CDouble -> IO (Id SKAction)
 strengthTo_duration strength duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "strengthTo:duration:") (retPtr retVoid) [argCFloat strength, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' strengthTo_durationSelector strength duration
 
 -- | Creates an action that sets the strength of a field
 --
@@ -985,7 +959,7 @@ strengthBy_duration :: CFloat -> CDouble -> IO (Id SKAction)
 strengthBy_duration strength duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "strengthBy:duration:") (retPtr retVoid) [argCFloat strength, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' strengthBy_durationSelector strength duration
 
 -- | Creates an action that idles for a specified period of time
 --
@@ -996,7 +970,7 @@ waitForDuration :: CDouble -> IO (Id SKAction)
 waitForDuration duration =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "waitForDuration:") (retPtr retVoid) [argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' waitForDurationSelector duration
 
 -- | Creates an action that idles for a randomized period of time
 --
@@ -1009,7 +983,7 @@ waitForDuration_withRange :: CDouble -> CDouble -> IO (Id SKAction)
 waitForDuration_withRange duration durationRange =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "waitForDuration:withRange:") (retPtr retVoid) [argCDouble duration, argCDouble durationRange] >>= retainedObject . castPtr
+    sendClassMessage cls' waitForDuration_withRangeSelector duration durationRange
 
 -- | Creates an action that removes the node from its parent
 --
@@ -1018,7 +992,7 @@ removeFromParent :: IO (Id SKAction)
 removeFromParent  =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "removeFromParent") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' removeFromParentSelector
 
 -- | Creates an action that calls a method on an object
 --
@@ -1027,11 +1001,11 @@ removeFromParent  =
 -- @target@ — The target object
 --
 -- ObjC selector: @+ performSelector:onTarget:@
-performSelector_onTarget :: Selector -> RawId -> IO (Id SKAction)
+performSelector_onTarget :: Sel -> RawId -> IO (Id SKAction)
 performSelector_onTarget selector target =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "performSelector:onTarget:") (retPtr retVoid) [argPtr (unSelector selector), argPtr (castPtr (unRawId target) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' performSelector_onTargetSelector selector target
 
 -- | Creates an action that executes a block
 --
@@ -1042,7 +1016,7 @@ runBlock :: Ptr () -> IO (Id SKAction)
 runBlock block =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "runBlock:") (retPtr retVoid) [argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' runBlockSelector block
 
 -- | Creates an action that executes a block
 --
@@ -1055,8 +1029,7 @@ runBlock_queue :: IsNSObject queue => Ptr () -> queue -> IO (Id SKAction)
 runBlock_queue block queue =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr queue $ \raw_queue ->
-      sendClassMsg cls' (mkSelector "runBlock:queue:") (retPtr retVoid) [argPtr (castPtr block :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' runBlock_queueSelector block (toNSObject queue)
 
 -- | Creates an action that runs an action on a named child object
 --
@@ -1071,9 +1044,7 @@ runAction_onChildWithName :: (IsSKAction action, IsNSString name) => action -> n
 runAction_onChildWithName action name =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr action $ \raw_action ->
-      withObjCPtr name $ \raw_name ->
-        sendClassMsg cls' (mkSelector "runAction:onChildWithName:") (retPtr retVoid) [argPtr (castPtr raw_action :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' runAction_onChildWithNameSelector (toSKAction action) (toNSString name)
 
 -- | Creates an action that executes a block over a duration
 --
@@ -1086,7 +1057,7 @@ customActionWithDuration_actionBlock :: CDouble -> Ptr () -> IO (Id SKAction)
 customActionWithDuration_actionBlock duration block =
   do
     cls' <- getRequiredClass "SKAction"
-    sendClassMsg cls' (mkSelector "customActionWithDuration:actionBlock:") (retPtr retVoid) [argCDouble duration, argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' customActionWithDuration_actionBlockSelector duration block
 
 -- | Creates an action of the given name from an action file.
 --
@@ -1097,8 +1068,7 @@ actionNamed :: IsNSString name => name -> IO (Id SKAction)
 actionNamed name =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "actionNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' actionNamedSelector (toNSString name)
 
 -- | Creates an action of the given name from an action file with a new duration.
 --
@@ -1111,8 +1081,7 @@ actionNamed_duration :: IsNSString name => name -> CDouble -> IO (Id SKAction)
 actionNamed_duration name duration =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "actionNamed:duration:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' actionNamed_durationSelector (toNSString name) duration
 
 -- | Creates an action of the given name from an action file.
 --
@@ -1125,9 +1094,7 @@ actionNamed_fromURL :: (IsNSString name, IsNSURL url) => name -> url -> IO (Id S
 actionNamed_fromURL name url =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr url $ \raw_url ->
-        sendClassMsg cls' (mkSelector "actionNamed:fromURL:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' actionNamed_fromURLSelector (toNSString name) (toNSURL url)
 
 -- | Creates an action of the given name from an action file with a new duration.
 --
@@ -1142,23 +1109,21 @@ actionNamed_fromURL_duration :: (IsNSString name, IsNSURL url) => name -> url ->
 actionNamed_fromURL_duration name url duration =
   do
     cls' <- getRequiredClass "SKAction"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr url $ \raw_url ->
-        sendClassMsg cls' (mkSelector "actionNamed:fromURL:duration:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_url :: Ptr ()), argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' actionNamed_fromURL_durationSelector (toNSString name) (toNSURL url) duration
 
 -- | The duration required to complete an action, in seconds.
 --
 -- ObjC selector: @- duration@
 duration :: IsSKAction skAction => skAction -> IO CDouble
-duration skAction  =
-    sendMsg skAction (mkSelector "duration") retCDouble []
+duration skAction =
+  sendMessage skAction durationSelector
 
 -- | The duration required to complete an action, in seconds.
 --
 -- ObjC selector: @- setDuration:@
 setDuration :: IsSKAction skAction => skAction -> CDouble -> IO ()
-setDuration skAction  value =
-    sendMsg skAction (mkSelector "setDuration:") retVoid [argCDouble value]
+setDuration skAction value =
+  sendMessage skAction setDurationSelector value
 
 -- | The timing mode used to execute an action
 --
@@ -1166,8 +1131,8 @@ setDuration skAction  value =
 --
 -- ObjC selector: @- timingMode@
 timingMode :: IsSKAction skAction => skAction -> IO SKActionTimingMode
-timingMode skAction  =
-    fmap (coerce :: CLong -> SKActionTimingMode) $ sendMsg skAction (mkSelector "timingMode") retCLong []
+timingMode skAction =
+  sendMessage skAction timingModeSelector
 
 -- | The timing mode used to execute an action
 --
@@ -1175,8 +1140,8 @@ timingMode skAction  =
 --
 -- ObjC selector: @- setTimingMode:@
 setTimingMode :: IsSKAction skAction => skAction -> SKActionTimingMode -> IO ()
-setTimingMode skAction  value =
-    sendMsg skAction (mkSelector "setTimingMode:") retVoid [argCLong (coerce value)]
+setTimingMode skAction value =
+  sendMessage skAction setTimingModeSelector value
 
 -- | When set, prodives a custom timing via a block. Applies after the 'timingMode' property is taken into account, defaults to nil
 --
@@ -1184,8 +1149,8 @@ setTimingMode skAction  value =
 --
 -- ObjC selector: @- timingFunction@
 timingFunction :: IsSKAction skAction => skAction -> IO (Ptr ())
-timingFunction skAction  =
-    fmap castPtr $ sendMsg skAction (mkSelector "timingFunction") (retPtr retVoid) []
+timingFunction skAction =
+  sendMessage skAction timingFunctionSelector
 
 -- | When set, prodives a custom timing via a block. Applies after the 'timingMode' property is taken into account, defaults to nil
 --
@@ -1193,400 +1158,400 @@ timingFunction skAction  =
 --
 -- ObjC selector: @- setTimingFunction:@
 setTimingFunction :: IsSKAction skAction => skAction -> Ptr () -> IO ()
-setTimingFunction skAction  value =
-    sendMsg skAction (mkSelector "setTimingFunction:") retVoid [argPtr (castPtr value :: Ptr ())]
+setTimingFunction skAction value =
+  sendMessage skAction setTimingFunctionSelector value
 
 -- | A speed factor that modifies how fast an action runs. Default value is 1.0
 --
 -- ObjC selector: @- speed@
 speed :: IsSKAction skAction => skAction -> IO CDouble
-speed skAction  =
-    sendMsg skAction (mkSelector "speed") retCDouble []
+speed skAction =
+  sendMessage skAction speedSelector
 
 -- | A speed factor that modifies how fast an action runs. Default value is 1.0
 --
 -- ObjC selector: @- setSpeed:@
 setSpeed :: IsSKAction skAction => skAction -> CDouble -> IO ()
-setSpeed skAction  value =
-    sendMsg skAction (mkSelector "setSpeed:") retVoid [argCDouble value]
+setSpeed skAction value =
+  sendMessage skAction setSpeedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reversedAction@
-reversedActionSelector :: Selector
+reversedActionSelector :: Selector '[] (Id SKAction)
 reversedActionSelector = mkSelector "reversedAction"
 
 -- | @Selector@ for @stereoPanTo:duration:@
-stereoPanTo_durationSelector :: Selector
+stereoPanTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 stereoPanTo_durationSelector = mkSelector "stereoPanTo:duration:"
 
 -- | @Selector@ for @stereoPanBy:duration:@
-stereoPanBy_durationSelector :: Selector
+stereoPanBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 stereoPanBy_durationSelector = mkSelector "stereoPanBy:duration:"
 
 -- | @Selector@ for @changeReverbTo:duration:@
-changeReverbTo_durationSelector :: Selector
+changeReverbTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeReverbTo_durationSelector = mkSelector "changeReverbTo:duration:"
 
 -- | @Selector@ for @changeReverbBy:duration:@
-changeReverbBy_durationSelector :: Selector
+changeReverbBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeReverbBy_durationSelector = mkSelector "changeReverbBy:duration:"
 
 -- | @Selector@ for @changeObstructionTo:duration:@
-changeObstructionTo_durationSelector :: Selector
+changeObstructionTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeObstructionTo_durationSelector = mkSelector "changeObstructionTo:duration:"
 
 -- | @Selector@ for @changeObstructionBy:duration:@
-changeObstructionBy_durationSelector :: Selector
+changeObstructionBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeObstructionBy_durationSelector = mkSelector "changeObstructionBy:duration:"
 
 -- | @Selector@ for @changeOcclusionTo:duration:@
-changeOcclusionTo_durationSelector :: Selector
+changeOcclusionTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeOcclusionTo_durationSelector = mkSelector "changeOcclusionTo:duration:"
 
 -- | @Selector@ for @changeOcclusionBy:duration:@
-changeOcclusionBy_durationSelector :: Selector
+changeOcclusionBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeOcclusionBy_durationSelector = mkSelector "changeOcclusionBy:duration:"
 
 -- | @Selector@ for @warpTo:duration:@
-warpTo_durationSelector :: Selector
+warpTo_durationSelector :: Selector '[Id SKWarpGeometry, CDouble] (Id SKAction)
 warpTo_durationSelector = mkSelector "warpTo:duration:"
 
 -- | @Selector@ for @animateWithWarps:times:@
-animateWithWarps_timesSelector :: Selector
+animateWithWarps_timesSelector :: Selector '[Id NSArray, Id NSArray] (Id SKAction)
 animateWithWarps_timesSelector = mkSelector "animateWithWarps:times:"
 
 -- | @Selector@ for @animateWithWarps:times:restore:@
-animateWithWarps_times_restoreSelector :: Selector
+animateWithWarps_times_restoreSelector :: Selector '[Id NSArray, Id NSArray, Bool] (Id SKAction)
 animateWithWarps_times_restoreSelector = mkSelector "animateWithWarps:times:restore:"
 
 -- | @Selector@ for @changeVolumeTo:duration:@
-changeVolumeTo_durationSelector :: Selector
+changeVolumeTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeVolumeTo_durationSelector = mkSelector "changeVolumeTo:duration:"
 
 -- | @Selector@ for @changeVolumeBy:duration:@
-changeVolumeBy_durationSelector :: Selector
+changeVolumeBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeVolumeBy_durationSelector = mkSelector "changeVolumeBy:duration:"
 
 -- | @Selector@ for @play@
-playSelector :: Selector
+playSelector :: Selector '[] (Id SKAction)
 playSelector = mkSelector "play"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] (Id SKAction)
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] (Id SKAction)
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @changePlaybackRateTo:duration:@
-changePlaybackRateTo_durationSelector :: Selector
+changePlaybackRateTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changePlaybackRateTo_durationSelector = mkSelector "changePlaybackRateTo:duration:"
 
 -- | @Selector@ for @changePlaybackRateBy:duration:@
-changePlaybackRateBy_durationSelector :: Selector
+changePlaybackRateBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changePlaybackRateBy_durationSelector = mkSelector "changePlaybackRateBy:duration:"
 
 -- | @Selector@ for @changeChargeTo:duration:@
-changeChargeTo_durationSelector :: Selector
+changeChargeTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeChargeTo_durationSelector = mkSelector "changeChargeTo:duration:"
 
 -- | @Selector@ for @changeChargeBy:duration:@
-changeChargeBy_durationSelector :: Selector
+changeChargeBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeChargeBy_durationSelector = mkSelector "changeChargeBy:duration:"
 
 -- | @Selector@ for @changeMassTo:duration:@
-changeMassTo_durationSelector :: Selector
+changeMassTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeMassTo_durationSelector = mkSelector "changeMassTo:duration:"
 
 -- | @Selector@ for @changeMassBy:duration:@
-changeMassBy_durationSelector :: Selector
+changeMassBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 changeMassBy_durationSelector = mkSelector "changeMassBy:duration:"
 
 -- | @Selector@ for @applyTorque:duration:@
-applyTorque_durationSelector :: Selector
+applyTorque_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 applyTorque_durationSelector = mkSelector "applyTorque:duration:"
 
 -- | @Selector@ for @applyAngularImpulse:duration:@
-applyAngularImpulse_durationSelector :: Selector
+applyAngularImpulse_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 applyAngularImpulse_durationSelector = mkSelector "applyAngularImpulse:duration:"
 
 -- | @Selector@ for @moveByX:y:duration:@
-moveByX_y_durationSelector :: Selector
+moveByX_y_durationSelector :: Selector '[CDouble, CDouble, CDouble] (Id SKAction)
 moveByX_y_durationSelector = mkSelector "moveByX:y:duration:"
 
 -- | @Selector@ for @moveToX:duration:@
-moveToX_durationSelector :: Selector
+moveToX_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 moveToX_durationSelector = mkSelector "moveToX:duration:"
 
 -- | @Selector@ for @moveToY:duration:@
-moveToY_durationSelector :: Selector
+moveToY_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 moveToY_durationSelector = mkSelector "moveToY:duration:"
 
 -- | @Selector@ for @rotateByAngle:duration:@
-rotateByAngle_durationSelector :: Selector
+rotateByAngle_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 rotateByAngle_durationSelector = mkSelector "rotateByAngle:duration:"
 
 -- | @Selector@ for @rotateToAngle:duration:@
-rotateToAngle_durationSelector :: Selector
+rotateToAngle_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 rotateToAngle_durationSelector = mkSelector "rotateToAngle:duration:"
 
 -- | @Selector@ for @rotateToAngle:duration:shortestUnitArc:@
-rotateToAngle_duration_shortestUnitArcSelector :: Selector
+rotateToAngle_duration_shortestUnitArcSelector :: Selector '[CDouble, CDouble, Bool] (Id SKAction)
 rotateToAngle_duration_shortestUnitArcSelector = mkSelector "rotateToAngle:duration:shortestUnitArc:"
 
 -- | @Selector@ for @resizeByWidth:height:duration:@
-resizeByWidth_height_durationSelector :: Selector
+resizeByWidth_height_durationSelector :: Selector '[CDouble, CDouble, CDouble] (Id SKAction)
 resizeByWidth_height_durationSelector = mkSelector "resizeByWidth:height:duration:"
 
 -- | @Selector@ for @resizeToWidth:height:duration:@
-resizeToWidth_height_durationSelector :: Selector
+resizeToWidth_height_durationSelector :: Selector '[CDouble, CDouble, CDouble] (Id SKAction)
 resizeToWidth_height_durationSelector = mkSelector "resizeToWidth:height:duration:"
 
 -- | @Selector@ for @resizeToWidth:duration:@
-resizeToWidth_durationSelector :: Selector
+resizeToWidth_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 resizeToWidth_durationSelector = mkSelector "resizeToWidth:duration:"
 
 -- | @Selector@ for @resizeToHeight:duration:@
-resizeToHeight_durationSelector :: Selector
+resizeToHeight_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 resizeToHeight_durationSelector = mkSelector "resizeToHeight:duration:"
 
 -- | @Selector@ for @scaleBy:duration:@
-scaleBy_durationSelector :: Selector
+scaleBy_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 scaleBy_durationSelector = mkSelector "scaleBy:duration:"
 
 -- | @Selector@ for @scaleXBy:y:duration:@
-scaleXBy_y_durationSelector :: Selector
+scaleXBy_y_durationSelector :: Selector '[CDouble, CDouble, CDouble] (Id SKAction)
 scaleXBy_y_durationSelector = mkSelector "scaleXBy:y:duration:"
 
 -- | @Selector@ for @scaleTo:duration:@
-scaleTo_durationSelector :: Selector
+scaleTo_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 scaleTo_durationSelector = mkSelector "scaleTo:duration:"
 
 -- | @Selector@ for @scaleXTo:y:duration:@
-scaleXTo_y_durationSelector :: Selector
+scaleXTo_y_durationSelector :: Selector '[CDouble, CDouble, CDouble] (Id SKAction)
 scaleXTo_y_durationSelector = mkSelector "scaleXTo:y:duration:"
 
 -- | @Selector@ for @scaleXTo:duration:@
-scaleXTo_durationSelector :: Selector
+scaleXTo_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 scaleXTo_durationSelector = mkSelector "scaleXTo:duration:"
 
 -- | @Selector@ for @scaleYTo:duration:@
-scaleYTo_durationSelector :: Selector
+scaleYTo_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 scaleYTo_durationSelector = mkSelector "scaleYTo:duration:"
 
 -- | @Selector@ for @sequence:@
-sequenceSelector :: Selector
+sequenceSelector :: Selector '[Id NSArray] (Id SKAction)
 sequenceSelector = mkSelector "sequence:"
 
 -- | @Selector@ for @group:@
-groupSelector :: Selector
+groupSelector :: Selector '[Id NSArray] (Id SKAction)
 groupSelector = mkSelector "group:"
 
 -- | @Selector@ for @repeatAction:count:@
-repeatAction_countSelector :: Selector
+repeatAction_countSelector :: Selector '[Id SKAction, CULong] (Id SKAction)
 repeatAction_countSelector = mkSelector "repeatAction:count:"
 
 -- | @Selector@ for @repeatActionForever:@
-repeatActionForeverSelector :: Selector
+repeatActionForeverSelector :: Selector '[Id SKAction] (Id SKAction)
 repeatActionForeverSelector = mkSelector "repeatActionForever:"
 
 -- | @Selector@ for @fadeInWithDuration:@
-fadeInWithDurationSelector :: Selector
+fadeInWithDurationSelector :: Selector '[CDouble] (Id SKAction)
 fadeInWithDurationSelector = mkSelector "fadeInWithDuration:"
 
 -- | @Selector@ for @fadeOutWithDuration:@
-fadeOutWithDurationSelector :: Selector
+fadeOutWithDurationSelector :: Selector '[CDouble] (Id SKAction)
 fadeOutWithDurationSelector = mkSelector "fadeOutWithDuration:"
 
 -- | @Selector@ for @fadeAlphaBy:duration:@
-fadeAlphaBy_durationSelector :: Selector
+fadeAlphaBy_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 fadeAlphaBy_durationSelector = mkSelector "fadeAlphaBy:duration:"
 
 -- | @Selector@ for @fadeAlphaTo:duration:@
-fadeAlphaTo_durationSelector :: Selector
+fadeAlphaTo_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 fadeAlphaTo_durationSelector = mkSelector "fadeAlphaTo:duration:"
 
 -- | @Selector@ for @hide@
-hideSelector :: Selector
+hideSelector :: Selector '[] (Id SKAction)
 hideSelector = mkSelector "hide"
 
 -- | @Selector@ for @unhide@
-unhideSelector :: Selector
+unhideSelector :: Selector '[] (Id SKAction)
 unhideSelector = mkSelector "unhide"
 
 -- | @Selector@ for @setTexture:@
-setTextureSelector :: Selector
+setTextureSelector :: Selector '[Id SKTexture] (Id SKAction)
 setTextureSelector = mkSelector "setTexture:"
 
 -- | @Selector@ for @setNormalTexture:@
-setNormalTextureSelector :: Selector
+setNormalTextureSelector :: Selector '[Id SKTexture] (Id SKAction)
 setNormalTextureSelector = mkSelector "setNormalTexture:"
 
 -- | @Selector@ for @setTexture:resize:@
-setTexture_resizeSelector :: Selector
+setTexture_resizeSelector :: Selector '[Id SKTexture, Bool] (Id SKAction)
 setTexture_resizeSelector = mkSelector "setTexture:resize:"
 
 -- | @Selector@ for @setNormalTexture:resize:@
-setNormalTexture_resizeSelector :: Selector
+setNormalTexture_resizeSelector :: Selector '[Id SKTexture, Bool] (Id SKAction)
 setNormalTexture_resizeSelector = mkSelector "setNormalTexture:resize:"
 
 -- | @Selector@ for @animateWithTextures:timePerFrame:@
-animateWithTextures_timePerFrameSelector :: Selector
+animateWithTextures_timePerFrameSelector :: Selector '[Id NSArray, CDouble] (Id SKAction)
 animateWithTextures_timePerFrameSelector = mkSelector "animateWithTextures:timePerFrame:"
 
 -- | @Selector@ for @animateWithNormalTextures:timePerFrame:@
-animateWithNormalTextures_timePerFrameSelector :: Selector
+animateWithNormalTextures_timePerFrameSelector :: Selector '[Id NSArray, CDouble] (Id SKAction)
 animateWithNormalTextures_timePerFrameSelector = mkSelector "animateWithNormalTextures:timePerFrame:"
 
 -- | @Selector@ for @animateWithTextures:timePerFrame:resize:restore:@
-animateWithTextures_timePerFrame_resize_restoreSelector :: Selector
+animateWithTextures_timePerFrame_resize_restoreSelector :: Selector '[Id NSArray, CDouble, Bool, Bool] (Id SKAction)
 animateWithTextures_timePerFrame_resize_restoreSelector = mkSelector "animateWithTextures:timePerFrame:resize:restore:"
 
 -- | @Selector@ for @animateWithNormalTextures:timePerFrame:resize:restore:@
-animateWithNormalTextures_timePerFrame_resize_restoreSelector :: Selector
+animateWithNormalTextures_timePerFrame_resize_restoreSelector :: Selector '[Id NSArray, CDouble, Bool, Bool] (Id SKAction)
 animateWithNormalTextures_timePerFrame_resize_restoreSelector = mkSelector "animateWithNormalTextures:timePerFrame:resize:restore:"
 
 -- | @Selector@ for @playSoundFileNamed:waitForCompletion:@
-playSoundFileNamed_waitForCompletionSelector :: Selector
+playSoundFileNamed_waitForCompletionSelector :: Selector '[Id NSString, Bool] (Id SKAction)
 playSoundFileNamed_waitForCompletionSelector = mkSelector "playSoundFileNamed:waitForCompletion:"
 
 -- | @Selector@ for @colorizeWithColor:colorBlendFactor:duration:@
-colorizeWithColor_colorBlendFactor_durationSelector :: Selector
+colorizeWithColor_colorBlendFactor_durationSelector :: Selector '[Id NSColor, CDouble, CDouble] (Id SKAction)
 colorizeWithColor_colorBlendFactor_durationSelector = mkSelector "colorizeWithColor:colorBlendFactor:duration:"
 
 -- | @Selector@ for @colorizeWithColorBlendFactor:duration:@
-colorizeWithColorBlendFactor_durationSelector :: Selector
+colorizeWithColorBlendFactor_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 colorizeWithColorBlendFactor_durationSelector = mkSelector "colorizeWithColorBlendFactor:duration:"
 
 -- | @Selector@ for @falloffTo:duration:@
-falloffTo_durationSelector :: Selector
+falloffTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 falloffTo_durationSelector = mkSelector "falloffTo:duration:"
 
 -- | @Selector@ for @falloffBy:duration:@
-falloffBy_durationSelector :: Selector
+falloffBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 falloffBy_durationSelector = mkSelector "falloffBy:duration:"
 
 -- | @Selector@ for @followPath:duration:@
-followPath_durationSelector :: Selector
+followPath_durationSelector :: Selector '[RawId, CDouble] (Id SKAction)
 followPath_durationSelector = mkSelector "followPath:duration:"
 
 -- | @Selector@ for @followPath:asOffset:orientToPath:duration:@
-followPath_asOffset_orientToPath_durationSelector :: Selector
+followPath_asOffset_orientToPath_durationSelector :: Selector '[RawId, Bool, Bool, CDouble] (Id SKAction)
 followPath_asOffset_orientToPath_durationSelector = mkSelector "followPath:asOffset:orientToPath:duration:"
 
 -- | @Selector@ for @followPath:speed:@
-followPath_speedSelector :: Selector
+followPath_speedSelector :: Selector '[RawId, CDouble] (Id SKAction)
 followPath_speedSelector = mkSelector "followPath:speed:"
 
 -- | @Selector@ for @followPath:asOffset:orientToPath:speed:@
-followPath_asOffset_orientToPath_speedSelector :: Selector
+followPath_asOffset_orientToPath_speedSelector :: Selector '[RawId, Bool, Bool, CDouble] (Id SKAction)
 followPath_asOffset_orientToPath_speedSelector = mkSelector "followPath:asOffset:orientToPath:speed:"
 
 -- | @Selector@ for @speedBy:duration:@
-speedBy_durationSelector :: Selector
+speedBy_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 speedBy_durationSelector = mkSelector "speedBy:duration:"
 
 -- | @Selector@ for @speedTo:duration:@
-speedTo_durationSelector :: Selector
+speedTo_durationSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 speedTo_durationSelector = mkSelector "speedTo:duration:"
 
 -- | @Selector@ for @reachToNode:rootNode:duration:@
-reachToNode_rootNode_durationSelector :: Selector
+reachToNode_rootNode_durationSelector :: Selector '[Id SKNode, Id SKNode, CDouble] (Id SKAction)
 reachToNode_rootNode_durationSelector = mkSelector "reachToNode:rootNode:duration:"
 
 -- | @Selector@ for @reachToNode:rootNode:velocity:@
-reachToNode_rootNode_velocitySelector :: Selector
+reachToNode_rootNode_velocitySelector :: Selector '[Id SKNode, Id SKNode, CDouble] (Id SKAction)
 reachToNode_rootNode_velocitySelector = mkSelector "reachToNode:rootNode:velocity:"
 
 -- | @Selector@ for @strengthTo:duration:@
-strengthTo_durationSelector :: Selector
+strengthTo_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 strengthTo_durationSelector = mkSelector "strengthTo:duration:"
 
 -- | @Selector@ for @strengthBy:duration:@
-strengthBy_durationSelector :: Selector
+strengthBy_durationSelector :: Selector '[CFloat, CDouble] (Id SKAction)
 strengthBy_durationSelector = mkSelector "strengthBy:duration:"
 
 -- | @Selector@ for @waitForDuration:@
-waitForDurationSelector :: Selector
+waitForDurationSelector :: Selector '[CDouble] (Id SKAction)
 waitForDurationSelector = mkSelector "waitForDuration:"
 
 -- | @Selector@ for @waitForDuration:withRange:@
-waitForDuration_withRangeSelector :: Selector
+waitForDuration_withRangeSelector :: Selector '[CDouble, CDouble] (Id SKAction)
 waitForDuration_withRangeSelector = mkSelector "waitForDuration:withRange:"
 
 -- | @Selector@ for @removeFromParent@
-removeFromParentSelector :: Selector
+removeFromParentSelector :: Selector '[] (Id SKAction)
 removeFromParentSelector = mkSelector "removeFromParent"
 
 -- | @Selector@ for @performSelector:onTarget:@
-performSelector_onTargetSelector :: Selector
+performSelector_onTargetSelector :: Selector '[Sel, RawId] (Id SKAction)
 performSelector_onTargetSelector = mkSelector "performSelector:onTarget:"
 
 -- | @Selector@ for @runBlock:@
-runBlockSelector :: Selector
+runBlockSelector :: Selector '[Ptr ()] (Id SKAction)
 runBlockSelector = mkSelector "runBlock:"
 
 -- | @Selector@ for @runBlock:queue:@
-runBlock_queueSelector :: Selector
+runBlock_queueSelector :: Selector '[Ptr (), Id NSObject] (Id SKAction)
 runBlock_queueSelector = mkSelector "runBlock:queue:"
 
 -- | @Selector@ for @runAction:onChildWithName:@
-runAction_onChildWithNameSelector :: Selector
+runAction_onChildWithNameSelector :: Selector '[Id SKAction, Id NSString] (Id SKAction)
 runAction_onChildWithNameSelector = mkSelector "runAction:onChildWithName:"
 
 -- | @Selector@ for @customActionWithDuration:actionBlock:@
-customActionWithDuration_actionBlockSelector :: Selector
+customActionWithDuration_actionBlockSelector :: Selector '[CDouble, Ptr ()] (Id SKAction)
 customActionWithDuration_actionBlockSelector = mkSelector "customActionWithDuration:actionBlock:"
 
 -- | @Selector@ for @actionNamed:@
-actionNamedSelector :: Selector
+actionNamedSelector :: Selector '[Id NSString] (Id SKAction)
 actionNamedSelector = mkSelector "actionNamed:"
 
 -- | @Selector@ for @actionNamed:duration:@
-actionNamed_durationSelector :: Selector
+actionNamed_durationSelector :: Selector '[Id NSString, CDouble] (Id SKAction)
 actionNamed_durationSelector = mkSelector "actionNamed:duration:"
 
 -- | @Selector@ for @actionNamed:fromURL:@
-actionNamed_fromURLSelector :: Selector
+actionNamed_fromURLSelector :: Selector '[Id NSString, Id NSURL] (Id SKAction)
 actionNamed_fromURLSelector = mkSelector "actionNamed:fromURL:"
 
 -- | @Selector@ for @actionNamed:fromURL:duration:@
-actionNamed_fromURL_durationSelector :: Selector
+actionNamed_fromURL_durationSelector :: Selector '[Id NSString, Id NSURL, CDouble] (Id SKAction)
 actionNamed_fromURL_durationSelector = mkSelector "actionNamed:fromURL:duration:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[CDouble] ()
 setDurationSelector = mkSelector "setDuration:"
 
 -- | @Selector@ for @timingMode@
-timingModeSelector :: Selector
+timingModeSelector :: Selector '[] SKActionTimingMode
 timingModeSelector = mkSelector "timingMode"
 
 -- | @Selector@ for @setTimingMode:@
-setTimingModeSelector :: Selector
+setTimingModeSelector :: Selector '[SKActionTimingMode] ()
 setTimingModeSelector = mkSelector "setTimingMode:"
 
 -- | @Selector@ for @timingFunction@
-timingFunctionSelector :: Selector
+timingFunctionSelector :: Selector '[] (Ptr ())
 timingFunctionSelector = mkSelector "timingFunction"
 
 -- | @Selector@ for @setTimingFunction:@
-setTimingFunctionSelector :: Selector
+setTimingFunctionSelector :: Selector '[Ptr ()] ()
 setTimingFunctionSelector = mkSelector "setTimingFunction:"
 
 -- | @Selector@ for @speed@
-speedSelector :: Selector
+speedSelector :: Selector '[] CDouble
 speedSelector = mkSelector "speed"
 
 -- | @Selector@ for @setSpeed:@
-setSpeedSelector :: Selector
+setSpeedSelector :: Selector '[CDouble] ()
 setSpeedSelector = mkSelector "setSpeed:"
 

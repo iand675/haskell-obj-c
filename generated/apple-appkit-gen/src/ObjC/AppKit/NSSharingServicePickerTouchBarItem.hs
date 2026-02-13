@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AppKit.NSSharingServicePickerTouchBarItem
   , setButtonTitle
   , buttonImage
   , setButtonImage
-  , delegateSelector
-  , setDelegateSelector
-  , enabledSelector
-  , setEnabledSelector
-  , buttonTitleSelector
-  , setButtonTitleSelector
   , buttonImageSelector
+  , buttonTitleSelector
+  , delegateSelector
+  , enabledSelector
   , setButtonImageSelector
+  , setButtonTitleSelector
+  , setDelegateSelector
+  , setEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,79 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- delegate@
 delegate :: IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem => nsSharingServicePickerTouchBarItem -> IO RawId
-delegate nsSharingServicePickerTouchBarItem  =
-    fmap (RawId . castPtr) $ sendMsg nsSharingServicePickerTouchBarItem (mkSelector "delegate") (retPtr retVoid) []
+delegate nsSharingServicePickerTouchBarItem =
+  sendMessage nsSharingServicePickerTouchBarItem delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem => nsSharingServicePickerTouchBarItem -> RawId -> IO ()
-setDelegate nsSharingServicePickerTouchBarItem  value =
-    sendMsg nsSharingServicePickerTouchBarItem (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsSharingServicePickerTouchBarItem value =
+  sendMessage nsSharingServicePickerTouchBarItem setDelegateSelector value
 
 -- | @- enabled@
 enabled :: IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem => nsSharingServicePickerTouchBarItem -> IO Bool
-enabled nsSharingServicePickerTouchBarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSharingServicePickerTouchBarItem (mkSelector "enabled") retCULong []
+enabled nsSharingServicePickerTouchBarItem =
+  sendMessage nsSharingServicePickerTouchBarItem enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem => nsSharingServicePickerTouchBarItem -> Bool -> IO ()
-setEnabled nsSharingServicePickerTouchBarItem  value =
-    sendMsg nsSharingServicePickerTouchBarItem (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled nsSharingServicePickerTouchBarItem value =
+  sendMessage nsSharingServicePickerTouchBarItem setEnabledSelector value
 
 -- | @- buttonTitle@
 buttonTitle :: IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem => nsSharingServicePickerTouchBarItem -> IO (Id NSString)
-buttonTitle nsSharingServicePickerTouchBarItem  =
-    sendMsg nsSharingServicePickerTouchBarItem (mkSelector "buttonTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonTitle nsSharingServicePickerTouchBarItem =
+  sendMessage nsSharingServicePickerTouchBarItem buttonTitleSelector
 
 -- | @- setButtonTitle:@
 setButtonTitle :: (IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem, IsNSString value) => nsSharingServicePickerTouchBarItem -> value -> IO ()
-setButtonTitle nsSharingServicePickerTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSharingServicePickerTouchBarItem (mkSelector "setButtonTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setButtonTitle nsSharingServicePickerTouchBarItem value =
+  sendMessage nsSharingServicePickerTouchBarItem setButtonTitleSelector (toNSString value)
 
 -- | @- buttonImage@
 buttonImage :: IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem => nsSharingServicePickerTouchBarItem -> IO (Id NSImage)
-buttonImage nsSharingServicePickerTouchBarItem  =
-    sendMsg nsSharingServicePickerTouchBarItem (mkSelector "buttonImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+buttonImage nsSharingServicePickerTouchBarItem =
+  sendMessage nsSharingServicePickerTouchBarItem buttonImageSelector
 
 -- | @- setButtonImage:@
 setButtonImage :: (IsNSSharingServicePickerTouchBarItem nsSharingServicePickerTouchBarItem, IsNSImage value) => nsSharingServicePickerTouchBarItem -> value -> IO ()
-setButtonImage nsSharingServicePickerTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsSharingServicePickerTouchBarItem (mkSelector "setButtonImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setButtonImage nsSharingServicePickerTouchBarItem value =
+  sendMessage nsSharingServicePickerTouchBarItem setButtonImageSelector (toNSImage value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @buttonTitle@
-buttonTitleSelector :: Selector
+buttonTitleSelector :: Selector '[] (Id NSString)
 buttonTitleSelector = mkSelector "buttonTitle"
 
 -- | @Selector@ for @setButtonTitle:@
-setButtonTitleSelector :: Selector
+setButtonTitleSelector :: Selector '[Id NSString] ()
 setButtonTitleSelector = mkSelector "setButtonTitle:"
 
 -- | @Selector@ for @buttonImage@
-buttonImageSelector :: Selector
+buttonImageSelector :: Selector '[] (Id NSImage)
 buttonImageSelector = mkSelector "buttonImage"
 
 -- | @Selector@ for @setButtonImage:@
-setButtonImageSelector :: Selector
+setButtonImageSelector :: Selector '[Id NSImage] ()
 setButtonImageSelector = mkSelector "setButtonImage:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -53,66 +54,62 @@ module ObjC.AppKit.NSArrayController
   , canInsert
   , canSelectNext
   , canSelectPrevious
-  , rearrangeObjectsSelector
-  , didChangeArrangementCriteriaSelector
-  , arrangeObjectsSelector
-  , setSelectionIndexesSelector
-  , setSelectionIndexSelector
-  , addSelectionIndexesSelector
-  , removeSelectionIndexesSelector
-  , setSelectedObjectsSelector
-  , addSelectedObjectsSelector
-  , removeSelectedObjectsSelector
-  , addSelector
-  , removeSelector
-  , insertSelector
-  , selectNextSelector
-  , selectPreviousSelector
   , addObjectSelector
   , addObjectsSelector
-  , insertObject_atArrangedObjectIndexSelector
-  , insertObjects_atArrangedObjectIndexesSelector
-  , removeObjectAtArrangedObjectIndexSelector
-  , removeObjectsAtArrangedObjectIndexesSelector
-  , removeObjectSelector
-  , removeObjectsSelector
-  , automaticallyRearrangesObjectsSelector
-  , setAutomaticallyRearrangesObjectsSelector
-  , automaticRearrangementKeyPathsSelector
-  , sortDescriptorsSelector
-  , setSortDescriptorsSelector
-  , filterPredicateSelector
-  , setFilterPredicateSelector
-  , clearsFilterPredicateOnInsertionSelector
-  , setClearsFilterPredicateOnInsertionSelector
-  , arrangedObjectsSelector
-  , avoidsEmptySelectionSelector
-  , setAvoidsEmptySelectionSelector
-  , preservesSelectionSelector
-  , setPreservesSelectionSelector
-  , selectsInsertedObjectsSelector
-  , setSelectsInsertedObjectsSelector
+  , addSelectedObjectsSelector
+  , addSelectionIndexesSelector
+  , addSelector
   , alwaysUsesMultipleValuesMarkerSelector
-  , setAlwaysUsesMultipleValuesMarkerSelector
-  , selectionIndexesSelector
-  , selectionIndexSelector
-  , selectedObjectsSelector
+  , arrangeObjectsSelector
+  , arrangedObjectsSelector
+  , automaticRearrangementKeyPathsSelector
+  , automaticallyRearrangesObjectsSelector
+  , avoidsEmptySelectionSelector
   , canInsertSelector
   , canSelectNextSelector
   , canSelectPreviousSelector
+  , clearsFilterPredicateOnInsertionSelector
+  , didChangeArrangementCriteriaSelector
+  , filterPredicateSelector
+  , insertObject_atArrangedObjectIndexSelector
+  , insertObjects_atArrangedObjectIndexesSelector
+  , insertSelector
+  , preservesSelectionSelector
+  , rearrangeObjectsSelector
+  , removeObjectAtArrangedObjectIndexSelector
+  , removeObjectSelector
+  , removeObjectsAtArrangedObjectIndexesSelector
+  , removeObjectsSelector
+  , removeSelectedObjectsSelector
+  , removeSelectionIndexesSelector
+  , removeSelector
+  , selectNextSelector
+  , selectPreviousSelector
+  , selectedObjectsSelector
+  , selectionIndexSelector
+  , selectionIndexesSelector
+  , selectsInsertedObjectsSelector
+  , setAlwaysUsesMultipleValuesMarkerSelector
+  , setAutomaticallyRearrangesObjectsSelector
+  , setAvoidsEmptySelectionSelector
+  , setClearsFilterPredicateOnInsertionSelector
+  , setFilterPredicateSelector
+  , setPreservesSelectionSelector
+  , setSelectedObjectsSelector
+  , setSelectionIndexSelector
+  , setSelectionIndexesSelector
+  , setSelectsInsertedObjectsSelector
+  , setSortDescriptorsSelector
+  , sortDescriptorsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -121,442 +118,428 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rearrangeObjects@
 rearrangeObjects :: IsNSArrayController nsArrayController => nsArrayController -> IO ()
-rearrangeObjects nsArrayController  =
-    sendMsg nsArrayController (mkSelector "rearrangeObjects") retVoid []
+rearrangeObjects nsArrayController =
+  sendMessage nsArrayController rearrangeObjectsSelector
 
 -- | @- didChangeArrangementCriteria@
 didChangeArrangementCriteria :: IsNSArrayController nsArrayController => nsArrayController -> IO ()
-didChangeArrangementCriteria nsArrayController  =
-    sendMsg nsArrayController (mkSelector "didChangeArrangementCriteria") retVoid []
+didChangeArrangementCriteria nsArrayController =
+  sendMessage nsArrayController didChangeArrangementCriteriaSelector
 
 -- | @- arrangeObjects:@
 arrangeObjects :: (IsNSArrayController nsArrayController, IsNSArray objects) => nsArrayController -> objects -> IO (Id NSArray)
-arrangeObjects nsArrayController  objects =
-  withObjCPtr objects $ \raw_objects ->
-      sendMsg nsArrayController (mkSelector "arrangeObjects:") (retPtr retVoid) [argPtr (castPtr raw_objects :: Ptr ())] >>= retainedObject . castPtr
+arrangeObjects nsArrayController objects =
+  sendMessage nsArrayController arrangeObjectsSelector (toNSArray objects)
 
 -- | @- setSelectionIndexes:@
 setSelectionIndexes :: (IsNSArrayController nsArrayController, IsNSIndexSet indexes) => nsArrayController -> indexes -> IO Bool
-setSelectionIndexes nsArrayController  indexes =
-  withObjCPtr indexes $ \raw_indexes ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "setSelectionIndexes:") retCULong [argPtr (castPtr raw_indexes :: Ptr ())]
+setSelectionIndexes nsArrayController indexes =
+  sendMessage nsArrayController setSelectionIndexesSelector (toNSIndexSet indexes)
 
 -- | @- setSelectionIndex:@
 setSelectionIndex :: IsNSArrayController nsArrayController => nsArrayController -> CULong -> IO Bool
-setSelectionIndex nsArrayController  index =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "setSelectionIndex:") retCULong [argCULong index]
+setSelectionIndex nsArrayController index =
+  sendMessage nsArrayController setSelectionIndexSelector index
 
 -- | @- addSelectionIndexes:@
 addSelectionIndexes :: (IsNSArrayController nsArrayController, IsNSIndexSet indexes) => nsArrayController -> indexes -> IO Bool
-addSelectionIndexes nsArrayController  indexes =
-  withObjCPtr indexes $ \raw_indexes ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "addSelectionIndexes:") retCULong [argPtr (castPtr raw_indexes :: Ptr ())]
+addSelectionIndexes nsArrayController indexes =
+  sendMessage nsArrayController addSelectionIndexesSelector (toNSIndexSet indexes)
 
 -- | @- removeSelectionIndexes:@
 removeSelectionIndexes :: (IsNSArrayController nsArrayController, IsNSIndexSet indexes) => nsArrayController -> indexes -> IO Bool
-removeSelectionIndexes nsArrayController  indexes =
-  withObjCPtr indexes $ \raw_indexes ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "removeSelectionIndexes:") retCULong [argPtr (castPtr raw_indexes :: Ptr ())]
+removeSelectionIndexes nsArrayController indexes =
+  sendMessage nsArrayController removeSelectionIndexesSelector (toNSIndexSet indexes)
 
 -- | @- setSelectedObjects:@
 setSelectedObjects :: (IsNSArrayController nsArrayController, IsNSArray objects) => nsArrayController -> objects -> IO Bool
-setSelectedObjects nsArrayController  objects =
-  withObjCPtr objects $ \raw_objects ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "setSelectedObjects:") retCULong [argPtr (castPtr raw_objects :: Ptr ())]
+setSelectedObjects nsArrayController objects =
+  sendMessage nsArrayController setSelectedObjectsSelector (toNSArray objects)
 
 -- | @- addSelectedObjects:@
 addSelectedObjects :: (IsNSArrayController nsArrayController, IsNSArray objects) => nsArrayController -> objects -> IO Bool
-addSelectedObjects nsArrayController  objects =
-  withObjCPtr objects $ \raw_objects ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "addSelectedObjects:") retCULong [argPtr (castPtr raw_objects :: Ptr ())]
+addSelectedObjects nsArrayController objects =
+  sendMessage nsArrayController addSelectedObjectsSelector (toNSArray objects)
 
 -- | @- removeSelectedObjects:@
 removeSelectedObjects :: (IsNSArrayController nsArrayController, IsNSArray objects) => nsArrayController -> objects -> IO Bool
-removeSelectedObjects nsArrayController  objects =
-  withObjCPtr objects $ \raw_objects ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "removeSelectedObjects:") retCULong [argPtr (castPtr raw_objects :: Ptr ())]
+removeSelectedObjects nsArrayController objects =
+  sendMessage nsArrayController removeSelectedObjectsSelector (toNSArray objects)
 
 -- | @- add:@
 add :: IsNSArrayController nsArrayController => nsArrayController -> RawId -> IO ()
-add nsArrayController  sender =
-    sendMsg nsArrayController (mkSelector "add:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+add nsArrayController sender =
+  sendMessage nsArrayController addSelector sender
 
 -- | @- remove:@
 remove :: IsNSArrayController nsArrayController => nsArrayController -> RawId -> IO ()
-remove nsArrayController  sender =
-    sendMsg nsArrayController (mkSelector "remove:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+remove nsArrayController sender =
+  sendMessage nsArrayController removeSelector sender
 
 -- | @- insert:@
 insert :: IsNSArrayController nsArrayController => nsArrayController -> RawId -> IO ()
-insert nsArrayController  sender =
-    sendMsg nsArrayController (mkSelector "insert:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+insert nsArrayController sender =
+  sendMessage nsArrayController insertSelector sender
 
 -- | @- selectNext:@
 selectNext :: IsNSArrayController nsArrayController => nsArrayController -> RawId -> IO ()
-selectNext nsArrayController  sender =
-    sendMsg nsArrayController (mkSelector "selectNext:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectNext nsArrayController sender =
+  sendMessage nsArrayController selectNextSelector sender
 
 -- | @- selectPrevious:@
 selectPrevious :: IsNSArrayController nsArrayController => nsArrayController -> RawId -> IO ()
-selectPrevious nsArrayController  sender =
-    sendMsg nsArrayController (mkSelector "selectPrevious:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+selectPrevious nsArrayController sender =
+  sendMessage nsArrayController selectPreviousSelector sender
 
 -- | @- addObject:@
 addObject :: IsNSArrayController nsArrayController => nsArrayController -> RawId -> IO ()
-addObject nsArrayController  object =
-    sendMsg nsArrayController (mkSelector "addObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+addObject nsArrayController object =
+  sendMessage nsArrayController addObjectSelector object
 
 -- | @- addObjects:@
 addObjects :: (IsNSArrayController nsArrayController, IsNSArray objects) => nsArrayController -> objects -> IO ()
-addObjects nsArrayController  objects =
-  withObjCPtr objects $ \raw_objects ->
-      sendMsg nsArrayController (mkSelector "addObjects:") retVoid [argPtr (castPtr raw_objects :: Ptr ())]
+addObjects nsArrayController objects =
+  sendMessage nsArrayController addObjectsSelector (toNSArray objects)
 
 -- | @- insertObject:atArrangedObjectIndex:@
 insertObject_atArrangedObjectIndex :: IsNSArrayController nsArrayController => nsArrayController -> RawId -> CULong -> IO ()
-insertObject_atArrangedObjectIndex nsArrayController  object index =
-    sendMsg nsArrayController (mkSelector "insertObject:atArrangedObjectIndex:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ()), argCULong index]
+insertObject_atArrangedObjectIndex nsArrayController object index =
+  sendMessage nsArrayController insertObject_atArrangedObjectIndexSelector object index
 
 -- | @- insertObjects:atArrangedObjectIndexes:@
 insertObjects_atArrangedObjectIndexes :: (IsNSArrayController nsArrayController, IsNSArray objects, IsNSIndexSet indexes) => nsArrayController -> objects -> indexes -> IO ()
-insertObjects_atArrangedObjectIndexes nsArrayController  objects indexes =
-  withObjCPtr objects $ \raw_objects ->
-    withObjCPtr indexes $ \raw_indexes ->
-        sendMsg nsArrayController (mkSelector "insertObjects:atArrangedObjectIndexes:") retVoid [argPtr (castPtr raw_objects :: Ptr ()), argPtr (castPtr raw_indexes :: Ptr ())]
+insertObjects_atArrangedObjectIndexes nsArrayController objects indexes =
+  sendMessage nsArrayController insertObjects_atArrangedObjectIndexesSelector (toNSArray objects) (toNSIndexSet indexes)
 
 -- | @- removeObjectAtArrangedObjectIndex:@
 removeObjectAtArrangedObjectIndex :: IsNSArrayController nsArrayController => nsArrayController -> CULong -> IO ()
-removeObjectAtArrangedObjectIndex nsArrayController  index =
-    sendMsg nsArrayController (mkSelector "removeObjectAtArrangedObjectIndex:") retVoid [argCULong index]
+removeObjectAtArrangedObjectIndex nsArrayController index =
+  sendMessage nsArrayController removeObjectAtArrangedObjectIndexSelector index
 
 -- | @- removeObjectsAtArrangedObjectIndexes:@
 removeObjectsAtArrangedObjectIndexes :: (IsNSArrayController nsArrayController, IsNSIndexSet indexes) => nsArrayController -> indexes -> IO ()
-removeObjectsAtArrangedObjectIndexes nsArrayController  indexes =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg nsArrayController (mkSelector "removeObjectsAtArrangedObjectIndexes:") retVoid [argPtr (castPtr raw_indexes :: Ptr ())]
+removeObjectsAtArrangedObjectIndexes nsArrayController indexes =
+  sendMessage nsArrayController removeObjectsAtArrangedObjectIndexesSelector (toNSIndexSet indexes)
 
 -- | @- removeObject:@
 removeObject :: IsNSArrayController nsArrayController => nsArrayController -> RawId -> IO ()
-removeObject nsArrayController  object =
-    sendMsg nsArrayController (mkSelector "removeObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+removeObject nsArrayController object =
+  sendMessage nsArrayController removeObjectSelector object
 
 -- | @- removeObjects:@
 removeObjects :: (IsNSArrayController nsArrayController, IsNSArray objects) => nsArrayController -> objects -> IO ()
-removeObjects nsArrayController  objects =
-  withObjCPtr objects $ \raw_objects ->
-      sendMsg nsArrayController (mkSelector "removeObjects:") retVoid [argPtr (castPtr raw_objects :: Ptr ())]
+removeObjects nsArrayController objects =
+  sendMessage nsArrayController removeObjectsSelector (toNSArray objects)
 
 -- | @- automaticallyRearrangesObjects@
 automaticallyRearrangesObjects :: IsNSArrayController nsArrayController => nsArrayController -> IO Bool
-automaticallyRearrangesObjects nsArrayController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "automaticallyRearrangesObjects") retCULong []
+automaticallyRearrangesObjects nsArrayController =
+  sendMessage nsArrayController automaticallyRearrangesObjectsSelector
 
 -- | @- setAutomaticallyRearrangesObjects:@
 setAutomaticallyRearrangesObjects :: IsNSArrayController nsArrayController => nsArrayController -> Bool -> IO ()
-setAutomaticallyRearrangesObjects nsArrayController  value =
-    sendMsg nsArrayController (mkSelector "setAutomaticallyRearrangesObjects:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyRearrangesObjects nsArrayController value =
+  sendMessage nsArrayController setAutomaticallyRearrangesObjectsSelector value
 
 -- | @- automaticRearrangementKeyPaths@
 automaticRearrangementKeyPaths :: IsNSArrayController nsArrayController => nsArrayController -> IO (Id NSArray)
-automaticRearrangementKeyPaths nsArrayController  =
-    sendMsg nsArrayController (mkSelector "automaticRearrangementKeyPaths") (retPtr retVoid) [] >>= retainedObject . castPtr
+automaticRearrangementKeyPaths nsArrayController =
+  sendMessage nsArrayController automaticRearrangementKeyPathsSelector
 
 -- | @- sortDescriptors@
 sortDescriptors :: IsNSArrayController nsArrayController => nsArrayController -> IO (Id NSArray)
-sortDescriptors nsArrayController  =
-    sendMsg nsArrayController (mkSelector "sortDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortDescriptors nsArrayController =
+  sendMessage nsArrayController sortDescriptorsSelector
 
 -- | @- setSortDescriptors:@
 setSortDescriptors :: (IsNSArrayController nsArrayController, IsNSArray value) => nsArrayController -> value -> IO ()
-setSortDescriptors nsArrayController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsArrayController (mkSelector "setSortDescriptors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSortDescriptors nsArrayController value =
+  sendMessage nsArrayController setSortDescriptorsSelector (toNSArray value)
 
 -- | @- filterPredicate@
 filterPredicate :: IsNSArrayController nsArrayController => nsArrayController -> IO (Id NSPredicate)
-filterPredicate nsArrayController  =
-    sendMsg nsArrayController (mkSelector "filterPredicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterPredicate nsArrayController =
+  sendMessage nsArrayController filterPredicateSelector
 
 -- | @- setFilterPredicate:@
 setFilterPredicate :: (IsNSArrayController nsArrayController, IsNSPredicate value) => nsArrayController -> value -> IO ()
-setFilterPredicate nsArrayController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsArrayController (mkSelector "setFilterPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFilterPredicate nsArrayController value =
+  sendMessage nsArrayController setFilterPredicateSelector (toNSPredicate value)
 
 -- | @- clearsFilterPredicateOnInsertion@
 clearsFilterPredicateOnInsertion :: IsNSArrayController nsArrayController => nsArrayController -> IO Bool
-clearsFilterPredicateOnInsertion nsArrayController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "clearsFilterPredicateOnInsertion") retCULong []
+clearsFilterPredicateOnInsertion nsArrayController =
+  sendMessage nsArrayController clearsFilterPredicateOnInsertionSelector
 
 -- | @- setClearsFilterPredicateOnInsertion:@
 setClearsFilterPredicateOnInsertion :: IsNSArrayController nsArrayController => nsArrayController -> Bool -> IO ()
-setClearsFilterPredicateOnInsertion nsArrayController  value =
-    sendMsg nsArrayController (mkSelector "setClearsFilterPredicateOnInsertion:") retVoid [argCULong (if value then 1 else 0)]
+setClearsFilterPredicateOnInsertion nsArrayController value =
+  sendMessage nsArrayController setClearsFilterPredicateOnInsertionSelector value
 
 -- | @- arrangedObjects@
 arrangedObjects :: IsNSArrayController nsArrayController => nsArrayController -> IO RawId
-arrangedObjects nsArrayController  =
-    fmap (RawId . castPtr) $ sendMsg nsArrayController (mkSelector "arrangedObjects") (retPtr retVoid) []
+arrangedObjects nsArrayController =
+  sendMessage nsArrayController arrangedObjectsSelector
 
 -- | @- avoidsEmptySelection@
 avoidsEmptySelection :: IsNSArrayController nsArrayController => nsArrayController -> IO Bool
-avoidsEmptySelection nsArrayController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "avoidsEmptySelection") retCULong []
+avoidsEmptySelection nsArrayController =
+  sendMessage nsArrayController avoidsEmptySelectionSelector
 
 -- | @- setAvoidsEmptySelection:@
 setAvoidsEmptySelection :: IsNSArrayController nsArrayController => nsArrayController -> Bool -> IO ()
-setAvoidsEmptySelection nsArrayController  value =
-    sendMsg nsArrayController (mkSelector "setAvoidsEmptySelection:") retVoid [argCULong (if value then 1 else 0)]
+setAvoidsEmptySelection nsArrayController value =
+  sendMessage nsArrayController setAvoidsEmptySelectionSelector value
 
 -- | @- preservesSelection@
 preservesSelection :: IsNSArrayController nsArrayController => nsArrayController -> IO Bool
-preservesSelection nsArrayController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "preservesSelection") retCULong []
+preservesSelection nsArrayController =
+  sendMessage nsArrayController preservesSelectionSelector
 
 -- | @- setPreservesSelection:@
 setPreservesSelection :: IsNSArrayController nsArrayController => nsArrayController -> Bool -> IO ()
-setPreservesSelection nsArrayController  value =
-    sendMsg nsArrayController (mkSelector "setPreservesSelection:") retVoid [argCULong (if value then 1 else 0)]
+setPreservesSelection nsArrayController value =
+  sendMessage nsArrayController setPreservesSelectionSelector value
 
 -- | @- selectsInsertedObjects@
 selectsInsertedObjects :: IsNSArrayController nsArrayController => nsArrayController -> IO Bool
-selectsInsertedObjects nsArrayController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "selectsInsertedObjects") retCULong []
+selectsInsertedObjects nsArrayController =
+  sendMessage nsArrayController selectsInsertedObjectsSelector
 
 -- | @- setSelectsInsertedObjects:@
 setSelectsInsertedObjects :: IsNSArrayController nsArrayController => nsArrayController -> Bool -> IO ()
-setSelectsInsertedObjects nsArrayController  value =
-    sendMsg nsArrayController (mkSelector "setSelectsInsertedObjects:") retVoid [argCULong (if value then 1 else 0)]
+setSelectsInsertedObjects nsArrayController value =
+  sendMessage nsArrayController setSelectsInsertedObjectsSelector value
 
 -- | @- alwaysUsesMultipleValuesMarker@
 alwaysUsesMultipleValuesMarker :: IsNSArrayController nsArrayController => nsArrayController -> IO Bool
-alwaysUsesMultipleValuesMarker nsArrayController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "alwaysUsesMultipleValuesMarker") retCULong []
+alwaysUsesMultipleValuesMarker nsArrayController =
+  sendMessage nsArrayController alwaysUsesMultipleValuesMarkerSelector
 
 -- | @- setAlwaysUsesMultipleValuesMarker:@
 setAlwaysUsesMultipleValuesMarker :: IsNSArrayController nsArrayController => nsArrayController -> Bool -> IO ()
-setAlwaysUsesMultipleValuesMarker nsArrayController  value =
-    sendMsg nsArrayController (mkSelector "setAlwaysUsesMultipleValuesMarker:") retVoid [argCULong (if value then 1 else 0)]
+setAlwaysUsesMultipleValuesMarker nsArrayController value =
+  sendMessage nsArrayController setAlwaysUsesMultipleValuesMarkerSelector value
 
 -- | @- selectionIndexes@
 selectionIndexes :: IsNSArrayController nsArrayController => nsArrayController -> IO (Id NSIndexSet)
-selectionIndexes nsArrayController  =
-    sendMsg nsArrayController (mkSelector "selectionIndexes") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectionIndexes nsArrayController =
+  sendMessage nsArrayController selectionIndexesSelector
 
 -- | @- selectionIndex@
 selectionIndex :: IsNSArrayController nsArrayController => nsArrayController -> IO CULong
-selectionIndex nsArrayController  =
-    sendMsg nsArrayController (mkSelector "selectionIndex") retCULong []
+selectionIndex nsArrayController =
+  sendMessage nsArrayController selectionIndexSelector
 
 -- | @- selectedObjects@
 selectedObjects :: IsNSArrayController nsArrayController => nsArrayController -> IO (Id NSArray)
-selectedObjects nsArrayController  =
-    sendMsg nsArrayController (mkSelector "selectedObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedObjects nsArrayController =
+  sendMessage nsArrayController selectedObjectsSelector
 
 -- | @- canInsert@
 canInsert :: IsNSArrayController nsArrayController => nsArrayController -> IO Bool
-canInsert nsArrayController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "canInsert") retCULong []
+canInsert nsArrayController =
+  sendMessage nsArrayController canInsertSelector
 
 -- | @- canSelectNext@
 canSelectNext :: IsNSArrayController nsArrayController => nsArrayController -> IO Bool
-canSelectNext nsArrayController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "canSelectNext") retCULong []
+canSelectNext nsArrayController =
+  sendMessage nsArrayController canSelectNextSelector
 
 -- | @- canSelectPrevious@
 canSelectPrevious :: IsNSArrayController nsArrayController => nsArrayController -> IO Bool
-canSelectPrevious nsArrayController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsArrayController (mkSelector "canSelectPrevious") retCULong []
+canSelectPrevious nsArrayController =
+  sendMessage nsArrayController canSelectPreviousSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rearrangeObjects@
-rearrangeObjectsSelector :: Selector
+rearrangeObjectsSelector :: Selector '[] ()
 rearrangeObjectsSelector = mkSelector "rearrangeObjects"
 
 -- | @Selector@ for @didChangeArrangementCriteria@
-didChangeArrangementCriteriaSelector :: Selector
+didChangeArrangementCriteriaSelector :: Selector '[] ()
 didChangeArrangementCriteriaSelector = mkSelector "didChangeArrangementCriteria"
 
 -- | @Selector@ for @arrangeObjects:@
-arrangeObjectsSelector :: Selector
+arrangeObjectsSelector :: Selector '[Id NSArray] (Id NSArray)
 arrangeObjectsSelector = mkSelector "arrangeObjects:"
 
 -- | @Selector@ for @setSelectionIndexes:@
-setSelectionIndexesSelector :: Selector
+setSelectionIndexesSelector :: Selector '[Id NSIndexSet] Bool
 setSelectionIndexesSelector = mkSelector "setSelectionIndexes:"
 
 -- | @Selector@ for @setSelectionIndex:@
-setSelectionIndexSelector :: Selector
+setSelectionIndexSelector :: Selector '[CULong] Bool
 setSelectionIndexSelector = mkSelector "setSelectionIndex:"
 
 -- | @Selector@ for @addSelectionIndexes:@
-addSelectionIndexesSelector :: Selector
+addSelectionIndexesSelector :: Selector '[Id NSIndexSet] Bool
 addSelectionIndexesSelector = mkSelector "addSelectionIndexes:"
 
 -- | @Selector@ for @removeSelectionIndexes:@
-removeSelectionIndexesSelector :: Selector
+removeSelectionIndexesSelector :: Selector '[Id NSIndexSet] Bool
 removeSelectionIndexesSelector = mkSelector "removeSelectionIndexes:"
 
 -- | @Selector@ for @setSelectedObjects:@
-setSelectedObjectsSelector :: Selector
+setSelectedObjectsSelector :: Selector '[Id NSArray] Bool
 setSelectedObjectsSelector = mkSelector "setSelectedObjects:"
 
 -- | @Selector@ for @addSelectedObjects:@
-addSelectedObjectsSelector :: Selector
+addSelectedObjectsSelector :: Selector '[Id NSArray] Bool
 addSelectedObjectsSelector = mkSelector "addSelectedObjects:"
 
 -- | @Selector@ for @removeSelectedObjects:@
-removeSelectedObjectsSelector :: Selector
+removeSelectedObjectsSelector :: Selector '[Id NSArray] Bool
 removeSelectedObjectsSelector = mkSelector "removeSelectedObjects:"
 
 -- | @Selector@ for @add:@
-addSelector :: Selector
+addSelector :: Selector '[RawId] ()
 addSelector = mkSelector "add:"
 
 -- | @Selector@ for @remove:@
-removeSelector :: Selector
+removeSelector :: Selector '[RawId] ()
 removeSelector = mkSelector "remove:"
 
 -- | @Selector@ for @insert:@
-insertSelector :: Selector
+insertSelector :: Selector '[RawId] ()
 insertSelector = mkSelector "insert:"
 
 -- | @Selector@ for @selectNext:@
-selectNextSelector :: Selector
+selectNextSelector :: Selector '[RawId] ()
 selectNextSelector = mkSelector "selectNext:"
 
 -- | @Selector@ for @selectPrevious:@
-selectPreviousSelector :: Selector
+selectPreviousSelector :: Selector '[RawId] ()
 selectPreviousSelector = mkSelector "selectPrevious:"
 
 -- | @Selector@ for @addObject:@
-addObjectSelector :: Selector
+addObjectSelector :: Selector '[RawId] ()
 addObjectSelector = mkSelector "addObject:"
 
 -- | @Selector@ for @addObjects:@
-addObjectsSelector :: Selector
+addObjectsSelector :: Selector '[Id NSArray] ()
 addObjectsSelector = mkSelector "addObjects:"
 
 -- | @Selector@ for @insertObject:atArrangedObjectIndex:@
-insertObject_atArrangedObjectIndexSelector :: Selector
+insertObject_atArrangedObjectIndexSelector :: Selector '[RawId, CULong] ()
 insertObject_atArrangedObjectIndexSelector = mkSelector "insertObject:atArrangedObjectIndex:"
 
 -- | @Selector@ for @insertObjects:atArrangedObjectIndexes:@
-insertObjects_atArrangedObjectIndexesSelector :: Selector
+insertObjects_atArrangedObjectIndexesSelector :: Selector '[Id NSArray, Id NSIndexSet] ()
 insertObjects_atArrangedObjectIndexesSelector = mkSelector "insertObjects:atArrangedObjectIndexes:"
 
 -- | @Selector@ for @removeObjectAtArrangedObjectIndex:@
-removeObjectAtArrangedObjectIndexSelector :: Selector
+removeObjectAtArrangedObjectIndexSelector :: Selector '[CULong] ()
 removeObjectAtArrangedObjectIndexSelector = mkSelector "removeObjectAtArrangedObjectIndex:"
 
 -- | @Selector@ for @removeObjectsAtArrangedObjectIndexes:@
-removeObjectsAtArrangedObjectIndexesSelector :: Selector
+removeObjectsAtArrangedObjectIndexesSelector :: Selector '[Id NSIndexSet] ()
 removeObjectsAtArrangedObjectIndexesSelector = mkSelector "removeObjectsAtArrangedObjectIndexes:"
 
 -- | @Selector@ for @removeObject:@
-removeObjectSelector :: Selector
+removeObjectSelector :: Selector '[RawId] ()
 removeObjectSelector = mkSelector "removeObject:"
 
 -- | @Selector@ for @removeObjects:@
-removeObjectsSelector :: Selector
+removeObjectsSelector :: Selector '[Id NSArray] ()
 removeObjectsSelector = mkSelector "removeObjects:"
 
 -- | @Selector@ for @automaticallyRearrangesObjects@
-automaticallyRearrangesObjectsSelector :: Selector
+automaticallyRearrangesObjectsSelector :: Selector '[] Bool
 automaticallyRearrangesObjectsSelector = mkSelector "automaticallyRearrangesObjects"
 
 -- | @Selector@ for @setAutomaticallyRearrangesObjects:@
-setAutomaticallyRearrangesObjectsSelector :: Selector
+setAutomaticallyRearrangesObjectsSelector :: Selector '[Bool] ()
 setAutomaticallyRearrangesObjectsSelector = mkSelector "setAutomaticallyRearrangesObjects:"
 
 -- | @Selector@ for @automaticRearrangementKeyPaths@
-automaticRearrangementKeyPathsSelector :: Selector
+automaticRearrangementKeyPathsSelector :: Selector '[] (Id NSArray)
 automaticRearrangementKeyPathsSelector = mkSelector "automaticRearrangementKeyPaths"
 
 -- | @Selector@ for @sortDescriptors@
-sortDescriptorsSelector :: Selector
+sortDescriptorsSelector :: Selector '[] (Id NSArray)
 sortDescriptorsSelector = mkSelector "sortDescriptors"
 
 -- | @Selector@ for @setSortDescriptors:@
-setSortDescriptorsSelector :: Selector
+setSortDescriptorsSelector :: Selector '[Id NSArray] ()
 setSortDescriptorsSelector = mkSelector "setSortDescriptors:"
 
 -- | @Selector@ for @filterPredicate@
-filterPredicateSelector :: Selector
+filterPredicateSelector :: Selector '[] (Id NSPredicate)
 filterPredicateSelector = mkSelector "filterPredicate"
 
 -- | @Selector@ for @setFilterPredicate:@
-setFilterPredicateSelector :: Selector
+setFilterPredicateSelector :: Selector '[Id NSPredicate] ()
 setFilterPredicateSelector = mkSelector "setFilterPredicate:"
 
 -- | @Selector@ for @clearsFilterPredicateOnInsertion@
-clearsFilterPredicateOnInsertionSelector :: Selector
+clearsFilterPredicateOnInsertionSelector :: Selector '[] Bool
 clearsFilterPredicateOnInsertionSelector = mkSelector "clearsFilterPredicateOnInsertion"
 
 -- | @Selector@ for @setClearsFilterPredicateOnInsertion:@
-setClearsFilterPredicateOnInsertionSelector :: Selector
+setClearsFilterPredicateOnInsertionSelector :: Selector '[Bool] ()
 setClearsFilterPredicateOnInsertionSelector = mkSelector "setClearsFilterPredicateOnInsertion:"
 
 -- | @Selector@ for @arrangedObjects@
-arrangedObjectsSelector :: Selector
+arrangedObjectsSelector :: Selector '[] RawId
 arrangedObjectsSelector = mkSelector "arrangedObjects"
 
 -- | @Selector@ for @avoidsEmptySelection@
-avoidsEmptySelectionSelector :: Selector
+avoidsEmptySelectionSelector :: Selector '[] Bool
 avoidsEmptySelectionSelector = mkSelector "avoidsEmptySelection"
 
 -- | @Selector@ for @setAvoidsEmptySelection:@
-setAvoidsEmptySelectionSelector :: Selector
+setAvoidsEmptySelectionSelector :: Selector '[Bool] ()
 setAvoidsEmptySelectionSelector = mkSelector "setAvoidsEmptySelection:"
 
 -- | @Selector@ for @preservesSelection@
-preservesSelectionSelector :: Selector
+preservesSelectionSelector :: Selector '[] Bool
 preservesSelectionSelector = mkSelector "preservesSelection"
 
 -- | @Selector@ for @setPreservesSelection:@
-setPreservesSelectionSelector :: Selector
+setPreservesSelectionSelector :: Selector '[Bool] ()
 setPreservesSelectionSelector = mkSelector "setPreservesSelection:"
 
 -- | @Selector@ for @selectsInsertedObjects@
-selectsInsertedObjectsSelector :: Selector
+selectsInsertedObjectsSelector :: Selector '[] Bool
 selectsInsertedObjectsSelector = mkSelector "selectsInsertedObjects"
 
 -- | @Selector@ for @setSelectsInsertedObjects:@
-setSelectsInsertedObjectsSelector :: Selector
+setSelectsInsertedObjectsSelector :: Selector '[Bool] ()
 setSelectsInsertedObjectsSelector = mkSelector "setSelectsInsertedObjects:"
 
 -- | @Selector@ for @alwaysUsesMultipleValuesMarker@
-alwaysUsesMultipleValuesMarkerSelector :: Selector
+alwaysUsesMultipleValuesMarkerSelector :: Selector '[] Bool
 alwaysUsesMultipleValuesMarkerSelector = mkSelector "alwaysUsesMultipleValuesMarker"
 
 -- | @Selector@ for @setAlwaysUsesMultipleValuesMarker:@
-setAlwaysUsesMultipleValuesMarkerSelector :: Selector
+setAlwaysUsesMultipleValuesMarkerSelector :: Selector '[Bool] ()
 setAlwaysUsesMultipleValuesMarkerSelector = mkSelector "setAlwaysUsesMultipleValuesMarker:"
 
 -- | @Selector@ for @selectionIndexes@
-selectionIndexesSelector :: Selector
+selectionIndexesSelector :: Selector '[] (Id NSIndexSet)
 selectionIndexesSelector = mkSelector "selectionIndexes"
 
 -- | @Selector@ for @selectionIndex@
-selectionIndexSelector :: Selector
+selectionIndexSelector :: Selector '[] CULong
 selectionIndexSelector = mkSelector "selectionIndex"
 
 -- | @Selector@ for @selectedObjects@
-selectedObjectsSelector :: Selector
+selectedObjectsSelector :: Selector '[] (Id NSArray)
 selectedObjectsSelector = mkSelector "selectedObjects"
 
 -- | @Selector@ for @canInsert@
-canInsertSelector :: Selector
+canInsertSelector :: Selector '[] Bool
 canInsertSelector = mkSelector "canInsert"
 
 -- | @Selector@ for @canSelectNext@
-canSelectNextSelector :: Selector
+canSelectNextSelector :: Selector '[] Bool
 canSelectNextSelector = mkSelector "canSelectNext"
 
 -- | @Selector@ for @canSelectPrevious@
-canSelectPreviousSelector :: Selector
+canSelectPreviousSelector :: Selector '[] Bool
 canSelectPreviousSelector = mkSelector "canSelectPrevious"
 

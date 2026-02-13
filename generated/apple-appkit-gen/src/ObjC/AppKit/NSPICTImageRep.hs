@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AppKit.NSPICTImageRep
   , initWithData
   , pictRepresentation
   , boundingBox
+  , boundingBoxSelector
   , imageRepWithDataSelector
   , initWithDataSelector
   , pictRepresentationSelector
-  , boundingBoxSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,42 +36,40 @@ imageRepWithData :: IsNSData pictData => pictData -> IO (Id NSPICTImageRep)
 imageRepWithData pictData =
   do
     cls' <- getRequiredClass "NSPICTImageRep"
-    withObjCPtr pictData $ \raw_pictData ->
-      sendClassMsg cls' (mkSelector "imageRepWithData:") (retPtr retVoid) [argPtr (castPtr raw_pictData :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageRepWithDataSelector (toNSData pictData)
 
 -- | @- initWithData:@
 initWithData :: (IsNSPICTImageRep nspictImageRep, IsNSData pictData) => nspictImageRep -> pictData -> IO (Id NSPICTImageRep)
-initWithData nspictImageRep  pictData =
-  withObjCPtr pictData $ \raw_pictData ->
-      sendMsg nspictImageRep (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_pictData :: Ptr ())] >>= ownedObject . castPtr
+initWithData nspictImageRep pictData =
+  sendOwnedMessage nspictImageRep initWithDataSelector (toNSData pictData)
 
 -- | @- PICTRepresentation@
 pictRepresentation :: IsNSPICTImageRep nspictImageRep => nspictImageRep -> IO (Id NSData)
-pictRepresentation nspictImageRep  =
-    sendMsg nspictImageRep (mkSelector "PICTRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+pictRepresentation nspictImageRep =
+  sendMessage nspictImageRep pictRepresentationSelector
 
 -- | @- boundingBox@
 boundingBox :: IsNSPICTImageRep nspictImageRep => nspictImageRep -> IO NSRect
-boundingBox nspictImageRep  =
-    sendMsgStret nspictImageRep (mkSelector "boundingBox") retNSRect []
+boundingBox nspictImageRep =
+  sendMessage nspictImageRep boundingBoxSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageRepWithData:@
-imageRepWithDataSelector :: Selector
+imageRepWithDataSelector :: Selector '[Id NSData] (Id NSPICTImageRep)
 imageRepWithDataSelector = mkSelector "imageRepWithData:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id NSPICTImageRep)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @PICTRepresentation@
-pictRepresentationSelector :: Selector
+pictRepresentationSelector :: Selector '[] (Id NSData)
 pictRepresentationSelector = mkSelector "PICTRepresentation"
 
 -- | @Selector@ for @boundingBox@
-boundingBoxSelector :: Selector
+boundingBoxSelector :: Selector '[] NSRect
 boundingBoxSelector = mkSelector "boundingBox"
 

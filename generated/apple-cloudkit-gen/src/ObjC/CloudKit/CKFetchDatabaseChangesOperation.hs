@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,39 +33,35 @@ module ObjC.CloudKit.CKFetchDatabaseChangesOperation
   , setChangeTokenUpdatedBlock
   , fetchDatabaseChangesCompletionBlock
   , setFetchDatabaseChangesCompletionBlock
+  , changeTokenUpdatedBlockSelector
+  , fetchAllChangesSelector
+  , fetchDatabaseChangesCompletionBlockSelector
   , initSelector
   , initWithPreviousServerChangeTokenSelector
   , previousServerChangeTokenSelector
-  , setPreviousServerChangeTokenSelector
-  , resultsLimitSelector
-  , setResultsLimitSelector
-  , fetchAllChangesSelector
-  , setFetchAllChangesSelector
   , recordZoneWithIDChangedBlockSelector
-  , setRecordZoneWithIDChangedBlockSelector
   , recordZoneWithIDWasDeletedBlockSelector
-  , setRecordZoneWithIDWasDeletedBlockSelector
-  , recordZoneWithIDWasPurgedBlockSelector
-  , setRecordZoneWithIDWasPurgedBlockSelector
   , recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector
-  , setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector
-  , changeTokenUpdatedBlockSelector
+  , recordZoneWithIDWasPurgedBlockSelector
+  , resultsLimitSelector
   , setChangeTokenUpdatedBlockSelector
-  , fetchDatabaseChangesCompletionBlockSelector
+  , setFetchAllChangesSelector
   , setFetchDatabaseChangesCompletionBlockSelector
+  , setPreviousServerChangeTokenSelector
+  , setRecordZoneWithIDChangedBlockSelector
+  , setRecordZoneWithIDWasDeletedBlockSelector
+  , setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector
+  , setRecordZoneWithIDWasPurgedBlockSelector
+  , setResultsLimitSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,35 +70,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO (Id CKFetchDatabaseChangesOperation)
-init_ ckFetchDatabaseChangesOperation  =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckFetchDatabaseChangesOperation =
+  sendOwnedMessage ckFetchDatabaseChangesOperation initSelector
 
 -- | @- initWithPreviousServerChangeToken:@
 initWithPreviousServerChangeToken :: (IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation, IsCKServerChangeToken previousServerChangeToken) => ckFetchDatabaseChangesOperation -> previousServerChangeToken -> IO (Id CKFetchDatabaseChangesOperation)
-initWithPreviousServerChangeToken ckFetchDatabaseChangesOperation  previousServerChangeToken =
-  withObjCPtr previousServerChangeToken $ \raw_previousServerChangeToken ->
-      sendMsg ckFetchDatabaseChangesOperation (mkSelector "initWithPreviousServerChangeToken:") (retPtr retVoid) [argPtr (castPtr raw_previousServerChangeToken :: Ptr ())] >>= ownedObject . castPtr
+initWithPreviousServerChangeToken ckFetchDatabaseChangesOperation previousServerChangeToken =
+  sendOwnedMessage ckFetchDatabaseChangesOperation initWithPreviousServerChangeTokenSelector (toCKServerChangeToken previousServerChangeToken)
 
 -- | @- previousServerChangeToken@
 previousServerChangeToken :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO (Id CKServerChangeToken)
-previousServerChangeToken ckFetchDatabaseChangesOperation  =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "previousServerChangeToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousServerChangeToken ckFetchDatabaseChangesOperation =
+  sendMessage ckFetchDatabaseChangesOperation previousServerChangeTokenSelector
 
 -- | @- setPreviousServerChangeToken:@
 setPreviousServerChangeToken :: (IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation, IsCKServerChangeToken value) => ckFetchDatabaseChangesOperation -> value -> IO ()
-setPreviousServerChangeToken ckFetchDatabaseChangesOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchDatabaseChangesOperation (mkSelector "setPreviousServerChangeToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreviousServerChangeToken ckFetchDatabaseChangesOperation value =
+  sendMessage ckFetchDatabaseChangesOperation setPreviousServerChangeTokenSelector (toCKServerChangeToken value)
 
 -- | @- resultsLimit@
 resultsLimit :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO CULong
-resultsLimit ckFetchDatabaseChangesOperation  =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "resultsLimit") retCULong []
+resultsLimit ckFetchDatabaseChangesOperation =
+  sendMessage ckFetchDatabaseChangesOperation resultsLimitSelector
 
 -- | @- setResultsLimit:@
 setResultsLimit :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> CULong -> IO ()
-setResultsLimit ckFetchDatabaseChangesOperation  value =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "setResultsLimit:") retVoid [argCULong value]
+setResultsLimit ckFetchDatabaseChangesOperation value =
+  sendMessage ckFetchDatabaseChangesOperation setResultsLimitSelector value
 
 -- | When set to YES, this operation will send repeated requests to the server until all record zone changes have been fetched.
 --
@@ -109,8 +104,8 @@ setResultsLimit ckFetchDatabaseChangesOperation  value =
 --
 -- ObjC selector: @- fetchAllChanges@
 fetchAllChanges :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO Bool
-fetchAllChanges ckFetchDatabaseChangesOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckFetchDatabaseChangesOperation (mkSelector "fetchAllChanges") retCULong []
+fetchAllChanges ckFetchDatabaseChangesOperation =
+  sendMessage ckFetchDatabaseChangesOperation fetchAllChangesSelector
 
 -- | When set to YES, this operation will send repeated requests to the server until all record zone changes have been fetched.
 --
@@ -118,36 +113,36 @@ fetchAllChanges ckFetchDatabaseChangesOperation  =
 --
 -- ObjC selector: @- setFetchAllChanges:@
 setFetchAllChanges :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> Bool -> IO ()
-setFetchAllChanges ckFetchDatabaseChangesOperation  value =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "setFetchAllChanges:") retVoid [argCULong (if value then 1 else 0)]
+setFetchAllChanges ckFetchDatabaseChangesOperation value =
+  sendMessage ckFetchDatabaseChangesOperation setFetchAllChangesSelector value
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- recordZoneWithIDChangedBlock@
 recordZoneWithIDChangedBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO (Ptr ())
-recordZoneWithIDChangedBlock ckFetchDatabaseChangesOperation  =
-    fmap castPtr $ sendMsg ckFetchDatabaseChangesOperation (mkSelector "recordZoneWithIDChangedBlock") (retPtr retVoid) []
+recordZoneWithIDChangedBlock ckFetchDatabaseChangesOperation =
+  sendMessage ckFetchDatabaseChangesOperation recordZoneWithIDChangedBlockSelector
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- setRecordZoneWithIDChangedBlock:@
 setRecordZoneWithIDChangedBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> Ptr () -> IO ()
-setRecordZoneWithIDChangedBlock ckFetchDatabaseChangesOperation  value =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "setRecordZoneWithIDChangedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRecordZoneWithIDChangedBlock ckFetchDatabaseChangesOperation value =
+  sendMessage ckFetchDatabaseChangesOperation setRecordZoneWithIDChangedBlockSelector value
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- recordZoneWithIDWasDeletedBlock@
 recordZoneWithIDWasDeletedBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO (Ptr ())
-recordZoneWithIDWasDeletedBlock ckFetchDatabaseChangesOperation  =
-    fmap castPtr $ sendMsg ckFetchDatabaseChangesOperation (mkSelector "recordZoneWithIDWasDeletedBlock") (retPtr retVoid) []
+recordZoneWithIDWasDeletedBlock ckFetchDatabaseChangesOperation =
+  sendMessage ckFetchDatabaseChangesOperation recordZoneWithIDWasDeletedBlockSelector
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- setRecordZoneWithIDWasDeletedBlock:@
 setRecordZoneWithIDWasDeletedBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> Ptr () -> IO ()
-setRecordZoneWithIDWasDeletedBlock ckFetchDatabaseChangesOperation  value =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "setRecordZoneWithIDWasDeletedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRecordZoneWithIDWasDeletedBlock ckFetchDatabaseChangesOperation value =
+  sendMessage ckFetchDatabaseChangesOperation setRecordZoneWithIDWasDeletedBlockSelector value
 
 -- | If this block is set it will be called instead of @recordZoneWithIDWasDeletedBlock@ if the user deleted this zone via the iCloud storage UI.
 --
@@ -155,8 +150,8 @@ setRecordZoneWithIDWasDeletedBlock ckFetchDatabaseChangesOperation  value =
 --
 -- ObjC selector: @- recordZoneWithIDWasPurgedBlock@
 recordZoneWithIDWasPurgedBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO (Ptr ())
-recordZoneWithIDWasPurgedBlock ckFetchDatabaseChangesOperation  =
-    fmap castPtr $ sendMsg ckFetchDatabaseChangesOperation (mkSelector "recordZoneWithIDWasPurgedBlock") (retPtr retVoid) []
+recordZoneWithIDWasPurgedBlock ckFetchDatabaseChangesOperation =
+  sendMessage ckFetchDatabaseChangesOperation recordZoneWithIDWasPurgedBlockSelector
 
 -- | If this block is set it will be called instead of @recordZoneWithIDWasDeletedBlock@ if the user deleted this zone via the iCloud storage UI.
 --
@@ -164,8 +159,8 @@ recordZoneWithIDWasPurgedBlock ckFetchDatabaseChangesOperation  =
 --
 -- ObjC selector: @- setRecordZoneWithIDWasPurgedBlock:@
 setRecordZoneWithIDWasPurgedBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> Ptr () -> IO ()
-setRecordZoneWithIDWasPurgedBlock ckFetchDatabaseChangesOperation  value =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "setRecordZoneWithIDWasPurgedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRecordZoneWithIDWasPurgedBlock ckFetchDatabaseChangesOperation value =
+  sendMessage ckFetchDatabaseChangesOperation setRecordZoneWithIDWasPurgedBlockSelector value
 
 -- | If this block is set it will be called instead of @recordZoneWithIDWasDeletedBlock@ if the user chose to reset all encrypted data for their account.
 --
@@ -173,8 +168,8 @@ setRecordZoneWithIDWasPurgedBlock ckFetchDatabaseChangesOperation  value =
 --
 -- ObjC selector: @- recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock@
 recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO (Ptr ())
-recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock ckFetchDatabaseChangesOperation  =
-    fmap castPtr $ sendMsg ckFetchDatabaseChangesOperation (mkSelector "recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock") (retPtr retVoid) []
+recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock ckFetchDatabaseChangesOperation =
+  sendMessage ckFetchDatabaseChangesOperation recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector
 
 -- | If this block is set it will be called instead of @recordZoneWithIDWasDeletedBlock@ if the user chose to reset all encrypted data for their account.
 --
@@ -182,22 +177,22 @@ recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock ckFetchDatabaseChange
 --
 -- ObjC selector: @- setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock:@
 setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> Ptr () -> IO ()
-setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock ckFetchDatabaseChangesOperation  value =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock ckFetchDatabaseChangesOperation value =
+  sendMessage ckFetchDatabaseChangesOperation setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector value
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- changeTokenUpdatedBlock@
 changeTokenUpdatedBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO (Ptr ())
-changeTokenUpdatedBlock ckFetchDatabaseChangesOperation  =
-    fmap castPtr $ sendMsg ckFetchDatabaseChangesOperation (mkSelector "changeTokenUpdatedBlock") (retPtr retVoid) []
+changeTokenUpdatedBlock ckFetchDatabaseChangesOperation =
+  sendMessage ckFetchDatabaseChangesOperation changeTokenUpdatedBlockSelector
 
 -- | Each @CKOperation@ instance has a private serial queue. This queue is used for all callback block invocations.  This block may share mutable state with other blocks assigned to this operation, but any such mutable state  should not be concurrently used outside of blocks assigned to this operation.
 --
 -- ObjC selector: @- setChangeTokenUpdatedBlock:@
 setChangeTokenUpdatedBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> Ptr () -> IO ()
-setChangeTokenUpdatedBlock ckFetchDatabaseChangesOperation  value =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "setChangeTokenUpdatedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setChangeTokenUpdatedBlock ckFetchDatabaseChangesOperation value =
+  sendMessage ckFetchDatabaseChangesOperation setChangeTokenUpdatedBlockSelector value
 
 -- | This block is called when the operation completes.
 --
@@ -205,8 +200,8 @@ setChangeTokenUpdatedBlock ckFetchDatabaseChangesOperation  value =
 --
 -- ObjC selector: @- fetchDatabaseChangesCompletionBlock@
 fetchDatabaseChangesCompletionBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> IO (Ptr ())
-fetchDatabaseChangesCompletionBlock ckFetchDatabaseChangesOperation  =
-    fmap castPtr $ sendMsg ckFetchDatabaseChangesOperation (mkSelector "fetchDatabaseChangesCompletionBlock") (retPtr retVoid) []
+fetchDatabaseChangesCompletionBlock ckFetchDatabaseChangesOperation =
+  sendMessage ckFetchDatabaseChangesOperation fetchDatabaseChangesCompletionBlockSelector
 
 -- | This block is called when the operation completes.
 --
@@ -214,90 +209,90 @@ fetchDatabaseChangesCompletionBlock ckFetchDatabaseChangesOperation  =
 --
 -- ObjC selector: @- setFetchDatabaseChangesCompletionBlock:@
 setFetchDatabaseChangesCompletionBlock :: IsCKFetchDatabaseChangesOperation ckFetchDatabaseChangesOperation => ckFetchDatabaseChangesOperation -> Ptr () -> IO ()
-setFetchDatabaseChangesCompletionBlock ckFetchDatabaseChangesOperation  value =
-    sendMsg ckFetchDatabaseChangesOperation (mkSelector "setFetchDatabaseChangesCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setFetchDatabaseChangesCompletionBlock ckFetchDatabaseChangesOperation value =
+  sendMessage ckFetchDatabaseChangesOperation setFetchDatabaseChangesCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKFetchDatabaseChangesOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithPreviousServerChangeToken:@
-initWithPreviousServerChangeTokenSelector :: Selector
+initWithPreviousServerChangeTokenSelector :: Selector '[Id CKServerChangeToken] (Id CKFetchDatabaseChangesOperation)
 initWithPreviousServerChangeTokenSelector = mkSelector "initWithPreviousServerChangeToken:"
 
 -- | @Selector@ for @previousServerChangeToken@
-previousServerChangeTokenSelector :: Selector
+previousServerChangeTokenSelector :: Selector '[] (Id CKServerChangeToken)
 previousServerChangeTokenSelector = mkSelector "previousServerChangeToken"
 
 -- | @Selector@ for @setPreviousServerChangeToken:@
-setPreviousServerChangeTokenSelector :: Selector
+setPreviousServerChangeTokenSelector :: Selector '[Id CKServerChangeToken] ()
 setPreviousServerChangeTokenSelector = mkSelector "setPreviousServerChangeToken:"
 
 -- | @Selector@ for @resultsLimit@
-resultsLimitSelector :: Selector
+resultsLimitSelector :: Selector '[] CULong
 resultsLimitSelector = mkSelector "resultsLimit"
 
 -- | @Selector@ for @setResultsLimit:@
-setResultsLimitSelector :: Selector
+setResultsLimitSelector :: Selector '[CULong] ()
 setResultsLimitSelector = mkSelector "setResultsLimit:"
 
 -- | @Selector@ for @fetchAllChanges@
-fetchAllChangesSelector :: Selector
+fetchAllChangesSelector :: Selector '[] Bool
 fetchAllChangesSelector = mkSelector "fetchAllChanges"
 
 -- | @Selector@ for @setFetchAllChanges:@
-setFetchAllChangesSelector :: Selector
+setFetchAllChangesSelector :: Selector '[Bool] ()
 setFetchAllChangesSelector = mkSelector "setFetchAllChanges:"
 
 -- | @Selector@ for @recordZoneWithIDChangedBlock@
-recordZoneWithIDChangedBlockSelector :: Selector
+recordZoneWithIDChangedBlockSelector :: Selector '[] (Ptr ())
 recordZoneWithIDChangedBlockSelector = mkSelector "recordZoneWithIDChangedBlock"
 
 -- | @Selector@ for @setRecordZoneWithIDChangedBlock:@
-setRecordZoneWithIDChangedBlockSelector :: Selector
+setRecordZoneWithIDChangedBlockSelector :: Selector '[Ptr ()] ()
 setRecordZoneWithIDChangedBlockSelector = mkSelector "setRecordZoneWithIDChangedBlock:"
 
 -- | @Selector@ for @recordZoneWithIDWasDeletedBlock@
-recordZoneWithIDWasDeletedBlockSelector :: Selector
+recordZoneWithIDWasDeletedBlockSelector :: Selector '[] (Ptr ())
 recordZoneWithIDWasDeletedBlockSelector = mkSelector "recordZoneWithIDWasDeletedBlock"
 
 -- | @Selector@ for @setRecordZoneWithIDWasDeletedBlock:@
-setRecordZoneWithIDWasDeletedBlockSelector :: Selector
+setRecordZoneWithIDWasDeletedBlockSelector :: Selector '[Ptr ()] ()
 setRecordZoneWithIDWasDeletedBlockSelector = mkSelector "setRecordZoneWithIDWasDeletedBlock:"
 
 -- | @Selector@ for @recordZoneWithIDWasPurgedBlock@
-recordZoneWithIDWasPurgedBlockSelector :: Selector
+recordZoneWithIDWasPurgedBlockSelector :: Selector '[] (Ptr ())
 recordZoneWithIDWasPurgedBlockSelector = mkSelector "recordZoneWithIDWasPurgedBlock"
 
 -- | @Selector@ for @setRecordZoneWithIDWasPurgedBlock:@
-setRecordZoneWithIDWasPurgedBlockSelector :: Selector
+setRecordZoneWithIDWasPurgedBlockSelector :: Selector '[Ptr ()] ()
 setRecordZoneWithIDWasPurgedBlockSelector = mkSelector "setRecordZoneWithIDWasPurgedBlock:"
 
 -- | @Selector@ for @recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock@
-recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector :: Selector
+recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector :: Selector '[] (Ptr ())
 recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector = mkSelector "recordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock"
 
 -- | @Selector@ for @setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock:@
-setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector :: Selector
+setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector :: Selector '[Ptr ()] ()
 setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlockSelector = mkSelector "setRecordZoneWithIDWasDeletedDueToUserEncryptedDataResetBlock:"
 
 -- | @Selector@ for @changeTokenUpdatedBlock@
-changeTokenUpdatedBlockSelector :: Selector
+changeTokenUpdatedBlockSelector :: Selector '[] (Ptr ())
 changeTokenUpdatedBlockSelector = mkSelector "changeTokenUpdatedBlock"
 
 -- | @Selector@ for @setChangeTokenUpdatedBlock:@
-setChangeTokenUpdatedBlockSelector :: Selector
+setChangeTokenUpdatedBlockSelector :: Selector '[Ptr ()] ()
 setChangeTokenUpdatedBlockSelector = mkSelector "setChangeTokenUpdatedBlock:"
 
 -- | @Selector@ for @fetchDatabaseChangesCompletionBlock@
-fetchDatabaseChangesCompletionBlockSelector :: Selector
+fetchDatabaseChangesCompletionBlockSelector :: Selector '[] (Ptr ())
 fetchDatabaseChangesCompletionBlockSelector = mkSelector "fetchDatabaseChangesCompletionBlock"
 
 -- | @Selector@ for @setFetchDatabaseChangesCompletionBlock:@
-setFetchDatabaseChangesCompletionBlockSelector :: Selector
+setFetchDatabaseChangesCompletionBlockSelector :: Selector '[Ptr ()] ()
 setFetchDatabaseChangesCompletionBlockSelector = mkSelector "setFetchDatabaseChangesCompletionBlock:"
 

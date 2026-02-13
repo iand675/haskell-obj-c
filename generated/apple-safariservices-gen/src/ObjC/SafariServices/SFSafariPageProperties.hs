@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.SafariServices.SFSafariPageProperties
   , title
   , usesPrivateBrowsing
   , active
-  , urlSelector
-  , titleSelector
-  , usesPrivateBrowsingSelector
   , activeSelector
+  , titleSelector
+  , urlSelector
+  , usesPrivateBrowsingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- url@
 url :: IsSFSafariPageProperties sfSafariPageProperties => sfSafariPageProperties -> IO (Id NSURL)
-url sfSafariPageProperties  =
-    sendMsg sfSafariPageProperties (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url sfSafariPageProperties =
+  sendMessage sfSafariPageProperties urlSelector
 
 -- | @- title@
 title :: IsSFSafariPageProperties sfSafariPageProperties => sfSafariPageProperties -> IO (Id NSString)
-title sfSafariPageProperties  =
-    sendMsg sfSafariPageProperties (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title sfSafariPageProperties =
+  sendMessage sfSafariPageProperties titleSelector
 
 -- | @- usesPrivateBrowsing@
 usesPrivateBrowsing :: IsSFSafariPageProperties sfSafariPageProperties => sfSafariPageProperties -> IO Bool
-usesPrivateBrowsing sfSafariPageProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSafariPageProperties (mkSelector "usesPrivateBrowsing") retCULong []
+usesPrivateBrowsing sfSafariPageProperties =
+  sendMessage sfSafariPageProperties usesPrivateBrowsingSelector
 
 -- | @- active@
 active :: IsSFSafariPageProperties sfSafariPageProperties => sfSafariPageProperties -> IO Bool
-active sfSafariPageProperties  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfSafariPageProperties (mkSelector "active") retCULong []
+active sfSafariPageProperties =
+  sendMessage sfSafariPageProperties activeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @usesPrivateBrowsing@
-usesPrivateBrowsingSelector :: Selector
+usesPrivateBrowsingSelector :: Selector '[] Bool
 usesPrivateBrowsingSelector = mkSelector "usesPrivateBrowsing"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 

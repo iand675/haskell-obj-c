@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.MapKit.MKPointOfInterestFilter
   , excludesCategory
   , filterIncludingAllCategories
   , filterExcludingAllCategories
-  , initIncludingCategoriesSelector
-  , initExcludingCategoriesSelector
-  , includesCategorySelector
   , excludesCategorySelector
-  , filterIncludingAllCategoriesSelector
   , filterExcludingAllCategoriesSelector
+  , filterIncludingAllCategoriesSelector
+  , includesCategorySelector
+  , initExcludingCategoriesSelector
+  , initIncludingCategoriesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,67 +36,63 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initIncludingCategories:@
 initIncludingCategories :: (IsMKPointOfInterestFilter mkPointOfInterestFilter, IsNSArray categories) => mkPointOfInterestFilter -> categories -> IO (Id MKPointOfInterestFilter)
-initIncludingCategories mkPointOfInterestFilter  categories =
-  withObjCPtr categories $ \raw_categories ->
-      sendMsg mkPointOfInterestFilter (mkSelector "initIncludingCategories:") (retPtr retVoid) [argPtr (castPtr raw_categories :: Ptr ())] >>= ownedObject . castPtr
+initIncludingCategories mkPointOfInterestFilter categories =
+  sendOwnedMessage mkPointOfInterestFilter initIncludingCategoriesSelector (toNSArray categories)
 
 -- | @- initExcludingCategories:@
 initExcludingCategories :: (IsMKPointOfInterestFilter mkPointOfInterestFilter, IsNSArray categories) => mkPointOfInterestFilter -> categories -> IO (Id MKPointOfInterestFilter)
-initExcludingCategories mkPointOfInterestFilter  categories =
-  withObjCPtr categories $ \raw_categories ->
-      sendMsg mkPointOfInterestFilter (mkSelector "initExcludingCategories:") (retPtr retVoid) [argPtr (castPtr raw_categories :: Ptr ())] >>= ownedObject . castPtr
+initExcludingCategories mkPointOfInterestFilter categories =
+  sendOwnedMessage mkPointOfInterestFilter initExcludingCategoriesSelector (toNSArray categories)
 
 -- | @- includesCategory:@
 includesCategory :: (IsMKPointOfInterestFilter mkPointOfInterestFilter, IsNSString category) => mkPointOfInterestFilter -> category -> IO Bool
-includesCategory mkPointOfInterestFilter  category =
-  withObjCPtr category $ \raw_category ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkPointOfInterestFilter (mkSelector "includesCategory:") retCULong [argPtr (castPtr raw_category :: Ptr ())]
+includesCategory mkPointOfInterestFilter category =
+  sendMessage mkPointOfInterestFilter includesCategorySelector (toNSString category)
 
 -- | @- excludesCategory:@
 excludesCategory :: (IsMKPointOfInterestFilter mkPointOfInterestFilter, IsNSString category) => mkPointOfInterestFilter -> category -> IO Bool
-excludesCategory mkPointOfInterestFilter  category =
-  withObjCPtr category $ \raw_category ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkPointOfInterestFilter (mkSelector "excludesCategory:") retCULong [argPtr (castPtr raw_category :: Ptr ())]
+excludesCategory mkPointOfInterestFilter category =
+  sendMessage mkPointOfInterestFilter excludesCategorySelector (toNSString category)
 
 -- | @+ filterIncludingAllCategories@
 filterIncludingAllCategories :: IO (Id MKPointOfInterestFilter)
 filterIncludingAllCategories  =
   do
     cls' <- getRequiredClass "MKPointOfInterestFilter"
-    sendClassMsg cls' (mkSelector "filterIncludingAllCategories") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' filterIncludingAllCategoriesSelector
 
 -- | @+ filterExcludingAllCategories@
 filterExcludingAllCategories :: IO (Id MKPointOfInterestFilter)
 filterExcludingAllCategories  =
   do
     cls' <- getRequiredClass "MKPointOfInterestFilter"
-    sendClassMsg cls' (mkSelector "filterExcludingAllCategories") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' filterExcludingAllCategoriesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initIncludingCategories:@
-initIncludingCategoriesSelector :: Selector
+initIncludingCategoriesSelector :: Selector '[Id NSArray] (Id MKPointOfInterestFilter)
 initIncludingCategoriesSelector = mkSelector "initIncludingCategories:"
 
 -- | @Selector@ for @initExcludingCategories:@
-initExcludingCategoriesSelector :: Selector
+initExcludingCategoriesSelector :: Selector '[Id NSArray] (Id MKPointOfInterestFilter)
 initExcludingCategoriesSelector = mkSelector "initExcludingCategories:"
 
 -- | @Selector@ for @includesCategory:@
-includesCategorySelector :: Selector
+includesCategorySelector :: Selector '[Id NSString] Bool
 includesCategorySelector = mkSelector "includesCategory:"
 
 -- | @Selector@ for @excludesCategory:@
-excludesCategorySelector :: Selector
+excludesCategorySelector :: Selector '[Id NSString] Bool
 excludesCategorySelector = mkSelector "excludesCategory:"
 
 -- | @Selector@ for @filterIncludingAllCategories@
-filterIncludingAllCategoriesSelector :: Selector
+filterIncludingAllCategoriesSelector :: Selector '[] (Id MKPointOfInterestFilter)
 filterIncludingAllCategoriesSelector = mkSelector "filterIncludingAllCategories"
 
 -- | @Selector@ for @filterExcludingAllCategories@
-filterExcludingAllCategoriesSelector :: Selector
+filterExcludingAllCategoriesSelector :: Selector '[] (Id MKPointOfInterestFilter)
 filterExcludingAllCategoriesSelector = mkSelector "filterExcludingAllCategories"
 

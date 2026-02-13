@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.NetworkExtension.NEHotspotConfigurationManager
   , joinAccessoryHotspotWithoutSecurity_completionHandler
   , sharedManager
   , applyConfiguration_completionHandlerSelector
-  , removeConfigurationForSSIDSelector
-  , removeConfigurationForHS20DomainNameSelector
-  , joinAccessoryHotspot_passphrase_completionHandlerSelector
   , joinAccessoryHotspotWithoutSecurity_completionHandlerSelector
+  , joinAccessoryHotspot_passphrase_completionHandlerSelector
+  , removeConfigurationForHS20DomainNameSelector
+  , removeConfigurationForSSIDSelector
   , sharedManagerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,9 +49,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- applyConfiguration:completionHandler:@
 applyConfiguration_completionHandler :: (IsNEHotspotConfigurationManager neHotspotConfigurationManager, IsNEHotspotConfiguration configuration) => neHotspotConfigurationManager -> configuration -> Ptr () -> IO ()
-applyConfiguration_completionHandler neHotspotConfigurationManager  configuration completionHandler =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg neHotspotConfigurationManager (mkSelector "applyConfiguration:completionHandler:") retVoid [argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+applyConfiguration_completionHandler neHotspotConfigurationManager configuration completionHandler =
+  sendMessage neHotspotConfigurationManager applyConfiguration_completionHandlerSelector (toNEHotspotConfiguration configuration) completionHandler
 
 -- | removeConfigurationForSSID:
 --
@@ -64,9 +60,8 @@ applyConfiguration_completionHandler neHotspotConfigurationManager  configuratio
 --
 -- ObjC selector: @- removeConfigurationForSSID:@
 removeConfigurationForSSID :: (IsNEHotspotConfigurationManager neHotspotConfigurationManager, IsNSString ssid) => neHotspotConfigurationManager -> ssid -> IO ()
-removeConfigurationForSSID neHotspotConfigurationManager  ssid =
-  withObjCPtr ssid $ \raw_ssid ->
-      sendMsg neHotspotConfigurationManager (mkSelector "removeConfigurationForSSID:") retVoid [argPtr (castPtr raw_ssid :: Ptr ())]
+removeConfigurationForSSID neHotspotConfigurationManager ssid =
+  sendMessage neHotspotConfigurationManager removeConfigurationForSSIDSelector (toNSString ssid)
 
 -- | removeConfigurationForNetworkName:
 --
@@ -76,9 +71,8 @@ removeConfigurationForSSID neHotspotConfigurationManager  ssid =
 --
 -- ObjC selector: @- removeConfigurationForHS20DomainName:@
 removeConfigurationForHS20DomainName :: (IsNEHotspotConfigurationManager neHotspotConfigurationManager, IsNSString domainName) => neHotspotConfigurationManager -> domainName -> IO ()
-removeConfigurationForHS20DomainName neHotspotConfigurationManager  domainName =
-  withObjCPtr domainName $ \raw_domainName ->
-      sendMsg neHotspotConfigurationManager (mkSelector "removeConfigurationForHS20DomainName:") retVoid [argPtr (castPtr raw_domainName :: Ptr ())]
+removeConfigurationForHS20DomainName neHotspotConfigurationManager domainName =
+  sendMessage neHotspotConfigurationManager removeConfigurationForHS20DomainNameSelector (toNSString domainName)
 
 -- | joinAccessoryHotspot:
 --
@@ -92,10 +86,8 @@ removeConfigurationForHS20DomainName neHotspotConfigurationManager  domainName =
 --
 -- ObjC selector: @- joinAccessoryHotspot:passphrase:completionHandler:@
 joinAccessoryHotspot_passphrase_completionHandler :: (IsNEHotspotConfigurationManager neHotspotConfigurationManager, IsASAccessory accessory, IsNSString passphrase) => neHotspotConfigurationManager -> accessory -> passphrase -> Ptr () -> IO ()
-joinAccessoryHotspot_passphrase_completionHandler neHotspotConfigurationManager  accessory passphrase completionHandler =
-  withObjCPtr accessory $ \raw_accessory ->
-    withObjCPtr passphrase $ \raw_passphrase ->
-        sendMsg neHotspotConfigurationManager (mkSelector "joinAccessoryHotspot:passphrase:completionHandler:") retVoid [argPtr (castPtr raw_accessory :: Ptr ()), argPtr (castPtr raw_passphrase :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+joinAccessoryHotspot_passphrase_completionHandler neHotspotConfigurationManager accessory passphrase completionHandler =
+  sendMessage neHotspotConfigurationManager joinAccessoryHotspot_passphrase_completionHandlerSelector (toASAccessory accessory) (toNSString passphrase) completionHandler
 
 -- | joinAccessoryHotspotWithoutSecurity:
 --
@@ -107,42 +99,41 @@ joinAccessoryHotspot_passphrase_completionHandler neHotspotConfigurationManager 
 --
 -- ObjC selector: @- joinAccessoryHotspotWithoutSecurity:completionHandler:@
 joinAccessoryHotspotWithoutSecurity_completionHandler :: (IsNEHotspotConfigurationManager neHotspotConfigurationManager, IsASAccessory accessory) => neHotspotConfigurationManager -> accessory -> Ptr () -> IO ()
-joinAccessoryHotspotWithoutSecurity_completionHandler neHotspotConfigurationManager  accessory completionHandler =
-  withObjCPtr accessory $ \raw_accessory ->
-      sendMsg neHotspotConfigurationManager (mkSelector "joinAccessoryHotspotWithoutSecurity:completionHandler:") retVoid [argPtr (castPtr raw_accessory :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+joinAccessoryHotspotWithoutSecurity_completionHandler neHotspotConfigurationManager accessory completionHandler =
+  sendMessage neHotspotConfigurationManager joinAccessoryHotspotWithoutSecurity_completionHandlerSelector (toASAccessory accessory) completionHandler
 
 -- | @+ sharedManager@
 sharedManager :: IO (Id NEHotspotConfigurationManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "NEHotspotConfigurationManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @applyConfiguration:completionHandler:@
-applyConfiguration_completionHandlerSelector :: Selector
+applyConfiguration_completionHandlerSelector :: Selector '[Id NEHotspotConfiguration, Ptr ()] ()
 applyConfiguration_completionHandlerSelector = mkSelector "applyConfiguration:completionHandler:"
 
 -- | @Selector@ for @removeConfigurationForSSID:@
-removeConfigurationForSSIDSelector :: Selector
+removeConfigurationForSSIDSelector :: Selector '[Id NSString] ()
 removeConfigurationForSSIDSelector = mkSelector "removeConfigurationForSSID:"
 
 -- | @Selector@ for @removeConfigurationForHS20DomainName:@
-removeConfigurationForHS20DomainNameSelector :: Selector
+removeConfigurationForHS20DomainNameSelector :: Selector '[Id NSString] ()
 removeConfigurationForHS20DomainNameSelector = mkSelector "removeConfigurationForHS20DomainName:"
 
 -- | @Selector@ for @joinAccessoryHotspot:passphrase:completionHandler:@
-joinAccessoryHotspot_passphrase_completionHandlerSelector :: Selector
+joinAccessoryHotspot_passphrase_completionHandlerSelector :: Selector '[Id ASAccessory, Id NSString, Ptr ()] ()
 joinAccessoryHotspot_passphrase_completionHandlerSelector = mkSelector "joinAccessoryHotspot:passphrase:completionHandler:"
 
 -- | @Selector@ for @joinAccessoryHotspotWithoutSecurity:completionHandler:@
-joinAccessoryHotspotWithoutSecurity_completionHandlerSelector :: Selector
+joinAccessoryHotspotWithoutSecurity_completionHandlerSelector :: Selector '[Id ASAccessory, Ptr ()] ()
 joinAccessoryHotspotWithoutSecurity_completionHandlerSelector = mkSelector "joinAccessoryHotspotWithoutSecurity:completionHandler:"
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id NEHotspotConfigurationManager)
 sharedManagerSelector = mkSelector "sharedManager"
 

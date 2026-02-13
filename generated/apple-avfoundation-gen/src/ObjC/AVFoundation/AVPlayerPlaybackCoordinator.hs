@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.AVFoundation.AVPlayerPlaybackCoordinator
   , delegate
   , setDelegate
   , playbackCoordinationMedium
+  , coordinateUsingCoordinationMedium_errorSelector
+  , delegateSelector
   , initSelector
   , newSelector
-  , coordinateUsingCoordinationMedium_errorSelector
-  , playerSelector
-  , delegateSelector
-  , setDelegateSelector
   , playbackCoordinationMediumSelector
+  , playerSelector
+  , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator => avPlayerPlaybackCoordinator -> IO (Id AVPlayerPlaybackCoordinator)
-init_ avPlayerPlaybackCoordinator  =
-    sendMsg avPlayerPlaybackCoordinator (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerPlaybackCoordinator =
+  sendOwnedMessage avPlayerPlaybackCoordinator initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerPlaybackCoordinator)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerPlaybackCoordinator"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Connects the playback coordinator to the coordination medium
 --
@@ -63,31 +60,29 @@ new  =
 --
 -- ObjC selector: @- coordinateUsingCoordinationMedium:error:@
 coordinateUsingCoordinationMedium_error :: (IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator, IsAVPlaybackCoordinationMedium coordinationMedium, IsNSError outError) => avPlayerPlaybackCoordinator -> coordinationMedium -> outError -> IO Bool
-coordinateUsingCoordinationMedium_error avPlayerPlaybackCoordinator  coordinationMedium outError =
-  withObjCPtr coordinationMedium $ \raw_coordinationMedium ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerPlaybackCoordinator (mkSelector "coordinateUsingCoordinationMedium:error:") retCULong [argPtr (castPtr raw_coordinationMedium :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+coordinateUsingCoordinationMedium_error avPlayerPlaybackCoordinator coordinationMedium outError =
+  sendMessage avPlayerPlaybackCoordinator coordinateUsingCoordinationMedium_errorSelector (toAVPlaybackCoordinationMedium coordinationMedium) (toNSError outError)
 
 -- | The AVPlayer this coordinator is controlling.
 --
 -- ObjC selector: @- player@
 player :: IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator => avPlayerPlaybackCoordinator -> IO (Id AVPlayer)
-player avPlayerPlaybackCoordinator  =
-    sendMsg avPlayerPlaybackCoordinator (mkSelector "player") (retPtr retVoid) [] >>= retainedObject . castPtr
+player avPlayerPlaybackCoordinator =
+  sendMessage avPlayerPlaybackCoordinator playerSelector
 
 -- | An object implementing the AVPlaybackCoordinatorDelegate protocol.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator => avPlayerPlaybackCoordinator -> IO RawId
-delegate avPlayerPlaybackCoordinator  =
-    fmap (RawId . castPtr) $ sendMsg avPlayerPlaybackCoordinator (mkSelector "delegate") (retPtr retVoid) []
+delegate avPlayerPlaybackCoordinator =
+  sendMessage avPlayerPlaybackCoordinator delegateSelector
 
 -- | An object implementing the AVPlaybackCoordinatorDelegate protocol.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator => avPlayerPlaybackCoordinator -> RawId -> IO ()
-setDelegate avPlayerPlaybackCoordinator  value =
-    sendMsg avPlayerPlaybackCoordinator (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avPlayerPlaybackCoordinator value =
+  sendMessage avPlayerPlaybackCoordinator setDelegateSelector value
 
 -- | The AVPlaybackCoordinationMedium this playback coordinator is connected to.
 --
@@ -95,38 +90,38 @@ setDelegate avPlayerPlaybackCoordinator  value =
 --
 -- ObjC selector: @- playbackCoordinationMedium@
 playbackCoordinationMedium :: IsAVPlayerPlaybackCoordinator avPlayerPlaybackCoordinator => avPlayerPlaybackCoordinator -> IO (Id AVPlaybackCoordinationMedium)
-playbackCoordinationMedium avPlayerPlaybackCoordinator  =
-    sendMsg avPlayerPlaybackCoordinator (mkSelector "playbackCoordinationMedium") (retPtr retVoid) [] >>= retainedObject . castPtr
+playbackCoordinationMedium avPlayerPlaybackCoordinator =
+  sendMessage avPlayerPlaybackCoordinator playbackCoordinationMediumSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerPlaybackCoordinator)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerPlaybackCoordinator)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @coordinateUsingCoordinationMedium:error:@
-coordinateUsingCoordinationMedium_errorSelector :: Selector
+coordinateUsingCoordinationMedium_errorSelector :: Selector '[Id AVPlaybackCoordinationMedium, Id NSError] Bool
 coordinateUsingCoordinationMedium_errorSelector = mkSelector "coordinateUsingCoordinationMedium:error:"
 
 -- | @Selector@ for @player@
-playerSelector :: Selector
+playerSelector :: Selector '[] (Id AVPlayer)
 playerSelector = mkSelector "player"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @playbackCoordinationMedium@
-playbackCoordinationMediumSelector :: Selector
+playbackCoordinationMediumSelector :: Selector '[] (Id AVPlaybackCoordinationMedium)
 playbackCoordinationMediumSelector = mkSelector "playbackCoordinationMedium"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRTimeSynchronizationClusterSetTrustedTimeSourceParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , trustedTimeSourceSelector
-  , setTrustedTimeSourceSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setTrustedTimeSourceSelector
+  , timedInvokeTimeoutMsSelector
+  , trustedTimeSourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- trustedTimeSource@
 trustedTimeSource :: IsMTRTimeSynchronizationClusterSetTrustedTimeSourceParams mtrTimeSynchronizationClusterSetTrustedTimeSourceParams => mtrTimeSynchronizationClusterSetTrustedTimeSourceParams -> IO (Id MTRTimeSynchronizationClusterFabricScopedTrustedTimeSourceStruct)
-trustedTimeSource mtrTimeSynchronizationClusterSetTrustedTimeSourceParams  =
-    sendMsg mtrTimeSynchronizationClusterSetTrustedTimeSourceParams (mkSelector "trustedTimeSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+trustedTimeSource mtrTimeSynchronizationClusterSetTrustedTimeSourceParams =
+  sendMessage mtrTimeSynchronizationClusterSetTrustedTimeSourceParams trustedTimeSourceSelector
 
 -- | @- setTrustedTimeSource:@
 setTrustedTimeSource :: (IsMTRTimeSynchronizationClusterSetTrustedTimeSourceParams mtrTimeSynchronizationClusterSetTrustedTimeSourceParams, IsMTRTimeSynchronizationClusterFabricScopedTrustedTimeSourceStruct value) => mtrTimeSynchronizationClusterSetTrustedTimeSourceParams -> value -> IO ()
-setTrustedTimeSource mtrTimeSynchronizationClusterSetTrustedTimeSourceParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetTrustedTimeSourceParams (mkSelector "setTrustedTimeSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTrustedTimeSource mtrTimeSynchronizationClusterSetTrustedTimeSourceParams value =
+  sendMessage mtrTimeSynchronizationClusterSetTrustedTimeSourceParams setTrustedTimeSourceSelector (toMTRTimeSynchronizationClusterFabricScopedTrustedTimeSourceStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setTrustedTimeSource mtrTimeSynchronizationClusterSetTrustedTimeSourceParams  va
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRTimeSynchronizationClusterSetTrustedTimeSourceParams mtrTimeSynchronizationClusterSetTrustedTimeSourceParams => mtrTimeSynchronizationClusterSetTrustedTimeSourceParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTrustedTimeSourceParams  =
-    sendMsg mtrTimeSynchronizationClusterSetTrustedTimeSourceParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTrustedTimeSourceParams =
+  sendMessage mtrTimeSynchronizationClusterSetTrustedTimeSourceParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTrustedTimeSourceParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRTimeSynchronizationClusterSetTrustedTimeSourceParams mtrTimeSynchronizationClusterSetTrustedTimeSourceParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetTrustedTimeSourceParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTrustedTimeSourceParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetTrustedTimeSourceParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTrustedTimeSourceParams value =
+  sendMessage mtrTimeSynchronizationClusterSetTrustedTimeSourceParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrTimeSynchronizationClusterSetTrustedTimeSourceParams 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRTimeSynchronizationClusterSetTrustedTimeSourceParams mtrTimeSynchronizationClusterSetTrustedTimeSourceParams => mtrTimeSynchronizationClusterSetTrustedTimeSourceParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrTimeSynchronizationClusterSetTrustedTimeSourceParams  =
-    sendMsg mtrTimeSynchronizationClusterSetTrustedTimeSourceParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrTimeSynchronizationClusterSetTrustedTimeSourceParams =
+  sendMessage mtrTimeSynchronizationClusterSetTrustedTimeSourceParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrTimeSynchronizationClusterSetTrustedTimeSourcePar
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRTimeSynchronizationClusterSetTrustedTimeSourceParams mtrTimeSynchronizationClusterSetTrustedTimeSourceParams, IsNSNumber value) => mtrTimeSynchronizationClusterSetTrustedTimeSourceParams -> value -> IO ()
-setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetTrustedTimeSourceParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTimeSynchronizationClusterSetTrustedTimeSourceParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrTimeSynchronizationClusterSetTrustedTimeSourceParams value =
+  sendMessage mtrTimeSynchronizationClusterSetTrustedTimeSourceParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @trustedTimeSource@
-trustedTimeSourceSelector :: Selector
+trustedTimeSourceSelector :: Selector '[] (Id MTRTimeSynchronizationClusterFabricScopedTrustedTimeSourceStruct)
 trustedTimeSourceSelector = mkSelector "trustedTimeSource"
 
 -- | @Selector@ for @setTrustedTimeSource:@
-setTrustedTimeSourceSelector :: Selector
+setTrustedTimeSourceSelector :: Selector '[Id MTRTimeSynchronizationClusterFabricScopedTrustedTimeSourceStruct] ()
 setTrustedTimeSourceSelector = mkSelector "setTrustedTimeSource:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,12 +21,12 @@ module ObjC.NetworkExtension.NEDNSProxyProvider
   , handleNewUDPFlow_initialRemoteFlowEndpoint
   , handleNewUDPFlow_initialRemoteEndpoint
   , systemDNSSettings
-  , startProxyWithOptions_completionHandlerSelector
-  , stopProxyWithReason_completionHandlerSelector
   , cancelProxyWithErrorSelector
   , handleNewFlowSelector
-  , handleNewUDPFlow_initialRemoteFlowEndpointSelector
   , handleNewUDPFlow_initialRemoteEndpointSelector
+  , handleNewUDPFlow_initialRemoteFlowEndpointSelector
+  , startProxyWithOptions_completionHandlerSelector
+  , stopProxyWithReason_completionHandlerSelector
   , systemDNSSettingsSelector
 
   -- * Enum types
@@ -51,15 +52,11 @@ module ObjC.NetworkExtension.NEDNSProxyProvider
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,9 +74,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startProxyWithOptions:completionHandler:@
 startProxyWithOptions_completionHandler :: (IsNEDNSProxyProvider nednsProxyProvider, IsNSDictionary options) => nednsProxyProvider -> options -> Ptr () -> IO ()
-startProxyWithOptions_completionHandler nednsProxyProvider  options completionHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg nednsProxyProvider (mkSelector "startProxyWithOptions:completionHandler:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+startProxyWithOptions_completionHandler nednsProxyProvider options completionHandler =
+  sendMessage nednsProxyProvider startProxyWithOptions_completionHandlerSelector (toNSDictionary options) completionHandler
 
 -- | stopProxyWithReason:completionHandler:
 --
@@ -91,8 +87,8 @@ startProxyWithOptions_completionHandler nednsProxyProvider  options completionHa
 --
 -- ObjC selector: @- stopProxyWithReason:completionHandler:@
 stopProxyWithReason_completionHandler :: IsNEDNSProxyProvider nednsProxyProvider => nednsProxyProvider -> NEProviderStopReason -> Ptr () -> IO ()
-stopProxyWithReason_completionHandler nednsProxyProvider  reason completionHandler =
-    sendMsg nednsProxyProvider (mkSelector "stopProxyWithReason:completionHandler:") retVoid [argCLong (coerce reason), argPtr (castPtr completionHandler :: Ptr ())]
+stopProxyWithReason_completionHandler nednsProxyProvider reason completionHandler =
+  sendMessage nednsProxyProvider stopProxyWithReason_completionHandlerSelector reason completionHandler
 
 -- | cancelProxyWithError:
 --
@@ -102,9 +98,8 @@ stopProxyWithReason_completionHandler nednsProxyProvider  reason completionHandl
 --
 -- ObjC selector: @- cancelProxyWithError:@
 cancelProxyWithError :: (IsNEDNSProxyProvider nednsProxyProvider, IsNSError error_) => nednsProxyProvider -> error_ -> IO ()
-cancelProxyWithError nednsProxyProvider  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nednsProxyProvider (mkSelector "cancelProxyWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+cancelProxyWithError nednsProxyProvider error_ =
+  sendMessage nednsProxyProvider cancelProxyWithErrorSelector (toNSError error_)
 
 -- | handleNewFlow:
 --
@@ -116,9 +111,8 @@ cancelProxyWithError nednsProxyProvider  error_ =
 --
 -- ObjC selector: @- handleNewFlow:@
 handleNewFlow :: (IsNEDNSProxyProvider nednsProxyProvider, IsNEAppProxyFlow flow) => nednsProxyProvider -> flow -> IO Bool
-handleNewFlow nednsProxyProvider  flow =
-  withObjCPtr flow $ \raw_flow ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nednsProxyProvider (mkSelector "handleNewFlow:") retCULong [argPtr (castPtr raw_flow :: Ptr ())]
+handleNewFlow nednsProxyProvider flow =
+  sendMessage nednsProxyProvider handleNewFlowSelector (toNEAppProxyFlow flow)
 
 -- | handleNewUDPFlow:initialRemoteFlowEndpoint:
 --
@@ -134,10 +128,8 @@ handleNewFlow nednsProxyProvider  flow =
 --
 -- ObjC selector: @- handleNewUDPFlow:initialRemoteFlowEndpoint:@
 handleNewUDPFlow_initialRemoteFlowEndpoint :: (IsNEDNSProxyProvider nednsProxyProvider, IsNEAppProxyUDPFlow flow, IsNSObject remoteEndpoint) => nednsProxyProvider -> flow -> remoteEndpoint -> IO Bool
-handleNewUDPFlow_initialRemoteFlowEndpoint nednsProxyProvider  flow remoteEndpoint =
-  withObjCPtr flow $ \raw_flow ->
-    withObjCPtr remoteEndpoint $ \raw_remoteEndpoint ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nednsProxyProvider (mkSelector "handleNewUDPFlow:initialRemoteFlowEndpoint:") retCULong [argPtr (castPtr raw_flow :: Ptr ()), argPtr (castPtr raw_remoteEndpoint :: Ptr ())]
+handleNewUDPFlow_initialRemoteFlowEndpoint nednsProxyProvider flow remoteEndpoint =
+  sendMessage nednsProxyProvider handleNewUDPFlow_initialRemoteFlowEndpointSelector (toNEAppProxyUDPFlow flow) (toNSObject remoteEndpoint)
 
 -- | handleNewUDPFlow:initialRemoteEndpoint:
 --
@@ -151,10 +143,8 @@ handleNewUDPFlow_initialRemoteFlowEndpoint nednsProxyProvider  flow remoteEndpoi
 --
 -- ObjC selector: @- handleNewUDPFlow:initialRemoteEndpoint:@
 handleNewUDPFlow_initialRemoteEndpoint :: (IsNEDNSProxyProvider nednsProxyProvider, IsNEAppProxyUDPFlow flow, IsNWEndpoint remoteEndpoint) => nednsProxyProvider -> flow -> remoteEndpoint -> IO Bool
-handleNewUDPFlow_initialRemoteEndpoint nednsProxyProvider  flow remoteEndpoint =
-  withObjCPtr flow $ \raw_flow ->
-    withObjCPtr remoteEndpoint $ \raw_remoteEndpoint ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nednsProxyProvider (mkSelector "handleNewUDPFlow:initialRemoteEndpoint:") retCULong [argPtr (castPtr raw_flow :: Ptr ()), argPtr (castPtr raw_remoteEndpoint :: Ptr ())]
+handleNewUDPFlow_initialRemoteEndpoint nednsProxyProvider flow remoteEndpoint =
+  sendMessage nednsProxyProvider handleNewUDPFlow_initialRemoteEndpointSelector (toNEAppProxyUDPFlow flow) (toNWEndpoint remoteEndpoint)
 
 -- | systemDNSSettings
 --
@@ -162,38 +152,38 @@ handleNewUDPFlow_initialRemoteEndpoint nednsProxyProvider  flow remoteEndpoint =
 --
 -- ObjC selector: @- systemDNSSettings@
 systemDNSSettings :: IsNEDNSProxyProvider nednsProxyProvider => nednsProxyProvider -> IO (Id NSArray)
-systemDNSSettings nednsProxyProvider  =
-    sendMsg nednsProxyProvider (mkSelector "systemDNSSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemDNSSettings nednsProxyProvider =
+  sendMessage nednsProxyProvider systemDNSSettingsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startProxyWithOptions:completionHandler:@
-startProxyWithOptions_completionHandlerSelector :: Selector
+startProxyWithOptions_completionHandlerSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 startProxyWithOptions_completionHandlerSelector = mkSelector "startProxyWithOptions:completionHandler:"
 
 -- | @Selector@ for @stopProxyWithReason:completionHandler:@
-stopProxyWithReason_completionHandlerSelector :: Selector
+stopProxyWithReason_completionHandlerSelector :: Selector '[NEProviderStopReason, Ptr ()] ()
 stopProxyWithReason_completionHandlerSelector = mkSelector "stopProxyWithReason:completionHandler:"
 
 -- | @Selector@ for @cancelProxyWithError:@
-cancelProxyWithErrorSelector :: Selector
+cancelProxyWithErrorSelector :: Selector '[Id NSError] ()
 cancelProxyWithErrorSelector = mkSelector "cancelProxyWithError:"
 
 -- | @Selector@ for @handleNewFlow:@
-handleNewFlowSelector :: Selector
+handleNewFlowSelector :: Selector '[Id NEAppProxyFlow] Bool
 handleNewFlowSelector = mkSelector "handleNewFlow:"
 
 -- | @Selector@ for @handleNewUDPFlow:initialRemoteFlowEndpoint:@
-handleNewUDPFlow_initialRemoteFlowEndpointSelector :: Selector
+handleNewUDPFlow_initialRemoteFlowEndpointSelector :: Selector '[Id NEAppProxyUDPFlow, Id NSObject] Bool
 handleNewUDPFlow_initialRemoteFlowEndpointSelector = mkSelector "handleNewUDPFlow:initialRemoteFlowEndpoint:"
 
 -- | @Selector@ for @handleNewUDPFlow:initialRemoteEndpoint:@
-handleNewUDPFlow_initialRemoteEndpointSelector :: Selector
+handleNewUDPFlow_initialRemoteEndpointSelector :: Selector '[Id NEAppProxyUDPFlow, Id NWEndpoint] Bool
 handleNewUDPFlow_initialRemoteEndpointSelector = mkSelector "handleNewUDPFlow:initialRemoteEndpoint:"
 
 -- | @Selector@ for @systemDNSSettings@
-systemDNSSettingsSelector :: Selector
+systemDNSSettingsSelector :: Selector '[] (Id NSArray)
 systemDNSSettingsSelector = mkSelector "systemDNSSettings"
 

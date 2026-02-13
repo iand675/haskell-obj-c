@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.MailKit.MEComposeSession
   , sessionID
   , mailMessage
   , composeContext
-  , newSelector
+  , composeContextSelector
   , initSelector
+  , mailMessageSelector
+  , newSelector
   , reloadSessionSelector
   , sessionIDSelector
-  , mailMessageSelector
-  , composeContextSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,12 +41,12 @@ new :: IO (Id MEComposeSession)
 new  =
   do
     cls' <- getRequiredClass "MEComposeSession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMEComposeSession meComposeSession => meComposeSession -> IO (Id MEComposeSession)
-init_ meComposeSession  =
-    sendMsg meComposeSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meComposeSession =
+  sendOwnedMessage meComposeSession initSelector
 
 -- | Requests Mail to refresh compose session with new information that the extension has.
 --
@@ -57,55 +54,55 @@ init_ meComposeSession  =
 --
 -- ObjC selector: @- reloadSession@
 reloadSession :: IsMEComposeSession meComposeSession => meComposeSession -> IO ()
-reloadSession meComposeSession  =
-    sendMsg meComposeSession (mkSelector "reloadSession") retVoid []
+reloadSession meComposeSession =
+  sendMessage meComposeSession reloadSessionSelector
 
 -- | A unique identifier for the session.
 --
 -- ObjC selector: @- sessionID@
 sessionID :: IsMEComposeSession meComposeSession => meComposeSession -> IO (Id NSUUID)
-sessionID meComposeSession  =
-    sendMsg meComposeSession (mkSelector "sessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionID meComposeSession =
+  sendMessage meComposeSession sessionIDSelector
 
 -- | An instance of @MEMessage@ that represents properties of the mail message that author is composing in this @MEComposeSession@
 --
 -- ObjC selector: @- mailMessage@
 mailMessage :: IsMEComposeSession meComposeSession => meComposeSession -> IO (Id MEMessage)
-mailMessage meComposeSession  =
-    sendMsg meComposeSession (mkSelector "mailMessage") (retPtr retVoid) [] >>= retainedObject . castPtr
+mailMessage meComposeSession =
+  sendMessage meComposeSession mailMessageSelector
 
 -- | An instance of @MEComposeContext@ that provides additional information about the compose session.
 --
 -- ObjC selector: @- composeContext@
 composeContext :: IsMEComposeSession meComposeSession => meComposeSession -> IO (Id MEComposeContext)
-composeContext meComposeSession  =
-    sendMsg meComposeSession (mkSelector "composeContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+composeContext meComposeSession =
+  sendMessage meComposeSession composeContextSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEComposeSession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEComposeSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @reloadSession@
-reloadSessionSelector :: Selector
+reloadSessionSelector :: Selector '[] ()
 reloadSessionSelector = mkSelector "reloadSession"
 
 -- | @Selector@ for @sessionID@
-sessionIDSelector :: Selector
+sessionIDSelector :: Selector '[] (Id NSUUID)
 sessionIDSelector = mkSelector "sessionID"
 
 -- | @Selector@ for @mailMessage@
-mailMessageSelector :: Selector
+mailMessageSelector :: Selector '[] (Id MEMessage)
 mailMessageSelector = mkSelector "mailMessage"
 
 -- | @Selector@ for @composeContext@
-composeContextSelector :: Selector
+composeContextSelector :: Selector '[] (Id MEComposeContext)
 composeContextSelector = mkSelector "composeContext"
 

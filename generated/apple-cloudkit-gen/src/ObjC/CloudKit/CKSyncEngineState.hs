@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,30 +34,26 @@ module ObjC.CloudKit.CKSyncEngineState
   , hasPendingUntrackedChanges
   , setHasPendingUntrackedChanges
   , zoneIDsWithUnfetchedServerChanges
+  , addPendingDatabaseChangesSelector
+  , addPendingRecordZoneChangesSelector
+  , hasPendingUntrackedChangesSelector
   , initSelector
   , newSelector
-  , addPendingRecordZoneChangesSelector
-  , removePendingRecordZoneChangesSelector
-  , addPendingDatabaseChangesSelector
-  , removePendingDatabaseChangesSelector
-  , pendingRecordZoneChangesSelector
   , pendingDatabaseChangesSelector
-  , hasPendingUntrackedChangesSelector
+  , pendingRecordZoneChangesSelector
+  , removePendingDatabaseChangesSelector
+  , removePendingRecordZoneChangesSelector
   , setHasPendingUntrackedChangesSelector
   , zoneIDsWithUnfetchedServerChangesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,15 +62,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKSyncEngineState ckSyncEngineState => ckSyncEngineState -> IO (Id CKSyncEngineState)
-init_ ckSyncEngineState  =
-    sendMsg ckSyncEngineState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSyncEngineState =
+  sendOwnedMessage ckSyncEngineState initSelector
 
 -- | @+ new@
 new :: IO (Id CKSyncEngineState)
 new  =
   do
     cls' <- getRequiredClass "CKSyncEngineState"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Adds to the list of pending record zone changes.
 --
@@ -83,17 +80,15 @@ new  =
 --
 -- ObjC selector: @- addPendingRecordZoneChanges:@
 addPendingRecordZoneChanges :: (IsCKSyncEngineState ckSyncEngineState, IsNSArray changes) => ckSyncEngineState -> changes -> IO ()
-addPendingRecordZoneChanges ckSyncEngineState  changes =
-  withObjCPtr changes $ \raw_changes ->
-      sendMsg ckSyncEngineState (mkSelector "addPendingRecordZoneChanges:") retVoid [argPtr (castPtr raw_changes :: Ptr ())]
+addPendingRecordZoneChanges ckSyncEngineState changes =
+  sendMessage ckSyncEngineState addPendingRecordZoneChangesSelector (toNSArray changes)
 
 -- | Removes from the list of pending record zone changes.
 --
 -- ObjC selector: @- removePendingRecordZoneChanges:@
 removePendingRecordZoneChanges :: (IsCKSyncEngineState ckSyncEngineState, IsNSArray changes) => ckSyncEngineState -> changes -> IO ()
-removePendingRecordZoneChanges ckSyncEngineState  changes =
-  withObjCPtr changes $ \raw_changes ->
-      sendMsg ckSyncEngineState (mkSelector "removePendingRecordZoneChanges:") retVoid [argPtr (castPtr raw_changes :: Ptr ())]
+removePendingRecordZoneChanges ckSyncEngineState changes =
+  sendMessage ckSyncEngineState removePendingRecordZoneChangesSelector (toNSArray changes)
 
 -- | Adds to the list of pending database changes.
 --
@@ -103,17 +98,15 @@ removePendingRecordZoneChanges ckSyncEngineState  changes =
 --
 -- ObjC selector: @- addPendingDatabaseChanges:@
 addPendingDatabaseChanges :: (IsCKSyncEngineState ckSyncEngineState, IsNSArray changes) => ckSyncEngineState -> changes -> IO ()
-addPendingDatabaseChanges ckSyncEngineState  changes =
-  withObjCPtr changes $ \raw_changes ->
-      sendMsg ckSyncEngineState (mkSelector "addPendingDatabaseChanges:") retVoid [argPtr (castPtr raw_changes :: Ptr ())]
+addPendingDatabaseChanges ckSyncEngineState changes =
+  sendMessage ckSyncEngineState addPendingDatabaseChangesSelector (toNSArray changes)
 
 -- | Removes from the list of pending database changes.
 --
 -- ObjC selector: @- removePendingDatabaseChanges:@
 removePendingDatabaseChanges :: (IsCKSyncEngineState ckSyncEngineState, IsNSArray changes) => ckSyncEngineState -> changes -> IO ()
-removePendingDatabaseChanges ckSyncEngineState  changes =
-  withObjCPtr changes $ \raw_changes ->
-      sendMsg ckSyncEngineState (mkSelector "removePendingDatabaseChanges:") retVoid [argPtr (castPtr raw_changes :: Ptr ())]
+removePendingDatabaseChanges ckSyncEngineState changes =
+  sendMessage ckSyncEngineState removePendingDatabaseChangesSelector (toNSArray changes)
 
 -- | A list of record changes that need to be sent to the server.
 --
@@ -127,15 +120,15 @@ removePendingDatabaseChanges ckSyncEngineState  changes =
 --
 -- ObjC selector: @- pendingRecordZoneChanges@
 pendingRecordZoneChanges :: IsCKSyncEngineState ckSyncEngineState => ckSyncEngineState -> IO (Id NSArray)
-pendingRecordZoneChanges ckSyncEngineState  =
-    sendMsg ckSyncEngineState (mkSelector "pendingRecordZoneChanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+pendingRecordZoneChanges ckSyncEngineState =
+  sendMessage ckSyncEngineState pendingRecordZoneChangesSelector
 
 -- | A list of database changes that need to be sent to the server, similar to @pendingRecordZoneChanges@.
 --
 -- ObjC selector: @- pendingDatabaseChanges@
 pendingDatabaseChanges :: IsCKSyncEngineState ckSyncEngineState => ckSyncEngineState -> IO (Id NSArray)
-pendingDatabaseChanges ckSyncEngineState  =
-    sendMsg ckSyncEngineState (mkSelector "pendingDatabaseChanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+pendingDatabaseChanges ckSyncEngineState =
+  sendMessage ckSyncEngineState pendingDatabaseChangesSelector
 
 -- | This represents whether or not you have pending changes to send to the server that aren't tracked in ``CKSyncEngine/State/pendingRecordZoneChanges``. This is useful if you want to track pending changes in your own local database instead of the sync engine state.
 --
@@ -143,8 +136,8 @@ pendingDatabaseChanges ckSyncEngineState  =
 --
 -- ObjC selector: @- hasPendingUntrackedChanges@
 hasPendingUntrackedChanges :: IsCKSyncEngineState ckSyncEngineState => ckSyncEngineState -> IO Bool
-hasPendingUntrackedChanges ckSyncEngineState  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckSyncEngineState (mkSelector "hasPendingUntrackedChanges") retCULong []
+hasPendingUntrackedChanges ckSyncEngineState =
+  sendMessage ckSyncEngineState hasPendingUntrackedChangesSelector
 
 -- | This represents whether or not you have pending changes to send to the server that aren't tracked in ``CKSyncEngine/State/pendingRecordZoneChanges``. This is useful if you want to track pending changes in your own local database instead of the sync engine state.
 --
@@ -152,61 +145,61 @@ hasPendingUntrackedChanges ckSyncEngineState  =
 --
 -- ObjC selector: @- setHasPendingUntrackedChanges:@
 setHasPendingUntrackedChanges :: IsCKSyncEngineState ckSyncEngineState => ckSyncEngineState -> Bool -> IO ()
-setHasPendingUntrackedChanges ckSyncEngineState  value =
-    sendMsg ckSyncEngineState (mkSelector "setHasPendingUntrackedChanges:") retVoid [argCULong (if value then 1 else 0)]
+setHasPendingUntrackedChanges ckSyncEngineState value =
+  sendMessage ckSyncEngineState setHasPendingUntrackedChangesSelector value
 
 -- | The list of zone IDs that have new changes to fetch from the server. ``CKSyncEngine-5sie5`` keeps track of these zones and will update this list as it receives new information.
 --
 -- ObjC selector: @- zoneIDsWithUnfetchedServerChanges@
 zoneIDsWithUnfetchedServerChanges :: IsCKSyncEngineState ckSyncEngineState => ckSyncEngineState -> IO (Id NSArray)
-zoneIDsWithUnfetchedServerChanges ckSyncEngineState  =
-    sendMsg ckSyncEngineState (mkSelector "zoneIDsWithUnfetchedServerChanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+zoneIDsWithUnfetchedServerChanges ckSyncEngineState =
+  sendMessage ckSyncEngineState zoneIDsWithUnfetchedServerChangesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSyncEngineState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSyncEngineState)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @addPendingRecordZoneChanges:@
-addPendingRecordZoneChangesSelector :: Selector
+addPendingRecordZoneChangesSelector :: Selector '[Id NSArray] ()
 addPendingRecordZoneChangesSelector = mkSelector "addPendingRecordZoneChanges:"
 
 -- | @Selector@ for @removePendingRecordZoneChanges:@
-removePendingRecordZoneChangesSelector :: Selector
+removePendingRecordZoneChangesSelector :: Selector '[Id NSArray] ()
 removePendingRecordZoneChangesSelector = mkSelector "removePendingRecordZoneChanges:"
 
 -- | @Selector@ for @addPendingDatabaseChanges:@
-addPendingDatabaseChangesSelector :: Selector
+addPendingDatabaseChangesSelector :: Selector '[Id NSArray] ()
 addPendingDatabaseChangesSelector = mkSelector "addPendingDatabaseChanges:"
 
 -- | @Selector@ for @removePendingDatabaseChanges:@
-removePendingDatabaseChangesSelector :: Selector
+removePendingDatabaseChangesSelector :: Selector '[Id NSArray] ()
 removePendingDatabaseChangesSelector = mkSelector "removePendingDatabaseChanges:"
 
 -- | @Selector@ for @pendingRecordZoneChanges@
-pendingRecordZoneChangesSelector :: Selector
+pendingRecordZoneChangesSelector :: Selector '[] (Id NSArray)
 pendingRecordZoneChangesSelector = mkSelector "pendingRecordZoneChanges"
 
 -- | @Selector@ for @pendingDatabaseChanges@
-pendingDatabaseChangesSelector :: Selector
+pendingDatabaseChangesSelector :: Selector '[] (Id NSArray)
 pendingDatabaseChangesSelector = mkSelector "pendingDatabaseChanges"
 
 -- | @Selector@ for @hasPendingUntrackedChanges@
-hasPendingUntrackedChangesSelector :: Selector
+hasPendingUntrackedChangesSelector :: Selector '[] Bool
 hasPendingUntrackedChangesSelector = mkSelector "hasPendingUntrackedChanges"
 
 -- | @Selector@ for @setHasPendingUntrackedChanges:@
-setHasPendingUntrackedChangesSelector :: Selector
+setHasPendingUntrackedChangesSelector :: Selector '[Bool] ()
 setHasPendingUntrackedChangesSelector = mkSelector "setHasPendingUntrackedChanges:"
 
 -- | @Selector@ for @zoneIDsWithUnfetchedServerChanges@
-zoneIDsWithUnfetchedServerChangesSelector :: Selector
+zoneIDsWithUnfetchedServerChangesSelector :: Selector '[] (Id NSArray)
 zoneIDsWithUnfetchedServerChangesSelector = mkSelector "zoneIDsWithUnfetchedServerChanges"
 

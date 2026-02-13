@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.NetworkExtension.NWHostEndpoint
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,9 +45,7 @@ endpointWithHostname_port :: (IsNSString hostname, IsNSString port) => hostname 
 endpointWithHostname_port hostname port =
   do
     cls' <- getRequiredClass "NWHostEndpoint"
-    withObjCPtr hostname $ \raw_hostname ->
-      withObjCPtr port $ \raw_port ->
-        sendClassMsg cls' (mkSelector "endpointWithHostname:port:") (retPtr retVoid) [argPtr (castPtr raw_hostname :: Ptr ()), argPtr (castPtr raw_port :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' endpointWithHostname_portSelector (toNSString hostname) (toNSString port)
 
 -- | hostname
 --
@@ -58,8 +53,8 @@ endpointWithHostname_port hostname port =
 --
 -- ObjC selector: @- hostname@
 hostname :: IsNWHostEndpoint nwHostEndpoint => nwHostEndpoint -> IO (Id NSString)
-hostname nwHostEndpoint  =
-    sendMsg nwHostEndpoint (mkSelector "hostname") (retPtr retVoid) [] >>= retainedObject . castPtr
+hostname nwHostEndpoint =
+  sendMessage nwHostEndpoint hostnameSelector
 
 -- | port
 --
@@ -67,22 +62,22 @@ hostname nwHostEndpoint  =
 --
 -- ObjC selector: @- port@
 port :: IsNWHostEndpoint nwHostEndpoint => nwHostEndpoint -> IO (Id NSString)
-port nwHostEndpoint  =
-    sendMsg nwHostEndpoint (mkSelector "port") (retPtr retVoid) [] >>= retainedObject . castPtr
+port nwHostEndpoint =
+  sendMessage nwHostEndpoint portSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @endpointWithHostname:port:@
-endpointWithHostname_portSelector :: Selector
+endpointWithHostname_portSelector :: Selector '[Id NSString, Id NSString] (Id NWHostEndpoint)
 endpointWithHostname_portSelector = mkSelector "endpointWithHostname:port:"
 
 -- | @Selector@ for @hostname@
-hostnameSelector :: Selector
+hostnameSelector :: Selector '[] (Id NSString)
 hostnameSelector = mkSelector "hostname"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] (Id NSString)
 portSelector = mkSelector "port"
 

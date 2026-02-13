@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRGeneralCommissioningClusterSetTCAcknowledgementsParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , tcVersionSelector
-  , setTcVersionSelector
-  , tcUserResponseSelector
-  , setTcUserResponseSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTcUserResponseSelector
+  , setTcVersionSelector
+  , setTimedInvokeTimeoutMsSelector
+  , tcUserResponseSelector
+  , tcVersionSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- tcVersion@
 tcVersion :: IsMTRGeneralCommissioningClusterSetTCAcknowledgementsParams mtrGeneralCommissioningClusterSetTCAcknowledgementsParams => mtrGeneralCommissioningClusterSetTCAcknowledgementsParams -> IO (Id NSNumber)
-tcVersion mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  =
-    sendMsg mtrGeneralCommissioningClusterSetTCAcknowledgementsParams (mkSelector "tcVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+tcVersion mtrGeneralCommissioningClusterSetTCAcknowledgementsParams =
+  sendMessage mtrGeneralCommissioningClusterSetTCAcknowledgementsParams tcVersionSelector
 
 -- | @- setTcVersion:@
 setTcVersion :: (IsMTRGeneralCommissioningClusterSetTCAcknowledgementsParams mtrGeneralCommissioningClusterSetTCAcknowledgementsParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetTCAcknowledgementsParams -> value -> IO ()
-setTcVersion mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetTCAcknowledgementsParams (mkSelector "setTcVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTcVersion mtrGeneralCommissioningClusterSetTCAcknowledgementsParams value =
+  sendMessage mtrGeneralCommissioningClusterSetTCAcknowledgementsParams setTcVersionSelector (toNSNumber value)
 
 -- | @- tcUserResponse@
 tcUserResponse :: IsMTRGeneralCommissioningClusterSetTCAcknowledgementsParams mtrGeneralCommissioningClusterSetTCAcknowledgementsParams => mtrGeneralCommissioningClusterSetTCAcknowledgementsParams -> IO (Id NSNumber)
-tcUserResponse mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  =
-    sendMsg mtrGeneralCommissioningClusterSetTCAcknowledgementsParams (mkSelector "tcUserResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+tcUserResponse mtrGeneralCommissioningClusterSetTCAcknowledgementsParams =
+  sendMessage mtrGeneralCommissioningClusterSetTCAcknowledgementsParams tcUserResponseSelector
 
 -- | @- setTcUserResponse:@
 setTcUserResponse :: (IsMTRGeneralCommissioningClusterSetTCAcknowledgementsParams mtrGeneralCommissioningClusterSetTCAcknowledgementsParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetTCAcknowledgementsParams -> value -> IO ()
-setTcUserResponse mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetTCAcknowledgementsParams (mkSelector "setTcUserResponse:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTcUserResponse mtrGeneralCommissioningClusterSetTCAcknowledgementsParams value =
+  sendMessage mtrGeneralCommissioningClusterSetTCAcknowledgementsParams setTcUserResponseSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setTcUserResponse mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  val
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGeneralCommissioningClusterSetTCAcknowledgementsParams mtrGeneralCommissioningClusterSetTCAcknowledgementsParams => mtrGeneralCommissioningClusterSetTCAcknowledgementsParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  =
-    sendMsg mtrGeneralCommissioningClusterSetTCAcknowledgementsParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGeneralCommissioningClusterSetTCAcknowledgementsParams =
+  sendMessage mtrGeneralCommissioningClusterSetTCAcknowledgementsParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGeneralCommissioningClusterSetTCAcknowledgementsParams mtrGeneralCommissioningClusterSetTCAcknowledgementsParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetTCAcknowledgementsParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetTCAcknowledgementsParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterSetTCAcknowledgementsParams value =
+  sendMessage mtrGeneralCommissioningClusterSetTCAcknowledgementsParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrGeneralCommissioningClusterSetTCAcknowledgementsParam
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRGeneralCommissioningClusterSetTCAcknowledgementsParams mtrGeneralCommissioningClusterSetTCAcknowledgementsParams => mtrGeneralCommissioningClusterSetTCAcknowledgementsParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  =
-    sendMsg mtrGeneralCommissioningClusterSetTCAcknowledgementsParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrGeneralCommissioningClusterSetTCAcknowledgementsParams =
+  sendMessage mtrGeneralCommissioningClusterSetTCAcknowledgementsParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrGeneralCommissioningClusterSetTCAcknowledgementsP
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRGeneralCommissioningClusterSetTCAcknowledgementsParams mtrGeneralCommissioningClusterSetTCAcknowledgementsParams, IsNSNumber value) => mtrGeneralCommissioningClusterSetTCAcknowledgementsParams -> value -> IO ()
-setServerSideProcessingTimeout mtrGeneralCommissioningClusterSetTCAcknowledgementsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGeneralCommissioningClusterSetTCAcknowledgementsParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrGeneralCommissioningClusterSetTCAcknowledgementsParams value =
+  sendMessage mtrGeneralCommissioningClusterSetTCAcknowledgementsParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tcVersion@
-tcVersionSelector :: Selector
+tcVersionSelector :: Selector '[] (Id NSNumber)
 tcVersionSelector = mkSelector "tcVersion"
 
 -- | @Selector@ for @setTcVersion:@
-setTcVersionSelector :: Selector
+setTcVersionSelector :: Selector '[Id NSNumber] ()
 setTcVersionSelector = mkSelector "setTcVersion:"
 
 -- | @Selector@ for @tcUserResponse@
-tcUserResponseSelector :: Selector
+tcUserResponseSelector :: Selector '[] (Id NSNumber)
 tcUserResponseSelector = mkSelector "tcUserResponse"
 
 -- | @Selector@ for @setTcUserResponse:@
-setTcUserResponseSelector :: Selector
+setTcUserResponseSelector :: Selector '[Id NSNumber] ()
 setTcUserResponseSelector = mkSelector "setTcUserResponse:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

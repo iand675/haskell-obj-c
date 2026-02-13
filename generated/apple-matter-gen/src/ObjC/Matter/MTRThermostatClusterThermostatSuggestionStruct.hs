@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRThermostatClusterThermostatSuggestionStruct
   , setEffectiveTime
   , expirationTime
   , setExpirationTime
-  , uniqueIDSelector
-  , setUniqueIDSelector
-  , presetHandleSelector
-  , setPresetHandleSelector
   , effectiveTimeSelector
-  , setEffectiveTimeSelector
   , expirationTimeSelector
+  , presetHandleSelector
+  , setEffectiveTimeSelector
   , setExpirationTimeSelector
+  , setPresetHandleSelector
+  , setUniqueIDSelector
+  , uniqueIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- uniqueID@
 uniqueID :: IsMTRThermostatClusterThermostatSuggestionStruct mtrThermostatClusterThermostatSuggestionStruct => mtrThermostatClusterThermostatSuggestionStruct -> IO (Id NSNumber)
-uniqueID mtrThermostatClusterThermostatSuggestionStruct  =
-    sendMsg mtrThermostatClusterThermostatSuggestionStruct (mkSelector "uniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueID mtrThermostatClusterThermostatSuggestionStruct =
+  sendMessage mtrThermostatClusterThermostatSuggestionStruct uniqueIDSelector
 
 -- | @- setUniqueID:@
 setUniqueID :: (IsMTRThermostatClusterThermostatSuggestionStruct mtrThermostatClusterThermostatSuggestionStruct, IsNSNumber value) => mtrThermostatClusterThermostatSuggestionStruct -> value -> IO ()
-setUniqueID mtrThermostatClusterThermostatSuggestionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterThermostatSuggestionStruct (mkSelector "setUniqueID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUniqueID mtrThermostatClusterThermostatSuggestionStruct value =
+  sendMessage mtrThermostatClusterThermostatSuggestionStruct setUniqueIDSelector (toNSNumber value)
 
 -- | @- presetHandle@
 presetHandle :: IsMTRThermostatClusterThermostatSuggestionStruct mtrThermostatClusterThermostatSuggestionStruct => mtrThermostatClusterThermostatSuggestionStruct -> IO (Id NSData)
-presetHandle mtrThermostatClusterThermostatSuggestionStruct  =
-    sendMsg mtrThermostatClusterThermostatSuggestionStruct (mkSelector "presetHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetHandle mtrThermostatClusterThermostatSuggestionStruct =
+  sendMessage mtrThermostatClusterThermostatSuggestionStruct presetHandleSelector
 
 -- | @- setPresetHandle:@
 setPresetHandle :: (IsMTRThermostatClusterThermostatSuggestionStruct mtrThermostatClusterThermostatSuggestionStruct, IsNSData value) => mtrThermostatClusterThermostatSuggestionStruct -> value -> IO ()
-setPresetHandle mtrThermostatClusterThermostatSuggestionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterThermostatSuggestionStruct (mkSelector "setPresetHandle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPresetHandle mtrThermostatClusterThermostatSuggestionStruct value =
+  sendMessage mtrThermostatClusterThermostatSuggestionStruct setPresetHandleSelector (toNSData value)
 
 -- | @- effectiveTime@
 effectiveTime :: IsMTRThermostatClusterThermostatSuggestionStruct mtrThermostatClusterThermostatSuggestionStruct => mtrThermostatClusterThermostatSuggestionStruct -> IO (Id NSNumber)
-effectiveTime mtrThermostatClusterThermostatSuggestionStruct  =
-    sendMsg mtrThermostatClusterThermostatSuggestionStruct (mkSelector "effectiveTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectiveTime mtrThermostatClusterThermostatSuggestionStruct =
+  sendMessage mtrThermostatClusterThermostatSuggestionStruct effectiveTimeSelector
 
 -- | @- setEffectiveTime:@
 setEffectiveTime :: (IsMTRThermostatClusterThermostatSuggestionStruct mtrThermostatClusterThermostatSuggestionStruct, IsNSNumber value) => mtrThermostatClusterThermostatSuggestionStruct -> value -> IO ()
-setEffectiveTime mtrThermostatClusterThermostatSuggestionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterThermostatSuggestionStruct (mkSelector "setEffectiveTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEffectiveTime mtrThermostatClusterThermostatSuggestionStruct value =
+  sendMessage mtrThermostatClusterThermostatSuggestionStruct setEffectiveTimeSelector (toNSNumber value)
 
 -- | @- expirationTime@
 expirationTime :: IsMTRThermostatClusterThermostatSuggestionStruct mtrThermostatClusterThermostatSuggestionStruct => mtrThermostatClusterThermostatSuggestionStruct -> IO (Id NSNumber)
-expirationTime mtrThermostatClusterThermostatSuggestionStruct  =
-    sendMsg mtrThermostatClusterThermostatSuggestionStruct (mkSelector "expirationTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationTime mtrThermostatClusterThermostatSuggestionStruct =
+  sendMessage mtrThermostatClusterThermostatSuggestionStruct expirationTimeSelector
 
 -- | @- setExpirationTime:@
 setExpirationTime :: (IsMTRThermostatClusterThermostatSuggestionStruct mtrThermostatClusterThermostatSuggestionStruct, IsNSNumber value) => mtrThermostatClusterThermostatSuggestionStruct -> value -> IO ()
-setExpirationTime mtrThermostatClusterThermostatSuggestionStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterThermostatSuggestionStruct (mkSelector "setExpirationTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExpirationTime mtrThermostatClusterThermostatSuggestionStruct value =
+  sendMessage mtrThermostatClusterThermostatSuggestionStruct setExpirationTimeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @uniqueID@
-uniqueIDSelector :: Selector
+uniqueIDSelector :: Selector '[] (Id NSNumber)
 uniqueIDSelector = mkSelector "uniqueID"
 
 -- | @Selector@ for @setUniqueID:@
-setUniqueIDSelector :: Selector
+setUniqueIDSelector :: Selector '[Id NSNumber] ()
 setUniqueIDSelector = mkSelector "setUniqueID:"
 
 -- | @Selector@ for @presetHandle@
-presetHandleSelector :: Selector
+presetHandleSelector :: Selector '[] (Id NSData)
 presetHandleSelector = mkSelector "presetHandle"
 
 -- | @Selector@ for @setPresetHandle:@
-setPresetHandleSelector :: Selector
+setPresetHandleSelector :: Selector '[Id NSData] ()
 setPresetHandleSelector = mkSelector "setPresetHandle:"
 
 -- | @Selector@ for @effectiveTime@
-effectiveTimeSelector :: Selector
+effectiveTimeSelector :: Selector '[] (Id NSNumber)
 effectiveTimeSelector = mkSelector "effectiveTime"
 
 -- | @Selector@ for @setEffectiveTime:@
-setEffectiveTimeSelector :: Selector
+setEffectiveTimeSelector :: Selector '[Id NSNumber] ()
 setEffectiveTimeSelector = mkSelector "setEffectiveTime:"
 
 -- | @Selector@ for @expirationTime@
-expirationTimeSelector :: Selector
+expirationTimeSelector :: Selector '[] (Id NSNumber)
 expirationTimeSelector = mkSelector "expirationTime"
 
 -- | @Selector@ for @setExpirationTime:@
-setExpirationTimeSelector :: Selector
+setExpirationTimeSelector :: Selector '[Id NSNumber] ()
 setExpirationTimeSelector = mkSelector "setExpirationTime:"
 

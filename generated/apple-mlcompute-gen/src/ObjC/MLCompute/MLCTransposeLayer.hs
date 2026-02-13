@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MLCompute.MLCTransposeLayer
   , IsMLCTransposeLayer(..)
   , layerWithDimensions
   , dimensions
-  , layerWithDimensionsSelector
   , dimensionsSelector
+  , layerWithDimensionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,7 @@ layerWithDimensions :: IsNSArray dimensions => dimensions -> IO (Id MLCTranspose
 layerWithDimensions dimensions =
   do
     cls' <- getRequiredClass "MLCTransposeLayer"
-    withObjCPtr dimensions $ \raw_dimensions ->
-      sendClassMsg cls' (mkSelector "layerWithDimensions:") (retPtr retVoid) [argPtr (castPtr raw_dimensions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDimensionsSelector (toNSArray dimensions)
 
 -- | dimensions
 --
@@ -55,18 +51,18 @@ layerWithDimensions dimensions =
 --
 -- ObjC selector: @- dimensions@
 dimensions :: IsMLCTransposeLayer mlcTransposeLayer => mlcTransposeLayer -> IO (Id NSArray)
-dimensions mlcTransposeLayer  =
-    sendMsg mlcTransposeLayer (mkSelector "dimensions") (retPtr retVoid) [] >>= retainedObject . castPtr
+dimensions mlcTransposeLayer =
+  sendMessage mlcTransposeLayer dimensionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDimensions:@
-layerWithDimensionsSelector :: Selector
+layerWithDimensionsSelector :: Selector '[Id NSArray] (Id MLCTransposeLayer)
 layerWithDimensionsSelector = mkSelector "layerWithDimensions:"
 
 -- | @Selector@ for @dimensions@
-dimensionsSelector :: Selector
+dimensionsSelector :: Selector '[] (Id NSArray)
 dimensionsSelector = mkSelector "dimensions"
 

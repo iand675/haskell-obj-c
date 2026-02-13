@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -50,15 +51,11 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayLUTQuantizationDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,8 +71,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDataType:@
 initWithDataType :: IsMPSNDArrayLUTQuantizationDescriptor mpsndArrayLUTQuantizationDescriptor => mpsndArrayLUTQuantizationDescriptor -> MPSDataType -> IO (Id MPSNDArrayLUTQuantizationDescriptor)
-initWithDataType mpsndArrayLUTQuantizationDescriptor  quantizationDataType =
-    sendMsg mpsndArrayLUTQuantizationDescriptor (mkSelector "initWithDataType:") (retPtr retVoid) [argCUInt (coerce quantizationDataType)] >>= ownedObject . castPtr
+initWithDataType mpsndArrayLUTQuantizationDescriptor quantizationDataType =
+  sendOwnedMessage mpsndArrayLUTQuantizationDescriptor initWithDataTypeSelector quantizationDataType
 
 -- | Initializes a vector lookup-table quantization descriptor.
 --
@@ -87,18 +84,18 @@ initWithDataType mpsndArrayLUTQuantizationDescriptor  quantizationDataType =
 --
 -- ObjC selector: @- initWithDataType:vectorAxis:@
 initWithDataType_vectorAxis :: IsMPSNDArrayLUTQuantizationDescriptor mpsndArrayLUTQuantizationDescriptor => mpsndArrayLUTQuantizationDescriptor -> MPSDataType -> CULong -> IO (Id MPSNDArrayLUTQuantizationDescriptor)
-initWithDataType_vectorAxis mpsndArrayLUTQuantizationDescriptor  quantizationDataType vectorAxis =
-    sendMsg mpsndArrayLUTQuantizationDescriptor (mkSelector "initWithDataType:vectorAxis:") (retPtr retVoid) [argCUInt (coerce quantizationDataType), argCULong vectorAxis] >>= ownedObject . castPtr
+initWithDataType_vectorAxis mpsndArrayLUTQuantizationDescriptor quantizationDataType vectorAxis =
+  sendOwnedMessage mpsndArrayLUTQuantizationDescriptor initWithDataType_vectorAxisSelector quantizationDataType vectorAxis
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDataType:@
-initWithDataTypeSelector :: Selector
+initWithDataTypeSelector :: Selector '[MPSDataType] (Id MPSNDArrayLUTQuantizationDescriptor)
 initWithDataTypeSelector = mkSelector "initWithDataType:"
 
 -- | @Selector@ for @initWithDataType:vectorAxis:@
-initWithDataType_vectorAxisSelector :: Selector
+initWithDataType_vectorAxisSelector :: Selector '[MPSDataType, CULong] (Id MPSNDArrayLUTQuantizationDescriptor)
 initWithDataType_vectorAxisSelector = mkSelector "initWithDataType:vectorAxis:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.PassKit.PKPass
   , passURL
   , remotePass
   , deviceName
-  , initWithData_errorSelector
-  , localizedValueForFieldKeySelector
-  , passTypeSelector
-  , paymentPassSelector
-  , secureElementPassSelector
-  , serialNumberSelector
-  , passTypeIdentifierSelector
-  , webServiceURLSelector
   , authenticationTokenSelector
-  , localizedNameSelector
+  , deviceNameSelector
+  , initWithData_errorSelector
   , localizedDescriptionSelector
+  , localizedNameSelector
+  , localizedValueForFieldKeySelector
   , organizationNameSelector
+  , passTypeIdentifierSelector
+  , passTypeSelector
+  , passURLSelector
+  , paymentPassSelector
   , relevantDateSelector
   , relevantDatesSelector
-  , userInfoSelector
-  , passURLSelector
   , remotePassSelector
-  , deviceNameSelector
+  , secureElementPassSelector
+  , serialNumberSelector
+  , userInfoSelector
+  , webServiceURLSelector
 
   -- * Enum types
   , PKPassType(PKPassType)
@@ -53,15 +54,11 @@ module ObjC.PassKit.PKPass
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,170 +68,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithData:error:@
 initWithData_error :: (IsPKPass pkPass, IsNSData data_, IsNSError error_) => pkPass -> data_ -> error_ -> IO (Id PKPass)
-initWithData_error pkPass  data_ error_ =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg pkPass (mkSelector "initWithData:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData_error pkPass data_ error_ =
+  sendOwnedMessage pkPass initWithData_errorSelector (toNSData data_) (toNSError error_)
 
 -- | @- localizedValueForFieldKey:@
 localizedValueForFieldKey :: (IsPKPass pkPass, IsNSString key) => pkPass -> key -> IO RawId
-localizedValueForFieldKey pkPass  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg pkPass (mkSelector "localizedValueForFieldKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+localizedValueForFieldKey pkPass key =
+  sendMessage pkPass localizedValueForFieldKeySelector (toNSString key)
 
 -- | @- passType@
 passType :: IsPKPass pkPass => pkPass -> IO PKPassType
-passType pkPass  =
-    fmap (coerce :: CULong -> PKPassType) $ sendMsg pkPass (mkSelector "passType") retCULong []
+passType pkPass =
+  sendMessage pkPass passTypeSelector
 
 -- | @- paymentPass@
 paymentPass :: IsPKPass pkPass => pkPass -> IO (Id PKPaymentPass)
-paymentPass pkPass  =
-    sendMsg pkPass (mkSelector "paymentPass") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentPass pkPass =
+  sendMessage pkPass paymentPassSelector
 
 -- | @- secureElementPass@
 secureElementPass :: IsPKPass pkPass => pkPass -> IO (Id PKSecureElementPass)
-secureElementPass pkPass  =
-    sendMsg pkPass (mkSelector "secureElementPass") (retPtr retVoid) [] >>= retainedObject . castPtr
+secureElementPass pkPass =
+  sendMessage pkPass secureElementPassSelector
 
 -- | @- serialNumber@
 serialNumber :: IsPKPass pkPass => pkPass -> IO (Id NSString)
-serialNumber pkPass  =
-    sendMsg pkPass (mkSelector "serialNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+serialNumber pkPass =
+  sendMessage pkPass serialNumberSelector
 
 -- | @- passTypeIdentifier@
 passTypeIdentifier :: IsPKPass pkPass => pkPass -> IO (Id NSString)
-passTypeIdentifier pkPass  =
-    sendMsg pkPass (mkSelector "passTypeIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+passTypeIdentifier pkPass =
+  sendMessage pkPass passTypeIdentifierSelector
 
 -- | @- webServiceURL@
 webServiceURL :: IsPKPass pkPass => pkPass -> IO (Id NSURL)
-webServiceURL pkPass  =
-    sendMsg pkPass (mkSelector "webServiceURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+webServiceURL pkPass =
+  sendMessage pkPass webServiceURLSelector
 
 -- | @- authenticationToken@
 authenticationToken :: IsPKPass pkPass => pkPass -> IO (Id NSString)
-authenticationToken pkPass  =
-    sendMsg pkPass (mkSelector "authenticationToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+authenticationToken pkPass =
+  sendMessage pkPass authenticationTokenSelector
 
 -- | @- localizedName@
 localizedName :: IsPKPass pkPass => pkPass -> IO (Id NSString)
-localizedName pkPass  =
-    sendMsg pkPass (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName pkPass =
+  sendMessage pkPass localizedNameSelector
 
 -- | @- localizedDescription@
 localizedDescription :: IsPKPass pkPass => pkPass -> IO (Id NSString)
-localizedDescription pkPass  =
-    sendMsg pkPass (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription pkPass =
+  sendMessage pkPass localizedDescriptionSelector
 
 -- | @- organizationName@
 organizationName :: IsPKPass pkPass => pkPass -> IO (Id NSString)
-organizationName pkPass  =
-    sendMsg pkPass (mkSelector "organizationName") (retPtr retVoid) [] >>= retainedObject . castPtr
+organizationName pkPass =
+  sendMessage pkPass organizationNameSelector
 
 -- | @- relevantDate@
 relevantDate :: IsPKPass pkPass => pkPass -> IO (Id NSDate)
-relevantDate pkPass  =
-    sendMsg pkPass (mkSelector "relevantDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+relevantDate pkPass =
+  sendMessage pkPass relevantDateSelector
 
 -- | @- relevantDates@
 relevantDates :: IsPKPass pkPass => pkPass -> IO (Id NSArray)
-relevantDates pkPass  =
-    sendMsg pkPass (mkSelector "relevantDates") (retPtr retVoid) [] >>= retainedObject . castPtr
+relevantDates pkPass =
+  sendMessage pkPass relevantDatesSelector
 
 -- | @- userInfo@
 userInfo :: IsPKPass pkPass => pkPass -> IO (Id NSDictionary)
-userInfo pkPass  =
-    sendMsg pkPass (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo pkPass =
+  sendMessage pkPass userInfoSelector
 
 -- | @- passURL@
 passURL :: IsPKPass pkPass => pkPass -> IO (Id NSURL)
-passURL pkPass  =
-    sendMsg pkPass (mkSelector "passURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+passURL pkPass =
+  sendMessage pkPass passURLSelector
 
 -- | @- remotePass@
 remotePass :: IsPKPass pkPass => pkPass -> IO Bool
-remotePass pkPass  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPass (mkSelector "remotePass") retCULong []
+remotePass pkPass =
+  sendMessage pkPass remotePassSelector
 
 -- | @- deviceName@
 deviceName :: IsPKPass pkPass => pkPass -> IO (Id NSString)
-deviceName pkPass  =
-    sendMsg pkPass (mkSelector "deviceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceName pkPass =
+  sendMessage pkPass deviceNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithData:error:@
-initWithData_errorSelector :: Selector
+initWithData_errorSelector :: Selector '[Id NSData, Id NSError] (Id PKPass)
 initWithData_errorSelector = mkSelector "initWithData:error:"
 
 -- | @Selector@ for @localizedValueForFieldKey:@
-localizedValueForFieldKeySelector :: Selector
+localizedValueForFieldKeySelector :: Selector '[Id NSString] RawId
 localizedValueForFieldKeySelector = mkSelector "localizedValueForFieldKey:"
 
 -- | @Selector@ for @passType@
-passTypeSelector :: Selector
+passTypeSelector :: Selector '[] PKPassType
 passTypeSelector = mkSelector "passType"
 
 -- | @Selector@ for @paymentPass@
-paymentPassSelector :: Selector
+paymentPassSelector :: Selector '[] (Id PKPaymentPass)
 paymentPassSelector = mkSelector "paymentPass"
 
 -- | @Selector@ for @secureElementPass@
-secureElementPassSelector :: Selector
+secureElementPassSelector :: Selector '[] (Id PKSecureElementPass)
 secureElementPassSelector = mkSelector "secureElementPass"
 
 -- | @Selector@ for @serialNumber@
-serialNumberSelector :: Selector
+serialNumberSelector :: Selector '[] (Id NSString)
 serialNumberSelector = mkSelector "serialNumber"
 
 -- | @Selector@ for @passTypeIdentifier@
-passTypeIdentifierSelector :: Selector
+passTypeIdentifierSelector :: Selector '[] (Id NSString)
 passTypeIdentifierSelector = mkSelector "passTypeIdentifier"
 
 -- | @Selector@ for @webServiceURL@
-webServiceURLSelector :: Selector
+webServiceURLSelector :: Selector '[] (Id NSURL)
 webServiceURLSelector = mkSelector "webServiceURL"
 
 -- | @Selector@ for @authenticationToken@
-authenticationTokenSelector :: Selector
+authenticationTokenSelector :: Selector '[] (Id NSString)
 authenticationTokenSelector = mkSelector "authenticationToken"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @organizationName@
-organizationNameSelector :: Selector
+organizationNameSelector :: Selector '[] (Id NSString)
 organizationNameSelector = mkSelector "organizationName"
 
 -- | @Selector@ for @relevantDate@
-relevantDateSelector :: Selector
+relevantDateSelector :: Selector '[] (Id NSDate)
 relevantDateSelector = mkSelector "relevantDate"
 
 -- | @Selector@ for @relevantDates@
-relevantDatesSelector :: Selector
+relevantDatesSelector :: Selector '[] (Id NSArray)
 relevantDatesSelector = mkSelector "relevantDates"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @passURL@
-passURLSelector :: Selector
+passURLSelector :: Selector '[] (Id NSURL)
 passURLSelector = mkSelector "passURL"
 
 -- | @Selector@ for @remotePass@
-remotePassSelector :: Selector
+remotePassSelector :: Selector '[] Bool
 remotePassSelector = mkSelector "remotePass"
 
 -- | @Selector@ for @deviceName@
-deviceNameSelector :: Selector
+deviceNameSelector :: Selector '[] (Id NSString)
 deviceNameSelector = mkSelector "deviceName"
 

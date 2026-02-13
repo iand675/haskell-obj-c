@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data MPSCustomKernelArgumentCount = MPSCustomKernelArgumentCount
   { mpsCustomKernelArgumentCountDestinationTextureCount :: !CULong
@@ -39,6 +41,16 @@ argMPSCustomKernelArgumentCount = mkStorableArg mpsCustomKernelArgumentCountStru
 
 retMPSCustomKernelArgumentCount :: RetType MPSCustomKernelArgumentCount
 retMPSCustomKernelArgumentCount = mkStorableRetType mpsCustomKernelArgumentCountStructType
+
+instance ObjCArgument MPSCustomKernelArgumentCount where
+  withObjCArg x k = k (argMPSCustomKernelArgumentCount x)
+
+instance ObjCReturn MPSCustomKernelArgumentCount where
+  type RawReturn MPSCustomKernelArgumentCount = MPSCustomKernelArgumentCount
+  objcRetType = retMPSCustomKernelArgumentCount
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | MPSDimensionSize
 --
@@ -68,6 +80,16 @@ argMPSDimensionSlice = mkStorableArg mpsDimensionSliceStructType
 
 retMPSDimensionSlice :: RetType MPSDimensionSlice
 retMPSDimensionSlice = mkStorableRetType mpsDimensionSliceStructType
+
+instance ObjCArgument MPSDimensionSlice where
+  withObjCArg x k = k (argMPSDimensionSlice x)
+
+instance ObjCReturn MPSDimensionSlice where
+  type RawReturn MPSDimensionSlice = MPSDimensionSlice
+  objcRetType = retMPSDimensionSlice
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | MPSImageCoordinate
 --
@@ -101,6 +123,16 @@ argMPSImageCoordinate = mkStorableArg mpsImageCoordinateStructType
 retMPSImageCoordinate :: RetType MPSImageCoordinate
 retMPSImageCoordinate = mkStorableRetType mpsImageCoordinateStructType
 
+instance ObjCArgument MPSImageCoordinate where
+  withObjCArg x k = k (argMPSImageCoordinate x)
+
+instance ObjCReturn MPSImageCoordinate where
+  type RawReturn MPSImageCoordinate = MPSImageCoordinate
+  objcRetType = retMPSImageCoordinate
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MPSOrigin
 --
 -- MPSKernel
@@ -132,6 +164,16 @@ argMPSOrigin = mkStorableArg mpsOriginStructType
 
 retMPSOrigin :: RetType MPSOrigin
 retMPSOrigin = mkStorableRetType mpsOriginStructType
+
+instance ObjCArgument MPSOrigin where
+  withObjCArg x k = k (argMPSOrigin x)
+
+instance ObjCReturn MPSOrigin where
+  type RawReturn MPSOrigin = MPSOrigin
+  objcRetType = retMPSOrigin
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | MPSScaleTransform
 --
@@ -176,6 +218,16 @@ argMPSScaleTransform = mkStorableArg mpsScaleTransformStructType
 retMPSScaleTransform :: RetType MPSScaleTransform
 retMPSScaleTransform = mkStorableRetType mpsScaleTransformStructType
 
+instance ObjCArgument MPSScaleTransform where
+  withObjCArg x k = k (argMPSScaleTransform x)
+
+instance ObjCReturn MPSScaleTransform where
+  type RawReturn MPSScaleTransform = MPSScaleTransform
+  objcRetType = retMPSScaleTransform
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MPSSize
 --
 -- MPSKernel
@@ -208,6 +260,16 @@ argMPSSize = mkStorableArg mpsSizeStructType
 retMPSSize :: RetType MPSSize
 retMPSSize = mkStorableRetType mpsSizeStructType
 
+instance ObjCArgument MPSSize where
+  withObjCArg x k = k (argMPSSize x)
+
+instance ObjCReturn MPSSize where
+  type RawReturn MPSSize = MPSSize
+  objcRetType = retMPSSize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MPSImageRegion
 --
 -- MPSImage
@@ -237,6 +299,16 @@ argMPSImageRegion = mkStorableArg mpsImageRegionStructType
 retMPSImageRegion :: RetType MPSImageRegion
 retMPSImageRegion = mkStorableRetType mpsImageRegionStructType
 
+instance ObjCArgument MPSImageRegion where
+  withObjCArg x k = k (argMPSImageRegion x)
+
+instance ObjCReturn MPSImageRegion where
+  type RawReturn MPSImageRegion = MPSImageRegion
+  objcRetType = retMPSImageRegion
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | MPSRegion
 --
 -- MPSKernel
@@ -265,3 +337,13 @@ argMPSRegion = mkStorableArg mpsRegionStructType
 
 retMPSRegion :: RetType MPSRegion
 retMPSRegion = mkStorableRetType mpsRegionStructType
+
+instance ObjCArgument MPSRegion where
+  withObjCArg x k = k (argMPSRegion x)
+
+instance ObjCReturn MPSRegion where
+  type RawReturn MPSRegion = MPSRegion
+  objcRetType = retMPSRegion
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

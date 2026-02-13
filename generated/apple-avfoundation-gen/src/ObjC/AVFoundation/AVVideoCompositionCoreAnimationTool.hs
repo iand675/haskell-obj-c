@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.AVFoundation.AVVideoCompositionCoreAnimationTool
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,7 @@ videoCompositionCoreAnimationToolWithAdditionalLayer_asTrackID :: IsCALayer laye
 videoCompositionCoreAnimationToolWithAdditionalLayer_asTrackID layer trackID =
   do
     cls' <- getRequiredClass "AVVideoCompositionCoreAnimationTool"
-    withObjCPtr layer $ \raw_layer ->
-      sendClassMsg cls' (mkSelector "videoCompositionCoreAnimationToolWithAdditionalLayer:asTrackID:") (retPtr retVoid) [argPtr (castPtr raw_layer :: Ptr ()), argCInt trackID] >>= retainedObject . castPtr
+    sendClassMessage cls' videoCompositionCoreAnimationToolWithAdditionalLayer_asTrackIDSelector (toCALayer layer) trackID
 
 -- | Compose the composited video frames with the Core Animation layer
 --
@@ -61,9 +57,7 @@ videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer_inLayer :: (IsCA
 videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer_inLayer videoLayer animationLayer =
   do
     cls' <- getRequiredClass "AVVideoCompositionCoreAnimationTool"
-    withObjCPtr videoLayer $ \raw_videoLayer ->
-      withObjCPtr animationLayer $ \raw_animationLayer ->
-        sendClassMsg cls' (mkSelector "videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:inLayer:") (retPtr retVoid) [argPtr (castPtr raw_videoLayer :: Ptr ()), argPtr (castPtr raw_animationLayer :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer_inLayerSelector (toCALayer videoLayer) (toCALayer animationLayer)
 
 -- | Compose the composited video frames with the Core Animation layer
 --
@@ -74,23 +68,21 @@ videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayers_inLayer :: (IsN
 videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayers_inLayer videoLayers animationLayer =
   do
     cls' <- getRequiredClass "AVVideoCompositionCoreAnimationTool"
-    withObjCPtr videoLayers $ \raw_videoLayers ->
-      withObjCPtr animationLayer $ \raw_animationLayer ->
-        sendClassMsg cls' (mkSelector "videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayers:inLayer:") (retPtr retVoid) [argPtr (castPtr raw_videoLayers :: Ptr ()), argPtr (castPtr raw_animationLayer :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayers_inLayerSelector (toNSArray videoLayers) (toCALayer animationLayer)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @videoCompositionCoreAnimationToolWithAdditionalLayer:asTrackID:@
-videoCompositionCoreAnimationToolWithAdditionalLayer_asTrackIDSelector :: Selector
+videoCompositionCoreAnimationToolWithAdditionalLayer_asTrackIDSelector :: Selector '[Id CALayer, CInt] (Id AVVideoCompositionCoreAnimationTool)
 videoCompositionCoreAnimationToolWithAdditionalLayer_asTrackIDSelector = mkSelector "videoCompositionCoreAnimationToolWithAdditionalLayer:asTrackID:"
 
 -- | @Selector@ for @videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:inLayer:@
-videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer_inLayerSelector :: Selector
+videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer_inLayerSelector :: Selector '[Id CALayer, Id CALayer] (Id AVVideoCompositionCoreAnimationTool)
 videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer_inLayerSelector = mkSelector "videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayer:inLayer:"
 
 -- | @Selector@ for @videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayers:inLayer:@
-videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayers_inLayerSelector :: Selector
+videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayers_inLayerSelector :: Selector '[Id NSArray, Id CALayer] (Id AVVideoCompositionCoreAnimationTool)
 videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayers_inLayerSelector = mkSelector "videoCompositionCoreAnimationToolWithPostProcessingAsVideoLayers:inLayer:"
 

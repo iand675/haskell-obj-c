@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.AppKit.NSScrubberFlowLayout
   , itemSize
   , setItemSize
   , invalidateLayoutForItemsAtIndexesSelector
-  , itemSpacingSelector
-  , setItemSpacingSelector
   , itemSizeSelector
+  , itemSpacingSelector
   , setItemSizeSelector
+  , setItemSpacingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,59 +41,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- invalidateLayoutForItemsAtIndexes:@
 invalidateLayoutForItemsAtIndexes :: (IsNSScrubberFlowLayout nsScrubberFlowLayout, IsNSIndexSet invalidItemIndexes) => nsScrubberFlowLayout -> invalidItemIndexes -> IO ()
-invalidateLayoutForItemsAtIndexes nsScrubberFlowLayout  invalidItemIndexes =
-  withObjCPtr invalidItemIndexes $ \raw_invalidItemIndexes ->
-      sendMsg nsScrubberFlowLayout (mkSelector "invalidateLayoutForItemsAtIndexes:") retVoid [argPtr (castPtr raw_invalidItemIndexes :: Ptr ())]
+invalidateLayoutForItemsAtIndexes nsScrubberFlowLayout invalidItemIndexes =
+  sendMessage nsScrubberFlowLayout invalidateLayoutForItemsAtIndexesSelector (toNSIndexSet invalidItemIndexes)
 
 -- | The amount of horizontal spacing between items in points. The default value is 0.0.
 --
 -- ObjC selector: @- itemSpacing@
 itemSpacing :: IsNSScrubberFlowLayout nsScrubberFlowLayout => nsScrubberFlowLayout -> IO CDouble
-itemSpacing nsScrubberFlowLayout  =
-    sendMsg nsScrubberFlowLayout (mkSelector "itemSpacing") retCDouble []
+itemSpacing nsScrubberFlowLayout =
+  sendMessage nsScrubberFlowLayout itemSpacingSelector
 
 -- | The amount of horizontal spacing between items in points. The default value is 0.0.
 --
 -- ObjC selector: @- setItemSpacing:@
 setItemSpacing :: IsNSScrubberFlowLayout nsScrubberFlowLayout => nsScrubberFlowLayout -> CDouble -> IO ()
-setItemSpacing nsScrubberFlowLayout  value =
-    sendMsg nsScrubberFlowLayout (mkSelector "setItemSpacing:") retVoid [argCDouble value]
+setItemSpacing nsScrubberFlowLayout value =
+  sendMessage nsScrubberFlowLayout setItemSpacingSelector value
 
 -- | The frame size for each item, if not provided by the scrubber's delegate. The default value is { 50.0, 30.0 }.
 --
 -- ObjC selector: @- itemSize@
 itemSize :: IsNSScrubberFlowLayout nsScrubberFlowLayout => nsScrubberFlowLayout -> IO NSSize
-itemSize nsScrubberFlowLayout  =
-    sendMsgStret nsScrubberFlowLayout (mkSelector "itemSize") retNSSize []
+itemSize nsScrubberFlowLayout =
+  sendMessage nsScrubberFlowLayout itemSizeSelector
 
 -- | The frame size for each item, if not provided by the scrubber's delegate. The default value is { 50.0, 30.0 }.
 --
 -- ObjC selector: @- setItemSize:@
 setItemSize :: IsNSScrubberFlowLayout nsScrubberFlowLayout => nsScrubberFlowLayout -> NSSize -> IO ()
-setItemSize nsScrubberFlowLayout  value =
-    sendMsg nsScrubberFlowLayout (mkSelector "setItemSize:") retVoid [argNSSize value]
+setItemSize nsScrubberFlowLayout value =
+  sendMessage nsScrubberFlowLayout setItemSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @invalidateLayoutForItemsAtIndexes:@
-invalidateLayoutForItemsAtIndexesSelector :: Selector
+invalidateLayoutForItemsAtIndexesSelector :: Selector '[Id NSIndexSet] ()
 invalidateLayoutForItemsAtIndexesSelector = mkSelector "invalidateLayoutForItemsAtIndexes:"
 
 -- | @Selector@ for @itemSpacing@
-itemSpacingSelector :: Selector
+itemSpacingSelector :: Selector '[] CDouble
 itemSpacingSelector = mkSelector "itemSpacing"
 
 -- | @Selector@ for @setItemSpacing:@
-setItemSpacingSelector :: Selector
+setItemSpacingSelector :: Selector '[CDouble] ()
 setItemSpacingSelector = mkSelector "setItemSpacing:"
 
 -- | @Selector@ for @itemSize@
-itemSizeSelector :: Selector
+itemSizeSelector :: Selector '[] NSSize
 itemSizeSelector = mkSelector "itemSize"
 
 -- | @Selector@ for @setItemSize:@
-setItemSizeSelector :: Selector
+setItemSizeSelector :: Selector '[NSSize] ()
 setItemSizeSelector = mkSelector "setItemSize:"
 

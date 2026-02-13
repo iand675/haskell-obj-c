@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.UserNotifications.UNNotificationSound
   , defaultSound
   , defaultRingtoneSound
   , defaultCriticalSound
-  , defaultCriticalSoundWithAudioVolumeSelector
-  , soundNamedSelector
-  , ringtoneSoundNamedSelector
   , criticalSoundNamedSelector
   , criticalSoundNamed_withAudioVolumeSelector
-  , initSelector
-  , defaultSoundSelector
-  , defaultRingtoneSoundSelector
   , defaultCriticalSoundSelector
+  , defaultCriticalSoundWithAudioVolumeSelector
+  , defaultRingtoneSoundSelector
+  , defaultSoundSelector
+  , initSelector
+  , ringtoneSoundNamedSelector
+  , soundNamedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,103 +45,99 @@ defaultCriticalSoundWithAudioVolume :: CFloat -> IO (Id UNNotificationSound)
 defaultCriticalSoundWithAudioVolume volume =
   do
     cls' <- getRequiredClass "UNNotificationSound"
-    sendClassMsg cls' (mkSelector "defaultCriticalSoundWithAudioVolume:") (retPtr retVoid) [argCFloat volume] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultCriticalSoundWithAudioVolumeSelector volume
 
 -- | @+ soundNamed:@
 soundNamed :: IsNSString name => name -> IO (Id UNNotificationSound)
 soundNamed name =
   do
     cls' <- getRequiredClass "UNNotificationSound"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "soundNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' soundNamedSelector (toNSString name)
 
 -- | @+ ringtoneSoundNamed:@
 ringtoneSoundNamed :: IsNSString name => name -> IO (Id UNNotificationSound)
 ringtoneSoundNamed name =
   do
     cls' <- getRequiredClass "UNNotificationSound"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "ringtoneSoundNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' ringtoneSoundNamedSelector (toNSString name)
 
 -- | @+ criticalSoundNamed:@
 criticalSoundNamed :: IsNSString name => name -> IO (Id UNNotificationSound)
 criticalSoundNamed name =
   do
     cls' <- getRequiredClass "UNNotificationSound"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "criticalSoundNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' criticalSoundNamedSelector (toNSString name)
 
 -- | @+ criticalSoundNamed:withAudioVolume:@
 criticalSoundNamed_withAudioVolume :: IsNSString name => name -> CFloat -> IO (Id UNNotificationSound)
 criticalSoundNamed_withAudioVolume name volume =
   do
     cls' <- getRequiredClass "UNNotificationSound"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "criticalSoundNamed:withAudioVolume:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCFloat volume] >>= retainedObject . castPtr
+    sendClassMessage cls' criticalSoundNamed_withAudioVolumeSelector (toNSString name) volume
 
 -- | @- init@
 init_ :: IsUNNotificationSound unNotificationSound => unNotificationSound -> IO (Id UNNotificationSound)
-init_ unNotificationSound  =
-    sendMsg unNotificationSound (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ unNotificationSound =
+  sendOwnedMessage unNotificationSound initSelector
 
 -- | @+ defaultSound@
 defaultSound :: IO (Id UNNotificationSound)
 defaultSound  =
   do
     cls' <- getRequiredClass "UNNotificationSound"
-    sendClassMsg cls' (mkSelector "defaultSound") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultSoundSelector
 
 -- | @+ defaultRingtoneSound@
 defaultRingtoneSound :: IO (Id UNNotificationSound)
 defaultRingtoneSound  =
   do
     cls' <- getRequiredClass "UNNotificationSound"
-    sendClassMsg cls' (mkSelector "defaultRingtoneSound") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultRingtoneSoundSelector
 
 -- | @+ defaultCriticalSound@
 defaultCriticalSound :: IO (Id UNNotificationSound)
 defaultCriticalSound  =
   do
     cls' <- getRequiredClass "UNNotificationSound"
-    sendClassMsg cls' (mkSelector "defaultCriticalSound") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultCriticalSoundSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultCriticalSoundWithAudioVolume:@
-defaultCriticalSoundWithAudioVolumeSelector :: Selector
+defaultCriticalSoundWithAudioVolumeSelector :: Selector '[CFloat] (Id UNNotificationSound)
 defaultCriticalSoundWithAudioVolumeSelector = mkSelector "defaultCriticalSoundWithAudioVolume:"
 
 -- | @Selector@ for @soundNamed:@
-soundNamedSelector :: Selector
+soundNamedSelector :: Selector '[Id NSString] (Id UNNotificationSound)
 soundNamedSelector = mkSelector "soundNamed:"
 
 -- | @Selector@ for @ringtoneSoundNamed:@
-ringtoneSoundNamedSelector :: Selector
+ringtoneSoundNamedSelector :: Selector '[Id NSString] (Id UNNotificationSound)
 ringtoneSoundNamedSelector = mkSelector "ringtoneSoundNamed:"
 
 -- | @Selector@ for @criticalSoundNamed:@
-criticalSoundNamedSelector :: Selector
+criticalSoundNamedSelector :: Selector '[Id NSString] (Id UNNotificationSound)
 criticalSoundNamedSelector = mkSelector "criticalSoundNamed:"
 
 -- | @Selector@ for @criticalSoundNamed:withAudioVolume:@
-criticalSoundNamed_withAudioVolumeSelector :: Selector
+criticalSoundNamed_withAudioVolumeSelector :: Selector '[Id NSString, CFloat] (Id UNNotificationSound)
 criticalSoundNamed_withAudioVolumeSelector = mkSelector "criticalSoundNamed:withAudioVolume:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id UNNotificationSound)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @defaultSound@
-defaultSoundSelector :: Selector
+defaultSoundSelector :: Selector '[] (Id UNNotificationSound)
 defaultSoundSelector = mkSelector "defaultSound"
 
 -- | @Selector@ for @defaultRingtoneSound@
-defaultRingtoneSoundSelector :: Selector
+defaultRingtoneSoundSelector :: Selector '[] (Id UNNotificationSound)
 defaultRingtoneSoundSelector = mkSelector "defaultRingtoneSound"
 
 -- | @Selector@ for @defaultCriticalSound@
-defaultCriticalSoundSelector :: Selector
+defaultCriticalSoundSelector :: Selector '[] (Id UNNotificationSound)
 defaultCriticalSoundSelector = mkSelector "defaultCriticalSound"
 

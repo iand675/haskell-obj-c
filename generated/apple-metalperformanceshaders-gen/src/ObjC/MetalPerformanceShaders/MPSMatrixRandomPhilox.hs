@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.MetalPerformanceShaders.MPSMatrixRandomPhilox
   , initWithDevice_destinationDataType_seed_distributionDescriptor
   , initWithDevice_destinationDataType_seed
   , initWithCoder_device
-  , initWithDeviceSelector
-  , initWithDevice_destinationDataType_seed_distributionDescriptorSelector
-  , initWithDevice_destinationDataType_seedSelector
   , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_destinationDataType_seedSelector
+  , initWithDevice_destinationDataType_seed_distributionDescriptorSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -52,15 +53,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixRandomPhilox
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,8 +71,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSMatrixRandomPhilox mpsMatrixRandomPhilox => mpsMatrixRandomPhilox -> RawId -> IO (Id MPSMatrixRandomPhilox)
-initWithDevice mpsMatrixRandomPhilox  device =
-    sendMsg mpsMatrixRandomPhilox (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixRandomPhilox device =
+  sendOwnedMessage mpsMatrixRandomPhilox initWithDeviceSelector device
 
 -- | initialize a MPSMatrixRandomPhilox filter
 --
@@ -89,9 +86,8 @@ initWithDevice mpsMatrixRandomPhilox  device =
 --
 -- ObjC selector: @- initWithDevice:destinationDataType:seed:distributionDescriptor:@
 initWithDevice_destinationDataType_seed_distributionDescriptor :: (IsMPSMatrixRandomPhilox mpsMatrixRandomPhilox, IsMPSMatrixRandomDistributionDescriptor distributionDescriptor) => mpsMatrixRandomPhilox -> RawId -> MPSDataType -> CULong -> distributionDescriptor -> IO (Id MPSMatrixRandomPhilox)
-initWithDevice_destinationDataType_seed_distributionDescriptor mpsMatrixRandomPhilox  device destinationDataType seed distributionDescriptor =
-  withObjCPtr distributionDescriptor $ \raw_distributionDescriptor ->
-      sendMsg mpsMatrixRandomPhilox (mkSelector "initWithDevice:destinationDataType:seed:distributionDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCUInt (coerce destinationDataType), argCULong seed, argPtr (castPtr raw_distributionDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_destinationDataType_seed_distributionDescriptor mpsMatrixRandomPhilox device destinationDataType seed distributionDescriptor =
+  sendOwnedMessage mpsMatrixRandomPhilox initWithDevice_destinationDataType_seed_distributionDescriptorSelector device destinationDataType seed (toMPSMatrixRandomDistributionDescriptor distributionDescriptor)
 
 -- | initialize a MPSMatrixRandomPhilox filter using a default distribution.
 --
@@ -103,32 +99,31 @@ initWithDevice_destinationDataType_seed_distributionDescriptor mpsMatrixRandomPh
 --
 -- ObjC selector: @- initWithDevice:destinationDataType:seed:@
 initWithDevice_destinationDataType_seed :: IsMPSMatrixRandomPhilox mpsMatrixRandomPhilox => mpsMatrixRandomPhilox -> RawId -> MPSDataType -> CULong -> IO (Id MPSMatrixRandomPhilox)
-initWithDevice_destinationDataType_seed mpsMatrixRandomPhilox  device destinationDataType seed =
-    sendMsg mpsMatrixRandomPhilox (mkSelector "initWithDevice:destinationDataType:seed:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCUInt (coerce destinationDataType), argCULong seed] >>= ownedObject . castPtr
+initWithDevice_destinationDataType_seed mpsMatrixRandomPhilox device destinationDataType seed =
+  sendOwnedMessage mpsMatrixRandomPhilox initWithDevice_destinationDataType_seedSelector device destinationDataType seed
 
 -- | @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixRandomPhilox mpsMatrixRandomPhilox, IsNSCoder aDecoder) => mpsMatrixRandomPhilox -> aDecoder -> RawId -> IO (Id MPSMatrixRandomPhilox)
-initWithCoder_device mpsMatrixRandomPhilox  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixRandomPhilox (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixRandomPhilox aDecoder device =
+  sendOwnedMessage mpsMatrixRandomPhilox initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixRandomPhilox)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:destinationDataType:seed:distributionDescriptor:@
-initWithDevice_destinationDataType_seed_distributionDescriptorSelector :: Selector
+initWithDevice_destinationDataType_seed_distributionDescriptorSelector :: Selector '[RawId, MPSDataType, CULong, Id MPSMatrixRandomDistributionDescriptor] (Id MPSMatrixRandomPhilox)
 initWithDevice_destinationDataType_seed_distributionDescriptorSelector = mkSelector "initWithDevice:destinationDataType:seed:distributionDescriptor:"
 
 -- | @Selector@ for @initWithDevice:destinationDataType:seed:@
-initWithDevice_destinationDataType_seedSelector :: Selector
+initWithDevice_destinationDataType_seedSelector :: Selector '[RawId, MPSDataType, CULong] (Id MPSMatrixRandomPhilox)
 initWithDevice_destinationDataType_seedSelector = mkSelector "initWithDevice:destinationDataType:seed:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixRandomPhilox)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 

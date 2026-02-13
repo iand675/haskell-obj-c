@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,23 +41,23 @@ module ObjC.MetalPerformanceShaders.MPSMatrixBatchNormalization
   , setEpsilon
   , computeStatistics
   , setComputeStatistics
-  , setNeuronType_parameterA_parameterB_parameterCSelector
-  , neuronTypeSelector
+  , computeStatisticsSelector
+  , copyWithZone_deviceSelector
+  , encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVector_resultMatrixSelector
+  , epsilonSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , neuronParameterASelector
   , neuronParameterBSelector
   , neuronParameterCSelector
-  , initWithDeviceSelector
-  , encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVector_resultMatrixSelector
-  , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
-  , sourceNumberOfFeatureVectorsSelector
+  , neuronTypeSelector
+  , setComputeStatisticsSelector
+  , setEpsilonSelector
+  , setNeuronType_parameterA_parameterB_parameterCSelector
+  , setSourceInputFeatureChannelsSelector
   , setSourceNumberOfFeatureVectorsSelector
   , sourceInputFeatureChannelsSelector
-  , setSourceInputFeatureChannelsSelector
-  , epsilonSelector
-  , setEpsilonSelector
-  , computeStatisticsSelector
-  , setComputeStatisticsSelector
+  , sourceNumberOfFeatureVectorsSelector
 
   -- * Enum types
   , MPSCNNNeuronType(MPSCNNNeuronType)
@@ -80,15 +81,11 @@ module ObjC.MetalPerformanceShaders.MPSMatrixBatchNormalization
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -110,41 +107,41 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setNeuronType:parameterA:parameterB:parameterC:@
 setNeuronType_parameterA_parameterB_parameterC :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> MPSCNNNeuronType -> CFloat -> CFloat -> CFloat -> IO ()
-setNeuronType_parameterA_parameterB_parameterC mpsMatrixBatchNormalization  neuronType parameterA parameterB parameterC =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "setNeuronType:parameterA:parameterB:parameterC:") retVoid [argCInt (coerce neuronType), argCFloat parameterA, argCFloat parameterB, argCFloat parameterC]
+setNeuronType_parameterA_parameterB_parameterC mpsMatrixBatchNormalization neuronType parameterA parameterB parameterC =
+  sendMessage mpsMatrixBatchNormalization setNeuronType_parameterA_parameterB_parameterCSelector neuronType parameterA parameterB parameterC
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronType@
 neuronType :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> IO MPSCNNNeuronType
-neuronType mpsMatrixBatchNormalization  =
-    fmap (coerce :: CInt -> MPSCNNNeuronType) $ sendMsg mpsMatrixBatchNormalization (mkSelector "neuronType") retCInt []
+neuronType mpsMatrixBatchNormalization =
+  sendMessage mpsMatrixBatchNormalization neuronTypeSelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronParameterA@
 neuronParameterA :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> IO CFloat
-neuronParameterA mpsMatrixBatchNormalization  =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "neuronParameterA") retCFloat []
+neuronParameterA mpsMatrixBatchNormalization =
+  sendMessage mpsMatrixBatchNormalization neuronParameterASelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronParameterB@
 neuronParameterB :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> IO CFloat
-neuronParameterB mpsMatrixBatchNormalization  =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "neuronParameterB") retCFloat []
+neuronParameterB mpsMatrixBatchNormalization =
+  sendMessage mpsMatrixBatchNormalization neuronParameterBSelector
 
 -- | Getter funtion for neuronType set using setNeuronType:parameterA:parameterB:parameterC method
 --
 -- ObjC selector: @- neuronParameterC@
 neuronParameterC :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> IO CFloat
-neuronParameterC mpsMatrixBatchNormalization  =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "neuronParameterC") retCFloat []
+neuronParameterC mpsMatrixBatchNormalization =
+  sendMessage mpsMatrixBatchNormalization neuronParameterCSelector
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> RawId -> IO (Id MPSMatrixBatchNormalization)
-initWithDevice mpsMatrixBatchNormalization  device =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixBatchNormalization device =
+  sendOwnedMessage mpsMatrixBatchNormalization initWithDeviceSelector device
 
 -- | Encode a MPSMatrixBatchNormalization object to a command buffer.
 --
@@ -170,14 +167,8 @@ initWithDevice mpsMatrixBatchNormalization  device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:inputMatrix:meanVector:varianceVector:gammaVector:betaVector:resultMatrix:@
 encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVector_resultMatrix :: (IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization, IsMPSMatrix inputMatrix, IsMPSVector meanVector, IsMPSVector varianceVector, IsMPSVector gammaVector, IsMPSVector betaVector, IsMPSMatrix resultMatrix) => mpsMatrixBatchNormalization -> RawId -> inputMatrix -> meanVector -> varianceVector -> gammaVector -> betaVector -> resultMatrix -> IO ()
-encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVector_resultMatrix mpsMatrixBatchNormalization  commandBuffer inputMatrix meanVector varianceVector gammaVector betaVector resultMatrix =
-  withObjCPtr inputMatrix $ \raw_inputMatrix ->
-    withObjCPtr meanVector $ \raw_meanVector ->
-      withObjCPtr varianceVector $ \raw_varianceVector ->
-        withObjCPtr gammaVector $ \raw_gammaVector ->
-          withObjCPtr betaVector $ \raw_betaVector ->
-            withObjCPtr resultMatrix $ \raw_resultMatrix ->
-                sendMsg mpsMatrixBatchNormalization (mkSelector "encodeToCommandBuffer:inputMatrix:meanVector:varianceVector:gammaVector:betaVector:resultMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_inputMatrix :: Ptr ()), argPtr (castPtr raw_meanVector :: Ptr ()), argPtr (castPtr raw_varianceVector :: Ptr ()), argPtr (castPtr raw_gammaVector :: Ptr ()), argPtr (castPtr raw_betaVector :: Ptr ()), argPtr (castPtr raw_resultMatrix :: Ptr ())]
+encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVector_resultMatrix mpsMatrixBatchNormalization commandBuffer inputMatrix meanVector varianceVector gammaVector betaVector resultMatrix =
+  sendMessage mpsMatrixBatchNormalization encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVector_resultMatrixSelector commandBuffer (toMPSMatrix inputMatrix) (toMPSVector meanVector) (toMPSVector varianceVector) (toMPSVector gammaVector) (toMPSVector betaVector) (toMPSMatrix resultMatrix)
 
 -- | NSSecureCoding compatability
 --
@@ -191,9 +182,8 @@ encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVect
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization, IsNSCoder aDecoder) => mpsMatrixBatchNormalization -> aDecoder -> RawId -> IO (Id MPSMatrixBatchNormalization)
-initWithCoder_device mpsMatrixBatchNormalization  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsMatrixBatchNormalization (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsMatrixBatchNormalization aDecoder device =
+  sendOwnedMessage mpsMatrixBatchNormalization initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Make a copy of this kernel for a new device -
 --
@@ -207,8 +197,8 @@ initWithCoder_device mpsMatrixBatchNormalization  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> Ptr () -> RawId -> IO (Id MPSMatrixBatchNormalization)
-copyWithZone_device mpsMatrixBatchNormalization  zone device =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsMatrixBatchNormalization zone device =
+  sendOwnedMessage mpsMatrixBatchNormalization copyWithZone_deviceSelector zone device
 
 -- | sourceNumberOfFeatureVectors
 --
@@ -216,8 +206,8 @@ copyWithZone_device mpsMatrixBatchNormalization  zone device =
 --
 -- ObjC selector: @- sourceNumberOfFeatureVectors@
 sourceNumberOfFeatureVectors :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> IO CULong
-sourceNumberOfFeatureVectors mpsMatrixBatchNormalization  =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "sourceNumberOfFeatureVectors") retCULong []
+sourceNumberOfFeatureVectors mpsMatrixBatchNormalization =
+  sendMessage mpsMatrixBatchNormalization sourceNumberOfFeatureVectorsSelector
 
 -- | sourceNumberOfFeatureVectors
 --
@@ -225,8 +215,8 @@ sourceNumberOfFeatureVectors mpsMatrixBatchNormalization  =
 --
 -- ObjC selector: @- setSourceNumberOfFeatureVectors:@
 setSourceNumberOfFeatureVectors :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> CULong -> IO ()
-setSourceNumberOfFeatureVectors mpsMatrixBatchNormalization  value =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "setSourceNumberOfFeatureVectors:") retVoid [argCULong value]
+setSourceNumberOfFeatureVectors mpsMatrixBatchNormalization value =
+  sendMessage mpsMatrixBatchNormalization setSourceNumberOfFeatureVectorsSelector value
 
 -- | sourceInputFeatureChannels
 --
@@ -234,8 +224,8 @@ setSourceNumberOfFeatureVectors mpsMatrixBatchNormalization  value =
 --
 -- ObjC selector: @- sourceInputFeatureChannels@
 sourceInputFeatureChannels :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> IO CULong
-sourceInputFeatureChannels mpsMatrixBatchNormalization  =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "sourceInputFeatureChannels") retCULong []
+sourceInputFeatureChannels mpsMatrixBatchNormalization =
+  sendMessage mpsMatrixBatchNormalization sourceInputFeatureChannelsSelector
 
 -- | sourceInputFeatureChannels
 --
@@ -243,8 +233,8 @@ sourceInputFeatureChannels mpsMatrixBatchNormalization  =
 --
 -- ObjC selector: @- setSourceInputFeatureChannels:@
 setSourceInputFeatureChannels :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> CULong -> IO ()
-setSourceInputFeatureChannels mpsMatrixBatchNormalization  value =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "setSourceInputFeatureChannels:") retVoid [argCULong value]
+setSourceInputFeatureChannels mpsMatrixBatchNormalization value =
+  sendMessage mpsMatrixBatchNormalization setSourceInputFeatureChannelsSelector value
 
 -- | epsilon
 --
@@ -252,8 +242,8 @@ setSourceInputFeatureChannels mpsMatrixBatchNormalization  value =
 --
 -- ObjC selector: @- epsilon@
 epsilon :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> IO CFloat
-epsilon mpsMatrixBatchNormalization  =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "epsilon") retCFloat []
+epsilon mpsMatrixBatchNormalization =
+  sendMessage mpsMatrixBatchNormalization epsilonSelector
 
 -- | epsilon
 --
@@ -261,8 +251,8 @@ epsilon mpsMatrixBatchNormalization  =
 --
 -- ObjC selector: @- setEpsilon:@
 setEpsilon :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> CFloat -> IO ()
-setEpsilon mpsMatrixBatchNormalization  value =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "setEpsilon:") retVoid [argCFloat value]
+setEpsilon mpsMatrixBatchNormalization value =
+  sendMessage mpsMatrixBatchNormalization setEpsilonSelector value
 
 -- | computeStatistics
 --
@@ -270,8 +260,8 @@ setEpsilon mpsMatrixBatchNormalization  value =
 --
 -- ObjC selector: @- computeStatistics@
 computeStatistics :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> IO Bool
-computeStatistics mpsMatrixBatchNormalization  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsMatrixBatchNormalization (mkSelector "computeStatistics") retCULong []
+computeStatistics mpsMatrixBatchNormalization =
+  sendMessage mpsMatrixBatchNormalization computeStatisticsSelector
 
 -- | computeStatistics
 --
@@ -279,78 +269,78 @@ computeStatistics mpsMatrixBatchNormalization  =
 --
 -- ObjC selector: @- setComputeStatistics:@
 setComputeStatistics :: IsMPSMatrixBatchNormalization mpsMatrixBatchNormalization => mpsMatrixBatchNormalization -> Bool -> IO ()
-setComputeStatistics mpsMatrixBatchNormalization  value =
-    sendMsg mpsMatrixBatchNormalization (mkSelector "setComputeStatistics:") retVoid [argCULong (if value then 1 else 0)]
+setComputeStatistics mpsMatrixBatchNormalization value =
+  sendMessage mpsMatrixBatchNormalization setComputeStatisticsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setNeuronType:parameterA:parameterB:parameterC:@
-setNeuronType_parameterA_parameterB_parameterCSelector :: Selector
+setNeuronType_parameterA_parameterB_parameterCSelector :: Selector '[MPSCNNNeuronType, CFloat, CFloat, CFloat] ()
 setNeuronType_parameterA_parameterB_parameterCSelector = mkSelector "setNeuronType:parameterA:parameterB:parameterC:"
 
 -- | @Selector@ for @neuronType@
-neuronTypeSelector :: Selector
+neuronTypeSelector :: Selector '[] MPSCNNNeuronType
 neuronTypeSelector = mkSelector "neuronType"
 
 -- | @Selector@ for @neuronParameterA@
-neuronParameterASelector :: Selector
+neuronParameterASelector :: Selector '[] CFloat
 neuronParameterASelector = mkSelector "neuronParameterA"
 
 -- | @Selector@ for @neuronParameterB@
-neuronParameterBSelector :: Selector
+neuronParameterBSelector :: Selector '[] CFloat
 neuronParameterBSelector = mkSelector "neuronParameterB"
 
 -- | @Selector@ for @neuronParameterC@
-neuronParameterCSelector :: Selector
+neuronParameterCSelector :: Selector '[] CFloat
 neuronParameterCSelector = mkSelector "neuronParameterC"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixBatchNormalization)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inputMatrix:meanVector:varianceVector:gammaVector:betaVector:resultMatrix:@
-encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVector_resultMatrixSelector :: Selector
+encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVector_resultMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSVector, Id MPSVector, Id MPSVector, Id MPSVector, Id MPSMatrix] ()
 encodeToCommandBuffer_inputMatrix_meanVector_varianceVector_gammaVector_betaVector_resultMatrixSelector = mkSelector "encodeToCommandBuffer:inputMatrix:meanVector:varianceVector:gammaVector:betaVector:resultMatrix:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSMatrixBatchNormalization)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSMatrixBatchNormalization)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @sourceNumberOfFeatureVectors@
-sourceNumberOfFeatureVectorsSelector :: Selector
+sourceNumberOfFeatureVectorsSelector :: Selector '[] CULong
 sourceNumberOfFeatureVectorsSelector = mkSelector "sourceNumberOfFeatureVectors"
 
 -- | @Selector@ for @setSourceNumberOfFeatureVectors:@
-setSourceNumberOfFeatureVectorsSelector :: Selector
+setSourceNumberOfFeatureVectorsSelector :: Selector '[CULong] ()
 setSourceNumberOfFeatureVectorsSelector = mkSelector "setSourceNumberOfFeatureVectors:"
 
 -- | @Selector@ for @sourceInputFeatureChannels@
-sourceInputFeatureChannelsSelector :: Selector
+sourceInputFeatureChannelsSelector :: Selector '[] CULong
 sourceInputFeatureChannelsSelector = mkSelector "sourceInputFeatureChannels"
 
 -- | @Selector@ for @setSourceInputFeatureChannels:@
-setSourceInputFeatureChannelsSelector :: Selector
+setSourceInputFeatureChannelsSelector :: Selector '[CULong] ()
 setSourceInputFeatureChannelsSelector = mkSelector "setSourceInputFeatureChannels:"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @setEpsilon:@
-setEpsilonSelector :: Selector
+setEpsilonSelector :: Selector '[CFloat] ()
 setEpsilonSelector = mkSelector "setEpsilon:"
 
 -- | @Selector@ for @computeStatistics@
-computeStatisticsSelector :: Selector
+computeStatisticsSelector :: Selector '[] Bool
 computeStatisticsSelector = mkSelector "computeStatistics"
 
 -- | @Selector@ for @setComputeStatistics:@
-setComputeStatisticsSelector :: Selector
+setComputeStatisticsSelector :: Selector '[Bool] ()
 setComputeStatisticsSelector = mkSelector "setComputeStatistics:"
 

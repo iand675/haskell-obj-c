@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,19 +27,19 @@ module ObjC.AVFoundation.AVCaption
   , animation
   , region
   , textAlignment
+  , animationSelector
+  , backgroundColorAtIndex_rangeSelector
+  , decorationAtIndex_rangeSelector
+  , fontStyleAtIndex_rangeSelector
+  , fontWeightAtIndex_rangeSelector
   , initSelector
   , newSelector
-  , textColorAtIndex_rangeSelector
-  , backgroundColorAtIndex_rangeSelector
-  , fontWeightAtIndex_rangeSelector
-  , fontStyleAtIndex_rangeSelector
-  , decorationAtIndex_rangeSelector
-  , textCombineAtIndex_rangeSelector
-  , rubyAtIndex_rangeSelector
-  , textSelector
-  , animationSelector
   , regionSelector
+  , rubyAtIndex_rangeSelector
   , textAlignmentSelector
+  , textColorAtIndex_rangeSelector
+  , textCombineAtIndex_rangeSelector
+  , textSelector
 
   -- * Enum types
   , AVCaptionAnimation(AVCaptionAnimation)
@@ -73,15 +74,11 @@ module ObjC.AVFoundation.AVCaption
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,15 +89,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaption avCaption => avCaption -> IO (Id AVCaption)
-init_ avCaption  =
-    sendMsg avCaption (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaption =
+  sendOwnedMessage avCaption initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaption)
 new  =
   do
     cls' <- getRequiredClass "AVCaption"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | textColorAtIndex:range:
 --
@@ -112,8 +109,8 @@ new  =
 --
 -- ObjC selector: @- textColorAtIndex:range:@
 textColorAtIndex_range :: IsAVCaption avCaption => avCaption -> CLong -> Ptr NSRange -> IO (Ptr ())
-textColorAtIndex_range avCaption  index outRange =
-    fmap castPtr $ sendMsg avCaption (mkSelector "textColorAtIndex:range:") (retPtr retVoid) [argCLong index, argPtr outRange]
+textColorAtIndex_range avCaption index outRange =
+  sendMessage avCaption textColorAtIndex_rangeSelector index outRange
 
 -- | backgroundColorAtIndex:range:
 --
@@ -127,8 +124,8 @@ textColorAtIndex_range avCaption  index outRange =
 --
 -- ObjC selector: @- backgroundColorAtIndex:range:@
 backgroundColorAtIndex_range :: IsAVCaption avCaption => avCaption -> CLong -> Ptr NSRange -> IO (Ptr ())
-backgroundColorAtIndex_range avCaption  index outRange =
-    fmap castPtr $ sendMsg avCaption (mkSelector "backgroundColorAtIndex:range:") (retPtr retVoid) [argCLong index, argPtr outRange]
+backgroundColorAtIndex_range avCaption index outRange =
+  sendMessage avCaption backgroundColorAtIndex_rangeSelector index outRange
 
 -- | fontWeightAtIndex:range:
 --
@@ -142,8 +139,8 @@ backgroundColorAtIndex_range avCaption  index outRange =
 --
 -- ObjC selector: @- fontWeightAtIndex:range:@
 fontWeightAtIndex_range :: IsAVCaption avCaption => avCaption -> CLong -> Ptr NSRange -> IO AVCaptionFontWeight
-fontWeightAtIndex_range avCaption  index outRange =
-    fmap (coerce :: CLong -> AVCaptionFontWeight) $ sendMsg avCaption (mkSelector "fontWeightAtIndex:range:") retCLong [argCLong index, argPtr outRange]
+fontWeightAtIndex_range avCaption index outRange =
+  sendMessage avCaption fontWeightAtIndex_rangeSelector index outRange
 
 -- | fontStyleAtIndex:range:
 --
@@ -155,8 +152,8 @@ fontWeightAtIndex_range avCaption  index outRange =
 --
 -- ObjC selector: @- fontStyleAtIndex:range:@
 fontStyleAtIndex_range :: IsAVCaption avCaption => avCaption -> CLong -> Ptr NSRange -> IO AVCaptionFontStyle
-fontStyleAtIndex_range avCaption  index outRange =
-    fmap (coerce :: CLong -> AVCaptionFontStyle) $ sendMsg avCaption (mkSelector "fontStyleAtIndex:range:") retCLong [argCLong index, argPtr outRange]
+fontStyleAtIndex_range avCaption index outRange =
+  sendMessage avCaption fontStyleAtIndex_rangeSelector index outRange
 
 -- | decorationAtIndex:range:
 --
@@ -168,8 +165,8 @@ fontStyleAtIndex_range avCaption  index outRange =
 --
 -- ObjC selector: @- decorationAtIndex:range:@
 decorationAtIndex_range :: IsAVCaption avCaption => avCaption -> CLong -> Ptr NSRange -> IO AVCaptionDecoration
-decorationAtIndex_range avCaption  index outRange =
-    fmap (coerce :: CULong -> AVCaptionDecoration) $ sendMsg avCaption (mkSelector "decorationAtIndex:range:") retCULong [argCLong index, argPtr outRange]
+decorationAtIndex_range avCaption index outRange =
+  sendMessage avCaption decorationAtIndex_rangeSelector index outRange
 
 -- | textCombineAtIndex:range:
 --
@@ -181,8 +178,8 @@ decorationAtIndex_range avCaption  index outRange =
 --
 -- ObjC selector: @- textCombineAtIndex:range:@
 textCombineAtIndex_range :: IsAVCaption avCaption => avCaption -> CLong -> Ptr NSRange -> IO AVCaptionTextCombine
-textCombineAtIndex_range avCaption  index outRange =
-    fmap (coerce :: CLong -> AVCaptionTextCombine) $ sendMsg avCaption (mkSelector "textCombineAtIndex:range:") retCLong [argCLong index, argPtr outRange]
+textCombineAtIndex_range avCaption index outRange =
+  sendMessage avCaption textCombineAtIndex_rangeSelector index outRange
 
 -- | rubyAtIndex:range:
 --
@@ -196,8 +193,8 @@ textCombineAtIndex_range avCaption  index outRange =
 --
 -- ObjC selector: @- rubyAtIndex:range:@
 rubyAtIndex_range :: IsAVCaption avCaption => avCaption -> CLong -> Ptr NSRange -> IO (Id AVCaptionRuby)
-rubyAtIndex_range avCaption  index outRange =
-    sendMsg avCaption (mkSelector "rubyAtIndex:range:") (retPtr retVoid) [argCLong index, argPtr outRange] >>= retainedObject . castPtr
+rubyAtIndex_range avCaption index outRange =
+  sendMessage avCaption rubyAtIndex_rangeSelector index outRange
 
 -- | text
 --
@@ -213,13 +210,13 @@ rubyAtIndex_range avCaption  index outRange =
 --
 -- ObjC selector: @- text@
 text :: IsAVCaption avCaption => avCaption -> IO (Id NSString)
-text avCaption  =
-    sendMsg avCaption (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text avCaption =
+  sendMessage avCaption textSelector
 
 -- | @- animation@
 animation :: IsAVCaption avCaption => avCaption -> IO AVCaptionAnimation
-animation avCaption  =
-    fmap (coerce :: CLong -> AVCaptionAnimation) $ sendMsg avCaption (mkSelector "animation") retCLong []
+animation avCaption =
+  sendMessage avCaption animationSelector
 
 -- | region
 --
@@ -229,8 +226,8 @@ animation avCaption  =
 --
 -- ObjC selector: @- region@
 region :: IsAVCaption avCaption => avCaption -> IO (Id AVCaptionRegion)
-region avCaption  =
-    sendMsg avCaption (mkSelector "region") (retPtr retVoid) [] >>= retainedObject . castPtr
+region avCaption =
+  sendMessage avCaption regionSelector
 
 -- | textAlignment
 --
@@ -240,62 +237,62 @@ region avCaption  =
 --
 -- ObjC selector: @- textAlignment@
 textAlignment :: IsAVCaption avCaption => avCaption -> IO AVCaptionTextAlignment
-textAlignment avCaption  =
-    fmap (coerce :: CLong -> AVCaptionTextAlignment) $ sendMsg avCaption (mkSelector "textAlignment") retCLong []
+textAlignment avCaption =
+  sendMessage avCaption textAlignmentSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaption)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaption)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @textColorAtIndex:range:@
-textColorAtIndex_rangeSelector :: Selector
+textColorAtIndex_rangeSelector :: Selector '[CLong, Ptr NSRange] (Ptr ())
 textColorAtIndex_rangeSelector = mkSelector "textColorAtIndex:range:"
 
 -- | @Selector@ for @backgroundColorAtIndex:range:@
-backgroundColorAtIndex_rangeSelector :: Selector
+backgroundColorAtIndex_rangeSelector :: Selector '[CLong, Ptr NSRange] (Ptr ())
 backgroundColorAtIndex_rangeSelector = mkSelector "backgroundColorAtIndex:range:"
 
 -- | @Selector@ for @fontWeightAtIndex:range:@
-fontWeightAtIndex_rangeSelector :: Selector
+fontWeightAtIndex_rangeSelector :: Selector '[CLong, Ptr NSRange] AVCaptionFontWeight
 fontWeightAtIndex_rangeSelector = mkSelector "fontWeightAtIndex:range:"
 
 -- | @Selector@ for @fontStyleAtIndex:range:@
-fontStyleAtIndex_rangeSelector :: Selector
+fontStyleAtIndex_rangeSelector :: Selector '[CLong, Ptr NSRange] AVCaptionFontStyle
 fontStyleAtIndex_rangeSelector = mkSelector "fontStyleAtIndex:range:"
 
 -- | @Selector@ for @decorationAtIndex:range:@
-decorationAtIndex_rangeSelector :: Selector
+decorationAtIndex_rangeSelector :: Selector '[CLong, Ptr NSRange] AVCaptionDecoration
 decorationAtIndex_rangeSelector = mkSelector "decorationAtIndex:range:"
 
 -- | @Selector@ for @textCombineAtIndex:range:@
-textCombineAtIndex_rangeSelector :: Selector
+textCombineAtIndex_rangeSelector :: Selector '[CLong, Ptr NSRange] AVCaptionTextCombine
 textCombineAtIndex_rangeSelector = mkSelector "textCombineAtIndex:range:"
 
 -- | @Selector@ for @rubyAtIndex:range:@
-rubyAtIndex_rangeSelector :: Selector
+rubyAtIndex_rangeSelector :: Selector '[CLong, Ptr NSRange] (Id AVCaptionRuby)
 rubyAtIndex_rangeSelector = mkSelector "rubyAtIndex:range:"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @animation@
-animationSelector :: Selector
+animationSelector :: Selector '[] AVCaptionAnimation
 animationSelector = mkSelector "animation"
 
 -- | @Selector@ for @region@
-regionSelector :: Selector
+regionSelector :: Selector '[] (Id AVCaptionRegion)
 regionSelector = mkSelector "region"
 
 -- | @Selector@ for @textAlignment@
-textAlignmentSelector :: Selector
+textAlignmentSelector :: Selector '[] AVCaptionTextAlignment
 textAlignmentSelector = mkSelector "textAlignment"
 

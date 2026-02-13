@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,33 +41,33 @@ module ObjC.Metal.MTL4AccelerationStructureCurveGeometryDescriptor
   , curveEndCaps
   , setCurveEndCaps
   , controlPointBufferSelector
-  , setControlPointBufferSelector
   , controlPointCountSelector
-  , setControlPointCountSelector
-  , controlPointStrideSelector
-  , setControlPointStrideSelector
   , controlPointFormatSelector
-  , setControlPointFormatSelector
-  , radiusBufferSelector
-  , setRadiusBufferSelector
-  , radiusFormatSelector
-  , setRadiusFormatSelector
-  , radiusStrideSelector
-  , setRadiusStrideSelector
-  , indexBufferSelector
-  , setIndexBufferSelector
-  , indexTypeSelector
-  , setIndexTypeSelector
-  , segmentCountSelector
-  , setSegmentCountSelector
-  , segmentControlPointCountSelector
-  , setSegmentControlPointCountSelector
-  , curveTypeSelector
-  , setCurveTypeSelector
+  , controlPointStrideSelector
   , curveBasisSelector
-  , setCurveBasisSelector
   , curveEndCapsSelector
+  , curveTypeSelector
+  , indexBufferSelector
+  , indexTypeSelector
+  , radiusBufferSelector
+  , radiusFormatSelector
+  , radiusStrideSelector
+  , segmentControlPointCountSelector
+  , segmentCountSelector
+  , setControlPointBufferSelector
+  , setControlPointCountSelector
+  , setControlPointFormatSelector
+  , setControlPointStrideSelector
+  , setCurveBasisSelector
   , setCurveEndCapsSelector
+  , setCurveTypeSelector
+  , setIndexBufferSelector
+  , setIndexTypeSelector
+  , setRadiusBufferSelector
+  , setRadiusFormatSelector
+  , setRadiusStrideSelector
+  , setSegmentControlPointCountSelector
+  , setSegmentCountSelector
 
   -- * Enum types
   , MTLAttributeFormat(MTLAttributeFormat)
@@ -142,15 +143,11 @@ module ObjC.Metal.MTL4AccelerationStructureCurveGeometryDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -167,8 +164,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- controlPointBuffer@
 controlPointBuffer :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO MTL4BufferRange
-controlPointBuffer mtL4AccelerationStructureCurveGeometryDescriptor  =
-    sendMsgStret mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "controlPointBuffer") retMTL4BufferRange []
+controlPointBuffer mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor controlPointBufferSelector
 
 -- | References a buffer containing curve control points.
 --
@@ -178,22 +175,22 @@ controlPointBuffer mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setControlPointBuffer:@
 setControlPointBuffer :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> MTL4BufferRange -> IO ()
-setControlPointBuffer mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setControlPointBuffer:") retVoid [argMTL4BufferRange value]
+setControlPointBuffer mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setControlPointBufferSelector value
 
 -- | Declares the number of control points in the control point buffer.
 --
 -- ObjC selector: @- controlPointCount@
 controlPointCount :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO CULong
-controlPointCount mtL4AccelerationStructureCurveGeometryDescriptor  =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "controlPointCount") retCULong []
+controlPointCount mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor controlPointCountSelector
 
 -- | Declares the number of control points in the control point buffer.
 --
 -- ObjC selector: @- setControlPointCount:@
 setControlPointCount :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> CULong -> IO ()
-setControlPointCount mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setControlPointCount:") retVoid [argCULong value]
+setControlPointCount mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setControlPointCountSelector value
 
 -- | Sets the stride, in bytes, between control points in the control point buffer the control point buffer references.
 --
@@ -203,8 +200,8 @@ setControlPointCount mtL4AccelerationStructureCurveGeometryDescriptor  value =
 --
 -- ObjC selector: @- controlPointStride@
 controlPointStride :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO CULong
-controlPointStride mtL4AccelerationStructureCurveGeometryDescriptor  =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "controlPointStride") retCULong []
+controlPointStride mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor controlPointStrideSelector
 
 -- | Sets the stride, in bytes, between control points in the control point buffer the control point buffer references.
 --
@@ -214,8 +211,8 @@ controlPointStride mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setControlPointStride:@
 setControlPointStride :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> CULong -> IO ()
-setControlPointStride mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setControlPointStride:") retVoid [argCULong value]
+setControlPointStride mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setControlPointStrideSelector value
 
 -- | Declares the format of the control points the control point buffer references.
 --
@@ -223,8 +220,8 @@ setControlPointStride mtL4AccelerationStructureCurveGeometryDescriptor  value =
 --
 -- ObjC selector: @- controlPointFormat@
 controlPointFormat :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO MTLAttributeFormat
-controlPointFormat mtL4AccelerationStructureCurveGeometryDescriptor  =
-    fmap (coerce :: CULong -> MTLAttributeFormat) $ sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "controlPointFormat") retCULong []
+controlPointFormat mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor controlPointFormatSelector
 
 -- | Declares the format of the control points the control point buffer references.
 --
@@ -232,8 +229,8 @@ controlPointFormat mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setControlPointFormat:@
 setControlPointFormat :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> MTLAttributeFormat -> IO ()
-setControlPointFormat mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setControlPointFormat:") retVoid [argCULong (coerce value)]
+setControlPointFormat mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setControlPointFormatSelector value
 
 -- | Assigns a reference to a buffer containing the curve radius for each control point.
 --
@@ -243,8 +240,8 @@ setControlPointFormat mtL4AccelerationStructureCurveGeometryDescriptor  value =
 --
 -- ObjC selector: @- radiusBuffer@
 radiusBuffer :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO MTL4BufferRange
-radiusBuffer mtL4AccelerationStructureCurveGeometryDescriptor  =
-    sendMsgStret mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "radiusBuffer") retMTL4BufferRange []
+radiusBuffer mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor radiusBufferSelector
 
 -- | Assigns a reference to a buffer containing the curve radius for each control point.
 --
@@ -254,8 +251,8 @@ radiusBuffer mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setRadiusBuffer:@
 setRadiusBuffer :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> MTL4BufferRange -> IO ()
-setRadiusBuffer mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setRadiusBuffer:") retVoid [argMTL4BufferRange value]
+setRadiusBuffer mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setRadiusBufferSelector value
 
 -- | Declares the format of the radii in the radius buffer.
 --
@@ -263,8 +260,8 @@ setRadiusBuffer mtL4AccelerationStructureCurveGeometryDescriptor  value =
 --
 -- ObjC selector: @- radiusFormat@
 radiusFormat :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO MTLAttributeFormat
-radiusFormat mtL4AccelerationStructureCurveGeometryDescriptor  =
-    fmap (coerce :: CULong -> MTLAttributeFormat) $ sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "radiusFormat") retCULong []
+radiusFormat mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor radiusFormatSelector
 
 -- | Declares the format of the radii in the radius buffer.
 --
@@ -272,8 +269,8 @@ radiusFormat mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setRadiusFormat:@
 setRadiusFormat :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> MTLAttributeFormat -> IO ()
-setRadiusFormat mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setRadiusFormat:") retVoid [argCULong (coerce value)]
+setRadiusFormat mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setRadiusFormatSelector value
 
 -- | Configures the stride, in bytes, between radii in the radius buffer.
 --
@@ -283,8 +280,8 @@ setRadiusFormat mtL4AccelerationStructureCurveGeometryDescriptor  value =
 --
 -- ObjC selector: @- radiusStride@
 radiusStride :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO CULong
-radiusStride mtL4AccelerationStructureCurveGeometryDescriptor  =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "radiusStride") retCULong []
+radiusStride mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor radiusStrideSelector
 
 -- | Configures the stride, in bytes, between radii in the radius buffer.
 --
@@ -294,8 +291,8 @@ radiusStride mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setRadiusStride:@
 setRadiusStride :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> CULong -> IO ()
-setRadiusStride mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setRadiusStride:") retVoid [argCULong value]
+setRadiusStride mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setRadiusStrideSelector value
 
 -- | Assigns an optional index buffer containing references to control points in the control point buffer.
 --
@@ -303,8 +300,8 @@ setRadiusStride mtL4AccelerationStructureCurveGeometryDescriptor  value =
 --
 -- ObjC selector: @- indexBuffer@
 indexBuffer :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO MTL4BufferRange
-indexBuffer mtL4AccelerationStructureCurveGeometryDescriptor  =
-    sendMsgStret mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "indexBuffer") retMTL4BufferRange []
+indexBuffer mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor indexBufferSelector
 
 -- | Assigns an optional index buffer containing references to control points in the control point buffer.
 --
@@ -312,36 +309,36 @@ indexBuffer mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setIndexBuffer:@
 setIndexBuffer :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> MTL4BufferRange -> IO ()
-setIndexBuffer mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setIndexBuffer:") retVoid [argMTL4BufferRange value]
+setIndexBuffer mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setIndexBufferSelector value
 
 -- | Specifies the size of the indices the @indexBuffer@ contains, which is typically either 16 or 32-bits for each index.
 --
 -- ObjC selector: @- indexType@
 indexType :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO MTLIndexType
-indexType mtL4AccelerationStructureCurveGeometryDescriptor  =
-    fmap (coerce :: CULong -> MTLIndexType) $ sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "indexType") retCULong []
+indexType mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor indexTypeSelector
 
 -- | Specifies the size of the indices the @indexBuffer@ contains, which is typically either 16 or 32-bits for each index.
 --
 -- ObjC selector: @- setIndexType:@
 setIndexType :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> MTLIndexType -> IO ()
-setIndexType mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setIndexType:") retVoid [argCULong (coerce value)]
+setIndexType mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setIndexTypeSelector value
 
 -- | Declares the number of curve segments.
 --
 -- ObjC selector: @- segmentCount@
 segmentCount :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO CULong
-segmentCount mtL4AccelerationStructureCurveGeometryDescriptor  =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "segmentCount") retCULong []
+segmentCount mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor segmentCountSelector
 
 -- | Declares the number of curve segments.
 --
 -- ObjC selector: @- setSegmentCount:@
 setSegmentCount :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> CULong -> IO ()
-setSegmentCount mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setSegmentCount:") retVoid [argCULong value]
+setSegmentCount mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setSegmentCountSelector value
 
 -- | Declares the number of control points per curve segment.
 --
@@ -349,8 +346,8 @@ setSegmentCount mtL4AccelerationStructureCurveGeometryDescriptor  value =
 --
 -- ObjC selector: @- segmentControlPointCount@
 segmentControlPointCount :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO CULong
-segmentControlPointCount mtL4AccelerationStructureCurveGeometryDescriptor  =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "segmentControlPointCount") retCULong []
+segmentControlPointCount mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor segmentControlPointCountSelector
 
 -- | Declares the number of control points per curve segment.
 --
@@ -358,8 +355,8 @@ segmentControlPointCount mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setSegmentControlPointCount:@
 setSegmentControlPointCount :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> CULong -> IO ()
-setSegmentControlPointCount mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setSegmentControlPointCount:") retVoid [argCULong value]
+setSegmentControlPointCount mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setSegmentControlPointCountSelector value
 
 -- | Controls the curve type.
 --
@@ -367,8 +364,8 @@ setSegmentControlPointCount mtL4AccelerationStructureCurveGeometryDescriptor  va
 --
 -- ObjC selector: @- curveType@
 curveType :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO MTLCurveType
-curveType mtL4AccelerationStructureCurveGeometryDescriptor  =
-    fmap (coerce :: CLong -> MTLCurveType) $ sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "curveType") retCLong []
+curveType mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor curveTypeSelector
 
 -- | Controls the curve type.
 --
@@ -376,8 +373,8 @@ curveType mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setCurveType:@
 setCurveType :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> MTLCurveType -> IO ()
-setCurveType mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setCurveType:") retVoid [argCLong (coerce value)]
+setCurveType mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setCurveTypeSelector value
 
 -- | Controls the curve basis function, determining how Metal interpolates the control points.
 --
@@ -385,8 +382,8 @@ setCurveType mtL4AccelerationStructureCurveGeometryDescriptor  value =
 --
 -- ObjC selector: @- curveBasis@
 curveBasis :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO MTLCurveBasis
-curveBasis mtL4AccelerationStructureCurveGeometryDescriptor  =
-    fmap (coerce :: CLong -> MTLCurveBasis) $ sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "curveBasis") retCLong []
+curveBasis mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor curveBasisSelector
 
 -- | Controls the curve basis function, determining how Metal interpolates the control points.
 --
@@ -394,8 +391,8 @@ curveBasis mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setCurveBasis:@
 setCurveBasis :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> MTLCurveBasis -> IO ()
-setCurveBasis mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setCurveBasis:") retVoid [argCLong (coerce value)]
+setCurveBasis mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setCurveBasisSelector value
 
 -- | Sets the type of curve end caps.
 --
@@ -403,8 +400,8 @@ setCurveBasis mtL4AccelerationStructureCurveGeometryDescriptor  value =
 --
 -- ObjC selector: @- curveEndCaps@
 curveEndCaps :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> IO MTLCurveEndCaps
-curveEndCaps mtL4AccelerationStructureCurveGeometryDescriptor  =
-    fmap (coerce :: CLong -> MTLCurveEndCaps) $ sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "curveEndCaps") retCLong []
+curveEndCaps mtL4AccelerationStructureCurveGeometryDescriptor =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor curveEndCapsSelector
 
 -- | Sets the type of curve end caps.
 --
@@ -412,122 +409,122 @@ curveEndCaps mtL4AccelerationStructureCurveGeometryDescriptor  =
 --
 -- ObjC selector: @- setCurveEndCaps:@
 setCurveEndCaps :: IsMTL4AccelerationStructureCurveGeometryDescriptor mtL4AccelerationStructureCurveGeometryDescriptor => mtL4AccelerationStructureCurveGeometryDescriptor -> MTLCurveEndCaps -> IO ()
-setCurveEndCaps mtL4AccelerationStructureCurveGeometryDescriptor  value =
-    sendMsg mtL4AccelerationStructureCurveGeometryDescriptor (mkSelector "setCurveEndCaps:") retVoid [argCLong (coerce value)]
+setCurveEndCaps mtL4AccelerationStructureCurveGeometryDescriptor value =
+  sendMessage mtL4AccelerationStructureCurveGeometryDescriptor setCurveEndCapsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @controlPointBuffer@
-controlPointBufferSelector :: Selector
+controlPointBufferSelector :: Selector '[] MTL4BufferRange
 controlPointBufferSelector = mkSelector "controlPointBuffer"
 
 -- | @Selector@ for @setControlPointBuffer:@
-setControlPointBufferSelector :: Selector
+setControlPointBufferSelector :: Selector '[MTL4BufferRange] ()
 setControlPointBufferSelector = mkSelector "setControlPointBuffer:"
 
 -- | @Selector@ for @controlPointCount@
-controlPointCountSelector :: Selector
+controlPointCountSelector :: Selector '[] CULong
 controlPointCountSelector = mkSelector "controlPointCount"
 
 -- | @Selector@ for @setControlPointCount:@
-setControlPointCountSelector :: Selector
+setControlPointCountSelector :: Selector '[CULong] ()
 setControlPointCountSelector = mkSelector "setControlPointCount:"
 
 -- | @Selector@ for @controlPointStride@
-controlPointStrideSelector :: Selector
+controlPointStrideSelector :: Selector '[] CULong
 controlPointStrideSelector = mkSelector "controlPointStride"
 
 -- | @Selector@ for @setControlPointStride:@
-setControlPointStrideSelector :: Selector
+setControlPointStrideSelector :: Selector '[CULong] ()
 setControlPointStrideSelector = mkSelector "setControlPointStride:"
 
 -- | @Selector@ for @controlPointFormat@
-controlPointFormatSelector :: Selector
+controlPointFormatSelector :: Selector '[] MTLAttributeFormat
 controlPointFormatSelector = mkSelector "controlPointFormat"
 
 -- | @Selector@ for @setControlPointFormat:@
-setControlPointFormatSelector :: Selector
+setControlPointFormatSelector :: Selector '[MTLAttributeFormat] ()
 setControlPointFormatSelector = mkSelector "setControlPointFormat:"
 
 -- | @Selector@ for @radiusBuffer@
-radiusBufferSelector :: Selector
+radiusBufferSelector :: Selector '[] MTL4BufferRange
 radiusBufferSelector = mkSelector "radiusBuffer"
 
 -- | @Selector@ for @setRadiusBuffer:@
-setRadiusBufferSelector :: Selector
+setRadiusBufferSelector :: Selector '[MTL4BufferRange] ()
 setRadiusBufferSelector = mkSelector "setRadiusBuffer:"
 
 -- | @Selector@ for @radiusFormat@
-radiusFormatSelector :: Selector
+radiusFormatSelector :: Selector '[] MTLAttributeFormat
 radiusFormatSelector = mkSelector "radiusFormat"
 
 -- | @Selector@ for @setRadiusFormat:@
-setRadiusFormatSelector :: Selector
+setRadiusFormatSelector :: Selector '[MTLAttributeFormat] ()
 setRadiusFormatSelector = mkSelector "setRadiusFormat:"
 
 -- | @Selector@ for @radiusStride@
-radiusStrideSelector :: Selector
+radiusStrideSelector :: Selector '[] CULong
 radiusStrideSelector = mkSelector "radiusStride"
 
 -- | @Selector@ for @setRadiusStride:@
-setRadiusStrideSelector :: Selector
+setRadiusStrideSelector :: Selector '[CULong] ()
 setRadiusStrideSelector = mkSelector "setRadiusStride:"
 
 -- | @Selector@ for @indexBuffer@
-indexBufferSelector :: Selector
+indexBufferSelector :: Selector '[] MTL4BufferRange
 indexBufferSelector = mkSelector "indexBuffer"
 
 -- | @Selector@ for @setIndexBuffer:@
-setIndexBufferSelector :: Selector
+setIndexBufferSelector :: Selector '[MTL4BufferRange] ()
 setIndexBufferSelector = mkSelector "setIndexBuffer:"
 
 -- | @Selector@ for @indexType@
-indexTypeSelector :: Selector
+indexTypeSelector :: Selector '[] MTLIndexType
 indexTypeSelector = mkSelector "indexType"
 
 -- | @Selector@ for @setIndexType:@
-setIndexTypeSelector :: Selector
+setIndexTypeSelector :: Selector '[MTLIndexType] ()
 setIndexTypeSelector = mkSelector "setIndexType:"
 
 -- | @Selector@ for @segmentCount@
-segmentCountSelector :: Selector
+segmentCountSelector :: Selector '[] CULong
 segmentCountSelector = mkSelector "segmentCount"
 
 -- | @Selector@ for @setSegmentCount:@
-setSegmentCountSelector :: Selector
+setSegmentCountSelector :: Selector '[CULong] ()
 setSegmentCountSelector = mkSelector "setSegmentCount:"
 
 -- | @Selector@ for @segmentControlPointCount@
-segmentControlPointCountSelector :: Selector
+segmentControlPointCountSelector :: Selector '[] CULong
 segmentControlPointCountSelector = mkSelector "segmentControlPointCount"
 
 -- | @Selector@ for @setSegmentControlPointCount:@
-setSegmentControlPointCountSelector :: Selector
+setSegmentControlPointCountSelector :: Selector '[CULong] ()
 setSegmentControlPointCountSelector = mkSelector "setSegmentControlPointCount:"
 
 -- | @Selector@ for @curveType@
-curveTypeSelector :: Selector
+curveTypeSelector :: Selector '[] MTLCurveType
 curveTypeSelector = mkSelector "curveType"
 
 -- | @Selector@ for @setCurveType:@
-setCurveTypeSelector :: Selector
+setCurveTypeSelector :: Selector '[MTLCurveType] ()
 setCurveTypeSelector = mkSelector "setCurveType:"
 
 -- | @Selector@ for @curveBasis@
-curveBasisSelector :: Selector
+curveBasisSelector :: Selector '[] MTLCurveBasis
 curveBasisSelector = mkSelector "curveBasis"
 
 -- | @Selector@ for @setCurveBasis:@
-setCurveBasisSelector :: Selector
+setCurveBasisSelector :: Selector '[MTLCurveBasis] ()
 setCurveBasisSelector = mkSelector "setCurveBasis:"
 
 -- | @Selector@ for @curveEndCaps@
-curveEndCapsSelector :: Selector
+curveEndCapsSelector :: Selector '[] MTLCurveEndCaps
 curveEndCapsSelector = mkSelector "curveEndCaps"
 
 -- | @Selector@ for @setCurveEndCaps:@
-setCurveEndCapsSelector :: Selector
+setCurveEndCapsSelector :: Selector '[MTLCurveEndCaps] ()
 setCurveEndCapsSelector = mkSelector "setCurveEndCaps:"
 

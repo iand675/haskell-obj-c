@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRDishwasherAlarmClusterResetParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , alarmsSelector
-  , setAlarmsSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setAlarmsSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- alarms@
 alarms :: IsMTRDishwasherAlarmClusterResetParams mtrDishwasherAlarmClusterResetParams => mtrDishwasherAlarmClusterResetParams -> IO (Id NSNumber)
-alarms mtrDishwasherAlarmClusterResetParams  =
-    sendMsg mtrDishwasherAlarmClusterResetParams (mkSelector "alarms") (retPtr retVoid) [] >>= retainedObject . castPtr
+alarms mtrDishwasherAlarmClusterResetParams =
+  sendMessage mtrDishwasherAlarmClusterResetParams alarmsSelector
 
 -- | @- setAlarms:@
 setAlarms :: (IsMTRDishwasherAlarmClusterResetParams mtrDishwasherAlarmClusterResetParams, IsNSNumber value) => mtrDishwasherAlarmClusterResetParams -> value -> IO ()
-setAlarms mtrDishwasherAlarmClusterResetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDishwasherAlarmClusterResetParams (mkSelector "setAlarms:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlarms mtrDishwasherAlarmClusterResetParams value =
+  sendMessage mtrDishwasherAlarmClusterResetParams setAlarmsSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setAlarms mtrDishwasherAlarmClusterResetParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDishwasherAlarmClusterResetParams mtrDishwasherAlarmClusterResetParams => mtrDishwasherAlarmClusterResetParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDishwasherAlarmClusterResetParams  =
-    sendMsg mtrDishwasherAlarmClusterResetParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDishwasherAlarmClusterResetParams =
+  sendMessage mtrDishwasherAlarmClusterResetParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrDishwasherAlarmClusterResetParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDishwasherAlarmClusterResetParams mtrDishwasherAlarmClusterResetParams, IsNSNumber value) => mtrDishwasherAlarmClusterResetParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDishwasherAlarmClusterResetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDishwasherAlarmClusterResetParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDishwasherAlarmClusterResetParams value =
+  sendMessage mtrDishwasherAlarmClusterResetParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrDishwasherAlarmClusterResetParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRDishwasherAlarmClusterResetParams mtrDishwasherAlarmClusterResetParams => mtrDishwasherAlarmClusterResetParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrDishwasherAlarmClusterResetParams  =
-    sendMsg mtrDishwasherAlarmClusterResetParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrDishwasherAlarmClusterResetParams =
+  sendMessage mtrDishwasherAlarmClusterResetParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrDishwasherAlarmClusterResetParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRDishwasherAlarmClusterResetParams mtrDishwasherAlarmClusterResetParams, IsNSNumber value) => mtrDishwasherAlarmClusterResetParams -> value -> IO ()
-setServerSideProcessingTimeout mtrDishwasherAlarmClusterResetParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDishwasherAlarmClusterResetParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrDishwasherAlarmClusterResetParams value =
+  sendMessage mtrDishwasherAlarmClusterResetParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @alarms@
-alarmsSelector :: Selector
+alarmsSelector :: Selector '[] (Id NSNumber)
 alarmsSelector = mkSelector "alarms"
 
 -- | @Selector@ for @setAlarms:@
-setAlarmsSelector :: Selector
+setAlarmsSelector :: Selector '[Id NSNumber] ()
 setAlarmsSelector = mkSelector "setAlarms:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

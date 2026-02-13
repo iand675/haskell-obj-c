@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.JavaScriptCore.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | JSRelationCondition
 --
@@ -38,3 +41,13 @@ pattern KJSRelationConditionGreaterThan = JSRelationCondition 2
 
 pattern KJSRelationConditionLessThan :: JSRelationCondition
 pattern KJSRelationConditionLessThan = JSRelationCondition 3
+
+instance ObjCArgument JSRelationCondition where
+  withObjCArg (JSRelationCondition x) k = k (argCUInt x)
+
+instance ObjCReturn JSRelationCondition where
+  type RawReturn JSRelationCondition = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (JSRelationCondition x)
+  fromOwned x = pure (JSRelationCondition x)

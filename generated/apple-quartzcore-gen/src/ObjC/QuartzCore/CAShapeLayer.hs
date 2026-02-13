@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,43 +31,39 @@ module ObjC.QuartzCore.CAShapeLayer
   , setLineDashPhase
   , lineDashPattern
   , setLineDashPattern
-  , pathSelector
-  , setPathSelector
   , fillColorSelector
-  , setFillColorSelector
   , fillRuleSelector
-  , setFillRuleSelector
-  , strokeColorSelector
-  , setStrokeColorSelector
-  , strokeStartSelector
-  , setStrokeStartSelector
-  , strokeEndSelector
-  , setStrokeEndSelector
-  , lineWidthSelector
-  , setLineWidthSelector
-  , miterLimitSelector
-  , setMiterLimitSelector
   , lineCapSelector
-  , setLineCapSelector
-  , lineJoinSelector
-  , setLineJoinSelector
-  , lineDashPhaseSelector
-  , setLineDashPhaseSelector
   , lineDashPatternSelector
+  , lineDashPhaseSelector
+  , lineJoinSelector
+  , lineWidthSelector
+  , miterLimitSelector
+  , pathSelector
+  , setFillColorSelector
+  , setFillRuleSelector
+  , setLineCapSelector
   , setLineDashPatternSelector
+  , setLineDashPhaseSelector
+  , setLineJoinSelector
+  , setLineWidthSelector
+  , setMiterLimitSelector
+  , setPathSelector
+  , setStrokeColorSelector
+  , setStrokeEndSelector
+  , setStrokeStartSelector
+  , strokeColorSelector
+  , strokeEndSelector
+  , strokeStartSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,225 +72,221 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- path@
 path :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO RawId
-path caShapeLayer  =
-    fmap (RawId . castPtr) $ sendMsg caShapeLayer (mkSelector "path") (retPtr retVoid) []
+path caShapeLayer =
+  sendMessage caShapeLayer pathSelector
 
 -- | @- setPath:@
 setPath :: IsCAShapeLayer caShapeLayer => caShapeLayer -> RawId -> IO ()
-setPath caShapeLayer  value =
-    sendMsg caShapeLayer (mkSelector "setPath:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPath caShapeLayer value =
+  sendMessage caShapeLayer setPathSelector value
 
 -- | @- fillColor@
 fillColor :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO (Ptr ())
-fillColor caShapeLayer  =
-    fmap castPtr $ sendMsg caShapeLayer (mkSelector "fillColor") (retPtr retVoid) []
+fillColor caShapeLayer =
+  sendMessage caShapeLayer fillColorSelector
 
 -- | @- setFillColor:@
 setFillColor :: IsCAShapeLayer caShapeLayer => caShapeLayer -> Ptr () -> IO ()
-setFillColor caShapeLayer  value =
-    sendMsg caShapeLayer (mkSelector "setFillColor:") retVoid [argPtr value]
+setFillColor caShapeLayer value =
+  sendMessage caShapeLayer setFillColorSelector value
 
 -- | @- fillRule@
 fillRule :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO (Id NSString)
-fillRule caShapeLayer  =
-    sendMsg caShapeLayer (mkSelector "fillRule") (retPtr retVoid) [] >>= retainedObject . castPtr
+fillRule caShapeLayer =
+  sendMessage caShapeLayer fillRuleSelector
 
 -- | @- setFillRule:@
 setFillRule :: (IsCAShapeLayer caShapeLayer, IsNSString value) => caShapeLayer -> value -> IO ()
-setFillRule caShapeLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caShapeLayer (mkSelector "setFillRule:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFillRule caShapeLayer value =
+  sendMessage caShapeLayer setFillRuleSelector (toNSString value)
 
 -- | @- strokeColor@
 strokeColor :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO (Ptr ())
-strokeColor caShapeLayer  =
-    fmap castPtr $ sendMsg caShapeLayer (mkSelector "strokeColor") (retPtr retVoid) []
+strokeColor caShapeLayer =
+  sendMessage caShapeLayer strokeColorSelector
 
 -- | @- setStrokeColor:@
 setStrokeColor :: IsCAShapeLayer caShapeLayer => caShapeLayer -> Ptr () -> IO ()
-setStrokeColor caShapeLayer  value =
-    sendMsg caShapeLayer (mkSelector "setStrokeColor:") retVoid [argPtr value]
+setStrokeColor caShapeLayer value =
+  sendMessage caShapeLayer setStrokeColorSelector value
 
 -- | @- strokeStart@
 strokeStart :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO CDouble
-strokeStart caShapeLayer  =
-    sendMsg caShapeLayer (mkSelector "strokeStart") retCDouble []
+strokeStart caShapeLayer =
+  sendMessage caShapeLayer strokeStartSelector
 
 -- | @- setStrokeStart:@
 setStrokeStart :: IsCAShapeLayer caShapeLayer => caShapeLayer -> CDouble -> IO ()
-setStrokeStart caShapeLayer  value =
-    sendMsg caShapeLayer (mkSelector "setStrokeStart:") retVoid [argCDouble value]
+setStrokeStart caShapeLayer value =
+  sendMessage caShapeLayer setStrokeStartSelector value
 
 -- | @- strokeEnd@
 strokeEnd :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO CDouble
-strokeEnd caShapeLayer  =
-    sendMsg caShapeLayer (mkSelector "strokeEnd") retCDouble []
+strokeEnd caShapeLayer =
+  sendMessage caShapeLayer strokeEndSelector
 
 -- | @- setStrokeEnd:@
 setStrokeEnd :: IsCAShapeLayer caShapeLayer => caShapeLayer -> CDouble -> IO ()
-setStrokeEnd caShapeLayer  value =
-    sendMsg caShapeLayer (mkSelector "setStrokeEnd:") retVoid [argCDouble value]
+setStrokeEnd caShapeLayer value =
+  sendMessage caShapeLayer setStrokeEndSelector value
 
 -- | @- lineWidth@
 lineWidth :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO CDouble
-lineWidth caShapeLayer  =
-    sendMsg caShapeLayer (mkSelector "lineWidth") retCDouble []
+lineWidth caShapeLayer =
+  sendMessage caShapeLayer lineWidthSelector
 
 -- | @- setLineWidth:@
 setLineWidth :: IsCAShapeLayer caShapeLayer => caShapeLayer -> CDouble -> IO ()
-setLineWidth caShapeLayer  value =
-    sendMsg caShapeLayer (mkSelector "setLineWidth:") retVoid [argCDouble value]
+setLineWidth caShapeLayer value =
+  sendMessage caShapeLayer setLineWidthSelector value
 
 -- | @- miterLimit@
 miterLimit :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO CDouble
-miterLimit caShapeLayer  =
-    sendMsg caShapeLayer (mkSelector "miterLimit") retCDouble []
+miterLimit caShapeLayer =
+  sendMessage caShapeLayer miterLimitSelector
 
 -- | @- setMiterLimit:@
 setMiterLimit :: IsCAShapeLayer caShapeLayer => caShapeLayer -> CDouble -> IO ()
-setMiterLimit caShapeLayer  value =
-    sendMsg caShapeLayer (mkSelector "setMiterLimit:") retVoid [argCDouble value]
+setMiterLimit caShapeLayer value =
+  sendMessage caShapeLayer setMiterLimitSelector value
 
 -- | @- lineCap@
 lineCap :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO (Id NSString)
-lineCap caShapeLayer  =
-    sendMsg caShapeLayer (mkSelector "lineCap") (retPtr retVoid) [] >>= retainedObject . castPtr
+lineCap caShapeLayer =
+  sendMessage caShapeLayer lineCapSelector
 
 -- | @- setLineCap:@
 setLineCap :: (IsCAShapeLayer caShapeLayer, IsNSString value) => caShapeLayer -> value -> IO ()
-setLineCap caShapeLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caShapeLayer (mkSelector "setLineCap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLineCap caShapeLayer value =
+  sendMessage caShapeLayer setLineCapSelector (toNSString value)
 
 -- | @- lineJoin@
 lineJoin :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO (Id NSString)
-lineJoin caShapeLayer  =
-    sendMsg caShapeLayer (mkSelector "lineJoin") (retPtr retVoid) [] >>= retainedObject . castPtr
+lineJoin caShapeLayer =
+  sendMessage caShapeLayer lineJoinSelector
 
 -- | @- setLineJoin:@
 setLineJoin :: (IsCAShapeLayer caShapeLayer, IsNSString value) => caShapeLayer -> value -> IO ()
-setLineJoin caShapeLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caShapeLayer (mkSelector "setLineJoin:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLineJoin caShapeLayer value =
+  sendMessage caShapeLayer setLineJoinSelector (toNSString value)
 
 -- | @- lineDashPhase@
 lineDashPhase :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO CDouble
-lineDashPhase caShapeLayer  =
-    sendMsg caShapeLayer (mkSelector "lineDashPhase") retCDouble []
+lineDashPhase caShapeLayer =
+  sendMessage caShapeLayer lineDashPhaseSelector
 
 -- | @- setLineDashPhase:@
 setLineDashPhase :: IsCAShapeLayer caShapeLayer => caShapeLayer -> CDouble -> IO ()
-setLineDashPhase caShapeLayer  value =
-    sendMsg caShapeLayer (mkSelector "setLineDashPhase:") retVoid [argCDouble value]
+setLineDashPhase caShapeLayer value =
+  sendMessage caShapeLayer setLineDashPhaseSelector value
 
 -- | @- lineDashPattern@
 lineDashPattern :: IsCAShapeLayer caShapeLayer => caShapeLayer -> IO (Id NSArray)
-lineDashPattern caShapeLayer  =
-    sendMsg caShapeLayer (mkSelector "lineDashPattern") (retPtr retVoid) [] >>= retainedObject . castPtr
+lineDashPattern caShapeLayer =
+  sendMessage caShapeLayer lineDashPatternSelector
 
 -- | @- setLineDashPattern:@
 setLineDashPattern :: (IsCAShapeLayer caShapeLayer, IsNSArray value) => caShapeLayer -> value -> IO ()
-setLineDashPattern caShapeLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caShapeLayer (mkSelector "setLineDashPattern:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLineDashPattern caShapeLayer value =
+  sendMessage caShapeLayer setLineDashPatternSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] RawId
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @setPath:@
-setPathSelector :: Selector
+setPathSelector :: Selector '[RawId] ()
 setPathSelector = mkSelector "setPath:"
 
 -- | @Selector@ for @fillColor@
-fillColorSelector :: Selector
+fillColorSelector :: Selector '[] (Ptr ())
 fillColorSelector = mkSelector "fillColor"
 
 -- | @Selector@ for @setFillColor:@
-setFillColorSelector :: Selector
+setFillColorSelector :: Selector '[Ptr ()] ()
 setFillColorSelector = mkSelector "setFillColor:"
 
 -- | @Selector@ for @fillRule@
-fillRuleSelector :: Selector
+fillRuleSelector :: Selector '[] (Id NSString)
 fillRuleSelector = mkSelector "fillRule"
 
 -- | @Selector@ for @setFillRule:@
-setFillRuleSelector :: Selector
+setFillRuleSelector :: Selector '[Id NSString] ()
 setFillRuleSelector = mkSelector "setFillRule:"
 
 -- | @Selector@ for @strokeColor@
-strokeColorSelector :: Selector
+strokeColorSelector :: Selector '[] (Ptr ())
 strokeColorSelector = mkSelector "strokeColor"
 
 -- | @Selector@ for @setStrokeColor:@
-setStrokeColorSelector :: Selector
+setStrokeColorSelector :: Selector '[Ptr ()] ()
 setStrokeColorSelector = mkSelector "setStrokeColor:"
 
 -- | @Selector@ for @strokeStart@
-strokeStartSelector :: Selector
+strokeStartSelector :: Selector '[] CDouble
 strokeStartSelector = mkSelector "strokeStart"
 
 -- | @Selector@ for @setStrokeStart:@
-setStrokeStartSelector :: Selector
+setStrokeStartSelector :: Selector '[CDouble] ()
 setStrokeStartSelector = mkSelector "setStrokeStart:"
 
 -- | @Selector@ for @strokeEnd@
-strokeEndSelector :: Selector
+strokeEndSelector :: Selector '[] CDouble
 strokeEndSelector = mkSelector "strokeEnd"
 
 -- | @Selector@ for @setStrokeEnd:@
-setStrokeEndSelector :: Selector
+setStrokeEndSelector :: Selector '[CDouble] ()
 setStrokeEndSelector = mkSelector "setStrokeEnd:"
 
 -- | @Selector@ for @lineWidth@
-lineWidthSelector :: Selector
+lineWidthSelector :: Selector '[] CDouble
 lineWidthSelector = mkSelector "lineWidth"
 
 -- | @Selector@ for @setLineWidth:@
-setLineWidthSelector :: Selector
+setLineWidthSelector :: Selector '[CDouble] ()
 setLineWidthSelector = mkSelector "setLineWidth:"
 
 -- | @Selector@ for @miterLimit@
-miterLimitSelector :: Selector
+miterLimitSelector :: Selector '[] CDouble
 miterLimitSelector = mkSelector "miterLimit"
 
 -- | @Selector@ for @setMiterLimit:@
-setMiterLimitSelector :: Selector
+setMiterLimitSelector :: Selector '[CDouble] ()
 setMiterLimitSelector = mkSelector "setMiterLimit:"
 
 -- | @Selector@ for @lineCap@
-lineCapSelector :: Selector
+lineCapSelector :: Selector '[] (Id NSString)
 lineCapSelector = mkSelector "lineCap"
 
 -- | @Selector@ for @setLineCap:@
-setLineCapSelector :: Selector
+setLineCapSelector :: Selector '[Id NSString] ()
 setLineCapSelector = mkSelector "setLineCap:"
 
 -- | @Selector@ for @lineJoin@
-lineJoinSelector :: Selector
+lineJoinSelector :: Selector '[] (Id NSString)
 lineJoinSelector = mkSelector "lineJoin"
 
 -- | @Selector@ for @setLineJoin:@
-setLineJoinSelector :: Selector
+setLineJoinSelector :: Selector '[Id NSString] ()
 setLineJoinSelector = mkSelector "setLineJoin:"
 
 -- | @Selector@ for @lineDashPhase@
-lineDashPhaseSelector :: Selector
+lineDashPhaseSelector :: Selector '[] CDouble
 lineDashPhaseSelector = mkSelector "lineDashPhase"
 
 -- | @Selector@ for @setLineDashPhase:@
-setLineDashPhaseSelector :: Selector
+setLineDashPhaseSelector :: Selector '[CDouble] ()
 setLineDashPhaseSelector = mkSelector "setLineDashPhase:"
 
 -- | @Selector@ for @lineDashPattern@
-lineDashPatternSelector :: Selector
+lineDashPatternSelector :: Selector '[] (Id NSArray)
 lineDashPatternSelector = mkSelector "lineDashPattern"
 
 -- | @Selector@ for @setLineDashPattern:@
-setLineDashPatternSelector :: Selector
+setLineDashPatternSelector :: Selector '[Id NSArray] ()
 setLineDashPatternSelector = mkSelector "setLineDashPattern:"
 

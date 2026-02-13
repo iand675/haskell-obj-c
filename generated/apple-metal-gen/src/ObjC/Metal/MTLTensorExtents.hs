@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.Metal.MTLTensorExtents
   , initWithRank_values
   , extentAtDimensionIndex
   , rank
-  , initWithRank_valuesSelector
   , extentAtDimensionIndexSelector
+  , initWithRank_valuesSelector
   , rankSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRank:values:@
 initWithRank_values :: IsMTLTensorExtents mtlTensorExtents => mtlTensorExtents -> CULong -> Const (Ptr CLong) -> IO (Id MTLTensorExtents)
-initWithRank_values mtlTensorExtents  rank values =
-    sendMsg mtlTensorExtents (mkSelector "initWithRank:values:") (retPtr retVoid) [argCULong rank, argPtr (unConst values)] >>= ownedObject . castPtr
+initWithRank_values mtlTensorExtents rank values =
+  sendOwnedMessage mtlTensorExtents initWithRank_valuesSelector rank values
 
 -- | Returns the extent at an index.
 --
@@ -50,8 +47,8 @@ initWithRank_values mtlTensorExtents  rank values =
 --
 -- ObjC selector: @- extentAtDimensionIndex:@
 extentAtDimensionIndex :: IsMTLTensorExtents mtlTensorExtents => mtlTensorExtents -> CULong -> IO CLong
-extentAtDimensionIndex mtlTensorExtents  dimensionIndex =
-    sendMsg mtlTensorExtents (mkSelector "extentAtDimensionIndex:") retCLong [argCULong dimensionIndex]
+extentAtDimensionIndex mtlTensorExtents dimensionIndex =
+  sendMessage mtlTensorExtents extentAtDimensionIndexSelector dimensionIndex
 
 -- | Obtains the rank of the tensor.
 --
@@ -59,22 +56,22 @@ extentAtDimensionIndex mtlTensorExtents  dimensionIndex =
 --
 -- ObjC selector: @- rank@
 rank :: IsMTLTensorExtents mtlTensorExtents => mtlTensorExtents -> IO CULong
-rank mtlTensorExtents  =
-    sendMsg mtlTensorExtents (mkSelector "rank") retCULong []
+rank mtlTensorExtents =
+  sendMessage mtlTensorExtents rankSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRank:values:@
-initWithRank_valuesSelector :: Selector
+initWithRank_valuesSelector :: Selector '[CULong, Const (Ptr CLong)] (Id MTLTensorExtents)
 initWithRank_valuesSelector = mkSelector "initWithRank:values:"
 
 -- | @Selector@ for @extentAtDimensionIndex:@
-extentAtDimensionIndexSelector :: Selector
+extentAtDimensionIndexSelector :: Selector '[CULong] CLong
 extentAtDimensionIndexSelector = mkSelector "extentAtDimensionIndex:"
 
 -- | @Selector@ for @rank@
-rankSelector :: Selector
+rankSelector :: Selector '[] CULong
 rankSelector = mkSelector "rank"
 

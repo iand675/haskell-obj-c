@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.AVFoundation.AVAssetReaderTrackOutput
   , outputSettings
   , audioTimePitchAlgorithm
   , setAudioTimePitchAlgorithm
-  , initSelector
-  , newSelector
   , assetReaderTrackOutputWithTrack_outputSettingsSelector
-  , initWithTrack_outputSettingsSelector
-  , trackSelector
-  , outputSettingsSelector
   , audioTimePitchAlgorithmSelector
+  , initSelector
+  , initWithTrack_outputSettingsSelector
+  , newSelector
+  , outputSettingsSelector
   , setAudioTimePitchAlgorithmSelector
+  , trackSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetReaderTrackOutput avAssetReaderTrackOutput => avAssetReaderTrackOutput -> IO (Id AVAssetReaderTrackOutput)
-init_ avAssetReaderTrackOutput  =
-    sendMsg avAssetReaderTrackOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetReaderTrackOutput =
+  sendOwnedMessage avAssetReaderTrackOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetReaderTrackOutput)
 new  =
   do
     cls' <- getRequiredClass "AVAssetReaderTrackOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | assetReaderTrackOutputWithTrack:outputSettings:
 --
@@ -92,9 +89,7 @@ assetReaderTrackOutputWithTrack_outputSettings :: (IsAVAssetTrack track, IsNSDic
 assetReaderTrackOutputWithTrack_outputSettings track outputSettings =
   do
     cls' <- getRequiredClass "AVAssetReaderTrackOutput"
-    withObjCPtr track $ \raw_track ->
-      withObjCPtr outputSettings $ \raw_outputSettings ->
-        sendClassMsg cls' (mkSelector "assetReaderTrackOutputWithTrack:outputSettings:") (retPtr retVoid) [argPtr (castPtr raw_track :: Ptr ()), argPtr (castPtr raw_outputSettings :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetReaderTrackOutputWithTrack_outputSettingsSelector (toAVAssetTrack track) (toNSDictionary outputSettings)
 
 -- | initWithTrack:outputSettings:
 --
@@ -128,10 +123,8 @@ assetReaderTrackOutputWithTrack_outputSettings track outputSettings =
 --
 -- ObjC selector: @- initWithTrack:outputSettings:@
 initWithTrack_outputSettings :: (IsAVAssetReaderTrackOutput avAssetReaderTrackOutput, IsAVAssetTrack track, IsNSDictionary outputSettings) => avAssetReaderTrackOutput -> track -> outputSettings -> IO (Id AVAssetReaderTrackOutput)
-initWithTrack_outputSettings avAssetReaderTrackOutput  track outputSettings =
-  withObjCPtr track $ \raw_track ->
-    withObjCPtr outputSettings $ \raw_outputSettings ->
-        sendMsg avAssetReaderTrackOutput (mkSelector "initWithTrack:outputSettings:") (retPtr retVoid) [argPtr (castPtr raw_track :: Ptr ()), argPtr (castPtr raw_outputSettings :: Ptr ())] >>= ownedObject . castPtr
+initWithTrack_outputSettings avAssetReaderTrackOutput track outputSettings =
+  sendOwnedMessage avAssetReaderTrackOutput initWithTrack_outputSettingsSelector (toAVAssetTrack track) (toNSDictionary outputSettings)
 
 -- | track
 --
@@ -141,8 +134,8 @@ initWithTrack_outputSettings avAssetReaderTrackOutput  track outputSettings =
 --
 -- ObjC selector: @- track@
 track :: IsAVAssetReaderTrackOutput avAssetReaderTrackOutput => avAssetReaderTrackOutput -> IO (Id AVAssetTrack)
-track avAssetReaderTrackOutput  =
-    sendMsg avAssetReaderTrackOutput (mkSelector "track") (retPtr retVoid) [] >>= retainedObject . castPtr
+track avAssetReaderTrackOutput =
+  sendMessage avAssetReaderTrackOutput trackSelector
 
 -- | outputSettings
 --
@@ -152,8 +145,8 @@ track avAssetReaderTrackOutput  =
 --
 -- ObjC selector: @- outputSettings@
 outputSettings :: IsAVAssetReaderTrackOutput avAssetReaderTrackOutput => avAssetReaderTrackOutput -> IO (Id NSDictionary)
-outputSettings avAssetReaderTrackOutput  =
-    sendMsg avAssetReaderTrackOutput (mkSelector "outputSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputSettings avAssetReaderTrackOutput =
+  sendMessage avAssetReaderTrackOutput outputSettingsSelector
 
 -- | audioTimePitchAlgorithm
 --
@@ -167,8 +160,8 @@ outputSettings avAssetReaderTrackOutput  =
 --
 -- ObjC selector: @- audioTimePitchAlgorithm@
 audioTimePitchAlgorithm :: IsAVAssetReaderTrackOutput avAssetReaderTrackOutput => avAssetReaderTrackOutput -> IO (Id NSString)
-audioTimePitchAlgorithm avAssetReaderTrackOutput  =
-    sendMsg avAssetReaderTrackOutput (mkSelector "audioTimePitchAlgorithm") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioTimePitchAlgorithm avAssetReaderTrackOutput =
+  sendMessage avAssetReaderTrackOutput audioTimePitchAlgorithmSelector
 
 -- | audioTimePitchAlgorithm
 --
@@ -182,43 +175,42 @@ audioTimePitchAlgorithm avAssetReaderTrackOutput  =
 --
 -- ObjC selector: @- setAudioTimePitchAlgorithm:@
 setAudioTimePitchAlgorithm :: (IsAVAssetReaderTrackOutput avAssetReaderTrackOutput, IsNSString value) => avAssetReaderTrackOutput -> value -> IO ()
-setAudioTimePitchAlgorithm avAssetReaderTrackOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetReaderTrackOutput (mkSelector "setAudioTimePitchAlgorithm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioTimePitchAlgorithm avAssetReaderTrackOutput value =
+  sendMessage avAssetReaderTrackOutput setAudioTimePitchAlgorithmSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetReaderTrackOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetReaderTrackOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetReaderTrackOutputWithTrack:outputSettings:@
-assetReaderTrackOutputWithTrack_outputSettingsSelector :: Selector
+assetReaderTrackOutputWithTrack_outputSettingsSelector :: Selector '[Id AVAssetTrack, Id NSDictionary] (Id AVAssetReaderTrackOutput)
 assetReaderTrackOutputWithTrack_outputSettingsSelector = mkSelector "assetReaderTrackOutputWithTrack:outputSettings:"
 
 -- | @Selector@ for @initWithTrack:outputSettings:@
-initWithTrack_outputSettingsSelector :: Selector
+initWithTrack_outputSettingsSelector :: Selector '[Id AVAssetTrack, Id NSDictionary] (Id AVAssetReaderTrackOutput)
 initWithTrack_outputSettingsSelector = mkSelector "initWithTrack:outputSettings:"
 
 -- | @Selector@ for @track@
-trackSelector :: Selector
+trackSelector :: Selector '[] (Id AVAssetTrack)
 trackSelector = mkSelector "track"
 
 -- | @Selector@ for @outputSettings@
-outputSettingsSelector :: Selector
+outputSettingsSelector :: Selector '[] (Id NSDictionary)
 outputSettingsSelector = mkSelector "outputSettings"
 
 -- | @Selector@ for @audioTimePitchAlgorithm@
-audioTimePitchAlgorithmSelector :: Selector
+audioTimePitchAlgorithmSelector :: Selector '[] (Id NSString)
 audioTimePitchAlgorithmSelector = mkSelector "audioTimePitchAlgorithm"
 
 -- | @Selector@ for @setAudioTimePitchAlgorithm:@
-setAudioTimePitchAlgorithmSelector :: Selector
+setAudioTimePitchAlgorithmSelector :: Selector '[Id NSString] ()
 setAudioTimePitchAlgorithmSelector = mkSelector "setAudioTimePitchAlgorithm:"
 

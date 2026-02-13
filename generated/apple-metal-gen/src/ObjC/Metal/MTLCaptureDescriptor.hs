@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,10 +15,10 @@ module ObjC.Metal.MTLCaptureDescriptor
   , outputURL
   , setOutputURL
   , captureObjectSelector
-  , setCaptureObjectSelector
   , destinationSelector
-  , setDestinationSelector
   , outputURLSelector
+  , setCaptureObjectSelector
+  , setDestinationSelector
   , setOutputURLSelector
 
   -- * Enum types
@@ -27,15 +28,11 @@ module ObjC.Metal.MTLCaptureDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- captureObject@
 captureObject :: IsMTLCaptureDescriptor mtlCaptureDescriptor => mtlCaptureDescriptor -> IO RawId
-captureObject mtlCaptureDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlCaptureDescriptor (mkSelector "captureObject") (retPtr retVoid) []
+captureObject mtlCaptureDescriptor =
+  sendMessage mtlCaptureDescriptor captureObjectSelector
 
 -- | The object that is captured.
 --
@@ -70,63 +67,62 @@ captureObject mtlCaptureDescriptor  =
 --
 -- ObjC selector: @- setCaptureObject:@
 setCaptureObject :: IsMTLCaptureDescriptor mtlCaptureDescriptor => mtlCaptureDescriptor -> RawId -> IO ()
-setCaptureObject mtlCaptureDescriptor  value =
-    sendMsg mtlCaptureDescriptor (mkSelector "setCaptureObject:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setCaptureObject mtlCaptureDescriptor value =
+  sendMessage mtlCaptureDescriptor setCaptureObjectSelector value
 
 -- | The destination you want the GPU trace to be captured to.
 --
 -- ObjC selector: @- destination@
 destination :: IsMTLCaptureDescriptor mtlCaptureDescriptor => mtlCaptureDescriptor -> IO MTLCaptureDestination
-destination mtlCaptureDescriptor  =
-    fmap (coerce :: CLong -> MTLCaptureDestination) $ sendMsg mtlCaptureDescriptor (mkSelector "destination") retCLong []
+destination mtlCaptureDescriptor =
+  sendMessage mtlCaptureDescriptor destinationSelector
 
 -- | The destination you want the GPU trace to be captured to.
 --
 -- ObjC selector: @- setDestination:@
 setDestination :: IsMTLCaptureDescriptor mtlCaptureDescriptor => mtlCaptureDescriptor -> MTLCaptureDestination -> IO ()
-setDestination mtlCaptureDescriptor  value =
-    sendMsg mtlCaptureDescriptor (mkSelector "setDestination:") retVoid [argCLong (coerce value)]
+setDestination mtlCaptureDescriptor value =
+  sendMessage mtlCaptureDescriptor setDestinationSelector value
 
 -- | URL the GPU Trace document will be captured to. Must be specified when destiation is MTLCaptureDestinationGPUTraceDocument.
 --
 -- ObjC selector: @- outputURL@
 outputURL :: IsMTLCaptureDescriptor mtlCaptureDescriptor => mtlCaptureDescriptor -> IO (Id NSURL)
-outputURL mtlCaptureDescriptor  =
-    sendMsg mtlCaptureDescriptor (mkSelector "outputURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputURL mtlCaptureDescriptor =
+  sendMessage mtlCaptureDescriptor outputURLSelector
 
 -- | URL the GPU Trace document will be captured to. Must be specified when destiation is MTLCaptureDestinationGPUTraceDocument.
 --
 -- ObjC selector: @- setOutputURL:@
 setOutputURL :: (IsMTLCaptureDescriptor mtlCaptureDescriptor, IsNSURL value) => mtlCaptureDescriptor -> value -> IO ()
-setOutputURL mtlCaptureDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlCaptureDescriptor (mkSelector "setOutputURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputURL mtlCaptureDescriptor value =
+  sendMessage mtlCaptureDescriptor setOutputURLSelector (toNSURL value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @captureObject@
-captureObjectSelector :: Selector
+captureObjectSelector :: Selector '[] RawId
 captureObjectSelector = mkSelector "captureObject"
 
 -- | @Selector@ for @setCaptureObject:@
-setCaptureObjectSelector :: Selector
+setCaptureObjectSelector :: Selector '[RawId] ()
 setCaptureObjectSelector = mkSelector "setCaptureObject:"
 
 -- | @Selector@ for @destination@
-destinationSelector :: Selector
+destinationSelector :: Selector '[] MTLCaptureDestination
 destinationSelector = mkSelector "destination"
 
 -- | @Selector@ for @setDestination:@
-setDestinationSelector :: Selector
+setDestinationSelector :: Selector '[MTLCaptureDestination] ()
 setDestinationSelector = mkSelector "setDestination:"
 
 -- | @Selector@ for @outputURL@
-outputURLSelector :: Selector
+outputURLSelector :: Selector '[] (Id NSURL)
 outputURLSelector = mkSelector "outputURL"
 
 -- | @Selector@ for @setOutputURL:@
-setOutputURLSelector :: Selector
+setOutputURLSelector :: Selector '[Id NSURL] ()
 setOutputURLSelector = mkSelector "setOutputURL:"
 

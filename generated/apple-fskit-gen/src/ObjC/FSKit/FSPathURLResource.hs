@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.FSKit.FSPathURLResource
   , init_
   , url
   , writable
-  , initWithURL_writableSelector
   , initSelector
+  , initWithURL_writableSelector
   , urlSelector
   , writableSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,46 +38,45 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithURL:writable:@
 initWithURL_writable :: (IsFSPathURLResource fsPathURLResource, IsNSURL url) => fsPathURLResource -> url -> Bool -> IO (Id FSPathURLResource)
-initWithURL_writable fsPathURLResource  url writable =
-  withObjCPtr url $ \raw_url ->
-      sendMsg fsPathURLResource (mkSelector "initWithURL:writable:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (if writable then 1 else 0)] >>= ownedObject . castPtr
+initWithURL_writable fsPathURLResource url writable =
+  sendOwnedMessage fsPathURLResource initWithURL_writableSelector (toNSURL url) writable
 
 -- | @- init@
 init_ :: IsFSPathURLResource fsPathURLResource => fsPathURLResource -> IO (Id FSPathURLResource)
-init_ fsPathURLResource  =
-    sendMsg fsPathURLResource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsPathURLResource =
+  sendOwnedMessage fsPathURLResource initSelector
 
 -- | The URL represented by the resource.
 --
 -- ObjC selector: @- url@
 url :: IsFSPathURLResource fsPathURLResource => fsPathURLResource -> IO (Id NSURL)
-url fsPathURLResource  =
-    sendMsg fsPathURLResource (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url fsPathURLResource =
+  sendMessage fsPathURLResource urlSelector
 
 -- | A Boolean value that indicates whether the file system supports writing to the contents of the path URL.
 --
 -- ObjC selector: @- writable@
 writable :: IsFSPathURLResource fsPathURLResource => fsPathURLResource -> IO Bool
-writable fsPathURLResource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsPathURLResource (mkSelector "writable") retCULong []
+writable fsPathURLResource =
+  sendMessage fsPathURLResource writableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithURL:writable:@
-initWithURL_writableSelector :: Selector
+initWithURL_writableSelector :: Selector '[Id NSURL, Bool] (Id FSPathURLResource)
 initWithURL_writableSelector = mkSelector "initWithURL:writable:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSPathURLResource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @writable@
-writableSelector :: Selector
+writableSelector :: Selector '[] Bool
 writableSelector = mkSelector "writable"
 

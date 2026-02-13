@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,34 +24,30 @@ module ObjC.Accessibility.AXDataPoint
   , setLabel
   , attributedLabel
   , setAttributedLabel
+  , additionalValuesSelector
+  , attributedLabelSelector
+  , initSelector
   , initWithX_ySelector
   , initWithX_y_additionalValuesSelector
   , initWithX_y_additionalValues_labelSelector
-  , initSelector
-  , newSelector
-  , xValueSelector
-  , setXValueSelector
-  , yValueSelector
-  , setYValueSelector
-  , additionalValuesSelector
-  , setAdditionalValuesSelector
   , labelSelector
-  , setLabelSelector
-  , attributedLabelSelector
+  , newSelector
+  , setAdditionalValuesSelector
   , setAttributedLabelSelector
+  , setLabelSelector
+  , setXValueSelector
+  , setYValueSelector
+  , xValueSelector
+  , yValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,176 +56,162 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithX:y:@
 initWithX_y :: (IsAXDataPoint axDataPoint, IsAXDataPointValue xValue, IsAXDataPointValue yValue) => axDataPoint -> xValue -> yValue -> IO (Id AXDataPoint)
-initWithX_y axDataPoint  xValue yValue =
-  withObjCPtr xValue $ \raw_xValue ->
-    withObjCPtr yValue $ \raw_yValue ->
-        sendMsg axDataPoint (mkSelector "initWithX:y:") (retPtr retVoid) [argPtr (castPtr raw_xValue :: Ptr ()), argPtr (castPtr raw_yValue :: Ptr ())] >>= ownedObject . castPtr
+initWithX_y axDataPoint xValue yValue =
+  sendOwnedMessage axDataPoint initWithX_ySelector (toAXDataPointValue xValue) (toAXDataPointValue yValue)
 
 -- | @- initWithX:y:additionalValues:@
 initWithX_y_additionalValues :: (IsAXDataPoint axDataPoint, IsAXDataPointValue xValue, IsAXDataPointValue yValue, IsNSArray additionalValues) => axDataPoint -> xValue -> yValue -> additionalValues -> IO (Id AXDataPoint)
-initWithX_y_additionalValues axDataPoint  xValue yValue additionalValues =
-  withObjCPtr xValue $ \raw_xValue ->
-    withObjCPtr yValue $ \raw_yValue ->
-      withObjCPtr additionalValues $ \raw_additionalValues ->
-          sendMsg axDataPoint (mkSelector "initWithX:y:additionalValues:") (retPtr retVoid) [argPtr (castPtr raw_xValue :: Ptr ()), argPtr (castPtr raw_yValue :: Ptr ()), argPtr (castPtr raw_additionalValues :: Ptr ())] >>= ownedObject . castPtr
+initWithX_y_additionalValues axDataPoint xValue yValue additionalValues =
+  sendOwnedMessage axDataPoint initWithX_y_additionalValuesSelector (toAXDataPointValue xValue) (toAXDataPointValue yValue) (toNSArray additionalValues)
 
 -- | @- initWithX:y:additionalValues:label:@
 initWithX_y_additionalValues_label :: (IsAXDataPoint axDataPoint, IsAXDataPointValue xValue, IsAXDataPointValue yValue, IsNSArray additionalValues, IsNSString label) => axDataPoint -> xValue -> yValue -> additionalValues -> label -> IO (Id AXDataPoint)
-initWithX_y_additionalValues_label axDataPoint  xValue yValue additionalValues label =
-  withObjCPtr xValue $ \raw_xValue ->
-    withObjCPtr yValue $ \raw_yValue ->
-      withObjCPtr additionalValues $ \raw_additionalValues ->
-        withObjCPtr label $ \raw_label ->
-            sendMsg axDataPoint (mkSelector "initWithX:y:additionalValues:label:") (retPtr retVoid) [argPtr (castPtr raw_xValue :: Ptr ()), argPtr (castPtr raw_yValue :: Ptr ()), argPtr (castPtr raw_additionalValues :: Ptr ()), argPtr (castPtr raw_label :: Ptr ())] >>= ownedObject . castPtr
+initWithX_y_additionalValues_label axDataPoint xValue yValue additionalValues label =
+  sendOwnedMessage axDataPoint initWithX_y_additionalValues_labelSelector (toAXDataPointValue xValue) (toAXDataPointValue yValue) (toNSArray additionalValues) (toNSString label)
 
 -- | @- init@
 init_ :: IsAXDataPoint axDataPoint => axDataPoint -> IO (Id AXDataPoint)
-init_ axDataPoint  =
-    sendMsg axDataPoint (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ axDataPoint =
+  sendOwnedMessage axDataPoint initSelector
 
 -- | @+ new@
 new :: IO (Id AXDataPoint)
 new  =
   do
     cls' <- getRequiredClass "AXDataPoint"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The x-axis value for this data point. Should be a Double for a numeric x-axis or a String for a categorical x-axis.
 --
 -- ObjC selector: @- xValue@
 xValue :: IsAXDataPoint axDataPoint => axDataPoint -> IO (Id AXDataPointValue)
-xValue axDataPoint  =
-    sendMsg axDataPoint (mkSelector "xValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+xValue axDataPoint =
+  sendMessage axDataPoint xValueSelector
 
 -- | The x-axis value for this data point. Should be a Double for a numeric x-axis or a String for a categorical x-axis.
 --
 -- ObjC selector: @- setXValue:@
 setXValue :: (IsAXDataPoint axDataPoint, IsAXDataPointValue value) => axDataPoint -> value -> IO ()
-setXValue axDataPoint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg axDataPoint (mkSelector "setXValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setXValue axDataPoint value =
+  sendMessage axDataPoint setXValueSelector (toAXDataPointValue value)
 
 -- | The y-axis value for this data point.
 --
 -- ObjC selector: @- yValue@
 yValue :: IsAXDataPoint axDataPoint => axDataPoint -> IO (Id AXDataPointValue)
-yValue axDataPoint  =
-    sendMsg axDataPoint (mkSelector "yValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+yValue axDataPoint =
+  sendMessage axDataPoint yValueSelector
 
 -- | The y-axis value for this data point.
 --
 -- ObjC selector: @- setYValue:@
 setYValue :: (IsAXDataPoint axDataPoint, IsAXDataPointValue value) => axDataPoint -> value -> IO ()
-setYValue axDataPoint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg axDataPoint (mkSelector "setYValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setYValue axDataPoint value =
+  sendMessage axDataPoint setYValueSelector (toAXDataPointValue value)
 
 -- | Any additional values for additional axes for this data point. These should be provided in the same order as their corresponding @AXDataAxisDescriptor@ objects in @AXChartDescriptor.additionalAxes@.
 --
 -- ObjC selector: @- additionalValues@
 additionalValues :: IsAXDataPoint axDataPoint => axDataPoint -> IO (Id NSArray)
-additionalValues axDataPoint  =
-    sendMsg axDataPoint (mkSelector "additionalValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+additionalValues axDataPoint =
+  sendMessage axDataPoint additionalValuesSelector
 
 -- | Any additional values for additional axes for this data point. These should be provided in the same order as their corresponding @AXDataAxisDescriptor@ objects in @AXChartDescriptor.additionalAxes@.
 --
 -- ObjC selector: @- setAdditionalValues:@
 setAdditionalValues :: (IsAXDataPoint axDataPoint, IsNSArray value) => axDataPoint -> value -> IO ()
-setAdditionalValues axDataPoint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg axDataPoint (mkSelector "setAdditionalValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdditionalValues axDataPoint value =
+  sendMessage axDataPoint setAdditionalValuesSelector (toNSArray value)
 
 -- | A name or label for this data point.
 --
 -- ObjC selector: @- label@
 label :: IsAXDataPoint axDataPoint => axDataPoint -> IO (Id NSString)
-label axDataPoint  =
-    sendMsg axDataPoint (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label axDataPoint =
+  sendMessage axDataPoint labelSelector
 
 -- | A name or label for this data point.
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsAXDataPoint axDataPoint, IsNSString value) => axDataPoint -> value -> IO ()
-setLabel axDataPoint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg axDataPoint (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel axDataPoint value =
+  sendMessage axDataPoint setLabelSelector (toNSString value)
 
 -- | An attributed version of the name or label for this data point.
 --
 -- ObjC selector: @- attributedLabel@
 attributedLabel :: IsAXDataPoint axDataPoint => axDataPoint -> IO (Id NSAttributedString)
-attributedLabel axDataPoint  =
-    sendMsg axDataPoint (mkSelector "attributedLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedLabel axDataPoint =
+  sendMessage axDataPoint attributedLabelSelector
 
 -- | An attributed version of the name or label for this data point.
 --
 -- ObjC selector: @- setAttributedLabel:@
 setAttributedLabel :: (IsAXDataPoint axDataPoint, IsNSAttributedString value) => axDataPoint -> value -> IO ()
-setAttributedLabel axDataPoint  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg axDataPoint (mkSelector "setAttributedLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedLabel axDataPoint value =
+  sendMessage axDataPoint setAttributedLabelSelector (toNSAttributedString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithX:y:@
-initWithX_ySelector :: Selector
+initWithX_ySelector :: Selector '[Id AXDataPointValue, Id AXDataPointValue] (Id AXDataPoint)
 initWithX_ySelector = mkSelector "initWithX:y:"
 
 -- | @Selector@ for @initWithX:y:additionalValues:@
-initWithX_y_additionalValuesSelector :: Selector
+initWithX_y_additionalValuesSelector :: Selector '[Id AXDataPointValue, Id AXDataPointValue, Id NSArray] (Id AXDataPoint)
 initWithX_y_additionalValuesSelector = mkSelector "initWithX:y:additionalValues:"
 
 -- | @Selector@ for @initWithX:y:additionalValues:label:@
-initWithX_y_additionalValues_labelSelector :: Selector
+initWithX_y_additionalValues_labelSelector :: Selector '[Id AXDataPointValue, Id AXDataPointValue, Id NSArray, Id NSString] (Id AXDataPoint)
 initWithX_y_additionalValues_labelSelector = mkSelector "initWithX:y:additionalValues:label:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AXDataPoint)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AXDataPoint)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @xValue@
-xValueSelector :: Selector
+xValueSelector :: Selector '[] (Id AXDataPointValue)
 xValueSelector = mkSelector "xValue"
 
 -- | @Selector@ for @setXValue:@
-setXValueSelector :: Selector
+setXValueSelector :: Selector '[Id AXDataPointValue] ()
 setXValueSelector = mkSelector "setXValue:"
 
 -- | @Selector@ for @yValue@
-yValueSelector :: Selector
+yValueSelector :: Selector '[] (Id AXDataPointValue)
 yValueSelector = mkSelector "yValue"
 
 -- | @Selector@ for @setYValue:@
-setYValueSelector :: Selector
+setYValueSelector :: Selector '[Id AXDataPointValue] ()
 setYValueSelector = mkSelector "setYValue:"
 
 -- | @Selector@ for @additionalValues@
-additionalValuesSelector :: Selector
+additionalValuesSelector :: Selector '[] (Id NSArray)
 additionalValuesSelector = mkSelector "additionalValues"
 
 -- | @Selector@ for @setAdditionalValues:@
-setAdditionalValuesSelector :: Selector
+setAdditionalValuesSelector :: Selector '[Id NSArray] ()
 setAdditionalValuesSelector = mkSelector "setAdditionalValues:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @attributedLabel@
-attributedLabelSelector :: Selector
+attributedLabelSelector :: Selector '[] (Id NSAttributedString)
 attributedLabelSelector = mkSelector "attributedLabel"
 
 -- | @Selector@ for @setAttributedLabel:@
-setAttributedLabelSelector :: Selector
+setAttributedLabelSelector :: Selector '[Id NSAttributedString] ()
 setAttributedLabelSelector = mkSelector "setAttributedLabel:"
 

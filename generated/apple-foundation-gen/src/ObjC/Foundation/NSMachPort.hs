@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.Foundation.NSMachPort
   , scheduleInRunLoop_forMode
   , removeFromRunLoop_forMode
   , machPort
-  , portWithMachPortSelector
-  , initWithMachPortSelector
-  , setDelegateSelector
   , delegateSelector
-  , portWithMachPort_optionsSelector
+  , initWithMachPortSelector
   , initWithMachPort_optionsSelector
-  , scheduleInRunLoop_forModeSelector
-  , removeFromRunLoop_forModeSelector
   , machPortSelector
+  , portWithMachPortSelector
+  , portWithMachPort_optionsSelector
+  , removeFromRunLoop_forModeSelector
+  , scheduleInRunLoop_forModeSelector
+  , setDelegateSelector
 
   -- * Enum types
   , NSMachPortOptions(NSMachPortOptions)
@@ -34,15 +35,11 @@ module ObjC.Foundation.NSMachPort
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,91 +51,87 @@ portWithMachPort :: CUInt -> IO (Id NSPort)
 portWithMachPort machPort =
   do
     cls' <- getRequiredClass "NSMachPort"
-    sendClassMsg cls' (mkSelector "portWithMachPort:") (retPtr retVoid) [argCUInt machPort] >>= retainedObject . castPtr
+    sendClassMessage cls' portWithMachPortSelector machPort
 
 -- | @- initWithMachPort:@
 initWithMachPort :: IsNSMachPort nsMachPort => nsMachPort -> CUInt -> IO (Id NSMachPort)
-initWithMachPort nsMachPort  machPort =
-    sendMsg nsMachPort (mkSelector "initWithMachPort:") (retPtr retVoid) [argCUInt machPort] >>= ownedObject . castPtr
+initWithMachPort nsMachPort machPort =
+  sendOwnedMessage nsMachPort initWithMachPortSelector machPort
 
 -- | @- setDelegate:@
 setDelegate :: IsNSMachPort nsMachPort => nsMachPort -> RawId -> IO ()
-setDelegate nsMachPort  anObject =
-    sendMsg nsMachPort (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+setDelegate nsMachPort anObject =
+  sendMessage nsMachPort setDelegateSelector anObject
 
 -- | @- delegate@
 delegate :: IsNSMachPort nsMachPort => nsMachPort -> IO RawId
-delegate nsMachPort  =
-    fmap (RawId . castPtr) $ sendMsg nsMachPort (mkSelector "delegate") (retPtr retVoid) []
+delegate nsMachPort =
+  sendMessage nsMachPort delegateSelector
 
 -- | @+ portWithMachPort:options:@
 portWithMachPort_options :: CUInt -> NSMachPortOptions -> IO (Id NSPort)
 portWithMachPort_options machPort f =
   do
     cls' <- getRequiredClass "NSMachPort"
-    sendClassMsg cls' (mkSelector "portWithMachPort:options:") (retPtr retVoid) [argCUInt machPort, argCULong (coerce f)] >>= retainedObject . castPtr
+    sendClassMessage cls' portWithMachPort_optionsSelector machPort f
 
 -- | @- initWithMachPort:options:@
 initWithMachPort_options :: IsNSMachPort nsMachPort => nsMachPort -> CUInt -> NSMachPortOptions -> IO (Id NSMachPort)
-initWithMachPort_options nsMachPort  machPort f =
-    sendMsg nsMachPort (mkSelector "initWithMachPort:options:") (retPtr retVoid) [argCUInt machPort, argCULong (coerce f)] >>= ownedObject . castPtr
+initWithMachPort_options nsMachPort machPort f =
+  sendOwnedMessage nsMachPort initWithMachPort_optionsSelector machPort f
 
 -- | @- scheduleInRunLoop:forMode:@
 scheduleInRunLoop_forMode :: (IsNSMachPort nsMachPort, IsNSRunLoop runLoop, IsNSString mode) => nsMachPort -> runLoop -> mode -> IO ()
-scheduleInRunLoop_forMode nsMachPort  runLoop mode =
-  withObjCPtr runLoop $ \raw_runLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsMachPort (mkSelector "scheduleInRunLoop:forMode:") retVoid [argPtr (castPtr raw_runLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+scheduleInRunLoop_forMode nsMachPort runLoop mode =
+  sendMessage nsMachPort scheduleInRunLoop_forModeSelector (toNSRunLoop runLoop) (toNSString mode)
 
 -- | @- removeFromRunLoop:forMode:@
 removeFromRunLoop_forMode :: (IsNSMachPort nsMachPort, IsNSRunLoop runLoop, IsNSString mode) => nsMachPort -> runLoop -> mode -> IO ()
-removeFromRunLoop_forMode nsMachPort  runLoop mode =
-  withObjCPtr runLoop $ \raw_runLoop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg nsMachPort (mkSelector "removeFromRunLoop:forMode:") retVoid [argPtr (castPtr raw_runLoop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+removeFromRunLoop_forMode nsMachPort runLoop mode =
+  sendMessage nsMachPort removeFromRunLoop_forModeSelector (toNSRunLoop runLoop) (toNSString mode)
 
 -- | @- machPort@
 machPort :: IsNSMachPort nsMachPort => nsMachPort -> IO CUInt
-machPort nsMachPort  =
-    sendMsg nsMachPort (mkSelector "machPort") retCUInt []
+machPort nsMachPort =
+  sendMessage nsMachPort machPortSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @portWithMachPort:@
-portWithMachPortSelector :: Selector
+portWithMachPortSelector :: Selector '[CUInt] (Id NSPort)
 portWithMachPortSelector = mkSelector "portWithMachPort:"
 
 -- | @Selector@ for @initWithMachPort:@
-initWithMachPortSelector :: Selector
+initWithMachPortSelector :: Selector '[CUInt] (Id NSMachPort)
 initWithMachPortSelector = mkSelector "initWithMachPort:"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @portWithMachPort:options:@
-portWithMachPort_optionsSelector :: Selector
+portWithMachPort_optionsSelector :: Selector '[CUInt, NSMachPortOptions] (Id NSPort)
 portWithMachPort_optionsSelector = mkSelector "portWithMachPort:options:"
 
 -- | @Selector@ for @initWithMachPort:options:@
-initWithMachPort_optionsSelector :: Selector
+initWithMachPort_optionsSelector :: Selector '[CUInt, NSMachPortOptions] (Id NSMachPort)
 initWithMachPort_optionsSelector = mkSelector "initWithMachPort:options:"
 
 -- | @Selector@ for @scheduleInRunLoop:forMode:@
-scheduleInRunLoop_forModeSelector :: Selector
+scheduleInRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 scheduleInRunLoop_forModeSelector = mkSelector "scheduleInRunLoop:forMode:"
 
 -- | @Selector@ for @removeFromRunLoop:forMode:@
-removeFromRunLoop_forModeSelector :: Selector
+removeFromRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 removeFromRunLoop_forModeSelector = mkSelector "removeFromRunLoop:forMode:"
 
 -- | @Selector@ for @machPort@
-machPortSelector :: Selector
+machPortSelector :: Selector '[] CUInt
 machPortSelector = mkSelector "machPort"
 

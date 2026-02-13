@@ -18,6 +18,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 dependencies:
 - base >= 4.7 && < 5
 - libffi
+- varargs
 - bytestring
 - template-haskell
 - containers
@@ -56,6 +57,7 @@ library:
   - ObjC.Runtime.Association
   - ObjC.Runtime.ClassBuilder
   - ObjC.Runtime.MsgSend
+  - ObjC.Runtime.Message
   - ObjC.Runtime.AutoreleasePool
   - ObjC.Runtime.Framework
   - ObjC.Runtime.NSString

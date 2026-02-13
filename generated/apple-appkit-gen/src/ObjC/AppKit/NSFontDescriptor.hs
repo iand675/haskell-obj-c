@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,27 +29,27 @@ module ObjC.AppKit.NSFontDescriptor
   , symbolicTraits
   , requiresFontAssetRequest
   , fontAttributes
-  , objectForKeySelector
-  , fontDescriptorWithFontAttributesSelector
-  , fontDescriptorWithName_sizeSelector
-  , fontDescriptorWithName_matrixSelector
-  , initWithFontAttributesSelector
-  , matchingFontDescriptorsWithMandatoryKeysSelector
-  , matchingFontDescriptorWithMandatoryKeysSelector
+  , fontAttributesSelector
   , fontDescriptorByAddingAttributesSelector
-  , fontDescriptorWithSymbolicTraitsSelector
-  , fontDescriptorWithSizeSelector
-  , fontDescriptorWithMatrixSelector
+  , fontDescriptorWithDesignSelector
   , fontDescriptorWithFaceSelector
   , fontDescriptorWithFamilySelector
-  , fontDescriptorWithDesignSelector
-  , preferredFontDescriptorForTextStyle_optionsSelector
-  , postscriptNameSelector
-  , pointSizeSelector
+  , fontDescriptorWithFontAttributesSelector
+  , fontDescriptorWithMatrixSelector
+  , fontDescriptorWithName_matrixSelector
+  , fontDescriptorWithName_sizeSelector
+  , fontDescriptorWithSizeSelector
+  , fontDescriptorWithSymbolicTraitsSelector
+  , initWithFontAttributesSelector
+  , matchingFontDescriptorWithMandatoryKeysSelector
+  , matchingFontDescriptorsWithMandatoryKeysSelector
   , matrixSelector
-  , symbolicTraitsSelector
+  , objectForKeySelector
+  , pointSizeSelector
+  , postscriptNameSelector
+  , preferredFontDescriptorForTextStyle_optionsSelector
   , requiresFontAssetRequestSelector
-  , fontAttributesSelector
+  , symbolicTraitsSelector
 
   -- * Enum types
   , NSFontDescriptorSymbolicTraits(NSFontDescriptorSymbolicTraits)
@@ -77,15 +78,11 @@ module ObjC.AppKit.NSFontDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -95,217 +92,202 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- objectForKey:@
 objectForKey :: (IsNSFontDescriptor nsFontDescriptor, IsNSString attribute) => nsFontDescriptor -> attribute -> IO RawId
-objectForKey nsFontDescriptor  attribute =
-  withObjCPtr attribute $ \raw_attribute ->
-      fmap (RawId . castPtr) $ sendMsg nsFontDescriptor (mkSelector "objectForKey:") (retPtr retVoid) [argPtr (castPtr raw_attribute :: Ptr ())]
+objectForKey nsFontDescriptor attribute =
+  sendMessage nsFontDescriptor objectForKeySelector (toNSString attribute)
 
 -- | @+ fontDescriptorWithFontAttributes:@
 fontDescriptorWithFontAttributes :: IsNSDictionary attributes => attributes -> IO (Id NSFontDescriptor)
 fontDescriptorWithFontAttributes attributes =
   do
     cls' <- getRequiredClass "NSFontDescriptor"
-    withObjCPtr attributes $ \raw_attributes ->
-      sendClassMsg cls' (mkSelector "fontDescriptorWithFontAttributes:") (retPtr retVoid) [argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fontDescriptorWithFontAttributesSelector (toNSDictionary attributes)
 
 -- | @+ fontDescriptorWithName:size:@
 fontDescriptorWithName_size :: IsNSString fontName => fontName -> CDouble -> IO (Id NSFontDescriptor)
 fontDescriptorWithName_size fontName size =
   do
     cls' <- getRequiredClass "NSFontDescriptor"
-    withObjCPtr fontName $ \raw_fontName ->
-      sendClassMsg cls' (mkSelector "fontDescriptorWithName:size:") (retPtr retVoid) [argPtr (castPtr raw_fontName :: Ptr ()), argCDouble size] >>= retainedObject . castPtr
+    sendClassMessage cls' fontDescriptorWithName_sizeSelector (toNSString fontName) size
 
 -- | @+ fontDescriptorWithName:matrix:@
 fontDescriptorWithName_matrix :: (IsNSString fontName, IsNSAffineTransform matrix) => fontName -> matrix -> IO (Id NSFontDescriptor)
 fontDescriptorWithName_matrix fontName matrix =
   do
     cls' <- getRequiredClass "NSFontDescriptor"
-    withObjCPtr fontName $ \raw_fontName ->
-      withObjCPtr matrix $ \raw_matrix ->
-        sendClassMsg cls' (mkSelector "fontDescriptorWithName:matrix:") (retPtr retVoid) [argPtr (castPtr raw_fontName :: Ptr ()), argPtr (castPtr raw_matrix :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fontDescriptorWithName_matrixSelector (toNSString fontName) (toNSAffineTransform matrix)
 
 -- | @- initWithFontAttributes:@
 initWithFontAttributes :: (IsNSFontDescriptor nsFontDescriptor, IsNSDictionary attributes) => nsFontDescriptor -> attributes -> IO (Id NSFontDescriptor)
-initWithFontAttributes nsFontDescriptor  attributes =
-  withObjCPtr attributes $ \raw_attributes ->
-      sendMsg nsFontDescriptor (mkSelector "initWithFontAttributes:") (retPtr retVoid) [argPtr (castPtr raw_attributes :: Ptr ())] >>= ownedObject . castPtr
+initWithFontAttributes nsFontDescriptor attributes =
+  sendOwnedMessage nsFontDescriptor initWithFontAttributesSelector (toNSDictionary attributes)
 
 -- | @- matchingFontDescriptorsWithMandatoryKeys:@
 matchingFontDescriptorsWithMandatoryKeys :: (IsNSFontDescriptor nsFontDescriptor, IsNSSet mandatoryKeys) => nsFontDescriptor -> mandatoryKeys -> IO (Id NSArray)
-matchingFontDescriptorsWithMandatoryKeys nsFontDescriptor  mandatoryKeys =
-  withObjCPtr mandatoryKeys $ \raw_mandatoryKeys ->
-      sendMsg nsFontDescriptor (mkSelector "matchingFontDescriptorsWithMandatoryKeys:") (retPtr retVoid) [argPtr (castPtr raw_mandatoryKeys :: Ptr ())] >>= retainedObject . castPtr
+matchingFontDescriptorsWithMandatoryKeys nsFontDescriptor mandatoryKeys =
+  sendMessage nsFontDescriptor matchingFontDescriptorsWithMandatoryKeysSelector (toNSSet mandatoryKeys)
 
 -- | @- matchingFontDescriptorWithMandatoryKeys:@
 matchingFontDescriptorWithMandatoryKeys :: (IsNSFontDescriptor nsFontDescriptor, IsNSSet mandatoryKeys) => nsFontDescriptor -> mandatoryKeys -> IO (Id NSFontDescriptor)
-matchingFontDescriptorWithMandatoryKeys nsFontDescriptor  mandatoryKeys =
-  withObjCPtr mandatoryKeys $ \raw_mandatoryKeys ->
-      sendMsg nsFontDescriptor (mkSelector "matchingFontDescriptorWithMandatoryKeys:") (retPtr retVoid) [argPtr (castPtr raw_mandatoryKeys :: Ptr ())] >>= retainedObject . castPtr
+matchingFontDescriptorWithMandatoryKeys nsFontDescriptor mandatoryKeys =
+  sendMessage nsFontDescriptor matchingFontDescriptorWithMandatoryKeysSelector (toNSSet mandatoryKeys)
 
 -- | @- fontDescriptorByAddingAttributes:@
 fontDescriptorByAddingAttributes :: (IsNSFontDescriptor nsFontDescriptor, IsNSDictionary attributes) => nsFontDescriptor -> attributes -> IO (Id NSFontDescriptor)
-fontDescriptorByAddingAttributes nsFontDescriptor  attributes =
-  withObjCPtr attributes $ \raw_attributes ->
-      sendMsg nsFontDescriptor (mkSelector "fontDescriptorByAddingAttributes:") (retPtr retVoid) [argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
+fontDescriptorByAddingAttributes nsFontDescriptor attributes =
+  sendMessage nsFontDescriptor fontDescriptorByAddingAttributesSelector (toNSDictionary attributes)
 
 -- | @- fontDescriptorWithSymbolicTraits:@
 fontDescriptorWithSymbolicTraits :: IsNSFontDescriptor nsFontDescriptor => nsFontDescriptor -> NSFontDescriptorSymbolicTraits -> IO (Id NSFontDescriptor)
-fontDescriptorWithSymbolicTraits nsFontDescriptor  symbolicTraits =
-    sendMsg nsFontDescriptor (mkSelector "fontDescriptorWithSymbolicTraits:") (retPtr retVoid) [argCUInt (coerce symbolicTraits)] >>= retainedObject . castPtr
+fontDescriptorWithSymbolicTraits nsFontDescriptor symbolicTraits =
+  sendMessage nsFontDescriptor fontDescriptorWithSymbolicTraitsSelector symbolicTraits
 
 -- | @- fontDescriptorWithSize:@
 fontDescriptorWithSize :: IsNSFontDescriptor nsFontDescriptor => nsFontDescriptor -> CDouble -> IO (Id NSFontDescriptor)
-fontDescriptorWithSize nsFontDescriptor  newPointSize =
-    sendMsg nsFontDescriptor (mkSelector "fontDescriptorWithSize:") (retPtr retVoid) [argCDouble newPointSize] >>= retainedObject . castPtr
+fontDescriptorWithSize nsFontDescriptor newPointSize =
+  sendMessage nsFontDescriptor fontDescriptorWithSizeSelector newPointSize
 
 -- | @- fontDescriptorWithMatrix:@
 fontDescriptorWithMatrix :: (IsNSFontDescriptor nsFontDescriptor, IsNSAffineTransform matrix) => nsFontDescriptor -> matrix -> IO (Id NSFontDescriptor)
-fontDescriptorWithMatrix nsFontDescriptor  matrix =
-  withObjCPtr matrix $ \raw_matrix ->
-      sendMsg nsFontDescriptor (mkSelector "fontDescriptorWithMatrix:") (retPtr retVoid) [argPtr (castPtr raw_matrix :: Ptr ())] >>= retainedObject . castPtr
+fontDescriptorWithMatrix nsFontDescriptor matrix =
+  sendMessage nsFontDescriptor fontDescriptorWithMatrixSelector (toNSAffineTransform matrix)
 
 -- | @- fontDescriptorWithFace:@
 fontDescriptorWithFace :: (IsNSFontDescriptor nsFontDescriptor, IsNSString newFace) => nsFontDescriptor -> newFace -> IO (Id NSFontDescriptor)
-fontDescriptorWithFace nsFontDescriptor  newFace =
-  withObjCPtr newFace $ \raw_newFace ->
-      sendMsg nsFontDescriptor (mkSelector "fontDescriptorWithFace:") (retPtr retVoid) [argPtr (castPtr raw_newFace :: Ptr ())] >>= retainedObject . castPtr
+fontDescriptorWithFace nsFontDescriptor newFace =
+  sendMessage nsFontDescriptor fontDescriptorWithFaceSelector (toNSString newFace)
 
 -- | @- fontDescriptorWithFamily:@
 fontDescriptorWithFamily :: (IsNSFontDescriptor nsFontDescriptor, IsNSString newFamily) => nsFontDescriptor -> newFamily -> IO (Id NSFontDescriptor)
-fontDescriptorWithFamily nsFontDescriptor  newFamily =
-  withObjCPtr newFamily $ \raw_newFamily ->
-      sendMsg nsFontDescriptor (mkSelector "fontDescriptorWithFamily:") (retPtr retVoid) [argPtr (castPtr raw_newFamily :: Ptr ())] >>= retainedObject . castPtr
+fontDescriptorWithFamily nsFontDescriptor newFamily =
+  sendMessage nsFontDescriptor fontDescriptorWithFamilySelector (toNSString newFamily)
 
 -- | @- fontDescriptorWithDesign:@
 fontDescriptorWithDesign :: (IsNSFontDescriptor nsFontDescriptor, IsNSString design) => nsFontDescriptor -> design -> IO (Id NSFontDescriptor)
-fontDescriptorWithDesign nsFontDescriptor  design =
-  withObjCPtr design $ \raw_design ->
-      sendMsg nsFontDescriptor (mkSelector "fontDescriptorWithDesign:") (retPtr retVoid) [argPtr (castPtr raw_design :: Ptr ())] >>= retainedObject . castPtr
+fontDescriptorWithDesign nsFontDescriptor design =
+  sendMessage nsFontDescriptor fontDescriptorWithDesignSelector (toNSString design)
 
 -- | @+ preferredFontDescriptorForTextStyle:options:@
 preferredFontDescriptorForTextStyle_options :: (IsNSString style, IsNSDictionary options) => style -> options -> IO (Id NSFontDescriptor)
 preferredFontDescriptorForTextStyle_options style options =
   do
     cls' <- getRequiredClass "NSFontDescriptor"
-    withObjCPtr style $ \raw_style ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "preferredFontDescriptorForTextStyle:options:") (retPtr retVoid) [argPtr (castPtr raw_style :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' preferredFontDescriptorForTextStyle_optionsSelector (toNSString style) (toNSDictionary options)
 
 -- | @- postscriptName@
 postscriptName :: IsNSFontDescriptor nsFontDescriptor => nsFontDescriptor -> IO (Id NSString)
-postscriptName nsFontDescriptor  =
-    sendMsg nsFontDescriptor (mkSelector "postscriptName") (retPtr retVoid) [] >>= retainedObject . castPtr
+postscriptName nsFontDescriptor =
+  sendMessage nsFontDescriptor postscriptNameSelector
 
 -- | @- pointSize@
 pointSize :: IsNSFontDescriptor nsFontDescriptor => nsFontDescriptor -> IO CDouble
-pointSize nsFontDescriptor  =
-    sendMsg nsFontDescriptor (mkSelector "pointSize") retCDouble []
+pointSize nsFontDescriptor =
+  sendMessage nsFontDescriptor pointSizeSelector
 
 -- | @- matrix@
 matrix :: IsNSFontDescriptor nsFontDescriptor => nsFontDescriptor -> IO (Id NSAffineTransform)
-matrix nsFontDescriptor  =
-    sendMsg nsFontDescriptor (mkSelector "matrix") (retPtr retVoid) [] >>= retainedObject . castPtr
+matrix nsFontDescriptor =
+  sendMessage nsFontDescriptor matrixSelector
 
 -- | @- symbolicTraits@
 symbolicTraits :: IsNSFontDescriptor nsFontDescriptor => nsFontDescriptor -> IO NSFontDescriptorSymbolicTraits
-symbolicTraits nsFontDescriptor  =
-    fmap (coerce :: CUInt -> NSFontDescriptorSymbolicTraits) $ sendMsg nsFontDescriptor (mkSelector "symbolicTraits") retCUInt []
+symbolicTraits nsFontDescriptor =
+  sendMessage nsFontDescriptor symbolicTraitsSelector
 
 -- | @- requiresFontAssetRequest@
 requiresFontAssetRequest :: IsNSFontDescriptor nsFontDescriptor => nsFontDescriptor -> IO Bool
-requiresFontAssetRequest nsFontDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFontDescriptor (mkSelector "requiresFontAssetRequest") retCULong []
+requiresFontAssetRequest nsFontDescriptor =
+  sendMessage nsFontDescriptor requiresFontAssetRequestSelector
 
 -- | @- fontAttributes@
 fontAttributes :: IsNSFontDescriptor nsFontDescriptor => nsFontDescriptor -> IO (Id NSDictionary)
-fontAttributes nsFontDescriptor  =
-    sendMsg nsFontDescriptor (mkSelector "fontAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+fontAttributes nsFontDescriptor =
+  sendMessage nsFontDescriptor fontAttributesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectForKey:@
-objectForKeySelector :: Selector
+objectForKeySelector :: Selector '[Id NSString] RawId
 objectForKeySelector = mkSelector "objectForKey:"
 
 -- | @Selector@ for @fontDescriptorWithFontAttributes:@
-fontDescriptorWithFontAttributesSelector :: Selector
+fontDescriptorWithFontAttributesSelector :: Selector '[Id NSDictionary] (Id NSFontDescriptor)
 fontDescriptorWithFontAttributesSelector = mkSelector "fontDescriptorWithFontAttributes:"
 
 -- | @Selector@ for @fontDescriptorWithName:size:@
-fontDescriptorWithName_sizeSelector :: Selector
+fontDescriptorWithName_sizeSelector :: Selector '[Id NSString, CDouble] (Id NSFontDescriptor)
 fontDescriptorWithName_sizeSelector = mkSelector "fontDescriptorWithName:size:"
 
 -- | @Selector@ for @fontDescriptorWithName:matrix:@
-fontDescriptorWithName_matrixSelector :: Selector
+fontDescriptorWithName_matrixSelector :: Selector '[Id NSString, Id NSAffineTransform] (Id NSFontDescriptor)
 fontDescriptorWithName_matrixSelector = mkSelector "fontDescriptorWithName:matrix:"
 
 -- | @Selector@ for @initWithFontAttributes:@
-initWithFontAttributesSelector :: Selector
+initWithFontAttributesSelector :: Selector '[Id NSDictionary] (Id NSFontDescriptor)
 initWithFontAttributesSelector = mkSelector "initWithFontAttributes:"
 
 -- | @Selector@ for @matchingFontDescriptorsWithMandatoryKeys:@
-matchingFontDescriptorsWithMandatoryKeysSelector :: Selector
+matchingFontDescriptorsWithMandatoryKeysSelector :: Selector '[Id NSSet] (Id NSArray)
 matchingFontDescriptorsWithMandatoryKeysSelector = mkSelector "matchingFontDescriptorsWithMandatoryKeys:"
 
 -- | @Selector@ for @matchingFontDescriptorWithMandatoryKeys:@
-matchingFontDescriptorWithMandatoryKeysSelector :: Selector
+matchingFontDescriptorWithMandatoryKeysSelector :: Selector '[Id NSSet] (Id NSFontDescriptor)
 matchingFontDescriptorWithMandatoryKeysSelector = mkSelector "matchingFontDescriptorWithMandatoryKeys:"
 
 -- | @Selector@ for @fontDescriptorByAddingAttributes:@
-fontDescriptorByAddingAttributesSelector :: Selector
+fontDescriptorByAddingAttributesSelector :: Selector '[Id NSDictionary] (Id NSFontDescriptor)
 fontDescriptorByAddingAttributesSelector = mkSelector "fontDescriptorByAddingAttributes:"
 
 -- | @Selector@ for @fontDescriptorWithSymbolicTraits:@
-fontDescriptorWithSymbolicTraitsSelector :: Selector
+fontDescriptorWithSymbolicTraitsSelector :: Selector '[NSFontDescriptorSymbolicTraits] (Id NSFontDescriptor)
 fontDescriptorWithSymbolicTraitsSelector = mkSelector "fontDescriptorWithSymbolicTraits:"
 
 -- | @Selector@ for @fontDescriptorWithSize:@
-fontDescriptorWithSizeSelector :: Selector
+fontDescriptorWithSizeSelector :: Selector '[CDouble] (Id NSFontDescriptor)
 fontDescriptorWithSizeSelector = mkSelector "fontDescriptorWithSize:"
 
 -- | @Selector@ for @fontDescriptorWithMatrix:@
-fontDescriptorWithMatrixSelector :: Selector
+fontDescriptorWithMatrixSelector :: Selector '[Id NSAffineTransform] (Id NSFontDescriptor)
 fontDescriptorWithMatrixSelector = mkSelector "fontDescriptorWithMatrix:"
 
 -- | @Selector@ for @fontDescriptorWithFace:@
-fontDescriptorWithFaceSelector :: Selector
+fontDescriptorWithFaceSelector :: Selector '[Id NSString] (Id NSFontDescriptor)
 fontDescriptorWithFaceSelector = mkSelector "fontDescriptorWithFace:"
 
 -- | @Selector@ for @fontDescriptorWithFamily:@
-fontDescriptorWithFamilySelector :: Selector
+fontDescriptorWithFamilySelector :: Selector '[Id NSString] (Id NSFontDescriptor)
 fontDescriptorWithFamilySelector = mkSelector "fontDescriptorWithFamily:"
 
 -- | @Selector@ for @fontDescriptorWithDesign:@
-fontDescriptorWithDesignSelector :: Selector
+fontDescriptorWithDesignSelector :: Selector '[Id NSString] (Id NSFontDescriptor)
 fontDescriptorWithDesignSelector = mkSelector "fontDescriptorWithDesign:"
 
 -- | @Selector@ for @preferredFontDescriptorForTextStyle:options:@
-preferredFontDescriptorForTextStyle_optionsSelector :: Selector
+preferredFontDescriptorForTextStyle_optionsSelector :: Selector '[Id NSString, Id NSDictionary] (Id NSFontDescriptor)
 preferredFontDescriptorForTextStyle_optionsSelector = mkSelector "preferredFontDescriptorForTextStyle:options:"
 
 -- | @Selector@ for @postscriptName@
-postscriptNameSelector :: Selector
+postscriptNameSelector :: Selector '[] (Id NSString)
 postscriptNameSelector = mkSelector "postscriptName"
 
 -- | @Selector@ for @pointSize@
-pointSizeSelector :: Selector
+pointSizeSelector :: Selector '[] CDouble
 pointSizeSelector = mkSelector "pointSize"
 
 -- | @Selector@ for @matrix@
-matrixSelector :: Selector
+matrixSelector :: Selector '[] (Id NSAffineTransform)
 matrixSelector = mkSelector "matrix"
 
 -- | @Selector@ for @symbolicTraits@
-symbolicTraitsSelector :: Selector
+symbolicTraitsSelector :: Selector '[] NSFontDescriptorSymbolicTraits
 symbolicTraitsSelector = mkSelector "symbolicTraits"
 
 -- | @Selector@ for @requiresFontAssetRequest@
-requiresFontAssetRequestSelector :: Selector
+requiresFontAssetRequestSelector :: Selector '[] Bool
 requiresFontAssetRequestSelector = mkSelector "requiresFontAssetRequest"
 
 -- | @Selector@ for @fontAttributes@
-fontAttributesSelector :: Selector
+fontAttributesSelector :: Selector '[] (Id NSDictionary)
 fontAttributesSelector = mkSelector "fontAttributes"
 

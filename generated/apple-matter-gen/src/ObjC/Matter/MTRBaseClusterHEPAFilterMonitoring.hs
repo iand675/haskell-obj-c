@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -50,59 +51,55 @@ module ObjC.Matter.MTRBaseClusterHEPAFilterMonitoring
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , resetConditionWithParams_completionSelector
-  , resetConditionWithCompletionSelector
-  , readAttributeConditionWithCompletionSelector
-  , subscribeAttributeConditionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeConditionWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeDegradationDirectionWithCompletionSelector
-  , subscribeAttributeDegradationDirectionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeDegradationDirectionWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeChangeIndicationWithCompletionSelector
-  , subscribeAttributeChangeIndicationWithParams_subscriptionEstablished_reportHandlerSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
   , readAttributeChangeIndicationWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeInPlaceIndicatorWithCompletionSelector
-  , subscribeAttributeInPlaceIndicatorWithParams_subscriptionEstablished_reportHandlerSelector
+  , readAttributeChangeIndicationWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeConditionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeConditionWithCompletionSelector
+  , readAttributeDegradationDirectionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeDegradationDirectionWithCompletionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
   , readAttributeInPlaceIndicatorWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeInPlaceIndicatorWithCompletionSelector
+  , readAttributeLastChangedTimeWithClusterStateCache_endpoint_queue_completionSelector
   , readAttributeLastChangedTimeWithCompletionSelector
+  , readAttributeReplacementProductListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeReplacementProductListWithCompletionSelector
+  , resetConditionWithCompletionSelector
+  , resetConditionWithParams_completionSelector
+  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeChangeIndicationWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeConditionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeDegradationDirectionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeInPlaceIndicatorWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeLastChangedTimeWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeReplacementProductListWithParams_subscriptionEstablished_reportHandlerSelector
   , writeAttributeLastChangedTimeWithValue_completionSelector
   , writeAttributeLastChangedTimeWithValue_params_completionSelector
-  , subscribeAttributeLastChangedTimeWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeLastChangedTimeWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeReplacementProductListWithCompletionSelector
-  , subscribeAttributeReplacementProductListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeReplacementProductListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
-  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
-  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
-  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -115,442 +112,391 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- resetConditionWithParams:completion:@
 resetConditionWithParams_completion :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRHEPAFilterMonitoringClusterResetConditionParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> IO ()
-resetConditionWithParams_completion mtrBaseClusterHEPAFilterMonitoring  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "resetConditionWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+resetConditionWithParams_completion mtrBaseClusterHEPAFilterMonitoring params completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring resetConditionWithParams_completionSelector (toMTRHEPAFilterMonitoringClusterResetConditionParams params) completion
 
 -- | @- resetConditionWithCompletion:@
 resetConditionWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-resetConditionWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "resetConditionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+resetConditionWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring resetConditionWithCompletionSelector completion
 
 -- | @- readAttributeConditionWithCompletion:@
 readAttributeConditionWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeConditionWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeConditionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeConditionWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeConditionWithCompletionSelector completion
 
 -- | @- subscribeAttributeConditionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeConditionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeConditionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeConditionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeConditionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeConditionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeConditionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeConditionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeConditionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeConditionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeConditionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeDegradationDirectionWithCompletion:@
 readAttributeDegradationDirectionWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeDegradationDirectionWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeDegradationDirectionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeDegradationDirectionWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeDegradationDirectionWithCompletionSelector completion
 
 -- | @- subscribeAttributeDegradationDirectionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeDegradationDirectionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeDegradationDirectionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeDegradationDirectionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeDegradationDirectionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeDegradationDirectionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeDegradationDirectionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeDegradationDirectionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeDegradationDirectionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeDegradationDirectionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeDegradationDirectionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeChangeIndicationWithCompletion:@
 readAttributeChangeIndicationWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeChangeIndicationWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeChangeIndicationWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeChangeIndicationWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeChangeIndicationWithCompletionSelector completion
 
 -- | @- subscribeAttributeChangeIndicationWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeChangeIndicationWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeChangeIndicationWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeChangeIndicationWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeChangeIndicationWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeChangeIndicationWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeChangeIndicationWithClusterStateCache:endpoint:queue:completion:@
 readAttributeChangeIndicationWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeChangeIndicationWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeChangeIndicationWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeChangeIndicationWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeInPlaceIndicatorWithCompletion:@
 readAttributeInPlaceIndicatorWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeInPlaceIndicatorWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeInPlaceIndicatorWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeInPlaceIndicatorWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeInPlaceIndicatorWithCompletionSelector completion
 
 -- | @- subscribeAttributeInPlaceIndicatorWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeInPlaceIndicatorWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeInPlaceIndicatorWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeInPlaceIndicatorWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeInPlaceIndicatorWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeInPlaceIndicatorWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeInPlaceIndicatorWithClusterStateCache:endpoint:queue:completion:@
 readAttributeInPlaceIndicatorWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeInPlaceIndicatorWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeInPlaceIndicatorWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeInPlaceIndicatorWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeLastChangedTimeWithCompletion:@
 readAttributeLastChangedTimeWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeLastChangedTimeWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeLastChangedTimeWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeLastChangedTimeWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeLastChangedTimeWithCompletionSelector completion
 
 -- | @- writeAttributeLastChangedTimeWithValue:completion:@
 writeAttributeLastChangedTimeWithValue_completion :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsNSNumber value) => mtrBaseClusterHEPAFilterMonitoring -> value -> Ptr () -> IO ()
-writeAttributeLastChangedTimeWithValue_completion mtrBaseClusterHEPAFilterMonitoring  value completion =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "writeAttributeLastChangedTimeWithValue:completion:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+writeAttributeLastChangedTimeWithValue_completion mtrBaseClusterHEPAFilterMonitoring value completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring writeAttributeLastChangedTimeWithValue_completionSelector (toNSNumber value) completion
 
 -- | @- writeAttributeLastChangedTimeWithValue:params:completion:@
 writeAttributeLastChangedTimeWithValue_params_completion :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsNSNumber value, IsMTRWriteParams params) => mtrBaseClusterHEPAFilterMonitoring -> value -> params -> Ptr () -> IO ()
-writeAttributeLastChangedTimeWithValue_params_completion mtrBaseClusterHEPAFilterMonitoring  value params completion =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr params $ \raw_params ->
-        sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "writeAttributeLastChangedTimeWithValue:params:completion:") retVoid [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+writeAttributeLastChangedTimeWithValue_params_completion mtrBaseClusterHEPAFilterMonitoring value params completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring writeAttributeLastChangedTimeWithValue_params_completionSelector (toNSNumber value) (toMTRWriteParams params) completion
 
 -- | @- subscribeAttributeLastChangedTimeWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeLastChangedTimeWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeLastChangedTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeLastChangedTimeWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeLastChangedTimeWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeLastChangedTimeWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeLastChangedTimeWithClusterStateCache:endpoint:queue:completion:@
 readAttributeLastChangedTimeWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeLastChangedTimeWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeLastChangedTimeWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeLastChangedTimeWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeReplacementProductListWithCompletion:@
 readAttributeReplacementProductListWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeReplacementProductListWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeReplacementProductListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeReplacementProductListWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeReplacementProductListWithCompletionSelector completion
 
 -- | @- subscribeAttributeReplacementProductListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeReplacementProductListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeReplacementProductListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeReplacementProductListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeReplacementProductListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeReplacementProductListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeReplacementProductListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeReplacementProductListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeReplacementProductListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeReplacementProductListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeReplacementProductListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterHEPAFilterMonitoring  completion =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterHEPAFilterMonitoring completion =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRSubscribeParams params) => mtrBaseClusterHEPAFilterMonitoring -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterHEPAFilterMonitoring params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterHEPAFilterMonitoring subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring => mtrBaseClusterHEPAFilterMonitoring -> IO (Id MTRBaseClusterHEPAFilterMonitoring)
-init_ mtrBaseClusterHEPAFilterMonitoring  =
-    sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterHEPAFilterMonitoring =
+  sendOwnedMessage mtrBaseClusterHEPAFilterMonitoring initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterHEPAFilterMonitoring)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterHEPAFilterMonitoring"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterHEPAFilterMonitoring mtrBaseClusterHEPAFilterMonitoring, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterHEPAFilterMonitoring -> device -> endpointID -> queue -> IO (Id MTRBaseClusterHEPAFilterMonitoring)
-initWithDevice_endpointID_queue mtrBaseClusterHEPAFilterMonitoring  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterHEPAFilterMonitoring (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterHEPAFilterMonitoring device endpointID queue =
+  sendOwnedMessage mtrBaseClusterHEPAFilterMonitoring initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @resetConditionWithParams:completion:@
-resetConditionWithParams_completionSelector :: Selector
+resetConditionWithParams_completionSelector :: Selector '[Id MTRHEPAFilterMonitoringClusterResetConditionParams, Ptr ()] ()
 resetConditionWithParams_completionSelector = mkSelector "resetConditionWithParams:completion:"
 
 -- | @Selector@ for @resetConditionWithCompletion:@
-resetConditionWithCompletionSelector :: Selector
+resetConditionWithCompletionSelector :: Selector '[Ptr ()] ()
 resetConditionWithCompletionSelector = mkSelector "resetConditionWithCompletion:"
 
 -- | @Selector@ for @readAttributeConditionWithCompletion:@
-readAttributeConditionWithCompletionSelector :: Selector
+readAttributeConditionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeConditionWithCompletionSelector = mkSelector "readAttributeConditionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeConditionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeConditionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeConditionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeConditionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeConditionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeConditionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeConditionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeConditionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeConditionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeConditionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeDegradationDirectionWithCompletion:@
-readAttributeDegradationDirectionWithCompletionSelector :: Selector
+readAttributeDegradationDirectionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeDegradationDirectionWithCompletionSelector = mkSelector "readAttributeDegradationDirectionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeDegradationDirectionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeDegradationDirectionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeDegradationDirectionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeDegradationDirectionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeDegradationDirectionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeDegradationDirectionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeDegradationDirectionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeDegradationDirectionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeDegradationDirectionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeDegradationDirectionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeChangeIndicationWithCompletion:@
-readAttributeChangeIndicationWithCompletionSelector :: Selector
+readAttributeChangeIndicationWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeChangeIndicationWithCompletionSelector = mkSelector "readAttributeChangeIndicationWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeChangeIndicationWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeChangeIndicationWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeChangeIndicationWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeChangeIndicationWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeChangeIndicationWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeChangeIndicationWithClusterStateCache:endpoint:queue:completion:@
-readAttributeChangeIndicationWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeChangeIndicationWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeChangeIndicationWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeChangeIndicationWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeInPlaceIndicatorWithCompletion:@
-readAttributeInPlaceIndicatorWithCompletionSelector :: Selector
+readAttributeInPlaceIndicatorWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeInPlaceIndicatorWithCompletionSelector = mkSelector "readAttributeInPlaceIndicatorWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeInPlaceIndicatorWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeInPlaceIndicatorWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeInPlaceIndicatorWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeInPlaceIndicatorWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeInPlaceIndicatorWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeInPlaceIndicatorWithClusterStateCache:endpoint:queue:completion:@
-readAttributeInPlaceIndicatorWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeInPlaceIndicatorWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeInPlaceIndicatorWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeInPlaceIndicatorWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeLastChangedTimeWithCompletion:@
-readAttributeLastChangedTimeWithCompletionSelector :: Selector
+readAttributeLastChangedTimeWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeLastChangedTimeWithCompletionSelector = mkSelector "readAttributeLastChangedTimeWithCompletion:"
 
 -- | @Selector@ for @writeAttributeLastChangedTimeWithValue:completion:@
-writeAttributeLastChangedTimeWithValue_completionSelector :: Selector
+writeAttributeLastChangedTimeWithValue_completionSelector :: Selector '[Id NSNumber, Ptr ()] ()
 writeAttributeLastChangedTimeWithValue_completionSelector = mkSelector "writeAttributeLastChangedTimeWithValue:completion:"
 
 -- | @Selector@ for @writeAttributeLastChangedTimeWithValue:params:completion:@
-writeAttributeLastChangedTimeWithValue_params_completionSelector :: Selector
+writeAttributeLastChangedTimeWithValue_params_completionSelector :: Selector '[Id NSNumber, Id MTRWriteParams, Ptr ()] ()
 writeAttributeLastChangedTimeWithValue_params_completionSelector = mkSelector "writeAttributeLastChangedTimeWithValue:params:completion:"
 
 -- | @Selector@ for @subscribeAttributeLastChangedTimeWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeLastChangedTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeLastChangedTimeWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeLastChangedTimeWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeLastChangedTimeWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeLastChangedTimeWithClusterStateCache:endpoint:queue:completion:@
-readAttributeLastChangedTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeLastChangedTimeWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeLastChangedTimeWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeLastChangedTimeWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeReplacementProductListWithCompletion:@
-readAttributeReplacementProductListWithCompletionSelector :: Selector
+readAttributeReplacementProductListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeReplacementProductListWithCompletionSelector = mkSelector "readAttributeReplacementProductListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeReplacementProductListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeReplacementProductListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeReplacementProductListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeReplacementProductListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeReplacementProductListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeReplacementProductListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeReplacementProductListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeReplacementProductListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeReplacementProductListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeReplacementProductListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterHEPAFilterMonitoring)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterHEPAFilterMonitoring)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterHEPAFilterMonitoring)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

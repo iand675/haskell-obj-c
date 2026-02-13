@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.GameplayKit.GKPath
   , numPoints
   , cyclical
   , setCyclical
-  , pathWithGraphNodes_radiusSelector
-  , initWithGraphNodes_radiusSelector
-  , radiusSelector
-  , setRadiusSelector
-  , numPointsSelector
   , cyclicalSelector
+  , initWithGraphNodes_radiusSelector
+  , numPointsSelector
+  , pathWithGraphNodes_radiusSelector
+  , radiusSelector
   , setCyclicalSelector
+  , setRadiusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,79 +49,77 @@ pathWithGraphNodes_radius :: IsNSArray graphNodes => graphNodes -> CFloat -> IO 
 pathWithGraphNodes_radius graphNodes radius =
   do
     cls' <- getRequiredClass "GKPath"
-    withObjCPtr graphNodes $ \raw_graphNodes ->
-      sendClassMsg cls' (mkSelector "pathWithGraphNodes:radius:") (retPtr retVoid) [argPtr (castPtr raw_graphNodes :: Ptr ()), argCFloat radius] >>= retainedObject . castPtr
+    sendClassMessage cls' pathWithGraphNodes_radiusSelector (toNSArray graphNodes) radius
 
 -- | @- initWithGraphNodes:radius:@
 initWithGraphNodes_radius :: (IsGKPath gkPath, IsNSArray graphNodes) => gkPath -> graphNodes -> CFloat -> IO (Id GKPath)
-initWithGraphNodes_radius gkPath  graphNodes radius =
-  withObjCPtr graphNodes $ \raw_graphNodes ->
-      sendMsg gkPath (mkSelector "initWithGraphNodes:radius:") (retPtr retVoid) [argPtr (castPtr raw_graphNodes :: Ptr ()), argCFloat radius] >>= ownedObject . castPtr
+initWithGraphNodes_radius gkPath graphNodes radius =
+  sendOwnedMessage gkPath initWithGraphNodes_radiusSelector (toNSArray graphNodes) radius
 
 -- | Radius of the pathway.  Defines a spatial area that the path occupies. This can be though of as the union between rectangles between all points, and circles at each point
 --
 -- ObjC selector: @- radius@
 radius :: IsGKPath gkPath => gkPath -> IO CFloat
-radius gkPath  =
-    sendMsg gkPath (mkSelector "radius") retCFloat []
+radius gkPath =
+  sendMessage gkPath radiusSelector
 
 -- | Radius of the pathway.  Defines a spatial area that the path occupies. This can be though of as the union between rectangles between all points, and circles at each point
 --
 -- ObjC selector: @- setRadius:@
 setRadius :: IsGKPath gkPath => gkPath -> CFloat -> IO ()
-setRadius gkPath  value =
-    sendMsg gkPath (mkSelector "setRadius:") retVoid [argCFloat value]
+setRadius gkPath value =
+  sendMessage gkPath setRadiusSelector value
 
 -- | Number of points in this path
 --
 -- ObjC selector: @- numPoints@
 numPoints :: IsGKPath gkPath => gkPath -> IO CULong
-numPoints gkPath  =
-    sendMsg gkPath (mkSelector "numPoints") retCULong []
+numPoints gkPath =
+  sendMessage gkPath numPointsSelector
 
 -- | Does this path loop back on itself, creating a cycle?
 --
 -- ObjC selector: @- cyclical@
 cyclical :: IsGKPath gkPath => gkPath -> IO Bool
-cyclical gkPath  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkPath (mkSelector "cyclical") retCULong []
+cyclical gkPath =
+  sendMessage gkPath cyclicalSelector
 
 -- | Does this path loop back on itself, creating a cycle?
 --
 -- ObjC selector: @- setCyclical:@
 setCyclical :: IsGKPath gkPath => gkPath -> Bool -> IO ()
-setCyclical gkPath  value =
-    sendMsg gkPath (mkSelector "setCyclical:") retVoid [argCULong (if value then 1 else 0)]
+setCyclical gkPath value =
+  sendMessage gkPath setCyclicalSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pathWithGraphNodes:radius:@
-pathWithGraphNodes_radiusSelector :: Selector
+pathWithGraphNodes_radiusSelector :: Selector '[Id NSArray, CFloat] (Id GKPath)
 pathWithGraphNodes_radiusSelector = mkSelector "pathWithGraphNodes:radius:"
 
 -- | @Selector@ for @initWithGraphNodes:radius:@
-initWithGraphNodes_radiusSelector :: Selector
+initWithGraphNodes_radiusSelector :: Selector '[Id NSArray, CFloat] (Id GKPath)
 initWithGraphNodes_radiusSelector = mkSelector "initWithGraphNodes:radius:"
 
 -- | @Selector@ for @radius@
-radiusSelector :: Selector
+radiusSelector :: Selector '[] CFloat
 radiusSelector = mkSelector "radius"
 
 -- | @Selector@ for @setRadius:@
-setRadiusSelector :: Selector
+setRadiusSelector :: Selector '[CFloat] ()
 setRadiusSelector = mkSelector "setRadius:"
 
 -- | @Selector@ for @numPoints@
-numPointsSelector :: Selector
+numPointsSelector :: Selector '[] CULong
 numPointsSelector = mkSelector "numPoints"
 
 -- | @Selector@ for @cyclical@
-cyclicalSelector :: Selector
+cyclicalSelector :: Selector '[] Bool
 cyclicalSelector = mkSelector "cyclical"
 
 -- | @Selector@ for @setCyclical:@
-setCyclicalSelector :: Selector
+setCyclicalSelector :: Selector '[Bool] ()
 setCyclicalSelector = mkSelector "setCyclical:"
 

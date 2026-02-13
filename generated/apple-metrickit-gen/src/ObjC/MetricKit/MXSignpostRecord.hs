@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.MetricKit.MXSignpostRecord
   , endTimeStamp
   , duration
   , isInterval
-  , jsonRepresentationSelector
-  , dictionaryRepresentationSelector
-  , subsystemSelector
-  , categorySelector
-  , nameSelector
   , beginTimeStampSelector
-  , endTimeStampSelector
+  , categorySelector
+  , dictionaryRepresentationSelector
   , durationSelector
+  , endTimeStampSelector
   , isIntervalSelector
+  , jsonRepresentationSelector
+  , nameSelector
+  , subsystemSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,8 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- JSONRepresentation@
 jsonRepresentation :: IsMXSignpostRecord mxSignpostRecord => mxSignpostRecord -> IO (Id NSData)
-jsonRepresentation mxSignpostRecord  =
-    sendMsg mxSignpostRecord (mkSelector "JSONRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+jsonRepresentation mxSignpostRecord =
+  sendMessage mxSignpostRecord jsonRepresentationSelector
 
 -- | dictionaryRepresentation
 --
@@ -68,8 +65,8 @@ jsonRepresentation mxSignpostRecord  =
 --
 -- ObjC selector: @- dictionaryRepresentation@
 dictionaryRepresentation :: IsMXSignpostRecord mxSignpostRecord => mxSignpostRecord -> IO (Id NSDictionary)
-dictionaryRepresentation mxSignpostRecord  =
-    sendMsg mxSignpostRecord (mkSelector "dictionaryRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryRepresentation mxSignpostRecord =
+  sendMessage mxSignpostRecord dictionaryRepresentationSelector
 
 -- | subsystem
 --
@@ -77,8 +74,8 @@ dictionaryRepresentation mxSignpostRecord  =
 --
 -- ObjC selector: @- subsystem@
 subsystem :: IsMXSignpostRecord mxSignpostRecord => mxSignpostRecord -> IO (Id NSString)
-subsystem mxSignpostRecord  =
-    sendMsg mxSignpostRecord (mkSelector "subsystem") (retPtr retVoid) [] >>= retainedObject . castPtr
+subsystem mxSignpostRecord =
+  sendMessage mxSignpostRecord subsystemSelector
 
 -- | category
 --
@@ -86,8 +83,8 @@ subsystem mxSignpostRecord  =
 --
 -- ObjC selector: @- category@
 category :: IsMXSignpostRecord mxSignpostRecord => mxSignpostRecord -> IO (Id NSString)
-category mxSignpostRecord  =
-    sendMsg mxSignpostRecord (mkSelector "category") (retPtr retVoid) [] >>= retainedObject . castPtr
+category mxSignpostRecord =
+  sendMessage mxSignpostRecord categorySelector
 
 -- | name
 --
@@ -95,8 +92,8 @@ category mxSignpostRecord  =
 --
 -- ObjC selector: @- name@
 name :: IsMXSignpostRecord mxSignpostRecord => mxSignpostRecord -> IO (Id NSString)
-name mxSignpostRecord  =
-    sendMsg mxSignpostRecord (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mxSignpostRecord =
+  sendMessage mxSignpostRecord nameSelector
 
 -- | beginTimeStamp
 --
@@ -104,8 +101,8 @@ name mxSignpostRecord  =
 --
 -- ObjC selector: @- beginTimeStamp@
 beginTimeStamp :: IsMXSignpostRecord mxSignpostRecord => mxSignpostRecord -> IO (Id NSDate)
-beginTimeStamp mxSignpostRecord  =
-    sendMsg mxSignpostRecord (mkSelector "beginTimeStamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+beginTimeStamp mxSignpostRecord =
+  sendMessage mxSignpostRecord beginTimeStampSelector
 
 -- | endTimeStamp
 --
@@ -113,8 +110,8 @@ beginTimeStamp mxSignpostRecord  =
 --
 -- ObjC selector: @- endTimeStamp@
 endTimeStamp :: IsMXSignpostRecord mxSignpostRecord => mxSignpostRecord -> IO (Id NSDate)
-endTimeStamp mxSignpostRecord  =
-    sendMsg mxSignpostRecord (mkSelector "endTimeStamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+endTimeStamp mxSignpostRecord =
+  sendMessage mxSignpostRecord endTimeStampSelector
 
 -- | duration
 --
@@ -122,8 +119,8 @@ endTimeStamp mxSignpostRecord  =
 --
 -- ObjC selector: @- duration@
 duration :: IsMXSignpostRecord mxSignpostRecord => mxSignpostRecord -> IO (Id NSMeasurement)
-duration mxSignpostRecord  =
-    sendMsg mxSignpostRecord (mkSelector "duration") (retPtr retVoid) [] >>= retainedObject . castPtr
+duration mxSignpostRecord =
+  sendMessage mxSignpostRecord durationSelector
 
 -- | isInterval
 --
@@ -131,46 +128,46 @@ duration mxSignpostRecord  =
 --
 -- ObjC selector: @- isInterval@
 isInterval :: IsMXSignpostRecord mxSignpostRecord => mxSignpostRecord -> IO Bool
-isInterval mxSignpostRecord  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mxSignpostRecord (mkSelector "isInterval") retCULong []
+isInterval mxSignpostRecord =
+  sendMessage mxSignpostRecord isIntervalSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @JSONRepresentation@
-jsonRepresentationSelector :: Selector
+jsonRepresentationSelector :: Selector '[] (Id NSData)
 jsonRepresentationSelector = mkSelector "JSONRepresentation"
 
 -- | @Selector@ for @dictionaryRepresentation@
-dictionaryRepresentationSelector :: Selector
+dictionaryRepresentationSelector :: Selector '[] (Id NSDictionary)
 dictionaryRepresentationSelector = mkSelector "dictionaryRepresentation"
 
 -- | @Selector@ for @subsystem@
-subsystemSelector :: Selector
+subsystemSelector :: Selector '[] (Id NSString)
 subsystemSelector = mkSelector "subsystem"
 
 -- | @Selector@ for @category@
-categorySelector :: Selector
+categorySelector :: Selector '[] (Id NSString)
 categorySelector = mkSelector "category"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @beginTimeStamp@
-beginTimeStampSelector :: Selector
+beginTimeStampSelector :: Selector '[] (Id NSDate)
 beginTimeStampSelector = mkSelector "beginTimeStamp"
 
 -- | @Selector@ for @endTimeStamp@
-endTimeStampSelector :: Selector
+endTimeStampSelector :: Selector '[] (Id NSDate)
 endTimeStampSelector = mkSelector "endTimeStamp"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] (Id NSMeasurement)
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @isInterval@
-isIntervalSelector :: Selector
+isIntervalSelector :: Selector '[] Bool
 isIntervalSelector = mkSelector "isInterval"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Matter.MTRThreadBorderRouterManagementClusterDatasetResponseParams
   , initWithResponseValue_error
   , dataset
   , setDataset
-  , initWithResponseValue_errorSelector
   , datasetSelector
+  , initWithResponseValue_errorSelector
   , setDatasetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,35 +36,32 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRThreadBorderRouterManagementClusterDatasetResponseParams mtrThreadBorderRouterManagementClusterDatasetResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrThreadBorderRouterManagementClusterDatasetResponseParams -> responseValue -> error_ -> IO (Id MTRThreadBorderRouterManagementClusterDatasetResponseParams)
-initWithResponseValue_error mtrThreadBorderRouterManagementClusterDatasetResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrThreadBorderRouterManagementClusterDatasetResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrThreadBorderRouterManagementClusterDatasetResponseParams responseValue error_ =
+  sendOwnedMessage mtrThreadBorderRouterManagementClusterDatasetResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- dataset@
 dataset :: IsMTRThreadBorderRouterManagementClusterDatasetResponseParams mtrThreadBorderRouterManagementClusterDatasetResponseParams => mtrThreadBorderRouterManagementClusterDatasetResponseParams -> IO (Id NSData)
-dataset mtrThreadBorderRouterManagementClusterDatasetResponseParams  =
-    sendMsg mtrThreadBorderRouterManagementClusterDatasetResponseParams (mkSelector "dataset") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataset mtrThreadBorderRouterManagementClusterDatasetResponseParams =
+  sendMessage mtrThreadBorderRouterManagementClusterDatasetResponseParams datasetSelector
 
 -- | @- setDataset:@
 setDataset :: (IsMTRThreadBorderRouterManagementClusterDatasetResponseParams mtrThreadBorderRouterManagementClusterDatasetResponseParams, IsNSData value) => mtrThreadBorderRouterManagementClusterDatasetResponseParams -> value -> IO ()
-setDataset mtrThreadBorderRouterManagementClusterDatasetResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadBorderRouterManagementClusterDatasetResponseParams (mkSelector "setDataset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDataset mtrThreadBorderRouterManagementClusterDatasetResponseParams value =
+  sendMessage mtrThreadBorderRouterManagementClusterDatasetResponseParams setDatasetSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRThreadBorderRouterManagementClusterDatasetResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @dataset@
-datasetSelector :: Selector
+datasetSelector :: Selector '[] (Id NSData)
 datasetSelector = mkSelector "dataset"
 
 -- | @Selector@ for @setDataset:@
-setDatasetSelector :: Selector
+setDatasetSelector :: Selector '[Id NSData] ()
 setDatasetSelector = mkSelector "setDataset:"
 

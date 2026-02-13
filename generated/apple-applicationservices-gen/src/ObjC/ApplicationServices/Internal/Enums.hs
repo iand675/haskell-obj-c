@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ApplicationServices.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @ATSFontFilterSelector@
 newtype ATSFontFilterSelector = ATSFontFilterSelector CInt
@@ -34,6 +37,16 @@ pattern KATSFontFilterSelectorFontApplierFunction = ATSFontFilterSelector 9
 pattern KATSFileReferenceFilterSelector :: ATSFontFilterSelector
 pattern KATSFileReferenceFilterSelector = ATSFontFilterSelector 10
 
+instance ObjCArgument ATSFontFilterSelector where
+  withObjCArg (ATSFontFilterSelector x) k = k (argCInt x)
+
+instance ObjCReturn ATSFontFilterSelector where
+  type RawReturn ATSFontFilterSelector = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ATSFontFilterSelector x)
+  fromOwned x = pure (ATSFontFilterSelector x)
+
 -- | @ATSFontNotifyAction@
 newtype ATSFontNotifyAction = ATSFontNotifyAction CInt
   deriving stock (Eq, Ord, Show)
@@ -44,6 +57,16 @@ pattern KATSFontNotifyActionFontsChanged = ATSFontNotifyAction 1
 
 pattern KATSFontNotifyActionDirectoriesChanged :: ATSFontNotifyAction
 pattern KATSFontNotifyActionDirectoriesChanged = ATSFontNotifyAction 2
+
+instance ObjCArgument ATSFontNotifyAction where
+  withObjCArg (ATSFontNotifyAction x) k = k (argCInt x)
+
+instance ObjCReturn ATSFontNotifyAction where
+  type RawReturn ATSFontNotifyAction = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ATSFontNotifyAction x)
+  fromOwned x = pure (ATSFontNotifyAction x)
 
 -- | @ATSFontNotifyOption@
 newtype ATSFontNotifyOption = ATSFontNotifyOption CInt
@@ -56,6 +79,16 @@ pattern KATSFontNotifyOptionDefault = ATSFontNotifyOption 0
 pattern KATSFontNotifyOptionReceiveWhileSuspended :: ATSFontNotifyOption
 pattern KATSFontNotifyOptionReceiveWhileSuspended = ATSFontNotifyOption 1
 
+instance ObjCArgument ATSFontNotifyOption where
+  withObjCArg (ATSFontNotifyOption x) k = k (argCInt x)
+
+instance ObjCReturn ATSFontNotifyOption where
+  type RawReturn ATSFontNotifyOption = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ATSFontNotifyOption x)
+  fromOwned x = pure (ATSFontNotifyOption x)
+
 -- | @ATSFontQueryMessageID@
 newtype ATSFontQueryMessageID = ATSFontQueryMessageID CInt
   deriving stock (Eq, Ord, Show)
@@ -63,6 +96,16 @@ newtype ATSFontQueryMessageID = ATSFontQueryMessageID CInt
 
 pattern KATSQueryActivateFontMessage :: ATSFontQueryMessageID
 pattern KATSQueryActivateFontMessage = ATSFontQueryMessageID 1635021665
+
+instance ObjCArgument ATSFontQueryMessageID where
+  withObjCArg (ATSFontQueryMessageID x) k = k (argCInt x)
+
+instance ObjCReturn ATSFontQueryMessageID where
+  type RawReturn ATSFontQueryMessageID = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ATSFontQueryMessageID x)
+  fromOwned x = pure (ATSFontQueryMessageID x)
 
 -- | kAXCopyMultipleAttributeOptionStopOnError
 --
@@ -84,6 +127,16 @@ instance Monoid AXCopyMultipleAttributeOptions where
 
 pattern KAXCopyMultipleAttributeOptionStopOnError :: AXCopyMultipleAttributeOptions
 pattern KAXCopyMultipleAttributeOptionStopOnError = AXCopyMultipleAttributeOptions 1
+
+instance ObjCArgument AXCopyMultipleAttributeOptions where
+  withObjCArg (AXCopyMultipleAttributeOptions x) k = k (argCUInt x)
+
+instance ObjCReturn AXCopyMultipleAttributeOptions where
+  type RawReturn AXCopyMultipleAttributeOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXCopyMultipleAttributeOptions x)
+  fromOwned x = pure (AXCopyMultipleAttributeOptions x)
 
 -- | Accessibility Error Codes
 --
@@ -141,6 +194,16 @@ pattern KAXErrorParameterizedAttributeUnsupported = AXError (-25213)
 pattern KAXErrorNotEnoughPrecision :: AXError
 pattern KAXErrorNotEnoughPrecision = AXError (-25214)
 
+instance ObjCArgument AXError where
+  withObjCArg (AXError x) k = k (argCInt x)
+
+instance ObjCReturn AXError where
+  type RawReturn AXError = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXError x)
+  fromOwned x = pure (AXError x)
+
 -- | AXMenuItemModifiers
 --
 -- Values that indicate the keyboard shortcut modifiers for a menu item (used with the {
@@ -172,6 +235,16 @@ pattern KAXMenuItemModifierControl = AXMenuItemModifiers 4
 pattern KAXMenuItemModifierNoCommand :: AXMenuItemModifiers
 pattern KAXMenuItemModifierNoCommand = AXMenuItemModifiers 8
 
+instance ObjCArgument AXMenuItemModifiers where
+  withObjCArg (AXMenuItemModifiers x) k = k (argCUInt x)
+
+instance ObjCReturn AXMenuItemModifiers where
+  type RawReturn AXMenuItemModifiers = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXMenuItemModifiers x)
+  fromOwned x = pure (AXMenuItemModifiers x)
+
 -- | Priority values used for kAXPriorityKey
 -- | @AXPriority@
 newtype AXPriority = AXPriority CLong
@@ -186,6 +259,16 @@ pattern KAXPriorityMedium = AXPriority 50
 
 pattern KAXPriorityHigh :: AXPriority
 pattern KAXPriorityHigh = AXPriority 90
+
+instance ObjCArgument AXPriority where
+  withObjCArg (AXPriority x) k = k (argCLong x)
+
+instance ObjCReturn AXPriority where
+  type RawReturn AXPriority = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXPriority x)
+  fromOwned x = pure (AXPriority x)
 
 -- | AXUnderlineStyle
 --
@@ -208,6 +291,16 @@ pattern KAXUnderlineStyleThick = AXUnderlineStyle 2
 
 pattern KAXUnderlineStyleDouble :: AXUnderlineStyle
 pattern KAXUnderlineStyleDouble = AXUnderlineStyle 9
+
+instance ObjCArgument AXUnderlineStyle where
+  withObjCArg (AXUnderlineStyle x) k = k (argCUInt x)
+
+instance ObjCReturn AXUnderlineStyle where
+  type RawReturn AXUnderlineStyle = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXUnderlineStyle x)
+  fromOwned x = pure (AXUnderlineStyle x)
 
 -- | AXValueType Wrappers
 --
@@ -247,6 +340,16 @@ pattern KAXValueTypeAXError = AXValueType 5
 pattern KAXValueTypeIllegal :: AXValueType
 pattern KAXValueTypeIllegal = AXValueType 0
 
+instance ObjCArgument AXValueType where
+  withObjCArg (AXValueType x) k = k (argCUInt x)
+
+instance ObjCReturn AXValueType where
+  type RawReturn AXValueType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXValueType x)
+  fromOwned x = pure (AXValueType x)
+
 -- | @CMFloatBitmapFlags@
 newtype CMFloatBitmapFlags = CMFloatBitmapFlags CInt
   deriving stock (Eq, Ord, Show)
@@ -264,6 +367,16 @@ pattern KCMFloatBitmapFlagsAlphaPremul = CMFloatBitmapFlags 2
 pattern KCMFloatBitmapFlagsRangeClipped :: CMFloatBitmapFlags
 pattern KCMFloatBitmapFlagsRangeClipped = CMFloatBitmapFlags 4
 
+instance ObjCArgument CMFloatBitmapFlags where
+  withObjCArg (CMFloatBitmapFlags x) k = k (argCInt x)
+
+instance ObjCReturn CMFloatBitmapFlags where
+  type RawReturn CMFloatBitmapFlags = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMFloatBitmapFlags x)
+  fromOwned x = pure (CMFloatBitmapFlags x)
+
 -- | @PMDataFormat@
 newtype PMDataFormat = PMDataFormat CInt
   deriving stock (Eq, Ord, Show)
@@ -277,6 +390,16 @@ pattern KPMDataFormatXMLMinimal = PMDataFormat 1
 
 pattern KPMDataFormatXMLCompressed :: PMDataFormat
 pattern KPMDataFormatXMLCompressed = PMDataFormat 2
+
+instance ObjCArgument PMDataFormat where
+  withObjCArg (PMDataFormat x) k = k (argCInt x)
+
+instance ObjCReturn PMDataFormat where
+  type RawReturn PMDataFormat = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PMDataFormat x)
+  fromOwned x = pure (PMDataFormat x)
 
 -- | @PasteboardFlavorFlags@ (bitmask)
 newtype PasteboardFlavorFlags = PasteboardFlavorFlags CUInt
@@ -310,6 +433,16 @@ pattern KPasteboardFlavorSystemTranslated = PasteboardFlavorFlags 256
 pattern KPasteboardFlavorPromised :: PasteboardFlavorFlags
 pattern KPasteboardFlavorPromised = PasteboardFlavorFlags 512
 
+instance ObjCArgument PasteboardFlavorFlags where
+  withObjCArg (PasteboardFlavorFlags x) k = k (argCUInt x)
+
+instance ObjCReturn PasteboardFlavorFlags where
+  type RawReturn PasteboardFlavorFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PasteboardFlavorFlags x)
+  fromOwned x = pure (PasteboardFlavorFlags x)
+
 -- | @PasteboardStandardLocation@
 newtype PasteboardStandardLocation = PasteboardStandardLocation CUInt
   deriving stock (Eq, Ord, Show)
@@ -320,6 +453,16 @@ pattern KPasteboardStandardLocationTrash = PasteboardStandardLocation 1953657704
 
 pattern KPasteboardStandardLocationUnknown :: PasteboardStandardLocation
 pattern KPasteboardStandardLocationUnknown = PasteboardStandardLocation 1970170734
+
+instance ObjCArgument PasteboardStandardLocation where
+  withObjCArg (PasteboardStandardLocation x) k = k (argCUInt x)
+
+instance ObjCReturn PasteboardStandardLocation where
+  type RawReturn PasteboardStandardLocation = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PasteboardStandardLocation x)
+  fromOwned x = pure (PasteboardStandardLocation x)
 
 -- | @PasteboardSyncFlags@ (bitmask)
 newtype PasteboardSyncFlags = PasteboardSyncFlags CUInt
@@ -337,3 +480,13 @@ pattern KPasteboardModified = PasteboardSyncFlags 1
 
 pattern KPasteboardClientIsOwner :: PasteboardSyncFlags
 pattern KPasteboardClientIsOwner = PasteboardSyncFlags 2
+
+instance ObjCArgument PasteboardSyncFlags where
+  withObjCArg (PasteboardSyncFlags x) k = k (argCUInt x)
+
+instance ObjCReturn PasteboardSyncFlags where
+  type RawReturn PasteboardSyncFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (PasteboardSyncFlags x)
+  fromOwned x = pure (PasteboardSyncFlags x)

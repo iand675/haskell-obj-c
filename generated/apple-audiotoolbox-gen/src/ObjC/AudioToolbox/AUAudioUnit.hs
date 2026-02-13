@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -135,112 +136,112 @@ module ObjC.AudioToolbox.AUAudioUnit
   , deviceOutputLatency
   , running
   , osWorkgroup
-  , initSelector
-  , initWithComponentDescription_options_errorSelector
-  , initWithComponentDescription_errorSelector
-  , instantiateWithComponentDescription_options_completionHandlerSelector
-  , allocateRenderResourcesAndReturnErrorSelector
-  , deallocateRenderResourcesSelector
-  , resetSelector
-  , tokenByAddingRenderObserverSelector
-  , removeRenderObserverSelector
-  , parametersForOverviewWithCountSelector
-  , saveUserPreset_errorSelector
-  , deleteUserPreset_errorSelector
-  , presetStateFor_errorSelector
-  , profileStateForCable_channelSelector
-  , enableProfile_cable_onChannel_errorSelector
-  , disableProfile_cable_onChannel_errorSelector
-  , messageChannelForSelector
-  , registerSubclass_asComponentDescription_name_versionSelector
-  , shouldChangeToFormat_forBusSelector
-  , setRenderResourcesAllocatedSelector
-  , setDeviceID_errorSelector
-  , startHardwareAndReturnErrorSelector
-  , stopHardwareSelector
-  , componentDescriptionSelector
-  , componentSelector
-  , componentNameSelector
-  , audioUnitNameSelector
-  , manufacturerNameSelector
-  , audioUnitShortNameSelector
-  , componentVersionSelector
-  , renderResourcesAllocatedSelector
-  , inputBussesSelector
-  , outputBussesSelector
-  , renderBlockSelector
-  , scheduleParameterBlockSelector
-  , maximumFramesToRenderSelector
-  , setMaximumFramesToRenderSelector
-  , parameterTreeSelector
-  , setParameterTreeSelector
   , allParameterValuesSelector
-  , musicDeviceOrEffectSelector
-  , virtualMIDICableCountSelector
-  , scheduleMIDIEventBlockSelector
-  , scheduleMIDIEventListBlockSelector
-  , midiOutputNamesSelector
-  , providesUserInterfaceSelector
-  , midiOutputEventBlockSelector
-  , setMIDIOutputEventBlockSelector
-  , midiOutputEventListBlockSelector
-  , setMIDIOutputEventListBlockSelector
+  , allocateRenderResourcesAndReturnErrorSelector
   , audioUnitMIDIProtocolSelector
-  , hostMIDIProtocolSelector
-  , setHostMIDIProtocolSelector
-  , fullStateSelector
-  , setFullStateSelector
-  , fullStateForDocumentSelector
-  , setFullStateForDocumentSelector
-  , factoryPresetsSelector
-  , userPresetsSelector
-  , supportsUserPresetsSelector
-  , isLoadedInProcessSelector
-  , currentPresetSelector
-  , setCurrentPresetSelector
-  , latencySelector
-  , tailTimeSelector
-  , renderQualitySelector
-  , setRenderQualitySelector
-  , shouldBypassEffectSelector
-  , setShouldBypassEffectSelector
-  , canProcessInPlaceSelector
-  , renderingOfflineSelector
-  , setRenderingOfflineSelector
-  , channelCapabilitiesSelector
-  , musicalContextBlockSelector
-  , setMusicalContextBlockSelector
-  , transportStateBlockSelector
-  , setTransportStateBlockSelector
-  , contextNameSelector
-  , setContextNameSelector
-  , migrateFromPluginSelector
-  , supportsMPESelector
-  , channelMapSelector
-  , setChannelMapSelector
-  , profileChangedBlockSelector
-  , setProfileChangedBlockSelector
-  , internalRenderBlockSelector
-  , renderContextObserverSelector
-  , midiOutputBufferSizeHintSelector
-  , setMIDIOutputBufferSizeHintSelector
-  , intendedSpatialExperienceSelector
-  , setIntendedSpatialExperienceSelector
+  , audioUnitNameSelector
+  , audioUnitShortNameSelector
   , canPerformInputSelector
   , canPerformOutputSelector
-  , inputEnabledSelector
-  , setInputEnabledSelector
-  , outputEnabledSelector
-  , setOutputEnabledSelector
-  , outputProviderSelector
-  , setOutputProviderSelector
-  , inputHandlerSelector
-  , setInputHandlerSelector
+  , canProcessInPlaceSelector
+  , channelCapabilitiesSelector
+  , channelMapSelector
+  , componentDescriptionSelector
+  , componentNameSelector
+  , componentSelector
+  , componentVersionSelector
+  , contextNameSelector
+  , currentPresetSelector
+  , deallocateRenderResourcesSelector
+  , deleteUserPreset_errorSelector
   , deviceIDSelector
   , deviceInputLatencySelector
   , deviceOutputLatencySelector
-  , runningSelector
+  , disableProfile_cable_onChannel_errorSelector
+  , enableProfile_cable_onChannel_errorSelector
+  , factoryPresetsSelector
+  , fullStateForDocumentSelector
+  , fullStateSelector
+  , hostMIDIProtocolSelector
+  , initSelector
+  , initWithComponentDescription_errorSelector
+  , initWithComponentDescription_options_errorSelector
+  , inputBussesSelector
+  , inputEnabledSelector
+  , inputHandlerSelector
+  , instantiateWithComponentDescription_options_completionHandlerSelector
+  , intendedSpatialExperienceSelector
+  , internalRenderBlockSelector
+  , isLoadedInProcessSelector
+  , latencySelector
+  , manufacturerNameSelector
+  , maximumFramesToRenderSelector
+  , messageChannelForSelector
+  , midiOutputBufferSizeHintSelector
+  , midiOutputEventBlockSelector
+  , midiOutputEventListBlockSelector
+  , midiOutputNamesSelector
+  , migrateFromPluginSelector
+  , musicDeviceOrEffectSelector
+  , musicalContextBlockSelector
   , osWorkgroupSelector
+  , outputBussesSelector
+  , outputEnabledSelector
+  , outputProviderSelector
+  , parameterTreeSelector
+  , parametersForOverviewWithCountSelector
+  , presetStateFor_errorSelector
+  , profileChangedBlockSelector
+  , profileStateForCable_channelSelector
+  , providesUserInterfaceSelector
+  , registerSubclass_asComponentDescription_name_versionSelector
+  , removeRenderObserverSelector
+  , renderBlockSelector
+  , renderContextObserverSelector
+  , renderQualitySelector
+  , renderResourcesAllocatedSelector
+  , renderingOfflineSelector
+  , resetSelector
+  , runningSelector
+  , saveUserPreset_errorSelector
+  , scheduleMIDIEventBlockSelector
+  , scheduleMIDIEventListBlockSelector
+  , scheduleParameterBlockSelector
+  , setChannelMapSelector
+  , setContextNameSelector
+  , setCurrentPresetSelector
+  , setDeviceID_errorSelector
+  , setFullStateForDocumentSelector
+  , setFullStateSelector
+  , setHostMIDIProtocolSelector
+  , setInputEnabledSelector
+  , setInputHandlerSelector
+  , setIntendedSpatialExperienceSelector
+  , setMIDIOutputBufferSizeHintSelector
+  , setMIDIOutputEventBlockSelector
+  , setMIDIOutputEventListBlockSelector
+  , setMaximumFramesToRenderSelector
+  , setMusicalContextBlockSelector
+  , setOutputEnabledSelector
+  , setOutputProviderSelector
+  , setParameterTreeSelector
+  , setProfileChangedBlockSelector
+  , setRenderQualitySelector
+  , setRenderResourcesAllocatedSelector
+  , setRenderingOfflineSelector
+  , setShouldBypassEffectSelector
+  , setTransportStateBlockSelector
+  , shouldBypassEffectSelector
+  , shouldChangeToFormat_forBusSelector
+  , startHardwareAndReturnErrorSelector
+  , stopHardwareSelector
+  , supportsMPESelector
+  , supportsUserPresetsSelector
+  , tailTimeSelector
+  , tokenByAddingRenderObserverSelector
+  , transportStateBlockSelector
+  , userPresetsSelector
+  , virtualMIDICableCountSelector
 
   -- * Enum types
   , AudioComponentInstantiationOptions(AudioComponentInstantiationOptions)
@@ -253,15 +254,11 @@ module ObjC.AudioToolbox.AUAudioUnit
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -274,8 +271,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUAudioUnit)
-init_ auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ auAudioUnit =
+  sendOwnedMessage auAudioUnit initSelector
 
 -- | initWithComponentDescription:options:error:
 --
@@ -289,9 +286,8 @@ init_ auAudioUnit  =
 --
 -- ObjC selector: @- initWithComponentDescription:options:error:@
 initWithComponentDescription_options_error :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> AudioComponentDescription -> AudioComponentInstantiationOptions -> outError -> IO (Id AUAudioUnit)
-initWithComponentDescription_options_error auAudioUnit  componentDescription options outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg auAudioUnit (mkSelector "initWithComponentDescription:options:error:") (retPtr retVoid) [argAudioComponentDescription componentDescription, argCUInt (coerce options), argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithComponentDescription_options_error auAudioUnit componentDescription options outError =
+  sendOwnedMessage auAudioUnit initWithComponentDescription_options_errorSelector componentDescription options (toNSError outError)
 
 -- | initWithComponentDescription:error:
 --
@@ -299,9 +295,8 @@ initWithComponentDescription_options_error auAudioUnit  componentDescription opt
 --
 -- ObjC selector: @- initWithComponentDescription:error:@
 initWithComponentDescription_error :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> AudioComponentDescription -> outError -> IO (Id AUAudioUnit)
-initWithComponentDescription_error auAudioUnit  componentDescription outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg auAudioUnit (mkSelector "initWithComponentDescription:error:") (retPtr retVoid) [argAudioComponentDescription componentDescription, argPtr (castPtr raw_outError :: Ptr ())] >>= ownedObject . castPtr
+initWithComponentDescription_error auAudioUnit componentDescription outError =
+  sendOwnedMessage auAudioUnit initWithComponentDescription_errorSelector componentDescription (toNSError outError)
 
 -- | instantiateWithComponentDescription:options:completionHandler:
 --
@@ -322,7 +317,7 @@ instantiateWithComponentDescription_options_completionHandler :: AudioComponentD
 instantiateWithComponentDescription_options_completionHandler componentDescription options completionHandler =
   do
     cls' <- getRequiredClass "AUAudioUnit"
-    sendClassMsg cls' (mkSelector "instantiateWithComponentDescription:options:completionHandler:") retVoid [argAudioComponentDescription componentDescription, argCUInt (coerce options), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' instantiateWithComponentDescription_options_completionHandlerSelector componentDescription options completionHandler
 
 -- | allocateRenderResourcesAndReturnError:
 --
@@ -334,9 +329,8 @@ instantiateWithComponentDescription_options_completionHandler componentDescripti
 --
 -- ObjC selector: @- allocateRenderResourcesAndReturnError:@
 allocateRenderResourcesAndReturnError :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> outError -> IO Bool
-allocateRenderResourcesAndReturnError auAudioUnit  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "allocateRenderResourcesAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+allocateRenderResourcesAndReturnError auAudioUnit outError =
+  sendOwnedMessage auAudioUnit allocateRenderResourcesAndReturnErrorSelector (toNSError outError)
 
 -- | deallocateRenderResources
 --
@@ -348,8 +342,8 @@ allocateRenderResourcesAndReturnError auAudioUnit  outError =
 --
 -- ObjC selector: @- deallocateRenderResources@
 deallocateRenderResources :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO ()
-deallocateRenderResources auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "deallocateRenderResources") retVoid []
+deallocateRenderResources auAudioUnit =
+  sendMessage auAudioUnit deallocateRenderResourcesSelector
 
 -- | reset
 --
@@ -361,8 +355,8 @@ deallocateRenderResources auAudioUnit  =
 --
 -- ObjC selector: @- reset@
 reset :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO ()
-reset auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "reset") retVoid []
+reset auAudioUnit =
+  sendMessage auAudioUnit resetSelector
 
 -- | tokenByAddingRenderObserver:
 --
@@ -380,8 +374,8 @@ reset auAudioUnit  =
 --
 -- ObjC selector: @- tokenByAddingRenderObserver:@
 tokenByAddingRenderObserver :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO CLong
-tokenByAddingRenderObserver auAudioUnit  observer =
-    sendMsg auAudioUnit (mkSelector "tokenByAddingRenderObserver:") retCLong [argPtr (castPtr observer :: Ptr ())]
+tokenByAddingRenderObserver auAudioUnit observer =
+  sendMessage auAudioUnit tokenByAddingRenderObserverSelector observer
 
 -- | removeRenderObserver:
 --
@@ -393,8 +387,8 @@ tokenByAddingRenderObserver auAudioUnit  observer =
 --
 -- ObjC selector: @- removeRenderObserver:@
 removeRenderObserver :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CLong -> IO ()
-removeRenderObserver auAudioUnit  token =
-    sendMsg auAudioUnit (mkSelector "removeRenderObserver:") retVoid [argCLong token]
+removeRenderObserver auAudioUnit token =
+  sendMessage auAudioUnit removeRenderObserverSelector token
 
 -- | parametersForOverviewWithCount:
 --
@@ -410,8 +404,8 @@ removeRenderObserver auAudioUnit  token =
 --
 -- ObjC selector: @- parametersForOverviewWithCount:@
 parametersForOverviewWithCount :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CLong -> IO (Id NSArray)
-parametersForOverviewWithCount auAudioUnit  count =
-    sendMsg auAudioUnit (mkSelector "parametersForOverviewWithCount:") (retPtr retVoid) [argCLong count] >>= retainedObject . castPtr
+parametersForOverviewWithCount auAudioUnit count =
+  sendMessage auAudioUnit parametersForOverviewWithCountSelector count
 
 -- | saveUserPreset:error
 --
@@ -433,10 +427,8 @@ parametersForOverviewWithCount auAudioUnit  count =
 --
 -- ObjC selector: @- saveUserPreset:error:@
 saveUserPreset_error :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitPreset userPreset, IsNSError outError) => auAudioUnit -> userPreset -> outError -> IO Bool
-saveUserPreset_error auAudioUnit  userPreset outError =
-  withObjCPtr userPreset $ \raw_userPreset ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "saveUserPreset:error:") retCULong [argPtr (castPtr raw_userPreset :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+saveUserPreset_error auAudioUnit userPreset outError =
+  sendMessage auAudioUnit saveUserPreset_errorSelector (toAUAudioUnitPreset userPreset) (toNSError outError)
 
 -- | deleteUserPreset:error
 --
@@ -456,10 +448,8 @@ saveUserPreset_error auAudioUnit  userPreset outError =
 --
 -- ObjC selector: @- deleteUserPreset:error:@
 deleteUserPreset_error :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitPreset userPreset, IsNSError outError) => auAudioUnit -> userPreset -> outError -> IO Bool
-deleteUserPreset_error auAudioUnit  userPreset outError =
-  withObjCPtr userPreset $ \raw_userPreset ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "deleteUserPreset:error:") retCULong [argPtr (castPtr raw_userPreset :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+deleteUserPreset_error auAudioUnit userPreset outError =
+  sendMessage auAudioUnit deleteUserPreset_errorSelector (toAUAudioUnitPreset userPreset) (toNSError outError)
 
 -- | presetStateFor:error
 --
@@ -481,10 +471,8 @@ deleteUserPreset_error auAudioUnit  userPreset outError =
 --
 -- ObjC selector: @- presetStateFor:error:@
 presetStateFor_error :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitPreset userPreset, IsNSError outError) => auAudioUnit -> userPreset -> outError -> IO (Id NSDictionary)
-presetStateFor_error auAudioUnit  userPreset outError =
-  withObjCPtr userPreset $ \raw_userPreset ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg auAudioUnit (mkSelector "presetStateFor:error:") (retPtr retVoid) [argPtr (castPtr raw_userPreset :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+presetStateFor_error auAudioUnit userPreset outError =
+  sendMessage auAudioUnit presetStateFor_errorSelector (toAUAudioUnitPreset userPreset) (toNSError outError)
 
 -- | profileStateForCable:channel:
 --
@@ -498,8 +486,8 @@ presetStateFor_error auAudioUnit  userPreset outError =
 --
 -- ObjC selector: @- profileStateForCable:channel:@
 profileStateForCable_channel :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CUChar -> CUChar -> IO (Id MIDICIProfileState)
-profileStateForCable_channel auAudioUnit  cable channel =
-    sendMsg auAudioUnit (mkSelector "profileStateForCable:channel:") (retPtr retVoid) [argCUChar cable, argCUChar channel] >>= retainedObject . castPtr
+profileStateForCable_channel auAudioUnit cable channel =
+  sendMessage auAudioUnit profileStateForCable_channelSelector cable channel
 
 -- | enableProfile:cable:onChannel:error:
 --
@@ -517,10 +505,8 @@ profileStateForCable_channel auAudioUnit  cable channel =
 --
 -- ObjC selector: @- enableProfile:cable:onChannel:error:@
 enableProfile_cable_onChannel_error :: (IsAUAudioUnit auAudioUnit, IsMIDICIProfile profile, IsNSError outError) => auAudioUnit -> profile -> CUChar -> CUChar -> outError -> IO Bool
-enableProfile_cable_onChannel_error auAudioUnit  profile cable channel outError =
-  withObjCPtr profile $ \raw_profile ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "enableProfile:cable:onChannel:error:") retCULong [argPtr (castPtr raw_profile :: Ptr ()), argCUChar cable, argCUChar channel, argPtr (castPtr raw_outError :: Ptr ())]
+enableProfile_cable_onChannel_error auAudioUnit profile cable channel outError =
+  sendMessage auAudioUnit enableProfile_cable_onChannel_errorSelector (toMIDICIProfile profile) cable channel (toNSError outError)
 
 -- | disableProfile:cable:onChannel:error:
 --
@@ -538,10 +524,8 @@ enableProfile_cable_onChannel_error auAudioUnit  profile cable channel outError 
 --
 -- ObjC selector: @- disableProfile:cable:onChannel:error:@
 disableProfile_cable_onChannel_error :: (IsAUAudioUnit auAudioUnit, IsMIDICIProfile profile, IsNSError outError) => auAudioUnit -> profile -> CUChar -> CUChar -> outError -> IO Bool
-disableProfile_cable_onChannel_error auAudioUnit  profile cable channel outError =
-  withObjCPtr profile $ \raw_profile ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "disableProfile:cable:onChannel:error:") retCULong [argPtr (castPtr raw_profile :: Ptr ()), argCUChar cable, argCUChar channel, argPtr (castPtr raw_outError :: Ptr ())]
+disableProfile_cable_onChannel_error auAudioUnit profile cable channel outError =
+  sendMessage auAudioUnit disableProfile_cable_onChannel_errorSelector (toMIDICIProfile profile) cable channel (toNSError outError)
 
 -- | messageChannelFor:
 --
@@ -555,9 +539,8 @@ disableProfile_cable_onChannel_error auAudioUnit  profile cable channel outError
 --
 -- ObjC selector: @- messageChannelFor:@
 messageChannelFor :: (IsAUAudioUnit auAudioUnit, IsNSString channelName) => auAudioUnit -> channelName -> IO RawId
-messageChannelFor auAudioUnit  channelName =
-  withObjCPtr channelName $ \raw_channelName ->
-      fmap (RawId . castPtr) $ sendMsg auAudioUnit (mkSelector "messageChannelFor:") (retPtr retVoid) [argPtr (castPtr raw_channelName :: Ptr ())]
+messageChannelFor auAudioUnit channelName =
+  sendMessage auAudioUnit messageChannelForSelector (toNSString channelName)
 
 -- | Register an audio unit component implemented as an AUAudioUnit subclass.
 --
@@ -568,8 +551,7 @@ registerSubclass_asComponentDescription_name_version :: IsNSString name => Class
 registerSubclass_asComponentDescription_name_version cls componentDescription name version =
   do
     cls' <- getRequiredClass "AUAudioUnit"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "registerSubclass:asComponentDescription:name:version:") retVoid [argPtr (unClass cls), argAudioComponentDescription componentDescription, argPtr (castPtr raw_name :: Ptr ()), argCUInt version]
+    sendClassMessage cls' registerSubclass_asComponentDescription_name_versionSelector cls componentDescription (toNSString name) version
 
 -- | shouldChangeToFormat:forBus:
 --
@@ -581,9 +563,8 @@ registerSubclass_asComponentDescription_name_version cls componentDescription na
 --
 -- ObjC selector: @- shouldChangeToFormat:forBus:@
 shouldChangeToFormat_forBus :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitBus bus) => auAudioUnit -> RawId -> bus -> IO Bool
-shouldChangeToFormat_forBus auAudioUnit  format bus =
-  withObjCPtr bus $ \raw_bus ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "shouldChangeToFormat:forBus:") retCULong [argPtr (castPtr (unRawId format) :: Ptr ()), argPtr (castPtr raw_bus :: Ptr ())]
+shouldChangeToFormat_forBus auAudioUnit format bus =
+  sendMessage auAudioUnit shouldChangeToFormat_forBusSelector format (toAUAudioUnitBus bus)
 
 -- | setRenderResourcesAllocated:
 --
@@ -591,8 +572,8 @@ shouldChangeToFormat_forBus auAudioUnit  format bus =
 --
 -- ObjC selector: @- setRenderResourcesAllocated:@
 setRenderResourcesAllocated :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
-setRenderResourcesAllocated auAudioUnit  flag =
-    sendMsg auAudioUnit (mkSelector "setRenderResourcesAllocated:") retVoid [argCULong (if flag then 1 else 0)]
+setRenderResourcesAllocated auAudioUnit flag =
+  sendMessage auAudioUnit setRenderResourcesAllocatedSelector flag
 
 -- | setDeviceID:error:
 --
@@ -604,9 +585,8 @@ setRenderResourcesAllocated auAudioUnit  flag =
 --
 -- ObjC selector: @- setDeviceID:error:@
 setDeviceID_error :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> CUInt -> outError -> IO Bool
-setDeviceID_error auAudioUnit  deviceID outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "setDeviceID:error:") retCULong [argCUInt deviceID, argPtr (castPtr raw_outError :: Ptr ())]
+setDeviceID_error auAudioUnit deviceID outError =
+  sendMessage auAudioUnit setDeviceID_errorSelector deviceID (toNSError outError)
 
 -- | startHardwareAndReturnError:
 --
@@ -616,9 +596,8 @@ setDeviceID_error auAudioUnit  deviceID outError =
 --
 -- ObjC selector: @- startHardwareAndReturnError:@
 startHardwareAndReturnError :: (IsAUAudioUnit auAudioUnit, IsNSError outError) => auAudioUnit -> outError -> IO Bool
-startHardwareAndReturnError auAudioUnit  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "startHardwareAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+startHardwareAndReturnError auAudioUnit outError =
+  sendMessage auAudioUnit startHardwareAndReturnErrorSelector (toNSError outError)
 
 -- | stopHardware
 --
@@ -626,8 +605,8 @@ startHardwareAndReturnError auAudioUnit  outError =
 --
 -- ObjC selector: @- stopHardware@
 stopHardware :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO ()
-stopHardware auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "stopHardware") retVoid []
+stopHardware auAudioUnit =
+  sendMessage auAudioUnit stopHardwareSelector
 
 -- | componentDescription
 --
@@ -635,8 +614,8 @@ stopHardware auAudioUnit  =
 --
 -- ObjC selector: @- componentDescription@
 componentDescription :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO AudioComponentDescription
-componentDescription auAudioUnit  =
-    sendMsgStret auAudioUnit (mkSelector "componentDescription") retAudioComponentDescription []
+componentDescription auAudioUnit =
+  sendMessage auAudioUnit componentDescriptionSelector
 
 -- | component
 --
@@ -644,8 +623,8 @@ componentDescription auAudioUnit  =
 --
 -- ObjC selector: @- component@
 component :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-component auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "component") (retPtr retVoid) []
+component auAudioUnit =
+  sendMessage auAudioUnit componentSelector
 
 -- | componentName
 --
@@ -655,8 +634,8 @@ component auAudioUnit  =
 --
 -- ObjC selector: @- componentName@
 componentName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
-componentName auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "componentName") (retPtr retVoid) [] >>= retainedObject . castPtr
+componentName auAudioUnit =
+  sendMessage auAudioUnit componentNameSelector
 
 -- | audioUnitName
 --
@@ -664,8 +643,8 @@ componentName auAudioUnit  =
 --
 -- ObjC selector: @- audioUnitName@
 audioUnitName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
-audioUnitName auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "audioUnitName") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioUnitName auAudioUnit =
+  sendMessage auAudioUnit audioUnitNameSelector
 
 -- | manufacturerName
 --
@@ -673,8 +652,8 @@ audioUnitName auAudioUnit  =
 --
 -- ObjC selector: @- manufacturerName@
 manufacturerName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
-manufacturerName auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "manufacturerName") (retPtr retVoid) [] >>= retainedObject . castPtr
+manufacturerName auAudioUnit =
+  sendMessage auAudioUnit manufacturerNameSelector
 
 -- | audioUnitShortName
 --
@@ -684,8 +663,8 @@ manufacturerName auAudioUnit  =
 --
 -- ObjC selector: @- audioUnitShortName@
 audioUnitShortName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
-audioUnitShortName auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "audioUnitShortName") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioUnitShortName auAudioUnit =
+  sendMessage auAudioUnit audioUnitShortNameSelector
 
 -- | componentVersion
 --
@@ -693,8 +672,8 @@ audioUnitShortName auAudioUnit  =
 --
 -- ObjC selector: @- componentVersion@
 componentVersion :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CUInt
-componentVersion auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "componentVersion") retCUInt []
+componentVersion auAudioUnit =
+  sendMessage auAudioUnit componentVersionSelector
 
 -- | renderResourcesAllocated
 --
@@ -702,8 +681,8 @@ componentVersion auAudioUnit  =
 --
 -- ObjC selector: @- renderResourcesAllocated@
 renderResourcesAllocated :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-renderResourcesAllocated auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "renderResourcesAllocated") retCULong []
+renderResourcesAllocated auAudioUnit =
+  sendMessage auAudioUnit renderResourcesAllocatedSelector
 
 -- | inputBusses
 --
@@ -713,8 +692,8 @@ renderResourcesAllocated auAudioUnit  =
 --
 -- ObjC selector: @- inputBusses@
 inputBusses :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUAudioUnitBusArray)
-inputBusses auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "inputBusses") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputBusses auAudioUnit =
+  sendMessage auAudioUnit inputBussesSelector
 
 -- | outputBusses
 --
@@ -724,8 +703,8 @@ inputBusses auAudioUnit  =
 --
 -- ObjC selector: @- outputBusses@
 outputBusses :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUAudioUnitBusArray)
-outputBusses auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "outputBusses") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputBusses auAudioUnit =
+  sendMessage auAudioUnit outputBussesSelector
 
 -- | renderBlock
 --
@@ -741,8 +720,8 @@ outputBusses auAudioUnit  =
 --
 -- ObjC selector: @- renderBlock@
 renderBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-renderBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "renderBlock") (retPtr retVoid) []
+renderBlock auAudioUnit =
+  sendMessage auAudioUnit renderBlockSelector
 
 -- | scheduleParameterBlock
 --
@@ -758,8 +737,8 @@ renderBlock auAudioUnit  =
 --
 -- ObjC selector: @- scheduleParameterBlock@
 scheduleParameterBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-scheduleParameterBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "scheduleParameterBlock") (retPtr retVoid) []
+scheduleParameterBlock auAudioUnit =
+  sendMessage auAudioUnit scheduleParameterBlockSelector
 
 -- | maximumFramesToRender
 --
@@ -771,8 +750,8 @@ scheduleParameterBlock auAudioUnit  =
 --
 -- ObjC selector: @- maximumFramesToRender@
 maximumFramesToRender :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CUInt
-maximumFramesToRender auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "maximumFramesToRender") retCUInt []
+maximumFramesToRender auAudioUnit =
+  sendMessage auAudioUnit maximumFramesToRenderSelector
 
 -- | maximumFramesToRender
 --
@@ -784,8 +763,8 @@ maximumFramesToRender auAudioUnit  =
 --
 -- ObjC selector: @- setMaximumFramesToRender:@
 setMaximumFramesToRender :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CUInt -> IO ()
-setMaximumFramesToRender auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setMaximumFramesToRender:") retVoid [argCUInt value]
+setMaximumFramesToRender auAudioUnit value =
+  sendMessage auAudioUnit setMaximumFramesToRenderSelector value
 
 -- | parameterTree
 --
@@ -807,8 +786,8 @@ setMaximumFramesToRender auAudioUnit  value =
 --
 -- ObjC selector: @- parameterTree@
 parameterTree :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUParameterTree)
-parameterTree auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "parameterTree") (retPtr retVoid) [] >>= retainedObject . castPtr
+parameterTree auAudioUnit =
+  sendMessage auAudioUnit parameterTreeSelector
 
 -- | parameterTree
 --
@@ -830,14 +809,13 @@ parameterTree auAudioUnit  =
 --
 -- ObjC selector: @- setParameterTree:@
 setParameterTree :: (IsAUAudioUnit auAudioUnit, IsAUParameterTree value) => auAudioUnit -> value -> IO ()
-setParameterTree auAudioUnit  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg auAudioUnit (mkSelector "setParameterTree:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setParameterTree auAudioUnit value =
+  sendMessage auAudioUnit setParameterTreeSelector (toAUParameterTree value)
 
 -- | @- allParameterValues@
 allParameterValues :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-allParameterValues auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "allParameterValues") retCULong []
+allParameterValues auAudioUnit =
+  sendMessage auAudioUnit allParameterValuesSelector
 
 -- | musicDeviceOrEffect
 --
@@ -847,8 +825,8 @@ allParameterValues auAudioUnit  =
 --
 -- ObjC selector: @- musicDeviceOrEffect@
 musicDeviceOrEffect :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-musicDeviceOrEffect auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "musicDeviceOrEffect") retCULong []
+musicDeviceOrEffect auAudioUnit =
+  sendMessage auAudioUnit musicDeviceOrEffectSelector
 
 -- | virtualMIDICableCount
 --
@@ -858,8 +836,8 @@ musicDeviceOrEffect auAudioUnit  =
 --
 -- ObjC selector: @- virtualMIDICableCount@
 virtualMIDICableCount :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CLong
-virtualMIDICableCount auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "virtualMIDICableCount") retCLong []
+virtualMIDICableCount auAudioUnit =
+  sendMessage auAudioUnit virtualMIDICableCountSelector
 
 -- | scheduleMIDIEventBlock
 --
@@ -877,8 +855,8 @@ virtualMIDICableCount auAudioUnit  =
 --
 -- ObjC selector: @- scheduleMIDIEventBlock@
 scheduleMIDIEventBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-scheduleMIDIEventBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "scheduleMIDIEventBlock") (retPtr retVoid) []
+scheduleMIDIEventBlock auAudioUnit =
+  sendMessage auAudioUnit scheduleMIDIEventBlockSelector
 
 -- | scheduleMIDIEventListBlock
 --
@@ -900,8 +878,8 @@ scheduleMIDIEventBlock auAudioUnit  =
 --
 -- ObjC selector: @- scheduleMIDIEventListBlock@
 scheduleMIDIEventListBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-scheduleMIDIEventListBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "scheduleMIDIEventListBlock") (retPtr retVoid) []
+scheduleMIDIEventListBlock auAudioUnit =
+  sendMessage auAudioUnit scheduleMIDIEventListBlockSelector
 
 -- | MIDIOutputNames
 --
@@ -913,8 +891,8 @@ scheduleMIDIEventListBlock auAudioUnit  =
 --
 -- ObjC selector: @- MIDIOutputNames@
 midiOutputNames :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
-midiOutputNames auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "MIDIOutputNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+midiOutputNames auAudioUnit =
+  sendMessage auAudioUnit midiOutputNamesSelector
 
 -- | providesUserInterface
 --
@@ -924,8 +902,8 @@ midiOutputNames auAudioUnit  =
 --
 -- ObjC selector: @- providesUserInterface@
 providesUserInterface :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-providesUserInterface auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "providesUserInterface") retCULong []
+providesUserInterface auAudioUnit =
+  sendMessage auAudioUnit providesUserInterfaceSelector
 
 -- | MIDIOutputEventBlock
 --
@@ -941,8 +919,8 @@ providesUserInterface auAudioUnit  =
 --
 -- ObjC selector: @- MIDIOutputEventBlock@
 midiOutputEventBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-midiOutputEventBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "MIDIOutputEventBlock") (retPtr retVoid) []
+midiOutputEventBlock auAudioUnit =
+  sendMessage auAudioUnit midiOutputEventBlockSelector
 
 -- | MIDIOutputEventBlock
 --
@@ -958,8 +936,8 @@ midiOutputEventBlock auAudioUnit  =
 --
 -- ObjC selector: @- setMIDIOutputEventBlock:@
 setMIDIOutputEventBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
-setMIDIOutputEventBlock auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setMIDIOutputEventBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setMIDIOutputEventBlock auAudioUnit value =
+  sendMessage auAudioUnit setMIDIOutputEventBlockSelector value
 
 -- | MIDIOutputEventListBlock
 --
@@ -977,8 +955,8 @@ setMIDIOutputEventBlock auAudioUnit  value =
 --
 -- ObjC selector: @- MIDIOutputEventListBlock@
 midiOutputEventListBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-midiOutputEventListBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "MIDIOutputEventListBlock") (retPtr retVoid) []
+midiOutputEventListBlock auAudioUnit =
+  sendMessage auAudioUnit midiOutputEventListBlockSelector
 
 -- | MIDIOutputEventListBlock
 --
@@ -996,8 +974,8 @@ midiOutputEventListBlock auAudioUnit  =
 --
 -- ObjC selector: @- setMIDIOutputEventListBlock:@
 setMIDIOutputEventListBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
-setMIDIOutputEventListBlock auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setMIDIOutputEventListBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setMIDIOutputEventListBlock auAudioUnit value =
+  sendMessage auAudioUnit setMIDIOutputEventListBlockSelector value
 
 -- | AudioUnitMIDIProtocol
 --
@@ -1011,8 +989,8 @@ setMIDIOutputEventListBlock auAudioUnit  value =
 --
 -- ObjC selector: @- AudioUnitMIDIProtocol@
 audioUnitMIDIProtocol :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO MIDIProtocolID
-audioUnitMIDIProtocol auAudioUnit  =
-    fmap (coerce :: CInt -> MIDIProtocolID) $ sendMsg auAudioUnit (mkSelector "AudioUnitMIDIProtocol") retCInt []
+audioUnitMIDIProtocol auAudioUnit =
+  sendMessage auAudioUnit audioUnitMIDIProtocolSelector
 
 -- | hostMIDIProtocol
 --
@@ -1028,8 +1006,8 @@ audioUnitMIDIProtocol auAudioUnit  =
 --
 -- ObjC selector: @- hostMIDIProtocol@
 hostMIDIProtocol :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO MIDIProtocolID
-hostMIDIProtocol auAudioUnit  =
-    fmap (coerce :: CInt -> MIDIProtocolID) $ sendMsg auAudioUnit (mkSelector "hostMIDIProtocol") retCInt []
+hostMIDIProtocol auAudioUnit =
+  sendMessage auAudioUnit hostMIDIProtocolSelector
 
 -- | hostMIDIProtocol
 --
@@ -1045,8 +1023,8 @@ hostMIDIProtocol auAudioUnit  =
 --
 -- ObjC selector: @- setHostMIDIProtocol:@
 setHostMIDIProtocol :: IsAUAudioUnit auAudioUnit => auAudioUnit -> MIDIProtocolID -> IO ()
-setHostMIDIProtocol auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setHostMIDIProtocol:") retVoid [argCInt (coerce value)]
+setHostMIDIProtocol auAudioUnit value =
+  sendMessage auAudioUnit setHostMIDIProtocolSelector value
 
 -- | fullState
 --
@@ -1060,8 +1038,8 @@ setHostMIDIProtocol auAudioUnit  value =
 --
 -- ObjC selector: @- fullState@
 fullState :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSDictionary)
-fullState auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "fullState") (retPtr retVoid) [] >>= retainedObject . castPtr
+fullState auAudioUnit =
+  sendMessage auAudioUnit fullStateSelector
 
 -- | fullState
 --
@@ -1075,9 +1053,8 @@ fullState auAudioUnit  =
 --
 -- ObjC selector: @- setFullState:@
 setFullState :: (IsAUAudioUnit auAudioUnit, IsNSDictionary value) => auAudioUnit -> value -> IO ()
-setFullState auAudioUnit  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg auAudioUnit (mkSelector "setFullState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFullState auAudioUnit value =
+  sendMessage auAudioUnit setFullStateSelector (toNSDictionary value)
 
 -- | fullStateForDocument
 --
@@ -1091,8 +1068,8 @@ setFullState auAudioUnit  value =
 --
 -- ObjC selector: @- fullStateForDocument@
 fullStateForDocument :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSDictionary)
-fullStateForDocument auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "fullStateForDocument") (retPtr retVoid) [] >>= retainedObject . castPtr
+fullStateForDocument auAudioUnit =
+  sendMessage auAudioUnit fullStateForDocumentSelector
 
 -- | fullStateForDocument
 --
@@ -1106,9 +1083,8 @@ fullStateForDocument auAudioUnit  =
 --
 -- ObjC selector: @- setFullStateForDocument:@
 setFullStateForDocument :: (IsAUAudioUnit auAudioUnit, IsNSDictionary value) => auAudioUnit -> value -> IO ()
-setFullStateForDocument auAudioUnit  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg auAudioUnit (mkSelector "setFullStateForDocument:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFullStateForDocument auAudioUnit value =
+  sendMessage auAudioUnit setFullStateForDocumentSelector (toNSDictionary value)
 
 -- | factoryPresets
 --
@@ -1120,8 +1096,8 @@ setFullStateForDocument auAudioUnit  value =
 --
 -- ObjC selector: @- factoryPresets@
 factoryPresets :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
-factoryPresets auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "factoryPresets") (retPtr retVoid) [] >>= retainedObject . castPtr
+factoryPresets auAudioUnit =
+  sendMessage auAudioUnit factoryPresetsSelector
 
 -- | userPresets
 --
@@ -1135,8 +1111,8 @@ factoryPresets auAudioUnit  =
 --
 -- ObjC selector: @- userPresets@
 userPresets :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
-userPresets auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "userPresets") (retPtr retVoid) [] >>= retainedObject . castPtr
+userPresets auAudioUnit =
+  sendMessage auAudioUnit userPresetsSelector
 
 -- | supportsUserPresets
 --
@@ -1150,8 +1126,8 @@ userPresets auAudioUnit  =
 --
 -- ObjC selector: @- supportsUserPresets@
 supportsUserPresets :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-supportsUserPresets auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "supportsUserPresets") retCULong []
+supportsUserPresets auAudioUnit =
+  sendMessage auAudioUnit supportsUserPresetsSelector
 
 -- | isLoadedInProcess
 --
@@ -1165,8 +1141,8 @@ supportsUserPresets auAudioUnit  =
 --
 -- ObjC selector: @- isLoadedInProcess@
 isLoadedInProcess :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-isLoadedInProcess auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "isLoadedInProcess") retCULong []
+isLoadedInProcess auAudioUnit =
+  sendMessage auAudioUnit isLoadedInProcessSelector
 
 -- | currentPreset
 --
@@ -1178,8 +1154,8 @@ isLoadedInProcess auAudioUnit  =
 --
 -- ObjC selector: @- currentPreset@
 currentPreset :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id AUAudioUnitPreset)
-currentPreset auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "currentPreset") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentPreset auAudioUnit =
+  sendMessage auAudioUnit currentPresetSelector
 
 -- | currentPreset
 --
@@ -1191,9 +1167,8 @@ currentPreset auAudioUnit  =
 --
 -- ObjC selector: @- setCurrentPreset:@
 setCurrentPreset :: (IsAUAudioUnit auAudioUnit, IsAUAudioUnitPreset value) => auAudioUnit -> value -> IO ()
-setCurrentPreset auAudioUnit  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg auAudioUnit (mkSelector "setCurrentPreset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentPreset auAudioUnit value =
+  sendMessage auAudioUnit setCurrentPresetSelector (toAUAudioUnitPreset value)
 
 -- | latency
 --
@@ -1207,8 +1182,8 @@ setCurrentPreset auAudioUnit  value =
 --
 -- ObjC selector: @- latency@
 latency :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CDouble
-latency auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "latency") retCDouble []
+latency auAudioUnit =
+  sendMessage auAudioUnit latencySelector
 
 -- | tailTime
 --
@@ -1220,8 +1195,8 @@ latency auAudioUnit  =
 --
 -- ObjC selector: @- tailTime@
 tailTime :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CDouble
-tailTime auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "tailTime") retCDouble []
+tailTime auAudioUnit =
+  sendMessage auAudioUnit tailTimeSelector
 
 -- | renderQuality
 --
@@ -1233,8 +1208,8 @@ tailTime auAudioUnit  =
 --
 -- ObjC selector: @- renderQuality@
 renderQuality :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CLong
-renderQuality auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "renderQuality") retCLong []
+renderQuality auAudioUnit =
+  sendMessage auAudioUnit renderQualitySelector
 
 -- | renderQuality
 --
@@ -1246,8 +1221,8 @@ renderQuality auAudioUnit  =
 --
 -- ObjC selector: @- setRenderQuality:@
 setRenderQuality :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CLong -> IO ()
-setRenderQuality auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setRenderQuality:") retVoid [argCLong value]
+setRenderQuality auAudioUnit value =
+  sendMessage auAudioUnit setRenderQualitySelector value
 
 -- | shouldBypassEffect
 --
@@ -1257,8 +1232,8 @@ setRenderQuality auAudioUnit  value =
 --
 -- ObjC selector: @- shouldBypassEffect@
 shouldBypassEffect :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-shouldBypassEffect auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "shouldBypassEffect") retCULong []
+shouldBypassEffect auAudioUnit =
+  sendMessage auAudioUnit shouldBypassEffectSelector
 
 -- | shouldBypassEffect
 --
@@ -1268,8 +1243,8 @@ shouldBypassEffect auAudioUnit  =
 --
 -- ObjC selector: @- setShouldBypassEffect:@
 setShouldBypassEffect :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
-setShouldBypassEffect auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setShouldBypassEffect:") retVoid [argCULong (if value then 1 else 0)]
+setShouldBypassEffect auAudioUnit value =
+  sendMessage auAudioUnit setShouldBypassEffectSelector value
 
 -- | canProcessInPlace
 --
@@ -1285,8 +1260,8 @@ setShouldBypassEffect auAudioUnit  value =
 --
 -- ObjC selector: @- canProcessInPlace@
 canProcessInPlace :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-canProcessInPlace auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "canProcessInPlace") retCULong []
+canProcessInPlace auAudioUnit =
+  sendMessage auAudioUnit canProcessInPlaceSelector
 
 -- | renderingOffline
 --
@@ -1298,8 +1273,8 @@ canProcessInPlace auAudioUnit  =
 --
 -- ObjC selector: @- renderingOffline@
 renderingOffline :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-renderingOffline auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "renderingOffline") retCULong []
+renderingOffline auAudioUnit =
+  sendMessage auAudioUnit renderingOfflineSelector
 
 -- | renderingOffline
 --
@@ -1311,8 +1286,8 @@ renderingOffline auAudioUnit  =
 --
 -- ObjC selector: @- setRenderingOffline:@
 setRenderingOffline :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
-setRenderingOffline auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setRenderingOffline:") retVoid [argCULong (if value then 1 else 0)]
+setRenderingOffline auAudioUnit value =
+  sendMessage auAudioUnit setRenderingOfflineSelector value
 
 -- | channelCapabilities
 --
@@ -1332,8 +1307,8 @@ setRenderingOffline auAudioUnit  value =
 --
 -- ObjC selector: @- channelCapabilities@
 channelCapabilities :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
-channelCapabilities auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "channelCapabilities") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelCapabilities auAudioUnit =
+  sendMessage auAudioUnit channelCapabilitiesSelector
 
 -- | musicalContextBlock
 --
@@ -1345,8 +1320,8 @@ channelCapabilities auAudioUnit  =
 --
 -- ObjC selector: @- musicalContextBlock@
 musicalContextBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-musicalContextBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "musicalContextBlock") (retPtr retVoid) []
+musicalContextBlock auAudioUnit =
+  sendMessage auAudioUnit musicalContextBlockSelector
 
 -- | musicalContextBlock
 --
@@ -1358,8 +1333,8 @@ musicalContextBlock auAudioUnit  =
 --
 -- ObjC selector: @- setMusicalContextBlock:@
 setMusicalContextBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
-setMusicalContextBlock auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setMusicalContextBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setMusicalContextBlock auAudioUnit value =
+  sendMessage auAudioUnit setMusicalContextBlockSelector value
 
 -- | transportStateBlock
 --
@@ -1371,8 +1346,8 @@ setMusicalContextBlock auAudioUnit  value =
 --
 -- ObjC selector: @- transportStateBlock@
 transportStateBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-transportStateBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "transportStateBlock") (retPtr retVoid) []
+transportStateBlock auAudioUnit =
+  sendMessage auAudioUnit transportStateBlockSelector
 
 -- | transportStateBlock
 --
@@ -1384,8 +1359,8 @@ transportStateBlock auAudioUnit  =
 --
 -- ObjC selector: @- setTransportStateBlock:@
 setTransportStateBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
-setTransportStateBlock auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setTransportStateBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setTransportStateBlock auAudioUnit value =
+  sendMessage auAudioUnit setTransportStateBlockSelector value
 
 -- | contextName
 --
@@ -1397,8 +1372,8 @@ setTransportStateBlock auAudioUnit  value =
 --
 -- ObjC selector: @- contextName@
 contextName :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSString)
-contextName auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "contextName") (retPtr retVoid) [] >>= retainedObject . castPtr
+contextName auAudioUnit =
+  sendMessage auAudioUnit contextNameSelector
 
 -- | contextName
 --
@@ -1410,9 +1385,8 @@ contextName auAudioUnit  =
 --
 -- ObjC selector: @- setContextName:@
 setContextName :: (IsAUAudioUnit auAudioUnit, IsNSString value) => auAudioUnit -> value -> IO ()
-setContextName auAudioUnit  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg auAudioUnit (mkSelector "setContextName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContextName auAudioUnit value =
+  sendMessage auAudioUnit setContextNameSelector (toNSString value)
 
 -- | migrateFromPlugin
 --
@@ -1424,8 +1398,8 @@ setContextName auAudioUnit  value =
 --
 -- ObjC selector: @- migrateFromPlugin@
 migrateFromPlugin :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
-migrateFromPlugin auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "migrateFromPlugin") (retPtr retVoid) [] >>= retainedObject . castPtr
+migrateFromPlugin auAudioUnit =
+  sendMessage auAudioUnit migrateFromPluginSelector
 
 -- | supportsMPE
 --
@@ -1435,8 +1409,8 @@ migrateFromPlugin auAudioUnit  =
 --
 -- ObjC selector: @- supportsMPE@
 supportsMPE :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-supportsMPE auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "supportsMPE") retCULong []
+supportsMPE auAudioUnit =
+  sendMessage auAudioUnit supportsMPESelector
 
 -- | channelMap
 --
@@ -1450,8 +1424,8 @@ supportsMPE auAudioUnit  =
 --
 -- ObjC selector: @- channelMap@
 channelMap :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id NSArray)
-channelMap auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "channelMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelMap auAudioUnit =
+  sendMessage auAudioUnit channelMapSelector
 
 -- | channelMap
 --
@@ -1465,9 +1439,8 @@ channelMap auAudioUnit  =
 --
 -- ObjC selector: @- setChannelMap:@
 setChannelMap :: (IsAUAudioUnit auAudioUnit, IsNSArray value) => auAudioUnit -> value -> IO ()
-setChannelMap auAudioUnit  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg auAudioUnit (mkSelector "setChannelMap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannelMap auAudioUnit value =
+  sendMessage auAudioUnit setChannelMapSelector (toNSArray value)
 
 -- | profileChangedBlock
 --
@@ -1477,8 +1450,8 @@ setChannelMap auAudioUnit  value =
 --
 -- ObjC selector: @- profileChangedBlock@
 profileChangedBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-profileChangedBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "profileChangedBlock") (retPtr retVoid) []
+profileChangedBlock auAudioUnit =
+  sendMessage auAudioUnit profileChangedBlockSelector
 
 -- | profileChangedBlock
 --
@@ -1488,15 +1461,15 @@ profileChangedBlock auAudioUnit  =
 --
 -- ObjC selector: @- setProfileChangedBlock:@
 setProfileChangedBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
-setProfileChangedBlock auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setProfileChangedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setProfileChangedBlock auAudioUnit value =
+  sendMessage auAudioUnit setProfileChangedBlockSelector value
 
 -- | Block which subclassers must provide (via a getter) to implement rendering.
 --
 -- ObjC selector: @- internalRenderBlock@
 internalRenderBlock :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-internalRenderBlock auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "internalRenderBlock") (retPtr retVoid) []
+internalRenderBlock auAudioUnit =
+  sendMessage auAudioUnit internalRenderBlockSelector
 
 -- | renderContextObserver
 --
@@ -1506,8 +1479,8 @@ internalRenderBlock auAudioUnit  =
 --
 -- ObjC selector: @- renderContextObserver@
 renderContextObserver :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-renderContextObserver auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "renderContextObserver") (retPtr retVoid) []
+renderContextObserver auAudioUnit =
+  sendMessage auAudioUnit renderContextObserverSelector
 
 -- | MIDIOutputBufferSizeHint
 --
@@ -1529,8 +1502,8 @@ renderContextObserver auAudioUnit  =
 --
 -- ObjC selector: @- MIDIOutputBufferSizeHint@
 midiOutputBufferSizeHint :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CLong
-midiOutputBufferSizeHint auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "MIDIOutputBufferSizeHint") retCLong []
+midiOutputBufferSizeHint auAudioUnit =
+  sendMessage auAudioUnit midiOutputBufferSizeHintSelector
 
 -- | MIDIOutputBufferSizeHint
 --
@@ -1552,8 +1525,8 @@ midiOutputBufferSizeHint auAudioUnit  =
 --
 -- ObjC selector: @- setMIDIOutputBufferSizeHint:@
 setMIDIOutputBufferSizeHint :: IsAUAudioUnit auAudioUnit => auAudioUnit -> CLong -> IO ()
-setMIDIOutputBufferSizeHint auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setMIDIOutputBufferSizeHint:") retVoid [argCLong value]
+setMIDIOutputBufferSizeHint auAudioUnit value =
+  sendMessage auAudioUnit setMIDIOutputBufferSizeHintSelector value
 
 -- | The AUAudioUnit's intended spatial experience.
 --
@@ -1561,8 +1534,8 @@ setMIDIOutputBufferSizeHint auAudioUnit  value =
 --
 -- ObjC selector: @- intendedSpatialExperience@
 intendedSpatialExperience :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO RawId
-intendedSpatialExperience auAudioUnit  =
-    fmap (RawId . castPtr) $ sendMsg auAudioUnit (mkSelector "intendedSpatialExperience") (retPtr retVoid) []
+intendedSpatialExperience auAudioUnit =
+  sendMessage auAudioUnit intendedSpatialExperienceSelector
 
 -- | The AUAudioUnit's intended spatial experience.
 --
@@ -1570,8 +1543,8 @@ intendedSpatialExperience auAudioUnit  =
 --
 -- ObjC selector: @- setIntendedSpatialExperience:@
 setIntendedSpatialExperience :: IsAUAudioUnit auAudioUnit => auAudioUnit -> RawId -> IO ()
-setIntendedSpatialExperience auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setIntendedSpatialExperience:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setIntendedSpatialExperience auAudioUnit value =
+  sendMessage auAudioUnit setIntendedSpatialExperienceSelector value
 
 -- | canPerformInput
 --
@@ -1579,8 +1552,8 @@ setIntendedSpatialExperience auAudioUnit  value =
 --
 -- ObjC selector: @- canPerformInput@
 canPerformInput :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-canPerformInput auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "canPerformInput") retCULong []
+canPerformInput auAudioUnit =
+  sendMessage auAudioUnit canPerformInputSelector
 
 -- | canPerformOutput
 --
@@ -1588,8 +1561,8 @@ canPerformInput auAudioUnit  =
 --
 -- ObjC selector: @- canPerformOutput@
 canPerformOutput :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-canPerformOutput auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "canPerformOutput") retCULong []
+canPerformOutput auAudioUnit =
+  sendMessage auAudioUnit canPerformOutputSelector
 
 -- | inputEnabled
 --
@@ -1599,8 +1572,8 @@ canPerformOutput auAudioUnit  =
 --
 -- ObjC selector: @- inputEnabled@
 inputEnabled :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-inputEnabled auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "inputEnabled") retCULong []
+inputEnabled auAudioUnit =
+  sendMessage auAudioUnit inputEnabledSelector
 
 -- | inputEnabled
 --
@@ -1610,8 +1583,8 @@ inputEnabled auAudioUnit  =
 --
 -- ObjC selector: @- setInputEnabled:@
 setInputEnabled :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
-setInputEnabled auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setInputEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setInputEnabled auAudioUnit value =
+  sendMessage auAudioUnit setInputEnabledSelector value
 
 -- | outputEnabled
 --
@@ -1621,8 +1594,8 @@ setInputEnabled auAudioUnit  value =
 --
 -- ObjC selector: @- outputEnabled@
 outputEnabled :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-outputEnabled auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "outputEnabled") retCULong []
+outputEnabled auAudioUnit =
+  sendMessage auAudioUnit outputEnabledSelector
 
 -- | outputEnabled
 --
@@ -1632,8 +1605,8 @@ outputEnabled auAudioUnit  =
 --
 -- ObjC selector: @- setOutputEnabled:@
 setOutputEnabled :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Bool -> IO ()
-setOutputEnabled auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setOutputEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setOutputEnabled auAudioUnit value =
+  sendMessage auAudioUnit setOutputEnabledSelector value
 
 -- | outputProvider
 --
@@ -1643,8 +1616,8 @@ setOutputEnabled auAudioUnit  value =
 --
 -- ObjC selector: @- outputProvider@
 outputProvider :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-outputProvider auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "outputProvider") (retPtr retVoid) []
+outputProvider auAudioUnit =
+  sendMessage auAudioUnit outputProviderSelector
 
 -- | outputProvider
 --
@@ -1654,8 +1627,8 @@ outputProvider auAudioUnit  =
 --
 -- ObjC selector: @- setOutputProvider:@
 setOutputProvider :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
-setOutputProvider auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setOutputProvider:") retVoid [argPtr (castPtr value :: Ptr ())]
+setOutputProvider auAudioUnit value =
+  sendMessage auAudioUnit setOutputProviderSelector value
 
 -- | inputHandler
 --
@@ -1665,8 +1638,8 @@ setOutputProvider auAudioUnit  value =
 --
 -- ObjC selector: @- inputHandler@
 inputHandler :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Ptr ())
-inputHandler auAudioUnit  =
-    fmap castPtr $ sendMsg auAudioUnit (mkSelector "inputHandler") (retPtr retVoid) []
+inputHandler auAudioUnit =
+  sendMessage auAudioUnit inputHandlerSelector
 
 -- | inputHandler
 --
@@ -1676,8 +1649,8 @@ inputHandler auAudioUnit  =
 --
 -- ObjC selector: @- setInputHandler:@
 setInputHandler :: IsAUAudioUnit auAudioUnit => auAudioUnit -> Ptr () -> IO ()
-setInputHandler auAudioUnit  value =
-    sendMsg auAudioUnit (mkSelector "setInputHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setInputHandler auAudioUnit value =
+  sendMessage auAudioUnit setInputHandlerSelector value
 
 -- | device
 --
@@ -1685,8 +1658,8 @@ setInputHandler auAudioUnit  value =
 --
 -- ObjC selector: @- deviceID@
 deviceID :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CUInt
-deviceID auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "deviceID") retCUInt []
+deviceID auAudioUnit =
+  sendMessage auAudioUnit deviceIDSelector
 
 -- | deviceInputLatency
 --
@@ -1696,8 +1669,8 @@ deviceID auAudioUnit  =
 --
 -- ObjC selector: @- deviceInputLatency@
 deviceInputLatency :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CDouble
-deviceInputLatency auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "deviceInputLatency") retCDouble []
+deviceInputLatency auAudioUnit =
+  sendMessage auAudioUnit deviceInputLatencySelector
 
 -- | deviceOutputLatency
 --
@@ -1707,8 +1680,8 @@ deviceInputLatency auAudioUnit  =
 --
 -- ObjC selector: @- deviceOutputLatency@
 deviceOutputLatency :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO CDouble
-deviceOutputLatency auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "deviceOutputLatency") retCDouble []
+deviceOutputLatency auAudioUnit =
+  sendMessage auAudioUnit deviceOutputLatencySelector
 
 -- | running
 --
@@ -1716,8 +1689,8 @@ deviceOutputLatency auAudioUnit  =
 --
 -- ObjC selector: @- running@
 running :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO Bool
-running auAudioUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg auAudioUnit (mkSelector "running") retCULong []
+running auAudioUnit =
+  sendMessage auAudioUnit runningSelector
 
 -- | osWorkgroup
 --
@@ -1729,434 +1702,434 @@ running auAudioUnit  =
 --
 -- ObjC selector: @- osWorkgroup@
 osWorkgroup :: IsAUAudioUnit auAudioUnit => auAudioUnit -> IO (Id OS_os_workgroup)
-osWorkgroup auAudioUnit  =
-    sendMsg auAudioUnit (mkSelector "osWorkgroup") (retPtr retVoid) [] >>= retainedObject . castPtr
+osWorkgroup auAudioUnit =
+  sendMessage auAudioUnit osWorkgroupSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AUAudioUnit)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithComponentDescription:options:error:@
-initWithComponentDescription_options_errorSelector :: Selector
+initWithComponentDescription_options_errorSelector :: Selector '[AudioComponentDescription, AudioComponentInstantiationOptions, Id NSError] (Id AUAudioUnit)
 initWithComponentDescription_options_errorSelector = mkSelector "initWithComponentDescription:options:error:"
 
 -- | @Selector@ for @initWithComponentDescription:error:@
-initWithComponentDescription_errorSelector :: Selector
+initWithComponentDescription_errorSelector :: Selector '[AudioComponentDescription, Id NSError] (Id AUAudioUnit)
 initWithComponentDescription_errorSelector = mkSelector "initWithComponentDescription:error:"
 
 -- | @Selector@ for @instantiateWithComponentDescription:options:completionHandler:@
-instantiateWithComponentDescription_options_completionHandlerSelector :: Selector
+instantiateWithComponentDescription_options_completionHandlerSelector :: Selector '[AudioComponentDescription, AudioComponentInstantiationOptions, Ptr ()] ()
 instantiateWithComponentDescription_options_completionHandlerSelector = mkSelector "instantiateWithComponentDescription:options:completionHandler:"
 
 -- | @Selector@ for @allocateRenderResourcesAndReturnError:@
-allocateRenderResourcesAndReturnErrorSelector :: Selector
+allocateRenderResourcesAndReturnErrorSelector :: Selector '[Id NSError] Bool
 allocateRenderResourcesAndReturnErrorSelector = mkSelector "allocateRenderResourcesAndReturnError:"
 
 -- | @Selector@ for @deallocateRenderResources@
-deallocateRenderResourcesSelector :: Selector
+deallocateRenderResourcesSelector :: Selector '[] ()
 deallocateRenderResourcesSelector = mkSelector "deallocateRenderResources"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @tokenByAddingRenderObserver:@
-tokenByAddingRenderObserverSelector :: Selector
+tokenByAddingRenderObserverSelector :: Selector '[Ptr ()] CLong
 tokenByAddingRenderObserverSelector = mkSelector "tokenByAddingRenderObserver:"
 
 -- | @Selector@ for @removeRenderObserver:@
-removeRenderObserverSelector :: Selector
+removeRenderObserverSelector :: Selector '[CLong] ()
 removeRenderObserverSelector = mkSelector "removeRenderObserver:"
 
 -- | @Selector@ for @parametersForOverviewWithCount:@
-parametersForOverviewWithCountSelector :: Selector
+parametersForOverviewWithCountSelector :: Selector '[CLong] (Id NSArray)
 parametersForOverviewWithCountSelector = mkSelector "parametersForOverviewWithCount:"
 
 -- | @Selector@ for @saveUserPreset:error:@
-saveUserPreset_errorSelector :: Selector
+saveUserPreset_errorSelector :: Selector '[Id AUAudioUnitPreset, Id NSError] Bool
 saveUserPreset_errorSelector = mkSelector "saveUserPreset:error:"
 
 -- | @Selector@ for @deleteUserPreset:error:@
-deleteUserPreset_errorSelector :: Selector
+deleteUserPreset_errorSelector :: Selector '[Id AUAudioUnitPreset, Id NSError] Bool
 deleteUserPreset_errorSelector = mkSelector "deleteUserPreset:error:"
 
 -- | @Selector@ for @presetStateFor:error:@
-presetStateFor_errorSelector :: Selector
+presetStateFor_errorSelector :: Selector '[Id AUAudioUnitPreset, Id NSError] (Id NSDictionary)
 presetStateFor_errorSelector = mkSelector "presetStateFor:error:"
 
 -- | @Selector@ for @profileStateForCable:channel:@
-profileStateForCable_channelSelector :: Selector
+profileStateForCable_channelSelector :: Selector '[CUChar, CUChar] (Id MIDICIProfileState)
 profileStateForCable_channelSelector = mkSelector "profileStateForCable:channel:"
 
 -- | @Selector@ for @enableProfile:cable:onChannel:error:@
-enableProfile_cable_onChannel_errorSelector :: Selector
+enableProfile_cable_onChannel_errorSelector :: Selector '[Id MIDICIProfile, CUChar, CUChar, Id NSError] Bool
 enableProfile_cable_onChannel_errorSelector = mkSelector "enableProfile:cable:onChannel:error:"
 
 -- | @Selector@ for @disableProfile:cable:onChannel:error:@
-disableProfile_cable_onChannel_errorSelector :: Selector
+disableProfile_cable_onChannel_errorSelector :: Selector '[Id MIDICIProfile, CUChar, CUChar, Id NSError] Bool
 disableProfile_cable_onChannel_errorSelector = mkSelector "disableProfile:cable:onChannel:error:"
 
 -- | @Selector@ for @messageChannelFor:@
-messageChannelForSelector :: Selector
+messageChannelForSelector :: Selector '[Id NSString] RawId
 messageChannelForSelector = mkSelector "messageChannelFor:"
 
 -- | @Selector@ for @registerSubclass:asComponentDescription:name:version:@
-registerSubclass_asComponentDescription_name_versionSelector :: Selector
+registerSubclass_asComponentDescription_name_versionSelector :: Selector '[Class, AudioComponentDescription, Id NSString, CUInt] ()
 registerSubclass_asComponentDescription_name_versionSelector = mkSelector "registerSubclass:asComponentDescription:name:version:"
 
 -- | @Selector@ for @shouldChangeToFormat:forBus:@
-shouldChangeToFormat_forBusSelector :: Selector
+shouldChangeToFormat_forBusSelector :: Selector '[RawId, Id AUAudioUnitBus] Bool
 shouldChangeToFormat_forBusSelector = mkSelector "shouldChangeToFormat:forBus:"
 
 -- | @Selector@ for @setRenderResourcesAllocated:@
-setRenderResourcesAllocatedSelector :: Selector
+setRenderResourcesAllocatedSelector :: Selector '[Bool] ()
 setRenderResourcesAllocatedSelector = mkSelector "setRenderResourcesAllocated:"
 
 -- | @Selector@ for @setDeviceID:error:@
-setDeviceID_errorSelector :: Selector
+setDeviceID_errorSelector :: Selector '[CUInt, Id NSError] Bool
 setDeviceID_errorSelector = mkSelector "setDeviceID:error:"
 
 -- | @Selector@ for @startHardwareAndReturnError:@
-startHardwareAndReturnErrorSelector :: Selector
+startHardwareAndReturnErrorSelector :: Selector '[Id NSError] Bool
 startHardwareAndReturnErrorSelector = mkSelector "startHardwareAndReturnError:"
 
 -- | @Selector@ for @stopHardware@
-stopHardwareSelector :: Selector
+stopHardwareSelector :: Selector '[] ()
 stopHardwareSelector = mkSelector "stopHardware"
 
 -- | @Selector@ for @componentDescription@
-componentDescriptionSelector :: Selector
+componentDescriptionSelector :: Selector '[] AudioComponentDescription
 componentDescriptionSelector = mkSelector "componentDescription"
 
 -- | @Selector@ for @component@
-componentSelector :: Selector
+componentSelector :: Selector '[] (Ptr ())
 componentSelector = mkSelector "component"
 
 -- | @Selector@ for @componentName@
-componentNameSelector :: Selector
+componentNameSelector :: Selector '[] (Id NSString)
 componentNameSelector = mkSelector "componentName"
 
 -- | @Selector@ for @audioUnitName@
-audioUnitNameSelector :: Selector
+audioUnitNameSelector :: Selector '[] (Id NSString)
 audioUnitNameSelector = mkSelector "audioUnitName"
 
 -- | @Selector@ for @manufacturerName@
-manufacturerNameSelector :: Selector
+manufacturerNameSelector :: Selector '[] (Id NSString)
 manufacturerNameSelector = mkSelector "manufacturerName"
 
 -- | @Selector@ for @audioUnitShortName@
-audioUnitShortNameSelector :: Selector
+audioUnitShortNameSelector :: Selector '[] (Id NSString)
 audioUnitShortNameSelector = mkSelector "audioUnitShortName"
 
 -- | @Selector@ for @componentVersion@
-componentVersionSelector :: Selector
+componentVersionSelector :: Selector '[] CUInt
 componentVersionSelector = mkSelector "componentVersion"
 
 -- | @Selector@ for @renderResourcesAllocated@
-renderResourcesAllocatedSelector :: Selector
+renderResourcesAllocatedSelector :: Selector '[] Bool
 renderResourcesAllocatedSelector = mkSelector "renderResourcesAllocated"
 
 -- | @Selector@ for @inputBusses@
-inputBussesSelector :: Selector
+inputBussesSelector :: Selector '[] (Id AUAudioUnitBusArray)
 inputBussesSelector = mkSelector "inputBusses"
 
 -- | @Selector@ for @outputBusses@
-outputBussesSelector :: Selector
+outputBussesSelector :: Selector '[] (Id AUAudioUnitBusArray)
 outputBussesSelector = mkSelector "outputBusses"
 
 -- | @Selector@ for @renderBlock@
-renderBlockSelector :: Selector
+renderBlockSelector :: Selector '[] (Ptr ())
 renderBlockSelector = mkSelector "renderBlock"
 
 -- | @Selector@ for @scheduleParameterBlock@
-scheduleParameterBlockSelector :: Selector
+scheduleParameterBlockSelector :: Selector '[] (Ptr ())
 scheduleParameterBlockSelector = mkSelector "scheduleParameterBlock"
 
 -- | @Selector@ for @maximumFramesToRender@
-maximumFramesToRenderSelector :: Selector
+maximumFramesToRenderSelector :: Selector '[] CUInt
 maximumFramesToRenderSelector = mkSelector "maximumFramesToRender"
 
 -- | @Selector@ for @setMaximumFramesToRender:@
-setMaximumFramesToRenderSelector :: Selector
+setMaximumFramesToRenderSelector :: Selector '[CUInt] ()
 setMaximumFramesToRenderSelector = mkSelector "setMaximumFramesToRender:"
 
 -- | @Selector@ for @parameterTree@
-parameterTreeSelector :: Selector
+parameterTreeSelector :: Selector '[] (Id AUParameterTree)
 parameterTreeSelector = mkSelector "parameterTree"
 
 -- | @Selector@ for @setParameterTree:@
-setParameterTreeSelector :: Selector
+setParameterTreeSelector :: Selector '[Id AUParameterTree] ()
 setParameterTreeSelector = mkSelector "setParameterTree:"
 
 -- | @Selector@ for @allParameterValues@
-allParameterValuesSelector :: Selector
+allParameterValuesSelector :: Selector '[] Bool
 allParameterValuesSelector = mkSelector "allParameterValues"
 
 -- | @Selector@ for @musicDeviceOrEffect@
-musicDeviceOrEffectSelector :: Selector
+musicDeviceOrEffectSelector :: Selector '[] Bool
 musicDeviceOrEffectSelector = mkSelector "musicDeviceOrEffect"
 
 -- | @Selector@ for @virtualMIDICableCount@
-virtualMIDICableCountSelector :: Selector
+virtualMIDICableCountSelector :: Selector '[] CLong
 virtualMIDICableCountSelector = mkSelector "virtualMIDICableCount"
 
 -- | @Selector@ for @scheduleMIDIEventBlock@
-scheduleMIDIEventBlockSelector :: Selector
+scheduleMIDIEventBlockSelector :: Selector '[] (Ptr ())
 scheduleMIDIEventBlockSelector = mkSelector "scheduleMIDIEventBlock"
 
 -- | @Selector@ for @scheduleMIDIEventListBlock@
-scheduleMIDIEventListBlockSelector :: Selector
+scheduleMIDIEventListBlockSelector :: Selector '[] (Ptr ())
 scheduleMIDIEventListBlockSelector = mkSelector "scheduleMIDIEventListBlock"
 
 -- | @Selector@ for @MIDIOutputNames@
-midiOutputNamesSelector :: Selector
+midiOutputNamesSelector :: Selector '[] (Id NSArray)
 midiOutputNamesSelector = mkSelector "MIDIOutputNames"
 
 -- | @Selector@ for @providesUserInterface@
-providesUserInterfaceSelector :: Selector
+providesUserInterfaceSelector :: Selector '[] Bool
 providesUserInterfaceSelector = mkSelector "providesUserInterface"
 
 -- | @Selector@ for @MIDIOutputEventBlock@
-midiOutputEventBlockSelector :: Selector
+midiOutputEventBlockSelector :: Selector '[] (Ptr ())
 midiOutputEventBlockSelector = mkSelector "MIDIOutputEventBlock"
 
 -- | @Selector@ for @setMIDIOutputEventBlock:@
-setMIDIOutputEventBlockSelector :: Selector
+setMIDIOutputEventBlockSelector :: Selector '[Ptr ()] ()
 setMIDIOutputEventBlockSelector = mkSelector "setMIDIOutputEventBlock:"
 
 -- | @Selector@ for @MIDIOutputEventListBlock@
-midiOutputEventListBlockSelector :: Selector
+midiOutputEventListBlockSelector :: Selector '[] (Ptr ())
 midiOutputEventListBlockSelector = mkSelector "MIDIOutputEventListBlock"
 
 -- | @Selector@ for @setMIDIOutputEventListBlock:@
-setMIDIOutputEventListBlockSelector :: Selector
+setMIDIOutputEventListBlockSelector :: Selector '[Ptr ()] ()
 setMIDIOutputEventListBlockSelector = mkSelector "setMIDIOutputEventListBlock:"
 
 -- | @Selector@ for @AudioUnitMIDIProtocol@
-audioUnitMIDIProtocolSelector :: Selector
+audioUnitMIDIProtocolSelector :: Selector '[] MIDIProtocolID
 audioUnitMIDIProtocolSelector = mkSelector "AudioUnitMIDIProtocol"
 
 -- | @Selector@ for @hostMIDIProtocol@
-hostMIDIProtocolSelector :: Selector
+hostMIDIProtocolSelector :: Selector '[] MIDIProtocolID
 hostMIDIProtocolSelector = mkSelector "hostMIDIProtocol"
 
 -- | @Selector@ for @setHostMIDIProtocol:@
-setHostMIDIProtocolSelector :: Selector
+setHostMIDIProtocolSelector :: Selector '[MIDIProtocolID] ()
 setHostMIDIProtocolSelector = mkSelector "setHostMIDIProtocol:"
 
 -- | @Selector@ for @fullState@
-fullStateSelector :: Selector
+fullStateSelector :: Selector '[] (Id NSDictionary)
 fullStateSelector = mkSelector "fullState"
 
 -- | @Selector@ for @setFullState:@
-setFullStateSelector :: Selector
+setFullStateSelector :: Selector '[Id NSDictionary] ()
 setFullStateSelector = mkSelector "setFullState:"
 
 -- | @Selector@ for @fullStateForDocument@
-fullStateForDocumentSelector :: Selector
+fullStateForDocumentSelector :: Selector '[] (Id NSDictionary)
 fullStateForDocumentSelector = mkSelector "fullStateForDocument"
 
 -- | @Selector@ for @setFullStateForDocument:@
-setFullStateForDocumentSelector :: Selector
+setFullStateForDocumentSelector :: Selector '[Id NSDictionary] ()
 setFullStateForDocumentSelector = mkSelector "setFullStateForDocument:"
 
 -- | @Selector@ for @factoryPresets@
-factoryPresetsSelector :: Selector
+factoryPresetsSelector :: Selector '[] (Id NSArray)
 factoryPresetsSelector = mkSelector "factoryPresets"
 
 -- | @Selector@ for @userPresets@
-userPresetsSelector :: Selector
+userPresetsSelector :: Selector '[] (Id NSArray)
 userPresetsSelector = mkSelector "userPresets"
 
 -- | @Selector@ for @supportsUserPresets@
-supportsUserPresetsSelector :: Selector
+supportsUserPresetsSelector :: Selector '[] Bool
 supportsUserPresetsSelector = mkSelector "supportsUserPresets"
 
 -- | @Selector@ for @isLoadedInProcess@
-isLoadedInProcessSelector :: Selector
+isLoadedInProcessSelector :: Selector '[] Bool
 isLoadedInProcessSelector = mkSelector "isLoadedInProcess"
 
 -- | @Selector@ for @currentPreset@
-currentPresetSelector :: Selector
+currentPresetSelector :: Selector '[] (Id AUAudioUnitPreset)
 currentPresetSelector = mkSelector "currentPreset"
 
 -- | @Selector@ for @setCurrentPreset:@
-setCurrentPresetSelector :: Selector
+setCurrentPresetSelector :: Selector '[Id AUAudioUnitPreset] ()
 setCurrentPresetSelector = mkSelector "setCurrentPreset:"
 
 -- | @Selector@ for @latency@
-latencySelector :: Selector
+latencySelector :: Selector '[] CDouble
 latencySelector = mkSelector "latency"
 
 -- | @Selector@ for @tailTime@
-tailTimeSelector :: Selector
+tailTimeSelector :: Selector '[] CDouble
 tailTimeSelector = mkSelector "tailTime"
 
 -- | @Selector@ for @renderQuality@
-renderQualitySelector :: Selector
+renderQualitySelector :: Selector '[] CLong
 renderQualitySelector = mkSelector "renderQuality"
 
 -- | @Selector@ for @setRenderQuality:@
-setRenderQualitySelector :: Selector
+setRenderQualitySelector :: Selector '[CLong] ()
 setRenderQualitySelector = mkSelector "setRenderQuality:"
 
 -- | @Selector@ for @shouldBypassEffect@
-shouldBypassEffectSelector :: Selector
+shouldBypassEffectSelector :: Selector '[] Bool
 shouldBypassEffectSelector = mkSelector "shouldBypassEffect"
 
 -- | @Selector@ for @setShouldBypassEffect:@
-setShouldBypassEffectSelector :: Selector
+setShouldBypassEffectSelector :: Selector '[Bool] ()
 setShouldBypassEffectSelector = mkSelector "setShouldBypassEffect:"
 
 -- | @Selector@ for @canProcessInPlace@
-canProcessInPlaceSelector :: Selector
+canProcessInPlaceSelector :: Selector '[] Bool
 canProcessInPlaceSelector = mkSelector "canProcessInPlace"
 
 -- | @Selector@ for @renderingOffline@
-renderingOfflineSelector :: Selector
+renderingOfflineSelector :: Selector '[] Bool
 renderingOfflineSelector = mkSelector "renderingOffline"
 
 -- | @Selector@ for @setRenderingOffline:@
-setRenderingOfflineSelector :: Selector
+setRenderingOfflineSelector :: Selector '[Bool] ()
 setRenderingOfflineSelector = mkSelector "setRenderingOffline:"
 
 -- | @Selector@ for @channelCapabilities@
-channelCapabilitiesSelector :: Selector
+channelCapabilitiesSelector :: Selector '[] (Id NSArray)
 channelCapabilitiesSelector = mkSelector "channelCapabilities"
 
 -- | @Selector@ for @musicalContextBlock@
-musicalContextBlockSelector :: Selector
+musicalContextBlockSelector :: Selector '[] (Ptr ())
 musicalContextBlockSelector = mkSelector "musicalContextBlock"
 
 -- | @Selector@ for @setMusicalContextBlock:@
-setMusicalContextBlockSelector :: Selector
+setMusicalContextBlockSelector :: Selector '[Ptr ()] ()
 setMusicalContextBlockSelector = mkSelector "setMusicalContextBlock:"
 
 -- | @Selector@ for @transportStateBlock@
-transportStateBlockSelector :: Selector
+transportStateBlockSelector :: Selector '[] (Ptr ())
 transportStateBlockSelector = mkSelector "transportStateBlock"
 
 -- | @Selector@ for @setTransportStateBlock:@
-setTransportStateBlockSelector :: Selector
+setTransportStateBlockSelector :: Selector '[Ptr ()] ()
 setTransportStateBlockSelector = mkSelector "setTransportStateBlock:"
 
 -- | @Selector@ for @contextName@
-contextNameSelector :: Selector
+contextNameSelector :: Selector '[] (Id NSString)
 contextNameSelector = mkSelector "contextName"
 
 -- | @Selector@ for @setContextName:@
-setContextNameSelector :: Selector
+setContextNameSelector :: Selector '[Id NSString] ()
 setContextNameSelector = mkSelector "setContextName:"
 
 -- | @Selector@ for @migrateFromPlugin@
-migrateFromPluginSelector :: Selector
+migrateFromPluginSelector :: Selector '[] (Id NSArray)
 migrateFromPluginSelector = mkSelector "migrateFromPlugin"
 
 -- | @Selector@ for @supportsMPE@
-supportsMPESelector :: Selector
+supportsMPESelector :: Selector '[] Bool
 supportsMPESelector = mkSelector "supportsMPE"
 
 -- | @Selector@ for @channelMap@
-channelMapSelector :: Selector
+channelMapSelector :: Selector '[] (Id NSArray)
 channelMapSelector = mkSelector "channelMap"
 
 -- | @Selector@ for @setChannelMap:@
-setChannelMapSelector :: Selector
+setChannelMapSelector :: Selector '[Id NSArray] ()
 setChannelMapSelector = mkSelector "setChannelMap:"
 
 -- | @Selector@ for @profileChangedBlock@
-profileChangedBlockSelector :: Selector
+profileChangedBlockSelector :: Selector '[] (Ptr ())
 profileChangedBlockSelector = mkSelector "profileChangedBlock"
 
 -- | @Selector@ for @setProfileChangedBlock:@
-setProfileChangedBlockSelector :: Selector
+setProfileChangedBlockSelector :: Selector '[Ptr ()] ()
 setProfileChangedBlockSelector = mkSelector "setProfileChangedBlock:"
 
 -- | @Selector@ for @internalRenderBlock@
-internalRenderBlockSelector :: Selector
+internalRenderBlockSelector :: Selector '[] (Ptr ())
 internalRenderBlockSelector = mkSelector "internalRenderBlock"
 
 -- | @Selector@ for @renderContextObserver@
-renderContextObserverSelector :: Selector
+renderContextObserverSelector :: Selector '[] (Ptr ())
 renderContextObserverSelector = mkSelector "renderContextObserver"
 
 -- | @Selector@ for @MIDIOutputBufferSizeHint@
-midiOutputBufferSizeHintSelector :: Selector
+midiOutputBufferSizeHintSelector :: Selector '[] CLong
 midiOutputBufferSizeHintSelector = mkSelector "MIDIOutputBufferSizeHint"
 
 -- | @Selector@ for @setMIDIOutputBufferSizeHint:@
-setMIDIOutputBufferSizeHintSelector :: Selector
+setMIDIOutputBufferSizeHintSelector :: Selector '[CLong] ()
 setMIDIOutputBufferSizeHintSelector = mkSelector "setMIDIOutputBufferSizeHint:"
 
 -- | @Selector@ for @intendedSpatialExperience@
-intendedSpatialExperienceSelector :: Selector
+intendedSpatialExperienceSelector :: Selector '[] RawId
 intendedSpatialExperienceSelector = mkSelector "intendedSpatialExperience"
 
 -- | @Selector@ for @setIntendedSpatialExperience:@
-setIntendedSpatialExperienceSelector :: Selector
+setIntendedSpatialExperienceSelector :: Selector '[RawId] ()
 setIntendedSpatialExperienceSelector = mkSelector "setIntendedSpatialExperience:"
 
 -- | @Selector@ for @canPerformInput@
-canPerformInputSelector :: Selector
+canPerformInputSelector :: Selector '[] Bool
 canPerformInputSelector = mkSelector "canPerformInput"
 
 -- | @Selector@ for @canPerformOutput@
-canPerformOutputSelector :: Selector
+canPerformOutputSelector :: Selector '[] Bool
 canPerformOutputSelector = mkSelector "canPerformOutput"
 
 -- | @Selector@ for @inputEnabled@
-inputEnabledSelector :: Selector
+inputEnabledSelector :: Selector '[] Bool
 inputEnabledSelector = mkSelector "inputEnabled"
 
 -- | @Selector@ for @setInputEnabled:@
-setInputEnabledSelector :: Selector
+setInputEnabledSelector :: Selector '[Bool] ()
 setInputEnabledSelector = mkSelector "setInputEnabled:"
 
 -- | @Selector@ for @outputEnabled@
-outputEnabledSelector :: Selector
+outputEnabledSelector :: Selector '[] Bool
 outputEnabledSelector = mkSelector "outputEnabled"
 
 -- | @Selector@ for @setOutputEnabled:@
-setOutputEnabledSelector :: Selector
+setOutputEnabledSelector :: Selector '[Bool] ()
 setOutputEnabledSelector = mkSelector "setOutputEnabled:"
 
 -- | @Selector@ for @outputProvider@
-outputProviderSelector :: Selector
+outputProviderSelector :: Selector '[] (Ptr ())
 outputProviderSelector = mkSelector "outputProvider"
 
 -- | @Selector@ for @setOutputProvider:@
-setOutputProviderSelector :: Selector
+setOutputProviderSelector :: Selector '[Ptr ()] ()
 setOutputProviderSelector = mkSelector "setOutputProvider:"
 
 -- | @Selector@ for @inputHandler@
-inputHandlerSelector :: Selector
+inputHandlerSelector :: Selector '[] (Ptr ())
 inputHandlerSelector = mkSelector "inputHandler"
 
 -- | @Selector@ for @setInputHandler:@
-setInputHandlerSelector :: Selector
+setInputHandlerSelector :: Selector '[Ptr ()] ()
 setInputHandlerSelector = mkSelector "setInputHandler:"
 
 -- | @Selector@ for @deviceID@
-deviceIDSelector :: Selector
+deviceIDSelector :: Selector '[] CUInt
 deviceIDSelector = mkSelector "deviceID"
 
 -- | @Selector@ for @deviceInputLatency@
-deviceInputLatencySelector :: Selector
+deviceInputLatencySelector :: Selector '[] CDouble
 deviceInputLatencySelector = mkSelector "deviceInputLatency"
 
 -- | @Selector@ for @deviceOutputLatency@
-deviceOutputLatencySelector :: Selector
+deviceOutputLatencySelector :: Selector '[] CDouble
 deviceOutputLatencySelector = mkSelector "deviceOutputLatency"
 
 -- | @Selector@ for @running@
-runningSelector :: Selector
+runningSelector :: Selector '[] Bool
 runningSelector = mkSelector "running"
 
 -- | @Selector@ for @osWorkgroup@
-osWorkgroupSelector :: Selector
+osWorkgroupSelector :: Selector '[] (Id OS_os_workgroup)
 osWorkgroupSelector = mkSelector "osWorkgroup"
 

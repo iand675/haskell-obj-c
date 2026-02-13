@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRAdministratorCommissioningClusterOpenBasicCommissioningWin
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , commissioningTimeoutSelector
-  , setCommissioningTimeoutSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setCommissioningTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- commissioningTimeout@
 commissioningTimeout :: IsMTRAdministratorCommissioningClusterOpenBasicCommissioningWindowParams mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams => mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams -> IO (Id NSNumber)
-commissioningTimeout mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams  =
-    sendMsg mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams (mkSelector "commissioningTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+commissioningTimeout mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams =
+  sendMessage mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams commissioningTimeoutSelector
 
 -- | @- setCommissioningTimeout:@
 setCommissioningTimeout :: (IsMTRAdministratorCommissioningClusterOpenBasicCommissioningWindowParams mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams, IsNSNumber value) => mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams -> value -> IO ()
-setCommissioningTimeout mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams (mkSelector "setCommissioningTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCommissioningTimeout mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams value =
+  sendMessage mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams setCommissioningTimeoutSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setCommissioningTimeout mtrAdministratorCommissioningClusterOpenBasicCommissioni
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRAdministratorCommissioningClusterOpenBasicCommissioningWindowParams mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams => mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams  =
-    sendMsg mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams =
+  sendMessage mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrAdministratorCommissioningClusterOpenBasicCommissioningW
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRAdministratorCommissioningClusterOpenBasicCommissioningWindowParams mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams, IsNSNumber value) => mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams value =
+  sendMessage mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrAdministratorCommissioningClusterOpenBasicCommissioni
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRAdministratorCommissioningClusterOpenBasicCommissioningWindowParams mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams => mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams  =
-    sendMsg mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams =
+  sendMessage mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrAdministratorCommissioningClusterOpenBasicCommiss
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRAdministratorCommissioningClusterOpenBasicCommissioningWindowParams mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams, IsNSNumber value) => mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams -> value -> IO ()
-setServerSideProcessingTimeout mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams value =
+  sendMessage mtrAdministratorCommissioningClusterOpenBasicCommissioningWindowParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @commissioningTimeout@
-commissioningTimeoutSelector :: Selector
+commissioningTimeoutSelector :: Selector '[] (Id NSNumber)
 commissioningTimeoutSelector = mkSelector "commissioningTimeout"
 
 -- | @Selector@ for @setCommissioningTimeout:@
-setCommissioningTimeoutSelector :: Selector
+setCommissioningTimeoutSelector :: Selector '[Id NSNumber] ()
 setCommissioningTimeoutSelector = mkSelector "setCommissioningTimeout:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

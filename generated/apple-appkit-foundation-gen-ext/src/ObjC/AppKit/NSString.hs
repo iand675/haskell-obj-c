@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,8 +11,8 @@ module ObjC.AppKit.NSString
   , IsNSString(..)
   , drawWithRect_options_attributes
   , boundingRectWithSize_options_attributes
-  , drawWithRect_options_attributesSelector
   , boundingRectWithSize_options_attributesSelector
+  , drawWithRect_options_attributesSelector
 
   -- * Enum types
   , NSStringDrawingOptions(NSStringDrawingOptions)
@@ -25,15 +26,11 @@ module ObjC.AppKit.NSString
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,15 +43,13 @@ import ObjC.Runtime.NSString (pureNSString)
 
 -- | @- drawWithRect:options:attributes:@
 drawWithRect_options_attributes :: (IsNSString nsString, IsNSDictionary attributes) => nsString -> NSRect -> NSStringDrawingOptions -> attributes -> IO ()
-drawWithRect_options_attributes nsString  rect options attributes =
-  withObjCPtr attributes $ \raw_attributes ->
-      sendMsg nsString (mkSelector "drawWithRect:options:attributes:") retVoid [argNSRect rect, argCLong (coerce options), argPtr (castPtr raw_attributes :: Ptr ())]
+drawWithRect_options_attributes nsString rect options attributes =
+  sendMessage nsString drawWithRect_options_attributesSelector rect options (toNSDictionary attributes)
 
 -- | @- boundingRectWithSize:options:attributes:@
 boundingRectWithSize_options_attributes :: (IsNSString nsString, IsNSDictionary attributes) => nsString -> NSSize -> NSStringDrawingOptions -> attributes -> IO NSRect
-boundingRectWithSize_options_attributes nsString  size options attributes =
-  withObjCPtr attributes $ \raw_attributes ->
-      sendMsgStret nsString (mkSelector "boundingRectWithSize:options:attributes:") retNSRect [argNSSize size, argCLong (coerce options), argPtr (castPtr raw_attributes :: Ptr ())]
+boundingRectWithSize_options_attributes nsString size options attributes =
+  sendMessage nsString boundingRectWithSize_options_attributesSelector size options (toNSDictionary attributes)
 
 
 -- | Allows using @OverloadedStrings@ for @Id NSString@.
@@ -68,10 +63,10 @@ instance IsString (Id NSString) where
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @drawWithRect:options:attributes:@
-drawWithRect_options_attributesSelector :: Selector
+drawWithRect_options_attributesSelector :: Selector '[NSRect, NSStringDrawingOptions, Id NSDictionary] ()
 drawWithRect_options_attributesSelector = mkSelector "drawWithRect:options:attributes:"
 
 -- | @Selector@ for @boundingRectWithSize:options:attributes:@
-boundingRectWithSize_options_attributesSelector :: Selector
+boundingRectWithSize_options_attributesSelector :: Selector '[NSSize, NSStringDrawingOptions, Id NSDictionary] NSRect
 boundingRectWithSize_options_attributesSelector = mkSelector "boundingRectWithSize:options:attributes:"
 

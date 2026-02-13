@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRThreadNetworkDirectoryClusterThreadNetworkStruct
   , setChannel
   , activeTimestamp
   , setActiveTimestamp
-  , extendedPanIDSelector
-  , setExtendedPanIDSelector
-  , networkNameSelector
-  , setNetworkNameSelector
-  , channelSelector
-  , setChannelSelector
   , activeTimestampSelector
+  , channelSelector
+  , extendedPanIDSelector
+  , networkNameSelector
   , setActiveTimestampSelector
+  , setChannelSelector
+  , setExtendedPanIDSelector
+  , setNetworkNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- extendedPanID@
 extendedPanID :: IsMTRThreadNetworkDirectoryClusterThreadNetworkStruct mtrThreadNetworkDirectoryClusterThreadNetworkStruct => mtrThreadNetworkDirectoryClusterThreadNetworkStruct -> IO (Id NSData)
-extendedPanID mtrThreadNetworkDirectoryClusterThreadNetworkStruct  =
-    sendMsg mtrThreadNetworkDirectoryClusterThreadNetworkStruct (mkSelector "extendedPanID") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedPanID mtrThreadNetworkDirectoryClusterThreadNetworkStruct =
+  sendMessage mtrThreadNetworkDirectoryClusterThreadNetworkStruct extendedPanIDSelector
 
 -- | @- setExtendedPanID:@
 setExtendedPanID :: (IsMTRThreadNetworkDirectoryClusterThreadNetworkStruct mtrThreadNetworkDirectoryClusterThreadNetworkStruct, IsNSData value) => mtrThreadNetworkDirectoryClusterThreadNetworkStruct -> value -> IO ()
-setExtendedPanID mtrThreadNetworkDirectoryClusterThreadNetworkStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterThreadNetworkStruct (mkSelector "setExtendedPanID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedPanID mtrThreadNetworkDirectoryClusterThreadNetworkStruct value =
+  sendMessage mtrThreadNetworkDirectoryClusterThreadNetworkStruct setExtendedPanIDSelector (toNSData value)
 
 -- | @- networkName@
 networkName :: IsMTRThreadNetworkDirectoryClusterThreadNetworkStruct mtrThreadNetworkDirectoryClusterThreadNetworkStruct => mtrThreadNetworkDirectoryClusterThreadNetworkStruct -> IO (Id NSString)
-networkName mtrThreadNetworkDirectoryClusterThreadNetworkStruct  =
-    sendMsg mtrThreadNetworkDirectoryClusterThreadNetworkStruct (mkSelector "networkName") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkName mtrThreadNetworkDirectoryClusterThreadNetworkStruct =
+  sendMessage mtrThreadNetworkDirectoryClusterThreadNetworkStruct networkNameSelector
 
 -- | @- setNetworkName:@
 setNetworkName :: (IsMTRThreadNetworkDirectoryClusterThreadNetworkStruct mtrThreadNetworkDirectoryClusterThreadNetworkStruct, IsNSString value) => mtrThreadNetworkDirectoryClusterThreadNetworkStruct -> value -> IO ()
-setNetworkName mtrThreadNetworkDirectoryClusterThreadNetworkStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterThreadNetworkStruct (mkSelector "setNetworkName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNetworkName mtrThreadNetworkDirectoryClusterThreadNetworkStruct value =
+  sendMessage mtrThreadNetworkDirectoryClusterThreadNetworkStruct setNetworkNameSelector (toNSString value)
 
 -- | @- channel@
 channel :: IsMTRThreadNetworkDirectoryClusterThreadNetworkStruct mtrThreadNetworkDirectoryClusterThreadNetworkStruct => mtrThreadNetworkDirectoryClusterThreadNetworkStruct -> IO (Id NSNumber)
-channel mtrThreadNetworkDirectoryClusterThreadNetworkStruct  =
-    sendMsg mtrThreadNetworkDirectoryClusterThreadNetworkStruct (mkSelector "channel") (retPtr retVoid) [] >>= retainedObject . castPtr
+channel mtrThreadNetworkDirectoryClusterThreadNetworkStruct =
+  sendMessage mtrThreadNetworkDirectoryClusterThreadNetworkStruct channelSelector
 
 -- | @- setChannel:@
 setChannel :: (IsMTRThreadNetworkDirectoryClusterThreadNetworkStruct mtrThreadNetworkDirectoryClusterThreadNetworkStruct, IsNSNumber value) => mtrThreadNetworkDirectoryClusterThreadNetworkStruct -> value -> IO ()
-setChannel mtrThreadNetworkDirectoryClusterThreadNetworkStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterThreadNetworkStruct (mkSelector "setChannel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannel mtrThreadNetworkDirectoryClusterThreadNetworkStruct value =
+  sendMessage mtrThreadNetworkDirectoryClusterThreadNetworkStruct setChannelSelector (toNSNumber value)
 
 -- | @- activeTimestamp@
 activeTimestamp :: IsMTRThreadNetworkDirectoryClusterThreadNetworkStruct mtrThreadNetworkDirectoryClusterThreadNetworkStruct => mtrThreadNetworkDirectoryClusterThreadNetworkStruct -> IO (Id NSNumber)
-activeTimestamp mtrThreadNetworkDirectoryClusterThreadNetworkStruct  =
-    sendMsg mtrThreadNetworkDirectoryClusterThreadNetworkStruct (mkSelector "activeTimestamp") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeTimestamp mtrThreadNetworkDirectoryClusterThreadNetworkStruct =
+  sendMessage mtrThreadNetworkDirectoryClusterThreadNetworkStruct activeTimestampSelector
 
 -- | @- setActiveTimestamp:@
 setActiveTimestamp :: (IsMTRThreadNetworkDirectoryClusterThreadNetworkStruct mtrThreadNetworkDirectoryClusterThreadNetworkStruct, IsNSNumber value) => mtrThreadNetworkDirectoryClusterThreadNetworkStruct -> value -> IO ()
-setActiveTimestamp mtrThreadNetworkDirectoryClusterThreadNetworkStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterThreadNetworkStruct (mkSelector "setActiveTimestamp:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActiveTimestamp mtrThreadNetworkDirectoryClusterThreadNetworkStruct value =
+  sendMessage mtrThreadNetworkDirectoryClusterThreadNetworkStruct setActiveTimestampSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @extendedPanID@
-extendedPanIDSelector :: Selector
+extendedPanIDSelector :: Selector '[] (Id NSData)
 extendedPanIDSelector = mkSelector "extendedPanID"
 
 -- | @Selector@ for @setExtendedPanID:@
-setExtendedPanIDSelector :: Selector
+setExtendedPanIDSelector :: Selector '[Id NSData] ()
 setExtendedPanIDSelector = mkSelector "setExtendedPanID:"
 
 -- | @Selector@ for @networkName@
-networkNameSelector :: Selector
+networkNameSelector :: Selector '[] (Id NSString)
 networkNameSelector = mkSelector "networkName"
 
 -- | @Selector@ for @setNetworkName:@
-setNetworkNameSelector :: Selector
+setNetworkNameSelector :: Selector '[Id NSString] ()
 setNetworkNameSelector = mkSelector "setNetworkName:"
 
 -- | @Selector@ for @channel@
-channelSelector :: Selector
+channelSelector :: Selector '[] (Id NSNumber)
 channelSelector = mkSelector "channel"
 
 -- | @Selector@ for @setChannel:@
-setChannelSelector :: Selector
+setChannelSelector :: Selector '[Id NSNumber] ()
 setChannelSelector = mkSelector "setChannel:"
 
 -- | @Selector@ for @activeTimestamp@
-activeTimestampSelector :: Selector
+activeTimestampSelector :: Selector '[] (Id NSNumber)
 activeTimestampSelector = mkSelector "activeTimestamp"
 
 -- | @Selector@ for @setActiveTimestamp:@
-setActiveTimestampSelector :: Selector
+setActiveTimestampSelector :: Selector '[Id NSNumber] ()
 setActiveTimestampSelector = mkSelector "setActiveTimestamp:"
 

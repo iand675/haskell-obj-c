@@ -20,4 +20,3 @@ library:
   - ObjC.MediaPlayer.AVMediaSelectionGroup
   - ObjC.MediaPlayer.AVMediaSelectionOption
   - ObjC.MediaPlayer.AVPlayerItem
-  - ObjC.MediaPlayer.NSUserActivity

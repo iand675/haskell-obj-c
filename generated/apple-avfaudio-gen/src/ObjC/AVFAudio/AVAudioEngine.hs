@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -60,49 +61,49 @@ module ObjC.AVFAudio.AVAudioEngine
   , manualRenderingFormat
   , manualRenderingMaximumFrameCount
   , manualRenderingSampleTime
-  , initSelector
   , attachNodeSelector
-  , detachNodeSelector
-  , connect_to_fromBus_toBus_formatSelector
-  , connect_to_formatSelector
-  , connect_toConnectionPoints_fromBus_formatSelector
-  , disconnectNodeInput_busSelector
-  , disconnectNodeInputSelector
-  , disconnectNodeOutput_busSelector
-  , disconnectNodeOutputSelector
-  , prepareSelector
-  , startAndReturnErrorSelector
-  , pauseSelector
-  , resetSelector
-  , stopSelector
-  , inputConnectionPointForNode_inputBusSelector
-  , outputConnectionPointsForNode_outputBusSelector
-  , enableManualRenderingMode_format_maximumFrameCount_errorSelector
-  , disableManualRenderingModeSelector
-  , renderOffline_toBuffer_errorSelector
-  , connectMIDI_to_format_blockSelector
-  , connectMIDI_to_format_eventListBlockSelector
+  , attachedNodesSelector
+  , autoShutdownEnabledSelector
   , connectMIDI_toNodes_format_blockSelector
   , connectMIDI_toNodes_format_eventListBlockSelector
-  , disconnectMIDI_fromSelector
-  , disconnectMIDI_fromNodesSelector
+  , connectMIDI_to_format_blockSelector
+  , connectMIDI_to_format_eventListBlockSelector
+  , connect_toConnectionPoints_fromBus_formatSelector
+  , connect_to_formatSelector
+  , connect_to_fromBus_toBus_formatSelector
+  , detachNodeSelector
+  , disableManualRenderingModeSelector
   , disconnectMIDIInputSelector
   , disconnectMIDIOutputSelector
-  , musicSequenceSelector
-  , setMusicSequenceSelector
-  , outputNodeSelector
+  , disconnectMIDI_fromNodesSelector
+  , disconnectMIDI_fromSelector
+  , disconnectNodeInputSelector
+  , disconnectNodeInput_busSelector
+  , disconnectNodeOutputSelector
+  , disconnectNodeOutput_busSelector
+  , enableManualRenderingMode_format_maximumFrameCount_errorSelector
+  , initSelector
+  , inputConnectionPointForNode_inputBusSelector
   , inputNodeSelector
-  , mainMixerNodeSelector
-  , runningSelector
-  , autoShutdownEnabledSelector
-  , setAutoShutdownEnabledSelector
-  , attachedNodesSelector
-  , manualRenderingBlockSelector
   , isInManualRenderingModeSelector
-  , manualRenderingModeSelector
+  , mainMixerNodeSelector
+  , manualRenderingBlockSelector
   , manualRenderingFormatSelector
   , manualRenderingMaximumFrameCountSelector
+  , manualRenderingModeSelector
   , manualRenderingSampleTimeSelector
+  , musicSequenceSelector
+  , outputConnectionPointsForNode_outputBusSelector
+  , outputNodeSelector
+  , pauseSelector
+  , prepareSelector
+  , renderOffline_toBuffer_errorSelector
+  , resetSelector
+  , runningSelector
+  , setAutoShutdownEnabledSelector
+  , setMusicSequenceSelector
+  , startAndReturnErrorSelector
+  , stopSelector
 
   -- * Enum types
   , AVAudioEngineManualRenderingMode(AVAudioEngineManualRenderingMode)
@@ -116,15 +117,11 @@ module ObjC.AVFAudio.AVAudioEngine
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -140,8 +137,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO (Id AVAudioEngine)
-init_ avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioEngine =
+  sendOwnedMessage avAudioEngine initSelector
 
 -- | attachNode:
 --
@@ -155,9 +152,8 @@ init_ avAudioEngine  =
 --
 -- ObjC selector: @- attachNode:@
 attachNode :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> IO ()
-attachNode avAudioEngine  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "attachNode:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+attachNode avAudioEngine node =
+  sendMessage avAudioEngine attachNodeSelector (toAVAudioNode node)
 
 -- | detachNode:
 --
@@ -167,9 +163,8 @@ attachNode avAudioEngine  node =
 --
 -- ObjC selector: @- detachNode:@
 detachNode :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> IO ()
-detachNode avAudioEngine  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "detachNode:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+detachNode avAudioEngine node =
+  sendMessage avAudioEngine detachNodeSelector (toAVAudioNode node)
 
 -- | connect:to:fromBus:toBus:format:
 --
@@ -191,11 +186,8 @@ detachNode avAudioEngine  node =
 --
 -- ObjC selector: @- connect:to:fromBus:toBus:format:@
 connect_to_fromBus_toBus_format :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node1, IsAVAudioNode node2, IsAVAudioFormat format) => avAudioEngine -> node1 -> node2 -> CULong -> CULong -> format -> IO ()
-connect_to_fromBus_toBus_format avAudioEngine  node1 node2 bus1 bus2 format =
-  withObjCPtr node1 $ \raw_node1 ->
-    withObjCPtr node2 $ \raw_node2 ->
-      withObjCPtr format $ \raw_format ->
-          sendMsg avAudioEngine (mkSelector "connect:to:fromBus:toBus:format:") retVoid [argPtr (castPtr raw_node1 :: Ptr ()), argPtr (castPtr raw_node2 :: Ptr ()), argCULong bus1, argCULong bus2, argPtr (castPtr raw_format :: Ptr ())]
+connect_to_fromBus_toBus_format avAudioEngine node1 node2 bus1 bus2 format =
+  sendMessage avAudioEngine connect_to_fromBus_toBus_formatSelector (toAVAudioNode node1) (toAVAudioNode node2) bus1 bus2 (toAVAudioFormat format)
 
 -- | connect:to:format:
 --
@@ -205,11 +197,8 @@ connect_to_fromBus_toBus_format avAudioEngine  node1 node2 bus1 bus2 format =
 --
 -- ObjC selector: @- connect:to:format:@
 connect_to_format :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node1, IsAVAudioNode node2, IsAVAudioFormat format) => avAudioEngine -> node1 -> node2 -> format -> IO ()
-connect_to_format avAudioEngine  node1 node2 format =
-  withObjCPtr node1 $ \raw_node1 ->
-    withObjCPtr node2 $ \raw_node2 ->
-      withObjCPtr format $ \raw_format ->
-          sendMsg avAudioEngine (mkSelector "connect:to:format:") retVoid [argPtr (castPtr raw_node1 :: Ptr ()), argPtr (castPtr raw_node2 :: Ptr ()), argPtr (castPtr raw_format :: Ptr ())]
+connect_to_format avAudioEngine node1 node2 format =
+  sendMessage avAudioEngine connect_to_formatSelector (toAVAudioNode node1) (toAVAudioNode node2) (toAVAudioFormat format)
 
 -- | connect:toConnectionPoints:fromBus:format:
 --
@@ -233,11 +222,8 @@ connect_to_format avAudioEngine  node1 node2 format =
 --
 -- ObjC selector: @- connect:toConnectionPoints:fromBus:format:@
 connect_toConnectionPoints_fromBus_format :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode sourceNode, IsNSArray destNodes, IsAVAudioFormat format) => avAudioEngine -> sourceNode -> destNodes -> CULong -> format -> IO ()
-connect_toConnectionPoints_fromBus_format avAudioEngine  sourceNode destNodes sourceBus format =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-    withObjCPtr destNodes $ \raw_destNodes ->
-      withObjCPtr format $ \raw_format ->
-          sendMsg avAudioEngine (mkSelector "connect:toConnectionPoints:fromBus:format:") retVoid [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_destNodes :: Ptr ()), argCULong sourceBus, argPtr (castPtr raw_format :: Ptr ())]
+connect_toConnectionPoints_fromBus_format avAudioEngine sourceNode destNodes sourceBus format =
+  sendMessage avAudioEngine connect_toConnectionPoints_fromBus_formatSelector (toAVAudioNode sourceNode) (toNSArray destNodes) sourceBus (toAVAudioFormat format)
 
 -- | disconnectNodeInput:bus:
 --
@@ -249,9 +235,8 @@ connect_toConnectionPoints_fromBus_format avAudioEngine  sourceNode destNodes so
 --
 -- ObjC selector: @- disconnectNodeInput:bus:@
 disconnectNodeInput_bus :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> CULong -> IO ()
-disconnectNodeInput_bus avAudioEngine  node bus =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "disconnectNodeInput:bus:") retVoid [argPtr (castPtr raw_node :: Ptr ()), argCULong bus]
+disconnectNodeInput_bus avAudioEngine node bus =
+  sendMessage avAudioEngine disconnectNodeInput_busSelector (toAVAudioNode node) bus
 
 -- | disconnectNodeInput:
 --
@@ -263,9 +248,8 @@ disconnectNodeInput_bus avAudioEngine  node bus =
 --
 -- ObjC selector: @- disconnectNodeInput:@
 disconnectNodeInput :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> IO ()
-disconnectNodeInput avAudioEngine  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "disconnectNodeInput:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+disconnectNodeInput avAudioEngine node =
+  sendMessage avAudioEngine disconnectNodeInputSelector (toAVAudioNode node)
 
 -- | disconnectNodeOutput:bus:
 --
@@ -277,9 +261,8 @@ disconnectNodeInput avAudioEngine  node =
 --
 -- ObjC selector: @- disconnectNodeOutput:bus:@
 disconnectNodeOutput_bus :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> CULong -> IO ()
-disconnectNodeOutput_bus avAudioEngine  node bus =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "disconnectNodeOutput:bus:") retVoid [argPtr (castPtr raw_node :: Ptr ()), argCULong bus]
+disconnectNodeOutput_bus avAudioEngine node bus =
+  sendMessage avAudioEngine disconnectNodeOutput_busSelector (toAVAudioNode node) bus
 
 -- | disconnectNodeOutput:
 --
@@ -291,9 +274,8 @@ disconnectNodeOutput_bus avAudioEngine  node bus =
 --
 -- ObjC selector: @- disconnectNodeOutput:@
 disconnectNodeOutput :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> IO ()
-disconnectNodeOutput avAudioEngine  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "disconnectNodeOutput:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+disconnectNodeOutput avAudioEngine node =
+  sendMessage avAudioEngine disconnectNodeOutputSelector (toAVAudioNode node)
 
 -- | prepare
 --
@@ -305,8 +287,8 @@ disconnectNodeOutput avAudioEngine  node =
 --
 -- ObjC selector: @- prepare@
 prepare :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO ()
-prepare avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "prepare") retVoid []
+prepare avAudioEngine =
+  sendMessage avAudioEngine prepareSelector
 
 -- | startAndReturnError:
 --
@@ -324,9 +306,8 @@ prepare avAudioEngine  =
 --
 -- ObjC selector: @- startAndReturnError:@
 startAndReturnError :: (IsAVAudioEngine avAudioEngine, IsNSError outError) => avAudioEngine -> outError -> IO Bool
-startAndReturnError avAudioEngine  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioEngine (mkSelector "startAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+startAndReturnError avAudioEngine outError =
+  sendMessage avAudioEngine startAndReturnErrorSelector (toNSError outError)
 
 -- | pause
 --
@@ -338,8 +319,8 @@ startAndReturnError avAudioEngine  outError =
 --
 -- ObjC selector: @- pause@
 pause :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO ()
-pause avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "pause") retVoid []
+pause avAudioEngine =
+  sendMessage avAudioEngine pauseSelector
 
 -- | reset
 --
@@ -351,8 +332,8 @@ pause avAudioEngine  =
 --
 -- ObjC selector: @- reset@
 reset :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO ()
-reset avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "reset") retVoid []
+reset avAudioEngine =
+  sendMessage avAudioEngine resetSelector
 
 -- | stop
 --
@@ -362,8 +343,8 @@ reset avAudioEngine  =
 --
 -- ObjC selector: @- stop@
 stop :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO ()
-stop avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "stop") retVoid []
+stop avAudioEngine =
+  sendMessage avAudioEngine stopSelector
 
 -- | inputConnectionPointForNode:inputBus:
 --
@@ -381,9 +362,8 @@ stop avAudioEngine  =
 --
 -- ObjC selector: @- inputConnectionPointForNode:inputBus:@
 inputConnectionPointForNode_inputBus :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> CULong -> IO (Id AVAudioConnectionPoint)
-inputConnectionPointForNode_inputBus avAudioEngine  node bus =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "inputConnectionPointForNode:inputBus:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ()), argCULong bus] >>= retainedObject . castPtr
+inputConnectionPointForNode_inputBus avAudioEngine node bus =
+  sendMessage avAudioEngine inputConnectionPointForNode_inputBusSelector (toAVAudioNode node) bus
 
 -- | outputConnectionPointsForNode:outputBus:
 --
@@ -401,9 +381,8 @@ inputConnectionPointForNode_inputBus avAudioEngine  node bus =
 --
 -- ObjC selector: @- outputConnectionPointsForNode:outputBus:@
 outputConnectionPointsForNode_outputBus :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> CULong -> IO (Id NSArray)
-outputConnectionPointsForNode_outputBus avAudioEngine  node bus =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "outputConnectionPointsForNode:outputBus:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ()), argCULong bus] >>= retainedObject . castPtr
+outputConnectionPointsForNode_outputBus avAudioEngine node bus =
+  sendMessage avAudioEngine outputConnectionPointsForNode_outputBusSelector (toAVAudioNode node) bus
 
 -- | enableManualRenderingMode:format:maximumFrameCount:error:
 --
@@ -433,10 +412,8 @@ outputConnectionPointsForNode_outputBus avAudioEngine  node bus =
 --
 -- ObjC selector: @- enableManualRenderingMode:format:maximumFrameCount:error:@
 enableManualRenderingMode_format_maximumFrameCount_error :: (IsAVAudioEngine avAudioEngine, IsAVAudioFormat pcmFormat, IsNSError outError) => avAudioEngine -> AVAudioEngineManualRenderingMode -> pcmFormat -> CUInt -> outError -> IO Bool
-enableManualRenderingMode_format_maximumFrameCount_error avAudioEngine  mode pcmFormat maximumFrameCount outError =
-  withObjCPtr pcmFormat $ \raw_pcmFormat ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioEngine (mkSelector "enableManualRenderingMode:format:maximumFrameCount:error:") retCULong [argCLong (coerce mode), argPtr (castPtr raw_pcmFormat :: Ptr ()), argCUInt maximumFrameCount, argPtr (castPtr raw_outError :: Ptr ())]
+enableManualRenderingMode_format_maximumFrameCount_error avAudioEngine mode pcmFormat maximumFrameCount outError =
+  sendMessage avAudioEngine enableManualRenderingMode_format_maximumFrameCount_errorSelector mode (toAVAudioFormat pcmFormat) maximumFrameCount (toNSError outError)
 
 -- | disableManualRenderingMode
 --
@@ -448,8 +425,8 @@ enableManualRenderingMode_format_maximumFrameCount_error avAudioEngine  mode pcm
 --
 -- ObjC selector: @- disableManualRenderingMode@
 disableManualRenderingMode :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO ()
-disableManualRenderingMode avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "disableManualRenderingMode") retVoid []
+disableManualRenderingMode avAudioEngine =
+  sendMessage avAudioEngine disableManualRenderingModeSelector
 
 -- | renderOffline:toBuffer:error:
 --
@@ -473,10 +450,8 @@ disableManualRenderingMode avAudioEngine  =
 --
 -- ObjC selector: @- renderOffline:toBuffer:error:@
 renderOffline_toBuffer_error :: (IsAVAudioEngine avAudioEngine, IsAVAudioPCMBuffer buffer, IsNSError outError) => avAudioEngine -> CUInt -> buffer -> outError -> IO AVAudioEngineManualRenderingStatus
-renderOffline_toBuffer_error avAudioEngine  numberOfFrames buffer outError =
-  withObjCPtr buffer $ \raw_buffer ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap (coerce :: CLong -> AVAudioEngineManualRenderingStatus) $ sendMsg avAudioEngine (mkSelector "renderOffline:toBuffer:error:") retCLong [argCUInt numberOfFrames, argPtr (castPtr raw_buffer :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+renderOffline_toBuffer_error avAudioEngine numberOfFrames buffer outError =
+  sendMessage avAudioEngine renderOffline_toBuffer_errorSelector numberOfFrames (toAVAudioPCMBuffer buffer) (toNSError outError)
 
 -- | connectMIDI:to:format:block:
 --
@@ -500,11 +475,8 @@ renderOffline_toBuffer_error avAudioEngine  numberOfFrames buffer outError =
 --
 -- ObjC selector: @- connectMIDI:to:format:block:@
 connectMIDI_to_format_block :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode sourceNode, IsAVAudioNode destinationNode, IsAVAudioFormat format) => avAudioEngine -> sourceNode -> destinationNode -> format -> Ptr () -> IO ()
-connectMIDI_to_format_block avAudioEngine  sourceNode destinationNode format tapBlock =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-    withObjCPtr destinationNode $ \raw_destinationNode ->
-      withObjCPtr format $ \raw_format ->
-          sendMsg avAudioEngine (mkSelector "connectMIDI:to:format:block:") retVoid [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_destinationNode :: Ptr ()), argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr tapBlock :: Ptr ())]
+connectMIDI_to_format_block avAudioEngine sourceNode destinationNode format tapBlock =
+  sendMessage avAudioEngine connectMIDI_to_format_blockSelector (toAVAudioNode sourceNode) (toAVAudioNode destinationNode) (toAVAudioFormat format) tapBlock
 
 -- | connectMIDI:to:format:eventListblock:
 --
@@ -528,11 +500,8 @@ connectMIDI_to_format_block avAudioEngine  sourceNode destinationNode format tap
 --
 -- ObjC selector: @- connectMIDI:to:format:eventListBlock:@
 connectMIDI_to_format_eventListBlock :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode sourceNode, IsAVAudioNode destinationNode, IsAVAudioFormat format) => avAudioEngine -> sourceNode -> destinationNode -> format -> Ptr () -> IO ()
-connectMIDI_to_format_eventListBlock avAudioEngine  sourceNode destinationNode format tapBlock =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-    withObjCPtr destinationNode $ \raw_destinationNode ->
-      withObjCPtr format $ \raw_format ->
-          sendMsg avAudioEngine (mkSelector "connectMIDI:to:format:eventListBlock:") retVoid [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_destinationNode :: Ptr ()), argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr tapBlock :: Ptr ())]
+connectMIDI_to_format_eventListBlock avAudioEngine sourceNode destinationNode format tapBlock =
+  sendMessage avAudioEngine connectMIDI_to_format_eventListBlockSelector (toAVAudioNode sourceNode) (toAVAudioNode destinationNode) (toAVAudioFormat format) tapBlock
 
 -- | connectMIDI:toNodes:format:block:
 --
@@ -558,11 +527,8 @@ connectMIDI_to_format_eventListBlock avAudioEngine  sourceNode destinationNode f
 --
 -- ObjC selector: @- connectMIDI:toNodes:format:block:@
 connectMIDI_toNodes_format_block :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode sourceNode, IsNSArray destinationNodes, IsAVAudioFormat format) => avAudioEngine -> sourceNode -> destinationNodes -> format -> Ptr () -> IO ()
-connectMIDI_toNodes_format_block avAudioEngine  sourceNode destinationNodes format tapBlock =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-    withObjCPtr destinationNodes $ \raw_destinationNodes ->
-      withObjCPtr format $ \raw_format ->
-          sendMsg avAudioEngine (mkSelector "connectMIDI:toNodes:format:block:") retVoid [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_destinationNodes :: Ptr ()), argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr tapBlock :: Ptr ())]
+connectMIDI_toNodes_format_block avAudioEngine sourceNode destinationNodes format tapBlock =
+  sendMessage avAudioEngine connectMIDI_toNodes_format_blockSelector (toAVAudioNode sourceNode) (toNSArray destinationNodes) (toAVAudioFormat format) tapBlock
 
 -- | connectMIDI:toNodes:format:eventListBlock:
 --
@@ -588,11 +554,8 @@ connectMIDI_toNodes_format_block avAudioEngine  sourceNode destinationNodes form
 --
 -- ObjC selector: @- connectMIDI:toNodes:format:eventListBlock:@
 connectMIDI_toNodes_format_eventListBlock :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode sourceNode, IsNSArray destinationNodes, IsAVAudioFormat format) => avAudioEngine -> sourceNode -> destinationNodes -> format -> Ptr () -> IO ()
-connectMIDI_toNodes_format_eventListBlock avAudioEngine  sourceNode destinationNodes format tapBlock =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-    withObjCPtr destinationNodes $ \raw_destinationNodes ->
-      withObjCPtr format $ \raw_format ->
-          sendMsg avAudioEngine (mkSelector "connectMIDI:toNodes:format:eventListBlock:") retVoid [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_destinationNodes :: Ptr ()), argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr tapBlock :: Ptr ())]
+connectMIDI_toNodes_format_eventListBlock avAudioEngine sourceNode destinationNodes format tapBlock =
+  sendMessage avAudioEngine connectMIDI_toNodes_format_eventListBlockSelector (toAVAudioNode sourceNode) (toNSArray destinationNodes) (toAVAudioFormat format) tapBlock
 
 -- | disconnectMIDI:from:
 --
@@ -606,10 +569,8 @@ connectMIDI_toNodes_format_eventListBlock avAudioEngine  sourceNode destinationN
 --
 -- ObjC selector: @- disconnectMIDI:from:@
 disconnectMIDI_from :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode sourceNode, IsAVAudioNode destinationNode) => avAudioEngine -> sourceNode -> destinationNode -> IO ()
-disconnectMIDI_from avAudioEngine  sourceNode destinationNode =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-    withObjCPtr destinationNode $ \raw_destinationNode ->
-        sendMsg avAudioEngine (mkSelector "disconnectMIDI:from:") retVoid [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_destinationNode :: Ptr ())]
+disconnectMIDI_from avAudioEngine sourceNode destinationNode =
+  sendMessage avAudioEngine disconnectMIDI_fromSelector (toAVAudioNode sourceNode) (toAVAudioNode destinationNode)
 
 -- | disconnectMIDI:fromNodes:
 --
@@ -623,10 +584,8 @@ disconnectMIDI_from avAudioEngine  sourceNode destinationNode =
 --
 -- ObjC selector: @- disconnectMIDI:fromNodes:@
 disconnectMIDI_fromNodes :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode sourceNode, IsNSArray destinationNodes) => avAudioEngine -> sourceNode -> destinationNodes -> IO ()
-disconnectMIDI_fromNodes avAudioEngine  sourceNode destinationNodes =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-    withObjCPtr destinationNodes $ \raw_destinationNodes ->
-        sendMsg avAudioEngine (mkSelector "disconnectMIDI:fromNodes:") retVoid [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_destinationNodes :: Ptr ())]
+disconnectMIDI_fromNodes avAudioEngine sourceNode destinationNodes =
+  sendMessage avAudioEngine disconnectMIDI_fromNodesSelector (toAVAudioNode sourceNode) (toNSArray destinationNodes)
 
 -- | disconnectMIDIInput:
 --
@@ -636,9 +595,8 @@ disconnectMIDI_fromNodes avAudioEngine  sourceNode destinationNodes =
 --
 -- ObjC selector: @- disconnectMIDIInput:@
 disconnectMIDIInput :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> IO ()
-disconnectMIDIInput avAudioEngine  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "disconnectMIDIInput:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+disconnectMIDIInput avAudioEngine node =
+  sendMessage avAudioEngine disconnectMIDIInputSelector (toAVAudioNode node)
 
 -- | disconnectMIDIOutput:
 --
@@ -648,9 +606,8 @@ disconnectMIDIInput avAudioEngine  node =
 --
 -- ObjC selector: @- disconnectMIDIOutput:@
 disconnectMIDIOutput :: (IsAVAudioEngine avAudioEngine, IsAVAudioNode node) => avAudioEngine -> node -> IO ()
-disconnectMIDIOutput avAudioEngine  node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioEngine (mkSelector "disconnectMIDIOutput:") retVoid [argPtr (castPtr raw_node :: Ptr ())]
+disconnectMIDIOutput avAudioEngine node =
+  sendMessage avAudioEngine disconnectMIDIOutputSelector (toAVAudioNode node)
 
 -- | musicSequence
 --
@@ -658,8 +615,8 @@ disconnectMIDIOutput avAudioEngine  node =
 --
 -- ObjC selector: @- musicSequence@
 musicSequence :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO (Ptr ())
-musicSequence avAudioEngine  =
-    fmap castPtr $ sendMsg avAudioEngine (mkSelector "musicSequence") (retPtr retVoid) []
+musicSequence avAudioEngine =
+  sendMessage avAudioEngine musicSequenceSelector
 
 -- | musicSequence
 --
@@ -667,8 +624,8 @@ musicSequence avAudioEngine  =
 --
 -- ObjC selector: @- setMusicSequence:@
 setMusicSequence :: IsAVAudioEngine avAudioEngine => avAudioEngine -> Ptr () -> IO ()
-setMusicSequence avAudioEngine  value =
-    sendMsg avAudioEngine (mkSelector "setMusicSequence:") retVoid [argPtr value]
+setMusicSequence avAudioEngine value =
+  sendMessage avAudioEngine setMusicSequenceSelector value
 
 -- | outputNode
 --
@@ -682,8 +639,8 @@ setMusicSequence avAudioEngine  value =
 --
 -- ObjC selector: @- outputNode@
 outputNode :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO (Id AVAudioOutputNode)
-outputNode avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "outputNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputNode avAudioEngine =
+  sendMessage avAudioEngine outputNodeSelector
 
 -- | inputNode
 --
@@ -701,8 +658,8 @@ outputNode avAudioEngine  =
 --
 -- ObjC selector: @- inputNode@
 inputNode :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO (Id AVAudioInputNode)
-inputNode avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "inputNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputNode avAudioEngine =
+  sendMessage avAudioEngine inputNodeSelector
 
 -- | mainMixerNode
 --
@@ -716,8 +673,8 @@ inputNode avAudioEngine  =
 --
 -- ObjC selector: @- mainMixerNode@
 mainMixerNode :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO (Id AVAudioMixerNode)
-mainMixerNode avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "mainMixerNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainMixerNode avAudioEngine =
+  sendMessage avAudioEngine mainMixerNodeSelector
 
 -- | running
 --
@@ -725,8 +682,8 @@ mainMixerNode avAudioEngine  =
 --
 -- ObjC selector: @- running@
 running :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO Bool
-running avAudioEngine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioEngine (mkSelector "running") retCULong []
+running avAudioEngine =
+  sendMessage avAudioEngine runningSelector
 
 -- | autoShutdownEnabled
 --
@@ -740,8 +697,8 @@ running avAudioEngine  =
 --
 -- ObjC selector: @- autoShutdownEnabled@
 autoShutdownEnabled :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO Bool
-autoShutdownEnabled avAudioEngine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioEngine (mkSelector "autoShutdownEnabled") retCULong []
+autoShutdownEnabled avAudioEngine =
+  sendMessage avAudioEngine autoShutdownEnabledSelector
 
 -- | autoShutdownEnabled
 --
@@ -755,8 +712,8 @@ autoShutdownEnabled avAudioEngine  =
 --
 -- ObjC selector: @- setAutoShutdownEnabled:@
 setAutoShutdownEnabled :: IsAVAudioEngine avAudioEngine => avAudioEngine -> Bool -> IO ()
-setAutoShutdownEnabled avAudioEngine  value =
-    sendMsg avAudioEngine (mkSelector "setAutoShutdownEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutoShutdownEnabled avAudioEngine value =
+  sendMessage avAudioEngine setAutoShutdownEnabledSelector value
 
 -- | attachedNodes
 --
@@ -764,8 +721,8 @@ setAutoShutdownEnabled avAudioEngine  value =
 --
 -- ObjC selector: @- attachedNodes@
 attachedNodes :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO (Id NSSet)
-attachedNodes avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "attachedNodes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attachedNodes avAudioEngine =
+  sendMessage avAudioEngine attachedNodesSelector
 
 -- | manualRenderingBlock
 --
@@ -779,8 +736,8 @@ attachedNodes avAudioEngine  =
 --
 -- ObjC selector: @- manualRenderingBlock@
 manualRenderingBlock :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO (Ptr ())
-manualRenderingBlock avAudioEngine  =
-    fmap castPtr $ sendMsg avAudioEngine (mkSelector "manualRenderingBlock") (retPtr retVoid) []
+manualRenderingBlock avAudioEngine =
+  sendMessage avAudioEngine manualRenderingBlockSelector
 
 -- | isInManualRenderingMode
 --
@@ -788,8 +745,8 @@ manualRenderingBlock avAudioEngine  =
 --
 -- ObjC selector: @- isInManualRenderingMode@
 isInManualRenderingMode :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO Bool
-isInManualRenderingMode avAudioEngine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioEngine (mkSelector "isInManualRenderingMode") retCULong []
+isInManualRenderingMode avAudioEngine =
+  sendMessage avAudioEngine isInManualRenderingModeSelector
 
 -- | manualRenderingMode
 --
@@ -799,8 +756,8 @@ isInManualRenderingMode avAudioEngine  =
 --
 -- ObjC selector: @- manualRenderingMode@
 manualRenderingMode :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO AVAudioEngineManualRenderingMode
-manualRenderingMode avAudioEngine  =
-    fmap (coerce :: CLong -> AVAudioEngineManualRenderingMode) $ sendMsg avAudioEngine (mkSelector "manualRenderingMode") retCLong []
+manualRenderingMode avAudioEngine =
+  sendMessage avAudioEngine manualRenderingModeSelector
 
 -- | manualRenderingFormat
 --
@@ -810,8 +767,8 @@ manualRenderingMode avAudioEngine  =
 --
 -- ObjC selector: @- manualRenderingFormat@
 manualRenderingFormat :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO (Id AVAudioFormat)
-manualRenderingFormat avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "manualRenderingFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+manualRenderingFormat avAudioEngine =
+  sendMessage avAudioEngine manualRenderingFormatSelector
 
 -- | manualRenderingMaximumFrameCount
 --
@@ -821,8 +778,8 @@ manualRenderingFormat avAudioEngine  =
 --
 -- ObjC selector: @- manualRenderingMaximumFrameCount@
 manualRenderingMaximumFrameCount :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO CUInt
-manualRenderingMaximumFrameCount avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "manualRenderingMaximumFrameCount") retCUInt []
+manualRenderingMaximumFrameCount avAudioEngine =
+  sendMessage avAudioEngine manualRenderingMaximumFrameCountSelector
 
 -- | manualRenderingSampleTime
 --
@@ -832,182 +789,182 @@ manualRenderingMaximumFrameCount avAudioEngine  =
 --
 -- ObjC selector: @- manualRenderingSampleTime@
 manualRenderingSampleTime :: IsAVAudioEngine avAudioEngine => avAudioEngine -> IO CLong
-manualRenderingSampleTime avAudioEngine  =
-    sendMsg avAudioEngine (mkSelector "manualRenderingSampleTime") retCLong []
+manualRenderingSampleTime avAudioEngine =
+  sendMessage avAudioEngine manualRenderingSampleTimeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioEngine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @attachNode:@
-attachNodeSelector :: Selector
+attachNodeSelector :: Selector '[Id AVAudioNode] ()
 attachNodeSelector = mkSelector "attachNode:"
 
 -- | @Selector@ for @detachNode:@
-detachNodeSelector :: Selector
+detachNodeSelector :: Selector '[Id AVAudioNode] ()
 detachNodeSelector = mkSelector "detachNode:"
 
 -- | @Selector@ for @connect:to:fromBus:toBus:format:@
-connect_to_fromBus_toBus_formatSelector :: Selector
+connect_to_fromBus_toBus_formatSelector :: Selector '[Id AVAudioNode, Id AVAudioNode, CULong, CULong, Id AVAudioFormat] ()
 connect_to_fromBus_toBus_formatSelector = mkSelector "connect:to:fromBus:toBus:format:"
 
 -- | @Selector@ for @connect:to:format:@
-connect_to_formatSelector :: Selector
+connect_to_formatSelector :: Selector '[Id AVAudioNode, Id AVAudioNode, Id AVAudioFormat] ()
 connect_to_formatSelector = mkSelector "connect:to:format:"
 
 -- | @Selector@ for @connect:toConnectionPoints:fromBus:format:@
-connect_toConnectionPoints_fromBus_formatSelector :: Selector
+connect_toConnectionPoints_fromBus_formatSelector :: Selector '[Id AVAudioNode, Id NSArray, CULong, Id AVAudioFormat] ()
 connect_toConnectionPoints_fromBus_formatSelector = mkSelector "connect:toConnectionPoints:fromBus:format:"
 
 -- | @Selector@ for @disconnectNodeInput:bus:@
-disconnectNodeInput_busSelector :: Selector
+disconnectNodeInput_busSelector :: Selector '[Id AVAudioNode, CULong] ()
 disconnectNodeInput_busSelector = mkSelector "disconnectNodeInput:bus:"
 
 -- | @Selector@ for @disconnectNodeInput:@
-disconnectNodeInputSelector :: Selector
+disconnectNodeInputSelector :: Selector '[Id AVAudioNode] ()
 disconnectNodeInputSelector = mkSelector "disconnectNodeInput:"
 
 -- | @Selector@ for @disconnectNodeOutput:bus:@
-disconnectNodeOutput_busSelector :: Selector
+disconnectNodeOutput_busSelector :: Selector '[Id AVAudioNode, CULong] ()
 disconnectNodeOutput_busSelector = mkSelector "disconnectNodeOutput:bus:"
 
 -- | @Selector@ for @disconnectNodeOutput:@
-disconnectNodeOutputSelector :: Selector
+disconnectNodeOutputSelector :: Selector '[Id AVAudioNode] ()
 disconnectNodeOutputSelector = mkSelector "disconnectNodeOutput:"
 
 -- | @Selector@ for @prepare@
-prepareSelector :: Selector
+prepareSelector :: Selector '[] ()
 prepareSelector = mkSelector "prepare"
 
 -- | @Selector@ for @startAndReturnError:@
-startAndReturnErrorSelector :: Selector
+startAndReturnErrorSelector :: Selector '[Id NSError] Bool
 startAndReturnErrorSelector = mkSelector "startAndReturnError:"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @inputConnectionPointForNode:inputBus:@
-inputConnectionPointForNode_inputBusSelector :: Selector
+inputConnectionPointForNode_inputBusSelector :: Selector '[Id AVAudioNode, CULong] (Id AVAudioConnectionPoint)
 inputConnectionPointForNode_inputBusSelector = mkSelector "inputConnectionPointForNode:inputBus:"
 
 -- | @Selector@ for @outputConnectionPointsForNode:outputBus:@
-outputConnectionPointsForNode_outputBusSelector :: Selector
+outputConnectionPointsForNode_outputBusSelector :: Selector '[Id AVAudioNode, CULong] (Id NSArray)
 outputConnectionPointsForNode_outputBusSelector = mkSelector "outputConnectionPointsForNode:outputBus:"
 
 -- | @Selector@ for @enableManualRenderingMode:format:maximumFrameCount:error:@
-enableManualRenderingMode_format_maximumFrameCount_errorSelector :: Selector
+enableManualRenderingMode_format_maximumFrameCount_errorSelector :: Selector '[AVAudioEngineManualRenderingMode, Id AVAudioFormat, CUInt, Id NSError] Bool
 enableManualRenderingMode_format_maximumFrameCount_errorSelector = mkSelector "enableManualRenderingMode:format:maximumFrameCount:error:"
 
 -- | @Selector@ for @disableManualRenderingMode@
-disableManualRenderingModeSelector :: Selector
+disableManualRenderingModeSelector :: Selector '[] ()
 disableManualRenderingModeSelector = mkSelector "disableManualRenderingMode"
 
 -- | @Selector@ for @renderOffline:toBuffer:error:@
-renderOffline_toBuffer_errorSelector :: Selector
+renderOffline_toBuffer_errorSelector :: Selector '[CUInt, Id AVAudioPCMBuffer, Id NSError] AVAudioEngineManualRenderingStatus
 renderOffline_toBuffer_errorSelector = mkSelector "renderOffline:toBuffer:error:"
 
 -- | @Selector@ for @connectMIDI:to:format:block:@
-connectMIDI_to_format_blockSelector :: Selector
+connectMIDI_to_format_blockSelector :: Selector '[Id AVAudioNode, Id AVAudioNode, Id AVAudioFormat, Ptr ()] ()
 connectMIDI_to_format_blockSelector = mkSelector "connectMIDI:to:format:block:"
 
 -- | @Selector@ for @connectMIDI:to:format:eventListBlock:@
-connectMIDI_to_format_eventListBlockSelector :: Selector
+connectMIDI_to_format_eventListBlockSelector :: Selector '[Id AVAudioNode, Id AVAudioNode, Id AVAudioFormat, Ptr ()] ()
 connectMIDI_to_format_eventListBlockSelector = mkSelector "connectMIDI:to:format:eventListBlock:"
 
 -- | @Selector@ for @connectMIDI:toNodes:format:block:@
-connectMIDI_toNodes_format_blockSelector :: Selector
+connectMIDI_toNodes_format_blockSelector :: Selector '[Id AVAudioNode, Id NSArray, Id AVAudioFormat, Ptr ()] ()
 connectMIDI_toNodes_format_blockSelector = mkSelector "connectMIDI:toNodes:format:block:"
 
 -- | @Selector@ for @connectMIDI:toNodes:format:eventListBlock:@
-connectMIDI_toNodes_format_eventListBlockSelector :: Selector
+connectMIDI_toNodes_format_eventListBlockSelector :: Selector '[Id AVAudioNode, Id NSArray, Id AVAudioFormat, Ptr ()] ()
 connectMIDI_toNodes_format_eventListBlockSelector = mkSelector "connectMIDI:toNodes:format:eventListBlock:"
 
 -- | @Selector@ for @disconnectMIDI:from:@
-disconnectMIDI_fromSelector :: Selector
+disconnectMIDI_fromSelector :: Selector '[Id AVAudioNode, Id AVAudioNode] ()
 disconnectMIDI_fromSelector = mkSelector "disconnectMIDI:from:"
 
 -- | @Selector@ for @disconnectMIDI:fromNodes:@
-disconnectMIDI_fromNodesSelector :: Selector
+disconnectMIDI_fromNodesSelector :: Selector '[Id AVAudioNode, Id NSArray] ()
 disconnectMIDI_fromNodesSelector = mkSelector "disconnectMIDI:fromNodes:"
 
 -- | @Selector@ for @disconnectMIDIInput:@
-disconnectMIDIInputSelector :: Selector
+disconnectMIDIInputSelector :: Selector '[Id AVAudioNode] ()
 disconnectMIDIInputSelector = mkSelector "disconnectMIDIInput:"
 
 -- | @Selector@ for @disconnectMIDIOutput:@
-disconnectMIDIOutputSelector :: Selector
+disconnectMIDIOutputSelector :: Selector '[Id AVAudioNode] ()
 disconnectMIDIOutputSelector = mkSelector "disconnectMIDIOutput:"
 
 -- | @Selector@ for @musicSequence@
-musicSequenceSelector :: Selector
+musicSequenceSelector :: Selector '[] (Ptr ())
 musicSequenceSelector = mkSelector "musicSequence"
 
 -- | @Selector@ for @setMusicSequence:@
-setMusicSequenceSelector :: Selector
+setMusicSequenceSelector :: Selector '[Ptr ()] ()
 setMusicSequenceSelector = mkSelector "setMusicSequence:"
 
 -- | @Selector@ for @outputNode@
-outputNodeSelector :: Selector
+outputNodeSelector :: Selector '[] (Id AVAudioOutputNode)
 outputNodeSelector = mkSelector "outputNode"
 
 -- | @Selector@ for @inputNode@
-inputNodeSelector :: Selector
+inputNodeSelector :: Selector '[] (Id AVAudioInputNode)
 inputNodeSelector = mkSelector "inputNode"
 
 -- | @Selector@ for @mainMixerNode@
-mainMixerNodeSelector :: Selector
+mainMixerNodeSelector :: Selector '[] (Id AVAudioMixerNode)
 mainMixerNodeSelector = mkSelector "mainMixerNode"
 
 -- | @Selector@ for @running@
-runningSelector :: Selector
+runningSelector :: Selector '[] Bool
 runningSelector = mkSelector "running"
 
 -- | @Selector@ for @autoShutdownEnabled@
-autoShutdownEnabledSelector :: Selector
+autoShutdownEnabledSelector :: Selector '[] Bool
 autoShutdownEnabledSelector = mkSelector "autoShutdownEnabled"
 
 -- | @Selector@ for @setAutoShutdownEnabled:@
-setAutoShutdownEnabledSelector :: Selector
+setAutoShutdownEnabledSelector :: Selector '[Bool] ()
 setAutoShutdownEnabledSelector = mkSelector "setAutoShutdownEnabled:"
 
 -- | @Selector@ for @attachedNodes@
-attachedNodesSelector :: Selector
+attachedNodesSelector :: Selector '[] (Id NSSet)
 attachedNodesSelector = mkSelector "attachedNodes"
 
 -- | @Selector@ for @manualRenderingBlock@
-manualRenderingBlockSelector :: Selector
+manualRenderingBlockSelector :: Selector '[] (Ptr ())
 manualRenderingBlockSelector = mkSelector "manualRenderingBlock"
 
 -- | @Selector@ for @isInManualRenderingMode@
-isInManualRenderingModeSelector :: Selector
+isInManualRenderingModeSelector :: Selector '[] Bool
 isInManualRenderingModeSelector = mkSelector "isInManualRenderingMode"
 
 -- | @Selector@ for @manualRenderingMode@
-manualRenderingModeSelector :: Selector
+manualRenderingModeSelector :: Selector '[] AVAudioEngineManualRenderingMode
 manualRenderingModeSelector = mkSelector "manualRenderingMode"
 
 -- | @Selector@ for @manualRenderingFormat@
-manualRenderingFormatSelector :: Selector
+manualRenderingFormatSelector :: Selector '[] (Id AVAudioFormat)
 manualRenderingFormatSelector = mkSelector "manualRenderingFormat"
 
 -- | @Selector@ for @manualRenderingMaximumFrameCount@
-manualRenderingMaximumFrameCountSelector :: Selector
+manualRenderingMaximumFrameCountSelector :: Selector '[] CUInt
 manualRenderingMaximumFrameCountSelector = mkSelector "manualRenderingMaximumFrameCount"
 
 -- | @Selector@ for @manualRenderingSampleTime@
-manualRenderingSampleTimeSelector :: Selector
+manualRenderingSampleTimeSelector :: Selector '[] CLong
 manualRenderingSampleTimeSelector = mkSelector "manualRenderingSampleTime"
 

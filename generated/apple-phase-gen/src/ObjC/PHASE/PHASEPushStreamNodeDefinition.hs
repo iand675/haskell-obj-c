@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.PHASE.PHASEPushStreamNodeDefinition
   , format
   , normalize
   , setNormalize
-  , initSelector
-  , newSelector
-  , initWithMixerDefinition_format_identifierSelector
-  , initWithMixerDefinition_formatSelector
   , formatSelector
+  , initSelector
+  , initWithMixerDefinition_formatSelector
+  , initWithMixerDefinition_format_identifierSelector
+  , newSelector
   , normalizeSelector
   , setNormalizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,15 +45,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEPushStreamNodeDefinition phasePushStreamNodeDefinition => phasePushStreamNodeDefinition -> IO (Id PHASEPushStreamNodeDefinition)
-init_ phasePushStreamNodeDefinition  =
-    sendMsg phasePushStreamNodeDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phasePushStreamNodeDefinition =
+  sendOwnedMessage phasePushStreamNodeDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEPushStreamNodeDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASEPushStreamNodeDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithMixerDefinition:format:identifier
 --
@@ -72,11 +69,8 @@ new  =
 --
 -- ObjC selector: @- initWithMixerDefinition:format:identifier:@
 initWithMixerDefinition_format_identifier :: (IsPHASEPushStreamNodeDefinition phasePushStreamNodeDefinition, IsPHASEMixerDefinition mixerDefinition, IsAVAudioFormat format, IsNSString identifier) => phasePushStreamNodeDefinition -> mixerDefinition -> format -> identifier -> IO (Id PHASEPushStreamNodeDefinition)
-initWithMixerDefinition_format_identifier phasePushStreamNodeDefinition  mixerDefinition format identifier =
-  withObjCPtr mixerDefinition $ \raw_mixerDefinition ->
-    withObjCPtr format $ \raw_format ->
-      withObjCPtr identifier $ \raw_identifier ->
-          sendMsg phasePushStreamNodeDefinition (mkSelector "initWithMixerDefinition:format:identifier:") (retPtr retVoid) [argPtr (castPtr raw_mixerDefinition :: Ptr ()), argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithMixerDefinition_format_identifier phasePushStreamNodeDefinition mixerDefinition format identifier =
+  sendOwnedMessage phasePushStreamNodeDefinition initWithMixerDefinition_format_identifierSelector (toPHASEMixerDefinition mixerDefinition) (toAVAudioFormat format) (toNSString identifier)
 
 -- | initWithMixerDefinition:format
 --
@@ -90,10 +84,8 @@ initWithMixerDefinition_format_identifier phasePushStreamNodeDefinition  mixerDe
 --
 -- ObjC selector: @- initWithMixerDefinition:format:@
 initWithMixerDefinition_format :: (IsPHASEPushStreamNodeDefinition phasePushStreamNodeDefinition, IsPHASEMixerDefinition mixerDefinition, IsAVAudioFormat format) => phasePushStreamNodeDefinition -> mixerDefinition -> format -> IO (Id PHASEPushStreamNodeDefinition)
-initWithMixerDefinition_format phasePushStreamNodeDefinition  mixerDefinition format =
-  withObjCPtr mixerDefinition $ \raw_mixerDefinition ->
-    withObjCPtr format $ \raw_format ->
-        sendMsg phasePushStreamNodeDefinition (mkSelector "initWithMixerDefinition:format:") (retPtr retVoid) [argPtr (castPtr raw_mixerDefinition :: Ptr ()), argPtr (castPtr raw_format :: Ptr ())] >>= ownedObject . castPtr
+initWithMixerDefinition_format phasePushStreamNodeDefinition mixerDefinition format =
+  sendOwnedMessage phasePushStreamNodeDefinition initWithMixerDefinition_formatSelector (toPHASEMixerDefinition mixerDefinition) (toAVAudioFormat format)
 
 -- | format
 --
@@ -101,8 +93,8 @@ initWithMixerDefinition_format phasePushStreamNodeDefinition  mixerDefinition fo
 --
 -- ObjC selector: @- format@
 format :: IsPHASEPushStreamNodeDefinition phasePushStreamNodeDefinition => phasePushStreamNodeDefinition -> IO (Id AVAudioFormat)
-format phasePushStreamNodeDefinition  =
-    sendMsg phasePushStreamNodeDefinition (mkSelector "format") (retPtr retVoid) [] >>= retainedObject . castPtr
+format phasePushStreamNodeDefinition =
+  sendMessage phasePushStreamNodeDefinition formatSelector
 
 -- | normalize
 --
@@ -112,8 +104,8 @@ format phasePushStreamNodeDefinition  =
 --
 -- ObjC selector: @- normalize@
 normalize :: IsPHASEPushStreamNodeDefinition phasePushStreamNodeDefinition => phasePushStreamNodeDefinition -> IO Bool
-normalize phasePushStreamNodeDefinition  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phasePushStreamNodeDefinition (mkSelector "normalize") retCULong []
+normalize phasePushStreamNodeDefinition =
+  sendMessage phasePushStreamNodeDefinition normalizeSelector
 
 -- | normalize
 --
@@ -123,38 +115,38 @@ normalize phasePushStreamNodeDefinition  =
 --
 -- ObjC selector: @- setNormalize:@
 setNormalize :: IsPHASEPushStreamNodeDefinition phasePushStreamNodeDefinition => phasePushStreamNodeDefinition -> Bool -> IO ()
-setNormalize phasePushStreamNodeDefinition  value =
-    sendMsg phasePushStreamNodeDefinition (mkSelector "setNormalize:") retVoid [argCULong (if value then 1 else 0)]
+setNormalize phasePushStreamNodeDefinition value =
+  sendMessage phasePushStreamNodeDefinition setNormalizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEPushStreamNodeDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEPushStreamNodeDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithMixerDefinition:format:identifier:@
-initWithMixerDefinition_format_identifierSelector :: Selector
+initWithMixerDefinition_format_identifierSelector :: Selector '[Id PHASEMixerDefinition, Id AVAudioFormat, Id NSString] (Id PHASEPushStreamNodeDefinition)
 initWithMixerDefinition_format_identifierSelector = mkSelector "initWithMixerDefinition:format:identifier:"
 
 -- | @Selector@ for @initWithMixerDefinition:format:@
-initWithMixerDefinition_formatSelector :: Selector
+initWithMixerDefinition_formatSelector :: Selector '[Id PHASEMixerDefinition, Id AVAudioFormat] (Id PHASEPushStreamNodeDefinition)
 initWithMixerDefinition_formatSelector = mkSelector "initWithMixerDefinition:format:"
 
 -- | @Selector@ for @format@
-formatSelector :: Selector
+formatSelector :: Selector '[] (Id AVAudioFormat)
 formatSelector = mkSelector "format"
 
 -- | @Selector@ for @normalize@
-normalizeSelector :: Selector
+normalizeSelector :: Selector '[] Bool
 normalizeSelector = mkSelector "normalize"
 
 -- | @Selector@ for @setNormalize:@
-setNormalizeSelector :: Selector
+setNormalizeSelector :: Selector '[Bool] ()
 setNormalizeSelector = mkSelector "setNormalize:"
 

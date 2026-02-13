@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRThermostatClusterSetpointChangeEvent
   , setPreviousSetpoint
   , currentSetpoint
   , setCurrentSetpoint
-  , systemModeSelector
-  , setSystemModeSelector
-  , occupancySelector
-  , setOccupancySelector
-  , previousSetpointSelector
-  , setPreviousSetpointSelector
   , currentSetpointSelector
+  , occupancySelector
+  , previousSetpointSelector
   , setCurrentSetpointSelector
+  , setOccupancySelector
+  , setPreviousSetpointSelector
+  , setSystemModeSelector
+  , systemModeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- systemMode@
 systemMode :: IsMTRThermostatClusterSetpointChangeEvent mtrThermostatClusterSetpointChangeEvent => mtrThermostatClusterSetpointChangeEvent -> IO (Id NSNumber)
-systemMode mtrThermostatClusterSetpointChangeEvent  =
-    sendMsg mtrThermostatClusterSetpointChangeEvent (mkSelector "systemMode") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemMode mtrThermostatClusterSetpointChangeEvent =
+  sendMessage mtrThermostatClusterSetpointChangeEvent systemModeSelector
 
 -- | @- setSystemMode:@
 setSystemMode :: (IsMTRThermostatClusterSetpointChangeEvent mtrThermostatClusterSetpointChangeEvent, IsNSNumber value) => mtrThermostatClusterSetpointChangeEvent -> value -> IO ()
-setSystemMode mtrThermostatClusterSetpointChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetpointChangeEvent (mkSelector "setSystemMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSystemMode mtrThermostatClusterSetpointChangeEvent value =
+  sendMessage mtrThermostatClusterSetpointChangeEvent setSystemModeSelector (toNSNumber value)
 
 -- | @- occupancy@
 occupancy :: IsMTRThermostatClusterSetpointChangeEvent mtrThermostatClusterSetpointChangeEvent => mtrThermostatClusterSetpointChangeEvent -> IO (Id NSNumber)
-occupancy mtrThermostatClusterSetpointChangeEvent  =
-    sendMsg mtrThermostatClusterSetpointChangeEvent (mkSelector "occupancy") (retPtr retVoid) [] >>= retainedObject . castPtr
+occupancy mtrThermostatClusterSetpointChangeEvent =
+  sendMessage mtrThermostatClusterSetpointChangeEvent occupancySelector
 
 -- | @- setOccupancy:@
 setOccupancy :: (IsMTRThermostatClusterSetpointChangeEvent mtrThermostatClusterSetpointChangeEvent, IsNSNumber value) => mtrThermostatClusterSetpointChangeEvent -> value -> IO ()
-setOccupancy mtrThermostatClusterSetpointChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetpointChangeEvent (mkSelector "setOccupancy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOccupancy mtrThermostatClusterSetpointChangeEvent value =
+  sendMessage mtrThermostatClusterSetpointChangeEvent setOccupancySelector (toNSNumber value)
 
 -- | @- previousSetpoint@
 previousSetpoint :: IsMTRThermostatClusterSetpointChangeEvent mtrThermostatClusterSetpointChangeEvent => mtrThermostatClusterSetpointChangeEvent -> IO (Id NSNumber)
-previousSetpoint mtrThermostatClusterSetpointChangeEvent  =
-    sendMsg mtrThermostatClusterSetpointChangeEvent (mkSelector "previousSetpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousSetpoint mtrThermostatClusterSetpointChangeEvent =
+  sendMessage mtrThermostatClusterSetpointChangeEvent previousSetpointSelector
 
 -- | @- setPreviousSetpoint:@
 setPreviousSetpoint :: (IsMTRThermostatClusterSetpointChangeEvent mtrThermostatClusterSetpointChangeEvent, IsNSNumber value) => mtrThermostatClusterSetpointChangeEvent -> value -> IO ()
-setPreviousSetpoint mtrThermostatClusterSetpointChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetpointChangeEvent (mkSelector "setPreviousSetpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreviousSetpoint mtrThermostatClusterSetpointChangeEvent value =
+  sendMessage mtrThermostatClusterSetpointChangeEvent setPreviousSetpointSelector (toNSNumber value)
 
 -- | @- currentSetpoint@
 currentSetpoint :: IsMTRThermostatClusterSetpointChangeEvent mtrThermostatClusterSetpointChangeEvent => mtrThermostatClusterSetpointChangeEvent -> IO (Id NSNumber)
-currentSetpoint mtrThermostatClusterSetpointChangeEvent  =
-    sendMsg mtrThermostatClusterSetpointChangeEvent (mkSelector "currentSetpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentSetpoint mtrThermostatClusterSetpointChangeEvent =
+  sendMessage mtrThermostatClusterSetpointChangeEvent currentSetpointSelector
 
 -- | @- setCurrentSetpoint:@
 setCurrentSetpoint :: (IsMTRThermostatClusterSetpointChangeEvent mtrThermostatClusterSetpointChangeEvent, IsNSNumber value) => mtrThermostatClusterSetpointChangeEvent -> value -> IO ()
-setCurrentSetpoint mtrThermostatClusterSetpointChangeEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterSetpointChangeEvent (mkSelector "setCurrentSetpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentSetpoint mtrThermostatClusterSetpointChangeEvent value =
+  sendMessage mtrThermostatClusterSetpointChangeEvent setCurrentSetpointSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @systemMode@
-systemModeSelector :: Selector
+systemModeSelector :: Selector '[] (Id NSNumber)
 systemModeSelector = mkSelector "systemMode"
 
 -- | @Selector@ for @setSystemMode:@
-setSystemModeSelector :: Selector
+setSystemModeSelector :: Selector '[Id NSNumber] ()
 setSystemModeSelector = mkSelector "setSystemMode:"
 
 -- | @Selector@ for @occupancy@
-occupancySelector :: Selector
+occupancySelector :: Selector '[] (Id NSNumber)
 occupancySelector = mkSelector "occupancy"
 
 -- | @Selector@ for @setOccupancy:@
-setOccupancySelector :: Selector
+setOccupancySelector :: Selector '[Id NSNumber] ()
 setOccupancySelector = mkSelector "setOccupancy:"
 
 -- | @Selector@ for @previousSetpoint@
-previousSetpointSelector :: Selector
+previousSetpointSelector :: Selector '[] (Id NSNumber)
 previousSetpointSelector = mkSelector "previousSetpoint"
 
 -- | @Selector@ for @setPreviousSetpoint:@
-setPreviousSetpointSelector :: Selector
+setPreviousSetpointSelector :: Selector '[Id NSNumber] ()
 setPreviousSetpointSelector = mkSelector "setPreviousSetpoint:"
 
 -- | @Selector@ for @currentSetpoint@
-currentSetpointSelector :: Selector
+currentSetpointSelector :: Selector '[] (Id NSNumber)
 currentSetpointSelector = mkSelector "currentSetpoint"
 
 -- | @Selector@ for @setCurrentSetpoint:@
-setCurrentSetpointSelector :: Selector
+setCurrentSetpointSelector :: Selector '[Id NSNumber] ()
 setCurrentSetpointSelector = mkSelector "setCurrentSetpoint:"
 

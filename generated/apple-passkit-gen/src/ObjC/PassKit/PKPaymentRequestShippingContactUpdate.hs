@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.PassKit.PKPaymentRequestShippingContactUpdate
   , setShippingMethods
   , errors
   , setErrors
-  , initWithErrors_paymentSummaryItems_shippingMethodsSelector
-  , shippingMethodsSelector
-  , setShippingMethodsSelector
   , errorsSelector
+  , initWithErrors_paymentSummaryItems_shippingMethodsSelector
   , setErrorsSelector
+  , setShippingMethodsSelector
+  , shippingMethodsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,55 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithErrors:paymentSummaryItems:shippingMethods:@
 initWithErrors_paymentSummaryItems_shippingMethods :: (IsPKPaymentRequestShippingContactUpdate pkPaymentRequestShippingContactUpdate, IsNSArray errors, IsNSArray paymentSummaryItems, IsNSArray shippingMethods) => pkPaymentRequestShippingContactUpdate -> errors -> paymentSummaryItems -> shippingMethods -> IO (Id PKPaymentRequestShippingContactUpdate)
-initWithErrors_paymentSummaryItems_shippingMethods pkPaymentRequestShippingContactUpdate  errors paymentSummaryItems shippingMethods =
-  withObjCPtr errors $ \raw_errors ->
-    withObjCPtr paymentSummaryItems $ \raw_paymentSummaryItems ->
-      withObjCPtr shippingMethods $ \raw_shippingMethods ->
-          sendMsg pkPaymentRequestShippingContactUpdate (mkSelector "initWithErrors:paymentSummaryItems:shippingMethods:") (retPtr retVoid) [argPtr (castPtr raw_errors :: Ptr ()), argPtr (castPtr raw_paymentSummaryItems :: Ptr ()), argPtr (castPtr raw_shippingMethods :: Ptr ())] >>= ownedObject . castPtr
+initWithErrors_paymentSummaryItems_shippingMethods pkPaymentRequestShippingContactUpdate errors paymentSummaryItems shippingMethods =
+  sendOwnedMessage pkPaymentRequestShippingContactUpdate initWithErrors_paymentSummaryItems_shippingMethodsSelector (toNSArray errors) (toNSArray paymentSummaryItems) (toNSArray shippingMethods)
 
 -- | @- shippingMethods@
 shippingMethods :: IsPKPaymentRequestShippingContactUpdate pkPaymentRequestShippingContactUpdate => pkPaymentRequestShippingContactUpdate -> IO (Id NSArray)
-shippingMethods pkPaymentRequestShippingContactUpdate  =
-    sendMsg pkPaymentRequestShippingContactUpdate (mkSelector "shippingMethods") (retPtr retVoid) [] >>= retainedObject . castPtr
+shippingMethods pkPaymentRequestShippingContactUpdate =
+  sendMessage pkPaymentRequestShippingContactUpdate shippingMethodsSelector
 
 -- | @- setShippingMethods:@
 setShippingMethods :: (IsPKPaymentRequestShippingContactUpdate pkPaymentRequestShippingContactUpdate, IsNSArray value) => pkPaymentRequestShippingContactUpdate -> value -> IO ()
-setShippingMethods pkPaymentRequestShippingContactUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestShippingContactUpdate (mkSelector "setShippingMethods:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShippingMethods pkPaymentRequestShippingContactUpdate value =
+  sendMessage pkPaymentRequestShippingContactUpdate setShippingMethodsSelector (toNSArray value)
 
 -- | @- errors@
 errors :: IsPKPaymentRequestShippingContactUpdate pkPaymentRequestShippingContactUpdate => pkPaymentRequestShippingContactUpdate -> IO (Id NSArray)
-errors pkPaymentRequestShippingContactUpdate  =
-    sendMsg pkPaymentRequestShippingContactUpdate (mkSelector "errors") (retPtr retVoid) [] >>= retainedObject . castPtr
+errors pkPaymentRequestShippingContactUpdate =
+  sendMessage pkPaymentRequestShippingContactUpdate errorsSelector
 
 -- | @- setErrors:@
 setErrors :: (IsPKPaymentRequestShippingContactUpdate pkPaymentRequestShippingContactUpdate, IsNSArray value) => pkPaymentRequestShippingContactUpdate -> value -> IO ()
-setErrors pkPaymentRequestShippingContactUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestShippingContactUpdate (mkSelector "setErrors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setErrors pkPaymentRequestShippingContactUpdate value =
+  sendMessage pkPaymentRequestShippingContactUpdate setErrorsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithErrors:paymentSummaryItems:shippingMethods:@
-initWithErrors_paymentSummaryItems_shippingMethodsSelector :: Selector
+initWithErrors_paymentSummaryItems_shippingMethodsSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray] (Id PKPaymentRequestShippingContactUpdate)
 initWithErrors_paymentSummaryItems_shippingMethodsSelector = mkSelector "initWithErrors:paymentSummaryItems:shippingMethods:"
 
 -- | @Selector@ for @shippingMethods@
-shippingMethodsSelector :: Selector
+shippingMethodsSelector :: Selector '[] (Id NSArray)
 shippingMethodsSelector = mkSelector "shippingMethods"
 
 -- | @Selector@ for @setShippingMethods:@
-setShippingMethodsSelector :: Selector
+setShippingMethodsSelector :: Selector '[Id NSArray] ()
 setShippingMethodsSelector = mkSelector "setShippingMethods:"
 
 -- | @Selector@ for @errors@
-errorsSelector :: Selector
+errorsSelector :: Selector '[] (Id NSArray)
 errorsSelector = mkSelector "errors"
 
 -- | @Selector@ for @setErrors:@
-setErrorsSelector :: Selector
+setErrorsSelector :: Selector '[Id NSArray] ()
 setErrorsSelector = mkSelector "setErrors:"
 

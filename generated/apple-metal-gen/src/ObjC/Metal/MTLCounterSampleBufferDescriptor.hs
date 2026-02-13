@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,13 +21,13 @@ module ObjC.Metal.MTLCounterSampleBufferDescriptor
   , sampleCount
   , setSampleCount
   , counterSetSelector
-  , setCounterSetSelector
   , labelSelector
-  , setLabelSelector
-  , storageModeSelector
-  , setStorageModeSelector
   , sampleCountSelector
+  , setCounterSetSelector
+  , setLabelSelector
   , setSampleCountSelector
+  , setStorageModeSelector
+  , storageModeSelector
 
   -- * Enum types
   , MTLStorageMode(MTLStorageMode)
@@ -37,15 +38,11 @@ module ObjC.Metal.MTLCounterSampleBufferDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,30 +54,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- counterSet@
 counterSet :: IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor => mtlCounterSampleBufferDescriptor -> IO RawId
-counterSet mtlCounterSampleBufferDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlCounterSampleBufferDescriptor (mkSelector "counterSet") (retPtr retVoid) []
+counterSet mtlCounterSampleBufferDescriptor =
+  sendMessage mtlCounterSampleBufferDescriptor counterSetSelector
 
 -- | counterSet The counterset to be sampled for this counter sample buffer
 --
 -- ObjC selector: @- setCounterSet:@
 setCounterSet :: IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor => mtlCounterSampleBufferDescriptor -> RawId -> IO ()
-setCounterSet mtlCounterSampleBufferDescriptor  value =
-    sendMsg mtlCounterSampleBufferDescriptor (mkSelector "setCounterSet:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setCounterSet mtlCounterSampleBufferDescriptor value =
+  sendMessage mtlCounterSampleBufferDescriptor setCounterSetSelector value
 
 -- | label A label to identify the sample buffer in debugging tools.
 --
 -- ObjC selector: @- label@
 label :: IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor => mtlCounterSampleBufferDescriptor -> IO (Id NSString)
-label mtlCounterSampleBufferDescriptor  =
-    sendMsg mtlCounterSampleBufferDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtlCounterSampleBufferDescriptor =
+  sendMessage mtlCounterSampleBufferDescriptor labelSelector
 
 -- | label A label to identify the sample buffer in debugging tools.
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor, IsNSString value) => mtlCounterSampleBufferDescriptor -> value -> IO ()
-setLabel mtlCounterSampleBufferDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlCounterSampleBufferDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtlCounterSampleBufferDescriptor value =
+  sendMessage mtlCounterSampleBufferDescriptor setLabelSelector (toNSString value)
 
 -- | storageMode The storage mode for the sample buffer.  Only
 --
@@ -88,8 +84,8 @@ setLabel mtlCounterSampleBufferDescriptor  value =
 --
 -- ObjC selector: @- storageMode@
 storageMode :: IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor => mtlCounterSampleBufferDescriptor -> IO MTLStorageMode
-storageMode mtlCounterSampleBufferDescriptor  =
-    fmap (coerce :: CULong -> MTLStorageMode) $ sendMsg mtlCounterSampleBufferDescriptor (mkSelector "storageMode") retCULong []
+storageMode mtlCounterSampleBufferDescriptor =
+  sendMessage mtlCounterSampleBufferDescriptor storageModeSelector
 
 -- | storageMode The storage mode for the sample buffer.  Only
 --
@@ -97,8 +93,8 @@ storageMode mtlCounterSampleBufferDescriptor  =
 --
 -- ObjC selector: @- setStorageMode:@
 setStorageMode :: IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor => mtlCounterSampleBufferDescriptor -> MTLStorageMode -> IO ()
-setStorageMode mtlCounterSampleBufferDescriptor  value =
-    sendMsg mtlCounterSampleBufferDescriptor (mkSelector "setStorageMode:") retVoid [argCULong (coerce value)]
+setStorageMode mtlCounterSampleBufferDescriptor value =
+  sendMessage mtlCounterSampleBufferDescriptor setStorageModeSelector value
 
 -- | sampleCount The number of samples that may be stored in the
 --
@@ -106,8 +102,8 @@ setStorageMode mtlCounterSampleBufferDescriptor  value =
 --
 -- ObjC selector: @- sampleCount@
 sampleCount :: IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor => mtlCounterSampleBufferDescriptor -> IO CULong
-sampleCount mtlCounterSampleBufferDescriptor  =
-    sendMsg mtlCounterSampleBufferDescriptor (mkSelector "sampleCount") retCULong []
+sampleCount mtlCounterSampleBufferDescriptor =
+  sendMessage mtlCounterSampleBufferDescriptor sampleCountSelector
 
 -- | sampleCount The number of samples that may be stored in the
 --
@@ -115,42 +111,42 @@ sampleCount mtlCounterSampleBufferDescriptor  =
 --
 -- ObjC selector: @- setSampleCount:@
 setSampleCount :: IsMTLCounterSampleBufferDescriptor mtlCounterSampleBufferDescriptor => mtlCounterSampleBufferDescriptor -> CULong -> IO ()
-setSampleCount mtlCounterSampleBufferDescriptor  value =
-    sendMsg mtlCounterSampleBufferDescriptor (mkSelector "setSampleCount:") retVoid [argCULong value]
+setSampleCount mtlCounterSampleBufferDescriptor value =
+  sendMessage mtlCounterSampleBufferDescriptor setSampleCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @counterSet@
-counterSetSelector :: Selector
+counterSetSelector :: Selector '[] RawId
 counterSetSelector = mkSelector "counterSet"
 
 -- | @Selector@ for @setCounterSet:@
-setCounterSetSelector :: Selector
+setCounterSetSelector :: Selector '[RawId] ()
 setCounterSetSelector = mkSelector "setCounterSet:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @storageMode@
-storageModeSelector :: Selector
+storageModeSelector :: Selector '[] MTLStorageMode
 storageModeSelector = mkSelector "storageMode"
 
 -- | @Selector@ for @setStorageMode:@
-setStorageModeSelector :: Selector
+setStorageModeSelector :: Selector '[MTLStorageMode] ()
 setStorageModeSelector = mkSelector "setStorageMode:"
 
 -- | @Selector@ for @sampleCount@
-sampleCountSelector :: Selector
+sampleCountSelector :: Selector '[] CULong
 sampleCountSelector = mkSelector "sampleCount"
 
 -- | @Selector@ for @setSampleCount:@
-setSampleCountSelector :: Selector
+setSampleCountSelector :: Selector '[CULong] ()
 setSampleCountSelector = mkSelector "setSampleCount:"
 

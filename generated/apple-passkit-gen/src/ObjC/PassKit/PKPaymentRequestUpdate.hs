@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,21 +23,21 @@ module ObjC.PassKit.PKPaymentRequestUpdate
   , setAutomaticReloadPaymentRequest
   , deferredPaymentRequest
   , setDeferredPaymentRequest
-  , initWithPaymentSummaryItemsSelector
-  , statusSelector
-  , setStatusSelector
-  , paymentSummaryItemsSelector
-  , setPaymentSummaryItemsSelector
-  , shippingMethodsSelector
-  , setShippingMethodsSelector
-  , multiTokenContextsSelector
-  , setMultiTokenContextsSelector
-  , recurringPaymentRequestSelector
-  , setRecurringPaymentRequestSelector
   , automaticReloadPaymentRequestSelector
-  , setAutomaticReloadPaymentRequestSelector
   , deferredPaymentRequestSelector
+  , initWithPaymentSummaryItemsSelector
+  , multiTokenContextsSelector
+  , paymentSummaryItemsSelector
+  , recurringPaymentRequestSelector
+  , setAutomaticReloadPaymentRequestSelector
   , setDeferredPaymentRequestSelector
+  , setMultiTokenContextsSelector
+  , setPaymentSummaryItemsSelector
+  , setRecurringPaymentRequestSelector
+  , setShippingMethodsSelector
+  , setStatusSelector
+  , shippingMethodsSelector
+  , statusSelector
 
   -- * Enum types
   , PKPaymentAuthorizationStatus(PKPaymentAuthorizationStatus)
@@ -51,15 +52,11 @@ module ObjC.PassKit.PKPaymentRequestUpdate
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,147 +66,140 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPaymentSummaryItems:@
 initWithPaymentSummaryItems :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsNSArray paymentSummaryItems) => pkPaymentRequestUpdate -> paymentSummaryItems -> IO (Id PKPaymentRequestUpdate)
-initWithPaymentSummaryItems pkPaymentRequestUpdate  paymentSummaryItems =
-  withObjCPtr paymentSummaryItems $ \raw_paymentSummaryItems ->
-      sendMsg pkPaymentRequestUpdate (mkSelector "initWithPaymentSummaryItems:") (retPtr retVoid) [argPtr (castPtr raw_paymentSummaryItems :: Ptr ())] >>= ownedObject . castPtr
+initWithPaymentSummaryItems pkPaymentRequestUpdate paymentSummaryItems =
+  sendOwnedMessage pkPaymentRequestUpdate initWithPaymentSummaryItemsSelector (toNSArray paymentSummaryItems)
 
 -- | @- status@
 status :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO PKPaymentAuthorizationStatus
-status pkPaymentRequestUpdate  =
-    fmap (coerce :: CLong -> PKPaymentAuthorizationStatus) $ sendMsg pkPaymentRequestUpdate (mkSelector "status") retCLong []
+status pkPaymentRequestUpdate =
+  sendMessage pkPaymentRequestUpdate statusSelector
 
 -- | @- setStatus:@
 setStatus :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> PKPaymentAuthorizationStatus -> IO ()
-setStatus pkPaymentRequestUpdate  value =
-    sendMsg pkPaymentRequestUpdate (mkSelector "setStatus:") retVoid [argCLong (coerce value)]
+setStatus pkPaymentRequestUpdate value =
+  sendMessage pkPaymentRequestUpdate setStatusSelector value
 
 -- | @- paymentSummaryItems@
 paymentSummaryItems :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id NSArray)
-paymentSummaryItems pkPaymentRequestUpdate  =
-    sendMsg pkPaymentRequestUpdate (mkSelector "paymentSummaryItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentSummaryItems pkPaymentRequestUpdate =
+  sendMessage pkPaymentRequestUpdate paymentSummaryItemsSelector
 
 -- | @- setPaymentSummaryItems:@
 setPaymentSummaryItems :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsNSArray value) => pkPaymentRequestUpdate -> value -> IO ()
-setPaymentSummaryItems pkPaymentRequestUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestUpdate (mkSelector "setPaymentSummaryItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaymentSummaryItems pkPaymentRequestUpdate value =
+  sendMessage pkPaymentRequestUpdate setPaymentSummaryItemsSelector (toNSArray value)
 
 -- | @- shippingMethods@
 shippingMethods :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id NSArray)
-shippingMethods pkPaymentRequestUpdate  =
-    sendMsg pkPaymentRequestUpdate (mkSelector "shippingMethods") (retPtr retVoid) [] >>= retainedObject . castPtr
+shippingMethods pkPaymentRequestUpdate =
+  sendMessage pkPaymentRequestUpdate shippingMethodsSelector
 
 -- | @- setShippingMethods:@
 setShippingMethods :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsNSArray value) => pkPaymentRequestUpdate -> value -> IO ()
-setShippingMethods pkPaymentRequestUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestUpdate (mkSelector "setShippingMethods:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShippingMethods pkPaymentRequestUpdate value =
+  sendMessage pkPaymentRequestUpdate setShippingMethodsSelector (toNSArray value)
 
 -- | @- multiTokenContexts@
 multiTokenContexts :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id NSArray)
-multiTokenContexts pkPaymentRequestUpdate  =
-    sendMsg pkPaymentRequestUpdate (mkSelector "multiTokenContexts") (retPtr retVoid) [] >>= retainedObject . castPtr
+multiTokenContexts pkPaymentRequestUpdate =
+  sendMessage pkPaymentRequestUpdate multiTokenContextsSelector
 
 -- | @- setMultiTokenContexts:@
 setMultiTokenContexts :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsNSArray value) => pkPaymentRequestUpdate -> value -> IO ()
-setMultiTokenContexts pkPaymentRequestUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestUpdate (mkSelector "setMultiTokenContexts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMultiTokenContexts pkPaymentRequestUpdate value =
+  sendMessage pkPaymentRequestUpdate setMultiTokenContextsSelector (toNSArray value)
 
 -- | @- recurringPaymentRequest@
 recurringPaymentRequest :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id PKRecurringPaymentRequest)
-recurringPaymentRequest pkPaymentRequestUpdate  =
-    sendMsg pkPaymentRequestUpdate (mkSelector "recurringPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+recurringPaymentRequest pkPaymentRequestUpdate =
+  sendMessage pkPaymentRequestUpdate recurringPaymentRequestSelector
 
 -- | @- setRecurringPaymentRequest:@
 setRecurringPaymentRequest :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsPKRecurringPaymentRequest value) => pkPaymentRequestUpdate -> value -> IO ()
-setRecurringPaymentRequest pkPaymentRequestUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestUpdate (mkSelector "setRecurringPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecurringPaymentRequest pkPaymentRequestUpdate value =
+  sendMessage pkPaymentRequestUpdate setRecurringPaymentRequestSelector (toPKRecurringPaymentRequest value)
 
 -- | @- automaticReloadPaymentRequest@
 automaticReloadPaymentRequest :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id PKAutomaticReloadPaymentRequest)
-automaticReloadPaymentRequest pkPaymentRequestUpdate  =
-    sendMsg pkPaymentRequestUpdate (mkSelector "automaticReloadPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+automaticReloadPaymentRequest pkPaymentRequestUpdate =
+  sendMessage pkPaymentRequestUpdate automaticReloadPaymentRequestSelector
 
 -- | @- setAutomaticReloadPaymentRequest:@
 setAutomaticReloadPaymentRequest :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsPKAutomaticReloadPaymentRequest value) => pkPaymentRequestUpdate -> value -> IO ()
-setAutomaticReloadPaymentRequest pkPaymentRequestUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestUpdate (mkSelector "setAutomaticReloadPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAutomaticReloadPaymentRequest pkPaymentRequestUpdate value =
+  sendMessage pkPaymentRequestUpdate setAutomaticReloadPaymentRequestSelector (toPKAutomaticReloadPaymentRequest value)
 
 -- | @- deferredPaymentRequest@
 deferredPaymentRequest :: IsPKPaymentRequestUpdate pkPaymentRequestUpdate => pkPaymentRequestUpdate -> IO (Id PKDeferredPaymentRequest)
-deferredPaymentRequest pkPaymentRequestUpdate  =
-    sendMsg pkPaymentRequestUpdate (mkSelector "deferredPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+deferredPaymentRequest pkPaymentRequestUpdate =
+  sendMessage pkPaymentRequestUpdate deferredPaymentRequestSelector
 
 -- | @- setDeferredPaymentRequest:@
 setDeferredPaymentRequest :: (IsPKPaymentRequestUpdate pkPaymentRequestUpdate, IsPKDeferredPaymentRequest value) => pkPaymentRequestUpdate -> value -> IO ()
-setDeferredPaymentRequest pkPaymentRequestUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestUpdate (mkSelector "setDeferredPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeferredPaymentRequest pkPaymentRequestUpdate value =
+  sendMessage pkPaymentRequestUpdate setDeferredPaymentRequestSelector (toPKDeferredPaymentRequest value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPaymentSummaryItems:@
-initWithPaymentSummaryItemsSelector :: Selector
+initWithPaymentSummaryItemsSelector :: Selector '[Id NSArray] (Id PKPaymentRequestUpdate)
 initWithPaymentSummaryItemsSelector = mkSelector "initWithPaymentSummaryItems:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] PKPaymentAuthorizationStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[PKPaymentAuthorizationStatus] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @paymentSummaryItems@
-paymentSummaryItemsSelector :: Selector
+paymentSummaryItemsSelector :: Selector '[] (Id NSArray)
 paymentSummaryItemsSelector = mkSelector "paymentSummaryItems"
 
 -- | @Selector@ for @setPaymentSummaryItems:@
-setPaymentSummaryItemsSelector :: Selector
+setPaymentSummaryItemsSelector :: Selector '[Id NSArray] ()
 setPaymentSummaryItemsSelector = mkSelector "setPaymentSummaryItems:"
 
 -- | @Selector@ for @shippingMethods@
-shippingMethodsSelector :: Selector
+shippingMethodsSelector :: Selector '[] (Id NSArray)
 shippingMethodsSelector = mkSelector "shippingMethods"
 
 -- | @Selector@ for @setShippingMethods:@
-setShippingMethodsSelector :: Selector
+setShippingMethodsSelector :: Selector '[Id NSArray] ()
 setShippingMethodsSelector = mkSelector "setShippingMethods:"
 
 -- | @Selector@ for @multiTokenContexts@
-multiTokenContextsSelector :: Selector
+multiTokenContextsSelector :: Selector '[] (Id NSArray)
 multiTokenContextsSelector = mkSelector "multiTokenContexts"
 
 -- | @Selector@ for @setMultiTokenContexts:@
-setMultiTokenContextsSelector :: Selector
+setMultiTokenContextsSelector :: Selector '[Id NSArray] ()
 setMultiTokenContextsSelector = mkSelector "setMultiTokenContexts:"
 
 -- | @Selector@ for @recurringPaymentRequest@
-recurringPaymentRequestSelector :: Selector
+recurringPaymentRequestSelector :: Selector '[] (Id PKRecurringPaymentRequest)
 recurringPaymentRequestSelector = mkSelector "recurringPaymentRequest"
 
 -- | @Selector@ for @setRecurringPaymentRequest:@
-setRecurringPaymentRequestSelector :: Selector
+setRecurringPaymentRequestSelector :: Selector '[Id PKRecurringPaymentRequest] ()
 setRecurringPaymentRequestSelector = mkSelector "setRecurringPaymentRequest:"
 
 -- | @Selector@ for @automaticReloadPaymentRequest@
-automaticReloadPaymentRequestSelector :: Selector
+automaticReloadPaymentRequestSelector :: Selector '[] (Id PKAutomaticReloadPaymentRequest)
 automaticReloadPaymentRequestSelector = mkSelector "automaticReloadPaymentRequest"
 
 -- | @Selector@ for @setAutomaticReloadPaymentRequest:@
-setAutomaticReloadPaymentRequestSelector :: Selector
+setAutomaticReloadPaymentRequestSelector :: Selector '[Id PKAutomaticReloadPaymentRequest] ()
 setAutomaticReloadPaymentRequestSelector = mkSelector "setAutomaticReloadPaymentRequest:"
 
 -- | @Selector@ for @deferredPaymentRequest@
-deferredPaymentRequestSelector :: Selector
+deferredPaymentRequestSelector :: Selector '[] (Id PKDeferredPaymentRequest)
 deferredPaymentRequestSelector = mkSelector "deferredPaymentRequest"
 
 -- | @Selector@ for @setDeferredPaymentRequest:@
-setDeferredPaymentRequestSelector :: Selector
+setDeferredPaymentRequestSelector :: Selector '[Id PKDeferredPaymentRequest] ()
 setDeferredPaymentRequestSelector = mkSelector "setDeferredPaymentRequest:"
 

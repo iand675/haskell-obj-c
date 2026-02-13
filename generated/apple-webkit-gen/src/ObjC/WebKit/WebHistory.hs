@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,33 +25,29 @@ module ObjC.WebKit.WebHistory
   , setHistoryItemLimit
   , historyAgeInDaysLimit
   , setHistoryAgeInDaysLimit
-  , optionalSharedHistorySelector
-  , setOptionalSharedHistorySelector
-  , loadFromURL_errorSelector
-  , saveToURL_errorSelector
   , addItemsSelector
-  , removeItemsSelector
-  , removeAllItemsSelector
-  , orderedItemsLastVisitedOnDaySelector
-  , itemForURLSelector
-  , orderedLastVisitedDaysSelector
-  , historyItemLimitSelector
-  , setHistoryItemLimitSelector
   , historyAgeInDaysLimitSelector
+  , historyItemLimitSelector
+  , itemForURLSelector
+  , loadFromURL_errorSelector
+  , optionalSharedHistorySelector
+  , orderedItemsLastVisitedOnDaySelector
+  , orderedLastVisitedDaysSelector
+  , removeAllItemsSelector
+  , removeItemsSelector
+  , saveToURL_errorSelector
   , setHistoryAgeInDaysLimitSelector
+  , setHistoryItemLimitSelector
+  , setOptionalSharedHistorySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,7 +65,7 @@ optionalSharedHistory :: IO (Id WebHistory)
 optionalSharedHistory  =
   do
     cls' <- getRequiredClass "WebHistory"
-    sendClassMsg cls' (mkSelector "optionalSharedHistory") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' optionalSharedHistorySelector
 
 -- | setOptionalSharedHistory:
 --
@@ -79,8 +76,7 @@ setOptionalSharedHistory :: IsWebHistory history => history -> IO ()
 setOptionalSharedHistory history =
   do
     cls' <- getRequiredClass "WebHistory"
-    withObjCPtr history $ \raw_history ->
-      sendClassMsg cls' (mkSelector "setOptionalSharedHistory:") retVoid [argPtr (castPtr raw_history :: Ptr ())]
+    sendClassMessage cls' setOptionalSharedHistorySelector (toWebHistory history)
 
 -- | loadFromURL:error:
 --
@@ -94,10 +90,8 @@ setOptionalSharedHistory history =
 --
 -- ObjC selector: @- loadFromURL:error:@
 loadFromURL_error :: (IsWebHistory webHistory, IsNSURL url, IsNSError error_) => webHistory -> url -> error_ -> IO Bool
-loadFromURL_error webHistory  url error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg webHistory (mkSelector "loadFromURL:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+loadFromURL_error webHistory url error_ =
+  sendMessage webHistory loadFromURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | saveToURL:error:
 --
@@ -111,10 +105,8 @@ loadFromURL_error webHistory  url error_ =
 --
 -- ObjC selector: @- saveToURL:error:@
 saveToURL_error :: (IsWebHistory webHistory, IsNSURL url, IsNSError error_) => webHistory -> url -> error_ -> IO Bool
-saveToURL_error webHistory  url error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg webHistory (mkSelector "saveToURL:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+saveToURL_error webHistory url error_ =
+  sendMessage webHistory saveToURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | addItems:
 --
@@ -122,9 +114,8 @@ saveToURL_error webHistory  url error_ =
 --
 -- ObjC selector: @- addItems:@
 addItems :: (IsWebHistory webHistory, IsNSArray newItems) => webHistory -> newItems -> IO ()
-addItems webHistory  newItems =
-  withObjCPtr newItems $ \raw_newItems ->
-      sendMsg webHistory (mkSelector "addItems:") retVoid [argPtr (castPtr raw_newItems :: Ptr ())]
+addItems webHistory newItems =
+  sendMessage webHistory addItemsSelector (toNSArray newItems)
 
 -- | removeItems:
 --
@@ -132,22 +123,20 @@ addItems webHistory  newItems =
 --
 -- ObjC selector: @- removeItems:@
 removeItems :: (IsWebHistory webHistory, IsNSArray items) => webHistory -> items -> IO ()
-removeItems webHistory  items =
-  withObjCPtr items $ \raw_items ->
-      sendMsg webHistory (mkSelector "removeItems:") retVoid [argPtr (castPtr raw_items :: Ptr ())]
+removeItems webHistory items =
+  sendMessage webHistory removeItemsSelector (toNSArray items)
 
 -- | removeAllItems
 --
 -- ObjC selector: @- removeAllItems@
 removeAllItems :: IsWebHistory webHistory => webHistory -> IO ()
-removeAllItems webHistory  =
-    sendMsg webHistory (mkSelector "removeAllItems") retVoid []
+removeAllItems webHistory =
+  sendMessage webHistory removeAllItemsSelector
 
 -- | @- orderedItemsLastVisitedOnDay:@
 orderedItemsLastVisitedOnDay :: (IsWebHistory webHistory, IsNSCalendarDate calendarDate) => webHistory -> calendarDate -> IO (Id NSArray)
-orderedItemsLastVisitedOnDay webHistory  calendarDate =
-  withObjCPtr calendarDate $ \raw_calendarDate ->
-      sendMsg webHistory (mkSelector "orderedItemsLastVisitedOnDay:") (retPtr retVoid) [argPtr (castPtr raw_calendarDate :: Ptr ())] >>= retainedObject . castPtr
+orderedItemsLastVisitedOnDay webHistory calendarDate =
+  sendMessage webHistory orderedItemsLastVisitedOnDaySelector (toNSCalendarDate calendarDate)
 
 -- | itemForURL:
 --
@@ -159,9 +148,8 @@ orderedItemsLastVisitedOnDay webHistory  calendarDate =
 --
 -- ObjC selector: @- itemForURL:@
 itemForURL :: (IsWebHistory webHistory, IsNSURL url) => webHistory -> url -> IO (Id WebHistoryItem)
-itemForURL webHistory  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg webHistory (mkSelector "itemForURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+itemForURL webHistory url =
+  sendMessage webHistory itemForURLSelector (toNSURL url)
 
 -- | orderedLastVisitedDays
 --
@@ -171,8 +159,8 @@ itemForURL webHistory  url =
 --
 -- ObjC selector: @- orderedLastVisitedDays@
 orderedLastVisitedDays :: IsWebHistory webHistory => webHistory -> IO (Id NSArray)
-orderedLastVisitedDays webHistory  =
-    sendMsg webHistory (mkSelector "orderedLastVisitedDays") (retPtr retVoid) [] >>= retainedObject . castPtr
+orderedLastVisitedDays webHistory =
+  sendMessage webHistory orderedLastVisitedDaysSelector
 
 -- | historyItemLimit
 --
@@ -180,8 +168,8 @@ orderedLastVisitedDays webHistory  =
 --
 -- ObjC selector: @- historyItemLimit@
 historyItemLimit :: IsWebHistory webHistory => webHistory -> IO CInt
-historyItemLimit webHistory  =
-    sendMsg webHistory (mkSelector "historyItemLimit") retCInt []
+historyItemLimit webHistory =
+  sendMessage webHistory historyItemLimitSelector
 
 -- | historyItemLimit
 --
@@ -189,8 +177,8 @@ historyItemLimit webHistory  =
 --
 -- ObjC selector: @- setHistoryItemLimit:@
 setHistoryItemLimit :: IsWebHistory webHistory => webHistory -> CInt -> IO ()
-setHistoryItemLimit webHistory  value =
-    sendMsg webHistory (mkSelector "setHistoryItemLimit:") retVoid [argCInt value]
+setHistoryItemLimit webHistory value =
+  sendMessage webHistory setHistoryItemLimitSelector value
 
 -- | historyAgeInDaysLimit
 --
@@ -198,8 +186,8 @@ setHistoryItemLimit webHistory  value =
 --
 -- ObjC selector: @- historyAgeInDaysLimit@
 historyAgeInDaysLimit :: IsWebHistory webHistory => webHistory -> IO CInt
-historyAgeInDaysLimit webHistory  =
-    sendMsg webHistory (mkSelector "historyAgeInDaysLimit") retCInt []
+historyAgeInDaysLimit webHistory =
+  sendMessage webHistory historyAgeInDaysLimitSelector
 
 -- | historyAgeInDaysLimit
 --
@@ -207,66 +195,66 @@ historyAgeInDaysLimit webHistory  =
 --
 -- ObjC selector: @- setHistoryAgeInDaysLimit:@
 setHistoryAgeInDaysLimit :: IsWebHistory webHistory => webHistory -> CInt -> IO ()
-setHistoryAgeInDaysLimit webHistory  value =
-    sendMsg webHistory (mkSelector "setHistoryAgeInDaysLimit:") retVoid [argCInt value]
+setHistoryAgeInDaysLimit webHistory value =
+  sendMessage webHistory setHistoryAgeInDaysLimitSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @optionalSharedHistory@
-optionalSharedHistorySelector :: Selector
+optionalSharedHistorySelector :: Selector '[] (Id WebHistory)
 optionalSharedHistorySelector = mkSelector "optionalSharedHistory"
 
 -- | @Selector@ for @setOptionalSharedHistory:@
-setOptionalSharedHistorySelector :: Selector
+setOptionalSharedHistorySelector :: Selector '[Id WebHistory] ()
 setOptionalSharedHistorySelector = mkSelector "setOptionalSharedHistory:"
 
 -- | @Selector@ for @loadFromURL:error:@
-loadFromURL_errorSelector :: Selector
+loadFromURL_errorSelector :: Selector '[Id NSURL, Id NSError] Bool
 loadFromURL_errorSelector = mkSelector "loadFromURL:error:"
 
 -- | @Selector@ for @saveToURL:error:@
-saveToURL_errorSelector :: Selector
+saveToURL_errorSelector :: Selector '[Id NSURL, Id NSError] Bool
 saveToURL_errorSelector = mkSelector "saveToURL:error:"
 
 -- | @Selector@ for @addItems:@
-addItemsSelector :: Selector
+addItemsSelector :: Selector '[Id NSArray] ()
 addItemsSelector = mkSelector "addItems:"
 
 -- | @Selector@ for @removeItems:@
-removeItemsSelector :: Selector
+removeItemsSelector :: Selector '[Id NSArray] ()
 removeItemsSelector = mkSelector "removeItems:"
 
 -- | @Selector@ for @removeAllItems@
-removeAllItemsSelector :: Selector
+removeAllItemsSelector :: Selector '[] ()
 removeAllItemsSelector = mkSelector "removeAllItems"
 
 -- | @Selector@ for @orderedItemsLastVisitedOnDay:@
-orderedItemsLastVisitedOnDaySelector :: Selector
+orderedItemsLastVisitedOnDaySelector :: Selector '[Id NSCalendarDate] (Id NSArray)
 orderedItemsLastVisitedOnDaySelector = mkSelector "orderedItemsLastVisitedOnDay:"
 
 -- | @Selector@ for @itemForURL:@
-itemForURLSelector :: Selector
+itemForURLSelector :: Selector '[Id NSURL] (Id WebHistoryItem)
 itemForURLSelector = mkSelector "itemForURL:"
 
 -- | @Selector@ for @orderedLastVisitedDays@
-orderedLastVisitedDaysSelector :: Selector
+orderedLastVisitedDaysSelector :: Selector '[] (Id NSArray)
 orderedLastVisitedDaysSelector = mkSelector "orderedLastVisitedDays"
 
 -- | @Selector@ for @historyItemLimit@
-historyItemLimitSelector :: Selector
+historyItemLimitSelector :: Selector '[] CInt
 historyItemLimitSelector = mkSelector "historyItemLimit"
 
 -- | @Selector@ for @setHistoryItemLimit:@
-setHistoryItemLimitSelector :: Selector
+setHistoryItemLimitSelector :: Selector '[CInt] ()
 setHistoryItemLimitSelector = mkSelector "setHistoryItemLimit:"
 
 -- | @Selector@ for @historyAgeInDaysLimit@
-historyAgeInDaysLimitSelector :: Selector
+historyAgeInDaysLimitSelector :: Selector '[] CInt
 historyAgeInDaysLimitSelector = mkSelector "historyAgeInDaysLimit"
 
 -- | @Selector@ for @setHistoryAgeInDaysLimit:@
-setHistoryAgeInDaysLimitSelector :: Selector
+setHistoryAgeInDaysLimitSelector :: Selector '[CInt] ()
 setHistoryAgeInDaysLimitSelector = mkSelector "setHistoryAgeInDaysLimit:"
 

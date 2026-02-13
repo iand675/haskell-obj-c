@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.MediaExtension.MERAWProcessorPixelBufferManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,9 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- createPixelBufferAndReturnError:@
 createPixelBufferAndReturnError :: (IsMERAWProcessorPixelBufferManager merawProcessorPixelBufferManager, IsNSError error_) => merawProcessorPixelBufferManager -> error_ -> IO (Ptr ())
-createPixelBufferAndReturnError merawProcessorPixelBufferManager  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap castPtr $ sendMsg merawProcessorPixelBufferManager (mkSelector "createPixelBufferAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())]
+createPixelBufferAndReturnError merawProcessorPixelBufferManager error_ =
+  sendMessage merawProcessorPixelBufferManager createPixelBufferAndReturnErrorSelector (toNSError error_)
 
 -- | pixelBufferAttributes
 --
@@ -61,8 +57,8 @@ createPixelBufferAndReturnError merawProcessorPixelBufferManager  error_ =
 --
 -- ObjC selector: @- pixelBufferAttributes@
 pixelBufferAttributes :: IsMERAWProcessorPixelBufferManager merawProcessorPixelBufferManager => merawProcessorPixelBufferManager -> IO (Id NSDictionary)
-pixelBufferAttributes merawProcessorPixelBufferManager  =
-    sendMsg merawProcessorPixelBufferManager (mkSelector "pixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+pixelBufferAttributes merawProcessorPixelBufferManager =
+  sendMessage merawProcessorPixelBufferManager pixelBufferAttributesSelector
 
 -- | pixelBufferAttributes
 --
@@ -72,23 +68,22 @@ pixelBufferAttributes merawProcessorPixelBufferManager  =
 --
 -- ObjC selector: @- setPixelBufferAttributes:@
 setPixelBufferAttributes :: (IsMERAWProcessorPixelBufferManager merawProcessorPixelBufferManager, IsNSDictionary value) => merawProcessorPixelBufferManager -> value -> IO ()
-setPixelBufferAttributes merawProcessorPixelBufferManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg merawProcessorPixelBufferManager (mkSelector "setPixelBufferAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPixelBufferAttributes merawProcessorPixelBufferManager value =
+  sendMessage merawProcessorPixelBufferManager setPixelBufferAttributesSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createPixelBufferAndReturnError:@
-createPixelBufferAndReturnErrorSelector :: Selector
+createPixelBufferAndReturnErrorSelector :: Selector '[Id NSError] (Ptr ())
 createPixelBufferAndReturnErrorSelector = mkSelector "createPixelBufferAndReturnError:"
 
 -- | @Selector@ for @pixelBufferAttributes@
-pixelBufferAttributesSelector :: Selector
+pixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 pixelBufferAttributesSelector = mkSelector "pixelBufferAttributes"
 
 -- | @Selector@ for @setPixelBufferAttributes:@
-setPixelBufferAttributesSelector :: Selector
+setPixelBufferAttributesSelector :: Selector '[Id NSDictionary] ()
 setPixelBufferAttributesSelector = mkSelector "setPixelBufferAttributes:"
 

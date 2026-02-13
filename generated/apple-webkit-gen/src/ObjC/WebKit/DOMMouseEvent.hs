@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.WebKit.DOMMouseEvent
   , y
   , fromElement
   , toElement
-  , initMouseEvent_canBubble_cancelable_view_detail_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey_button_relatedTargetSelector
-  , initMouseEventSelector
-  , screenXSelector
-  , screenYSelector
+  , altKeySelector
+  , buttonSelector
   , clientXSelector
   , clientYSelector
   , ctrlKeySelector
-  , shiftKeySelector
-  , altKeySelector
+  , fromElementSelector
+  , initMouseEventSelector
+  , initMouseEvent_canBubble_cancelable_view_detail_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey_button_relatedTargetSelector
   , metaKeySelector
-  , buttonSelector
-  , relatedTargetSelector
   , offsetXSelector
   , offsetYSelector
+  , relatedTargetSelector
+  , screenXSelector
+  , screenYSelector
+  , shiftKeySelector
+  , toElementSelector
   , xSelector
   , ySelector
-  , fromElementSelector
-  , toElementSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,171 +60,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initMouseEvent:canBubble:cancelable:view:detail:screenX:screenY:clientX:clientY:ctrlKey:altKey:shiftKey:metaKey:button:relatedTarget:@
 initMouseEvent_canBubble_cancelable_view_detail_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey_button_relatedTarget :: (IsDOMMouseEvent domMouseEvent, IsNSString type_, IsDOMAbstractView view) => domMouseEvent -> type_ -> Bool -> Bool -> view -> CInt -> CInt -> CInt -> CInt -> CInt -> Bool -> Bool -> Bool -> Bool -> CUShort -> RawId -> IO ()
-initMouseEvent_canBubble_cancelable_view_detail_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey_button_relatedTarget domMouseEvent  type_ canBubble cancelable view detail screenX screenY clientX clientY ctrlKey altKey shiftKey metaKey button relatedTarget =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr view $ \raw_view ->
-        sendMsg domMouseEvent (mkSelector "initMouseEvent:canBubble:cancelable:view:detail:screenX:screenY:clientX:clientY:ctrlKey:altKey:shiftKey:metaKey:button:relatedTarget:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argCULong (if canBubble then 1 else 0), argCULong (if cancelable then 1 else 0), argPtr (castPtr raw_view :: Ptr ()), argCInt detail, argCInt screenX, argCInt screenY, argCInt clientX, argCInt clientY, argCULong (if ctrlKey then 1 else 0), argCULong (if altKey then 1 else 0), argCULong (if shiftKey then 1 else 0), argCULong (if metaKey then 1 else 0), argCUInt (fromIntegral button), argPtr (castPtr (unRawId relatedTarget) :: Ptr ())]
+initMouseEvent_canBubble_cancelable_view_detail_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey_button_relatedTarget domMouseEvent type_ canBubble cancelable view detail screenX screenY clientX clientY ctrlKey altKey shiftKey metaKey button relatedTarget =
+  sendOwnedMessage domMouseEvent initMouseEvent_canBubble_cancelable_view_detail_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey_button_relatedTargetSelector (toNSString type_) canBubble cancelable (toDOMAbstractView view) detail screenX screenY clientX clientY ctrlKey altKey shiftKey metaKey button relatedTarget
 
 -- | @- initMouseEvent:::::::::::::::@
 initMouseEvent :: (IsDOMMouseEvent domMouseEvent, IsNSString type_, IsDOMAbstractView view) => domMouseEvent -> type_ -> Bool -> Bool -> view -> CInt -> CInt -> CInt -> CInt -> CInt -> Bool -> Bool -> Bool -> Bool -> CUShort -> RawId -> IO ()
-initMouseEvent domMouseEvent  type_ canBubble cancelable view detail screenX screenY clientX clientY ctrlKey altKey shiftKey metaKey button relatedTarget =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr view $ \raw_view ->
-        sendMsg domMouseEvent (mkSelector "initMouseEvent:::::::::::::::") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argCULong (if canBubble then 1 else 0), argCULong (if cancelable then 1 else 0), argPtr (castPtr raw_view :: Ptr ()), argCInt detail, argCInt screenX, argCInt screenY, argCInt clientX, argCInt clientY, argCULong (if ctrlKey then 1 else 0), argCULong (if altKey then 1 else 0), argCULong (if shiftKey then 1 else 0), argCULong (if metaKey then 1 else 0), argCUInt (fromIntegral button), argPtr (castPtr (unRawId relatedTarget) :: Ptr ())]
+initMouseEvent domMouseEvent type_ canBubble cancelable view detail screenX screenY clientX clientY ctrlKey altKey shiftKey metaKey button relatedTarget =
+  sendOwnedMessage domMouseEvent initMouseEventSelector (toNSString type_) canBubble cancelable (toDOMAbstractView view) detail screenX screenY clientX clientY ctrlKey altKey shiftKey metaKey button relatedTarget
 
 -- | @- screenX@
 screenX :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CInt
-screenX domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "screenX") retCInt []
+screenX domMouseEvent =
+  sendMessage domMouseEvent screenXSelector
 
 -- | @- screenY@
 screenY :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CInt
-screenY domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "screenY") retCInt []
+screenY domMouseEvent =
+  sendMessage domMouseEvent screenYSelector
 
 -- | @- clientX@
 clientX :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CInt
-clientX domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "clientX") retCInt []
+clientX domMouseEvent =
+  sendMessage domMouseEvent clientXSelector
 
 -- | @- clientY@
 clientY :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CInt
-clientY domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "clientY") retCInt []
+clientY domMouseEvent =
+  sendMessage domMouseEvent clientYSelector
 
 -- | @- ctrlKey@
 ctrlKey :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO Bool
-ctrlKey domMouseEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domMouseEvent (mkSelector "ctrlKey") retCULong []
+ctrlKey domMouseEvent =
+  sendMessage domMouseEvent ctrlKeySelector
 
 -- | @- shiftKey@
 shiftKey :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO Bool
-shiftKey domMouseEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domMouseEvent (mkSelector "shiftKey") retCULong []
+shiftKey domMouseEvent =
+  sendMessage domMouseEvent shiftKeySelector
 
 -- | @- altKey@
 altKey :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO Bool
-altKey domMouseEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domMouseEvent (mkSelector "altKey") retCULong []
+altKey domMouseEvent =
+  sendMessage domMouseEvent altKeySelector
 
 -- | @- metaKey@
 metaKey :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO Bool
-metaKey domMouseEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domMouseEvent (mkSelector "metaKey") retCULong []
+metaKey domMouseEvent =
+  sendMessage domMouseEvent metaKeySelector
 
 -- | @- button@
 button :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CShort
-button domMouseEvent  =
-    fmap fromIntegral $ sendMsg domMouseEvent (mkSelector "button") retCInt []
+button domMouseEvent =
+  sendMessage domMouseEvent buttonSelector
 
 -- | @- relatedTarget@
 relatedTarget :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO RawId
-relatedTarget domMouseEvent  =
-    fmap (RawId . castPtr) $ sendMsg domMouseEvent (mkSelector "relatedTarget") (retPtr retVoid) []
+relatedTarget domMouseEvent =
+  sendMessage domMouseEvent relatedTargetSelector
 
 -- | @- offsetX@
 offsetX :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CInt
-offsetX domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "offsetX") retCInt []
+offsetX domMouseEvent =
+  sendMessage domMouseEvent offsetXSelector
 
 -- | @- offsetY@
 offsetY :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CInt
-offsetY domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "offsetY") retCInt []
+offsetY domMouseEvent =
+  sendMessage domMouseEvent offsetYSelector
 
 -- | @- x@
 x :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CInt
-x domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "x") retCInt []
+x domMouseEvent =
+  sendMessage domMouseEvent xSelector
 
 -- | @- y@
 y :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO CInt
-y domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "y") retCInt []
+y domMouseEvent =
+  sendMessage domMouseEvent ySelector
 
 -- | @- fromElement@
 fromElement :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO (Id DOMNode)
-fromElement domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "fromElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+fromElement domMouseEvent =
+  sendMessage domMouseEvent fromElementSelector
 
 -- | @- toElement@
 toElement :: IsDOMMouseEvent domMouseEvent => domMouseEvent -> IO (Id DOMNode)
-toElement domMouseEvent  =
-    sendMsg domMouseEvent (mkSelector "toElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+toElement domMouseEvent =
+  sendMessage domMouseEvent toElementSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initMouseEvent:canBubble:cancelable:view:detail:screenX:screenY:clientX:clientY:ctrlKey:altKey:shiftKey:metaKey:button:relatedTarget:@
-initMouseEvent_canBubble_cancelable_view_detail_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey_button_relatedTargetSelector :: Selector
+initMouseEvent_canBubble_cancelable_view_detail_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey_button_relatedTargetSelector :: Selector '[Id NSString, Bool, Bool, Id DOMAbstractView, CInt, CInt, CInt, CInt, CInt, Bool, Bool, Bool, Bool, CUShort, RawId] ()
 initMouseEvent_canBubble_cancelable_view_detail_screenX_screenY_clientX_clientY_ctrlKey_altKey_shiftKey_metaKey_button_relatedTargetSelector = mkSelector "initMouseEvent:canBubble:cancelable:view:detail:screenX:screenY:clientX:clientY:ctrlKey:altKey:shiftKey:metaKey:button:relatedTarget:"
 
 -- | @Selector@ for @initMouseEvent:::::::::::::::@
-initMouseEventSelector :: Selector
+initMouseEventSelector :: Selector '[Id NSString, Bool, Bool, Id DOMAbstractView, CInt, CInt, CInt, CInt, CInt, Bool, Bool, Bool, Bool, CUShort, RawId] ()
 initMouseEventSelector = mkSelector "initMouseEvent:::::::::::::::"
 
 -- | @Selector@ for @screenX@
-screenXSelector :: Selector
+screenXSelector :: Selector '[] CInt
 screenXSelector = mkSelector "screenX"
 
 -- | @Selector@ for @screenY@
-screenYSelector :: Selector
+screenYSelector :: Selector '[] CInt
 screenYSelector = mkSelector "screenY"
 
 -- | @Selector@ for @clientX@
-clientXSelector :: Selector
+clientXSelector :: Selector '[] CInt
 clientXSelector = mkSelector "clientX"
 
 -- | @Selector@ for @clientY@
-clientYSelector :: Selector
+clientYSelector :: Selector '[] CInt
 clientYSelector = mkSelector "clientY"
 
 -- | @Selector@ for @ctrlKey@
-ctrlKeySelector :: Selector
+ctrlKeySelector :: Selector '[] Bool
 ctrlKeySelector = mkSelector "ctrlKey"
 
 -- | @Selector@ for @shiftKey@
-shiftKeySelector :: Selector
+shiftKeySelector :: Selector '[] Bool
 shiftKeySelector = mkSelector "shiftKey"
 
 -- | @Selector@ for @altKey@
-altKeySelector :: Selector
+altKeySelector :: Selector '[] Bool
 altKeySelector = mkSelector "altKey"
 
 -- | @Selector@ for @metaKey@
-metaKeySelector :: Selector
+metaKeySelector :: Selector '[] Bool
 metaKeySelector = mkSelector "metaKey"
 
 -- | @Selector@ for @button@
-buttonSelector :: Selector
+buttonSelector :: Selector '[] CShort
 buttonSelector = mkSelector "button"
 
 -- | @Selector@ for @relatedTarget@
-relatedTargetSelector :: Selector
+relatedTargetSelector :: Selector '[] RawId
 relatedTargetSelector = mkSelector "relatedTarget"
 
 -- | @Selector@ for @offsetX@
-offsetXSelector :: Selector
+offsetXSelector :: Selector '[] CInt
 offsetXSelector = mkSelector "offsetX"
 
 -- | @Selector@ for @offsetY@
-offsetYSelector :: Selector
+offsetYSelector :: Selector '[] CInt
 offsetYSelector = mkSelector "offsetY"
 
 -- | @Selector@ for @x@
-xSelector :: Selector
+xSelector :: Selector '[] CInt
 xSelector = mkSelector "x"
 
 -- | @Selector@ for @y@
-ySelector :: Selector
+ySelector :: Selector '[] CInt
 ySelector = mkSelector "y"
 
 -- | @Selector@ for @fromElement@
-fromElementSelector :: Selector
+fromElementSelector :: Selector '[] (Id DOMNode)
 fromElementSelector = mkSelector "fromElement"
 
 -- | @Selector@ for @toElement@
-toElementSelector :: Selector
+toElementSelector :: Selector '[] (Id DOMNode)
 toElementSelector = mkSelector "toElement"
 

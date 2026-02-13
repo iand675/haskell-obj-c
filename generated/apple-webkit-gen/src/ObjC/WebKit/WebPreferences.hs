@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -68,65 +69,65 @@ module ObjC.WebKit.WebPreferences
   , setSuppressesIncrementalRendering
   , allowsAirPlayForMediaPlayback
   , setAllowsAirPlayForMediaPlayback
-  , standardPreferencesSelector
-  , initWithIdentifierSelector
-  , identifierSelector
-  , standardFontFamilySelector
-  , setStandardFontFamilySelector
-  , fixedFontFamilySelector
-  , setFixedFontFamilySelector
-  , serifFontFamilySelector
-  , setSerifFontFamilySelector
-  , sansSerifFontFamilySelector
-  , setSansSerifFontFamilySelector
-  , cursiveFontFamilySelector
-  , setCursiveFontFamilySelector
-  , fantasyFontFamilySelector
-  , setFantasyFontFamilySelector
-  , defaultFontSizeSelector
-  , setDefaultFontSizeSelector
-  , defaultFixedFontSizeSelector
-  , setDefaultFixedFontSizeSelector
-  , minimumFontSizeSelector
-  , setMinimumFontSizeSelector
-  , minimumLogicalFontSizeSelector
-  , setMinimumLogicalFontSizeSelector
-  , defaultTextEncodingNameSelector
-  , setDefaultTextEncodingNameSelector
-  , userStyleSheetEnabledSelector
-  , setUserStyleSheetEnabledSelector
-  , userStyleSheetLocationSelector
-  , setUserStyleSheetLocationSelector
-  , javaEnabledSelector
-  , setJavaEnabledSelector
-  , javaScriptEnabledSelector
-  , setJavaScriptEnabledSelector
-  , javaScriptCanOpenWindowsAutomaticallySelector
-  , setJavaScriptCanOpenWindowsAutomaticallySelector
-  , plugInsEnabledSelector
-  , setPlugInsEnabledSelector
-  , allowsAnimatedImagesSelector
-  , setAllowsAnimatedImagesSelector
-  , allowsAnimatedImageLoopingSelector
-  , setAllowsAnimatedImageLoopingSelector
-  , loadsImagesAutomaticallySelector
-  , setLoadsImagesAutomaticallySelector
-  , autosavesSelector
-  , setAutosavesSelector
-  , shouldPrintBackgroundsSelector
-  , setShouldPrintBackgroundsSelector
-  , privateBrowsingEnabledSelector
-  , setPrivateBrowsingEnabledSelector
-  , tabsToLinksSelector
-  , setTabsToLinksSelector
-  , usesPageCacheSelector
-  , setUsesPageCacheSelector
-  , cacheModelSelector
-  , setCacheModelSelector
-  , suppressesIncrementalRenderingSelector
-  , setSuppressesIncrementalRenderingSelector
   , allowsAirPlayForMediaPlaybackSelector
+  , allowsAnimatedImageLoopingSelector
+  , allowsAnimatedImagesSelector
+  , autosavesSelector
+  , cacheModelSelector
+  , cursiveFontFamilySelector
+  , defaultFixedFontSizeSelector
+  , defaultFontSizeSelector
+  , defaultTextEncodingNameSelector
+  , fantasyFontFamilySelector
+  , fixedFontFamilySelector
+  , identifierSelector
+  , initWithIdentifierSelector
+  , javaEnabledSelector
+  , javaScriptCanOpenWindowsAutomaticallySelector
+  , javaScriptEnabledSelector
+  , loadsImagesAutomaticallySelector
+  , minimumFontSizeSelector
+  , minimumLogicalFontSizeSelector
+  , plugInsEnabledSelector
+  , privateBrowsingEnabledSelector
+  , sansSerifFontFamilySelector
+  , serifFontFamilySelector
   , setAllowsAirPlayForMediaPlaybackSelector
+  , setAllowsAnimatedImageLoopingSelector
+  , setAllowsAnimatedImagesSelector
+  , setAutosavesSelector
+  , setCacheModelSelector
+  , setCursiveFontFamilySelector
+  , setDefaultFixedFontSizeSelector
+  , setDefaultFontSizeSelector
+  , setDefaultTextEncodingNameSelector
+  , setFantasyFontFamilySelector
+  , setFixedFontFamilySelector
+  , setJavaEnabledSelector
+  , setJavaScriptCanOpenWindowsAutomaticallySelector
+  , setJavaScriptEnabledSelector
+  , setLoadsImagesAutomaticallySelector
+  , setMinimumFontSizeSelector
+  , setMinimumLogicalFontSizeSelector
+  , setPlugInsEnabledSelector
+  , setPrivateBrowsingEnabledSelector
+  , setSansSerifFontFamilySelector
+  , setSerifFontFamilySelector
+  , setShouldPrintBackgroundsSelector
+  , setStandardFontFamilySelector
+  , setSuppressesIncrementalRenderingSelector
+  , setTabsToLinksSelector
+  , setUserStyleSheetEnabledSelector
+  , setUserStyleSheetLocationSelector
+  , setUsesPageCacheSelector
+  , shouldPrintBackgroundsSelector
+  , standardFontFamilySelector
+  , standardPreferencesSelector
+  , suppressesIncrementalRenderingSelector
+  , tabsToLinksSelector
+  , userStyleSheetEnabledSelector
+  , userStyleSheetLocationSelector
+  , usesPageCacheSelector
 
   -- * Enum types
   , WebCacheModel(WebCacheModel)
@@ -136,15 +137,11 @@ module ObjC.WebKit.WebPreferences
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -159,7 +156,7 @@ standardPreferences :: IO (Id WebPreferences)
 standardPreferences  =
   do
     cls' <- getRequiredClass "WebPreferences"
-    sendClassMsg cls' (mkSelector "standardPreferences") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' standardPreferencesSelector
 
 -- | initWithIdentifier:
 --
@@ -171,9 +168,8 @@ standardPreferences  =
 --
 -- ObjC selector: @- initWithIdentifier:@
 initWithIdentifier :: (IsWebPreferences webPreferences, IsNSString anIdentifier) => webPreferences -> anIdentifier -> IO (Id WebPreferences)
-initWithIdentifier webPreferences  anIdentifier =
-  withObjCPtr anIdentifier $ \raw_anIdentifier ->
-      sendMsg webPreferences (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_anIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier webPreferences anIdentifier =
+  sendOwnedMessage webPreferences initWithIdentifierSelector (toNSString anIdentifier)
 
 -- | identifier
 --
@@ -181,183 +177,176 @@ initWithIdentifier webPreferences  anIdentifier =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsWebPreferences webPreferences => webPreferences -> IO (Id NSString)
-identifier webPreferences  =
-    sendMsg webPreferences (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier webPreferences =
+  sendMessage webPreferences identifierSelector
 
 -- | standardFontFamily
 --
 -- ObjC selector: @- standardFontFamily@
 standardFontFamily :: IsWebPreferences webPreferences => webPreferences -> IO (Id NSString)
-standardFontFamily webPreferences  =
-    sendMsg webPreferences (mkSelector "standardFontFamily") (retPtr retVoid) [] >>= retainedObject . castPtr
+standardFontFamily webPreferences =
+  sendMessage webPreferences standardFontFamilySelector
 
 -- | standardFontFamily
 --
 -- ObjC selector: @- setStandardFontFamily:@
 setStandardFontFamily :: (IsWebPreferences webPreferences, IsNSString value) => webPreferences -> value -> IO ()
-setStandardFontFamily webPreferences  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webPreferences (mkSelector "setStandardFontFamily:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStandardFontFamily webPreferences value =
+  sendMessage webPreferences setStandardFontFamilySelector (toNSString value)
 
 -- | fixedFontFamily
 --
 -- ObjC selector: @- fixedFontFamily@
 fixedFontFamily :: IsWebPreferences webPreferences => webPreferences -> IO (Id NSString)
-fixedFontFamily webPreferences  =
-    sendMsg webPreferences (mkSelector "fixedFontFamily") (retPtr retVoid) [] >>= retainedObject . castPtr
+fixedFontFamily webPreferences =
+  sendMessage webPreferences fixedFontFamilySelector
 
 -- | fixedFontFamily
 --
 -- ObjC selector: @- setFixedFontFamily:@
 setFixedFontFamily :: (IsWebPreferences webPreferences, IsNSString value) => webPreferences -> value -> IO ()
-setFixedFontFamily webPreferences  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webPreferences (mkSelector "setFixedFontFamily:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFixedFontFamily webPreferences value =
+  sendMessage webPreferences setFixedFontFamilySelector (toNSString value)
 
 -- | serifFontFamily
 --
 -- ObjC selector: @- serifFontFamily@
 serifFontFamily :: IsWebPreferences webPreferences => webPreferences -> IO (Id NSString)
-serifFontFamily webPreferences  =
-    sendMsg webPreferences (mkSelector "serifFontFamily") (retPtr retVoid) [] >>= retainedObject . castPtr
+serifFontFamily webPreferences =
+  sendMessage webPreferences serifFontFamilySelector
 
 -- | serifFontFamily
 --
 -- ObjC selector: @- setSerifFontFamily:@
 setSerifFontFamily :: (IsWebPreferences webPreferences, IsNSString value) => webPreferences -> value -> IO ()
-setSerifFontFamily webPreferences  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webPreferences (mkSelector "setSerifFontFamily:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSerifFontFamily webPreferences value =
+  sendMessage webPreferences setSerifFontFamilySelector (toNSString value)
 
 -- | sansSerifFontFamily
 --
 -- ObjC selector: @- sansSerifFontFamily@
 sansSerifFontFamily :: IsWebPreferences webPreferences => webPreferences -> IO (Id NSString)
-sansSerifFontFamily webPreferences  =
-    sendMsg webPreferences (mkSelector "sansSerifFontFamily") (retPtr retVoid) [] >>= retainedObject . castPtr
+sansSerifFontFamily webPreferences =
+  sendMessage webPreferences sansSerifFontFamilySelector
 
 -- | sansSerifFontFamily
 --
 -- ObjC selector: @- setSansSerifFontFamily:@
 setSansSerifFontFamily :: (IsWebPreferences webPreferences, IsNSString value) => webPreferences -> value -> IO ()
-setSansSerifFontFamily webPreferences  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webPreferences (mkSelector "setSansSerifFontFamily:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSansSerifFontFamily webPreferences value =
+  sendMessage webPreferences setSansSerifFontFamilySelector (toNSString value)
 
 -- | cursiveFontFamily
 --
 -- ObjC selector: @- cursiveFontFamily@
 cursiveFontFamily :: IsWebPreferences webPreferences => webPreferences -> IO (Id NSString)
-cursiveFontFamily webPreferences  =
-    sendMsg webPreferences (mkSelector "cursiveFontFamily") (retPtr retVoid) [] >>= retainedObject . castPtr
+cursiveFontFamily webPreferences =
+  sendMessage webPreferences cursiveFontFamilySelector
 
 -- | cursiveFontFamily
 --
 -- ObjC selector: @- setCursiveFontFamily:@
 setCursiveFontFamily :: (IsWebPreferences webPreferences, IsNSString value) => webPreferences -> value -> IO ()
-setCursiveFontFamily webPreferences  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webPreferences (mkSelector "setCursiveFontFamily:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCursiveFontFamily webPreferences value =
+  sendMessage webPreferences setCursiveFontFamilySelector (toNSString value)
 
 -- | fantasyFontFamily
 --
 -- ObjC selector: @- fantasyFontFamily@
 fantasyFontFamily :: IsWebPreferences webPreferences => webPreferences -> IO (Id NSString)
-fantasyFontFamily webPreferences  =
-    sendMsg webPreferences (mkSelector "fantasyFontFamily") (retPtr retVoid) [] >>= retainedObject . castPtr
+fantasyFontFamily webPreferences =
+  sendMessage webPreferences fantasyFontFamilySelector
 
 -- | fantasyFontFamily
 --
 -- ObjC selector: @- setFantasyFontFamily:@
 setFantasyFontFamily :: (IsWebPreferences webPreferences, IsNSString value) => webPreferences -> value -> IO ()
-setFantasyFontFamily webPreferences  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webPreferences (mkSelector "setFantasyFontFamily:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFantasyFontFamily webPreferences value =
+  sendMessage webPreferences setFantasyFontFamilySelector (toNSString value)
 
 -- | defaultFontSize
 --
 -- ObjC selector: @- defaultFontSize@
 defaultFontSize :: IsWebPreferences webPreferences => webPreferences -> IO CInt
-defaultFontSize webPreferences  =
-    sendMsg webPreferences (mkSelector "defaultFontSize") retCInt []
+defaultFontSize webPreferences =
+  sendMessage webPreferences defaultFontSizeSelector
 
 -- | defaultFontSize
 --
 -- ObjC selector: @- setDefaultFontSize:@
 setDefaultFontSize :: IsWebPreferences webPreferences => webPreferences -> CInt -> IO ()
-setDefaultFontSize webPreferences  value =
-    sendMsg webPreferences (mkSelector "setDefaultFontSize:") retVoid [argCInt value]
+setDefaultFontSize webPreferences value =
+  sendMessage webPreferences setDefaultFontSizeSelector value
 
 -- | defaultFixedFontSize
 --
 -- ObjC selector: @- defaultFixedFontSize@
 defaultFixedFontSize :: IsWebPreferences webPreferences => webPreferences -> IO CInt
-defaultFixedFontSize webPreferences  =
-    sendMsg webPreferences (mkSelector "defaultFixedFontSize") retCInt []
+defaultFixedFontSize webPreferences =
+  sendMessage webPreferences defaultFixedFontSizeSelector
 
 -- | defaultFixedFontSize
 --
 -- ObjC selector: @- setDefaultFixedFontSize:@
 setDefaultFixedFontSize :: IsWebPreferences webPreferences => webPreferences -> CInt -> IO ()
-setDefaultFixedFontSize webPreferences  value =
-    sendMsg webPreferences (mkSelector "setDefaultFixedFontSize:") retVoid [argCInt value]
+setDefaultFixedFontSize webPreferences value =
+  sendMessage webPreferences setDefaultFixedFontSizeSelector value
 
 -- | minimumFontSize
 --
 -- ObjC selector: @- minimumFontSize@
 minimumFontSize :: IsWebPreferences webPreferences => webPreferences -> IO CInt
-minimumFontSize webPreferences  =
-    sendMsg webPreferences (mkSelector "minimumFontSize") retCInt []
+minimumFontSize webPreferences =
+  sendMessage webPreferences minimumFontSizeSelector
 
 -- | minimumFontSize
 --
 -- ObjC selector: @- setMinimumFontSize:@
 setMinimumFontSize :: IsWebPreferences webPreferences => webPreferences -> CInt -> IO ()
-setMinimumFontSize webPreferences  value =
-    sendMsg webPreferences (mkSelector "setMinimumFontSize:") retVoid [argCInt value]
+setMinimumFontSize webPreferences value =
+  sendMessage webPreferences setMinimumFontSizeSelector value
 
 -- | minimumLogicalFontSize
 --
 -- ObjC selector: @- minimumLogicalFontSize@
 minimumLogicalFontSize :: IsWebPreferences webPreferences => webPreferences -> IO CInt
-minimumLogicalFontSize webPreferences  =
-    sendMsg webPreferences (mkSelector "minimumLogicalFontSize") retCInt []
+minimumLogicalFontSize webPreferences =
+  sendMessage webPreferences minimumLogicalFontSizeSelector
 
 -- | minimumLogicalFontSize
 --
 -- ObjC selector: @- setMinimumLogicalFontSize:@
 setMinimumLogicalFontSize :: IsWebPreferences webPreferences => webPreferences -> CInt -> IO ()
-setMinimumLogicalFontSize webPreferences  value =
-    sendMsg webPreferences (mkSelector "setMinimumLogicalFontSize:") retVoid [argCInt value]
+setMinimumLogicalFontSize webPreferences value =
+  sendMessage webPreferences setMinimumLogicalFontSizeSelector value
 
 -- | defaultTextEncodingName
 --
 -- ObjC selector: @- defaultTextEncodingName@
 defaultTextEncodingName :: IsWebPreferences webPreferences => webPreferences -> IO (Id NSString)
-defaultTextEncodingName webPreferences  =
-    sendMsg webPreferences (mkSelector "defaultTextEncodingName") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultTextEncodingName webPreferences =
+  sendMessage webPreferences defaultTextEncodingNameSelector
 
 -- | defaultTextEncodingName
 --
 -- ObjC selector: @- setDefaultTextEncodingName:@
 setDefaultTextEncodingName :: (IsWebPreferences webPreferences, IsNSString value) => webPreferences -> value -> IO ()
-setDefaultTextEncodingName webPreferences  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webPreferences (mkSelector "setDefaultTextEncodingName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultTextEncodingName webPreferences value =
+  sendMessage webPreferences setDefaultTextEncodingNameSelector (toNSString value)
 
 -- | userStyleSheetEnabled
 --
 -- ObjC selector: @- userStyleSheetEnabled@
 userStyleSheetEnabled :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-userStyleSheetEnabled webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "userStyleSheetEnabled") retCULong []
+userStyleSheetEnabled webPreferences =
+  sendMessage webPreferences userStyleSheetEnabledSelector
 
 -- | userStyleSheetEnabled
 --
 -- ObjC selector: @- setUserStyleSheetEnabled:@
 setUserStyleSheetEnabled :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setUserStyleSheetEnabled webPreferences  value =
-    sendMsg webPreferences (mkSelector "setUserStyleSheetEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setUserStyleSheetEnabled webPreferences value =
+  sendMessage webPreferences setUserStyleSheetEnabledSelector value
 
 -- | userStyleSheetLocation
 --
@@ -365,8 +354,8 @@ setUserStyleSheetEnabled webPreferences  value =
 --
 -- ObjC selector: @- userStyleSheetLocation@
 userStyleSheetLocation :: IsWebPreferences webPreferences => webPreferences -> IO (Id NSURL)
-userStyleSheetLocation webPreferences  =
-    sendMsg webPreferences (mkSelector "userStyleSheetLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+userStyleSheetLocation webPreferences =
+  sendMessage webPreferences userStyleSheetLocationSelector
 
 -- | userStyleSheetLocation
 --
@@ -374,9 +363,8 @@ userStyleSheetLocation webPreferences  =
 --
 -- ObjC selector: @- setUserStyleSheetLocation:@
 setUserStyleSheetLocation :: (IsWebPreferences webPreferences, IsNSURL value) => webPreferences -> value -> IO ()
-setUserStyleSheetLocation webPreferences  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg webPreferences (mkSelector "setUserStyleSheetLocation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserStyleSheetLocation webPreferences value =
+  sendMessage webPreferences setUserStyleSheetLocationSelector (toNSURL value)
 
 -- | javaEnabled
 --
@@ -384,8 +372,8 @@ setUserStyleSheetLocation webPreferences  value =
 --
 -- ObjC selector: @- javaEnabled@
 javaEnabled :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-javaEnabled webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "javaEnabled") retCULong []
+javaEnabled webPreferences =
+  sendMessage webPreferences javaEnabledSelector
 
 -- | javaEnabled
 --
@@ -393,92 +381,92 @@ javaEnabled webPreferences  =
 --
 -- ObjC selector: @- setJavaEnabled:@
 setJavaEnabled :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setJavaEnabled webPreferences  value =
-    sendMsg webPreferences (mkSelector "setJavaEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setJavaEnabled webPreferences value =
+  sendMessage webPreferences setJavaEnabledSelector value
 
 -- | javaScriptEnabled
 --
 -- ObjC selector: @- javaScriptEnabled@
 javaScriptEnabled :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-javaScriptEnabled webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "javaScriptEnabled") retCULong []
+javaScriptEnabled webPreferences =
+  sendMessage webPreferences javaScriptEnabledSelector
 
 -- | javaScriptEnabled
 --
 -- ObjC selector: @- setJavaScriptEnabled:@
 setJavaScriptEnabled :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setJavaScriptEnabled webPreferences  value =
-    sendMsg webPreferences (mkSelector "setJavaScriptEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setJavaScriptEnabled webPreferences value =
+  sendMessage webPreferences setJavaScriptEnabledSelector value
 
 -- | javaScriptCanOpenWindowsAutomatically
 --
 -- ObjC selector: @- javaScriptCanOpenWindowsAutomatically@
 javaScriptCanOpenWindowsAutomatically :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-javaScriptCanOpenWindowsAutomatically webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "javaScriptCanOpenWindowsAutomatically") retCULong []
+javaScriptCanOpenWindowsAutomatically webPreferences =
+  sendMessage webPreferences javaScriptCanOpenWindowsAutomaticallySelector
 
 -- | javaScriptCanOpenWindowsAutomatically
 --
 -- ObjC selector: @- setJavaScriptCanOpenWindowsAutomatically:@
 setJavaScriptCanOpenWindowsAutomatically :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setJavaScriptCanOpenWindowsAutomatically webPreferences  value =
-    sendMsg webPreferences (mkSelector "setJavaScriptCanOpenWindowsAutomatically:") retVoid [argCULong (if value then 1 else 0)]
+setJavaScriptCanOpenWindowsAutomatically webPreferences value =
+  sendMessage webPreferences setJavaScriptCanOpenWindowsAutomaticallySelector value
 
 -- | plugInsEnabled
 --
 -- ObjC selector: @- plugInsEnabled@
 plugInsEnabled :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-plugInsEnabled webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "plugInsEnabled") retCULong []
+plugInsEnabled webPreferences =
+  sendMessage webPreferences plugInsEnabledSelector
 
 -- | plugInsEnabled
 --
 -- ObjC selector: @- setPlugInsEnabled:@
 setPlugInsEnabled :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setPlugInsEnabled webPreferences  value =
-    sendMsg webPreferences (mkSelector "setPlugInsEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setPlugInsEnabled webPreferences value =
+  sendMessage webPreferences setPlugInsEnabledSelector value
 
 -- | allowsAnimatedImages
 --
 -- ObjC selector: @- allowsAnimatedImages@
 allowsAnimatedImages :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-allowsAnimatedImages webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "allowsAnimatedImages") retCULong []
+allowsAnimatedImages webPreferences =
+  sendMessage webPreferences allowsAnimatedImagesSelector
 
 -- | allowsAnimatedImages
 --
 -- ObjC selector: @- setAllowsAnimatedImages:@
 setAllowsAnimatedImages :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setAllowsAnimatedImages webPreferences  value =
-    sendMsg webPreferences (mkSelector "setAllowsAnimatedImages:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAnimatedImages webPreferences value =
+  sendMessage webPreferences setAllowsAnimatedImagesSelector value
 
 -- | allowsAnimatedImageLooping
 --
 -- ObjC selector: @- allowsAnimatedImageLooping@
 allowsAnimatedImageLooping :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-allowsAnimatedImageLooping webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "allowsAnimatedImageLooping") retCULong []
+allowsAnimatedImageLooping webPreferences =
+  sendMessage webPreferences allowsAnimatedImageLoopingSelector
 
 -- | allowsAnimatedImageLooping
 --
 -- ObjC selector: @- setAllowsAnimatedImageLooping:@
 setAllowsAnimatedImageLooping :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setAllowsAnimatedImageLooping webPreferences  value =
-    sendMsg webPreferences (mkSelector "setAllowsAnimatedImageLooping:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAnimatedImageLooping webPreferences value =
+  sendMessage webPreferences setAllowsAnimatedImageLoopingSelector value
 
 -- | willLoadImagesAutomatically
 --
 -- ObjC selector: @- loadsImagesAutomatically@
 loadsImagesAutomatically :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-loadsImagesAutomatically webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "loadsImagesAutomatically") retCULong []
+loadsImagesAutomatically webPreferences =
+  sendMessage webPreferences loadsImagesAutomaticallySelector
 
 -- | willLoadImagesAutomatically
 --
 -- ObjC selector: @- setLoadsImagesAutomatically:@
 setLoadsImagesAutomatically :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setLoadsImagesAutomatically webPreferences  value =
-    sendMsg webPreferences (mkSelector "setLoadsImagesAutomatically:") retVoid [argCULong (if value then 1 else 0)]
+setLoadsImagesAutomatically webPreferences value =
+  sendMessage webPreferences setLoadsImagesAutomaticallySelector value
 
 -- | autosaves
 --
@@ -486,8 +474,8 @@ setLoadsImagesAutomatically webPreferences  value =
 --
 -- ObjC selector: @- autosaves@
 autosaves :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-autosaves webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "autosaves") retCULong []
+autosaves webPreferences =
+  sendMessage webPreferences autosavesSelector
 
 -- | autosaves
 --
@@ -495,22 +483,22 @@ autosaves webPreferences  =
 --
 -- ObjC selector: @- setAutosaves:@
 setAutosaves :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setAutosaves webPreferences  value =
-    sendMsg webPreferences (mkSelector "setAutosaves:") retVoid [argCULong (if value then 1 else 0)]
+setAutosaves webPreferences value =
+  sendMessage webPreferences setAutosavesSelector value
 
 -- | shouldPrintBackgrounds
 --
 -- ObjC selector: @- shouldPrintBackgrounds@
 shouldPrintBackgrounds :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-shouldPrintBackgrounds webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "shouldPrintBackgrounds") retCULong []
+shouldPrintBackgrounds webPreferences =
+  sendMessage webPreferences shouldPrintBackgroundsSelector
 
 -- | shouldPrintBackgrounds
 --
 -- ObjC selector: @- setShouldPrintBackgrounds:@
 setShouldPrintBackgrounds :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setShouldPrintBackgrounds webPreferences  value =
-    sendMsg webPreferences (mkSelector "setShouldPrintBackgrounds:") retVoid [argCULong (if value then 1 else 0)]
+setShouldPrintBackgrounds webPreferences value =
+  sendMessage webPreferences setShouldPrintBackgroundsSelector value
 
 -- | privateBrowsingEnabled:
 --
@@ -518,8 +506,8 @@ setShouldPrintBackgrounds webPreferences  value =
 --
 -- ObjC selector: @- privateBrowsingEnabled@
 privateBrowsingEnabled :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-privateBrowsingEnabled webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "privateBrowsingEnabled") retCULong []
+privateBrowsingEnabled webPreferences =
+  sendMessage webPreferences privateBrowsingEnabledSelector
 
 -- | privateBrowsingEnabled:
 --
@@ -527,8 +515,8 @@ privateBrowsingEnabled webPreferences  =
 --
 -- ObjC selector: @- setPrivateBrowsingEnabled:@
 setPrivateBrowsingEnabled :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setPrivateBrowsingEnabled webPreferences  value =
-    sendMsg webPreferences (mkSelector "setPrivateBrowsingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setPrivateBrowsingEnabled webPreferences value =
+  sendMessage webPreferences setPrivateBrowsingEnabledSelector value
 
 -- | tabsToLinks
 --
@@ -536,8 +524,8 @@ setPrivateBrowsingEnabled webPreferences  value =
 --
 -- ObjC selector: @- tabsToLinks@
 tabsToLinks :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-tabsToLinks webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "tabsToLinks") retCULong []
+tabsToLinks webPreferences =
+  sendMessage webPreferences tabsToLinksSelector
 
 -- | tabsToLinks
 --
@@ -545,8 +533,8 @@ tabsToLinks webPreferences  =
 --
 -- ObjC selector: @- setTabsToLinks:@
 setTabsToLinks :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setTabsToLinks webPreferences  value =
-    sendMsg webPreferences (mkSelector "setTabsToLinks:") retVoid [argCULong (if value then 1 else 0)]
+setTabsToLinks webPreferences value =
+  sendMessage webPreferences setTabsToLinksSelector value
 
 -- | usesPageCache
 --
@@ -556,8 +544,8 @@ setTabsToLinks webPreferences  value =
 --
 -- ObjC selector: @- usesPageCache@
 usesPageCache :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-usesPageCache webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "usesPageCache") retCULong []
+usesPageCache webPreferences =
+  sendMessage webPreferences usesPageCacheSelector
 
 -- | usesPageCache
 --
@@ -567,8 +555,8 @@ usesPageCache webPreferences  =
 --
 -- ObjC selector: @- setUsesPageCache:@
 setUsesPageCache :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setUsesPageCache webPreferences  value =
-    sendMsg webPreferences (mkSelector "setUsesPageCache:") retVoid [argCULong (if value then 1 else 0)]
+setUsesPageCache webPreferences value =
+  sendMessage webPreferences setUsesPageCacheSelector value
 
 -- | cacheModel
 --
@@ -582,8 +570,8 @@ setUsesPageCache webPreferences  value =
 --
 -- ObjC selector: @- cacheModel@
 cacheModel :: IsWebPreferences webPreferences => webPreferences -> IO WebCacheModel
-cacheModel webPreferences  =
-    fmap (coerce :: CULong -> WebCacheModel) $ sendMsg webPreferences (mkSelector "cacheModel") retCULong []
+cacheModel webPreferences =
+  sendMessage webPreferences cacheModelSelector
 
 -- | cacheModel
 --
@@ -597,274 +585,274 @@ cacheModel webPreferences  =
 --
 -- ObjC selector: @- setCacheModel:@
 setCacheModel :: IsWebPreferences webPreferences => webPreferences -> WebCacheModel -> IO ()
-setCacheModel webPreferences  value =
-    sendMsg webPreferences (mkSelector "setCacheModel:") retVoid [argCULong (coerce value)]
+setCacheModel webPreferences value =
+  sendMessage webPreferences setCacheModelSelector value
 
 -- | suppressesIncrementalRendering
 --
 -- ObjC selector: @- suppressesIncrementalRendering@
 suppressesIncrementalRendering :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-suppressesIncrementalRendering webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "suppressesIncrementalRendering") retCULong []
+suppressesIncrementalRendering webPreferences =
+  sendMessage webPreferences suppressesIncrementalRenderingSelector
 
 -- | suppressesIncrementalRendering
 --
 -- ObjC selector: @- setSuppressesIncrementalRendering:@
 setSuppressesIncrementalRendering :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setSuppressesIncrementalRendering webPreferences  value =
-    sendMsg webPreferences (mkSelector "setSuppressesIncrementalRendering:") retVoid [argCULong (if value then 1 else 0)]
+setSuppressesIncrementalRendering webPreferences value =
+  sendMessage webPreferences setSuppressesIncrementalRenderingSelector value
 
 -- | allowsAirPlayForMediaPlayback
 --
 -- ObjC selector: @- allowsAirPlayForMediaPlayback@
 allowsAirPlayForMediaPlayback :: IsWebPreferences webPreferences => webPreferences -> IO Bool
-allowsAirPlayForMediaPlayback webPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg webPreferences (mkSelector "allowsAirPlayForMediaPlayback") retCULong []
+allowsAirPlayForMediaPlayback webPreferences =
+  sendMessage webPreferences allowsAirPlayForMediaPlaybackSelector
 
 -- | allowsAirPlayForMediaPlayback
 --
 -- ObjC selector: @- setAllowsAirPlayForMediaPlayback:@
 setAllowsAirPlayForMediaPlayback :: IsWebPreferences webPreferences => webPreferences -> Bool -> IO ()
-setAllowsAirPlayForMediaPlayback webPreferences  value =
-    sendMsg webPreferences (mkSelector "setAllowsAirPlayForMediaPlayback:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAirPlayForMediaPlayback webPreferences value =
+  sendMessage webPreferences setAllowsAirPlayForMediaPlaybackSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @standardPreferences@
-standardPreferencesSelector :: Selector
+standardPreferencesSelector :: Selector '[] (Id WebPreferences)
 standardPreferencesSelector = mkSelector "standardPreferences"
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[Id NSString] (Id WebPreferences)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @standardFontFamily@
-standardFontFamilySelector :: Selector
+standardFontFamilySelector :: Selector '[] (Id NSString)
 standardFontFamilySelector = mkSelector "standardFontFamily"
 
 -- | @Selector@ for @setStandardFontFamily:@
-setStandardFontFamilySelector :: Selector
+setStandardFontFamilySelector :: Selector '[Id NSString] ()
 setStandardFontFamilySelector = mkSelector "setStandardFontFamily:"
 
 -- | @Selector@ for @fixedFontFamily@
-fixedFontFamilySelector :: Selector
+fixedFontFamilySelector :: Selector '[] (Id NSString)
 fixedFontFamilySelector = mkSelector "fixedFontFamily"
 
 -- | @Selector@ for @setFixedFontFamily:@
-setFixedFontFamilySelector :: Selector
+setFixedFontFamilySelector :: Selector '[Id NSString] ()
 setFixedFontFamilySelector = mkSelector "setFixedFontFamily:"
 
 -- | @Selector@ for @serifFontFamily@
-serifFontFamilySelector :: Selector
+serifFontFamilySelector :: Selector '[] (Id NSString)
 serifFontFamilySelector = mkSelector "serifFontFamily"
 
 -- | @Selector@ for @setSerifFontFamily:@
-setSerifFontFamilySelector :: Selector
+setSerifFontFamilySelector :: Selector '[Id NSString] ()
 setSerifFontFamilySelector = mkSelector "setSerifFontFamily:"
 
 -- | @Selector@ for @sansSerifFontFamily@
-sansSerifFontFamilySelector :: Selector
+sansSerifFontFamilySelector :: Selector '[] (Id NSString)
 sansSerifFontFamilySelector = mkSelector "sansSerifFontFamily"
 
 -- | @Selector@ for @setSansSerifFontFamily:@
-setSansSerifFontFamilySelector :: Selector
+setSansSerifFontFamilySelector :: Selector '[Id NSString] ()
 setSansSerifFontFamilySelector = mkSelector "setSansSerifFontFamily:"
 
 -- | @Selector@ for @cursiveFontFamily@
-cursiveFontFamilySelector :: Selector
+cursiveFontFamilySelector :: Selector '[] (Id NSString)
 cursiveFontFamilySelector = mkSelector "cursiveFontFamily"
 
 -- | @Selector@ for @setCursiveFontFamily:@
-setCursiveFontFamilySelector :: Selector
+setCursiveFontFamilySelector :: Selector '[Id NSString] ()
 setCursiveFontFamilySelector = mkSelector "setCursiveFontFamily:"
 
 -- | @Selector@ for @fantasyFontFamily@
-fantasyFontFamilySelector :: Selector
+fantasyFontFamilySelector :: Selector '[] (Id NSString)
 fantasyFontFamilySelector = mkSelector "fantasyFontFamily"
 
 -- | @Selector@ for @setFantasyFontFamily:@
-setFantasyFontFamilySelector :: Selector
+setFantasyFontFamilySelector :: Selector '[Id NSString] ()
 setFantasyFontFamilySelector = mkSelector "setFantasyFontFamily:"
 
 -- | @Selector@ for @defaultFontSize@
-defaultFontSizeSelector :: Selector
+defaultFontSizeSelector :: Selector '[] CInt
 defaultFontSizeSelector = mkSelector "defaultFontSize"
 
 -- | @Selector@ for @setDefaultFontSize:@
-setDefaultFontSizeSelector :: Selector
+setDefaultFontSizeSelector :: Selector '[CInt] ()
 setDefaultFontSizeSelector = mkSelector "setDefaultFontSize:"
 
 -- | @Selector@ for @defaultFixedFontSize@
-defaultFixedFontSizeSelector :: Selector
+defaultFixedFontSizeSelector :: Selector '[] CInt
 defaultFixedFontSizeSelector = mkSelector "defaultFixedFontSize"
 
 -- | @Selector@ for @setDefaultFixedFontSize:@
-setDefaultFixedFontSizeSelector :: Selector
+setDefaultFixedFontSizeSelector :: Selector '[CInt] ()
 setDefaultFixedFontSizeSelector = mkSelector "setDefaultFixedFontSize:"
 
 -- | @Selector@ for @minimumFontSize@
-minimumFontSizeSelector :: Selector
+minimumFontSizeSelector :: Selector '[] CInt
 minimumFontSizeSelector = mkSelector "minimumFontSize"
 
 -- | @Selector@ for @setMinimumFontSize:@
-setMinimumFontSizeSelector :: Selector
+setMinimumFontSizeSelector :: Selector '[CInt] ()
 setMinimumFontSizeSelector = mkSelector "setMinimumFontSize:"
 
 -- | @Selector@ for @minimumLogicalFontSize@
-minimumLogicalFontSizeSelector :: Selector
+minimumLogicalFontSizeSelector :: Selector '[] CInt
 minimumLogicalFontSizeSelector = mkSelector "minimumLogicalFontSize"
 
 -- | @Selector@ for @setMinimumLogicalFontSize:@
-setMinimumLogicalFontSizeSelector :: Selector
+setMinimumLogicalFontSizeSelector :: Selector '[CInt] ()
 setMinimumLogicalFontSizeSelector = mkSelector "setMinimumLogicalFontSize:"
 
 -- | @Selector@ for @defaultTextEncodingName@
-defaultTextEncodingNameSelector :: Selector
+defaultTextEncodingNameSelector :: Selector '[] (Id NSString)
 defaultTextEncodingNameSelector = mkSelector "defaultTextEncodingName"
 
 -- | @Selector@ for @setDefaultTextEncodingName:@
-setDefaultTextEncodingNameSelector :: Selector
+setDefaultTextEncodingNameSelector :: Selector '[Id NSString] ()
 setDefaultTextEncodingNameSelector = mkSelector "setDefaultTextEncodingName:"
 
 -- | @Selector@ for @userStyleSheetEnabled@
-userStyleSheetEnabledSelector :: Selector
+userStyleSheetEnabledSelector :: Selector '[] Bool
 userStyleSheetEnabledSelector = mkSelector "userStyleSheetEnabled"
 
 -- | @Selector@ for @setUserStyleSheetEnabled:@
-setUserStyleSheetEnabledSelector :: Selector
+setUserStyleSheetEnabledSelector :: Selector '[Bool] ()
 setUserStyleSheetEnabledSelector = mkSelector "setUserStyleSheetEnabled:"
 
 -- | @Selector@ for @userStyleSheetLocation@
-userStyleSheetLocationSelector :: Selector
+userStyleSheetLocationSelector :: Selector '[] (Id NSURL)
 userStyleSheetLocationSelector = mkSelector "userStyleSheetLocation"
 
 -- | @Selector@ for @setUserStyleSheetLocation:@
-setUserStyleSheetLocationSelector :: Selector
+setUserStyleSheetLocationSelector :: Selector '[Id NSURL] ()
 setUserStyleSheetLocationSelector = mkSelector "setUserStyleSheetLocation:"
 
 -- | @Selector@ for @javaEnabled@
-javaEnabledSelector :: Selector
+javaEnabledSelector :: Selector '[] Bool
 javaEnabledSelector = mkSelector "javaEnabled"
 
 -- | @Selector@ for @setJavaEnabled:@
-setJavaEnabledSelector :: Selector
+setJavaEnabledSelector :: Selector '[Bool] ()
 setJavaEnabledSelector = mkSelector "setJavaEnabled:"
 
 -- | @Selector@ for @javaScriptEnabled@
-javaScriptEnabledSelector :: Selector
+javaScriptEnabledSelector :: Selector '[] Bool
 javaScriptEnabledSelector = mkSelector "javaScriptEnabled"
 
 -- | @Selector@ for @setJavaScriptEnabled:@
-setJavaScriptEnabledSelector :: Selector
+setJavaScriptEnabledSelector :: Selector '[Bool] ()
 setJavaScriptEnabledSelector = mkSelector "setJavaScriptEnabled:"
 
 -- | @Selector@ for @javaScriptCanOpenWindowsAutomatically@
-javaScriptCanOpenWindowsAutomaticallySelector :: Selector
+javaScriptCanOpenWindowsAutomaticallySelector :: Selector '[] Bool
 javaScriptCanOpenWindowsAutomaticallySelector = mkSelector "javaScriptCanOpenWindowsAutomatically"
 
 -- | @Selector@ for @setJavaScriptCanOpenWindowsAutomatically:@
-setJavaScriptCanOpenWindowsAutomaticallySelector :: Selector
+setJavaScriptCanOpenWindowsAutomaticallySelector :: Selector '[Bool] ()
 setJavaScriptCanOpenWindowsAutomaticallySelector = mkSelector "setJavaScriptCanOpenWindowsAutomatically:"
 
 -- | @Selector@ for @plugInsEnabled@
-plugInsEnabledSelector :: Selector
+plugInsEnabledSelector :: Selector '[] Bool
 plugInsEnabledSelector = mkSelector "plugInsEnabled"
 
 -- | @Selector@ for @setPlugInsEnabled:@
-setPlugInsEnabledSelector :: Selector
+setPlugInsEnabledSelector :: Selector '[Bool] ()
 setPlugInsEnabledSelector = mkSelector "setPlugInsEnabled:"
 
 -- | @Selector@ for @allowsAnimatedImages@
-allowsAnimatedImagesSelector :: Selector
+allowsAnimatedImagesSelector :: Selector '[] Bool
 allowsAnimatedImagesSelector = mkSelector "allowsAnimatedImages"
 
 -- | @Selector@ for @setAllowsAnimatedImages:@
-setAllowsAnimatedImagesSelector :: Selector
+setAllowsAnimatedImagesSelector :: Selector '[Bool] ()
 setAllowsAnimatedImagesSelector = mkSelector "setAllowsAnimatedImages:"
 
 -- | @Selector@ for @allowsAnimatedImageLooping@
-allowsAnimatedImageLoopingSelector :: Selector
+allowsAnimatedImageLoopingSelector :: Selector '[] Bool
 allowsAnimatedImageLoopingSelector = mkSelector "allowsAnimatedImageLooping"
 
 -- | @Selector@ for @setAllowsAnimatedImageLooping:@
-setAllowsAnimatedImageLoopingSelector :: Selector
+setAllowsAnimatedImageLoopingSelector :: Selector '[Bool] ()
 setAllowsAnimatedImageLoopingSelector = mkSelector "setAllowsAnimatedImageLooping:"
 
 -- | @Selector@ for @loadsImagesAutomatically@
-loadsImagesAutomaticallySelector :: Selector
+loadsImagesAutomaticallySelector :: Selector '[] Bool
 loadsImagesAutomaticallySelector = mkSelector "loadsImagesAutomatically"
 
 -- | @Selector@ for @setLoadsImagesAutomatically:@
-setLoadsImagesAutomaticallySelector :: Selector
+setLoadsImagesAutomaticallySelector :: Selector '[Bool] ()
 setLoadsImagesAutomaticallySelector = mkSelector "setLoadsImagesAutomatically:"
 
 -- | @Selector@ for @autosaves@
-autosavesSelector :: Selector
+autosavesSelector :: Selector '[] Bool
 autosavesSelector = mkSelector "autosaves"
 
 -- | @Selector@ for @setAutosaves:@
-setAutosavesSelector :: Selector
+setAutosavesSelector :: Selector '[Bool] ()
 setAutosavesSelector = mkSelector "setAutosaves:"
 
 -- | @Selector@ for @shouldPrintBackgrounds@
-shouldPrintBackgroundsSelector :: Selector
+shouldPrintBackgroundsSelector :: Selector '[] Bool
 shouldPrintBackgroundsSelector = mkSelector "shouldPrintBackgrounds"
 
 -- | @Selector@ for @setShouldPrintBackgrounds:@
-setShouldPrintBackgroundsSelector :: Selector
+setShouldPrintBackgroundsSelector :: Selector '[Bool] ()
 setShouldPrintBackgroundsSelector = mkSelector "setShouldPrintBackgrounds:"
 
 -- | @Selector@ for @privateBrowsingEnabled@
-privateBrowsingEnabledSelector :: Selector
+privateBrowsingEnabledSelector :: Selector '[] Bool
 privateBrowsingEnabledSelector = mkSelector "privateBrowsingEnabled"
 
 -- | @Selector@ for @setPrivateBrowsingEnabled:@
-setPrivateBrowsingEnabledSelector :: Selector
+setPrivateBrowsingEnabledSelector :: Selector '[Bool] ()
 setPrivateBrowsingEnabledSelector = mkSelector "setPrivateBrowsingEnabled:"
 
 -- | @Selector@ for @tabsToLinks@
-tabsToLinksSelector :: Selector
+tabsToLinksSelector :: Selector '[] Bool
 tabsToLinksSelector = mkSelector "tabsToLinks"
 
 -- | @Selector@ for @setTabsToLinks:@
-setTabsToLinksSelector :: Selector
+setTabsToLinksSelector :: Selector '[Bool] ()
 setTabsToLinksSelector = mkSelector "setTabsToLinks:"
 
 -- | @Selector@ for @usesPageCache@
-usesPageCacheSelector :: Selector
+usesPageCacheSelector :: Selector '[] Bool
 usesPageCacheSelector = mkSelector "usesPageCache"
 
 -- | @Selector@ for @setUsesPageCache:@
-setUsesPageCacheSelector :: Selector
+setUsesPageCacheSelector :: Selector '[Bool] ()
 setUsesPageCacheSelector = mkSelector "setUsesPageCache:"
 
 -- | @Selector@ for @cacheModel@
-cacheModelSelector :: Selector
+cacheModelSelector :: Selector '[] WebCacheModel
 cacheModelSelector = mkSelector "cacheModel"
 
 -- | @Selector@ for @setCacheModel:@
-setCacheModelSelector :: Selector
+setCacheModelSelector :: Selector '[WebCacheModel] ()
 setCacheModelSelector = mkSelector "setCacheModel:"
 
 -- | @Selector@ for @suppressesIncrementalRendering@
-suppressesIncrementalRenderingSelector :: Selector
+suppressesIncrementalRenderingSelector :: Selector '[] Bool
 suppressesIncrementalRenderingSelector = mkSelector "suppressesIncrementalRendering"
 
 -- | @Selector@ for @setSuppressesIncrementalRendering:@
-setSuppressesIncrementalRenderingSelector :: Selector
+setSuppressesIncrementalRenderingSelector :: Selector '[Bool] ()
 setSuppressesIncrementalRenderingSelector = mkSelector "setSuppressesIncrementalRendering:"
 
 -- | @Selector@ for @allowsAirPlayForMediaPlayback@
-allowsAirPlayForMediaPlaybackSelector :: Selector
+allowsAirPlayForMediaPlaybackSelector :: Selector '[] Bool
 allowsAirPlayForMediaPlaybackSelector = mkSelector "allowsAirPlayForMediaPlayback"
 
 -- | @Selector@ for @setAllowsAirPlayForMediaPlayback:@
-setAllowsAirPlayForMediaPlaybackSelector :: Selector
+setAllowsAirPlayForMediaPlaybackSelector :: Selector '[Bool] ()
 setAllowsAirPlayForMediaPlaybackSelector = mkSelector "setAllowsAirPlayForMediaPlayback:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -45,44 +46,44 @@ module ObjC.AppKit.NSTextLayoutManager
   , renderingAttributesValidator
   , setRenderingAttributesValidator
   , linkRenderingAttributes
+  , addRenderingAttribute_value_forTextRangeSelector
+  , delegateSelector
+  , ensureLayoutForRangeSelector
+  , enumerateTextLayoutFragmentsFromLocation_options_usingBlockSelector
+  , enumerateTextSegmentsInRange_type_options_usingBlockSelector
   , initSelector
   , initWithCoderSelector
-  , replaceTextContentManagerSelector
-  , ensureLayoutForRangeSelector
   , invalidateLayoutForRangeSelector
-  , textLayoutFragmentForLocationSelector
-  , enumerateTextLayoutFragmentsFromLocation_options_usingBlockSelector
-  , setRenderingAttributes_forTextRangeSelector
-  , addRenderingAttribute_value_forTextRangeSelector
-  , removeRenderingAttribute_forTextRangeSelector
   , invalidateRenderingAttributesForTextRangeSelector
-  , renderingAttributesForLink_atLocationSelector
-  , enumerateTextSegmentsInRange_type_options_usingBlockSelector
-  , replaceContentsInRange_withTextElementsSelector
-  , replaceContentsInRange_withAttributedStringSelector
-  , delegateSelector
-  , setDelegateSelector
-  , usesFontLeadingSelector
-  , setUsesFontLeadingSelector
-  , limitsLayoutForSuspiciousContentsSelector
-  , setLimitsLayoutForSuspiciousContentsSelector
-  , usesHyphenationSelector
-  , setUsesHyphenationSelector
-  , resolvesNaturalAlignmentWithBaseWritingDirectionSelector
-  , setResolvesNaturalAlignmentWithBaseWritingDirectionSelector
-  , textContentManagerSelector
-  , textContainerSelector
-  , setTextContainerSelector
-  , textViewportLayoutControllerSelector
   , layoutQueueSelector
-  , setLayoutQueueSelector
-  , textSelectionsSelector
-  , setTextSelectionsSelector
-  , textSelectionNavigationSelector
-  , setTextSelectionNavigationSelector
-  , renderingAttributesValidatorSelector
-  , setRenderingAttributesValidatorSelector
+  , limitsLayoutForSuspiciousContentsSelector
   , linkRenderingAttributesSelector
+  , removeRenderingAttribute_forTextRangeSelector
+  , renderingAttributesForLink_atLocationSelector
+  , renderingAttributesValidatorSelector
+  , replaceContentsInRange_withAttributedStringSelector
+  , replaceContentsInRange_withTextElementsSelector
+  , replaceTextContentManagerSelector
+  , resolvesNaturalAlignmentWithBaseWritingDirectionSelector
+  , setDelegateSelector
+  , setLayoutQueueSelector
+  , setLimitsLayoutForSuspiciousContentsSelector
+  , setRenderingAttributesValidatorSelector
+  , setRenderingAttributes_forTextRangeSelector
+  , setResolvesNaturalAlignmentWithBaseWritingDirectionSelector
+  , setTextContainerSelector
+  , setTextSelectionNavigationSelector
+  , setTextSelectionsSelector
+  , setUsesFontLeadingSelector
+  , setUsesHyphenationSelector
+  , textContainerSelector
+  , textContentManagerSelector
+  , textLayoutFragmentForLocationSelector
+  , textSelectionNavigationSelector
+  , textSelectionsSelector
+  , textViewportLayoutControllerSelector
+  , usesFontLeadingSelector
+  , usesHyphenationSelector
 
   -- * Enum types
   , NSTextLayoutFragmentEnumerationOptions(NSTextLayoutFragmentEnumerationOptions)
@@ -105,15 +106,11 @@ module ObjC.AppKit.NSTextLayoutManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -123,134 +120,118 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO (Id NSTextLayoutManager)
-init_ nsTextLayoutManager  =
-    sendMsg nsTextLayoutManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsTextLayoutManager =
+  sendOwnedMessage nsTextLayoutManager initSelector
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSCoder coder) => nsTextLayoutManager -> coder -> IO (Id NSTextLayoutManager)
-initWithCoder nsTextLayoutManager  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsTextLayoutManager (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsTextLayoutManager coder =
+  sendOwnedMessage nsTextLayoutManager initWithCoderSelector (toNSCoder coder)
 
 -- | @- replaceTextContentManager:@
 replaceTextContentManager :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSTextContentManager textContentManager) => nsTextLayoutManager -> textContentManager -> IO ()
-replaceTextContentManager nsTextLayoutManager  textContentManager =
-  withObjCPtr textContentManager $ \raw_textContentManager ->
-      sendMsg nsTextLayoutManager (mkSelector "replaceTextContentManager:") retVoid [argPtr (castPtr raw_textContentManager :: Ptr ())]
+replaceTextContentManager nsTextLayoutManager textContentManager =
+  sendMessage nsTextLayoutManager replaceTextContentManagerSelector (toNSTextContentManager textContentManager)
 
 -- | @- ensureLayoutForRange:@
 ensureLayoutForRange :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSTextRange range) => nsTextLayoutManager -> range -> IO ()
-ensureLayoutForRange nsTextLayoutManager  range =
-  withObjCPtr range $ \raw_range ->
-      sendMsg nsTextLayoutManager (mkSelector "ensureLayoutForRange:") retVoid [argPtr (castPtr raw_range :: Ptr ())]
+ensureLayoutForRange nsTextLayoutManager range =
+  sendMessage nsTextLayoutManager ensureLayoutForRangeSelector (toNSTextRange range)
 
 -- | @- invalidateLayoutForRange:@
 invalidateLayoutForRange :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSTextRange range) => nsTextLayoutManager -> range -> IO ()
-invalidateLayoutForRange nsTextLayoutManager  range =
-  withObjCPtr range $ \raw_range ->
-      sendMsg nsTextLayoutManager (mkSelector "invalidateLayoutForRange:") retVoid [argPtr (castPtr raw_range :: Ptr ())]
+invalidateLayoutForRange nsTextLayoutManager range =
+  sendMessage nsTextLayoutManager invalidateLayoutForRangeSelector (toNSTextRange range)
 
 -- | @- textLayoutFragmentForLocation:@
 textLayoutFragmentForLocation :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> RawId -> IO (Id NSTextLayoutFragment)
-textLayoutFragmentForLocation nsTextLayoutManager  location =
-    sendMsg nsTextLayoutManager (mkSelector "textLayoutFragmentForLocation:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ())] >>= retainedObject . castPtr
+textLayoutFragmentForLocation nsTextLayoutManager location =
+  sendMessage nsTextLayoutManager textLayoutFragmentForLocationSelector location
 
 -- | @- enumerateTextLayoutFragmentsFromLocation:options:usingBlock:@
 enumerateTextLayoutFragmentsFromLocation_options_usingBlock :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> RawId -> NSTextLayoutFragmentEnumerationOptions -> Ptr () -> IO RawId
-enumerateTextLayoutFragmentsFromLocation_options_usingBlock nsTextLayoutManager  location options block =
-    fmap (RawId . castPtr) $ sendMsg nsTextLayoutManager (mkSelector "enumerateTextLayoutFragmentsFromLocation:options:usingBlock:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ()), argCULong (coerce options), argPtr (castPtr block :: Ptr ())]
+enumerateTextLayoutFragmentsFromLocation_options_usingBlock nsTextLayoutManager location options block =
+  sendMessage nsTextLayoutManager enumerateTextLayoutFragmentsFromLocation_options_usingBlockSelector location options block
 
 -- | @- setRenderingAttributes:forTextRange:@
 setRenderingAttributes_forTextRange :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSDictionary renderingAttributes, IsNSTextRange textRange) => nsTextLayoutManager -> renderingAttributes -> textRange -> IO ()
-setRenderingAttributes_forTextRange nsTextLayoutManager  renderingAttributes textRange =
-  withObjCPtr renderingAttributes $ \raw_renderingAttributes ->
-    withObjCPtr textRange $ \raw_textRange ->
-        sendMsg nsTextLayoutManager (mkSelector "setRenderingAttributes:forTextRange:") retVoid [argPtr (castPtr raw_renderingAttributes :: Ptr ()), argPtr (castPtr raw_textRange :: Ptr ())]
+setRenderingAttributes_forTextRange nsTextLayoutManager renderingAttributes textRange =
+  sendMessage nsTextLayoutManager setRenderingAttributes_forTextRangeSelector (toNSDictionary renderingAttributes) (toNSTextRange textRange)
 
 -- | @- addRenderingAttribute:value:forTextRange:@
 addRenderingAttribute_value_forTextRange :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSString renderingAttribute, IsNSTextRange textRange) => nsTextLayoutManager -> renderingAttribute -> RawId -> textRange -> IO ()
-addRenderingAttribute_value_forTextRange nsTextLayoutManager  renderingAttribute value textRange =
-  withObjCPtr renderingAttribute $ \raw_renderingAttribute ->
-    withObjCPtr textRange $ \raw_textRange ->
-        sendMsg nsTextLayoutManager (mkSelector "addRenderingAttribute:value:forTextRange:") retVoid [argPtr (castPtr raw_renderingAttribute :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_textRange :: Ptr ())]
+addRenderingAttribute_value_forTextRange nsTextLayoutManager renderingAttribute value textRange =
+  sendMessage nsTextLayoutManager addRenderingAttribute_value_forTextRangeSelector (toNSString renderingAttribute) value (toNSTextRange textRange)
 
 -- | @- removeRenderingAttribute:forTextRange:@
 removeRenderingAttribute_forTextRange :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSString renderingAttribute, IsNSTextRange textRange) => nsTextLayoutManager -> renderingAttribute -> textRange -> IO ()
-removeRenderingAttribute_forTextRange nsTextLayoutManager  renderingAttribute textRange =
-  withObjCPtr renderingAttribute $ \raw_renderingAttribute ->
-    withObjCPtr textRange $ \raw_textRange ->
-        sendMsg nsTextLayoutManager (mkSelector "removeRenderingAttribute:forTextRange:") retVoid [argPtr (castPtr raw_renderingAttribute :: Ptr ()), argPtr (castPtr raw_textRange :: Ptr ())]
+removeRenderingAttribute_forTextRange nsTextLayoutManager renderingAttribute textRange =
+  sendMessage nsTextLayoutManager removeRenderingAttribute_forTextRangeSelector (toNSString renderingAttribute) (toNSTextRange textRange)
 
 -- | @- invalidateRenderingAttributesForTextRange:@
 invalidateRenderingAttributesForTextRange :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSTextRange textRange) => nsTextLayoutManager -> textRange -> IO ()
-invalidateRenderingAttributesForTextRange nsTextLayoutManager  textRange =
-  withObjCPtr textRange $ \raw_textRange ->
-      sendMsg nsTextLayoutManager (mkSelector "invalidateRenderingAttributesForTextRange:") retVoid [argPtr (castPtr raw_textRange :: Ptr ())]
+invalidateRenderingAttributesForTextRange nsTextLayoutManager textRange =
+  sendMessage nsTextLayoutManager invalidateRenderingAttributesForTextRangeSelector (toNSTextRange textRange)
 
 -- | @- renderingAttributesForLink:atLocation:@
 renderingAttributesForLink_atLocation :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> RawId -> RawId -> IO (Id NSDictionary)
-renderingAttributesForLink_atLocation nsTextLayoutManager  link location =
-    sendMsg nsTextLayoutManager (mkSelector "renderingAttributesForLink:atLocation:") (retPtr retVoid) [argPtr (castPtr (unRawId link) :: Ptr ()), argPtr (castPtr (unRawId location) :: Ptr ())] >>= retainedObject . castPtr
+renderingAttributesForLink_atLocation nsTextLayoutManager link location =
+  sendMessage nsTextLayoutManager renderingAttributesForLink_atLocationSelector link location
 
 -- | @- enumerateTextSegmentsInRange:type:options:usingBlock:@
 enumerateTextSegmentsInRange_type_options_usingBlock :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSTextRange textRange) => nsTextLayoutManager -> textRange -> NSTextLayoutManagerSegmentType -> NSTextLayoutManagerSegmentOptions -> Ptr () -> IO ()
-enumerateTextSegmentsInRange_type_options_usingBlock nsTextLayoutManager  textRange type_ options block =
-  withObjCPtr textRange $ \raw_textRange ->
-      sendMsg nsTextLayoutManager (mkSelector "enumerateTextSegmentsInRange:type:options:usingBlock:") retVoid [argPtr (castPtr raw_textRange :: Ptr ()), argCLong (coerce type_), argCULong (coerce options), argPtr (castPtr block :: Ptr ())]
+enumerateTextSegmentsInRange_type_options_usingBlock nsTextLayoutManager textRange type_ options block =
+  sendMessage nsTextLayoutManager enumerateTextSegmentsInRange_type_options_usingBlockSelector (toNSTextRange textRange) type_ options block
 
 -- | @- replaceContentsInRange:withTextElements:@
 replaceContentsInRange_withTextElements :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSTextRange range, IsNSArray textElements) => nsTextLayoutManager -> range -> textElements -> IO ()
-replaceContentsInRange_withTextElements nsTextLayoutManager  range textElements =
-  withObjCPtr range $ \raw_range ->
-    withObjCPtr textElements $ \raw_textElements ->
-        sendMsg nsTextLayoutManager (mkSelector "replaceContentsInRange:withTextElements:") retVoid [argPtr (castPtr raw_range :: Ptr ()), argPtr (castPtr raw_textElements :: Ptr ())]
+replaceContentsInRange_withTextElements nsTextLayoutManager range textElements =
+  sendMessage nsTextLayoutManager replaceContentsInRange_withTextElementsSelector (toNSTextRange range) (toNSArray textElements)
 
 -- | @- replaceContentsInRange:withAttributedString:@
 replaceContentsInRange_withAttributedString :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSTextRange range, IsNSAttributedString attributedString) => nsTextLayoutManager -> range -> attributedString -> IO ()
-replaceContentsInRange_withAttributedString nsTextLayoutManager  range attributedString =
-  withObjCPtr range $ \raw_range ->
-    withObjCPtr attributedString $ \raw_attributedString ->
-        sendMsg nsTextLayoutManager (mkSelector "replaceContentsInRange:withAttributedString:") retVoid [argPtr (castPtr raw_range :: Ptr ()), argPtr (castPtr raw_attributedString :: Ptr ())]
+replaceContentsInRange_withAttributedString nsTextLayoutManager range attributedString =
+  sendMessage nsTextLayoutManager replaceContentsInRange_withAttributedStringSelector (toNSTextRange range) (toNSAttributedString attributedString)
 
 -- | @- delegate@
 delegate :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO RawId
-delegate nsTextLayoutManager  =
-    fmap (RawId . castPtr) $ sendMsg nsTextLayoutManager (mkSelector "delegate") (retPtr retVoid) []
+delegate nsTextLayoutManager =
+  sendMessage nsTextLayoutManager delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> RawId -> IO ()
-setDelegate nsTextLayoutManager  value =
-    sendMsg nsTextLayoutManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setDelegateSelector value
 
 -- | @- usesFontLeading@
 usesFontLeading :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO Bool
-usesFontLeading nsTextLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextLayoutManager (mkSelector "usesFontLeading") retCULong []
+usesFontLeading nsTextLayoutManager =
+  sendMessage nsTextLayoutManager usesFontLeadingSelector
 
 -- | @- setUsesFontLeading:@
 setUsesFontLeading :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> Bool -> IO ()
-setUsesFontLeading nsTextLayoutManager  value =
-    sendMsg nsTextLayoutManager (mkSelector "setUsesFontLeading:") retVoid [argCULong (if value then 1 else 0)]
+setUsesFontLeading nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setUsesFontLeadingSelector value
 
 -- | @- limitsLayoutForSuspiciousContents@
 limitsLayoutForSuspiciousContents :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO Bool
-limitsLayoutForSuspiciousContents nsTextLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextLayoutManager (mkSelector "limitsLayoutForSuspiciousContents") retCULong []
+limitsLayoutForSuspiciousContents nsTextLayoutManager =
+  sendMessage nsTextLayoutManager limitsLayoutForSuspiciousContentsSelector
 
 -- | @- setLimitsLayoutForSuspiciousContents:@
 setLimitsLayoutForSuspiciousContents :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> Bool -> IO ()
-setLimitsLayoutForSuspiciousContents nsTextLayoutManager  value =
-    sendMsg nsTextLayoutManager (mkSelector "setLimitsLayoutForSuspiciousContents:") retVoid [argCULong (if value then 1 else 0)]
+setLimitsLayoutForSuspiciousContents nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setLimitsLayoutForSuspiciousContentsSelector value
 
 -- | @- usesHyphenation@
 usesHyphenation :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO Bool
-usesHyphenation nsTextLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextLayoutManager (mkSelector "usesHyphenation") retCULong []
+usesHyphenation nsTextLayoutManager =
+  sendMessage nsTextLayoutManager usesHyphenationSelector
 
 -- | @- setUsesHyphenation:@
 setUsesHyphenation :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> Bool -> IO ()
-setUsesHyphenation nsTextLayoutManager  value =
-    sendMsg nsTextLayoutManager (mkSelector "setUsesHyphenation:") retVoid [argCULong (if value then 1 else 0)]
+setUsesHyphenation nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setUsesHyphenationSelector value
 
 -- | Specifies the behavior for resolving ``NSTextAlignment.natural`` to the visual alignment.
 --
@@ -258,8 +239,8 @@ setUsesHyphenation nsTextLayoutManager  value =
 --
 -- ObjC selector: @- resolvesNaturalAlignmentWithBaseWritingDirection@
 resolvesNaturalAlignmentWithBaseWritingDirection :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO Bool
-resolvesNaturalAlignmentWithBaseWritingDirection nsTextLayoutManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextLayoutManager (mkSelector "resolvesNaturalAlignmentWithBaseWritingDirection") retCULong []
+resolvesNaturalAlignmentWithBaseWritingDirection nsTextLayoutManager =
+  sendMessage nsTextLayoutManager resolvesNaturalAlignmentWithBaseWritingDirectionSelector
 
 -- | Specifies the behavior for resolving ``NSTextAlignment.natural`` to the visual alignment.
 --
@@ -267,233 +248,229 @@ resolvesNaturalAlignmentWithBaseWritingDirection nsTextLayoutManager  =
 --
 -- ObjC selector: @- setResolvesNaturalAlignmentWithBaseWritingDirection:@
 setResolvesNaturalAlignmentWithBaseWritingDirection :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> Bool -> IO ()
-setResolvesNaturalAlignmentWithBaseWritingDirection nsTextLayoutManager  value =
-    sendMsg nsTextLayoutManager (mkSelector "setResolvesNaturalAlignmentWithBaseWritingDirection:") retVoid [argCULong (if value then 1 else 0)]
+setResolvesNaturalAlignmentWithBaseWritingDirection nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setResolvesNaturalAlignmentWithBaseWritingDirectionSelector value
 
 -- | @- textContentManager@
 textContentManager :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO (Id NSTextContentManager)
-textContentManager nsTextLayoutManager  =
-    sendMsg nsTextLayoutManager (mkSelector "textContentManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+textContentManager nsTextLayoutManager =
+  sendMessage nsTextLayoutManager textContentManagerSelector
 
 -- | @- textContainer@
 textContainer :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO (Id NSTextContainer)
-textContainer nsTextLayoutManager  =
-    sendMsg nsTextLayoutManager (mkSelector "textContainer") (retPtr retVoid) [] >>= retainedObject . castPtr
+textContainer nsTextLayoutManager =
+  sendMessage nsTextLayoutManager textContainerSelector
 
 -- | @- setTextContainer:@
 setTextContainer :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSTextContainer value) => nsTextLayoutManager -> value -> IO ()
-setTextContainer nsTextLayoutManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextLayoutManager (mkSelector "setTextContainer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextContainer nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setTextContainerSelector (toNSTextContainer value)
 
 -- | @- textViewportLayoutController@
 textViewportLayoutController :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO (Id NSTextViewportLayoutController)
-textViewportLayoutController nsTextLayoutManager  =
-    sendMsg nsTextLayoutManager (mkSelector "textViewportLayoutController") (retPtr retVoid) [] >>= retainedObject . castPtr
+textViewportLayoutController nsTextLayoutManager =
+  sendMessage nsTextLayoutManager textViewportLayoutControllerSelector
 
 -- | @- layoutQueue@
 layoutQueue :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO (Id NSOperationQueue)
-layoutQueue nsTextLayoutManager  =
-    sendMsg nsTextLayoutManager (mkSelector "layoutQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+layoutQueue nsTextLayoutManager =
+  sendMessage nsTextLayoutManager layoutQueueSelector
 
 -- | @- setLayoutQueue:@
 setLayoutQueue :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSOperationQueue value) => nsTextLayoutManager -> value -> IO ()
-setLayoutQueue nsTextLayoutManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextLayoutManager (mkSelector "setLayoutQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLayoutQueue nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setLayoutQueueSelector (toNSOperationQueue value)
 
 -- | @- textSelections@
 textSelections :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO (Id NSArray)
-textSelections nsTextLayoutManager  =
-    sendMsg nsTextLayoutManager (mkSelector "textSelections") (retPtr retVoid) [] >>= retainedObject . castPtr
+textSelections nsTextLayoutManager =
+  sendMessage nsTextLayoutManager textSelectionsSelector
 
 -- | @- setTextSelections:@
 setTextSelections :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSArray value) => nsTextLayoutManager -> value -> IO ()
-setTextSelections nsTextLayoutManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextLayoutManager (mkSelector "setTextSelections:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextSelections nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setTextSelectionsSelector (toNSArray value)
 
 -- | @- textSelectionNavigation@
 textSelectionNavigation :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO (Id NSTextSelectionNavigation)
-textSelectionNavigation nsTextLayoutManager  =
-    sendMsg nsTextLayoutManager (mkSelector "textSelectionNavigation") (retPtr retVoid) [] >>= retainedObject . castPtr
+textSelectionNavigation nsTextLayoutManager =
+  sendMessage nsTextLayoutManager textSelectionNavigationSelector
 
 -- | @- setTextSelectionNavigation:@
 setTextSelectionNavigation :: (IsNSTextLayoutManager nsTextLayoutManager, IsNSTextSelectionNavigation value) => nsTextLayoutManager -> value -> IO ()
-setTextSelectionNavigation nsTextLayoutManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextLayoutManager (mkSelector "setTextSelectionNavigation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextSelectionNavigation nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setTextSelectionNavigationSelector (toNSTextSelectionNavigation value)
 
 -- | @- renderingAttributesValidator@
 renderingAttributesValidator :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> IO (Ptr ())
-renderingAttributesValidator nsTextLayoutManager  =
-    fmap castPtr $ sendMsg nsTextLayoutManager (mkSelector "renderingAttributesValidator") (retPtr retVoid) []
+renderingAttributesValidator nsTextLayoutManager =
+  sendMessage nsTextLayoutManager renderingAttributesValidatorSelector
 
 -- | @- setRenderingAttributesValidator:@
 setRenderingAttributesValidator :: IsNSTextLayoutManager nsTextLayoutManager => nsTextLayoutManager -> Ptr () -> IO ()
-setRenderingAttributesValidator nsTextLayoutManager  value =
-    sendMsg nsTextLayoutManager (mkSelector "setRenderingAttributesValidator:") retVoid [argPtr (castPtr value :: Ptr ())]
+setRenderingAttributesValidator nsTextLayoutManager value =
+  sendMessage nsTextLayoutManager setRenderingAttributesValidatorSelector value
 
 -- | @+ linkRenderingAttributes@
 linkRenderingAttributes :: IO (Id NSDictionary)
 linkRenderingAttributes  =
   do
     cls' <- getRequiredClass "NSTextLayoutManager"
-    sendClassMsg cls' (mkSelector "linkRenderingAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' linkRenderingAttributesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSTextLayoutManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSTextLayoutManager)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @replaceTextContentManager:@
-replaceTextContentManagerSelector :: Selector
+replaceTextContentManagerSelector :: Selector '[Id NSTextContentManager] ()
 replaceTextContentManagerSelector = mkSelector "replaceTextContentManager:"
 
 -- | @Selector@ for @ensureLayoutForRange:@
-ensureLayoutForRangeSelector :: Selector
+ensureLayoutForRangeSelector :: Selector '[Id NSTextRange] ()
 ensureLayoutForRangeSelector = mkSelector "ensureLayoutForRange:"
 
 -- | @Selector@ for @invalidateLayoutForRange:@
-invalidateLayoutForRangeSelector :: Selector
+invalidateLayoutForRangeSelector :: Selector '[Id NSTextRange] ()
 invalidateLayoutForRangeSelector = mkSelector "invalidateLayoutForRange:"
 
 -- | @Selector@ for @textLayoutFragmentForLocation:@
-textLayoutFragmentForLocationSelector :: Selector
+textLayoutFragmentForLocationSelector :: Selector '[RawId] (Id NSTextLayoutFragment)
 textLayoutFragmentForLocationSelector = mkSelector "textLayoutFragmentForLocation:"
 
 -- | @Selector@ for @enumerateTextLayoutFragmentsFromLocation:options:usingBlock:@
-enumerateTextLayoutFragmentsFromLocation_options_usingBlockSelector :: Selector
+enumerateTextLayoutFragmentsFromLocation_options_usingBlockSelector :: Selector '[RawId, NSTextLayoutFragmentEnumerationOptions, Ptr ()] RawId
 enumerateTextLayoutFragmentsFromLocation_options_usingBlockSelector = mkSelector "enumerateTextLayoutFragmentsFromLocation:options:usingBlock:"
 
 -- | @Selector@ for @setRenderingAttributes:forTextRange:@
-setRenderingAttributes_forTextRangeSelector :: Selector
+setRenderingAttributes_forTextRangeSelector :: Selector '[Id NSDictionary, Id NSTextRange] ()
 setRenderingAttributes_forTextRangeSelector = mkSelector "setRenderingAttributes:forTextRange:"
 
 -- | @Selector@ for @addRenderingAttribute:value:forTextRange:@
-addRenderingAttribute_value_forTextRangeSelector :: Selector
+addRenderingAttribute_value_forTextRangeSelector :: Selector '[Id NSString, RawId, Id NSTextRange] ()
 addRenderingAttribute_value_forTextRangeSelector = mkSelector "addRenderingAttribute:value:forTextRange:"
 
 -- | @Selector@ for @removeRenderingAttribute:forTextRange:@
-removeRenderingAttribute_forTextRangeSelector :: Selector
+removeRenderingAttribute_forTextRangeSelector :: Selector '[Id NSString, Id NSTextRange] ()
 removeRenderingAttribute_forTextRangeSelector = mkSelector "removeRenderingAttribute:forTextRange:"
 
 -- | @Selector@ for @invalidateRenderingAttributesForTextRange:@
-invalidateRenderingAttributesForTextRangeSelector :: Selector
+invalidateRenderingAttributesForTextRangeSelector :: Selector '[Id NSTextRange] ()
 invalidateRenderingAttributesForTextRangeSelector = mkSelector "invalidateRenderingAttributesForTextRange:"
 
 -- | @Selector@ for @renderingAttributesForLink:atLocation:@
-renderingAttributesForLink_atLocationSelector :: Selector
+renderingAttributesForLink_atLocationSelector :: Selector '[RawId, RawId] (Id NSDictionary)
 renderingAttributesForLink_atLocationSelector = mkSelector "renderingAttributesForLink:atLocation:"
 
 -- | @Selector@ for @enumerateTextSegmentsInRange:type:options:usingBlock:@
-enumerateTextSegmentsInRange_type_options_usingBlockSelector :: Selector
+enumerateTextSegmentsInRange_type_options_usingBlockSelector :: Selector '[Id NSTextRange, NSTextLayoutManagerSegmentType, NSTextLayoutManagerSegmentOptions, Ptr ()] ()
 enumerateTextSegmentsInRange_type_options_usingBlockSelector = mkSelector "enumerateTextSegmentsInRange:type:options:usingBlock:"
 
 -- | @Selector@ for @replaceContentsInRange:withTextElements:@
-replaceContentsInRange_withTextElementsSelector :: Selector
+replaceContentsInRange_withTextElementsSelector :: Selector '[Id NSTextRange, Id NSArray] ()
 replaceContentsInRange_withTextElementsSelector = mkSelector "replaceContentsInRange:withTextElements:"
 
 -- | @Selector@ for @replaceContentsInRange:withAttributedString:@
-replaceContentsInRange_withAttributedStringSelector :: Selector
+replaceContentsInRange_withAttributedStringSelector :: Selector '[Id NSTextRange, Id NSAttributedString] ()
 replaceContentsInRange_withAttributedStringSelector = mkSelector "replaceContentsInRange:withAttributedString:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @usesFontLeading@
-usesFontLeadingSelector :: Selector
+usesFontLeadingSelector :: Selector '[] Bool
 usesFontLeadingSelector = mkSelector "usesFontLeading"
 
 -- | @Selector@ for @setUsesFontLeading:@
-setUsesFontLeadingSelector :: Selector
+setUsesFontLeadingSelector :: Selector '[Bool] ()
 setUsesFontLeadingSelector = mkSelector "setUsesFontLeading:"
 
 -- | @Selector@ for @limitsLayoutForSuspiciousContents@
-limitsLayoutForSuspiciousContentsSelector :: Selector
+limitsLayoutForSuspiciousContentsSelector :: Selector '[] Bool
 limitsLayoutForSuspiciousContentsSelector = mkSelector "limitsLayoutForSuspiciousContents"
 
 -- | @Selector@ for @setLimitsLayoutForSuspiciousContents:@
-setLimitsLayoutForSuspiciousContentsSelector :: Selector
+setLimitsLayoutForSuspiciousContentsSelector :: Selector '[Bool] ()
 setLimitsLayoutForSuspiciousContentsSelector = mkSelector "setLimitsLayoutForSuspiciousContents:"
 
 -- | @Selector@ for @usesHyphenation@
-usesHyphenationSelector :: Selector
+usesHyphenationSelector :: Selector '[] Bool
 usesHyphenationSelector = mkSelector "usesHyphenation"
 
 -- | @Selector@ for @setUsesHyphenation:@
-setUsesHyphenationSelector :: Selector
+setUsesHyphenationSelector :: Selector '[Bool] ()
 setUsesHyphenationSelector = mkSelector "setUsesHyphenation:"
 
 -- | @Selector@ for @resolvesNaturalAlignmentWithBaseWritingDirection@
-resolvesNaturalAlignmentWithBaseWritingDirectionSelector :: Selector
+resolvesNaturalAlignmentWithBaseWritingDirectionSelector :: Selector '[] Bool
 resolvesNaturalAlignmentWithBaseWritingDirectionSelector = mkSelector "resolvesNaturalAlignmentWithBaseWritingDirection"
 
 -- | @Selector@ for @setResolvesNaturalAlignmentWithBaseWritingDirection:@
-setResolvesNaturalAlignmentWithBaseWritingDirectionSelector :: Selector
+setResolvesNaturalAlignmentWithBaseWritingDirectionSelector :: Selector '[Bool] ()
 setResolvesNaturalAlignmentWithBaseWritingDirectionSelector = mkSelector "setResolvesNaturalAlignmentWithBaseWritingDirection:"
 
 -- | @Selector@ for @textContentManager@
-textContentManagerSelector :: Selector
+textContentManagerSelector :: Selector '[] (Id NSTextContentManager)
 textContentManagerSelector = mkSelector "textContentManager"
 
 -- | @Selector@ for @textContainer@
-textContainerSelector :: Selector
+textContainerSelector :: Selector '[] (Id NSTextContainer)
 textContainerSelector = mkSelector "textContainer"
 
 -- | @Selector@ for @setTextContainer:@
-setTextContainerSelector :: Selector
+setTextContainerSelector :: Selector '[Id NSTextContainer] ()
 setTextContainerSelector = mkSelector "setTextContainer:"
 
 -- | @Selector@ for @textViewportLayoutController@
-textViewportLayoutControllerSelector :: Selector
+textViewportLayoutControllerSelector :: Selector '[] (Id NSTextViewportLayoutController)
 textViewportLayoutControllerSelector = mkSelector "textViewportLayoutController"
 
 -- | @Selector@ for @layoutQueue@
-layoutQueueSelector :: Selector
+layoutQueueSelector :: Selector '[] (Id NSOperationQueue)
 layoutQueueSelector = mkSelector "layoutQueue"
 
 -- | @Selector@ for @setLayoutQueue:@
-setLayoutQueueSelector :: Selector
+setLayoutQueueSelector :: Selector '[Id NSOperationQueue] ()
 setLayoutQueueSelector = mkSelector "setLayoutQueue:"
 
 -- | @Selector@ for @textSelections@
-textSelectionsSelector :: Selector
+textSelectionsSelector :: Selector '[] (Id NSArray)
 textSelectionsSelector = mkSelector "textSelections"
 
 -- | @Selector@ for @setTextSelections:@
-setTextSelectionsSelector :: Selector
+setTextSelectionsSelector :: Selector '[Id NSArray] ()
 setTextSelectionsSelector = mkSelector "setTextSelections:"
 
 -- | @Selector@ for @textSelectionNavigation@
-textSelectionNavigationSelector :: Selector
+textSelectionNavigationSelector :: Selector '[] (Id NSTextSelectionNavigation)
 textSelectionNavigationSelector = mkSelector "textSelectionNavigation"
 
 -- | @Selector@ for @setTextSelectionNavigation:@
-setTextSelectionNavigationSelector :: Selector
+setTextSelectionNavigationSelector :: Selector '[Id NSTextSelectionNavigation] ()
 setTextSelectionNavigationSelector = mkSelector "setTextSelectionNavigation:"
 
 -- | @Selector@ for @renderingAttributesValidator@
-renderingAttributesValidatorSelector :: Selector
+renderingAttributesValidatorSelector :: Selector '[] (Ptr ())
 renderingAttributesValidatorSelector = mkSelector "renderingAttributesValidator"
 
 -- | @Selector@ for @setRenderingAttributesValidator:@
-setRenderingAttributesValidatorSelector :: Selector
+setRenderingAttributesValidatorSelector :: Selector '[Ptr ()] ()
 setRenderingAttributesValidatorSelector = mkSelector "setRenderingAttributesValidator:"
 
 -- | @Selector@ for @linkRenderingAttributes@
-linkRenderingAttributesSelector :: Selector
+linkRenderingAttributesSelector :: Selector '[] (Id NSDictionary)
 linkRenderingAttributesSelector = mkSelector "linkRenderingAttributes"
 

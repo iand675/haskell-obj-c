@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.GameController.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | This is the player index that a connected controller will have if it has never been assigned a player index on the current system. Controllers retain the player index they have been assigned between game sessions, so if you wish to unset the player index of a controller set it back to this value.
 -- | @GCControllerPlayerIndex@
@@ -32,6 +35,16 @@ pattern GCControllerPlayerIndex3 = GCControllerPlayerIndex 2
 pattern GCControllerPlayerIndex4 :: GCControllerPlayerIndex
 pattern GCControllerPlayerIndex4 = GCControllerPlayerIndex 3
 
+instance ObjCArgument GCControllerPlayerIndex where
+  withObjCArg (GCControllerPlayerIndex x) k = k (argCLong x)
+
+instance ObjCReturn GCControllerPlayerIndex where
+  type RawReturn GCControllerPlayerIndex = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCControllerPlayerIndex x)
+  fromOwned x = pure (GCControllerPlayerIndex x)
+
 -- | This is the battery status and it's represented by one of the following values: GCControllerBatteryStateUnknown means that the current state of battery is unknown or cannot be determined GCControllerBatteryStateDischarging means that controller is on battery and discharging at this moment GCControllerBatteryStateCharging means that controller is plugged in, but it's battery level is less than 100% GCControllerBatteryStateFull means that controller is plugged in and it's battery level is 100%
 -- | @GCDeviceBatteryState@
 newtype GCDeviceBatteryState = GCDeviceBatteryState CLong
@@ -50,6 +63,16 @@ pattern GCDeviceBatteryStateCharging = GCDeviceBatteryState 1
 pattern GCDeviceBatteryStateFull :: GCDeviceBatteryState
 pattern GCDeviceBatteryStateFull = GCDeviceBatteryState 2
 
+instance ObjCArgument GCDeviceBatteryState where
+  withObjCArg (GCDeviceBatteryState x) k = k (argCLong x)
+
+instance ObjCReturn GCDeviceBatteryState where
+  type RawReturn GCDeviceBatteryState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCDeviceBatteryState x)
+  fromOwned x = pure (GCDeviceBatteryState x)
+
 -- | @GCDevicePhysicalInputElementChange@
 newtype GCDevicePhysicalInputElementChange = GCDevicePhysicalInputElementChange CLong
   deriving stock (Eq, Ord, Show)
@@ -63,6 +86,16 @@ pattern GCDevicePhysicalInputElementNoChange = GCDevicePhysicalInputElementChang
 
 pattern GCDevicePhysicalInputElementChanged :: GCDevicePhysicalInputElementChange
 pattern GCDevicePhysicalInputElementChanged = GCDevicePhysicalInputElementChange 1
+
+instance ObjCArgument GCDevicePhysicalInputElementChange where
+  withObjCArg (GCDevicePhysicalInputElementChange x) k = k (argCLong x)
+
+instance ObjCReturn GCDevicePhysicalInputElementChange where
+  type RawReturn GCDevicePhysicalInputElementChange = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCDevicePhysicalInputElementChange x)
+  fromOwned x = pure (GCDevicePhysicalInputElementChange x)
 
 -- | @GCDualSenseAdaptiveTriggerMode@
 newtype GCDualSenseAdaptiveTriggerMode = GCDualSenseAdaptiveTriggerMode CLong
@@ -83,6 +116,16 @@ pattern GCDualSenseAdaptiveTriggerModeVibration = GCDualSenseAdaptiveTriggerMode
 
 pattern GCDualSenseAdaptiveTriggerModeSlopeFeedback :: GCDualSenseAdaptiveTriggerMode
 pattern GCDualSenseAdaptiveTriggerModeSlopeFeedback = GCDualSenseAdaptiveTriggerMode 4
+
+instance ObjCArgument GCDualSenseAdaptiveTriggerMode where
+  withObjCArg (GCDualSenseAdaptiveTriggerMode x) k = k (argCLong x)
+
+instance ObjCReturn GCDualSenseAdaptiveTriggerMode where
+  type RawReturn GCDualSenseAdaptiveTriggerMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCDualSenseAdaptiveTriggerMode x)
+  fromOwned x = pure (GCDualSenseAdaptiveTriggerMode x)
 
 -- | @GCDualSenseAdaptiveTriggerStatus@
 newtype GCDualSenseAdaptiveTriggerStatus = GCDualSenseAdaptiveTriggerStatus CLong
@@ -122,6 +165,16 @@ pattern GCDualSenseAdaptiveTriggerStatusSlopeFeedbackApplyingLoad = GCDualSenseA
 pattern GCDualSenseAdaptiveTriggerStatusSlopeFeedbackFinished :: GCDualSenseAdaptiveTriggerStatus
 pattern GCDualSenseAdaptiveTriggerStatusSlopeFeedbackFinished = GCDualSenseAdaptiveTriggerStatus 9
 
+instance ObjCArgument GCDualSenseAdaptiveTriggerStatus where
+  withObjCArg (GCDualSenseAdaptiveTriggerStatus x) k = k (argCLong x)
+
+instance ObjCReturn GCDualSenseAdaptiveTriggerStatus where
+  type RawReturn GCDualSenseAdaptiveTriggerStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCDualSenseAdaptiveTriggerStatus x)
+  fromOwned x = pure (GCDualSenseAdaptiveTriggerStatus x)
+
 -- | @GCExtendedGamepadSnapshotDataVersion@
 newtype GCExtendedGamepadSnapshotDataVersion = GCExtendedGamepadSnapshotDataVersion CLong
   deriving stock (Eq, Ord, Show)
@@ -133,6 +186,16 @@ pattern GCExtendedGamepadSnapshotDataVersion1 = GCExtendedGamepadSnapshotDataVer
 pattern GCExtendedGamepadSnapshotDataVersion2 :: GCExtendedGamepadSnapshotDataVersion
 pattern GCExtendedGamepadSnapshotDataVersion2 = GCExtendedGamepadSnapshotDataVersion 257
 
+instance ObjCArgument GCExtendedGamepadSnapshotDataVersion where
+  withObjCArg (GCExtendedGamepadSnapshotDataVersion x) k = k (argCLong x)
+
+instance ObjCReturn GCExtendedGamepadSnapshotDataVersion where
+  type RawReturn GCExtendedGamepadSnapshotDataVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCExtendedGamepadSnapshotDataVersion x)
+  fromOwned x = pure (GCExtendedGamepadSnapshotDataVersion x)
+
 -- | @GCMicroGamepadSnapshotDataVersion@
 newtype GCMicroGamepadSnapshotDataVersion = GCMicroGamepadSnapshotDataVersion CLong
   deriving stock (Eq, Ord, Show)
@@ -140,6 +203,16 @@ newtype GCMicroGamepadSnapshotDataVersion = GCMicroGamepadSnapshotDataVersion CL
 
 pattern GCMicroGamepadSnapshotDataVersion1 :: GCMicroGamepadSnapshotDataVersion
 pattern GCMicroGamepadSnapshotDataVersion1 = GCMicroGamepadSnapshotDataVersion 256
+
+instance ObjCArgument GCMicroGamepadSnapshotDataVersion where
+  withObjCArg (GCMicroGamepadSnapshotDataVersion x) k = k (argCLong x)
+
+instance ObjCReturn GCMicroGamepadSnapshotDataVersion where
+  type RawReturn GCMicroGamepadSnapshotDataVersion = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCMicroGamepadSnapshotDataVersion x)
+  fromOwned x = pure (GCMicroGamepadSnapshotDataVersion x)
 
 -- | One or more directions associated with a @GCPhysicalInputSource.@
 -- | @GCPhysicalInputSourceDirection@ (bitmask)
@@ -168,6 +241,16 @@ pattern GCPhysicalInputSourceDirectionDown = GCPhysicalInputSourceDirection 4
 pattern GCPhysicalInputSourceDirectionLeft :: GCPhysicalInputSourceDirection
 pattern GCPhysicalInputSourceDirectionLeft = GCPhysicalInputSourceDirection 8
 
+instance ObjCArgument GCPhysicalInputSourceDirection where
+  withObjCArg (GCPhysicalInputSourceDirection x) k = k (argCULong x)
+
+instance ObjCReturn GCPhysicalInputSourceDirection where
+  type RawReturn GCPhysicalInputSourceDirection = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCPhysicalInputSourceDirection x)
+  fromOwned x = pure (GCPhysicalInputSourceDirection x)
+
 -- | Elements on a GCDevice can be used for system gestures. The system gesture state represents how input is handled in the app for a controller element that is bound to a system gesture.
 --
 -- The Options button on an extended gamepad can be bound to take a screenshot with a long press. This occurs outside of
@@ -193,6 +276,16 @@ pattern GCSystemGestureStateAlwaysReceive = GCSystemGestureState 1
 pattern GCSystemGestureStateDisabled :: GCSystemGestureState
 pattern GCSystemGestureStateDisabled = GCSystemGestureState 2
 
+instance ObjCArgument GCSystemGestureState where
+  withObjCArg (GCSystemGestureState x) k = k (argCLong x)
+
+instance ObjCReturn GCSystemGestureState where
+  type RawReturn GCSystemGestureState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCSystemGestureState x)
+  fromOwned x = pure (GCSystemGestureState x)
+
 -- | Represents the current state of a touch event on a touchpad.
 -- | @GCTouchState@
 newtype GCTouchState = GCTouchState CLong
@@ -207,3 +300,13 @@ pattern GCTouchStateDown = GCTouchState 1
 
 pattern GCTouchStateMoving :: GCTouchState
 pattern GCTouchStateMoving = GCTouchState 2
+
+instance ObjCArgument GCTouchState where
+  withObjCArg (GCTouchState x) k = k (argCLong x)
+
+instance ObjCReturn GCTouchState where
+  type RawReturn GCTouchState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (GCTouchState x)
+  fromOwned x = pure (GCTouchState x)

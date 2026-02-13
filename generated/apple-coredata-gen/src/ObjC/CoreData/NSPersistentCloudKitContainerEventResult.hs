@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,15 +24,11 @@ module ObjC.CoreData.NSPersistentCloudKitContainerEventResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,43 +38,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSPersistentCloudKitContainerEventResult nsPersistentCloudKitContainerEventResult => nsPersistentCloudKitContainerEventResult -> IO (Id NSPersistentCloudKitContainerEventResult)
-init_ nsPersistentCloudKitContainerEventResult  =
-    sendMsg nsPersistentCloudKitContainerEventResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsPersistentCloudKitContainerEventResult =
+  sendOwnedMessage nsPersistentCloudKitContainerEventResult initSelector
 
 -- | @+ new@
 new :: IO (Id NSPersistentCloudKitContainerEventResult)
 new  =
   do
     cls' <- getRequiredClass "NSPersistentCloudKitContainerEventResult"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- result@
 result :: IsNSPersistentCloudKitContainerEventResult nsPersistentCloudKitContainerEventResult => nsPersistentCloudKitContainerEventResult -> IO RawId
-result nsPersistentCloudKitContainerEventResult  =
-    fmap (RawId . castPtr) $ sendMsg nsPersistentCloudKitContainerEventResult (mkSelector "result") (retPtr retVoid) []
+result nsPersistentCloudKitContainerEventResult =
+  sendMessage nsPersistentCloudKitContainerEventResult resultSelector
 
 -- | @- resultType@
 resultType :: IsNSPersistentCloudKitContainerEventResult nsPersistentCloudKitContainerEventResult => nsPersistentCloudKitContainerEventResult -> IO NSPersistentCloudKitContainerEventResultType
-resultType nsPersistentCloudKitContainerEventResult  =
-    fmap (coerce :: CLong -> NSPersistentCloudKitContainerEventResultType) $ sendMsg nsPersistentCloudKitContainerEventResult (mkSelector "resultType") retCLong []
+resultType nsPersistentCloudKitContainerEventResult =
+  sendMessage nsPersistentCloudKitContainerEventResult resultTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSPersistentCloudKitContainerEventResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSPersistentCloudKitContainerEventResult)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @result@
-resultSelector :: Selector
+resultSelector :: Selector '[] RawId
 resultSelector = mkSelector "result"
 
 -- | @Selector@ for @resultType@
-resultTypeSelector :: Selector
+resultTypeSelector :: Selector '[] NSPersistentCloudKitContainerEventResultType
 resultTypeSelector = mkSelector "resultType"
 

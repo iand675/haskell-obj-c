@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.NetworkExtension.NEHotspotHS20Settings
   , setNaiRealmNames
   , mccAndMNCs
   , setMCCAndMNCs
-  , initWithDomainName_roamingEnabledSelector
   , domainNameSelector
-  , roamingEnabledSelector
-  , setRoamingEnabledSelector
-  , roamingConsortiumOIsSelector
-  , setRoamingConsortiumOIsSelector
-  , naiRealmNamesSelector
-  , setNaiRealmNamesSelector
+  , initWithDomainName_roamingEnabledSelector
   , mccAndMNCsSelector
+  , naiRealmNamesSelector
+  , roamingConsortiumOIsSelector
+  , roamingEnabledSelector
   , setMCCAndMNCsSelector
+  , setNaiRealmNamesSelector
+  , setRoamingConsortiumOIsSelector
+  , setRoamingEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,9 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDomainName:roamingEnabled:@
 initWithDomainName_roamingEnabled :: (IsNEHotspotHS20Settings neHotspotHS20Settings, IsNSString domainName) => neHotspotHS20Settings -> domainName -> Bool -> IO (Id NEHotspotHS20Settings)
-initWithDomainName_roamingEnabled neHotspotHS20Settings  domainName roamingEnabled =
-  withObjCPtr domainName $ \raw_domainName ->
-      sendMsg neHotspotHS20Settings (mkSelector "initWithDomainName:roamingEnabled:") (retPtr retVoid) [argPtr (castPtr raw_domainName :: Ptr ()), argCULong (if roamingEnabled then 1 else 0)] >>= ownedObject . castPtr
+initWithDomainName_roamingEnabled neHotspotHS20Settings domainName roamingEnabled =
+  sendOwnedMessage neHotspotHS20Settings initWithDomainName_roamingEnabledSelector (toNSString domainName) roamingEnabled
 
 -- | domainName
 --
@@ -69,8 +65,8 @@ initWithDomainName_roamingEnabled neHotspotHS20Settings  domainName roamingEnabl
 --
 -- ObjC selector: @- domainName@
 domainName :: IsNEHotspotHS20Settings neHotspotHS20Settings => neHotspotHS20Settings -> IO (Id NSString)
-domainName neHotspotHS20Settings  =
-    sendMsg neHotspotHS20Settings (mkSelector "domainName") (retPtr retVoid) [] >>= retainedObject . castPtr
+domainName neHotspotHS20Settings =
+  sendMessage neHotspotHS20Settings domainNameSelector
 
 -- | roamingEnabled
 --
@@ -78,8 +74,8 @@ domainName neHotspotHS20Settings  =
 --
 -- ObjC selector: @- roamingEnabled@
 roamingEnabled :: IsNEHotspotHS20Settings neHotspotHS20Settings => neHotspotHS20Settings -> IO Bool
-roamingEnabled neHotspotHS20Settings  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neHotspotHS20Settings (mkSelector "roamingEnabled") retCULong []
+roamingEnabled neHotspotHS20Settings =
+  sendMessage neHotspotHS20Settings roamingEnabledSelector
 
 -- | roamingEnabled
 --
@@ -87,8 +83,8 @@ roamingEnabled neHotspotHS20Settings  =
 --
 -- ObjC selector: @- setRoamingEnabled:@
 setRoamingEnabled :: IsNEHotspotHS20Settings neHotspotHS20Settings => neHotspotHS20Settings -> Bool -> IO ()
-setRoamingEnabled neHotspotHS20Settings  value =
-    sendMsg neHotspotHS20Settings (mkSelector "setRoamingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setRoamingEnabled neHotspotHS20Settings value =
+  sendMessage neHotspotHS20Settings setRoamingEnabledSelector value
 
 -- | roamingConsortiumOIs
 --
@@ -96,8 +92,8 @@ setRoamingEnabled neHotspotHS20Settings  value =
 --
 -- ObjC selector: @- roamingConsortiumOIs@
 roamingConsortiumOIs :: IsNEHotspotHS20Settings neHotspotHS20Settings => neHotspotHS20Settings -> IO (Id NSArray)
-roamingConsortiumOIs neHotspotHS20Settings  =
-    sendMsg neHotspotHS20Settings (mkSelector "roamingConsortiumOIs") (retPtr retVoid) [] >>= retainedObject . castPtr
+roamingConsortiumOIs neHotspotHS20Settings =
+  sendMessage neHotspotHS20Settings roamingConsortiumOIsSelector
 
 -- | roamingConsortiumOIs
 --
@@ -105,9 +101,8 @@ roamingConsortiumOIs neHotspotHS20Settings  =
 --
 -- ObjC selector: @- setRoamingConsortiumOIs:@
 setRoamingConsortiumOIs :: (IsNEHotspotHS20Settings neHotspotHS20Settings, IsNSArray value) => neHotspotHS20Settings -> value -> IO ()
-setRoamingConsortiumOIs neHotspotHS20Settings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neHotspotHS20Settings (mkSelector "setRoamingConsortiumOIs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRoamingConsortiumOIs neHotspotHS20Settings value =
+  sendMessage neHotspotHS20Settings setRoamingConsortiumOIsSelector (toNSArray value)
 
 -- | naiRealmNames
 --
@@ -115,8 +110,8 @@ setRoamingConsortiumOIs neHotspotHS20Settings  value =
 --
 -- ObjC selector: @- naiRealmNames@
 naiRealmNames :: IsNEHotspotHS20Settings neHotspotHS20Settings => neHotspotHS20Settings -> IO (Id NSArray)
-naiRealmNames neHotspotHS20Settings  =
-    sendMsg neHotspotHS20Settings (mkSelector "naiRealmNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+naiRealmNames neHotspotHS20Settings =
+  sendMessage neHotspotHS20Settings naiRealmNamesSelector
 
 -- | naiRealmNames
 --
@@ -124,9 +119,8 @@ naiRealmNames neHotspotHS20Settings  =
 --
 -- ObjC selector: @- setNaiRealmNames:@
 setNaiRealmNames :: (IsNEHotspotHS20Settings neHotspotHS20Settings, IsNSArray value) => neHotspotHS20Settings -> value -> IO ()
-setNaiRealmNames neHotspotHS20Settings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neHotspotHS20Settings (mkSelector "setNaiRealmNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNaiRealmNames neHotspotHS20Settings value =
+  sendMessage neHotspotHS20Settings setNaiRealmNamesSelector (toNSArray value)
 
 -- | MCCAndMNCs
 --
@@ -134,8 +128,8 @@ setNaiRealmNames neHotspotHS20Settings  value =
 --
 -- ObjC selector: @- MCCAndMNCs@
 mccAndMNCs :: IsNEHotspotHS20Settings neHotspotHS20Settings => neHotspotHS20Settings -> IO (Id NSArray)
-mccAndMNCs neHotspotHS20Settings  =
-    sendMsg neHotspotHS20Settings (mkSelector "MCCAndMNCs") (retPtr retVoid) [] >>= retainedObject . castPtr
+mccAndMNCs neHotspotHS20Settings =
+  sendMessage neHotspotHS20Settings mccAndMNCsSelector
 
 -- | MCCAndMNCs
 --
@@ -143,51 +137,50 @@ mccAndMNCs neHotspotHS20Settings  =
 --
 -- ObjC selector: @- setMCCAndMNCs:@
 setMCCAndMNCs :: (IsNEHotspotHS20Settings neHotspotHS20Settings, IsNSArray value) => neHotspotHS20Settings -> value -> IO ()
-setMCCAndMNCs neHotspotHS20Settings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neHotspotHS20Settings (mkSelector "setMCCAndMNCs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMCCAndMNCs neHotspotHS20Settings value =
+  sendMessage neHotspotHS20Settings setMCCAndMNCsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDomainName:roamingEnabled:@
-initWithDomainName_roamingEnabledSelector :: Selector
+initWithDomainName_roamingEnabledSelector :: Selector '[Id NSString, Bool] (Id NEHotspotHS20Settings)
 initWithDomainName_roamingEnabledSelector = mkSelector "initWithDomainName:roamingEnabled:"
 
 -- | @Selector@ for @domainName@
-domainNameSelector :: Selector
+domainNameSelector :: Selector '[] (Id NSString)
 domainNameSelector = mkSelector "domainName"
 
 -- | @Selector@ for @roamingEnabled@
-roamingEnabledSelector :: Selector
+roamingEnabledSelector :: Selector '[] Bool
 roamingEnabledSelector = mkSelector "roamingEnabled"
 
 -- | @Selector@ for @setRoamingEnabled:@
-setRoamingEnabledSelector :: Selector
+setRoamingEnabledSelector :: Selector '[Bool] ()
 setRoamingEnabledSelector = mkSelector "setRoamingEnabled:"
 
 -- | @Selector@ for @roamingConsortiumOIs@
-roamingConsortiumOIsSelector :: Selector
+roamingConsortiumOIsSelector :: Selector '[] (Id NSArray)
 roamingConsortiumOIsSelector = mkSelector "roamingConsortiumOIs"
 
 -- | @Selector@ for @setRoamingConsortiumOIs:@
-setRoamingConsortiumOIsSelector :: Selector
+setRoamingConsortiumOIsSelector :: Selector '[Id NSArray] ()
 setRoamingConsortiumOIsSelector = mkSelector "setRoamingConsortiumOIs:"
 
 -- | @Selector@ for @naiRealmNames@
-naiRealmNamesSelector :: Selector
+naiRealmNamesSelector :: Selector '[] (Id NSArray)
 naiRealmNamesSelector = mkSelector "naiRealmNames"
 
 -- | @Selector@ for @setNaiRealmNames:@
-setNaiRealmNamesSelector :: Selector
+setNaiRealmNamesSelector :: Selector '[Id NSArray] ()
 setNaiRealmNamesSelector = mkSelector "setNaiRealmNames:"
 
 -- | @Selector@ for @MCCAndMNCs@
-mccAndMNCsSelector :: Selector
+mccAndMNCsSelector :: Selector '[] (Id NSArray)
 mccAndMNCsSelector = mkSelector "MCCAndMNCs"
 
 -- | @Selector@ for @setMCCAndMNCs:@
-setMCCAndMNCsSelector :: Selector
+setMCCAndMNCsSelector :: Selector '[Id NSArray] ()
 setMCCAndMNCsSelector = mkSelector "setMCCAndMNCs:"
 

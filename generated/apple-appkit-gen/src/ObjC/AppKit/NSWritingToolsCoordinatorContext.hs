@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,25 +25,21 @@ module ObjC.AppKit.NSWritingToolsCoordinatorContext
   , range
   , identifier
   , resolvedRange
-  , initWithAttributedString_rangeSelector
-  , initSelector
   , attributedStringSelector
-  , rangeSelector
   , identifierSelector
+  , initSelector
+  , initWithAttributedString_rangeSelector
+  , rangeSelector
   , resolvedRangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,14 +55,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAttributedString:range:@
 initWithAttributedString_range :: (IsNSWritingToolsCoordinatorContext nsWritingToolsCoordinatorContext, IsNSAttributedString attributedString) => nsWritingToolsCoordinatorContext -> attributedString -> NSRange -> IO (Id NSWritingToolsCoordinatorContext)
-initWithAttributedString_range nsWritingToolsCoordinatorContext  attributedString range =
-  withObjCPtr attributedString $ \raw_attributedString ->
-      sendMsg nsWritingToolsCoordinatorContext (mkSelector "initWithAttributedString:range:") (retPtr retVoid) [argPtr (castPtr raw_attributedString :: Ptr ()), argNSRange range] >>= ownedObject . castPtr
+initWithAttributedString_range nsWritingToolsCoordinatorContext attributedString range =
+  sendOwnedMessage nsWritingToolsCoordinatorContext initWithAttributedString_rangeSelector (toNSAttributedString attributedString) range
 
 -- | @- init@
 init_ :: IsNSWritingToolsCoordinatorContext nsWritingToolsCoordinatorContext => nsWritingToolsCoordinatorContext -> IO (Id NSWritingToolsCoordinatorContext)
-init_ nsWritingToolsCoordinatorContext  =
-    sendMsg nsWritingToolsCoordinatorContext (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsWritingToolsCoordinatorContext =
+  sendOwnedMessage nsWritingToolsCoordinatorContext initSelector
 
 -- | The portion of your view’s text to evaluate.
 --
@@ -75,8 +71,8 @@ init_ nsWritingToolsCoordinatorContext  =
 --
 -- ObjC selector: @- attributedString@
 attributedString :: IsNSWritingToolsCoordinatorContext nsWritingToolsCoordinatorContext => nsWritingToolsCoordinatorContext -> IO (Id NSAttributedString)
-attributedString nsWritingToolsCoordinatorContext  =
-    sendMsg nsWritingToolsCoordinatorContext (mkSelector "attributedString") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedString nsWritingToolsCoordinatorContext =
+  sendMessage nsWritingToolsCoordinatorContext attributedStringSelector
 
 -- | The unique identifier of the context object.
 --
@@ -84,8 +80,8 @@ attributedString nsWritingToolsCoordinatorContext  =
 --
 -- ObjC selector: @- range@
 range :: IsNSWritingToolsCoordinatorContext nsWritingToolsCoordinatorContext => nsWritingToolsCoordinatorContext -> IO NSRange
-range nsWritingToolsCoordinatorContext  =
-    sendMsgStret nsWritingToolsCoordinatorContext (mkSelector "range") retNSRange []
+range nsWritingToolsCoordinatorContext =
+  sendMessage nsWritingToolsCoordinatorContext rangeSelector
 
 -- | The unique identifier of the context object.
 --
@@ -93,8 +89,8 @@ range nsWritingToolsCoordinatorContext  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsNSWritingToolsCoordinatorContext nsWritingToolsCoordinatorContext => nsWritingToolsCoordinatorContext -> IO (Id NSUUID)
-identifier nsWritingToolsCoordinatorContext  =
-    sendMsg nsWritingToolsCoordinatorContext (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier nsWritingToolsCoordinatorContext =
+  sendMessage nsWritingToolsCoordinatorContext identifierSelector
 
 -- | The actual range of text that Writing Tools might change, which can be different than the range of text you supplied.
 --
@@ -104,34 +100,34 @@ identifier nsWritingToolsCoordinatorContext  =
 --
 -- ObjC selector: @- resolvedRange@
 resolvedRange :: IsNSWritingToolsCoordinatorContext nsWritingToolsCoordinatorContext => nsWritingToolsCoordinatorContext -> IO NSRange
-resolvedRange nsWritingToolsCoordinatorContext  =
-    sendMsgStret nsWritingToolsCoordinatorContext (mkSelector "resolvedRange") retNSRange []
+resolvedRange nsWritingToolsCoordinatorContext =
+  sendMessage nsWritingToolsCoordinatorContext resolvedRangeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAttributedString:range:@
-initWithAttributedString_rangeSelector :: Selector
+initWithAttributedString_rangeSelector :: Selector '[Id NSAttributedString, NSRange] (Id NSWritingToolsCoordinatorContext)
 initWithAttributedString_rangeSelector = mkSelector "initWithAttributedString:range:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSWritingToolsCoordinatorContext)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @attributedString@
-attributedStringSelector :: Selector
+attributedStringSelector :: Selector '[] (Id NSAttributedString)
 attributedStringSelector = mkSelector "attributedString"
 
 -- | @Selector@ for @range@
-rangeSelector :: Selector
+rangeSelector :: Selector '[] NSRange
 rangeSelector = mkSelector "range"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSUUID)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @resolvedRange@
-resolvedRangeSelector :: Selector
+resolvedRangeSelector :: Selector '[] NSRange
 resolvedRangeSelector = mkSelector "resolvedRange"
 

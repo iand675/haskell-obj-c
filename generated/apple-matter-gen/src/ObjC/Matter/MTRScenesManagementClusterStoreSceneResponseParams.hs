@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRScenesManagementClusterStoreSceneResponseParams
   , setGroupID
   , sceneID
   , setSceneID
-  , initWithResponseValue_errorSelector
-  , statusSelector
-  , setStatusSelector
   , groupIDSelector
-  , setGroupIDSelector
+  , initWithResponseValue_errorSelector
   , sceneIDSelector
+  , setGroupIDSelector
   , setSceneIDSelector
+  , setStatusSelector
+  , statusSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,73 +44,68 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRScenesManagementClusterStoreSceneResponseParams mtrScenesManagementClusterStoreSceneResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrScenesManagementClusterStoreSceneResponseParams -> responseValue -> error_ -> IO (Id MTRScenesManagementClusterStoreSceneResponseParams)
-initWithResponseValue_error mtrScenesManagementClusterStoreSceneResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrScenesManagementClusterStoreSceneResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrScenesManagementClusterStoreSceneResponseParams responseValue error_ =
+  sendOwnedMessage mtrScenesManagementClusterStoreSceneResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRScenesManagementClusterStoreSceneResponseParams mtrScenesManagementClusterStoreSceneResponseParams => mtrScenesManagementClusterStoreSceneResponseParams -> IO (Id NSNumber)
-status mtrScenesManagementClusterStoreSceneResponseParams  =
-    sendMsg mtrScenesManagementClusterStoreSceneResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrScenesManagementClusterStoreSceneResponseParams =
+  sendMessage mtrScenesManagementClusterStoreSceneResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRScenesManagementClusterStoreSceneResponseParams mtrScenesManagementClusterStoreSceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterStoreSceneResponseParams -> value -> IO ()
-setStatus mtrScenesManagementClusterStoreSceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterStoreSceneResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrScenesManagementClusterStoreSceneResponseParams value =
+  sendMessage mtrScenesManagementClusterStoreSceneResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- groupID@
 groupID :: IsMTRScenesManagementClusterStoreSceneResponseParams mtrScenesManagementClusterStoreSceneResponseParams => mtrScenesManagementClusterStoreSceneResponseParams -> IO (Id NSNumber)
-groupID mtrScenesManagementClusterStoreSceneResponseParams  =
-    sendMsg mtrScenesManagementClusterStoreSceneResponseParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrScenesManagementClusterStoreSceneResponseParams =
+  sendMessage mtrScenesManagementClusterStoreSceneResponseParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRScenesManagementClusterStoreSceneResponseParams mtrScenesManagementClusterStoreSceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterStoreSceneResponseParams -> value -> IO ()
-setGroupID mtrScenesManagementClusterStoreSceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterStoreSceneResponseParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrScenesManagementClusterStoreSceneResponseParams value =
+  sendMessage mtrScenesManagementClusterStoreSceneResponseParams setGroupIDSelector (toNSNumber value)
 
 -- | @- sceneID@
 sceneID :: IsMTRScenesManagementClusterStoreSceneResponseParams mtrScenesManagementClusterStoreSceneResponseParams => mtrScenesManagementClusterStoreSceneResponseParams -> IO (Id NSNumber)
-sceneID mtrScenesManagementClusterStoreSceneResponseParams  =
-    sendMsg mtrScenesManagementClusterStoreSceneResponseParams (mkSelector "sceneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneID mtrScenesManagementClusterStoreSceneResponseParams =
+  sendMessage mtrScenesManagementClusterStoreSceneResponseParams sceneIDSelector
 
 -- | @- setSceneID:@
 setSceneID :: (IsMTRScenesManagementClusterStoreSceneResponseParams mtrScenesManagementClusterStoreSceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterStoreSceneResponseParams -> value -> IO ()
-setSceneID mtrScenesManagementClusterStoreSceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterStoreSceneResponseParams (mkSelector "setSceneID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneID mtrScenesManagementClusterStoreSceneResponseParams value =
+  sendMessage mtrScenesManagementClusterStoreSceneResponseParams setSceneIDSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRScenesManagementClusterStoreSceneResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @sceneID@
-sceneIDSelector :: Selector
+sceneIDSelector :: Selector '[] (Id NSNumber)
 sceneIDSelector = mkSelector "sceneID"
 
 -- | @Selector@ for @setSceneID:@
-setSceneIDSelector :: Selector
+setSceneIDSelector :: Selector '[Id NSNumber] ()
 setSceneIDSelector = mkSelector "setSceneID:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,17 +23,17 @@ module ObjC.HealthKit.HKVisionPrism
   , verticalBase
   , horizontalBase
   , eye
-  , initWithAmount_angle_eyeSelector
-  , initWithVerticalAmount_verticalBase_horizontalAmount_horizontalBase_eyeSelector
-  , initSelector
-  , newSelector
   , amountSelector
   , angleSelector
-  , verticalAmountSelector
-  , horizontalAmountSelector
-  , verticalBaseSelector
-  , horizontalBaseSelector
   , eyeSelector
+  , horizontalAmountSelector
+  , horizontalBaseSelector
+  , initSelector
+  , initWithAmount_angle_eyeSelector
+  , initWithVerticalAmount_verticalBase_horizontalAmount_horizontalBase_eyeSelector
+  , newSelector
+  , verticalAmountSelector
+  , verticalBaseSelector
 
   -- * Enum types
   , HKPrismBase(HKPrismBase)
@@ -47,15 +48,11 @@ module ObjC.HealthKit.HKVisionPrism
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,10 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAmount:angle:eye:@
 initWithAmount_angle_eye :: (IsHKVisionPrism hkVisionPrism, IsHKQuantity amount, IsHKQuantity angle) => hkVisionPrism -> amount -> angle -> HKVisionEye -> IO (Id HKVisionPrism)
-initWithAmount_angle_eye hkVisionPrism  amount angle eye =
-  withObjCPtr amount $ \raw_amount ->
-    withObjCPtr angle $ \raw_angle ->
-        sendMsg hkVisionPrism (mkSelector "initWithAmount:angle:eye:") (retPtr retVoid) [argPtr (castPtr raw_amount :: Ptr ()), argPtr (castPtr raw_angle :: Ptr ()), argCLong (coerce eye)] >>= ownedObject . castPtr
+initWithAmount_angle_eye hkVisionPrism amount angle eye =
+  sendOwnedMessage hkVisionPrism initWithAmount_angle_eyeSelector (toHKQuantity amount) (toHKQuantity angle) eye
 
 -- | initWithVerticalAmount:verticalBase:horizontalAmount:horizontalBase:eye
 --
@@ -92,22 +87,20 @@ initWithAmount_angle_eye hkVisionPrism  amount angle eye =
 --
 -- ObjC selector: @- initWithVerticalAmount:verticalBase:horizontalAmount:horizontalBase:eye:@
 initWithVerticalAmount_verticalBase_horizontalAmount_horizontalBase_eye :: (IsHKVisionPrism hkVisionPrism, IsHKQuantity verticalAmount, IsHKQuantity horizontalAmount) => hkVisionPrism -> verticalAmount -> HKPrismBase -> horizontalAmount -> HKPrismBase -> HKVisionEye -> IO (Id HKVisionPrism)
-initWithVerticalAmount_verticalBase_horizontalAmount_horizontalBase_eye hkVisionPrism  verticalAmount verticalBase horizontalAmount horizontalBase eye =
-  withObjCPtr verticalAmount $ \raw_verticalAmount ->
-    withObjCPtr horizontalAmount $ \raw_horizontalAmount ->
-        sendMsg hkVisionPrism (mkSelector "initWithVerticalAmount:verticalBase:horizontalAmount:horizontalBase:eye:") (retPtr retVoid) [argPtr (castPtr raw_verticalAmount :: Ptr ()), argCLong (coerce verticalBase), argPtr (castPtr raw_horizontalAmount :: Ptr ()), argCLong (coerce horizontalBase), argCLong (coerce eye)] >>= ownedObject . castPtr
+initWithVerticalAmount_verticalBase_horizontalAmount_horizontalBase_eye hkVisionPrism verticalAmount verticalBase horizontalAmount horizontalBase eye =
+  sendOwnedMessage hkVisionPrism initWithVerticalAmount_verticalBase_horizontalAmount_horizontalBase_eyeSelector (toHKQuantity verticalAmount) verticalBase (toHKQuantity horizontalAmount) horizontalBase eye
 
 -- | @- init@
 init_ :: IsHKVisionPrism hkVisionPrism => hkVisionPrism -> IO (Id HKVisionPrism)
-init_ hkVisionPrism  =
-    sendMsg hkVisionPrism (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkVisionPrism =
+  sendOwnedMessage hkVisionPrism initSelector
 
 -- | @+ new@
 new :: IO (Id HKVisionPrism)
 new  =
   do
     cls' <- getRequiredClass "HKVisionPrism"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | amount
 --
@@ -115,8 +108,8 @@ new  =
 --
 -- ObjC selector: @- amount@
 amount :: IsHKVisionPrism hkVisionPrism => hkVisionPrism -> IO (Id HKQuantity)
-amount hkVisionPrism  =
-    sendMsg hkVisionPrism (mkSelector "amount") (retPtr retVoid) [] >>= retainedObject . castPtr
+amount hkVisionPrism =
+  sendMessage hkVisionPrism amountSelector
 
 -- | angle
 --
@@ -124,8 +117,8 @@ amount hkVisionPrism  =
 --
 -- ObjC selector: @- angle@
 angle :: IsHKVisionPrism hkVisionPrism => hkVisionPrism -> IO (Id HKQuantity)
-angle hkVisionPrism  =
-    sendMsg hkVisionPrism (mkSelector "angle") (retPtr retVoid) [] >>= retainedObject . castPtr
+angle hkVisionPrism =
+  sendMessage hkVisionPrism angleSelector
 
 -- | verticalAmount
 --
@@ -133,8 +126,8 @@ angle hkVisionPrism  =
 --
 -- ObjC selector: @- verticalAmount@
 verticalAmount :: IsHKVisionPrism hkVisionPrism => hkVisionPrism -> IO (Id HKQuantity)
-verticalAmount hkVisionPrism  =
-    sendMsg hkVisionPrism (mkSelector "verticalAmount") (retPtr retVoid) [] >>= retainedObject . castPtr
+verticalAmount hkVisionPrism =
+  sendMessage hkVisionPrism verticalAmountSelector
 
 -- | horizontalAmount
 --
@@ -142,8 +135,8 @@ verticalAmount hkVisionPrism  =
 --
 -- ObjC selector: @- horizontalAmount@
 horizontalAmount :: IsHKVisionPrism hkVisionPrism => hkVisionPrism -> IO (Id HKQuantity)
-horizontalAmount hkVisionPrism  =
-    sendMsg hkVisionPrism (mkSelector "horizontalAmount") (retPtr retVoid) [] >>= retainedObject . castPtr
+horizontalAmount hkVisionPrism =
+  sendMessage hkVisionPrism horizontalAmountSelector
 
 -- | verticalBase
 --
@@ -151,8 +144,8 @@ horizontalAmount hkVisionPrism  =
 --
 -- ObjC selector: @- verticalBase@
 verticalBase :: IsHKVisionPrism hkVisionPrism => hkVisionPrism -> IO HKPrismBase
-verticalBase hkVisionPrism  =
-    fmap (coerce :: CLong -> HKPrismBase) $ sendMsg hkVisionPrism (mkSelector "verticalBase") retCLong []
+verticalBase hkVisionPrism =
+  sendMessage hkVisionPrism verticalBaseSelector
 
 -- | horizontalBase
 --
@@ -160,8 +153,8 @@ verticalBase hkVisionPrism  =
 --
 -- ObjC selector: @- horizontalBase@
 horizontalBase :: IsHKVisionPrism hkVisionPrism => hkVisionPrism -> IO HKPrismBase
-horizontalBase hkVisionPrism  =
-    fmap (coerce :: CLong -> HKPrismBase) $ sendMsg hkVisionPrism (mkSelector "horizontalBase") retCLong []
+horizontalBase hkVisionPrism =
+  sendMessage hkVisionPrism horizontalBaseSelector
 
 -- | eye
 --
@@ -169,54 +162,54 @@ horizontalBase hkVisionPrism  =
 --
 -- ObjC selector: @- eye@
 eye :: IsHKVisionPrism hkVisionPrism => hkVisionPrism -> IO HKVisionEye
-eye hkVisionPrism  =
-    fmap (coerce :: CLong -> HKVisionEye) $ sendMsg hkVisionPrism (mkSelector "eye") retCLong []
+eye hkVisionPrism =
+  sendMessage hkVisionPrism eyeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAmount:angle:eye:@
-initWithAmount_angle_eyeSelector :: Selector
+initWithAmount_angle_eyeSelector :: Selector '[Id HKQuantity, Id HKQuantity, HKVisionEye] (Id HKVisionPrism)
 initWithAmount_angle_eyeSelector = mkSelector "initWithAmount:angle:eye:"
 
 -- | @Selector@ for @initWithVerticalAmount:verticalBase:horizontalAmount:horizontalBase:eye:@
-initWithVerticalAmount_verticalBase_horizontalAmount_horizontalBase_eyeSelector :: Selector
+initWithVerticalAmount_verticalBase_horizontalAmount_horizontalBase_eyeSelector :: Selector '[Id HKQuantity, HKPrismBase, Id HKQuantity, HKPrismBase, HKVisionEye] (Id HKVisionPrism)
 initWithVerticalAmount_verticalBase_horizontalAmount_horizontalBase_eyeSelector = mkSelector "initWithVerticalAmount:verticalBase:horizontalAmount:horizontalBase:eye:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKVisionPrism)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKVisionPrism)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @amount@
-amountSelector :: Selector
+amountSelector :: Selector '[] (Id HKQuantity)
 amountSelector = mkSelector "amount"
 
 -- | @Selector@ for @angle@
-angleSelector :: Selector
+angleSelector :: Selector '[] (Id HKQuantity)
 angleSelector = mkSelector "angle"
 
 -- | @Selector@ for @verticalAmount@
-verticalAmountSelector :: Selector
+verticalAmountSelector :: Selector '[] (Id HKQuantity)
 verticalAmountSelector = mkSelector "verticalAmount"
 
 -- | @Selector@ for @horizontalAmount@
-horizontalAmountSelector :: Selector
+horizontalAmountSelector :: Selector '[] (Id HKQuantity)
 horizontalAmountSelector = mkSelector "horizontalAmount"
 
 -- | @Selector@ for @verticalBase@
-verticalBaseSelector :: Selector
+verticalBaseSelector :: Selector '[] HKPrismBase
 verticalBaseSelector = mkSelector "verticalBase"
 
 -- | @Selector@ for @horizontalBase@
-horizontalBaseSelector :: Selector
+horizontalBaseSelector :: Selector '[] HKPrismBase
 horizontalBaseSelector = mkSelector "horizontalBase"
 
 -- | @Selector@ for @eye@
-eyeSelector :: Selector
+eyeSelector :: Selector '[] HKVisionEye
 eyeSelector = mkSelector "eye"
 

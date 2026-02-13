@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,15 +29,15 @@ module ObjC.NetworkExtension.NEOnDemandRule
   , setProbeURL
   , actionSelector
   , dnsSearchDomainMatchSelector
-  , setDNSSearchDomainMatchSelector
   , dnsServerAddressMatchSelector
-  , setDNSServerAddressMatchSelector
   , interfaceTypeMatchSelector
-  , setInterfaceTypeMatchSelector
-  , ssidMatchSelector
-  , setSSIDMatchSelector
   , probeURLSelector
+  , setDNSSearchDomainMatchSelector
+  , setDNSServerAddressMatchSelector
+  , setInterfaceTypeMatchSelector
   , setProbeURLSelector
+  , setSSIDMatchSelector
+  , ssidMatchSelector
 
   -- * Enum types
   , NEOnDemandRuleAction(NEOnDemandRuleAction)
@@ -52,15 +53,11 @@ module ObjC.NetworkExtension.NEOnDemandRule
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,8 +71,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- action@
 action :: IsNEOnDemandRule neOnDemandRule => neOnDemandRule -> IO NEOnDemandRuleAction
-action neOnDemandRule  =
-    fmap (coerce :: CLong -> NEOnDemandRuleAction) $ sendMsg neOnDemandRule (mkSelector "action") retCLong []
+action neOnDemandRule =
+  sendMessage neOnDemandRule actionSelector
 
 -- | DNSSearchDomainMatch
 --
@@ -83,8 +80,8 @@ action neOnDemandRule  =
 --
 -- ObjC selector: @- DNSSearchDomainMatch@
 dnsSearchDomainMatch :: IsNEOnDemandRule neOnDemandRule => neOnDemandRule -> IO (Id NSArray)
-dnsSearchDomainMatch neOnDemandRule  =
-    sendMsg neOnDemandRule (mkSelector "DNSSearchDomainMatch") (retPtr retVoid) [] >>= retainedObject . castPtr
+dnsSearchDomainMatch neOnDemandRule =
+  sendMessage neOnDemandRule dnsSearchDomainMatchSelector
 
 -- | DNSSearchDomainMatch
 --
@@ -92,9 +89,8 @@ dnsSearchDomainMatch neOnDemandRule  =
 --
 -- ObjC selector: @- setDNSSearchDomainMatch:@
 setDNSSearchDomainMatch :: (IsNEOnDemandRule neOnDemandRule, IsNSArray value) => neOnDemandRule -> value -> IO ()
-setDNSSearchDomainMatch neOnDemandRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neOnDemandRule (mkSelector "setDNSSearchDomainMatch:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDNSSearchDomainMatch neOnDemandRule value =
+  sendMessage neOnDemandRule setDNSSearchDomainMatchSelector (toNSArray value)
 
 -- | DNSServerAddressMatch
 --
@@ -102,8 +98,8 @@ setDNSSearchDomainMatch neOnDemandRule  value =
 --
 -- ObjC selector: @- DNSServerAddressMatch@
 dnsServerAddressMatch :: IsNEOnDemandRule neOnDemandRule => neOnDemandRule -> IO (Id NSArray)
-dnsServerAddressMatch neOnDemandRule  =
-    sendMsg neOnDemandRule (mkSelector "DNSServerAddressMatch") (retPtr retVoid) [] >>= retainedObject . castPtr
+dnsServerAddressMatch neOnDemandRule =
+  sendMessage neOnDemandRule dnsServerAddressMatchSelector
 
 -- | DNSServerAddressMatch
 --
@@ -111,9 +107,8 @@ dnsServerAddressMatch neOnDemandRule  =
 --
 -- ObjC selector: @- setDNSServerAddressMatch:@
 setDNSServerAddressMatch :: (IsNEOnDemandRule neOnDemandRule, IsNSArray value) => neOnDemandRule -> value -> IO ()
-setDNSServerAddressMatch neOnDemandRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neOnDemandRule (mkSelector "setDNSServerAddressMatch:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDNSServerAddressMatch neOnDemandRule value =
+  sendMessage neOnDemandRule setDNSServerAddressMatchSelector (toNSArray value)
 
 -- | interfaceTypeMatch
 --
@@ -121,8 +116,8 @@ setDNSServerAddressMatch neOnDemandRule  value =
 --
 -- ObjC selector: @- interfaceTypeMatch@
 interfaceTypeMatch :: IsNEOnDemandRule neOnDemandRule => neOnDemandRule -> IO NEOnDemandRuleInterfaceType
-interfaceTypeMatch neOnDemandRule  =
-    fmap (coerce :: CLong -> NEOnDemandRuleInterfaceType) $ sendMsg neOnDemandRule (mkSelector "interfaceTypeMatch") retCLong []
+interfaceTypeMatch neOnDemandRule =
+  sendMessage neOnDemandRule interfaceTypeMatchSelector
 
 -- | interfaceTypeMatch
 --
@@ -130,8 +125,8 @@ interfaceTypeMatch neOnDemandRule  =
 --
 -- ObjC selector: @- setInterfaceTypeMatch:@
 setInterfaceTypeMatch :: IsNEOnDemandRule neOnDemandRule => neOnDemandRule -> NEOnDemandRuleInterfaceType -> IO ()
-setInterfaceTypeMatch neOnDemandRule  value =
-    sendMsg neOnDemandRule (mkSelector "setInterfaceTypeMatch:") retVoid [argCLong (coerce value)]
+setInterfaceTypeMatch neOnDemandRule value =
+  sendMessage neOnDemandRule setInterfaceTypeMatchSelector value
 
 -- | SSIDMatch
 --
@@ -139,8 +134,8 @@ setInterfaceTypeMatch neOnDemandRule  value =
 --
 -- ObjC selector: @- SSIDMatch@
 ssidMatch :: IsNEOnDemandRule neOnDemandRule => neOnDemandRule -> IO (Id NSArray)
-ssidMatch neOnDemandRule  =
-    sendMsg neOnDemandRule (mkSelector "SSIDMatch") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssidMatch neOnDemandRule =
+  sendMessage neOnDemandRule ssidMatchSelector
 
 -- | SSIDMatch
 --
@@ -148,9 +143,8 @@ ssidMatch neOnDemandRule  =
 --
 -- ObjC selector: @- setSSIDMatch:@
 setSSIDMatch :: (IsNEOnDemandRule neOnDemandRule, IsNSArray value) => neOnDemandRule -> value -> IO ()
-setSSIDMatch neOnDemandRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neOnDemandRule (mkSelector "setSSIDMatch:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSSIDMatch neOnDemandRule value =
+  sendMessage neOnDemandRule setSSIDMatchSelector (toNSArray value)
 
 -- | probeURL
 --
@@ -158,8 +152,8 @@ setSSIDMatch neOnDemandRule  value =
 --
 -- ObjC selector: @- probeURL@
 probeURL :: IsNEOnDemandRule neOnDemandRule => neOnDemandRule -> IO (Id NSURL)
-probeURL neOnDemandRule  =
-    sendMsg neOnDemandRule (mkSelector "probeURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+probeURL neOnDemandRule =
+  sendMessage neOnDemandRule probeURLSelector
 
 -- | probeURL
 --
@@ -167,55 +161,54 @@ probeURL neOnDemandRule  =
 --
 -- ObjC selector: @- setProbeURL:@
 setProbeURL :: (IsNEOnDemandRule neOnDemandRule, IsNSURL value) => neOnDemandRule -> value -> IO ()
-setProbeURL neOnDemandRule  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neOnDemandRule (mkSelector "setProbeURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProbeURL neOnDemandRule value =
+  sendMessage neOnDemandRule setProbeURLSelector (toNSURL value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] NEOnDemandRuleAction
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @DNSSearchDomainMatch@
-dnsSearchDomainMatchSelector :: Selector
+dnsSearchDomainMatchSelector :: Selector '[] (Id NSArray)
 dnsSearchDomainMatchSelector = mkSelector "DNSSearchDomainMatch"
 
 -- | @Selector@ for @setDNSSearchDomainMatch:@
-setDNSSearchDomainMatchSelector :: Selector
+setDNSSearchDomainMatchSelector :: Selector '[Id NSArray] ()
 setDNSSearchDomainMatchSelector = mkSelector "setDNSSearchDomainMatch:"
 
 -- | @Selector@ for @DNSServerAddressMatch@
-dnsServerAddressMatchSelector :: Selector
+dnsServerAddressMatchSelector :: Selector '[] (Id NSArray)
 dnsServerAddressMatchSelector = mkSelector "DNSServerAddressMatch"
 
 -- | @Selector@ for @setDNSServerAddressMatch:@
-setDNSServerAddressMatchSelector :: Selector
+setDNSServerAddressMatchSelector :: Selector '[Id NSArray] ()
 setDNSServerAddressMatchSelector = mkSelector "setDNSServerAddressMatch:"
 
 -- | @Selector@ for @interfaceTypeMatch@
-interfaceTypeMatchSelector :: Selector
+interfaceTypeMatchSelector :: Selector '[] NEOnDemandRuleInterfaceType
 interfaceTypeMatchSelector = mkSelector "interfaceTypeMatch"
 
 -- | @Selector@ for @setInterfaceTypeMatch:@
-setInterfaceTypeMatchSelector :: Selector
+setInterfaceTypeMatchSelector :: Selector '[NEOnDemandRuleInterfaceType] ()
 setInterfaceTypeMatchSelector = mkSelector "setInterfaceTypeMatch:"
 
 -- | @Selector@ for @SSIDMatch@
-ssidMatchSelector :: Selector
+ssidMatchSelector :: Selector '[] (Id NSArray)
 ssidMatchSelector = mkSelector "SSIDMatch"
 
 -- | @Selector@ for @setSSIDMatch:@
-setSSIDMatchSelector :: Selector
+setSSIDMatchSelector :: Selector '[Id NSArray] ()
 setSSIDMatchSelector = mkSelector "setSSIDMatch:"
 
 -- | @Selector@ for @probeURL@
-probeURLSelector :: Selector
+probeURLSelector :: Selector '[] (Id NSURL)
 probeURLSelector = mkSelector "probeURL"
 
 -- | @Selector@ for @setProbeURL:@
-setProbeURLSelector :: Selector
+setProbeURLSelector :: Selector '[Id NSURL] ()
 setProbeURLSelector = mkSelector "setProbeURL:"
 

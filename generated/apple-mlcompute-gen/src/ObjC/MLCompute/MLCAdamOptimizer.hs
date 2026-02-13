@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.MLCompute.MLCAdamOptimizer
   , epsilon
   , usesAMSGrad
   , timeStep
-  , optimizerWithDescriptorSelector
-  , optimizerWithDescriptor_beta1_beta2_epsilon_timeStepSelector
-  , optimizerWithDescriptor_beta1_beta2_epsilon_usesAMSGrad_timeStepSelector
   , beta1Selector
   , beta2Selector
   , epsilonSelector
-  , usesAMSGradSelector
+  , optimizerWithDescriptorSelector
+  , optimizerWithDescriptor_beta1_beta2_epsilon_timeStepSelector
+  , optimizerWithDescriptor_beta1_beta2_epsilon_usesAMSGrad_timeStepSelector
   , timeStepSelector
+  , usesAMSGradSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,7 @@ optimizerWithDescriptor :: IsMLCOptimizerDescriptor optimizerDescriptor => optim
 optimizerWithDescriptor optimizerDescriptor =
   do
     cls' <- getRequiredClass "MLCAdamOptimizer"
-    withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendClassMsg cls' (mkSelector "optimizerWithDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_optimizerDescriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' optimizerWithDescriptorSelector (toMLCOptimizerDescriptor optimizerDescriptor)
 
 -- | Create a MLCAdamOptimizer object
 --
@@ -76,8 +72,7 @@ optimizerWithDescriptor_beta1_beta2_epsilon_timeStep :: IsMLCOptimizerDescriptor
 optimizerWithDescriptor_beta1_beta2_epsilon_timeStep optimizerDescriptor beta1 beta2 epsilon timeStep =
   do
     cls' <- getRequiredClass "MLCAdamOptimizer"
-    withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendClassMsg cls' (mkSelector "optimizerWithDescriptor:beta1:beta2:epsilon:timeStep:") (retPtr retVoid) [argPtr (castPtr raw_optimizerDescriptor :: Ptr ()), argCFloat beta1, argCFloat beta2, argCFloat epsilon, argCULong timeStep] >>= retainedObject . castPtr
+    sendClassMessage cls' optimizerWithDescriptor_beta1_beta2_epsilon_timeStepSelector (toMLCOptimizerDescriptor optimizerDescriptor) beta1 beta2 epsilon timeStep
 
 -- | Create a MLCAdamOptimizer object
 --
@@ -100,8 +95,7 @@ optimizerWithDescriptor_beta1_beta2_epsilon_usesAMSGrad_timeStep :: IsMLCOptimiz
 optimizerWithDescriptor_beta1_beta2_epsilon_usesAMSGrad_timeStep optimizerDescriptor beta1 beta2 epsilon usesAMSGrad timeStep =
   do
     cls' <- getRequiredClass "MLCAdamOptimizer"
-    withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendClassMsg cls' (mkSelector "optimizerWithDescriptor:beta1:beta2:epsilon:usesAMSGrad:timeStep:") (retPtr retVoid) [argPtr (castPtr raw_optimizerDescriptor :: Ptr ()), argCFloat beta1, argCFloat beta2, argCFloat epsilon, argCULong (if usesAMSGrad then 1 else 0), argCULong timeStep] >>= retainedObject . castPtr
+    sendClassMessage cls' optimizerWithDescriptor_beta1_beta2_epsilon_usesAMSGrad_timeStepSelector (toMLCOptimizerDescriptor optimizerDescriptor) beta1 beta2 epsilon usesAMSGrad timeStep
 
 -- | beta1
 --
@@ -111,8 +105,8 @@ optimizerWithDescriptor_beta1_beta2_epsilon_usesAMSGrad_timeStep optimizerDescri
 --
 -- ObjC selector: @- beta1@
 beta1 :: IsMLCAdamOptimizer mlcAdamOptimizer => mlcAdamOptimizer -> IO CFloat
-beta1 mlcAdamOptimizer  =
-    sendMsg mlcAdamOptimizer (mkSelector "beta1") retCFloat []
+beta1 mlcAdamOptimizer =
+  sendMessage mlcAdamOptimizer beta1Selector
 
 -- | beta2
 --
@@ -122,8 +116,8 @@ beta1 mlcAdamOptimizer  =
 --
 -- ObjC selector: @- beta2@
 beta2 :: IsMLCAdamOptimizer mlcAdamOptimizer => mlcAdamOptimizer -> IO CFloat
-beta2 mlcAdamOptimizer  =
-    sendMsg mlcAdamOptimizer (mkSelector "beta2") retCFloat []
+beta2 mlcAdamOptimizer =
+  sendMessage mlcAdamOptimizer beta2Selector
 
 -- | epsilon
 --
@@ -133,8 +127,8 @@ beta2 mlcAdamOptimizer  =
 --
 -- ObjC selector: @- epsilon@
 epsilon :: IsMLCAdamOptimizer mlcAdamOptimizer => mlcAdamOptimizer -> IO CFloat
-epsilon mlcAdamOptimizer  =
-    sendMsg mlcAdamOptimizer (mkSelector "epsilon") retCFloat []
+epsilon mlcAdamOptimizer =
+  sendMessage mlcAdamOptimizer epsilonSelector
 
 -- | usesAMSGrad
 --
@@ -144,8 +138,8 @@ epsilon mlcAdamOptimizer  =
 --
 -- ObjC selector: @- usesAMSGrad@
 usesAMSGrad :: IsMLCAdamOptimizer mlcAdamOptimizer => mlcAdamOptimizer -> IO Bool
-usesAMSGrad mlcAdamOptimizer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcAdamOptimizer (mkSelector "usesAMSGrad") retCULong []
+usesAMSGrad mlcAdamOptimizer =
+  sendMessage mlcAdamOptimizer usesAMSGradSelector
 
 -- | timeStep
 --
@@ -155,42 +149,42 @@ usesAMSGrad mlcAdamOptimizer  =
 --
 -- ObjC selector: @- timeStep@
 timeStep :: IsMLCAdamOptimizer mlcAdamOptimizer => mlcAdamOptimizer -> IO CULong
-timeStep mlcAdamOptimizer  =
-    sendMsg mlcAdamOptimizer (mkSelector "timeStep") retCULong []
+timeStep mlcAdamOptimizer =
+  sendMessage mlcAdamOptimizer timeStepSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @optimizerWithDescriptor:@
-optimizerWithDescriptorSelector :: Selector
+optimizerWithDescriptorSelector :: Selector '[Id MLCOptimizerDescriptor] (Id MLCAdamOptimizer)
 optimizerWithDescriptorSelector = mkSelector "optimizerWithDescriptor:"
 
 -- | @Selector@ for @optimizerWithDescriptor:beta1:beta2:epsilon:timeStep:@
-optimizerWithDescriptor_beta1_beta2_epsilon_timeStepSelector :: Selector
+optimizerWithDescriptor_beta1_beta2_epsilon_timeStepSelector :: Selector '[Id MLCOptimizerDescriptor, CFloat, CFloat, CFloat, CULong] (Id MLCAdamOptimizer)
 optimizerWithDescriptor_beta1_beta2_epsilon_timeStepSelector = mkSelector "optimizerWithDescriptor:beta1:beta2:epsilon:timeStep:"
 
 -- | @Selector@ for @optimizerWithDescriptor:beta1:beta2:epsilon:usesAMSGrad:timeStep:@
-optimizerWithDescriptor_beta1_beta2_epsilon_usesAMSGrad_timeStepSelector :: Selector
+optimizerWithDescriptor_beta1_beta2_epsilon_usesAMSGrad_timeStepSelector :: Selector '[Id MLCOptimizerDescriptor, CFloat, CFloat, CFloat, Bool, CULong] (Id MLCAdamOptimizer)
 optimizerWithDescriptor_beta1_beta2_epsilon_usesAMSGrad_timeStepSelector = mkSelector "optimizerWithDescriptor:beta1:beta2:epsilon:usesAMSGrad:timeStep:"
 
 -- | @Selector@ for @beta1@
-beta1Selector :: Selector
+beta1Selector :: Selector '[] CFloat
 beta1Selector = mkSelector "beta1"
 
 -- | @Selector@ for @beta2@
-beta2Selector :: Selector
+beta2Selector :: Selector '[] CFloat
 beta2Selector = mkSelector "beta2"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @usesAMSGrad@
-usesAMSGradSelector :: Selector
+usesAMSGradSelector :: Selector '[] Bool
 usesAMSGradSelector = mkSelector "usesAMSGrad"
 
 -- | @Selector@ for @timeStep@
-timeStepSelector :: Selector
+timeStepSelector :: Selector '[] CULong
 timeStepSelector = mkSelector "timeStep"
 

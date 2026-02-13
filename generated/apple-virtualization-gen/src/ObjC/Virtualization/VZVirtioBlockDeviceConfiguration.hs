@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.Virtualization.VZVirtioBlockDeviceConfiguration
   , validateBlockDeviceIdentifier_error
   , blockDeviceIdentifier
   , setBlockDeviceIdentifier
-  , initWithAttachmentSelector
-  , validateBlockDeviceIdentifier_errorSelector
   , blockDeviceIdentifierSelector
+  , initWithAttachmentSelector
   , setBlockDeviceIdentifierSelector
+  , validateBlockDeviceIdentifier_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,9 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAttachment:@
 initWithAttachment :: (IsVZVirtioBlockDeviceConfiguration vzVirtioBlockDeviceConfiguration, IsVZStorageDeviceAttachment attachment) => vzVirtioBlockDeviceConfiguration -> attachment -> IO (Id VZVirtioBlockDeviceConfiguration)
-initWithAttachment vzVirtioBlockDeviceConfiguration  attachment =
-  withObjCPtr attachment $ \raw_attachment ->
-      sendMsg vzVirtioBlockDeviceConfiguration (mkSelector "initWithAttachment:") (retPtr retVoid) [argPtr (castPtr raw_attachment :: Ptr ())] >>= ownedObject . castPtr
+initWithAttachment vzVirtioBlockDeviceConfiguration attachment =
+  sendOwnedMessage vzVirtioBlockDeviceConfiguration initWithAttachmentSelector (toVZStorageDeviceAttachment attachment)
 
 -- | Check if blockDeviceIdentifier is a valid Virtio block device identifier.
 --
@@ -64,9 +60,7 @@ validateBlockDeviceIdentifier_error :: (IsNSString blockDeviceIdentifier, IsNSEr
 validateBlockDeviceIdentifier_error blockDeviceIdentifier error_ =
   do
     cls' <- getRequiredClass "VZVirtioBlockDeviceConfiguration"
-    withObjCPtr blockDeviceIdentifier $ \raw_blockDeviceIdentifier ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "validateBlockDeviceIdentifier:error:") retCULong [argPtr (castPtr raw_blockDeviceIdentifier :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' validateBlockDeviceIdentifier_errorSelector (toNSString blockDeviceIdentifier) (toNSError error_)
 
 -- | The device identifier is a string identifying the Virtio block device. Empty string by default.
 --
@@ -78,8 +72,8 @@ validateBlockDeviceIdentifier_error blockDeviceIdentifier error_ =
 --
 -- ObjC selector: @- blockDeviceIdentifier@
 blockDeviceIdentifier :: IsVZVirtioBlockDeviceConfiguration vzVirtioBlockDeviceConfiguration => vzVirtioBlockDeviceConfiguration -> IO (Id NSString)
-blockDeviceIdentifier vzVirtioBlockDeviceConfiguration  =
-    sendMsg vzVirtioBlockDeviceConfiguration (mkSelector "blockDeviceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+blockDeviceIdentifier vzVirtioBlockDeviceConfiguration =
+  sendMessage vzVirtioBlockDeviceConfiguration blockDeviceIdentifierSelector
 
 -- | The device identifier is a string identifying the Virtio block device. Empty string by default.
 --
@@ -91,27 +85,26 @@ blockDeviceIdentifier vzVirtioBlockDeviceConfiguration  =
 --
 -- ObjC selector: @- setBlockDeviceIdentifier:@
 setBlockDeviceIdentifier :: (IsVZVirtioBlockDeviceConfiguration vzVirtioBlockDeviceConfiguration, IsNSString value) => vzVirtioBlockDeviceConfiguration -> value -> IO ()
-setBlockDeviceIdentifier vzVirtioBlockDeviceConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzVirtioBlockDeviceConfiguration (mkSelector "setBlockDeviceIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBlockDeviceIdentifier vzVirtioBlockDeviceConfiguration value =
+  sendMessage vzVirtioBlockDeviceConfiguration setBlockDeviceIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAttachment:@
-initWithAttachmentSelector :: Selector
+initWithAttachmentSelector :: Selector '[Id VZStorageDeviceAttachment] (Id VZVirtioBlockDeviceConfiguration)
 initWithAttachmentSelector = mkSelector "initWithAttachment:"
 
 -- | @Selector@ for @validateBlockDeviceIdentifier:error:@
-validateBlockDeviceIdentifier_errorSelector :: Selector
+validateBlockDeviceIdentifier_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 validateBlockDeviceIdentifier_errorSelector = mkSelector "validateBlockDeviceIdentifier:error:"
 
 -- | @Selector@ for @blockDeviceIdentifier@
-blockDeviceIdentifierSelector :: Selector
+blockDeviceIdentifierSelector :: Selector '[] (Id NSString)
 blockDeviceIdentifierSelector = mkSelector "blockDeviceIdentifier"
 
 -- | @Selector@ for @setBlockDeviceIdentifier:@
-setBlockDeviceIdentifierSelector :: Selector
+setBlockDeviceIdentifierSelector :: Selector '[Id NSString] ()
 setBlockDeviceIdentifierSelector = mkSelector "setBlockDeviceIdentifier:"
 

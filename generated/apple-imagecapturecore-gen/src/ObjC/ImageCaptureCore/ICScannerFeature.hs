@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,10 +18,10 @@ module ObjC.ImageCaptureCore.ICScannerFeature
   , internalName
   , humanReadableName
   , tooltip
-  , typeSelector
-  , internalNameSelector
   , humanReadableNameSelector
+  , internalNameSelector
   , tooltipSelector
+  , typeSelector
 
   -- * Enum types
   , ICScannerFeatureType(ICScannerFeatureType)
@@ -31,15 +32,11 @@ module ObjC.ImageCaptureCore.ICScannerFeature
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- type@
 type_ :: IsICScannerFeature icScannerFeature => icScannerFeature -> IO ICScannerFeatureType
-type_ icScannerFeature  =
-    fmap (coerce :: CULong -> ICScannerFeatureType) $ sendMsg icScannerFeature (mkSelector "type") retCULong []
+type_ icScannerFeature =
+  sendMessage icScannerFeature typeSelector
 
 -- | internalName
 --
@@ -62,8 +59,8 @@ type_ icScannerFeature  =
 --
 -- ObjC selector: @- internalName@
 internalName :: IsICScannerFeature icScannerFeature => icScannerFeature -> IO (Id NSString)
-internalName icScannerFeature  =
-    sendMsg icScannerFeature (mkSelector "internalName") (retPtr retVoid) [] >>= retainedObject . castPtr
+internalName icScannerFeature =
+  sendMessage icScannerFeature internalNameSelector
 
 -- | humanReadableName
 --
@@ -71,8 +68,8 @@ internalName icScannerFeature  =
 --
 -- ObjC selector: @- humanReadableName@
 humanReadableName :: IsICScannerFeature icScannerFeature => icScannerFeature -> IO (Id NSString)
-humanReadableName icScannerFeature  =
-    sendMsg icScannerFeature (mkSelector "humanReadableName") (retPtr retVoid) [] >>= retainedObject . castPtr
+humanReadableName icScannerFeature =
+  sendMessage icScannerFeature humanReadableNameSelector
 
 -- | tooltip
 --
@@ -80,26 +77,26 @@ humanReadableName icScannerFeature  =
 --
 -- ObjC selector: @- tooltip@
 tooltip :: IsICScannerFeature icScannerFeature => icScannerFeature -> IO (Id NSString)
-tooltip icScannerFeature  =
-    sendMsg icScannerFeature (mkSelector "tooltip") (retPtr retVoid) [] >>= retainedObject . castPtr
+tooltip icScannerFeature =
+  sendMessage icScannerFeature tooltipSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] ICScannerFeatureType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @internalName@
-internalNameSelector :: Selector
+internalNameSelector :: Selector '[] (Id NSString)
 internalNameSelector = mkSelector "internalName"
 
 -- | @Selector@ for @humanReadableName@
-humanReadableNameSelector :: Selector
+humanReadableNameSelector :: Selector '[] (Id NSString)
 humanReadableNameSelector = mkSelector "humanReadableName"
 
 -- | @Selector@ for @tooltip@
-tooltipSelector :: Selector
+tooltipSelector :: Selector '[] (Id NSString)
 tooltipSelector = mkSelector "tooltip"
 

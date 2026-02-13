@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.Matter.MTRCertificateInfo
   , notBefore
   , notAfter
   , publicKeyData
-  , newSelector
   , initSelector
   , initWithTLVBytesSelector
   , issuerSelector
-  , subjectSelector
-  , notBeforeSelector
+  , newSelector
   , notAfterSelector
+  , notBeforeSelector
   , publicKeyDataSelector
+  , subjectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,12 +47,12 @@ new :: IO (Id MTRCertificateInfo)
 new  =
   do
     cls' <- getRequiredClass "MTRCertificateInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMTRCertificateInfo mtrCertificateInfo => mtrCertificateInfo -> IO (Id MTRCertificateInfo)
-init_ mtrCertificateInfo  =
-    sendMsg mtrCertificateInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrCertificateInfo =
+  sendOwnedMessage mtrCertificateInfo initSelector
 
 -- | Initializes the receiver with an operational certificate in Matter TLV format.
 --
@@ -63,9 +60,8 @@ init_ mtrCertificateInfo  =
 --
 -- ObjC selector: @- initWithTLVBytes:@
 initWithTLVBytes :: (IsMTRCertificateInfo mtrCertificateInfo, IsNSData bytes) => mtrCertificateInfo -> bytes -> IO (Id MTRCertificateInfo)
-initWithTLVBytes mtrCertificateInfo  bytes =
-  withObjCPtr bytes $ \raw_bytes ->
-      sendMsg mtrCertificateInfo (mkSelector "initWithTLVBytes:") (retPtr retVoid) [argPtr (castPtr raw_bytes :: Ptr ())] >>= ownedObject . castPtr
+initWithTLVBytes mtrCertificateInfo bytes =
+  sendOwnedMessage mtrCertificateInfo initWithTLVBytesSelector (toNSData bytes)
 
 -- | The Distinguished Name of the issuer of the certificate.
 --
@@ -77,66 +73,66 @@ initWithTLVBytes mtrCertificateInfo  bytes =
 --
 -- ObjC selector: @- issuer@
 issuer :: IsMTRCertificateInfo mtrCertificateInfo => mtrCertificateInfo -> IO (Id MTRDistinguishedNameInfo)
-issuer mtrCertificateInfo  =
-    sendMsg mtrCertificateInfo (mkSelector "issuer") (retPtr retVoid) [] >>= retainedObject . castPtr
+issuer mtrCertificateInfo =
+  sendMessage mtrCertificateInfo issuerSelector
 
 -- | The Distinguished Name of the entity represented by the certificate.
 --
 -- ObjC selector: @- subject@
 subject :: IsMTRCertificateInfo mtrCertificateInfo => mtrCertificateInfo -> IO (Id MTRDistinguishedNameInfo)
-subject mtrCertificateInfo  =
-    sendMsg mtrCertificateInfo (mkSelector "subject") (retPtr retVoid) [] >>= retainedObject . castPtr
+subject mtrCertificateInfo =
+  sendMessage mtrCertificateInfo subjectSelector
 
 -- | @- notBefore@
 notBefore :: IsMTRCertificateInfo mtrCertificateInfo => mtrCertificateInfo -> IO (Id NSDate)
-notBefore mtrCertificateInfo  =
-    sendMsg mtrCertificateInfo (mkSelector "notBefore") (retPtr retVoid) [] >>= retainedObject . castPtr
+notBefore mtrCertificateInfo =
+  sendMessage mtrCertificateInfo notBeforeSelector
 
 -- | @- notAfter@
 notAfter :: IsMTRCertificateInfo mtrCertificateInfo => mtrCertificateInfo -> IO (Id NSDate)
-notAfter mtrCertificateInfo  =
-    sendMsg mtrCertificateInfo (mkSelector "notAfter") (retPtr retVoid) [] >>= retainedObject . castPtr
+notAfter mtrCertificateInfo =
+  sendMessage mtrCertificateInfo notAfterSelector
 
 -- | Public key data for this certificate
 --
 -- ObjC selector: @- publicKeyData@
 publicKeyData :: IsMTRCertificateInfo mtrCertificateInfo => mtrCertificateInfo -> IO (Id NSData)
-publicKeyData mtrCertificateInfo  =
-    sendMsg mtrCertificateInfo (mkSelector "publicKeyData") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicKeyData mtrCertificateInfo =
+  sendMessage mtrCertificateInfo publicKeyDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRCertificateInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRCertificateInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithTLVBytes:@
-initWithTLVBytesSelector :: Selector
+initWithTLVBytesSelector :: Selector '[Id NSData] (Id MTRCertificateInfo)
 initWithTLVBytesSelector = mkSelector "initWithTLVBytes:"
 
 -- | @Selector@ for @issuer@
-issuerSelector :: Selector
+issuerSelector :: Selector '[] (Id MTRDistinguishedNameInfo)
 issuerSelector = mkSelector "issuer"
 
 -- | @Selector@ for @subject@
-subjectSelector :: Selector
+subjectSelector :: Selector '[] (Id MTRDistinguishedNameInfo)
 subjectSelector = mkSelector "subject"
 
 -- | @Selector@ for @notBefore@
-notBeforeSelector :: Selector
+notBeforeSelector :: Selector '[] (Id NSDate)
 notBeforeSelector = mkSelector "notBefore"
 
 -- | @Selector@ for @notAfter@
-notAfterSelector :: Selector
+notAfterSelector :: Selector '[] (Id NSDate)
 notAfterSelector = mkSelector "notAfter"
 
 -- | @Selector@ for @publicKeyData@
-publicKeyDataSelector :: Selector
+publicKeyDataSelector :: Selector '[] (Id NSData)
 publicKeyDataSelector = mkSelector "publicKeyData"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,8 +11,8 @@ module ObjC.Intents.INActivateCarSignalIntent
   , initWithCarName_signals
   , carName
   , signals
-  , initWithCarName_signalsSelector
   , carNameSelector
+  , initWithCarName_signalsSelector
   , signalsSelector
 
   -- * Enum types
@@ -21,15 +22,11 @@ module ObjC.Intents.INActivateCarSignalIntent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,33 +36,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCarName:signals:@
 initWithCarName_signals :: (IsINActivateCarSignalIntent inActivateCarSignalIntent, IsINSpeakableString carName) => inActivateCarSignalIntent -> carName -> INCarSignalOptions -> IO (Id INActivateCarSignalIntent)
-initWithCarName_signals inActivateCarSignalIntent  carName signals =
-  withObjCPtr carName $ \raw_carName ->
-      sendMsg inActivateCarSignalIntent (mkSelector "initWithCarName:signals:") (retPtr retVoid) [argPtr (castPtr raw_carName :: Ptr ()), argCULong (coerce signals)] >>= ownedObject . castPtr
+initWithCarName_signals inActivateCarSignalIntent carName signals =
+  sendOwnedMessage inActivateCarSignalIntent initWithCarName_signalsSelector (toINSpeakableString carName) signals
 
 -- | @- carName@
 carName :: IsINActivateCarSignalIntent inActivateCarSignalIntent => inActivateCarSignalIntent -> IO (Id INSpeakableString)
-carName inActivateCarSignalIntent  =
-    sendMsg inActivateCarSignalIntent (mkSelector "carName") (retPtr retVoid) [] >>= retainedObject . castPtr
+carName inActivateCarSignalIntent =
+  sendMessage inActivateCarSignalIntent carNameSelector
 
 -- | @- signals@
 signals :: IsINActivateCarSignalIntent inActivateCarSignalIntent => inActivateCarSignalIntent -> IO INCarSignalOptions
-signals inActivateCarSignalIntent  =
-    fmap (coerce :: CULong -> INCarSignalOptions) $ sendMsg inActivateCarSignalIntent (mkSelector "signals") retCULong []
+signals inActivateCarSignalIntent =
+  sendMessage inActivateCarSignalIntent signalsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCarName:signals:@
-initWithCarName_signalsSelector :: Selector
+initWithCarName_signalsSelector :: Selector '[Id INSpeakableString, INCarSignalOptions] (Id INActivateCarSignalIntent)
 initWithCarName_signalsSelector = mkSelector "initWithCarName:signals:"
 
 -- | @Selector@ for @carName@
-carNameSelector :: Selector
+carNameSelector :: Selector '[] (Id INSpeakableString)
 carNameSelector = mkSelector "carName"
 
 -- | @Selector@ for @signals@
-signalsSelector :: Selector
+signalsSelector :: Selector '[] INCarSignalOptions
 signalsSelector = mkSelector "signals"
 

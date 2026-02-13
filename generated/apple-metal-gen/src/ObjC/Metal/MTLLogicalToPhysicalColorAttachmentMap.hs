@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Metal.MTLLogicalToPhysicalColorAttachmentMap
   , setPhysicalIndex_forLogicalIndex
   , getPhysicalIndexForLogicalIndex
   , reset
-  , setPhysicalIndex_forLogicalIndexSelector
   , getPhysicalIndexForLogicalIndexSelector
   , resetSelector
+  , setPhysicalIndex_forLogicalIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,34 +36,34 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setPhysicalIndex:forLogicalIndex:@
 setPhysicalIndex_forLogicalIndex :: IsMTLLogicalToPhysicalColorAttachmentMap mtlLogicalToPhysicalColorAttachmentMap => mtlLogicalToPhysicalColorAttachmentMap -> CULong -> CULong -> IO ()
-setPhysicalIndex_forLogicalIndex mtlLogicalToPhysicalColorAttachmentMap  physicalIndex logicalIndex =
-    sendMsg mtlLogicalToPhysicalColorAttachmentMap (mkSelector "setPhysicalIndex:forLogicalIndex:") retVoid [argCULong physicalIndex, argCULong logicalIndex]
+setPhysicalIndex_forLogicalIndex mtlLogicalToPhysicalColorAttachmentMap physicalIndex logicalIndex =
+  sendMessage mtlLogicalToPhysicalColorAttachmentMap setPhysicalIndex_forLogicalIndexSelector physicalIndex logicalIndex
 
 -- | Queries the physical color attachment index corresponding to a logical index.
 --
 -- ObjC selector: @- getPhysicalIndexForLogicalIndex:@
 getPhysicalIndexForLogicalIndex :: IsMTLLogicalToPhysicalColorAttachmentMap mtlLogicalToPhysicalColorAttachmentMap => mtlLogicalToPhysicalColorAttachmentMap -> CULong -> IO CULong
-getPhysicalIndexForLogicalIndex mtlLogicalToPhysicalColorAttachmentMap  logicalIndex =
-    sendMsg mtlLogicalToPhysicalColorAttachmentMap (mkSelector "getPhysicalIndexForLogicalIndex:") retCULong [argCULong logicalIndex]
+getPhysicalIndexForLogicalIndex mtlLogicalToPhysicalColorAttachmentMap logicalIndex =
+  sendMessage mtlLogicalToPhysicalColorAttachmentMap getPhysicalIndexForLogicalIndexSelector logicalIndex
 
 -- | @- reset@
 reset :: IsMTLLogicalToPhysicalColorAttachmentMap mtlLogicalToPhysicalColorAttachmentMap => mtlLogicalToPhysicalColorAttachmentMap -> IO ()
-reset mtlLogicalToPhysicalColorAttachmentMap  =
-    sendMsg mtlLogicalToPhysicalColorAttachmentMap (mkSelector "reset") retVoid []
+reset mtlLogicalToPhysicalColorAttachmentMap =
+  sendMessage mtlLogicalToPhysicalColorAttachmentMap resetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setPhysicalIndex:forLogicalIndex:@
-setPhysicalIndex_forLogicalIndexSelector :: Selector
+setPhysicalIndex_forLogicalIndexSelector :: Selector '[CULong, CULong] ()
 setPhysicalIndex_forLogicalIndexSelector = mkSelector "setPhysicalIndex:forLogicalIndex:"
 
 -- | @Selector@ for @getPhysicalIndexForLogicalIndex:@
-getPhysicalIndexForLogicalIndexSelector :: Selector
+getPhysicalIndexForLogicalIndexSelector :: Selector '[CULong] CULong
 getPhysicalIndexForLogicalIndexSelector = mkSelector "getPhysicalIndexForLogicalIndex:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 

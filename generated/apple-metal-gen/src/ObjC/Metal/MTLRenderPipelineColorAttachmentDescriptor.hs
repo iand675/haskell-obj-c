@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.Metal.MTLRenderPipelineColorAttachmentDescriptor
   , setAlphaBlendOperation
   , writeMask
   , setWriteMask
-  , pixelFormatSelector
-  , setPixelFormatSelector
-  , blendingEnabledSelector
-  , setBlendingEnabledSelector
-  , sourceRGBBlendFactorSelector
-  , setSourceRGBBlendFactorSelector
-  , destinationRGBBlendFactorSelector
-  , setDestinationRGBBlendFactorSelector
-  , rgbBlendOperationSelector
-  , setRgbBlendOperationSelector
-  , sourceAlphaBlendFactorSelector
-  , setSourceAlphaBlendFactorSelector
-  , destinationAlphaBlendFactorSelector
-  , setDestinationAlphaBlendFactorSelector
   , alphaBlendOperationSelector
+  , blendingEnabledSelector
+  , destinationAlphaBlendFactorSelector
+  , destinationRGBBlendFactorSelector
+  , pixelFormatSelector
+  , rgbBlendOperationSelector
   , setAlphaBlendOperationSelector
-  , writeMaskSelector
+  , setBlendingEnabledSelector
+  , setDestinationAlphaBlendFactorSelector
+  , setDestinationRGBBlendFactorSelector
+  , setPixelFormatSelector
+  , setRgbBlendOperationSelector
+  , setSourceAlphaBlendFactorSelector
+  , setSourceRGBBlendFactorSelector
   , setWriteMaskSelector
+  , sourceAlphaBlendFactorSelector
+  , sourceRGBBlendFactorSelector
+  , writeMaskSelector
 
   -- * Enum types
   , MTLBlendFactor(MTLBlendFactor)
@@ -225,15 +226,11 @@ module ObjC.Metal.MTLRenderPipelineColorAttachmentDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -245,201 +242,201 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- pixelFormat@
 pixelFormat :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> IO MTLPixelFormat
-pixelFormat mtlRenderPipelineColorAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLPixelFormat) $ sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "pixelFormat") retCULong []
+pixelFormat mtlRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor pixelFormatSelector
 
 -- | Pixel format.  Defaults to MTLPixelFormatInvalid
 --
 -- ObjC selector: @- setPixelFormat:@
 setPixelFormat :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> MTLPixelFormat -> IO ()
-setPixelFormat mtlRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "setPixelFormat:") retVoid [argCULong (coerce value)]
+setPixelFormat mtlRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor setPixelFormatSelector value
 
 -- | Enable blending.  Defaults to NO.
 --
 -- ObjC selector: @- blendingEnabled@
 blendingEnabled :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> IO Bool
-blendingEnabled mtlRenderPipelineColorAttachmentDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "blendingEnabled") retCULong []
+blendingEnabled mtlRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor blendingEnabledSelector
 
 -- | Enable blending.  Defaults to NO.
 --
 -- ObjC selector: @- setBlendingEnabled:@
 setBlendingEnabled :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> Bool -> IO ()
-setBlendingEnabled mtlRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "setBlendingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setBlendingEnabled mtlRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor setBlendingEnabledSelector value
 
 -- | Defaults to MTLBlendFactorOne
 --
 -- ObjC selector: @- sourceRGBBlendFactor@
 sourceRGBBlendFactor :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> IO MTLBlendFactor
-sourceRGBBlendFactor mtlRenderPipelineColorAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLBlendFactor) $ sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "sourceRGBBlendFactor") retCULong []
+sourceRGBBlendFactor mtlRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor sourceRGBBlendFactorSelector
 
 -- | Defaults to MTLBlendFactorOne
 --
 -- ObjC selector: @- setSourceRGBBlendFactor:@
 setSourceRGBBlendFactor :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> MTLBlendFactor -> IO ()
-setSourceRGBBlendFactor mtlRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "setSourceRGBBlendFactor:") retVoid [argCULong (coerce value)]
+setSourceRGBBlendFactor mtlRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor setSourceRGBBlendFactorSelector value
 
 -- | Defaults to MTLBlendFactorZero
 --
 -- ObjC selector: @- destinationRGBBlendFactor@
 destinationRGBBlendFactor :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> IO MTLBlendFactor
-destinationRGBBlendFactor mtlRenderPipelineColorAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLBlendFactor) $ sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "destinationRGBBlendFactor") retCULong []
+destinationRGBBlendFactor mtlRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor destinationRGBBlendFactorSelector
 
 -- | Defaults to MTLBlendFactorZero
 --
 -- ObjC selector: @- setDestinationRGBBlendFactor:@
 setDestinationRGBBlendFactor :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> MTLBlendFactor -> IO ()
-setDestinationRGBBlendFactor mtlRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "setDestinationRGBBlendFactor:") retVoid [argCULong (coerce value)]
+setDestinationRGBBlendFactor mtlRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor setDestinationRGBBlendFactorSelector value
 
 -- | Defaults to MTLBlendOperationAdd
 --
 -- ObjC selector: @- rgbBlendOperation@
 rgbBlendOperation :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> IO MTLBlendOperation
-rgbBlendOperation mtlRenderPipelineColorAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLBlendOperation) $ sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "rgbBlendOperation") retCULong []
+rgbBlendOperation mtlRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor rgbBlendOperationSelector
 
 -- | Defaults to MTLBlendOperationAdd
 --
 -- ObjC selector: @- setRgbBlendOperation:@
 setRgbBlendOperation :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> MTLBlendOperation -> IO ()
-setRgbBlendOperation mtlRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "setRgbBlendOperation:") retVoid [argCULong (coerce value)]
+setRgbBlendOperation mtlRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor setRgbBlendOperationSelector value
 
 -- | Defaults to MTLBlendFactorOne
 --
 -- ObjC selector: @- sourceAlphaBlendFactor@
 sourceAlphaBlendFactor :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> IO MTLBlendFactor
-sourceAlphaBlendFactor mtlRenderPipelineColorAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLBlendFactor) $ sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "sourceAlphaBlendFactor") retCULong []
+sourceAlphaBlendFactor mtlRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor sourceAlphaBlendFactorSelector
 
 -- | Defaults to MTLBlendFactorOne
 --
 -- ObjC selector: @- setSourceAlphaBlendFactor:@
 setSourceAlphaBlendFactor :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> MTLBlendFactor -> IO ()
-setSourceAlphaBlendFactor mtlRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "setSourceAlphaBlendFactor:") retVoid [argCULong (coerce value)]
+setSourceAlphaBlendFactor mtlRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor setSourceAlphaBlendFactorSelector value
 
 -- | Defaults to MTLBlendFactorZero
 --
 -- ObjC selector: @- destinationAlphaBlendFactor@
 destinationAlphaBlendFactor :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> IO MTLBlendFactor
-destinationAlphaBlendFactor mtlRenderPipelineColorAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLBlendFactor) $ sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "destinationAlphaBlendFactor") retCULong []
+destinationAlphaBlendFactor mtlRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor destinationAlphaBlendFactorSelector
 
 -- | Defaults to MTLBlendFactorZero
 --
 -- ObjC selector: @- setDestinationAlphaBlendFactor:@
 setDestinationAlphaBlendFactor :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> MTLBlendFactor -> IO ()
-setDestinationAlphaBlendFactor mtlRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "setDestinationAlphaBlendFactor:") retVoid [argCULong (coerce value)]
+setDestinationAlphaBlendFactor mtlRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor setDestinationAlphaBlendFactorSelector value
 
 -- | Defaults to MTLBlendOperationAdd
 --
 -- ObjC selector: @- alphaBlendOperation@
 alphaBlendOperation :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> IO MTLBlendOperation
-alphaBlendOperation mtlRenderPipelineColorAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLBlendOperation) $ sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "alphaBlendOperation") retCULong []
+alphaBlendOperation mtlRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor alphaBlendOperationSelector
 
 -- | Defaults to MTLBlendOperationAdd
 --
 -- ObjC selector: @- setAlphaBlendOperation:@
 setAlphaBlendOperation :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> MTLBlendOperation -> IO ()
-setAlphaBlendOperation mtlRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "setAlphaBlendOperation:") retVoid [argCULong (coerce value)]
+setAlphaBlendOperation mtlRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor setAlphaBlendOperationSelector value
 
 -- | Defaults to MTLColorWriteMaskAll
 --
 -- ObjC selector: @- writeMask@
 writeMask :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> IO MTLColorWriteMask
-writeMask mtlRenderPipelineColorAttachmentDescriptor  =
-    fmap (coerce :: CULong -> MTLColorWriteMask) $ sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "writeMask") retCULong []
+writeMask mtlRenderPipelineColorAttachmentDescriptor =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor writeMaskSelector
 
 -- | Defaults to MTLColorWriteMaskAll
 --
 -- ObjC selector: @- setWriteMask:@
 setWriteMask :: IsMTLRenderPipelineColorAttachmentDescriptor mtlRenderPipelineColorAttachmentDescriptor => mtlRenderPipelineColorAttachmentDescriptor -> MTLColorWriteMask -> IO ()
-setWriteMask mtlRenderPipelineColorAttachmentDescriptor  value =
-    sendMsg mtlRenderPipelineColorAttachmentDescriptor (mkSelector "setWriteMask:") retVoid [argCULong (coerce value)]
+setWriteMask mtlRenderPipelineColorAttachmentDescriptor value =
+  sendMessage mtlRenderPipelineColorAttachmentDescriptor setWriteMaskSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] MTLPixelFormat
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @setPixelFormat:@
-setPixelFormatSelector :: Selector
+setPixelFormatSelector :: Selector '[MTLPixelFormat] ()
 setPixelFormatSelector = mkSelector "setPixelFormat:"
 
 -- | @Selector@ for @blendingEnabled@
-blendingEnabledSelector :: Selector
+blendingEnabledSelector :: Selector '[] Bool
 blendingEnabledSelector = mkSelector "blendingEnabled"
 
 -- | @Selector@ for @setBlendingEnabled:@
-setBlendingEnabledSelector :: Selector
+setBlendingEnabledSelector :: Selector '[Bool] ()
 setBlendingEnabledSelector = mkSelector "setBlendingEnabled:"
 
 -- | @Selector@ for @sourceRGBBlendFactor@
-sourceRGBBlendFactorSelector :: Selector
+sourceRGBBlendFactorSelector :: Selector '[] MTLBlendFactor
 sourceRGBBlendFactorSelector = mkSelector "sourceRGBBlendFactor"
 
 -- | @Selector@ for @setSourceRGBBlendFactor:@
-setSourceRGBBlendFactorSelector :: Selector
+setSourceRGBBlendFactorSelector :: Selector '[MTLBlendFactor] ()
 setSourceRGBBlendFactorSelector = mkSelector "setSourceRGBBlendFactor:"
 
 -- | @Selector@ for @destinationRGBBlendFactor@
-destinationRGBBlendFactorSelector :: Selector
+destinationRGBBlendFactorSelector :: Selector '[] MTLBlendFactor
 destinationRGBBlendFactorSelector = mkSelector "destinationRGBBlendFactor"
 
 -- | @Selector@ for @setDestinationRGBBlendFactor:@
-setDestinationRGBBlendFactorSelector :: Selector
+setDestinationRGBBlendFactorSelector :: Selector '[MTLBlendFactor] ()
 setDestinationRGBBlendFactorSelector = mkSelector "setDestinationRGBBlendFactor:"
 
 -- | @Selector@ for @rgbBlendOperation@
-rgbBlendOperationSelector :: Selector
+rgbBlendOperationSelector :: Selector '[] MTLBlendOperation
 rgbBlendOperationSelector = mkSelector "rgbBlendOperation"
 
 -- | @Selector@ for @setRgbBlendOperation:@
-setRgbBlendOperationSelector :: Selector
+setRgbBlendOperationSelector :: Selector '[MTLBlendOperation] ()
 setRgbBlendOperationSelector = mkSelector "setRgbBlendOperation:"
 
 -- | @Selector@ for @sourceAlphaBlendFactor@
-sourceAlphaBlendFactorSelector :: Selector
+sourceAlphaBlendFactorSelector :: Selector '[] MTLBlendFactor
 sourceAlphaBlendFactorSelector = mkSelector "sourceAlphaBlendFactor"
 
 -- | @Selector@ for @setSourceAlphaBlendFactor:@
-setSourceAlphaBlendFactorSelector :: Selector
+setSourceAlphaBlendFactorSelector :: Selector '[MTLBlendFactor] ()
 setSourceAlphaBlendFactorSelector = mkSelector "setSourceAlphaBlendFactor:"
 
 -- | @Selector@ for @destinationAlphaBlendFactor@
-destinationAlphaBlendFactorSelector :: Selector
+destinationAlphaBlendFactorSelector :: Selector '[] MTLBlendFactor
 destinationAlphaBlendFactorSelector = mkSelector "destinationAlphaBlendFactor"
 
 -- | @Selector@ for @setDestinationAlphaBlendFactor:@
-setDestinationAlphaBlendFactorSelector :: Selector
+setDestinationAlphaBlendFactorSelector :: Selector '[MTLBlendFactor] ()
 setDestinationAlphaBlendFactorSelector = mkSelector "setDestinationAlphaBlendFactor:"
 
 -- | @Selector@ for @alphaBlendOperation@
-alphaBlendOperationSelector :: Selector
+alphaBlendOperationSelector :: Selector '[] MTLBlendOperation
 alphaBlendOperationSelector = mkSelector "alphaBlendOperation"
 
 -- | @Selector@ for @setAlphaBlendOperation:@
-setAlphaBlendOperationSelector :: Selector
+setAlphaBlendOperationSelector :: Selector '[MTLBlendOperation] ()
 setAlphaBlendOperationSelector = mkSelector "setAlphaBlendOperation:"
 
 -- | @Selector@ for @writeMask@
-writeMaskSelector :: Selector
+writeMaskSelector :: Selector '[] MTLColorWriteMask
 writeMaskSelector = mkSelector "writeMask"
 
 -- | @Selector@ for @setWriteMask:@
-setWriteMaskSelector :: Selector
+setWriteMaskSelector :: Selector '[MTLColorWriteMask] ()
 setWriteMaskSelector = mkSelector "setWriteMask:"
 

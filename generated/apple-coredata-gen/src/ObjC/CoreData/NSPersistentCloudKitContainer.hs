@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.CoreData.NSPersistentCloudKitContainer
   , persistUpdatedShare_inPersistentStore_completion
   , fetchSharesMatchingObjectIDs_error
   , fetchSharesInPersistentStore_error
-  , initializeCloudKitSchemaWithOptions_errorSelector
-  , recordForManagedObjectIDSelector
-  , recordsForManagedObjectIDsSelector
-  , recordIDForManagedObjectIDSelector
-  , recordIDsForManagedObjectIDsSelector
-  , canUpdateRecordForManagedObjectWithIDSelector
   , canDeleteRecordForManagedObjectWithIDSelector
   , canModifyManagedObjectsInStoreSelector
-  , purgeObjectsAndRecordsInZoneWithID_inPersistentStore_completionSelector
-  , persistUpdatedShare_inPersistentStore_completionSelector
-  , fetchSharesMatchingObjectIDs_errorSelector
+  , canUpdateRecordForManagedObjectWithIDSelector
   , fetchSharesInPersistentStore_errorSelector
+  , fetchSharesMatchingObjectIDs_errorSelector
+  , initializeCloudKitSchemaWithOptions_errorSelector
+  , persistUpdatedShare_inPersistentStore_completionSelector
+  , purgeObjectsAndRecordsInZoneWithID_inPersistentStore_completionSelector
+  , recordForManagedObjectIDSelector
+  , recordIDForManagedObjectIDSelector
+  , recordIDsForManagedObjectIDsSelector
+  , recordsForManagedObjectIDsSelector
 
   -- * Enum types
   , NSPersistentCloudKitContainerSchemaInitializationOptions(NSPersistentCloudKitContainerSchemaInitializationOptions)
@@ -40,15 +41,11 @@ module ObjC.CoreData.NSPersistentCloudKitContainer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,129 +56,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initializeCloudKitSchemaWithOptions:error:@
 initializeCloudKitSchemaWithOptions_error :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSError error_) => nsPersistentCloudKitContainer -> NSPersistentCloudKitContainerSchemaInitializationOptions -> error_ -> IO Bool
-initializeCloudKitSchemaWithOptions_error nsPersistentCloudKitContainer  options error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentCloudKitContainer (mkSelector "initializeCloudKitSchemaWithOptions:error:") retCULong [argCULong (coerce options), argPtr (castPtr raw_error_ :: Ptr ())]
+initializeCloudKitSchemaWithOptions_error nsPersistentCloudKitContainer options error_ =
+  sendOwnedMessage nsPersistentCloudKitContainer initializeCloudKitSchemaWithOptions_errorSelector options (toNSError error_)
 
 -- | @- recordForManagedObjectID:@
 recordForManagedObjectID :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSManagedObjectID managedObjectID) => nsPersistentCloudKitContainer -> managedObjectID -> IO (Id CKRecord)
-recordForManagedObjectID nsPersistentCloudKitContainer  managedObjectID =
-  withObjCPtr managedObjectID $ \raw_managedObjectID ->
-      sendMsg nsPersistentCloudKitContainer (mkSelector "recordForManagedObjectID:") (retPtr retVoid) [argPtr (castPtr raw_managedObjectID :: Ptr ())] >>= retainedObject . castPtr
+recordForManagedObjectID nsPersistentCloudKitContainer managedObjectID =
+  sendMessage nsPersistentCloudKitContainer recordForManagedObjectIDSelector (toNSManagedObjectID managedObjectID)
 
 -- | @- recordsForManagedObjectIDs:@
 recordsForManagedObjectIDs :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSArray managedObjectIDs) => nsPersistentCloudKitContainer -> managedObjectIDs -> IO (Id NSDictionary)
-recordsForManagedObjectIDs nsPersistentCloudKitContainer  managedObjectIDs =
-  withObjCPtr managedObjectIDs $ \raw_managedObjectIDs ->
-      sendMsg nsPersistentCloudKitContainer (mkSelector "recordsForManagedObjectIDs:") (retPtr retVoid) [argPtr (castPtr raw_managedObjectIDs :: Ptr ())] >>= retainedObject . castPtr
+recordsForManagedObjectIDs nsPersistentCloudKitContainer managedObjectIDs =
+  sendMessage nsPersistentCloudKitContainer recordsForManagedObjectIDsSelector (toNSArray managedObjectIDs)
 
 -- | @- recordIDForManagedObjectID:@
 recordIDForManagedObjectID :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSManagedObjectID managedObjectID) => nsPersistentCloudKitContainer -> managedObjectID -> IO (Id CKRecordID)
-recordIDForManagedObjectID nsPersistentCloudKitContainer  managedObjectID =
-  withObjCPtr managedObjectID $ \raw_managedObjectID ->
-      sendMsg nsPersistentCloudKitContainer (mkSelector "recordIDForManagedObjectID:") (retPtr retVoid) [argPtr (castPtr raw_managedObjectID :: Ptr ())] >>= retainedObject . castPtr
+recordIDForManagedObjectID nsPersistentCloudKitContainer managedObjectID =
+  sendMessage nsPersistentCloudKitContainer recordIDForManagedObjectIDSelector (toNSManagedObjectID managedObjectID)
 
 -- | @- recordIDsForManagedObjectIDs:@
 recordIDsForManagedObjectIDs :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSArray managedObjectIDs) => nsPersistentCloudKitContainer -> managedObjectIDs -> IO (Id NSDictionary)
-recordIDsForManagedObjectIDs nsPersistentCloudKitContainer  managedObjectIDs =
-  withObjCPtr managedObjectIDs $ \raw_managedObjectIDs ->
-      sendMsg nsPersistentCloudKitContainer (mkSelector "recordIDsForManagedObjectIDs:") (retPtr retVoid) [argPtr (castPtr raw_managedObjectIDs :: Ptr ())] >>= retainedObject . castPtr
+recordIDsForManagedObjectIDs nsPersistentCloudKitContainer managedObjectIDs =
+  sendMessage nsPersistentCloudKitContainer recordIDsForManagedObjectIDsSelector (toNSArray managedObjectIDs)
 
 -- | @- canUpdateRecordForManagedObjectWithID:@
 canUpdateRecordForManagedObjectWithID :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSManagedObjectID objectID) => nsPersistentCloudKitContainer -> objectID -> IO Bool
-canUpdateRecordForManagedObjectWithID nsPersistentCloudKitContainer  objectID =
-  withObjCPtr objectID $ \raw_objectID ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentCloudKitContainer (mkSelector "canUpdateRecordForManagedObjectWithID:") retCULong [argPtr (castPtr raw_objectID :: Ptr ())]
+canUpdateRecordForManagedObjectWithID nsPersistentCloudKitContainer objectID =
+  sendMessage nsPersistentCloudKitContainer canUpdateRecordForManagedObjectWithIDSelector (toNSManagedObjectID objectID)
 
 -- | @- canDeleteRecordForManagedObjectWithID:@
 canDeleteRecordForManagedObjectWithID :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSManagedObjectID objectID) => nsPersistentCloudKitContainer -> objectID -> IO Bool
-canDeleteRecordForManagedObjectWithID nsPersistentCloudKitContainer  objectID =
-  withObjCPtr objectID $ \raw_objectID ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentCloudKitContainer (mkSelector "canDeleteRecordForManagedObjectWithID:") retCULong [argPtr (castPtr raw_objectID :: Ptr ())]
+canDeleteRecordForManagedObjectWithID nsPersistentCloudKitContainer objectID =
+  sendMessage nsPersistentCloudKitContainer canDeleteRecordForManagedObjectWithIDSelector (toNSManagedObjectID objectID)
 
 -- | @- canModifyManagedObjectsInStore:@
 canModifyManagedObjectsInStore :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSPersistentStore store) => nsPersistentCloudKitContainer -> store -> IO Bool
-canModifyManagedObjectsInStore nsPersistentCloudKitContainer  store =
-  withObjCPtr store $ \raw_store ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPersistentCloudKitContainer (mkSelector "canModifyManagedObjectsInStore:") retCULong [argPtr (castPtr raw_store :: Ptr ())]
+canModifyManagedObjectsInStore nsPersistentCloudKitContainer store =
+  sendMessage nsPersistentCloudKitContainer canModifyManagedObjectsInStoreSelector (toNSPersistentStore store)
 
 -- | @- purgeObjectsAndRecordsInZoneWithID:inPersistentStore:completion:@
 purgeObjectsAndRecordsInZoneWithID_inPersistentStore_completion :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsCKRecordZoneID zoneID, IsNSPersistentStore persistentStore) => nsPersistentCloudKitContainer -> zoneID -> persistentStore -> Ptr () -> IO ()
-purgeObjectsAndRecordsInZoneWithID_inPersistentStore_completion nsPersistentCloudKitContainer  zoneID persistentStore completion =
-  withObjCPtr zoneID $ \raw_zoneID ->
-    withObjCPtr persistentStore $ \raw_persistentStore ->
-        sendMsg nsPersistentCloudKitContainer (mkSelector "purgeObjectsAndRecordsInZoneWithID:inPersistentStore:completion:") retVoid [argPtr (castPtr raw_zoneID :: Ptr ()), argPtr (castPtr raw_persistentStore :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+purgeObjectsAndRecordsInZoneWithID_inPersistentStore_completion nsPersistentCloudKitContainer zoneID persistentStore completion =
+  sendMessage nsPersistentCloudKitContainer purgeObjectsAndRecordsInZoneWithID_inPersistentStore_completionSelector (toCKRecordZoneID zoneID) (toNSPersistentStore persistentStore) completion
 
 -- | @- persistUpdatedShare:inPersistentStore:completion:@
 persistUpdatedShare_inPersistentStore_completion :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsCKShare share, IsNSPersistentStore persistentStore) => nsPersistentCloudKitContainer -> share -> persistentStore -> Ptr () -> IO ()
-persistUpdatedShare_inPersistentStore_completion nsPersistentCloudKitContainer  share persistentStore completion =
-  withObjCPtr share $ \raw_share ->
-    withObjCPtr persistentStore $ \raw_persistentStore ->
-        sendMsg nsPersistentCloudKitContainer (mkSelector "persistUpdatedShare:inPersistentStore:completion:") retVoid [argPtr (castPtr raw_share :: Ptr ()), argPtr (castPtr raw_persistentStore :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+persistUpdatedShare_inPersistentStore_completion nsPersistentCloudKitContainer share persistentStore completion =
+  sendMessage nsPersistentCloudKitContainer persistUpdatedShare_inPersistentStore_completionSelector (toCKShare share) (toNSPersistentStore persistentStore) completion
 
 -- | @- fetchSharesMatchingObjectIDs:error:@
 fetchSharesMatchingObjectIDs_error :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSArray objectIDs, IsNSError error_) => nsPersistentCloudKitContainer -> objectIDs -> error_ -> IO (Id NSDictionary)
-fetchSharesMatchingObjectIDs_error nsPersistentCloudKitContainer  objectIDs error_ =
-  withObjCPtr objectIDs $ \raw_objectIDs ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsPersistentCloudKitContainer (mkSelector "fetchSharesMatchingObjectIDs:error:") (retPtr retVoid) [argPtr (castPtr raw_objectIDs :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+fetchSharesMatchingObjectIDs_error nsPersistentCloudKitContainer objectIDs error_ =
+  sendMessage nsPersistentCloudKitContainer fetchSharesMatchingObjectIDs_errorSelector (toNSArray objectIDs) (toNSError error_)
 
 -- | @- fetchSharesInPersistentStore:error:@
 fetchSharesInPersistentStore_error :: (IsNSPersistentCloudKitContainer nsPersistentCloudKitContainer, IsNSPersistentStore persistentStore, IsNSError error_) => nsPersistentCloudKitContainer -> persistentStore -> error_ -> IO (Id NSArray)
-fetchSharesInPersistentStore_error nsPersistentCloudKitContainer  persistentStore error_ =
-  withObjCPtr persistentStore $ \raw_persistentStore ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsPersistentCloudKitContainer (mkSelector "fetchSharesInPersistentStore:error:") (retPtr retVoid) [argPtr (castPtr raw_persistentStore :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+fetchSharesInPersistentStore_error nsPersistentCloudKitContainer persistentStore error_ =
+  sendMessage nsPersistentCloudKitContainer fetchSharesInPersistentStore_errorSelector (toNSPersistentStore persistentStore) (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initializeCloudKitSchemaWithOptions:error:@
-initializeCloudKitSchemaWithOptions_errorSelector :: Selector
+initializeCloudKitSchemaWithOptions_errorSelector :: Selector '[NSPersistentCloudKitContainerSchemaInitializationOptions, Id NSError] Bool
 initializeCloudKitSchemaWithOptions_errorSelector = mkSelector "initializeCloudKitSchemaWithOptions:error:"
 
 -- | @Selector@ for @recordForManagedObjectID:@
-recordForManagedObjectIDSelector :: Selector
+recordForManagedObjectIDSelector :: Selector '[Id NSManagedObjectID] (Id CKRecord)
 recordForManagedObjectIDSelector = mkSelector "recordForManagedObjectID:"
 
 -- | @Selector@ for @recordsForManagedObjectIDs:@
-recordsForManagedObjectIDsSelector :: Selector
+recordsForManagedObjectIDsSelector :: Selector '[Id NSArray] (Id NSDictionary)
 recordsForManagedObjectIDsSelector = mkSelector "recordsForManagedObjectIDs:"
 
 -- | @Selector@ for @recordIDForManagedObjectID:@
-recordIDForManagedObjectIDSelector :: Selector
+recordIDForManagedObjectIDSelector :: Selector '[Id NSManagedObjectID] (Id CKRecordID)
 recordIDForManagedObjectIDSelector = mkSelector "recordIDForManagedObjectID:"
 
 -- | @Selector@ for @recordIDsForManagedObjectIDs:@
-recordIDsForManagedObjectIDsSelector :: Selector
+recordIDsForManagedObjectIDsSelector :: Selector '[Id NSArray] (Id NSDictionary)
 recordIDsForManagedObjectIDsSelector = mkSelector "recordIDsForManagedObjectIDs:"
 
 -- | @Selector@ for @canUpdateRecordForManagedObjectWithID:@
-canUpdateRecordForManagedObjectWithIDSelector :: Selector
+canUpdateRecordForManagedObjectWithIDSelector :: Selector '[Id NSManagedObjectID] Bool
 canUpdateRecordForManagedObjectWithIDSelector = mkSelector "canUpdateRecordForManagedObjectWithID:"
 
 -- | @Selector@ for @canDeleteRecordForManagedObjectWithID:@
-canDeleteRecordForManagedObjectWithIDSelector :: Selector
+canDeleteRecordForManagedObjectWithIDSelector :: Selector '[Id NSManagedObjectID] Bool
 canDeleteRecordForManagedObjectWithIDSelector = mkSelector "canDeleteRecordForManagedObjectWithID:"
 
 -- | @Selector@ for @canModifyManagedObjectsInStore:@
-canModifyManagedObjectsInStoreSelector :: Selector
+canModifyManagedObjectsInStoreSelector :: Selector '[Id NSPersistentStore] Bool
 canModifyManagedObjectsInStoreSelector = mkSelector "canModifyManagedObjectsInStore:"
 
 -- | @Selector@ for @purgeObjectsAndRecordsInZoneWithID:inPersistentStore:completion:@
-purgeObjectsAndRecordsInZoneWithID_inPersistentStore_completionSelector :: Selector
+purgeObjectsAndRecordsInZoneWithID_inPersistentStore_completionSelector :: Selector '[Id CKRecordZoneID, Id NSPersistentStore, Ptr ()] ()
 purgeObjectsAndRecordsInZoneWithID_inPersistentStore_completionSelector = mkSelector "purgeObjectsAndRecordsInZoneWithID:inPersistentStore:completion:"
 
 -- | @Selector@ for @persistUpdatedShare:inPersistentStore:completion:@
-persistUpdatedShare_inPersistentStore_completionSelector :: Selector
+persistUpdatedShare_inPersistentStore_completionSelector :: Selector '[Id CKShare, Id NSPersistentStore, Ptr ()] ()
 persistUpdatedShare_inPersistentStore_completionSelector = mkSelector "persistUpdatedShare:inPersistentStore:completion:"
 
 -- | @Selector@ for @fetchSharesMatchingObjectIDs:error:@
-fetchSharesMatchingObjectIDs_errorSelector :: Selector
+fetchSharesMatchingObjectIDs_errorSelector :: Selector '[Id NSArray, Id NSError] (Id NSDictionary)
 fetchSharesMatchingObjectIDs_errorSelector = mkSelector "fetchSharesMatchingObjectIDs:error:"
 
 -- | @Selector@ for @fetchSharesInPersistentStore:error:@
-fetchSharesInPersistentStore_errorSelector :: Selector
+fetchSharesInPersistentStore_errorSelector :: Selector '[Id NSPersistentStore, Id NSError] (Id NSArray)
 fetchSharesInPersistentStore_errorSelector = mkSelector "fetchSharesInPersistentStore:error:"
 

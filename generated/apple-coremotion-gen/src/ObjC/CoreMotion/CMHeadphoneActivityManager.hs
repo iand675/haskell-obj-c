@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.CoreMotion.CMHeadphoneActivityManager
   , activityActive
   , statusAvailable
   , statusActive
+  , activityActiveSelector
+  , activityAvailableSelector
   , authorizationStatusSelector
   , startActivityUpdatesToQueue_withHandlerSelector
-  , stopActivityUpdatesSelector
   , startStatusUpdatesToQueue_withHandlerSelector
-  , stopStatusUpdatesSelector
-  , activityAvailableSelector
-  , activityActiveSelector
-  , statusAvailableSelector
   , statusActiveSelector
+  , statusAvailableSelector
+  , stopActivityUpdatesSelector
+  , stopStatusUpdatesSelector
 
   -- * Enum types
   , CMAuthorizationStatus(CMAuthorizationStatus)
@@ -35,15 +36,11 @@ module ObjC.CoreMotion.CMHeadphoneActivityManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,87 +53,85 @@ authorizationStatus :: IO CMAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "CMHeadphoneActivityManager"
-    fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | @- startActivityUpdatesToQueue:withHandler:@
 startActivityUpdatesToQueue_withHandler :: (IsCMHeadphoneActivityManager cmHeadphoneActivityManager, IsNSOperationQueue queue) => cmHeadphoneActivityManager -> queue -> Ptr () -> IO ()
-startActivityUpdatesToQueue_withHandler cmHeadphoneActivityManager  queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmHeadphoneActivityManager (mkSelector "startActivityUpdatesToQueue:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startActivityUpdatesToQueue_withHandler cmHeadphoneActivityManager queue handler =
+  sendMessage cmHeadphoneActivityManager startActivityUpdatesToQueue_withHandlerSelector (toNSOperationQueue queue) handler
 
 -- | @- stopActivityUpdates@
 stopActivityUpdates :: IsCMHeadphoneActivityManager cmHeadphoneActivityManager => cmHeadphoneActivityManager -> IO ()
-stopActivityUpdates cmHeadphoneActivityManager  =
-    sendMsg cmHeadphoneActivityManager (mkSelector "stopActivityUpdates") retVoid []
+stopActivityUpdates cmHeadphoneActivityManager =
+  sendMessage cmHeadphoneActivityManager stopActivityUpdatesSelector
 
 -- | @- startStatusUpdatesToQueue:withHandler:@
 startStatusUpdatesToQueue_withHandler :: (IsCMHeadphoneActivityManager cmHeadphoneActivityManager, IsNSOperationQueue queue) => cmHeadphoneActivityManager -> queue -> Ptr () -> IO ()
-startStatusUpdatesToQueue_withHandler cmHeadphoneActivityManager  queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmHeadphoneActivityManager (mkSelector "startStatusUpdatesToQueue:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startStatusUpdatesToQueue_withHandler cmHeadphoneActivityManager queue handler =
+  sendMessage cmHeadphoneActivityManager startStatusUpdatesToQueue_withHandlerSelector (toNSOperationQueue queue) handler
 
 -- | @- stopStatusUpdates@
 stopStatusUpdates :: IsCMHeadphoneActivityManager cmHeadphoneActivityManager => cmHeadphoneActivityManager -> IO ()
-stopStatusUpdates cmHeadphoneActivityManager  =
-    sendMsg cmHeadphoneActivityManager (mkSelector "stopStatusUpdates") retVoid []
+stopStatusUpdates cmHeadphoneActivityManager =
+  sendMessage cmHeadphoneActivityManager stopStatusUpdatesSelector
 
 -- | @- activityAvailable@
 activityAvailable :: IsCMHeadphoneActivityManager cmHeadphoneActivityManager => cmHeadphoneActivityManager -> IO Bool
-activityAvailable cmHeadphoneActivityManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmHeadphoneActivityManager (mkSelector "activityAvailable") retCULong []
+activityAvailable cmHeadphoneActivityManager =
+  sendMessage cmHeadphoneActivityManager activityAvailableSelector
 
 -- | @- activityActive@
 activityActive :: IsCMHeadphoneActivityManager cmHeadphoneActivityManager => cmHeadphoneActivityManager -> IO Bool
-activityActive cmHeadphoneActivityManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmHeadphoneActivityManager (mkSelector "activityActive") retCULong []
+activityActive cmHeadphoneActivityManager =
+  sendMessage cmHeadphoneActivityManager activityActiveSelector
 
 -- | @- statusAvailable@
 statusAvailable :: IsCMHeadphoneActivityManager cmHeadphoneActivityManager => cmHeadphoneActivityManager -> IO Bool
-statusAvailable cmHeadphoneActivityManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmHeadphoneActivityManager (mkSelector "statusAvailable") retCULong []
+statusAvailable cmHeadphoneActivityManager =
+  sendMessage cmHeadphoneActivityManager statusAvailableSelector
 
 -- | @- statusActive@
 statusActive :: IsCMHeadphoneActivityManager cmHeadphoneActivityManager => cmHeadphoneActivityManager -> IO Bool
-statusActive cmHeadphoneActivityManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmHeadphoneActivityManager (mkSelector "statusActive") retCULong []
+statusActive cmHeadphoneActivityManager =
+  sendMessage cmHeadphoneActivityManager statusActiveSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CMAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @startActivityUpdatesToQueue:withHandler:@
-startActivityUpdatesToQueue_withHandlerSelector :: Selector
+startActivityUpdatesToQueue_withHandlerSelector :: Selector '[Id NSOperationQueue, Ptr ()] ()
 startActivityUpdatesToQueue_withHandlerSelector = mkSelector "startActivityUpdatesToQueue:withHandler:"
 
 -- | @Selector@ for @stopActivityUpdates@
-stopActivityUpdatesSelector :: Selector
+stopActivityUpdatesSelector :: Selector '[] ()
 stopActivityUpdatesSelector = mkSelector "stopActivityUpdates"
 
 -- | @Selector@ for @startStatusUpdatesToQueue:withHandler:@
-startStatusUpdatesToQueue_withHandlerSelector :: Selector
+startStatusUpdatesToQueue_withHandlerSelector :: Selector '[Id NSOperationQueue, Ptr ()] ()
 startStatusUpdatesToQueue_withHandlerSelector = mkSelector "startStatusUpdatesToQueue:withHandler:"
 
 -- | @Selector@ for @stopStatusUpdates@
-stopStatusUpdatesSelector :: Selector
+stopStatusUpdatesSelector :: Selector '[] ()
 stopStatusUpdatesSelector = mkSelector "stopStatusUpdates"
 
 -- | @Selector@ for @activityAvailable@
-activityAvailableSelector :: Selector
+activityAvailableSelector :: Selector '[] Bool
 activityAvailableSelector = mkSelector "activityAvailable"
 
 -- | @Selector@ for @activityActive@
-activityActiveSelector :: Selector
+activityActiveSelector :: Selector '[] Bool
 activityActiveSelector = mkSelector "activityActive"
 
 -- | @Selector@ for @statusAvailable@
-statusAvailableSelector :: Selector
+statusAvailableSelector :: Selector '[] Bool
 statusAvailableSelector = mkSelector "statusAvailable"
 
 -- | @Selector@ for @statusActive@
-statusActiveSelector :: Selector
+statusActiveSelector :: Selector '[] Bool
 statusActiveSelector = mkSelector "statusActive"
 

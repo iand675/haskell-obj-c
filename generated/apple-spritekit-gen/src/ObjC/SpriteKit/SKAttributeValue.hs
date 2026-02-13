@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.SpriteKit.SKAttributeValue
   , init_
   , floatValue
   , setFloatValue
-  , valueWithFloatSelector
-  , initSelector
   , floatValueSelector
+  , initSelector
   , setFloatValueSelector
+  , valueWithFloatSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,40 +35,40 @@ valueWithFloat :: CFloat -> IO (Id SKAttributeValue)
 valueWithFloat value =
   do
     cls' <- getRequiredClass "SKAttributeValue"
-    sendClassMsg cls' (mkSelector "valueWithFloat:") (retPtr retVoid) [argCFloat value] >>= retainedObject . castPtr
+    sendClassMessage cls' valueWithFloatSelector value
 
 -- | @- init@
 init_ :: IsSKAttributeValue skAttributeValue => skAttributeValue -> IO (Id SKAttributeValue)
-init_ skAttributeValue  =
-    sendMsg skAttributeValue (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ skAttributeValue =
+  sendOwnedMessage skAttributeValue initSelector
 
 -- | @- floatValue@
 floatValue :: IsSKAttributeValue skAttributeValue => skAttributeValue -> IO CFloat
-floatValue skAttributeValue  =
-    sendMsg skAttributeValue (mkSelector "floatValue") retCFloat []
+floatValue skAttributeValue =
+  sendMessage skAttributeValue floatValueSelector
 
 -- | @- setFloatValue:@
 setFloatValue :: IsSKAttributeValue skAttributeValue => skAttributeValue -> CFloat -> IO ()
-setFloatValue skAttributeValue  value =
-    sendMsg skAttributeValue (mkSelector "setFloatValue:") retVoid [argCFloat value]
+setFloatValue skAttributeValue value =
+  sendMessage skAttributeValue setFloatValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @valueWithFloat:@
-valueWithFloatSelector :: Selector
+valueWithFloatSelector :: Selector '[CFloat] (Id SKAttributeValue)
 valueWithFloatSelector = mkSelector "valueWithFloat:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SKAttributeValue)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @floatValue@
-floatValueSelector :: Selector
+floatValueSelector :: Selector '[] CFloat
 floatValueSelector = mkSelector "floatValue"
 
 -- | @Selector@ for @setFloatValue:@
-setFloatValueSelector :: Selector
+setFloatValueSelector :: Selector '[CFloat] ()
 setFloatValueSelector = mkSelector "setFloatValue:"
 

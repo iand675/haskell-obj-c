@@ -102,7 +102,7 @@ cbHsType CbUInt   = "Int"
 cbHsType CbDouble = "Double"
 cbHsType CbFloat  = "Float"
 cbHsType CbVoid   = "()"
-cbHsType CbSel    = "Selector"
+cbHsType CbSel    = "Sel"
 cbHsType CbClass  = "Class"
 
 -- | C FFI type for the IMP wrapper.

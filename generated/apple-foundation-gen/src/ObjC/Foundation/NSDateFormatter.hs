@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -85,84 +86,84 @@ module ObjC.Foundation.NSDateFormatter
   , setGregorianStartDate
   , doesRelativeDateFormatting
   , setDoesRelativeDateFormatting
-  , getObjectValue_forString_range_errorSelector
-  , stringFromDateSelector
-  , dateFromStringSelector
-  , localizedStringFromDate_dateStyle_timeStyleSelector
-  , dateFormatFromTemplate_options_localeSelector
-  , setLocalizedDateFormatFromTemplateSelector
-  , initWithDateFormat_allowNaturalLanguageSelector
   , allowsNaturalLanguageSelector
-  , formattingContextSelector
-  , setFormattingContextSelector
-  , defaultFormatterBehaviorSelector
-  , setDefaultFormatterBehaviorSelector
-  , dateFormatSelector
-  , setDateFormatSelector
-  , dateStyleSelector
-  , setDateStyleSelector
-  , timeStyleSelector
-  , setTimeStyleSelector
-  , localeSelector
-  , setLocaleSelector
-  , generatesCalendarDatesSelector
-  , setGeneratesCalendarDatesSelector
-  , formatterBehaviorSelector
-  , setFormatterBehaviorSelector
-  , timeZoneSelector
-  , setTimeZoneSelector
-  , calendarSelector
-  , setCalendarSelector
-  , lenientSelector
-  , setLenientSelector
-  , twoDigitStartDateSelector
-  , setTwoDigitStartDateSelector
-  , defaultDateSelector
-  , setDefaultDateSelector
-  , eraSymbolsSelector
-  , setEraSymbolsSelector
-  , monthSymbolsSelector
-  , setMonthSymbolsSelector
-  , shortMonthSymbolsSelector
-  , setShortMonthSymbolsSelector
-  , weekdaySymbolsSelector
-  , setWeekdaySymbolsSelector
-  , shortWeekdaySymbolsSelector
-  , setShortWeekdaySymbolsSelector
   , amSymbolSelector
-  , setAMSymbolSelector
-  , pmSymbolSelector
-  , setPMSymbolSelector
-  , longEraSymbolsSelector
-  , setLongEraSymbolsSelector
-  , veryShortMonthSymbolsSelector
-  , setVeryShortMonthSymbolsSelector
-  , standaloneMonthSymbolsSelector
-  , setStandaloneMonthSymbolsSelector
-  , shortStandaloneMonthSymbolsSelector
-  , setShortStandaloneMonthSymbolsSelector
-  , veryShortStandaloneMonthSymbolsSelector
-  , setVeryShortStandaloneMonthSymbolsSelector
-  , veryShortWeekdaySymbolsSelector
-  , setVeryShortWeekdaySymbolsSelector
-  , standaloneWeekdaySymbolsSelector
-  , setStandaloneWeekdaySymbolsSelector
-  , shortStandaloneWeekdaySymbolsSelector
-  , setShortStandaloneWeekdaySymbolsSelector
-  , veryShortStandaloneWeekdaySymbolsSelector
-  , setVeryShortStandaloneWeekdaySymbolsSelector
-  , quarterSymbolsSelector
-  , setQuarterSymbolsSelector
-  , shortQuarterSymbolsSelector
-  , setShortQuarterSymbolsSelector
-  , standaloneQuarterSymbolsSelector
-  , setStandaloneQuarterSymbolsSelector
-  , shortStandaloneQuarterSymbolsSelector
-  , setShortStandaloneQuarterSymbolsSelector
-  , gregorianStartDateSelector
-  , setGregorianStartDateSelector
+  , calendarSelector
+  , dateFormatFromTemplate_options_localeSelector
+  , dateFormatSelector
+  , dateFromStringSelector
+  , dateStyleSelector
+  , defaultDateSelector
+  , defaultFormatterBehaviorSelector
   , doesRelativeDateFormattingSelector
+  , eraSymbolsSelector
+  , formatterBehaviorSelector
+  , formattingContextSelector
+  , generatesCalendarDatesSelector
+  , getObjectValue_forString_range_errorSelector
+  , gregorianStartDateSelector
+  , initWithDateFormat_allowNaturalLanguageSelector
+  , lenientSelector
+  , localeSelector
+  , localizedStringFromDate_dateStyle_timeStyleSelector
+  , longEraSymbolsSelector
+  , monthSymbolsSelector
+  , pmSymbolSelector
+  , quarterSymbolsSelector
+  , setAMSymbolSelector
+  , setCalendarSelector
+  , setDateFormatSelector
+  , setDateStyleSelector
+  , setDefaultDateSelector
+  , setDefaultFormatterBehaviorSelector
   , setDoesRelativeDateFormattingSelector
+  , setEraSymbolsSelector
+  , setFormatterBehaviorSelector
+  , setFormattingContextSelector
+  , setGeneratesCalendarDatesSelector
+  , setGregorianStartDateSelector
+  , setLenientSelector
+  , setLocaleSelector
+  , setLocalizedDateFormatFromTemplateSelector
+  , setLongEraSymbolsSelector
+  , setMonthSymbolsSelector
+  , setPMSymbolSelector
+  , setQuarterSymbolsSelector
+  , setShortMonthSymbolsSelector
+  , setShortQuarterSymbolsSelector
+  , setShortStandaloneMonthSymbolsSelector
+  , setShortStandaloneQuarterSymbolsSelector
+  , setShortStandaloneWeekdaySymbolsSelector
+  , setShortWeekdaySymbolsSelector
+  , setStandaloneMonthSymbolsSelector
+  , setStandaloneQuarterSymbolsSelector
+  , setStandaloneWeekdaySymbolsSelector
+  , setTimeStyleSelector
+  , setTimeZoneSelector
+  , setTwoDigitStartDateSelector
+  , setVeryShortMonthSymbolsSelector
+  , setVeryShortStandaloneMonthSymbolsSelector
+  , setVeryShortStandaloneWeekdaySymbolsSelector
+  , setVeryShortWeekdaySymbolsSelector
+  , setWeekdaySymbolsSelector
+  , shortMonthSymbolsSelector
+  , shortQuarterSymbolsSelector
+  , shortStandaloneMonthSymbolsSelector
+  , shortStandaloneQuarterSymbolsSelector
+  , shortStandaloneWeekdaySymbolsSelector
+  , shortWeekdaySymbolsSelector
+  , standaloneMonthSymbolsSelector
+  , standaloneQuarterSymbolsSelector
+  , standaloneWeekdaySymbolsSelector
+  , stringFromDateSelector
+  , timeStyleSelector
+  , timeZoneSelector
+  , twoDigitStartDateSelector
+  , veryShortMonthSymbolsSelector
+  , veryShortStandaloneMonthSymbolsSelector
+  , veryShortStandaloneWeekdaySymbolsSelector
+  , veryShortWeekdaySymbolsSelector
+  , weekdaySymbolsSelector
 
   -- * Enum types
   , NSDateFormatterBehavior(NSDateFormatterBehavior)
@@ -185,15 +186,11 @@ module ObjC.Foundation.NSDateFormatter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -203,751 +200,715 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- getObjectValue:forString:range:error:@
 getObjectValue_forString_range_error :: (IsNSDateFormatter nsDateFormatter, IsNSString string, IsNSError error_) => nsDateFormatter -> Ptr RawId -> string -> Ptr NSRange -> error_ -> IO Bool
-getObjectValue_forString_range_error nsDateFormatter  obj_ string rangep error_ =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateFormatter (mkSelector "getObjectValue:forString:range:error:") retCULong [argPtr obj_, argPtr (castPtr raw_string :: Ptr ()), argPtr rangep, argPtr (castPtr raw_error_ :: Ptr ())]
+getObjectValue_forString_range_error nsDateFormatter obj_ string rangep error_ =
+  sendMessage nsDateFormatter getObjectValue_forString_range_errorSelector obj_ (toNSString string) rangep (toNSError error_)
 
 -- | @- stringFromDate:@
 stringFromDate :: (IsNSDateFormatter nsDateFormatter, IsNSDate date) => nsDateFormatter -> date -> IO (Id NSString)
-stringFromDate nsDateFormatter  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg nsDateFormatter (mkSelector "stringFromDate:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+stringFromDate nsDateFormatter date =
+  sendMessage nsDateFormatter stringFromDateSelector (toNSDate date)
 
 -- | @- dateFromString:@
 dateFromString :: (IsNSDateFormatter nsDateFormatter, IsNSString string) => nsDateFormatter -> string -> IO (Id NSDate)
-dateFromString nsDateFormatter  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsDateFormatter (mkSelector "dateFromString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+dateFromString nsDateFormatter string =
+  sendMessage nsDateFormatter dateFromStringSelector (toNSString string)
 
 -- | @+ localizedStringFromDate:dateStyle:timeStyle:@
 localizedStringFromDate_dateStyle_timeStyle :: IsNSDate date => date -> NSDateFormatterStyle -> NSDateFormatterStyle -> IO (Id NSString)
 localizedStringFromDate_dateStyle_timeStyle date dstyle tstyle =
   do
     cls' <- getRequiredClass "NSDateFormatter"
-    withObjCPtr date $ \raw_date ->
-      sendClassMsg cls' (mkSelector "localizedStringFromDate:dateStyle:timeStyle:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ()), argCULong (coerce dstyle), argCULong (coerce tstyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedStringFromDate_dateStyle_timeStyleSelector (toNSDate date) dstyle tstyle
 
 -- | @+ dateFormatFromTemplate:options:locale:@
 dateFormatFromTemplate_options_locale :: (IsNSString tmplate, IsNSLocale locale) => tmplate -> CULong -> locale -> IO (Id NSString)
 dateFormatFromTemplate_options_locale tmplate opts locale =
   do
     cls' <- getRequiredClass "NSDateFormatter"
-    withObjCPtr tmplate $ \raw_tmplate ->
-      withObjCPtr locale $ \raw_locale ->
-        sendClassMsg cls' (mkSelector "dateFormatFromTemplate:options:locale:") (retPtr retVoid) [argPtr (castPtr raw_tmplate :: Ptr ()), argCULong opts, argPtr (castPtr raw_locale :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dateFormatFromTemplate_options_localeSelector (toNSString tmplate) opts (toNSLocale locale)
 
 -- | @- setLocalizedDateFormatFromTemplate:@
 setLocalizedDateFormatFromTemplate :: (IsNSDateFormatter nsDateFormatter, IsNSString dateFormatTemplate) => nsDateFormatter -> dateFormatTemplate -> IO ()
-setLocalizedDateFormatFromTemplate nsDateFormatter  dateFormatTemplate =
-  withObjCPtr dateFormatTemplate $ \raw_dateFormatTemplate ->
-      sendMsg nsDateFormatter (mkSelector "setLocalizedDateFormatFromTemplate:") retVoid [argPtr (castPtr raw_dateFormatTemplate :: Ptr ())]
+setLocalizedDateFormatFromTemplate nsDateFormatter dateFormatTemplate =
+  sendMessage nsDateFormatter setLocalizedDateFormatFromTemplateSelector (toNSString dateFormatTemplate)
 
 -- | @- initWithDateFormat:allowNaturalLanguage:@
 initWithDateFormat_allowNaturalLanguage :: (IsNSDateFormatter nsDateFormatter, IsNSString format) => nsDateFormatter -> format -> Bool -> IO RawId
-initWithDateFormat_allowNaturalLanguage nsDateFormatter  format flag =
-  withObjCPtr format $ \raw_format ->
-      fmap (RawId . castPtr) $ sendMsg nsDateFormatter (mkSelector "initWithDateFormat:allowNaturalLanguage:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argCULong (if flag then 1 else 0)]
+initWithDateFormat_allowNaturalLanguage nsDateFormatter format flag =
+  sendOwnedMessage nsDateFormatter initWithDateFormat_allowNaturalLanguageSelector (toNSString format) flag
 
 -- | @- allowsNaturalLanguage@
 allowsNaturalLanguage :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO Bool
-allowsNaturalLanguage nsDateFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateFormatter (mkSelector "allowsNaturalLanguage") retCULong []
+allowsNaturalLanguage nsDateFormatter =
+  sendMessage nsDateFormatter allowsNaturalLanguageSelector
 
 -- | @- formattingContext@
 formattingContext :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO NSFormattingContext
-formattingContext nsDateFormatter  =
-    fmap (coerce :: CLong -> NSFormattingContext) $ sendMsg nsDateFormatter (mkSelector "formattingContext") retCLong []
+formattingContext nsDateFormatter =
+  sendMessage nsDateFormatter formattingContextSelector
 
 -- | @- setFormattingContext:@
 setFormattingContext :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> NSFormattingContext -> IO ()
-setFormattingContext nsDateFormatter  value =
-    sendMsg nsDateFormatter (mkSelector "setFormattingContext:") retVoid [argCLong (coerce value)]
+setFormattingContext nsDateFormatter value =
+  sendMessage nsDateFormatter setFormattingContextSelector value
 
 -- | @+ defaultFormatterBehavior@
 defaultFormatterBehavior :: IO NSDateFormatterBehavior
 defaultFormatterBehavior  =
   do
     cls' <- getRequiredClass "NSDateFormatter"
-    fmap (coerce :: CULong -> NSDateFormatterBehavior) $ sendClassMsg cls' (mkSelector "defaultFormatterBehavior") retCULong []
+    sendClassMessage cls' defaultFormatterBehaviorSelector
 
 -- | @+ setDefaultFormatterBehavior:@
 setDefaultFormatterBehavior :: NSDateFormatterBehavior -> IO ()
 setDefaultFormatterBehavior value =
   do
     cls' <- getRequiredClass "NSDateFormatter"
-    sendClassMsg cls' (mkSelector "setDefaultFormatterBehavior:") retVoid [argCULong (coerce value)]
+    sendClassMessage cls' setDefaultFormatterBehaviorSelector value
 
 -- | @- dateFormat@
 dateFormat :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSString)
-dateFormat nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "dateFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+dateFormat nsDateFormatter =
+  sendMessage nsDateFormatter dateFormatSelector
 
 -- | @- setDateFormat:@
 setDateFormat :: (IsNSDateFormatter nsDateFormatter, IsNSString value) => nsDateFormatter -> value -> IO ()
-setDateFormat nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setDateFormat:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDateFormat nsDateFormatter value =
+  sendMessage nsDateFormatter setDateFormatSelector (toNSString value)
 
 -- | @- dateStyle@
 dateStyle :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO NSDateFormatterStyle
-dateStyle nsDateFormatter  =
-    fmap (coerce :: CULong -> NSDateFormatterStyle) $ sendMsg nsDateFormatter (mkSelector "dateStyle") retCULong []
+dateStyle nsDateFormatter =
+  sendMessage nsDateFormatter dateStyleSelector
 
 -- | @- setDateStyle:@
 setDateStyle :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> NSDateFormatterStyle -> IO ()
-setDateStyle nsDateFormatter  value =
-    sendMsg nsDateFormatter (mkSelector "setDateStyle:") retVoid [argCULong (coerce value)]
+setDateStyle nsDateFormatter value =
+  sendMessage nsDateFormatter setDateStyleSelector value
 
 -- | @- timeStyle@
 timeStyle :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO NSDateFormatterStyle
-timeStyle nsDateFormatter  =
-    fmap (coerce :: CULong -> NSDateFormatterStyle) $ sendMsg nsDateFormatter (mkSelector "timeStyle") retCULong []
+timeStyle nsDateFormatter =
+  sendMessage nsDateFormatter timeStyleSelector
 
 -- | @- setTimeStyle:@
 setTimeStyle :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> NSDateFormatterStyle -> IO ()
-setTimeStyle nsDateFormatter  value =
-    sendMsg nsDateFormatter (mkSelector "setTimeStyle:") retVoid [argCULong (coerce value)]
+setTimeStyle nsDateFormatter value =
+  sendMessage nsDateFormatter setTimeStyleSelector value
 
 -- | @- locale@
 locale :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSLocale)
-locale nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale nsDateFormatter =
+  sendMessage nsDateFormatter localeSelector
 
 -- | @- setLocale:@
 setLocale :: (IsNSDateFormatter nsDateFormatter, IsNSLocale value) => nsDateFormatter -> value -> IO ()
-setLocale nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale nsDateFormatter value =
+  sendMessage nsDateFormatter setLocaleSelector (toNSLocale value)
 
 -- | @- generatesCalendarDates@
 generatesCalendarDates :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO Bool
-generatesCalendarDates nsDateFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateFormatter (mkSelector "generatesCalendarDates") retCULong []
+generatesCalendarDates nsDateFormatter =
+  sendMessage nsDateFormatter generatesCalendarDatesSelector
 
 -- | @- setGeneratesCalendarDates:@
 setGeneratesCalendarDates :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> Bool -> IO ()
-setGeneratesCalendarDates nsDateFormatter  value =
-    sendMsg nsDateFormatter (mkSelector "setGeneratesCalendarDates:") retVoid [argCULong (if value then 1 else 0)]
+setGeneratesCalendarDates nsDateFormatter value =
+  sendMessage nsDateFormatter setGeneratesCalendarDatesSelector value
 
 -- | @- formatterBehavior@
 formatterBehavior :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO NSDateFormatterBehavior
-formatterBehavior nsDateFormatter  =
-    fmap (coerce :: CULong -> NSDateFormatterBehavior) $ sendMsg nsDateFormatter (mkSelector "formatterBehavior") retCULong []
+formatterBehavior nsDateFormatter =
+  sendMessage nsDateFormatter formatterBehaviorSelector
 
 -- | @- setFormatterBehavior:@
 setFormatterBehavior :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> NSDateFormatterBehavior -> IO ()
-setFormatterBehavior nsDateFormatter  value =
-    sendMsg nsDateFormatter (mkSelector "setFormatterBehavior:") retVoid [argCULong (coerce value)]
+setFormatterBehavior nsDateFormatter value =
+  sendMessage nsDateFormatter setFormatterBehaviorSelector value
 
 -- | @- timeZone@
 timeZone :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSTimeZone)
-timeZone nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "timeZone") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeZone nsDateFormatter =
+  sendMessage nsDateFormatter timeZoneSelector
 
 -- | @- setTimeZone:@
 setTimeZone :: (IsNSDateFormatter nsDateFormatter, IsNSTimeZone value) => nsDateFormatter -> value -> IO ()
-setTimeZone nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setTimeZone:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeZone nsDateFormatter value =
+  sendMessage nsDateFormatter setTimeZoneSelector (toNSTimeZone value)
 
 -- | @- calendar@
 calendar :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSCalendar)
-calendar nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "calendar") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendar nsDateFormatter =
+  sendMessage nsDateFormatter calendarSelector
 
 -- | @- setCalendar:@
 setCalendar :: (IsNSDateFormatter nsDateFormatter, IsNSCalendar value) => nsDateFormatter -> value -> IO ()
-setCalendar nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setCalendar:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCalendar nsDateFormatter value =
+  sendMessage nsDateFormatter setCalendarSelector (toNSCalendar value)
 
 -- | @- lenient@
 lenient :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO Bool
-lenient nsDateFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateFormatter (mkSelector "lenient") retCULong []
+lenient nsDateFormatter =
+  sendMessage nsDateFormatter lenientSelector
 
 -- | @- setLenient:@
 setLenient :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> Bool -> IO ()
-setLenient nsDateFormatter  value =
-    sendMsg nsDateFormatter (mkSelector "setLenient:") retVoid [argCULong (if value then 1 else 0)]
+setLenient nsDateFormatter value =
+  sendMessage nsDateFormatter setLenientSelector value
 
 -- | @- twoDigitStartDate@
 twoDigitStartDate :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSDate)
-twoDigitStartDate nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "twoDigitStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+twoDigitStartDate nsDateFormatter =
+  sendMessage nsDateFormatter twoDigitStartDateSelector
 
 -- | @- setTwoDigitStartDate:@
 setTwoDigitStartDate :: (IsNSDateFormatter nsDateFormatter, IsNSDate value) => nsDateFormatter -> value -> IO ()
-setTwoDigitStartDate nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setTwoDigitStartDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTwoDigitStartDate nsDateFormatter value =
+  sendMessage nsDateFormatter setTwoDigitStartDateSelector (toNSDate value)
 
 -- | @- defaultDate@
 defaultDate :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSDate)
-defaultDate nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "defaultDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultDate nsDateFormatter =
+  sendMessage nsDateFormatter defaultDateSelector
 
 -- | @- setDefaultDate:@
 setDefaultDate :: (IsNSDateFormatter nsDateFormatter, IsNSDate value) => nsDateFormatter -> value -> IO ()
-setDefaultDate nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setDefaultDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDefaultDate nsDateFormatter value =
+  sendMessage nsDateFormatter setDefaultDateSelector (toNSDate value)
 
 -- | @- eraSymbols@
 eraSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-eraSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "eraSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+eraSymbols nsDateFormatter =
+  sendMessage nsDateFormatter eraSymbolsSelector
 
 -- | @- setEraSymbols:@
 setEraSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setEraSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setEraSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEraSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setEraSymbolsSelector (toNSArray value)
 
 -- | @- monthSymbols@
 monthSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-monthSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "monthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+monthSymbols nsDateFormatter =
+  sendMessage nsDateFormatter monthSymbolsSelector
 
 -- | @- setMonthSymbols:@
 setMonthSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setMonthSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setMonthSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMonthSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setMonthSymbolsSelector (toNSArray value)
 
 -- | @- shortMonthSymbols@
 shortMonthSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-shortMonthSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "shortMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortMonthSymbols nsDateFormatter =
+  sendMessage nsDateFormatter shortMonthSymbolsSelector
 
 -- | @- setShortMonthSymbols:@
 setShortMonthSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setShortMonthSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setShortMonthSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShortMonthSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setShortMonthSymbolsSelector (toNSArray value)
 
 -- | @- weekdaySymbols@
 weekdaySymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-weekdaySymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "weekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+weekdaySymbols nsDateFormatter =
+  sendMessage nsDateFormatter weekdaySymbolsSelector
 
 -- | @- setWeekdaySymbols:@
 setWeekdaySymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setWeekdaySymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setWeekdaySymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWeekdaySymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setWeekdaySymbolsSelector (toNSArray value)
 
 -- | @- shortWeekdaySymbols@
 shortWeekdaySymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-shortWeekdaySymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "shortWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortWeekdaySymbols nsDateFormatter =
+  sendMessage nsDateFormatter shortWeekdaySymbolsSelector
 
 -- | @- setShortWeekdaySymbols:@
 setShortWeekdaySymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setShortWeekdaySymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setShortWeekdaySymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShortWeekdaySymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setShortWeekdaySymbolsSelector (toNSArray value)
 
 -- | @- AMSymbol@
 amSymbol :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSString)
-amSymbol nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "AMSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+amSymbol nsDateFormatter =
+  sendMessage nsDateFormatter amSymbolSelector
 
 -- | @- setAMSymbol:@
 setAMSymbol :: (IsNSDateFormatter nsDateFormatter, IsNSString value) => nsDateFormatter -> value -> IO ()
-setAMSymbol nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setAMSymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAMSymbol nsDateFormatter value =
+  sendMessage nsDateFormatter setAMSymbolSelector (toNSString value)
 
 -- | @- PMSymbol@
 pmSymbol :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSString)
-pmSymbol nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "PMSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+pmSymbol nsDateFormatter =
+  sendMessage nsDateFormatter pmSymbolSelector
 
 -- | @- setPMSymbol:@
 setPMSymbol :: (IsNSDateFormatter nsDateFormatter, IsNSString value) => nsDateFormatter -> value -> IO ()
-setPMSymbol nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setPMSymbol:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPMSymbol nsDateFormatter value =
+  sendMessage nsDateFormatter setPMSymbolSelector (toNSString value)
 
 -- | @- longEraSymbols@
 longEraSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-longEraSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "longEraSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+longEraSymbols nsDateFormatter =
+  sendMessage nsDateFormatter longEraSymbolsSelector
 
 -- | @- setLongEraSymbols:@
 setLongEraSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setLongEraSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setLongEraSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLongEraSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setLongEraSymbolsSelector (toNSArray value)
 
 -- | @- veryShortMonthSymbols@
 veryShortMonthSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-veryShortMonthSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "veryShortMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+veryShortMonthSymbols nsDateFormatter =
+  sendMessage nsDateFormatter veryShortMonthSymbolsSelector
 
 -- | @- setVeryShortMonthSymbols:@
 setVeryShortMonthSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setVeryShortMonthSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setVeryShortMonthSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVeryShortMonthSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setVeryShortMonthSymbolsSelector (toNSArray value)
 
 -- | @- standaloneMonthSymbols@
 standaloneMonthSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-standaloneMonthSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "standaloneMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+standaloneMonthSymbols nsDateFormatter =
+  sendMessage nsDateFormatter standaloneMonthSymbolsSelector
 
 -- | @- setStandaloneMonthSymbols:@
 setStandaloneMonthSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setStandaloneMonthSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setStandaloneMonthSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStandaloneMonthSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setStandaloneMonthSymbolsSelector (toNSArray value)
 
 -- | @- shortStandaloneMonthSymbols@
 shortStandaloneMonthSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-shortStandaloneMonthSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "shortStandaloneMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortStandaloneMonthSymbols nsDateFormatter =
+  sendMessage nsDateFormatter shortStandaloneMonthSymbolsSelector
 
 -- | @- setShortStandaloneMonthSymbols:@
 setShortStandaloneMonthSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setShortStandaloneMonthSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setShortStandaloneMonthSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShortStandaloneMonthSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setShortStandaloneMonthSymbolsSelector (toNSArray value)
 
 -- | @- veryShortStandaloneMonthSymbols@
 veryShortStandaloneMonthSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-veryShortStandaloneMonthSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "veryShortStandaloneMonthSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+veryShortStandaloneMonthSymbols nsDateFormatter =
+  sendMessage nsDateFormatter veryShortStandaloneMonthSymbolsSelector
 
 -- | @- setVeryShortStandaloneMonthSymbols:@
 setVeryShortStandaloneMonthSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setVeryShortStandaloneMonthSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setVeryShortStandaloneMonthSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVeryShortStandaloneMonthSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setVeryShortStandaloneMonthSymbolsSelector (toNSArray value)
 
 -- | @- veryShortWeekdaySymbols@
 veryShortWeekdaySymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-veryShortWeekdaySymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "veryShortWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+veryShortWeekdaySymbols nsDateFormatter =
+  sendMessage nsDateFormatter veryShortWeekdaySymbolsSelector
 
 -- | @- setVeryShortWeekdaySymbols:@
 setVeryShortWeekdaySymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setVeryShortWeekdaySymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setVeryShortWeekdaySymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVeryShortWeekdaySymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setVeryShortWeekdaySymbolsSelector (toNSArray value)
 
 -- | @- standaloneWeekdaySymbols@
 standaloneWeekdaySymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-standaloneWeekdaySymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "standaloneWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+standaloneWeekdaySymbols nsDateFormatter =
+  sendMessage nsDateFormatter standaloneWeekdaySymbolsSelector
 
 -- | @- setStandaloneWeekdaySymbols:@
 setStandaloneWeekdaySymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setStandaloneWeekdaySymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setStandaloneWeekdaySymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStandaloneWeekdaySymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setStandaloneWeekdaySymbolsSelector (toNSArray value)
 
 -- | @- shortStandaloneWeekdaySymbols@
 shortStandaloneWeekdaySymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-shortStandaloneWeekdaySymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "shortStandaloneWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortStandaloneWeekdaySymbols nsDateFormatter =
+  sendMessage nsDateFormatter shortStandaloneWeekdaySymbolsSelector
 
 -- | @- setShortStandaloneWeekdaySymbols:@
 setShortStandaloneWeekdaySymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setShortStandaloneWeekdaySymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setShortStandaloneWeekdaySymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShortStandaloneWeekdaySymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setShortStandaloneWeekdaySymbolsSelector (toNSArray value)
 
 -- | @- veryShortStandaloneWeekdaySymbols@
 veryShortStandaloneWeekdaySymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-veryShortStandaloneWeekdaySymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "veryShortStandaloneWeekdaySymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+veryShortStandaloneWeekdaySymbols nsDateFormatter =
+  sendMessage nsDateFormatter veryShortStandaloneWeekdaySymbolsSelector
 
 -- | @- setVeryShortStandaloneWeekdaySymbols:@
 setVeryShortStandaloneWeekdaySymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setVeryShortStandaloneWeekdaySymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setVeryShortStandaloneWeekdaySymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVeryShortStandaloneWeekdaySymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setVeryShortStandaloneWeekdaySymbolsSelector (toNSArray value)
 
 -- | @- quarterSymbols@
 quarterSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-quarterSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "quarterSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+quarterSymbols nsDateFormatter =
+  sendMessage nsDateFormatter quarterSymbolsSelector
 
 -- | @- setQuarterSymbols:@
 setQuarterSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setQuarterSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setQuarterSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setQuarterSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setQuarterSymbolsSelector (toNSArray value)
 
 -- | @- shortQuarterSymbols@
 shortQuarterSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-shortQuarterSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "shortQuarterSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortQuarterSymbols nsDateFormatter =
+  sendMessage nsDateFormatter shortQuarterSymbolsSelector
 
 -- | @- setShortQuarterSymbols:@
 setShortQuarterSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setShortQuarterSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setShortQuarterSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShortQuarterSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setShortQuarterSymbolsSelector (toNSArray value)
 
 -- | @- standaloneQuarterSymbols@
 standaloneQuarterSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-standaloneQuarterSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "standaloneQuarterSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+standaloneQuarterSymbols nsDateFormatter =
+  sendMessage nsDateFormatter standaloneQuarterSymbolsSelector
 
 -- | @- setStandaloneQuarterSymbols:@
 setStandaloneQuarterSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setStandaloneQuarterSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setStandaloneQuarterSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStandaloneQuarterSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setStandaloneQuarterSymbolsSelector (toNSArray value)
 
 -- | @- shortStandaloneQuarterSymbols@
 shortStandaloneQuarterSymbols :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSArray)
-shortStandaloneQuarterSymbols nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "shortStandaloneQuarterSymbols") (retPtr retVoid) [] >>= retainedObject . castPtr
+shortStandaloneQuarterSymbols nsDateFormatter =
+  sendMessage nsDateFormatter shortStandaloneQuarterSymbolsSelector
 
 -- | @- setShortStandaloneQuarterSymbols:@
 setShortStandaloneQuarterSymbols :: (IsNSDateFormatter nsDateFormatter, IsNSArray value) => nsDateFormatter -> value -> IO ()
-setShortStandaloneQuarterSymbols nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setShortStandaloneQuarterSymbols:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShortStandaloneQuarterSymbols nsDateFormatter value =
+  sendMessage nsDateFormatter setShortStandaloneQuarterSymbolsSelector (toNSArray value)
 
 -- | @- gregorianStartDate@
 gregorianStartDate :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO (Id NSDate)
-gregorianStartDate nsDateFormatter  =
-    sendMsg nsDateFormatter (mkSelector "gregorianStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+gregorianStartDate nsDateFormatter =
+  sendMessage nsDateFormatter gregorianStartDateSelector
 
 -- | @- setGregorianStartDate:@
 setGregorianStartDate :: (IsNSDateFormatter nsDateFormatter, IsNSDate value) => nsDateFormatter -> value -> IO ()
-setGregorianStartDate nsDateFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDateFormatter (mkSelector "setGregorianStartDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGregorianStartDate nsDateFormatter value =
+  sendMessage nsDateFormatter setGregorianStartDateSelector (toNSDate value)
 
 -- | @- doesRelativeDateFormatting@
 doesRelativeDateFormatting :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> IO Bool
-doesRelativeDateFormatting nsDateFormatter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDateFormatter (mkSelector "doesRelativeDateFormatting") retCULong []
+doesRelativeDateFormatting nsDateFormatter =
+  sendMessage nsDateFormatter doesRelativeDateFormattingSelector
 
 -- | @- setDoesRelativeDateFormatting:@
 setDoesRelativeDateFormatting :: IsNSDateFormatter nsDateFormatter => nsDateFormatter -> Bool -> IO ()
-setDoesRelativeDateFormatting nsDateFormatter  value =
-    sendMsg nsDateFormatter (mkSelector "setDoesRelativeDateFormatting:") retVoid [argCULong (if value then 1 else 0)]
+setDoesRelativeDateFormatting nsDateFormatter value =
+  sendMessage nsDateFormatter setDoesRelativeDateFormattingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getObjectValue:forString:range:error:@
-getObjectValue_forString_range_errorSelector :: Selector
+getObjectValue_forString_range_errorSelector :: Selector '[Ptr RawId, Id NSString, Ptr NSRange, Id NSError] Bool
 getObjectValue_forString_range_errorSelector = mkSelector "getObjectValue:forString:range:error:"
 
 -- | @Selector@ for @stringFromDate:@
-stringFromDateSelector :: Selector
+stringFromDateSelector :: Selector '[Id NSDate] (Id NSString)
 stringFromDateSelector = mkSelector "stringFromDate:"
 
 -- | @Selector@ for @dateFromString:@
-dateFromStringSelector :: Selector
+dateFromStringSelector :: Selector '[Id NSString] (Id NSDate)
 dateFromStringSelector = mkSelector "dateFromString:"
 
 -- | @Selector@ for @localizedStringFromDate:dateStyle:timeStyle:@
-localizedStringFromDate_dateStyle_timeStyleSelector :: Selector
+localizedStringFromDate_dateStyle_timeStyleSelector :: Selector '[Id NSDate, NSDateFormatterStyle, NSDateFormatterStyle] (Id NSString)
 localizedStringFromDate_dateStyle_timeStyleSelector = mkSelector "localizedStringFromDate:dateStyle:timeStyle:"
 
 -- | @Selector@ for @dateFormatFromTemplate:options:locale:@
-dateFormatFromTemplate_options_localeSelector :: Selector
+dateFormatFromTemplate_options_localeSelector :: Selector '[Id NSString, CULong, Id NSLocale] (Id NSString)
 dateFormatFromTemplate_options_localeSelector = mkSelector "dateFormatFromTemplate:options:locale:"
 
 -- | @Selector@ for @setLocalizedDateFormatFromTemplate:@
-setLocalizedDateFormatFromTemplateSelector :: Selector
+setLocalizedDateFormatFromTemplateSelector :: Selector '[Id NSString] ()
 setLocalizedDateFormatFromTemplateSelector = mkSelector "setLocalizedDateFormatFromTemplate:"
 
 -- | @Selector@ for @initWithDateFormat:allowNaturalLanguage:@
-initWithDateFormat_allowNaturalLanguageSelector :: Selector
+initWithDateFormat_allowNaturalLanguageSelector :: Selector '[Id NSString, Bool] RawId
 initWithDateFormat_allowNaturalLanguageSelector = mkSelector "initWithDateFormat:allowNaturalLanguage:"
 
 -- | @Selector@ for @allowsNaturalLanguage@
-allowsNaturalLanguageSelector :: Selector
+allowsNaturalLanguageSelector :: Selector '[] Bool
 allowsNaturalLanguageSelector = mkSelector "allowsNaturalLanguage"
 
 -- | @Selector@ for @formattingContext@
-formattingContextSelector :: Selector
+formattingContextSelector :: Selector '[] NSFormattingContext
 formattingContextSelector = mkSelector "formattingContext"
 
 -- | @Selector@ for @setFormattingContext:@
-setFormattingContextSelector :: Selector
+setFormattingContextSelector :: Selector '[NSFormattingContext] ()
 setFormattingContextSelector = mkSelector "setFormattingContext:"
 
 -- | @Selector@ for @defaultFormatterBehavior@
-defaultFormatterBehaviorSelector :: Selector
+defaultFormatterBehaviorSelector :: Selector '[] NSDateFormatterBehavior
 defaultFormatterBehaviorSelector = mkSelector "defaultFormatterBehavior"
 
 -- | @Selector@ for @setDefaultFormatterBehavior:@
-setDefaultFormatterBehaviorSelector :: Selector
+setDefaultFormatterBehaviorSelector :: Selector '[NSDateFormatterBehavior] ()
 setDefaultFormatterBehaviorSelector = mkSelector "setDefaultFormatterBehavior:"
 
 -- | @Selector@ for @dateFormat@
-dateFormatSelector :: Selector
+dateFormatSelector :: Selector '[] (Id NSString)
 dateFormatSelector = mkSelector "dateFormat"
 
 -- | @Selector@ for @setDateFormat:@
-setDateFormatSelector :: Selector
+setDateFormatSelector :: Selector '[Id NSString] ()
 setDateFormatSelector = mkSelector "setDateFormat:"
 
 -- | @Selector@ for @dateStyle@
-dateStyleSelector :: Selector
+dateStyleSelector :: Selector '[] NSDateFormatterStyle
 dateStyleSelector = mkSelector "dateStyle"
 
 -- | @Selector@ for @setDateStyle:@
-setDateStyleSelector :: Selector
+setDateStyleSelector :: Selector '[NSDateFormatterStyle] ()
 setDateStyleSelector = mkSelector "setDateStyle:"
 
 -- | @Selector@ for @timeStyle@
-timeStyleSelector :: Selector
+timeStyleSelector :: Selector '[] NSDateFormatterStyle
 timeStyleSelector = mkSelector "timeStyle"
 
 -- | @Selector@ for @setTimeStyle:@
-setTimeStyleSelector :: Selector
+setTimeStyleSelector :: Selector '[NSDateFormatterStyle] ()
 setTimeStyleSelector = mkSelector "setTimeStyle:"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 
 -- | @Selector@ for @generatesCalendarDates@
-generatesCalendarDatesSelector :: Selector
+generatesCalendarDatesSelector :: Selector '[] Bool
 generatesCalendarDatesSelector = mkSelector "generatesCalendarDates"
 
 -- | @Selector@ for @setGeneratesCalendarDates:@
-setGeneratesCalendarDatesSelector :: Selector
+setGeneratesCalendarDatesSelector :: Selector '[Bool] ()
 setGeneratesCalendarDatesSelector = mkSelector "setGeneratesCalendarDates:"
 
 -- | @Selector@ for @formatterBehavior@
-formatterBehaviorSelector :: Selector
+formatterBehaviorSelector :: Selector '[] NSDateFormatterBehavior
 formatterBehaviorSelector = mkSelector "formatterBehavior"
 
 -- | @Selector@ for @setFormatterBehavior:@
-setFormatterBehaviorSelector :: Selector
+setFormatterBehaviorSelector :: Selector '[NSDateFormatterBehavior] ()
 setFormatterBehaviorSelector = mkSelector "setFormatterBehavior:"
 
 -- | @Selector@ for @timeZone@
-timeZoneSelector :: Selector
+timeZoneSelector :: Selector '[] (Id NSTimeZone)
 timeZoneSelector = mkSelector "timeZone"
 
 -- | @Selector@ for @setTimeZone:@
-setTimeZoneSelector :: Selector
+setTimeZoneSelector :: Selector '[Id NSTimeZone] ()
 setTimeZoneSelector = mkSelector "setTimeZone:"
 
 -- | @Selector@ for @calendar@
-calendarSelector :: Selector
+calendarSelector :: Selector '[] (Id NSCalendar)
 calendarSelector = mkSelector "calendar"
 
 -- | @Selector@ for @setCalendar:@
-setCalendarSelector :: Selector
+setCalendarSelector :: Selector '[Id NSCalendar] ()
 setCalendarSelector = mkSelector "setCalendar:"
 
 -- | @Selector@ for @lenient@
-lenientSelector :: Selector
+lenientSelector :: Selector '[] Bool
 lenientSelector = mkSelector "lenient"
 
 -- | @Selector@ for @setLenient:@
-setLenientSelector :: Selector
+setLenientSelector :: Selector '[Bool] ()
 setLenientSelector = mkSelector "setLenient:"
 
 -- | @Selector@ for @twoDigitStartDate@
-twoDigitStartDateSelector :: Selector
+twoDigitStartDateSelector :: Selector '[] (Id NSDate)
 twoDigitStartDateSelector = mkSelector "twoDigitStartDate"
 
 -- | @Selector@ for @setTwoDigitStartDate:@
-setTwoDigitStartDateSelector :: Selector
+setTwoDigitStartDateSelector :: Selector '[Id NSDate] ()
 setTwoDigitStartDateSelector = mkSelector "setTwoDigitStartDate:"
 
 -- | @Selector@ for @defaultDate@
-defaultDateSelector :: Selector
+defaultDateSelector :: Selector '[] (Id NSDate)
 defaultDateSelector = mkSelector "defaultDate"
 
 -- | @Selector@ for @setDefaultDate:@
-setDefaultDateSelector :: Selector
+setDefaultDateSelector :: Selector '[Id NSDate] ()
 setDefaultDateSelector = mkSelector "setDefaultDate:"
 
 -- | @Selector@ for @eraSymbols@
-eraSymbolsSelector :: Selector
+eraSymbolsSelector :: Selector '[] (Id NSArray)
 eraSymbolsSelector = mkSelector "eraSymbols"
 
 -- | @Selector@ for @setEraSymbols:@
-setEraSymbolsSelector :: Selector
+setEraSymbolsSelector :: Selector '[Id NSArray] ()
 setEraSymbolsSelector = mkSelector "setEraSymbols:"
 
 -- | @Selector@ for @monthSymbols@
-monthSymbolsSelector :: Selector
+monthSymbolsSelector :: Selector '[] (Id NSArray)
 monthSymbolsSelector = mkSelector "monthSymbols"
 
 -- | @Selector@ for @setMonthSymbols:@
-setMonthSymbolsSelector :: Selector
+setMonthSymbolsSelector :: Selector '[Id NSArray] ()
 setMonthSymbolsSelector = mkSelector "setMonthSymbols:"
 
 -- | @Selector@ for @shortMonthSymbols@
-shortMonthSymbolsSelector :: Selector
+shortMonthSymbolsSelector :: Selector '[] (Id NSArray)
 shortMonthSymbolsSelector = mkSelector "shortMonthSymbols"
 
 -- | @Selector@ for @setShortMonthSymbols:@
-setShortMonthSymbolsSelector :: Selector
+setShortMonthSymbolsSelector :: Selector '[Id NSArray] ()
 setShortMonthSymbolsSelector = mkSelector "setShortMonthSymbols:"
 
 -- | @Selector@ for @weekdaySymbols@
-weekdaySymbolsSelector :: Selector
+weekdaySymbolsSelector :: Selector '[] (Id NSArray)
 weekdaySymbolsSelector = mkSelector "weekdaySymbols"
 
 -- | @Selector@ for @setWeekdaySymbols:@
-setWeekdaySymbolsSelector :: Selector
+setWeekdaySymbolsSelector :: Selector '[Id NSArray] ()
 setWeekdaySymbolsSelector = mkSelector "setWeekdaySymbols:"
 
 -- | @Selector@ for @shortWeekdaySymbols@
-shortWeekdaySymbolsSelector :: Selector
+shortWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 shortWeekdaySymbolsSelector = mkSelector "shortWeekdaySymbols"
 
 -- | @Selector@ for @setShortWeekdaySymbols:@
-setShortWeekdaySymbolsSelector :: Selector
+setShortWeekdaySymbolsSelector :: Selector '[Id NSArray] ()
 setShortWeekdaySymbolsSelector = mkSelector "setShortWeekdaySymbols:"
 
 -- | @Selector@ for @AMSymbol@
-amSymbolSelector :: Selector
+amSymbolSelector :: Selector '[] (Id NSString)
 amSymbolSelector = mkSelector "AMSymbol"
 
 -- | @Selector@ for @setAMSymbol:@
-setAMSymbolSelector :: Selector
+setAMSymbolSelector :: Selector '[Id NSString] ()
 setAMSymbolSelector = mkSelector "setAMSymbol:"
 
 -- | @Selector@ for @PMSymbol@
-pmSymbolSelector :: Selector
+pmSymbolSelector :: Selector '[] (Id NSString)
 pmSymbolSelector = mkSelector "PMSymbol"
 
 -- | @Selector@ for @setPMSymbol:@
-setPMSymbolSelector :: Selector
+setPMSymbolSelector :: Selector '[Id NSString] ()
 setPMSymbolSelector = mkSelector "setPMSymbol:"
 
 -- | @Selector@ for @longEraSymbols@
-longEraSymbolsSelector :: Selector
+longEraSymbolsSelector :: Selector '[] (Id NSArray)
 longEraSymbolsSelector = mkSelector "longEraSymbols"
 
 -- | @Selector@ for @setLongEraSymbols:@
-setLongEraSymbolsSelector :: Selector
+setLongEraSymbolsSelector :: Selector '[Id NSArray] ()
 setLongEraSymbolsSelector = mkSelector "setLongEraSymbols:"
 
 -- | @Selector@ for @veryShortMonthSymbols@
-veryShortMonthSymbolsSelector :: Selector
+veryShortMonthSymbolsSelector :: Selector '[] (Id NSArray)
 veryShortMonthSymbolsSelector = mkSelector "veryShortMonthSymbols"
 
 -- | @Selector@ for @setVeryShortMonthSymbols:@
-setVeryShortMonthSymbolsSelector :: Selector
+setVeryShortMonthSymbolsSelector :: Selector '[Id NSArray] ()
 setVeryShortMonthSymbolsSelector = mkSelector "setVeryShortMonthSymbols:"
 
 -- | @Selector@ for @standaloneMonthSymbols@
-standaloneMonthSymbolsSelector :: Selector
+standaloneMonthSymbolsSelector :: Selector '[] (Id NSArray)
 standaloneMonthSymbolsSelector = mkSelector "standaloneMonthSymbols"
 
 -- | @Selector@ for @setStandaloneMonthSymbols:@
-setStandaloneMonthSymbolsSelector :: Selector
+setStandaloneMonthSymbolsSelector :: Selector '[Id NSArray] ()
 setStandaloneMonthSymbolsSelector = mkSelector "setStandaloneMonthSymbols:"
 
 -- | @Selector@ for @shortStandaloneMonthSymbols@
-shortStandaloneMonthSymbolsSelector :: Selector
+shortStandaloneMonthSymbolsSelector :: Selector '[] (Id NSArray)
 shortStandaloneMonthSymbolsSelector = mkSelector "shortStandaloneMonthSymbols"
 
 -- | @Selector@ for @setShortStandaloneMonthSymbols:@
-setShortStandaloneMonthSymbolsSelector :: Selector
+setShortStandaloneMonthSymbolsSelector :: Selector '[Id NSArray] ()
 setShortStandaloneMonthSymbolsSelector = mkSelector "setShortStandaloneMonthSymbols:"
 
 -- | @Selector@ for @veryShortStandaloneMonthSymbols@
-veryShortStandaloneMonthSymbolsSelector :: Selector
+veryShortStandaloneMonthSymbolsSelector :: Selector '[] (Id NSArray)
 veryShortStandaloneMonthSymbolsSelector = mkSelector "veryShortStandaloneMonthSymbols"
 
 -- | @Selector@ for @setVeryShortStandaloneMonthSymbols:@
-setVeryShortStandaloneMonthSymbolsSelector :: Selector
+setVeryShortStandaloneMonthSymbolsSelector :: Selector '[Id NSArray] ()
 setVeryShortStandaloneMonthSymbolsSelector = mkSelector "setVeryShortStandaloneMonthSymbols:"
 
 -- | @Selector@ for @veryShortWeekdaySymbols@
-veryShortWeekdaySymbolsSelector :: Selector
+veryShortWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 veryShortWeekdaySymbolsSelector = mkSelector "veryShortWeekdaySymbols"
 
 -- | @Selector@ for @setVeryShortWeekdaySymbols:@
-setVeryShortWeekdaySymbolsSelector :: Selector
+setVeryShortWeekdaySymbolsSelector :: Selector '[Id NSArray] ()
 setVeryShortWeekdaySymbolsSelector = mkSelector "setVeryShortWeekdaySymbols:"
 
 -- | @Selector@ for @standaloneWeekdaySymbols@
-standaloneWeekdaySymbolsSelector :: Selector
+standaloneWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 standaloneWeekdaySymbolsSelector = mkSelector "standaloneWeekdaySymbols"
 
 -- | @Selector@ for @setStandaloneWeekdaySymbols:@
-setStandaloneWeekdaySymbolsSelector :: Selector
+setStandaloneWeekdaySymbolsSelector :: Selector '[Id NSArray] ()
 setStandaloneWeekdaySymbolsSelector = mkSelector "setStandaloneWeekdaySymbols:"
 
 -- | @Selector@ for @shortStandaloneWeekdaySymbols@
-shortStandaloneWeekdaySymbolsSelector :: Selector
+shortStandaloneWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 shortStandaloneWeekdaySymbolsSelector = mkSelector "shortStandaloneWeekdaySymbols"
 
 -- | @Selector@ for @setShortStandaloneWeekdaySymbols:@
-setShortStandaloneWeekdaySymbolsSelector :: Selector
+setShortStandaloneWeekdaySymbolsSelector :: Selector '[Id NSArray] ()
 setShortStandaloneWeekdaySymbolsSelector = mkSelector "setShortStandaloneWeekdaySymbols:"
 
 -- | @Selector@ for @veryShortStandaloneWeekdaySymbols@
-veryShortStandaloneWeekdaySymbolsSelector :: Selector
+veryShortStandaloneWeekdaySymbolsSelector :: Selector '[] (Id NSArray)
 veryShortStandaloneWeekdaySymbolsSelector = mkSelector "veryShortStandaloneWeekdaySymbols"
 
 -- | @Selector@ for @setVeryShortStandaloneWeekdaySymbols:@
-setVeryShortStandaloneWeekdaySymbolsSelector :: Selector
+setVeryShortStandaloneWeekdaySymbolsSelector :: Selector '[Id NSArray] ()
 setVeryShortStandaloneWeekdaySymbolsSelector = mkSelector "setVeryShortStandaloneWeekdaySymbols:"
 
 -- | @Selector@ for @quarterSymbols@
-quarterSymbolsSelector :: Selector
+quarterSymbolsSelector :: Selector '[] (Id NSArray)
 quarterSymbolsSelector = mkSelector "quarterSymbols"
 
 -- | @Selector@ for @setQuarterSymbols:@
-setQuarterSymbolsSelector :: Selector
+setQuarterSymbolsSelector :: Selector '[Id NSArray] ()
 setQuarterSymbolsSelector = mkSelector "setQuarterSymbols:"
 
 -- | @Selector@ for @shortQuarterSymbols@
-shortQuarterSymbolsSelector :: Selector
+shortQuarterSymbolsSelector :: Selector '[] (Id NSArray)
 shortQuarterSymbolsSelector = mkSelector "shortQuarterSymbols"
 
 -- | @Selector@ for @setShortQuarterSymbols:@
-setShortQuarterSymbolsSelector :: Selector
+setShortQuarterSymbolsSelector :: Selector '[Id NSArray] ()
 setShortQuarterSymbolsSelector = mkSelector "setShortQuarterSymbols:"
 
 -- | @Selector@ for @standaloneQuarterSymbols@
-standaloneQuarterSymbolsSelector :: Selector
+standaloneQuarterSymbolsSelector :: Selector '[] (Id NSArray)
 standaloneQuarterSymbolsSelector = mkSelector "standaloneQuarterSymbols"
 
 -- | @Selector@ for @setStandaloneQuarterSymbols:@
-setStandaloneQuarterSymbolsSelector :: Selector
+setStandaloneQuarterSymbolsSelector :: Selector '[Id NSArray] ()
 setStandaloneQuarterSymbolsSelector = mkSelector "setStandaloneQuarterSymbols:"
 
 -- | @Selector@ for @shortStandaloneQuarterSymbols@
-shortStandaloneQuarterSymbolsSelector :: Selector
+shortStandaloneQuarterSymbolsSelector :: Selector '[] (Id NSArray)
 shortStandaloneQuarterSymbolsSelector = mkSelector "shortStandaloneQuarterSymbols"
 
 -- | @Selector@ for @setShortStandaloneQuarterSymbols:@
-setShortStandaloneQuarterSymbolsSelector :: Selector
+setShortStandaloneQuarterSymbolsSelector :: Selector '[Id NSArray] ()
 setShortStandaloneQuarterSymbolsSelector = mkSelector "setShortStandaloneQuarterSymbols:"
 
 -- | @Selector@ for @gregorianStartDate@
-gregorianStartDateSelector :: Selector
+gregorianStartDateSelector :: Selector '[] (Id NSDate)
 gregorianStartDateSelector = mkSelector "gregorianStartDate"
 
 -- | @Selector@ for @setGregorianStartDate:@
-setGregorianStartDateSelector :: Selector
+setGregorianStartDateSelector :: Selector '[Id NSDate] ()
 setGregorianStartDateSelector = mkSelector "setGregorianStartDate:"
 
 -- | @Selector@ for @doesRelativeDateFormatting@
-doesRelativeDateFormattingSelector :: Selector
+doesRelativeDateFormattingSelector :: Selector '[] Bool
 doesRelativeDateFormattingSelector = mkSelector "doesRelativeDateFormatting"
 
 -- | @Selector@ for @setDoesRelativeDateFormatting:@
-setDoesRelativeDateFormattingSelector :: Selector
+setDoesRelativeDateFormattingSelector :: Selector '[Bool] ()
 setDoesRelativeDateFormattingSelector = mkSelector "setDoesRelativeDateFormatting:"
 

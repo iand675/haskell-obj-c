@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Quartz.QCCompositionLayer
   , initWithFile
   , initWithComposition
   , composition
-  , compositionLayerWithFileSelector
   , compositionLayerWithCompositionSelector
-  , initWithFileSelector
-  , initWithCompositionSelector
+  , compositionLayerWithFileSelector
   , compositionSelector
+  , initWithCompositionSelector
+  , initWithFileSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,55 +38,51 @@ compositionLayerWithFile :: IsNSString path => path -> IO (Id QCCompositionLayer
 compositionLayerWithFile path =
   do
     cls' <- getRequiredClass "QCCompositionLayer"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "compositionLayerWithFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' compositionLayerWithFileSelector (toNSString path)
 
 -- | @+ compositionLayerWithComposition:@
 compositionLayerWithComposition :: IsQCComposition composition => composition -> IO (Id QCCompositionLayer)
 compositionLayerWithComposition composition =
   do
     cls' <- getRequiredClass "QCCompositionLayer"
-    withObjCPtr composition $ \raw_composition ->
-      sendClassMsg cls' (mkSelector "compositionLayerWithComposition:") (retPtr retVoid) [argPtr (castPtr raw_composition :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' compositionLayerWithCompositionSelector (toQCComposition composition)
 
 -- | @- initWithFile:@
 initWithFile :: (IsQCCompositionLayer qcCompositionLayer, IsNSString path) => qcCompositionLayer -> path -> IO RawId
-initWithFile qcCompositionLayer  path =
-  withObjCPtr path $ \raw_path ->
-      fmap (RawId . castPtr) $ sendMsg qcCompositionLayer (mkSelector "initWithFile:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())]
+initWithFile qcCompositionLayer path =
+  sendOwnedMessage qcCompositionLayer initWithFileSelector (toNSString path)
 
 -- | @- initWithComposition:@
 initWithComposition :: (IsQCCompositionLayer qcCompositionLayer, IsQCComposition composition) => qcCompositionLayer -> composition -> IO RawId
-initWithComposition qcCompositionLayer  composition =
-  withObjCPtr composition $ \raw_composition ->
-      fmap (RawId . castPtr) $ sendMsg qcCompositionLayer (mkSelector "initWithComposition:") (retPtr retVoid) [argPtr (castPtr raw_composition :: Ptr ())]
+initWithComposition qcCompositionLayer composition =
+  sendOwnedMessage qcCompositionLayer initWithCompositionSelector (toQCComposition composition)
 
 -- | @- composition@
 composition :: IsQCCompositionLayer qcCompositionLayer => qcCompositionLayer -> IO (Id QCComposition)
-composition qcCompositionLayer  =
-    sendMsg qcCompositionLayer (mkSelector "composition") (retPtr retVoid) [] >>= retainedObject . castPtr
+composition qcCompositionLayer =
+  sendMessage qcCompositionLayer compositionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @compositionLayerWithFile:@
-compositionLayerWithFileSelector :: Selector
+compositionLayerWithFileSelector :: Selector '[Id NSString] (Id QCCompositionLayer)
 compositionLayerWithFileSelector = mkSelector "compositionLayerWithFile:"
 
 -- | @Selector@ for @compositionLayerWithComposition:@
-compositionLayerWithCompositionSelector :: Selector
+compositionLayerWithCompositionSelector :: Selector '[Id QCComposition] (Id QCCompositionLayer)
 compositionLayerWithCompositionSelector = mkSelector "compositionLayerWithComposition:"
 
 -- | @Selector@ for @initWithFile:@
-initWithFileSelector :: Selector
+initWithFileSelector :: Selector '[Id NSString] RawId
 initWithFileSelector = mkSelector "initWithFile:"
 
 -- | @Selector@ for @initWithComposition:@
-initWithCompositionSelector :: Selector
+initWithCompositionSelector :: Selector '[Id QCComposition] RawId
 initWithCompositionSelector = mkSelector "initWithComposition:"
 
 -- | @Selector@ for @composition@
-compositionSelector :: Selector
+compositionSelector :: Selector '[] (Id QCComposition)
 compositionSelector = mkSelector "composition"
 

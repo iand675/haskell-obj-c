@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.MetricKit.MXMetric
   , IsMXMetric(..)
   , jsonRepresentation
   , dictionaryRepresentation
-  , jsonRepresentationSelector
   , dictionaryRepresentationSelector
+  , jsonRepresentationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- JSONRepresentation@
 jsonRepresentation :: IsMXMetric mxMetric => mxMetric -> IO (Id NSData)
-jsonRepresentation mxMetric  =
-    sendMsg mxMetric (mkSelector "JSONRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+jsonRepresentation mxMetric =
+  sendMessage mxMetric jsonRepresentationSelector
 
 -- | DictionaryRepresentation
 --
@@ -54,18 +51,18 @@ jsonRepresentation mxMetric  =
 --
 -- ObjC selector: @- DictionaryRepresentation@
 dictionaryRepresentation :: IsMXMetric mxMetric => mxMetric -> IO (Id NSDictionary)
-dictionaryRepresentation mxMetric  =
-    sendMsg mxMetric (mkSelector "DictionaryRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryRepresentation mxMetric =
+  sendMessage mxMetric dictionaryRepresentationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @JSONRepresentation@
-jsonRepresentationSelector :: Selector
+jsonRepresentationSelector :: Selector '[] (Id NSData)
 jsonRepresentationSelector = mkSelector "JSONRepresentation"
 
 -- | @Selector@ for @DictionaryRepresentation@
-dictionaryRepresentationSelector :: Selector
+dictionaryRepresentationSelector :: Selector '[] (Id NSDictionary)
 dictionaryRepresentationSelector = mkSelector "DictionaryRepresentation"
 

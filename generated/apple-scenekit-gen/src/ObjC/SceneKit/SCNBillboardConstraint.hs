@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,15 +24,11 @@ module ObjC.SceneKit.SCNBillboardConstraint
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,7 +47,7 @@ billboardConstraint :: IO (Id SCNBillboardConstraint)
 billboardConstraint  =
   do
     cls' <- getRequiredClass "SCNBillboardConstraint"
-    sendClassMsg cls' (mkSelector "billboardConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' billboardConstraintSelector
 
 -- | freeAxes
 --
@@ -58,8 +55,8 @@ billboardConstraint  =
 --
 -- ObjC selector: @- freeAxes@
 freeAxes :: IsSCNBillboardConstraint scnBillboardConstraint => scnBillboardConstraint -> IO SCNBillboardAxis
-freeAxes scnBillboardConstraint  =
-    fmap (coerce :: CULong -> SCNBillboardAxis) $ sendMsg scnBillboardConstraint (mkSelector "freeAxes") retCULong []
+freeAxes scnBillboardConstraint =
+  sendMessage scnBillboardConstraint freeAxesSelector
 
 -- | freeAxes
 --
@@ -67,22 +64,22 @@ freeAxes scnBillboardConstraint  =
 --
 -- ObjC selector: @- setFreeAxes:@
 setFreeAxes :: IsSCNBillboardConstraint scnBillboardConstraint => scnBillboardConstraint -> SCNBillboardAxis -> IO ()
-setFreeAxes scnBillboardConstraint  value =
-    sendMsg scnBillboardConstraint (mkSelector "setFreeAxes:") retVoid [argCULong (coerce value)]
+setFreeAxes scnBillboardConstraint value =
+  sendMessage scnBillboardConstraint setFreeAxesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @billboardConstraint@
-billboardConstraintSelector :: Selector
+billboardConstraintSelector :: Selector '[] (Id SCNBillboardConstraint)
 billboardConstraintSelector = mkSelector "billboardConstraint"
 
 -- | @Selector@ for @freeAxes@
-freeAxesSelector :: Selector
+freeAxesSelector :: Selector '[] SCNBillboardAxis
 freeAxesSelector = mkSelector "freeAxes"
 
 -- | @Selector@ for @setFreeAxes:@
-setFreeAxesSelector :: Selector
+setFreeAxesSelector :: Selector '[SCNBillboardAxis] ()
 setFreeAxesSelector = mkSelector "setFreeAxes:"
 

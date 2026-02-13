@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.QuartzCore.CAMetalDisplayLink
   , setPreferredFrameRateRange
   , paused
   , setPaused
-  , initWithMetalLayerSelector
   , addToRunLoop_forModeSelector
-  , removeFromRunLoop_forModeSelector
-  , invalidateSelector
   , delegateSelector
-  , setDelegateSelector
-  , preferredFrameLatencySelector
-  , setPreferredFrameLatencySelector
-  , preferredFrameRateRangeSelector
-  , setPreferredFrameRateRangeSelector
+  , initWithMetalLayerSelector
+  , invalidateSelector
   , pausedSelector
+  , preferredFrameLatencySelector
+  , preferredFrameRateRangeSelector
+  , removeFromRunLoop_forModeSelector
+  , setDelegateSelector
   , setPausedSelector
+  , setPreferredFrameLatencySelector
+  , setPreferredFrameRateRangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,118 +49,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithMetalLayer:@
 initWithMetalLayer :: (IsCAMetalDisplayLink caMetalDisplayLink, IsCAMetalLayer layer) => caMetalDisplayLink -> layer -> IO (Id CAMetalDisplayLink)
-initWithMetalLayer caMetalDisplayLink  layer =
-  withObjCPtr layer $ \raw_layer ->
-      sendMsg caMetalDisplayLink (mkSelector "initWithMetalLayer:") (retPtr retVoid) [argPtr (castPtr raw_layer :: Ptr ())] >>= ownedObject . castPtr
+initWithMetalLayer caMetalDisplayLink layer =
+  sendOwnedMessage caMetalDisplayLink initWithMetalLayerSelector (toCAMetalLayer layer)
 
 -- | @- addToRunLoop:forMode:@
 addToRunLoop_forMode :: (IsCAMetalDisplayLink caMetalDisplayLink, IsNSRunLoop runloop, IsNSString mode) => caMetalDisplayLink -> runloop -> mode -> IO ()
-addToRunLoop_forMode caMetalDisplayLink  runloop mode =
-  withObjCPtr runloop $ \raw_runloop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg caMetalDisplayLink (mkSelector "addToRunLoop:forMode:") retVoid [argPtr (castPtr raw_runloop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+addToRunLoop_forMode caMetalDisplayLink runloop mode =
+  sendMessage caMetalDisplayLink addToRunLoop_forModeSelector (toNSRunLoop runloop) (toNSString mode)
 
 -- | @- removeFromRunLoop:forMode:@
 removeFromRunLoop_forMode :: (IsCAMetalDisplayLink caMetalDisplayLink, IsNSRunLoop runloop, IsNSString mode) => caMetalDisplayLink -> runloop -> mode -> IO ()
-removeFromRunLoop_forMode caMetalDisplayLink  runloop mode =
-  withObjCPtr runloop $ \raw_runloop ->
-    withObjCPtr mode $ \raw_mode ->
-        sendMsg caMetalDisplayLink (mkSelector "removeFromRunLoop:forMode:") retVoid [argPtr (castPtr raw_runloop :: Ptr ()), argPtr (castPtr raw_mode :: Ptr ())]
+removeFromRunLoop_forMode caMetalDisplayLink runloop mode =
+  sendMessage caMetalDisplayLink removeFromRunLoop_forModeSelector (toNSRunLoop runloop) (toNSString mode)
 
 -- | @- invalidate@
 invalidate :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> IO ()
-invalidate caMetalDisplayLink  =
-    sendMsg caMetalDisplayLink (mkSelector "invalidate") retVoid []
+invalidate caMetalDisplayLink =
+  sendMessage caMetalDisplayLink invalidateSelector
 
 -- | @- delegate@
 delegate :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> IO RawId
-delegate caMetalDisplayLink  =
-    fmap (RawId . castPtr) $ sendMsg caMetalDisplayLink (mkSelector "delegate") (retPtr retVoid) []
+delegate caMetalDisplayLink =
+  sendMessage caMetalDisplayLink delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> RawId -> IO ()
-setDelegate caMetalDisplayLink  value =
-    sendMsg caMetalDisplayLink (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate caMetalDisplayLink value =
+  sendMessage caMetalDisplayLink setDelegateSelector value
 
 -- | @- preferredFrameLatency@
 preferredFrameLatency :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> IO CFloat
-preferredFrameLatency caMetalDisplayLink  =
-    sendMsg caMetalDisplayLink (mkSelector "preferredFrameLatency") retCFloat []
+preferredFrameLatency caMetalDisplayLink =
+  sendMessage caMetalDisplayLink preferredFrameLatencySelector
 
 -- | @- setPreferredFrameLatency:@
 setPreferredFrameLatency :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> CFloat -> IO ()
-setPreferredFrameLatency caMetalDisplayLink  value =
-    sendMsg caMetalDisplayLink (mkSelector "setPreferredFrameLatency:") retVoid [argCFloat value]
+setPreferredFrameLatency caMetalDisplayLink value =
+  sendMessage caMetalDisplayLink setPreferredFrameLatencySelector value
 
 -- | @- preferredFrameRateRange@
 preferredFrameRateRange :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> IO CAFrameRateRange
-preferredFrameRateRange caMetalDisplayLink  =
-    sendMsgStret caMetalDisplayLink (mkSelector "preferredFrameRateRange") retCAFrameRateRange []
+preferredFrameRateRange caMetalDisplayLink =
+  sendMessage caMetalDisplayLink preferredFrameRateRangeSelector
 
 -- | @- setPreferredFrameRateRange:@
 setPreferredFrameRateRange :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> CAFrameRateRange -> IO ()
-setPreferredFrameRateRange caMetalDisplayLink  value =
-    sendMsg caMetalDisplayLink (mkSelector "setPreferredFrameRateRange:") retVoid [argCAFrameRateRange value]
+setPreferredFrameRateRange caMetalDisplayLink value =
+  sendMessage caMetalDisplayLink setPreferredFrameRateRangeSelector value
 
 -- | @- paused@
 paused :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> IO Bool
-paused caMetalDisplayLink  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caMetalDisplayLink (mkSelector "paused") retCULong []
+paused caMetalDisplayLink =
+  sendMessage caMetalDisplayLink pausedSelector
 
 -- | @- setPaused:@
 setPaused :: IsCAMetalDisplayLink caMetalDisplayLink => caMetalDisplayLink -> Bool -> IO ()
-setPaused caMetalDisplayLink  value =
-    sendMsg caMetalDisplayLink (mkSelector "setPaused:") retVoid [argCULong (if value then 1 else 0)]
+setPaused caMetalDisplayLink value =
+  sendMessage caMetalDisplayLink setPausedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMetalLayer:@
-initWithMetalLayerSelector :: Selector
+initWithMetalLayerSelector :: Selector '[Id CAMetalLayer] (Id CAMetalDisplayLink)
 initWithMetalLayerSelector = mkSelector "initWithMetalLayer:"
 
 -- | @Selector@ for @addToRunLoop:forMode:@
-addToRunLoop_forModeSelector :: Selector
+addToRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 addToRunLoop_forModeSelector = mkSelector "addToRunLoop:forMode:"
 
 -- | @Selector@ for @removeFromRunLoop:forMode:@
-removeFromRunLoop_forModeSelector :: Selector
+removeFromRunLoop_forModeSelector :: Selector '[Id NSRunLoop, Id NSString] ()
 removeFromRunLoop_forModeSelector = mkSelector "removeFromRunLoop:forMode:"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @preferredFrameLatency@
-preferredFrameLatencySelector :: Selector
+preferredFrameLatencySelector :: Selector '[] CFloat
 preferredFrameLatencySelector = mkSelector "preferredFrameLatency"
 
 -- | @Selector@ for @setPreferredFrameLatency:@
-setPreferredFrameLatencySelector :: Selector
+setPreferredFrameLatencySelector :: Selector '[CFloat] ()
 setPreferredFrameLatencySelector = mkSelector "setPreferredFrameLatency:"
 
 -- | @Selector@ for @preferredFrameRateRange@
-preferredFrameRateRangeSelector :: Selector
+preferredFrameRateRangeSelector :: Selector '[] CAFrameRateRange
 preferredFrameRateRangeSelector = mkSelector "preferredFrameRateRange"
 
 -- | @Selector@ for @setPreferredFrameRateRange:@
-setPreferredFrameRateRangeSelector :: Selector
+setPreferredFrameRateRangeSelector :: Selector '[CAFrameRateRange] ()
 setPreferredFrameRateRangeSelector = mkSelector "setPreferredFrameRateRange:"
 
 -- | @Selector@ for @paused@
-pausedSelector :: Selector
+pausedSelector :: Selector '[] Bool
 pausedSelector = mkSelector "paused"
 
 -- | @Selector@ for @setPaused:@
-setPausedSelector :: Selector
+setPausedSelector :: Selector '[Bool] ()
 setPausedSelector = mkSelector "setPaused:"
 

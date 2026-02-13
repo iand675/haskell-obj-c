@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Intents.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @INAccountType@
 newtype INAccountType = INAccountType CLong
@@ -40,6 +43,16 @@ pattern INAccountTypePrepaid = INAccountType 6
 pattern INAccountTypeSaving :: INAccountType
 pattern INAccountTypeSaving = INAccountType 7
 
+instance ObjCArgument INAccountType where
+  withObjCArg (INAccountType x) k = k (argCLong x)
+
+instance ObjCReturn INAccountType where
+  type RawReturn INAccountType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAccountType x)
+  fromOwned x = pure (INAccountType x)
+
 -- | @INActivateCarSignalIntentResponseCode@
 newtype INActivateCarSignalIntentResponseCode = INActivateCarSignalIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -62,6 +75,16 @@ pattern INActivateCarSignalIntentResponseCodeFailure = INActivateCarSignalIntent
 
 pattern INActivateCarSignalIntentResponseCodeFailureRequiringAppLaunch :: INActivateCarSignalIntentResponseCode
 pattern INActivateCarSignalIntentResponseCodeFailureRequiringAppLaunch = INActivateCarSignalIntentResponseCode 5
+
+instance ObjCArgument INActivateCarSignalIntentResponseCode where
+  withObjCArg (INActivateCarSignalIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INActivateCarSignalIntentResponseCode where
+  type RawReturn INActivateCarSignalIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INActivateCarSignalIntentResponseCode x)
+  fromOwned x = pure (INActivateCarSignalIntentResponseCode x)
 
 -- | @INAddMediaIntentResponseCode@
 newtype INAddMediaIntentResponseCode = INAddMediaIntentResponseCode CLong
@@ -89,6 +112,16 @@ pattern INAddMediaIntentResponseCodeFailure = INAddMediaIntentResponseCode 5
 pattern INAddMediaIntentResponseCodeFailureRequiringAppLaunch :: INAddMediaIntentResponseCode
 pattern INAddMediaIntentResponseCodeFailureRequiringAppLaunch = INAddMediaIntentResponseCode 6
 
+instance ObjCArgument INAddMediaIntentResponseCode where
+  withObjCArg (INAddMediaIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INAddMediaIntentResponseCode where
+  type RawReturn INAddMediaIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAddMediaIntentResponseCode x)
+  fromOwned x = pure (INAddMediaIntentResponseCode x)
+
 -- | @INAddMediaMediaDestinationUnsupportedReason@
 newtype INAddMediaMediaDestinationUnsupportedReason = INAddMediaMediaDestinationUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -99,6 +132,16 @@ pattern INAddMediaMediaDestinationUnsupportedReasonPlaylistNameNotFound = INAddM
 
 pattern INAddMediaMediaDestinationUnsupportedReasonPlaylistNotEditable :: INAddMediaMediaDestinationUnsupportedReason
 pattern INAddMediaMediaDestinationUnsupportedReasonPlaylistNotEditable = INAddMediaMediaDestinationUnsupportedReason 2
+
+instance ObjCArgument INAddMediaMediaDestinationUnsupportedReason where
+  withObjCArg (INAddMediaMediaDestinationUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INAddMediaMediaDestinationUnsupportedReason where
+  type RawReturn INAddMediaMediaDestinationUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAddMediaMediaDestinationUnsupportedReason x)
+  fromOwned x = pure (INAddMediaMediaDestinationUnsupportedReason x)
 
 -- | @INAddMediaMediaItemUnsupportedReason@
 newtype INAddMediaMediaItemUnsupportedReason = INAddMediaMediaItemUnsupportedReason CLong
@@ -129,6 +172,16 @@ pattern INAddMediaMediaItemUnsupportedReasonServiceUnavailable = INAddMediaMedia
 pattern INAddMediaMediaItemUnsupportedReasonRegionRestriction :: INAddMediaMediaItemUnsupportedReason
 pattern INAddMediaMediaItemUnsupportedReasonRegionRestriction = INAddMediaMediaItemUnsupportedReason 8
 
+instance ObjCArgument INAddMediaMediaItemUnsupportedReason where
+  withObjCArg (INAddMediaMediaItemUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INAddMediaMediaItemUnsupportedReason where
+  type RawReturn INAddMediaMediaItemUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAddMediaMediaItemUnsupportedReason x)
+  fromOwned x = pure (INAddMediaMediaItemUnsupportedReason x)
+
 -- | @INAddTasksIntentResponseCode@
 newtype INAddTasksIntentResponseCode = INAddTasksIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -152,6 +205,16 @@ pattern INAddTasksIntentResponseCodeFailure = INAddTasksIntentResponseCode 4
 pattern INAddTasksIntentResponseCodeFailureRequiringAppLaunch :: INAddTasksIntentResponseCode
 pattern INAddTasksIntentResponseCodeFailureRequiringAppLaunch = INAddTasksIntentResponseCode 5
 
+instance ObjCArgument INAddTasksIntentResponseCode where
+  withObjCArg (INAddTasksIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INAddTasksIntentResponseCode where
+  type RawReturn INAddTasksIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAddTasksIntentResponseCode x)
+  fromOwned x = pure (INAddTasksIntentResponseCode x)
+
 -- | @INAddTasksTargetTaskListConfirmationReason@
 newtype INAddTasksTargetTaskListConfirmationReason = INAddTasksTargetTaskListConfirmationReason CLong
   deriving stock (Eq, Ord, Show)
@@ -159,6 +222,16 @@ newtype INAddTasksTargetTaskListConfirmationReason = INAddTasksTargetTaskListCon
 
 pattern INAddTasksTargetTaskListConfirmationReasonListShouldBeCreated :: INAddTasksTargetTaskListConfirmationReason
 pattern INAddTasksTargetTaskListConfirmationReasonListShouldBeCreated = INAddTasksTargetTaskListConfirmationReason 1
+
+instance ObjCArgument INAddTasksTargetTaskListConfirmationReason where
+  withObjCArg (INAddTasksTargetTaskListConfirmationReason x) k = k (argCLong x)
+
+instance ObjCReturn INAddTasksTargetTaskListConfirmationReason where
+  type RawReturn INAddTasksTargetTaskListConfirmationReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAddTasksTargetTaskListConfirmationReason x)
+  fromOwned x = pure (INAddTasksTargetTaskListConfirmationReason x)
 
 -- | @INAddTasksTemporalEventTriggerUnsupportedReason@
 newtype INAddTasksTemporalEventTriggerUnsupportedReason = INAddTasksTemporalEventTriggerUnsupportedReason CLong
@@ -170,6 +243,16 @@ pattern INAddTasksTemporalEventTriggerUnsupportedReasonTimeInPast = INAddTasksTe
 
 pattern INAddTasksTemporalEventTriggerUnsupportedReasonInvalidRecurrence :: INAddTasksTemporalEventTriggerUnsupportedReason
 pattern INAddTasksTemporalEventTriggerUnsupportedReasonInvalidRecurrence = INAddTasksTemporalEventTriggerUnsupportedReason 2
+
+instance ObjCArgument INAddTasksTemporalEventTriggerUnsupportedReason where
+  withObjCArg (INAddTasksTemporalEventTriggerUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INAddTasksTemporalEventTriggerUnsupportedReason where
+  type RawReturn INAddTasksTemporalEventTriggerUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAddTasksTemporalEventTriggerUnsupportedReason x)
+  fromOwned x = pure (INAddTasksTemporalEventTriggerUnsupportedReason x)
 
 -- | @INAmountType@
 newtype INAmountType = INAmountType CLong
@@ -197,6 +280,16 @@ pattern INAmountTypeMinimumTransferAmount = INAmountType 5
 pattern INAmountTypeStatementBalance :: INAmountType
 pattern INAmountTypeStatementBalance = INAmountType 6
 
+instance ObjCArgument INAmountType where
+  withObjCArg (INAmountType x) k = k (argCLong x)
+
+instance ObjCReturn INAmountType where
+  type RawReturn INAmountType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAmountType x)
+  fromOwned x = pure (INAmountType x)
+
 -- | @INAnswerCallIntentResponseCode@
 newtype INAnswerCallIntentResponseCode = INAnswerCallIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -222,6 +315,16 @@ pattern INAnswerCallIntentResponseCodeFailure = INAnswerCallIntentResponseCode 5
 
 pattern INAnswerCallIntentResponseCodeFailureRequiringAppLaunch :: INAnswerCallIntentResponseCode
 pattern INAnswerCallIntentResponseCodeFailureRequiringAppLaunch = INAnswerCallIntentResponseCode 6
+
+instance ObjCArgument INAnswerCallIntentResponseCode where
+  withObjCArg (INAnswerCallIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INAnswerCallIntentResponseCode where
+  type RawReturn INAnswerCallIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAnswerCallIntentResponseCode x)
+  fromOwned x = pure (INAnswerCallIntentResponseCode x)
 
 -- | @INAppendToNoteIntentResponseCode@
 newtype INAppendToNoteIntentResponseCode = INAppendToNoteIntentResponseCode CLong
@@ -249,6 +352,16 @@ pattern INAppendToNoteIntentResponseCodeFailureRequiringAppLaunch = INAppendToNo
 pattern INAppendToNoteIntentResponseCodeFailureCannotUpdatePasswordProtectedNote :: INAppendToNoteIntentResponseCode
 pattern INAppendToNoteIntentResponseCodeFailureCannotUpdatePasswordProtectedNote = INAppendToNoteIntentResponseCode 6
 
+instance ObjCArgument INAppendToNoteIntentResponseCode where
+  withObjCArg (INAppendToNoteIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INAppendToNoteIntentResponseCode where
+  type RawReturn INAppendToNoteIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INAppendToNoteIntentResponseCode x)
+  fromOwned x = pure (INAppendToNoteIntentResponseCode x)
+
 -- | @INBalanceType@
 newtype INBalanceType = INBalanceType CLong
   deriving stock (Eq, Ord, Show)
@@ -265,6 +378,16 @@ pattern INBalanceTypePoints = INBalanceType 2
 
 pattern INBalanceTypeMiles :: INBalanceType
 pattern INBalanceTypeMiles = INBalanceType 3
+
+instance ObjCArgument INBalanceType where
+  withObjCArg (INBalanceType x) k = k (argCLong x)
+
+instance ObjCReturn INBalanceType where
+  type RawReturn INBalanceType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INBalanceType x)
+  fromOwned x = pure (INBalanceType x)
 
 -- | @INBillType@
 newtype INBillType = INBillType CLong
@@ -340,6 +463,16 @@ pattern INBillTypeUtilities = INBillType 21
 pattern INBillTypeWater :: INBillType
 pattern INBillTypeWater = INBillType 22
 
+instance ObjCArgument INBillType where
+  withObjCArg (INBillType x) k = k (argCLong x)
+
+instance ObjCReturn INBillType where
+  type RawReturn INBillType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INBillType x)
+  fromOwned x = pure (INBillType x)
+
 -- | @INBookRestaurantReservationIntentCode@
 newtype INBookRestaurantReservationIntentCode = INBookRestaurantReservationIntentCode CLong
   deriving stock (Eq, Ord, Show)
@@ -363,6 +496,16 @@ pattern INBookRestaurantReservationIntentCodeFailureRequiringAppLaunchMustVerify
 pattern INBookRestaurantReservationIntentCodeFailureRequiringAppLaunchServiceTemporarilyUnavailable :: INBookRestaurantReservationIntentCode
 pattern INBookRestaurantReservationIntentCodeFailureRequiringAppLaunchServiceTemporarilyUnavailable = INBookRestaurantReservationIntentCode 5
 
+instance ObjCArgument INBookRestaurantReservationIntentCode where
+  withObjCArg (INBookRestaurantReservationIntentCode x) k = k (argCLong x)
+
+instance ObjCReturn INBookRestaurantReservationIntentCode where
+  type RawReturn INBookRestaurantReservationIntentCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INBookRestaurantReservationIntentCode x)
+  fromOwned x = pure (INBookRestaurantReservationIntentCode x)
+
 -- | @INCallAudioRoute@
 newtype INCallAudioRoute = INCallAudioRoute CLong
   deriving stock (Eq, Ord, Show)
@@ -377,6 +520,16 @@ pattern INCallAudioRouteSpeakerphoneAudioRoute = INCallAudioRoute 1
 pattern INCallAudioRouteBluetoothAudioRoute :: INCallAudioRoute
 pattern INCallAudioRouteBluetoothAudioRoute = INCallAudioRoute 2
 
+instance ObjCArgument INCallAudioRoute where
+  withObjCArg (INCallAudioRoute x) k = k (argCLong x)
+
+instance ObjCReturn INCallAudioRoute where
+  type RawReturn INCallAudioRoute = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCallAudioRoute x)
+  fromOwned x = pure (INCallAudioRoute x)
+
 -- | @INCallCapability@
 newtype INCallCapability = INCallCapability CLong
   deriving stock (Eq, Ord, Show)
@@ -390,6 +543,16 @@ pattern INCallCapabilityAudioCall = INCallCapability 1
 
 pattern INCallCapabilityVideoCall :: INCallCapability
 pattern INCallCapabilityVideoCall = INCallCapability 2
+
+instance ObjCArgument INCallCapability where
+  withObjCArg (INCallCapability x) k = k (argCLong x)
+
+instance ObjCReturn INCallCapability where
+  type RawReturn INCallCapability = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCallCapability x)
+  fromOwned x = pure (INCallCapability x)
 
 -- | @INCallCapabilityOptions@ (bitmask)
 newtype INCallCapabilityOptions = INCallCapabilityOptions CULong
@@ -407,6 +570,16 @@ pattern INCallCapabilityOptionAudioCall = INCallCapabilityOptions 1
 
 pattern INCallCapabilityOptionVideoCall :: INCallCapabilityOptions
 pattern INCallCapabilityOptionVideoCall = INCallCapabilityOptions 2
+
+instance ObjCArgument INCallCapabilityOptions where
+  withObjCArg (INCallCapabilityOptions x) k = k (argCULong x)
+
+instance ObjCReturn INCallCapabilityOptions where
+  type RawReturn INCallCapabilityOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCallCapabilityOptions x)
+  fromOwned x = pure (INCallCapabilityOptions x)
 
 -- | @INCallDestinationType@
 newtype INCallDestinationType = INCallDestinationType CLong
@@ -443,6 +616,16 @@ pattern INCallDestinationTypeVoicemailDestination = INCallDestinationType 3
 pattern INCallDestinationTypeRedialDestination :: INCallDestinationType
 pattern INCallDestinationTypeRedialDestination = INCallDestinationType 4
 
+instance ObjCArgument INCallDestinationType where
+  withObjCArg (INCallDestinationType x) k = k (argCLong x)
+
+instance ObjCReturn INCallDestinationType where
+  type RawReturn INCallDestinationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCallDestinationType x)
+  fromOwned x = pure (INCallDestinationType x)
+
 -- | @INCallRecordType@
 newtype INCallRecordType = INCallRecordType CLong
   deriving stock (Eq, Ord, Show)
@@ -474,6 +657,16 @@ pattern INCallRecordTypeInProgress = INCallRecordType 7
 
 pattern INCallRecordTypeOnHold :: INCallRecordType
 pattern INCallRecordTypeOnHold = INCallRecordType 8
+
+instance ObjCArgument INCallRecordType where
+  withObjCArg (INCallRecordType x) k = k (argCLong x)
+
+instance ObjCReturn INCallRecordType where
+  type RawReturn INCallRecordType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCallRecordType x)
+  fromOwned x = pure (INCallRecordType x)
 
 -- | @INCallRecordTypeOptions@ (bitmask)
 newtype INCallRecordTypeOptions = INCallRecordTypeOptions CULong
@@ -510,6 +703,16 @@ pattern INCallRecordTypeOptionInProgress = INCallRecordTypeOptions 64
 pattern INCallRecordTypeOptionOnHold :: INCallRecordTypeOptions
 pattern INCallRecordTypeOptionOnHold = INCallRecordTypeOptions 128
 
+instance ObjCArgument INCallRecordTypeOptions where
+  withObjCArg (INCallRecordTypeOptions x) k = k (argCULong x)
+
+instance ObjCReturn INCallRecordTypeOptions where
+  type RawReturn INCallRecordTypeOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCallRecordTypeOptions x)
+  fromOwned x = pure (INCallRecordTypeOptions x)
+
 -- | @INCancelRideIntentResponseCode@
 newtype INCancelRideIntentResponseCode = INCancelRideIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -526,6 +729,16 @@ pattern INCancelRideIntentResponseCodeSuccess = INCancelRideIntentResponseCode 2
 
 pattern INCancelRideIntentResponseCodeFailure :: INCancelRideIntentResponseCode
 pattern INCancelRideIntentResponseCodeFailure = INCancelRideIntentResponseCode 3
+
+instance ObjCArgument INCancelRideIntentResponseCode where
+  withObjCArg (INCancelRideIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INCancelRideIntentResponseCode where
+  type RawReturn INCancelRideIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCancelRideIntentResponseCode x)
+  fromOwned x = pure (INCancelRideIntentResponseCode x)
 
 -- | @INCancelWorkoutIntentResponseCode@
 newtype INCancelWorkoutIntentResponseCode = INCancelWorkoutIntentResponseCode CLong
@@ -556,6 +769,16 @@ pattern INCancelWorkoutIntentResponseCodeHandleInApp = INCancelWorkoutIntentResp
 pattern INCancelWorkoutIntentResponseCodeSuccess :: INCancelWorkoutIntentResponseCode
 pattern INCancelWorkoutIntentResponseCodeSuccess = INCancelWorkoutIntentResponseCode 7
 
+instance ObjCArgument INCancelWorkoutIntentResponseCode where
+  withObjCArg (INCancelWorkoutIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INCancelWorkoutIntentResponseCode where
+  type RawReturn INCancelWorkoutIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCancelWorkoutIntentResponseCode x)
+  fromOwned x = pure (INCancelWorkoutIntentResponseCode x)
+
 -- | @INCarAirCirculationMode@
 newtype INCarAirCirculationMode = INCarAirCirculationMode CLong
   deriving stock (Eq, Ord, Show)
@@ -569,6 +792,16 @@ pattern INCarAirCirculationModeFreshAir = INCarAirCirculationMode 1
 
 pattern INCarAirCirculationModeRecirculateAir :: INCarAirCirculationMode
 pattern INCarAirCirculationModeRecirculateAir = INCarAirCirculationMode 2
+
+instance ObjCArgument INCarAirCirculationMode where
+  withObjCArg (INCarAirCirculationMode x) k = k (argCLong x)
+
+instance ObjCReturn INCarAirCirculationMode where
+  type RawReturn INCarAirCirculationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCarAirCirculationMode x)
+  fromOwned x = pure (INCarAirCirculationMode x)
 
 -- | @INCarAudioSource@
 newtype INCarAudioSource = INCarAudioSource CLong
@@ -605,6 +838,16 @@ pattern INCarAudioSourceOpticalDrive = INCarAudioSource 8
 pattern INCarAudioSourceHardDrive :: INCarAudioSource
 pattern INCarAudioSourceHardDrive = INCarAudioSource 9
 
+instance ObjCArgument INCarAudioSource where
+  withObjCArg (INCarAudioSource x) k = k (argCLong x)
+
+instance ObjCReturn INCarAudioSource where
+  type RawReturn INCarAudioSource = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCarAudioSource x)
+  fromOwned x = pure (INCarAudioSource x)
+
 -- | @INCarDefroster@
 newtype INCarDefroster = INCarDefroster CLong
   deriving stock (Eq, Ord, Show)
@@ -621,6 +864,16 @@ pattern INCarDefrosterRear = INCarDefroster 2
 
 pattern INCarDefrosterAll :: INCarDefroster
 pattern INCarDefrosterAll = INCarDefroster 3
+
+instance ObjCArgument INCarDefroster where
+  withObjCArg (INCarDefroster x) k = k (argCLong x)
+
+instance ObjCReturn INCarDefroster where
+  type RawReturn INCarDefroster = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCarDefroster x)
+  fromOwned x = pure (INCarDefroster x)
 
 -- | @INCarSeat@
 newtype INCarSeat = INCarSeat CLong
@@ -666,6 +919,16 @@ pattern INCarSeatThirdRow = INCarSeat 11
 pattern INCarSeatAll :: INCarSeat
 pattern INCarSeatAll = INCarSeat 12
 
+instance ObjCArgument INCarSeat where
+  withObjCArg (INCarSeat x) k = k (argCLong x)
+
+instance ObjCReturn INCarSeat where
+  type RawReturn INCarSeat = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCarSeat x)
+  fromOwned x = pure (INCarSeat x)
+
 -- | @INCarSignalOptions@ (bitmask)
 newtype INCarSignalOptions = INCarSignalOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -683,6 +946,16 @@ pattern INCarSignalOptionAudible = INCarSignalOptions 1
 pattern INCarSignalOptionVisible :: INCarSignalOptions
 pattern INCarSignalOptionVisible = INCarSignalOptions 2
 
+instance ObjCArgument INCarSignalOptions where
+  withObjCArg (INCarSignalOptions x) k = k (argCULong x)
+
+instance ObjCReturn INCarSignalOptions where
+  type RawReturn INCarSignalOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCarSignalOptions x)
+  fromOwned x = pure (INCarSignalOptions x)
+
 -- | @INConditionalOperator@
 newtype INConditionalOperator = INConditionalOperator CLong
   deriving stock (Eq, Ord, Show)
@@ -696,6 +969,16 @@ pattern INConditionalOperatorAny = INConditionalOperator 1
 
 pattern INConditionalOperatorNone :: INConditionalOperator
 pattern INConditionalOperatorNone = INConditionalOperator 2
+
+instance ObjCArgument INConditionalOperator where
+  withObjCArg (INConditionalOperator x) k = k (argCLong x)
+
+instance ObjCReturn INConditionalOperator where
+  type RawReturn INConditionalOperator = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INConditionalOperator x)
+  fromOwned x = pure (INConditionalOperator x)
 
 -- | @INCreateNoteIntentResponseCode@
 newtype INCreateNoteIntentResponseCode = INCreateNoteIntentResponseCode CLong
@@ -720,6 +1003,16 @@ pattern INCreateNoteIntentResponseCodeFailure = INCreateNoteIntentResponseCode 4
 pattern INCreateNoteIntentResponseCodeFailureRequiringAppLaunch :: INCreateNoteIntentResponseCode
 pattern INCreateNoteIntentResponseCodeFailureRequiringAppLaunch = INCreateNoteIntentResponseCode 5
 
+instance ObjCArgument INCreateNoteIntentResponseCode where
+  withObjCArg (INCreateNoteIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INCreateNoteIntentResponseCode where
+  type RawReturn INCreateNoteIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCreateNoteIntentResponseCode x)
+  fromOwned x = pure (INCreateNoteIntentResponseCode x)
+
 -- | @INCreateTaskListIntentResponseCode@
 newtype INCreateTaskListIntentResponseCode = INCreateTaskListIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -742,6 +1035,16 @@ pattern INCreateTaskListIntentResponseCodeFailure = INCreateTaskListIntentRespon
 
 pattern INCreateTaskListIntentResponseCodeFailureRequiringAppLaunch :: INCreateTaskListIntentResponseCode
 pattern INCreateTaskListIntentResponseCodeFailureRequiringAppLaunch = INCreateTaskListIntentResponseCode 5
+
+instance ObjCArgument INCreateTaskListIntentResponseCode where
+  withObjCArg (INCreateTaskListIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INCreateTaskListIntentResponseCode where
+  type RawReturn INCreateTaskListIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INCreateTaskListIntentResponseCode x)
+  fromOwned x = pure (INCreateTaskListIntentResponseCode x)
 
 -- | A relevant daily routine situation.
 --
@@ -781,6 +1084,16 @@ pattern INDailyRoutineSituationActiveWorkout = INDailyRoutineSituation 8
 pattern INDailyRoutineSituationPhysicalActivityIncomplete :: INDailyRoutineSituation
 pattern INDailyRoutineSituationPhysicalActivityIncomplete = INDailyRoutineSituation 9
 
+instance ObjCArgument INDailyRoutineSituation where
+  withObjCArg (INDailyRoutineSituation x) k = k (argCLong x)
+
+instance ObjCReturn INDailyRoutineSituation where
+  type RawReturn INDailyRoutineSituation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INDailyRoutineSituation x)
+  fromOwned x = pure (INDailyRoutineSituation x)
+
 -- | @INDateSearchType@
 newtype INDateSearchType = INDateSearchType CLong
   deriving stock (Eq, Ord, Show)
@@ -797,6 +1110,16 @@ pattern INDateSearchTypeByModifiedDate = INDateSearchType 2
 
 pattern INDateSearchTypeByCreatedDate :: INDateSearchType
 pattern INDateSearchTypeByCreatedDate = INDateSearchType 3
+
+instance ObjCArgument INDateSearchType where
+  withObjCArg (INDateSearchType x) k = k (argCLong x)
+
+instance ObjCReturn INDateSearchType where
+  type RawReturn INDateSearchType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INDateSearchType x)
+  fromOwned x = pure (INDateSearchType x)
 
 -- | @INDayOfWeekOptions@ (bitmask)
 newtype INDayOfWeekOptions = INDayOfWeekOptions CULong
@@ -830,6 +1153,16 @@ pattern INDayOfWeekOptionSaturday = INDayOfWeekOptions 32
 pattern INDayOfWeekOptionSunday :: INDayOfWeekOptions
 pattern INDayOfWeekOptionSunday = INDayOfWeekOptions 64
 
+instance ObjCArgument INDayOfWeekOptions where
+  withObjCArg (INDayOfWeekOptions x) k = k (argCULong x)
+
+instance ObjCReturn INDayOfWeekOptions where
+  type RawReturn INDayOfWeekOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INDayOfWeekOptions x)
+  fromOwned x = pure (INDayOfWeekOptions x)
+
 -- | @INDeleteTasksIntentResponseCode@
 newtype INDeleteTasksIntentResponseCode = INDeleteTasksIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -853,6 +1186,16 @@ pattern INDeleteTasksIntentResponseCodeFailure = INDeleteTasksIntentResponseCode
 pattern INDeleteTasksIntentResponseCodeFailureRequiringAppLaunch :: INDeleteTasksIntentResponseCode
 pattern INDeleteTasksIntentResponseCodeFailureRequiringAppLaunch = INDeleteTasksIntentResponseCode 5
 
+instance ObjCArgument INDeleteTasksIntentResponseCode where
+  withObjCArg (INDeleteTasksIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INDeleteTasksIntentResponseCode where
+  type RawReturn INDeleteTasksIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INDeleteTasksIntentResponseCode x)
+  fromOwned x = pure (INDeleteTasksIntentResponseCode x)
+
 -- | @INDeleteTasksTaskListUnsupportedReason@
 newtype INDeleteTasksTaskListUnsupportedReason = INDeleteTasksTaskListUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -860,6 +1203,16 @@ newtype INDeleteTasksTaskListUnsupportedReason = INDeleteTasksTaskListUnsupporte
 
 pattern INDeleteTasksTaskListUnsupportedReasonNoTaskListFound :: INDeleteTasksTaskListUnsupportedReason
 pattern INDeleteTasksTaskListUnsupportedReasonNoTaskListFound = INDeleteTasksTaskListUnsupportedReason 1
+
+instance ObjCArgument INDeleteTasksTaskListUnsupportedReason where
+  withObjCArg (INDeleteTasksTaskListUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INDeleteTasksTaskListUnsupportedReason where
+  type RawReturn INDeleteTasksTaskListUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INDeleteTasksTaskListUnsupportedReason x)
+  fromOwned x = pure (INDeleteTasksTaskListUnsupportedReason x)
 
 -- | @INDeleteTasksTaskUnsupportedReason@
 newtype INDeleteTasksTaskUnsupportedReason = INDeleteTasksTaskUnsupportedReason CLong
@@ -871,6 +1224,16 @@ pattern INDeleteTasksTaskUnsupportedReasonNoTasksFound = INDeleteTasksTaskUnsupp
 
 pattern INDeleteTasksTaskUnsupportedReasonNoTasksInApp :: INDeleteTasksTaskUnsupportedReason
 pattern INDeleteTasksTaskUnsupportedReasonNoTasksInApp = INDeleteTasksTaskUnsupportedReason 2
+
+instance ObjCArgument INDeleteTasksTaskUnsupportedReason where
+  withObjCArg (INDeleteTasksTaskUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INDeleteTasksTaskUnsupportedReason where
+  type RawReturn INDeleteTasksTaskUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INDeleteTasksTaskUnsupportedReason x)
+  fromOwned x = pure (INDeleteTasksTaskUnsupportedReason x)
 
 -- | @INEditMessageIntentResponseCode@
 newtype INEditMessageIntentResponseCode = INEditMessageIntentResponseCode CLong
@@ -913,6 +1276,16 @@ pattern INEditMessageIntentResponseCodeFailureMessageServiceNotAvailable = INEdi
 pattern INEditMessageIntentResponseCodeFailureRequiringInAppAuthentication :: INEditMessageIntentResponseCode
 pattern INEditMessageIntentResponseCodeFailureRequiringInAppAuthentication = INEditMessageIntentResponseCode 11
 
+instance ObjCArgument INEditMessageIntentResponseCode where
+  withObjCArg (INEditMessageIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INEditMessageIntentResponseCode where
+  type RawReturn INEditMessageIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INEditMessageIntentResponseCode x)
+  fromOwned x = pure (INEditMessageIntentResponseCode x)
+
 -- | @INEndWorkoutIntentResponseCode@
 newtype INEndWorkoutIntentResponseCode = INEndWorkoutIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -942,6 +1315,16 @@ pattern INEndWorkoutIntentResponseCodeHandleInApp = INEndWorkoutIntentResponseCo
 pattern INEndWorkoutIntentResponseCodeSuccess :: INEndWorkoutIntentResponseCode
 pattern INEndWorkoutIntentResponseCodeSuccess = INEndWorkoutIntentResponseCode 7
 
+instance ObjCArgument INEndWorkoutIntentResponseCode where
+  withObjCArg (INEndWorkoutIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INEndWorkoutIntentResponseCode where
+  type RawReturn INEndWorkoutIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INEndWorkoutIntentResponseCode x)
+  fromOwned x = pure (INEndWorkoutIntentResponseCode x)
+
 -- | @INFocusStatusAuthorizationStatus@
 newtype INFocusStatusAuthorizationStatus = INFocusStatusAuthorizationStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -959,6 +1342,16 @@ pattern INFocusStatusAuthorizationStatusDenied = INFocusStatusAuthorizationStatu
 pattern INFocusStatusAuthorizationStatusAuthorized :: INFocusStatusAuthorizationStatus
 pattern INFocusStatusAuthorizationStatusAuthorized = INFocusStatusAuthorizationStatus 3
 
+instance ObjCArgument INFocusStatusAuthorizationStatus where
+  withObjCArg (INFocusStatusAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn INFocusStatusAuthorizationStatus where
+  type RawReturn INFocusStatusAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INFocusStatusAuthorizationStatus x)
+  fromOwned x = pure (INFocusStatusAuthorizationStatus x)
+
 -- | @INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode@
 newtype INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode = INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -972,6 +1365,16 @@ pattern INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCodeFail
 
 pattern INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCodeUnspecified :: INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode
 pattern INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCodeUnspecified = INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode 2
+
+instance ObjCArgument INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode where
+  withObjCArg (INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode where
+  type RawReturn INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode x)
+  fromOwned x = pure (INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode x)
 
 -- | @INGetAvailableRestaurantReservationBookingsIntentCode@
 newtype INGetAvailableRestaurantReservationBookingsIntentCode = INGetAvailableRestaurantReservationBookingsIntentCode CLong
@@ -989,6 +1392,16 @@ pattern INGetAvailableRestaurantReservationBookingsIntentCodeFailureRequestUnsat
 
 pattern INGetAvailableRestaurantReservationBookingsIntentCodeFailureRequestUnspecified :: INGetAvailableRestaurantReservationBookingsIntentCode
 pattern INGetAvailableRestaurantReservationBookingsIntentCodeFailureRequestUnspecified = INGetAvailableRestaurantReservationBookingsIntentCode 3
+
+instance ObjCArgument INGetAvailableRestaurantReservationBookingsIntentCode where
+  withObjCArg (INGetAvailableRestaurantReservationBookingsIntentCode x) k = k (argCLong x)
+
+instance ObjCReturn INGetAvailableRestaurantReservationBookingsIntentCode where
+  type RawReturn INGetAvailableRestaurantReservationBookingsIntentCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INGetAvailableRestaurantReservationBookingsIntentCode x)
+  fromOwned x = pure (INGetAvailableRestaurantReservationBookingsIntentCode x)
 
 -- | @INGetCarLockStatusIntentResponseCode@
 newtype INGetCarLockStatusIntentResponseCode = INGetCarLockStatusIntentResponseCode CLong
@@ -1013,6 +1426,16 @@ pattern INGetCarLockStatusIntentResponseCodeFailure = INGetCarLockStatusIntentRe
 pattern INGetCarLockStatusIntentResponseCodeFailureRequiringAppLaunch :: INGetCarLockStatusIntentResponseCode
 pattern INGetCarLockStatusIntentResponseCodeFailureRequiringAppLaunch = INGetCarLockStatusIntentResponseCode 5
 
+instance ObjCArgument INGetCarLockStatusIntentResponseCode where
+  withObjCArg (INGetCarLockStatusIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INGetCarLockStatusIntentResponseCode where
+  type RawReturn INGetCarLockStatusIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INGetCarLockStatusIntentResponseCode x)
+  fromOwned x = pure (INGetCarLockStatusIntentResponseCode x)
+
 -- | @INGetCarPowerLevelStatusIntentResponseCode@
 newtype INGetCarPowerLevelStatusIntentResponseCode = INGetCarPowerLevelStatusIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -1035,6 +1458,16 @@ pattern INGetCarPowerLevelStatusIntentResponseCodeFailure = INGetCarPowerLevelSt
 
 pattern INGetCarPowerLevelStatusIntentResponseCodeFailureRequiringAppLaunch :: INGetCarPowerLevelStatusIntentResponseCode
 pattern INGetCarPowerLevelStatusIntentResponseCodeFailureRequiringAppLaunch = INGetCarPowerLevelStatusIntentResponseCode 5
+
+instance ObjCArgument INGetCarPowerLevelStatusIntentResponseCode where
+  withObjCArg (INGetCarPowerLevelStatusIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INGetCarPowerLevelStatusIntentResponseCode where
+  type RawReturn INGetCarPowerLevelStatusIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INGetCarPowerLevelStatusIntentResponseCode x)
+  fromOwned x = pure (INGetCarPowerLevelStatusIntentResponseCode x)
 
 -- | @INGetReservationDetailsIntentResponseCode@
 newtype INGetReservationDetailsIntentResponseCode = INGetReservationDetailsIntentResponseCode CLong
@@ -1059,6 +1492,16 @@ pattern INGetReservationDetailsIntentResponseCodeFailure = INGetReservationDetai
 pattern INGetReservationDetailsIntentResponseCodeFailureRequiringAppLaunch :: INGetReservationDetailsIntentResponseCode
 pattern INGetReservationDetailsIntentResponseCodeFailureRequiringAppLaunch = INGetReservationDetailsIntentResponseCode 5
 
+instance ObjCArgument INGetReservationDetailsIntentResponseCode where
+  withObjCArg (INGetReservationDetailsIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INGetReservationDetailsIntentResponseCode where
+  type RawReturn INGetReservationDetailsIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INGetReservationDetailsIntentResponseCode x)
+  fromOwned x = pure (INGetReservationDetailsIntentResponseCode x)
+
 -- | @INGetRestaurantGuestIntentResponseCode@
 newtype INGetRestaurantGuestIntentResponseCode = INGetRestaurantGuestIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -1069,6 +1512,16 @@ pattern INGetRestaurantGuestIntentResponseCodeSuccess = INGetRestaurantGuestInte
 
 pattern INGetRestaurantGuestIntentResponseCodeFailure :: INGetRestaurantGuestIntentResponseCode
 pattern INGetRestaurantGuestIntentResponseCodeFailure = INGetRestaurantGuestIntentResponseCode 1
+
+instance ObjCArgument INGetRestaurantGuestIntentResponseCode where
+  withObjCArg (INGetRestaurantGuestIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INGetRestaurantGuestIntentResponseCode where
+  type RawReturn INGetRestaurantGuestIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INGetRestaurantGuestIntentResponseCode x)
+  fromOwned x = pure (INGetRestaurantGuestIntentResponseCode x)
 
 -- | @INGetRideStatusIntentResponseCode@
 newtype INGetRideStatusIntentResponseCode = INGetRideStatusIntentResponseCode CLong
@@ -1099,6 +1552,16 @@ pattern INGetRideStatusIntentResponseCodeFailureRequiringAppLaunchMustVerifyCred
 pattern INGetRideStatusIntentResponseCodeFailureRequiringAppLaunchServiceTemporarilyUnavailable :: INGetRideStatusIntentResponseCode
 pattern INGetRideStatusIntentResponseCodeFailureRequiringAppLaunchServiceTemporarilyUnavailable = INGetRideStatusIntentResponseCode 7
 
+instance ObjCArgument INGetRideStatusIntentResponseCode where
+  withObjCArg (INGetRideStatusIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INGetRideStatusIntentResponseCode where
+  type RawReturn INGetRideStatusIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INGetRideStatusIntentResponseCode x)
+  fromOwned x = pure (INGetRideStatusIntentResponseCode x)
+
 -- | @INGetUserCurrentRestaurantReservationBookingsIntentResponseCode@
 newtype INGetUserCurrentRestaurantReservationBookingsIntentResponseCode = INGetUserCurrentRestaurantReservationBookingsIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -1115,6 +1578,16 @@ pattern INGetUserCurrentRestaurantReservationBookingsIntentResponseCodeFailureRe
 
 pattern INGetUserCurrentRestaurantReservationBookingsIntentResponseCodeUnspecified :: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode
 pattern INGetUserCurrentRestaurantReservationBookingsIntentResponseCodeUnspecified = INGetUserCurrentRestaurantReservationBookingsIntentResponseCode 3
+
+instance ObjCArgument INGetUserCurrentRestaurantReservationBookingsIntentResponseCode where
+  withObjCArg (INGetUserCurrentRestaurantReservationBookingsIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INGetUserCurrentRestaurantReservationBookingsIntentResponseCode where
+  type RawReturn INGetUserCurrentRestaurantReservationBookingsIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INGetUserCurrentRestaurantReservationBookingsIntentResponseCode x)
+  fromOwned x = pure (INGetUserCurrentRestaurantReservationBookingsIntentResponseCode x)
 
 -- | @INGetVisualCodeIntentResponseCode@
 newtype INGetVisualCodeIntentResponseCode = INGetVisualCodeIntentResponseCode CLong
@@ -1145,6 +1618,16 @@ pattern INGetVisualCodeIntentResponseCodeFailureRequiringAppLaunch = INGetVisual
 pattern INGetVisualCodeIntentResponseCodeFailureAppConfigurationRequired :: INGetVisualCodeIntentResponseCode
 pattern INGetVisualCodeIntentResponseCodeFailureAppConfigurationRequired = INGetVisualCodeIntentResponseCode 7
 
+instance ObjCArgument INGetVisualCodeIntentResponseCode where
+  withObjCArg (INGetVisualCodeIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INGetVisualCodeIntentResponseCode where
+  type RawReturn INGetVisualCodeIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INGetVisualCodeIntentResponseCode x)
+  fromOwned x = pure (INGetVisualCodeIntentResponseCode x)
+
 -- | @INHangUpCallIntentResponseCode@
 newtype INHangUpCallIntentResponseCode = INHangUpCallIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -1170,6 +1653,16 @@ pattern INHangUpCallIntentResponseCodeFailureRequiringAppLaunch = INHangUpCallIn
 
 pattern INHangUpCallIntentResponseCodeFailureNoCallToHangUp :: INHangUpCallIntentResponseCode
 pattern INHangUpCallIntentResponseCodeFailureNoCallToHangUp = INHangUpCallIntentResponseCode 6
+
+instance ObjCArgument INHangUpCallIntentResponseCode where
+  withObjCArg (INHangUpCallIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INHangUpCallIntentResponseCode where
+  type RawReturn INHangUpCallIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INHangUpCallIntentResponseCode x)
+  fromOwned x = pure (INHangUpCallIntentResponseCode x)
 
 -- | @INIntentErrorCode@
 newtype INIntentErrorCode = INIntentErrorCode CLong
@@ -1278,6 +1771,16 @@ pattern INIntentErrorUnableToCreateAppIntentRepresentation = INIntentErrorCode 1
 pattern INIntentErrorNoAppIntent :: INIntentErrorCode
 pattern INIntentErrorNoAppIntent = INIntentErrorCode 10001
 
+instance ObjCArgument INIntentErrorCode where
+  withObjCArg (INIntentErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn INIntentErrorCode where
+  type RawReturn INIntentErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INIntentErrorCode x)
+  fromOwned x = pure (INIntentErrorCode x)
+
 -- | @INIntentHandlingStatus@
 newtype INIntentHandlingStatus = INIntentHandlingStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -1304,6 +1807,16 @@ pattern INIntentHandlingStatusDeferredToApplication = INIntentHandlingStatus 5
 pattern INIntentHandlingStatusUserConfirmationRequired :: INIntentHandlingStatus
 pattern INIntentHandlingStatusUserConfirmationRequired = INIntentHandlingStatus 6
 
+instance ObjCArgument INIntentHandlingStatus where
+  withObjCArg (INIntentHandlingStatus x) k = k (argCLong x)
+
+instance ObjCReturn INIntentHandlingStatus where
+  type RawReturn INIntentHandlingStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INIntentHandlingStatus x)
+  fromOwned x = pure (INIntentHandlingStatus x)
+
 -- | @INInteractionDirection@
 newtype INInteractionDirection = INInteractionDirection CLong
   deriving stock (Eq, Ord, Show)
@@ -1317,6 +1830,16 @@ pattern INInteractionDirectionOutgoing = INInteractionDirection 1
 
 pattern INInteractionDirectionIncoming :: INInteractionDirection
 pattern INInteractionDirectionIncoming = INInteractionDirection 2
+
+instance ObjCArgument INInteractionDirection where
+  withObjCArg (INInteractionDirection x) k = k (argCLong x)
+
+instance ObjCReturn INInteractionDirection where
+  type RawReturn INInteractionDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INInteractionDirection x)
+  fromOwned x = pure (INInteractionDirection x)
 
 -- | @INListCarsIntentResponseCode@
 newtype INListCarsIntentResponseCode = INListCarsIntentResponseCode CLong
@@ -1340,6 +1863,16 @@ pattern INListCarsIntentResponseCodeFailure = INListCarsIntentResponseCode 4
 
 pattern INListCarsIntentResponseCodeFailureRequiringAppLaunch :: INListCarsIntentResponseCode
 pattern INListCarsIntentResponseCodeFailureRequiringAppLaunch = INListCarsIntentResponseCode 5
+
+instance ObjCArgument INListCarsIntentResponseCode where
+  withObjCArg (INListCarsIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INListCarsIntentResponseCode where
+  type RawReturn INListCarsIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INListCarsIntentResponseCode x)
+  fromOwned x = pure (INListCarsIntentResponseCode x)
 
 -- | @INListRideOptionsIntentResponseCode@
 newtype INListRideOptionsIntentResponseCode = INListRideOptionsIntentResponseCode CLong
@@ -1379,6 +1912,16 @@ pattern INListRideOptionsIntentResponseCodeFailureRequiringAppLaunchPreviousRide
 pattern INListRideOptionsIntentResponseCodeFailurePreviousRideNeedsFeedback :: INListRideOptionsIntentResponseCode
 pattern INListRideOptionsIntentResponseCodeFailurePreviousRideNeedsFeedback = INListRideOptionsIntentResponseCode 10
 
+instance ObjCArgument INListRideOptionsIntentResponseCode where
+  withObjCArg (INListRideOptionsIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INListRideOptionsIntentResponseCode where
+  type RawReturn INListRideOptionsIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INListRideOptionsIntentResponseCode x)
+  fromOwned x = pure (INListRideOptionsIntentResponseCode x)
+
 -- | @INLocationSearchType@
 newtype INLocationSearchType = INLocationSearchType CLong
   deriving stock (Eq, Ord, Show)
@@ -1389,6 +1932,16 @@ pattern INLocationSearchTypeUnknown = INLocationSearchType 0
 
 pattern INLocationSearchTypeByLocationTrigger :: INLocationSearchType
 pattern INLocationSearchTypeByLocationTrigger = INLocationSearchType 1
+
+instance ObjCArgument INLocationSearchType where
+  withObjCArg (INLocationSearchType x) k = k (argCLong x)
+
+instance ObjCReturn INLocationSearchType where
+  type RawReturn INLocationSearchType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INLocationSearchType x)
+  fromOwned x = pure (INLocationSearchType x)
 
 -- | @INMediaAffinityType@
 newtype INMediaAffinityType = INMediaAffinityType CLong
@@ -1404,6 +1957,16 @@ pattern INMediaAffinityTypeLike = INMediaAffinityType 1
 pattern INMediaAffinityTypeDislike :: INMediaAffinityType
 pattern INMediaAffinityTypeDislike = INMediaAffinityType 2
 
+instance ObjCArgument INMediaAffinityType where
+  withObjCArg (INMediaAffinityType x) k = k (argCLong x)
+
+instance ObjCReturn INMediaAffinityType where
+  type RawReturn INMediaAffinityType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMediaAffinityType x)
+  fromOwned x = pure (INMediaAffinityType x)
+
 -- | @INMediaDestinationType@
 newtype INMediaDestinationType = INMediaDestinationType CLong
   deriving stock (Eq, Ord, Show)
@@ -1417,6 +1980,16 @@ pattern INMediaDestinationTypeLibrary = INMediaDestinationType 1
 
 pattern INMediaDestinationTypePlaylist :: INMediaDestinationType
 pattern INMediaDestinationTypePlaylist = INMediaDestinationType 2
+
+instance ObjCArgument INMediaDestinationType where
+  withObjCArg (INMediaDestinationType x) k = k (argCLong x)
+
+instance ObjCReturn INMediaDestinationType where
+  type RawReturn INMediaDestinationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMediaDestinationType x)
+  fromOwned x = pure (INMediaDestinationType x)
 
 -- | @INMediaItemType@
 newtype INMediaItemType = INMediaItemType CLong
@@ -1486,6 +2059,16 @@ pattern INMediaItemTypeAlgorithmicRadioStation = INMediaItemType 19
 pattern INMediaItemTypeNews :: INMediaItemType
 pattern INMediaItemTypeNews = INMediaItemType 20
 
+instance ObjCArgument INMediaItemType where
+  withObjCArg (INMediaItemType x) k = k (argCLong x)
+
+instance ObjCReturn INMediaItemType where
+  type RawReturn INMediaItemType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMediaItemType x)
+  fromOwned x = pure (INMediaItemType x)
+
 -- | @INMediaReference@
 newtype INMediaReference = INMediaReference CLong
   deriving stock (Eq, Ord, Show)
@@ -1499,6 +2082,16 @@ pattern INMediaReferenceCurrentlyPlaying = INMediaReference 1
 
 pattern INMediaReferenceMy :: INMediaReference
 pattern INMediaReferenceMy = INMediaReference 2
+
+instance ObjCArgument INMediaReference where
+  withObjCArg (INMediaReference x) k = k (argCLong x)
+
+instance ObjCReturn INMediaReference where
+  type RawReturn INMediaReference = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMediaReference x)
+  fromOwned x = pure (INMediaReference x)
 
 -- | @INMediaSortOrder@
 newtype INMediaSortOrder = INMediaSortOrder CLong
@@ -1532,6 +2125,16 @@ pattern INMediaSortOrderTrending = INMediaSortOrder 7
 pattern INMediaSortOrderRecommended :: INMediaSortOrder
 pattern INMediaSortOrderRecommended = INMediaSortOrder 8
 
+instance ObjCArgument INMediaSortOrder where
+  withObjCArg (INMediaSortOrder x) k = k (argCLong x)
+
+instance ObjCReturn INMediaSortOrder where
+  type RawReturn INMediaSortOrder = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMediaSortOrder x)
+  fromOwned x = pure (INMediaSortOrder x)
+
 -- | @INMediaUserContextSubscriptionStatus@
 newtype INMediaUserContextSubscriptionStatus = INMediaUserContextSubscriptionStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -1545,6 +2148,16 @@ pattern INMediaUserContextSubscriptionStatusNotSubscribed = INMediaUserContextSu
 
 pattern INMediaUserContextSubscriptionStatusSubscribed :: INMediaUserContextSubscriptionStatus
 pattern INMediaUserContextSubscriptionStatusSubscribed = INMediaUserContextSubscriptionStatus 2
+
+instance ObjCArgument INMediaUserContextSubscriptionStatus where
+  withObjCArg (INMediaUserContextSubscriptionStatus x) k = k (argCLong x)
+
+instance ObjCReturn INMediaUserContextSubscriptionStatus where
+  type RawReturn INMediaUserContextSubscriptionStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMediaUserContextSubscriptionStatus x)
+  fromOwned x = pure (INMediaUserContextSubscriptionStatus x)
 
 -- | @INMessageAttribute@
 newtype INMessageAttribute = INMessageAttribute CLong
@@ -1568,6 +2181,16 @@ pattern INMessageAttributeUnflagged = INMessageAttribute 4
 
 pattern INMessageAttributePlayed :: INMessageAttribute
 pattern INMessageAttributePlayed = INMessageAttribute 5
+
+instance ObjCArgument INMessageAttribute where
+  withObjCArg (INMessageAttribute x) k = k (argCLong x)
+
+instance ObjCReturn INMessageAttribute where
+  type RawReturn INMessageAttribute = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMessageAttribute x)
+  fromOwned x = pure (INMessageAttribute x)
 
 -- | @INMessageAttributeOptions@ (bitmask)
 newtype INMessageAttributeOptions = INMessageAttributeOptions CULong
@@ -1595,6 +2218,16 @@ pattern INMessageAttributeOptionUnflagged = INMessageAttributeOptions 8
 pattern INMessageAttributeOptionPlayed :: INMessageAttributeOptions
 pattern INMessageAttributeOptionPlayed = INMessageAttributeOptions 16
 
+instance ObjCArgument INMessageAttributeOptions where
+  withObjCArg (INMessageAttributeOptions x) k = k (argCULong x)
+
+instance ObjCReturn INMessageAttributeOptions where
+  type RawReturn INMessageAttributeOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMessageAttributeOptions x)
+  fromOwned x = pure (INMessageAttributeOptions x)
+
 -- | @INMessageReactionType@
 newtype INMessageReactionType = INMessageReactionType CLong
   deriving stock (Eq, Ord, Show)
@@ -1608,6 +2241,16 @@ pattern INMessageReactionTypeEmoji = INMessageReactionType 1
 
 pattern INMessageReactionTypeGeneric :: INMessageReactionType
 pattern INMessageReactionTypeGeneric = INMessageReactionType 2
+
+instance ObjCArgument INMessageReactionType where
+  withObjCArg (INMessageReactionType x) k = k (argCLong x)
+
+instance ObjCReturn INMessageReactionType where
+  type RawReturn INMessageReactionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMessageReactionType x)
+  fromOwned x = pure (INMessageReactionType x)
 
 -- | @INMessageType@
 newtype INMessageType = INMessageType CLong
@@ -1701,6 +2344,16 @@ pattern INMessageTypeMediaAnimatedImage = INMessageType 27
 pattern INMessageTypeThirdPartyAttachment :: INMessageType
 pattern INMessageTypeThirdPartyAttachment = INMessageType 28
 
+instance ObjCArgument INMessageType where
+  withObjCArg (INMessageType x) k = k (argCLong x)
+
+instance ObjCReturn INMessageType where
+  type RawReturn INMessageType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INMessageType x)
+  fromOwned x = pure (INMessageType x)
+
 -- | @INNoteContentType@
 newtype INNoteContentType = INNoteContentType CLong
   deriving stock (Eq, Ord, Show)
@@ -1714,6 +2367,16 @@ pattern INNoteContentTypeText = INNoteContentType 1
 
 pattern INNoteContentTypeImage :: INNoteContentType
 pattern INNoteContentTypeImage = INNoteContentType 2
+
+instance ObjCArgument INNoteContentType where
+  withObjCArg (INNoteContentType x) k = k (argCLong x)
+
+instance ObjCReturn INNoteContentType where
+  type RawReturn INNoteContentType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INNoteContentType x)
+  fromOwned x = pure (INNoteContentType x)
 
 -- | @INNotebookItemType@
 newtype INNotebookItemType = INNotebookItemType CLong
@@ -1732,6 +2395,16 @@ pattern INNotebookItemTypeTaskList = INNotebookItemType 2
 pattern INNotebookItemTypeTask :: INNotebookItemType
 pattern INNotebookItemTypeTask = INNotebookItemType 3
 
+instance ObjCArgument INNotebookItemType where
+  withObjCArg (INNotebookItemType x) k = k (argCLong x)
+
+instance ObjCReturn INNotebookItemType where
+  type RawReturn INNotebookItemType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INNotebookItemType x)
+  fromOwned x = pure (INNotebookItemType x)
+
 -- | @INOutgoingMessageType@
 newtype INOutgoingMessageType = INOutgoingMessageType CLong
   deriving stock (Eq, Ord, Show)
@@ -1745,6 +2418,16 @@ pattern INOutgoingMessageTypeOutgoingMessageText = INOutgoingMessageType 1
 
 pattern INOutgoingMessageTypeOutgoingMessageAudio :: INOutgoingMessageType
 pattern INOutgoingMessageTypeOutgoingMessageAudio = INOutgoingMessageType 2
+
+instance ObjCArgument INOutgoingMessageType where
+  withObjCArg (INOutgoingMessageType x) k = k (argCLong x)
+
+instance ObjCReturn INOutgoingMessageType where
+  type RawReturn INOutgoingMessageType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INOutgoingMessageType x)
+  fromOwned x = pure (INOutgoingMessageType x)
 
 -- | @INPauseWorkoutIntentResponseCode@
 newtype INPauseWorkoutIntentResponseCode = INPauseWorkoutIntentResponseCode CLong
@@ -1775,6 +2458,16 @@ pattern INPauseWorkoutIntentResponseCodeHandleInApp = INPauseWorkoutIntentRespon
 pattern INPauseWorkoutIntentResponseCodeSuccess :: INPauseWorkoutIntentResponseCode
 pattern INPauseWorkoutIntentResponseCodeSuccess = INPauseWorkoutIntentResponseCode 7
 
+instance ObjCArgument INPauseWorkoutIntentResponseCode where
+  withObjCArg (INPauseWorkoutIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INPauseWorkoutIntentResponseCode where
+  type RawReturn INPauseWorkoutIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPauseWorkoutIntentResponseCode x)
+  fromOwned x = pure (INPauseWorkoutIntentResponseCode x)
+
 -- | @INPayBillIntentResponseCode@
 newtype INPayBillIntentResponseCode = INPayBillIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -1803,6 +2496,16 @@ pattern INPayBillIntentResponseCodeFailureCredentialsUnverified = INPayBillInten
 
 pattern INPayBillIntentResponseCodeFailureInsufficientFunds :: INPayBillIntentResponseCode
 pattern INPayBillIntentResponseCodeFailureInsufficientFunds = INPayBillIntentResponseCode 7
+
+instance ObjCArgument INPayBillIntentResponseCode where
+  withObjCArg (INPayBillIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INPayBillIntentResponseCode where
+  type RawReturn INPayBillIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPayBillIntentResponseCode x)
+  fromOwned x = pure (INPayBillIntentResponseCode x)
 
 -- | @INPaymentMethodType@
 newtype INPaymentMethodType = INPaymentMethodType CLong
@@ -1836,6 +2539,16 @@ pattern INPaymentMethodTypeStore = INPaymentMethodType 7
 pattern INPaymentMethodTypeApplePay :: INPaymentMethodType
 pattern INPaymentMethodTypeApplePay = INPaymentMethodType 8
 
+instance ObjCArgument INPaymentMethodType where
+  withObjCArg (INPaymentMethodType x) k = k (argCLong x)
+
+instance ObjCReturn INPaymentMethodType where
+  type RawReturn INPaymentMethodType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPaymentMethodType x)
+  fromOwned x = pure (INPaymentMethodType x)
+
 -- | @INPaymentStatus@
 newtype INPaymentStatus = INPaymentStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -1859,6 +2572,16 @@ pattern INPaymentStatusFailed = INPaymentStatus 4
 pattern INPaymentStatusUnpaid :: INPaymentStatus
 pattern INPaymentStatusUnpaid = INPaymentStatus 5
 
+instance ObjCArgument INPaymentStatus where
+  withObjCArg (INPaymentStatus x) k = k (argCLong x)
+
+instance ObjCReturn INPaymentStatus where
+  type RawReturn INPaymentStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPaymentStatus x)
+  fromOwned x = pure (INPaymentStatus x)
+
 -- | @INPersonHandleType@
 newtype INPersonHandleType = INPersonHandleType CLong
   deriving stock (Eq, Ord, Show)
@@ -1873,6 +2596,16 @@ pattern INPersonHandleTypeEmailAddress = INPersonHandleType 1
 pattern INPersonHandleTypePhoneNumber :: INPersonHandleType
 pattern INPersonHandleTypePhoneNumber = INPersonHandleType 2
 
+instance ObjCArgument INPersonHandleType where
+  withObjCArg (INPersonHandleType x) k = k (argCLong x)
+
+instance ObjCReturn INPersonHandleType where
+  type RawReturn INPersonHandleType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPersonHandleType x)
+  fromOwned x = pure (INPersonHandleType x)
+
 -- | @INPersonSuggestionType@
 newtype INPersonSuggestionType = INPersonSuggestionType CLong
   deriving stock (Eq, Ord, Show)
@@ -1886,6 +2619,16 @@ pattern INPersonSuggestionTypeSocialProfile = INPersonSuggestionType 1
 
 pattern INPersonSuggestionTypeInstantMessageAddress :: INPersonSuggestionType
 pattern INPersonSuggestionTypeInstantMessageAddress = INPersonSuggestionType 2
+
+instance ObjCArgument INPersonSuggestionType where
+  withObjCArg (INPersonSuggestionType x) k = k (argCLong x)
+
+instance ObjCReturn INPersonSuggestionType where
+  type RawReturn INPersonSuggestionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPersonSuggestionType x)
+  fromOwned x = pure (INPersonSuggestionType x)
 
 -- | @INPhotoAttributeOptions@ (bitmask)
 newtype INPhotoAttributeOptions = INPhotoAttributeOptions CULong
@@ -1985,6 +2728,16 @@ pattern INPhotoAttributeOptionBouncePhoto = INPhotoAttributeOptions 134217728
 pattern INPhotoAttributeOptionLongExposurePhoto :: INPhotoAttributeOptions
 pattern INPhotoAttributeOptionLongExposurePhoto = INPhotoAttributeOptions 268435456
 
+instance ObjCArgument INPhotoAttributeOptions where
+  withObjCArg (INPhotoAttributeOptions x) k = k (argCULong x)
+
+instance ObjCReturn INPhotoAttributeOptions where
+  type RawReturn INPhotoAttributeOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPhotoAttributeOptions x)
+  fromOwned x = pure (INPhotoAttributeOptions x)
+
 -- | @INPlayMediaIntentResponseCode@
 newtype INPlayMediaIntentResponseCode = INPlayMediaIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2026,6 +2779,16 @@ pattern INPlayMediaIntentResponseCodeFailureRestrictedContent = INPlayMediaInten
 pattern INPlayMediaIntentResponseCodeFailureMaxStreamLimitReached :: INPlayMediaIntentResponseCode
 pattern INPlayMediaIntentResponseCodeFailureMaxStreamLimitReached = INPlayMediaIntentResponseCode 11
 
+instance ObjCArgument INPlayMediaIntentResponseCode where
+  withObjCArg (INPlayMediaIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INPlayMediaIntentResponseCode where
+  type RawReturn INPlayMediaIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPlayMediaIntentResponseCode x)
+  fromOwned x = pure (INPlayMediaIntentResponseCode x)
+
 -- | @INPlayMediaMediaItemUnsupportedReason@
 newtype INPlayMediaMediaItemUnsupportedReason = INPlayMediaMediaItemUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -2055,6 +2818,16 @@ pattern INPlayMediaMediaItemUnsupportedReasonServiceUnavailable = INPlayMediaMed
 pattern INPlayMediaMediaItemUnsupportedReasonRegionRestriction :: INPlayMediaMediaItemUnsupportedReason
 pattern INPlayMediaMediaItemUnsupportedReasonRegionRestriction = INPlayMediaMediaItemUnsupportedReason 8
 
+instance ObjCArgument INPlayMediaMediaItemUnsupportedReason where
+  withObjCArg (INPlayMediaMediaItemUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INPlayMediaMediaItemUnsupportedReason where
+  type RawReturn INPlayMediaMediaItemUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPlayMediaMediaItemUnsupportedReason x)
+  fromOwned x = pure (INPlayMediaMediaItemUnsupportedReason x)
+
 -- | @INPlayMediaPlaybackSpeedUnsupportedReason@
 newtype INPlayMediaPlaybackSpeedUnsupportedReason = INPlayMediaPlaybackSpeedUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -2065,6 +2838,16 @@ pattern INPlayMediaPlaybackSpeedUnsupportedReasonBelowMinimum = INPlayMediaPlayb
 
 pattern INPlayMediaPlaybackSpeedUnsupportedReasonAboveMaximum :: INPlayMediaPlaybackSpeedUnsupportedReason
 pattern INPlayMediaPlaybackSpeedUnsupportedReasonAboveMaximum = INPlayMediaPlaybackSpeedUnsupportedReason 2
+
+instance ObjCArgument INPlayMediaPlaybackSpeedUnsupportedReason where
+  withObjCArg (INPlayMediaPlaybackSpeedUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INPlayMediaPlaybackSpeedUnsupportedReason where
+  type RawReturn INPlayMediaPlaybackSpeedUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPlayMediaPlaybackSpeedUnsupportedReason x)
+  fromOwned x = pure (INPlayMediaPlaybackSpeedUnsupportedReason x)
 
 -- | @INPlaybackQueueLocation@
 newtype INPlaybackQueueLocation = INPlaybackQueueLocation CLong
@@ -2083,6 +2866,16 @@ pattern INPlaybackQueueLocationNext = INPlaybackQueueLocation 2
 pattern INPlaybackQueueLocationLater :: INPlaybackQueueLocation
 pattern INPlaybackQueueLocationLater = INPlaybackQueueLocation 3
 
+instance ObjCArgument INPlaybackQueueLocation where
+  withObjCArg (INPlaybackQueueLocation x) k = k (argCLong x)
+
+instance ObjCReturn INPlaybackQueueLocation where
+  type RawReturn INPlaybackQueueLocation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPlaybackQueueLocation x)
+  fromOwned x = pure (INPlaybackQueueLocation x)
+
 -- | @INPlaybackRepeatMode@
 newtype INPlaybackRepeatMode = INPlaybackRepeatMode CLong
   deriving stock (Eq, Ord, Show)
@@ -2099,6 +2892,16 @@ pattern INPlaybackRepeatModeAll = INPlaybackRepeatMode 2
 
 pattern INPlaybackRepeatModeOne :: INPlaybackRepeatMode
 pattern INPlaybackRepeatModeOne = INPlaybackRepeatMode 3
+
+instance ObjCArgument INPlaybackRepeatMode where
+  withObjCArg (INPlaybackRepeatMode x) k = k (argCLong x)
+
+instance ObjCReturn INPlaybackRepeatMode where
+  type RawReturn INPlaybackRepeatMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INPlaybackRepeatMode x)
+  fromOwned x = pure (INPlaybackRepeatMode x)
 
 -- | @INRadioType@
 newtype INRadioType = INRadioType CLong
@@ -2122,6 +2925,16 @@ pattern INRadioTypeSatellite = INRadioType 4
 
 pattern INRadioTypeDAB :: INRadioType
 pattern INRadioTypeDAB = INRadioType 5
+
+instance ObjCArgument INRadioType where
+  withObjCArg (INRadioType x) k = k (argCLong x)
+
+instance ObjCReturn INRadioType where
+  type RawReturn INRadioType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRadioType x)
+  fromOwned x = pure (INRadioType x)
 
 -- | @INRecurrenceFrequency@
 newtype INRecurrenceFrequency = INRecurrenceFrequency CLong
@@ -2149,6 +2962,16 @@ pattern INRecurrenceFrequencyMonthly = INRecurrenceFrequency 5
 pattern INRecurrenceFrequencyYearly :: INRecurrenceFrequency
 pattern INRecurrenceFrequencyYearly = INRecurrenceFrequency 6
 
+instance ObjCArgument INRecurrenceFrequency where
+  withObjCArg (INRecurrenceFrequency x) k = k (argCLong x)
+
+instance ObjCReturn INRecurrenceFrequency where
+  type RawReturn INRecurrenceFrequency = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRecurrenceFrequency x)
+  fromOwned x = pure (INRecurrenceFrequency x)
+
 -- | @INRelativeReference@
 newtype INRelativeReference = INRelativeReference CLong
   deriving stock (Eq, Ord, Show)
@@ -2162,6 +2985,16 @@ pattern INRelativeReferenceNext = INRelativeReference 1
 
 pattern INRelativeReferencePrevious :: INRelativeReference
 pattern INRelativeReferencePrevious = INRelativeReference 2
+
+instance ObjCArgument INRelativeReference where
+  withObjCArg (INRelativeReference x) k = k (argCLong x)
+
+instance ObjCReturn INRelativeReference where
+  type RawReturn INRelativeReference = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRelativeReference x)
+  fromOwned x = pure (INRelativeReference x)
 
 -- | @INRelativeSetting@
 newtype INRelativeSetting = INRelativeSetting CLong
@@ -2183,6 +3016,16 @@ pattern INRelativeSettingHigher = INRelativeSetting 3
 pattern INRelativeSettingHighest :: INRelativeSetting
 pattern INRelativeSettingHighest = INRelativeSetting 4
 
+instance ObjCArgument INRelativeSetting where
+  withObjCArg (INRelativeSetting x) k = k (argCLong x)
+
+instance ObjCReturn INRelativeSetting where
+  type RawReturn INRelativeSetting = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRelativeSetting x)
+  fromOwned x = pure (INRelativeSetting x)
+
 -- | The role of the relevant shortcut.
 --
 -- Provides a hint to Siri about the expected user experience.
@@ -2197,6 +3040,16 @@ pattern INRelevantShortcutRoleAction = INRelevantShortcutRole 0
 pattern INRelevantShortcutRoleInformation :: INRelevantShortcutRole
 pattern INRelevantShortcutRoleInformation = INRelevantShortcutRole 1
 
+instance ObjCArgument INRelevantShortcutRole where
+  withObjCArg (INRelevantShortcutRole x) k = k (argCLong x)
+
+instance ObjCReturn INRelevantShortcutRole where
+  type RawReturn INRelevantShortcutRole = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRelevantShortcutRole x)
+  fromOwned x = pure (INRelevantShortcutRole x)
+
 -- | @INRequestPaymentCurrencyAmountUnsupportedReason@
 newtype INRequestPaymentCurrencyAmountUnsupportedReason = INRequestPaymentCurrencyAmountUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -2210,6 +3063,16 @@ pattern INRequestPaymentCurrencyAmountUnsupportedReasonPaymentsAmountAboveMaximu
 
 pattern INRequestPaymentCurrencyAmountUnsupportedReasonPaymentsCurrencyUnsupported :: INRequestPaymentCurrencyAmountUnsupportedReason
 pattern INRequestPaymentCurrencyAmountUnsupportedReasonPaymentsCurrencyUnsupported = INRequestPaymentCurrencyAmountUnsupportedReason 3
+
+instance ObjCArgument INRequestPaymentCurrencyAmountUnsupportedReason where
+  withObjCArg (INRequestPaymentCurrencyAmountUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INRequestPaymentCurrencyAmountUnsupportedReason where
+  type RawReturn INRequestPaymentCurrencyAmountUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRequestPaymentCurrencyAmountUnsupportedReason x)
+  fromOwned x = pure (INRequestPaymentCurrencyAmountUnsupportedReason x)
 
 -- | @INRequestPaymentIntentResponseCode@
 newtype INRequestPaymentIntentResponseCode = INRequestPaymentIntentResponseCode CLong
@@ -2255,6 +3118,16 @@ pattern INRequestPaymentIntentResponseCodeFailureNotEligible = INRequestPaymentI
 pattern INRequestPaymentIntentResponseCodeFailureTermsAndConditionsAcceptanceRequired :: INRequestPaymentIntentResponseCode
 pattern INRequestPaymentIntentResponseCodeFailureTermsAndConditionsAcceptanceRequired = INRequestPaymentIntentResponseCode 12
 
+instance ObjCArgument INRequestPaymentIntentResponseCode where
+  withObjCArg (INRequestPaymentIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INRequestPaymentIntentResponseCode where
+  type RawReturn INRequestPaymentIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRequestPaymentIntentResponseCode x)
+  fromOwned x = pure (INRequestPaymentIntentResponseCode x)
+
 -- | @INRequestPaymentPayerUnsupportedReason@
 newtype INRequestPaymentPayerUnsupportedReason = INRequestPaymentPayerUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -2268,6 +3141,16 @@ pattern INRequestPaymentPayerUnsupportedReasonNoAccount = INRequestPaymentPayerU
 
 pattern INRequestPaymentPayerUnsupportedReasonNoValidHandle :: INRequestPaymentPayerUnsupportedReason
 pattern INRequestPaymentPayerUnsupportedReasonNoValidHandle = INRequestPaymentPayerUnsupportedReason 3
+
+instance ObjCArgument INRequestPaymentPayerUnsupportedReason where
+  withObjCArg (INRequestPaymentPayerUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INRequestPaymentPayerUnsupportedReason where
+  type RawReturn INRequestPaymentPayerUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRequestPaymentPayerUnsupportedReason x)
+  fromOwned x = pure (INRequestPaymentPayerUnsupportedReason x)
 
 -- | @INRequestRideIntentResponseCode@
 newtype INRequestRideIntentResponseCode = INRequestRideIntentResponseCode CLong
@@ -2307,6 +3190,16 @@ pattern INRequestRideIntentResponseCodeFailureRequiringAppLaunchPreviousRideNeed
 pattern INRequestRideIntentResponseCodeFailureRequiringAppLaunchRideScheduledTooFar :: INRequestRideIntentResponseCode
 pattern INRequestRideIntentResponseCodeFailureRequiringAppLaunchRideScheduledTooFar = INRequestRideIntentResponseCode 10
 
+instance ObjCArgument INRequestRideIntentResponseCode where
+  withObjCArg (INRequestRideIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INRequestRideIntentResponseCode where
+  type RawReturn INRequestRideIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRequestRideIntentResponseCode x)
+  fromOwned x = pure (INRequestRideIntentResponseCode x)
+
 -- | @INReservationActionType@
 newtype INReservationActionType = INReservationActionType CLong
   deriving stock (Eq, Ord, Show)
@@ -2317,6 +3210,16 @@ pattern INReservationActionTypeUnknown = INReservationActionType 0
 
 pattern INReservationActionTypeCheckIn :: INReservationActionType
 pattern INReservationActionTypeCheckIn = INReservationActionType 1
+
+instance ObjCArgument INReservationActionType where
+  withObjCArg (INReservationActionType x) k = k (argCLong x)
+
+instance ObjCReturn INReservationActionType where
+  type RawReturn INReservationActionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INReservationActionType x)
+  fromOwned x = pure (INReservationActionType x)
 
 -- | @INReservationStatus@
 newtype INReservationStatus = INReservationStatus CLong
@@ -2338,6 +3241,16 @@ pattern INReservationStatusHold = INReservationStatus 3
 pattern INReservationStatusConfirmed :: INReservationStatus
 pattern INReservationStatusConfirmed = INReservationStatus 4
 
+instance ObjCArgument INReservationStatus where
+  withObjCArg (INReservationStatus x) k = k (argCLong x)
+
+instance ObjCReturn INReservationStatus where
+  type RawReturn INReservationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INReservationStatus x)
+  fromOwned x = pure (INReservationStatus x)
+
 -- | @INRestaurantReservationUserBookingStatus@
 newtype INRestaurantReservationUserBookingStatus = INRestaurantReservationUserBookingStatus CULong
   deriving stock (Eq, Ord, Show)
@@ -2351,6 +3264,16 @@ pattern INRestaurantReservationUserBookingStatusConfirmed = INRestaurantReservat
 
 pattern INRestaurantReservationUserBookingStatusDenied :: INRestaurantReservationUserBookingStatus
 pattern INRestaurantReservationUserBookingStatusDenied = INRestaurantReservationUserBookingStatus 2
+
+instance ObjCArgument INRestaurantReservationUserBookingStatus where
+  withObjCArg (INRestaurantReservationUserBookingStatus x) k = k (argCULong x)
+
+instance ObjCReturn INRestaurantReservationUserBookingStatus where
+  type RawReturn INRestaurantReservationUserBookingStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRestaurantReservationUserBookingStatus x)
+  fromOwned x = pure (INRestaurantReservationUserBookingStatus x)
 
 -- | @INResumeWorkoutIntentResponseCode@
 newtype INResumeWorkoutIntentResponseCode = INResumeWorkoutIntentResponseCode CLong
@@ -2381,6 +3304,16 @@ pattern INResumeWorkoutIntentResponseCodeHandleInApp = INResumeWorkoutIntentResp
 pattern INResumeWorkoutIntentResponseCodeSuccess :: INResumeWorkoutIntentResponseCode
 pattern INResumeWorkoutIntentResponseCodeSuccess = INResumeWorkoutIntentResponseCode 7
 
+instance ObjCArgument INResumeWorkoutIntentResponseCode where
+  withObjCArg (INResumeWorkoutIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INResumeWorkoutIntentResponseCode where
+  type RawReturn INResumeWorkoutIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INResumeWorkoutIntentResponseCode x)
+  fromOwned x = pure (INResumeWorkoutIntentResponseCode x)
+
 -- | @INRideFeedbackTypeOptions@ (bitmask)
 newtype INRideFeedbackTypeOptions = INRideFeedbackTypeOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -2397,6 +3330,16 @@ pattern INRideFeedbackTypeOptionRate = INRideFeedbackTypeOptions 1
 
 pattern INRideFeedbackTypeOptionTip :: INRideFeedbackTypeOptions
 pattern INRideFeedbackTypeOptionTip = INRideFeedbackTypeOptions 2
+
+instance ObjCArgument INRideFeedbackTypeOptions where
+  withObjCArg (INRideFeedbackTypeOptions x) k = k (argCULong x)
+
+instance ObjCReturn INRideFeedbackTypeOptions where
+  type RawReturn INRideFeedbackTypeOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRideFeedbackTypeOptions x)
+  fromOwned x = pure (INRideFeedbackTypeOptions x)
 
 -- | @INRidePhase@
 newtype INRidePhase = INRidePhase CLong
@@ -2424,6 +3367,16 @@ pattern INRidePhaseApproachingPickup = INRidePhase 5
 pattern INRidePhasePickup :: INRidePhase
 pattern INRidePhasePickup = INRidePhase 6
 
+instance ObjCArgument INRidePhase where
+  withObjCArg (INRidePhase x) k = k (argCLong x)
+
+instance ObjCReturn INRidePhase where
+  type RawReturn INRidePhase = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INRidePhase x)
+  fromOwned x = pure (INRidePhase x)
+
 -- | @INSaveProfileInCarIntentResponseCode@
 newtype INSaveProfileInCarIntentResponseCode = INSaveProfileInCarIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2446,6 +3399,16 @@ pattern INSaveProfileInCarIntentResponseCodeFailure = INSaveProfileInCarIntentRe
 
 pattern INSaveProfileInCarIntentResponseCodeFailureRequiringAppLaunch :: INSaveProfileInCarIntentResponseCode
 pattern INSaveProfileInCarIntentResponseCodeFailureRequiringAppLaunch = INSaveProfileInCarIntentResponseCode 5
+
+instance ObjCArgument INSaveProfileInCarIntentResponseCode where
+  withObjCArg (INSaveProfileInCarIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSaveProfileInCarIntentResponseCode where
+  type RawReturn INSaveProfileInCarIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSaveProfileInCarIntentResponseCode x)
+  fromOwned x = pure (INSaveProfileInCarIntentResponseCode x)
 
 -- | @INSearchCallHistoryIntentResponseCode@
 newtype INSearchCallHistoryIntentResponseCode = INSearchCallHistoryIntentResponseCode CLong
@@ -2475,6 +3438,16 @@ pattern INSearchCallHistoryIntentResponseCodeInProgress = INSearchCallHistoryInt
 
 pattern INSearchCallHistoryIntentResponseCodeSuccess :: INSearchCallHistoryIntentResponseCode
 pattern INSearchCallHistoryIntentResponseCodeSuccess = INSearchCallHistoryIntentResponseCode 7
+
+instance ObjCArgument INSearchCallHistoryIntentResponseCode where
+  withObjCArg (INSearchCallHistoryIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSearchCallHistoryIntentResponseCode where
+  type RawReturn INSearchCallHistoryIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSearchCallHistoryIntentResponseCode x)
+  fromOwned x = pure (INSearchCallHistoryIntentResponseCode x)
 
 -- | @INSearchForAccountsIntentResponseCode@
 newtype INSearchForAccountsIntentResponseCode = INSearchForAccountsIntentResponseCode CLong
@@ -2511,6 +3484,16 @@ pattern INSearchForAccountsIntentResponseCodeFailureTermsAndConditionsAcceptance
 pattern INSearchForAccountsIntentResponseCodeFailureNotEligible :: INSearchForAccountsIntentResponseCode
 pattern INSearchForAccountsIntentResponseCodeFailureNotEligible = INSearchForAccountsIntentResponseCode 9
 
+instance ObjCArgument INSearchForAccountsIntentResponseCode where
+  withObjCArg (INSearchForAccountsIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSearchForAccountsIntentResponseCode where
+  type RawReturn INSearchForAccountsIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSearchForAccountsIntentResponseCode x)
+  fromOwned x = pure (INSearchForAccountsIntentResponseCode x)
+
 -- | @INSearchForBillsIntentResponseCode@
 newtype INSearchForBillsIntentResponseCode = INSearchForBillsIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2540,6 +3523,16 @@ pattern INSearchForBillsIntentResponseCodeFailureCredentialsUnverified = INSearc
 pattern INSearchForBillsIntentResponseCodeFailureBillNotFound :: INSearchForBillsIntentResponseCode
 pattern INSearchForBillsIntentResponseCodeFailureBillNotFound = INSearchForBillsIntentResponseCode 7
 
+instance ObjCArgument INSearchForBillsIntentResponseCode where
+  withObjCArg (INSearchForBillsIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSearchForBillsIntentResponseCode where
+  type RawReturn INSearchForBillsIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSearchForBillsIntentResponseCode x)
+  fromOwned x = pure (INSearchForBillsIntentResponseCode x)
+
 -- | @INSearchForMediaIntentResponseCode@
 newtype INSearchForMediaIntentResponseCode = INSearchForMediaIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2565,6 +3558,16 @@ pattern INSearchForMediaIntentResponseCodeFailure = INSearchForMediaIntentRespon
 
 pattern INSearchForMediaIntentResponseCodeFailureRequiringAppLaunch :: INSearchForMediaIntentResponseCode
 pattern INSearchForMediaIntentResponseCodeFailureRequiringAppLaunch = INSearchForMediaIntentResponseCode 6
+
+instance ObjCArgument INSearchForMediaIntentResponseCode where
+  withObjCArg (INSearchForMediaIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSearchForMediaIntentResponseCode where
+  type RawReturn INSearchForMediaIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSearchForMediaIntentResponseCode x)
+  fromOwned x = pure (INSearchForMediaIntentResponseCode x)
 
 -- | @INSearchForMediaMediaItemUnsupportedReason@
 newtype INSearchForMediaMediaItemUnsupportedReason = INSearchForMediaMediaItemUnsupportedReason CLong
@@ -2594,6 +3597,16 @@ pattern INSearchForMediaMediaItemUnsupportedReasonServiceUnavailable = INSearchF
 
 pattern INSearchForMediaMediaItemUnsupportedReasonRegionRestriction :: INSearchForMediaMediaItemUnsupportedReason
 pattern INSearchForMediaMediaItemUnsupportedReasonRegionRestriction = INSearchForMediaMediaItemUnsupportedReason 8
+
+instance ObjCArgument INSearchForMediaMediaItemUnsupportedReason where
+  withObjCArg (INSearchForMediaMediaItemUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INSearchForMediaMediaItemUnsupportedReason where
+  type RawReturn INSearchForMediaMediaItemUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSearchForMediaMediaItemUnsupportedReason x)
+  fromOwned x = pure (INSearchForMediaMediaItemUnsupportedReason x)
 
 -- | @INSearchForMessagesIntentResponseCode@
 newtype INSearchForMessagesIntentResponseCode = INSearchForMessagesIntentResponseCode CLong
@@ -2627,6 +3640,16 @@ pattern INSearchForMessagesIntentResponseCodeFailureMessageTooManyResults = INSe
 pattern INSearchForMessagesIntentResponseCodeFailureRequiringInAppAuthentication :: INSearchForMessagesIntentResponseCode
 pattern INSearchForMessagesIntentResponseCodeFailureRequiringInAppAuthentication = INSearchForMessagesIntentResponseCode 8
 
+instance ObjCArgument INSearchForMessagesIntentResponseCode where
+  withObjCArg (INSearchForMessagesIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSearchForMessagesIntentResponseCode where
+  type RawReturn INSearchForMessagesIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSearchForMessagesIntentResponseCode x)
+  fromOwned x = pure (INSearchForMessagesIntentResponseCode x)
+
 -- | @INSearchForNotebookItemsIntentResponseCode@
 newtype INSearchForNotebookItemsIntentResponseCode = INSearchForNotebookItemsIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2650,6 +3673,16 @@ pattern INSearchForNotebookItemsIntentResponseCodeFailure = INSearchForNotebookI
 pattern INSearchForNotebookItemsIntentResponseCodeFailureRequiringAppLaunch :: INSearchForNotebookItemsIntentResponseCode
 pattern INSearchForNotebookItemsIntentResponseCodeFailureRequiringAppLaunch = INSearchForNotebookItemsIntentResponseCode 5
 
+instance ObjCArgument INSearchForNotebookItemsIntentResponseCode where
+  withObjCArg (INSearchForNotebookItemsIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSearchForNotebookItemsIntentResponseCode where
+  type RawReturn INSearchForNotebookItemsIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSearchForNotebookItemsIntentResponseCode x)
+  fromOwned x = pure (INSearchForNotebookItemsIntentResponseCode x)
+
 -- | @INSearchForPhotosIntentResponseCode@
 newtype INSearchForPhotosIntentResponseCode = INSearchForPhotosIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2672,6 +3705,16 @@ pattern INSearchForPhotosIntentResponseCodeFailureRequiringAppLaunch = INSearchF
 
 pattern INSearchForPhotosIntentResponseCodeFailureAppConfigurationRequired :: INSearchForPhotosIntentResponseCode
 pattern INSearchForPhotosIntentResponseCodeFailureAppConfigurationRequired = INSearchForPhotosIntentResponseCode 5
+
+instance ObjCArgument INSearchForPhotosIntentResponseCode where
+  withObjCArg (INSearchForPhotosIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSearchForPhotosIntentResponseCode where
+  type RawReturn INSearchForPhotosIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSearchForPhotosIntentResponseCode x)
+  fromOwned x = pure (INSearchForPhotosIntentResponseCode x)
 
 -- | @INSendMessageIntentResponseCode@
 newtype INSendMessageIntentResponseCode = INSendMessageIntentResponseCode CLong
@@ -2702,6 +3745,16 @@ pattern INSendMessageIntentResponseCodeFailureMessageServiceNotAvailable = INSen
 pattern INSendMessageIntentResponseCodeFailureRequiringInAppAuthentication :: INSendMessageIntentResponseCode
 pattern INSendMessageIntentResponseCodeFailureRequiringInAppAuthentication = INSendMessageIntentResponseCode 7
 
+instance ObjCArgument INSendMessageIntentResponseCode where
+  withObjCArg (INSendMessageIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSendMessageIntentResponseCode where
+  type RawReturn INSendMessageIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSendMessageIntentResponseCode x)
+  fromOwned x = pure (INSendMessageIntentResponseCode x)
+
 -- | @INSendMessageRecipientUnsupportedReason@
 newtype INSendMessageRecipientUnsupportedReason = INSendMessageRecipientUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -2728,6 +3781,16 @@ pattern INSendMessageRecipientUnsupportedReasonNoHandleForLabel = INSendMessageR
 pattern INSendMessageRecipientUnsupportedReasonRequiringInAppAuthentication :: INSendMessageRecipientUnsupportedReason
 pattern INSendMessageRecipientUnsupportedReasonRequiringInAppAuthentication = INSendMessageRecipientUnsupportedReason 7
 
+instance ObjCArgument INSendMessageRecipientUnsupportedReason where
+  withObjCArg (INSendMessageRecipientUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INSendMessageRecipientUnsupportedReason where
+  type RawReturn INSendMessageRecipientUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSendMessageRecipientUnsupportedReason x)
+  fromOwned x = pure (INSendMessageRecipientUnsupportedReason x)
+
 -- | @INSendPaymentCurrencyAmountUnsupportedReason@
 newtype INSendPaymentCurrencyAmountUnsupportedReason = INSendPaymentCurrencyAmountUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -2741,6 +3804,16 @@ pattern INSendPaymentCurrencyAmountUnsupportedReasonPaymentsAmountAboveMaximum =
 
 pattern INSendPaymentCurrencyAmountUnsupportedReasonPaymentsCurrencyUnsupported :: INSendPaymentCurrencyAmountUnsupportedReason
 pattern INSendPaymentCurrencyAmountUnsupportedReasonPaymentsCurrencyUnsupported = INSendPaymentCurrencyAmountUnsupportedReason 3
+
+instance ObjCArgument INSendPaymentCurrencyAmountUnsupportedReason where
+  withObjCArg (INSendPaymentCurrencyAmountUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INSendPaymentCurrencyAmountUnsupportedReason where
+  type RawReturn INSendPaymentCurrencyAmountUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSendPaymentCurrencyAmountUnsupportedReason x)
+  fromOwned x = pure (INSendPaymentCurrencyAmountUnsupportedReason x)
 
 -- | @INSendPaymentIntentResponseCode@
 newtype INSendPaymentIntentResponseCode = INSendPaymentIntentResponseCode CLong
@@ -2789,6 +3862,16 @@ pattern INSendPaymentIntentResponseCodeFailureNotEligible = INSendPaymentIntentR
 pattern INSendPaymentIntentResponseCodeFailureTermsAndConditionsAcceptanceRequired :: INSendPaymentIntentResponseCode
 pattern INSendPaymentIntentResponseCodeFailureTermsAndConditionsAcceptanceRequired = INSendPaymentIntentResponseCode 13
 
+instance ObjCArgument INSendPaymentIntentResponseCode where
+  withObjCArg (INSendPaymentIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSendPaymentIntentResponseCode where
+  type RawReturn INSendPaymentIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSendPaymentIntentResponseCode x)
+  fromOwned x = pure (INSendPaymentIntentResponseCode x)
+
 -- | @INSendPaymentPayeeUnsupportedReason@
 newtype INSendPaymentPayeeUnsupportedReason = INSendPaymentPayeeUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -2806,6 +3889,16 @@ pattern INSendPaymentPayeeUnsupportedReasonNoAccount = INSendPaymentPayeeUnsuppo
 pattern INSendPaymentPayeeUnsupportedReasonNoValidHandle :: INSendPaymentPayeeUnsupportedReason
 pattern INSendPaymentPayeeUnsupportedReasonNoValidHandle = INSendPaymentPayeeUnsupportedReason 4
 
+instance ObjCArgument INSendPaymentPayeeUnsupportedReason where
+  withObjCArg (INSendPaymentPayeeUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INSendPaymentPayeeUnsupportedReason where
+  type RawReturn INSendPaymentPayeeUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSendPaymentPayeeUnsupportedReason x)
+  fromOwned x = pure (INSendPaymentPayeeUnsupportedReason x)
+
 -- | @INSendRideFeedbackIntentResponseCode@
 newtype INSendRideFeedbackIntentResponseCode = INSendRideFeedbackIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2822,6 +3915,16 @@ pattern INSendRideFeedbackIntentResponseCodeSuccess = INSendRideFeedbackIntentRe
 
 pattern INSendRideFeedbackIntentResponseCodeFailure :: INSendRideFeedbackIntentResponseCode
 pattern INSendRideFeedbackIntentResponseCodeFailure = INSendRideFeedbackIntentResponseCode 3
+
+instance ObjCArgument INSendRideFeedbackIntentResponseCode where
+  withObjCArg (INSendRideFeedbackIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSendRideFeedbackIntentResponseCode where
+  type RawReturn INSendRideFeedbackIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSendRideFeedbackIntentResponseCode x)
+  fromOwned x = pure (INSendRideFeedbackIntentResponseCode x)
 
 -- | @INSetAudioSourceInCarIntentResponseCode@
 newtype INSetAudioSourceInCarIntentResponseCode = INSetAudioSourceInCarIntentResponseCode CLong
@@ -2846,6 +3949,16 @@ pattern INSetAudioSourceInCarIntentResponseCodeFailure = INSetAudioSourceInCarIn
 pattern INSetAudioSourceInCarIntentResponseCodeFailureRequiringAppLaunch :: INSetAudioSourceInCarIntentResponseCode
 pattern INSetAudioSourceInCarIntentResponseCodeFailureRequiringAppLaunch = INSetAudioSourceInCarIntentResponseCode 5
 
+instance ObjCArgument INSetAudioSourceInCarIntentResponseCode where
+  withObjCArg (INSetAudioSourceInCarIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSetAudioSourceInCarIntentResponseCode where
+  type RawReturn INSetAudioSourceInCarIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetAudioSourceInCarIntentResponseCode x)
+  fromOwned x = pure (INSetAudioSourceInCarIntentResponseCode x)
+
 -- | @INSetCarLockStatusIntentResponseCode@
 newtype INSetCarLockStatusIntentResponseCode = INSetCarLockStatusIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2868,6 +3981,16 @@ pattern INSetCarLockStatusIntentResponseCodeFailure = INSetCarLockStatusIntentRe
 
 pattern INSetCarLockStatusIntentResponseCodeFailureRequiringAppLaunch :: INSetCarLockStatusIntentResponseCode
 pattern INSetCarLockStatusIntentResponseCodeFailureRequiringAppLaunch = INSetCarLockStatusIntentResponseCode 5
+
+instance ObjCArgument INSetCarLockStatusIntentResponseCode where
+  withObjCArg (INSetCarLockStatusIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSetCarLockStatusIntentResponseCode where
+  type RawReturn INSetCarLockStatusIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetCarLockStatusIntentResponseCode x)
+  fromOwned x = pure (INSetCarLockStatusIntentResponseCode x)
 
 -- | @INSetClimateSettingsInCarIntentResponseCode@
 newtype INSetClimateSettingsInCarIntentResponseCode = INSetClimateSettingsInCarIntentResponseCode CLong
@@ -2892,6 +4015,16 @@ pattern INSetClimateSettingsInCarIntentResponseCodeFailure = INSetClimateSetting
 pattern INSetClimateSettingsInCarIntentResponseCodeFailureRequiringAppLaunch :: INSetClimateSettingsInCarIntentResponseCode
 pattern INSetClimateSettingsInCarIntentResponseCodeFailureRequiringAppLaunch = INSetClimateSettingsInCarIntentResponseCode 5
 
+instance ObjCArgument INSetClimateSettingsInCarIntentResponseCode where
+  withObjCArg (INSetClimateSettingsInCarIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSetClimateSettingsInCarIntentResponseCode where
+  type RawReturn INSetClimateSettingsInCarIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetClimateSettingsInCarIntentResponseCode x)
+  fromOwned x = pure (INSetClimateSettingsInCarIntentResponseCode x)
+
 -- | @INSetDefrosterSettingsInCarIntentResponseCode@
 newtype INSetDefrosterSettingsInCarIntentResponseCode = INSetDefrosterSettingsInCarIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2914,6 +4047,16 @@ pattern INSetDefrosterSettingsInCarIntentResponseCodeFailure = INSetDefrosterSet
 
 pattern INSetDefrosterSettingsInCarIntentResponseCodeFailureRequiringAppLaunch :: INSetDefrosterSettingsInCarIntentResponseCode
 pattern INSetDefrosterSettingsInCarIntentResponseCodeFailureRequiringAppLaunch = INSetDefrosterSettingsInCarIntentResponseCode 5
+
+instance ObjCArgument INSetDefrosterSettingsInCarIntentResponseCode where
+  withObjCArg (INSetDefrosterSettingsInCarIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSetDefrosterSettingsInCarIntentResponseCode where
+  type RawReturn INSetDefrosterSettingsInCarIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetDefrosterSettingsInCarIntentResponseCode x)
+  fromOwned x = pure (INSetDefrosterSettingsInCarIntentResponseCode x)
 
 -- | @INSetMessageAttributeIntentResponseCode@
 newtype INSetMessageAttributeIntentResponseCode = INSetMessageAttributeIntentResponseCode CLong
@@ -2944,6 +4087,16 @@ pattern INSetMessageAttributeIntentResponseCodeFailureMessageNotFound = INSetMes
 pattern INSetMessageAttributeIntentResponseCodeFailureMessageAttributeNotSet :: INSetMessageAttributeIntentResponseCode
 pattern INSetMessageAttributeIntentResponseCodeFailureMessageAttributeNotSet = INSetMessageAttributeIntentResponseCode 7
 
+instance ObjCArgument INSetMessageAttributeIntentResponseCode where
+  withObjCArg (INSetMessageAttributeIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSetMessageAttributeIntentResponseCode where
+  type RawReturn INSetMessageAttributeIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetMessageAttributeIntentResponseCode x)
+  fromOwned x = pure (INSetMessageAttributeIntentResponseCode x)
+
 -- | @INSetProfileInCarIntentResponseCode@
 newtype INSetProfileInCarIntentResponseCode = INSetProfileInCarIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -2966,6 +4119,16 @@ pattern INSetProfileInCarIntentResponseCodeFailure = INSetProfileInCarIntentResp
 
 pattern INSetProfileInCarIntentResponseCodeFailureRequiringAppLaunch :: INSetProfileInCarIntentResponseCode
 pattern INSetProfileInCarIntentResponseCodeFailureRequiringAppLaunch = INSetProfileInCarIntentResponseCode 5
+
+instance ObjCArgument INSetProfileInCarIntentResponseCode where
+  withObjCArg (INSetProfileInCarIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSetProfileInCarIntentResponseCode where
+  type RawReturn INSetProfileInCarIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetProfileInCarIntentResponseCode x)
+  fromOwned x = pure (INSetProfileInCarIntentResponseCode x)
 
 -- | @INSetRadioStationIntentResponseCode@
 newtype INSetRadioStationIntentResponseCode = INSetRadioStationIntentResponseCode CLong
@@ -2993,6 +4156,16 @@ pattern INSetRadioStationIntentResponseCodeFailureRequiringAppLaunch = INSetRadi
 pattern INSetRadioStationIntentResponseCodeFailureNotSubscribed :: INSetRadioStationIntentResponseCode
 pattern INSetRadioStationIntentResponseCodeFailureNotSubscribed = INSetRadioStationIntentResponseCode 6
 
+instance ObjCArgument INSetRadioStationIntentResponseCode where
+  withObjCArg (INSetRadioStationIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSetRadioStationIntentResponseCode where
+  type RawReturn INSetRadioStationIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetRadioStationIntentResponseCode x)
+  fromOwned x = pure (INSetRadioStationIntentResponseCode x)
+
 -- | @INSetSeatSettingsInCarIntentResponseCode@
 newtype INSetSeatSettingsInCarIntentResponseCode = INSetSeatSettingsInCarIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -3015,6 +4188,16 @@ pattern INSetSeatSettingsInCarIntentResponseCodeFailure = INSetSeatSettingsInCar
 
 pattern INSetSeatSettingsInCarIntentResponseCodeFailureRequiringAppLaunch :: INSetSeatSettingsInCarIntentResponseCode
 pattern INSetSeatSettingsInCarIntentResponseCodeFailureRequiringAppLaunch = INSetSeatSettingsInCarIntentResponseCode 5
+
+instance ObjCArgument INSetSeatSettingsInCarIntentResponseCode where
+  withObjCArg (INSetSeatSettingsInCarIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSetSeatSettingsInCarIntentResponseCode where
+  type RawReturn INSetSeatSettingsInCarIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetSeatSettingsInCarIntentResponseCode x)
+  fromOwned x = pure (INSetSeatSettingsInCarIntentResponseCode x)
 
 -- | @INSetTaskAttributeIntentResponseCode@
 newtype INSetTaskAttributeIntentResponseCode = INSetTaskAttributeIntentResponseCode CLong
@@ -3039,6 +4222,16 @@ pattern INSetTaskAttributeIntentResponseCodeFailure = INSetTaskAttributeIntentRe
 pattern INSetTaskAttributeIntentResponseCodeFailureRequiringAppLaunch :: INSetTaskAttributeIntentResponseCode
 pattern INSetTaskAttributeIntentResponseCodeFailureRequiringAppLaunch = INSetTaskAttributeIntentResponseCode 5
 
+instance ObjCArgument INSetTaskAttributeIntentResponseCode where
+  withObjCArg (INSetTaskAttributeIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSetTaskAttributeIntentResponseCode where
+  type RawReturn INSetTaskAttributeIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetTaskAttributeIntentResponseCode x)
+  fromOwned x = pure (INSetTaskAttributeIntentResponseCode x)
+
 -- | @INSetTaskAttributeTemporalEventTriggerUnsupportedReason@
 newtype INSetTaskAttributeTemporalEventTriggerUnsupportedReason = INSetTaskAttributeTemporalEventTriggerUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -3049,6 +4242,16 @@ pattern INSetTaskAttributeTemporalEventTriggerUnsupportedReasonTimeInPast = INSe
 
 pattern INSetTaskAttributeTemporalEventTriggerUnsupportedReasonInvalidRecurrence :: INSetTaskAttributeTemporalEventTriggerUnsupportedReason
 pattern INSetTaskAttributeTemporalEventTriggerUnsupportedReasonInvalidRecurrence = INSetTaskAttributeTemporalEventTriggerUnsupportedReason 2
+
+instance ObjCArgument INSetTaskAttributeTemporalEventTriggerUnsupportedReason where
+  withObjCArg (INSetTaskAttributeTemporalEventTriggerUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INSetTaskAttributeTemporalEventTriggerUnsupportedReason where
+  type RawReturn INSetTaskAttributeTemporalEventTriggerUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSetTaskAttributeTemporalEventTriggerUnsupportedReason x)
+  fromOwned x = pure (INSetTaskAttributeTemporalEventTriggerUnsupportedReason x)
 
 -- | @INShareFocusStatusIntentResponseCode@
 newtype INShareFocusStatusIntentResponseCode = INShareFocusStatusIntentResponseCode CLong
@@ -3072,6 +4275,16 @@ pattern INShareFocusStatusIntentResponseCodeFailure = INShareFocusStatusIntentRe
 
 pattern INShareFocusStatusIntentResponseCodeFailureRequiringAppLaunch :: INShareFocusStatusIntentResponseCode
 pattern INShareFocusStatusIntentResponseCodeFailureRequiringAppLaunch = INShareFocusStatusIntentResponseCode 5
+
+instance ObjCArgument INShareFocusStatusIntentResponseCode where
+  withObjCArg (INShareFocusStatusIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INShareFocusStatusIntentResponseCode where
+  type RawReturn INShareFocusStatusIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INShareFocusStatusIntentResponseCode x)
+  fromOwned x = pure (INShareFocusStatusIntentResponseCode x)
 
 -- | @INShortcutAvailabilityOptions@ (bitmask)
 newtype INShortcutAvailabilityOptions = INShortcutAvailabilityOptions CULong
@@ -3105,6 +4318,16 @@ pattern INShortcutAvailabilityOptionSleepWrapUpYourDay = INShortcutAvailabilityO
 pattern INShortcutAvailabilityOptionSleepYogaAndStretching :: INShortcutAvailabilityOptions
 pattern INShortcutAvailabilityOptionSleepYogaAndStretching = INShortcutAvailabilityOptions 64
 
+instance ObjCArgument INShortcutAvailabilityOptions where
+  withObjCArg (INShortcutAvailabilityOptions x) k = k (argCULong x)
+
+instance ObjCReturn INShortcutAvailabilityOptions where
+  type RawReturn INShortcutAvailabilityOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INShortcutAvailabilityOptions x)
+  fromOwned x = pure (INShortcutAvailabilityOptions x)
+
 -- | @INSiriAuthorizationStatus@
 newtype INSiriAuthorizationStatus = INSiriAuthorizationStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -3121,6 +4344,16 @@ pattern INSiriAuthorizationStatusDenied = INSiriAuthorizationStatus 2
 
 pattern INSiriAuthorizationStatusAuthorized :: INSiriAuthorizationStatus
 pattern INSiriAuthorizationStatusAuthorized = INSiriAuthorizationStatus 3
+
+instance ObjCArgument INSiriAuthorizationStatus where
+  withObjCArg (INSiriAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn INSiriAuthorizationStatus where
+  type RawReturn INSiriAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSiriAuthorizationStatus x)
+  fromOwned x = pure (INSiriAuthorizationStatus x)
 
 -- | @INSnoozeTasksIntentResponseCode@
 newtype INSnoozeTasksIntentResponseCode = INSnoozeTasksIntentResponseCode CLong
@@ -3145,6 +4378,16 @@ pattern INSnoozeTasksIntentResponseCodeFailure = INSnoozeTasksIntentResponseCode
 pattern INSnoozeTasksIntentResponseCodeFailureRequiringAppLaunch :: INSnoozeTasksIntentResponseCode
 pattern INSnoozeTasksIntentResponseCodeFailureRequiringAppLaunch = INSnoozeTasksIntentResponseCode 5
 
+instance ObjCArgument INSnoozeTasksIntentResponseCode where
+  withObjCArg (INSnoozeTasksIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INSnoozeTasksIntentResponseCode where
+  type RawReturn INSnoozeTasksIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSnoozeTasksIntentResponseCode x)
+  fromOwned x = pure (INSnoozeTasksIntentResponseCode x)
+
 -- | @INSnoozeTasksTaskUnsupportedReason@
 newtype INSnoozeTasksTaskUnsupportedReason = INSnoozeTasksTaskUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -3152,6 +4395,16 @@ newtype INSnoozeTasksTaskUnsupportedReason = INSnoozeTasksTaskUnsupportedReason 
 
 pattern INSnoozeTasksTaskUnsupportedReasonNoTasksFound :: INSnoozeTasksTaskUnsupportedReason
 pattern INSnoozeTasksTaskUnsupportedReasonNoTasksFound = INSnoozeTasksTaskUnsupportedReason 1
+
+instance ObjCArgument INSnoozeTasksTaskUnsupportedReason where
+  withObjCArg (INSnoozeTasksTaskUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INSnoozeTasksTaskUnsupportedReason where
+  type RawReturn INSnoozeTasksTaskUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSnoozeTasksTaskUnsupportedReason x)
+  fromOwned x = pure (INSnoozeTasksTaskUnsupportedReason x)
 
 -- | @INSortType@
 newtype INSortType = INSortType CLong
@@ -3167,6 +4420,16 @@ pattern INSortTypeAsIs = INSortType 1
 pattern INSortTypeByDate :: INSortType
 pattern INSortTypeByDate = INSortType 2
 
+instance ObjCArgument INSortType where
+  withObjCArg (INSortType x) k = k (argCLong x)
+
+instance ObjCReturn INSortType where
+  type RawReturn INSortType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSortType x)
+  fromOwned x = pure (INSortType x)
+
 -- | @INSpatialEvent@
 newtype INSpatialEvent = INSpatialEvent CLong
   deriving stock (Eq, Ord, Show)
@@ -3180,6 +4443,16 @@ pattern INSpatialEventArrive = INSpatialEvent 1
 
 pattern INSpatialEventDepart :: INSpatialEvent
 pattern INSpatialEventDepart = INSpatialEvent 2
+
+instance ObjCArgument INSpatialEvent where
+  withObjCArg (INSpatialEvent x) k = k (argCLong x)
+
+instance ObjCReturn INSpatialEvent where
+  type RawReturn INSpatialEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INSpatialEvent x)
+  fromOwned x = pure (INSpatialEvent x)
 
 -- | @INStartAudioCallIntentResponseCode@
 newtype INStartAudioCallIntentResponseCode = INStartAudioCallIntentResponseCode CLong
@@ -3213,6 +4486,16 @@ pattern INStartAudioCallIntentResponseCodeFailureContactNotSupportedByApp = INSt
 pattern INStartAudioCallIntentResponseCodeFailureNoValidNumber :: INStartAudioCallIntentResponseCode
 pattern INStartAudioCallIntentResponseCodeFailureNoValidNumber = INStartAudioCallIntentResponseCode 8
 
+instance ObjCArgument INStartAudioCallIntentResponseCode where
+  withObjCArg (INStartAudioCallIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INStartAudioCallIntentResponseCode where
+  type RawReturn INStartAudioCallIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INStartAudioCallIntentResponseCode x)
+  fromOwned x = pure (INStartAudioCallIntentResponseCode x)
+
 -- | @INStartCallCallCapabilityUnsupportedReason@
 newtype INStartCallCallCapabilityUnsupportedReason = INStartCallCallCapabilityUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -3227,6 +4510,16 @@ pattern INStartCallCallCapabilityUnsupportedReasonMicrophoneNotAccessible = INSt
 pattern INStartCallCallCapabilityUnsupportedReasonCameraNotAccessible :: INStartCallCallCapabilityUnsupportedReason
 pattern INStartCallCallCapabilityUnsupportedReasonCameraNotAccessible = INStartCallCallCapabilityUnsupportedReason 3
 
+instance ObjCArgument INStartCallCallCapabilityUnsupportedReason where
+  withObjCArg (INStartCallCallCapabilityUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INStartCallCallCapabilityUnsupportedReason where
+  type RawReturn INStartCallCallCapabilityUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INStartCallCallCapabilityUnsupportedReason x)
+  fromOwned x = pure (INStartCallCallCapabilityUnsupportedReason x)
+
 -- | @INStartCallCallRecordToCallBackUnsupportedReason@
 newtype INStartCallCallRecordToCallBackUnsupportedReason = INStartCallCallRecordToCallBackUnsupportedReason CLong
   deriving stock (Eq, Ord, Show)
@@ -3234,6 +4527,16 @@ newtype INStartCallCallRecordToCallBackUnsupportedReason = INStartCallCallRecord
 
 pattern INStartCallCallRecordToCallBackUnsupportedReasonNoMatchingCall :: INStartCallCallRecordToCallBackUnsupportedReason
 pattern INStartCallCallRecordToCallBackUnsupportedReasonNoMatchingCall = INStartCallCallRecordToCallBackUnsupportedReason 1
+
+instance ObjCArgument INStartCallCallRecordToCallBackUnsupportedReason where
+  withObjCArg (INStartCallCallRecordToCallBackUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INStartCallCallRecordToCallBackUnsupportedReason where
+  type RawReturn INStartCallCallRecordToCallBackUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INStartCallCallRecordToCallBackUnsupportedReason x)
+  fromOwned x = pure (INStartCallCallRecordToCallBackUnsupportedReason x)
 
 -- | @INStartCallContactUnsupportedReason@
 newtype INStartCallContactUnsupportedReason = INStartCallContactUnsupportedReason CLong
@@ -3263,6 +4566,16 @@ pattern INStartCallContactUnsupportedReasonNoUsableHandleForRedial = INStartCall
 
 pattern INStartCallContactUnsupportedReasonRequiringInAppAuthentication :: INStartCallContactUnsupportedReason
 pattern INStartCallContactUnsupportedReasonRequiringInAppAuthentication = INStartCallContactUnsupportedReason 8
+
+instance ObjCArgument INStartCallContactUnsupportedReason where
+  withObjCArg (INStartCallContactUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INStartCallContactUnsupportedReason where
+  type RawReturn INStartCallContactUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INStartCallContactUnsupportedReason x)
+  fromOwned x = pure (INStartCallContactUnsupportedReason x)
 
 -- | @INStartCallIntentResponseCode@
 newtype INStartCallIntentResponseCode = INStartCallIntentResponseCode CLong
@@ -3311,6 +4624,16 @@ pattern INStartCallIntentResponseCodeFailureCallRinging = INStartCallIntentRespo
 pattern INStartCallIntentResponseCodeFailureRequiringInAppAuthentication :: INStartCallIntentResponseCode
 pattern INStartCallIntentResponseCodeFailureRequiringInAppAuthentication = INStartCallIntentResponseCode 13
 
+instance ObjCArgument INStartCallIntentResponseCode where
+  withObjCArg (INStartCallIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INStartCallIntentResponseCode where
+  type RawReturn INStartCallIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INStartCallIntentResponseCode x)
+  fromOwned x = pure (INStartCallIntentResponseCode x)
+
 -- | @INStartPhotoPlaybackIntentResponseCode@
 newtype INStartPhotoPlaybackIntentResponseCode = INStartPhotoPlaybackIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -3333,6 +4656,16 @@ pattern INStartPhotoPlaybackIntentResponseCodeFailureRequiringAppLaunch = INStar
 
 pattern INStartPhotoPlaybackIntentResponseCodeFailureAppConfigurationRequired :: INStartPhotoPlaybackIntentResponseCode
 pattern INStartPhotoPlaybackIntentResponseCodeFailureAppConfigurationRequired = INStartPhotoPlaybackIntentResponseCode 5
+
+instance ObjCArgument INStartPhotoPlaybackIntentResponseCode where
+  withObjCArg (INStartPhotoPlaybackIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INStartPhotoPlaybackIntentResponseCode where
+  type RawReturn INStartPhotoPlaybackIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INStartPhotoPlaybackIntentResponseCode x)
+  fromOwned x = pure (INStartPhotoPlaybackIntentResponseCode x)
 
 -- | @INStartVideoCallIntentResponseCode@
 newtype INStartVideoCallIntentResponseCode = INStartVideoCallIntentResponseCode CLong
@@ -3366,6 +4699,16 @@ pattern INStartVideoCallIntentResponseCodeFailureContactNotSupportedByApp = INSt
 pattern INStartVideoCallIntentResponseCodeFailureInvalidNumber :: INStartVideoCallIntentResponseCode
 pattern INStartVideoCallIntentResponseCodeFailureInvalidNumber = INStartVideoCallIntentResponseCode 8
 
+instance ObjCArgument INStartVideoCallIntentResponseCode where
+  withObjCArg (INStartVideoCallIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INStartVideoCallIntentResponseCode where
+  type RawReturn INStartVideoCallIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INStartVideoCallIntentResponseCode x)
+  fromOwned x = pure (INStartVideoCallIntentResponseCode x)
+
 -- | @INStartWorkoutIntentResponseCode@
 newtype INStartWorkoutIntentResponseCode = INStartWorkoutIntentResponseCode CLong
   deriving stock (Eq, Ord, Show)
@@ -3398,6 +4741,16 @@ pattern INStartWorkoutIntentResponseCodeHandleInApp = INStartWorkoutIntentRespon
 pattern INStartWorkoutIntentResponseCodeSuccess :: INStartWorkoutIntentResponseCode
 pattern INStartWorkoutIntentResponseCodeSuccess = INStartWorkoutIntentResponseCode 8
 
+instance ObjCArgument INStartWorkoutIntentResponseCode where
+  withObjCArg (INStartWorkoutIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INStartWorkoutIntentResponseCode where
+  type RawReturn INStartWorkoutIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INStartWorkoutIntentResponseCode x)
+  fromOwned x = pure (INStartWorkoutIntentResponseCode x)
+
 -- | @INStickerType@
 newtype INStickerType = INStickerType CLong
   deriving stock (Eq, Ord, Show)
@@ -3411,6 +4764,16 @@ pattern INStickerTypeEmoji = INStickerType 1
 
 pattern INStickerTypeGeneric :: INStickerType
 pattern INStickerTypeGeneric = INStickerType 2
+
+instance ObjCArgument INStickerType where
+  withObjCArg (INStickerType x) k = k (argCLong x)
+
+instance ObjCReturn INStickerType where
+  type RawReturn INStickerType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INStickerType x)
+  fromOwned x = pure (INStickerType x)
 
 -- | @INTaskPriority@
 newtype INTaskPriority = INTaskPriority CLong
@@ -3426,6 +4789,16 @@ pattern INTaskPriorityNotFlagged = INTaskPriority 1
 pattern INTaskPriorityFlagged :: INTaskPriority
 pattern INTaskPriorityFlagged = INTaskPriority 2
 
+instance ObjCArgument INTaskPriority where
+  withObjCArg (INTaskPriority x) k = k (argCLong x)
+
+instance ObjCReturn INTaskPriority where
+  type RawReturn INTaskPriority = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INTaskPriority x)
+  fromOwned x = pure (INTaskPriority x)
+
 -- | @INTaskStatus@
 newtype INTaskStatus = INTaskStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -3440,6 +4813,16 @@ pattern INTaskStatusNotCompleted = INTaskStatus 1
 pattern INTaskStatusCompleted :: INTaskStatus
 pattern INTaskStatusCompleted = INTaskStatus 2
 
+instance ObjCArgument INTaskStatus where
+  withObjCArg (INTaskStatus x) k = k (argCLong x)
+
+instance ObjCReturn INTaskStatus where
+  type RawReturn INTaskStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INTaskStatus x)
+  fromOwned x = pure (INTaskStatus x)
+
 -- | @INTaskType@
 newtype INTaskType = INTaskType CLong
   deriving stock (Eq, Ord, Show)
@@ -3453,6 +4836,16 @@ pattern INTaskTypeNotCompletable = INTaskType 1
 
 pattern INTaskTypeCompletable :: INTaskType
 pattern INTaskTypeCompletable = INTaskType 2
+
+instance ObjCArgument INTaskType where
+  withObjCArg (INTaskType x) k = k (argCLong x)
+
+instance ObjCReturn INTaskType where
+  type RawReturn INTaskType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INTaskType x)
+  fromOwned x = pure (INTaskType x)
 
 -- | @INTemporalEventTriggerTypeOptions@ (bitmask)
 newtype INTemporalEventTriggerTypeOptions = INTemporalEventTriggerTypeOptions CULong
@@ -3474,6 +4867,16 @@ pattern INTemporalEventTriggerTypeOptionScheduledNonRecurring = INTemporalEventT
 pattern INTemporalEventTriggerTypeOptionScheduledRecurring :: INTemporalEventTriggerTypeOptions
 pattern INTemporalEventTriggerTypeOptionScheduledRecurring = INTemporalEventTriggerTypeOptions 4
 
+instance ObjCArgument INTemporalEventTriggerTypeOptions where
+  withObjCArg (INTemporalEventTriggerTypeOptions x) k = k (argCULong x)
+
+instance ObjCReturn INTemporalEventTriggerTypeOptions where
+  type RawReturn INTemporalEventTriggerTypeOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INTemporalEventTriggerTypeOptions x)
+  fromOwned x = pure (INTemporalEventTriggerTypeOptions x)
+
 -- | @INTicketedEventCategory@
 newtype INTicketedEventCategory = INTicketedEventCategory CLong
   deriving stock (Eq, Ord, Show)
@@ -3484,6 +4887,16 @@ pattern INTicketedEventCategoryUnknown = INTicketedEventCategory 0
 
 pattern INTicketedEventCategoryMovie :: INTicketedEventCategory
 pattern INTicketedEventCategoryMovie = INTicketedEventCategory 1
+
+instance ObjCArgument INTicketedEventCategory where
+  withObjCArg (INTicketedEventCategory x) k = k (argCLong x)
+
+instance ObjCReturn INTicketedEventCategory where
+  type RawReturn INTicketedEventCategory = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INTicketedEventCategory x)
+  fromOwned x = pure (INTicketedEventCategory x)
 
 -- | @INTransferMoneyIntentResponseCode@
 newtype INTransferMoneyIntentResponseCode = INTransferMoneyIntentResponseCode CLong
@@ -3513,6 +4926,16 @@ pattern INTransferMoneyIntentResponseCodeFailureCredentialsUnverified = INTransf
 
 pattern INTransferMoneyIntentResponseCodeFailureInsufficientFunds :: INTransferMoneyIntentResponseCode
 pattern INTransferMoneyIntentResponseCodeFailureInsufficientFunds = INTransferMoneyIntentResponseCode 7
+
+instance ObjCArgument INTransferMoneyIntentResponseCode where
+  withObjCArg (INTransferMoneyIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INTransferMoneyIntentResponseCode where
+  type RawReturn INTransferMoneyIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INTransferMoneyIntentResponseCode x)
+  fromOwned x = pure (INTransferMoneyIntentResponseCode x)
 
 -- | @INUnsendMessagesIntentResponseCode@
 newtype INUnsendMessagesIntentResponseCode = INUnsendMessagesIntentResponseCode CLong
@@ -3555,6 +4978,16 @@ pattern INUnsendMessagesIntentResponseCodeFailureMessageServiceNotAvailable = IN
 pattern INUnsendMessagesIntentResponseCodeFailureRequiringInAppAuthentication :: INUnsendMessagesIntentResponseCode
 pattern INUnsendMessagesIntentResponseCodeFailureRequiringInAppAuthentication = INUnsendMessagesIntentResponseCode 11
 
+instance ObjCArgument INUnsendMessagesIntentResponseCode where
+  withObjCArg (INUnsendMessagesIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INUnsendMessagesIntentResponseCode where
+  type RawReturn INUnsendMessagesIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INUnsendMessagesIntentResponseCode x)
+  fromOwned x = pure (INUnsendMessagesIntentResponseCode x)
+
 -- | @INUpcomingMediaPredictionMode@
 newtype INUpcomingMediaPredictionMode = INUpcomingMediaPredictionMode CLong
   deriving stock (Eq, Ord, Show)
@@ -3565,6 +4998,16 @@ pattern INUpcomingMediaPredictionModeDefault = INUpcomingMediaPredictionMode 0
 
 pattern INUpcomingMediaPredictionModeOnlyPredictSuggestedIntents :: INUpcomingMediaPredictionMode
 pattern INUpcomingMediaPredictionModeOnlyPredictSuggestedIntents = INUpcomingMediaPredictionMode 1
+
+instance ObjCArgument INUpcomingMediaPredictionMode where
+  withObjCArg (INUpcomingMediaPredictionMode x) k = k (argCLong x)
+
+instance ObjCReturn INUpcomingMediaPredictionMode where
+  type RawReturn INUpcomingMediaPredictionMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INUpcomingMediaPredictionMode x)
+  fromOwned x = pure (INUpcomingMediaPredictionMode x)
 
 -- | @INUpdateMediaAffinityIntentResponseCode@
 newtype INUpdateMediaAffinityIntentResponseCode = INUpdateMediaAffinityIntentResponseCode CLong
@@ -3588,6 +5031,16 @@ pattern INUpdateMediaAffinityIntentResponseCodeFailure = INUpdateMediaAffinityIn
 
 pattern INUpdateMediaAffinityIntentResponseCodeFailureRequiringAppLaunch :: INUpdateMediaAffinityIntentResponseCode
 pattern INUpdateMediaAffinityIntentResponseCodeFailureRequiringAppLaunch = INUpdateMediaAffinityIntentResponseCode 5
+
+instance ObjCArgument INUpdateMediaAffinityIntentResponseCode where
+  withObjCArg (INUpdateMediaAffinityIntentResponseCode x) k = k (argCLong x)
+
+instance ObjCReturn INUpdateMediaAffinityIntentResponseCode where
+  type RawReturn INUpdateMediaAffinityIntentResponseCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INUpdateMediaAffinityIntentResponseCode x)
+  fromOwned x = pure (INUpdateMediaAffinityIntentResponseCode x)
 
 -- | @INUpdateMediaAffinityMediaItemUnsupportedReason@
 newtype INUpdateMediaAffinityMediaItemUnsupportedReason = INUpdateMediaAffinityMediaItemUnsupportedReason CLong
@@ -3618,6 +5071,16 @@ pattern INUpdateMediaAffinityMediaItemUnsupportedReasonServiceUnavailable = INUp
 pattern INUpdateMediaAffinityMediaItemUnsupportedReasonRegionRestriction :: INUpdateMediaAffinityMediaItemUnsupportedReason
 pattern INUpdateMediaAffinityMediaItemUnsupportedReasonRegionRestriction = INUpdateMediaAffinityMediaItemUnsupportedReason 8
 
+instance ObjCArgument INUpdateMediaAffinityMediaItemUnsupportedReason where
+  withObjCArg (INUpdateMediaAffinityMediaItemUnsupportedReason x) k = k (argCLong x)
+
+instance ObjCReturn INUpdateMediaAffinityMediaItemUnsupportedReason where
+  type RawReturn INUpdateMediaAffinityMediaItemUnsupportedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INUpdateMediaAffinityMediaItemUnsupportedReason x)
+  fromOwned x = pure (INUpdateMediaAffinityMediaItemUnsupportedReason x)
+
 -- | @INVisualCodeType@
 newtype INVisualCodeType = INVisualCodeType CLong
   deriving stock (Eq, Ord, Show)
@@ -3643,6 +5106,16 @@ pattern INVisualCodeTypeBus = INVisualCodeType 5
 
 pattern INVisualCodeTypeSubway :: INVisualCodeType
 pattern INVisualCodeTypeSubway = INVisualCodeType 6
+
+instance ObjCArgument INVisualCodeType where
+  withObjCArg (INVisualCodeType x) k = k (argCLong x)
+
+instance ObjCReturn INVisualCodeType where
+  type RawReturn INVisualCodeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INVisualCodeType x)
+  fromOwned x = pure (INVisualCodeType x)
 
 -- | @INVocabularyStringType@
 newtype INVocabularyStringType = INVocabularyStringType CLong
@@ -3697,6 +5170,16 @@ pattern INVocabularyStringTypeMediaAudiobookAuthorName = INVocabularyStringType 
 pattern INVocabularyStringTypeMediaShowTitle :: INVocabularyStringType
 pattern INVocabularyStringTypeMediaShowTitle = INVocabularyStringType 704
 
+instance ObjCArgument INVocabularyStringType where
+  withObjCArg (INVocabularyStringType x) k = k (argCLong x)
+
+instance ObjCReturn INVocabularyStringType where
+  type RawReturn INVocabularyStringType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INVocabularyStringType x)
+  fromOwned x = pure (INVocabularyStringType x)
+
 -- | @INWorkoutGoalUnitType@
 newtype INWorkoutGoalUnitType = INWorkoutGoalUnitType CLong
   deriving stock (Eq, Ord, Show)
@@ -3735,6 +5218,16 @@ pattern INWorkoutGoalUnitTypeJoule = INWorkoutGoalUnitType 9
 pattern INWorkoutGoalUnitTypeKiloCalorie :: INWorkoutGoalUnitType
 pattern INWorkoutGoalUnitTypeKiloCalorie = INWorkoutGoalUnitType 10
 
+instance ObjCArgument INWorkoutGoalUnitType where
+  withObjCArg (INWorkoutGoalUnitType x) k = k (argCLong x)
+
+instance ObjCReturn INWorkoutGoalUnitType where
+  type RawReturn INWorkoutGoalUnitType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INWorkoutGoalUnitType x)
+  fromOwned x = pure (INWorkoutGoalUnitType x)
+
 -- | @INWorkoutLocationType@
 newtype INWorkoutLocationType = INWorkoutLocationType CLong
   deriving stock (Eq, Ord, Show)
@@ -3748,3 +5241,13 @@ pattern INWorkoutLocationTypeOutdoor = INWorkoutLocationType 1
 
 pattern INWorkoutLocationTypeIndoor :: INWorkoutLocationType
 pattern INWorkoutLocationTypeIndoor = INWorkoutLocationType 2
+
+instance ObjCArgument INWorkoutLocationType where
+  withObjCArg (INWorkoutLocationType x) k = k (argCLong x)
+
+instance ObjCReturn INWorkoutLocationType where
+  type RawReturn INWorkoutLocationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (INWorkoutLocationType x)
+  fromOwned x = pure (INWorkoutLocationType x)

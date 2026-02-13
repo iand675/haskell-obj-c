@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.Matter.MTRCameraAVSettingsUserLevelManagementClusterMPTZStruct
   , setZoom
   , panSelector
   , setPanSelector
-  , tiltSelector
   , setTiltSelector
-  , zoomSelector
   , setZoomSelector
+  , tiltSelector
+  , zoomSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- pan@
 pan :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZStruct mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct => mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct -> IO (Id NSNumber)
-pan mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct (mkSelector "pan") (retPtr retVoid) [] >>= retainedObject . castPtr
+pan mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct panSelector
 
 -- | @- setPan:@
 setPan :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZStruct mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct -> value -> IO ()
-setPan mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct (mkSelector "setPan:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPan mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct setPanSelector (toNSNumber value)
 
 -- | @- tilt@
 tilt :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZStruct mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct => mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct -> IO (Id NSNumber)
-tilt mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct (mkSelector "tilt") (retPtr retVoid) [] >>= retainedObject . castPtr
+tilt mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct tiltSelector
 
 -- | @- setTilt:@
 setTilt :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZStruct mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct -> value -> IO ()
-setTilt mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct (mkSelector "setTilt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTilt mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct setTiltSelector (toNSNumber value)
 
 -- | @- zoom@
 zoom :: IsMTRCameraAVSettingsUserLevelManagementClusterMPTZStruct mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct => mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct -> IO (Id NSNumber)
-zoom mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct  =
-    sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct (mkSelector "zoom") (retPtr retVoid) [] >>= retainedObject . castPtr
+zoom mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct zoomSelector
 
 -- | @- setZoom:@
 setZoom :: (IsMTRCameraAVSettingsUserLevelManagementClusterMPTZStruct mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct, IsNSNumber value) => mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct -> value -> IO ()
-setZoom mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct (mkSelector "setZoom:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setZoom mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct value =
+  sendMessage mtrCameraAVSettingsUserLevelManagementClusterMPTZStruct setZoomSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pan@
-panSelector :: Selector
+panSelector :: Selector '[] (Id NSNumber)
 panSelector = mkSelector "pan"
 
 -- | @Selector@ for @setPan:@
-setPanSelector :: Selector
+setPanSelector :: Selector '[Id NSNumber] ()
 setPanSelector = mkSelector "setPan:"
 
 -- | @Selector@ for @tilt@
-tiltSelector :: Selector
+tiltSelector :: Selector '[] (Id NSNumber)
 tiltSelector = mkSelector "tilt"
 
 -- | @Selector@ for @setTilt:@
-setTiltSelector :: Selector
+setTiltSelector :: Selector '[Id NSNumber] ()
 setTiltSelector = mkSelector "setTilt:"
 
 -- | @Selector@ for @zoom@
-zoomSelector :: Selector
+zoomSelector :: Selector '[] (Id NSNumber)
 zoomSelector = mkSelector "zoom"
 
 -- | @Selector@ for @setZoom:@
-setZoomSelector :: Selector
+setZoomSelector :: Selector '[Id NSNumber] ()
 setZoomSelector = mkSelector "setZoom:"
 

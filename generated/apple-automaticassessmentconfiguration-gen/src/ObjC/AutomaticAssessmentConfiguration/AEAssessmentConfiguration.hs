@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -77,38 +78,38 @@ module ObjC.AutomaticAssessmentConfiguration.AEAssessmentConfiguration
   , setAllowsScreenshots
   , mainParticipantConfiguration
   , configurationsByApplication
-  , setConfiguration_forApplicationSelector
-  , removeApplicationSelector
-  , autocorrectModeSelector
-  , setAutocorrectModeSelector
-  , allowsSpellCheckSelector
-  , setAllowsSpellCheckSelector
-  , allowsPredictiveKeyboardSelector
-  , setAllowsPredictiveKeyboardSelector
-  , allowsKeyboardShortcutsSelector
-  , setAllowsKeyboardShortcutsSelector
-  , allowsActivityContinuationSelector
-  , setAllowsActivityContinuationSelector
-  , allowsDictationSelector
-  , setAllowsDictationSelector
   , allowsAccessibilityKeyboardSelector
-  , setAllowsAccessibilityKeyboardSelector
   , allowsAccessibilityLiveCaptionsSelector
-  , setAllowsAccessibilityLiveCaptionsSelector
   , allowsAccessibilityReaderSelector
-  , setAllowsAccessibilityReaderSelector
   , allowsAccessibilitySpeechSelector
-  , setAllowsAccessibilitySpeechSelector
   , allowsAccessibilityTypingFeedbackSelector
-  , setAllowsAccessibilityTypingFeedbackSelector
-  , allowsPasswordAutoFillSelector
-  , setAllowsPasswordAutoFillSelector
+  , allowsActivityContinuationSelector
   , allowsContinuousPathKeyboardSelector
-  , setAllowsContinuousPathKeyboardSelector
+  , allowsDictationSelector
+  , allowsKeyboardShortcutsSelector
+  , allowsPasswordAutoFillSelector
+  , allowsPredictiveKeyboardSelector
   , allowsScreenshotsSelector
-  , setAllowsScreenshotsSelector
-  , mainParticipantConfigurationSelector
+  , allowsSpellCheckSelector
+  , autocorrectModeSelector
   , configurationsByApplicationSelector
+  , mainParticipantConfigurationSelector
+  , removeApplicationSelector
+  , setAllowsAccessibilityKeyboardSelector
+  , setAllowsAccessibilityLiveCaptionsSelector
+  , setAllowsAccessibilityReaderSelector
+  , setAllowsAccessibilitySpeechSelector
+  , setAllowsAccessibilityTypingFeedbackSelector
+  , setAllowsActivityContinuationSelector
+  , setAllowsContinuousPathKeyboardSelector
+  , setAllowsDictationSelector
+  , setAllowsKeyboardShortcutsSelector
+  , setAllowsPasswordAutoFillSelector
+  , setAllowsPredictiveKeyboardSelector
+  , setAllowsScreenshotsSelector
+  , setAllowsSpellCheckSelector
+  , setAutocorrectModeSelector
+  , setConfiguration_forApplicationSelector
 
   -- * Enum types
   , AEAutocorrectMode(AEAutocorrectMode)
@@ -118,15 +119,11 @@ module ObjC.AutomaticAssessmentConfiguration.AEAssessmentConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -150,10 +147,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setConfiguration:forApplication:@
 setConfiguration_forApplication :: (IsAEAssessmentConfiguration aeAssessmentConfiguration, IsAEAssessmentParticipantConfiguration configuration, IsAEAssessmentApplication application) => aeAssessmentConfiguration -> configuration -> application -> IO ()
-setConfiguration_forApplication aeAssessmentConfiguration  configuration application =
-  withObjCPtr configuration $ \raw_configuration ->
-    withObjCPtr application $ \raw_application ->
-        sendMsg aeAssessmentConfiguration (mkSelector "setConfiguration:forApplication:") retVoid [argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_application :: Ptr ())]
+setConfiguration_forApplication aeAssessmentConfiguration configuration application =
+  sendMessage aeAssessmentConfiguration setConfiguration_forApplicationSelector (toAEAssessmentParticipantConfiguration configuration) (toAEAssessmentApplication application)
 
 -- | Removes the availability of a previously allowed app.
 --
@@ -163,9 +158,8 @@ setConfiguration_forApplication aeAssessmentConfiguration  configuration applica
 --
 -- ObjC selector: @- removeApplication:@
 removeApplication :: (IsAEAssessmentConfiguration aeAssessmentConfiguration, IsAEAssessmentApplication application) => aeAssessmentConfiguration -> application -> IO ()
-removeApplication aeAssessmentConfiguration  application =
-  withObjCPtr application $ \raw_application ->
-      sendMsg aeAssessmentConfiguration (mkSelector "removeApplication:") retVoid [argPtr (castPtr raw_application :: Ptr ())]
+removeApplication aeAssessmentConfiguration application =
+  sendMessage aeAssessmentConfiguration removeApplicationSelector (toAEAssessmentApplication application)
 
 -- | The autocorrect mode that specifies which autocorrect features to allow during an assessment.
 --
@@ -173,8 +167,8 @@ removeApplication aeAssessmentConfiguration  application =
 --
 -- ObjC selector: @- autocorrectMode@
 autocorrectMode :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO AEAutocorrectMode
-autocorrectMode aeAssessmentConfiguration  =
-    fmap (coerce :: CULong -> AEAutocorrectMode) $ sendMsg aeAssessmentConfiguration (mkSelector "autocorrectMode") retCULong []
+autocorrectMode aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration autocorrectModeSelector
 
 -- | The autocorrect mode that specifies which autocorrect features to allow during an assessment.
 --
@@ -182,8 +176,8 @@ autocorrectMode aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAutocorrectMode:@
 setAutocorrectMode :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> AEAutocorrectMode -> IO ()
-setAutocorrectMode aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAutocorrectMode:") retVoid [argCULong (coerce value)]
+setAutocorrectMode aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAutocorrectModeSelector value
 
 -- | A Boolean value that indicates whether to allow spell check during an assessment.
 --
@@ -191,8 +185,8 @@ setAutocorrectMode aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsSpellCheck@
 allowsSpellCheck :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsSpellCheck aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsSpellCheck") retCULong []
+allowsSpellCheck aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsSpellCheckSelector
 
 -- | A Boolean value that indicates whether to allow spell check during an assessment.
 --
@@ -200,8 +194,8 @@ allowsSpellCheck aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsSpellCheck:@
 setAllowsSpellCheck :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsSpellCheck aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsSpellCheck:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsSpellCheck aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsSpellCheckSelector value
 
 -- | A Boolean value that indicates whether to enable the predictive keyboard during an assessment.
 --
@@ -209,8 +203,8 @@ setAllowsSpellCheck aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsPredictiveKeyboard@
 allowsPredictiveKeyboard :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsPredictiveKeyboard aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsPredictiveKeyboard") retCULong []
+allowsPredictiveKeyboard aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsPredictiveKeyboardSelector
 
 -- | A Boolean value that indicates whether to enable the predictive keyboard during an assessment.
 --
@@ -218,8 +212,8 @@ allowsPredictiveKeyboard aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsPredictiveKeyboard:@
 setAllowsPredictiveKeyboard :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsPredictiveKeyboard aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsPredictiveKeyboard:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsPredictiveKeyboard aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsPredictiveKeyboardSelector value
 
 -- | A Boolean value that indicates whether to allow keyboard shortcuts during an assessment.
 --
@@ -227,8 +221,8 @@ setAllowsPredictiveKeyboard aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsKeyboardShortcuts@
 allowsKeyboardShortcuts :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsKeyboardShortcuts aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsKeyboardShortcuts") retCULong []
+allowsKeyboardShortcuts aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsKeyboardShortcutsSelector
 
 -- | A Boolean value that indicates whether to allow keyboard shortcuts during an assessment.
 --
@@ -236,8 +230,8 @@ allowsKeyboardShortcuts aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsKeyboardShortcuts:@
 setAllowsKeyboardShortcuts :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsKeyboardShortcuts aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsKeyboardShortcuts:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsKeyboardShortcuts aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsKeyboardShortcutsSelector value
 
 -- | A Boolean value that indicates whether to allow Handoff during an assessment.
 --
@@ -245,8 +239,8 @@ setAllowsKeyboardShortcuts aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsActivityContinuation@
 allowsActivityContinuation :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsActivityContinuation aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsActivityContinuation") retCULong []
+allowsActivityContinuation aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsActivityContinuationSelector
 
 -- | A Boolean value that indicates whether to allow Handoff during an assessment.
 --
@@ -254,8 +248,8 @@ allowsActivityContinuation aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsActivityContinuation:@
 setAllowsActivityContinuation :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsActivityContinuation aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsActivityContinuation:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsActivityContinuation aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsActivityContinuationSelector value
 
 -- | A Boolean value that indicates whether to allow the use of dictation during an assessment.
 --
@@ -263,8 +257,8 @@ setAllowsActivityContinuation aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsDictation@
 allowsDictation :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsDictation aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsDictation") retCULong []
+allowsDictation aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsDictationSelector
 
 -- | A Boolean value that indicates whether to allow the use of dictation during an assessment.
 --
@@ -272,8 +266,8 @@ allowsDictation aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsDictation:@
 setAllowsDictation :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsDictation aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsDictation:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsDictation aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsDictationSelector value
 
 -- | A Boolean value that indicates whether to allow alternative input methods in the Accessibility Keyboard during an assessment.
 --
@@ -281,8 +275,8 @@ setAllowsDictation aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsAccessibilityKeyboard@
 allowsAccessibilityKeyboard :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsAccessibilityKeyboard aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsAccessibilityKeyboard") retCULong []
+allowsAccessibilityKeyboard aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsAccessibilityKeyboardSelector
 
 -- | A Boolean value that indicates whether to allow alternative input methods in the Accessibility Keyboard during an assessment.
 --
@@ -290,8 +284,8 @@ allowsAccessibilityKeyboard aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsAccessibilityKeyboard:@
 setAllowsAccessibilityKeyboard :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsAccessibilityKeyboard aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsAccessibilityKeyboard:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAccessibilityKeyboard aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsAccessibilityKeyboardSelector value
 
 -- | A Boolean value that indicates whether to allow Live Captions during an assessment.
 --
@@ -299,8 +293,8 @@ setAllowsAccessibilityKeyboard aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsAccessibilityLiveCaptions@
 allowsAccessibilityLiveCaptions :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsAccessibilityLiveCaptions aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsAccessibilityLiveCaptions") retCULong []
+allowsAccessibilityLiveCaptions aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsAccessibilityLiveCaptionsSelector
 
 -- | A Boolean value that indicates whether to allow Live Captions during an assessment.
 --
@@ -308,8 +302,8 @@ allowsAccessibilityLiveCaptions aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsAccessibilityLiveCaptions:@
 setAllowsAccessibilityLiveCaptions :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsAccessibilityLiveCaptions aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsAccessibilityLiveCaptions:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAccessibilityLiveCaptions aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsAccessibilityLiveCaptionsSelector value
 
 -- | A Boolean value that indicates whether to allow the Accessibility Reader during an assessment.
 --
@@ -317,8 +311,8 @@ setAllowsAccessibilityLiveCaptions aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsAccessibilityReader@
 allowsAccessibilityReader :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsAccessibilityReader aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsAccessibilityReader") retCULong []
+allowsAccessibilityReader aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsAccessibilityReaderSelector
 
 -- | A Boolean value that indicates whether to allow the Accessibility Reader during an assessment.
 --
@@ -326,8 +320,8 @@ allowsAccessibilityReader aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsAccessibilityReader:@
 setAllowsAccessibilityReader :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsAccessibilityReader aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsAccessibilityReader:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAccessibilityReader aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsAccessibilityReaderSelector value
 
 -- | A Boolean value that indicates whether to allow the speech-related accessibility features during an assessment.
 --
@@ -337,8 +331,8 @@ setAllowsAccessibilityReader aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsAccessibilitySpeech@
 allowsAccessibilitySpeech :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsAccessibilitySpeech aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsAccessibilitySpeech") retCULong []
+allowsAccessibilitySpeech aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsAccessibilitySpeechSelector
 
 -- | A Boolean value that indicates whether to allow the speech-related accessibility features during an assessment.
 --
@@ -348,8 +342,8 @@ allowsAccessibilitySpeech aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsAccessibilitySpeech:@
 setAllowsAccessibilitySpeech :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsAccessibilitySpeech aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsAccessibilitySpeech:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAccessibilitySpeech aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsAccessibilitySpeechSelector value
 
 -- | A Boolean value that indicates whether to allow accessibility typing feedback during an assessment.
 --
@@ -357,8 +351,8 @@ setAllowsAccessibilitySpeech aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsAccessibilityTypingFeedback@
 allowsAccessibilityTypingFeedback :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsAccessibilityTypingFeedback aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsAccessibilityTypingFeedback") retCULong []
+allowsAccessibilityTypingFeedback aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsAccessibilityTypingFeedbackSelector
 
 -- | A Boolean value that indicates whether to allow accessibility typing feedback during an assessment.
 --
@@ -366,8 +360,8 @@ allowsAccessibilityTypingFeedback aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsAccessibilityTypingFeedback:@
 setAllowsAccessibilityTypingFeedback :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsAccessibilityTypingFeedback aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsAccessibilityTypingFeedback:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAccessibilityTypingFeedback aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsAccessibilityTypingFeedbackSelector value
 
 -- | A Boolean value that indicates whether to allow password autofill during an assessment.
 --
@@ -375,8 +369,8 @@ setAllowsAccessibilityTypingFeedback aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsPasswordAutoFill@
 allowsPasswordAutoFill :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsPasswordAutoFill aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsPasswordAutoFill") retCULong []
+allowsPasswordAutoFill aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsPasswordAutoFillSelector
 
 -- | A Boolean value that indicates whether to allow password autofill during an assessment.
 --
@@ -384,8 +378,8 @@ allowsPasswordAutoFill aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsPasswordAutoFill:@
 setAllowsPasswordAutoFill :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsPasswordAutoFill aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsPasswordAutoFill:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsPasswordAutoFill aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsPasswordAutoFillSelector value
 
 -- | A Boolean value that indicates whether to allow Slide to Type to operate during an assessment.
 --
@@ -393,8 +387,8 @@ setAllowsPasswordAutoFill aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsContinuousPathKeyboard@
 allowsContinuousPathKeyboard :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsContinuousPathKeyboard aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsContinuousPathKeyboard") retCULong []
+allowsContinuousPathKeyboard aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsContinuousPathKeyboardSelector
 
 -- | A Boolean value that indicates whether to allow Slide to Type to operate during an assessment.
 --
@@ -402,8 +396,8 @@ allowsContinuousPathKeyboard aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsContinuousPathKeyboard:@
 setAllowsContinuousPathKeyboard :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsContinuousPathKeyboard aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsContinuousPathKeyboard:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsContinuousPathKeyboard aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsContinuousPathKeyboardSelector value
 
 -- | A Boolean value that indicates whether to allow screenshots copied to the clipboard during an assessment.
 --
@@ -413,8 +407,8 @@ setAllowsContinuousPathKeyboard aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- allowsScreenshots@
 allowsScreenshots :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO Bool
-allowsScreenshots aeAssessmentConfiguration  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg aeAssessmentConfiguration (mkSelector "allowsScreenshots") retCULong []
+allowsScreenshots aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration allowsScreenshotsSelector
 
 -- | A Boolean value that indicates whether to allow screenshots copied to the clipboard during an assessment.
 --
@@ -424,8 +418,8 @@ allowsScreenshots aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- setAllowsScreenshots:@
 setAllowsScreenshots :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> Bool -> IO ()
-setAllowsScreenshots aeAssessmentConfiguration  value =
-    sendMsg aeAssessmentConfiguration (mkSelector "setAllowsScreenshots:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsScreenshots aeAssessmentConfiguration value =
+  sendMessage aeAssessmentConfiguration setAllowsScreenshotsSelector value
 
 -- | The app-specific configuration for the app that invokes the assessment.
 --
@@ -435,8 +429,8 @@ setAllowsScreenshots aeAssessmentConfiguration  value =
 --
 -- ObjC selector: @- mainParticipantConfiguration@
 mainParticipantConfiguration :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO (Id AEAssessmentParticipantConfiguration)
-mainParticipantConfiguration aeAssessmentConfiguration  =
-    sendMsg aeAssessmentConfiguration (mkSelector "mainParticipantConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainParticipantConfiguration aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration mainParticipantConfigurationSelector
 
 -- | The collection of apps available during an assessment, along with their associated configurations.
 --
@@ -444,138 +438,138 @@ mainParticipantConfiguration aeAssessmentConfiguration  =
 --
 -- ObjC selector: @- configurationsByApplication@
 configurationsByApplication :: IsAEAssessmentConfiguration aeAssessmentConfiguration => aeAssessmentConfiguration -> IO (Id NSDictionary)
-configurationsByApplication aeAssessmentConfiguration  =
-    sendMsg aeAssessmentConfiguration (mkSelector "configurationsByApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+configurationsByApplication aeAssessmentConfiguration =
+  sendMessage aeAssessmentConfiguration configurationsByApplicationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setConfiguration:forApplication:@
-setConfiguration_forApplicationSelector :: Selector
+setConfiguration_forApplicationSelector :: Selector '[Id AEAssessmentParticipantConfiguration, Id AEAssessmentApplication] ()
 setConfiguration_forApplicationSelector = mkSelector "setConfiguration:forApplication:"
 
 -- | @Selector@ for @removeApplication:@
-removeApplicationSelector :: Selector
+removeApplicationSelector :: Selector '[Id AEAssessmentApplication] ()
 removeApplicationSelector = mkSelector "removeApplication:"
 
 -- | @Selector@ for @autocorrectMode@
-autocorrectModeSelector :: Selector
+autocorrectModeSelector :: Selector '[] AEAutocorrectMode
 autocorrectModeSelector = mkSelector "autocorrectMode"
 
 -- | @Selector@ for @setAutocorrectMode:@
-setAutocorrectModeSelector :: Selector
+setAutocorrectModeSelector :: Selector '[AEAutocorrectMode] ()
 setAutocorrectModeSelector = mkSelector "setAutocorrectMode:"
 
 -- | @Selector@ for @allowsSpellCheck@
-allowsSpellCheckSelector :: Selector
+allowsSpellCheckSelector :: Selector '[] Bool
 allowsSpellCheckSelector = mkSelector "allowsSpellCheck"
 
 -- | @Selector@ for @setAllowsSpellCheck:@
-setAllowsSpellCheckSelector :: Selector
+setAllowsSpellCheckSelector :: Selector '[Bool] ()
 setAllowsSpellCheckSelector = mkSelector "setAllowsSpellCheck:"
 
 -- | @Selector@ for @allowsPredictiveKeyboard@
-allowsPredictiveKeyboardSelector :: Selector
+allowsPredictiveKeyboardSelector :: Selector '[] Bool
 allowsPredictiveKeyboardSelector = mkSelector "allowsPredictiveKeyboard"
 
 -- | @Selector@ for @setAllowsPredictiveKeyboard:@
-setAllowsPredictiveKeyboardSelector :: Selector
+setAllowsPredictiveKeyboardSelector :: Selector '[Bool] ()
 setAllowsPredictiveKeyboardSelector = mkSelector "setAllowsPredictiveKeyboard:"
 
 -- | @Selector@ for @allowsKeyboardShortcuts@
-allowsKeyboardShortcutsSelector :: Selector
+allowsKeyboardShortcutsSelector :: Selector '[] Bool
 allowsKeyboardShortcutsSelector = mkSelector "allowsKeyboardShortcuts"
 
 -- | @Selector@ for @setAllowsKeyboardShortcuts:@
-setAllowsKeyboardShortcutsSelector :: Selector
+setAllowsKeyboardShortcutsSelector :: Selector '[Bool] ()
 setAllowsKeyboardShortcutsSelector = mkSelector "setAllowsKeyboardShortcuts:"
 
 -- | @Selector@ for @allowsActivityContinuation@
-allowsActivityContinuationSelector :: Selector
+allowsActivityContinuationSelector :: Selector '[] Bool
 allowsActivityContinuationSelector = mkSelector "allowsActivityContinuation"
 
 -- | @Selector@ for @setAllowsActivityContinuation:@
-setAllowsActivityContinuationSelector :: Selector
+setAllowsActivityContinuationSelector :: Selector '[Bool] ()
 setAllowsActivityContinuationSelector = mkSelector "setAllowsActivityContinuation:"
 
 -- | @Selector@ for @allowsDictation@
-allowsDictationSelector :: Selector
+allowsDictationSelector :: Selector '[] Bool
 allowsDictationSelector = mkSelector "allowsDictation"
 
 -- | @Selector@ for @setAllowsDictation:@
-setAllowsDictationSelector :: Selector
+setAllowsDictationSelector :: Selector '[Bool] ()
 setAllowsDictationSelector = mkSelector "setAllowsDictation:"
 
 -- | @Selector@ for @allowsAccessibilityKeyboard@
-allowsAccessibilityKeyboardSelector :: Selector
+allowsAccessibilityKeyboardSelector :: Selector '[] Bool
 allowsAccessibilityKeyboardSelector = mkSelector "allowsAccessibilityKeyboard"
 
 -- | @Selector@ for @setAllowsAccessibilityKeyboard:@
-setAllowsAccessibilityKeyboardSelector :: Selector
+setAllowsAccessibilityKeyboardSelector :: Selector '[Bool] ()
 setAllowsAccessibilityKeyboardSelector = mkSelector "setAllowsAccessibilityKeyboard:"
 
 -- | @Selector@ for @allowsAccessibilityLiveCaptions@
-allowsAccessibilityLiveCaptionsSelector :: Selector
+allowsAccessibilityLiveCaptionsSelector :: Selector '[] Bool
 allowsAccessibilityLiveCaptionsSelector = mkSelector "allowsAccessibilityLiveCaptions"
 
 -- | @Selector@ for @setAllowsAccessibilityLiveCaptions:@
-setAllowsAccessibilityLiveCaptionsSelector :: Selector
+setAllowsAccessibilityLiveCaptionsSelector :: Selector '[Bool] ()
 setAllowsAccessibilityLiveCaptionsSelector = mkSelector "setAllowsAccessibilityLiveCaptions:"
 
 -- | @Selector@ for @allowsAccessibilityReader@
-allowsAccessibilityReaderSelector :: Selector
+allowsAccessibilityReaderSelector :: Selector '[] Bool
 allowsAccessibilityReaderSelector = mkSelector "allowsAccessibilityReader"
 
 -- | @Selector@ for @setAllowsAccessibilityReader:@
-setAllowsAccessibilityReaderSelector :: Selector
+setAllowsAccessibilityReaderSelector :: Selector '[Bool] ()
 setAllowsAccessibilityReaderSelector = mkSelector "setAllowsAccessibilityReader:"
 
 -- | @Selector@ for @allowsAccessibilitySpeech@
-allowsAccessibilitySpeechSelector :: Selector
+allowsAccessibilitySpeechSelector :: Selector '[] Bool
 allowsAccessibilitySpeechSelector = mkSelector "allowsAccessibilitySpeech"
 
 -- | @Selector@ for @setAllowsAccessibilitySpeech:@
-setAllowsAccessibilitySpeechSelector :: Selector
+setAllowsAccessibilitySpeechSelector :: Selector '[Bool] ()
 setAllowsAccessibilitySpeechSelector = mkSelector "setAllowsAccessibilitySpeech:"
 
 -- | @Selector@ for @allowsAccessibilityTypingFeedback@
-allowsAccessibilityTypingFeedbackSelector :: Selector
+allowsAccessibilityTypingFeedbackSelector :: Selector '[] Bool
 allowsAccessibilityTypingFeedbackSelector = mkSelector "allowsAccessibilityTypingFeedback"
 
 -- | @Selector@ for @setAllowsAccessibilityTypingFeedback:@
-setAllowsAccessibilityTypingFeedbackSelector :: Selector
+setAllowsAccessibilityTypingFeedbackSelector :: Selector '[Bool] ()
 setAllowsAccessibilityTypingFeedbackSelector = mkSelector "setAllowsAccessibilityTypingFeedback:"
 
 -- | @Selector@ for @allowsPasswordAutoFill@
-allowsPasswordAutoFillSelector :: Selector
+allowsPasswordAutoFillSelector :: Selector '[] Bool
 allowsPasswordAutoFillSelector = mkSelector "allowsPasswordAutoFill"
 
 -- | @Selector@ for @setAllowsPasswordAutoFill:@
-setAllowsPasswordAutoFillSelector :: Selector
+setAllowsPasswordAutoFillSelector :: Selector '[Bool] ()
 setAllowsPasswordAutoFillSelector = mkSelector "setAllowsPasswordAutoFill:"
 
 -- | @Selector@ for @allowsContinuousPathKeyboard@
-allowsContinuousPathKeyboardSelector :: Selector
+allowsContinuousPathKeyboardSelector :: Selector '[] Bool
 allowsContinuousPathKeyboardSelector = mkSelector "allowsContinuousPathKeyboard"
 
 -- | @Selector@ for @setAllowsContinuousPathKeyboard:@
-setAllowsContinuousPathKeyboardSelector :: Selector
+setAllowsContinuousPathKeyboardSelector :: Selector '[Bool] ()
 setAllowsContinuousPathKeyboardSelector = mkSelector "setAllowsContinuousPathKeyboard:"
 
 -- | @Selector@ for @allowsScreenshots@
-allowsScreenshotsSelector :: Selector
+allowsScreenshotsSelector :: Selector '[] Bool
 allowsScreenshotsSelector = mkSelector "allowsScreenshots"
 
 -- | @Selector@ for @setAllowsScreenshots:@
-setAllowsScreenshotsSelector :: Selector
+setAllowsScreenshotsSelector :: Selector '[Bool] ()
 setAllowsScreenshotsSelector = mkSelector "setAllowsScreenshots:"
 
 -- | @Selector@ for @mainParticipantConfiguration@
-mainParticipantConfigurationSelector :: Selector
+mainParticipantConfigurationSelector :: Selector '[] (Id AEAssessmentParticipantConfiguration)
 mainParticipantConfigurationSelector = mkSelector "mainParticipantConfiguration"
 
 -- | @Selector@ for @configurationsByApplication@
-configurationsByApplicationSelector :: Selector
+configurationsByApplicationSelector :: Selector '[] (Id NSDictionary)
 configurationsByApplicationSelector = mkSelector "configurationsByApplication"
 

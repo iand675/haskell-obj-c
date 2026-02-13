@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INPaymentMethodResolutionResult
   , successWithResolvedPaymentMethod
   , disambiguationWithPaymentMethodsToDisambiguate
   , confirmationRequiredWithPaymentMethodToConfirm
-  , successWithResolvedPaymentMethodSelector
-  , disambiguationWithPaymentMethodsToDisambiguateSelector
   , confirmationRequiredWithPaymentMethodToConfirmSelector
+  , disambiguationWithPaymentMethodsToDisambiguateSelector
+  , successWithResolvedPaymentMethodSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedPaymentMethod :: IsINPaymentMethod resolvedPaymentMethod => r
 successWithResolvedPaymentMethod resolvedPaymentMethod =
   do
     cls' <- getRequiredClass "INPaymentMethodResolutionResult"
-    withObjCPtr resolvedPaymentMethod $ \raw_resolvedPaymentMethod ->
-      sendClassMsg cls' (mkSelector "successWithResolvedPaymentMethod:") (retPtr retVoid) [argPtr (castPtr raw_resolvedPaymentMethod :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedPaymentMethodSelector (toINPaymentMethod resolvedPaymentMethod)
 
 -- | @+ disambiguationWithPaymentMethodsToDisambiguate:@
 disambiguationWithPaymentMethodsToDisambiguate :: IsNSArray paymentMethodsToDisambiguate => paymentMethodsToDisambiguate -> IO (Id INPaymentMethodResolutionResult)
 disambiguationWithPaymentMethodsToDisambiguate paymentMethodsToDisambiguate =
   do
     cls' <- getRequiredClass "INPaymentMethodResolutionResult"
-    withObjCPtr paymentMethodsToDisambiguate $ \raw_paymentMethodsToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithPaymentMethodsToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_paymentMethodsToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithPaymentMethodsToDisambiguateSelector (toNSArray paymentMethodsToDisambiguate)
 
 -- | @+ confirmationRequiredWithPaymentMethodToConfirm:@
 confirmationRequiredWithPaymentMethodToConfirm :: IsINPaymentMethod paymentMethodToConfirm => paymentMethodToConfirm -> IO (Id INPaymentMethodResolutionResult)
 confirmationRequiredWithPaymentMethodToConfirm paymentMethodToConfirm =
   do
     cls' <- getRequiredClass "INPaymentMethodResolutionResult"
-    withObjCPtr paymentMethodToConfirm $ \raw_paymentMethodToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithPaymentMethodToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_paymentMethodToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithPaymentMethodToConfirmSelector (toINPaymentMethod paymentMethodToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedPaymentMethod:@
-successWithResolvedPaymentMethodSelector :: Selector
+successWithResolvedPaymentMethodSelector :: Selector '[Id INPaymentMethod] (Id INPaymentMethodResolutionResult)
 successWithResolvedPaymentMethodSelector = mkSelector "successWithResolvedPaymentMethod:"
 
 -- | @Selector@ for @disambiguationWithPaymentMethodsToDisambiguate:@
-disambiguationWithPaymentMethodsToDisambiguateSelector :: Selector
+disambiguationWithPaymentMethodsToDisambiguateSelector :: Selector '[Id NSArray] (Id INPaymentMethodResolutionResult)
 disambiguationWithPaymentMethodsToDisambiguateSelector = mkSelector "disambiguationWithPaymentMethodsToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithPaymentMethodToConfirm:@
-confirmationRequiredWithPaymentMethodToConfirmSelector :: Selector
+confirmationRequiredWithPaymentMethodToConfirmSelector :: Selector '[Id INPaymentMethod] (Id INPaymentMethodResolutionResult)
 confirmationRequiredWithPaymentMethodToConfirmSelector = mkSelector "confirmationRequiredWithPaymentMethodToConfirm:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.CoreLocation.CLBackgroundActivitySessionDiagnostic
   , insufficientlyInUse
   , serviceSessionRequired
   , authorizationRequestInProgress
-  , authorizationDeniedSelector
   , authorizationDeniedGloballySelector
+  , authorizationDeniedSelector
+  , authorizationRequestInProgressSelector
   , authorizationRestrictedSelector
   , insufficientlyInUseSelector
   , serviceSessionRequiredSelector
-  , authorizationRequestInProgressSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,59 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- authorizationDenied@
 authorizationDenied :: IsCLBackgroundActivitySessionDiagnostic clBackgroundActivitySessionDiagnostic => clBackgroundActivitySessionDiagnostic -> IO Bool
-authorizationDenied clBackgroundActivitySessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clBackgroundActivitySessionDiagnostic (mkSelector "authorizationDenied") retCULong []
+authorizationDenied clBackgroundActivitySessionDiagnostic =
+  sendMessage clBackgroundActivitySessionDiagnostic authorizationDeniedSelector
 
 -- | @- authorizationDeniedGlobally@
 authorizationDeniedGlobally :: IsCLBackgroundActivitySessionDiagnostic clBackgroundActivitySessionDiagnostic => clBackgroundActivitySessionDiagnostic -> IO Bool
-authorizationDeniedGlobally clBackgroundActivitySessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clBackgroundActivitySessionDiagnostic (mkSelector "authorizationDeniedGlobally") retCULong []
+authorizationDeniedGlobally clBackgroundActivitySessionDiagnostic =
+  sendMessage clBackgroundActivitySessionDiagnostic authorizationDeniedGloballySelector
 
 -- | @- authorizationRestricted@
 authorizationRestricted :: IsCLBackgroundActivitySessionDiagnostic clBackgroundActivitySessionDiagnostic => clBackgroundActivitySessionDiagnostic -> IO Bool
-authorizationRestricted clBackgroundActivitySessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clBackgroundActivitySessionDiagnostic (mkSelector "authorizationRestricted") retCULong []
+authorizationRestricted clBackgroundActivitySessionDiagnostic =
+  sendMessage clBackgroundActivitySessionDiagnostic authorizationRestrictedSelector
 
 -- | @- insufficientlyInUse@
 insufficientlyInUse :: IsCLBackgroundActivitySessionDiagnostic clBackgroundActivitySessionDiagnostic => clBackgroundActivitySessionDiagnostic -> IO Bool
-insufficientlyInUse clBackgroundActivitySessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clBackgroundActivitySessionDiagnostic (mkSelector "insufficientlyInUse") retCULong []
+insufficientlyInUse clBackgroundActivitySessionDiagnostic =
+  sendMessage clBackgroundActivitySessionDiagnostic insufficientlyInUseSelector
 
 -- | @- serviceSessionRequired@
 serviceSessionRequired :: IsCLBackgroundActivitySessionDiagnostic clBackgroundActivitySessionDiagnostic => clBackgroundActivitySessionDiagnostic -> IO Bool
-serviceSessionRequired clBackgroundActivitySessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clBackgroundActivitySessionDiagnostic (mkSelector "serviceSessionRequired") retCULong []
+serviceSessionRequired clBackgroundActivitySessionDiagnostic =
+  sendMessage clBackgroundActivitySessionDiagnostic serviceSessionRequiredSelector
 
 -- | @- authorizationRequestInProgress@
 authorizationRequestInProgress :: IsCLBackgroundActivitySessionDiagnostic clBackgroundActivitySessionDiagnostic => clBackgroundActivitySessionDiagnostic -> IO Bool
-authorizationRequestInProgress clBackgroundActivitySessionDiagnostic  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clBackgroundActivitySessionDiagnostic (mkSelector "authorizationRequestInProgress") retCULong []
+authorizationRequestInProgress clBackgroundActivitySessionDiagnostic =
+  sendMessage clBackgroundActivitySessionDiagnostic authorizationRequestInProgressSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationDenied@
-authorizationDeniedSelector :: Selector
+authorizationDeniedSelector :: Selector '[] Bool
 authorizationDeniedSelector = mkSelector "authorizationDenied"
 
 -- | @Selector@ for @authorizationDeniedGlobally@
-authorizationDeniedGloballySelector :: Selector
+authorizationDeniedGloballySelector :: Selector '[] Bool
 authorizationDeniedGloballySelector = mkSelector "authorizationDeniedGlobally"
 
 -- | @Selector@ for @authorizationRestricted@
-authorizationRestrictedSelector :: Selector
+authorizationRestrictedSelector :: Selector '[] Bool
 authorizationRestrictedSelector = mkSelector "authorizationRestricted"
 
 -- | @Selector@ for @insufficientlyInUse@
-insufficientlyInUseSelector :: Selector
+insufficientlyInUseSelector :: Selector '[] Bool
 insufficientlyInUseSelector = mkSelector "insufficientlyInUse"
 
 -- | @Selector@ for @serviceSessionRequired@
-serviceSessionRequiredSelector :: Selector
+serviceSessionRequiredSelector :: Selector '[] Bool
 serviceSessionRequiredSelector = mkSelector "serviceSessionRequired"
 
 -- | @Selector@ for @authorizationRequestInProgress@
-authorizationRequestInProgressSelector :: Selector
+authorizationRequestInProgressSelector :: Selector '[] Bool
 authorizationRequestInProgressSelector = mkSelector "authorizationRequestInProgress"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.SceneKit.SCNSkinner
   , bones
   , boneWeights
   , boneIndices
-  , skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndicesSelector
-  , skeletonSelector
-  , setSkeletonSelector
-  , baseGeometrySelector
-  , setBaseGeometrySelector
   , baseGeometryBindTransformSelector
-  , setBaseGeometryBindTransformSelector
-  , boneInverseBindTransformsSelector
-  , bonesSelector
-  , boneWeightsSelector
+  , baseGeometrySelector
   , boneIndicesSelector
+  , boneInverseBindTransformsSelector
+  , boneWeightsSelector
+  , bonesSelector
+  , setBaseGeometryBindTransformSelector
+  , setBaseGeometrySelector
+  , setSkeletonSelector
+  , skeletonSelector
+  , skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndicesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,12 +68,7 @@ skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndices 
 skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndices baseGeometry bones boneInverseBindTransforms boneWeights boneIndices =
   do
     cls' <- getRequiredClass "SCNSkinner"
-    withObjCPtr baseGeometry $ \raw_baseGeometry ->
-      withObjCPtr bones $ \raw_bones ->
-        withObjCPtr boneInverseBindTransforms $ \raw_boneInverseBindTransforms ->
-          withObjCPtr boneWeights $ \raw_boneWeights ->
-            withObjCPtr boneIndices $ \raw_boneIndices ->
-              sendClassMsg cls' (mkSelector "skinnerWithBaseGeometry:bones:boneInverseBindTransforms:boneWeights:boneIndices:") (retPtr retVoid) [argPtr (castPtr raw_baseGeometry :: Ptr ()), argPtr (castPtr raw_bones :: Ptr ()), argPtr (castPtr raw_boneInverseBindTransforms :: Ptr ()), argPtr (castPtr raw_boneWeights :: Ptr ()), argPtr (castPtr raw_boneIndices :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndicesSelector (toSCNGeometry baseGeometry) (toNSArray bones) (toNSArray boneInverseBindTransforms) (toSCNGeometrySource boneWeights) (toSCNGeometrySource boneIndices)
 
 -- | skeleton
 --
@@ -86,8 +78,8 @@ skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndices 
 --
 -- ObjC selector: @- skeleton@
 skeleton :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id SCNNode)
-skeleton scnSkinner  =
-    sendMsg scnSkinner (mkSelector "skeleton") (retPtr retVoid) [] >>= retainedObject . castPtr
+skeleton scnSkinner =
+  sendMessage scnSkinner skeletonSelector
 
 -- | skeleton
 --
@@ -97,9 +89,8 @@ skeleton scnSkinner  =
 --
 -- ObjC selector: @- setSkeleton:@
 setSkeleton :: (IsSCNSkinner scnSkinner, IsSCNNode value) => scnSkinner -> value -> IO ()
-setSkeleton scnSkinner  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnSkinner (mkSelector "setSkeleton:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSkeleton scnSkinner value =
+  sendMessage scnSkinner setSkeletonSelector (toSCNNode value)
 
 -- | baseGeometry
 --
@@ -109,8 +100,8 @@ setSkeleton scnSkinner  value =
 --
 -- ObjC selector: @- baseGeometry@
 baseGeometry :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id SCNGeometry)
-baseGeometry scnSkinner  =
-    sendMsg scnSkinner (mkSelector "baseGeometry") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseGeometry scnSkinner =
+  sendMessage scnSkinner baseGeometrySelector
 
 -- | baseGeometry
 --
@@ -120,9 +111,8 @@ baseGeometry scnSkinner  =
 --
 -- ObjC selector: @- setBaseGeometry:@
 setBaseGeometry :: (IsSCNSkinner scnSkinner, IsSCNGeometry value) => scnSkinner -> value -> IO ()
-setBaseGeometry scnSkinner  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnSkinner (mkSelector "setBaseGeometry:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBaseGeometry scnSkinner value =
+  sendMessage scnSkinner setBaseGeometrySelector (toSCNGeometry value)
 
 -- | baseGeometryBindTransform
 --
@@ -130,8 +120,8 @@ setBaseGeometry scnSkinner  value =
 --
 -- ObjC selector: @- baseGeometryBindTransform@
 baseGeometryBindTransform :: IsSCNSkinner scnSkinner => scnSkinner -> IO SCNMatrix4
-baseGeometryBindTransform scnSkinner  =
-    sendMsgStret scnSkinner (mkSelector "baseGeometryBindTransform") retSCNMatrix4 []
+baseGeometryBindTransform scnSkinner =
+  sendMessage scnSkinner baseGeometryBindTransformSelector
 
 -- | baseGeometryBindTransform
 --
@@ -139,8 +129,8 @@ baseGeometryBindTransform scnSkinner  =
 --
 -- ObjC selector: @- setBaseGeometryBindTransform:@
 setBaseGeometryBindTransform :: IsSCNSkinner scnSkinner => scnSkinner -> SCNMatrix4 -> IO ()
-setBaseGeometryBindTransform scnSkinner  value =
-    sendMsg scnSkinner (mkSelector "setBaseGeometryBindTransform:") retVoid [argSCNMatrix4 value]
+setBaseGeometryBindTransform scnSkinner value =
+  sendMessage scnSkinner setBaseGeometryBindTransformSelector value
 
 -- | boneInverseBindTransforms
 --
@@ -150,8 +140,8 @@ setBaseGeometryBindTransform scnSkinner  value =
 --
 -- ObjC selector: @- boneInverseBindTransforms@
 boneInverseBindTransforms :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id NSArray)
-boneInverseBindTransforms scnSkinner  =
-    sendMsg scnSkinner (mkSelector "boneInverseBindTransforms") (retPtr retVoid) [] >>= retainedObject . castPtr
+boneInverseBindTransforms scnSkinner =
+  sendMessage scnSkinner boneInverseBindTransformsSelector
 
 -- | bones
 --
@@ -159,8 +149,8 @@ boneInverseBindTransforms scnSkinner  =
 --
 -- ObjC selector: @- bones@
 bones :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id NSArray)
-bones scnSkinner  =
-    sendMsg scnSkinner (mkSelector "bones") (retPtr retVoid) [] >>= retainedObject . castPtr
+bones scnSkinner =
+  sendMessage scnSkinner bonesSelector
 
 -- | boneWeights
 --
@@ -168,8 +158,8 @@ bones scnSkinner  =
 --
 -- ObjC selector: @- boneWeights@
 boneWeights :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id SCNGeometrySource)
-boneWeights scnSkinner  =
-    sendMsg scnSkinner (mkSelector "boneWeights") (retPtr retVoid) [] >>= retainedObject . castPtr
+boneWeights scnSkinner =
+  sendMessage scnSkinner boneWeightsSelector
 
 -- | boneIndices
 --
@@ -177,54 +167,54 @@ boneWeights scnSkinner  =
 --
 -- ObjC selector: @- boneIndices@
 boneIndices :: IsSCNSkinner scnSkinner => scnSkinner -> IO (Id SCNGeometrySource)
-boneIndices scnSkinner  =
-    sendMsg scnSkinner (mkSelector "boneIndices") (retPtr retVoid) [] >>= retainedObject . castPtr
+boneIndices scnSkinner =
+  sendMessage scnSkinner boneIndicesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @skinnerWithBaseGeometry:bones:boneInverseBindTransforms:boneWeights:boneIndices:@
-skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndicesSelector :: Selector
+skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndicesSelector :: Selector '[Id SCNGeometry, Id NSArray, Id NSArray, Id SCNGeometrySource, Id SCNGeometrySource] (Id SCNSkinner)
 skinnerWithBaseGeometry_bones_boneInverseBindTransforms_boneWeights_boneIndicesSelector = mkSelector "skinnerWithBaseGeometry:bones:boneInverseBindTransforms:boneWeights:boneIndices:"
 
 -- | @Selector@ for @skeleton@
-skeletonSelector :: Selector
+skeletonSelector :: Selector '[] (Id SCNNode)
 skeletonSelector = mkSelector "skeleton"
 
 -- | @Selector@ for @setSkeleton:@
-setSkeletonSelector :: Selector
+setSkeletonSelector :: Selector '[Id SCNNode] ()
 setSkeletonSelector = mkSelector "setSkeleton:"
 
 -- | @Selector@ for @baseGeometry@
-baseGeometrySelector :: Selector
+baseGeometrySelector :: Selector '[] (Id SCNGeometry)
 baseGeometrySelector = mkSelector "baseGeometry"
 
 -- | @Selector@ for @setBaseGeometry:@
-setBaseGeometrySelector :: Selector
+setBaseGeometrySelector :: Selector '[Id SCNGeometry] ()
 setBaseGeometrySelector = mkSelector "setBaseGeometry:"
 
 -- | @Selector@ for @baseGeometryBindTransform@
-baseGeometryBindTransformSelector :: Selector
+baseGeometryBindTransformSelector :: Selector '[] SCNMatrix4
 baseGeometryBindTransformSelector = mkSelector "baseGeometryBindTransform"
 
 -- | @Selector@ for @setBaseGeometryBindTransform:@
-setBaseGeometryBindTransformSelector :: Selector
+setBaseGeometryBindTransformSelector :: Selector '[SCNMatrix4] ()
 setBaseGeometryBindTransformSelector = mkSelector "setBaseGeometryBindTransform:"
 
 -- | @Selector@ for @boneInverseBindTransforms@
-boneInverseBindTransformsSelector :: Selector
+boneInverseBindTransformsSelector :: Selector '[] (Id NSArray)
 boneInverseBindTransformsSelector = mkSelector "boneInverseBindTransforms"
 
 -- | @Selector@ for @bones@
-bonesSelector :: Selector
+bonesSelector :: Selector '[] (Id NSArray)
 bonesSelector = mkSelector "bones"
 
 -- | @Selector@ for @boneWeights@
-boneWeightsSelector :: Selector
+boneWeightsSelector :: Selector '[] (Id SCNGeometrySource)
 boneWeightsSelector = mkSelector "boneWeights"
 
 -- | @Selector@ for @boneIndices@
-boneIndicesSelector :: Selector
+boneIndicesSelector :: Selector '[] (Id SCNGeometrySource)
 boneIndicesSelector = mkSelector "boneIndices"
 

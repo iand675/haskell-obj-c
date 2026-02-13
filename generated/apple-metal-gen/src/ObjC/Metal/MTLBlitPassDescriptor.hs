@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.Metal.MTLBlitPassDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,7 +39,7 @@ blitPassDescriptor :: IO (Id MTLBlitPassDescriptor)
 blitPassDescriptor  =
   do
     cls' <- getRequiredClass "MTLBlitPassDescriptor"
-    sendClassMsg cls' (mkSelector "blitPassDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' blitPassDescriptorSelector
 
 -- | sampleBufferAttachments
 --
@@ -50,18 +47,18 @@ blitPassDescriptor  =
 --
 -- ObjC selector: @- sampleBufferAttachments@
 sampleBufferAttachments :: IsMTLBlitPassDescriptor mtlBlitPassDescriptor => mtlBlitPassDescriptor -> IO (Id MTLBlitPassSampleBufferAttachmentDescriptorArray)
-sampleBufferAttachments mtlBlitPassDescriptor  =
-    sendMsg mtlBlitPassDescriptor (mkSelector "sampleBufferAttachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleBufferAttachments mtlBlitPassDescriptor =
+  sendMessage mtlBlitPassDescriptor sampleBufferAttachmentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @blitPassDescriptor@
-blitPassDescriptorSelector :: Selector
+blitPassDescriptorSelector :: Selector '[] (Id MTLBlitPassDescriptor)
 blitPassDescriptorSelector = mkSelector "blitPassDescriptor"
 
 -- | @Selector@ for @sampleBufferAttachments@
-sampleBufferAttachmentsSelector :: Selector
+sampleBufferAttachmentsSelector :: Selector '[] (Id MTLBlitPassSampleBufferAttachmentDescriptorArray)
 sampleBufferAttachmentsSelector = mkSelector "sampleBufferAttachments"
 

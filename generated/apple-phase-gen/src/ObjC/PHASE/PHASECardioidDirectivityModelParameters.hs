@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.PHASE.PHASECardioidDirectivityModelParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,9 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithSubbandParameters:@
 initWithSubbandParameters :: (IsPHASECardioidDirectivityModelParameters phaseCardioidDirectivityModelParameters, IsNSArray subbandParameters) => phaseCardioidDirectivityModelParameters -> subbandParameters -> IO (Id PHASECardioidDirectivityModelParameters)
-initWithSubbandParameters phaseCardioidDirectivityModelParameters  subbandParameters =
-  withObjCPtr subbandParameters $ \raw_subbandParameters ->
-      sendMsg phaseCardioidDirectivityModelParameters (mkSelector "initWithSubbandParameters:") (retPtr retVoid) [argPtr (castPtr raw_subbandParameters :: Ptr ())] >>= ownedObject . castPtr
+initWithSubbandParameters phaseCardioidDirectivityModelParameters subbandParameters =
+  sendOwnedMessage phaseCardioidDirectivityModelParameters initWithSubbandParametersSelector (toNSArray subbandParameters)
 
 -- | subbandParameters
 --
@@ -47,18 +43,18 @@ initWithSubbandParameters phaseCardioidDirectivityModelParameters  subbandParame
 --
 -- ObjC selector: @- subbandParameters@
 subbandParameters :: IsPHASECardioidDirectivityModelParameters phaseCardioidDirectivityModelParameters => phaseCardioidDirectivityModelParameters -> IO (Id NSArray)
-subbandParameters phaseCardioidDirectivityModelParameters  =
-    sendMsg phaseCardioidDirectivityModelParameters (mkSelector "subbandParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+subbandParameters phaseCardioidDirectivityModelParameters =
+  sendMessage phaseCardioidDirectivityModelParameters subbandParametersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSubbandParameters:@
-initWithSubbandParametersSelector :: Selector
+initWithSubbandParametersSelector :: Selector '[Id NSArray] (Id PHASECardioidDirectivityModelParameters)
 initWithSubbandParametersSelector = mkSelector "initWithSubbandParameters:"
 
 -- | @Selector@ for @subbandParameters@
-subbandParametersSelector :: Selector
+subbandParametersSelector :: Selector '[] (Id NSArray)
 subbandParametersSelector = mkSelector "subbandParameters"
 

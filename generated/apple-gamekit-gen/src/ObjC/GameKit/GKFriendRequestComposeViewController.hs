@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.GameKit.GKFriendRequestComposeViewController
   , addRecipientsWithEmailAddresses
   , composeViewDelegate
   , setComposeViewDelegate
-  , maxNumberOfRecipientsSelector
-  , setMessageSelector
   , addRecipientPlayersSelector
-  , addRecipientsWithPlayerIDsSelector
   , addRecipientsWithEmailAddressesSelector
+  , addRecipientsWithPlayerIDsSelector
   , composeViewDelegateSelector
+  , maxNumberOfRecipientsSelector
   , setComposeViewDelegateSelector
+  , setMessageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,75 +46,71 @@ maxNumberOfRecipients :: IO CULong
 maxNumberOfRecipients  =
   do
     cls' <- getRequiredClass "GKFriendRequestComposeViewController"
-    sendClassMsg cls' (mkSelector "maxNumberOfRecipients") retCULong []
+    sendClassMessage cls' maxNumberOfRecipientsSelector
 
 -- | Specify the message sent to the invitee. A default message will be used if you don't specify one.
 --
 -- ObjC selector: @- setMessage:@
 setMessage :: (IsGKFriendRequestComposeViewController gkFriendRequestComposeViewController, IsNSString message) => gkFriendRequestComposeViewController -> message -> IO ()
-setMessage gkFriendRequestComposeViewController  message =
-  withObjCPtr message $ \raw_message ->
-      sendMsg gkFriendRequestComposeViewController (mkSelector "setMessage:") retVoid [argPtr (castPtr raw_message :: Ptr ())]
+setMessage gkFriendRequestComposeViewController message =
+  sendMessage gkFriendRequestComposeViewController setMessageSelector (toNSString message)
 
 -- | Add recipients to the request. If you don't specify at least one recipient before presenting the view, the recipients field will be made firstResponder, to encourage the user to add some. If you add more than maxNumberOfRecipients recipients, these methods will throw an exception.
 --
 -- ObjC selector: @- addRecipientPlayers:@
 addRecipientPlayers :: (IsGKFriendRequestComposeViewController gkFriendRequestComposeViewController, IsNSArray players) => gkFriendRequestComposeViewController -> players -> IO ()
-addRecipientPlayers gkFriendRequestComposeViewController  players =
-  withObjCPtr players $ \raw_players ->
-      sendMsg gkFriendRequestComposeViewController (mkSelector "addRecipientPlayers:") retVoid [argPtr (castPtr raw_players :: Ptr ())]
+addRecipientPlayers gkFriendRequestComposeViewController players =
+  sendMessage gkFriendRequestComposeViewController addRecipientPlayersSelector (toNSArray players)
 
 -- | @- addRecipientsWithPlayerIDs:@
 addRecipientsWithPlayerIDs :: (IsGKFriendRequestComposeViewController gkFriendRequestComposeViewController, IsNSArray playerIDs) => gkFriendRequestComposeViewController -> playerIDs -> IO ()
-addRecipientsWithPlayerIDs gkFriendRequestComposeViewController  playerIDs =
-  withObjCPtr playerIDs $ \raw_playerIDs ->
-      sendMsg gkFriendRequestComposeViewController (mkSelector "addRecipientsWithPlayerIDs:") retVoid [argPtr (castPtr raw_playerIDs :: Ptr ())]
+addRecipientsWithPlayerIDs gkFriendRequestComposeViewController playerIDs =
+  sendMessage gkFriendRequestComposeViewController addRecipientsWithPlayerIDsSelector (toNSArray playerIDs)
 
 -- | @- addRecipientsWithEmailAddresses:@
 addRecipientsWithEmailAddresses :: (IsGKFriendRequestComposeViewController gkFriendRequestComposeViewController, IsNSArray emailAddresses) => gkFriendRequestComposeViewController -> emailAddresses -> IO ()
-addRecipientsWithEmailAddresses gkFriendRequestComposeViewController  emailAddresses =
-  withObjCPtr emailAddresses $ \raw_emailAddresses ->
-      sendMsg gkFriendRequestComposeViewController (mkSelector "addRecipientsWithEmailAddresses:") retVoid [argPtr (castPtr raw_emailAddresses :: Ptr ())]
+addRecipientsWithEmailAddresses gkFriendRequestComposeViewController emailAddresses =
+  sendMessage gkFriendRequestComposeViewController addRecipientsWithEmailAddressesSelector (toNSArray emailAddresses)
 
 -- | @- composeViewDelegate@
 composeViewDelegate :: IsGKFriendRequestComposeViewController gkFriendRequestComposeViewController => gkFriendRequestComposeViewController -> IO RawId
-composeViewDelegate gkFriendRequestComposeViewController  =
-    fmap (RawId . castPtr) $ sendMsg gkFriendRequestComposeViewController (mkSelector "composeViewDelegate") (retPtr retVoid) []
+composeViewDelegate gkFriendRequestComposeViewController =
+  sendMessage gkFriendRequestComposeViewController composeViewDelegateSelector
 
 -- | @- setComposeViewDelegate:@
 setComposeViewDelegate :: IsGKFriendRequestComposeViewController gkFriendRequestComposeViewController => gkFriendRequestComposeViewController -> RawId -> IO ()
-setComposeViewDelegate gkFriendRequestComposeViewController  value =
-    sendMsg gkFriendRequestComposeViewController (mkSelector "setComposeViewDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setComposeViewDelegate gkFriendRequestComposeViewController value =
+  sendMessage gkFriendRequestComposeViewController setComposeViewDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @maxNumberOfRecipients@
-maxNumberOfRecipientsSelector :: Selector
+maxNumberOfRecipientsSelector :: Selector '[] CULong
 maxNumberOfRecipientsSelector = mkSelector "maxNumberOfRecipients"
 
 -- | @Selector@ for @setMessage:@
-setMessageSelector :: Selector
+setMessageSelector :: Selector '[Id NSString] ()
 setMessageSelector = mkSelector "setMessage:"
 
 -- | @Selector@ for @addRecipientPlayers:@
-addRecipientPlayersSelector :: Selector
+addRecipientPlayersSelector :: Selector '[Id NSArray] ()
 addRecipientPlayersSelector = mkSelector "addRecipientPlayers:"
 
 -- | @Selector@ for @addRecipientsWithPlayerIDs:@
-addRecipientsWithPlayerIDsSelector :: Selector
+addRecipientsWithPlayerIDsSelector :: Selector '[Id NSArray] ()
 addRecipientsWithPlayerIDsSelector = mkSelector "addRecipientsWithPlayerIDs:"
 
 -- | @Selector@ for @addRecipientsWithEmailAddresses:@
-addRecipientsWithEmailAddressesSelector :: Selector
+addRecipientsWithEmailAddressesSelector :: Selector '[Id NSArray] ()
 addRecipientsWithEmailAddressesSelector = mkSelector "addRecipientsWithEmailAddresses:"
 
 -- | @Selector@ for @composeViewDelegate@
-composeViewDelegateSelector :: Selector
+composeViewDelegateSelector :: Selector '[] RawId
 composeViewDelegateSelector = mkSelector "composeViewDelegate"
 
 -- | @Selector@ for @setComposeViewDelegate:@
-setComposeViewDelegateSelector :: Selector
+setComposeViewDelegateSelector :: Selector '[RawId] ()
 setComposeViewDelegateSelector = mkSelector "setComposeViewDelegate:"
 

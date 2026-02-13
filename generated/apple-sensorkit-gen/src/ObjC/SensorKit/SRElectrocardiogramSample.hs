@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.SensorKit.SRElectrocardiogramSample
   , session
   , lead
   , data_
-  , initSelector
-  , newSelector
+  , dataSelector
   , dateSelector
   , frequencySelector
-  , sessionSelector
+  , initSelector
   , leadSelector
-  , dataSelector
+  , newSelector
+  , sessionSelector
 
   -- * Enum types
   , SRElectrocardiogramLead(SRElectrocardiogramLead)
@@ -29,15 +30,11 @@ module ObjC.SensorKit.SRElectrocardiogramSample
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSRElectrocardiogramSample srElectrocardiogramSample => srElectrocardiogramSample -> IO (Id SRElectrocardiogramSample)
-init_ srElectrocardiogramSample  =
-    sendMsg srElectrocardiogramSample (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ srElectrocardiogramSample =
+  sendOwnedMessage srElectrocardiogramSample initSelector
 
 -- | @+ new@
 new :: IO (Id SRElectrocardiogramSample)
 new  =
   do
     cls' <- getRequiredClass "SRElectrocardiogramSample"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | date
 --
@@ -63,8 +60,8 @@ new  =
 --
 -- ObjC selector: @- date@
 date :: IsSRElectrocardiogramSample srElectrocardiogramSample => srElectrocardiogramSample -> IO (Id NSDate)
-date srElectrocardiogramSample  =
-    sendMsg srElectrocardiogramSample (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date srElectrocardiogramSample =
+  sendMessage srElectrocardiogramSample dateSelector
 
 -- | frequency
 --
@@ -72,8 +69,8 @@ date srElectrocardiogramSample  =
 --
 -- ObjC selector: @- frequency@
 frequency :: IsSRElectrocardiogramSample srElectrocardiogramSample => srElectrocardiogramSample -> IO (Id NSMeasurement)
-frequency srElectrocardiogramSample  =
-    sendMsg srElectrocardiogramSample (mkSelector "frequency") (retPtr retVoid) [] >>= retainedObject . castPtr
+frequency srElectrocardiogramSample =
+  sendMessage srElectrocardiogramSample frequencySelector
 
 -- | session
 --
@@ -81,48 +78,48 @@ frequency srElectrocardiogramSample  =
 --
 -- ObjC selector: @- session@
 session :: IsSRElectrocardiogramSample srElectrocardiogramSample => srElectrocardiogramSample -> IO (Id SRElectrocardiogramSession)
-session srElectrocardiogramSample  =
-    sendMsg srElectrocardiogramSample (mkSelector "session") (retPtr retVoid) [] >>= retainedObject . castPtr
+session srElectrocardiogramSample =
+  sendMessage srElectrocardiogramSample sessionSelector
 
 -- | @- lead@
 lead :: IsSRElectrocardiogramSample srElectrocardiogramSample => srElectrocardiogramSample -> IO SRElectrocardiogramLead
-lead srElectrocardiogramSample  =
-    fmap (coerce :: CLong -> SRElectrocardiogramLead) $ sendMsg srElectrocardiogramSample (mkSelector "lead") retCLong []
+lead srElectrocardiogramSample =
+  sendMessage srElectrocardiogramSample leadSelector
 
 -- | @- data@
 data_ :: IsSRElectrocardiogramSample srElectrocardiogramSample => srElectrocardiogramSample -> IO (Id NSArray)
-data_ srElectrocardiogramSample  =
-    sendMsg srElectrocardiogramSample (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ srElectrocardiogramSample =
+  sendMessage srElectrocardiogramSample dataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SRElectrocardiogramSample)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SRElectrocardiogramSample)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] (Id NSMeasurement)
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @session@
-sessionSelector :: Selector
+sessionSelector :: Selector '[] (Id SRElectrocardiogramSession)
 sessionSelector = mkSelector "session"
 
 -- | @Selector@ for @lead@
-leadSelector :: Selector
+leadSelector :: Selector '[] SRElectrocardiogramLead
 leadSelector = mkSelector "lead"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSArray)
 dataSelector = mkSelector "data"
 

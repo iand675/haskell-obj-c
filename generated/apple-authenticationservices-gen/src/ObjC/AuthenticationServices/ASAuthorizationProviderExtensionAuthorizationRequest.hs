@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,41 +29,37 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionAuthorization
   , callerAuditToken
   , userInterfaceEnabled
   , loginManager
-  , doNotHandleSelector
-  , cancelSelector
-  , completeSelector
-  , completeWithHTTPAuthorizationHeadersSelector
-  , completeWithHTTPResponse_httpBodySelector
-  , completeWithAuthorizationResultSelector
-  , completeWithErrorSelector
-  , presentAuthorizationViewControllerWithCompletionSelector
-  , urlSelector
-  , requestedOperationSelector
-  , httpHeadersSelector
-  , httpBodySelector
-  , realmSelector
-  , extensionDataSelector
-  , callerBundleIdentifierSelector
   , authorizationOptionsSelector
+  , callerAuditTokenSelector
+  , callerBundleIdentifierSelector
   , callerManagedSelector
   , callerTeamIdentifierSelector
+  , cancelSelector
+  , completeSelector
+  , completeWithAuthorizationResultSelector
+  , completeWithErrorSelector
+  , completeWithHTTPAuthorizationHeadersSelector
+  , completeWithHTTPResponse_httpBodySelector
+  , doNotHandleSelector
+  , extensionDataSelector
+  , httpBodySelector
+  , httpHeadersSelector
   , localizedCallerDisplayNameSelector
-  , callerAuditTokenSelector
-  , userInterfaceEnabledSelector
   , loginManagerSelector
+  , presentAuthorizationViewControllerWithCompletionSelector
+  , realmSelector
+  , requestedOperationSelector
+  , urlSelector
+  , userInterfaceEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,39 +70,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- doNotHandle@
 doNotHandle :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO ()
-doNotHandle asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "doNotHandle") retVoid []
+doNotHandle asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest doNotHandleSelector
 
 -- | Call when authorization needs to be canceled from some reason (for example user pressed Cancel button).
 --
 -- ObjC selector: @- cancel@
 cancel :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO ()
-cancel asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "cancel") retVoid []
+cancel asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest cancelSelector
 
 -- | Call when authorization succeeded without any output.
 --
 -- ObjC selector: @- complete@
 complete :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO ()
-complete asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "complete") retVoid []
+complete asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest completeSelector
 
 -- | Call when authorization succeeded with an authorization tokens stored in HTTP headers.
 --
 -- ObjC selector: @- completeWithHTTPAuthorizationHeaders:@
 completeWithHTTPAuthorizationHeaders :: (IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest, IsNSDictionary httpAuthorizationHeaders) => asAuthorizationProviderExtensionAuthorizationRequest -> httpAuthorizationHeaders -> IO ()
-completeWithHTTPAuthorizationHeaders asAuthorizationProviderExtensionAuthorizationRequest  httpAuthorizationHeaders =
-  withObjCPtr httpAuthorizationHeaders $ \raw_httpAuthorizationHeaders ->
-      sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "completeWithHTTPAuthorizationHeaders:") retVoid [argPtr (castPtr raw_httpAuthorizationHeaders :: Ptr ())]
+completeWithHTTPAuthorizationHeaders asAuthorizationProviderExtensionAuthorizationRequest httpAuthorizationHeaders =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest completeWithHTTPAuthorizationHeadersSelector (toNSDictionary httpAuthorizationHeaders)
 
 -- | Call when authorization succeeded with a HTTP response.
 --
 -- ObjC selector: @- completeWithHTTPResponse:httpBody:@
 completeWithHTTPResponse_httpBody :: (IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest, IsNSHTTPURLResponse httpResponse, IsNSData httpBody) => asAuthorizationProviderExtensionAuthorizationRequest -> httpResponse -> httpBody -> IO ()
-completeWithHTTPResponse_httpBody asAuthorizationProviderExtensionAuthorizationRequest  httpResponse httpBody =
-  withObjCPtr httpResponse $ \raw_httpResponse ->
-    withObjCPtr httpBody $ \raw_httpBody ->
-        sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "completeWithHTTPResponse:httpBody:") retVoid [argPtr (castPtr raw_httpResponse :: Ptr ()), argPtr (castPtr raw_httpBody :: Ptr ())]
+completeWithHTTPResponse_httpBody asAuthorizationProviderExtensionAuthorizationRequest httpResponse httpBody =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest completeWithHTTPResponse_httpBodySelector (toNSHTTPURLResponse httpResponse) (toNSData httpBody)
 
 -- | Call when authorization succeeded with
 --
@@ -113,108 +107,106 @@ completeWithHTTPResponse_httpBody asAuthorizationProviderExtensionAuthorizationR
 --
 -- ObjC selector: @- completeWithAuthorizationResult:@
 completeWithAuthorizationResult :: (IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest, IsASAuthorizationProviderExtensionAuthorizationResult authorizationResult) => asAuthorizationProviderExtensionAuthorizationRequest -> authorizationResult -> IO ()
-completeWithAuthorizationResult asAuthorizationProviderExtensionAuthorizationRequest  authorizationResult =
-  withObjCPtr authorizationResult $ \raw_authorizationResult ->
-      sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "completeWithAuthorizationResult:") retVoid [argPtr (castPtr raw_authorizationResult :: Ptr ())]
+completeWithAuthorizationResult asAuthorizationProviderExtensionAuthorizationRequest authorizationResult =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest completeWithAuthorizationResultSelector (toASAuthorizationProviderExtensionAuthorizationResult authorizationResult)
 
 -- | Call when authorization failed with an error.
 --
 -- ObjC selector: @- completeWithError:@
 completeWithError :: (IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest, IsNSError error_) => asAuthorizationProviderExtensionAuthorizationRequest -> error_ -> IO ()
-completeWithError asAuthorizationProviderExtensionAuthorizationRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "completeWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+completeWithError asAuthorizationProviderExtensionAuthorizationRequest error_ =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest completeWithErrorSelector (toNSError error_)
 
 -- | Asks authorization service to show extension view controller. If the controller cannot be shown an error is returned.
 --
 -- ObjC selector: @- presentAuthorizationViewControllerWithCompletion:@
 presentAuthorizationViewControllerWithCompletion :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> Ptr () -> IO ()
-presentAuthorizationViewControllerWithCompletion asAuthorizationProviderExtensionAuthorizationRequest  completion =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "presentAuthorizationViewControllerWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+presentAuthorizationViewControllerWithCompletion asAuthorizationProviderExtensionAuthorizationRequest completion =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest presentAuthorizationViewControllerWithCompletionSelector completion
 
 -- | Request URL with all components.
 --
 -- ObjC selector: @- url@
 url :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSURL)
-url asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest urlSelector
 
 -- | Operation to be executed by the extension.
 --
 -- ObjC selector: @- requestedOperation@
 requestedOperation :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSString)
-requestedOperation asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "requestedOperation") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestedOperation asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest requestedOperationSelector
 
 -- | Request HTTP headers.
 --
 -- ObjC selector: @- httpHeaders@
 httpHeaders :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSDictionary)
-httpHeaders asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "httpHeaders") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpHeaders asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest httpHeadersSelector
 
 -- | Request body.
 --
 -- ObjC selector: @- httpBody@
 httpBody :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSData)
-httpBody asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "httpBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpBody asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest httpBodySelector
 
 -- | Realm.
 --
 -- ObjC selector: @- realm@
 realm :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSString)
-realm asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "realm") (retPtr retVoid) [] >>= retainedObject . castPtr
+realm asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest realmSelector
 
 -- | Extension data from extension configuration provided by MDM stored as a property-list.
 --
 -- ObjC selector: @- extensionData@
 extensionData :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSDictionary)
-extensionData asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "extensionData") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensionData asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest extensionDataSelector
 
 -- | Identification of the calling application.
 --
 -- ObjC selector: @- callerBundleIdentifier@
 callerBundleIdentifier :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSString)
-callerBundleIdentifier asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "callerBundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+callerBundleIdentifier asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest callerBundleIdentifierSelector
 
 -- | Authorization options.
 --
 -- ObjC selector: @- authorizationOptions@
 authorizationOptions :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSDictionary)
-authorizationOptions asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "authorizationOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorizationOptions asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest authorizationOptionsSelector
 
 -- | Indicates whether the calling application is managed.
 --
 -- ObjC selector: @- callerManaged@
 callerManaged :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO Bool
-callerManaged asAuthorizationProviderExtensionAuthorizationRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "callerManaged") retCULong []
+callerManaged asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest callerManagedSelector
 
 -- | Team identifier of the calling application.
 --
 -- ObjC selector: @- callerTeamIdentifier@
 callerTeamIdentifier :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSString)
-callerTeamIdentifier asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "callerTeamIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+callerTeamIdentifier asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest callerTeamIdentifierSelector
 
 -- | Localized display name of the calling application.
 --
 -- ObjC selector: @- localizedCallerDisplayName@
 localizedCallerDisplayName :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSString)
-localizedCallerDisplayName asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "localizedCallerDisplayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedCallerDisplayName asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest localizedCallerDisplayNameSelector
 
 -- | Audit token of the calling application.
 --
 -- ObjC selector: @- callerAuditToken@
 callerAuditToken :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id NSData)
-callerAuditToken asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "callerAuditToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+callerAuditToken asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest callerAuditTokenSelector
 
 -- | Indicates whether the authorization user interface is enabled.
 --
@@ -226,105 +218,105 @@ callerAuditToken asAuthorizationProviderExtensionAuthorizationRequest  =
 --
 -- ObjC selector: @- userInterfaceEnabled@
 userInterfaceEnabled :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO Bool
-userInterfaceEnabled asAuthorizationProviderExtensionAuthorizationRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "userInterfaceEnabled") retCULong []
+userInterfaceEnabled asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest userInterfaceEnabledSelector
 
 -- | The login manager to interface with the Platform SSO configuration.
 --
 -- ObjC selector: @- loginManager@
 loginManager :: IsASAuthorizationProviderExtensionAuthorizationRequest asAuthorizationProviderExtensionAuthorizationRequest => asAuthorizationProviderExtensionAuthorizationRequest -> IO (Id ASAuthorizationProviderExtensionLoginManager)
-loginManager asAuthorizationProviderExtensionAuthorizationRequest  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationRequest (mkSelector "loginManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+loginManager asAuthorizationProviderExtensionAuthorizationRequest =
+  sendMessage asAuthorizationProviderExtensionAuthorizationRequest loginManagerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @doNotHandle@
-doNotHandleSelector :: Selector
+doNotHandleSelector :: Selector '[] ()
 doNotHandleSelector = mkSelector "doNotHandle"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @complete@
-completeSelector :: Selector
+completeSelector :: Selector '[] ()
 completeSelector = mkSelector "complete"
 
 -- | @Selector@ for @completeWithHTTPAuthorizationHeaders:@
-completeWithHTTPAuthorizationHeadersSelector :: Selector
+completeWithHTTPAuthorizationHeadersSelector :: Selector '[Id NSDictionary] ()
 completeWithHTTPAuthorizationHeadersSelector = mkSelector "completeWithHTTPAuthorizationHeaders:"
 
 -- | @Selector@ for @completeWithHTTPResponse:httpBody:@
-completeWithHTTPResponse_httpBodySelector :: Selector
+completeWithHTTPResponse_httpBodySelector :: Selector '[Id NSHTTPURLResponse, Id NSData] ()
 completeWithHTTPResponse_httpBodySelector = mkSelector "completeWithHTTPResponse:httpBody:"
 
 -- | @Selector@ for @completeWithAuthorizationResult:@
-completeWithAuthorizationResultSelector :: Selector
+completeWithAuthorizationResultSelector :: Selector '[Id ASAuthorizationProviderExtensionAuthorizationResult] ()
 completeWithAuthorizationResultSelector = mkSelector "completeWithAuthorizationResult:"
 
 -- | @Selector@ for @completeWithError:@
-completeWithErrorSelector :: Selector
+completeWithErrorSelector :: Selector '[Id NSError] ()
 completeWithErrorSelector = mkSelector "completeWithError:"
 
 -- | @Selector@ for @presentAuthorizationViewControllerWithCompletion:@
-presentAuthorizationViewControllerWithCompletionSelector :: Selector
+presentAuthorizationViewControllerWithCompletionSelector :: Selector '[Ptr ()] ()
 presentAuthorizationViewControllerWithCompletionSelector = mkSelector "presentAuthorizationViewControllerWithCompletion:"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @requestedOperation@
-requestedOperationSelector :: Selector
+requestedOperationSelector :: Selector '[] (Id NSString)
 requestedOperationSelector = mkSelector "requestedOperation"
 
 -- | @Selector@ for @httpHeaders@
-httpHeadersSelector :: Selector
+httpHeadersSelector :: Selector '[] (Id NSDictionary)
 httpHeadersSelector = mkSelector "httpHeaders"
 
 -- | @Selector@ for @httpBody@
-httpBodySelector :: Selector
+httpBodySelector :: Selector '[] (Id NSData)
 httpBodySelector = mkSelector "httpBody"
 
 -- | @Selector@ for @realm@
-realmSelector :: Selector
+realmSelector :: Selector '[] (Id NSString)
 realmSelector = mkSelector "realm"
 
 -- | @Selector@ for @extensionData@
-extensionDataSelector :: Selector
+extensionDataSelector :: Selector '[] (Id NSDictionary)
 extensionDataSelector = mkSelector "extensionData"
 
 -- | @Selector@ for @callerBundleIdentifier@
-callerBundleIdentifierSelector :: Selector
+callerBundleIdentifierSelector :: Selector '[] (Id NSString)
 callerBundleIdentifierSelector = mkSelector "callerBundleIdentifier"
 
 -- | @Selector@ for @authorizationOptions@
-authorizationOptionsSelector :: Selector
+authorizationOptionsSelector :: Selector '[] (Id NSDictionary)
 authorizationOptionsSelector = mkSelector "authorizationOptions"
 
 -- | @Selector@ for @callerManaged@
-callerManagedSelector :: Selector
+callerManagedSelector :: Selector '[] Bool
 callerManagedSelector = mkSelector "callerManaged"
 
 -- | @Selector@ for @callerTeamIdentifier@
-callerTeamIdentifierSelector :: Selector
+callerTeamIdentifierSelector :: Selector '[] (Id NSString)
 callerTeamIdentifierSelector = mkSelector "callerTeamIdentifier"
 
 -- | @Selector@ for @localizedCallerDisplayName@
-localizedCallerDisplayNameSelector :: Selector
+localizedCallerDisplayNameSelector :: Selector '[] (Id NSString)
 localizedCallerDisplayNameSelector = mkSelector "localizedCallerDisplayName"
 
 -- | @Selector@ for @callerAuditToken@
-callerAuditTokenSelector :: Selector
+callerAuditTokenSelector :: Selector '[] (Id NSData)
 callerAuditTokenSelector = mkSelector "callerAuditToken"
 
 -- | @Selector@ for @userInterfaceEnabled@
-userInterfaceEnabledSelector :: Selector
+userInterfaceEnabledSelector :: Selector '[] Bool
 userInterfaceEnabledSelector = mkSelector "userInterfaceEnabled"
 
 -- | @Selector@ for @loginManager@
-loginManagerSelector :: Selector
+loginManagerSelector :: Selector '[] (Id ASAuthorizationProviderExtensionLoginManager)
 loginManagerSelector = mkSelector "loginManager"
 

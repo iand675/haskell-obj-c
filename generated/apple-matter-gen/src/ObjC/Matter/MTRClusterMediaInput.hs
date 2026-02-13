@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,42 +32,38 @@ module ObjC.Matter.MTRClusterMediaInput
   , hideInputStatusWithExpectedValues_expectedValueInterval_completionHandler
   , renameInputWithParams_expectedValues_expectedValueInterval_completionHandler
   , initWithDevice_endpointID_queue
-  , selectInputWithParams_expectedValues_expectedValueInterval_completionSelector
-  , showInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector
-  , showInputStatusWithExpectedValues_expectedValueInterval_completionSelector
-  , hideInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector
+  , hideInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector
   , hideInputStatusWithExpectedValues_expectedValueInterval_completionSelector
-  , renameInputWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeInputListWithParamsSelector
-  , readAttributeCurrentInputWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , hideInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , hideInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , selectInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , showInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , showInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector
-  , hideInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , hideInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector
+  , readAttributeCurrentInputWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeInputListWithParamsSelector
   , renameInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , initWithDevice_endpointID_queueSelector
+  , renameInputWithParams_expectedValues_expectedValueInterval_completionSelector
+  , selectInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , selectInputWithParams_expectedValues_expectedValueInterval_completionSelector
+  , showInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector
+  , showInputStatusWithExpectedValues_expectedValueInterval_completionSelector
+  , showInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , showInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,260 +72,216 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- selectInputWithParams:expectedValues:expectedValueInterval:completion:@
 selectInputWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRMediaInputClusterSelectInputParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-selectInputWithParams_expectedValues_expectedValueInterval_completion mtrClusterMediaInput  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterMediaInput (mkSelector "selectInputWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+selectInputWithParams_expectedValues_expectedValueInterval_completion mtrClusterMediaInput params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterMediaInput selectInputWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRMediaInputClusterSelectInputParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- showInputStatusWithParams:expectedValues:expectedValueInterval:completion:@
 showInputStatusWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRMediaInputClusterShowInputStatusParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-showInputStatusWithParams_expectedValues_expectedValueInterval_completion mtrClusterMediaInput  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterMediaInput (mkSelector "showInputStatusWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+showInputStatusWithParams_expectedValues_expectedValueInterval_completion mtrClusterMediaInput params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterMediaInput showInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRMediaInputClusterShowInputStatusParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- showInputStatusWithExpectedValues:expectedValueInterval:completion:@
 showInputStatusWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-showInputStatusWithExpectedValues_expectedValueInterval_completion mtrClusterMediaInput  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterMediaInput (mkSelector "showInputStatusWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+showInputStatusWithExpectedValues_expectedValueInterval_completion mtrClusterMediaInput expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterMediaInput showInputStatusWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- hideInputStatusWithParams:expectedValues:expectedValueInterval:completion:@
 hideInputStatusWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRMediaInputClusterHideInputStatusParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-hideInputStatusWithParams_expectedValues_expectedValueInterval_completion mtrClusterMediaInput  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterMediaInput (mkSelector "hideInputStatusWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+hideInputStatusWithParams_expectedValues_expectedValueInterval_completion mtrClusterMediaInput params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterMediaInput hideInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRMediaInputClusterHideInputStatusParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- hideInputStatusWithExpectedValues:expectedValueInterval:completion:@
 hideInputStatusWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-hideInputStatusWithExpectedValues_expectedValueInterval_completion mtrClusterMediaInput  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterMediaInput (mkSelector "hideInputStatusWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+hideInputStatusWithExpectedValues_expectedValueInterval_completion mtrClusterMediaInput expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterMediaInput hideInputStatusWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- renameInputWithParams:expectedValues:expectedValueInterval:completion:@
 renameInputWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRMediaInputClusterRenameInputParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-renameInputWithParams_expectedValues_expectedValueInterval_completion mtrClusterMediaInput  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterMediaInput (mkSelector "renameInputWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+renameInputWithParams_expectedValues_expectedValueInterval_completion mtrClusterMediaInput params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterMediaInput renameInputWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRMediaInputClusterRenameInputParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeInputListWithParams:@
 readAttributeInputListWithParams :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRReadParams params) => mtrClusterMediaInput -> params -> IO (Id NSDictionary)
-readAttributeInputListWithParams mtrClusterMediaInput  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterMediaInput (mkSelector "readAttributeInputListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeInputListWithParams mtrClusterMediaInput params =
+  sendMessage mtrClusterMediaInput readAttributeInputListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentInputWithParams:@
 readAttributeCurrentInputWithParams :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRReadParams params) => mtrClusterMediaInput -> params -> IO (Id NSDictionary)
-readAttributeCurrentInputWithParams mtrClusterMediaInput  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterMediaInput (mkSelector "readAttributeCurrentInputWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentInputWithParams mtrClusterMediaInput params =
+  sendMessage mtrClusterMediaInput readAttributeCurrentInputWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRReadParams params) => mtrClusterMediaInput -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterMediaInput  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterMediaInput (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterMediaInput params =
+  sendMessage mtrClusterMediaInput readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRReadParams params) => mtrClusterMediaInput -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterMediaInput  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterMediaInput (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterMediaInput params =
+  sendMessage mtrClusterMediaInput readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRReadParams params) => mtrClusterMediaInput -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterMediaInput  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterMediaInput (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterMediaInput params =
+  sendMessage mtrClusterMediaInput readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRReadParams params) => mtrClusterMediaInput -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterMediaInput  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterMediaInput (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterMediaInput params =
+  sendMessage mtrClusterMediaInput readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRReadParams params) => mtrClusterMediaInput -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterMediaInput  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterMediaInput (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterMediaInput params =
+  sendMessage mtrClusterMediaInput readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterMediaInput mtrClusterMediaInput => mtrClusterMediaInput -> IO (Id MTRClusterMediaInput)
-init_ mtrClusterMediaInput  =
-    sendMsg mtrClusterMediaInput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterMediaInput =
+  sendOwnedMessage mtrClusterMediaInput initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterMediaInput)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterMediaInput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRDevice device, IsNSObject queue) => mtrClusterMediaInput -> device -> CUShort -> queue -> IO (Id MTRClusterMediaInput)
-initWithDevice_endpoint_queue mtrClusterMediaInput  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterMediaInput (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterMediaInput device endpoint queue =
+  sendOwnedMessage mtrClusterMediaInput initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- selectInputWithParams:expectedValues:expectedValueInterval:completionHandler:@
 selectInputWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRMediaInputClusterSelectInputParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-selectInputWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterMediaInput (mkSelector "selectInputWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+selectInputWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterMediaInput selectInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRMediaInputClusterSelectInputParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- showInputStatusWithParams:expectedValues:expectedValueInterval:completionHandler:@
 showInputStatusWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRMediaInputClusterShowInputStatusParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-showInputStatusWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterMediaInput (mkSelector "showInputStatusWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+showInputStatusWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterMediaInput showInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRMediaInputClusterShowInputStatusParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- showInputStatusWithExpectedValues:expectedValueInterval:completionHandler:@
 showInputStatusWithExpectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-showInputStatusWithExpectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput  expectedValues expectedValueIntervalMs completionHandler =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterMediaInput (mkSelector "showInputStatusWithExpectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+showInputStatusWithExpectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput expectedValues expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterMediaInput showInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- hideInputStatusWithParams:expectedValues:expectedValueInterval:completionHandler:@
 hideInputStatusWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRMediaInputClusterHideInputStatusParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-hideInputStatusWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterMediaInput (mkSelector "hideInputStatusWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+hideInputStatusWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterMediaInput hideInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRMediaInputClusterHideInputStatusParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- hideInputStatusWithExpectedValues:expectedValueInterval:completionHandler:@
 hideInputStatusWithExpectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-hideInputStatusWithExpectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput  expectedValues expectedValueIntervalMs completionHandler =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterMediaInput (mkSelector "hideInputStatusWithExpectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+hideInputStatusWithExpectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput expectedValues expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterMediaInput hideInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- renameInputWithParams:expectedValues:expectedValueInterval:completionHandler:@
 renameInputWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRMediaInputClusterRenameInputParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterMediaInput -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-renameInputWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterMediaInput (mkSelector "renameInputWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+renameInputWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterMediaInput params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterMediaInput renameInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRMediaInputClusterRenameInputParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterMediaInput mtrClusterMediaInput, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterMediaInput -> device -> endpointID -> queue -> IO (Id MTRClusterMediaInput)
-initWithDevice_endpointID_queue mtrClusterMediaInput  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterMediaInput (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterMediaInput device endpointID queue =
+  sendOwnedMessage mtrClusterMediaInput initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectInputWithParams:expectedValues:expectedValueInterval:completion:@
-selectInputWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+selectInputWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRMediaInputClusterSelectInputParams, Id NSArray, Id NSNumber, Ptr ()] ()
 selectInputWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "selectInputWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @showInputStatusWithParams:expectedValues:expectedValueInterval:completion:@
-showInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+showInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRMediaInputClusterShowInputStatusParams, Id NSArray, Id NSNumber, Ptr ()] ()
 showInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "showInputStatusWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @showInputStatusWithExpectedValues:expectedValueInterval:completion:@
-showInputStatusWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+showInputStatusWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 showInputStatusWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "showInputStatusWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @hideInputStatusWithParams:expectedValues:expectedValueInterval:completion:@
-hideInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+hideInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRMediaInputClusterHideInputStatusParams, Id NSArray, Id NSNumber, Ptr ()] ()
 hideInputStatusWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "hideInputStatusWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @hideInputStatusWithExpectedValues:expectedValueInterval:completion:@
-hideInputStatusWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+hideInputStatusWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 hideInputStatusWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "hideInputStatusWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @renameInputWithParams:expectedValues:expectedValueInterval:completion:@
-renameInputWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+renameInputWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRMediaInputClusterRenameInputParams, Id NSArray, Id NSNumber, Ptr ()] ()
 renameInputWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "renameInputWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeInputListWithParams:@
-readAttributeInputListWithParamsSelector :: Selector
+readAttributeInputListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeInputListWithParamsSelector = mkSelector "readAttributeInputListWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentInputWithParams:@
-readAttributeCurrentInputWithParamsSelector :: Selector
+readAttributeCurrentInputWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentInputWithParamsSelector = mkSelector "readAttributeCurrentInputWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterMediaInput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterMediaInput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterMediaInput)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @selectInputWithParams:expectedValues:expectedValueInterval:completionHandler:@
-selectInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+selectInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRMediaInputClusterSelectInputParams, Id NSArray, Id NSNumber, Ptr ()] ()
 selectInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "selectInputWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @showInputStatusWithParams:expectedValues:expectedValueInterval:completionHandler:@
-showInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+showInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRMediaInputClusterShowInputStatusParams, Id NSArray, Id NSNumber, Ptr ()] ()
 showInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "showInputStatusWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @showInputStatusWithExpectedValues:expectedValueInterval:completionHandler:@
-showInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+showInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 showInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "showInputStatusWithExpectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @hideInputStatusWithParams:expectedValues:expectedValueInterval:completionHandler:@
-hideInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+hideInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRMediaInputClusterHideInputStatusParams, Id NSArray, Id NSNumber, Ptr ()] ()
 hideInputStatusWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "hideInputStatusWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @hideInputStatusWithExpectedValues:expectedValueInterval:completionHandler:@
-hideInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+hideInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 hideInputStatusWithExpectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "hideInputStatusWithExpectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @renameInputWithParams:expectedValues:expectedValueInterval:completionHandler:@
-renameInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+renameInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRMediaInputClusterRenameInputParams, Id NSArray, Id NSNumber, Ptr ()] ()
 renameInputWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "renameInputWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterMediaInput)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

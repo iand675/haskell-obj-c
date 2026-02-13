@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,17 +21,17 @@ module ObjC.GameKit.GKTurnBasedExchange
   , completionDate
   , replies
   , cancelWithLocalizableMessageKey_arguments_completionHandlerSelector
-  , replyWithLocalizableMessageKey_arguments_data_completionHandlerSelector
-  , exchangeIDSelector
-  , senderSelector
-  , recipientsSelector
-  , statusSelector
-  , messageSelector
-  , dataSelector
-  , sendDateSelector
-  , timeoutDateSelector
   , completionDateSelector
+  , dataSelector
+  , exchangeIDSelector
+  , messageSelector
+  , recipientsSelector
   , repliesSelector
+  , replyWithLocalizableMessageKey_arguments_data_completionHandlerSelector
+  , sendDateSelector
+  , senderSelector
+  , statusSelector
+  , timeoutDateSelector
 
   -- * Enum types
   , GKTurnBasedExchangeStatus(GKTurnBasedExchangeStatus)
@@ -42,15 +43,11 @@ module ObjC.GameKit.GKTurnBasedExchange
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,118 +57,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- cancelWithLocalizableMessageKey:arguments:completionHandler:@
 cancelWithLocalizableMessageKey_arguments_completionHandler :: (IsGKTurnBasedExchange gkTurnBasedExchange, IsNSString key, IsNSArray arguments) => gkTurnBasedExchange -> key -> arguments -> Ptr () -> IO ()
-cancelWithLocalizableMessageKey_arguments_completionHandler gkTurnBasedExchange  key arguments completionHandler =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr arguments $ \raw_arguments ->
-        sendMsg gkTurnBasedExchange (mkSelector "cancelWithLocalizableMessageKey:arguments:completionHandler:") retVoid [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+cancelWithLocalizableMessageKey_arguments_completionHandler gkTurnBasedExchange key arguments completionHandler =
+  sendMessage gkTurnBasedExchange cancelWithLocalizableMessageKey_arguments_completionHandlerSelector (toNSString key) (toNSArray arguments) completionHandler
 
 -- | @- replyWithLocalizableMessageKey:arguments:data:completionHandler:@
 replyWithLocalizableMessageKey_arguments_data_completionHandler :: (IsGKTurnBasedExchange gkTurnBasedExchange, IsNSString key, IsNSArray arguments, IsNSData data_) => gkTurnBasedExchange -> key -> arguments -> data_ -> Ptr () -> IO ()
-replyWithLocalizableMessageKey_arguments_data_completionHandler gkTurnBasedExchange  key arguments data_ completionHandler =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr arguments $ \raw_arguments ->
-      withObjCPtr data_ $ \raw_data_ ->
-          sendMsg gkTurnBasedExchange (mkSelector "replyWithLocalizableMessageKey:arguments:data:completionHandler:") retVoid [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ()), argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+replyWithLocalizableMessageKey_arguments_data_completionHandler gkTurnBasedExchange key arguments data_ completionHandler =
+  sendMessage gkTurnBasedExchange replyWithLocalizableMessageKey_arguments_data_completionHandlerSelector (toNSString key) (toNSArray arguments) (toNSData data_) completionHandler
 
 -- | @- exchangeID@
 exchangeID :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO (Id NSString)
-exchangeID gkTurnBasedExchange  =
-    sendMsg gkTurnBasedExchange (mkSelector "exchangeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+exchangeID gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange exchangeIDSelector
 
 -- | @- sender@
 sender :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO (Id GKTurnBasedParticipant)
-sender gkTurnBasedExchange  =
-    sendMsg gkTurnBasedExchange (mkSelector "sender") (retPtr retVoid) [] >>= retainedObject . castPtr
+sender gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange senderSelector
 
 -- | @- recipients@
 recipients :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO (Id NSArray)
-recipients gkTurnBasedExchange  =
-    sendMsg gkTurnBasedExchange (mkSelector "recipients") (retPtr retVoid) [] >>= retainedObject . castPtr
+recipients gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange recipientsSelector
 
 -- | @- status@
 status :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO GKTurnBasedExchangeStatus
-status gkTurnBasedExchange  =
-    fmap (coerce :: CSChar -> GKTurnBasedExchangeStatus) $ sendMsg gkTurnBasedExchange (mkSelector "status") retCSChar []
+status gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange statusSelector
 
 -- | @- message@
 message :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO (Id NSString)
-message gkTurnBasedExchange  =
-    sendMsg gkTurnBasedExchange (mkSelector "message") (retPtr retVoid) [] >>= retainedObject . castPtr
+message gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange messageSelector
 
 -- | @- data@
 data_ :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO (Id NSData)
-data_ gkTurnBasedExchange  =
-    sendMsg gkTurnBasedExchange (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange dataSelector
 
 -- | @- sendDate@
 sendDate :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO (Id NSDate)
-sendDate gkTurnBasedExchange  =
-    sendMsg gkTurnBasedExchange (mkSelector "sendDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+sendDate gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange sendDateSelector
 
 -- | @- timeoutDate@
 timeoutDate :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO (Id NSDate)
-timeoutDate gkTurnBasedExchange  =
-    sendMsg gkTurnBasedExchange (mkSelector "timeoutDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeoutDate gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange timeoutDateSelector
 
 -- | @- completionDate@
 completionDate :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO (Id NSDate)
-completionDate gkTurnBasedExchange  =
-    sendMsg gkTurnBasedExchange (mkSelector "completionDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+completionDate gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange completionDateSelector
 
 -- | @- replies@
 replies :: IsGKTurnBasedExchange gkTurnBasedExchange => gkTurnBasedExchange -> IO (Id NSArray)
-replies gkTurnBasedExchange  =
-    sendMsg gkTurnBasedExchange (mkSelector "replies") (retPtr retVoid) [] >>= retainedObject . castPtr
+replies gkTurnBasedExchange =
+  sendMessage gkTurnBasedExchange repliesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cancelWithLocalizableMessageKey:arguments:completionHandler:@
-cancelWithLocalizableMessageKey_arguments_completionHandlerSelector :: Selector
+cancelWithLocalizableMessageKey_arguments_completionHandlerSelector :: Selector '[Id NSString, Id NSArray, Ptr ()] ()
 cancelWithLocalizableMessageKey_arguments_completionHandlerSelector = mkSelector "cancelWithLocalizableMessageKey:arguments:completionHandler:"
 
 -- | @Selector@ for @replyWithLocalizableMessageKey:arguments:data:completionHandler:@
-replyWithLocalizableMessageKey_arguments_data_completionHandlerSelector :: Selector
+replyWithLocalizableMessageKey_arguments_data_completionHandlerSelector :: Selector '[Id NSString, Id NSArray, Id NSData, Ptr ()] ()
 replyWithLocalizableMessageKey_arguments_data_completionHandlerSelector = mkSelector "replyWithLocalizableMessageKey:arguments:data:completionHandler:"
 
 -- | @Selector@ for @exchangeID@
-exchangeIDSelector :: Selector
+exchangeIDSelector :: Selector '[] (Id NSString)
 exchangeIDSelector = mkSelector "exchangeID"
 
 -- | @Selector@ for @sender@
-senderSelector :: Selector
+senderSelector :: Selector '[] (Id GKTurnBasedParticipant)
 senderSelector = mkSelector "sender"
 
 -- | @Selector@ for @recipients@
-recipientsSelector :: Selector
+recipientsSelector :: Selector '[] (Id NSArray)
 recipientsSelector = mkSelector "recipients"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] GKTurnBasedExchangeStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @message@
-messageSelector :: Selector
+messageSelector :: Selector '[] (Id NSString)
 messageSelector = mkSelector "message"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @sendDate@
-sendDateSelector :: Selector
+sendDateSelector :: Selector '[] (Id NSDate)
 sendDateSelector = mkSelector "sendDate"
 
 -- | @Selector@ for @timeoutDate@
-timeoutDateSelector :: Selector
+timeoutDateSelector :: Selector '[] (Id NSDate)
 timeoutDateSelector = mkSelector "timeoutDate"
 
 -- | @Selector@ for @completionDate@
-completionDateSelector :: Selector
+completionDateSelector :: Selector '[] (Id NSDate)
 completionDateSelector = mkSelector "completionDate"
 
 -- | @Selector@ for @replies@
-repliesSelector :: Selector
+repliesSelector :: Selector '[] (Id NSArray)
 repliesSelector = mkSelector "replies"
 

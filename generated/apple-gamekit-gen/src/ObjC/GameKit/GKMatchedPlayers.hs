@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.GameKit.GKMatchedPlayers
   , properties
   , players
   , playerProperties
-  , propertiesSelector
-  , playersSelector
   , playerPropertiesSelector
+  , playersSelector
+  , propertiesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- properties@
 properties :: IsGKMatchedPlayers gkMatchedPlayers => gkMatchedPlayers -> IO RawId
-properties gkMatchedPlayers  =
-    fmap (RawId . castPtr) $ sendMsg gkMatchedPlayers (mkSelector "properties") (retPtr retVoid) []
+properties gkMatchedPlayers =
+  sendMessage gkMatchedPlayers propertiesSelector
 
 -- | @- players@
 players :: IsGKMatchedPlayers gkMatchedPlayers => gkMatchedPlayers -> IO (Id NSArray)
-players gkMatchedPlayers  =
-    sendMsg gkMatchedPlayers (mkSelector "players") (retPtr retVoid) [] >>= retainedObject . castPtr
+players gkMatchedPlayers =
+  sendMessage gkMatchedPlayers playersSelector
 
 -- | @- playerProperties@
 playerProperties :: IsGKMatchedPlayers gkMatchedPlayers => gkMatchedPlayers -> IO (Id NSDictionary)
-playerProperties gkMatchedPlayers  =
-    sendMsg gkMatchedPlayers (mkSelector "playerProperties") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerProperties gkMatchedPlayers =
+  sendMessage gkMatchedPlayers playerPropertiesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] RawId
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @players@
-playersSelector :: Selector
+playersSelector :: Selector '[] (Id NSArray)
 playersSelector = mkSelector "players"
 
 -- | @Selector@ for @playerProperties@
-playerPropertiesSelector :: Selector
+playerPropertiesSelector :: Selector '[] (Id NSDictionary)
 playerPropertiesSelector = mkSelector "playerProperties"
 

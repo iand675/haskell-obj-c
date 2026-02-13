@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.ShazamKit.SHMatchedMediaItem
   , matchOffset
   , predictedCurrentMatchOffset
   , confidence
+  , confidenceSelector
   , frequencySkewSelector
   , matchOffsetSelector
   , predictedCurrentMatchOffsetSelector
-  , confidenceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- frequencySkew@
 frequencySkew :: IsSHMatchedMediaItem shMatchedMediaItem => shMatchedMediaItem -> IO CFloat
-frequencySkew shMatchedMediaItem  =
-    sendMsg shMatchedMediaItem (mkSelector "frequencySkew") retCFloat []
+frequencySkew shMatchedMediaItem =
+  sendMessage shMatchedMediaItem frequencySkewSelector
 
 -- | The timecode in the reference recording that matches the start of the query, in seconds.
 --
@@ -54,15 +51,15 @@ frequencySkew shMatchedMediaItem  =
 --
 -- ObjC selector: @- matchOffset@
 matchOffset :: IsSHMatchedMediaItem shMatchedMediaItem => shMatchedMediaItem -> IO CDouble
-matchOffset shMatchedMediaItem  =
-    sendMsg shMatchedMediaItem (mkSelector "matchOffset") retCDouble []
+matchOffset shMatchedMediaItem =
+  sendMessage shMatchedMediaItem matchOffsetSelector
 
 -- | The updated timecode in the reference recording that matches the current playback position of the query audio, in seconds.
 --
 -- ObjC selector: @- predictedCurrentMatchOffset@
 predictedCurrentMatchOffset :: IsSHMatchedMediaItem shMatchedMediaItem => shMatchedMediaItem -> IO CDouble
-predictedCurrentMatchOffset shMatchedMediaItem  =
-    sendMsg shMatchedMediaItem (mkSelector "predictedCurrentMatchOffset") retCDouble []
+predictedCurrentMatchOffset shMatchedMediaItem =
+  sendMessage shMatchedMediaItem predictedCurrentMatchOffsetSelector
 
 -- | The level of confidence in the match result.
 --
@@ -70,26 +67,26 @@ predictedCurrentMatchOffset shMatchedMediaItem  =
 --
 -- ObjC selector: @- confidence@
 confidence :: IsSHMatchedMediaItem shMatchedMediaItem => shMatchedMediaItem -> IO CFloat
-confidence shMatchedMediaItem  =
-    sendMsg shMatchedMediaItem (mkSelector "confidence") retCFloat []
+confidence shMatchedMediaItem =
+  sendMessage shMatchedMediaItem confidenceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @frequencySkew@
-frequencySkewSelector :: Selector
+frequencySkewSelector :: Selector '[] CFloat
 frequencySkewSelector = mkSelector "frequencySkew"
 
 -- | @Selector@ for @matchOffset@
-matchOffsetSelector :: Selector
+matchOffsetSelector :: Selector '[] CDouble
 matchOffsetSelector = mkSelector "matchOffset"
 
 -- | @Selector@ for @predictedCurrentMatchOffset@
-predictedCurrentMatchOffsetSelector :: Selector
+predictedCurrentMatchOffsetSelector :: Selector '[] CDouble
 predictedCurrentMatchOffsetSelector = mkSelector "predictedCurrentMatchOffset"
 
 -- | @Selector@ for @confidence@
-confidenceSelector :: Selector
+confidenceSelector :: Selector '[] CFloat
 confidenceSelector = mkSelector "confidence"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.HealthKit.HKObserverQuery
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,16 +32,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSampleType:predicate:updateHandler:@
 initWithSampleType_predicate_updateHandler :: (IsHKObserverQuery hkObserverQuery, IsHKSampleType sampleType, IsNSPredicate predicate) => hkObserverQuery -> sampleType -> predicate -> Ptr () -> IO (Id HKObserverQuery)
-initWithSampleType_predicate_updateHandler hkObserverQuery  sampleType predicate updateHandler =
-  withObjCPtr sampleType $ \raw_sampleType ->
-    withObjCPtr predicate $ \raw_predicate ->
-        sendMsg hkObserverQuery (mkSelector "initWithSampleType:predicate:updateHandler:") (retPtr retVoid) [argPtr (castPtr raw_sampleType :: Ptr ()), argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr updateHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithSampleType_predicate_updateHandler hkObserverQuery sampleType predicate updateHandler =
+  sendOwnedMessage hkObserverQuery initWithSampleType_predicate_updateHandlerSelector (toHKSampleType sampleType) (toNSPredicate predicate) updateHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSampleType:predicate:updateHandler:@
-initWithSampleType_predicate_updateHandlerSelector :: Selector
+initWithSampleType_predicate_updateHandlerSelector :: Selector '[Id HKSampleType, Id NSPredicate, Ptr ()] (Id HKObserverQuery)
 initWithSampleType_predicate_updateHandlerSelector = mkSelector "initWithSampleType:predicate:updateHandler:"
 

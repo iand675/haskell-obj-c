@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,33 +25,29 @@ module ObjC.CoreImage.CIFilterGenerator
   , exportedKeys
   , classAttributes
   , setClassAttributes
-  , filterGeneratorSelector
-  , filterGeneratorWithContentsOfURLSelector
-  , initWithContentsOfURLSelector
+  , classAttributesSelector
   , connectObject_withKey_toObject_withKeySelector
   , disconnectObject_withKey_toObject_withKeySelector
   , exportKey_fromObject_withNameSelector
+  , exportedKeysSelector
+  , filterGeneratorSelector
+  , filterGeneratorWithContentsOfURLSelector
+  , filterSelector
+  , initWithContentsOfURLSelector
+  , registerFilterNameSelector
   , removeExportedKeySelector
   , setAttributes_forExportedKeySelector
-  , filterSelector
-  , registerFilterNameSelector
-  , writeToURL_atomicallySelector
-  , exportedKeysSelector
-  , classAttributesSelector
   , setClassAttributesSelector
+  , writeToURL_atomicallySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,7 +61,7 @@ filterGenerator :: IO (Id CIFilterGenerator)
 filterGenerator  =
   do
     cls' <- getRequiredClass "CIFilterGenerator"
-    sendClassMsg cls' (mkSelector "filterGenerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' filterGeneratorSelector
 
 -- | Create a CIFilterGenerator with the contents of the file.
 --
@@ -75,8 +72,7 @@ filterGeneratorWithContentsOfURL :: IsNSURL aURL => aURL -> IO (Id CIFilterGener
 filterGeneratorWithContentsOfURL aURL =
   do
     cls' <- getRequiredClass "CIFilterGenerator"
-    withObjCPtr aURL $ \raw_aURL ->
-      sendClassMsg cls' (mkSelector "filterGeneratorWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_aURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterGeneratorWithContentsOfURLSelector (toNSURL aURL)
 
 -- | Initializes a CIFilterGenerator with the contents of the file.
 --
@@ -84,9 +80,8 @@ filterGeneratorWithContentsOfURL aURL =
 --
 -- ObjC selector: @- initWithContentsOfURL:@
 initWithContentsOfURL :: (IsCIFilterGenerator ciFilterGenerator, IsNSURL aURL) => ciFilterGenerator -> aURL -> IO RawId
-initWithContentsOfURL ciFilterGenerator  aURL =
-  withObjCPtr aURL $ \raw_aURL ->
-      fmap (RawId . castPtr) $ sendMsg ciFilterGenerator (mkSelector "initWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_aURL :: Ptr ())]
+initWithContentsOfURL ciFilterGenerator aURL =
+  sendOwnedMessage ciFilterGenerator initWithContentsOfURLSelector (toNSURL aURL)
 
 -- | Connect two objects into the filter chain.
 --
@@ -102,10 +97,8 @@ initWithContentsOfURL ciFilterGenerator  aURL =
 --
 -- ObjC selector: @- connectObject:withKey:toObject:withKey:@
 connectObject_withKey_toObject_withKey :: (IsCIFilterGenerator ciFilterGenerator, IsNSString sourceKey, IsNSString targetKey) => ciFilterGenerator -> RawId -> sourceKey -> RawId -> targetKey -> IO ()
-connectObject_withKey_toObject_withKey ciFilterGenerator  sourceObject sourceKey targetObject targetKey =
-  withObjCPtr sourceKey $ \raw_sourceKey ->
-    withObjCPtr targetKey $ \raw_targetKey ->
-        sendMsg ciFilterGenerator (mkSelector "connectObject:withKey:toObject:withKey:") retVoid [argPtr (castPtr (unRawId sourceObject) :: Ptr ()), argPtr (castPtr raw_sourceKey :: Ptr ()), argPtr (castPtr (unRawId targetObject) :: Ptr ()), argPtr (castPtr raw_targetKey :: Ptr ())]
+connectObject_withKey_toObject_withKey ciFilterGenerator sourceObject sourceKey targetObject targetKey =
+  sendMessage ciFilterGenerator connectObject_withKey_toObject_withKeySelector sourceObject (toNSString sourceKey) targetObject (toNSString targetKey)
 
 -- | Removes the connection between two objects in the filter chain.
 --
@@ -121,10 +114,8 @@ connectObject_withKey_toObject_withKey ciFilterGenerator  sourceObject sourceKey
 --
 -- ObjC selector: @- disconnectObject:withKey:toObject:withKey:@
 disconnectObject_withKey_toObject_withKey :: (IsCIFilterGenerator ciFilterGenerator, IsNSString sourceKey, IsNSString targetKey) => ciFilterGenerator -> RawId -> sourceKey -> RawId -> targetKey -> IO ()
-disconnectObject_withKey_toObject_withKey ciFilterGenerator  sourceObject sourceKey targetObject targetKey =
-  withObjCPtr sourceKey $ \raw_sourceKey ->
-    withObjCPtr targetKey $ \raw_targetKey ->
-        sendMsg ciFilterGenerator (mkSelector "disconnectObject:withKey:toObject:withKey:") retVoid [argPtr (castPtr (unRawId sourceObject) :: Ptr ()), argPtr (castPtr raw_sourceKey :: Ptr ()), argPtr (castPtr (unRawId targetObject) :: Ptr ()), argPtr (castPtr raw_targetKey :: Ptr ())]
+disconnectObject_withKey_toObject_withKey ciFilterGenerator sourceObject sourceKey targetObject targetKey =
+  sendMessage ciFilterGenerator disconnectObject_withKey_toObject_withKeySelector sourceObject (toNSString sourceKey) targetObject (toNSString targetKey)
 
 -- | This methods allows you to export an input or output key of an object in the filter chain to be available through the inputKeys or outputKeys API when converted into a CIFilter
 --
@@ -138,10 +129,8 @@ disconnectObject_withKey_toObject_withKey ciFilterGenerator  sourceObject source
 --
 -- ObjC selector: @- exportKey:fromObject:withName:@
 exportKey_fromObject_withName :: (IsCIFilterGenerator ciFilterGenerator, IsNSString key, IsNSString exportedKeyName) => ciFilterGenerator -> key -> RawId -> exportedKeyName -> IO ()
-exportKey_fromObject_withName ciFilterGenerator  key targetObject exportedKeyName =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr exportedKeyName $ \raw_exportedKeyName ->
-        sendMsg ciFilterGenerator (mkSelector "exportKey:fromObject:withName:") retVoid [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr (unRawId targetObject) :: Ptr ()), argPtr (castPtr raw_exportedKeyName :: Ptr ())]
+exportKey_fromObject_withName ciFilterGenerator key targetObject exportedKeyName =
+  sendMessage ciFilterGenerator exportKey_fromObject_withNameSelector (toNSString key) targetObject (toNSString exportedKeyName)
 
 -- | Removes a key that was exported before using exportKey:fromObject:withName:
 --
@@ -151,9 +140,8 @@ exportKey_fromObject_withName ciFilterGenerator  key targetObject exportedKeyNam
 --
 -- ObjC selector: @- removeExportedKey:@
 removeExportedKey :: (IsCIFilterGenerator ciFilterGenerator, IsNSString exportedKeyName) => ciFilterGenerator -> exportedKeyName -> IO ()
-removeExportedKey ciFilterGenerator  exportedKeyName =
-  withObjCPtr exportedKeyName $ \raw_exportedKeyName ->
-      sendMsg ciFilterGenerator (mkSelector "removeExportedKey:") retVoid [argPtr (castPtr raw_exportedKeyName :: Ptr ())]
+removeExportedKey ciFilterGenerator exportedKeyName =
+  sendMessage ciFilterGenerator removeExportedKeySelector (toNSString exportedKeyName)
 
 -- | Set a new dictionary of attributes for an exported key.
 --
@@ -161,10 +149,8 @@ removeExportedKey ciFilterGenerator  exportedKeyName =
 --
 -- ObjC selector: @- setAttributes:forExportedKey:@
 setAttributes_forExportedKey :: (IsCIFilterGenerator ciFilterGenerator, IsNSDictionary attributes, IsNSString key) => ciFilterGenerator -> attributes -> key -> IO ()
-setAttributes_forExportedKey ciFilterGenerator  attributes key =
-  withObjCPtr attributes $ \raw_attributes ->
-    withObjCPtr key $ \raw_key ->
-        sendMsg ciFilterGenerator (mkSelector "setAttributes:forExportedKey:") retVoid [argPtr (castPtr raw_attributes :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setAttributes_forExportedKey ciFilterGenerator attributes key =
+  sendMessage ciFilterGenerator setAttributes_forExportedKeySelector (toNSDictionary attributes) (toNSString key)
 
 -- | Create a CIFilter object based on this filter chain.
 --
@@ -172,8 +158,8 @@ setAttributes_forExportedKey ciFilterGenerator  attributes key =
 --
 -- ObjC selector: @- filter@
 filter_ :: IsCIFilterGenerator ciFilterGenerator => ciFilterGenerator -> IO (Id CIFilter)
-filter_ ciFilterGenerator  =
-    sendMsg ciFilterGenerator (mkSelector "filter") (retPtr retVoid) [] >>= retainedObject . castPtr
+filter_ ciFilterGenerator =
+  sendMessage ciFilterGenerator filterSelector
 
 -- | Register the resulting filter of the chain in the CIFilter repository.
 --
@@ -183,9 +169,8 @@ filter_ ciFilterGenerator  =
 --
 -- ObjC selector: @- registerFilterName:@
 registerFilterName :: (IsCIFilterGenerator ciFilterGenerator, IsNSString name) => ciFilterGenerator -> name -> IO ()
-registerFilterName ciFilterGenerator  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg ciFilterGenerator (mkSelector "registerFilterName:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+registerFilterName ciFilterGenerator name =
+  sendMessage ciFilterGenerator registerFilterNameSelector (toNSString name)
 
 -- | Write the CIFilterGenerator into a file
 --
@@ -193,9 +178,8 @@ registerFilterName ciFilterGenerator  name =
 --
 -- ObjC selector: @- writeToURL:atomically:@
 writeToURL_atomically :: (IsCIFilterGenerator ciFilterGenerator, IsNSURL aURL) => ciFilterGenerator -> aURL -> Bool -> IO Bool
-writeToURL_atomically ciFilterGenerator  aURL flag =
-  withObjCPtr aURL $ \raw_aURL ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFilterGenerator (mkSelector "writeToURL:atomically:") retCULong [argPtr (castPtr raw_aURL :: Ptr ()), argCULong (if flag then 1 else 0)]
+writeToURL_atomically ciFilterGenerator aURL flag =
+  sendMessage ciFilterGenerator writeToURL_atomicallySelector (toNSURL aURL) flag
 
 -- | An array of the exported keys.
 --
@@ -205,81 +189,80 @@ writeToURL_atomically ciFilterGenerator  aURL flag =
 --
 -- ObjC selector: @- exportedKeys@
 exportedKeys :: IsCIFilterGenerator ciFilterGenerator => ciFilterGenerator -> IO (Id NSDictionary)
-exportedKeys ciFilterGenerator  =
-    sendMsg ciFilterGenerator (mkSelector "exportedKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+exportedKeys ciFilterGenerator =
+  sendMessage ciFilterGenerator exportedKeysSelector
 
 -- | Retrieve or Set the class attributes that will be used to register the filter using the registerFilterName method. Make sure you set the class attributes before using the registerFilterName method. See CIFilter for a description of the classAttributes that are needed to register a filter.
 --
 -- ObjC selector: @- classAttributes@
 classAttributes :: IsCIFilterGenerator ciFilterGenerator => ciFilterGenerator -> IO (Id NSDictionary)
-classAttributes ciFilterGenerator  =
-    sendMsg ciFilterGenerator (mkSelector "classAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+classAttributes ciFilterGenerator =
+  sendMessage ciFilterGenerator classAttributesSelector
 
 -- | Retrieve or Set the class attributes that will be used to register the filter using the registerFilterName method. Make sure you set the class attributes before using the registerFilterName method. See CIFilter for a description of the classAttributes that are needed to register a filter.
 --
 -- ObjC selector: @- setClassAttributes:@
 setClassAttributes :: (IsCIFilterGenerator ciFilterGenerator, IsNSDictionary value) => ciFilterGenerator -> value -> IO ()
-setClassAttributes ciFilterGenerator  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ciFilterGenerator (mkSelector "setClassAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClassAttributes ciFilterGenerator value =
+  sendMessage ciFilterGenerator setClassAttributesSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @filterGenerator@
-filterGeneratorSelector :: Selector
+filterGeneratorSelector :: Selector '[] (Id CIFilterGenerator)
 filterGeneratorSelector = mkSelector "filterGenerator"
 
 -- | @Selector@ for @filterGeneratorWithContentsOfURL:@
-filterGeneratorWithContentsOfURLSelector :: Selector
+filterGeneratorWithContentsOfURLSelector :: Selector '[Id NSURL] (Id CIFilterGenerator)
 filterGeneratorWithContentsOfURLSelector = mkSelector "filterGeneratorWithContentsOfURL:"
 
 -- | @Selector@ for @initWithContentsOfURL:@
-initWithContentsOfURLSelector :: Selector
+initWithContentsOfURLSelector :: Selector '[Id NSURL] RawId
 initWithContentsOfURLSelector = mkSelector "initWithContentsOfURL:"
 
 -- | @Selector@ for @connectObject:withKey:toObject:withKey:@
-connectObject_withKey_toObject_withKeySelector :: Selector
+connectObject_withKey_toObject_withKeySelector :: Selector '[RawId, Id NSString, RawId, Id NSString] ()
 connectObject_withKey_toObject_withKeySelector = mkSelector "connectObject:withKey:toObject:withKey:"
 
 -- | @Selector@ for @disconnectObject:withKey:toObject:withKey:@
-disconnectObject_withKey_toObject_withKeySelector :: Selector
+disconnectObject_withKey_toObject_withKeySelector :: Selector '[RawId, Id NSString, RawId, Id NSString] ()
 disconnectObject_withKey_toObject_withKeySelector = mkSelector "disconnectObject:withKey:toObject:withKey:"
 
 -- | @Selector@ for @exportKey:fromObject:withName:@
-exportKey_fromObject_withNameSelector :: Selector
+exportKey_fromObject_withNameSelector :: Selector '[Id NSString, RawId, Id NSString] ()
 exportKey_fromObject_withNameSelector = mkSelector "exportKey:fromObject:withName:"
 
 -- | @Selector@ for @removeExportedKey:@
-removeExportedKeySelector :: Selector
+removeExportedKeySelector :: Selector '[Id NSString] ()
 removeExportedKeySelector = mkSelector "removeExportedKey:"
 
 -- | @Selector@ for @setAttributes:forExportedKey:@
-setAttributes_forExportedKeySelector :: Selector
+setAttributes_forExportedKeySelector :: Selector '[Id NSDictionary, Id NSString] ()
 setAttributes_forExportedKeySelector = mkSelector "setAttributes:forExportedKey:"
 
 -- | @Selector@ for @filter@
-filterSelector :: Selector
+filterSelector :: Selector '[] (Id CIFilter)
 filterSelector = mkSelector "filter"
 
 -- | @Selector@ for @registerFilterName:@
-registerFilterNameSelector :: Selector
+registerFilterNameSelector :: Selector '[Id NSString] ()
 registerFilterNameSelector = mkSelector "registerFilterName:"
 
 -- | @Selector@ for @writeToURL:atomically:@
-writeToURL_atomicallySelector :: Selector
+writeToURL_atomicallySelector :: Selector '[Id NSURL, Bool] Bool
 writeToURL_atomicallySelector = mkSelector "writeToURL:atomically:"
 
 -- | @Selector@ for @exportedKeys@
-exportedKeysSelector :: Selector
+exportedKeysSelector :: Selector '[] (Id NSDictionary)
 exportedKeysSelector = mkSelector "exportedKeys"
 
 -- | @Selector@ for @classAttributes@
-classAttributesSelector :: Selector
+classAttributesSelector :: Selector '[] (Id NSDictionary)
 classAttributesSelector = mkSelector "classAttributes"
 
 -- | @Selector@ for @setClassAttributes:@
-setClassAttributesSelector :: Selector
+setClassAttributesSelector :: Selector '[Id NSDictionary] ()
 setClassAttributesSelector = mkSelector "setClassAttributes:"
 

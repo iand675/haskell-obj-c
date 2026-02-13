@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.Matter.MTROperationalCSRInfo
   , csrNonce
   , csrElementsTLV
   , attestationSignature
-  , initWithCSR_csrNonce_csrElementsTLV_attestationSignatureSelector
-  , initWithCSRNonce_csrElementsTLV_attestationSignatureSelector
-  , initWithCSRElementsTLV_attestationSignatureSelector
-  , initWithCSRResponseParamsSelector
-  , csrSelector
-  , csrNonceSelector
-  , csrElementsTLVSelector
   , attestationSignatureSelector
+  , csrElementsTLVSelector
+  , csrNonceSelector
+  , csrSelector
+  , initWithCSRElementsTLV_attestationSignatureSelector
+  , initWithCSRNonce_csrElementsTLV_attestationSignatureSelector
+  , initWithCSRResponseParamsSelector
+  , initWithCSR_csrNonce_csrElementsTLV_attestationSignatureSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,60 +44,50 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithCSR:csrNonce:csrElementsTLV:attestationSignature:@
 initWithCSR_csrNonce_csrElementsTLV_attestationSignature :: (IsMTROperationalCSRInfo mtrOperationalCSRInfo, IsNSData csr, IsNSData csrNonce, IsNSData csrElementsTLV, IsNSData attestationSignature) => mtrOperationalCSRInfo -> csr -> csrNonce -> csrElementsTLV -> attestationSignature -> IO (Id MTROperationalCSRInfo)
-initWithCSR_csrNonce_csrElementsTLV_attestationSignature mtrOperationalCSRInfo  csr csrNonce csrElementsTLV attestationSignature =
-  withObjCPtr csr $ \raw_csr ->
-    withObjCPtr csrNonce $ \raw_csrNonce ->
-      withObjCPtr csrElementsTLV $ \raw_csrElementsTLV ->
-        withObjCPtr attestationSignature $ \raw_attestationSignature ->
-            sendMsg mtrOperationalCSRInfo (mkSelector "initWithCSR:csrNonce:csrElementsTLV:attestationSignature:") (retPtr retVoid) [argPtr (castPtr raw_csr :: Ptr ()), argPtr (castPtr raw_csrNonce :: Ptr ()), argPtr (castPtr raw_csrElementsTLV :: Ptr ()), argPtr (castPtr raw_attestationSignature :: Ptr ())] >>= ownedObject . castPtr
+initWithCSR_csrNonce_csrElementsTLV_attestationSignature mtrOperationalCSRInfo csr csrNonce csrElementsTLV attestationSignature =
+  sendOwnedMessage mtrOperationalCSRInfo initWithCSR_csrNonce_csrElementsTLV_attestationSignatureSelector (toNSData csr) (toNSData csrNonce) (toNSData csrElementsTLV) (toNSData attestationSignature)
 
 -- | Initialize an MTROperationalCSRInfo by providing the csrNonce (for example, the nonce the client initially supplied), and the csrElementsTLV and attestationSignature that the server returned.  This will ensure that csrNonce matches the data in csrElementsTLV, returning nil if it does not, and extract the csr from csrElementsTLV.
 --
 -- ObjC selector: @- initWithCSRNonce:csrElementsTLV:attestationSignature:@
 initWithCSRNonce_csrElementsTLV_attestationSignature :: (IsMTROperationalCSRInfo mtrOperationalCSRInfo, IsNSData csrNonce, IsNSData csrElementsTLV, IsNSData attestationSignature) => mtrOperationalCSRInfo -> csrNonce -> csrElementsTLV -> attestationSignature -> IO (Id MTROperationalCSRInfo)
-initWithCSRNonce_csrElementsTLV_attestationSignature mtrOperationalCSRInfo  csrNonce csrElementsTLV attestationSignature =
-  withObjCPtr csrNonce $ \raw_csrNonce ->
-    withObjCPtr csrElementsTLV $ \raw_csrElementsTLV ->
-      withObjCPtr attestationSignature $ \raw_attestationSignature ->
-          sendMsg mtrOperationalCSRInfo (mkSelector "initWithCSRNonce:csrElementsTLV:attestationSignature:") (retPtr retVoid) [argPtr (castPtr raw_csrNonce :: Ptr ()), argPtr (castPtr raw_csrElementsTLV :: Ptr ()), argPtr (castPtr raw_attestationSignature :: Ptr ())] >>= ownedObject . castPtr
+initWithCSRNonce_csrElementsTLV_attestationSignature mtrOperationalCSRInfo csrNonce csrElementsTLV attestationSignature =
+  sendOwnedMessage mtrOperationalCSRInfo initWithCSRNonce_csrElementsTLV_attestationSignatureSelector (toNSData csrNonce) (toNSData csrElementsTLV) (toNSData attestationSignature)
 
 -- | Initialize an MTROperationalCSRInfo by providing just the csrElementsTLV and attestationSignature (which can come from an MTROperationalCredentialsClusterCSRResponseParams).  This will extract the csr and csrNonce from the csrElementsTLV, if possible, and return nil if that fails.
 --
 -- ObjC selector: @- initWithCSRElementsTLV:attestationSignature:@
 initWithCSRElementsTLV_attestationSignature :: (IsMTROperationalCSRInfo mtrOperationalCSRInfo, IsNSData csrElementsTLV, IsNSData attestationSignature) => mtrOperationalCSRInfo -> csrElementsTLV -> attestationSignature -> IO (Id MTROperationalCSRInfo)
-initWithCSRElementsTLV_attestationSignature mtrOperationalCSRInfo  csrElementsTLV attestationSignature =
-  withObjCPtr csrElementsTLV $ \raw_csrElementsTLV ->
-    withObjCPtr attestationSignature $ \raw_attestationSignature ->
-        sendMsg mtrOperationalCSRInfo (mkSelector "initWithCSRElementsTLV:attestationSignature:") (retPtr retVoid) [argPtr (castPtr raw_csrElementsTLV :: Ptr ()), argPtr (castPtr raw_attestationSignature :: Ptr ())] >>= ownedObject . castPtr
+initWithCSRElementsTLV_attestationSignature mtrOperationalCSRInfo csrElementsTLV attestationSignature =
+  sendOwnedMessage mtrOperationalCSRInfo initWithCSRElementsTLV_attestationSignatureSelector (toNSData csrElementsTLV) (toNSData attestationSignature)
 
 -- | Initialize an MTROperationalCSRInfo by providing an MTROperationalCredentialsClusterCSRResponseParams.  This will extract the relevant fields from the response data.
 --
 -- ObjC selector: @- initWithCSRResponseParams:@
 initWithCSRResponseParams :: (IsMTROperationalCSRInfo mtrOperationalCSRInfo, IsMTROperationalCredentialsClusterCSRResponseParams responseParams) => mtrOperationalCSRInfo -> responseParams -> IO (Id MTROperationalCSRInfo)
-initWithCSRResponseParams mtrOperationalCSRInfo  responseParams =
-  withObjCPtr responseParams $ \raw_responseParams ->
-      sendMsg mtrOperationalCSRInfo (mkSelector "initWithCSRResponseParams:") (retPtr retVoid) [argPtr (castPtr raw_responseParams :: Ptr ())] >>= ownedObject . castPtr
+initWithCSRResponseParams mtrOperationalCSRInfo responseParams =
+  sendOwnedMessage mtrOperationalCSRInfo initWithCSRResponseParamsSelector (toMTROperationalCredentialsClusterCSRResponseParams responseParams)
 
 -- | DER-encoded certificate signing request.
 --
 -- ObjC selector: @- csr@
 csr :: IsMTROperationalCSRInfo mtrOperationalCSRInfo => mtrOperationalCSRInfo -> IO (Id NSData)
-csr mtrOperationalCSRInfo  =
-    sendMsg mtrOperationalCSRInfo (mkSelector "csr") (retPtr retVoid) [] >>= retainedObject . castPtr
+csr mtrOperationalCSRInfo =
+  sendMessage mtrOperationalCSRInfo csrSelector
 
 -- | The nonce associated with this CSR.
 --
 -- ObjC selector: @- csrNonce@
 csrNonce :: IsMTROperationalCSRInfo mtrOperationalCSRInfo => mtrOperationalCSRInfo -> IO (Id NSData)
-csrNonce mtrOperationalCSRInfo  =
-    sendMsg mtrOperationalCSRInfo (mkSelector "csrNonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+csrNonce mtrOperationalCSRInfo =
+  sendMessage mtrOperationalCSRInfo csrNonceSelector
 
 -- | TLV-encoded nocsr-elements structure.  This includes the "csr" and "csrNonce" fields, and can include additional vendor-specific information.
 --
 -- ObjC selector: @- csrElementsTLV@
 csrElementsTLV :: IsMTROperationalCSRInfo mtrOperationalCSRInfo => mtrOperationalCSRInfo -> IO (Id NSData)
-csrElementsTLV mtrOperationalCSRInfo  =
-    sendMsg mtrOperationalCSRInfo (mkSelector "csrElementsTLV") (retPtr retVoid) [] >>= retainedObject . castPtr
+csrElementsTLV mtrOperationalCSRInfo =
+  sendMessage mtrOperationalCSRInfo csrElementsTLVSelector
 
 -- | A signature, using the device attestation private key of the device that created the CSR, over the concatenation of csrElementsTLV and the attestation challenge from the secure session.
 --
@@ -108,42 +95,42 @@ csrElementsTLV mtrOperationalCSRInfo  =
 --
 -- ObjC selector: @- attestationSignature@
 attestationSignature :: IsMTROperationalCSRInfo mtrOperationalCSRInfo => mtrOperationalCSRInfo -> IO (Id NSData)
-attestationSignature mtrOperationalCSRInfo  =
-    sendMsg mtrOperationalCSRInfo (mkSelector "attestationSignature") (retPtr retVoid) [] >>= retainedObject . castPtr
+attestationSignature mtrOperationalCSRInfo =
+  sendMessage mtrOperationalCSRInfo attestationSignatureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCSR:csrNonce:csrElementsTLV:attestationSignature:@
-initWithCSR_csrNonce_csrElementsTLV_attestationSignatureSelector :: Selector
+initWithCSR_csrNonce_csrElementsTLV_attestationSignatureSelector :: Selector '[Id NSData, Id NSData, Id NSData, Id NSData] (Id MTROperationalCSRInfo)
 initWithCSR_csrNonce_csrElementsTLV_attestationSignatureSelector = mkSelector "initWithCSR:csrNonce:csrElementsTLV:attestationSignature:"
 
 -- | @Selector@ for @initWithCSRNonce:csrElementsTLV:attestationSignature:@
-initWithCSRNonce_csrElementsTLV_attestationSignatureSelector :: Selector
+initWithCSRNonce_csrElementsTLV_attestationSignatureSelector :: Selector '[Id NSData, Id NSData, Id NSData] (Id MTROperationalCSRInfo)
 initWithCSRNonce_csrElementsTLV_attestationSignatureSelector = mkSelector "initWithCSRNonce:csrElementsTLV:attestationSignature:"
 
 -- | @Selector@ for @initWithCSRElementsTLV:attestationSignature:@
-initWithCSRElementsTLV_attestationSignatureSelector :: Selector
+initWithCSRElementsTLV_attestationSignatureSelector :: Selector '[Id NSData, Id NSData] (Id MTROperationalCSRInfo)
 initWithCSRElementsTLV_attestationSignatureSelector = mkSelector "initWithCSRElementsTLV:attestationSignature:"
 
 -- | @Selector@ for @initWithCSRResponseParams:@
-initWithCSRResponseParamsSelector :: Selector
+initWithCSRResponseParamsSelector :: Selector '[Id MTROperationalCredentialsClusterCSRResponseParams] (Id MTROperationalCSRInfo)
 initWithCSRResponseParamsSelector = mkSelector "initWithCSRResponseParams:"
 
 -- | @Selector@ for @csr@
-csrSelector :: Selector
+csrSelector :: Selector '[] (Id NSData)
 csrSelector = mkSelector "csr"
 
 -- | @Selector@ for @csrNonce@
-csrNonceSelector :: Selector
+csrNonceSelector :: Selector '[] (Id NSData)
 csrNonceSelector = mkSelector "csrNonce"
 
 -- | @Selector@ for @csrElementsTLV@
-csrElementsTLVSelector :: Selector
+csrElementsTLVSelector :: Selector '[] (Id NSData)
 csrElementsTLVSelector = mkSelector "csrElementsTLV"
 
 -- | @Selector@ for @attestationSignature@
-attestationSignatureSelector :: Selector
+attestationSignatureSelector :: Selector '[] (Id NSData)
 attestationSignatureSelector = mkSelector "attestationSignature"
 

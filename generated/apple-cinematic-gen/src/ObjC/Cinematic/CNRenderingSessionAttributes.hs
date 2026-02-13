@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Cinematic.CNRenderingSessionAttributes
   , init_
   , new
   , renderingVersion
-  , loadFromAsset_completionHandlerSelector
   , initSelector
+  , loadFromAsset_completionHandlerSelector
   , newSelector
   , renderingVersionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,45 +40,44 @@ loadFromAsset_completionHandler :: IsAVAsset asset => asset -> Ptr () -> IO ()
 loadFromAsset_completionHandler asset completionHandler =
   do
     cls' <- getRequiredClass "CNRenderingSessionAttributes"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "loadFromAsset:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' loadFromAsset_completionHandlerSelector (toAVAsset asset) completionHandler
 
 -- | @- init@
 init_ :: IsCNRenderingSessionAttributes cnRenderingSessionAttributes => cnRenderingSessionAttributes -> IO (Id CNRenderingSessionAttributes)
-init_ cnRenderingSessionAttributes  =
-    sendMsg cnRenderingSessionAttributes (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnRenderingSessionAttributes =
+  sendOwnedMessage cnRenderingSessionAttributes initSelector
 
 -- | @+ new@
 new :: IO (Id CNRenderingSessionAttributes)
 new  =
   do
     cls' <- getRequiredClass "CNRenderingSessionAttributes"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Rendering version used to render the original.
 --
 -- ObjC selector: @- renderingVersion@
 renderingVersion :: IsCNRenderingSessionAttributes cnRenderingSessionAttributes => cnRenderingSessionAttributes -> IO CLong
-renderingVersion cnRenderingSessionAttributes  =
-    sendMsg cnRenderingSessionAttributes (mkSelector "renderingVersion") retCLong []
+renderingVersion cnRenderingSessionAttributes =
+  sendMessage cnRenderingSessionAttributes renderingVersionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadFromAsset:completionHandler:@
-loadFromAsset_completionHandlerSelector :: Selector
+loadFromAsset_completionHandlerSelector :: Selector '[Id AVAsset, Ptr ()] ()
 loadFromAsset_completionHandlerSelector = mkSelector "loadFromAsset:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNRenderingSessionAttributes)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNRenderingSessionAttributes)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @renderingVersion@
-renderingVersionSelector :: Selector
+renderingVersionSelector :: Selector '[] CLong
 renderingVersionSelector = mkSelector "renderingVersion"
 

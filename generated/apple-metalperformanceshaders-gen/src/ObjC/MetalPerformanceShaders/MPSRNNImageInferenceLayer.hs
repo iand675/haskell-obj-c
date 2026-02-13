@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,22 +30,22 @@ module ObjC.MetalPerformanceShaders.MPSRNNImageInferenceLayer
   , setStoreAllIntermediateStates
   , bidirectionalCombineMode
   , setBidirectionalCombineMode
+  , bidirectionalCombineModeSelector
+  , copyWithZone_deviceSelector
+  , encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImages_destinationBackwardImagesSelector
+  , encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState_recurrentOutputStatesSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , initWithDevice_rnnDescriptorSelector
   , initWithDevice_rnnDescriptorsSelector
-  , initWithDeviceSelector
-  , encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState_recurrentOutputStatesSelector
-  , encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImages_destinationBackwardImagesSelector
-  , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
   , inputFeatureChannelsSelector
-  , outputFeatureChannelsSelector
   , numberOfLayersSelector
+  , outputFeatureChannelsSelector
   , recurrentOutputIsTemporarySelector
-  , setRecurrentOutputIsTemporarySelector
-  , storeAllIntermediateStatesSelector
-  , setStoreAllIntermediateStatesSelector
-  , bidirectionalCombineModeSelector
   , setBidirectionalCombineModeSelector
+  , setRecurrentOutputIsTemporarySelector
+  , setStoreAllIntermediateStatesSelector
+  , storeAllIntermediateStatesSelector
 
   -- * Enum types
   , MPSRNNBidirectionalCombineMode(MPSRNNBidirectionalCombineMode)
@@ -54,15 +55,11 @@ module ObjC.MetalPerformanceShaders.MPSRNNImageInferenceLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,9 +77,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:rnnDescriptor:@
 initWithDevice_rnnDescriptor :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> RawId -> Const (Id MPSRNNDescriptor) -> IO (Id MPSRNNImageInferenceLayer)
-initWithDevice_rnnDescriptor mpsrnnImageInferenceLayer  device rnnDescriptor =
-  withObjCPtr rnnDescriptor $ \raw_rnnDescriptor ->
-      sendMsg mpsrnnImageInferenceLayer (mkSelector "initWithDevice:rnnDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_rnnDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_rnnDescriptor mpsrnnImageInferenceLayer device rnnDescriptor =
+  sendOwnedMessage mpsrnnImageInferenceLayer initWithDevice_rnnDescriptorSelector device rnnDescriptor
 
 -- | Initializes a kernel that implements a stack of convolutional RNN layers
 --
@@ -94,14 +90,13 @@ initWithDevice_rnnDescriptor mpsrnnImageInferenceLayer  device rnnDescriptor =
 --
 -- ObjC selector: @- initWithDevice:rnnDescriptors:@
 initWithDevice_rnnDescriptors :: (IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer, IsNSArray rnnDescriptors) => mpsrnnImageInferenceLayer -> RawId -> rnnDescriptors -> IO (Id MPSRNNImageInferenceLayer)
-initWithDevice_rnnDescriptors mpsrnnImageInferenceLayer  device rnnDescriptors =
-  withObjCPtr rnnDescriptors $ \raw_rnnDescriptors ->
-      sendMsg mpsrnnImageInferenceLayer (mkSelector "initWithDevice:rnnDescriptors:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_rnnDescriptors :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_rnnDescriptors mpsrnnImageInferenceLayer device rnnDescriptors =
+  sendOwnedMessage mpsrnnImageInferenceLayer initWithDevice_rnnDescriptorsSelector device (toNSArray rnnDescriptors)
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> RawId -> IO (Id MPSRNNImageInferenceLayer)
-initWithDevice mpsrnnImageInferenceLayer  device =
-    sendMsg mpsrnnImageInferenceLayer (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsrnnImageInferenceLayer device =
+  sendOwnedMessage mpsrnnImageInferenceLayer initWithDeviceSelector device
 
 -- | Encode an MPSRNNImageInferenceLayer kernel (stack) for a sequence of inputs into a command buffer.                  Note that when encoding using this function the
 --
@@ -144,12 +139,8 @@ initWithDevice mpsrnnImageInferenceLayer  device =
 --
 -- ObjC selector: @- encodeSequenceToCommandBuffer:sourceImages:destinationImages:recurrentInputState:recurrentOutputStates:@
 encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState_recurrentOutputStates :: (IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer, IsNSArray sourceImages, IsNSArray destinationImages, IsMPSRNNRecurrentImageState recurrentInputState, IsNSMutableArray recurrentOutputStates) => mpsrnnImageInferenceLayer -> RawId -> sourceImages -> destinationImages -> recurrentInputState -> recurrentOutputStates -> IO ()
-encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState_recurrentOutputStates mpsrnnImageInferenceLayer  commandBuffer sourceImages destinationImages recurrentInputState recurrentOutputStates =
-  withObjCPtr sourceImages $ \raw_sourceImages ->
-    withObjCPtr destinationImages $ \raw_destinationImages ->
-      withObjCPtr recurrentInputState $ \raw_recurrentInputState ->
-        withObjCPtr recurrentOutputStates $ \raw_recurrentOutputStates ->
-            sendMsg mpsrnnImageInferenceLayer (mkSelector "encodeSequenceToCommandBuffer:sourceImages:destinationImages:recurrentInputState:recurrentOutputStates:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImages :: Ptr ()), argPtr (castPtr raw_destinationImages :: Ptr ()), argPtr (castPtr raw_recurrentInputState :: Ptr ()), argPtr (castPtr raw_recurrentOutputStates :: Ptr ())]
+encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState_recurrentOutputStates mpsrnnImageInferenceLayer commandBuffer sourceImages destinationImages recurrentInputState recurrentOutputStates =
+  sendMessage mpsrnnImageInferenceLayer encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState_recurrentOutputStatesSelector commandBuffer (toNSArray sourceImages) (toNSArray destinationImages) (toMPSRNNRecurrentImageState recurrentInputState) (toNSMutableArray recurrentOutputStates)
 
 -- | Encode an MPSRNNImageInferenceLayer kernel stack for an input image sequences into a command buffer bidirectionally.                  The operation proceeds as follows: The first source image x0 is passed through all forward traversing layers in the stack,                  ie. those that were initialized with MPSRNNSequenceDirectionForward, recurrent input is assumed zero.                  This produces forward output yf0 and recurrent states hf00, hf01, hf02, ... hf0n, one for each forward layer.                  Then x1 is passed to forward layers together with recurrent state hf00, hf01, ..., hf0n, which produces yf1, and hf10,...                  This procedure is iterated until the last image in the input sequence x_(N-1), which produces forward output yf(N-1).                  The backwards layers iterate the same sequence backwards, starting from input x_(N-1) (recurrent state zero),                  that produces yb(N-1) and recurrent output hb(N-1)0, hf(N-1)1, ... hb(N-1)m, one for each backwards traversing layer.                  Then the backwards layers handle input x_(N-2) using recurrent state hb(N-1)0, ..., et cetera, until the                  first image of the sequence is computed, producing output yb0. The result of the operation is either pair of sequences                  ({yf0, yf1, ... , yf(N-1)},  {yb0, yb1, ... , yb(N-1)}) or a combined sequence, {(yf0 + yb0), ... , (yf(N-1) + yb(N-1)) },                  where '+' stands either for sum, or concatenation along feature channels, as specified by bidirectionalCombineMode.
 --
@@ -163,11 +154,8 @@ encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState
 --
 -- ObjC selector: @- encodeBidirectionalSequenceToCommandBuffer:sourceSequence:destinationForwardImages:destinationBackwardImages:@
 encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImages_destinationBackwardImages :: (IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer, IsNSArray sourceSequence, IsNSArray destinationForwardImages, IsNSArray destinationBackwardImages) => mpsrnnImageInferenceLayer -> RawId -> sourceSequence -> destinationForwardImages -> destinationBackwardImages -> IO ()
-encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImages_destinationBackwardImages mpsrnnImageInferenceLayer  commandBuffer sourceSequence destinationForwardImages destinationBackwardImages =
-  withObjCPtr sourceSequence $ \raw_sourceSequence ->
-    withObjCPtr destinationForwardImages $ \raw_destinationForwardImages ->
-      withObjCPtr destinationBackwardImages $ \raw_destinationBackwardImages ->
-          sendMsg mpsrnnImageInferenceLayer (mkSelector "encodeBidirectionalSequenceToCommandBuffer:sourceSequence:destinationForwardImages:destinationBackwardImages:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceSequence :: Ptr ()), argPtr (castPtr raw_destinationForwardImages :: Ptr ()), argPtr (castPtr raw_destinationBackwardImages :: Ptr ())]
+encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImages_destinationBackwardImages mpsrnnImageInferenceLayer commandBuffer sourceSequence destinationForwardImages destinationBackwardImages =
+  sendMessage mpsrnnImageInferenceLayer encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImages_destinationBackwardImagesSelector commandBuffer (toNSArray sourceSequence) (toNSArray destinationForwardImages) (toNSArray destinationBackwardImages)
 
 -- | NSSecureCoding compatability
 --
@@ -181,9 +169,8 @@ encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImag
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer, IsNSCoder aDecoder) => mpsrnnImageInferenceLayer -> aDecoder -> RawId -> IO (Id MPSRNNImageInferenceLayer)
-initWithCoder_device mpsrnnImageInferenceLayer  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsrnnImageInferenceLayer (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsrnnImageInferenceLayer aDecoder device =
+  sendOwnedMessage mpsrnnImageInferenceLayer initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Make a copy of this kernel for a new device -
 --
@@ -197,8 +184,8 @@ initWithCoder_device mpsrnnImageInferenceLayer  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> Ptr () -> RawId -> IO (Id MPSRNNImageInferenceLayer)
-copyWithZone_device mpsrnnImageInferenceLayer  zone device =
-    sendMsg mpsrnnImageInferenceLayer (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsrnnImageInferenceLayer zone device =
+  sendOwnedMessage mpsrnnImageInferenceLayer copyWithZone_deviceSelector zone device
 
 -- | inputFeatureChannels
 --
@@ -206,8 +193,8 @@ copyWithZone_device mpsrnnImageInferenceLayer  zone device =
 --
 -- ObjC selector: @- inputFeatureChannels@
 inputFeatureChannels :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> IO CULong
-inputFeatureChannels mpsrnnImageInferenceLayer  =
-    sendMsg mpsrnnImageInferenceLayer (mkSelector "inputFeatureChannels") retCULong []
+inputFeatureChannels mpsrnnImageInferenceLayer =
+  sendMessage mpsrnnImageInferenceLayer inputFeatureChannelsSelector
 
 -- | outputFeatureChannels
 --
@@ -215,8 +202,8 @@ inputFeatureChannels mpsrnnImageInferenceLayer  =
 --
 -- ObjC selector: @- outputFeatureChannels@
 outputFeatureChannels :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> IO CULong
-outputFeatureChannels mpsrnnImageInferenceLayer  =
-    sendMsg mpsrnnImageInferenceLayer (mkSelector "outputFeatureChannels") retCULong []
+outputFeatureChannels mpsrnnImageInferenceLayer =
+  sendMessage mpsrnnImageInferenceLayer outputFeatureChannelsSelector
 
 -- | numberOfLayers
 --
@@ -224,8 +211,8 @@ outputFeatureChannels mpsrnnImageInferenceLayer  =
 --
 -- ObjC selector: @- numberOfLayers@
 numberOfLayers :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> IO CULong
-numberOfLayers mpsrnnImageInferenceLayer  =
-    sendMsg mpsrnnImageInferenceLayer (mkSelector "numberOfLayers") retCULong []
+numberOfLayers mpsrnnImageInferenceLayer =
+  sendMessage mpsrnnImageInferenceLayer numberOfLayersSelector
 
 -- | recurrentOutputIsTemporary
 --
@@ -235,8 +222,8 @@ numberOfLayers mpsrnnImageInferenceLayer  =
 --
 -- ObjC selector: @- recurrentOutputIsTemporary@
 recurrentOutputIsTemporary :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> IO Bool
-recurrentOutputIsTemporary mpsrnnImageInferenceLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnImageInferenceLayer (mkSelector "recurrentOutputIsTemporary") retCULong []
+recurrentOutputIsTemporary mpsrnnImageInferenceLayer =
+  sendMessage mpsrnnImageInferenceLayer recurrentOutputIsTemporarySelector
 
 -- | recurrentOutputIsTemporary
 --
@@ -246,8 +233,8 @@ recurrentOutputIsTemporary mpsrnnImageInferenceLayer  =
 --
 -- ObjC selector: @- setRecurrentOutputIsTemporary:@
 setRecurrentOutputIsTemporary :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> Bool -> IO ()
-setRecurrentOutputIsTemporary mpsrnnImageInferenceLayer  value =
-    sendMsg mpsrnnImageInferenceLayer (mkSelector "setRecurrentOutputIsTemporary:") retVoid [argCULong (if value then 1 else 0)]
+setRecurrentOutputIsTemporary mpsrnnImageInferenceLayer value =
+  sendMessage mpsrnnImageInferenceLayer setRecurrentOutputIsTemporarySelector value
 
 -- | storeAllIntermediateStates
 --
@@ -255,8 +242,8 @@ setRecurrentOutputIsTemporary mpsrnnImageInferenceLayer  value =
 --
 -- ObjC selector: @- storeAllIntermediateStates@
 storeAllIntermediateStates :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> IO Bool
-storeAllIntermediateStates mpsrnnImageInferenceLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnImageInferenceLayer (mkSelector "storeAllIntermediateStates") retCULong []
+storeAllIntermediateStates mpsrnnImageInferenceLayer =
+  sendMessage mpsrnnImageInferenceLayer storeAllIntermediateStatesSelector
 
 -- | storeAllIntermediateStates
 --
@@ -264,8 +251,8 @@ storeAllIntermediateStates mpsrnnImageInferenceLayer  =
 --
 -- ObjC selector: @- setStoreAllIntermediateStates:@
 setStoreAllIntermediateStates :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> Bool -> IO ()
-setStoreAllIntermediateStates mpsrnnImageInferenceLayer  value =
-    sendMsg mpsrnnImageInferenceLayer (mkSelector "setStoreAllIntermediateStates:") retVoid [argCULong (if value then 1 else 0)]
+setStoreAllIntermediateStates mpsrnnImageInferenceLayer value =
+  sendMessage mpsrnnImageInferenceLayer setStoreAllIntermediateStatesSelector value
 
 -- | bidirectionalCombineMode
 --
@@ -273,8 +260,8 @@ setStoreAllIntermediateStates mpsrnnImageInferenceLayer  value =
 --
 -- ObjC selector: @- bidirectionalCombineMode@
 bidirectionalCombineMode :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> IO MPSRNNBidirectionalCombineMode
-bidirectionalCombineMode mpsrnnImageInferenceLayer  =
-    fmap (coerce :: CULong -> MPSRNNBidirectionalCombineMode) $ sendMsg mpsrnnImageInferenceLayer (mkSelector "bidirectionalCombineMode") retCULong []
+bidirectionalCombineMode mpsrnnImageInferenceLayer =
+  sendMessage mpsrnnImageInferenceLayer bidirectionalCombineModeSelector
 
 -- | bidirectionalCombineMode
 --
@@ -282,74 +269,74 @@ bidirectionalCombineMode mpsrnnImageInferenceLayer  =
 --
 -- ObjC selector: @- setBidirectionalCombineMode:@
 setBidirectionalCombineMode :: IsMPSRNNImageInferenceLayer mpsrnnImageInferenceLayer => mpsrnnImageInferenceLayer -> MPSRNNBidirectionalCombineMode -> IO ()
-setBidirectionalCombineMode mpsrnnImageInferenceLayer  value =
-    sendMsg mpsrnnImageInferenceLayer (mkSelector "setBidirectionalCombineMode:") retVoid [argCULong (coerce value)]
+setBidirectionalCombineMode mpsrnnImageInferenceLayer value =
+  sendMessage mpsrnnImageInferenceLayer setBidirectionalCombineModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:rnnDescriptor:@
-initWithDevice_rnnDescriptorSelector :: Selector
+initWithDevice_rnnDescriptorSelector :: Selector '[RawId, Const (Id MPSRNNDescriptor)] (Id MPSRNNImageInferenceLayer)
 initWithDevice_rnnDescriptorSelector = mkSelector "initWithDevice:rnnDescriptor:"
 
 -- | @Selector@ for @initWithDevice:rnnDescriptors:@
-initWithDevice_rnnDescriptorsSelector :: Selector
+initWithDevice_rnnDescriptorsSelector :: Selector '[RawId, Id NSArray] (Id MPSRNNImageInferenceLayer)
 initWithDevice_rnnDescriptorsSelector = mkSelector "initWithDevice:rnnDescriptors:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSRNNImageInferenceLayer)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeSequenceToCommandBuffer:sourceImages:destinationImages:recurrentInputState:recurrentOutputStates:@
-encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState_recurrentOutputStatesSelector :: Selector
+encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState_recurrentOutputStatesSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id MPSRNNRecurrentImageState, Id NSMutableArray] ()
 encodeSequenceToCommandBuffer_sourceImages_destinationImages_recurrentInputState_recurrentOutputStatesSelector = mkSelector "encodeSequenceToCommandBuffer:sourceImages:destinationImages:recurrentInputState:recurrentOutputStates:"
 
 -- | @Selector@ for @encodeBidirectionalSequenceToCommandBuffer:sourceSequence:destinationForwardImages:destinationBackwardImages:@
-encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImages_destinationBackwardImagesSelector :: Selector
+encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImages_destinationBackwardImagesSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id NSArray] ()
 encodeBidirectionalSequenceToCommandBuffer_sourceSequence_destinationForwardImages_destinationBackwardImagesSelector = mkSelector "encodeBidirectionalSequenceToCommandBuffer:sourceSequence:destinationForwardImages:destinationBackwardImages:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSRNNImageInferenceLayer)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSRNNImageInferenceLayer)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @inputFeatureChannels@
-inputFeatureChannelsSelector :: Selector
+inputFeatureChannelsSelector :: Selector '[] CULong
 inputFeatureChannelsSelector = mkSelector "inputFeatureChannels"
 
 -- | @Selector@ for @outputFeatureChannels@
-outputFeatureChannelsSelector :: Selector
+outputFeatureChannelsSelector :: Selector '[] CULong
 outputFeatureChannelsSelector = mkSelector "outputFeatureChannels"
 
 -- | @Selector@ for @numberOfLayers@
-numberOfLayersSelector :: Selector
+numberOfLayersSelector :: Selector '[] CULong
 numberOfLayersSelector = mkSelector "numberOfLayers"
 
 -- | @Selector@ for @recurrentOutputIsTemporary@
-recurrentOutputIsTemporarySelector :: Selector
+recurrentOutputIsTemporarySelector :: Selector '[] Bool
 recurrentOutputIsTemporarySelector = mkSelector "recurrentOutputIsTemporary"
 
 -- | @Selector@ for @setRecurrentOutputIsTemporary:@
-setRecurrentOutputIsTemporarySelector :: Selector
+setRecurrentOutputIsTemporarySelector :: Selector '[Bool] ()
 setRecurrentOutputIsTemporarySelector = mkSelector "setRecurrentOutputIsTemporary:"
 
 -- | @Selector@ for @storeAllIntermediateStates@
-storeAllIntermediateStatesSelector :: Selector
+storeAllIntermediateStatesSelector :: Selector '[] Bool
 storeAllIntermediateStatesSelector = mkSelector "storeAllIntermediateStates"
 
 -- | @Selector@ for @setStoreAllIntermediateStates:@
-setStoreAllIntermediateStatesSelector :: Selector
+setStoreAllIntermediateStatesSelector :: Selector '[Bool] ()
 setStoreAllIntermediateStatesSelector = mkSelector "setStoreAllIntermediateStates:"
 
 -- | @Selector@ for @bidirectionalCombineMode@
-bidirectionalCombineModeSelector :: Selector
+bidirectionalCombineModeSelector :: Selector '[] MPSRNNBidirectionalCombineMode
 bidirectionalCombineModeSelector = mkSelector "bidirectionalCombineMode"
 
 -- | @Selector@ for @setBidirectionalCombineMode:@
-setBidirectionalCombineModeSelector :: Selector
+setBidirectionalCombineModeSelector :: Selector '[MPSRNNBidirectionalCombineMode] ()
 setBidirectionalCombineModeSelector = mkSelector "setBidirectionalCombineMode:"
 

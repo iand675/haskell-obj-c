@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,8 +17,8 @@ module ObjC.AccessorySetupKit.ASPickerDisplaySettings
   , setOptions
   , defaultSettingsSelector
   , discoveryTimeoutSelector
-  , setDiscoveryTimeoutSelector
   , optionsSelector
+  , setDiscoveryTimeoutSelector
   , setOptionsSelector
 
   -- * Enum types
@@ -26,15 +27,11 @@ module ObjC.AccessorySetupKit.ASPickerDisplaySettings
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,57 +46,57 @@ defaultSettings :: IO (Id ASPickerDisplaySettings)
 defaultSettings  =
   do
     cls' <- getRequiredClass "ASPickerDisplaySettings"
-    sendClassMsg cls' (mkSelector "defaultSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultSettingsSelector
 
 -- | Custom timeout for picker. Default is 30 seconds.
 --
 -- ObjC selector: @- discoveryTimeout@
 discoveryTimeout :: IsASPickerDisplaySettings asPickerDisplaySettings => asPickerDisplaySettings -> IO CDouble
-discoveryTimeout asPickerDisplaySettings  =
-    sendMsg asPickerDisplaySettings (mkSelector "discoveryTimeout") retCDouble []
+discoveryTimeout asPickerDisplaySettings =
+  sendMessage asPickerDisplaySettings discoveryTimeoutSelector
 
 -- | Custom timeout for picker. Default is 30 seconds.
 --
 -- ObjC selector: @- setDiscoveryTimeout:@
 setDiscoveryTimeout :: IsASPickerDisplaySettings asPickerDisplaySettings => asPickerDisplaySettings -> CDouble -> IO ()
-setDiscoveryTimeout asPickerDisplaySettings  value =
-    sendMsg asPickerDisplaySettings (mkSelector "setDiscoveryTimeout:") retVoid [argCDouble value]
+setDiscoveryTimeout asPickerDisplaySettings value =
+  sendMessage asPickerDisplaySettings setDiscoveryTimeoutSelector value
 
 -- | Custom options for the picker.
 --
 -- ObjC selector: @- options@
 options :: IsASPickerDisplaySettings asPickerDisplaySettings => asPickerDisplaySettings -> IO ASPickerDisplaySettingsOptions
-options asPickerDisplaySettings  =
-    fmap (coerce :: CULong -> ASPickerDisplaySettingsOptions) $ sendMsg asPickerDisplaySettings (mkSelector "options") retCULong []
+options asPickerDisplaySettings =
+  sendMessage asPickerDisplaySettings optionsSelector
 
 -- | Custom options for the picker.
 --
 -- ObjC selector: @- setOptions:@
 setOptions :: IsASPickerDisplaySettings asPickerDisplaySettings => asPickerDisplaySettings -> ASPickerDisplaySettingsOptions -> IO ()
-setOptions asPickerDisplaySettings  value =
-    sendMsg asPickerDisplaySettings (mkSelector "setOptions:") retVoid [argCULong (coerce value)]
+setOptions asPickerDisplaySettings value =
+  sendMessage asPickerDisplaySettings setOptionsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultSettings@
-defaultSettingsSelector :: Selector
+defaultSettingsSelector :: Selector '[] (Id ASPickerDisplaySettings)
 defaultSettingsSelector = mkSelector "defaultSettings"
 
 -- | @Selector@ for @discoveryTimeout@
-discoveryTimeoutSelector :: Selector
+discoveryTimeoutSelector :: Selector '[] CDouble
 discoveryTimeoutSelector = mkSelector "discoveryTimeout"
 
 -- | @Selector@ for @setDiscoveryTimeout:@
-setDiscoveryTimeoutSelector :: Selector
+setDiscoveryTimeoutSelector :: Selector '[CDouble] ()
 setDiscoveryTimeoutSelector = mkSelector "setDiscoveryTimeout:"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] ASPickerDisplaySettingsOptions
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @setOptions:@
-setOptionsSelector :: Selector
+setOptionsSelector :: Selector '[ASPickerDisplaySettingsOptions] ()
 setOptionsSelector = mkSelector "setOptions:"
 

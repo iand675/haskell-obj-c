@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,33 +25,29 @@ module ObjC.CoreMediaIO.CMIOExtensionDevice
   , legacyDeviceID
   , source
   , streams
-  , initSelector
-  , newSelector
-  , deviceWithLocalizedName_deviceID_legacyDeviceID_sourceSelector
-  , initWithLocalizedName_deviceID_legacyDeviceID_sourceSelector
-  , deviceWithLocalizedName_deviceID_sourceSelector
-  , initWithLocalizedName_deviceID_sourceSelector
   , addStream_errorSelector
-  , removeStream_errorSelector
-  , notifyPropertiesChangedSelector
-  , localizedNameSelector
   , deviceIDSelector
+  , deviceWithLocalizedName_deviceID_legacyDeviceID_sourceSelector
+  , deviceWithLocalizedName_deviceID_sourceSelector
+  , initSelector
+  , initWithLocalizedName_deviceID_legacyDeviceID_sourceSelector
+  , initWithLocalizedName_deviceID_sourceSelector
   , legacyDeviceIDSelector
+  , localizedNameSelector
+  , newSelector
+  , notifyPropertiesChangedSelector
+  , removeStream_errorSelector
   , sourceSelector
   , streamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,15 +56,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCMIOExtensionDevice cmioExtensionDevice => cmioExtensionDevice -> IO (Id CMIOExtensionDevice)
-init_ cmioExtensionDevice  =
-    sendMsg cmioExtensionDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cmioExtensionDevice =
+  sendOwnedMessage cmioExtensionDevice initSelector
 
 -- | @+ new@
 new :: IO (Id CMIOExtensionDevice)
 new  =
   do
     cls' <- getRequiredClass "CMIOExtensionDevice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | deviceWithLocalizedName:deviceID:legacyDeviceID:source:
 --
@@ -88,10 +85,7 @@ deviceWithLocalizedName_deviceID_legacyDeviceID_source :: (IsNSString localizedN
 deviceWithLocalizedName_deviceID_legacyDeviceID_source localizedName deviceID legacyDeviceID source =
   do
     cls' <- getRequiredClass "CMIOExtensionDevice"
-    withObjCPtr localizedName $ \raw_localizedName ->
-      withObjCPtr deviceID $ \raw_deviceID ->
-        withObjCPtr legacyDeviceID $ \raw_legacyDeviceID ->
-          sendClassMsg cls' (mkSelector "deviceWithLocalizedName:deviceID:legacyDeviceID:source:") (retPtr retVoid) [argPtr (castPtr raw_localizedName :: Ptr ()), argPtr (castPtr raw_deviceID :: Ptr ()), argPtr (castPtr raw_legacyDeviceID :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithLocalizedName_deviceID_legacyDeviceID_sourceSelector (toNSString localizedName) (toNSUUID deviceID) (toNSString legacyDeviceID) source
 
 -- | initWithLocalizedName:deviceID:legacyDeviceID:source:
 --
@@ -109,11 +103,8 @@ deviceWithLocalizedName_deviceID_legacyDeviceID_source localizedName deviceID le
 --
 -- ObjC selector: @- initWithLocalizedName:deviceID:legacyDeviceID:source:@
 initWithLocalizedName_deviceID_legacyDeviceID_source :: (IsCMIOExtensionDevice cmioExtensionDevice, IsNSString localizedName, IsNSUUID deviceID, IsNSString legacyDeviceID) => cmioExtensionDevice -> localizedName -> deviceID -> legacyDeviceID -> RawId -> IO (Id CMIOExtensionDevice)
-initWithLocalizedName_deviceID_legacyDeviceID_source cmioExtensionDevice  localizedName deviceID legacyDeviceID source =
-  withObjCPtr localizedName $ \raw_localizedName ->
-    withObjCPtr deviceID $ \raw_deviceID ->
-      withObjCPtr legacyDeviceID $ \raw_legacyDeviceID ->
-          sendMsg cmioExtensionDevice (mkSelector "initWithLocalizedName:deviceID:legacyDeviceID:source:") (retPtr retVoid) [argPtr (castPtr raw_localizedName :: Ptr ()), argPtr (castPtr raw_deviceID :: Ptr ()), argPtr (castPtr raw_legacyDeviceID :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalizedName_deviceID_legacyDeviceID_source cmioExtensionDevice localizedName deviceID legacyDeviceID source =
+  sendOwnedMessage cmioExtensionDevice initWithLocalizedName_deviceID_legacyDeviceID_sourceSelector (toNSString localizedName) (toNSUUID deviceID) (toNSString legacyDeviceID) source
 
 -- | deviceWithLocalizedName:deviceID:source:
 --
@@ -132,9 +123,7 @@ deviceWithLocalizedName_deviceID_source :: (IsNSString localizedName, IsNSUUID d
 deviceWithLocalizedName_deviceID_source localizedName deviceID source =
   do
     cls' <- getRequiredClass "CMIOExtensionDevice"
-    withObjCPtr localizedName $ \raw_localizedName ->
-      withObjCPtr deviceID $ \raw_deviceID ->
-        sendClassMsg cls' (mkSelector "deviceWithLocalizedName:deviceID:source:") (retPtr retVoid) [argPtr (castPtr raw_localizedName :: Ptr ()), argPtr (castPtr raw_deviceID :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithLocalizedName_deviceID_sourceSelector (toNSString localizedName) (toNSUUID deviceID) source
 
 -- | initWithLocalizedName:deviceID:source:
 --
@@ -150,10 +139,8 @@ deviceWithLocalizedName_deviceID_source localizedName deviceID source =
 --
 -- ObjC selector: @- initWithLocalizedName:deviceID:source:@
 initWithLocalizedName_deviceID_source :: (IsCMIOExtensionDevice cmioExtensionDevice, IsNSString localizedName, IsNSUUID deviceID) => cmioExtensionDevice -> localizedName -> deviceID -> RawId -> IO (Id CMIOExtensionDevice)
-initWithLocalizedName_deviceID_source cmioExtensionDevice  localizedName deviceID source =
-  withObjCPtr localizedName $ \raw_localizedName ->
-    withObjCPtr deviceID $ \raw_deviceID ->
-        sendMsg cmioExtensionDevice (mkSelector "initWithLocalizedName:deviceID:source:") (retPtr retVoid) [argPtr (castPtr raw_localizedName :: Ptr ()), argPtr (castPtr raw_deviceID :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalizedName_deviceID_source cmioExtensionDevice localizedName deviceID source =
+  sendOwnedMessage cmioExtensionDevice initWithLocalizedName_deviceID_sourceSelector (toNSString localizedName) (toNSUUID deviceID) source
 
 -- | addStream:error:
 --
@@ -167,10 +154,8 @@ initWithLocalizedName_deviceID_source cmioExtensionDevice  localizedName deviceI
 --
 -- ObjC selector: @- addStream:error:@
 addStream_error :: (IsCMIOExtensionDevice cmioExtensionDevice, IsCMIOExtensionStream stream, IsNSError outError) => cmioExtensionDevice -> stream -> outError -> IO Bool
-addStream_error cmioExtensionDevice  stream outError =
-  withObjCPtr stream $ \raw_stream ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmioExtensionDevice (mkSelector "addStream:error:") retCULong [argPtr (castPtr raw_stream :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+addStream_error cmioExtensionDevice stream outError =
+  sendMessage cmioExtensionDevice addStream_errorSelector (toCMIOExtensionStream stream) (toNSError outError)
 
 -- | removeStream:error:
 --
@@ -184,10 +169,8 @@ addStream_error cmioExtensionDevice  stream outError =
 --
 -- ObjC selector: @- removeStream:error:@
 removeStream_error :: (IsCMIOExtensionDevice cmioExtensionDevice, IsCMIOExtensionStream stream, IsNSError outError) => cmioExtensionDevice -> stream -> outError -> IO Bool
-removeStream_error cmioExtensionDevice  stream outError =
-  withObjCPtr stream $ \raw_stream ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg cmioExtensionDevice (mkSelector "removeStream:error:") retCULong [argPtr (castPtr raw_stream :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+removeStream_error cmioExtensionDevice stream outError =
+  sendMessage cmioExtensionDevice removeStream_errorSelector (toCMIOExtensionStream stream) (toNSError outError)
 
 -- | notifyPropertiesChanged:
 --
@@ -197,9 +180,8 @@ removeStream_error cmioExtensionDevice  stream outError =
 --
 -- ObjC selector: @- notifyPropertiesChanged:@
 notifyPropertiesChanged :: (IsCMIOExtensionDevice cmioExtensionDevice, IsNSDictionary propertyStates) => cmioExtensionDevice -> propertyStates -> IO ()
-notifyPropertiesChanged cmioExtensionDevice  propertyStates =
-  withObjCPtr propertyStates $ \raw_propertyStates ->
-      sendMsg cmioExtensionDevice (mkSelector "notifyPropertiesChanged:") retVoid [argPtr (castPtr raw_propertyStates :: Ptr ())]
+notifyPropertiesChanged cmioExtensionDevice propertyStates =
+  sendMessage cmioExtensionDevice notifyPropertiesChangedSelector (toNSDictionary propertyStates)
 
 -- | localizedName
 --
@@ -207,8 +189,8 @@ notifyPropertiesChanged cmioExtensionDevice  propertyStates =
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsCMIOExtensionDevice cmioExtensionDevice => cmioExtensionDevice -> IO (Id NSString)
-localizedName cmioExtensionDevice  =
-    sendMsg cmioExtensionDevice (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName cmioExtensionDevice =
+  sendMessage cmioExtensionDevice localizedNameSelector
 
 -- | deviceID
 --
@@ -216,8 +198,8 @@ localizedName cmioExtensionDevice  =
 --
 -- ObjC selector: @- deviceID@
 deviceID :: IsCMIOExtensionDevice cmioExtensionDevice => cmioExtensionDevice -> IO (Id NSUUID)
-deviceID cmioExtensionDevice  =
-    sendMsg cmioExtensionDevice (mkSelector "deviceID") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceID cmioExtensionDevice =
+  sendMessage cmioExtensionDevice deviceIDSelector
 
 -- | legacyDeviceID
 --
@@ -225,8 +207,8 @@ deviceID cmioExtensionDevice  =
 --
 -- ObjC selector: @- legacyDeviceID@
 legacyDeviceID :: IsCMIOExtensionDevice cmioExtensionDevice => cmioExtensionDevice -> IO (Id NSString)
-legacyDeviceID cmioExtensionDevice  =
-    sendMsg cmioExtensionDevice (mkSelector "legacyDeviceID") (retPtr retVoid) [] >>= retainedObject . castPtr
+legacyDeviceID cmioExtensionDevice =
+  sendMessage cmioExtensionDevice legacyDeviceIDSelector
 
 -- | source
 --
@@ -234,8 +216,8 @@ legacyDeviceID cmioExtensionDevice  =
 --
 -- ObjC selector: @- source@
 source :: IsCMIOExtensionDevice cmioExtensionDevice => cmioExtensionDevice -> IO RawId
-source cmioExtensionDevice  =
-    fmap (RawId . castPtr) $ sendMsg cmioExtensionDevice (mkSelector "source") (retPtr retVoid) []
+source cmioExtensionDevice =
+  sendMessage cmioExtensionDevice sourceSelector
 
 -- | streams
 --
@@ -245,66 +227,66 @@ source cmioExtensionDevice  =
 --
 -- ObjC selector: @- streams@
 streams :: IsCMIOExtensionDevice cmioExtensionDevice => cmioExtensionDevice -> IO (Id NSArray)
-streams cmioExtensionDevice  =
-    sendMsg cmioExtensionDevice (mkSelector "streams") (retPtr retVoid) [] >>= retainedObject . castPtr
+streams cmioExtensionDevice =
+  sendMessage cmioExtensionDevice streamsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CMIOExtensionDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CMIOExtensionDevice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @deviceWithLocalizedName:deviceID:legacyDeviceID:source:@
-deviceWithLocalizedName_deviceID_legacyDeviceID_sourceSelector :: Selector
+deviceWithLocalizedName_deviceID_legacyDeviceID_sourceSelector :: Selector '[Id NSString, Id NSUUID, Id NSString, RawId] (Id CMIOExtensionDevice)
 deviceWithLocalizedName_deviceID_legacyDeviceID_sourceSelector = mkSelector "deviceWithLocalizedName:deviceID:legacyDeviceID:source:"
 
 -- | @Selector@ for @initWithLocalizedName:deviceID:legacyDeviceID:source:@
-initWithLocalizedName_deviceID_legacyDeviceID_sourceSelector :: Selector
+initWithLocalizedName_deviceID_legacyDeviceID_sourceSelector :: Selector '[Id NSString, Id NSUUID, Id NSString, RawId] (Id CMIOExtensionDevice)
 initWithLocalizedName_deviceID_legacyDeviceID_sourceSelector = mkSelector "initWithLocalizedName:deviceID:legacyDeviceID:source:"
 
 -- | @Selector@ for @deviceWithLocalizedName:deviceID:source:@
-deviceWithLocalizedName_deviceID_sourceSelector :: Selector
+deviceWithLocalizedName_deviceID_sourceSelector :: Selector '[Id NSString, Id NSUUID, RawId] (Id CMIOExtensionDevice)
 deviceWithLocalizedName_deviceID_sourceSelector = mkSelector "deviceWithLocalizedName:deviceID:source:"
 
 -- | @Selector@ for @initWithLocalizedName:deviceID:source:@
-initWithLocalizedName_deviceID_sourceSelector :: Selector
+initWithLocalizedName_deviceID_sourceSelector :: Selector '[Id NSString, Id NSUUID, RawId] (Id CMIOExtensionDevice)
 initWithLocalizedName_deviceID_sourceSelector = mkSelector "initWithLocalizedName:deviceID:source:"
 
 -- | @Selector@ for @addStream:error:@
-addStream_errorSelector :: Selector
+addStream_errorSelector :: Selector '[Id CMIOExtensionStream, Id NSError] Bool
 addStream_errorSelector = mkSelector "addStream:error:"
 
 -- | @Selector@ for @removeStream:error:@
-removeStream_errorSelector :: Selector
+removeStream_errorSelector :: Selector '[Id CMIOExtensionStream, Id NSError] Bool
 removeStream_errorSelector = mkSelector "removeStream:error:"
 
 -- | @Selector@ for @notifyPropertiesChanged:@
-notifyPropertiesChangedSelector :: Selector
+notifyPropertiesChangedSelector :: Selector '[Id NSDictionary] ()
 notifyPropertiesChangedSelector = mkSelector "notifyPropertiesChanged:"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @deviceID@
-deviceIDSelector :: Selector
+deviceIDSelector :: Selector '[] (Id NSUUID)
 deviceIDSelector = mkSelector "deviceID"
 
 -- | @Selector@ for @legacyDeviceID@
-legacyDeviceIDSelector :: Selector
+legacyDeviceIDSelector :: Selector '[] (Id NSString)
 legacyDeviceIDSelector = mkSelector "legacyDeviceID"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] RawId
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @streams@
-streamsSelector :: Selector
+streamsSelector :: Selector '[] (Id NSArray)
 streamsSelector = mkSelector "streams"
 

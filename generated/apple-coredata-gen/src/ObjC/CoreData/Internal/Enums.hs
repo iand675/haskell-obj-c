@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreData.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @NSAttributeType@
 newtype NSAttributeType = NSAttributeType CULong
@@ -64,6 +67,16 @@ pattern NSObjectIDAttributeType = NSAttributeType 2000
 pattern NSCompositeAttributeType :: NSAttributeType
 pattern NSCompositeAttributeType = NSAttributeType 2100
 
+instance ObjCArgument NSAttributeType where
+  withObjCArg (NSAttributeType x) k = k (argCULong x)
+
+instance ObjCReturn NSAttributeType where
+  type RawReturn NSAttributeType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSAttributeType x)
+  fromOwned x = pure (NSAttributeType x)
+
 -- | @NSBatchDeleteRequestResultType@
 newtype NSBatchDeleteRequestResultType = NSBatchDeleteRequestResultType CULong
   deriving stock (Eq, Ord, Show)
@@ -77,6 +90,16 @@ pattern NSBatchDeleteResultTypeObjectIDs = NSBatchDeleteRequestResultType 1
 
 pattern NSBatchDeleteResultTypeCount :: NSBatchDeleteRequestResultType
 pattern NSBatchDeleteResultTypeCount = NSBatchDeleteRequestResultType 2
+
+instance ObjCArgument NSBatchDeleteRequestResultType where
+  withObjCArg (NSBatchDeleteRequestResultType x) k = k (argCULong x)
+
+instance ObjCReturn NSBatchDeleteRequestResultType where
+  type RawReturn NSBatchDeleteRequestResultType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSBatchDeleteRequestResultType x)
+  fromOwned x = pure (NSBatchDeleteRequestResultType x)
 
 -- | @NSBatchInsertRequestResultType@
 newtype NSBatchInsertRequestResultType = NSBatchInsertRequestResultType CULong
@@ -92,6 +115,16 @@ pattern NSBatchInsertRequestResultTypeObjectIDs = NSBatchInsertRequestResultType
 pattern NSBatchInsertRequestResultTypeCount :: NSBatchInsertRequestResultType
 pattern NSBatchInsertRequestResultTypeCount = NSBatchInsertRequestResultType 2
 
+instance ObjCArgument NSBatchInsertRequestResultType where
+  withObjCArg (NSBatchInsertRequestResultType x) k = k (argCULong x)
+
+instance ObjCReturn NSBatchInsertRequestResultType where
+  type RawReturn NSBatchInsertRequestResultType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSBatchInsertRequestResultType x)
+  fromOwned x = pure (NSBatchInsertRequestResultType x)
+
 -- | @NSBatchUpdateRequestResultType@
 newtype NSBatchUpdateRequestResultType = NSBatchUpdateRequestResultType CULong
   deriving stock (Eq, Ord, Show)
@@ -105,6 +138,16 @@ pattern NSUpdatedObjectIDsResultType = NSBatchUpdateRequestResultType 1
 
 pattern NSUpdatedObjectsCountResultType :: NSBatchUpdateRequestResultType
 pattern NSUpdatedObjectsCountResultType = NSBatchUpdateRequestResultType 2
+
+instance ObjCArgument NSBatchUpdateRequestResultType where
+  withObjCArg (NSBatchUpdateRequestResultType x) k = k (argCULong x)
+
+instance ObjCReturn NSBatchUpdateRequestResultType where
+  type RawReturn NSBatchUpdateRequestResultType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSBatchUpdateRequestResultType x)
+  fromOwned x = pure (NSBatchUpdateRequestResultType x)
 
 -- | @NSDeleteRule@
 newtype NSDeleteRule = NSDeleteRule CULong
@@ -122,6 +165,16 @@ pattern NSCascadeDeleteRule = NSDeleteRule 2
 
 pattern NSDenyDeleteRule :: NSDeleteRule
 pattern NSDenyDeleteRule = NSDeleteRule 3
+
+instance ObjCArgument NSDeleteRule where
+  withObjCArg (NSDeleteRule x) k = k (argCULong x)
+
+instance ObjCReturn NSDeleteRule where
+  type RawReturn NSDeleteRule = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSDeleteRule x)
+  fromOwned x = pure (NSDeleteRule x)
 
 -- | @NSEntityMappingType@
 newtype NSEntityMappingType = NSEntityMappingType CULong
@@ -146,6 +199,16 @@ pattern NSCopyEntityMappingType = NSEntityMappingType 4
 pattern NSTransformEntityMappingType :: NSEntityMappingType
 pattern NSTransformEntityMappingType = NSEntityMappingType 5
 
+instance ObjCArgument NSEntityMappingType where
+  withObjCArg (NSEntityMappingType x) k = k (argCULong x)
+
+instance ObjCReturn NSEntityMappingType where
+  type RawReturn NSEntityMappingType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSEntityMappingType x)
+  fromOwned x = pure (NSEntityMappingType x)
+
 -- | @NSFetchIndexElementType@
 newtype NSFetchIndexElementType = NSFetchIndexElementType CULong
   deriving stock (Eq, Ord, Show)
@@ -156,6 +219,16 @@ pattern NSFetchIndexElementTypeBinary = NSFetchIndexElementType 0
 
 pattern NSFetchIndexElementTypeRTree :: NSFetchIndexElementType
 pattern NSFetchIndexElementTypeRTree = NSFetchIndexElementType 1
+
+instance ObjCArgument NSFetchIndexElementType where
+  withObjCArg (NSFetchIndexElementType x) k = k (argCULong x)
+
+instance ObjCReturn NSFetchIndexElementType where
+  type RawReturn NSFetchIndexElementType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFetchIndexElementType x)
+  fromOwned x = pure (NSFetchIndexElementType x)
 
 -- | @NSFetchRequestResultType@ (bitmask)
 newtype NSFetchRequestResultType = NSFetchRequestResultType CULong
@@ -180,6 +253,16 @@ pattern NSDictionaryResultType = NSFetchRequestResultType 2
 pattern NSCountResultType :: NSFetchRequestResultType
 pattern NSCountResultType = NSFetchRequestResultType 4
 
+instance ObjCArgument NSFetchRequestResultType where
+  withObjCArg (NSFetchRequestResultType x) k = k (argCULong x)
+
+instance ObjCReturn NSFetchRequestResultType where
+  type RawReturn NSFetchRequestResultType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFetchRequestResultType x)
+  fromOwned x = pure (NSFetchRequestResultType x)
+
 -- | @NSFetchedResultsChangeType@
 newtype NSFetchedResultsChangeType = NSFetchedResultsChangeType CULong
   deriving stock (Eq, Ord, Show)
@@ -197,6 +280,16 @@ pattern NSFetchedResultsChangeMove = NSFetchedResultsChangeType 3
 pattern NSFetchedResultsChangeUpdate :: NSFetchedResultsChangeType
 pattern NSFetchedResultsChangeUpdate = NSFetchedResultsChangeType 4
 
+instance ObjCArgument NSFetchedResultsChangeType where
+  withObjCArg (NSFetchedResultsChangeType x) k = k (argCULong x)
+
+instance ObjCReturn NSFetchedResultsChangeType where
+  type RawReturn NSFetchedResultsChangeType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSFetchedResultsChangeType x)
+  fromOwned x = pure (NSFetchedResultsChangeType x)
+
 -- | @NSManagedObjectContextConcurrencyType@
 newtype NSManagedObjectContextConcurrencyType = NSManagedObjectContextConcurrencyType CULong
   deriving stock (Eq, Ord, Show)
@@ -210,6 +303,16 @@ pattern NSPrivateQueueConcurrencyType = NSManagedObjectContextConcurrencyType 1
 
 pattern NSMainQueueConcurrencyType :: NSManagedObjectContextConcurrencyType
 pattern NSMainQueueConcurrencyType = NSManagedObjectContextConcurrencyType 2
+
+instance ObjCArgument NSManagedObjectContextConcurrencyType where
+  withObjCArg (NSManagedObjectContextConcurrencyType x) k = k (argCULong x)
+
+instance ObjCReturn NSManagedObjectContextConcurrencyType where
+  type RawReturn NSManagedObjectContextConcurrencyType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSManagedObjectContextConcurrencyType x)
+  fromOwned x = pure (NSManagedObjectContextConcurrencyType x)
 
 -- | @NSMergePolicyType@
 newtype NSMergePolicyType = NSMergePolicyType CULong
@@ -231,6 +334,16 @@ pattern NSOverwriteMergePolicyType = NSMergePolicyType 3
 pattern NSRollbackMergePolicyType :: NSMergePolicyType
 pattern NSRollbackMergePolicyType = NSMergePolicyType 4
 
+instance ObjCArgument NSMergePolicyType where
+  withObjCArg (NSMergePolicyType x) k = k (argCULong x)
+
+instance ObjCReturn NSMergePolicyType where
+  type RawReturn NSMergePolicyType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSMergePolicyType x)
+  fromOwned x = pure (NSMergePolicyType x)
+
 -- | @NSPersistentCloudKitContainerEventResultType@
 newtype NSPersistentCloudKitContainerEventResultType = NSPersistentCloudKitContainerEventResultType CLong
   deriving stock (Eq, Ord, Show)
@@ -241,6 +354,16 @@ pattern NSPersistentCloudKitContainerEventResultTypeEvents = NSPersistentCloudKi
 
 pattern NSPersistentCloudKitContainerEventResultTypeCountEvents :: NSPersistentCloudKitContainerEventResultType
 pattern NSPersistentCloudKitContainerEventResultTypeCountEvents = NSPersistentCloudKitContainerEventResultType 1
+
+instance ObjCArgument NSPersistentCloudKitContainerEventResultType where
+  withObjCArg (NSPersistentCloudKitContainerEventResultType x) k = k (argCLong x)
+
+instance ObjCReturn NSPersistentCloudKitContainerEventResultType where
+  type RawReturn NSPersistentCloudKitContainerEventResultType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPersistentCloudKitContainerEventResultType x)
+  fromOwned x = pure (NSPersistentCloudKitContainerEventResultType x)
 
 -- | @NSPersistentCloudKitContainerEventType@
 newtype NSPersistentCloudKitContainerEventType = NSPersistentCloudKitContainerEventType CLong
@@ -255,6 +378,16 @@ pattern NSPersistentCloudKitContainerEventTypeImport = NSPersistentCloudKitConta
 
 pattern NSPersistentCloudKitContainerEventTypeExport :: NSPersistentCloudKitContainerEventType
 pattern NSPersistentCloudKitContainerEventTypeExport = NSPersistentCloudKitContainerEventType 2
+
+instance ObjCArgument NSPersistentCloudKitContainerEventType where
+  withObjCArg (NSPersistentCloudKitContainerEventType x) k = k (argCLong x)
+
+instance ObjCReturn NSPersistentCloudKitContainerEventType where
+  type RawReturn NSPersistentCloudKitContainerEventType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPersistentCloudKitContainerEventType x)
+  fromOwned x = pure (NSPersistentCloudKitContainerEventType x)
 
 -- | @NSPersistentCloudKitContainerSchemaInitializationOptions@ (bitmask)
 newtype NSPersistentCloudKitContainerSchemaInitializationOptions = NSPersistentCloudKitContainerSchemaInitializationOptions CULong
@@ -276,6 +409,16 @@ pattern NSPersistentCloudKitContainerSchemaInitializationOptionsDryRun = NSPersi
 pattern NSPersistentCloudKitContainerSchemaInitializationOptionsPrintSchema :: NSPersistentCloudKitContainerSchemaInitializationOptions
 pattern NSPersistentCloudKitContainerSchemaInitializationOptionsPrintSchema = NSPersistentCloudKitContainerSchemaInitializationOptions 4
 
+instance ObjCArgument NSPersistentCloudKitContainerSchemaInitializationOptions where
+  withObjCArg (NSPersistentCloudKitContainerSchemaInitializationOptions x) k = k (argCULong x)
+
+instance ObjCReturn NSPersistentCloudKitContainerSchemaInitializationOptions where
+  type RawReturn NSPersistentCloudKitContainerSchemaInitializationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPersistentCloudKitContainerSchemaInitializationOptions x)
+  fromOwned x = pure (NSPersistentCloudKitContainerSchemaInitializationOptions x)
+
 -- | @NSPersistentHistoryChangeType@
 newtype NSPersistentHistoryChangeType = NSPersistentHistoryChangeType CLong
   deriving stock (Eq, Ord, Show)
@@ -289,6 +432,16 @@ pattern NSPersistentHistoryChangeTypeUpdate = NSPersistentHistoryChangeType 1
 
 pattern NSPersistentHistoryChangeTypeDelete :: NSPersistentHistoryChangeType
 pattern NSPersistentHistoryChangeTypeDelete = NSPersistentHistoryChangeType 2
+
+instance ObjCArgument NSPersistentHistoryChangeType where
+  withObjCArg (NSPersistentHistoryChangeType x) k = k (argCLong x)
+
+instance ObjCReturn NSPersistentHistoryChangeType where
+  type RawReturn NSPersistentHistoryChangeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPersistentHistoryChangeType x)
+  fromOwned x = pure (NSPersistentHistoryChangeType x)
 
 -- | @NSPersistentHistoryResultType@
 newtype NSPersistentHistoryResultType = NSPersistentHistoryResultType CLong
@@ -313,6 +466,16 @@ pattern NSPersistentHistoryResultTypeChangesOnly = NSPersistentHistoryResultType
 pattern NSPersistentHistoryResultTypeTransactionsAndChanges :: NSPersistentHistoryResultType
 pattern NSPersistentHistoryResultTypeTransactionsAndChanges = NSPersistentHistoryResultType 5
 
+instance ObjCArgument NSPersistentHistoryResultType where
+  withObjCArg (NSPersistentHistoryResultType x) k = k (argCLong x)
+
+instance ObjCReturn NSPersistentHistoryResultType where
+  type RawReturn NSPersistentHistoryResultType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPersistentHistoryResultType x)
+  fromOwned x = pure (NSPersistentHistoryResultType x)
+
 -- | @NSPersistentStoreRequestType@
 newtype NSPersistentStoreRequestType = NSPersistentStoreRequestType CULong
   deriving stock (Eq, Ord, Show)
@@ -333,6 +496,16 @@ pattern NSBatchUpdateRequestType = NSPersistentStoreRequestType 6
 pattern NSBatchDeleteRequestType :: NSPersistentStoreRequestType
 pattern NSBatchDeleteRequestType = NSPersistentStoreRequestType 7
 
+instance ObjCArgument NSPersistentStoreRequestType where
+  withObjCArg (NSPersistentStoreRequestType x) k = k (argCULong x)
+
+instance ObjCReturn NSPersistentStoreRequestType where
+  type RawReturn NSPersistentStoreRequestType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPersistentStoreRequestType x)
+  fromOwned x = pure (NSPersistentStoreRequestType x)
+
 -- | @NSPersistentStoreUbiquitousTransitionType@
 newtype NSPersistentStoreUbiquitousTransitionType = NSPersistentStoreUbiquitousTransitionType CULong
   deriving stock (Eq, Ord, Show)
@@ -349,6 +522,16 @@ pattern NSPersistentStoreUbiquitousTransitionTypeContentRemoved = NSPersistentSt
 
 pattern NSPersistentStoreUbiquitousTransitionTypeInitialImportCompleted :: NSPersistentStoreUbiquitousTransitionType
 pattern NSPersistentStoreUbiquitousTransitionTypeInitialImportCompleted = NSPersistentStoreUbiquitousTransitionType 4
+
+instance ObjCArgument NSPersistentStoreUbiquitousTransitionType where
+  withObjCArg (NSPersistentStoreUbiquitousTransitionType x) k = k (argCULong x)
+
+instance ObjCReturn NSPersistentStoreUbiquitousTransitionType where
+  type RawReturn NSPersistentStoreUbiquitousTransitionType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSPersistentStoreUbiquitousTransitionType x)
+  fromOwned x = pure (NSPersistentStoreUbiquitousTransitionType x)
 
 -- | @NSSnapshotEventType@ (bitmask)
 newtype NSSnapshotEventType = NSSnapshotEventType CULong
@@ -378,3 +561,13 @@ pattern NSSnapshotEventRefresh = NSSnapshotEventType 32
 
 pattern NSSnapshotEventMergePolicy :: NSSnapshotEventType
 pattern NSSnapshotEventMergePolicy = NSSnapshotEventType 64
+
+instance ObjCArgument NSSnapshotEventType where
+  withObjCArg (NSSnapshotEventType x) k = k (argCULong x)
+
+instance ObjCReturn NSSnapshotEventType where
+  type RawReturn NSSnapshotEventType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NSSnapshotEventType x)
+  fromOwned x = pure (NSSnapshotEventType x)

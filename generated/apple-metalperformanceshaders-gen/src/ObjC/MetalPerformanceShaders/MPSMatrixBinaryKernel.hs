@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MetalPerformanceShaders.MPSMatrixBinaryKernel
   , setBatchStart
   , batchSize
   , setBatchSize
-  , batchStartSelector
-  , setBatchStartSelector
   , batchSizeSelector
+  , batchStartSelector
   , setBatchSizeSelector
+  , setBatchStartSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- batchStart@
 batchStart :: IsMPSMatrixBinaryKernel mpsMatrixBinaryKernel => mpsMatrixBinaryKernel -> IO CULong
-batchStart mpsMatrixBinaryKernel  =
-    sendMsg mpsMatrixBinaryKernel (mkSelector "batchStart") retCULong []
+batchStart mpsMatrixBinaryKernel =
+  sendMessage mpsMatrixBinaryKernel batchStartSelector
 
 -- | batchStart
 --
@@ -54,8 +51,8 @@ batchStart mpsMatrixBinaryKernel  =
 --
 -- ObjC selector: @- setBatchStart:@
 setBatchStart :: IsMPSMatrixBinaryKernel mpsMatrixBinaryKernel => mpsMatrixBinaryKernel -> CULong -> IO ()
-setBatchStart mpsMatrixBinaryKernel  value =
-    sendMsg mpsMatrixBinaryKernel (mkSelector "setBatchStart:") retVoid [argCULong value]
+setBatchStart mpsMatrixBinaryKernel value =
+  sendMessage mpsMatrixBinaryKernel setBatchStartSelector value
 
 -- | batchSize
 --
@@ -63,8 +60,8 @@ setBatchStart mpsMatrixBinaryKernel  value =
 --
 -- ObjC selector: @- batchSize@
 batchSize :: IsMPSMatrixBinaryKernel mpsMatrixBinaryKernel => mpsMatrixBinaryKernel -> IO CULong
-batchSize mpsMatrixBinaryKernel  =
-    sendMsg mpsMatrixBinaryKernel (mkSelector "batchSize") retCULong []
+batchSize mpsMatrixBinaryKernel =
+  sendMessage mpsMatrixBinaryKernel batchSizeSelector
 
 -- | batchSize
 --
@@ -72,26 +69,26 @@ batchSize mpsMatrixBinaryKernel  =
 --
 -- ObjC selector: @- setBatchSize:@
 setBatchSize :: IsMPSMatrixBinaryKernel mpsMatrixBinaryKernel => mpsMatrixBinaryKernel -> CULong -> IO ()
-setBatchSize mpsMatrixBinaryKernel  value =
-    sendMsg mpsMatrixBinaryKernel (mkSelector "setBatchSize:") retVoid [argCULong value]
+setBatchSize mpsMatrixBinaryKernel value =
+  sendMessage mpsMatrixBinaryKernel setBatchSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @batchStart@
-batchStartSelector :: Selector
+batchStartSelector :: Selector '[] CULong
 batchStartSelector = mkSelector "batchStart"
 
 -- | @Selector@ for @setBatchStart:@
-setBatchStartSelector :: Selector
+setBatchStartSelector :: Selector '[CULong] ()
 setBatchStartSelector = mkSelector "setBatchStart:"
 
 -- | @Selector@ for @batchSize@
-batchSizeSelector :: Selector
+batchSizeSelector :: Selector '[] CULong
 batchSizeSelector = mkSelector "batchSize"
 
 -- | @Selector@ for @setBatchSize:@
-setBatchSizeSelector :: Selector
+setBatchSizeSelector :: Selector '[CULong] ()
 setBatchSizeSelector = mkSelector "setBatchSize:"
 

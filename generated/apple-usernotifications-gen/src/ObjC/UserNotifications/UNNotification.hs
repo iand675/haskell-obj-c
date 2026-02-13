@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.UserNotifications.UNNotification
   , init_
   , date
   , request
-  , initSelector
   , dateSelector
+  , initSelector
   , requestSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsUNNotification unNotification => unNotification -> IO (Id UNNotification)
-init_ unNotification  =
-    sendMsg unNotification (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ unNotification =
+  sendOwnedMessage unNotification initSelector
 
 -- | @- date@
 date :: IsUNNotification unNotification => unNotification -> IO (Id NSDate)
-date unNotification  =
-    sendMsg unNotification (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date unNotification =
+  sendMessage unNotification dateSelector
 
 -- | @- request@
 request :: IsUNNotification unNotification => unNotification -> IO (Id UNNotificationRequest)
-request unNotification  =
-    sendMsg unNotification (mkSelector "request") (retPtr retVoid) [] >>= retainedObject . castPtr
+request unNotification =
+  sendMessage unNotification requestSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id UNNotification)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @request@
-requestSelector :: Selector
+requestSelector :: Selector '[] (Id UNNotificationRequest)
 requestSelector = mkSelector "request"
 

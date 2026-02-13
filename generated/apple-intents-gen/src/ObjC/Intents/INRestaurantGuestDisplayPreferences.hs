@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Intents.INRestaurantGuestDisplayPreferences
   , setEmailAddressEditable
   , phoneNumberEditable
   , setPhoneNumberEditable
-  , nameFieldFirstNameOptionalSelector
-  , setNameFieldFirstNameOptionalSelector
-  , nameFieldLastNameOptionalSelector
-  , setNameFieldLastNameOptionalSelector
-  , nameFieldShouldBeDisplayedSelector
-  , setNameFieldShouldBeDisplayedSelector
-  , emailAddressFieldShouldBeDisplayedSelector
-  , setEmailAddressFieldShouldBeDisplayedSelector
-  , phoneNumberFieldShouldBeDisplayedSelector
-  , setPhoneNumberFieldShouldBeDisplayedSelector
-  , nameEditableSelector
-  , setNameEditableSelector
   , emailAddressEditableSelector
-  , setEmailAddressEditableSelector
+  , emailAddressFieldShouldBeDisplayedSelector
+  , nameEditableSelector
+  , nameFieldFirstNameOptionalSelector
+  , nameFieldLastNameOptionalSelector
+  , nameFieldShouldBeDisplayedSelector
   , phoneNumberEditableSelector
+  , phoneNumberFieldShouldBeDisplayedSelector
+  , setEmailAddressEditableSelector
+  , setEmailAddressFieldShouldBeDisplayedSelector
+  , setNameEditableSelector
+  , setNameFieldFirstNameOptionalSelector
+  , setNameFieldLastNameOptionalSelector
+  , setNameFieldShouldBeDisplayedSelector
   , setPhoneNumberEditableSelector
+  , setPhoneNumberFieldShouldBeDisplayedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,149 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- nameFieldFirstNameOptional@
 nameFieldFirstNameOptional :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> IO Bool
-nameFieldFirstNameOptional inRestaurantGuestDisplayPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantGuestDisplayPreferences (mkSelector "nameFieldFirstNameOptional") retCULong []
+nameFieldFirstNameOptional inRestaurantGuestDisplayPreferences =
+  sendMessage inRestaurantGuestDisplayPreferences nameFieldFirstNameOptionalSelector
 
 -- | @- setNameFieldFirstNameOptional:@
 setNameFieldFirstNameOptional :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> Bool -> IO ()
-setNameFieldFirstNameOptional inRestaurantGuestDisplayPreferences  value =
-    sendMsg inRestaurantGuestDisplayPreferences (mkSelector "setNameFieldFirstNameOptional:") retVoid [argCULong (if value then 1 else 0)]
+setNameFieldFirstNameOptional inRestaurantGuestDisplayPreferences value =
+  sendMessage inRestaurantGuestDisplayPreferences setNameFieldFirstNameOptionalSelector value
 
 -- | @- nameFieldLastNameOptional@
 nameFieldLastNameOptional :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> IO Bool
-nameFieldLastNameOptional inRestaurantGuestDisplayPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantGuestDisplayPreferences (mkSelector "nameFieldLastNameOptional") retCULong []
+nameFieldLastNameOptional inRestaurantGuestDisplayPreferences =
+  sendMessage inRestaurantGuestDisplayPreferences nameFieldLastNameOptionalSelector
 
 -- | @- setNameFieldLastNameOptional:@
 setNameFieldLastNameOptional :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> Bool -> IO ()
-setNameFieldLastNameOptional inRestaurantGuestDisplayPreferences  value =
-    sendMsg inRestaurantGuestDisplayPreferences (mkSelector "setNameFieldLastNameOptional:") retVoid [argCULong (if value then 1 else 0)]
+setNameFieldLastNameOptional inRestaurantGuestDisplayPreferences value =
+  sendMessage inRestaurantGuestDisplayPreferences setNameFieldLastNameOptionalSelector value
 
 -- | @- nameFieldShouldBeDisplayed@
 nameFieldShouldBeDisplayed :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> IO Bool
-nameFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantGuestDisplayPreferences (mkSelector "nameFieldShouldBeDisplayed") retCULong []
+nameFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences =
+  sendMessage inRestaurantGuestDisplayPreferences nameFieldShouldBeDisplayedSelector
 
 -- | @- setNameFieldShouldBeDisplayed:@
 setNameFieldShouldBeDisplayed :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> Bool -> IO ()
-setNameFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences  value =
-    sendMsg inRestaurantGuestDisplayPreferences (mkSelector "setNameFieldShouldBeDisplayed:") retVoid [argCULong (if value then 1 else 0)]
+setNameFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences value =
+  sendMessage inRestaurantGuestDisplayPreferences setNameFieldShouldBeDisplayedSelector value
 
 -- | @- emailAddressFieldShouldBeDisplayed@
 emailAddressFieldShouldBeDisplayed :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> IO Bool
-emailAddressFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantGuestDisplayPreferences (mkSelector "emailAddressFieldShouldBeDisplayed") retCULong []
+emailAddressFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences =
+  sendMessage inRestaurantGuestDisplayPreferences emailAddressFieldShouldBeDisplayedSelector
 
 -- | @- setEmailAddressFieldShouldBeDisplayed:@
 setEmailAddressFieldShouldBeDisplayed :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> Bool -> IO ()
-setEmailAddressFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences  value =
-    sendMsg inRestaurantGuestDisplayPreferences (mkSelector "setEmailAddressFieldShouldBeDisplayed:") retVoid [argCULong (if value then 1 else 0)]
+setEmailAddressFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences value =
+  sendMessage inRestaurantGuestDisplayPreferences setEmailAddressFieldShouldBeDisplayedSelector value
 
 -- | @- phoneNumberFieldShouldBeDisplayed@
 phoneNumberFieldShouldBeDisplayed :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> IO Bool
-phoneNumberFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantGuestDisplayPreferences (mkSelector "phoneNumberFieldShouldBeDisplayed") retCULong []
+phoneNumberFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences =
+  sendMessage inRestaurantGuestDisplayPreferences phoneNumberFieldShouldBeDisplayedSelector
 
 -- | @- setPhoneNumberFieldShouldBeDisplayed:@
 setPhoneNumberFieldShouldBeDisplayed :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> Bool -> IO ()
-setPhoneNumberFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences  value =
-    sendMsg inRestaurantGuestDisplayPreferences (mkSelector "setPhoneNumberFieldShouldBeDisplayed:") retVoid [argCULong (if value then 1 else 0)]
+setPhoneNumberFieldShouldBeDisplayed inRestaurantGuestDisplayPreferences value =
+  sendMessage inRestaurantGuestDisplayPreferences setPhoneNumberFieldShouldBeDisplayedSelector value
 
 -- | @- nameEditable@
 nameEditable :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> IO Bool
-nameEditable inRestaurantGuestDisplayPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantGuestDisplayPreferences (mkSelector "nameEditable") retCULong []
+nameEditable inRestaurantGuestDisplayPreferences =
+  sendMessage inRestaurantGuestDisplayPreferences nameEditableSelector
 
 -- | @- setNameEditable:@
 setNameEditable :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> Bool -> IO ()
-setNameEditable inRestaurantGuestDisplayPreferences  value =
-    sendMsg inRestaurantGuestDisplayPreferences (mkSelector "setNameEditable:") retVoid [argCULong (if value then 1 else 0)]
+setNameEditable inRestaurantGuestDisplayPreferences value =
+  sendMessage inRestaurantGuestDisplayPreferences setNameEditableSelector value
 
 -- | @- emailAddressEditable@
 emailAddressEditable :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> IO Bool
-emailAddressEditable inRestaurantGuestDisplayPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantGuestDisplayPreferences (mkSelector "emailAddressEditable") retCULong []
+emailAddressEditable inRestaurantGuestDisplayPreferences =
+  sendMessage inRestaurantGuestDisplayPreferences emailAddressEditableSelector
 
 -- | @- setEmailAddressEditable:@
 setEmailAddressEditable :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> Bool -> IO ()
-setEmailAddressEditable inRestaurantGuestDisplayPreferences  value =
-    sendMsg inRestaurantGuestDisplayPreferences (mkSelector "setEmailAddressEditable:") retVoid [argCULong (if value then 1 else 0)]
+setEmailAddressEditable inRestaurantGuestDisplayPreferences value =
+  sendMessage inRestaurantGuestDisplayPreferences setEmailAddressEditableSelector value
 
 -- | @- phoneNumberEditable@
 phoneNumberEditable :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> IO Bool
-phoneNumberEditable inRestaurantGuestDisplayPreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg inRestaurantGuestDisplayPreferences (mkSelector "phoneNumberEditable") retCULong []
+phoneNumberEditable inRestaurantGuestDisplayPreferences =
+  sendMessage inRestaurantGuestDisplayPreferences phoneNumberEditableSelector
 
 -- | @- setPhoneNumberEditable:@
 setPhoneNumberEditable :: IsINRestaurantGuestDisplayPreferences inRestaurantGuestDisplayPreferences => inRestaurantGuestDisplayPreferences -> Bool -> IO ()
-setPhoneNumberEditable inRestaurantGuestDisplayPreferences  value =
-    sendMsg inRestaurantGuestDisplayPreferences (mkSelector "setPhoneNumberEditable:") retVoid [argCULong (if value then 1 else 0)]
+setPhoneNumberEditable inRestaurantGuestDisplayPreferences value =
+  sendMessage inRestaurantGuestDisplayPreferences setPhoneNumberEditableSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nameFieldFirstNameOptional@
-nameFieldFirstNameOptionalSelector :: Selector
+nameFieldFirstNameOptionalSelector :: Selector '[] Bool
 nameFieldFirstNameOptionalSelector = mkSelector "nameFieldFirstNameOptional"
 
 -- | @Selector@ for @setNameFieldFirstNameOptional:@
-setNameFieldFirstNameOptionalSelector :: Selector
+setNameFieldFirstNameOptionalSelector :: Selector '[Bool] ()
 setNameFieldFirstNameOptionalSelector = mkSelector "setNameFieldFirstNameOptional:"
 
 -- | @Selector@ for @nameFieldLastNameOptional@
-nameFieldLastNameOptionalSelector :: Selector
+nameFieldLastNameOptionalSelector :: Selector '[] Bool
 nameFieldLastNameOptionalSelector = mkSelector "nameFieldLastNameOptional"
 
 -- | @Selector@ for @setNameFieldLastNameOptional:@
-setNameFieldLastNameOptionalSelector :: Selector
+setNameFieldLastNameOptionalSelector :: Selector '[Bool] ()
 setNameFieldLastNameOptionalSelector = mkSelector "setNameFieldLastNameOptional:"
 
 -- | @Selector@ for @nameFieldShouldBeDisplayed@
-nameFieldShouldBeDisplayedSelector :: Selector
+nameFieldShouldBeDisplayedSelector :: Selector '[] Bool
 nameFieldShouldBeDisplayedSelector = mkSelector "nameFieldShouldBeDisplayed"
 
 -- | @Selector@ for @setNameFieldShouldBeDisplayed:@
-setNameFieldShouldBeDisplayedSelector :: Selector
+setNameFieldShouldBeDisplayedSelector :: Selector '[Bool] ()
 setNameFieldShouldBeDisplayedSelector = mkSelector "setNameFieldShouldBeDisplayed:"
 
 -- | @Selector@ for @emailAddressFieldShouldBeDisplayed@
-emailAddressFieldShouldBeDisplayedSelector :: Selector
+emailAddressFieldShouldBeDisplayedSelector :: Selector '[] Bool
 emailAddressFieldShouldBeDisplayedSelector = mkSelector "emailAddressFieldShouldBeDisplayed"
 
 -- | @Selector@ for @setEmailAddressFieldShouldBeDisplayed:@
-setEmailAddressFieldShouldBeDisplayedSelector :: Selector
+setEmailAddressFieldShouldBeDisplayedSelector :: Selector '[Bool] ()
 setEmailAddressFieldShouldBeDisplayedSelector = mkSelector "setEmailAddressFieldShouldBeDisplayed:"
 
 -- | @Selector@ for @phoneNumberFieldShouldBeDisplayed@
-phoneNumberFieldShouldBeDisplayedSelector :: Selector
+phoneNumberFieldShouldBeDisplayedSelector :: Selector '[] Bool
 phoneNumberFieldShouldBeDisplayedSelector = mkSelector "phoneNumberFieldShouldBeDisplayed"
 
 -- | @Selector@ for @setPhoneNumberFieldShouldBeDisplayed:@
-setPhoneNumberFieldShouldBeDisplayedSelector :: Selector
+setPhoneNumberFieldShouldBeDisplayedSelector :: Selector '[Bool] ()
 setPhoneNumberFieldShouldBeDisplayedSelector = mkSelector "setPhoneNumberFieldShouldBeDisplayed:"
 
 -- | @Selector@ for @nameEditable@
-nameEditableSelector :: Selector
+nameEditableSelector :: Selector '[] Bool
 nameEditableSelector = mkSelector "nameEditable"
 
 -- | @Selector@ for @setNameEditable:@
-setNameEditableSelector :: Selector
+setNameEditableSelector :: Selector '[Bool] ()
 setNameEditableSelector = mkSelector "setNameEditable:"
 
 -- | @Selector@ for @emailAddressEditable@
-emailAddressEditableSelector :: Selector
+emailAddressEditableSelector :: Selector '[] Bool
 emailAddressEditableSelector = mkSelector "emailAddressEditable"
 
 -- | @Selector@ for @setEmailAddressEditable:@
-setEmailAddressEditableSelector :: Selector
+setEmailAddressEditableSelector :: Selector '[Bool] ()
 setEmailAddressEditableSelector = mkSelector "setEmailAddressEditable:"
 
 -- | @Selector@ for @phoneNumberEditable@
-phoneNumberEditableSelector :: Selector
+phoneNumberEditableSelector :: Selector '[] Bool
 phoneNumberEditableSelector = mkSelector "phoneNumberEditable"
 
 -- | @Selector@ for @setPhoneNumberEditable:@
-setPhoneNumberEditableSelector :: Selector
+setPhoneNumberEditableSelector :: Selector '[Bool] ()
 setPhoneNumberEditableSelector = mkSelector "setPhoneNumberEditable:"
 

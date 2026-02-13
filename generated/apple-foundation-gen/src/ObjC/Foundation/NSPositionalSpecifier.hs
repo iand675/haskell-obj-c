@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.Foundation.NSPositionalSpecifier
   , insertionKey
   , insertionIndex
   , insertionReplaces
-  , initWithPosition_objectSpecifierSelector
-  , setInsertionClassDescriptionSelector
   , evaluateSelector
-  , positionSelector
-  , objectSpecifierSelector
+  , initWithPosition_objectSpecifierSelector
   , insertionContainerSelector
-  , insertionKeySelector
   , insertionIndexSelector
+  , insertionKeySelector
   , insertionReplacesSelector
+  , objectSpecifierSelector
+  , positionSelector
+  , setInsertionClassDescriptionSelector
 
   -- * Enum types
   , NSInsertionPosition(NSInsertionPosition)
@@ -36,15 +37,11 @@ module ObjC.Foundation.NSPositionalSpecifier
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,88 +50,86 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithPosition:objectSpecifier:@
 initWithPosition_objectSpecifier :: (IsNSPositionalSpecifier nsPositionalSpecifier, IsNSScriptObjectSpecifier specifier) => nsPositionalSpecifier -> NSInsertionPosition -> specifier -> IO (Id NSPositionalSpecifier)
-initWithPosition_objectSpecifier nsPositionalSpecifier  position specifier =
-  withObjCPtr specifier $ \raw_specifier ->
-      sendMsg nsPositionalSpecifier (mkSelector "initWithPosition:objectSpecifier:") (retPtr retVoid) [argCULong (coerce position), argPtr (castPtr raw_specifier :: Ptr ())] >>= ownedObject . castPtr
+initWithPosition_objectSpecifier nsPositionalSpecifier position specifier =
+  sendOwnedMessage nsPositionalSpecifier initWithPosition_objectSpecifierSelector position (toNSScriptObjectSpecifier specifier)
 
 -- | @- setInsertionClassDescription:@
 setInsertionClassDescription :: (IsNSPositionalSpecifier nsPositionalSpecifier, IsNSScriptClassDescription classDescription) => nsPositionalSpecifier -> classDescription -> IO ()
-setInsertionClassDescription nsPositionalSpecifier  classDescription =
-  withObjCPtr classDescription $ \raw_classDescription ->
-      sendMsg nsPositionalSpecifier (mkSelector "setInsertionClassDescription:") retVoid [argPtr (castPtr raw_classDescription :: Ptr ())]
+setInsertionClassDescription nsPositionalSpecifier classDescription =
+  sendMessage nsPositionalSpecifier setInsertionClassDescriptionSelector (toNSScriptClassDescription classDescription)
 
 -- | @- evaluate@
 evaluate :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifier -> IO ()
-evaluate nsPositionalSpecifier  =
-    sendMsg nsPositionalSpecifier (mkSelector "evaluate") retVoid []
+evaluate nsPositionalSpecifier =
+  sendMessage nsPositionalSpecifier evaluateSelector
 
 -- | @- position@
 position :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifier -> IO NSInsertionPosition
-position nsPositionalSpecifier  =
-    fmap (coerce :: CULong -> NSInsertionPosition) $ sendMsg nsPositionalSpecifier (mkSelector "position") retCULong []
+position nsPositionalSpecifier =
+  sendMessage nsPositionalSpecifier positionSelector
 
 -- | @- objectSpecifier@
 objectSpecifier :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifier -> IO (Id NSScriptObjectSpecifier)
-objectSpecifier nsPositionalSpecifier  =
-    sendMsg nsPositionalSpecifier (mkSelector "objectSpecifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectSpecifier nsPositionalSpecifier =
+  sendMessage nsPositionalSpecifier objectSpecifierSelector
 
 -- | @- insertionContainer@
 insertionContainer :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifier -> IO RawId
-insertionContainer nsPositionalSpecifier  =
-    fmap (RawId . castPtr) $ sendMsg nsPositionalSpecifier (mkSelector "insertionContainer") (retPtr retVoid) []
+insertionContainer nsPositionalSpecifier =
+  sendMessage nsPositionalSpecifier insertionContainerSelector
 
 -- | @- insertionKey@
 insertionKey :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifier -> IO (Id NSString)
-insertionKey nsPositionalSpecifier  =
-    sendMsg nsPositionalSpecifier (mkSelector "insertionKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+insertionKey nsPositionalSpecifier =
+  sendMessage nsPositionalSpecifier insertionKeySelector
 
 -- | @- insertionIndex@
 insertionIndex :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifier -> IO CLong
-insertionIndex nsPositionalSpecifier  =
-    sendMsg nsPositionalSpecifier (mkSelector "insertionIndex") retCLong []
+insertionIndex nsPositionalSpecifier =
+  sendMessage nsPositionalSpecifier insertionIndexSelector
 
 -- | @- insertionReplaces@
 insertionReplaces :: IsNSPositionalSpecifier nsPositionalSpecifier => nsPositionalSpecifier -> IO Bool
-insertionReplaces nsPositionalSpecifier  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPositionalSpecifier (mkSelector "insertionReplaces") retCULong []
+insertionReplaces nsPositionalSpecifier =
+  sendMessage nsPositionalSpecifier insertionReplacesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPosition:objectSpecifier:@
-initWithPosition_objectSpecifierSelector :: Selector
+initWithPosition_objectSpecifierSelector :: Selector '[NSInsertionPosition, Id NSScriptObjectSpecifier] (Id NSPositionalSpecifier)
 initWithPosition_objectSpecifierSelector = mkSelector "initWithPosition:objectSpecifier:"
 
 -- | @Selector@ for @setInsertionClassDescription:@
-setInsertionClassDescriptionSelector :: Selector
+setInsertionClassDescriptionSelector :: Selector '[Id NSScriptClassDescription] ()
 setInsertionClassDescriptionSelector = mkSelector "setInsertionClassDescription:"
 
 -- | @Selector@ for @evaluate@
-evaluateSelector :: Selector
+evaluateSelector :: Selector '[] ()
 evaluateSelector = mkSelector "evaluate"
 
 -- | @Selector@ for @position@
-positionSelector :: Selector
+positionSelector :: Selector '[] NSInsertionPosition
 positionSelector = mkSelector "position"
 
 -- | @Selector@ for @objectSpecifier@
-objectSpecifierSelector :: Selector
+objectSpecifierSelector :: Selector '[] (Id NSScriptObjectSpecifier)
 objectSpecifierSelector = mkSelector "objectSpecifier"
 
 -- | @Selector@ for @insertionContainer@
-insertionContainerSelector :: Selector
+insertionContainerSelector :: Selector '[] RawId
 insertionContainerSelector = mkSelector "insertionContainer"
 
 -- | @Selector@ for @insertionKey@
-insertionKeySelector :: Selector
+insertionKeySelector :: Selector '[] (Id NSString)
 insertionKeySelector = mkSelector "insertionKey"
 
 -- | @Selector@ for @insertionIndex@
-insertionIndexSelector :: Selector
+insertionIndexSelector :: Selector '[] CLong
 insertionIndexSelector = mkSelector "insertionIndex"
 
 -- | @Selector@ for @insertionReplaces@
-insertionReplacesSelector :: Selector
+insertionReplacesSelector :: Selector '[] Bool
 insertionReplacesSelector = mkSelector "insertionReplaces"
 

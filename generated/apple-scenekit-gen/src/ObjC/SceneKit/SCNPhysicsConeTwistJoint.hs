@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,33 +23,29 @@ module ObjC.SceneKit.SCNPhysicsConeTwistJoint
   , setMaximumAngularLimit2
   , maximumTwistAngle
   , setMaximumTwistAngle
+  , bodyASelector
+  , bodyBSelector
+  , frameASelector
+  , frameBSelector
   , jointWithBodyA_frameA_bodyB_frameBSelector
   , jointWithBody_frameSelector
-  , bodyASelector
-  , frameASelector
-  , setFrameASelector
-  , bodyBSelector
-  , frameBSelector
-  , setFrameBSelector
   , maximumAngularLimit1Selector
-  , setMaximumAngularLimit1Selector
   , maximumAngularLimit2Selector
-  , setMaximumAngularLimit2Selector
   , maximumTwistAngleSelector
+  , setFrameASelector
+  , setFrameBSelector
+  , setMaximumAngularLimit1Selector
+  , setMaximumAngularLimit2Selector
   , setMaximumTwistAngleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,135 +58,132 @@ jointWithBodyA_frameA_bodyB_frameB :: (IsSCNPhysicsBody bodyA, IsSCNPhysicsBody 
 jointWithBodyA_frameA_bodyB_frameB bodyA frameA bodyB frameB =
   do
     cls' <- getRequiredClass "SCNPhysicsConeTwistJoint"
-    withObjCPtr bodyA $ \raw_bodyA ->
-      withObjCPtr bodyB $ \raw_bodyB ->
-        sendClassMsg cls' (mkSelector "jointWithBodyA:frameA:bodyB:frameB:") (retPtr retVoid) [argPtr (castPtr raw_bodyA :: Ptr ()), argSCNMatrix4 frameA, argPtr (castPtr raw_bodyB :: Ptr ()), argSCNMatrix4 frameB] >>= retainedObject . castPtr
+    sendClassMessage cls' jointWithBodyA_frameA_bodyB_frameBSelector (toSCNPhysicsBody bodyA) frameA (toSCNPhysicsBody bodyB) frameB
 
 -- | @+ jointWithBody:frame:@
 jointWithBody_frame :: IsSCNPhysicsBody body => body -> SCNMatrix4 -> IO (Id SCNPhysicsConeTwistJoint)
 jointWithBody_frame body frame =
   do
     cls' <- getRequiredClass "SCNPhysicsConeTwistJoint"
-    withObjCPtr body $ \raw_body ->
-      sendClassMsg cls' (mkSelector "jointWithBody:frame:") (retPtr retVoid) [argPtr (castPtr raw_body :: Ptr ()), argSCNMatrix4 frame] >>= retainedObject . castPtr
+    sendClassMessage cls' jointWithBody_frameSelector (toSCNPhysicsBody body) frame
 
 -- | @- bodyA@
 bodyA :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> IO (Id SCNPhysicsBody)
-bodyA scnPhysicsConeTwistJoint  =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "bodyA") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyA scnPhysicsConeTwistJoint =
+  sendMessage scnPhysicsConeTwistJoint bodyASelector
 
 -- | @- frameA@
 frameA :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> IO SCNMatrix4
-frameA scnPhysicsConeTwistJoint  =
-    sendMsgStret scnPhysicsConeTwistJoint (mkSelector "frameA") retSCNMatrix4 []
+frameA scnPhysicsConeTwistJoint =
+  sendMessage scnPhysicsConeTwistJoint frameASelector
 
 -- | @- setFrameA:@
 setFrameA :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> SCNMatrix4 -> IO ()
-setFrameA scnPhysicsConeTwistJoint  value =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "setFrameA:") retVoid [argSCNMatrix4 value]
+setFrameA scnPhysicsConeTwistJoint value =
+  sendMessage scnPhysicsConeTwistJoint setFrameASelector value
 
 -- | @- bodyB@
 bodyB :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> IO (Id SCNPhysicsBody)
-bodyB scnPhysicsConeTwistJoint  =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "bodyB") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyB scnPhysicsConeTwistJoint =
+  sendMessage scnPhysicsConeTwistJoint bodyBSelector
 
 -- | @- frameB@
 frameB :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> IO SCNMatrix4
-frameB scnPhysicsConeTwistJoint  =
-    sendMsgStret scnPhysicsConeTwistJoint (mkSelector "frameB") retSCNMatrix4 []
+frameB scnPhysicsConeTwistJoint =
+  sendMessage scnPhysicsConeTwistJoint frameBSelector
 
 -- | @- setFrameB:@
 setFrameB :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> SCNMatrix4 -> IO ()
-setFrameB scnPhysicsConeTwistJoint  value =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "setFrameB:") retVoid [argSCNMatrix4 value]
+setFrameB scnPhysicsConeTwistJoint value =
+  sendMessage scnPhysicsConeTwistJoint setFrameBSelector value
 
 -- | @- maximumAngularLimit1@
 maximumAngularLimit1 :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> IO CDouble
-maximumAngularLimit1 scnPhysicsConeTwistJoint  =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "maximumAngularLimit1") retCDouble []
+maximumAngularLimit1 scnPhysicsConeTwistJoint =
+  sendMessage scnPhysicsConeTwistJoint maximumAngularLimit1Selector
 
 -- | @- setMaximumAngularLimit1:@
 setMaximumAngularLimit1 :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> CDouble -> IO ()
-setMaximumAngularLimit1 scnPhysicsConeTwistJoint  value =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "setMaximumAngularLimit1:") retVoid [argCDouble value]
+setMaximumAngularLimit1 scnPhysicsConeTwistJoint value =
+  sendMessage scnPhysicsConeTwistJoint setMaximumAngularLimit1Selector value
 
 -- | @- maximumAngularLimit2@
 maximumAngularLimit2 :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> IO CDouble
-maximumAngularLimit2 scnPhysicsConeTwistJoint  =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "maximumAngularLimit2") retCDouble []
+maximumAngularLimit2 scnPhysicsConeTwistJoint =
+  sendMessage scnPhysicsConeTwistJoint maximumAngularLimit2Selector
 
 -- | @- setMaximumAngularLimit2:@
 setMaximumAngularLimit2 :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> CDouble -> IO ()
-setMaximumAngularLimit2 scnPhysicsConeTwistJoint  value =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "setMaximumAngularLimit2:") retVoid [argCDouble value]
+setMaximumAngularLimit2 scnPhysicsConeTwistJoint value =
+  sendMessage scnPhysicsConeTwistJoint setMaximumAngularLimit2Selector value
 
 -- | @- maximumTwistAngle@
 maximumTwistAngle :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> IO CDouble
-maximumTwistAngle scnPhysicsConeTwistJoint  =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "maximumTwistAngle") retCDouble []
+maximumTwistAngle scnPhysicsConeTwistJoint =
+  sendMessage scnPhysicsConeTwistJoint maximumTwistAngleSelector
 
 -- | @- setMaximumTwistAngle:@
 setMaximumTwistAngle :: IsSCNPhysicsConeTwistJoint scnPhysicsConeTwistJoint => scnPhysicsConeTwistJoint -> CDouble -> IO ()
-setMaximumTwistAngle scnPhysicsConeTwistJoint  value =
-    sendMsg scnPhysicsConeTwistJoint (mkSelector "setMaximumTwistAngle:") retVoid [argCDouble value]
+setMaximumTwistAngle scnPhysicsConeTwistJoint value =
+  sendMessage scnPhysicsConeTwistJoint setMaximumTwistAngleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @jointWithBodyA:frameA:bodyB:frameB:@
-jointWithBodyA_frameA_bodyB_frameBSelector :: Selector
+jointWithBodyA_frameA_bodyB_frameBSelector :: Selector '[Id SCNPhysicsBody, SCNMatrix4, Id SCNPhysicsBody, SCNMatrix4] (Id SCNPhysicsConeTwistJoint)
 jointWithBodyA_frameA_bodyB_frameBSelector = mkSelector "jointWithBodyA:frameA:bodyB:frameB:"
 
 -- | @Selector@ for @jointWithBody:frame:@
-jointWithBody_frameSelector :: Selector
+jointWithBody_frameSelector :: Selector '[Id SCNPhysicsBody, SCNMatrix4] (Id SCNPhysicsConeTwistJoint)
 jointWithBody_frameSelector = mkSelector "jointWithBody:frame:"
 
 -- | @Selector@ for @bodyA@
-bodyASelector :: Selector
+bodyASelector :: Selector '[] (Id SCNPhysicsBody)
 bodyASelector = mkSelector "bodyA"
 
 -- | @Selector@ for @frameA@
-frameASelector :: Selector
+frameASelector :: Selector '[] SCNMatrix4
 frameASelector = mkSelector "frameA"
 
 -- | @Selector@ for @setFrameA:@
-setFrameASelector :: Selector
+setFrameASelector :: Selector '[SCNMatrix4] ()
 setFrameASelector = mkSelector "setFrameA:"
 
 -- | @Selector@ for @bodyB@
-bodyBSelector :: Selector
+bodyBSelector :: Selector '[] (Id SCNPhysicsBody)
 bodyBSelector = mkSelector "bodyB"
 
 -- | @Selector@ for @frameB@
-frameBSelector :: Selector
+frameBSelector :: Selector '[] SCNMatrix4
 frameBSelector = mkSelector "frameB"
 
 -- | @Selector@ for @setFrameB:@
-setFrameBSelector :: Selector
+setFrameBSelector :: Selector '[SCNMatrix4] ()
 setFrameBSelector = mkSelector "setFrameB:"
 
 -- | @Selector@ for @maximumAngularLimit1@
-maximumAngularLimit1Selector :: Selector
+maximumAngularLimit1Selector :: Selector '[] CDouble
 maximumAngularLimit1Selector = mkSelector "maximumAngularLimit1"
 
 -- | @Selector@ for @setMaximumAngularLimit1:@
-setMaximumAngularLimit1Selector :: Selector
+setMaximumAngularLimit1Selector :: Selector '[CDouble] ()
 setMaximumAngularLimit1Selector = mkSelector "setMaximumAngularLimit1:"
 
 -- | @Selector@ for @maximumAngularLimit2@
-maximumAngularLimit2Selector :: Selector
+maximumAngularLimit2Selector :: Selector '[] CDouble
 maximumAngularLimit2Selector = mkSelector "maximumAngularLimit2"
 
 -- | @Selector@ for @setMaximumAngularLimit2:@
-setMaximumAngularLimit2Selector :: Selector
+setMaximumAngularLimit2Selector :: Selector '[CDouble] ()
 setMaximumAngularLimit2Selector = mkSelector "setMaximumAngularLimit2:"
 
 -- | @Selector@ for @maximumTwistAngle@
-maximumTwistAngleSelector :: Selector
+maximumTwistAngleSelector :: Selector '[] CDouble
 maximumTwistAngleSelector = mkSelector "maximumTwistAngle"
 
 -- | @Selector@ for @setMaximumTwistAngle:@
-setMaximumTwistAngleSelector :: Selector
+setMaximumTwistAngleSelector :: Selector '[CDouble] ()
 setMaximumTwistAngleSelector = mkSelector "setMaximumTwistAngle:"
 

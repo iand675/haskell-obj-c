@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.CoreMotion.CMHighFrequencyHeartRateData
   , heartRate
   , confidence
   , date
-  , heartRateSelector
   , confidenceSelector
   , dateSelector
+  , heartRateSelector
 
   -- * Enum types
   , CMHighFrequencyHeartRateDataConfidence(CMHighFrequencyHeartRateDataConfidence)
@@ -23,15 +24,11 @@ module ObjC.CoreMotion.CMHighFrequencyHeartRateData
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,32 +38,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- heartRate@
 heartRate :: IsCMHighFrequencyHeartRateData cmHighFrequencyHeartRateData => cmHighFrequencyHeartRateData -> IO CDouble
-heartRate cmHighFrequencyHeartRateData  =
-    sendMsg cmHighFrequencyHeartRateData (mkSelector "heartRate") retCDouble []
+heartRate cmHighFrequencyHeartRateData =
+  sendMessage cmHighFrequencyHeartRateData heartRateSelector
 
 -- | @- confidence@
 confidence :: IsCMHighFrequencyHeartRateData cmHighFrequencyHeartRateData => cmHighFrequencyHeartRateData -> IO CMHighFrequencyHeartRateDataConfidence
-confidence cmHighFrequencyHeartRateData  =
-    fmap (coerce :: CLong -> CMHighFrequencyHeartRateDataConfidence) $ sendMsg cmHighFrequencyHeartRateData (mkSelector "confidence") retCLong []
+confidence cmHighFrequencyHeartRateData =
+  sendMessage cmHighFrequencyHeartRateData confidenceSelector
 
 -- | @- date@
 date :: IsCMHighFrequencyHeartRateData cmHighFrequencyHeartRateData => cmHighFrequencyHeartRateData -> IO (Id NSDate)
-date cmHighFrequencyHeartRateData  =
-    sendMsg cmHighFrequencyHeartRateData (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date cmHighFrequencyHeartRateData =
+  sendMessage cmHighFrequencyHeartRateData dateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @heartRate@
-heartRateSelector :: Selector
+heartRateSelector :: Selector '[] CDouble
 heartRateSelector = mkSelector "heartRate"
 
 -- | @Selector@ for @confidence@
-confidenceSelector :: Selector
+confidenceSelector :: Selector '[] CMHighFrequencyHeartRateDataConfidence
 confidenceSelector = mkSelector "confidence"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 

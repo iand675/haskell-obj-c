@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,21 +25,21 @@ module ObjC.AVFoundation.AVContentKeyRequest
   , contentKey
   , originatingRecipient
   , renewsExpiringResponseData
-  , makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandlerSelector
-  , processContentKeyResponseSelector
-  , processContentKeyResponseErrorSelector
-  , respondByRequestingPersistableContentKeyRequestSelector
-  , respondByRequestingPersistableContentKeyRequestAndReturnErrorSelector
-  , statusSelector
+  , canProvidePersistableContentKeySelector
+  , contentKeySelector
+  , contentKeySpecifierSelector
   , errorSelector
   , identifierSelector
   , initializationDataSelector
+  , makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandlerSelector
   , optionsSelector
-  , canProvidePersistableContentKeySelector
-  , contentKeySpecifierSelector
-  , contentKeySelector
   , originatingRecipientSelector
+  , processContentKeyResponseErrorSelector
+  , processContentKeyResponseSelector
   , renewsExpiringResponseDataSelector
+  , respondByRequestingPersistableContentKeyRequestAndReturnErrorSelector
+  , respondByRequestingPersistableContentKeyRequestSelector
+  , statusSelector
 
   -- * Enum types
   , AVContentKeyRequestStatus(AVContentKeyRequestStatus)
@@ -51,15 +52,11 @@ module ObjC.AVFoundation.AVContentKeyRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,11 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- makeStreamingContentKeyRequestDataForApp:contentIdentifier:options:completionHandler:@
 makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandler :: (IsAVContentKeyRequest avContentKeyRequest, IsNSData appIdentifier, IsNSData contentIdentifier, IsNSDictionary options) => avContentKeyRequest -> appIdentifier -> contentIdentifier -> options -> Ptr () -> IO ()
-makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandler avContentKeyRequest  appIdentifier contentIdentifier options handler =
-  withObjCPtr appIdentifier $ \raw_appIdentifier ->
-    withObjCPtr contentIdentifier $ \raw_contentIdentifier ->
-      withObjCPtr options $ \raw_options ->
-          sendMsg avContentKeyRequest (mkSelector "makeStreamingContentKeyRequestDataForApp:contentIdentifier:options:completionHandler:") retVoid [argPtr (castPtr raw_appIdentifier :: Ptr ()), argPtr (castPtr raw_contentIdentifier :: Ptr ()), argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandler avContentKeyRequest appIdentifier contentIdentifier options handler =
+  sendMessage avContentKeyRequest makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandlerSelector (toNSData appIdentifier) (toNSData contentIdentifier) (toNSDictionary options) handler
 
 -- | Informs the receiver to process the specified content key response.
 --
@@ -89,9 +83,8 @@ makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHan
 --
 -- ObjC selector: @- processContentKeyResponse:@
 processContentKeyResponse :: (IsAVContentKeyRequest avContentKeyRequest, IsAVContentKeyResponse keyResponse) => avContentKeyRequest -> keyResponse -> IO ()
-processContentKeyResponse avContentKeyRequest  keyResponse =
-  withObjCPtr keyResponse $ \raw_keyResponse ->
-      sendMsg avContentKeyRequest (mkSelector "processContentKeyResponse:") retVoid [argPtr (castPtr raw_keyResponse :: Ptr ())]
+processContentKeyResponse avContentKeyRequest keyResponse =
+  sendMessage avContentKeyRequest processContentKeyResponseSelector (toAVContentKeyResponse keyResponse)
 
 -- | Informs the receiver that obtaining a content key response has failed, resulting in failure handling.
 --
@@ -99,9 +92,8 @@ processContentKeyResponse avContentKeyRequest  keyResponse =
 --
 -- ObjC selector: @- processContentKeyResponseError:@
 processContentKeyResponseError :: (IsAVContentKeyRequest avContentKeyRequest, IsNSError error_) => avContentKeyRequest -> error_ -> IO ()
-processContentKeyResponseError avContentKeyRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg avContentKeyRequest (mkSelector "processContentKeyResponseError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+processContentKeyResponseError avContentKeyRequest error_ =
+  sendMessage avContentKeyRequest processContentKeyResponseErrorSelector (toNSError error_)
 
 -- | Informs the receiver to process a persistable content key request.
 --
@@ -109,8 +101,8 @@ processContentKeyResponseError avContentKeyRequest  error_ =
 --
 -- ObjC selector: @- respondByRequestingPersistableContentKeyRequest@
 respondByRequestingPersistableContentKeyRequest :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO ()
-respondByRequestingPersistableContentKeyRequest avContentKeyRequest  =
-    sendMsg avContentKeyRequest (mkSelector "respondByRequestingPersistableContentKeyRequest") retVoid []
+respondByRequestingPersistableContentKeyRequest avContentKeyRequest =
+  sendMessage avContentKeyRequest respondByRequestingPersistableContentKeyRequestSelector
 
 -- | Informs the receiver to process a persistable content key request.
 --
@@ -122,16 +114,15 @@ respondByRequestingPersistableContentKeyRequest avContentKeyRequest  =
 --
 -- ObjC selector: @- respondByRequestingPersistableContentKeyRequestAndReturnError:@
 respondByRequestingPersistableContentKeyRequestAndReturnError :: (IsAVContentKeyRequest avContentKeyRequest, IsNSError outError) => avContentKeyRequest -> outError -> IO Bool
-respondByRequestingPersistableContentKeyRequestAndReturnError avContentKeyRequest  outError =
-  withObjCPtr outError $ \raw_outError ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avContentKeyRequest (mkSelector "respondByRequestingPersistableContentKeyRequestAndReturnError:") retCULong [argPtr (castPtr raw_outError :: Ptr ())]
+respondByRequestingPersistableContentKeyRequestAndReturnError avContentKeyRequest outError =
+  sendMessage avContentKeyRequest respondByRequestingPersistableContentKeyRequestAndReturnErrorSelector (toNSError outError)
 
 -- | This describes the state of the AVContentKeyRequest, value is one of AVContentKeyRequestStatus.
 --
 -- ObjC selector: @- status@
 status :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO AVContentKeyRequestStatus
-status avContentKeyRequest  =
-    fmap (coerce :: CLong -> AVContentKeyRequestStatus) $ sendMsg avContentKeyRequest (mkSelector "status") retCLong []
+status avContentKeyRequest =
+  sendMessage avContentKeyRequest statusSelector
 
 -- | If the receiver's status is AVContentKeyRequestStatusFailed, this describes the error that caused the failure.
 --
@@ -139,8 +130,8 @@ status avContentKeyRequest  =
 --
 -- ObjC selector: @- error@
 error_ :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO (Id NSError)
-error_ avContentKeyRequest  =
-    sendMsg avContentKeyRequest (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avContentKeyRequest =
+  sendMessage avContentKeyRequest errorSelector
 
 -- | Container- and protocol-specific identifier for the content key.
 --
@@ -148,20 +139,20 @@ error_ avContentKeyRequest  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO RawId
-identifier avContentKeyRequest  =
-    fmap (RawId . castPtr) $ sendMsg avContentKeyRequest (mkSelector "identifier") (retPtr retVoid) []
+identifier avContentKeyRequest =
+  sendMessage avContentKeyRequest identifierSelector
 
 -- | @- initializationData@
 initializationData :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO (Id NSData)
-initializationData avContentKeyRequest  =
-    sendMsg avContentKeyRequest (mkSelector "initializationData") (retPtr retVoid) [] >>= ownedObject . castPtr
+initializationData avContentKeyRequest =
+  sendOwnedMessage avContentKeyRequest initializationDataSelector
 
 -- | Additional information specified while initiaing key loading using -processContentKeyRequestWithIdentifier:initializationData:options:.
 --
 -- ObjC selector: @- options@
 options :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO (Id NSDictionary)
-options avContentKeyRequest  =
-    sendMsg avContentKeyRequest (mkSelector "options") (retPtr retVoid) [] >>= retainedObject . castPtr
+options avContentKeyRequest =
+  sendMessage avContentKeyRequest optionsSelector
 
 -- | When the value of this property is YES, you can use the method -persistableContentKeyFromKeyVendorResponse:options:error: to create a persistable content key from the content key response.
 --
@@ -169,15 +160,15 @@ options avContentKeyRequest  =
 --
 -- ObjC selector: @- canProvidePersistableContentKey@
 canProvidePersistableContentKey :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO Bool
-canProvidePersistableContentKey avContentKeyRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avContentKeyRequest (mkSelector "canProvidePersistableContentKey") retCULong []
+canProvidePersistableContentKey avContentKeyRequest =
+  sendMessage avContentKeyRequest canProvidePersistableContentKeySelector
 
 -- | Specifies the requested content key.
 --
 -- ObjC selector: @- contentKeySpecifier@
 contentKeySpecifier :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO (Id AVContentKeySpecifier)
-contentKeySpecifier avContentKeyRequest  =
-    sendMsg avContentKeyRequest (mkSelector "contentKeySpecifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentKeySpecifier avContentKeyRequest =
+  sendMessage avContentKeyRequest contentKeySpecifierSelector
 
 -- | Represents an AVContentKey that results from an invocation of -processContentKeyResponse:.
 --
@@ -185,8 +176,8 @@ contentKeySpecifier avContentKeyRequest  =
 --
 -- ObjC selector: @- contentKey@
 contentKey :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO (Id AVContentKey)
-contentKey avContentKeyRequest  =
-    sendMsg avContentKeyRequest (mkSelector "contentKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentKey avContentKeyRequest =
+  sendMessage avContentKeyRequest contentKeySelector
 
 -- | The AVContentKeyRecipient which initiated this request, if any.
 --
@@ -200,77 +191,77 @@ contentKey avContentKeyRequest  =
 --
 -- ObjC selector: @- originatingRecipient@
 originatingRecipient :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO RawId
-originatingRecipient avContentKeyRequest  =
-    fmap (RawId . castPtr) $ sendMsg avContentKeyRequest (mkSelector "originatingRecipient") (retPtr retVoid) []
+originatingRecipient avContentKeyRequest =
+  sendMessage avContentKeyRequest originatingRecipientSelector
 
 -- | Indicates whether the receiver represents a request to renew previously provided response data that is expiring or has expired.
 --
 -- ObjC selector: @- renewsExpiringResponseData@
 renewsExpiringResponseData :: IsAVContentKeyRequest avContentKeyRequest => avContentKeyRequest -> IO Bool
-renewsExpiringResponseData avContentKeyRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avContentKeyRequest (mkSelector "renewsExpiringResponseData") retCULong []
+renewsExpiringResponseData avContentKeyRequest =
+  sendMessage avContentKeyRequest renewsExpiringResponseDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @makeStreamingContentKeyRequestDataForApp:contentIdentifier:options:completionHandler:@
-makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandlerSelector :: Selector
+makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandlerSelector :: Selector '[Id NSData, Id NSData, Id NSDictionary, Ptr ()] ()
 makeStreamingContentKeyRequestDataForApp_contentIdentifier_options_completionHandlerSelector = mkSelector "makeStreamingContentKeyRequestDataForApp:contentIdentifier:options:completionHandler:"
 
 -- | @Selector@ for @processContentKeyResponse:@
-processContentKeyResponseSelector :: Selector
+processContentKeyResponseSelector :: Selector '[Id AVContentKeyResponse] ()
 processContentKeyResponseSelector = mkSelector "processContentKeyResponse:"
 
 -- | @Selector@ for @processContentKeyResponseError:@
-processContentKeyResponseErrorSelector :: Selector
+processContentKeyResponseErrorSelector :: Selector '[Id NSError] ()
 processContentKeyResponseErrorSelector = mkSelector "processContentKeyResponseError:"
 
 -- | @Selector@ for @respondByRequestingPersistableContentKeyRequest@
-respondByRequestingPersistableContentKeyRequestSelector :: Selector
+respondByRequestingPersistableContentKeyRequestSelector :: Selector '[] ()
 respondByRequestingPersistableContentKeyRequestSelector = mkSelector "respondByRequestingPersistableContentKeyRequest"
 
 -- | @Selector@ for @respondByRequestingPersistableContentKeyRequestAndReturnError:@
-respondByRequestingPersistableContentKeyRequestAndReturnErrorSelector :: Selector
+respondByRequestingPersistableContentKeyRequestAndReturnErrorSelector :: Selector '[Id NSError] Bool
 respondByRequestingPersistableContentKeyRequestAndReturnErrorSelector = mkSelector "respondByRequestingPersistableContentKeyRequestAndReturnError:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVContentKeyRequestStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] RawId
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @initializationData@
-initializationDataSelector :: Selector
+initializationDataSelector :: Selector '[] (Id NSData)
 initializationDataSelector = mkSelector "initializationData"
 
 -- | @Selector@ for @options@
-optionsSelector :: Selector
+optionsSelector :: Selector '[] (Id NSDictionary)
 optionsSelector = mkSelector "options"
 
 -- | @Selector@ for @canProvidePersistableContentKey@
-canProvidePersistableContentKeySelector :: Selector
+canProvidePersistableContentKeySelector :: Selector '[] Bool
 canProvidePersistableContentKeySelector = mkSelector "canProvidePersistableContentKey"
 
 -- | @Selector@ for @contentKeySpecifier@
-contentKeySpecifierSelector :: Selector
+contentKeySpecifierSelector :: Selector '[] (Id AVContentKeySpecifier)
 contentKeySpecifierSelector = mkSelector "contentKeySpecifier"
 
 -- | @Selector@ for @contentKey@
-contentKeySelector :: Selector
+contentKeySelector :: Selector '[] (Id AVContentKey)
 contentKeySelector = mkSelector "contentKey"
 
 -- | @Selector@ for @originatingRecipient@
-originatingRecipientSelector :: Selector
+originatingRecipientSelector :: Selector '[] RawId
 originatingRecipientSelector = mkSelector "originatingRecipient"
 
 -- | @Selector@ for @renewsExpiringResponseData@
-renewsExpiringResponseDataSelector :: Selector
+renewsExpiringResponseDataSelector :: Selector '[] Bool
 renewsExpiringResponseDataSelector = mkSelector "renewsExpiringResponseData"
 

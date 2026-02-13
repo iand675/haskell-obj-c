@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,20 @@ module ObjC.Virtualization.VZBridgedNetworkInterface
   , networkInterfaces
   , identifier
   , localizedDisplayName
-  , newSelector
-  , initSelector
-  , networkInterfacesSelector
   , identifierSelector
+  , initSelector
   , localizedDisplayNameSelector
+  , networkInterfacesSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,12 +51,12 @@ new :: IO (Id VZBridgedNetworkInterface)
 new  =
   do
     cls' <- getRequiredClass "VZBridgedNetworkInterface"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZBridgedNetworkInterface vzBridgedNetworkInterface => vzBridgedNetworkInterface -> IO (Id VZBridgedNetworkInterface)
-init_ vzBridgedNetworkInterface  =
-    sendMsg vzBridgedNetworkInterface (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzBridgedNetworkInterface =
+  sendOwnedMessage vzBridgedNetworkInterface initSelector
 
 -- | Return the list of network interfaces available for bridging.
 --
@@ -68,43 +65,43 @@ networkInterfaces :: IO (Id NSArray)
 networkInterfaces  =
   do
     cls' <- getRequiredClass "VZBridgedNetworkInterface"
-    sendClassMsg cls' (mkSelector "networkInterfaces") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' networkInterfacesSelector
 
 -- | Return the unique identifier for this interface. The identifier is the BSD name associated with the interface (e.g. "en0").
 --
 -- ObjC selector: @- identifier@
 identifier :: IsVZBridgedNetworkInterface vzBridgedNetworkInterface => vzBridgedNetworkInterface -> IO (Id NSString)
-identifier vzBridgedNetworkInterface  =
-    sendMsg vzBridgedNetworkInterface (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier vzBridgedNetworkInterface =
+  sendMessage vzBridgedNetworkInterface identifierSelector
 
 -- | Return a display name if available (e.g. "Ethernet").
 --
 -- ObjC selector: @- localizedDisplayName@
 localizedDisplayName :: IsVZBridgedNetworkInterface vzBridgedNetworkInterface => vzBridgedNetworkInterface -> IO (Id NSString)
-localizedDisplayName vzBridgedNetworkInterface  =
-    sendMsg vzBridgedNetworkInterface (mkSelector "localizedDisplayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDisplayName vzBridgedNetworkInterface =
+  sendMessage vzBridgedNetworkInterface localizedDisplayNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZBridgedNetworkInterface)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZBridgedNetworkInterface)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @networkInterfaces@
-networkInterfacesSelector :: Selector
+networkInterfacesSelector :: Selector '[] (Id NSArray)
 networkInterfacesSelector = mkSelector "networkInterfaces"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @localizedDisplayName@
-localizedDisplayNameSelector :: Selector
+localizedDisplayNameSelector :: Selector '[] (Id NSString)
 localizedDisplayNameSelector = mkSelector "localizedDisplayName"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.NetworkExtension.NWBonjourServiceEndpoint
   , name
   , type_
   , domain
+  , domainSelector
   , endpointWithName_type_domainSelector
   , nameSelector
   , typeSelector
-  , domainSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,10 +49,7 @@ endpointWithName_type_domain :: (IsNSString name, IsNSString type_, IsNSString d
 endpointWithName_type_domain name type_ domain =
   do
     cls' <- getRequiredClass "NWBonjourServiceEndpoint"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr type_ $ \raw_type_ ->
-        withObjCPtr domain $ \raw_domain ->
-          sendClassMsg cls' (mkSelector "endpointWithName:type:domain:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_domain :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' endpointWithName_type_domainSelector (toNSString name) (toNSString type_) (toNSString domain)
 
 -- | name
 --
@@ -63,8 +57,8 @@ endpointWithName_type_domain name type_ domain =
 --
 -- ObjC selector: @- name@
 name :: IsNWBonjourServiceEndpoint nwBonjourServiceEndpoint => nwBonjourServiceEndpoint -> IO (Id NSString)
-name nwBonjourServiceEndpoint  =
-    sendMsg nwBonjourServiceEndpoint (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nwBonjourServiceEndpoint =
+  sendMessage nwBonjourServiceEndpoint nameSelector
 
 -- | type
 --
@@ -72,8 +66,8 @@ name nwBonjourServiceEndpoint  =
 --
 -- ObjC selector: @- type@
 type_ :: IsNWBonjourServiceEndpoint nwBonjourServiceEndpoint => nwBonjourServiceEndpoint -> IO (Id NSString)
-type_ nwBonjourServiceEndpoint  =
-    sendMsg nwBonjourServiceEndpoint (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ nwBonjourServiceEndpoint =
+  sendMessage nwBonjourServiceEndpoint typeSelector
 
 -- | domain
 --
@@ -81,26 +75,26 @@ type_ nwBonjourServiceEndpoint  =
 --
 -- ObjC selector: @- domain@
 domain :: IsNWBonjourServiceEndpoint nwBonjourServiceEndpoint => nwBonjourServiceEndpoint -> IO (Id NSString)
-domain nwBonjourServiceEndpoint  =
-    sendMsg nwBonjourServiceEndpoint (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain nwBonjourServiceEndpoint =
+  sendMessage nwBonjourServiceEndpoint domainSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @endpointWithName:type:domain:@
-endpointWithName_type_domainSelector :: Selector
+endpointWithName_type_domainSelector :: Selector '[Id NSString, Id NSString, Id NSString] (Id NWBonjourServiceEndpoint)
 endpointWithName_type_domainSelector = mkSelector "endpointWithName:type:domain:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id NSString)
 domainSelector = mkSelector "domain"
 

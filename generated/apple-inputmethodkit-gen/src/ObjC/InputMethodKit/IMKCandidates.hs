@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -40,53 +41,49 @@ module ObjC.InputMethodKit.IMKCandidates
   , candidateIdentifierAtLineNumber
   , lineNumberForCandidateWithIdentifier
   , clearSelection
+  , attachChild_toCandidate_typeSelector
+  , attributesSelector
+  , candidateFrameSelector
+  , candidateIdentifierAtLineNumberSelector
+  , candidateStringIdentifierSelector
+  , clearSelectionSelector
+  , detachChildSelector
+  , dismissesAutomaticallySelector
+  , hideChildSelector
+  , hideSelector
   , initWithServer_panelTypeSelector
   , initWithServer_panelType_styleTypeSelector
-  , panelTypeSelector
-  , setPanelTypeSelector
-  , showSelector
-  , hideSelector
   , isVisibleSelector
-  , updateCandidatesSelector
-  , showAnnotationSelector
-  , showSublist_subListDelegateSelector
-  , candidateFrameSelector
-  , setSelectionKeysSelector
-  , selectionKeysSelector
-  , setSelectionKeysKeylayoutSelector
-  , selectionKeysKeylayoutSelector
-  , setAttributesSelector
-  , attributesSelector
-  , setDismissesAutomaticallySelector
-  , dismissesAutomaticallySelector
-  , selectedCandidateSelector
-  , setCandidateFrameTopLeftSelector
-  , showChildSelector
-  , hideChildSelector
-  , attachChild_toCandidate_typeSelector
-  , detachChildSelector
-  , setCandidateDataSelector
-  , selectCandidateWithIdentifierSelector
-  , selectCandidateSelector
-  , showCandidatesSelector
-  , candidateStringIdentifierSelector
-  , selectedCandidateStringSelector
-  , candidateIdentifierAtLineNumberSelector
   , lineNumberForCandidateWithIdentifierSelector
-  , clearSelectionSelector
+  , panelTypeSelector
+  , selectCandidateSelector
+  , selectCandidateWithIdentifierSelector
+  , selectedCandidateSelector
+  , selectedCandidateStringSelector
+  , selectionKeysKeylayoutSelector
+  , selectionKeysSelector
+  , setAttributesSelector
+  , setCandidateDataSelector
+  , setCandidateFrameTopLeftSelector
+  , setDismissesAutomaticallySelector
+  , setPanelTypeSelector
+  , setSelectionKeysKeylayoutSelector
+  , setSelectionKeysSelector
+  , showAnnotationSelector
+  , showCandidatesSelector
+  , showChildSelector
+  , showSelector
+  , showSublist_subListDelegateSelector
+  , updateCandidatesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,29 +98,27 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithServer:panelType:@
 initWithServer_panelType :: (IsIMKCandidates imkCandidates, IsIMKServer server) => imkCandidates -> server -> CULong -> IO RawId
-initWithServer_panelType imkCandidates  server panelType =
-  withObjCPtr server $ \raw_server ->
-      fmap (RawId . castPtr) $ sendMsg imkCandidates (mkSelector "initWithServer:panelType:") (retPtr retVoid) [argPtr (castPtr raw_server :: Ptr ()), argCULong panelType]
+initWithServer_panelType imkCandidates server panelType =
+  sendOwnedMessage imkCandidates initWithServer_panelTypeSelector (toIMKServer server) panelType
 
 -- | @- initWithServer:panelType:styleType:@
 initWithServer_panelType_styleType :: (IsIMKCandidates imkCandidates, IsIMKServer server) => imkCandidates -> server -> CULong -> CULong -> IO RawId
-initWithServer_panelType_styleType imkCandidates  server panelType style =
-  withObjCPtr server $ \raw_server ->
-      fmap (RawId . castPtr) $ sendMsg imkCandidates (mkSelector "initWithServer:panelType:styleType:") (retPtr retVoid) [argPtr (castPtr raw_server :: Ptr ()), argCULong panelType, argCULong style]
+initWithServer_panelType_styleType imkCandidates server panelType style =
+  sendOwnedMessage imkCandidates initWithServer_panelType_styleTypeSelector (toIMKServer server) panelType style
 
 -- | Return the panel type.
 --
 -- ObjC selector: @- panelType@
 panelType :: IsIMKCandidates imkCandidates => imkCandidates -> IO CULong
-panelType imkCandidates  =
-    sendMsg imkCandidates (mkSelector "panelType") retCULong []
+panelType imkCandidates =
+  sendMessage imkCandidates panelTypeSelector
 
 -- | Change the panel type.
 --
 -- ObjC selector: @- setPanelType:@
 setPanelType :: IsIMKCandidates imkCandidates => imkCandidates -> CULong -> IO ()
-setPanelType imkCandidates  panelType =
-    sendMsg imkCandidates (mkSelector "setPanelType:") retVoid [argCULong panelType]
+setPanelType imkCandidates panelType =
+  sendMessage imkCandidates setPanelTypeSelector panelType
 
 -- | If a candidate window type has been provided, show the candidate window. The caller provides a location hint that is used to position the window.
 --
@@ -131,22 +126,22 @@ setPanelType imkCandidates  panelType =
 --
 -- ObjC selector: @- show:@
 show_ :: IsIMKCandidates imkCandidates => imkCandidates -> CULong -> IO ()
-show_ imkCandidates  locationHint =
-    sendMsg imkCandidates (mkSelector "show:") retVoid [argCULong locationHint]
+show_ imkCandidates locationHint =
+  sendMessage imkCandidates showSelector locationHint
 
 -- | If the candidate window is visible, hide it.
 --
 -- ObjC selector: @- hide@
 hide :: IsIMKCandidates imkCandidates => imkCandidates -> IO ()
-hide imkCandidates  =
-    sendMsg imkCandidates (mkSelector "hide") retVoid []
+hide imkCandidates =
+  sendMessage imkCandidates hideSelector
 
 -- | Utility method returns YES if a candidate display is visible.
 --
 -- ObjC selector: @- isVisible@
 isVisible :: IsIMKCandidates imkCandidates => imkCandidates -> IO Bool
-isVisible imkCandidates  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg imkCandidates (mkSelector "isVisible") retCULong []
+isVisible imkCandidates =
+  sendMessage imkCandidates isVisibleSelector
 
 -- | Call this method to update the candidates displayed in the candidate window.
 --
@@ -154,8 +149,8 @@ isVisible imkCandidates  =
 --
 -- ObjC selector: @- updateCandidates@
 updateCandidates :: IsIMKCandidates imkCandidates => imkCandidates -> IO ()
-updateCandidates imkCandidates  =
-    sendMsg imkCandidates (mkSelector "updateCandidates") retVoid []
+updateCandidates imkCandidates =
+  sendMessage imkCandidates updateCandidatesSelector
 
 -- | Displays an annotation window whose contents are the annotationString.
 --
@@ -163,20 +158,18 @@ updateCandidates imkCandidates  =
 --
 -- ObjC selector: @- showAnnotation:@
 showAnnotation :: (IsIMKCandidates imkCandidates, IsNSAttributedString annotationString) => imkCandidates -> annotationString -> IO ()
-showAnnotation imkCandidates  annotationString =
-  withObjCPtr annotationString $ \raw_annotationString ->
-      sendMsg imkCandidates (mkSelector "showAnnotation:") retVoid [argPtr (castPtr raw_annotationString :: Ptr ())]
+showAnnotation imkCandidates annotationString =
+  sendMessage imkCandidates showAnnotationSelector (toNSAttributedString annotationString)
 
 -- | @- showSublist:subListDelegate:@
 showSublist_subListDelegate :: (IsIMKCandidates imkCandidates, IsNSArray candidates) => imkCandidates -> candidates -> RawId -> IO ()
-showSublist_subListDelegate imkCandidates  candidates delegate =
-  withObjCPtr candidates $ \raw_candidates ->
-      sendMsg imkCandidates (mkSelector "showSublist:subListDelegate:") retVoid [argPtr (castPtr raw_candidates :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())]
+showSublist_subListDelegate imkCandidates candidates delegate =
+  sendMessage imkCandidates showSublist_subListDelegateSelector (toNSArray candidates) delegate
 
 -- | @- candidateFrame@
 candidateFrame :: IsIMKCandidates imkCandidates => imkCandidates -> IO NSRect
-candidateFrame imkCandidates  =
-    sendMsgStret imkCandidates (mkSelector "candidateFrame") retNSRect []
+candidateFrame imkCandidates =
+  sendMessage imkCandidates candidateFrameSelector
 
 -- | Set the selection keys for the candidates.
 --
@@ -190,9 +183,8 @@ candidateFrame imkCandidates  =
 --
 -- ObjC selector: @- setSelectionKeys:@
 setSelectionKeys :: (IsIMKCandidates imkCandidates, IsNSArray keyCodes) => imkCandidates -> keyCodes -> IO ()
-setSelectionKeys imkCandidates  keyCodes =
-  withObjCPtr keyCodes $ \raw_keyCodes ->
-      sendMsg imkCandidates (mkSelector "setSelectionKeys:") retVoid [argPtr (castPtr raw_keyCodes :: Ptr ())]
+setSelectionKeys imkCandidates keyCodes =
+  sendMessage imkCandidates setSelectionKeysSelector (toNSArray keyCodes)
 
 -- | Returns an NSArray of NSNumbers where each NSNumber is a virtual key code.
 --
@@ -200,15 +192,15 @@ setSelectionKeys imkCandidates  keyCodes =
 --
 -- ObjC selector: @- selectionKeys@
 selectionKeys :: IsIMKCandidates imkCandidates => imkCandidates -> IO (Id NSArray)
-selectionKeys imkCandidates  =
-    sendMsg imkCandidates (mkSelector "selectionKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectionKeys imkCandidates =
+  sendMessage imkCandidates selectionKeysSelector
 
 -- | Sets the key layout that is used to map virtual key codes to characters.
 --
 -- ObjC selector: @- setSelectionKeysKeylayout:@
 setSelectionKeysKeylayout :: IsIMKCandidates imkCandidates => imkCandidates -> Ptr () -> IO ()
-setSelectionKeysKeylayout imkCandidates  layout =
-    sendMsg imkCandidates (mkSelector "setSelectionKeysKeylayout:") retVoid [argPtr layout]
+setSelectionKeysKeylayout imkCandidates layout =
+  sendMessage imkCandidates setSelectionKeysKeylayoutSelector layout
 
 -- | Returns the key layout that is used to map virtual key codes for the selection keys.  By default this is the key layout whose source id is com.apple.keylayout.US.
 --
@@ -216,8 +208,8 @@ setSelectionKeysKeylayout imkCandidates  layout =
 --
 -- ObjC selector: @- selectionKeysKeylayout@
 selectionKeysKeylayout :: IsIMKCandidates imkCandidates => imkCandidates -> IO (Ptr ())
-selectionKeysKeylayout imkCandidates  =
-    fmap castPtr $ sendMsg imkCandidates (mkSelector "selectionKeysKeylayout") (retPtr retVoid) []
+selectionKeysKeylayout imkCandidates =
+  sendMessage imkCandidates selectionKeysKeylayoutSelector
 
 -- | Sets the "style" attributes for the candidates window.  The keys for the attributes dictionary and the values are:
 --
@@ -233,16 +225,15 @@ selectionKeysKeylayout imkCandidates  =
 --
 -- ObjC selector: @- setAttributes:@
 setAttributes :: (IsIMKCandidates imkCandidates, IsNSDictionary attributes) => imkCandidates -> attributes -> IO ()
-setAttributes imkCandidates  attributes =
-  withObjCPtr attributes $ \raw_attributes ->
-      sendMsg imkCandidates (mkSelector "setAttributes:") retVoid [argPtr (castPtr raw_attributes :: Ptr ())]
+setAttributes imkCandidates attributes =
+  sendMessage imkCandidates setAttributesSelector (toNSDictionary attributes)
 
 -- | Returns the attributes dictionary.
 --
 -- ObjC selector: @- attributes@
 attributes :: IsIMKCandidates imkCandidates => imkCandidates -> IO (Id NSDictionary)
-attributes imkCandidates  =
-    sendMsg imkCandidates (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes imkCandidates =
+  sendMessage imkCandidates attributesSelector
 
 -- | Setting the dismissesAutomatically flag determines what happens to displayed candidates when the return key or enter key is typed.
 --
@@ -254,15 +245,15 @@ attributes imkCandidates  =
 --
 -- ObjC selector: @- setDismissesAutomatically:@
 setDismissesAutomatically :: IsIMKCandidates imkCandidates => imkCandidates -> Bool -> IO ()
-setDismissesAutomatically imkCandidates  flag =
-    sendMsg imkCandidates (mkSelector "setDismissesAutomatically:") retVoid [argCULong (if flag then 1 else 0)]
+setDismissesAutomatically imkCandidates flag =
+  sendMessage imkCandidates setDismissesAutomaticallySelector flag
 
 -- | Returns the dismissesAutomatically flag.
 --
 -- ObjC selector: @- dismissesAutomatically@
 dismissesAutomatically :: IsIMKCandidates imkCandidates => imkCandidates -> IO Bool
-dismissesAutomatically imkCandidates  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg imkCandidates (mkSelector "dismissesAutomatically") retCULong []
+dismissesAutomatically imkCandidates =
+  sendMessage imkCandidates dismissesAutomaticallySelector
 
 -- | Returns the currently selected candidate identifer.
 --
@@ -270,15 +261,15 @@ dismissesAutomatically imkCandidates  =
 --
 -- ObjC selector: @- selectedCandidate@
 selectedCandidate :: IsIMKCandidates imkCandidates => imkCandidates -> IO CLong
-selectedCandidate imkCandidates  =
-    sendMsg imkCandidates (mkSelector "selectedCandidate") retCLong []
+selectedCandidate imkCandidates =
+  sendMessage imkCandidates selectedCandidateSelector
 
 -- | Positions the top-left corner of the candidate window’s frame rectangle at a given point in screen coordinates.
 --
 -- ObjC selector: @- setCandidateFrameTopLeft:@
 setCandidateFrameTopLeft :: IsIMKCandidates imkCandidates => imkCandidates -> NSPoint -> IO ()
-setCandidateFrameTopLeft imkCandidates  point =
-    sendMsg imkCandidates (mkSelector "setCandidateFrameTopLeft:") retVoid [argNSPoint point]
+setCandidateFrameTopLeft imkCandidates point =
+  sendMessage imkCandidates setCandidateFrameTopLeftSelector point
 
 -- | If the current selection has a child IMKCandidates object that will be shown.
 --
@@ -286,8 +277,8 @@ setCandidateFrameTopLeft imkCandidates  point =
 --
 -- ObjC selector: @- showChild@
 showChild :: IsIMKCandidates imkCandidates => imkCandidates -> IO ()
-showChild imkCandidates  =
-    sendMsg imkCandidates (mkSelector "showChild") retVoid []
+showChild imkCandidates =
+  sendMessage imkCandidates showChildSelector
 
 -- | If the current selection has a child IMKCandidates that is being shown hide it.
 --
@@ -295,8 +286,8 @@ showChild imkCandidates  =
 --
 -- ObjC selector: @- hideChild@
 hideChild :: IsIMKCandidates imkCandidates => imkCandidates -> IO ()
-hideChild imkCandidates  =
-    sendMsg imkCandidates (mkSelector "hideChild") retVoid []
+hideChild imkCandidates =
+  sendMessage imkCandidates hideChildSelector
 
 -- | Attach an IMKCandidates object to the specified selection.
 --
@@ -304,16 +295,15 @@ hideChild imkCandidates  =
 --
 -- ObjC selector: @- attachChild:toCandidate:type:@
 attachChild_toCandidate_type :: (IsIMKCandidates imkCandidates, IsIMKCandidates child) => imkCandidates -> child -> CLong -> CULong -> IO ()
-attachChild_toCandidate_type imkCandidates  child candidateIdentifier theType =
-  withObjCPtr child $ \raw_child ->
-      sendMsg imkCandidates (mkSelector "attachChild:toCandidate:type:") retVoid [argPtr (castPtr raw_child :: Ptr ()), argCLong candidateIdentifier, argCULong theType]
+attachChild_toCandidate_type imkCandidates child candidateIdentifier theType =
+  sendMessage imkCandidates attachChild_toCandidate_typeSelector (toIMKCandidates child) candidateIdentifier theType
 
 -- | Detach the IMKCandidates object attached to candidate
 --
 -- ObjC selector: @- detachChild:@
 detachChild :: IsIMKCandidates imkCandidates => imkCandidates -> CLong -> IO ()
-detachChild imkCandidates  candidateIdentifier =
-    sendMsg imkCandidates (mkSelector "detachChild:") retVoid [argCLong candidateIdentifier]
+detachChild imkCandidates candidateIdentifier =
+  sendMessage imkCandidates detachChildSelector candidateIdentifier
 
 -- | Set the candidates data directly rather than supplying data via [IMKInputContoller candidates:].
 --
@@ -321,9 +311,8 @@ detachChild imkCandidates  candidateIdentifier =
 --
 -- ObjC selector: @- setCandidateData:@
 setCandidateData :: (IsIMKCandidates imkCandidates, IsNSArray candidatesArray) => imkCandidates -> candidatesArray -> IO ()
-setCandidateData imkCandidates  candidatesArray =
-  withObjCPtr candidatesArray $ \raw_candidatesArray ->
-      sendMsg imkCandidates (mkSelector "setCandidateData:") retVoid [argPtr (castPtr raw_candidatesArray :: Ptr ())]
+setCandidateData imkCandidates candidatesArray =
+  sendMessage imkCandidates setCandidateDataSelector (toNSArray candidatesArray)
 
 -- | Select the candidate whose identifier matches the identifier parameter.
 --
@@ -333,13 +322,13 @@ setCandidateData imkCandidates  candidatesArray =
 --
 -- ObjC selector: @- selectCandidateWithIdentifier:@
 selectCandidateWithIdentifier :: IsIMKCandidates imkCandidates => imkCandidates -> CLong -> IO Bool
-selectCandidateWithIdentifier imkCandidates  candidateIdentifier =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg imkCandidates (mkSelector "selectCandidateWithIdentifier:") retCULong [argCLong candidateIdentifier]
+selectCandidateWithIdentifier imkCandidates candidateIdentifier =
+  sendMessage imkCandidates selectCandidateWithIdentifierSelector candidateIdentifier
 
 -- | @- selectCandidate:@
 selectCandidate :: IsIMKCandidates imkCandidates => imkCandidates -> CLong -> IO ()
-selectCandidate imkCandidates  candidateIdentifier =
-    sendMsg imkCandidates (mkSelector "selectCandidate:") retVoid [argCLong candidateIdentifier]
+selectCandidate imkCandidates candidateIdentifier =
+  sendMessage imkCandidates selectCandidateSelector candidateIdentifier
 
 -- | Show the candidate window.
 --
@@ -347,8 +336,8 @@ selectCandidate imkCandidates  candidateIdentifier =
 --
 -- ObjC selector: @- showCandidates@
 showCandidates :: IsIMKCandidates imkCandidates => imkCandidates -> IO ()
-showCandidates imkCandidates  =
-    sendMsg imkCandidates (mkSelector "showCandidates") retVoid []
+showCandidates imkCandidates =
+  sendMessage imkCandidates showCandidatesSelector
 
 -- | Map a candidateString to an identifier.
 --
@@ -356,8 +345,8 @@ showCandidates imkCandidates  =
 --
 -- ObjC selector: @- candidateStringIdentifier:@
 candidateStringIdentifier :: IsIMKCandidates imkCandidates => imkCandidates -> RawId -> IO CLong
-candidateStringIdentifier imkCandidates  candidateString =
-    sendMsg imkCandidates (mkSelector "candidateStringIdentifier:") retCLong [argPtr (castPtr (unRawId candidateString) :: Ptr ())]
+candidateStringIdentifier imkCandidates candidateString =
+  sendMessage imkCandidates candidateStringIdentifierSelector candidateString
 
 -- | Returns the currently selected candidate string.
 --
@@ -365,8 +354,8 @@ candidateStringIdentifier imkCandidates  candidateString =
 --
 -- ObjC selector: @- selectedCandidateString@
 selectedCandidateString :: IsIMKCandidates imkCandidates => imkCandidates -> IO (Id NSAttributedString)
-selectedCandidateString imkCandidates  =
-    sendMsg imkCandidates (mkSelector "selectedCandidateString") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedCandidateString imkCandidates =
+  sendMessage imkCandidates selectedCandidateStringSelector
 
 -- | Returns the candidate identifier for a given line in the candidate window display.
 --
@@ -376,8 +365,8 @@ selectedCandidateString imkCandidates  =
 --
 -- ObjC selector: @- candidateIdentifierAtLineNumber:@
 candidateIdentifierAtLineNumber :: IsIMKCandidates imkCandidates => imkCandidates -> CLong -> IO CLong
-candidateIdentifierAtLineNumber imkCandidates  lineNumber =
-    sendMsg imkCandidates (mkSelector "candidateIdentifierAtLineNumber:") retCLong [argCLong lineNumber]
+candidateIdentifierAtLineNumber imkCandidates lineNumber =
+  sendMessage imkCandidates candidateIdentifierAtLineNumberSelector lineNumber
 
 -- | Returns the line number for a given CandidateID.
 --
@@ -389,153 +378,153 @@ candidateIdentifierAtLineNumber imkCandidates  lineNumber =
 --
 -- ObjC selector: @- lineNumberForCandidateWithIdentifier:@
 lineNumberForCandidateWithIdentifier :: IsIMKCandidates imkCandidates => imkCandidates -> CLong -> IO CLong
-lineNumberForCandidateWithIdentifier imkCandidates  candidateIdentifier =
-    sendMsg imkCandidates (mkSelector "lineNumberForCandidateWithIdentifier:") retCLong [argCLong candidateIdentifier]
+lineNumberForCandidateWithIdentifier imkCandidates candidateIdentifier =
+  sendMessage imkCandidates lineNumberForCandidateWithIdentifierSelector candidateIdentifier
 
 -- | Clears the current selection.
 --
 -- ObjC selector: @- clearSelection@
 clearSelection :: IsIMKCandidates imkCandidates => imkCandidates -> IO ()
-clearSelection imkCandidates  =
-    sendMsg imkCandidates (mkSelector "clearSelection") retVoid []
+clearSelection imkCandidates =
+  sendMessage imkCandidates clearSelectionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithServer:panelType:@
-initWithServer_panelTypeSelector :: Selector
+initWithServer_panelTypeSelector :: Selector '[Id IMKServer, CULong] RawId
 initWithServer_panelTypeSelector = mkSelector "initWithServer:panelType:"
 
 -- | @Selector@ for @initWithServer:panelType:styleType:@
-initWithServer_panelType_styleTypeSelector :: Selector
+initWithServer_panelType_styleTypeSelector :: Selector '[Id IMKServer, CULong, CULong] RawId
 initWithServer_panelType_styleTypeSelector = mkSelector "initWithServer:panelType:styleType:"
 
 -- | @Selector@ for @panelType@
-panelTypeSelector :: Selector
+panelTypeSelector :: Selector '[] CULong
 panelTypeSelector = mkSelector "panelType"
 
 -- | @Selector@ for @setPanelType:@
-setPanelTypeSelector :: Selector
+setPanelTypeSelector :: Selector '[CULong] ()
 setPanelTypeSelector = mkSelector "setPanelType:"
 
 -- | @Selector@ for @show:@
-showSelector :: Selector
+showSelector :: Selector '[CULong] ()
 showSelector = mkSelector "show:"
 
 -- | @Selector@ for @hide@
-hideSelector :: Selector
+hideSelector :: Selector '[] ()
 hideSelector = mkSelector "hide"
 
 -- | @Selector@ for @isVisible@
-isVisibleSelector :: Selector
+isVisibleSelector :: Selector '[] Bool
 isVisibleSelector = mkSelector "isVisible"
 
 -- | @Selector@ for @updateCandidates@
-updateCandidatesSelector :: Selector
+updateCandidatesSelector :: Selector '[] ()
 updateCandidatesSelector = mkSelector "updateCandidates"
 
 -- | @Selector@ for @showAnnotation:@
-showAnnotationSelector :: Selector
+showAnnotationSelector :: Selector '[Id NSAttributedString] ()
 showAnnotationSelector = mkSelector "showAnnotation:"
 
 -- | @Selector@ for @showSublist:subListDelegate:@
-showSublist_subListDelegateSelector :: Selector
+showSublist_subListDelegateSelector :: Selector '[Id NSArray, RawId] ()
 showSublist_subListDelegateSelector = mkSelector "showSublist:subListDelegate:"
 
 -- | @Selector@ for @candidateFrame@
-candidateFrameSelector :: Selector
+candidateFrameSelector :: Selector '[] NSRect
 candidateFrameSelector = mkSelector "candidateFrame"
 
 -- | @Selector@ for @setSelectionKeys:@
-setSelectionKeysSelector :: Selector
+setSelectionKeysSelector :: Selector '[Id NSArray] ()
 setSelectionKeysSelector = mkSelector "setSelectionKeys:"
 
 -- | @Selector@ for @selectionKeys@
-selectionKeysSelector :: Selector
+selectionKeysSelector :: Selector '[] (Id NSArray)
 selectionKeysSelector = mkSelector "selectionKeys"
 
 -- | @Selector@ for @setSelectionKeysKeylayout:@
-setSelectionKeysKeylayoutSelector :: Selector
+setSelectionKeysKeylayoutSelector :: Selector '[Ptr ()] ()
 setSelectionKeysKeylayoutSelector = mkSelector "setSelectionKeysKeylayout:"
 
 -- | @Selector@ for @selectionKeysKeylayout@
-selectionKeysKeylayoutSelector :: Selector
+selectionKeysKeylayoutSelector :: Selector '[] (Ptr ())
 selectionKeysKeylayoutSelector = mkSelector "selectionKeysKeylayout"
 
 -- | @Selector@ for @setAttributes:@
-setAttributesSelector :: Selector
+setAttributesSelector :: Selector '[Id NSDictionary] ()
 setAttributesSelector = mkSelector "setAttributes:"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @setDismissesAutomatically:@
-setDismissesAutomaticallySelector :: Selector
+setDismissesAutomaticallySelector :: Selector '[Bool] ()
 setDismissesAutomaticallySelector = mkSelector "setDismissesAutomatically:"
 
 -- | @Selector@ for @dismissesAutomatically@
-dismissesAutomaticallySelector :: Selector
+dismissesAutomaticallySelector :: Selector '[] Bool
 dismissesAutomaticallySelector = mkSelector "dismissesAutomatically"
 
 -- | @Selector@ for @selectedCandidate@
-selectedCandidateSelector :: Selector
+selectedCandidateSelector :: Selector '[] CLong
 selectedCandidateSelector = mkSelector "selectedCandidate"
 
 -- | @Selector@ for @setCandidateFrameTopLeft:@
-setCandidateFrameTopLeftSelector :: Selector
+setCandidateFrameTopLeftSelector :: Selector '[NSPoint] ()
 setCandidateFrameTopLeftSelector = mkSelector "setCandidateFrameTopLeft:"
 
 -- | @Selector@ for @showChild@
-showChildSelector :: Selector
+showChildSelector :: Selector '[] ()
 showChildSelector = mkSelector "showChild"
 
 -- | @Selector@ for @hideChild@
-hideChildSelector :: Selector
+hideChildSelector :: Selector '[] ()
 hideChildSelector = mkSelector "hideChild"
 
 -- | @Selector@ for @attachChild:toCandidate:type:@
-attachChild_toCandidate_typeSelector :: Selector
+attachChild_toCandidate_typeSelector :: Selector '[Id IMKCandidates, CLong, CULong] ()
 attachChild_toCandidate_typeSelector = mkSelector "attachChild:toCandidate:type:"
 
 -- | @Selector@ for @detachChild:@
-detachChildSelector :: Selector
+detachChildSelector :: Selector '[CLong] ()
 detachChildSelector = mkSelector "detachChild:"
 
 -- | @Selector@ for @setCandidateData:@
-setCandidateDataSelector :: Selector
+setCandidateDataSelector :: Selector '[Id NSArray] ()
 setCandidateDataSelector = mkSelector "setCandidateData:"
 
 -- | @Selector@ for @selectCandidateWithIdentifier:@
-selectCandidateWithIdentifierSelector :: Selector
+selectCandidateWithIdentifierSelector :: Selector '[CLong] Bool
 selectCandidateWithIdentifierSelector = mkSelector "selectCandidateWithIdentifier:"
 
 -- | @Selector@ for @selectCandidate:@
-selectCandidateSelector :: Selector
+selectCandidateSelector :: Selector '[CLong] ()
 selectCandidateSelector = mkSelector "selectCandidate:"
 
 -- | @Selector@ for @showCandidates@
-showCandidatesSelector :: Selector
+showCandidatesSelector :: Selector '[] ()
 showCandidatesSelector = mkSelector "showCandidates"
 
 -- | @Selector@ for @candidateStringIdentifier:@
-candidateStringIdentifierSelector :: Selector
+candidateStringIdentifierSelector :: Selector '[RawId] CLong
 candidateStringIdentifierSelector = mkSelector "candidateStringIdentifier:"
 
 -- | @Selector@ for @selectedCandidateString@
-selectedCandidateStringSelector :: Selector
+selectedCandidateStringSelector :: Selector '[] (Id NSAttributedString)
 selectedCandidateStringSelector = mkSelector "selectedCandidateString"
 
 -- | @Selector@ for @candidateIdentifierAtLineNumber:@
-candidateIdentifierAtLineNumberSelector :: Selector
+candidateIdentifierAtLineNumberSelector :: Selector '[CLong] CLong
 candidateIdentifierAtLineNumberSelector = mkSelector "candidateIdentifierAtLineNumber:"
 
 -- | @Selector@ for @lineNumberForCandidateWithIdentifier:@
-lineNumberForCandidateWithIdentifierSelector :: Selector
+lineNumberForCandidateWithIdentifierSelector :: Selector '[CLong] CLong
 lineNumberForCandidateWithIdentifierSelector = mkSelector "lineNumberForCandidateWithIdentifier:"
 
 -- | @Selector@ for @clearSelection@
-clearSelectionSelector :: Selector
+clearSelectionSelector :: Selector '[] ()
 clearSelectionSelector = mkSelector "clearSelection"
 

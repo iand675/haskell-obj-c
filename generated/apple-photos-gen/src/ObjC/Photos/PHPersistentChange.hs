@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Photos.PHPersistentChange
   , init_
   , changeDetailsForObjectType_error
   , changeToken
-  , newSelector
-  , initSelector
   , changeDetailsForObjectType_errorSelector
   , changeTokenSelector
+  , initSelector
+  , newSelector
 
   -- * Enum types
   , PHObjectType(PHObjectType)
@@ -24,15 +25,11 @@ module ObjC.Photos.PHPersistentChange
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,41 +42,40 @@ new :: IO (Id PHPersistentChange)
 new  =
   do
     cls' <- getRequiredClass "PHPersistentChange"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsPHPersistentChange phPersistentChange => phPersistentChange -> IO (Id PHPersistentChange)
-init_ phPersistentChange  =
-    sendMsg phPersistentChange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phPersistentChange =
+  sendOwnedMessage phPersistentChange initSelector
 
 -- | @- changeDetailsForObjectType:error:@
 changeDetailsForObjectType_error :: (IsPHPersistentChange phPersistentChange, IsNSError error_) => phPersistentChange -> PHObjectType -> error_ -> IO (Id PHPersistentObjectChangeDetails)
-changeDetailsForObjectType_error phPersistentChange  objectType error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg phPersistentChange (mkSelector "changeDetailsForObjectType:error:") (retPtr retVoid) [argCLong (coerce objectType), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+changeDetailsForObjectType_error phPersistentChange objectType error_ =
+  sendMessage phPersistentChange changeDetailsForObjectType_errorSelector objectType (toNSError error_)
 
 -- | @- changeToken@
 changeToken :: IsPHPersistentChange phPersistentChange => phPersistentChange -> IO (Id PHPersistentChangeToken)
-changeToken phPersistentChange  =
-    sendMsg phPersistentChange (mkSelector "changeToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+changeToken phPersistentChange =
+  sendMessage phPersistentChange changeTokenSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHPersistentChange)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHPersistentChange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @changeDetailsForObjectType:error:@
-changeDetailsForObjectType_errorSelector :: Selector
+changeDetailsForObjectType_errorSelector :: Selector '[PHObjectType, Id NSError] (Id PHPersistentObjectChangeDetails)
 changeDetailsForObjectType_errorSelector = mkSelector "changeDetailsForObjectType:error:"
 
 -- | @Selector@ for @changeToken@
-changeTokenSelector :: Selector
+changeTokenSelector :: Selector '[] (Id PHPersistentChangeToken)
 changeTokenSelector = mkSelector "changeToken"
 

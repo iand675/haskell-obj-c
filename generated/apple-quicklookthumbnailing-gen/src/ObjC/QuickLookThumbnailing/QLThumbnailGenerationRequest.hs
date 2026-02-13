@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.QuickLookThumbnailing.QLThumbnailGenerationRequest
   , setIconMode
   , scale
   , representationTypes
-  , initSelector
-  , newSelector
   , contentTypeSelector
-  , setContentTypeSelector
-  , minimumDimensionSelector
-  , setMinimumDimensionSelector
   , iconModeSelector
-  , setIconModeSelector
-  , scaleSelector
+  , initSelector
+  , minimumDimensionSelector
+  , newSelector
   , representationTypesSelector
+  , scaleSelector
+  , setContentTypeSelector
+  , setIconModeSelector
+  , setMinimumDimensionSelector
 
   -- * Enum types
   , QLThumbnailGenerationRequestRepresentationTypes(QLThumbnailGenerationRequestRepresentationTypes)
@@ -37,15 +38,11 @@ module ObjC.QuickLookThumbnailing.QLThumbnailGenerationRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,110 +53,109 @@ import ObjC.UniformTypeIdentifiers.Internal.Classes
 
 -- | @- init@
 init_ :: IsQLThumbnailGenerationRequest qlThumbnailGenerationRequest => qlThumbnailGenerationRequest -> IO (Id QLThumbnailGenerationRequest)
-init_ qlThumbnailGenerationRequest  =
-    sendMsg qlThumbnailGenerationRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ qlThumbnailGenerationRequest =
+  sendOwnedMessage qlThumbnailGenerationRequest initSelector
 
 -- | @+ new@
 new :: IO (Id QLThumbnailGenerationRequest)
 new  =
   do
     cls' <- getRequiredClass "QLThumbnailGenerationRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The content type of the file being thumbnailed is used to determine the provider of the thumbnail and the icon styles applied if iconMode is requested. By default the content type is derived from the file extension. Setting this property will override the derived content type. This is useful for files that don't have meaningful extensions but for which you may already know the content type.
 --
 -- ObjC selector: @- contentType@
 contentType :: IsQLThumbnailGenerationRequest qlThumbnailGenerationRequest => qlThumbnailGenerationRequest -> IO (Id UTType)
-contentType qlThumbnailGenerationRequest  =
-    sendMsg qlThumbnailGenerationRequest (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentType qlThumbnailGenerationRequest =
+  sendMessage qlThumbnailGenerationRequest contentTypeSelector
 
 -- | The content type of the file being thumbnailed is used to determine the provider of the thumbnail and the icon styles applied if iconMode is requested. By default the content type is derived from the file extension. Setting this property will override the derived content type. This is useful for files that don't have meaningful extensions but for which you may already know the content type.
 --
 -- ObjC selector: @- setContentType:@
 setContentType :: (IsQLThumbnailGenerationRequest qlThumbnailGenerationRequest, IsUTType value) => qlThumbnailGenerationRequest -> value -> IO ()
-setContentType qlThumbnailGenerationRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg qlThumbnailGenerationRequest (mkSelector "setContentType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentType qlThumbnailGenerationRequest value =
+  sendMessage qlThumbnailGenerationRequest setContentTypeSelector (toUTType value)
 
 -- | Defaults to 0. If set, the thumbnail will have a width and height greater or equal to minimumDimension * scale. If set and it is not possible to generate thumbnails of minimumDimension for any of the requested QLThumbnailGenerationRequestRepresentationTypes, no thumbnail will be provided.
 --
 -- ObjC selector: @- minimumDimension@
 minimumDimension :: IsQLThumbnailGenerationRequest qlThumbnailGenerationRequest => qlThumbnailGenerationRequest -> IO CDouble
-minimumDimension qlThumbnailGenerationRequest  =
-    sendMsg qlThumbnailGenerationRequest (mkSelector "minimumDimension") retCDouble []
+minimumDimension qlThumbnailGenerationRequest =
+  sendMessage qlThumbnailGenerationRequest minimumDimensionSelector
 
 -- | Defaults to 0. If set, the thumbnail will have a width and height greater or equal to minimumDimension * scale. If set and it is not possible to generate thumbnails of minimumDimension for any of the requested QLThumbnailGenerationRequestRepresentationTypes, no thumbnail will be provided.
 --
 -- ObjC selector: @- setMinimumDimension:@
 setMinimumDimension :: IsQLThumbnailGenerationRequest qlThumbnailGenerationRequest => qlThumbnailGenerationRequest -> CDouble -> IO ()
-setMinimumDimension qlThumbnailGenerationRequest  value =
-    sendMsg qlThumbnailGenerationRequest (mkSelector "setMinimumDimension:") retVoid [argCDouble value]
+setMinimumDimension qlThumbnailGenerationRequest value =
+  sendMessage qlThumbnailGenerationRequest setMinimumDimensionSelector value
 
 -- | If set to YES, this will generate something appropriate for display as a file icon, meaning that the thumbnail might be embedded in a frame, show a curled corner, draw a background and/or a drop shadow, as appropriate for the platform. If set to NO, this will generate a raw undecorated thumbnail. Defaults to NO.
 --
 -- ObjC selector: @- iconMode@
 iconMode :: IsQLThumbnailGenerationRequest qlThumbnailGenerationRequest => qlThumbnailGenerationRequest -> IO Bool
-iconMode qlThumbnailGenerationRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qlThumbnailGenerationRequest (mkSelector "iconMode") retCULong []
+iconMode qlThumbnailGenerationRequest =
+  sendMessage qlThumbnailGenerationRequest iconModeSelector
 
 -- | If set to YES, this will generate something appropriate for display as a file icon, meaning that the thumbnail might be embedded in a frame, show a curled corner, draw a background and/or a drop shadow, as appropriate for the platform. If set to NO, this will generate a raw undecorated thumbnail. Defaults to NO.
 --
 -- ObjC selector: @- setIconMode:@
 setIconMode :: IsQLThumbnailGenerationRequest qlThumbnailGenerationRequest => qlThumbnailGenerationRequest -> Bool -> IO ()
-setIconMode qlThumbnailGenerationRequest  value =
-    sendMsg qlThumbnailGenerationRequest (mkSelector "setIconMode:") retVoid [argCULong (if value then 1 else 0)]
+setIconMode qlThumbnailGenerationRequest value =
+  sendMessage qlThumbnailGenerationRequest setIconModeSelector value
 
 -- | @- scale@
 scale :: IsQLThumbnailGenerationRequest qlThumbnailGenerationRequest => qlThumbnailGenerationRequest -> IO CDouble
-scale qlThumbnailGenerationRequest  =
-    sendMsg qlThumbnailGenerationRequest (mkSelector "scale") retCDouble []
+scale qlThumbnailGenerationRequest =
+  sendMessage qlThumbnailGenerationRequest scaleSelector
 
 -- | @- representationTypes@
 representationTypes :: IsQLThumbnailGenerationRequest qlThumbnailGenerationRequest => qlThumbnailGenerationRequest -> IO QLThumbnailGenerationRequestRepresentationTypes
-representationTypes qlThumbnailGenerationRequest  =
-    fmap (coerce :: CULong -> QLThumbnailGenerationRequestRepresentationTypes) $ sendMsg qlThumbnailGenerationRequest (mkSelector "representationTypes") retCULong []
+representationTypes qlThumbnailGenerationRequest =
+  sendMessage qlThumbnailGenerationRequest representationTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id QLThumbnailGenerationRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id QLThumbnailGenerationRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id UTType)
 contentTypeSelector = mkSelector "contentType"
 
 -- | @Selector@ for @setContentType:@
-setContentTypeSelector :: Selector
+setContentTypeSelector :: Selector '[Id UTType] ()
 setContentTypeSelector = mkSelector "setContentType:"
 
 -- | @Selector@ for @minimumDimension@
-minimumDimensionSelector :: Selector
+minimumDimensionSelector :: Selector '[] CDouble
 minimumDimensionSelector = mkSelector "minimumDimension"
 
 -- | @Selector@ for @setMinimumDimension:@
-setMinimumDimensionSelector :: Selector
+setMinimumDimensionSelector :: Selector '[CDouble] ()
 setMinimumDimensionSelector = mkSelector "setMinimumDimension:"
 
 -- | @Selector@ for @iconMode@
-iconModeSelector :: Selector
+iconModeSelector :: Selector '[] Bool
 iconModeSelector = mkSelector "iconMode"
 
 -- | @Selector@ for @setIconMode:@
-setIconModeSelector :: Selector
+setIconModeSelector :: Selector '[Bool] ()
 setIconModeSelector = mkSelector "setIconMode:"
 
 -- | @Selector@ for @scale@
-scaleSelector :: Selector
+scaleSelector :: Selector '[] CDouble
 scaleSelector = mkSelector "scale"
 
 -- | @Selector@ for @representationTypes@
-representationTypesSelector :: Selector
+representationTypesSelector :: Selector '[] QLThumbnailGenerationRequestRepresentationTypes
 representationTypesSelector = mkSelector "representationTypes"
 

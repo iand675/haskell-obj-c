@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,12 +16,12 @@ module ObjC.GameKit.GKLeaderboardViewController
   , setCategory
   , leaderboardDelegate
   , setLeaderboardDelegate
-  , timeScopeSelector
-  , setTimeScopeSelector
   , categorySelector
-  , setCategorySelector
   , leaderboardDelegateSelector
+  , setCategorySelector
   , setLeaderboardDelegateSelector
+  , setTimeScopeSelector
+  , timeScopeSelector
 
   -- * Enum types
   , GKLeaderboardTimeScope(GKLeaderboardTimeScope)
@@ -30,15 +31,11 @@ module ObjC.GameKit.GKLeaderboardViewController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,60 +46,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- timeScope@
 timeScope :: IsGKLeaderboardViewController gkLeaderboardViewController => gkLeaderboardViewController -> IO GKLeaderboardTimeScope
-timeScope gkLeaderboardViewController  =
-    fmap (coerce :: CLong -> GKLeaderboardTimeScope) $ sendMsg gkLeaderboardViewController (mkSelector "timeScope") retCLong []
+timeScope gkLeaderboardViewController =
+  sendMessage gkLeaderboardViewController timeScopeSelector
 
 -- | @- setTimeScope:@
 setTimeScope :: IsGKLeaderboardViewController gkLeaderboardViewController => gkLeaderboardViewController -> GKLeaderboardTimeScope -> IO ()
-setTimeScope gkLeaderboardViewController  value =
-    sendMsg gkLeaderboardViewController (mkSelector "setTimeScope:") retVoid [argCLong (coerce value)]
+setTimeScope gkLeaderboardViewController value =
+  sendMessage gkLeaderboardViewController setTimeScopeSelector value
 
 -- | @- category@
 category :: IsGKLeaderboardViewController gkLeaderboardViewController => gkLeaderboardViewController -> IO (Id NSString)
-category gkLeaderboardViewController  =
-    sendMsg gkLeaderboardViewController (mkSelector "category") (retPtr retVoid) [] >>= retainedObject . castPtr
+category gkLeaderboardViewController =
+  sendMessage gkLeaderboardViewController categorySelector
 
 -- | @- setCategory:@
 setCategory :: (IsGKLeaderboardViewController gkLeaderboardViewController, IsNSString value) => gkLeaderboardViewController -> value -> IO ()
-setCategory gkLeaderboardViewController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkLeaderboardViewController (mkSelector "setCategory:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCategory gkLeaderboardViewController value =
+  sendMessage gkLeaderboardViewController setCategorySelector (toNSString value)
 
 -- | @- leaderboardDelegate@
 leaderboardDelegate :: IsGKLeaderboardViewController gkLeaderboardViewController => gkLeaderboardViewController -> IO RawId
-leaderboardDelegate gkLeaderboardViewController  =
-    fmap (RawId . castPtr) $ sendMsg gkLeaderboardViewController (mkSelector "leaderboardDelegate") (retPtr retVoid) []
+leaderboardDelegate gkLeaderboardViewController =
+  sendMessage gkLeaderboardViewController leaderboardDelegateSelector
 
 -- | @- setLeaderboardDelegate:@
 setLeaderboardDelegate :: IsGKLeaderboardViewController gkLeaderboardViewController => gkLeaderboardViewController -> RawId -> IO ()
-setLeaderboardDelegate gkLeaderboardViewController  value =
-    sendMsg gkLeaderboardViewController (mkSelector "setLeaderboardDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setLeaderboardDelegate gkLeaderboardViewController value =
+  sendMessage gkLeaderboardViewController setLeaderboardDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timeScope@
-timeScopeSelector :: Selector
+timeScopeSelector :: Selector '[] GKLeaderboardTimeScope
 timeScopeSelector = mkSelector "timeScope"
 
 -- | @Selector@ for @setTimeScope:@
-setTimeScopeSelector :: Selector
+setTimeScopeSelector :: Selector '[GKLeaderboardTimeScope] ()
 setTimeScopeSelector = mkSelector "setTimeScope:"
 
 -- | @Selector@ for @category@
-categorySelector :: Selector
+categorySelector :: Selector '[] (Id NSString)
 categorySelector = mkSelector "category"
 
 -- | @Selector@ for @setCategory:@
-setCategorySelector :: Selector
+setCategorySelector :: Selector '[Id NSString] ()
 setCategorySelector = mkSelector "setCategory:"
 
 -- | @Selector@ for @leaderboardDelegate@
-leaderboardDelegateSelector :: Selector
+leaderboardDelegateSelector :: Selector '[] RawId
 leaderboardDelegateSelector = mkSelector "leaderboardDelegate"
 
 -- | @Selector@ for @setLeaderboardDelegate:@
-setLeaderboardDelegateSelector :: Selector
+setLeaderboardDelegateSelector :: Selector '[RawId] ()
 setLeaderboardDelegateSelector = mkSelector "setLeaderboardDelegate:"
 

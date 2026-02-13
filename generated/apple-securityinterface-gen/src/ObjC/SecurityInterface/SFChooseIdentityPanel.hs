@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,35 +27,31 @@ module ObjC.SecurityInterface.SFChooseIdentityPanel
   , informativeText
   , setDomain
   , domain
-  , sharedChooseIdentityPanelSelector
-  , runModalForIdentities_messageSelector
   , beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_messageSelector
-  , identitySelector
-  , setPoliciesSelector
-  , policiesSelector
-  , setDefaultButtonTitleSelector
-  , setAlternateButtonTitleSelector
-  , setShowsHelpSelector
-  , showsHelpSelector
-  , setHelpAnchorSelector
-  , helpAnchorSelector
-  , setInformativeTextSelector
-  , informativeTextSelector
-  , setDomainSelector
   , domainSelector
+  , helpAnchorSelector
+  , identitySelector
+  , informativeTextSelector
+  , policiesSelector
+  , runModalForIdentities_messageSelector
+  , setAlternateButtonTitleSelector
+  , setDefaultButtonTitleSelector
+  , setDomainSelector
+  , setHelpAnchorSelector
+  , setInformativeTextSelector
+  , setPoliciesSelector
+  , setShowsHelpSelector
+  , sharedChooseIdentityPanelSelector
+  , showsHelpSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,7 +70,7 @@ sharedChooseIdentityPanel :: IO (Id SFChooseIdentityPanel)
 sharedChooseIdentityPanel  =
   do
     cls' <- getRequiredClass "SFChooseIdentityPanel"
-    sendClassMsg cls' (mkSelector "sharedChooseIdentityPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedChooseIdentityPanelSelector
 
 -- | runModalForIdentities:message:
 --
@@ -85,10 +82,8 @@ sharedChooseIdentityPanel  =
 --
 -- ObjC selector: @- runModalForIdentities:message:@
 runModalForIdentities_message :: (IsSFChooseIdentityPanel sfChooseIdentityPanel, IsNSArray identities, IsNSString message) => sfChooseIdentityPanel -> identities -> message -> IO CLong
-runModalForIdentities_message sfChooseIdentityPanel  identities message =
-  withObjCPtr identities $ \raw_identities ->
-    withObjCPtr message $ \raw_message ->
-        sendMsg sfChooseIdentityPanel (mkSelector "runModalForIdentities:message:") retCLong [argPtr (castPtr raw_identities :: Ptr ()), argPtr (castPtr raw_message :: Ptr ())]
+runModalForIdentities_message sfChooseIdentityPanel identities message =
+  sendMessage sfChooseIdentityPanel runModalForIdentities_messageSelector (toNSArray identities) (toNSString message)
 
 -- | beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:
 --
@@ -109,12 +104,9 @@ runModalForIdentities_message sfChooseIdentityPanel  identities message =
 -- The didEndSelector method should have the following signature:        - (void)chooseIdentitySheetDidEnd:(NSWindow *)sheet returnCode:(NSInteger)returnCode contextInfo:(void *)contextInfo
 --
 -- ObjC selector: @- beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_message :: (IsSFChooseIdentityPanel sfChooseIdentityPanel, IsNSWindow docWindow, IsNSArray identities, IsNSString message) => sfChooseIdentityPanel -> docWindow -> RawId -> Selector -> Ptr () -> identities -> message -> IO ()
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_message sfChooseIdentityPanel  docWindow delegate didEndSelector contextInfo identities message =
-  withObjCPtr docWindow $ \raw_docWindow ->
-    withObjCPtr identities $ \raw_identities ->
-      withObjCPtr message $ \raw_message ->
-          sendMsg sfChooseIdentityPanel (mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:") retVoid [argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo, argPtr (castPtr raw_identities :: Ptr ()), argPtr (castPtr raw_message :: Ptr ())]
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_message :: (IsSFChooseIdentityPanel sfChooseIdentityPanel, IsNSWindow docWindow, IsNSArray identities, IsNSString message) => sfChooseIdentityPanel -> docWindow -> RawId -> Sel -> Ptr () -> identities -> message -> IO ()
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_message sfChooseIdentityPanel docWindow delegate didEndSelector contextInfo identities message =
+  sendMessage sfChooseIdentityPanel beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_messageSelector (toNSWindow docWindow) delegate didEndSelector contextInfo (toNSArray identities) (toNSString message)
 
 -- | identity
 --
@@ -122,8 +114,8 @@ beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_message 
 --
 -- ObjC selector: @- identity@
 identity :: IsSFChooseIdentityPanel sfChooseIdentityPanel => sfChooseIdentityPanel -> IO (Ptr ())
-identity sfChooseIdentityPanel  =
-    fmap castPtr $ sendMsg sfChooseIdentityPanel (mkSelector "identity") (retPtr retVoid) []
+identity sfChooseIdentityPanel =
+  sendMessage sfChooseIdentityPanel identitySelector
 
 -- | setPolicies:
 --
@@ -135,8 +127,8 @@ identity sfChooseIdentityPanel  =
 --
 -- ObjC selector: @- setPolicies:@
 setPolicies :: IsSFChooseIdentityPanel sfChooseIdentityPanel => sfChooseIdentityPanel -> RawId -> IO ()
-setPolicies sfChooseIdentityPanel  policies =
-    sendMsg sfChooseIdentityPanel (mkSelector "setPolicies:") retVoid [argPtr (castPtr (unRawId policies) :: Ptr ())]
+setPolicies sfChooseIdentityPanel policies =
+  sendMessage sfChooseIdentityPanel setPoliciesSelector policies
 
 -- | policies
 --
@@ -146,8 +138,8 @@ setPolicies sfChooseIdentityPanel  policies =
 --
 -- ObjC selector: @- policies@
 policies :: IsSFChooseIdentityPanel sfChooseIdentityPanel => sfChooseIdentityPanel -> IO (Id NSArray)
-policies sfChooseIdentityPanel  =
-    sendMsg sfChooseIdentityPanel (mkSelector "policies") (retPtr retVoid) [] >>= retainedObject . castPtr
+policies sfChooseIdentityPanel =
+  sendMessage sfChooseIdentityPanel policiesSelector
 
 -- | setDefaultButtonTitle:
 --
@@ -157,9 +149,8 @@ policies sfChooseIdentityPanel  =
 --
 -- ObjC selector: @- setDefaultButtonTitle:@
 setDefaultButtonTitle :: (IsSFChooseIdentityPanel sfChooseIdentityPanel, IsNSString title) => sfChooseIdentityPanel -> title -> IO ()
-setDefaultButtonTitle sfChooseIdentityPanel  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg sfChooseIdentityPanel (mkSelector "setDefaultButtonTitle:") retVoid [argPtr (castPtr raw_title :: Ptr ())]
+setDefaultButtonTitle sfChooseIdentityPanel title =
+  sendMessage sfChooseIdentityPanel setDefaultButtonTitleSelector (toNSString title)
 
 -- | setAlternateButtonTitle:
 --
@@ -169,30 +160,28 @@ setDefaultButtonTitle sfChooseIdentityPanel  title =
 --
 -- ObjC selector: @- setAlternateButtonTitle:@
 setAlternateButtonTitle :: (IsSFChooseIdentityPanel sfChooseIdentityPanel, IsNSString title) => sfChooseIdentityPanel -> title -> IO ()
-setAlternateButtonTitle sfChooseIdentityPanel  title =
-  withObjCPtr title $ \raw_title ->
-      sendMsg sfChooseIdentityPanel (mkSelector "setAlternateButtonTitle:") retVoid [argPtr (castPtr raw_title :: Ptr ())]
+setAlternateButtonTitle sfChooseIdentityPanel title =
+  sendMessage sfChooseIdentityPanel setAlternateButtonTitleSelector (toNSString title)
 
 -- | @- setShowsHelp:@
 setShowsHelp :: IsSFChooseIdentityPanel sfChooseIdentityPanel => sfChooseIdentityPanel -> Bool -> IO ()
-setShowsHelp sfChooseIdentityPanel  showsHelp =
-    sendMsg sfChooseIdentityPanel (mkSelector "setShowsHelp:") retVoid [argCULong (if showsHelp then 1 else 0)]
+setShowsHelp sfChooseIdentityPanel showsHelp =
+  sendMessage sfChooseIdentityPanel setShowsHelpSelector showsHelp
 
 -- | @- showsHelp@
 showsHelp :: IsSFChooseIdentityPanel sfChooseIdentityPanel => sfChooseIdentityPanel -> IO Bool
-showsHelp sfChooseIdentityPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg sfChooseIdentityPanel (mkSelector "showsHelp") retCULong []
+showsHelp sfChooseIdentityPanel =
+  sendMessage sfChooseIdentityPanel showsHelpSelector
 
 -- | @- setHelpAnchor:@
 setHelpAnchor :: (IsSFChooseIdentityPanel sfChooseIdentityPanel, IsNSString anchor) => sfChooseIdentityPanel -> anchor -> IO ()
-setHelpAnchor sfChooseIdentityPanel  anchor =
-  withObjCPtr anchor $ \raw_anchor ->
-      sendMsg sfChooseIdentityPanel (mkSelector "setHelpAnchor:") retVoid [argPtr (castPtr raw_anchor :: Ptr ())]
+setHelpAnchor sfChooseIdentityPanel anchor =
+  sendMessage sfChooseIdentityPanel setHelpAnchorSelector (toNSString anchor)
 
 -- | @- helpAnchor@
 helpAnchor :: IsSFChooseIdentityPanel sfChooseIdentityPanel => sfChooseIdentityPanel -> IO (Id NSString)
-helpAnchor sfChooseIdentityPanel  =
-    sendMsg sfChooseIdentityPanel (mkSelector "helpAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+helpAnchor sfChooseIdentityPanel =
+  sendMessage sfChooseIdentityPanel helpAnchorSelector
 
 -- | setInformativeText:
 --
@@ -204,9 +193,8 @@ helpAnchor sfChooseIdentityPanel  =
 --
 -- ObjC selector: @- setInformativeText:@
 setInformativeText :: (IsSFChooseIdentityPanel sfChooseIdentityPanel, IsNSString informativeText) => sfChooseIdentityPanel -> informativeText -> IO ()
-setInformativeText sfChooseIdentityPanel  informativeText =
-  withObjCPtr informativeText $ \raw_informativeText ->
-      sendMsg sfChooseIdentityPanel (mkSelector "setInformativeText:") retVoid [argPtr (castPtr raw_informativeText :: Ptr ())]
+setInformativeText sfChooseIdentityPanel informativeText =
+  sendMessage sfChooseIdentityPanel setInformativeTextSelector (toNSString informativeText)
 
 -- | informativeText
 --
@@ -214,8 +202,8 @@ setInformativeText sfChooseIdentityPanel  informativeText =
 --
 -- ObjC selector: @- informativeText@
 informativeText :: IsSFChooseIdentityPanel sfChooseIdentityPanel => sfChooseIdentityPanel -> IO (Id NSString)
-informativeText sfChooseIdentityPanel  =
-    sendMsg sfChooseIdentityPanel (mkSelector "informativeText") (retPtr retVoid) [] >>= retainedObject . castPtr
+informativeText sfChooseIdentityPanel =
+  sendMessage sfChooseIdentityPanel informativeTextSelector
 
 -- | setDomain:
 --
@@ -227,9 +215,8 @@ informativeText sfChooseIdentityPanel  =
 --
 -- ObjC selector: @- setDomain:@
 setDomain :: (IsSFChooseIdentityPanel sfChooseIdentityPanel, IsNSString domainString) => sfChooseIdentityPanel -> domainString -> IO ()
-setDomain sfChooseIdentityPanel  domainString =
-  withObjCPtr domainString $ \raw_domainString ->
-      sendMsg sfChooseIdentityPanel (mkSelector "setDomain:") retVoid [argPtr (castPtr raw_domainString :: Ptr ())]
+setDomain sfChooseIdentityPanel domainString =
+  sendMessage sfChooseIdentityPanel setDomainSelector (toNSString domainString)
 
 -- | domain
 --
@@ -237,74 +224,74 @@ setDomain sfChooseIdentityPanel  domainString =
 --
 -- ObjC selector: @- domain@
 domain :: IsSFChooseIdentityPanel sfChooseIdentityPanel => sfChooseIdentityPanel -> IO (Id NSString)
-domain sfChooseIdentityPanel  =
-    sendMsg sfChooseIdentityPanel (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain sfChooseIdentityPanel =
+  sendMessage sfChooseIdentityPanel domainSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedChooseIdentityPanel@
-sharedChooseIdentityPanelSelector :: Selector
+sharedChooseIdentityPanelSelector :: Selector '[] (Id SFChooseIdentityPanel)
 sharedChooseIdentityPanelSelector = mkSelector "sharedChooseIdentityPanel"
 
 -- | @Selector@ for @runModalForIdentities:message:@
-runModalForIdentities_messageSelector :: Selector
+runModalForIdentities_messageSelector :: Selector '[Id NSArray, Id NSString] CLong
 runModalForIdentities_messageSelector = mkSelector "runModalForIdentities:message:"
 
 -- | @Selector@ for @beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_messageSelector :: Selector
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_messageSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr (), Id NSArray, Id NSString] ()
 beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_identities_messageSelector = mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:"
 
 -- | @Selector@ for @identity@
-identitySelector :: Selector
+identitySelector :: Selector '[] (Ptr ())
 identitySelector = mkSelector "identity"
 
 -- | @Selector@ for @setPolicies:@
-setPoliciesSelector :: Selector
+setPoliciesSelector :: Selector '[RawId] ()
 setPoliciesSelector = mkSelector "setPolicies:"
 
 -- | @Selector@ for @policies@
-policiesSelector :: Selector
+policiesSelector :: Selector '[] (Id NSArray)
 policiesSelector = mkSelector "policies"
 
 -- | @Selector@ for @setDefaultButtonTitle:@
-setDefaultButtonTitleSelector :: Selector
+setDefaultButtonTitleSelector :: Selector '[Id NSString] ()
 setDefaultButtonTitleSelector = mkSelector "setDefaultButtonTitle:"
 
 -- | @Selector@ for @setAlternateButtonTitle:@
-setAlternateButtonTitleSelector :: Selector
+setAlternateButtonTitleSelector :: Selector '[Id NSString] ()
 setAlternateButtonTitleSelector = mkSelector "setAlternateButtonTitle:"
 
 -- | @Selector@ for @setShowsHelp:@
-setShowsHelpSelector :: Selector
+setShowsHelpSelector :: Selector '[Bool] ()
 setShowsHelpSelector = mkSelector "setShowsHelp:"
 
 -- | @Selector@ for @showsHelp@
-showsHelpSelector :: Selector
+showsHelpSelector :: Selector '[] Bool
 showsHelpSelector = mkSelector "showsHelp"
 
 -- | @Selector@ for @setHelpAnchor:@
-setHelpAnchorSelector :: Selector
+setHelpAnchorSelector :: Selector '[Id NSString] ()
 setHelpAnchorSelector = mkSelector "setHelpAnchor:"
 
 -- | @Selector@ for @helpAnchor@
-helpAnchorSelector :: Selector
+helpAnchorSelector :: Selector '[] (Id NSString)
 helpAnchorSelector = mkSelector "helpAnchor"
 
 -- | @Selector@ for @setInformativeText:@
-setInformativeTextSelector :: Selector
+setInformativeTextSelector :: Selector '[Id NSString] ()
 setInformativeTextSelector = mkSelector "setInformativeText:"
 
 -- | @Selector@ for @informativeText@
-informativeTextSelector :: Selector
+informativeTextSelector :: Selector '[] (Id NSString)
 informativeTextSelector = mkSelector "informativeText"
 
 -- | @Selector@ for @setDomain:@
-setDomainSelector :: Selector
+setDomainSelector :: Selector '[Id NSString] ()
 setDomainSelector = mkSelector "setDomain:"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id NSString)
 domainSelector = mkSelector "domain"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.Virtualization.VZMacGraphicsDisplayConfiguration
   , setHeightInPixels
   , pixelsPerInch
   , setPixelsPerInch
-  , initWithWidthInPixels_heightInPixels_pixelsPerInchSelector
-  , initForScreen_sizeInPointsSelector
-  , widthInPixelsSelector
-  , setWidthInPixelsSelector
   , heightInPixelsSelector
-  , setHeightInPixelsSelector
+  , initForScreen_sizeInPointsSelector
+  , initWithWidthInPixels_heightInPixels_pixelsPerInchSelector
   , pixelsPerInchSelector
+  , setHeightInPixelsSelector
   , setPixelsPerInchSelector
+  , setWidthInPixelsSelector
+  , widthInPixelsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,8 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithWidthInPixels:heightInPixels:pixelsPerInch:@
 initWithWidthInPixels_heightInPixels_pixelsPerInch :: IsVZMacGraphicsDisplayConfiguration vzMacGraphicsDisplayConfiguration => vzMacGraphicsDisplayConfiguration -> CLong -> CLong -> CLong -> IO (Id VZMacGraphicsDisplayConfiguration)
-initWithWidthInPixels_heightInPixels_pixelsPerInch vzMacGraphicsDisplayConfiguration  widthInPixels heightInPixels pixelsPerInch =
-    sendMsg vzMacGraphicsDisplayConfiguration (mkSelector "initWithWidthInPixels:heightInPixels:pixelsPerInch:") (retPtr retVoid) [argCLong widthInPixels, argCLong heightInPixels, argCLong pixelsPerInch] >>= ownedObject . castPtr
+initWithWidthInPixels_heightInPixels_pixelsPerInch vzMacGraphicsDisplayConfiguration widthInPixels heightInPixels pixelsPerInch =
+  sendOwnedMessage vzMacGraphicsDisplayConfiguration initWithWidthInPixels_heightInPixels_pixelsPerInchSelector widthInPixels heightInPixels pixelsPerInch
 
 -- | Create a display configuration suitable for showing on the specified screen.
 --
@@ -70,85 +67,84 @@ initWithWidthInPixels_heightInPixels_pixelsPerInch vzMacGraphicsDisplayConfigura
 --
 -- ObjC selector: @- initForScreen:sizeInPoints:@
 initForScreen_sizeInPoints :: (IsVZMacGraphicsDisplayConfiguration vzMacGraphicsDisplayConfiguration, IsNSScreen screen) => vzMacGraphicsDisplayConfiguration -> screen -> NSSize -> IO (Id VZMacGraphicsDisplayConfiguration)
-initForScreen_sizeInPoints vzMacGraphicsDisplayConfiguration  screen sizeInPoints =
-  withObjCPtr screen $ \raw_screen ->
-      sendMsg vzMacGraphicsDisplayConfiguration (mkSelector "initForScreen:sizeInPoints:") (retPtr retVoid) [argPtr (castPtr raw_screen :: Ptr ()), argNSSize sizeInPoints] >>= ownedObject . castPtr
+initForScreen_sizeInPoints vzMacGraphicsDisplayConfiguration screen sizeInPoints =
+  sendOwnedMessage vzMacGraphicsDisplayConfiguration initForScreen_sizeInPointsSelector (toNSScreen screen) sizeInPoints
 
 -- | The width of the display, in pixels.
 --
 -- ObjC selector: @- widthInPixels@
 widthInPixels :: IsVZMacGraphicsDisplayConfiguration vzMacGraphicsDisplayConfiguration => vzMacGraphicsDisplayConfiguration -> IO CLong
-widthInPixels vzMacGraphicsDisplayConfiguration  =
-    sendMsg vzMacGraphicsDisplayConfiguration (mkSelector "widthInPixels") retCLong []
+widthInPixels vzMacGraphicsDisplayConfiguration =
+  sendMessage vzMacGraphicsDisplayConfiguration widthInPixelsSelector
 
 -- | The width of the display, in pixels.
 --
 -- ObjC selector: @- setWidthInPixels:@
 setWidthInPixels :: IsVZMacGraphicsDisplayConfiguration vzMacGraphicsDisplayConfiguration => vzMacGraphicsDisplayConfiguration -> CLong -> IO ()
-setWidthInPixels vzMacGraphicsDisplayConfiguration  value =
-    sendMsg vzMacGraphicsDisplayConfiguration (mkSelector "setWidthInPixels:") retVoid [argCLong value]
+setWidthInPixels vzMacGraphicsDisplayConfiguration value =
+  sendMessage vzMacGraphicsDisplayConfiguration setWidthInPixelsSelector value
 
 -- | The height of the display, in pixels.
 --
 -- ObjC selector: @- heightInPixels@
 heightInPixels :: IsVZMacGraphicsDisplayConfiguration vzMacGraphicsDisplayConfiguration => vzMacGraphicsDisplayConfiguration -> IO CLong
-heightInPixels vzMacGraphicsDisplayConfiguration  =
-    sendMsg vzMacGraphicsDisplayConfiguration (mkSelector "heightInPixels") retCLong []
+heightInPixels vzMacGraphicsDisplayConfiguration =
+  sendMessage vzMacGraphicsDisplayConfiguration heightInPixelsSelector
 
 -- | The height of the display, in pixels.
 --
 -- ObjC selector: @- setHeightInPixels:@
 setHeightInPixels :: IsVZMacGraphicsDisplayConfiguration vzMacGraphicsDisplayConfiguration => vzMacGraphicsDisplayConfiguration -> CLong -> IO ()
-setHeightInPixels vzMacGraphicsDisplayConfiguration  value =
-    sendMsg vzMacGraphicsDisplayConfiguration (mkSelector "setHeightInPixels:") retVoid [argCLong value]
+setHeightInPixels vzMacGraphicsDisplayConfiguration value =
+  sendMessage vzMacGraphicsDisplayConfiguration setHeightInPixelsSelector value
 
 -- | The pixel density as a number of pixels per inch.
 --
 -- ObjC selector: @- pixelsPerInch@
 pixelsPerInch :: IsVZMacGraphicsDisplayConfiguration vzMacGraphicsDisplayConfiguration => vzMacGraphicsDisplayConfiguration -> IO CLong
-pixelsPerInch vzMacGraphicsDisplayConfiguration  =
-    sendMsg vzMacGraphicsDisplayConfiguration (mkSelector "pixelsPerInch") retCLong []
+pixelsPerInch vzMacGraphicsDisplayConfiguration =
+  sendMessage vzMacGraphicsDisplayConfiguration pixelsPerInchSelector
 
 -- | The pixel density as a number of pixels per inch.
 --
 -- ObjC selector: @- setPixelsPerInch:@
 setPixelsPerInch :: IsVZMacGraphicsDisplayConfiguration vzMacGraphicsDisplayConfiguration => vzMacGraphicsDisplayConfiguration -> CLong -> IO ()
-setPixelsPerInch vzMacGraphicsDisplayConfiguration  value =
-    sendMsg vzMacGraphicsDisplayConfiguration (mkSelector "setPixelsPerInch:") retVoid [argCLong value]
+setPixelsPerInch vzMacGraphicsDisplayConfiguration value =
+  sendMessage vzMacGraphicsDisplayConfiguration setPixelsPerInchSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithWidthInPixels:heightInPixels:pixelsPerInch:@
-initWithWidthInPixels_heightInPixels_pixelsPerInchSelector :: Selector
+initWithWidthInPixels_heightInPixels_pixelsPerInchSelector :: Selector '[CLong, CLong, CLong] (Id VZMacGraphicsDisplayConfiguration)
 initWithWidthInPixels_heightInPixels_pixelsPerInchSelector = mkSelector "initWithWidthInPixels:heightInPixels:pixelsPerInch:"
 
 -- | @Selector@ for @initForScreen:sizeInPoints:@
-initForScreen_sizeInPointsSelector :: Selector
+initForScreen_sizeInPointsSelector :: Selector '[Id NSScreen, NSSize] (Id VZMacGraphicsDisplayConfiguration)
 initForScreen_sizeInPointsSelector = mkSelector "initForScreen:sizeInPoints:"
 
 -- | @Selector@ for @widthInPixels@
-widthInPixelsSelector :: Selector
+widthInPixelsSelector :: Selector '[] CLong
 widthInPixelsSelector = mkSelector "widthInPixels"
 
 -- | @Selector@ for @setWidthInPixels:@
-setWidthInPixelsSelector :: Selector
+setWidthInPixelsSelector :: Selector '[CLong] ()
 setWidthInPixelsSelector = mkSelector "setWidthInPixels:"
 
 -- | @Selector@ for @heightInPixels@
-heightInPixelsSelector :: Selector
+heightInPixelsSelector :: Selector '[] CLong
 heightInPixelsSelector = mkSelector "heightInPixels"
 
 -- | @Selector@ for @setHeightInPixels:@
-setHeightInPixelsSelector :: Selector
+setHeightInPixelsSelector :: Selector '[CLong] ()
 setHeightInPixelsSelector = mkSelector "setHeightInPixels:"
 
 -- | @Selector@ for @pixelsPerInch@
-pixelsPerInchSelector :: Selector
+pixelsPerInchSelector :: Selector '[] CLong
 pixelsPerInchSelector = mkSelector "pixelsPerInch"
 
 -- | @Selector@ for @setPixelsPerInch:@
-setPixelsPerInchSelector :: Selector
+setPixelsPerInchSelector :: Selector '[CLong] ()
 setPixelsPerInchSelector = mkSelector "setPixelsPerInch:"
 

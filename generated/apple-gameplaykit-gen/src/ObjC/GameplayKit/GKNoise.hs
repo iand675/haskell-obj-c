@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,39 +33,35 @@ module ObjC.GameplayKit.GKNoise
   , maximumWithNoise
   , raiseToPowerWithNoise
   , displaceXWithNoise_yWithNoise_zWithNoise
+  , addWithNoiseSelector
+  , applyAbsoluteValueSelector
+  , applyTurbulenceWithFrequency_power_roughness_seedSelector
+  , clampWithLowerBound_upperBoundSelector
+  , displaceXWithNoise_yWithNoise_zWithNoiseSelector
   , initSelector
-  , noiseWithNoiseSourceSelector
-  , noiseWithNoiseSource_gradientColorsSelector
   , initWithNoiseSourceSelector
   , initWithNoiseSource_gradientColorsSelector
+  , invertSelector
+  , maximumWithNoiseSelector
+  , minimumWithNoiseSelector
+  , multiplyWithNoiseSelector
   , noiseWithComponentNoises_selectionNoiseSelector
   , noiseWithComponentNoises_selectionNoise_componentBoundaries_boundaryBlendDistancesSelector
-  , applyAbsoluteValueSelector
-  , clampWithLowerBound_upperBoundSelector
+  , noiseWithNoiseSourceSelector
+  , noiseWithNoiseSource_gradientColorsSelector
   , raiseToPowerSelector
-  , invertSelector
-  , applyTurbulenceWithFrequency_power_roughness_seedSelector
+  , raiseToPowerWithNoiseSelector
   , remapValuesToCurveWithControlPointsSelector
   , remapValuesToTerracesWithPeaks_terracesInvertedSelector
-  , addWithNoiseSelector
-  , multiplyWithNoiseSelector
-  , minimumWithNoiseSelector
-  , maximumWithNoiseSelector
-  , raiseToPowerWithNoiseSelector
-  , displaceXWithNoise_yWithNoise_zWithNoiseSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,8 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsGKNoise gkNoise => gkNoise -> IO (Id GKNoise)
-init_ gkNoise  =
-    sendMsg gkNoise (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkNoise =
+  sendOwnedMessage gkNoise initSelector
 
 -- | Initializes a noise with the specified noise source.
 --
@@ -87,8 +84,7 @@ noiseWithNoiseSource :: IsGKNoiseSource noiseSource => noiseSource -> IO (Id GKN
 noiseWithNoiseSource noiseSource =
   do
     cls' <- getRequiredClass "GKNoise"
-    withObjCPtr noiseSource $ \raw_noiseSource ->
-      sendClassMsg cls' (mkSelector "noiseWithNoiseSource:") (retPtr retVoid) [argPtr (castPtr raw_noiseSource :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' noiseWithNoiseSourceSelector (toGKNoiseSource noiseSource)
 
 -- | Initializes a noise with the specified noise source and parameters.
 --
@@ -101,9 +97,7 @@ noiseWithNoiseSource_gradientColors :: (IsGKNoiseSource noiseSource, IsNSDiction
 noiseWithNoiseSource_gradientColors noiseSource gradientColors =
   do
     cls' <- getRequiredClass "GKNoise"
-    withObjCPtr noiseSource $ \raw_noiseSource ->
-      withObjCPtr gradientColors $ \raw_gradientColors ->
-        sendClassMsg cls' (mkSelector "noiseWithNoiseSource:gradientColors:") (retPtr retVoid) [argPtr (castPtr raw_noiseSource :: Ptr ()), argPtr (castPtr raw_gradientColors :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' noiseWithNoiseSource_gradientColorsSelector (toGKNoiseSource noiseSource) (toNSDictionary gradientColors)
 
 -- | Initializes a noise with the specified noise source.
 --
@@ -111,9 +105,8 @@ noiseWithNoiseSource_gradientColors noiseSource gradientColors =
 --
 -- ObjC selector: @- initWithNoiseSource:@
 initWithNoiseSource :: (IsGKNoise gkNoise, IsGKNoiseSource noiseSource) => gkNoise -> noiseSource -> IO (Id GKNoise)
-initWithNoiseSource gkNoise  noiseSource =
-  withObjCPtr noiseSource $ \raw_noiseSource ->
-      sendMsg gkNoise (mkSelector "initWithNoiseSource:") (retPtr retVoid) [argPtr (castPtr raw_noiseSource :: Ptr ())] >>= ownedObject . castPtr
+initWithNoiseSource gkNoise noiseSource =
+  sendOwnedMessage gkNoise initWithNoiseSourceSelector (toGKNoiseSource noiseSource)
 
 -- | Initializes a noise with the specified noise source and parameters.
 --
@@ -123,10 +116,8 @@ initWithNoiseSource gkNoise  noiseSource =
 --
 -- ObjC selector: @- initWithNoiseSource:gradientColors:@
 initWithNoiseSource_gradientColors :: (IsGKNoise gkNoise, IsGKNoiseSource noiseSource, IsNSDictionary gradientColors) => gkNoise -> noiseSource -> gradientColors -> IO (Id GKNoise)
-initWithNoiseSource_gradientColors gkNoise  noiseSource gradientColors =
-  withObjCPtr noiseSource $ \raw_noiseSource ->
-    withObjCPtr gradientColors $ \raw_gradientColors ->
-        sendMsg gkNoise (mkSelector "initWithNoiseSource:gradientColors:") (retPtr retVoid) [argPtr (castPtr raw_noiseSource :: Ptr ()), argPtr (castPtr raw_gradientColors :: Ptr ())] >>= ownedObject . castPtr
+initWithNoiseSource_gradientColors gkNoise noiseSource gradientColors =
+  sendOwnedMessage gkNoise initWithNoiseSource_gradientColorsSelector (toGKNoiseSource noiseSource) (toNSDictionary gradientColors)
 
 -- | Initializes a composite noise from one or more component noises.  Useful for combining and layering noises together.
 --
@@ -139,9 +130,7 @@ noiseWithComponentNoises_selectionNoise :: (IsNSArray noises, IsGKNoise selectio
 noiseWithComponentNoises_selectionNoise noises selectionNoise =
   do
     cls' <- getRequiredClass "GKNoise"
-    withObjCPtr noises $ \raw_noises ->
-      withObjCPtr selectionNoise $ \raw_selectionNoise ->
-        sendClassMsg cls' (mkSelector "noiseWithComponentNoises:selectionNoise:") (retPtr retVoid) [argPtr (castPtr raw_noises :: Ptr ()), argPtr (castPtr raw_selectionNoise :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' noiseWithComponentNoises_selectionNoiseSelector (toNSArray noises) (toGKNoise selectionNoise)
 
 -- | Initializes a composite noise from one or more component noises.  Useful for combining and layering noises together.
 --
@@ -158,18 +147,14 @@ noiseWithComponentNoises_selectionNoise_componentBoundaries_boundaryBlendDistanc
 noiseWithComponentNoises_selectionNoise_componentBoundaries_boundaryBlendDistances noises selectionNoise componentBoundaries blendDistances =
   do
     cls' <- getRequiredClass "GKNoise"
-    withObjCPtr noises $ \raw_noises ->
-      withObjCPtr selectionNoise $ \raw_selectionNoise ->
-        withObjCPtr componentBoundaries $ \raw_componentBoundaries ->
-          withObjCPtr blendDistances $ \raw_blendDistances ->
-            sendClassMsg cls' (mkSelector "noiseWithComponentNoises:selectionNoise:componentBoundaries:boundaryBlendDistances:") (retPtr retVoid) [argPtr (castPtr raw_noises :: Ptr ()), argPtr (castPtr raw_selectionNoise :: Ptr ()), argPtr (castPtr raw_componentBoundaries :: Ptr ()), argPtr (castPtr raw_blendDistances :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' noiseWithComponentNoises_selectionNoise_componentBoundaries_boundaryBlendDistancesSelector (toNSArray noises) (toGKNoise selectionNoise) (toNSArray componentBoundaries) (toNSArray blendDistances)
 
 -- | Takes the absoltue value of all noise positions.
 --
 -- ObjC selector: @- applyAbsoluteValue@
 applyAbsoluteValue :: IsGKNoise gkNoise => gkNoise -> IO ()
-applyAbsoluteValue gkNoise  =
-    sendMsg gkNoise (mkSelector "applyAbsoluteValue") retVoid []
+applyAbsoluteValue gkNoise =
+  sendMessage gkNoise applyAbsoluteValueSelector
 
 -- | Clamps all noise values to the specified bounds.
 --
@@ -179,8 +164,8 @@ applyAbsoluteValue gkNoise  =
 --
 -- ObjC selector: @- clampWithLowerBound:upperBound:@
 clampWithLowerBound_upperBound :: IsGKNoise gkNoise => gkNoise -> CDouble -> CDouble -> IO ()
-clampWithLowerBound_upperBound gkNoise  lowerBound upperBound =
-    sendMsg gkNoise (mkSelector "clampWithLowerBound:upperBound:") retVoid [argCDouble lowerBound, argCDouble upperBound]
+clampWithLowerBound_upperBound gkNoise lowerBound upperBound =
+  sendMessage gkNoise clampWithLowerBound_upperBoundSelector lowerBound upperBound
 
 -- | Raises all noise values to the specified power.
 --
@@ -188,22 +173,22 @@ clampWithLowerBound_upperBound gkNoise  lowerBound upperBound =
 --
 -- ObjC selector: @- raiseToPower:@
 raiseToPower :: IsGKNoise gkNoise => gkNoise -> CDouble -> IO ()
-raiseToPower gkNoise  power =
-    sendMsg gkNoise (mkSelector "raiseToPower:") retVoid [argCDouble power]
+raiseToPower gkNoise power =
+  sendMessage gkNoise raiseToPowerSelector power
 
 -- | Inverts all noise values, from positive to negative and vice versa.
 --
 -- ObjC selector: @- invert@
 invert :: IsGKNoise gkNoise => gkNoise -> IO ()
-invert gkNoise  =
-    sendMsg gkNoise (mkSelector "invert") retVoid []
+invert gkNoise =
+  sendMessage gkNoise invertSelector
 
 -- | Applies a turbulent displacement to all noise values.
 --
 -- ObjC selector: @- applyTurbulenceWithFrequency:power:roughness:seed:@
 applyTurbulenceWithFrequency_power_roughness_seed :: IsGKNoise gkNoise => gkNoise -> CDouble -> CDouble -> CInt -> CInt -> IO ()
-applyTurbulenceWithFrequency_power_roughness_seed gkNoise  frequency power roughness seed =
-    sendMsg gkNoise (mkSelector "applyTurbulenceWithFrequency:power:roughness:seed:") retVoid [argCDouble frequency, argCDouble power, argCInt roughness, argCInt seed]
+applyTurbulenceWithFrequency_power_roughness_seed gkNoise frequency power roughness seed =
+  sendMessage gkNoise applyTurbulenceWithFrequency_power_roughness_seedSelector frequency power roughness seed
 
 -- | Remaps all noise values to a smooth curve that passes through the specified control points.
 --
@@ -211,9 +196,8 @@ applyTurbulenceWithFrequency_power_roughness_seed gkNoise  frequency power rough
 --
 -- ObjC selector: @- remapValuesToCurveWithControlPoints:@
 remapValuesToCurveWithControlPoints :: (IsGKNoise gkNoise, IsNSDictionary controlPoints) => gkNoise -> controlPoints -> IO ()
-remapValuesToCurveWithControlPoints gkNoise  controlPoints =
-  withObjCPtr controlPoints $ \raw_controlPoints ->
-      sendMsg gkNoise (mkSelector "remapValuesToCurveWithControlPoints:") retVoid [argPtr (castPtr raw_controlPoints :: Ptr ())]
+remapValuesToCurveWithControlPoints gkNoise controlPoints =
+  sendMessage gkNoise remapValuesToCurveWithControlPointsSelector (toNSDictionary controlPoints)
 
 -- | Remaps all noise values to one or more terraces with peaks.  Useful for creating valleys and trenches.
 --
@@ -223,9 +207,8 @@ remapValuesToCurveWithControlPoints gkNoise  controlPoints =
 --
 -- ObjC selector: @- remapValuesToTerracesWithPeaks:terracesInverted:@
 remapValuesToTerracesWithPeaks_terracesInverted :: (IsGKNoise gkNoise, IsNSArray peakInputValues) => gkNoise -> peakInputValues -> Bool -> IO ()
-remapValuesToTerracesWithPeaks_terracesInverted gkNoise  peakInputValues inverted =
-  withObjCPtr peakInputValues $ \raw_peakInputValues ->
-      sendMsg gkNoise (mkSelector "remapValuesToTerracesWithPeaks:terracesInverted:") retVoid [argPtr (castPtr raw_peakInputValues :: Ptr ()), argCULong (if inverted then 1 else 0)]
+remapValuesToTerracesWithPeaks_terracesInverted gkNoise peakInputValues inverted =
+  sendMessage gkNoise remapValuesToTerracesWithPeaks_terracesInvertedSelector (toNSArray peakInputValues) inverted
 
 -- | Adds all noise values by the noise values at the same position in specified noise.
 --
@@ -233,9 +216,8 @@ remapValuesToTerracesWithPeaks_terracesInverted gkNoise  peakInputValues inverte
 --
 -- ObjC selector: @- addWithNoise:@
 addWithNoise :: (IsGKNoise gkNoise, IsGKNoise noise) => gkNoise -> noise -> IO ()
-addWithNoise gkNoise  noise =
-  withObjCPtr noise $ \raw_noise ->
-      sendMsg gkNoise (mkSelector "addWithNoise:") retVoid [argPtr (castPtr raw_noise :: Ptr ())]
+addWithNoise gkNoise noise =
+  sendMessage gkNoise addWithNoiseSelector (toGKNoise noise)
 
 -- | Multiplies all noise values by the noise values at the same position in specified noise.
 --
@@ -243,9 +225,8 @@ addWithNoise gkNoise  noise =
 --
 -- ObjC selector: @- multiplyWithNoise:@
 multiplyWithNoise :: (IsGKNoise gkNoise, IsGKNoise noise) => gkNoise -> noise -> IO ()
-multiplyWithNoise gkNoise  noise =
-  withObjCPtr noise $ \raw_noise ->
-      sendMsg gkNoise (mkSelector "multiplyWithNoise:") retVoid [argPtr (castPtr raw_noise :: Ptr ())]
+multiplyWithNoise gkNoise noise =
+  sendMessage gkNoise multiplyWithNoiseSelector (toGKNoise noise)
 
 -- | Takes the minimum value between this noise and the specified noise at each position.
 --
@@ -253,9 +234,8 @@ multiplyWithNoise gkNoise  noise =
 --
 -- ObjC selector: @- minimumWithNoise:@
 minimumWithNoise :: (IsGKNoise gkNoise, IsGKNoise noise) => gkNoise -> noise -> IO ()
-minimumWithNoise gkNoise  noise =
-  withObjCPtr noise $ \raw_noise ->
-      sendMsg gkNoise (mkSelector "minimumWithNoise:") retVoid [argPtr (castPtr raw_noise :: Ptr ())]
+minimumWithNoise gkNoise noise =
+  sendMessage gkNoise minimumWithNoiseSelector (toGKNoise noise)
 
 -- | Takes the maximum value between this noise and the specified noise at each position.
 --
@@ -263,9 +243,8 @@ minimumWithNoise gkNoise  noise =
 --
 -- ObjC selector: @- maximumWithNoise:@
 maximumWithNoise :: (IsGKNoise gkNoise, IsGKNoise noise) => gkNoise -> noise -> IO ()
-maximumWithNoise gkNoise  noise =
-  withObjCPtr noise $ \raw_noise ->
-      sendMsg gkNoise (mkSelector "maximumWithNoise:") retVoid [argPtr (castPtr raw_noise :: Ptr ())]
+maximumWithNoise gkNoise noise =
+  sendMessage gkNoise maximumWithNoiseSelector (toGKNoise noise)
 
 -- | Raises all noise values to the power of the value at the same position of the specified noise.
 --
@@ -273,9 +252,8 @@ maximumWithNoise gkNoise  noise =
 --
 -- ObjC selector: @- raiseToPowerWithNoise:@
 raiseToPowerWithNoise :: (IsGKNoise gkNoise, IsGKNoise noise) => gkNoise -> noise -> IO ()
-raiseToPowerWithNoise gkNoise  noise =
-  withObjCPtr noise $ \raw_noise ->
-      sendMsg gkNoise (mkSelector "raiseToPowerWithNoise:") retVoid [argPtr (castPtr raw_noise :: Ptr ())]
+raiseToPowerWithNoise gkNoise noise =
+  sendMessage gkNoise raiseToPowerWithNoiseSelector (toGKNoise noise)
 
 -- | Displaces all noise values by the values at the same positions of the specified noises.
 --
@@ -287,93 +265,90 @@ raiseToPowerWithNoise gkNoise  noise =
 --
 -- ObjC selector: @- displaceXWithNoise:yWithNoise:zWithNoise:@
 displaceXWithNoise_yWithNoise_zWithNoise :: (IsGKNoise gkNoise, IsGKNoise xDisplacementNoise, IsGKNoise yDisplacementNoise, IsGKNoise zDisplacementNoise) => gkNoise -> xDisplacementNoise -> yDisplacementNoise -> zDisplacementNoise -> IO ()
-displaceXWithNoise_yWithNoise_zWithNoise gkNoise  xDisplacementNoise yDisplacementNoise zDisplacementNoise =
-  withObjCPtr xDisplacementNoise $ \raw_xDisplacementNoise ->
-    withObjCPtr yDisplacementNoise $ \raw_yDisplacementNoise ->
-      withObjCPtr zDisplacementNoise $ \raw_zDisplacementNoise ->
-          sendMsg gkNoise (mkSelector "displaceXWithNoise:yWithNoise:zWithNoise:") retVoid [argPtr (castPtr raw_xDisplacementNoise :: Ptr ()), argPtr (castPtr raw_yDisplacementNoise :: Ptr ()), argPtr (castPtr raw_zDisplacementNoise :: Ptr ())]
+displaceXWithNoise_yWithNoise_zWithNoise gkNoise xDisplacementNoise yDisplacementNoise zDisplacementNoise =
+  sendMessage gkNoise displaceXWithNoise_yWithNoise_zWithNoiseSelector (toGKNoise xDisplacementNoise) (toGKNoise yDisplacementNoise) (toGKNoise zDisplacementNoise)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKNoise)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @noiseWithNoiseSource:@
-noiseWithNoiseSourceSelector :: Selector
+noiseWithNoiseSourceSelector :: Selector '[Id GKNoiseSource] (Id GKNoise)
 noiseWithNoiseSourceSelector = mkSelector "noiseWithNoiseSource:"
 
 -- | @Selector@ for @noiseWithNoiseSource:gradientColors:@
-noiseWithNoiseSource_gradientColorsSelector :: Selector
+noiseWithNoiseSource_gradientColorsSelector :: Selector '[Id GKNoiseSource, Id NSDictionary] (Id GKNoise)
 noiseWithNoiseSource_gradientColorsSelector = mkSelector "noiseWithNoiseSource:gradientColors:"
 
 -- | @Selector@ for @initWithNoiseSource:@
-initWithNoiseSourceSelector :: Selector
+initWithNoiseSourceSelector :: Selector '[Id GKNoiseSource] (Id GKNoise)
 initWithNoiseSourceSelector = mkSelector "initWithNoiseSource:"
 
 -- | @Selector@ for @initWithNoiseSource:gradientColors:@
-initWithNoiseSource_gradientColorsSelector :: Selector
+initWithNoiseSource_gradientColorsSelector :: Selector '[Id GKNoiseSource, Id NSDictionary] (Id GKNoise)
 initWithNoiseSource_gradientColorsSelector = mkSelector "initWithNoiseSource:gradientColors:"
 
 -- | @Selector@ for @noiseWithComponentNoises:selectionNoise:@
-noiseWithComponentNoises_selectionNoiseSelector :: Selector
+noiseWithComponentNoises_selectionNoiseSelector :: Selector '[Id NSArray, Id GKNoise] (Id GKNoise)
 noiseWithComponentNoises_selectionNoiseSelector = mkSelector "noiseWithComponentNoises:selectionNoise:"
 
 -- | @Selector@ for @noiseWithComponentNoises:selectionNoise:componentBoundaries:boundaryBlendDistances:@
-noiseWithComponentNoises_selectionNoise_componentBoundaries_boundaryBlendDistancesSelector :: Selector
+noiseWithComponentNoises_selectionNoise_componentBoundaries_boundaryBlendDistancesSelector :: Selector '[Id NSArray, Id GKNoise, Id NSArray, Id NSArray] (Id GKNoise)
 noiseWithComponentNoises_selectionNoise_componentBoundaries_boundaryBlendDistancesSelector = mkSelector "noiseWithComponentNoises:selectionNoise:componentBoundaries:boundaryBlendDistances:"
 
 -- | @Selector@ for @applyAbsoluteValue@
-applyAbsoluteValueSelector :: Selector
+applyAbsoluteValueSelector :: Selector '[] ()
 applyAbsoluteValueSelector = mkSelector "applyAbsoluteValue"
 
 -- | @Selector@ for @clampWithLowerBound:upperBound:@
-clampWithLowerBound_upperBoundSelector :: Selector
+clampWithLowerBound_upperBoundSelector :: Selector '[CDouble, CDouble] ()
 clampWithLowerBound_upperBoundSelector = mkSelector "clampWithLowerBound:upperBound:"
 
 -- | @Selector@ for @raiseToPower:@
-raiseToPowerSelector :: Selector
+raiseToPowerSelector :: Selector '[CDouble] ()
 raiseToPowerSelector = mkSelector "raiseToPower:"
 
 -- | @Selector@ for @invert@
-invertSelector :: Selector
+invertSelector :: Selector '[] ()
 invertSelector = mkSelector "invert"
 
 -- | @Selector@ for @applyTurbulenceWithFrequency:power:roughness:seed:@
-applyTurbulenceWithFrequency_power_roughness_seedSelector :: Selector
+applyTurbulenceWithFrequency_power_roughness_seedSelector :: Selector '[CDouble, CDouble, CInt, CInt] ()
 applyTurbulenceWithFrequency_power_roughness_seedSelector = mkSelector "applyTurbulenceWithFrequency:power:roughness:seed:"
 
 -- | @Selector@ for @remapValuesToCurveWithControlPoints:@
-remapValuesToCurveWithControlPointsSelector :: Selector
+remapValuesToCurveWithControlPointsSelector :: Selector '[Id NSDictionary] ()
 remapValuesToCurveWithControlPointsSelector = mkSelector "remapValuesToCurveWithControlPoints:"
 
 -- | @Selector@ for @remapValuesToTerracesWithPeaks:terracesInverted:@
-remapValuesToTerracesWithPeaks_terracesInvertedSelector :: Selector
+remapValuesToTerracesWithPeaks_terracesInvertedSelector :: Selector '[Id NSArray, Bool] ()
 remapValuesToTerracesWithPeaks_terracesInvertedSelector = mkSelector "remapValuesToTerracesWithPeaks:terracesInverted:"
 
 -- | @Selector@ for @addWithNoise:@
-addWithNoiseSelector :: Selector
+addWithNoiseSelector :: Selector '[Id GKNoise] ()
 addWithNoiseSelector = mkSelector "addWithNoise:"
 
 -- | @Selector@ for @multiplyWithNoise:@
-multiplyWithNoiseSelector :: Selector
+multiplyWithNoiseSelector :: Selector '[Id GKNoise] ()
 multiplyWithNoiseSelector = mkSelector "multiplyWithNoise:"
 
 -- | @Selector@ for @minimumWithNoise:@
-minimumWithNoiseSelector :: Selector
+minimumWithNoiseSelector :: Selector '[Id GKNoise] ()
 minimumWithNoiseSelector = mkSelector "minimumWithNoise:"
 
 -- | @Selector@ for @maximumWithNoise:@
-maximumWithNoiseSelector :: Selector
+maximumWithNoiseSelector :: Selector '[Id GKNoise] ()
 maximumWithNoiseSelector = mkSelector "maximumWithNoise:"
 
 -- | @Selector@ for @raiseToPowerWithNoise:@
-raiseToPowerWithNoiseSelector :: Selector
+raiseToPowerWithNoiseSelector :: Selector '[Id GKNoise] ()
 raiseToPowerWithNoiseSelector = mkSelector "raiseToPowerWithNoise:"
 
 -- | @Selector@ for @displaceXWithNoise:yWithNoise:zWithNoise:@
-displaceXWithNoise_yWithNoise_zWithNoiseSelector :: Selector
+displaceXWithNoise_yWithNoise_zWithNoiseSelector :: Selector '[Id GKNoise, Id GKNoise, Id GKNoise] ()
 displaceXWithNoise_yWithNoise_zWithNoiseSelector = mkSelector "displaceXWithNoise:yWithNoise:zWithNoise:"
 

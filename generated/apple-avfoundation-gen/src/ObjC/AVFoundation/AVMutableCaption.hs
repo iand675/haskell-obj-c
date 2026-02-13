@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,28 +34,28 @@ module ObjC.AVFoundation.AVMutableCaption
   , setRegion
   , textAlignment
   , setTextAlignment
-  , setTextColor_inRangeSelector
-  , setBackgroundColor_inRangeSelector
-  , setFontWeight_inRangeSelector
-  , setFontStyle_inRangeSelector
-  , setDecoration_inRangeSelector
-  , setTextCombine_inRangeSelector
-  , setRuby_inRangeSelector
-  , removeTextColorInRangeSelector
-  , removeBackgroundColorInRangeSelector
-  , removeFontWeightInRangeSelector
-  , removeFontStyleInRangeSelector
-  , removeDecorationInRangeSelector
-  , removeTextCombineInRangeSelector
-  , removeRubyInRangeSelector
-  , textSelector
-  , setTextSelector
   , animationSelector
-  , setAnimationSelector
   , regionSelector
+  , removeBackgroundColorInRangeSelector
+  , removeDecorationInRangeSelector
+  , removeFontStyleInRangeSelector
+  , removeFontWeightInRangeSelector
+  , removeRubyInRangeSelector
+  , removeTextColorInRangeSelector
+  , removeTextCombineInRangeSelector
+  , setAnimationSelector
+  , setBackgroundColor_inRangeSelector
+  , setDecoration_inRangeSelector
+  , setFontStyle_inRangeSelector
+  , setFontWeight_inRangeSelector
   , setRegionSelector
-  , textAlignmentSelector
+  , setRuby_inRangeSelector
   , setTextAlignmentSelector
+  , setTextColor_inRangeSelector
+  , setTextCombine_inRangeSelector
+  , setTextSelector
+  , textAlignmentSelector
+  , textSelector
 
   -- * Enum types
   , AVCaptionAnimation(AVCaptionAnimation)
@@ -89,15 +90,11 @@ module ObjC.AVFoundation.AVMutableCaption
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -114,8 +111,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setTextColor:inRange:@
 setTextColor_inRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> Ptr () -> NSRange -> IO ()
-setTextColor_inRange avMutableCaption  color range =
-    sendMsg avMutableCaption (mkSelector "setTextColor:inRange:") retVoid [argPtr color, argNSRange range]
+setTextColor_inRange avMutableCaption color range =
+  sendMessage avMutableCaption setTextColor_inRangeSelector color range
 
 -- | setBackgroundColor:inRange:
 --
@@ -125,8 +122,8 @@ setTextColor_inRange avMutableCaption  color range =
 --
 -- ObjC selector: @- setBackgroundColor:inRange:@
 setBackgroundColor_inRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> Ptr () -> NSRange -> IO ()
-setBackgroundColor_inRange avMutableCaption  color range =
-    sendMsg avMutableCaption (mkSelector "setBackgroundColor:inRange:") retVoid [argPtr color, argNSRange range]
+setBackgroundColor_inRange avMutableCaption color range =
+  sendMessage avMutableCaption setBackgroundColor_inRangeSelector color range
 
 -- | setFontWeight:inRange:
 --
@@ -136,8 +133,8 @@ setBackgroundColor_inRange avMutableCaption  color range =
 --
 -- ObjC selector: @- setFontWeight:inRange:@
 setFontWeight_inRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> AVCaptionFontWeight -> NSRange -> IO ()
-setFontWeight_inRange avMutableCaption  fontWeight range =
-    sendMsg avMutableCaption (mkSelector "setFontWeight:inRange:") retVoid [argCLong (coerce fontWeight), argNSRange range]
+setFontWeight_inRange avMutableCaption fontWeight range =
+  sendMessage avMutableCaption setFontWeight_inRangeSelector fontWeight range
 
 -- | setFontStyle:inRange:
 --
@@ -147,8 +144,8 @@ setFontWeight_inRange avMutableCaption  fontWeight range =
 --
 -- ObjC selector: @- setFontStyle:inRange:@
 setFontStyle_inRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> AVCaptionFontStyle -> NSRange -> IO ()
-setFontStyle_inRange avMutableCaption  fontStyle range =
-    sendMsg avMutableCaption (mkSelector "setFontStyle:inRange:") retVoid [argCLong (coerce fontStyle), argNSRange range]
+setFontStyle_inRange avMutableCaption fontStyle range =
+  sendMessage avMutableCaption setFontStyle_inRangeSelector fontStyle range
 
 -- | setDecoration:inRange:
 --
@@ -158,8 +155,8 @@ setFontStyle_inRange avMutableCaption  fontStyle range =
 --
 -- ObjC selector: @- setDecoration:inRange:@
 setDecoration_inRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> AVCaptionDecoration -> NSRange -> IO ()
-setDecoration_inRange avMutableCaption  decoration range =
-    sendMsg avMutableCaption (mkSelector "setDecoration:inRange:") retVoid [argCULong (coerce decoration), argNSRange range]
+setDecoration_inRange avMutableCaption decoration range =
+  sendMessage avMutableCaption setDecoration_inRangeSelector decoration range
 
 -- | setTextCombine:inRange:
 --
@@ -169,8 +166,8 @@ setDecoration_inRange avMutableCaption  decoration range =
 --
 -- ObjC selector: @- setTextCombine:inRange:@
 setTextCombine_inRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> AVCaptionTextCombine -> NSRange -> IO ()
-setTextCombine_inRange avMutableCaption  textCombine range =
-    sendMsg avMutableCaption (mkSelector "setTextCombine:inRange:") retVoid [argCLong (coerce textCombine), argNSRange range]
+setTextCombine_inRange avMutableCaption textCombine range =
+  sendMessage avMutableCaption setTextCombine_inRangeSelector textCombine range
 
 -- | setRuby:inRange:
 --
@@ -180,9 +177,8 @@ setTextCombine_inRange avMutableCaption  textCombine range =
 --
 -- ObjC selector: @- setRuby:inRange:@
 setRuby_inRange :: (IsAVMutableCaption avMutableCaption, IsAVCaptionRuby ruby) => avMutableCaption -> ruby -> NSRange -> IO ()
-setRuby_inRange avMutableCaption  ruby range =
-  withObjCPtr ruby $ \raw_ruby ->
-      sendMsg avMutableCaption (mkSelector "setRuby:inRange:") retVoid [argPtr (castPtr raw_ruby :: Ptr ()), argNSRange range]
+setRuby_inRange avMutableCaption ruby range =
+  sendMessage avMutableCaption setRuby_inRangeSelector (toAVCaptionRuby ruby) range
 
 -- | removeTextColorInRange:
 --
@@ -192,8 +188,8 @@ setRuby_inRange avMutableCaption  ruby range =
 --
 -- ObjC selector: @- removeTextColorInRange:@
 removeTextColorInRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> NSRange -> IO ()
-removeTextColorInRange avMutableCaption  range =
-    sendMsg avMutableCaption (mkSelector "removeTextColorInRange:") retVoid [argNSRange range]
+removeTextColorInRange avMutableCaption range =
+  sendMessage avMutableCaption removeTextColorInRangeSelector range
 
 -- | removeBackgroundColorInRange:
 --
@@ -203,8 +199,8 @@ removeTextColorInRange avMutableCaption  range =
 --
 -- ObjC selector: @- removeBackgroundColorInRange:@
 removeBackgroundColorInRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> NSRange -> IO ()
-removeBackgroundColorInRange avMutableCaption  range =
-    sendMsg avMutableCaption (mkSelector "removeBackgroundColorInRange:") retVoid [argNSRange range]
+removeBackgroundColorInRange avMutableCaption range =
+  sendMessage avMutableCaption removeBackgroundColorInRangeSelector range
 
 -- | removeFontWeightInRange:
 --
@@ -214,8 +210,8 @@ removeBackgroundColorInRange avMutableCaption  range =
 --
 -- ObjC selector: @- removeFontWeightInRange:@
 removeFontWeightInRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> NSRange -> IO ()
-removeFontWeightInRange avMutableCaption  range =
-    sendMsg avMutableCaption (mkSelector "removeFontWeightInRange:") retVoid [argNSRange range]
+removeFontWeightInRange avMutableCaption range =
+  sendMessage avMutableCaption removeFontWeightInRangeSelector range
 
 -- | removeFontStyleInRange:
 --
@@ -225,8 +221,8 @@ removeFontWeightInRange avMutableCaption  range =
 --
 -- ObjC selector: @- removeFontStyleInRange:@
 removeFontStyleInRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> NSRange -> IO ()
-removeFontStyleInRange avMutableCaption  range =
-    sendMsg avMutableCaption (mkSelector "removeFontStyleInRange:") retVoid [argNSRange range]
+removeFontStyleInRange avMutableCaption range =
+  sendMessage avMutableCaption removeFontStyleInRangeSelector range
 
 -- | removeDecorationInRange:
 --
@@ -236,8 +232,8 @@ removeFontStyleInRange avMutableCaption  range =
 --
 -- ObjC selector: @- removeDecorationInRange:@
 removeDecorationInRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> NSRange -> IO ()
-removeDecorationInRange avMutableCaption  range =
-    sendMsg avMutableCaption (mkSelector "removeDecorationInRange:") retVoid [argNSRange range]
+removeDecorationInRange avMutableCaption range =
+  sendMessage avMutableCaption removeDecorationInRangeSelector range
 
 -- | removeTextCombineInRange:
 --
@@ -247,8 +243,8 @@ removeDecorationInRange avMutableCaption  range =
 --
 -- ObjC selector: @- removeTextCombineInRange:@
 removeTextCombineInRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> NSRange -> IO ()
-removeTextCombineInRange avMutableCaption  range =
-    sendMsg avMutableCaption (mkSelector "removeTextCombineInRange:") retVoid [argNSRange range]
+removeTextCombineInRange avMutableCaption range =
+  sendMessage avMutableCaption removeTextCombineInRangeSelector range
 
 -- | removeRubyInRange:
 --
@@ -258,8 +254,8 @@ removeTextCombineInRange avMutableCaption  range =
 --
 -- ObjC selector: @- removeRubyInRange:@
 removeRubyInRange :: IsAVMutableCaption avMutableCaption => avMutableCaption -> NSRange -> IO ()
-removeRubyInRange avMutableCaption  range =
-    sendMsg avMutableCaption (mkSelector "removeRubyInRange:") retVoid [argNSRange range]
+removeRubyInRange avMutableCaption range =
+  sendMessage avMutableCaption removeRubyInRangeSelector range
 
 -- | text
 --
@@ -269,8 +265,8 @@ removeRubyInRange avMutableCaption  range =
 --
 -- ObjC selector: @- text@
 text :: IsAVMutableCaption avMutableCaption => avMutableCaption -> IO (Id NSString)
-text avMutableCaption  =
-    sendMsg avMutableCaption (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text avMutableCaption =
+  sendMessage avMutableCaption textSelector
 
 -- | text
 --
@@ -280,19 +276,18 @@ text avMutableCaption  =
 --
 -- ObjC selector: @- setText:@
 setText :: (IsAVMutableCaption avMutableCaption, IsNSString value) => avMutableCaption -> value -> IO ()
-setText avMutableCaption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableCaption (mkSelector "setText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setText avMutableCaption value =
+  sendMessage avMutableCaption setTextSelector (toNSString value)
 
 -- | @- animation@
 animation :: IsAVMutableCaption avMutableCaption => avMutableCaption -> IO AVCaptionAnimation
-animation avMutableCaption  =
-    fmap (coerce :: CLong -> AVCaptionAnimation) $ sendMsg avMutableCaption (mkSelector "animation") retCLong []
+animation avMutableCaption =
+  sendMessage avMutableCaption animationSelector
 
 -- | @- setAnimation:@
 setAnimation :: IsAVMutableCaption avMutableCaption => avMutableCaption -> AVCaptionAnimation -> IO ()
-setAnimation avMutableCaption  value =
-    sendMsg avMutableCaption (mkSelector "setAnimation:") retVoid [argCLong (coerce value)]
+setAnimation avMutableCaption value =
+  sendMessage avMutableCaption setAnimationSelector value
 
 -- | region
 --
@@ -302,8 +297,8 @@ setAnimation avMutableCaption  value =
 --
 -- ObjC selector: @- region@
 region :: IsAVMutableCaption avMutableCaption => avMutableCaption -> IO (Id AVCaptionRegion)
-region avMutableCaption  =
-    sendMsg avMutableCaption (mkSelector "region") (retPtr retVoid) [] >>= retainedObject . castPtr
+region avMutableCaption =
+  sendMessage avMutableCaption regionSelector
 
 -- | region
 --
@@ -313,9 +308,8 @@ region avMutableCaption  =
 --
 -- ObjC selector: @- setRegion:@
 setRegion :: (IsAVMutableCaption avMutableCaption, IsAVCaptionRegion value) => avMutableCaption -> value -> IO ()
-setRegion avMutableCaption  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableCaption (mkSelector "setRegion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRegion avMutableCaption value =
+  sendMessage avMutableCaption setRegionSelector (toAVCaptionRegion value)
 
 -- | textAlignment
 --
@@ -323,8 +317,8 @@ setRegion avMutableCaption  value =
 --
 -- ObjC selector: @- textAlignment@
 textAlignment :: IsAVMutableCaption avMutableCaption => avMutableCaption -> IO AVCaptionTextAlignment
-textAlignment avMutableCaption  =
-    fmap (coerce :: CLong -> AVCaptionTextAlignment) $ sendMsg avMutableCaption (mkSelector "textAlignment") retCLong []
+textAlignment avMutableCaption =
+  sendMessage avMutableCaption textAlignmentSelector
 
 -- | textAlignment
 --
@@ -332,98 +326,98 @@ textAlignment avMutableCaption  =
 --
 -- ObjC selector: @- setTextAlignment:@
 setTextAlignment :: IsAVMutableCaption avMutableCaption => avMutableCaption -> AVCaptionTextAlignment -> IO ()
-setTextAlignment avMutableCaption  value =
-    sendMsg avMutableCaption (mkSelector "setTextAlignment:") retVoid [argCLong (coerce value)]
+setTextAlignment avMutableCaption value =
+  sendMessage avMutableCaption setTextAlignmentSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setTextColor:inRange:@
-setTextColor_inRangeSelector :: Selector
+setTextColor_inRangeSelector :: Selector '[Ptr (), NSRange] ()
 setTextColor_inRangeSelector = mkSelector "setTextColor:inRange:"
 
 -- | @Selector@ for @setBackgroundColor:inRange:@
-setBackgroundColor_inRangeSelector :: Selector
+setBackgroundColor_inRangeSelector :: Selector '[Ptr (), NSRange] ()
 setBackgroundColor_inRangeSelector = mkSelector "setBackgroundColor:inRange:"
 
 -- | @Selector@ for @setFontWeight:inRange:@
-setFontWeight_inRangeSelector :: Selector
+setFontWeight_inRangeSelector :: Selector '[AVCaptionFontWeight, NSRange] ()
 setFontWeight_inRangeSelector = mkSelector "setFontWeight:inRange:"
 
 -- | @Selector@ for @setFontStyle:inRange:@
-setFontStyle_inRangeSelector :: Selector
+setFontStyle_inRangeSelector :: Selector '[AVCaptionFontStyle, NSRange] ()
 setFontStyle_inRangeSelector = mkSelector "setFontStyle:inRange:"
 
 -- | @Selector@ for @setDecoration:inRange:@
-setDecoration_inRangeSelector :: Selector
+setDecoration_inRangeSelector :: Selector '[AVCaptionDecoration, NSRange] ()
 setDecoration_inRangeSelector = mkSelector "setDecoration:inRange:"
 
 -- | @Selector@ for @setTextCombine:inRange:@
-setTextCombine_inRangeSelector :: Selector
+setTextCombine_inRangeSelector :: Selector '[AVCaptionTextCombine, NSRange] ()
 setTextCombine_inRangeSelector = mkSelector "setTextCombine:inRange:"
 
 -- | @Selector@ for @setRuby:inRange:@
-setRuby_inRangeSelector :: Selector
+setRuby_inRangeSelector :: Selector '[Id AVCaptionRuby, NSRange] ()
 setRuby_inRangeSelector = mkSelector "setRuby:inRange:"
 
 -- | @Selector@ for @removeTextColorInRange:@
-removeTextColorInRangeSelector :: Selector
+removeTextColorInRangeSelector :: Selector '[NSRange] ()
 removeTextColorInRangeSelector = mkSelector "removeTextColorInRange:"
 
 -- | @Selector@ for @removeBackgroundColorInRange:@
-removeBackgroundColorInRangeSelector :: Selector
+removeBackgroundColorInRangeSelector :: Selector '[NSRange] ()
 removeBackgroundColorInRangeSelector = mkSelector "removeBackgroundColorInRange:"
 
 -- | @Selector@ for @removeFontWeightInRange:@
-removeFontWeightInRangeSelector :: Selector
+removeFontWeightInRangeSelector :: Selector '[NSRange] ()
 removeFontWeightInRangeSelector = mkSelector "removeFontWeightInRange:"
 
 -- | @Selector@ for @removeFontStyleInRange:@
-removeFontStyleInRangeSelector :: Selector
+removeFontStyleInRangeSelector :: Selector '[NSRange] ()
 removeFontStyleInRangeSelector = mkSelector "removeFontStyleInRange:"
 
 -- | @Selector@ for @removeDecorationInRange:@
-removeDecorationInRangeSelector :: Selector
+removeDecorationInRangeSelector :: Selector '[NSRange] ()
 removeDecorationInRangeSelector = mkSelector "removeDecorationInRange:"
 
 -- | @Selector@ for @removeTextCombineInRange:@
-removeTextCombineInRangeSelector :: Selector
+removeTextCombineInRangeSelector :: Selector '[NSRange] ()
 removeTextCombineInRangeSelector = mkSelector "removeTextCombineInRange:"
 
 -- | @Selector@ for @removeRubyInRange:@
-removeRubyInRangeSelector :: Selector
+removeRubyInRangeSelector :: Selector '[NSRange] ()
 removeRubyInRangeSelector = mkSelector "removeRubyInRange:"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @setText:@
-setTextSelector :: Selector
+setTextSelector :: Selector '[Id NSString] ()
 setTextSelector = mkSelector "setText:"
 
 -- | @Selector@ for @animation@
-animationSelector :: Selector
+animationSelector :: Selector '[] AVCaptionAnimation
 animationSelector = mkSelector "animation"
 
 -- | @Selector@ for @setAnimation:@
-setAnimationSelector :: Selector
+setAnimationSelector :: Selector '[AVCaptionAnimation] ()
 setAnimationSelector = mkSelector "setAnimation:"
 
 -- | @Selector@ for @region@
-regionSelector :: Selector
+regionSelector :: Selector '[] (Id AVCaptionRegion)
 regionSelector = mkSelector "region"
 
 -- | @Selector@ for @setRegion:@
-setRegionSelector :: Selector
+setRegionSelector :: Selector '[Id AVCaptionRegion] ()
 setRegionSelector = mkSelector "setRegion:"
 
 -- | @Selector@ for @textAlignment@
-textAlignmentSelector :: Selector
+textAlignmentSelector :: Selector '[] AVCaptionTextAlignment
 textAlignmentSelector = mkSelector "textAlignment"
 
 -- | @Selector@ for @setTextAlignment:@
-setTextAlignmentSelector :: Selector
+setTextAlignmentSelector :: Selector '[AVCaptionTextAlignment] ()
 setTextAlignmentSelector = mkSelector "setTextAlignment:"
 

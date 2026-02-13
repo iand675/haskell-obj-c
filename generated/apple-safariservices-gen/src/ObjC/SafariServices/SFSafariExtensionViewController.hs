@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.SafariServices.SFSafariExtensionViewController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -30,14 +27,14 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- dismissPopover@
 dismissPopover :: IsSFSafariExtensionViewController sfSafariExtensionViewController => sfSafariExtensionViewController -> IO ()
-dismissPopover sfSafariExtensionViewController  =
-    sendMsg sfSafariExtensionViewController (mkSelector "dismissPopover") retVoid []
+dismissPopover sfSafariExtensionViewController =
+  sendMessage sfSafariExtensionViewController dismissPopoverSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dismissPopover@
-dismissPopoverSelector :: Selector
+dismissPopoverSelector :: Selector '[] ()
 dismissPopoverSelector = mkSelector "dismissPopover"
 

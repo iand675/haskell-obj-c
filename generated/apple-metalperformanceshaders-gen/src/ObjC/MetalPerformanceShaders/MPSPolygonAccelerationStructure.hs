@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,28 +34,28 @@ module ObjC.MetalPerformanceShaders.MPSPolygonAccelerationStructure
   , setPolygonCount
   , polygonBuffers
   , setPolygonBuffers
-  , polygonTypeSelector
-  , setPolygonTypeSelector
-  , vertexStrideSelector
-  , setVertexStrideSelector
-  , indexTypeSelector
-  , setIndexTypeSelector
-  , vertexBufferSelector
-  , setVertexBufferSelector
-  , vertexBufferOffsetSelector
-  , setVertexBufferOffsetSelector
-  , indexBufferSelector
-  , setIndexBufferSelector
   , indexBufferOffsetSelector
-  , setIndexBufferOffsetSelector
-  , maskBufferSelector
-  , setMaskBufferSelector
+  , indexBufferSelector
+  , indexTypeSelector
   , maskBufferOffsetSelector
-  , setMaskBufferOffsetSelector
-  , polygonCountSelector
-  , setPolygonCountSelector
+  , maskBufferSelector
   , polygonBuffersSelector
+  , polygonCountSelector
+  , polygonTypeSelector
+  , setIndexBufferOffsetSelector
+  , setIndexBufferSelector
+  , setIndexTypeSelector
+  , setMaskBufferOffsetSelector
+  , setMaskBufferSelector
   , setPolygonBuffersSelector
+  , setPolygonCountSelector
+  , setPolygonTypeSelector
+  , setVertexBufferOffsetSelector
+  , setVertexBufferSelector
+  , setVertexStrideSelector
+  , vertexBufferOffsetSelector
+  , vertexBufferSelector
+  , vertexStrideSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -91,15 +92,11 @@ module ObjC.MetalPerformanceShaders.MPSPolygonAccelerationStructure
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -111,15 +108,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- polygonType@
 polygonType :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO MPSPolygonType
-polygonType mpsPolygonAccelerationStructure  =
-    fmap (coerce :: CULong -> MPSPolygonType) $ sendMsg mpsPolygonAccelerationStructure (mkSelector "polygonType") retCULong []
+polygonType mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure polygonTypeSelector
 
 -- | The type of polygon. Defaults to MPSPolygonTypeTriangle. Changes to this property require rebuilding the acceleration structure.
 --
 -- ObjC selector: @- setPolygonType:@
 setPolygonType :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> MPSPolygonType -> IO ()
-setPolygonType mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setPolygonType:") retVoid [argCULong (coerce value)]
+setPolygonType mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setPolygonTypeSelector value
 
 -- | Offset, in bytes, between consecutive vertices in the vertex buffer. Defaults to 0 bytes, indicating that the vertices are packed according to the natural alignment of the vector_float3 type: 16 bytes.
 --
@@ -127,8 +124,8 @@ setPolygonType mpsPolygonAccelerationStructure  value =
 --
 -- ObjC selector: @- vertexStride@
 vertexStride :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO CULong
-vertexStride mpsPolygonAccelerationStructure  =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "vertexStride") retCULong []
+vertexStride mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure vertexStrideSelector
 
 -- | Offset, in bytes, between consecutive vertices in the vertex buffer. Defaults to 0 bytes, indicating that the vertices are packed according to the natural alignment of the vector_float3 type: 16 bytes.
 --
@@ -136,22 +133,22 @@ vertexStride mpsPolygonAccelerationStructure  =
 --
 -- ObjC selector: @- setVertexStride:@
 setVertexStride :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> CULong -> IO ()
-setVertexStride mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setVertexStride:") retVoid [argCULong value]
+setVertexStride mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setVertexStrideSelector value
 
 -- | Index type. Defaults to MPSDataTypeUInt32. Only MPSDataTypeUInt16 and MPSDataTypeUInt32 are supported.
 --
 -- ObjC selector: @- indexType@
 indexType :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO MPSDataType
-indexType mpsPolygonAccelerationStructure  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsPolygonAccelerationStructure (mkSelector "indexType") retCUInt []
+indexType mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure indexTypeSelector
 
 -- | Index type. Defaults to MPSDataTypeUInt32. Only MPSDataTypeUInt16 and MPSDataTypeUInt32 are supported.
 --
 -- ObjC selector: @- setIndexType:@
 setIndexType :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> MPSDataType -> IO ()
-setIndexType mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setIndexType:") retVoid [argCUInt (coerce value)]
+setIndexType mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setIndexTypeSelector value
 
 -- | Vertex buffer containing vertex data encoded as three 32 bit floats per vertex. Note that by default each vertex is aligned to the alignment of the vector_float3 type: 16 bytes. This can be changed using the vertexStride property. A vertex buffer must be provided before the acceleration structure is built.
 --
@@ -163,8 +160,8 @@ setIndexType mpsPolygonAccelerationStructure  value =
 --
 -- ObjC selector: @- vertexBuffer@
 vertexBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO RawId
-vertexBuffer mpsPolygonAccelerationStructure  =
-    fmap (RawId . castPtr) $ sendMsg mpsPolygonAccelerationStructure (mkSelector "vertexBuffer") (retPtr retVoid) []
+vertexBuffer mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure vertexBufferSelector
 
 -- | Vertex buffer containing vertex data encoded as three 32 bit floats per vertex. Note that by default each vertex is aligned to the alignment of the vector_float3 type: 16 bytes. This can be changed using the vertexStride property. A vertex buffer must be provided before the acceleration structure is built.
 --
@@ -176,8 +173,8 @@ vertexBuffer mpsPolygonAccelerationStructure  =
 --
 -- ObjC selector: @- setVertexBuffer:@
 setVertexBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> RawId -> IO ()
-setVertexBuffer mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setVertexBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setVertexBuffer mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setVertexBufferSelector value
 
 -- | Offset, in bytes, into the vertex buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
@@ -185,8 +182,8 @@ setVertexBuffer mpsPolygonAccelerationStructure  value =
 --
 -- ObjC selector: @- vertexBufferOffset@
 vertexBufferOffset :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO CULong
-vertexBufferOffset mpsPolygonAccelerationStructure  =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "vertexBufferOffset") retCULong []
+vertexBufferOffset mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure vertexBufferOffsetSelector
 
 -- | Offset, in bytes, into the vertex buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
@@ -194,8 +191,8 @@ vertexBufferOffset mpsPolygonAccelerationStructure  =
 --
 -- ObjC selector: @- setVertexBufferOffset:@
 setVertexBufferOffset :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> CULong -> IO ()
-setVertexBufferOffset mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setVertexBufferOffset:") retVoid [argCULong value]
+setVertexBufferOffset mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setVertexBufferOffsetSelector value
 
 -- | Index buffer containing index data. Each index references a vertex in the vertex buffer. May be nil.
 --
@@ -203,8 +200,8 @@ setVertexBufferOffset mpsPolygonAccelerationStructure  value =
 --
 -- ObjC selector: @- indexBuffer@
 indexBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO RawId
-indexBuffer mpsPolygonAccelerationStructure  =
-    fmap (RawId . castPtr) $ sendMsg mpsPolygonAccelerationStructure (mkSelector "indexBuffer") (retPtr retVoid) []
+indexBuffer mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure indexBufferSelector
 
 -- | Index buffer containing index data. Each index references a vertex in the vertex buffer. May be nil.
 --
@@ -212,8 +209,8 @@ indexBuffer mpsPolygonAccelerationStructure  =
 --
 -- ObjC selector: @- setIndexBuffer:@
 setIndexBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> RawId -> IO ()
-setIndexBuffer mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setIndexBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setIndexBuffer mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setIndexBufferSelector value
 
 -- | Offset, in bytes, into the index buffer. Defaults to 0 bytes. Must be aligned to a multiple of the index type. Changes to this property require rebuilding the acceleration structure.
 --
@@ -221,8 +218,8 @@ setIndexBuffer mpsPolygonAccelerationStructure  value =
 --
 -- ObjC selector: @- indexBufferOffset@
 indexBufferOffset :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO CULong
-indexBufferOffset mpsPolygonAccelerationStructure  =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "indexBufferOffset") retCULong []
+indexBufferOffset mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure indexBufferOffsetSelector
 
 -- | Offset, in bytes, into the index buffer. Defaults to 0 bytes. Must be aligned to a multiple of the index type. Changes to this property require rebuilding the acceleration structure.
 --
@@ -230,8 +227,8 @@ indexBufferOffset mpsPolygonAccelerationStructure  =
 --
 -- ObjC selector: @- setIndexBufferOffset:@
 setIndexBufferOffset :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> CULong -> IO ()
-setIndexBufferOffset mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setIndexBufferOffset:") retVoid [argCULong value]
+setIndexBufferOffset mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setIndexBufferOffsetSelector value
 
 -- | Mask buffer containing one uint32_t mask per polygon. May be nil. Otherwise, the mask type must be specified on the MPSRayIntersector with which it is used.
 --
@@ -239,8 +236,8 @@ setIndexBufferOffset mpsPolygonAccelerationStructure  value =
 --
 -- ObjC selector: @- maskBuffer@
 maskBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO RawId
-maskBuffer mpsPolygonAccelerationStructure  =
-    fmap (RawId . castPtr) $ sendMsg mpsPolygonAccelerationStructure (mkSelector "maskBuffer") (retPtr retVoid) []
+maskBuffer mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure maskBufferSelector
 
 -- | Mask buffer containing one uint32_t mask per polygon. May be nil. Otherwise, the mask type must be specified on the MPSRayIntersector with which it is used.
 --
@@ -248,8 +245,8 @@ maskBuffer mpsPolygonAccelerationStructure  =
 --
 -- ObjC selector: @- setMaskBuffer:@
 setMaskBuffer :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> RawId -> IO ()
-setMaskBuffer mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setMaskBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setMaskBuffer mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setMaskBufferSelector value
 
 -- | Offset, in bytes, into the mask buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
@@ -257,8 +254,8 @@ setMaskBuffer mpsPolygonAccelerationStructure  value =
 --
 -- ObjC selector: @- maskBufferOffset@
 maskBufferOffset :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO CULong
-maskBufferOffset mpsPolygonAccelerationStructure  =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "maskBufferOffset") retCULong []
+maskBufferOffset mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure maskBufferOffsetSelector
 
 -- | Offset, in bytes, into the mask buffer. Defaults to 0 bytes. Must be aligned to 4 bytes.
 --
@@ -266,8 +263,8 @@ maskBufferOffset mpsPolygonAccelerationStructure  =
 --
 -- ObjC selector: @- setMaskBufferOffset:@
 setMaskBufferOffset :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> CULong -> IO ()
-setMaskBufferOffset mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setMaskBufferOffset:") retVoid [argCULong value]
+setMaskBufferOffset mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setMaskBufferOffsetSelector value
 
 -- | Number of polygons. Changes to this property require rebuilding the acceleration structure.
 --
@@ -275,8 +272,8 @@ setMaskBufferOffset mpsPolygonAccelerationStructure  value =
 --
 -- ObjC selector: @- polygonCount@
 polygonCount :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO CULong
-polygonCount mpsPolygonAccelerationStructure  =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "polygonCount") retCULong []
+polygonCount mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure polygonCountSelector
 
 -- | Number of polygons. Changes to this property require rebuilding the acceleration structure.
 --
@@ -284,8 +281,8 @@ polygonCount mpsPolygonAccelerationStructure  =
 --
 -- ObjC selector: @- setPolygonCount:@
 setPolygonCount :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> CULong -> IO ()
-setPolygonCount mpsPolygonAccelerationStructure  value =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "setPolygonCount:") retVoid [argCULong value]
+setPolygonCount mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setPolygonCountSelector value
 
 -- | Array of polygon buffers. Each buffer contains a vertex buffer and optional index and mask buffer for an array of polygons. Changing the length of this array requires rebuilding the acceleration structure.
 --
@@ -295,8 +292,8 @@ setPolygonCount mpsPolygonAccelerationStructure  value =
 --
 -- ObjC selector: @- polygonBuffers@
 polygonBuffers :: IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure => mpsPolygonAccelerationStructure -> IO (Id NSArray)
-polygonBuffers mpsPolygonAccelerationStructure  =
-    sendMsg mpsPolygonAccelerationStructure (mkSelector "polygonBuffers") (retPtr retVoid) [] >>= retainedObject . castPtr
+polygonBuffers mpsPolygonAccelerationStructure =
+  sendMessage mpsPolygonAccelerationStructure polygonBuffersSelector
 
 -- | Array of polygon buffers. Each buffer contains a vertex buffer and optional index and mask buffer for an array of polygons. Changing the length of this array requires rebuilding the acceleration structure.
 --
@@ -306,99 +303,98 @@ polygonBuffers mpsPolygonAccelerationStructure  =
 --
 -- ObjC selector: @- setPolygonBuffers:@
 setPolygonBuffers :: (IsMPSPolygonAccelerationStructure mpsPolygonAccelerationStructure, IsNSArray value) => mpsPolygonAccelerationStructure -> value -> IO ()
-setPolygonBuffers mpsPolygonAccelerationStructure  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsPolygonAccelerationStructure (mkSelector "setPolygonBuffers:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPolygonBuffers mpsPolygonAccelerationStructure value =
+  sendMessage mpsPolygonAccelerationStructure setPolygonBuffersSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @polygonType@
-polygonTypeSelector :: Selector
+polygonTypeSelector :: Selector '[] MPSPolygonType
 polygonTypeSelector = mkSelector "polygonType"
 
 -- | @Selector@ for @setPolygonType:@
-setPolygonTypeSelector :: Selector
+setPolygonTypeSelector :: Selector '[MPSPolygonType] ()
 setPolygonTypeSelector = mkSelector "setPolygonType:"
 
 -- | @Selector@ for @vertexStride@
-vertexStrideSelector :: Selector
+vertexStrideSelector :: Selector '[] CULong
 vertexStrideSelector = mkSelector "vertexStride"
 
 -- | @Selector@ for @setVertexStride:@
-setVertexStrideSelector :: Selector
+setVertexStrideSelector :: Selector '[CULong] ()
 setVertexStrideSelector = mkSelector "setVertexStride:"
 
 -- | @Selector@ for @indexType@
-indexTypeSelector :: Selector
+indexTypeSelector :: Selector '[] MPSDataType
 indexTypeSelector = mkSelector "indexType"
 
 -- | @Selector@ for @setIndexType:@
-setIndexTypeSelector :: Selector
+setIndexTypeSelector :: Selector '[MPSDataType] ()
 setIndexTypeSelector = mkSelector "setIndexType:"
 
 -- | @Selector@ for @vertexBuffer@
-vertexBufferSelector :: Selector
+vertexBufferSelector :: Selector '[] RawId
 vertexBufferSelector = mkSelector "vertexBuffer"
 
 -- | @Selector@ for @setVertexBuffer:@
-setVertexBufferSelector :: Selector
+setVertexBufferSelector :: Selector '[RawId] ()
 setVertexBufferSelector = mkSelector "setVertexBuffer:"
 
 -- | @Selector@ for @vertexBufferOffset@
-vertexBufferOffsetSelector :: Selector
+vertexBufferOffsetSelector :: Selector '[] CULong
 vertexBufferOffsetSelector = mkSelector "vertexBufferOffset"
 
 -- | @Selector@ for @setVertexBufferOffset:@
-setVertexBufferOffsetSelector :: Selector
+setVertexBufferOffsetSelector :: Selector '[CULong] ()
 setVertexBufferOffsetSelector = mkSelector "setVertexBufferOffset:"
 
 -- | @Selector@ for @indexBuffer@
-indexBufferSelector :: Selector
+indexBufferSelector :: Selector '[] RawId
 indexBufferSelector = mkSelector "indexBuffer"
 
 -- | @Selector@ for @setIndexBuffer:@
-setIndexBufferSelector :: Selector
+setIndexBufferSelector :: Selector '[RawId] ()
 setIndexBufferSelector = mkSelector "setIndexBuffer:"
 
 -- | @Selector@ for @indexBufferOffset@
-indexBufferOffsetSelector :: Selector
+indexBufferOffsetSelector :: Selector '[] CULong
 indexBufferOffsetSelector = mkSelector "indexBufferOffset"
 
 -- | @Selector@ for @setIndexBufferOffset:@
-setIndexBufferOffsetSelector :: Selector
+setIndexBufferOffsetSelector :: Selector '[CULong] ()
 setIndexBufferOffsetSelector = mkSelector "setIndexBufferOffset:"
 
 -- | @Selector@ for @maskBuffer@
-maskBufferSelector :: Selector
+maskBufferSelector :: Selector '[] RawId
 maskBufferSelector = mkSelector "maskBuffer"
 
 -- | @Selector@ for @setMaskBuffer:@
-setMaskBufferSelector :: Selector
+setMaskBufferSelector :: Selector '[RawId] ()
 setMaskBufferSelector = mkSelector "setMaskBuffer:"
 
 -- | @Selector@ for @maskBufferOffset@
-maskBufferOffsetSelector :: Selector
+maskBufferOffsetSelector :: Selector '[] CULong
 maskBufferOffsetSelector = mkSelector "maskBufferOffset"
 
 -- | @Selector@ for @setMaskBufferOffset:@
-setMaskBufferOffsetSelector :: Selector
+setMaskBufferOffsetSelector :: Selector '[CULong] ()
 setMaskBufferOffsetSelector = mkSelector "setMaskBufferOffset:"
 
 -- | @Selector@ for @polygonCount@
-polygonCountSelector :: Selector
+polygonCountSelector :: Selector '[] CULong
 polygonCountSelector = mkSelector "polygonCount"
 
 -- | @Selector@ for @setPolygonCount:@
-setPolygonCountSelector :: Selector
+setPolygonCountSelector :: Selector '[CULong] ()
 setPolygonCountSelector = mkSelector "setPolygonCount:"
 
 -- | @Selector@ for @polygonBuffers@
-polygonBuffersSelector :: Selector
+polygonBuffersSelector :: Selector '[] (Id NSArray)
 polygonBuffersSelector = mkSelector "polygonBuffers"
 
 -- | @Selector@ for @setPolygonBuffers:@
-setPolygonBuffersSelector :: Selector
+setPolygonBuffersSelector :: Selector '[Id NSArray] ()
 setPolygonBuffersSelector = mkSelector "setPolygonBuffers:"
 

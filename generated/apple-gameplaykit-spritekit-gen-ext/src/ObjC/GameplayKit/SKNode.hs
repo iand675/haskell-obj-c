@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.GameplayKit.SKNode
   , obstaclesFromNodePhysicsBodies
   , entity
   , setEntity
-  , obstaclesFromSpriteTextures_accuracySelector
+  , entitySelector
   , obstaclesFromNodeBoundsSelector
   , obstaclesFromNodePhysicsBodiesSelector
-  , entitySelector
+  , obstaclesFromSpriteTextures_accuracySelector
   , setEntitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,7 @@ obstaclesFromSpriteTextures_accuracy :: IsNSArray sprites => sprites -> CFloat -
 obstaclesFromSpriteTextures_accuracy sprites accuracy =
   do
     cls' <- getRequiredClass "SKNode"
-    withObjCPtr sprites $ \raw_sprites ->
-      sendClassMsg cls' (mkSelector "obstaclesFromSpriteTextures:accuracy:") (retPtr retVoid) [argPtr (castPtr raw_sprites :: Ptr ()), argCFloat accuracy] >>= retainedObject . castPtr
+    sendClassMessage cls' obstaclesFromSpriteTextures_accuracySelector (toNSArray sprites) accuracy
 
 -- | Returns an array of GKPolygonObstacles from a group of SKNode's transformed bounds in scene space.
 --
@@ -57,8 +53,7 @@ obstaclesFromNodeBounds :: IsNSArray nodes => nodes -> IO (Id NSArray)
 obstaclesFromNodeBounds nodes =
   do
     cls' <- getRequiredClass "SKNode"
-    withObjCPtr nodes $ \raw_nodes ->
-      sendClassMsg cls' (mkSelector "obstaclesFromNodeBounds:") (retPtr retVoid) [argPtr (castPtr raw_nodes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' obstaclesFromNodeBoundsSelector (toNSArray nodes)
 
 -- | Returns an array of GKPolygonObstacles from a group of SKNode's physics bodies in scene space.
 --
@@ -69,8 +64,7 @@ obstaclesFromNodePhysicsBodies :: IsNSArray nodes => nodes -> IO (Id NSArray)
 obstaclesFromNodePhysicsBodies nodes =
   do
     cls' <- getRequiredClass "SKNode"
-    withObjCPtr nodes $ \raw_nodes ->
-      sendClassMsg cls' (mkSelector "obstaclesFromNodePhysicsBodies:") (retPtr retVoid) [argPtr (castPtr raw_nodes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' obstaclesFromNodePhysicsBodiesSelector (toNSArray nodes)
 
 -- | The GKEntity associated with the node via a GKSKNodeComponent.
 --
@@ -78,8 +72,8 @@ obstaclesFromNodePhysicsBodies nodes =
 --
 -- ObjC selector: @- entity@
 entity :: IsSKNode skNode => skNode -> IO RawId
-entity skNode  =
-    fmap (RawId . castPtr) $ sendMsg skNode (mkSelector "entity") (retPtr retVoid) []
+entity skNode =
+  sendMessage skNode entitySelector
 
 -- | The GKEntity associated with the node via a GKSKNodeComponent.
 --
@@ -87,30 +81,30 @@ entity skNode  =
 --
 -- ObjC selector: @- setEntity:@
 setEntity :: IsSKNode skNode => skNode -> RawId -> IO ()
-setEntity skNode  value =
-    sendMsg skNode (mkSelector "setEntity:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setEntity skNode value =
+  sendMessage skNode setEntitySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @obstaclesFromSpriteTextures:accuracy:@
-obstaclesFromSpriteTextures_accuracySelector :: Selector
+obstaclesFromSpriteTextures_accuracySelector :: Selector '[Id NSArray, CFloat] (Id NSArray)
 obstaclesFromSpriteTextures_accuracySelector = mkSelector "obstaclesFromSpriteTextures:accuracy:"
 
 -- | @Selector@ for @obstaclesFromNodeBounds:@
-obstaclesFromNodeBoundsSelector :: Selector
+obstaclesFromNodeBoundsSelector :: Selector '[Id NSArray] (Id NSArray)
 obstaclesFromNodeBoundsSelector = mkSelector "obstaclesFromNodeBounds:"
 
 -- | @Selector@ for @obstaclesFromNodePhysicsBodies:@
-obstaclesFromNodePhysicsBodiesSelector :: Selector
+obstaclesFromNodePhysicsBodiesSelector :: Selector '[Id NSArray] (Id NSArray)
 obstaclesFromNodePhysicsBodiesSelector = mkSelector "obstaclesFromNodePhysicsBodies:"
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] RawId
 entitySelector = mkSelector "entity"
 
 -- | @Selector@ for @setEntity:@
-setEntitySelector :: Selector
+setEntitySelector :: Selector '[RawId] ()
 setEntitySelector = mkSelector "setEntity:"
 

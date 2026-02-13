@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.AVFoundation.AVFragmentedMovieMinder
   , mindingInterval
   , setMindingInterval
   , movies
+  , addFragmentedMovieSelector
   , fragmentedMovieMinderWithMovie_mindingIntervalSelector
   , initWithMovie_mindingIntervalSelector
-  , addFragmentedMovieSelector
-  , removeFragmentedMovieSelector
   , mindingIntervalSelector
-  , setMindingIntervalSelector
   , moviesSelector
+  , removeFragmentedMovieSelector
+  , setMindingIntervalSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,7 @@ fragmentedMovieMinderWithMovie_mindingInterval :: IsAVFragmentedMovie movie => m
 fragmentedMovieMinderWithMovie_mindingInterval movie mindingInterval =
   do
     cls' <- getRequiredClass "AVFragmentedMovieMinder"
-    withObjCPtr movie $ \raw_movie ->
-      sendClassMsg cls' (mkSelector "fragmentedMovieMinderWithMovie:mindingInterval:") (retPtr retVoid) [argPtr (castPtr raw_movie :: Ptr ()), argCDouble mindingInterval] >>= retainedObject . castPtr
+    sendClassMessage cls' fragmentedMovieMinderWithMovie_mindingIntervalSelector (toAVFragmentedMovie movie) mindingInterval
 
 -- | initWithMovie:mindingInterval:
 --
@@ -75,9 +71,8 @@ fragmentedMovieMinderWithMovie_mindingInterval movie mindingInterval =
 --
 -- ObjC selector: @- initWithMovie:mindingInterval:@
 initWithMovie_mindingInterval :: (IsAVFragmentedMovieMinder avFragmentedMovieMinder, IsAVFragmentedMovie movie) => avFragmentedMovieMinder -> movie -> CDouble -> IO (Id AVFragmentedMovieMinder)
-initWithMovie_mindingInterval avFragmentedMovieMinder  movie mindingInterval =
-  withObjCPtr movie $ \raw_movie ->
-      sendMsg avFragmentedMovieMinder (mkSelector "initWithMovie:mindingInterval:") (retPtr retVoid) [argPtr (castPtr raw_movie :: Ptr ()), argCDouble mindingInterval] >>= ownedObject . castPtr
+initWithMovie_mindingInterval avFragmentedMovieMinder movie mindingInterval =
+  sendOwnedMessage avFragmentedMovieMinder initWithMovie_mindingIntervalSelector (toAVFragmentedMovie movie) mindingInterval
 
 -- | addFragmentedMovie:
 --
@@ -87,9 +82,8 @@ initWithMovie_mindingInterval avFragmentedMovieMinder  movie mindingInterval =
 --
 -- ObjC selector: @- addFragmentedMovie:@
 addFragmentedMovie :: (IsAVFragmentedMovieMinder avFragmentedMovieMinder, IsAVFragmentedMovie movie) => avFragmentedMovieMinder -> movie -> IO ()
-addFragmentedMovie avFragmentedMovieMinder  movie =
-  withObjCPtr movie $ \raw_movie ->
-      sendMsg avFragmentedMovieMinder (mkSelector "addFragmentedMovie:") retVoid [argPtr (castPtr raw_movie :: Ptr ())]
+addFragmentedMovie avFragmentedMovieMinder movie =
+  sendMessage avFragmentedMovieMinder addFragmentedMovieSelector (toAVFragmentedMovie movie)
 
 -- | removeFragmentedMovie:
 --
@@ -99,9 +93,8 @@ addFragmentedMovie avFragmentedMovieMinder  movie =
 --
 -- ObjC selector: @- removeFragmentedMovie:@
 removeFragmentedMovie :: (IsAVFragmentedMovieMinder avFragmentedMovieMinder, IsAVFragmentedMovie movie) => avFragmentedMovieMinder -> movie -> IO ()
-removeFragmentedMovie avFragmentedMovieMinder  movie =
-  withObjCPtr movie $ \raw_movie ->
-      sendMsg avFragmentedMovieMinder (mkSelector "removeFragmentedMovie:") retVoid [argPtr (castPtr raw_movie :: Ptr ())]
+removeFragmentedMovie avFragmentedMovieMinder movie =
+  sendMessage avFragmentedMovieMinder removeFragmentedMovieSelector (toAVFragmentedMovie movie)
 
 -- | mindingInterval
 --
@@ -109,8 +102,8 @@ removeFragmentedMovie avFragmentedMovieMinder  movie =
 --
 -- ObjC selector: @- mindingInterval@
 mindingInterval :: IsAVFragmentedMovieMinder avFragmentedMovieMinder => avFragmentedMovieMinder -> IO CDouble
-mindingInterval avFragmentedMovieMinder  =
-    sendMsg avFragmentedMovieMinder (mkSelector "mindingInterval") retCDouble []
+mindingInterval avFragmentedMovieMinder =
+  sendMessage avFragmentedMovieMinder mindingIntervalSelector
 
 -- | mindingInterval
 --
@@ -118,8 +111,8 @@ mindingInterval avFragmentedMovieMinder  =
 --
 -- ObjC selector: @- setMindingInterval:@
 setMindingInterval :: IsAVFragmentedMovieMinder avFragmentedMovieMinder => avFragmentedMovieMinder -> CDouble -> IO ()
-setMindingInterval avFragmentedMovieMinder  value =
-    sendMsg avFragmentedMovieMinder (mkSelector "setMindingInterval:") retVoid [argCDouble value]
+setMindingInterval avFragmentedMovieMinder value =
+  sendMessage avFragmentedMovieMinder setMindingIntervalSelector value
 
 -- | movies
 --
@@ -127,38 +120,38 @@ setMindingInterval avFragmentedMovieMinder  value =
 --
 -- ObjC selector: @- movies@
 movies :: IsAVFragmentedMovieMinder avFragmentedMovieMinder => avFragmentedMovieMinder -> IO (Id NSArray)
-movies avFragmentedMovieMinder  =
-    sendMsg avFragmentedMovieMinder (mkSelector "movies") (retPtr retVoid) [] >>= retainedObject . castPtr
+movies avFragmentedMovieMinder =
+  sendMessage avFragmentedMovieMinder moviesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fragmentedMovieMinderWithMovie:mindingInterval:@
-fragmentedMovieMinderWithMovie_mindingIntervalSelector :: Selector
+fragmentedMovieMinderWithMovie_mindingIntervalSelector :: Selector '[Id AVFragmentedMovie, CDouble] (Id AVFragmentedMovieMinder)
 fragmentedMovieMinderWithMovie_mindingIntervalSelector = mkSelector "fragmentedMovieMinderWithMovie:mindingInterval:"
 
 -- | @Selector@ for @initWithMovie:mindingInterval:@
-initWithMovie_mindingIntervalSelector :: Selector
+initWithMovie_mindingIntervalSelector :: Selector '[Id AVFragmentedMovie, CDouble] (Id AVFragmentedMovieMinder)
 initWithMovie_mindingIntervalSelector = mkSelector "initWithMovie:mindingInterval:"
 
 -- | @Selector@ for @addFragmentedMovie:@
-addFragmentedMovieSelector :: Selector
+addFragmentedMovieSelector :: Selector '[Id AVFragmentedMovie] ()
 addFragmentedMovieSelector = mkSelector "addFragmentedMovie:"
 
 -- | @Selector@ for @removeFragmentedMovie:@
-removeFragmentedMovieSelector :: Selector
+removeFragmentedMovieSelector :: Selector '[Id AVFragmentedMovie] ()
 removeFragmentedMovieSelector = mkSelector "removeFragmentedMovie:"
 
 -- | @Selector@ for @mindingInterval@
-mindingIntervalSelector :: Selector
+mindingIntervalSelector :: Selector '[] CDouble
 mindingIntervalSelector = mkSelector "mindingInterval"
 
 -- | @Selector@ for @setMindingInterval:@
-setMindingIntervalSelector :: Selector
+setMindingIntervalSelector :: Selector '[CDouble] ()
 setMindingIntervalSelector = mkSelector "setMindingInterval:"
 
 -- | @Selector@ for @movies@
-moviesSelector :: Selector
+moviesSelector :: Selector '[] (Id NSArray)
 moviesSelector = mkSelector "movies"
 

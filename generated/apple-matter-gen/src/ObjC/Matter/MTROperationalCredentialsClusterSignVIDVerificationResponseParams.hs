@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTROperationalCredentialsClusterSignVIDVerificationResponsePa
   , setFabricBindingVersion
   , signature
   , setSignature
-  , initWithResponseValue_errorSelector
-  , fabricIndexSelector
-  , setFabricIndexSelector
   , fabricBindingVersionSelector
+  , fabricIndexSelector
+  , initWithResponseValue_errorSelector
   , setFabricBindingVersionSelector
-  , signatureSelector
+  , setFabricIndexSelector
   , setSignatureSelector
+  , signatureSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,73 +44,68 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTROperationalCredentialsClusterSignVIDVerificationResponseParams mtrOperationalCredentialsClusterSignVIDVerificationResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrOperationalCredentialsClusterSignVIDVerificationResponseParams -> responseValue -> error_ -> IO (Id MTROperationalCredentialsClusterSignVIDVerificationResponseParams)
-initWithResponseValue_error mtrOperationalCredentialsClusterSignVIDVerificationResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrOperationalCredentialsClusterSignVIDVerificationResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrOperationalCredentialsClusterSignVIDVerificationResponseParams responseValue error_ =
+  sendOwnedMessage mtrOperationalCredentialsClusterSignVIDVerificationResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTROperationalCredentialsClusterSignVIDVerificationResponseParams mtrOperationalCredentialsClusterSignVIDVerificationResponseParams => mtrOperationalCredentialsClusterSignVIDVerificationResponseParams -> IO (Id NSNumber)
-fabricIndex mtrOperationalCredentialsClusterSignVIDVerificationResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterSignVIDVerificationResponseParams (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrOperationalCredentialsClusterSignVIDVerificationResponseParams =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationResponseParams fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTROperationalCredentialsClusterSignVIDVerificationResponseParams mtrOperationalCredentialsClusterSignVIDVerificationResponseParams, IsNSNumber value) => mtrOperationalCredentialsClusterSignVIDVerificationResponseParams -> value -> IO ()
-setFabricIndex mtrOperationalCredentialsClusterSignVIDVerificationResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSignVIDVerificationResponseParams (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrOperationalCredentialsClusterSignVIDVerificationResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationResponseParams setFabricIndexSelector (toNSNumber value)
 
 -- | @- fabricBindingVersion@
 fabricBindingVersion :: IsMTROperationalCredentialsClusterSignVIDVerificationResponseParams mtrOperationalCredentialsClusterSignVIDVerificationResponseParams => mtrOperationalCredentialsClusterSignVIDVerificationResponseParams -> IO (Id NSNumber)
-fabricBindingVersion mtrOperationalCredentialsClusterSignVIDVerificationResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterSignVIDVerificationResponseParams (mkSelector "fabricBindingVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricBindingVersion mtrOperationalCredentialsClusterSignVIDVerificationResponseParams =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationResponseParams fabricBindingVersionSelector
 
 -- | @- setFabricBindingVersion:@
 setFabricBindingVersion :: (IsMTROperationalCredentialsClusterSignVIDVerificationResponseParams mtrOperationalCredentialsClusterSignVIDVerificationResponseParams, IsNSNumber value) => mtrOperationalCredentialsClusterSignVIDVerificationResponseParams -> value -> IO ()
-setFabricBindingVersion mtrOperationalCredentialsClusterSignVIDVerificationResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSignVIDVerificationResponseParams (mkSelector "setFabricBindingVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricBindingVersion mtrOperationalCredentialsClusterSignVIDVerificationResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationResponseParams setFabricBindingVersionSelector (toNSNumber value)
 
 -- | @- signature@
 signature :: IsMTROperationalCredentialsClusterSignVIDVerificationResponseParams mtrOperationalCredentialsClusterSignVIDVerificationResponseParams => mtrOperationalCredentialsClusterSignVIDVerificationResponseParams -> IO (Id NSData)
-signature mtrOperationalCredentialsClusterSignVIDVerificationResponseParams  =
-    sendMsg mtrOperationalCredentialsClusterSignVIDVerificationResponseParams (mkSelector "signature") (retPtr retVoid) [] >>= retainedObject . castPtr
+signature mtrOperationalCredentialsClusterSignVIDVerificationResponseParams =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationResponseParams signatureSelector
 
 -- | @- setSignature:@
 setSignature :: (IsMTROperationalCredentialsClusterSignVIDVerificationResponseParams mtrOperationalCredentialsClusterSignVIDVerificationResponseParams, IsNSData value) => mtrOperationalCredentialsClusterSignVIDVerificationResponseParams -> value -> IO ()
-setSignature mtrOperationalCredentialsClusterSignVIDVerificationResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOperationalCredentialsClusterSignVIDVerificationResponseParams (mkSelector "setSignature:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSignature mtrOperationalCredentialsClusterSignVIDVerificationResponseParams value =
+  sendMessage mtrOperationalCredentialsClusterSignVIDVerificationResponseParams setSignatureSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTROperationalCredentialsClusterSignVIDVerificationResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 
 -- | @Selector@ for @fabricBindingVersion@
-fabricBindingVersionSelector :: Selector
+fabricBindingVersionSelector :: Selector '[] (Id NSNumber)
 fabricBindingVersionSelector = mkSelector "fabricBindingVersion"
 
 -- | @Selector@ for @setFabricBindingVersion:@
-setFabricBindingVersionSelector :: Selector
+setFabricBindingVersionSelector :: Selector '[Id NSNumber] ()
 setFabricBindingVersionSelector = mkSelector "setFabricBindingVersion:"
 
 -- | @Selector@ for @signature@
-signatureSelector :: Selector
+signatureSelector :: Selector '[] (Id NSData)
 signatureSelector = mkSelector "signature"
 
 -- | @Selector@ for @setSignature:@
-setSignatureSelector :: Selector
+setSignatureSelector :: Selector '[Id NSData] ()
 setSignatureSelector = mkSelector "setSignature:"
 

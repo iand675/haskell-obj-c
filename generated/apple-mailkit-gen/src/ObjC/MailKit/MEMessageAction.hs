@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,14 +20,14 @@ module ObjC.MailKit.MEMessageAction
   , markAsReadAction
   , markAsUnreadAction
   , flagActionWithFlagSelector
-  , setBackgroundColorActionWithColorSelector
   , initSelector
-  , newSelector
-  , moveToTrashActionSelector
-  , moveToArchiveActionSelector
-  , moveToJunkActionSelector
   , markAsReadActionSelector
   , markAsUnreadActionSelector
+  , moveToArchiveActionSelector
+  , moveToJunkActionSelector
+  , moveToTrashActionSelector
+  , newSelector
+  , setBackgroundColorActionWithColorSelector
 
   -- * Enum types
   , MEMessageActionFlag(MEMessageActionFlag)
@@ -51,15 +52,11 @@ module ObjC.MailKit.MEMessageAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,7 +71,7 @@ flagActionWithFlag :: MEMessageActionFlag -> IO (Id MEMessageAction)
 flagActionWithFlag flag =
   do
     cls' <- getRequiredClass "MEMessageAction"
-    sendClassMsg cls' (mkSelector "flagActionWithFlag:") (retPtr retVoid) [argCLong (coerce flag)] >>= retainedObject . castPtr
+    sendClassMessage cls' flagActionWithFlagSelector flag
 
 -- | Adds a color to the message when shown in the message list.
 --
@@ -83,19 +80,19 @@ setBackgroundColorActionWithColor :: MEMessageActionMessageColor -> IO (Id MEMes
 setBackgroundColorActionWithColor color =
   do
     cls' <- getRequiredClass "MEMessageAction"
-    sendClassMsg cls' (mkSelector "setBackgroundColorActionWithColor:") (retPtr retVoid) [argCLong (coerce color)] >>= retainedObject . castPtr
+    sendClassMessage cls' setBackgroundColorActionWithColorSelector color
 
 -- | @- init@
 init_ :: IsMEMessageAction meMessageAction => meMessageAction -> IO (Id MEMessageAction)
-init_ meMessageAction  =
-    sendMsg meMessageAction (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meMessageAction =
+  sendOwnedMessage meMessageAction initSelector
 
 -- | @+ new@
 new :: IO (Id MEMessageAction)
 new  =
   do
     cls' <- getRequiredClass "MEMessageAction"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Moves the mail message to the user's trash mailbox for the account.
 --
@@ -104,7 +101,7 @@ moveToTrashAction :: IO (Id MEMessageAction)
 moveToTrashAction  =
   do
     cls' <- getRequiredClass "MEMessageAction"
-    sendClassMsg cls' (mkSelector "moveToTrashAction") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' moveToTrashActionSelector
 
 -- | Moves the mail message to the user's archive mailbox for the account.
 --
@@ -113,7 +110,7 @@ moveToArchiveAction :: IO (Id MEMessageAction)
 moveToArchiveAction  =
   do
     cls' <- getRequiredClass "MEMessageAction"
-    sendClassMsg cls' (mkSelector "moveToArchiveAction") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' moveToArchiveActionSelector
 
 -- | Moves the mail message to the user's junk mailbox for the account.
 --
@@ -122,7 +119,7 @@ moveToJunkAction :: IO (Id MEMessageAction)
 moveToJunkAction  =
   do
     cls' <- getRequiredClass "MEMessageAction"
-    sendClassMsg cls' (mkSelector "moveToJunkAction") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' moveToJunkActionSelector
 
 -- | Marks the mail message as read.
 --
@@ -131,7 +128,7 @@ markAsReadAction :: IO (Id MEMessageAction)
 markAsReadAction  =
   do
     cls' <- getRequiredClass "MEMessageAction"
-    sendClassMsg cls' (mkSelector "markAsReadAction") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' markAsReadActionSelector
 
 -- | Marks the mail  message as unread.
 --
@@ -140,45 +137,45 @@ markAsUnreadAction :: IO (Id MEMessageAction)
 markAsUnreadAction  =
   do
     cls' <- getRequiredClass "MEMessageAction"
-    sendClassMsg cls' (mkSelector "markAsUnreadAction") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' markAsUnreadActionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @flagActionWithFlag:@
-flagActionWithFlagSelector :: Selector
+flagActionWithFlagSelector :: Selector '[MEMessageActionFlag] (Id MEMessageAction)
 flagActionWithFlagSelector = mkSelector "flagActionWithFlag:"
 
 -- | @Selector@ for @setBackgroundColorActionWithColor:@
-setBackgroundColorActionWithColorSelector :: Selector
+setBackgroundColorActionWithColorSelector :: Selector '[MEMessageActionMessageColor] (Id MEMessageAction)
 setBackgroundColorActionWithColorSelector = mkSelector "setBackgroundColorActionWithColor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MEMessageAction)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MEMessageAction)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @moveToTrashAction@
-moveToTrashActionSelector :: Selector
+moveToTrashActionSelector :: Selector '[] (Id MEMessageAction)
 moveToTrashActionSelector = mkSelector "moveToTrashAction"
 
 -- | @Selector@ for @moveToArchiveAction@
-moveToArchiveActionSelector :: Selector
+moveToArchiveActionSelector :: Selector '[] (Id MEMessageAction)
 moveToArchiveActionSelector = mkSelector "moveToArchiveAction"
 
 -- | @Selector@ for @moveToJunkAction@
-moveToJunkActionSelector :: Selector
+moveToJunkActionSelector :: Selector '[] (Id MEMessageAction)
 moveToJunkActionSelector = mkSelector "moveToJunkAction"
 
 -- | @Selector@ for @markAsReadAction@
-markAsReadActionSelector :: Selector
+markAsReadActionSelector :: Selector '[] (Id MEMessageAction)
 markAsReadActionSelector = mkSelector "markAsReadAction"
 
 -- | @Selector@ for @markAsUnreadAction@
-markAsUnreadActionSelector :: Selector
+markAsUnreadActionSelector :: Selector '[] (Id MEMessageAction)
 markAsUnreadActionSelector = mkSelector "markAsUnreadAction"
 

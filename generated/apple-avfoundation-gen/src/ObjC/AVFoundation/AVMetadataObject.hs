@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,13 +23,13 @@ module ObjC.AVFoundation.AVMetadataObject
   , objectID
   , cinematicVideoFocusMode
   , fixedFocus
-  , initSelector
-  , newSelector
-  , typeSelector
-  , groupIDSelector
-  , objectIDSelector
   , cinematicVideoFocusModeSelector
   , fixedFocusSelector
+  , groupIDSelector
+  , initSelector
+  , newSelector
+  , objectIDSelector
+  , typeSelector
 
   -- * Enum types
   , AVCaptureCinematicVideoFocusMode(AVCaptureCinematicVideoFocusMode)
@@ -38,15 +39,11 @@ module ObjC.AVFoundation.AVMetadataObject
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,15 +53,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetadataObject avMetadataObject => avMetadataObject -> IO (Id AVMetadataObject)
-init_ avMetadataObject  =
-    sendMsg avMetadataObject (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetadataObject =
+  sendOwnedMessage avMetadataObject initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetadataObject)
 new  =
   do
     cls' <- getRequiredClass "AVMetadataObject"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | type
 --
@@ -74,8 +71,8 @@ new  =
 --
 -- ObjC selector: @- type@
 type_ :: IsAVMetadataObject avMetadataObject => avMetadataObject -> IO (Id NSString)
-type_ avMetadataObject  =
-    sendMsg avMetadataObject (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ avMetadataObject =
+  sendMessage avMetadataObject typeSelector
 
 -- | An identifier associated with a metadata object used to group it with other metadata objects belonging to a common parent.
 --
@@ -83,8 +80,8 @@ type_ avMetadataObject  =
 --
 -- ObjC selector: @- groupID@
 groupID :: IsAVMetadataObject avMetadataObject => avMetadataObject -> IO CLong
-groupID avMetadataObject  =
-    sendMsg avMetadataObject (mkSelector "groupID") retCLong []
+groupID avMetadataObject =
+  sendMessage avMetadataObject groupIDSelector
 
 -- | A unique identifier for each detected object type (face, body, hands, heads and salient objects) in a collection.
 --
@@ -92,8 +89,8 @@ groupID avMetadataObject  =
 --
 -- ObjC selector: @- objectID@
 objectID :: IsAVMetadataObject avMetadataObject => avMetadataObject -> IO CLong
-objectID avMetadataObject  =
-    sendMsg avMetadataObject (mkSelector "objectID") retCLong []
+objectID avMetadataObject =
+  sendMessage avMetadataObject objectIDSelector
 
 -- | The current focus mode when an object is detected during a Cinematic Video recording.
 --
@@ -101,45 +98,45 @@ objectID avMetadataObject  =
 --
 -- ObjC selector: @- cinematicVideoFocusMode@
 cinematicVideoFocusMode :: IsAVMetadataObject avMetadataObject => avMetadataObject -> IO AVCaptureCinematicVideoFocusMode
-cinematicVideoFocusMode avMetadataObject  =
-    fmap (coerce :: CLong -> AVCaptureCinematicVideoFocusMode) $ sendMsg avMetadataObject (mkSelector "cinematicVideoFocusMode") retCLong []
+cinematicVideoFocusMode avMetadataObject =
+  sendMessage avMetadataObject cinematicVideoFocusModeSelector
 
 -- | A BOOL indicating whether this metadata object represents a fixed focus.
 --
 -- ObjC selector: @- fixedFocus@
 fixedFocus :: IsAVMetadataObject avMetadataObject => avMetadataObject -> IO Bool
-fixedFocus avMetadataObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetadataObject (mkSelector "fixedFocus") retCULong []
+fixedFocus avMetadataObject =
+  sendMessage avMetadataObject fixedFocusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetadataObject)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetadataObject)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] CLong
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @objectID@
-objectIDSelector :: Selector
+objectIDSelector :: Selector '[] CLong
 objectIDSelector = mkSelector "objectID"
 
 -- | @Selector@ for @cinematicVideoFocusMode@
-cinematicVideoFocusModeSelector :: Selector
+cinematicVideoFocusModeSelector :: Selector '[] AVCaptureCinematicVideoFocusMode
 cinematicVideoFocusModeSelector = mkSelector "cinematicVideoFocusMode"
 
 -- | @Selector@ for @fixedFocus@
-fixedFocusSelector :: Selector
+fixedFocusSelector :: Selector '[] Bool
 fixedFocusSelector = mkSelector "fixedFocus"
 

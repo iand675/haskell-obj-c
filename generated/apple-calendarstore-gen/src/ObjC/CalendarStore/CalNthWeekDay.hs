@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.CalendarStore.CalNthWeekDay
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- dayOfTheWeek@
 dayOfTheWeek :: IsCalNthWeekDay calNthWeekDay => calNthWeekDay -> IO CULong
-dayOfTheWeek calNthWeekDay  =
-    sendMsg calNthWeekDay (mkSelector "dayOfTheWeek") retCULong []
+dayOfTheWeek calNthWeekDay =
+  sendMessage calNthWeekDay dayOfTheWeekSelector
 
 -- | @- weekNumber@
 weekNumber :: IsCalNthWeekDay calNthWeekDay => calNthWeekDay -> IO CLong
-weekNumber calNthWeekDay  =
-    sendMsg calNthWeekDay (mkSelector "weekNumber") retCLong []
+weekNumber calNthWeekDay =
+  sendMessage calNthWeekDay weekNumberSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dayOfTheWeek@
-dayOfTheWeekSelector :: Selector
+dayOfTheWeekSelector :: Selector '[] CULong
 dayOfTheWeekSelector = mkSelector "dayOfTheWeek"
 
 -- | @Selector@ for @weekNumber@
-weekNumberSelector :: Selector
+weekNumberSelector :: Selector '[] CLong
 weekNumberSelector = mkSelector "weekNumber"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.ClassKit.CLSQuantityItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,38 +38,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifier:title:@
 initWithIdentifier_title :: (IsCLSQuantityItem clsQuantityItem, IsNSString identifier, IsNSString title) => clsQuantityItem -> identifier -> title -> IO (Id CLSQuantityItem)
-initWithIdentifier_title clsQuantityItem  identifier title =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr title $ \raw_title ->
-        sendMsg clsQuantityItem (mkSelector "initWithIdentifier:title:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier_title clsQuantityItem identifier title =
+  sendOwnedMessage clsQuantityItem initWithIdentifier_titleSelector (toNSString identifier) (toNSString title)
 
 -- | Quantity awarded.
 --
 -- ObjC selector: @- quantity@
 quantity :: IsCLSQuantityItem clsQuantityItem => clsQuantityItem -> IO CDouble
-quantity clsQuantityItem  =
-    sendMsg clsQuantityItem (mkSelector "quantity") retCDouble []
+quantity clsQuantityItem =
+  sendMessage clsQuantityItem quantitySelector
 
 -- | Quantity awarded.
 --
 -- ObjC selector: @- setQuantity:@
 setQuantity :: IsCLSQuantityItem clsQuantityItem => clsQuantityItem -> CDouble -> IO ()
-setQuantity clsQuantityItem  value =
-    sendMsg clsQuantityItem (mkSelector "setQuantity:") retVoid [argCDouble value]
+setQuantity clsQuantityItem value =
+  sendMessage clsQuantityItem setQuantitySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:title:@
-initWithIdentifier_titleSelector :: Selector
+initWithIdentifier_titleSelector :: Selector '[Id NSString, Id NSString] (Id CLSQuantityItem)
 initWithIdentifier_titleSelector = mkSelector "initWithIdentifier:title:"
 
 -- | @Selector@ for @quantity@
-quantitySelector :: Selector
+quantitySelector :: Selector '[] CDouble
 quantitySelector = mkSelector "quantity"
 
 -- | @Selector@ for @setQuantity:@
-setQuantitySelector :: Selector
+setQuantitySelector :: Selector '[CDouble] ()
 setQuantitySelector = mkSelector "setQuantity:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,26 +24,22 @@ module ObjC.MetalPerformanceShaders.MPSCNNSpatialNormalizationNode
   , setKernelWidth
   , kernelHeight
   , setKernelHeight
-  , nodeWithSource_kernelSizeSelector
-  , initWithSource_kernelSizeSelector
   , initWithSourceSelector
-  , kernelWidthSelector
-  , setKernelWidthSelector
+  , initWithSource_kernelSizeSelector
   , kernelHeightSelector
+  , kernelWidthSelector
+  , nodeWithSource_kernelSizeSelector
   , setKernelHeightSelector
+  , setKernelWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,70 +51,67 @@ nodeWithSource_kernelSize :: IsMPSNNImageNode sourceNode => sourceNode -> CULong
 nodeWithSource_kernelSize sourceNode kernelSize =
   do
     cls' <- getRequiredClass "MPSCNNSpatialNormalizationNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:kernelSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong kernelSize] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_kernelSizeSelector (toMPSNNImageNode sourceNode) kernelSize
 
 -- | @- initWithSource:kernelSize:@
 initWithSource_kernelSize :: (IsMPSCNNSpatialNormalizationNode mpscnnSpatialNormalizationNode, IsMPSNNImageNode sourceNode) => mpscnnSpatialNormalizationNode -> sourceNode -> CULong -> IO (Id MPSCNNSpatialNormalizationNode)
-initWithSource_kernelSize mpscnnSpatialNormalizationNode  sourceNode kernelSize =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnSpatialNormalizationNode (mkSelector "initWithSource:kernelSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong kernelSize] >>= ownedObject . castPtr
+initWithSource_kernelSize mpscnnSpatialNormalizationNode sourceNode kernelSize =
+  sendOwnedMessage mpscnnSpatialNormalizationNode initWithSource_kernelSizeSelector (toMPSNNImageNode sourceNode) kernelSize
 
 -- | @- initWithSource:@
 initWithSource :: (IsMPSCNNSpatialNormalizationNode mpscnnSpatialNormalizationNode, IsMPSNNImageNode sourceNode) => mpscnnSpatialNormalizationNode -> sourceNode -> IO (Id MPSCNNSpatialNormalizationNode)
-initWithSource mpscnnSpatialNormalizationNode  sourceNode =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnSpatialNormalizationNode (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= ownedObject . castPtr
+initWithSource mpscnnSpatialNormalizationNode sourceNode =
+  sendOwnedMessage mpscnnSpatialNormalizationNode initWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- | @- kernelWidth@
 kernelWidth :: IsMPSCNNSpatialNormalizationNode mpscnnSpatialNormalizationNode => mpscnnSpatialNormalizationNode -> IO CULong
-kernelWidth mpscnnSpatialNormalizationNode  =
-    sendMsg mpscnnSpatialNormalizationNode (mkSelector "kernelWidth") retCULong []
+kernelWidth mpscnnSpatialNormalizationNode =
+  sendMessage mpscnnSpatialNormalizationNode kernelWidthSelector
 
 -- | @- setKernelWidth:@
 setKernelWidth :: IsMPSCNNSpatialNormalizationNode mpscnnSpatialNormalizationNode => mpscnnSpatialNormalizationNode -> CULong -> IO ()
-setKernelWidth mpscnnSpatialNormalizationNode  value =
-    sendMsg mpscnnSpatialNormalizationNode (mkSelector "setKernelWidth:") retVoid [argCULong value]
+setKernelWidth mpscnnSpatialNormalizationNode value =
+  sendMessage mpscnnSpatialNormalizationNode setKernelWidthSelector value
 
 -- | @- kernelHeight@
 kernelHeight :: IsMPSCNNSpatialNormalizationNode mpscnnSpatialNormalizationNode => mpscnnSpatialNormalizationNode -> IO CULong
-kernelHeight mpscnnSpatialNormalizationNode  =
-    sendMsg mpscnnSpatialNormalizationNode (mkSelector "kernelHeight") retCULong []
+kernelHeight mpscnnSpatialNormalizationNode =
+  sendMessage mpscnnSpatialNormalizationNode kernelHeightSelector
 
 -- | @- setKernelHeight:@
 setKernelHeight :: IsMPSCNNSpatialNormalizationNode mpscnnSpatialNormalizationNode => mpscnnSpatialNormalizationNode -> CULong -> IO ()
-setKernelHeight mpscnnSpatialNormalizationNode  value =
-    sendMsg mpscnnSpatialNormalizationNode (mkSelector "setKernelHeight:") retVoid [argCULong value]
+setKernelHeight mpscnnSpatialNormalizationNode value =
+  sendMessage mpscnnSpatialNormalizationNode setKernelHeightSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:kernelSize:@
-nodeWithSource_kernelSizeSelector :: Selector
+nodeWithSource_kernelSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNSpatialNormalizationNode)
 nodeWithSource_kernelSizeSelector = mkSelector "nodeWithSource:kernelSize:"
 
 -- | @Selector@ for @initWithSource:kernelSize:@
-initWithSource_kernelSizeSelector :: Selector
+initWithSource_kernelSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNSpatialNormalizationNode)
 initWithSource_kernelSizeSelector = mkSelector "initWithSource:kernelSize:"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSCNNSpatialNormalizationNode)
 initWithSourceSelector = mkSelector "initWithSource:"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 
 -- | @Selector@ for @setKernelWidth:@
-setKernelWidthSelector :: Selector
+setKernelWidthSelector :: Selector '[CULong] ()
 setKernelWidthSelector = mkSelector "setKernelWidth:"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @setKernelHeight:@
-setKernelHeightSelector :: Selector
+setKernelHeightSelector :: Selector '[CULong] ()
 setKernelHeightSelector = mkSelector "setKernelHeight:"
 

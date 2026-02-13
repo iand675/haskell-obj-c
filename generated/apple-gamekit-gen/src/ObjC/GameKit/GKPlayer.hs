@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.GameKit.GKPlayer
   , isInvitable
   , isFriend
   , playerID
-  , scopedIDsArePersistentSelector
-  , anonymousGuestPlayerWithIdentifierSelector
-  , loadPhotoForSize_withCompletionHandlerSelector
-  , gamePlayerIDSelector
-  , teamPlayerIDSelector
-  , displayNameSelector
   , aliasSelector
+  , anonymousGuestPlayerWithIdentifierSelector
+  , displayNameSelector
+  , gamePlayerIDSelector
   , guestIdentifierSelector
-  , isInvitableSelector
   , isFriendSelector
+  , isInvitableSelector
+  , loadPhotoForSize_withCompletionHandlerSelector
   , playerIDSelector
+  , scopedIDsArePersistentSelector
+  , teamPlayerIDSelector
 
   -- * Enum types
   , GKPhotoSize(GKPhotoSize)
@@ -37,15 +38,11 @@ module ObjC.GameKit.GKPlayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,117 +54,116 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- scopedIDsArePersistent@
 scopedIDsArePersistent :: IsGKPlayer gkPlayer => gkPlayer -> IO Bool
-scopedIDsArePersistent gkPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkPlayer (mkSelector "scopedIDsArePersistent") retCULong []
+scopedIDsArePersistent gkPlayer =
+  sendMessage gkPlayer scopedIDsArePersistentSelector
 
 -- | @+ anonymousGuestPlayerWithIdentifier:@
 anonymousGuestPlayerWithIdentifier :: IsNSString guestIdentifier => guestIdentifier -> IO (Id GKPlayer)
 anonymousGuestPlayerWithIdentifier guestIdentifier =
   do
     cls' <- getRequiredClass "GKPlayer"
-    withObjCPtr guestIdentifier $ \raw_guestIdentifier ->
-      sendClassMsg cls' (mkSelector "anonymousGuestPlayerWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_guestIdentifier :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' anonymousGuestPlayerWithIdentifierSelector (toNSString guestIdentifier)
 
 -- | Asynchronously load the player's photo. Error will be nil on success. Possible reasons for error: 1. Communications failure
 --
 -- ObjC selector: @- loadPhotoForSize:withCompletionHandler:@
 loadPhotoForSize_withCompletionHandler :: IsGKPlayer gkPlayer => gkPlayer -> GKPhotoSize -> Ptr () -> IO ()
-loadPhotoForSize_withCompletionHandler gkPlayer  size completionHandler =
-    sendMsg gkPlayer (mkSelector "loadPhotoForSize:withCompletionHandler:") retVoid [argCLong (coerce size), argPtr (castPtr completionHandler :: Ptr ())]
+loadPhotoForSize_withCompletionHandler gkPlayer size completionHandler =
+  sendMessage gkPlayer loadPhotoForSize_withCompletionHandlerSelector size completionHandler
 
 -- | This is the player's unique and persistent ID that is scoped to this application.
 --
 -- ObjC selector: @- gamePlayerID@
 gamePlayerID :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
-gamePlayerID gkPlayer  =
-    sendMsg gkPlayer (mkSelector "gamePlayerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+gamePlayerID gkPlayer =
+  sendMessage gkPlayer gamePlayerIDSelector
 
 -- | This is the player's unique and persistent ID that is scoped to the Apple Store Connect Team identifier of this application.
 --
 -- ObjC selector: @- teamPlayerID@
 teamPlayerID :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
-teamPlayerID gkPlayer  =
-    sendMsg gkPlayer (mkSelector "teamPlayerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+teamPlayerID gkPlayer =
+  sendMessage gkPlayer teamPlayerIDSelector
 
 -- | This is player's alias to be displayed. The display name may be very long, so be sure to use appropriate string truncation API when drawing.
 --
 -- ObjC selector: @- displayName@
 displayName :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
-displayName gkPlayer  =
-    sendMsg gkPlayer (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName gkPlayer =
+  sendMessage gkPlayer displayNameSelector
 
 -- | The alias property contains the player's nickname. When you need to display the name to the user, consider using displayName instead. The nickname is unique but not invariant: the player may change their nickname. The nickname may be very long, so be sure to use appropriate string truncation API when drawing.
 --
 -- ObjC selector: @- alias@
 alias :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
-alias gkPlayer  =
-    sendMsg gkPlayer (mkSelector "alias") (retPtr retVoid) [] >>= retainedObject . castPtr
+alias gkPlayer =
+  sendMessage gkPlayer aliasSelector
 
 -- | @- guestIdentifier@
 guestIdentifier :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
-guestIdentifier gkPlayer  =
-    sendMsg gkPlayer (mkSelector "guestIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+guestIdentifier gkPlayer =
+  sendMessage gkPlayer guestIdentifierSelector
 
 -- | @- isInvitable@
 isInvitable :: IsGKPlayer gkPlayer => gkPlayer -> IO Bool
-isInvitable gkPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkPlayer (mkSelector "isInvitable") retCULong []
+isInvitable gkPlayer =
+  sendMessage gkPlayer isInvitableSelector
 
 -- | @- isFriend@
 isFriend :: IsGKPlayer gkPlayer => gkPlayer -> IO Bool
-isFriend gkPlayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkPlayer (mkSelector "isFriend") retCULong []
+isFriend gkPlayer =
+  sendMessage gkPlayer isFriendSelector
 
 -- | @- playerID@
 playerID :: IsGKPlayer gkPlayer => gkPlayer -> IO (Id NSString)
-playerID gkPlayer  =
-    sendMsg gkPlayer (mkSelector "playerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerID gkPlayer =
+  sendMessage gkPlayer playerIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scopedIDsArePersistent@
-scopedIDsArePersistentSelector :: Selector
+scopedIDsArePersistentSelector :: Selector '[] Bool
 scopedIDsArePersistentSelector = mkSelector "scopedIDsArePersistent"
 
 -- | @Selector@ for @anonymousGuestPlayerWithIdentifier:@
-anonymousGuestPlayerWithIdentifierSelector :: Selector
+anonymousGuestPlayerWithIdentifierSelector :: Selector '[Id NSString] (Id GKPlayer)
 anonymousGuestPlayerWithIdentifierSelector = mkSelector "anonymousGuestPlayerWithIdentifier:"
 
 -- | @Selector@ for @loadPhotoForSize:withCompletionHandler:@
-loadPhotoForSize_withCompletionHandlerSelector :: Selector
+loadPhotoForSize_withCompletionHandlerSelector :: Selector '[GKPhotoSize, Ptr ()] ()
 loadPhotoForSize_withCompletionHandlerSelector = mkSelector "loadPhotoForSize:withCompletionHandler:"
 
 -- | @Selector@ for @gamePlayerID@
-gamePlayerIDSelector :: Selector
+gamePlayerIDSelector :: Selector '[] (Id NSString)
 gamePlayerIDSelector = mkSelector "gamePlayerID"
 
 -- | @Selector@ for @teamPlayerID@
-teamPlayerIDSelector :: Selector
+teamPlayerIDSelector :: Selector '[] (Id NSString)
 teamPlayerIDSelector = mkSelector "teamPlayerID"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @alias@
-aliasSelector :: Selector
+aliasSelector :: Selector '[] (Id NSString)
 aliasSelector = mkSelector "alias"
 
 -- | @Selector@ for @guestIdentifier@
-guestIdentifierSelector :: Selector
+guestIdentifierSelector :: Selector '[] (Id NSString)
 guestIdentifierSelector = mkSelector "guestIdentifier"
 
 -- | @Selector@ for @isInvitable@
-isInvitableSelector :: Selector
+isInvitableSelector :: Selector '[] Bool
 isInvitableSelector = mkSelector "isInvitable"
 
 -- | @Selector@ for @isFriend@
-isFriendSelector :: Selector
+isFriendSelector :: Selector '[] Bool
 isFriendSelector = mkSelector "isFriend"
 
 -- | @Selector@ for @playerID@
-playerIDSelector :: Selector
+playerIDSelector :: Selector '[] (Id NSString)
 playerIDSelector = mkSelector "playerID"
 

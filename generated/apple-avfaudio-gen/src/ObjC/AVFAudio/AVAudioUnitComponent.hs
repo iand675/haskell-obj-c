@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,41 +33,37 @@ module ObjC.AVFAudio.AVAudioUnitComponent
   , passesAUVal
   , hasCustomView
   , configurationDictionary
-  , supportsNumberInputChannels_outputChannelsSelector
-  , nameSelector
-  , typeNameSelector
-  , localizedTypeNameSelector
-  , manufacturerNameSelector
-  , versionSelector
-  , versionStringSelector
-  , componentURLSelector
-  , availableArchitecturesSelector
-  , sandboxSafeSelector
-  , hasMIDIInputSelector
-  , hasMIDIOutputSelector
-  , audioComponentSelector
-  , userTagNamesSelector
-  , setUserTagNamesSelector
   , allTagNamesSelector
   , audioComponentDescriptionSelector
-  , iconURLSelector
-  , iconSelector
-  , passesAUValSelector
-  , hasCustomViewSelector
+  , audioComponentSelector
+  , availableArchitecturesSelector
+  , componentURLSelector
   , configurationDictionarySelector
+  , hasCustomViewSelector
+  , hasMIDIInputSelector
+  , hasMIDIOutputSelector
+  , iconSelector
+  , iconURLSelector
+  , localizedTypeNameSelector
+  , manufacturerNameSelector
+  , nameSelector
+  , passesAUValSelector
+  , sandboxSafeSelector
+  , setUserTagNamesSelector
+  , supportsNumberInputChannels_outputChannelsSelector
+  , typeNameSelector
+  , userTagNamesSelector
+  , versionSelector
+  , versionStringSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,8 +77,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- supportsNumberInputChannels:outputChannels:@
 supportsNumberInputChannels_outputChannels :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> CLong -> CLong -> IO Bool
-supportsNumberInputChannels_outputChannels avAudioUnitComponent  numInputChannels numOutputChannels =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitComponent (mkSelector "supportsNumberInputChannels:outputChannels:") retCULong [argCLong numInputChannels, argCLong numOutputChannels]
+supportsNumberInputChannels_outputChannels avAudioUnitComponent numInputChannels numOutputChannels =
+  sendMessage avAudioUnitComponent supportsNumberInputChannels_outputChannelsSelector numInputChannels numOutputChannels
 
 -- | name
 --
@@ -89,8 +86,8 @@ supportsNumberInputChannels_outputChannels avAudioUnitComponent  numInputChannel
 --
 -- ObjC selector: @- name@
 name :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSString)
-name avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name avAudioUnitComponent =
+  sendMessage avAudioUnitComponent nameSelector
 
 -- | typeName
 --
@@ -98,8 +95,8 @@ name avAudioUnitComponent  =
 --
 -- ObjC selector: @- typeName@
 typeName :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSString)
-typeName avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "typeName") (retPtr retVoid) [] >>= retainedObject . castPtr
+typeName avAudioUnitComponent =
+  sendMessage avAudioUnitComponent typeNameSelector
 
 -- | localizedTypeName
 --
@@ -107,8 +104,8 @@ typeName avAudioUnitComponent  =
 --
 -- ObjC selector: @- localizedTypeName@
 localizedTypeName :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSString)
-localizedTypeName avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "localizedTypeName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedTypeName avAudioUnitComponent =
+  sendMessage avAudioUnitComponent localizedTypeNameSelector
 
 -- | manufacturerName
 --
@@ -116,8 +113,8 @@ localizedTypeName avAudioUnitComponent  =
 --
 -- ObjC selector: @- manufacturerName@
 manufacturerName :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSString)
-manufacturerName avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "manufacturerName") (retPtr retVoid) [] >>= retainedObject . castPtr
+manufacturerName avAudioUnitComponent =
+  sendMessage avAudioUnitComponent manufacturerNameSelector
 
 -- | version
 --
@@ -125,8 +122,8 @@ manufacturerName avAudioUnitComponent  =
 --
 -- ObjC selector: @- version@
 version :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO CULong
-version avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "version") retCULong []
+version avAudioUnitComponent =
+  sendMessage avAudioUnitComponent versionSelector
 
 -- | versionString
 --
@@ -134,8 +131,8 @@ version avAudioUnitComponent  =
 --
 -- ObjC selector: @- versionString@
 versionString :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSString)
-versionString avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "versionString") (retPtr retVoid) [] >>= retainedObject . castPtr
+versionString avAudioUnitComponent =
+  sendMessage avAudioUnitComponent versionStringSelector
 
 -- | componentURL
 --
@@ -143,8 +140,8 @@ versionString avAudioUnitComponent  =
 --
 -- ObjC selector: @- componentURL@
 componentURL :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO RawId
-componentURL avAudioUnitComponent  =
-    fmap (RawId . castPtr) $ sendMsg avAudioUnitComponent (mkSelector "componentURL") (retPtr retVoid) []
+componentURL avAudioUnitComponent =
+  sendMessage avAudioUnitComponent componentURLSelector
 
 -- | availableArchitectures
 --
@@ -152,8 +149,8 @@ componentURL avAudioUnitComponent  =
 --
 -- ObjC selector: @- availableArchitectures@
 availableArchitectures :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSArray)
-availableArchitectures avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "availableArchitectures") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableArchitectures avAudioUnitComponent =
+  sendMessage avAudioUnitComponent availableArchitecturesSelector
 
 -- | sandboxSafe
 --
@@ -161,8 +158,8 @@ availableArchitectures avAudioUnitComponent  =
 --
 -- ObjC selector: @- sandboxSafe@
 sandboxSafe :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO Bool
-sandboxSafe avAudioUnitComponent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitComponent (mkSelector "sandboxSafe") retCULong []
+sandboxSafe avAudioUnitComponent =
+  sendMessage avAudioUnitComponent sandboxSafeSelector
 
 -- | hasMIDIInput
 --
@@ -170,8 +167,8 @@ sandboxSafe avAudioUnitComponent  =
 --
 -- ObjC selector: @- hasMIDIInput@
 hasMIDIInput :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO Bool
-hasMIDIInput avAudioUnitComponent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitComponent (mkSelector "hasMIDIInput") retCULong []
+hasMIDIInput avAudioUnitComponent =
+  sendMessage avAudioUnitComponent hasMIDIInputSelector
 
 -- | hasMIDIOutput
 --
@@ -179,8 +176,8 @@ hasMIDIInput avAudioUnitComponent  =
 --
 -- ObjC selector: @- hasMIDIOutput@
 hasMIDIOutput :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO Bool
-hasMIDIOutput avAudioUnitComponent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitComponent (mkSelector "hasMIDIOutput") retCULong []
+hasMIDIOutput avAudioUnitComponent =
+  sendMessage avAudioUnitComponent hasMIDIOutputSelector
 
 -- | audioComponent
 --
@@ -188,8 +185,8 @@ hasMIDIOutput avAudioUnitComponent  =
 --
 -- ObjC selector: @- audioComponent@
 audioComponent :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Ptr ())
-audioComponent avAudioUnitComponent  =
-    fmap castPtr $ sendMsg avAudioUnitComponent (mkSelector "audioComponent") (retPtr retVoid) []
+audioComponent avAudioUnitComponent =
+  sendMessage avAudioUnitComponent audioComponentSelector
 
 -- | userTagNames
 --
@@ -197,8 +194,8 @@ audioComponent avAudioUnitComponent  =
 --
 -- ObjC selector: @- userTagNames@
 userTagNames :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSArray)
-userTagNames avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "userTagNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+userTagNames avAudioUnitComponent =
+  sendMessage avAudioUnitComponent userTagNamesSelector
 
 -- | userTagNames
 --
@@ -206,9 +203,8 @@ userTagNames avAudioUnitComponent  =
 --
 -- ObjC selector: @- setUserTagNames:@
 setUserTagNames :: (IsAVAudioUnitComponent avAudioUnitComponent, IsNSArray value) => avAudioUnitComponent -> value -> IO ()
-setUserTagNames avAudioUnitComponent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAudioUnitComponent (mkSelector "setUserTagNames:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserTagNames avAudioUnitComponent value =
+  sendMessage avAudioUnitComponent setUserTagNamesSelector (toNSArray value)
 
 -- | allTagNames
 --
@@ -216,8 +212,8 @@ setUserTagNames avAudioUnitComponent  value =
 --
 -- ObjC selector: @- allTagNames@
 allTagNames :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSArray)
-allTagNames avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "allTagNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+allTagNames avAudioUnitComponent =
+  sendMessage avAudioUnitComponent allTagNamesSelector
 
 -- | audioComponentDescription
 --
@@ -225,8 +221,8 @@ allTagNames avAudioUnitComponent  =
 --
 -- ObjC selector: @- audioComponentDescription@
 audioComponentDescription :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO AudioComponentDescription
-audioComponentDescription avAudioUnitComponent  =
-    sendMsgStret avAudioUnitComponent (mkSelector "audioComponentDescription") retAudioComponentDescription []
+audioComponentDescription avAudioUnitComponent =
+  sendMessage avAudioUnitComponent audioComponentDescriptionSelector
 
 -- | iconURL
 --
@@ -234,13 +230,13 @@ audioComponentDescription avAudioUnitComponent  =
 --
 -- ObjC selector: @- iconURL@
 iconURL :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSURL)
-iconURL avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "iconURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+iconURL avAudioUnitComponent =
+  sendMessage avAudioUnitComponent iconURLSelector
 
 -- | @- icon@
 icon :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO RawId
-icon avAudioUnitComponent  =
-    fmap (RawId . castPtr) $ sendMsg avAudioUnitComponent (mkSelector "icon") (retPtr retVoid) []
+icon avAudioUnitComponent =
+  sendMessage avAudioUnitComponent iconSelector
 
 -- | passesAUVal
 --
@@ -248,8 +244,8 @@ icon avAudioUnitComponent  =
 --
 -- ObjC selector: @- passesAUVal@
 passesAUVal :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO Bool
-passesAUVal avAudioUnitComponent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitComponent (mkSelector "passesAUVal") retCULong []
+passesAUVal avAudioUnitComponent =
+  sendMessage avAudioUnitComponent passesAUValSelector
 
 -- | hasCustomView
 --
@@ -257,8 +253,8 @@ passesAUVal avAudioUnitComponent  =
 --
 -- ObjC selector: @- hasCustomView@
 hasCustomView :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO Bool
-hasCustomView avAudioUnitComponent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioUnitComponent (mkSelector "hasCustomView") retCULong []
+hasCustomView avAudioUnitComponent =
+  sendMessage avAudioUnitComponent hasCustomViewSelector
 
 -- | configurationDictionary
 --
@@ -266,98 +262,98 @@ hasCustomView avAudioUnitComponent  =
 --
 -- ObjC selector: @- configurationDictionary@
 configurationDictionary :: IsAVAudioUnitComponent avAudioUnitComponent => avAudioUnitComponent -> IO (Id NSDictionary)
-configurationDictionary avAudioUnitComponent  =
-    sendMsg avAudioUnitComponent (mkSelector "configurationDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+configurationDictionary avAudioUnitComponent =
+  sendMessage avAudioUnitComponent configurationDictionarySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportsNumberInputChannels:outputChannels:@
-supportsNumberInputChannels_outputChannelsSelector :: Selector
+supportsNumberInputChannels_outputChannelsSelector :: Selector '[CLong, CLong] Bool
 supportsNumberInputChannels_outputChannelsSelector = mkSelector "supportsNumberInputChannels:outputChannels:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @typeName@
-typeNameSelector :: Selector
+typeNameSelector :: Selector '[] (Id NSString)
 typeNameSelector = mkSelector "typeName"
 
 -- | @Selector@ for @localizedTypeName@
-localizedTypeNameSelector :: Selector
+localizedTypeNameSelector :: Selector '[] (Id NSString)
 localizedTypeNameSelector = mkSelector "localizedTypeName"
 
 -- | @Selector@ for @manufacturerName@
-manufacturerNameSelector :: Selector
+manufacturerNameSelector :: Selector '[] (Id NSString)
 manufacturerNameSelector = mkSelector "manufacturerName"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] CULong
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @versionString@
-versionStringSelector :: Selector
+versionStringSelector :: Selector '[] (Id NSString)
 versionStringSelector = mkSelector "versionString"
 
 -- | @Selector@ for @componentURL@
-componentURLSelector :: Selector
+componentURLSelector :: Selector '[] RawId
 componentURLSelector = mkSelector "componentURL"
 
 -- | @Selector@ for @availableArchitectures@
-availableArchitecturesSelector :: Selector
+availableArchitecturesSelector :: Selector '[] (Id NSArray)
 availableArchitecturesSelector = mkSelector "availableArchitectures"
 
 -- | @Selector@ for @sandboxSafe@
-sandboxSafeSelector :: Selector
+sandboxSafeSelector :: Selector '[] Bool
 sandboxSafeSelector = mkSelector "sandboxSafe"
 
 -- | @Selector@ for @hasMIDIInput@
-hasMIDIInputSelector :: Selector
+hasMIDIInputSelector :: Selector '[] Bool
 hasMIDIInputSelector = mkSelector "hasMIDIInput"
 
 -- | @Selector@ for @hasMIDIOutput@
-hasMIDIOutputSelector :: Selector
+hasMIDIOutputSelector :: Selector '[] Bool
 hasMIDIOutputSelector = mkSelector "hasMIDIOutput"
 
 -- | @Selector@ for @audioComponent@
-audioComponentSelector :: Selector
+audioComponentSelector :: Selector '[] (Ptr ())
 audioComponentSelector = mkSelector "audioComponent"
 
 -- | @Selector@ for @userTagNames@
-userTagNamesSelector :: Selector
+userTagNamesSelector :: Selector '[] (Id NSArray)
 userTagNamesSelector = mkSelector "userTagNames"
 
 -- | @Selector@ for @setUserTagNames:@
-setUserTagNamesSelector :: Selector
+setUserTagNamesSelector :: Selector '[Id NSArray] ()
 setUserTagNamesSelector = mkSelector "setUserTagNames:"
 
 -- | @Selector@ for @allTagNames@
-allTagNamesSelector :: Selector
+allTagNamesSelector :: Selector '[] (Id NSArray)
 allTagNamesSelector = mkSelector "allTagNames"
 
 -- | @Selector@ for @audioComponentDescription@
-audioComponentDescriptionSelector :: Selector
+audioComponentDescriptionSelector :: Selector '[] AudioComponentDescription
 audioComponentDescriptionSelector = mkSelector "audioComponentDescription"
 
 -- | @Selector@ for @iconURL@
-iconURLSelector :: Selector
+iconURLSelector :: Selector '[] (Id NSURL)
 iconURLSelector = mkSelector "iconURL"
 
 -- | @Selector@ for @icon@
-iconSelector :: Selector
+iconSelector :: Selector '[] RawId
 iconSelector = mkSelector "icon"
 
 -- | @Selector@ for @passesAUVal@
-passesAUValSelector :: Selector
+passesAUValSelector :: Selector '[] Bool
 passesAUValSelector = mkSelector "passesAUVal"
 
 -- | @Selector@ for @hasCustomView@
-hasCustomViewSelector :: Selector
+hasCustomViewSelector :: Selector '[] Bool
 hasCustomViewSelector = mkSelector "hasCustomView"
 
 -- | @Selector@ for @configurationDictionary@
-configurationDictionarySelector :: Selector
+configurationDictionarySelector :: Selector '[] (Id NSDictionary)
 configurationDictionarySelector = mkSelector "configurationDictionary"
 

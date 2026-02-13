@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.NetworkExtension.NEHotspotHelper
   , registerWithOptions_queue_handler
   , logoff
   , supportedNetworkInterfaces
-  , registerWithOptions_queue_handlerSelector
   , logoffSelector
+  , registerWithOptions_queue_handlerSelector
   , supportedNetworkInterfacesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,9 +61,7 @@ registerWithOptions_queue_handler :: (IsNSDictionary options, IsNSObject queue) 
 registerWithOptions_queue_handler options queue handler =
   do
     cls' <- getRequiredClass "NEHotspotHelper"
-    withObjCPtr options $ \raw_options ->
-      withObjCPtr queue $ \raw_queue ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "registerWithOptions:queue:handler:") retCULong [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' registerWithOptions_queue_handlerSelector (toNSDictionary options) (toNSObject queue) handler
 
 -- | logoff:
 --
@@ -89,8 +84,7 @@ logoff :: IsNEHotspotNetwork network => network -> IO Bool
 logoff network =
   do
     cls' <- getRequiredClass "NEHotspotHelper"
-    withObjCPtr network $ \raw_network ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "logoff:") retCULong [argPtr (castPtr raw_network :: Ptr ())]
+    sendClassMessage cls' logoffSelector (toNEHotspotNetwork network)
 
 -- | supportedNetworkInterfaces
 --
@@ -107,21 +101,21 @@ supportedNetworkInterfaces :: IO (Id NSArray)
 supportedNetworkInterfaces  =
   do
     cls' <- getRequiredClass "NEHotspotHelper"
-    sendClassMsg cls' (mkSelector "supportedNetworkInterfaces") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedNetworkInterfacesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registerWithOptions:queue:handler:@
-registerWithOptions_queue_handlerSelector :: Selector
+registerWithOptions_queue_handlerSelector :: Selector '[Id NSDictionary, Id NSObject, Ptr ()] Bool
 registerWithOptions_queue_handlerSelector = mkSelector "registerWithOptions:queue:handler:"
 
 -- | @Selector@ for @logoff:@
-logoffSelector :: Selector
+logoffSelector :: Selector '[Id NEHotspotNetwork] Bool
 logoffSelector = mkSelector "logoff:"
 
 -- | @Selector@ for @supportedNetworkInterfaces@
-supportedNetworkInterfacesSelector :: Selector
+supportedNetworkInterfacesSelector :: Selector '[] (Id NSArray)
 supportedNetworkInterfacesSelector = mkSelector "supportedNetworkInterfaces"
 

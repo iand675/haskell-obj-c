@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,23 +23,19 @@ module ObjC.Speech.SFTranscription
   , segments
   , speakingRate
   , averagePauseDuration
+  , averagePauseDurationSelector
   , formattedStringSelector
   , segmentsSelector
   , speakingRateSelector
-  , averagePauseDurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- formattedString@
 formattedString :: IsSFTranscription sfTranscription => sfTranscription -> IO (Id NSString)
-formattedString sfTranscription  =
-    sendMsg sfTranscription (mkSelector "formattedString") (retPtr retVoid) [] >>= retainedObject . castPtr
+formattedString sfTranscription =
+  sendMessage sfTranscription formattedStringSelector
 
 -- | An array of transcription segments that represent the parts of the transcription, as identified by the speech recognizer.
 --
@@ -58,40 +55,40 @@ formattedString sfTranscription  =
 --
 -- ObjC selector: @- segments@
 segments :: IsSFTranscription sfTranscription => sfTranscription -> IO (Id NSArray)
-segments sfTranscription  =
-    sendMsg sfTranscription (mkSelector "segments") (retPtr retVoid) [] >>= retainedObject . castPtr
+segments sfTranscription =
+  sendMessage sfTranscription segmentsSelector
 
 -- | The number of words spoken per minute.
 --
 -- ObjC selector: @- speakingRate@
 speakingRate :: IsSFTranscription sfTranscription => sfTranscription -> IO CDouble
-speakingRate sfTranscription  =
-    sendMsg sfTranscription (mkSelector "speakingRate") retCDouble []
+speakingRate sfTranscription =
+  sendMessage sfTranscription speakingRateSelector
 
 -- | The average pause duration between words, measured in seconds.
 --
 -- ObjC selector: @- averagePauseDuration@
 averagePauseDuration :: IsSFTranscription sfTranscription => sfTranscription -> IO CDouble
-averagePauseDuration sfTranscription  =
-    sendMsg sfTranscription (mkSelector "averagePauseDuration") retCDouble []
+averagePauseDuration sfTranscription =
+  sendMessage sfTranscription averagePauseDurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @formattedString@
-formattedStringSelector :: Selector
+formattedStringSelector :: Selector '[] (Id NSString)
 formattedStringSelector = mkSelector "formattedString"
 
 -- | @Selector@ for @segments@
-segmentsSelector :: Selector
+segmentsSelector :: Selector '[] (Id NSArray)
 segmentsSelector = mkSelector "segments"
 
 -- | @Selector@ for @speakingRate@
-speakingRateSelector :: Selector
+speakingRateSelector :: Selector '[] CDouble
 speakingRateSelector = mkSelector "speakingRate"
 
 -- | @Selector@ for @averagePauseDuration@
-averagePauseDurationSelector :: Selector
+averagePauseDurationSelector :: Selector '[] CDouble
 averagePauseDurationSelector = mkSelector "averagePauseDuration"
 

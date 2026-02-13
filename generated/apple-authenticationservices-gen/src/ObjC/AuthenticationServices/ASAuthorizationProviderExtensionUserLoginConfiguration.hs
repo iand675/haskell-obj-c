@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionUserLoginConf
   , loginUserName
   , setLoginUserName
   , initSelector
-  , newSelector
   , initWithLoginUserNameSelector
-  , setCustomAssertionRequestHeaderClaims_returningErrorSelector
-  , setCustomAssertionRequestBodyClaims_returningErrorSelector
-  , setCustomLoginRequestHeaderClaims_returningErrorSelector
-  , setCustomLoginRequestBodyClaims_returningErrorSelector
   , loginUserNameSelector
+  , newSelector
+  , setCustomAssertionRequestBodyClaims_returningErrorSelector
+  , setCustomAssertionRequestHeaderClaims_returningErrorSelector
+  , setCustomLoginRequestBodyClaims_returningErrorSelector
+  , setCustomLoginRequestHeaderClaims_returningErrorSelector
   , setLoginUserNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASAuthorizationProviderExtensionUserLoginConfiguration asAuthorizationProviderExtensionUserLoginConfiguration => asAuthorizationProviderExtensionUserLoginConfiguration -> IO (Id ASAuthorizationProviderExtensionUserLoginConfiguration)
-init_ asAuthorizationProviderExtensionUserLoginConfiguration  =
-    sendMsg asAuthorizationProviderExtensionUserLoginConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationProviderExtensionUserLoginConfiguration =
+  sendOwnedMessage asAuthorizationProviderExtensionUserLoginConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id ASAuthorizationProviderExtensionUserLoginConfiguration)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationProviderExtensionUserLoginConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates an instance with the required values.
 --
@@ -61,9 +58,8 @@ new  =
 --
 -- ObjC selector: @- initWithLoginUserName:@
 initWithLoginUserName :: (IsASAuthorizationProviderExtensionUserLoginConfiguration asAuthorizationProviderExtensionUserLoginConfiguration, IsNSString loginUserName) => asAuthorizationProviderExtensionUserLoginConfiguration -> loginUserName -> IO (Id ASAuthorizationProviderExtensionUserLoginConfiguration)
-initWithLoginUserName asAuthorizationProviderExtensionUserLoginConfiguration  loginUserName =
-  withObjCPtr loginUserName $ \raw_loginUserName ->
-      sendMsg asAuthorizationProviderExtensionUserLoginConfiguration (mkSelector "initWithLoginUserName:") (retPtr retVoid) [argPtr (castPtr raw_loginUserName :: Ptr ())] >>= ownedObject . castPtr
+initWithLoginUserName asAuthorizationProviderExtensionUserLoginConfiguration loginUserName =
+  sendOwnedMessage asAuthorizationProviderExtensionUserLoginConfiguration initWithLoginUserNameSelector (toNSString loginUserName)
 
 -- | Sets custom claims to be added to the embedded assertion request header.
 --
@@ -75,10 +71,8 @@ initWithLoginUserName asAuthorizationProviderExtensionUserLoginConfiguration  lo
 --
 -- ObjC selector: @- setCustomAssertionRequestHeaderClaims:returningError:@
 setCustomAssertionRequestHeaderClaims_returningError :: (IsASAuthorizationProviderExtensionUserLoginConfiguration asAuthorizationProviderExtensionUserLoginConfiguration, IsNSDictionary claims, IsNSError error_) => asAuthorizationProviderExtensionUserLoginConfiguration -> claims -> error_ -> IO Bool
-setCustomAssertionRequestHeaderClaims_returningError asAuthorizationProviderExtensionUserLoginConfiguration  claims error_ =
-  withObjCPtr claims $ \raw_claims ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationProviderExtensionUserLoginConfiguration (mkSelector "setCustomAssertionRequestHeaderClaims:returningError:") retCULong [argPtr (castPtr raw_claims :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setCustomAssertionRequestHeaderClaims_returningError asAuthorizationProviderExtensionUserLoginConfiguration claims error_ =
+  sendMessage asAuthorizationProviderExtensionUserLoginConfiguration setCustomAssertionRequestHeaderClaims_returningErrorSelector (toNSDictionary claims) (toNSError error_)
 
 -- | Sets custom claims to be added to the embedded assertion request body.
 --
@@ -90,10 +84,8 @@ setCustomAssertionRequestHeaderClaims_returningError asAuthorizationProviderExte
 --
 -- ObjC selector: @- setCustomAssertionRequestBodyClaims:returningError:@
 setCustomAssertionRequestBodyClaims_returningError :: (IsASAuthorizationProviderExtensionUserLoginConfiguration asAuthorizationProviderExtensionUserLoginConfiguration, IsNSDictionary claims, IsNSError error_) => asAuthorizationProviderExtensionUserLoginConfiguration -> claims -> error_ -> IO Bool
-setCustomAssertionRequestBodyClaims_returningError asAuthorizationProviderExtensionUserLoginConfiguration  claims error_ =
-  withObjCPtr claims $ \raw_claims ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationProviderExtensionUserLoginConfiguration (mkSelector "setCustomAssertionRequestBodyClaims:returningError:") retCULong [argPtr (castPtr raw_claims :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setCustomAssertionRequestBodyClaims_returningError asAuthorizationProviderExtensionUserLoginConfiguration claims error_ =
+  sendMessage asAuthorizationProviderExtensionUserLoginConfiguration setCustomAssertionRequestBodyClaims_returningErrorSelector (toNSDictionary claims) (toNSError error_)
 
 -- | Sets custom claims to be added to the login request header.
 --
@@ -105,10 +97,8 @@ setCustomAssertionRequestBodyClaims_returningError asAuthorizationProviderExtens
 --
 -- ObjC selector: @- setCustomLoginRequestHeaderClaims:returningError:@
 setCustomLoginRequestHeaderClaims_returningError :: (IsASAuthorizationProviderExtensionUserLoginConfiguration asAuthorizationProviderExtensionUserLoginConfiguration, IsNSDictionary claims, IsNSError error_) => asAuthorizationProviderExtensionUserLoginConfiguration -> claims -> error_ -> IO Bool
-setCustomLoginRequestHeaderClaims_returningError asAuthorizationProviderExtensionUserLoginConfiguration  claims error_ =
-  withObjCPtr claims $ \raw_claims ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationProviderExtensionUserLoginConfiguration (mkSelector "setCustomLoginRequestHeaderClaims:returningError:") retCULong [argPtr (castPtr raw_claims :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setCustomLoginRequestHeaderClaims_returningError asAuthorizationProviderExtensionUserLoginConfiguration claims error_ =
+  sendMessage asAuthorizationProviderExtensionUserLoginConfiguration setCustomLoginRequestHeaderClaims_returningErrorSelector (toNSDictionary claims) (toNSError error_)
 
 -- | Sets custom claims to be added to the login request body.
 --
@@ -120,63 +110,60 @@ setCustomLoginRequestHeaderClaims_returningError asAuthorizationProviderExtensio
 --
 -- ObjC selector: @- setCustomLoginRequestBodyClaims:returningError:@
 setCustomLoginRequestBodyClaims_returningError :: (IsASAuthorizationProviderExtensionUserLoginConfiguration asAuthorizationProviderExtensionUserLoginConfiguration, IsNSDictionary claims, IsNSError error_) => asAuthorizationProviderExtensionUserLoginConfiguration -> claims -> error_ -> IO Bool
-setCustomLoginRequestBodyClaims_returningError asAuthorizationProviderExtensionUserLoginConfiguration  claims error_ =
-  withObjCPtr claims $ \raw_claims ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationProviderExtensionUserLoginConfiguration (mkSelector "setCustomLoginRequestBodyClaims:returningError:") retCULong [argPtr (castPtr raw_claims :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setCustomLoginRequestBodyClaims_returningError asAuthorizationProviderExtensionUserLoginConfiguration claims error_ =
+  sendMessage asAuthorizationProviderExtensionUserLoginConfiguration setCustomLoginRequestBodyClaims_returningErrorSelector (toNSDictionary claims) (toNSError error_)
 
 -- | The user name to use when authenticating with the identity provider.
 --
 -- ObjC selector: @- loginUserName@
 loginUserName :: IsASAuthorizationProviderExtensionUserLoginConfiguration asAuthorizationProviderExtensionUserLoginConfiguration => asAuthorizationProviderExtensionUserLoginConfiguration -> IO (Id NSString)
-loginUserName asAuthorizationProviderExtensionUserLoginConfiguration  =
-    sendMsg asAuthorizationProviderExtensionUserLoginConfiguration (mkSelector "loginUserName") (retPtr retVoid) [] >>= retainedObject . castPtr
+loginUserName asAuthorizationProviderExtensionUserLoginConfiguration =
+  sendMessage asAuthorizationProviderExtensionUserLoginConfiguration loginUserNameSelector
 
 -- | The user name to use when authenticating with the identity provider.
 --
 -- ObjC selector: @- setLoginUserName:@
 setLoginUserName :: (IsASAuthorizationProviderExtensionUserLoginConfiguration asAuthorizationProviderExtensionUserLoginConfiguration, IsNSString value) => asAuthorizationProviderExtensionUserLoginConfiguration -> value -> IO ()
-setLoginUserName asAuthorizationProviderExtensionUserLoginConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionUserLoginConfiguration (mkSelector "setLoginUserName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLoginUserName asAuthorizationProviderExtensionUserLoginConfiguration value =
+  sendMessage asAuthorizationProviderExtensionUserLoginConfiguration setLoginUserNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationProviderExtensionUserLoginConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationProviderExtensionUserLoginConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithLoginUserName:@
-initWithLoginUserNameSelector :: Selector
+initWithLoginUserNameSelector :: Selector '[Id NSString] (Id ASAuthorizationProviderExtensionUserLoginConfiguration)
 initWithLoginUserNameSelector = mkSelector "initWithLoginUserName:"
 
 -- | @Selector@ for @setCustomAssertionRequestHeaderClaims:returningError:@
-setCustomAssertionRequestHeaderClaims_returningErrorSelector :: Selector
+setCustomAssertionRequestHeaderClaims_returningErrorSelector :: Selector '[Id NSDictionary, Id NSError] Bool
 setCustomAssertionRequestHeaderClaims_returningErrorSelector = mkSelector "setCustomAssertionRequestHeaderClaims:returningError:"
 
 -- | @Selector@ for @setCustomAssertionRequestBodyClaims:returningError:@
-setCustomAssertionRequestBodyClaims_returningErrorSelector :: Selector
+setCustomAssertionRequestBodyClaims_returningErrorSelector :: Selector '[Id NSDictionary, Id NSError] Bool
 setCustomAssertionRequestBodyClaims_returningErrorSelector = mkSelector "setCustomAssertionRequestBodyClaims:returningError:"
 
 -- | @Selector@ for @setCustomLoginRequestHeaderClaims:returningError:@
-setCustomLoginRequestHeaderClaims_returningErrorSelector :: Selector
+setCustomLoginRequestHeaderClaims_returningErrorSelector :: Selector '[Id NSDictionary, Id NSError] Bool
 setCustomLoginRequestHeaderClaims_returningErrorSelector = mkSelector "setCustomLoginRequestHeaderClaims:returningError:"
 
 -- | @Selector@ for @setCustomLoginRequestBodyClaims:returningError:@
-setCustomLoginRequestBodyClaims_returningErrorSelector :: Selector
+setCustomLoginRequestBodyClaims_returningErrorSelector :: Selector '[Id NSDictionary, Id NSError] Bool
 setCustomLoginRequestBodyClaims_returningErrorSelector = mkSelector "setCustomLoginRequestBodyClaims:returningError:"
 
 -- | @Selector@ for @loginUserName@
-loginUserNameSelector :: Selector
+loginUserNameSelector :: Selector '[] (Id NSString)
 loginUserNameSelector = mkSelector "loginUserName"
 
 -- | @Selector@ for @setLoginUserName:@
-setLoginUserNameSelector :: Selector
+setLoginUserNameSelector :: Selector '[Id NSString] ()
 setLoginUserNameSelector = mkSelector "setLoginUserName:"
 

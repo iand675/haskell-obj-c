@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Foundation.NSMethodSignature
   , frameLength
   , methodReturnType
   , methodReturnLength
-  , signatureWithObjCTypesSelector
+  , frameLengthSelector
   , getArgumentTypeAtIndexSelector
   , isOnewaySelector
-  , numberOfArgumentsSelector
-  , frameLengthSelector
-  , methodReturnTypeSelector
   , methodReturnLengthSelector
+  , methodReturnTypeSelector
+  , numberOfArgumentsSelector
+  , signatureWithObjCTypesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,67 +40,67 @@ signatureWithObjCTypes :: Const (Ptr CChar) -> IO (Id NSMethodSignature)
 signatureWithObjCTypes types =
   do
     cls' <- getRequiredClass "NSMethodSignature"
-    sendClassMsg cls' (mkSelector "signatureWithObjCTypes:") (retPtr retVoid) [argPtr (unConst types)] >>= retainedObject . castPtr
+    sendClassMessage cls' signatureWithObjCTypesSelector types
 
 -- | @- getArgumentTypeAtIndex:@
 getArgumentTypeAtIndex :: IsNSMethodSignature nsMethodSignature => nsMethodSignature -> CULong -> IO (Const (Ptr CChar))
-getArgumentTypeAtIndex nsMethodSignature  idx =
-    fmap Const $ fmap castPtr $ sendMsg nsMethodSignature (mkSelector "getArgumentTypeAtIndex:") (retPtr retVoid) [argCULong idx]
+getArgumentTypeAtIndex nsMethodSignature idx =
+  sendMessage nsMethodSignature getArgumentTypeAtIndexSelector idx
 
 -- | @- isOneway@
 isOneway :: IsNSMethodSignature nsMethodSignature => nsMethodSignature -> IO Bool
-isOneway nsMethodSignature  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMethodSignature (mkSelector "isOneway") retCULong []
+isOneway nsMethodSignature =
+  sendMessage nsMethodSignature isOnewaySelector
 
 -- | @- numberOfArguments@
 numberOfArguments :: IsNSMethodSignature nsMethodSignature => nsMethodSignature -> IO CULong
-numberOfArguments nsMethodSignature  =
-    sendMsg nsMethodSignature (mkSelector "numberOfArguments") retCULong []
+numberOfArguments nsMethodSignature =
+  sendMessage nsMethodSignature numberOfArgumentsSelector
 
 -- | @- frameLength@
 frameLength :: IsNSMethodSignature nsMethodSignature => nsMethodSignature -> IO CULong
-frameLength nsMethodSignature  =
-    sendMsg nsMethodSignature (mkSelector "frameLength") retCULong []
+frameLength nsMethodSignature =
+  sendMessage nsMethodSignature frameLengthSelector
 
 -- | @- methodReturnType@
 methodReturnType :: IsNSMethodSignature nsMethodSignature => nsMethodSignature -> IO (Ptr CChar)
-methodReturnType nsMethodSignature  =
-    fmap castPtr $ sendMsg nsMethodSignature (mkSelector "methodReturnType") (retPtr retVoid) []
+methodReturnType nsMethodSignature =
+  sendMessage nsMethodSignature methodReturnTypeSelector
 
 -- | @- methodReturnLength@
 methodReturnLength :: IsNSMethodSignature nsMethodSignature => nsMethodSignature -> IO CULong
-methodReturnLength nsMethodSignature  =
-    sendMsg nsMethodSignature (mkSelector "methodReturnLength") retCULong []
+methodReturnLength nsMethodSignature =
+  sendMessage nsMethodSignature methodReturnLengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @signatureWithObjCTypes:@
-signatureWithObjCTypesSelector :: Selector
+signatureWithObjCTypesSelector :: Selector '[Const (Ptr CChar)] (Id NSMethodSignature)
 signatureWithObjCTypesSelector = mkSelector "signatureWithObjCTypes:"
 
 -- | @Selector@ for @getArgumentTypeAtIndex:@
-getArgumentTypeAtIndexSelector :: Selector
+getArgumentTypeAtIndexSelector :: Selector '[CULong] (Const (Ptr CChar))
 getArgumentTypeAtIndexSelector = mkSelector "getArgumentTypeAtIndex:"
 
 -- | @Selector@ for @isOneway@
-isOnewaySelector :: Selector
+isOnewaySelector :: Selector '[] Bool
 isOnewaySelector = mkSelector "isOneway"
 
 -- | @Selector@ for @numberOfArguments@
-numberOfArgumentsSelector :: Selector
+numberOfArgumentsSelector :: Selector '[] CULong
 numberOfArgumentsSelector = mkSelector "numberOfArguments"
 
 -- | @Selector@ for @frameLength@
-frameLengthSelector :: Selector
+frameLengthSelector :: Selector '[] CULong
 frameLengthSelector = mkSelector "frameLength"
 
 -- | @Selector@ for @methodReturnType@
-methodReturnTypeSelector :: Selector
+methodReturnTypeSelector :: Selector '[] (Ptr CChar)
 methodReturnTypeSelector = mkSelector "methodReturnType"
 
 -- | @Selector@ for @methodReturnLength@
-methodReturnLengthSelector :: Selector
+methodReturnLengthSelector :: Selector '[] CULong
 methodReturnLengthSelector = mkSelector "methodReturnLength"
 

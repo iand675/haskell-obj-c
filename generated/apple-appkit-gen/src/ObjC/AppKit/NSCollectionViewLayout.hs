@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,57 +45,53 @@ module ObjC.AppKit.NSCollectionViewLayout
   , layoutAttributesClass
   , invalidationContextClass
   , collectionViewContentSize
+  , collectionViewContentSizeSelector
+  , collectionViewSelector
+  , finalLayoutAttributesForDisappearingDecorationElementOfKind_atIndexPathSelector
+  , finalLayoutAttributesForDisappearingItemAtIndexPathSelector
+  , finalLayoutAttributesForDisappearingSupplementaryElementOfKind_atIndexPathSelector
+  , finalizeAnimatedBoundsChangeSelector
+  , finalizeCollectionViewUpdatesSelector
+  , finalizeLayoutTransitionSelector
+  , indexPathsToDeleteForDecorationViewOfKindSelector
+  , indexPathsToDeleteForSupplementaryViewOfKindSelector
+  , indexPathsToInsertForDecorationViewOfKindSelector
+  , indexPathsToInsertForSupplementaryViewOfKindSelector
+  , initialLayoutAttributesForAppearingDecorationElementOfKind_atIndexPathSelector
+  , initialLayoutAttributesForAppearingItemAtIndexPathSelector
+  , initialLayoutAttributesForAppearingSupplementaryElementOfKind_atIndexPathSelector
   , invalidateLayoutSelector
   , invalidateLayoutWithContextSelector
-  , registerClass_forDecorationViewOfKindSelector
-  , registerNib_forDecorationViewOfKindSelector
-  , prepareForCollectionViewUpdatesSelector
-  , finalizeCollectionViewUpdatesSelector
-  , prepareForAnimatedBoundsChangeSelector
-  , finalizeAnimatedBoundsChangeSelector
-  , prepareForTransitionToLayoutSelector
-  , prepareForTransitionFromLayoutSelector
-  , finalizeLayoutTransitionSelector
-  , initialLayoutAttributesForAppearingItemAtIndexPathSelector
-  , finalLayoutAttributesForDisappearingItemAtIndexPathSelector
-  , initialLayoutAttributesForAppearingSupplementaryElementOfKind_atIndexPathSelector
-  , finalLayoutAttributesForDisappearingSupplementaryElementOfKind_atIndexPathSelector
-  , initialLayoutAttributesForAppearingDecorationElementOfKind_atIndexPathSelector
-  , finalLayoutAttributesForDisappearingDecorationElementOfKind_atIndexPathSelector
-  , indexPathsToDeleteForSupplementaryViewOfKindSelector
-  , indexPathsToDeleteForDecorationViewOfKindSelector
-  , indexPathsToInsertForSupplementaryViewOfKindSelector
-  , indexPathsToInsertForDecorationViewOfKindSelector
-  , prepareLayoutSelector
-  , layoutAttributesForElementsInRectSelector
-  , layoutAttributesForItemAtIndexPathSelector
-  , layoutAttributesForSupplementaryViewOfKind_atIndexPathSelector
+  , invalidationContextClassSelector
+  , invalidationContextForBoundsChangeSelector
+  , invalidationContextForPreferredLayoutAttributes_withOriginalAttributesSelector
+  , layoutAttributesClassSelector
   , layoutAttributesForDecorationViewOfKind_atIndexPathSelector
   , layoutAttributesForDropTargetAtPointSelector
+  , layoutAttributesForElementsInRectSelector
   , layoutAttributesForInterItemGapBeforeIndexPathSelector
+  , layoutAttributesForItemAtIndexPathSelector
+  , layoutAttributesForSupplementaryViewOfKind_atIndexPathSelector
+  , prepareForAnimatedBoundsChangeSelector
+  , prepareForCollectionViewUpdatesSelector
+  , prepareForTransitionFromLayoutSelector
+  , prepareForTransitionToLayoutSelector
+  , prepareLayoutSelector
+  , registerClass_forDecorationViewOfKindSelector
+  , registerNib_forDecorationViewOfKindSelector
   , shouldInvalidateLayoutForBoundsChangeSelector
-  , invalidationContextForBoundsChangeSelector
   , shouldInvalidateLayoutForPreferredLayoutAttributes_withOriginalAttributesSelector
-  , invalidationContextForPreferredLayoutAttributes_withOriginalAttributesSelector
-  , targetContentOffsetForProposedContentOffset_withScrollingVelocitySelector
   , targetContentOffsetForProposedContentOffsetSelector
-  , collectionViewSelector
-  , layoutAttributesClassSelector
-  , invalidationContextClassSelector
-  , collectionViewContentSizeSelector
+  , targetContentOffsetForProposedContentOffset_withScrollingVelocitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -104,382 +101,351 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- invalidateLayout@
 invalidateLayout :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> IO ()
-invalidateLayout nsCollectionViewLayout  =
-    sendMsg nsCollectionViewLayout (mkSelector "invalidateLayout") retVoid []
+invalidateLayout nsCollectionViewLayout =
+  sendMessage nsCollectionViewLayout invalidateLayoutSelector
 
 -- | @- invalidateLayoutWithContext:@
 invalidateLayoutWithContext :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSCollectionViewLayoutInvalidationContext context) => nsCollectionViewLayout -> context -> IO ()
-invalidateLayoutWithContext nsCollectionViewLayout  context =
-  withObjCPtr context $ \raw_context ->
-      sendMsg nsCollectionViewLayout (mkSelector "invalidateLayoutWithContext:") retVoid [argPtr (castPtr raw_context :: Ptr ())]
+invalidateLayoutWithContext nsCollectionViewLayout context =
+  sendMessage nsCollectionViewLayout invalidateLayoutWithContextSelector (toNSCollectionViewLayoutInvalidationContext context)
 
 -- | @- registerClass:forDecorationViewOfKind:@
 registerClass_forDecorationViewOfKind :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind) => nsCollectionViewLayout -> Class -> elementKind -> IO ()
-registerClass_forDecorationViewOfKind nsCollectionViewLayout  viewClass elementKind =
-  withObjCPtr elementKind $ \raw_elementKind ->
-      sendMsg nsCollectionViewLayout (mkSelector "registerClass:forDecorationViewOfKind:") retVoid [argPtr (unClass viewClass), argPtr (castPtr raw_elementKind :: Ptr ())]
+registerClass_forDecorationViewOfKind nsCollectionViewLayout viewClass elementKind =
+  sendMessage nsCollectionViewLayout registerClass_forDecorationViewOfKindSelector viewClass (toNSString elementKind)
 
 -- | @- registerNib:forDecorationViewOfKind:@
 registerNib_forDecorationViewOfKind :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSNib nib, IsNSString elementKind) => nsCollectionViewLayout -> nib -> elementKind -> IO ()
-registerNib_forDecorationViewOfKind nsCollectionViewLayout  nib elementKind =
-  withObjCPtr nib $ \raw_nib ->
-    withObjCPtr elementKind $ \raw_elementKind ->
-        sendMsg nsCollectionViewLayout (mkSelector "registerNib:forDecorationViewOfKind:") retVoid [argPtr (castPtr raw_nib :: Ptr ()), argPtr (castPtr raw_elementKind :: Ptr ())]
+registerNib_forDecorationViewOfKind nsCollectionViewLayout nib elementKind =
+  sendMessage nsCollectionViewLayout registerNib_forDecorationViewOfKindSelector (toNSNib nib) (toNSString elementKind)
 
 -- | @- prepareForCollectionViewUpdates:@
 prepareForCollectionViewUpdates :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSArray updateItems) => nsCollectionViewLayout -> updateItems -> IO ()
-prepareForCollectionViewUpdates nsCollectionViewLayout  updateItems =
-  withObjCPtr updateItems $ \raw_updateItems ->
-      sendMsg nsCollectionViewLayout (mkSelector "prepareForCollectionViewUpdates:") retVoid [argPtr (castPtr raw_updateItems :: Ptr ())]
+prepareForCollectionViewUpdates nsCollectionViewLayout updateItems =
+  sendMessage nsCollectionViewLayout prepareForCollectionViewUpdatesSelector (toNSArray updateItems)
 
 -- | @- finalizeCollectionViewUpdates@
 finalizeCollectionViewUpdates :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> IO ()
-finalizeCollectionViewUpdates nsCollectionViewLayout  =
-    sendMsg nsCollectionViewLayout (mkSelector "finalizeCollectionViewUpdates") retVoid []
+finalizeCollectionViewUpdates nsCollectionViewLayout =
+  sendMessage nsCollectionViewLayout finalizeCollectionViewUpdatesSelector
 
 -- | @- prepareForAnimatedBoundsChange:@
 prepareForAnimatedBoundsChange :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> NSRect -> IO ()
-prepareForAnimatedBoundsChange nsCollectionViewLayout  oldBounds =
-    sendMsg nsCollectionViewLayout (mkSelector "prepareForAnimatedBoundsChange:") retVoid [argNSRect oldBounds]
+prepareForAnimatedBoundsChange nsCollectionViewLayout oldBounds =
+  sendMessage nsCollectionViewLayout prepareForAnimatedBoundsChangeSelector oldBounds
 
 -- | @- finalizeAnimatedBoundsChange@
 finalizeAnimatedBoundsChange :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> IO ()
-finalizeAnimatedBoundsChange nsCollectionViewLayout  =
-    sendMsg nsCollectionViewLayout (mkSelector "finalizeAnimatedBoundsChange") retVoid []
+finalizeAnimatedBoundsChange nsCollectionViewLayout =
+  sendMessage nsCollectionViewLayout finalizeAnimatedBoundsChangeSelector
 
 -- | @- prepareForTransitionToLayout:@
 prepareForTransitionToLayout :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSCollectionViewLayout newLayout) => nsCollectionViewLayout -> newLayout -> IO ()
-prepareForTransitionToLayout nsCollectionViewLayout  newLayout =
-  withObjCPtr newLayout $ \raw_newLayout ->
-      sendMsg nsCollectionViewLayout (mkSelector "prepareForTransitionToLayout:") retVoid [argPtr (castPtr raw_newLayout :: Ptr ())]
+prepareForTransitionToLayout nsCollectionViewLayout newLayout =
+  sendMessage nsCollectionViewLayout prepareForTransitionToLayoutSelector (toNSCollectionViewLayout newLayout)
 
 -- | @- prepareForTransitionFromLayout:@
 prepareForTransitionFromLayout :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSCollectionViewLayout oldLayout) => nsCollectionViewLayout -> oldLayout -> IO ()
-prepareForTransitionFromLayout nsCollectionViewLayout  oldLayout =
-  withObjCPtr oldLayout $ \raw_oldLayout ->
-      sendMsg nsCollectionViewLayout (mkSelector "prepareForTransitionFromLayout:") retVoid [argPtr (castPtr raw_oldLayout :: Ptr ())]
+prepareForTransitionFromLayout nsCollectionViewLayout oldLayout =
+  sendMessage nsCollectionViewLayout prepareForTransitionFromLayoutSelector (toNSCollectionViewLayout oldLayout)
 
 -- | @- finalizeLayoutTransition@
 finalizeLayoutTransition :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> IO ()
-finalizeLayoutTransition nsCollectionViewLayout  =
-    sendMsg nsCollectionViewLayout (mkSelector "finalizeLayoutTransition") retVoid []
+finalizeLayoutTransition nsCollectionViewLayout =
+  sendMessage nsCollectionViewLayout finalizeLayoutTransitionSelector
 
 -- | @- initialLayoutAttributesForAppearingItemAtIndexPath:@
 initialLayoutAttributesForAppearingItemAtIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSIndexPath itemIndexPath) => nsCollectionViewLayout -> itemIndexPath -> IO (Id NSCollectionViewLayoutAttributes)
-initialLayoutAttributesForAppearingItemAtIndexPath nsCollectionViewLayout  itemIndexPath =
-  withObjCPtr itemIndexPath $ \raw_itemIndexPath ->
-      sendMsg nsCollectionViewLayout (mkSelector "initialLayoutAttributesForAppearingItemAtIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_itemIndexPath :: Ptr ())] >>= ownedObject . castPtr
+initialLayoutAttributesForAppearingItemAtIndexPath nsCollectionViewLayout itemIndexPath =
+  sendOwnedMessage nsCollectionViewLayout initialLayoutAttributesForAppearingItemAtIndexPathSelector (toNSIndexPath itemIndexPath)
 
 -- | @- finalLayoutAttributesForDisappearingItemAtIndexPath:@
 finalLayoutAttributesForDisappearingItemAtIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSIndexPath itemIndexPath) => nsCollectionViewLayout -> itemIndexPath -> IO (Id NSCollectionViewLayoutAttributes)
-finalLayoutAttributesForDisappearingItemAtIndexPath nsCollectionViewLayout  itemIndexPath =
-  withObjCPtr itemIndexPath $ \raw_itemIndexPath ->
-      sendMsg nsCollectionViewLayout (mkSelector "finalLayoutAttributesForDisappearingItemAtIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_itemIndexPath :: Ptr ())] >>= retainedObject . castPtr
+finalLayoutAttributesForDisappearingItemAtIndexPath nsCollectionViewLayout itemIndexPath =
+  sendMessage nsCollectionViewLayout finalLayoutAttributesForDisappearingItemAtIndexPathSelector (toNSIndexPath itemIndexPath)
 
 -- | @- initialLayoutAttributesForAppearingSupplementaryElementOfKind:atIndexPath:@
 initialLayoutAttributesForAppearingSupplementaryElementOfKind_atIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind, IsNSIndexPath elementIndexPath) => nsCollectionViewLayout -> elementKind -> elementIndexPath -> IO (Id NSCollectionViewLayoutAttributes)
-initialLayoutAttributesForAppearingSupplementaryElementOfKind_atIndexPath nsCollectionViewLayout  elementKind elementIndexPath =
-  withObjCPtr elementKind $ \raw_elementKind ->
-    withObjCPtr elementIndexPath $ \raw_elementIndexPath ->
-        sendMsg nsCollectionViewLayout (mkSelector "initialLayoutAttributesForAppearingSupplementaryElementOfKind:atIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ()), argPtr (castPtr raw_elementIndexPath :: Ptr ())] >>= ownedObject . castPtr
+initialLayoutAttributesForAppearingSupplementaryElementOfKind_atIndexPath nsCollectionViewLayout elementKind elementIndexPath =
+  sendOwnedMessage nsCollectionViewLayout initialLayoutAttributesForAppearingSupplementaryElementOfKind_atIndexPathSelector (toNSString elementKind) (toNSIndexPath elementIndexPath)
 
 -- | @- finalLayoutAttributesForDisappearingSupplementaryElementOfKind:atIndexPath:@
 finalLayoutAttributesForDisappearingSupplementaryElementOfKind_atIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind, IsNSIndexPath elementIndexPath) => nsCollectionViewLayout -> elementKind -> elementIndexPath -> IO (Id NSCollectionViewLayoutAttributes)
-finalLayoutAttributesForDisappearingSupplementaryElementOfKind_atIndexPath nsCollectionViewLayout  elementKind elementIndexPath =
-  withObjCPtr elementKind $ \raw_elementKind ->
-    withObjCPtr elementIndexPath $ \raw_elementIndexPath ->
-        sendMsg nsCollectionViewLayout (mkSelector "finalLayoutAttributesForDisappearingSupplementaryElementOfKind:atIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ()), argPtr (castPtr raw_elementIndexPath :: Ptr ())] >>= retainedObject . castPtr
+finalLayoutAttributesForDisappearingSupplementaryElementOfKind_atIndexPath nsCollectionViewLayout elementKind elementIndexPath =
+  sendMessage nsCollectionViewLayout finalLayoutAttributesForDisappearingSupplementaryElementOfKind_atIndexPathSelector (toNSString elementKind) (toNSIndexPath elementIndexPath)
 
 -- | @- initialLayoutAttributesForAppearingDecorationElementOfKind:atIndexPath:@
 initialLayoutAttributesForAppearingDecorationElementOfKind_atIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind, IsNSIndexPath decorationIndexPath) => nsCollectionViewLayout -> elementKind -> decorationIndexPath -> IO (Id NSCollectionViewLayoutAttributes)
-initialLayoutAttributesForAppearingDecorationElementOfKind_atIndexPath nsCollectionViewLayout  elementKind decorationIndexPath =
-  withObjCPtr elementKind $ \raw_elementKind ->
-    withObjCPtr decorationIndexPath $ \raw_decorationIndexPath ->
-        sendMsg nsCollectionViewLayout (mkSelector "initialLayoutAttributesForAppearingDecorationElementOfKind:atIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ()), argPtr (castPtr raw_decorationIndexPath :: Ptr ())] >>= ownedObject . castPtr
+initialLayoutAttributesForAppearingDecorationElementOfKind_atIndexPath nsCollectionViewLayout elementKind decorationIndexPath =
+  sendOwnedMessage nsCollectionViewLayout initialLayoutAttributesForAppearingDecorationElementOfKind_atIndexPathSelector (toNSString elementKind) (toNSIndexPath decorationIndexPath)
 
 -- | @- finalLayoutAttributesForDisappearingDecorationElementOfKind:atIndexPath:@
 finalLayoutAttributesForDisappearingDecorationElementOfKind_atIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind, IsNSIndexPath decorationIndexPath) => nsCollectionViewLayout -> elementKind -> decorationIndexPath -> IO (Id NSCollectionViewLayoutAttributes)
-finalLayoutAttributesForDisappearingDecorationElementOfKind_atIndexPath nsCollectionViewLayout  elementKind decorationIndexPath =
-  withObjCPtr elementKind $ \raw_elementKind ->
-    withObjCPtr decorationIndexPath $ \raw_decorationIndexPath ->
-        sendMsg nsCollectionViewLayout (mkSelector "finalLayoutAttributesForDisappearingDecorationElementOfKind:atIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ()), argPtr (castPtr raw_decorationIndexPath :: Ptr ())] >>= retainedObject . castPtr
+finalLayoutAttributesForDisappearingDecorationElementOfKind_atIndexPath nsCollectionViewLayout elementKind decorationIndexPath =
+  sendMessage nsCollectionViewLayout finalLayoutAttributesForDisappearingDecorationElementOfKind_atIndexPathSelector (toNSString elementKind) (toNSIndexPath decorationIndexPath)
 
 -- | @- indexPathsToDeleteForSupplementaryViewOfKind:@
 indexPathsToDeleteForSupplementaryViewOfKind :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind) => nsCollectionViewLayout -> elementKind -> IO (Id NSSet)
-indexPathsToDeleteForSupplementaryViewOfKind nsCollectionViewLayout  elementKind =
-  withObjCPtr elementKind $ \raw_elementKind ->
-      sendMsg nsCollectionViewLayout (mkSelector "indexPathsToDeleteForSupplementaryViewOfKind:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ())] >>= retainedObject . castPtr
+indexPathsToDeleteForSupplementaryViewOfKind nsCollectionViewLayout elementKind =
+  sendMessage nsCollectionViewLayout indexPathsToDeleteForSupplementaryViewOfKindSelector (toNSString elementKind)
 
 -- | @- indexPathsToDeleteForDecorationViewOfKind:@
 indexPathsToDeleteForDecorationViewOfKind :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind) => nsCollectionViewLayout -> elementKind -> IO (Id NSSet)
-indexPathsToDeleteForDecorationViewOfKind nsCollectionViewLayout  elementKind =
-  withObjCPtr elementKind $ \raw_elementKind ->
-      sendMsg nsCollectionViewLayout (mkSelector "indexPathsToDeleteForDecorationViewOfKind:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ())] >>= retainedObject . castPtr
+indexPathsToDeleteForDecorationViewOfKind nsCollectionViewLayout elementKind =
+  sendMessage nsCollectionViewLayout indexPathsToDeleteForDecorationViewOfKindSelector (toNSString elementKind)
 
 -- | @- indexPathsToInsertForSupplementaryViewOfKind:@
 indexPathsToInsertForSupplementaryViewOfKind :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind) => nsCollectionViewLayout -> elementKind -> IO (Id NSSet)
-indexPathsToInsertForSupplementaryViewOfKind nsCollectionViewLayout  elementKind =
-  withObjCPtr elementKind $ \raw_elementKind ->
-      sendMsg nsCollectionViewLayout (mkSelector "indexPathsToInsertForSupplementaryViewOfKind:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ())] >>= retainedObject . castPtr
+indexPathsToInsertForSupplementaryViewOfKind nsCollectionViewLayout elementKind =
+  sendMessage nsCollectionViewLayout indexPathsToInsertForSupplementaryViewOfKindSelector (toNSString elementKind)
 
 -- | @- indexPathsToInsertForDecorationViewOfKind:@
 indexPathsToInsertForDecorationViewOfKind :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind) => nsCollectionViewLayout -> elementKind -> IO (Id NSSet)
-indexPathsToInsertForDecorationViewOfKind nsCollectionViewLayout  elementKind =
-  withObjCPtr elementKind $ \raw_elementKind ->
-      sendMsg nsCollectionViewLayout (mkSelector "indexPathsToInsertForDecorationViewOfKind:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ())] >>= retainedObject . castPtr
+indexPathsToInsertForDecorationViewOfKind nsCollectionViewLayout elementKind =
+  sendMessage nsCollectionViewLayout indexPathsToInsertForDecorationViewOfKindSelector (toNSString elementKind)
 
 -- | @- prepareLayout@
 prepareLayout :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> IO ()
-prepareLayout nsCollectionViewLayout  =
-    sendMsg nsCollectionViewLayout (mkSelector "prepareLayout") retVoid []
+prepareLayout nsCollectionViewLayout =
+  sendMessage nsCollectionViewLayout prepareLayoutSelector
 
 -- | @- layoutAttributesForElementsInRect:@
 layoutAttributesForElementsInRect :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> NSRect -> IO (Id NSArray)
-layoutAttributesForElementsInRect nsCollectionViewLayout  rect =
-    sendMsg nsCollectionViewLayout (mkSelector "layoutAttributesForElementsInRect:") (retPtr retVoid) [argNSRect rect] >>= retainedObject . castPtr
+layoutAttributesForElementsInRect nsCollectionViewLayout rect =
+  sendMessage nsCollectionViewLayout layoutAttributesForElementsInRectSelector rect
 
 -- | @- layoutAttributesForItemAtIndexPath:@
 layoutAttributesForItemAtIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSIndexPath indexPath) => nsCollectionViewLayout -> indexPath -> IO (Id NSCollectionViewLayoutAttributes)
-layoutAttributesForItemAtIndexPath nsCollectionViewLayout  indexPath =
-  withObjCPtr indexPath $ \raw_indexPath ->
-      sendMsg nsCollectionViewLayout (mkSelector "layoutAttributesForItemAtIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_indexPath :: Ptr ())] >>= retainedObject . castPtr
+layoutAttributesForItemAtIndexPath nsCollectionViewLayout indexPath =
+  sendMessage nsCollectionViewLayout layoutAttributesForItemAtIndexPathSelector (toNSIndexPath indexPath)
 
 -- | @- layoutAttributesForSupplementaryViewOfKind:atIndexPath:@
 layoutAttributesForSupplementaryViewOfKind_atIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind, IsNSIndexPath indexPath) => nsCollectionViewLayout -> elementKind -> indexPath -> IO (Id NSCollectionViewLayoutAttributes)
-layoutAttributesForSupplementaryViewOfKind_atIndexPath nsCollectionViewLayout  elementKind indexPath =
-  withObjCPtr elementKind $ \raw_elementKind ->
-    withObjCPtr indexPath $ \raw_indexPath ->
-        sendMsg nsCollectionViewLayout (mkSelector "layoutAttributesForSupplementaryViewOfKind:atIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ()), argPtr (castPtr raw_indexPath :: Ptr ())] >>= retainedObject . castPtr
+layoutAttributesForSupplementaryViewOfKind_atIndexPath nsCollectionViewLayout elementKind indexPath =
+  sendMessage nsCollectionViewLayout layoutAttributesForSupplementaryViewOfKind_atIndexPathSelector (toNSString elementKind) (toNSIndexPath indexPath)
 
 -- | @- layoutAttributesForDecorationViewOfKind:atIndexPath:@
 layoutAttributesForDecorationViewOfKind_atIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSString elementKind, IsNSIndexPath indexPath) => nsCollectionViewLayout -> elementKind -> indexPath -> IO (Id NSCollectionViewLayoutAttributes)
-layoutAttributesForDecorationViewOfKind_atIndexPath nsCollectionViewLayout  elementKind indexPath =
-  withObjCPtr elementKind $ \raw_elementKind ->
-    withObjCPtr indexPath $ \raw_indexPath ->
-        sendMsg nsCollectionViewLayout (mkSelector "layoutAttributesForDecorationViewOfKind:atIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_elementKind :: Ptr ()), argPtr (castPtr raw_indexPath :: Ptr ())] >>= retainedObject . castPtr
+layoutAttributesForDecorationViewOfKind_atIndexPath nsCollectionViewLayout elementKind indexPath =
+  sendMessage nsCollectionViewLayout layoutAttributesForDecorationViewOfKind_atIndexPathSelector (toNSString elementKind) (toNSIndexPath indexPath)
 
 -- | @- layoutAttributesForDropTargetAtPoint:@
 layoutAttributesForDropTargetAtPoint :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> NSPoint -> IO (Id NSCollectionViewLayoutAttributes)
-layoutAttributesForDropTargetAtPoint nsCollectionViewLayout  pointInCollectionView =
-    sendMsg nsCollectionViewLayout (mkSelector "layoutAttributesForDropTargetAtPoint:") (retPtr retVoid) [argNSPoint pointInCollectionView] >>= retainedObject . castPtr
+layoutAttributesForDropTargetAtPoint nsCollectionViewLayout pointInCollectionView =
+  sendMessage nsCollectionViewLayout layoutAttributesForDropTargetAtPointSelector pointInCollectionView
 
 -- | @- layoutAttributesForInterItemGapBeforeIndexPath:@
 layoutAttributesForInterItemGapBeforeIndexPath :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSIndexPath indexPath) => nsCollectionViewLayout -> indexPath -> IO (Id NSCollectionViewLayoutAttributes)
-layoutAttributesForInterItemGapBeforeIndexPath nsCollectionViewLayout  indexPath =
-  withObjCPtr indexPath $ \raw_indexPath ->
-      sendMsg nsCollectionViewLayout (mkSelector "layoutAttributesForInterItemGapBeforeIndexPath:") (retPtr retVoid) [argPtr (castPtr raw_indexPath :: Ptr ())] >>= retainedObject . castPtr
+layoutAttributesForInterItemGapBeforeIndexPath nsCollectionViewLayout indexPath =
+  sendMessage nsCollectionViewLayout layoutAttributesForInterItemGapBeforeIndexPathSelector (toNSIndexPath indexPath)
 
 -- | @- shouldInvalidateLayoutForBoundsChange:@
 shouldInvalidateLayoutForBoundsChange :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> NSRect -> IO Bool
-shouldInvalidateLayoutForBoundsChange nsCollectionViewLayout  newBounds =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionViewLayout (mkSelector "shouldInvalidateLayoutForBoundsChange:") retCULong [argNSRect newBounds]
+shouldInvalidateLayoutForBoundsChange nsCollectionViewLayout newBounds =
+  sendMessage nsCollectionViewLayout shouldInvalidateLayoutForBoundsChangeSelector newBounds
 
 -- | @- invalidationContextForBoundsChange:@
 invalidationContextForBoundsChange :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> NSRect -> IO (Id NSCollectionViewLayoutInvalidationContext)
-invalidationContextForBoundsChange nsCollectionViewLayout  newBounds =
-    sendMsg nsCollectionViewLayout (mkSelector "invalidationContextForBoundsChange:") (retPtr retVoid) [argNSRect newBounds] >>= retainedObject . castPtr
+invalidationContextForBoundsChange nsCollectionViewLayout newBounds =
+  sendMessage nsCollectionViewLayout invalidationContextForBoundsChangeSelector newBounds
 
 -- | @- shouldInvalidateLayoutForPreferredLayoutAttributes:withOriginalAttributes:@
 shouldInvalidateLayoutForPreferredLayoutAttributes_withOriginalAttributes :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSCollectionViewLayoutAttributes preferredAttributes, IsNSCollectionViewLayoutAttributes originalAttributes) => nsCollectionViewLayout -> preferredAttributes -> originalAttributes -> IO Bool
-shouldInvalidateLayoutForPreferredLayoutAttributes_withOriginalAttributes nsCollectionViewLayout  preferredAttributes originalAttributes =
-  withObjCPtr preferredAttributes $ \raw_preferredAttributes ->
-    withObjCPtr originalAttributes $ \raw_originalAttributes ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionViewLayout (mkSelector "shouldInvalidateLayoutForPreferredLayoutAttributes:withOriginalAttributes:") retCULong [argPtr (castPtr raw_preferredAttributes :: Ptr ()), argPtr (castPtr raw_originalAttributes :: Ptr ())]
+shouldInvalidateLayoutForPreferredLayoutAttributes_withOriginalAttributes nsCollectionViewLayout preferredAttributes originalAttributes =
+  sendMessage nsCollectionViewLayout shouldInvalidateLayoutForPreferredLayoutAttributes_withOriginalAttributesSelector (toNSCollectionViewLayoutAttributes preferredAttributes) (toNSCollectionViewLayoutAttributes originalAttributes)
 
 -- | @- invalidationContextForPreferredLayoutAttributes:withOriginalAttributes:@
 invalidationContextForPreferredLayoutAttributes_withOriginalAttributes :: (IsNSCollectionViewLayout nsCollectionViewLayout, IsNSCollectionViewLayoutAttributes preferredAttributes, IsNSCollectionViewLayoutAttributes originalAttributes) => nsCollectionViewLayout -> preferredAttributes -> originalAttributes -> IO (Id NSCollectionViewLayoutInvalidationContext)
-invalidationContextForPreferredLayoutAttributes_withOriginalAttributes nsCollectionViewLayout  preferredAttributes originalAttributes =
-  withObjCPtr preferredAttributes $ \raw_preferredAttributes ->
-    withObjCPtr originalAttributes $ \raw_originalAttributes ->
-        sendMsg nsCollectionViewLayout (mkSelector "invalidationContextForPreferredLayoutAttributes:withOriginalAttributes:") (retPtr retVoid) [argPtr (castPtr raw_preferredAttributes :: Ptr ()), argPtr (castPtr raw_originalAttributes :: Ptr ())] >>= retainedObject . castPtr
+invalidationContextForPreferredLayoutAttributes_withOriginalAttributes nsCollectionViewLayout preferredAttributes originalAttributes =
+  sendMessage nsCollectionViewLayout invalidationContextForPreferredLayoutAttributes_withOriginalAttributesSelector (toNSCollectionViewLayoutAttributes preferredAttributes) (toNSCollectionViewLayoutAttributes originalAttributes)
 
 -- | @- targetContentOffsetForProposedContentOffset:withScrollingVelocity:@
 targetContentOffsetForProposedContentOffset_withScrollingVelocity :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> NSPoint -> NSPoint -> IO NSPoint
-targetContentOffsetForProposedContentOffset_withScrollingVelocity nsCollectionViewLayout  proposedContentOffset velocity =
-    sendMsgStret nsCollectionViewLayout (mkSelector "targetContentOffsetForProposedContentOffset:withScrollingVelocity:") retNSPoint [argNSPoint proposedContentOffset, argNSPoint velocity]
+targetContentOffsetForProposedContentOffset_withScrollingVelocity nsCollectionViewLayout proposedContentOffset velocity =
+  sendMessage nsCollectionViewLayout targetContentOffsetForProposedContentOffset_withScrollingVelocitySelector proposedContentOffset velocity
 
 -- | @- targetContentOffsetForProposedContentOffset:@
 targetContentOffsetForProposedContentOffset :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> NSPoint -> IO NSPoint
-targetContentOffsetForProposedContentOffset nsCollectionViewLayout  proposedContentOffset =
-    sendMsgStret nsCollectionViewLayout (mkSelector "targetContentOffsetForProposedContentOffset:") retNSPoint [argNSPoint proposedContentOffset]
+targetContentOffsetForProposedContentOffset nsCollectionViewLayout proposedContentOffset =
+  sendMessage nsCollectionViewLayout targetContentOffsetForProposedContentOffsetSelector proposedContentOffset
 
 -- | @- collectionView@
 collectionView :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> IO (Id NSCollectionView)
-collectionView nsCollectionViewLayout  =
-    sendMsg nsCollectionViewLayout (mkSelector "collectionView") (retPtr retVoid) [] >>= retainedObject . castPtr
+collectionView nsCollectionViewLayout =
+  sendMessage nsCollectionViewLayout collectionViewSelector
 
 -- | @+ layoutAttributesClass@
 layoutAttributesClass :: IO Class
 layoutAttributesClass  =
   do
     cls' <- getRequiredClass "NSCollectionViewLayout"
-    fmap (Class . castPtr) $ sendClassMsg cls' (mkSelector "layoutAttributesClass") (retPtr retVoid) []
+    sendClassMessage cls' layoutAttributesClassSelector
 
 -- | @+ invalidationContextClass@
 invalidationContextClass :: IO Class
 invalidationContextClass  =
   do
     cls' <- getRequiredClass "NSCollectionViewLayout"
-    fmap (Class . castPtr) $ sendClassMsg cls' (mkSelector "invalidationContextClass") (retPtr retVoid) []
+    sendClassMessage cls' invalidationContextClassSelector
 
 -- | @- collectionViewContentSize@
 collectionViewContentSize :: IsNSCollectionViewLayout nsCollectionViewLayout => nsCollectionViewLayout -> IO NSSize
-collectionViewContentSize nsCollectionViewLayout  =
-    sendMsgStret nsCollectionViewLayout (mkSelector "collectionViewContentSize") retNSSize []
+collectionViewContentSize nsCollectionViewLayout =
+  sendMessage nsCollectionViewLayout collectionViewContentSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @invalidateLayout@
-invalidateLayoutSelector :: Selector
+invalidateLayoutSelector :: Selector '[] ()
 invalidateLayoutSelector = mkSelector "invalidateLayout"
 
 -- | @Selector@ for @invalidateLayoutWithContext:@
-invalidateLayoutWithContextSelector :: Selector
+invalidateLayoutWithContextSelector :: Selector '[Id NSCollectionViewLayoutInvalidationContext] ()
 invalidateLayoutWithContextSelector = mkSelector "invalidateLayoutWithContext:"
 
 -- | @Selector@ for @registerClass:forDecorationViewOfKind:@
-registerClass_forDecorationViewOfKindSelector :: Selector
+registerClass_forDecorationViewOfKindSelector :: Selector '[Class, Id NSString] ()
 registerClass_forDecorationViewOfKindSelector = mkSelector "registerClass:forDecorationViewOfKind:"
 
 -- | @Selector@ for @registerNib:forDecorationViewOfKind:@
-registerNib_forDecorationViewOfKindSelector :: Selector
+registerNib_forDecorationViewOfKindSelector :: Selector '[Id NSNib, Id NSString] ()
 registerNib_forDecorationViewOfKindSelector = mkSelector "registerNib:forDecorationViewOfKind:"
 
 -- | @Selector@ for @prepareForCollectionViewUpdates:@
-prepareForCollectionViewUpdatesSelector :: Selector
+prepareForCollectionViewUpdatesSelector :: Selector '[Id NSArray] ()
 prepareForCollectionViewUpdatesSelector = mkSelector "prepareForCollectionViewUpdates:"
 
 -- | @Selector@ for @finalizeCollectionViewUpdates@
-finalizeCollectionViewUpdatesSelector :: Selector
+finalizeCollectionViewUpdatesSelector :: Selector '[] ()
 finalizeCollectionViewUpdatesSelector = mkSelector "finalizeCollectionViewUpdates"
 
 -- | @Selector@ for @prepareForAnimatedBoundsChange:@
-prepareForAnimatedBoundsChangeSelector :: Selector
+prepareForAnimatedBoundsChangeSelector :: Selector '[NSRect] ()
 prepareForAnimatedBoundsChangeSelector = mkSelector "prepareForAnimatedBoundsChange:"
 
 -- | @Selector@ for @finalizeAnimatedBoundsChange@
-finalizeAnimatedBoundsChangeSelector :: Selector
+finalizeAnimatedBoundsChangeSelector :: Selector '[] ()
 finalizeAnimatedBoundsChangeSelector = mkSelector "finalizeAnimatedBoundsChange"
 
 -- | @Selector@ for @prepareForTransitionToLayout:@
-prepareForTransitionToLayoutSelector :: Selector
+prepareForTransitionToLayoutSelector :: Selector '[Id NSCollectionViewLayout] ()
 prepareForTransitionToLayoutSelector = mkSelector "prepareForTransitionToLayout:"
 
 -- | @Selector@ for @prepareForTransitionFromLayout:@
-prepareForTransitionFromLayoutSelector :: Selector
+prepareForTransitionFromLayoutSelector :: Selector '[Id NSCollectionViewLayout] ()
 prepareForTransitionFromLayoutSelector = mkSelector "prepareForTransitionFromLayout:"
 
 -- | @Selector@ for @finalizeLayoutTransition@
-finalizeLayoutTransitionSelector :: Selector
+finalizeLayoutTransitionSelector :: Selector '[] ()
 finalizeLayoutTransitionSelector = mkSelector "finalizeLayoutTransition"
 
 -- | @Selector@ for @initialLayoutAttributesForAppearingItemAtIndexPath:@
-initialLayoutAttributesForAppearingItemAtIndexPathSelector :: Selector
+initialLayoutAttributesForAppearingItemAtIndexPathSelector :: Selector '[Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 initialLayoutAttributesForAppearingItemAtIndexPathSelector = mkSelector "initialLayoutAttributesForAppearingItemAtIndexPath:"
 
 -- | @Selector@ for @finalLayoutAttributesForDisappearingItemAtIndexPath:@
-finalLayoutAttributesForDisappearingItemAtIndexPathSelector :: Selector
+finalLayoutAttributesForDisappearingItemAtIndexPathSelector :: Selector '[Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 finalLayoutAttributesForDisappearingItemAtIndexPathSelector = mkSelector "finalLayoutAttributesForDisappearingItemAtIndexPath:"
 
 -- | @Selector@ for @initialLayoutAttributesForAppearingSupplementaryElementOfKind:atIndexPath:@
-initialLayoutAttributesForAppearingSupplementaryElementOfKind_atIndexPathSelector :: Selector
+initialLayoutAttributesForAppearingSupplementaryElementOfKind_atIndexPathSelector :: Selector '[Id NSString, Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 initialLayoutAttributesForAppearingSupplementaryElementOfKind_atIndexPathSelector = mkSelector "initialLayoutAttributesForAppearingSupplementaryElementOfKind:atIndexPath:"
 
 -- | @Selector@ for @finalLayoutAttributesForDisappearingSupplementaryElementOfKind:atIndexPath:@
-finalLayoutAttributesForDisappearingSupplementaryElementOfKind_atIndexPathSelector :: Selector
+finalLayoutAttributesForDisappearingSupplementaryElementOfKind_atIndexPathSelector :: Selector '[Id NSString, Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 finalLayoutAttributesForDisappearingSupplementaryElementOfKind_atIndexPathSelector = mkSelector "finalLayoutAttributesForDisappearingSupplementaryElementOfKind:atIndexPath:"
 
 -- | @Selector@ for @initialLayoutAttributesForAppearingDecorationElementOfKind:atIndexPath:@
-initialLayoutAttributesForAppearingDecorationElementOfKind_atIndexPathSelector :: Selector
+initialLayoutAttributesForAppearingDecorationElementOfKind_atIndexPathSelector :: Selector '[Id NSString, Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 initialLayoutAttributesForAppearingDecorationElementOfKind_atIndexPathSelector = mkSelector "initialLayoutAttributesForAppearingDecorationElementOfKind:atIndexPath:"
 
 -- | @Selector@ for @finalLayoutAttributesForDisappearingDecorationElementOfKind:atIndexPath:@
-finalLayoutAttributesForDisappearingDecorationElementOfKind_atIndexPathSelector :: Selector
+finalLayoutAttributesForDisappearingDecorationElementOfKind_atIndexPathSelector :: Selector '[Id NSString, Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 finalLayoutAttributesForDisappearingDecorationElementOfKind_atIndexPathSelector = mkSelector "finalLayoutAttributesForDisappearingDecorationElementOfKind:atIndexPath:"
 
 -- | @Selector@ for @indexPathsToDeleteForSupplementaryViewOfKind:@
-indexPathsToDeleteForSupplementaryViewOfKindSelector :: Selector
+indexPathsToDeleteForSupplementaryViewOfKindSelector :: Selector '[Id NSString] (Id NSSet)
 indexPathsToDeleteForSupplementaryViewOfKindSelector = mkSelector "indexPathsToDeleteForSupplementaryViewOfKind:"
 
 -- | @Selector@ for @indexPathsToDeleteForDecorationViewOfKind:@
-indexPathsToDeleteForDecorationViewOfKindSelector :: Selector
+indexPathsToDeleteForDecorationViewOfKindSelector :: Selector '[Id NSString] (Id NSSet)
 indexPathsToDeleteForDecorationViewOfKindSelector = mkSelector "indexPathsToDeleteForDecorationViewOfKind:"
 
 -- | @Selector@ for @indexPathsToInsertForSupplementaryViewOfKind:@
-indexPathsToInsertForSupplementaryViewOfKindSelector :: Selector
+indexPathsToInsertForSupplementaryViewOfKindSelector :: Selector '[Id NSString] (Id NSSet)
 indexPathsToInsertForSupplementaryViewOfKindSelector = mkSelector "indexPathsToInsertForSupplementaryViewOfKind:"
 
 -- | @Selector@ for @indexPathsToInsertForDecorationViewOfKind:@
-indexPathsToInsertForDecorationViewOfKindSelector :: Selector
+indexPathsToInsertForDecorationViewOfKindSelector :: Selector '[Id NSString] (Id NSSet)
 indexPathsToInsertForDecorationViewOfKindSelector = mkSelector "indexPathsToInsertForDecorationViewOfKind:"
 
 -- | @Selector@ for @prepareLayout@
-prepareLayoutSelector :: Selector
+prepareLayoutSelector :: Selector '[] ()
 prepareLayoutSelector = mkSelector "prepareLayout"
 
 -- | @Selector@ for @layoutAttributesForElementsInRect:@
-layoutAttributesForElementsInRectSelector :: Selector
+layoutAttributesForElementsInRectSelector :: Selector '[NSRect] (Id NSArray)
 layoutAttributesForElementsInRectSelector = mkSelector "layoutAttributesForElementsInRect:"
 
 -- | @Selector@ for @layoutAttributesForItemAtIndexPath:@
-layoutAttributesForItemAtIndexPathSelector :: Selector
+layoutAttributesForItemAtIndexPathSelector :: Selector '[Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 layoutAttributesForItemAtIndexPathSelector = mkSelector "layoutAttributesForItemAtIndexPath:"
 
 -- | @Selector@ for @layoutAttributesForSupplementaryViewOfKind:atIndexPath:@
-layoutAttributesForSupplementaryViewOfKind_atIndexPathSelector :: Selector
+layoutAttributesForSupplementaryViewOfKind_atIndexPathSelector :: Selector '[Id NSString, Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 layoutAttributesForSupplementaryViewOfKind_atIndexPathSelector = mkSelector "layoutAttributesForSupplementaryViewOfKind:atIndexPath:"
 
 -- | @Selector@ for @layoutAttributesForDecorationViewOfKind:atIndexPath:@
-layoutAttributesForDecorationViewOfKind_atIndexPathSelector :: Selector
+layoutAttributesForDecorationViewOfKind_atIndexPathSelector :: Selector '[Id NSString, Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 layoutAttributesForDecorationViewOfKind_atIndexPathSelector = mkSelector "layoutAttributesForDecorationViewOfKind:atIndexPath:"
 
 -- | @Selector@ for @layoutAttributesForDropTargetAtPoint:@
-layoutAttributesForDropTargetAtPointSelector :: Selector
+layoutAttributesForDropTargetAtPointSelector :: Selector '[NSPoint] (Id NSCollectionViewLayoutAttributes)
 layoutAttributesForDropTargetAtPointSelector = mkSelector "layoutAttributesForDropTargetAtPoint:"
 
 -- | @Selector@ for @layoutAttributesForInterItemGapBeforeIndexPath:@
-layoutAttributesForInterItemGapBeforeIndexPathSelector :: Selector
+layoutAttributesForInterItemGapBeforeIndexPathSelector :: Selector '[Id NSIndexPath] (Id NSCollectionViewLayoutAttributes)
 layoutAttributesForInterItemGapBeforeIndexPathSelector = mkSelector "layoutAttributesForInterItemGapBeforeIndexPath:"
 
 -- | @Selector@ for @shouldInvalidateLayoutForBoundsChange:@
-shouldInvalidateLayoutForBoundsChangeSelector :: Selector
+shouldInvalidateLayoutForBoundsChangeSelector :: Selector '[NSRect] Bool
 shouldInvalidateLayoutForBoundsChangeSelector = mkSelector "shouldInvalidateLayoutForBoundsChange:"
 
 -- | @Selector@ for @invalidationContextForBoundsChange:@
-invalidationContextForBoundsChangeSelector :: Selector
+invalidationContextForBoundsChangeSelector :: Selector '[NSRect] (Id NSCollectionViewLayoutInvalidationContext)
 invalidationContextForBoundsChangeSelector = mkSelector "invalidationContextForBoundsChange:"
 
 -- | @Selector@ for @shouldInvalidateLayoutForPreferredLayoutAttributes:withOriginalAttributes:@
-shouldInvalidateLayoutForPreferredLayoutAttributes_withOriginalAttributesSelector :: Selector
+shouldInvalidateLayoutForPreferredLayoutAttributes_withOriginalAttributesSelector :: Selector '[Id NSCollectionViewLayoutAttributes, Id NSCollectionViewLayoutAttributes] Bool
 shouldInvalidateLayoutForPreferredLayoutAttributes_withOriginalAttributesSelector = mkSelector "shouldInvalidateLayoutForPreferredLayoutAttributes:withOriginalAttributes:"
 
 -- | @Selector@ for @invalidationContextForPreferredLayoutAttributes:withOriginalAttributes:@
-invalidationContextForPreferredLayoutAttributes_withOriginalAttributesSelector :: Selector
+invalidationContextForPreferredLayoutAttributes_withOriginalAttributesSelector :: Selector '[Id NSCollectionViewLayoutAttributes, Id NSCollectionViewLayoutAttributes] (Id NSCollectionViewLayoutInvalidationContext)
 invalidationContextForPreferredLayoutAttributes_withOriginalAttributesSelector = mkSelector "invalidationContextForPreferredLayoutAttributes:withOriginalAttributes:"
 
 -- | @Selector@ for @targetContentOffsetForProposedContentOffset:withScrollingVelocity:@
-targetContentOffsetForProposedContentOffset_withScrollingVelocitySelector :: Selector
+targetContentOffsetForProposedContentOffset_withScrollingVelocitySelector :: Selector '[NSPoint, NSPoint] NSPoint
 targetContentOffsetForProposedContentOffset_withScrollingVelocitySelector = mkSelector "targetContentOffsetForProposedContentOffset:withScrollingVelocity:"
 
 -- | @Selector@ for @targetContentOffsetForProposedContentOffset:@
-targetContentOffsetForProposedContentOffsetSelector :: Selector
+targetContentOffsetForProposedContentOffsetSelector :: Selector '[NSPoint] NSPoint
 targetContentOffsetForProposedContentOffsetSelector = mkSelector "targetContentOffsetForProposedContentOffset:"
 
 -- | @Selector@ for @collectionView@
-collectionViewSelector :: Selector
+collectionViewSelector :: Selector '[] (Id NSCollectionView)
 collectionViewSelector = mkSelector "collectionView"
 
 -- | @Selector@ for @layoutAttributesClass@
-layoutAttributesClassSelector :: Selector
+layoutAttributesClassSelector :: Selector '[] Class
 layoutAttributesClassSelector = mkSelector "layoutAttributesClass"
 
 -- | @Selector@ for @invalidationContextClass@
-invalidationContextClassSelector :: Selector
+invalidationContextClassSelector :: Selector '[] Class
 invalidationContextClassSelector = mkSelector "invalidationContextClass"
 
 -- | @Selector@ for @collectionViewContentSize@
-collectionViewContentSizeSelector :: Selector
+collectionViewContentSizeSelector :: Selector '[] NSSize
 collectionViewContentSizeSelector = mkSelector "collectionViewContentSize"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data IORPCMessageErrorReturnContent = IORPCMessageErrorReturnContent
   { iorpcMessageErrorReturnContentHdr :: !(Ptr ())
@@ -39,3 +41,13 @@ argIORPCMessageErrorReturnContent = mkStorableArg iorpcMessageErrorReturnContent
 
 retIORPCMessageErrorReturnContent :: RetType IORPCMessageErrorReturnContent
 retIORPCMessageErrorReturnContent = mkStorableRetType iorpcMessageErrorReturnContentStructType
+
+instance ObjCArgument IORPCMessageErrorReturnContent where
+  withObjCArg x k = k (argIORPCMessageErrorReturnContent x)
+
+instance ObjCReturn IORPCMessageErrorReturnContent where
+  type RawReturn IORPCMessageErrorReturnContent = IORPCMessageErrorReturnContent
+  objcRetType = retIORPCMessageErrorReturnContent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

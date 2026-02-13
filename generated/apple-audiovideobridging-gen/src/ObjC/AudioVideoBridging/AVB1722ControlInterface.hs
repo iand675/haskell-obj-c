@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,15 +27,11 @@ module ObjC.AudioVideoBridging.AVB1722ControlInterface
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVB1722ControlInterface avB1722ControlInterface => avB1722ControlInterface -> IO (Id AVB1722ControlInterface)
-init_ avB1722ControlInterface  =
-    sendMsg avB1722ControlInterface (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avB1722ControlInterface =
+  sendOwnedMessage avB1722ControlInterface initSelector
 
 -- | initWithInterfaceName:
 --
@@ -56,9 +53,8 @@ init_ avB1722ControlInterface  =
 --
 -- ObjC selector: @- initWithInterfaceName:@
 initWithInterfaceName :: (IsAVB1722ControlInterface avB1722ControlInterface, IsNSString anInterfaceName) => avB1722ControlInterface -> anInterfaceName -> IO (Id AVB1722ControlInterface)
-initWithInterfaceName avB1722ControlInterface  anInterfaceName =
-  withObjCPtr anInterfaceName $ \raw_anInterfaceName ->
-      sendMsg avB1722ControlInterface (mkSelector "initWithInterfaceName:") (retPtr retVoid) [argPtr (castPtr raw_anInterfaceName :: Ptr ())] >>= ownedObject . castPtr
+initWithInterfaceName avB1722ControlInterface anInterfaceName =
+  sendOwnedMessage avB1722ControlInterface initWithInterfaceNameSelector (toNSString anInterfaceName)
 
 -- | initWithInterface:
 --
@@ -70,14 +66,13 @@ initWithInterfaceName avB1722ControlInterface  anInterfaceName =
 --
 -- ObjC selector: @- initWithInterface:@
 initWithInterface :: (IsAVB1722ControlInterface avB1722ControlInterface, IsAVBInterface anInterface) => avB1722ControlInterface -> anInterface -> IO (Id AVB1722ControlInterface)
-initWithInterface avB1722ControlInterface  anInterface =
-  withObjCPtr anInterface $ \raw_anInterface ->
-      sendMsg avB1722ControlInterface (mkSelector "initWithInterface:") (retPtr retVoid) [argPtr (castPtr raw_anInterface :: Ptr ())] >>= ownedObject . castPtr
+initWithInterface avB1722ControlInterface anInterface =
+  sendOwnedMessage avB1722ControlInterface initWithInterfaceSelector (toAVBInterface anInterface)
 
 -- | @- interfaceName@
 interfaceName :: IsAVB1722ControlInterface avB1722ControlInterface => avB1722ControlInterface -> IO (Id NSString)
-interfaceName avB1722ControlInterface  =
-    sendMsg avB1722ControlInterface (mkSelector "interfaceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+interfaceName avB1722ControlInterface =
+  sendMessage avB1722ControlInterface interfaceNameSelector
 
 -- | interface
 --
@@ -85,30 +80,30 @@ interfaceName avB1722ControlInterface  =
 --
 -- ObjC selector: @- interface@
 interface :: IsAVB1722ControlInterface avB1722ControlInterface => avB1722ControlInterface -> IO (Id AVBInterface)
-interface avB1722ControlInterface  =
-    sendMsg avB1722ControlInterface (mkSelector "interface") (retPtr retVoid) [] >>= retainedObject . castPtr
+interface avB1722ControlInterface =
+  sendMessage avB1722ControlInterface interfaceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVB1722ControlInterface)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithInterfaceName:@
-initWithInterfaceNameSelector :: Selector
+initWithInterfaceNameSelector :: Selector '[Id NSString] (Id AVB1722ControlInterface)
 initWithInterfaceNameSelector = mkSelector "initWithInterfaceName:"
 
 -- | @Selector@ for @initWithInterface:@
-initWithInterfaceSelector :: Selector
+initWithInterfaceSelector :: Selector '[Id AVBInterface] (Id AVB1722ControlInterface)
 initWithInterfaceSelector = mkSelector "initWithInterface:"
 
 -- | @Selector@ for @interfaceName@
-interfaceNameSelector :: Selector
+interfaceNameSelector :: Selector '[] (Id NSString)
 interfaceNameSelector = mkSelector "interfaceName"
 
 -- | @Selector@ for @interface@
-interfaceSelector :: Selector
+interfaceSelector :: Selector '[] (Id AVBInterface)
 interfaceSelector = mkSelector "interface"
 

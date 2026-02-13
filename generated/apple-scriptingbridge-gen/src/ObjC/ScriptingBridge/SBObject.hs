@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,30 +28,26 @@ module ObjC.ScriptingBridge.SBObject
   , elementArrayWithCode
   , sendEvent_id_parameters
   , setTo
-  , initSelector
-  , initWithPropertiesSelector
-  , initWithDataSelector
-  , getSelector
-  , lastErrorSelector
-  , initWithElementCode_properties_dataSelector
-  , propertyWithCodeSelector
-  , propertyWithClass_codeSelector
   , elementArrayWithCodeSelector
+  , getSelector
+  , initSelector
+  , initWithDataSelector
+  , initWithElementCode_properties_dataSelector
+  , initWithPropertiesSelector
+  , lastErrorSelector
+  , propertyWithClass_codeSelector
+  , propertyWithCodeSelector
   , sendEvent_id_parametersSelector
   , setToSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsSBObject sbObject => sbObject -> IO (Id SBObject)
-init_ sbObject  =
-    sendMsg sbObject (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ sbObject =
+  sendOwnedMessage sbObject initSelector
 
 -- | Returns an instance of an @SBObject@ subclass initialized with the specified properties.
 --
@@ -78,9 +75,8 @@ init_ sbObject  =
 --
 -- ObjC selector: @- initWithProperties:@
 initWithProperties :: (IsSBObject sbObject, IsNSDictionary properties) => sbObject -> properties -> IO (Id SBObject)
-initWithProperties sbObject  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg sbObject (mkSelector "initWithProperties:") (retPtr retVoid) [argPtr (castPtr raw_properties :: Ptr ())] >>= ownedObject . castPtr
+initWithProperties sbObject properties =
+  sendOwnedMessage sbObject initWithPropertiesSelector (toNSDictionary properties)
 
 -- | Returns an instance of an @SBObject@ subclass initialized with the given data.
 --
@@ -92,8 +88,8 @@ initWithProperties sbObject  properties =
 --
 -- ObjC selector: @- initWithData:@
 initWithData :: IsSBObject sbObject => sbObject -> RawId -> IO (Id SBObject)
-initWithData sbObject  data_ =
-    sendMsg sbObject (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr (unRawId data_) :: Ptr ())] >>= ownedObject . castPtr
+initWithData sbObject data_ =
+  sendOwnedMessage sbObject initWithDataSelector data_
 
 -- | Forces evaluation of the receiver, causing the real object to be returned immediately.
 --
@@ -103,15 +99,15 @@ initWithData sbObject  data_ =
 --
 -- ObjC selector: @- get@
 get :: IsSBObject sbObject => sbObject -> IO RawId
-get sbObject  =
-    fmap (RawId . castPtr) $ sendMsg sbObject (mkSelector "get") (retPtr retVoid) []
+get sbObject =
+  sendMessage sbObject getSelector
 
 -- | The error from the last event this object sent, or nil if it succeeded.
 --
 -- ObjC selector: @- lastError@
 lastError :: IsSBObject sbObject => sbObject -> IO (Id NSError)
-lastError sbObject  =
-    sendMsg sbObject (mkSelector "lastError") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastError sbObject =
+  sendMessage sbObject lastErrorSelector
 
 -- | Returns an instance of an @SBObject@ subclass initialized with the specified properties and data and added to the designated element array.
 --
@@ -127,9 +123,8 @@ lastError sbObject  =
 --
 -- ObjC selector: @- initWithElementCode:properties:data:@
 initWithElementCode_properties_data :: (IsSBObject sbObject, IsNSDictionary properties) => sbObject -> CUInt -> properties -> RawId -> IO (Id SBObject)
-initWithElementCode_properties_data sbObject  code properties data_ =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg sbObject (mkSelector "initWithElementCode:properties:data:") (retPtr retVoid) [argCUInt code, argPtr (castPtr raw_properties :: Ptr ()), argPtr (castPtr (unRawId data_) :: Ptr ())] >>= ownedObject . castPtr
+initWithElementCode_properties_data sbObject code properties data_ =
+  sendOwnedMessage sbObject initWithElementCode_properties_dataSelector code (toNSDictionary properties) data_
 
 -- | Returns an object representing the specified property of the receiver.
 --
@@ -141,8 +136,8 @@ initWithElementCode_properties_data sbObject  code properties data_ =
 --
 -- ObjC selector: @- propertyWithCode:@
 propertyWithCode :: IsSBObject sbObject => sbObject -> CUInt -> IO (Id SBObject)
-propertyWithCode sbObject  code =
-    sendMsg sbObject (mkSelector "propertyWithCode:") (retPtr retVoid) [argCUInt code] >>= retainedObject . castPtr
+propertyWithCode sbObject code =
+  sendMessage sbObject propertyWithCodeSelector code
 
 -- | Returns an object of the designated scripting class representing the specified property of the receiver
 --
@@ -158,8 +153,8 @@ propertyWithCode sbObject  code =
 --
 -- ObjC selector: @- propertyWithClass:code:@
 propertyWithClass_code :: IsSBObject sbObject => sbObject -> Class -> CUInt -> IO (Id SBObject)
-propertyWithClass_code sbObject  cls code =
-    sendMsg sbObject (mkSelector "propertyWithClass:code:") (retPtr retVoid) [argPtr (unClass cls), argCUInt code] >>= retainedObject . castPtr
+propertyWithClass_code sbObject cls code =
+  sendMessage sbObject propertyWithClass_codeSelector cls code
 
 -- | Returns an array containing every child of the receiver with the given class-type code.
 --
@@ -173,8 +168,8 @@ propertyWithClass_code sbObject  cls code =
 --
 -- ObjC selector: @- elementArrayWithCode:@
 elementArrayWithCode :: IsSBObject sbObject => sbObject -> CUInt -> IO (Id SBElementArray)
-elementArrayWithCode sbObject  code =
-    sendMsg sbObject (mkSelector "elementArrayWithCode:") (retPtr retVoid) [argCUInt code] >>= retainedObject . castPtr
+elementArrayWithCode sbObject code =
+  sendMessage sbObject elementArrayWithCodeSelector code
 
 -- | Sends an Apple event with the given event class, event ID, and format to the target application.
 --
@@ -192,8 +187,8 @@ elementArrayWithCode sbObject  code =
 --
 -- ObjC selector: @- sendEvent:id:parameters:@
 sendEvent_id_parameters :: IsSBObject sbObject => sbObject -> CUInt -> CUInt -> CUInt -> IO RawId
-sendEvent_id_parameters sbObject  eventClass eventID firstParamCode =
-    fmap (RawId . castPtr) $ sendMsg sbObject (mkSelector "sendEvent:id:parameters:") (retPtr retVoid) [argCUInt eventClass, argCUInt eventID, argCUInt firstParamCode]
+sendEvent_id_parameters sbObject eventClass eventID firstParamCode =
+  sendMessage sbObject sendEvent_id_parametersSelector eventClass eventID firstParamCode
 
 -- | Sets the receiver to a specified value.
 --
@@ -203,54 +198,54 @@ sendEvent_id_parameters sbObject  eventClass eventID firstParamCode =
 --
 -- ObjC selector: @- setTo:@
 setTo :: IsSBObject sbObject => sbObject -> RawId -> IO ()
-setTo sbObject  value =
-    sendMsg sbObject (mkSelector "setTo:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTo sbObject value =
+  sendMessage sbObject setToSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SBObject)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithProperties:@
-initWithPropertiesSelector :: Selector
+initWithPropertiesSelector :: Selector '[Id NSDictionary] (Id SBObject)
 initWithPropertiesSelector = mkSelector "initWithProperties:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[RawId] (Id SBObject)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @get@
-getSelector :: Selector
+getSelector :: Selector '[] RawId
 getSelector = mkSelector "get"
 
 -- | @Selector@ for @lastError@
-lastErrorSelector :: Selector
+lastErrorSelector :: Selector '[] (Id NSError)
 lastErrorSelector = mkSelector "lastError"
 
 -- | @Selector@ for @initWithElementCode:properties:data:@
-initWithElementCode_properties_dataSelector :: Selector
+initWithElementCode_properties_dataSelector :: Selector '[CUInt, Id NSDictionary, RawId] (Id SBObject)
 initWithElementCode_properties_dataSelector = mkSelector "initWithElementCode:properties:data:"
 
 -- | @Selector@ for @propertyWithCode:@
-propertyWithCodeSelector :: Selector
+propertyWithCodeSelector :: Selector '[CUInt] (Id SBObject)
 propertyWithCodeSelector = mkSelector "propertyWithCode:"
 
 -- | @Selector@ for @propertyWithClass:code:@
-propertyWithClass_codeSelector :: Selector
+propertyWithClass_codeSelector :: Selector '[Class, CUInt] (Id SBObject)
 propertyWithClass_codeSelector = mkSelector "propertyWithClass:code:"
 
 -- | @Selector@ for @elementArrayWithCode:@
-elementArrayWithCodeSelector :: Selector
+elementArrayWithCodeSelector :: Selector '[CUInt] (Id SBElementArray)
 elementArrayWithCodeSelector = mkSelector "elementArrayWithCode:"
 
 -- | @Selector@ for @sendEvent:id:parameters:@
-sendEvent_id_parametersSelector :: Selector
+sendEvent_id_parametersSelector :: Selector '[CUInt, CUInt, CUInt] RawId
 sendEvent_id_parametersSelector = mkSelector "sendEvent:id:parameters:"
 
 -- | @Selector@ for @setTo:@
-setToSelector :: Selector
+setToSelector :: Selector '[RawId] ()
 setToSelector = mkSelector "setTo:"
 

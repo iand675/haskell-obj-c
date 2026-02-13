@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -48,27 +49,27 @@ module ObjC.MetalPerformanceShaders.MPSRNNMatrixTrainingLayer
   , setTrainingStateIsTemporary
   , accumulateWeightGradients
   , setAccumulateWeightGradients
-  , initWithDevice_rnnDescriptor_trainableWeightsSelector
-  , createWeightGradientMatrices_dataTypeSelector
+  , accumulateWeightGradientsSelector
+  , copyWithZone_deviceSelector
   , createTemporaryWeightGradientMatrices_dataType_commandBufferSelector
+  , createWeightGradientMatrices_dataTypeSelector
   , createWeightMatricesSelector
-  , initWithDeviceSelector
-  , encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector
   , encodeForwardSequenceToCommandBuffer_sourceMatrices_destinationMatrices_trainingStates_weightsSelector
+  , encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector
   , encodeGradientSequenceToCommandBuffer_forwardSources_forwardSourceOffsets_sourceGradients_sourceGradientOffsets_destinationGradients_destinationOffsets_weightGradients_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector
   , encodeGradientSequenceToCommandBuffer_forwardSources_sourceGradients_destinationGradients_weightGradients_trainingStates_weightsSelector
   , initWithCoder_deviceSelector
-  , copyWithZone_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_rnnDescriptor_trainableWeightsSelector
   , inputFeatureChannelsSelector
   , outputFeatureChannelsSelector
-  , storeAllIntermediateStatesSelector
-  , setStoreAllIntermediateStatesSelector
   , recurrentOutputIsTemporarySelector
-  , setRecurrentOutputIsTemporarySelector
-  , trainingStateIsTemporarySelector
-  , setTrainingStateIsTemporarySelector
-  , accumulateWeightGradientsSelector
   , setAccumulateWeightGradientsSelector
+  , setRecurrentOutputIsTemporarySelector
+  , setStoreAllIntermediateStatesSelector
+  , setTrainingStateIsTemporarySelector
+  , storeAllIntermediateStatesSelector
+  , trainingStateIsTemporarySelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -133,15 +134,11 @@ module ObjC.MetalPerformanceShaders.MPSRNNMatrixTrainingLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -161,10 +158,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:rnnDescriptor:trainableWeights:@
 initWithDevice_rnnDescriptor_trainableWeights :: (IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer, IsNSMutableArray trainableWeights) => mpsrnnMatrixTrainingLayer -> RawId -> Const (Id MPSRNNDescriptor) -> trainableWeights -> IO (Id MPSRNNMatrixTrainingLayer)
-initWithDevice_rnnDescriptor_trainableWeights mpsrnnMatrixTrainingLayer  device rnnDescriptor trainableWeights =
-  withObjCPtr rnnDescriptor $ \raw_rnnDescriptor ->
-    withObjCPtr trainableWeights $ \raw_trainableWeights ->
-        sendMsg mpsrnnMatrixTrainingLayer (mkSelector "initWithDevice:rnnDescriptor:trainableWeights:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_rnnDescriptor :: Ptr ()), argPtr (castPtr raw_trainableWeights :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_rnnDescriptor_trainableWeights mpsrnnMatrixTrainingLayer device rnnDescriptor trainableWeights =
+  sendOwnedMessage mpsrnnMatrixTrainingLayer initWithDevice_rnnDescriptor_trainableWeightsSelector device rnnDescriptor (toNSMutableArray trainableWeights)
 
 -- | Initializes a set of matrices that can be used in training for weight and bias gradient outputs in
 --
@@ -178,9 +173,8 @@ initWithDevice_rnnDescriptor_trainableWeights mpsrnnMatrixTrainingLayer  device 
 --
 -- ObjC selector: @- createWeightGradientMatrices:dataType:@
 createWeightGradientMatrices_dataType :: (IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer, IsNSMutableArray matricesOut) => mpsrnnMatrixTrainingLayer -> matricesOut -> MPSDataType -> IO ()
-createWeightGradientMatrices_dataType mpsrnnMatrixTrainingLayer  matricesOut dataType =
-  withObjCPtr matricesOut $ \raw_matricesOut ->
-      sendMsg mpsrnnMatrixTrainingLayer (mkSelector "createWeightGradientMatrices:dataType:") retVoid [argPtr (castPtr raw_matricesOut :: Ptr ()), argCUInt (coerce dataType)]
+createWeightGradientMatrices_dataType mpsrnnMatrixTrainingLayer matricesOut dataType =
+  sendMessage mpsrnnMatrixTrainingLayer createWeightGradientMatrices_dataTypeSelector (toNSMutableArray matricesOut) dataType
 
 -- | As createWeightGradientMatrices, but the matrices will be temporary with readCount = 1, which means that they              become invalid after the first encode call that reads them. Note also that as the matrices are temporary, their              storage mode will be private which means that you can only access the data using a kernel on the GPU.
 --
@@ -192,9 +186,8 @@ createWeightGradientMatrices_dataType mpsrnnMatrixTrainingLayer  matricesOut dat
 --
 -- ObjC selector: @- createTemporaryWeightGradientMatrices:dataType:commandBuffer:@
 createTemporaryWeightGradientMatrices_dataType_commandBuffer :: (IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer, IsNSMutableArray matricesOut) => mpsrnnMatrixTrainingLayer -> matricesOut -> MPSDataType -> RawId -> IO ()
-createTemporaryWeightGradientMatrices_dataType_commandBuffer mpsrnnMatrixTrainingLayer  matricesOut dataType commandBuffer =
-  withObjCPtr matricesOut $ \raw_matricesOut ->
-      sendMsg mpsrnnMatrixTrainingLayer (mkSelector "createTemporaryWeightGradientMatrices:dataType:commandBuffer:") retVoid [argPtr (castPtr raw_matricesOut :: Ptr ()), argCUInt (coerce dataType), argPtr (castPtr (unRawId commandBuffer) :: Ptr ())]
+createTemporaryWeightGradientMatrices_dataType_commandBuffer mpsrnnMatrixTrainingLayer matricesOut dataType commandBuffer =
+  sendMessage mpsrnnMatrixTrainingLayer createTemporaryWeightGradientMatrices_dataType_commandBufferSelector (toNSMutableArray matricesOut) dataType commandBuffer
 
 -- | Initializes a set of matrices that can be used in training for weight and bias matrices in              the forward and backward passes. The layout, datatype and number of matrices is the same as for the outputs of
 --
@@ -204,14 +197,13 @@ createTemporaryWeightGradientMatrices_dataType_commandBuffer mpsrnnMatrixTrainin
 --
 -- ObjC selector: @- createWeightMatrices:@
 createWeightMatrices :: (IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer, IsNSMutableArray matricesOut) => mpsrnnMatrixTrainingLayer -> matricesOut -> IO ()
-createWeightMatrices mpsrnnMatrixTrainingLayer  matricesOut =
-  withObjCPtr matricesOut $ \raw_matricesOut ->
-      sendMsg mpsrnnMatrixTrainingLayer (mkSelector "createWeightMatrices:") retVoid [argPtr (castPtr raw_matricesOut :: Ptr ())]
+createWeightMatrices mpsrnnMatrixTrainingLayer matricesOut =
+  sendMessage mpsrnnMatrixTrainingLayer createWeightMatricesSelector (toNSMutableArray matricesOut)
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> RawId -> IO (Id MPSRNNMatrixTrainingLayer)
-initWithDevice mpsrnnMatrixTrainingLayer  device =
-    sendMsg mpsrnnMatrixTrainingLayer (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsrnnMatrixTrainingLayer device =
+  sendOwnedMessage mpsrnnMatrixTrainingLayer initWithDeviceSelector device
 
 -- | Encode an MPSRNNMatrixTrainingLayer forward pass kernel for a sequence of inputs into a command buffer.
 --
@@ -241,14 +233,8 @@ initWithDevice mpsrnnMatrixTrainingLayer  device =
 --
 -- ObjC selector: @- encodeForwardSequenceToCommandBuffer:sourceMatrices:sourceOffsets:destinationMatrices:destinationOffsets:trainingStates:recurrentInputState:recurrentOutputStates:weights:@
 encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_trainingStates_recurrentInputState_recurrentOutputStates_weights :: (IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer, IsNSArray sourceMatrices, IsNSArray destinationMatrices, IsNSMutableArray trainingStates, IsMPSRNNRecurrentMatrixState recurrentInputState, IsNSMutableArray recurrentOutputStates, IsNSArray weights) => mpsrnnMatrixTrainingLayer -> RawId -> sourceMatrices -> Ptr CULong -> destinationMatrices -> Ptr CULong -> trainingStates -> recurrentInputState -> recurrentOutputStates -> weights -> IO ()
-encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_trainingStates_recurrentInputState_recurrentOutputStates_weights mpsrnnMatrixTrainingLayer  commandBuffer sourceMatrices sourceOffsets destinationMatrices destinationOffsets trainingStates recurrentInputState recurrentOutputStates weights =
-  withObjCPtr sourceMatrices $ \raw_sourceMatrices ->
-    withObjCPtr destinationMatrices $ \raw_destinationMatrices ->
-      withObjCPtr trainingStates $ \raw_trainingStates ->
-        withObjCPtr recurrentInputState $ \raw_recurrentInputState ->
-          withObjCPtr recurrentOutputStates $ \raw_recurrentOutputStates ->
-            withObjCPtr weights $ \raw_weights ->
-                sendMsg mpsrnnMatrixTrainingLayer (mkSelector "encodeForwardSequenceToCommandBuffer:sourceMatrices:sourceOffsets:destinationMatrices:destinationOffsets:trainingStates:recurrentInputState:recurrentOutputStates:weights:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrices :: Ptr ()), argPtr sourceOffsets, argPtr (castPtr raw_destinationMatrices :: Ptr ()), argPtr destinationOffsets, argPtr (castPtr raw_trainingStates :: Ptr ()), argPtr (castPtr raw_recurrentInputState :: Ptr ()), argPtr (castPtr raw_recurrentOutputStates :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ())]
+encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_trainingStates_recurrentInputState_recurrentOutputStates_weights mpsrnnMatrixTrainingLayer commandBuffer sourceMatrices sourceOffsets destinationMatrices destinationOffsets trainingStates recurrentInputState recurrentOutputStates weights =
+  sendMessage mpsrnnMatrixTrainingLayer encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector commandBuffer (toNSArray sourceMatrices) sourceOffsets (toNSArray destinationMatrices) destinationOffsets (toNSMutableArray trainingStates) (toMPSRNNRecurrentMatrixState recurrentInputState) (toNSMutableArray recurrentOutputStates) (toNSArray weights)
 
 -- | Encode an MPSRNNMatrixTrainingLayer forward pass kernel for a sequence of inputs into a command buffer.
 --
@@ -268,12 +254,8 @@ encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMat
 --
 -- ObjC selector: @- encodeForwardSequenceToCommandBuffer:sourceMatrices:destinationMatrices:trainingStates:weights:@
 encodeForwardSequenceToCommandBuffer_sourceMatrices_destinationMatrices_trainingStates_weights :: (IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer, IsNSArray sourceMatrices, IsNSArray destinationMatrices, IsNSMutableArray trainingStates, IsNSArray weights) => mpsrnnMatrixTrainingLayer -> RawId -> sourceMatrices -> destinationMatrices -> trainingStates -> weights -> IO ()
-encodeForwardSequenceToCommandBuffer_sourceMatrices_destinationMatrices_trainingStates_weights mpsrnnMatrixTrainingLayer  commandBuffer sourceMatrices destinationMatrices trainingStates weights =
-  withObjCPtr sourceMatrices $ \raw_sourceMatrices ->
-    withObjCPtr destinationMatrices $ \raw_destinationMatrices ->
-      withObjCPtr trainingStates $ \raw_trainingStates ->
-        withObjCPtr weights $ \raw_weights ->
-            sendMsg mpsrnnMatrixTrainingLayer (mkSelector "encodeForwardSequenceToCommandBuffer:sourceMatrices:destinationMatrices:trainingStates:weights:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceMatrices :: Ptr ()), argPtr (castPtr raw_destinationMatrices :: Ptr ()), argPtr (castPtr raw_trainingStates :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ())]
+encodeForwardSequenceToCommandBuffer_sourceMatrices_destinationMatrices_trainingStates_weights mpsrnnMatrixTrainingLayer commandBuffer sourceMatrices destinationMatrices trainingStates weights =
+  sendMessage mpsrnnMatrixTrainingLayer encodeForwardSequenceToCommandBuffer_sourceMatrices_destinationMatrices_trainingStates_weightsSelector commandBuffer (toNSArray sourceMatrices) (toNSArray destinationMatrices) (toNSMutableArray trainingStates) (toNSArray weights)
 
 -- | Encode an MPSRNNMatrixTrainingLayer gradient pass kernel for a sequence of input gradients into a command buffer.              NOTE: The time sequence indexing follows the array indexing in the inputs: sourceGradients[0] has to contain the              gradients corresponding to the first matrix in the forward pass corresponding to the current subsequence, which is              typically sourceMatrices[0].
 --
@@ -313,16 +295,8 @@ encodeForwardSequenceToCommandBuffer_sourceMatrices_destinationMatrices_training
 --
 -- ObjC selector: @- encodeGradientSequenceToCommandBuffer:forwardSources:forwardSourceOffsets:sourceGradients:sourceGradientOffsets:destinationGradients:destinationOffsets:weightGradients:trainingStates:recurrentInputState:recurrentOutputStates:weights:@
 encodeGradientSequenceToCommandBuffer_forwardSources_forwardSourceOffsets_sourceGradients_sourceGradientOffsets_destinationGradients_destinationOffsets_weightGradients_trainingStates_recurrentInputState_recurrentOutputStates_weights :: (IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer, IsNSArray forwardSources, IsNSArray sourceGradients, IsNSArray destinationGradients, IsNSArray weightGradients, IsNSArray trainingStates, IsMPSRNNRecurrentMatrixState recurrentInputState, IsNSMutableArray recurrentOutputStates, IsNSArray weights) => mpsrnnMatrixTrainingLayer -> RawId -> forwardSources -> Ptr CULong -> sourceGradients -> Ptr CULong -> destinationGradients -> Ptr CULong -> weightGradients -> trainingStates -> recurrentInputState -> recurrentOutputStates -> weights -> IO ()
-encodeGradientSequenceToCommandBuffer_forwardSources_forwardSourceOffsets_sourceGradients_sourceGradientOffsets_destinationGradients_destinationOffsets_weightGradients_trainingStates_recurrentInputState_recurrentOutputStates_weights mpsrnnMatrixTrainingLayer  commandBuffer forwardSources forwardSourceOffsets sourceGradients sourceGradientOffsets destinationGradients destinationOffsets weightGradients trainingStates recurrentInputState recurrentOutputStates weights =
-  withObjCPtr forwardSources $ \raw_forwardSources ->
-    withObjCPtr sourceGradients $ \raw_sourceGradients ->
-      withObjCPtr destinationGradients $ \raw_destinationGradients ->
-        withObjCPtr weightGradients $ \raw_weightGradients ->
-          withObjCPtr trainingStates $ \raw_trainingStates ->
-            withObjCPtr recurrentInputState $ \raw_recurrentInputState ->
-              withObjCPtr recurrentOutputStates $ \raw_recurrentOutputStates ->
-                withObjCPtr weights $ \raw_weights ->
-                    sendMsg mpsrnnMatrixTrainingLayer (mkSelector "encodeGradientSequenceToCommandBuffer:forwardSources:forwardSourceOffsets:sourceGradients:sourceGradientOffsets:destinationGradients:destinationOffsets:weightGradients:trainingStates:recurrentInputState:recurrentOutputStates:weights:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_forwardSources :: Ptr ()), argPtr forwardSourceOffsets, argPtr (castPtr raw_sourceGradients :: Ptr ()), argPtr sourceGradientOffsets, argPtr (castPtr raw_destinationGradients :: Ptr ()), argPtr destinationOffsets, argPtr (castPtr raw_weightGradients :: Ptr ()), argPtr (castPtr raw_trainingStates :: Ptr ()), argPtr (castPtr raw_recurrentInputState :: Ptr ()), argPtr (castPtr raw_recurrentOutputStates :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ())]
+encodeGradientSequenceToCommandBuffer_forwardSources_forwardSourceOffsets_sourceGradients_sourceGradientOffsets_destinationGradients_destinationOffsets_weightGradients_trainingStates_recurrentInputState_recurrentOutputStates_weights mpsrnnMatrixTrainingLayer commandBuffer forwardSources forwardSourceOffsets sourceGradients sourceGradientOffsets destinationGradients destinationOffsets weightGradients trainingStates recurrentInputState recurrentOutputStates weights =
+  sendMessage mpsrnnMatrixTrainingLayer encodeGradientSequenceToCommandBuffer_forwardSources_forwardSourceOffsets_sourceGradients_sourceGradientOffsets_destinationGradients_destinationOffsets_weightGradients_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector commandBuffer (toNSArray forwardSources) forwardSourceOffsets (toNSArray sourceGradients) sourceGradientOffsets (toNSArray destinationGradients) destinationOffsets (toNSArray weightGradients) (toNSArray trainingStates) (toMPSRNNRecurrentMatrixState recurrentInputState) (toNSMutableArray recurrentOutputStates) (toNSArray weights)
 
 -- | Encode an MPSRNNMatrixTrainingLayer gradient pass kernel for a sequence of input gradients into a command buffer.              NOTE: The time sequence indexing follows the array indexing in the inputs: sourceGradients[0] has to contain the              gradients corresponding to the first matrix in the forward pass corresponding to the current subsequence, which is              typically sourceMatrices[0].
 --
@@ -350,14 +324,8 @@ encodeGradientSequenceToCommandBuffer_forwardSources_forwardSourceOffsets_source
 --
 -- ObjC selector: @- encodeGradientSequenceToCommandBuffer:forwardSources:sourceGradients:destinationGradients:weightGradients:trainingStates:weights:@
 encodeGradientSequenceToCommandBuffer_forwardSources_sourceGradients_destinationGradients_weightGradients_trainingStates_weights :: (IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer, IsNSArray forwardSources, IsNSArray sourceGradients, IsNSArray destinationGradients, IsNSArray weightGradients, IsNSArray trainingStates, IsNSArray weights) => mpsrnnMatrixTrainingLayer -> RawId -> forwardSources -> sourceGradients -> destinationGradients -> weightGradients -> trainingStates -> weights -> IO ()
-encodeGradientSequenceToCommandBuffer_forwardSources_sourceGradients_destinationGradients_weightGradients_trainingStates_weights mpsrnnMatrixTrainingLayer  commandBuffer forwardSources sourceGradients destinationGradients weightGradients trainingStates weights =
-  withObjCPtr forwardSources $ \raw_forwardSources ->
-    withObjCPtr sourceGradients $ \raw_sourceGradients ->
-      withObjCPtr destinationGradients $ \raw_destinationGradients ->
-        withObjCPtr weightGradients $ \raw_weightGradients ->
-          withObjCPtr trainingStates $ \raw_trainingStates ->
-            withObjCPtr weights $ \raw_weights ->
-                sendMsg mpsrnnMatrixTrainingLayer (mkSelector "encodeGradientSequenceToCommandBuffer:forwardSources:sourceGradients:destinationGradients:weightGradients:trainingStates:weights:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_forwardSources :: Ptr ()), argPtr (castPtr raw_sourceGradients :: Ptr ()), argPtr (castPtr raw_destinationGradients :: Ptr ()), argPtr (castPtr raw_weightGradients :: Ptr ()), argPtr (castPtr raw_trainingStates :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ())]
+encodeGradientSequenceToCommandBuffer_forwardSources_sourceGradients_destinationGradients_weightGradients_trainingStates_weights mpsrnnMatrixTrainingLayer commandBuffer forwardSources sourceGradients destinationGradients weightGradients trainingStates weights =
+  sendMessage mpsrnnMatrixTrainingLayer encodeGradientSequenceToCommandBuffer_forwardSources_sourceGradients_destinationGradients_weightGradients_trainingStates_weightsSelector commandBuffer (toNSArray forwardSources) (toNSArray sourceGradients) (toNSArray destinationGradients) (toNSArray weightGradients) (toNSArray trainingStates) (toNSArray weights)
 
 -- | NSSecureCoding compatability
 --
@@ -371,9 +339,8 @@ encodeGradientSequenceToCommandBuffer_forwardSources_sourceGradients_destination
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer, IsNSCoder aDecoder) => mpsrnnMatrixTrainingLayer -> aDecoder -> RawId -> IO (Id MPSRNNMatrixTrainingLayer)
-initWithCoder_device mpsrnnMatrixTrainingLayer  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsrnnMatrixTrainingLayer (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsrnnMatrixTrainingLayer aDecoder device =
+  sendOwnedMessage mpsrnnMatrixTrainingLayer initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Make a copy of this kernel for a new device -
 --
@@ -387,8 +354,8 @@ initWithCoder_device mpsrnnMatrixTrainingLayer  aDecoder device =
 --
 -- ObjC selector: @- copyWithZone:device:@
 copyWithZone_device :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> Ptr () -> RawId -> IO (Id MPSRNNMatrixTrainingLayer)
-copyWithZone_device mpsrnnMatrixTrainingLayer  zone device =
-    sendMsg mpsrnnMatrixTrainingLayer (mkSelector "copyWithZone:device:") (retPtr retVoid) [argPtr zone, argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+copyWithZone_device mpsrnnMatrixTrainingLayer zone device =
+  sendOwnedMessage mpsrnnMatrixTrainingLayer copyWithZone_deviceSelector zone device
 
 -- | inputFeatureChannels
 --
@@ -396,8 +363,8 @@ copyWithZone_device mpsrnnMatrixTrainingLayer  zone device =
 --
 -- ObjC selector: @- inputFeatureChannels@
 inputFeatureChannels :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> IO CULong
-inputFeatureChannels mpsrnnMatrixTrainingLayer  =
-    sendMsg mpsrnnMatrixTrainingLayer (mkSelector "inputFeatureChannels") retCULong []
+inputFeatureChannels mpsrnnMatrixTrainingLayer =
+  sendMessage mpsrnnMatrixTrainingLayer inputFeatureChannelsSelector
 
 -- | outputFeatureChannels
 --
@@ -405,8 +372,8 @@ inputFeatureChannels mpsrnnMatrixTrainingLayer  =
 --
 -- ObjC selector: @- outputFeatureChannels@
 outputFeatureChannels :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> IO CULong
-outputFeatureChannels mpsrnnMatrixTrainingLayer  =
-    sendMsg mpsrnnMatrixTrainingLayer (mkSelector "outputFeatureChannels") retCULong []
+outputFeatureChannels mpsrnnMatrixTrainingLayer =
+  sendMessage mpsrnnMatrixTrainingLayer outputFeatureChannelsSelector
 
 -- | storeAllIntermediateStates
 --
@@ -414,8 +381,8 @@ outputFeatureChannels mpsrnnMatrixTrainingLayer  =
 --
 -- ObjC selector: @- storeAllIntermediateStates@
 storeAllIntermediateStates :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> IO Bool
-storeAllIntermediateStates mpsrnnMatrixTrainingLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnMatrixTrainingLayer (mkSelector "storeAllIntermediateStates") retCULong []
+storeAllIntermediateStates mpsrnnMatrixTrainingLayer =
+  sendMessage mpsrnnMatrixTrainingLayer storeAllIntermediateStatesSelector
 
 -- | storeAllIntermediateStates
 --
@@ -423,8 +390,8 @@ storeAllIntermediateStates mpsrnnMatrixTrainingLayer  =
 --
 -- ObjC selector: @- setStoreAllIntermediateStates:@
 setStoreAllIntermediateStates :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> Bool -> IO ()
-setStoreAllIntermediateStates mpsrnnMatrixTrainingLayer  value =
-    sendMsg mpsrnnMatrixTrainingLayer (mkSelector "setStoreAllIntermediateStates:") retVoid [argCULong (if value then 1 else 0)]
+setStoreAllIntermediateStates mpsrnnMatrixTrainingLayer value =
+  sendMessage mpsrnnMatrixTrainingLayer setStoreAllIntermediateStatesSelector value
 
 -- | recurrentOutputIsTemporary
 --
@@ -434,8 +401,8 @@ setStoreAllIntermediateStates mpsrnnMatrixTrainingLayer  value =
 --
 -- ObjC selector: @- recurrentOutputIsTemporary@
 recurrentOutputIsTemporary :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> IO Bool
-recurrentOutputIsTemporary mpsrnnMatrixTrainingLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnMatrixTrainingLayer (mkSelector "recurrentOutputIsTemporary") retCULong []
+recurrentOutputIsTemporary mpsrnnMatrixTrainingLayer =
+  sendMessage mpsrnnMatrixTrainingLayer recurrentOutputIsTemporarySelector
 
 -- | recurrentOutputIsTemporary
 --
@@ -445,8 +412,8 @@ recurrentOutputIsTemporary mpsrnnMatrixTrainingLayer  =
 --
 -- ObjC selector: @- setRecurrentOutputIsTemporary:@
 setRecurrentOutputIsTemporary :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> Bool -> IO ()
-setRecurrentOutputIsTemporary mpsrnnMatrixTrainingLayer  value =
-    sendMsg mpsrnnMatrixTrainingLayer (mkSelector "setRecurrentOutputIsTemporary:") retVoid [argCULong (if value then 1 else 0)]
+setRecurrentOutputIsTemporary mpsrnnMatrixTrainingLayer value =
+  sendMessage mpsrnnMatrixTrainingLayer setRecurrentOutputIsTemporarySelector value
 
 -- | trainingStateIsTemporary
 --
@@ -456,8 +423,8 @@ setRecurrentOutputIsTemporary mpsrnnMatrixTrainingLayer  value =
 --
 -- ObjC selector: @- trainingStateIsTemporary@
 trainingStateIsTemporary :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> IO Bool
-trainingStateIsTemporary mpsrnnMatrixTrainingLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnMatrixTrainingLayer (mkSelector "trainingStateIsTemporary") retCULong []
+trainingStateIsTemporary mpsrnnMatrixTrainingLayer =
+  sendMessage mpsrnnMatrixTrainingLayer trainingStateIsTemporarySelector
 
 -- | trainingStateIsTemporary
 --
@@ -467,8 +434,8 @@ trainingStateIsTemporary mpsrnnMatrixTrainingLayer  =
 --
 -- ObjC selector: @- setTrainingStateIsTemporary:@
 setTrainingStateIsTemporary :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> Bool -> IO ()
-setTrainingStateIsTemporary mpsrnnMatrixTrainingLayer  value =
-    sendMsg mpsrnnMatrixTrainingLayer (mkSelector "setTrainingStateIsTemporary:") retVoid [argCULong (if value then 1 else 0)]
+setTrainingStateIsTemporary mpsrnnMatrixTrainingLayer value =
+  sendMessage mpsrnnMatrixTrainingLayer setTrainingStateIsTemporarySelector value
 
 -- | accumulateWeightGradients
 --
@@ -476,8 +443,8 @@ setTrainingStateIsTemporary mpsrnnMatrixTrainingLayer  value =
 --
 -- ObjC selector: @- accumulateWeightGradients@
 accumulateWeightGradients :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> IO Bool
-accumulateWeightGradients mpsrnnMatrixTrainingLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsrnnMatrixTrainingLayer (mkSelector "accumulateWeightGradients") retCULong []
+accumulateWeightGradients mpsrnnMatrixTrainingLayer =
+  sendMessage mpsrnnMatrixTrainingLayer accumulateWeightGradientsSelector
 
 -- | accumulateWeightGradients
 --
@@ -485,94 +452,94 @@ accumulateWeightGradients mpsrnnMatrixTrainingLayer  =
 --
 -- ObjC selector: @- setAccumulateWeightGradients:@
 setAccumulateWeightGradients :: IsMPSRNNMatrixTrainingLayer mpsrnnMatrixTrainingLayer => mpsrnnMatrixTrainingLayer -> Bool -> IO ()
-setAccumulateWeightGradients mpsrnnMatrixTrainingLayer  value =
-    sendMsg mpsrnnMatrixTrainingLayer (mkSelector "setAccumulateWeightGradients:") retVoid [argCULong (if value then 1 else 0)]
+setAccumulateWeightGradients mpsrnnMatrixTrainingLayer value =
+  sendMessage mpsrnnMatrixTrainingLayer setAccumulateWeightGradientsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:rnnDescriptor:trainableWeights:@
-initWithDevice_rnnDescriptor_trainableWeightsSelector :: Selector
+initWithDevice_rnnDescriptor_trainableWeightsSelector :: Selector '[RawId, Const (Id MPSRNNDescriptor), Id NSMutableArray] (Id MPSRNNMatrixTrainingLayer)
 initWithDevice_rnnDescriptor_trainableWeightsSelector = mkSelector "initWithDevice:rnnDescriptor:trainableWeights:"
 
 -- | @Selector@ for @createWeightGradientMatrices:dataType:@
-createWeightGradientMatrices_dataTypeSelector :: Selector
+createWeightGradientMatrices_dataTypeSelector :: Selector '[Id NSMutableArray, MPSDataType] ()
 createWeightGradientMatrices_dataTypeSelector = mkSelector "createWeightGradientMatrices:dataType:"
 
 -- | @Selector@ for @createTemporaryWeightGradientMatrices:dataType:commandBuffer:@
-createTemporaryWeightGradientMatrices_dataType_commandBufferSelector :: Selector
+createTemporaryWeightGradientMatrices_dataType_commandBufferSelector :: Selector '[Id NSMutableArray, MPSDataType, RawId] ()
 createTemporaryWeightGradientMatrices_dataType_commandBufferSelector = mkSelector "createTemporaryWeightGradientMatrices:dataType:commandBuffer:"
 
 -- | @Selector@ for @createWeightMatrices:@
-createWeightMatricesSelector :: Selector
+createWeightMatricesSelector :: Selector '[Id NSMutableArray] ()
 createWeightMatricesSelector = mkSelector "createWeightMatrices:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSRNNMatrixTrainingLayer)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeForwardSequenceToCommandBuffer:sourceMatrices:sourceOffsets:destinationMatrices:destinationOffsets:trainingStates:recurrentInputState:recurrentOutputStates:weights:@
-encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector :: Selector
+encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector :: Selector '[RawId, Id NSArray, Ptr CULong, Id NSArray, Ptr CULong, Id NSMutableArray, Id MPSRNNRecurrentMatrixState, Id NSMutableArray, Id NSArray] ()
 encodeForwardSequenceToCommandBuffer_sourceMatrices_sourceOffsets_destinationMatrices_destinationOffsets_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector = mkSelector "encodeForwardSequenceToCommandBuffer:sourceMatrices:sourceOffsets:destinationMatrices:destinationOffsets:trainingStates:recurrentInputState:recurrentOutputStates:weights:"
 
 -- | @Selector@ for @encodeForwardSequenceToCommandBuffer:sourceMatrices:destinationMatrices:trainingStates:weights:@
-encodeForwardSequenceToCommandBuffer_sourceMatrices_destinationMatrices_trainingStates_weightsSelector :: Selector
+encodeForwardSequenceToCommandBuffer_sourceMatrices_destinationMatrices_trainingStates_weightsSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id NSMutableArray, Id NSArray] ()
 encodeForwardSequenceToCommandBuffer_sourceMatrices_destinationMatrices_trainingStates_weightsSelector = mkSelector "encodeForwardSequenceToCommandBuffer:sourceMatrices:destinationMatrices:trainingStates:weights:"
 
 -- | @Selector@ for @encodeGradientSequenceToCommandBuffer:forwardSources:forwardSourceOffsets:sourceGradients:sourceGradientOffsets:destinationGradients:destinationOffsets:weightGradients:trainingStates:recurrentInputState:recurrentOutputStates:weights:@
-encodeGradientSequenceToCommandBuffer_forwardSources_forwardSourceOffsets_sourceGradients_sourceGradientOffsets_destinationGradients_destinationOffsets_weightGradients_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector :: Selector
+encodeGradientSequenceToCommandBuffer_forwardSources_forwardSourceOffsets_sourceGradients_sourceGradientOffsets_destinationGradients_destinationOffsets_weightGradients_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector :: Selector '[RawId, Id NSArray, Ptr CULong, Id NSArray, Ptr CULong, Id NSArray, Ptr CULong, Id NSArray, Id NSArray, Id MPSRNNRecurrentMatrixState, Id NSMutableArray, Id NSArray] ()
 encodeGradientSequenceToCommandBuffer_forwardSources_forwardSourceOffsets_sourceGradients_sourceGradientOffsets_destinationGradients_destinationOffsets_weightGradients_trainingStates_recurrentInputState_recurrentOutputStates_weightsSelector = mkSelector "encodeGradientSequenceToCommandBuffer:forwardSources:forwardSourceOffsets:sourceGradients:sourceGradientOffsets:destinationGradients:destinationOffsets:weightGradients:trainingStates:recurrentInputState:recurrentOutputStates:weights:"
 
 -- | @Selector@ for @encodeGradientSequenceToCommandBuffer:forwardSources:sourceGradients:destinationGradients:weightGradients:trainingStates:weights:@
-encodeGradientSequenceToCommandBuffer_forwardSources_sourceGradients_destinationGradients_weightGradients_trainingStates_weightsSelector :: Selector
+encodeGradientSequenceToCommandBuffer_forwardSources_sourceGradients_destinationGradients_weightGradients_trainingStates_weightsSelector :: Selector '[RawId, Id NSArray, Id NSArray, Id NSArray, Id NSArray, Id NSArray, Id NSArray] ()
 encodeGradientSequenceToCommandBuffer_forwardSources_sourceGradients_destinationGradients_weightGradients_trainingStates_weightsSelector = mkSelector "encodeGradientSequenceToCommandBuffer:forwardSources:sourceGradients:destinationGradients:weightGradients:trainingStates:weights:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSRNNMatrixTrainingLayer)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @copyWithZone:device:@
-copyWithZone_deviceSelector :: Selector
+copyWithZone_deviceSelector :: Selector '[Ptr (), RawId] (Id MPSRNNMatrixTrainingLayer)
 copyWithZone_deviceSelector = mkSelector "copyWithZone:device:"
 
 -- | @Selector@ for @inputFeatureChannels@
-inputFeatureChannelsSelector :: Selector
+inputFeatureChannelsSelector :: Selector '[] CULong
 inputFeatureChannelsSelector = mkSelector "inputFeatureChannels"
 
 -- | @Selector@ for @outputFeatureChannels@
-outputFeatureChannelsSelector :: Selector
+outputFeatureChannelsSelector :: Selector '[] CULong
 outputFeatureChannelsSelector = mkSelector "outputFeatureChannels"
 
 -- | @Selector@ for @storeAllIntermediateStates@
-storeAllIntermediateStatesSelector :: Selector
+storeAllIntermediateStatesSelector :: Selector '[] Bool
 storeAllIntermediateStatesSelector = mkSelector "storeAllIntermediateStates"
 
 -- | @Selector@ for @setStoreAllIntermediateStates:@
-setStoreAllIntermediateStatesSelector :: Selector
+setStoreAllIntermediateStatesSelector :: Selector '[Bool] ()
 setStoreAllIntermediateStatesSelector = mkSelector "setStoreAllIntermediateStates:"
 
 -- | @Selector@ for @recurrentOutputIsTemporary@
-recurrentOutputIsTemporarySelector :: Selector
+recurrentOutputIsTemporarySelector :: Selector '[] Bool
 recurrentOutputIsTemporarySelector = mkSelector "recurrentOutputIsTemporary"
 
 -- | @Selector@ for @setRecurrentOutputIsTemporary:@
-setRecurrentOutputIsTemporarySelector :: Selector
+setRecurrentOutputIsTemporarySelector :: Selector '[Bool] ()
 setRecurrentOutputIsTemporarySelector = mkSelector "setRecurrentOutputIsTemporary:"
 
 -- | @Selector@ for @trainingStateIsTemporary@
-trainingStateIsTemporarySelector :: Selector
+trainingStateIsTemporarySelector :: Selector '[] Bool
 trainingStateIsTemporarySelector = mkSelector "trainingStateIsTemporary"
 
 -- | @Selector@ for @setTrainingStateIsTemporary:@
-setTrainingStateIsTemporarySelector :: Selector
+setTrainingStateIsTemporarySelector :: Selector '[Bool] ()
 setTrainingStateIsTemporarySelector = mkSelector "setTrainingStateIsTemporary:"
 
 -- | @Selector@ for @accumulateWeightGradients@
-accumulateWeightGradientsSelector :: Selector
+accumulateWeightGradientsSelector :: Selector '[] Bool
 accumulateWeightGradientsSelector = mkSelector "accumulateWeightGradients"
 
 -- | @Selector@ for @setAccumulateWeightGradients:@
-setAccumulateWeightGradientsSelector :: Selector
+setAccumulateWeightGradientsSelector :: Selector '[Bool] ()
 setAccumulateWeightGradientsSelector = mkSelector "setAccumulateWeightGradients:"
 

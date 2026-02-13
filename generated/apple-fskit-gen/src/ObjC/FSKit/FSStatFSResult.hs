@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,48 +44,44 @@ module ObjC.FSKit.FSStatFSResult
   , fileSystemSubType
   , setFileSystemSubType
   , fileSystemTypeName
-  , initWithFileSystemTypeNameSelector
-  , initSelector
-  , blockSizeSelector
-  , setBlockSizeSelector
-  , ioSizeSelector
-  , setIoSizeSelector
-  , totalBlocksSelector
-  , setTotalBlocksSelector
   , availableBlocksSelector
-  , setAvailableBlocksSelector
-  , freeBlocksSelector
-  , setFreeBlocksSelector
-  , usedBlocksSelector
-  , setUsedBlocksSelector
-  , totalBytesSelector
-  , setTotalBytesSelector
   , availableBytesSelector
-  , setAvailableBytesSelector
-  , freeBytesSelector
-  , setFreeBytesSelector
-  , usedBytesSelector
-  , setUsedBytesSelector
-  , totalFilesSelector
-  , setTotalFilesSelector
-  , freeFilesSelector
-  , setFreeFilesSelector
+  , blockSizeSelector
   , fileSystemSubTypeSelector
-  , setFileSystemSubTypeSelector
   , fileSystemTypeNameSelector
+  , freeBlocksSelector
+  , freeBytesSelector
+  , freeFilesSelector
+  , initSelector
+  , initWithFileSystemTypeNameSelector
+  , ioSizeSelector
+  , setAvailableBlocksSelector
+  , setAvailableBytesSelector
+  , setBlockSizeSelector
+  , setFileSystemSubTypeSelector
+  , setFreeBlocksSelector
+  , setFreeBytesSelector
+  , setFreeFilesSelector
+  , setIoSizeSelector
+  , setTotalBlocksSelector
+  , setTotalBytesSelector
+  , setTotalFilesSelector
+  , setUsedBlocksSelector
+  , setUsedBytesSelector
+  , totalBlocksSelector
+  , totalBytesSelector
+  , totalFilesSelector
+  , usedBlocksSelector
+  , usedBytesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -97,14 +94,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFileSystemTypeName:@
 initWithFileSystemTypeName :: (IsFSStatFSResult fsStatFSResult, IsNSString fileSystemTypeName) => fsStatFSResult -> fileSystemTypeName -> IO (Id FSStatFSResult)
-initWithFileSystemTypeName fsStatFSResult  fileSystemTypeName =
-  withObjCPtr fileSystemTypeName $ \raw_fileSystemTypeName ->
-      sendMsg fsStatFSResult (mkSelector "initWithFileSystemTypeName:") (retPtr retVoid) [argPtr (castPtr raw_fileSystemTypeName :: Ptr ())] >>= ownedObject . castPtr
+initWithFileSystemTypeName fsStatFSResult fileSystemTypeName =
+  sendOwnedMessage fsStatFSResult initWithFileSystemTypeNameSelector (toNSString fileSystemTypeName)
 
 -- | @- init@
 init_ :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO (Id FSStatFSResult)
-init_ fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsStatFSResult =
+  sendOwnedMessage fsStatFSResult initSelector
 
 -- | A property for the volume's block size, in bytes.
 --
@@ -112,8 +108,8 @@ init_ fsStatFSResult  =
 --
 -- ObjC selector: @- blockSize@
 blockSize :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CLong
-blockSize fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "blockSize") retCLong []
+blockSize fsStatFSResult =
+  sendMessage fsStatFSResult blockSizeSelector
 
 -- | A property for the volume's block size, in bytes.
 --
@@ -121,8 +117,8 @@ blockSize fsStatFSResult  =
 --
 -- ObjC selector: @- setBlockSize:@
 setBlockSize :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CLong -> IO ()
-setBlockSize fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setBlockSize:") retVoid [argCLong value]
+setBlockSize fsStatFSResult value =
+  sendMessage fsStatFSResult setBlockSizeSelector value
 
 -- | A property for the optimal block size with which to perform I/O.
 --
@@ -130,8 +126,8 @@ setBlockSize fsStatFSResult  value =
 --
 -- ObjC selector: @- ioSize@
 ioSize :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CLong
-ioSize fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "ioSize") retCLong []
+ioSize fsStatFSResult =
+  sendMessage fsStatFSResult ioSizeSelector
 
 -- | A property for the optimal block size with which to perform I/O.
 --
@@ -139,148 +135,148 @@ ioSize fsStatFSResult  =
 --
 -- ObjC selector: @- setIoSize:@
 setIoSize :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CLong -> IO ()
-setIoSize fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setIoSize:") retVoid [argCLong value]
+setIoSize fsStatFSResult value =
+  sendMessage fsStatFSResult setIoSizeSelector value
 
 -- | A property for the volume's total data block count.
 --
 -- ObjC selector: @- totalBlocks@
 totalBlocks :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-totalBlocks fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "totalBlocks") retCULong []
+totalBlocks fsStatFSResult =
+  sendMessage fsStatFSResult totalBlocksSelector
 
 -- | A property for the volume's total data block count.
 --
 -- ObjC selector: @- setTotalBlocks:@
 setTotalBlocks :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setTotalBlocks fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setTotalBlocks:") retVoid [argCULong value]
+setTotalBlocks fsStatFSResult value =
+  sendMessage fsStatFSResult setTotalBlocksSelector value
 
 -- | A property for the number of free blocks available to a non-superuser on the volume.
 --
 -- ObjC selector: @- availableBlocks@
 availableBlocks :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-availableBlocks fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "availableBlocks") retCULong []
+availableBlocks fsStatFSResult =
+  sendMessage fsStatFSResult availableBlocksSelector
 
 -- | A property for the number of free blocks available to a non-superuser on the volume.
 --
 -- ObjC selector: @- setAvailableBlocks:@
 setAvailableBlocks :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setAvailableBlocks fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setAvailableBlocks:") retVoid [argCULong value]
+setAvailableBlocks fsStatFSResult value =
+  sendMessage fsStatFSResult setAvailableBlocksSelector value
 
 -- | A property for the number of free blocks in the volume.
 --
 -- ObjC selector: @- freeBlocks@
 freeBlocks :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-freeBlocks fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "freeBlocks") retCULong []
+freeBlocks fsStatFSResult =
+  sendMessage fsStatFSResult freeBlocksSelector
 
 -- | A property for the number of free blocks in the volume.
 --
 -- ObjC selector: @- setFreeBlocks:@
 setFreeBlocks :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setFreeBlocks fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setFreeBlocks:") retVoid [argCULong value]
+setFreeBlocks fsStatFSResult value =
+  sendMessage fsStatFSResult setFreeBlocksSelector value
 
 -- | A property for the number of used blocks in the volume.
 --
 -- ObjC selector: @- usedBlocks@
 usedBlocks :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-usedBlocks fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "usedBlocks") retCULong []
+usedBlocks fsStatFSResult =
+  sendMessage fsStatFSResult usedBlocksSelector
 
 -- | A property for the number of used blocks in the volume.
 --
 -- ObjC selector: @- setUsedBlocks:@
 setUsedBlocks :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setUsedBlocks fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setUsedBlocks:") retVoid [argCULong value]
+setUsedBlocks fsStatFSResult value =
+  sendMessage fsStatFSResult setUsedBlocksSelector value
 
 -- | A property for the total size, in bytes, of the volume.
 --
 -- ObjC selector: @- totalBytes@
 totalBytes :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-totalBytes fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "totalBytes") retCULong []
+totalBytes fsStatFSResult =
+  sendMessage fsStatFSResult totalBytesSelector
 
 -- | A property for the total size, in bytes, of the volume.
 --
 -- ObjC selector: @- setTotalBytes:@
 setTotalBytes :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setTotalBytes fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setTotalBytes:") retVoid [argCULong value]
+setTotalBytes fsStatFSResult value =
+  sendMessage fsStatFSResult setTotalBytesSelector value
 
 -- | A property for the amount of space available to users, in bytes, in the volume.
 --
 -- ObjC selector: @- availableBytes@
 availableBytes :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-availableBytes fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "availableBytes") retCULong []
+availableBytes fsStatFSResult =
+  sendMessage fsStatFSResult availableBytesSelector
 
 -- | A property for the amount of space available to users, in bytes, in the volume.
 --
 -- ObjC selector: @- setAvailableBytes:@
 setAvailableBytes :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setAvailableBytes fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setAvailableBytes:") retVoid [argCULong value]
+setAvailableBytes fsStatFSResult value =
+  sendMessage fsStatFSResult setAvailableBytesSelector value
 
 -- | A property for the amount of free space, in bytes, in the volume.
 --
 -- ObjC selector: @- freeBytes@
 freeBytes :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-freeBytes fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "freeBytes") retCULong []
+freeBytes fsStatFSResult =
+  sendMessage fsStatFSResult freeBytesSelector
 
 -- | A property for the amount of free space, in bytes, in the volume.
 --
 -- ObjC selector: @- setFreeBytes:@
 setFreeBytes :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setFreeBytes fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setFreeBytes:") retVoid [argCULong value]
+setFreeBytes fsStatFSResult value =
+  sendMessage fsStatFSResult setFreeBytesSelector value
 
 -- | A property for the amount of used space, in bytes, in the volume.
 --
 -- ObjC selector: @- usedBytes@
 usedBytes :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-usedBytes fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "usedBytes") retCULong []
+usedBytes fsStatFSResult =
+  sendMessage fsStatFSResult usedBytesSelector
 
 -- | A property for the amount of used space, in bytes, in the volume.
 --
 -- ObjC selector: @- setUsedBytes:@
 setUsedBytes :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setUsedBytes fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setUsedBytes:") retVoid [argCULong value]
+setUsedBytes fsStatFSResult value =
+  sendMessage fsStatFSResult setUsedBytesSelector value
 
 -- | A property for the total number of file slots in the volume,
 --
 -- ObjC selector: @- totalFiles@
 totalFiles :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-totalFiles fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "totalFiles") retCULong []
+totalFiles fsStatFSResult =
+  sendMessage fsStatFSResult totalFilesSelector
 
 -- | A property for the total number of file slots in the volume,
 --
 -- ObjC selector: @- setTotalFiles:@
 setTotalFiles :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setTotalFiles fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setTotalFiles:") retVoid [argCULong value]
+setTotalFiles fsStatFSResult value =
+  sendMessage fsStatFSResult setTotalFilesSelector value
 
 -- | A property for the total number of free file slots in the volume.
 --
 -- ObjC selector: @- freeFiles@
 freeFiles :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CULong
-freeFiles fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "freeFiles") retCULong []
+freeFiles fsStatFSResult =
+  sendMessage fsStatFSResult freeFilesSelector
 
 -- | A property for the total number of free file slots in the volume.
 --
 -- ObjC selector: @- setFreeFiles:@
 setFreeFiles :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CULong -> IO ()
-setFreeFiles fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setFreeFiles:") retVoid [argCULong value]
+setFreeFiles fsStatFSResult value =
+  sendMessage fsStatFSResult setFreeFilesSelector value
 
 -- | A property for the file system's subtype or flavor.
 --
@@ -288,8 +284,8 @@ setFreeFiles fsStatFSResult  value =
 --
 -- ObjC selector: @- fileSystemSubType@
 fileSystemSubType :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO CLong
-fileSystemSubType fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "fileSystemSubType") retCLong []
+fileSystemSubType fsStatFSResult =
+  sendMessage fsStatFSResult fileSystemSubTypeSelector
 
 -- | A property for the file system's subtype or flavor.
 --
@@ -297,8 +293,8 @@ fileSystemSubType fsStatFSResult  =
 --
 -- ObjC selector: @- setFileSystemSubType:@
 setFileSystemSubType :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> CLong -> IO ()
-setFileSystemSubType fsStatFSResult  value =
-    sendMsg fsStatFSResult (mkSelector "setFileSystemSubType:") retVoid [argCLong value]
+setFileSystemSubType fsStatFSResult value =
+  sendMessage fsStatFSResult setFileSystemSubTypeSelector value
 
 -- | A property for the file system type name.
 --
@@ -306,126 +302,126 @@ setFileSystemSubType fsStatFSResult  value =
 --
 -- ObjC selector: @- fileSystemTypeName@
 fileSystemTypeName :: IsFSStatFSResult fsStatFSResult => fsStatFSResult -> IO (Id NSString)
-fileSystemTypeName fsStatFSResult  =
-    sendMsg fsStatFSResult (mkSelector "fileSystemTypeName") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileSystemTypeName fsStatFSResult =
+  sendMessage fsStatFSResult fileSystemTypeNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFileSystemTypeName:@
-initWithFileSystemTypeNameSelector :: Selector
+initWithFileSystemTypeNameSelector :: Selector '[Id NSString] (Id FSStatFSResult)
 initWithFileSystemTypeNameSelector = mkSelector "initWithFileSystemTypeName:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSStatFSResult)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @blockSize@
-blockSizeSelector :: Selector
+blockSizeSelector :: Selector '[] CLong
 blockSizeSelector = mkSelector "blockSize"
 
 -- | @Selector@ for @setBlockSize:@
-setBlockSizeSelector :: Selector
+setBlockSizeSelector :: Selector '[CLong] ()
 setBlockSizeSelector = mkSelector "setBlockSize:"
 
 -- | @Selector@ for @ioSize@
-ioSizeSelector :: Selector
+ioSizeSelector :: Selector '[] CLong
 ioSizeSelector = mkSelector "ioSize"
 
 -- | @Selector@ for @setIoSize:@
-setIoSizeSelector :: Selector
+setIoSizeSelector :: Selector '[CLong] ()
 setIoSizeSelector = mkSelector "setIoSize:"
 
 -- | @Selector@ for @totalBlocks@
-totalBlocksSelector :: Selector
+totalBlocksSelector :: Selector '[] CULong
 totalBlocksSelector = mkSelector "totalBlocks"
 
 -- | @Selector@ for @setTotalBlocks:@
-setTotalBlocksSelector :: Selector
+setTotalBlocksSelector :: Selector '[CULong] ()
 setTotalBlocksSelector = mkSelector "setTotalBlocks:"
 
 -- | @Selector@ for @availableBlocks@
-availableBlocksSelector :: Selector
+availableBlocksSelector :: Selector '[] CULong
 availableBlocksSelector = mkSelector "availableBlocks"
 
 -- | @Selector@ for @setAvailableBlocks:@
-setAvailableBlocksSelector :: Selector
+setAvailableBlocksSelector :: Selector '[CULong] ()
 setAvailableBlocksSelector = mkSelector "setAvailableBlocks:"
 
 -- | @Selector@ for @freeBlocks@
-freeBlocksSelector :: Selector
+freeBlocksSelector :: Selector '[] CULong
 freeBlocksSelector = mkSelector "freeBlocks"
 
 -- | @Selector@ for @setFreeBlocks:@
-setFreeBlocksSelector :: Selector
+setFreeBlocksSelector :: Selector '[CULong] ()
 setFreeBlocksSelector = mkSelector "setFreeBlocks:"
 
 -- | @Selector@ for @usedBlocks@
-usedBlocksSelector :: Selector
+usedBlocksSelector :: Selector '[] CULong
 usedBlocksSelector = mkSelector "usedBlocks"
 
 -- | @Selector@ for @setUsedBlocks:@
-setUsedBlocksSelector :: Selector
+setUsedBlocksSelector :: Selector '[CULong] ()
 setUsedBlocksSelector = mkSelector "setUsedBlocks:"
 
 -- | @Selector@ for @totalBytes@
-totalBytesSelector :: Selector
+totalBytesSelector :: Selector '[] CULong
 totalBytesSelector = mkSelector "totalBytes"
 
 -- | @Selector@ for @setTotalBytes:@
-setTotalBytesSelector :: Selector
+setTotalBytesSelector :: Selector '[CULong] ()
 setTotalBytesSelector = mkSelector "setTotalBytes:"
 
 -- | @Selector@ for @availableBytes@
-availableBytesSelector :: Selector
+availableBytesSelector :: Selector '[] CULong
 availableBytesSelector = mkSelector "availableBytes"
 
 -- | @Selector@ for @setAvailableBytes:@
-setAvailableBytesSelector :: Selector
+setAvailableBytesSelector :: Selector '[CULong] ()
 setAvailableBytesSelector = mkSelector "setAvailableBytes:"
 
 -- | @Selector@ for @freeBytes@
-freeBytesSelector :: Selector
+freeBytesSelector :: Selector '[] CULong
 freeBytesSelector = mkSelector "freeBytes"
 
 -- | @Selector@ for @setFreeBytes:@
-setFreeBytesSelector :: Selector
+setFreeBytesSelector :: Selector '[CULong] ()
 setFreeBytesSelector = mkSelector "setFreeBytes:"
 
 -- | @Selector@ for @usedBytes@
-usedBytesSelector :: Selector
+usedBytesSelector :: Selector '[] CULong
 usedBytesSelector = mkSelector "usedBytes"
 
 -- | @Selector@ for @setUsedBytes:@
-setUsedBytesSelector :: Selector
+setUsedBytesSelector :: Selector '[CULong] ()
 setUsedBytesSelector = mkSelector "setUsedBytes:"
 
 -- | @Selector@ for @totalFiles@
-totalFilesSelector :: Selector
+totalFilesSelector :: Selector '[] CULong
 totalFilesSelector = mkSelector "totalFiles"
 
 -- | @Selector@ for @setTotalFiles:@
-setTotalFilesSelector :: Selector
+setTotalFilesSelector :: Selector '[CULong] ()
 setTotalFilesSelector = mkSelector "setTotalFiles:"
 
 -- | @Selector@ for @freeFiles@
-freeFilesSelector :: Selector
+freeFilesSelector :: Selector '[] CULong
 freeFilesSelector = mkSelector "freeFiles"
 
 -- | @Selector@ for @setFreeFiles:@
-setFreeFilesSelector :: Selector
+setFreeFilesSelector :: Selector '[CULong] ()
 setFreeFilesSelector = mkSelector "setFreeFiles:"
 
 -- | @Selector@ for @fileSystemSubType@
-fileSystemSubTypeSelector :: Selector
+fileSystemSubTypeSelector :: Selector '[] CLong
 fileSystemSubTypeSelector = mkSelector "fileSystemSubType"
 
 -- | @Selector@ for @setFileSystemSubType:@
-setFileSystemSubTypeSelector :: Selector
+setFileSystemSubTypeSelector :: Selector '[CLong] ()
 setFileSystemSubTypeSelector = mkSelector "setFileSystemSubType:"
 
 -- | @Selector@ for @fileSystemTypeName@
-fileSystemTypeNameSelector :: Selector
+fileSystemTypeNameSelector :: Selector '[] (Id NSString)
 fileSystemTypeNameSelector = mkSelector "fileSystemTypeName"
 

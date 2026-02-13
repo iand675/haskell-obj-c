@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.ModelIO.MDLTransformRotateYOp
   , IsMDLTransformRotateYOp(..)
   , name
   , animatedValue
-  , nameSelector
   , animatedValueSelector
+  , nameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMDLTransformRotateYOp mdlTransformRotateYOp => mdlTransformRotateYOp -> IO (Id NSString)
-name mdlTransformRotateYOp  =
-    sendMsg mdlTransformRotateYOp (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mdlTransformRotateYOp =
+  sendMessage mdlTransformRotateYOp nameSelector
 
 -- | @- animatedValue@
 animatedValue :: IsMDLTransformRotateYOp mdlTransformRotateYOp => mdlTransformRotateYOp -> IO (Id MDLAnimatedScalar)
-animatedValue mdlTransformRotateYOp  =
-    sendMsg mdlTransformRotateYOp (mkSelector "animatedValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+animatedValue mdlTransformRotateYOp =
+  sendMessage mdlTransformRotateYOp animatedValueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @animatedValue@
-animatedValueSelector :: Selector
+animatedValueSelector :: Selector '[] (Id MDLAnimatedScalar)
 animatedValueSelector = mkSelector "animatedValue"
 

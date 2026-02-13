@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,11 @@ module ObjC.ModelIO.MDLTransform
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,52 +42,52 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsMDLTransform mdlTransform => mdlTransform -> IO (Id MDLTransform)
-init_ mdlTransform  =
-    sendMsg mdlTransform (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mdlTransform =
+  sendOwnedMessage mdlTransform initSelector
 
 -- | @- initWithIdentity@
 initWithIdentity :: IsMDLTransform mdlTransform => mdlTransform -> IO (Id MDLTransform)
-initWithIdentity mdlTransform  =
-    sendMsg mdlTransform (mkSelector "initWithIdentity") (retPtr retVoid) [] >>= ownedObject . castPtr
+initWithIdentity mdlTransform =
+  sendOwnedMessage mdlTransform initWithIdentitySelector
 
 -- | @- initWithTransformComponent:@
 initWithTransformComponent :: IsMDLTransform mdlTransform => mdlTransform -> RawId -> IO (Id MDLTransform)
-initWithTransformComponent mdlTransform  component =
-    sendMsg mdlTransform (mkSelector "initWithTransformComponent:") (retPtr retVoid) [argPtr (castPtr (unRawId component) :: Ptr ())] >>= ownedObject . castPtr
+initWithTransformComponent mdlTransform component =
+  sendOwnedMessage mdlTransform initWithTransformComponentSelector component
 
 -- | @- initWithTransformComponent:resetsTransform:@
 initWithTransformComponent_resetsTransform :: IsMDLTransform mdlTransform => mdlTransform -> RawId -> Bool -> IO (Id MDLTransform)
-initWithTransformComponent_resetsTransform mdlTransform  component resetsTransform =
-    sendMsg mdlTransform (mkSelector "initWithTransformComponent:resetsTransform:") (retPtr retVoid) [argPtr (castPtr (unRawId component) :: Ptr ()), argCULong (if resetsTransform then 1 else 0)] >>= ownedObject . castPtr
+initWithTransformComponent_resetsTransform mdlTransform component resetsTransform =
+  sendOwnedMessage mdlTransform initWithTransformComponent_resetsTransformSelector component resetsTransform
 
 -- | Set all transform components to identity
 --
 -- ObjC selector: @- setIdentity@
 setIdentity :: IsMDLTransform mdlTransform => mdlTransform -> IO ()
-setIdentity mdlTransform  =
-    sendMsg mdlTransform (mkSelector "setIdentity") retVoid []
+setIdentity mdlTransform =
+  sendMessage mdlTransform setIdentitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MDLTransform)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithIdentity@
-initWithIdentitySelector :: Selector
+initWithIdentitySelector :: Selector '[] (Id MDLTransform)
 initWithIdentitySelector = mkSelector "initWithIdentity"
 
 -- | @Selector@ for @initWithTransformComponent:@
-initWithTransformComponentSelector :: Selector
+initWithTransformComponentSelector :: Selector '[RawId] (Id MDLTransform)
 initWithTransformComponentSelector = mkSelector "initWithTransformComponent:"
 
 -- | @Selector@ for @initWithTransformComponent:resetsTransform:@
-initWithTransformComponent_resetsTransformSelector :: Selector
+initWithTransformComponent_resetsTransformSelector :: Selector '[RawId, Bool] (Id MDLTransform)
 initWithTransformComponent_resetsTransformSelector = mkSelector "initWithTransformComponent:resetsTransform:"
 
 -- | @Selector@ for @setIdentity@
-setIdentitySelector :: Selector
+setIdentitySelector :: Selector '[] ()
 setIdentitySelector = mkSelector "setIdentity"
 

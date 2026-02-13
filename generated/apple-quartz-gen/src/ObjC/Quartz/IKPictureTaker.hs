@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,29 +21,25 @@ module ObjC.Quartz.IKPictureTaker
   , outputImage
   , setMirroring
   , mirroring
-  , pictureTakerSelector
-  , runModalSelector
-  , beginPictureTakerWithDelegate_didEndSelector_contextInfoSelector
   , beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfoSelector
-  , popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfoSelector
-  , setInputImageSelector
+  , beginPictureTakerWithDelegate_didEndSelector_contextInfoSelector
   , inputImageSelector
-  , outputImageSelector
-  , setMirroringSelector
   , mirroringSelector
+  , outputImageSelector
+  , pictureTakerSelector
+  , popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfoSelector
+  , runModalSelector
+  , setInputImageSelector
+  , setMirroringSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,7 +56,7 @@ pictureTaker :: IO (Id IKPictureTaker)
 pictureTaker  =
   do
     cls' <- getRequiredClass "IKPictureTaker"
-    sendClassMsg cls' (mkSelector "pictureTaker") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pictureTakerSelector
 
 -- | runModal
 --
@@ -69,8 +66,8 @@ pictureTaker  =
 --
 -- ObjC selector: @- runModal@
 runModal :: IsIKPictureTaker ikPictureTaker => ikPictureTaker -> IO CLong
-runModal ikPictureTaker  =
-    sendMsg ikPictureTaker (mkSelector "runModal") retCLong []
+runModal ikPictureTaker =
+  sendMessage ikPictureTaker runModalSelector
 
 -- | beginPictureTakerWithDelegate:didEndSelector:contextInfo:
 --
@@ -85,9 +82,9 @@ runModal ikPictureTaker  =
 -- didEndSelector should have the following signature: - (void)pictureTakerDidEnd:(IKPictureTaker *)pictureTaker returnCode:(NSInteger)returnCode contextInfo:(void  *)contextInfo;  returnCode value is set to NSOKButton if the user validate, or to NSCancelButton if the user cancel.
 --
 -- ObjC selector: @- beginPictureTakerWithDelegate:didEndSelector:contextInfo:@
-beginPictureTakerWithDelegate_didEndSelector_contextInfo :: IsIKPictureTaker ikPictureTaker => ikPictureTaker -> RawId -> Selector -> Ptr () -> IO ()
-beginPictureTakerWithDelegate_didEndSelector_contextInfo ikPictureTaker  delegate didEndSelector contextInfo =
-    sendMsg ikPictureTaker (mkSelector "beginPictureTakerWithDelegate:didEndSelector:contextInfo:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+beginPictureTakerWithDelegate_didEndSelector_contextInfo :: IsIKPictureTaker ikPictureTaker => ikPictureTaker -> RawId -> Sel -> Ptr () -> IO ()
+beginPictureTakerWithDelegate_didEndSelector_contextInfo ikPictureTaker delegate didEndSelector contextInfo =
+  sendMessage ikPictureTaker beginPictureTakerWithDelegate_didEndSelector_contextInfoSelector delegate didEndSelector contextInfo
 
 -- | beginPictureTakerSheetForWindow:withDelegate:didEndSelector:contextInfo:
 --
@@ -102,10 +99,9 @@ beginPictureTakerWithDelegate_didEndSelector_contextInfo ikPictureTaker  delegat
 -- didEndSelector should have the following signature: - (void)pictureTakerDidEnd:(IKPictureTaker *)pictureTaker returnCode:(NSInteger)returnCode contextInfo:(void  *)contextInfo;  returnCode value is set to NSOKButton if the user validate, or to NSCancelButton if the user cancel.
 --
 -- ObjC selector: @- beginPictureTakerSheetForWindow:withDelegate:didEndSelector:contextInfo:@
-beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfo :: (IsIKPictureTaker ikPictureTaker, IsNSWindow aWindow) => ikPictureTaker -> aWindow -> RawId -> Selector -> Ptr () -> IO ()
-beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfo ikPictureTaker  aWindow delegate didEndSelector contextInfo =
-  withObjCPtr aWindow $ \raw_aWindow ->
-      sendMsg ikPictureTaker (mkSelector "beginPictureTakerSheetForWindow:withDelegate:didEndSelector:contextInfo:") retVoid [argPtr (castPtr raw_aWindow :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfo :: (IsIKPictureTaker ikPictureTaker, IsNSWindow aWindow) => ikPictureTaker -> aWindow -> RawId -> Sel -> Ptr () -> IO ()
+beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfo ikPictureTaker aWindow delegate didEndSelector contextInfo =
+  sendMessage ikPictureTaker beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfoSelector (toNSWindow aWindow) delegate didEndSelector contextInfo
 
 -- | popUpRecentsMenuForView:withDelegate:didEndSelector:contextInfo:
 --
@@ -120,10 +116,9 @@ beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfo ikPictur
 -- didEndSelector should have the following signature: - (void)pictureTakerDidEnd:(IKPictureTaker *)pictureTaker returnCode:(NSInteger)returnCode contextInfo:(void  *)contextInfo;  returnCode value is set to NSOKButton if the user validate, or to NSCancelButton if the user cancel.
 --
 -- ObjC selector: @- popUpRecentsMenuForView:withDelegate:didEndSelector:contextInfo:@
-popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfo :: (IsIKPictureTaker ikPictureTaker, IsNSView aView) => ikPictureTaker -> aView -> RawId -> Selector -> Ptr () -> IO ()
-popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfo ikPictureTaker  aView delegate didEndSelector contextInfo =
-  withObjCPtr aView $ \raw_aView ->
-      sendMsg ikPictureTaker (mkSelector "popUpRecentsMenuForView:withDelegate:didEndSelector:contextInfo:") retVoid [argPtr (castPtr raw_aView :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfo :: (IsIKPictureTaker ikPictureTaker, IsNSView aView) => ikPictureTaker -> aView -> RawId -> Sel -> Ptr () -> IO ()
+popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfo ikPictureTaker aView delegate didEndSelector contextInfo =
+  sendMessage ikPictureTaker popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfoSelector (toNSView aView) delegate didEndSelector contextInfo
 
 -- | setInputImage:
 --
@@ -135,9 +130,8 @@ popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfo ikPictureTaker  
 --
 -- ObjC selector: @- setInputImage:@
 setInputImage :: (IsIKPictureTaker ikPictureTaker, IsNSImage image) => ikPictureTaker -> image -> IO ()
-setInputImage ikPictureTaker  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg ikPictureTaker (mkSelector "setInputImage:") retVoid [argPtr (castPtr raw_image :: Ptr ())]
+setInputImage ikPictureTaker image =
+  sendMessage ikPictureTaker setInputImageSelector (toNSImage image)
 
 -- | inputImage
 --
@@ -147,8 +141,8 @@ setInputImage ikPictureTaker  image =
 --
 -- ObjC selector: @- inputImage@
 inputImage :: IsIKPictureTaker ikPictureTaker => ikPictureTaker -> IO (Id NSImage)
-inputImage ikPictureTaker  =
-    sendMsg ikPictureTaker (mkSelector "inputImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputImage ikPictureTaker =
+  sendMessage ikPictureTaker inputImageSelector
 
 -- | outputImage
 --
@@ -156,8 +150,8 @@ inputImage ikPictureTaker  =
 --
 -- ObjC selector: @- outputImage@
 outputImage :: IsIKPictureTaker ikPictureTaker => ikPictureTaker -> IO (Id NSImage)
-outputImage ikPictureTaker  =
-    sendMsg ikPictureTaker (mkSelector "outputImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputImage ikPictureTaker =
+  sendMessage ikPictureTaker outputImageSelector
 
 -- | setMirroring:
 --
@@ -165,8 +159,8 @@ outputImage ikPictureTaker  =
 --
 -- ObjC selector: @- setMirroring:@
 setMirroring :: IsIKPictureTaker ikPictureTaker => ikPictureTaker -> Bool -> IO ()
-setMirroring ikPictureTaker  b =
-    sendMsg ikPictureTaker (mkSelector "setMirroring:") retVoid [argCULong (if b then 1 else 0)]
+setMirroring ikPictureTaker b =
+  sendMessage ikPictureTaker setMirroringSelector b
 
 -- | mirroring
 --
@@ -174,50 +168,50 @@ setMirroring ikPictureTaker  b =
 --
 -- ObjC selector: @- mirroring@
 mirroring :: IsIKPictureTaker ikPictureTaker => ikPictureTaker -> IO Bool
-mirroring ikPictureTaker  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ikPictureTaker (mkSelector "mirroring") retCULong []
+mirroring ikPictureTaker =
+  sendMessage ikPictureTaker mirroringSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pictureTaker@
-pictureTakerSelector :: Selector
+pictureTakerSelector :: Selector '[] (Id IKPictureTaker)
 pictureTakerSelector = mkSelector "pictureTaker"
 
 -- | @Selector@ for @runModal@
-runModalSelector :: Selector
+runModalSelector :: Selector '[] CLong
 runModalSelector = mkSelector "runModal"
 
 -- | @Selector@ for @beginPictureTakerWithDelegate:didEndSelector:contextInfo:@
-beginPictureTakerWithDelegate_didEndSelector_contextInfoSelector :: Selector
+beginPictureTakerWithDelegate_didEndSelector_contextInfoSelector :: Selector '[RawId, Sel, Ptr ()] ()
 beginPictureTakerWithDelegate_didEndSelector_contextInfoSelector = mkSelector "beginPictureTakerWithDelegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @beginPictureTakerSheetForWindow:withDelegate:didEndSelector:contextInfo:@
-beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfoSelector :: Selector
+beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfoSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr ()] ()
 beginPictureTakerSheetForWindow_withDelegate_didEndSelector_contextInfoSelector = mkSelector "beginPictureTakerSheetForWindow:withDelegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @popUpRecentsMenuForView:withDelegate:didEndSelector:contextInfo:@
-popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfoSelector :: Selector
+popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfoSelector :: Selector '[Id NSView, RawId, Sel, Ptr ()] ()
 popUpRecentsMenuForView_withDelegate_didEndSelector_contextInfoSelector = mkSelector "popUpRecentsMenuForView:withDelegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @setInputImage:@
-setInputImageSelector :: Selector
+setInputImageSelector :: Selector '[Id NSImage] ()
 setInputImageSelector = mkSelector "setInputImage:"
 
 -- | @Selector@ for @inputImage@
-inputImageSelector :: Selector
+inputImageSelector :: Selector '[] (Id NSImage)
 inputImageSelector = mkSelector "inputImage"
 
 -- | @Selector@ for @outputImage@
-outputImageSelector :: Selector
+outputImageSelector :: Selector '[] (Id NSImage)
 outputImageSelector = mkSelector "outputImage"
 
 -- | @Selector@ for @setMirroring:@
-setMirroringSelector :: Selector
+setMirroringSelector :: Selector '[Bool] ()
 setMirroringSelector = mkSelector "setMirroring:"
 
 -- | @Selector@ for @mirroring@
-mirroringSelector :: Selector
+mirroringSelector :: Selector '[] Bool
 mirroringSelector = mkSelector "mirroring"
 

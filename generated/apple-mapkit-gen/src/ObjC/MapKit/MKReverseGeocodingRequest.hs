@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.MapKit.MKReverseGeocodingRequest
   , loading
   , preferredLocale
   , setPreferredLocale
-  , initSelector
-  , newSelector
-  , initWithLocationSelector
   , cancelSelector
   , cancelledSelector
+  , initSelector
+  , initWithLocationSelector
   , loadingSelector
+  , newSelector
   , preferredLocaleSelector
   , setPreferredLocaleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,80 +40,79 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMKReverseGeocodingRequest mkReverseGeocodingRequest => mkReverseGeocodingRequest -> IO (Id MKReverseGeocodingRequest)
-init_ mkReverseGeocodingRequest  =
-    sendMsg mkReverseGeocodingRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mkReverseGeocodingRequest =
+  sendOwnedMessage mkReverseGeocodingRequest initSelector
 
 -- | @+ new@
 new :: IO (Id MKReverseGeocodingRequest)
 new  =
   do
     cls' <- getRequiredClass "MKReverseGeocodingRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithLocation:@
 initWithLocation :: IsMKReverseGeocodingRequest mkReverseGeocodingRequest => mkReverseGeocodingRequest -> RawId -> IO (Id MKReverseGeocodingRequest)
-initWithLocation mkReverseGeocodingRequest  location =
-    sendMsg mkReverseGeocodingRequest (mkSelector "initWithLocation:") (retPtr retVoid) [argPtr (castPtr (unRawId location) :: Ptr ())] >>= ownedObject . castPtr
+initWithLocation mkReverseGeocodingRequest location =
+  sendOwnedMessage mkReverseGeocodingRequest initWithLocationSelector location
 
 -- | @- cancel@
 cancel :: IsMKReverseGeocodingRequest mkReverseGeocodingRequest => mkReverseGeocodingRequest -> IO ()
-cancel mkReverseGeocodingRequest  =
-    sendMsg mkReverseGeocodingRequest (mkSelector "cancel") retVoid []
+cancel mkReverseGeocodingRequest =
+  sendMessage mkReverseGeocodingRequest cancelSelector
 
 -- | @- cancelled@
 cancelled :: IsMKReverseGeocodingRequest mkReverseGeocodingRequest => mkReverseGeocodingRequest -> IO Bool
-cancelled mkReverseGeocodingRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkReverseGeocodingRequest (mkSelector "cancelled") retCULong []
+cancelled mkReverseGeocodingRequest =
+  sendMessage mkReverseGeocodingRequest cancelledSelector
 
 -- | @- loading@
 loading :: IsMKReverseGeocodingRequest mkReverseGeocodingRequest => mkReverseGeocodingRequest -> IO Bool
-loading mkReverseGeocodingRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mkReverseGeocodingRequest (mkSelector "loading") retCULong []
+loading mkReverseGeocodingRequest =
+  sendMessage mkReverseGeocodingRequest loadingSelector
 
 -- | @- preferredLocale@
 preferredLocale :: IsMKReverseGeocodingRequest mkReverseGeocodingRequest => mkReverseGeocodingRequest -> IO (Id NSLocale)
-preferredLocale mkReverseGeocodingRequest  =
-    sendMsg mkReverseGeocodingRequest (mkSelector "preferredLocale") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredLocale mkReverseGeocodingRequest =
+  sendMessage mkReverseGeocodingRequest preferredLocaleSelector
 
 -- | @- setPreferredLocale:@
 setPreferredLocale :: (IsMKReverseGeocodingRequest mkReverseGeocodingRequest, IsNSLocale value) => mkReverseGeocodingRequest -> value -> IO ()
-setPreferredLocale mkReverseGeocodingRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkReverseGeocodingRequest (mkSelector "setPreferredLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreferredLocale mkReverseGeocodingRequest value =
+  sendMessage mkReverseGeocodingRequest setPreferredLocaleSelector (toNSLocale value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MKReverseGeocodingRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MKReverseGeocodingRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithLocation:@
-initWithLocationSelector :: Selector
+initWithLocationSelector :: Selector '[RawId] (Id MKReverseGeocodingRequest)
 initWithLocationSelector = mkSelector "initWithLocation:"
 
 -- | @Selector@ for @cancel@
-cancelSelector :: Selector
+cancelSelector :: Selector '[] ()
 cancelSelector = mkSelector "cancel"
 
 -- | @Selector@ for @cancelled@
-cancelledSelector :: Selector
+cancelledSelector :: Selector '[] Bool
 cancelledSelector = mkSelector "cancelled"
 
 -- | @Selector@ for @loading@
-loadingSelector :: Selector
+loadingSelector :: Selector '[] Bool
 loadingSelector = mkSelector "loading"
 
 -- | @Selector@ for @preferredLocale@
-preferredLocaleSelector :: Selector
+preferredLocaleSelector :: Selector '[] (Id NSLocale)
 preferredLocaleSelector = mkSelector "preferredLocale"
 
 -- | @Selector@ for @setPreferredLocale:@
-setPreferredLocaleSelector :: Selector
+setPreferredLocaleSelector :: Selector '[Id NSLocale] ()
 setPreferredLocaleSelector = mkSelector "setPreferredLocale:"
 

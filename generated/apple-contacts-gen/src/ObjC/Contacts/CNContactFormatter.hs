@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,17 +23,17 @@ module ObjC.Contacts.CNContactFormatter
   , descriptorForRequiredKeysForDelimiter
   , style
   , setStyle
-  , descriptorForRequiredKeysForStyleSelector
-  , stringFromContact_styleSelector
-  , attributedStringFromContact_style_defaultAttributesSelector
-  , nameOrderForContactSelector
-  , delimiterForContactSelector
-  , stringFromContactSelector
   , attributedStringFromContact_defaultAttributesSelector
-  , descriptorForRequiredKeysForNameOrderSelector
+  , attributedStringFromContact_style_defaultAttributesSelector
+  , delimiterForContactSelector
   , descriptorForRequiredKeysForDelimiterSelector
-  , styleSelector
+  , descriptorForRequiredKeysForNameOrderSelector
+  , descriptorForRequiredKeysForStyleSelector
+  , nameOrderForContactSelector
   , setStyleSelector
+  , stringFromContactSelector
+  , stringFromContact_styleSelector
+  , styleSelector
 
   -- * Enum types
   , CNContactDisplayNameOrder(CNContactDisplayNameOrder)
@@ -45,15 +46,11 @@ module ObjC.Contacts.CNContactFormatter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,7 +71,7 @@ descriptorForRequiredKeysForStyle :: CNContactFormatterStyle -> IO RawId
 descriptorForRequiredKeysForStyle style =
   do
     cls' <- getRequiredClass "CNContactFormatter"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "descriptorForRequiredKeysForStyle:") (retPtr retVoid) [argCLong (coerce style)]
+    sendClassMessage cls' descriptorForRequiredKeysForStyleSelector style
 
 -- | Formats the contact name.
 --
@@ -89,8 +86,7 @@ stringFromContact_style :: IsCNContact contact => contact -> CNContactFormatterS
 stringFromContact_style contact style =
   do
     cls' <- getRequiredClass "CNContactFormatter"
-    withObjCPtr contact $ \raw_contact ->
-      sendClassMsg cls' (mkSelector "stringFromContact:style:") (retPtr retVoid) [argPtr (castPtr raw_contact :: Ptr ()), argCLong (coerce style)] >>= retainedObject . castPtr
+    sendClassMessage cls' stringFromContact_styleSelector (toCNContact contact) style
 
 -- | Formats the contact name returning an attributed string.
 --
@@ -109,9 +105,7 @@ attributedStringFromContact_style_defaultAttributes :: (IsCNContact contact, IsN
 attributedStringFromContact_style_defaultAttributes contact style attributes =
   do
     cls' <- getRequiredClass "CNContactFormatter"
-    withObjCPtr contact $ \raw_contact ->
-      withObjCPtr attributes $ \raw_attributes ->
-        sendClassMsg cls' (mkSelector "attributedStringFromContact:style:defaultAttributes:") (retPtr retVoid) [argPtr (castPtr raw_contact :: Ptr ()), argCLong (coerce style), argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' attributedStringFromContact_style_defaultAttributesSelector (toCNContact contact) style (toNSDictionary attributes)
 
 -- | The recommended name order for a given contact.
 --
@@ -120,8 +114,7 @@ nameOrderForContact :: IsCNContact contact => contact -> IO CNContactDisplayName
 nameOrderForContact contact =
   do
     cls' <- getRequiredClass "CNContactFormatter"
-    withObjCPtr contact $ \raw_contact ->
-      fmap (coerce :: CLong -> CNContactDisplayNameOrder) $ sendClassMsg cls' (mkSelector "nameOrderForContact:") retCLong [argPtr (castPtr raw_contact :: Ptr ())]
+    sendClassMessage cls' nameOrderForContactSelector (toCNContact contact)
 
 -- | The recommended delimiter to use between name components for a given contact.
 --
@@ -130,8 +123,7 @@ delimiterForContact :: IsCNContact contact => contact -> IO (Id NSString)
 delimiterForContact contact =
   do
     cls' <- getRequiredClass "CNContactFormatter"
-    withObjCPtr contact $ \raw_contact ->
-      sendClassMsg cls' (mkSelector "delimiterForContact:") (retPtr retVoid) [argPtr (castPtr raw_contact :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' delimiterForContactSelector (toCNContact contact)
 
 -- | Formats the contact name.
 --
@@ -141,9 +133,8 @@ delimiterForContact contact =
 --
 -- ObjC selector: @- stringFromContact:@
 stringFromContact :: (IsCNContactFormatter cnContactFormatter, IsCNContact contact) => cnContactFormatter -> contact -> IO (Id NSString)
-stringFromContact cnContactFormatter  contact =
-  withObjCPtr contact $ \raw_contact ->
-      sendMsg cnContactFormatter (mkSelector "stringFromContact:") (retPtr retVoid) [argPtr (castPtr raw_contact :: Ptr ())] >>= retainedObject . castPtr
+stringFromContact cnContactFormatter contact =
+  sendMessage cnContactFormatter stringFromContactSelector (toCNContact contact)
 
 -- | Formats the contact name returning an attributed string.
 --
@@ -157,10 +148,8 @@ stringFromContact cnContactFormatter  contact =
 --
 -- ObjC selector: @- attributedStringFromContact:defaultAttributes:@
 attributedStringFromContact_defaultAttributes :: (IsCNContactFormatter cnContactFormatter, IsCNContact contact, IsNSDictionary attributes) => cnContactFormatter -> contact -> attributes -> IO (Id NSAttributedString)
-attributedStringFromContact_defaultAttributes cnContactFormatter  contact attributes =
-  withObjCPtr contact $ \raw_contact ->
-    withObjCPtr attributes $ \raw_attributes ->
-        sendMsg cnContactFormatter (mkSelector "attributedStringFromContact:defaultAttributes:") (retPtr retVoid) [argPtr (castPtr raw_contact :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())] >>= retainedObject . castPtr
+attributedStringFromContact_defaultAttributes cnContactFormatter contact attributes =
+  sendMessage cnContactFormatter attributedStringFromContact_defaultAttributesSelector (toCNContact contact) (toNSDictionary attributes)
 
 -- | The contact key descriptor required for the name order.
 --
@@ -173,7 +162,7 @@ descriptorForRequiredKeysForNameOrder :: IO RawId
 descriptorForRequiredKeysForNameOrder  =
   do
     cls' <- getRequiredClass "CNContactFormatter"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "descriptorForRequiredKeysForNameOrder") (retPtr retVoid) []
+    sendClassMessage cls' descriptorForRequiredKeysForNameOrderSelector
 
 -- | The contact key descriptor required for the name delimiter.
 --
@@ -186,7 +175,7 @@ descriptorForRequiredKeysForDelimiter :: IO RawId
 descriptorForRequiredKeysForDelimiter  =
   do
     cls' <- getRequiredClass "CNContactFormatter"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "descriptorForRequiredKeysForDelimiter") (retPtr retVoid) []
+    sendClassMessage cls' descriptorForRequiredKeysForDelimiterSelector
 
 -- | The style for a contact formatter instance.
 --
@@ -194,8 +183,8 @@ descriptorForRequiredKeysForDelimiter  =
 --
 -- ObjC selector: @- style@
 style :: IsCNContactFormatter cnContactFormatter => cnContactFormatter -> IO CNContactFormatterStyle
-style cnContactFormatter  =
-    fmap (coerce :: CLong -> CNContactFormatterStyle) $ sendMsg cnContactFormatter (mkSelector "style") retCLong []
+style cnContactFormatter =
+  sendMessage cnContactFormatter styleSelector
 
 -- | The style for a contact formatter instance.
 --
@@ -203,54 +192,54 @@ style cnContactFormatter  =
 --
 -- ObjC selector: @- setStyle:@
 setStyle :: IsCNContactFormatter cnContactFormatter => cnContactFormatter -> CNContactFormatterStyle -> IO ()
-setStyle cnContactFormatter  value =
-    sendMsg cnContactFormatter (mkSelector "setStyle:") retVoid [argCLong (coerce value)]
+setStyle cnContactFormatter value =
+  sendMessage cnContactFormatter setStyleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorForRequiredKeysForStyle:@
-descriptorForRequiredKeysForStyleSelector :: Selector
+descriptorForRequiredKeysForStyleSelector :: Selector '[CNContactFormatterStyle] RawId
 descriptorForRequiredKeysForStyleSelector = mkSelector "descriptorForRequiredKeysForStyle:"
 
 -- | @Selector@ for @stringFromContact:style:@
-stringFromContact_styleSelector :: Selector
+stringFromContact_styleSelector :: Selector '[Id CNContact, CNContactFormatterStyle] (Id NSString)
 stringFromContact_styleSelector = mkSelector "stringFromContact:style:"
 
 -- | @Selector@ for @attributedStringFromContact:style:defaultAttributes:@
-attributedStringFromContact_style_defaultAttributesSelector :: Selector
+attributedStringFromContact_style_defaultAttributesSelector :: Selector '[Id CNContact, CNContactFormatterStyle, Id NSDictionary] (Id NSAttributedString)
 attributedStringFromContact_style_defaultAttributesSelector = mkSelector "attributedStringFromContact:style:defaultAttributes:"
 
 -- | @Selector@ for @nameOrderForContact:@
-nameOrderForContactSelector :: Selector
+nameOrderForContactSelector :: Selector '[Id CNContact] CNContactDisplayNameOrder
 nameOrderForContactSelector = mkSelector "nameOrderForContact:"
 
 -- | @Selector@ for @delimiterForContact:@
-delimiterForContactSelector :: Selector
+delimiterForContactSelector :: Selector '[Id CNContact] (Id NSString)
 delimiterForContactSelector = mkSelector "delimiterForContact:"
 
 -- | @Selector@ for @stringFromContact:@
-stringFromContactSelector :: Selector
+stringFromContactSelector :: Selector '[Id CNContact] (Id NSString)
 stringFromContactSelector = mkSelector "stringFromContact:"
 
 -- | @Selector@ for @attributedStringFromContact:defaultAttributes:@
-attributedStringFromContact_defaultAttributesSelector :: Selector
+attributedStringFromContact_defaultAttributesSelector :: Selector '[Id CNContact, Id NSDictionary] (Id NSAttributedString)
 attributedStringFromContact_defaultAttributesSelector = mkSelector "attributedStringFromContact:defaultAttributes:"
 
 -- | @Selector@ for @descriptorForRequiredKeysForNameOrder@
-descriptorForRequiredKeysForNameOrderSelector :: Selector
+descriptorForRequiredKeysForNameOrderSelector :: Selector '[] RawId
 descriptorForRequiredKeysForNameOrderSelector = mkSelector "descriptorForRequiredKeysForNameOrder"
 
 -- | @Selector@ for @descriptorForRequiredKeysForDelimiter@
-descriptorForRequiredKeysForDelimiterSelector :: Selector
+descriptorForRequiredKeysForDelimiterSelector :: Selector '[] RawId
 descriptorForRequiredKeysForDelimiterSelector = mkSelector "descriptorForRequiredKeysForDelimiter"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] CNContactFormatterStyle
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @setStyle:@
-setStyleSelector :: Selector
+setStyleSelector :: Selector '[CNContactFormatterStyle] ()
 setStyleSelector = mkSelector "setStyle:"
 

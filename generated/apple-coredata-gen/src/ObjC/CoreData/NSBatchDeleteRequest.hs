@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.CoreData.NSBatchDeleteRequest
   , resultType
   , setResultType
   , fetchRequest
+  , fetchRequestSelector
   , initSelector
   , initWithFetchRequestSelector
   , initWithObjectIDsSelector
   , resultTypeSelector
   , setResultTypeSelector
-  , fetchRequestSelector
 
   -- * Enum types
   , NSBatchDeleteRequestResultType(NSBatchDeleteRequestResultType)
@@ -28,15 +29,11 @@ module ObjC.CoreData.NSBatchDeleteRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,61 +43,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSBatchDeleteRequest nsBatchDeleteRequest => nsBatchDeleteRequest -> IO (Id NSBatchDeleteRequest)
-init_ nsBatchDeleteRequest  =
-    sendMsg nsBatchDeleteRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsBatchDeleteRequest =
+  sendOwnedMessage nsBatchDeleteRequest initSelector
 
 -- | @- initWithFetchRequest:@
 initWithFetchRequest :: (IsNSBatchDeleteRequest nsBatchDeleteRequest, IsNSFetchRequest fetch) => nsBatchDeleteRequest -> fetch -> IO (Id NSBatchDeleteRequest)
-initWithFetchRequest nsBatchDeleteRequest  fetch =
-  withObjCPtr fetch $ \raw_fetch ->
-      sendMsg nsBatchDeleteRequest (mkSelector "initWithFetchRequest:") (retPtr retVoid) [argPtr (castPtr raw_fetch :: Ptr ())] >>= ownedObject . castPtr
+initWithFetchRequest nsBatchDeleteRequest fetch =
+  sendOwnedMessage nsBatchDeleteRequest initWithFetchRequestSelector (toNSFetchRequest fetch)
 
 -- | @- initWithObjectIDs:@
 initWithObjectIDs :: (IsNSBatchDeleteRequest nsBatchDeleteRequest, IsNSArray objects) => nsBatchDeleteRequest -> objects -> IO (Id NSBatchDeleteRequest)
-initWithObjectIDs nsBatchDeleteRequest  objects =
-  withObjCPtr objects $ \raw_objects ->
-      sendMsg nsBatchDeleteRequest (mkSelector "initWithObjectIDs:") (retPtr retVoid) [argPtr (castPtr raw_objects :: Ptr ())] >>= ownedObject . castPtr
+initWithObjectIDs nsBatchDeleteRequest objects =
+  sendOwnedMessage nsBatchDeleteRequest initWithObjectIDsSelector (toNSArray objects)
 
 -- | @- resultType@
 resultType :: IsNSBatchDeleteRequest nsBatchDeleteRequest => nsBatchDeleteRequest -> IO NSBatchDeleteRequestResultType
-resultType nsBatchDeleteRequest  =
-    fmap (coerce :: CULong -> NSBatchDeleteRequestResultType) $ sendMsg nsBatchDeleteRequest (mkSelector "resultType") retCULong []
+resultType nsBatchDeleteRequest =
+  sendMessage nsBatchDeleteRequest resultTypeSelector
 
 -- | @- setResultType:@
 setResultType :: IsNSBatchDeleteRequest nsBatchDeleteRequest => nsBatchDeleteRequest -> NSBatchDeleteRequestResultType -> IO ()
-setResultType nsBatchDeleteRequest  value =
-    sendMsg nsBatchDeleteRequest (mkSelector "setResultType:") retVoid [argCULong (coerce value)]
+setResultType nsBatchDeleteRequest value =
+  sendMessage nsBatchDeleteRequest setResultTypeSelector value
 
 -- | @- fetchRequest@
 fetchRequest :: IsNSBatchDeleteRequest nsBatchDeleteRequest => nsBatchDeleteRequest -> IO (Id NSFetchRequest)
-fetchRequest nsBatchDeleteRequest  =
-    sendMsg nsBatchDeleteRequest (mkSelector "fetchRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchRequest nsBatchDeleteRequest =
+  sendMessage nsBatchDeleteRequest fetchRequestSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSBatchDeleteRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithFetchRequest:@
-initWithFetchRequestSelector :: Selector
+initWithFetchRequestSelector :: Selector '[Id NSFetchRequest] (Id NSBatchDeleteRequest)
 initWithFetchRequestSelector = mkSelector "initWithFetchRequest:"
 
 -- | @Selector@ for @initWithObjectIDs:@
-initWithObjectIDsSelector :: Selector
+initWithObjectIDsSelector :: Selector '[Id NSArray] (Id NSBatchDeleteRequest)
 initWithObjectIDsSelector = mkSelector "initWithObjectIDs:"
 
 -- | @Selector@ for @resultType@
-resultTypeSelector :: Selector
+resultTypeSelector :: Selector '[] NSBatchDeleteRequestResultType
 resultTypeSelector = mkSelector "resultType"
 
 -- | @Selector@ for @setResultType:@
-setResultTypeSelector :: Selector
+setResultTypeSelector :: Selector '[NSBatchDeleteRequestResultType] ()
 setResultTypeSelector = mkSelector "setResultType:"
 
 -- | @Selector@ for @fetchRequest@
-fetchRequestSelector :: Selector
+fetchRequestSelector :: Selector '[] (Id NSFetchRequest)
 fetchRequestSelector = mkSelector "fetchRequest"
 

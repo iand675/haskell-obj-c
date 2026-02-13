@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.GameKit.GKTurnBasedMatchmakerViewController
   , matchmakingMode
   , setMatchmakingMode
   , initWithMatchRequestSelector
-  , turnBasedMatchmakerDelegateSelector
-  , setTurnBasedMatchmakerDelegateSelector
-  , showExistingMatchesSelector
-  , setShowExistingMatchesSelector
   , matchmakingModeSelector
   , setMatchmakingModeSelector
+  , setShowExistingMatchesSelector
+  , setTurnBasedMatchmakerDelegateSelector
+  , showExistingMatchesSelector
+  , turnBasedMatchmakerDelegateSelector
 
   -- * Enum types
   , GKMatchmakingMode(GKMatchmakingMode)
@@ -33,15 +34,11 @@ module ObjC.GameKit.GKTurnBasedMatchmakerViewController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,73 +49,72 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithMatchRequest:@
 initWithMatchRequest :: (IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController, IsGKMatchRequest request) => gkTurnBasedMatchmakerViewController -> request -> IO RawId
-initWithMatchRequest gkTurnBasedMatchmakerViewController  request =
-  withObjCPtr request $ \raw_request ->
-      fmap (RawId . castPtr) $ sendMsg gkTurnBasedMatchmakerViewController (mkSelector "initWithMatchRequest:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ())]
+initWithMatchRequest gkTurnBasedMatchmakerViewController request =
+  sendOwnedMessage gkTurnBasedMatchmakerViewController initWithMatchRequestSelector (toGKMatchRequest request)
 
 -- | @- turnBasedMatchmakerDelegate@
 turnBasedMatchmakerDelegate :: IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController => gkTurnBasedMatchmakerViewController -> IO RawId
-turnBasedMatchmakerDelegate gkTurnBasedMatchmakerViewController  =
-    fmap (RawId . castPtr) $ sendMsg gkTurnBasedMatchmakerViewController (mkSelector "turnBasedMatchmakerDelegate") (retPtr retVoid) []
+turnBasedMatchmakerDelegate gkTurnBasedMatchmakerViewController =
+  sendMessage gkTurnBasedMatchmakerViewController turnBasedMatchmakerDelegateSelector
 
 -- | @- setTurnBasedMatchmakerDelegate:@
 setTurnBasedMatchmakerDelegate :: IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController => gkTurnBasedMatchmakerViewController -> RawId -> IO ()
-setTurnBasedMatchmakerDelegate gkTurnBasedMatchmakerViewController  value =
-    sendMsg gkTurnBasedMatchmakerViewController (mkSelector "setTurnBasedMatchmakerDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setTurnBasedMatchmakerDelegate gkTurnBasedMatchmakerViewController value =
+  sendMessage gkTurnBasedMatchmakerViewController setTurnBasedMatchmakerDelegateSelector value
 
 -- | @- showExistingMatches@
 showExistingMatches :: IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController => gkTurnBasedMatchmakerViewController -> IO Bool
-showExistingMatches gkTurnBasedMatchmakerViewController  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkTurnBasedMatchmakerViewController (mkSelector "showExistingMatches") retCULong []
+showExistingMatches gkTurnBasedMatchmakerViewController =
+  sendMessage gkTurnBasedMatchmakerViewController showExistingMatchesSelector
 
 -- | @- setShowExistingMatches:@
 setShowExistingMatches :: IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController => gkTurnBasedMatchmakerViewController -> Bool -> IO ()
-setShowExistingMatches gkTurnBasedMatchmakerViewController  value =
-    sendMsg gkTurnBasedMatchmakerViewController (mkSelector "setShowExistingMatches:") retVoid [argCULong (if value then 1 else 0)]
+setShowExistingMatches gkTurnBasedMatchmakerViewController value =
+  sendMessage gkTurnBasedMatchmakerViewController setShowExistingMatchesSelector value
 
 -- | This controls the mode of matchmaking to support in the UI (all, nearby only, automatch only, invite only). Throws an exception if you can not set to the desired mode (due to restrictions)
 --
 -- ObjC selector: @- matchmakingMode@
 matchmakingMode :: IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController => gkTurnBasedMatchmakerViewController -> IO GKMatchmakingMode
-matchmakingMode gkTurnBasedMatchmakerViewController  =
-    fmap (coerce :: CLong -> GKMatchmakingMode) $ sendMsg gkTurnBasedMatchmakerViewController (mkSelector "matchmakingMode") retCLong []
+matchmakingMode gkTurnBasedMatchmakerViewController =
+  sendMessage gkTurnBasedMatchmakerViewController matchmakingModeSelector
 
 -- | This controls the mode of matchmaking to support in the UI (all, nearby only, automatch only, invite only). Throws an exception if you can not set to the desired mode (due to restrictions)
 --
 -- ObjC selector: @- setMatchmakingMode:@
 setMatchmakingMode :: IsGKTurnBasedMatchmakerViewController gkTurnBasedMatchmakerViewController => gkTurnBasedMatchmakerViewController -> GKMatchmakingMode -> IO ()
-setMatchmakingMode gkTurnBasedMatchmakerViewController  value =
-    sendMsg gkTurnBasedMatchmakerViewController (mkSelector "setMatchmakingMode:") retVoid [argCLong (coerce value)]
+setMatchmakingMode gkTurnBasedMatchmakerViewController value =
+  sendMessage gkTurnBasedMatchmakerViewController setMatchmakingModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMatchRequest:@
-initWithMatchRequestSelector :: Selector
+initWithMatchRequestSelector :: Selector '[Id GKMatchRequest] RawId
 initWithMatchRequestSelector = mkSelector "initWithMatchRequest:"
 
 -- | @Selector@ for @turnBasedMatchmakerDelegate@
-turnBasedMatchmakerDelegateSelector :: Selector
+turnBasedMatchmakerDelegateSelector :: Selector '[] RawId
 turnBasedMatchmakerDelegateSelector = mkSelector "turnBasedMatchmakerDelegate"
 
 -- | @Selector@ for @setTurnBasedMatchmakerDelegate:@
-setTurnBasedMatchmakerDelegateSelector :: Selector
+setTurnBasedMatchmakerDelegateSelector :: Selector '[RawId] ()
 setTurnBasedMatchmakerDelegateSelector = mkSelector "setTurnBasedMatchmakerDelegate:"
 
 -- | @Selector@ for @showExistingMatches@
-showExistingMatchesSelector :: Selector
+showExistingMatchesSelector :: Selector '[] Bool
 showExistingMatchesSelector = mkSelector "showExistingMatches"
 
 -- | @Selector@ for @setShowExistingMatches:@
-setShowExistingMatchesSelector :: Selector
+setShowExistingMatchesSelector :: Selector '[Bool] ()
 setShowExistingMatchesSelector = mkSelector "setShowExistingMatches:"
 
 -- | @Selector@ for @matchmakingMode@
-matchmakingModeSelector :: Selector
+matchmakingModeSelector :: Selector '[] GKMatchmakingMode
 matchmakingModeSelector = mkSelector "matchmakingMode"
 
 -- | @Selector@ for @setMatchmakingMode:@
-setMatchmakingModeSelector :: Selector
+setMatchmakingModeSelector :: Selector '[GKMatchmakingMode] ()
 setMatchmakingModeSelector = mkSelector "setMatchmakingMode:"
 

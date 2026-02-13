@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,33 +25,29 @@ module ObjC.Matter.MTRThreadOperationalDataset
   , panID
   , channel
   , setChannel
-  , initSelector
-  , newSelector
-  , initWithNetworkName_extendedPANID_masterKey_PSKc_channelNumber_panIDSelector
-  , initWithDataSelector
-  , dataSelector
-  , initWithNetworkName_extendedPANID_masterKey_PSKc_channel_panIDSelector
-  , networkNameSelector
-  , extendedPANIDSelector
-  , masterKeySelector
-  , psKcSelector
   , channelNumberSelector
-  , panIDSelector
   , channelSelector
+  , dataSelector
+  , extendedPANIDSelector
+  , initSelector
+  , initWithDataSelector
+  , initWithNetworkName_extendedPANID_masterKey_PSKc_channelNumber_panIDSelector
+  , initWithNetworkName_extendedPANID_masterKey_PSKc_channel_panIDSelector
+  , masterKeySelector
+  , networkNameSelector
+  , newSelector
+  , panIDSelector
+  , psKcSelector
   , setChannelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,15 +56,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> IO (Id MTRThreadOperationalDataset)
-init_ mtrThreadOperationalDataset  =
-    sendMsg mtrThreadOperationalDataset (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrThreadOperationalDataset =
+  sendOwnedMessage mtrThreadOperationalDataset initSelector
 
 -- | @+ new@
 new :: IO (Id MTRThreadOperationalDataset)
 new  =
   do
     cls' <- getRequiredClass "MTRThreadOperationalDataset"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Create a Thread Operational Dataset object with the individual network fields.
 --
@@ -83,149 +80,137 @@ new  =
 --
 -- ObjC selector: @- initWithNetworkName:extendedPANID:masterKey:PSKc:channelNumber:panID:@
 initWithNetworkName_extendedPANID_masterKey_PSKc_channelNumber_panID :: (IsMTRThreadOperationalDataset mtrThreadOperationalDataset, IsNSString networkName, IsNSData extendedPANID, IsNSData masterKey, IsNSData psKc, IsNSNumber channelNumber, IsNSData panID) => mtrThreadOperationalDataset -> networkName -> extendedPANID -> masterKey -> psKc -> channelNumber -> panID -> IO (Id MTRThreadOperationalDataset)
-initWithNetworkName_extendedPANID_masterKey_PSKc_channelNumber_panID mtrThreadOperationalDataset  networkName extendedPANID masterKey psKc channelNumber panID =
-  withObjCPtr networkName $ \raw_networkName ->
-    withObjCPtr extendedPANID $ \raw_extendedPANID ->
-      withObjCPtr masterKey $ \raw_masterKey ->
-        withObjCPtr psKc $ \raw_psKc ->
-          withObjCPtr channelNumber $ \raw_channelNumber ->
-            withObjCPtr panID $ \raw_panID ->
-                sendMsg mtrThreadOperationalDataset (mkSelector "initWithNetworkName:extendedPANID:masterKey:PSKc:channelNumber:panID:") (retPtr retVoid) [argPtr (castPtr raw_networkName :: Ptr ()), argPtr (castPtr raw_extendedPANID :: Ptr ()), argPtr (castPtr raw_masterKey :: Ptr ()), argPtr (castPtr raw_psKc :: Ptr ()), argPtr (castPtr raw_channelNumber :: Ptr ()), argPtr (castPtr raw_panID :: Ptr ())] >>= ownedObject . castPtr
+initWithNetworkName_extendedPANID_masterKey_PSKc_channelNumber_panID mtrThreadOperationalDataset networkName extendedPANID masterKey psKc channelNumber panID =
+  sendOwnedMessage mtrThreadOperationalDataset initWithNetworkName_extendedPANID_masterKey_PSKc_channelNumber_panIDSelector (toNSString networkName) (toNSData extendedPANID) (toNSData masterKey) (toNSData psKc) (toNSNumber channelNumber) (toNSData panID)
 
 -- | Create a Thread Operational Dataset object with a RCP formatted active operational dataset. This initializer will return nil if the input data cannot be parsed correctly
 --
 -- ObjC selector: @- initWithData:@
 initWithData :: (IsMTRThreadOperationalDataset mtrThreadOperationalDataset, IsNSData data_) => mtrThreadOperationalDataset -> data_ -> IO (Id MTRThreadOperationalDataset)
-initWithData mtrThreadOperationalDataset  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg mtrThreadOperationalDataset (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData mtrThreadOperationalDataset data_ =
+  sendOwnedMessage mtrThreadOperationalDataset initWithDataSelector (toNSData data_)
 
 -- | Get the underlying data that represents the Thread Active Operational Dataset This can be used for the threadOperationalDataset of MTRCommissioningParameters.
 --
 -- ObjC selector: @- data@
 data_ :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> IO (Id NSData)
-data_ mtrThreadOperationalDataset  =
-    sendMsg mtrThreadOperationalDataset (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrThreadOperationalDataset =
+  sendMessage mtrThreadOperationalDataset dataSelector
 
 -- | @- initWithNetworkName:extendedPANID:masterKey:PSKc:channel:panID:@
 initWithNetworkName_extendedPANID_masterKey_PSKc_channel_panID :: (IsMTRThreadOperationalDataset mtrThreadOperationalDataset, IsNSString networkName, IsNSData extendedPANID, IsNSData masterKey, IsNSData psKc, IsNSData panID) => mtrThreadOperationalDataset -> networkName -> extendedPANID -> masterKey -> psKc -> CUShort -> panID -> IO (Id MTRThreadOperationalDataset)
-initWithNetworkName_extendedPANID_masterKey_PSKc_channel_panID mtrThreadOperationalDataset  networkName extendedPANID masterKey psKc channel panID =
-  withObjCPtr networkName $ \raw_networkName ->
-    withObjCPtr extendedPANID $ \raw_extendedPANID ->
-      withObjCPtr masterKey $ \raw_masterKey ->
-        withObjCPtr psKc $ \raw_psKc ->
-          withObjCPtr panID $ \raw_panID ->
-              sendMsg mtrThreadOperationalDataset (mkSelector "initWithNetworkName:extendedPANID:masterKey:PSKc:channel:panID:") (retPtr retVoid) [argPtr (castPtr raw_networkName :: Ptr ()), argPtr (castPtr raw_extendedPANID :: Ptr ()), argPtr (castPtr raw_masterKey :: Ptr ()), argPtr (castPtr raw_psKc :: Ptr ()), argCUInt (fromIntegral channel), argPtr (castPtr raw_panID :: Ptr ())] >>= ownedObject . castPtr
+initWithNetworkName_extendedPANID_masterKey_PSKc_channel_panID mtrThreadOperationalDataset networkName extendedPANID masterKey psKc channel panID =
+  sendOwnedMessage mtrThreadOperationalDataset initWithNetworkName_extendedPANID_masterKey_PSKc_channel_panIDSelector (toNSString networkName) (toNSData extendedPANID) (toNSData masterKey) (toNSData psKc) channel (toNSData panID)
 
 -- | The Thread Network name
 --
 -- ObjC selector: @- networkName@
 networkName :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> IO (Id NSString)
-networkName mtrThreadOperationalDataset  =
-    sendMsg mtrThreadOperationalDataset (mkSelector "networkName") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkName mtrThreadOperationalDataset =
+  sendMessage mtrThreadOperationalDataset networkNameSelector
 
 -- | The Thread Network extendended PAN ID
 --
 -- ObjC selector: @- extendedPANID@
 extendedPANID :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> IO (Id NSData)
-extendedPANID mtrThreadOperationalDataset  =
-    sendMsg mtrThreadOperationalDataset (mkSelector "extendedPANID") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedPANID mtrThreadOperationalDataset =
+  sendMessage mtrThreadOperationalDataset extendedPANIDSelector
 
 -- | The 16 byte Master Key
 --
 -- ObjC selector: @- masterKey@
 masterKey :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> IO (Id NSData)
-masterKey mtrThreadOperationalDataset  =
-    sendMsg mtrThreadOperationalDataset (mkSelector "masterKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+masterKey mtrThreadOperationalDataset =
+  sendMessage mtrThreadOperationalDataset masterKeySelector
 
 -- | The Thread PSKc
 --
 -- ObjC selector: @- PSKc@
 psKc :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> IO (Id NSData)
-psKc mtrThreadOperationalDataset  =
-    sendMsg mtrThreadOperationalDataset (mkSelector "PSKc") (retPtr retVoid) [] >>= retainedObject . castPtr
+psKc mtrThreadOperationalDataset =
+  sendMessage mtrThreadOperationalDataset psKcSelector
 
 -- | The Thread network channel.  Always an unsigned 16-bit integer.
 --
 -- ObjC selector: @- channelNumber@
 channelNumber :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> IO (Id NSNumber)
-channelNumber mtrThreadOperationalDataset  =
-    sendMsg mtrThreadOperationalDataset (mkSelector "channelNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelNumber mtrThreadOperationalDataset =
+  sendMessage mtrThreadOperationalDataset channelNumberSelector
 
 -- | A uint16_t stored as 2-bytes in host order representing the Thread PAN ID
 --
 -- ObjC selector: @- panID@
 panID :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> IO (Id NSData)
-panID mtrThreadOperationalDataset  =
-    sendMsg mtrThreadOperationalDataset (mkSelector "panID") (retPtr retVoid) [] >>= retainedObject . castPtr
+panID mtrThreadOperationalDataset =
+  sendMessage mtrThreadOperationalDataset panIDSelector
 
 -- | @- channel@
 channel :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> IO CUShort
-channel mtrThreadOperationalDataset  =
-    fmap fromIntegral $ sendMsg mtrThreadOperationalDataset (mkSelector "channel") retCUInt []
+channel mtrThreadOperationalDataset =
+  sendMessage mtrThreadOperationalDataset channelSelector
 
 -- | @- setChannel:@
 setChannel :: IsMTRThreadOperationalDataset mtrThreadOperationalDataset => mtrThreadOperationalDataset -> CUShort -> IO ()
-setChannel mtrThreadOperationalDataset  value =
-    sendMsg mtrThreadOperationalDataset (mkSelector "setChannel:") retVoid [argCUInt (fromIntegral value)]
+setChannel mtrThreadOperationalDataset value =
+  sendMessage mtrThreadOperationalDataset setChannelSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRThreadOperationalDataset)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRThreadOperationalDataset)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithNetworkName:extendedPANID:masterKey:PSKc:channelNumber:panID:@
-initWithNetworkName_extendedPANID_masterKey_PSKc_channelNumber_panIDSelector :: Selector
+initWithNetworkName_extendedPANID_masterKey_PSKc_channelNumber_panIDSelector :: Selector '[Id NSString, Id NSData, Id NSData, Id NSData, Id NSNumber, Id NSData] (Id MTRThreadOperationalDataset)
 initWithNetworkName_extendedPANID_masterKey_PSKc_channelNumber_panIDSelector = mkSelector "initWithNetworkName:extendedPANID:masterKey:PSKc:channelNumber:panID:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id MTRThreadOperationalDataset)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @initWithNetworkName:extendedPANID:masterKey:PSKc:channel:panID:@
-initWithNetworkName_extendedPANID_masterKey_PSKc_channel_panIDSelector :: Selector
+initWithNetworkName_extendedPANID_masterKey_PSKc_channel_panIDSelector :: Selector '[Id NSString, Id NSData, Id NSData, Id NSData, CUShort, Id NSData] (Id MTRThreadOperationalDataset)
 initWithNetworkName_extendedPANID_masterKey_PSKc_channel_panIDSelector = mkSelector "initWithNetworkName:extendedPANID:masterKey:PSKc:channel:panID:"
 
 -- | @Selector@ for @networkName@
-networkNameSelector :: Selector
+networkNameSelector :: Selector '[] (Id NSString)
 networkNameSelector = mkSelector "networkName"
 
 -- | @Selector@ for @extendedPANID@
-extendedPANIDSelector :: Selector
+extendedPANIDSelector :: Selector '[] (Id NSData)
 extendedPANIDSelector = mkSelector "extendedPANID"
 
 -- | @Selector@ for @masterKey@
-masterKeySelector :: Selector
+masterKeySelector :: Selector '[] (Id NSData)
 masterKeySelector = mkSelector "masterKey"
 
 -- | @Selector@ for @PSKc@
-psKcSelector :: Selector
+psKcSelector :: Selector '[] (Id NSData)
 psKcSelector = mkSelector "PSKc"
 
 -- | @Selector@ for @channelNumber@
-channelNumberSelector :: Selector
+channelNumberSelector :: Selector '[] (Id NSNumber)
 channelNumberSelector = mkSelector "channelNumber"
 
 -- | @Selector@ for @panID@
-panIDSelector :: Selector
+panIDSelector :: Selector '[] (Id NSData)
 panIDSelector = mkSelector "panID"
 
 -- | @Selector@ for @channel@
-channelSelector :: Selector
+channelSelector :: Selector '[] CUShort
 channelSelector = mkSelector "channel"
 
 -- | @Selector@ for @setChannel:@
-setChannelSelector :: Selector
+setChannelSelector :: Selector '[CUShort] ()
 setChannelSelector = mkSelector "setChannel:"
 

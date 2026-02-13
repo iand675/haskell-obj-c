@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.PDFKit.PDFAnnotationFreeText
   , setFontColor
   , alignment
   , setAlignment
-  , fontSelector
-  , setFontSelector
-  , fontColorSelector
-  , setFontColorSelector
   , alignmentSelector
+  , fontColorSelector
+  , fontSelector
   , setAlignmentSelector
+  , setFontColorSelector
+  , setFontSelector
 
   -- * Enum types
   , NSTextAlignment(NSTextAlignment)
@@ -30,15 +31,11 @@ module ObjC.PDFKit.PDFAnnotationFreeText
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,61 +46,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- font@
 font :: IsPDFAnnotationFreeText pdfAnnotationFreeText => pdfAnnotationFreeText -> IO (Id NSFont)
-font pdfAnnotationFreeText  =
-    sendMsg pdfAnnotationFreeText (mkSelector "font") (retPtr retVoid) [] >>= retainedObject . castPtr
+font pdfAnnotationFreeText =
+  sendMessage pdfAnnotationFreeText fontSelector
 
 -- | @- setFont:@
 setFont :: (IsPDFAnnotationFreeText pdfAnnotationFreeText, IsNSFont font) => pdfAnnotationFreeText -> font -> IO ()
-setFont pdfAnnotationFreeText  font =
-  withObjCPtr font $ \raw_font ->
-      sendMsg pdfAnnotationFreeText (mkSelector "setFont:") retVoid [argPtr (castPtr raw_font :: Ptr ())]
+setFont pdfAnnotationFreeText font =
+  sendMessage pdfAnnotationFreeText setFontSelector (toNSFont font)
 
 -- | @- fontColor@
 fontColor :: IsPDFAnnotationFreeText pdfAnnotationFreeText => pdfAnnotationFreeText -> IO (Id NSColor)
-fontColor pdfAnnotationFreeText  =
-    sendMsg pdfAnnotationFreeText (mkSelector "fontColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fontColor pdfAnnotationFreeText =
+  sendMessage pdfAnnotationFreeText fontColorSelector
 
 -- | @- setFontColor:@
 setFontColor :: (IsPDFAnnotationFreeText pdfAnnotationFreeText, IsNSColor color) => pdfAnnotationFreeText -> color -> IO ()
-setFontColor pdfAnnotationFreeText  color =
-  withObjCPtr color $ \raw_color ->
-      sendMsg pdfAnnotationFreeText (mkSelector "setFontColor:") retVoid [argPtr (castPtr raw_color :: Ptr ())]
+setFontColor pdfAnnotationFreeText color =
+  sendMessage pdfAnnotationFreeText setFontColorSelector (toNSColor color)
 
 -- | @- alignment@
 alignment :: IsPDFAnnotationFreeText pdfAnnotationFreeText => pdfAnnotationFreeText -> IO NSTextAlignment
-alignment pdfAnnotationFreeText  =
-    fmap (coerce :: CLong -> NSTextAlignment) $ sendMsg pdfAnnotationFreeText (mkSelector "alignment") retCLong []
+alignment pdfAnnotationFreeText =
+  sendMessage pdfAnnotationFreeText alignmentSelector
 
 -- | @- setAlignment:@
 setAlignment :: IsPDFAnnotationFreeText pdfAnnotationFreeText => pdfAnnotationFreeText -> NSTextAlignment -> IO ()
-setAlignment pdfAnnotationFreeText  alignment =
-    sendMsg pdfAnnotationFreeText (mkSelector "setAlignment:") retVoid [argCLong (coerce alignment)]
+setAlignment pdfAnnotationFreeText alignment =
+  sendMessage pdfAnnotationFreeText setAlignmentSelector alignment
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @font@
-fontSelector :: Selector
+fontSelector :: Selector '[] (Id NSFont)
 fontSelector = mkSelector "font"
 
 -- | @Selector@ for @setFont:@
-setFontSelector :: Selector
+setFontSelector :: Selector '[Id NSFont] ()
 setFontSelector = mkSelector "setFont:"
 
 -- | @Selector@ for @fontColor@
-fontColorSelector :: Selector
+fontColorSelector :: Selector '[] (Id NSColor)
 fontColorSelector = mkSelector "fontColor"
 
 -- | @Selector@ for @setFontColor:@
-setFontColorSelector :: Selector
+setFontColorSelector :: Selector '[Id NSColor] ()
 setFontColorSelector = mkSelector "setFontColor:"
 
 -- | @Selector@ for @alignment@
-alignmentSelector :: Selector
+alignmentSelector :: Selector '[] NSTextAlignment
 alignmentSelector = mkSelector "alignment"
 
 -- | @Selector@ for @setAlignment:@
-setAlignmentSelector :: Selector
+setAlignmentSelector :: Selector '[NSTextAlignment] ()
 setAlignmentSelector = mkSelector "setAlignment:"
 

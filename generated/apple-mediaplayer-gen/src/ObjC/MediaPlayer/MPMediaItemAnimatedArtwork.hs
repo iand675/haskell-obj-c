@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,22 +20,18 @@ module ObjC.MediaPlayer.MPMediaItemAnimatedArtwork
   , new
   , init_
   , initWithArtworkID_previewImageRequestHandler_videoAssetFileURLRequestHandler
-  , newSelector
   , initSelector
   , initWithArtworkID_previewImageRequestHandler_videoAssetFileURLRequestHandlerSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,12 +43,12 @@ new :: IO (Id MPMediaItemAnimatedArtwork)
 new  =
   do
     cls' <- getRequiredClass "MPMediaItemAnimatedArtwork"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMPMediaItemAnimatedArtwork mpMediaItemAnimatedArtwork => mpMediaItemAnimatedArtwork -> IO (Id MPMediaItemAnimatedArtwork)
-init_ mpMediaItemAnimatedArtwork  =
-    sendMsg mpMediaItemAnimatedArtwork (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpMediaItemAnimatedArtwork =
+  sendOwnedMessage mpMediaItemAnimatedArtwork initSelector
 
 -- | Creates an animated artwork.
 --
@@ -59,23 +56,22 @@ init_ mpMediaItemAnimatedArtwork  =
 --
 -- ObjC selector: @- initWithArtworkID:previewImageRequestHandler:videoAssetFileURLRequestHandler:@
 initWithArtworkID_previewImageRequestHandler_videoAssetFileURLRequestHandler :: (IsMPMediaItemAnimatedArtwork mpMediaItemAnimatedArtwork, IsNSString artworkID) => mpMediaItemAnimatedArtwork -> artworkID -> Ptr () -> Ptr () -> IO (Id MPMediaItemAnimatedArtwork)
-initWithArtworkID_previewImageRequestHandler_videoAssetFileURLRequestHandler mpMediaItemAnimatedArtwork  artworkID previewImageRequestHandler videoAssetFileURLRequestHandler =
-  withObjCPtr artworkID $ \raw_artworkID ->
-      sendMsg mpMediaItemAnimatedArtwork (mkSelector "initWithArtworkID:previewImageRequestHandler:videoAssetFileURLRequestHandler:") (retPtr retVoid) [argPtr (castPtr raw_artworkID :: Ptr ()), argPtr (castPtr previewImageRequestHandler :: Ptr ()), argPtr (castPtr videoAssetFileURLRequestHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithArtworkID_previewImageRequestHandler_videoAssetFileURLRequestHandler mpMediaItemAnimatedArtwork artworkID previewImageRequestHandler videoAssetFileURLRequestHandler =
+  sendOwnedMessage mpMediaItemAnimatedArtwork initWithArtworkID_previewImageRequestHandler_videoAssetFileURLRequestHandlerSelector (toNSString artworkID) previewImageRequestHandler videoAssetFileURLRequestHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MPMediaItemAnimatedArtwork)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPMediaItemAnimatedArtwork)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithArtworkID:previewImageRequestHandler:videoAssetFileURLRequestHandler:@
-initWithArtworkID_previewImageRequestHandler_videoAssetFileURLRequestHandlerSelector :: Selector
+initWithArtworkID_previewImageRequestHandler_videoAssetFileURLRequestHandlerSelector :: Selector '[Id NSString, Ptr (), Ptr ()] (Id MPMediaItemAnimatedArtwork)
 initWithArtworkID_previewImageRequestHandler_videoAssetFileURLRequestHandlerSelector = mkSelector "initWithArtworkID:previewImageRequestHandler:videoAssetFileURLRequestHandler:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.FSKit.FSMutableFileDataBuffer
   , mutableBytes
   , length_
   , initSelector
-  , mutableBytesSelector
   , lengthSelector
+  , mutableBytesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,36 +34,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSMutableFileDataBuffer fsMutableFileDataBuffer => fsMutableFileDataBuffer -> IO (Id FSMutableFileDataBuffer)
-init_ fsMutableFileDataBuffer  =
-    sendMsg fsMutableFileDataBuffer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsMutableFileDataBuffer =
+  sendOwnedMessage fsMutableFileDataBuffer initSelector
 
 -- | The byte data.
 --
 -- ObjC selector: @- mutableBytes@
 mutableBytes :: IsFSMutableFileDataBuffer fsMutableFileDataBuffer => fsMutableFileDataBuffer -> IO (Ptr ())
-mutableBytes fsMutableFileDataBuffer  =
-    fmap castPtr $ sendMsg fsMutableFileDataBuffer (mkSelector "mutableBytes") (retPtr retVoid) []
+mutableBytes fsMutableFileDataBuffer =
+  sendMessage fsMutableFileDataBuffer mutableBytesSelector
 
 -- | The data length of the buffer.
 --
 -- ObjC selector: @- length@
 length_ :: IsFSMutableFileDataBuffer fsMutableFileDataBuffer => fsMutableFileDataBuffer -> IO CULong
-length_ fsMutableFileDataBuffer  =
-    sendMsg fsMutableFileDataBuffer (mkSelector "length") retCULong []
+length_ fsMutableFileDataBuffer =
+  sendMessage fsMutableFileDataBuffer lengthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSMutableFileDataBuffer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @mutableBytes@
-mutableBytesSelector :: Selector
+mutableBytesSelector :: Selector '[] (Ptr ())
 mutableBytesSelector = mkSelector "mutableBytes"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CULong
 lengthSelector = mkSelector "length"
 

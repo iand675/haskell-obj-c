@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.AVFoundation.AVDelegatingPlaybackCoordinatorPauseCommand
   , new
   , shouldBufferInAnticipationOfPlayback
   , anticipatedPlaybackRate
+  , anticipatedPlaybackRateSelector
   , initSelector
   , newSelector
   , shouldBufferInAnticipationOfPlaybackSelector
-  , anticipatedPlaybackRateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVDelegatingPlaybackCoordinatorPauseCommand avDelegatingPlaybackCoordinatorPauseCommand => avDelegatingPlaybackCoordinatorPauseCommand -> IO (Id AVDelegatingPlaybackCoordinatorPauseCommand)
-init_ avDelegatingPlaybackCoordinatorPauseCommand  =
-    sendMsg avDelegatingPlaybackCoordinatorPauseCommand (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avDelegatingPlaybackCoordinatorPauseCommand =
+  sendOwnedMessage avDelegatingPlaybackCoordinatorPauseCommand initSelector
 
 -- | @+ new@
 new :: IO (Id AVDelegatingPlaybackCoordinatorPauseCommand)
 new  =
   do
     cls' <- getRequiredClass "AVDelegatingPlaybackCoordinatorPauseCommand"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Indicates that playback is anticipated and the player should begin buffering if necessary.
 --
@@ -55,33 +52,33 @@ new  =
 --
 -- ObjC selector: @- shouldBufferInAnticipationOfPlayback@
 shouldBufferInAnticipationOfPlayback :: IsAVDelegatingPlaybackCoordinatorPauseCommand avDelegatingPlaybackCoordinatorPauseCommand => avDelegatingPlaybackCoordinatorPauseCommand -> IO Bool
-shouldBufferInAnticipationOfPlayback avDelegatingPlaybackCoordinatorPauseCommand  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avDelegatingPlaybackCoordinatorPauseCommand (mkSelector "shouldBufferInAnticipationOfPlayback") retCULong []
+shouldBufferInAnticipationOfPlayback avDelegatingPlaybackCoordinatorPauseCommand =
+  sendMessage avDelegatingPlaybackCoordinatorPauseCommand shouldBufferInAnticipationOfPlaybackSelector
 
 -- | The rate to prepare for if shouldBufferInAnticipationOfPlayback is YES.
 --
 -- ObjC selector: @- anticipatedPlaybackRate@
 anticipatedPlaybackRate :: IsAVDelegatingPlaybackCoordinatorPauseCommand avDelegatingPlaybackCoordinatorPauseCommand => avDelegatingPlaybackCoordinatorPauseCommand -> IO CFloat
-anticipatedPlaybackRate avDelegatingPlaybackCoordinatorPauseCommand  =
-    sendMsg avDelegatingPlaybackCoordinatorPauseCommand (mkSelector "anticipatedPlaybackRate") retCFloat []
+anticipatedPlaybackRate avDelegatingPlaybackCoordinatorPauseCommand =
+  sendMessage avDelegatingPlaybackCoordinatorPauseCommand anticipatedPlaybackRateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVDelegatingPlaybackCoordinatorPauseCommand)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVDelegatingPlaybackCoordinatorPauseCommand)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @shouldBufferInAnticipationOfPlayback@
-shouldBufferInAnticipationOfPlaybackSelector :: Selector
+shouldBufferInAnticipationOfPlaybackSelector :: Selector '[] Bool
 shouldBufferInAnticipationOfPlaybackSelector = mkSelector "shouldBufferInAnticipationOfPlayback"
 
 -- | @Selector@ for @anticipatedPlaybackRate@
-anticipatedPlaybackRateSelector :: Selector
+anticipatedPlaybackRateSelector :: Selector '[] CFloat
 anticipatedPlaybackRateSelector = mkSelector "anticipatedPlaybackRate"
 

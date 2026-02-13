@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,41 +43,41 @@ module ObjC.Metal.MTLTextureDescriptor
   , setCompressionType
   , placementSparsePageSize
   , setPlacementSparsePageSize
-  , texture2DDescriptorWithPixelFormat_width_height_mipmappedSelector
-  , textureCubeDescriptorWithPixelFormat_size_mipmappedSelector
-  , textureBufferDescriptorWithPixelFormat_width_resourceOptions_usageSelector
-  , textureTypeSelector
-  , setTextureTypeSelector
-  , pixelFormatSelector
-  , setPixelFormatSelector
-  , widthSelector
-  , setWidthSelector
-  , heightSelector
-  , setHeightSelector
-  , depthSelector
-  , setDepthSelector
-  , mipmapLevelCountSelector
-  , setMipmapLevelCountSelector
-  , sampleCountSelector
-  , setSampleCountSelector
-  , arrayLengthSelector
-  , setArrayLengthSelector
-  , resourceOptionsSelector
-  , setResourceOptionsSelector
-  , cpuCacheModeSelector
-  , setCpuCacheModeSelector
-  , storageModeSelector
-  , setStorageModeSelector
-  , hazardTrackingModeSelector
-  , setHazardTrackingModeSelector
-  , usageSelector
-  , setUsageSelector
   , allowGPUOptimizedContentsSelector
-  , setAllowGPUOptimizedContentsSelector
+  , arrayLengthSelector
   , compressionTypeSelector
-  , setCompressionTypeSelector
+  , cpuCacheModeSelector
+  , depthSelector
+  , hazardTrackingModeSelector
+  , heightSelector
+  , mipmapLevelCountSelector
+  , pixelFormatSelector
   , placementSparsePageSizeSelector
+  , resourceOptionsSelector
+  , sampleCountSelector
+  , setAllowGPUOptimizedContentsSelector
+  , setArrayLengthSelector
+  , setCompressionTypeSelector
+  , setCpuCacheModeSelector
+  , setDepthSelector
+  , setHazardTrackingModeSelector
+  , setHeightSelector
+  , setMipmapLevelCountSelector
+  , setPixelFormatSelector
   , setPlacementSparsePageSizeSelector
+  , setResourceOptionsSelector
+  , setSampleCountSelector
+  , setStorageModeSelector
+  , setTextureTypeSelector
+  , setUsageSelector
+  , setWidthSelector
+  , storageModeSelector
+  , texture2DDescriptorWithPixelFormat_width_height_mipmappedSelector
+  , textureBufferDescriptorWithPixelFormat_width_resourceOptions_usageSelector
+  , textureCubeDescriptorWithPixelFormat_size_mipmappedSelector
+  , textureTypeSelector
+  , usageSelector
+  , widthSelector
 
   -- * Enum types
   , MTLCPUCacheMode(MTLCPUCacheMode)
@@ -272,15 +273,11 @@ module ObjC.Metal.MTLTextureDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -297,7 +294,7 @@ texture2DDescriptorWithPixelFormat_width_height_mipmapped :: MTLPixelFormat -> C
 texture2DDescriptorWithPixelFormat_width_height_mipmapped pixelFormat width height mipmapped =
   do
     cls' <- getRequiredClass "MTLTextureDescriptor"
-    sendClassMsg cls' (mkSelector "texture2DDescriptorWithPixelFormat:width:height:mipmapped:") (retPtr retVoid) [argCULong (coerce pixelFormat), argCULong width, argCULong height, argCULong (if mipmapped then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' texture2DDescriptorWithPixelFormat_width_height_mipmappedSelector pixelFormat width height mipmapped
 
 -- | textureCubeDescriptorWithPixelFormat:size:mipmapped:
 --
@@ -308,7 +305,7 @@ textureCubeDescriptorWithPixelFormat_size_mipmapped :: MTLPixelFormat -> CULong 
 textureCubeDescriptorWithPixelFormat_size_mipmapped pixelFormat size mipmapped =
   do
     cls' <- getRequiredClass "MTLTextureDescriptor"
-    sendClassMsg cls' (mkSelector "textureCubeDescriptorWithPixelFormat:size:mipmapped:") (retPtr retVoid) [argCULong (coerce pixelFormat), argCULong size, argCULong (if mipmapped then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' textureCubeDescriptorWithPixelFormat_size_mipmappedSelector pixelFormat size mipmapped
 
 -- | textureBufferDescriptorWithPixelFormat:width:resourceOptions:usage:
 --
@@ -319,7 +316,7 @@ textureBufferDescriptorWithPixelFormat_width_resourceOptions_usage :: MTLPixelFo
 textureBufferDescriptorWithPixelFormat_width_resourceOptions_usage pixelFormat width resourceOptions usage =
   do
     cls' <- getRequiredClass "MTLTextureDescriptor"
-    sendClassMsg cls' (mkSelector "textureBufferDescriptorWithPixelFormat:width:resourceOptions:usage:") (retPtr retVoid) [argCULong (coerce pixelFormat), argCULong width, argCULong (coerce resourceOptions), argCULong (coerce usage)] >>= retainedObject . castPtr
+    sendClassMessage cls' textureBufferDescriptorWithPixelFormat_width_resourceOptions_usageSelector pixelFormat width resourceOptions usage
 
 -- | type
 --
@@ -327,8 +324,8 @@ textureBufferDescriptorWithPixelFormat_width_resourceOptions_usage pixelFormat w
 --
 -- ObjC selector: @- textureType@
 textureType :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO MTLTextureType
-textureType mtlTextureDescriptor  =
-    fmap (coerce :: CULong -> MTLTextureType) $ sendMsg mtlTextureDescriptor (mkSelector "textureType") retCULong []
+textureType mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor textureTypeSelector
 
 -- | type
 --
@@ -336,8 +333,8 @@ textureType mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setTextureType:@
 setTextureType :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> MTLTextureType -> IO ()
-setTextureType mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setTextureType:") retVoid [argCULong (coerce value)]
+setTextureType mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setTextureTypeSelector value
 
 -- | pixelFormat
 --
@@ -345,8 +342,8 @@ setTextureType mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- pixelFormat@
 pixelFormat :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO MTLPixelFormat
-pixelFormat mtlTextureDescriptor  =
-    fmap (coerce :: CULong -> MTLPixelFormat) $ sendMsg mtlTextureDescriptor (mkSelector "pixelFormat") retCULong []
+pixelFormat mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor pixelFormatSelector
 
 -- | pixelFormat
 --
@@ -354,8 +351,8 @@ pixelFormat mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setPixelFormat:@
 setPixelFormat :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> MTLPixelFormat -> IO ()
-setPixelFormat mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setPixelFormat:") retVoid [argCULong (coerce value)]
+setPixelFormat mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setPixelFormatSelector value
 
 -- | width
 --
@@ -363,8 +360,8 @@ setPixelFormat mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- width@
 width :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO CULong
-width mtlTextureDescriptor  =
-    sendMsg mtlTextureDescriptor (mkSelector "width") retCULong []
+width mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor widthSelector
 
 -- | width
 --
@@ -372,8 +369,8 @@ width mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setWidth:@
 setWidth :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> CULong -> IO ()
-setWidth mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setWidth:") retVoid [argCULong value]
+setWidth mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setWidthSelector value
 
 -- | height
 --
@@ -383,8 +380,8 @@ setWidth mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- height@
 height :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO CULong
-height mtlTextureDescriptor  =
-    sendMsg mtlTextureDescriptor (mkSelector "height") retCULong []
+height mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor heightSelector
 
 -- | height
 --
@@ -394,8 +391,8 @@ height mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> CULong -> IO ()
-setHeight mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setHeight:") retVoid [argCULong value]
+setHeight mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setHeightSelector value
 
 -- | depth
 --
@@ -405,8 +402,8 @@ setHeight mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- depth@
 depth :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO CULong
-depth mtlTextureDescriptor  =
-    sendMsg mtlTextureDescriptor (mkSelector "depth") retCULong []
+depth mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor depthSelector
 
 -- | depth
 --
@@ -416,8 +413,8 @@ depth mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setDepth:@
 setDepth :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> CULong -> IO ()
-setDepth mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setDepth:") retVoid [argCULong value]
+setDepth mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setDepthSelector value
 
 -- | mipmapLevelCount
 --
@@ -427,8 +424,8 @@ setDepth mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- mipmapLevelCount@
 mipmapLevelCount :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO CULong
-mipmapLevelCount mtlTextureDescriptor  =
-    sendMsg mtlTextureDescriptor (mkSelector "mipmapLevelCount") retCULong []
+mipmapLevelCount mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor mipmapLevelCountSelector
 
 -- | mipmapLevelCount
 --
@@ -438,8 +435,8 @@ mipmapLevelCount mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setMipmapLevelCount:@
 setMipmapLevelCount :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> CULong -> IO ()
-setMipmapLevelCount mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setMipmapLevelCount:") retVoid [argCULong value]
+setMipmapLevelCount mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setMipmapLevelCountSelector value
 
 -- | sampleCount
 --
@@ -449,8 +446,8 @@ setMipmapLevelCount mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- sampleCount@
 sampleCount :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO CULong
-sampleCount mtlTextureDescriptor  =
-    sendMsg mtlTextureDescriptor (mkSelector "sampleCount") retCULong []
+sampleCount mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor sampleCountSelector
 
 -- | sampleCount
 --
@@ -460,8 +457,8 @@ sampleCount mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setSampleCount:@
 setSampleCount :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> CULong -> IO ()
-setSampleCount mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setSampleCount:") retVoid [argCULong value]
+setSampleCount mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setSampleCountSelector value
 
 -- | arrayLength
 --
@@ -471,8 +468,8 @@ setSampleCount mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- arrayLength@
 arrayLength :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO CULong
-arrayLength mtlTextureDescriptor  =
-    sendMsg mtlTextureDescriptor (mkSelector "arrayLength") retCULong []
+arrayLength mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor arrayLengthSelector
 
 -- | arrayLength
 --
@@ -482,8 +479,8 @@ arrayLength mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setArrayLength:@
 setArrayLength :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> CULong -> IO ()
-setArrayLength mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setArrayLength:") retVoid [argCULong value]
+setArrayLength mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setArrayLengthSelector value
 
 -- | resourceOptions
 --
@@ -493,8 +490,8 @@ setArrayLength mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- resourceOptions@
 resourceOptions :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO MTLResourceOptions
-resourceOptions mtlTextureDescriptor  =
-    fmap (coerce :: CULong -> MTLResourceOptions) $ sendMsg mtlTextureDescriptor (mkSelector "resourceOptions") retCULong []
+resourceOptions mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor resourceOptionsSelector
 
 -- | resourceOptions
 --
@@ -504,8 +501,8 @@ resourceOptions mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setResourceOptions:@
 setResourceOptions :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> MTLResourceOptions -> IO ()
-setResourceOptions mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setResourceOptions:") retVoid [argCULong (coerce value)]
+setResourceOptions mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setResourceOptionsSelector value
 
 -- | cpuCacheMode
 --
@@ -513,8 +510,8 @@ setResourceOptions mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- cpuCacheMode@
 cpuCacheMode :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO MTLCPUCacheMode
-cpuCacheMode mtlTextureDescriptor  =
-    fmap (coerce :: CULong -> MTLCPUCacheMode) $ sendMsg mtlTextureDescriptor (mkSelector "cpuCacheMode") retCULong []
+cpuCacheMode mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor cpuCacheModeSelector
 
 -- | cpuCacheMode
 --
@@ -522,8 +519,8 @@ cpuCacheMode mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setCpuCacheMode:@
 setCpuCacheMode :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> MTLCPUCacheMode -> IO ()
-setCpuCacheMode mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setCpuCacheMode:") retVoid [argCULong (coerce value)]
+setCpuCacheMode mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setCpuCacheModeSelector value
 
 -- | storageMode
 --
@@ -531,8 +528,8 @@ setCpuCacheMode mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- storageMode@
 storageMode :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO MTLStorageMode
-storageMode mtlTextureDescriptor  =
-    fmap (coerce :: CULong -> MTLStorageMode) $ sendMsg mtlTextureDescriptor (mkSelector "storageMode") retCULong []
+storageMode mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor storageModeSelector
 
 -- | storageMode
 --
@@ -540,8 +537,8 @@ storageMode mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setStorageMode:@
 setStorageMode :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> MTLStorageMode -> IO ()
-setStorageMode mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setStorageMode:") retVoid [argCULong (coerce value)]
+setStorageMode mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setStorageModeSelector value
 
 -- | hazardTrackingMode
 --
@@ -551,8 +548,8 @@ setStorageMode mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- hazardTrackingMode@
 hazardTrackingMode :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO MTLHazardTrackingMode
-hazardTrackingMode mtlTextureDescriptor  =
-    fmap (coerce :: CULong -> MTLHazardTrackingMode) $ sendMsg mtlTextureDescriptor (mkSelector "hazardTrackingMode") retCULong []
+hazardTrackingMode mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor hazardTrackingModeSelector
 
 -- | hazardTrackingMode
 --
@@ -562,8 +559,8 @@ hazardTrackingMode mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setHazardTrackingMode:@
 setHazardTrackingMode :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> MTLHazardTrackingMode -> IO ()
-setHazardTrackingMode mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setHazardTrackingMode:") retVoid [argCULong (coerce value)]
+setHazardTrackingMode mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setHazardTrackingModeSelector value
 
 -- | usage
 --
@@ -571,8 +568,8 @@ setHazardTrackingMode mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- usage@
 usage :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO MTLTextureUsage
-usage mtlTextureDescriptor  =
-    fmap (coerce :: CULong -> MTLTextureUsage) $ sendMsg mtlTextureDescriptor (mkSelector "usage") retCULong []
+usage mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor usageSelector
 
 -- | usage
 --
@@ -580,8 +577,8 @@ usage mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setUsage:@
 setUsage :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> MTLTextureUsage -> IO ()
-setUsage mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setUsage:") retVoid [argCULong (coerce value)]
+setUsage mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setUsageSelector value
 
 -- | allowGPUOptimizedContents
 --
@@ -591,8 +588,8 @@ setUsage mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- allowGPUOptimizedContents@
 allowGPUOptimizedContents :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO Bool
-allowGPUOptimizedContents mtlTextureDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlTextureDescriptor (mkSelector "allowGPUOptimizedContents") retCULong []
+allowGPUOptimizedContents mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor allowGPUOptimizedContentsSelector
 
 -- | allowGPUOptimizedContents
 --
@@ -602,8 +599,8 @@ allowGPUOptimizedContents mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setAllowGPUOptimizedContents:@
 setAllowGPUOptimizedContents :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> Bool -> IO ()
-setAllowGPUOptimizedContents mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setAllowGPUOptimizedContents:") retVoid [argCULong (if value then 1 else 0)]
+setAllowGPUOptimizedContents mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setAllowGPUOptimizedContentsSelector value
 
 -- | compressionType
 --
@@ -613,8 +610,8 @@ setAllowGPUOptimizedContents mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- compressionType@
 compressionType :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO MTLTextureCompressionType
-compressionType mtlTextureDescriptor  =
-    fmap (coerce :: CLong -> MTLTextureCompressionType) $ sendMsg mtlTextureDescriptor (mkSelector "compressionType") retCLong []
+compressionType mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor compressionTypeSelector
 
 -- | compressionType
 --
@@ -624,8 +621,8 @@ compressionType mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setCompressionType:@
 setCompressionType :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> MTLTextureCompressionType -> IO ()
-setCompressionType mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setCompressionType:") retVoid [argCLong (coerce value)]
+setCompressionType mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setCompressionTypeSelector value
 
 -- | Determines the page size for a placement sparse texture.
 --
@@ -637,8 +634,8 @@ setCompressionType mtlTextureDescriptor  value =
 --
 -- ObjC selector: @- placementSparsePageSize@
 placementSparsePageSize :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> IO MTLSparsePageSize
-placementSparsePageSize mtlTextureDescriptor  =
-    fmap (coerce :: CLong -> MTLSparsePageSize) $ sendMsg mtlTextureDescriptor (mkSelector "placementSparsePageSize") retCLong []
+placementSparsePageSize mtlTextureDescriptor =
+  sendMessage mtlTextureDescriptor placementSparsePageSizeSelector
 
 -- | Determines the page size for a placement sparse texture.
 --
@@ -650,150 +647,150 @@ placementSparsePageSize mtlTextureDescriptor  =
 --
 -- ObjC selector: @- setPlacementSparsePageSize:@
 setPlacementSparsePageSize :: IsMTLTextureDescriptor mtlTextureDescriptor => mtlTextureDescriptor -> MTLSparsePageSize -> IO ()
-setPlacementSparsePageSize mtlTextureDescriptor  value =
-    sendMsg mtlTextureDescriptor (mkSelector "setPlacementSparsePageSize:") retVoid [argCLong (coerce value)]
+setPlacementSparsePageSize mtlTextureDescriptor value =
+  sendMessage mtlTextureDescriptor setPlacementSparsePageSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @texture2DDescriptorWithPixelFormat:width:height:mipmapped:@
-texture2DDescriptorWithPixelFormat_width_height_mipmappedSelector :: Selector
+texture2DDescriptorWithPixelFormat_width_height_mipmappedSelector :: Selector '[MTLPixelFormat, CULong, CULong, Bool] (Id MTLTextureDescriptor)
 texture2DDescriptorWithPixelFormat_width_height_mipmappedSelector = mkSelector "texture2DDescriptorWithPixelFormat:width:height:mipmapped:"
 
 -- | @Selector@ for @textureCubeDescriptorWithPixelFormat:size:mipmapped:@
-textureCubeDescriptorWithPixelFormat_size_mipmappedSelector :: Selector
+textureCubeDescriptorWithPixelFormat_size_mipmappedSelector :: Selector '[MTLPixelFormat, CULong, Bool] (Id MTLTextureDescriptor)
 textureCubeDescriptorWithPixelFormat_size_mipmappedSelector = mkSelector "textureCubeDescriptorWithPixelFormat:size:mipmapped:"
 
 -- | @Selector@ for @textureBufferDescriptorWithPixelFormat:width:resourceOptions:usage:@
-textureBufferDescriptorWithPixelFormat_width_resourceOptions_usageSelector :: Selector
+textureBufferDescriptorWithPixelFormat_width_resourceOptions_usageSelector :: Selector '[MTLPixelFormat, CULong, MTLResourceOptions, MTLTextureUsage] (Id MTLTextureDescriptor)
 textureBufferDescriptorWithPixelFormat_width_resourceOptions_usageSelector = mkSelector "textureBufferDescriptorWithPixelFormat:width:resourceOptions:usage:"
 
 -- | @Selector@ for @textureType@
-textureTypeSelector :: Selector
+textureTypeSelector :: Selector '[] MTLTextureType
 textureTypeSelector = mkSelector "textureType"
 
 -- | @Selector@ for @setTextureType:@
-setTextureTypeSelector :: Selector
+setTextureTypeSelector :: Selector '[MTLTextureType] ()
 setTextureTypeSelector = mkSelector "setTextureType:"
 
 -- | @Selector@ for @pixelFormat@
-pixelFormatSelector :: Selector
+pixelFormatSelector :: Selector '[] MTLPixelFormat
 pixelFormatSelector = mkSelector "pixelFormat"
 
 -- | @Selector@ for @setPixelFormat:@
-setPixelFormatSelector :: Selector
+setPixelFormatSelector :: Selector '[MTLPixelFormat] ()
 setPixelFormatSelector = mkSelector "setPixelFormat:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CULong
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[CULong] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CULong
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CULong] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @depth@
-depthSelector :: Selector
+depthSelector :: Selector '[] CULong
 depthSelector = mkSelector "depth"
 
 -- | @Selector@ for @setDepth:@
-setDepthSelector :: Selector
+setDepthSelector :: Selector '[CULong] ()
 setDepthSelector = mkSelector "setDepth:"
 
 -- | @Selector@ for @mipmapLevelCount@
-mipmapLevelCountSelector :: Selector
+mipmapLevelCountSelector :: Selector '[] CULong
 mipmapLevelCountSelector = mkSelector "mipmapLevelCount"
 
 -- | @Selector@ for @setMipmapLevelCount:@
-setMipmapLevelCountSelector :: Selector
+setMipmapLevelCountSelector :: Selector '[CULong] ()
 setMipmapLevelCountSelector = mkSelector "setMipmapLevelCount:"
 
 -- | @Selector@ for @sampleCount@
-sampleCountSelector :: Selector
+sampleCountSelector :: Selector '[] CULong
 sampleCountSelector = mkSelector "sampleCount"
 
 -- | @Selector@ for @setSampleCount:@
-setSampleCountSelector :: Selector
+setSampleCountSelector :: Selector '[CULong] ()
 setSampleCountSelector = mkSelector "setSampleCount:"
 
 -- | @Selector@ for @arrayLength@
-arrayLengthSelector :: Selector
+arrayLengthSelector :: Selector '[] CULong
 arrayLengthSelector = mkSelector "arrayLength"
 
 -- | @Selector@ for @setArrayLength:@
-setArrayLengthSelector :: Selector
+setArrayLengthSelector :: Selector '[CULong] ()
 setArrayLengthSelector = mkSelector "setArrayLength:"
 
 -- | @Selector@ for @resourceOptions@
-resourceOptionsSelector :: Selector
+resourceOptionsSelector :: Selector '[] MTLResourceOptions
 resourceOptionsSelector = mkSelector "resourceOptions"
 
 -- | @Selector@ for @setResourceOptions:@
-setResourceOptionsSelector :: Selector
+setResourceOptionsSelector :: Selector '[MTLResourceOptions] ()
 setResourceOptionsSelector = mkSelector "setResourceOptions:"
 
 -- | @Selector@ for @cpuCacheMode@
-cpuCacheModeSelector :: Selector
+cpuCacheModeSelector :: Selector '[] MTLCPUCacheMode
 cpuCacheModeSelector = mkSelector "cpuCacheMode"
 
 -- | @Selector@ for @setCpuCacheMode:@
-setCpuCacheModeSelector :: Selector
+setCpuCacheModeSelector :: Selector '[MTLCPUCacheMode] ()
 setCpuCacheModeSelector = mkSelector "setCpuCacheMode:"
 
 -- | @Selector@ for @storageMode@
-storageModeSelector :: Selector
+storageModeSelector :: Selector '[] MTLStorageMode
 storageModeSelector = mkSelector "storageMode"
 
 -- | @Selector@ for @setStorageMode:@
-setStorageModeSelector :: Selector
+setStorageModeSelector :: Selector '[MTLStorageMode] ()
 setStorageModeSelector = mkSelector "setStorageMode:"
 
 -- | @Selector@ for @hazardTrackingMode@
-hazardTrackingModeSelector :: Selector
+hazardTrackingModeSelector :: Selector '[] MTLHazardTrackingMode
 hazardTrackingModeSelector = mkSelector "hazardTrackingMode"
 
 -- | @Selector@ for @setHazardTrackingMode:@
-setHazardTrackingModeSelector :: Selector
+setHazardTrackingModeSelector :: Selector '[MTLHazardTrackingMode] ()
 setHazardTrackingModeSelector = mkSelector "setHazardTrackingMode:"
 
 -- | @Selector@ for @usage@
-usageSelector :: Selector
+usageSelector :: Selector '[] MTLTextureUsage
 usageSelector = mkSelector "usage"
 
 -- | @Selector@ for @setUsage:@
-setUsageSelector :: Selector
+setUsageSelector :: Selector '[MTLTextureUsage] ()
 setUsageSelector = mkSelector "setUsage:"
 
 -- | @Selector@ for @allowGPUOptimizedContents@
-allowGPUOptimizedContentsSelector :: Selector
+allowGPUOptimizedContentsSelector :: Selector '[] Bool
 allowGPUOptimizedContentsSelector = mkSelector "allowGPUOptimizedContents"
 
 -- | @Selector@ for @setAllowGPUOptimizedContents:@
-setAllowGPUOptimizedContentsSelector :: Selector
+setAllowGPUOptimizedContentsSelector :: Selector '[Bool] ()
 setAllowGPUOptimizedContentsSelector = mkSelector "setAllowGPUOptimizedContents:"
 
 -- | @Selector@ for @compressionType@
-compressionTypeSelector :: Selector
+compressionTypeSelector :: Selector '[] MTLTextureCompressionType
 compressionTypeSelector = mkSelector "compressionType"
 
 -- | @Selector@ for @setCompressionType:@
-setCompressionTypeSelector :: Selector
+setCompressionTypeSelector :: Selector '[MTLTextureCompressionType] ()
 setCompressionTypeSelector = mkSelector "setCompressionType:"
 
 -- | @Selector@ for @placementSparsePageSize@
-placementSparsePageSizeSelector :: Selector
+placementSparsePageSizeSelector :: Selector '[] MTLSparsePageSize
 placementSparsePageSizeSelector = mkSelector "placementSparsePageSize"
 
 -- | @Selector@ for @setPlacementSparsePageSize:@
-setPlacementSparsePageSizeSelector :: Selector
+setPlacementSparsePageSizeSelector :: Selector '[MTLSparsePageSize] ()
 setPlacementSparsePageSizeSelector = mkSelector "setPlacementSparsePageSize:"
 

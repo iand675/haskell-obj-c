@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.HealthKit.HKSampleQuery
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,8 +32,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- limit@
 limit :: IsHKSampleQuery hkSampleQuery => hkSampleQuery -> IO CULong
-limit hkSampleQuery  =
-    sendMsg hkSampleQuery (mkSelector "limit") retCULong []
+limit hkSampleQuery =
+  sendMessage hkSampleQuery limitSelector
 
 -- | sortDescriptors
 --
@@ -44,18 +41,18 @@ limit hkSampleQuery  =
 --
 -- ObjC selector: @- sortDescriptors@
 sortDescriptors :: IsHKSampleQuery hkSampleQuery => hkSampleQuery -> IO (Id NSArray)
-sortDescriptors hkSampleQuery  =
-    sendMsg hkSampleQuery (mkSelector "sortDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortDescriptors hkSampleQuery =
+  sendMessage hkSampleQuery sortDescriptorsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @limit@
-limitSelector :: Selector
+limitSelector :: Selector '[] CULong
 limitSelector = mkSelector "limit"
 
 -- | @Selector@ for @sortDescriptors@
-sortDescriptorsSelector :: Selector
+sortDescriptorsSelector :: Selector '[] (Id NSArray)
 sortDescriptorsSelector = mkSelector "sortDescriptors"
 

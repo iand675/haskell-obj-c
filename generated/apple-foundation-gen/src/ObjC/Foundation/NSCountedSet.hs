@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Foundation.NSCountedSet
   , objectEnumerator
   , addObject
   , removeObject
-  , initWithCapacitySelector
-  , initWithArraySelector
-  , initWithSetSelector
-  , countForObjectSelector
-  , objectEnumeratorSelector
   , addObjectSelector
+  , countForObjectSelector
+  , initWithArraySelector
+  , initWithCapacitySelector
+  , initWithSetSelector
+  , objectEnumeratorSelector
   , removeObjectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,70 +39,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCapacity:@
 initWithCapacity :: IsNSCountedSet nsCountedSet => nsCountedSet -> CULong -> IO (Id NSCountedSet)
-initWithCapacity nsCountedSet  numItems =
-    sendMsg nsCountedSet (mkSelector "initWithCapacity:") (retPtr retVoid) [argCULong numItems] >>= ownedObject . castPtr
+initWithCapacity nsCountedSet numItems =
+  sendOwnedMessage nsCountedSet initWithCapacitySelector numItems
 
 -- | @- initWithArray:@
 initWithArray :: (IsNSCountedSet nsCountedSet, IsNSArray array) => nsCountedSet -> array -> IO (Id NSCountedSet)
-initWithArray nsCountedSet  array =
-  withObjCPtr array $ \raw_array ->
-      sendMsg nsCountedSet (mkSelector "initWithArray:") (retPtr retVoid) [argPtr (castPtr raw_array :: Ptr ())] >>= ownedObject . castPtr
+initWithArray nsCountedSet array =
+  sendOwnedMessage nsCountedSet initWithArraySelector (toNSArray array)
 
 -- | @- initWithSet:@
 initWithSet :: (IsNSCountedSet nsCountedSet, IsNSSet set) => nsCountedSet -> set -> IO (Id NSCountedSet)
-initWithSet nsCountedSet  set =
-  withObjCPtr set $ \raw_set ->
-      sendMsg nsCountedSet (mkSelector "initWithSet:") (retPtr retVoid) [argPtr (castPtr raw_set :: Ptr ())] >>= ownedObject . castPtr
+initWithSet nsCountedSet set =
+  sendOwnedMessage nsCountedSet initWithSetSelector (toNSSet set)
 
 -- | @- countForObject:@
 countForObject :: IsNSCountedSet nsCountedSet => nsCountedSet -> RawId -> IO CULong
-countForObject nsCountedSet  object =
-    sendMsg nsCountedSet (mkSelector "countForObject:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+countForObject nsCountedSet object =
+  sendMessage nsCountedSet countForObjectSelector object
 
 -- | @- objectEnumerator@
 objectEnumerator :: IsNSCountedSet nsCountedSet => nsCountedSet -> IO (Id NSEnumerator)
-objectEnumerator nsCountedSet  =
-    sendMsg nsCountedSet (mkSelector "objectEnumerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectEnumerator nsCountedSet =
+  sendMessage nsCountedSet objectEnumeratorSelector
 
 -- | @- addObject:@
 addObject :: IsNSCountedSet nsCountedSet => nsCountedSet -> RawId -> IO ()
-addObject nsCountedSet  object =
-    sendMsg nsCountedSet (mkSelector "addObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+addObject nsCountedSet object =
+  sendMessage nsCountedSet addObjectSelector object
 
 -- | @- removeObject:@
 removeObject :: IsNSCountedSet nsCountedSet => nsCountedSet -> RawId -> IO ()
-removeObject nsCountedSet  object =
-    sendMsg nsCountedSet (mkSelector "removeObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+removeObject nsCountedSet object =
+  sendMessage nsCountedSet removeObjectSelector object
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCapacity:@
-initWithCapacitySelector :: Selector
+initWithCapacitySelector :: Selector '[CULong] (Id NSCountedSet)
 initWithCapacitySelector = mkSelector "initWithCapacity:"
 
 -- | @Selector@ for @initWithArray:@
-initWithArraySelector :: Selector
+initWithArraySelector :: Selector '[Id NSArray] (Id NSCountedSet)
 initWithArraySelector = mkSelector "initWithArray:"
 
 -- | @Selector@ for @initWithSet:@
-initWithSetSelector :: Selector
+initWithSetSelector :: Selector '[Id NSSet] (Id NSCountedSet)
 initWithSetSelector = mkSelector "initWithSet:"
 
 -- | @Selector@ for @countForObject:@
-countForObjectSelector :: Selector
+countForObjectSelector :: Selector '[RawId] CULong
 countForObjectSelector = mkSelector "countForObject:"
 
 -- | @Selector@ for @objectEnumerator@
-objectEnumeratorSelector :: Selector
+objectEnumeratorSelector :: Selector '[] (Id NSEnumerator)
 objectEnumeratorSelector = mkSelector "objectEnumerator"
 
 -- | @Selector@ for @addObject:@
-addObjectSelector :: Selector
+addObjectSelector :: Selector '[RawId] ()
 addObjectSelector = mkSelector "addObject:"
 
 -- | @Selector@ for @removeObject:@
-removeObjectSelector :: Selector
+removeObjectSelector :: Selector '[RawId] ()
 removeObjectSelector = mkSelector "removeObject:"
 

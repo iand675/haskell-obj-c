@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,24 @@ module ObjC.AVFoundation.AVMovie
   , tracks
   , canContainMovieFragments
   , containsMovieFragments
-  , movieTypesSelector
-  , movieWithURL_optionsSelector
-  , initWithURL_optionsSelector
-  , movieWithData_optionsSelector
-  , initWithData_optionsSelector
-  , trackWithTrackIDSelector
-  , loadTrackWithTrackID_completionHandlerSelector
-  , tracksWithMediaTypeSelector
-  , tracksWithMediaCharacteristicSelector
-  , movieHeaderWithFileType_errorSelector
-  , writeMovieHeaderToURL_fileType_options_errorSelector
-  , isCompatibleWithFileTypeSelector
-  , urlSelector
-  , dataSelector
-  , defaultMediaDataStorageSelector
-  , tracksSelector
   , canContainMovieFragmentsSelector
   , containsMovieFragmentsSelector
+  , dataSelector
+  , defaultMediaDataStorageSelector
+  , initWithData_optionsSelector
+  , initWithURL_optionsSelector
+  , isCompatibleWithFileTypeSelector
+  , loadTrackWithTrackID_completionHandlerSelector
+  , movieHeaderWithFileType_errorSelector
+  , movieTypesSelector
+  , movieWithData_optionsSelector
+  , movieWithURL_optionsSelector
+  , trackWithTrackIDSelector
+  , tracksSelector
+  , tracksWithMediaCharacteristicSelector
+  , tracksWithMediaTypeSelector
+  , urlSelector
+  , writeMovieHeaderToURL_fileType_options_errorSelector
 
   -- * Enum types
   , AVMovieWritingOptions(AVMovieWritingOptions)
@@ -51,15 +52,11 @@ module ObjC.AVFoundation.AVMovie
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,7 +75,7 @@ movieTypes :: IO (Id NSArray)
 movieTypes  =
   do
     cls' <- getRequiredClass "AVMovie"
-    sendClassMsg cls' (mkSelector "movieTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' movieTypesSelector
 
 -- | movieWithURL:options:
 --
@@ -97,9 +94,7 @@ movieWithURL_options :: (IsNSURL url, IsNSDictionary options) => url -> options 
 movieWithURL_options url options =
   do
     cls' <- getRequiredClass "AVMovie"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "movieWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' movieWithURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | initWithURL:options:
 --
@@ -115,10 +110,8 @@ movieWithURL_options url options =
 --
 -- ObjC selector: @- initWithURL:options:@
 initWithURL_options :: (IsAVMovie avMovie, IsNSURL url, IsNSDictionary options) => avMovie -> url -> options -> IO (Id AVMovie)
-initWithURL_options avMovie  url options =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg avMovie (mkSelector "initWithURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_options avMovie url options =
+  sendOwnedMessage avMovie initWithURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | movieWithData:options:
 --
@@ -137,9 +130,7 @@ movieWithData_options :: (IsNSData data_, IsNSDictionary options) => data_ -> op
 movieWithData_options data_ options =
   do
     cls' <- getRequiredClass "AVMovie"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "movieWithData:options:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' movieWithData_optionsSelector (toNSData data_) (toNSDictionary options)
 
 -- | initWithData:options:
 --
@@ -157,10 +148,8 @@ movieWithData_options data_ options =
 --
 -- ObjC selector: @- initWithData:options:@
 initWithData_options :: (IsAVMovie avMovie, IsNSData data_, IsNSDictionary options) => avMovie -> data_ -> options -> IO (Id AVMovie)
-initWithData_options avMovie  data_ options =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg avMovie (mkSelector "initWithData:options:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithData_options avMovie data_ options =
+  sendOwnedMessage avMovie initWithData_optionsSelector (toNSData data_) (toNSDictionary options)
 
 -- | trackWithTrackID:
 --
@@ -174,8 +163,8 @@ initWithData_options avMovie  data_ options =
 --
 -- ObjC selector: @- trackWithTrackID:@
 trackWithTrackID :: IsAVMovie avMovie => avMovie -> CInt -> IO (Id AVMovieTrack)
-trackWithTrackID avMovie  trackID =
-    sendMsg avMovie (mkSelector "trackWithTrackID:") (retPtr retVoid) [argCInt trackID] >>= retainedObject . castPtr
+trackWithTrackID avMovie trackID =
+  sendMessage avMovie trackWithTrackIDSelector trackID
 
 -- | loadTrackWithTrackID:completionHandler:
 --
@@ -187,8 +176,8 @@ trackWithTrackID avMovie  trackID =
 --
 -- ObjC selector: @- loadTrackWithTrackID:completionHandler:@
 loadTrackWithTrackID_completionHandler :: IsAVMovie avMovie => avMovie -> CInt -> Ptr () -> IO ()
-loadTrackWithTrackID_completionHandler avMovie  trackID completionHandler =
-    sendMsg avMovie (mkSelector "loadTrackWithTrackID:completionHandler:") retVoid [argCInt trackID, argPtr (castPtr completionHandler :: Ptr ())]
+loadTrackWithTrackID_completionHandler avMovie trackID completionHandler =
+  sendMessage avMovie loadTrackWithTrackID_completionHandlerSelector trackID completionHandler
 
 -- | tracksWithMediaType:
 --
@@ -202,9 +191,8 @@ loadTrackWithTrackID_completionHandler avMovie  trackID completionHandler =
 --
 -- ObjC selector: @- tracksWithMediaType:@
 tracksWithMediaType :: (IsAVMovie avMovie, IsNSString mediaType) => avMovie -> mediaType -> IO (Id NSArray)
-tracksWithMediaType avMovie  mediaType =
-  withObjCPtr mediaType $ \raw_mediaType ->
-      sendMsg avMovie (mkSelector "tracksWithMediaType:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaType avMovie mediaType =
+  sendMessage avMovie tracksWithMediaTypeSelector (toNSString mediaType)
 
 -- | tracksWithMediaCharacteristic:
 --
@@ -218,9 +206,8 @@ tracksWithMediaType avMovie  mediaType =
 --
 -- ObjC selector: @- tracksWithMediaCharacteristic:@
 tracksWithMediaCharacteristic :: (IsAVMovie avMovie, IsNSString mediaCharacteristic) => avMovie -> mediaCharacteristic -> IO (Id NSArray)
-tracksWithMediaCharacteristic avMovie  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avMovie (mkSelector "tracksWithMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaCharacteristic avMovie mediaCharacteristic =
+  sendMessage avMovie tracksWithMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | movieHeaderWithFileType:error:
 --
@@ -236,10 +223,8 @@ tracksWithMediaCharacteristic avMovie  mediaCharacteristic =
 --
 -- ObjC selector: @- movieHeaderWithFileType:error:@
 movieHeaderWithFileType_error :: (IsAVMovie avMovie, IsNSString fileType, IsNSError outError) => avMovie -> fileType -> outError -> IO (Id NSData)
-movieHeaderWithFileType_error avMovie  fileType outError =
-  withObjCPtr fileType $ \raw_fileType ->
-    withObjCPtr outError $ \raw_outError ->
-        sendMsg avMovie (mkSelector "movieHeaderWithFileType:error:") (retPtr retVoid) [argPtr (castPtr raw_fileType :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+movieHeaderWithFileType_error avMovie fileType outError =
+  sendMessage avMovie movieHeaderWithFileType_errorSelector (toNSString fileType) (toNSError outError)
 
 -- | writeMovieHeaderToURL:fileType:options:error:
 --
@@ -257,11 +242,8 @@ movieHeaderWithFileType_error avMovie  fileType outError =
 --
 -- ObjC selector: @- writeMovieHeaderToURL:fileType:options:error:@
 writeMovieHeaderToURL_fileType_options_error :: (IsAVMovie avMovie, IsNSURL url, IsNSString fileType, IsNSError outError) => avMovie -> url -> fileType -> AVMovieWritingOptions -> outError -> IO Bool
-writeMovieHeaderToURL_fileType_options_error avMovie  url fileType options outError =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr fileType $ \raw_fileType ->
-      withObjCPtr outError $ \raw_outError ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMovie (mkSelector "writeMovieHeaderToURL:fileType:options:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_fileType :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_outError :: Ptr ())]
+writeMovieHeaderToURL_fileType_options_error avMovie url fileType options outError =
+  sendMessage avMovie writeMovieHeaderToURL_fileType_options_errorSelector (toNSURL url) (toNSString fileType) options (toNSError outError)
 
 -- | isCompatibleWithFileType:
 --
@@ -273,9 +255,8 @@ writeMovieHeaderToURL_fileType_options_error avMovie  url fileType options outEr
 --
 -- ObjC selector: @- isCompatibleWithFileType:@
 isCompatibleWithFileType :: (IsAVMovie avMovie, IsNSString fileType) => avMovie -> fileType -> IO Bool
-isCompatibleWithFileType avMovie  fileType =
-  withObjCPtr fileType $ \raw_fileType ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMovie (mkSelector "isCompatibleWithFileType:") retCULong [argPtr (castPtr raw_fileType :: Ptr ())]
+isCompatibleWithFileType avMovie fileType =
+  sendMessage avMovie isCompatibleWithFileTypeSelector (toNSString fileType)
 
 -- | URL
 --
@@ -283,8 +264,8 @@ isCompatibleWithFileType avMovie  fileType =
 --
 -- ObjC selector: @- URL@
 url :: IsAVMovie avMovie => avMovie -> IO (Id NSURL)
-url avMovie  =
-    sendMsg avMovie (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url avMovie =
+  sendMessage avMovie urlSelector
 
 -- | data
 --
@@ -292,8 +273,8 @@ url avMovie  =
 --
 -- ObjC selector: @- data@
 data_ :: IsAVMovie avMovie => avMovie -> IO (Id NSData)
-data_ avMovie  =
-    sendMsg avMovie (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ avMovie =
+  sendMessage avMovie dataSelector
 
 -- | defaultMediaDataStorage
 --
@@ -303,8 +284,8 @@ data_ avMovie  =
 --
 -- ObjC selector: @- defaultMediaDataStorage@
 defaultMediaDataStorage :: IsAVMovie avMovie => avMovie -> IO (Id AVMediaDataStorage)
-defaultMediaDataStorage avMovie  =
-    sendMsg avMovie (mkSelector "defaultMediaDataStorage") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultMediaDataStorage avMovie =
+  sendMessage avMovie defaultMediaDataStorageSelector
 
 -- | tracks
 --
@@ -314,8 +295,8 @@ defaultMediaDataStorage avMovie  =
 --
 -- ObjC selector: @- tracks@
 tracks :: IsAVMovie avMovie => avMovie -> IO (Id NSArray)
-tracks avMovie  =
-    sendMsg avMovie (mkSelector "tracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tracks avMovie =
+  sendMessage avMovie tracksSelector
 
 -- | canContainMovieFragments
 --
@@ -325,8 +306,8 @@ tracks avMovie  =
 --
 -- ObjC selector: @- canContainMovieFragments@
 canContainMovieFragments :: IsAVMovie avMovie => avMovie -> IO Bool
-canContainMovieFragments avMovie  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMovie (mkSelector "canContainMovieFragments") retCULong []
+canContainMovieFragments avMovie =
+  sendMessage avMovie canContainMovieFragmentsSelector
 
 -- | containsMovieFragments
 --
@@ -336,82 +317,82 @@ canContainMovieFragments avMovie  =
 --
 -- ObjC selector: @- containsMovieFragments@
 containsMovieFragments :: IsAVMovie avMovie => avMovie -> IO Bool
-containsMovieFragments avMovie  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMovie (mkSelector "containsMovieFragments") retCULong []
+containsMovieFragments avMovie =
+  sendMessage avMovie containsMovieFragmentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @movieTypes@
-movieTypesSelector :: Selector
+movieTypesSelector :: Selector '[] (Id NSArray)
 movieTypesSelector = mkSelector "movieTypes"
 
 -- | @Selector@ for @movieWithURL:options:@
-movieWithURL_optionsSelector :: Selector
+movieWithURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id AVMovie)
 movieWithURL_optionsSelector = mkSelector "movieWithURL:options:"
 
 -- | @Selector@ for @initWithURL:options:@
-initWithURL_optionsSelector :: Selector
+initWithURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id AVMovie)
 initWithURL_optionsSelector = mkSelector "initWithURL:options:"
 
 -- | @Selector@ for @movieWithData:options:@
-movieWithData_optionsSelector :: Selector
+movieWithData_optionsSelector :: Selector '[Id NSData, Id NSDictionary] (Id AVMovie)
 movieWithData_optionsSelector = mkSelector "movieWithData:options:"
 
 -- | @Selector@ for @initWithData:options:@
-initWithData_optionsSelector :: Selector
+initWithData_optionsSelector :: Selector '[Id NSData, Id NSDictionary] (Id AVMovie)
 initWithData_optionsSelector = mkSelector "initWithData:options:"
 
 -- | @Selector@ for @trackWithTrackID:@
-trackWithTrackIDSelector :: Selector
+trackWithTrackIDSelector :: Selector '[CInt] (Id AVMovieTrack)
 trackWithTrackIDSelector = mkSelector "trackWithTrackID:"
 
 -- | @Selector@ for @loadTrackWithTrackID:completionHandler:@
-loadTrackWithTrackID_completionHandlerSelector :: Selector
+loadTrackWithTrackID_completionHandlerSelector :: Selector '[CInt, Ptr ()] ()
 loadTrackWithTrackID_completionHandlerSelector = mkSelector "loadTrackWithTrackID:completionHandler:"
 
 -- | @Selector@ for @tracksWithMediaType:@
-tracksWithMediaTypeSelector :: Selector
+tracksWithMediaTypeSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaTypeSelector = mkSelector "tracksWithMediaType:"
 
 -- | @Selector@ for @tracksWithMediaCharacteristic:@
-tracksWithMediaCharacteristicSelector :: Selector
+tracksWithMediaCharacteristicSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaCharacteristicSelector = mkSelector "tracksWithMediaCharacteristic:"
 
 -- | @Selector@ for @movieHeaderWithFileType:error:@
-movieHeaderWithFileType_errorSelector :: Selector
+movieHeaderWithFileType_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSData)
 movieHeaderWithFileType_errorSelector = mkSelector "movieHeaderWithFileType:error:"
 
 -- | @Selector@ for @writeMovieHeaderToURL:fileType:options:error:@
-writeMovieHeaderToURL_fileType_options_errorSelector :: Selector
+writeMovieHeaderToURL_fileType_options_errorSelector :: Selector '[Id NSURL, Id NSString, AVMovieWritingOptions, Id NSError] Bool
 writeMovieHeaderToURL_fileType_options_errorSelector = mkSelector "writeMovieHeaderToURL:fileType:options:error:"
 
 -- | @Selector@ for @isCompatibleWithFileType:@
-isCompatibleWithFileTypeSelector :: Selector
+isCompatibleWithFileTypeSelector :: Selector '[Id NSString] Bool
 isCompatibleWithFileTypeSelector = mkSelector "isCompatibleWithFileType:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @defaultMediaDataStorage@
-defaultMediaDataStorageSelector :: Selector
+defaultMediaDataStorageSelector :: Selector '[] (Id AVMediaDataStorage)
 defaultMediaDataStorageSelector = mkSelector "defaultMediaDataStorage"
 
 -- | @Selector@ for @tracks@
-tracksSelector :: Selector
+tracksSelector :: Selector '[] (Id NSArray)
 tracksSelector = mkSelector "tracks"
 
 -- | @Selector@ for @canContainMovieFragments@
-canContainMovieFragmentsSelector :: Selector
+canContainMovieFragmentsSelector :: Selector '[] Bool
 canContainMovieFragmentsSelector = mkSelector "canContainMovieFragments"
 
 -- | @Selector@ for @containsMovieFragments@
-containsMovieFragmentsSelector :: Selector
+containsMovieFragmentsSelector :: Selector '[] Bool
 containsMovieFragmentsSelector = mkSelector "containsMovieFragments"
 

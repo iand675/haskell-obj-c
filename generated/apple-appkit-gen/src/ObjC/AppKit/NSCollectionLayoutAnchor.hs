@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.AppKit.NSCollectionLayoutAnchor
   , offset
   , isAbsoluteOffset
   , isFractionalOffset
+  , edgesSelector
+  , initSelector
+  , isAbsoluteOffsetSelector
+  , isFractionalOffsetSelector
   , layoutAnchorWithEdgesSelector
   , layoutAnchorWithEdges_absoluteOffsetSelector
   , layoutAnchorWithEdges_fractionalOffsetSelector
-  , initSelector
   , newSelector
-  , edgesSelector
   , offsetSelector
-  , isAbsoluteOffsetSelector
-  , isFractionalOffsetSelector
 
   -- * Enum types
   , NSDirectionalRectEdge(NSDirectionalRectEdge)
@@ -37,15 +38,11 @@ module ObjC.AppKit.NSCollectionLayoutAnchor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,91 +56,91 @@ layoutAnchorWithEdges :: NSDirectionalRectEdge -> IO (Id NSCollectionLayoutAncho
 layoutAnchorWithEdges edges =
   do
     cls' <- getRequiredClass "NSCollectionLayoutAnchor"
-    sendClassMsg cls' (mkSelector "layoutAnchorWithEdges:") (retPtr retVoid) [argCULong (coerce edges)] >>= retainedObject . castPtr
+    sendClassMessage cls' layoutAnchorWithEdgesSelector edges
 
 -- | @+ layoutAnchorWithEdges:absoluteOffset:@
 layoutAnchorWithEdges_absoluteOffset :: NSDirectionalRectEdge -> NSPoint -> IO (Id NSCollectionLayoutAnchor)
 layoutAnchorWithEdges_absoluteOffset edges absoluteOffset =
   do
     cls' <- getRequiredClass "NSCollectionLayoutAnchor"
-    sendClassMsg cls' (mkSelector "layoutAnchorWithEdges:absoluteOffset:") (retPtr retVoid) [argCULong (coerce edges), argNSPoint absoluteOffset] >>= retainedObject . castPtr
+    sendClassMessage cls' layoutAnchorWithEdges_absoluteOffsetSelector edges absoluteOffset
 
 -- | @+ layoutAnchorWithEdges:fractionalOffset:@
 layoutAnchorWithEdges_fractionalOffset :: NSDirectionalRectEdge -> NSPoint -> IO (Id NSCollectionLayoutAnchor)
 layoutAnchorWithEdges_fractionalOffset edges fractionalOffset =
   do
     cls' <- getRequiredClass "NSCollectionLayoutAnchor"
-    sendClassMsg cls' (mkSelector "layoutAnchorWithEdges:fractionalOffset:") (retPtr retVoid) [argCULong (coerce edges), argNSPoint fractionalOffset] >>= retainedObject . castPtr
+    sendClassMessage cls' layoutAnchorWithEdges_fractionalOffsetSelector edges fractionalOffset
 
 -- | @- init@
 init_ :: IsNSCollectionLayoutAnchor nsCollectionLayoutAnchor => nsCollectionLayoutAnchor -> IO (Id NSCollectionLayoutAnchor)
-init_ nsCollectionLayoutAnchor  =
-    sendMsg nsCollectionLayoutAnchor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionLayoutAnchor =
+  sendOwnedMessage nsCollectionLayoutAnchor initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionLayoutAnchor)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionLayoutAnchor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- edges@
 edges :: IsNSCollectionLayoutAnchor nsCollectionLayoutAnchor => nsCollectionLayoutAnchor -> IO NSDirectionalRectEdge
-edges nsCollectionLayoutAnchor  =
-    fmap (coerce :: CULong -> NSDirectionalRectEdge) $ sendMsg nsCollectionLayoutAnchor (mkSelector "edges") retCULong []
+edges nsCollectionLayoutAnchor =
+  sendMessage nsCollectionLayoutAnchor edgesSelector
 
 -- | @- offset@
 offset :: IsNSCollectionLayoutAnchor nsCollectionLayoutAnchor => nsCollectionLayoutAnchor -> IO NSPoint
-offset nsCollectionLayoutAnchor  =
-    sendMsgStret nsCollectionLayoutAnchor (mkSelector "offset") retNSPoint []
+offset nsCollectionLayoutAnchor =
+  sendMessage nsCollectionLayoutAnchor offsetSelector
 
 -- | @- isAbsoluteOffset@
 isAbsoluteOffset :: IsNSCollectionLayoutAnchor nsCollectionLayoutAnchor => nsCollectionLayoutAnchor -> IO Bool
-isAbsoluteOffset nsCollectionLayoutAnchor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionLayoutAnchor (mkSelector "isAbsoluteOffset") retCULong []
+isAbsoluteOffset nsCollectionLayoutAnchor =
+  sendMessage nsCollectionLayoutAnchor isAbsoluteOffsetSelector
 
 -- | @- isFractionalOffset@
 isFractionalOffset :: IsNSCollectionLayoutAnchor nsCollectionLayoutAnchor => nsCollectionLayoutAnchor -> IO Bool
-isFractionalOffset nsCollectionLayoutAnchor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionLayoutAnchor (mkSelector "isFractionalOffset") retCULong []
+isFractionalOffset nsCollectionLayoutAnchor =
+  sendMessage nsCollectionLayoutAnchor isFractionalOffsetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layoutAnchorWithEdges:@
-layoutAnchorWithEdgesSelector :: Selector
+layoutAnchorWithEdgesSelector :: Selector '[NSDirectionalRectEdge] (Id NSCollectionLayoutAnchor)
 layoutAnchorWithEdgesSelector = mkSelector "layoutAnchorWithEdges:"
 
 -- | @Selector@ for @layoutAnchorWithEdges:absoluteOffset:@
-layoutAnchorWithEdges_absoluteOffsetSelector :: Selector
+layoutAnchorWithEdges_absoluteOffsetSelector :: Selector '[NSDirectionalRectEdge, NSPoint] (Id NSCollectionLayoutAnchor)
 layoutAnchorWithEdges_absoluteOffsetSelector = mkSelector "layoutAnchorWithEdges:absoluteOffset:"
 
 -- | @Selector@ for @layoutAnchorWithEdges:fractionalOffset:@
-layoutAnchorWithEdges_fractionalOffsetSelector :: Selector
+layoutAnchorWithEdges_fractionalOffsetSelector :: Selector '[NSDirectionalRectEdge, NSPoint] (Id NSCollectionLayoutAnchor)
 layoutAnchorWithEdges_fractionalOffsetSelector = mkSelector "layoutAnchorWithEdges:fractionalOffset:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionLayoutAnchor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionLayoutAnchor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @edges@
-edgesSelector :: Selector
+edgesSelector :: Selector '[] NSDirectionalRectEdge
 edgesSelector = mkSelector "edges"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] NSPoint
 offsetSelector = mkSelector "offset"
 
 -- | @Selector@ for @isAbsoluteOffset@
-isAbsoluteOffsetSelector :: Selector
+isAbsoluteOffsetSelector :: Selector '[] Bool
 isAbsoluteOffsetSelector = mkSelector "isAbsoluteOffset"
 
 -- | @Selector@ for @isFractionalOffset@
-isFractionalOffsetSelector :: Selector
+isFractionalOffsetSelector :: Selector '[] Bool
 isFractionalOffsetSelector = mkSelector "isFractionalOffset"
 

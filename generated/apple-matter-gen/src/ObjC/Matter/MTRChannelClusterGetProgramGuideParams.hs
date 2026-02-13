@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.Matter.MTRChannelClusterGetProgramGuideParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , startTimeSelector
-  , setStartTimeSelector
-  , endTimeSelector
-  , setEndTimeSelector
   , channelListSelector
-  , setChannelListSelector
-  , pageTokenSelector
-  , setPageTokenSelector
-  , recordingFlagSelector
-  , setRecordingFlagSelector
-  , externalIDListSelector
-  , setExternalIDListSelector
   , dataSelector
-  , setDataSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , endTimeSelector
+  , externalIDListSelector
+  , pageTokenSelector
+  , recordingFlagSelector
   , serverSideProcessingTimeoutSelector
+  , setChannelListSelector
+  , setDataSelector
+  , setEndTimeSelector
+  , setExternalIDListSelector
+  , setPageTokenSelector
+  , setRecordingFlagSelector
   , setServerSideProcessingTimeoutSelector
+  , setStartTimeSelector
+  , setTimedInvokeTimeoutMsSelector
+  , startTimeSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,80 +60,73 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- startTime@
 startTime :: IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams => mtrChannelClusterGetProgramGuideParams -> IO (Id NSNumber)
-startTime mtrChannelClusterGetProgramGuideParams  =
-    sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "startTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+startTime mtrChannelClusterGetProgramGuideParams =
+  sendMessage mtrChannelClusterGetProgramGuideParams startTimeSelector
 
 -- | @- setStartTime:@
 setStartTime :: (IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams, IsNSNumber value) => mtrChannelClusterGetProgramGuideParams -> value -> IO ()
-setStartTime mtrChannelClusterGetProgramGuideParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "setStartTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartTime mtrChannelClusterGetProgramGuideParams value =
+  sendMessage mtrChannelClusterGetProgramGuideParams setStartTimeSelector (toNSNumber value)
 
 -- | @- endTime@
 endTime :: IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams => mtrChannelClusterGetProgramGuideParams -> IO (Id NSNumber)
-endTime mtrChannelClusterGetProgramGuideParams  =
-    sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "endTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+endTime mtrChannelClusterGetProgramGuideParams =
+  sendMessage mtrChannelClusterGetProgramGuideParams endTimeSelector
 
 -- | @- setEndTime:@
 setEndTime :: (IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams, IsNSNumber value) => mtrChannelClusterGetProgramGuideParams -> value -> IO ()
-setEndTime mtrChannelClusterGetProgramGuideParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "setEndTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndTime mtrChannelClusterGetProgramGuideParams value =
+  sendMessage mtrChannelClusterGetProgramGuideParams setEndTimeSelector (toNSNumber value)
 
 -- | @- channelList@
 channelList :: IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams => mtrChannelClusterGetProgramGuideParams -> IO (Id NSArray)
-channelList mtrChannelClusterGetProgramGuideParams  =
-    sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "channelList") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelList mtrChannelClusterGetProgramGuideParams =
+  sendMessage mtrChannelClusterGetProgramGuideParams channelListSelector
 
 -- | @- setChannelList:@
 setChannelList :: (IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams, IsNSArray value) => mtrChannelClusterGetProgramGuideParams -> value -> IO ()
-setChannelList mtrChannelClusterGetProgramGuideParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "setChannelList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannelList mtrChannelClusterGetProgramGuideParams value =
+  sendMessage mtrChannelClusterGetProgramGuideParams setChannelListSelector (toNSArray value)
 
 -- | @- pageToken@
 pageToken :: IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams => mtrChannelClusterGetProgramGuideParams -> IO (Id MTRChannelClusterPageTokenStruct)
-pageToken mtrChannelClusterGetProgramGuideParams  =
-    sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "pageToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+pageToken mtrChannelClusterGetProgramGuideParams =
+  sendMessage mtrChannelClusterGetProgramGuideParams pageTokenSelector
 
 -- | @- setPageToken:@
 setPageToken :: (IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams, IsMTRChannelClusterPageTokenStruct value) => mtrChannelClusterGetProgramGuideParams -> value -> IO ()
-setPageToken mtrChannelClusterGetProgramGuideParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "setPageToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPageToken mtrChannelClusterGetProgramGuideParams value =
+  sendMessage mtrChannelClusterGetProgramGuideParams setPageTokenSelector (toMTRChannelClusterPageTokenStruct value)
 
 -- | @- recordingFlag@
 recordingFlag :: IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams => mtrChannelClusterGetProgramGuideParams -> IO (Id NSNumber)
-recordingFlag mtrChannelClusterGetProgramGuideParams  =
-    sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "recordingFlag") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordingFlag mtrChannelClusterGetProgramGuideParams =
+  sendMessage mtrChannelClusterGetProgramGuideParams recordingFlagSelector
 
 -- | @- setRecordingFlag:@
 setRecordingFlag :: (IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams, IsNSNumber value) => mtrChannelClusterGetProgramGuideParams -> value -> IO ()
-setRecordingFlag mtrChannelClusterGetProgramGuideParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "setRecordingFlag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecordingFlag mtrChannelClusterGetProgramGuideParams value =
+  sendMessage mtrChannelClusterGetProgramGuideParams setRecordingFlagSelector (toNSNumber value)
 
 -- | @- externalIDList@
 externalIDList :: IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams => mtrChannelClusterGetProgramGuideParams -> IO (Id NSArray)
-externalIDList mtrChannelClusterGetProgramGuideParams  =
-    sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "externalIDList") (retPtr retVoid) [] >>= retainedObject . castPtr
+externalIDList mtrChannelClusterGetProgramGuideParams =
+  sendMessage mtrChannelClusterGetProgramGuideParams externalIDListSelector
 
 -- | @- setExternalIDList:@
 setExternalIDList :: (IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams, IsNSArray value) => mtrChannelClusterGetProgramGuideParams -> value -> IO ()
-setExternalIDList mtrChannelClusterGetProgramGuideParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "setExternalIDList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExternalIDList mtrChannelClusterGetProgramGuideParams value =
+  sendMessage mtrChannelClusterGetProgramGuideParams setExternalIDListSelector (toNSArray value)
 
 -- | @- data@
 data_ :: IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams => mtrChannelClusterGetProgramGuideParams -> IO (Id NSData)
-data_ mtrChannelClusterGetProgramGuideParams  =
-    sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrChannelClusterGetProgramGuideParams =
+  sendMessage mtrChannelClusterGetProgramGuideParams dataSelector
 
 -- | @- setData:@
 setData :: (IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams, IsNSData value) => mtrChannelClusterGetProgramGuideParams -> value -> IO ()
-setData mtrChannelClusterGetProgramGuideParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mtrChannelClusterGetProgramGuideParams value =
+  sendMessage mtrChannelClusterGetProgramGuideParams setDataSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -146,8 +136,8 @@ setData mtrChannelClusterGetProgramGuideParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams => mtrChannelClusterGetProgramGuideParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrChannelClusterGetProgramGuideParams  =
-    sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrChannelClusterGetProgramGuideParams =
+  sendMessage mtrChannelClusterGetProgramGuideParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -157,9 +147,8 @@ timedInvokeTimeoutMs mtrChannelClusterGetProgramGuideParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams, IsNSNumber value) => mtrChannelClusterGetProgramGuideParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrChannelClusterGetProgramGuideParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrChannelClusterGetProgramGuideParams value =
+  sendMessage mtrChannelClusterGetProgramGuideParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -169,8 +158,8 @@ setTimedInvokeTimeoutMs mtrChannelClusterGetProgramGuideParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams => mtrChannelClusterGetProgramGuideParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrChannelClusterGetProgramGuideParams  =
-    sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrChannelClusterGetProgramGuideParams =
+  sendMessage mtrChannelClusterGetProgramGuideParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -180,83 +169,82 @@ serverSideProcessingTimeout mtrChannelClusterGetProgramGuideParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRChannelClusterGetProgramGuideParams mtrChannelClusterGetProgramGuideParams, IsNSNumber value) => mtrChannelClusterGetProgramGuideParams -> value -> IO ()
-setServerSideProcessingTimeout mtrChannelClusterGetProgramGuideParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterGetProgramGuideParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrChannelClusterGetProgramGuideParams value =
+  sendMessage mtrChannelClusterGetProgramGuideParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startTime@
-startTimeSelector :: Selector
+startTimeSelector :: Selector '[] (Id NSNumber)
 startTimeSelector = mkSelector "startTime"
 
 -- | @Selector@ for @setStartTime:@
-setStartTimeSelector :: Selector
+setStartTimeSelector :: Selector '[Id NSNumber] ()
 setStartTimeSelector = mkSelector "setStartTime:"
 
 -- | @Selector@ for @endTime@
-endTimeSelector :: Selector
+endTimeSelector :: Selector '[] (Id NSNumber)
 endTimeSelector = mkSelector "endTime"
 
 -- | @Selector@ for @setEndTime:@
-setEndTimeSelector :: Selector
+setEndTimeSelector :: Selector '[Id NSNumber] ()
 setEndTimeSelector = mkSelector "setEndTime:"
 
 -- | @Selector@ for @channelList@
-channelListSelector :: Selector
+channelListSelector :: Selector '[] (Id NSArray)
 channelListSelector = mkSelector "channelList"
 
 -- | @Selector@ for @setChannelList:@
-setChannelListSelector :: Selector
+setChannelListSelector :: Selector '[Id NSArray] ()
 setChannelListSelector = mkSelector "setChannelList:"
 
 -- | @Selector@ for @pageToken@
-pageTokenSelector :: Selector
+pageTokenSelector :: Selector '[] (Id MTRChannelClusterPageTokenStruct)
 pageTokenSelector = mkSelector "pageToken"
 
 -- | @Selector@ for @setPageToken:@
-setPageTokenSelector :: Selector
+setPageTokenSelector :: Selector '[Id MTRChannelClusterPageTokenStruct] ()
 setPageTokenSelector = mkSelector "setPageToken:"
 
 -- | @Selector@ for @recordingFlag@
-recordingFlagSelector :: Selector
+recordingFlagSelector :: Selector '[] (Id NSNumber)
 recordingFlagSelector = mkSelector "recordingFlag"
 
 -- | @Selector@ for @setRecordingFlag:@
-setRecordingFlagSelector :: Selector
+setRecordingFlagSelector :: Selector '[Id NSNumber] ()
 setRecordingFlagSelector = mkSelector "setRecordingFlag:"
 
 -- | @Selector@ for @externalIDList@
-externalIDListSelector :: Selector
+externalIDListSelector :: Selector '[] (Id NSArray)
 externalIDListSelector = mkSelector "externalIDList"
 
 -- | @Selector@ for @setExternalIDList:@
-setExternalIDListSelector :: Selector
+setExternalIDListSelector :: Selector '[Id NSArray] ()
 setExternalIDListSelector = mkSelector "setExternalIDList:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSData] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

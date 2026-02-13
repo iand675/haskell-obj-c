@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.MediaExtension.MERAWProcessingIntegerParameter
   , initialValue
   , currentValue
   , setCurrentValue
-  , initWithName_key_description_initialValue_maximum_minimumSelector
-  , initWithName_key_description_initialValue_maximum_minimum_neutralValueSelector
-  , initWithName_key_description_initialValue_maximum_minimum_cameraValueSelector
-  , initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraValueSelector
-  , hasNeutralValueSelector
+  , currentValueSelector
   , hasCameraValueSelector
+  , hasNeutralValueSelector
+  , initWithName_key_description_initialValue_maximum_minimumSelector
+  , initWithName_key_description_initialValue_maximum_minimum_cameraValueSelector
+  , initWithName_key_description_initialValue_maximum_minimum_neutralValueSelector
+  , initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraValueSelector
+  , initialValueSelector
   , maximumValueSelector
   , minimumValueSelector
-  , initialValueSelector
-  , currentValueSelector
   , setCurrentValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,35 +46,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithName:key:description:initialValue:maximum:minimum:@
 initWithName_key_description_initialValue_maximum_minimum :: (IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter, IsNSString name, IsNSString key, IsNSString description) => merawProcessingIntegerParameter -> name -> key -> description -> CLong -> CLong -> CLong -> IO (Id MERAWProcessingIntegerParameter)
-initWithName_key_description_initialValue_maximum_minimum merawProcessingIntegerParameter  name key description initialValue maximum_ minimum_ =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr description $ \raw_description ->
-          sendMsg merawProcessingIntegerParameter (mkSelector "initWithName:key:description:initialValue:maximum:minimum:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_description :: Ptr ()), argCLong initialValue, argCLong maximum_, argCLong minimum_] >>= ownedObject . castPtr
+initWithName_key_description_initialValue_maximum_minimum merawProcessingIntegerParameter name key description initialValue maximum_ minimum_ =
+  sendOwnedMessage merawProcessingIntegerParameter initWithName_key_description_initialValue_maximum_minimumSelector (toNSString name) (toNSString key) (toNSString description) initialValue maximum_ minimum_
 
 -- | @- initWithName:key:description:initialValue:maximum:minimum:neutralValue:@
 initWithName_key_description_initialValue_maximum_minimum_neutralValue :: (IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter, IsNSString name, IsNSString key, IsNSString description) => merawProcessingIntegerParameter -> name -> key -> description -> CLong -> CLong -> CLong -> CLong -> IO (Id MERAWProcessingIntegerParameter)
-initWithName_key_description_initialValue_maximum_minimum_neutralValue merawProcessingIntegerParameter  name key description initialValue maximum_ minimum_ neutralValue =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr description $ \raw_description ->
-          sendMsg merawProcessingIntegerParameter (mkSelector "initWithName:key:description:initialValue:maximum:minimum:neutralValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_description :: Ptr ()), argCLong initialValue, argCLong maximum_, argCLong minimum_, argCLong neutralValue] >>= ownedObject . castPtr
+initWithName_key_description_initialValue_maximum_minimum_neutralValue merawProcessingIntegerParameter name key description initialValue maximum_ minimum_ neutralValue =
+  sendOwnedMessage merawProcessingIntegerParameter initWithName_key_description_initialValue_maximum_minimum_neutralValueSelector (toNSString name) (toNSString key) (toNSString description) initialValue maximum_ minimum_ neutralValue
 
 -- | @- initWithName:key:description:initialValue:maximum:minimum:cameraValue:@
 initWithName_key_description_initialValue_maximum_minimum_cameraValue :: (IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter, IsNSString name, IsNSString key, IsNSString description) => merawProcessingIntegerParameter -> name -> key -> description -> CLong -> CLong -> CLong -> CLong -> IO (Id MERAWProcessingIntegerParameter)
-initWithName_key_description_initialValue_maximum_minimum_cameraValue merawProcessingIntegerParameter  name key description initialValue maximum_ minimum_ cameraValue =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr description $ \raw_description ->
-          sendMsg merawProcessingIntegerParameter (mkSelector "initWithName:key:description:initialValue:maximum:minimum:cameraValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_description :: Ptr ()), argCLong initialValue, argCLong maximum_, argCLong minimum_, argCLong cameraValue] >>= ownedObject . castPtr
+initWithName_key_description_initialValue_maximum_minimum_cameraValue merawProcessingIntegerParameter name key description initialValue maximum_ minimum_ cameraValue =
+  sendOwnedMessage merawProcessingIntegerParameter initWithName_key_description_initialValue_maximum_minimum_cameraValueSelector (toNSString name) (toNSString key) (toNSString description) initialValue maximum_ minimum_ cameraValue
 
 -- | @- initWithName:key:description:initialValue:maximum:minimum:neutralValue:cameraValue:@
 initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraValue :: (IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter, IsNSString name, IsNSString key, IsNSString description) => merawProcessingIntegerParameter -> name -> key -> description -> CLong -> CLong -> CLong -> CLong -> CLong -> IO (Id MERAWProcessingIntegerParameter)
-initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraValue merawProcessingIntegerParameter  name key description initialValue maximum_ minimum_ neutralValue cameraValue =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr description $ \raw_description ->
-          sendMsg merawProcessingIntegerParameter (mkSelector "initWithName:key:description:initialValue:maximum:minimum:neutralValue:cameraValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_description :: Ptr ()), argCLong initialValue, argCLong maximum_, argCLong minimum_, argCLong neutralValue, argCLong cameraValue] >>= ownedObject . castPtr
+initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraValue merawProcessingIntegerParameter name key description initialValue maximum_ minimum_ neutralValue cameraValue =
+  sendOwnedMessage merawProcessingIntegerParameter initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraValueSelector (toNSString name) (toNSString key) (toNSString description) initialValue maximum_ minimum_ neutralValue cameraValue
 
 -- | hasNeutralValue
 --
@@ -87,8 +72,8 @@ initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraVal
 --
 -- ObjC selector: @- hasNeutralValue:@
 hasNeutralValue :: IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter => merawProcessingIntegerParameter -> Ptr CLong -> IO Bool
-hasNeutralValue merawProcessingIntegerParameter  outNeutralValue =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg merawProcessingIntegerParameter (mkSelector "hasNeutralValue:") retCULong [argPtr outNeutralValue]
+hasNeutralValue merawProcessingIntegerParameter outNeutralValue =
+  sendMessage merawProcessingIntegerParameter hasNeutralValueSelector outNeutralValue
 
 -- | hasCameraValue
 --
@@ -96,8 +81,8 @@ hasNeutralValue merawProcessingIntegerParameter  outNeutralValue =
 --
 -- ObjC selector: @- hasCameraValue:@
 hasCameraValue :: IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter => merawProcessingIntegerParameter -> Ptr CLong -> IO Bool
-hasCameraValue merawProcessingIntegerParameter  outCameraValue =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg merawProcessingIntegerParameter (mkSelector "hasCameraValue:") retCULong [argPtr outCameraValue]
+hasCameraValue merawProcessingIntegerParameter outCameraValue =
+  sendMessage merawProcessingIntegerParameter hasCameraValueSelector outCameraValue
 
 -- | maximumValue
 --
@@ -105,8 +90,8 @@ hasCameraValue merawProcessingIntegerParameter  outCameraValue =
 --
 -- ObjC selector: @- maximumValue@
 maximumValue :: IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter => merawProcessingIntegerParameter -> IO CLong
-maximumValue merawProcessingIntegerParameter  =
-    sendMsg merawProcessingIntegerParameter (mkSelector "maximumValue") retCLong []
+maximumValue merawProcessingIntegerParameter =
+  sendMessage merawProcessingIntegerParameter maximumValueSelector
 
 -- | minimumValue
 --
@@ -114,8 +99,8 @@ maximumValue merawProcessingIntegerParameter  =
 --
 -- ObjC selector: @- minimumValue@
 minimumValue :: IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter => merawProcessingIntegerParameter -> IO CLong
-minimumValue merawProcessingIntegerParameter  =
-    sendMsg merawProcessingIntegerParameter (mkSelector "minimumValue") retCLong []
+minimumValue merawProcessingIntegerParameter =
+  sendMessage merawProcessingIntegerParameter minimumValueSelector
 
 -- | initialValue
 --
@@ -123,8 +108,8 @@ minimumValue merawProcessingIntegerParameter  =
 --
 -- ObjC selector: @- initialValue@
 initialValue :: IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter => merawProcessingIntegerParameter -> IO CLong
-initialValue merawProcessingIntegerParameter  =
-    sendMsg merawProcessingIntegerParameter (mkSelector "initialValue") retCLong []
+initialValue merawProcessingIntegerParameter =
+  sendOwnedMessage merawProcessingIntegerParameter initialValueSelector
 
 -- | currentValue
 --
@@ -134,8 +119,8 @@ initialValue merawProcessingIntegerParameter  =
 --
 -- ObjC selector: @- currentValue@
 currentValue :: IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter => merawProcessingIntegerParameter -> IO CLong
-currentValue merawProcessingIntegerParameter  =
-    sendMsg merawProcessingIntegerParameter (mkSelector "currentValue") retCLong []
+currentValue merawProcessingIntegerParameter =
+  sendMessage merawProcessingIntegerParameter currentValueSelector
 
 -- | currentValue
 --
@@ -145,54 +130,54 @@ currentValue merawProcessingIntegerParameter  =
 --
 -- ObjC selector: @- setCurrentValue:@
 setCurrentValue :: IsMERAWProcessingIntegerParameter merawProcessingIntegerParameter => merawProcessingIntegerParameter -> CLong -> IO ()
-setCurrentValue merawProcessingIntegerParameter  value =
-    sendMsg merawProcessingIntegerParameter (mkSelector "setCurrentValue:") retVoid [argCLong value]
+setCurrentValue merawProcessingIntegerParameter value =
+  sendMessage merawProcessingIntegerParameter setCurrentValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:key:description:initialValue:maximum:minimum:@
-initWithName_key_description_initialValue_maximum_minimumSelector :: Selector
+initWithName_key_description_initialValue_maximum_minimumSelector :: Selector '[Id NSString, Id NSString, Id NSString, CLong, CLong, CLong] (Id MERAWProcessingIntegerParameter)
 initWithName_key_description_initialValue_maximum_minimumSelector = mkSelector "initWithName:key:description:initialValue:maximum:minimum:"
 
 -- | @Selector@ for @initWithName:key:description:initialValue:maximum:minimum:neutralValue:@
-initWithName_key_description_initialValue_maximum_minimum_neutralValueSelector :: Selector
+initWithName_key_description_initialValue_maximum_minimum_neutralValueSelector :: Selector '[Id NSString, Id NSString, Id NSString, CLong, CLong, CLong, CLong] (Id MERAWProcessingIntegerParameter)
 initWithName_key_description_initialValue_maximum_minimum_neutralValueSelector = mkSelector "initWithName:key:description:initialValue:maximum:minimum:neutralValue:"
 
 -- | @Selector@ for @initWithName:key:description:initialValue:maximum:minimum:cameraValue:@
-initWithName_key_description_initialValue_maximum_minimum_cameraValueSelector :: Selector
+initWithName_key_description_initialValue_maximum_minimum_cameraValueSelector :: Selector '[Id NSString, Id NSString, Id NSString, CLong, CLong, CLong, CLong] (Id MERAWProcessingIntegerParameter)
 initWithName_key_description_initialValue_maximum_minimum_cameraValueSelector = mkSelector "initWithName:key:description:initialValue:maximum:minimum:cameraValue:"
 
 -- | @Selector@ for @initWithName:key:description:initialValue:maximum:minimum:neutralValue:cameraValue:@
-initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraValueSelector :: Selector
+initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraValueSelector :: Selector '[Id NSString, Id NSString, Id NSString, CLong, CLong, CLong, CLong, CLong] (Id MERAWProcessingIntegerParameter)
 initWithName_key_description_initialValue_maximum_minimum_neutralValue_cameraValueSelector = mkSelector "initWithName:key:description:initialValue:maximum:minimum:neutralValue:cameraValue:"
 
 -- | @Selector@ for @hasNeutralValue:@
-hasNeutralValueSelector :: Selector
+hasNeutralValueSelector :: Selector '[Ptr CLong] Bool
 hasNeutralValueSelector = mkSelector "hasNeutralValue:"
 
 -- | @Selector@ for @hasCameraValue:@
-hasCameraValueSelector :: Selector
+hasCameraValueSelector :: Selector '[Ptr CLong] Bool
 hasCameraValueSelector = mkSelector "hasCameraValue:"
 
 -- | @Selector@ for @maximumValue@
-maximumValueSelector :: Selector
+maximumValueSelector :: Selector '[] CLong
 maximumValueSelector = mkSelector "maximumValue"
 
 -- | @Selector@ for @minimumValue@
-minimumValueSelector :: Selector
+minimumValueSelector :: Selector '[] CLong
 minimumValueSelector = mkSelector "minimumValue"
 
 -- | @Selector@ for @initialValue@
-initialValueSelector :: Selector
+initialValueSelector :: Selector '[] CLong
 initialValueSelector = mkSelector "initialValue"
 
 -- | @Selector@ for @currentValue@
-currentValueSelector :: Selector
+currentValueSelector :: Selector '[] CLong
 currentValueSelector = mkSelector "currentValue"
 
 -- | @Selector@ for @setCurrentValue:@
-setCurrentValueSelector :: Selector
+setCurrentValueSelector :: Selector '[CLong] ()
 setCurrentValueSelector = mkSelector "setCurrentValue:"
 

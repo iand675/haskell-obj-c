@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.AuthenticationServices.ASAccountAuthenticationModificationViewContro
   , prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfo
   , cancelRequest
   , extensionContext
-  , convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existingCredential_userInfoSelector
-  , prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCredential_userInfoSelector
-  , changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newPassword_userInfoSelector
-  , prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfoSelector
   , cancelRequestSelector
+  , changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newPassword_userInfoSelector
+  , convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existingCredential_userInfoSelector
   , extensionContextSelector
+  , prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfoSelector
+  , prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCredential_userInfoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,11 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier:existingCredential:userInfo:@
 convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existingCredential_userInfo :: (IsASAccountAuthenticationModificationViewController asAccountAuthenticationModificationViewController, IsASCredentialServiceIdentifier serviceIdentifier, IsASPasswordCredential existingCredential, IsNSDictionary userInfo) => asAccountAuthenticationModificationViewController -> serviceIdentifier -> existingCredential -> userInfo -> IO ()
-convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existingCredential_userInfo asAccountAuthenticationModificationViewController  serviceIdentifier existingCredential userInfo =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr existingCredential $ \raw_existingCredential ->
-      withObjCPtr userInfo $ \raw_userInfo ->
-          sendMsg asAccountAuthenticationModificationViewController (mkSelector "convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier:existingCredential:userInfo:") retVoid [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_existingCredential :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ())]
+convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existingCredential_userInfo asAccountAuthenticationModificationViewController serviceIdentifier existingCredential userInfo =
+  sendMessage asAccountAuthenticationModificationViewController convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existingCredential_userInfoSelector (toASCredentialServiceIdentifier serviceIdentifier) (toASPasswordCredential existingCredential) (toNSDictionary userInfo)
 
 -- | This method will be called when a Sign in with Apple upgrade request requires user interaction.
 --
@@ -68,11 +62,8 @@ convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existi
 --
 -- ObjC selector: @- prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier:existingCredential:userInfo:@
 prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCredential_userInfo :: (IsASAccountAuthenticationModificationViewController asAccountAuthenticationModificationViewController, IsASCredentialServiceIdentifier serviceIdentifier, IsASPasswordCredential existingCredential, IsNSDictionary userInfo) => asAccountAuthenticationModificationViewController -> serviceIdentifier -> existingCredential -> userInfo -> IO ()
-prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCredential_userInfo asAccountAuthenticationModificationViewController  serviceIdentifier existingCredential userInfo =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr existingCredential $ \raw_existingCredential ->
-      withObjCPtr userInfo $ \raw_userInfo ->
-          sendMsg asAccountAuthenticationModificationViewController (mkSelector "prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier:existingCredential:userInfo:") retVoid [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_existingCredential :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ())]
+prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCredential_userInfo asAccountAuthenticationModificationViewController serviceIdentifier existingCredential userInfo =
+  sendMessage asAccountAuthenticationModificationViewController prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCredential_userInfoSelector (toASCredentialServiceIdentifier serviceIdentifier) (toASPasswordCredential existingCredential) (toNSDictionary userInfo)
 
 -- | This method will be called when a user initiates a strong password upgrade request.
 --
@@ -88,12 +79,8 @@ prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCr
 --
 -- ObjC selector: @- changePasswordWithoutUserInteractionForServiceIdentifier:existingCredential:newPassword:userInfo:@
 changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newPassword_userInfo :: (IsASAccountAuthenticationModificationViewController asAccountAuthenticationModificationViewController, IsASCredentialServiceIdentifier serviceIdentifier, IsASPasswordCredential existingCredential, IsNSString newPassword, IsNSDictionary userInfo) => asAccountAuthenticationModificationViewController -> serviceIdentifier -> existingCredential -> newPassword -> userInfo -> IO ()
-changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newPassword_userInfo asAccountAuthenticationModificationViewController  serviceIdentifier existingCredential newPassword userInfo =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr existingCredential $ \raw_existingCredential ->
-      withObjCPtr newPassword $ \raw_newPassword ->
-        withObjCPtr userInfo $ \raw_userInfo ->
-            sendMsg asAccountAuthenticationModificationViewController (mkSelector "changePasswordWithoutUserInteractionForServiceIdentifier:existingCredential:newPassword:userInfo:") retVoid [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_existingCredential :: Ptr ()), argPtr (castPtr raw_newPassword :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ())]
+changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newPassword_userInfo asAccountAuthenticationModificationViewController serviceIdentifier existingCredential newPassword userInfo =
+  sendMessage asAccountAuthenticationModificationViewController changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newPassword_userInfoSelector (toASCredentialServiceIdentifier serviceIdentifier) (toASPasswordCredential existingCredential) (toNSString newPassword) (toNSDictionary userInfo)
 
 -- | This method will be called when a strong password upgrade request requires user interaction.
 --
@@ -109,12 +96,8 @@ changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newP
 --
 -- ObjC selector: @- prepareInterfaceToChangePasswordForServiceIdentifier:existingCredential:newPassword:userInfo:@
 prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfo :: (IsASAccountAuthenticationModificationViewController asAccountAuthenticationModificationViewController, IsASCredentialServiceIdentifier serviceIdentifier, IsASPasswordCredential existingCredential, IsNSString newPassword, IsNSDictionary userInfo) => asAccountAuthenticationModificationViewController -> serviceIdentifier -> existingCredential -> newPassword -> userInfo -> IO ()
-prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfo asAccountAuthenticationModificationViewController  serviceIdentifier existingCredential newPassword userInfo =
-  withObjCPtr serviceIdentifier $ \raw_serviceIdentifier ->
-    withObjCPtr existingCredential $ \raw_existingCredential ->
-      withObjCPtr newPassword $ \raw_newPassword ->
-        withObjCPtr userInfo $ \raw_userInfo ->
-            sendMsg asAccountAuthenticationModificationViewController (mkSelector "prepareInterfaceToChangePasswordForServiceIdentifier:existingCredential:newPassword:userInfo:") retVoid [argPtr (castPtr raw_serviceIdentifier :: Ptr ()), argPtr (castPtr raw_existingCredential :: Ptr ()), argPtr (castPtr raw_newPassword :: Ptr ()), argPtr (castPtr raw_userInfo :: Ptr ())]
+prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfo asAccountAuthenticationModificationViewController serviceIdentifier existingCredential newPassword userInfo =
+  sendMessage asAccountAuthenticationModificationViewController prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfoSelector (toASCredentialServiceIdentifier serviceIdentifier) (toASPasswordCredential existingCredential) (toNSString newPassword) (toNSDictionary userInfo)
 
 -- | This method will be called when the user taps the system-provided "Cancel" button shown above extension UI.
 --
@@ -122,39 +105,39 @@ prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassw
 --
 -- ObjC selector: @- cancelRequest@
 cancelRequest :: IsASAccountAuthenticationModificationViewController asAccountAuthenticationModificationViewController => asAccountAuthenticationModificationViewController -> IO ()
-cancelRequest asAccountAuthenticationModificationViewController  =
-    sendMsg asAccountAuthenticationModificationViewController (mkSelector "cancelRequest") retVoid []
+cancelRequest asAccountAuthenticationModificationViewController =
+  sendMessage asAccountAuthenticationModificationViewController cancelRequestSelector
 
 -- | @- extensionContext@
 extensionContext :: IsASAccountAuthenticationModificationViewController asAccountAuthenticationModificationViewController => asAccountAuthenticationModificationViewController -> IO (Id ASAccountAuthenticationModificationExtensionContext)
-extensionContext asAccountAuthenticationModificationViewController  =
-    sendMsg asAccountAuthenticationModificationViewController (mkSelector "extensionContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensionContext asAccountAuthenticationModificationViewController =
+  sendMessage asAccountAuthenticationModificationViewController extensionContextSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier:existingCredential:userInfo:@
-convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existingCredential_userInfoSelector :: Selector
+convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existingCredential_userInfoSelector :: Selector '[Id ASCredentialServiceIdentifier, Id ASPasswordCredential, Id NSDictionary] ()
 convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier_existingCredential_userInfoSelector = mkSelector "convertAccountToSignInWithAppleWithoutUserInteractionForServiceIdentifier:existingCredential:userInfo:"
 
 -- | @Selector@ for @prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier:existingCredential:userInfo:@
-prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCredential_userInfoSelector :: Selector
+prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCredential_userInfoSelector :: Selector '[Id ASCredentialServiceIdentifier, Id ASPasswordCredential, Id NSDictionary] ()
 prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier_existingCredential_userInfoSelector = mkSelector "prepareInterfaceToConvertAccountToSignInWithAppleForServiceIdentifier:existingCredential:userInfo:"
 
 -- | @Selector@ for @changePasswordWithoutUserInteractionForServiceIdentifier:existingCredential:newPassword:userInfo:@
-changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newPassword_userInfoSelector :: Selector
+changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newPassword_userInfoSelector :: Selector '[Id ASCredentialServiceIdentifier, Id ASPasswordCredential, Id NSString, Id NSDictionary] ()
 changePasswordWithoutUserInteractionForServiceIdentifier_existingCredential_newPassword_userInfoSelector = mkSelector "changePasswordWithoutUserInteractionForServiceIdentifier:existingCredential:newPassword:userInfo:"
 
 -- | @Selector@ for @prepareInterfaceToChangePasswordForServiceIdentifier:existingCredential:newPassword:userInfo:@
-prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfoSelector :: Selector
+prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfoSelector :: Selector '[Id ASCredentialServiceIdentifier, Id ASPasswordCredential, Id NSString, Id NSDictionary] ()
 prepareInterfaceToChangePasswordForServiceIdentifier_existingCredential_newPassword_userInfoSelector = mkSelector "prepareInterfaceToChangePasswordForServiceIdentifier:existingCredential:newPassword:userInfo:"
 
 -- | @Selector@ for @cancelRequest@
-cancelRequestSelector :: Selector
+cancelRequestSelector :: Selector '[] ()
 cancelRequestSelector = mkSelector "cancelRequest"
 
 -- | @Selector@ for @extensionContext@
-extensionContextSelector :: Selector
+extensionContextSelector :: Selector '[] (Id ASAccountAuthenticationModificationExtensionContext)
 extensionContextSelector = mkSelector "extensionContext"
 

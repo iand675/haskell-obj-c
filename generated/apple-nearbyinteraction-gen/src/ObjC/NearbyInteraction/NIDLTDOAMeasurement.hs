@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,15 @@ module ObjC.NearbyInteraction.NIDLTDOAMeasurement
   , signalStrength
   , carrierFrequencyOffset
   , coordinatesType
-  , initSelector
-  , newSelector
   , addressSelector
-  , measurementTypeSelector
-  , transmitTimeSelector
-  , receiveTimeSelector
-  , signalStrengthSelector
   , carrierFrequencyOffsetSelector
   , coordinatesTypeSelector
+  , initSelector
+  , measurementTypeSelector
+  , newSelector
+  , receiveTimeSelector
+  , signalStrengthSelector
+  , transmitTimeSelector
 
   -- * Enum types
   , NIDLTDOACoordinatesType(NIDLTDOACoordinatesType)
@@ -39,15 +40,11 @@ module ObjC.NearbyInteraction.NIDLTDOAMeasurement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,102 +56,102 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsNIDLTDOAMeasurement nidltdoaMeasurement => nidltdoaMeasurement -> IO (Id NIDLTDOAMeasurement)
-init_ nidltdoaMeasurement  =
-    sendMsg nidltdoaMeasurement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nidltdoaMeasurement =
+  sendOwnedMessage nidltdoaMeasurement initSelector
 
 -- | @+ new@
 new :: IO (Id NIDLTDOAMeasurement)
 new  =
   do
     cls' <- getRequiredClass "NIDLTDOAMeasurement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Indicates the address of anchor of this measurement.
 --
 -- ObjC selector: @- address@
 address :: IsNIDLTDOAMeasurement nidltdoaMeasurement => nidltdoaMeasurement -> IO CULong
-address nidltdoaMeasurement  =
-    sendMsg nidltdoaMeasurement (mkSelector "address") retCULong []
+address nidltdoaMeasurement =
+  sendMessage nidltdoaMeasurement addressSelector
 
 -- | Indicates the type of this measurement.
 --
 -- ObjC selector: @- measurementType@
 measurementType :: IsNIDLTDOAMeasurement nidltdoaMeasurement => nidltdoaMeasurement -> IO NIDLTDOAMeasurementType
-measurementType nidltdoaMeasurement  =
-    fmap (coerce :: CLong -> NIDLTDOAMeasurementType) $ sendMsg nidltdoaMeasurement (mkSelector "measurementType") retCLong []
+measurementType nidltdoaMeasurement =
+  sendMessage nidltdoaMeasurement measurementTypeSelector
 
 -- | Indicates the transmission timestamp (in seconds).
 --
 -- ObjC selector: @- transmitTime@
 transmitTime :: IsNIDLTDOAMeasurement nidltdoaMeasurement => nidltdoaMeasurement -> IO CDouble
-transmitTime nidltdoaMeasurement  =
-    sendMsg nidltdoaMeasurement (mkSelector "transmitTime") retCDouble []
+transmitTime nidltdoaMeasurement =
+  sendMessage nidltdoaMeasurement transmitTimeSelector
 
 -- | Indicates the reception timestamp (in seconds).
 --
 -- ObjC selector: @- receiveTime@
 receiveTime :: IsNIDLTDOAMeasurement nidltdoaMeasurement => nidltdoaMeasurement -> IO CDouble
-receiveTime nidltdoaMeasurement  =
-    sendMsg nidltdoaMeasurement (mkSelector "receiveTime") retCDouble []
+receiveTime nidltdoaMeasurement =
+  sendMessage nidltdoaMeasurement receiveTimeSelector
 
 -- | Indicates the signal strength in dBm.
 --
 -- ObjC selector: @- signalStrength@
 signalStrength :: IsNIDLTDOAMeasurement nidltdoaMeasurement => nidltdoaMeasurement -> IO CDouble
-signalStrength nidltdoaMeasurement  =
-    sendMsg nidltdoaMeasurement (mkSelector "signalStrength") retCDouble []
+signalStrength nidltdoaMeasurement =
+  sendMessage nidltdoaMeasurement signalStrengthSelector
 
 -- | Indicates the estimated carrier frequency offset (dimensionless).
 --
 -- ObjC selector: @- carrierFrequencyOffset@
 carrierFrequencyOffset :: IsNIDLTDOAMeasurement nidltdoaMeasurement => nidltdoaMeasurement -> IO CDouble
-carrierFrequencyOffset nidltdoaMeasurement  =
-    sendMsg nidltdoaMeasurement (mkSelector "carrierFrequencyOffset") retCDouble []
+carrierFrequencyOffset nidltdoaMeasurement =
+  sendMessage nidltdoaMeasurement carrierFrequencyOffsetSelector
 
 -- | Inidicates the type of coordinates of this anchor.
 --
 -- ObjC selector: @- coordinatesType@
 coordinatesType :: IsNIDLTDOAMeasurement nidltdoaMeasurement => nidltdoaMeasurement -> IO NIDLTDOACoordinatesType
-coordinatesType nidltdoaMeasurement  =
-    fmap (coerce :: CLong -> NIDLTDOACoordinatesType) $ sendMsg nidltdoaMeasurement (mkSelector "coordinatesType") retCLong []
+coordinatesType nidltdoaMeasurement =
+  sendMessage nidltdoaMeasurement coordinatesTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NIDLTDOAMeasurement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NIDLTDOAMeasurement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @address@
-addressSelector :: Selector
+addressSelector :: Selector '[] CULong
 addressSelector = mkSelector "address"
 
 -- | @Selector@ for @measurementType@
-measurementTypeSelector :: Selector
+measurementTypeSelector :: Selector '[] NIDLTDOAMeasurementType
 measurementTypeSelector = mkSelector "measurementType"
 
 -- | @Selector@ for @transmitTime@
-transmitTimeSelector :: Selector
+transmitTimeSelector :: Selector '[] CDouble
 transmitTimeSelector = mkSelector "transmitTime"
 
 -- | @Selector@ for @receiveTime@
-receiveTimeSelector :: Selector
+receiveTimeSelector :: Selector '[] CDouble
 receiveTimeSelector = mkSelector "receiveTime"
 
 -- | @Selector@ for @signalStrength@
-signalStrengthSelector :: Selector
+signalStrengthSelector :: Selector '[] CDouble
 signalStrengthSelector = mkSelector "signalStrength"
 
 -- | @Selector@ for @carrierFrequencyOffset@
-carrierFrequencyOffsetSelector :: Selector
+carrierFrequencyOffsetSelector :: Selector '[] CDouble
 carrierFrequencyOffsetSelector = mkSelector "carrierFrequencyOffset"
 
 -- | @Selector@ for @coordinatesType@
-coordinatesTypeSelector :: Selector
+coordinatesTypeSelector :: Selector '[] NIDLTDOACoordinatesType
 coordinatesTypeSelector = mkSelector "coordinatesType"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,34 +36,34 @@ module ObjC.Metal.MTLCompileOptions
   , setMaxTotalThreadsPerThreadgroup
   , enableLogging
   , setEnableLogging
-  , preprocessorMacrosSelector
-  , setPreprocessorMacrosSelector
-  , fastMathEnabledSelector
-  , setFastMathEnabledSelector
-  , mathModeSelector
-  , setMathModeSelector
-  , mathFloatingPointFunctionsSelector
-  , setMathFloatingPointFunctionsSelector
-  , languageVersionSelector
-  , setLanguageVersionSelector
-  , libraryTypeSelector
-  , setLibraryTypeSelector
-  , installNameSelector
-  , setInstallNameSelector
-  , librariesSelector
-  , setLibrariesSelector
-  , preserveInvarianceSelector
-  , setPreserveInvarianceSelector
-  , optimizationLevelSelector
-  , setOptimizationLevelSelector
-  , compileSymbolVisibilitySelector
-  , setCompileSymbolVisibilitySelector
   , allowReferencingUndefinedSymbolsSelector
-  , setAllowReferencingUndefinedSymbolsSelector
-  , maxTotalThreadsPerThreadgroupSelector
-  , setMaxTotalThreadsPerThreadgroupSelector
+  , compileSymbolVisibilitySelector
   , enableLoggingSelector
+  , fastMathEnabledSelector
+  , installNameSelector
+  , languageVersionSelector
+  , librariesSelector
+  , libraryTypeSelector
+  , mathFloatingPointFunctionsSelector
+  , mathModeSelector
+  , maxTotalThreadsPerThreadgroupSelector
+  , optimizationLevelSelector
+  , preprocessorMacrosSelector
+  , preserveInvarianceSelector
+  , setAllowReferencingUndefinedSymbolsSelector
+  , setCompileSymbolVisibilitySelector
   , setEnableLoggingSelector
+  , setFastMathEnabledSelector
+  , setInstallNameSelector
+  , setLanguageVersionSelector
+  , setLibrariesSelector
+  , setLibraryTypeSelector
+  , setMathFloatingPointFunctionsSelector
+  , setMathModeSelector
+  , setMaxTotalThreadsPerThreadgroupSelector
+  , setOptimizationLevelSelector
+  , setPreprocessorMacrosSelector
+  , setPreserveInvarianceSelector
 
   -- * Enum types
   , MTLCompileSymbolVisibility(MTLCompileSymbolVisibility)
@@ -97,15 +98,11 @@ module ObjC.Metal.MTLCompileOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -121,8 +118,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- preprocessorMacros@
 preprocessorMacros :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO (Id NSDictionary)
-preprocessorMacros mtlCompileOptions  =
-    sendMsg mtlCompileOptions (mkSelector "preprocessorMacros") (retPtr retVoid) [] >>= retainedObject . castPtr
+preprocessorMacros mtlCompileOptions =
+  sendMessage mtlCompileOptions preprocessorMacrosSelector
 
 -- | preprocessorNames
 --
@@ -132,9 +129,8 @@ preprocessorMacros mtlCompileOptions  =
 --
 -- ObjC selector: @- setPreprocessorMacros:@
 setPreprocessorMacros :: (IsMTLCompileOptions mtlCompileOptions, IsNSDictionary value) => mtlCompileOptions -> value -> IO ()
-setPreprocessorMacros mtlCompileOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlCompileOptions (mkSelector "setPreprocessorMacros:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreprocessorMacros mtlCompileOptions value =
+  sendMessage mtlCompileOptions setPreprocessorMacrosSelector (toNSDictionary value)
 
 -- | fastMathEnabled
 --
@@ -142,8 +138,8 @@ setPreprocessorMacros mtlCompileOptions  value =
 --
 -- ObjC selector: @- fastMathEnabled@
 fastMathEnabled :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO Bool
-fastMathEnabled mtlCompileOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlCompileOptions (mkSelector "fastMathEnabled") retCULong []
+fastMathEnabled mtlCompileOptions =
+  sendMessage mtlCompileOptions fastMathEnabledSelector
 
 -- | fastMathEnabled
 --
@@ -151,8 +147,8 @@ fastMathEnabled mtlCompileOptions  =
 --
 -- ObjC selector: @- setFastMathEnabled:@
 setFastMathEnabled :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> Bool -> IO ()
-setFastMathEnabled mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setFastMathEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setFastMathEnabled mtlCompileOptions value =
+  sendMessage mtlCompileOptions setFastMathEnabledSelector value
 
 -- | mathMode
 --
@@ -160,8 +156,8 @@ setFastMathEnabled mtlCompileOptions  value =
 --
 -- ObjC selector: @- mathMode@
 mathMode :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO MTLMathMode
-mathMode mtlCompileOptions  =
-    fmap (coerce :: CLong -> MTLMathMode) $ sendMsg mtlCompileOptions (mkSelector "mathMode") retCLong []
+mathMode mtlCompileOptions =
+  sendMessage mtlCompileOptions mathModeSelector
 
 -- | mathMode
 --
@@ -169,8 +165,8 @@ mathMode mtlCompileOptions  =
 --
 -- ObjC selector: @- setMathMode:@
 setMathMode :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> MTLMathMode -> IO ()
-setMathMode mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setMathMode:") retVoid [argCLong (coerce value)]
+setMathMode mtlCompileOptions value =
+  sendMessage mtlCompileOptions setMathModeSelector value
 
 -- | mathFloatingPointFunctions
 --
@@ -178,8 +174,8 @@ setMathMode mtlCompileOptions  value =
 --
 -- ObjC selector: @- mathFloatingPointFunctions@
 mathFloatingPointFunctions :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO MTLMathFloatingPointFunctions
-mathFloatingPointFunctions mtlCompileOptions  =
-    fmap (coerce :: CLong -> MTLMathFloatingPointFunctions) $ sendMsg mtlCompileOptions (mkSelector "mathFloatingPointFunctions") retCLong []
+mathFloatingPointFunctions mtlCompileOptions =
+  sendMessage mtlCompileOptions mathFloatingPointFunctionsSelector
 
 -- | mathFloatingPointFunctions
 --
@@ -187,8 +183,8 @@ mathFloatingPointFunctions mtlCompileOptions  =
 --
 -- ObjC selector: @- setMathFloatingPointFunctions:@
 setMathFloatingPointFunctions :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> MTLMathFloatingPointFunctions -> IO ()
-setMathFloatingPointFunctions mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setMathFloatingPointFunctions:") retVoid [argCLong (coerce value)]
+setMathFloatingPointFunctions mtlCompileOptions value =
+  sendMessage mtlCompileOptions setMathFloatingPointFunctionsSelector value
 
 -- | languageVersion
 --
@@ -196,8 +192,8 @@ setMathFloatingPointFunctions mtlCompileOptions  value =
 --
 -- ObjC selector: @- languageVersion@
 languageVersion :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO MTLLanguageVersion
-languageVersion mtlCompileOptions  =
-    fmap (coerce :: CULong -> MTLLanguageVersion) $ sendMsg mtlCompileOptions (mkSelector "languageVersion") retCULong []
+languageVersion mtlCompileOptions =
+  sendMessage mtlCompileOptions languageVersionSelector
 
 -- | languageVersion
 --
@@ -205,8 +201,8 @@ languageVersion mtlCompileOptions  =
 --
 -- ObjC selector: @- setLanguageVersion:@
 setLanguageVersion :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> MTLLanguageVersion -> IO ()
-setLanguageVersion mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setLanguageVersion:") retVoid [argCULong (coerce value)]
+setLanguageVersion mtlCompileOptions value =
+  sendMessage mtlCompileOptions setLanguageVersionSelector value
 
 -- | type
 --
@@ -216,8 +212,8 @@ setLanguageVersion mtlCompileOptions  value =
 --
 -- ObjC selector: @- libraryType@
 libraryType :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO MTLLibraryType
-libraryType mtlCompileOptions  =
-    fmap (coerce :: CLong -> MTLLibraryType) $ sendMsg mtlCompileOptions (mkSelector "libraryType") retCLong []
+libraryType mtlCompileOptions =
+  sendMessage mtlCompileOptions libraryTypeSelector
 
 -- | type
 --
@@ -227,8 +223,8 @@ libraryType mtlCompileOptions  =
 --
 -- ObjC selector: @- setLibraryType:@
 setLibraryType :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> MTLLibraryType -> IO ()
-setLibraryType mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setLibraryType:") retVoid [argCLong (coerce value)]
+setLibraryType mtlCompileOptions value =
+  sendMessage mtlCompileOptions setLibraryTypeSelector value
 
 -- | installName
 --
@@ -238,8 +234,8 @@ setLibraryType mtlCompileOptions  value =
 --
 -- ObjC selector: @- installName@
 installName :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO (Id NSString)
-installName mtlCompileOptions  =
-    sendMsg mtlCompileOptions (mkSelector "installName") (retPtr retVoid) [] >>= retainedObject . castPtr
+installName mtlCompileOptions =
+  sendMessage mtlCompileOptions installNameSelector
 
 -- | installName
 --
@@ -249,9 +245,8 @@ installName mtlCompileOptions  =
 --
 -- ObjC selector: @- setInstallName:@
 setInstallName :: (IsMTLCompileOptions mtlCompileOptions, IsNSString value) => mtlCompileOptions -> value -> IO ()
-setInstallName mtlCompileOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlCompileOptions (mkSelector "setInstallName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInstallName mtlCompileOptions value =
+  sendMessage mtlCompileOptions setInstallNameSelector (toNSString value)
 
 -- | libraries
 --
@@ -259,8 +254,8 @@ setInstallName mtlCompileOptions  value =
 --
 -- ObjC selector: @- libraries@
 libraries :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO (Id NSArray)
-libraries mtlCompileOptions  =
-    sendMsg mtlCompileOptions (mkSelector "libraries") (retPtr retVoid) [] >>= retainedObject . castPtr
+libraries mtlCompileOptions =
+  sendMessage mtlCompileOptions librariesSelector
 
 -- | libraries
 --
@@ -268,9 +263,8 @@ libraries mtlCompileOptions  =
 --
 -- ObjC selector: @- setLibraries:@
 setLibraries :: (IsMTLCompileOptions mtlCompileOptions, IsNSArray value) => mtlCompileOptions -> value -> IO ()
-setLibraries mtlCompileOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlCompileOptions (mkSelector "setLibraries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLibraries mtlCompileOptions value =
+  sendMessage mtlCompileOptions setLibrariesSelector (toNSArray value)
 
 -- | preserveInvariance
 --
@@ -278,8 +272,8 @@ setLibraries mtlCompileOptions  value =
 --
 -- ObjC selector: @- preserveInvariance@
 preserveInvariance :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO Bool
-preserveInvariance mtlCompileOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlCompileOptions (mkSelector "preserveInvariance") retCULong []
+preserveInvariance mtlCompileOptions =
+  sendMessage mtlCompileOptions preserveInvarianceSelector
 
 -- | preserveInvariance
 --
@@ -287,8 +281,8 @@ preserveInvariance mtlCompileOptions  =
 --
 -- ObjC selector: @- setPreserveInvariance:@
 setPreserveInvariance :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> Bool -> IO ()
-setPreserveInvariance mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setPreserveInvariance:") retVoid [argCULong (if value then 1 else 0)]
+setPreserveInvariance mtlCompileOptions value =
+  sendMessage mtlCompileOptions setPreserveInvarianceSelector value
 
 -- | optimizationLevel
 --
@@ -296,8 +290,8 @@ setPreserveInvariance mtlCompileOptions  value =
 --
 -- ObjC selector: @- optimizationLevel@
 optimizationLevel :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO MTLLibraryOptimizationLevel
-optimizationLevel mtlCompileOptions  =
-    fmap (coerce :: CLong -> MTLLibraryOptimizationLevel) $ sendMsg mtlCompileOptions (mkSelector "optimizationLevel") retCLong []
+optimizationLevel mtlCompileOptions =
+  sendMessage mtlCompileOptions optimizationLevelSelector
 
 -- | optimizationLevel
 --
@@ -305,22 +299,22 @@ optimizationLevel mtlCompileOptions  =
 --
 -- ObjC selector: @- setOptimizationLevel:@
 setOptimizationLevel :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> MTLLibraryOptimizationLevel -> IO ()
-setOptimizationLevel mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setOptimizationLevel:") retVoid [argCLong (coerce value)]
+setOptimizationLevel mtlCompileOptions value =
+  sendMessage mtlCompileOptions setOptimizationLevelSelector value
 
 -- | Adds a compiler command to force the default visibility of symbols to be hidden
 --
 -- ObjC selector: @- compileSymbolVisibility@
 compileSymbolVisibility :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO MTLCompileSymbolVisibility
-compileSymbolVisibility mtlCompileOptions  =
-    fmap (coerce :: CLong -> MTLCompileSymbolVisibility) $ sendMsg mtlCompileOptions (mkSelector "compileSymbolVisibility") retCLong []
+compileSymbolVisibility mtlCompileOptions =
+  sendMessage mtlCompileOptions compileSymbolVisibilitySelector
 
 -- | Adds a compiler command to force the default visibility of symbols to be hidden
 --
 -- ObjC selector: @- setCompileSymbolVisibility:@
 setCompileSymbolVisibility :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> MTLCompileSymbolVisibility -> IO ()
-setCompileSymbolVisibility mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setCompileSymbolVisibility:") retVoid [argCLong (coerce value)]
+setCompileSymbolVisibility mtlCompileOptions value =
+  sendMessage mtlCompileOptions setCompileSymbolVisibilitySelector value
 
 -- | allowReferencingUndefinedSymbols
 --
@@ -328,8 +322,8 @@ setCompileSymbolVisibility mtlCompileOptions  value =
 --
 -- ObjC selector: @- allowReferencingUndefinedSymbols@
 allowReferencingUndefinedSymbols :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO Bool
-allowReferencingUndefinedSymbols mtlCompileOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlCompileOptions (mkSelector "allowReferencingUndefinedSymbols") retCULong []
+allowReferencingUndefinedSymbols mtlCompileOptions =
+  sendMessage mtlCompileOptions allowReferencingUndefinedSymbolsSelector
 
 -- | allowReferencingUndefinedSymbols
 --
@@ -337,8 +331,8 @@ allowReferencingUndefinedSymbols mtlCompileOptions  =
 --
 -- ObjC selector: @- setAllowReferencingUndefinedSymbols:@
 setAllowReferencingUndefinedSymbols :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> Bool -> IO ()
-setAllowReferencingUndefinedSymbols mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setAllowReferencingUndefinedSymbols:") retVoid [argCULong (if value then 1 else 0)]
+setAllowReferencingUndefinedSymbols mtlCompileOptions value =
+  sendMessage mtlCompileOptions setAllowReferencingUndefinedSymbolsSelector value
 
 -- | maxTotalThreadsPerThreadgroup
 --
@@ -346,8 +340,8 @@ setAllowReferencingUndefinedSymbols mtlCompileOptions  value =
 --
 -- ObjC selector: @- maxTotalThreadsPerThreadgroup@
 maxTotalThreadsPerThreadgroup :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO CULong
-maxTotalThreadsPerThreadgroup mtlCompileOptions  =
-    sendMsg mtlCompileOptions (mkSelector "maxTotalThreadsPerThreadgroup") retCULong []
+maxTotalThreadsPerThreadgroup mtlCompileOptions =
+  sendMessage mtlCompileOptions maxTotalThreadsPerThreadgroupSelector
 
 -- | maxTotalThreadsPerThreadgroup
 --
@@ -355,8 +349,8 @@ maxTotalThreadsPerThreadgroup mtlCompileOptions  =
 --
 -- ObjC selector: @- setMaxTotalThreadsPerThreadgroup:@
 setMaxTotalThreadsPerThreadgroup :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> CULong -> IO ()
-setMaxTotalThreadsPerThreadgroup mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setMaxTotalThreadsPerThreadgroup:") retVoid [argCULong value]
+setMaxTotalThreadsPerThreadgroup mtlCompileOptions value =
+  sendMessage mtlCompileOptions setMaxTotalThreadsPerThreadgroupSelector value
 
 -- | enableLogging
 --
@@ -364,8 +358,8 @@ setMaxTotalThreadsPerThreadgroup mtlCompileOptions  value =
 --
 -- ObjC selector: @- enableLogging@
 enableLogging :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> IO Bool
-enableLogging mtlCompileOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlCompileOptions (mkSelector "enableLogging") retCULong []
+enableLogging mtlCompileOptions =
+  sendMessage mtlCompileOptions enableLoggingSelector
 
 -- | enableLogging
 --
@@ -373,122 +367,122 @@ enableLogging mtlCompileOptions  =
 --
 -- ObjC selector: @- setEnableLogging:@
 setEnableLogging :: IsMTLCompileOptions mtlCompileOptions => mtlCompileOptions -> Bool -> IO ()
-setEnableLogging mtlCompileOptions  value =
-    sendMsg mtlCompileOptions (mkSelector "setEnableLogging:") retVoid [argCULong (if value then 1 else 0)]
+setEnableLogging mtlCompileOptions value =
+  sendMessage mtlCompileOptions setEnableLoggingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @preprocessorMacros@
-preprocessorMacrosSelector :: Selector
+preprocessorMacrosSelector :: Selector '[] (Id NSDictionary)
 preprocessorMacrosSelector = mkSelector "preprocessorMacros"
 
 -- | @Selector@ for @setPreprocessorMacros:@
-setPreprocessorMacrosSelector :: Selector
+setPreprocessorMacrosSelector :: Selector '[Id NSDictionary] ()
 setPreprocessorMacrosSelector = mkSelector "setPreprocessorMacros:"
 
 -- | @Selector@ for @fastMathEnabled@
-fastMathEnabledSelector :: Selector
+fastMathEnabledSelector :: Selector '[] Bool
 fastMathEnabledSelector = mkSelector "fastMathEnabled"
 
 -- | @Selector@ for @setFastMathEnabled:@
-setFastMathEnabledSelector :: Selector
+setFastMathEnabledSelector :: Selector '[Bool] ()
 setFastMathEnabledSelector = mkSelector "setFastMathEnabled:"
 
 -- | @Selector@ for @mathMode@
-mathModeSelector :: Selector
+mathModeSelector :: Selector '[] MTLMathMode
 mathModeSelector = mkSelector "mathMode"
 
 -- | @Selector@ for @setMathMode:@
-setMathModeSelector :: Selector
+setMathModeSelector :: Selector '[MTLMathMode] ()
 setMathModeSelector = mkSelector "setMathMode:"
 
 -- | @Selector@ for @mathFloatingPointFunctions@
-mathFloatingPointFunctionsSelector :: Selector
+mathFloatingPointFunctionsSelector :: Selector '[] MTLMathFloatingPointFunctions
 mathFloatingPointFunctionsSelector = mkSelector "mathFloatingPointFunctions"
 
 -- | @Selector@ for @setMathFloatingPointFunctions:@
-setMathFloatingPointFunctionsSelector :: Selector
+setMathFloatingPointFunctionsSelector :: Selector '[MTLMathFloatingPointFunctions] ()
 setMathFloatingPointFunctionsSelector = mkSelector "setMathFloatingPointFunctions:"
 
 -- | @Selector@ for @languageVersion@
-languageVersionSelector :: Selector
+languageVersionSelector :: Selector '[] MTLLanguageVersion
 languageVersionSelector = mkSelector "languageVersion"
 
 -- | @Selector@ for @setLanguageVersion:@
-setLanguageVersionSelector :: Selector
+setLanguageVersionSelector :: Selector '[MTLLanguageVersion] ()
 setLanguageVersionSelector = mkSelector "setLanguageVersion:"
 
 -- | @Selector@ for @libraryType@
-libraryTypeSelector :: Selector
+libraryTypeSelector :: Selector '[] MTLLibraryType
 libraryTypeSelector = mkSelector "libraryType"
 
 -- | @Selector@ for @setLibraryType:@
-setLibraryTypeSelector :: Selector
+setLibraryTypeSelector :: Selector '[MTLLibraryType] ()
 setLibraryTypeSelector = mkSelector "setLibraryType:"
 
 -- | @Selector@ for @installName@
-installNameSelector :: Selector
+installNameSelector :: Selector '[] (Id NSString)
 installNameSelector = mkSelector "installName"
 
 -- | @Selector@ for @setInstallName:@
-setInstallNameSelector :: Selector
+setInstallNameSelector :: Selector '[Id NSString] ()
 setInstallNameSelector = mkSelector "setInstallName:"
 
 -- | @Selector@ for @libraries@
-librariesSelector :: Selector
+librariesSelector :: Selector '[] (Id NSArray)
 librariesSelector = mkSelector "libraries"
 
 -- | @Selector@ for @setLibraries:@
-setLibrariesSelector :: Selector
+setLibrariesSelector :: Selector '[Id NSArray] ()
 setLibrariesSelector = mkSelector "setLibraries:"
 
 -- | @Selector@ for @preserveInvariance@
-preserveInvarianceSelector :: Selector
+preserveInvarianceSelector :: Selector '[] Bool
 preserveInvarianceSelector = mkSelector "preserveInvariance"
 
 -- | @Selector@ for @setPreserveInvariance:@
-setPreserveInvarianceSelector :: Selector
+setPreserveInvarianceSelector :: Selector '[Bool] ()
 setPreserveInvarianceSelector = mkSelector "setPreserveInvariance:"
 
 -- | @Selector@ for @optimizationLevel@
-optimizationLevelSelector :: Selector
+optimizationLevelSelector :: Selector '[] MTLLibraryOptimizationLevel
 optimizationLevelSelector = mkSelector "optimizationLevel"
 
 -- | @Selector@ for @setOptimizationLevel:@
-setOptimizationLevelSelector :: Selector
+setOptimizationLevelSelector :: Selector '[MTLLibraryOptimizationLevel] ()
 setOptimizationLevelSelector = mkSelector "setOptimizationLevel:"
 
 -- | @Selector@ for @compileSymbolVisibility@
-compileSymbolVisibilitySelector :: Selector
+compileSymbolVisibilitySelector :: Selector '[] MTLCompileSymbolVisibility
 compileSymbolVisibilitySelector = mkSelector "compileSymbolVisibility"
 
 -- | @Selector@ for @setCompileSymbolVisibility:@
-setCompileSymbolVisibilitySelector :: Selector
+setCompileSymbolVisibilitySelector :: Selector '[MTLCompileSymbolVisibility] ()
 setCompileSymbolVisibilitySelector = mkSelector "setCompileSymbolVisibility:"
 
 -- | @Selector@ for @allowReferencingUndefinedSymbols@
-allowReferencingUndefinedSymbolsSelector :: Selector
+allowReferencingUndefinedSymbolsSelector :: Selector '[] Bool
 allowReferencingUndefinedSymbolsSelector = mkSelector "allowReferencingUndefinedSymbols"
 
 -- | @Selector@ for @setAllowReferencingUndefinedSymbols:@
-setAllowReferencingUndefinedSymbolsSelector :: Selector
+setAllowReferencingUndefinedSymbolsSelector :: Selector '[Bool] ()
 setAllowReferencingUndefinedSymbolsSelector = mkSelector "setAllowReferencingUndefinedSymbols:"
 
 -- | @Selector@ for @maxTotalThreadsPerThreadgroup@
-maxTotalThreadsPerThreadgroupSelector :: Selector
+maxTotalThreadsPerThreadgroupSelector :: Selector '[] CULong
 maxTotalThreadsPerThreadgroupSelector = mkSelector "maxTotalThreadsPerThreadgroup"
 
 -- | @Selector@ for @setMaxTotalThreadsPerThreadgroup:@
-setMaxTotalThreadsPerThreadgroupSelector :: Selector
+setMaxTotalThreadsPerThreadgroupSelector :: Selector '[CULong] ()
 setMaxTotalThreadsPerThreadgroupSelector = mkSelector "setMaxTotalThreadsPerThreadgroup:"
 
 -- | @Selector@ for @enableLogging@
-enableLoggingSelector :: Selector
+enableLoggingSelector :: Selector '[] Bool
 enableLoggingSelector = mkSelector "enableLogging"
 
 -- | @Selector@ for @setEnableLogging:@
-setEnableLoggingSelector :: Selector
+setEnableLoggingSelector :: Selector '[Bool] ()
 setEnableLoggingSelector = mkSelector "setEnableLogging:"
 

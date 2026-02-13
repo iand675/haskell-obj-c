@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -86,93 +87,89 @@ module ObjC.IOBluetooth.IOBluetoothDevice
   , services
   , handsFreeAudioGateway
   , handsFreeDevice
-  , registerForConnectNotifications_selectorSelector
-  , registerForDisconnectNotification_selectorSelector
-  , deviceWithAddressSelector
-  , withAddressSelector
-  , deviceWithAddressStringSelector
-  , withDeviceRefSelector
-  , getDeviceRefSelector
-  , openL2CAPChannelSync_withPSM_delegateSelector
-  , openL2CAPChannelAsync_withPSM_delegateSelector
-  , openL2CAPChannel_findExisting_newChannelSelector
-  , sendL2CAPEchoRequest_lengthSelector
-  , openRFCOMMChannel_channelSelector
-  , openRFCOMMChannelSync_withChannelID_delegateSelector
-  , openRFCOMMChannelAsync_withChannelID_delegateSelector
-  , getClassOfDeviceSelector
-  , getServiceClassMajorSelector
-  , getDeviceClassMajorSelector
-  , getDeviceClassMinorSelector
-  , getNameSelector
-  , getNameOrAddressSelector
-  , getLastNameUpdateSelector
-  , getAddressSelector
-  , getAddressStringSelector
-  , getPageScanRepetitionModeSelector
-  , getPageScanPeriodModeSelector
-  , getPageScanModeSelector
-  , getClockOffsetSelector
-  , getLastInquiryUpdateSelector
-  , rssiSelector
-  , rawRSSISelector
-  , isConnectedSelector
-  , openConnectionSelector
-  , openConnection_withPageTimeout_authenticationRequiredSelector
-  , closeConnectionSelector
-  , remoteNameRequestSelector
-  , remoteNameRequest_withPageTimeoutSelector
-  , requestAuthenticationSelector
-  , getConnectionHandleSelector
-  , isIncomingSelector
-  , getLinkTypeSelector
-  , getEncryptionModeSelector
-  , performSDPQuerySelector
-  , performSDPQuery_uuidsSelector
-  , getServicesSelector
-  , getLastServicesUpdateSelector
-  , getServiceRecordForUUIDSelector
-  , favoriteDevicesSelector
-  , isFavoriteSelector
   , addToFavoritesSelector
-  , removeFromFavoritesSelector
-  , recentDevicesSelector
-  , recentAccessDateSelector
-  , pairedDevicesSelector
-  , isPairedSelector
-  , setSupervisionTimeoutSelector
-  , openL2CAPChannelSync_withPSM_withConfiguration_delegateSelector
-  , openL2CAPChannelAsync_withPSM_withConfiguration_delegateSelector
+  , addressStringSelector
   , awakeAfterUsingCoderSelector
-  , handsFreeAudioGatewayDriverIDSelector
-  , handsFreeAudioGatewayServiceRecordSelector
-  , handsFreeDeviceDriverIDSelector
-  , handsFreeDeviceServiceRecordSelector
   , classOfDeviceSelector
-  , serviceClassMajorSelector
+  , closeConnectionSelector
+  , connectionHandleSelector
   , deviceClassMajorSelector
   , deviceClassMinorSelector
-  , nameSelector
-  , nameOrAddressSelector
-  , lastNameUpdateSelector
-  , addressStringSelector
-  , connectionHandleSelector
-  , servicesSelector
+  , deviceWithAddressSelector
+  , deviceWithAddressStringSelector
+  , favoriteDevicesSelector
+  , getAddressSelector
+  , getAddressStringSelector
+  , getClassOfDeviceSelector
+  , getClockOffsetSelector
+  , getConnectionHandleSelector
+  , getDeviceClassMajorSelector
+  , getDeviceClassMinorSelector
+  , getDeviceRefSelector
+  , getEncryptionModeSelector
+  , getLastInquiryUpdateSelector
+  , getLastNameUpdateSelector
+  , getLastServicesUpdateSelector
+  , getLinkTypeSelector
+  , getNameOrAddressSelector
+  , getNameSelector
+  , getPageScanModeSelector
+  , getPageScanPeriodModeSelector
+  , getPageScanRepetitionModeSelector
+  , getServiceClassMajorSelector
+  , getServiceRecordForUUIDSelector
+  , getServicesSelector
+  , handsFreeAudioGatewayDriverIDSelector
   , handsFreeAudioGatewaySelector
+  , handsFreeAudioGatewayServiceRecordSelector
+  , handsFreeDeviceDriverIDSelector
   , handsFreeDeviceSelector
+  , handsFreeDeviceServiceRecordSelector
+  , isConnectedSelector
+  , isFavoriteSelector
+  , isIncomingSelector
+  , isPairedSelector
+  , lastNameUpdateSelector
+  , nameOrAddressSelector
+  , nameSelector
+  , openConnectionSelector
+  , openConnection_withPageTimeout_authenticationRequiredSelector
+  , openL2CAPChannelAsync_withPSM_delegateSelector
+  , openL2CAPChannelAsync_withPSM_withConfiguration_delegateSelector
+  , openL2CAPChannelSync_withPSM_delegateSelector
+  , openL2CAPChannelSync_withPSM_withConfiguration_delegateSelector
+  , openL2CAPChannel_findExisting_newChannelSelector
+  , openRFCOMMChannelAsync_withChannelID_delegateSelector
+  , openRFCOMMChannelSync_withChannelID_delegateSelector
+  , openRFCOMMChannel_channelSelector
+  , pairedDevicesSelector
+  , performSDPQuerySelector
+  , performSDPQuery_uuidsSelector
+  , rawRSSISelector
+  , recentAccessDateSelector
+  , recentDevicesSelector
+  , registerForConnectNotifications_selectorSelector
+  , registerForDisconnectNotification_selectorSelector
+  , remoteNameRequestSelector
+  , remoteNameRequest_withPageTimeoutSelector
+  , removeFromFavoritesSelector
+  , requestAuthenticationSelector
+  , rssiSelector
+  , sendL2CAPEchoRequest_lengthSelector
+  , serviceClassMajorSelector
+  , servicesSelector
+  , setSupervisionTimeoutSelector
+  , withAddressSelector
+  , withDeviceRefSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -192,11 +189,11 @@ import ObjC.Foundation.Internal.Classes
 -- Returns: Returns an IOBluetoothUserNotification representing the outstanding device connect notification.                                To unregister the notification, call -unregister on the returned IOBluetoothUserNotification                                object.  If an error is encountered creating the notification, nil is returned.  The returned                                IOBluetoothUserNotification object will be valid for as long as the notification is registered.                                It is not necessary to retain the result.  Once -unregister is called on it, it will no longer                                be valid.
 --
 -- ObjC selector: @+ registerForConnectNotifications:selector:@
-registerForConnectNotifications_selector :: RawId -> Selector -> IO (Id IOBluetoothUserNotification)
+registerForConnectNotifications_selector :: RawId -> Sel -> IO (Id IOBluetoothUserNotification)
 registerForConnectNotifications_selector observer inSelector =
   do
     cls' <- getRequiredClass "IOBluetoothDevice"
-    sendClassMsg cls' (mkSelector "registerForConnectNotifications:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (unSelector inSelector)] >>= retainedObject . castPtr
+    sendClassMessage cls' registerForConnectNotifications_selectorSelector observer inSelector
 
 -- | registerForDisconnectNotification:selector:
 --
@@ -211,9 +208,9 @@ registerForConnectNotifications_selector observer inSelector =
 -- Returns: Returns an IOBluetoothUserNotification representing the outstanding device disconnect notification.                                To unregister the notification, call -unregister of the returned IOBluetoothUserNotification                                object.  If an error is encountered creating the notification, nil is returned.
 --
 -- ObjC selector: @- registerForDisconnectNotification:selector:@
-registerForDisconnectNotification_selector :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> RawId -> Selector -> IO (Id IOBluetoothUserNotification)
-registerForDisconnectNotification_selector ioBluetoothDevice  observer inSelector =
-    sendMsg ioBluetoothDevice (mkSelector "registerForDisconnectNotification:selector:") (retPtr retVoid) [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (unSelector inSelector)] >>= retainedObject . castPtr
+registerForDisconnectNotification_selector :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> RawId -> Sel -> IO (Id IOBluetoothUserNotification)
+registerForDisconnectNotification_selector ioBluetoothDevice observer inSelector =
+  sendMessage ioBluetoothDevice registerForDisconnectNotification_selectorSelector observer inSelector
 
 -- | deviceWithAddress:
 --
@@ -230,14 +227,14 @@ deviceWithAddress :: Const RawId -> IO (Id IOBluetoothDevice)
 deviceWithAddress address =
   do
     cls' <- getRequiredClass "IOBluetoothDevice"
-    sendClassMsg cls' (mkSelector "deviceWithAddress:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst address)) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithAddressSelector address
 
 -- | @+ withAddress:@
 withAddress :: Const RawId -> IO (Id IOBluetoothDevice)
 withAddress address =
   do
     cls' <- getRequiredClass "IOBluetoothDevice"
-    sendClassMsg cls' (mkSelector "withAddress:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst address)) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' withAddressSelector address
 
 -- | deviceWithAddressString:
 --
@@ -254,8 +251,7 @@ deviceWithAddressString :: IsNSString address => address -> IO (Id IOBluetoothDe
 deviceWithAddressString address =
   do
     cls' <- getRequiredClass "IOBluetoothDevice"
-    withObjCPtr address $ \raw_address ->
-      sendClassMsg cls' (mkSelector "deviceWithAddressString:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceWithAddressStringSelector (toNSString address)
 
 -- | withDeviceRef:
 --
@@ -272,7 +268,7 @@ withDeviceRef :: Ptr () -> IO (Id IOBluetoothDevice)
 withDeviceRef deviceRef =
   do
     cls' <- getRequiredClass "IOBluetoothDevice"
-    sendClassMsg cls' (mkSelector "withDeviceRef:") (retPtr retVoid) [argPtr deviceRef] >>= retainedObject . castPtr
+    sendClassMessage cls' withDeviceRefSelector deviceRef
 
 -- | getDeviceRef
 --
@@ -284,8 +280,8 @@ withDeviceRef deviceRef =
 --
 -- ObjC selector: @- getDeviceRef@
 getDeviceRef :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Ptr ())
-getDeviceRef ioBluetoothDevice  =
-    fmap castPtr $ sendMsg ioBluetoothDevice (mkSelector "getDeviceRef") (retPtr retVoid) []
+getDeviceRef ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getDeviceRefSelector
 
 -- | openL2CAPChannelSync:withPSM:delegate:
 --
@@ -305,9 +301,8 @@ getDeviceRef ioBluetoothDevice  =
 --
 -- ObjC selector: @- openL2CAPChannelSync:withPSM:delegate:@
 openL2CAPChannelSync_withPSM_delegate :: (IsIOBluetoothDevice ioBluetoothDevice, IsIOBluetoothL2CAPChannel newChannel) => ioBluetoothDevice -> newChannel -> CUShort -> RawId -> IO CInt
-openL2CAPChannelSync_withPSM_delegate ioBluetoothDevice  newChannel psm channelDelegate =
-  withObjCPtr newChannel $ \raw_newChannel ->
-      sendMsg ioBluetoothDevice (mkSelector "openL2CAPChannelSync:withPSM:delegate:") retCInt [argPtr (castPtr raw_newChannel :: Ptr ()), argCUInt (fromIntegral psm), argPtr (castPtr (unRawId channelDelegate) :: Ptr ())]
+openL2CAPChannelSync_withPSM_delegate ioBluetoothDevice newChannel psm channelDelegate =
+  sendMessage ioBluetoothDevice openL2CAPChannelSync_withPSM_delegateSelector (toIOBluetoothL2CAPChannel newChannel) psm channelDelegate
 
 -- | openL2CAPChannelAsync:withPSM:delegate:
 --
@@ -327,9 +322,8 @@ openL2CAPChannelSync_withPSM_delegate ioBluetoothDevice  newChannel psm channelD
 --
 -- ObjC selector: @- openL2CAPChannelAsync:withPSM:delegate:@
 openL2CAPChannelAsync_withPSM_delegate :: (IsIOBluetoothDevice ioBluetoothDevice, IsIOBluetoothL2CAPChannel newChannel) => ioBluetoothDevice -> newChannel -> CUShort -> RawId -> IO CInt
-openL2CAPChannelAsync_withPSM_delegate ioBluetoothDevice  newChannel psm channelDelegate =
-  withObjCPtr newChannel $ \raw_newChannel ->
-      sendMsg ioBluetoothDevice (mkSelector "openL2CAPChannelAsync:withPSM:delegate:") retCInt [argPtr (castPtr raw_newChannel :: Ptr ()), argCUInt (fromIntegral psm), argPtr (castPtr (unRawId channelDelegate) :: Ptr ())]
+openL2CAPChannelAsync_withPSM_delegate ioBluetoothDevice newChannel psm channelDelegate =
+  sendMessage ioBluetoothDevice openL2CAPChannelAsync_withPSM_delegateSelector (toIOBluetoothL2CAPChannel newChannel) psm channelDelegate
 
 -- | openL2CAPChannel:findExisting:newChannel:
 --
@@ -347,9 +341,8 @@ openL2CAPChannelAsync_withPSM_delegate ioBluetoothDevice  newChannel psm channel
 --
 -- ObjC selector: @- openL2CAPChannel:findExisting:newChannel:@
 openL2CAPChannel_findExisting_newChannel :: (IsIOBluetoothDevice ioBluetoothDevice, IsIOBluetoothL2CAPChannel newChannel) => ioBluetoothDevice -> CUShort -> Bool -> newChannel -> IO CInt
-openL2CAPChannel_findExisting_newChannel ioBluetoothDevice  psm findExisting newChannel =
-  withObjCPtr newChannel $ \raw_newChannel ->
-      sendMsg ioBluetoothDevice (mkSelector "openL2CAPChannel:findExisting:newChannel:") retCInt [argCUInt (fromIntegral psm), argCULong (if findExisting then 1 else 0), argPtr (castPtr raw_newChannel :: Ptr ())]
+openL2CAPChannel_findExisting_newChannel ioBluetoothDevice psm findExisting newChannel =
+  sendMessage ioBluetoothDevice openL2CAPChannel_findExisting_newChannelSelector psm findExisting (toIOBluetoothL2CAPChannel newChannel)
 
 -- | sendL2CAPEchoRequest:length:
 --
@@ -365,8 +358,8 @@ openL2CAPChannel_findExisting_newChannel ioBluetoothDevice  psm findExisting new
 --
 -- ObjC selector: @- sendL2CAPEchoRequest:length:@
 sendL2CAPEchoRequest_length :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> Ptr () -> CUShort -> IO CInt
-sendL2CAPEchoRequest_length ioBluetoothDevice  data_ length_ =
-    sendMsg ioBluetoothDevice (mkSelector "sendL2CAPEchoRequest:length:") retCInt [argPtr data_, argCUInt (fromIntegral length_)]
+sendL2CAPEchoRequest_length ioBluetoothDevice data_ length_ =
+  sendMessage ioBluetoothDevice sendL2CAPEchoRequest_lengthSelector data_ length_
 
 -- | openRFCOMMChannel:channel:
 --
@@ -382,9 +375,8 @@ sendL2CAPEchoRequest_length ioBluetoothDevice  data_ length_ =
 --
 -- ObjC selector: @- openRFCOMMChannel:channel:@
 openRFCOMMChannel_channel :: (IsIOBluetoothDevice ioBluetoothDevice, IsIOBluetoothRFCOMMChannel rfcommChannel) => ioBluetoothDevice -> CUChar -> rfcommChannel -> IO CInt
-openRFCOMMChannel_channel ioBluetoothDevice  channelID rfcommChannel =
-  withObjCPtr rfcommChannel $ \raw_rfcommChannel ->
-      sendMsg ioBluetoothDevice (mkSelector "openRFCOMMChannel:channel:") retCInt [argCUChar channelID, argPtr (castPtr raw_rfcommChannel :: Ptr ())]
+openRFCOMMChannel_channel ioBluetoothDevice channelID rfcommChannel =
+  sendMessage ioBluetoothDevice openRFCOMMChannel_channelSelector channelID (toIOBluetoothRFCOMMChannel rfcommChannel)
 
 -- | openRFCOMMChannelSync:withChannelID:delegate:
 --
@@ -406,9 +398,8 @@ openRFCOMMChannel_channel ioBluetoothDevice  channelID rfcommChannel =
 --
 -- ObjC selector: @- openRFCOMMChannelSync:withChannelID:delegate:@
 openRFCOMMChannelSync_withChannelID_delegate :: (IsIOBluetoothDevice ioBluetoothDevice, IsIOBluetoothRFCOMMChannel rfcommChannel) => ioBluetoothDevice -> rfcommChannel -> CUChar -> RawId -> IO CInt
-openRFCOMMChannelSync_withChannelID_delegate ioBluetoothDevice  rfcommChannel channelID channelDelegate =
-  withObjCPtr rfcommChannel $ \raw_rfcommChannel ->
-      sendMsg ioBluetoothDevice (mkSelector "openRFCOMMChannelSync:withChannelID:delegate:") retCInt [argPtr (castPtr raw_rfcommChannel :: Ptr ()), argCUChar channelID, argPtr (castPtr (unRawId channelDelegate) :: Ptr ())]
+openRFCOMMChannelSync_withChannelID_delegate ioBluetoothDevice rfcommChannel channelID channelDelegate =
+  sendMessage ioBluetoothDevice openRFCOMMChannelSync_withChannelID_delegateSelector (toIOBluetoothRFCOMMChannel rfcommChannel) channelID channelDelegate
 
 -- | openRFCOMMChannelAsync:withChannelID:delegate:
 --
@@ -430,44 +421,43 @@ openRFCOMMChannelSync_withChannelID_delegate ioBluetoothDevice  rfcommChannel ch
 --
 -- ObjC selector: @- openRFCOMMChannelAsync:withChannelID:delegate:@
 openRFCOMMChannelAsync_withChannelID_delegate :: (IsIOBluetoothDevice ioBluetoothDevice, IsIOBluetoothRFCOMMChannel rfcommChannel) => ioBluetoothDevice -> rfcommChannel -> CUChar -> RawId -> IO CInt
-openRFCOMMChannelAsync_withChannelID_delegate ioBluetoothDevice  rfcommChannel channelID channelDelegate =
-  withObjCPtr rfcommChannel $ \raw_rfcommChannel ->
-      sendMsg ioBluetoothDevice (mkSelector "openRFCOMMChannelAsync:withChannelID:delegate:") retCInt [argPtr (castPtr raw_rfcommChannel :: Ptr ()), argCUChar channelID, argPtr (castPtr (unRawId channelDelegate) :: Ptr ())]
+openRFCOMMChannelAsync_withChannelID_delegate ioBluetoothDevice rfcommChannel channelID channelDelegate =
+  sendMessage ioBluetoothDevice openRFCOMMChannelAsync_withChannelID_delegateSelector (toIOBluetoothRFCOMMChannel rfcommChannel) channelID channelDelegate
 
 -- | @- getClassOfDevice@
 getClassOfDevice :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUInt
-getClassOfDevice ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getClassOfDevice") retCUInt []
+getClassOfDevice ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getClassOfDeviceSelector
 
 -- | @- getServiceClassMajor@
 getServiceClassMajor :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUInt
-getServiceClassMajor ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getServiceClassMajor") retCUInt []
+getServiceClassMajor ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getServiceClassMajorSelector
 
 -- | @- getDeviceClassMajor@
 getDeviceClassMajor :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUInt
-getDeviceClassMajor ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getDeviceClassMajor") retCUInt []
+getDeviceClassMajor ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getDeviceClassMajorSelector
 
 -- | @- getDeviceClassMinor@
 getDeviceClassMinor :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUInt
-getDeviceClassMinor ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getDeviceClassMinor") retCUInt []
+getDeviceClassMinor ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getDeviceClassMinorSelector
 
 -- | @- getName@
 getName :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSString)
-getName ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getName") (retPtr retVoid) [] >>= retainedObject . castPtr
+getName ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getNameSelector
 
 -- | @- getNameOrAddress@
 getNameOrAddress :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSString)
-getNameOrAddress ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getNameOrAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+getNameOrAddress ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getNameOrAddressSelector
 
 -- | @- getLastNameUpdate@
 getLastNameUpdate :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSDate)
-getLastNameUpdate ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getLastNameUpdate") (retPtr retVoid) [] >>= retainedObject . castPtr
+getLastNameUpdate ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getLastNameUpdateSelector
 
 -- | getAddress
 --
@@ -477,13 +467,13 @@ getLastNameUpdate ioBluetoothDevice  =
 --
 -- ObjC selector: @- getAddress@
 getAddress :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Const RawId)
-getAddress ioBluetoothDevice  =
-    fmap Const $ fmap (RawId . castPtr) $ sendMsg ioBluetoothDevice (mkSelector "getAddress") (retPtr retVoid) []
+getAddress ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getAddressSelector
 
 -- | @- getAddressString@
 getAddressString :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSString)
-getAddressString ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getAddressString") (retPtr retVoid) [] >>= retainedObject . castPtr
+getAddressString ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getAddressStringSelector
 
 -- | getPageScanRepetitionMode
 --
@@ -495,8 +485,8 @@ getAddressString ioBluetoothDevice  =
 --
 -- ObjC selector: @- getPageScanRepetitionMode@
 getPageScanRepetitionMode :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUChar
-getPageScanRepetitionMode ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getPageScanRepetitionMode") retCUChar []
+getPageScanRepetitionMode ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getPageScanRepetitionModeSelector
 
 -- | getPageScanPeriodMode
 --
@@ -508,8 +498,8 @@ getPageScanRepetitionMode ioBluetoothDevice  =
 --
 -- ObjC selector: @- getPageScanPeriodMode@
 getPageScanPeriodMode :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUChar
-getPageScanPeriodMode ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getPageScanPeriodMode") retCUChar []
+getPageScanPeriodMode ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getPageScanPeriodModeSelector
 
 -- | getPageScanMode
 --
@@ -521,8 +511,8 @@ getPageScanPeriodMode ioBluetoothDevice  =
 --
 -- ObjC selector: @- getPageScanMode@
 getPageScanMode :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUChar
-getPageScanMode ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getPageScanMode") retCUChar []
+getPageScanMode ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getPageScanModeSelector
 
 -- | getClockOffset
 --
@@ -534,8 +524,8 @@ getPageScanMode ioBluetoothDevice  =
 --
 -- ObjC selector: @- getClockOffset@
 getClockOffset :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUShort
-getClockOffset ioBluetoothDevice  =
-    fmap fromIntegral $ sendMsg ioBluetoothDevice (mkSelector "getClockOffset") retCUInt []
+getClockOffset ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getClockOffsetSelector
 
 -- | getLastInquiryUpdate
 --
@@ -545,8 +535,8 @@ getClockOffset ioBluetoothDevice  =
 --
 -- ObjC selector: @- getLastInquiryUpdate@
 getLastInquiryUpdate :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSDate)
-getLastInquiryUpdate ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getLastInquiryUpdate") (retPtr retVoid) [] >>= retainedObject . castPtr
+getLastInquiryUpdate ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getLastInquiryUpdateSelector
 
 -- | RSSI
 --
@@ -556,8 +546,8 @@ getLastInquiryUpdate ioBluetoothDevice  =
 --
 -- ObjC selector: @- RSSI@
 rssi :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CSChar
-rssi ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "RSSI") retCSChar []
+rssi ioBluetoothDevice =
+  sendMessage ioBluetoothDevice rssiSelector
 
 -- | rawRSSI
 --
@@ -569,8 +559,8 @@ rssi ioBluetoothDevice  =
 --
 -- ObjC selector: @- rawRSSI@
 rawRSSI :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CSChar
-rawRSSI ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "rawRSSI") retCSChar []
+rawRSSI ioBluetoothDevice =
+  sendMessage ioBluetoothDevice rawRSSISelector
 
 -- | isConnected
 --
@@ -580,8 +570,8 @@ rawRSSI ioBluetoothDevice  =
 --
 -- ObjC selector: @- isConnected@
 isConnected :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO Bool
-isConnected ioBluetoothDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothDevice (mkSelector "isConnected") retCULong []
+isConnected ioBluetoothDevice =
+  sendMessage ioBluetoothDevice isConnectedSelector
 
 -- | openConnection
 --
@@ -595,8 +585,8 @@ isConnected ioBluetoothDevice  =
 --
 -- ObjC selector: @- openConnection@
 openConnection :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CInt
-openConnection ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "openConnection") retCInt []
+openConnection ioBluetoothDevice =
+  sendMessage ioBluetoothDevice openConnectionSelector
 
 -- | openConnection:withPageTimeout:authenticationRequired:
 --
@@ -618,8 +608,8 @@ openConnection ioBluetoothDevice  =
 --
 -- ObjC selector: @- openConnection:withPageTimeout:authenticationRequired:@
 openConnection_withPageTimeout_authenticationRequired :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> RawId -> CUShort -> Bool -> IO CInt
-openConnection_withPageTimeout_authenticationRequired ioBluetoothDevice  target pageTimeoutValue authenticationRequired =
-    sendMsg ioBluetoothDevice (mkSelector "openConnection:withPageTimeout:authenticationRequired:") retCInt [argPtr (castPtr (unRawId target) :: Ptr ()), argCUInt (fromIntegral pageTimeoutValue), argCULong (if authenticationRequired then 1 else 0)]
+openConnection_withPageTimeout_authenticationRequired ioBluetoothDevice target pageTimeoutValue authenticationRequired =
+  sendMessage ioBluetoothDevice openConnection_withPageTimeout_authenticationRequiredSelector target pageTimeoutValue authenticationRequired
 
 -- | closeConnection
 --
@@ -631,8 +621,8 @@ openConnection_withPageTimeout_authenticationRequired ioBluetoothDevice  target 
 --
 -- ObjC selector: @- closeConnection@
 closeConnection :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CInt
-closeConnection ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "closeConnection") retCInt []
+closeConnection ioBluetoothDevice =
+  sendMessage ioBluetoothDevice closeConnectionSelector
 
 -- | remoteNameRequest:
 --
@@ -650,8 +640,8 @@ closeConnection ioBluetoothDevice  =
 --
 -- ObjC selector: @- remoteNameRequest:@
 remoteNameRequest :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> RawId -> IO CInt
-remoteNameRequest ioBluetoothDevice  target =
-    sendMsg ioBluetoothDevice (mkSelector "remoteNameRequest:") retCInt [argPtr (castPtr (unRawId target) :: Ptr ())]
+remoteNameRequest ioBluetoothDevice target =
+  sendMessage ioBluetoothDevice remoteNameRequestSelector target
 
 -- | remoteNameRequest:withPageTimeout:
 --
@@ -669,8 +659,8 @@ remoteNameRequest ioBluetoothDevice  target =
 --
 -- ObjC selector: @- remoteNameRequest:withPageTimeout:@
 remoteNameRequest_withPageTimeout :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> RawId -> CUShort -> IO CInt
-remoteNameRequest_withPageTimeout ioBluetoothDevice  target pageTimeoutValue =
-    sendMsg ioBluetoothDevice (mkSelector "remoteNameRequest:withPageTimeout:") retCInt [argPtr (castPtr (unRawId target) :: Ptr ()), argCUInt (fromIntegral pageTimeoutValue)]
+remoteNameRequest_withPageTimeout ioBluetoothDevice target pageTimeoutValue =
+  sendMessage ioBluetoothDevice remoteNameRequest_withPageTimeoutSelector target pageTimeoutValue
 
 -- | requestAuthentication
 --
@@ -682,13 +672,13 @@ remoteNameRequest_withPageTimeout ioBluetoothDevice  target pageTimeoutValue =
 --
 -- ObjC selector: @- requestAuthentication@
 requestAuthentication :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CInt
-requestAuthentication ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "requestAuthentication") retCInt []
+requestAuthentication ioBluetoothDevice =
+  sendMessage ioBluetoothDevice requestAuthenticationSelector
 
 -- | @- getConnectionHandle@
 getConnectionHandle :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUShort
-getConnectionHandle ioBluetoothDevice  =
-    fmap fromIntegral $ sendMsg ioBluetoothDevice (mkSelector "getConnectionHandle") retCUInt []
+getConnectionHandle ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getConnectionHandleSelector
 
 -- | isIncoming
 --
@@ -702,8 +692,8 @@ getConnectionHandle ioBluetoothDevice  =
 --
 -- ObjC selector: @- isIncoming@
 isIncoming :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO Bool
-isIncoming ioBluetoothDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothDevice (mkSelector "isIncoming") retCULong []
+isIncoming ioBluetoothDevice =
+  sendMessage ioBluetoothDevice isIncomingSelector
 
 -- | getLinkType
 --
@@ -715,8 +705,8 @@ isIncoming ioBluetoothDevice  =
 --
 -- ObjC selector: @- getLinkType@
 getLinkType :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUChar
-getLinkType ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getLinkType") retCUChar []
+getLinkType ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getLinkTypeSelector
 
 -- | getEncryptionMode
 --
@@ -728,8 +718,8 @@ getLinkType ioBluetoothDevice  =
 --
 -- ObjC selector: @- getEncryptionMode@
 getEncryptionMode :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUChar
-getEncryptionMode ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getEncryptionMode") retCUChar []
+getEncryptionMode ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getEncryptionModeSelector
 
 -- | performSDPQuery:
 --
@@ -743,8 +733,8 @@ getEncryptionMode ioBluetoothDevice  =
 --
 -- ObjC selector: @- performSDPQuery:@
 performSDPQuery :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> RawId -> IO CInt
-performSDPQuery ioBluetoothDevice  target =
-    sendMsg ioBluetoothDevice (mkSelector "performSDPQuery:") retCInt [argPtr (castPtr (unRawId target) :: Ptr ())]
+performSDPQuery ioBluetoothDevice target =
+  sendMessage ioBluetoothDevice performSDPQuerySelector target
 
 -- | performSDPQuery:uuids:
 --
@@ -762,14 +752,13 @@ performSDPQuery ioBluetoothDevice  target =
 --
 -- ObjC selector: @- performSDPQuery:uuids:@
 performSDPQuery_uuids :: (IsIOBluetoothDevice ioBluetoothDevice, IsNSArray uuidArray) => ioBluetoothDevice -> RawId -> uuidArray -> IO CInt
-performSDPQuery_uuids ioBluetoothDevice  target uuidArray =
-  withObjCPtr uuidArray $ \raw_uuidArray ->
-      sendMsg ioBluetoothDevice (mkSelector "performSDPQuery:uuids:") retCInt [argPtr (castPtr (unRawId target) :: Ptr ()), argPtr (castPtr raw_uuidArray :: Ptr ())]
+performSDPQuery_uuids ioBluetoothDevice target uuidArray =
+  sendMessage ioBluetoothDevice performSDPQuery_uuidsSelector target (toNSArray uuidArray)
 
 -- | @- getServices@
 getServices :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSArray)
-getServices ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getServices") (retPtr retVoid) [] >>= retainedObject . castPtr
+getServices ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getServicesSelector
 
 -- | getLastServicesUpdate
 --
@@ -779,8 +768,8 @@ getServices ioBluetoothDevice  =
 --
 -- ObjC selector: @- getLastServicesUpdate@
 getLastServicesUpdate :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSDate)
-getLastServicesUpdate ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "getLastServicesUpdate") (retPtr retVoid) [] >>= retainedObject . castPtr
+getLastServicesUpdate ioBluetoothDevice =
+  sendMessage ioBluetoothDevice getLastServicesUpdateSelector
 
 -- | getServiceRecordForUUID
 --
@@ -794,9 +783,8 @@ getLastServicesUpdate ioBluetoothDevice  =
 --
 -- ObjC selector: @- getServiceRecordForUUID:@
 getServiceRecordForUUID :: (IsIOBluetoothDevice ioBluetoothDevice, IsIOBluetoothSDPUUID sdpUUID) => ioBluetoothDevice -> sdpUUID -> IO (Id IOBluetoothSDPServiceRecord)
-getServiceRecordForUUID ioBluetoothDevice  sdpUUID =
-  withObjCPtr sdpUUID $ \raw_sdpUUID ->
-      sendMsg ioBluetoothDevice (mkSelector "getServiceRecordForUUID:") (retPtr retVoid) [argPtr (castPtr raw_sdpUUID :: Ptr ())] >>= retainedObject . castPtr
+getServiceRecordForUUID ioBluetoothDevice sdpUUID =
+  sendMessage ioBluetoothDevice getServiceRecordForUUIDSelector (toIOBluetoothSDPUUID sdpUUID)
 
 -- | favoriteDevices
 --
@@ -813,7 +801,7 @@ favoriteDevices :: IO (Id NSArray)
 favoriteDevices  =
   do
     cls' <- getRequiredClass "IOBluetoothDevice"
-    sendClassMsg cls' (mkSelector "favoriteDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' favoriteDevicesSelector
 
 -- | isFavorite
 --
@@ -825,8 +813,8 @@ favoriteDevices  =
 --
 -- ObjC selector: @- isFavorite@
 isFavorite :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO Bool
-isFavorite ioBluetoothDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothDevice (mkSelector "isFavorite") retCULong []
+isFavorite ioBluetoothDevice =
+  sendMessage ioBluetoothDevice isFavoriteSelector
 
 -- | addToFavorites
 --
@@ -838,8 +826,8 @@ isFavorite ioBluetoothDevice  =
 --
 -- ObjC selector: @- addToFavorites@
 addToFavorites :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CInt
-addToFavorites ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "addToFavorites") retCInt []
+addToFavorites ioBluetoothDevice =
+  sendMessage ioBluetoothDevice addToFavoritesSelector
 
 -- | removeFromFavorites
 --
@@ -851,8 +839,8 @@ addToFavorites ioBluetoothDevice  =
 --
 -- ObjC selector: @- removeFromFavorites@
 removeFromFavorites :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CInt
-removeFromFavorites ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "removeFromFavorites") retCInt []
+removeFromFavorites ioBluetoothDevice =
+  sendMessage ioBluetoothDevice removeFromFavoritesSelector
 
 -- | recentDevices
 --
@@ -871,7 +859,7 @@ recentDevices :: CULong -> IO (Id NSArray)
 recentDevices numDevices =
   do
     cls' <- getRequiredClass "IOBluetoothDevice"
-    sendClassMsg cls' (mkSelector "recentDevices:") (retPtr retVoid) [argCULong numDevices] >>= retainedObject . castPtr
+    sendClassMessage cls' recentDevicesSelector numDevices
 
 -- | recentAccessDate
 --
@@ -885,8 +873,8 @@ recentDevices numDevices =
 --
 -- ObjC selector: @- recentAccessDate@
 recentAccessDate :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSDate)
-recentAccessDate ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "recentAccessDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+recentAccessDate ioBluetoothDevice =
+  sendMessage ioBluetoothDevice recentAccessDateSelector
 
 -- | pairedDevices
 --
@@ -903,7 +891,7 @@ pairedDevices :: IO (Id NSArray)
 pairedDevices  =
   do
     cls' <- getRequiredClass "IOBluetoothDevice"
-    sendClassMsg cls' (mkSelector "pairedDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pairedDevicesSelector
 
 -- | isPaired
 --
@@ -915,8 +903,8 @@ pairedDevices  =
 --
 -- ObjC selector: @- isPaired@
 isPaired :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO Bool
-isPaired ioBluetoothDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothDevice (mkSelector "isPaired") retCULong []
+isPaired ioBluetoothDevice =
+  sendMessage ioBluetoothDevice isPairedSelector
 
 -- | setSupervisionTimeout
 --
@@ -930,8 +918,8 @@ isPaired ioBluetoothDevice  =
 --
 -- ObjC selector: @- setSupervisionTimeout:@
 setSupervisionTimeout :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> CUShort -> IO CInt
-setSupervisionTimeout ioBluetoothDevice  timeout =
-    sendMsg ioBluetoothDevice (mkSelector "setSupervisionTimeout:") retCInt [argCUInt (fromIntegral timeout)]
+setSupervisionTimeout ioBluetoothDevice timeout =
+  sendMessage ioBluetoothDevice setSupervisionTimeoutSelector timeout
 
 -- | openL2CAPChannelSync:withPSM:withConfiguration:delegate:
 --
@@ -953,10 +941,8 @@ setSupervisionTimeout ioBluetoothDevice  timeout =
 --
 -- ObjC selector: @- openL2CAPChannelSync:withPSM:withConfiguration:delegate:@
 openL2CAPChannelSync_withPSM_withConfiguration_delegate :: (IsIOBluetoothDevice ioBluetoothDevice, IsIOBluetoothL2CAPChannel newChannel, IsNSDictionary channelConfiguration) => ioBluetoothDevice -> newChannel -> CUShort -> channelConfiguration -> RawId -> IO CInt
-openL2CAPChannelSync_withPSM_withConfiguration_delegate ioBluetoothDevice  newChannel psm channelConfiguration channelDelegate =
-  withObjCPtr newChannel $ \raw_newChannel ->
-    withObjCPtr channelConfiguration $ \raw_channelConfiguration ->
-        sendMsg ioBluetoothDevice (mkSelector "openL2CAPChannelSync:withPSM:withConfiguration:delegate:") retCInt [argPtr (castPtr raw_newChannel :: Ptr ()), argCUInt (fromIntegral psm), argPtr (castPtr raw_channelConfiguration :: Ptr ()), argPtr (castPtr (unRawId channelDelegate) :: Ptr ())]
+openL2CAPChannelSync_withPSM_withConfiguration_delegate ioBluetoothDevice newChannel psm channelConfiguration channelDelegate =
+  sendMessage ioBluetoothDevice openL2CAPChannelSync_withPSM_withConfiguration_delegateSelector (toIOBluetoothL2CAPChannel newChannel) psm (toNSDictionary channelConfiguration) channelDelegate
 
 -- | openL2CAPChannelAsync:withPSM:withConfiguration:delegate:
 --
@@ -978,16 +964,13 @@ openL2CAPChannelSync_withPSM_withConfiguration_delegate ioBluetoothDevice  newCh
 --
 -- ObjC selector: @- openL2CAPChannelAsync:withPSM:withConfiguration:delegate:@
 openL2CAPChannelAsync_withPSM_withConfiguration_delegate :: (IsIOBluetoothDevice ioBluetoothDevice, IsIOBluetoothL2CAPChannel newChannel, IsNSDictionary channelConfiguration) => ioBluetoothDevice -> newChannel -> CUShort -> channelConfiguration -> RawId -> IO CInt
-openL2CAPChannelAsync_withPSM_withConfiguration_delegate ioBluetoothDevice  newChannel psm channelConfiguration channelDelegate =
-  withObjCPtr newChannel $ \raw_newChannel ->
-    withObjCPtr channelConfiguration $ \raw_channelConfiguration ->
-        sendMsg ioBluetoothDevice (mkSelector "openL2CAPChannelAsync:withPSM:withConfiguration:delegate:") retCInt [argPtr (castPtr raw_newChannel :: Ptr ()), argCUInt (fromIntegral psm), argPtr (castPtr raw_channelConfiguration :: Ptr ()), argPtr (castPtr (unRawId channelDelegate) :: Ptr ())]
+openL2CAPChannelAsync_withPSM_withConfiguration_delegate ioBluetoothDevice newChannel psm channelConfiguration channelDelegate =
+  sendMessage ioBluetoothDevice openL2CAPChannelAsync_withPSM_withConfiguration_delegateSelector (toIOBluetoothL2CAPChannel newChannel) psm (toNSDictionary channelConfiguration) channelDelegate
 
 -- | @- awakeAfterUsingCoder:@
 awakeAfterUsingCoder :: (IsIOBluetoothDevice ioBluetoothDevice, IsNSCoder coder) => ioBluetoothDevice -> coder -> IO RawId
-awakeAfterUsingCoder ioBluetoothDevice  coder =
-  withObjCPtr coder $ \raw_coder ->
-      fmap (RawId . castPtr) $ sendMsg ioBluetoothDevice (mkSelector "awakeAfterUsingCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())]
+awakeAfterUsingCoder ioBluetoothDevice coder =
+  sendMessage ioBluetoothDevice awakeAfterUsingCoderSelector (toNSCoder coder)
 
 -- | handsFreeAudioGatewayDriverID
 --
@@ -999,8 +982,8 @@ awakeAfterUsingCoder ioBluetoothDevice  coder =
 --
 -- ObjC selector: @- handsFreeAudioGatewayDriverID@
 handsFreeAudioGatewayDriverID :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSString)
-handsFreeAudioGatewayDriverID ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "handsFreeAudioGatewayDriverID") (retPtr retVoid) [] >>= retainedObject . castPtr
+handsFreeAudioGatewayDriverID ioBluetoothDevice =
+  sendMessage ioBluetoothDevice handsFreeAudioGatewayDriverIDSelector
 
 -- | handsFreeAudioGatewayServiceRecord
 --
@@ -1012,8 +995,8 @@ handsFreeAudioGatewayDriverID ioBluetoothDevice  =
 --
 -- ObjC selector: @- handsFreeAudioGatewayServiceRecord@
 handsFreeAudioGatewayServiceRecord :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id IOBluetoothSDPServiceRecord)
-handsFreeAudioGatewayServiceRecord ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "handsFreeAudioGatewayServiceRecord") (retPtr retVoid) [] >>= retainedObject . castPtr
+handsFreeAudioGatewayServiceRecord ioBluetoothDevice =
+  sendMessage ioBluetoothDevice handsFreeAudioGatewayServiceRecordSelector
 
 -- | handsFreeDeviceDriverID
 --
@@ -1025,8 +1008,8 @@ handsFreeAudioGatewayServiceRecord ioBluetoothDevice  =
 --
 -- ObjC selector: @- handsFreeDeviceDriverID@
 handsFreeDeviceDriverID :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSString)
-handsFreeDeviceDriverID ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "handsFreeDeviceDriverID") (retPtr retVoid) [] >>= retainedObject . castPtr
+handsFreeDeviceDriverID ioBluetoothDevice =
+  sendMessage ioBluetoothDevice handsFreeDeviceDriverIDSelector
 
 -- | handsFreeDeviceServiceRecord
 --
@@ -1038,8 +1021,8 @@ handsFreeDeviceDriverID ioBluetoothDevice  =
 --
 -- ObjC selector: @- handsFreeDeviceServiceRecord@
 handsFreeDeviceServiceRecord :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id IOBluetoothSDPServiceRecord)
-handsFreeDeviceServiceRecord ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "handsFreeDeviceServiceRecord") (retPtr retVoid) [] >>= retainedObject . castPtr
+handsFreeDeviceServiceRecord ioBluetoothDevice =
+  sendMessage ioBluetoothDevice handsFreeDeviceServiceRecordSelector
 
 -- | getClassOfDevice
 --
@@ -1051,8 +1034,8 @@ handsFreeDeviceServiceRecord ioBluetoothDevice  =
 --
 -- ObjC selector: @- classOfDevice@
 classOfDevice :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUInt
-classOfDevice ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "classOfDevice") retCUInt []
+classOfDevice ioBluetoothDevice =
+  sendMessage ioBluetoothDevice classOfDeviceSelector
 
 -- | getServiceClassMajor
 --
@@ -1064,8 +1047,8 @@ classOfDevice ioBluetoothDevice  =
 --
 -- ObjC selector: @- serviceClassMajor@
 serviceClassMajor :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUInt
-serviceClassMajor ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "serviceClassMajor") retCUInt []
+serviceClassMajor ioBluetoothDevice =
+  sendMessage ioBluetoothDevice serviceClassMajorSelector
 
 -- | getDeviceClassMajor
 --
@@ -1077,8 +1060,8 @@ serviceClassMajor ioBluetoothDevice  =
 --
 -- ObjC selector: @- deviceClassMajor@
 deviceClassMajor :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUInt
-deviceClassMajor ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "deviceClassMajor") retCUInt []
+deviceClassMajor ioBluetoothDevice =
+  sendMessage ioBluetoothDevice deviceClassMajorSelector
 
 -- | getDeviceClassMinor
 --
@@ -1090,8 +1073,8 @@ deviceClassMajor ioBluetoothDevice  =
 --
 -- ObjC selector: @- deviceClassMinor@
 deviceClassMinor :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUInt
-deviceClassMinor ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "deviceClassMinor") retCUInt []
+deviceClassMinor ioBluetoothDevice =
+  sendMessage ioBluetoothDevice deviceClassMinorSelector
 
 -- | getName
 --
@@ -1103,8 +1086,8 @@ deviceClassMinor ioBluetoothDevice  =
 --
 -- ObjC selector: @- name@
 name :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSString)
-name ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name ioBluetoothDevice =
+  sendMessage ioBluetoothDevice nameSelector
 
 -- | getNameOrAddress
 --
@@ -1116,8 +1099,8 @@ name ioBluetoothDevice  =
 --
 -- ObjC selector: @- nameOrAddress@
 nameOrAddress :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSString)
-nameOrAddress ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "nameOrAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+nameOrAddress ioBluetoothDevice =
+  sendMessage ioBluetoothDevice nameOrAddressSelector
 
 -- | getLastNameUpdate
 --
@@ -1127,8 +1110,8 @@ nameOrAddress ioBluetoothDevice  =
 --
 -- ObjC selector: @- lastNameUpdate@
 lastNameUpdate :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSDate)
-lastNameUpdate ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "lastNameUpdate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastNameUpdate ioBluetoothDevice =
+  sendMessage ioBluetoothDevice lastNameUpdateSelector
 
 -- | getAddressString
 --
@@ -1140,8 +1123,8 @@ lastNameUpdate ioBluetoothDevice  =
 --
 -- ObjC selector: @- addressString@
 addressString :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSString)
-addressString ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "addressString") (retPtr retVoid) [] >>= retainedObject . castPtr
+addressString ioBluetoothDevice =
+  sendMessage ioBluetoothDevice addressStringSelector
 
 -- | getConnectionHandle
 --
@@ -1153,8 +1136,8 @@ addressString ioBluetoothDevice  =
 --
 -- ObjC selector: @- connectionHandle@
 connectionHandle :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO CUShort
-connectionHandle ioBluetoothDevice  =
-    fmap fromIntegral $ sendMsg ioBluetoothDevice (mkSelector "connectionHandle") retCUInt []
+connectionHandle ioBluetoothDevice =
+  sendMessage ioBluetoothDevice connectionHandleSelector
 
 -- | services
 --
@@ -1168,8 +1151,8 @@ connectionHandle ioBluetoothDevice  =
 --
 -- ObjC selector: @- services@
 services :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO (Id NSArray)
-services ioBluetoothDevice  =
-    sendMsg ioBluetoothDevice (mkSelector "services") (retPtr retVoid) [] >>= retainedObject . castPtr
+services ioBluetoothDevice =
+  sendMessage ioBluetoothDevice servicesSelector
 
 -- | isHandsFreeAudioGateway
 --
@@ -1181,8 +1164,8 @@ services ioBluetoothDevice  =
 --
 -- ObjC selector: @- handsFreeAudioGateway@
 handsFreeAudioGateway :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO Bool
-handsFreeAudioGateway ioBluetoothDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothDevice (mkSelector "handsFreeAudioGateway") retCULong []
+handsFreeAudioGateway ioBluetoothDevice =
+  sendMessage ioBluetoothDevice handsFreeAudioGatewaySelector
 
 -- | isHandsFreeDevice
 --
@@ -1194,306 +1177,306 @@ handsFreeAudioGateway ioBluetoothDevice  =
 --
 -- ObjC selector: @- handsFreeDevice@
 handsFreeDevice :: IsIOBluetoothDevice ioBluetoothDevice => ioBluetoothDevice -> IO Bool
-handsFreeDevice ioBluetoothDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ioBluetoothDevice (mkSelector "handsFreeDevice") retCULong []
+handsFreeDevice ioBluetoothDevice =
+  sendMessage ioBluetoothDevice handsFreeDeviceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registerForConnectNotifications:selector:@
-registerForConnectNotifications_selectorSelector :: Selector
+registerForConnectNotifications_selectorSelector :: Selector '[RawId, Sel] (Id IOBluetoothUserNotification)
 registerForConnectNotifications_selectorSelector = mkSelector "registerForConnectNotifications:selector:"
 
 -- | @Selector@ for @registerForDisconnectNotification:selector:@
-registerForDisconnectNotification_selectorSelector :: Selector
+registerForDisconnectNotification_selectorSelector :: Selector '[RawId, Sel] (Id IOBluetoothUserNotification)
 registerForDisconnectNotification_selectorSelector = mkSelector "registerForDisconnectNotification:selector:"
 
 -- | @Selector@ for @deviceWithAddress:@
-deviceWithAddressSelector :: Selector
+deviceWithAddressSelector :: Selector '[Const RawId] (Id IOBluetoothDevice)
 deviceWithAddressSelector = mkSelector "deviceWithAddress:"
 
 -- | @Selector@ for @withAddress:@
-withAddressSelector :: Selector
+withAddressSelector :: Selector '[Const RawId] (Id IOBluetoothDevice)
 withAddressSelector = mkSelector "withAddress:"
 
 -- | @Selector@ for @deviceWithAddressString:@
-deviceWithAddressStringSelector :: Selector
+deviceWithAddressStringSelector :: Selector '[Id NSString] (Id IOBluetoothDevice)
 deviceWithAddressStringSelector = mkSelector "deviceWithAddressString:"
 
 -- | @Selector@ for @withDeviceRef:@
-withDeviceRefSelector :: Selector
+withDeviceRefSelector :: Selector '[Ptr ()] (Id IOBluetoothDevice)
 withDeviceRefSelector = mkSelector "withDeviceRef:"
 
 -- | @Selector@ for @getDeviceRef@
-getDeviceRefSelector :: Selector
+getDeviceRefSelector :: Selector '[] (Ptr ())
 getDeviceRefSelector = mkSelector "getDeviceRef"
 
 -- | @Selector@ for @openL2CAPChannelSync:withPSM:delegate:@
-openL2CAPChannelSync_withPSM_delegateSelector :: Selector
+openL2CAPChannelSync_withPSM_delegateSelector :: Selector '[Id IOBluetoothL2CAPChannel, CUShort, RawId] CInt
 openL2CAPChannelSync_withPSM_delegateSelector = mkSelector "openL2CAPChannelSync:withPSM:delegate:"
 
 -- | @Selector@ for @openL2CAPChannelAsync:withPSM:delegate:@
-openL2CAPChannelAsync_withPSM_delegateSelector :: Selector
+openL2CAPChannelAsync_withPSM_delegateSelector :: Selector '[Id IOBluetoothL2CAPChannel, CUShort, RawId] CInt
 openL2CAPChannelAsync_withPSM_delegateSelector = mkSelector "openL2CAPChannelAsync:withPSM:delegate:"
 
 -- | @Selector@ for @openL2CAPChannel:findExisting:newChannel:@
-openL2CAPChannel_findExisting_newChannelSelector :: Selector
+openL2CAPChannel_findExisting_newChannelSelector :: Selector '[CUShort, Bool, Id IOBluetoothL2CAPChannel] CInt
 openL2CAPChannel_findExisting_newChannelSelector = mkSelector "openL2CAPChannel:findExisting:newChannel:"
 
 -- | @Selector@ for @sendL2CAPEchoRequest:length:@
-sendL2CAPEchoRequest_lengthSelector :: Selector
+sendL2CAPEchoRequest_lengthSelector :: Selector '[Ptr (), CUShort] CInt
 sendL2CAPEchoRequest_lengthSelector = mkSelector "sendL2CAPEchoRequest:length:"
 
 -- | @Selector@ for @openRFCOMMChannel:channel:@
-openRFCOMMChannel_channelSelector :: Selector
+openRFCOMMChannel_channelSelector :: Selector '[CUChar, Id IOBluetoothRFCOMMChannel] CInt
 openRFCOMMChannel_channelSelector = mkSelector "openRFCOMMChannel:channel:"
 
 -- | @Selector@ for @openRFCOMMChannelSync:withChannelID:delegate:@
-openRFCOMMChannelSync_withChannelID_delegateSelector :: Selector
+openRFCOMMChannelSync_withChannelID_delegateSelector :: Selector '[Id IOBluetoothRFCOMMChannel, CUChar, RawId] CInt
 openRFCOMMChannelSync_withChannelID_delegateSelector = mkSelector "openRFCOMMChannelSync:withChannelID:delegate:"
 
 -- | @Selector@ for @openRFCOMMChannelAsync:withChannelID:delegate:@
-openRFCOMMChannelAsync_withChannelID_delegateSelector :: Selector
+openRFCOMMChannelAsync_withChannelID_delegateSelector :: Selector '[Id IOBluetoothRFCOMMChannel, CUChar, RawId] CInt
 openRFCOMMChannelAsync_withChannelID_delegateSelector = mkSelector "openRFCOMMChannelAsync:withChannelID:delegate:"
 
 -- | @Selector@ for @getClassOfDevice@
-getClassOfDeviceSelector :: Selector
+getClassOfDeviceSelector :: Selector '[] CUInt
 getClassOfDeviceSelector = mkSelector "getClassOfDevice"
 
 -- | @Selector@ for @getServiceClassMajor@
-getServiceClassMajorSelector :: Selector
+getServiceClassMajorSelector :: Selector '[] CUInt
 getServiceClassMajorSelector = mkSelector "getServiceClassMajor"
 
 -- | @Selector@ for @getDeviceClassMajor@
-getDeviceClassMajorSelector :: Selector
+getDeviceClassMajorSelector :: Selector '[] CUInt
 getDeviceClassMajorSelector = mkSelector "getDeviceClassMajor"
 
 -- | @Selector@ for @getDeviceClassMinor@
-getDeviceClassMinorSelector :: Selector
+getDeviceClassMinorSelector :: Selector '[] CUInt
 getDeviceClassMinorSelector = mkSelector "getDeviceClassMinor"
 
 -- | @Selector@ for @getName@
-getNameSelector :: Selector
+getNameSelector :: Selector '[] (Id NSString)
 getNameSelector = mkSelector "getName"
 
 -- | @Selector@ for @getNameOrAddress@
-getNameOrAddressSelector :: Selector
+getNameOrAddressSelector :: Selector '[] (Id NSString)
 getNameOrAddressSelector = mkSelector "getNameOrAddress"
 
 -- | @Selector@ for @getLastNameUpdate@
-getLastNameUpdateSelector :: Selector
+getLastNameUpdateSelector :: Selector '[] (Id NSDate)
 getLastNameUpdateSelector = mkSelector "getLastNameUpdate"
 
 -- | @Selector@ for @getAddress@
-getAddressSelector :: Selector
+getAddressSelector :: Selector '[] (Const RawId)
 getAddressSelector = mkSelector "getAddress"
 
 -- | @Selector@ for @getAddressString@
-getAddressStringSelector :: Selector
+getAddressStringSelector :: Selector '[] (Id NSString)
 getAddressStringSelector = mkSelector "getAddressString"
 
 -- | @Selector@ for @getPageScanRepetitionMode@
-getPageScanRepetitionModeSelector :: Selector
+getPageScanRepetitionModeSelector :: Selector '[] CUChar
 getPageScanRepetitionModeSelector = mkSelector "getPageScanRepetitionMode"
 
 -- | @Selector@ for @getPageScanPeriodMode@
-getPageScanPeriodModeSelector :: Selector
+getPageScanPeriodModeSelector :: Selector '[] CUChar
 getPageScanPeriodModeSelector = mkSelector "getPageScanPeriodMode"
 
 -- | @Selector@ for @getPageScanMode@
-getPageScanModeSelector :: Selector
+getPageScanModeSelector :: Selector '[] CUChar
 getPageScanModeSelector = mkSelector "getPageScanMode"
 
 -- | @Selector@ for @getClockOffset@
-getClockOffsetSelector :: Selector
+getClockOffsetSelector :: Selector '[] CUShort
 getClockOffsetSelector = mkSelector "getClockOffset"
 
 -- | @Selector@ for @getLastInquiryUpdate@
-getLastInquiryUpdateSelector :: Selector
+getLastInquiryUpdateSelector :: Selector '[] (Id NSDate)
 getLastInquiryUpdateSelector = mkSelector "getLastInquiryUpdate"
 
 -- | @Selector@ for @RSSI@
-rssiSelector :: Selector
+rssiSelector :: Selector '[] CSChar
 rssiSelector = mkSelector "RSSI"
 
 -- | @Selector@ for @rawRSSI@
-rawRSSISelector :: Selector
+rawRSSISelector :: Selector '[] CSChar
 rawRSSISelector = mkSelector "rawRSSI"
 
 -- | @Selector@ for @isConnected@
-isConnectedSelector :: Selector
+isConnectedSelector :: Selector '[] Bool
 isConnectedSelector = mkSelector "isConnected"
 
 -- | @Selector@ for @openConnection@
-openConnectionSelector :: Selector
+openConnectionSelector :: Selector '[] CInt
 openConnectionSelector = mkSelector "openConnection"
 
 -- | @Selector@ for @openConnection:withPageTimeout:authenticationRequired:@
-openConnection_withPageTimeout_authenticationRequiredSelector :: Selector
+openConnection_withPageTimeout_authenticationRequiredSelector :: Selector '[RawId, CUShort, Bool] CInt
 openConnection_withPageTimeout_authenticationRequiredSelector = mkSelector "openConnection:withPageTimeout:authenticationRequired:"
 
 -- | @Selector@ for @closeConnection@
-closeConnectionSelector :: Selector
+closeConnectionSelector :: Selector '[] CInt
 closeConnectionSelector = mkSelector "closeConnection"
 
 -- | @Selector@ for @remoteNameRequest:@
-remoteNameRequestSelector :: Selector
+remoteNameRequestSelector :: Selector '[RawId] CInt
 remoteNameRequestSelector = mkSelector "remoteNameRequest:"
 
 -- | @Selector@ for @remoteNameRequest:withPageTimeout:@
-remoteNameRequest_withPageTimeoutSelector :: Selector
+remoteNameRequest_withPageTimeoutSelector :: Selector '[RawId, CUShort] CInt
 remoteNameRequest_withPageTimeoutSelector = mkSelector "remoteNameRequest:withPageTimeout:"
 
 -- | @Selector@ for @requestAuthentication@
-requestAuthenticationSelector :: Selector
+requestAuthenticationSelector :: Selector '[] CInt
 requestAuthenticationSelector = mkSelector "requestAuthentication"
 
 -- | @Selector@ for @getConnectionHandle@
-getConnectionHandleSelector :: Selector
+getConnectionHandleSelector :: Selector '[] CUShort
 getConnectionHandleSelector = mkSelector "getConnectionHandle"
 
 -- | @Selector@ for @isIncoming@
-isIncomingSelector :: Selector
+isIncomingSelector :: Selector '[] Bool
 isIncomingSelector = mkSelector "isIncoming"
 
 -- | @Selector@ for @getLinkType@
-getLinkTypeSelector :: Selector
+getLinkTypeSelector :: Selector '[] CUChar
 getLinkTypeSelector = mkSelector "getLinkType"
 
 -- | @Selector@ for @getEncryptionMode@
-getEncryptionModeSelector :: Selector
+getEncryptionModeSelector :: Selector '[] CUChar
 getEncryptionModeSelector = mkSelector "getEncryptionMode"
 
 -- | @Selector@ for @performSDPQuery:@
-performSDPQuerySelector :: Selector
+performSDPQuerySelector :: Selector '[RawId] CInt
 performSDPQuerySelector = mkSelector "performSDPQuery:"
 
 -- | @Selector@ for @performSDPQuery:uuids:@
-performSDPQuery_uuidsSelector :: Selector
+performSDPQuery_uuidsSelector :: Selector '[RawId, Id NSArray] CInt
 performSDPQuery_uuidsSelector = mkSelector "performSDPQuery:uuids:"
 
 -- | @Selector@ for @getServices@
-getServicesSelector :: Selector
+getServicesSelector :: Selector '[] (Id NSArray)
 getServicesSelector = mkSelector "getServices"
 
 -- | @Selector@ for @getLastServicesUpdate@
-getLastServicesUpdateSelector :: Selector
+getLastServicesUpdateSelector :: Selector '[] (Id NSDate)
 getLastServicesUpdateSelector = mkSelector "getLastServicesUpdate"
 
 -- | @Selector@ for @getServiceRecordForUUID:@
-getServiceRecordForUUIDSelector :: Selector
+getServiceRecordForUUIDSelector :: Selector '[Id IOBluetoothSDPUUID] (Id IOBluetoothSDPServiceRecord)
 getServiceRecordForUUIDSelector = mkSelector "getServiceRecordForUUID:"
 
 -- | @Selector@ for @favoriteDevices@
-favoriteDevicesSelector :: Selector
+favoriteDevicesSelector :: Selector '[] (Id NSArray)
 favoriteDevicesSelector = mkSelector "favoriteDevices"
 
 -- | @Selector@ for @isFavorite@
-isFavoriteSelector :: Selector
+isFavoriteSelector :: Selector '[] Bool
 isFavoriteSelector = mkSelector "isFavorite"
 
 -- | @Selector@ for @addToFavorites@
-addToFavoritesSelector :: Selector
+addToFavoritesSelector :: Selector '[] CInt
 addToFavoritesSelector = mkSelector "addToFavorites"
 
 -- | @Selector@ for @removeFromFavorites@
-removeFromFavoritesSelector :: Selector
+removeFromFavoritesSelector :: Selector '[] CInt
 removeFromFavoritesSelector = mkSelector "removeFromFavorites"
 
 -- | @Selector@ for @recentDevices:@
-recentDevicesSelector :: Selector
+recentDevicesSelector :: Selector '[CULong] (Id NSArray)
 recentDevicesSelector = mkSelector "recentDevices:"
 
 -- | @Selector@ for @recentAccessDate@
-recentAccessDateSelector :: Selector
+recentAccessDateSelector :: Selector '[] (Id NSDate)
 recentAccessDateSelector = mkSelector "recentAccessDate"
 
 -- | @Selector@ for @pairedDevices@
-pairedDevicesSelector :: Selector
+pairedDevicesSelector :: Selector '[] (Id NSArray)
 pairedDevicesSelector = mkSelector "pairedDevices"
 
 -- | @Selector@ for @isPaired@
-isPairedSelector :: Selector
+isPairedSelector :: Selector '[] Bool
 isPairedSelector = mkSelector "isPaired"
 
 -- | @Selector@ for @setSupervisionTimeout:@
-setSupervisionTimeoutSelector :: Selector
+setSupervisionTimeoutSelector :: Selector '[CUShort] CInt
 setSupervisionTimeoutSelector = mkSelector "setSupervisionTimeout:"
 
 -- | @Selector@ for @openL2CAPChannelSync:withPSM:withConfiguration:delegate:@
-openL2CAPChannelSync_withPSM_withConfiguration_delegateSelector :: Selector
+openL2CAPChannelSync_withPSM_withConfiguration_delegateSelector :: Selector '[Id IOBluetoothL2CAPChannel, CUShort, Id NSDictionary, RawId] CInt
 openL2CAPChannelSync_withPSM_withConfiguration_delegateSelector = mkSelector "openL2CAPChannelSync:withPSM:withConfiguration:delegate:"
 
 -- | @Selector@ for @openL2CAPChannelAsync:withPSM:withConfiguration:delegate:@
-openL2CAPChannelAsync_withPSM_withConfiguration_delegateSelector :: Selector
+openL2CAPChannelAsync_withPSM_withConfiguration_delegateSelector :: Selector '[Id IOBluetoothL2CAPChannel, CUShort, Id NSDictionary, RawId] CInt
 openL2CAPChannelAsync_withPSM_withConfiguration_delegateSelector = mkSelector "openL2CAPChannelAsync:withPSM:withConfiguration:delegate:"
 
 -- | @Selector@ for @awakeAfterUsingCoder:@
-awakeAfterUsingCoderSelector :: Selector
+awakeAfterUsingCoderSelector :: Selector '[Id NSCoder] RawId
 awakeAfterUsingCoderSelector = mkSelector "awakeAfterUsingCoder:"
 
 -- | @Selector@ for @handsFreeAudioGatewayDriverID@
-handsFreeAudioGatewayDriverIDSelector :: Selector
+handsFreeAudioGatewayDriverIDSelector :: Selector '[] (Id NSString)
 handsFreeAudioGatewayDriverIDSelector = mkSelector "handsFreeAudioGatewayDriverID"
 
 -- | @Selector@ for @handsFreeAudioGatewayServiceRecord@
-handsFreeAudioGatewayServiceRecordSelector :: Selector
+handsFreeAudioGatewayServiceRecordSelector :: Selector '[] (Id IOBluetoothSDPServiceRecord)
 handsFreeAudioGatewayServiceRecordSelector = mkSelector "handsFreeAudioGatewayServiceRecord"
 
 -- | @Selector@ for @handsFreeDeviceDriverID@
-handsFreeDeviceDriverIDSelector :: Selector
+handsFreeDeviceDriverIDSelector :: Selector '[] (Id NSString)
 handsFreeDeviceDriverIDSelector = mkSelector "handsFreeDeviceDriverID"
 
 -- | @Selector@ for @handsFreeDeviceServiceRecord@
-handsFreeDeviceServiceRecordSelector :: Selector
+handsFreeDeviceServiceRecordSelector :: Selector '[] (Id IOBluetoothSDPServiceRecord)
 handsFreeDeviceServiceRecordSelector = mkSelector "handsFreeDeviceServiceRecord"
 
 -- | @Selector@ for @classOfDevice@
-classOfDeviceSelector :: Selector
+classOfDeviceSelector :: Selector '[] CUInt
 classOfDeviceSelector = mkSelector "classOfDevice"
 
 -- | @Selector@ for @serviceClassMajor@
-serviceClassMajorSelector :: Selector
+serviceClassMajorSelector :: Selector '[] CUInt
 serviceClassMajorSelector = mkSelector "serviceClassMajor"
 
 -- | @Selector@ for @deviceClassMajor@
-deviceClassMajorSelector :: Selector
+deviceClassMajorSelector :: Selector '[] CUInt
 deviceClassMajorSelector = mkSelector "deviceClassMajor"
 
 -- | @Selector@ for @deviceClassMinor@
-deviceClassMinorSelector :: Selector
+deviceClassMinorSelector :: Selector '[] CUInt
 deviceClassMinorSelector = mkSelector "deviceClassMinor"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @nameOrAddress@
-nameOrAddressSelector :: Selector
+nameOrAddressSelector :: Selector '[] (Id NSString)
 nameOrAddressSelector = mkSelector "nameOrAddress"
 
 -- | @Selector@ for @lastNameUpdate@
-lastNameUpdateSelector :: Selector
+lastNameUpdateSelector :: Selector '[] (Id NSDate)
 lastNameUpdateSelector = mkSelector "lastNameUpdate"
 
 -- | @Selector@ for @addressString@
-addressStringSelector :: Selector
+addressStringSelector :: Selector '[] (Id NSString)
 addressStringSelector = mkSelector "addressString"
 
 -- | @Selector@ for @connectionHandle@
-connectionHandleSelector :: Selector
+connectionHandleSelector :: Selector '[] CUShort
 connectionHandleSelector = mkSelector "connectionHandle"
 
 -- | @Selector@ for @services@
-servicesSelector :: Selector
+servicesSelector :: Selector '[] (Id NSArray)
 servicesSelector = mkSelector "services"
 
 -- | @Selector@ for @handsFreeAudioGateway@
-handsFreeAudioGatewaySelector :: Selector
+handsFreeAudioGatewaySelector :: Selector '[] Bool
 handsFreeAudioGatewaySelector = mkSelector "handsFreeAudioGateway"
 
 -- | @Selector@ for @handsFreeDevice@
-handsFreeDeviceSelector :: Selector
+handsFreeDeviceSelector :: Selector '[] Bool
 handsFreeDeviceSelector = mkSelector "handsFreeDevice"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.CloudKit.CKFetchShareParticipantsOperation
   , setPerShareParticipantCompletionBlock
   , fetchShareParticipantsCompletionBlock
   , setFetchShareParticipantsCompletionBlock
+  , fetchShareParticipantsCompletionBlockSelector
   , initSelector
   , initWithUserIdentityLookupInfosSelector
-  , userIdentityLookupInfosSelector
+  , perShareParticipantCompletionBlockSelector
+  , setFetchShareParticipantsCompletionBlockSelector
+  , setPerShareParticipantCompletionBlockSelector
+  , setShareParticipantFetchedBlockSelector
   , setUserIdentityLookupInfosSelector
   , shareParticipantFetchedBlockSelector
-  , setShareParticipantFetchedBlockSelector
-  , perShareParticipantCompletionBlockSelector
-  , setPerShareParticipantCompletionBlockSelector
-  , fetchShareParticipantsCompletionBlockSelector
-  , setFetchShareParticipantsCompletionBlockSelector
+  , userIdentityLookupInfosSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,25 +44,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation => ckFetchShareParticipantsOperation -> IO (Id CKFetchShareParticipantsOperation)
-init_ ckFetchShareParticipantsOperation  =
-    sendMsg ckFetchShareParticipantsOperation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckFetchShareParticipantsOperation =
+  sendOwnedMessage ckFetchShareParticipantsOperation initSelector
 
 -- | @- initWithUserIdentityLookupInfos:@
 initWithUserIdentityLookupInfos :: (IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation, IsNSArray userIdentityLookupInfos) => ckFetchShareParticipantsOperation -> userIdentityLookupInfos -> IO (Id CKFetchShareParticipantsOperation)
-initWithUserIdentityLookupInfos ckFetchShareParticipantsOperation  userIdentityLookupInfos =
-  withObjCPtr userIdentityLookupInfos $ \raw_userIdentityLookupInfos ->
-      sendMsg ckFetchShareParticipantsOperation (mkSelector "initWithUserIdentityLookupInfos:") (retPtr retVoid) [argPtr (castPtr raw_userIdentityLookupInfos :: Ptr ())] >>= ownedObject . castPtr
+initWithUserIdentityLookupInfos ckFetchShareParticipantsOperation userIdentityLookupInfos =
+  sendOwnedMessage ckFetchShareParticipantsOperation initWithUserIdentityLookupInfosSelector (toNSArray userIdentityLookupInfos)
 
 -- | @- userIdentityLookupInfos@
 userIdentityLookupInfos :: IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation => ckFetchShareParticipantsOperation -> IO (Id NSArray)
-userIdentityLookupInfos ckFetchShareParticipantsOperation  =
-    sendMsg ckFetchShareParticipantsOperation (mkSelector "userIdentityLookupInfos") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIdentityLookupInfos ckFetchShareParticipantsOperation =
+  sendMessage ckFetchShareParticipantsOperation userIdentityLookupInfosSelector
 
 -- | @- setUserIdentityLookupInfos:@
 setUserIdentityLookupInfos :: (IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation, IsNSArray value) => ckFetchShareParticipantsOperation -> value -> IO ()
-setUserIdentityLookupInfos ckFetchShareParticipantsOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckFetchShareParticipantsOperation (mkSelector "setUserIdentityLookupInfos:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserIdentityLookupInfos ckFetchShareParticipantsOperation value =
+  sendMessage ckFetchShareParticipantsOperation setUserIdentityLookupInfosSelector (toNSArray value)
 
 -- | Called once for each share participant created from a submitted user identity lookup info.
 --
@@ -73,8 +68,8 @@ setUserIdentityLookupInfos ckFetchShareParticipantsOperation  value =
 --
 -- ObjC selector: @- shareParticipantFetchedBlock@
 shareParticipantFetchedBlock :: IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation => ckFetchShareParticipantsOperation -> IO (Ptr ())
-shareParticipantFetchedBlock ckFetchShareParticipantsOperation  =
-    fmap castPtr $ sendMsg ckFetchShareParticipantsOperation (mkSelector "shareParticipantFetchedBlock") (retPtr retVoid) []
+shareParticipantFetchedBlock ckFetchShareParticipantsOperation =
+  sendMessage ckFetchShareParticipantsOperation shareParticipantFetchedBlockSelector
 
 -- | Called once for each share participant created from a submitted user identity lookup info.
 --
@@ -82,8 +77,8 @@ shareParticipantFetchedBlock ckFetchShareParticipantsOperation  =
 --
 -- ObjC selector: @- setShareParticipantFetchedBlock:@
 setShareParticipantFetchedBlock :: IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation => ckFetchShareParticipantsOperation -> Ptr () -> IO ()
-setShareParticipantFetchedBlock ckFetchShareParticipantsOperation  value =
-    sendMsg ckFetchShareParticipantsOperation (mkSelector "setShareParticipantFetchedBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setShareParticipantFetchedBlock ckFetchShareParticipantsOperation value =
+  sendMessage ckFetchShareParticipantsOperation setShareParticipantFetchedBlockSelector value
 
 -- | Called once for each lookup info.
 --
@@ -91,8 +86,8 @@ setShareParticipantFetchedBlock ckFetchShareParticipantsOperation  value =
 --
 -- ObjC selector: @- perShareParticipantCompletionBlock@
 perShareParticipantCompletionBlock :: IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation => ckFetchShareParticipantsOperation -> IO (Ptr ())
-perShareParticipantCompletionBlock ckFetchShareParticipantsOperation  =
-    fmap castPtr $ sendMsg ckFetchShareParticipantsOperation (mkSelector "perShareParticipantCompletionBlock") (retPtr retVoid) []
+perShareParticipantCompletionBlock ckFetchShareParticipantsOperation =
+  sendMessage ckFetchShareParticipantsOperation perShareParticipantCompletionBlockSelector
 
 -- | Called once for each lookup info.
 --
@@ -100,8 +95,8 @@ perShareParticipantCompletionBlock ckFetchShareParticipantsOperation  =
 --
 -- ObjC selector: @- setPerShareParticipantCompletionBlock:@
 setPerShareParticipantCompletionBlock :: IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation => ckFetchShareParticipantsOperation -> Ptr () -> IO ()
-setPerShareParticipantCompletionBlock ckFetchShareParticipantsOperation  value =
-    sendMsg ckFetchShareParticipantsOperation (mkSelector "setPerShareParticipantCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPerShareParticipantCompletionBlock ckFetchShareParticipantsOperation value =
+  sendMessage ckFetchShareParticipantsOperation setPerShareParticipantCompletionBlockSelector value
 
 -- | This block is called when the operation completes.
 --
@@ -113,8 +108,8 @@ setPerShareParticipantCompletionBlock ckFetchShareParticipantsOperation  value =
 --
 -- ObjC selector: @- fetchShareParticipantsCompletionBlock@
 fetchShareParticipantsCompletionBlock :: IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation => ckFetchShareParticipantsOperation -> IO (Ptr ())
-fetchShareParticipantsCompletionBlock ckFetchShareParticipantsOperation  =
-    fmap castPtr $ sendMsg ckFetchShareParticipantsOperation (mkSelector "fetchShareParticipantsCompletionBlock") (retPtr retVoid) []
+fetchShareParticipantsCompletionBlock ckFetchShareParticipantsOperation =
+  sendMessage ckFetchShareParticipantsOperation fetchShareParticipantsCompletionBlockSelector
 
 -- | This block is called when the operation completes.
 --
@@ -126,50 +121,50 @@ fetchShareParticipantsCompletionBlock ckFetchShareParticipantsOperation  =
 --
 -- ObjC selector: @- setFetchShareParticipantsCompletionBlock:@
 setFetchShareParticipantsCompletionBlock :: IsCKFetchShareParticipantsOperation ckFetchShareParticipantsOperation => ckFetchShareParticipantsOperation -> Ptr () -> IO ()
-setFetchShareParticipantsCompletionBlock ckFetchShareParticipantsOperation  value =
-    sendMsg ckFetchShareParticipantsOperation (mkSelector "setFetchShareParticipantsCompletionBlock:") retVoid [argPtr (castPtr value :: Ptr ())]
+setFetchShareParticipantsCompletionBlock ckFetchShareParticipantsOperation value =
+  sendMessage ckFetchShareParticipantsOperation setFetchShareParticipantsCompletionBlockSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKFetchShareParticipantsOperation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithUserIdentityLookupInfos:@
-initWithUserIdentityLookupInfosSelector :: Selector
+initWithUserIdentityLookupInfosSelector :: Selector '[Id NSArray] (Id CKFetchShareParticipantsOperation)
 initWithUserIdentityLookupInfosSelector = mkSelector "initWithUserIdentityLookupInfos:"
 
 -- | @Selector@ for @userIdentityLookupInfos@
-userIdentityLookupInfosSelector :: Selector
+userIdentityLookupInfosSelector :: Selector '[] (Id NSArray)
 userIdentityLookupInfosSelector = mkSelector "userIdentityLookupInfos"
 
 -- | @Selector@ for @setUserIdentityLookupInfos:@
-setUserIdentityLookupInfosSelector :: Selector
+setUserIdentityLookupInfosSelector :: Selector '[Id NSArray] ()
 setUserIdentityLookupInfosSelector = mkSelector "setUserIdentityLookupInfos:"
 
 -- | @Selector@ for @shareParticipantFetchedBlock@
-shareParticipantFetchedBlockSelector :: Selector
+shareParticipantFetchedBlockSelector :: Selector '[] (Ptr ())
 shareParticipantFetchedBlockSelector = mkSelector "shareParticipantFetchedBlock"
 
 -- | @Selector@ for @setShareParticipantFetchedBlock:@
-setShareParticipantFetchedBlockSelector :: Selector
+setShareParticipantFetchedBlockSelector :: Selector '[Ptr ()] ()
 setShareParticipantFetchedBlockSelector = mkSelector "setShareParticipantFetchedBlock:"
 
 -- | @Selector@ for @perShareParticipantCompletionBlock@
-perShareParticipantCompletionBlockSelector :: Selector
+perShareParticipantCompletionBlockSelector :: Selector '[] (Ptr ())
 perShareParticipantCompletionBlockSelector = mkSelector "perShareParticipantCompletionBlock"
 
 -- | @Selector@ for @setPerShareParticipantCompletionBlock:@
-setPerShareParticipantCompletionBlockSelector :: Selector
+setPerShareParticipantCompletionBlockSelector :: Selector '[Ptr ()] ()
 setPerShareParticipantCompletionBlockSelector = mkSelector "setPerShareParticipantCompletionBlock:"
 
 -- | @Selector@ for @fetchShareParticipantsCompletionBlock@
-fetchShareParticipantsCompletionBlockSelector :: Selector
+fetchShareParticipantsCompletionBlockSelector :: Selector '[] (Ptr ())
 fetchShareParticipantsCompletionBlockSelector = mkSelector "fetchShareParticipantsCompletionBlock"
 
 -- | @Selector@ for @setFetchShareParticipantsCompletionBlock:@
-setFetchShareParticipantsCompletionBlockSelector :: Selector
+setFetchShareParticipantsCompletionBlockSelector :: Selector '[Ptr ()] ()
 setFetchShareParticipantsCompletionBlockSelector = mkSelector "setFetchShareParticipantsCompletionBlock:"
 

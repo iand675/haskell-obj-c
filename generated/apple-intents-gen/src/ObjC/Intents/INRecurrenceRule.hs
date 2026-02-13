@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,11 +14,11 @@ module ObjC.Intents.INRecurrenceRule
   , interval
   , frequency
   , weeklyRecurrenceDays
+  , frequencySelector
   , initSelector
   , initWithInterval_frequencySelector
   , initWithInterval_frequency_weeklyRecurrenceDaysSelector
   , intervalSelector
-  , frequencySelector
   , weeklyRecurrenceDaysSelector
 
   -- * Enum types
@@ -40,15 +41,11 @@ module ObjC.Intents.INRecurrenceRule
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,59 +55,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINRecurrenceRule inRecurrenceRule => inRecurrenceRule -> IO (Id INRecurrenceRule)
-init_ inRecurrenceRule  =
-    sendMsg inRecurrenceRule (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inRecurrenceRule =
+  sendOwnedMessage inRecurrenceRule initSelector
 
 -- | @- initWithInterval:frequency:@
 initWithInterval_frequency :: IsINRecurrenceRule inRecurrenceRule => inRecurrenceRule -> CULong -> INRecurrenceFrequency -> IO (Id INRecurrenceRule)
-initWithInterval_frequency inRecurrenceRule  interval frequency =
-    sendMsg inRecurrenceRule (mkSelector "initWithInterval:frequency:") (retPtr retVoid) [argCULong interval, argCLong (coerce frequency)] >>= ownedObject . castPtr
+initWithInterval_frequency inRecurrenceRule interval frequency =
+  sendOwnedMessage inRecurrenceRule initWithInterval_frequencySelector interval frequency
 
 -- | @- initWithInterval:frequency:weeklyRecurrenceDays:@
 initWithInterval_frequency_weeklyRecurrenceDays :: IsINRecurrenceRule inRecurrenceRule => inRecurrenceRule -> CULong -> INRecurrenceFrequency -> INDayOfWeekOptions -> IO (Id INRecurrenceRule)
-initWithInterval_frequency_weeklyRecurrenceDays inRecurrenceRule  interval frequency weeklyRecurrenceDays =
-    sendMsg inRecurrenceRule (mkSelector "initWithInterval:frequency:weeklyRecurrenceDays:") (retPtr retVoid) [argCULong interval, argCLong (coerce frequency), argCULong (coerce weeklyRecurrenceDays)] >>= ownedObject . castPtr
+initWithInterval_frequency_weeklyRecurrenceDays inRecurrenceRule interval frequency weeklyRecurrenceDays =
+  sendOwnedMessage inRecurrenceRule initWithInterval_frequency_weeklyRecurrenceDaysSelector interval frequency weeklyRecurrenceDays
 
 -- | @- interval@
 interval :: IsINRecurrenceRule inRecurrenceRule => inRecurrenceRule -> IO CULong
-interval inRecurrenceRule  =
-    sendMsg inRecurrenceRule (mkSelector "interval") retCULong []
+interval inRecurrenceRule =
+  sendMessage inRecurrenceRule intervalSelector
 
 -- | @- frequency@
 frequency :: IsINRecurrenceRule inRecurrenceRule => inRecurrenceRule -> IO INRecurrenceFrequency
-frequency inRecurrenceRule  =
-    fmap (coerce :: CLong -> INRecurrenceFrequency) $ sendMsg inRecurrenceRule (mkSelector "frequency") retCLong []
+frequency inRecurrenceRule =
+  sendMessage inRecurrenceRule frequencySelector
 
 -- | @- weeklyRecurrenceDays@
 weeklyRecurrenceDays :: IsINRecurrenceRule inRecurrenceRule => inRecurrenceRule -> IO INDayOfWeekOptions
-weeklyRecurrenceDays inRecurrenceRule  =
-    fmap (coerce :: CULong -> INDayOfWeekOptions) $ sendMsg inRecurrenceRule (mkSelector "weeklyRecurrenceDays") retCULong []
+weeklyRecurrenceDays inRecurrenceRule =
+  sendMessage inRecurrenceRule weeklyRecurrenceDaysSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INRecurrenceRule)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithInterval:frequency:@
-initWithInterval_frequencySelector :: Selector
+initWithInterval_frequencySelector :: Selector '[CULong, INRecurrenceFrequency] (Id INRecurrenceRule)
 initWithInterval_frequencySelector = mkSelector "initWithInterval:frequency:"
 
 -- | @Selector@ for @initWithInterval:frequency:weeklyRecurrenceDays:@
-initWithInterval_frequency_weeklyRecurrenceDaysSelector :: Selector
+initWithInterval_frequency_weeklyRecurrenceDaysSelector :: Selector '[CULong, INRecurrenceFrequency, INDayOfWeekOptions] (Id INRecurrenceRule)
 initWithInterval_frequency_weeklyRecurrenceDaysSelector = mkSelector "initWithInterval:frequency:weeklyRecurrenceDays:"
 
 -- | @Selector@ for @interval@
-intervalSelector :: Selector
+intervalSelector :: Selector '[] CULong
 intervalSelector = mkSelector "interval"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] INRecurrenceFrequency
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @weeklyRecurrenceDays@
-weeklyRecurrenceDaysSelector :: Selector
+weeklyRecurrenceDaysSelector :: Selector '[] INDayOfWeekOptions
 weeklyRecurrenceDaysSelector = mkSelector "weeklyRecurrenceDays"
 

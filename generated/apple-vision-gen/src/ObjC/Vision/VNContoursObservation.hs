@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Vision.VNContoursObservation
   , topLevelContourCount
   , topLevelContours
   , normalizedPath
-  , contourAtIndex_errorSelector
   , contourAtIndexPath_errorSelector
+  , contourAtIndex_errorSelector
   , contourCountSelector
+  , normalizedPathSelector
   , topLevelContourCountSelector
   , topLevelContoursSelector
-  , normalizedPathSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,9 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- contourAtIndex:error:@
 contourAtIndex_error :: (IsVNContoursObservation vnContoursObservation, IsNSError error_) => vnContoursObservation -> CLong -> error_ -> IO (Id VNContour)
-contourAtIndex_error vnContoursObservation  contourIndex error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnContoursObservation (mkSelector "contourAtIndex:error:") (retPtr retVoid) [argCLong contourIndex, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+contourAtIndex_error vnContoursObservation contourIndex error_ =
+  sendMessage vnContoursObservation contourAtIndex_errorSelector contourIndex (toNSError error_)
 
 -- | Returns the VNContour object at the specified index path.
 --
@@ -63,24 +59,22 @@ contourAtIndex_error vnContoursObservation  contourIndex error_ =
 --
 -- ObjC selector: @- contourAtIndexPath:error:@
 contourAtIndexPath_error :: (IsVNContoursObservation vnContoursObservation, IsNSIndexPath indexPath, IsNSError error_) => vnContoursObservation -> indexPath -> error_ -> IO (Id VNContour)
-contourAtIndexPath_error vnContoursObservation  indexPath error_ =
-  withObjCPtr indexPath $ \raw_indexPath ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnContoursObservation (mkSelector "contourAtIndexPath:error:") (retPtr retVoid) [argPtr (castPtr raw_indexPath :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+contourAtIndexPath_error vnContoursObservation indexPath error_ =
+  sendMessage vnContoursObservation contourAtIndexPath_errorSelector (toNSIndexPath indexPath) (toNSError error_)
 
 -- | The total number of contours detected.
 --
 -- ObjC selector: @- contourCount@
 contourCount :: IsVNContoursObservation vnContoursObservation => vnContoursObservation -> IO CLong
-contourCount vnContoursObservation  =
-    sendMsg vnContoursObservation (mkSelector "contourCount") retCLong []
+contourCount vnContoursObservation =
+  sendMessage vnContoursObservation contourCountSelector
 
 -- | The total number of top-level contours detected.
 --
 -- ObjC selector: @- topLevelContourCount@
 topLevelContourCount :: IsVNContoursObservation vnContoursObservation => vnContoursObservation -> IO CLong
-topLevelContourCount vnContoursObservation  =
-    sendMsg vnContoursObservation (mkSelector "topLevelContourCount") retCLong []
+topLevelContourCount vnContoursObservation =
+  sendMessage vnContoursObservation topLevelContourCountSelector
 
 -- | An array of the top level contours (i.e. contours that are not enclosed inside another contour),.
 --
@@ -90,8 +84,8 @@ topLevelContourCount vnContoursObservation  =
 --
 -- ObjC selector: @- topLevelContours@
 topLevelContours :: IsVNContoursObservation vnContoursObservation => vnContoursObservation -> IO (Id NSArray)
-topLevelContours vnContoursObservation  =
-    sendMsg vnContoursObservation (mkSelector "topLevelContours") (retPtr retVoid) [] >>= retainedObject . castPtr
+topLevelContours vnContoursObservation =
+  sendMessage vnContoursObservation topLevelContoursSelector
 
 -- | Obtain all of the contours represented as a CGPath in normalized coordinates.
 --
@@ -99,34 +93,34 @@ topLevelContours vnContoursObservation  =
 --
 -- ObjC selector: @- normalizedPath@
 normalizedPath :: IsVNContoursObservation vnContoursObservation => vnContoursObservation -> IO RawId
-normalizedPath vnContoursObservation  =
-    fmap (RawId . castPtr) $ sendMsg vnContoursObservation (mkSelector "normalizedPath") (retPtr retVoid) []
+normalizedPath vnContoursObservation =
+  sendMessage vnContoursObservation normalizedPathSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contourAtIndex:error:@
-contourAtIndex_errorSelector :: Selector
+contourAtIndex_errorSelector :: Selector '[CLong, Id NSError] (Id VNContour)
 contourAtIndex_errorSelector = mkSelector "contourAtIndex:error:"
 
 -- | @Selector@ for @contourAtIndexPath:error:@
-contourAtIndexPath_errorSelector :: Selector
+contourAtIndexPath_errorSelector :: Selector '[Id NSIndexPath, Id NSError] (Id VNContour)
 contourAtIndexPath_errorSelector = mkSelector "contourAtIndexPath:error:"
 
 -- | @Selector@ for @contourCount@
-contourCountSelector :: Selector
+contourCountSelector :: Selector '[] CLong
 contourCountSelector = mkSelector "contourCount"
 
 -- | @Selector@ for @topLevelContourCount@
-topLevelContourCountSelector :: Selector
+topLevelContourCountSelector :: Selector '[] CLong
 topLevelContourCountSelector = mkSelector "topLevelContourCount"
 
 -- | @Selector@ for @topLevelContours@
-topLevelContoursSelector :: Selector
+topLevelContoursSelector :: Selector '[] (Id NSArray)
 topLevelContoursSelector = mkSelector "topLevelContours"
 
 -- | @Selector@ for @normalizedPath@
-normalizedPathSelector :: Selector
+normalizedPathSelector :: Selector '[] RawId
 normalizedPathSelector = mkSelector "normalizedPath"
 

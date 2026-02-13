@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.Intents.INAddMediaMediaItemResolutionResult
   , successesWithResolvedMediaItems
   , unsupportedForReason
   , initWithMediaItemResolutionResult
+  , initWithMediaItemResolutionResultSelector
   , successesWithResolvedMediaItemsSelector
   , unsupportedForReasonSelector
-  , initWithMediaItemResolutionResultSelector
 
   -- * Enum types
   , INAddMediaMediaItemUnsupportedReason(INAddMediaMediaItemUnsupportedReason)
@@ -27,15 +28,11 @@ module ObjC.Intents.INAddMediaMediaItemResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,35 +45,33 @@ successesWithResolvedMediaItems :: IsNSArray resolvedMediaItems => resolvedMedia
 successesWithResolvedMediaItems resolvedMediaItems =
   do
     cls' <- getRequiredClass "INAddMediaMediaItemResolutionResult"
-    withObjCPtr resolvedMediaItems $ \raw_resolvedMediaItems ->
-      sendClassMsg cls' (mkSelector "successesWithResolvedMediaItems:") (retPtr retVoid) [argPtr (castPtr raw_resolvedMediaItems :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successesWithResolvedMediaItemsSelector (toNSArray resolvedMediaItems)
 
 -- | @+ unsupportedForReason:@
 unsupportedForReason :: INAddMediaMediaItemUnsupportedReason -> IO (Id INAddMediaMediaItemResolutionResult)
 unsupportedForReason reason =
   do
     cls' <- getRequiredClass "INAddMediaMediaItemResolutionResult"
-    sendClassMsg cls' (mkSelector "unsupportedForReason:") (retPtr retVoid) [argCLong (coerce reason)] >>= retainedObject . castPtr
+    sendClassMessage cls' unsupportedForReasonSelector reason
 
 -- | @- initWithMediaItemResolutionResult:@
 initWithMediaItemResolutionResult :: (IsINAddMediaMediaItemResolutionResult inAddMediaMediaItemResolutionResult, IsINMediaItemResolutionResult mediaItemResolutionResult) => inAddMediaMediaItemResolutionResult -> mediaItemResolutionResult -> IO (Id INAddMediaMediaItemResolutionResult)
-initWithMediaItemResolutionResult inAddMediaMediaItemResolutionResult  mediaItemResolutionResult =
-  withObjCPtr mediaItemResolutionResult $ \raw_mediaItemResolutionResult ->
-      sendMsg inAddMediaMediaItemResolutionResult (mkSelector "initWithMediaItemResolutionResult:") (retPtr retVoid) [argPtr (castPtr raw_mediaItemResolutionResult :: Ptr ())] >>= ownedObject . castPtr
+initWithMediaItemResolutionResult inAddMediaMediaItemResolutionResult mediaItemResolutionResult =
+  sendOwnedMessage inAddMediaMediaItemResolutionResult initWithMediaItemResolutionResultSelector (toINMediaItemResolutionResult mediaItemResolutionResult)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successesWithResolvedMediaItems:@
-successesWithResolvedMediaItemsSelector :: Selector
+successesWithResolvedMediaItemsSelector :: Selector '[Id NSArray] (Id NSArray)
 successesWithResolvedMediaItemsSelector = mkSelector "successesWithResolvedMediaItems:"
 
 -- | @Selector@ for @unsupportedForReason:@
-unsupportedForReasonSelector :: Selector
+unsupportedForReasonSelector :: Selector '[INAddMediaMediaItemUnsupportedReason] (Id INAddMediaMediaItemResolutionResult)
 unsupportedForReasonSelector = mkSelector "unsupportedForReason:"
 
 -- | @Selector@ for @initWithMediaItemResolutionResult:@
-initWithMediaItemResolutionResultSelector :: Selector
+initWithMediaItemResolutionResultSelector :: Selector '[Id INMediaItemResolutionResult] (Id INAddMediaMediaItemResolutionResult)
 initWithMediaItemResolutionResultSelector = mkSelector "initWithMediaItemResolutionResult:"
 

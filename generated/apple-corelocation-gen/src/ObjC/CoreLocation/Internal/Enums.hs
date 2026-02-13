@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreLocation.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CLAccuracyAuthorization@
 newtype CLAccuracyAuthorization = CLAccuracyAuthorization CLong
@@ -21,6 +24,16 @@ pattern CLAccuracyAuthorizationFullAccuracy = CLAccuracyAuthorization 0
 
 pattern CLAccuracyAuthorizationReducedAccuracy :: CLAccuracyAuthorization
 pattern CLAccuracyAuthorizationReducedAccuracy = CLAccuracyAuthorization 1
+
+instance ObjCArgument CLAccuracyAuthorization where
+  withObjCArg (CLAccuracyAuthorization x) k = k (argCLong x)
+
+instance ObjCReturn CLAccuracyAuthorization where
+  type RawReturn CLAccuracyAuthorization = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLAccuracyAuthorization x)
+  fromOwned x = pure (CLAccuracyAuthorization x)
 
 -- | @CLActivityType@
 newtype CLActivityType = CLActivityType CLong
@@ -41,6 +54,16 @@ pattern CLActivityTypeOtherNavigation = CLActivityType 4
 
 pattern CLActivityTypeAirborne :: CLActivityType
 pattern CLActivityTypeAirborne = CLActivityType 5
+
+instance ObjCArgument CLActivityType where
+  withObjCArg (CLActivityType x) k = k (argCLong x)
+
+instance ObjCReturn CLActivityType where
+  type RawReturn CLActivityType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLActivityType x)
+  fromOwned x = pure (CLActivityType x)
 
 -- | @CLAuthorizationStatus@
 newtype CLAuthorizationStatus = CLAuthorizationStatus CInt
@@ -64,6 +87,16 @@ pattern KCLAuthorizationStatusAuthorizedWhenInUse = CLAuthorizationStatus 4
 
 pattern KCLAuthorizationStatusAuthorized :: CLAuthorizationStatus
 pattern KCLAuthorizationStatusAuthorized = CLAuthorizationStatus 3
+
+instance ObjCArgument CLAuthorizationStatus where
+  withObjCArg (CLAuthorizationStatus x) k = k (argCInt x)
+
+instance ObjCReturn CLAuthorizationStatus where
+  type RawReturn CLAuthorizationStatus = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLAuthorizationStatus x)
+  fromOwned x = pure (CLAuthorizationStatus x)
 
 -- | @CLDeviceOrientation@
 newtype CLDeviceOrientation = CLDeviceOrientation CInt
@@ -90,6 +123,16 @@ pattern CLDeviceOrientationFaceUp = CLDeviceOrientation 5
 
 pattern CLDeviceOrientationFaceDown :: CLDeviceOrientation
 pattern CLDeviceOrientationFaceDown = CLDeviceOrientation 6
+
+instance ObjCArgument CLDeviceOrientation where
+  withObjCArg (CLDeviceOrientation x) k = k (argCInt x)
+
+instance ObjCReturn CLDeviceOrientation where
+  type RawReturn CLDeviceOrientation = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLDeviceOrientation x)
+  fromOwned x = pure (CLDeviceOrientation x)
 
 -- | @CLError@
 newtype CLError = CLError CLong
@@ -156,6 +199,16 @@ pattern KCLErrorPromptDeclined = CLError 18
 pattern KCLErrorHistoricalLocationError :: CLError
 pattern KCLErrorHistoricalLocationError = CLError 19
 
+instance ObjCArgument CLError where
+  withObjCArg (CLError x) k = k (argCLong x)
+
+instance ObjCReturn CLError where
+  type RawReturn CLError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLError x)
+  fromOwned x = pure (CLError x)
+
 -- | @CLLiveUpdateConfiguration@
 newtype CLLiveUpdateConfiguration = CLLiveUpdateConfiguration CLong
   deriving stock (Eq, Ord, Show)
@@ -175,6 +228,16 @@ pattern CLLiveUpdateConfigurationFitness = CLLiveUpdateConfiguration 3
 
 pattern CLLiveUpdateConfigurationAirborne :: CLLiveUpdateConfiguration
 pattern CLLiveUpdateConfigurationAirborne = CLLiveUpdateConfiguration 4
+
+instance ObjCArgument CLLiveUpdateConfiguration where
+  withObjCArg (CLLiveUpdateConfiguration x) k = k (argCLong x)
+
+instance ObjCReturn CLLiveUpdateConfiguration where
+  type RawReturn CLLiveUpdateConfiguration = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLLiveUpdateConfiguration x)
+  fromOwned x = pure (CLLiveUpdateConfiguration x)
 
 -- | @CLLocationPushServiceError@
 newtype CLLocationPushServiceError = CLLocationPushServiceError CLong
@@ -196,6 +259,16 @@ pattern CLLocationPushServiceErrorMissingEntitlement = CLLocationPushServiceErro
 pattern CLLocationPushServiceErrorUnsupportedPlatform :: CLLocationPushServiceError
 pattern CLLocationPushServiceErrorUnsupportedPlatform = CLLocationPushServiceError 4
 
+instance ObjCArgument CLLocationPushServiceError where
+  withObjCArg (CLLocationPushServiceError x) k = k (argCLong x)
+
+instance ObjCReturn CLLocationPushServiceError where
+  type RawReturn CLLocationPushServiceError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLLocationPushServiceError x)
+  fromOwned x = pure (CLLocationPushServiceError x)
+
 -- | @CLMonitoringState@
 newtype CLMonitoringState = CLMonitoringState CULong
   deriving stock (Eq, Ord, Show)
@@ -212,6 +285,16 @@ pattern CLMonitoringStateUnsatisfied = CLMonitoringState 2
 
 pattern CLMonitoringStateUnmonitored :: CLMonitoringState
 pattern CLMonitoringStateUnmonitored = CLMonitoringState 3
+
+instance ObjCArgument CLMonitoringState where
+  withObjCArg (CLMonitoringState x) k = k (argCULong x)
+
+instance ObjCReturn CLMonitoringState where
+  type RawReturn CLMonitoringState = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLMonitoringState x)
+  fromOwned x = pure (CLMonitoringState x)
 
 -- | @CLProximity@
 newtype CLProximity = CLProximity CLong
@@ -230,6 +313,16 @@ pattern CLProximityNear = CLProximity 2
 pattern CLProximityFar :: CLProximity
 pattern CLProximityFar = CLProximity 3
 
+instance ObjCArgument CLProximity where
+  withObjCArg (CLProximity x) k = k (argCLong x)
+
+instance ObjCReturn CLProximity where
+  type RawReturn CLProximity = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLProximity x)
+  fromOwned x = pure (CLProximity x)
+
 -- | @CLRegionState@
 newtype CLRegionState = CLRegionState CLong
   deriving stock (Eq, Ord, Show)
@@ -244,6 +337,16 @@ pattern CLRegionStateInside = CLRegionState 1
 pattern CLRegionStateOutside :: CLRegionState
 pattern CLRegionStateOutside = CLRegionState 2
 
+instance ObjCArgument CLRegionState where
+  withObjCArg (CLRegionState x) k = k (argCLong x)
+
+instance ObjCReturn CLRegionState where
+  type RawReturn CLRegionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLRegionState x)
+  fromOwned x = pure (CLRegionState x)
+
 -- | @CLServiceSessionAuthorizationRequirement@
 newtype CLServiceSessionAuthorizationRequirement = CLServiceSessionAuthorizationRequirement CLong
   deriving stock (Eq, Ord, Show)
@@ -257,3 +360,13 @@ pattern CLServiceSessionAuthorizationRequirementWhenInUse = CLServiceSessionAuth
 
 pattern CLServiceSessionAuthorizationRequirementAlways :: CLServiceSessionAuthorizationRequirement
 pattern CLServiceSessionAuthorizationRequirementAlways = CLServiceSessionAuthorizationRequirement 2
+
+instance ObjCArgument CLServiceSessionAuthorizationRequirement where
+  withObjCArg (CLServiceSessionAuthorizationRequirement x) k = k (argCLong x)
+
+instance ObjCReturn CLServiceSessionAuthorizationRequirement where
+  type RawReturn CLServiceSessionAuthorizationRequirement = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CLServiceSessionAuthorizationRequirement x)
+  fromOwned x = pure (CLServiceSessionAuthorizationRequirement x)

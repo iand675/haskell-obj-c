@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,21 +27,21 @@ module ObjC.Vision.VNRecognizeTextRequest
   , minimumTextHeight
   , setMinimumTextHeight
   , results
-  , supportedRecognitionLanguagesForTextRecognitionLevel_revision_errorSelector
-  , supportedRecognitionLanguagesAndReturnErrorSelector
-  , recognitionLanguagesSelector
-  , setRecognitionLanguagesSelector
-  , customWordsSelector
-  , setCustomWordsSelector
-  , recognitionLevelSelector
-  , setRecognitionLevelSelector
-  , usesLanguageCorrectionSelector
-  , setUsesLanguageCorrectionSelector
   , automaticallyDetectsLanguageSelector
-  , setAutomaticallyDetectsLanguageSelector
+  , customWordsSelector
   , minimumTextHeightSelector
-  , setMinimumTextHeightSelector
+  , recognitionLanguagesSelector
+  , recognitionLevelSelector
   , resultsSelector
+  , setAutomaticallyDetectsLanguageSelector
+  , setCustomWordsSelector
+  , setMinimumTextHeightSelector
+  , setRecognitionLanguagesSelector
+  , setRecognitionLevelSelector
+  , setUsesLanguageCorrectionSelector
+  , supportedRecognitionLanguagesAndReturnErrorSelector
+  , supportedRecognitionLanguagesForTextRecognitionLevel_revision_errorSelector
+  , usesLanguageCorrectionSelector
 
   -- * Enum types
   , VNRequestTextRecognitionLevel(VNRequestTextRecognitionLevel)
@@ -49,15 +50,11 @@ module ObjC.Vision.VNRecognizeTextRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,8 +69,7 @@ supportedRecognitionLanguagesForTextRecognitionLevel_revision_error :: IsNSError
 supportedRecognitionLanguagesForTextRecognitionLevel_revision_error recognitionLevel requestRevision error_ =
   do
     cls' <- getRequiredClass "VNRecognizeTextRequest"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "supportedRecognitionLanguagesForTextRecognitionLevel:revision:error:") (retPtr retVoid) [argCLong (coerce recognitionLevel), argCULong requestRevision, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedRecognitionLanguagesForTextRecognitionLevel_revision_errorSelector recognitionLevel requestRevision (toNSError error_)
 
 -- | Obtain the collection of supported recognition languages.
 --
@@ -85,160 +81,157 @@ supportedRecognitionLanguagesForTextRecognitionLevel_revision_error recognitionL
 --
 -- ObjC selector: @- supportedRecognitionLanguagesAndReturnError:@
 supportedRecognitionLanguagesAndReturnError :: (IsVNRecognizeTextRequest vnRecognizeTextRequest, IsNSError error_) => vnRecognizeTextRequest -> error_ -> IO (Id NSArray)
-supportedRecognitionLanguagesAndReturnError vnRecognizeTextRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnRecognizeTextRequest (mkSelector "supportedRecognitionLanguagesAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedRecognitionLanguagesAndReturnError vnRecognizeTextRequest error_ =
+  sendMessage vnRecognizeTextRequest supportedRecognitionLanguagesAndReturnErrorSelector (toNSError error_)
 
 -- | Specify the languages used for the detection. The order of the languages in the array defines the order in which languages will be used during the language processing. The languages are specified as ISO language codes.
 --
 -- ObjC selector: @- recognitionLanguages@
 recognitionLanguages :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> IO (Id NSArray)
-recognitionLanguages vnRecognizeTextRequest  =
-    sendMsg vnRecognizeTextRequest (mkSelector "recognitionLanguages") (retPtr retVoid) [] >>= retainedObject . castPtr
+recognitionLanguages vnRecognizeTextRequest =
+  sendMessage vnRecognizeTextRequest recognitionLanguagesSelector
 
 -- | Specify the languages used for the detection. The order of the languages in the array defines the order in which languages will be used during the language processing. The languages are specified as ISO language codes.
 --
 -- ObjC selector: @- setRecognitionLanguages:@
 setRecognitionLanguages :: (IsVNRecognizeTextRequest vnRecognizeTextRequest, IsNSArray value) => vnRecognizeTextRequest -> value -> IO ()
-setRecognitionLanguages vnRecognizeTextRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vnRecognizeTextRequest (mkSelector "setRecognitionLanguages:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecognitionLanguages vnRecognizeTextRequest value =
+  sendMessage vnRecognizeTextRequest setRecognitionLanguagesSelector (toNSArray value)
 
 -- | An array of strings that will be used at the word recognition stage in addition to the recognition languages. The customWords list takes precedence over the standard lexicon.
 --
 -- ObjC selector: @- customWords@
 customWords :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> IO (Id NSArray)
-customWords vnRecognizeTextRequest  =
-    sendMsg vnRecognizeTextRequest (mkSelector "customWords") (retPtr retVoid) [] >>= retainedObject . castPtr
+customWords vnRecognizeTextRequest =
+  sendMessage vnRecognizeTextRequest customWordsSelector
 
 -- | An array of strings that will be used at the word recognition stage in addition to the recognition languages. The customWords list takes precedence over the standard lexicon.
 --
 -- ObjC selector: @- setCustomWords:@
 setCustomWords :: (IsVNRecognizeTextRequest vnRecognizeTextRequest, IsNSArray value) => vnRecognizeTextRequest -> value -> IO ()
-setCustomWords vnRecognizeTextRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vnRecognizeTextRequest (mkSelector "setCustomWords:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomWords vnRecognizeTextRequest value =
+  sendMessage vnRecognizeTextRequest setCustomWordsSelector (toNSArray value)
 
 -- | The recognition level selects which techniques will be used during the text recognition. There are trade-offs between performance and accuracy.
 --
 -- ObjC selector: @- recognitionLevel@
 recognitionLevel :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> IO VNRequestTextRecognitionLevel
-recognitionLevel vnRecognizeTextRequest  =
-    fmap (coerce :: CLong -> VNRequestTextRecognitionLevel) $ sendMsg vnRecognizeTextRequest (mkSelector "recognitionLevel") retCLong []
+recognitionLevel vnRecognizeTextRequest =
+  sendMessage vnRecognizeTextRequest recognitionLevelSelector
 
 -- | The recognition level selects which techniques will be used during the text recognition. There are trade-offs between performance and accuracy.
 --
 -- ObjC selector: @- setRecognitionLevel:@
 setRecognitionLevel :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> VNRequestTextRecognitionLevel -> IO ()
-setRecognitionLevel vnRecognizeTextRequest  value =
-    sendMsg vnRecognizeTextRequest (mkSelector "setRecognitionLevel:") retVoid [argCLong (coerce value)]
+setRecognitionLevel vnRecognizeTextRequest value =
+  sendMessage vnRecognizeTextRequest setRecognitionLevelSelector value
 
 -- | Determines whether language correction should be applied during the recognition process. Disabling this will return the raw recognition results providing performance benefits but less accurate results.
 --
 -- ObjC selector: @- usesLanguageCorrection@
 usesLanguageCorrection :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> IO Bool
-usesLanguageCorrection vnRecognizeTextRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnRecognizeTextRequest (mkSelector "usesLanguageCorrection") retCULong []
+usesLanguageCorrection vnRecognizeTextRequest =
+  sendMessage vnRecognizeTextRequest usesLanguageCorrectionSelector
 
 -- | Determines whether language correction should be applied during the recognition process. Disabling this will return the raw recognition results providing performance benefits but less accurate results.
 --
 -- ObjC selector: @- setUsesLanguageCorrection:@
 setUsesLanguageCorrection :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> Bool -> IO ()
-setUsesLanguageCorrection vnRecognizeTextRequest  value =
-    sendMsg vnRecognizeTextRequest (mkSelector "setUsesLanguageCorrection:") retVoid [argCULong (if value then 1 else 0)]
+setUsesLanguageCorrection vnRecognizeTextRequest value =
+  sendMessage vnRecognizeTextRequest setUsesLanguageCorrectionSelector value
 
 -- | Language detection will try to automatically identify the script/langauge during the detection and use the appropiate model for recognition and language correction. This can be particularly helpful, if the nature of the content is unkown and with this flag being set it will for instance determine if text is latin vs chinese so you don't have to pick the language model in the first case. But as the language correction cannot always guarantee the correct detection, it is advisable to set the languages, if you have domain knowledge of what language to expect. The default value is NO. Also note that this feature is only available since VNRecognizeTextRequestRevision3 and is a no-op before that.
 --
 -- ObjC selector: @- automaticallyDetectsLanguage@
 automaticallyDetectsLanguage :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> IO Bool
-automaticallyDetectsLanguage vnRecognizeTextRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnRecognizeTextRequest (mkSelector "automaticallyDetectsLanguage") retCULong []
+automaticallyDetectsLanguage vnRecognizeTextRequest =
+  sendMessage vnRecognizeTextRequest automaticallyDetectsLanguageSelector
 
 -- | Language detection will try to automatically identify the script/langauge during the detection and use the appropiate model for recognition and language correction. This can be particularly helpful, if the nature of the content is unkown and with this flag being set it will for instance determine if text is latin vs chinese so you don't have to pick the language model in the first case. But as the language correction cannot always guarantee the correct detection, it is advisable to set the languages, if you have domain knowledge of what language to expect. The default value is NO. Also note that this feature is only available since VNRecognizeTextRequestRevision3 and is a no-op before that.
 --
 -- ObjC selector: @- setAutomaticallyDetectsLanguage:@
 setAutomaticallyDetectsLanguage :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> Bool -> IO ()
-setAutomaticallyDetectsLanguage vnRecognizeTextRequest  value =
-    sendMsg vnRecognizeTextRequest (mkSelector "setAutomaticallyDetectsLanguage:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyDetectsLanguage vnRecognizeTextRequest value =
+  sendMessage vnRecognizeTextRequest setAutomaticallyDetectsLanguageSelector value
 
 -- | @- minimumTextHeight@
 minimumTextHeight :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> IO CFloat
-minimumTextHeight vnRecognizeTextRequest  =
-    sendMsg vnRecognizeTextRequest (mkSelector "minimumTextHeight") retCFloat []
+minimumTextHeight vnRecognizeTextRequest =
+  sendMessage vnRecognizeTextRequest minimumTextHeightSelector
 
 -- | @- setMinimumTextHeight:@
 setMinimumTextHeight :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> CFloat -> IO ()
-setMinimumTextHeight vnRecognizeTextRequest  value =
-    sendMsg vnRecognizeTextRequest (mkSelector "setMinimumTextHeight:") retVoid [argCFloat value]
+setMinimumTextHeight vnRecognizeTextRequest value =
+  sendMessage vnRecognizeTextRequest setMinimumTextHeightSelector value
 
 -- | VNRecognizedTextObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNRecognizeTextRequest vnRecognizeTextRequest => vnRecognizeTextRequest -> IO (Id NSArray)
-results vnRecognizeTextRequest  =
-    sendMsg vnRecognizeTextRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnRecognizeTextRequest =
+  sendMessage vnRecognizeTextRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportedRecognitionLanguagesForTextRecognitionLevel:revision:error:@
-supportedRecognitionLanguagesForTextRecognitionLevel_revision_errorSelector :: Selector
+supportedRecognitionLanguagesForTextRecognitionLevel_revision_errorSelector :: Selector '[VNRequestTextRecognitionLevel, CULong, Id NSError] (Id NSArray)
 supportedRecognitionLanguagesForTextRecognitionLevel_revision_errorSelector = mkSelector "supportedRecognitionLanguagesForTextRecognitionLevel:revision:error:"
 
 -- | @Selector@ for @supportedRecognitionLanguagesAndReturnError:@
-supportedRecognitionLanguagesAndReturnErrorSelector :: Selector
+supportedRecognitionLanguagesAndReturnErrorSelector :: Selector '[Id NSError] (Id NSArray)
 supportedRecognitionLanguagesAndReturnErrorSelector = mkSelector "supportedRecognitionLanguagesAndReturnError:"
 
 -- | @Selector@ for @recognitionLanguages@
-recognitionLanguagesSelector :: Selector
+recognitionLanguagesSelector :: Selector '[] (Id NSArray)
 recognitionLanguagesSelector = mkSelector "recognitionLanguages"
 
 -- | @Selector@ for @setRecognitionLanguages:@
-setRecognitionLanguagesSelector :: Selector
+setRecognitionLanguagesSelector :: Selector '[Id NSArray] ()
 setRecognitionLanguagesSelector = mkSelector "setRecognitionLanguages:"
 
 -- | @Selector@ for @customWords@
-customWordsSelector :: Selector
+customWordsSelector :: Selector '[] (Id NSArray)
 customWordsSelector = mkSelector "customWords"
 
 -- | @Selector@ for @setCustomWords:@
-setCustomWordsSelector :: Selector
+setCustomWordsSelector :: Selector '[Id NSArray] ()
 setCustomWordsSelector = mkSelector "setCustomWords:"
 
 -- | @Selector@ for @recognitionLevel@
-recognitionLevelSelector :: Selector
+recognitionLevelSelector :: Selector '[] VNRequestTextRecognitionLevel
 recognitionLevelSelector = mkSelector "recognitionLevel"
 
 -- | @Selector@ for @setRecognitionLevel:@
-setRecognitionLevelSelector :: Selector
+setRecognitionLevelSelector :: Selector '[VNRequestTextRecognitionLevel] ()
 setRecognitionLevelSelector = mkSelector "setRecognitionLevel:"
 
 -- | @Selector@ for @usesLanguageCorrection@
-usesLanguageCorrectionSelector :: Selector
+usesLanguageCorrectionSelector :: Selector '[] Bool
 usesLanguageCorrectionSelector = mkSelector "usesLanguageCorrection"
 
 -- | @Selector@ for @setUsesLanguageCorrection:@
-setUsesLanguageCorrectionSelector :: Selector
+setUsesLanguageCorrectionSelector :: Selector '[Bool] ()
 setUsesLanguageCorrectionSelector = mkSelector "setUsesLanguageCorrection:"
 
 -- | @Selector@ for @automaticallyDetectsLanguage@
-automaticallyDetectsLanguageSelector :: Selector
+automaticallyDetectsLanguageSelector :: Selector '[] Bool
 automaticallyDetectsLanguageSelector = mkSelector "automaticallyDetectsLanguage"
 
 -- | @Selector@ for @setAutomaticallyDetectsLanguage:@
-setAutomaticallyDetectsLanguageSelector :: Selector
+setAutomaticallyDetectsLanguageSelector :: Selector '[Bool] ()
 setAutomaticallyDetectsLanguageSelector = mkSelector "setAutomaticallyDetectsLanguage:"
 
 -- | @Selector@ for @minimumTextHeight@
-minimumTextHeightSelector :: Selector
+minimumTextHeightSelector :: Selector '[] CFloat
 minimumTextHeightSelector = mkSelector "minimumTextHeight"
 
 -- | @Selector@ for @setMinimumTextHeight:@
-setMinimumTextHeightSelector :: Selector
+setMinimumTextHeightSelector :: Selector '[CFloat] ()
 setMinimumTextHeightSelector = mkSelector "setMinimumTextHeight:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

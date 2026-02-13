@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,34 +42,34 @@ module ObjC.SceneKit.SCNMaterialProperty
   , setMaxAnisotropy
   , borderColor
   , setBorderColor
-  , materialPropertyWithContentsSelector
-  , precomputedLightingEnvironmentContentsWithURL_errorSelector
-  , precomputedLightingEnvironmentContentsWithData_errorSelector
-  , precomputedLightingEnvironmentDataForContents_device_errorSelector
-  , contentsSelector
-  , setContentsSelector
-  , intensitySelector
-  , setIntensitySelector
-  , minificationFilterSelector
-  , setMinificationFilterSelector
-  , magnificationFilterSelector
-  , setMagnificationFilterSelector
-  , mipFilterSelector
-  , setMipFilterSelector
-  , contentsTransformSelector
-  , setContentsTransformSelector
-  , wrapSSelector
-  , setWrapSSelector
-  , wrapTSelector
-  , setWrapTSelector
-  , mappingChannelSelector
-  , setMappingChannelSelector
-  , textureComponentsSelector
-  , setTextureComponentsSelector
-  , maxAnisotropySelector
-  , setMaxAnisotropySelector
   , borderColorSelector
+  , contentsSelector
+  , contentsTransformSelector
+  , intensitySelector
+  , magnificationFilterSelector
+  , mappingChannelSelector
+  , materialPropertyWithContentsSelector
+  , maxAnisotropySelector
+  , minificationFilterSelector
+  , mipFilterSelector
+  , precomputedLightingEnvironmentContentsWithData_errorSelector
+  , precomputedLightingEnvironmentContentsWithURL_errorSelector
+  , precomputedLightingEnvironmentDataForContents_device_errorSelector
   , setBorderColorSelector
+  , setContentsSelector
+  , setContentsTransformSelector
+  , setIntensitySelector
+  , setMagnificationFilterSelector
+  , setMappingChannelSelector
+  , setMaxAnisotropySelector
+  , setMinificationFilterSelector
+  , setMipFilterSelector
+  , setTextureComponentsSelector
+  , setWrapSSelector
+  , setWrapTSelector
+  , textureComponentsSelector
+  , wrapSSelector
+  , wrapTSelector
 
   -- * Enum types
   , SCNColorMask(SCNColorMask)
@@ -90,15 +91,11 @@ module ObjC.SceneKit.SCNMaterialProperty
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -116,7 +113,7 @@ materialPropertyWithContents :: RawId -> IO (Id SCNMaterialProperty)
 materialPropertyWithContents contents =
   do
     cls' <- getRequiredClass "SCNMaterialProperty"
-    sendClassMsg cls' (mkSelector "materialPropertyWithContents:") (retPtr retVoid) [argPtr (castPtr (unRawId contents) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' materialPropertyWithContentsSelector contents
 
 -- | precomputedLightingEnvironmentContentsWithURL:error:
 --
@@ -127,9 +124,7 @@ precomputedLightingEnvironmentContentsWithURL_error :: (IsNSURL url, IsNSError e
 precomputedLightingEnvironmentContentsWithURL_error url error_ =
   do
     cls' <- getRequiredClass "SCNMaterialProperty"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "precomputedLightingEnvironmentContentsWithURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' precomputedLightingEnvironmentContentsWithURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | precomputedLightingEnvironmentContentsWithData:error:
 --
@@ -140,9 +135,7 @@ precomputedLightingEnvironmentContentsWithData_error :: (IsNSData data_, IsNSErr
 precomputedLightingEnvironmentContentsWithData_error data_ error_ =
   do
     cls' <- getRequiredClass "SCNMaterialProperty"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "precomputedLightingEnvironmentContentsWithData:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' precomputedLightingEnvironmentContentsWithData_errorSelector (toNSData data_) (toNSError error_)
 
 -- | precomputedLightingEnvironmentDataForContents:device:error:
 --
@@ -155,8 +148,7 @@ precomputedLightingEnvironmentDataForContents_device_error :: IsNSError error_ =
 precomputedLightingEnvironmentDataForContents_device_error contents device error_ =
   do
     cls' <- getRequiredClass "SCNMaterialProperty"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "precomputedLightingEnvironmentDataForContents:device:error:") (retPtr retVoid) [argPtr (castPtr (unRawId contents) :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' precomputedLightingEnvironmentDataForContents_device_errorSelector contents device (toNSError error_)
 
 -- | contents
 --
@@ -166,8 +158,8 @@ precomputedLightingEnvironmentDataForContents_device_error contents device error
 --
 -- ObjC selector: @- contents@
 contents :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO RawId
-contents scnMaterialProperty  =
-    fmap (RawId . castPtr) $ sendMsg scnMaterialProperty (mkSelector "contents") (retPtr retVoid) []
+contents scnMaterialProperty =
+  sendMessage scnMaterialProperty contentsSelector
 
 -- | contents
 --
@@ -177,8 +169,8 @@ contents scnMaterialProperty  =
 --
 -- ObjC selector: @- setContents:@
 setContents :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> RawId -> IO ()
-setContents scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setContents:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setContents scnMaterialProperty value =
+  sendMessage scnMaterialProperty setContentsSelector value
 
 -- | intensity
 --
@@ -186,8 +178,8 @@ setContents scnMaterialProperty  value =
 --
 -- ObjC selector: @- intensity@
 intensity :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO CDouble
-intensity scnMaterialProperty  =
-    sendMsg scnMaterialProperty (mkSelector "intensity") retCDouble []
+intensity scnMaterialProperty =
+  sendMessage scnMaterialProperty intensitySelector
 
 -- | intensity
 --
@@ -195,8 +187,8 @@ intensity scnMaterialProperty  =
 --
 -- ObjC selector: @- setIntensity:@
 setIntensity :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> CDouble -> IO ()
-setIntensity scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setIntensity:") retVoid [argCDouble value]
+setIntensity scnMaterialProperty value =
+  sendMessage scnMaterialProperty setIntensitySelector value
 
 -- | minificationFilter
 --
@@ -206,8 +198,8 @@ setIntensity scnMaterialProperty  value =
 --
 -- ObjC selector: @- minificationFilter@
 minificationFilter :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO SCNFilterMode
-minificationFilter scnMaterialProperty  =
-    fmap (coerce :: CLong -> SCNFilterMode) $ sendMsg scnMaterialProperty (mkSelector "minificationFilter") retCLong []
+minificationFilter scnMaterialProperty =
+  sendMessage scnMaterialProperty minificationFilterSelector
 
 -- | minificationFilter
 --
@@ -217,8 +209,8 @@ minificationFilter scnMaterialProperty  =
 --
 -- ObjC selector: @- setMinificationFilter:@
 setMinificationFilter :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> SCNFilterMode -> IO ()
-setMinificationFilter scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setMinificationFilter:") retVoid [argCLong (coerce value)]
+setMinificationFilter scnMaterialProperty value =
+  sendMessage scnMaterialProperty setMinificationFilterSelector value
 
 -- | magnificationFilter
 --
@@ -228,8 +220,8 @@ setMinificationFilter scnMaterialProperty  value =
 --
 -- ObjC selector: @- magnificationFilter@
 magnificationFilter :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO SCNFilterMode
-magnificationFilter scnMaterialProperty  =
-    fmap (coerce :: CLong -> SCNFilterMode) $ sendMsg scnMaterialProperty (mkSelector "magnificationFilter") retCLong []
+magnificationFilter scnMaterialProperty =
+  sendMessage scnMaterialProperty magnificationFilterSelector
 
 -- | magnificationFilter
 --
@@ -239,8 +231,8 @@ magnificationFilter scnMaterialProperty  =
 --
 -- ObjC selector: @- setMagnificationFilter:@
 setMagnificationFilter :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> SCNFilterMode -> IO ()
-setMagnificationFilter scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setMagnificationFilter:") retVoid [argCLong (coerce value)]
+setMagnificationFilter scnMaterialProperty value =
+  sendMessage scnMaterialProperty setMagnificationFilterSelector value
 
 -- | mipFilter
 --
@@ -250,8 +242,8 @@ setMagnificationFilter scnMaterialProperty  value =
 --
 -- ObjC selector: @- mipFilter@
 mipFilter :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO SCNFilterMode
-mipFilter scnMaterialProperty  =
-    fmap (coerce :: CLong -> SCNFilterMode) $ sendMsg scnMaterialProperty (mkSelector "mipFilter") retCLong []
+mipFilter scnMaterialProperty =
+  sendMessage scnMaterialProperty mipFilterSelector
 
 -- | mipFilter
 --
@@ -261,8 +253,8 @@ mipFilter scnMaterialProperty  =
 --
 -- ObjC selector: @- setMipFilter:@
 setMipFilter :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> SCNFilterMode -> IO ()
-setMipFilter scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setMipFilter:") retVoid [argCLong (coerce value)]
+setMipFilter scnMaterialProperty value =
+  sendMessage scnMaterialProperty setMipFilterSelector value
 
 -- | contentsTransform
 --
@@ -270,8 +262,8 @@ setMipFilter scnMaterialProperty  value =
 --
 -- ObjC selector: @- contentsTransform@
 contentsTransform :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO SCNMatrix4
-contentsTransform scnMaterialProperty  =
-    sendMsgStret scnMaterialProperty (mkSelector "contentsTransform") retSCNMatrix4 []
+contentsTransform scnMaterialProperty =
+  sendMessage scnMaterialProperty contentsTransformSelector
 
 -- | contentsTransform
 --
@@ -279,8 +271,8 @@ contentsTransform scnMaterialProperty  =
 --
 -- ObjC selector: @- setContentsTransform:@
 setContentsTransform :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> SCNMatrix4 -> IO ()
-setContentsTransform scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setContentsTransform:") retVoid [argSCNMatrix4 value]
+setContentsTransform scnMaterialProperty value =
+  sendMessage scnMaterialProperty setContentsTransformSelector value
 
 -- | wrapS
 --
@@ -288,8 +280,8 @@ setContentsTransform scnMaterialProperty  value =
 --
 -- ObjC selector: @- wrapS@
 wrapS :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO SCNWrapMode
-wrapS scnMaterialProperty  =
-    fmap (coerce :: CLong -> SCNWrapMode) $ sendMsg scnMaterialProperty (mkSelector "wrapS") retCLong []
+wrapS scnMaterialProperty =
+  sendMessage scnMaterialProperty wrapSSelector
 
 -- | wrapS
 --
@@ -297,8 +289,8 @@ wrapS scnMaterialProperty  =
 --
 -- ObjC selector: @- setWrapS:@
 setWrapS :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> SCNWrapMode -> IO ()
-setWrapS scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setWrapS:") retVoid [argCLong (coerce value)]
+setWrapS scnMaterialProperty value =
+  sendMessage scnMaterialProperty setWrapSSelector value
 
 -- | wrapT
 --
@@ -306,8 +298,8 @@ setWrapS scnMaterialProperty  value =
 --
 -- ObjC selector: @- wrapT@
 wrapT :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO SCNWrapMode
-wrapT scnMaterialProperty  =
-    fmap (coerce :: CLong -> SCNWrapMode) $ sendMsg scnMaterialProperty (mkSelector "wrapT") retCLong []
+wrapT scnMaterialProperty =
+  sendMessage scnMaterialProperty wrapTSelector
 
 -- | wrapT
 --
@@ -315,8 +307,8 @@ wrapT scnMaterialProperty  =
 --
 -- ObjC selector: @- setWrapT:@
 setWrapT :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> SCNWrapMode -> IO ()
-setWrapT scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setWrapT:") retVoid [argCLong (coerce value)]
+setWrapT scnMaterialProperty value =
+  sendMessage scnMaterialProperty setWrapTSelector value
 
 -- | mappingChannel
 --
@@ -326,8 +318,8 @@ setWrapT scnMaterialProperty  value =
 --
 -- ObjC selector: @- mappingChannel@
 mappingChannel :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO CLong
-mappingChannel scnMaterialProperty  =
-    sendMsg scnMaterialProperty (mkSelector "mappingChannel") retCLong []
+mappingChannel scnMaterialProperty =
+  sendMessage scnMaterialProperty mappingChannelSelector
 
 -- | mappingChannel
 --
@@ -337,8 +329,8 @@ mappingChannel scnMaterialProperty  =
 --
 -- ObjC selector: @- setMappingChannel:@
 setMappingChannel :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> CLong -> IO ()
-setMappingChannel scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setMappingChannel:") retVoid [argCLong value]
+setMappingChannel scnMaterialProperty value =
+  sendMessage scnMaterialProperty setMappingChannelSelector value
 
 -- | textureComponents
 --
@@ -348,8 +340,8 @@ setMappingChannel scnMaterialProperty  value =
 --
 -- ObjC selector: @- textureComponents@
 textureComponents :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO SCNColorMask
-textureComponents scnMaterialProperty  =
-    fmap (coerce :: CLong -> SCNColorMask) $ sendMsg scnMaterialProperty (mkSelector "textureComponents") retCLong []
+textureComponents scnMaterialProperty =
+  sendMessage scnMaterialProperty textureComponentsSelector
 
 -- | textureComponents
 --
@@ -359,8 +351,8 @@ textureComponents scnMaterialProperty  =
 --
 -- ObjC selector: @- setTextureComponents:@
 setTextureComponents :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> SCNColorMask -> IO ()
-setTextureComponents scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setTextureComponents:") retVoid [argCLong (coerce value)]
+setTextureComponents scnMaterialProperty value =
+  sendMessage scnMaterialProperty setTextureComponentsSelector value
 
 -- | maxAnisotropy
 --
@@ -370,8 +362,8 @@ setTextureComponents scnMaterialProperty  value =
 --
 -- ObjC selector: @- maxAnisotropy@
 maxAnisotropy :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO CDouble
-maxAnisotropy scnMaterialProperty  =
-    sendMsg scnMaterialProperty (mkSelector "maxAnisotropy") retCDouble []
+maxAnisotropy scnMaterialProperty =
+  sendMessage scnMaterialProperty maxAnisotropySelector
 
 -- | maxAnisotropy
 --
@@ -381,8 +373,8 @@ maxAnisotropy scnMaterialProperty  =
 --
 -- ObjC selector: @- setMaxAnisotropy:@
 setMaxAnisotropy :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> CDouble -> IO ()
-setMaxAnisotropy scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setMaxAnisotropy:") retVoid [argCDouble value]
+setMaxAnisotropy scnMaterialProperty value =
+  sendMessage scnMaterialProperty setMaxAnisotropySelector value
 
 -- | borderColor
 --
@@ -392,8 +384,8 @@ setMaxAnisotropy scnMaterialProperty  value =
 --
 -- ObjC selector: @- borderColor@
 borderColor :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> IO RawId
-borderColor scnMaterialProperty  =
-    fmap (RawId . castPtr) $ sendMsg scnMaterialProperty (mkSelector "borderColor") (retPtr retVoid) []
+borderColor scnMaterialProperty =
+  sendMessage scnMaterialProperty borderColorSelector
 
 -- | borderColor
 --
@@ -403,122 +395,122 @@ borderColor scnMaterialProperty  =
 --
 -- ObjC selector: @- setBorderColor:@
 setBorderColor :: IsSCNMaterialProperty scnMaterialProperty => scnMaterialProperty -> RawId -> IO ()
-setBorderColor scnMaterialProperty  value =
-    sendMsg scnMaterialProperty (mkSelector "setBorderColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setBorderColor scnMaterialProperty value =
+  sendMessage scnMaterialProperty setBorderColorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @materialPropertyWithContents:@
-materialPropertyWithContentsSelector :: Selector
+materialPropertyWithContentsSelector :: Selector '[RawId] (Id SCNMaterialProperty)
 materialPropertyWithContentsSelector = mkSelector "materialPropertyWithContents:"
 
 -- | @Selector@ for @precomputedLightingEnvironmentContentsWithURL:error:@
-precomputedLightingEnvironmentContentsWithURL_errorSelector :: Selector
+precomputedLightingEnvironmentContentsWithURL_errorSelector :: Selector '[Id NSURL, Id NSError] RawId
 precomputedLightingEnvironmentContentsWithURL_errorSelector = mkSelector "precomputedLightingEnvironmentContentsWithURL:error:"
 
 -- | @Selector@ for @precomputedLightingEnvironmentContentsWithData:error:@
-precomputedLightingEnvironmentContentsWithData_errorSelector :: Selector
+precomputedLightingEnvironmentContentsWithData_errorSelector :: Selector '[Id NSData, Id NSError] RawId
 precomputedLightingEnvironmentContentsWithData_errorSelector = mkSelector "precomputedLightingEnvironmentContentsWithData:error:"
 
 -- | @Selector@ for @precomputedLightingEnvironmentDataForContents:device:error:@
-precomputedLightingEnvironmentDataForContents_device_errorSelector :: Selector
+precomputedLightingEnvironmentDataForContents_device_errorSelector :: Selector '[RawId, RawId, Id NSError] (Id NSData)
 precomputedLightingEnvironmentDataForContents_device_errorSelector = mkSelector "precomputedLightingEnvironmentDataForContents:device:error:"
 
 -- | @Selector@ for @contents@
-contentsSelector :: Selector
+contentsSelector :: Selector '[] RawId
 contentsSelector = mkSelector "contents"
 
 -- | @Selector@ for @setContents:@
-setContentsSelector :: Selector
+setContentsSelector :: Selector '[RawId] ()
 setContentsSelector = mkSelector "setContents:"
 
 -- | @Selector@ for @intensity@
-intensitySelector :: Selector
+intensitySelector :: Selector '[] CDouble
 intensitySelector = mkSelector "intensity"
 
 -- | @Selector@ for @setIntensity:@
-setIntensitySelector :: Selector
+setIntensitySelector :: Selector '[CDouble] ()
 setIntensitySelector = mkSelector "setIntensity:"
 
 -- | @Selector@ for @minificationFilter@
-minificationFilterSelector :: Selector
+minificationFilterSelector :: Selector '[] SCNFilterMode
 minificationFilterSelector = mkSelector "minificationFilter"
 
 -- | @Selector@ for @setMinificationFilter:@
-setMinificationFilterSelector :: Selector
+setMinificationFilterSelector :: Selector '[SCNFilterMode] ()
 setMinificationFilterSelector = mkSelector "setMinificationFilter:"
 
 -- | @Selector@ for @magnificationFilter@
-magnificationFilterSelector :: Selector
+magnificationFilterSelector :: Selector '[] SCNFilterMode
 magnificationFilterSelector = mkSelector "magnificationFilter"
 
 -- | @Selector@ for @setMagnificationFilter:@
-setMagnificationFilterSelector :: Selector
+setMagnificationFilterSelector :: Selector '[SCNFilterMode] ()
 setMagnificationFilterSelector = mkSelector "setMagnificationFilter:"
 
 -- | @Selector@ for @mipFilter@
-mipFilterSelector :: Selector
+mipFilterSelector :: Selector '[] SCNFilterMode
 mipFilterSelector = mkSelector "mipFilter"
 
 -- | @Selector@ for @setMipFilter:@
-setMipFilterSelector :: Selector
+setMipFilterSelector :: Selector '[SCNFilterMode] ()
 setMipFilterSelector = mkSelector "setMipFilter:"
 
 -- | @Selector@ for @contentsTransform@
-contentsTransformSelector :: Selector
+contentsTransformSelector :: Selector '[] SCNMatrix4
 contentsTransformSelector = mkSelector "contentsTransform"
 
 -- | @Selector@ for @setContentsTransform:@
-setContentsTransformSelector :: Selector
+setContentsTransformSelector :: Selector '[SCNMatrix4] ()
 setContentsTransformSelector = mkSelector "setContentsTransform:"
 
 -- | @Selector@ for @wrapS@
-wrapSSelector :: Selector
+wrapSSelector :: Selector '[] SCNWrapMode
 wrapSSelector = mkSelector "wrapS"
 
 -- | @Selector@ for @setWrapS:@
-setWrapSSelector :: Selector
+setWrapSSelector :: Selector '[SCNWrapMode] ()
 setWrapSSelector = mkSelector "setWrapS:"
 
 -- | @Selector@ for @wrapT@
-wrapTSelector :: Selector
+wrapTSelector :: Selector '[] SCNWrapMode
 wrapTSelector = mkSelector "wrapT"
 
 -- | @Selector@ for @setWrapT:@
-setWrapTSelector :: Selector
+setWrapTSelector :: Selector '[SCNWrapMode] ()
 setWrapTSelector = mkSelector "setWrapT:"
 
 -- | @Selector@ for @mappingChannel@
-mappingChannelSelector :: Selector
+mappingChannelSelector :: Selector '[] CLong
 mappingChannelSelector = mkSelector "mappingChannel"
 
 -- | @Selector@ for @setMappingChannel:@
-setMappingChannelSelector :: Selector
+setMappingChannelSelector :: Selector '[CLong] ()
 setMappingChannelSelector = mkSelector "setMappingChannel:"
 
 -- | @Selector@ for @textureComponents@
-textureComponentsSelector :: Selector
+textureComponentsSelector :: Selector '[] SCNColorMask
 textureComponentsSelector = mkSelector "textureComponents"
 
 -- | @Selector@ for @setTextureComponents:@
-setTextureComponentsSelector :: Selector
+setTextureComponentsSelector :: Selector '[SCNColorMask] ()
 setTextureComponentsSelector = mkSelector "setTextureComponents:"
 
 -- | @Selector@ for @maxAnisotropy@
-maxAnisotropySelector :: Selector
+maxAnisotropySelector :: Selector '[] CDouble
 maxAnisotropySelector = mkSelector "maxAnisotropy"
 
 -- | @Selector@ for @setMaxAnisotropy:@
-setMaxAnisotropySelector :: Selector
+setMaxAnisotropySelector :: Selector '[CDouble] ()
 setMaxAnisotropySelector = mkSelector "setMaxAnisotropy:"
 
 -- | @Selector@ for @borderColor@
-borderColorSelector :: Selector
+borderColorSelector :: Selector '[] RawId
 borderColorSelector = mkSelector "borderColor"
 
 -- | @Selector@ for @setBorderColor:@
-setBorderColorSelector :: Selector
+setBorderColorSelector :: Selector '[RawId] ()
 setBorderColorSelector = mkSelector "setBorderColor:"
 

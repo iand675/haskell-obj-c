@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.Photos.PHVideoRequestOptions
   , setDeliveryMode
   , progressHandler
   , setProgressHandler
-  , networkAccessAllowedSelector
-  , setNetworkAccessAllowedSelector
-  , versionSelector
-  , setVersionSelector
   , deliveryModeSelector
-  , setDeliveryModeSelector
+  , networkAccessAllowedSelector
   , progressHandlerSelector
+  , setDeliveryModeSelector
+  , setNetworkAccessAllowedSelector
   , setProgressHandlerSelector
+  , setVersionSelector
+  , versionSelector
 
   -- * Enum types
   , PHVideoRequestOptionsDeliveryMode(PHVideoRequestOptionsDeliveryMode)
@@ -36,15 +37,11 @@ module ObjC.Photos.PHVideoRequestOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,77 +51,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- networkAccessAllowed@
 networkAccessAllowed :: IsPHVideoRequestOptions phVideoRequestOptions => phVideoRequestOptions -> IO Bool
-networkAccessAllowed phVideoRequestOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phVideoRequestOptions (mkSelector "networkAccessAllowed") retCULong []
+networkAccessAllowed phVideoRequestOptions =
+  sendMessage phVideoRequestOptions networkAccessAllowedSelector
 
 -- | @- setNetworkAccessAllowed:@
 setNetworkAccessAllowed :: IsPHVideoRequestOptions phVideoRequestOptions => phVideoRequestOptions -> Bool -> IO ()
-setNetworkAccessAllowed phVideoRequestOptions  value =
-    sendMsg phVideoRequestOptions (mkSelector "setNetworkAccessAllowed:") retVoid [argCULong (if value then 1 else 0)]
+setNetworkAccessAllowed phVideoRequestOptions value =
+  sendMessage phVideoRequestOptions setNetworkAccessAllowedSelector value
 
 -- | @- version@
 version :: IsPHVideoRequestOptions phVideoRequestOptions => phVideoRequestOptions -> IO PHVideoRequestOptionsVersion
-version phVideoRequestOptions  =
-    fmap (coerce :: CLong -> PHVideoRequestOptionsVersion) $ sendMsg phVideoRequestOptions (mkSelector "version") retCLong []
+version phVideoRequestOptions =
+  sendMessage phVideoRequestOptions versionSelector
 
 -- | @- setVersion:@
 setVersion :: IsPHVideoRequestOptions phVideoRequestOptions => phVideoRequestOptions -> PHVideoRequestOptionsVersion -> IO ()
-setVersion phVideoRequestOptions  value =
-    sendMsg phVideoRequestOptions (mkSelector "setVersion:") retVoid [argCLong (coerce value)]
+setVersion phVideoRequestOptions value =
+  sendMessage phVideoRequestOptions setVersionSelector value
 
 -- | @- deliveryMode@
 deliveryMode :: IsPHVideoRequestOptions phVideoRequestOptions => phVideoRequestOptions -> IO PHVideoRequestOptionsDeliveryMode
-deliveryMode phVideoRequestOptions  =
-    fmap (coerce :: CLong -> PHVideoRequestOptionsDeliveryMode) $ sendMsg phVideoRequestOptions (mkSelector "deliveryMode") retCLong []
+deliveryMode phVideoRequestOptions =
+  sendMessage phVideoRequestOptions deliveryModeSelector
 
 -- | @- setDeliveryMode:@
 setDeliveryMode :: IsPHVideoRequestOptions phVideoRequestOptions => phVideoRequestOptions -> PHVideoRequestOptionsDeliveryMode -> IO ()
-setDeliveryMode phVideoRequestOptions  value =
-    sendMsg phVideoRequestOptions (mkSelector "setDeliveryMode:") retVoid [argCLong (coerce value)]
+setDeliveryMode phVideoRequestOptions value =
+  sendMessage phVideoRequestOptions setDeliveryModeSelector value
 
 -- | @- progressHandler@
 progressHandler :: IsPHVideoRequestOptions phVideoRequestOptions => phVideoRequestOptions -> IO (Ptr ())
-progressHandler phVideoRequestOptions  =
-    fmap castPtr $ sendMsg phVideoRequestOptions (mkSelector "progressHandler") (retPtr retVoid) []
+progressHandler phVideoRequestOptions =
+  sendMessage phVideoRequestOptions progressHandlerSelector
 
 -- | @- setProgressHandler:@
 setProgressHandler :: IsPHVideoRequestOptions phVideoRequestOptions => phVideoRequestOptions -> Ptr () -> IO ()
-setProgressHandler phVideoRequestOptions  value =
-    sendMsg phVideoRequestOptions (mkSelector "setProgressHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setProgressHandler phVideoRequestOptions value =
+  sendMessage phVideoRequestOptions setProgressHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @networkAccessAllowed@
-networkAccessAllowedSelector :: Selector
+networkAccessAllowedSelector :: Selector '[] Bool
 networkAccessAllowedSelector = mkSelector "networkAccessAllowed"
 
 -- | @Selector@ for @setNetworkAccessAllowed:@
-setNetworkAccessAllowedSelector :: Selector
+setNetworkAccessAllowedSelector :: Selector '[Bool] ()
 setNetworkAccessAllowedSelector = mkSelector "setNetworkAccessAllowed:"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] PHVideoRequestOptionsVersion
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @setVersion:@
-setVersionSelector :: Selector
+setVersionSelector :: Selector '[PHVideoRequestOptionsVersion] ()
 setVersionSelector = mkSelector "setVersion:"
 
 -- | @Selector@ for @deliveryMode@
-deliveryModeSelector :: Selector
+deliveryModeSelector :: Selector '[] PHVideoRequestOptionsDeliveryMode
 deliveryModeSelector = mkSelector "deliveryMode"
 
 -- | @Selector@ for @setDeliveryMode:@
-setDeliveryModeSelector :: Selector
+setDeliveryModeSelector :: Selector '[PHVideoRequestOptionsDeliveryMode] ()
 setDeliveryModeSelector = mkSelector "setDeliveryMode:"
 
 -- | @Selector@ for @progressHandler@
-progressHandlerSelector :: Selector
+progressHandlerSelector :: Selector '[] (Ptr ())
 progressHandlerSelector = mkSelector "progressHandler"
 
 -- | @Selector@ for @setProgressHandler:@
-setProgressHandlerSelector :: Selector
+setProgressHandlerSelector :: Selector '[Ptr ()] ()
 setProgressHandlerSelector = mkSelector "setProgressHandler:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.ModelIO.MDLLight
   , setLightType
   , colorSpace
   , setColorSpace
-  , lightTypeSelector
-  , setLightTypeSelector
   , colorSpaceSelector
+  , lightTypeSelector
   , setColorSpaceSelector
+  , setLightTypeSelector
 
   -- * Enum types
   , MDLLightType(MDLLightType)
@@ -33,15 +34,11 @@ module ObjC.ModelIO.MDLLight
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,42 +48,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- lightType@
 lightType :: IsMDLLight mdlLight => mdlLight -> IO MDLLightType
-lightType mdlLight  =
-    fmap (coerce :: CULong -> MDLLightType) $ sendMsg mdlLight (mkSelector "lightType") retCULong []
+lightType mdlLight =
+  sendMessage mdlLight lightTypeSelector
 
 -- | @- setLightType:@
 setLightType :: IsMDLLight mdlLight => mdlLight -> MDLLightType -> IO ()
-setLightType mdlLight  value =
-    sendMsg mdlLight (mkSelector "setLightType:") retVoid [argCULong (coerce value)]
+setLightType mdlLight value =
+  sendMessage mdlLight setLightTypeSelector value
 
 -- | @- colorSpace@
 colorSpace :: IsMDLLight mdlLight => mdlLight -> IO (Id NSString)
-colorSpace mdlLight  =
-    sendMsg mdlLight (mkSelector "colorSpace") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorSpace mdlLight =
+  sendMessage mdlLight colorSpaceSelector
 
 -- | @- setColorSpace:@
 setColorSpace :: (IsMDLLight mdlLight, IsNSString value) => mdlLight -> value -> IO ()
-setColorSpace mdlLight  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlLight (mkSelector "setColorSpace:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColorSpace mdlLight value =
+  sendMessage mdlLight setColorSpaceSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @lightType@
-lightTypeSelector :: Selector
+lightTypeSelector :: Selector '[] MDLLightType
 lightTypeSelector = mkSelector "lightType"
 
 -- | @Selector@ for @setLightType:@
-setLightTypeSelector :: Selector
+setLightTypeSelector :: Selector '[MDLLightType] ()
 setLightTypeSelector = mkSelector "setLightType:"
 
 -- | @Selector@ for @colorSpace@
-colorSpaceSelector :: Selector
+colorSpaceSelector :: Selector '[] (Id NSString)
 colorSpaceSelector = mkSelector "colorSpace"
 
 -- | @Selector@ for @setColorSpace:@
-setColorSpaceSelector :: Selector
+setColorSpaceSelector :: Selector '[Id NSString] ()
 setColorSpaceSelector = mkSelector "setColorSpace:"
 

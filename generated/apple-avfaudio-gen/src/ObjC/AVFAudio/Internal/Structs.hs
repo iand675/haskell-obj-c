@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | AVAudio3DAngularOrientation
 --
@@ -51,6 +53,16 @@ argAVAudio3DAngularOrientation = mkStorableArg avAudio3DAngularOrientationStruct
 retAVAudio3DAngularOrientation :: RetType AVAudio3DAngularOrientation
 retAVAudio3DAngularOrientation = mkStorableRetType avAudio3DAngularOrientationStructType
 
+instance ObjCArgument AVAudio3DAngularOrientation where
+  withObjCArg x k = k (argAVAudio3DAngularOrientation x)
+
+instance ObjCReturn AVAudio3DAngularOrientation where
+  type RawReturn AVAudio3DAngularOrientation = AVAudio3DAngularOrientation
+  objcRetType = retAVAudio3DAngularOrientation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AVAudio3DPoint
 --
 -- Struct representing a point in 3D space
@@ -83,6 +95,16 @@ argAVAudio3DPoint = mkStorableArg avAudio3DPointStructType
 retAVAudio3DPoint :: RetType AVAudio3DPoint
 retAVAudio3DPoint = mkStorableRetType avAudio3DPointStructType
 
+instance ObjCArgument AVAudio3DPoint where
+  withObjCArg x k = k (argAVAudio3DPoint x)
+
+instance ObjCReturn AVAudio3DPoint where
+  type RawReturn AVAudio3DPoint = AVAudio3DPoint
+  objcRetType = retAVAudio3DPoint
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AVAudio3DPoint
 --
 -- Struct representing a point in 3D space
@@ -114,6 +136,16 @@ argAVAudio3DVector = mkStorableArg avAudio3DVectorStructType
 
 retAVAudio3DVector :: RetType AVAudio3DVector
 retAVAudio3DVector = mkStorableRetType avAudio3DVectorStructType
+
+instance ObjCArgument AVAudio3DVector where
+  withObjCArg x k = k (argAVAudio3DVector x)
+
+instance ObjCReturn AVAudio3DVector where
+  type RawReturn AVAudio3DVector = AVAudio3DVector
+  objcRetType = retAVAudio3DVector
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AVAudioConverterPrimeInfo
 --
@@ -158,6 +190,16 @@ argAVAudioConverterPrimeInfo = mkStorableArg avAudioConverterPrimeInfoStructType
 retAVAudioConverterPrimeInfo :: RetType AVAudioConverterPrimeInfo
 retAVAudioConverterPrimeInfo = mkStorableRetType avAudioConverterPrimeInfoStructType
 
+instance ObjCArgument AVAudioConverterPrimeInfo where
+  withObjCArg x k = k (argAVAudioConverterPrimeInfo x)
+
+instance ObjCReturn AVAudioConverterPrimeInfo where
+  type RawReturn AVAudioConverterPrimeInfo = AVAudioConverterPrimeInfo
+  objcRetType = retAVAudioConverterPrimeInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | AVBeatRange
 --
 -- Used to describe a specific time range within an AVMusicTrack.
@@ -184,6 +226,16 @@ argAVBeatRange = mkStorableArg avBeatRangeStructType
 
 retAVBeatRange :: RetType AVBeatRange
 retAVBeatRange = mkStorableRetType avBeatRangeStructType
+
+instance ObjCArgument AVBeatRange where
+  withObjCArg x k = k (argAVBeatRange x)
+
+instance ObjCReturn AVBeatRange where
+  type RawReturn AVBeatRange = AVBeatRange
+  objcRetType = retAVBeatRange
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | AVAudio3DVectorOrientation
 --
@@ -213,3 +265,13 @@ argAVAudio3DVectorOrientation = mkStorableArg avAudio3DVectorOrientationStructTy
 
 retAVAudio3DVectorOrientation :: RetType AVAudio3DVectorOrientation
 retAVAudio3DVectorOrientation = mkStorableRetType avAudio3DVectorOrientationStructType
+
+instance ObjCArgument AVAudio3DVectorOrientation where
+  withObjCArg x k = k (argAVAudio3DVectorOrientation x)
+
+instance ObjCReturn AVAudio3DVectorOrientation where
+  type RawReturn AVAudio3DVectorOrientation = AVAudio3DVectorOrientation
+  objcRetType = retAVAudio3DVectorOrientation
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

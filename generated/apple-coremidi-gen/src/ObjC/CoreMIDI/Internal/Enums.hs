@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreMIDI.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | MIDICICategoryOptions
 --
@@ -39,6 +42,16 @@ pattern KMIDICICategoryOptionsPropertyExchangeSupported = MIDICICategoryOptions 
 pattern KMIDICICategoryOptionsProcessInquirySupported :: MIDICICategoryOptions
 pattern KMIDICICategoryOptionsProcessInquirySupported = MIDICICategoryOptions 16
 
+instance ObjCArgument MIDICICategoryOptions where
+  withObjCArg (MIDICICategoryOptions x) k = k (argCUChar x)
+
+instance ObjCReturn MIDICICategoryOptions where
+  type RawReturn MIDICICategoryOptions = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDICICategoryOptions x)
+  fromOwned x = pure (MIDICICategoryOptions x)
+
 -- | @MIDICIDeviceType@
 newtype MIDICIDeviceType = MIDICIDeviceType CUChar
   deriving stock (Eq, Ord, Show)
@@ -55,6 +68,16 @@ pattern KMIDICIDeviceTypeVirtual = MIDICIDeviceType 2
 
 pattern KMIDICIDeviceTypeUSBMIDI :: MIDICIDeviceType
 pattern KMIDICIDeviceTypeUSBMIDI = MIDICIDeviceType 3
+
+instance ObjCArgument MIDICIDeviceType where
+  withObjCArg (MIDICIDeviceType x) k = k (argCUChar x)
+
+instance ObjCReturn MIDICIDeviceType where
+  type RawReturn MIDICIDeviceType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDICIDeviceType x)
+  fromOwned x = pure (MIDICIDeviceType x)
 
 -- | MIDICIManagementMessageType
 --
@@ -85,6 +108,16 @@ pattern KMIDICIManagementMessageTypeInvalidateMUID = MIDICIManagementMessageType
 pattern KMIDICIManagementMessageTypeMIDICINAK :: MIDICIManagementMessageType
 pattern KMIDICIManagementMessageTypeMIDICINAK = MIDICIManagementMessageType 127
 
+instance ObjCArgument MIDICIManagementMessageType where
+  withObjCArg (MIDICIManagementMessageType x) k = k (argCUChar x)
+
+instance ObjCReturn MIDICIManagementMessageType where
+  type RawReturn MIDICIManagementMessageType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDICIManagementMessageType x)
+  fromOwned x = pure (MIDICIManagementMessageType x)
+
 -- | MIDICIProcessInquiryMessageType
 --
 -- MIDI-CI Process Inquiry sub-ID values.
@@ -107,6 +140,16 @@ pattern KMIDICIProcessInquiryMessageTypeReplyToMIDIMessageReport = MIDICIProcess
 
 pattern KMIDICIProcessInquiryMessageTypeEndOfMIDIMessageReport :: MIDICIProcessInquiryMessageType
 pattern KMIDICIProcessInquiryMessageTypeEndOfMIDIMessageReport = MIDICIProcessInquiryMessageType 68
+
+instance ObjCArgument MIDICIProcessInquiryMessageType where
+  withObjCArg (MIDICIProcessInquiryMessageType x) k = k (argCUChar x)
+
+instance ObjCReturn MIDICIProcessInquiryMessageType where
+  type RawReturn MIDICIProcessInquiryMessageType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDICIProcessInquiryMessageType x)
+  fromOwned x = pure (MIDICIProcessInquiryMessageType x)
 
 -- | MIDICIProfileMessageType
 --
@@ -149,6 +192,16 @@ pattern KMIDICIProfileMessageTypeReplyToDetailsInquiry = MIDICIProfileMessageTyp
 pattern KMIDICIProfileMessageTypeProfileSpecificData :: MIDICIProfileMessageType
 pattern KMIDICIProfileMessageTypeProfileSpecificData = MIDICIProfileMessageType 47
 
+instance ObjCArgument MIDICIProfileMessageType where
+  withObjCArg (MIDICIProfileMessageType x) k = k (argCUChar x)
+
+instance ObjCReturn MIDICIProfileMessageType where
+  type RawReturn MIDICIProfileMessageType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDICIProfileMessageType x)
+  fromOwned x = pure (MIDICIProfileMessageType x)
+
 -- | MIDICIProfileType
 --
 -- MIDI-CI Profile variants.
@@ -168,6 +221,16 @@ pattern KMIDICIProfileTypeFunctionBlock = MIDICIProfileType 3
 
 pattern KMIDICIProfileTypeMultichannel :: MIDICIProfileType
 pattern KMIDICIProfileTypeMultichannel = MIDICIProfileType 4
+
+instance ObjCArgument MIDICIProfileType where
+  withObjCArg (MIDICIProfileType x) k = k (argCUChar x)
+
+instance ObjCReturn MIDICIProfileType where
+  type RawReturn MIDICIProfileType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDICIProfileType x)
+  fromOwned x = pure (MIDICIProfileType x)
 
 -- | MIDICIPropertyExchangeMessageType
 --
@@ -209,6 +272,16 @@ pattern KMIDICIPropertyExchangeMessageTypeReplyToSubscription = MIDICIPropertyEx
 
 pattern KMIDICIPropertyExchangeMessageTypeNotify :: MIDICIPropertyExchangeMessageType
 pattern KMIDICIPropertyExchangeMessageTypeNotify = MIDICIPropertyExchangeMessageType 63
+
+instance ObjCArgument MIDICIPropertyExchangeMessageType where
+  withObjCArg (MIDICIPropertyExchangeMessageType x) k = k (argCUChar x)
+
+instance ObjCReturn MIDICIPropertyExchangeMessageType where
+  type RawReturn MIDICIPropertyExchangeMessageType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDICIPropertyExchangeMessageType x)
+  fromOwned x = pure (MIDICIPropertyExchangeMessageType x)
 
 -- | @MIDICVStatus@
 newtype MIDICVStatus = MIDICVStatus CUInt
@@ -260,6 +333,16 @@ pattern KMIDICVStatusPerNotePitchBend = MIDICVStatus 6
 pattern KMIDICVStatusPerNoteMgmt :: MIDICVStatus
 pattern KMIDICVStatusPerNoteMgmt = MIDICVStatus 15
 
+instance ObjCArgument MIDICVStatus where
+  withObjCArg (MIDICVStatus x) k = k (argCUInt x)
+
+instance ObjCReturn MIDICVStatus where
+  type RawReturn MIDICVStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDICVStatus x)
+  fromOwned x = pure (MIDICVStatus x)
+
 -- | @MIDIMessageType@
 newtype MIDIMessageType = MIDIMessageType CUInt
   deriving stock (Eq, Ord, Show)
@@ -295,6 +378,16 @@ pattern KMIDIMessageTypeStream = MIDIMessageType 15
 pattern KMIDIMessageTypeInvalid :: MIDIMessageType
 pattern KMIDIMessageTypeInvalid = MIDIMessageType 255
 
+instance ObjCArgument MIDIMessageType where
+  withObjCArg (MIDIMessageType x) k = k (argCUInt x)
+
+instance ObjCReturn MIDIMessageType where
+  type RawReturn MIDIMessageType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIMessageType x)
+  fromOwned x = pure (MIDIMessageType x)
+
 -- | @MIDINetworkConnectionPolicy@
 newtype MIDINetworkConnectionPolicy = MIDINetworkConnectionPolicy CULong
   deriving stock (Eq, Ord, Show)
@@ -308,6 +401,16 @@ pattern MIDINetworkConnectionPolicy_HostsInContactList = MIDINetworkConnectionPo
 
 pattern MIDINetworkConnectionPolicy_Anyone :: MIDINetworkConnectionPolicy
 pattern MIDINetworkConnectionPolicy_Anyone = MIDINetworkConnectionPolicy 2
+
+instance ObjCArgument MIDINetworkConnectionPolicy where
+  withObjCArg (MIDINetworkConnectionPolicy x) k = k (argCULong x)
+
+instance ObjCReturn MIDINetworkConnectionPolicy where
+  type RawReturn MIDINetworkConnectionPolicy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDINetworkConnectionPolicy x)
+  fromOwned x = pure (MIDINetworkConnectionPolicy x)
 
 -- | @MIDINoteAttribute@
 newtype MIDINoteAttribute = MIDINoteAttribute CUChar
@@ -325,6 +428,16 @@ pattern KMIDINoteAttributeProfileSpecific = MIDINoteAttribute 2
 
 pattern KMIDINoteAttributePitch :: MIDINoteAttribute
 pattern KMIDINoteAttributePitch = MIDINoteAttribute 3
+
+instance ObjCArgument MIDINoteAttribute where
+  withObjCArg (MIDINoteAttribute x) k = k (argCUChar x)
+
+instance ObjCReturn MIDINoteAttribute where
+  type RawReturn MIDINoteAttribute = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDINoteAttribute x)
+  fromOwned x = pure (MIDINoteAttribute x)
 
 -- | MIDINotificationMessageID
 --
@@ -386,6 +499,16 @@ pattern KMIDIMsgIOError = MIDINotificationMessageID 7
 pattern KMIDIMsgInternalStart :: MIDINotificationMessageID
 pattern KMIDIMsgInternalStart = MIDINotificationMessageID 4096
 
+instance ObjCArgument MIDINotificationMessageID where
+  withObjCArg (MIDINotificationMessageID x) k = k (argCInt x)
+
+instance ObjCReturn MIDINotificationMessageID where
+  type RawReturn MIDINotificationMessageID = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDINotificationMessageID x)
+  fromOwned x = pure (MIDINotificationMessageID x)
+
 -- | MIDIObjectType
 --
 -- Signifies the type of a MIDIObject.
@@ -423,6 +546,16 @@ pattern KMIDIObjectType_ExternalSource = MIDIObjectType 18
 pattern KMIDIObjectType_ExternalDestination :: MIDIObjectType
 pattern KMIDIObjectType_ExternalDestination = MIDIObjectType 19
 
+instance ObjCArgument MIDIObjectType where
+  withObjCArg (MIDIObjectType x) k = k (argCInt x)
+
+instance ObjCReturn MIDIObjectType where
+  type RawReturn MIDIObjectType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIObjectType x)
+  fromOwned x = pure (MIDIObjectType x)
+
 -- | @MIDIPerNoteManagementOptions@ (bitmask)
 newtype MIDIPerNoteManagementOptions = MIDIPerNoteManagementOptions CUChar
   deriving stock (Eq, Ord, Show)
@@ -440,6 +573,16 @@ pattern KMIDIPerNoteManagementReset = MIDIPerNoteManagementOptions 1
 pattern KMIDIPerNoteManagementDetach :: MIDIPerNoteManagementOptions
 pattern KMIDIPerNoteManagementDetach = MIDIPerNoteManagementOptions 2
 
+instance ObjCArgument MIDIPerNoteManagementOptions where
+  withObjCArg (MIDIPerNoteManagementOptions x) k = k (argCUChar x)
+
+instance ObjCReturn MIDIPerNoteManagementOptions where
+  type RawReturn MIDIPerNoteManagementOptions = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIPerNoteManagementOptions x)
+  fromOwned x = pure (MIDIPerNoteManagementOptions x)
+
 -- | @MIDIProgramChangeOptions@ (bitmask)
 newtype MIDIProgramChangeOptions = MIDIProgramChangeOptions CUChar
   deriving stock (Eq, Ord, Show)
@@ -453,6 +596,16 @@ instance Monoid MIDIProgramChangeOptions where
 
 pattern KMIDIProgramChangeBankValid :: MIDIProgramChangeOptions
 pattern KMIDIProgramChangeBankValid = MIDIProgramChangeOptions 1
+
+instance ObjCArgument MIDIProgramChangeOptions where
+  withObjCArg (MIDIProgramChangeOptions x) k = k (argCUChar x)
+
+instance ObjCReturn MIDIProgramChangeOptions where
+  type RawReturn MIDIProgramChangeOptions = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIProgramChangeOptions x)
+  fromOwned x = pure (MIDIProgramChangeOptions x)
 
 -- | MIDIProtocolID
 --
@@ -476,6 +629,16 @@ pattern KMIDIProtocol_1_0 = MIDIProtocolID 1
 pattern KMIDIProtocol_2_0 :: MIDIProtocolID
 pattern KMIDIProtocol_2_0 = MIDIProtocolID 2
 
+instance ObjCArgument MIDIProtocolID where
+  withObjCArg (MIDIProtocolID x) k = k (argCInt x)
+
+instance ObjCReturn MIDIProtocolID where
+  type RawReturn MIDIProtocolID = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIProtocolID x)
+  fromOwned x = pure (MIDIProtocolID x)
+
 -- | @MIDISysExStatus@
 newtype MIDISysExStatus = MIDISysExStatus CUInt
   deriving stock (Eq, Ord, Show)
@@ -498,6 +661,16 @@ pattern KMIDISysExStatusMixedDataSetHeader = MIDISysExStatus 8
 
 pattern KMIDISysExStatusMixedDataSetPayload :: MIDISysExStatus
 pattern KMIDISysExStatusMixedDataSetPayload = MIDISysExStatus 9
+
+instance ObjCArgument MIDISysExStatus where
+  withObjCArg (MIDISysExStatus x) k = k (argCUInt x)
+
+instance ObjCReturn MIDISysExStatus where
+  type RawReturn MIDISysExStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDISysExStatus x)
+  fromOwned x = pure (MIDISysExStatus x)
 
 -- | @MIDISystemStatus@
 newtype MIDISystemStatus = MIDISystemStatus CUInt
@@ -543,6 +716,16 @@ pattern KMIDIStatusActiveSensing = MIDISystemStatus 254
 pattern KMIDIStatusSystemReset :: MIDISystemStatus
 pattern KMIDIStatusSystemReset = MIDISystemStatus 255
 
+instance ObjCArgument MIDISystemStatus where
+  withObjCArg (MIDISystemStatus x) k = k (argCUInt x)
+
+instance ObjCReturn MIDISystemStatus where
+  type RawReturn MIDISystemStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDISystemStatus x)
+  fromOwned x = pure (MIDISystemStatus x)
+
 -- | MIDITransformControlType
 --
 -- Specifies how control numbers are interpreted.
@@ -586,6 +769,16 @@ pattern KMIDIControlType_7BitNRPN = MIDITransformControlType 4
 
 pattern KMIDIControlType_14BitNRPN :: MIDITransformControlType
 pattern KMIDIControlType_14BitNRPN = MIDITransformControlType 5
+
+instance ObjCArgument MIDITransformControlType where
+  withObjCArg (MIDITransformControlType x) k = k (argCUChar x)
+
+instance ObjCReturn MIDITransformControlType where
+  type RawReturn MIDITransformControlType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDITransformControlType x)
+  fromOwned x = pure (MIDITransformControlType x)
 
 -- | MIDITransformType
 --
@@ -651,6 +844,16 @@ pattern KMIDITransform_MaxValue = MIDITransformType 11
 pattern KMIDITransform_MapValue :: MIDITransformType
 pattern KMIDITransform_MapValue = MIDITransformType 12
 
+instance ObjCArgument MIDITransformType where
+  withObjCArg (MIDITransformType x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn MIDITransformType where
+  type RawReturn MIDITransformType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDITransformType (fromIntegral x))
+  fromOwned x = pure (MIDITransformType (fromIntegral x))
+
 -- | MIDIUMPCIObjectBackingType
 --
 -- The underlying transport / backing device type variants.
@@ -671,6 +874,16 @@ pattern KMIDIUMPCIObjectBackingTypeDriverDevice = MIDIUMPCIObjectBackingType 2
 pattern KMIDIUMPCIObjectBackingTypeUSBMIDI :: MIDIUMPCIObjectBackingType
 pattern KMIDIUMPCIObjectBackingTypeUSBMIDI = MIDIUMPCIObjectBackingType 3
 
+instance ObjCArgument MIDIUMPCIObjectBackingType where
+  withObjCArg (MIDIUMPCIObjectBackingType x) k = k (argCUChar x)
+
+instance ObjCReturn MIDIUMPCIObjectBackingType where
+  type RawReturn MIDIUMPCIObjectBackingType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIUMPCIObjectBackingType x)
+  fromOwned x = pure (MIDIUMPCIObjectBackingType x)
+
 -- | Function Block direction types
 -- | @MIDIUMPFunctionBlockDirection@
 newtype MIDIUMPFunctionBlockDirection = MIDIUMPFunctionBlockDirection CInt
@@ -689,6 +902,16 @@ pattern KMIDIUMPFunctionBlockDirectionOutput = MIDIUMPFunctionBlockDirection 2
 pattern KMIDIUMPFunctionBlockDirectionBidirectional :: MIDIUMPFunctionBlockDirection
 pattern KMIDIUMPFunctionBlockDirectionBidirectional = MIDIUMPFunctionBlockDirection 3
 
+instance ObjCArgument MIDIUMPFunctionBlockDirection where
+  withObjCArg (MIDIUMPFunctionBlockDirection x) k = k (argCInt x)
+
+instance ObjCReturn MIDIUMPFunctionBlockDirection where
+  type RawReturn MIDIUMPFunctionBlockDirection = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIUMPFunctionBlockDirection x)
+  fromOwned x = pure (MIDIUMPFunctionBlockDirection x)
+
 -- | MIDI 1.0 speed information for Function Blocks
 -- | @MIDIUMPFunctionBlockMIDI1Info@
 newtype MIDIUMPFunctionBlockMIDI1Info = MIDIUMPFunctionBlockMIDI1Info CInt
@@ -703,6 +926,16 @@ pattern KMIDIUMPFunctionBlockMIDI1InfoUnrestrictedBandwidth = MIDIUMPFunctionBlo
 
 pattern KMIDIUMPFunctionBlockMIDI1InfoRestrictedBandwidth :: MIDIUMPFunctionBlockMIDI1Info
 pattern KMIDIUMPFunctionBlockMIDI1InfoRestrictedBandwidth = MIDIUMPFunctionBlockMIDI1Info 2
+
+instance ObjCArgument MIDIUMPFunctionBlockMIDI1Info where
+  withObjCArg (MIDIUMPFunctionBlockMIDI1Info x) k = k (argCInt x)
+
+instance ObjCReturn MIDIUMPFunctionBlockMIDI1Info where
+  type RawReturn MIDIUMPFunctionBlockMIDI1Info = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIUMPFunctionBlockMIDI1Info x)
+  fromOwned x = pure (MIDIUMPFunctionBlockMIDI1Info x)
 
 -- | UI hint types for Function Blocks
 -- | @MIDIUMPFunctionBlockUIHint@
@@ -721,6 +954,16 @@ pattern KMIDIUMPFunctionBlockUIHintSender = MIDIUMPFunctionBlockUIHint 2
 
 pattern KMIDIUMPFunctionBlockUIHintSenderReceiver :: MIDIUMPFunctionBlockUIHint
 pattern KMIDIUMPFunctionBlockUIHintSenderReceiver = MIDIUMPFunctionBlockUIHint 3
+
+instance ObjCArgument MIDIUMPFunctionBlockUIHint where
+  withObjCArg (MIDIUMPFunctionBlockUIHint x) k = k (argCInt x)
+
+instance ObjCReturn MIDIUMPFunctionBlockUIHint where
+  type RawReturn MIDIUMPFunctionBlockUIHint = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIUMPFunctionBlockUIHint x)
+  fromOwned x = pure (MIDIUMPFunctionBlockUIHint x)
 
 -- | MIDIUMPProtocolOptions
 --
@@ -750,6 +993,16 @@ pattern KMIDIUMPProtocolOptionsMIDI1 = MIDIUMPProtocolOptions 1
 pattern KMIDIUMPProtocolOptionsMIDI2 :: MIDIUMPProtocolOptions
 pattern KMIDIUMPProtocolOptionsMIDI2 = MIDIUMPProtocolOptions 2
 
+instance ObjCArgument MIDIUMPProtocolOptions where
+  withObjCArg (MIDIUMPProtocolOptions x) k = k (argCUChar x)
+
+instance ObjCReturn MIDIUMPProtocolOptions where
+  type RawReturn MIDIUMPProtocolOptions = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIUMPProtocolOptions x)
+  fromOwned x = pure (MIDIUMPProtocolOptions x)
+
 -- | @MIDIUtilityStatus@
 newtype MIDIUtilityStatus = MIDIUtilityStatus CUInt
   deriving stock (Eq, Ord, Show)
@@ -770,6 +1023,16 @@ pattern KMIDIUtilityStatusDeltaClockstampTicksPerQuarterNote = MIDIUtilityStatus
 pattern KMIDIUtilityStatusTicksSinceLastEvent :: MIDIUtilityStatus
 pattern KMIDIUtilityStatusTicksSinceLastEvent = MIDIUtilityStatus 4
 
+instance ObjCArgument MIDIUtilityStatus where
+  withObjCArg (MIDIUtilityStatus x) k = k (argCUInt x)
+
+instance ObjCReturn MIDIUtilityStatus where
+  type RawReturn MIDIUtilityStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MIDIUtilityStatus x)
+  fromOwned x = pure (MIDIUtilityStatus x)
+
 -- | Stream Message Format
 -- | @UMPStreamMessageFormat@
 newtype UMPStreamMessageFormat = UMPStreamMessageFormat CUChar
@@ -787,6 +1050,16 @@ pattern KUMPStreamMessageFormatContinuing = UMPStreamMessageFormat 2
 
 pattern KUMPStreamMessageFormatEnd :: UMPStreamMessageFormat
 pattern KUMPStreamMessageFormatEnd = UMPStreamMessageFormat 3
+
+instance ObjCArgument UMPStreamMessageFormat where
+  withObjCArg (UMPStreamMessageFormat x) k = k (argCUChar x)
+
+instance ObjCReturn UMPStreamMessageFormat where
+  type RawReturn UMPStreamMessageFormat = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UMPStreamMessageFormat x)
+  fromOwned x = pure (UMPStreamMessageFormat x)
 
 -- | @UMPStreamMessageStatus@
 newtype UMPStreamMessageStatus = UMPStreamMessageStatus CUInt
@@ -828,3 +1101,13 @@ pattern KUMPStreamMessageStatusStartOfClip = UMPStreamMessageStatus 32
 
 pattern KUMPStreamMessageStatusEndOfClip :: UMPStreamMessageStatus
 pattern KUMPStreamMessageStatusEndOfClip = UMPStreamMessageStatus 33
+
+instance ObjCArgument UMPStreamMessageStatus where
+  withObjCArg (UMPStreamMessageStatus x) k = k (argCUInt x)
+
+instance ObjCReturn UMPStreamMessageStatus where
+  type RawReturn UMPStreamMessageStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UMPStreamMessageStatus x)
+  fromOwned x = pure (UMPStreamMessageStatus x)

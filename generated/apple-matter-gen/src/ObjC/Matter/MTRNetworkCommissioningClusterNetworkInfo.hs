@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRNetworkCommissioningClusterNetworkInfo
   , setNetworkID
   , connected
   , setConnected
-  , networkIDSelector
-  , setNetworkIDSelector
   , connectedSelector
+  , networkIDSelector
   , setConnectedSelector
+  , setNetworkIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- networkID@
 networkID :: IsMTRNetworkCommissioningClusterNetworkInfo mtrNetworkCommissioningClusterNetworkInfo => mtrNetworkCommissioningClusterNetworkInfo -> IO (Id NSData)
-networkID mtrNetworkCommissioningClusterNetworkInfo  =
-    sendMsg mtrNetworkCommissioningClusterNetworkInfo (mkSelector "networkID") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkID mtrNetworkCommissioningClusterNetworkInfo =
+  sendMessage mtrNetworkCommissioningClusterNetworkInfo networkIDSelector
 
 -- | @- setNetworkID:@
 setNetworkID :: (IsMTRNetworkCommissioningClusterNetworkInfo mtrNetworkCommissioningClusterNetworkInfo, IsNSData value) => mtrNetworkCommissioningClusterNetworkInfo -> value -> IO ()
-setNetworkID mtrNetworkCommissioningClusterNetworkInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterNetworkInfo (mkSelector "setNetworkID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNetworkID mtrNetworkCommissioningClusterNetworkInfo value =
+  sendMessage mtrNetworkCommissioningClusterNetworkInfo setNetworkIDSelector (toNSData value)
 
 -- | @- connected@
 connected :: IsMTRNetworkCommissioningClusterNetworkInfo mtrNetworkCommissioningClusterNetworkInfo => mtrNetworkCommissioningClusterNetworkInfo -> IO (Id NSNumber)
-connected mtrNetworkCommissioningClusterNetworkInfo  =
-    sendMsg mtrNetworkCommissioningClusterNetworkInfo (mkSelector "connected") (retPtr retVoid) [] >>= retainedObject . castPtr
+connected mtrNetworkCommissioningClusterNetworkInfo =
+  sendMessage mtrNetworkCommissioningClusterNetworkInfo connectedSelector
 
 -- | @- setConnected:@
 setConnected :: (IsMTRNetworkCommissioningClusterNetworkInfo mtrNetworkCommissioningClusterNetworkInfo, IsNSNumber value) => mtrNetworkCommissioningClusterNetworkInfo -> value -> IO ()
-setConnected mtrNetworkCommissioningClusterNetworkInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterNetworkInfo (mkSelector "setConnected:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConnected mtrNetworkCommissioningClusterNetworkInfo value =
+  sendMessage mtrNetworkCommissioningClusterNetworkInfo setConnectedSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @networkID@
-networkIDSelector :: Selector
+networkIDSelector :: Selector '[] (Id NSData)
 networkIDSelector = mkSelector "networkID"
 
 -- | @Selector@ for @setNetworkID:@
-setNetworkIDSelector :: Selector
+setNetworkIDSelector :: Selector '[Id NSData] ()
 setNetworkIDSelector = mkSelector "setNetworkID:"
 
 -- | @Selector@ for @connected@
-connectedSelector :: Selector
+connectedSelector :: Selector '[] (Id NSNumber)
 connectedSelector = mkSelector "connected"
 
 -- | @Selector@ for @setConnected:@
-setConnectedSelector :: Selector
+setConnectedSelector :: Selector '[Id NSNumber] ()
 setConnectedSelector = mkSelector "setConnected:"
 

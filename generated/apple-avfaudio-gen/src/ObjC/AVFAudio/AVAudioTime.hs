@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,35 +35,31 @@ module ObjC.AVFAudio.AVAudioTime
   , sampleTimeValid
   , sampleTime
   , sampleRate
+  , extrapolateTimeFromAnchorSelector
+  , hostTimeForSecondsSelector
+  , hostTimeSelector
+  , hostTimeValidSelector
   , initWithAudioTimeStamp_sampleRateSelector
   , initWithHostTimeSelector
-  , initWithSampleTime_atRateSelector
   , initWithHostTime_sampleTime_atRateSelector
+  , initWithSampleTime_atRateSelector
+  , sampleRateSelector
+  , sampleTimeSelector
+  , sampleTimeValidSelector
+  , secondsForHostTimeSelector
   , timeWithAudioTimeStamp_sampleRateSelector
   , timeWithHostTimeSelector
-  , timeWithSampleTime_atRateSelector
   , timeWithHostTime_sampleTime_atRateSelector
-  , hostTimeForSecondsSelector
-  , secondsForHostTimeSelector
-  , extrapolateTimeFromAnchorSelector
-  , hostTimeValidSelector
-  , hostTimeSelector
-  , sampleTimeValidSelector
-  , sampleTimeSelector
-  , sampleRateSelector
+  , timeWithSampleTime_atRateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,29 +70,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAudioTimeStamp:sampleRate:@
 initWithAudioTimeStamp_sampleRate :: IsAVAudioTime avAudioTime => avAudioTime -> Const RawId -> CDouble -> IO (Id AVAudioTime)
-initWithAudioTimeStamp_sampleRate avAudioTime  ts sampleRate =
-    sendMsg avAudioTime (mkSelector "initWithAudioTimeStamp:sampleRate:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst ts)) :: Ptr ()), argCDouble sampleRate] >>= ownedObject . castPtr
+initWithAudioTimeStamp_sampleRate avAudioTime ts sampleRate =
+  sendOwnedMessage avAudioTime initWithAudioTimeStamp_sampleRateSelector ts sampleRate
 
 -- | initWithHostTime:
 --
 -- ObjC selector: @- initWithHostTime:@
 initWithHostTime :: IsAVAudioTime avAudioTime => avAudioTime -> CULong -> IO (Id AVAudioTime)
-initWithHostTime avAudioTime  hostTime =
-    sendMsg avAudioTime (mkSelector "initWithHostTime:") (retPtr retVoid) [argCULong hostTime] >>= ownedObject . castPtr
+initWithHostTime avAudioTime hostTime =
+  sendOwnedMessage avAudioTime initWithHostTimeSelector hostTime
 
 -- | initWithSampleTime:atRate:
 --
 -- ObjC selector: @- initWithSampleTime:atRate:@
 initWithSampleTime_atRate :: IsAVAudioTime avAudioTime => avAudioTime -> CLong -> CDouble -> IO (Id AVAudioTime)
-initWithSampleTime_atRate avAudioTime  sampleTime sampleRate =
-    sendMsg avAudioTime (mkSelector "initWithSampleTime:atRate:") (retPtr retVoid) [argCLong sampleTime, argCDouble sampleRate] >>= ownedObject . castPtr
+initWithSampleTime_atRate avAudioTime sampleTime sampleRate =
+  sendOwnedMessage avAudioTime initWithSampleTime_atRateSelector sampleTime sampleRate
 
 -- | initWithHostTime:sampleTime:atRate:
 --
 -- ObjC selector: @- initWithHostTime:sampleTime:atRate:@
 initWithHostTime_sampleTime_atRate :: IsAVAudioTime avAudioTime => avAudioTime -> CULong -> CLong -> CDouble -> IO (Id AVAudioTime)
-initWithHostTime_sampleTime_atRate avAudioTime  hostTime sampleTime sampleRate =
-    sendMsg avAudioTime (mkSelector "initWithHostTime:sampleTime:atRate:") (retPtr retVoid) [argCULong hostTime, argCLong sampleTime, argCDouble sampleRate] >>= ownedObject . castPtr
+initWithHostTime_sampleTime_atRate avAudioTime hostTime sampleTime sampleRate =
+  sendOwnedMessage avAudioTime initWithHostTime_sampleTime_atRateSelector hostTime sampleTime sampleRate
 
 -- | timeWithAudioTimeStamp:sampleRate:
 --
@@ -104,7 +101,7 @@ timeWithAudioTimeStamp_sampleRate :: Const RawId -> CDouble -> IO (Id AVAudioTim
 timeWithAudioTimeStamp_sampleRate ts sampleRate =
   do
     cls' <- getRequiredClass "AVAudioTime"
-    sendClassMsg cls' (mkSelector "timeWithAudioTimeStamp:sampleRate:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst ts)) :: Ptr ()), argCDouble sampleRate] >>= retainedObject . castPtr
+    sendClassMessage cls' timeWithAudioTimeStamp_sampleRateSelector ts sampleRate
 
 -- | timeWithHostTime:
 --
@@ -113,7 +110,7 @@ timeWithHostTime :: CULong -> IO (Id AVAudioTime)
 timeWithHostTime hostTime =
   do
     cls' <- getRequiredClass "AVAudioTime"
-    sendClassMsg cls' (mkSelector "timeWithHostTime:") (retPtr retVoid) [argCULong hostTime] >>= retainedObject . castPtr
+    sendClassMessage cls' timeWithHostTimeSelector hostTime
 
 -- | timeWithSampleTime:atRate:
 --
@@ -122,7 +119,7 @@ timeWithSampleTime_atRate :: CLong -> CDouble -> IO (Id AVAudioTime)
 timeWithSampleTime_atRate sampleTime sampleRate =
   do
     cls' <- getRequiredClass "AVAudioTime"
-    sendClassMsg cls' (mkSelector "timeWithSampleTime:atRate:") (retPtr retVoid) [argCLong sampleTime, argCDouble sampleRate] >>= retainedObject . castPtr
+    sendClassMessage cls' timeWithSampleTime_atRateSelector sampleTime sampleRate
 
 -- | timeWithHostTime:sampleTime:atRate:
 --
@@ -131,7 +128,7 @@ timeWithHostTime_sampleTime_atRate :: CULong -> CLong -> CDouble -> IO (Id AVAud
 timeWithHostTime_sampleTime_atRate hostTime sampleTime sampleRate =
   do
     cls' <- getRequiredClass "AVAudioTime"
-    sendClassMsg cls' (mkSelector "timeWithHostTime:sampleTime:atRate:") (retPtr retVoid) [argCULong hostTime, argCLong sampleTime, argCDouble sampleRate] >>= retainedObject . castPtr
+    sendClassMessage cls' timeWithHostTime_sampleTime_atRateSelector hostTime sampleTime sampleRate
 
 -- | hostTimeForSeconds:
 --
@@ -142,7 +139,7 @@ hostTimeForSeconds :: CDouble -> IO CULong
 hostTimeForSeconds seconds =
   do
     cls' <- getRequiredClass "AVAudioTime"
-    sendClassMsg cls' (mkSelector "hostTimeForSeconds:") retCULong [argCDouble seconds]
+    sendClassMessage cls' hostTimeForSecondsSelector seconds
 
 -- | secondsForHostTime:
 --
@@ -153,7 +150,7 @@ secondsForHostTime :: CULong -> IO CDouble
 secondsForHostTime hostTime =
   do
     cls' <- getRequiredClass "AVAudioTime"
-    sendClassMsg cls' (mkSelector "secondsForHostTime:") retCDouble [argCULong hostTime]
+    sendClassMessage cls' secondsForHostTimeSelector hostTime
 
 -- | extrapolateTimeFromAnchor:
 --
@@ -171,9 +168,8 @@ secondsForHostTime hostTime =
 --
 -- ObjC selector: @- extrapolateTimeFromAnchor:@
 extrapolateTimeFromAnchor :: (IsAVAudioTime avAudioTime, IsAVAudioTime anchorTime) => avAudioTime -> anchorTime -> IO (Id AVAudioTime)
-extrapolateTimeFromAnchor avAudioTime  anchorTime =
-  withObjCPtr anchorTime $ \raw_anchorTime ->
-      sendMsg avAudioTime (mkSelector "extrapolateTimeFromAnchor:") (retPtr retVoid) [argPtr (castPtr raw_anchorTime :: Ptr ())] >>= retainedObject . castPtr
+extrapolateTimeFromAnchor avAudioTime anchorTime =
+  sendMessage avAudioTime extrapolateTimeFromAnchorSelector (toAVAudioTime anchorTime)
 
 -- | hostTimeValid
 --
@@ -181,8 +177,8 @@ extrapolateTimeFromAnchor avAudioTime  anchorTime =
 --
 -- ObjC selector: @- hostTimeValid@
 hostTimeValid :: IsAVAudioTime avAudioTime => avAudioTime -> IO Bool
-hostTimeValid avAudioTime  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioTime (mkSelector "hostTimeValid") retCULong []
+hostTimeValid avAudioTime =
+  sendMessage avAudioTime hostTimeValidSelector
 
 -- | hostTime
 --
@@ -190,8 +186,8 @@ hostTimeValid avAudioTime  =
 --
 -- ObjC selector: @- hostTime@
 hostTime :: IsAVAudioTime avAudioTime => avAudioTime -> IO CULong
-hostTime avAudioTime  =
-    sendMsg avAudioTime (mkSelector "hostTime") retCULong []
+hostTime avAudioTime =
+  sendMessage avAudioTime hostTimeSelector
 
 -- | sampleTimeValid
 --
@@ -199,8 +195,8 @@ hostTime avAudioTime  =
 --
 -- ObjC selector: @- sampleTimeValid@
 sampleTimeValid :: IsAVAudioTime avAudioTime => avAudioTime -> IO Bool
-sampleTimeValid avAudioTime  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioTime (mkSelector "sampleTimeValid") retCULong []
+sampleTimeValid avAudioTime =
+  sendMessage avAudioTime sampleTimeValidSelector
 
 -- | sampleTime
 --
@@ -208,8 +204,8 @@ sampleTimeValid avAudioTime  =
 --
 -- ObjC selector: @- sampleTime@
 sampleTime :: IsAVAudioTime avAudioTime => avAudioTime -> IO CLong
-sampleTime avAudioTime  =
-    sendMsg avAudioTime (mkSelector "sampleTime") retCLong []
+sampleTime avAudioTime =
+  sendMessage avAudioTime sampleTimeSelector
 
 -- | sampleRate
 --
@@ -217,74 +213,74 @@ sampleTime avAudioTime  =
 --
 -- ObjC selector: @- sampleRate@
 sampleRate :: IsAVAudioTime avAudioTime => avAudioTime -> IO CDouble
-sampleRate avAudioTime  =
-    sendMsg avAudioTime (mkSelector "sampleRate") retCDouble []
+sampleRate avAudioTime =
+  sendMessage avAudioTime sampleRateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAudioTimeStamp:sampleRate:@
-initWithAudioTimeStamp_sampleRateSelector :: Selector
+initWithAudioTimeStamp_sampleRateSelector :: Selector '[Const RawId, CDouble] (Id AVAudioTime)
 initWithAudioTimeStamp_sampleRateSelector = mkSelector "initWithAudioTimeStamp:sampleRate:"
 
 -- | @Selector@ for @initWithHostTime:@
-initWithHostTimeSelector :: Selector
+initWithHostTimeSelector :: Selector '[CULong] (Id AVAudioTime)
 initWithHostTimeSelector = mkSelector "initWithHostTime:"
 
 -- | @Selector@ for @initWithSampleTime:atRate:@
-initWithSampleTime_atRateSelector :: Selector
+initWithSampleTime_atRateSelector :: Selector '[CLong, CDouble] (Id AVAudioTime)
 initWithSampleTime_atRateSelector = mkSelector "initWithSampleTime:atRate:"
 
 -- | @Selector@ for @initWithHostTime:sampleTime:atRate:@
-initWithHostTime_sampleTime_atRateSelector :: Selector
+initWithHostTime_sampleTime_atRateSelector :: Selector '[CULong, CLong, CDouble] (Id AVAudioTime)
 initWithHostTime_sampleTime_atRateSelector = mkSelector "initWithHostTime:sampleTime:atRate:"
 
 -- | @Selector@ for @timeWithAudioTimeStamp:sampleRate:@
-timeWithAudioTimeStamp_sampleRateSelector :: Selector
+timeWithAudioTimeStamp_sampleRateSelector :: Selector '[Const RawId, CDouble] (Id AVAudioTime)
 timeWithAudioTimeStamp_sampleRateSelector = mkSelector "timeWithAudioTimeStamp:sampleRate:"
 
 -- | @Selector@ for @timeWithHostTime:@
-timeWithHostTimeSelector :: Selector
+timeWithHostTimeSelector :: Selector '[CULong] (Id AVAudioTime)
 timeWithHostTimeSelector = mkSelector "timeWithHostTime:"
 
 -- | @Selector@ for @timeWithSampleTime:atRate:@
-timeWithSampleTime_atRateSelector :: Selector
+timeWithSampleTime_atRateSelector :: Selector '[CLong, CDouble] (Id AVAudioTime)
 timeWithSampleTime_atRateSelector = mkSelector "timeWithSampleTime:atRate:"
 
 -- | @Selector@ for @timeWithHostTime:sampleTime:atRate:@
-timeWithHostTime_sampleTime_atRateSelector :: Selector
+timeWithHostTime_sampleTime_atRateSelector :: Selector '[CULong, CLong, CDouble] (Id AVAudioTime)
 timeWithHostTime_sampleTime_atRateSelector = mkSelector "timeWithHostTime:sampleTime:atRate:"
 
 -- | @Selector@ for @hostTimeForSeconds:@
-hostTimeForSecondsSelector :: Selector
+hostTimeForSecondsSelector :: Selector '[CDouble] CULong
 hostTimeForSecondsSelector = mkSelector "hostTimeForSeconds:"
 
 -- | @Selector@ for @secondsForHostTime:@
-secondsForHostTimeSelector :: Selector
+secondsForHostTimeSelector :: Selector '[CULong] CDouble
 secondsForHostTimeSelector = mkSelector "secondsForHostTime:"
 
 -- | @Selector@ for @extrapolateTimeFromAnchor:@
-extrapolateTimeFromAnchorSelector :: Selector
+extrapolateTimeFromAnchorSelector :: Selector '[Id AVAudioTime] (Id AVAudioTime)
 extrapolateTimeFromAnchorSelector = mkSelector "extrapolateTimeFromAnchor:"
 
 -- | @Selector@ for @hostTimeValid@
-hostTimeValidSelector :: Selector
+hostTimeValidSelector :: Selector '[] Bool
 hostTimeValidSelector = mkSelector "hostTimeValid"
 
 -- | @Selector@ for @hostTime@
-hostTimeSelector :: Selector
+hostTimeSelector :: Selector '[] CULong
 hostTimeSelector = mkSelector "hostTime"
 
 -- | @Selector@ for @sampleTimeValid@
-sampleTimeValidSelector :: Selector
+sampleTimeValidSelector :: Selector '[] Bool
 sampleTimeValidSelector = mkSelector "sampleTimeValid"
 
 -- | @Selector@ for @sampleTime@
-sampleTimeSelector :: Selector
+sampleTimeSelector :: Selector '[] CLong
 sampleTimeSelector = mkSelector "sampleTime"
 
 -- | @Selector@ for @sampleRate@
-sampleRateSelector :: Selector
+sampleRateSelector :: Selector '[] CDouble
 sampleRateSelector = mkSelector "sampleRate"
 

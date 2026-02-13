@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,9 +17,9 @@ module ObjC.FSKit.FSItemSetAttributesRequest
   , wasAttributeConsumed
   , consumedAttributes
   , setConsumedAttributes
-  , wasAttributeConsumedSelector
   , consumedAttributesSelector
   , setConsumedAttributesSelector
+  , wasAttributeConsumedSelector
 
   -- * Enum types
   , FSItemAttribute(FSItemAttribute)
@@ -43,15 +44,11 @@ module ObjC.FSKit.FSItemSetAttributesRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,8 +62,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- wasAttributeConsumed:@
 wasAttributeConsumed :: IsFSItemSetAttributesRequest fsItemSetAttributesRequest => fsItemSetAttributesRequest -> FSItemAttribute -> IO Bool
-wasAttributeConsumed fsItemSetAttributesRequest  attribute =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsItemSetAttributesRequest (mkSelector "wasAttributeConsumed:") retCULong [argCLong (coerce attribute)]
+wasAttributeConsumed fsItemSetAttributesRequest attribute =
+  sendMessage fsItemSetAttributesRequest wasAttributeConsumedSelector attribute
 
 -- | The attributes successfully used by the file system.
 --
@@ -74,8 +71,8 @@ wasAttributeConsumed fsItemSetAttributesRequest  attribute =
 --
 -- ObjC selector: @- consumedAttributes@
 consumedAttributes :: IsFSItemSetAttributesRequest fsItemSetAttributesRequest => fsItemSetAttributesRequest -> IO FSItemAttribute
-consumedAttributes fsItemSetAttributesRequest  =
-    fmap (coerce :: CLong -> FSItemAttribute) $ sendMsg fsItemSetAttributesRequest (mkSelector "consumedAttributes") retCLong []
+consumedAttributes fsItemSetAttributesRequest =
+  sendMessage fsItemSetAttributesRequest consumedAttributesSelector
 
 -- | The attributes successfully used by the file system.
 --
@@ -83,22 +80,22 @@ consumedAttributes fsItemSetAttributesRequest  =
 --
 -- ObjC selector: @- setConsumedAttributes:@
 setConsumedAttributes :: IsFSItemSetAttributesRequest fsItemSetAttributesRequest => fsItemSetAttributesRequest -> FSItemAttribute -> IO ()
-setConsumedAttributes fsItemSetAttributesRequest  value =
-    sendMsg fsItemSetAttributesRequest (mkSelector "setConsumedAttributes:") retVoid [argCLong (coerce value)]
+setConsumedAttributes fsItemSetAttributesRequest value =
+  sendMessage fsItemSetAttributesRequest setConsumedAttributesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @wasAttributeConsumed:@
-wasAttributeConsumedSelector :: Selector
+wasAttributeConsumedSelector :: Selector '[FSItemAttribute] Bool
 wasAttributeConsumedSelector = mkSelector "wasAttributeConsumed:"
 
 -- | @Selector@ for @consumedAttributes@
-consumedAttributesSelector :: Selector
+consumedAttributesSelector :: Selector '[] FSItemAttribute
 consumedAttributesSelector = mkSelector "consumedAttributes"
 
 -- | @Selector@ for @setConsumedAttributes:@
-setConsumedAttributesSelector :: Selector
+setConsumedAttributesSelector :: Selector '[FSItemAttribute] ()
 setConsumedAttributesSelector = mkSelector "setConsumedAttributes:"
 

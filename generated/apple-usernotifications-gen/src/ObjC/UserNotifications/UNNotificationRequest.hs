@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.UserNotifications.UNNotificationRequest
   , identifier
   , content
   , trigger
-  , requestWithIdentifier_content_triggerSelector
-  , initSelector
-  , identifierSelector
   , contentSelector
+  , identifierSelector
+  , initSelector
+  , requestWithIdentifier_content_triggerSelector
   , triggerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,52 +37,49 @@ requestWithIdentifier_content_trigger :: (IsNSString identifier, IsUNNotificatio
 requestWithIdentifier_content_trigger identifier content trigger =
   do
     cls' <- getRequiredClass "UNNotificationRequest"
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr content $ \raw_content ->
-        withObjCPtr trigger $ \raw_trigger ->
-          sendClassMsg cls' (mkSelector "requestWithIdentifier:content:trigger:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_content :: Ptr ()), argPtr (castPtr raw_trigger :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' requestWithIdentifier_content_triggerSelector (toNSString identifier) (toUNNotificationContent content) (toUNNotificationTrigger trigger)
 
 -- | @- init@
 init_ :: IsUNNotificationRequest unNotificationRequest => unNotificationRequest -> IO (Id UNNotificationRequest)
-init_ unNotificationRequest  =
-    sendMsg unNotificationRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ unNotificationRequest =
+  sendOwnedMessage unNotificationRequest initSelector
 
 -- | @- identifier@
 identifier :: IsUNNotificationRequest unNotificationRequest => unNotificationRequest -> IO (Id NSString)
-identifier unNotificationRequest  =
-    sendMsg unNotificationRequest (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier unNotificationRequest =
+  sendMessage unNotificationRequest identifierSelector
 
 -- | @- content@
 content :: IsUNNotificationRequest unNotificationRequest => unNotificationRequest -> IO (Id UNNotificationContent)
-content unNotificationRequest  =
-    sendMsg unNotificationRequest (mkSelector "content") (retPtr retVoid) [] >>= retainedObject . castPtr
+content unNotificationRequest =
+  sendMessage unNotificationRequest contentSelector
 
 -- | @- trigger@
 trigger :: IsUNNotificationRequest unNotificationRequest => unNotificationRequest -> IO (Id UNNotificationTrigger)
-trigger unNotificationRequest  =
-    sendMsg unNotificationRequest (mkSelector "trigger") (retPtr retVoid) [] >>= retainedObject . castPtr
+trigger unNotificationRequest =
+  sendMessage unNotificationRequest triggerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestWithIdentifier:content:trigger:@
-requestWithIdentifier_content_triggerSelector :: Selector
+requestWithIdentifier_content_triggerSelector :: Selector '[Id NSString, Id UNNotificationContent, Id UNNotificationTrigger] (Id UNNotificationRequest)
 requestWithIdentifier_content_triggerSelector = mkSelector "requestWithIdentifier:content:trigger:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id UNNotificationRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @content@
-contentSelector :: Selector
+contentSelector :: Selector '[] (Id UNNotificationContent)
 contentSelector = mkSelector "content"
 
 -- | @Selector@ for @trigger@
-triggerSelector :: Selector
+triggerSelector :: Selector '[] (Id UNNotificationTrigger)
 triggerSelector = mkSelector "trigger"
 

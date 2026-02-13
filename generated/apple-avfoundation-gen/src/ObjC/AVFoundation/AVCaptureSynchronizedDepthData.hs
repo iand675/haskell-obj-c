@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,15 +30,11 @@ module ObjC.AVFoundation.AVCaptureSynchronizedDepthData
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,8 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- depthData@
 depthData :: IsAVCaptureSynchronizedDepthData avCaptureSynchronizedDepthData => avCaptureSynchronizedDepthData -> IO (Id AVDepthData)
-depthData avCaptureSynchronizedDepthData  =
-    sendMsg avCaptureSynchronizedDepthData (mkSelector "depthData") (retPtr retVoid) [] >>= retainedObject . castPtr
+depthData avCaptureSynchronizedDepthData =
+  sendMessage avCaptureSynchronizedDepthData depthDataSelector
 
 -- | depthDataWasDropped
 --
@@ -64,8 +61,8 @@ depthData avCaptureSynchronizedDepthData  =
 --
 -- ObjC selector: @- depthDataWasDropped@
 depthDataWasDropped :: IsAVCaptureSynchronizedDepthData avCaptureSynchronizedDepthData => avCaptureSynchronizedDepthData -> IO Bool
-depthDataWasDropped avCaptureSynchronizedDepthData  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureSynchronizedDepthData (mkSelector "depthDataWasDropped") retCULong []
+depthDataWasDropped avCaptureSynchronizedDepthData =
+  sendMessage avCaptureSynchronizedDepthData depthDataWasDroppedSelector
 
 -- | droppedReason
 --
@@ -75,22 +72,22 @@ depthDataWasDropped avCaptureSynchronizedDepthData  =
 --
 -- ObjC selector: @- droppedReason@
 droppedReason :: IsAVCaptureSynchronizedDepthData avCaptureSynchronizedDepthData => avCaptureSynchronizedDepthData -> IO AVCaptureOutputDataDroppedReason
-droppedReason avCaptureSynchronizedDepthData  =
-    fmap (coerce :: CLong -> AVCaptureOutputDataDroppedReason) $ sendMsg avCaptureSynchronizedDepthData (mkSelector "droppedReason") retCLong []
+droppedReason avCaptureSynchronizedDepthData =
+  sendMessage avCaptureSynchronizedDepthData droppedReasonSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @depthData@
-depthDataSelector :: Selector
+depthDataSelector :: Selector '[] (Id AVDepthData)
 depthDataSelector = mkSelector "depthData"
 
 -- | @Selector@ for @depthDataWasDropped@
-depthDataWasDroppedSelector :: Selector
+depthDataWasDroppedSelector :: Selector '[] Bool
 depthDataWasDroppedSelector = mkSelector "depthDataWasDropped"
 
 -- | @Selector@ for @droppedReason@
-droppedReasonSelector :: Selector
+droppedReasonSelector :: Selector '[] AVCaptureOutputDataDroppedReason
 droppedReasonSelector = mkSelector "droppedReason"
 

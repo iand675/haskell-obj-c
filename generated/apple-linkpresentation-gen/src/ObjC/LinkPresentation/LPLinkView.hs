@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,25 +27,21 @@ module ObjC.LinkPresentation.LPLinkView
   , initWithMetadata
   , metadata
   , setMetadata
-  , initWithCoderSelector
   , encodeWithCoderSelector
-  , initWithURLSelector
+  , initWithCoderSelector
   , initWithMetadataSelector
+  , initWithURLSelector
   , metadataSelector
   , setMetadataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,31 +51,27 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsLPLinkView lpLinkView, IsNSCoder coder) => lpLinkView -> coder -> IO (Id LPLinkView)
-initWithCoder lpLinkView  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg lpLinkView (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder lpLinkView coder =
+  sendOwnedMessage lpLinkView initWithCoderSelector (toNSCoder coder)
 
 -- | @- encodeWithCoder:@
 encodeWithCoder :: (IsLPLinkView lpLinkView, IsNSCoder coder) => lpLinkView -> coder -> IO ()
-encodeWithCoder lpLinkView  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg lpLinkView (mkSelector "encodeWithCoder:") retVoid [argPtr (castPtr raw_coder :: Ptr ())]
+encodeWithCoder lpLinkView coder =
+  sendMessage lpLinkView encodeWithCoderSelector (toNSCoder coder)
 
 -- | Initializes a placeholder link view without metadata for a given URL.
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsLPLinkView lpLinkView, IsNSURL url) => lpLinkView -> url -> IO (Id LPLinkView)
-initWithURL lpLinkView  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg lpLinkView (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL lpLinkView url =
+  sendOwnedMessage lpLinkView initWithURLSelector (toNSURL url)
 
 -- | Initializes a link view with specified metadata.
 --
 -- ObjC selector: @- initWithMetadata:@
 initWithMetadata :: (IsLPLinkView lpLinkView, IsLPLinkMetadata metadata) => lpLinkView -> metadata -> IO (Id LPLinkView)
-initWithMetadata lpLinkView  metadata =
-  withObjCPtr metadata $ \raw_metadata ->
-      sendMsg lpLinkView (mkSelector "initWithMetadata:") (retPtr retVoid) [argPtr (castPtr raw_metadata :: Ptr ())] >>= ownedObject . castPtr
+initWithMetadata lpLinkView metadata =
+  sendOwnedMessage lpLinkView initWithMetadataSelector (toLPLinkMetadata metadata)
 
 -- | The metadata from which to generate a rich presentation.
 --
@@ -86,8 +79,8 @@ initWithMetadata lpLinkView  metadata =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsLPLinkView lpLinkView => lpLinkView -> IO (Id LPLinkMetadata)
-metadata lpLinkView  =
-    sendMsg lpLinkView (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata lpLinkView =
+  sendMessage lpLinkView metadataSelector
 
 -- | The metadata from which to generate a rich presentation.
 --
@@ -95,35 +88,34 @@ metadata lpLinkView  =
 --
 -- ObjC selector: @- setMetadata:@
 setMetadata :: (IsLPLinkView lpLinkView, IsLPLinkMetadata value) => lpLinkView -> value -> IO ()
-setMetadata lpLinkView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg lpLinkView (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadata lpLinkView value =
+  sendMessage lpLinkView setMetadataSelector (toLPLinkMetadata value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id LPLinkView)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @encodeWithCoder:@
-encodeWithCoderSelector :: Selector
+encodeWithCoderSelector :: Selector '[Id NSCoder] ()
 encodeWithCoderSelector = mkSelector "encodeWithCoder:"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id LPLinkView)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initWithMetadata:@
-initWithMetadataSelector :: Selector
+initWithMetadataSelector :: Selector '[Id LPLinkMetadata] (Id LPLinkView)
 initWithMetadataSelector = mkSelector "initWithMetadata:"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id LPLinkMetadata)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @setMetadata:@
-setMetadataSelector :: Selector
+setMetadataSelector :: Selector '[Id LPLinkMetadata] ()
 setMetadataSelector = mkSelector "setMetadata:"
 

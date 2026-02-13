@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Metal.MTLRenderPipelineFunctionsDescriptor
   , setFragmentAdditionalBinaryFunctions
   , tileAdditionalBinaryFunctions
   , setTileAdditionalBinaryFunctions
-  , vertexAdditionalBinaryFunctionsSelector
-  , setVertexAdditionalBinaryFunctionsSelector
   , fragmentAdditionalBinaryFunctionsSelector
   , setFragmentAdditionalBinaryFunctionsSelector
-  , tileAdditionalBinaryFunctionsSelector
   , setTileAdditionalBinaryFunctionsSelector
+  , setVertexAdditionalBinaryFunctionsSelector
+  , tileAdditionalBinaryFunctionsSelector
+  , vertexAdditionalBinaryFunctionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- vertexAdditionalBinaryFunctions@
 vertexAdditionalBinaryFunctions :: IsMTLRenderPipelineFunctionsDescriptor mtlRenderPipelineFunctionsDescriptor => mtlRenderPipelineFunctionsDescriptor -> IO (Id NSArray)
-vertexAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  =
-    sendMsg mtlRenderPipelineFunctionsDescriptor (mkSelector "vertexAdditionalBinaryFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertexAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor =
+  sendMessage mtlRenderPipelineFunctionsDescriptor vertexAdditionalBinaryFunctionsSelector
 
 -- | vertexAdditionalBinaryFunctions
 --
@@ -52,9 +49,8 @@ vertexAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  =
 --
 -- ObjC selector: @- setVertexAdditionalBinaryFunctions:@
 setVertexAdditionalBinaryFunctions :: (IsMTLRenderPipelineFunctionsDescriptor mtlRenderPipelineFunctionsDescriptor, IsNSArray value) => mtlRenderPipelineFunctionsDescriptor -> value -> IO ()
-setVertexAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlRenderPipelineFunctionsDescriptor (mkSelector "setVertexAdditionalBinaryFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVertexAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor value =
+  sendMessage mtlRenderPipelineFunctionsDescriptor setVertexAdditionalBinaryFunctionsSelector (toNSArray value)
 
 -- | fragmentAdditionalBinaryFunctions
 --
@@ -62,8 +58,8 @@ setVertexAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  value =
 --
 -- ObjC selector: @- fragmentAdditionalBinaryFunctions@
 fragmentAdditionalBinaryFunctions :: IsMTLRenderPipelineFunctionsDescriptor mtlRenderPipelineFunctionsDescriptor => mtlRenderPipelineFunctionsDescriptor -> IO (Id NSArray)
-fragmentAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  =
-    sendMsg mtlRenderPipelineFunctionsDescriptor (mkSelector "fragmentAdditionalBinaryFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragmentAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor =
+  sendMessage mtlRenderPipelineFunctionsDescriptor fragmentAdditionalBinaryFunctionsSelector
 
 -- | fragmentAdditionalBinaryFunctions
 --
@@ -71,9 +67,8 @@ fragmentAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  =
 --
 -- ObjC selector: @- setFragmentAdditionalBinaryFunctions:@
 setFragmentAdditionalBinaryFunctions :: (IsMTLRenderPipelineFunctionsDescriptor mtlRenderPipelineFunctionsDescriptor, IsNSArray value) => mtlRenderPipelineFunctionsDescriptor -> value -> IO ()
-setFragmentAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlRenderPipelineFunctionsDescriptor (mkSelector "setFragmentAdditionalBinaryFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFragmentAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor value =
+  sendMessage mtlRenderPipelineFunctionsDescriptor setFragmentAdditionalBinaryFunctionsSelector (toNSArray value)
 
 -- | tileAdditionalBinaryFunctions
 --
@@ -81,8 +76,8 @@ setFragmentAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  value
 --
 -- ObjC selector: @- tileAdditionalBinaryFunctions@
 tileAdditionalBinaryFunctions :: IsMTLRenderPipelineFunctionsDescriptor mtlRenderPipelineFunctionsDescriptor => mtlRenderPipelineFunctionsDescriptor -> IO (Id NSArray)
-tileAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  =
-    sendMsg mtlRenderPipelineFunctionsDescriptor (mkSelector "tileAdditionalBinaryFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+tileAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor =
+  sendMessage mtlRenderPipelineFunctionsDescriptor tileAdditionalBinaryFunctionsSelector
 
 -- | tileAdditionalBinaryFunctions
 --
@@ -90,35 +85,34 @@ tileAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  =
 --
 -- ObjC selector: @- setTileAdditionalBinaryFunctions:@
 setTileAdditionalBinaryFunctions :: (IsMTLRenderPipelineFunctionsDescriptor mtlRenderPipelineFunctionsDescriptor, IsNSArray value) => mtlRenderPipelineFunctionsDescriptor -> value -> IO ()
-setTileAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlRenderPipelineFunctionsDescriptor (mkSelector "setTileAdditionalBinaryFunctions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTileAdditionalBinaryFunctions mtlRenderPipelineFunctionsDescriptor value =
+  sendMessage mtlRenderPipelineFunctionsDescriptor setTileAdditionalBinaryFunctionsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @vertexAdditionalBinaryFunctions@
-vertexAdditionalBinaryFunctionsSelector :: Selector
+vertexAdditionalBinaryFunctionsSelector :: Selector '[] (Id NSArray)
 vertexAdditionalBinaryFunctionsSelector = mkSelector "vertexAdditionalBinaryFunctions"
 
 -- | @Selector@ for @setVertexAdditionalBinaryFunctions:@
-setVertexAdditionalBinaryFunctionsSelector :: Selector
+setVertexAdditionalBinaryFunctionsSelector :: Selector '[Id NSArray] ()
 setVertexAdditionalBinaryFunctionsSelector = mkSelector "setVertexAdditionalBinaryFunctions:"
 
 -- | @Selector@ for @fragmentAdditionalBinaryFunctions@
-fragmentAdditionalBinaryFunctionsSelector :: Selector
+fragmentAdditionalBinaryFunctionsSelector :: Selector '[] (Id NSArray)
 fragmentAdditionalBinaryFunctionsSelector = mkSelector "fragmentAdditionalBinaryFunctions"
 
 -- | @Selector@ for @setFragmentAdditionalBinaryFunctions:@
-setFragmentAdditionalBinaryFunctionsSelector :: Selector
+setFragmentAdditionalBinaryFunctionsSelector :: Selector '[Id NSArray] ()
 setFragmentAdditionalBinaryFunctionsSelector = mkSelector "setFragmentAdditionalBinaryFunctions:"
 
 -- | @Selector@ for @tileAdditionalBinaryFunctions@
-tileAdditionalBinaryFunctionsSelector :: Selector
+tileAdditionalBinaryFunctionsSelector :: Selector '[] (Id NSArray)
 tileAdditionalBinaryFunctionsSelector = mkSelector "tileAdditionalBinaryFunctions"
 
 -- | @Selector@ for @setTileAdditionalBinaryFunctions:@
-setTileAdditionalBinaryFunctionsSelector :: Selector
+setTileAdditionalBinaryFunctionsSelector :: Selector '[Id NSArray] ()
 setTileAdditionalBinaryFunctionsSelector = mkSelector "setTileAdditionalBinaryFunctions:"
 

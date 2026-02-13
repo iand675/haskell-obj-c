@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.MetalPerformanceShaders.MPSNNGridSample
   , initWithCoder_device
   , useGridValueAsInputCoordinate
   , setUseGridValueAsInputCoordinate
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
-  , useGridValueAsInputCoordinateSelector
+  , initWithDeviceSelector
   , setUseGridValueAsInputCoordinateSelector
+  , useGridValueAsInputCoordinateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNGridSample mpsnnGridSample => mpsnnGridSample -> RawId -> IO (Id MPSNNGridSample)
-initWithDevice mpsnnGridSample  device =
-    sendMsg mpsnnGridSample (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnGridSample device =
+  sendOwnedMessage mpsnnGridSample initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -56,9 +53,8 @@ initWithDevice mpsnnGridSample  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNGridSample mpsnnGridSample, IsNSCoder aDecoder) => mpsnnGridSample -> aDecoder -> RawId -> IO (Id MPSNNGridSample)
-initWithCoder_device mpsnnGridSample  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnGridSample (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnGridSample aDecoder device =
+  sendOwnedMessage mpsnnGridSample initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | useGridValueAsInputCoordinate
 --
@@ -66,8 +62,8 @@ initWithCoder_device mpsnnGridSample  aDecoder device =
 --
 -- ObjC selector: @- useGridValueAsInputCoordinate@
 useGridValueAsInputCoordinate :: IsMPSNNGridSample mpsnnGridSample => mpsnnGridSample -> IO Bool
-useGridValueAsInputCoordinate mpsnnGridSample  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnGridSample (mkSelector "useGridValueAsInputCoordinate") retCULong []
+useGridValueAsInputCoordinate mpsnnGridSample =
+  sendMessage mpsnnGridSample useGridValueAsInputCoordinateSelector
 
 -- | useGridValueAsInputCoordinate
 --
@@ -75,26 +71,26 @@ useGridValueAsInputCoordinate mpsnnGridSample  =
 --
 -- ObjC selector: @- setUseGridValueAsInputCoordinate:@
 setUseGridValueAsInputCoordinate :: IsMPSNNGridSample mpsnnGridSample => mpsnnGridSample -> Bool -> IO ()
-setUseGridValueAsInputCoordinate mpsnnGridSample  value =
-    sendMsg mpsnnGridSample (mkSelector "setUseGridValueAsInputCoordinate:") retVoid [argCULong (if value then 1 else 0)]
+setUseGridValueAsInputCoordinate mpsnnGridSample value =
+  sendMessage mpsnnGridSample setUseGridValueAsInputCoordinateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNGridSample)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNGridSample)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @useGridValueAsInputCoordinate@
-useGridValueAsInputCoordinateSelector :: Selector
+useGridValueAsInputCoordinateSelector :: Selector '[] Bool
 useGridValueAsInputCoordinateSelector = mkSelector "useGridValueAsInputCoordinate"
 
 -- | @Selector@ for @setUseGridValueAsInputCoordinate:@
-setUseGridValueAsInputCoordinateSelector :: Selector
+setUseGridValueAsInputCoordinateSelector :: Selector '[Bool] ()
 setUseGridValueAsInputCoordinateSelector = mkSelector "setUseGridValueAsInputCoordinate:"
 

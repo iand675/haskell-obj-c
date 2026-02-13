@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.AuthenticationServices.ASAuthorizationAppleIDRequest
   , IsASAuthorizationAppleIDRequest(..)
   , user
   , setUser
-  , userSelector
   , setUserSelector
+  , userSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,8 +32,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- user@
 user :: IsASAuthorizationAppleIDRequest asAuthorizationAppleIDRequest => asAuthorizationAppleIDRequest -> IO (Id NSString)
-user asAuthorizationAppleIDRequest  =
-    sendMsg asAuthorizationAppleIDRequest (mkSelector "user") (retPtr retVoid) [] >>= retainedObject . castPtr
+user asAuthorizationAppleIDRequest =
+  sendMessage asAuthorizationAppleIDRequest userSelector
 
 -- | If you have been previously vended a 'user' value through ASAuthorization response, you may set it here to provide additional context to identity provider.
 --
@@ -44,19 +41,18 @@ user asAuthorizationAppleIDRequest  =
 --
 -- ObjC selector: @- setUser:@
 setUser :: (IsASAuthorizationAppleIDRequest asAuthorizationAppleIDRequest, IsNSString value) => asAuthorizationAppleIDRequest -> value -> IO ()
-setUser asAuthorizationAppleIDRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationAppleIDRequest (mkSelector "setUser:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUser asAuthorizationAppleIDRequest value =
+  sendMessage asAuthorizationAppleIDRequest setUserSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @user@
-userSelector :: Selector
+userSelector :: Selector '[] (Id NSString)
 userSelector = mkSelector "user"
 
 -- | @Selector@ for @setUser:@
-setUserSelector :: Selector
+setUserSelector :: Selector '[Id NSString] ()
 setUserSelector = mkSelector "setUser:"
 

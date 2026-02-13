@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.AVFoundation.AVAssetVariantVideoAttributes
   , codecTypes
   , nominalFrameRate
   , videoLayoutAttributes
+  , codecTypesSelector
   , initSelector
   , newSelector
-  , videoRangeSelector
-  , codecTypesSelector
   , nominalFrameRateSelector
   , videoLayoutAttributesSelector
+  , videoRangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,36 +40,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetVariantVideoAttributes avAssetVariantVideoAttributes => avAssetVariantVideoAttributes -> IO (Id AVAssetVariantVideoAttributes)
-init_ avAssetVariantVideoAttributes  =
-    sendMsg avAssetVariantVideoAttributes (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetVariantVideoAttributes =
+  sendOwnedMessage avAssetVariantVideoAttributes initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetVariantVideoAttributes)
 new  =
   do
     cls' <- getRequiredClass "AVAssetVariantVideoAttributes"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Provides the video range of the variant. If it is not declared, it will be AVVideoRangeSDR.
 --
 -- ObjC selector: @- videoRange@
 videoRange :: IsAVAssetVariantVideoAttributes avAssetVariantVideoAttributes => avAssetVariantVideoAttributes -> IO (Id NSString)
-videoRange avAssetVariantVideoAttributes  =
-    sendMsg avAssetVariantVideoAttributes (mkSelector "videoRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoRange avAssetVariantVideoAttributes =
+  sendMessage avAssetVariantVideoAttributes videoRangeSelector
 
 -- | Provides an array of video sample codec types present in the variant's renditions if any are declared. Each value in the array is a NSNumber representation of CMVideoCodecType.
 --
 -- ObjC selector: @- codecTypes@
 codecTypes :: IsAVAssetVariantVideoAttributes avAssetVariantVideoAttributes => avAssetVariantVideoAttributes -> IO (Id NSArray)
-codecTypes avAssetVariantVideoAttributes  =
-    sendMsg avAssetVariantVideoAttributes (mkSelector "codecTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+codecTypes avAssetVariantVideoAttributes =
+  sendMessage avAssetVariantVideoAttributes codecTypesSelector
 
 -- | If it is not declared, the value will be negative.
 --
 -- ObjC selector: @- nominalFrameRate@
 nominalFrameRate :: IsAVAssetVariantVideoAttributes avAssetVariantVideoAttributes => avAssetVariantVideoAttributes -> IO CDouble
-nominalFrameRate avAssetVariantVideoAttributes  =
-    sendMsg avAssetVariantVideoAttributes (mkSelector "nominalFrameRate") retCDouble []
+nominalFrameRate avAssetVariantVideoAttributes =
+  sendMessage avAssetVariantVideoAttributes nominalFrameRateSelector
 
 -- | Describes the video layout attributes.
 --
@@ -80,34 +77,34 @@ nominalFrameRate avAssetVariantVideoAttributes  =
 --
 -- ObjC selector: @- videoLayoutAttributes@
 videoLayoutAttributes :: IsAVAssetVariantVideoAttributes avAssetVariantVideoAttributes => avAssetVariantVideoAttributes -> IO (Id NSArray)
-videoLayoutAttributes avAssetVariantVideoAttributes  =
-    sendMsg avAssetVariantVideoAttributes (mkSelector "videoLayoutAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoLayoutAttributes avAssetVariantVideoAttributes =
+  sendMessage avAssetVariantVideoAttributes videoLayoutAttributesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetVariantVideoAttributes)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetVariantVideoAttributes)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @videoRange@
-videoRangeSelector :: Selector
+videoRangeSelector :: Selector '[] (Id NSString)
 videoRangeSelector = mkSelector "videoRange"
 
 -- | @Selector@ for @codecTypes@
-codecTypesSelector :: Selector
+codecTypesSelector :: Selector '[] (Id NSArray)
 codecTypesSelector = mkSelector "codecTypes"
 
 -- | @Selector@ for @nominalFrameRate@
-nominalFrameRateSelector :: Selector
+nominalFrameRateSelector :: Selector '[] CDouble
 nominalFrameRateSelector = mkSelector "nominalFrameRate"
 
 -- | @Selector@ for @videoLayoutAttributes@
-videoLayoutAttributesSelector :: Selector
+videoLayoutAttributesSelector :: Selector '[] (Id NSArray)
 videoLayoutAttributesSelector = mkSelector "videoLayoutAttributes"
 

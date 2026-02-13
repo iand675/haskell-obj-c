@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Matter.MTRLaundryWasherModeClusterModeTagStruct
   , setValue
   , mfgCodeSelector
   , setMfgCodeSelector
-  , valueSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- mfgCode@
 mfgCode :: IsMTRLaundryWasherModeClusterModeTagStruct mtrLaundryWasherModeClusterModeTagStruct => mtrLaundryWasherModeClusterModeTagStruct -> IO (Id NSNumber)
-mfgCode mtrLaundryWasherModeClusterModeTagStruct  =
-    sendMsg mtrLaundryWasherModeClusterModeTagStruct (mkSelector "mfgCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+mfgCode mtrLaundryWasherModeClusterModeTagStruct =
+  sendMessage mtrLaundryWasherModeClusterModeTagStruct mfgCodeSelector
 
 -- | @- setMfgCode:@
 setMfgCode :: (IsMTRLaundryWasherModeClusterModeTagStruct mtrLaundryWasherModeClusterModeTagStruct, IsNSNumber value) => mtrLaundryWasherModeClusterModeTagStruct -> value -> IO ()
-setMfgCode mtrLaundryWasherModeClusterModeTagStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLaundryWasherModeClusterModeTagStruct (mkSelector "setMfgCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMfgCode mtrLaundryWasherModeClusterModeTagStruct value =
+  sendMessage mtrLaundryWasherModeClusterModeTagStruct setMfgCodeSelector (toNSNumber value)
 
 -- | @- value@
 value :: IsMTRLaundryWasherModeClusterModeTagStruct mtrLaundryWasherModeClusterModeTagStruct => mtrLaundryWasherModeClusterModeTagStruct -> IO (Id NSNumber)
-value mtrLaundryWasherModeClusterModeTagStruct  =
-    sendMsg mtrLaundryWasherModeClusterModeTagStruct (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mtrLaundryWasherModeClusterModeTagStruct =
+  sendMessage mtrLaundryWasherModeClusterModeTagStruct valueSelector
 
 -- | @- setValue:@
 setValue :: (IsMTRLaundryWasherModeClusterModeTagStruct mtrLaundryWasherModeClusterModeTagStruct, IsNSNumber value) => mtrLaundryWasherModeClusterModeTagStruct -> value -> IO ()
-setValue mtrLaundryWasherModeClusterModeTagStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrLaundryWasherModeClusterModeTagStruct (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue mtrLaundryWasherModeClusterModeTagStruct value =
+  sendMessage mtrLaundryWasherModeClusterModeTagStruct setValueSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mfgCode@
-mfgCodeSelector :: Selector
+mfgCodeSelector :: Selector '[] (Id NSNumber)
 mfgCodeSelector = mkSelector "mfgCode"
 
 -- | @Selector@ for @setMfgCode:@
-setMfgCodeSelector :: Selector
+setMfgCodeSelector :: Selector '[Id NSNumber] ()
 setMfgCodeSelector = mkSelector "setMfgCode:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSNumber)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSNumber] ()
 setValueSelector = mkSelector "setValue:"
 

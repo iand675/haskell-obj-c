@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,33 +23,29 @@ module ObjC.Matter.MTRClusterCommodityPrice
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , getDetailedPriceRequestWithParams_expectedValues_expectedValueInterval_completionSelector
   , getDetailedForecastRequestWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeTariffUnitWithParamsSelector
-  , readAttributeCurrencyWithParamsSelector
-  , readAttributeCurrentPriceWithParamsSelector
-  , readAttributePriceForecastWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , getDetailedPriceRequestWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeCurrencyWithParamsSelector
+  , readAttributeCurrentPriceWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributePriceForecastWithParamsSelector
+  , readAttributeTariffUnitWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,153 +54,135 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- getDetailedPriceRequestWithParams:expectedValues:expectedValueInterval:completion:@
 getDetailedPriceRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRCommodityPriceClusterGetDetailedPriceRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterCommodityPrice -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getDetailedPriceRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterCommodityPrice  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterCommodityPrice (mkSelector "getDetailedPriceRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getDetailedPriceRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterCommodityPrice params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterCommodityPrice getDetailedPriceRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRCommodityPriceClusterGetDetailedPriceRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getDetailedForecastRequestWithParams:expectedValues:expectedValueInterval:completion:@
 getDetailedForecastRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRCommodityPriceClusterGetDetailedForecastRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterCommodityPrice -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getDetailedForecastRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterCommodityPrice  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterCommodityPrice (mkSelector "getDetailedForecastRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getDetailedForecastRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterCommodityPrice params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterCommodityPrice getDetailedForecastRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRCommodityPriceClusterGetDetailedForecastRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeTariffUnitWithParams:@
 readAttributeTariffUnitWithParams :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRReadParams params) => mtrClusterCommodityPrice -> params -> IO (Id NSDictionary)
-readAttributeTariffUnitWithParams mtrClusterCommodityPrice  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterCommodityPrice (mkSelector "readAttributeTariffUnitWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeTariffUnitWithParams mtrClusterCommodityPrice params =
+  sendMessage mtrClusterCommodityPrice readAttributeTariffUnitWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrencyWithParams:@
 readAttributeCurrencyWithParams :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRReadParams params) => mtrClusterCommodityPrice -> params -> IO (Id NSDictionary)
-readAttributeCurrencyWithParams mtrClusterCommodityPrice  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterCommodityPrice (mkSelector "readAttributeCurrencyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrencyWithParams mtrClusterCommodityPrice params =
+  sendMessage mtrClusterCommodityPrice readAttributeCurrencyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentPriceWithParams:@
 readAttributeCurrentPriceWithParams :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRReadParams params) => mtrClusterCommodityPrice -> params -> IO (Id NSDictionary)
-readAttributeCurrentPriceWithParams mtrClusterCommodityPrice  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterCommodityPrice (mkSelector "readAttributeCurrentPriceWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentPriceWithParams mtrClusterCommodityPrice params =
+  sendMessage mtrClusterCommodityPrice readAttributeCurrentPriceWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePriceForecastWithParams:@
 readAttributePriceForecastWithParams :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRReadParams params) => mtrClusterCommodityPrice -> params -> IO (Id NSDictionary)
-readAttributePriceForecastWithParams mtrClusterCommodityPrice  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterCommodityPrice (mkSelector "readAttributePriceForecastWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePriceForecastWithParams mtrClusterCommodityPrice params =
+  sendMessage mtrClusterCommodityPrice readAttributePriceForecastWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRReadParams params) => mtrClusterCommodityPrice -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterCommodityPrice  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterCommodityPrice (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterCommodityPrice params =
+  sendMessage mtrClusterCommodityPrice readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRReadParams params) => mtrClusterCommodityPrice -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterCommodityPrice  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterCommodityPrice (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterCommodityPrice params =
+  sendMessage mtrClusterCommodityPrice readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRReadParams params) => mtrClusterCommodityPrice -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterCommodityPrice  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterCommodityPrice (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterCommodityPrice params =
+  sendMessage mtrClusterCommodityPrice readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRReadParams params) => mtrClusterCommodityPrice -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterCommodityPrice  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterCommodityPrice (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterCommodityPrice params =
+  sendMessage mtrClusterCommodityPrice readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRReadParams params) => mtrClusterCommodityPrice -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterCommodityPrice  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterCommodityPrice (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterCommodityPrice params =
+  sendMessage mtrClusterCommodityPrice readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterCommodityPrice mtrClusterCommodityPrice => mtrClusterCommodityPrice -> IO (Id MTRClusterCommodityPrice)
-init_ mtrClusterCommodityPrice  =
-    sendMsg mtrClusterCommodityPrice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterCommodityPrice =
+  sendOwnedMessage mtrClusterCommodityPrice initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterCommodityPrice)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterCommodityPrice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterCommodityPrice mtrClusterCommodityPrice, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterCommodityPrice -> device -> endpointID -> queue -> IO (Id MTRClusterCommodityPrice)
-initWithDevice_endpointID_queue mtrClusterCommodityPrice  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterCommodityPrice (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterCommodityPrice device endpointID queue =
+  sendOwnedMessage mtrClusterCommodityPrice initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getDetailedPriceRequestWithParams:expectedValues:expectedValueInterval:completion:@
-getDetailedPriceRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getDetailedPriceRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRCommodityPriceClusterGetDetailedPriceRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getDetailedPriceRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getDetailedPriceRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getDetailedForecastRequestWithParams:expectedValues:expectedValueInterval:completion:@
-getDetailedForecastRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getDetailedForecastRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRCommodityPriceClusterGetDetailedForecastRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getDetailedForecastRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getDetailedForecastRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeTariffUnitWithParams:@
-readAttributeTariffUnitWithParamsSelector :: Selector
+readAttributeTariffUnitWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeTariffUnitWithParamsSelector = mkSelector "readAttributeTariffUnitWithParams:"
 
 -- | @Selector@ for @readAttributeCurrencyWithParams:@
-readAttributeCurrencyWithParamsSelector :: Selector
+readAttributeCurrencyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrencyWithParamsSelector = mkSelector "readAttributeCurrencyWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentPriceWithParams:@
-readAttributeCurrentPriceWithParamsSelector :: Selector
+readAttributeCurrentPriceWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentPriceWithParamsSelector = mkSelector "readAttributeCurrentPriceWithParams:"
 
 -- | @Selector@ for @readAttributePriceForecastWithParams:@
-readAttributePriceForecastWithParamsSelector :: Selector
+readAttributePriceForecastWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePriceForecastWithParamsSelector = mkSelector "readAttributePriceForecastWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterCommodityPrice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterCommodityPrice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterCommodityPrice)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

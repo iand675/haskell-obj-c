@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Foundation.NSOutputStream
   , outputStreamToFileAtPath_append
   , outputStreamWithURL_append
   , hasSpaceAvailable
-  , write_maxLengthSelector
-  , initToMemorySelector
+  , hasSpaceAvailableSelector
   , initToBuffer_capacitySelector
-  , initWithURL_appendSelector
   , initToFileAtPath_appendSelector
-  , outputStreamToMemorySelector
+  , initToMemorySelector
+  , initWithURL_appendSelector
   , outputStreamToBuffer_capacitySelector
   , outputStreamToFileAtPath_appendSelector
+  , outputStreamToMemorySelector
   , outputStreamWithURL_appendSelector
-  , hasSpaceAvailableSelector
+  , write_maxLengthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,107 +43,103 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- write:maxLength:@
 write_maxLength :: IsNSOutputStream nsOutputStream => nsOutputStream -> Const (Ptr CUChar) -> CULong -> IO CLong
-write_maxLength nsOutputStream  buffer len =
-    sendMsg nsOutputStream (mkSelector "write:maxLength:") retCLong [argPtr (unConst buffer), argCULong len]
+write_maxLength nsOutputStream buffer len =
+  sendMessage nsOutputStream write_maxLengthSelector buffer len
 
 -- | @- initToMemory@
 initToMemory :: IsNSOutputStream nsOutputStream => nsOutputStream -> IO (Id NSOutputStream)
-initToMemory nsOutputStream  =
-    sendMsg nsOutputStream (mkSelector "initToMemory") (retPtr retVoid) [] >>= ownedObject . castPtr
+initToMemory nsOutputStream =
+  sendOwnedMessage nsOutputStream initToMemorySelector
 
 -- | @- initToBuffer:capacity:@
 initToBuffer_capacity :: IsNSOutputStream nsOutputStream => nsOutputStream -> Ptr CUChar -> CULong -> IO (Id NSOutputStream)
-initToBuffer_capacity nsOutputStream  buffer capacity =
-    sendMsg nsOutputStream (mkSelector "initToBuffer:capacity:") (retPtr retVoid) [argPtr buffer, argCULong capacity] >>= ownedObject . castPtr
+initToBuffer_capacity nsOutputStream buffer capacity =
+  sendOwnedMessage nsOutputStream initToBuffer_capacitySelector buffer capacity
 
 -- | @- initWithURL:append:@
 initWithURL_append :: (IsNSOutputStream nsOutputStream, IsNSURL url) => nsOutputStream -> url -> Bool -> IO (Id NSOutputStream)
-initWithURL_append nsOutputStream  url shouldAppend =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsOutputStream (mkSelector "initWithURL:append:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (if shouldAppend then 1 else 0)] >>= ownedObject . castPtr
+initWithURL_append nsOutputStream url shouldAppend =
+  sendOwnedMessage nsOutputStream initWithURL_appendSelector (toNSURL url) shouldAppend
 
 -- | @- initToFileAtPath:append:@
 initToFileAtPath_append :: (IsNSOutputStream nsOutputStream, IsNSString path) => nsOutputStream -> path -> Bool -> IO (Id NSOutputStream)
-initToFileAtPath_append nsOutputStream  path shouldAppend =
-  withObjCPtr path $ \raw_path ->
-      sendMsg nsOutputStream (mkSelector "initToFileAtPath:append:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ()), argCULong (if shouldAppend then 1 else 0)] >>= ownedObject . castPtr
+initToFileAtPath_append nsOutputStream path shouldAppend =
+  sendOwnedMessage nsOutputStream initToFileAtPath_appendSelector (toNSString path) shouldAppend
 
 -- | @+ outputStreamToMemory@
 outputStreamToMemory :: IO (Id NSOutputStream)
 outputStreamToMemory  =
   do
     cls' <- getRequiredClass "NSOutputStream"
-    sendClassMsg cls' (mkSelector "outputStreamToMemory") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' outputStreamToMemorySelector
 
 -- | @+ outputStreamToBuffer:capacity:@
 outputStreamToBuffer_capacity :: Ptr CUChar -> CULong -> IO (Id NSOutputStream)
 outputStreamToBuffer_capacity buffer capacity =
   do
     cls' <- getRequiredClass "NSOutputStream"
-    sendClassMsg cls' (mkSelector "outputStreamToBuffer:capacity:") (retPtr retVoid) [argPtr buffer, argCULong capacity] >>= retainedObject . castPtr
+    sendClassMessage cls' outputStreamToBuffer_capacitySelector buffer capacity
 
 -- | @+ outputStreamToFileAtPath:append:@
 outputStreamToFileAtPath_append :: IsNSString path => path -> Bool -> IO (Id NSOutputStream)
 outputStreamToFileAtPath_append path shouldAppend =
   do
     cls' <- getRequiredClass "NSOutputStream"
-    withObjCPtr path $ \raw_path ->
-      sendClassMsg cls' (mkSelector "outputStreamToFileAtPath:append:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ()), argCULong (if shouldAppend then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' outputStreamToFileAtPath_appendSelector (toNSString path) shouldAppend
 
 -- | @+ outputStreamWithURL:append:@
 outputStreamWithURL_append :: IsNSURL url => url -> Bool -> IO (Id NSOutputStream)
 outputStreamWithURL_append url shouldAppend =
   do
     cls' <- getRequiredClass "NSOutputStream"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "outputStreamWithURL:append:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (if shouldAppend then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' outputStreamWithURL_appendSelector (toNSURL url) shouldAppend
 
 -- | @- hasSpaceAvailable@
 hasSpaceAvailable :: IsNSOutputStream nsOutputStream => nsOutputStream -> IO Bool
-hasSpaceAvailable nsOutputStream  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOutputStream (mkSelector "hasSpaceAvailable") retCULong []
+hasSpaceAvailable nsOutputStream =
+  sendMessage nsOutputStream hasSpaceAvailableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @write:maxLength:@
-write_maxLengthSelector :: Selector
+write_maxLengthSelector :: Selector '[Const (Ptr CUChar), CULong] CLong
 write_maxLengthSelector = mkSelector "write:maxLength:"
 
 -- | @Selector@ for @initToMemory@
-initToMemorySelector :: Selector
+initToMemorySelector :: Selector '[] (Id NSOutputStream)
 initToMemorySelector = mkSelector "initToMemory"
 
 -- | @Selector@ for @initToBuffer:capacity:@
-initToBuffer_capacitySelector :: Selector
+initToBuffer_capacitySelector :: Selector '[Ptr CUChar, CULong] (Id NSOutputStream)
 initToBuffer_capacitySelector = mkSelector "initToBuffer:capacity:"
 
 -- | @Selector@ for @initWithURL:append:@
-initWithURL_appendSelector :: Selector
+initWithURL_appendSelector :: Selector '[Id NSURL, Bool] (Id NSOutputStream)
 initWithURL_appendSelector = mkSelector "initWithURL:append:"
 
 -- | @Selector@ for @initToFileAtPath:append:@
-initToFileAtPath_appendSelector :: Selector
+initToFileAtPath_appendSelector :: Selector '[Id NSString, Bool] (Id NSOutputStream)
 initToFileAtPath_appendSelector = mkSelector "initToFileAtPath:append:"
 
 -- | @Selector@ for @outputStreamToMemory@
-outputStreamToMemorySelector :: Selector
+outputStreamToMemorySelector :: Selector '[] (Id NSOutputStream)
 outputStreamToMemorySelector = mkSelector "outputStreamToMemory"
 
 -- | @Selector@ for @outputStreamToBuffer:capacity:@
-outputStreamToBuffer_capacitySelector :: Selector
+outputStreamToBuffer_capacitySelector :: Selector '[Ptr CUChar, CULong] (Id NSOutputStream)
 outputStreamToBuffer_capacitySelector = mkSelector "outputStreamToBuffer:capacity:"
 
 -- | @Selector@ for @outputStreamToFileAtPath:append:@
-outputStreamToFileAtPath_appendSelector :: Selector
+outputStreamToFileAtPath_appendSelector :: Selector '[Id NSString, Bool] (Id NSOutputStream)
 outputStreamToFileAtPath_appendSelector = mkSelector "outputStreamToFileAtPath:append:"
 
 -- | @Selector@ for @outputStreamWithURL:append:@
-outputStreamWithURL_appendSelector :: Selector
+outputStreamWithURL_appendSelector :: Selector '[Id NSURL, Bool] (Id NSOutputStream)
 outputStreamWithURL_appendSelector = mkSelector "outputStreamWithURL:append:"
 
 -- | @Selector@ for @hasSpaceAvailable@
-hasSpaceAvailableSelector :: Selector
+hasSpaceAvailableSelector :: Selector '[] Bool
 hasSpaceAvailableSelector = mkSelector "hasSpaceAvailable"
 

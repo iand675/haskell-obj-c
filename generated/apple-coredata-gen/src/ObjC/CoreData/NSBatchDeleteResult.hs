@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.CoreData.NSBatchDeleteResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,23 +35,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- result@
 result :: IsNSBatchDeleteResult nsBatchDeleteResult => nsBatchDeleteResult -> IO RawId
-result nsBatchDeleteResult  =
-    fmap (RawId . castPtr) $ sendMsg nsBatchDeleteResult (mkSelector "result") (retPtr retVoid) []
+result nsBatchDeleteResult =
+  sendMessage nsBatchDeleteResult resultSelector
 
 -- | @- resultType@
 resultType :: IsNSBatchDeleteResult nsBatchDeleteResult => nsBatchDeleteResult -> IO NSBatchDeleteRequestResultType
-resultType nsBatchDeleteResult  =
-    fmap (coerce :: CULong -> NSBatchDeleteRequestResultType) $ sendMsg nsBatchDeleteResult (mkSelector "resultType") retCULong []
+resultType nsBatchDeleteResult =
+  sendMessage nsBatchDeleteResult resultTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @result@
-resultSelector :: Selector
+resultSelector :: Selector '[] RawId
 resultSelector = mkSelector "result"
 
 -- | @Selector@ for @resultType@
-resultTypeSelector :: Selector
+resultTypeSelector :: Selector '[] NSBatchDeleteRequestResultType
 resultTypeSelector = mkSelector "resultType"
 

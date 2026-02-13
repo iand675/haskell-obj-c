@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRClosureControlClusterMoveToParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , positionSelector
-  , setPositionSelector
   , latchSelector
-  , setLatchSelector
-  , speedSelector
-  , setSpeedSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , positionSelector
   , serverSideProcessingTimeoutSelector
+  , setLatchSelector
+  , setPositionSelector
   , setServerSideProcessingTimeoutSelector
+  , setSpeedSelector
+  , setTimedInvokeTimeoutMsSelector
+  , speedSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- position@
 position :: IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams => mtrClosureControlClusterMoveToParams -> IO (Id NSNumber)
-position mtrClosureControlClusterMoveToParams  =
-    sendMsg mtrClosureControlClusterMoveToParams (mkSelector "position") (retPtr retVoid) [] >>= retainedObject . castPtr
+position mtrClosureControlClusterMoveToParams =
+  sendMessage mtrClosureControlClusterMoveToParams positionSelector
 
 -- | @- setPosition:@
 setPosition :: (IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams, IsNSNumber value) => mtrClosureControlClusterMoveToParams -> value -> IO ()
-setPosition mtrClosureControlClusterMoveToParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureControlClusterMoveToParams (mkSelector "setPosition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPosition mtrClosureControlClusterMoveToParams value =
+  sendMessage mtrClosureControlClusterMoveToParams setPositionSelector (toNSNumber value)
 
 -- | @- latch@
 latch :: IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams => mtrClosureControlClusterMoveToParams -> IO (Id NSNumber)
-latch mtrClosureControlClusterMoveToParams  =
-    sendMsg mtrClosureControlClusterMoveToParams (mkSelector "latch") (retPtr retVoid) [] >>= retainedObject . castPtr
+latch mtrClosureControlClusterMoveToParams =
+  sendMessage mtrClosureControlClusterMoveToParams latchSelector
 
 -- | @- setLatch:@
 setLatch :: (IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams, IsNSNumber value) => mtrClosureControlClusterMoveToParams -> value -> IO ()
-setLatch mtrClosureControlClusterMoveToParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureControlClusterMoveToParams (mkSelector "setLatch:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLatch mtrClosureControlClusterMoveToParams value =
+  sendMessage mtrClosureControlClusterMoveToParams setLatchSelector (toNSNumber value)
 
 -- | @- speed@
 speed :: IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams => mtrClosureControlClusterMoveToParams -> IO (Id NSNumber)
-speed mtrClosureControlClusterMoveToParams  =
-    sendMsg mtrClosureControlClusterMoveToParams (mkSelector "speed") (retPtr retVoid) [] >>= retainedObject . castPtr
+speed mtrClosureControlClusterMoveToParams =
+  sendMessage mtrClosureControlClusterMoveToParams speedSelector
 
 -- | @- setSpeed:@
 setSpeed :: (IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams, IsNSNumber value) => mtrClosureControlClusterMoveToParams -> value -> IO ()
-setSpeed mtrClosureControlClusterMoveToParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureControlClusterMoveToParams (mkSelector "setSpeed:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSpeed mtrClosureControlClusterMoveToParams value =
+  sendMessage mtrClosureControlClusterMoveToParams setSpeedSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setSpeed mtrClosureControlClusterMoveToParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams => mtrClosureControlClusterMoveToParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrClosureControlClusterMoveToParams  =
-    sendMsg mtrClosureControlClusterMoveToParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrClosureControlClusterMoveToParams =
+  sendMessage mtrClosureControlClusterMoveToParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrClosureControlClusterMoveToParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams, IsNSNumber value) => mtrClosureControlClusterMoveToParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrClosureControlClusterMoveToParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureControlClusterMoveToParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrClosureControlClusterMoveToParams value =
+  sendMessage mtrClosureControlClusterMoveToParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrClosureControlClusterMoveToParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams => mtrClosureControlClusterMoveToParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrClosureControlClusterMoveToParams  =
-    sendMsg mtrClosureControlClusterMoveToParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrClosureControlClusterMoveToParams =
+  sendMessage mtrClosureControlClusterMoveToParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrClosureControlClusterMoveToParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRClosureControlClusterMoveToParams mtrClosureControlClusterMoveToParams, IsNSNumber value) => mtrClosureControlClusterMoveToParams -> value -> IO ()
-setServerSideProcessingTimeout mtrClosureControlClusterMoveToParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrClosureControlClusterMoveToParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrClosureControlClusterMoveToParams value =
+  sendMessage mtrClosureControlClusterMoveToParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @position@
-positionSelector :: Selector
+positionSelector :: Selector '[] (Id NSNumber)
 positionSelector = mkSelector "position"
 
 -- | @Selector@ for @setPosition:@
-setPositionSelector :: Selector
+setPositionSelector :: Selector '[Id NSNumber] ()
 setPositionSelector = mkSelector "setPosition:"
 
 -- | @Selector@ for @latch@
-latchSelector :: Selector
+latchSelector :: Selector '[] (Id NSNumber)
 latchSelector = mkSelector "latch"
 
 -- | @Selector@ for @setLatch:@
-setLatchSelector :: Selector
+setLatchSelector :: Selector '[Id NSNumber] ()
 setLatchSelector = mkSelector "setLatch:"
 
 -- | @Selector@ for @speed@
-speedSelector :: Selector
+speedSelector :: Selector '[] (Id NSNumber)
 speedSelector = mkSelector "speed"
 
 -- | @Selector@ for @setSpeed:@
-setSpeedSelector :: Selector
+setSpeedSelector :: Selector '[Id NSNumber] ()
 setSpeedSelector = mkSelector "setSpeed:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

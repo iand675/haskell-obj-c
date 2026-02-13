@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.IOSurface.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @IOSurfaceComponentName@
 newtype IOSurfaceComponentName = IOSurfaceComponentName CInt
@@ -40,6 +43,16 @@ pattern KIOSurfaceComponentNameChromaRed = IOSurfaceComponentName 6
 pattern KIOSurfaceComponentNameChromaBlue :: IOSurfaceComponentName
 pattern KIOSurfaceComponentNameChromaBlue = IOSurfaceComponentName 7
 
+instance ObjCArgument IOSurfaceComponentName where
+  withObjCArg (IOSurfaceComponentName x) k = k (argCInt x)
+
+instance ObjCReturn IOSurfaceComponentName where
+  type RawReturn IOSurfaceComponentName = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOSurfaceComponentName x)
+  fromOwned x = pure (IOSurfaceComponentName x)
+
 -- | @IOSurfaceComponentRange@
 newtype IOSurfaceComponentRange = IOSurfaceComponentRange CInt
   deriving stock (Eq, Ord, Show)
@@ -56,6 +69,16 @@ pattern KIOSurfaceComponentRangeVideoRange = IOSurfaceComponentRange 2
 
 pattern KIOSurfaceComponentRangeWideRange :: IOSurfaceComponentRange
 pattern KIOSurfaceComponentRangeWideRange = IOSurfaceComponentRange 3
+
+instance ObjCArgument IOSurfaceComponentRange where
+  withObjCArg (IOSurfaceComponentRange x) k = k (argCInt x)
+
+instance ObjCReturn IOSurfaceComponentRange where
+  type RawReturn IOSurfaceComponentRange = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOSurfaceComponentRange x)
+  fromOwned x = pure (IOSurfaceComponentRange x)
 
 -- | @IOSurfaceComponentType@
 newtype IOSurfaceComponentType = IOSurfaceComponentType CInt
@@ -77,6 +100,16 @@ pattern KIOSurfaceComponentTypeFloat = IOSurfaceComponentType 3
 pattern KIOSurfaceComponentTypeSignedNormalized :: IOSurfaceComponentType
 pattern KIOSurfaceComponentTypeSignedNormalized = IOSurfaceComponentType 4
 
+instance ObjCArgument IOSurfaceComponentType where
+  withObjCArg (IOSurfaceComponentType x) k = k (argCInt x)
+
+instance ObjCReturn IOSurfaceComponentType where
+  type RawReturn IOSurfaceComponentType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOSurfaceComponentType x)
+  fromOwned x = pure (IOSurfaceComponentType x)
+
 -- | @IOSurfaceLockOptions@ (bitmask)
 newtype IOSurfaceLockOptions = IOSurfaceLockOptions CUInt
   deriving stock (Eq, Ord, Show)
@@ -94,6 +127,16 @@ pattern KIOSurfaceLockReadOnly = IOSurfaceLockOptions 1
 pattern KIOSurfaceLockAvoidSync :: IOSurfaceLockOptions
 pattern KIOSurfaceLockAvoidSync = IOSurfaceLockOptions 2
 
+instance ObjCArgument IOSurfaceLockOptions where
+  withObjCArg (IOSurfaceLockOptions x) k = k (argCUInt x)
+
+instance ObjCReturn IOSurfaceLockOptions where
+  type RawReturn IOSurfaceLockOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOSurfaceLockOptions x)
+  fromOwned x = pure (IOSurfaceLockOptions x)
+
 -- | @IOSurfaceMemoryLedgerFlags@ (bitmask)
 newtype IOSurfaceMemoryLedgerFlags = IOSurfaceMemoryLedgerFlags CUInt
   deriving stock (Eq, Ord, Show)
@@ -107,6 +150,16 @@ instance Monoid IOSurfaceMemoryLedgerFlags where
 
 pattern KIOSurfaceMemoryLedgerFlagNoFootprint :: IOSurfaceMemoryLedgerFlags
 pattern KIOSurfaceMemoryLedgerFlagNoFootprint = IOSurfaceMemoryLedgerFlags 1
+
+instance ObjCArgument IOSurfaceMemoryLedgerFlags where
+  withObjCArg (IOSurfaceMemoryLedgerFlags x) k = k (argCUInt x)
+
+instance ObjCReturn IOSurfaceMemoryLedgerFlags where
+  type RawReturn IOSurfaceMemoryLedgerFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOSurfaceMemoryLedgerFlags x)
+  fromOwned x = pure (IOSurfaceMemoryLedgerFlags x)
 
 -- | @IOSurfaceMemoryLedgerTags@
 newtype IOSurfaceMemoryLedgerTags = IOSurfaceMemoryLedgerTags CInt
@@ -127,6 +180,16 @@ pattern KIOSurfaceMemoryLedgerTagGraphics = IOSurfaceMemoryLedgerTags 4
 
 pattern KIOSurfaceMemoryLedgerTagNeural :: IOSurfaceMemoryLedgerTags
 pattern KIOSurfaceMemoryLedgerTagNeural = IOSurfaceMemoryLedgerTags 5
+
+instance ObjCArgument IOSurfaceMemoryLedgerTags where
+  withObjCArg (IOSurfaceMemoryLedgerTags x) k = k (argCInt x)
+
+instance ObjCReturn IOSurfaceMemoryLedgerTags where
+  type RawReturn IOSurfaceMemoryLedgerTags = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOSurfaceMemoryLedgerTags x)
+  fromOwned x = pure (IOSurfaceMemoryLedgerTags x)
 
 -- | @IOSurfacePurgeabilityState@ (bitmask)
 newtype IOSurfacePurgeabilityState = IOSurfacePurgeabilityState CUInt
@@ -151,6 +214,16 @@ pattern KIOSurfacePurgeableEmpty = IOSurfacePurgeabilityState 2
 pattern KIOSurfacePurgeableKeepCurrent :: IOSurfacePurgeabilityState
 pattern KIOSurfacePurgeableKeepCurrent = IOSurfacePurgeabilityState 3
 
+instance ObjCArgument IOSurfacePurgeabilityState where
+  withObjCArg (IOSurfacePurgeabilityState x) k = k (argCUInt x)
+
+instance ObjCReturn IOSurfacePurgeabilityState where
+  type RawReturn IOSurfacePurgeabilityState = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOSurfacePurgeabilityState x)
+  fromOwned x = pure (IOSurfacePurgeabilityState x)
+
 -- | @IOSurfaceSubsampling@
 newtype IOSurfaceSubsampling = IOSurfaceSubsampling CInt
   deriving stock (Eq, Ord, Show)
@@ -170,3 +243,13 @@ pattern KIOSurfaceSubsampling420 = IOSurfaceSubsampling 3
 
 pattern KIOSurfaceSubsampling411 :: IOSurfaceSubsampling
 pattern KIOSurfaceSubsampling411 = IOSurfaceSubsampling 4
+
+instance ObjCArgument IOSurfaceSubsampling where
+  withObjCArg (IOSurfaceSubsampling x) k = k (argCInt x)
+
+instance ObjCReturn IOSurfaceSubsampling where
+  type RawReturn IOSurfaceSubsampling = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOSurfaceSubsampling x)
+  fromOwned x = pure (IOSurfaceSubsampling x)

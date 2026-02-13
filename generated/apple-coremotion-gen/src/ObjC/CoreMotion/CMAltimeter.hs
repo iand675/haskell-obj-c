@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.CoreMotion.CMAltimeter
   , isAbsoluteAltitudeAvailable
   , startAbsoluteAltitudeUpdatesToQueue_withHandler
   , stopAbsoluteAltitudeUpdates
-  , isRelativeAltitudeAvailableSelector
   , authorizationStatusSelector
-  , startRelativeAltitudeUpdatesToQueue_withHandlerSelector
-  , stopRelativeAltitudeUpdatesSelector
   , isAbsoluteAltitudeAvailableSelector
+  , isRelativeAltitudeAvailableSelector
   , startAbsoluteAltitudeUpdatesToQueue_withHandlerSelector
+  , startRelativeAltitudeUpdatesToQueue_withHandlerSelector
   , stopAbsoluteAltitudeUpdatesSelector
+  , stopRelativeAltitudeUpdatesSelector
 
   -- * Enum types
   , CMAuthorizationStatus(CMAuthorizationStatus)
@@ -31,15 +32,11 @@ module ObjC.CoreMotion.CMAltimeter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,73 +49,71 @@ isRelativeAltitudeAvailable :: IO Bool
 isRelativeAltitudeAvailable  =
   do
     cls' <- getRequiredClass "CMAltimeter"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isRelativeAltitudeAvailable") retCULong []
+    sendClassMessage cls' isRelativeAltitudeAvailableSelector
 
 -- | @+ authorizationStatus@
 authorizationStatus :: IO CMAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "CMAltimeter"
-    fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | @- startRelativeAltitudeUpdatesToQueue:withHandler:@
 startRelativeAltitudeUpdatesToQueue_withHandler :: (IsCMAltimeter cmAltimeter, IsNSOperationQueue queue) => cmAltimeter -> queue -> Ptr () -> IO ()
-startRelativeAltitudeUpdatesToQueue_withHandler cmAltimeter  queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmAltimeter (mkSelector "startRelativeAltitudeUpdatesToQueue:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startRelativeAltitudeUpdatesToQueue_withHandler cmAltimeter queue handler =
+  sendMessage cmAltimeter startRelativeAltitudeUpdatesToQueue_withHandlerSelector (toNSOperationQueue queue) handler
 
 -- | @- stopRelativeAltitudeUpdates@
 stopRelativeAltitudeUpdates :: IsCMAltimeter cmAltimeter => cmAltimeter -> IO ()
-stopRelativeAltitudeUpdates cmAltimeter  =
-    sendMsg cmAltimeter (mkSelector "stopRelativeAltitudeUpdates") retVoid []
+stopRelativeAltitudeUpdates cmAltimeter =
+  sendMessage cmAltimeter stopRelativeAltitudeUpdatesSelector
 
 -- | @+ isAbsoluteAltitudeAvailable@
 isAbsoluteAltitudeAvailable :: IO Bool
 isAbsoluteAltitudeAvailable  =
   do
     cls' <- getRequiredClass "CMAltimeter"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isAbsoluteAltitudeAvailable") retCULong []
+    sendClassMessage cls' isAbsoluteAltitudeAvailableSelector
 
 -- | @- startAbsoluteAltitudeUpdatesToQueue:withHandler:@
 startAbsoluteAltitudeUpdatesToQueue_withHandler :: (IsCMAltimeter cmAltimeter, IsNSOperationQueue queue) => cmAltimeter -> queue -> Ptr () -> IO ()
-startAbsoluteAltitudeUpdatesToQueue_withHandler cmAltimeter  queue handler =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cmAltimeter (mkSelector "startAbsoluteAltitudeUpdatesToQueue:withHandler:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startAbsoluteAltitudeUpdatesToQueue_withHandler cmAltimeter queue handler =
+  sendMessage cmAltimeter startAbsoluteAltitudeUpdatesToQueue_withHandlerSelector (toNSOperationQueue queue) handler
 
 -- | @- stopAbsoluteAltitudeUpdates@
 stopAbsoluteAltitudeUpdates :: IsCMAltimeter cmAltimeter => cmAltimeter -> IO ()
-stopAbsoluteAltitudeUpdates cmAltimeter  =
-    sendMsg cmAltimeter (mkSelector "stopAbsoluteAltitudeUpdates") retVoid []
+stopAbsoluteAltitudeUpdates cmAltimeter =
+  sendMessage cmAltimeter stopAbsoluteAltitudeUpdatesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isRelativeAltitudeAvailable@
-isRelativeAltitudeAvailableSelector :: Selector
+isRelativeAltitudeAvailableSelector :: Selector '[] Bool
 isRelativeAltitudeAvailableSelector = mkSelector "isRelativeAltitudeAvailable"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CMAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @startRelativeAltitudeUpdatesToQueue:withHandler:@
-startRelativeAltitudeUpdatesToQueue_withHandlerSelector :: Selector
+startRelativeAltitudeUpdatesToQueue_withHandlerSelector :: Selector '[Id NSOperationQueue, Ptr ()] ()
 startRelativeAltitudeUpdatesToQueue_withHandlerSelector = mkSelector "startRelativeAltitudeUpdatesToQueue:withHandler:"
 
 -- | @Selector@ for @stopRelativeAltitudeUpdates@
-stopRelativeAltitudeUpdatesSelector :: Selector
+stopRelativeAltitudeUpdatesSelector :: Selector '[] ()
 stopRelativeAltitudeUpdatesSelector = mkSelector "stopRelativeAltitudeUpdates"
 
 -- | @Selector@ for @isAbsoluteAltitudeAvailable@
-isAbsoluteAltitudeAvailableSelector :: Selector
+isAbsoluteAltitudeAvailableSelector :: Selector '[] Bool
 isAbsoluteAltitudeAvailableSelector = mkSelector "isAbsoluteAltitudeAvailable"
 
 -- | @Selector@ for @startAbsoluteAltitudeUpdatesToQueue:withHandler:@
-startAbsoluteAltitudeUpdatesToQueue_withHandlerSelector :: Selector
+startAbsoluteAltitudeUpdatesToQueue_withHandlerSelector :: Selector '[Id NSOperationQueue, Ptr ()] ()
 startAbsoluteAltitudeUpdatesToQueue_withHandlerSelector = mkSelector "startAbsoluteAltitudeUpdatesToQueue:withHandler:"
 
 -- | @Selector@ for @stopAbsoluteAltitudeUpdates@
-stopAbsoluteAltitudeUpdatesSelector :: Selector
+stopAbsoluteAltitudeUpdatesSelector :: Selector '[] ()
 stopAbsoluteAltitudeUpdatesSelector = mkSelector "stopAbsoluteAltitudeUpdates"
 

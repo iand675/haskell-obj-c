@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,55 +43,51 @@ module ObjC.WebKit.DOMHTMLObjectElement
   , contentDocument
   , absoluteImageURL
   , contentFrame
-  , formSelector
-  , codeSelector
-  , setCodeSelector
-  , alignSelector
-  , setAlignSelector
-  , archiveSelector
-  , setArchiveSelector
-  , borderSelector
-  , setBorderSelector
-  , codeBaseSelector
-  , setCodeBaseSelector
-  , codeTypeSelector
-  , setCodeTypeSelector
-  , dataSelector
-  , setDataSelector
-  , declareSelector
-  , setDeclareSelector
-  , heightSelector
-  , setHeightSelector
-  , hspaceSelector
-  , setHspaceSelector
-  , nameSelector
-  , setNameSelector
-  , standbySelector
-  , setStandbySelector
-  , typeSelector
-  , setTypeSelector
-  , useMapSelector
-  , setUseMapSelector
-  , vspaceSelector
-  , setVspaceSelector
-  , widthSelector
-  , setWidthSelector
-  , contentDocumentSelector
   , absoluteImageURLSelector
+  , alignSelector
+  , archiveSelector
+  , borderSelector
+  , codeBaseSelector
+  , codeSelector
+  , codeTypeSelector
+  , contentDocumentSelector
   , contentFrameSelector
+  , dataSelector
+  , declareSelector
+  , formSelector
+  , heightSelector
+  , hspaceSelector
+  , nameSelector
+  , setAlignSelector
+  , setArchiveSelector
+  , setBorderSelector
+  , setCodeBaseSelector
+  , setCodeSelector
+  , setCodeTypeSelector
+  , setDataSelector
+  , setDeclareSelector
+  , setHeightSelector
+  , setHspaceSelector
+  , setNameSelector
+  , setStandbySelector
+  , setTypeSelector
+  , setUseMapSelector
+  , setVspaceSelector
+  , setWidthSelector
+  , standbySelector
+  , typeSelector
+  , useMapSelector
+  , vspaceSelector
+  , widthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,191 +96,178 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- form@
 form :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id DOMHTMLFormElement)
-form domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "form") (retPtr retVoid) [] >>= retainedObject . castPtr
+form domhtmlObjectElement =
+  sendMessage domhtmlObjectElement formSelector
 
 -- | @- code@
 code :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-code domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "code") (retPtr retVoid) [] >>= retainedObject . castPtr
+code domhtmlObjectElement =
+  sendMessage domhtmlObjectElement codeSelector
 
 -- | @- setCode:@
 setCode :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setCode domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCode domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setCodeSelector (toNSString value)
 
 -- | @- align@
 align :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-align domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "align") (retPtr retVoid) [] >>= retainedObject . castPtr
+align domhtmlObjectElement =
+  sendMessage domhtmlObjectElement alignSelector
 
 -- | @- setAlign:@
 setAlign :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setAlign domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlign domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setAlignSelector (toNSString value)
 
 -- | @- archive@
 archive :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-archive domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "archive") (retPtr retVoid) [] >>= retainedObject . castPtr
+archive domhtmlObjectElement =
+  sendMessage domhtmlObjectElement archiveSelector
 
 -- | @- setArchive:@
 setArchive :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setArchive domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setArchive:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArchive domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setArchiveSelector (toNSString value)
 
 -- | @- border@
 border :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-border domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "border") (retPtr retVoid) [] >>= retainedObject . castPtr
+border domhtmlObjectElement =
+  sendMessage domhtmlObjectElement borderSelector
 
 -- | @- setBorder:@
 setBorder :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setBorder domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setBorder:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBorder domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setBorderSelector (toNSString value)
 
 -- | @- codeBase@
 codeBase :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-codeBase domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "codeBase") (retPtr retVoid) [] >>= retainedObject . castPtr
+codeBase domhtmlObjectElement =
+  sendMessage domhtmlObjectElement codeBaseSelector
 
 -- | @- setCodeBase:@
 setCodeBase :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setCodeBase domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setCodeBase:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCodeBase domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setCodeBaseSelector (toNSString value)
 
 -- | @- codeType@
 codeType :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-codeType domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "codeType") (retPtr retVoid) [] >>= retainedObject . castPtr
+codeType domhtmlObjectElement =
+  sendMessage domhtmlObjectElement codeTypeSelector
 
 -- | @- setCodeType:@
 setCodeType :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setCodeType domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setCodeType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCodeType domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setCodeTypeSelector (toNSString value)
 
 -- | @- data@
 data_ :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-data_ domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ domhtmlObjectElement =
+  sendMessage domhtmlObjectElement dataSelector
 
 -- | @- setData:@
 setData :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setData domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setDataSelector (toNSString value)
 
 -- | @- declare@
 declare :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO Bool
-declare domhtmlObjectElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlObjectElement (mkSelector "declare") retCULong []
+declare domhtmlObjectElement =
+  sendMessage domhtmlObjectElement declareSelector
 
 -- | @- setDeclare:@
 setDeclare :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> Bool -> IO ()
-setDeclare domhtmlObjectElement  value =
-    sendMsg domhtmlObjectElement (mkSelector "setDeclare:") retVoid [argCULong (if value then 1 else 0)]
+setDeclare domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setDeclareSelector value
 
 -- | @- height@
 height :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-height domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "height") (retPtr retVoid) [] >>= retainedObject . castPtr
+height domhtmlObjectElement =
+  sendMessage domhtmlObjectElement heightSelector
 
 -- | @- setHeight:@
 setHeight :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setHeight domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setHeight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHeight domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setHeightSelector (toNSString value)
 
 -- | @- hspace@
 hspace :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO CInt
-hspace domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "hspace") retCInt []
+hspace domhtmlObjectElement =
+  sendMessage domhtmlObjectElement hspaceSelector
 
 -- | @- setHspace:@
 setHspace :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> CInt -> IO ()
-setHspace domhtmlObjectElement  value =
-    sendMsg domhtmlObjectElement (mkSelector "setHspace:") retVoid [argCInt value]
+setHspace domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setHspaceSelector value
 
 -- | @- name@
 name :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-name domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlObjectElement =
+  sendMessage domhtmlObjectElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setName domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setNameSelector (toNSString value)
 
 -- | @- standby@
 standby :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-standby domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "standby") (retPtr retVoid) [] >>= retainedObject . castPtr
+standby domhtmlObjectElement =
+  sendMessage domhtmlObjectElement standbySelector
 
 -- | @- setStandby:@
 setStandby :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setStandby domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setStandby:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStandby domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setStandbySelector (toNSString value)
 
 -- | @- type@
 type_ :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-type_ domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmlObjectElement =
+  sendMessage domhtmlObjectElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setType domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setTypeSelector (toNSString value)
 
 -- | @- useMap@
 useMap :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-useMap domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "useMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+useMap domhtmlObjectElement =
+  sendMessage domhtmlObjectElement useMapSelector
 
 -- | @- setUseMap:@
 setUseMap :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setUseMap domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setUseMap:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUseMap domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setUseMapSelector (toNSString value)
 
 -- | @- vspace@
 vspace :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO CInt
-vspace domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "vspace") retCInt []
+vspace domhtmlObjectElement =
+  sendMessage domhtmlObjectElement vspaceSelector
 
 -- | @- setVspace:@
 setVspace :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> CInt -> IO ()
-setVspace domhtmlObjectElement  value =
-    sendMsg domhtmlObjectElement (mkSelector "setVspace:") retVoid [argCInt value]
+setVspace domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setVspaceSelector value
 
 -- | @- width@
 width :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSString)
-width domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "width") (retPtr retVoid) [] >>= retainedObject . castPtr
+width domhtmlObjectElement =
+  sendMessage domhtmlObjectElement widthSelector
 
 -- | @- setWidth:@
 setWidth :: (IsDOMHTMLObjectElement domhtmlObjectElement, IsNSString value) => domhtmlObjectElement -> value -> IO ()
-setWidth domhtmlObjectElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlObjectElement (mkSelector "setWidth:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWidth domhtmlObjectElement value =
+  sendMessage domhtmlObjectElement setWidthSelector (toNSString value)
 
 -- | @- contentDocument@
 contentDocument :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id DOMDocument)
-contentDocument domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "contentDocument") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentDocument domhtmlObjectElement =
+  sendMessage domhtmlObjectElement contentDocumentSelector
 
 -- | @- absoluteImageURL@
 absoluteImageURL :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id NSURL)
-absoluteImageURL domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "absoluteImageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+absoluteImageURL domhtmlObjectElement =
+  sendMessage domhtmlObjectElement absoluteImageURLSelector
 
 -- | contentFrame
 --
@@ -293,154 +277,154 @@ absoluteImageURL domhtmlObjectElement  =
 --
 -- ObjC selector: @- contentFrame@
 contentFrame :: IsDOMHTMLObjectElement domhtmlObjectElement => domhtmlObjectElement -> IO (Id WebFrame)
-contentFrame domhtmlObjectElement  =
-    sendMsg domhtmlObjectElement (mkSelector "contentFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentFrame domhtmlObjectElement =
+  sendMessage domhtmlObjectElement contentFrameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @form@
-formSelector :: Selector
+formSelector :: Selector '[] (Id DOMHTMLFormElement)
 formSelector = mkSelector "form"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] (Id NSString)
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @setCode:@
-setCodeSelector :: Selector
+setCodeSelector :: Selector '[Id NSString] ()
 setCodeSelector = mkSelector "setCode:"
 
 -- | @Selector@ for @align@
-alignSelector :: Selector
+alignSelector :: Selector '[] (Id NSString)
 alignSelector = mkSelector "align"
 
 -- | @Selector@ for @setAlign:@
-setAlignSelector :: Selector
+setAlignSelector :: Selector '[Id NSString] ()
 setAlignSelector = mkSelector "setAlign:"
 
 -- | @Selector@ for @archive@
-archiveSelector :: Selector
+archiveSelector :: Selector '[] (Id NSString)
 archiveSelector = mkSelector "archive"
 
 -- | @Selector@ for @setArchive:@
-setArchiveSelector :: Selector
+setArchiveSelector :: Selector '[Id NSString] ()
 setArchiveSelector = mkSelector "setArchive:"
 
 -- | @Selector@ for @border@
-borderSelector :: Selector
+borderSelector :: Selector '[] (Id NSString)
 borderSelector = mkSelector "border"
 
 -- | @Selector@ for @setBorder:@
-setBorderSelector :: Selector
+setBorderSelector :: Selector '[Id NSString] ()
 setBorderSelector = mkSelector "setBorder:"
 
 -- | @Selector@ for @codeBase@
-codeBaseSelector :: Selector
+codeBaseSelector :: Selector '[] (Id NSString)
 codeBaseSelector = mkSelector "codeBase"
 
 -- | @Selector@ for @setCodeBase:@
-setCodeBaseSelector :: Selector
+setCodeBaseSelector :: Selector '[Id NSString] ()
 setCodeBaseSelector = mkSelector "setCodeBase:"
 
 -- | @Selector@ for @codeType@
-codeTypeSelector :: Selector
+codeTypeSelector :: Selector '[] (Id NSString)
 codeTypeSelector = mkSelector "codeType"
 
 -- | @Selector@ for @setCodeType:@
-setCodeTypeSelector :: Selector
+setCodeTypeSelector :: Selector '[Id NSString] ()
 setCodeTypeSelector = mkSelector "setCodeType:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSString)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSString] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @declare@
-declareSelector :: Selector
+declareSelector :: Selector '[] Bool
 declareSelector = mkSelector "declare"
 
 -- | @Selector@ for @setDeclare:@
-setDeclareSelector :: Selector
+setDeclareSelector :: Selector '[Bool] ()
 setDeclareSelector = mkSelector "setDeclare:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] (Id NSString)
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[Id NSString] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @hspace@
-hspaceSelector :: Selector
+hspaceSelector :: Selector '[] CInt
 hspaceSelector = mkSelector "hspace"
 
 -- | @Selector@ for @setHspace:@
-setHspaceSelector :: Selector
+setHspaceSelector :: Selector '[CInt] ()
 setHspaceSelector = mkSelector "setHspace:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @standby@
-standbySelector :: Selector
+standbySelector :: Selector '[] (Id NSString)
 standbySelector = mkSelector "standby"
 
 -- | @Selector@ for @setStandby:@
-setStandbySelector :: Selector
+setStandbySelector :: Selector '[Id NSString] ()
 setStandbySelector = mkSelector "setStandby:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @useMap@
-useMapSelector :: Selector
+useMapSelector :: Selector '[] (Id NSString)
 useMapSelector = mkSelector "useMap"
 
 -- | @Selector@ for @setUseMap:@
-setUseMapSelector :: Selector
+setUseMapSelector :: Selector '[Id NSString] ()
 setUseMapSelector = mkSelector "setUseMap:"
 
 -- | @Selector@ for @vspace@
-vspaceSelector :: Selector
+vspaceSelector :: Selector '[] CInt
 vspaceSelector = mkSelector "vspace"
 
 -- | @Selector@ for @setVspace:@
-setVspaceSelector :: Selector
+setVspaceSelector :: Selector '[CInt] ()
 setVspaceSelector = mkSelector "setVspace:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] (Id NSString)
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @setWidth:@
-setWidthSelector :: Selector
+setWidthSelector :: Selector '[Id NSString] ()
 setWidthSelector = mkSelector "setWidth:"
 
 -- | @Selector@ for @contentDocument@
-contentDocumentSelector :: Selector
+contentDocumentSelector :: Selector '[] (Id DOMDocument)
 contentDocumentSelector = mkSelector "contentDocument"
 
 -- | @Selector@ for @absoluteImageURL@
-absoluteImageURLSelector :: Selector
+absoluteImageURLSelector :: Selector '[] (Id NSURL)
 absoluteImageURLSelector = mkSelector "absoluteImageURL"
 
 -- | @Selector@ for @contentFrame@
-contentFrameSelector :: Selector
+contentFrameSelector :: Selector '[] (Id WebFrame)
 contentFrameSelector = mkSelector "contentFrame"
 

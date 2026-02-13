@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.CoreML.MLKey
   , name
   , scope
   , initSelector
-  , newSelector
   , nameSelector
+  , newSelector
   , scopeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,43 +34,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLKey mlKey => mlKey -> IO (Id MLKey)
-init_ mlKey  =
-    sendMsg mlKey (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlKey =
+  sendOwnedMessage mlKey initSelector
 
 -- | @+ new@
 new :: IO RawId
 new  =
   do
     cls' <- getRequiredClass "MLKey"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "new") (retPtr retVoid) []
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- name@
 name :: IsMLKey mlKey => mlKey -> IO (Id NSString)
-name mlKey  =
-    sendMsg mlKey (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mlKey =
+  sendMessage mlKey nameSelector
 
 -- | @- scope@
 scope :: IsMLKey mlKey => mlKey -> IO (Id NSString)
-scope mlKey  =
-    sendMsg mlKey (mkSelector "scope") (retPtr retVoid) [] >>= retainedObject . castPtr
+scope mlKey =
+  sendMessage mlKey scopeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLKey)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] RawId
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @scope@
-scopeSelector :: Selector
+scopeSelector :: Selector '[] (Id NSString)
 scopeSelector = mkSelector "scope"
 

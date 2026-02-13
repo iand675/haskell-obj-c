@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.Matter.MTRServerCluster
   , clusterRevision
   , accessGrants
   , attributes
-  , initSelector
-  , newSelector
-  , initWithClusterID_revisionSelector
+  , accessGrantsSelector
   , addAccessGrantSelector
-  , removeAccessGrantSelector
   , addAttributeSelector
-  , newDescriptorClusterSelector
+  , attributesSelector
   , clusterIDSelector
   , clusterRevisionSelector
-  , accessGrantsSelector
-  , attributesSelector
+  , initSelector
+  , initWithClusterID_revisionSelector
+  , newDescriptorClusterSelector
+  , newSelector
+  , removeAccessGrantSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRServerCluster mtrServerCluster => mtrServerCluster -> IO (Id MTRServerCluster)
-init_ mtrServerCluster  =
-    sendMsg mtrServerCluster (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrServerCluster =
+  sendOwnedMessage mtrServerCluster initSelector
 
 -- | @+ new@
 new :: IO (Id MTRServerCluster)
 new  =
   do
     cls' <- getRequiredClass "MTRServerCluster"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The provided clusterID must not be MTRClusterIDTypeDescriptorID; see newDescriptorCluster.
 --
@@ -73,26 +70,22 @@ new  =
 --
 -- ObjC selector: @- initWithClusterID:revision:@
 initWithClusterID_revision :: (IsMTRServerCluster mtrServerCluster, IsNSNumber clusterID, IsNSNumber revision) => mtrServerCluster -> clusterID -> revision -> IO (Id MTRServerCluster)
-initWithClusterID_revision mtrServerCluster  clusterID revision =
-  withObjCPtr clusterID $ \raw_clusterID ->
-    withObjCPtr revision $ \raw_revision ->
-        sendMsg mtrServerCluster (mkSelector "initWithClusterID:revision:") (retPtr retVoid) [argPtr (castPtr raw_clusterID :: Ptr ()), argPtr (castPtr raw_revision :: Ptr ())] >>= ownedObject . castPtr
+initWithClusterID_revision mtrServerCluster clusterID revision =
+  sendOwnedMessage mtrServerCluster initWithClusterID_revisionSelector (toNSNumber clusterID) (toNSNumber revision)
 
 -- | Add an access grant to the cluster.  If the same access grant is added multiple times, it will be treated as if it were added once (and removing it once will remove it).
 --
 -- ObjC selector: @- addAccessGrant:@
 addAccessGrant :: (IsMTRServerCluster mtrServerCluster, IsMTRAccessGrant accessGrant) => mtrServerCluster -> accessGrant -> IO ()
-addAccessGrant mtrServerCluster  accessGrant =
-  withObjCPtr accessGrant $ \raw_accessGrant ->
-      sendMsg mtrServerCluster (mkSelector "addAccessGrant:") retVoid [argPtr (castPtr raw_accessGrant :: Ptr ())]
+addAccessGrant mtrServerCluster accessGrant =
+  sendMessage mtrServerCluster addAccessGrantSelector (toMTRAccessGrant accessGrant)
 
 -- | Remove an access grant from the cluster.
 --
 -- ObjC selector: @- removeAccessGrant:@
 removeAccessGrant :: (IsMTRServerCluster mtrServerCluster, IsMTRAccessGrant accessGrant) => mtrServerCluster -> accessGrant -> IO ()
-removeAccessGrant mtrServerCluster  accessGrant =
-  withObjCPtr accessGrant $ \raw_accessGrant ->
-      sendMsg mtrServerCluster (mkSelector "removeAccessGrant:") retVoid [argPtr (castPtr raw_accessGrant :: Ptr ())]
+removeAccessGrant mtrServerCluster accessGrant =
+  sendMessage mtrServerCluster removeAccessGrantSelector (toMTRAccessGrant accessGrant)
 
 -- | Add an attribute to the cluster.  This can only be done before the endpoint the cluster is a part of has been added to a controller.
 --
@@ -110,9 +103,8 @@ removeAccessGrant mtrServerCluster  accessGrant =
 --
 -- ObjC selector: @- addAttribute:@
 addAttribute :: (IsMTRServerCluster mtrServerCluster, IsMTRServerAttribute attribute) => mtrServerCluster -> attribute -> IO Bool
-addAttribute mtrServerCluster  attribute =
-  withObjCPtr attribute $ \raw_attribute ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrServerCluster (mkSelector "addAttribute:") retCULong [argPtr (castPtr raw_attribute :: Ptr ())]
+addAttribute mtrServerCluster attribute =
+  sendMessage mtrServerCluster addAttributeSelector (toMTRServerAttribute attribute)
 
 -- | Create a cluster description for the descriptor cluster.  This will set clusterRevision to the current version implemented by Matter.framework.
 --
@@ -121,17 +113,17 @@ newDescriptorCluster :: IO (Id MTRServerCluster)
 newDescriptorCluster  =
   do
     cls' <- getRequiredClass "MTRServerCluster"
-    sendClassMsg cls' (mkSelector "newDescriptorCluster") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newDescriptorClusterSelector
 
 -- | @- clusterID@
 clusterID :: IsMTRServerCluster mtrServerCluster => mtrServerCluster -> IO (Id NSNumber)
-clusterID mtrServerCluster  =
-    sendMsg mtrServerCluster (mkSelector "clusterID") (retPtr retVoid) [] >>= retainedObject . castPtr
+clusterID mtrServerCluster =
+  sendMessage mtrServerCluster clusterIDSelector
 
 -- | @- clusterRevision@
 clusterRevision :: IsMTRServerCluster mtrServerCluster => mtrServerCluster -> IO (Id NSNumber)
-clusterRevision mtrServerCluster  =
-    sendMsg mtrServerCluster (mkSelector "clusterRevision") (retPtr retVoid) [] >>= retainedObject . castPtr
+clusterRevision mtrServerCluster =
+  sendMessage mtrServerCluster clusterRevisionSelector
 
 -- | The list of entities that are allowed to access this cluster instance.  This list is in addition to any endpoint-wide access grants that exist.
 --
@@ -139,61 +131,61 @@ clusterRevision mtrServerCluster  =
 --
 -- ObjC selector: @- accessGrants@
 accessGrants :: IsMTRServerCluster mtrServerCluster => mtrServerCluster -> IO (Id NSArray)
-accessGrants mtrServerCluster  =
-    sendMsg mtrServerCluster (mkSelector "accessGrants") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessGrants mtrServerCluster =
+  sendMessage mtrServerCluster accessGrantsSelector
 
 -- | The list of attributes supported by the cluster.
 --
 -- ObjC selector: @- attributes@
 attributes :: IsMTRServerCluster mtrServerCluster => mtrServerCluster -> IO (Id NSArray)
-attributes mtrServerCluster  =
-    sendMsg mtrServerCluster (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes mtrServerCluster =
+  sendMessage mtrServerCluster attributesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRServerCluster)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRServerCluster)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithClusterID:revision:@
-initWithClusterID_revisionSelector :: Selector
+initWithClusterID_revisionSelector :: Selector '[Id NSNumber, Id NSNumber] (Id MTRServerCluster)
 initWithClusterID_revisionSelector = mkSelector "initWithClusterID:revision:"
 
 -- | @Selector@ for @addAccessGrant:@
-addAccessGrantSelector :: Selector
+addAccessGrantSelector :: Selector '[Id MTRAccessGrant] ()
 addAccessGrantSelector = mkSelector "addAccessGrant:"
 
 -- | @Selector@ for @removeAccessGrant:@
-removeAccessGrantSelector :: Selector
+removeAccessGrantSelector :: Selector '[Id MTRAccessGrant] ()
 removeAccessGrantSelector = mkSelector "removeAccessGrant:"
 
 -- | @Selector@ for @addAttribute:@
-addAttributeSelector :: Selector
+addAttributeSelector :: Selector '[Id MTRServerAttribute] Bool
 addAttributeSelector = mkSelector "addAttribute:"
 
 -- | @Selector@ for @newDescriptorCluster@
-newDescriptorClusterSelector :: Selector
+newDescriptorClusterSelector :: Selector '[] (Id MTRServerCluster)
 newDescriptorClusterSelector = mkSelector "newDescriptorCluster"
 
 -- | @Selector@ for @clusterID@
-clusterIDSelector :: Selector
+clusterIDSelector :: Selector '[] (Id NSNumber)
 clusterIDSelector = mkSelector "clusterID"
 
 -- | @Selector@ for @clusterRevision@
-clusterRevisionSelector :: Selector
+clusterRevisionSelector :: Selector '[] (Id NSNumber)
 clusterRevisionSelector = mkSelector "clusterRevision"
 
 -- | @Selector@ for @accessGrants@
-accessGrantsSelector :: Selector
+accessGrantsSelector :: Selector '[] (Id NSArray)
 accessGrantsSelector = mkSelector "accessGrants"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSArray)
 attributesSelector = mkSelector "attributes"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.MetalPerformanceShaders.MPSNNReshape
   , encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels
   , encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannels
   , encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
-  , encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
-  , encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
   , encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
+  , encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
+  , encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
+  , encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,14 +42,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNReshape mpsnnReshape => mpsnnReshape -> RawId -> IO (Id MPSNNReshape)
-initWithDevice mpsnnReshape  device =
-    sendMsg mpsnnReshape (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnReshape device =
+  sendOwnedMessage mpsnnReshape initWithDeviceSelector device
 
 -- | @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNReshape mpsnnReshape, IsNSCoder aDecoder) => mpsnnReshape -> aDecoder -> RawId -> IO (Id MPSNNReshape)
-initWithCoder_device mpsnnReshape  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnReshape (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnReshape aDecoder device =
+  sendOwnedMessage mpsnnReshape initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode a reshape to a command buffer for a given shape.
 --
@@ -68,9 +64,8 @@ initWithCoder_device mpsnnReshape  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceImage:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
 encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannels :: (IsMPSNNReshape mpsnnReshape, IsMPSImage sourceImage) => mpsnnReshape -> RawId -> sourceImage -> CULong -> CULong -> CULong -> IO (Id MPSImage)
-encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape  commandBuffer sourceImage reshapedWidth reshapedHeight reshapedFeatureChannels =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-      sendMsg mpsnnReshape (mkSelector "encodeToCommandBuffer:sourceImage:reshapedWidth:reshapedHeight:reshapedFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argCULong reshapedWidth, argCULong reshapedHeight, argCULong reshapedFeatureChannels] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape commandBuffer sourceImage reshapedWidth reshapedHeight reshapedFeatureChannels =
+  sendMessage mpsnnReshape encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector commandBuffer (toMPSImage sourceImage) reshapedWidth reshapedHeight reshapedFeatureChannels
 
 -- | Encode a reshape to a command buffer for a given shape.
 --
@@ -90,10 +85,8 @@ encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureCh
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
 encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels :: (IsMPSNNReshape mpsnnReshape, IsMPSImage sourceImage, IsMPSState outState) => mpsnnReshape -> RawId -> sourceImage -> outState -> Bool -> CULong -> CULong -> CULong -> IO (Id MPSImage)
-encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape  commandBuffer sourceImage outState isTemporary reshapedWidth reshapedHeight reshapedFeatureChannels =
-  withObjCPtr sourceImage $ \raw_sourceImage ->
-    withObjCPtr outState $ \raw_outState ->
-        sendMsg mpsnnReshape (mkSelector "encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_outState :: Ptr ()), argCULong (if isTemporary then 1 else 0), argCULong reshapedWidth, argCULong reshapedHeight, argCULong reshapedFeatureChannels] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape commandBuffer sourceImage outState isTemporary reshapedWidth reshapedHeight reshapedFeatureChannels =
+  sendMessage mpsnnReshape encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector commandBuffer (toMPSImage sourceImage) (toMPSState outState) isTemporary reshapedWidth reshapedHeight reshapedFeatureChannels
 
 -- | Encode a reshape to a command buffer for a given shape.
 --
@@ -109,8 +102,8 @@ encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_r
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
 encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannels :: IsMPSNNReshape mpsnnReshape => mpsnnReshape -> RawId -> RawId -> CULong -> CULong -> CULong -> IO RawId
-encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape  commandBuffer sourceImages reshapedWidth reshapedHeight reshapedFeatureChannels =
-    fmap (RawId . castPtr) $ sendMsg mpsnnReshape (mkSelector "encodeBatchToCommandBuffer:sourceImages:reshapedWidth:reshapedHeight:reshapedFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argCULong reshapedWidth, argCULong reshapedHeight, argCULong reshapedFeatureChannels]
+encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape commandBuffer sourceImages reshapedWidth reshapedHeight reshapedFeatureChannels =
+  sendMessage mpsnnReshape encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector commandBuffer sourceImages reshapedWidth reshapedHeight reshapedFeatureChannels
 
 -- | Encode a reshape to a command buffer for a given shape.
 --
@@ -130,34 +123,34 @@ encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFea
 --
 -- ObjC selector: @- encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
 encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels :: IsMPSNNReshape mpsnnReshape => mpsnnReshape -> RawId -> RawId -> RawId -> Bool -> CULong -> CULong -> CULong -> IO RawId
-encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape  commandBuffer sourceImages outStates isTemporary reshapedWidth reshapedHeight reshapedFeatureChannels =
-    fmap (RawId . castPtr) $ sendMsg mpsnnReshape (mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceImages) :: Ptr ()), argPtr (castPtr (unRawId outStates) :: Ptr ()), argCULong (if isTemporary then 1 else 0), argCULong reshapedWidth, argCULong reshapedHeight, argCULong reshapedFeatureChannels]
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannels mpsnnReshape commandBuffer sourceImages outStates isTemporary reshapedWidth reshapedHeight reshapedFeatureChannels =
+  sendMessage mpsnnReshape encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector commandBuffer sourceImages outStates isTemporary reshapedWidth reshapedHeight reshapedFeatureChannels
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNReshape)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNReshape)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
-encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector
+encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector '[RawId, Id MPSImage, CULong, CULong, CULong] (Id MPSImage)
 encodeToCommandBuffer_sourceImage_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector = mkSelector "encodeToCommandBuffer:sourceImage:reshapedWidth:reshapedHeight:reshapedFeatureChannels:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
-encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector
+encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector '[RawId, Id MPSImage, Id MPSState, Bool, CULong, CULong, CULong] (Id MPSImage)
 encodeToCommandBuffer_sourceImage_destinationState_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector = mkSelector "encodeToCommandBuffer:sourceImage:destinationState:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
-encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector '[RawId, RawId, CULong, CULong, CULong] RawId
 encodeBatchToCommandBuffer_sourceImages_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:reshapedWidth:reshapedHeight:reshapedFeatureChannels:"
 
 -- | @Selector@ for @encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:@
-encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector
+encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector :: Selector '[RawId, RawId, RawId, Bool, CULong, CULong, CULong] RawId
 encodeBatchToCommandBuffer_sourceImages_destinationStates_destinationStateIsTemporary_reshapedWidth_reshapedHeight_reshapedFeatureChannelsSelector = mkSelector "encodeBatchToCommandBuffer:sourceImages:destinationStates:destinationStateIsTemporary:reshapedWidth:reshapedHeight:reshapedFeatureChannels:"
 

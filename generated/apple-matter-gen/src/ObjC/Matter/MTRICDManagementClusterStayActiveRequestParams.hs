@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRICDManagementClusterStayActiveRequestParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , stayActiveDurationSelector
-  , setStayActiveDurationSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setStayActiveDurationSelector
+  , setTimedInvokeTimeoutMsSelector
+  , stayActiveDurationSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- stayActiveDuration@
 stayActiveDuration :: IsMTRICDManagementClusterStayActiveRequestParams mtricdManagementClusterStayActiveRequestParams => mtricdManagementClusterStayActiveRequestParams -> IO (Id NSNumber)
-stayActiveDuration mtricdManagementClusterStayActiveRequestParams  =
-    sendMsg mtricdManagementClusterStayActiveRequestParams (mkSelector "stayActiveDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+stayActiveDuration mtricdManagementClusterStayActiveRequestParams =
+  sendMessage mtricdManagementClusterStayActiveRequestParams stayActiveDurationSelector
 
 -- | @- setStayActiveDuration:@
 setStayActiveDuration :: (IsMTRICDManagementClusterStayActiveRequestParams mtricdManagementClusterStayActiveRequestParams, IsNSNumber value) => mtricdManagementClusterStayActiveRequestParams -> value -> IO ()
-setStayActiveDuration mtricdManagementClusterStayActiveRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterStayActiveRequestParams (mkSelector "setStayActiveDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStayActiveDuration mtricdManagementClusterStayActiveRequestParams value =
+  sendMessage mtricdManagementClusterStayActiveRequestParams setStayActiveDurationSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setStayActiveDuration mtricdManagementClusterStayActiveRequestParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRICDManagementClusterStayActiveRequestParams mtricdManagementClusterStayActiveRequestParams => mtricdManagementClusterStayActiveRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtricdManagementClusterStayActiveRequestParams  =
-    sendMsg mtricdManagementClusterStayActiveRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtricdManagementClusterStayActiveRequestParams =
+  sendMessage mtricdManagementClusterStayActiveRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtricdManagementClusterStayActiveRequestParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRICDManagementClusterStayActiveRequestParams mtricdManagementClusterStayActiveRequestParams, IsNSNumber value) => mtricdManagementClusterStayActiveRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtricdManagementClusterStayActiveRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterStayActiveRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtricdManagementClusterStayActiveRequestParams value =
+  sendMessage mtricdManagementClusterStayActiveRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtricdManagementClusterStayActiveRequestParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRICDManagementClusterStayActiveRequestParams mtricdManagementClusterStayActiveRequestParams => mtricdManagementClusterStayActiveRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtricdManagementClusterStayActiveRequestParams  =
-    sendMsg mtricdManagementClusterStayActiveRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtricdManagementClusterStayActiveRequestParams =
+  sendMessage mtricdManagementClusterStayActiveRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtricdManagementClusterStayActiveRequestParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRICDManagementClusterStayActiveRequestParams mtricdManagementClusterStayActiveRequestParams, IsNSNumber value) => mtricdManagementClusterStayActiveRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtricdManagementClusterStayActiveRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtricdManagementClusterStayActiveRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtricdManagementClusterStayActiveRequestParams value =
+  sendMessage mtricdManagementClusterStayActiveRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stayActiveDuration@
-stayActiveDurationSelector :: Selector
+stayActiveDurationSelector :: Selector '[] (Id NSNumber)
 stayActiveDurationSelector = mkSelector "stayActiveDuration"
 
 -- | @Selector@ for @setStayActiveDuration:@
-setStayActiveDurationSelector :: Selector
+setStayActiveDurationSelector :: Selector '[Id NSNumber] ()
 setStayActiveDurationSelector = mkSelector "setStayActiveDuration:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

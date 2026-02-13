@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -55,50 +56,50 @@ module ObjC.AVKit.AVPlayerView
   , setShowsFullScreenToggleButton
   , showsTimecodes
   , setShowsTimecodes
-  , selectSpeedSelector
-  , flashChapterNumber_chapterTitleSelector
-  , beginTrimmingWithCompletionHandlerSelector
-  , playerSelector
-  , setPlayerSelector
-  , controlsStyleSelector
-  , setControlsStyleSelector
-  , videoGravitySelector
-  , setVideoGravitySelector
-  , readyForDisplaySelector
-  , videoBoundsSelector
-  , contentOverlayViewSelector
-  , updatesNowPlayingInfoCenterSelector
-  , setUpdatesNowPlayingInfoCenterSelector
-  , delegateSelector
-  , setDelegateSelector
-  , speedsSelector
-  , setSpeedsSelector
-  , selectedSpeedSelector
-  , allowsVideoFrameAnalysisSelector
-  , setAllowsVideoFrameAnalysisSelector
-  , videoFrameAnalysisTypesSelector
-  , setVideoFrameAnalysisTypesSelector
-  , allowsMagnificationSelector
-  , setAllowsMagnificationSelector
-  , magnificationSelector
-  , setMagnificationSelector
-  , preferredDisplayDynamicRangeSelector
-  , setPreferredDisplayDynamicRangeSelector
-  , allowsPictureInPicturePlaybackSelector
-  , setAllowsPictureInPicturePlaybackSelector
-  , pictureInPictureDelegateSelector
-  , setPictureInPictureDelegateSelector
-  , canBeginTrimmingSelector
-  , showsFrameSteppingButtonsSelector
-  , setShowsFrameSteppingButtonsSelector
-  , showsSharingServiceButtonSelector
-  , setShowsSharingServiceButtonSelector
   , actionPopUpButtonMenuSelector
+  , allowsMagnificationSelector
+  , allowsPictureInPicturePlaybackSelector
+  , allowsVideoFrameAnalysisSelector
+  , beginTrimmingWithCompletionHandlerSelector
+  , canBeginTrimmingSelector
+  , contentOverlayViewSelector
+  , controlsStyleSelector
+  , delegateSelector
+  , flashChapterNumber_chapterTitleSelector
+  , magnificationSelector
+  , pictureInPictureDelegateSelector
+  , playerSelector
+  , preferredDisplayDynamicRangeSelector
+  , readyForDisplaySelector
+  , selectSpeedSelector
+  , selectedSpeedSelector
   , setActionPopUpButtonMenuSelector
-  , showsFullScreenToggleButtonSelector
+  , setAllowsMagnificationSelector
+  , setAllowsPictureInPicturePlaybackSelector
+  , setAllowsVideoFrameAnalysisSelector
+  , setControlsStyleSelector
+  , setDelegateSelector
+  , setMagnificationSelector
+  , setPictureInPictureDelegateSelector
+  , setPlayerSelector
+  , setPreferredDisplayDynamicRangeSelector
+  , setShowsFrameSteppingButtonsSelector
   , setShowsFullScreenToggleButtonSelector
-  , showsTimecodesSelector
+  , setShowsSharingServiceButtonSelector
   , setShowsTimecodesSelector
+  , setSpeedsSelector
+  , setUpdatesNowPlayingInfoCenterSelector
+  , setVideoFrameAnalysisTypesSelector
+  , setVideoGravitySelector
+  , showsFrameSteppingButtonsSelector
+  , showsFullScreenToggleButtonSelector
+  , showsSharingServiceButtonSelector
+  , showsTimecodesSelector
+  , speedsSelector
+  , updatesNowPlayingInfoCenterSelector
+  , videoBoundsSelector
+  , videoFrameAnalysisTypesSelector
+  , videoGravitySelector
 
   -- * Enum types
   , AVDisplayDynamicRange(AVDisplayDynamicRange)
@@ -122,15 +123,11 @@ module ObjC.AVKit.AVPlayerView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -151,9 +148,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- selectSpeed:@
 selectSpeed :: (IsAVPlayerView avPlayerView, IsAVPlaybackSpeed speed) => avPlayerView -> speed -> IO ()
-selectSpeed avPlayerView  speed =
-  withObjCPtr speed $ \raw_speed ->
-      sendMsg avPlayerView (mkSelector "selectSpeed:") retVoid [argPtr (castPtr raw_speed :: Ptr ())]
+selectSpeed avPlayerView speed =
+  sendMessage avPlayerView selectSpeedSelector (toAVPlaybackSpeed speed)
 
 -- | flashChapterNumber:chapterTitle:
 --
@@ -165,9 +161,8 @@ selectSpeed avPlayerView  speed =
 --
 -- ObjC selector: @- flashChapterNumber:chapterTitle:@
 flashChapterNumber_chapterTitle :: (IsAVPlayerView avPlayerView, IsNSString chapterTitle) => avPlayerView -> CULong -> chapterTitle -> IO ()
-flashChapterNumber_chapterTitle avPlayerView  chapterNumber chapterTitle =
-  withObjCPtr chapterTitle $ \raw_chapterTitle ->
-      sendMsg avPlayerView (mkSelector "flashChapterNumber:chapterTitle:") retVoid [argCULong chapterNumber, argPtr (castPtr raw_chapterTitle :: Ptr ())]
+flashChapterNumber_chapterTitle avPlayerView chapterNumber chapterTitle =
+  sendMessage avPlayerView flashChapterNumber_chapterTitleSelector chapterNumber (toNSString chapterTitle)
 
 -- | beginTrimmingWithCompletionHandler:
 --
@@ -177,8 +172,8 @@ flashChapterNumber_chapterTitle avPlayerView  chapterNumber chapterTitle =
 --
 -- ObjC selector: @- beginTrimmingWithCompletionHandler:@
 beginTrimmingWithCompletionHandler :: IsAVPlayerView avPlayerView => avPlayerView -> Ptr () -> IO ()
-beginTrimmingWithCompletionHandler avPlayerView  handler =
-    sendMsg avPlayerView (mkSelector "beginTrimmingWithCompletionHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+beginTrimmingWithCompletionHandler avPlayerView handler =
+  sendMessage avPlayerView beginTrimmingWithCompletionHandlerSelector handler
 
 -- | player
 --
@@ -186,8 +181,8 @@ beginTrimmingWithCompletionHandler avPlayerView  handler =
 --
 -- ObjC selector: @- player@
 player :: IsAVPlayerView avPlayerView => avPlayerView -> IO (Id AVPlayer)
-player avPlayerView  =
-    sendMsg avPlayerView (mkSelector "player") (retPtr retVoid) [] >>= retainedObject . castPtr
+player avPlayerView =
+  sendMessage avPlayerView playerSelector
 
 -- | player
 --
@@ -195,9 +190,8 @@ player avPlayerView  =
 --
 -- ObjC selector: @- setPlayer:@
 setPlayer :: (IsAVPlayerView avPlayerView, IsAVPlayer value) => avPlayerView -> value -> IO ()
-setPlayer avPlayerView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerView (mkSelector "setPlayer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlayer avPlayerView value =
+  sendMessage avPlayerView setPlayerSelector (toAVPlayer value)
 
 -- | controlsStyle
 --
@@ -207,8 +201,8 @@ setPlayer avPlayerView  value =
 --
 -- ObjC selector: @- controlsStyle@
 controlsStyle :: IsAVPlayerView avPlayerView => avPlayerView -> IO AVPlayerViewControlsStyle
-controlsStyle avPlayerView  =
-    fmap (coerce :: CLong -> AVPlayerViewControlsStyle) $ sendMsg avPlayerView (mkSelector "controlsStyle") retCLong []
+controlsStyle avPlayerView =
+  sendMessage avPlayerView controlsStyleSelector
 
 -- | controlsStyle
 --
@@ -218,8 +212,8 @@ controlsStyle avPlayerView  =
 --
 -- ObjC selector: @- setControlsStyle:@
 setControlsStyle :: IsAVPlayerView avPlayerView => avPlayerView -> AVPlayerViewControlsStyle -> IO ()
-setControlsStyle avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setControlsStyle:") retVoid [argCLong (coerce value)]
+setControlsStyle avPlayerView value =
+  sendMessage avPlayerView setControlsStyleSelector value
 
 -- | videoGravity
 --
@@ -229,8 +223,8 @@ setControlsStyle avPlayerView  value =
 --
 -- ObjC selector: @- videoGravity@
 videoGravity :: IsAVPlayerView avPlayerView => avPlayerView -> IO (Id NSString)
-videoGravity avPlayerView  =
-    sendMsg avPlayerView (mkSelector "videoGravity") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoGravity avPlayerView =
+  sendMessage avPlayerView videoGravitySelector
 
 -- | videoGravity
 --
@@ -240,9 +234,8 @@ videoGravity avPlayerView  =
 --
 -- ObjC selector: @- setVideoGravity:@
 setVideoGravity :: (IsAVPlayerView avPlayerView, IsNSString value) => avPlayerView -> value -> IO ()
-setVideoGravity avPlayerView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerView (mkSelector "setVideoGravity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoGravity avPlayerView value =
+  sendMessage avPlayerView setVideoGravitySelector (toNSString value)
 
 -- | readyForDisplay
 --
@@ -250,8 +243,8 @@ setVideoGravity avPlayerView  value =
 --
 -- ObjC selector: @- readyForDisplay@
 readyForDisplay :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-readyForDisplay avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "readyForDisplay") retCULong []
+readyForDisplay avPlayerView =
+  sendMessage avPlayerView readyForDisplaySelector
 
 -- | videoBounds
 --
@@ -259,8 +252,8 @@ readyForDisplay avPlayerView  =
 --
 -- ObjC selector: @- videoBounds@
 videoBounds :: IsAVPlayerView avPlayerView => avPlayerView -> IO NSRect
-videoBounds avPlayerView  =
-    sendMsgStret avPlayerView (mkSelector "videoBounds") retNSRect []
+videoBounds avPlayerView =
+  sendMessage avPlayerView videoBoundsSelector
 
 -- | contentOverlayView
 --
@@ -268,8 +261,8 @@ videoBounds avPlayerView  =
 --
 -- ObjC selector: @- contentOverlayView@
 contentOverlayView :: IsAVPlayerView avPlayerView => avPlayerView -> IO (Id NSView)
-contentOverlayView avPlayerView  =
-    sendMsg avPlayerView (mkSelector "contentOverlayView") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentOverlayView avPlayerView =
+  sendMessage avPlayerView contentOverlayViewSelector
 
 -- | updatesNowPlayingInfoCenter
 --
@@ -277,8 +270,8 @@ contentOverlayView avPlayerView  =
 --
 -- ObjC selector: @- updatesNowPlayingInfoCenter@
 updatesNowPlayingInfoCenter :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-updatesNowPlayingInfoCenter avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "updatesNowPlayingInfoCenter") retCULong []
+updatesNowPlayingInfoCenter avPlayerView =
+  sendMessage avPlayerView updatesNowPlayingInfoCenterSelector
 
 -- | updatesNowPlayingInfoCenter
 --
@@ -286,8 +279,8 @@ updatesNowPlayingInfoCenter avPlayerView  =
 --
 -- ObjC selector: @- setUpdatesNowPlayingInfoCenter:@
 setUpdatesNowPlayingInfoCenter :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
-setUpdatesNowPlayingInfoCenter avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setUpdatesNowPlayingInfoCenter:") retVoid [argCULong (if value then 1 else 0)]
+setUpdatesNowPlayingInfoCenter avPlayerView value =
+  sendMessage avPlayerView setUpdatesNowPlayingInfoCenterSelector value
 
 -- | delegate
 --
@@ -295,8 +288,8 @@ setUpdatesNowPlayingInfoCenter avPlayerView  value =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVPlayerView avPlayerView => avPlayerView -> IO RawId
-delegate avPlayerView  =
-    fmap (RawId . castPtr) $ sendMsg avPlayerView (mkSelector "delegate") (retPtr retVoid) []
+delegate avPlayerView =
+  sendMessage avPlayerView delegateSelector
 
 -- | delegate
 --
@@ -304,8 +297,8 @@ delegate avPlayerView  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsAVPlayerView avPlayerView => avPlayerView -> RawId -> IO ()
-setDelegate avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avPlayerView value =
+  sendMessage avPlayerView setDelegateSelector value
 
 -- | speeds
 --
@@ -317,8 +310,8 @@ setDelegate avPlayerView  value =
 --
 -- ObjC selector: @- speeds@
 speeds :: IsAVPlayerView avPlayerView => avPlayerView -> IO (Id NSArray)
-speeds avPlayerView  =
-    sendMsg avPlayerView (mkSelector "speeds") (retPtr retVoid) [] >>= retainedObject . castPtr
+speeds avPlayerView =
+  sendMessage avPlayerView speedsSelector
 
 -- | speeds
 --
@@ -330,9 +323,8 @@ speeds avPlayerView  =
 --
 -- ObjC selector: @- setSpeeds:@
 setSpeeds :: (IsAVPlayerView avPlayerView, IsNSArray value) => avPlayerView -> value -> IO ()
-setSpeeds avPlayerView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerView (mkSelector "setSpeeds:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSpeeds avPlayerView value =
+  sendMessage avPlayerView setSpeedsSelector (toNSArray value)
 
 -- | selectedSpeed
 --
@@ -342,8 +334,8 @@ setSpeeds avPlayerView  value =
 --
 -- ObjC selector: @- selectedSpeed@
 selectedSpeed :: IsAVPlayerView avPlayerView => avPlayerView -> IO (Id AVPlaybackSpeed)
-selectedSpeed avPlayerView  =
-    sendMsg avPlayerView (mkSelector "selectedSpeed") (retPtr retVoid) [] >>= retainedObject . castPtr
+selectedSpeed avPlayerView =
+  sendMessage avPlayerView selectedSpeedSelector
 
 -- | allowsVideoFrameAnalysis
 --
@@ -351,8 +343,8 @@ selectedSpeed avPlayerView  =
 --
 -- ObjC selector: @- allowsVideoFrameAnalysis@
 allowsVideoFrameAnalysis :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-allowsVideoFrameAnalysis avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "allowsVideoFrameAnalysis") retCULong []
+allowsVideoFrameAnalysis avPlayerView =
+  sendMessage avPlayerView allowsVideoFrameAnalysisSelector
 
 -- | allowsVideoFrameAnalysis
 --
@@ -360,8 +352,8 @@ allowsVideoFrameAnalysis avPlayerView  =
 --
 -- ObjC selector: @- setAllowsVideoFrameAnalysis:@
 setAllowsVideoFrameAnalysis :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
-setAllowsVideoFrameAnalysis avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setAllowsVideoFrameAnalysis:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsVideoFrameAnalysis avPlayerView value =
+  sendMessage avPlayerView setAllowsVideoFrameAnalysisSelector value
 
 -- | videoFrameAnalysisTypes
 --
@@ -369,8 +361,8 @@ setAllowsVideoFrameAnalysis avPlayerView  value =
 --
 -- ObjC selector: @- videoFrameAnalysisTypes@
 videoFrameAnalysisTypes :: IsAVPlayerView avPlayerView => avPlayerView -> IO AVVideoFrameAnalysisType
-videoFrameAnalysisTypes avPlayerView  =
-    fmap (coerce :: CULong -> AVVideoFrameAnalysisType) $ sendMsg avPlayerView (mkSelector "videoFrameAnalysisTypes") retCULong []
+videoFrameAnalysisTypes avPlayerView =
+  sendMessage avPlayerView videoFrameAnalysisTypesSelector
 
 -- | videoFrameAnalysisTypes
 --
@@ -378,8 +370,8 @@ videoFrameAnalysisTypes avPlayerView  =
 --
 -- ObjC selector: @- setVideoFrameAnalysisTypes:@
 setVideoFrameAnalysisTypes :: IsAVPlayerView avPlayerView => avPlayerView -> AVVideoFrameAnalysisType -> IO ()
-setVideoFrameAnalysisTypes avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setVideoFrameAnalysisTypes:") retVoid [argCULong (coerce value)]
+setVideoFrameAnalysisTypes avPlayerView value =
+  sendMessage avPlayerView setVideoFrameAnalysisTypesSelector value
 
 -- | allowsMagnification
 --
@@ -389,8 +381,8 @@ setVideoFrameAnalysisTypes avPlayerView  value =
 --
 -- ObjC selector: @- allowsMagnification@
 allowsMagnification :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-allowsMagnification avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "allowsMagnification") retCULong []
+allowsMagnification avPlayerView =
+  sendMessage avPlayerView allowsMagnificationSelector
 
 -- | allowsMagnification
 --
@@ -400,8 +392,8 @@ allowsMagnification avPlayerView  =
 --
 -- ObjC selector: @- setAllowsMagnification:@
 setAllowsMagnification :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
-setAllowsMagnification avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setAllowsMagnification:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsMagnification avPlayerView value =
+  sendMessage avPlayerView setAllowsMagnificationSelector value
 
 -- | magnification
 --
@@ -411,8 +403,8 @@ setAllowsMagnification avPlayerView  value =
 --
 -- ObjC selector: @- magnification@
 magnification :: IsAVPlayerView avPlayerView => avPlayerView -> IO CDouble
-magnification avPlayerView  =
-    sendMsg avPlayerView (mkSelector "magnification") retCDouble []
+magnification avPlayerView =
+  sendMessage avPlayerView magnificationSelector
 
 -- | magnification
 --
@@ -422,8 +414,8 @@ magnification avPlayerView  =
 --
 -- ObjC selector: @- setMagnification:@
 setMagnification :: IsAVPlayerView avPlayerView => avPlayerView -> CDouble -> IO ()
-setMagnification avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setMagnification:") retVoid [argCDouble value]
+setMagnification avPlayerView value =
+  sendMessage avPlayerView setMagnificationSelector value
 
 -- | Describes how High Dynamic Range (HDR) video content renders.
 --
@@ -433,8 +425,8 @@ setMagnification avPlayerView  value =
 --
 -- ObjC selector: @- preferredDisplayDynamicRange@
 preferredDisplayDynamicRange :: IsAVPlayerView avPlayerView => avPlayerView -> IO AVDisplayDynamicRange
-preferredDisplayDynamicRange avPlayerView  =
-    fmap (coerce :: CLong -> AVDisplayDynamicRange) $ sendMsg avPlayerView (mkSelector "preferredDisplayDynamicRange") retCLong []
+preferredDisplayDynamicRange avPlayerView =
+  sendMessage avPlayerView preferredDisplayDynamicRangeSelector
 
 -- | Describes how High Dynamic Range (HDR) video content renders.
 --
@@ -444,8 +436,8 @@ preferredDisplayDynamicRange avPlayerView  =
 --
 -- ObjC selector: @- setPreferredDisplayDynamicRange:@
 setPreferredDisplayDynamicRange :: IsAVPlayerView avPlayerView => avPlayerView -> AVDisplayDynamicRange -> IO ()
-setPreferredDisplayDynamicRange avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setPreferredDisplayDynamicRange:") retVoid [argCLong (coerce value)]
+setPreferredDisplayDynamicRange avPlayerView value =
+  sendMessage avPlayerView setPreferredDisplayDynamicRangeSelector value
 
 -- | allowsPictureInPicturePlayback
 --
@@ -453,8 +445,8 @@ setPreferredDisplayDynamicRange avPlayerView  value =
 --
 -- ObjC selector: @- allowsPictureInPicturePlayback@
 allowsPictureInPicturePlayback :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-allowsPictureInPicturePlayback avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "allowsPictureInPicturePlayback") retCULong []
+allowsPictureInPicturePlayback avPlayerView =
+  sendMessage avPlayerView allowsPictureInPicturePlaybackSelector
 
 -- | allowsPictureInPicturePlayback
 --
@@ -462,8 +454,8 @@ allowsPictureInPicturePlayback avPlayerView  =
 --
 -- ObjC selector: @- setAllowsPictureInPicturePlayback:@
 setAllowsPictureInPicturePlayback :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
-setAllowsPictureInPicturePlayback avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setAllowsPictureInPicturePlayback:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsPictureInPicturePlayback avPlayerView value =
+  sendMessage avPlayerView setAllowsPictureInPicturePlaybackSelector value
 
 -- | pictureInPictureDelegate
 --
@@ -471,8 +463,8 @@ setAllowsPictureInPicturePlayback avPlayerView  value =
 --
 -- ObjC selector: @- pictureInPictureDelegate@
 pictureInPictureDelegate :: IsAVPlayerView avPlayerView => avPlayerView -> IO RawId
-pictureInPictureDelegate avPlayerView  =
-    fmap (RawId . castPtr) $ sendMsg avPlayerView (mkSelector "pictureInPictureDelegate") (retPtr retVoid) []
+pictureInPictureDelegate avPlayerView =
+  sendMessage avPlayerView pictureInPictureDelegateSelector
 
 -- | pictureInPictureDelegate
 --
@@ -480,8 +472,8 @@ pictureInPictureDelegate avPlayerView  =
 --
 -- ObjC selector: @- setPictureInPictureDelegate:@
 setPictureInPictureDelegate :: IsAVPlayerView avPlayerView => avPlayerView -> RawId -> IO ()
-setPictureInPictureDelegate avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setPictureInPictureDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPictureInPictureDelegate avPlayerView value =
+  sendMessage avPlayerView setPictureInPictureDelegateSelector value
 
 -- | canBeginTrimming
 --
@@ -489,8 +481,8 @@ setPictureInPictureDelegate avPlayerView  value =
 --
 -- ObjC selector: @- canBeginTrimming@
 canBeginTrimming :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-canBeginTrimming avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "canBeginTrimming") retCULong []
+canBeginTrimming avPlayerView =
+  sendMessage avPlayerView canBeginTrimmingSelector
 
 -- | showsFrameSteppingButtons
 --
@@ -498,8 +490,8 @@ canBeginTrimming avPlayerView  =
 --
 -- ObjC selector: @- showsFrameSteppingButtons@
 showsFrameSteppingButtons :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-showsFrameSteppingButtons avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "showsFrameSteppingButtons") retCULong []
+showsFrameSteppingButtons avPlayerView =
+  sendMessage avPlayerView showsFrameSteppingButtonsSelector
 
 -- | showsFrameSteppingButtons
 --
@@ -507,8 +499,8 @@ showsFrameSteppingButtons avPlayerView  =
 --
 -- ObjC selector: @- setShowsFrameSteppingButtons:@
 setShowsFrameSteppingButtons :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
-setShowsFrameSteppingButtons avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setShowsFrameSteppingButtons:") retVoid [argCULong (if value then 1 else 0)]
+setShowsFrameSteppingButtons avPlayerView value =
+  sendMessage avPlayerView setShowsFrameSteppingButtonsSelector value
 
 -- | showsSharingServiceButton
 --
@@ -516,8 +508,8 @@ setShowsFrameSteppingButtons avPlayerView  value =
 --
 -- ObjC selector: @- showsSharingServiceButton@
 showsSharingServiceButton :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-showsSharingServiceButton avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "showsSharingServiceButton") retCULong []
+showsSharingServiceButton avPlayerView =
+  sendMessage avPlayerView showsSharingServiceButtonSelector
 
 -- | showsSharingServiceButton
 --
@@ -525,8 +517,8 @@ showsSharingServiceButton avPlayerView  =
 --
 -- ObjC selector: @- setShowsSharingServiceButton:@
 setShowsSharingServiceButton :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
-setShowsSharingServiceButton avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setShowsSharingServiceButton:") retVoid [argCULong (if value then 1 else 0)]
+setShowsSharingServiceButton avPlayerView value =
+  sendMessage avPlayerView setShowsSharingServiceButtonSelector value
 
 -- | actionPopUpButtonMenu
 --
@@ -534,8 +526,8 @@ setShowsSharingServiceButton avPlayerView  value =
 --
 -- ObjC selector: @- actionPopUpButtonMenu@
 actionPopUpButtonMenu :: IsAVPlayerView avPlayerView => avPlayerView -> IO (Id NSMenu)
-actionPopUpButtonMenu avPlayerView  =
-    sendMsg avPlayerView (mkSelector "actionPopUpButtonMenu") (retPtr retVoid) [] >>= retainedObject . castPtr
+actionPopUpButtonMenu avPlayerView =
+  sendMessage avPlayerView actionPopUpButtonMenuSelector
 
 -- | actionPopUpButtonMenu
 --
@@ -543,9 +535,8 @@ actionPopUpButtonMenu avPlayerView  =
 --
 -- ObjC selector: @- setActionPopUpButtonMenu:@
 setActionPopUpButtonMenu :: (IsAVPlayerView avPlayerView, IsNSMenu value) => avPlayerView -> value -> IO ()
-setActionPopUpButtonMenu avPlayerView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerView (mkSelector "setActionPopUpButtonMenu:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActionPopUpButtonMenu avPlayerView value =
+  sendMessage avPlayerView setActionPopUpButtonMenuSelector (toNSMenu value)
 
 -- | showsFullScreenToggleButton
 --
@@ -553,8 +544,8 @@ setActionPopUpButtonMenu avPlayerView  value =
 --
 -- ObjC selector: @- showsFullScreenToggleButton@
 showsFullScreenToggleButton :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-showsFullScreenToggleButton avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "showsFullScreenToggleButton") retCULong []
+showsFullScreenToggleButton avPlayerView =
+  sendMessage avPlayerView showsFullScreenToggleButtonSelector
 
 -- | showsFullScreenToggleButton
 --
@@ -562,8 +553,8 @@ showsFullScreenToggleButton avPlayerView  =
 --
 -- ObjC selector: @- setShowsFullScreenToggleButton:@
 setShowsFullScreenToggleButton :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
-setShowsFullScreenToggleButton avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setShowsFullScreenToggleButton:") retVoid [argCULong (if value then 1 else 0)]
+setShowsFullScreenToggleButton avPlayerView value =
+  sendMessage avPlayerView setShowsFullScreenToggleButtonSelector value
 
 -- | showsTimecodes
 --
@@ -571,8 +562,8 @@ setShowsFullScreenToggleButton avPlayerView  value =
 --
 -- ObjC selector: @- showsTimecodes@
 showsTimecodes :: IsAVPlayerView avPlayerView => avPlayerView -> IO Bool
-showsTimecodes avPlayerView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerView (mkSelector "showsTimecodes") retCULong []
+showsTimecodes avPlayerView =
+  sendMessage avPlayerView showsTimecodesSelector
 
 -- | showsTimecodes
 --
@@ -580,186 +571,186 @@ showsTimecodes avPlayerView  =
 --
 -- ObjC selector: @- setShowsTimecodes:@
 setShowsTimecodes :: IsAVPlayerView avPlayerView => avPlayerView -> Bool -> IO ()
-setShowsTimecodes avPlayerView  value =
-    sendMsg avPlayerView (mkSelector "setShowsTimecodes:") retVoid [argCULong (if value then 1 else 0)]
+setShowsTimecodes avPlayerView value =
+  sendMessage avPlayerView setShowsTimecodesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @selectSpeed:@
-selectSpeedSelector :: Selector
+selectSpeedSelector :: Selector '[Id AVPlaybackSpeed] ()
 selectSpeedSelector = mkSelector "selectSpeed:"
 
 -- | @Selector@ for @flashChapterNumber:chapterTitle:@
-flashChapterNumber_chapterTitleSelector :: Selector
+flashChapterNumber_chapterTitleSelector :: Selector '[CULong, Id NSString] ()
 flashChapterNumber_chapterTitleSelector = mkSelector "flashChapterNumber:chapterTitle:"
 
 -- | @Selector@ for @beginTrimmingWithCompletionHandler:@
-beginTrimmingWithCompletionHandlerSelector :: Selector
+beginTrimmingWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 beginTrimmingWithCompletionHandlerSelector = mkSelector "beginTrimmingWithCompletionHandler:"
 
 -- | @Selector@ for @player@
-playerSelector :: Selector
+playerSelector :: Selector '[] (Id AVPlayer)
 playerSelector = mkSelector "player"
 
 -- | @Selector@ for @setPlayer:@
-setPlayerSelector :: Selector
+setPlayerSelector :: Selector '[Id AVPlayer] ()
 setPlayerSelector = mkSelector "setPlayer:"
 
 -- | @Selector@ for @controlsStyle@
-controlsStyleSelector :: Selector
+controlsStyleSelector :: Selector '[] AVPlayerViewControlsStyle
 controlsStyleSelector = mkSelector "controlsStyle"
 
 -- | @Selector@ for @setControlsStyle:@
-setControlsStyleSelector :: Selector
+setControlsStyleSelector :: Selector '[AVPlayerViewControlsStyle] ()
 setControlsStyleSelector = mkSelector "setControlsStyle:"
 
 -- | @Selector@ for @videoGravity@
-videoGravitySelector :: Selector
+videoGravitySelector :: Selector '[] (Id NSString)
 videoGravitySelector = mkSelector "videoGravity"
 
 -- | @Selector@ for @setVideoGravity:@
-setVideoGravitySelector :: Selector
+setVideoGravitySelector :: Selector '[Id NSString] ()
 setVideoGravitySelector = mkSelector "setVideoGravity:"
 
 -- | @Selector@ for @readyForDisplay@
-readyForDisplaySelector :: Selector
+readyForDisplaySelector :: Selector '[] Bool
 readyForDisplaySelector = mkSelector "readyForDisplay"
 
 -- | @Selector@ for @videoBounds@
-videoBoundsSelector :: Selector
+videoBoundsSelector :: Selector '[] NSRect
 videoBoundsSelector = mkSelector "videoBounds"
 
 -- | @Selector@ for @contentOverlayView@
-contentOverlayViewSelector :: Selector
+contentOverlayViewSelector :: Selector '[] (Id NSView)
 contentOverlayViewSelector = mkSelector "contentOverlayView"
 
 -- | @Selector@ for @updatesNowPlayingInfoCenter@
-updatesNowPlayingInfoCenterSelector :: Selector
+updatesNowPlayingInfoCenterSelector :: Selector '[] Bool
 updatesNowPlayingInfoCenterSelector = mkSelector "updatesNowPlayingInfoCenter"
 
 -- | @Selector@ for @setUpdatesNowPlayingInfoCenter:@
-setUpdatesNowPlayingInfoCenterSelector :: Selector
+setUpdatesNowPlayingInfoCenterSelector :: Selector '[Bool] ()
 setUpdatesNowPlayingInfoCenterSelector = mkSelector "setUpdatesNowPlayingInfoCenter:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @speeds@
-speedsSelector :: Selector
+speedsSelector :: Selector '[] (Id NSArray)
 speedsSelector = mkSelector "speeds"
 
 -- | @Selector@ for @setSpeeds:@
-setSpeedsSelector :: Selector
+setSpeedsSelector :: Selector '[Id NSArray] ()
 setSpeedsSelector = mkSelector "setSpeeds:"
 
 -- | @Selector@ for @selectedSpeed@
-selectedSpeedSelector :: Selector
+selectedSpeedSelector :: Selector '[] (Id AVPlaybackSpeed)
 selectedSpeedSelector = mkSelector "selectedSpeed"
 
 -- | @Selector@ for @allowsVideoFrameAnalysis@
-allowsVideoFrameAnalysisSelector :: Selector
+allowsVideoFrameAnalysisSelector :: Selector '[] Bool
 allowsVideoFrameAnalysisSelector = mkSelector "allowsVideoFrameAnalysis"
 
 -- | @Selector@ for @setAllowsVideoFrameAnalysis:@
-setAllowsVideoFrameAnalysisSelector :: Selector
+setAllowsVideoFrameAnalysisSelector :: Selector '[Bool] ()
 setAllowsVideoFrameAnalysisSelector = mkSelector "setAllowsVideoFrameAnalysis:"
 
 -- | @Selector@ for @videoFrameAnalysisTypes@
-videoFrameAnalysisTypesSelector :: Selector
+videoFrameAnalysisTypesSelector :: Selector '[] AVVideoFrameAnalysisType
 videoFrameAnalysisTypesSelector = mkSelector "videoFrameAnalysisTypes"
 
 -- | @Selector@ for @setVideoFrameAnalysisTypes:@
-setVideoFrameAnalysisTypesSelector :: Selector
+setVideoFrameAnalysisTypesSelector :: Selector '[AVVideoFrameAnalysisType] ()
 setVideoFrameAnalysisTypesSelector = mkSelector "setVideoFrameAnalysisTypes:"
 
 -- | @Selector@ for @allowsMagnification@
-allowsMagnificationSelector :: Selector
+allowsMagnificationSelector :: Selector '[] Bool
 allowsMagnificationSelector = mkSelector "allowsMagnification"
 
 -- | @Selector@ for @setAllowsMagnification:@
-setAllowsMagnificationSelector :: Selector
+setAllowsMagnificationSelector :: Selector '[Bool] ()
 setAllowsMagnificationSelector = mkSelector "setAllowsMagnification:"
 
 -- | @Selector@ for @magnification@
-magnificationSelector :: Selector
+magnificationSelector :: Selector '[] CDouble
 magnificationSelector = mkSelector "magnification"
 
 -- | @Selector@ for @setMagnification:@
-setMagnificationSelector :: Selector
+setMagnificationSelector :: Selector '[CDouble] ()
 setMagnificationSelector = mkSelector "setMagnification:"
 
 -- | @Selector@ for @preferredDisplayDynamicRange@
-preferredDisplayDynamicRangeSelector :: Selector
+preferredDisplayDynamicRangeSelector :: Selector '[] AVDisplayDynamicRange
 preferredDisplayDynamicRangeSelector = mkSelector "preferredDisplayDynamicRange"
 
 -- | @Selector@ for @setPreferredDisplayDynamicRange:@
-setPreferredDisplayDynamicRangeSelector :: Selector
+setPreferredDisplayDynamicRangeSelector :: Selector '[AVDisplayDynamicRange] ()
 setPreferredDisplayDynamicRangeSelector = mkSelector "setPreferredDisplayDynamicRange:"
 
 -- | @Selector@ for @allowsPictureInPicturePlayback@
-allowsPictureInPicturePlaybackSelector :: Selector
+allowsPictureInPicturePlaybackSelector :: Selector '[] Bool
 allowsPictureInPicturePlaybackSelector = mkSelector "allowsPictureInPicturePlayback"
 
 -- | @Selector@ for @setAllowsPictureInPicturePlayback:@
-setAllowsPictureInPicturePlaybackSelector :: Selector
+setAllowsPictureInPicturePlaybackSelector :: Selector '[Bool] ()
 setAllowsPictureInPicturePlaybackSelector = mkSelector "setAllowsPictureInPicturePlayback:"
 
 -- | @Selector@ for @pictureInPictureDelegate@
-pictureInPictureDelegateSelector :: Selector
+pictureInPictureDelegateSelector :: Selector '[] RawId
 pictureInPictureDelegateSelector = mkSelector "pictureInPictureDelegate"
 
 -- | @Selector@ for @setPictureInPictureDelegate:@
-setPictureInPictureDelegateSelector :: Selector
+setPictureInPictureDelegateSelector :: Selector '[RawId] ()
 setPictureInPictureDelegateSelector = mkSelector "setPictureInPictureDelegate:"
 
 -- | @Selector@ for @canBeginTrimming@
-canBeginTrimmingSelector :: Selector
+canBeginTrimmingSelector :: Selector '[] Bool
 canBeginTrimmingSelector = mkSelector "canBeginTrimming"
 
 -- | @Selector@ for @showsFrameSteppingButtons@
-showsFrameSteppingButtonsSelector :: Selector
+showsFrameSteppingButtonsSelector :: Selector '[] Bool
 showsFrameSteppingButtonsSelector = mkSelector "showsFrameSteppingButtons"
 
 -- | @Selector@ for @setShowsFrameSteppingButtons:@
-setShowsFrameSteppingButtonsSelector :: Selector
+setShowsFrameSteppingButtonsSelector :: Selector '[Bool] ()
 setShowsFrameSteppingButtonsSelector = mkSelector "setShowsFrameSteppingButtons:"
 
 -- | @Selector@ for @showsSharingServiceButton@
-showsSharingServiceButtonSelector :: Selector
+showsSharingServiceButtonSelector :: Selector '[] Bool
 showsSharingServiceButtonSelector = mkSelector "showsSharingServiceButton"
 
 -- | @Selector@ for @setShowsSharingServiceButton:@
-setShowsSharingServiceButtonSelector :: Selector
+setShowsSharingServiceButtonSelector :: Selector '[Bool] ()
 setShowsSharingServiceButtonSelector = mkSelector "setShowsSharingServiceButton:"
 
 -- | @Selector@ for @actionPopUpButtonMenu@
-actionPopUpButtonMenuSelector :: Selector
+actionPopUpButtonMenuSelector :: Selector '[] (Id NSMenu)
 actionPopUpButtonMenuSelector = mkSelector "actionPopUpButtonMenu"
 
 -- | @Selector@ for @setActionPopUpButtonMenu:@
-setActionPopUpButtonMenuSelector :: Selector
+setActionPopUpButtonMenuSelector :: Selector '[Id NSMenu] ()
 setActionPopUpButtonMenuSelector = mkSelector "setActionPopUpButtonMenu:"
 
 -- | @Selector@ for @showsFullScreenToggleButton@
-showsFullScreenToggleButtonSelector :: Selector
+showsFullScreenToggleButtonSelector :: Selector '[] Bool
 showsFullScreenToggleButtonSelector = mkSelector "showsFullScreenToggleButton"
 
 -- | @Selector@ for @setShowsFullScreenToggleButton:@
-setShowsFullScreenToggleButtonSelector :: Selector
+setShowsFullScreenToggleButtonSelector :: Selector '[Bool] ()
 setShowsFullScreenToggleButtonSelector = mkSelector "setShowsFullScreenToggleButton:"
 
 -- | @Selector@ for @showsTimecodes@
-showsTimecodesSelector :: Selector
+showsTimecodesSelector :: Selector '[] Bool
 showsTimecodesSelector = mkSelector "showsTimecodes"
 
 -- | @Selector@ for @setShowsTimecodes:@
-setShowsTimecodesSelector :: Selector
+setShowsTimecodesSelector :: Selector '[Bool] ()
 setShowsTimecodesSelector = mkSelector "setShowsTimecodes:"
 

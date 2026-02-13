@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.Metal.MTL4CompilerDescriptor
   , pipelineDataSetSerializer
   , setPipelineDataSetSerializer
   , labelSelector
-  , setLabelSelector
   , pipelineDataSetSerializerSelector
+  , setLabelSelector
   , setPipelineDataSetSerializerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,48 +36,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- label@
 label :: IsMTL4CompilerDescriptor mtL4CompilerDescriptor => mtL4CompilerDescriptor -> IO (Id NSString)
-label mtL4CompilerDescriptor  =
-    sendMsg mtL4CompilerDescriptor (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtL4CompilerDescriptor =
+  sendMessage mtL4CompilerDescriptor labelSelector
 
 -- | Assigns an optional descriptor label to the compiler for debugging purposes.
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMTL4CompilerDescriptor mtL4CompilerDescriptor, IsNSString value) => mtL4CompilerDescriptor -> value -> IO ()
-setLabel mtL4CompilerDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4CompilerDescriptor (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtL4CompilerDescriptor value =
+  sendMessage mtL4CompilerDescriptor setLabelSelector (toNSString value)
 
 -- | Assigns a pipeline data set serializer into which this compiler stores data for all pipelines it creates.
 --
 -- ObjC selector: @- pipelineDataSetSerializer@
 pipelineDataSetSerializer :: IsMTL4CompilerDescriptor mtL4CompilerDescriptor => mtL4CompilerDescriptor -> IO RawId
-pipelineDataSetSerializer mtL4CompilerDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtL4CompilerDescriptor (mkSelector "pipelineDataSetSerializer") (retPtr retVoid) []
+pipelineDataSetSerializer mtL4CompilerDescriptor =
+  sendMessage mtL4CompilerDescriptor pipelineDataSetSerializerSelector
 
 -- | Assigns a pipeline data set serializer into which this compiler stores data for all pipelines it creates.
 --
 -- ObjC selector: @- setPipelineDataSetSerializer:@
 setPipelineDataSetSerializer :: IsMTL4CompilerDescriptor mtL4CompilerDescriptor => mtL4CompilerDescriptor -> RawId -> IO ()
-setPipelineDataSetSerializer mtL4CompilerDescriptor  value =
-    sendMsg mtL4CompilerDescriptor (mkSelector "setPipelineDataSetSerializer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPipelineDataSetSerializer mtL4CompilerDescriptor value =
+  sendMessage mtL4CompilerDescriptor setPipelineDataSetSerializerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @pipelineDataSetSerializer@
-pipelineDataSetSerializerSelector :: Selector
+pipelineDataSetSerializerSelector :: Selector '[] RawId
 pipelineDataSetSerializerSelector = mkSelector "pipelineDataSetSerializer"
 
 -- | @Selector@ for @setPipelineDataSetSerializer:@
-setPipelineDataSetSerializerSelector :: Selector
+setPipelineDataSetSerializerSelector :: Selector '[RawId] ()
 setPipelineDataSetSerializerSelector = mkSelector "setPipelineDataSetSerializer:"
 

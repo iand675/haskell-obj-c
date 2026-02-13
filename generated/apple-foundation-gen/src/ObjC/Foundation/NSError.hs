@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Foundation.NSError
   , recoveryAttempter
   , helpAnchor
   , underlyingErrors
-  , initWithDomain_code_userInfoSelector
-  , errorWithDomain_code_userInfoSelector
-  , setUserInfoValueProviderForDomain_providerSelector
-  , userInfoValueProviderForDomainSelector
-  , domainSelector
   , codeSelector
-  , userInfoSelector
+  , domainSelector
+  , errorWithDomain_code_userInfoSelector
+  , helpAnchorSelector
+  , initWithDomain_code_userInfoSelector
   , localizedDescriptionSelector
   , localizedFailureReasonSelector
-  , localizedRecoverySuggestionSelector
   , localizedRecoveryOptionsSelector
+  , localizedRecoverySuggestionSelector
   , recoveryAttempterSelector
-  , helpAnchorSelector
+  , setUserInfoValueProviderForDomain_providerSelector
   , underlyingErrorsSelector
+  , userInfoSelector
+  , userInfoValueProviderForDomainSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,143 +51,137 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDomain:code:userInfo:@
 initWithDomain_code_userInfo :: (IsNSError nsError, IsNSString domain, IsNSDictionary dict) => nsError -> domain -> CLong -> dict -> IO (Id NSError)
-initWithDomain_code_userInfo nsError  domain code dict =
-  withObjCPtr domain $ \raw_domain ->
-    withObjCPtr dict $ \raw_dict ->
-        sendMsg nsError (mkSelector "initWithDomain:code:userInfo:") (retPtr retVoid) [argPtr (castPtr raw_domain :: Ptr ()), argCLong code, argPtr (castPtr raw_dict :: Ptr ())] >>= ownedObject . castPtr
+initWithDomain_code_userInfo nsError domain code dict =
+  sendOwnedMessage nsError initWithDomain_code_userInfoSelector (toNSString domain) code (toNSDictionary dict)
 
 -- | @+ errorWithDomain:code:userInfo:@
 errorWithDomain_code_userInfo :: (IsNSString domain, IsNSDictionary dict) => domain -> CLong -> dict -> IO (Id NSError)
 errorWithDomain_code_userInfo domain code dict =
   do
     cls' <- getRequiredClass "NSError"
-    withObjCPtr domain $ \raw_domain ->
-      withObjCPtr dict $ \raw_dict ->
-        sendClassMsg cls' (mkSelector "errorWithDomain:code:userInfo:") (retPtr retVoid) [argPtr (castPtr raw_domain :: Ptr ()), argCLong code, argPtr (castPtr raw_dict :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' errorWithDomain_code_userInfoSelector (toNSString domain) code (toNSDictionary dict)
 
 -- | @+ setUserInfoValueProviderForDomain:provider:@
 setUserInfoValueProviderForDomain_provider :: IsNSString errorDomain => errorDomain -> RawId -> IO ()
 setUserInfoValueProviderForDomain_provider errorDomain provider =
   do
     cls' <- getRequiredClass "NSError"
-    withObjCPtr errorDomain $ \raw_errorDomain ->
-      sendClassMsg cls' (mkSelector "setUserInfoValueProviderForDomain:provider:") retVoid [argPtr (castPtr raw_errorDomain :: Ptr ()), argPtr (castPtr (unRawId provider) :: Ptr ())]
+    sendClassMessage cls' setUserInfoValueProviderForDomain_providerSelector (toNSString errorDomain) provider
 
 -- | @+ userInfoValueProviderForDomain:@
 userInfoValueProviderForDomain :: IsNSString errorDomain => errorDomain -> IO RawId
 userInfoValueProviderForDomain errorDomain =
   do
     cls' <- getRequiredClass "NSError"
-    withObjCPtr errorDomain $ \raw_errorDomain ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "userInfoValueProviderForDomain:") (retPtr retVoid) [argPtr (castPtr raw_errorDomain :: Ptr ())]
+    sendClassMessage cls' userInfoValueProviderForDomainSelector (toNSString errorDomain)
 
 -- | @- domain@
 domain :: IsNSError nsError => nsError -> IO (Id NSString)
-domain nsError  =
-    sendMsg nsError (mkSelector "domain") (retPtr retVoid) [] >>= retainedObject . castPtr
+domain nsError =
+  sendMessage nsError domainSelector
 
 -- | @- code@
 code :: IsNSError nsError => nsError -> IO CLong
-code nsError  =
-    sendMsg nsError (mkSelector "code") retCLong []
+code nsError =
+  sendMessage nsError codeSelector
 
 -- | @- userInfo@
 userInfo :: IsNSError nsError => nsError -> IO (Id NSDictionary)
-userInfo nsError  =
-    sendMsg nsError (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsError =
+  sendMessage nsError userInfoSelector
 
 -- | @- localizedDescription@
 localizedDescription :: IsNSError nsError => nsError -> IO (Id NSString)
-localizedDescription nsError  =
-    sendMsg nsError (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription nsError =
+  sendMessage nsError localizedDescriptionSelector
 
 -- | @- localizedFailureReason@
 localizedFailureReason :: IsNSError nsError => nsError -> IO (Id NSString)
-localizedFailureReason nsError  =
-    sendMsg nsError (mkSelector "localizedFailureReason") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedFailureReason nsError =
+  sendMessage nsError localizedFailureReasonSelector
 
 -- | @- localizedRecoverySuggestion@
 localizedRecoverySuggestion :: IsNSError nsError => nsError -> IO (Id NSString)
-localizedRecoverySuggestion nsError  =
-    sendMsg nsError (mkSelector "localizedRecoverySuggestion") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedRecoverySuggestion nsError =
+  sendMessage nsError localizedRecoverySuggestionSelector
 
 -- | @- localizedRecoveryOptions@
 localizedRecoveryOptions :: IsNSError nsError => nsError -> IO (Id NSArray)
-localizedRecoveryOptions nsError  =
-    sendMsg nsError (mkSelector "localizedRecoveryOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedRecoveryOptions nsError =
+  sendMessage nsError localizedRecoveryOptionsSelector
 
 -- | @- recoveryAttempter@
 recoveryAttempter :: IsNSError nsError => nsError -> IO RawId
-recoveryAttempter nsError  =
-    fmap (RawId . castPtr) $ sendMsg nsError (mkSelector "recoveryAttempter") (retPtr retVoid) []
+recoveryAttempter nsError =
+  sendMessage nsError recoveryAttempterSelector
 
 -- | @- helpAnchor@
 helpAnchor :: IsNSError nsError => nsError -> IO (Id NSString)
-helpAnchor nsError  =
-    sendMsg nsError (mkSelector "helpAnchor") (retPtr retVoid) [] >>= retainedObject . castPtr
+helpAnchor nsError =
+  sendMessage nsError helpAnchorSelector
 
 -- | @- underlyingErrors@
 underlyingErrors :: IsNSError nsError => nsError -> IO (Id NSArray)
-underlyingErrors nsError  =
-    sendMsg nsError (mkSelector "underlyingErrors") (retPtr retVoid) [] >>= retainedObject . castPtr
+underlyingErrors nsError =
+  sendMessage nsError underlyingErrorsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDomain:code:userInfo:@
-initWithDomain_code_userInfoSelector :: Selector
+initWithDomain_code_userInfoSelector :: Selector '[Id NSString, CLong, Id NSDictionary] (Id NSError)
 initWithDomain_code_userInfoSelector = mkSelector "initWithDomain:code:userInfo:"
 
 -- | @Selector@ for @errorWithDomain:code:userInfo:@
-errorWithDomain_code_userInfoSelector :: Selector
+errorWithDomain_code_userInfoSelector :: Selector '[Id NSString, CLong, Id NSDictionary] (Id NSError)
 errorWithDomain_code_userInfoSelector = mkSelector "errorWithDomain:code:userInfo:"
 
 -- | @Selector@ for @setUserInfoValueProviderForDomain:provider:@
-setUserInfoValueProviderForDomain_providerSelector :: Selector
+setUserInfoValueProviderForDomain_providerSelector :: Selector '[Id NSString, RawId] ()
 setUserInfoValueProviderForDomain_providerSelector = mkSelector "setUserInfoValueProviderForDomain:provider:"
 
 -- | @Selector@ for @userInfoValueProviderForDomain:@
-userInfoValueProviderForDomainSelector :: Selector
+userInfoValueProviderForDomainSelector :: Selector '[Id NSString] RawId
 userInfoValueProviderForDomainSelector = mkSelector "userInfoValueProviderForDomain:"
 
 -- | @Selector@ for @domain@
-domainSelector :: Selector
+domainSelector :: Selector '[] (Id NSString)
 domainSelector = mkSelector "domain"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] CLong
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @localizedFailureReason@
-localizedFailureReasonSelector :: Selector
+localizedFailureReasonSelector :: Selector '[] (Id NSString)
 localizedFailureReasonSelector = mkSelector "localizedFailureReason"
 
 -- | @Selector@ for @localizedRecoverySuggestion@
-localizedRecoverySuggestionSelector :: Selector
+localizedRecoverySuggestionSelector :: Selector '[] (Id NSString)
 localizedRecoverySuggestionSelector = mkSelector "localizedRecoverySuggestion"
 
 -- | @Selector@ for @localizedRecoveryOptions@
-localizedRecoveryOptionsSelector :: Selector
+localizedRecoveryOptionsSelector :: Selector '[] (Id NSArray)
 localizedRecoveryOptionsSelector = mkSelector "localizedRecoveryOptions"
 
 -- | @Selector@ for @recoveryAttempter@
-recoveryAttempterSelector :: Selector
+recoveryAttempterSelector :: Selector '[] RawId
 recoveryAttempterSelector = mkSelector "recoveryAttempter"
 
 -- | @Selector@ for @helpAnchor@
-helpAnchorSelector :: Selector
+helpAnchorSelector :: Selector '[] (Id NSString)
 helpAnchorSelector = mkSelector "helpAnchor"
 
 -- | @Selector@ for @underlyingErrors@
-underlyingErrorsSelector :: Selector
+underlyingErrorsSelector :: Selector '[] (Id NSArray)
 underlyingErrorsSelector = mkSelector "underlyingErrors"
 

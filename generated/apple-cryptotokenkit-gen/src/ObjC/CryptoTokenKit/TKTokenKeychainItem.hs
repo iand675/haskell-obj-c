@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.CryptoTokenKit.TKTokenKeychainItem
   , setLabel
   , constraints
   , setConstraints
-  , initWithObjectIDSelector
-  , initSelector
-  , objectIDSelector
-  , labelSelector
-  , setLabelSelector
   , constraintsSelector
+  , initSelector
+  , initWithObjectIDSelector
+  , labelSelector
+  , objectIDSelector
   , setConstraintsSelector
+  , setLabelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,80 +44,78 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithObjectID:@
 initWithObjectID :: IsTKTokenKeychainItem tkTokenKeychainItem => tkTokenKeychainItem -> RawId -> IO (Id TKTokenKeychainItem)
-initWithObjectID tkTokenKeychainItem  objectID =
-    sendMsg tkTokenKeychainItem (mkSelector "initWithObjectID:") (retPtr retVoid) [argPtr (castPtr (unRawId objectID) :: Ptr ())] >>= ownedObject . castPtr
+initWithObjectID tkTokenKeychainItem objectID =
+  sendOwnedMessage tkTokenKeychainItem initWithObjectIDSelector objectID
 
 -- | @- init@
 init_ :: IsTKTokenKeychainItem tkTokenKeychainItem => tkTokenKeychainItem -> IO (Id TKTokenKeychainItem)
-init_ tkTokenKeychainItem  =
-    sendMsg tkTokenKeychainItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkTokenKeychainItem =
+  sendOwnedMessage tkTokenKeychainItem initSelector
 
 -- | object ID for item identification
 --
 -- ObjC selector: @- objectID@
 objectID :: IsTKTokenKeychainItem tkTokenKeychainItem => tkTokenKeychainItem -> IO RawId
-objectID tkTokenKeychainItem  =
-    fmap (RawId . castPtr) $ sendMsg tkTokenKeychainItem (mkSelector "objectID") (retPtr retVoid) []
+objectID tkTokenKeychainItem =
+  sendMessage tkTokenKeychainItem objectIDSelector
 
 -- | Contains the user-visible label for this item.  This property is an equivalent of kSecAttrLabel in SecItem.h
 --
 -- ObjC selector: @- label@
 label :: IsTKTokenKeychainItem tkTokenKeychainItem => tkTokenKeychainItem -> IO (Id NSString)
-label tkTokenKeychainItem  =
-    sendMsg tkTokenKeychainItem (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label tkTokenKeychainItem =
+  sendMessage tkTokenKeychainItem labelSelector
 
 -- | Contains the user-visible label for this item.  This property is an equivalent of kSecAttrLabel in SecItem.h
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsTKTokenKeychainItem tkTokenKeychainItem, IsNSString value) => tkTokenKeychainItem -> value -> IO ()
-setLabel tkTokenKeychainItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkTokenKeychainItem (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel tkTokenKeychainItem value =
+  sendMessage tkTokenKeychainItem setLabelSelector (toNSString value)
 
 -- | Contains access constraints for this object keyed by TKTOpenOperation wrapped in NSNumber.
 --
 -- ObjC selector: @- constraints@
 constraints :: IsTKTokenKeychainItem tkTokenKeychainItem => tkTokenKeychainItem -> IO (Id NSDictionary)
-constraints tkTokenKeychainItem  =
-    sendMsg tkTokenKeychainItem (mkSelector "constraints") (retPtr retVoid) [] >>= retainedObject . castPtr
+constraints tkTokenKeychainItem =
+  sendMessage tkTokenKeychainItem constraintsSelector
 
 -- | Contains access constraints for this object keyed by TKTOpenOperation wrapped in NSNumber.
 --
 -- ObjC selector: @- setConstraints:@
 setConstraints :: (IsTKTokenKeychainItem tkTokenKeychainItem, IsNSDictionary value) => tkTokenKeychainItem -> value -> IO ()
-setConstraints tkTokenKeychainItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkTokenKeychainItem (mkSelector "setConstraints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConstraints tkTokenKeychainItem value =
+  sendMessage tkTokenKeychainItem setConstraintsSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithObjectID:@
-initWithObjectIDSelector :: Selector
+initWithObjectIDSelector :: Selector '[RawId] (Id TKTokenKeychainItem)
 initWithObjectIDSelector = mkSelector "initWithObjectID:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKTokenKeychainItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @objectID@
-objectIDSelector :: Selector
+objectIDSelector :: Selector '[] RawId
 objectIDSelector = mkSelector "objectID"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @constraints@
-constraintsSelector :: Selector
+constraintsSelector :: Selector '[] (Id NSDictionary)
 constraintsSelector = mkSelector "constraints"
 
 -- | @Selector@ for @setConstraints:@
-setConstraintsSelector :: Selector
+setConstraintsSelector :: Selector '[Id NSDictionary] ()
 setConstraintsSelector = mkSelector "setConstraints:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.PassKit.PKPaymentPass
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,14 +34,14 @@ import ObjC.PassKit.Internal.Enums
 
 -- | @- activationState@
 activationState :: IsPKPaymentPass pkPaymentPass => pkPaymentPass -> IO PKPaymentPassActivationState
-activationState pkPaymentPass  =
-    fmap (coerce :: CULong -> PKPaymentPassActivationState) $ sendMsg pkPaymentPass (mkSelector "activationState") retCULong []
+activationState pkPaymentPass =
+  sendMessage pkPaymentPass activationStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @activationState@
-activationStateSelector :: Selector
+activationStateSelector :: Selector '[] PKPaymentPassActivationState
 activationStateSelector = mkSelector "activationState"
 

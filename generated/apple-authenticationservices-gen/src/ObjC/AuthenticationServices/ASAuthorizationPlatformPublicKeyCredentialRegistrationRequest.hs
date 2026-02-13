@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,13 +16,13 @@ module ObjC.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialReg
   , setPrf
   , requestStyle
   , setRequestStyle
-  , newSelector
   , initSelector
   , largeBlobSelector
-  , setLargeBlobSelector
+  , newSelector
   , prfSelector
-  , setPrfSelector
   , requestStyleSelector
+  , setLargeBlobSelector
+  , setPrfSelector
   , setRequestStyleSelector
 
   -- * Enum types
@@ -31,15 +32,11 @@ module ObjC.AuthenticationServices.ASAuthorizationPlatformPublicKeyCredentialReg
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,78 +49,76 @@ new :: IO (Id ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> IO (Id ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest)
-init_ asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  =
-    sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationPlatformPublicKeyCredentialRegistrationRequest =
+  sendOwnedMessage asAuthorizationPlatformPublicKeyCredentialRegistrationRequest initSelector
 
 -- | @- largeBlob@
 largeBlob :: IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> IO (Id ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput)
-largeBlob asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  =
-    sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "largeBlob") (retPtr retVoid) [] >>= retainedObject . castPtr
+largeBlob asAuthorizationPlatformPublicKeyCredentialRegistrationRequest =
+  sendMessage asAuthorizationPlatformPublicKeyCredentialRegistrationRequest largeBlobSelector
 
 -- | @- setLargeBlob:@
 setLargeBlob :: (IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest, IsASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput value) => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> value -> IO ()
-setLargeBlob asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "setLargeBlob:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLargeBlob asAuthorizationPlatformPublicKeyCredentialRegistrationRequest value =
+  sendMessage asAuthorizationPlatformPublicKeyCredentialRegistrationRequest setLargeBlobSelector (toASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput value)
 
 -- | @- prf@
 prf :: IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> IO (Id ASAuthorizationPublicKeyCredentialPRFRegistrationInput)
-prf asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  =
-    sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "prf") (retPtr retVoid) [] >>= retainedObject . castPtr
+prf asAuthorizationPlatformPublicKeyCredentialRegistrationRequest =
+  sendMessage asAuthorizationPlatformPublicKeyCredentialRegistrationRequest prfSelector
 
 -- | @- setPrf:@
 setPrf :: (IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest, IsASAuthorizationPublicKeyCredentialPRFRegistrationInput value) => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> value -> IO ()
-setPrf asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "setPrf:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrf asAuthorizationPlatformPublicKeyCredentialRegistrationRequest value =
+  sendMessage asAuthorizationPlatformPublicKeyCredentialRegistrationRequest setPrfSelector (toASAuthorizationPublicKeyCredentialPRFRegistrationInput value)
 
 -- | @- requestStyle@
 requestStyle :: IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> IO ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle
-requestStyle asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  =
-    fmap (coerce :: CLong -> ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle) $ sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "requestStyle") retCLong []
+requestStyle asAuthorizationPlatformPublicKeyCredentialRegistrationRequest =
+  sendMessage asAuthorizationPlatformPublicKeyCredentialRegistrationRequest requestStyleSelector
 
 -- | @- setRequestStyle:@
 setRequestStyle :: IsASAuthorizationPlatformPublicKeyCredentialRegistrationRequest asAuthorizationPlatformPublicKeyCredentialRegistrationRequest => asAuthorizationPlatformPublicKeyCredentialRegistrationRequest -> ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle -> IO ()
-setRequestStyle asAuthorizationPlatformPublicKeyCredentialRegistrationRequest  value =
-    sendMsg asAuthorizationPlatformPublicKeyCredentialRegistrationRequest (mkSelector "setRequestStyle:") retVoid [argCLong (coerce value)]
+setRequestStyle asAuthorizationPlatformPublicKeyCredentialRegistrationRequest value =
+  sendMessage asAuthorizationPlatformPublicKeyCredentialRegistrationRequest setRequestStyleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationPlatformPublicKeyCredentialRegistrationRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @largeBlob@
-largeBlobSelector :: Selector
+largeBlobSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput)
 largeBlobSelector = mkSelector "largeBlob"
 
 -- | @Selector@ for @setLargeBlob:@
-setLargeBlobSelector :: Selector
+setLargeBlobSelector :: Selector '[Id ASAuthorizationPublicKeyCredentialLargeBlobRegistrationInput] ()
 setLargeBlobSelector = mkSelector "setLargeBlob:"
 
 -- | @Selector@ for @prf@
-prfSelector :: Selector
+prfSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialPRFRegistrationInput)
 prfSelector = mkSelector "prf"
 
 -- | @Selector@ for @setPrf:@
-setPrfSelector :: Selector
+setPrfSelector :: Selector '[Id ASAuthorizationPublicKeyCredentialPRFRegistrationInput] ()
 setPrfSelector = mkSelector "setPrf:"
 
 -- | @Selector@ for @requestStyle@
-requestStyleSelector :: Selector
+requestStyleSelector :: Selector '[] ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle
 requestStyleSelector = mkSelector "requestStyle"
 
 -- | @Selector@ for @setRequestStyle:@
-setRequestStyleSelector :: Selector
+setRequestStyleSelector :: Selector '[ASAuthorizationPlatformPublicKeyCredentialRegistrationRequestStyle] ()
 setRequestStyleSelector = mkSelector "setRequestStyle:"
 

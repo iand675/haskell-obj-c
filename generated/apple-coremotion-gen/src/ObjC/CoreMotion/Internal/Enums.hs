@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreMotion.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @CMAttitudeReferenceFrame@ (bitmask)
 newtype CMAttitudeReferenceFrame = CMAttitudeReferenceFrame CULong
@@ -34,6 +37,16 @@ pattern CMAttitudeReferenceFrameXMagneticNorthZVertical = CMAttitudeReferenceFra
 pattern CMAttitudeReferenceFrameXTrueNorthZVertical :: CMAttitudeReferenceFrame
 pattern CMAttitudeReferenceFrameXTrueNorthZVertical = CMAttitudeReferenceFrame 8
 
+instance ObjCArgument CMAttitudeReferenceFrame where
+  withObjCArg (CMAttitudeReferenceFrame x) k = k (argCULong x)
+
+instance ObjCReturn CMAttitudeReferenceFrame where
+  type RawReturn CMAttitudeReferenceFrame = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMAttitudeReferenceFrame x)
+  fromOwned x = pure (CMAttitudeReferenceFrame x)
+
 -- | @CMAuthorizationStatus@
 newtype CMAuthorizationStatus = CMAuthorizationStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -51,6 +64,16 @@ pattern CMAuthorizationStatusDenied = CMAuthorizationStatus 2
 pattern CMAuthorizationStatusAuthorized :: CMAuthorizationStatus
 pattern CMAuthorizationStatusAuthorized = CMAuthorizationStatus 3
 
+instance ObjCArgument CMAuthorizationStatus where
+  withObjCArg (CMAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn CMAuthorizationStatus where
+  type RawReturn CMAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMAuthorizationStatus x)
+  fromOwned x = pure (CMAuthorizationStatus x)
+
 -- | @CMDeviceMotionSensorLocation@
 newtype CMDeviceMotionSensorLocation = CMDeviceMotionSensorLocation CLong
   deriving stock (Eq, Ord, Show)
@@ -64,6 +87,16 @@ pattern CMDeviceMotionSensorLocationHeadphoneLeft = CMDeviceMotionSensorLocation
 
 pattern CMDeviceMotionSensorLocationHeadphoneRight :: CMDeviceMotionSensorLocation
 pattern CMDeviceMotionSensorLocationHeadphoneRight = CMDeviceMotionSensorLocation 2
+
+instance ObjCArgument CMDeviceMotionSensorLocation where
+  withObjCArg (CMDeviceMotionSensorLocation x) k = k (argCLong x)
+
+instance ObjCReturn CMDeviceMotionSensorLocation where
+  type RawReturn CMDeviceMotionSensorLocation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMDeviceMotionSensorLocation x)
+  fromOwned x = pure (CMDeviceMotionSensorLocation x)
 
 -- | Fall Detection Event Resolution
 --
@@ -87,6 +120,16 @@ pattern CMFallDetectionEventUserResolutionRejected = CMFallDetectionEventUserRes
 pattern CMFallDetectionEventUserResolutionUnresponsive :: CMFallDetectionEventUserResolution
 pattern CMFallDetectionEventUserResolutionUnresponsive = CMFallDetectionEventUserResolution 3
 
+instance ObjCArgument CMFallDetectionEventUserResolution where
+  withObjCArg (CMFallDetectionEventUserResolution x) k = k (argCLong x)
+
+instance ObjCReturn CMFallDetectionEventUserResolution where
+  type RawReturn CMFallDetectionEventUserResolution = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMFallDetectionEventUserResolution x)
+  fromOwned x = pure (CMFallDetectionEventUserResolution x)
+
 -- | @CMHeadphoneActivityStatus@
 newtype CMHeadphoneActivityStatus = CMHeadphoneActivityStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -97,6 +140,16 @@ pattern CMHeadphoneActivityStatusDisconnected = CMHeadphoneActivityStatus 0
 
 pattern CMHeadphoneActivityStatusConnected :: CMHeadphoneActivityStatus
 pattern CMHeadphoneActivityStatusConnected = CMHeadphoneActivityStatus 1
+
+instance ObjCArgument CMHeadphoneActivityStatus where
+  withObjCArg (CMHeadphoneActivityStatus x) k = k (argCLong x)
+
+instance ObjCReturn CMHeadphoneActivityStatus where
+  type RawReturn CMHeadphoneActivityStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMHeadphoneActivityStatus x)
+  fromOwned x = pure (CMHeadphoneActivityStatus x)
 
 -- | @CMHighFrequencyHeartRateDataConfidence@
 newtype CMHighFrequencyHeartRateDataConfidence = CMHighFrequencyHeartRateDataConfidence CLong
@@ -115,6 +168,16 @@ pattern CMHighFrequencyHeartRateDataConfidenceHigh = CMHighFrequencyHeartRateDat
 pattern CMHighFrequencyHeartRateDataConfidenceHighest :: CMHighFrequencyHeartRateDataConfidence
 pattern CMHighFrequencyHeartRateDataConfidenceHighest = CMHighFrequencyHeartRateDataConfidence 3
 
+instance ObjCArgument CMHighFrequencyHeartRateDataConfidence where
+  withObjCArg (CMHighFrequencyHeartRateDataConfidence x) k = k (argCLong x)
+
+instance ObjCReturn CMHighFrequencyHeartRateDataConfidence where
+  type RawReturn CMHighFrequencyHeartRateDataConfidence = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMHighFrequencyHeartRateDataConfidence x)
+  fromOwned x = pure (CMHighFrequencyHeartRateDataConfidence x)
+
 -- | @CMMagneticFieldCalibrationAccuracy@
 newtype CMMagneticFieldCalibrationAccuracy = CMMagneticFieldCalibrationAccuracy CInt
   deriving stock (Eq, Ord, Show)
@@ -132,6 +195,16 @@ pattern CMMagneticFieldCalibrationAccuracyMedium = CMMagneticFieldCalibrationAcc
 pattern CMMagneticFieldCalibrationAccuracyHigh :: CMMagneticFieldCalibrationAccuracy
 pattern CMMagneticFieldCalibrationAccuracyHigh = CMMagneticFieldCalibrationAccuracy 2
 
+instance ObjCArgument CMMagneticFieldCalibrationAccuracy where
+  withObjCArg (CMMagneticFieldCalibrationAccuracy x) k = k (argCInt x)
+
+instance ObjCReturn CMMagneticFieldCalibrationAccuracy where
+  type RawReturn CMMagneticFieldCalibrationAccuracy = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMMagneticFieldCalibrationAccuracy x)
+  fromOwned x = pure (CMMagneticFieldCalibrationAccuracy x)
+
 -- | @CMMotionActivityConfidence@
 newtype CMMotionActivityConfidence = CMMotionActivityConfidence CLong
   deriving stock (Eq, Ord, Show)
@@ -145,6 +218,16 @@ pattern CMMotionActivityConfidenceMedium = CMMotionActivityConfidence 1
 
 pattern CMMotionActivityConfidenceHigh :: CMMotionActivityConfidence
 pattern CMMotionActivityConfidenceHigh = CMMotionActivityConfidence 2
+
+instance ObjCArgument CMMotionActivityConfidence where
+  withObjCArg (CMMotionActivityConfidence x) k = k (argCLong x)
+
+instance ObjCReturn CMMotionActivityConfidence where
+  type RawReturn CMMotionActivityConfidence = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMMotionActivityConfidence x)
+  fromOwned x = pure (CMMotionActivityConfidence x)
 
 -- | @CMOdometerOriginDevice@
 newtype CMOdometerOriginDevice = CMOdometerOriginDevice CLong
@@ -160,6 +243,16 @@ pattern CMOdometerOriginDeviceLocal = CMOdometerOriginDevice 1
 pattern CMOdometerOriginDeviceRemote :: CMOdometerOriginDevice
 pattern CMOdometerOriginDeviceRemote = CMOdometerOriginDevice 2
 
+instance ObjCArgument CMOdometerOriginDevice where
+  withObjCArg (CMOdometerOriginDevice x) k = k (argCLong x)
+
+instance ObjCReturn CMOdometerOriginDevice where
+  type RawReturn CMOdometerOriginDevice = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMOdometerOriginDevice x)
+  fromOwned x = pure (CMOdometerOriginDevice x)
+
 -- | @CMPedometerEventType@
 newtype CMPedometerEventType = CMPedometerEventType CLong
   deriving stock (Eq, Ord, Show)
@@ -170,6 +263,16 @@ pattern CMPedometerEventTypePause = CMPedometerEventType 0
 
 pattern CMPedometerEventTypeResume :: CMPedometerEventType
 pattern CMPedometerEventTypeResume = CMPedometerEventType 1
+
+instance ObjCArgument CMPedometerEventType where
+  withObjCArg (CMPedometerEventType x) k = k (argCLong x)
+
+instance ObjCReturn CMPedometerEventType where
+  type RawReturn CMPedometerEventType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMPedometerEventType x)
+  fromOwned x = pure (CMPedometerEventType x)
 
 -- | @CMWaterSubmersionDepthState@
 newtype CMWaterSubmersionDepthState = CMWaterSubmersionDepthState CLong
@@ -197,6 +300,16 @@ pattern CMWaterSubmersionDepthStatePastMaxDepth = CMWaterSubmersionDepthState 50
 pattern CMWaterSubmersionDepthStateSensorDepthError :: CMWaterSubmersionDepthState
 pattern CMWaterSubmersionDepthStateSensorDepthError = CMWaterSubmersionDepthState 600
 
+instance ObjCArgument CMWaterSubmersionDepthState where
+  withObjCArg (CMWaterSubmersionDepthState x) k = k (argCLong x)
+
+instance ObjCReturn CMWaterSubmersionDepthState where
+  type RawReturn CMWaterSubmersionDepthState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMWaterSubmersionDepthState x)
+  fromOwned x = pure (CMWaterSubmersionDepthState x)
+
 -- | @CMWaterSubmersionState@
 newtype CMWaterSubmersionState = CMWaterSubmersionState CLong
   deriving stock (Eq, Ord, Show)
@@ -210,3 +323,13 @@ pattern CMWaterSubmersionStateNotSubmerged = CMWaterSubmersionState 1
 
 pattern CMWaterSubmersionStateSubmerged :: CMWaterSubmersionState
 pattern CMWaterSubmersionStateSubmerged = CMWaterSubmersionState 2
+
+instance ObjCArgument CMWaterSubmersionState where
+  withObjCArg (CMWaterSubmersionState x) k = k (argCLong x)
+
+instance ObjCReturn CMWaterSubmersionState where
+  type RawReturn CMWaterSubmersionState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CMWaterSubmersionState x)
+  fromOwned x = pure (CMWaterSubmersionState x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.ShazamKit.SHMatch
   , init_
   , mediaItems
   , querySignature
-  , newSelector
   , initSelector
   , mediaItemsSelector
+  , newSelector
   , querySignatureSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,44 +39,44 @@ new :: IO (Id SHMatch)
 new  =
   do
     cls' <- getRequiredClass "SHMatch"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsSHMatch shMatch => shMatch -> IO (Id SHMatch)
-init_ shMatch  =
-    sendMsg shMatch (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ shMatch =
+  sendOwnedMessage shMatch initSelector
 
 -- | An array of the media items in the catalog that match the query signature, in order of the quality of the match.
 --
 -- ObjC selector: @- mediaItems@
 mediaItems :: IsSHMatch shMatch => shMatch -> IO (Id NSArray)
-mediaItems shMatch  =
-    sendMsg shMatch (mkSelector "mediaItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaItems shMatch =
+  sendMessage shMatch mediaItemsSelector
 
 -- | The query signature for the match.
 --
 -- ObjC selector: @- querySignature@
 querySignature :: IsSHMatch shMatch => shMatch -> IO (Id SHSignature)
-querySignature shMatch  =
-    sendMsg shMatch (mkSelector "querySignature") (retPtr retVoid) [] >>= retainedObject . castPtr
+querySignature shMatch =
+  sendMessage shMatch querySignatureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SHMatch)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SHMatch)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @mediaItems@
-mediaItemsSelector :: Selector
+mediaItemsSelector :: Selector '[] (Id NSArray)
 mediaItemsSelector = mkSelector "mediaItems"
 
 -- | @Selector@ for @querySignature@
-querySignatureSelector :: Selector
+querySignatureSelector :: Selector '[] (Id SHSignature)
 querySignatureSelector = mkSelector "querySignature"
 

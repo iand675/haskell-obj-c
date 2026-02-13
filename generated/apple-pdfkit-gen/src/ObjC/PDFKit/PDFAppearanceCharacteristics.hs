@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,21 +23,21 @@ module ObjC.PDFKit.PDFAppearanceCharacteristics
   , downCaption
   , setDownCaption
   , appearanceCharacteristicsKeyValues
-  , controlTypeSelector
-  , setControlTypeSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , borderColorSelector
-  , setBorderColorSelector
-  , rotationSelector
-  , setRotationSelector
-  , captionSelector
-  , setCaptionSelector
-  , rolloverCaptionSelector
-  , setRolloverCaptionSelector
-  , downCaptionSelector
-  , setDownCaptionSelector
   , appearanceCharacteristicsKeyValuesSelector
+  , backgroundColorSelector
+  , borderColorSelector
+  , captionSelector
+  , controlTypeSelector
+  , downCaptionSelector
+  , rolloverCaptionSelector
+  , rotationSelector
+  , setBackgroundColorSelector
+  , setBorderColorSelector
+  , setCaptionSelector
+  , setControlTypeSelector
+  , setDownCaptionSelector
+  , setRolloverCaptionSelector
+  , setRotationSelector
 
   -- * Enum types
   , PDFWidgetControlType(PDFWidgetControlType)
@@ -47,15 +48,11 @@ module ObjC.PDFKit.PDFAppearanceCharacteristics
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,145 +63,140 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- controlType@
 controlType :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> IO PDFWidgetControlType
-controlType pdfAppearanceCharacteristics  =
-    fmap (coerce :: CLong -> PDFWidgetControlType) $ sendMsg pdfAppearanceCharacteristics (mkSelector "controlType") retCLong []
+controlType pdfAppearanceCharacteristics =
+  sendMessage pdfAppearanceCharacteristics controlTypeSelector
 
 -- | @- setControlType:@
 setControlType :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> PDFWidgetControlType -> IO ()
-setControlType pdfAppearanceCharacteristics  value =
-    sendMsg pdfAppearanceCharacteristics (mkSelector "setControlType:") retVoid [argCLong (coerce value)]
+setControlType pdfAppearanceCharacteristics value =
+  sendMessage pdfAppearanceCharacteristics setControlTypeSelector value
 
 -- | @- backgroundColor@
 backgroundColor :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> IO (Id NSColor)
-backgroundColor pdfAppearanceCharacteristics  =
-    sendMsg pdfAppearanceCharacteristics (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor pdfAppearanceCharacteristics =
+  sendMessage pdfAppearanceCharacteristics backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics, IsNSColor value) => pdfAppearanceCharacteristics -> value -> IO ()
-setBackgroundColor pdfAppearanceCharacteristics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfAppearanceCharacteristics (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor pdfAppearanceCharacteristics value =
+  sendMessage pdfAppearanceCharacteristics setBackgroundColorSelector (toNSColor value)
 
 -- | @- borderColor@
 borderColor :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> IO (Id NSColor)
-borderColor pdfAppearanceCharacteristics  =
-    sendMsg pdfAppearanceCharacteristics (mkSelector "borderColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+borderColor pdfAppearanceCharacteristics =
+  sendMessage pdfAppearanceCharacteristics borderColorSelector
 
 -- | @- setBorderColor:@
 setBorderColor :: (IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics, IsNSColor value) => pdfAppearanceCharacteristics -> value -> IO ()
-setBorderColor pdfAppearanceCharacteristics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfAppearanceCharacteristics (mkSelector "setBorderColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBorderColor pdfAppearanceCharacteristics value =
+  sendMessage pdfAppearanceCharacteristics setBorderColorSelector (toNSColor value)
 
 -- | @- rotation@
 rotation :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> IO CLong
-rotation pdfAppearanceCharacteristics  =
-    sendMsg pdfAppearanceCharacteristics (mkSelector "rotation") retCLong []
+rotation pdfAppearanceCharacteristics =
+  sendMessage pdfAppearanceCharacteristics rotationSelector
 
 -- | @- setRotation:@
 setRotation :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> CLong -> IO ()
-setRotation pdfAppearanceCharacteristics  value =
-    sendMsg pdfAppearanceCharacteristics (mkSelector "setRotation:") retVoid [argCLong value]
+setRotation pdfAppearanceCharacteristics value =
+  sendMessage pdfAppearanceCharacteristics setRotationSelector value
 
 -- | @- caption@
 caption :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> IO (Id NSString)
-caption pdfAppearanceCharacteristics  =
-    sendMsg pdfAppearanceCharacteristics (mkSelector "caption") (retPtr retVoid) [] >>= retainedObject . castPtr
+caption pdfAppearanceCharacteristics =
+  sendMessage pdfAppearanceCharacteristics captionSelector
 
 -- | @- setCaption:@
 setCaption :: (IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics, IsNSString value) => pdfAppearanceCharacteristics -> value -> IO ()
-setCaption pdfAppearanceCharacteristics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfAppearanceCharacteristics (mkSelector "setCaption:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCaption pdfAppearanceCharacteristics value =
+  sendMessage pdfAppearanceCharacteristics setCaptionSelector (toNSString value)
 
 -- | @- rolloverCaption@
 rolloverCaption :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> IO (Id NSString)
-rolloverCaption pdfAppearanceCharacteristics  =
-    sendMsg pdfAppearanceCharacteristics (mkSelector "rolloverCaption") (retPtr retVoid) [] >>= retainedObject . castPtr
+rolloverCaption pdfAppearanceCharacteristics =
+  sendMessage pdfAppearanceCharacteristics rolloverCaptionSelector
 
 -- | @- setRolloverCaption:@
 setRolloverCaption :: (IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics, IsNSString value) => pdfAppearanceCharacteristics -> value -> IO ()
-setRolloverCaption pdfAppearanceCharacteristics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfAppearanceCharacteristics (mkSelector "setRolloverCaption:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRolloverCaption pdfAppearanceCharacteristics value =
+  sendMessage pdfAppearanceCharacteristics setRolloverCaptionSelector (toNSString value)
 
 -- | @- downCaption@
 downCaption :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> IO (Id NSString)
-downCaption pdfAppearanceCharacteristics  =
-    sendMsg pdfAppearanceCharacteristics (mkSelector "downCaption") (retPtr retVoid) [] >>= retainedObject . castPtr
+downCaption pdfAppearanceCharacteristics =
+  sendMessage pdfAppearanceCharacteristics downCaptionSelector
 
 -- | @- setDownCaption:@
 setDownCaption :: (IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics, IsNSString value) => pdfAppearanceCharacteristics -> value -> IO ()
-setDownCaption pdfAppearanceCharacteristics  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pdfAppearanceCharacteristics (mkSelector "setDownCaption:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDownCaption pdfAppearanceCharacteristics value =
+  sendMessage pdfAppearanceCharacteristics setDownCaptionSelector (toNSString value)
 
 -- | @- appearanceCharacteristicsKeyValues@
 appearanceCharacteristicsKeyValues :: IsPDFAppearanceCharacteristics pdfAppearanceCharacteristics => pdfAppearanceCharacteristics -> IO (Id NSDictionary)
-appearanceCharacteristicsKeyValues pdfAppearanceCharacteristics  =
-    sendMsg pdfAppearanceCharacteristics (mkSelector "appearanceCharacteristicsKeyValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+appearanceCharacteristicsKeyValues pdfAppearanceCharacteristics =
+  sendMessage pdfAppearanceCharacteristics appearanceCharacteristicsKeyValuesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @controlType@
-controlTypeSelector :: Selector
+controlTypeSelector :: Selector '[] PDFWidgetControlType
 controlTypeSelector = mkSelector "controlType"
 
 -- | @Selector@ for @setControlType:@
-setControlTypeSelector :: Selector
+setControlTypeSelector :: Selector '[PDFWidgetControlType] ()
 setControlTypeSelector = mkSelector "setControlType:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @borderColor@
-borderColorSelector :: Selector
+borderColorSelector :: Selector '[] (Id NSColor)
 borderColorSelector = mkSelector "borderColor"
 
 -- | @Selector@ for @setBorderColor:@
-setBorderColorSelector :: Selector
+setBorderColorSelector :: Selector '[Id NSColor] ()
 setBorderColorSelector = mkSelector "setBorderColor:"
 
 -- | @Selector@ for @rotation@
-rotationSelector :: Selector
+rotationSelector :: Selector '[] CLong
 rotationSelector = mkSelector "rotation"
 
 -- | @Selector@ for @setRotation:@
-setRotationSelector :: Selector
+setRotationSelector :: Selector '[CLong] ()
 setRotationSelector = mkSelector "setRotation:"
 
 -- | @Selector@ for @caption@
-captionSelector :: Selector
+captionSelector :: Selector '[] (Id NSString)
 captionSelector = mkSelector "caption"
 
 -- | @Selector@ for @setCaption:@
-setCaptionSelector :: Selector
+setCaptionSelector :: Selector '[Id NSString] ()
 setCaptionSelector = mkSelector "setCaption:"
 
 -- | @Selector@ for @rolloverCaption@
-rolloverCaptionSelector :: Selector
+rolloverCaptionSelector :: Selector '[] (Id NSString)
 rolloverCaptionSelector = mkSelector "rolloverCaption"
 
 -- | @Selector@ for @setRolloverCaption:@
-setRolloverCaptionSelector :: Selector
+setRolloverCaptionSelector :: Selector '[Id NSString] ()
 setRolloverCaptionSelector = mkSelector "setRolloverCaption:"
 
 -- | @Selector@ for @downCaption@
-downCaptionSelector :: Selector
+downCaptionSelector :: Selector '[] (Id NSString)
 downCaptionSelector = mkSelector "downCaption"
 
 -- | @Selector@ for @setDownCaption:@
-setDownCaptionSelector :: Selector
+setDownCaptionSelector :: Selector '[Id NSString] ()
 setDownCaptionSelector = mkSelector "setDownCaption:"
 
 -- | @Selector@ for @appearanceCharacteristicsKeyValues@
-appearanceCharacteristicsKeyValuesSelector :: Selector
+appearanceCharacteristicsKeyValuesSelector :: Selector '[] (Id NSDictionary)
 appearanceCharacteristicsKeyValuesSelector = mkSelector "appearanceCharacteristicsKeyValues"
 

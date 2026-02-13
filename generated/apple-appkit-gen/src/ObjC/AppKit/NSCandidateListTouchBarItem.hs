@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.AppKit.NSCandidateListTouchBarItem
   , candidates
   , customizationLabel
   , setCustomizationLabel
-  , updateWithInsertionPointVisibilitySelector
-  , setCandidates_forSelectedRange_inStringSelector
-  , clientSelector
-  , setClientSelector
-  , delegateSelector
-  , setDelegateSelector
-  , collapsedSelector
-  , setCollapsedSelector
   , allowsCollapsingSelector
-  , setAllowsCollapsingSelector
-  , candidateListVisibleSelector
   , allowsTextInputContextCandidatesSelector
-  , setAllowsTextInputContextCandidatesSelector
   , attributedStringForCandidateSelector
-  , setAttributedStringForCandidateSelector
+  , candidateListVisibleSelector
   , candidatesSelector
+  , clientSelector
+  , collapsedSelector
   , customizationLabelSelector
+  , delegateSelector
+  , setAllowsCollapsingSelector
+  , setAllowsTextInputContextCandidatesSelector
+  , setAttributedStringForCandidateSelector
+  , setCandidates_forSelectedRange_inStringSelector
+  , setClientSelector
+  , setCollapsedSelector
   , setCustomizationLabelSelector
+  , setDelegateSelector
+  , updateWithInsertionPointVisibilitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,171 +61,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- updateWithInsertionPointVisibility:@
 updateWithInsertionPointVisibility :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> Bool -> IO ()
-updateWithInsertionPointVisibility nsCandidateListTouchBarItem  isVisible =
-    sendMsg nsCandidateListTouchBarItem (mkSelector "updateWithInsertionPointVisibility:") retVoid [argCULong (if isVisible then 1 else 0)]
+updateWithInsertionPointVisibility nsCandidateListTouchBarItem isVisible =
+  sendMessage nsCandidateListTouchBarItem updateWithInsertionPointVisibilitySelector isVisible
 
 -- | @- setCandidates:forSelectedRange:inString:@
 setCandidates_forSelectedRange_inString :: (IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem, IsNSArray candidates, IsNSString originalString) => nsCandidateListTouchBarItem -> candidates -> NSRange -> originalString -> IO ()
-setCandidates_forSelectedRange_inString nsCandidateListTouchBarItem  candidates selectedRange originalString =
-  withObjCPtr candidates $ \raw_candidates ->
-    withObjCPtr originalString $ \raw_originalString ->
-        sendMsg nsCandidateListTouchBarItem (mkSelector "setCandidates:forSelectedRange:inString:") retVoid [argPtr (castPtr raw_candidates :: Ptr ()), argNSRange selectedRange, argPtr (castPtr raw_originalString :: Ptr ())]
+setCandidates_forSelectedRange_inString nsCandidateListTouchBarItem candidates selectedRange originalString =
+  sendMessage nsCandidateListTouchBarItem setCandidates_forSelectedRange_inStringSelector (toNSArray candidates) selectedRange (toNSString originalString)
 
 -- | @- client@
 client :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO (Id NSView)
-client nsCandidateListTouchBarItem  =
-    sendMsg nsCandidateListTouchBarItem (mkSelector "client") (retPtr retVoid) [] >>= retainedObject . castPtr
+client nsCandidateListTouchBarItem =
+  sendMessage nsCandidateListTouchBarItem clientSelector
 
 -- | @- setClient:@
 setClient :: (IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem, IsNSView value) => nsCandidateListTouchBarItem -> value -> IO ()
-setClient nsCandidateListTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCandidateListTouchBarItem (mkSelector "setClient:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClient nsCandidateListTouchBarItem value =
+  sendMessage nsCandidateListTouchBarItem setClientSelector (toNSView value)
 
 -- | @- delegate@
 delegate :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO RawId
-delegate nsCandidateListTouchBarItem  =
-    fmap (RawId . castPtr) $ sendMsg nsCandidateListTouchBarItem (mkSelector "delegate") (retPtr retVoid) []
+delegate nsCandidateListTouchBarItem =
+  sendMessage nsCandidateListTouchBarItem delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> RawId -> IO ()
-setDelegate nsCandidateListTouchBarItem  value =
-    sendMsg nsCandidateListTouchBarItem (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsCandidateListTouchBarItem value =
+  sendMessage nsCandidateListTouchBarItem setDelegateSelector value
 
 -- | @- collapsed@
 collapsed :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO Bool
-collapsed nsCandidateListTouchBarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCandidateListTouchBarItem (mkSelector "collapsed") retCULong []
+collapsed nsCandidateListTouchBarItem =
+  sendMessage nsCandidateListTouchBarItem collapsedSelector
 
 -- | @- setCollapsed:@
 setCollapsed :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> Bool -> IO ()
-setCollapsed nsCandidateListTouchBarItem  value =
-    sendMsg nsCandidateListTouchBarItem (mkSelector "setCollapsed:") retVoid [argCULong (if value then 1 else 0)]
+setCollapsed nsCandidateListTouchBarItem value =
+  sendMessage nsCandidateListTouchBarItem setCollapsedSelector value
 
 -- | @- allowsCollapsing@
 allowsCollapsing :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO Bool
-allowsCollapsing nsCandidateListTouchBarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCandidateListTouchBarItem (mkSelector "allowsCollapsing") retCULong []
+allowsCollapsing nsCandidateListTouchBarItem =
+  sendMessage nsCandidateListTouchBarItem allowsCollapsingSelector
 
 -- | @- setAllowsCollapsing:@
 setAllowsCollapsing :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> Bool -> IO ()
-setAllowsCollapsing nsCandidateListTouchBarItem  value =
-    sendMsg nsCandidateListTouchBarItem (mkSelector "setAllowsCollapsing:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsCollapsing nsCandidateListTouchBarItem value =
+  sendMessage nsCandidateListTouchBarItem setAllowsCollapsingSelector value
 
 -- | @- candidateListVisible@
 candidateListVisible :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO Bool
-candidateListVisible nsCandidateListTouchBarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCandidateListTouchBarItem (mkSelector "candidateListVisible") retCULong []
+candidateListVisible nsCandidateListTouchBarItem =
+  sendMessage nsCandidateListTouchBarItem candidateListVisibleSelector
 
 -- | @- allowsTextInputContextCandidates@
 allowsTextInputContextCandidates :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO Bool
-allowsTextInputContextCandidates nsCandidateListTouchBarItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCandidateListTouchBarItem (mkSelector "allowsTextInputContextCandidates") retCULong []
+allowsTextInputContextCandidates nsCandidateListTouchBarItem =
+  sendMessage nsCandidateListTouchBarItem allowsTextInputContextCandidatesSelector
 
 -- | @- setAllowsTextInputContextCandidates:@
 setAllowsTextInputContextCandidates :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> Bool -> IO ()
-setAllowsTextInputContextCandidates nsCandidateListTouchBarItem  value =
-    sendMsg nsCandidateListTouchBarItem (mkSelector "setAllowsTextInputContextCandidates:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsTextInputContextCandidates nsCandidateListTouchBarItem value =
+  sendMessage nsCandidateListTouchBarItem setAllowsTextInputContextCandidatesSelector value
 
 -- | @- attributedStringForCandidate@
 attributedStringForCandidate :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO (Ptr ())
-attributedStringForCandidate nsCandidateListTouchBarItem  =
-    fmap castPtr $ sendMsg nsCandidateListTouchBarItem (mkSelector "attributedStringForCandidate") (retPtr retVoid) []
+attributedStringForCandidate nsCandidateListTouchBarItem =
+  sendMessage nsCandidateListTouchBarItem attributedStringForCandidateSelector
 
 -- | @- setAttributedStringForCandidate:@
 setAttributedStringForCandidate :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> Ptr () -> IO ()
-setAttributedStringForCandidate nsCandidateListTouchBarItem  value =
-    sendMsg nsCandidateListTouchBarItem (mkSelector "setAttributedStringForCandidate:") retVoid [argPtr (castPtr value :: Ptr ())]
+setAttributedStringForCandidate nsCandidateListTouchBarItem value =
+  sendMessage nsCandidateListTouchBarItem setAttributedStringForCandidateSelector value
 
 -- | @- candidates@
 candidates :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO (Id NSArray)
-candidates nsCandidateListTouchBarItem  =
-    sendMsg nsCandidateListTouchBarItem (mkSelector "candidates") (retPtr retVoid) [] >>= retainedObject . castPtr
+candidates nsCandidateListTouchBarItem =
+  sendMessage nsCandidateListTouchBarItem candidatesSelector
 
 -- | @- customizationLabel@
 customizationLabel :: IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem => nsCandidateListTouchBarItem -> IO (Id NSString)
-customizationLabel nsCandidateListTouchBarItem  =
-    sendMsg nsCandidateListTouchBarItem (mkSelector "customizationLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+customizationLabel nsCandidateListTouchBarItem =
+  sendMessage nsCandidateListTouchBarItem customizationLabelSelector
 
 -- | @- setCustomizationLabel:@
 setCustomizationLabel :: (IsNSCandidateListTouchBarItem nsCandidateListTouchBarItem, IsNSString value) => nsCandidateListTouchBarItem -> value -> IO ()
-setCustomizationLabel nsCandidateListTouchBarItem  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsCandidateListTouchBarItem (mkSelector "setCustomizationLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCustomizationLabel nsCandidateListTouchBarItem value =
+  sendMessage nsCandidateListTouchBarItem setCustomizationLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @updateWithInsertionPointVisibility:@
-updateWithInsertionPointVisibilitySelector :: Selector
+updateWithInsertionPointVisibilitySelector :: Selector '[Bool] ()
 updateWithInsertionPointVisibilitySelector = mkSelector "updateWithInsertionPointVisibility:"
 
 -- | @Selector@ for @setCandidates:forSelectedRange:inString:@
-setCandidates_forSelectedRange_inStringSelector :: Selector
+setCandidates_forSelectedRange_inStringSelector :: Selector '[Id NSArray, NSRange, Id NSString] ()
 setCandidates_forSelectedRange_inStringSelector = mkSelector "setCandidates:forSelectedRange:inString:"
 
 -- | @Selector@ for @client@
-clientSelector :: Selector
+clientSelector :: Selector '[] (Id NSView)
 clientSelector = mkSelector "client"
 
 -- | @Selector@ for @setClient:@
-setClientSelector :: Selector
+setClientSelector :: Selector '[Id NSView] ()
 setClientSelector = mkSelector "setClient:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @collapsed@
-collapsedSelector :: Selector
+collapsedSelector :: Selector '[] Bool
 collapsedSelector = mkSelector "collapsed"
 
 -- | @Selector@ for @setCollapsed:@
-setCollapsedSelector :: Selector
+setCollapsedSelector :: Selector '[Bool] ()
 setCollapsedSelector = mkSelector "setCollapsed:"
 
 -- | @Selector@ for @allowsCollapsing@
-allowsCollapsingSelector :: Selector
+allowsCollapsingSelector :: Selector '[] Bool
 allowsCollapsingSelector = mkSelector "allowsCollapsing"
 
 -- | @Selector@ for @setAllowsCollapsing:@
-setAllowsCollapsingSelector :: Selector
+setAllowsCollapsingSelector :: Selector '[Bool] ()
 setAllowsCollapsingSelector = mkSelector "setAllowsCollapsing:"
 
 -- | @Selector@ for @candidateListVisible@
-candidateListVisibleSelector :: Selector
+candidateListVisibleSelector :: Selector '[] Bool
 candidateListVisibleSelector = mkSelector "candidateListVisible"
 
 -- | @Selector@ for @allowsTextInputContextCandidates@
-allowsTextInputContextCandidatesSelector :: Selector
+allowsTextInputContextCandidatesSelector :: Selector '[] Bool
 allowsTextInputContextCandidatesSelector = mkSelector "allowsTextInputContextCandidates"
 
 -- | @Selector@ for @setAllowsTextInputContextCandidates:@
-setAllowsTextInputContextCandidatesSelector :: Selector
+setAllowsTextInputContextCandidatesSelector :: Selector '[Bool] ()
 setAllowsTextInputContextCandidatesSelector = mkSelector "setAllowsTextInputContextCandidates:"
 
 -- | @Selector@ for @attributedStringForCandidate@
-attributedStringForCandidateSelector :: Selector
+attributedStringForCandidateSelector :: Selector '[] (Ptr ())
 attributedStringForCandidateSelector = mkSelector "attributedStringForCandidate"
 
 -- | @Selector@ for @setAttributedStringForCandidate:@
-setAttributedStringForCandidateSelector :: Selector
+setAttributedStringForCandidateSelector :: Selector '[Ptr ()] ()
 setAttributedStringForCandidateSelector = mkSelector "setAttributedStringForCandidate:"
 
 -- | @Selector@ for @candidates@
-candidatesSelector :: Selector
+candidatesSelector :: Selector '[] (Id NSArray)
 candidatesSelector = mkSelector "candidates"
 
 -- | @Selector@ for @customizationLabel@
-customizationLabelSelector :: Selector
+customizationLabelSelector :: Selector '[] (Id NSString)
 customizationLabelSelector = mkSelector "customizationLabel"
 
 -- | @Selector@ for @setCustomizationLabel:@
-setCustomizationLabelSelector :: Selector
+setCustomizationLabelSelector :: Selector '[Id NSString] ()
 setCustomizationLabelSelector = mkSelector "setCustomizationLabel:"
 

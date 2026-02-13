@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MetricKit.MXNetworkTransferMetric
   , cumulativeWifiDownload
   , cumulativeCellularUpload
   , cumulativeCellularDownload
-  , cumulativeWifiUploadSelector
-  , cumulativeWifiDownloadSelector
-  , cumulativeCellularUploadSelector
   , cumulativeCellularDownloadSelector
+  , cumulativeCellularUploadSelector
+  , cumulativeWifiDownloadSelector
+  , cumulativeWifiUploadSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- cumulativeWifiUpload@
 cumulativeWifiUpload :: IsMXNetworkTransferMetric mxNetworkTransferMetric => mxNetworkTransferMetric -> IO (Id NSMeasurement)
-cumulativeWifiUpload mxNetworkTransferMetric  =
-    sendMsg mxNetworkTransferMetric (mkSelector "cumulativeWifiUpload") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeWifiUpload mxNetworkTransferMetric =
+  sendMessage mxNetworkTransferMetric cumulativeWifiUploadSelector
 
 -- | cumulativeWifiDownload
 --
@@ -56,8 +53,8 @@ cumulativeWifiUpload mxNetworkTransferMetric  =
 --
 -- ObjC selector: @- cumulativeWifiDownload@
 cumulativeWifiDownload :: IsMXNetworkTransferMetric mxNetworkTransferMetric => mxNetworkTransferMetric -> IO (Id NSMeasurement)
-cumulativeWifiDownload mxNetworkTransferMetric  =
-    sendMsg mxNetworkTransferMetric (mkSelector "cumulativeWifiDownload") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeWifiDownload mxNetworkTransferMetric =
+  sendMessage mxNetworkTransferMetric cumulativeWifiDownloadSelector
 
 -- | cumulativeCellularUpload
 --
@@ -69,8 +66,8 @@ cumulativeWifiDownload mxNetworkTransferMetric  =
 --
 -- ObjC selector: @- cumulativeCellularUpload@
 cumulativeCellularUpload :: IsMXNetworkTransferMetric mxNetworkTransferMetric => mxNetworkTransferMetric -> IO (Id NSMeasurement)
-cumulativeCellularUpload mxNetworkTransferMetric  =
-    sendMsg mxNetworkTransferMetric (mkSelector "cumulativeCellularUpload") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeCellularUpload mxNetworkTransferMetric =
+  sendMessage mxNetworkTransferMetric cumulativeCellularUploadSelector
 
 -- | cumulativeCellularDownload
 --
@@ -82,26 +79,26 @@ cumulativeCellularUpload mxNetworkTransferMetric  =
 --
 -- ObjC selector: @- cumulativeCellularDownload@
 cumulativeCellularDownload :: IsMXNetworkTransferMetric mxNetworkTransferMetric => mxNetworkTransferMetric -> IO (Id NSMeasurement)
-cumulativeCellularDownload mxNetworkTransferMetric  =
-    sendMsg mxNetworkTransferMetric (mkSelector "cumulativeCellularDownload") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeCellularDownload mxNetworkTransferMetric =
+  sendMessage mxNetworkTransferMetric cumulativeCellularDownloadSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cumulativeWifiUpload@
-cumulativeWifiUploadSelector :: Selector
+cumulativeWifiUploadSelector :: Selector '[] (Id NSMeasurement)
 cumulativeWifiUploadSelector = mkSelector "cumulativeWifiUpload"
 
 -- | @Selector@ for @cumulativeWifiDownload@
-cumulativeWifiDownloadSelector :: Selector
+cumulativeWifiDownloadSelector :: Selector '[] (Id NSMeasurement)
 cumulativeWifiDownloadSelector = mkSelector "cumulativeWifiDownload"
 
 -- | @Selector@ for @cumulativeCellularUpload@
-cumulativeCellularUploadSelector :: Selector
+cumulativeCellularUploadSelector :: Selector '[] (Id NSMeasurement)
 cumulativeCellularUploadSelector = mkSelector "cumulativeCellularUpload"
 
 -- | @Selector@ for @cumulativeCellularDownload@
-cumulativeCellularDownloadSelector :: Selector
+cumulativeCellularDownloadSelector :: Selector '[] (Id NSMeasurement)
 cumulativeCellularDownloadSelector = mkSelector "cumulativeCellularDownload"
 

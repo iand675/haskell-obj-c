@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.Intents.INSpatialEventTrigger
   , initWithPlacemark_event
   , placemark
   , event
+  , eventSelector
   , initWithPlacemark_eventSelector
   , placemarkSelector
-  , eventSelector
 
   -- * Enum types
   , INSpatialEvent(INSpatialEvent)
@@ -22,15 +23,11 @@ module ObjC.Intents.INSpatialEventTrigger
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,33 +38,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithPlacemark:event:@
 initWithPlacemark_event :: (IsINSpatialEventTrigger inSpatialEventTrigger, IsCLPlacemark placemark) => inSpatialEventTrigger -> placemark -> INSpatialEvent -> IO (Id INSpatialEventTrigger)
-initWithPlacemark_event inSpatialEventTrigger  placemark event =
-  withObjCPtr placemark $ \raw_placemark ->
-      sendMsg inSpatialEventTrigger (mkSelector "initWithPlacemark:event:") (retPtr retVoid) [argPtr (castPtr raw_placemark :: Ptr ()), argCLong (coerce event)] >>= ownedObject . castPtr
+initWithPlacemark_event inSpatialEventTrigger placemark event =
+  sendOwnedMessage inSpatialEventTrigger initWithPlacemark_eventSelector (toCLPlacemark placemark) event
 
 -- | @- placemark@
 placemark :: IsINSpatialEventTrigger inSpatialEventTrigger => inSpatialEventTrigger -> IO (Id CLPlacemark)
-placemark inSpatialEventTrigger  =
-    sendMsg inSpatialEventTrigger (mkSelector "placemark") (retPtr retVoid) [] >>= retainedObject . castPtr
+placemark inSpatialEventTrigger =
+  sendMessage inSpatialEventTrigger placemarkSelector
 
 -- | @- event@
 event :: IsINSpatialEventTrigger inSpatialEventTrigger => inSpatialEventTrigger -> IO INSpatialEvent
-event inSpatialEventTrigger  =
-    fmap (coerce :: CLong -> INSpatialEvent) $ sendMsg inSpatialEventTrigger (mkSelector "event") retCLong []
+event inSpatialEventTrigger =
+  sendMessage inSpatialEventTrigger eventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPlacemark:event:@
-initWithPlacemark_eventSelector :: Selector
+initWithPlacemark_eventSelector :: Selector '[Id CLPlacemark, INSpatialEvent] (Id INSpatialEventTrigger)
 initWithPlacemark_eventSelector = mkSelector "initWithPlacemark:event:"
 
 -- | @Selector@ for @placemark@
-placemarkSelector :: Selector
+placemarkSelector :: Selector '[] (Id CLPlacemark)
 placemarkSelector = mkSelector "placemark"
 
 -- | @Selector@ for @event@
-eventSelector :: Selector
+eventSelector :: Selector '[] INSpatialEvent
 eventSelector = mkSelector "event"
 

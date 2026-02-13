@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,31 +23,27 @@ module ObjC.HealthKit.HKWorkoutActivity
   , duration
   , workoutEvents
   , allStatistics
-  , statisticsForTypeSelector
+  , allStatisticsSelector
+  , durationSelector
+  , endDateSelector
   , initSelector
-  , newSelector
   , initWithWorkoutConfiguration_startDate_endDate_metadataSelector
+  , metadataSelector
+  , newSelector
+  , startDateSelector
+  , statisticsForTypeSelector
   , uuidSelector
   , workoutConfigurationSelector
-  , startDateSelector
-  , endDateSelector
-  , metadataSelector
-  , durationSelector
   , workoutEventsSelector
-  , allStatisticsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,21 +58,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- statisticsForType:@
 statisticsForType :: (IsHKWorkoutActivity hkWorkoutActivity, IsHKQuantityType quantityType) => hkWorkoutActivity -> quantityType -> IO (Id HKStatistics)
-statisticsForType hkWorkoutActivity  quantityType =
-  withObjCPtr quantityType $ \raw_quantityType ->
-      sendMsg hkWorkoutActivity (mkSelector "statisticsForType:") (retPtr retVoid) [argPtr (castPtr raw_quantityType :: Ptr ())] >>= retainedObject . castPtr
+statisticsForType hkWorkoutActivity quantityType =
+  sendMessage hkWorkoutActivity statisticsForTypeSelector (toHKQuantityType quantityType)
 
 -- | @- init@
 init_ :: IsHKWorkoutActivity hkWorkoutActivity => hkWorkoutActivity -> IO (Id HKWorkoutActivity)
-init_ hkWorkoutActivity  =
-    sendMsg hkWorkoutActivity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkWorkoutActivity =
+  sendOwnedMessage hkWorkoutActivity initSelector
 
 -- | @+ new@
 new :: IO (Id HKWorkoutActivity)
 new  =
   do
     cls' <- getRequiredClass "HKWorkoutActivity"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithWorkoutConfiguration:startDate:endDate:metadata:
 --
@@ -91,12 +87,8 @@ new  =
 --
 -- ObjC selector: @- initWithWorkoutConfiguration:startDate:endDate:metadata:@
 initWithWorkoutConfiguration_startDate_endDate_metadata :: (IsHKWorkoutActivity hkWorkoutActivity, IsHKWorkoutConfiguration workoutConfiguration, IsNSDate startDate, IsNSDate endDate, IsNSDictionary metadata) => hkWorkoutActivity -> workoutConfiguration -> startDate -> endDate -> metadata -> IO (Id HKWorkoutActivity)
-initWithWorkoutConfiguration_startDate_endDate_metadata hkWorkoutActivity  workoutConfiguration startDate endDate metadata =
-  withObjCPtr workoutConfiguration $ \raw_workoutConfiguration ->
-    withObjCPtr startDate $ \raw_startDate ->
-      withObjCPtr endDate $ \raw_endDate ->
-        withObjCPtr metadata $ \raw_metadata ->
-            sendMsg hkWorkoutActivity (mkSelector "initWithWorkoutConfiguration:startDate:endDate:metadata:") (retPtr retVoid) [argPtr (castPtr raw_workoutConfiguration :: Ptr ()), argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= ownedObject . castPtr
+initWithWorkoutConfiguration_startDate_endDate_metadata hkWorkoutActivity workoutConfiguration startDate endDate metadata =
+  sendOwnedMessage hkWorkoutActivity initWithWorkoutConfiguration_startDate_endDate_metadataSelector (toHKWorkoutConfiguration workoutConfiguration) (toNSDate startDate) (toNSDate endDate) (toNSDictionary metadata)
 
 -- | UUID
 --
@@ -104,8 +96,8 @@ initWithWorkoutConfiguration_startDate_endDate_metadata hkWorkoutActivity  worko
 --
 -- ObjC selector: @- UUID@
 uuid :: IsHKWorkoutActivity hkWorkoutActivity => hkWorkoutActivity -> IO (Id NSUUID)
-uuid hkWorkoutActivity  =
-    sendMsg hkWorkoutActivity (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid hkWorkoutActivity =
+  sendMessage hkWorkoutActivity uuidSelector
 
 -- | workoutConfiguration
 --
@@ -113,8 +105,8 @@ uuid hkWorkoutActivity  =
 --
 -- ObjC selector: @- workoutConfiguration@
 workoutConfiguration :: IsHKWorkoutActivity hkWorkoutActivity => hkWorkoutActivity -> IO (Id HKWorkoutConfiguration)
-workoutConfiguration hkWorkoutActivity  =
-    sendMsg hkWorkoutActivity (mkSelector "workoutConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+workoutConfiguration hkWorkoutActivity =
+  sendMessage hkWorkoutActivity workoutConfigurationSelector
 
 -- | startDate
 --
@@ -122,8 +114,8 @@ workoutConfiguration hkWorkoutActivity  =
 --
 -- ObjC selector: @- startDate@
 startDate :: IsHKWorkoutActivity hkWorkoutActivity => hkWorkoutActivity -> IO (Id NSDate)
-startDate hkWorkoutActivity  =
-    sendMsg hkWorkoutActivity (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate hkWorkoutActivity =
+  sendMessage hkWorkoutActivity startDateSelector
 
 -- | endDate
 --
@@ -133,8 +125,8 @@ startDate hkWorkoutActivity  =
 --
 -- ObjC selector: @- endDate@
 endDate :: IsHKWorkoutActivity hkWorkoutActivity => hkWorkoutActivity -> IO (Id NSDate)
-endDate hkWorkoutActivity  =
-    sendMsg hkWorkoutActivity (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate hkWorkoutActivity =
+  sendMessage hkWorkoutActivity endDateSelector
 
 -- | metadata
 --
@@ -144,8 +136,8 @@ endDate hkWorkoutActivity  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsHKWorkoutActivity hkWorkoutActivity => hkWorkoutActivity -> IO (Id NSDictionary)
-metadata hkWorkoutActivity  =
-    sendMsg hkWorkoutActivity (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata hkWorkoutActivity =
+  sendMessage hkWorkoutActivity metadataSelector
 
 -- | duration
 --
@@ -155,8 +147,8 @@ metadata hkWorkoutActivity  =
 --
 -- ObjC selector: @- duration@
 duration :: IsHKWorkoutActivity hkWorkoutActivity => hkWorkoutActivity -> IO CDouble
-duration hkWorkoutActivity  =
-    sendMsg hkWorkoutActivity (mkSelector "duration") retCDouble []
+duration hkWorkoutActivity =
+  sendMessage hkWorkoutActivity durationSelector
 
 -- | workoutEvents
 --
@@ -166,8 +158,8 @@ duration hkWorkoutActivity  =
 --
 -- ObjC selector: @- workoutEvents@
 workoutEvents :: IsHKWorkoutActivity hkWorkoutActivity => hkWorkoutActivity -> IO (Id NSArray)
-workoutEvents hkWorkoutActivity  =
-    sendMsg hkWorkoutActivity (mkSelector "workoutEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+workoutEvents hkWorkoutActivity =
+  sendMessage hkWorkoutActivity workoutEventsSelector
 
 -- | allStatistics
 --
@@ -177,58 +169,58 @@ workoutEvents hkWorkoutActivity  =
 --
 -- ObjC selector: @- allStatistics@
 allStatistics :: IsHKWorkoutActivity hkWorkoutActivity => hkWorkoutActivity -> IO (Id NSDictionary)
-allStatistics hkWorkoutActivity  =
-    sendMsg hkWorkoutActivity (mkSelector "allStatistics") (retPtr retVoid) [] >>= retainedObject . castPtr
+allStatistics hkWorkoutActivity =
+  sendMessage hkWorkoutActivity allStatisticsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @statisticsForType:@
-statisticsForTypeSelector :: Selector
+statisticsForTypeSelector :: Selector '[Id HKQuantityType] (Id HKStatistics)
 statisticsForTypeSelector = mkSelector "statisticsForType:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKWorkoutActivity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKWorkoutActivity)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithWorkoutConfiguration:startDate:endDate:metadata:@
-initWithWorkoutConfiguration_startDate_endDate_metadataSelector :: Selector
+initWithWorkoutConfiguration_startDate_endDate_metadataSelector :: Selector '[Id HKWorkoutConfiguration, Id NSDate, Id NSDate, Id NSDictionary] (Id HKWorkoutActivity)
 initWithWorkoutConfiguration_startDate_endDate_metadataSelector = mkSelector "initWithWorkoutConfiguration:startDate:endDate:metadata:"
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "UUID"
 
 -- | @Selector@ for @workoutConfiguration@
-workoutConfigurationSelector :: Selector
+workoutConfigurationSelector :: Selector '[] (Id HKWorkoutConfiguration)
 workoutConfigurationSelector = mkSelector "workoutConfiguration"
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSDictionary)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @workoutEvents@
-workoutEventsSelector :: Selector
+workoutEventsSelector :: Selector '[] (Id NSArray)
 workoutEventsSelector = mkSelector "workoutEvents"
 
 -- | @Selector@ for @allStatistics@
-allStatisticsSelector :: Selector
+allStatisticsSelector :: Selector '[] (Id NSDictionary)
 allStatisticsSelector = mkSelector "allStatistics"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Virtualization.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | VZDiskImageCachingMode
 --
@@ -34,6 +37,16 @@ pattern VZDiskImageCachingModeUncached = VZDiskImageCachingMode 1
 pattern VZDiskImageCachingModeCached :: VZDiskImageCachingMode
 pattern VZDiskImageCachingModeCached = VZDiskImageCachingMode 2
 
+instance ObjCArgument VZDiskImageCachingMode where
+  withObjCArg (VZDiskImageCachingMode x) k = k (argCLong x)
+
+instance ObjCReturn VZDiskImageCachingMode where
+  type RawReturn VZDiskImageCachingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VZDiskImageCachingMode x)
+  fromOwned x = pure (VZDiskImageCachingMode x)
+
 -- | @VZDiskImageSynchronizationMode@
 newtype VZDiskImageSynchronizationMode = VZDiskImageSynchronizationMode CLong
   deriving stock (Eq, Ord, Show)
@@ -48,6 +61,16 @@ pattern VZDiskImageSynchronizationModeFsync = VZDiskImageSynchronizationMode 2
 pattern VZDiskImageSynchronizationModeNone :: VZDiskImageSynchronizationMode
 pattern VZDiskImageSynchronizationModeNone = VZDiskImageSynchronizationMode 3
 
+instance ObjCArgument VZDiskImageSynchronizationMode where
+  withObjCArg (VZDiskImageSynchronizationMode x) k = k (argCLong x)
+
+instance ObjCReturn VZDiskImageSynchronizationMode where
+  type RawReturn VZDiskImageSynchronizationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VZDiskImageSynchronizationMode x)
+  fromOwned x = pure (VZDiskImageSynchronizationMode x)
+
 -- | @VZDiskSynchronizationMode@
 newtype VZDiskSynchronizationMode = VZDiskSynchronizationMode CLong
   deriving stock (Eq, Ord, Show)
@@ -58,6 +81,16 @@ pattern VZDiskSynchronizationModeFull = VZDiskSynchronizationMode 0
 
 pattern VZDiskSynchronizationModeNone :: VZDiskSynchronizationMode
 pattern VZDiskSynchronizationModeNone = VZDiskSynchronizationMode 1
+
+instance ObjCArgument VZDiskSynchronizationMode where
+  withObjCArg (VZDiskSynchronizationMode x) k = k (argCLong x)
+
+instance ObjCReturn VZDiskSynchronizationMode where
+  type RawReturn VZDiskSynchronizationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VZDiskSynchronizationMode x)
+  fromOwned x = pure (VZDiskSynchronizationMode x)
 
 -- | Options when creating a new EFI variable store.
 -- | @VZEFIVariableStoreInitializationOptions@ (bitmask)
@@ -73,6 +106,16 @@ instance Monoid VZEFIVariableStoreInitializationOptions where
 
 pattern VZEFIVariableStoreInitializationOptionAllowOverwrite :: VZEFIVariableStoreInitializationOptions
 pattern VZEFIVariableStoreInitializationOptionAllowOverwrite = VZEFIVariableStoreInitializationOptions 1
+
+instance ObjCArgument VZEFIVariableStoreInitializationOptions where
+  withObjCArg (VZEFIVariableStoreInitializationOptions x) k = k (argCULong x)
+
+instance ObjCReturn VZEFIVariableStoreInitializationOptions where
+  type RawReturn VZEFIVariableStoreInitializationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VZEFIVariableStoreInitializationOptions x)
+  fromOwned x = pure (VZEFIVariableStoreInitializationOptions x)
 
 -- | VZErrorCode
 --
@@ -259,6 +302,16 @@ pattern VZErrorDeviceInitializationFailure = VZErrorCode 30003
 pattern VZErrorDeviceNotFound :: VZErrorCode
 pattern VZErrorDeviceNotFound = VZErrorCode 30004
 
+instance ObjCArgument VZErrorCode where
+  withObjCArg (VZErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn VZErrorCode where
+  type RawReturn VZErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VZErrorCode x)
+  fromOwned x = pure (VZErrorCode x)
+
 -- | Availability of Rosetta support for Linux binaries.
 -- | @VZLinuxRosettaAvailability@
 newtype VZLinuxRosettaAvailability = VZLinuxRosettaAvailability CLong
@@ -274,6 +327,16 @@ pattern VZLinuxRosettaAvailabilityNotInstalled = VZLinuxRosettaAvailability 1
 pattern VZLinuxRosettaAvailabilityInstalled :: VZLinuxRosettaAvailability
 pattern VZLinuxRosettaAvailabilityInstalled = VZLinuxRosettaAvailability 2
 
+instance ObjCArgument VZLinuxRosettaAvailability where
+  withObjCArg (VZLinuxRosettaAvailability x) k = k (argCLong x)
+
+instance ObjCReturn VZLinuxRosettaAvailability where
+  type RawReturn VZLinuxRosettaAvailability = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VZLinuxRosettaAvailability x)
+  fromOwned x = pure (VZLinuxRosettaAvailability x)
+
 -- | Options when creating a new auxiliary storage.
 -- | @VZMacAuxiliaryStorageInitializationOptions@ (bitmask)
 newtype VZMacAuxiliaryStorageInitializationOptions = VZMacAuxiliaryStorageInitializationOptions CULong
@@ -288,6 +351,16 @@ instance Monoid VZMacAuxiliaryStorageInitializationOptions where
 
 pattern VZMacAuxiliaryStorageInitializationOptionAllowOverwrite :: VZMacAuxiliaryStorageInitializationOptions
 pattern VZMacAuxiliaryStorageInitializationOptionAllowOverwrite = VZMacAuxiliaryStorageInitializationOptions 1
+
+instance ObjCArgument VZMacAuxiliaryStorageInitializationOptions where
+  withObjCArg (VZMacAuxiliaryStorageInitializationOptions x) k = k (argCULong x)
+
+instance ObjCReturn VZMacAuxiliaryStorageInitializationOptions where
+  type RawReturn VZMacAuxiliaryStorageInitializationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VZMacAuxiliaryStorageInitializationOptions x)
+  fromOwned x = pure (VZMacAuxiliaryStorageInitializationOptions x)
 
 -- | Execution state of the virtual machine.
 -- | @VZVirtualMachineState@
@@ -324,3 +397,13 @@ pattern VZVirtualMachineStateSaving = VZVirtualMachineState 8
 
 pattern VZVirtualMachineStateRestoring :: VZVirtualMachineState
 pattern VZVirtualMachineStateRestoring = VZVirtualMachineState 9
+
+instance ObjCArgument VZVirtualMachineState where
+  withObjCArg (VZVirtualMachineState x) k = k (argCLong x)
+
+instance ObjCReturn VZVirtualMachineState where
+  type RawReturn VZVirtualMachineState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (VZVirtualMachineState x)
+  fromOwned x = pure (VZVirtualMachineState x)

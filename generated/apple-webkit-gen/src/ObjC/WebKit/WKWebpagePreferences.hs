@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,13 +20,13 @@ module ObjC.WebKit.WKWebpagePreferences
   , setLockdownModeEnabled
   , preferredHTTPSNavigationPolicy
   , setPreferredHTTPSNavigationPolicy
-  , preferredContentModeSelector
-  , setPreferredContentModeSelector
   , allowsContentJavaScriptSelector
-  , setAllowsContentJavaScriptSelector
   , lockdownModeEnabledSelector
-  , setLockdownModeEnabledSelector
+  , preferredContentModeSelector
   , preferredHTTPSNavigationPolicySelector
+  , setAllowsContentJavaScriptSelector
+  , setLockdownModeEnabledSelector
+  , setPreferredContentModeSelector
   , setPreferredHTTPSNavigationPolicySelector
 
   -- * Enum types
@@ -41,15 +42,11 @@ module ObjC.WebKit.WKWebpagePreferences
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,8 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- preferredContentMode@
 preferredContentMode :: IsWKWebpagePreferences wkWebpagePreferences => wkWebpagePreferences -> IO WKContentMode
-preferredContentMode wkWebpagePreferences  =
-    fmap (coerce :: CLong -> WKContentMode) $ sendMsg wkWebpagePreferences (mkSelector "preferredContentMode") retCLong []
+preferredContentMode wkWebpagePreferences =
+  sendMessage wkWebpagePreferences preferredContentModeSelector
 
 -- | A WKContentMode indicating the content mode to prefer when loading and rendering a webpage.
 --
@@ -72,18 +69,18 @@ preferredContentMode wkWebpagePreferences  =
 --
 -- ObjC selector: @- setPreferredContentMode:@
 setPreferredContentMode :: IsWKWebpagePreferences wkWebpagePreferences => wkWebpagePreferences -> WKContentMode -> IO ()
-setPreferredContentMode wkWebpagePreferences  value =
-    sendMsg wkWebpagePreferences (mkSelector "setPreferredContentMode:") retVoid [argCLong (coerce value)]
+setPreferredContentMode wkWebpagePreferences value =
+  sendMessage wkWebpagePreferences setPreferredContentModeSelector value
 
 -- | @- allowsContentJavaScript@
 allowsContentJavaScript :: IsWKWebpagePreferences wkWebpagePreferences => wkWebpagePreferences -> IO Bool
-allowsContentJavaScript wkWebpagePreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebpagePreferences (mkSelector "allowsContentJavaScript") retCULong []
+allowsContentJavaScript wkWebpagePreferences =
+  sendMessage wkWebpagePreferences allowsContentJavaScriptSelector
 
 -- | @- setAllowsContentJavaScript:@
 setAllowsContentJavaScript :: IsWKWebpagePreferences wkWebpagePreferences => wkWebpagePreferences -> Bool -> IO ()
-setAllowsContentJavaScript wkWebpagePreferences  value =
-    sendMsg wkWebpagePreferences (mkSelector "setAllowsContentJavaScript:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsContentJavaScript wkWebpagePreferences value =
+  sendMessage wkWebpagePreferences setAllowsContentJavaScriptSelector value
 
 -- | A boolean indicating whether lockdown mode is enabled.
 --
@@ -91,8 +88,8 @@ setAllowsContentJavaScript wkWebpagePreferences  value =
 --
 -- ObjC selector: @- lockdownModeEnabled@
 lockdownModeEnabled :: IsWKWebpagePreferences wkWebpagePreferences => wkWebpagePreferences -> IO Bool
-lockdownModeEnabled wkWebpagePreferences  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebpagePreferences (mkSelector "lockdownModeEnabled") retCULong []
+lockdownModeEnabled wkWebpagePreferences =
+  sendMessage wkWebpagePreferences lockdownModeEnabledSelector
 
 -- | A boolean indicating whether lockdown mode is enabled.
 --
@@ -100,8 +97,8 @@ lockdownModeEnabled wkWebpagePreferences  =
 --
 -- ObjC selector: @- setLockdownModeEnabled:@
 setLockdownModeEnabled :: IsWKWebpagePreferences wkWebpagePreferences => wkWebpagePreferences -> Bool -> IO ()
-setLockdownModeEnabled wkWebpagePreferences  value =
-    sendMsg wkWebpagePreferences (mkSelector "setLockdownModeEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setLockdownModeEnabled wkWebpagePreferences value =
+  sendMessage wkWebpagePreferences setLockdownModeEnabledSelector value
 
 -- | A WKWebpagePreferencesUpgradeToHTTPSPolicy indicating the desired mode used when performing a top-level navigation to a webpage.
 --
@@ -109,8 +106,8 @@ setLockdownModeEnabled wkWebpagePreferences  value =
 --
 -- ObjC selector: @- preferredHTTPSNavigationPolicy@
 preferredHTTPSNavigationPolicy :: IsWKWebpagePreferences wkWebpagePreferences => wkWebpagePreferences -> IO WKWebpagePreferencesUpgradeToHTTPSPolicy
-preferredHTTPSNavigationPolicy wkWebpagePreferences  =
-    fmap (coerce :: CLong -> WKWebpagePreferencesUpgradeToHTTPSPolicy) $ sendMsg wkWebpagePreferences (mkSelector "preferredHTTPSNavigationPolicy") retCLong []
+preferredHTTPSNavigationPolicy wkWebpagePreferences =
+  sendMessage wkWebpagePreferences preferredHTTPSNavigationPolicySelector
 
 -- | A WKWebpagePreferencesUpgradeToHTTPSPolicy indicating the desired mode used when performing a top-level navigation to a webpage.
 --
@@ -118,42 +115,42 @@ preferredHTTPSNavigationPolicy wkWebpagePreferences  =
 --
 -- ObjC selector: @- setPreferredHTTPSNavigationPolicy:@
 setPreferredHTTPSNavigationPolicy :: IsWKWebpagePreferences wkWebpagePreferences => wkWebpagePreferences -> WKWebpagePreferencesUpgradeToHTTPSPolicy -> IO ()
-setPreferredHTTPSNavigationPolicy wkWebpagePreferences  value =
-    sendMsg wkWebpagePreferences (mkSelector "setPreferredHTTPSNavigationPolicy:") retVoid [argCLong (coerce value)]
+setPreferredHTTPSNavigationPolicy wkWebpagePreferences value =
+  sendMessage wkWebpagePreferences setPreferredHTTPSNavigationPolicySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @preferredContentMode@
-preferredContentModeSelector :: Selector
+preferredContentModeSelector :: Selector '[] WKContentMode
 preferredContentModeSelector = mkSelector "preferredContentMode"
 
 -- | @Selector@ for @setPreferredContentMode:@
-setPreferredContentModeSelector :: Selector
+setPreferredContentModeSelector :: Selector '[WKContentMode] ()
 setPreferredContentModeSelector = mkSelector "setPreferredContentMode:"
 
 -- | @Selector@ for @allowsContentJavaScript@
-allowsContentJavaScriptSelector :: Selector
+allowsContentJavaScriptSelector :: Selector '[] Bool
 allowsContentJavaScriptSelector = mkSelector "allowsContentJavaScript"
 
 -- | @Selector@ for @setAllowsContentJavaScript:@
-setAllowsContentJavaScriptSelector :: Selector
+setAllowsContentJavaScriptSelector :: Selector '[Bool] ()
 setAllowsContentJavaScriptSelector = mkSelector "setAllowsContentJavaScript:"
 
 -- | @Selector@ for @lockdownModeEnabled@
-lockdownModeEnabledSelector :: Selector
+lockdownModeEnabledSelector :: Selector '[] Bool
 lockdownModeEnabledSelector = mkSelector "lockdownModeEnabled"
 
 -- | @Selector@ for @setLockdownModeEnabled:@
-setLockdownModeEnabledSelector :: Selector
+setLockdownModeEnabledSelector :: Selector '[Bool] ()
 setLockdownModeEnabledSelector = mkSelector "setLockdownModeEnabled:"
 
 -- | @Selector@ for @preferredHTTPSNavigationPolicy@
-preferredHTTPSNavigationPolicySelector :: Selector
+preferredHTTPSNavigationPolicySelector :: Selector '[] WKWebpagePreferencesUpgradeToHTTPSPolicy
 preferredHTTPSNavigationPolicySelector = mkSelector "preferredHTTPSNavigationPolicy"
 
 -- | @Selector@ for @setPreferredHTTPSNavigationPolicy:@
-setPreferredHTTPSNavigationPolicySelector :: Selector
+setPreferredHTTPSNavigationPolicySelector :: Selector '[WKWebpagePreferencesUpgradeToHTTPSPolicy] ()
 setPreferredHTTPSNavigationPolicySelector = mkSelector "setPreferredHTTPSNavigationPolicy:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.BrowserEngineKit.BEAccessibilityTextMarkerRange
   , setStartMarker
   , endMarker
   , setEndMarker
-  , startMarkerSelector
-  , setStartMarkerSelector
   , endMarkerSelector
   , setEndMarkerSelector
+  , setStartMarkerSelector
+  , startMarkerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,43 +34,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- startMarker@
 startMarker :: IsBEAccessibilityTextMarkerRange beAccessibilityTextMarkerRange => beAccessibilityTextMarkerRange -> IO (Id BEAccessibilityTextMarker)
-startMarker beAccessibilityTextMarkerRange  =
-    sendMsg beAccessibilityTextMarkerRange (mkSelector "startMarker") (retPtr retVoid) [] >>= retainedObject . castPtr
+startMarker beAccessibilityTextMarkerRange =
+  sendMessage beAccessibilityTextMarkerRange startMarkerSelector
 
 -- | @- setStartMarker:@
 setStartMarker :: (IsBEAccessibilityTextMarkerRange beAccessibilityTextMarkerRange, IsBEAccessibilityTextMarker value) => beAccessibilityTextMarkerRange -> value -> IO ()
-setStartMarker beAccessibilityTextMarkerRange  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg beAccessibilityTextMarkerRange (mkSelector "setStartMarker:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartMarker beAccessibilityTextMarkerRange value =
+  sendMessage beAccessibilityTextMarkerRange setStartMarkerSelector (toBEAccessibilityTextMarker value)
 
 -- | @- endMarker@
 endMarker :: IsBEAccessibilityTextMarkerRange beAccessibilityTextMarkerRange => beAccessibilityTextMarkerRange -> IO (Id BEAccessibilityTextMarker)
-endMarker beAccessibilityTextMarkerRange  =
-    sendMsg beAccessibilityTextMarkerRange (mkSelector "endMarker") (retPtr retVoid) [] >>= retainedObject . castPtr
+endMarker beAccessibilityTextMarkerRange =
+  sendMessage beAccessibilityTextMarkerRange endMarkerSelector
 
 -- | @- setEndMarker:@
 setEndMarker :: (IsBEAccessibilityTextMarkerRange beAccessibilityTextMarkerRange, IsBEAccessibilityTextMarker value) => beAccessibilityTextMarkerRange -> value -> IO ()
-setEndMarker beAccessibilityTextMarkerRange  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg beAccessibilityTextMarkerRange (mkSelector "setEndMarker:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndMarker beAccessibilityTextMarkerRange value =
+  sendMessage beAccessibilityTextMarkerRange setEndMarkerSelector (toBEAccessibilityTextMarker value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startMarker@
-startMarkerSelector :: Selector
+startMarkerSelector :: Selector '[] (Id BEAccessibilityTextMarker)
 startMarkerSelector = mkSelector "startMarker"
 
 -- | @Selector@ for @setStartMarker:@
-setStartMarkerSelector :: Selector
+setStartMarkerSelector :: Selector '[Id BEAccessibilityTextMarker] ()
 setStartMarkerSelector = mkSelector "setStartMarker:"
 
 -- | @Selector@ for @endMarker@
-endMarkerSelector :: Selector
+endMarkerSelector :: Selector '[] (Id BEAccessibilityTextMarker)
 endMarkerSelector = mkSelector "endMarker"
 
 -- | @Selector@ for @setEndMarker:@
-setEndMarkerSelector :: Selector
+setEndMarkerSelector :: Selector '[Id BEAccessibilityTextMarker] ()
 setEndMarkerSelector = mkSelector "setEndMarker:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,19 +25,19 @@ module ObjC.MLCompute.MLCOptimizerDescriptor
   , gradientClippingType
   , maximumClippingNorm
   , customGlobalNorm
-  , descriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector
+  , appliesGradientClippingSelector
+  , customGlobalNormSelector
   , descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector
   , descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClippingType_gradientClipMax_gradientClipMin_maximumClippingNorm_customGlobalNorm_regularizationType_regularizationScaleSelector
-  , learningRateSelector
-  , gradientRescaleSelector
-  , appliesGradientClippingSelector
+  , descriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector
   , gradientClipMaxSelector
   , gradientClipMinSelector
+  , gradientClippingTypeSelector
+  , gradientRescaleSelector
+  , learningRateSelector
+  , maximumClippingNormSelector
   , regularizationScaleSelector
   , regularizationTypeSelector
-  , gradientClippingTypeSelector
-  , maximumClippingNormSelector
-  , customGlobalNormSelector
 
   -- * Enum types
   , MLCGradientClippingType(MLCGradientClippingType)
@@ -50,15 +51,11 @@ module ObjC.MLCompute.MLCOptimizerDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,7 +80,7 @@ descriptorWithLearningRate_gradientRescale_regularizationType_regularizationScal
 descriptorWithLearningRate_gradientRescale_regularizationType_regularizationScale learningRate gradientRescale regularizationType regularizationScale =
   do
     cls' <- getRequiredClass "MLCOptimizerDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithLearningRate:gradientRescale:regularizationType:regularizationScale:") (retPtr retVoid) [argCFloat learningRate, argCFloat gradientRescale, argCInt (coerce regularizationType), argCFloat regularizationScale] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector learningRate gradientRescale regularizationType regularizationScale
 
 -- | Create a MLCOptimizerDescriptor object
 --
@@ -108,7 +105,7 @@ descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClipM
 descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScale learningRate gradientRescale appliesGradientClipping gradientClipMax gradientClipMin regularizationType regularizationScale =
   do
     cls' <- getRequiredClass "MLCOptimizerDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithLearningRate:gradientRescale:appliesGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:") (retPtr retVoid) [argCFloat learningRate, argCFloat gradientRescale, argCULong (if appliesGradientClipping then 1 else 0), argCFloat gradientClipMax, argCFloat gradientClipMin, argCInt (coerce regularizationType), argCFloat regularizationScale] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector learningRate gradientRescale appliesGradientClipping gradientClipMax gradientClipMin regularizationType regularizationScale
 
 -- | Create an MLCOptimizerDescriptor object
 --
@@ -139,7 +136,7 @@ descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClipp
 descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClippingType_gradientClipMax_gradientClipMin_maximumClippingNorm_customGlobalNorm_regularizationType_regularizationScale learningRate gradientRescale appliesGradientClipping gradientClippingType gradientClipMax gradientClipMin maximumClippingNorm customGlobalNorm regularizationType regularizationScale =
   do
     cls' <- getRequiredClass "MLCOptimizerDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithLearningRate:gradientRescale:appliesGradientClipping:gradientClippingType:gradientClipMax:gradientClipMin:maximumClippingNorm:customGlobalNorm:regularizationType:regularizationScale:") (retPtr retVoid) [argCFloat learningRate, argCFloat gradientRescale, argCULong (if appliesGradientClipping then 1 else 0), argCInt (coerce gradientClippingType), argCFloat gradientClipMax, argCFloat gradientClipMin, argCFloat maximumClippingNorm, argCFloat customGlobalNorm, argCInt (coerce regularizationType), argCFloat regularizationScale] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClippingType_gradientClipMax_gradientClipMin_maximumClippingNorm_customGlobalNorm_regularizationType_regularizationScaleSelector learningRate gradientRescale appliesGradientClipping gradientClippingType gradientClipMax gradientClipMin maximumClippingNorm customGlobalNorm regularizationType regularizationScale
 
 -- | learningRate
 --
@@ -147,8 +144,8 @@ descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClipp
 --
 -- ObjC selector: @- learningRate@
 learningRate :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO CFloat
-learningRate mlcOptimizerDescriptor  =
-    sendMsg mlcOptimizerDescriptor (mkSelector "learningRate") retCFloat []
+learningRate mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor learningRateSelector
 
 -- | gradientRescale
 --
@@ -156,8 +153,8 @@ learningRate mlcOptimizerDescriptor  =
 --
 -- ObjC selector: @- gradientRescale@
 gradientRescale :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO CFloat
-gradientRescale mlcOptimizerDescriptor  =
-    sendMsg mlcOptimizerDescriptor (mkSelector "gradientRescale") retCFloat []
+gradientRescale mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor gradientRescaleSelector
 
 -- | appliesGradientClipping
 --
@@ -167,8 +164,8 @@ gradientRescale mlcOptimizerDescriptor  =
 --
 -- ObjC selector: @- appliesGradientClipping@
 appliesGradientClipping :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO Bool
-appliesGradientClipping mlcOptimizerDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcOptimizerDescriptor (mkSelector "appliesGradientClipping") retCULong []
+appliesGradientClipping mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor appliesGradientClippingSelector
 
 -- | gradientClipMax
 --
@@ -176,8 +173,8 @@ appliesGradientClipping mlcOptimizerDescriptor  =
 --
 -- ObjC selector: @- gradientClipMax@
 gradientClipMax :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO CFloat
-gradientClipMax mlcOptimizerDescriptor  =
-    sendMsg mlcOptimizerDescriptor (mkSelector "gradientClipMax") retCFloat []
+gradientClipMax mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor gradientClipMaxSelector
 
 -- | gradientClipMin
 --
@@ -185,8 +182,8 @@ gradientClipMax mlcOptimizerDescriptor  =
 --
 -- ObjC selector: @- gradientClipMin@
 gradientClipMin :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO CFloat
-gradientClipMin mlcOptimizerDescriptor  =
-    sendMsg mlcOptimizerDescriptor (mkSelector "gradientClipMin") retCFloat []
+gradientClipMin mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor gradientClipMinSelector
 
 -- | regularizationScale
 --
@@ -194,8 +191,8 @@ gradientClipMin mlcOptimizerDescriptor  =
 --
 -- ObjC selector: @- regularizationScale@
 regularizationScale :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO CFloat
-regularizationScale mlcOptimizerDescriptor  =
-    sendMsg mlcOptimizerDescriptor (mkSelector "regularizationScale") retCFloat []
+regularizationScale mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor regularizationScaleSelector
 
 -- | regularizationType
 --
@@ -203,8 +200,8 @@ regularizationScale mlcOptimizerDescriptor  =
 --
 -- ObjC selector: @- regularizationType@
 regularizationType :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO MLCRegularizationType
-regularizationType mlcOptimizerDescriptor  =
-    fmap (coerce :: CInt -> MLCRegularizationType) $ sendMsg mlcOptimizerDescriptor (mkSelector "regularizationType") retCInt []
+regularizationType mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor regularizationTypeSelector
 
 -- | gradientClippingType
 --
@@ -212,8 +209,8 @@ regularizationType mlcOptimizerDescriptor  =
 --
 -- ObjC selector: @- gradientClippingType@
 gradientClippingType :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO MLCGradientClippingType
-gradientClippingType mlcOptimizerDescriptor  =
-    fmap (coerce :: CInt -> MLCGradientClippingType) $ sendMsg mlcOptimizerDescriptor (mkSelector "gradientClippingType") retCInt []
+gradientClippingType mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor gradientClippingTypeSelector
 
 -- | maximumClippingNorm
 --
@@ -221,8 +218,8 @@ gradientClippingType mlcOptimizerDescriptor  =
 --
 -- ObjC selector: @- maximumClippingNorm@
 maximumClippingNorm :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO CFloat
-maximumClippingNorm mlcOptimizerDescriptor  =
-    sendMsg mlcOptimizerDescriptor (mkSelector "maximumClippingNorm") retCFloat []
+maximumClippingNorm mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor maximumClippingNormSelector
 
 -- | customGlobalNorm
 --
@@ -230,62 +227,62 @@ maximumClippingNorm mlcOptimizerDescriptor  =
 --
 -- ObjC selector: @- customGlobalNorm@
 customGlobalNorm :: IsMLCOptimizerDescriptor mlcOptimizerDescriptor => mlcOptimizerDescriptor -> IO CFloat
-customGlobalNorm mlcOptimizerDescriptor  =
-    sendMsg mlcOptimizerDescriptor (mkSelector "customGlobalNorm") retCFloat []
+customGlobalNorm mlcOptimizerDescriptor =
+  sendMessage mlcOptimizerDescriptor customGlobalNormSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithLearningRate:gradientRescale:regularizationType:regularizationScale:@
-descriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector :: Selector
+descriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector :: Selector '[CFloat, CFloat, MLCRegularizationType, CFloat] (Id MLCOptimizerDescriptor)
 descriptorWithLearningRate_gradientRescale_regularizationType_regularizationScaleSelector = mkSelector "descriptorWithLearningRate:gradientRescale:regularizationType:regularizationScale:"
 
 -- | @Selector@ for @descriptorWithLearningRate:gradientRescale:appliesGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:@
-descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector :: Selector
+descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector :: Selector '[CFloat, CFloat, Bool, CFloat, CFloat, MLCRegularizationType, CFloat] (Id MLCOptimizerDescriptor)
 descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClipMax_gradientClipMin_regularizationType_regularizationScaleSelector = mkSelector "descriptorWithLearningRate:gradientRescale:appliesGradientClipping:gradientClipMax:gradientClipMin:regularizationType:regularizationScale:"
 
 -- | @Selector@ for @descriptorWithLearningRate:gradientRescale:appliesGradientClipping:gradientClippingType:gradientClipMax:gradientClipMin:maximumClippingNorm:customGlobalNorm:regularizationType:regularizationScale:@
-descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClippingType_gradientClipMax_gradientClipMin_maximumClippingNorm_customGlobalNorm_regularizationType_regularizationScaleSelector :: Selector
+descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClippingType_gradientClipMax_gradientClipMin_maximumClippingNorm_customGlobalNorm_regularizationType_regularizationScaleSelector :: Selector '[CFloat, CFloat, Bool, MLCGradientClippingType, CFloat, CFloat, CFloat, CFloat, MLCRegularizationType, CFloat] (Id MLCOptimizerDescriptor)
 descriptorWithLearningRate_gradientRescale_appliesGradientClipping_gradientClippingType_gradientClipMax_gradientClipMin_maximumClippingNorm_customGlobalNorm_regularizationType_regularizationScaleSelector = mkSelector "descriptorWithLearningRate:gradientRescale:appliesGradientClipping:gradientClippingType:gradientClipMax:gradientClipMin:maximumClippingNorm:customGlobalNorm:regularizationType:regularizationScale:"
 
 -- | @Selector@ for @learningRate@
-learningRateSelector :: Selector
+learningRateSelector :: Selector '[] CFloat
 learningRateSelector = mkSelector "learningRate"
 
 -- | @Selector@ for @gradientRescale@
-gradientRescaleSelector :: Selector
+gradientRescaleSelector :: Selector '[] CFloat
 gradientRescaleSelector = mkSelector "gradientRescale"
 
 -- | @Selector@ for @appliesGradientClipping@
-appliesGradientClippingSelector :: Selector
+appliesGradientClippingSelector :: Selector '[] Bool
 appliesGradientClippingSelector = mkSelector "appliesGradientClipping"
 
 -- | @Selector@ for @gradientClipMax@
-gradientClipMaxSelector :: Selector
+gradientClipMaxSelector :: Selector '[] CFloat
 gradientClipMaxSelector = mkSelector "gradientClipMax"
 
 -- | @Selector@ for @gradientClipMin@
-gradientClipMinSelector :: Selector
+gradientClipMinSelector :: Selector '[] CFloat
 gradientClipMinSelector = mkSelector "gradientClipMin"
 
 -- | @Selector@ for @regularizationScale@
-regularizationScaleSelector :: Selector
+regularizationScaleSelector :: Selector '[] CFloat
 regularizationScaleSelector = mkSelector "regularizationScale"
 
 -- | @Selector@ for @regularizationType@
-regularizationTypeSelector :: Selector
+regularizationTypeSelector :: Selector '[] MLCRegularizationType
 regularizationTypeSelector = mkSelector "regularizationType"
 
 -- | @Selector@ for @gradientClippingType@
-gradientClippingTypeSelector :: Selector
+gradientClippingTypeSelector :: Selector '[] MLCGradientClippingType
 gradientClippingTypeSelector = mkSelector "gradientClippingType"
 
 -- | @Selector@ for @maximumClippingNorm@
-maximumClippingNormSelector :: Selector
+maximumClippingNormSelector :: Selector '[] CFloat
 maximumClippingNormSelector = mkSelector "maximumClippingNorm"
 
 -- | @Selector@ for @customGlobalNorm@
-customGlobalNormSelector :: Selector
+customGlobalNormSelector :: Selector '[] CFloat
 customGlobalNormSelector = mkSelector "customGlobalNorm"
 

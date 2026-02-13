@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,40 +32,36 @@ module ObjC.ImageCaptureCore.ICCameraItem
   , addedAfterContentCatalogCompleted
   , thumbnailIfAvailable
   , largeThumbnailIfAvailable
-  , requestThumbnailSelector
-  , requestMetadataSelector
-  , flushThumbnailCacheSelector
-  , flushMetadataCacheSelector
-  , deviceSelector
-  , parentFolderSelector
-  , nameSelector
-  , utiSelector
-  , fileSystemPathSelector
-  , lockedSelector
-  , rawSelector
-  , inTemporaryStoreSelector
-  , creationDateSelector
-  , modificationDateSelector
-  , thumbnailSelector
-  , metadataSelector
-  , userDataSelector
-  , ptpObjectHandleSelector
   , addedAfterContentCatalogCompletedSelector
-  , thumbnailIfAvailableSelector
+  , creationDateSelector
+  , deviceSelector
+  , fileSystemPathSelector
+  , flushMetadataCacheSelector
+  , flushThumbnailCacheSelector
+  , inTemporaryStoreSelector
   , largeThumbnailIfAvailableSelector
+  , lockedSelector
+  , metadataSelector
+  , modificationDateSelector
+  , nameSelector
+  , parentFolderSelector
+  , ptpObjectHandleSelector
+  , rawSelector
+  , requestMetadataSelector
+  , requestThumbnailSelector
+  , thumbnailIfAvailableSelector
+  , thumbnailSelector
+  , userDataSelector
+  , utiSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,8 +76,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- requestThumbnail@
 requestThumbnail :: IsICCameraItem icCameraItem => icCameraItem -> IO ()
-requestThumbnail icCameraItem  =
-    sendMsg icCameraItem (mkSelector "requestThumbnail") retVoid []
+requestThumbnail icCameraItem =
+  sendMessage icCameraItem requestThumbnailSelector
 
 -- | requestMetadata
 --
@@ -90,8 +87,8 @@ requestThumbnail icCameraItem  =
 --
 -- ObjC selector: @- requestMetadata@
 requestMetadata :: IsICCameraItem icCameraItem => icCameraItem -> IO ()
-requestMetadata icCameraItem  =
-    sendMsg icCameraItem (mkSelector "requestMetadata") retVoid []
+requestMetadata icCameraItem =
+  sendMessage icCameraItem requestMetadataSelector
 
 -- | flushThumbnailCache
 --
@@ -99,8 +96,8 @@ requestMetadata icCameraItem  =
 --
 -- ObjC selector: @- flushThumbnailCache@
 flushThumbnailCache :: IsICCameraItem icCameraItem => icCameraItem -> IO ()
-flushThumbnailCache icCameraItem  =
-    sendMsg icCameraItem (mkSelector "flushThumbnailCache") retVoid []
+flushThumbnailCache icCameraItem =
+  sendMessage icCameraItem flushThumbnailCacheSelector
 
 -- | flushMetadataCache
 --
@@ -108,8 +105,8 @@ flushThumbnailCache icCameraItem  =
 --
 -- ObjC selector: @- flushMetadataCache@
 flushMetadataCache :: IsICCameraItem icCameraItem => icCameraItem -> IO ()
-flushMetadataCache icCameraItem  =
-    sendMsg icCameraItem (mkSelector "flushMetadataCache") retVoid []
+flushMetadataCache icCameraItem =
+  sendMessage icCameraItem flushMetadataCacheSelector
 
 -- | device
 --
@@ -117,8 +114,8 @@ flushMetadataCache icCameraItem  =
 --
 -- ObjC selector: @- device@
 device :: IsICCameraItem icCameraItem => icCameraItem -> IO (Id ICCameraDevice)
-device icCameraItem  =
-    sendMsg icCameraItem (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device icCameraItem =
+  sendMessage icCameraItem deviceSelector
 
 -- | parentFolder
 --
@@ -126,8 +123,8 @@ device icCameraItem  =
 --
 -- ObjC selector: @- parentFolder@
 parentFolder :: IsICCameraItem icCameraItem => icCameraItem -> IO (Id ICCameraFolder)
-parentFolder icCameraItem  =
-    sendMsg icCameraItem (mkSelector "parentFolder") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentFolder icCameraItem =
+  sendMessage icCameraItem parentFolderSelector
 
 -- | name
 --
@@ -135,8 +132,8 @@ parentFolder icCameraItem  =
 --
 -- ObjC selector: @- name@
 name :: IsICCameraItem icCameraItem => icCameraItem -> IO (Id NSString)
-name icCameraItem  =
-    sendMsg icCameraItem (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name icCameraItem =
+  sendMessage icCameraItem nameSelector
 
 -- | UTI
 --
@@ -144,8 +141,8 @@ name icCameraItem  =
 --
 -- ObjC selector: @- UTI@
 uti :: IsICCameraItem icCameraItem => icCameraItem -> IO (Id NSString)
-uti icCameraItem  =
-    sendMsg icCameraItem (mkSelector "UTI") (retPtr retVoid) [] >>= retainedObject . castPtr
+uti icCameraItem =
+  sendMessage icCameraItem utiSelector
 
 -- | fileSystemPath
 --
@@ -153,8 +150,8 @@ uti icCameraItem  =
 --
 -- ObjC selector: @- fileSystemPath@
 fileSystemPath :: IsICCameraItem icCameraItem => icCameraItem -> IO RawId
-fileSystemPath icCameraItem  =
-    fmap (RawId . castPtr) $ sendMsg icCameraItem (mkSelector "fileSystemPath") (retPtr retVoid) []
+fileSystemPath icCameraItem =
+  sendMessage icCameraItem fileSystemPathSelector
 
 -- | locked
 --
@@ -162,8 +159,8 @@ fileSystemPath icCameraItem  =
 --
 -- ObjC selector: @- locked@
 locked :: IsICCameraItem icCameraItem => icCameraItem -> IO Bool
-locked icCameraItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraItem (mkSelector "locked") retCULong []
+locked icCameraItem =
+  sendMessage icCameraItem lockedSelector
 
 -- | raw
 --
@@ -171,8 +168,8 @@ locked icCameraItem  =
 --
 -- ObjC selector: @- raw@
 raw :: IsICCameraItem icCameraItem => icCameraItem -> IO Bool
-raw icCameraItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraItem (mkSelector "raw") retCULong []
+raw icCameraItem =
+  sendMessage icCameraItem rawSelector
 
 -- | inTemporaryStore
 --
@@ -180,8 +177,8 @@ raw icCameraItem  =
 --
 -- ObjC selector: @- inTemporaryStore@
 inTemporaryStore :: IsICCameraItem icCameraItem => icCameraItem -> IO Bool
-inTemporaryStore icCameraItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraItem (mkSelector "inTemporaryStore") retCULong []
+inTemporaryStore icCameraItem =
+  sendMessage icCameraItem inTemporaryStoreSelector
 
 -- | creationDate
 --
@@ -189,8 +186,8 @@ inTemporaryStore icCameraItem  =
 --
 -- ObjC selector: @- creationDate@
 creationDate :: IsICCameraItem icCameraItem => icCameraItem -> IO (Id NSDate)
-creationDate icCameraItem  =
-    sendMsg icCameraItem (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate icCameraItem =
+  sendMessage icCameraItem creationDateSelector
 
 -- | modificationDate
 --
@@ -198,8 +195,8 @@ creationDate icCameraItem  =
 --
 -- ObjC selector: @- modificationDate@
 modificationDate :: IsICCameraItem icCameraItem => icCameraItem -> IO (Id NSDate)
-modificationDate icCameraItem  =
-    sendMsg icCameraItem (mkSelector "modificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+modificationDate icCameraItem =
+  sendMessage icCameraItem modificationDateSelector
 
 -- | thumbnail
 --
@@ -207,8 +204,8 @@ modificationDate icCameraItem  =
 --
 -- ObjC selector: @- thumbnail@
 thumbnail :: IsICCameraItem icCameraItem => icCameraItem -> IO (Ptr ())
-thumbnail icCameraItem  =
-    fmap castPtr $ sendMsg icCameraItem (mkSelector "thumbnail") (retPtr retVoid) []
+thumbnail icCameraItem =
+  sendMessage icCameraItem thumbnailSelector
 
 -- | metadata
 --
@@ -216,8 +213,8 @@ thumbnail icCameraItem  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsICCameraItem icCameraItem => icCameraItem -> IO (Id NSDictionary)
-metadata icCameraItem  =
-    sendMsg icCameraItem (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata icCameraItem =
+  sendMessage icCameraItem metadataSelector
 
 -- | userData
 --
@@ -225,8 +222,8 @@ metadata icCameraItem  =
 --
 -- ObjC selector: @- userData@
 userData :: IsICCameraItem icCameraItem => icCameraItem -> IO (Id NSMutableDictionary)
-userData icCameraItem  =
-    sendMsg icCameraItem (mkSelector "userData") (retPtr retVoid) [] >>= retainedObject . castPtr
+userData icCameraItem =
+  sendMessage icCameraItem userDataSelector
 
 -- | ptpObjectHandle
 --
@@ -234,8 +231,8 @@ userData icCameraItem  =
 --
 -- ObjC selector: @- ptpObjectHandle@
 ptpObjectHandle :: IsICCameraItem icCameraItem => icCameraItem -> IO CUInt
-ptpObjectHandle icCameraItem  =
-    sendMsg icCameraItem (mkSelector "ptpObjectHandle") retCUInt []
+ptpObjectHandle icCameraItem =
+  sendMessage icCameraItem ptpObjectHandleSelector
 
 -- | addedAfterContentCatalogCompleted
 --
@@ -243,108 +240,108 @@ ptpObjectHandle icCameraItem  =
 --
 -- ObjC selector: @- addedAfterContentCatalogCompleted@
 addedAfterContentCatalogCompleted :: IsICCameraItem icCameraItem => icCameraItem -> IO Bool
-addedAfterContentCatalogCompleted icCameraItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraItem (mkSelector "addedAfterContentCatalogCompleted") retCULong []
+addedAfterContentCatalogCompleted icCameraItem =
+  sendMessage icCameraItem addedAfterContentCatalogCompletedSelector
 
 -- | thumbnailIfAvailable
 --
 -- ObjC selector: @- thumbnailIfAvailable@
 thumbnailIfAvailable :: IsICCameraItem icCameraItem => icCameraItem -> IO (Ptr ())
-thumbnailIfAvailable icCameraItem  =
-    fmap castPtr $ sendMsg icCameraItem (mkSelector "thumbnailIfAvailable") (retPtr retVoid) []
+thumbnailIfAvailable icCameraItem =
+  sendMessage icCameraItem thumbnailIfAvailableSelector
 
 -- | largeThumbnailIfAvailable
 --
 -- ObjC selector: @- largeThumbnailIfAvailable@
 largeThumbnailIfAvailable :: IsICCameraItem icCameraItem => icCameraItem -> IO (Ptr ())
-largeThumbnailIfAvailable icCameraItem  =
-    fmap castPtr $ sendMsg icCameraItem (mkSelector "largeThumbnailIfAvailable") (retPtr retVoid) []
+largeThumbnailIfAvailable icCameraItem =
+  sendMessage icCameraItem largeThumbnailIfAvailableSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestThumbnail@
-requestThumbnailSelector :: Selector
+requestThumbnailSelector :: Selector '[] ()
 requestThumbnailSelector = mkSelector "requestThumbnail"
 
 -- | @Selector@ for @requestMetadata@
-requestMetadataSelector :: Selector
+requestMetadataSelector :: Selector '[] ()
 requestMetadataSelector = mkSelector "requestMetadata"
 
 -- | @Selector@ for @flushThumbnailCache@
-flushThumbnailCacheSelector :: Selector
+flushThumbnailCacheSelector :: Selector '[] ()
 flushThumbnailCacheSelector = mkSelector "flushThumbnailCache"
 
 -- | @Selector@ for @flushMetadataCache@
-flushMetadataCacheSelector :: Selector
+flushMetadataCacheSelector :: Selector '[] ()
 flushMetadataCacheSelector = mkSelector "flushMetadataCache"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id ICCameraDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @parentFolder@
-parentFolderSelector :: Selector
+parentFolderSelector :: Selector '[] (Id ICCameraFolder)
 parentFolderSelector = mkSelector "parentFolder"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @UTI@
-utiSelector :: Selector
+utiSelector :: Selector '[] (Id NSString)
 utiSelector = mkSelector "UTI"
 
 -- | @Selector@ for @fileSystemPath@
-fileSystemPathSelector :: Selector
+fileSystemPathSelector :: Selector '[] RawId
 fileSystemPathSelector = mkSelector "fileSystemPath"
 
 -- | @Selector@ for @locked@
-lockedSelector :: Selector
+lockedSelector :: Selector '[] Bool
 lockedSelector = mkSelector "locked"
 
 -- | @Selector@ for @raw@
-rawSelector :: Selector
+rawSelector :: Selector '[] Bool
 rawSelector = mkSelector "raw"
 
 -- | @Selector@ for @inTemporaryStore@
-inTemporaryStoreSelector :: Selector
+inTemporaryStoreSelector :: Selector '[] Bool
 inTemporaryStoreSelector = mkSelector "inTemporaryStore"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 
 -- | @Selector@ for @modificationDate@
-modificationDateSelector :: Selector
+modificationDateSelector :: Selector '[] (Id NSDate)
 modificationDateSelector = mkSelector "modificationDate"
 
 -- | @Selector@ for @thumbnail@
-thumbnailSelector :: Selector
+thumbnailSelector :: Selector '[] (Ptr ())
 thumbnailSelector = mkSelector "thumbnail"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSDictionary)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @userData@
-userDataSelector :: Selector
+userDataSelector :: Selector '[] (Id NSMutableDictionary)
 userDataSelector = mkSelector "userData"
 
 -- | @Selector@ for @ptpObjectHandle@
-ptpObjectHandleSelector :: Selector
+ptpObjectHandleSelector :: Selector '[] CUInt
 ptpObjectHandleSelector = mkSelector "ptpObjectHandle"
 
 -- | @Selector@ for @addedAfterContentCatalogCompleted@
-addedAfterContentCatalogCompletedSelector :: Selector
+addedAfterContentCatalogCompletedSelector :: Selector '[] Bool
 addedAfterContentCatalogCompletedSelector = mkSelector "addedAfterContentCatalogCompleted"
 
 -- | @Selector@ for @thumbnailIfAvailable@
-thumbnailIfAvailableSelector :: Selector
+thumbnailIfAvailableSelector :: Selector '[] (Ptr ())
 thumbnailIfAvailableSelector = mkSelector "thumbnailIfAvailable"
 
 -- | @Selector@ for @largeThumbnailIfAvailable@
-largeThumbnailIfAvailableSelector :: Selector
+largeThumbnailIfAvailableSelector :: Selector '[] (Ptr ())
 largeThumbnailIfAvailableSelector = mkSelector "largeThumbnailIfAvailable"
 

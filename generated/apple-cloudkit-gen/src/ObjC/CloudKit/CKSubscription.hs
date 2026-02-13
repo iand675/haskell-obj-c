@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,10 +16,10 @@ module ObjC.CloudKit.CKSubscription
   , setNotificationInfo
   , initSelector
   , newSelector
-  , subscriptionIDSelector
-  , subscriptionTypeSelector
   , notificationInfoSelector
   , setNotificationInfoSelector
+  , subscriptionIDSelector
+  , subscriptionTypeSelector
 
   -- * Enum types
   , CKSubscriptionType(CKSubscriptionType)
@@ -28,15 +29,11 @@ module ObjC.CloudKit.CKSubscription
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,25 +43,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKSubscription ckSubscription => ckSubscription -> IO (Id CKSubscription)
-init_ ckSubscription  =
-    sendMsg ckSubscription (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckSubscription =
+  sendOwnedMessage ckSubscription initSelector
 
 -- | @+ new@
 new :: IO (Id CKSubscription)
 new  =
   do
     cls' <- getRequiredClass "CKSubscription"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- subscriptionID@
 subscriptionID :: IsCKSubscription ckSubscription => ckSubscription -> IO (Id NSString)
-subscriptionID ckSubscription  =
-    sendMsg ckSubscription (mkSelector "subscriptionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptionID ckSubscription =
+  sendMessage ckSubscription subscriptionIDSelector
 
 -- | @- subscriptionType@
 subscriptionType :: IsCKSubscription ckSubscription => ckSubscription -> IO CKSubscriptionType
-subscriptionType ckSubscription  =
-    fmap (coerce :: CLong -> CKSubscriptionType) $ sendMsg ckSubscription (mkSelector "subscriptionType") retCLong []
+subscriptionType ckSubscription =
+  sendMessage ckSubscription subscriptionTypeSelector
 
 -- | Describes the notification that will be sent when the subscription fires.
 --
@@ -72,8 +69,8 @@ subscriptionType ckSubscription  =
 --
 -- ObjC selector: @- notificationInfo@
 notificationInfo :: IsCKSubscription ckSubscription => ckSubscription -> IO (Id CKNotificationInfo)
-notificationInfo ckSubscription  =
-    sendMsg ckSubscription (mkSelector "notificationInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+notificationInfo ckSubscription =
+  sendMessage ckSubscription notificationInfoSelector
 
 -- | Describes the notification that will be sent when the subscription fires.
 --
@@ -81,35 +78,34 @@ notificationInfo ckSubscription  =
 --
 -- ObjC selector: @- setNotificationInfo:@
 setNotificationInfo :: (IsCKSubscription ckSubscription, IsCKNotificationInfo value) => ckSubscription -> value -> IO ()
-setNotificationInfo ckSubscription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ckSubscription (mkSelector "setNotificationInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNotificationInfo ckSubscription value =
+  sendMessage ckSubscription setNotificationInfoSelector (toCKNotificationInfo value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKSubscription)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKSubscription)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @subscriptionID@
-subscriptionIDSelector :: Selector
+subscriptionIDSelector :: Selector '[] (Id NSString)
 subscriptionIDSelector = mkSelector "subscriptionID"
 
 -- | @Selector@ for @subscriptionType@
-subscriptionTypeSelector :: Selector
+subscriptionTypeSelector :: Selector '[] CKSubscriptionType
 subscriptionTypeSelector = mkSelector "subscriptionType"
 
 -- | @Selector@ for @notificationInfo@
-notificationInfoSelector :: Selector
+notificationInfoSelector :: Selector '[] (Id CKNotificationInfo)
 notificationInfoSelector = mkSelector "notificationInfo"
 
 -- | @Selector@ for @setNotificationInfo:@
-setNotificationInfoSelector :: Selector
+setNotificationInfoSelector :: Selector '[Id CKNotificationInfo] ()
 setNotificationInfoSelector = mkSelector "setNotificationInfo:"
 

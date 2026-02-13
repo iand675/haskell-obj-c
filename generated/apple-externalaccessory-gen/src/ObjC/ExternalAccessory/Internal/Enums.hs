@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ExternalAccessory.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @EABluetoothAccessoryPickerErrorCode@
 newtype EABluetoothAccessoryPickerErrorCode = EABluetoothAccessoryPickerErrorCode CLong
@@ -27,6 +30,16 @@ pattern EABluetoothAccessoryPickerResultCancelled = EABluetoothAccessoryPickerEr
 
 pattern EABluetoothAccessoryPickerResultFailed :: EABluetoothAccessoryPickerErrorCode
 pattern EABluetoothAccessoryPickerResultFailed = EABluetoothAccessoryPickerErrorCode 3
+
+instance ObjCArgument EABluetoothAccessoryPickerErrorCode where
+  withObjCArg (EABluetoothAccessoryPickerErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn EABluetoothAccessoryPickerErrorCode where
+  type RawReturn EABluetoothAccessoryPickerErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EABluetoothAccessoryPickerErrorCode x)
+  fromOwned x = pure (EABluetoothAccessoryPickerErrorCode x)
 
 -- | EAWiFiUnconfiguredAccessoryBrowserState
 --
@@ -56,6 +69,16 @@ pattern EAWiFiUnconfiguredAccessoryBrowserStateSearching = EAWiFiUnconfiguredAcc
 pattern EAWiFiUnconfiguredAccessoryBrowserStateConfiguring :: EAWiFiUnconfiguredAccessoryBrowserState
 pattern EAWiFiUnconfiguredAccessoryBrowserStateConfiguring = EAWiFiUnconfiguredAccessoryBrowserState 3
 
+instance ObjCArgument EAWiFiUnconfiguredAccessoryBrowserState where
+  withObjCArg (EAWiFiUnconfiguredAccessoryBrowserState x) k = k (argCLong x)
+
+instance ObjCReturn EAWiFiUnconfiguredAccessoryBrowserState where
+  type RawReturn EAWiFiUnconfiguredAccessoryBrowserState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EAWiFiUnconfiguredAccessoryBrowserState x)
+  fromOwned x = pure (EAWiFiUnconfiguredAccessoryBrowserState x)
+
 -- | EAWiFiUnconfiguredAccessoryConfigurationStatus
 --
 -- Represents the state of an EAWiFiUnconfiguredAccessory configuration process.
@@ -78,6 +101,16 @@ pattern EAWiFiUnconfiguredAccessoryConfigurationStatusUserCancelledConfiguration
 
 pattern EAWiFiUnconfiguredAccessoryConfigurationStatusFailed :: EAWiFiUnconfiguredAccessoryConfigurationStatus
 pattern EAWiFiUnconfiguredAccessoryConfigurationStatusFailed = EAWiFiUnconfiguredAccessoryConfigurationStatus 2
+
+instance ObjCArgument EAWiFiUnconfiguredAccessoryConfigurationStatus where
+  withObjCArg (EAWiFiUnconfiguredAccessoryConfigurationStatus x) k = k (argCLong x)
+
+instance ObjCReturn EAWiFiUnconfiguredAccessoryConfigurationStatus where
+  type RawReturn EAWiFiUnconfiguredAccessoryConfigurationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EAWiFiUnconfiguredAccessoryConfigurationStatus x)
+  fromOwned x = pure (EAWiFiUnconfiguredAccessoryConfigurationStatus x)
 
 -- | EAWiFiUnconfiguredAccessoryProperties
 --
@@ -107,3 +140,13 @@ pattern EAWiFiUnconfiguredAccessoryPropertySupportsAirPrint = EAWiFiUnconfigured
 
 pattern EAWiFiUnconfiguredAccessoryPropertySupportsHomeKit :: EAWiFiUnconfiguredAccessoryProperties
 pattern EAWiFiUnconfiguredAccessoryPropertySupportsHomeKit = EAWiFiUnconfiguredAccessoryProperties 4
+
+instance ObjCArgument EAWiFiUnconfiguredAccessoryProperties where
+  withObjCArg (EAWiFiUnconfiguredAccessoryProperties x) k = k (argCULong x)
+
+instance ObjCReturn EAWiFiUnconfiguredAccessoryProperties where
+  type RawReturn EAWiFiUnconfiguredAccessoryProperties = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EAWiFiUnconfiguredAccessoryProperties x)
+  fromOwned x = pure (EAWiFiUnconfiguredAccessoryProperties x)

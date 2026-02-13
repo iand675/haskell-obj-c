@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,18 +24,18 @@ module ObjC.AVFoundation.AVMutableCaptionRegion
   , setDisplayAlignment
   , writingMode
   , setWritingMode
+  , displayAlignmentSelector
   , initSelector
   , initWithIdentifierSelector
   , originSelector
-  , setOriginSelector
-  , sizeSelector
-  , setSizeSelector
   , scrollSelector
-  , setScrollSelector
-  , displayAlignmentSelector
   , setDisplayAlignmentSelector
-  , writingModeSelector
+  , setOriginSelector
+  , setScrollSelector
+  , setSizeSelector
   , setWritingModeSelector
+  , sizeSelector
+  , writingModeSelector
 
   -- * Enum types
   , AVCaptionRegionDisplayAlignment(AVCaptionRegionDisplayAlignment)
@@ -50,15 +51,11 @@ module ObjC.AVFoundation.AVMutableCaptionRegion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,8 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> IO (Id AVMutableCaptionRegion)
-init_ avMutableCaptionRegion  =
-    sendMsg avMutableCaptionRegion (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMutableCaptionRegion =
+  sendOwnedMessage avMutableCaptionRegion initSelector
 
 -- | initWithIdentifier:
 --
@@ -82,9 +79,8 @@ init_ avMutableCaptionRegion  =
 --
 -- ObjC selector: @- initWithIdentifier:@
 initWithIdentifier :: (IsAVMutableCaptionRegion avMutableCaptionRegion, IsNSString identifier) => avMutableCaptionRegion -> identifier -> IO (Id AVMutableCaptionRegion)
-initWithIdentifier avMutableCaptionRegion  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg avMutableCaptionRegion (mkSelector "initWithIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithIdentifier avMutableCaptionRegion identifier =
+  sendOwnedMessage avMutableCaptionRegion initWithIdentifierSelector (toNSString identifier)
 
 -- | origin
 --
@@ -92,8 +88,8 @@ initWithIdentifier avMutableCaptionRegion  identifier =
 --
 -- ObjC selector: @- origin@
 origin :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> IO AVCaptionPoint
-origin avMutableCaptionRegion  =
-    sendMsgStret avMutableCaptionRegion (mkSelector "origin") retAVCaptionPoint []
+origin avMutableCaptionRegion =
+  sendMessage avMutableCaptionRegion originSelector
 
 -- | origin
 --
@@ -101,8 +97,8 @@ origin avMutableCaptionRegion  =
 --
 -- ObjC selector: @- setOrigin:@
 setOrigin :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> AVCaptionPoint -> IO ()
-setOrigin avMutableCaptionRegion  value =
-    sendMsg avMutableCaptionRegion (mkSelector "setOrigin:") retVoid [argAVCaptionPoint value]
+setOrigin avMutableCaptionRegion value =
+  sendMessage avMutableCaptionRegion setOriginSelector value
 
 -- | size
 --
@@ -110,8 +106,8 @@ setOrigin avMutableCaptionRegion  value =
 --
 -- ObjC selector: @- size@
 size :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> IO AVCaptionSize
-size avMutableCaptionRegion  =
-    sendMsgStret avMutableCaptionRegion (mkSelector "size") retAVCaptionSize []
+size avMutableCaptionRegion =
+  sendMessage avMutableCaptionRegion sizeSelector
 
 -- | size
 --
@@ -119,8 +115,8 @@ size avMutableCaptionRegion  =
 --
 -- ObjC selector: @- setSize:@
 setSize :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> AVCaptionSize -> IO ()
-setSize avMutableCaptionRegion  value =
-    sendMsg avMutableCaptionRegion (mkSelector "setSize:") retVoid [argAVCaptionSize value]
+setSize avMutableCaptionRegion value =
+  sendMessage avMutableCaptionRegion setSizeSelector value
 
 -- | scroll
 --
@@ -128,8 +124,8 @@ setSize avMutableCaptionRegion  value =
 --
 -- ObjC selector: @- scroll@
 scroll :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> IO AVCaptionRegionScroll
-scroll avMutableCaptionRegion  =
-    fmap (coerce :: CLong -> AVCaptionRegionScroll) $ sendMsg avMutableCaptionRegion (mkSelector "scroll") retCLong []
+scroll avMutableCaptionRegion =
+  sendMessage avMutableCaptionRegion scrollSelector
 
 -- | scroll
 --
@@ -137,8 +133,8 @@ scroll avMutableCaptionRegion  =
 --
 -- ObjC selector: @- setScroll:@
 setScroll :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> AVCaptionRegionScroll -> IO ()
-setScroll avMutableCaptionRegion  value =
-    sendMsg avMutableCaptionRegion (mkSelector "setScroll:") retVoid [argCLong (coerce value)]
+setScroll avMutableCaptionRegion value =
+  sendMessage avMutableCaptionRegion setScrollSelector value
 
 -- | displayAlignment
 --
@@ -146,8 +142,8 @@ setScroll avMutableCaptionRegion  value =
 --
 -- ObjC selector: @- displayAlignment@
 displayAlignment :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> IO AVCaptionRegionDisplayAlignment
-displayAlignment avMutableCaptionRegion  =
-    fmap (coerce :: CLong -> AVCaptionRegionDisplayAlignment) $ sendMsg avMutableCaptionRegion (mkSelector "displayAlignment") retCLong []
+displayAlignment avMutableCaptionRegion =
+  sendMessage avMutableCaptionRegion displayAlignmentSelector
 
 -- | displayAlignment
 --
@@ -155,8 +151,8 @@ displayAlignment avMutableCaptionRegion  =
 --
 -- ObjC selector: @- setDisplayAlignment:@
 setDisplayAlignment :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> AVCaptionRegionDisplayAlignment -> IO ()
-setDisplayAlignment avMutableCaptionRegion  value =
-    sendMsg avMutableCaptionRegion (mkSelector "setDisplayAlignment:") retVoid [argCLong (coerce value)]
+setDisplayAlignment avMutableCaptionRegion value =
+  sendMessage avMutableCaptionRegion setDisplayAlignmentSelector value
 
 -- | writingMode
 --
@@ -164,8 +160,8 @@ setDisplayAlignment avMutableCaptionRegion  value =
 --
 -- ObjC selector: @- writingMode@
 writingMode :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> IO AVCaptionRegionWritingMode
-writingMode avMutableCaptionRegion  =
-    fmap (coerce :: CLong -> AVCaptionRegionWritingMode) $ sendMsg avMutableCaptionRegion (mkSelector "writingMode") retCLong []
+writingMode avMutableCaptionRegion =
+  sendMessage avMutableCaptionRegion writingModeSelector
 
 -- | writingMode
 --
@@ -173,58 +169,58 @@ writingMode avMutableCaptionRegion  =
 --
 -- ObjC selector: @- setWritingMode:@
 setWritingMode :: IsAVMutableCaptionRegion avMutableCaptionRegion => avMutableCaptionRegion -> AVCaptionRegionWritingMode -> IO ()
-setWritingMode avMutableCaptionRegion  value =
-    sendMsg avMutableCaptionRegion (mkSelector "setWritingMode:") retVoid [argCLong (coerce value)]
+setWritingMode avMutableCaptionRegion value =
+  sendMessage avMutableCaptionRegion setWritingModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMutableCaptionRegion)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithIdentifier:@
-initWithIdentifierSelector :: Selector
+initWithIdentifierSelector :: Selector '[Id NSString] (Id AVMutableCaptionRegion)
 initWithIdentifierSelector = mkSelector "initWithIdentifier:"
 
 -- | @Selector@ for @origin@
-originSelector :: Selector
+originSelector :: Selector '[] AVCaptionPoint
 originSelector = mkSelector "origin"
 
 -- | @Selector@ for @setOrigin:@
-setOriginSelector :: Selector
+setOriginSelector :: Selector '[AVCaptionPoint] ()
 setOriginSelector = mkSelector "setOrigin:"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] AVCaptionSize
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @setSize:@
-setSizeSelector :: Selector
+setSizeSelector :: Selector '[AVCaptionSize] ()
 setSizeSelector = mkSelector "setSize:"
 
 -- | @Selector@ for @scroll@
-scrollSelector :: Selector
+scrollSelector :: Selector '[] AVCaptionRegionScroll
 scrollSelector = mkSelector "scroll"
 
 -- | @Selector@ for @setScroll:@
-setScrollSelector :: Selector
+setScrollSelector :: Selector '[AVCaptionRegionScroll] ()
 setScrollSelector = mkSelector "setScroll:"
 
 -- | @Selector@ for @displayAlignment@
-displayAlignmentSelector :: Selector
+displayAlignmentSelector :: Selector '[] AVCaptionRegionDisplayAlignment
 displayAlignmentSelector = mkSelector "displayAlignment"
 
 -- | @Selector@ for @setDisplayAlignment:@
-setDisplayAlignmentSelector :: Selector
+setDisplayAlignmentSelector :: Selector '[AVCaptionRegionDisplayAlignment] ()
 setDisplayAlignmentSelector = mkSelector "setDisplayAlignment:"
 
 -- | @Selector@ for @writingMode@
-writingModeSelector :: Selector
+writingModeSelector :: Selector '[] AVCaptionRegionWritingMode
 writingModeSelector = mkSelector "writingMode"
 
 -- | @Selector@ for @setWritingMode:@
-setWritingModeSelector :: Selector
+setWritingModeSelector :: Selector '[AVCaptionRegionWritingMode] ()
 setWritingModeSelector = mkSelector "setWritingMode:"
 

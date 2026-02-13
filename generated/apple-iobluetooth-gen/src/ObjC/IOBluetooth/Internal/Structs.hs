@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data BluetoothEnhancedSynchronousConnectionInfo = BluetoothEnhancedSynchronousConnectionInfo
   { bluetoothEnhancedSynchronousConnectionInfoTransmitBandWidth :: !CUInt
@@ -103,6 +105,16 @@ argBluetoothEnhancedSynchronousConnectionInfo = mkStorableArg bluetoothEnhancedS
 retBluetoothEnhancedSynchronousConnectionInfo :: RetType BluetoothEnhancedSynchronousConnectionInfo
 retBluetoothEnhancedSynchronousConnectionInfo = mkStorableRetType bluetoothEnhancedSynchronousConnectionInfoStructType
 
+instance ObjCArgument BluetoothEnhancedSynchronousConnectionInfo where
+  withObjCArg x k = k (argBluetoothEnhancedSynchronousConnectionInfo x)
+
+instance ObjCReturn BluetoothEnhancedSynchronousConnectionInfo where
+  type RawReturn BluetoothEnhancedSynchronousConnectionInfo = BluetoothEnhancedSynchronousConnectionInfo
+  objcRetType = retBluetoothEnhancedSynchronousConnectionInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIAcceptSynchronousConnectionRequestParams = BluetoothHCIAcceptSynchronousConnectionRequestParams
   { bluetoothHCIAcceptSynchronousConnectionRequestParamsTransmitBandwidth :: !CUInt
   , bluetoothHCIAcceptSynchronousConnectionRequestParamsReceiveBandwidth :: !CUInt
@@ -139,6 +151,16 @@ argBluetoothHCIAcceptSynchronousConnectionRequestParams = mkStorableArg bluetoot
 retBluetoothHCIAcceptSynchronousConnectionRequestParams :: RetType BluetoothHCIAcceptSynchronousConnectionRequestParams
 retBluetoothHCIAcceptSynchronousConnectionRequestParams = mkStorableRetType bluetoothHCIAcceptSynchronousConnectionRequestParamsStructType
 
+instance ObjCArgument BluetoothHCIAcceptSynchronousConnectionRequestParams where
+  withObjCArg x k = k (argBluetoothHCIAcceptSynchronousConnectionRequestParams x)
+
+instance ObjCReturn BluetoothHCIAcceptSynchronousConnectionRequestParams where
+  type RawReturn BluetoothHCIAcceptSynchronousConnectionRequestParams = BluetoothHCIAcceptSynchronousConnectionRequestParams
+  objcRetType = retBluetoothHCIAcceptSynchronousConnectionRequestParams
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIAutomaticFlushTimeoutInfo = BluetoothHCIAutomaticFlushTimeoutInfo
   { bluetoothHCIAutomaticFlushTimeoutInfoHandle :: !CUShort
   , bluetoothHCIAutomaticFlushTimeoutInfoTimeout :: !CUShort
@@ -162,6 +184,16 @@ argBluetoothHCIAutomaticFlushTimeoutInfo = mkStorableArg bluetoothHCIAutomaticFl
 
 retBluetoothHCIAutomaticFlushTimeoutInfo :: RetType BluetoothHCIAutomaticFlushTimeoutInfo
 retBluetoothHCIAutomaticFlushTimeoutInfo = mkStorableRetType bluetoothHCIAutomaticFlushTimeoutInfoStructType
+
+instance ObjCArgument BluetoothHCIAutomaticFlushTimeoutInfo where
+  withObjCArg x k = k (argBluetoothHCIAutomaticFlushTimeoutInfo x)
+
+instance ObjCReturn BluetoothHCIAutomaticFlushTimeoutInfo where
+  type RawReturn BluetoothHCIAutomaticFlushTimeoutInfo = BluetoothHCIAutomaticFlushTimeoutInfo
+  objcRetType = retBluetoothHCIAutomaticFlushTimeoutInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIBufferSize = BluetoothHCIBufferSize
   { bluetoothHCIBufferSizeACLDataPacketLength :: !CUShort
@@ -193,6 +225,16 @@ argBluetoothHCIBufferSize = mkStorableArg bluetoothHCIBufferSizeStructType
 retBluetoothHCIBufferSize :: RetType BluetoothHCIBufferSize
 retBluetoothHCIBufferSize = mkStorableRetType bluetoothHCIBufferSizeStructType
 
+instance ObjCArgument BluetoothHCIBufferSize where
+  withObjCArg x k = k (argBluetoothHCIBufferSize x)
+
+instance ObjCReturn BluetoothHCIBufferSize where
+  type RawReturn BluetoothHCIBufferSize = BluetoothHCIBufferSize
+  objcRetType = retBluetoothHCIBufferSize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEncryptionKeySizeInfo = BluetoothHCIEncryptionKeySizeInfo
   { bluetoothHCIEncryptionKeySizeInfoHandle :: !CUShort
   , bluetoothHCIEncryptionKeySizeInfoKeySize :: !CUChar
@@ -216,6 +258,16 @@ argBluetoothHCIEncryptionKeySizeInfo = mkStorableArg bluetoothHCIEncryptionKeySi
 
 retBluetoothHCIEncryptionKeySizeInfo :: RetType BluetoothHCIEncryptionKeySizeInfo
 retBluetoothHCIEncryptionKeySizeInfo = mkStorableRetType bluetoothHCIEncryptionKeySizeInfoStructType
+
+instance ObjCArgument BluetoothHCIEncryptionKeySizeInfo where
+  withObjCArg x k = k (argBluetoothHCIEncryptionKeySizeInfo x)
+
+instance ObjCReturn BluetoothHCIEncryptionKeySizeInfo where
+  type RawReturn BluetoothHCIEncryptionKeySizeInfo = BluetoothHCIEncryptionKeySizeInfo
+  objcRetType = retBluetoothHCIEncryptionKeySizeInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams = BluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams
   { bluetoothHCIEnhancedAcceptSynchronousConnectionRequestParamsTransmitBandwidth :: !CUInt
@@ -304,6 +356,16 @@ argBluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams = mkStorableArg 
 retBluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams :: RetType BluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams
 retBluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams = mkStorableRetType bluetoothHCIEnhancedAcceptSynchronousConnectionRequestParamsStructType
 
+instance ObjCArgument BluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams where
+  withObjCArg x k = k (argBluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams x)
+
+instance ObjCReturn BluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams where
+  type RawReturn BluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams = BluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams
+  objcRetType = retBluetoothHCIEnhancedAcceptSynchronousConnectionRequestParams
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEnhancedSetupSynchronousConnectionParams = BluetoothHCIEnhancedSetupSynchronousConnectionParams
   { bluetoothHCIEnhancedSetupSynchronousConnectionParamsTransmitBandwidth :: !CUInt
   , bluetoothHCIEnhancedSetupSynchronousConnectionParamsReceiveBandwidth :: !CUInt
@@ -391,6 +453,16 @@ argBluetoothHCIEnhancedSetupSynchronousConnectionParams = mkStorableArg bluetoot
 retBluetoothHCIEnhancedSetupSynchronousConnectionParams :: RetType BluetoothHCIEnhancedSetupSynchronousConnectionParams
 retBluetoothHCIEnhancedSetupSynchronousConnectionParams = mkStorableRetType bluetoothHCIEnhancedSetupSynchronousConnectionParamsStructType
 
+instance ObjCArgument BluetoothHCIEnhancedSetupSynchronousConnectionParams where
+  withObjCArg x k = k (argBluetoothHCIEnhancedSetupSynchronousConnectionParams x)
+
+instance ObjCReturn BluetoothHCIEnhancedSetupSynchronousConnectionParams where
+  type RawReturn BluetoothHCIEnhancedSetupSynchronousConnectionParams = BluetoothHCIEnhancedSetupSynchronousConnectionParams
+  objcRetType = retBluetoothHCIEnhancedSetupSynchronousConnectionParams
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventAuthenticationCompleteResults = BluetoothHCIEventAuthenticationCompleteResults
   { bluetoothHCIEventAuthenticationCompleteResultsConnectionHandle :: !CUShort
   } deriving (Eq, Show)
@@ -412,6 +484,16 @@ argBluetoothHCIEventAuthenticationCompleteResults = mkStorableArg bluetoothHCIEv
 retBluetoothHCIEventAuthenticationCompleteResults :: RetType BluetoothHCIEventAuthenticationCompleteResults
 retBluetoothHCIEventAuthenticationCompleteResults = mkStorableRetType bluetoothHCIEventAuthenticationCompleteResultsStructType
 
+instance ObjCArgument BluetoothHCIEventAuthenticationCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventAuthenticationCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventAuthenticationCompleteResults where
+  type RawReturn BluetoothHCIEventAuthenticationCompleteResults = BluetoothHCIEventAuthenticationCompleteResults
+  objcRetType = retBluetoothHCIEventAuthenticationCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventChangeConnectionLinkKeyCompleteResults = BluetoothHCIEventChangeConnectionLinkKeyCompleteResults
   { bluetoothHCIEventChangeConnectionLinkKeyCompleteResultsConnectionHandle :: !CUShort
   } deriving (Eq, Show)
@@ -432,6 +514,16 @@ argBluetoothHCIEventChangeConnectionLinkKeyCompleteResults = mkStorableArg bluet
 
 retBluetoothHCIEventChangeConnectionLinkKeyCompleteResults :: RetType BluetoothHCIEventChangeConnectionLinkKeyCompleteResults
 retBluetoothHCIEventChangeConnectionLinkKeyCompleteResults = mkStorableRetType bluetoothHCIEventChangeConnectionLinkKeyCompleteResultsStructType
+
+instance ObjCArgument BluetoothHCIEventChangeConnectionLinkKeyCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventChangeConnectionLinkKeyCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventChangeConnectionLinkKeyCompleteResults where
+  type RawReturn BluetoothHCIEventChangeConnectionLinkKeyCompleteResults = BluetoothHCIEventChangeConnectionLinkKeyCompleteResults
+  objcRetType = retBluetoothHCIEventChangeConnectionLinkKeyCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventConnectionCompleteResults = BluetoothHCIEventConnectionCompleteResults
   { bluetoothHCIEventConnectionCompleteResultsConnectionHandle :: !CUShort
@@ -463,6 +555,16 @@ argBluetoothHCIEventConnectionCompleteResults = mkStorableArg bluetoothHCIEventC
 retBluetoothHCIEventConnectionCompleteResults :: RetType BluetoothHCIEventConnectionCompleteResults
 retBluetoothHCIEventConnectionCompleteResults = mkStorableRetType bluetoothHCIEventConnectionCompleteResultsStructType
 
+instance ObjCArgument BluetoothHCIEventConnectionCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventConnectionCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventConnectionCompleteResults where
+  type RawReturn BluetoothHCIEventConnectionCompleteResults = BluetoothHCIEventConnectionCompleteResults
+  objcRetType = retBluetoothHCIEventConnectionCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventConnectionPacketTypeResults = BluetoothHCIEventConnectionPacketTypeResults
   { bluetoothHCIEventConnectionPacketTypeResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventConnectionPacketTypeResultsPacketType :: !CUShort
@@ -486,6 +588,16 @@ argBluetoothHCIEventConnectionPacketTypeResults = mkStorableArg bluetoothHCIEven
 
 retBluetoothHCIEventConnectionPacketTypeResults :: RetType BluetoothHCIEventConnectionPacketTypeResults
 retBluetoothHCIEventConnectionPacketTypeResults = mkStorableRetType bluetoothHCIEventConnectionPacketTypeResultsStructType
+
+instance ObjCArgument BluetoothHCIEventConnectionPacketTypeResults where
+  withObjCArg x k = k (argBluetoothHCIEventConnectionPacketTypeResults x)
+
+instance ObjCReturn BluetoothHCIEventConnectionPacketTypeResults where
+  type RawReturn BluetoothHCIEventConnectionPacketTypeResults = BluetoothHCIEventConnectionPacketTypeResults
+  objcRetType = retBluetoothHCIEventConnectionPacketTypeResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventConnectionRequestResults = BluetoothHCIEventConnectionRequestResults
   { bluetoothHCIEventConnectionRequestResultsDeviceAddress :: !(Ptr ())
@@ -514,6 +626,16 @@ argBluetoothHCIEventConnectionRequestResults = mkStorableArg bluetoothHCIEventCo
 retBluetoothHCIEventConnectionRequestResults :: RetType BluetoothHCIEventConnectionRequestResults
 retBluetoothHCIEventConnectionRequestResults = mkStorableRetType bluetoothHCIEventConnectionRequestResultsStructType
 
+instance ObjCArgument BluetoothHCIEventConnectionRequestResults where
+  withObjCArg x k = k (argBluetoothHCIEventConnectionRequestResults x)
+
+instance ObjCReturn BluetoothHCIEventConnectionRequestResults where
+  type RawReturn BluetoothHCIEventConnectionRequestResults = BluetoothHCIEventConnectionRequestResults
+  objcRetType = retBluetoothHCIEventConnectionRequestResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventDataBufferOverflowResults = BluetoothHCIEventDataBufferOverflowResults
   { bluetoothHCIEventDataBufferOverflowResultsLinkType :: !CUChar
   } deriving (Eq, Show)
@@ -534,6 +656,16 @@ argBluetoothHCIEventDataBufferOverflowResults = mkStorableArg bluetoothHCIEventD
 
 retBluetoothHCIEventDataBufferOverflowResults :: RetType BluetoothHCIEventDataBufferOverflowResults
 retBluetoothHCIEventDataBufferOverflowResults = mkStorableRetType bluetoothHCIEventDataBufferOverflowResultsStructType
+
+instance ObjCArgument BluetoothHCIEventDataBufferOverflowResults where
+  withObjCArg x k = k (argBluetoothHCIEventDataBufferOverflowResults x)
+
+instance ObjCReturn BluetoothHCIEventDataBufferOverflowResults where
+  type RawReturn BluetoothHCIEventDataBufferOverflowResults = BluetoothHCIEventDataBufferOverflowResults
+  objcRetType = retBluetoothHCIEventDataBufferOverflowResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventDisconnectionCompleteResults = BluetoothHCIEventDisconnectionCompleteResults
   { bluetoothHCIEventDisconnectionCompleteResultsConnectionHandle :: !CUShort
@@ -559,6 +691,16 @@ argBluetoothHCIEventDisconnectionCompleteResults = mkStorableArg bluetoothHCIEve
 retBluetoothHCIEventDisconnectionCompleteResults :: RetType BluetoothHCIEventDisconnectionCompleteResults
 retBluetoothHCIEventDisconnectionCompleteResults = mkStorableRetType bluetoothHCIEventDisconnectionCompleteResultsStructType
 
+instance ObjCArgument BluetoothHCIEventDisconnectionCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventDisconnectionCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventDisconnectionCompleteResults where
+  type RawReturn BluetoothHCIEventDisconnectionCompleteResults = BluetoothHCIEventDisconnectionCompleteResults
+  objcRetType = retBluetoothHCIEventDisconnectionCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventEncryptionChangeResults = BluetoothHCIEventEncryptionChangeResults
   { bluetoothHCIEventEncryptionChangeResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventEncryptionChangeResultsEnable :: !CUChar
@@ -583,6 +725,16 @@ argBluetoothHCIEventEncryptionChangeResults = mkStorableArg bluetoothHCIEventEnc
 retBluetoothHCIEventEncryptionChangeResults :: RetType BluetoothHCIEventEncryptionChangeResults
 retBluetoothHCIEventEncryptionChangeResults = mkStorableRetType bluetoothHCIEventEncryptionChangeResultsStructType
 
+instance ObjCArgument BluetoothHCIEventEncryptionChangeResults where
+  withObjCArg x k = k (argBluetoothHCIEventEncryptionChangeResults x)
+
+instance ObjCReturn BluetoothHCIEventEncryptionChangeResults where
+  type RawReturn BluetoothHCIEventEncryptionChangeResults = BluetoothHCIEventEncryptionChangeResults
+  objcRetType = retBluetoothHCIEventEncryptionChangeResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventEncryptionKeyRefreshCompleteResults = BluetoothHCIEventEncryptionKeyRefreshCompleteResults
   { bluetoothHCIEventEncryptionKeyRefreshCompleteResultsConnectionHandle :: !CUShort
   } deriving (Eq, Show)
@@ -603,6 +755,16 @@ argBluetoothHCIEventEncryptionKeyRefreshCompleteResults = mkStorableArg bluetoot
 
 retBluetoothHCIEventEncryptionKeyRefreshCompleteResults :: RetType BluetoothHCIEventEncryptionKeyRefreshCompleteResults
 retBluetoothHCIEventEncryptionKeyRefreshCompleteResults = mkStorableRetType bluetoothHCIEventEncryptionKeyRefreshCompleteResultsStructType
+
+instance ObjCArgument BluetoothHCIEventEncryptionKeyRefreshCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventEncryptionKeyRefreshCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventEncryptionKeyRefreshCompleteResults where
+  type RawReturn BluetoothHCIEventEncryptionKeyRefreshCompleteResults = BluetoothHCIEventEncryptionKeyRefreshCompleteResults
+  objcRetType = retBluetoothHCIEventEncryptionKeyRefreshCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventFlowSpecificationData = BluetoothHCIEventFlowSpecificationData
   { bluetoothHCIEventFlowSpecificationDataConnectionHandle :: !CUShort
@@ -646,6 +808,16 @@ argBluetoothHCIEventFlowSpecificationData = mkStorableArg bluetoothHCIEventFlowS
 retBluetoothHCIEventFlowSpecificationData :: RetType BluetoothHCIEventFlowSpecificationData
 retBluetoothHCIEventFlowSpecificationData = mkStorableRetType bluetoothHCIEventFlowSpecificationDataStructType
 
+instance ObjCArgument BluetoothHCIEventFlowSpecificationData where
+  withObjCArg x k = k (argBluetoothHCIEventFlowSpecificationData x)
+
+instance ObjCReturn BluetoothHCIEventFlowSpecificationData where
+  type RawReturn BluetoothHCIEventFlowSpecificationData = BluetoothHCIEventFlowSpecificationData
+  objcRetType = retBluetoothHCIEventFlowSpecificationData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventFlushOccurredResults = BluetoothHCIEventFlushOccurredResults
   { bluetoothHCIEventFlushOccurredResultsConnectionHandle :: !CUShort
   } deriving (Eq, Show)
@@ -667,6 +839,16 @@ argBluetoothHCIEventFlushOccurredResults = mkStorableArg bluetoothHCIEventFlushO
 retBluetoothHCIEventFlushOccurredResults :: RetType BluetoothHCIEventFlushOccurredResults
 retBluetoothHCIEventFlushOccurredResults = mkStorableRetType bluetoothHCIEventFlushOccurredResultsStructType
 
+instance ObjCArgument BluetoothHCIEventFlushOccurredResults where
+  withObjCArg x k = k (argBluetoothHCIEventFlushOccurredResults x)
+
+instance ObjCReturn BluetoothHCIEventFlushOccurredResults where
+  type RawReturn BluetoothHCIEventFlushOccurredResults = BluetoothHCIEventFlushOccurredResults
+  objcRetType = retBluetoothHCIEventFlushOccurredResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventHardwareErrorResults = BluetoothHCIEventHardwareErrorResults
   { bluetoothHCIEventHardwareErrorResultsError :: !CUChar
   } deriving (Eq, Show)
@@ -687,6 +869,16 @@ argBluetoothHCIEventHardwareErrorResults = mkStorableArg bluetoothHCIEventHardwa
 
 retBluetoothHCIEventHardwareErrorResults :: RetType BluetoothHCIEventHardwareErrorResults
 retBluetoothHCIEventHardwareErrorResults = mkStorableRetType bluetoothHCIEventHardwareErrorResultsStructType
+
+instance ObjCArgument BluetoothHCIEventHardwareErrorResults where
+  withObjCArg x k = k (argBluetoothHCIEventHardwareErrorResults x)
+
+instance ObjCReturn BluetoothHCIEventHardwareErrorResults where
+  type RawReturn BluetoothHCIEventHardwareErrorResults = BluetoothHCIEventHardwareErrorResults
+  objcRetType = retBluetoothHCIEventHardwareErrorResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventLEConnectionCompleteResults = BluetoothHCIEventLEConnectionCompleteResults
   { bluetoothHCIEventLEConnectionCompleteResultsConnectionHandle :: !CUShort
@@ -730,6 +922,16 @@ argBluetoothHCIEventLEConnectionCompleteResults = mkStorableArg bluetoothHCIEven
 retBluetoothHCIEventLEConnectionCompleteResults :: RetType BluetoothHCIEventLEConnectionCompleteResults
 retBluetoothHCIEventLEConnectionCompleteResults = mkStorableRetType bluetoothHCIEventLEConnectionCompleteResultsStructType
 
+instance ObjCArgument BluetoothHCIEventLEConnectionCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventLEConnectionCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventLEConnectionCompleteResults where
+  type RawReturn BluetoothHCIEventLEConnectionCompleteResults = BluetoothHCIEventLEConnectionCompleteResults
+  objcRetType = retBluetoothHCIEventLEConnectionCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventLEConnectionUpdateCompleteResults = BluetoothHCIEventLEConnectionUpdateCompleteResults
   { bluetoothHCIEventLEConnectionUpdateCompleteResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventLEConnectionUpdateCompleteResultsConnInterval :: !CUShort
@@ -759,6 +961,16 @@ argBluetoothHCIEventLEConnectionUpdateCompleteResults = mkStorableArg bluetoothH
 
 retBluetoothHCIEventLEConnectionUpdateCompleteResults :: RetType BluetoothHCIEventLEConnectionUpdateCompleteResults
 retBluetoothHCIEventLEConnectionUpdateCompleteResults = mkStorableRetType bluetoothHCIEventLEConnectionUpdateCompleteResultsStructType
+
+instance ObjCArgument BluetoothHCIEventLEConnectionUpdateCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventLEConnectionUpdateCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventLEConnectionUpdateCompleteResults where
+  type RawReturn BluetoothHCIEventLEConnectionUpdateCompleteResults = BluetoothHCIEventLEConnectionUpdateCompleteResults
+  objcRetType = retBluetoothHCIEventLEConnectionUpdateCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventLEEnhancedConnectionCompleteResults = BluetoothHCIEventLEEnhancedConnectionCompleteResults
   { bluetoothHCIEventLEEnhancedConnectionCompleteResultsConnectionHandle :: !CUShort
@@ -808,6 +1020,16 @@ argBluetoothHCIEventLEEnhancedConnectionCompleteResults = mkStorableArg bluetoot
 retBluetoothHCIEventLEEnhancedConnectionCompleteResults :: RetType BluetoothHCIEventLEEnhancedConnectionCompleteResults
 retBluetoothHCIEventLEEnhancedConnectionCompleteResults = mkStorableRetType bluetoothHCIEventLEEnhancedConnectionCompleteResultsStructType
 
+instance ObjCArgument BluetoothHCIEventLEEnhancedConnectionCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventLEEnhancedConnectionCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventLEEnhancedConnectionCompleteResults where
+  type RawReturn BluetoothHCIEventLEEnhancedConnectionCompleteResults = BluetoothHCIEventLEEnhancedConnectionCompleteResults
+  objcRetType = retBluetoothHCIEventLEEnhancedConnectionCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults = BluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults
   { bluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResultsUsedFeatures :: !(Ptr ())
@@ -831,6 +1053,16 @@ argBluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults = mkStorableArg blue
 
 retBluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults :: RetType BluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults
 retBluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults = mkStorableRetType bluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResultsStructType
+
+instance ObjCArgument BluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults where
+  type RawReturn BluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults = BluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults
+  objcRetType = retBluetoothHCIEventLEReadRemoteUsedFeaturesCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventLinkKeyNotificationResults = BluetoothHCIEventLinkKeyNotificationResults
   { bluetoothHCIEventLinkKeyNotificationResultsDeviceAddress :: !(Ptr ())
@@ -859,6 +1091,16 @@ argBluetoothHCIEventLinkKeyNotificationResults = mkStorableArg bluetoothHCIEvent
 retBluetoothHCIEventLinkKeyNotificationResults :: RetType BluetoothHCIEventLinkKeyNotificationResults
 retBluetoothHCIEventLinkKeyNotificationResults = mkStorableRetType bluetoothHCIEventLinkKeyNotificationResultsStructType
 
+instance ObjCArgument BluetoothHCIEventLinkKeyNotificationResults where
+  withObjCArg x k = k (argBluetoothHCIEventLinkKeyNotificationResults x)
+
+instance ObjCReturn BluetoothHCIEventLinkKeyNotificationResults where
+  type RawReturn BluetoothHCIEventLinkKeyNotificationResults = BluetoothHCIEventLinkKeyNotificationResults
+  objcRetType = retBluetoothHCIEventLinkKeyNotificationResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventMasterLinkKeyCompleteResults = BluetoothHCIEventMasterLinkKeyCompleteResults
   { bluetoothHCIEventMasterLinkKeyCompleteResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventMasterLinkKeyCompleteResultsKeyFlag :: !CUChar
@@ -883,6 +1125,16 @@ argBluetoothHCIEventMasterLinkKeyCompleteResults = mkStorableArg bluetoothHCIEve
 retBluetoothHCIEventMasterLinkKeyCompleteResults :: RetType BluetoothHCIEventMasterLinkKeyCompleteResults
 retBluetoothHCIEventMasterLinkKeyCompleteResults = mkStorableRetType bluetoothHCIEventMasterLinkKeyCompleteResultsStructType
 
+instance ObjCArgument BluetoothHCIEventMasterLinkKeyCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventMasterLinkKeyCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventMasterLinkKeyCompleteResults where
+  type RawReturn BluetoothHCIEventMasterLinkKeyCompleteResults = BluetoothHCIEventMasterLinkKeyCompleteResults
+  objcRetType = retBluetoothHCIEventMasterLinkKeyCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventMaxSlotsChangeResults = BluetoothHCIEventMaxSlotsChangeResults
   { bluetoothHCIEventMaxSlotsChangeResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventMaxSlotsChangeResultsMaxSlots :: !CUChar
@@ -906,6 +1158,16 @@ argBluetoothHCIEventMaxSlotsChangeResults = mkStorableArg bluetoothHCIEventMaxSl
 
 retBluetoothHCIEventMaxSlotsChangeResults :: RetType BluetoothHCIEventMaxSlotsChangeResults
 retBluetoothHCIEventMaxSlotsChangeResults = mkStorableRetType bluetoothHCIEventMaxSlotsChangeResultsStructType
+
+instance ObjCArgument BluetoothHCIEventMaxSlotsChangeResults where
+  withObjCArg x k = k (argBluetoothHCIEventMaxSlotsChangeResults x)
+
+instance ObjCReturn BluetoothHCIEventMaxSlotsChangeResults where
+  type RawReturn BluetoothHCIEventMaxSlotsChangeResults = BluetoothHCIEventMaxSlotsChangeResults
+  objcRetType = retBluetoothHCIEventMaxSlotsChangeResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventModeChangeResults = BluetoothHCIEventModeChangeResults
   { bluetoothHCIEventModeChangeResultsConnectionHandle :: !CUShort
@@ -934,6 +1196,16 @@ argBluetoothHCIEventModeChangeResults = mkStorableArg bluetoothHCIEventModeChang
 retBluetoothHCIEventModeChangeResults :: RetType BluetoothHCIEventModeChangeResults
 retBluetoothHCIEventModeChangeResults = mkStorableRetType bluetoothHCIEventModeChangeResultsStructType
 
+instance ObjCArgument BluetoothHCIEventModeChangeResults where
+  withObjCArg x k = k (argBluetoothHCIEventModeChangeResults x)
+
+instance ObjCReturn BluetoothHCIEventModeChangeResults where
+  type RawReturn BluetoothHCIEventModeChangeResults = BluetoothHCIEventModeChangeResults
+  objcRetType = retBluetoothHCIEventModeChangeResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventPageScanModeChangeResults = BluetoothHCIEventPageScanModeChangeResults
   { bluetoothHCIEventPageScanModeChangeResultsDeviceAddress :: !(Ptr ())
   , bluetoothHCIEventPageScanModeChangeResultsPageScanMode :: !CUChar
@@ -957,6 +1229,16 @@ argBluetoothHCIEventPageScanModeChangeResults = mkStorableArg bluetoothHCIEventP
 
 retBluetoothHCIEventPageScanModeChangeResults :: RetType BluetoothHCIEventPageScanModeChangeResults
 retBluetoothHCIEventPageScanModeChangeResults = mkStorableRetType bluetoothHCIEventPageScanModeChangeResultsStructType
+
+instance ObjCArgument BluetoothHCIEventPageScanModeChangeResults where
+  withObjCArg x k = k (argBluetoothHCIEventPageScanModeChangeResults x)
+
+instance ObjCReturn BluetoothHCIEventPageScanModeChangeResults where
+  type RawReturn BluetoothHCIEventPageScanModeChangeResults = BluetoothHCIEventPageScanModeChangeResults
+  objcRetType = retBluetoothHCIEventPageScanModeChangeResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventPageScanRepetitionModeChangeResults = BluetoothHCIEventPageScanRepetitionModeChangeResults
   { bluetoothHCIEventPageScanRepetitionModeChangeResultsDeviceAddress :: !(Ptr ())
@@ -982,6 +1264,16 @@ argBluetoothHCIEventPageScanRepetitionModeChangeResults = mkStorableArg bluetoot
 retBluetoothHCIEventPageScanRepetitionModeChangeResults :: RetType BluetoothHCIEventPageScanRepetitionModeChangeResults
 retBluetoothHCIEventPageScanRepetitionModeChangeResults = mkStorableRetType bluetoothHCIEventPageScanRepetitionModeChangeResultsStructType
 
+instance ObjCArgument BluetoothHCIEventPageScanRepetitionModeChangeResults where
+  withObjCArg x k = k (argBluetoothHCIEventPageScanRepetitionModeChangeResults x)
+
+instance ObjCReturn BluetoothHCIEventPageScanRepetitionModeChangeResults where
+  type RawReturn BluetoothHCIEventPageScanRepetitionModeChangeResults = BluetoothHCIEventPageScanRepetitionModeChangeResults
+  objcRetType = retBluetoothHCIEventPageScanRepetitionModeChangeResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventQoSViolationResults = BluetoothHCIEventQoSViolationResults
   { bluetoothHCIEventQoSViolationResultsConnectionHandle :: !CUShort
   } deriving (Eq, Show)
@@ -1002,6 +1294,16 @@ argBluetoothHCIEventQoSViolationResults = mkStorableArg bluetoothHCIEventQoSViol
 
 retBluetoothHCIEventQoSViolationResults :: RetType BluetoothHCIEventQoSViolationResults
 retBluetoothHCIEventQoSViolationResults = mkStorableRetType bluetoothHCIEventQoSViolationResultsStructType
+
+instance ObjCArgument BluetoothHCIEventQoSViolationResults where
+  withObjCArg x k = k (argBluetoothHCIEventQoSViolationResults x)
+
+instance ObjCReturn BluetoothHCIEventQoSViolationResults where
+  type RawReturn BluetoothHCIEventQoSViolationResults = BluetoothHCIEventQoSViolationResults
+  objcRetType = retBluetoothHCIEventQoSViolationResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventReadClockOffsetResults = BluetoothHCIEventReadClockOffsetResults
   { bluetoothHCIEventReadClockOffsetResultsConnectionHandle :: !CUShort
@@ -1027,6 +1329,16 @@ argBluetoothHCIEventReadClockOffsetResults = mkStorableArg bluetoothHCIEventRead
 retBluetoothHCIEventReadClockOffsetResults :: RetType BluetoothHCIEventReadClockOffsetResults
 retBluetoothHCIEventReadClockOffsetResults = mkStorableRetType bluetoothHCIEventReadClockOffsetResultsStructType
 
+instance ObjCArgument BluetoothHCIEventReadClockOffsetResults where
+  withObjCArg x k = k (argBluetoothHCIEventReadClockOffsetResults x)
+
+instance ObjCReturn BluetoothHCIEventReadClockOffsetResults where
+  type RawReturn BluetoothHCIEventReadClockOffsetResults = BluetoothHCIEventReadClockOffsetResults
+  objcRetType = retBluetoothHCIEventReadClockOffsetResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventReadExtendedFeaturesResults = BluetoothHCIEventReadExtendedFeaturesResults
   { bluetoothHCIEventReadExtendedFeaturesResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventReadExtendedFeaturesResultsSupportedFeaturesInfo :: !(Ptr ())
@@ -1050,6 +1362,16 @@ argBluetoothHCIEventReadExtendedFeaturesResults = mkStorableArg bluetoothHCIEven
 
 retBluetoothHCIEventReadExtendedFeaturesResults :: RetType BluetoothHCIEventReadExtendedFeaturesResults
 retBluetoothHCIEventReadExtendedFeaturesResults = mkStorableRetType bluetoothHCIEventReadExtendedFeaturesResultsStructType
+
+instance ObjCArgument BluetoothHCIEventReadExtendedFeaturesResults where
+  withObjCArg x k = k (argBluetoothHCIEventReadExtendedFeaturesResults x)
+
+instance ObjCReturn BluetoothHCIEventReadExtendedFeaturesResults where
+  type RawReturn BluetoothHCIEventReadExtendedFeaturesResults = BluetoothHCIEventReadExtendedFeaturesResults
+  objcRetType = retBluetoothHCIEventReadExtendedFeaturesResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventReadRemoteExtendedFeaturesResults = BluetoothHCIEventReadRemoteExtendedFeaturesResults
   { bluetoothHCIEventReadRemoteExtendedFeaturesResultsError :: !CUChar
@@ -1084,6 +1406,16 @@ argBluetoothHCIEventReadRemoteExtendedFeaturesResults = mkStorableArg bluetoothH
 retBluetoothHCIEventReadRemoteExtendedFeaturesResults :: RetType BluetoothHCIEventReadRemoteExtendedFeaturesResults
 retBluetoothHCIEventReadRemoteExtendedFeaturesResults = mkStorableRetType bluetoothHCIEventReadRemoteExtendedFeaturesResultsStructType
 
+instance ObjCArgument BluetoothHCIEventReadRemoteExtendedFeaturesResults where
+  withObjCArg x k = k (argBluetoothHCIEventReadRemoteExtendedFeaturesResults x)
+
+instance ObjCReturn BluetoothHCIEventReadRemoteExtendedFeaturesResults where
+  type RawReturn BluetoothHCIEventReadRemoteExtendedFeaturesResults = BluetoothHCIEventReadRemoteExtendedFeaturesResults
+  objcRetType = retBluetoothHCIEventReadRemoteExtendedFeaturesResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventReadRemoteSupportedFeaturesResults = BluetoothHCIEventReadRemoteSupportedFeaturesResults
   { bluetoothHCIEventReadRemoteSupportedFeaturesResultsError :: !CUChar
   , bluetoothHCIEventReadRemoteSupportedFeaturesResultsConnectionHandle :: !CUShort
@@ -1110,6 +1442,16 @@ argBluetoothHCIEventReadRemoteSupportedFeaturesResults = mkStorableArg bluetooth
 
 retBluetoothHCIEventReadRemoteSupportedFeaturesResults :: RetType BluetoothHCIEventReadRemoteSupportedFeaturesResults
 retBluetoothHCIEventReadRemoteSupportedFeaturesResults = mkStorableRetType bluetoothHCIEventReadRemoteSupportedFeaturesResultsStructType
+
+instance ObjCArgument BluetoothHCIEventReadRemoteSupportedFeaturesResults where
+  withObjCArg x k = k (argBluetoothHCIEventReadRemoteSupportedFeaturesResults x)
+
+instance ObjCReturn BluetoothHCIEventReadRemoteSupportedFeaturesResults where
+  type RawReturn BluetoothHCIEventReadRemoteSupportedFeaturesResults = BluetoothHCIEventReadRemoteSupportedFeaturesResults
+  objcRetType = retBluetoothHCIEventReadRemoteSupportedFeaturesResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventReadRemoteVersionInfoResults = BluetoothHCIEventReadRemoteVersionInfoResults
   { bluetoothHCIEventReadRemoteVersionInfoResultsConnectionHandle :: !CUShort
@@ -1141,6 +1483,16 @@ argBluetoothHCIEventReadRemoteVersionInfoResults = mkStorableArg bluetoothHCIEve
 retBluetoothHCIEventReadRemoteVersionInfoResults :: RetType BluetoothHCIEventReadRemoteVersionInfoResults
 retBluetoothHCIEventReadRemoteVersionInfoResults = mkStorableRetType bluetoothHCIEventReadRemoteVersionInfoResultsStructType
 
+instance ObjCArgument BluetoothHCIEventReadRemoteVersionInfoResults where
+  withObjCArg x k = k (argBluetoothHCIEventReadRemoteVersionInfoResults x)
+
+instance ObjCReturn BluetoothHCIEventReadRemoteVersionInfoResults where
+  type RawReturn BluetoothHCIEventReadRemoteVersionInfoResults = BluetoothHCIEventReadRemoteVersionInfoResults
+  objcRetType = retBluetoothHCIEventReadRemoteVersionInfoResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventReadSupportedFeaturesResults = BluetoothHCIEventReadSupportedFeaturesResults
   { bluetoothHCIEventReadSupportedFeaturesResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventReadSupportedFeaturesResultsSupportedFeatures :: !(Ptr ())
@@ -1165,6 +1517,16 @@ argBluetoothHCIEventReadSupportedFeaturesResults = mkStorableArg bluetoothHCIEve
 retBluetoothHCIEventReadSupportedFeaturesResults :: RetType BluetoothHCIEventReadSupportedFeaturesResults
 retBluetoothHCIEventReadSupportedFeaturesResults = mkStorableRetType bluetoothHCIEventReadSupportedFeaturesResultsStructType
 
+instance ObjCArgument BluetoothHCIEventReadSupportedFeaturesResults where
+  withObjCArg x k = k (argBluetoothHCIEventReadSupportedFeaturesResults x)
+
+instance ObjCReturn BluetoothHCIEventReadSupportedFeaturesResults where
+  type RawReturn BluetoothHCIEventReadSupportedFeaturesResults = BluetoothHCIEventReadSupportedFeaturesResults
+  objcRetType = retBluetoothHCIEventReadSupportedFeaturesResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventReturnLinkKeysResults = BluetoothHCIEventReturnLinkKeysResults
   { bluetoothHCIEventReturnLinkKeysResultsNumLinkKeys :: !CUChar
   , bluetoothHCIEventReturnLinkKeysResultsLinkKeys :: !(Ptr ())
@@ -1188,6 +1550,16 @@ argBluetoothHCIEventReturnLinkKeysResults = mkStorableArg bluetoothHCIEventRetur
 
 retBluetoothHCIEventReturnLinkKeysResults :: RetType BluetoothHCIEventReturnLinkKeysResults
 retBluetoothHCIEventReturnLinkKeysResults = mkStorableRetType bluetoothHCIEventReturnLinkKeysResultsStructType
+
+instance ObjCArgument BluetoothHCIEventReturnLinkKeysResults where
+  withObjCArg x k = k (argBluetoothHCIEventReturnLinkKeysResults x)
+
+instance ObjCReturn BluetoothHCIEventReturnLinkKeysResults where
+  type RawReturn BluetoothHCIEventReturnLinkKeysResults = BluetoothHCIEventReturnLinkKeysResults
+  objcRetType = retBluetoothHCIEventReturnLinkKeysResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventRoleChangeResults = BluetoothHCIEventRoleChangeResults
   { bluetoothHCIEventRoleChangeResultsConnectionHandle :: !CUShort
@@ -1216,6 +1588,16 @@ argBluetoothHCIEventRoleChangeResults = mkStorableArg bluetoothHCIEventRoleChang
 retBluetoothHCIEventRoleChangeResults :: RetType BluetoothHCIEventRoleChangeResults
 retBluetoothHCIEventRoleChangeResults = mkStorableRetType bluetoothHCIEventRoleChangeResultsStructType
 
+instance ObjCArgument BluetoothHCIEventRoleChangeResults where
+  withObjCArg x k = k (argBluetoothHCIEventRoleChangeResults x)
+
+instance ObjCReturn BluetoothHCIEventRoleChangeResults where
+  type RawReturn BluetoothHCIEventRoleChangeResults = BluetoothHCIEventRoleChangeResults
+  objcRetType = retBluetoothHCIEventRoleChangeResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventSimplePairingCompleteResults = BluetoothHCIEventSimplePairingCompleteResults
   { bluetoothHCIEventSimplePairingCompleteResultsDeviceAddress :: !(Ptr ())
   } deriving (Eq, Show)
@@ -1236,6 +1618,16 @@ argBluetoothHCIEventSimplePairingCompleteResults = mkStorableArg bluetoothHCIEve
 
 retBluetoothHCIEventSimplePairingCompleteResults :: RetType BluetoothHCIEventSimplePairingCompleteResults
 retBluetoothHCIEventSimplePairingCompleteResults = mkStorableRetType bluetoothHCIEventSimplePairingCompleteResultsStructType
+
+instance ObjCArgument BluetoothHCIEventSimplePairingCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventSimplePairingCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventSimplePairingCompleteResults where
+  type RawReturn BluetoothHCIEventSimplePairingCompleteResults = BluetoothHCIEventSimplePairingCompleteResults
+  objcRetType = retBluetoothHCIEventSimplePairingCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventSniffSubratingResults = BluetoothHCIEventSniffSubratingResults
   { bluetoothHCIEventSniffSubratingResultsConnectionHandle :: !CUShort
@@ -1270,6 +1662,16 @@ argBluetoothHCIEventSniffSubratingResults = mkStorableArg bluetoothHCIEventSniff
 retBluetoothHCIEventSniffSubratingResults :: RetType BluetoothHCIEventSniffSubratingResults
 retBluetoothHCIEventSniffSubratingResults = mkStorableRetType bluetoothHCIEventSniffSubratingResultsStructType
 
+instance ObjCArgument BluetoothHCIEventSniffSubratingResults where
+  withObjCArg x k = k (argBluetoothHCIEventSniffSubratingResults x)
+
+instance ObjCReturn BluetoothHCIEventSniffSubratingResults where
+  type RawReturn BluetoothHCIEventSniffSubratingResults = BluetoothHCIEventSniffSubratingResults
+  objcRetType = retBluetoothHCIEventSniffSubratingResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventSynchronousConnectionChangedResults = BluetoothHCIEventSynchronousConnectionChangedResults
   { bluetoothHCIEventSynchronousConnectionChangedResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventSynchronousConnectionChangedResultsTransmissionInterval :: !CUChar
@@ -1302,6 +1704,16 @@ argBluetoothHCIEventSynchronousConnectionChangedResults = mkStorableArg bluetoot
 
 retBluetoothHCIEventSynchronousConnectionChangedResults :: RetType BluetoothHCIEventSynchronousConnectionChangedResults
 retBluetoothHCIEventSynchronousConnectionChangedResults = mkStorableRetType bluetoothHCIEventSynchronousConnectionChangedResultsStructType
+
+instance ObjCArgument BluetoothHCIEventSynchronousConnectionChangedResults where
+  withObjCArg x k = k (argBluetoothHCIEventSynchronousConnectionChangedResults x)
+
+instance ObjCReturn BluetoothHCIEventSynchronousConnectionChangedResults where
+  type RawReturn BluetoothHCIEventSynchronousConnectionChangedResults = BluetoothHCIEventSynchronousConnectionChangedResults
+  objcRetType = retBluetoothHCIEventSynchronousConnectionChangedResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIEventSynchronousConnectionCompleteResults = BluetoothHCIEventSynchronousConnectionCompleteResults
   { bluetoothHCIEventSynchronousConnectionCompleteResultsConnectionHandle :: !CUShort
@@ -1345,6 +1757,16 @@ argBluetoothHCIEventSynchronousConnectionCompleteResults = mkStorableArg bluetoo
 retBluetoothHCIEventSynchronousConnectionCompleteResults :: RetType BluetoothHCIEventSynchronousConnectionCompleteResults
 retBluetoothHCIEventSynchronousConnectionCompleteResults = mkStorableRetType bluetoothHCIEventSynchronousConnectionCompleteResultsStructType
 
+instance ObjCArgument BluetoothHCIEventSynchronousConnectionCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventSynchronousConnectionCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventSynchronousConnectionCompleteResults where
+  type RawReturn BluetoothHCIEventSynchronousConnectionCompleteResults = BluetoothHCIEventSynchronousConnectionCompleteResults
+  objcRetType = retBluetoothHCIEventSynchronousConnectionCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIExtendedInquiryResult = BluetoothHCIExtendedInquiryResult
   { bluetoothHCIExtendedInquiryResultNumberOfReponses :: !CUChar
   , bluetoothHCIExtendedInquiryResultDeviceAddress :: !(Ptr ())
@@ -1387,6 +1809,16 @@ argBluetoothHCIExtendedInquiryResult = mkStorableArg bluetoothHCIExtendedInquiry
 retBluetoothHCIExtendedInquiryResult :: RetType BluetoothHCIExtendedInquiryResult
 retBluetoothHCIExtendedInquiryResult = mkStorableRetType bluetoothHCIExtendedInquiryResultStructType
 
+instance ObjCArgument BluetoothHCIExtendedInquiryResult where
+  withObjCArg x k = k (argBluetoothHCIExtendedInquiryResult x)
+
+instance ObjCReturn BluetoothHCIExtendedInquiryResult where
+  type RawReturn BluetoothHCIExtendedInquiryResult = BluetoothHCIExtendedInquiryResult
+  objcRetType = retBluetoothHCIExtendedInquiryResult
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIFailedContactInfo = BluetoothHCIFailedContactInfo
   { bluetoothHCIFailedContactInfoCount :: !CUShort
   , bluetoothHCIFailedContactInfoHandle :: !CUShort
@@ -1410,6 +1842,16 @@ argBluetoothHCIFailedContactInfo = mkStorableArg bluetoothHCIFailedContactInfoSt
 
 retBluetoothHCIFailedContactInfo :: RetType BluetoothHCIFailedContactInfo
 retBluetoothHCIFailedContactInfo = mkStorableRetType bluetoothHCIFailedContactInfoStructType
+
+instance ObjCArgument BluetoothHCIFailedContactInfo where
+  withObjCArg x k = k (argBluetoothHCIFailedContactInfo x)
+
+instance ObjCReturn BluetoothHCIFailedContactInfo where
+  type RawReturn BluetoothHCIFailedContactInfo = BluetoothHCIFailedContactInfo
+  objcRetType = retBluetoothHCIFailedContactInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIInquiryResult = BluetoothHCIInquiryResult
   { bluetoothHCIInquiryResultDeviceAddress :: !(Ptr ())
@@ -1447,6 +1889,16 @@ argBluetoothHCIInquiryResult = mkStorableArg bluetoothHCIInquiryResultStructType
 retBluetoothHCIInquiryResult :: RetType BluetoothHCIInquiryResult
 retBluetoothHCIInquiryResult = mkStorableRetType bluetoothHCIInquiryResultStructType
 
+instance ObjCArgument BluetoothHCIInquiryResult where
+  withObjCArg x k = k (argBluetoothHCIInquiryResult x)
+
+instance ObjCReturn BluetoothHCIInquiryResult where
+  type RawReturn BluetoothHCIInquiryResult = BluetoothHCIInquiryResult
+  objcRetType = retBluetoothHCIInquiryResult
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIInquiryWithRSSIResult = BluetoothHCIInquiryWithRSSIResult
   { bluetoothHCIInquiryWithRSSIResultDeviceAddress :: !(Ptr ())
   , bluetoothHCIInquiryWithRSSIResultPageScanRepetitionMode :: !CUChar
@@ -1483,6 +1935,16 @@ argBluetoothHCIInquiryWithRSSIResult = mkStorableArg bluetoothHCIInquiryWithRSSI
 retBluetoothHCIInquiryWithRSSIResult :: RetType BluetoothHCIInquiryWithRSSIResult
 retBluetoothHCIInquiryWithRSSIResult = mkStorableRetType bluetoothHCIInquiryWithRSSIResultStructType
 
+instance ObjCArgument BluetoothHCIInquiryWithRSSIResult where
+  withObjCArg x k = k (argBluetoothHCIInquiryWithRSSIResult x)
+
+instance ObjCReturn BluetoothHCIInquiryWithRSSIResult where
+  type RawReturn BluetoothHCIInquiryWithRSSIResult = BluetoothHCIInquiryWithRSSIResult
+  objcRetType = retBluetoothHCIInquiryWithRSSIResult
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCILEBufferSize = BluetoothHCILEBufferSize
   { bluetoothHCILEBufferSizeACLDataPacketLength :: !CUShort
   , bluetoothHCILEBufferSizeTotalNumACLDataPackets :: !CUChar
@@ -1506,6 +1968,16 @@ argBluetoothHCILEBufferSize = mkStorableArg bluetoothHCILEBufferSizeStructType
 
 retBluetoothHCILEBufferSize :: RetType BluetoothHCILEBufferSize
 retBluetoothHCILEBufferSize = mkStorableRetType bluetoothHCILEBufferSizeStructType
+
+instance ObjCArgument BluetoothHCILEBufferSize where
+  withObjCArg x k = k (argBluetoothHCILEBufferSize x)
+
+instance ObjCReturn BluetoothHCILEBufferSize where
+  type RawReturn BluetoothHCILEBufferSize = BluetoothHCILEBufferSize
+  objcRetType = retBluetoothHCILEBufferSize
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCILinkPolicySettingsInfo = BluetoothHCILinkPolicySettingsInfo
   { bluetoothHCILinkPolicySettingsInfoSettings :: !CUShort
@@ -1531,6 +2003,16 @@ argBluetoothHCILinkPolicySettingsInfo = mkStorableArg bluetoothHCILinkPolicySett
 retBluetoothHCILinkPolicySettingsInfo :: RetType BluetoothHCILinkPolicySettingsInfo
 retBluetoothHCILinkPolicySettingsInfo = mkStorableRetType bluetoothHCILinkPolicySettingsInfoStructType
 
+instance ObjCArgument BluetoothHCILinkPolicySettingsInfo where
+  withObjCArg x k = k (argBluetoothHCILinkPolicySettingsInfo x)
+
+instance ObjCReturn BluetoothHCILinkPolicySettingsInfo where
+  type RawReturn BluetoothHCILinkPolicySettingsInfo = BluetoothHCILinkPolicySettingsInfo
+  objcRetType = retBluetoothHCILinkPolicySettingsInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCILinkQualityInfo = BluetoothHCILinkQualityInfo
   { bluetoothHCILinkQualityInfoHandle :: !CUShort
   , bluetoothHCILinkQualityInfoQualityValue :: !CUChar
@@ -1555,6 +2037,16 @@ argBluetoothHCILinkQualityInfo = mkStorableArg bluetoothHCILinkQualityInfoStruct
 retBluetoothHCILinkQualityInfo :: RetType BluetoothHCILinkQualityInfo
 retBluetoothHCILinkQualityInfo = mkStorableRetType bluetoothHCILinkQualityInfoStructType
 
+instance ObjCArgument BluetoothHCILinkQualityInfo where
+  withObjCArg x k = k (argBluetoothHCILinkQualityInfo x)
+
+instance ObjCReturn BluetoothHCILinkQualityInfo where
+  type RawReturn BluetoothHCILinkQualityInfo = BluetoothHCILinkQualityInfo
+  objcRetType = retBluetoothHCILinkQualityInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCILinkSupervisionTimeout = BluetoothHCILinkSupervisionTimeout
   { bluetoothHCILinkSupervisionTimeoutHandle :: !CUShort
   , bluetoothHCILinkSupervisionTimeoutTimeout :: !CUShort
@@ -1578,6 +2070,16 @@ argBluetoothHCILinkSupervisionTimeout = mkStorableArg bluetoothHCILinkSupervisio
 
 retBluetoothHCILinkSupervisionTimeout :: RetType BluetoothHCILinkSupervisionTimeout
 retBluetoothHCILinkSupervisionTimeout = mkStorableRetType bluetoothHCILinkSupervisionTimeoutStructType
+
+instance ObjCArgument BluetoothHCILinkSupervisionTimeout where
+  withObjCArg x k = k (argBluetoothHCILinkSupervisionTimeout x)
+
+instance ObjCReturn BluetoothHCILinkSupervisionTimeout where
+  type RawReturn BluetoothHCILinkSupervisionTimeout = BluetoothHCILinkSupervisionTimeout
+  objcRetType = retBluetoothHCILinkSupervisionTimeout
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIQualityOfServiceSetupParams = BluetoothHCIQualityOfServiceSetupParams
   { bluetoothHCIQualityOfServiceSetupParamsFlags :: !CUChar
@@ -1615,6 +2117,16 @@ argBluetoothHCIQualityOfServiceSetupParams = mkStorableArg bluetoothHCIQualityOf
 retBluetoothHCIQualityOfServiceSetupParams :: RetType BluetoothHCIQualityOfServiceSetupParams
 retBluetoothHCIQualityOfServiceSetupParams = mkStorableRetType bluetoothHCIQualityOfServiceSetupParamsStructType
 
+instance ObjCArgument BluetoothHCIQualityOfServiceSetupParams where
+  withObjCArg x k = k (argBluetoothHCIQualityOfServiceSetupParams x)
+
+instance ObjCReturn BluetoothHCIQualityOfServiceSetupParams where
+  type RawReturn BluetoothHCIQualityOfServiceSetupParams = BluetoothHCIQualityOfServiceSetupParams
+  objcRetType = retBluetoothHCIQualityOfServiceSetupParams
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIRSSIInfo = BluetoothHCIRSSIInfo
   { bluetoothHCIRSSIInfoHandle :: !CUShort
   , bluetoothHCIRSSIInfoRSSIValue :: !CSChar
@@ -1639,6 +2151,16 @@ argBluetoothHCIRSSIInfo = mkStorableArg bluetoothHCIRSSIInfoStructType
 retBluetoothHCIRSSIInfo :: RetType BluetoothHCIRSSIInfo
 retBluetoothHCIRSSIInfo = mkStorableRetType bluetoothHCIRSSIInfoStructType
 
+instance ObjCArgument BluetoothHCIRSSIInfo where
+  withObjCArg x k = k (argBluetoothHCIRSSIInfo x)
+
+instance ObjCReturn BluetoothHCIRSSIInfo where
+  type RawReturn BluetoothHCIRSSIInfo = BluetoothHCIRSSIInfo
+  objcRetType = retBluetoothHCIRSSIInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIReadExtendedInquiryResponseResults = BluetoothHCIReadExtendedInquiryResponseResults
   { bluetoothHCIReadExtendedInquiryResponseResultsOutFECRequired :: !CUChar
   , bluetoothHCIReadExtendedInquiryResponseResultsExtendedInquiryResponse :: !(Ptr ())
@@ -1662,6 +2184,16 @@ argBluetoothHCIReadExtendedInquiryResponseResults = mkStorableArg bluetoothHCIRe
 
 retBluetoothHCIReadExtendedInquiryResponseResults :: RetType BluetoothHCIReadExtendedInquiryResponseResults
 retBluetoothHCIReadExtendedInquiryResponseResults = mkStorableRetType bluetoothHCIReadExtendedInquiryResponseResultsStructType
+
+instance ObjCArgument BluetoothHCIReadExtendedInquiryResponseResults where
+  withObjCArg x k = k (argBluetoothHCIReadExtendedInquiryResponseResults x)
+
+instance ObjCReturn BluetoothHCIReadExtendedInquiryResponseResults where
+  type RawReturn BluetoothHCIReadExtendedInquiryResponseResults = BluetoothHCIReadExtendedInquiryResponseResults
+  objcRetType = retBluetoothHCIReadExtendedInquiryResponseResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIReadLMPHandleResults = BluetoothHCIReadLMPHandleResults
   { bluetoothHCIReadLMPHandleResultsHandle :: !CUShort
@@ -1690,6 +2222,16 @@ argBluetoothHCIReadLMPHandleResults = mkStorableArg bluetoothHCIReadLMPHandleRes
 retBluetoothHCIReadLMPHandleResults :: RetType BluetoothHCIReadLMPHandleResults
 retBluetoothHCIReadLMPHandleResults = mkStorableRetType bluetoothHCIReadLMPHandleResultsStructType
 
+instance ObjCArgument BluetoothHCIReadLMPHandleResults where
+  withObjCArg x k = k (argBluetoothHCIReadLMPHandleResults x)
+
+instance ObjCReturn BluetoothHCIReadLMPHandleResults where
+  type RawReturn BluetoothHCIReadLMPHandleResults = BluetoothHCIReadLMPHandleResults
+  objcRetType = retBluetoothHCIReadLMPHandleResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIReadLocalOOBDataResults = BluetoothHCIReadLocalOOBDataResults
   { bluetoothHCIReadLocalOOBDataResultsHash :: !(Ptr ())
   , bluetoothHCIReadLocalOOBDataResultsRandomizer :: !(Ptr ())
@@ -1713,6 +2255,16 @@ argBluetoothHCIReadLocalOOBDataResults = mkStorableArg bluetoothHCIReadLocalOOBD
 
 retBluetoothHCIReadLocalOOBDataResults :: RetType BluetoothHCIReadLocalOOBDataResults
 retBluetoothHCIReadLocalOOBDataResults = mkStorableRetType bluetoothHCIReadLocalOOBDataResultsStructType
+
+instance ObjCArgument BluetoothHCIReadLocalOOBDataResults where
+  withObjCArg x k = k (argBluetoothHCIReadLocalOOBDataResults x)
+
+instance ObjCReturn BluetoothHCIReadLocalOOBDataResults where
+  type RawReturn BluetoothHCIReadLocalOOBDataResults = BluetoothHCIReadLocalOOBDataResults
+  objcRetType = retBluetoothHCIReadLocalOOBDataResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIRequestCallbackInfo = BluetoothHCIRequestCallbackInfo
   { bluetoothHCIRequestCallbackInfoUserCallback :: !CULong
@@ -1747,6 +2299,16 @@ argBluetoothHCIRequestCallbackInfo = mkStorableArg bluetoothHCIRequestCallbackIn
 retBluetoothHCIRequestCallbackInfo :: RetType BluetoothHCIRequestCallbackInfo
 retBluetoothHCIRequestCallbackInfo = mkStorableRetType bluetoothHCIRequestCallbackInfoStructType
 
+instance ObjCArgument BluetoothHCIRequestCallbackInfo where
+  withObjCArg x k = k (argBluetoothHCIRequestCallbackInfo x)
+
+instance ObjCReturn BluetoothHCIRequestCallbackInfo where
+  type RawReturn BluetoothHCIRequestCallbackInfo = BluetoothHCIRequestCallbackInfo
+  objcRetType = retBluetoothHCIRequestCallbackInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIRoleInfo = BluetoothHCIRoleInfo
   { bluetoothHCIRoleInfoRole :: !CUChar
   , bluetoothHCIRoleInfoHandle :: !CUShort
@@ -1771,6 +2333,16 @@ argBluetoothHCIRoleInfo = mkStorableArg bluetoothHCIRoleInfoStructType
 retBluetoothHCIRoleInfo :: RetType BluetoothHCIRoleInfo
 retBluetoothHCIRoleInfo = mkStorableRetType bluetoothHCIRoleInfoStructType
 
+instance ObjCArgument BluetoothHCIRoleInfo where
+  withObjCArg x k = k (argBluetoothHCIRoleInfo x)
+
+instance ObjCReturn BluetoothHCIRoleInfo where
+  type RawReturn BluetoothHCIRoleInfo = BluetoothHCIRoleInfo
+  objcRetType = retBluetoothHCIRoleInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIScanActivity = BluetoothHCIScanActivity
   { bluetoothHCIScanActivityScanInterval :: !CUShort
   , bluetoothHCIScanActivityScanWindow :: !CUShort
@@ -1794,6 +2366,16 @@ argBluetoothHCIScanActivity = mkStorableArg bluetoothHCIScanActivityStructType
 
 retBluetoothHCIScanActivity :: RetType BluetoothHCIScanActivity
 retBluetoothHCIScanActivity = mkStorableRetType bluetoothHCIScanActivityStructType
+
+instance ObjCArgument BluetoothHCIScanActivity where
+  withObjCArg x k = k (argBluetoothHCIScanActivity x)
+
+instance ObjCReturn BluetoothHCIScanActivity where
+  type RawReturn BluetoothHCIScanActivity = BluetoothHCIScanActivity
+  objcRetType = retBluetoothHCIScanActivity
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCISetupSynchronousConnectionParams = BluetoothHCISetupSynchronousConnectionParams
   { bluetoothHCISetupSynchronousConnectionParamsTransmitBandwidth :: !CUInt
@@ -1831,6 +2413,16 @@ argBluetoothHCISetupSynchronousConnectionParams = mkStorableArg bluetoothHCISetu
 retBluetoothHCISetupSynchronousConnectionParams :: RetType BluetoothHCISetupSynchronousConnectionParams
 retBluetoothHCISetupSynchronousConnectionParams = mkStorableRetType bluetoothHCISetupSynchronousConnectionParamsStructType
 
+instance ObjCArgument BluetoothHCISetupSynchronousConnectionParams where
+  withObjCArg x k = k (argBluetoothHCISetupSynchronousConnectionParams x)
+
+instance ObjCReturn BluetoothHCISetupSynchronousConnectionParams where
+  type RawReturn BluetoothHCISetupSynchronousConnectionParams = BluetoothHCISetupSynchronousConnectionParams
+  objcRetType = retBluetoothHCISetupSynchronousConnectionParams
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIStoredLinkKeysInfo = BluetoothHCIStoredLinkKeysInfo
   { bluetoothHCIStoredLinkKeysInfoNumLinkKeysRead :: !CUShort
   , bluetoothHCIStoredLinkKeysInfoMaxNumLinkKeysAllowedInDevice :: !CUShort
@@ -1855,6 +2447,16 @@ argBluetoothHCIStoredLinkKeysInfo = mkStorableArg bluetoothHCIStoredLinkKeysInfo
 retBluetoothHCIStoredLinkKeysInfo :: RetType BluetoothHCIStoredLinkKeysInfo
 retBluetoothHCIStoredLinkKeysInfo = mkStorableRetType bluetoothHCIStoredLinkKeysInfoStructType
 
+instance ObjCArgument BluetoothHCIStoredLinkKeysInfo where
+  withObjCArg x k = k (argBluetoothHCIStoredLinkKeysInfo x)
+
+instance ObjCReturn BluetoothHCIStoredLinkKeysInfo where
+  type RawReturn BluetoothHCIStoredLinkKeysInfo = BluetoothHCIStoredLinkKeysInfo
+  objcRetType = retBluetoothHCIStoredLinkKeysInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCITransmitPowerLevelInfo = BluetoothHCITransmitPowerLevelInfo
   { bluetoothHCITransmitPowerLevelInfoHandle :: !CUShort
   , bluetoothHCITransmitPowerLevelInfoLevel :: !CSChar
@@ -1878,6 +2480,16 @@ argBluetoothHCITransmitPowerLevelInfo = mkStorableArg bluetoothHCITransmitPowerL
 
 retBluetoothHCITransmitPowerLevelInfo :: RetType BluetoothHCITransmitPowerLevelInfo
 retBluetoothHCITransmitPowerLevelInfo = mkStorableRetType bluetoothHCITransmitPowerLevelInfoStructType
+
+instance ObjCArgument BluetoothHCITransmitPowerLevelInfo where
+  withObjCArg x k = k (argBluetoothHCITransmitPowerLevelInfo x)
+
+instance ObjCReturn BluetoothHCITransmitPowerLevelInfo where
+  type RawReturn BluetoothHCITransmitPowerLevelInfo = BluetoothHCITransmitPowerLevelInfo
+  objcRetType = retBluetoothHCITransmitPowerLevelInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothHCIVersionInfo = BluetoothHCIVersionInfo
   { bluetoothHCIVersionInfoManufacturerName :: !CUShort
@@ -1912,6 +2524,16 @@ argBluetoothHCIVersionInfo = mkStorableArg bluetoothHCIVersionInfoStructType
 retBluetoothHCIVersionInfo :: RetType BluetoothHCIVersionInfo
 retBluetoothHCIVersionInfo = mkStorableRetType bluetoothHCIVersionInfoStructType
 
+instance ObjCArgument BluetoothHCIVersionInfo where
+  withObjCArg x k = k (argBluetoothHCIVersionInfo x)
+
+instance ObjCReturn BluetoothHCIVersionInfo where
+  type RawReturn BluetoothHCIVersionInfo = BluetoothHCIVersionInfo
+  objcRetType = retBluetoothHCIVersionInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothIOCapabilityResponse = BluetoothIOCapabilityResponse
   { bluetoothIOCapabilityResponseDeviceAddress :: !(Ptr ())
   , bluetoothIOCapabilityResponseIoCapability :: !CUChar
@@ -1942,6 +2564,16 @@ argBluetoothIOCapabilityResponse = mkStorableArg bluetoothIOCapabilityResponseSt
 retBluetoothIOCapabilityResponse :: RetType BluetoothIOCapabilityResponse
 retBluetoothIOCapabilityResponse = mkStorableRetType bluetoothIOCapabilityResponseStructType
 
+instance ObjCArgument BluetoothIOCapabilityResponse where
+  withObjCArg x k = k (argBluetoothIOCapabilityResponse x)
+
+instance ObjCReturn BluetoothIOCapabilityResponse where
+  type RawReturn BluetoothIOCapabilityResponse = BluetoothIOCapabilityResponse
+  objcRetType = retBluetoothIOCapabilityResponse
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothKeypressNotification = BluetoothKeypressNotification
   { bluetoothKeypressNotificationDeviceAddress :: !(Ptr ())
   , bluetoothKeypressNotificationNotificationType :: !CUChar
@@ -1965,6 +2597,16 @@ argBluetoothKeypressNotification = mkStorableArg bluetoothKeypressNotificationSt
 
 retBluetoothKeypressNotification :: RetType BluetoothKeypressNotification
 retBluetoothKeypressNotification = mkStorableRetType bluetoothKeypressNotificationStructType
+
+instance ObjCArgument BluetoothKeypressNotification where
+  withObjCArg x k = k (argBluetoothKeypressNotification x)
+
+instance ObjCReturn BluetoothKeypressNotification where
+  type RawReturn BluetoothKeypressNotification = BluetoothKeypressNotification
+  objcRetType = retBluetoothKeypressNotification
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothL2CAPQualityOfServiceOptions = BluetoothL2CAPQualityOfServiceOptions
   { bluetoothL2CAPQualityOfServiceOptionsFlags :: !CUChar
@@ -2005,6 +2647,16 @@ argBluetoothL2CAPQualityOfServiceOptions = mkStorableArg bluetoothL2CAPQualityOf
 retBluetoothL2CAPQualityOfServiceOptions :: RetType BluetoothL2CAPQualityOfServiceOptions
 retBluetoothL2CAPQualityOfServiceOptions = mkStorableRetType bluetoothL2CAPQualityOfServiceOptionsStructType
 
+instance ObjCArgument BluetoothL2CAPQualityOfServiceOptions where
+  withObjCArg x k = k (argBluetoothL2CAPQualityOfServiceOptions x)
+
+instance ObjCReturn BluetoothL2CAPQualityOfServiceOptions where
+  type RawReturn BluetoothL2CAPQualityOfServiceOptions = BluetoothL2CAPQualityOfServiceOptions
+  objcRetType = retBluetoothL2CAPQualityOfServiceOptions
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothL2CAPRetransmissionAndFlowControlOptions = BluetoothL2CAPRetransmissionAndFlowControlOptions
   { bluetoothL2CAPRetransmissionAndFlowControlOptionsFlags :: !CUChar
   , bluetoothL2CAPRetransmissionAndFlowControlOptionsTxWindowSize :: !CUChar
@@ -2041,6 +2693,16 @@ argBluetoothL2CAPRetransmissionAndFlowControlOptions = mkStorableArg bluetoothL2
 retBluetoothL2CAPRetransmissionAndFlowControlOptions :: RetType BluetoothL2CAPRetransmissionAndFlowControlOptions
 retBluetoothL2CAPRetransmissionAndFlowControlOptions = mkStorableRetType bluetoothL2CAPRetransmissionAndFlowControlOptionsStructType
 
+instance ObjCArgument BluetoothL2CAPRetransmissionAndFlowControlOptions where
+  withObjCArg x k = k (argBluetoothL2CAPRetransmissionAndFlowControlOptions x)
+
+instance ObjCReturn BluetoothL2CAPRetransmissionAndFlowControlOptions where
+  type RawReturn BluetoothL2CAPRetransmissionAndFlowControlOptions = BluetoothL2CAPRetransmissionAndFlowControlOptions
+  objcRetType = retBluetoothL2CAPRetransmissionAndFlowControlOptions
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothReadClockInfo = BluetoothReadClockInfo
   { bluetoothReadClockInfoHandle :: !CUShort
   , bluetoothReadClockInfoClock :: !CUInt
@@ -2068,6 +2730,16 @@ argBluetoothReadClockInfo = mkStorableArg bluetoothReadClockInfoStructType
 retBluetoothReadClockInfo :: RetType BluetoothReadClockInfo
 retBluetoothReadClockInfo = mkStorableRetType bluetoothReadClockInfoStructType
 
+instance ObjCArgument BluetoothReadClockInfo where
+  withObjCArg x k = k (argBluetoothReadClockInfo x)
+
+instance ObjCReturn BluetoothReadClockInfo where
+  type RawReturn BluetoothReadClockInfo = BluetoothReadClockInfo
+  objcRetType = retBluetoothReadClockInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothRemoteHostSupportedFeaturesNotification = BluetoothRemoteHostSupportedFeaturesNotification
   { bluetoothRemoteHostSupportedFeaturesNotificationDeviceAddress :: !(Ptr ())
   , bluetoothRemoteHostSupportedFeaturesNotificationHostSupportedFeatures :: !(Ptr ())
@@ -2091,6 +2763,16 @@ argBluetoothRemoteHostSupportedFeaturesNotification = mkStorableArg bluetoothRem
 
 retBluetoothRemoteHostSupportedFeaturesNotification :: RetType BluetoothRemoteHostSupportedFeaturesNotification
 retBluetoothRemoteHostSupportedFeaturesNotification = mkStorableRetType bluetoothRemoteHostSupportedFeaturesNotificationStructType
+
+instance ObjCArgument BluetoothRemoteHostSupportedFeaturesNotification where
+  withObjCArg x k = k (argBluetoothRemoteHostSupportedFeaturesNotification x)
+
+instance ObjCReturn BluetoothRemoteHostSupportedFeaturesNotification where
+  type RawReturn BluetoothRemoteHostSupportedFeaturesNotification = BluetoothRemoteHostSupportedFeaturesNotification
+  objcRetType = retBluetoothRemoteHostSupportedFeaturesNotification
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothSynchronousConnectionInfo = BluetoothSynchronousConnectionInfo
   { bluetoothSynchronousConnectionInfoTransmitBandWidth :: !CUInt
@@ -2128,6 +2810,16 @@ argBluetoothSynchronousConnectionInfo = mkStorableArg bluetoothSynchronousConnec
 retBluetoothSynchronousConnectionInfo :: RetType BluetoothSynchronousConnectionInfo
 retBluetoothSynchronousConnectionInfo = mkStorableRetType bluetoothSynchronousConnectionInfoStructType
 
+instance ObjCArgument BluetoothSynchronousConnectionInfo where
+  withObjCArg x k = k (argBluetoothSynchronousConnectionInfo x)
+
+instance ObjCReturn BluetoothSynchronousConnectionInfo where
+  type RawReturn BluetoothSynchronousConnectionInfo = BluetoothSynchronousConnectionInfo
+  objcRetType = retBluetoothSynchronousConnectionInfo
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothUserConfirmationRequest = BluetoothUserConfirmationRequest
   { bluetoothUserConfirmationRequestDeviceAddress :: !(Ptr ())
   , bluetoothUserConfirmationRequestNumericValue :: !CUInt
@@ -2151,6 +2843,16 @@ argBluetoothUserConfirmationRequest = mkStorableArg bluetoothUserConfirmationReq
 
 retBluetoothUserConfirmationRequest :: RetType BluetoothUserConfirmationRequest
 retBluetoothUserConfirmationRequest = mkStorableRetType bluetoothUserConfirmationRequestStructType
+
+instance ObjCArgument BluetoothUserConfirmationRequest where
+  withObjCArg x k = k (argBluetoothUserConfirmationRequest x)
+
+instance ObjCReturn BluetoothUserConfirmationRequest where
+  type RawReturn BluetoothUserConfirmationRequest = BluetoothUserConfirmationRequest
+  objcRetType = retBluetoothUserConfirmationRequest
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data BluetoothUserPasskeyNotification = BluetoothUserPasskeyNotification
   { bluetoothUserPasskeyNotificationDeviceAddress :: !(Ptr ())
@@ -2176,6 +2878,16 @@ argBluetoothUserPasskeyNotification = mkStorableArg bluetoothUserPasskeyNotifica
 retBluetoothUserPasskeyNotification :: RetType BluetoothUserPasskeyNotification
 retBluetoothUserPasskeyNotification = mkStorableRetType bluetoothUserPasskeyNotificationStructType
 
+instance ObjCArgument BluetoothUserPasskeyNotification where
+  withObjCArg x k = k (argBluetoothUserPasskeyNotification x)
+
+instance ObjCReturn BluetoothUserPasskeyNotification where
+  type RawReturn BluetoothUserPasskeyNotification = BluetoothUserPasskeyNotification
+  objcRetType = retBluetoothUserPasskeyNotification
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data IOBluetoothL2CAPChannelDataBlock = IOBluetoothL2CAPChannelDataBlock
   { ioBluetoothL2CAPChannelDataBlockDataPtr :: !(Ptr ())
   , ioBluetoothL2CAPChannelDataBlockDataSize :: !CULong
@@ -2200,6 +2912,16 @@ argIOBluetoothL2CAPChannelDataBlock = mkStorableArg ioBluetoothL2CAPChannelDataB
 retIOBluetoothL2CAPChannelDataBlock :: RetType IOBluetoothL2CAPChannelDataBlock
 retIOBluetoothL2CAPChannelDataBlock = mkStorableRetType ioBluetoothL2CAPChannelDataBlockStructType
 
+instance ObjCArgument IOBluetoothL2CAPChannelDataBlock where
+  withObjCArg x k = k (argIOBluetoothL2CAPChannelDataBlock x)
+
+instance ObjCReturn IOBluetoothL2CAPChannelDataBlock where
+  type RawReturn IOBluetoothL2CAPChannelDataBlock = IOBluetoothL2CAPChannelDataBlock
+  objcRetType = retIOBluetoothL2CAPChannelDataBlock
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data OBEXAbortCommandData = OBEXAbortCommandData
   { obexAbortCommandDataHeaderDataPtr :: !(Ptr ())
   , obexAbortCommandDataHeaderDataLength :: !CULong
@@ -2223,6 +2945,16 @@ argOBEXAbortCommandData = mkStorableArg obexAbortCommandDataStructType
 
 retOBEXAbortCommandData :: RetType OBEXAbortCommandData
 retOBEXAbortCommandData = mkStorableRetType obexAbortCommandDataStructType
+
+instance ObjCArgument OBEXAbortCommandData where
+  withObjCArg x k = k (argOBEXAbortCommandData x)
+
+instance ObjCReturn OBEXAbortCommandData where
+  type RawReturn OBEXAbortCommandData = OBEXAbortCommandData
+  objcRetType = retOBEXAbortCommandData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data OBEXAbortCommandResponseData = OBEXAbortCommandResponseData
   { obexAbortCommandResponseDataServerResponseOpCode :: !CUChar
@@ -2250,6 +2982,16 @@ argOBEXAbortCommandResponseData = mkStorableArg obexAbortCommandResponseDataStru
 
 retOBEXAbortCommandResponseData :: RetType OBEXAbortCommandResponseData
 retOBEXAbortCommandResponseData = mkStorableRetType obexAbortCommandResponseDataStructType
+
+instance ObjCArgument OBEXAbortCommandResponseData where
+  withObjCArg x k = k (argOBEXAbortCommandResponseData x)
+
+instance ObjCReturn OBEXAbortCommandResponseData where
+  type RawReturn OBEXAbortCommandResponseData = OBEXAbortCommandResponseData
+  objcRetType = retOBEXAbortCommandResponseData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data OBEXConnectCommandData = OBEXConnectCommandData
   { obexConnectCommandDataHeaderDataPtr :: !(Ptr ())
@@ -2283,6 +3025,16 @@ argOBEXConnectCommandData = mkStorableArg obexConnectCommandDataStructType
 
 retOBEXConnectCommandData :: RetType OBEXConnectCommandData
 retOBEXConnectCommandData = mkStorableRetType obexConnectCommandDataStructType
+
+instance ObjCArgument OBEXConnectCommandData where
+  withObjCArg x k = k (argOBEXConnectCommandData x)
+
+instance ObjCReturn OBEXConnectCommandData where
+  type RawReturn OBEXConnectCommandData = OBEXConnectCommandData
+  objcRetType = retOBEXConnectCommandData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data OBEXConnectCommandResponseData = OBEXConnectCommandResponseData
   { obexConnectCommandResponseDataServerResponseOpCode :: !CUChar
@@ -2320,6 +3072,16 @@ argOBEXConnectCommandResponseData = mkStorableArg obexConnectCommandResponseData
 retOBEXConnectCommandResponseData :: RetType OBEXConnectCommandResponseData
 retOBEXConnectCommandResponseData = mkStorableRetType obexConnectCommandResponseDataStructType
 
+instance ObjCArgument OBEXConnectCommandResponseData where
+  withObjCArg x k = k (argOBEXConnectCommandResponseData x)
+
+instance ObjCReturn OBEXConnectCommandResponseData where
+  type RawReturn OBEXConnectCommandResponseData = OBEXConnectCommandResponseData
+  objcRetType = retOBEXConnectCommandResponseData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data OBEXDisconnectCommandData = OBEXDisconnectCommandData
   { obexDisconnectCommandDataHeaderDataPtr :: !(Ptr ())
   , obexDisconnectCommandDataHeaderDataLength :: !CULong
@@ -2343,6 +3105,16 @@ argOBEXDisconnectCommandData = mkStorableArg obexDisconnectCommandDataStructType
 
 retOBEXDisconnectCommandData :: RetType OBEXDisconnectCommandData
 retOBEXDisconnectCommandData = mkStorableRetType obexDisconnectCommandDataStructType
+
+instance ObjCArgument OBEXDisconnectCommandData where
+  withObjCArg x k = k (argOBEXDisconnectCommandData x)
+
+instance ObjCReturn OBEXDisconnectCommandData where
+  type RawReturn OBEXDisconnectCommandData = OBEXDisconnectCommandData
+  objcRetType = retOBEXDisconnectCommandData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data OBEXDisconnectCommandResponseData = OBEXDisconnectCommandResponseData
   { obexDisconnectCommandResponseDataServerResponseOpCode :: !CUChar
@@ -2371,6 +3143,16 @@ argOBEXDisconnectCommandResponseData = mkStorableArg obexDisconnectCommandRespon
 retOBEXDisconnectCommandResponseData :: RetType OBEXDisconnectCommandResponseData
 retOBEXDisconnectCommandResponseData = mkStorableRetType obexDisconnectCommandResponseDataStructType
 
+instance ObjCArgument OBEXDisconnectCommandResponseData where
+  withObjCArg x k = k (argOBEXDisconnectCommandResponseData x)
+
+instance ObjCReturn OBEXDisconnectCommandResponseData where
+  type RawReturn OBEXDisconnectCommandResponseData = OBEXDisconnectCommandResponseData
+  objcRetType = retOBEXDisconnectCommandResponseData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data OBEXErrorData = OBEXErrorData
   { obexErrorDataError :: !CInt
   , obexErrorDataDataPtr :: !(Ptr ())
@@ -2398,6 +3180,16 @@ argOBEXErrorData = mkStorableArg obexErrorDataStructType
 retOBEXErrorData :: RetType OBEXErrorData
 retOBEXErrorData = mkStorableRetType obexErrorDataStructType
 
+instance ObjCArgument OBEXErrorData where
+  withObjCArg x k = k (argOBEXErrorData x)
+
+instance ObjCReturn OBEXErrorData where
+  type RawReturn OBEXErrorData = OBEXErrorData
+  objcRetType = retOBEXErrorData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data OBEXGetCommandData = OBEXGetCommandData
   { obexGetCommandDataHeaderDataPtr :: !(Ptr ())
   , obexGetCommandDataHeaderDataLength :: !CULong
@@ -2421,6 +3213,16 @@ argOBEXGetCommandData = mkStorableArg obexGetCommandDataStructType
 
 retOBEXGetCommandData :: RetType OBEXGetCommandData
 retOBEXGetCommandData = mkStorableRetType obexGetCommandDataStructType
+
+instance ObjCArgument OBEXGetCommandData where
+  withObjCArg x k = k (argOBEXGetCommandData x)
+
+instance ObjCReturn OBEXGetCommandData where
+  type RawReturn OBEXGetCommandData = OBEXGetCommandData
+  objcRetType = retOBEXGetCommandData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data OBEXGetCommandResponseData = OBEXGetCommandResponseData
   { obexGetCommandResponseDataServerResponseOpCode :: !CUChar
@@ -2449,6 +3251,16 @@ argOBEXGetCommandResponseData = mkStorableArg obexGetCommandResponseDataStructTy
 retOBEXGetCommandResponseData :: RetType OBEXGetCommandResponseData
 retOBEXGetCommandResponseData = mkStorableRetType obexGetCommandResponseDataStructType
 
+instance ObjCArgument OBEXGetCommandResponseData where
+  withObjCArg x k = k (argOBEXGetCommandResponseData x)
+
+instance ObjCReturn OBEXGetCommandResponseData where
+  type RawReturn OBEXGetCommandResponseData = OBEXGetCommandResponseData
+  objcRetType = retOBEXGetCommandResponseData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data OBEXPutCommandData = OBEXPutCommandData
   { obexPutCommandDataHeaderDataPtr :: !(Ptr ())
   , obexPutCommandDataHeaderDataLength :: !CULong
@@ -2476,6 +3288,16 @@ argOBEXPutCommandData = mkStorableArg obexPutCommandDataStructType
 retOBEXPutCommandData :: RetType OBEXPutCommandData
 retOBEXPutCommandData = mkStorableRetType obexPutCommandDataStructType
 
+instance ObjCArgument OBEXPutCommandData where
+  withObjCArg x k = k (argOBEXPutCommandData x)
+
+instance ObjCReturn OBEXPutCommandData where
+  type RawReturn OBEXPutCommandData = OBEXPutCommandData
+  objcRetType = retOBEXPutCommandData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data OBEXPutCommandResponseData = OBEXPutCommandResponseData
   { obexPutCommandResponseDataServerResponseOpCode :: !CUChar
   , obexPutCommandResponseDataHeaderDataPtr :: !(Ptr ())
@@ -2502,6 +3324,16 @@ argOBEXPutCommandResponseData = mkStorableArg obexPutCommandResponseDataStructTy
 
 retOBEXPutCommandResponseData :: RetType OBEXPutCommandResponseData
 retOBEXPutCommandResponseData = mkStorableRetType obexPutCommandResponseDataStructType
+
+instance ObjCArgument OBEXPutCommandResponseData where
+  withObjCArg x k = k (argOBEXPutCommandResponseData x)
+
+instance ObjCReturn OBEXPutCommandResponseData where
+  type RawReturn OBEXPutCommandResponseData = OBEXPutCommandResponseData
+  objcRetType = retOBEXPutCommandResponseData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data OBEXSetPathCommandData = OBEXSetPathCommandData
   { obexSetPathCommandDataHeaderDataPtr :: !(Ptr ())
@@ -2532,6 +3364,16 @@ argOBEXSetPathCommandData = mkStorableArg obexSetPathCommandDataStructType
 
 retOBEXSetPathCommandData :: RetType OBEXSetPathCommandData
 retOBEXSetPathCommandData = mkStorableRetType obexSetPathCommandDataStructType
+
+instance ObjCArgument OBEXSetPathCommandData where
+  withObjCArg x k = k (argOBEXSetPathCommandData x)
+
+instance ObjCReturn OBEXSetPathCommandData where
+  type RawReturn OBEXSetPathCommandData = OBEXSetPathCommandData
+  objcRetType = retOBEXSetPathCommandData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data OBEXSetPathCommandResponseData = OBEXSetPathCommandResponseData
   { obexSetPathCommandResponseDataServerResponseOpCode :: !CUChar
@@ -2566,6 +3408,16 @@ argOBEXSetPathCommandResponseData = mkStorableArg obexSetPathCommandResponseData
 retOBEXSetPathCommandResponseData :: RetType OBEXSetPathCommandResponseData
 retOBEXSetPathCommandResponseData = mkStorableRetType obexSetPathCommandResponseDataStructType
 
+instance ObjCArgument OBEXSetPathCommandResponseData where
+  withObjCArg x k = k (argOBEXSetPathCommandResponseData x)
+
+instance ObjCReturn OBEXSetPathCommandResponseData where
+  type RawReturn OBEXSetPathCommandResponseData = OBEXSetPathCommandResponseData
+  objcRetType = retOBEXSetPathCommandResponseData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data OBEXTransportEvent = OBEXTransportEvent
   { obexTransportEventType :: !CUInt
   , obexTransportEventStatus :: !CInt
@@ -2596,6 +3448,16 @@ argOBEXTransportEvent = mkStorableArg obexTransportEventStructType
 retOBEXTransportEvent :: RetType OBEXTransportEvent
 retOBEXTransportEvent = mkStorableRetType obexTransportEventStructType
 
+instance ObjCArgument OBEXTransportEvent where
+  withObjCArg x k = k (argOBEXTransportEvent x)
+
+instance ObjCReturn OBEXTransportEvent where
+  type RawReturn OBEXTransportEvent = OBEXTransportEvent
+  objcRetType = retOBEXTransportEvent
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data BluetoothHCIEventQoSSetupCompleteResults = BluetoothHCIEventQoSSetupCompleteResults
   { bluetoothHCIEventQoSSetupCompleteResultsConnectionHandle :: !CUShort
   , bluetoothHCIEventQoSSetupCompleteResultsSetupParams :: !BluetoothHCIQualityOfServiceSetupParams
@@ -2619,3 +3481,13 @@ argBluetoothHCIEventQoSSetupCompleteResults = mkStorableArg bluetoothHCIEventQoS
 
 retBluetoothHCIEventQoSSetupCompleteResults :: RetType BluetoothHCIEventQoSSetupCompleteResults
 retBluetoothHCIEventQoSSetupCompleteResults = mkStorableRetType bluetoothHCIEventQoSSetupCompleteResultsStructType
+
+instance ObjCArgument BluetoothHCIEventQoSSetupCompleteResults where
+  withObjCArg x k = k (argBluetoothHCIEventQoSSetupCompleteResults x)
+
+instance ObjCReturn BluetoothHCIEventQoSSetupCompleteResults where
+  type RawReturn BluetoothHCIEventQoSSetupCompleteResults = BluetoothHCIEventQoSSetupCompleteResults
+  objcRetType = retBluetoothHCIEventQoSSetupCompleteResults
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

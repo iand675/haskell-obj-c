@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionAuthorization
   , setHttpBody
   , privateKeys
   , setPrivateKeys
+  , httpAuthorizationHeadersSelector
+  , httpBodySelector
+  , httpResponseSelector
   , initWithHTTPAuthorizationHeadersSelector
   , initWithHTTPResponse_httpBodySelector
-  , httpAuthorizationHeadersSelector
-  , setHttpAuthorizationHeadersSelector
-  , httpResponseSelector
-  , setHttpResponseSelector
-  , httpBodySelector
-  , setHttpBodySelector
   , privateKeysSelector
+  , setHttpAuthorizationHeadersSelector
+  , setHttpBodySelector
+  , setHttpResponseSelector
   , setPrivateKeysSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,120 +46,113 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithHTTPAuthorizationHeaders:@
 initWithHTTPAuthorizationHeaders :: (IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult, IsNSDictionary httpAuthorizationHeaders) => asAuthorizationProviderExtensionAuthorizationResult -> httpAuthorizationHeaders -> IO (Id ASAuthorizationProviderExtensionAuthorizationResult)
-initWithHTTPAuthorizationHeaders asAuthorizationProviderExtensionAuthorizationResult  httpAuthorizationHeaders =
-  withObjCPtr httpAuthorizationHeaders $ \raw_httpAuthorizationHeaders ->
-      sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "initWithHTTPAuthorizationHeaders:") (retPtr retVoid) [argPtr (castPtr raw_httpAuthorizationHeaders :: Ptr ())] >>= ownedObject . castPtr
+initWithHTTPAuthorizationHeaders asAuthorizationProviderExtensionAuthorizationResult httpAuthorizationHeaders =
+  sendOwnedMessage asAuthorizationProviderExtensionAuthorizationResult initWithHTTPAuthorizationHeadersSelector (toNSDictionary httpAuthorizationHeaders)
 
 -- | Authorization succeeded with a HTTP response.
 --
 -- ObjC selector: @- initWithHTTPResponse:httpBody:@
 initWithHTTPResponse_httpBody :: (IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult, IsNSHTTPURLResponse httpResponse, IsNSData httpBody) => asAuthorizationProviderExtensionAuthorizationResult -> httpResponse -> httpBody -> IO (Id ASAuthorizationProviderExtensionAuthorizationResult)
-initWithHTTPResponse_httpBody asAuthorizationProviderExtensionAuthorizationResult  httpResponse httpBody =
-  withObjCPtr httpResponse $ \raw_httpResponse ->
-    withObjCPtr httpBody $ \raw_httpBody ->
-        sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "initWithHTTPResponse:httpBody:") (retPtr retVoid) [argPtr (castPtr raw_httpResponse :: Ptr ()), argPtr (castPtr raw_httpBody :: Ptr ())] >>= ownedObject . castPtr
+initWithHTTPResponse_httpBody asAuthorizationProviderExtensionAuthorizationResult httpResponse httpBody =
+  sendOwnedMessage asAuthorizationProviderExtensionAuthorizationResult initWithHTTPResponse_httpBodySelector (toNSHTTPURLResponse httpResponse) (toNSData httpBody)
 
 -- | HTTP extra headers for addition with credentials.
 --
 -- ObjC selector: @- httpAuthorizationHeaders@
 httpAuthorizationHeaders :: IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult => asAuthorizationProviderExtensionAuthorizationResult -> IO (Id NSDictionary)
-httpAuthorizationHeaders asAuthorizationProviderExtensionAuthorizationResult  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "httpAuthorizationHeaders") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpAuthorizationHeaders asAuthorizationProviderExtensionAuthorizationResult =
+  sendMessage asAuthorizationProviderExtensionAuthorizationResult httpAuthorizationHeadersSelector
 
 -- | HTTP extra headers for addition with credentials.
 --
 -- ObjC selector: @- setHttpAuthorizationHeaders:@
 setHttpAuthorizationHeaders :: (IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult, IsNSDictionary value) => asAuthorizationProviderExtensionAuthorizationResult -> value -> IO ()
-setHttpAuthorizationHeaders asAuthorizationProviderExtensionAuthorizationResult  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "setHttpAuthorizationHeaders:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHttpAuthorizationHeaders asAuthorizationProviderExtensionAuthorizationResult value =
+  sendMessage asAuthorizationProviderExtensionAuthorizationResult setHttpAuthorizationHeadersSelector (toNSDictionary value)
 
 -- | HTTP response for OAUth and SAML based authentications.
 --
 -- ObjC selector: @- httpResponse@
 httpResponse :: IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult => asAuthorizationProviderExtensionAuthorizationResult -> IO (Id NSHTTPURLResponse)
-httpResponse asAuthorizationProviderExtensionAuthorizationResult  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "httpResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpResponse asAuthorizationProviderExtensionAuthorizationResult =
+  sendMessage asAuthorizationProviderExtensionAuthorizationResult httpResponseSelector
 
 -- | HTTP response for OAUth and SAML based authentications.
 --
 -- ObjC selector: @- setHttpResponse:@
 setHttpResponse :: (IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult, IsNSHTTPURLResponse value) => asAuthorizationProviderExtensionAuthorizationResult -> value -> IO ()
-setHttpResponse asAuthorizationProviderExtensionAuthorizationResult  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "setHttpResponse:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHttpResponse asAuthorizationProviderExtensionAuthorizationResult value =
+  sendMessage asAuthorizationProviderExtensionAuthorizationResult setHttpResponseSelector (toNSHTTPURLResponse value)
 
 -- | HTTP response body for OAUth and SAML based authentications.
 --
 -- ObjC selector: @- httpBody@
 httpBody :: IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult => asAuthorizationProviderExtensionAuthorizationResult -> IO (Id NSData)
-httpBody asAuthorizationProviderExtensionAuthorizationResult  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "httpBody") (retPtr retVoid) [] >>= retainedObject . castPtr
+httpBody asAuthorizationProviderExtensionAuthorizationResult =
+  sendMessage asAuthorizationProviderExtensionAuthorizationResult httpBodySelector
 
 -- | HTTP response body for OAUth and SAML based authentications.
 --
 -- ObjC selector: @- setHttpBody:@
 setHttpBody :: (IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult, IsNSData value) => asAuthorizationProviderExtensionAuthorizationResult -> value -> IO ()
-setHttpBody asAuthorizationProviderExtensionAuthorizationResult  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "setHttpBody:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHttpBody asAuthorizationProviderExtensionAuthorizationResult value =
+  sendMessage asAuthorizationProviderExtensionAuthorizationResult setHttpBodySelector (toNSData value)
 
 -- | Private SecKeys.
 --
 -- ObjC selector: @- privateKeys@
 privateKeys :: IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult => asAuthorizationProviderExtensionAuthorizationResult -> IO (Id NSArray)
-privateKeys asAuthorizationProviderExtensionAuthorizationResult  =
-    sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "privateKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+privateKeys asAuthorizationProviderExtensionAuthorizationResult =
+  sendMessage asAuthorizationProviderExtensionAuthorizationResult privateKeysSelector
 
 -- | Private SecKeys.
 --
 -- ObjC selector: @- setPrivateKeys:@
 setPrivateKeys :: (IsASAuthorizationProviderExtensionAuthorizationResult asAuthorizationProviderExtensionAuthorizationResult, IsNSArray value) => asAuthorizationProviderExtensionAuthorizationResult -> value -> IO ()
-setPrivateKeys asAuthorizationProviderExtensionAuthorizationResult  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionAuthorizationResult (mkSelector "setPrivateKeys:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrivateKeys asAuthorizationProviderExtensionAuthorizationResult value =
+  sendMessage asAuthorizationProviderExtensionAuthorizationResult setPrivateKeysSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHTTPAuthorizationHeaders:@
-initWithHTTPAuthorizationHeadersSelector :: Selector
+initWithHTTPAuthorizationHeadersSelector :: Selector '[Id NSDictionary] (Id ASAuthorizationProviderExtensionAuthorizationResult)
 initWithHTTPAuthorizationHeadersSelector = mkSelector "initWithHTTPAuthorizationHeaders:"
 
 -- | @Selector@ for @initWithHTTPResponse:httpBody:@
-initWithHTTPResponse_httpBodySelector :: Selector
+initWithHTTPResponse_httpBodySelector :: Selector '[Id NSHTTPURLResponse, Id NSData] (Id ASAuthorizationProviderExtensionAuthorizationResult)
 initWithHTTPResponse_httpBodySelector = mkSelector "initWithHTTPResponse:httpBody:"
 
 -- | @Selector@ for @httpAuthorizationHeaders@
-httpAuthorizationHeadersSelector :: Selector
+httpAuthorizationHeadersSelector :: Selector '[] (Id NSDictionary)
 httpAuthorizationHeadersSelector = mkSelector "httpAuthorizationHeaders"
 
 -- | @Selector@ for @setHttpAuthorizationHeaders:@
-setHttpAuthorizationHeadersSelector :: Selector
+setHttpAuthorizationHeadersSelector :: Selector '[Id NSDictionary] ()
 setHttpAuthorizationHeadersSelector = mkSelector "setHttpAuthorizationHeaders:"
 
 -- | @Selector@ for @httpResponse@
-httpResponseSelector :: Selector
+httpResponseSelector :: Selector '[] (Id NSHTTPURLResponse)
 httpResponseSelector = mkSelector "httpResponse"
 
 -- | @Selector@ for @setHttpResponse:@
-setHttpResponseSelector :: Selector
+setHttpResponseSelector :: Selector '[Id NSHTTPURLResponse] ()
 setHttpResponseSelector = mkSelector "setHttpResponse:"
 
 -- | @Selector@ for @httpBody@
-httpBodySelector :: Selector
+httpBodySelector :: Selector '[] (Id NSData)
 httpBodySelector = mkSelector "httpBody"
 
 -- | @Selector@ for @setHttpBody:@
-setHttpBodySelector :: Selector
+setHttpBodySelector :: Selector '[Id NSData] ()
 setHttpBodySelector = mkSelector "setHttpBody:"
 
 -- | @Selector@ for @privateKeys@
-privateKeysSelector :: Selector
+privateKeysSelector :: Selector '[] (Id NSArray)
 privateKeysSelector = mkSelector "privateKeys"
 
 -- | @Selector@ for @setPrivateKeys:@
-setPrivateKeysSelector :: Selector
+setPrivateKeysSelector :: Selector '[Id NSArray] ()
 setPrivateKeysSelector = mkSelector "setPrivateKeys:"
 

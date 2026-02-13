@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,45 +33,41 @@ module ObjC.Foundation.NSScriptCommand
   , scriptErrorString
   , setScriptErrorString
   , appleEvent
-  , initWithCommandDescriptionSelector
-  , initWithCoderSelector
-  , performDefaultImplementationSelector
-  , executeCommandSelector
-  , currentCommandSelector
-  , suspendExecutionSelector
-  , resumeExecutionWithResultSelector
-  , commandDescriptionSelector
-  , directParameterSelector
-  , setDirectParameterSelector
-  , receiversSpecifierSelector
-  , setReceiversSpecifierSelector
-  , evaluatedReceiversSelector
-  , argumentsSelector
-  , setArgumentsSelector
-  , evaluatedArgumentsSelector
-  , wellFormedSelector
-  , scriptErrorNumberSelector
-  , setScriptErrorNumberSelector
-  , scriptErrorOffendingObjectDescriptorSelector
-  , setScriptErrorOffendingObjectDescriptorSelector
-  , scriptErrorExpectedTypeDescriptorSelector
-  , setScriptErrorExpectedTypeDescriptorSelector
-  , scriptErrorStringSelector
-  , setScriptErrorStringSelector
   , appleEventSelector
+  , argumentsSelector
+  , commandDescriptionSelector
+  , currentCommandSelector
+  , directParameterSelector
+  , evaluatedArgumentsSelector
+  , evaluatedReceiversSelector
+  , executeCommandSelector
+  , initWithCoderSelector
+  , initWithCommandDescriptionSelector
+  , performDefaultImplementationSelector
+  , receiversSpecifierSelector
+  , resumeExecutionWithResultSelector
+  , scriptErrorExpectedTypeDescriptorSelector
+  , scriptErrorNumberSelector
+  , scriptErrorOffendingObjectDescriptorSelector
+  , scriptErrorStringSelector
+  , setArgumentsSelector
+  , setDirectParameterSelector
+  , setReceiversSpecifierSelector
+  , setScriptErrorExpectedTypeDescriptorSelector
+  , setScriptErrorNumberSelector
+  , setScriptErrorOffendingObjectDescriptorSelector
+  , setScriptErrorStringSelector
+  , suspendExecutionSelector
+  , wellFormedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -78,248 +75,241 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithCommandDescription:@
 initWithCommandDescription :: (IsNSScriptCommand nsScriptCommand, IsNSScriptCommandDescription commandDef) => nsScriptCommand -> commandDef -> IO (Id NSScriptCommand)
-initWithCommandDescription nsScriptCommand  commandDef =
-  withObjCPtr commandDef $ \raw_commandDef ->
-      sendMsg nsScriptCommand (mkSelector "initWithCommandDescription:") (retPtr retVoid) [argPtr (castPtr raw_commandDef :: Ptr ())] >>= ownedObject . castPtr
+initWithCommandDescription nsScriptCommand commandDef =
+  sendOwnedMessage nsScriptCommand initWithCommandDescriptionSelector (toNSScriptCommandDescription commandDef)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSScriptCommand nsScriptCommand, IsNSCoder inCoder) => nsScriptCommand -> inCoder -> IO (Id NSScriptCommand)
-initWithCoder nsScriptCommand  inCoder =
-  withObjCPtr inCoder $ \raw_inCoder ->
-      sendMsg nsScriptCommand (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_inCoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsScriptCommand inCoder =
+  sendOwnedMessage nsScriptCommand initWithCoderSelector (toNSCoder inCoder)
 
 -- | @- performDefaultImplementation@
 performDefaultImplementation :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO RawId
-performDefaultImplementation nsScriptCommand  =
-    fmap (RawId . castPtr) $ sendMsg nsScriptCommand (mkSelector "performDefaultImplementation") (retPtr retVoid) []
+performDefaultImplementation nsScriptCommand =
+  sendMessage nsScriptCommand performDefaultImplementationSelector
 
 -- | @- executeCommand@
 executeCommand :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO RawId
-executeCommand nsScriptCommand  =
-    fmap (RawId . castPtr) $ sendMsg nsScriptCommand (mkSelector "executeCommand") (retPtr retVoid) []
+executeCommand nsScriptCommand =
+  sendMessage nsScriptCommand executeCommandSelector
 
 -- | @+ currentCommand@
 currentCommand :: IO (Id NSScriptCommand)
 currentCommand  =
   do
     cls' <- getRequiredClass "NSScriptCommand"
-    sendClassMsg cls' (mkSelector "currentCommand") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentCommandSelector
 
 -- | @- suspendExecution@
 suspendExecution :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO ()
-suspendExecution nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "suspendExecution") retVoid []
+suspendExecution nsScriptCommand =
+  sendMessage nsScriptCommand suspendExecutionSelector
 
 -- | @- resumeExecutionWithResult:@
 resumeExecutionWithResult :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> RawId -> IO ()
-resumeExecutionWithResult nsScriptCommand  result =
-    sendMsg nsScriptCommand (mkSelector "resumeExecutionWithResult:") retVoid [argPtr (castPtr (unRawId result) :: Ptr ())]
+resumeExecutionWithResult nsScriptCommand result =
+  sendMessage nsScriptCommand resumeExecutionWithResultSelector result
 
 -- | @- commandDescription@
 commandDescription :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSScriptCommandDescription)
-commandDescription nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "commandDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+commandDescription nsScriptCommand =
+  sendMessage nsScriptCommand commandDescriptionSelector
 
 -- | @- directParameter@
 directParameter :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO RawId
-directParameter nsScriptCommand  =
-    fmap (RawId . castPtr) $ sendMsg nsScriptCommand (mkSelector "directParameter") (retPtr retVoid) []
+directParameter nsScriptCommand =
+  sendMessage nsScriptCommand directParameterSelector
 
 -- | @- setDirectParameter:@
 setDirectParameter :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> RawId -> IO ()
-setDirectParameter nsScriptCommand  value =
-    sendMsg nsScriptCommand (mkSelector "setDirectParameter:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDirectParameter nsScriptCommand value =
+  sendMessage nsScriptCommand setDirectParameterSelector value
 
 -- | @- receiversSpecifier@
 receiversSpecifier :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSScriptObjectSpecifier)
-receiversSpecifier nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "receiversSpecifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+receiversSpecifier nsScriptCommand =
+  sendMessage nsScriptCommand receiversSpecifierSelector
 
 -- | @- setReceiversSpecifier:@
 setReceiversSpecifier :: (IsNSScriptCommand nsScriptCommand, IsNSScriptObjectSpecifier value) => nsScriptCommand -> value -> IO ()
-setReceiversSpecifier nsScriptCommand  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsScriptCommand (mkSelector "setReceiversSpecifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReceiversSpecifier nsScriptCommand value =
+  sendMessage nsScriptCommand setReceiversSpecifierSelector (toNSScriptObjectSpecifier value)
 
 -- | @- evaluatedReceivers@
 evaluatedReceivers :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO RawId
-evaluatedReceivers nsScriptCommand  =
-    fmap (RawId . castPtr) $ sendMsg nsScriptCommand (mkSelector "evaluatedReceivers") (retPtr retVoid) []
+evaluatedReceivers nsScriptCommand =
+  sendMessage nsScriptCommand evaluatedReceiversSelector
 
 -- | @- arguments@
 arguments :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSDictionary)
-arguments nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "arguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+arguments nsScriptCommand =
+  sendMessage nsScriptCommand argumentsSelector
 
 -- | @- setArguments:@
 setArguments :: (IsNSScriptCommand nsScriptCommand, IsNSDictionary value) => nsScriptCommand -> value -> IO ()
-setArguments nsScriptCommand  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsScriptCommand (mkSelector "setArguments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArguments nsScriptCommand value =
+  sendMessage nsScriptCommand setArgumentsSelector (toNSDictionary value)
 
 -- | @- evaluatedArguments@
 evaluatedArguments :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSDictionary)
-evaluatedArguments nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "evaluatedArguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+evaluatedArguments nsScriptCommand =
+  sendMessage nsScriptCommand evaluatedArgumentsSelector
 
 -- | @- wellFormed@
 wellFormed :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO Bool
-wellFormed nsScriptCommand  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsScriptCommand (mkSelector "wellFormed") retCULong []
+wellFormed nsScriptCommand =
+  sendMessage nsScriptCommand wellFormedSelector
 
 -- | @- scriptErrorNumber@
 scriptErrorNumber :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO CLong
-scriptErrorNumber nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "scriptErrorNumber") retCLong []
+scriptErrorNumber nsScriptCommand =
+  sendMessage nsScriptCommand scriptErrorNumberSelector
 
 -- | @- setScriptErrorNumber:@
 setScriptErrorNumber :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> CLong -> IO ()
-setScriptErrorNumber nsScriptCommand  value =
-    sendMsg nsScriptCommand (mkSelector "setScriptErrorNumber:") retVoid [argCLong value]
+setScriptErrorNumber nsScriptCommand value =
+  sendMessage nsScriptCommand setScriptErrorNumberSelector value
 
 -- | @- scriptErrorOffendingObjectDescriptor@
 scriptErrorOffendingObjectDescriptor :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSAppleEventDescriptor)
-scriptErrorOffendingObjectDescriptor nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "scriptErrorOffendingObjectDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+scriptErrorOffendingObjectDescriptor nsScriptCommand =
+  sendMessage nsScriptCommand scriptErrorOffendingObjectDescriptorSelector
 
 -- | @- setScriptErrorOffendingObjectDescriptor:@
 setScriptErrorOffendingObjectDescriptor :: (IsNSScriptCommand nsScriptCommand, IsNSAppleEventDescriptor value) => nsScriptCommand -> value -> IO ()
-setScriptErrorOffendingObjectDescriptor nsScriptCommand  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsScriptCommand (mkSelector "setScriptErrorOffendingObjectDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScriptErrorOffendingObjectDescriptor nsScriptCommand value =
+  sendMessage nsScriptCommand setScriptErrorOffendingObjectDescriptorSelector (toNSAppleEventDescriptor value)
 
 -- | @- scriptErrorExpectedTypeDescriptor@
 scriptErrorExpectedTypeDescriptor :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSAppleEventDescriptor)
-scriptErrorExpectedTypeDescriptor nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "scriptErrorExpectedTypeDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+scriptErrorExpectedTypeDescriptor nsScriptCommand =
+  sendMessage nsScriptCommand scriptErrorExpectedTypeDescriptorSelector
 
 -- | @- setScriptErrorExpectedTypeDescriptor:@
 setScriptErrorExpectedTypeDescriptor :: (IsNSScriptCommand nsScriptCommand, IsNSAppleEventDescriptor value) => nsScriptCommand -> value -> IO ()
-setScriptErrorExpectedTypeDescriptor nsScriptCommand  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsScriptCommand (mkSelector "setScriptErrorExpectedTypeDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScriptErrorExpectedTypeDescriptor nsScriptCommand value =
+  sendMessage nsScriptCommand setScriptErrorExpectedTypeDescriptorSelector (toNSAppleEventDescriptor value)
 
 -- | @- scriptErrorString@
 scriptErrorString :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSString)
-scriptErrorString nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "scriptErrorString") (retPtr retVoid) [] >>= retainedObject . castPtr
+scriptErrorString nsScriptCommand =
+  sendMessage nsScriptCommand scriptErrorStringSelector
 
 -- | @- setScriptErrorString:@
 setScriptErrorString :: (IsNSScriptCommand nsScriptCommand, IsNSString value) => nsScriptCommand -> value -> IO ()
-setScriptErrorString nsScriptCommand  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsScriptCommand (mkSelector "setScriptErrorString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScriptErrorString nsScriptCommand value =
+  sendMessage nsScriptCommand setScriptErrorStringSelector (toNSString value)
 
 -- | @- appleEvent@
 appleEvent :: IsNSScriptCommand nsScriptCommand => nsScriptCommand -> IO (Id NSAppleEventDescriptor)
-appleEvent nsScriptCommand  =
-    sendMsg nsScriptCommand (mkSelector "appleEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+appleEvent nsScriptCommand =
+  sendMessage nsScriptCommand appleEventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCommandDescription:@
-initWithCommandDescriptionSelector :: Selector
+initWithCommandDescriptionSelector :: Selector '[Id NSScriptCommandDescription] (Id NSScriptCommand)
 initWithCommandDescriptionSelector = mkSelector "initWithCommandDescription:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSScriptCommand)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @performDefaultImplementation@
-performDefaultImplementationSelector :: Selector
+performDefaultImplementationSelector :: Selector '[] RawId
 performDefaultImplementationSelector = mkSelector "performDefaultImplementation"
 
 -- | @Selector@ for @executeCommand@
-executeCommandSelector :: Selector
+executeCommandSelector :: Selector '[] RawId
 executeCommandSelector = mkSelector "executeCommand"
 
 -- | @Selector@ for @currentCommand@
-currentCommandSelector :: Selector
+currentCommandSelector :: Selector '[] (Id NSScriptCommand)
 currentCommandSelector = mkSelector "currentCommand"
 
 -- | @Selector@ for @suspendExecution@
-suspendExecutionSelector :: Selector
+suspendExecutionSelector :: Selector '[] ()
 suspendExecutionSelector = mkSelector "suspendExecution"
 
 -- | @Selector@ for @resumeExecutionWithResult:@
-resumeExecutionWithResultSelector :: Selector
+resumeExecutionWithResultSelector :: Selector '[RawId] ()
 resumeExecutionWithResultSelector = mkSelector "resumeExecutionWithResult:"
 
 -- | @Selector@ for @commandDescription@
-commandDescriptionSelector :: Selector
+commandDescriptionSelector :: Selector '[] (Id NSScriptCommandDescription)
 commandDescriptionSelector = mkSelector "commandDescription"
 
 -- | @Selector@ for @directParameter@
-directParameterSelector :: Selector
+directParameterSelector :: Selector '[] RawId
 directParameterSelector = mkSelector "directParameter"
 
 -- | @Selector@ for @setDirectParameter:@
-setDirectParameterSelector :: Selector
+setDirectParameterSelector :: Selector '[RawId] ()
 setDirectParameterSelector = mkSelector "setDirectParameter:"
 
 -- | @Selector@ for @receiversSpecifier@
-receiversSpecifierSelector :: Selector
+receiversSpecifierSelector :: Selector '[] (Id NSScriptObjectSpecifier)
 receiversSpecifierSelector = mkSelector "receiversSpecifier"
 
 -- | @Selector@ for @setReceiversSpecifier:@
-setReceiversSpecifierSelector :: Selector
+setReceiversSpecifierSelector :: Selector '[Id NSScriptObjectSpecifier] ()
 setReceiversSpecifierSelector = mkSelector "setReceiversSpecifier:"
 
 -- | @Selector@ for @evaluatedReceivers@
-evaluatedReceiversSelector :: Selector
+evaluatedReceiversSelector :: Selector '[] RawId
 evaluatedReceiversSelector = mkSelector "evaluatedReceivers"
 
 -- | @Selector@ for @arguments@
-argumentsSelector :: Selector
+argumentsSelector :: Selector '[] (Id NSDictionary)
 argumentsSelector = mkSelector "arguments"
 
 -- | @Selector@ for @setArguments:@
-setArgumentsSelector :: Selector
+setArgumentsSelector :: Selector '[Id NSDictionary] ()
 setArgumentsSelector = mkSelector "setArguments:"
 
 -- | @Selector@ for @evaluatedArguments@
-evaluatedArgumentsSelector :: Selector
+evaluatedArgumentsSelector :: Selector '[] (Id NSDictionary)
 evaluatedArgumentsSelector = mkSelector "evaluatedArguments"
 
 -- | @Selector@ for @wellFormed@
-wellFormedSelector :: Selector
+wellFormedSelector :: Selector '[] Bool
 wellFormedSelector = mkSelector "wellFormed"
 
 -- | @Selector@ for @scriptErrorNumber@
-scriptErrorNumberSelector :: Selector
+scriptErrorNumberSelector :: Selector '[] CLong
 scriptErrorNumberSelector = mkSelector "scriptErrorNumber"
 
 -- | @Selector@ for @setScriptErrorNumber:@
-setScriptErrorNumberSelector :: Selector
+setScriptErrorNumberSelector :: Selector '[CLong] ()
 setScriptErrorNumberSelector = mkSelector "setScriptErrorNumber:"
 
 -- | @Selector@ for @scriptErrorOffendingObjectDescriptor@
-scriptErrorOffendingObjectDescriptorSelector :: Selector
+scriptErrorOffendingObjectDescriptorSelector :: Selector '[] (Id NSAppleEventDescriptor)
 scriptErrorOffendingObjectDescriptorSelector = mkSelector "scriptErrorOffendingObjectDescriptor"
 
 -- | @Selector@ for @setScriptErrorOffendingObjectDescriptor:@
-setScriptErrorOffendingObjectDescriptorSelector :: Selector
+setScriptErrorOffendingObjectDescriptorSelector :: Selector '[Id NSAppleEventDescriptor] ()
 setScriptErrorOffendingObjectDescriptorSelector = mkSelector "setScriptErrorOffendingObjectDescriptor:"
 
 -- | @Selector@ for @scriptErrorExpectedTypeDescriptor@
-scriptErrorExpectedTypeDescriptorSelector :: Selector
+scriptErrorExpectedTypeDescriptorSelector :: Selector '[] (Id NSAppleEventDescriptor)
 scriptErrorExpectedTypeDescriptorSelector = mkSelector "scriptErrorExpectedTypeDescriptor"
 
 -- | @Selector@ for @setScriptErrorExpectedTypeDescriptor:@
-setScriptErrorExpectedTypeDescriptorSelector :: Selector
+setScriptErrorExpectedTypeDescriptorSelector :: Selector '[Id NSAppleEventDescriptor] ()
 setScriptErrorExpectedTypeDescriptorSelector = mkSelector "setScriptErrorExpectedTypeDescriptor:"
 
 -- | @Selector@ for @scriptErrorString@
-scriptErrorStringSelector :: Selector
+scriptErrorStringSelector :: Selector '[] (Id NSString)
 scriptErrorStringSelector = mkSelector "scriptErrorString"
 
 -- | @Selector@ for @setScriptErrorString:@
-setScriptErrorStringSelector :: Selector
+setScriptErrorStringSelector :: Selector '[Id NSString] ()
 setScriptErrorStringSelector = mkSelector "setScriptErrorString:"
 
 -- | @Selector@ for @appleEvent@
-appleEventSelector :: Selector
+appleEventSelector :: Selector '[] (Id NSAppleEventDescriptor)
 appleEventSelector = mkSelector "appleEvent"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.JavaRuntimeSupport.JRSSymbolicator
   , IsJRSSymbolicator(..)
   , symbolicatorForPid
   , addressForSymbol
-  , symbolicatorForPidSelector
   , addressForSymbolSelector
+  , symbolicatorForPidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,23 +31,22 @@ symbolicatorForPid :: CInt -> IO (Id JRSSymbolicator)
 symbolicatorForPid pid =
   do
     cls' <- getRequiredClass "JRSSymbolicator"
-    sendClassMsg cls' (mkSelector "symbolicatorForPid:") (retPtr retVoid) [argCInt pid] >>= retainedObject . castPtr
+    sendClassMessage cls' symbolicatorForPidSelector pid
 
 -- | @- addressForSymbol:@
 addressForSymbol :: (IsJRSSymbolicator jrsSymbolicator, IsNSString symbolName) => jrsSymbolicator -> symbolName -> IO CULong
-addressForSymbol jrsSymbolicator  symbolName =
-  withObjCPtr symbolName $ \raw_symbolName ->
-      sendMsg jrsSymbolicator (mkSelector "addressForSymbol:") retCULong [argPtr (castPtr raw_symbolName :: Ptr ())]
+addressForSymbol jrsSymbolicator symbolName =
+  sendMessage jrsSymbolicator addressForSymbolSelector (toNSString symbolName)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @symbolicatorForPid:@
-symbolicatorForPidSelector :: Selector
+symbolicatorForPidSelector :: Selector '[CInt] (Id JRSSymbolicator)
 symbolicatorForPidSelector = mkSelector "symbolicatorForPid:"
 
 -- | @Selector@ for @addressForSymbol:@
-addressForSymbolSelector :: Selector
+addressForSymbolSelector :: Selector '[Id NSString] CULong
 addressForSymbolSelector = mkSelector "addressForSymbol:"
 

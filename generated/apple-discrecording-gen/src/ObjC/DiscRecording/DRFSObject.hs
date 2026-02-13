@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -190,37 +191,33 @@ module ObjC.DiscRecording.DRFSObject
   , explicitFilesystemMask
   , setExplicitFilesystemMask
   , effectiveFilesystemMask
-  , isVirtualSelector
-  , sourcePathSelector
-  , parentSelector
   , baseNameSelector
-  , setBaseNameSelector
-  , specificNameForFilesystemSelector
-  , specificNamesSelector
-  , setSpecificName_forFilesystemSelector
-  , setSpecificNamesSelector
+  , effectiveFilesystemMaskSelector
+  , explicitFilesystemMaskSelector
+  , isVirtualSelector
   , mangledNameForFilesystemSelector
   , mangledNamesSelector
-  , propertyForKey_inFilesystem_mergeWithOtherFilesystemsSelector
+  , parentSelector
   , propertiesForFilesystem_mergeWithOtherFilesystemsSelector
-  , setProperty_forKey_inFilesystemSelector
-  , setProperties_inFilesystemSelector
-  , explicitFilesystemMaskSelector
+  , propertyForKey_inFilesystem_mergeWithOtherFilesystemsSelector
+  , setBaseNameSelector
   , setExplicitFilesystemMaskSelector
-  , effectiveFilesystemMaskSelector
+  , setProperties_inFilesystemSelector
+  , setProperty_forKey_inFilesystemSelector
+  , setSpecificName_forFilesystemSelector
+  , setSpecificNamesSelector
+  , sourcePathSelector
+  , specificNameForFilesystemSelector
+  , specificNamesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -235,8 +232,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isVirtual@
 isVirtual :: IsDRFSObject drfsObject => drfsObject -> IO Bool
-isVirtual drfsObject  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg drfsObject (mkSelector "isVirtual") retCULong []
+isVirtual drfsObject =
+  sendMessage drfsObject isVirtualSelector
 
 -- | sourcePath
 --
@@ -248,8 +245,8 @@ isVirtual drfsObject  =
 --
 -- ObjC selector: @- sourcePath@
 sourcePath :: IsDRFSObject drfsObject => drfsObject -> IO (Id NSString)
-sourcePath drfsObject  =
-    sendMsg drfsObject (mkSelector "sourcePath") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourcePath drfsObject =
+  sendMessage drfsObject sourcePathSelector
 
 -- | parent
 --
@@ -263,8 +260,8 @@ sourcePath drfsObject  =
 --
 -- ObjC selector: @- parent@
 parent :: IsDRFSObject drfsObject => drfsObject -> IO (Id DRFolder)
-parent drfsObject  =
-    sendMsg drfsObject (mkSelector "parent") (retPtr retVoid) [] >>= retainedObject . castPtr
+parent drfsObject =
+  sendMessage drfsObject parentSelector
 
 -- | baseName
 --
@@ -282,8 +279,8 @@ parent drfsObject  =
 --
 -- ObjC selector: @- baseName@
 baseName :: IsDRFSObject drfsObject => drfsObject -> IO (Id NSString)
-baseName drfsObject  =
-    sendMsg drfsObject (mkSelector "baseName") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseName drfsObject =
+  sendMessage drfsObject baseNameSelector
 
 -- | setBaseName:
 --
@@ -301,9 +298,8 @@ baseName drfsObject  =
 --
 -- ObjC selector: @- setBaseName:@
 setBaseName :: (IsDRFSObject drfsObject, IsNSString baseName) => drfsObject -> baseName -> IO ()
-setBaseName drfsObject  baseName =
-  withObjCPtr baseName $ \raw_baseName ->
-      sendMsg drfsObject (mkSelector "setBaseName:") retVoid [argPtr (castPtr raw_baseName :: Ptr ())]
+setBaseName drfsObject baseName =
+  sendMessage drfsObject setBaseNameSelector (toNSString baseName)
 
 -- | specificNameForFilesystem:
 --
@@ -315,9 +311,8 @@ setBaseName drfsObject  baseName =
 --
 -- ObjC selector: @- specificNameForFilesystem:@
 specificNameForFilesystem :: (IsDRFSObject drfsObject, IsNSString filesystem) => drfsObject -> filesystem -> IO (Id NSString)
-specificNameForFilesystem drfsObject  filesystem =
-  withObjCPtr filesystem $ \raw_filesystem ->
-      sendMsg drfsObject (mkSelector "specificNameForFilesystem:") (retPtr retVoid) [argPtr (castPtr raw_filesystem :: Ptr ())] >>= retainedObject . castPtr
+specificNameForFilesystem drfsObject filesystem =
+  sendMessage drfsObject specificNameForFilesystemSelector (toNSString filesystem)
 
 -- | specificNames
 --
@@ -329,8 +324,8 @@ specificNameForFilesystem drfsObject  filesystem =
 --
 -- ObjC selector: @- specificNames@
 specificNames :: IsDRFSObject drfsObject => drfsObject -> IO (Id NSDictionary)
-specificNames drfsObject  =
-    sendMsg drfsObject (mkSelector "specificNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+specificNames drfsObject =
+  sendMessage drfsObject specificNamesSelector
 
 -- | setSpecificName:forFilesystem:
 --
@@ -348,10 +343,8 @@ specificNames drfsObject  =
 --
 -- ObjC selector: @- setSpecificName:forFilesystem:@
 setSpecificName_forFilesystem :: (IsDRFSObject drfsObject, IsNSString name, IsNSString filesystem) => drfsObject -> name -> filesystem -> IO ()
-setSpecificName_forFilesystem drfsObject  name filesystem =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr filesystem $ \raw_filesystem ->
-        sendMsg drfsObject (mkSelector "setSpecificName:forFilesystem:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_filesystem :: Ptr ())]
+setSpecificName_forFilesystem drfsObject name filesystem =
+  sendMessage drfsObject setSpecificName_forFilesystemSelector (toNSString name) (toNSString filesystem)
 
 -- | setSpecificNames:
 --
@@ -373,9 +366,8 @@ setSpecificName_forFilesystem drfsObject  name filesystem =
 --
 -- ObjC selector: @- setSpecificNames:@
 setSpecificNames :: (IsDRFSObject drfsObject, IsNSDictionary specificNames) => drfsObject -> specificNames -> IO ()
-setSpecificNames drfsObject  specificNames =
-  withObjCPtr specificNames $ \raw_specificNames ->
-      sendMsg drfsObject (mkSelector "setSpecificNames:") retVoid [argPtr (castPtr raw_specificNames :: Ptr ())]
+setSpecificNames drfsObject specificNames =
+  sendMessage drfsObject setSpecificNamesSelector (toNSDictionary specificNames)
 
 -- | mangledNameForFilesystem:
 --
@@ -389,9 +381,8 @@ setSpecificNames drfsObject  specificNames =
 --
 -- ObjC selector: @- mangledNameForFilesystem:@
 mangledNameForFilesystem :: (IsDRFSObject drfsObject, IsNSString filesystem) => drfsObject -> filesystem -> IO (Id NSString)
-mangledNameForFilesystem drfsObject  filesystem =
-  withObjCPtr filesystem $ \raw_filesystem ->
-      sendMsg drfsObject (mkSelector "mangledNameForFilesystem:") (retPtr retVoid) [argPtr (castPtr raw_filesystem :: Ptr ())] >>= retainedObject . castPtr
+mangledNameForFilesystem drfsObject filesystem =
+  sendMessage drfsObject mangledNameForFilesystemSelector (toNSString filesystem)
 
 -- | mangledNames
 --
@@ -403,8 +394,8 @@ mangledNameForFilesystem drfsObject  filesystem =
 --
 -- ObjC selector: @- mangledNames@
 mangledNames :: IsDRFSObject drfsObject => drfsObject -> IO (Id NSDictionary)
-mangledNames drfsObject  =
-    sendMsg drfsObject (mkSelector "mangledNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+mangledNames drfsObject =
+  sendMessage drfsObject mangledNamesSelector
 
 -- | propertyForKey:inFilesystem:mergeWithOtherFilesystems:
 --
@@ -430,10 +421,8 @@ mangledNames drfsObject  =
 --
 -- ObjC selector: @- propertyForKey:inFilesystem:mergeWithOtherFilesystems:@
 propertyForKey_inFilesystem_mergeWithOtherFilesystems :: (IsDRFSObject drfsObject, IsNSString key, IsNSString filesystem) => drfsObject -> key -> filesystem -> Bool -> IO RawId
-propertyForKey_inFilesystem_mergeWithOtherFilesystems drfsObject  key filesystem merge =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr filesystem $ \raw_filesystem ->
-        fmap (RawId . castPtr) $ sendMsg drfsObject (mkSelector "propertyForKey:inFilesystem:mergeWithOtherFilesystems:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_filesystem :: Ptr ()), argCULong (if merge then 1 else 0)]
+propertyForKey_inFilesystem_mergeWithOtherFilesystems drfsObject key filesystem merge =
+  sendMessage drfsObject propertyForKey_inFilesystem_mergeWithOtherFilesystemsSelector (toNSString key) (toNSString filesystem) merge
 
 -- | propertiesForFilesystem:mergeWithOtherFilesystems:
 --
@@ -457,9 +446,8 @@ propertyForKey_inFilesystem_mergeWithOtherFilesystems drfsObject  key filesystem
 --
 -- ObjC selector: @- propertiesForFilesystem:mergeWithOtherFilesystems:@
 propertiesForFilesystem_mergeWithOtherFilesystems :: (IsDRFSObject drfsObject, IsNSString filesystem) => drfsObject -> filesystem -> Bool -> IO (Id NSDictionary)
-propertiesForFilesystem_mergeWithOtherFilesystems drfsObject  filesystem merge =
-  withObjCPtr filesystem $ \raw_filesystem ->
-      sendMsg drfsObject (mkSelector "propertiesForFilesystem:mergeWithOtherFilesystems:") (retPtr retVoid) [argPtr (castPtr raw_filesystem :: Ptr ()), argCULong (if merge then 1 else 0)] >>= retainedObject . castPtr
+propertiesForFilesystem_mergeWithOtherFilesystems drfsObject filesystem merge =
+  sendMessage drfsObject propertiesForFilesystem_mergeWithOtherFilesystemsSelector (toNSString filesystem) merge
 
 -- | setProperty:forKey:inFilesystem:
 --
@@ -483,10 +471,8 @@ propertiesForFilesystem_mergeWithOtherFilesystems drfsObject  filesystem merge =
 --
 -- ObjC selector: @- setProperty:forKey:inFilesystem:@
 setProperty_forKey_inFilesystem :: (IsDRFSObject drfsObject, IsNSString key, IsNSString filesystem) => drfsObject -> RawId -> key -> filesystem -> IO ()
-setProperty_forKey_inFilesystem drfsObject  property key filesystem =
-  withObjCPtr key $ \raw_key ->
-    withObjCPtr filesystem $ \raw_filesystem ->
-        sendMsg drfsObject (mkSelector "setProperty:forKey:inFilesystem:") retVoid [argPtr (castPtr (unRawId property) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_filesystem :: Ptr ())]
+setProperty_forKey_inFilesystem drfsObject property key filesystem =
+  sendMessage drfsObject setProperty_forKey_inFilesystemSelector property (toNSString key) (toNSString filesystem)
 
 -- | setProperties:inFilesystem:
 --
@@ -508,10 +494,8 @@ setProperty_forKey_inFilesystem drfsObject  property key filesystem =
 --
 -- ObjC selector: @- setProperties:inFilesystem:@
 setProperties_inFilesystem :: (IsDRFSObject drfsObject, IsNSDictionary properties, IsNSString filesystem) => drfsObject -> properties -> filesystem -> IO ()
-setProperties_inFilesystem drfsObject  properties filesystem =
-  withObjCPtr properties $ \raw_properties ->
-    withObjCPtr filesystem $ \raw_filesystem ->
-        sendMsg drfsObject (mkSelector "setProperties:inFilesystem:") retVoid [argPtr (castPtr raw_properties :: Ptr ()), argPtr (castPtr raw_filesystem :: Ptr ())]
+setProperties_inFilesystem drfsObject properties filesystem =
+  sendMessage drfsObject setProperties_inFilesystemSelector (toNSDictionary properties) (toNSString filesystem)
 
 -- | explicitFilesystemMask
 --
@@ -527,8 +511,8 @@ setProperties_inFilesystem drfsObject  properties filesystem =
 --
 -- ObjC selector: @- explicitFilesystemMask@
 explicitFilesystemMask :: IsDRFSObject drfsObject => drfsObject -> IO CUInt
-explicitFilesystemMask drfsObject  =
-    sendMsg drfsObject (mkSelector "explicitFilesystemMask") retCUInt []
+explicitFilesystemMask drfsObject =
+  sendMessage drfsObject explicitFilesystemMaskSelector
 
 -- | setExplicitFilesystemMask:
 --
@@ -540,8 +524,8 @@ explicitFilesystemMask drfsObject  =
 --
 -- ObjC selector: @- setExplicitFilesystemMask:@
 setExplicitFilesystemMask :: IsDRFSObject drfsObject => drfsObject -> CUInt -> IO ()
-setExplicitFilesystemMask drfsObject  mask =
-    sendMsg drfsObject (mkSelector "setExplicitFilesystemMask:") retVoid [argCUInt mask]
+setExplicitFilesystemMask drfsObject mask =
+  sendMessage drfsObject setExplicitFilesystemMaskSelector mask
 
 -- | effectiveFilesystemMask
 --
@@ -553,82 +537,82 @@ setExplicitFilesystemMask drfsObject  mask =
 --
 -- ObjC selector: @- effectiveFilesystemMask@
 effectiveFilesystemMask :: IsDRFSObject drfsObject => drfsObject -> IO CUInt
-effectiveFilesystemMask drfsObject  =
-    sendMsg drfsObject (mkSelector "effectiveFilesystemMask") retCUInt []
+effectiveFilesystemMask drfsObject =
+  sendMessage drfsObject effectiveFilesystemMaskSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isVirtual@
-isVirtualSelector :: Selector
+isVirtualSelector :: Selector '[] Bool
 isVirtualSelector = mkSelector "isVirtual"
 
 -- | @Selector@ for @sourcePath@
-sourcePathSelector :: Selector
+sourcePathSelector :: Selector '[] (Id NSString)
 sourcePathSelector = mkSelector "sourcePath"
 
 -- | @Selector@ for @parent@
-parentSelector :: Selector
+parentSelector :: Selector '[] (Id DRFolder)
 parentSelector = mkSelector "parent"
 
 -- | @Selector@ for @baseName@
-baseNameSelector :: Selector
+baseNameSelector :: Selector '[] (Id NSString)
 baseNameSelector = mkSelector "baseName"
 
 -- | @Selector@ for @setBaseName:@
-setBaseNameSelector :: Selector
+setBaseNameSelector :: Selector '[Id NSString] ()
 setBaseNameSelector = mkSelector "setBaseName:"
 
 -- | @Selector@ for @specificNameForFilesystem:@
-specificNameForFilesystemSelector :: Selector
+specificNameForFilesystemSelector :: Selector '[Id NSString] (Id NSString)
 specificNameForFilesystemSelector = mkSelector "specificNameForFilesystem:"
 
 -- | @Selector@ for @specificNames@
-specificNamesSelector :: Selector
+specificNamesSelector :: Selector '[] (Id NSDictionary)
 specificNamesSelector = mkSelector "specificNames"
 
 -- | @Selector@ for @setSpecificName:forFilesystem:@
-setSpecificName_forFilesystemSelector :: Selector
+setSpecificName_forFilesystemSelector :: Selector '[Id NSString, Id NSString] ()
 setSpecificName_forFilesystemSelector = mkSelector "setSpecificName:forFilesystem:"
 
 -- | @Selector@ for @setSpecificNames:@
-setSpecificNamesSelector :: Selector
+setSpecificNamesSelector :: Selector '[Id NSDictionary] ()
 setSpecificNamesSelector = mkSelector "setSpecificNames:"
 
 -- | @Selector@ for @mangledNameForFilesystem:@
-mangledNameForFilesystemSelector :: Selector
+mangledNameForFilesystemSelector :: Selector '[Id NSString] (Id NSString)
 mangledNameForFilesystemSelector = mkSelector "mangledNameForFilesystem:"
 
 -- | @Selector@ for @mangledNames@
-mangledNamesSelector :: Selector
+mangledNamesSelector :: Selector '[] (Id NSDictionary)
 mangledNamesSelector = mkSelector "mangledNames"
 
 -- | @Selector@ for @propertyForKey:inFilesystem:mergeWithOtherFilesystems:@
-propertyForKey_inFilesystem_mergeWithOtherFilesystemsSelector :: Selector
+propertyForKey_inFilesystem_mergeWithOtherFilesystemsSelector :: Selector '[Id NSString, Id NSString, Bool] RawId
 propertyForKey_inFilesystem_mergeWithOtherFilesystemsSelector = mkSelector "propertyForKey:inFilesystem:mergeWithOtherFilesystems:"
 
 -- | @Selector@ for @propertiesForFilesystem:mergeWithOtherFilesystems:@
-propertiesForFilesystem_mergeWithOtherFilesystemsSelector :: Selector
+propertiesForFilesystem_mergeWithOtherFilesystemsSelector :: Selector '[Id NSString, Bool] (Id NSDictionary)
 propertiesForFilesystem_mergeWithOtherFilesystemsSelector = mkSelector "propertiesForFilesystem:mergeWithOtherFilesystems:"
 
 -- | @Selector@ for @setProperty:forKey:inFilesystem:@
-setProperty_forKey_inFilesystemSelector :: Selector
+setProperty_forKey_inFilesystemSelector :: Selector '[RawId, Id NSString, Id NSString] ()
 setProperty_forKey_inFilesystemSelector = mkSelector "setProperty:forKey:inFilesystem:"
 
 -- | @Selector@ for @setProperties:inFilesystem:@
-setProperties_inFilesystemSelector :: Selector
+setProperties_inFilesystemSelector :: Selector '[Id NSDictionary, Id NSString] ()
 setProperties_inFilesystemSelector = mkSelector "setProperties:inFilesystem:"
 
 -- | @Selector@ for @explicitFilesystemMask@
-explicitFilesystemMaskSelector :: Selector
+explicitFilesystemMaskSelector :: Selector '[] CUInt
 explicitFilesystemMaskSelector = mkSelector "explicitFilesystemMask"
 
 -- | @Selector@ for @setExplicitFilesystemMask:@
-setExplicitFilesystemMaskSelector :: Selector
+setExplicitFilesystemMaskSelector :: Selector '[CUInt] ()
 setExplicitFilesystemMaskSelector = mkSelector "setExplicitFilesystemMask:"
 
 -- | @Selector@ for @effectiveFilesystemMask@
-effectiveFilesystemMaskSelector :: Selector
+effectiveFilesystemMaskSelector :: Selector '[] CUInt
 effectiveFilesystemMaskSelector = mkSelector "effectiveFilesystemMask"
 

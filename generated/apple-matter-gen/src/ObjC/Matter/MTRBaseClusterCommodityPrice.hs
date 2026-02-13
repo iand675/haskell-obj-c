@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,51 +43,47 @@ module ObjC.Matter.MTRBaseClusterCommodityPrice
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , getDetailedPriceRequestWithParams_completionSelector
   , getDetailedForecastRequestWithParams_completionSelector
-  , readAttributeTariffUnitWithCompletionSelector
-  , subscribeAttributeTariffUnitWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeTariffUnitWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeCurrencyWithCompletionSelector
-  , subscribeAttributeCurrencyWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeCurrencyWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeCurrentPriceWithCompletionSelector
-  , subscribeAttributeCurrentPriceWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeCurrentPriceWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributePriceForecastWithCompletionSelector
-  , subscribeAttributePriceForecastWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributePriceForecastWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeGeneratedCommandListWithCompletionSelector
-  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAcceptedCommandListWithCompletionSelector
-  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeAttributeListWithCompletionSelector
-  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeFeatureMapWithCompletionSelector
-  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
-  , readAttributeClusterRevisionWithCompletionSelector
-  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
-  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , getDetailedPriceRequestWithParams_completionSelector
   , initSelector
-  , newSelector
   , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAcceptedCommandListWithCompletionSelector
+  , readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeAttributeListWithCompletionSelector
+  , readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeClusterRevisionWithCompletionSelector
+  , readAttributeCurrencyWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeCurrencyWithCompletionSelector
+  , readAttributeCurrentPriceWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeCurrentPriceWithCompletionSelector
+  , readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeFeatureMapWithCompletionSelector
+  , readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeGeneratedCommandListWithCompletionSelector
+  , readAttributePriceForecastWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributePriceForecastWithCompletionSelector
+  , readAttributeTariffUnitWithClusterStateCache_endpoint_queue_completionSelector
+  , readAttributeTariffUnitWithCompletionSelector
+  , subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeCurrencyWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeCurrentPriceWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributePriceForecastWithParams_subscriptionEstablished_reportHandlerSelector
+  , subscribeAttributeTariffUnitWithParams_subscriptionEstablished_reportHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,9 +96,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- getDetailedPriceRequestWithParams:completion:@
 getDetailedPriceRequestWithParams_completion :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRCommodityPriceClusterGetDetailedPriceRequestParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> IO ()
-getDetailedPriceRequestWithParams_completion mtrBaseClusterCommodityPrice  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "getDetailedPriceRequestWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getDetailedPriceRequestWithParams_completion mtrBaseClusterCommodityPrice params completion =
+  sendMessage mtrBaseClusterCommodityPrice getDetailedPriceRequestWithParams_completionSelector (toMTRCommodityPriceClusterGetDetailedPriceRequestParams params) completion
 
 -- | Command GetDetailedForecastRequest
 --
@@ -109,350 +105,310 @@ getDetailedPriceRequestWithParams_completion mtrBaseClusterCommodityPrice  param
 --
 -- ObjC selector: @- getDetailedForecastRequestWithParams:completion:@
 getDetailedForecastRequestWithParams_completion :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRCommodityPriceClusterGetDetailedForecastRequestParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> IO ()
-getDetailedForecastRequestWithParams_completion mtrBaseClusterCommodityPrice  params completion =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "getDetailedForecastRequestWithParams:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getDetailedForecastRequestWithParams_completion mtrBaseClusterCommodityPrice params completion =
+  sendMessage mtrBaseClusterCommodityPrice getDetailedForecastRequestWithParams_completionSelector (toMTRCommodityPriceClusterGetDetailedForecastRequestParams params) completion
 
 -- | @- readAttributeTariffUnitWithCompletion:@
 readAttributeTariffUnitWithCompletion :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> Ptr () -> IO ()
-readAttributeTariffUnitWithCompletion mtrBaseClusterCommodityPrice  completion =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "readAttributeTariffUnitWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeTariffUnitWithCompletion mtrBaseClusterCommodityPrice completion =
+  sendMessage mtrBaseClusterCommodityPrice readAttributeTariffUnitWithCompletionSelector completion
 
 -- | @- subscribeAttributeTariffUnitWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeTariffUnitWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRSubscribeParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeTariffUnitWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "subscribeAttributeTariffUnitWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeTariffUnitWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCommodityPrice subscribeAttributeTariffUnitWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeTariffUnitWithClusterStateCache:endpoint:queue:completion:@
 readAttributeTariffUnitWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeTariffUnitWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeTariffUnitWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeTariffUnitWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeCurrencyWithCompletion:@
 readAttributeCurrencyWithCompletion :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> Ptr () -> IO ()
-readAttributeCurrencyWithCompletion mtrBaseClusterCommodityPrice  completion =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "readAttributeCurrencyWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeCurrencyWithCompletion mtrBaseClusterCommodityPrice completion =
+  sendMessage mtrBaseClusterCommodityPrice readAttributeCurrencyWithCompletionSelector completion
 
 -- | @- subscribeAttributeCurrencyWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeCurrencyWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRSubscribeParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeCurrencyWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "subscribeAttributeCurrencyWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeCurrencyWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCommodityPrice subscribeAttributeCurrencyWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeCurrencyWithClusterStateCache:endpoint:queue:completion:@
 readAttributeCurrencyWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeCurrencyWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeCurrencyWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeCurrencyWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeCurrentPriceWithCompletion:@
 readAttributeCurrentPriceWithCompletion :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> Ptr () -> IO ()
-readAttributeCurrentPriceWithCompletion mtrBaseClusterCommodityPrice  completion =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "readAttributeCurrentPriceWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeCurrentPriceWithCompletion mtrBaseClusterCommodityPrice completion =
+  sendMessage mtrBaseClusterCommodityPrice readAttributeCurrentPriceWithCompletionSelector completion
 
 -- | @- subscribeAttributeCurrentPriceWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeCurrentPriceWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRSubscribeParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeCurrentPriceWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "subscribeAttributeCurrentPriceWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeCurrentPriceWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCommodityPrice subscribeAttributeCurrentPriceWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeCurrentPriceWithClusterStateCache:endpoint:queue:completion:@
 readAttributeCurrentPriceWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeCurrentPriceWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeCurrentPriceWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeCurrentPriceWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributePriceForecastWithCompletion:@
 readAttributePriceForecastWithCompletion :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> Ptr () -> IO ()
-readAttributePriceForecastWithCompletion mtrBaseClusterCommodityPrice  completion =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "readAttributePriceForecastWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributePriceForecastWithCompletion mtrBaseClusterCommodityPrice completion =
+  sendMessage mtrBaseClusterCommodityPrice readAttributePriceForecastWithCompletionSelector completion
 
 -- | @- subscribeAttributePriceForecastWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributePriceForecastWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRSubscribeParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributePriceForecastWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "subscribeAttributePriceForecastWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributePriceForecastWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCommodityPrice subscribeAttributePriceForecastWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributePriceForecastWithClusterStateCache:endpoint:queue:completion:@
 readAttributePriceForecastWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributePriceForecastWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributePriceForecastWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributePriceForecastWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeGeneratedCommandListWithCompletion:@
 readAttributeGeneratedCommandListWithCompletion :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> Ptr () -> IO ()
-readAttributeGeneratedCommandListWithCompletion mtrBaseClusterCommodityPrice  completion =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "readAttributeGeneratedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeGeneratedCommandListWithCompletion mtrBaseClusterCommodityPrice completion =
+  sendMessage mtrBaseClusterCommodityPrice readAttributeGeneratedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRSubscribeParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCommodityPrice subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAcceptedCommandListWithCompletion:@
 readAttributeAcceptedCommandListWithCompletion :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> Ptr () -> IO ()
-readAttributeAcceptedCommandListWithCompletion mtrBaseClusterCommodityPrice  completion =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "readAttributeAcceptedCommandListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAcceptedCommandListWithCompletion mtrBaseClusterCommodityPrice completion =
+  sendMessage mtrBaseClusterCommodityPrice readAttributeAcceptedCommandListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRSubscribeParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCommodityPrice subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeAttributeListWithCompletion:@
 readAttributeAttributeListWithCompletion :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> Ptr () -> IO ()
-readAttributeAttributeListWithCompletion mtrBaseClusterCommodityPrice  completion =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "readAttributeAttributeListWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeAttributeListWithCompletion mtrBaseClusterCommodityPrice completion =
+  sendMessage mtrBaseClusterCommodityPrice readAttributeAttributeListWithCompletionSelector completion
 
 -- | @- subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRSubscribeParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCommodityPrice subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeFeatureMapWithCompletion:@
 readAttributeFeatureMapWithCompletion :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> Ptr () -> IO ()
-readAttributeFeatureMapWithCompletion mtrBaseClusterCommodityPrice  completion =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "readAttributeFeatureMapWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeFeatureMapWithCompletion mtrBaseClusterCommodityPrice completion =
+  sendMessage mtrBaseClusterCommodityPrice readAttributeFeatureMapWithCompletionSelector completion
 
 -- | @- subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRSubscribeParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCommodityPrice subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- readAttributeClusterRevisionWithCompletion:@
 readAttributeClusterRevisionWithCompletion :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> Ptr () -> IO ()
-readAttributeClusterRevisionWithCompletion mtrBaseClusterCommodityPrice  completion =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "readAttributeClusterRevisionWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+readAttributeClusterRevisionWithCompletion mtrBaseClusterCommodityPrice completion =
+  sendMessage mtrBaseClusterCommodityPrice readAttributeClusterRevisionWithCompletionSelector completion
 
 -- | @- subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRSubscribeParams params) => mtrBaseClusterCommodityPrice -> params -> Ptr () -> Ptr () -> IO ()
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice  params subscriptionEstablished reportHandler =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrBaseClusterCommodityPrice (mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr subscriptionEstablished :: Ptr ()), argPtr (castPtr reportHandler :: Ptr ())]
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandler mtrBaseClusterCommodityPrice params subscriptionEstablished reportHandler =
+  sendMessage mtrBaseClusterCommodityPrice subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector (toMTRSubscribeParams params) subscriptionEstablished reportHandler
 
 -- | @+ readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion :: (IsMTRClusterStateCacheContainer clusterStateCacheContainer, IsNSNumber endpoint, IsNSObject queue) => clusterStateCacheContainer -> endpoint -> queue -> Ptr () -> IO ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completion clusterStateCacheContainer endpoint queue completion =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    withObjCPtr clusterStateCacheContainer $ \raw_clusterStateCacheContainer ->
-      withObjCPtr endpoint $ \raw_endpoint ->
-        withObjCPtr queue $ \raw_queue ->
-          sendClassMsg cls' (mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:") retVoid [argPtr (castPtr raw_clusterStateCacheContainer :: Ptr ()), argPtr (castPtr raw_endpoint :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+    sendClassMessage cls' readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector (toMTRClusterStateCacheContainer clusterStateCacheContainer) (toNSNumber endpoint) (toNSObject queue) completion
 
 -- | @- init@
 init_ :: IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice => mtrBaseClusterCommodityPrice -> IO (Id MTRBaseClusterCommodityPrice)
-init_ mtrBaseClusterCommodityPrice  =
-    sendMsg mtrBaseClusterCommodityPrice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrBaseClusterCommodityPrice =
+  sendOwnedMessage mtrBaseClusterCommodityPrice initSelector
 
 -- | @+ new@
 new :: IO (Id MTRBaseClusterCommodityPrice)
 new  =
   do
     cls' <- getRequiredClass "MTRBaseClusterCommodityPrice"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods (reads, writes, commands) that take a completion, the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRBaseClusterCommodityPrice mtrBaseClusterCommodityPrice, IsMTRBaseDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrBaseClusterCommodityPrice -> device -> endpointID -> queue -> IO (Id MTRBaseClusterCommodityPrice)
-initWithDevice_endpointID_queue mtrBaseClusterCommodityPrice  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrBaseClusterCommodityPrice (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrBaseClusterCommodityPrice device endpointID queue =
+  sendOwnedMessage mtrBaseClusterCommodityPrice initWithDevice_endpointID_queueSelector (toMTRBaseDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getDetailedPriceRequestWithParams:completion:@
-getDetailedPriceRequestWithParams_completionSelector :: Selector
+getDetailedPriceRequestWithParams_completionSelector :: Selector '[Id MTRCommodityPriceClusterGetDetailedPriceRequestParams, Ptr ()] ()
 getDetailedPriceRequestWithParams_completionSelector = mkSelector "getDetailedPriceRequestWithParams:completion:"
 
 -- | @Selector@ for @getDetailedForecastRequestWithParams:completion:@
-getDetailedForecastRequestWithParams_completionSelector :: Selector
+getDetailedForecastRequestWithParams_completionSelector :: Selector '[Id MTRCommodityPriceClusterGetDetailedForecastRequestParams, Ptr ()] ()
 getDetailedForecastRequestWithParams_completionSelector = mkSelector "getDetailedForecastRequestWithParams:completion:"
 
 -- | @Selector@ for @readAttributeTariffUnitWithCompletion:@
-readAttributeTariffUnitWithCompletionSelector :: Selector
+readAttributeTariffUnitWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeTariffUnitWithCompletionSelector = mkSelector "readAttributeTariffUnitWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeTariffUnitWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeTariffUnitWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeTariffUnitWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeTariffUnitWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeTariffUnitWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeTariffUnitWithClusterStateCache:endpoint:queue:completion:@
-readAttributeTariffUnitWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeTariffUnitWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeTariffUnitWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeTariffUnitWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeCurrencyWithCompletion:@
-readAttributeCurrencyWithCompletionSelector :: Selector
+readAttributeCurrencyWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeCurrencyWithCompletionSelector = mkSelector "readAttributeCurrencyWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeCurrencyWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeCurrencyWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeCurrencyWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeCurrencyWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeCurrencyWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeCurrencyWithClusterStateCache:endpoint:queue:completion:@
-readAttributeCurrencyWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeCurrencyWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeCurrencyWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeCurrencyWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeCurrentPriceWithCompletion:@
-readAttributeCurrentPriceWithCompletionSelector :: Selector
+readAttributeCurrentPriceWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeCurrentPriceWithCompletionSelector = mkSelector "readAttributeCurrentPriceWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeCurrentPriceWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeCurrentPriceWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeCurrentPriceWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeCurrentPriceWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeCurrentPriceWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeCurrentPriceWithClusterStateCache:endpoint:queue:completion:@
-readAttributeCurrentPriceWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeCurrentPriceWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeCurrentPriceWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeCurrentPriceWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributePriceForecastWithCompletion:@
-readAttributePriceForecastWithCompletionSelector :: Selector
+readAttributePriceForecastWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributePriceForecastWithCompletionSelector = mkSelector "readAttributePriceForecastWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributePriceForecastWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributePriceForecastWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributePriceForecastWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributePriceForecastWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributePriceForecastWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributePriceForecastWithClusterStateCache:endpoint:queue:completion:@
-readAttributePriceForecastWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributePriceForecastWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributePriceForecastWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributePriceForecastWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithCompletion:@
-readAttributeGeneratedCommandListWithCompletionSelector :: Selector
+readAttributeGeneratedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeGeneratedCommandListWithCompletionSelector = mkSelector "readAttributeGeneratedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeGeneratedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeGeneratedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeGeneratedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeGeneratedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithCompletion:@
-readAttributeAcceptedCommandListWithCompletionSelector :: Selector
+readAttributeAcceptedCommandListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAcceptedCommandListWithCompletionSelector = mkSelector "readAttributeAcceptedCommandListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAcceptedCommandListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAcceptedCommandListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAcceptedCommandListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAcceptedCommandListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeAttributeListWithCompletion:@
-readAttributeAttributeListWithCompletionSelector :: Selector
+readAttributeAttributeListWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeAttributeListWithCompletionSelector = mkSelector "readAttributeAttributeListWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeAttributeListWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeAttributeListWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:@
-readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeAttributeListWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeAttributeListWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithCompletion:@
-readAttributeFeatureMapWithCompletionSelector :: Selector
+readAttributeFeatureMapWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeFeatureMapWithCompletionSelector = mkSelector "readAttributeFeatureMapWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeFeatureMapWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeFeatureMapWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:@
-readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeFeatureMapWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeFeatureMapWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithCompletion:@
-readAttributeClusterRevisionWithCompletionSelector :: Selector
+readAttributeClusterRevisionWithCompletionSelector :: Selector '[Ptr ()] ()
 readAttributeClusterRevisionWithCompletionSelector = mkSelector "readAttributeClusterRevisionWithCompletion:"
 
 -- | @Selector@ for @subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:@
-subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector
+subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector :: Selector '[Id MTRSubscribeParams, Ptr (), Ptr ()] ()
 subscribeAttributeClusterRevisionWithParams_subscriptionEstablished_reportHandlerSelector = mkSelector "subscribeAttributeClusterRevisionWithParams:subscriptionEstablished:reportHandler:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:@
-readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector
+readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector :: Selector '[Id MTRClusterStateCacheContainer, Id NSNumber, Id NSObject, Ptr ()] ()
 readAttributeClusterRevisionWithClusterStateCache_endpoint_queue_completionSelector = mkSelector "readAttributeClusterRevisionWithClusterStateCache:endpoint:queue:completion:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRBaseClusterCommodityPrice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRBaseClusterCommodityPrice)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRBaseDevice, Id NSNumber, Id NSObject] (Id MTRBaseClusterCommodityPrice)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.ScreenCaptureKit.SCScreenshotManager
   , captureSampleBufferWithFilter_configuration_completionHandler
   , captureImageWithFilter_configuration_completionHandler
   , captureScreenshotWithFilter_configuration_completionHandler
-  , initSelector
-  , captureSampleBufferWithFilter_configuration_completionHandlerSelector
   , captureImageWithFilter_configuration_completionHandlerSelector
+  , captureSampleBufferWithFilter_configuration_completionHandlerSelector
   , captureScreenshotWithFilter_configuration_completionHandlerSelector
+  , initSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,8 +32,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSCScreenshotManager scScreenshotManager => scScreenshotManager -> IO (Id SCScreenshotManager)
-init_ scScreenshotManager  =
-    sendMsg scScreenshotManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ scScreenshotManager =
+  sendOwnedMessage scScreenshotManager initSelector
 
 -- | captureSampleBufferWithFilter:configuration:completionHandler:
 --
@@ -53,9 +50,7 @@ captureSampleBufferWithFilter_configuration_completionHandler :: (IsSCContentFil
 captureSampleBufferWithFilter_configuration_completionHandler contentFilter config completionHandler =
   do
     cls' <- getRequiredClass "SCScreenshotManager"
-    withObjCPtr contentFilter $ \raw_contentFilter ->
-      withObjCPtr config $ \raw_config ->
-        sendClassMsg cls' (mkSelector "captureSampleBufferWithFilter:configuration:completionHandler:") retVoid [argPtr (castPtr raw_contentFilter :: Ptr ()), argPtr (castPtr raw_config :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' captureSampleBufferWithFilter_configuration_completionHandlerSelector (toSCContentFilter contentFilter) (toSCStreamConfiguration config) completionHandler
 
 -- | captureImageWithFilter:configuration:completionHandler:
 --
@@ -72,9 +67,7 @@ captureImageWithFilter_configuration_completionHandler :: (IsSCContentFilter con
 captureImageWithFilter_configuration_completionHandler contentFilter config completionHandler =
   do
     cls' <- getRequiredClass "SCScreenshotManager"
-    withObjCPtr contentFilter $ \raw_contentFilter ->
-      withObjCPtr config $ \raw_config ->
-        sendClassMsg cls' (mkSelector "captureImageWithFilter:configuration:completionHandler:") retVoid [argPtr (castPtr raw_contentFilter :: Ptr ()), argPtr (castPtr raw_config :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' captureImageWithFilter_configuration_completionHandlerSelector (toSCContentFilter contentFilter) (toSCStreamConfiguration config) completionHandler
 
 -- | captureScreenshotWithFilter:configuration:completionHandler:
 --
@@ -91,27 +84,25 @@ captureScreenshotWithFilter_configuration_completionHandler :: (IsSCContentFilte
 captureScreenshotWithFilter_configuration_completionHandler contentFilter config completionHandler =
   do
     cls' <- getRequiredClass "SCScreenshotManager"
-    withObjCPtr contentFilter $ \raw_contentFilter ->
-      withObjCPtr config $ \raw_config ->
-        sendClassMsg cls' (mkSelector "captureScreenshotWithFilter:configuration:completionHandler:") retVoid [argPtr (castPtr raw_contentFilter :: Ptr ()), argPtr (castPtr raw_config :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' captureScreenshotWithFilter_configuration_completionHandlerSelector (toSCContentFilter contentFilter) (toSCScreenshotConfiguration config) completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SCScreenshotManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @captureSampleBufferWithFilter:configuration:completionHandler:@
-captureSampleBufferWithFilter_configuration_completionHandlerSelector :: Selector
+captureSampleBufferWithFilter_configuration_completionHandlerSelector :: Selector '[Id SCContentFilter, Id SCStreamConfiguration, Ptr ()] ()
 captureSampleBufferWithFilter_configuration_completionHandlerSelector = mkSelector "captureSampleBufferWithFilter:configuration:completionHandler:"
 
 -- | @Selector@ for @captureImageWithFilter:configuration:completionHandler:@
-captureImageWithFilter_configuration_completionHandlerSelector :: Selector
+captureImageWithFilter_configuration_completionHandlerSelector :: Selector '[Id SCContentFilter, Id SCStreamConfiguration, Ptr ()] ()
 captureImageWithFilter_configuration_completionHandlerSelector = mkSelector "captureImageWithFilter:configuration:completionHandler:"
 
 -- | @Selector@ for @captureScreenshotWithFilter:configuration:completionHandler:@
-captureScreenshotWithFilter_configuration_completionHandlerSelector :: Selector
+captureScreenshotWithFilter_configuration_completionHandlerSelector :: Selector '[Id SCContentFilter, Id SCScreenshotConfiguration, Ptr ()] ()
 captureScreenshotWithFilter_configuration_completionHandlerSelector = mkSelector "captureScreenshotWithFilter:configuration:completionHandler:"
 

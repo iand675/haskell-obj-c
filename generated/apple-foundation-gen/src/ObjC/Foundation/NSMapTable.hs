@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,27 +29,27 @@ module ObjC.Foundation.NSMapTable
   , keyPointerFunctions
   , valuePointerFunctions
   , count
+  , countSelector
+  , dictionaryRepresentationSelector
   , initWithKeyOptions_valueOptions_capacitySelector
   , initWithKeyPointerFunctions_valuePointerFunctions_capacitySelector
+  , keyEnumeratorSelector
+  , keyPointerFunctionsSelector
   , mapTableWithKeyOptions_valueOptionsSelector
   , mapTableWithStrongToStrongObjectsSelector
-  , mapTableWithWeakToStrongObjectsSelector
   , mapTableWithStrongToWeakObjectsSelector
+  , mapTableWithWeakToStrongObjectsSelector
   , mapTableWithWeakToWeakObjectsSelector
-  , strongToStrongObjectsMapTableSelector
-  , weakToStrongObjectsMapTableSelector
-  , strongToWeakObjectsMapTableSelector
-  , weakToWeakObjectsMapTableSelector
+  , objectEnumeratorSelector
   , objectForKeySelector
+  , removeAllObjectsSelector
   , removeObjectForKeySelector
   , setObject_forKeySelector
-  , keyEnumeratorSelector
-  , objectEnumeratorSelector
-  , removeAllObjectsSelector
-  , dictionaryRepresentationSelector
-  , keyPointerFunctionsSelector
+  , strongToStrongObjectsMapTableSelector
+  , strongToWeakObjectsMapTableSelector
   , valuePointerFunctionsSelector
-  , countSelector
+  , weakToStrongObjectsMapTableSelector
+  , weakToWeakObjectsMapTableSelector
 
   -- * Enum types
   , NSPointerFunctionsOptions(NSPointerFunctionsOptions)
@@ -68,15 +69,11 @@ module ObjC.Foundation.NSMapTable
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,214 +82,212 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithKeyOptions:valueOptions:capacity:@
 initWithKeyOptions_valueOptions_capacity :: IsNSMapTable nsMapTable => nsMapTable -> NSPointerFunctionsOptions -> NSPointerFunctionsOptions -> CULong -> IO (Id NSMapTable)
-initWithKeyOptions_valueOptions_capacity nsMapTable  keyOptions valueOptions initialCapacity =
-    sendMsg nsMapTable (mkSelector "initWithKeyOptions:valueOptions:capacity:") (retPtr retVoid) [argCULong (coerce keyOptions), argCULong (coerce valueOptions), argCULong initialCapacity] >>= ownedObject . castPtr
+initWithKeyOptions_valueOptions_capacity nsMapTable keyOptions valueOptions initialCapacity =
+  sendOwnedMessage nsMapTable initWithKeyOptions_valueOptions_capacitySelector keyOptions valueOptions initialCapacity
 
 -- | @- initWithKeyPointerFunctions:valuePointerFunctions:capacity:@
 initWithKeyPointerFunctions_valuePointerFunctions_capacity :: (IsNSMapTable nsMapTable, IsNSPointerFunctions keyFunctions, IsNSPointerFunctions valueFunctions) => nsMapTable -> keyFunctions -> valueFunctions -> CULong -> IO (Id NSMapTable)
-initWithKeyPointerFunctions_valuePointerFunctions_capacity nsMapTable  keyFunctions valueFunctions initialCapacity =
-  withObjCPtr keyFunctions $ \raw_keyFunctions ->
-    withObjCPtr valueFunctions $ \raw_valueFunctions ->
-        sendMsg nsMapTable (mkSelector "initWithKeyPointerFunctions:valuePointerFunctions:capacity:") (retPtr retVoid) [argPtr (castPtr raw_keyFunctions :: Ptr ()), argPtr (castPtr raw_valueFunctions :: Ptr ()), argCULong initialCapacity] >>= ownedObject . castPtr
+initWithKeyPointerFunctions_valuePointerFunctions_capacity nsMapTable keyFunctions valueFunctions initialCapacity =
+  sendOwnedMessage nsMapTable initWithKeyPointerFunctions_valuePointerFunctions_capacitySelector (toNSPointerFunctions keyFunctions) (toNSPointerFunctions valueFunctions) initialCapacity
 
 -- | @+ mapTableWithKeyOptions:valueOptions:@
 mapTableWithKeyOptions_valueOptions :: NSPointerFunctionsOptions -> NSPointerFunctionsOptions -> IO (Id NSMapTable)
 mapTableWithKeyOptions_valueOptions keyOptions valueOptions =
   do
     cls' <- getRequiredClass "NSMapTable"
-    sendClassMsg cls' (mkSelector "mapTableWithKeyOptions:valueOptions:") (retPtr retVoid) [argCULong (coerce keyOptions), argCULong (coerce valueOptions)] >>= retainedObject . castPtr
+    sendClassMessage cls' mapTableWithKeyOptions_valueOptionsSelector keyOptions valueOptions
 
 -- | @+ mapTableWithStrongToStrongObjects@
 mapTableWithStrongToStrongObjects :: IO RawId
 mapTableWithStrongToStrongObjects  =
   do
     cls' <- getRequiredClass "NSMapTable"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "mapTableWithStrongToStrongObjects") (retPtr retVoid) []
+    sendClassMessage cls' mapTableWithStrongToStrongObjectsSelector
 
 -- | @+ mapTableWithWeakToStrongObjects@
 mapTableWithWeakToStrongObjects :: IO RawId
 mapTableWithWeakToStrongObjects  =
   do
     cls' <- getRequiredClass "NSMapTable"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "mapTableWithWeakToStrongObjects") (retPtr retVoid) []
+    sendClassMessage cls' mapTableWithWeakToStrongObjectsSelector
 
 -- | @+ mapTableWithStrongToWeakObjects@
 mapTableWithStrongToWeakObjects :: IO RawId
 mapTableWithStrongToWeakObjects  =
   do
     cls' <- getRequiredClass "NSMapTable"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "mapTableWithStrongToWeakObjects") (retPtr retVoid) []
+    sendClassMessage cls' mapTableWithStrongToWeakObjectsSelector
 
 -- | @+ mapTableWithWeakToWeakObjects@
 mapTableWithWeakToWeakObjects :: IO RawId
 mapTableWithWeakToWeakObjects  =
   do
     cls' <- getRequiredClass "NSMapTable"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "mapTableWithWeakToWeakObjects") (retPtr retVoid) []
+    sendClassMessage cls' mapTableWithWeakToWeakObjectsSelector
 
 -- | @+ strongToStrongObjectsMapTable@
 strongToStrongObjectsMapTable :: IO (Id NSMapTable)
 strongToStrongObjectsMapTable  =
   do
     cls' <- getRequiredClass "NSMapTable"
-    sendClassMsg cls' (mkSelector "strongToStrongObjectsMapTable") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' strongToStrongObjectsMapTableSelector
 
 -- | @+ weakToStrongObjectsMapTable@
 weakToStrongObjectsMapTable :: IO (Id NSMapTable)
 weakToStrongObjectsMapTable  =
   do
     cls' <- getRequiredClass "NSMapTable"
-    sendClassMsg cls' (mkSelector "weakToStrongObjectsMapTable") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' weakToStrongObjectsMapTableSelector
 
 -- | @+ strongToWeakObjectsMapTable@
 strongToWeakObjectsMapTable :: IO (Id NSMapTable)
 strongToWeakObjectsMapTable  =
   do
     cls' <- getRequiredClass "NSMapTable"
-    sendClassMsg cls' (mkSelector "strongToWeakObjectsMapTable") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' strongToWeakObjectsMapTableSelector
 
 -- | @+ weakToWeakObjectsMapTable@
 weakToWeakObjectsMapTable :: IO (Id NSMapTable)
 weakToWeakObjectsMapTable  =
   do
     cls' <- getRequiredClass "NSMapTable"
-    sendClassMsg cls' (mkSelector "weakToWeakObjectsMapTable") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' weakToWeakObjectsMapTableSelector
 
 -- | @- objectForKey:@
 objectForKey :: IsNSMapTable nsMapTable => nsMapTable -> RawId -> IO RawId
-objectForKey nsMapTable  aKey =
-    fmap (RawId . castPtr) $ sendMsg nsMapTable (mkSelector "objectForKey:") (retPtr retVoid) [argPtr (castPtr (unRawId aKey) :: Ptr ())]
+objectForKey nsMapTable aKey =
+  sendMessage nsMapTable objectForKeySelector aKey
 
 -- | @- removeObjectForKey:@
 removeObjectForKey :: IsNSMapTable nsMapTable => nsMapTable -> RawId -> IO ()
-removeObjectForKey nsMapTable  aKey =
-    sendMsg nsMapTable (mkSelector "removeObjectForKey:") retVoid [argPtr (castPtr (unRawId aKey) :: Ptr ())]
+removeObjectForKey nsMapTable aKey =
+  sendMessage nsMapTable removeObjectForKeySelector aKey
 
 -- | @- setObject:forKey:@
 setObject_forKey :: IsNSMapTable nsMapTable => nsMapTable -> RawId -> RawId -> IO ()
-setObject_forKey nsMapTable  anObject aKey =
-    sendMsg nsMapTable (mkSelector "setObject:forKey:") retVoid [argPtr (castPtr (unRawId anObject) :: Ptr ()), argPtr (castPtr (unRawId aKey) :: Ptr ())]
+setObject_forKey nsMapTable anObject aKey =
+  sendMessage nsMapTable setObject_forKeySelector anObject aKey
 
 -- | @- keyEnumerator@
 keyEnumerator :: IsNSMapTable nsMapTable => nsMapTable -> IO (Id NSEnumerator)
-keyEnumerator nsMapTable  =
-    sendMsg nsMapTable (mkSelector "keyEnumerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyEnumerator nsMapTable =
+  sendMessage nsMapTable keyEnumeratorSelector
 
 -- | @- objectEnumerator@
 objectEnumerator :: IsNSMapTable nsMapTable => nsMapTable -> IO (Id NSEnumerator)
-objectEnumerator nsMapTable  =
-    sendMsg nsMapTable (mkSelector "objectEnumerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectEnumerator nsMapTable =
+  sendMessage nsMapTable objectEnumeratorSelector
 
 -- | @- removeAllObjects@
 removeAllObjects :: IsNSMapTable nsMapTable => nsMapTable -> IO ()
-removeAllObjects nsMapTable  =
-    sendMsg nsMapTable (mkSelector "removeAllObjects") retVoid []
+removeAllObjects nsMapTable =
+  sendMessage nsMapTable removeAllObjectsSelector
 
 -- | @- dictionaryRepresentation@
 dictionaryRepresentation :: IsNSMapTable nsMapTable => nsMapTable -> IO (Id NSDictionary)
-dictionaryRepresentation nsMapTable  =
-    sendMsg nsMapTable (mkSelector "dictionaryRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryRepresentation nsMapTable =
+  sendMessage nsMapTable dictionaryRepresentationSelector
 
 -- | @- keyPointerFunctions@
 keyPointerFunctions :: IsNSMapTable nsMapTable => nsMapTable -> IO (Id NSPointerFunctions)
-keyPointerFunctions nsMapTable  =
-    sendMsg nsMapTable (mkSelector "keyPointerFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyPointerFunctions nsMapTable =
+  sendMessage nsMapTable keyPointerFunctionsSelector
 
 -- | @- valuePointerFunctions@
 valuePointerFunctions :: IsNSMapTable nsMapTable => nsMapTable -> IO (Id NSPointerFunctions)
-valuePointerFunctions nsMapTable  =
-    sendMsg nsMapTable (mkSelector "valuePointerFunctions") (retPtr retVoid) [] >>= retainedObject . castPtr
+valuePointerFunctions nsMapTable =
+  sendMessage nsMapTable valuePointerFunctionsSelector
 
 -- | @- count@
 count :: IsNSMapTable nsMapTable => nsMapTable -> IO CULong
-count nsMapTable  =
-    sendMsg nsMapTable (mkSelector "count") retCULong []
+count nsMapTable =
+  sendMessage nsMapTable countSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithKeyOptions:valueOptions:capacity:@
-initWithKeyOptions_valueOptions_capacitySelector :: Selector
+initWithKeyOptions_valueOptions_capacitySelector :: Selector '[NSPointerFunctionsOptions, NSPointerFunctionsOptions, CULong] (Id NSMapTable)
 initWithKeyOptions_valueOptions_capacitySelector = mkSelector "initWithKeyOptions:valueOptions:capacity:"
 
 -- | @Selector@ for @initWithKeyPointerFunctions:valuePointerFunctions:capacity:@
-initWithKeyPointerFunctions_valuePointerFunctions_capacitySelector :: Selector
+initWithKeyPointerFunctions_valuePointerFunctions_capacitySelector :: Selector '[Id NSPointerFunctions, Id NSPointerFunctions, CULong] (Id NSMapTable)
 initWithKeyPointerFunctions_valuePointerFunctions_capacitySelector = mkSelector "initWithKeyPointerFunctions:valuePointerFunctions:capacity:"
 
 -- | @Selector@ for @mapTableWithKeyOptions:valueOptions:@
-mapTableWithKeyOptions_valueOptionsSelector :: Selector
+mapTableWithKeyOptions_valueOptionsSelector :: Selector '[NSPointerFunctionsOptions, NSPointerFunctionsOptions] (Id NSMapTable)
 mapTableWithKeyOptions_valueOptionsSelector = mkSelector "mapTableWithKeyOptions:valueOptions:"
 
 -- | @Selector@ for @mapTableWithStrongToStrongObjects@
-mapTableWithStrongToStrongObjectsSelector :: Selector
+mapTableWithStrongToStrongObjectsSelector :: Selector '[] RawId
 mapTableWithStrongToStrongObjectsSelector = mkSelector "mapTableWithStrongToStrongObjects"
 
 -- | @Selector@ for @mapTableWithWeakToStrongObjects@
-mapTableWithWeakToStrongObjectsSelector :: Selector
+mapTableWithWeakToStrongObjectsSelector :: Selector '[] RawId
 mapTableWithWeakToStrongObjectsSelector = mkSelector "mapTableWithWeakToStrongObjects"
 
 -- | @Selector@ for @mapTableWithStrongToWeakObjects@
-mapTableWithStrongToWeakObjectsSelector :: Selector
+mapTableWithStrongToWeakObjectsSelector :: Selector '[] RawId
 mapTableWithStrongToWeakObjectsSelector = mkSelector "mapTableWithStrongToWeakObjects"
 
 -- | @Selector@ for @mapTableWithWeakToWeakObjects@
-mapTableWithWeakToWeakObjectsSelector :: Selector
+mapTableWithWeakToWeakObjectsSelector :: Selector '[] RawId
 mapTableWithWeakToWeakObjectsSelector = mkSelector "mapTableWithWeakToWeakObjects"
 
 -- | @Selector@ for @strongToStrongObjectsMapTable@
-strongToStrongObjectsMapTableSelector :: Selector
+strongToStrongObjectsMapTableSelector :: Selector '[] (Id NSMapTable)
 strongToStrongObjectsMapTableSelector = mkSelector "strongToStrongObjectsMapTable"
 
 -- | @Selector@ for @weakToStrongObjectsMapTable@
-weakToStrongObjectsMapTableSelector :: Selector
+weakToStrongObjectsMapTableSelector :: Selector '[] (Id NSMapTable)
 weakToStrongObjectsMapTableSelector = mkSelector "weakToStrongObjectsMapTable"
 
 -- | @Selector@ for @strongToWeakObjectsMapTable@
-strongToWeakObjectsMapTableSelector :: Selector
+strongToWeakObjectsMapTableSelector :: Selector '[] (Id NSMapTable)
 strongToWeakObjectsMapTableSelector = mkSelector "strongToWeakObjectsMapTable"
 
 -- | @Selector@ for @weakToWeakObjectsMapTable@
-weakToWeakObjectsMapTableSelector :: Selector
+weakToWeakObjectsMapTableSelector :: Selector '[] (Id NSMapTable)
 weakToWeakObjectsMapTableSelector = mkSelector "weakToWeakObjectsMapTable"
 
 -- | @Selector@ for @objectForKey:@
-objectForKeySelector :: Selector
+objectForKeySelector :: Selector '[RawId] RawId
 objectForKeySelector = mkSelector "objectForKey:"
 
 -- | @Selector@ for @removeObjectForKey:@
-removeObjectForKeySelector :: Selector
+removeObjectForKeySelector :: Selector '[RawId] ()
 removeObjectForKeySelector = mkSelector "removeObjectForKey:"
 
 -- | @Selector@ for @setObject:forKey:@
-setObject_forKeySelector :: Selector
+setObject_forKeySelector :: Selector '[RawId, RawId] ()
 setObject_forKeySelector = mkSelector "setObject:forKey:"
 
 -- | @Selector@ for @keyEnumerator@
-keyEnumeratorSelector :: Selector
+keyEnumeratorSelector :: Selector '[] (Id NSEnumerator)
 keyEnumeratorSelector = mkSelector "keyEnumerator"
 
 -- | @Selector@ for @objectEnumerator@
-objectEnumeratorSelector :: Selector
+objectEnumeratorSelector :: Selector '[] (Id NSEnumerator)
 objectEnumeratorSelector = mkSelector "objectEnumerator"
 
 -- | @Selector@ for @removeAllObjects@
-removeAllObjectsSelector :: Selector
+removeAllObjectsSelector :: Selector '[] ()
 removeAllObjectsSelector = mkSelector "removeAllObjects"
 
 -- | @Selector@ for @dictionaryRepresentation@
-dictionaryRepresentationSelector :: Selector
+dictionaryRepresentationSelector :: Selector '[] (Id NSDictionary)
 dictionaryRepresentationSelector = mkSelector "dictionaryRepresentation"
 
 -- | @Selector@ for @keyPointerFunctions@
-keyPointerFunctionsSelector :: Selector
+keyPointerFunctionsSelector :: Selector '[] (Id NSPointerFunctions)
 keyPointerFunctionsSelector = mkSelector "keyPointerFunctions"
 
 -- | @Selector@ for @valuePointerFunctions@
-valuePointerFunctionsSelector :: Selector
+valuePointerFunctionsSelector :: Selector '[] (Id NSPointerFunctions)
 valuePointerFunctionsSelector = mkSelector "valuePointerFunctions"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 

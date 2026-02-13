@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRWebRTCTransportRequestorClusterEndParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , webRTCSessionIDSelector
-  , setWebRTCSessionIDSelector
   , reasonSelector
-  , setReasonSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setReasonSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , setWebRTCSessionIDSelector
+  , timedInvokeTimeoutMsSelector
+  , webRTCSessionIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- webRTCSessionID@
 webRTCSessionID :: IsMTRWebRTCTransportRequestorClusterEndParams mtrWebRTCTransportRequestorClusterEndParams => mtrWebRTCTransportRequestorClusterEndParams -> IO (Id NSNumber)
-webRTCSessionID mtrWebRTCTransportRequestorClusterEndParams  =
-    sendMsg mtrWebRTCTransportRequestorClusterEndParams (mkSelector "webRTCSessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+webRTCSessionID mtrWebRTCTransportRequestorClusterEndParams =
+  sendMessage mtrWebRTCTransportRequestorClusterEndParams webRTCSessionIDSelector
 
 -- | @- setWebRTCSessionID:@
 setWebRTCSessionID :: (IsMTRWebRTCTransportRequestorClusterEndParams mtrWebRTCTransportRequestorClusterEndParams, IsNSNumber value) => mtrWebRTCTransportRequestorClusterEndParams -> value -> IO ()
-setWebRTCSessionID mtrWebRTCTransportRequestorClusterEndParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportRequestorClusterEndParams (mkSelector "setWebRTCSessionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWebRTCSessionID mtrWebRTCTransportRequestorClusterEndParams value =
+  sendMessage mtrWebRTCTransportRequestorClusterEndParams setWebRTCSessionIDSelector (toNSNumber value)
 
 -- | @- reason@
 reason :: IsMTRWebRTCTransportRequestorClusterEndParams mtrWebRTCTransportRequestorClusterEndParams => mtrWebRTCTransportRequestorClusterEndParams -> IO (Id NSNumber)
-reason mtrWebRTCTransportRequestorClusterEndParams  =
-    sendMsg mtrWebRTCTransportRequestorClusterEndParams (mkSelector "reason") (retPtr retVoid) [] >>= retainedObject . castPtr
+reason mtrWebRTCTransportRequestorClusterEndParams =
+  sendMessage mtrWebRTCTransportRequestorClusterEndParams reasonSelector
 
 -- | @- setReason:@
 setReason :: (IsMTRWebRTCTransportRequestorClusterEndParams mtrWebRTCTransportRequestorClusterEndParams, IsNSNumber value) => mtrWebRTCTransportRequestorClusterEndParams -> value -> IO ()
-setReason mtrWebRTCTransportRequestorClusterEndParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportRequestorClusterEndParams (mkSelector "setReason:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReason mtrWebRTCTransportRequestorClusterEndParams value =
+  sendMessage mtrWebRTCTransportRequestorClusterEndParams setReasonSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setReason mtrWebRTCTransportRequestorClusterEndParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRWebRTCTransportRequestorClusterEndParams mtrWebRTCTransportRequestorClusterEndParams => mtrWebRTCTransportRequestorClusterEndParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrWebRTCTransportRequestorClusterEndParams  =
-    sendMsg mtrWebRTCTransportRequestorClusterEndParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrWebRTCTransportRequestorClusterEndParams =
+  sendMessage mtrWebRTCTransportRequestorClusterEndParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrWebRTCTransportRequestorClusterEndParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRWebRTCTransportRequestorClusterEndParams mtrWebRTCTransportRequestorClusterEndParams, IsNSNumber value) => mtrWebRTCTransportRequestorClusterEndParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrWebRTCTransportRequestorClusterEndParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportRequestorClusterEndParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrWebRTCTransportRequestorClusterEndParams value =
+  sendMessage mtrWebRTCTransportRequestorClusterEndParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrWebRTCTransportRequestorClusterEndParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRWebRTCTransportRequestorClusterEndParams mtrWebRTCTransportRequestorClusterEndParams => mtrWebRTCTransportRequestorClusterEndParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrWebRTCTransportRequestorClusterEndParams  =
-    sendMsg mtrWebRTCTransportRequestorClusterEndParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrWebRTCTransportRequestorClusterEndParams =
+  sendMessage mtrWebRTCTransportRequestorClusterEndParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrWebRTCTransportRequestorClusterEndParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRWebRTCTransportRequestorClusterEndParams mtrWebRTCTransportRequestorClusterEndParams, IsNSNumber value) => mtrWebRTCTransportRequestorClusterEndParams -> value -> IO ()
-setServerSideProcessingTimeout mtrWebRTCTransportRequestorClusterEndParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportRequestorClusterEndParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrWebRTCTransportRequestorClusterEndParams value =
+  sendMessage mtrWebRTCTransportRequestorClusterEndParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @webRTCSessionID@
-webRTCSessionIDSelector :: Selector
+webRTCSessionIDSelector :: Selector '[] (Id NSNumber)
 webRTCSessionIDSelector = mkSelector "webRTCSessionID"
 
 -- | @Selector@ for @setWebRTCSessionID:@
-setWebRTCSessionIDSelector :: Selector
+setWebRTCSessionIDSelector :: Selector '[Id NSNumber] ()
 setWebRTCSessionIDSelector = mkSelector "setWebRTCSessionID:"
 
 -- | @Selector@ for @reason@
-reasonSelector :: Selector
+reasonSelector :: Selector '[] (Id NSNumber)
 reasonSelector = mkSelector "reason"
 
 -- | @Selector@ for @setReason:@
-setReasonSelector :: Selector
+setReasonSelector :: Selector '[Id NSNumber] ()
 setReasonSelector = mkSelector "setReason:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

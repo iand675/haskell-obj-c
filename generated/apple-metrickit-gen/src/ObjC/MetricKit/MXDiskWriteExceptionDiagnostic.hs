@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.MetricKit.MXDiskWriteExceptionDiagnostic
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- callStackTree@
 callStackTree :: IsMXDiskWriteExceptionDiagnostic mxDiskWriteExceptionDiagnostic => mxDiskWriteExceptionDiagnostic -> IO (Id MXCallStackTree)
-callStackTree mxDiskWriteExceptionDiagnostic  =
-    sendMsg mxDiskWriteExceptionDiagnostic (mkSelector "callStackTree") (retPtr retVoid) [] >>= retainedObject . castPtr
+callStackTree mxDiskWriteExceptionDiagnostic =
+  sendMessage mxDiskWriteExceptionDiagnostic callStackTreeSelector
 
 -- | totalWritesCaused
 --
@@ -52,18 +49,18 @@ callStackTree mxDiskWriteExceptionDiagnostic  =
 --
 -- ObjC selector: @- totalWritesCaused@
 totalWritesCaused :: IsMXDiskWriteExceptionDiagnostic mxDiskWriteExceptionDiagnostic => mxDiskWriteExceptionDiagnostic -> IO (Id NSMeasurement)
-totalWritesCaused mxDiskWriteExceptionDiagnostic  =
-    sendMsg mxDiskWriteExceptionDiagnostic (mkSelector "totalWritesCaused") (retPtr retVoid) [] >>= retainedObject . castPtr
+totalWritesCaused mxDiskWriteExceptionDiagnostic =
+  sendMessage mxDiskWriteExceptionDiagnostic totalWritesCausedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @callStackTree@
-callStackTreeSelector :: Selector
+callStackTreeSelector :: Selector '[] (Id MXCallStackTree)
 callStackTreeSelector = mkSelector "callStackTree"
 
 -- | @Selector@ for @totalWritesCaused@
-totalWritesCausedSelector :: Selector
+totalWritesCausedSelector :: Selector '[] (Id NSMeasurement)
 totalWritesCausedSelector = mkSelector "totalWritesCaused"
 

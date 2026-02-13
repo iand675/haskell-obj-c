@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MediaExtension.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | MEDecodeFrameStatus
 --
@@ -38,6 +41,16 @@ pattern MEDecodeFrameNoStatus = MEDecodeFrameStatus 0
 
 pattern MEDecodeFrameFrameDropped :: MEDecodeFrameStatus
 pattern MEDecodeFrameFrameDropped = MEDecodeFrameStatus 1
+
+instance ObjCArgument MEDecodeFrameStatus where
+  withObjCArg (MEDecodeFrameStatus x) k = k (argCULong x)
+
+instance ObjCReturn MEDecodeFrameStatus where
+  type RawReturn MEDecodeFrameStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEDecodeFrameStatus x)
+  fromOwned x = pure (MEDecodeFrameStatus x)
 
 -- | MEError
 --
@@ -133,6 +146,16 @@ pattern MEErrorPermissionDenied = MEError (-19330)
 pattern MEErrorReferenceMissing :: MEError
 pattern MEErrorReferenceMissing = MEError (-19331)
 
+instance ObjCArgument MEError where
+  withObjCArg (MEError x) k = k (argCLong x)
+
+instance ObjCReturn MEError where
+  type RawReturn MEError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEError x)
+  fromOwned x = pure (MEError x)
+
 -- | MEFileInfoFragmentsStatus
 --
 -- Describes whether a file supports or contains fragments. For QuickTime movie and ISO files, it indicates the presence of an 'mvex' box, which is necessary in order to signal the possible presence of later 'moof' boxes.
@@ -161,6 +184,16 @@ pattern MEFileInfoContainsFragments = MEFileInfoFragmentsStatus 1
 
 pattern MEFileInfoCouldContainButDoesNotContainFragments :: MEFileInfoFragmentsStatus
 pattern MEFileInfoCouldContainButDoesNotContainFragments = MEFileInfoFragmentsStatus 2
+
+instance ObjCArgument MEFileInfoFragmentsStatus where
+  withObjCArg (MEFileInfoFragmentsStatus x) k = k (argCLong x)
+
+instance ObjCReturn MEFileInfoFragmentsStatus where
+  type RawReturn MEFileInfoFragmentsStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEFileInfoFragmentsStatus x)
+  fromOwned x = pure (MEFileInfoFragmentsStatus x)
 
 -- | MEFormatReaderParseAdditionalFragmentsStatus
 --
@@ -198,3 +231,13 @@ pattern MEFormatReaderParseAdditionalFragmentsStatusFragmentAdded = MEFormatRead
 
 pattern MEFormatReaderParseAdditionalFragmentsStatusFragmentsComplete :: MEFormatReaderParseAdditionalFragmentsStatus
 pattern MEFormatReaderParseAdditionalFragmentsStatusFragmentsComplete = MEFormatReaderParseAdditionalFragmentsStatus 4
+
+instance ObjCArgument MEFormatReaderParseAdditionalFragmentsStatus where
+  withObjCArg (MEFormatReaderParseAdditionalFragmentsStatus x) k = k (argCULong x)
+
+instance ObjCReturn MEFormatReaderParseAdditionalFragmentsStatus where
+  type RawReturn MEFormatReaderParseAdditionalFragmentsStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MEFormatReaderParseAdditionalFragmentsStatus x)
+  fromOwned x = pure (MEFormatReaderParseAdditionalFragmentsStatus x)

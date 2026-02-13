@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.HealthKit.HKHeartbeatSeriesQuery
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,15 +34,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithHeartbeatSeries:dataHandler:@
 initWithHeartbeatSeries_dataHandler :: (IsHKHeartbeatSeriesQuery hkHeartbeatSeriesQuery, IsHKHeartbeatSeriesSample heartbeatSeries) => hkHeartbeatSeriesQuery -> heartbeatSeries -> Ptr () -> IO (Id HKHeartbeatSeriesQuery)
-initWithHeartbeatSeries_dataHandler hkHeartbeatSeriesQuery  heartbeatSeries dataHandler =
-  withObjCPtr heartbeatSeries $ \raw_heartbeatSeries ->
-      sendMsg hkHeartbeatSeriesQuery (mkSelector "initWithHeartbeatSeries:dataHandler:") (retPtr retVoid) [argPtr (castPtr raw_heartbeatSeries :: Ptr ()), argPtr (castPtr dataHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithHeartbeatSeries_dataHandler hkHeartbeatSeriesQuery heartbeatSeries dataHandler =
+  sendOwnedMessage hkHeartbeatSeriesQuery initWithHeartbeatSeries_dataHandlerSelector (toHKHeartbeatSeriesSample heartbeatSeries) dataHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithHeartbeatSeries:dataHandler:@
-initWithHeartbeatSeries_dataHandlerSelector :: Selector
+initWithHeartbeatSeries_dataHandlerSelector :: Selector '[Id HKHeartbeatSeriesSample, Ptr ()] (Id HKHeartbeatSeriesQuery)
 initWithHeartbeatSeries_dataHandlerSelector = mkSelector "initWithHeartbeatSeries:dataHandler:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,10 +14,10 @@ module ObjC.Intents.INMediaUserContext
   , numberOfLibraryItems
   , setNumberOfLibraryItems
   , initSelector
-  , subscriptionStatusSelector
-  , setSubscriptionStatusSelector
   , numberOfLibraryItemsSelector
   , setNumberOfLibraryItemsSelector
+  , setSubscriptionStatusSelector
+  , subscriptionStatusSelector
 
   -- * Enum types
   , INMediaUserContextSubscriptionStatus(INMediaUserContextSubscriptionStatus)
@@ -26,15 +27,11 @@ module ObjC.Intents.INMediaUserContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,59 +41,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINMediaUserContext inMediaUserContext => inMediaUserContext -> IO (Id INMediaUserContext)
-init_ inMediaUserContext  =
-    sendMsg inMediaUserContext (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inMediaUserContext =
+  sendOwnedMessage inMediaUserContext initSelector
 
 -- | Used as a signal of user affinity for the app
 --
 -- ObjC selector: @- subscriptionStatus@
 subscriptionStatus :: IsINMediaUserContext inMediaUserContext => inMediaUserContext -> IO INMediaUserContextSubscriptionStatus
-subscriptionStatus inMediaUserContext  =
-    fmap (coerce :: CLong -> INMediaUserContextSubscriptionStatus) $ sendMsg inMediaUserContext (mkSelector "subscriptionStatus") retCLong []
+subscriptionStatus inMediaUserContext =
+  sendMessage inMediaUserContext subscriptionStatusSelector
 
 -- | Used as a signal of user affinity for the app
 --
 -- ObjC selector: @- setSubscriptionStatus:@
 setSubscriptionStatus :: IsINMediaUserContext inMediaUserContext => inMediaUserContext -> INMediaUserContextSubscriptionStatus -> IO ()
-setSubscriptionStatus inMediaUserContext  value =
-    sendMsg inMediaUserContext (mkSelector "setSubscriptionStatus:") retVoid [argCLong (coerce value)]
+setSubscriptionStatus inMediaUserContext value =
+  sendMessage inMediaUserContext setSubscriptionStatusSelector value
 
 -- | Approximate number of relevant items available in the user's library (playlists, songs, podcasts, albums, etc.) - used as a signal of user affinity for the app
 --
 -- ObjC selector: @- numberOfLibraryItems@
 numberOfLibraryItems :: IsINMediaUserContext inMediaUserContext => inMediaUserContext -> IO (Id NSNumber)
-numberOfLibraryItems inMediaUserContext  =
-    sendMsg inMediaUserContext (mkSelector "numberOfLibraryItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+numberOfLibraryItems inMediaUserContext =
+  sendMessage inMediaUserContext numberOfLibraryItemsSelector
 
 -- | Approximate number of relevant items available in the user's library (playlists, songs, podcasts, albums, etc.) - used as a signal of user affinity for the app
 --
 -- ObjC selector: @- setNumberOfLibraryItems:@
 setNumberOfLibraryItems :: (IsINMediaUserContext inMediaUserContext, IsNSNumber value) => inMediaUserContext -> value -> IO ()
-setNumberOfLibraryItems inMediaUserContext  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inMediaUserContext (mkSelector "setNumberOfLibraryItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNumberOfLibraryItems inMediaUserContext value =
+  sendMessage inMediaUserContext setNumberOfLibraryItemsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INMediaUserContext)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @subscriptionStatus@
-subscriptionStatusSelector :: Selector
+subscriptionStatusSelector :: Selector '[] INMediaUserContextSubscriptionStatus
 subscriptionStatusSelector = mkSelector "subscriptionStatus"
 
 -- | @Selector@ for @setSubscriptionStatus:@
-setSubscriptionStatusSelector :: Selector
+setSubscriptionStatusSelector :: Selector '[INMediaUserContextSubscriptionStatus] ()
 setSubscriptionStatusSelector = mkSelector "setSubscriptionStatus:"
 
 -- | @Selector@ for @numberOfLibraryItems@
-numberOfLibraryItemsSelector :: Selector
+numberOfLibraryItemsSelector :: Selector '[] (Id NSNumber)
 numberOfLibraryItemsSelector = mkSelector "numberOfLibraryItems"
 
 -- | @Selector@ for @setNumberOfLibraryItems:@
-setNumberOfLibraryItemsSelector :: Selector
+setNumberOfLibraryItemsSelector :: Selector '[Id NSNumber] ()
 setNumberOfLibraryItemsSelector = mkSelector "setNumberOfLibraryItems:"
 

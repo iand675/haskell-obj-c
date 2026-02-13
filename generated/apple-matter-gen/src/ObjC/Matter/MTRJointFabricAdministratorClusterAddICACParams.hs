@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRJointFabricAdministratorClusterAddICACParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , icacValueSelector
-  , setIcacValueSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setIcacValueSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- icacValue@
 icacValue :: IsMTRJointFabricAdministratorClusterAddICACParams mtrJointFabricAdministratorClusterAddICACParams => mtrJointFabricAdministratorClusterAddICACParams -> IO (Id NSData)
-icacValue mtrJointFabricAdministratorClusterAddICACParams  =
-    sendMsg mtrJointFabricAdministratorClusterAddICACParams (mkSelector "icacValue") (retPtr retVoid) [] >>= retainedObject . castPtr
+icacValue mtrJointFabricAdministratorClusterAddICACParams =
+  sendMessage mtrJointFabricAdministratorClusterAddICACParams icacValueSelector
 
 -- | @- setIcacValue:@
 setIcacValue :: (IsMTRJointFabricAdministratorClusterAddICACParams mtrJointFabricAdministratorClusterAddICACParams, IsNSData value) => mtrJointFabricAdministratorClusterAddICACParams -> value -> IO ()
-setIcacValue mtrJointFabricAdministratorClusterAddICACParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterAddICACParams (mkSelector "setIcacValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIcacValue mtrJointFabricAdministratorClusterAddICACParams value =
+  sendMessage mtrJointFabricAdministratorClusterAddICACParams setIcacValueSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setIcacValue mtrJointFabricAdministratorClusterAddICACParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricAdministratorClusterAddICACParams mtrJointFabricAdministratorClusterAddICACParams => mtrJointFabricAdministratorClusterAddICACParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricAdministratorClusterAddICACParams  =
-    sendMsg mtrJointFabricAdministratorClusterAddICACParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricAdministratorClusterAddICACParams =
+  sendMessage mtrJointFabricAdministratorClusterAddICACParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrJointFabricAdministratorClusterAddICACParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricAdministratorClusterAddICACParams mtrJointFabricAdministratorClusterAddICACParams, IsNSNumber value) => mtrJointFabricAdministratorClusterAddICACParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterAddICACParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterAddICACParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterAddICACParams value =
+  sendMessage mtrJointFabricAdministratorClusterAddICACParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterAddICACParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricAdministratorClusterAddICACParams mtrJointFabricAdministratorClusterAddICACParams => mtrJointFabricAdministratorClusterAddICACParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricAdministratorClusterAddICACParams  =
-    sendMsg mtrJointFabricAdministratorClusterAddICACParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricAdministratorClusterAddICACParams =
+  sendMessage mtrJointFabricAdministratorClusterAddICACParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrJointFabricAdministratorClusterAddICACParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricAdministratorClusterAddICACParams mtrJointFabricAdministratorClusterAddICACParams, IsNSNumber value) => mtrJointFabricAdministratorClusterAddICACParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricAdministratorClusterAddICACParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterAddICACParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricAdministratorClusterAddICACParams value =
+  sendMessage mtrJointFabricAdministratorClusterAddICACParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @icacValue@
-icacValueSelector :: Selector
+icacValueSelector :: Selector '[] (Id NSData)
 icacValueSelector = mkSelector "icacValue"
 
 -- | @Selector@ for @setIcacValue:@
-setIcacValueSelector :: Selector
+setIcacValueSelector :: Selector '[Id NSData] ()
 setIcacValueSelector = mkSelector "setIcacValue:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -191,8 +191,6 @@ library:
   - ObjC.Matter.MTRBaseClusterOnOffSwitchConfiguration
   - ObjC.Matter.MTRBaseClusterOperationalCredentials
   - ObjC.Matter.MTRBaseClusterOperationalState
-  - ObjC.Matter.MTRBaseClusterOtaSoftwareUpdateProvider
-  - ObjC.Matter.MTRBaseClusterOtaSoftwareUpdateRequestor
   - ObjC.Matter.MTRBaseClusterOvenCavityOperationalState
   - ObjC.Matter.MTRBaseClusterOvenMode
   - ObjC.Matter.MTRBaseClusterOzoneConcentrationMeasurement
@@ -240,7 +238,6 @@ library:
   - ObjC.Matter.MTRBaseClusterUserLabel
   - ObjC.Matter.MTRBaseClusterValveConfigurationAndControl
   - ObjC.Matter.MTRBaseClusterWakeOnLAN
-  - ObjC.Matter.MTRBaseClusterWakeOnLan
   - ObjC.Matter.MTRBaseClusterWaterHeaterManagement
   - ObjC.Matter.MTRBaseClusterWaterHeaterMode
   - ObjC.Matter.MTRBaseClusterWebRTCTransportProvider
@@ -440,8 +437,6 @@ library:
   - ObjC.Matter.MTRClusterOnOffSwitchConfiguration
   - ObjC.Matter.MTRClusterOperationalCredentials
   - ObjC.Matter.MTRClusterOperationalState
-  - ObjC.Matter.MTRClusterOtaSoftwareUpdateProvider
-  - ObjC.Matter.MTRClusterOtaSoftwareUpdateRequestor
   - ObjC.Matter.MTRClusterOvenCavityOperationalState
   - ObjC.Matter.MTRClusterOvenMode
   - ObjC.Matter.MTRClusterOzoneConcentrationMeasurement
@@ -491,7 +486,6 @@ library:
   - ObjC.Matter.MTRClusterUserLabel
   - ObjC.Matter.MTRClusterValveConfigurationAndControl
   - ObjC.Matter.MTRClusterWakeOnLAN
-  - ObjC.Matter.MTRClusterWakeOnLan
   - ObjC.Matter.MTRClusterWaterHeaterManagement
   - ObjC.Matter.MTRClusterWaterHeaterMode
   - ObjC.Matter.MTRClusterWebRTCTransportProvider
@@ -969,16 +963,6 @@ library:
   - ObjC.Matter.MTROperationalStateClusterStartParams
   - ObjC.Matter.MTROperationalStateClusterStopParams
   - ObjC.Matter.MTROptionalQRCodeInfo
-  - ObjC.Matter.MTROtaSoftwareUpdateProviderClusterApplyUpdateRequestParams
-  - ObjC.Matter.MTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams
-  - ObjC.Matter.MTROtaSoftwareUpdateProviderClusterNotifyUpdateAppliedParams
-  - ObjC.Matter.MTROtaSoftwareUpdateProviderClusterQueryImageParams
-  - ObjC.Matter.MTROtaSoftwareUpdateProviderClusterQueryImageResponseParams
-  - ObjC.Matter.MTROtaSoftwareUpdateRequestorClusterAnnounceOtaProviderParams
-  - ObjC.Matter.MTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent
-  - ObjC.Matter.MTROtaSoftwareUpdateRequestorClusterProviderLocation
-  - ObjC.Matter.MTROtaSoftwareUpdateRequestorClusterStateTransitionEvent
-  - ObjC.Matter.MTROtaSoftwareUpdateRequestorClusterVersionAppliedEvent
   - ObjC.Matter.MTROvenCavityOperationalStateClusterErrorStateStruct
   - ObjC.Matter.MTROvenCavityOperationalStateClusterOperationCompletionEvent
   - ObjC.Matter.MTROvenCavityOperationalStateClusterOperationalCommandResponseParams
@@ -1247,7 +1231,6 @@ library:
   - ObjC.Matter.MTRTimeSynchronizationClusterSetTimeZoneResponseParams
   - ObjC.Matter.MTRTimeSynchronizationClusterSetTrustedTimeSourceParams
   - ObjC.Matter.MTRTimeSynchronizationClusterSetUTCTimeParams
-  - ObjC.Matter.MTRTimeSynchronizationClusterSetUtcTimeParams
   - ObjC.Matter.MTRTimeSynchronizationClusterTimeFailureEvent
   - ObjC.Matter.MTRTimeSynchronizationClusterTimeZoneStatusEvent
   - ObjC.Matter.MTRTimeSynchronizationClusterTimeZoneStruct

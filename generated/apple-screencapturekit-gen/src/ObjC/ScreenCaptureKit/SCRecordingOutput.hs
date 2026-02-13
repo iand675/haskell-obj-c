@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.ScreenCaptureKit.SCRecordingOutput
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,26 +38,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithConfiguration:delegate:@
 initWithConfiguration_delegate :: (IsSCRecordingOutput scRecordingOutput, IsSCRecordingOutputConfiguration recordingOutputConfiguration) => scRecordingOutput -> recordingOutputConfiguration -> RawId -> IO (Id SCRecordingOutput)
-initWithConfiguration_delegate scRecordingOutput  recordingOutputConfiguration delegate =
-  withObjCPtr recordingOutputConfiguration $ \raw_recordingOutputConfiguration ->
-      sendMsg scRecordingOutput (mkSelector "initWithConfiguration:delegate:") (retPtr retVoid) [argPtr (castPtr raw_recordingOutputConfiguration :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration_delegate scRecordingOutput recordingOutputConfiguration delegate =
+  sendOwnedMessage scRecordingOutput initWithConfiguration_delegateSelector (toSCRecordingOutputConfiguration recordingOutputConfiguration) delegate
 
 -- | Indicates current size, in bytes, of the data recorded to the output file.
 --
 -- ObjC selector: @- recordedFileSize@
 recordedFileSize :: IsSCRecordingOutput scRecordingOutput => scRecordingOutput -> IO CLong
-recordedFileSize scRecordingOutput  =
-    sendMsg scRecordingOutput (mkSelector "recordedFileSize") retCLong []
+recordedFileSize scRecordingOutput =
+  sendMessage scRecordingOutput recordedFileSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithConfiguration:delegate:@
-initWithConfiguration_delegateSelector :: Selector
+initWithConfiguration_delegateSelector :: Selector '[Id SCRecordingOutputConfiguration, RawId] (Id SCRecordingOutput)
 initWithConfiguration_delegateSelector = mkSelector "initWithConfiguration:delegate:"
 
 -- | @Selector@ for @recordedFileSize@
-recordedFileSizeSelector :: Selector
+recordedFileSizeSelector :: Selector '[] CLong
 recordedFileSizeSelector = mkSelector "recordedFileSize"
 

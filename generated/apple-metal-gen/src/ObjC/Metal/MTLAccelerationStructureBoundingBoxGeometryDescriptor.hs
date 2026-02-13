@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Metal.MTLAccelerationStructureBoundingBoxGeometryDescriptor
   , setBoundingBoxStride
   , boundingBoxCount
   , setBoundingBoxCount
-  , descriptorSelector
-  , boundingBoxBufferSelector
-  , setBoundingBoxBufferSelector
   , boundingBoxBufferOffsetSelector
-  , setBoundingBoxBufferOffsetSelector
-  , boundingBoxStrideSelector
-  , setBoundingBoxStrideSelector
+  , boundingBoxBufferSelector
   , boundingBoxCountSelector
+  , boundingBoxStrideSelector
+  , descriptorSelector
+  , setBoundingBoxBufferOffsetSelector
+  , setBoundingBoxBufferSelector
   , setBoundingBoxCountSelector
+  , setBoundingBoxStrideSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,101 +47,101 @@ descriptor :: IO (Id MTLAccelerationStructureBoundingBoxGeometryDescriptor)
 descriptor  =
   do
     cls' <- getRequiredClass "MTLAccelerationStructureBoundingBoxGeometryDescriptor"
-    sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorSelector
 
 -- | Bounding box buffer containing MTLAxisAlignedBoundingBoxes. Must not be nil.
 --
 -- ObjC selector: @- boundingBoxBuffer@
 boundingBoxBuffer :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> IO RawId
-boundingBoxBuffer mtlAccelerationStructureBoundingBoxGeometryDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "boundingBoxBuffer") (retPtr retVoid) []
+boundingBoxBuffer mtlAccelerationStructureBoundingBoxGeometryDescriptor =
+  sendMessage mtlAccelerationStructureBoundingBoxGeometryDescriptor boundingBoxBufferSelector
 
 -- | Bounding box buffer containing MTLAxisAlignedBoundingBoxes. Must not be nil.
 --
 -- ObjC selector: @- setBoundingBoxBuffer:@
 setBoundingBoxBuffer :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> RawId -> IO ()
-setBoundingBoxBuffer mtlAccelerationStructureBoundingBoxGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "setBoundingBoxBuffer:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setBoundingBoxBuffer mtlAccelerationStructureBoundingBoxGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureBoundingBoxGeometryDescriptor setBoundingBoxBufferSelector value
 
 -- | Bounding box buffer offset. Must be a multiple of the bounding box stride and must be aligned to the platform's buffer offset alignment.
 --
 -- ObjC selector: @- boundingBoxBufferOffset@
 boundingBoxBufferOffset :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> IO CULong
-boundingBoxBufferOffset mtlAccelerationStructureBoundingBoxGeometryDescriptor  =
-    sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "boundingBoxBufferOffset") retCULong []
+boundingBoxBufferOffset mtlAccelerationStructureBoundingBoxGeometryDescriptor =
+  sendMessage mtlAccelerationStructureBoundingBoxGeometryDescriptor boundingBoxBufferOffsetSelector
 
 -- | Bounding box buffer offset. Must be a multiple of the bounding box stride and must be aligned to the platform's buffer offset alignment.
 --
 -- ObjC selector: @- setBoundingBoxBufferOffset:@
 setBoundingBoxBufferOffset :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> CULong -> IO ()
-setBoundingBoxBufferOffset mtlAccelerationStructureBoundingBoxGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "setBoundingBoxBufferOffset:") retVoid [argCULong value]
+setBoundingBoxBufferOffset mtlAccelerationStructureBoundingBoxGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureBoundingBoxGeometryDescriptor setBoundingBoxBufferOffsetSelector value
 
 -- | Stride, in bytes, between bounding boxes in the bounding box buffer. Must be at least 24 bytes and must be a multiple of 4 bytes. Defaults to 24 bytes.
 --
 -- ObjC selector: @- boundingBoxStride@
 boundingBoxStride :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> IO CULong
-boundingBoxStride mtlAccelerationStructureBoundingBoxGeometryDescriptor  =
-    sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "boundingBoxStride") retCULong []
+boundingBoxStride mtlAccelerationStructureBoundingBoxGeometryDescriptor =
+  sendMessage mtlAccelerationStructureBoundingBoxGeometryDescriptor boundingBoxStrideSelector
 
 -- | Stride, in bytes, between bounding boxes in the bounding box buffer. Must be at least 24 bytes and must be a multiple of 4 bytes. Defaults to 24 bytes.
 --
 -- ObjC selector: @- setBoundingBoxStride:@
 setBoundingBoxStride :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> CULong -> IO ()
-setBoundingBoxStride mtlAccelerationStructureBoundingBoxGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "setBoundingBoxStride:") retVoid [argCULong value]
+setBoundingBoxStride mtlAccelerationStructureBoundingBoxGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureBoundingBoxGeometryDescriptor setBoundingBoxStrideSelector value
 
 -- | Number of bounding boxes
 --
 -- ObjC selector: @- boundingBoxCount@
 boundingBoxCount :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> IO CULong
-boundingBoxCount mtlAccelerationStructureBoundingBoxGeometryDescriptor  =
-    sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "boundingBoxCount") retCULong []
+boundingBoxCount mtlAccelerationStructureBoundingBoxGeometryDescriptor =
+  sendMessage mtlAccelerationStructureBoundingBoxGeometryDescriptor boundingBoxCountSelector
 
 -- | Number of bounding boxes
 --
 -- ObjC selector: @- setBoundingBoxCount:@
 setBoundingBoxCount :: IsMTLAccelerationStructureBoundingBoxGeometryDescriptor mtlAccelerationStructureBoundingBoxGeometryDescriptor => mtlAccelerationStructureBoundingBoxGeometryDescriptor -> CULong -> IO ()
-setBoundingBoxCount mtlAccelerationStructureBoundingBoxGeometryDescriptor  value =
-    sendMsg mtlAccelerationStructureBoundingBoxGeometryDescriptor (mkSelector "setBoundingBoxCount:") retVoid [argCULong value]
+setBoundingBoxCount mtlAccelerationStructureBoundingBoxGeometryDescriptor value =
+  sendMessage mtlAccelerationStructureBoundingBoxGeometryDescriptor setBoundingBoxCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MTLAccelerationStructureBoundingBoxGeometryDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @boundingBoxBuffer@
-boundingBoxBufferSelector :: Selector
+boundingBoxBufferSelector :: Selector '[] RawId
 boundingBoxBufferSelector = mkSelector "boundingBoxBuffer"
 
 -- | @Selector@ for @setBoundingBoxBuffer:@
-setBoundingBoxBufferSelector :: Selector
+setBoundingBoxBufferSelector :: Selector '[RawId] ()
 setBoundingBoxBufferSelector = mkSelector "setBoundingBoxBuffer:"
 
 -- | @Selector@ for @boundingBoxBufferOffset@
-boundingBoxBufferOffsetSelector :: Selector
+boundingBoxBufferOffsetSelector :: Selector '[] CULong
 boundingBoxBufferOffsetSelector = mkSelector "boundingBoxBufferOffset"
 
 -- | @Selector@ for @setBoundingBoxBufferOffset:@
-setBoundingBoxBufferOffsetSelector :: Selector
+setBoundingBoxBufferOffsetSelector :: Selector '[CULong] ()
 setBoundingBoxBufferOffsetSelector = mkSelector "setBoundingBoxBufferOffset:"
 
 -- | @Selector@ for @boundingBoxStride@
-boundingBoxStrideSelector :: Selector
+boundingBoxStrideSelector :: Selector '[] CULong
 boundingBoxStrideSelector = mkSelector "boundingBoxStride"
 
 -- | @Selector@ for @setBoundingBoxStride:@
-setBoundingBoxStrideSelector :: Selector
+setBoundingBoxStrideSelector :: Selector '[CULong] ()
 setBoundingBoxStrideSelector = mkSelector "setBoundingBoxStride:"
 
 -- | @Selector@ for @boundingBoxCount@
-boundingBoxCountSelector :: Selector
+boundingBoxCountSelector :: Selector '[] CULong
 boundingBoxCountSelector = mkSelector "boundingBoxCount"
 
 -- | @Selector@ for @setBoundingBoxCount:@
-setBoundingBoxCountSelector :: Selector
+setBoundingBoxCountSelector :: Selector '[CULong] ()
 setBoundingBoxCountSelector = mkSelector "setBoundingBoxCount:"
 

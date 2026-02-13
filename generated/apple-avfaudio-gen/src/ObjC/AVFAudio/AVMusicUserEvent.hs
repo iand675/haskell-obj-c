@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AVFAudio.AVMusicUserEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,9 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithData:@
 initWithData :: (IsAVMusicUserEvent avMusicUserEvent, IsNSData data_) => avMusicUserEvent -> data_ -> IO (Id AVMusicUserEvent)
-initWithData avMusicUserEvent  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg avMusicUserEvent (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData avMusicUserEvent data_ =
+  sendOwnedMessage avMusicUserEvent initWithDataSelector (toNSData data_)
 
 -- | sizeInBytes
 --
@@ -53,18 +49,18 @@ initWithData avMusicUserEvent  data_ =
 --
 -- ObjC selector: @- sizeInBytes@
 sizeInBytes :: IsAVMusicUserEvent avMusicUserEvent => avMusicUserEvent -> IO CUInt
-sizeInBytes avMusicUserEvent  =
-    sendMsg avMusicUserEvent (mkSelector "sizeInBytes") retCUInt []
+sizeInBytes avMusicUserEvent =
+  sendMessage avMusicUserEvent sizeInBytesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id AVMusicUserEvent)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @sizeInBytes@
-sizeInBytesSelector :: Selector
+sizeInBytesSelector :: Selector '[] CUInt
 sizeInBytesSelector = mkSelector "sizeInBytes"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,22 +28,22 @@ module ObjC.MLCompute.MLCLSTMDescriptor
   , returnsSequences
   , dropout
   , resultMode
-  , newSelector
-  , initSelector
+  , batchFirstSelector
   , descriptorWithInputSize_hiddenSize_layerCountSelector
-  , descriptorWithInputSize_hiddenSize_layerCount_usesBiases_isBidirectional_dropoutSelector
   , descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_dropoutSelector
   , descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropoutSelector
   , descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropout_resultModeSelector
-  , inputSizeSelector
-  , hiddenSizeSelector
-  , layerCountSelector
-  , usesBiasesSelector
-  , batchFirstSelector
-  , isBidirectionalSelector
-  , returnsSequencesSelector
+  , descriptorWithInputSize_hiddenSize_layerCount_usesBiases_isBidirectional_dropoutSelector
   , dropoutSelector
+  , hiddenSizeSelector
+  , initSelector
+  , inputSizeSelector
+  , isBidirectionalSelector
+  , layerCountSelector
+  , newSelector
   , resultModeSelector
+  , returnsSequencesSelector
+  , usesBiasesSelector
 
   -- * Enum types
   , MLCLSTMResultMode(MLCLSTMResultMode)
@@ -51,15 +52,11 @@ module ObjC.MLCompute.MLCLSTMDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,12 +69,12 @@ new :: IO (Id MLCLSTMDescriptor)
 new  =
   do
     cls' <- getRequiredClass "MLCLSTMDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO (Id MLCLSTMDescriptor)
-init_ mlclstmDescriptor  =
-    sendMsg mlclstmDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlclstmDescriptor =
+  sendOwnedMessage mlclstmDescriptor initSelector
 
 -- | Creates a LSTM descriptor with batchFirst = YES
 --
@@ -94,7 +91,7 @@ descriptorWithInputSize_hiddenSize_layerCount :: CULong -> CULong -> CULong -> I
 descriptorWithInputSize_hiddenSize_layerCount inputSize hiddenSize layerCount =
   do
     cls' <- getRequiredClass "MLCLSTMDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithInputSize:hiddenSize:layerCount:") (retPtr retVoid) [argCULong inputSize, argCULong hiddenSize, argCULong layerCount] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithInputSize_hiddenSize_layerCountSelector inputSize hiddenSize layerCount
 
 -- | Creates a LSTM descriptor descriptor with batchFirst = YES
 --
@@ -117,21 +114,21 @@ descriptorWithInputSize_hiddenSize_layerCount_usesBiases_isBidirectional_dropout
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_isBidirectional_dropout inputSize hiddenSize layerCount usesBiases isBidirectional dropout =
   do
     cls' <- getRequiredClass "MLCLSTMDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithInputSize:hiddenSize:layerCount:usesBiases:isBidirectional:dropout:") (retPtr retVoid) [argCULong inputSize, argCULong hiddenSize, argCULong layerCount, argCULong (if usesBiases then 1 else 0), argCULong (if isBidirectional then 1 else 0), argCFloat dropout] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithInputSize_hiddenSize_layerCount_usesBiases_isBidirectional_dropoutSelector inputSize hiddenSize layerCount usesBiases isBidirectional dropout
 
 -- | @+ descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:dropout:@
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_dropout :: CULong -> CULong -> CULong -> Bool -> Bool -> Bool -> CFloat -> IO (Id MLCLSTMDescriptor)
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_dropout inputSize hiddenSize layerCount usesBiases batchFirst isBidirectional dropout =
   do
     cls' <- getRequiredClass "MLCLSTMDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:dropout:") (retPtr retVoid) [argCULong inputSize, argCULong hiddenSize, argCULong layerCount, argCULong (if usesBiases then 1 else 0), argCULong (if batchFirst then 1 else 0), argCULong (if isBidirectional then 1 else 0), argCFloat dropout] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_dropoutSelector inputSize hiddenSize layerCount usesBiases batchFirst isBidirectional dropout
 
 -- | @+ descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:returnsSequences:dropout:@
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropout :: CULong -> CULong -> CULong -> Bool -> Bool -> Bool -> Bool -> CFloat -> IO (Id MLCLSTMDescriptor)
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropout inputSize hiddenSize layerCount usesBiases batchFirst isBidirectional returnsSequences dropout =
   do
     cls' <- getRequiredClass "MLCLSTMDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:returnsSequences:dropout:") (retPtr retVoid) [argCULong inputSize, argCULong hiddenSize, argCULong layerCount, argCULong (if usesBiases then 1 else 0), argCULong (if batchFirst then 1 else 0), argCULong (if isBidirectional then 1 else 0), argCULong (if returnsSequences then 1 else 0), argCFloat dropout] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropoutSelector inputSize hiddenSize layerCount usesBiases batchFirst isBidirectional returnsSequences dropout
 
 -- | Creates a LSTM descriptor.
 --
@@ -160,7 +157,7 @@ descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectio
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropout_resultMode inputSize hiddenSize layerCount usesBiases batchFirst isBidirectional returnsSequences dropout resultMode =
   do
     cls' <- getRequiredClass "MLCLSTMDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:returnsSequences:dropout:resultMode:") (retPtr retVoid) [argCULong inputSize, argCULong hiddenSize, argCULong layerCount, argCULong (if usesBiases then 1 else 0), argCULong (if batchFirst then 1 else 0), argCULong (if isBidirectional then 1 else 0), argCULong (if returnsSequences then 1 else 0), argCFloat dropout, argCULong (coerce resultMode)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropout_resultModeSelector inputSize hiddenSize layerCount usesBiases batchFirst isBidirectional returnsSequences dropout resultMode
 
 -- | inputSize
 --
@@ -168,8 +165,8 @@ descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectio
 --
 -- ObjC selector: @- inputSize@
 inputSize :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO CULong
-inputSize mlclstmDescriptor  =
-    sendMsg mlclstmDescriptor (mkSelector "inputSize") retCULong []
+inputSize mlclstmDescriptor =
+  sendMessage mlclstmDescriptor inputSizeSelector
 
 -- | hiddenSize
 --
@@ -177,8 +174,8 @@ inputSize mlclstmDescriptor  =
 --
 -- ObjC selector: @- hiddenSize@
 hiddenSize :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO CULong
-hiddenSize mlclstmDescriptor  =
-    sendMsg mlclstmDescriptor (mkSelector "hiddenSize") retCULong []
+hiddenSize mlclstmDescriptor =
+  sendMessage mlclstmDescriptor hiddenSizeSelector
 
 -- | layerCount
 --
@@ -186,8 +183,8 @@ hiddenSize mlclstmDescriptor  =
 --
 -- ObjC selector: @- layerCount@
 layerCount :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO CULong
-layerCount mlclstmDescriptor  =
-    sendMsg mlclstmDescriptor (mkSelector "layerCount") retCULong []
+layerCount mlclstmDescriptor =
+  sendMessage mlclstmDescriptor layerCountSelector
 
 -- | usesBiases
 --
@@ -195,8 +192,8 @@ layerCount mlclstmDescriptor  =
 --
 -- ObjC selector: @- usesBiases@
 usesBiases :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO Bool
-usesBiases mlclstmDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlclstmDescriptor (mkSelector "usesBiases") retCULong []
+usesBiases mlclstmDescriptor =
+  sendMessage mlclstmDescriptor usesBiasesSelector
 
 -- | batchFirst
 --
@@ -204,8 +201,8 @@ usesBiases mlclstmDescriptor  =
 --
 -- ObjC selector: @- batchFirst@
 batchFirst :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO Bool
-batchFirst mlclstmDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlclstmDescriptor (mkSelector "batchFirst") retCULong []
+batchFirst mlclstmDescriptor =
+  sendMessage mlclstmDescriptor batchFirstSelector
 
 -- | isBidirectional
 --
@@ -213,8 +210,8 @@ batchFirst mlclstmDescriptor  =
 --
 -- ObjC selector: @- isBidirectional@
 isBidirectional :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO Bool
-isBidirectional mlclstmDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlclstmDescriptor (mkSelector "isBidirectional") retCULong []
+isBidirectional mlclstmDescriptor =
+  sendMessage mlclstmDescriptor isBidirectionalSelector
 
 -- | returnsSequences
 --
@@ -222,8 +219,8 @@ isBidirectional mlclstmDescriptor  =
 --
 -- ObjC selector: @- returnsSequences@
 returnsSequences :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO Bool
-returnsSequences mlclstmDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlclstmDescriptor (mkSelector "returnsSequences") retCULong []
+returnsSequences mlclstmDescriptor =
+  sendMessage mlclstmDescriptor returnsSequencesSelector
 
 -- | dropout
 --
@@ -231,8 +228,8 @@ returnsSequences mlclstmDescriptor  =
 --
 -- ObjC selector: @- dropout@
 dropout :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO CFloat
-dropout mlclstmDescriptor  =
-    sendMsg mlclstmDescriptor (mkSelector "dropout") retCFloat []
+dropout mlclstmDescriptor =
+  sendMessage mlclstmDescriptor dropoutSelector
 
 -- | resultMode
 --
@@ -240,74 +237,74 @@ dropout mlclstmDescriptor  =
 --
 -- ObjC selector: @- resultMode@
 resultMode :: IsMLCLSTMDescriptor mlclstmDescriptor => mlclstmDescriptor -> IO MLCLSTMResultMode
-resultMode mlclstmDescriptor  =
-    fmap (coerce :: CULong -> MLCLSTMResultMode) $ sendMsg mlclstmDescriptor (mkSelector "resultMode") retCULong []
+resultMode mlclstmDescriptor =
+  sendMessage mlclstmDescriptor resultModeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCLSTMDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCLSTMDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @descriptorWithInputSize:hiddenSize:layerCount:@
-descriptorWithInputSize_hiddenSize_layerCountSelector :: Selector
+descriptorWithInputSize_hiddenSize_layerCountSelector :: Selector '[CULong, CULong, CULong] (Id MLCLSTMDescriptor)
 descriptorWithInputSize_hiddenSize_layerCountSelector = mkSelector "descriptorWithInputSize:hiddenSize:layerCount:"
 
 -- | @Selector@ for @descriptorWithInputSize:hiddenSize:layerCount:usesBiases:isBidirectional:dropout:@
-descriptorWithInputSize_hiddenSize_layerCount_usesBiases_isBidirectional_dropoutSelector :: Selector
+descriptorWithInputSize_hiddenSize_layerCount_usesBiases_isBidirectional_dropoutSelector :: Selector '[CULong, CULong, CULong, Bool, Bool, CFloat] (Id MLCLSTMDescriptor)
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_isBidirectional_dropoutSelector = mkSelector "descriptorWithInputSize:hiddenSize:layerCount:usesBiases:isBidirectional:dropout:"
 
 -- | @Selector@ for @descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:dropout:@
-descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_dropoutSelector :: Selector
+descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_dropoutSelector :: Selector '[CULong, CULong, CULong, Bool, Bool, Bool, CFloat] (Id MLCLSTMDescriptor)
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_dropoutSelector = mkSelector "descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:dropout:"
 
 -- | @Selector@ for @descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:returnsSequences:dropout:@
-descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropoutSelector :: Selector
+descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropoutSelector :: Selector '[CULong, CULong, CULong, Bool, Bool, Bool, Bool, CFloat] (Id MLCLSTMDescriptor)
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropoutSelector = mkSelector "descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:returnsSequences:dropout:"
 
 -- | @Selector@ for @descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:returnsSequences:dropout:resultMode:@
-descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropout_resultModeSelector :: Selector
+descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropout_resultModeSelector :: Selector '[CULong, CULong, CULong, Bool, Bool, Bool, Bool, CFloat, MLCLSTMResultMode] (Id MLCLSTMDescriptor)
 descriptorWithInputSize_hiddenSize_layerCount_usesBiases_batchFirst_isBidirectional_returnsSequences_dropout_resultModeSelector = mkSelector "descriptorWithInputSize:hiddenSize:layerCount:usesBiases:batchFirst:isBidirectional:returnsSequences:dropout:resultMode:"
 
 -- | @Selector@ for @inputSize@
-inputSizeSelector :: Selector
+inputSizeSelector :: Selector '[] CULong
 inputSizeSelector = mkSelector "inputSize"
 
 -- | @Selector@ for @hiddenSize@
-hiddenSizeSelector :: Selector
+hiddenSizeSelector :: Selector '[] CULong
 hiddenSizeSelector = mkSelector "hiddenSize"
 
 -- | @Selector@ for @layerCount@
-layerCountSelector :: Selector
+layerCountSelector :: Selector '[] CULong
 layerCountSelector = mkSelector "layerCount"
 
 -- | @Selector@ for @usesBiases@
-usesBiasesSelector :: Selector
+usesBiasesSelector :: Selector '[] Bool
 usesBiasesSelector = mkSelector "usesBiases"
 
 -- | @Selector@ for @batchFirst@
-batchFirstSelector :: Selector
+batchFirstSelector :: Selector '[] Bool
 batchFirstSelector = mkSelector "batchFirst"
 
 -- | @Selector@ for @isBidirectional@
-isBidirectionalSelector :: Selector
+isBidirectionalSelector :: Selector '[] Bool
 isBidirectionalSelector = mkSelector "isBidirectional"
 
 -- | @Selector@ for @returnsSequences@
-returnsSequencesSelector :: Selector
+returnsSequencesSelector :: Selector '[] Bool
 returnsSequencesSelector = mkSelector "returnsSequences"
 
 -- | @Selector@ for @dropout@
-dropoutSelector :: Selector
+dropoutSelector :: Selector '[] CFloat
 dropoutSelector = mkSelector "dropout"
 
 -- | @Selector@ for @resultMode@
-resultModeSelector :: Selector
+resultModeSelector :: Selector '[] MLCLSTMResultMode
 resultModeSelector = mkSelector "resultMode"
 

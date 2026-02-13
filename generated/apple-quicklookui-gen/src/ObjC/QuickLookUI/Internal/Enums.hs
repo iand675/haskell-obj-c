@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.QuickLookUI.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Styles for a Preview View.
 -- | @QLPreviewViewStyle@
@@ -22,3 +25,13 @@ pattern QLPreviewViewStyleNormal = QLPreviewViewStyle 0
 
 pattern QLPreviewViewStyleCompact :: QLPreviewViewStyle
 pattern QLPreviewViewStyleCompact = QLPreviewViewStyle 1
+
+instance ObjCArgument QLPreviewViewStyle where
+  withObjCArg (QLPreviewViewStyle x) k = k (argCULong x)
+
+instance ObjCReturn QLPreviewViewStyle where
+  type RawReturn QLPreviewViewStyle = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (QLPreviewViewStyle x)
+  fromOwned x = pure (QLPreviewViewStyle x)

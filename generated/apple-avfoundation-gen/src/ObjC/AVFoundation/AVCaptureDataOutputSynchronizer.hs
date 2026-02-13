@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,26 +24,22 @@ module ObjC.AVFoundation.AVCaptureDataOutputSynchronizer
   , dataOutputs
   , delegate
   , delegateCallbackQueue
-  , initSelector
-  , newSelector
-  , initWithDataOutputsSelector
-  , setDelegate_queueSelector
   , dataOutputsSelector
-  , delegateSelector
   , delegateCallbackQueueSelector
+  , delegateSelector
+  , initSelector
+  , initWithDataOutputsSelector
+  , newSelector
+  , setDelegate_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,15 +48,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureDataOutputSynchronizer avCaptureDataOutputSynchronizer => avCaptureDataOutputSynchronizer -> IO (Id AVCaptureDataOutputSynchronizer)
-init_ avCaptureDataOutputSynchronizer  =
-    sendMsg avCaptureDataOutputSynchronizer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureDataOutputSynchronizer =
+  sendOwnedMessage avCaptureDataOutputSynchronizer initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureDataOutputSynchronizer)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureDataOutputSynchronizer"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithDataOutputs:
 --
@@ -71,9 +68,8 @@ new  =
 --
 -- ObjC selector: @- initWithDataOutputs:@
 initWithDataOutputs :: (IsAVCaptureDataOutputSynchronizer avCaptureDataOutputSynchronizer, IsNSArray dataOutputs) => avCaptureDataOutputSynchronizer -> dataOutputs -> IO (Id AVCaptureDataOutputSynchronizer)
-initWithDataOutputs avCaptureDataOutputSynchronizer  dataOutputs =
-  withObjCPtr dataOutputs $ \raw_dataOutputs ->
-      sendMsg avCaptureDataOutputSynchronizer (mkSelector "initWithDataOutputs:") (retPtr retVoid) [argPtr (castPtr raw_dataOutputs :: Ptr ())] >>= ownedObject . castPtr
+initWithDataOutputs avCaptureDataOutputSynchronizer dataOutputs =
+  sendOwnedMessage avCaptureDataOutputSynchronizer initWithDataOutputsSelector (toNSArray dataOutputs)
 
 -- | setDelegate:queue:
 --
@@ -89,9 +85,8 @@ initWithDataOutputs avCaptureDataOutputSynchronizer  dataOutputs =
 --
 -- ObjC selector: @- setDelegate:queue:@
 setDelegate_queue :: (IsAVCaptureDataOutputSynchronizer avCaptureDataOutputSynchronizer, IsNSObject delegateCallbackQueue) => avCaptureDataOutputSynchronizer -> RawId -> delegateCallbackQueue -> IO ()
-setDelegate_queue avCaptureDataOutputSynchronizer  delegate delegateCallbackQueue =
-  withObjCPtr delegateCallbackQueue $ \raw_delegateCallbackQueue ->
-      sendMsg avCaptureDataOutputSynchronizer (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateCallbackQueue :: Ptr ())]
+setDelegate_queue avCaptureDataOutputSynchronizer delegate delegateCallbackQueue =
+  sendMessage avCaptureDataOutputSynchronizer setDelegate_queueSelector delegate (toNSObject delegateCallbackQueue)
 
 -- | dataOutputs
 --
@@ -99,8 +94,8 @@ setDelegate_queue avCaptureDataOutputSynchronizer  delegate delegateCallbackQueu
 --
 -- ObjC selector: @- dataOutputs@
 dataOutputs :: IsAVCaptureDataOutputSynchronizer avCaptureDataOutputSynchronizer => avCaptureDataOutputSynchronizer -> IO (Id NSArray)
-dataOutputs avCaptureDataOutputSynchronizer  =
-    sendMsg avCaptureDataOutputSynchronizer (mkSelector "dataOutputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataOutputs avCaptureDataOutputSynchronizer =
+  sendMessage avCaptureDataOutputSynchronizer dataOutputsSelector
 
 -- | delegate
 --
@@ -110,8 +105,8 @@ dataOutputs avCaptureDataOutputSynchronizer  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVCaptureDataOutputSynchronizer avCaptureDataOutputSynchronizer => avCaptureDataOutputSynchronizer -> IO RawId
-delegate avCaptureDataOutputSynchronizer  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureDataOutputSynchronizer (mkSelector "delegate") (retPtr retVoid) []
+delegate avCaptureDataOutputSynchronizer =
+  sendMessage avCaptureDataOutputSynchronizer delegateSelector
 
 -- | delegateCallbackQueue
 --
@@ -121,38 +116,38 @@ delegate avCaptureDataOutputSynchronizer  =
 --
 -- ObjC selector: @- delegateCallbackQueue@
 delegateCallbackQueue :: IsAVCaptureDataOutputSynchronizer avCaptureDataOutputSynchronizer => avCaptureDataOutputSynchronizer -> IO (Id NSObject)
-delegateCallbackQueue avCaptureDataOutputSynchronizer  =
-    sendMsg avCaptureDataOutputSynchronizer (mkSelector "delegateCallbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateCallbackQueue avCaptureDataOutputSynchronizer =
+  sendMessage avCaptureDataOutputSynchronizer delegateCallbackQueueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureDataOutputSynchronizer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureDataOutputSynchronizer)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDataOutputs:@
-initWithDataOutputsSelector :: Selector
+initWithDataOutputsSelector :: Selector '[Id NSArray] (Id AVCaptureDataOutputSynchronizer)
 initWithDataOutputsSelector = mkSelector "initWithDataOutputs:"
 
 -- | @Selector@ for @setDelegate:queue:@
-setDelegate_queueSelector :: Selector
+setDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 
 -- | @Selector@ for @dataOutputs@
-dataOutputsSelector :: Selector
+dataOutputsSelector :: Selector '[] (Id NSArray)
 dataOutputsSelector = mkSelector "dataOutputs"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateCallbackQueue@
-delegateCallbackQueueSelector :: Selector
+delegateCallbackQueueSelector :: Selector '[] (Id NSObject)
 delegateCallbackQueueSelector = mkSelector "delegateCallbackQueue"
 

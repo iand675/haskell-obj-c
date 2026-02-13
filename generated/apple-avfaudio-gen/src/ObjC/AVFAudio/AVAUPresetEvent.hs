@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.AVFAudio.AVAUPresetEvent
   , element
   , setElement
   , presetDictionary
-  , initWithScope_element_dictionarySelector
-  , scopeSelector
-  , setScopeSelector
   , elementSelector
-  , setElementSelector
+  , initWithScope_element_dictionarySelector
   , presetDictionarySelector
+  , scopeSelector
+  , setElementSelector
+  , setScopeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,9 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithScope:element:dictionary:@
 initWithScope_element_dictionary :: (IsAVAUPresetEvent avauPresetEvent, IsNSDictionary presetDictionary) => avauPresetEvent -> CUInt -> CUInt -> presetDictionary -> IO (Id AVAUPresetEvent)
-initWithScope_element_dictionary avauPresetEvent  scope element presetDictionary =
-  withObjCPtr presetDictionary $ \raw_presetDictionary ->
-      sendMsg avauPresetEvent (mkSelector "initWithScope:element:dictionary:") (retPtr retVoid) [argCUInt scope, argCUInt element, argPtr (castPtr raw_presetDictionary :: Ptr ())] >>= ownedObject . castPtr
+initWithScope_element_dictionary avauPresetEvent scope element presetDictionary =
+  sendOwnedMessage avauPresetEvent initWithScope_element_dictionarySelector scope element (toNSDictionary presetDictionary)
 
 -- | scope
 --
@@ -67,8 +63,8 @@ initWithScope_element_dictionary avauPresetEvent  scope element presetDictionary
 --
 -- ObjC selector: @- scope@
 scope :: IsAVAUPresetEvent avauPresetEvent => avauPresetEvent -> IO CUInt
-scope avauPresetEvent  =
-    sendMsg avauPresetEvent (mkSelector "scope") retCUInt []
+scope avauPresetEvent =
+  sendMessage avauPresetEvent scopeSelector
 
 -- | scope
 --
@@ -76,8 +72,8 @@ scope avauPresetEvent  =
 --
 -- ObjC selector: @- setScope:@
 setScope :: IsAVAUPresetEvent avauPresetEvent => avauPresetEvent -> CUInt -> IO ()
-setScope avauPresetEvent  value =
-    sendMsg avauPresetEvent (mkSelector "setScope:") retVoid [argCUInt value]
+setScope avauPresetEvent value =
+  sendMessage avauPresetEvent setScopeSelector value
 
 -- | element
 --
@@ -85,8 +81,8 @@ setScope avauPresetEvent  value =
 --
 -- ObjC selector: @- element@
 element :: IsAVAUPresetEvent avauPresetEvent => avauPresetEvent -> IO CUInt
-element avauPresetEvent  =
-    sendMsg avauPresetEvent (mkSelector "element") retCUInt []
+element avauPresetEvent =
+  sendMessage avauPresetEvent elementSelector
 
 -- | element
 --
@@ -94,8 +90,8 @@ element avauPresetEvent  =
 --
 -- ObjC selector: @- setElement:@
 setElement :: IsAVAUPresetEvent avauPresetEvent => avauPresetEvent -> CUInt -> IO ()
-setElement avauPresetEvent  value =
-    sendMsg avauPresetEvent (mkSelector "setElement:") retVoid [argCUInt value]
+setElement avauPresetEvent value =
+  sendMessage avauPresetEvent setElementSelector value
 
 -- | presetDictionary
 --
@@ -103,34 +99,34 @@ setElement avauPresetEvent  value =
 --
 -- ObjC selector: @- presetDictionary@
 presetDictionary :: IsAVAUPresetEvent avauPresetEvent => avauPresetEvent -> IO (Id NSDictionary)
-presetDictionary avauPresetEvent  =
-    sendMsg avauPresetEvent (mkSelector "presetDictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+presetDictionary avauPresetEvent =
+  sendMessage avauPresetEvent presetDictionarySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithScope:element:dictionary:@
-initWithScope_element_dictionarySelector :: Selector
+initWithScope_element_dictionarySelector :: Selector '[CUInt, CUInt, Id NSDictionary] (Id AVAUPresetEvent)
 initWithScope_element_dictionarySelector = mkSelector "initWithScope:element:dictionary:"
 
 -- | @Selector@ for @scope@
-scopeSelector :: Selector
+scopeSelector :: Selector '[] CUInt
 scopeSelector = mkSelector "scope"
 
 -- | @Selector@ for @setScope:@
-setScopeSelector :: Selector
+setScopeSelector :: Selector '[CUInt] ()
 setScopeSelector = mkSelector "setScope:"
 
 -- | @Selector@ for @element@
-elementSelector :: Selector
+elementSelector :: Selector '[] CUInt
 elementSelector = mkSelector "element"
 
 -- | @Selector@ for @setElement:@
-setElementSelector :: Selector
+setElementSelector :: Selector '[CUInt] ()
 setElementSelector = mkSelector "setElement:"
 
 -- | @Selector@ for @presetDictionary@
-presetDictionarySelector :: Selector
+presetDictionarySelector :: Selector '[] (Id NSDictionary)
 presetDictionarySelector = mkSelector "presetDictionary"
 

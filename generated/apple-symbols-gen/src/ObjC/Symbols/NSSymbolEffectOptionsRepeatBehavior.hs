@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Symbols.NSSymbolEffectOptionsRepeatBehavior
   , behaviorPeriodicWithDelay
   , behaviorPeriodicWithCount_delay
   , behaviorContinuous
-  , newSelector
-  , initSelector
+  , behaviorContinuousSelector
   , behaviorPeriodicSelector
   , behaviorPeriodicWithCountSelector
-  , behaviorPeriodicWithDelaySelector
   , behaviorPeriodicWithCount_delaySelector
-  , behaviorContinuousSelector
+  , behaviorPeriodicWithDelaySelector
+  , initSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,12 +43,12 @@ new :: IO (Id NSSymbolEffectOptionsRepeatBehavior)
 new  =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptionsRepeatBehavior"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSSymbolEffectOptionsRepeatBehavior nsSymbolEffectOptionsRepeatBehavior => nsSymbolEffectOptionsRepeatBehavior -> IO (Id NSSymbolEffectOptionsRepeatBehavior)
-init_ nsSymbolEffectOptionsRepeatBehavior  =
-    sendMsg nsSymbolEffectOptionsRepeatBehavior (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsSymbolEffectOptionsRepeatBehavior =
+  sendOwnedMessage nsSymbolEffectOptionsRepeatBehavior initSelector
 
 -- | Creates and returns a repeat behavior that prefers to repeat indefinitely using periodic animations. Periodic animations play the effect at regular intervals starting and stopping each time.
 --
@@ -62,7 +59,7 @@ behaviorPeriodic :: IO (Id NSSymbolEffectOptionsRepeatBehavior)
 behaviorPeriodic  =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptionsRepeatBehavior"
-    sendClassMsg cls' (mkSelector "behaviorPeriodic") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorPeriodicSelector
 
 -- | Creates and returns a repeat behavior with a preferred play count using periodic animations. Periodic animations play the effect at regular intervals starting and stopping each time.
 --
@@ -75,7 +72,7 @@ behaviorPeriodicWithCount :: CLong -> IO (Id NSSymbolEffectOptionsRepeatBehavior
 behaviorPeriodicWithCount count =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptionsRepeatBehavior"
-    sendClassMsg cls' (mkSelector "behaviorPeriodicWithCount:") (retPtr retVoid) [argCLong count] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorPeriodicWithCountSelector count
 
 -- | Creates and returns a repeat behavior with a preferred repeat delay using periodic animations. Periodic animations play the effect at regular intervals starting and stopping each time.
 --
@@ -88,7 +85,7 @@ behaviorPeriodicWithDelay :: CDouble -> IO (Id NSSymbolEffectOptionsRepeatBehavi
 behaviorPeriodicWithDelay delay =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptionsRepeatBehavior"
-    sendClassMsg cls' (mkSelector "behaviorPeriodicWithDelay:") (retPtr retVoid) [argCDouble delay] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorPeriodicWithDelaySelector delay
 
 -- | Creates and returns a repeat behavior with a preferred play count and delay using periodic animations. Periodic animations play the effect at regular intervals starting and stopping each time.
 --
@@ -103,7 +100,7 @@ behaviorPeriodicWithCount_delay :: CLong -> CDouble -> IO (Id NSSymbolEffectOpti
 behaviorPeriodicWithCount_delay count delay =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptionsRepeatBehavior"
-    sendClassMsg cls' (mkSelector "behaviorPeriodicWithCount:delay:") (retPtr retVoid) [argCLong count, argCDouble delay] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorPeriodicWithCount_delaySelector count delay
 
 -- | Creates and returns a repeat behavior that prefers to repeat indefinitely, using continuous animations if available. Continuous animations have an intro, a body that runs as long as the effect is enabled, and an outro. If available these animations provide a smoother animation when an effect repeats indefinitely.
 --
@@ -114,37 +111,37 @@ behaviorContinuous :: IO (Id NSSymbolEffectOptionsRepeatBehavior)
 behaviorContinuous  =
   do
     cls' <- getRequiredClass "NSSymbolEffectOptionsRepeatBehavior"
-    sendClassMsg cls' (mkSelector "behaviorContinuous") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' behaviorContinuousSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSSymbolEffectOptionsRepeatBehavior)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSSymbolEffectOptionsRepeatBehavior)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @behaviorPeriodic@
-behaviorPeriodicSelector :: Selector
+behaviorPeriodicSelector :: Selector '[] (Id NSSymbolEffectOptionsRepeatBehavior)
 behaviorPeriodicSelector = mkSelector "behaviorPeriodic"
 
 -- | @Selector@ for @behaviorPeriodicWithCount:@
-behaviorPeriodicWithCountSelector :: Selector
+behaviorPeriodicWithCountSelector :: Selector '[CLong] (Id NSSymbolEffectOptionsRepeatBehavior)
 behaviorPeriodicWithCountSelector = mkSelector "behaviorPeriodicWithCount:"
 
 -- | @Selector@ for @behaviorPeriodicWithDelay:@
-behaviorPeriodicWithDelaySelector :: Selector
+behaviorPeriodicWithDelaySelector :: Selector '[CDouble] (Id NSSymbolEffectOptionsRepeatBehavior)
 behaviorPeriodicWithDelaySelector = mkSelector "behaviorPeriodicWithDelay:"
 
 -- | @Selector@ for @behaviorPeriodicWithCount:delay:@
-behaviorPeriodicWithCount_delaySelector :: Selector
+behaviorPeriodicWithCount_delaySelector :: Selector '[CLong, CDouble] (Id NSSymbolEffectOptionsRepeatBehavior)
 behaviorPeriodicWithCount_delaySelector = mkSelector "behaviorPeriodicWithCount:delay:"
 
 -- | @Selector@ for @behaviorContinuous@
-behaviorContinuousSelector :: Selector
+behaviorContinuousSelector :: Selector '[] (Id NSSymbolEffectOptionsRepeatBehavior)
 behaviorContinuousSelector = mkSelector "behaviorContinuous"
 

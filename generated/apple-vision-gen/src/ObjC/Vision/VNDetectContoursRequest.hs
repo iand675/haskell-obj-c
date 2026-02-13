@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.Vision.VNDetectContoursRequest
   , setMaximumImageDimension
   , results
   , contrastAdjustmentSelector
-  , setContrastAdjustmentSelector
   , contrastPivotSelector
-  , setContrastPivotSelector
-  , detectsDarkOnLightSelector
-  , setDetectsDarkOnLightSelector
   , detectDarkOnLightSelector
-  , setDetectDarkOnLightSelector
+  , detectsDarkOnLightSelector
   , maximumImageDimensionSelector
-  , setMaximumImageDimensionSelector
   , resultsSelector
+  , setContrastAdjustmentSelector
+  , setContrastPivotSelector
+  , setDetectDarkOnLightSelector
+  , setDetectsDarkOnLightSelector
+  , setMaximumImageDimensionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,8 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- contrastAdjustment@
 contrastAdjustment :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> IO CFloat
-contrastAdjustment vnDetectContoursRequest  =
-    sendMsg vnDetectContoursRequest (mkSelector "contrastAdjustment") retCFloat []
+contrastAdjustment vnDetectContoursRequest =
+  sendMessage vnDetectContoursRequest contrastAdjustmentSelector
 
 -- | The amount to adjust the image's contrast by.        A value of +1.0 means that the contrast is not adjusted. The default value is +2.0.
 --
@@ -66,47 +63,46 @@ contrastAdjustment vnDetectContoursRequest  =
 --
 -- ObjC selector: @- setContrastAdjustment:@
 setContrastAdjustment :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> CFloat -> IO ()
-setContrastAdjustment vnDetectContoursRequest  value =
-    sendMsg vnDetectContoursRequest (mkSelector "setContrastAdjustment:") retVoid [argCFloat value]
+setContrastAdjustment vnDetectContoursRequest value =
+  sendMessage vnDetectContoursRequest setContrastAdjustmentSelector value
 
 -- | The pixel value to use as a pivot for the contrast. Valid values are from [0.0 ... +1.0], or nil to auto-detect based on image intensity.        The default value is +0.5 (i.e. pixel center).
 --
 -- ObjC selector: @- contrastPivot@
 contrastPivot :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> IO (Id NSNumber)
-contrastPivot vnDetectContoursRequest  =
-    sendMsg vnDetectContoursRequest (mkSelector "contrastPivot") (retPtr retVoid) [] >>= retainedObject . castPtr
+contrastPivot vnDetectContoursRequest =
+  sendMessage vnDetectContoursRequest contrastPivotSelector
 
 -- | The pixel value to use as a pivot for the contrast. Valid values are from [0.0 ... +1.0], or nil to auto-detect based on image intensity.        The default value is +0.5 (i.e. pixel center).
 --
 -- ObjC selector: @- setContrastPivot:@
 setContrastPivot :: (IsVNDetectContoursRequest vnDetectContoursRequest, IsNSNumber value) => vnDetectContoursRequest -> value -> IO ()
-setContrastPivot vnDetectContoursRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vnDetectContoursRequest (mkSelector "setContrastPivot:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContrastPivot vnDetectContoursRequest value =
+  sendMessage vnDetectContoursRequest setContrastPivotSelector (toNSNumber value)
 
 -- | Identifies to the request if detecting a dark object on a light background, or vice versa, to aid in detection. The default value is YES.
 --
 -- ObjC selector: @- detectsDarkOnLight@
 detectsDarkOnLight :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> IO Bool
-detectsDarkOnLight vnDetectContoursRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnDetectContoursRequest (mkSelector "detectsDarkOnLight") retCULong []
+detectsDarkOnLight vnDetectContoursRequest =
+  sendMessage vnDetectContoursRequest detectsDarkOnLightSelector
 
 -- | Identifies to the request if detecting a dark object on a light background, or vice versa, to aid in detection. The default value is YES.
 --
 -- ObjC selector: @- setDetectsDarkOnLight:@
 setDetectsDarkOnLight :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> Bool -> IO ()
-setDetectsDarkOnLight vnDetectContoursRequest  value =
-    sendMsg vnDetectContoursRequest (mkSelector "setDetectsDarkOnLight:") retVoid [argCULong (if value then 1 else 0)]
+setDetectsDarkOnLight vnDetectContoursRequest value =
+  sendMessage vnDetectContoursRequest setDetectsDarkOnLightSelector value
 
 -- | @- detectDarkOnLight@
 detectDarkOnLight :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> IO Bool
-detectDarkOnLight vnDetectContoursRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnDetectContoursRequest (mkSelector "detectDarkOnLight") retCULong []
+detectDarkOnLight vnDetectContoursRequest =
+  sendMessage vnDetectContoursRequest detectDarkOnLightSelector
 
 -- | @- setDetectDarkOnLight:@
 setDetectDarkOnLight :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> Bool -> IO ()
-setDetectDarkOnLight vnDetectContoursRequest  value =
-    sendMsg vnDetectContoursRequest (mkSelector "setDetectDarkOnLight:") retVoid [argCULong (if value then 1 else 0)]
+setDetectDarkOnLight vnDetectContoursRequest value =
+  sendMessage vnDetectContoursRequest setDetectDarkOnLightSelector value
 
 -- | The limit on the maximum dimension of the image to be used for contour detection. Valid range of values is [64 ... NSUIntegerMax]. The default value is 512.
 --
@@ -114,8 +110,8 @@ setDetectDarkOnLight vnDetectContoursRequest  value =
 --
 -- ObjC selector: @- maximumImageDimension@
 maximumImageDimension :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> IO CULong
-maximumImageDimension vnDetectContoursRequest  =
-    sendMsg vnDetectContoursRequest (mkSelector "maximumImageDimension") retCULong []
+maximumImageDimension vnDetectContoursRequest =
+  sendMessage vnDetectContoursRequest maximumImageDimensionSelector
 
 -- | The limit on the maximum dimension of the image to be used for contour detection. Valid range of values is [64 ... NSUIntegerMax]. The default value is 512.
 --
@@ -123,61 +119,61 @@ maximumImageDimension vnDetectContoursRequest  =
 --
 -- ObjC selector: @- setMaximumImageDimension:@
 setMaximumImageDimension :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> CULong -> IO ()
-setMaximumImageDimension vnDetectContoursRequest  value =
-    sendMsg vnDetectContoursRequest (mkSelector "setMaximumImageDimension:") retVoid [argCULong value]
+setMaximumImageDimension vnDetectContoursRequest value =
+  sendMessage vnDetectContoursRequest setMaximumImageDimensionSelector value
 
 -- | VNContoursObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNDetectContoursRequest vnDetectContoursRequest => vnDetectContoursRequest -> IO (Id NSArray)
-results vnDetectContoursRequest  =
-    sendMsg vnDetectContoursRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnDetectContoursRequest =
+  sendMessage vnDetectContoursRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contrastAdjustment@
-contrastAdjustmentSelector :: Selector
+contrastAdjustmentSelector :: Selector '[] CFloat
 contrastAdjustmentSelector = mkSelector "contrastAdjustment"
 
 -- | @Selector@ for @setContrastAdjustment:@
-setContrastAdjustmentSelector :: Selector
+setContrastAdjustmentSelector :: Selector '[CFloat] ()
 setContrastAdjustmentSelector = mkSelector "setContrastAdjustment:"
 
 -- | @Selector@ for @contrastPivot@
-contrastPivotSelector :: Selector
+contrastPivotSelector :: Selector '[] (Id NSNumber)
 contrastPivotSelector = mkSelector "contrastPivot"
 
 -- | @Selector@ for @setContrastPivot:@
-setContrastPivotSelector :: Selector
+setContrastPivotSelector :: Selector '[Id NSNumber] ()
 setContrastPivotSelector = mkSelector "setContrastPivot:"
 
 -- | @Selector@ for @detectsDarkOnLight@
-detectsDarkOnLightSelector :: Selector
+detectsDarkOnLightSelector :: Selector '[] Bool
 detectsDarkOnLightSelector = mkSelector "detectsDarkOnLight"
 
 -- | @Selector@ for @setDetectsDarkOnLight:@
-setDetectsDarkOnLightSelector :: Selector
+setDetectsDarkOnLightSelector :: Selector '[Bool] ()
 setDetectsDarkOnLightSelector = mkSelector "setDetectsDarkOnLight:"
 
 -- | @Selector@ for @detectDarkOnLight@
-detectDarkOnLightSelector :: Selector
+detectDarkOnLightSelector :: Selector '[] Bool
 detectDarkOnLightSelector = mkSelector "detectDarkOnLight"
 
 -- | @Selector@ for @setDetectDarkOnLight:@
-setDetectDarkOnLightSelector :: Selector
+setDetectDarkOnLightSelector :: Selector '[Bool] ()
 setDetectDarkOnLightSelector = mkSelector "setDetectDarkOnLight:"
 
 -- | @Selector@ for @maximumImageDimension@
-maximumImageDimensionSelector :: Selector
+maximumImageDimensionSelector :: Selector '[] CULong
 maximumImageDimensionSelector = mkSelector "maximumImageDimension"
 
 -- | @Selector@ for @setMaximumImageDimension:@
-setMaximumImageDimensionSelector :: Selector
+setMaximumImageDimensionSelector :: Selector '[CULong] ()
 setMaximumImageDimensionSelector = mkSelector "setMaximumImageDimension:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

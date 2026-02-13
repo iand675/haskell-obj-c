@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MLCompute.MLCGatherLayer
   , IsMLCGatherLayer(..)
   , layerWithDimension
   , dimension
-  , layerWithDimensionSelector
   , dimensionSelector
+  , layerWithDimensionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,7 +41,7 @@ layerWithDimension :: CULong -> IO (Id MLCGatherLayer)
 layerWithDimension dimension =
   do
     cls' <- getRequiredClass "MLCGatherLayer"
-    sendClassMsg cls' (mkSelector "layerWithDimension:") (retPtr retVoid) [argCULong dimension] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDimensionSelector dimension
 
 -- | dimension
 --
@@ -52,18 +49,18 @@ layerWithDimension dimension =
 --
 -- ObjC selector: @- dimension@
 dimension :: IsMLCGatherLayer mlcGatherLayer => mlcGatherLayer -> IO CULong
-dimension mlcGatherLayer  =
-    sendMsg mlcGatherLayer (mkSelector "dimension") retCULong []
+dimension mlcGatherLayer =
+  sendMessage mlcGatherLayer dimensionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDimension:@
-layerWithDimensionSelector :: Selector
+layerWithDimensionSelector :: Selector '[CULong] (Id MLCGatherLayer)
 layerWithDimensionSelector = mkSelector "layerWithDimension:"
 
 -- | @Selector@ for @dimension@
-dimensionSelector :: Selector
+dimensionSelector :: Selector '[] CULong
 dimensionSelector = mkSelector "dimension"
 

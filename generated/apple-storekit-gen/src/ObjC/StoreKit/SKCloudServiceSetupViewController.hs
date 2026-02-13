@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.StoreKit.SKCloudServiceSetupViewController
   , loadWithOptions_completionHandler
   , delegate
   , setDelegate
-  , loadWithOptions_completionHandlerSelector
   , delegateSelector
+  , loadWithOptions_completionHandlerSelector
   , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,37 +33,36 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- loadWithOptions:completionHandler:@
 loadWithOptions_completionHandler :: (IsSKCloudServiceSetupViewController skCloudServiceSetupViewController, IsNSDictionary options) => skCloudServiceSetupViewController -> options -> Ptr () -> IO ()
-loadWithOptions_completionHandler skCloudServiceSetupViewController  options completionHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg skCloudServiceSetupViewController (mkSelector "loadWithOptions:completionHandler:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+loadWithOptions_completionHandler skCloudServiceSetupViewController options completionHandler =
+  sendMessage skCloudServiceSetupViewController loadWithOptions_completionHandlerSelector (toNSDictionary options) completionHandler
 
 -- | Optional delegate.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSKCloudServiceSetupViewController skCloudServiceSetupViewController => skCloudServiceSetupViewController -> IO RawId
-delegate skCloudServiceSetupViewController  =
-    fmap (RawId . castPtr) $ sendMsg skCloudServiceSetupViewController (mkSelector "delegate") (retPtr retVoid) []
+delegate skCloudServiceSetupViewController =
+  sendMessage skCloudServiceSetupViewController delegateSelector
 
 -- | Optional delegate.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSKCloudServiceSetupViewController skCloudServiceSetupViewController => skCloudServiceSetupViewController -> RawId -> IO ()
-setDelegate skCloudServiceSetupViewController  value =
-    sendMsg skCloudServiceSetupViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate skCloudServiceSetupViewController value =
+  sendMessage skCloudServiceSetupViewController setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadWithOptions:completionHandler:@
-loadWithOptions_completionHandlerSelector :: Selector
+loadWithOptions_completionHandlerSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 loadWithOptions_completionHandlerSelector = mkSelector "loadWithOptions:completionHandler:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

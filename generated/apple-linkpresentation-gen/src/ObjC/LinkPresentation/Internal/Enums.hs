@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.LinkPresentation.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @LPErrorCode@
 newtype LPErrorCode = LPErrorCode CLong
@@ -30,3 +33,13 @@ pattern LPErrorMetadataFetchTimedOut = LPErrorCode 4
 
 pattern LPErrorMetadataFetchNotAllowed :: LPErrorCode
 pattern LPErrorMetadataFetchNotAllowed = LPErrorCode 5
+
+instance ObjCArgument LPErrorCode where
+  withObjCArg (LPErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn LPErrorCode where
+  type RawReturn LPErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LPErrorCode x)
+  fromOwned x = pure (LPErrorCode x)

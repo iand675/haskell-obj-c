@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Matter.MTRDeviceType
   , name
   , isUtility
   , deviceTypeForIDSelector
-  , initSelector
-  , newSelector
   , idSelector
-  , nameSelector
+  , initSelector
   , isUtilitySelector
+  , nameSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,67 +43,66 @@ deviceTypeForID :: IsNSNumber deviceTypeID => deviceTypeID -> IO (Id MTRDeviceTy
 deviceTypeForID deviceTypeID =
   do
     cls' <- getRequiredClass "MTRDeviceType"
-    withObjCPtr deviceTypeID $ \raw_deviceTypeID ->
-      sendClassMsg cls' (mkSelector "deviceTypeForID:") (retPtr retVoid) [argPtr (castPtr raw_deviceTypeID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' deviceTypeForIDSelector (toNSNumber deviceTypeID)
 
 -- | @- init@
 init_ :: IsMTRDeviceType mtrDeviceType => mtrDeviceType -> IO (Id MTRDeviceType)
-init_ mtrDeviceType  =
-    sendMsg mtrDeviceType (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrDeviceType =
+  sendOwnedMessage mtrDeviceType initSelector
 
 -- | @+ new@
 new :: IO (Id MTRDeviceType)
 new  =
   do
     cls' <- getRequiredClass "MTRDeviceType"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The identifier of the device type (32-bit unsigned integer).
 --
 -- ObjC selector: @- id@
 id_ :: IsMTRDeviceType mtrDeviceType => mtrDeviceType -> IO (Id NSNumber)
-id_ mtrDeviceType  =
-    sendMsg mtrDeviceType (mkSelector "id") (retPtr retVoid) [] >>= retainedObject . castPtr
+id_ mtrDeviceType =
+  sendMessage mtrDeviceType idSelector
 
 -- | Returns the name of the device type.
 --
 -- ObjC selector: @- name@
 name :: IsMTRDeviceType mtrDeviceType => mtrDeviceType -> IO (Id NSString)
-name mtrDeviceType  =
-    sendMsg mtrDeviceType (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrDeviceType =
+  sendMessage mtrDeviceType nameSelector
 
 -- | Returns whether this is a utility device type.
 --
 -- ObjC selector: @- isUtility@
 isUtility :: IsMTRDeviceType mtrDeviceType => mtrDeviceType -> IO Bool
-isUtility mtrDeviceType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrDeviceType (mkSelector "isUtility") retCULong []
+isUtility mtrDeviceType =
+  sendMessage mtrDeviceType isUtilitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @deviceTypeForID:@
-deviceTypeForIDSelector :: Selector
+deviceTypeForIDSelector :: Selector '[Id NSNumber] (Id MTRDeviceType)
 deviceTypeForIDSelector = mkSelector "deviceTypeForID:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRDeviceType)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRDeviceType)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @id@
-idSelector :: Selector
+idSelector :: Selector '[] (Id NSNumber)
 idSelector = mkSelector "id"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @isUtility@
-isUtilitySelector :: Selector
+isUtilitySelector :: Selector '[] Bool
 isUtilitySelector = mkSelector "isUtility"
 

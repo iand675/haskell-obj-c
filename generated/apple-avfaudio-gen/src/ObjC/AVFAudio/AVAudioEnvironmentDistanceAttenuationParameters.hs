@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,14 +23,14 @@ module ObjC.AVFAudio.AVAudioEnvironmentDistanceAttenuationParameters
   , setMaximumDistance
   , rolloffFactor
   , setRolloffFactor
-  , initSelector
   , distanceAttenuationModelSelector
-  , setDistanceAttenuationModelSelector
-  , referenceDistanceSelector
-  , setReferenceDistanceSelector
+  , initSelector
   , maximumDistanceSelector
-  , setMaximumDistanceSelector
+  , referenceDistanceSelector
   , rolloffFactorSelector
+  , setDistanceAttenuationModelSelector
+  , setMaximumDistanceSelector
+  , setReferenceDistanceSelector
   , setRolloffFactorSelector
 
   -- * Enum types
@@ -40,15 +41,11 @@ module ObjC.AVFAudio.AVAudioEnvironmentDistanceAttenuationParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioEnvironmentDistanceAttenuationParameters avAudioEnvironmentDistanceAttenuationParameters => avAudioEnvironmentDistanceAttenuationParameters -> IO (Id AVAudioEnvironmentDistanceAttenuationParameters)
-init_ avAudioEnvironmentDistanceAttenuationParameters  =
-    sendMsg avAudioEnvironmentDistanceAttenuationParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioEnvironmentDistanceAttenuationParameters =
+  sendOwnedMessage avAudioEnvironmentDistanceAttenuationParameters initSelector
 
 -- | distanceAttenuationModel
 --
@@ -69,8 +66,8 @@ init_ avAudioEnvironmentDistanceAttenuationParameters  =
 --
 -- ObjC selector: @- distanceAttenuationModel@
 distanceAttenuationModel :: IsAVAudioEnvironmentDistanceAttenuationParameters avAudioEnvironmentDistanceAttenuationParameters => avAudioEnvironmentDistanceAttenuationParameters -> IO AVAudioEnvironmentDistanceAttenuationModel
-distanceAttenuationModel avAudioEnvironmentDistanceAttenuationParameters  =
-    fmap (coerce :: CLong -> AVAudioEnvironmentDistanceAttenuationModel) $ sendMsg avAudioEnvironmentDistanceAttenuationParameters (mkSelector "distanceAttenuationModel") retCLong []
+distanceAttenuationModel avAudioEnvironmentDistanceAttenuationParameters =
+  sendMessage avAudioEnvironmentDistanceAttenuationParameters distanceAttenuationModelSelector
 
 -- | distanceAttenuationModel
 --
@@ -80,8 +77,8 @@ distanceAttenuationModel avAudioEnvironmentDistanceAttenuationParameters  =
 --
 -- ObjC selector: @- setDistanceAttenuationModel:@
 setDistanceAttenuationModel :: IsAVAudioEnvironmentDistanceAttenuationParameters avAudioEnvironmentDistanceAttenuationParameters => avAudioEnvironmentDistanceAttenuationParameters -> AVAudioEnvironmentDistanceAttenuationModel -> IO ()
-setDistanceAttenuationModel avAudioEnvironmentDistanceAttenuationParameters  value =
-    sendMsg avAudioEnvironmentDistanceAttenuationParameters (mkSelector "setDistanceAttenuationModel:") retVoid [argCLong (coerce value)]
+setDistanceAttenuationModel avAudioEnvironmentDistanceAttenuationParameters value =
+  sendMessage avAudioEnvironmentDistanceAttenuationParameters setDistanceAttenuationModelSelector value
 
 -- | referenceDistance
 --
@@ -91,8 +88,8 @@ setDistanceAttenuationModel avAudioEnvironmentDistanceAttenuationParameters  val
 --
 -- ObjC selector: @- referenceDistance@
 referenceDistance :: IsAVAudioEnvironmentDistanceAttenuationParameters avAudioEnvironmentDistanceAttenuationParameters => avAudioEnvironmentDistanceAttenuationParameters -> IO CFloat
-referenceDistance avAudioEnvironmentDistanceAttenuationParameters  =
-    sendMsg avAudioEnvironmentDistanceAttenuationParameters (mkSelector "referenceDistance") retCFloat []
+referenceDistance avAudioEnvironmentDistanceAttenuationParameters =
+  sendMessage avAudioEnvironmentDistanceAttenuationParameters referenceDistanceSelector
 
 -- | referenceDistance
 --
@@ -102,8 +99,8 @@ referenceDistance avAudioEnvironmentDistanceAttenuationParameters  =
 --
 -- ObjC selector: @- setReferenceDistance:@
 setReferenceDistance :: IsAVAudioEnvironmentDistanceAttenuationParameters avAudioEnvironmentDistanceAttenuationParameters => avAudioEnvironmentDistanceAttenuationParameters -> CFloat -> IO ()
-setReferenceDistance avAudioEnvironmentDistanceAttenuationParameters  value =
-    sendMsg avAudioEnvironmentDistanceAttenuationParameters (mkSelector "setReferenceDistance:") retVoid [argCFloat value]
+setReferenceDistance avAudioEnvironmentDistanceAttenuationParameters value =
+  sendMessage avAudioEnvironmentDistanceAttenuationParameters setReferenceDistanceSelector value
 
 -- | maximumDistance
 --
@@ -113,8 +110,8 @@ setReferenceDistance avAudioEnvironmentDistanceAttenuationParameters  value =
 --
 -- ObjC selector: @- maximumDistance@
 maximumDistance :: IsAVAudioEnvironmentDistanceAttenuationParameters avAudioEnvironmentDistanceAttenuationParameters => avAudioEnvironmentDistanceAttenuationParameters -> IO CFloat
-maximumDistance avAudioEnvironmentDistanceAttenuationParameters  =
-    sendMsg avAudioEnvironmentDistanceAttenuationParameters (mkSelector "maximumDistance") retCFloat []
+maximumDistance avAudioEnvironmentDistanceAttenuationParameters =
+  sendMessage avAudioEnvironmentDistanceAttenuationParameters maximumDistanceSelector
 
 -- | maximumDistance
 --
@@ -124,8 +121,8 @@ maximumDistance avAudioEnvironmentDistanceAttenuationParameters  =
 --
 -- ObjC selector: @- setMaximumDistance:@
 setMaximumDistance :: IsAVAudioEnvironmentDistanceAttenuationParameters avAudioEnvironmentDistanceAttenuationParameters => avAudioEnvironmentDistanceAttenuationParameters -> CFloat -> IO ()
-setMaximumDistance avAudioEnvironmentDistanceAttenuationParameters  value =
-    sendMsg avAudioEnvironmentDistanceAttenuationParameters (mkSelector "setMaximumDistance:") retVoid [argCFloat value]
+setMaximumDistance avAudioEnvironmentDistanceAttenuationParameters value =
+  sendMessage avAudioEnvironmentDistanceAttenuationParameters setMaximumDistanceSelector value
 
 -- | rolloffFactor
 --
@@ -135,8 +132,8 @@ setMaximumDistance avAudioEnvironmentDistanceAttenuationParameters  value =
 --
 -- ObjC selector: @- rolloffFactor@
 rolloffFactor :: IsAVAudioEnvironmentDistanceAttenuationParameters avAudioEnvironmentDistanceAttenuationParameters => avAudioEnvironmentDistanceAttenuationParameters -> IO CFloat
-rolloffFactor avAudioEnvironmentDistanceAttenuationParameters  =
-    sendMsg avAudioEnvironmentDistanceAttenuationParameters (mkSelector "rolloffFactor") retCFloat []
+rolloffFactor avAudioEnvironmentDistanceAttenuationParameters =
+  sendMessage avAudioEnvironmentDistanceAttenuationParameters rolloffFactorSelector
 
 -- | rolloffFactor
 --
@@ -146,46 +143,46 @@ rolloffFactor avAudioEnvironmentDistanceAttenuationParameters  =
 --
 -- ObjC selector: @- setRolloffFactor:@
 setRolloffFactor :: IsAVAudioEnvironmentDistanceAttenuationParameters avAudioEnvironmentDistanceAttenuationParameters => avAudioEnvironmentDistanceAttenuationParameters -> CFloat -> IO ()
-setRolloffFactor avAudioEnvironmentDistanceAttenuationParameters  value =
-    sendMsg avAudioEnvironmentDistanceAttenuationParameters (mkSelector "setRolloffFactor:") retVoid [argCFloat value]
+setRolloffFactor avAudioEnvironmentDistanceAttenuationParameters value =
+  sendMessage avAudioEnvironmentDistanceAttenuationParameters setRolloffFactorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioEnvironmentDistanceAttenuationParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @distanceAttenuationModel@
-distanceAttenuationModelSelector :: Selector
+distanceAttenuationModelSelector :: Selector '[] AVAudioEnvironmentDistanceAttenuationModel
 distanceAttenuationModelSelector = mkSelector "distanceAttenuationModel"
 
 -- | @Selector@ for @setDistanceAttenuationModel:@
-setDistanceAttenuationModelSelector :: Selector
+setDistanceAttenuationModelSelector :: Selector '[AVAudioEnvironmentDistanceAttenuationModel] ()
 setDistanceAttenuationModelSelector = mkSelector "setDistanceAttenuationModel:"
 
 -- | @Selector@ for @referenceDistance@
-referenceDistanceSelector :: Selector
+referenceDistanceSelector :: Selector '[] CFloat
 referenceDistanceSelector = mkSelector "referenceDistance"
 
 -- | @Selector@ for @setReferenceDistance:@
-setReferenceDistanceSelector :: Selector
+setReferenceDistanceSelector :: Selector '[CFloat] ()
 setReferenceDistanceSelector = mkSelector "setReferenceDistance:"
 
 -- | @Selector@ for @maximumDistance@
-maximumDistanceSelector :: Selector
+maximumDistanceSelector :: Selector '[] CFloat
 maximumDistanceSelector = mkSelector "maximumDistance"
 
 -- | @Selector@ for @setMaximumDistance:@
-setMaximumDistanceSelector :: Selector
+setMaximumDistanceSelector :: Selector '[CFloat] ()
 setMaximumDistanceSelector = mkSelector "setMaximumDistance:"
 
 -- | @Selector@ for @rolloffFactor@
-rolloffFactorSelector :: Selector
+rolloffFactorSelector :: Selector '[] CFloat
 rolloffFactorSelector = mkSelector "rolloffFactor"
 
 -- | @Selector@ for @setRolloffFactor:@
-setRolloffFactorSelector :: Selector
+setRolloffFactorSelector :: Selector '[CFloat] ()
 setRolloffFactorSelector = mkSelector "setRolloffFactor:"
 

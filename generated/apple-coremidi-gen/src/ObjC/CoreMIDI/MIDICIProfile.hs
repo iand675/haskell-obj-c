@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,15 +27,11 @@ module ObjC.CoreMIDI.MIDICIProfile
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,57 +40,54 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMIDICIProfile midiciProfile => midiciProfile -> IO (Id MIDICIProfile)
-init_ midiciProfile  =
-    sendMsg midiciProfile (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ midiciProfile =
+  sendOwnedMessage midiciProfile initSelector
 
 -- | @- initWithData:@
 initWithData :: (IsMIDICIProfile midiciProfile, IsNSData data_) => midiciProfile -> data_ -> IO (Id MIDICIProfile)
-initWithData midiciProfile  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg midiciProfile (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ())] >>= ownedObject . castPtr
+initWithData midiciProfile data_ =
+  sendOwnedMessage midiciProfile initWithDataSelector (toNSData data_)
 
 -- | @- initWithData:name:@
 initWithData_name :: (IsMIDICIProfile midiciProfile, IsNSData data_, IsNSString inName) => midiciProfile -> data_ -> inName -> IO (Id MIDICIProfile)
-initWithData_name midiciProfile  data_ inName =
-  withObjCPtr data_ $ \raw_data_ ->
-    withObjCPtr inName $ \raw_inName ->
-        sendMsg midiciProfile (mkSelector "initWithData:name:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_inName :: Ptr ())] >>= ownedObject . castPtr
+initWithData_name midiciProfile data_ inName =
+  sendOwnedMessage midiciProfile initWithData_nameSelector (toNSData data_) (toNSString inName)
 
 -- | An NSString describing the profile.
 --
 -- ObjC selector: @- name@
 name :: IsMIDICIProfile midiciProfile => midiciProfile -> IO (Id NSString)
-name midiciProfile  =
-    sendMsg midiciProfile (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name midiciProfile =
+  sendMessage midiciProfile nameSelector
 
 -- | The unique 5-byte profile identifier representing the profile.
 --
 -- ObjC selector: @- profileID@
 profileID :: IsMIDICIProfile midiciProfile => midiciProfile -> IO (Id NSData)
-profileID midiciProfile  =
-    sendMsg midiciProfile (mkSelector "profileID") (retPtr retVoid) [] >>= retainedObject . castPtr
+profileID midiciProfile =
+  sendMessage midiciProfile profileIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MIDICIProfile)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id MIDICIProfile)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @initWithData:name:@
-initWithData_nameSelector :: Selector
+initWithData_nameSelector :: Selector '[Id NSData, Id NSString] (Id MIDICIProfile)
 initWithData_nameSelector = mkSelector "initWithData:name:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @profileID@
-profileIDSelector :: Selector
+profileIDSelector :: Selector '[] (Id NSData)
 profileIDSelector = mkSelector "profileID"
 

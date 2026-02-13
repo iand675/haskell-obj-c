@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.GameSave.GSSyncedDirectoryVersion
   , modifiedDate
   , url
   , description
+  , descriptionSelector
   , initSelector
-  , newSelector
   , isLocalSelector
   , localizedNameOfSavingComputerSelector
   , modifiedDateSelector
+  , newSelector
   , urlSelector
-  , descriptionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,34 +38,34 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsGSSyncedDirectoryVersion gsSyncedDirectoryVersion => gsSyncedDirectoryVersion -> IO (Id GSSyncedDirectoryVersion)
-init_ gsSyncedDirectoryVersion  =
-    sendMsg gsSyncedDirectoryVersion (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gsSyncedDirectoryVersion =
+  sendOwnedMessage gsSyncedDirectoryVersion initSelector
 
 -- | @- new@
 new :: IsGSSyncedDirectoryVersion gsSyncedDirectoryVersion => gsSyncedDirectoryVersion -> IO (Id GSSyncedDirectoryVersion)
-new gsSyncedDirectoryVersion  =
-    sendMsg gsSyncedDirectoryVersion (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+new gsSyncedDirectoryVersion =
+  sendOwnedMessage gsSyncedDirectoryVersion newSelector
 
 -- | @YES@ if the directory version is local; otherwise @NO@.
 --
 -- ObjC selector: @- isLocal@
 isLocal :: IsGSSyncedDirectoryVersion gsSyncedDirectoryVersion => gsSyncedDirectoryVersion -> IO Bool
-isLocal gsSyncedDirectoryVersion  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gsSyncedDirectoryVersion (mkSelector "isLocal") retCULong []
+isLocal gsSyncedDirectoryVersion =
+  sendMessage gsSyncedDirectoryVersion isLocalSelector
 
 -- | The localized name of the device that saved this version.
 --
 -- ObjC selector: @- localizedNameOfSavingComputer@
 localizedNameOfSavingComputer :: IsGSSyncedDirectoryVersion gsSyncedDirectoryVersion => gsSyncedDirectoryVersion -> IO (Id NSString)
-localizedNameOfSavingComputer gsSyncedDirectoryVersion  =
-    sendMsg gsSyncedDirectoryVersion (mkSelector "localizedNameOfSavingComputer") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedNameOfSavingComputer gsSyncedDirectoryVersion =
+  sendMessage gsSyncedDirectoryVersion localizedNameOfSavingComputerSelector
 
 -- | The date that this version was last modified.
 --
 -- ObjC selector: @- modifiedDate@
 modifiedDate :: IsGSSyncedDirectoryVersion gsSyncedDirectoryVersion => gsSyncedDirectoryVersion -> IO (Id NSDate)
-modifiedDate gsSyncedDirectoryVersion  =
-    sendMsg gsSyncedDirectoryVersion (mkSelector "modifiedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+modifiedDate gsSyncedDirectoryVersion =
+  sendMessage gsSyncedDirectoryVersion modifiedDateSelector
 
 -- | The URL of a directory where you read and write game-save data.
 --
@@ -76,43 +73,43 @@ modifiedDate gsSyncedDirectoryVersion  =
 --
 -- ObjC selector: @- url@
 url :: IsGSSyncedDirectoryVersion gsSyncedDirectoryVersion => gsSyncedDirectoryVersion -> IO (Id NSURL)
-url gsSyncedDirectoryVersion  =
-    sendMsg gsSyncedDirectoryVersion (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url gsSyncedDirectoryVersion =
+  sendMessage gsSyncedDirectoryVersion urlSelector
 
 -- | @- description@
 description :: IsGSSyncedDirectoryVersion gsSyncedDirectoryVersion => gsSyncedDirectoryVersion -> IO (Id NSString)
-description gsSyncedDirectoryVersion  =
-    sendMsg gsSyncedDirectoryVersion (mkSelector "description") (retPtr retVoid) [] >>= retainedObject . castPtr
+description gsSyncedDirectoryVersion =
+  sendMessage gsSyncedDirectoryVersion descriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GSSyncedDirectoryVersion)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id GSSyncedDirectoryVersion)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @isLocal@
-isLocalSelector :: Selector
+isLocalSelector :: Selector '[] Bool
 isLocalSelector = mkSelector "isLocal"
 
 -- | @Selector@ for @localizedNameOfSavingComputer@
-localizedNameOfSavingComputerSelector :: Selector
+localizedNameOfSavingComputerSelector :: Selector '[] (Id NSString)
 localizedNameOfSavingComputerSelector = mkSelector "localizedNameOfSavingComputer"
 
 -- | @Selector@ for @modifiedDate@
-modifiedDateSelector :: Selector
+modifiedDateSelector :: Selector '[] (Id NSDate)
 modifiedDateSelector = mkSelector "modifiedDate"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @description@
-descriptionSelector :: Selector
+descriptionSelector :: Selector '[] (Id NSString)
 descriptionSelector = mkSelector "description"
 

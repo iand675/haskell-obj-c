@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INCurrencyAmountResolutionResult
   , successWithResolvedCurrencyAmount
   , disambiguationWithCurrencyAmountsToDisambiguate
   , confirmationRequiredWithCurrencyAmountToConfirm
-  , successWithResolvedCurrencyAmountSelector
-  , disambiguationWithCurrencyAmountsToDisambiguateSelector
   , confirmationRequiredWithCurrencyAmountToConfirmSelector
+  , disambiguationWithCurrencyAmountsToDisambiguateSelector
+  , successWithResolvedCurrencyAmountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedCurrencyAmount :: IsINCurrencyAmount resolvedCurrencyAmount =
 successWithResolvedCurrencyAmount resolvedCurrencyAmount =
   do
     cls' <- getRequiredClass "INCurrencyAmountResolutionResult"
-    withObjCPtr resolvedCurrencyAmount $ \raw_resolvedCurrencyAmount ->
-      sendClassMsg cls' (mkSelector "successWithResolvedCurrencyAmount:") (retPtr retVoid) [argPtr (castPtr raw_resolvedCurrencyAmount :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedCurrencyAmountSelector (toINCurrencyAmount resolvedCurrencyAmount)
 
 -- | @+ disambiguationWithCurrencyAmountsToDisambiguate:@
 disambiguationWithCurrencyAmountsToDisambiguate :: IsNSArray currencyAmountsToDisambiguate => currencyAmountsToDisambiguate -> IO (Id INCurrencyAmountResolutionResult)
 disambiguationWithCurrencyAmountsToDisambiguate currencyAmountsToDisambiguate =
   do
     cls' <- getRequiredClass "INCurrencyAmountResolutionResult"
-    withObjCPtr currencyAmountsToDisambiguate $ \raw_currencyAmountsToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithCurrencyAmountsToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_currencyAmountsToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithCurrencyAmountsToDisambiguateSelector (toNSArray currencyAmountsToDisambiguate)
 
 -- | @+ confirmationRequiredWithCurrencyAmountToConfirm:@
 confirmationRequiredWithCurrencyAmountToConfirm :: IsINCurrencyAmount currencyAmountToConfirm => currencyAmountToConfirm -> IO (Id INCurrencyAmountResolutionResult)
 confirmationRequiredWithCurrencyAmountToConfirm currencyAmountToConfirm =
   do
     cls' <- getRequiredClass "INCurrencyAmountResolutionResult"
-    withObjCPtr currencyAmountToConfirm $ \raw_currencyAmountToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithCurrencyAmountToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_currencyAmountToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithCurrencyAmountToConfirmSelector (toINCurrencyAmount currencyAmountToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedCurrencyAmount:@
-successWithResolvedCurrencyAmountSelector :: Selector
+successWithResolvedCurrencyAmountSelector :: Selector '[Id INCurrencyAmount] (Id INCurrencyAmountResolutionResult)
 successWithResolvedCurrencyAmountSelector = mkSelector "successWithResolvedCurrencyAmount:"
 
 -- | @Selector@ for @disambiguationWithCurrencyAmountsToDisambiguate:@
-disambiguationWithCurrencyAmountsToDisambiguateSelector :: Selector
+disambiguationWithCurrencyAmountsToDisambiguateSelector :: Selector '[Id NSArray] (Id INCurrencyAmountResolutionResult)
 disambiguationWithCurrencyAmountsToDisambiguateSelector = mkSelector "disambiguationWithCurrencyAmountsToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithCurrencyAmountToConfirm:@
-confirmationRequiredWithCurrencyAmountToConfirmSelector :: Selector
+confirmationRequiredWithCurrencyAmountToConfirmSelector :: Selector '[Id INCurrencyAmount] (Id INCurrencyAmountResolutionResult)
 confirmationRequiredWithCurrencyAmountToConfirmSelector = mkSelector "confirmationRequiredWithCurrencyAmountToConfirm:"
 

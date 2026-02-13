@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -50,34 +51,34 @@ module ObjC.Virtualization.VZVirtualMachine
   , networkDevices
   , socketDevices
   , usbControllers
-  , newSelector
+  , canPauseSelector
+  , canRequestStopSelector
+  , canResumeSelector
+  , canStartSelector
+  , canStopSelector
+  , consoleDevicesSelector
+  , delegateSelector
+  , directorySharingDevicesSelector
+  , graphicsDevicesSelector
   , initSelector
   , initWithConfigurationSelector
   , initWithConfiguration_queueSelector
-  , startWithCompletionHandlerSelector
-  , startWithOptions_completionHandlerSelector
-  , stopWithCompletionHandlerSelector
-  , pauseWithCompletionHandlerSelector
-  , resumeWithCompletionHandlerSelector
-  , restoreMachineStateFromURL_completionHandlerSelector
-  , saveMachineStateToURL_completionHandlerSelector
-  , requestStopWithErrorSelector
-  , queueSelector
-  , supportedSelector
-  , stateSelector
-  , delegateSelector
-  , setDelegateSelector
-  , canStartSelector
-  , canStopSelector
-  , canPauseSelector
-  , canResumeSelector
-  , canRequestStopSelector
-  , consoleDevicesSelector
-  , directorySharingDevicesSelector
-  , graphicsDevicesSelector
   , memoryBalloonDevicesSelector
   , networkDevicesSelector
+  , newSelector
+  , pauseWithCompletionHandlerSelector
+  , queueSelector
+  , requestStopWithErrorSelector
+  , restoreMachineStateFromURL_completionHandlerSelector
+  , resumeWithCompletionHandlerSelector
+  , saveMachineStateToURL_completionHandlerSelector
+  , setDelegateSelector
   , socketDevicesSelector
+  , startWithCompletionHandlerSelector
+  , startWithOptions_completionHandlerSelector
+  , stateSelector
+  , stopWithCompletionHandlerSelector
+  , supportedSelector
   , usbControllersSelector
 
   -- * Enum types
@@ -95,15 +96,11 @@ module ObjC.Virtualization.VZVirtualMachine
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -116,12 +113,12 @@ new :: IO (Id VZVirtualMachine)
 new  =
   do
     cls' <- getRequiredClass "VZVirtualMachine"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id VZVirtualMachine)
-init_ vzVirtualMachine  =
-    sendMsg vzVirtualMachine (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtualMachine =
+  sendOwnedMessage vzVirtualMachine initSelector
 
 -- | Initialize the virtual machine.
 --
@@ -131,9 +128,8 @@ init_ vzVirtualMachine  =
 --
 -- ObjC selector: @- initWithConfiguration:@
 initWithConfiguration :: (IsVZVirtualMachine vzVirtualMachine, IsVZVirtualMachineConfiguration configuration) => vzVirtualMachine -> configuration -> IO (Id VZVirtualMachine)
-initWithConfiguration vzVirtualMachine  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg vzVirtualMachine (mkSelector "initWithConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration vzVirtualMachine configuration =
+  sendOwnedMessage vzVirtualMachine initWithConfigurationSelector (toVZVirtualMachineConfiguration configuration)
 
 -- | Initialize the virtual machine.
 --
@@ -143,10 +139,8 @@ initWithConfiguration vzVirtualMachine  configuration =
 --
 -- ObjC selector: @- initWithConfiguration:queue:@
 initWithConfiguration_queue :: (IsVZVirtualMachine vzVirtualMachine, IsVZVirtualMachineConfiguration configuration, IsNSObject queue) => vzVirtualMachine -> configuration -> queue -> IO (Id VZVirtualMachine)
-initWithConfiguration_queue vzVirtualMachine  configuration queue =
-  withObjCPtr configuration $ \raw_configuration ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg vzVirtualMachine (mkSelector "initWithConfiguration:queue:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration_queue vzVirtualMachine configuration queue =
+  sendOwnedMessage vzVirtualMachine initWithConfiguration_queueSelector (toVZVirtualMachineConfiguration configuration) (toNSObject queue)
 
 -- | Start a virtual machine.
 --
@@ -156,8 +150,8 @@ initWithConfiguration_queue vzVirtualMachine  configuration queue =
 --
 -- ObjC selector: @- startWithCompletionHandler:@
 startWithCompletionHandler :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> Ptr () -> IO ()
-startWithCompletionHandler vzVirtualMachine  completionHandler =
-    sendMsg vzVirtualMachine (mkSelector "startWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+startWithCompletionHandler vzVirtualMachine completionHandler =
+  sendMessage vzVirtualMachine startWithCompletionHandlerSelector completionHandler
 
 -- | Start a virtual machine with options.
 --
@@ -171,9 +165,8 @@ startWithCompletionHandler vzVirtualMachine  completionHandler =
 --
 -- ObjC selector: @- startWithOptions:completionHandler:@
 startWithOptions_completionHandler :: (IsVZVirtualMachine vzVirtualMachine, IsVZVirtualMachineStartOptions options) => vzVirtualMachine -> options -> Ptr () -> IO ()
-startWithOptions_completionHandler vzVirtualMachine  options completionHandler =
-  withObjCPtr options $ \raw_options ->
-      sendMsg vzVirtualMachine (mkSelector "startWithOptions:completionHandler:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+startWithOptions_completionHandler vzVirtualMachine options completionHandler =
+  sendMessage vzVirtualMachine startWithOptions_completionHandlerSelector (toVZVirtualMachineStartOptions options) completionHandler
 
 -- | Stop a virtual machine.
 --
@@ -187,8 +180,8 @@ startWithOptions_completionHandler vzVirtualMachine  options completionHandler =
 --
 -- ObjC selector: @- stopWithCompletionHandler:@
 stopWithCompletionHandler :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> Ptr () -> IO ()
-stopWithCompletionHandler vzVirtualMachine  completionHandler =
-    sendMsg vzVirtualMachine (mkSelector "stopWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+stopWithCompletionHandler vzVirtualMachine completionHandler =
+  sendMessage vzVirtualMachine stopWithCompletionHandlerSelector completionHandler
 
 -- | Pause a virtual machine.
 --
@@ -198,8 +191,8 @@ stopWithCompletionHandler vzVirtualMachine  completionHandler =
 --
 -- ObjC selector: @- pauseWithCompletionHandler:@
 pauseWithCompletionHandler :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> Ptr () -> IO ()
-pauseWithCompletionHandler vzVirtualMachine  completionHandler =
-    sendMsg vzVirtualMachine (mkSelector "pauseWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+pauseWithCompletionHandler vzVirtualMachine completionHandler =
+  sendMessage vzVirtualMachine pauseWithCompletionHandlerSelector completionHandler
 
 -- | Resume a virtual machine.
 --
@@ -209,8 +202,8 @@ pauseWithCompletionHandler vzVirtualMachine  completionHandler =
 --
 -- ObjC selector: @- resumeWithCompletionHandler:@
 resumeWithCompletionHandler :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> Ptr () -> IO ()
-resumeWithCompletionHandler vzVirtualMachine  completionHandler =
-    sendMsg vzVirtualMachine (mkSelector "resumeWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+resumeWithCompletionHandler vzVirtualMachine completionHandler =
+  sendMessage vzVirtualMachine resumeWithCompletionHandlerSelector completionHandler
 
 -- | Restore a virtual machine.
 --
@@ -232,9 +225,8 @@ resumeWithCompletionHandler vzVirtualMachine  completionHandler =
 --
 -- ObjC selector: @- restoreMachineStateFromURL:completionHandler:@
 restoreMachineStateFromURL_completionHandler :: (IsVZVirtualMachine vzVirtualMachine, IsNSURL saveFileURL) => vzVirtualMachine -> saveFileURL -> Ptr () -> IO ()
-restoreMachineStateFromURL_completionHandler vzVirtualMachine  saveFileURL completionHandler =
-  withObjCPtr saveFileURL $ \raw_saveFileURL ->
-      sendMsg vzVirtualMachine (mkSelector "restoreMachineStateFromURL:completionHandler:") retVoid [argPtr (castPtr raw_saveFileURL :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+restoreMachineStateFromURL_completionHandler vzVirtualMachine saveFileURL completionHandler =
+  sendMessage vzVirtualMachine restoreMachineStateFromURL_completionHandlerSelector (toNSURL saveFileURL) completionHandler
 
 -- | Save a virtual machine.
 --
@@ -252,9 +244,8 @@ restoreMachineStateFromURL_completionHandler vzVirtualMachine  saveFileURL compl
 --
 -- ObjC selector: @- saveMachineStateToURL:completionHandler:@
 saveMachineStateToURL_completionHandler :: (IsVZVirtualMachine vzVirtualMachine, IsNSURL saveFileURL) => vzVirtualMachine -> saveFileURL -> Ptr () -> IO ()
-saveMachineStateToURL_completionHandler vzVirtualMachine  saveFileURL completionHandler =
-  withObjCPtr saveFileURL $ \raw_saveFileURL ->
-      sendMsg vzVirtualMachine (mkSelector "saveMachineStateToURL:completionHandler:") retVoid [argPtr (castPtr raw_saveFileURL :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+saveMachineStateToURL_completionHandler vzVirtualMachine saveFileURL completionHandler =
+  sendMessage vzVirtualMachine saveMachineStateToURL_completionHandlerSelector (toNSURL saveFileURL) completionHandler
 
 -- | Request that the guest turns itself off.
 --
@@ -268,9 +259,8 @@ saveMachineStateToURL_completionHandler vzVirtualMachine  saveFileURL completion
 --
 -- ObjC selector: @- requestStopWithError:@
 requestStopWithError :: (IsVZVirtualMachine vzVirtualMachine, IsNSError error_) => vzVirtualMachine -> error_ -> IO Bool
-requestStopWithError vzVirtualMachine  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzVirtualMachine (mkSelector "requestStopWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+requestStopWithError vzVirtualMachine error_ =
+  sendMessage vzVirtualMachine requestStopWithErrorSelector (toNSError error_)
 
 -- | The queue associated with this virtual machine.
 --
@@ -282,8 +272,8 @@ requestStopWithError vzVirtualMachine  error_ =
 --
 -- ObjC selector: @- queue@
 queue :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSObject)
-queue vzVirtualMachine  =
-    sendMsg vzVirtualMachine (mkSelector "queue") (retPtr retVoid) [] >>= retainedObject . castPtr
+queue vzVirtualMachine =
+  sendMessage vzVirtualMachine queueSelector
 
 -- | Indicate whether or not virtualization is available.
 --
@@ -294,28 +284,28 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "VZVirtualMachine"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- | Execution state of the virtual machine.
 --
 -- ObjC selector: @- state@
 state :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO VZVirtualMachineState
-state vzVirtualMachine  =
-    fmap (coerce :: CLong -> VZVirtualMachineState) $ sendMsg vzVirtualMachine (mkSelector "state") retCLong []
+state vzVirtualMachine =
+  sendMessage vzVirtualMachine stateSelector
 
 -- | The virtual machine delegate.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO RawId
-delegate vzVirtualMachine  =
-    fmap (RawId . castPtr) $ sendMsg vzVirtualMachine (mkSelector "delegate") (retPtr retVoid) []
+delegate vzVirtualMachine =
+  sendMessage vzVirtualMachine delegateSelector
 
 -- | The virtual machine delegate.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> RawId -> IO ()
-setDelegate vzVirtualMachine  value =
-    sendMsg vzVirtualMachine (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate vzVirtualMachine value =
+  sendMessage vzVirtualMachine setDelegateSelector value
 
 -- | Return YES if the machine is in a state that can be started.
 --
@@ -325,8 +315,8 @@ setDelegate vzVirtualMachine  value =
 --
 -- ObjC selector: @- canStart@
 canStart :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO Bool
-canStart vzVirtualMachine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzVirtualMachine (mkSelector "canStart") retCULong []
+canStart vzVirtualMachine =
+  sendMessage vzVirtualMachine canStartSelector
 
 -- | Return YES if the machine is in a state that can be stopped.
 --
@@ -336,8 +326,8 @@ canStart vzVirtualMachine  =
 --
 -- ObjC selector: @- canStop@
 canStop :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO Bool
-canStop vzVirtualMachine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzVirtualMachine (mkSelector "canStop") retCULong []
+canStop vzVirtualMachine =
+  sendMessage vzVirtualMachine canStopSelector
 
 -- | Return YES if the machine is in a state that can be paused.
 --
@@ -347,8 +337,8 @@ canStop vzVirtualMachine  =
 --
 -- ObjC selector: @- canPause@
 canPause :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO Bool
-canPause vzVirtualMachine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzVirtualMachine (mkSelector "canPause") retCULong []
+canPause vzVirtualMachine =
+  sendMessage vzVirtualMachine canPauseSelector
 
 -- | Return YES if the machine is in a state that can be resumed.
 --
@@ -358,8 +348,8 @@ canPause vzVirtualMachine  =
 --
 -- ObjC selector: @- canResume@
 canResume :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO Bool
-canResume vzVirtualMachine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzVirtualMachine (mkSelector "canResume") retCULong []
+canResume vzVirtualMachine =
+  sendMessage vzVirtualMachine canResumeSelector
 
 -- | Returns whether the machine is in a state where the guest can be asked to stop.
 --
@@ -369,8 +359,8 @@ canResume vzVirtualMachine  =
 --
 -- ObjC selector: @- canRequestStop@
 canRequestStop :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO Bool
-canRequestStop vzVirtualMachine  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzVirtualMachine (mkSelector "canRequestStop") retCULong []
+canRequestStop vzVirtualMachine =
+  sendMessage vzVirtualMachine canRequestStopSelector
 
 -- | Return the list of console devices configured on this virtual machine. Return an empty array if no console device is configured.
 --
@@ -380,8 +370,8 @@ canRequestStop vzVirtualMachine  =
 --
 -- ObjC selector: @- consoleDevices@
 consoleDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
-consoleDevices vzVirtualMachine  =
-    sendMsg vzVirtualMachine (mkSelector "consoleDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+consoleDevices vzVirtualMachine =
+  sendMessage vzVirtualMachine consoleDevicesSelector
 
 -- | Return the list of directory sharing devices configured on this virtual machine. Return an empty array if no directory sharing device is configured.
 --
@@ -391,8 +381,8 @@ consoleDevices vzVirtualMachine  =
 --
 -- ObjC selector: @- directorySharingDevices@
 directorySharingDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
-directorySharingDevices vzVirtualMachine  =
-    sendMsg vzVirtualMachine (mkSelector "directorySharingDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+directorySharingDevices vzVirtualMachine =
+  sendMessage vzVirtualMachine directorySharingDevicesSelector
 
 -- | Return the list of graphics devices configured on this virtual machine. Return an empty array if no graphics device is configured.
 --
@@ -402,8 +392,8 @@ directorySharingDevices vzVirtualMachine  =
 --
 -- ObjC selector: @- graphicsDevices@
 graphicsDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
-graphicsDevices vzVirtualMachine  =
-    sendMsg vzVirtualMachine (mkSelector "graphicsDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+graphicsDevices vzVirtualMachine =
+  sendMessage vzVirtualMachine graphicsDevicesSelector
 
 -- | Return the list of memory balloon devices configured on this virtual machine. Return an empty array if no memory balloon device is configured.
 --
@@ -413,8 +403,8 @@ graphicsDevices vzVirtualMachine  =
 --
 -- ObjC selector: @- memoryBalloonDevices@
 memoryBalloonDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
-memoryBalloonDevices vzVirtualMachine  =
-    sendMsg vzVirtualMachine (mkSelector "memoryBalloonDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+memoryBalloonDevices vzVirtualMachine =
+  sendMessage vzVirtualMachine memoryBalloonDevicesSelector
 
 -- | Return the list of network devices configured on this virtual machine. Return an empty array if no network device is configured.
 --
@@ -424,8 +414,8 @@ memoryBalloonDevices vzVirtualMachine  =
 --
 -- ObjC selector: @- networkDevices@
 networkDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
-networkDevices vzVirtualMachine  =
-    sendMsg vzVirtualMachine (mkSelector "networkDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkDevices vzVirtualMachine =
+  sendMessage vzVirtualMachine networkDevicesSelector
 
 -- | Return the list of socket devices configured on this virtual machine. Return an empty array if no socket device is configured.
 --
@@ -435,8 +425,8 @@ networkDevices vzVirtualMachine  =
 --
 -- ObjC selector: @- socketDevices@
 socketDevices :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
-socketDevices vzVirtualMachine  =
-    sendMsg vzVirtualMachine (mkSelector "socketDevices") (retPtr retVoid) [] >>= retainedObject . castPtr
+socketDevices vzVirtualMachine =
+  sendMessage vzVirtualMachine socketDevicesSelector
 
 -- | Return the list of USB controllers configured on this virtual machine. Return an empty array if no USB controller is configured.
 --
@@ -446,126 +436,126 @@ socketDevices vzVirtualMachine  =
 --
 -- ObjC selector: @- usbControllers@
 usbControllers :: IsVZVirtualMachine vzVirtualMachine => vzVirtualMachine -> IO (Id NSArray)
-usbControllers vzVirtualMachine  =
-    sendMsg vzVirtualMachine (mkSelector "usbControllers") (retPtr retVoid) [] >>= retainedObject . castPtr
+usbControllers vzVirtualMachine =
+  sendMessage vzVirtualMachine usbControllersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZVirtualMachine)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtualMachine)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithConfiguration:@
-initWithConfigurationSelector :: Selector
+initWithConfigurationSelector :: Selector '[Id VZVirtualMachineConfiguration] (Id VZVirtualMachine)
 initWithConfigurationSelector = mkSelector "initWithConfiguration:"
 
 -- | @Selector@ for @initWithConfiguration:queue:@
-initWithConfiguration_queueSelector :: Selector
+initWithConfiguration_queueSelector :: Selector '[Id VZVirtualMachineConfiguration, Id NSObject] (Id VZVirtualMachine)
 initWithConfiguration_queueSelector = mkSelector "initWithConfiguration:queue:"
 
 -- | @Selector@ for @startWithCompletionHandler:@
-startWithCompletionHandlerSelector :: Selector
+startWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 startWithCompletionHandlerSelector = mkSelector "startWithCompletionHandler:"
 
 -- | @Selector@ for @startWithOptions:completionHandler:@
-startWithOptions_completionHandlerSelector :: Selector
+startWithOptions_completionHandlerSelector :: Selector '[Id VZVirtualMachineStartOptions, Ptr ()] ()
 startWithOptions_completionHandlerSelector = mkSelector "startWithOptions:completionHandler:"
 
 -- | @Selector@ for @stopWithCompletionHandler:@
-stopWithCompletionHandlerSelector :: Selector
+stopWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 stopWithCompletionHandlerSelector = mkSelector "stopWithCompletionHandler:"
 
 -- | @Selector@ for @pauseWithCompletionHandler:@
-pauseWithCompletionHandlerSelector :: Selector
+pauseWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 pauseWithCompletionHandlerSelector = mkSelector "pauseWithCompletionHandler:"
 
 -- | @Selector@ for @resumeWithCompletionHandler:@
-resumeWithCompletionHandlerSelector :: Selector
+resumeWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 resumeWithCompletionHandlerSelector = mkSelector "resumeWithCompletionHandler:"
 
 -- | @Selector@ for @restoreMachineStateFromURL:completionHandler:@
-restoreMachineStateFromURL_completionHandlerSelector :: Selector
+restoreMachineStateFromURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 restoreMachineStateFromURL_completionHandlerSelector = mkSelector "restoreMachineStateFromURL:completionHandler:"
 
 -- | @Selector@ for @saveMachineStateToURL:completionHandler:@
-saveMachineStateToURL_completionHandlerSelector :: Selector
+saveMachineStateToURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 saveMachineStateToURL_completionHandlerSelector = mkSelector "saveMachineStateToURL:completionHandler:"
 
 -- | @Selector@ for @requestStopWithError:@
-requestStopWithErrorSelector :: Selector
+requestStopWithErrorSelector :: Selector '[Id NSError] Bool
 requestStopWithErrorSelector = mkSelector "requestStopWithError:"
 
 -- | @Selector@ for @queue@
-queueSelector :: Selector
+queueSelector :: Selector '[] (Id NSObject)
 queueSelector = mkSelector "queue"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] VZVirtualMachineState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @canStart@
-canStartSelector :: Selector
+canStartSelector :: Selector '[] Bool
 canStartSelector = mkSelector "canStart"
 
 -- | @Selector@ for @canStop@
-canStopSelector :: Selector
+canStopSelector :: Selector '[] Bool
 canStopSelector = mkSelector "canStop"
 
 -- | @Selector@ for @canPause@
-canPauseSelector :: Selector
+canPauseSelector :: Selector '[] Bool
 canPauseSelector = mkSelector "canPause"
 
 -- | @Selector@ for @canResume@
-canResumeSelector :: Selector
+canResumeSelector :: Selector '[] Bool
 canResumeSelector = mkSelector "canResume"
 
 -- | @Selector@ for @canRequestStop@
-canRequestStopSelector :: Selector
+canRequestStopSelector :: Selector '[] Bool
 canRequestStopSelector = mkSelector "canRequestStop"
 
 -- | @Selector@ for @consoleDevices@
-consoleDevicesSelector :: Selector
+consoleDevicesSelector :: Selector '[] (Id NSArray)
 consoleDevicesSelector = mkSelector "consoleDevices"
 
 -- | @Selector@ for @directorySharingDevices@
-directorySharingDevicesSelector :: Selector
+directorySharingDevicesSelector :: Selector '[] (Id NSArray)
 directorySharingDevicesSelector = mkSelector "directorySharingDevices"
 
 -- | @Selector@ for @graphicsDevices@
-graphicsDevicesSelector :: Selector
+graphicsDevicesSelector :: Selector '[] (Id NSArray)
 graphicsDevicesSelector = mkSelector "graphicsDevices"
 
 -- | @Selector@ for @memoryBalloonDevices@
-memoryBalloonDevicesSelector :: Selector
+memoryBalloonDevicesSelector :: Selector '[] (Id NSArray)
 memoryBalloonDevicesSelector = mkSelector "memoryBalloonDevices"
 
 -- | @Selector@ for @networkDevices@
-networkDevicesSelector :: Selector
+networkDevicesSelector :: Selector '[] (Id NSArray)
 networkDevicesSelector = mkSelector "networkDevices"
 
 -- | @Selector@ for @socketDevices@
-socketDevicesSelector :: Selector
+socketDevicesSelector :: Selector '[] (Id NSArray)
 socketDevicesSelector = mkSelector "socketDevices"
 
 -- | @Selector@ for @usbControllers@
-usbControllersSelector :: Selector
+usbControllersSelector :: Selector '[] (Id NSArray)
 usbControllersSelector = mkSelector "usbControllers"
 

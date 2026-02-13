@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,19 +28,20 @@ module ObjC.AudioVideoBridging.AVB17221AECPMessage
   , setSequenceID
   , sourceMAC
   , setSourceMAC
+  , avB17221AECPMessageErrorForStatusCodeSelector
+  , controllerEntityIDSelector
   , errorForStatusCodeSelector
   , messageTypeSelector
-  , setMessageTypeSelector
-  , statusSelector
-  , setStatusSelector
-  , targetEntityIDSelector
-  , setTargetEntityIDSelector
-  , controllerEntityIDSelector
-  , setControllerEntityIDSelector
   , sequenceIDSelector
+  , setControllerEntityIDSelector
+  , setMessageTypeSelector
   , setSequenceIDSelector
-  , sourceMACSelector
   , setSourceMACSelector
+  , setStatusSelector
+  , setTargetEntityIDSelector
+  , sourceMACSelector
+  , statusSelector
+  , targetEntityIDSelector
 
   -- * Enum types
   , AVB17221AECPMessageType(AVB17221AECPMessageType)
@@ -75,15 +77,11 @@ module ObjC.AudioVideoBridging.AVB17221AECPMessage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -102,7 +100,7 @@ avB17221AECPMessageErrorForStatusCode :: AVB17221AECPStatusCode -> IO (Id NSErro
 avB17221AECPMessageErrorForStatusCode statusCode =
   do
     cls' <- getRequiredClass "AVB17221AECPMessage"
-    sendClassMsg cls' (mkSelector "errorForStatusCode:") (retPtr retVoid) [argCUChar (coerce statusCode)] >>= retainedObject . castPtr
+    sendClassMessage cls' avB17221AECPMessageErrorForStatusCodeSelector statusCode
 
 -- | errorForStatusCode
 --
@@ -112,8 +110,8 @@ avB17221AECPMessageErrorForStatusCode statusCode =
 --
 -- ObjC selector: @- errorForStatusCode@
 errorForStatusCode :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> IO (Id NSError)
-errorForStatusCode avB17221AECPMessage  =
-    sendMsg avB17221AECPMessage (mkSelector "errorForStatusCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+errorForStatusCode avB17221AECPMessage =
+  sendMessage avB17221AECPMessage errorForStatusCodeSelector
 
 -- | messageType
 --
@@ -121,8 +119,8 @@ errorForStatusCode avB17221AECPMessage  =
 --
 -- ObjC selector: @- messageType@
 messageType :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> IO AVB17221AECPMessageType
-messageType avB17221AECPMessage  =
-    fmap (coerce :: CUChar -> AVB17221AECPMessageType) $ sendMsg avB17221AECPMessage (mkSelector "messageType") retCUChar []
+messageType avB17221AECPMessage =
+  sendMessage avB17221AECPMessage messageTypeSelector
 
 -- | messageType
 --
@@ -130,8 +128,8 @@ messageType avB17221AECPMessage  =
 --
 -- ObjC selector: @- setMessageType:@
 setMessageType :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> AVB17221AECPMessageType -> IO ()
-setMessageType avB17221AECPMessage  value =
-    sendMsg avB17221AECPMessage (mkSelector "setMessageType:") retVoid [argCUChar (coerce value)]
+setMessageType avB17221AECPMessage value =
+  sendMessage avB17221AECPMessage setMessageTypeSelector value
 
 -- | status
 --
@@ -139,8 +137,8 @@ setMessageType avB17221AECPMessage  value =
 --
 -- ObjC selector: @- status@
 status :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> IO AVB17221AECPStatusCode
-status avB17221AECPMessage  =
-    fmap (coerce :: CUChar -> AVB17221AECPStatusCode) $ sendMsg avB17221AECPMessage (mkSelector "status") retCUChar []
+status avB17221AECPMessage =
+  sendMessage avB17221AECPMessage statusSelector
 
 -- | status
 --
@@ -148,8 +146,8 @@ status avB17221AECPMessage  =
 --
 -- ObjC selector: @- setStatus:@
 setStatus :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> AVB17221AECPStatusCode -> IO ()
-setStatus avB17221AECPMessage  value =
-    sendMsg avB17221AECPMessage (mkSelector "setStatus:") retVoid [argCUChar (coerce value)]
+setStatus avB17221AECPMessage value =
+  sendMessage avB17221AECPMessage setStatusSelector value
 
 -- | targetEntityID
 --
@@ -157,8 +155,8 @@ setStatus avB17221AECPMessage  value =
 --
 -- ObjC selector: @- targetEntityID@
 targetEntityID :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> IO CULong
-targetEntityID avB17221AECPMessage  =
-    sendMsg avB17221AECPMessage (mkSelector "targetEntityID") retCULong []
+targetEntityID avB17221AECPMessage =
+  sendMessage avB17221AECPMessage targetEntityIDSelector
 
 -- | targetEntityID
 --
@@ -166,8 +164,8 @@ targetEntityID avB17221AECPMessage  =
 --
 -- ObjC selector: @- setTargetEntityID:@
 setTargetEntityID :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> CULong -> IO ()
-setTargetEntityID avB17221AECPMessage  value =
-    sendMsg avB17221AECPMessage (mkSelector "setTargetEntityID:") retVoid [argCULong value]
+setTargetEntityID avB17221AECPMessage value =
+  sendMessage avB17221AECPMessage setTargetEntityIDSelector value
 
 -- | controllerEntityID
 --
@@ -175,8 +173,8 @@ setTargetEntityID avB17221AECPMessage  value =
 --
 -- ObjC selector: @- controllerEntityID@
 controllerEntityID :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> IO CULong
-controllerEntityID avB17221AECPMessage  =
-    sendMsg avB17221AECPMessage (mkSelector "controllerEntityID") retCULong []
+controllerEntityID avB17221AECPMessage =
+  sendMessage avB17221AECPMessage controllerEntityIDSelector
 
 -- | controllerEntityID
 --
@@ -184,8 +182,8 @@ controllerEntityID avB17221AECPMessage  =
 --
 -- ObjC selector: @- setControllerEntityID:@
 setControllerEntityID :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> CULong -> IO ()
-setControllerEntityID avB17221AECPMessage  value =
-    sendMsg avB17221AECPMessage (mkSelector "setControllerEntityID:") retVoid [argCULong value]
+setControllerEntityID avB17221AECPMessage value =
+  sendMessage avB17221AECPMessage setControllerEntityIDSelector value
 
 -- | sequenceID
 --
@@ -193,8 +191,8 @@ setControllerEntityID avB17221AECPMessage  value =
 --
 -- ObjC selector: @- sequenceID@
 sequenceID :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> IO CUShort
-sequenceID avB17221AECPMessage  =
-    fmap fromIntegral $ sendMsg avB17221AECPMessage (mkSelector "sequenceID") retCUInt []
+sequenceID avB17221AECPMessage =
+  sendMessage avB17221AECPMessage sequenceIDSelector
 
 -- | sequenceID
 --
@@ -202,8 +200,8 @@ sequenceID avB17221AECPMessage  =
 --
 -- ObjC selector: @- setSequenceID:@
 setSequenceID :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> CUShort -> IO ()
-setSequenceID avB17221AECPMessage  value =
-    sendMsg avB17221AECPMessage (mkSelector "setSequenceID:") retVoid [argCUInt (fromIntegral value)]
+setSequenceID avB17221AECPMessage value =
+  sendMessage avB17221AECPMessage setSequenceIDSelector value
 
 -- | sourceMAC
 --
@@ -211,8 +209,8 @@ setSequenceID avB17221AECPMessage  value =
 --
 -- ObjC selector: @- sourceMAC@
 sourceMAC :: IsAVB17221AECPMessage avB17221AECPMessage => avB17221AECPMessage -> IO (Id AVBMACAddress)
-sourceMAC avB17221AECPMessage  =
-    sendMsg avB17221AECPMessage (mkSelector "sourceMAC") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceMAC avB17221AECPMessage =
+  sendMessage avB17221AECPMessage sourceMACSelector
 
 -- | sourceMAC
 --
@@ -220,63 +218,66 @@ sourceMAC avB17221AECPMessage  =
 --
 -- ObjC selector: @- setSourceMAC:@
 setSourceMAC :: (IsAVB17221AECPMessage avB17221AECPMessage, IsAVBMACAddress value) => avB17221AECPMessage -> value -> IO ()
-setSourceMAC avB17221AECPMessage  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avB17221AECPMessage (mkSelector "setSourceMAC:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSourceMAC avB17221AECPMessage value =
+  sendMessage avB17221AECPMessage setSourceMACSelector (toAVBMACAddress value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @errorForStatusCode:@
-errorForStatusCodeSelector :: Selector
-errorForStatusCodeSelector = mkSelector "errorForStatusCode:"
+avB17221AECPMessageErrorForStatusCodeSelector :: Selector '[AVB17221AECPStatusCode] (Id NSError)
+avB17221AECPMessageErrorForStatusCodeSelector = mkSelector "errorForStatusCode:"
+
+-- | @Selector@ for @errorForStatusCode@
+errorForStatusCodeSelector :: Selector '[] (Id NSError)
+errorForStatusCodeSelector = mkSelector "errorForStatusCode"
 
 -- | @Selector@ for @messageType@
-messageTypeSelector :: Selector
+messageTypeSelector :: Selector '[] AVB17221AECPMessageType
 messageTypeSelector = mkSelector "messageType"
 
 -- | @Selector@ for @setMessageType:@
-setMessageTypeSelector :: Selector
+setMessageTypeSelector :: Selector '[AVB17221AECPMessageType] ()
 setMessageTypeSelector = mkSelector "setMessageType:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVB17221AECPStatusCode
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[AVB17221AECPStatusCode] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @targetEntityID@
-targetEntityIDSelector :: Selector
+targetEntityIDSelector :: Selector '[] CULong
 targetEntityIDSelector = mkSelector "targetEntityID"
 
 -- | @Selector@ for @setTargetEntityID:@
-setTargetEntityIDSelector :: Selector
+setTargetEntityIDSelector :: Selector '[CULong] ()
 setTargetEntityIDSelector = mkSelector "setTargetEntityID:"
 
 -- | @Selector@ for @controllerEntityID@
-controllerEntityIDSelector :: Selector
+controllerEntityIDSelector :: Selector '[] CULong
 controllerEntityIDSelector = mkSelector "controllerEntityID"
 
 -- | @Selector@ for @setControllerEntityID:@
-setControllerEntityIDSelector :: Selector
+setControllerEntityIDSelector :: Selector '[CULong] ()
 setControllerEntityIDSelector = mkSelector "setControllerEntityID:"
 
 -- | @Selector@ for @sequenceID@
-sequenceIDSelector :: Selector
+sequenceIDSelector :: Selector '[] CUShort
 sequenceIDSelector = mkSelector "sequenceID"
 
 -- | @Selector@ for @setSequenceID:@
-setSequenceIDSelector :: Selector
+setSequenceIDSelector :: Selector '[CUShort] ()
 setSequenceIDSelector = mkSelector "setSequenceID:"
 
 -- | @Selector@ for @sourceMAC@
-sourceMACSelector :: Selector
+sourceMACSelector :: Selector '[] (Id AVBMACAddress)
 sourceMACSelector = mkSelector "sourceMAC"
 
 -- | @Selector@ for @setSourceMAC:@
-setSourceMACSelector :: Selector
+setSourceMACSelector :: Selector '[Id AVBMACAddress] ()
 setSourceMACSelector = mkSelector "setSourceMAC:"
 

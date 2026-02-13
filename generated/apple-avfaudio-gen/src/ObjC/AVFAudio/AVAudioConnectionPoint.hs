@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.AVFAudio.AVAudioConnectionPoint
   , init_
   , node
   , bus
-  , initWithNode_busSelector
-  , initSelector
-  , nodeSelector
   , busSelector
+  , initSelector
+  , initWithNode_busSelector
+  , nodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,14 +50,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithNode:bus:@
 initWithNode_bus :: (IsAVAudioConnectionPoint avAudioConnectionPoint, IsAVAudioNode node) => avAudioConnectionPoint -> node -> CULong -> IO (Id AVAudioConnectionPoint)
-initWithNode_bus avAudioConnectionPoint  node bus =
-  withObjCPtr node $ \raw_node ->
-      sendMsg avAudioConnectionPoint (mkSelector "initWithNode:bus:") (retPtr retVoid) [argPtr (castPtr raw_node :: Ptr ()), argCULong bus] >>= ownedObject . castPtr
+initWithNode_bus avAudioConnectionPoint node bus =
+  sendOwnedMessage avAudioConnectionPoint initWithNode_busSelector (toAVAudioNode node) bus
 
 -- | @- init@
 init_ :: IsAVAudioConnectionPoint avAudioConnectionPoint => avAudioConnectionPoint -> IO (Id AVAudioConnectionPoint)
-init_ avAudioConnectionPoint  =
-    sendMsg avAudioConnectionPoint (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioConnectionPoint =
+  sendOwnedMessage avAudioConnectionPoint initSelector
 
 -- | node
 --
@@ -68,8 +64,8 @@ init_ avAudioConnectionPoint  =
 --
 -- ObjC selector: @- node@
 node :: IsAVAudioConnectionPoint avAudioConnectionPoint => avAudioConnectionPoint -> IO (Id AVAudioNode)
-node avAudioConnectionPoint  =
-    sendMsg avAudioConnectionPoint (mkSelector "node") (retPtr retVoid) [] >>= retainedObject . castPtr
+node avAudioConnectionPoint =
+  sendMessage avAudioConnectionPoint nodeSelector
 
 -- | bus
 --
@@ -77,26 +73,26 @@ node avAudioConnectionPoint  =
 --
 -- ObjC selector: @- bus@
 bus :: IsAVAudioConnectionPoint avAudioConnectionPoint => avAudioConnectionPoint -> IO CULong
-bus avAudioConnectionPoint  =
-    sendMsg avAudioConnectionPoint (mkSelector "bus") retCULong []
+bus avAudioConnectionPoint =
+  sendMessage avAudioConnectionPoint busSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithNode:bus:@
-initWithNode_busSelector :: Selector
+initWithNode_busSelector :: Selector '[Id AVAudioNode, CULong] (Id AVAudioConnectionPoint)
 initWithNode_busSelector = mkSelector "initWithNode:bus:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioConnectionPoint)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @node@
-nodeSelector :: Selector
+nodeSelector :: Selector '[] (Id AVAudioNode)
 nodeSelector = mkSelector "node"
 
 -- | @Selector@ for @bus@
-busSelector :: Selector
+busSelector :: Selector '[] CULong
 busSelector = mkSelector "bus"
 

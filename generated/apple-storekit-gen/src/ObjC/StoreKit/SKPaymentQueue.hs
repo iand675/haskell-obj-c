@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,22 +26,22 @@ module ObjC.StoreKit.SKPaymentQueue
   , storefront
   , transactionObservers
   , transactions
-  , defaultQueueSelector
-  , canMakePaymentsSelector
   , addPaymentSelector
+  , addTransactionObserverSelector
+  , canMakePaymentsSelector
+  , cancelDownloadsSelector
+  , defaultQueueSelector
+  , delegateSelector
+  , finishTransactionSelector
+  , pauseDownloadsSelector
+  , presentCodeRedemptionSheetSelector
+  , removeTransactionObserverSelector
   , restoreCompletedTransactionsSelector
   , restoreCompletedTransactionsWithApplicationUsernameSelector
-  , finishTransactionSelector
-  , startDownloadsSelector
-  , pauseDownloadsSelector
   , resumeDownloadsSelector
-  , cancelDownloadsSelector
-  , addTransactionObserverSelector
-  , removeTransactionObserverSelector
-  , showPriceConsentIfNeededSelector
-  , presentCodeRedemptionSheetSelector
-  , delegateSelector
   , setDelegateSelector
+  , showPriceConsentIfNeededSelector
+  , startDownloadsSelector
   , storefrontSelector
   , transactionObserversSelector
   , transactionsSelector
@@ -48,15 +49,11 @@ module ObjC.StoreKit.SKPaymentQueue
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,184 +65,177 @@ defaultQueue :: IO (Id SKPaymentQueue)
 defaultQueue  =
   do
     cls' <- getRequiredClass "SKPaymentQueue"
-    sendClassMsg cls' (mkSelector "defaultQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultQueueSelector
 
 -- | @+ canMakePayments@
 canMakePayments :: IO Bool
 canMakePayments  =
   do
     cls' <- getRequiredClass "SKPaymentQueue"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "canMakePayments") retCULong []
+    sendClassMessage cls' canMakePaymentsSelector
 
 -- | @- addPayment:@
 addPayment :: (IsSKPaymentQueue skPaymentQueue, IsSKPayment payment) => skPaymentQueue -> payment -> IO ()
-addPayment skPaymentQueue  payment =
-  withObjCPtr payment $ \raw_payment ->
-      sendMsg skPaymentQueue (mkSelector "addPayment:") retVoid [argPtr (castPtr raw_payment :: Ptr ())]
+addPayment skPaymentQueue payment =
+  sendMessage skPaymentQueue addPaymentSelector (toSKPayment payment)
 
 -- | @- restoreCompletedTransactions@
 restoreCompletedTransactions :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO ()
-restoreCompletedTransactions skPaymentQueue  =
-    sendMsg skPaymentQueue (mkSelector "restoreCompletedTransactions") retVoid []
+restoreCompletedTransactions skPaymentQueue =
+  sendMessage skPaymentQueue restoreCompletedTransactionsSelector
 
 -- | @- restoreCompletedTransactionsWithApplicationUsername:@
 restoreCompletedTransactionsWithApplicationUsername :: (IsSKPaymentQueue skPaymentQueue, IsNSString username) => skPaymentQueue -> username -> IO ()
-restoreCompletedTransactionsWithApplicationUsername skPaymentQueue  username =
-  withObjCPtr username $ \raw_username ->
-      sendMsg skPaymentQueue (mkSelector "restoreCompletedTransactionsWithApplicationUsername:") retVoid [argPtr (castPtr raw_username :: Ptr ())]
+restoreCompletedTransactionsWithApplicationUsername skPaymentQueue username =
+  sendMessage skPaymentQueue restoreCompletedTransactionsWithApplicationUsernameSelector (toNSString username)
 
 -- | @- finishTransaction:@
 finishTransaction :: (IsSKPaymentQueue skPaymentQueue, IsSKPaymentTransaction transaction) => skPaymentQueue -> transaction -> IO ()
-finishTransaction skPaymentQueue  transaction =
-  withObjCPtr transaction $ \raw_transaction ->
-      sendMsg skPaymentQueue (mkSelector "finishTransaction:") retVoid [argPtr (castPtr raw_transaction :: Ptr ())]
+finishTransaction skPaymentQueue transaction =
+  sendMessage skPaymentQueue finishTransactionSelector (toSKPaymentTransaction transaction)
 
 -- | @- startDownloads:@
 startDownloads :: (IsSKPaymentQueue skPaymentQueue, IsNSArray downloads) => skPaymentQueue -> downloads -> IO ()
-startDownloads skPaymentQueue  downloads =
-  withObjCPtr downloads $ \raw_downloads ->
-      sendMsg skPaymentQueue (mkSelector "startDownloads:") retVoid [argPtr (castPtr raw_downloads :: Ptr ())]
+startDownloads skPaymentQueue downloads =
+  sendMessage skPaymentQueue startDownloadsSelector (toNSArray downloads)
 
 -- | @- pauseDownloads:@
 pauseDownloads :: (IsSKPaymentQueue skPaymentQueue, IsNSArray downloads) => skPaymentQueue -> downloads -> IO ()
-pauseDownloads skPaymentQueue  downloads =
-  withObjCPtr downloads $ \raw_downloads ->
-      sendMsg skPaymentQueue (mkSelector "pauseDownloads:") retVoid [argPtr (castPtr raw_downloads :: Ptr ())]
+pauseDownloads skPaymentQueue downloads =
+  sendMessage skPaymentQueue pauseDownloadsSelector (toNSArray downloads)
 
 -- | @- resumeDownloads:@
 resumeDownloads :: (IsSKPaymentQueue skPaymentQueue, IsNSArray downloads) => skPaymentQueue -> downloads -> IO ()
-resumeDownloads skPaymentQueue  downloads =
-  withObjCPtr downloads $ \raw_downloads ->
-      sendMsg skPaymentQueue (mkSelector "resumeDownloads:") retVoid [argPtr (castPtr raw_downloads :: Ptr ())]
+resumeDownloads skPaymentQueue downloads =
+  sendMessage skPaymentQueue resumeDownloadsSelector (toNSArray downloads)
 
 -- | @- cancelDownloads:@
 cancelDownloads :: (IsSKPaymentQueue skPaymentQueue, IsNSArray downloads) => skPaymentQueue -> downloads -> IO ()
-cancelDownloads skPaymentQueue  downloads =
-  withObjCPtr downloads $ \raw_downloads ->
-      sendMsg skPaymentQueue (mkSelector "cancelDownloads:") retVoid [argPtr (castPtr raw_downloads :: Ptr ())]
+cancelDownloads skPaymentQueue downloads =
+  sendMessage skPaymentQueue cancelDownloadsSelector (toNSArray downloads)
 
 -- | @- addTransactionObserver:@
 addTransactionObserver :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> RawId -> IO ()
-addTransactionObserver skPaymentQueue  observer =
-    sendMsg skPaymentQueue (mkSelector "addTransactionObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+addTransactionObserver skPaymentQueue observer =
+  sendMessage skPaymentQueue addTransactionObserverSelector observer
 
 -- | @- removeTransactionObserver:@
 removeTransactionObserver :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> RawId -> IO ()
-removeTransactionObserver skPaymentQueue  observer =
-    sendMsg skPaymentQueue (mkSelector "removeTransactionObserver:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ())]
+removeTransactionObserver skPaymentQueue observer =
+  sendMessage skPaymentQueue removeTransactionObserverSelector observer
 
 -- | @- showPriceConsentIfNeeded@
 showPriceConsentIfNeeded :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO ()
-showPriceConsentIfNeeded skPaymentQueue  =
-    sendMsg skPaymentQueue (mkSelector "showPriceConsentIfNeeded") retVoid []
+showPriceConsentIfNeeded skPaymentQueue =
+  sendMessage skPaymentQueue showPriceConsentIfNeededSelector
 
 -- | @- presentCodeRedemptionSheet@
 presentCodeRedemptionSheet :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO ()
-presentCodeRedemptionSheet skPaymentQueue  =
-    sendMsg skPaymentQueue (mkSelector "presentCodeRedemptionSheet") retVoid []
+presentCodeRedemptionSheet skPaymentQueue =
+  sendMessage skPaymentQueue presentCodeRedemptionSheetSelector
 
 -- | @- delegate@
 delegate :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO RawId
-delegate skPaymentQueue  =
-    fmap (RawId . castPtr) $ sendMsg skPaymentQueue (mkSelector "delegate") (retPtr retVoid) []
+delegate skPaymentQueue =
+  sendMessage skPaymentQueue delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> RawId -> IO ()
-setDelegate skPaymentQueue  value =
-    sendMsg skPaymentQueue (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate skPaymentQueue value =
+  sendMessage skPaymentQueue setDelegateSelector value
 
 -- | @- storefront@
 storefront :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO (Id SKStorefront)
-storefront skPaymentQueue  =
-    sendMsg skPaymentQueue (mkSelector "storefront") (retPtr retVoid) [] >>= retainedObject . castPtr
+storefront skPaymentQueue =
+  sendMessage skPaymentQueue storefrontSelector
 
 -- | @- transactionObservers@
 transactionObservers :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO (Id NSArray)
-transactionObservers skPaymentQueue  =
-    sendMsg skPaymentQueue (mkSelector "transactionObservers") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionObservers skPaymentQueue =
+  sendMessage skPaymentQueue transactionObserversSelector
 
 -- | @- transactions@
 transactions :: IsSKPaymentQueue skPaymentQueue => skPaymentQueue -> IO (Id NSArray)
-transactions skPaymentQueue  =
-    sendMsg skPaymentQueue (mkSelector "transactions") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactions skPaymentQueue =
+  sendMessage skPaymentQueue transactionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultQueue@
-defaultQueueSelector :: Selector
+defaultQueueSelector :: Selector '[] (Id SKPaymentQueue)
 defaultQueueSelector = mkSelector "defaultQueue"
 
 -- | @Selector@ for @canMakePayments@
-canMakePaymentsSelector :: Selector
+canMakePaymentsSelector :: Selector '[] Bool
 canMakePaymentsSelector = mkSelector "canMakePayments"
 
 -- | @Selector@ for @addPayment:@
-addPaymentSelector :: Selector
+addPaymentSelector :: Selector '[Id SKPayment] ()
 addPaymentSelector = mkSelector "addPayment:"
 
 -- | @Selector@ for @restoreCompletedTransactions@
-restoreCompletedTransactionsSelector :: Selector
+restoreCompletedTransactionsSelector :: Selector '[] ()
 restoreCompletedTransactionsSelector = mkSelector "restoreCompletedTransactions"
 
 -- | @Selector@ for @restoreCompletedTransactionsWithApplicationUsername:@
-restoreCompletedTransactionsWithApplicationUsernameSelector :: Selector
+restoreCompletedTransactionsWithApplicationUsernameSelector :: Selector '[Id NSString] ()
 restoreCompletedTransactionsWithApplicationUsernameSelector = mkSelector "restoreCompletedTransactionsWithApplicationUsername:"
 
 -- | @Selector@ for @finishTransaction:@
-finishTransactionSelector :: Selector
+finishTransactionSelector :: Selector '[Id SKPaymentTransaction] ()
 finishTransactionSelector = mkSelector "finishTransaction:"
 
 -- | @Selector@ for @startDownloads:@
-startDownloadsSelector :: Selector
+startDownloadsSelector :: Selector '[Id NSArray] ()
 startDownloadsSelector = mkSelector "startDownloads:"
 
 -- | @Selector@ for @pauseDownloads:@
-pauseDownloadsSelector :: Selector
+pauseDownloadsSelector :: Selector '[Id NSArray] ()
 pauseDownloadsSelector = mkSelector "pauseDownloads:"
 
 -- | @Selector@ for @resumeDownloads:@
-resumeDownloadsSelector :: Selector
+resumeDownloadsSelector :: Selector '[Id NSArray] ()
 resumeDownloadsSelector = mkSelector "resumeDownloads:"
 
 -- | @Selector@ for @cancelDownloads:@
-cancelDownloadsSelector :: Selector
+cancelDownloadsSelector :: Selector '[Id NSArray] ()
 cancelDownloadsSelector = mkSelector "cancelDownloads:"
 
 -- | @Selector@ for @addTransactionObserver:@
-addTransactionObserverSelector :: Selector
+addTransactionObserverSelector :: Selector '[RawId] ()
 addTransactionObserverSelector = mkSelector "addTransactionObserver:"
 
 -- | @Selector@ for @removeTransactionObserver:@
-removeTransactionObserverSelector :: Selector
+removeTransactionObserverSelector :: Selector '[RawId] ()
 removeTransactionObserverSelector = mkSelector "removeTransactionObserver:"
 
 -- | @Selector@ for @showPriceConsentIfNeeded@
-showPriceConsentIfNeededSelector :: Selector
+showPriceConsentIfNeededSelector :: Selector '[] ()
 showPriceConsentIfNeededSelector = mkSelector "showPriceConsentIfNeeded"
 
 -- | @Selector@ for @presentCodeRedemptionSheet@
-presentCodeRedemptionSheetSelector :: Selector
+presentCodeRedemptionSheetSelector :: Selector '[] ()
 presentCodeRedemptionSheetSelector = mkSelector "presentCodeRedemptionSheet"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @storefront@
-storefrontSelector :: Selector
+storefrontSelector :: Selector '[] (Id SKStorefront)
 storefrontSelector = mkSelector "storefront"
 
 -- | @Selector@ for @transactionObservers@
-transactionObserversSelector :: Selector
+transactionObserversSelector :: Selector '[] (Id NSArray)
 transactionObserversSelector = mkSelector "transactionObservers"
 
 -- | @Selector@ for @transactions@
-transactionsSelector :: Selector
+transactionsSelector :: Selector '[] (Id NSArray)
 transactionsSelector = mkSelector "transactions"
 

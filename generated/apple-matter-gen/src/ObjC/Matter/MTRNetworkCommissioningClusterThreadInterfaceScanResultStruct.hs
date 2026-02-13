@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Matter.MTRNetworkCommissioningClusterThreadInterfaceScanResultStruct
   , setRssi
   , lqi
   , setLqi
-  , panIdSelector
-  , setPanIdSelector
-  , extendedPanIdSelector
-  , setExtendedPanIdSelector
-  , networkNameSelector
-  , setNetworkNameSelector
   , channelSelector
-  , setChannelSelector
-  , versionSelector
-  , setVersionSelector
   , extendedAddressSelector
-  , setExtendedAddressSelector
-  , rssiSelector
-  , setRssiSelector
+  , extendedPanIdSelector
   , lqiSelector
+  , networkNameSelector
+  , panIdSelector
+  , rssiSelector
+  , setChannelSelector
+  , setExtendedAddressSelector
+  , setExtendedPanIdSelector
   , setLqiSelector
+  , setNetworkNameSelector
+  , setPanIdSelector
+  , setRssiSelector
+  , setVersionSelector
+  , versionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,157 +56,149 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- panId@
 panId :: IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> IO (Id NSNumber)
-panId mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "panId") (retPtr retVoid) [] >>= retainedObject . castPtr
+panId mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct panIdSelector
 
 -- | @- setPanId:@
 setPanId :: (IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> value -> IO ()
-setPanId mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "setPanId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPanId mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct setPanIdSelector (toNSNumber value)
 
 -- | @- extendedPanId@
 extendedPanId :: IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> IO (Id NSNumber)
-extendedPanId mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "extendedPanId") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedPanId mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct extendedPanIdSelector
 
 -- | @- setExtendedPanId:@
 setExtendedPanId :: (IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> value -> IO ()
-setExtendedPanId mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "setExtendedPanId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedPanId mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct setExtendedPanIdSelector (toNSNumber value)
 
 -- | @- networkName@
 networkName :: IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> IO (Id NSString)
-networkName mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "networkName") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkName mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct networkNameSelector
 
 -- | @- setNetworkName:@
 setNetworkName :: (IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct, IsNSString value) => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> value -> IO ()
-setNetworkName mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "setNetworkName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNetworkName mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct setNetworkNameSelector (toNSString value)
 
 -- | @- channel@
 channel :: IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> IO (Id NSNumber)
-channel mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "channel") (retPtr retVoid) [] >>= retainedObject . castPtr
+channel mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct channelSelector
 
 -- | @- setChannel:@
 setChannel :: (IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> value -> IO ()
-setChannel mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "setChannel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannel mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct setChannelSelector (toNSNumber value)
 
 -- | @- version@
 version :: IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> IO (Id NSNumber)
-version mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct versionSelector
 
 -- | @- setVersion:@
 setVersion :: (IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> value -> IO ()
-setVersion mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "setVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVersion mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct setVersionSelector (toNSNumber value)
 
 -- | @- extendedAddress@
 extendedAddress :: IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> IO (Id NSData)
-extendedAddress mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "extendedAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedAddress mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct extendedAddressSelector
 
 -- | @- setExtendedAddress:@
 setExtendedAddress :: (IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct, IsNSData value) => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> value -> IO ()
-setExtendedAddress mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "setExtendedAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedAddress mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct setExtendedAddressSelector (toNSData value)
 
 -- | @- rssi@
 rssi :: IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> IO (Id NSNumber)
-rssi mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "rssi") (retPtr retVoid) [] >>= retainedObject . castPtr
+rssi mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct rssiSelector
 
 -- | @- setRssi:@
 setRssi :: (IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> value -> IO ()
-setRssi mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "setRssi:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRssi mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct setRssiSelector (toNSNumber value)
 
 -- | @- lqi@
 lqi :: IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> IO (Id NSNumber)
-lqi mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "lqi") (retPtr retVoid) [] >>= retainedObject . castPtr
+lqi mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct lqiSelector
 
 -- | @- setLqi:@
 setLqi :: (IsMTRNetworkCommissioningClusterThreadInterfaceScanResultStruct mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct -> value -> IO ()
-setLqi mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct (mkSelector "setLqi:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLqi mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterThreadInterfaceScanResultStruct setLqiSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @panId@
-panIdSelector :: Selector
+panIdSelector :: Selector '[] (Id NSNumber)
 panIdSelector = mkSelector "panId"
 
 -- | @Selector@ for @setPanId:@
-setPanIdSelector :: Selector
+setPanIdSelector :: Selector '[Id NSNumber] ()
 setPanIdSelector = mkSelector "setPanId:"
 
 -- | @Selector@ for @extendedPanId@
-extendedPanIdSelector :: Selector
+extendedPanIdSelector :: Selector '[] (Id NSNumber)
 extendedPanIdSelector = mkSelector "extendedPanId"
 
 -- | @Selector@ for @setExtendedPanId:@
-setExtendedPanIdSelector :: Selector
+setExtendedPanIdSelector :: Selector '[Id NSNumber] ()
 setExtendedPanIdSelector = mkSelector "setExtendedPanId:"
 
 -- | @Selector@ for @networkName@
-networkNameSelector :: Selector
+networkNameSelector :: Selector '[] (Id NSString)
 networkNameSelector = mkSelector "networkName"
 
 -- | @Selector@ for @setNetworkName:@
-setNetworkNameSelector :: Selector
+setNetworkNameSelector :: Selector '[Id NSString] ()
 setNetworkNameSelector = mkSelector "setNetworkName:"
 
 -- | @Selector@ for @channel@
-channelSelector :: Selector
+channelSelector :: Selector '[] (Id NSNumber)
 channelSelector = mkSelector "channel"
 
 -- | @Selector@ for @setChannel:@
-setChannelSelector :: Selector
+setChannelSelector :: Selector '[Id NSNumber] ()
 setChannelSelector = mkSelector "setChannel:"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSNumber)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @setVersion:@
-setVersionSelector :: Selector
+setVersionSelector :: Selector '[Id NSNumber] ()
 setVersionSelector = mkSelector "setVersion:"
 
 -- | @Selector@ for @extendedAddress@
-extendedAddressSelector :: Selector
+extendedAddressSelector :: Selector '[] (Id NSData)
 extendedAddressSelector = mkSelector "extendedAddress"
 
 -- | @Selector@ for @setExtendedAddress:@
-setExtendedAddressSelector :: Selector
+setExtendedAddressSelector :: Selector '[Id NSData] ()
 setExtendedAddressSelector = mkSelector "setExtendedAddress:"
 
 -- | @Selector@ for @rssi@
-rssiSelector :: Selector
+rssiSelector :: Selector '[] (Id NSNumber)
 rssiSelector = mkSelector "rssi"
 
 -- | @Selector@ for @setRssi:@
-setRssiSelector :: Selector
+setRssiSelector :: Selector '[Id NSNumber] ()
 setRssiSelector = mkSelector "setRssi:"
 
 -- | @Selector@ for @lqi@
-lqiSelector :: Selector
+lqiSelector :: Selector '[] (Id NSNumber)
 lqiSelector = mkSelector "lqi"
 
 -- | @Selector@ for @setLqi:@
-setLqiSelector :: Selector
+setLqiSelector :: Selector '[Id NSNumber] ()
 setLqiSelector = mkSelector "setLqi:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,26 +18,22 @@ module ObjC.Metal.MTLFunctionStitchingFunctionNode
   , setArguments
   , controlDependencies
   , setControlDependencies
+  , argumentsSelector
+  , controlDependenciesSelector
   , initWithName_arguments_controlDependenciesSelector
   , nameSelector
-  , setNameSelector
-  , argumentsSelector
   , setArgumentsSelector
-  , controlDependenciesSelector
   , setControlDependenciesSelector
+  , setNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,74 +42,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithName:arguments:controlDependencies:@
 initWithName_arguments_controlDependencies :: (IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode, IsNSString name, IsNSArray arguments, IsNSArray controlDependencies) => mtlFunctionStitchingFunctionNode -> name -> arguments -> controlDependencies -> IO (Id MTLFunctionStitchingFunctionNode)
-initWithName_arguments_controlDependencies mtlFunctionStitchingFunctionNode  name arguments controlDependencies =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr arguments $ \raw_arguments ->
-      withObjCPtr controlDependencies $ \raw_controlDependencies ->
-          sendMsg mtlFunctionStitchingFunctionNode (mkSelector "initWithName:arguments:controlDependencies:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ()), argPtr (castPtr raw_controlDependencies :: Ptr ())] >>= ownedObject . castPtr
+initWithName_arguments_controlDependencies mtlFunctionStitchingFunctionNode name arguments controlDependencies =
+  sendOwnedMessage mtlFunctionStitchingFunctionNode initWithName_arguments_controlDependenciesSelector (toNSString name) (toNSArray arguments) (toNSArray controlDependencies)
 
 -- | @- name@
 name :: IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode => mtlFunctionStitchingFunctionNode -> IO (Id NSString)
-name mtlFunctionStitchingFunctionNode  =
-    sendMsg mtlFunctionStitchingFunctionNode (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtlFunctionStitchingFunctionNode =
+  sendMessage mtlFunctionStitchingFunctionNode nameSelector
 
 -- | @- setName:@
 setName :: (IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode, IsNSString value) => mtlFunctionStitchingFunctionNode -> value -> IO ()
-setName mtlFunctionStitchingFunctionNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionStitchingFunctionNode (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtlFunctionStitchingFunctionNode value =
+  sendMessage mtlFunctionStitchingFunctionNode setNameSelector (toNSString value)
 
 -- | @- arguments@
 arguments :: IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode => mtlFunctionStitchingFunctionNode -> IO (Id NSArray)
-arguments mtlFunctionStitchingFunctionNode  =
-    sendMsg mtlFunctionStitchingFunctionNode (mkSelector "arguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+arguments mtlFunctionStitchingFunctionNode =
+  sendMessage mtlFunctionStitchingFunctionNode argumentsSelector
 
 -- | @- setArguments:@
 setArguments :: (IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode, IsNSArray value) => mtlFunctionStitchingFunctionNode -> value -> IO ()
-setArguments mtlFunctionStitchingFunctionNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionStitchingFunctionNode (mkSelector "setArguments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArguments mtlFunctionStitchingFunctionNode value =
+  sendMessage mtlFunctionStitchingFunctionNode setArgumentsSelector (toNSArray value)
 
 -- | @- controlDependencies@
 controlDependencies :: IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode => mtlFunctionStitchingFunctionNode -> IO (Id NSArray)
-controlDependencies mtlFunctionStitchingFunctionNode  =
-    sendMsg mtlFunctionStitchingFunctionNode (mkSelector "controlDependencies") (retPtr retVoid) [] >>= retainedObject . castPtr
+controlDependencies mtlFunctionStitchingFunctionNode =
+  sendMessage mtlFunctionStitchingFunctionNode controlDependenciesSelector
 
 -- | @- setControlDependencies:@
 setControlDependencies :: (IsMTLFunctionStitchingFunctionNode mtlFunctionStitchingFunctionNode, IsNSArray value) => mtlFunctionStitchingFunctionNode -> value -> IO ()
-setControlDependencies mtlFunctionStitchingFunctionNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtlFunctionStitchingFunctionNode (mkSelector "setControlDependencies:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setControlDependencies mtlFunctionStitchingFunctionNode value =
+  sendMessage mtlFunctionStitchingFunctionNode setControlDependenciesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:arguments:controlDependencies:@
-initWithName_arguments_controlDependenciesSelector :: Selector
+initWithName_arguments_controlDependenciesSelector :: Selector '[Id NSString, Id NSArray, Id NSArray] (Id MTLFunctionStitchingFunctionNode)
 initWithName_arguments_controlDependenciesSelector = mkSelector "initWithName:arguments:controlDependencies:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @arguments@
-argumentsSelector :: Selector
+argumentsSelector :: Selector '[] (Id NSArray)
 argumentsSelector = mkSelector "arguments"
 
 -- | @Selector@ for @setArguments:@
-setArgumentsSelector :: Selector
+setArgumentsSelector :: Selector '[Id NSArray] ()
 setArgumentsSelector = mkSelector "setArguments:"
 
 -- | @Selector@ for @controlDependencies@
-controlDependenciesSelector :: Selector
+controlDependenciesSelector :: Selector '[] (Id NSArray)
 controlDependenciesSelector = mkSelector "controlDependencies"
 
 -- | @Selector@ for @setControlDependencies:@
-setControlDependenciesSelector :: Selector
+setControlDependenciesSelector :: Selector '[Id NSArray] ()
 setControlDependenciesSelector = mkSelector "setControlDependencies:"
 

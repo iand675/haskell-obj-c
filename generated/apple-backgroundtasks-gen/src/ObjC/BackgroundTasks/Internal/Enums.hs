@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.BackgroundTasks.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @BGContinuedProcessingTaskRequestResources@ (bitmask)
 newtype BGContinuedProcessingTaskRequestResources = BGContinuedProcessingTaskRequestResources CLong
@@ -28,6 +31,16 @@ pattern BGContinuedProcessingTaskRequestResourcesDefault = BGContinuedProcessing
 pattern BGContinuedProcessingTaskRequestResourcesGPU :: BGContinuedProcessingTaskRequestResources
 pattern BGContinuedProcessingTaskRequestResourcesGPU = BGContinuedProcessingTaskRequestResources 1
 
+instance ObjCArgument BGContinuedProcessingTaskRequestResources where
+  withObjCArg (BGContinuedProcessingTaskRequestResources x) k = k (argCLong x)
+
+instance ObjCReturn BGContinuedProcessingTaskRequestResources where
+  type RawReturn BGContinuedProcessingTaskRequestResources = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BGContinuedProcessingTaskRequestResources x)
+  fromOwned x = pure (BGContinuedProcessingTaskRequestResources x)
+
 -- | @BGContinuedProcessingTaskRequestSubmissionStrategy@
 newtype BGContinuedProcessingTaskRequestSubmissionStrategy = BGContinuedProcessingTaskRequestSubmissionStrategy CLong
   deriving stock (Eq, Ord, Show)
@@ -38,6 +51,16 @@ pattern BGContinuedProcessingTaskRequestSubmissionStrategyFail = BGContinuedProc
 
 pattern BGContinuedProcessingTaskRequestSubmissionStrategyQueue :: BGContinuedProcessingTaskRequestSubmissionStrategy
 pattern BGContinuedProcessingTaskRequestSubmissionStrategyQueue = BGContinuedProcessingTaskRequestSubmissionStrategy 1
+
+instance ObjCArgument BGContinuedProcessingTaskRequestSubmissionStrategy where
+  withObjCArg (BGContinuedProcessingTaskRequestSubmissionStrategy x) k = k (argCLong x)
+
+instance ObjCReturn BGContinuedProcessingTaskRequestSubmissionStrategy where
+  type RawReturn BGContinuedProcessingTaskRequestSubmissionStrategy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BGContinuedProcessingTaskRequestSubmissionStrategy x)
+  fromOwned x = pure (BGContinuedProcessingTaskRequestSubmissionStrategy x)
 
 -- | An enumeration of the task scheduling errors.
 -- | @BGTaskSchedulerErrorCode@
@@ -56,3 +79,13 @@ pattern BGTaskSchedulerErrorCodeNotPermitted = BGTaskSchedulerErrorCode 3
 
 pattern BGTaskSchedulerErrorCodeImmediateRunIneligible :: BGTaskSchedulerErrorCode
 pattern BGTaskSchedulerErrorCodeImmediateRunIneligible = BGTaskSchedulerErrorCode 4
+
+instance ObjCArgument BGTaskSchedulerErrorCode where
+  withObjCArg (BGTaskSchedulerErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn BGTaskSchedulerErrorCode where
+  type RawReturn BGTaskSchedulerErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BGTaskSchedulerErrorCode x)
+  fromOwned x = pure (BGTaskSchedulerErrorCode x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.NetworkExtension.NETransparentProxyNetworkSettings
   , setIncludedNetworkRules
   , excludedNetworkRules
   , setExcludedNetworkRules
-  , includedNetworkRulesSelector
-  , setIncludedNetworkRulesSelector
   , excludedNetworkRulesSelector
+  , includedNetworkRulesSelector
   , setExcludedNetworkRulesSelector
+  , setIncludedNetworkRulesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- includedNetworkRules@
 includedNetworkRules :: IsNETransparentProxyNetworkSettings neTransparentProxyNetworkSettings => neTransparentProxyNetworkSettings -> IO (Id NSArray)
-includedNetworkRules neTransparentProxyNetworkSettings  =
-    sendMsg neTransparentProxyNetworkSettings (mkSelector "includedNetworkRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+includedNetworkRules neTransparentProxyNetworkSettings =
+  sendMessage neTransparentProxyNetworkSettings includedNetworkRulesSelector
 
 -- | includedNetworkRules
 --
@@ -56,9 +53,8 @@ includedNetworkRules neTransparentProxyNetworkSettings  =
 --
 -- ObjC selector: @- setIncludedNetworkRules:@
 setIncludedNetworkRules :: (IsNETransparentProxyNetworkSettings neTransparentProxyNetworkSettings, IsNSArray value) => neTransparentProxyNetworkSettings -> value -> IO ()
-setIncludedNetworkRules neTransparentProxyNetworkSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTransparentProxyNetworkSettings (mkSelector "setIncludedNetworkRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIncludedNetworkRules neTransparentProxyNetworkSettings value =
+  sendMessage neTransparentProxyNetworkSettings setIncludedNetworkRulesSelector (toNSArray value)
 
 -- | excludedNetworkRules
 --
@@ -66,8 +62,8 @@ setIncludedNetworkRules neTransparentProxyNetworkSettings  value =
 --
 -- ObjC selector: @- excludedNetworkRules@
 excludedNetworkRules :: IsNETransparentProxyNetworkSettings neTransparentProxyNetworkSettings => neTransparentProxyNetworkSettings -> IO (Id NSArray)
-excludedNetworkRules neTransparentProxyNetworkSettings  =
-    sendMsg neTransparentProxyNetworkSettings (mkSelector "excludedNetworkRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedNetworkRules neTransparentProxyNetworkSettings =
+  sendMessage neTransparentProxyNetworkSettings excludedNetworkRulesSelector
 
 -- | excludedNetworkRules
 --
@@ -75,27 +71,26 @@ excludedNetworkRules neTransparentProxyNetworkSettings  =
 --
 -- ObjC selector: @- setExcludedNetworkRules:@
 setExcludedNetworkRules :: (IsNETransparentProxyNetworkSettings neTransparentProxyNetworkSettings, IsNSArray value) => neTransparentProxyNetworkSettings -> value -> IO ()
-setExcludedNetworkRules neTransparentProxyNetworkSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTransparentProxyNetworkSettings (mkSelector "setExcludedNetworkRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExcludedNetworkRules neTransparentProxyNetworkSettings value =
+  sendMessage neTransparentProxyNetworkSettings setExcludedNetworkRulesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @includedNetworkRules@
-includedNetworkRulesSelector :: Selector
+includedNetworkRulesSelector :: Selector '[] (Id NSArray)
 includedNetworkRulesSelector = mkSelector "includedNetworkRules"
 
 -- | @Selector@ for @setIncludedNetworkRules:@
-setIncludedNetworkRulesSelector :: Selector
+setIncludedNetworkRulesSelector :: Selector '[Id NSArray] ()
 setIncludedNetworkRulesSelector = mkSelector "setIncludedNetworkRules:"
 
 -- | @Selector@ for @excludedNetworkRules@
-excludedNetworkRulesSelector :: Selector
+excludedNetworkRulesSelector :: Selector '[] (Id NSArray)
 excludedNetworkRulesSelector = mkSelector "excludedNetworkRules"
 
 -- | @Selector@ for @setExcludedNetworkRules:@
-setExcludedNetworkRulesSelector :: Selector
+setExcludedNetworkRulesSelector :: Selector '[Id NSArray] ()
 setExcludedNetworkRulesSelector = mkSelector "setExcludedNetworkRules:"
 

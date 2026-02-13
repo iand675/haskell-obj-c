@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.CryptoTokenKit.TKToken
   , setDelegate
   , configuration
   , keychainContents
-  , initWithTokenDriver_instanceIDSelector
-  , initSelector
-  , tokenDriverSelector
-  , delegateSelector
-  , setDelegateSelector
   , configurationSelector
+  , delegateSelector
+  , initSelector
+  , initWithTokenDriver_instanceIDSelector
   , keychainContentsSelector
+  , setDelegateSelector
+  , tokenDriverSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,74 +46,72 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithTokenDriver:instanceID:@
 initWithTokenDriver_instanceID :: (IsTKToken tkToken, IsTKTokenDriver tokenDriver, IsNSString instanceID) => tkToken -> tokenDriver -> instanceID -> IO (Id TKToken)
-initWithTokenDriver_instanceID tkToken  tokenDriver instanceID =
-  withObjCPtr tokenDriver $ \raw_tokenDriver ->
-    withObjCPtr instanceID $ \raw_instanceID ->
-        sendMsg tkToken (mkSelector "initWithTokenDriver:instanceID:") (retPtr retVoid) [argPtr (castPtr raw_tokenDriver :: Ptr ()), argPtr (castPtr raw_instanceID :: Ptr ())] >>= ownedObject . castPtr
+initWithTokenDriver_instanceID tkToken tokenDriver instanceID =
+  sendOwnedMessage tkToken initWithTokenDriver_instanceIDSelector (toTKTokenDriver tokenDriver) (toNSString instanceID)
 
 -- | @- init@
 init_ :: IsTKToken tkToken => tkToken -> IO (Id TKToken)
-init_ tkToken  =
-    sendMsg tkToken (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkToken =
+  sendOwnedMessage tkToken initSelector
 
 -- | @- tokenDriver@
 tokenDriver :: IsTKToken tkToken => tkToken -> IO (Id TKTokenDriver)
-tokenDriver tkToken  =
-    sendMsg tkToken (mkSelector "tokenDriver") (retPtr retVoid) [] >>= retainedObject . castPtr
+tokenDriver tkToken =
+  sendMessage tkToken tokenDriverSelector
 
 -- | @- delegate@
 delegate :: IsTKToken tkToken => tkToken -> IO RawId
-delegate tkToken  =
-    fmap (RawId . castPtr) $ sendMsg tkToken (mkSelector "delegate") (retPtr retVoid) []
+delegate tkToken =
+  sendMessage tkToken delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsTKToken tkToken => tkToken -> RawId -> IO ()
-setDelegate tkToken  value =
-    sendMsg tkToken (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate tkToken value =
+  sendMessage tkToken setDelegateSelector value
 
 -- | Token configuration associated with this token instance.
 --
 -- ObjC selector: @- configuration@
 configuration :: IsTKToken tkToken => tkToken -> IO (Id TKTokenConfiguration)
-configuration tkToken  =
-    sendMsg tkToken (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration tkToken =
+  sendMessage tkToken configurationSelector
 
 -- | Keychain contents (certificate and key items) representing this token.
 --
 -- ObjC selector: @- keychainContents@
 keychainContents :: IsTKToken tkToken => tkToken -> IO (Id TKTokenKeychainContents)
-keychainContents tkToken  =
-    sendMsg tkToken (mkSelector "keychainContents") (retPtr retVoid) [] >>= retainedObject . castPtr
+keychainContents tkToken =
+  sendMessage tkToken keychainContentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTokenDriver:instanceID:@
-initWithTokenDriver_instanceIDSelector :: Selector
+initWithTokenDriver_instanceIDSelector :: Selector '[Id TKTokenDriver, Id NSString] (Id TKToken)
 initWithTokenDriver_instanceIDSelector = mkSelector "initWithTokenDriver:instanceID:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKToken)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @tokenDriver@
-tokenDriverSelector :: Selector
+tokenDriverSelector :: Selector '[] (Id TKTokenDriver)
 tokenDriverSelector = mkSelector "tokenDriver"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id TKTokenConfiguration)
 configurationSelector = mkSelector "configuration"
 
 -- | @Selector@ for @keychainContents@
-keychainContentsSelector :: Selector
+keychainContentsSelector :: Selector '[] (Id TKTokenKeychainContents)
 keychainContentsSelector = mkSelector "keychainContents"
 

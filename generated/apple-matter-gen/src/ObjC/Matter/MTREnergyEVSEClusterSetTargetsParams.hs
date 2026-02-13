@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTREnergyEVSEClusterSetTargetsParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , chargingTargetSchedulesSelector
-  , setChargingTargetSchedulesSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setChargingTargetSchedulesSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- chargingTargetSchedules@
 chargingTargetSchedules :: IsMTREnergyEVSEClusterSetTargetsParams mtrEnergyEVSEClusterSetTargetsParams => mtrEnergyEVSEClusterSetTargetsParams -> IO (Id NSArray)
-chargingTargetSchedules mtrEnergyEVSEClusterSetTargetsParams  =
-    sendMsg mtrEnergyEVSEClusterSetTargetsParams (mkSelector "chargingTargetSchedules") (retPtr retVoid) [] >>= retainedObject . castPtr
+chargingTargetSchedules mtrEnergyEVSEClusterSetTargetsParams =
+  sendMessage mtrEnergyEVSEClusterSetTargetsParams chargingTargetSchedulesSelector
 
 -- | @- setChargingTargetSchedules:@
 setChargingTargetSchedules :: (IsMTREnergyEVSEClusterSetTargetsParams mtrEnergyEVSEClusterSetTargetsParams, IsNSArray value) => mtrEnergyEVSEClusterSetTargetsParams -> value -> IO ()
-setChargingTargetSchedules mtrEnergyEVSEClusterSetTargetsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterSetTargetsParams (mkSelector "setChargingTargetSchedules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChargingTargetSchedules mtrEnergyEVSEClusterSetTargetsParams value =
+  sendMessage mtrEnergyEVSEClusterSetTargetsParams setChargingTargetSchedulesSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setChargingTargetSchedules mtrEnergyEVSEClusterSetTargetsParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTREnergyEVSEClusterSetTargetsParams mtrEnergyEVSEClusterSetTargetsParams => mtrEnergyEVSEClusterSetTargetsParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrEnergyEVSEClusterSetTargetsParams  =
-    sendMsg mtrEnergyEVSEClusterSetTargetsParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrEnergyEVSEClusterSetTargetsParams =
+  sendMessage mtrEnergyEVSEClusterSetTargetsParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrEnergyEVSEClusterSetTargetsParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTREnergyEVSEClusterSetTargetsParams mtrEnergyEVSEClusterSetTargetsParams, IsNSNumber value) => mtrEnergyEVSEClusterSetTargetsParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrEnergyEVSEClusterSetTargetsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterSetTargetsParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrEnergyEVSEClusterSetTargetsParams value =
+  sendMessage mtrEnergyEVSEClusterSetTargetsParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrEnergyEVSEClusterSetTargetsParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTREnergyEVSEClusterSetTargetsParams mtrEnergyEVSEClusterSetTargetsParams => mtrEnergyEVSEClusterSetTargetsParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrEnergyEVSEClusterSetTargetsParams  =
-    sendMsg mtrEnergyEVSEClusterSetTargetsParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrEnergyEVSEClusterSetTargetsParams =
+  sendMessage mtrEnergyEVSEClusterSetTargetsParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrEnergyEVSEClusterSetTargetsParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTREnergyEVSEClusterSetTargetsParams mtrEnergyEVSEClusterSetTargetsParams, IsNSNumber value) => mtrEnergyEVSEClusterSetTargetsParams -> value -> IO ()
-setServerSideProcessingTimeout mtrEnergyEVSEClusterSetTargetsParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterSetTargetsParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrEnergyEVSEClusterSetTargetsParams value =
+  sendMessage mtrEnergyEVSEClusterSetTargetsParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @chargingTargetSchedules@
-chargingTargetSchedulesSelector :: Selector
+chargingTargetSchedulesSelector :: Selector '[] (Id NSArray)
 chargingTargetSchedulesSelector = mkSelector "chargingTargetSchedules"
 
 -- | @Selector@ for @setChargingTargetSchedules:@
-setChargingTargetSchedulesSelector :: Selector
+setChargingTargetSchedulesSelector :: Selector '[Id NSArray] ()
 setChargingTargetSchedulesSelector = mkSelector "setChargingTargetSchedules:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

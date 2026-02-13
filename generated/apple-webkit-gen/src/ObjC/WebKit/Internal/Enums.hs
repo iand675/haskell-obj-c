@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.WebKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @DOMEventExceptionCode@
 newtype DOMEventExceptionCode = DOMEventExceptionCode CInt
@@ -18,6 +21,16 @@ newtype DOMEventExceptionCode = DOMEventExceptionCode CInt
 
 pattern DOM_UNSPECIFIED_EVENT_TYPE_ERR :: DOMEventExceptionCode
 pattern DOM_UNSPECIFIED_EVENT_TYPE_ERR = DOMEventExceptionCode 0
+
+instance ObjCArgument DOMEventExceptionCode where
+  withObjCArg (DOMEventExceptionCode x) k = k (argCInt x)
+
+instance ObjCReturn DOMEventExceptionCode where
+  type RawReturn DOMEventExceptionCode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DOMEventExceptionCode x)
+  fromOwned x = pure (DOMEventExceptionCode x)
 
 -- | @DOMExceptionCode@
 newtype DOMExceptionCode = DOMExceptionCode CInt
@@ -69,6 +82,16 @@ pattern DOM_NAMESPACE_ERR = DOMExceptionCode 14
 pattern DOM_INVALID_ACCESS_ERR :: DOMExceptionCode
 pattern DOM_INVALID_ACCESS_ERR = DOMExceptionCode 15
 
+instance ObjCArgument DOMExceptionCode where
+  withObjCArg (DOMExceptionCode x) k = k (argCInt x)
+
+instance ObjCReturn DOMExceptionCode where
+  type RawReturn DOMExceptionCode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DOMExceptionCode x)
+  fromOwned x = pure (DOMExceptionCode x)
+
 -- | @DOMRangeExceptionCode@
 newtype DOMRangeExceptionCode = DOMRangeExceptionCode CInt
   deriving stock (Eq, Ord, Show)
@@ -80,6 +103,16 @@ pattern DOM_BAD_BOUNDARYPOINTS_ERR = DOMRangeExceptionCode 1
 pattern DOM_INVALID_NODE_TYPE_ERR :: DOMRangeExceptionCode
 pattern DOM_INVALID_NODE_TYPE_ERR = DOMRangeExceptionCode 2
 
+instance ObjCArgument DOMRangeExceptionCode where
+  withObjCArg (DOMRangeExceptionCode x) k = k (argCInt x)
+
+instance ObjCReturn DOMRangeExceptionCode where
+  type RawReturn DOMRangeExceptionCode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DOMRangeExceptionCode x)
+  fromOwned x = pure (DOMRangeExceptionCode x)
+
 -- | @DOMXPathExceptionCode@
 newtype DOMXPathExceptionCode = DOMXPathExceptionCode CInt
   deriving stock (Eq, Ord, Show)
@@ -90,6 +123,16 @@ pattern DOM_INVALID_EXPRESSION_ERR = DOMXPathExceptionCode 51
 
 pattern DOM_TYPE_ERR :: DOMXPathExceptionCode
 pattern DOM_TYPE_ERR = DOMXPathExceptionCode 52
+
+instance ObjCArgument DOMXPathExceptionCode where
+  withObjCArg (DOMXPathExceptionCode x) k = k (argCInt x)
+
+instance ObjCReturn DOMXPathExceptionCode where
+  type RawReturn DOMXPathExceptionCode = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (DOMXPathExceptionCode x)
+  fromOwned x = pure (DOMXPathExceptionCode x)
 
 -- | WKAudiovisualMediaTypes
 --
@@ -125,6 +168,16 @@ pattern WKAudiovisualMediaTypeVideo = WKAudiovisualMediaTypes 2
 pattern WKAudiovisualMediaTypeAll :: WKAudiovisualMediaTypes
 pattern WKAudiovisualMediaTypeAll = WKAudiovisualMediaTypes 18446744073709551615
 
+instance ObjCArgument WKAudiovisualMediaTypes where
+  withObjCArg (WKAudiovisualMediaTypes x) k = k (argCULong x)
+
+instance ObjCReturn WKAudiovisualMediaTypes where
+  type RawReturn WKAudiovisualMediaTypes = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKAudiovisualMediaTypes x)
+  fromOwned x = pure (WKAudiovisualMediaTypes x)
+
 -- | WKContentMode
 --
 -- A content mode represents the type of content to load, as well as additional layout and rendering adaptations that are applied as a result of loading the content
@@ -150,6 +203,16 @@ pattern WKContentModeMobile = WKContentMode 1
 pattern WKContentModeDesktop :: WKContentMode
 pattern WKContentModeDesktop = WKContentMode 2
 
+instance ObjCArgument WKContentMode where
+  withObjCArg (WKContentMode x) k = k (argCLong x)
+
+instance ObjCReturn WKContentMode where
+  type RawReturn WKContentMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKContentMode x)
+  fromOwned x = pure (WKContentMode x)
+
 -- | @WKCookiePolicy@
 newtype WKCookiePolicy = WKCookiePolicy CLong
   deriving stock (Eq, Ord, Show)
@@ -160,6 +223,16 @@ pattern WKCookiePolicyAllow = WKCookiePolicy 0
 
 pattern WKCookiePolicyDisallow :: WKCookiePolicy
 pattern WKCookiePolicyDisallow = WKCookiePolicy 1
+
+instance ObjCArgument WKCookiePolicy where
+  withObjCArg (WKCookiePolicy x) k = k (argCLong x)
+
+instance ObjCReturn WKCookiePolicy where
+  type RawReturn WKCookiePolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKCookiePolicy x)
+  fromOwned x = pure (WKCookiePolicy x)
 
 -- | WKDialogResult
 --
@@ -184,6 +257,16 @@ pattern WKDialogResultAskAgain = WKDialogResult 2
 pattern WKDialogResultHandled :: WKDialogResult
 pattern WKDialogResultHandled = WKDialogResult 3
 
+instance ObjCArgument WKDialogResult where
+  withObjCArg (WKDialogResult x) k = k (argCLong x)
+
+instance ObjCReturn WKDialogResult where
+  type RawReturn WKDialogResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKDialogResult x)
+  fromOwned x = pure (WKDialogResult x)
+
 -- | @WKDownloadPlaceholderPolicy@
 newtype WKDownloadPlaceholderPolicy = WKDownloadPlaceholderPolicy CLong
   deriving stock (Eq, Ord, Show)
@@ -195,6 +278,16 @@ pattern WKDownloadPlaceholderPolicyDisable = WKDownloadPlaceholderPolicy 0
 pattern WKDownloadPlaceholderPolicyEnable :: WKDownloadPlaceholderPolicy
 pattern WKDownloadPlaceholderPolicyEnable = WKDownloadPlaceholderPolicy 1
 
+instance ObjCArgument WKDownloadPlaceholderPolicy where
+  withObjCArg (WKDownloadPlaceholderPolicy x) k = k (argCLong x)
+
+instance ObjCReturn WKDownloadPlaceholderPolicy where
+  type RawReturn WKDownloadPlaceholderPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKDownloadPlaceholderPolicy x)
+  fromOwned x = pure (WKDownloadPlaceholderPolicy x)
+
 -- | @WKDownloadRedirectPolicy@
 newtype WKDownloadRedirectPolicy = WKDownloadRedirectPolicy CLong
   deriving stock (Eq, Ord, Show)
@@ -205,6 +298,16 @@ pattern WKDownloadRedirectPolicyCancel = WKDownloadRedirectPolicy 0
 
 pattern WKDownloadRedirectPolicyAllow :: WKDownloadRedirectPolicy
 pattern WKDownloadRedirectPolicyAllow = WKDownloadRedirectPolicy 1
+
+instance ObjCArgument WKDownloadRedirectPolicy where
+  withObjCArg (WKDownloadRedirectPolicy x) k = k (argCLong x)
+
+instance ObjCReturn WKDownloadRedirectPolicy where
+  type RawReturn WKDownloadRedirectPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKDownloadRedirectPolicy x)
+  fromOwned x = pure (WKDownloadRedirectPolicy x)
 
 -- | WKErrorCode
 --
@@ -291,6 +394,16 @@ pattern WKErrorMalformedCredential = WKErrorCode 16
 pattern WKErrorCredentialNotFound :: WKErrorCode
 pattern WKErrorCredentialNotFound = WKErrorCode 17
 
+instance ObjCArgument WKErrorCode where
+  withObjCArg (WKErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn WKErrorCode where
+  type RawReturn WKErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKErrorCode x)
+  fromOwned x = pure (WKErrorCode x)
+
 -- | @WKFullscreenState@
 newtype WKFullscreenState = WKFullscreenState CLong
   deriving stock (Eq, Ord, Show)
@@ -308,6 +421,16 @@ pattern WKFullscreenStateInFullscreen = WKFullscreenState 2
 pattern WKFullscreenStateExitingFullscreen :: WKFullscreenState
 pattern WKFullscreenStateExitingFullscreen = WKFullscreenState 3
 
+instance ObjCArgument WKFullscreenState where
+  withObjCArg (WKFullscreenState x) k = k (argCLong x)
+
+instance ObjCReturn WKFullscreenState where
+  type RawReturn WKFullscreenState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKFullscreenState x)
+  fromOwned x = pure (WKFullscreenState x)
+
 -- | @WKInactiveSchedulingPolicy@
 newtype WKInactiveSchedulingPolicy = WKInactiveSchedulingPolicy CLong
   deriving stock (Eq, Ord, Show)
@@ -321,6 +444,16 @@ pattern WKInactiveSchedulingPolicyThrottle = WKInactiveSchedulingPolicy 1
 
 pattern WKInactiveSchedulingPolicyNone :: WKInactiveSchedulingPolicy
 pattern WKInactiveSchedulingPolicyNone = WKInactiveSchedulingPolicy 2
+
+instance ObjCArgument WKInactiveSchedulingPolicy where
+  withObjCArg (WKInactiveSchedulingPolicy x) k = k (argCLong x)
+
+instance ObjCReturn WKInactiveSchedulingPolicy where
+  type RawReturn WKInactiveSchedulingPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKInactiveSchedulingPolicy x)
+  fromOwned x = pure (WKInactiveSchedulingPolicy x)
 
 -- | @WKMediaCaptureState@
 newtype WKMediaCaptureState = WKMediaCaptureState CLong
@@ -336,6 +469,16 @@ pattern WKMediaCaptureStateActive = WKMediaCaptureState 1
 pattern WKMediaCaptureStateMuted :: WKMediaCaptureState
 pattern WKMediaCaptureStateMuted = WKMediaCaptureState 2
 
+instance ObjCArgument WKMediaCaptureState where
+  withObjCArg (WKMediaCaptureState x) k = k (argCLong x)
+
+instance ObjCReturn WKMediaCaptureState where
+  type RawReturn WKMediaCaptureState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKMediaCaptureState x)
+  fromOwned x = pure (WKMediaCaptureState x)
+
 -- | @WKMediaCaptureType@
 newtype WKMediaCaptureType = WKMediaCaptureType CLong
   deriving stock (Eq, Ord, Show)
@@ -349,6 +492,16 @@ pattern WKMediaCaptureTypeMicrophone = WKMediaCaptureType 1
 
 pattern WKMediaCaptureTypeCameraAndMicrophone :: WKMediaCaptureType
 pattern WKMediaCaptureTypeCameraAndMicrophone = WKMediaCaptureType 2
+
+instance ObjCArgument WKMediaCaptureType where
+  withObjCArg (WKMediaCaptureType x) k = k (argCLong x)
+
+instance ObjCReturn WKMediaCaptureType where
+  type RawReturn WKMediaCaptureType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKMediaCaptureType x)
+  fromOwned x = pure (WKMediaCaptureType x)
 
 -- | @WKMediaPlaybackState@
 newtype WKMediaPlaybackState = WKMediaPlaybackState CLong
@@ -366,6 +519,16 @@ pattern WKMediaPlaybackStatePaused = WKMediaPlaybackState 2
 
 pattern WKMediaPlaybackStateSuspended :: WKMediaPlaybackState
 pattern WKMediaPlaybackStateSuspended = WKMediaPlaybackState 3
+
+instance ObjCArgument WKMediaPlaybackState where
+  withObjCArg (WKMediaPlaybackState x) k = k (argCLong x)
+
+instance ObjCReturn WKMediaPlaybackState where
+  type RawReturn WKMediaPlaybackState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKMediaPlaybackState x)
+  fromOwned x = pure (WKMediaPlaybackState x)
 
 -- | WKNavigationActionPolicy
 --
@@ -390,6 +553,16 @@ pattern WKNavigationActionPolicyAllow = WKNavigationActionPolicy 1
 pattern WKNavigationActionPolicyDownload :: WKNavigationActionPolicy
 pattern WKNavigationActionPolicyDownload = WKNavigationActionPolicy 2
 
+instance ObjCArgument WKNavigationActionPolicy where
+  withObjCArg (WKNavigationActionPolicy x) k = k (argCLong x)
+
+instance ObjCReturn WKNavigationActionPolicy where
+  type RawReturn WKNavigationActionPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKNavigationActionPolicy x)
+  fromOwned x = pure (WKNavigationActionPolicy x)
+
 -- | WKNavigationResponsePolicy
 --
 -- The policy to pass back to the decision handler from the webView:decidePolicyForNavigationResponse:decisionHandler: method.
@@ -412,6 +585,16 @@ pattern WKNavigationResponsePolicyAllow = WKNavigationResponsePolicy 1
 
 pattern WKNavigationResponsePolicyDownload :: WKNavigationResponsePolicy
 pattern WKNavigationResponsePolicyDownload = WKNavigationResponsePolicy 2
+
+instance ObjCArgument WKNavigationResponsePolicy where
+  withObjCArg (WKNavigationResponsePolicy x) k = k (argCLong x)
+
+instance ObjCReturn WKNavigationResponsePolicy where
+  type RawReturn WKNavigationResponsePolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKNavigationResponsePolicy x)
+  fromOwned x = pure (WKNavigationResponsePolicy x)
 
 -- | WKNavigationType
 --
@@ -451,6 +634,16 @@ pattern WKNavigationTypeFormResubmitted = WKNavigationType 4
 pattern WKNavigationTypeOther :: WKNavigationType
 pattern WKNavigationTypeOther = WKNavigationType (-1)
 
+instance ObjCArgument WKNavigationType where
+  withObjCArg (WKNavigationType x) k = k (argCLong x)
+
+instance ObjCReturn WKNavigationType where
+  type RawReturn WKNavigationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKNavigationType x)
+  fromOwned x = pure (WKNavigationType x)
+
 -- | @WKPermissionDecision@
 newtype WKPermissionDecision = WKPermissionDecision CLong
   deriving stock (Eq, Ord, Show)
@@ -464,6 +657,16 @@ pattern WKPermissionDecisionGrant = WKPermissionDecision 1
 
 pattern WKPermissionDecisionDeny :: WKPermissionDecision
 pattern WKPermissionDecisionDeny = WKPermissionDecision 2
+
+instance ObjCArgument WKPermissionDecision where
+  withObjCArg (WKPermissionDecision x) k = k (argCLong x)
+
+instance ObjCReturn WKPermissionDecision where
+  type RawReturn WKPermissionDecision = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKPermissionDecision x)
+  fromOwned x = pure (WKPermissionDecision x)
 
 -- | WKUserInterfaceDirectionPolicy
 --
@@ -489,6 +692,16 @@ pattern WKUserInterfaceDirectionPolicyContent = WKUserInterfaceDirectionPolicy 0
 pattern WKUserInterfaceDirectionPolicySystem :: WKUserInterfaceDirectionPolicy
 pattern WKUserInterfaceDirectionPolicySystem = WKUserInterfaceDirectionPolicy 1
 
+instance ObjCArgument WKUserInterfaceDirectionPolicy where
+  withObjCArg (WKUserInterfaceDirectionPolicy x) k = k (argCLong x)
+
+instance ObjCReturn WKUserInterfaceDirectionPolicy where
+  type RawReturn WKUserInterfaceDirectionPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKUserInterfaceDirectionPolicy x)
+  fromOwned x = pure (WKUserInterfaceDirectionPolicy x)
+
 -- | WKUserScriptInjectionTime
 --
 -- when a user script should be injected into a webpage.
@@ -506,6 +719,16 @@ pattern WKUserScriptInjectionTimeAtDocumentStart = WKUserScriptInjectionTime 0
 
 pattern WKUserScriptInjectionTimeAtDocumentEnd :: WKUserScriptInjectionTime
 pattern WKUserScriptInjectionTimeAtDocumentEnd = WKUserScriptInjectionTime 1
+
+instance ObjCArgument WKUserScriptInjectionTime where
+  withObjCArg (WKUserScriptInjectionTime x) k = k (argCLong x)
+
+instance ObjCReturn WKUserScriptInjectionTime where
+  type RawReturn WKUserScriptInjectionTime = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKUserScriptInjectionTime x)
+  fromOwned x = pure (WKUserScriptInjectionTime x)
 
 -- | Constants used by ``NSError`` to indicate errors in the ``WKWebExtensionContext`` domain.
 --
@@ -542,6 +765,16 @@ pattern WKWebExtensionContextErrorNoBackgroundContent = WKWebExtensionContextErr
 
 pattern WKWebExtensionContextErrorBackgroundContentFailedToLoad :: WKWebExtensionContextError
 pattern WKWebExtensionContextErrorBackgroundContentFailedToLoad = WKWebExtensionContextError 6
+
+instance ObjCArgument WKWebExtensionContextError where
+  withObjCArg (WKWebExtensionContextError x) k = k (argCLong x)
+
+instance ObjCReturn WKWebExtensionContextError where
+  type RawReturn WKWebExtensionContextError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionContextError x)
+  fromOwned x = pure (WKWebExtensionContextError x)
 
 -- | Constants used to indicate permission status in ``WKWebExtensionContext``.
 --
@@ -584,6 +817,16 @@ pattern WKWebExtensionContextPermissionStatusGrantedImplicitly = WKWebExtensionC
 pattern WKWebExtensionContextPermissionStatusGrantedExplicitly :: WKWebExtensionContextPermissionStatus
 pattern WKWebExtensionContextPermissionStatusGrantedExplicitly = WKWebExtensionContextPermissionStatus 3
 
+instance ObjCArgument WKWebExtensionContextPermissionStatus where
+  withObjCArg (WKWebExtensionContextPermissionStatus x) k = k (argCLong x)
+
+instance ObjCReturn WKWebExtensionContextPermissionStatus where
+  type RawReturn WKWebExtensionContextPermissionStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionContextPermissionStatus x)
+  fromOwned x = pure (WKWebExtensionContextPermissionStatus x)
+
 -- | Constants used by ``NSError`` to indicate errors in the ``WKWebExtensionDataRecord`` domain.
 --
 -- WKWebExtensionDataRecordErrorUnknown  Indicates that an unknown error occurred.
@@ -609,6 +852,16 @@ pattern WKWebExtensionDataRecordErrorSessionStorageFailed = WKWebExtensionDataRe
 
 pattern WKWebExtensionDataRecordErrorSynchronizedStorageFailed :: WKWebExtensionDataRecordError
 pattern WKWebExtensionDataRecordErrorSynchronizedStorageFailed = WKWebExtensionDataRecordError 4
+
+instance ObjCArgument WKWebExtensionDataRecordError where
+  withObjCArg (WKWebExtensionDataRecordError x) k = k (argCLong x)
+
+instance ObjCReturn WKWebExtensionDataRecordError where
+  type RawReturn WKWebExtensionDataRecordError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionDataRecordError x)
+  fromOwned x = pure (WKWebExtensionDataRecordError x)
 
 -- | Constants used by ``NSError`` to indicate errors in the ``WKWebExtension`` domain.
 --
@@ -661,6 +914,16 @@ pattern WKWebExtensionErrorInvalidBackgroundPersistence = WKWebExtensionError 8
 pattern WKWebExtensionErrorInvalidArchive :: WKWebExtensionError
 pattern WKWebExtensionErrorInvalidArchive = WKWebExtensionError 9
 
+instance ObjCArgument WKWebExtensionError where
+  withObjCArg (WKWebExtensionError x) k = k (argCLong x)
+
+instance ObjCReturn WKWebExtensionError where
+  type RawReturn WKWebExtensionError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionError x)
+  fromOwned x = pure (WKWebExtensionError x)
+
 -- | Constants used by ``NSError`` to indicate errors in the ``WKWebExtensionMatchPattern`` domain.
 --
 -- WKWebExtensionMatchPatternErrorUnknown  Indicates that an unknown error occurred.
@@ -686,6 +949,16 @@ pattern WKWebExtensionMatchPatternErrorInvalidHost = WKWebExtensionMatchPatternE
 
 pattern WKWebExtensionMatchPatternErrorInvalidPath :: WKWebExtensionMatchPatternError
 pattern WKWebExtensionMatchPatternErrorInvalidPath = WKWebExtensionMatchPatternError 4
+
+instance ObjCArgument WKWebExtensionMatchPatternError where
+  withObjCArg (WKWebExtensionMatchPatternError x) k = k (argCLong x)
+
+instance ObjCReturn WKWebExtensionMatchPatternError where
+  type RawReturn WKWebExtensionMatchPatternError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionMatchPatternError x)
+  fromOwned x = pure (WKWebExtensionMatchPatternError x)
 
 -- | Constants used by ``WKWebExtensionMatchPattern`` to indicate matching options.
 --
@@ -719,6 +992,16 @@ pattern WKWebExtensionMatchPatternOptionsIgnorePaths = WKWebExtensionMatchPatter
 pattern WKWebExtensionMatchPatternOptionsMatchBidirectionally :: WKWebExtensionMatchPatternOptions
 pattern WKWebExtensionMatchPatternOptionsMatchBidirectionally = WKWebExtensionMatchPatternOptions 4
 
+instance ObjCArgument WKWebExtensionMatchPatternOptions where
+  withObjCArg (WKWebExtensionMatchPatternOptions x) k = k (argCULong x)
+
+instance ObjCReturn WKWebExtensionMatchPatternOptions where
+  type RawReturn WKWebExtensionMatchPatternOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionMatchPatternOptions x)
+  fromOwned x = pure (WKWebExtensionMatchPatternOptions x)
+
 -- | Constants used by ``NSError`` to indicate errors in the ``WKWebExtensionMessagePort`` domain.
 --
 -- WKWebExtensionMessagePortErrorUnknown  Indicates that an unknown error occurred.
@@ -739,6 +1022,16 @@ pattern WKWebExtensionMessagePortErrorNotConnected = WKWebExtensionMessagePortEr
 
 pattern WKWebExtensionMessagePortErrorMessageInvalid :: WKWebExtensionMessagePortError
 pattern WKWebExtensionMessagePortErrorMessageInvalid = WKWebExtensionMessagePortError 3
+
+instance ObjCArgument WKWebExtensionMessagePortError where
+  withObjCArg (WKWebExtensionMessagePortError x) k = k (argCLong x)
+
+instance ObjCReturn WKWebExtensionMessagePortError where
+  type RawReturn WKWebExtensionMessagePortError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionMessagePortError x)
+  fromOwned x = pure (WKWebExtensionMessagePortError x)
 
 -- | Constants used by ``WKWebExtensionController \@/link and
 --
@@ -794,6 +1087,16 @@ pattern WKWebExtensionTabChangedPropertiesURL = WKWebExtensionTabChangedProperti
 pattern WKWebExtensionTabChangedPropertiesZoomFactor :: WKWebExtensionTabChangedProperties
 pattern WKWebExtensionTabChangedPropertiesZoomFactor = WKWebExtensionTabChangedProperties 512
 
+instance ObjCArgument WKWebExtensionTabChangedProperties where
+  withObjCArg (WKWebExtensionTabChangedProperties x) k = k (argCULong x)
+
+instance ObjCReturn WKWebExtensionTabChangedProperties where
+  type RawReturn WKWebExtensionTabChangedProperties = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionTabChangedProperties x)
+  fromOwned x = pure (WKWebExtensionTabChangedProperties x)
+
 -- | Constants used by ``WKWebExtensionWindow`` to indicate possible states of a window.
 --
 -- WKWebExtensionWindowStateNormal  Indicates a window is in its normal state.
@@ -820,6 +1123,16 @@ pattern WKWebExtensionWindowStateMaximized = WKWebExtensionWindowState 2
 pattern WKWebExtensionWindowStateFullscreen :: WKWebExtensionWindowState
 pattern WKWebExtensionWindowStateFullscreen = WKWebExtensionWindowState 3
 
+instance ObjCArgument WKWebExtensionWindowState where
+  withObjCArg (WKWebExtensionWindowState x) k = k (argCLong x)
+
+instance ObjCReturn WKWebExtensionWindowState where
+  type RawReturn WKWebExtensionWindowState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionWindowState x)
+  fromOwned x = pure (WKWebExtensionWindowState x)
+
 -- | Constants used by ``WKWebExtensionWindow`` to indicate the type of a window.
 --
 -- WKWebExtensionWindowTypeNormal  Indicates a normal window.
@@ -836,6 +1149,16 @@ pattern WKWebExtensionWindowTypeNormal = WKWebExtensionWindowType 0
 pattern WKWebExtensionWindowTypePopup :: WKWebExtensionWindowType
 pattern WKWebExtensionWindowTypePopup = WKWebExtensionWindowType 1
 
+instance ObjCArgument WKWebExtensionWindowType where
+  withObjCArg (WKWebExtensionWindowType x) k = k (argCLong x)
+
+instance ObjCReturn WKWebExtensionWindowType where
+  type RawReturn WKWebExtensionWindowType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebExtensionWindowType x)
+  fromOwned x = pure (WKWebExtensionWindowType x)
+
 -- | @WKWebViewDataType@ (bitmask)
 newtype WKWebViewDataType = WKWebViewDataType CULong
   deriving stock (Eq, Ord, Show)
@@ -849,6 +1172,16 @@ instance Monoid WKWebViewDataType where
 
 pattern WKWebViewDataTypeSessionStorage :: WKWebViewDataType
 pattern WKWebViewDataTypeSessionStorage = WKWebViewDataType 1
+
+instance ObjCArgument WKWebViewDataType where
+  withObjCArg (WKWebViewDataType x) k = k (argCULong x)
+
+instance ObjCReturn WKWebViewDataType where
+  type RawReturn WKWebViewDataType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebViewDataType x)
+  fromOwned x = pure (WKWebViewDataType x)
 
 -- | WKWebpagePreferencesUpgradeToHTTPSPolicy
 --
@@ -877,6 +1210,16 @@ pattern WKWebpagePreferencesUpgradeToHTTPSPolicyUserMediatedFallbackToHTTP = WKW
 
 pattern WKWebpagePreferencesUpgradeToHTTPSPolicyErrorOnFailure :: WKWebpagePreferencesUpgradeToHTTPSPolicy
 pattern WKWebpagePreferencesUpgradeToHTTPSPolicyErrorOnFailure = WKWebpagePreferencesUpgradeToHTTPSPolicy 3
+
+instance ObjCArgument WKWebpagePreferencesUpgradeToHTTPSPolicy where
+  withObjCArg (WKWebpagePreferencesUpgradeToHTTPSPolicy x) k = k (argCLong x)
+
+instance ObjCReturn WKWebpagePreferencesUpgradeToHTTPSPolicy where
+  type RawReturn WKWebpagePreferencesUpgradeToHTTPSPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WKWebpagePreferencesUpgradeToHTTPSPolicy x)
+  fromOwned x = pure (WKWebpagePreferencesUpgradeToHTTPSPolicy x)
 
 -- | WebCacheModel
 --
@@ -912,6 +1255,16 @@ pattern WebCacheModelDocumentBrowser = WebCacheModel 1
 
 pattern WebCacheModelPrimaryWebBrowser :: WebCacheModel
 pattern WebCacheModelPrimaryWebBrowser = WebCacheModel 2
+
+instance ObjCArgument WebCacheModel where
+  withObjCArg (WebCacheModel x) k = k (argCULong x)
+
+instance ObjCReturn WebCacheModel where
+  type RawReturn WebCacheModel = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WebCacheModel x)
+  fromOwned x = pure (WebCacheModel x)
 
 -- | WebDragDestinationAction
 --
@@ -951,6 +1304,16 @@ pattern WebDragDestinationActionLoad = WebDragDestinationAction 4
 
 pattern WebDragDestinationActionAny :: WebDragDestinationAction
 pattern WebDragDestinationActionAny = WebDragDestinationAction 4294967295
+
+instance ObjCArgument WebDragDestinationAction where
+  withObjCArg (WebDragDestinationAction x) k = k (argCULong x)
+
+instance ObjCReturn WebDragDestinationAction where
+  type RawReturn WebDragDestinationAction = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WebDragDestinationAction x)
+  fromOwned x = pure (WebDragDestinationAction x)
 
 -- | WebDragSourceAction
 --
@@ -996,6 +1359,16 @@ pattern WebDragSourceActionSelection = WebDragSourceAction 8
 pattern WebDragSourceActionAny :: WebDragSourceAction
 pattern WebDragSourceActionAny = WebDragSourceAction 4294967295
 
+instance ObjCArgument WebDragSourceAction where
+  withObjCArg (WebDragSourceAction x) k = k (argCULong x)
+
+instance ObjCReturn WebDragSourceAction where
+  type RawReturn WebDragSourceAction = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WebDragSourceAction x)
+  fromOwned x = pure (WebDragSourceAction x)
+
 -- | WebNavigationType
 --
 -- The type of action that triggered a possible navigation.
@@ -1034,6 +1407,16 @@ pattern WebNavigationTypeFormResubmitted = WebNavigationType 4
 pattern WebNavigationTypeOther :: WebNavigationType
 pattern WebNavigationTypeOther = WebNavigationType 5
 
+instance ObjCArgument WebNavigationType where
+  withObjCArg (WebNavigationType x) k = k (argCLong x)
+
+instance ObjCReturn WebNavigationType where
+  type RawReturn WebNavigationType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WebNavigationType x)
+  fromOwned x = pure (WebNavigationType x)
+
 -- | @WebViewInsertAction@
 newtype WebViewInsertAction = WebViewInsertAction CLong
   deriving stock (Eq, Ord, Show)
@@ -1047,3 +1430,13 @@ pattern WebViewInsertActionPasted = WebViewInsertAction 1
 
 pattern WebViewInsertActionDropped :: WebViewInsertAction
 pattern WebViewInsertActionDropped = WebViewInsertAction 2
+
+instance ObjCArgument WebViewInsertAction where
+  withObjCArg (WebViewInsertAction x) k = k (argCLong x)
+
+instance ObjCReturn WebViewInsertAction where
+  type RawReturn WebViewInsertAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (WebViewInsertAction x)
+  fromOwned x = pure (WebViewInsertAction x)

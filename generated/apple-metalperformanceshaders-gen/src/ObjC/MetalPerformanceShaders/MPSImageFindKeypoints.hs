@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.MetalPerformanceShaders.MPSImageFindKeypoints
   , initWithDevice
   , initWithCoder_device
   , encodeToCommandBuffer_sourceTexture_regions_numberOfRegions_keypointCountBuffer_keypointCountBufferOffset_keypointDataBuffer_keypointDataBufferOffset
-  , initWithDevice_infoSelector
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
   , encodeToCommandBuffer_sourceTexture_regions_numberOfRegions_keypointCountBuffer_keypointCountBufferOffset_keypointDataBuffer_keypointDataBufferOffsetSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_infoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,13 +44,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:info:@
 initWithDevice_info :: IsMPSImageFindKeypoints mpsImageFindKeypoints => mpsImageFindKeypoints -> RawId -> Const RawId -> IO (Id MPSImageFindKeypoints)
-initWithDevice_info mpsImageFindKeypoints  device info =
-    sendMsg mpsImageFindKeypoints (mkSelector "initWithDevice:info:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId (unConst info)) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_info mpsImageFindKeypoints device info =
+  sendOwnedMessage mpsImageFindKeypoints initWithDevice_infoSelector device info
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageFindKeypoints mpsImageFindKeypoints => mpsImageFindKeypoints -> RawId -> IO (Id MPSImageFindKeypoints)
-initWithDevice mpsImageFindKeypoints  device =
-    sendMsg mpsImageFindKeypoints (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageFindKeypoints device =
+  sendOwnedMessage mpsImageFindKeypoints initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -67,9 +64,8 @@ initWithDevice mpsImageFindKeypoints  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageFindKeypoints mpsImageFindKeypoints, IsNSCoder aDecoder) => mpsImageFindKeypoints -> aDecoder -> RawId -> IO (Id MPSImageFindKeypoints)
-initWithCoder_device mpsImageFindKeypoints  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageFindKeypoints (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageFindKeypoints aDecoder device =
+  sendOwnedMessage mpsImageFindKeypoints initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode the filter to a command buffer using a MTLComputeCommandEncoder.
 --
@@ -91,26 +87,26 @@ initWithCoder_device mpsImageFindKeypoints  aDecoder device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:sourceTexture:regions:numberOfRegions:keypointCountBuffer:keypointCountBufferOffset:keypointDataBuffer:keypointDataBufferOffset:@
 encodeToCommandBuffer_sourceTexture_regions_numberOfRegions_keypointCountBuffer_keypointCountBufferOffset_keypointDataBuffer_keypointDataBufferOffset :: IsMPSImageFindKeypoints mpsImageFindKeypoints => mpsImageFindKeypoints -> RawId -> RawId -> Const RawId -> CULong -> RawId -> CULong -> RawId -> CULong -> IO ()
-encodeToCommandBuffer_sourceTexture_regions_numberOfRegions_keypointCountBuffer_keypointCountBufferOffset_keypointDataBuffer_keypointDataBufferOffset mpsImageFindKeypoints  commandBuffer source regions numberOfRegions keypointCountBuffer keypointCountBufferOffset keypointDataBuffer keypointDataBufferOffset =
-    sendMsg mpsImageFindKeypoints (mkSelector "encodeToCommandBuffer:sourceTexture:regions:numberOfRegions:keypointCountBuffer:keypointCountBufferOffset:keypointDataBuffer:keypointDataBufferOffset:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ()), argPtr (castPtr (unRawId (unConst regions)) :: Ptr ()), argCULong numberOfRegions, argPtr (castPtr (unRawId keypointCountBuffer) :: Ptr ()), argCULong keypointCountBufferOffset, argPtr (castPtr (unRawId keypointDataBuffer) :: Ptr ()), argCULong keypointDataBufferOffset]
+encodeToCommandBuffer_sourceTexture_regions_numberOfRegions_keypointCountBuffer_keypointCountBufferOffset_keypointDataBuffer_keypointDataBufferOffset mpsImageFindKeypoints commandBuffer source regions numberOfRegions keypointCountBuffer keypointCountBufferOffset keypointDataBuffer keypointDataBufferOffset =
+  sendMessage mpsImageFindKeypoints encodeToCommandBuffer_sourceTexture_regions_numberOfRegions_keypointCountBuffer_keypointCountBufferOffset_keypointDataBuffer_keypointDataBufferOffsetSelector commandBuffer source regions numberOfRegions keypointCountBuffer keypointCountBufferOffset keypointDataBuffer keypointDataBufferOffset
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:info:@
-initWithDevice_infoSelector :: Selector
+initWithDevice_infoSelector :: Selector '[RawId, Const RawId] (Id MPSImageFindKeypoints)
 initWithDevice_infoSelector = mkSelector "initWithDevice:info:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageFindKeypoints)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageFindKeypoints)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceTexture:regions:numberOfRegions:keypointCountBuffer:keypointCountBufferOffset:keypointDataBuffer:keypointDataBufferOffset:@
-encodeToCommandBuffer_sourceTexture_regions_numberOfRegions_keypointCountBuffer_keypointCountBufferOffset_keypointDataBuffer_keypointDataBufferOffsetSelector :: Selector
+encodeToCommandBuffer_sourceTexture_regions_numberOfRegions_keypointCountBuffer_keypointCountBufferOffset_keypointDataBuffer_keypointDataBufferOffsetSelector :: Selector '[RawId, RawId, Const RawId, CULong, RawId, CULong, RawId, CULong] ()
 encodeToCommandBuffer_sourceTexture_regions_numberOfRegions_keypointCountBuffer_keypointCountBufferOffset_keypointDataBuffer_keypointDataBufferOffsetSelector = mkSelector "encodeToCommandBuffer:sourceTexture:regions:numberOfRegions:keypointCountBuffer:keypointCountBufferOffset:keypointDataBuffer:keypointDataBufferOffset:"
 

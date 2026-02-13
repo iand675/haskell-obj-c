@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,26 +22,22 @@ module ObjC.PHASE.PHASENumberMetaParameterDefinition
   , minimum_
   , maximum_
   , initSelector
-  , newSelector
-  , initWithValue_identifierSelector
   , initWithValueSelector
-  , initWithValue_minimum_maximum_identifierSelector
+  , initWithValue_identifierSelector
   , initWithValue_minimum_maximumSelector
-  , minimumSelector
+  , initWithValue_minimum_maximum_identifierSelector
   , maximumSelector
+  , minimumSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASENumberMetaParameterDefinition phaseNumberMetaParameterDefinition => phaseNumberMetaParameterDefinition -> IO (Id PHASENumberMetaParameterDefinition)
-init_ phaseNumberMetaParameterDefinition  =
-    sendMsg phaseNumberMetaParameterDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseNumberMetaParameterDefinition =
+  sendOwnedMessage phaseNumberMetaParameterDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASENumberMetaParameterDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASENumberMetaParameterDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithValue:identifier
 --
@@ -71,9 +68,8 @@ new  =
 --
 -- ObjC selector: @- initWithValue:identifier:@
 initWithValue_identifier :: (IsPHASENumberMetaParameterDefinition phaseNumberMetaParameterDefinition, IsNSString identifier) => phaseNumberMetaParameterDefinition -> CDouble -> identifier -> IO (Id PHASENumberMetaParameterDefinition)
-initWithValue_identifier phaseNumberMetaParameterDefinition  value identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg phaseNumberMetaParameterDefinition (mkSelector "initWithValue:identifier:") (retPtr retVoid) [argCDouble value, argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithValue_identifier phaseNumberMetaParameterDefinition value identifier =
+  sendOwnedMessage phaseNumberMetaParameterDefinition initWithValue_identifierSelector value (toNSString identifier)
 
 -- | initWithValue
 --
@@ -85,8 +81,8 @@ initWithValue_identifier phaseNumberMetaParameterDefinition  value identifier =
 --
 -- ObjC selector: @- initWithValue:@
 initWithValue :: IsPHASENumberMetaParameterDefinition phaseNumberMetaParameterDefinition => phaseNumberMetaParameterDefinition -> CDouble -> IO (Id PHASENumberMetaParameterDefinition)
-initWithValue phaseNumberMetaParameterDefinition  value =
-    sendMsg phaseNumberMetaParameterDefinition (mkSelector "initWithValue:") (retPtr retVoid) [argCDouble value] >>= ownedObject . castPtr
+initWithValue phaseNumberMetaParameterDefinition value =
+  sendOwnedMessage phaseNumberMetaParameterDefinition initWithValueSelector value
 
 -- | initWithValue:minimum:maximum:identifier
 --
@@ -104,9 +100,8 @@ initWithValue phaseNumberMetaParameterDefinition  value =
 --
 -- ObjC selector: @- initWithValue:minimum:maximum:identifier:@
 initWithValue_minimum_maximum_identifier :: (IsPHASENumberMetaParameterDefinition phaseNumberMetaParameterDefinition, IsNSString identifier) => phaseNumberMetaParameterDefinition -> CDouble -> CDouble -> CDouble -> identifier -> IO (Id PHASENumberMetaParameterDefinition)
-initWithValue_minimum_maximum_identifier phaseNumberMetaParameterDefinition  value minimum_ maximum_ identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg phaseNumberMetaParameterDefinition (mkSelector "initWithValue:minimum:maximum:identifier:") (retPtr retVoid) [argCDouble value, argCDouble minimum_, argCDouble maximum_, argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithValue_minimum_maximum_identifier phaseNumberMetaParameterDefinition value minimum_ maximum_ identifier =
+  sendOwnedMessage phaseNumberMetaParameterDefinition initWithValue_minimum_maximum_identifierSelector value minimum_ maximum_ (toNSString identifier)
 
 -- | initWithValue:minimum:maximum
 --
@@ -122,8 +117,8 @@ initWithValue_minimum_maximum_identifier phaseNumberMetaParameterDefinition  val
 --
 -- ObjC selector: @- initWithValue:minimum:maximum:@
 initWithValue_minimum_maximum :: IsPHASENumberMetaParameterDefinition phaseNumberMetaParameterDefinition => phaseNumberMetaParameterDefinition -> CDouble -> CDouble -> CDouble -> IO (Id PHASENumberMetaParameterDefinition)
-initWithValue_minimum_maximum phaseNumberMetaParameterDefinition  value minimum_ maximum_ =
-    sendMsg phaseNumberMetaParameterDefinition (mkSelector "initWithValue:minimum:maximum:") (retPtr retVoid) [argCDouble value, argCDouble minimum_, argCDouble maximum_] >>= ownedObject . castPtr
+initWithValue_minimum_maximum phaseNumberMetaParameterDefinition value minimum_ maximum_ =
+  sendOwnedMessage phaseNumberMetaParameterDefinition initWithValue_minimum_maximumSelector value minimum_ maximum_
 
 -- | minimum
 --
@@ -131,8 +126,8 @@ initWithValue_minimum_maximum phaseNumberMetaParameterDefinition  value minimum_
 --
 -- ObjC selector: @- minimum@
 minimum_ :: IsPHASENumberMetaParameterDefinition phaseNumberMetaParameterDefinition => phaseNumberMetaParameterDefinition -> IO CDouble
-minimum_ phaseNumberMetaParameterDefinition  =
-    sendMsg phaseNumberMetaParameterDefinition (mkSelector "minimum") retCDouble []
+minimum_ phaseNumberMetaParameterDefinition =
+  sendMessage phaseNumberMetaParameterDefinition minimumSelector
 
 -- | maximum
 --
@@ -140,42 +135,42 @@ minimum_ phaseNumberMetaParameterDefinition  =
 --
 -- ObjC selector: @- maximum@
 maximum_ :: IsPHASENumberMetaParameterDefinition phaseNumberMetaParameterDefinition => phaseNumberMetaParameterDefinition -> IO CDouble
-maximum_ phaseNumberMetaParameterDefinition  =
-    sendMsg phaseNumberMetaParameterDefinition (mkSelector "maximum") retCDouble []
+maximum_ phaseNumberMetaParameterDefinition =
+  sendMessage phaseNumberMetaParameterDefinition maximumSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASENumberMetaParameterDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASENumberMetaParameterDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithValue:identifier:@
-initWithValue_identifierSelector :: Selector
+initWithValue_identifierSelector :: Selector '[CDouble, Id NSString] (Id PHASENumberMetaParameterDefinition)
 initWithValue_identifierSelector = mkSelector "initWithValue:identifier:"
 
 -- | @Selector@ for @initWithValue:@
-initWithValueSelector :: Selector
+initWithValueSelector :: Selector '[CDouble] (Id PHASENumberMetaParameterDefinition)
 initWithValueSelector = mkSelector "initWithValue:"
 
 -- | @Selector@ for @initWithValue:minimum:maximum:identifier:@
-initWithValue_minimum_maximum_identifierSelector :: Selector
+initWithValue_minimum_maximum_identifierSelector :: Selector '[CDouble, CDouble, CDouble, Id NSString] (Id PHASENumberMetaParameterDefinition)
 initWithValue_minimum_maximum_identifierSelector = mkSelector "initWithValue:minimum:maximum:identifier:"
 
 -- | @Selector@ for @initWithValue:minimum:maximum:@
-initWithValue_minimum_maximumSelector :: Selector
+initWithValue_minimum_maximumSelector :: Selector '[CDouble, CDouble, CDouble] (Id PHASENumberMetaParameterDefinition)
 initWithValue_minimum_maximumSelector = mkSelector "initWithValue:minimum:maximum:"
 
 -- | @Selector@ for @minimum@
-minimumSelector :: Selector
+minimumSelector :: Selector '[] CDouble
 minimumSelector = mkSelector "minimum"
 
 -- | @Selector@ for @maximum@
-maximumSelector :: Selector
+maximumSelector :: Selector '[] CDouble
 maximumSelector = mkSelector "maximum"
 

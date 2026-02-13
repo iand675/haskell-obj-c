@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRAccessControlClusterFabricRestrictionReviewUpdateEvent
   , setArlRequestFlowUrl
   , fabricIndex
   , setFabricIndex
-  , tokenSelector
-  , setTokenSelector
-  , instructionSelector
-  , setInstructionSelector
   , arlRequestFlowUrlSelector
-  , setArlRequestFlowUrlSelector
   , fabricIndexSelector
+  , instructionSelector
+  , setArlRequestFlowUrlSelector
   , setFabricIndexSelector
+  , setInstructionSelector
+  , setTokenSelector
+  , tokenSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- token@
 token :: IsMTRAccessControlClusterFabricRestrictionReviewUpdateEvent mtrAccessControlClusterFabricRestrictionReviewUpdateEvent => mtrAccessControlClusterFabricRestrictionReviewUpdateEvent -> IO (Id NSNumber)
-token mtrAccessControlClusterFabricRestrictionReviewUpdateEvent  =
-    sendMsg mtrAccessControlClusterFabricRestrictionReviewUpdateEvent (mkSelector "token") (retPtr retVoid) [] >>= retainedObject . castPtr
+token mtrAccessControlClusterFabricRestrictionReviewUpdateEvent =
+  sendMessage mtrAccessControlClusterFabricRestrictionReviewUpdateEvent tokenSelector
 
 -- | @- setToken:@
 setToken :: (IsMTRAccessControlClusterFabricRestrictionReviewUpdateEvent mtrAccessControlClusterFabricRestrictionReviewUpdateEvent, IsNSNumber value) => mtrAccessControlClusterFabricRestrictionReviewUpdateEvent -> value -> IO ()
-setToken mtrAccessControlClusterFabricRestrictionReviewUpdateEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterFabricRestrictionReviewUpdateEvent (mkSelector "setToken:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setToken mtrAccessControlClusterFabricRestrictionReviewUpdateEvent value =
+  sendMessage mtrAccessControlClusterFabricRestrictionReviewUpdateEvent setTokenSelector (toNSNumber value)
 
 -- | @- instruction@
 instruction :: IsMTRAccessControlClusterFabricRestrictionReviewUpdateEvent mtrAccessControlClusterFabricRestrictionReviewUpdateEvent => mtrAccessControlClusterFabricRestrictionReviewUpdateEvent -> IO (Id NSString)
-instruction mtrAccessControlClusterFabricRestrictionReviewUpdateEvent  =
-    sendMsg mtrAccessControlClusterFabricRestrictionReviewUpdateEvent (mkSelector "instruction") (retPtr retVoid) [] >>= retainedObject . castPtr
+instruction mtrAccessControlClusterFabricRestrictionReviewUpdateEvent =
+  sendMessage mtrAccessControlClusterFabricRestrictionReviewUpdateEvent instructionSelector
 
 -- | @- setInstruction:@
 setInstruction :: (IsMTRAccessControlClusterFabricRestrictionReviewUpdateEvent mtrAccessControlClusterFabricRestrictionReviewUpdateEvent, IsNSString value) => mtrAccessControlClusterFabricRestrictionReviewUpdateEvent -> value -> IO ()
-setInstruction mtrAccessControlClusterFabricRestrictionReviewUpdateEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterFabricRestrictionReviewUpdateEvent (mkSelector "setInstruction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInstruction mtrAccessControlClusterFabricRestrictionReviewUpdateEvent value =
+  sendMessage mtrAccessControlClusterFabricRestrictionReviewUpdateEvent setInstructionSelector (toNSString value)
 
 -- | @- arlRequestFlowUrl@
 arlRequestFlowUrl :: IsMTRAccessControlClusterFabricRestrictionReviewUpdateEvent mtrAccessControlClusterFabricRestrictionReviewUpdateEvent => mtrAccessControlClusterFabricRestrictionReviewUpdateEvent -> IO (Id NSString)
-arlRequestFlowUrl mtrAccessControlClusterFabricRestrictionReviewUpdateEvent  =
-    sendMsg mtrAccessControlClusterFabricRestrictionReviewUpdateEvent (mkSelector "arlRequestFlowUrl") (retPtr retVoid) [] >>= retainedObject . castPtr
+arlRequestFlowUrl mtrAccessControlClusterFabricRestrictionReviewUpdateEvent =
+  sendMessage mtrAccessControlClusterFabricRestrictionReviewUpdateEvent arlRequestFlowUrlSelector
 
 -- | @- setArlRequestFlowUrl:@
 setArlRequestFlowUrl :: (IsMTRAccessControlClusterFabricRestrictionReviewUpdateEvent mtrAccessControlClusterFabricRestrictionReviewUpdateEvent, IsNSString value) => mtrAccessControlClusterFabricRestrictionReviewUpdateEvent -> value -> IO ()
-setArlRequestFlowUrl mtrAccessControlClusterFabricRestrictionReviewUpdateEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterFabricRestrictionReviewUpdateEvent (mkSelector "setArlRequestFlowUrl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArlRequestFlowUrl mtrAccessControlClusterFabricRestrictionReviewUpdateEvent value =
+  sendMessage mtrAccessControlClusterFabricRestrictionReviewUpdateEvent setArlRequestFlowUrlSelector (toNSString value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRAccessControlClusterFabricRestrictionReviewUpdateEvent mtrAccessControlClusterFabricRestrictionReviewUpdateEvent => mtrAccessControlClusterFabricRestrictionReviewUpdateEvent -> IO (Id NSNumber)
-fabricIndex mtrAccessControlClusterFabricRestrictionReviewUpdateEvent  =
-    sendMsg mtrAccessControlClusterFabricRestrictionReviewUpdateEvent (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrAccessControlClusterFabricRestrictionReviewUpdateEvent =
+  sendMessage mtrAccessControlClusterFabricRestrictionReviewUpdateEvent fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRAccessControlClusterFabricRestrictionReviewUpdateEvent mtrAccessControlClusterFabricRestrictionReviewUpdateEvent, IsNSNumber value) => mtrAccessControlClusterFabricRestrictionReviewUpdateEvent -> value -> IO ()
-setFabricIndex mtrAccessControlClusterFabricRestrictionReviewUpdateEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccessControlClusterFabricRestrictionReviewUpdateEvent (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrAccessControlClusterFabricRestrictionReviewUpdateEvent value =
+  sendMessage mtrAccessControlClusterFabricRestrictionReviewUpdateEvent setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @token@
-tokenSelector :: Selector
+tokenSelector :: Selector '[] (Id NSNumber)
 tokenSelector = mkSelector "token"
 
 -- | @Selector@ for @setToken:@
-setTokenSelector :: Selector
+setTokenSelector :: Selector '[Id NSNumber] ()
 setTokenSelector = mkSelector "setToken:"
 
 -- | @Selector@ for @instruction@
-instructionSelector :: Selector
+instructionSelector :: Selector '[] (Id NSString)
 instructionSelector = mkSelector "instruction"
 
 -- | @Selector@ for @setInstruction:@
-setInstructionSelector :: Selector
+setInstructionSelector :: Selector '[Id NSString] ()
 setInstructionSelector = mkSelector "setInstruction:"
 
 -- | @Selector@ for @arlRequestFlowUrl@
-arlRequestFlowUrlSelector :: Selector
+arlRequestFlowUrlSelector :: Selector '[] (Id NSString)
 arlRequestFlowUrlSelector = mkSelector "arlRequestFlowUrl"
 
 -- | @Selector@ for @setArlRequestFlowUrl:@
-setArlRequestFlowUrlSelector :: Selector
+setArlRequestFlowUrlSelector :: Selector '[Id NSString] ()
 setArlRequestFlowUrlSelector = mkSelector "setArlRequestFlowUrl:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

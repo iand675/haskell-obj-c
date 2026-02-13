@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Social.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @SLRequestMethod@
 newtype SLRequestMethod = SLRequestMethod CLong
@@ -27,3 +30,13 @@ pattern SLRequestMethodDELETE = SLRequestMethod 2
 
 pattern SLRequestMethodPUT :: SLRequestMethod
 pattern SLRequestMethodPUT = SLRequestMethod 3
+
+instance ObjCArgument SLRequestMethod where
+  withObjCArg (SLRequestMethod x) k = k (argCLong x)
+
+instance ObjCReturn SLRequestMethod where
+  type RawReturn SLRequestMethod = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SLRequestMethod x)
+  fromOwned x = pure (SLRequestMethod x)

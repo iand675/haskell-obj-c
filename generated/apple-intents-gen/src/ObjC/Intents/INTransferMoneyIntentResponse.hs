@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,21 +23,21 @@ module ObjC.Intents.INTransferMoneyIntentResponse
   , setTransactionNote
   , transferFee
   , setTransferFee
-  , initSelector
-  , initWithCode_userActivitySelector
   , codeSelector
   , fromAccountSelector
+  , initSelector
+  , initWithCode_userActivitySelector
   , setFromAccountSelector
-  , toAccountSelector
   , setToAccountSelector
-  , transactionAmountSelector
   , setTransactionAmountSelector
-  , transactionScheduledDateSelector
-  , setTransactionScheduledDateSelector
-  , transactionNoteSelector
   , setTransactionNoteSelector
-  , transferFeeSelector
+  , setTransactionScheduledDateSelector
   , setTransferFeeSelector
+  , toAccountSelector
+  , transactionAmountSelector
+  , transactionNoteSelector
+  , transactionScheduledDateSelector
+  , transferFeeSelector
 
   -- * Enum types
   , INTransferMoneyIntentResponseCode(INTransferMoneyIntentResponseCode)
@@ -51,15 +52,11 @@ module ObjC.Intents.INTransferMoneyIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,147 +66,140 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse => inTransferMoneyIntentResponse -> IO RawId
-init_ inTransferMoneyIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inTransferMoneyIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inTransferMoneyIntentResponse =
+  sendOwnedMessage inTransferMoneyIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse, IsNSUserActivity userActivity) => inTransferMoneyIntentResponse -> INTransferMoneyIntentResponseCode -> userActivity -> IO (Id INTransferMoneyIntentResponse)
-initWithCode_userActivity inTransferMoneyIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inTransferMoneyIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inTransferMoneyIntentResponse code userActivity =
+  sendOwnedMessage inTransferMoneyIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse => inTransferMoneyIntentResponse -> IO INTransferMoneyIntentResponseCode
-code inTransferMoneyIntentResponse  =
-    fmap (coerce :: CLong -> INTransferMoneyIntentResponseCode) $ sendMsg inTransferMoneyIntentResponse (mkSelector "code") retCLong []
+code inTransferMoneyIntentResponse =
+  sendMessage inTransferMoneyIntentResponse codeSelector
 
 -- | @- fromAccount@
 fromAccount :: IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse => inTransferMoneyIntentResponse -> IO (Id INPaymentAccount)
-fromAccount inTransferMoneyIntentResponse  =
-    sendMsg inTransferMoneyIntentResponse (mkSelector "fromAccount") (retPtr retVoid) [] >>= retainedObject . castPtr
+fromAccount inTransferMoneyIntentResponse =
+  sendMessage inTransferMoneyIntentResponse fromAccountSelector
 
 -- | @- setFromAccount:@
 setFromAccount :: (IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse, IsINPaymentAccount value) => inTransferMoneyIntentResponse -> value -> IO ()
-setFromAccount inTransferMoneyIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inTransferMoneyIntentResponse (mkSelector "setFromAccount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFromAccount inTransferMoneyIntentResponse value =
+  sendMessage inTransferMoneyIntentResponse setFromAccountSelector (toINPaymentAccount value)
 
 -- | @- toAccount@
 toAccount :: IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse => inTransferMoneyIntentResponse -> IO (Id INPaymentAccount)
-toAccount inTransferMoneyIntentResponse  =
-    sendMsg inTransferMoneyIntentResponse (mkSelector "toAccount") (retPtr retVoid) [] >>= retainedObject . castPtr
+toAccount inTransferMoneyIntentResponse =
+  sendMessage inTransferMoneyIntentResponse toAccountSelector
 
 -- | @- setToAccount:@
 setToAccount :: (IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse, IsINPaymentAccount value) => inTransferMoneyIntentResponse -> value -> IO ()
-setToAccount inTransferMoneyIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inTransferMoneyIntentResponse (mkSelector "setToAccount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setToAccount inTransferMoneyIntentResponse value =
+  sendMessage inTransferMoneyIntentResponse setToAccountSelector (toINPaymentAccount value)
 
 -- | @- transactionAmount@
 transactionAmount :: IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse => inTransferMoneyIntentResponse -> IO (Id INPaymentAmount)
-transactionAmount inTransferMoneyIntentResponse  =
-    sendMsg inTransferMoneyIntentResponse (mkSelector "transactionAmount") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionAmount inTransferMoneyIntentResponse =
+  sendMessage inTransferMoneyIntentResponse transactionAmountSelector
 
 -- | @- setTransactionAmount:@
 setTransactionAmount :: (IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse, IsINPaymentAmount value) => inTransferMoneyIntentResponse -> value -> IO ()
-setTransactionAmount inTransferMoneyIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inTransferMoneyIntentResponse (mkSelector "setTransactionAmount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransactionAmount inTransferMoneyIntentResponse value =
+  sendMessage inTransferMoneyIntentResponse setTransactionAmountSelector (toINPaymentAmount value)
 
 -- | @- transactionScheduledDate@
 transactionScheduledDate :: IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse => inTransferMoneyIntentResponse -> IO (Id INDateComponentsRange)
-transactionScheduledDate inTransferMoneyIntentResponse  =
-    sendMsg inTransferMoneyIntentResponse (mkSelector "transactionScheduledDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionScheduledDate inTransferMoneyIntentResponse =
+  sendMessage inTransferMoneyIntentResponse transactionScheduledDateSelector
 
 -- | @- setTransactionScheduledDate:@
 setTransactionScheduledDate :: (IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse, IsINDateComponentsRange value) => inTransferMoneyIntentResponse -> value -> IO ()
-setTransactionScheduledDate inTransferMoneyIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inTransferMoneyIntentResponse (mkSelector "setTransactionScheduledDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransactionScheduledDate inTransferMoneyIntentResponse value =
+  sendMessage inTransferMoneyIntentResponse setTransactionScheduledDateSelector (toINDateComponentsRange value)
 
 -- | @- transactionNote@
 transactionNote :: IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse => inTransferMoneyIntentResponse -> IO (Id NSString)
-transactionNote inTransferMoneyIntentResponse  =
-    sendMsg inTransferMoneyIntentResponse (mkSelector "transactionNote") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionNote inTransferMoneyIntentResponse =
+  sendMessage inTransferMoneyIntentResponse transactionNoteSelector
 
 -- | @- setTransactionNote:@
 setTransactionNote :: (IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse, IsNSString value) => inTransferMoneyIntentResponse -> value -> IO ()
-setTransactionNote inTransferMoneyIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inTransferMoneyIntentResponse (mkSelector "setTransactionNote:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransactionNote inTransferMoneyIntentResponse value =
+  sendMessage inTransferMoneyIntentResponse setTransactionNoteSelector (toNSString value)
 
 -- | @- transferFee@
 transferFee :: IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse => inTransferMoneyIntentResponse -> IO (Id INCurrencyAmount)
-transferFee inTransferMoneyIntentResponse  =
-    sendMsg inTransferMoneyIntentResponse (mkSelector "transferFee") (retPtr retVoid) [] >>= retainedObject . castPtr
+transferFee inTransferMoneyIntentResponse =
+  sendMessage inTransferMoneyIntentResponse transferFeeSelector
 
 -- | @- setTransferFee:@
 setTransferFee :: (IsINTransferMoneyIntentResponse inTransferMoneyIntentResponse, IsINCurrencyAmount value) => inTransferMoneyIntentResponse -> value -> IO ()
-setTransferFee inTransferMoneyIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inTransferMoneyIntentResponse (mkSelector "setTransferFee:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransferFee inTransferMoneyIntentResponse value =
+  sendMessage inTransferMoneyIntentResponse setTransferFeeSelector (toINCurrencyAmount value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INTransferMoneyIntentResponseCode, Id NSUserActivity] (Id INTransferMoneyIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INTransferMoneyIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @fromAccount@
-fromAccountSelector :: Selector
+fromAccountSelector :: Selector '[] (Id INPaymentAccount)
 fromAccountSelector = mkSelector "fromAccount"
 
 -- | @Selector@ for @setFromAccount:@
-setFromAccountSelector :: Selector
+setFromAccountSelector :: Selector '[Id INPaymentAccount] ()
 setFromAccountSelector = mkSelector "setFromAccount:"
 
 -- | @Selector@ for @toAccount@
-toAccountSelector :: Selector
+toAccountSelector :: Selector '[] (Id INPaymentAccount)
 toAccountSelector = mkSelector "toAccount"
 
 -- | @Selector@ for @setToAccount:@
-setToAccountSelector :: Selector
+setToAccountSelector :: Selector '[Id INPaymentAccount] ()
 setToAccountSelector = mkSelector "setToAccount:"
 
 -- | @Selector@ for @transactionAmount@
-transactionAmountSelector :: Selector
+transactionAmountSelector :: Selector '[] (Id INPaymentAmount)
 transactionAmountSelector = mkSelector "transactionAmount"
 
 -- | @Selector@ for @setTransactionAmount:@
-setTransactionAmountSelector :: Selector
+setTransactionAmountSelector :: Selector '[Id INPaymentAmount] ()
 setTransactionAmountSelector = mkSelector "setTransactionAmount:"
 
 -- | @Selector@ for @transactionScheduledDate@
-transactionScheduledDateSelector :: Selector
+transactionScheduledDateSelector :: Selector '[] (Id INDateComponentsRange)
 transactionScheduledDateSelector = mkSelector "transactionScheduledDate"
 
 -- | @Selector@ for @setTransactionScheduledDate:@
-setTransactionScheduledDateSelector :: Selector
+setTransactionScheduledDateSelector :: Selector '[Id INDateComponentsRange] ()
 setTransactionScheduledDateSelector = mkSelector "setTransactionScheduledDate:"
 
 -- | @Selector@ for @transactionNote@
-transactionNoteSelector :: Selector
+transactionNoteSelector :: Selector '[] (Id NSString)
 transactionNoteSelector = mkSelector "transactionNote"
 
 -- | @Selector@ for @setTransactionNote:@
-setTransactionNoteSelector :: Selector
+setTransactionNoteSelector :: Selector '[Id NSString] ()
 setTransactionNoteSelector = mkSelector "setTransactionNote:"
 
 -- | @Selector@ for @transferFee@
-transferFeeSelector :: Selector
+transferFeeSelector :: Selector '[] (Id INCurrencyAmount)
 transferFeeSelector = mkSelector "transferFee"
 
 -- | @Selector@ for @setTransferFee:@
-setTransferFeeSelector :: Selector
+setTransferFeeSelector :: Selector '[Id INCurrencyAmount] ()
 setTransferFeeSelector = mkSelector "setTransferFee:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,12 +14,12 @@ module ObjC.Intents.INTicketedEvent
   , name
   , eventDuration
   , location
+  , categorySelector
+  , eventDurationSelector
   , initSelector
   , initWithCategory_name_eventDuration_locationSelector
-  , categorySelector
-  , nameSelector
-  , eventDurationSelector
   , locationSelector
+  , nameSelector
 
   -- * Enum types
   , INTicketedEventCategory(INTicketedEventCategory)
@@ -27,15 +28,11 @@ module ObjC.Intents.INTicketedEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,62 +43,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINTicketedEvent inTicketedEvent => inTicketedEvent -> IO (Id INTicketedEvent)
-init_ inTicketedEvent  =
-    sendMsg inTicketedEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inTicketedEvent =
+  sendOwnedMessage inTicketedEvent initSelector
 
 -- | @- initWithCategory:name:eventDuration:location:@
 initWithCategory_name_eventDuration_location :: (IsINTicketedEvent inTicketedEvent, IsNSString name, IsINDateComponentsRange eventDuration, IsCLPlacemark location) => inTicketedEvent -> INTicketedEventCategory -> name -> eventDuration -> location -> IO (Id INTicketedEvent)
-initWithCategory_name_eventDuration_location inTicketedEvent  category name eventDuration location =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr eventDuration $ \raw_eventDuration ->
-      withObjCPtr location $ \raw_location ->
-          sendMsg inTicketedEvent (mkSelector "initWithCategory:name:eventDuration:location:") (retPtr retVoid) [argCLong (coerce category), argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_eventDuration :: Ptr ()), argPtr (castPtr raw_location :: Ptr ())] >>= ownedObject . castPtr
+initWithCategory_name_eventDuration_location inTicketedEvent category name eventDuration location =
+  sendOwnedMessage inTicketedEvent initWithCategory_name_eventDuration_locationSelector category (toNSString name) (toINDateComponentsRange eventDuration) (toCLPlacemark location)
 
 -- | @- category@
 category :: IsINTicketedEvent inTicketedEvent => inTicketedEvent -> IO INTicketedEventCategory
-category inTicketedEvent  =
-    fmap (coerce :: CLong -> INTicketedEventCategory) $ sendMsg inTicketedEvent (mkSelector "category") retCLong []
+category inTicketedEvent =
+  sendMessage inTicketedEvent categorySelector
 
 -- | @- name@
 name :: IsINTicketedEvent inTicketedEvent => inTicketedEvent -> IO (Id NSString)
-name inTicketedEvent  =
-    sendMsg inTicketedEvent (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name inTicketedEvent =
+  sendMessage inTicketedEvent nameSelector
 
 -- | @- eventDuration@
 eventDuration :: IsINTicketedEvent inTicketedEvent => inTicketedEvent -> IO (Id INDateComponentsRange)
-eventDuration inTicketedEvent  =
-    sendMsg inTicketedEvent (mkSelector "eventDuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+eventDuration inTicketedEvent =
+  sendMessage inTicketedEvent eventDurationSelector
 
 -- | @- location@
 location :: IsINTicketedEvent inTicketedEvent => inTicketedEvent -> IO (Id CLPlacemark)
-location inTicketedEvent  =
-    sendMsg inTicketedEvent (mkSelector "location") (retPtr retVoid) [] >>= retainedObject . castPtr
+location inTicketedEvent =
+  sendMessage inTicketedEvent locationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INTicketedEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCategory:name:eventDuration:location:@
-initWithCategory_name_eventDuration_locationSelector :: Selector
+initWithCategory_name_eventDuration_locationSelector :: Selector '[INTicketedEventCategory, Id NSString, Id INDateComponentsRange, Id CLPlacemark] (Id INTicketedEvent)
 initWithCategory_name_eventDuration_locationSelector = mkSelector "initWithCategory:name:eventDuration:location:"
 
 -- | @Selector@ for @category@
-categorySelector :: Selector
+categorySelector :: Selector '[] INTicketedEventCategory
 categorySelector = mkSelector "category"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @eventDuration@
-eventDurationSelector :: Selector
+eventDurationSelector :: Selector '[] (Id INDateComponentsRange)
 eventDurationSelector = mkSelector "eventDuration"
 
 -- | @Selector@ for @location@
-locationSelector :: Selector
+locationSelector :: Selector '[] (Id CLPlacemark)
 locationSelector = mkSelector "location"
 

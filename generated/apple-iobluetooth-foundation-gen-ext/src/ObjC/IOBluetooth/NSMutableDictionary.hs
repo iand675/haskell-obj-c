@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -32,43 +33,39 @@ module ObjC.IOBluetooth.NSMutableDictionary
   , addImageHandleHeader
   , addImageDescriptorHeader_length
   , withOBEXHeadersData_headersDataSize
-  , dictionaryWithOBEXHeadersData_headersDataSizeSelector
-  , dictionaryWithOBEXHeadersDataSelector
-  , getHeaderBytesSelector
-  , addTargetHeader_lengthSelector
-  , addHTTPHeader_lengthSelector
-  , addBodyHeader_length_endOfBodySelector
-  , addWhoHeader_lengthSelector
-  , addConnectionIDHeader_lengthSelector
   , addApplicationParameterHeader_lengthSelector
-  , addByteSequenceHeader_lengthSelector
-  , addObjectClassHeader_lengthSelector
   , addAuthorizationChallengeHeader_lengthSelector
   , addAuthorizationResponseHeader_lengthSelector
-  , addTimeISOHeader_lengthSelector
-  , addTypeHeaderSelector
-  , addLengthHeaderSelector
-  , addTime4ByteHeaderSelector
+  , addBodyHeader_length_endOfBodySelector
+  , addByteSequenceHeader_lengthSelector
+  , addConnectionIDHeader_lengthSelector
   , addCountHeaderSelector
   , addDescriptionHeaderSelector
-  , addNameHeaderSelector
-  , addUserDefinedHeader_lengthSelector
-  , addImageHandleHeaderSelector
+  , addHTTPHeader_lengthSelector
   , addImageDescriptorHeader_lengthSelector
+  , addImageHandleHeaderSelector
+  , addLengthHeaderSelector
+  , addNameHeaderSelector
+  , addObjectClassHeader_lengthSelector
+  , addTargetHeader_lengthSelector
+  , addTime4ByteHeaderSelector
+  , addTimeISOHeader_lengthSelector
+  , addTypeHeaderSelector
+  , addUserDefinedHeader_lengthSelector
+  , addWhoHeader_lengthSelector
+  , dictionaryWithOBEXHeadersDataSelector
+  , dictionaryWithOBEXHeadersData_headersDataSizeSelector
+  , getHeaderBytesSelector
   , withOBEXHeadersData_headersDataSizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,229 +77,224 @@ dictionaryWithOBEXHeadersData_headersDataSize :: Const (Ptr ()) -> CULong -> IO 
 dictionaryWithOBEXHeadersData_headersDataSize inHeadersData inDataSize =
   do
     cls' <- getRequiredClass "NSMutableDictionary"
-    sendClassMsg cls' (mkSelector "dictionaryWithOBEXHeadersData:headersDataSize:") (retPtr retVoid) [argPtr (unConst inHeadersData), argCULong inDataSize] >>= retainedObject . castPtr
+    sendClassMessage cls' dictionaryWithOBEXHeadersData_headersDataSizeSelector inHeadersData inDataSize
 
 -- | @+ dictionaryWithOBEXHeadersData:@
 dictionaryWithOBEXHeadersData :: IsNSData inHeadersData => inHeadersData -> IO (Id NSMutableDictionary)
 dictionaryWithOBEXHeadersData inHeadersData =
   do
     cls' <- getRequiredClass "NSMutableDictionary"
-    withObjCPtr inHeadersData $ \raw_inHeadersData ->
-      sendClassMsg cls' (mkSelector "dictionaryWithOBEXHeadersData:") (retPtr retVoid) [argPtr (castPtr raw_inHeadersData :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dictionaryWithOBEXHeadersDataSelector (toNSData inHeadersData)
 
 -- | @- getHeaderBytes@
 getHeaderBytes :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> IO (Id NSMutableData)
-getHeaderBytes nsMutableDictionary  =
-    sendMsg nsMutableDictionary (mkSelector "getHeaderBytes") (retPtr retVoid) [] >>= retainedObject . castPtr
+getHeaderBytes nsMutableDictionary =
+  sendMessage nsMutableDictionary getHeaderBytesSelector
 
 -- | @- addTargetHeader:length:@
 addTargetHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addTargetHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addTargetHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addTargetHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addTargetHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addHTTPHeader:length:@
 addHTTPHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addHTTPHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addHTTPHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addHTTPHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addHTTPHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addBodyHeader:length:endOfBody:@
 addBodyHeader_length_endOfBody :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> Bool -> IO CInt
-addBodyHeader_length_endOfBody nsMutableDictionary  inHeaderData inHeaderDataLength isEndOfBody =
-    sendMsg nsMutableDictionary (mkSelector "addBodyHeader:length:endOfBody:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength, argCULong (if isEndOfBody then 1 else 0)]
+addBodyHeader_length_endOfBody nsMutableDictionary inHeaderData inHeaderDataLength isEndOfBody =
+  sendMessage nsMutableDictionary addBodyHeader_length_endOfBodySelector inHeaderData inHeaderDataLength isEndOfBody
 
 -- | @- addWhoHeader:length:@
 addWhoHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addWhoHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addWhoHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addWhoHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addWhoHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addConnectionIDHeader:length:@
 addConnectionIDHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addConnectionIDHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addConnectionIDHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addConnectionIDHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addConnectionIDHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addApplicationParameterHeader:length:@
 addApplicationParameterHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addApplicationParameterHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addApplicationParameterHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addApplicationParameterHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addApplicationParameterHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addByteSequenceHeader:length:@
 addByteSequenceHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addByteSequenceHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addByteSequenceHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addByteSequenceHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addByteSequenceHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addObjectClassHeader:length:@
 addObjectClassHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addObjectClassHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addObjectClassHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addObjectClassHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addObjectClassHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addAuthorizationChallengeHeader:length:@
 addAuthorizationChallengeHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addAuthorizationChallengeHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addAuthorizationChallengeHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addAuthorizationChallengeHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addAuthorizationChallengeHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addAuthorizationResponseHeader:length:@
 addAuthorizationResponseHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addAuthorizationResponseHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addAuthorizationResponseHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addAuthorizationResponseHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addAuthorizationResponseHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addTimeISOHeader:length:@
 addTimeISOHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addTimeISOHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addTimeISOHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addTimeISOHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addTimeISOHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addTypeHeader:@
 addTypeHeader :: (IsNSMutableDictionary nsMutableDictionary, IsNSString type_) => nsMutableDictionary -> type_ -> IO CInt
-addTypeHeader nsMutableDictionary  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg nsMutableDictionary (mkSelector "addTypeHeader:") retCInt [argPtr (castPtr raw_type_ :: Ptr ())]
+addTypeHeader nsMutableDictionary type_ =
+  sendMessage nsMutableDictionary addTypeHeaderSelector (toNSString type_)
 
 -- | @- addLengthHeader:@
 addLengthHeader :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> CUInt -> IO CInt
-addLengthHeader nsMutableDictionary  length_ =
-    sendMsg nsMutableDictionary (mkSelector "addLengthHeader:") retCInt [argCUInt length_]
+addLengthHeader nsMutableDictionary length_ =
+  sendMessage nsMutableDictionary addLengthHeaderSelector length_
 
 -- | @- addTime4ByteHeader:@
 addTime4ByteHeader :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> CUInt -> IO CInt
-addTime4ByteHeader nsMutableDictionary  time4Byte =
-    sendMsg nsMutableDictionary (mkSelector "addTime4ByteHeader:") retCInt [argCUInt time4Byte]
+addTime4ByteHeader nsMutableDictionary time4Byte =
+  sendMessage nsMutableDictionary addTime4ByteHeaderSelector time4Byte
 
 -- | @- addCountHeader:@
 addCountHeader :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> CUInt -> IO CInt
-addCountHeader nsMutableDictionary  inCount =
-    sendMsg nsMutableDictionary (mkSelector "addCountHeader:") retCInt [argCUInt inCount]
+addCountHeader nsMutableDictionary inCount =
+  sendMessage nsMutableDictionary addCountHeaderSelector inCount
 
 -- | @- addDescriptionHeader:@
 addDescriptionHeader :: (IsNSMutableDictionary nsMutableDictionary, IsNSString inDescriptionString) => nsMutableDictionary -> inDescriptionString -> IO CInt
-addDescriptionHeader nsMutableDictionary  inDescriptionString =
-  withObjCPtr inDescriptionString $ \raw_inDescriptionString ->
-      sendMsg nsMutableDictionary (mkSelector "addDescriptionHeader:") retCInt [argPtr (castPtr raw_inDescriptionString :: Ptr ())]
+addDescriptionHeader nsMutableDictionary inDescriptionString =
+  sendMessage nsMutableDictionary addDescriptionHeaderSelector (toNSString inDescriptionString)
 
 -- | @- addNameHeader:@
 addNameHeader :: (IsNSMutableDictionary nsMutableDictionary, IsNSString inNameString) => nsMutableDictionary -> inNameString -> IO CInt
-addNameHeader nsMutableDictionary  inNameString =
-  withObjCPtr inNameString $ \raw_inNameString ->
-      sendMsg nsMutableDictionary (mkSelector "addNameHeader:") retCInt [argPtr (castPtr raw_inNameString :: Ptr ())]
+addNameHeader nsMutableDictionary inNameString =
+  sendMessage nsMutableDictionary addNameHeaderSelector (toNSString inNameString)
 
 -- | @- addUserDefinedHeader:length:@
 addUserDefinedHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addUserDefinedHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addUserDefinedHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addUserDefinedHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addUserDefinedHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @- addImageHandleHeader:@
 addImageHandleHeader :: (IsNSMutableDictionary nsMutableDictionary, IsNSString type_) => nsMutableDictionary -> type_ -> IO CInt
-addImageHandleHeader nsMutableDictionary  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg nsMutableDictionary (mkSelector "addImageHandleHeader:") retCInt [argPtr (castPtr raw_type_ :: Ptr ())]
+addImageHandleHeader nsMutableDictionary type_ =
+  sendMessage nsMutableDictionary addImageHandleHeaderSelector (toNSString type_)
 
 -- | @- addImageDescriptorHeader:length:@
 addImageDescriptorHeader_length :: IsNSMutableDictionary nsMutableDictionary => nsMutableDictionary -> Const (Ptr ()) -> CUInt -> IO CInt
-addImageDescriptorHeader_length nsMutableDictionary  inHeaderData inHeaderDataLength =
-    sendMsg nsMutableDictionary (mkSelector "addImageDescriptorHeader:length:") retCInt [argPtr (unConst inHeaderData), argCUInt inHeaderDataLength]
+addImageDescriptorHeader_length nsMutableDictionary inHeaderData inHeaderDataLength =
+  sendMessage nsMutableDictionary addImageDescriptorHeader_lengthSelector inHeaderData inHeaderDataLength
 
 -- | @+ withOBEXHeadersData:headersDataSize:@
 withOBEXHeadersData_headersDataSize :: Const (Ptr ()) -> CULong -> IO (Id NSMutableDictionary)
 withOBEXHeadersData_headersDataSize inHeadersData inDataSize =
   do
     cls' <- getRequiredClass "NSMutableDictionary"
-    sendClassMsg cls' (mkSelector "withOBEXHeadersData:headersDataSize:") (retPtr retVoid) [argPtr (unConst inHeadersData), argCULong inDataSize] >>= retainedObject . castPtr
+    sendClassMessage cls' withOBEXHeadersData_headersDataSizeSelector inHeadersData inDataSize
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dictionaryWithOBEXHeadersData:headersDataSize:@
-dictionaryWithOBEXHeadersData_headersDataSizeSelector :: Selector
+dictionaryWithOBEXHeadersData_headersDataSizeSelector :: Selector '[Const (Ptr ()), CULong] (Id NSMutableDictionary)
 dictionaryWithOBEXHeadersData_headersDataSizeSelector = mkSelector "dictionaryWithOBEXHeadersData:headersDataSize:"
 
 -- | @Selector@ for @dictionaryWithOBEXHeadersData:@
-dictionaryWithOBEXHeadersDataSelector :: Selector
+dictionaryWithOBEXHeadersDataSelector :: Selector '[Id NSData] (Id NSMutableDictionary)
 dictionaryWithOBEXHeadersDataSelector = mkSelector "dictionaryWithOBEXHeadersData:"
 
 -- | @Selector@ for @getHeaderBytes@
-getHeaderBytesSelector :: Selector
+getHeaderBytesSelector :: Selector '[] (Id NSMutableData)
 getHeaderBytesSelector = mkSelector "getHeaderBytes"
 
 -- | @Selector@ for @addTargetHeader:length:@
-addTargetHeader_lengthSelector :: Selector
+addTargetHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addTargetHeader_lengthSelector = mkSelector "addTargetHeader:length:"
 
 -- | @Selector@ for @addHTTPHeader:length:@
-addHTTPHeader_lengthSelector :: Selector
+addHTTPHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addHTTPHeader_lengthSelector = mkSelector "addHTTPHeader:length:"
 
 -- | @Selector@ for @addBodyHeader:length:endOfBody:@
-addBodyHeader_length_endOfBodySelector :: Selector
+addBodyHeader_length_endOfBodySelector :: Selector '[Const (Ptr ()), CUInt, Bool] CInt
 addBodyHeader_length_endOfBodySelector = mkSelector "addBodyHeader:length:endOfBody:"
 
 -- | @Selector@ for @addWhoHeader:length:@
-addWhoHeader_lengthSelector :: Selector
+addWhoHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addWhoHeader_lengthSelector = mkSelector "addWhoHeader:length:"
 
 -- | @Selector@ for @addConnectionIDHeader:length:@
-addConnectionIDHeader_lengthSelector :: Selector
+addConnectionIDHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addConnectionIDHeader_lengthSelector = mkSelector "addConnectionIDHeader:length:"
 
 -- | @Selector@ for @addApplicationParameterHeader:length:@
-addApplicationParameterHeader_lengthSelector :: Selector
+addApplicationParameterHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addApplicationParameterHeader_lengthSelector = mkSelector "addApplicationParameterHeader:length:"
 
 -- | @Selector@ for @addByteSequenceHeader:length:@
-addByteSequenceHeader_lengthSelector :: Selector
+addByteSequenceHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addByteSequenceHeader_lengthSelector = mkSelector "addByteSequenceHeader:length:"
 
 -- | @Selector@ for @addObjectClassHeader:length:@
-addObjectClassHeader_lengthSelector :: Selector
+addObjectClassHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addObjectClassHeader_lengthSelector = mkSelector "addObjectClassHeader:length:"
 
 -- | @Selector@ for @addAuthorizationChallengeHeader:length:@
-addAuthorizationChallengeHeader_lengthSelector :: Selector
+addAuthorizationChallengeHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addAuthorizationChallengeHeader_lengthSelector = mkSelector "addAuthorizationChallengeHeader:length:"
 
 -- | @Selector@ for @addAuthorizationResponseHeader:length:@
-addAuthorizationResponseHeader_lengthSelector :: Selector
+addAuthorizationResponseHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addAuthorizationResponseHeader_lengthSelector = mkSelector "addAuthorizationResponseHeader:length:"
 
 -- | @Selector@ for @addTimeISOHeader:length:@
-addTimeISOHeader_lengthSelector :: Selector
+addTimeISOHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addTimeISOHeader_lengthSelector = mkSelector "addTimeISOHeader:length:"
 
 -- | @Selector@ for @addTypeHeader:@
-addTypeHeaderSelector :: Selector
+addTypeHeaderSelector :: Selector '[Id NSString] CInt
 addTypeHeaderSelector = mkSelector "addTypeHeader:"
 
 -- | @Selector@ for @addLengthHeader:@
-addLengthHeaderSelector :: Selector
+addLengthHeaderSelector :: Selector '[CUInt] CInt
 addLengthHeaderSelector = mkSelector "addLengthHeader:"
 
 -- | @Selector@ for @addTime4ByteHeader:@
-addTime4ByteHeaderSelector :: Selector
+addTime4ByteHeaderSelector :: Selector '[CUInt] CInt
 addTime4ByteHeaderSelector = mkSelector "addTime4ByteHeader:"
 
 -- | @Selector@ for @addCountHeader:@
-addCountHeaderSelector :: Selector
+addCountHeaderSelector :: Selector '[CUInt] CInt
 addCountHeaderSelector = mkSelector "addCountHeader:"
 
 -- | @Selector@ for @addDescriptionHeader:@
-addDescriptionHeaderSelector :: Selector
+addDescriptionHeaderSelector :: Selector '[Id NSString] CInt
 addDescriptionHeaderSelector = mkSelector "addDescriptionHeader:"
 
 -- | @Selector@ for @addNameHeader:@
-addNameHeaderSelector :: Selector
+addNameHeaderSelector :: Selector '[Id NSString] CInt
 addNameHeaderSelector = mkSelector "addNameHeader:"
 
 -- | @Selector@ for @addUserDefinedHeader:length:@
-addUserDefinedHeader_lengthSelector :: Selector
+addUserDefinedHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addUserDefinedHeader_lengthSelector = mkSelector "addUserDefinedHeader:length:"
 
 -- | @Selector@ for @addImageHandleHeader:@
-addImageHandleHeaderSelector :: Selector
+addImageHandleHeaderSelector :: Selector '[Id NSString] CInt
 addImageHandleHeaderSelector = mkSelector "addImageHandleHeader:"
 
 -- | @Selector@ for @addImageDescriptorHeader:length:@
-addImageDescriptorHeader_lengthSelector :: Selector
+addImageDescriptorHeader_lengthSelector :: Selector '[Const (Ptr ()), CUInt] CInt
 addImageDescriptorHeader_lengthSelector = mkSelector "addImageDescriptorHeader:length:"
 
 -- | @Selector@ for @withOBEXHeadersData:headersDataSize:@
-withOBEXHeadersData_headersDataSizeSelector :: Selector
+withOBEXHeadersData_headersDataSizeSelector :: Selector '[Const (Ptr ()), CULong] (Id NSMutableDictionary)
 withOBEXHeadersData_headersDataSizeSelector = mkSelector "withOBEXHeadersData:headersDataSize:"
 

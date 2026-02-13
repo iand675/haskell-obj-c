@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,29 +25,25 @@ module ObjC.MetricKit.MXBackgroundExitData
   , cumulativeAppWatchdogExitCount
   , cumulativeSuspendedWithLockedFileExitCount
   , cumulativeBackgroundTaskAssertionTimeoutExitCount
-  , cumulativeNormalAppExitCountSelector
-  , cumulativeMemoryResourceLimitExitCountSelector
-  , cumulativeCPUResourceLimitExitCountSelector
-  , cumulativeMemoryPressureExitCountSelector
-  , cumulativeBadAccessExitCountSelector
   , cumulativeAbnormalExitCountSelector
-  , cumulativeIllegalInstructionExitCountSelector
   , cumulativeAppWatchdogExitCountSelector
-  , cumulativeSuspendedWithLockedFileExitCountSelector
   , cumulativeBackgroundTaskAssertionTimeoutExitCountSelector
+  , cumulativeBadAccessExitCountSelector
+  , cumulativeCPUResourceLimitExitCountSelector
+  , cumulativeIllegalInstructionExitCountSelector
+  , cumulativeMemoryPressureExitCountSelector
+  , cumulativeMemoryResourceLimitExitCountSelector
+  , cumulativeNormalAppExitCountSelector
+  , cumulativeSuspendedWithLockedFileExitCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- cumulativeNormalAppExitCount@
 cumulativeNormalAppExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeNormalAppExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeNormalAppExitCount") retCULong []
+cumulativeNormalAppExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeNormalAppExitCountSelector
 
 -- | cumulativeMemoryResourceLimitExitCount
 --
@@ -68,8 +65,8 @@ cumulativeNormalAppExitCount mxBackgroundExitData  =
 --
 -- ObjC selector: @- cumulativeMemoryResourceLimitExitCount@
 cumulativeMemoryResourceLimitExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeMemoryResourceLimitExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeMemoryResourceLimitExitCount") retCULong []
+cumulativeMemoryResourceLimitExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeMemoryResourceLimitExitCountSelector
 
 -- | cumulativeCPUResourceLimitExitCount
 --
@@ -77,8 +74,8 @@ cumulativeMemoryResourceLimitExitCount mxBackgroundExitData  =
 --
 -- ObjC selector: @- cumulativeCPUResourceLimitExitCount@
 cumulativeCPUResourceLimitExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeCPUResourceLimitExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeCPUResourceLimitExitCount") retCULong []
+cumulativeCPUResourceLimitExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeCPUResourceLimitExitCountSelector
 
 -- | cumulativeMemoryPressureExitCount
 --
@@ -86,8 +83,8 @@ cumulativeCPUResourceLimitExitCount mxBackgroundExitData  =
 --
 -- ObjC selector: @- cumulativeMemoryPressureExitCount@
 cumulativeMemoryPressureExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeMemoryPressureExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeMemoryPressureExitCount") retCULong []
+cumulativeMemoryPressureExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeMemoryPressureExitCountSelector
 
 -- | cumulativeBadAccessExitCount
 --
@@ -95,8 +92,8 @@ cumulativeMemoryPressureExitCount mxBackgroundExitData  =
 --
 -- ObjC selector: @- cumulativeBadAccessExitCount@
 cumulativeBadAccessExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeBadAccessExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeBadAccessExitCount") retCULong []
+cumulativeBadAccessExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeBadAccessExitCountSelector
 
 -- | cumulativeAbnormalExitCount
 --
@@ -106,8 +103,8 @@ cumulativeBadAccessExitCount mxBackgroundExitData  =
 --
 -- ObjC selector: @- cumulativeAbnormalExitCount@
 cumulativeAbnormalExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeAbnormalExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeAbnormalExitCount") retCULong []
+cumulativeAbnormalExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeAbnormalExitCountSelector
 
 -- | cumulativeIllegalInstructionExitCount
 --
@@ -117,8 +114,8 @@ cumulativeAbnormalExitCount mxBackgroundExitData  =
 --
 -- ObjC selector: @- cumulativeIllegalInstructionExitCount@
 cumulativeIllegalInstructionExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeIllegalInstructionExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeIllegalInstructionExitCount") retCULong []
+cumulativeIllegalInstructionExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeIllegalInstructionExitCountSelector
 
 -- | cumulativeAppWatchdogExitCount
 --
@@ -128,8 +125,8 @@ cumulativeIllegalInstructionExitCount mxBackgroundExitData  =
 --
 -- ObjC selector: @- cumulativeAppWatchdogExitCount@
 cumulativeAppWatchdogExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeAppWatchdogExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeAppWatchdogExitCount") retCULong []
+cumulativeAppWatchdogExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeAppWatchdogExitCountSelector
 
 -- | cumulativeSuspendedWithLockedFileExitCount
 --
@@ -139,8 +136,8 @@ cumulativeAppWatchdogExitCount mxBackgroundExitData  =
 --
 -- ObjC selector: @- cumulativeSuspendedWithLockedFileExitCount@
 cumulativeSuspendedWithLockedFileExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeSuspendedWithLockedFileExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeSuspendedWithLockedFileExitCount") retCULong []
+cumulativeSuspendedWithLockedFileExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeSuspendedWithLockedFileExitCountSelector
 
 -- | cumulativeBackgroundTaskAssertionTimeoutExitCount
 --
@@ -150,50 +147,50 @@ cumulativeSuspendedWithLockedFileExitCount mxBackgroundExitData  =
 --
 -- ObjC selector: @- cumulativeBackgroundTaskAssertionTimeoutExitCount@
 cumulativeBackgroundTaskAssertionTimeoutExitCount :: IsMXBackgroundExitData mxBackgroundExitData => mxBackgroundExitData -> IO CULong
-cumulativeBackgroundTaskAssertionTimeoutExitCount mxBackgroundExitData  =
-    sendMsg mxBackgroundExitData (mkSelector "cumulativeBackgroundTaskAssertionTimeoutExitCount") retCULong []
+cumulativeBackgroundTaskAssertionTimeoutExitCount mxBackgroundExitData =
+  sendMessage mxBackgroundExitData cumulativeBackgroundTaskAssertionTimeoutExitCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cumulativeNormalAppExitCount@
-cumulativeNormalAppExitCountSelector :: Selector
+cumulativeNormalAppExitCountSelector :: Selector '[] CULong
 cumulativeNormalAppExitCountSelector = mkSelector "cumulativeNormalAppExitCount"
 
 -- | @Selector@ for @cumulativeMemoryResourceLimitExitCount@
-cumulativeMemoryResourceLimitExitCountSelector :: Selector
+cumulativeMemoryResourceLimitExitCountSelector :: Selector '[] CULong
 cumulativeMemoryResourceLimitExitCountSelector = mkSelector "cumulativeMemoryResourceLimitExitCount"
 
 -- | @Selector@ for @cumulativeCPUResourceLimitExitCount@
-cumulativeCPUResourceLimitExitCountSelector :: Selector
+cumulativeCPUResourceLimitExitCountSelector :: Selector '[] CULong
 cumulativeCPUResourceLimitExitCountSelector = mkSelector "cumulativeCPUResourceLimitExitCount"
 
 -- | @Selector@ for @cumulativeMemoryPressureExitCount@
-cumulativeMemoryPressureExitCountSelector :: Selector
+cumulativeMemoryPressureExitCountSelector :: Selector '[] CULong
 cumulativeMemoryPressureExitCountSelector = mkSelector "cumulativeMemoryPressureExitCount"
 
 -- | @Selector@ for @cumulativeBadAccessExitCount@
-cumulativeBadAccessExitCountSelector :: Selector
+cumulativeBadAccessExitCountSelector :: Selector '[] CULong
 cumulativeBadAccessExitCountSelector = mkSelector "cumulativeBadAccessExitCount"
 
 -- | @Selector@ for @cumulativeAbnormalExitCount@
-cumulativeAbnormalExitCountSelector :: Selector
+cumulativeAbnormalExitCountSelector :: Selector '[] CULong
 cumulativeAbnormalExitCountSelector = mkSelector "cumulativeAbnormalExitCount"
 
 -- | @Selector@ for @cumulativeIllegalInstructionExitCount@
-cumulativeIllegalInstructionExitCountSelector :: Selector
+cumulativeIllegalInstructionExitCountSelector :: Selector '[] CULong
 cumulativeIllegalInstructionExitCountSelector = mkSelector "cumulativeIllegalInstructionExitCount"
 
 -- | @Selector@ for @cumulativeAppWatchdogExitCount@
-cumulativeAppWatchdogExitCountSelector :: Selector
+cumulativeAppWatchdogExitCountSelector :: Selector '[] CULong
 cumulativeAppWatchdogExitCountSelector = mkSelector "cumulativeAppWatchdogExitCount"
 
 -- | @Selector@ for @cumulativeSuspendedWithLockedFileExitCount@
-cumulativeSuspendedWithLockedFileExitCountSelector :: Selector
+cumulativeSuspendedWithLockedFileExitCountSelector :: Selector '[] CULong
 cumulativeSuspendedWithLockedFileExitCountSelector = mkSelector "cumulativeSuspendedWithLockedFileExitCount"
 
 -- | @Selector@ for @cumulativeBackgroundTaskAssertionTimeoutExitCount@
-cumulativeBackgroundTaskAssertionTimeoutExitCountSelector :: Selector
+cumulativeBackgroundTaskAssertionTimeoutExitCountSelector :: Selector '[] CULong
 cumulativeBackgroundTaskAssertionTimeoutExitCountSelector = mkSelector "cumulativeBackgroundTaskAssertionTimeoutExitCount"
 

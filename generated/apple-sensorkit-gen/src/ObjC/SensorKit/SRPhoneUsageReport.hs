@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.SensorKit.SRPhoneUsageReport
   , totalUniqueContacts
   , totalPhoneCallDuration
   , durationSelector
-  , totalOutgoingCallsSelector
   , totalIncomingCallsSelector
-  , totalUniqueContactsSelector
+  , totalOutgoingCallsSelector
   , totalPhoneCallDurationSelector
+  , totalUniqueContactsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,50 +34,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- duration@
 duration :: IsSRPhoneUsageReport srPhoneUsageReport => srPhoneUsageReport -> IO CDouble
-duration srPhoneUsageReport  =
-    sendMsg srPhoneUsageReport (mkSelector "duration") retCDouble []
+duration srPhoneUsageReport =
+  sendMessage srPhoneUsageReport durationSelector
 
 -- | @- totalOutgoingCalls@
 totalOutgoingCalls :: IsSRPhoneUsageReport srPhoneUsageReport => srPhoneUsageReport -> IO CLong
-totalOutgoingCalls srPhoneUsageReport  =
-    sendMsg srPhoneUsageReport (mkSelector "totalOutgoingCalls") retCLong []
+totalOutgoingCalls srPhoneUsageReport =
+  sendMessage srPhoneUsageReport totalOutgoingCallsSelector
 
 -- | @- totalIncomingCalls@
 totalIncomingCalls :: IsSRPhoneUsageReport srPhoneUsageReport => srPhoneUsageReport -> IO CLong
-totalIncomingCalls srPhoneUsageReport  =
-    sendMsg srPhoneUsageReport (mkSelector "totalIncomingCalls") retCLong []
+totalIncomingCalls srPhoneUsageReport =
+  sendMessage srPhoneUsageReport totalIncomingCallsSelector
 
 -- | @- totalUniqueContacts@
 totalUniqueContacts :: IsSRPhoneUsageReport srPhoneUsageReport => srPhoneUsageReport -> IO CLong
-totalUniqueContacts srPhoneUsageReport  =
-    sendMsg srPhoneUsageReport (mkSelector "totalUniqueContacts") retCLong []
+totalUniqueContacts srPhoneUsageReport =
+  sendMessage srPhoneUsageReport totalUniqueContactsSelector
 
 -- | @- totalPhoneCallDuration@
 totalPhoneCallDuration :: IsSRPhoneUsageReport srPhoneUsageReport => srPhoneUsageReport -> IO CDouble
-totalPhoneCallDuration srPhoneUsageReport  =
-    sendMsg srPhoneUsageReport (mkSelector "totalPhoneCallDuration") retCDouble []
+totalPhoneCallDuration srPhoneUsageReport =
+  sendMessage srPhoneUsageReport totalPhoneCallDurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @totalOutgoingCalls@
-totalOutgoingCallsSelector :: Selector
+totalOutgoingCallsSelector :: Selector '[] CLong
 totalOutgoingCallsSelector = mkSelector "totalOutgoingCalls"
 
 -- | @Selector@ for @totalIncomingCalls@
-totalIncomingCallsSelector :: Selector
+totalIncomingCallsSelector :: Selector '[] CLong
 totalIncomingCallsSelector = mkSelector "totalIncomingCalls"
 
 -- | @Selector@ for @totalUniqueContacts@
-totalUniqueContactsSelector :: Selector
+totalUniqueContactsSelector :: Selector '[] CLong
 totalUniqueContactsSelector = mkSelector "totalUniqueContacts"
 
 -- | @Selector@ for @totalPhoneCallDuration@
-totalPhoneCallDurationSelector :: Selector
+totalPhoneCallDurationSelector :: Selector '[] CDouble
 totalPhoneCallDurationSelector = mkSelector "totalPhoneCallDuration"
 

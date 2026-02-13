@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,15 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphSingleGateRNNDescriptor
   , setTraining
   , activation
   , setActivation
+  , activationSelector
+  , bidirectionalSelector
   , descriptorSelector
   , reverseSelector
-  , setReverseSelector
-  , bidirectionalSelector
-  , setBidirectionalSelector
-  , trainingSelector
-  , setTrainingSelector
-  , activationSelector
   , setActivationSelector
+  , setBidirectionalSelector
+  , setReverseSelector
+  , setTrainingSelector
+  , trainingSelector
 
   -- * Enum types
   , MPSGraphRNNActivation(MPSGraphRNNActivation)
@@ -40,15 +41,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphSingleGateRNNDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,7 +60,7 @@ descriptor :: IO (Id MPSGraphSingleGateRNNDescriptor)
 descriptor  =
   do
     cls' <- getRequiredClass "MPSGraphSingleGateRNNDescriptor"
-    sendClassMsg cls' (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorSelector
 
 -- | A parameter that defines time direction of the input sequence.
 --
@@ -71,8 +68,8 @@ descriptor  =
 --
 -- ObjC selector: @- reverse@
 reverse_ :: IsMPSGraphSingleGateRNNDescriptor mpsGraphSingleGateRNNDescriptor => mpsGraphSingleGateRNNDescriptor -> IO Bool
-reverse_ mpsGraphSingleGateRNNDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphSingleGateRNNDescriptor (mkSelector "reverse") retCULong []
+reverse_ mpsGraphSingleGateRNNDescriptor =
+  sendMessage mpsGraphSingleGateRNNDescriptor reverseSelector
 
 -- | A parameter that defines time direction of the input sequence.
 --
@@ -80,8 +77,8 @@ reverse_ mpsGraphSingleGateRNNDescriptor  =
 --
 -- ObjC selector: @- setReverse:@
 setReverse :: IsMPSGraphSingleGateRNNDescriptor mpsGraphSingleGateRNNDescriptor => mpsGraphSingleGateRNNDescriptor -> Bool -> IO ()
-setReverse mpsGraphSingleGateRNNDescriptor  value =
-    sendMsg mpsGraphSingleGateRNNDescriptor (mkSelector "setReverse:") retVoid [argCULong (if value then 1 else 0)]
+setReverse mpsGraphSingleGateRNNDescriptor value =
+  sendMessage mpsGraphSingleGateRNNDescriptor setReverseSelector value
 
 -- | A parameter that defines a bidirectional RNN layer.
 --
@@ -89,8 +86,8 @@ setReverse mpsGraphSingleGateRNNDescriptor  value =
 --
 -- ObjC selector: @- bidirectional@
 bidirectional :: IsMPSGraphSingleGateRNNDescriptor mpsGraphSingleGateRNNDescriptor => mpsGraphSingleGateRNNDescriptor -> IO Bool
-bidirectional mpsGraphSingleGateRNNDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphSingleGateRNNDescriptor (mkSelector "bidirectional") retCULong []
+bidirectional mpsGraphSingleGateRNNDescriptor =
+  sendMessage mpsGraphSingleGateRNNDescriptor bidirectionalSelector
 
 -- | A parameter that defines a bidirectional RNN layer.
 --
@@ -98,8 +95,8 @@ bidirectional mpsGraphSingleGateRNNDescriptor  =
 --
 -- ObjC selector: @- setBidirectional:@
 setBidirectional :: IsMPSGraphSingleGateRNNDescriptor mpsGraphSingleGateRNNDescriptor => mpsGraphSingleGateRNNDescriptor -> Bool -> IO ()
-setBidirectional mpsGraphSingleGateRNNDescriptor  value =
-    sendMsg mpsGraphSingleGateRNNDescriptor (mkSelector "setBidirectional:") retVoid [argCULong (if value then 1 else 0)]
+setBidirectional mpsGraphSingleGateRNNDescriptor value =
+  sendMessage mpsGraphSingleGateRNNDescriptor setBidirectionalSelector value
 
 -- | A parameter that makes the RNN layer support training.
 --
@@ -107,8 +104,8 @@ setBidirectional mpsGraphSingleGateRNNDescriptor  value =
 --
 -- ObjC selector: @- training@
 training :: IsMPSGraphSingleGateRNNDescriptor mpsGraphSingleGateRNNDescriptor => mpsGraphSingleGateRNNDescriptor -> IO Bool
-training mpsGraphSingleGateRNNDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsGraphSingleGateRNNDescriptor (mkSelector "training") retCULong []
+training mpsGraphSingleGateRNNDescriptor =
+  sendMessage mpsGraphSingleGateRNNDescriptor trainingSelector
 
 -- | A parameter that makes the RNN layer support training.
 --
@@ -116,8 +113,8 @@ training mpsGraphSingleGateRNNDescriptor  =
 --
 -- ObjC selector: @- setTraining:@
 setTraining :: IsMPSGraphSingleGateRNNDescriptor mpsGraphSingleGateRNNDescriptor => mpsGraphSingleGateRNNDescriptor -> Bool -> IO ()
-setTraining mpsGraphSingleGateRNNDescriptor  value =
-    sendMsg mpsGraphSingleGateRNNDescriptor (mkSelector "setTraining:") retVoid [argCULong (if value then 1 else 0)]
+setTraining mpsGraphSingleGateRNNDescriptor value =
+  sendMessage mpsGraphSingleGateRNNDescriptor setTrainingSelector value
 
 -- | A parameter that defines the activation function to use with the RNN operation.
 --
@@ -125,8 +122,8 @@ setTraining mpsGraphSingleGateRNNDescriptor  value =
 --
 -- ObjC selector: @- activation@
 activation :: IsMPSGraphSingleGateRNNDescriptor mpsGraphSingleGateRNNDescriptor => mpsGraphSingleGateRNNDescriptor -> IO MPSGraphRNNActivation
-activation mpsGraphSingleGateRNNDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphRNNActivation) $ sendMsg mpsGraphSingleGateRNNDescriptor (mkSelector "activation") retCULong []
+activation mpsGraphSingleGateRNNDescriptor =
+  sendMessage mpsGraphSingleGateRNNDescriptor activationSelector
 
 -- | A parameter that defines the activation function to use with the RNN operation.
 --
@@ -134,46 +131,46 @@ activation mpsGraphSingleGateRNNDescriptor  =
 --
 -- ObjC selector: @- setActivation:@
 setActivation :: IsMPSGraphSingleGateRNNDescriptor mpsGraphSingleGateRNNDescriptor => mpsGraphSingleGateRNNDescriptor -> MPSGraphRNNActivation -> IO ()
-setActivation mpsGraphSingleGateRNNDescriptor  value =
-    sendMsg mpsGraphSingleGateRNNDescriptor (mkSelector "setActivation:") retVoid [argCULong (coerce value)]
+setActivation mpsGraphSingleGateRNNDescriptor value =
+  sendMessage mpsGraphSingleGateRNNDescriptor setActivationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MPSGraphSingleGateRNNDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @reverse@
-reverseSelector :: Selector
+reverseSelector :: Selector '[] Bool
 reverseSelector = mkSelector "reverse"
 
 -- | @Selector@ for @setReverse:@
-setReverseSelector :: Selector
+setReverseSelector :: Selector '[Bool] ()
 setReverseSelector = mkSelector "setReverse:"
 
 -- | @Selector@ for @bidirectional@
-bidirectionalSelector :: Selector
+bidirectionalSelector :: Selector '[] Bool
 bidirectionalSelector = mkSelector "bidirectional"
 
 -- | @Selector@ for @setBidirectional:@
-setBidirectionalSelector :: Selector
+setBidirectionalSelector :: Selector '[Bool] ()
 setBidirectionalSelector = mkSelector "setBidirectional:"
 
 -- | @Selector@ for @training@
-trainingSelector :: Selector
+trainingSelector :: Selector '[] Bool
 trainingSelector = mkSelector "training"
 
 -- | @Selector@ for @setTraining:@
-setTrainingSelector :: Selector
+setTrainingSelector :: Selector '[Bool] ()
 setTrainingSelector = mkSelector "setTraining:"
 
 -- | @Selector@ for @activation@
-activationSelector :: Selector
+activationSelector :: Selector '[] MPSGraphRNNActivation
 activationSelector = mkSelector "activation"
 
 -- | @Selector@ for @setActivation:@
-setActivationSelector :: Selector
+setActivationSelector :: Selector '[MPSGraphRNNActivation] ()
 setActivationSelector = mkSelector "setActivation:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.CryptoTokenKit.TKTokenWatcher
   , addRemovalHandler_forTokenID
   , tokenInfoForTokenID
   , tokenIDs
+  , addRemovalHandler_forTokenIDSelector
   , initSelector
   , initWithInsertionHandlerSelector
   , setInsertionHandlerSelector
-  , addRemovalHandler_forTokenIDSelector
-  , tokenInfoForTokenIDSelector
   , tokenIDsSelector
+  , tokenInfoForTokenIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsTKTokenWatcher tkTokenWatcher => tkTokenWatcher -> IO (Id TKTokenWatcher)
-init_ tkTokenWatcher  =
-    sendMsg tkTokenWatcher (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkTokenWatcher =
+  sendOwnedMessage tkTokenWatcher initSelector
 
 -- | Init watcher with insertion handler
 --
@@ -52,8 +49,8 @@ init_ tkTokenWatcher  =
 --
 -- ObjC selector: @- initWithInsertionHandler:@
 initWithInsertionHandler :: IsTKTokenWatcher tkTokenWatcher => tkTokenWatcher -> Ptr () -> IO (Id TKTokenWatcher)
-initWithInsertionHandler tkTokenWatcher  insertionHandler =
-    sendMsg tkTokenWatcher (mkSelector "initWithInsertionHandler:") (retPtr retVoid) [argPtr (castPtr insertionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithInsertionHandler tkTokenWatcher insertionHandler =
+  sendOwnedMessage tkTokenWatcher initWithInsertionHandlerSelector insertionHandler
 
 -- | Set insertion handler
 --
@@ -63,8 +60,8 @@ initWithInsertionHandler tkTokenWatcher  insertionHandler =
 --
 -- ObjC selector: @- setInsertionHandler:@
 setInsertionHandler :: IsTKTokenWatcher tkTokenWatcher => tkTokenWatcher -> Ptr () -> IO ()
-setInsertionHandler tkTokenWatcher  insertionHandler =
-    sendMsg tkTokenWatcher (mkSelector "setInsertionHandler:") retVoid [argPtr (castPtr insertionHandler :: Ptr ())]
+setInsertionHandler tkTokenWatcher insertionHandler =
+  sendMessage tkTokenWatcher setInsertionHandlerSelector insertionHandler
 
 -- | Add removal watcher for specific tokenID
 --
@@ -76,9 +73,8 @@ setInsertionHandler tkTokenWatcher  insertionHandler =
 --
 -- ObjC selector: @- addRemovalHandler:forTokenID:@
 addRemovalHandler_forTokenID :: (IsTKTokenWatcher tkTokenWatcher, IsNSString tokenID) => tkTokenWatcher -> Ptr () -> tokenID -> IO ()
-addRemovalHandler_forTokenID tkTokenWatcher  removalHandler tokenID =
-  withObjCPtr tokenID $ \raw_tokenID ->
-      sendMsg tkTokenWatcher (mkSelector "addRemovalHandler:forTokenID:") retVoid [argPtr (castPtr removalHandler :: Ptr ()), argPtr (castPtr raw_tokenID :: Ptr ())]
+addRemovalHandler_forTokenID tkTokenWatcher removalHandler tokenID =
+  sendMessage tkTokenWatcher addRemovalHandler_forTokenIDSelector removalHandler (toNSString tokenID)
 
 -- | Return TokenInfo for specific tokenID
 --
@@ -88,42 +84,41 @@ addRemovalHandler_forTokenID tkTokenWatcher  removalHandler tokenID =
 --
 -- ObjC selector: @- tokenInfoForTokenID:@
 tokenInfoForTokenID :: (IsTKTokenWatcher tkTokenWatcher, IsNSString tokenID) => tkTokenWatcher -> tokenID -> IO (Id TKTokenWatcherTokenInfo)
-tokenInfoForTokenID tkTokenWatcher  tokenID =
-  withObjCPtr tokenID $ \raw_tokenID ->
-      sendMsg tkTokenWatcher (mkSelector "tokenInfoForTokenID:") (retPtr retVoid) [argPtr (castPtr raw_tokenID :: Ptr ())] >>= retainedObject . castPtr
+tokenInfoForTokenID tkTokenWatcher tokenID =
+  sendMessage tkTokenWatcher tokenInfoForTokenIDSelector (toNSString tokenID)
 
 -- | Array of currently known TokenIDs in the system.  Tokens are identified by instance's names. It is possible to use KVO to be notified about token arrivals and removals.
 --
 -- ObjC selector: @- tokenIDs@
 tokenIDs :: IsTKTokenWatcher tkTokenWatcher => tkTokenWatcher -> IO (Id NSArray)
-tokenIDs tkTokenWatcher  =
-    sendMsg tkTokenWatcher (mkSelector "tokenIDs") (retPtr retVoid) [] >>= retainedObject . castPtr
+tokenIDs tkTokenWatcher =
+  sendMessage tkTokenWatcher tokenIDsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKTokenWatcher)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithInsertionHandler:@
-initWithInsertionHandlerSelector :: Selector
+initWithInsertionHandlerSelector :: Selector '[Ptr ()] (Id TKTokenWatcher)
 initWithInsertionHandlerSelector = mkSelector "initWithInsertionHandler:"
 
 -- | @Selector@ for @setInsertionHandler:@
-setInsertionHandlerSelector :: Selector
+setInsertionHandlerSelector :: Selector '[Ptr ()] ()
 setInsertionHandlerSelector = mkSelector "setInsertionHandler:"
 
 -- | @Selector@ for @addRemovalHandler:forTokenID:@
-addRemovalHandler_forTokenIDSelector :: Selector
+addRemovalHandler_forTokenIDSelector :: Selector '[Ptr (), Id NSString] ()
 addRemovalHandler_forTokenIDSelector = mkSelector "addRemovalHandler:forTokenID:"
 
 -- | @Selector@ for @tokenInfoForTokenID:@
-tokenInfoForTokenIDSelector :: Selector
+tokenInfoForTokenIDSelector :: Selector '[Id NSString] (Id TKTokenWatcherTokenInfo)
 tokenInfoForTokenIDSelector = mkSelector "tokenInfoForTokenID:"
 
 -- | @Selector@ for @tokenIDs@
-tokenIDsSelector :: Selector
+tokenIDsSelector :: Selector '[] (Id NSArray)
 tokenIDsSelector = mkSelector "tokenIDs"
 

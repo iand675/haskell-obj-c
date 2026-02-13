@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.WebKit.DOMOverflowEvent
   , orient
   , horizontalOverflow
   , verticalOverflow
+  , horizontalOverflowSelector
   , initOverflowEvent_horizontalOverflow_verticalOverflowSelector
   , orientSelector
-  , horizontalOverflowSelector
   , verticalOverflowSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,41 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initOverflowEvent:horizontalOverflow:verticalOverflow:@
 initOverflowEvent_horizontalOverflow_verticalOverflow :: IsDOMOverflowEvent domOverflowEvent => domOverflowEvent -> CUShort -> Bool -> Bool -> IO ()
-initOverflowEvent_horizontalOverflow_verticalOverflow domOverflowEvent  orient horizontalOverflow verticalOverflow =
-    sendMsg domOverflowEvent (mkSelector "initOverflowEvent:horizontalOverflow:verticalOverflow:") retVoid [argCUInt (fromIntegral orient), argCULong (if horizontalOverflow then 1 else 0), argCULong (if verticalOverflow then 1 else 0)]
+initOverflowEvent_horizontalOverflow_verticalOverflow domOverflowEvent orient horizontalOverflow verticalOverflow =
+  sendOwnedMessage domOverflowEvent initOverflowEvent_horizontalOverflow_verticalOverflowSelector orient horizontalOverflow verticalOverflow
 
 -- | @- orient@
 orient :: IsDOMOverflowEvent domOverflowEvent => domOverflowEvent -> IO CUShort
-orient domOverflowEvent  =
-    fmap fromIntegral $ sendMsg domOverflowEvent (mkSelector "orient") retCUInt []
+orient domOverflowEvent =
+  sendMessage domOverflowEvent orientSelector
 
 -- | @- horizontalOverflow@
 horizontalOverflow :: IsDOMOverflowEvent domOverflowEvent => domOverflowEvent -> IO Bool
-horizontalOverflow domOverflowEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domOverflowEvent (mkSelector "horizontalOverflow") retCULong []
+horizontalOverflow domOverflowEvent =
+  sendMessage domOverflowEvent horizontalOverflowSelector
 
 -- | @- verticalOverflow@
 verticalOverflow :: IsDOMOverflowEvent domOverflowEvent => domOverflowEvent -> IO Bool
-verticalOverflow domOverflowEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domOverflowEvent (mkSelector "verticalOverflow") retCULong []
+verticalOverflow domOverflowEvent =
+  sendMessage domOverflowEvent verticalOverflowSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initOverflowEvent:horizontalOverflow:verticalOverflow:@
-initOverflowEvent_horizontalOverflow_verticalOverflowSelector :: Selector
+initOverflowEvent_horizontalOverflow_verticalOverflowSelector :: Selector '[CUShort, Bool, Bool] ()
 initOverflowEvent_horizontalOverflow_verticalOverflowSelector = mkSelector "initOverflowEvent:horizontalOverflow:verticalOverflow:"
 
 -- | @Selector@ for @orient@
-orientSelector :: Selector
+orientSelector :: Selector '[] CUShort
 orientSelector = mkSelector "orient"
 
 -- | @Selector@ for @horizontalOverflow@
-horizontalOverflowSelector :: Selector
+horizontalOverflowSelector :: Selector '[] Bool
 horizontalOverflowSelector = mkSelector "horizontalOverflow"
 
 -- | @Selector@ for @verticalOverflow@
-verticalOverflowSelector :: Selector
+verticalOverflowSelector :: Selector '[] Bool
 verticalOverflowSelector = mkSelector "verticalOverflow"
 

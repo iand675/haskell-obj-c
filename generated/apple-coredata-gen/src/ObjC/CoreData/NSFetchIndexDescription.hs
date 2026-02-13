@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.CoreData.NSFetchIndexDescription
   , entity
   , partialIndexPredicate
   , setPartialIndexPredicate
+  , elementsSelector
+  , entitySelector
   , initWithName_elementsSelector
   , nameSelector
-  , setNameSelector
-  , elementsSelector
-  , setElementsSelector
-  , entitySelector
   , partialIndexPredicateSelector
+  , setElementsSelector
+  , setNameSelector
   , setPartialIndexPredicateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,82 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithName:elements:@
 initWithName_elements :: (IsNSFetchIndexDescription nsFetchIndexDescription, IsNSString name, IsNSArray elements) => nsFetchIndexDescription -> name -> elements -> IO (Id NSFetchIndexDescription)
-initWithName_elements nsFetchIndexDescription  name elements =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr elements $ \raw_elements ->
-        sendMsg nsFetchIndexDescription (mkSelector "initWithName:elements:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_elements :: Ptr ())] >>= ownedObject . castPtr
+initWithName_elements nsFetchIndexDescription name elements =
+  sendOwnedMessage nsFetchIndexDescription initWithName_elementsSelector (toNSString name) (toNSArray elements)
 
 -- | @- name@
 name :: IsNSFetchIndexDescription nsFetchIndexDescription => nsFetchIndexDescription -> IO (Id NSString)
-name nsFetchIndexDescription  =
-    sendMsg nsFetchIndexDescription (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsFetchIndexDescription =
+  sendMessage nsFetchIndexDescription nameSelector
 
 -- | @- setName:@
 setName :: (IsNSFetchIndexDescription nsFetchIndexDescription, IsNSString value) => nsFetchIndexDescription -> value -> IO ()
-setName nsFetchIndexDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchIndexDescription (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsFetchIndexDescription value =
+  sendMessage nsFetchIndexDescription setNameSelector (toNSString value)
 
 -- | @- elements@
 elements :: IsNSFetchIndexDescription nsFetchIndexDescription => nsFetchIndexDescription -> IO (Id NSArray)
-elements nsFetchIndexDescription  =
-    sendMsg nsFetchIndexDescription (mkSelector "elements") (retPtr retVoid) [] >>= retainedObject . castPtr
+elements nsFetchIndexDescription =
+  sendMessage nsFetchIndexDescription elementsSelector
 
 -- | @- setElements:@
 setElements :: (IsNSFetchIndexDescription nsFetchIndexDescription, IsNSArray value) => nsFetchIndexDescription -> value -> IO ()
-setElements nsFetchIndexDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchIndexDescription (mkSelector "setElements:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setElements nsFetchIndexDescription value =
+  sendMessage nsFetchIndexDescription setElementsSelector (toNSArray value)
 
 -- | @- entity@
 entity :: IsNSFetchIndexDescription nsFetchIndexDescription => nsFetchIndexDescription -> IO (Id NSEntityDescription)
-entity nsFetchIndexDescription  =
-    sendMsg nsFetchIndexDescription (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+entity nsFetchIndexDescription =
+  sendMessage nsFetchIndexDescription entitySelector
 
 -- | @- partialIndexPredicate@
 partialIndexPredicate :: IsNSFetchIndexDescription nsFetchIndexDescription => nsFetchIndexDescription -> IO (Id NSPredicate)
-partialIndexPredicate nsFetchIndexDescription  =
-    sendMsg nsFetchIndexDescription (mkSelector "partialIndexPredicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+partialIndexPredicate nsFetchIndexDescription =
+  sendMessage nsFetchIndexDescription partialIndexPredicateSelector
 
 -- | @- setPartialIndexPredicate:@
 setPartialIndexPredicate :: (IsNSFetchIndexDescription nsFetchIndexDescription, IsNSPredicate value) => nsFetchIndexDescription -> value -> IO ()
-setPartialIndexPredicate nsFetchIndexDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFetchIndexDescription (mkSelector "setPartialIndexPredicate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPartialIndexPredicate nsFetchIndexDescription value =
+  sendMessage nsFetchIndexDescription setPartialIndexPredicateSelector (toNSPredicate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:elements:@
-initWithName_elementsSelector :: Selector
+initWithName_elementsSelector :: Selector '[Id NSString, Id NSArray] (Id NSFetchIndexDescription)
 initWithName_elementsSelector = mkSelector "initWithName:elements:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @elements@
-elementsSelector :: Selector
+elementsSelector :: Selector '[] (Id NSArray)
 elementsSelector = mkSelector "elements"
 
 -- | @Selector@ for @setElements:@
-setElementsSelector :: Selector
+setElementsSelector :: Selector '[Id NSArray] ()
 setElementsSelector = mkSelector "setElements:"
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] (Id NSEntityDescription)
 entitySelector = mkSelector "entity"
 
 -- | @Selector@ for @partialIndexPredicate@
-partialIndexPredicateSelector :: Selector
+partialIndexPredicateSelector :: Selector '[] (Id NSPredicate)
 partialIndexPredicateSelector = mkSelector "partialIndexPredicate"
 
 -- | @Selector@ for @setPartialIndexPredicate:@
-setPartialIndexPredicateSelector :: Selector
+setPartialIndexPredicateSelector :: Selector '[Id NSPredicate] ()
 setPartialIndexPredicateSelector = mkSelector "setPartialIndexPredicate:"
 

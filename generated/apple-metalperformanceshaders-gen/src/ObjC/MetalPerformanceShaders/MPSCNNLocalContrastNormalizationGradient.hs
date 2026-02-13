@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,33 +39,29 @@ module ObjC.MetalPerformanceShaders.MPSCNNLocalContrastNormalizationGradient
   , setPm
   , ps
   , setPs
-  , initWithDevice_kernelWidth_kernelHeightSelector
-  , initWithCoder_deviceSelector
   , alphaSelector
-  , setAlphaSelector
   , betaSelector
-  , setBetaSelector
   , deltaSelector
-  , setDeltaSelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_kernelWidth_kernelHeightSelector
   , p0Selector
-  , setP0Selector
   , pmSelector
-  , setPmSelector
   , psSelector
+  , setAlphaSelector
+  , setBetaSelector
+  , setDeltaSelector
+  , setP0Selector
+  , setPmSelector
   , setPsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,8 +82,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:@
 initWithDevice_kernelWidth_kernelHeight :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> RawId -> CULong -> CULong -> IO (Id MPSCNNLocalContrastNormalizationGradient)
-initWithDevice_kernelWidth_kernelHeight mpscnnLocalContrastNormalizationGradient  device kernelWidth kernelHeight =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "initWithDevice:kernelWidth:kernelHeight:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight mpscnnLocalContrastNormalizationGradient device kernelWidth kernelHeight =
+  sendOwnedMessage mpscnnLocalContrastNormalizationGradient initWithDevice_kernelWidth_kernelHeightSelector device kernelWidth kernelHeight
 
 -- | NSSecureCoding compatability
 --
@@ -100,9 +97,8 @@ initWithDevice_kernelWidth_kernelHeight mpscnnLocalContrastNormalizationGradient
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient, IsNSCoder aDecoder) => mpscnnLocalContrastNormalizationGradient -> aDecoder -> RawId -> IO (Id MPSCNNLocalContrastNormalizationGradient)
-initWithCoder_device mpscnnLocalContrastNormalizationGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnLocalContrastNormalizationGradient aDecoder device =
+  sendOwnedMessage mpscnnLocalContrastNormalizationGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | alpha
 --
@@ -112,8 +108,8 @@ initWithCoder_device mpscnnLocalContrastNormalizationGradient  aDecoder device =
 --
 -- ObjC selector: @- alpha@
 alpha :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> IO CFloat
-alpha mpscnnLocalContrastNormalizationGradient  =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "alpha") retCFloat []
+alpha mpscnnLocalContrastNormalizationGradient =
+  sendMessage mpscnnLocalContrastNormalizationGradient alphaSelector
 
 -- | alpha
 --
@@ -123,8 +119,8 @@ alpha mpscnnLocalContrastNormalizationGradient  =
 --
 -- ObjC selector: @- setAlpha:@
 setAlpha :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> CFloat -> IO ()
-setAlpha mpscnnLocalContrastNormalizationGradient  value =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "setAlpha:") retVoid [argCFloat value]
+setAlpha mpscnnLocalContrastNormalizationGradient value =
+  sendMessage mpscnnLocalContrastNormalizationGradient setAlphaSelector value
 
 -- | beta
 --
@@ -132,8 +128,8 @@ setAlpha mpscnnLocalContrastNormalizationGradient  value =
 --
 -- ObjC selector: @- beta@
 beta :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> IO CFloat
-beta mpscnnLocalContrastNormalizationGradient  =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "beta") retCFloat []
+beta mpscnnLocalContrastNormalizationGradient =
+  sendMessage mpscnnLocalContrastNormalizationGradient betaSelector
 
 -- | beta
 --
@@ -141,8 +137,8 @@ beta mpscnnLocalContrastNormalizationGradient  =
 --
 -- ObjC selector: @- setBeta:@
 setBeta :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> CFloat -> IO ()
-setBeta mpscnnLocalContrastNormalizationGradient  value =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "setBeta:") retVoid [argCFloat value]
+setBeta mpscnnLocalContrastNormalizationGradient value =
+  sendMessage mpscnnLocalContrastNormalizationGradient setBetaSelector value
 
 -- | delta
 --
@@ -150,8 +146,8 @@ setBeta mpscnnLocalContrastNormalizationGradient  value =
 --
 -- ObjC selector: @- delta@
 delta :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> IO CFloat
-delta mpscnnLocalContrastNormalizationGradient  =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "delta") retCFloat []
+delta mpscnnLocalContrastNormalizationGradient =
+  sendMessage mpscnnLocalContrastNormalizationGradient deltaSelector
 
 -- | delta
 --
@@ -159,8 +155,8 @@ delta mpscnnLocalContrastNormalizationGradient  =
 --
 -- ObjC selector: @- setDelta:@
 setDelta :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> CFloat -> IO ()
-setDelta mpscnnLocalContrastNormalizationGradient  value =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "setDelta:") retVoid [argCFloat value]
+setDelta mpscnnLocalContrastNormalizationGradient value =
+  sendMessage mpscnnLocalContrastNormalizationGradient setDeltaSelector value
 
 -- | p0
 --
@@ -168,8 +164,8 @@ setDelta mpscnnLocalContrastNormalizationGradient  value =
 --
 -- ObjC selector: @- p0@
 p0 :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> IO CFloat
-p0 mpscnnLocalContrastNormalizationGradient  =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "p0") retCFloat []
+p0 mpscnnLocalContrastNormalizationGradient =
+  sendMessage mpscnnLocalContrastNormalizationGradient p0Selector
 
 -- | p0
 --
@@ -177,8 +173,8 @@ p0 mpscnnLocalContrastNormalizationGradient  =
 --
 -- ObjC selector: @- setP0:@
 setP0 :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> CFloat -> IO ()
-setP0 mpscnnLocalContrastNormalizationGradient  value =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "setP0:") retVoid [argCFloat value]
+setP0 mpscnnLocalContrastNormalizationGradient value =
+  sendMessage mpscnnLocalContrastNormalizationGradient setP0Selector value
 
 -- | pm
 --
@@ -186,8 +182,8 @@ setP0 mpscnnLocalContrastNormalizationGradient  value =
 --
 -- ObjC selector: @- pm@
 pm :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> IO CFloat
-pm mpscnnLocalContrastNormalizationGradient  =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "pm") retCFloat []
+pm mpscnnLocalContrastNormalizationGradient =
+  sendMessage mpscnnLocalContrastNormalizationGradient pmSelector
 
 -- | pm
 --
@@ -195,8 +191,8 @@ pm mpscnnLocalContrastNormalizationGradient  =
 --
 -- ObjC selector: @- setPm:@
 setPm :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> CFloat -> IO ()
-setPm mpscnnLocalContrastNormalizationGradient  value =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "setPm:") retVoid [argCFloat value]
+setPm mpscnnLocalContrastNormalizationGradient value =
+  sendMessage mpscnnLocalContrastNormalizationGradient setPmSelector value
 
 -- | ps
 --
@@ -204,8 +200,8 @@ setPm mpscnnLocalContrastNormalizationGradient  value =
 --
 -- ObjC selector: @- ps@
 ps :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> IO CFloat
-ps mpscnnLocalContrastNormalizationGradient  =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "ps") retCFloat []
+ps mpscnnLocalContrastNormalizationGradient =
+  sendMessage mpscnnLocalContrastNormalizationGradient psSelector
 
 -- | ps
 --
@@ -213,66 +209,66 @@ ps mpscnnLocalContrastNormalizationGradient  =
 --
 -- ObjC selector: @- setPs:@
 setPs :: IsMPSCNNLocalContrastNormalizationGradient mpscnnLocalContrastNormalizationGradient => mpscnnLocalContrastNormalizationGradient -> CFloat -> IO ()
-setPs mpscnnLocalContrastNormalizationGradient  value =
-    sendMsg mpscnnLocalContrastNormalizationGradient (mkSelector "setPs:") retVoid [argCFloat value]
+setPs mpscnnLocalContrastNormalizationGradient value =
+  sendMessage mpscnnLocalContrastNormalizationGradient setPsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:@
-initWithDevice_kernelWidth_kernelHeightSelector :: Selector
+initWithDevice_kernelWidth_kernelHeightSelector :: Selector '[RawId, CULong, CULong] (Id MPSCNNLocalContrastNormalizationGradient)
 initWithDevice_kernelWidth_kernelHeightSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNLocalContrastNormalizationGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CFloat
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CFloat] ()
 setAlphaSelector = mkSelector "setAlpha:"
 
 -- | @Selector@ for @beta@
-betaSelector :: Selector
+betaSelector :: Selector '[] CFloat
 betaSelector = mkSelector "beta"
 
 -- | @Selector@ for @setBeta:@
-setBetaSelector :: Selector
+setBetaSelector :: Selector '[CFloat] ()
 setBetaSelector = mkSelector "setBeta:"
 
 -- | @Selector@ for @delta@
-deltaSelector :: Selector
+deltaSelector :: Selector '[] CFloat
 deltaSelector = mkSelector "delta"
 
 -- | @Selector@ for @setDelta:@
-setDeltaSelector :: Selector
+setDeltaSelector :: Selector '[CFloat] ()
 setDeltaSelector = mkSelector "setDelta:"
 
 -- | @Selector@ for @p0@
-p0Selector :: Selector
+p0Selector :: Selector '[] CFloat
 p0Selector = mkSelector "p0"
 
 -- | @Selector@ for @setP0:@
-setP0Selector :: Selector
+setP0Selector :: Selector '[CFloat] ()
 setP0Selector = mkSelector "setP0:"
 
 -- | @Selector@ for @pm@
-pmSelector :: Selector
+pmSelector :: Selector '[] CFloat
 pmSelector = mkSelector "pm"
 
 -- | @Selector@ for @setPm:@
-setPmSelector :: Selector
+setPmSelector :: Selector '[CFloat] ()
 setPmSelector = mkSelector "setPm:"
 
 -- | @Selector@ for @ps@
-psSelector :: Selector
+psSelector :: Selector '[] CFloat
 psSelector = mkSelector "ps"
 
 -- | @Selector@ for @setPs:@
-setPsSelector :: Selector
+setPsSelector :: Selector '[CFloat] ()
 setPsSelector = mkSelector "setPs:"
 

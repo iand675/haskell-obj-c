@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.CoreMotion.CMPedometer
   , stopPedometerUpdates
   , startPedometerEventUpdatesWithHandler
   , stopPedometerEventUpdates
-  , isStepCountingAvailableSelector
+  , authorizationStatusSelector
+  , isCadenceAvailableSelector
   , isDistanceAvailableSelector
   , isFloorCountingAvailableSelector
   , isPaceAvailableSelector
-  , isCadenceAvailableSelector
   , isPedometerEventTrackingAvailableSelector
-  , authorizationStatusSelector
+  , isStepCountingAvailableSelector
   , queryPedometerDataFromDate_toDate_withHandlerSelector
-  , startPedometerUpdatesFromDate_withHandlerSelector
-  , stopPedometerUpdatesSelector
   , startPedometerEventUpdatesWithHandlerSelector
+  , startPedometerUpdatesFromDate_withHandlerSelector
   , stopPedometerEventUpdatesSelector
+  , stopPedometerUpdatesSelector
 
   -- * Enum types
   , CMAuthorizationStatus(CMAuthorizationStatus)
@@ -41,15 +42,11 @@ module ObjC.CoreMotion.CMPedometer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,127 +59,124 @@ isStepCountingAvailable :: IO Bool
 isStepCountingAvailable  =
   do
     cls' <- getRequiredClass "CMPedometer"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isStepCountingAvailable") retCULong []
+    sendClassMessage cls' isStepCountingAvailableSelector
 
 -- | @+ isDistanceAvailable@
 isDistanceAvailable :: IO Bool
 isDistanceAvailable  =
   do
     cls' <- getRequiredClass "CMPedometer"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isDistanceAvailable") retCULong []
+    sendClassMessage cls' isDistanceAvailableSelector
 
 -- | @+ isFloorCountingAvailable@
 isFloorCountingAvailable :: IO Bool
 isFloorCountingAvailable  =
   do
     cls' <- getRequiredClass "CMPedometer"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isFloorCountingAvailable") retCULong []
+    sendClassMessage cls' isFloorCountingAvailableSelector
 
 -- | @+ isPaceAvailable@
 isPaceAvailable :: IO Bool
 isPaceAvailable  =
   do
     cls' <- getRequiredClass "CMPedometer"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isPaceAvailable") retCULong []
+    sendClassMessage cls' isPaceAvailableSelector
 
 -- | @+ isCadenceAvailable@
 isCadenceAvailable :: IO Bool
 isCadenceAvailable  =
   do
     cls' <- getRequiredClass "CMPedometer"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isCadenceAvailable") retCULong []
+    sendClassMessage cls' isCadenceAvailableSelector
 
 -- | @+ isPedometerEventTrackingAvailable@
 isPedometerEventTrackingAvailable :: IO Bool
 isPedometerEventTrackingAvailable  =
   do
     cls' <- getRequiredClass "CMPedometer"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isPedometerEventTrackingAvailable") retCULong []
+    sendClassMessage cls' isPedometerEventTrackingAvailableSelector
 
 -- | @+ authorizationStatus@
 authorizationStatus :: IO CMAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "CMPedometer"
-    fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | @- queryPedometerDataFromDate:toDate:withHandler:@
 queryPedometerDataFromDate_toDate_withHandler :: (IsCMPedometer cmPedometer, IsNSDate start, IsNSDate end) => cmPedometer -> start -> end -> Ptr () -> IO ()
-queryPedometerDataFromDate_toDate_withHandler cmPedometer  start end handler =
-  withObjCPtr start $ \raw_start ->
-    withObjCPtr end $ \raw_end ->
-        sendMsg cmPedometer (mkSelector "queryPedometerDataFromDate:toDate:withHandler:") retVoid [argPtr (castPtr raw_start :: Ptr ()), argPtr (castPtr raw_end :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+queryPedometerDataFromDate_toDate_withHandler cmPedometer start end handler =
+  sendMessage cmPedometer queryPedometerDataFromDate_toDate_withHandlerSelector (toNSDate start) (toNSDate end) handler
 
 -- | @- startPedometerUpdatesFromDate:withHandler:@
 startPedometerUpdatesFromDate_withHandler :: (IsCMPedometer cmPedometer, IsNSDate start) => cmPedometer -> start -> Ptr () -> IO ()
-startPedometerUpdatesFromDate_withHandler cmPedometer  start handler =
-  withObjCPtr start $ \raw_start ->
-      sendMsg cmPedometer (mkSelector "startPedometerUpdatesFromDate:withHandler:") retVoid [argPtr (castPtr raw_start :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+startPedometerUpdatesFromDate_withHandler cmPedometer start handler =
+  sendMessage cmPedometer startPedometerUpdatesFromDate_withHandlerSelector (toNSDate start) handler
 
 -- | @- stopPedometerUpdates@
 stopPedometerUpdates :: IsCMPedometer cmPedometer => cmPedometer -> IO ()
-stopPedometerUpdates cmPedometer  =
-    sendMsg cmPedometer (mkSelector "stopPedometerUpdates") retVoid []
+stopPedometerUpdates cmPedometer =
+  sendMessage cmPedometer stopPedometerUpdatesSelector
 
 -- | @- startPedometerEventUpdatesWithHandler:@
 startPedometerEventUpdatesWithHandler :: IsCMPedometer cmPedometer => cmPedometer -> Ptr () -> IO ()
-startPedometerEventUpdatesWithHandler cmPedometer  handler =
-    sendMsg cmPedometer (mkSelector "startPedometerEventUpdatesWithHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+startPedometerEventUpdatesWithHandler cmPedometer handler =
+  sendMessage cmPedometer startPedometerEventUpdatesWithHandlerSelector handler
 
 -- | @- stopPedometerEventUpdates@
 stopPedometerEventUpdates :: IsCMPedometer cmPedometer => cmPedometer -> IO ()
-stopPedometerEventUpdates cmPedometer  =
-    sendMsg cmPedometer (mkSelector "stopPedometerEventUpdates") retVoid []
+stopPedometerEventUpdates cmPedometer =
+  sendMessage cmPedometer stopPedometerEventUpdatesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isStepCountingAvailable@
-isStepCountingAvailableSelector :: Selector
+isStepCountingAvailableSelector :: Selector '[] Bool
 isStepCountingAvailableSelector = mkSelector "isStepCountingAvailable"
 
 -- | @Selector@ for @isDistanceAvailable@
-isDistanceAvailableSelector :: Selector
+isDistanceAvailableSelector :: Selector '[] Bool
 isDistanceAvailableSelector = mkSelector "isDistanceAvailable"
 
 -- | @Selector@ for @isFloorCountingAvailable@
-isFloorCountingAvailableSelector :: Selector
+isFloorCountingAvailableSelector :: Selector '[] Bool
 isFloorCountingAvailableSelector = mkSelector "isFloorCountingAvailable"
 
 -- | @Selector@ for @isPaceAvailable@
-isPaceAvailableSelector :: Selector
+isPaceAvailableSelector :: Selector '[] Bool
 isPaceAvailableSelector = mkSelector "isPaceAvailable"
 
 -- | @Selector@ for @isCadenceAvailable@
-isCadenceAvailableSelector :: Selector
+isCadenceAvailableSelector :: Selector '[] Bool
 isCadenceAvailableSelector = mkSelector "isCadenceAvailable"
 
 -- | @Selector@ for @isPedometerEventTrackingAvailable@
-isPedometerEventTrackingAvailableSelector :: Selector
+isPedometerEventTrackingAvailableSelector :: Selector '[] Bool
 isPedometerEventTrackingAvailableSelector = mkSelector "isPedometerEventTrackingAvailable"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CMAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @queryPedometerDataFromDate:toDate:withHandler:@
-queryPedometerDataFromDate_toDate_withHandlerSelector :: Selector
+queryPedometerDataFromDate_toDate_withHandlerSelector :: Selector '[Id NSDate, Id NSDate, Ptr ()] ()
 queryPedometerDataFromDate_toDate_withHandlerSelector = mkSelector "queryPedometerDataFromDate:toDate:withHandler:"
 
 -- | @Selector@ for @startPedometerUpdatesFromDate:withHandler:@
-startPedometerUpdatesFromDate_withHandlerSelector :: Selector
+startPedometerUpdatesFromDate_withHandlerSelector :: Selector '[Id NSDate, Ptr ()] ()
 startPedometerUpdatesFromDate_withHandlerSelector = mkSelector "startPedometerUpdatesFromDate:withHandler:"
 
 -- | @Selector@ for @stopPedometerUpdates@
-stopPedometerUpdatesSelector :: Selector
+stopPedometerUpdatesSelector :: Selector '[] ()
 stopPedometerUpdatesSelector = mkSelector "stopPedometerUpdates"
 
 -- | @Selector@ for @startPedometerEventUpdatesWithHandler:@
-startPedometerEventUpdatesWithHandlerSelector :: Selector
+startPedometerEventUpdatesWithHandlerSelector :: Selector '[Ptr ()] ()
 startPedometerEventUpdatesWithHandlerSelector = mkSelector "startPedometerEventUpdatesWithHandler:"
 
 -- | @Selector@ for @stopPedometerEventUpdates@
-stopPedometerEventUpdatesSelector :: Selector
+stopPedometerEventUpdatesSelector :: Selector '[] ()
 stopPedometerEventUpdatesSelector = mkSelector "stopPedometerEventUpdates"
 

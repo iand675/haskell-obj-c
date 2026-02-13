@@ -1,11 +1,12 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 
--- | Generated bindings for @MTROtaSoftwareUpdateRequestorClusterStateTransitionEvent@.
-module ObjC.Matter.MTROtaSoftwareUpdateRequestorClusterStateTransitionEvent
-  ( MTROtaSoftwareUpdateRequestorClusterStateTransitionEvent
-  , IsMTROtaSoftwareUpdateRequestorClusterStateTransitionEvent(..)
+-- | Generated bindings for @MTROTASoftwareUpdateRequestorClusterStateTransitionEvent@.
+module ObjC.Matter.MTROTASoftwareUpdateRequestorClusterStateTransitionEvent
+  ( MTROTASoftwareUpdateRequestorClusterStateTransitionEvent
+  , IsMTROTASoftwareUpdateRequestorClusterStateTransitionEvent(..)
   , previousState
   , setPreviousState
   , newState
@@ -14,27 +15,23 @@ module ObjC.Matter.MTROtaSoftwareUpdateRequestorClusterStateTransitionEvent
   , setReason
   , targetSoftwareVersion
   , setTargetSoftwareVersion
-  , previousStateSelector
-  , setPreviousStateSelector
   , newStateSelector
-  , setNewStateSelector
+  , previousStateSelector
   , reasonSelector
+  , setNewStateSelector
+  , setPreviousStateSelector
   , setReasonSelector
-  , targetSoftwareVersionSelector
   , setTargetSoftwareVersionSelector
+  , targetSoftwareVersionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,82 +39,78 @@ import ObjC.Matter.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
 -- | @- previousState@
-previousState :: IsMTROtaSoftwareUpdateRequestorClusterStateTransitionEvent mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent => mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent -> IO (Id NSNumber)
-previousState mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent  =
-    sendMsg mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent (mkSelector "previousState") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousState :: IsMTROTASoftwareUpdateRequestorClusterStateTransitionEvent mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent => mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent -> IO (Id NSNumber)
+previousState mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent previousStateSelector
 
 -- | @- setPreviousState:@
-setPreviousState :: (IsMTROtaSoftwareUpdateRequestorClusterStateTransitionEvent mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent, IsNSNumber value) => mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent -> value -> IO ()
-setPreviousState mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent (mkSelector "setPreviousState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPreviousState :: (IsMTROTASoftwareUpdateRequestorClusterStateTransitionEvent mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent, IsNSNumber value) => mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent -> value -> IO ()
+setPreviousState mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent value =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent setPreviousStateSelector (toNSNumber value)
 
 -- | @- newState@
-newState :: IsMTROtaSoftwareUpdateRequestorClusterStateTransitionEvent mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent => mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent -> IO (Id NSNumber)
-newState mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent  =
-    sendMsg mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent (mkSelector "newState") (retPtr retVoid) [] >>= ownedObject . castPtr
+newState :: IsMTROTASoftwareUpdateRequestorClusterStateTransitionEvent mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent => mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent -> IO (Id NSNumber)
+newState mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent =
+  sendOwnedMessage mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent newStateSelector
 
 -- | @- setNewState:@
-setNewState :: (IsMTROtaSoftwareUpdateRequestorClusterStateTransitionEvent mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent, IsNSNumber value) => mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent -> value -> IO ()
-setNewState mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent (mkSelector "setNewState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNewState :: (IsMTROTASoftwareUpdateRequestorClusterStateTransitionEvent mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent, IsNSNumber value) => mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent -> value -> IO ()
+setNewState mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent value =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent setNewStateSelector (toNSNumber value)
 
 -- | @- reason@
-reason :: IsMTROtaSoftwareUpdateRequestorClusterStateTransitionEvent mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent => mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent -> IO (Id NSNumber)
-reason mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent  =
-    sendMsg mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent (mkSelector "reason") (retPtr retVoid) [] >>= retainedObject . castPtr
+reason :: IsMTROTASoftwareUpdateRequestorClusterStateTransitionEvent mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent => mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent -> IO (Id NSNumber)
+reason mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent reasonSelector
 
 -- | @- setReason:@
-setReason :: (IsMTROtaSoftwareUpdateRequestorClusterStateTransitionEvent mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent, IsNSNumber value) => mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent -> value -> IO ()
-setReason mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent (mkSelector "setReason:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReason :: (IsMTROTASoftwareUpdateRequestorClusterStateTransitionEvent mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent, IsNSNumber value) => mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent -> value -> IO ()
+setReason mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent value =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent setReasonSelector (toNSNumber value)
 
 -- | @- targetSoftwareVersion@
-targetSoftwareVersion :: IsMTROtaSoftwareUpdateRequestorClusterStateTransitionEvent mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent => mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent -> IO (Id NSNumber)
-targetSoftwareVersion mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent  =
-    sendMsg mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent (mkSelector "targetSoftwareVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetSoftwareVersion :: IsMTROTASoftwareUpdateRequestorClusterStateTransitionEvent mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent => mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent -> IO (Id NSNumber)
+targetSoftwareVersion mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent targetSoftwareVersionSelector
 
 -- | @- setTargetSoftwareVersion:@
-setTargetSoftwareVersion :: (IsMTROtaSoftwareUpdateRequestorClusterStateTransitionEvent mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent, IsNSNumber value) => mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent -> value -> IO ()
-setTargetSoftwareVersion mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateRequestorClusterStateTransitionEvent (mkSelector "setTargetSoftwareVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTargetSoftwareVersion :: (IsMTROTASoftwareUpdateRequestorClusterStateTransitionEvent mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent, IsNSNumber value) => mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent -> value -> IO ()
+setTargetSoftwareVersion mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent value =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterStateTransitionEvent setTargetSoftwareVersionSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @previousState@
-previousStateSelector :: Selector
+previousStateSelector :: Selector '[] (Id NSNumber)
 previousStateSelector = mkSelector "previousState"
 
 -- | @Selector@ for @setPreviousState:@
-setPreviousStateSelector :: Selector
+setPreviousStateSelector :: Selector '[Id NSNumber] ()
 setPreviousStateSelector = mkSelector "setPreviousState:"
 
 -- | @Selector@ for @newState@
-newStateSelector :: Selector
+newStateSelector :: Selector '[] (Id NSNumber)
 newStateSelector = mkSelector "newState"
 
 -- | @Selector@ for @setNewState:@
-setNewStateSelector :: Selector
+setNewStateSelector :: Selector '[Id NSNumber] ()
 setNewStateSelector = mkSelector "setNewState:"
 
 -- | @Selector@ for @reason@
-reasonSelector :: Selector
+reasonSelector :: Selector '[] (Id NSNumber)
 reasonSelector = mkSelector "reason"
 
 -- | @Selector@ for @setReason:@
-setReasonSelector :: Selector
+setReasonSelector :: Selector '[Id NSNumber] ()
 setReasonSelector = mkSelector "setReason:"
 
 -- | @Selector@ for @targetSoftwareVersion@
-targetSoftwareVersionSelector :: Selector
+targetSoftwareVersionSelector :: Selector '[] (Id NSNumber)
 targetSoftwareVersionSelector = mkSelector "targetSoftwareVersion"
 
 -- | @Selector@ for @setTargetSoftwareVersion:@
-setTargetSoftwareVersionSelector :: Selector
+setTargetSoftwareVersionSelector :: Selector '[Id NSNumber] ()
 setTargetSoftwareVersionSelector = mkSelector "setTargetSoftwareVersion:"
 

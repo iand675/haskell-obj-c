@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.PencilKit.PKStrokePath
   , parametricValue_offsetByTime
   , count
   , creationDate
-  , initWithControlPoints_creationDateSelector
-  , pointAtIndexSelector
-  , objectAtIndexedSubscriptSelector
-  , interpolatedPointAtSelector
-  , enumerateInterpolatedPointsInRange_strideByDistance_usingBlockSelector
-  , enumerateInterpolatedPointsInRange_strideByTime_usingBlockSelector
-  , enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlockSelector
-  , parametricValue_offsetByDistanceSelector
-  , parametricValue_offsetByTimeSelector
   , countSelector
   , creationDateSelector
+  , enumerateInterpolatedPointsInRange_strideByDistance_usingBlockSelector
+  , enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlockSelector
+  , enumerateInterpolatedPointsInRange_strideByTime_usingBlockSelector
+  , initWithControlPoints_creationDateSelector
+  , interpolatedPointAtSelector
+  , objectAtIndexedSubscriptSelector
+  , parametricValue_offsetByDistanceSelector
+  , parametricValue_offsetByTimeSelector
+  , pointAtIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,31 +54,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithControlPoints:creationDate:@
 initWithControlPoints_creationDate :: (IsPKStrokePath pkStrokePath, IsNSArray controlPoints, IsNSDate creationDate) => pkStrokePath -> controlPoints -> creationDate -> IO (Id PKStrokePath)
-initWithControlPoints_creationDate pkStrokePath  controlPoints creationDate =
-  withObjCPtr controlPoints $ \raw_controlPoints ->
-    withObjCPtr creationDate $ \raw_creationDate ->
-        sendMsg pkStrokePath (mkSelector "initWithControlPoints:creationDate:") (retPtr retVoid) [argPtr (castPtr raw_controlPoints :: Ptr ()), argPtr (castPtr raw_creationDate :: Ptr ())] >>= ownedObject . castPtr
+initWithControlPoints_creationDate pkStrokePath controlPoints creationDate =
+  sendOwnedMessage pkStrokePath initWithControlPoints_creationDateSelector (toNSArray controlPoints) (toNSDate creationDate)
 
 -- | Returns B-spline control point at index @i@.
 --
 -- ObjC selector: @- pointAtIndex:@
 pointAtIndex :: IsPKStrokePath pkStrokePath => pkStrokePath -> CULong -> IO (Id PKStrokePoint)
-pointAtIndex pkStrokePath  i =
-    sendMsg pkStrokePath (mkSelector "pointAtIndex:") (retPtr retVoid) [argCULong i] >>= retainedObject . castPtr
+pointAtIndex pkStrokePath i =
+  sendMessage pkStrokePath pointAtIndexSelector i
 
 -- | Returns B-spline control point at index @i@.
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsPKStrokePath pkStrokePath => pkStrokePath -> CULong -> IO (Id PKStrokePoint)
-objectAtIndexedSubscript pkStrokePath  i =
-    sendMsg pkStrokePath (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong i] >>= retainedObject . castPtr
+objectAtIndexedSubscript pkStrokePath i =
+  sendMessage pkStrokePath objectAtIndexedSubscriptSelector i
 
 -- | The on-curve point for the floating point [0, count-1] @parametricValue@ parameter.
 --
 -- ObjC selector: @- interpolatedPointAt:@
 interpolatedPointAt :: IsPKStrokePath pkStrokePath => pkStrokePath -> CDouble -> IO (Id PKStrokePoint)
-interpolatedPointAt pkStrokePath  parametricValue =
-    sendMsg pkStrokePath (mkSelector "interpolatedPointAt:") (retPtr retVoid) [argCDouble parametricValue] >>= retainedObject . castPtr
+interpolatedPointAt pkStrokePath parametricValue =
+  sendMessage pkStrokePath interpolatedPointAtSelector parametricValue
 
 -- | Executes a given block using each point in a range with a distance step.
 --
@@ -93,9 +88,8 @@ interpolatedPointAt pkStrokePath  parametricValue =
 --
 -- ObjC selector: @- enumerateInterpolatedPointsInRange:strideByDistance:usingBlock:@
 enumerateInterpolatedPointsInRange_strideByDistance_usingBlock :: (IsPKStrokePath pkStrokePath, IsPKFloatRange range) => pkStrokePath -> range -> CDouble -> Ptr () -> IO ()
-enumerateInterpolatedPointsInRange_strideByDistance_usingBlock pkStrokePath  range distanceStep block =
-  withObjCPtr range $ \raw_range ->
-      sendMsg pkStrokePath (mkSelector "enumerateInterpolatedPointsInRange:strideByDistance:usingBlock:") retVoid [argPtr (castPtr raw_range :: Ptr ()), argCDouble distanceStep, argPtr (castPtr block :: Ptr ())]
+enumerateInterpolatedPointsInRange_strideByDistance_usingBlock pkStrokePath range distanceStep block =
+  sendMessage pkStrokePath enumerateInterpolatedPointsInRange_strideByDistance_usingBlockSelector (toPKFloatRange range) distanceStep block
 
 -- | Executes a given block using each point in a range with a time step.
 --
@@ -107,9 +101,8 @@ enumerateInterpolatedPointsInRange_strideByDistance_usingBlock pkStrokePath  ran
 --
 -- ObjC selector: @- enumerateInterpolatedPointsInRange:strideByTime:usingBlock:@
 enumerateInterpolatedPointsInRange_strideByTime_usingBlock :: (IsPKStrokePath pkStrokePath, IsPKFloatRange range) => pkStrokePath -> range -> CDouble -> Ptr () -> IO ()
-enumerateInterpolatedPointsInRange_strideByTime_usingBlock pkStrokePath  range timeStep block =
-  withObjCPtr range $ \raw_range ->
-      sendMsg pkStrokePath (mkSelector "enumerateInterpolatedPointsInRange:strideByTime:usingBlock:") retVoid [argPtr (castPtr raw_range :: Ptr ()), argCDouble timeStep, argPtr (castPtr block :: Ptr ())]
+enumerateInterpolatedPointsInRange_strideByTime_usingBlock pkStrokePath range timeStep block =
+  sendMessage pkStrokePath enumerateInterpolatedPointsInRange_strideByTime_usingBlockSelector (toPKFloatRange range) timeStep block
 
 -- | Executes a given block using each point in a range with a parametric step.
 --
@@ -121,9 +114,8 @@ enumerateInterpolatedPointsInRange_strideByTime_usingBlock pkStrokePath  range t
 --
 -- ObjC selector: @- enumerateInterpolatedPointsInRange:strideByParametricStep:usingBlock:@
 enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlock :: (IsPKStrokePath pkStrokePath, IsPKFloatRange range) => pkStrokePath -> range -> CDouble -> Ptr () -> IO ()
-enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlock pkStrokePath  range parametricStep block =
-  withObjCPtr range $ \raw_range ->
-      sendMsg pkStrokePath (mkSelector "enumerateInterpolatedPointsInRange:strideByParametricStep:usingBlock:") retVoid [argPtr (castPtr raw_range :: Ptr ()), argCDouble parametricStep, argPtr (castPtr block :: Ptr ())]
+enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlock pkStrokePath range parametricStep block =
+  sendMessage pkStrokePath enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlockSelector (toPKFloatRange range) parametricStep block
 
 -- | Returns a parametric value on the B-spline that is a specified distance from the given parametric value.
 --
@@ -135,8 +127,8 @@ enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlock pkStrokePat
 --
 -- ObjC selector: @- parametricValue:offsetByDistance:@
 parametricValue_offsetByDistance :: IsPKStrokePath pkStrokePath => pkStrokePath -> CDouble -> CDouble -> IO CDouble
-parametricValue_offsetByDistance pkStrokePath  parametricValue distanceStep =
-    sendMsg pkStrokePath (mkSelector "parametricValue:offsetByDistance:") retCDouble [argCDouble parametricValue, argCDouble distanceStep]
+parametricValue_offsetByDistance pkStrokePath parametricValue distanceStep =
+  sendMessage pkStrokePath parametricValue_offsetByDistanceSelector parametricValue distanceStep
 
 -- | Returns a parametric value on the B-spline that is a specified time from the given parametric value.
 --
@@ -148,68 +140,68 @@ parametricValue_offsetByDistance pkStrokePath  parametricValue distanceStep =
 --
 -- ObjC selector: @- parametricValue:offsetByTime:@
 parametricValue_offsetByTime :: IsPKStrokePath pkStrokePath => pkStrokePath -> CDouble -> CDouble -> IO CDouble
-parametricValue_offsetByTime pkStrokePath  parametricValue timeStep =
-    sendMsg pkStrokePath (mkSelector "parametricValue:offsetByTime:") retCDouble [argCDouble parametricValue, argCDouble timeStep]
+parametricValue_offsetByTime pkStrokePath parametricValue timeStep =
+  sendMessage pkStrokePath parametricValue_offsetByTimeSelector parametricValue timeStep
 
 -- | The number of control points in this stroke path.
 --
 -- ObjC selector: @- count@
 count :: IsPKStrokePath pkStrokePath => pkStrokePath -> IO CULong
-count pkStrokePath  =
-    sendMsg pkStrokePath (mkSelector "count") retCULong []
+count pkStrokePath =
+  sendMessage pkStrokePath countSelector
 
 -- | The time at which this stroke path was started. The @timeOffset@ of contained PKStrokePoints is relative to this date.
 --
 -- ObjC selector: @- creationDate@
 creationDate :: IsPKStrokePath pkStrokePath => pkStrokePath -> IO (Id NSDate)
-creationDate pkStrokePath  =
-    sendMsg pkStrokePath (mkSelector "creationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+creationDate pkStrokePath =
+  sendMessage pkStrokePath creationDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithControlPoints:creationDate:@
-initWithControlPoints_creationDateSelector :: Selector
+initWithControlPoints_creationDateSelector :: Selector '[Id NSArray, Id NSDate] (Id PKStrokePath)
 initWithControlPoints_creationDateSelector = mkSelector "initWithControlPoints:creationDate:"
 
 -- | @Selector@ for @pointAtIndex:@
-pointAtIndexSelector :: Selector
+pointAtIndexSelector :: Selector '[CULong] (Id PKStrokePoint)
 pointAtIndexSelector = mkSelector "pointAtIndex:"
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id PKStrokePoint)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @interpolatedPointAt:@
-interpolatedPointAtSelector :: Selector
+interpolatedPointAtSelector :: Selector '[CDouble] (Id PKStrokePoint)
 interpolatedPointAtSelector = mkSelector "interpolatedPointAt:"
 
 -- | @Selector@ for @enumerateInterpolatedPointsInRange:strideByDistance:usingBlock:@
-enumerateInterpolatedPointsInRange_strideByDistance_usingBlockSelector :: Selector
+enumerateInterpolatedPointsInRange_strideByDistance_usingBlockSelector :: Selector '[Id PKFloatRange, CDouble, Ptr ()] ()
 enumerateInterpolatedPointsInRange_strideByDistance_usingBlockSelector = mkSelector "enumerateInterpolatedPointsInRange:strideByDistance:usingBlock:"
 
 -- | @Selector@ for @enumerateInterpolatedPointsInRange:strideByTime:usingBlock:@
-enumerateInterpolatedPointsInRange_strideByTime_usingBlockSelector :: Selector
+enumerateInterpolatedPointsInRange_strideByTime_usingBlockSelector :: Selector '[Id PKFloatRange, CDouble, Ptr ()] ()
 enumerateInterpolatedPointsInRange_strideByTime_usingBlockSelector = mkSelector "enumerateInterpolatedPointsInRange:strideByTime:usingBlock:"
 
 -- | @Selector@ for @enumerateInterpolatedPointsInRange:strideByParametricStep:usingBlock:@
-enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlockSelector :: Selector
+enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlockSelector :: Selector '[Id PKFloatRange, CDouble, Ptr ()] ()
 enumerateInterpolatedPointsInRange_strideByParametricStep_usingBlockSelector = mkSelector "enumerateInterpolatedPointsInRange:strideByParametricStep:usingBlock:"
 
 -- | @Selector@ for @parametricValue:offsetByDistance:@
-parametricValue_offsetByDistanceSelector :: Selector
+parametricValue_offsetByDistanceSelector :: Selector '[CDouble, CDouble] CDouble
 parametricValue_offsetByDistanceSelector = mkSelector "parametricValue:offsetByDistance:"
 
 -- | @Selector@ for @parametricValue:offsetByTime:@
-parametricValue_offsetByTimeSelector :: Selector
+parametricValue_offsetByTimeSelector :: Selector '[CDouble, CDouble] CDouble
 parametricValue_offsetByTimeSelector = mkSelector "parametricValue:offsetByTime:"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @creationDate@
-creationDateSelector :: Selector
+creationDateSelector :: Selector '[] (Id NSDate)
 creationDateSelector = mkSelector "creationDate"
 

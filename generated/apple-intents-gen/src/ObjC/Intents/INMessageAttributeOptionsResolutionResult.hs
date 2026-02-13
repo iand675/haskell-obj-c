@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INMessageAttributeOptionsResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithMessageAttributeOptionsToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedMessageAttributeOptionsSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithMessageAttributeOptionsToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedMessageAttributeOptionsSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INMessageAttributeOptions(INMessageAttributeOptions)
@@ -26,15 +27,11 @@ module ObjC.Intents.INMessageAttributeOptionsResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,46 +44,46 @@ successWithResolvedMessageAttributeOptions :: INMessageAttributeOptions -> IO (I
 successWithResolvedMessageAttributeOptions resolvedMessageAttributeOptions =
   do
     cls' <- getRequiredClass "INMessageAttributeOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedMessageAttributeOptions:") (retPtr retVoid) [argCULong (coerce resolvedMessageAttributeOptions)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedMessageAttributeOptionsSelector resolvedMessageAttributeOptions
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INMessageAttributeOptions -> IO (Id INMessageAttributeOptionsResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INMessageAttributeOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCULong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithMessageAttributeOptionsToConfirm:@
 confirmationRequiredWithMessageAttributeOptionsToConfirm :: INMessageAttributeOptions -> IO (Id INMessageAttributeOptionsResolutionResult)
 confirmationRequiredWithMessageAttributeOptionsToConfirm messageAttributeOptionsToConfirm =
   do
     cls' <- getRequiredClass "INMessageAttributeOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithMessageAttributeOptionsToConfirm:") (retPtr retVoid) [argCULong (coerce messageAttributeOptionsToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithMessageAttributeOptionsToConfirmSelector messageAttributeOptionsToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INMessageAttributeOptions -> IO (Id INMessageAttributeOptionsResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INMessageAttributeOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCULong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedMessageAttributeOptions:@
-successWithResolvedMessageAttributeOptionsSelector :: Selector
+successWithResolvedMessageAttributeOptionsSelector :: Selector '[INMessageAttributeOptions] (Id INMessageAttributeOptionsResolutionResult)
 successWithResolvedMessageAttributeOptionsSelector = mkSelector "successWithResolvedMessageAttributeOptions:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INMessageAttributeOptions] (Id INMessageAttributeOptionsResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithMessageAttributeOptionsToConfirm:@
-confirmationRequiredWithMessageAttributeOptionsToConfirmSelector :: Selector
+confirmationRequiredWithMessageAttributeOptionsToConfirmSelector :: Selector '[INMessageAttributeOptions] (Id INMessageAttributeOptionsResolutionResult)
 confirmationRequiredWithMessageAttributeOptionsToConfirmSelector = mkSelector "confirmationRequiredWithMessageAttributeOptionsToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INMessageAttributeOptions] (Id INMessageAttributeOptionsResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

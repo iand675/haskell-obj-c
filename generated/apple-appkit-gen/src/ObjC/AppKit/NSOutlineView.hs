@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -50,49 +51,49 @@ module ObjC.AppKit.NSOutlineView
   , setUserInterfaceLayoutDirection
   , stronglyReferencesItems
   , setStronglyReferencesItems
-  , isExpandableSelector
-  , numberOfChildrenOfItemSelector
-  , child_ofItemSelector
-  , expandItem_expandChildrenSelector
-  , expandItemSelector
-  , collapseItem_collapseChildrenSelector
-  , collapseItemSelector
-  , reloadItem_reloadChildrenSelector
-  , reloadItemSelector
-  , parentForItemSelector
+  , autoresizesOutlineColumnSelector
+  , autosaveExpandedItemsSelector
   , childIndexForItemSelector
+  , child_ofItemSelector
+  , collapseItemSelector
+  , collapseItem_collapseChildrenSelector
+  , dataSourceSelector
+  , delegateSelector
+  , expandItemSelector
+  , expandItem_expandChildrenSelector
+  , frameOfOutlineCellAtRowSelector
+  , indentationMarkerFollowsCellSelector
+  , indentationPerLevelSelector
+  , insertItemsAtIndexes_inParent_withAnimationSelector
+  , insertRowsAtIndexes_withAnimationSelector
+  , isExpandableSelector
+  , isItemExpandedSelector
   , itemAtRowSelector
-  , rowForItemSelector
   , levelForItemSelector
   , levelForRowSelector
-  , isItemExpandedSelector
-  , frameOfOutlineCellAtRowSelector
-  , setDropItem_dropChildIndexSelector
-  , shouldCollapseAutoExpandedItemsForDepositedSelector
-  , insertItemsAtIndexes_inParent_withAnimationSelector
-  , removeItemsAtIndexes_inParent_withAnimationSelector
   , moveItemAtIndex_inParent_toIndex_inParentSelector
-  , insertRowsAtIndexes_withAnimationSelector
-  , removeRowsAtIndexes_withAnimationSelector
   , moveRowAtIndex_toIndexSelector
-  , delegateSelector
-  , setDelegateSelector
-  , dataSourceSelector
-  , setDataSourceSelector
+  , numberOfChildrenOfItemSelector
   , outlineTableColumnSelector
-  , setOutlineTableColumnSelector
-  , indentationPerLevelSelector
-  , setIndentationPerLevelSelector
-  , indentationMarkerFollowsCellSelector
-  , setIndentationMarkerFollowsCellSelector
-  , autoresizesOutlineColumnSelector
+  , parentForItemSelector
+  , reloadItemSelector
+  , reloadItem_reloadChildrenSelector
+  , removeItemsAtIndexes_inParent_withAnimationSelector
+  , removeRowsAtIndexes_withAnimationSelector
+  , rowForItemSelector
   , setAutoresizesOutlineColumnSelector
-  , autosaveExpandedItemsSelector
   , setAutosaveExpandedItemsSelector
-  , userInterfaceLayoutDirectionSelector
-  , setUserInterfaceLayoutDirectionSelector
-  , stronglyReferencesItemsSelector
+  , setDataSourceSelector
+  , setDelegateSelector
+  , setDropItem_dropChildIndexSelector
+  , setIndentationMarkerFollowsCellSelector
+  , setIndentationPerLevelSelector
+  , setOutlineTableColumnSelector
   , setStronglyReferencesItemsSelector
+  , setUserInterfaceLayoutDirectionSelector
+  , shouldCollapseAutoExpandedItemsForDepositedSelector
+  , stronglyReferencesItemsSelector
+  , userInterfaceLayoutDirectionSelector
 
   -- * Enum types
   , NSTableViewAnimationOptions(NSTableViewAnimationOptions)
@@ -109,15 +110,11 @@ module ObjC.AppKit.NSOutlineView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -128,397 +125,392 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- isExpandable:@
 isExpandable :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO Bool
-isExpandable nsOutlineView  item =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOutlineView (mkSelector "isExpandable:") retCULong [argPtr (castPtr (unRawId item) :: Ptr ())]
+isExpandable nsOutlineView item =
+  sendMessage nsOutlineView isExpandableSelector item
 
 -- | @- numberOfChildrenOfItem:@
 numberOfChildrenOfItem :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO CLong
-numberOfChildrenOfItem nsOutlineView  item =
-    sendMsg nsOutlineView (mkSelector "numberOfChildrenOfItem:") retCLong [argPtr (castPtr (unRawId item) :: Ptr ())]
+numberOfChildrenOfItem nsOutlineView item =
+  sendMessage nsOutlineView numberOfChildrenOfItemSelector item
 
 -- | @- child:ofItem:@
 child_ofItem :: IsNSOutlineView nsOutlineView => nsOutlineView -> CLong -> RawId -> IO RawId
-child_ofItem nsOutlineView  index item =
-    fmap (RawId . castPtr) $ sendMsg nsOutlineView (mkSelector "child:ofItem:") (retPtr retVoid) [argCLong index, argPtr (castPtr (unRawId item) :: Ptr ())]
+child_ofItem nsOutlineView index item =
+  sendMessage nsOutlineView child_ofItemSelector index item
 
 -- | @- expandItem:expandChildren:@
 expandItem_expandChildren :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> Bool -> IO ()
-expandItem_expandChildren nsOutlineView  item expandChildren =
-    sendMsg nsOutlineView (mkSelector "expandItem:expandChildren:") retVoid [argPtr (castPtr (unRawId item) :: Ptr ()), argCULong (if expandChildren then 1 else 0)]
+expandItem_expandChildren nsOutlineView item expandChildren =
+  sendMessage nsOutlineView expandItem_expandChildrenSelector item expandChildren
 
 -- | @- expandItem:@
 expandItem :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO ()
-expandItem nsOutlineView  item =
-    sendMsg nsOutlineView (mkSelector "expandItem:") retVoid [argPtr (castPtr (unRawId item) :: Ptr ())]
+expandItem nsOutlineView item =
+  sendMessage nsOutlineView expandItemSelector item
 
 -- | @- collapseItem:collapseChildren:@
 collapseItem_collapseChildren :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> Bool -> IO ()
-collapseItem_collapseChildren nsOutlineView  item collapseChildren =
-    sendMsg nsOutlineView (mkSelector "collapseItem:collapseChildren:") retVoid [argPtr (castPtr (unRawId item) :: Ptr ()), argCULong (if collapseChildren then 1 else 0)]
+collapseItem_collapseChildren nsOutlineView item collapseChildren =
+  sendMessage nsOutlineView collapseItem_collapseChildrenSelector item collapseChildren
 
 -- | @- collapseItem:@
 collapseItem :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO ()
-collapseItem nsOutlineView  item =
-    sendMsg nsOutlineView (mkSelector "collapseItem:") retVoid [argPtr (castPtr (unRawId item) :: Ptr ())]
+collapseItem nsOutlineView item =
+  sendMessage nsOutlineView collapseItemSelector item
 
 -- | @- reloadItem:reloadChildren:@
 reloadItem_reloadChildren :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> Bool -> IO ()
-reloadItem_reloadChildren nsOutlineView  item reloadChildren =
-    sendMsg nsOutlineView (mkSelector "reloadItem:reloadChildren:") retVoid [argPtr (castPtr (unRawId item) :: Ptr ()), argCULong (if reloadChildren then 1 else 0)]
+reloadItem_reloadChildren nsOutlineView item reloadChildren =
+  sendMessage nsOutlineView reloadItem_reloadChildrenSelector item reloadChildren
 
 -- | @- reloadItem:@
 reloadItem :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO ()
-reloadItem nsOutlineView  item =
-    sendMsg nsOutlineView (mkSelector "reloadItem:") retVoid [argPtr (castPtr (unRawId item) :: Ptr ())]
+reloadItem nsOutlineView item =
+  sendMessage nsOutlineView reloadItemSelector item
 
 -- | @- parentForItem:@
 parentForItem :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO RawId
-parentForItem nsOutlineView  item =
-    fmap (RawId . castPtr) $ sendMsg nsOutlineView (mkSelector "parentForItem:") (retPtr retVoid) [argPtr (castPtr (unRawId item) :: Ptr ())]
+parentForItem nsOutlineView item =
+  sendMessage nsOutlineView parentForItemSelector item
 
 -- | @- childIndexForItem:@
 childIndexForItem :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO CLong
-childIndexForItem nsOutlineView  item =
-    sendMsg nsOutlineView (mkSelector "childIndexForItem:") retCLong [argPtr (castPtr (unRawId item) :: Ptr ())]
+childIndexForItem nsOutlineView item =
+  sendMessage nsOutlineView childIndexForItemSelector item
 
 -- | @- itemAtRow:@
 itemAtRow :: IsNSOutlineView nsOutlineView => nsOutlineView -> CLong -> IO RawId
-itemAtRow nsOutlineView  row =
-    fmap (RawId . castPtr) $ sendMsg nsOutlineView (mkSelector "itemAtRow:") (retPtr retVoid) [argCLong row]
+itemAtRow nsOutlineView row =
+  sendMessage nsOutlineView itemAtRowSelector row
 
 -- | @- rowForItem:@
 rowForItem :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO CLong
-rowForItem nsOutlineView  item =
-    sendMsg nsOutlineView (mkSelector "rowForItem:") retCLong [argPtr (castPtr (unRawId item) :: Ptr ())]
+rowForItem nsOutlineView item =
+  sendMessage nsOutlineView rowForItemSelector item
 
 -- | @- levelForItem:@
 levelForItem :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO CLong
-levelForItem nsOutlineView  item =
-    sendMsg nsOutlineView (mkSelector "levelForItem:") retCLong [argPtr (castPtr (unRawId item) :: Ptr ())]
+levelForItem nsOutlineView item =
+  sendMessage nsOutlineView levelForItemSelector item
 
 -- | @- levelForRow:@
 levelForRow :: IsNSOutlineView nsOutlineView => nsOutlineView -> CLong -> IO CLong
-levelForRow nsOutlineView  row =
-    sendMsg nsOutlineView (mkSelector "levelForRow:") retCLong [argCLong row]
+levelForRow nsOutlineView row =
+  sendMessage nsOutlineView levelForRowSelector row
 
 -- | @- isItemExpanded:@
 isItemExpanded :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO Bool
-isItemExpanded nsOutlineView  item =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOutlineView (mkSelector "isItemExpanded:") retCULong [argPtr (castPtr (unRawId item) :: Ptr ())]
+isItemExpanded nsOutlineView item =
+  sendMessage nsOutlineView isItemExpandedSelector item
 
 -- | @- frameOfOutlineCellAtRow:@
 frameOfOutlineCellAtRow :: IsNSOutlineView nsOutlineView => nsOutlineView -> CLong -> IO NSRect
-frameOfOutlineCellAtRow nsOutlineView  row =
-    sendMsgStret nsOutlineView (mkSelector "frameOfOutlineCellAtRow:") retNSRect [argCLong row]
+frameOfOutlineCellAtRow nsOutlineView row =
+  sendMessage nsOutlineView frameOfOutlineCellAtRowSelector row
 
 -- | @- setDropItem:dropChildIndex:@
 setDropItem_dropChildIndex :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> CLong -> IO ()
-setDropItem_dropChildIndex nsOutlineView  item index =
-    sendMsg nsOutlineView (mkSelector "setDropItem:dropChildIndex:") retVoid [argPtr (castPtr (unRawId item) :: Ptr ()), argCLong index]
+setDropItem_dropChildIndex nsOutlineView item index =
+  sendMessage nsOutlineView setDropItem_dropChildIndexSelector item index
 
 -- | @- shouldCollapseAutoExpandedItemsForDeposited:@
 shouldCollapseAutoExpandedItemsForDeposited :: IsNSOutlineView nsOutlineView => nsOutlineView -> Bool -> IO Bool
-shouldCollapseAutoExpandedItemsForDeposited nsOutlineView  deposited =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOutlineView (mkSelector "shouldCollapseAutoExpandedItemsForDeposited:") retCULong [argCULong (if deposited then 1 else 0)]
+shouldCollapseAutoExpandedItemsForDeposited nsOutlineView deposited =
+  sendMessage nsOutlineView shouldCollapseAutoExpandedItemsForDepositedSelector deposited
 
 -- | @- insertItemsAtIndexes:inParent:withAnimation:@
 insertItemsAtIndexes_inParent_withAnimation :: (IsNSOutlineView nsOutlineView, IsNSIndexSet indexes) => nsOutlineView -> indexes -> RawId -> NSTableViewAnimationOptions -> IO ()
-insertItemsAtIndexes_inParent_withAnimation nsOutlineView  indexes parent animationOptions =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg nsOutlineView (mkSelector "insertItemsAtIndexes:inParent:withAnimation:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argPtr (castPtr (unRawId parent) :: Ptr ()), argCULong (coerce animationOptions)]
+insertItemsAtIndexes_inParent_withAnimation nsOutlineView indexes parent animationOptions =
+  sendMessage nsOutlineView insertItemsAtIndexes_inParent_withAnimationSelector (toNSIndexSet indexes) parent animationOptions
 
 -- | @- removeItemsAtIndexes:inParent:withAnimation:@
 removeItemsAtIndexes_inParent_withAnimation :: (IsNSOutlineView nsOutlineView, IsNSIndexSet indexes) => nsOutlineView -> indexes -> RawId -> NSTableViewAnimationOptions -> IO ()
-removeItemsAtIndexes_inParent_withAnimation nsOutlineView  indexes parent animationOptions =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg nsOutlineView (mkSelector "removeItemsAtIndexes:inParent:withAnimation:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argPtr (castPtr (unRawId parent) :: Ptr ()), argCULong (coerce animationOptions)]
+removeItemsAtIndexes_inParent_withAnimation nsOutlineView indexes parent animationOptions =
+  sendMessage nsOutlineView removeItemsAtIndexes_inParent_withAnimationSelector (toNSIndexSet indexes) parent animationOptions
 
 -- | @- moveItemAtIndex:inParent:toIndex:inParent:@
 moveItemAtIndex_inParent_toIndex_inParent :: IsNSOutlineView nsOutlineView => nsOutlineView -> CLong -> RawId -> CLong -> RawId -> IO ()
-moveItemAtIndex_inParent_toIndex_inParent nsOutlineView  fromIndex oldParent toIndex newParent =
-    sendMsg nsOutlineView (mkSelector "moveItemAtIndex:inParent:toIndex:inParent:") retVoid [argCLong fromIndex, argPtr (castPtr (unRawId oldParent) :: Ptr ()), argCLong toIndex, argPtr (castPtr (unRawId newParent) :: Ptr ())]
+moveItemAtIndex_inParent_toIndex_inParent nsOutlineView fromIndex oldParent toIndex newParent =
+  sendMessage nsOutlineView moveItemAtIndex_inParent_toIndex_inParentSelector fromIndex oldParent toIndex newParent
 
 -- | @- insertRowsAtIndexes:withAnimation:@
 insertRowsAtIndexes_withAnimation :: (IsNSOutlineView nsOutlineView, IsNSIndexSet indexes) => nsOutlineView -> indexes -> NSTableViewAnimationOptions -> IO ()
-insertRowsAtIndexes_withAnimation nsOutlineView  indexes animationOptions =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg nsOutlineView (mkSelector "insertRowsAtIndexes:withAnimation:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argCULong (coerce animationOptions)]
+insertRowsAtIndexes_withAnimation nsOutlineView indexes animationOptions =
+  sendMessage nsOutlineView insertRowsAtIndexes_withAnimationSelector (toNSIndexSet indexes) animationOptions
 
 -- | @- removeRowsAtIndexes:withAnimation:@
 removeRowsAtIndexes_withAnimation :: (IsNSOutlineView nsOutlineView, IsNSIndexSet indexes) => nsOutlineView -> indexes -> NSTableViewAnimationOptions -> IO ()
-removeRowsAtIndexes_withAnimation nsOutlineView  indexes animationOptions =
-  withObjCPtr indexes $ \raw_indexes ->
-      sendMsg nsOutlineView (mkSelector "removeRowsAtIndexes:withAnimation:") retVoid [argPtr (castPtr raw_indexes :: Ptr ()), argCULong (coerce animationOptions)]
+removeRowsAtIndexes_withAnimation nsOutlineView indexes animationOptions =
+  sendMessage nsOutlineView removeRowsAtIndexes_withAnimationSelector (toNSIndexSet indexes) animationOptions
 
 -- | @- moveRowAtIndex:toIndex:@
 moveRowAtIndex_toIndex :: IsNSOutlineView nsOutlineView => nsOutlineView -> CLong -> CLong -> IO ()
-moveRowAtIndex_toIndex nsOutlineView  oldIndex newIndex =
-    sendMsg nsOutlineView (mkSelector "moveRowAtIndex:toIndex:") retVoid [argCLong oldIndex, argCLong newIndex]
+moveRowAtIndex_toIndex nsOutlineView oldIndex newIndex =
+  sendMessage nsOutlineView moveRowAtIndex_toIndexSelector oldIndex newIndex
 
 -- | @- delegate@
 delegate :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO RawId
-delegate nsOutlineView  =
-    fmap (RawId . castPtr) $ sendMsg nsOutlineView (mkSelector "delegate") (retPtr retVoid) []
+delegate nsOutlineView =
+  sendMessage nsOutlineView delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO ()
-setDelegate nsOutlineView  value =
-    sendMsg nsOutlineView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsOutlineView value =
+  sendMessage nsOutlineView setDelegateSelector value
 
 -- | @- dataSource@
 dataSource :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO RawId
-dataSource nsOutlineView  =
-    fmap (RawId . castPtr) $ sendMsg nsOutlineView (mkSelector "dataSource") (retPtr retVoid) []
+dataSource nsOutlineView =
+  sendMessage nsOutlineView dataSourceSelector
 
 -- | @- setDataSource:@
 setDataSource :: IsNSOutlineView nsOutlineView => nsOutlineView -> RawId -> IO ()
-setDataSource nsOutlineView  value =
-    sendMsg nsOutlineView (mkSelector "setDataSource:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDataSource nsOutlineView value =
+  sendMessage nsOutlineView setDataSourceSelector value
 
 -- | @- outlineTableColumn@
 outlineTableColumn :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO (Id NSTableColumn)
-outlineTableColumn nsOutlineView  =
-    sendMsg nsOutlineView (mkSelector "outlineTableColumn") (retPtr retVoid) [] >>= retainedObject . castPtr
+outlineTableColumn nsOutlineView =
+  sendMessage nsOutlineView outlineTableColumnSelector
 
 -- | @- setOutlineTableColumn:@
 setOutlineTableColumn :: (IsNSOutlineView nsOutlineView, IsNSTableColumn value) => nsOutlineView -> value -> IO ()
-setOutlineTableColumn nsOutlineView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsOutlineView (mkSelector "setOutlineTableColumn:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutlineTableColumn nsOutlineView value =
+  sendMessage nsOutlineView setOutlineTableColumnSelector (toNSTableColumn value)
 
 -- | @- indentationPerLevel@
 indentationPerLevel :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO CDouble
-indentationPerLevel nsOutlineView  =
-    sendMsg nsOutlineView (mkSelector "indentationPerLevel") retCDouble []
+indentationPerLevel nsOutlineView =
+  sendMessage nsOutlineView indentationPerLevelSelector
 
 -- | @- setIndentationPerLevel:@
 setIndentationPerLevel :: IsNSOutlineView nsOutlineView => nsOutlineView -> CDouble -> IO ()
-setIndentationPerLevel nsOutlineView  value =
-    sendMsg nsOutlineView (mkSelector "setIndentationPerLevel:") retVoid [argCDouble value]
+setIndentationPerLevel nsOutlineView value =
+  sendMessage nsOutlineView setIndentationPerLevelSelector value
 
 -- | @- indentationMarkerFollowsCell@
 indentationMarkerFollowsCell :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO Bool
-indentationMarkerFollowsCell nsOutlineView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOutlineView (mkSelector "indentationMarkerFollowsCell") retCULong []
+indentationMarkerFollowsCell nsOutlineView =
+  sendMessage nsOutlineView indentationMarkerFollowsCellSelector
 
 -- | @- setIndentationMarkerFollowsCell:@
 setIndentationMarkerFollowsCell :: IsNSOutlineView nsOutlineView => nsOutlineView -> Bool -> IO ()
-setIndentationMarkerFollowsCell nsOutlineView  value =
-    sendMsg nsOutlineView (mkSelector "setIndentationMarkerFollowsCell:") retVoid [argCULong (if value then 1 else 0)]
+setIndentationMarkerFollowsCell nsOutlineView value =
+  sendMessage nsOutlineView setIndentationMarkerFollowsCellSelector value
 
 -- | @- autoresizesOutlineColumn@
 autoresizesOutlineColumn :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO Bool
-autoresizesOutlineColumn nsOutlineView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOutlineView (mkSelector "autoresizesOutlineColumn") retCULong []
+autoresizesOutlineColumn nsOutlineView =
+  sendMessage nsOutlineView autoresizesOutlineColumnSelector
 
 -- | @- setAutoresizesOutlineColumn:@
 setAutoresizesOutlineColumn :: IsNSOutlineView nsOutlineView => nsOutlineView -> Bool -> IO ()
-setAutoresizesOutlineColumn nsOutlineView  value =
-    sendMsg nsOutlineView (mkSelector "setAutoresizesOutlineColumn:") retVoid [argCULong (if value then 1 else 0)]
+setAutoresizesOutlineColumn nsOutlineView value =
+  sendMessage nsOutlineView setAutoresizesOutlineColumnSelector value
 
 -- | @- autosaveExpandedItems@
 autosaveExpandedItems :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO Bool
-autosaveExpandedItems nsOutlineView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOutlineView (mkSelector "autosaveExpandedItems") retCULong []
+autosaveExpandedItems nsOutlineView =
+  sendMessage nsOutlineView autosaveExpandedItemsSelector
 
 -- | @- setAutosaveExpandedItems:@
 setAutosaveExpandedItems :: IsNSOutlineView nsOutlineView => nsOutlineView -> Bool -> IO ()
-setAutosaveExpandedItems nsOutlineView  value =
-    sendMsg nsOutlineView (mkSelector "setAutosaveExpandedItems:") retVoid [argCULong (if value then 1 else 0)]
+setAutosaveExpandedItems nsOutlineView value =
+  sendMessage nsOutlineView setAutosaveExpandedItemsSelector value
 
 -- | @- userInterfaceLayoutDirection@
 userInterfaceLayoutDirection :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO NSUserInterfaceLayoutDirection
-userInterfaceLayoutDirection nsOutlineView  =
-    fmap (coerce :: CLong -> NSUserInterfaceLayoutDirection) $ sendMsg nsOutlineView (mkSelector "userInterfaceLayoutDirection") retCLong []
+userInterfaceLayoutDirection nsOutlineView =
+  sendMessage nsOutlineView userInterfaceLayoutDirectionSelector
 
 -- | @- setUserInterfaceLayoutDirection:@
 setUserInterfaceLayoutDirection :: IsNSOutlineView nsOutlineView => nsOutlineView -> NSUserInterfaceLayoutDirection -> IO ()
-setUserInterfaceLayoutDirection nsOutlineView  value =
-    sendMsg nsOutlineView (mkSelector "setUserInterfaceLayoutDirection:") retVoid [argCLong (coerce value)]
+setUserInterfaceLayoutDirection nsOutlineView value =
+  sendMessage nsOutlineView setUserInterfaceLayoutDirectionSelector value
 
 -- | @- stronglyReferencesItems@
 stronglyReferencesItems :: IsNSOutlineView nsOutlineView => nsOutlineView -> IO Bool
-stronglyReferencesItems nsOutlineView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOutlineView (mkSelector "stronglyReferencesItems") retCULong []
+stronglyReferencesItems nsOutlineView =
+  sendMessage nsOutlineView stronglyReferencesItemsSelector
 
 -- | @- setStronglyReferencesItems:@
 setStronglyReferencesItems :: IsNSOutlineView nsOutlineView => nsOutlineView -> Bool -> IO ()
-setStronglyReferencesItems nsOutlineView  value =
-    sendMsg nsOutlineView (mkSelector "setStronglyReferencesItems:") retVoid [argCULong (if value then 1 else 0)]
+setStronglyReferencesItems nsOutlineView value =
+  sendMessage nsOutlineView setStronglyReferencesItemsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isExpandable:@
-isExpandableSelector :: Selector
+isExpandableSelector :: Selector '[RawId] Bool
 isExpandableSelector = mkSelector "isExpandable:"
 
 -- | @Selector@ for @numberOfChildrenOfItem:@
-numberOfChildrenOfItemSelector :: Selector
+numberOfChildrenOfItemSelector :: Selector '[RawId] CLong
 numberOfChildrenOfItemSelector = mkSelector "numberOfChildrenOfItem:"
 
 -- | @Selector@ for @child:ofItem:@
-child_ofItemSelector :: Selector
+child_ofItemSelector :: Selector '[CLong, RawId] RawId
 child_ofItemSelector = mkSelector "child:ofItem:"
 
 -- | @Selector@ for @expandItem:expandChildren:@
-expandItem_expandChildrenSelector :: Selector
+expandItem_expandChildrenSelector :: Selector '[RawId, Bool] ()
 expandItem_expandChildrenSelector = mkSelector "expandItem:expandChildren:"
 
 -- | @Selector@ for @expandItem:@
-expandItemSelector :: Selector
+expandItemSelector :: Selector '[RawId] ()
 expandItemSelector = mkSelector "expandItem:"
 
 -- | @Selector@ for @collapseItem:collapseChildren:@
-collapseItem_collapseChildrenSelector :: Selector
+collapseItem_collapseChildrenSelector :: Selector '[RawId, Bool] ()
 collapseItem_collapseChildrenSelector = mkSelector "collapseItem:collapseChildren:"
 
 -- | @Selector@ for @collapseItem:@
-collapseItemSelector :: Selector
+collapseItemSelector :: Selector '[RawId] ()
 collapseItemSelector = mkSelector "collapseItem:"
 
 -- | @Selector@ for @reloadItem:reloadChildren:@
-reloadItem_reloadChildrenSelector :: Selector
+reloadItem_reloadChildrenSelector :: Selector '[RawId, Bool] ()
 reloadItem_reloadChildrenSelector = mkSelector "reloadItem:reloadChildren:"
 
 -- | @Selector@ for @reloadItem:@
-reloadItemSelector :: Selector
+reloadItemSelector :: Selector '[RawId] ()
 reloadItemSelector = mkSelector "reloadItem:"
 
 -- | @Selector@ for @parentForItem:@
-parentForItemSelector :: Selector
+parentForItemSelector :: Selector '[RawId] RawId
 parentForItemSelector = mkSelector "parentForItem:"
 
 -- | @Selector@ for @childIndexForItem:@
-childIndexForItemSelector :: Selector
+childIndexForItemSelector :: Selector '[RawId] CLong
 childIndexForItemSelector = mkSelector "childIndexForItem:"
 
 -- | @Selector@ for @itemAtRow:@
-itemAtRowSelector :: Selector
+itemAtRowSelector :: Selector '[CLong] RawId
 itemAtRowSelector = mkSelector "itemAtRow:"
 
 -- | @Selector@ for @rowForItem:@
-rowForItemSelector :: Selector
+rowForItemSelector :: Selector '[RawId] CLong
 rowForItemSelector = mkSelector "rowForItem:"
 
 -- | @Selector@ for @levelForItem:@
-levelForItemSelector :: Selector
+levelForItemSelector :: Selector '[RawId] CLong
 levelForItemSelector = mkSelector "levelForItem:"
 
 -- | @Selector@ for @levelForRow:@
-levelForRowSelector :: Selector
+levelForRowSelector :: Selector '[CLong] CLong
 levelForRowSelector = mkSelector "levelForRow:"
 
 -- | @Selector@ for @isItemExpanded:@
-isItemExpandedSelector :: Selector
+isItemExpandedSelector :: Selector '[RawId] Bool
 isItemExpandedSelector = mkSelector "isItemExpanded:"
 
 -- | @Selector@ for @frameOfOutlineCellAtRow:@
-frameOfOutlineCellAtRowSelector :: Selector
+frameOfOutlineCellAtRowSelector :: Selector '[CLong] NSRect
 frameOfOutlineCellAtRowSelector = mkSelector "frameOfOutlineCellAtRow:"
 
 -- | @Selector@ for @setDropItem:dropChildIndex:@
-setDropItem_dropChildIndexSelector :: Selector
+setDropItem_dropChildIndexSelector :: Selector '[RawId, CLong] ()
 setDropItem_dropChildIndexSelector = mkSelector "setDropItem:dropChildIndex:"
 
 -- | @Selector@ for @shouldCollapseAutoExpandedItemsForDeposited:@
-shouldCollapseAutoExpandedItemsForDepositedSelector :: Selector
+shouldCollapseAutoExpandedItemsForDepositedSelector :: Selector '[Bool] Bool
 shouldCollapseAutoExpandedItemsForDepositedSelector = mkSelector "shouldCollapseAutoExpandedItemsForDeposited:"
 
 -- | @Selector@ for @insertItemsAtIndexes:inParent:withAnimation:@
-insertItemsAtIndexes_inParent_withAnimationSelector :: Selector
+insertItemsAtIndexes_inParent_withAnimationSelector :: Selector '[Id NSIndexSet, RawId, NSTableViewAnimationOptions] ()
 insertItemsAtIndexes_inParent_withAnimationSelector = mkSelector "insertItemsAtIndexes:inParent:withAnimation:"
 
 -- | @Selector@ for @removeItemsAtIndexes:inParent:withAnimation:@
-removeItemsAtIndexes_inParent_withAnimationSelector :: Selector
+removeItemsAtIndexes_inParent_withAnimationSelector :: Selector '[Id NSIndexSet, RawId, NSTableViewAnimationOptions] ()
 removeItemsAtIndexes_inParent_withAnimationSelector = mkSelector "removeItemsAtIndexes:inParent:withAnimation:"
 
 -- | @Selector@ for @moveItemAtIndex:inParent:toIndex:inParent:@
-moveItemAtIndex_inParent_toIndex_inParentSelector :: Selector
+moveItemAtIndex_inParent_toIndex_inParentSelector :: Selector '[CLong, RawId, CLong, RawId] ()
 moveItemAtIndex_inParent_toIndex_inParentSelector = mkSelector "moveItemAtIndex:inParent:toIndex:inParent:"
 
 -- | @Selector@ for @insertRowsAtIndexes:withAnimation:@
-insertRowsAtIndexes_withAnimationSelector :: Selector
+insertRowsAtIndexes_withAnimationSelector :: Selector '[Id NSIndexSet, NSTableViewAnimationOptions] ()
 insertRowsAtIndexes_withAnimationSelector = mkSelector "insertRowsAtIndexes:withAnimation:"
 
 -- | @Selector@ for @removeRowsAtIndexes:withAnimation:@
-removeRowsAtIndexes_withAnimationSelector :: Selector
+removeRowsAtIndexes_withAnimationSelector :: Selector '[Id NSIndexSet, NSTableViewAnimationOptions] ()
 removeRowsAtIndexes_withAnimationSelector = mkSelector "removeRowsAtIndexes:withAnimation:"
 
 -- | @Selector@ for @moveRowAtIndex:toIndex:@
-moveRowAtIndex_toIndexSelector :: Selector
+moveRowAtIndex_toIndexSelector :: Selector '[CLong, CLong] ()
 moveRowAtIndex_toIndexSelector = mkSelector "moveRowAtIndex:toIndex:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @dataSource@
-dataSourceSelector :: Selector
+dataSourceSelector :: Selector '[] RawId
 dataSourceSelector = mkSelector "dataSource"
 
 -- | @Selector@ for @setDataSource:@
-setDataSourceSelector :: Selector
+setDataSourceSelector :: Selector '[RawId] ()
 setDataSourceSelector = mkSelector "setDataSource:"
 
 -- | @Selector@ for @outlineTableColumn@
-outlineTableColumnSelector :: Selector
+outlineTableColumnSelector :: Selector '[] (Id NSTableColumn)
 outlineTableColumnSelector = mkSelector "outlineTableColumn"
 
 -- | @Selector@ for @setOutlineTableColumn:@
-setOutlineTableColumnSelector :: Selector
+setOutlineTableColumnSelector :: Selector '[Id NSTableColumn] ()
 setOutlineTableColumnSelector = mkSelector "setOutlineTableColumn:"
 
 -- | @Selector@ for @indentationPerLevel@
-indentationPerLevelSelector :: Selector
+indentationPerLevelSelector :: Selector '[] CDouble
 indentationPerLevelSelector = mkSelector "indentationPerLevel"
 
 -- | @Selector@ for @setIndentationPerLevel:@
-setIndentationPerLevelSelector :: Selector
+setIndentationPerLevelSelector :: Selector '[CDouble] ()
 setIndentationPerLevelSelector = mkSelector "setIndentationPerLevel:"
 
 -- | @Selector@ for @indentationMarkerFollowsCell@
-indentationMarkerFollowsCellSelector :: Selector
+indentationMarkerFollowsCellSelector :: Selector '[] Bool
 indentationMarkerFollowsCellSelector = mkSelector "indentationMarkerFollowsCell"
 
 -- | @Selector@ for @setIndentationMarkerFollowsCell:@
-setIndentationMarkerFollowsCellSelector :: Selector
+setIndentationMarkerFollowsCellSelector :: Selector '[Bool] ()
 setIndentationMarkerFollowsCellSelector = mkSelector "setIndentationMarkerFollowsCell:"
 
 -- | @Selector@ for @autoresizesOutlineColumn@
-autoresizesOutlineColumnSelector :: Selector
+autoresizesOutlineColumnSelector :: Selector '[] Bool
 autoresizesOutlineColumnSelector = mkSelector "autoresizesOutlineColumn"
 
 -- | @Selector@ for @setAutoresizesOutlineColumn:@
-setAutoresizesOutlineColumnSelector :: Selector
+setAutoresizesOutlineColumnSelector :: Selector '[Bool] ()
 setAutoresizesOutlineColumnSelector = mkSelector "setAutoresizesOutlineColumn:"
 
 -- | @Selector@ for @autosaveExpandedItems@
-autosaveExpandedItemsSelector :: Selector
+autosaveExpandedItemsSelector :: Selector '[] Bool
 autosaveExpandedItemsSelector = mkSelector "autosaveExpandedItems"
 
 -- | @Selector@ for @setAutosaveExpandedItems:@
-setAutosaveExpandedItemsSelector :: Selector
+setAutosaveExpandedItemsSelector :: Selector '[Bool] ()
 setAutosaveExpandedItemsSelector = mkSelector "setAutosaveExpandedItems:"
 
 -- | @Selector@ for @userInterfaceLayoutDirection@
-userInterfaceLayoutDirectionSelector :: Selector
+userInterfaceLayoutDirectionSelector :: Selector '[] NSUserInterfaceLayoutDirection
 userInterfaceLayoutDirectionSelector = mkSelector "userInterfaceLayoutDirection"
 
 -- | @Selector@ for @setUserInterfaceLayoutDirection:@
-setUserInterfaceLayoutDirectionSelector :: Selector
+setUserInterfaceLayoutDirectionSelector :: Selector '[NSUserInterfaceLayoutDirection] ()
 setUserInterfaceLayoutDirectionSelector = mkSelector "setUserInterfaceLayoutDirection:"
 
 -- | @Selector@ for @stronglyReferencesItems@
-stronglyReferencesItemsSelector :: Selector
+stronglyReferencesItemsSelector :: Selector '[] Bool
 stronglyReferencesItemsSelector = mkSelector "stronglyReferencesItems"
 
 -- | @Selector@ for @setStronglyReferencesItems:@
-setStronglyReferencesItemsSelector :: Selector
+setStronglyReferencesItemsSelector :: Selector '[Bool] ()
 setStronglyReferencesItemsSelector = mkSelector "setStronglyReferencesItems:"
 

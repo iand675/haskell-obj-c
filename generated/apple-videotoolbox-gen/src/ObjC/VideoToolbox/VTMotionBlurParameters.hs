@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,17 +25,17 @@ module ObjC.VideoToolbox.VTMotionBlurParameters
   , motionBlurStrength
   , submissionMode
   , destinationFrame
-  , initWithSourceFrame_nextFrame_previousFrame_nextOpticalFlow_previousOpticalFlow_motionBlurStrength_submissionMode_destinationFrameSelector
-  , initSelector
-  , newSelector
-  , sourceFrameSelector
-  , nextFrameSelector
-  , previousFrameSelector
-  , nextOpticalFlowSelector
-  , previousOpticalFlowSelector
-  , motionBlurStrengthSelector
-  , submissionModeSelector
   , destinationFrameSelector
+  , initSelector
+  , initWithSourceFrame_nextFrame_previousFrame_nextOpticalFlow_previousOpticalFlow_motionBlurStrength_submissionMode_destinationFrameSelector
+  , motionBlurStrengthSelector
+  , newSelector
+  , nextFrameSelector
+  , nextOpticalFlowSelector
+  , previousFrameSelector
+  , previousOpticalFlowSelector
+  , sourceFrameSelector
+  , submissionModeSelector
 
   -- * Enum types
   , VTMotionBlurParametersSubmissionMode(VTMotionBlurParametersSubmissionMode)
@@ -43,15 +44,11 @@ module ObjC.VideoToolbox.VTMotionBlurParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,47 +64,41 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSourceFrame:nextFrame:previousFrame:nextOpticalFlow:previousOpticalFlow:motionBlurStrength:submissionMode:destinationFrame:@
 initWithSourceFrame_nextFrame_previousFrame_nextOpticalFlow_previousOpticalFlow_motionBlurStrength_submissionMode_destinationFrame :: (IsVTMotionBlurParameters vtMotionBlurParameters, IsVTFrameProcessorFrame sourceFrame, IsVTFrameProcessorFrame nextFrame, IsVTFrameProcessorFrame previousFrame, IsVTFrameProcessorOpticalFlow nextOpticalFlow, IsVTFrameProcessorOpticalFlow previousOpticalFlow, IsVTFrameProcessorFrame destinationFrame) => vtMotionBlurParameters -> sourceFrame -> nextFrame -> previousFrame -> nextOpticalFlow -> previousOpticalFlow -> CLong -> VTMotionBlurParametersSubmissionMode -> destinationFrame -> IO (Id VTMotionBlurParameters)
-initWithSourceFrame_nextFrame_previousFrame_nextOpticalFlow_previousOpticalFlow_motionBlurStrength_submissionMode_destinationFrame vtMotionBlurParameters  sourceFrame nextFrame previousFrame nextOpticalFlow previousOpticalFlow motionBlurStrength submissionMode destinationFrame =
-  withObjCPtr sourceFrame $ \raw_sourceFrame ->
-    withObjCPtr nextFrame $ \raw_nextFrame ->
-      withObjCPtr previousFrame $ \raw_previousFrame ->
-        withObjCPtr nextOpticalFlow $ \raw_nextOpticalFlow ->
-          withObjCPtr previousOpticalFlow $ \raw_previousOpticalFlow ->
-            withObjCPtr destinationFrame $ \raw_destinationFrame ->
-                sendMsg vtMotionBlurParameters (mkSelector "initWithSourceFrame:nextFrame:previousFrame:nextOpticalFlow:previousOpticalFlow:motionBlurStrength:submissionMode:destinationFrame:") (retPtr retVoid) [argPtr (castPtr raw_sourceFrame :: Ptr ()), argPtr (castPtr raw_nextFrame :: Ptr ()), argPtr (castPtr raw_previousFrame :: Ptr ()), argPtr (castPtr raw_nextOpticalFlow :: Ptr ()), argPtr (castPtr raw_previousOpticalFlow :: Ptr ()), argCLong motionBlurStrength, argCLong (coerce submissionMode), argPtr (castPtr raw_destinationFrame :: Ptr ())] >>= ownedObject . castPtr
+initWithSourceFrame_nextFrame_previousFrame_nextOpticalFlow_previousOpticalFlow_motionBlurStrength_submissionMode_destinationFrame vtMotionBlurParameters sourceFrame nextFrame previousFrame nextOpticalFlow previousOpticalFlow motionBlurStrength submissionMode destinationFrame =
+  sendOwnedMessage vtMotionBlurParameters initWithSourceFrame_nextFrame_previousFrame_nextOpticalFlow_previousOpticalFlow_motionBlurStrength_submissionMode_destinationFrameSelector (toVTFrameProcessorFrame sourceFrame) (toVTFrameProcessorFrame nextFrame) (toVTFrameProcessorFrame previousFrame) (toVTFrameProcessorOpticalFlow nextOpticalFlow) (toVTFrameProcessorOpticalFlow previousOpticalFlow) motionBlurStrength submissionMode (toVTFrameProcessorFrame destinationFrame)
 
 -- | @- init@
 init_ :: IsVTMotionBlurParameters vtMotionBlurParameters => vtMotionBlurParameters -> IO (Id VTMotionBlurParameters)
-init_ vtMotionBlurParameters  =
-    sendMsg vtMotionBlurParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtMotionBlurParameters =
+  sendOwnedMessage vtMotionBlurParameters initSelector
 
 -- | @+ new@
 new :: IO (Id VTMotionBlurParameters)
 new  =
   do
     cls' <- getRequiredClass "VTMotionBlurParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Current source frame, which must be non @nil@.
 --
 -- ObjC selector: @- sourceFrame@
 sourceFrame :: IsVTMotionBlurParameters vtMotionBlurParameters => vtMotionBlurParameters -> IO (Id VTFrameProcessorFrame)
-sourceFrame vtMotionBlurParameters  =
-    sendMsg vtMotionBlurParameters (mkSelector "sourceFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceFrame vtMotionBlurParameters =
+  sendMessage vtMotionBlurParameters sourceFrameSelector
 
 -- | The next source frame in presentation time order, which is @nil@ for the last frame.
 --
 -- ObjC selector: @- nextFrame@
 nextFrame :: IsVTMotionBlurParameters vtMotionBlurParameters => vtMotionBlurParameters -> IO (Id VTFrameProcessorFrame)
-nextFrame vtMotionBlurParameters  =
-    sendMsg vtMotionBlurParameters (mkSelector "nextFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextFrame vtMotionBlurParameters =
+  sendMessage vtMotionBlurParameters nextFrameSelector
 
 -- | Previous source frame in presentation time order, which is @nil@ for the first frame.
 --
 -- ObjC selector: @- previousFrame@
 previousFrame :: IsVTMotionBlurParameters vtMotionBlurParameters => vtMotionBlurParameters -> IO (Id VTFrameProcessorFrame)
-previousFrame vtMotionBlurParameters  =
-    sendMsg vtMotionBlurParameters (mkSelector "previousFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousFrame vtMotionBlurParameters =
+  sendMessage vtMotionBlurParameters previousFrameSelector
 
 -- | Optional frame processor optical flow object that contains forward and backward optical flow with next frame.
 --
@@ -115,8 +106,8 @@ previousFrame vtMotionBlurParameters  =
 --
 -- ObjC selector: @- nextOpticalFlow@
 nextOpticalFlow :: IsVTMotionBlurParameters vtMotionBlurParameters => vtMotionBlurParameters -> IO (Id VTFrameProcessorOpticalFlow)
-nextOpticalFlow vtMotionBlurParameters  =
-    sendMsg vtMotionBlurParameters (mkSelector "nextOpticalFlow") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextOpticalFlow vtMotionBlurParameters =
+  sendMessage vtMotionBlurParameters nextOpticalFlowSelector
 
 -- | Optional frame processor optical flow object that contains forward and backward optical flow with previous frame.
 --
@@ -124,8 +115,8 @@ nextOpticalFlow vtMotionBlurParameters  =
 --
 -- ObjC selector: @- previousOpticalFlow@
 previousOpticalFlow :: IsVTMotionBlurParameters vtMotionBlurParameters => vtMotionBlurParameters -> IO (Id VTFrameProcessorOpticalFlow)
-previousOpticalFlow vtMotionBlurParameters  =
-    sendMsg vtMotionBlurParameters (mkSelector "previousOpticalFlow") (retPtr retVoid) [] >>= retainedObject . castPtr
+previousOpticalFlow vtMotionBlurParameters =
+  sendMessage vtMotionBlurParameters previousOpticalFlowSelector
 
 -- | Number that indicates the strength of motion blur.
 --
@@ -133,68 +124,68 @@ previousOpticalFlow vtMotionBlurParameters  =
 --
 -- ObjC selector: @- motionBlurStrength@
 motionBlurStrength :: IsVTMotionBlurParameters vtMotionBlurParameters => vtMotionBlurParameters -> IO CLong
-motionBlurStrength vtMotionBlurParameters  =
-    sendMsg vtMotionBlurParameters (mkSelector "motionBlurStrength") retCLong []
+motionBlurStrength vtMotionBlurParameters =
+  sendMessage vtMotionBlurParameters motionBlurStrengthSelector
 
 -- | Ordering of the input frames this submission related to the previous submission.
 --
 -- ObjC selector: @- submissionMode@
 submissionMode :: IsVTMotionBlurParameters vtMotionBlurParameters => vtMotionBlurParameters -> IO VTMotionBlurParametersSubmissionMode
-submissionMode vtMotionBlurParameters  =
-    fmap (coerce :: CLong -> VTMotionBlurParametersSubmissionMode) $ sendMsg vtMotionBlurParameters (mkSelector "submissionMode") retCLong []
+submissionMode vtMotionBlurParameters =
+  sendMessage vtMotionBlurParameters submissionModeSelector
 
 -- | Destination frame that contains user-allocated pixel buffer that receive a frame with motion blur applied by the processor.
 --
 -- ObjC selector: @- destinationFrame@
 destinationFrame :: IsVTMotionBlurParameters vtMotionBlurParameters => vtMotionBlurParameters -> IO (Id VTFrameProcessorFrame)
-destinationFrame vtMotionBlurParameters  =
-    sendMsg vtMotionBlurParameters (mkSelector "destinationFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationFrame vtMotionBlurParameters =
+  sendMessage vtMotionBlurParameters destinationFrameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSourceFrame:nextFrame:previousFrame:nextOpticalFlow:previousOpticalFlow:motionBlurStrength:submissionMode:destinationFrame:@
-initWithSourceFrame_nextFrame_previousFrame_nextOpticalFlow_previousOpticalFlow_motionBlurStrength_submissionMode_destinationFrameSelector :: Selector
+initWithSourceFrame_nextFrame_previousFrame_nextOpticalFlow_previousOpticalFlow_motionBlurStrength_submissionMode_destinationFrameSelector :: Selector '[Id VTFrameProcessorFrame, Id VTFrameProcessorFrame, Id VTFrameProcessorFrame, Id VTFrameProcessorOpticalFlow, Id VTFrameProcessorOpticalFlow, CLong, VTMotionBlurParametersSubmissionMode, Id VTFrameProcessorFrame] (Id VTMotionBlurParameters)
 initWithSourceFrame_nextFrame_previousFrame_nextOpticalFlow_previousOpticalFlow_motionBlurStrength_submissionMode_destinationFrameSelector = mkSelector "initWithSourceFrame:nextFrame:previousFrame:nextOpticalFlow:previousOpticalFlow:motionBlurStrength:submissionMode:destinationFrame:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTMotionBlurParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTMotionBlurParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sourceFrame@
-sourceFrameSelector :: Selector
+sourceFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 sourceFrameSelector = mkSelector "sourceFrame"
 
 -- | @Selector@ for @nextFrame@
-nextFrameSelector :: Selector
+nextFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 nextFrameSelector = mkSelector "nextFrame"
 
 -- | @Selector@ for @previousFrame@
-previousFrameSelector :: Selector
+previousFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 previousFrameSelector = mkSelector "previousFrame"
 
 -- | @Selector@ for @nextOpticalFlow@
-nextOpticalFlowSelector :: Selector
+nextOpticalFlowSelector :: Selector '[] (Id VTFrameProcessorOpticalFlow)
 nextOpticalFlowSelector = mkSelector "nextOpticalFlow"
 
 -- | @Selector@ for @previousOpticalFlow@
-previousOpticalFlowSelector :: Selector
+previousOpticalFlowSelector :: Selector '[] (Id VTFrameProcessorOpticalFlow)
 previousOpticalFlowSelector = mkSelector "previousOpticalFlow"
 
 -- | @Selector@ for @motionBlurStrength@
-motionBlurStrengthSelector :: Selector
+motionBlurStrengthSelector :: Selector '[] CLong
 motionBlurStrengthSelector = mkSelector "motionBlurStrength"
 
 -- | @Selector@ for @submissionMode@
-submissionModeSelector :: Selector
+submissionModeSelector :: Selector '[] VTMotionBlurParametersSubmissionMode
 submissionModeSelector = mkSelector "submissionMode"
 
 -- | @Selector@ for @destinationFrame@
-destinationFrameSelector :: Selector
+destinationFrameSelector :: Selector '[] (Id VTFrameProcessorFrame)
 destinationFrameSelector = mkSelector "destinationFrame"
 

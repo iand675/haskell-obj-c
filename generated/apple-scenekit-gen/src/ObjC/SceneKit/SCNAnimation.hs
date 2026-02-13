@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,60 +50,56 @@ module ObjC.SceneKit.SCNAnimation
   , setAdditive
   , cumulative
   , setCumulative
-  , animationWithContentsOfURLSelector
+  , additiveSelector
+  , animationDidStartSelector
+  , animationDidStopSelector
+  , animationEventsSelector
   , animationNamedSelector
   , animationWithCAAnimationSelector
-  , durationSelector
-  , setDurationSelector
-  , keyPathSelector
-  , setKeyPathSelector
-  , timingFunctionSelector
-  , setTimingFunctionSelector
-  , blendInDurationSelector
-  , setBlendInDurationSelector
-  , blendOutDurationSelector
-  , setBlendOutDurationSelector
-  , removedOnCompletionSelector
-  , setRemovedOnCompletionSelector
+  , animationWithContentsOfURLSelector
   , appliedOnCompletionSelector
-  , setAppliedOnCompletionSelector
-  , repeatCountSelector
-  , setRepeatCountSelector
   , autoreversesSelector
-  , setAutoreversesSelector
-  , startDelaySelector
-  , setStartDelaySelector
-  , timeOffsetSelector
-  , setTimeOffsetSelector
-  , fillsForwardSelector
-  , setFillsForwardSelector
-  , fillsBackwardSelector
-  , setFillsBackwardSelector
-  , usesSceneTimeBaseSelector
-  , setUsesSceneTimeBaseSelector
-  , animationDidStartSelector
-  , setAnimationDidStartSelector
-  , animationDidStopSelector
-  , setAnimationDidStopSelector
-  , animationEventsSelector
-  , setAnimationEventsSelector
-  , additiveSelector
-  , setAdditiveSelector
+  , blendInDurationSelector
+  , blendOutDurationSelector
   , cumulativeSelector
+  , durationSelector
+  , fillsBackwardSelector
+  , fillsForwardSelector
+  , keyPathSelector
+  , removedOnCompletionSelector
+  , repeatCountSelector
+  , setAdditiveSelector
+  , setAnimationDidStartSelector
+  , setAnimationDidStopSelector
+  , setAnimationEventsSelector
+  , setAppliedOnCompletionSelector
+  , setAutoreversesSelector
+  , setBlendInDurationSelector
+  , setBlendOutDurationSelector
   , setCumulativeSelector
+  , setDurationSelector
+  , setFillsBackwardSelector
+  , setFillsForwardSelector
+  , setKeyPathSelector
+  , setRemovedOnCompletionSelector
+  , setRepeatCountSelector
+  , setStartDelaySelector
+  , setTimeOffsetSelector
+  , setTimingFunctionSelector
+  , setUsesSceneTimeBaseSelector
+  , startDelaySelector
+  , timeOffsetSelector
+  , timingFunctionSelector
+  , usesSceneTimeBaseSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -119,8 +116,7 @@ animationWithContentsOfURL :: IsNSURL animationUrl => animationUrl -> IO (Id SCN
 animationWithContentsOfURL animationUrl =
   do
     cls' <- getRequiredClass "SCNAnimation"
-    withObjCPtr animationUrl $ \raw_animationUrl ->
-      sendClassMsg cls' (mkSelector "animationWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_animationUrl :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' animationWithContentsOfURLSelector (toNSURL animationUrl)
 
 -- | Loads and returns the animation with the specified name in the current application bundle.
 --
@@ -131,8 +127,7 @@ animationNamed :: IsNSString animationName => animationName -> IO (Id SCNAnimati
 animationNamed animationName =
   do
     cls' <- getRequiredClass "SCNAnimation"
-    withObjCPtr animationName $ \raw_animationName ->
-      sendClassMsg cls' (mkSelector "animationNamed:") (retPtr retVoid) [argPtr (castPtr raw_animationName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' animationNamedSelector (toNSString animationName)
 
 -- | Returns a SCNAnimation initialized from a CAAnimation.
 --
@@ -145,52 +140,49 @@ animationWithCAAnimation :: IsCAAnimation caAnimation => caAnimation -> IO (Id S
 animationWithCAAnimation caAnimation =
   do
     cls' <- getRequiredClass "SCNAnimation"
-    withObjCPtr caAnimation $ \raw_caAnimation ->
-      sendClassMsg cls' (mkSelector "animationWithCAAnimation:") (retPtr retVoid) [argPtr (castPtr raw_caAnimation :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' animationWithCAAnimationSelector (toCAAnimation caAnimation)
 
 -- | The duration of the animation in seconds. Defaults to 0.
 --
 -- ObjC selector: @- duration@
 duration :: IsSCNAnimation scnAnimation => scnAnimation -> IO CDouble
-duration scnAnimation  =
-    sendMsg scnAnimation (mkSelector "duration") retCDouble []
+duration scnAnimation =
+  sendMessage scnAnimation durationSelector
 
 -- | The duration of the animation in seconds. Defaults to 0.
 --
 -- ObjC selector: @- setDuration:@
 setDuration :: IsSCNAnimation scnAnimation => scnAnimation -> CDouble -> IO ()
-setDuration scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setDuration:") retVoid [argCDouble value]
+setDuration scnAnimation value =
+  sendMessage scnAnimation setDurationSelector value
 
 -- | The key-path describing the property to be animated for single-property animations, nil for animations targetting multiple nodes. defaults to nil. The key-path uses the KVC syntax. It's also possible to target a specific sub-node with the following syntax:    /<node-name>.property1.property2.field    (field is optional, <node-name> is the name of the targeted node).
 --
 -- ObjC selector: @- keyPath@
 keyPath :: IsSCNAnimation scnAnimation => scnAnimation -> IO (Id NSString)
-keyPath scnAnimation  =
-    sendMsg scnAnimation (mkSelector "keyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyPath scnAnimation =
+  sendMessage scnAnimation keyPathSelector
 
 -- | The key-path describing the property to be animated for single-property animations, nil for animations targetting multiple nodes. defaults to nil. The key-path uses the KVC syntax. It's also possible to target a specific sub-node with the following syntax:    /<node-name>.property1.property2.field    (field is optional, <node-name> is the name of the targeted node).
 --
 -- ObjC selector: @- setKeyPath:@
 setKeyPath :: (IsSCNAnimation scnAnimation, IsNSString value) => scnAnimation -> value -> IO ()
-setKeyPath scnAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnAnimation (mkSelector "setKeyPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyPath scnAnimation value =
+  sendMessage scnAnimation setKeyPathSelector (toNSString value)
 
 -- | A timing function defining the pacing of the animation. Defaults to nil indicating linear pacing.
 --
 -- ObjC selector: @- timingFunction@
 timingFunction :: IsSCNAnimation scnAnimation => scnAnimation -> IO (Id SCNTimingFunction)
-timingFunction scnAnimation  =
-    sendMsg scnAnimation (mkSelector "timingFunction") (retPtr retVoid) [] >>= retainedObject . castPtr
+timingFunction scnAnimation =
+  sendMessage scnAnimation timingFunctionSelector
 
 -- | A timing function defining the pacing of the animation. Defaults to nil indicating linear pacing.
 --
 -- ObjC selector: @- setTimingFunction:@
 setTimingFunction :: (IsSCNAnimation scnAnimation, IsSCNTimingFunction value) => scnAnimation -> value -> IO ()
-setTimingFunction scnAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnAnimation (mkSelector "setTimingFunction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimingFunction scnAnimation value =
+  sendMessage scnAnimation setTimingFunctionSelector (toSCNTimingFunction value)
 
 -- | Determines the receiver's blend-in duration.
 --
@@ -198,8 +190,8 @@ setTimingFunction scnAnimation  value =
 --
 -- ObjC selector: @- blendInDuration@
 blendInDuration :: IsSCNAnimation scnAnimation => scnAnimation -> IO CDouble
-blendInDuration scnAnimation  =
-    sendMsg scnAnimation (mkSelector "blendInDuration") retCDouble []
+blendInDuration scnAnimation =
+  sendMessage scnAnimation blendInDurationSelector
 
 -- | Determines the receiver's blend-in duration.
 --
@@ -207,8 +199,8 @@ blendInDuration scnAnimation  =
 --
 -- ObjC selector: @- setBlendInDuration:@
 setBlendInDuration :: IsSCNAnimation scnAnimation => scnAnimation -> CDouble -> IO ()
-setBlendInDuration scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setBlendInDuration:") retVoid [argCDouble value]
+setBlendInDuration scnAnimation value =
+  sendMessage scnAnimation setBlendInDurationSelector value
 
 -- | Determines the receiver's blend-out duration.
 --
@@ -216,8 +208,8 @@ setBlendInDuration scnAnimation  value =
 --
 -- ObjC selector: @- blendOutDuration@
 blendOutDuration :: IsSCNAnimation scnAnimation => scnAnimation -> IO CDouble
-blendOutDuration scnAnimation  =
-    sendMsg scnAnimation (mkSelector "blendOutDuration") retCDouble []
+blendOutDuration scnAnimation =
+  sendMessage scnAnimation blendOutDurationSelector
 
 -- | Determines the receiver's blend-out duration.
 --
@@ -225,64 +217,64 @@ blendOutDuration scnAnimation  =
 --
 -- ObjC selector: @- setBlendOutDuration:@
 setBlendOutDuration :: IsSCNAnimation scnAnimation => scnAnimation -> CDouble -> IO ()
-setBlendOutDuration scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setBlendOutDuration:") retVoid [argCDouble value]
+setBlendOutDuration scnAnimation value =
+  sendMessage scnAnimation setBlendOutDurationSelector value
 
 -- | When true, the animation is removed from the render tree once its active duration has passed. Defaults to YES.
 --
 -- ObjC selector: @- removedOnCompletion@
 removedOnCompletion :: IsSCNAnimation scnAnimation => scnAnimation -> IO Bool
-removedOnCompletion scnAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAnimation (mkSelector "removedOnCompletion") retCULong []
+removedOnCompletion scnAnimation =
+  sendMessage scnAnimation removedOnCompletionSelector
 
 -- | When true, the animation is removed from the render tree once its active duration has passed. Defaults to YES.
 --
 -- ObjC selector: @- setRemovedOnCompletion:@
 setRemovedOnCompletion :: IsSCNAnimation scnAnimation => scnAnimation -> Bool -> IO ()
-setRemovedOnCompletion scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setRemovedOnCompletion:") retVoid [argCULong (if value then 1 else 0)]
+setRemovedOnCompletion scnAnimation value =
+  sendMessage scnAnimation setRemovedOnCompletionSelector value
 
 -- | When true, the animation is applied to the model tree once its active duration has passed. Defaults to NO.
 --
 -- ObjC selector: @- appliedOnCompletion@
 appliedOnCompletion :: IsSCNAnimation scnAnimation => scnAnimation -> IO Bool
-appliedOnCompletion scnAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAnimation (mkSelector "appliedOnCompletion") retCULong []
+appliedOnCompletion scnAnimation =
+  sendMessage scnAnimation appliedOnCompletionSelector
 
 -- | When true, the animation is applied to the model tree once its active duration has passed. Defaults to NO.
 --
 -- ObjC selector: @- setAppliedOnCompletion:@
 setAppliedOnCompletion :: IsSCNAnimation scnAnimation => scnAnimation -> Bool -> IO ()
-setAppliedOnCompletion scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setAppliedOnCompletion:") retVoid [argCULong (if value then 1 else 0)]
+setAppliedOnCompletion scnAnimation value =
+  sendMessage scnAnimation setAppliedOnCompletionSelector value
 
 -- | The repeat count of the object. May be fractional. Defaults to 0.
 --
 -- ObjC selector: @- repeatCount@
 repeatCount :: IsSCNAnimation scnAnimation => scnAnimation -> IO CDouble
-repeatCount scnAnimation  =
-    sendMsg scnAnimation (mkSelector "repeatCount") retCDouble []
+repeatCount scnAnimation =
+  sendMessage scnAnimation repeatCountSelector
 
 -- | The repeat count of the object. May be fractional. Defaults to 0.
 --
 -- ObjC selector: @- setRepeatCount:@
 setRepeatCount :: IsSCNAnimation scnAnimation => scnAnimation -> CDouble -> IO ()
-setRepeatCount scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setRepeatCount:") retVoid [argCDouble value]
+setRepeatCount scnAnimation value =
+  sendMessage scnAnimation setRepeatCountSelector value
 
 -- | When true, the object plays backwards after playing forwards. Defaults to NO.
 --
 -- ObjC selector: @- autoreverses@
 autoreverses :: IsSCNAnimation scnAnimation => scnAnimation -> IO Bool
-autoreverses scnAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAnimation (mkSelector "autoreverses") retCULong []
+autoreverses scnAnimation =
+  sendMessage scnAnimation autoreversesSelector
 
 -- | When true, the object plays backwards after playing forwards. Defaults to NO.
 --
 -- ObjC selector: @- setAutoreverses:@
 setAutoreverses :: IsSCNAnimation scnAnimation => scnAnimation -> Bool -> IO ()
-setAutoreverses scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setAutoreverses:") retVoid [argCULong (if value then 1 else 0)]
+setAutoreverses scnAnimation value =
+  sendMessage scnAnimation setAutoreversesSelector value
 
 -- | The relative delay to start the animation, in relation to its parent animation if applicable. Defaults to 0.
 --
@@ -290,8 +282,8 @@ setAutoreverses scnAnimation  value =
 --
 -- ObjC selector: @- startDelay@
 startDelay :: IsSCNAnimation scnAnimation => scnAnimation -> IO CDouble
-startDelay scnAnimation  =
-    sendMsg scnAnimation (mkSelector "startDelay") retCDouble []
+startDelay scnAnimation =
+  sendMessage scnAnimation startDelaySelector
 
 -- | The relative delay to start the animation, in relation to its parent animation if applicable. Defaults to 0.
 --
@@ -299,50 +291,50 @@ startDelay scnAnimation  =
 --
 -- ObjC selector: @- setStartDelay:@
 setStartDelay :: IsSCNAnimation scnAnimation => scnAnimation -> CDouble -> IO ()
-setStartDelay scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setStartDelay:") retVoid [argCDouble value]
+setStartDelay scnAnimation value =
+  sendMessage scnAnimation setStartDelaySelector value
 
 -- | Additional offset in active local time. i.e. to convert from parent time tp to active local time t: t = (tp - begin) * speed + offset. Defaults to 0.
 --
 -- ObjC selector: @- timeOffset@
 timeOffset :: IsSCNAnimation scnAnimation => scnAnimation -> IO CDouble
-timeOffset scnAnimation  =
-    sendMsg scnAnimation (mkSelector "timeOffset") retCDouble []
+timeOffset scnAnimation =
+  sendMessage scnAnimation timeOffsetSelector
 
 -- | Additional offset in active local time. i.e. to convert from parent time tp to active local time t: t = (tp - begin) * speed + offset. Defaults to 0.
 --
 -- ObjC selector: @- setTimeOffset:@
 setTimeOffset :: IsSCNAnimation scnAnimation => scnAnimation -> CDouble -> IO ()
-setTimeOffset scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setTimeOffset:") retVoid [argCDouble value]
+setTimeOffset scnAnimation value =
+  sendMessage scnAnimation setTimeOffsetSelector value
 
 -- | When true, the animation remains active after its active duration and evaluates to its end value. Defaults to NO.
 --
 -- ObjC selector: @- fillsForward@
 fillsForward :: IsSCNAnimation scnAnimation => scnAnimation -> IO Bool
-fillsForward scnAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAnimation (mkSelector "fillsForward") retCULong []
+fillsForward scnAnimation =
+  sendMessage scnAnimation fillsForwardSelector
 
 -- | When true, the animation remains active after its active duration and evaluates to its end value. Defaults to NO.
 --
 -- ObjC selector: @- setFillsForward:@
 setFillsForward :: IsSCNAnimation scnAnimation => scnAnimation -> Bool -> IO ()
-setFillsForward scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setFillsForward:") retVoid [argCULong (if value then 1 else 0)]
+setFillsForward scnAnimation value =
+  sendMessage scnAnimation setFillsForwardSelector value
 
 -- | When true, the animation is active before its active duration and evaluates to its start value. Defaults to NO.
 --
 -- ObjC selector: @- fillsBackward@
 fillsBackward :: IsSCNAnimation scnAnimation => scnAnimation -> IO Bool
-fillsBackward scnAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAnimation (mkSelector "fillsBackward") retCULong []
+fillsBackward scnAnimation =
+  sendMessage scnAnimation fillsBackwardSelector
 
 -- | When true, the animation is active before its active duration and evaluates to its start value. Defaults to NO.
 --
 -- ObjC selector: @- setFillsBackward:@
 setFillsBackward :: IsSCNAnimation scnAnimation => scnAnimation -> Bool -> IO ()
-setFillsBackward scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setFillsBackward:") retVoid [argCULong (if value then 1 else 0)]
+setFillsBackward scnAnimation value =
+  sendMessage scnAnimation setFillsBackwardSelector value
 
 -- | Determines whether the receiver is evaluated using the scene time or the system time. Defaults to NO.
 --
@@ -352,8 +344,8 @@ setFillsBackward scnAnimation  value =
 --
 -- ObjC selector: @- usesSceneTimeBase@
 usesSceneTimeBase :: IsSCNAnimation scnAnimation => scnAnimation -> IO Bool
-usesSceneTimeBase scnAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAnimation (mkSelector "usesSceneTimeBase") retCULong []
+usesSceneTimeBase scnAnimation =
+  sendMessage scnAnimation usesSceneTimeBaseSelector
 
 -- | Determines whether the receiver is evaluated using the scene time or the system time. Defaults to NO.
 --
@@ -363,36 +355,36 @@ usesSceneTimeBase scnAnimation  =
 --
 -- ObjC selector: @- setUsesSceneTimeBase:@
 setUsesSceneTimeBase :: IsSCNAnimation scnAnimation => scnAnimation -> Bool -> IO ()
-setUsesSceneTimeBase scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setUsesSceneTimeBase:") retVoid [argCULong (if value then 1 else 0)]
+setUsesSceneTimeBase scnAnimation value =
+  sendMessage scnAnimation setUsesSceneTimeBaseSelector value
 
 -- | Called when the animation starts.
 --
 -- ObjC selector: @- animationDidStart@
 animationDidStart :: IsSCNAnimation scnAnimation => scnAnimation -> IO (Ptr ())
-animationDidStart scnAnimation  =
-    fmap castPtr $ sendMsg scnAnimation (mkSelector "animationDidStart") (retPtr retVoid) []
+animationDidStart scnAnimation =
+  sendMessage scnAnimation animationDidStartSelector
 
 -- | Called when the animation starts.
 --
 -- ObjC selector: @- setAnimationDidStart:@
 setAnimationDidStart :: IsSCNAnimation scnAnimation => scnAnimation -> Ptr () -> IO ()
-setAnimationDidStart scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setAnimationDidStart:") retVoid [argPtr (castPtr value :: Ptr ())]
+setAnimationDidStart scnAnimation value =
+  sendMessage scnAnimation setAnimationDidStartSelector value
 
 -- | Called when the animation either completes its active duration or is removed from the object it is attached to (i.e. the layer). The 'completed' argument of SCNAnimationDidStopBlock is true if the animation reached the end of its active duration without being removed.
 --
 -- ObjC selector: @- animationDidStop@
 animationDidStop :: IsSCNAnimation scnAnimation => scnAnimation -> IO (Ptr ())
-animationDidStop scnAnimation  =
-    fmap castPtr $ sendMsg scnAnimation (mkSelector "animationDidStop") (retPtr retVoid) []
+animationDidStop scnAnimation =
+  sendMessage scnAnimation animationDidStopSelector
 
 -- | Called when the animation either completes its active duration or is removed from the object it is attached to (i.e. the layer). The 'completed' argument of SCNAnimationDidStopBlock is true if the animation reached the end of its active duration without being removed.
 --
 -- ObjC selector: @- setAnimationDidStop:@
 setAnimationDidStop :: IsSCNAnimation scnAnimation => scnAnimation -> Ptr () -> IO ()
-setAnimationDidStop scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setAnimationDidStop:") retVoid [argPtr (castPtr value :: Ptr ())]
+setAnimationDidStop scnAnimation value =
+  sendMessage scnAnimation setAnimationDidStopSelector value
 
 -- | Specifies the animation events attached to the receiver.
 --
@@ -400,8 +392,8 @@ setAnimationDidStop scnAnimation  value =
 --
 -- ObjC selector: @- animationEvents@
 animationEvents :: IsSCNAnimation scnAnimation => scnAnimation -> IO (Id NSArray)
-animationEvents scnAnimation  =
-    sendMsg scnAnimation (mkSelector "animationEvents") (retPtr retVoid) [] >>= retainedObject . castPtr
+animationEvents scnAnimation =
+  sendMessage scnAnimation animationEventsSelector
 
 -- | Specifies the animation events attached to the receiver.
 --
@@ -409,203 +401,202 @@ animationEvents scnAnimation  =
 --
 -- ObjC selector: @- setAnimationEvents:@
 setAnimationEvents :: (IsSCNAnimation scnAnimation, IsNSArray value) => scnAnimation -> value -> IO ()
-setAnimationEvents scnAnimation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnAnimation (mkSelector "setAnimationEvents:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAnimationEvents scnAnimation value =
+  sendMessage scnAnimation setAnimationEventsSelector (toNSArray value)
 
 -- | When true the value specified by the animation will be "added" to the current presentation value of the property to produce the new presentation value. The addition function is type-dependent, e.g. for affine transforms the two matrices are concatenated. Defaults to NO.
 --
 -- ObjC selector: @- additive@
 additive :: IsSCNAnimation scnAnimation => scnAnimation -> IO Bool
-additive scnAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAnimation (mkSelector "additive") retCULong []
+additive scnAnimation =
+  sendMessage scnAnimation additiveSelector
 
 -- | When true the value specified by the animation will be "added" to the current presentation value of the property to produce the new presentation value. The addition function is type-dependent, e.g. for affine transforms the two matrices are concatenated. Defaults to NO.
 --
 -- ObjC selector: @- setAdditive:@
 setAdditive :: IsSCNAnimation scnAnimation => scnAnimation -> Bool -> IO ()
-setAdditive scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setAdditive:") retVoid [argCULong (if value then 1 else 0)]
+setAdditive scnAnimation value =
+  sendMessage scnAnimation setAdditiveSelector value
 
 -- | The `cumulative' property affects how repeating animations produce their result. If true then the current value of the animation is the value at the end of the previous repeat cycle, plus the value of the current repeat cycle. If false, the value is simply the value calculated for the current repeat cycle. Defaults to NO.
 --
 -- ObjC selector: @- cumulative@
 cumulative :: IsSCNAnimation scnAnimation => scnAnimation -> IO Bool
-cumulative scnAnimation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnAnimation (mkSelector "cumulative") retCULong []
+cumulative scnAnimation =
+  sendMessage scnAnimation cumulativeSelector
 
 -- | The `cumulative' property affects how repeating animations produce their result. If true then the current value of the animation is the value at the end of the previous repeat cycle, plus the value of the current repeat cycle. If false, the value is simply the value calculated for the current repeat cycle. Defaults to NO.
 --
 -- ObjC selector: @- setCumulative:@
 setCumulative :: IsSCNAnimation scnAnimation => scnAnimation -> Bool -> IO ()
-setCumulative scnAnimation  value =
-    sendMsg scnAnimation (mkSelector "setCumulative:") retVoid [argCULong (if value then 1 else 0)]
+setCumulative scnAnimation value =
+  sendMessage scnAnimation setCumulativeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @animationWithContentsOfURL:@
-animationWithContentsOfURLSelector :: Selector
+animationWithContentsOfURLSelector :: Selector '[Id NSURL] (Id SCNAnimation)
 animationWithContentsOfURLSelector = mkSelector "animationWithContentsOfURL:"
 
 -- | @Selector@ for @animationNamed:@
-animationNamedSelector :: Selector
+animationNamedSelector :: Selector '[Id NSString] (Id SCNAnimation)
 animationNamedSelector = mkSelector "animationNamed:"
 
 -- | @Selector@ for @animationWithCAAnimation:@
-animationWithCAAnimationSelector :: Selector
+animationWithCAAnimationSelector :: Selector '[Id CAAnimation] (Id SCNAnimation)
 animationWithCAAnimationSelector = mkSelector "animationWithCAAnimation:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[CDouble] ()
 setDurationSelector = mkSelector "setDuration:"
 
 -- | @Selector@ for @keyPath@
-keyPathSelector :: Selector
+keyPathSelector :: Selector '[] (Id NSString)
 keyPathSelector = mkSelector "keyPath"
 
 -- | @Selector@ for @setKeyPath:@
-setKeyPathSelector :: Selector
+setKeyPathSelector :: Selector '[Id NSString] ()
 setKeyPathSelector = mkSelector "setKeyPath:"
 
 -- | @Selector@ for @timingFunction@
-timingFunctionSelector :: Selector
+timingFunctionSelector :: Selector '[] (Id SCNTimingFunction)
 timingFunctionSelector = mkSelector "timingFunction"
 
 -- | @Selector@ for @setTimingFunction:@
-setTimingFunctionSelector :: Selector
+setTimingFunctionSelector :: Selector '[Id SCNTimingFunction] ()
 setTimingFunctionSelector = mkSelector "setTimingFunction:"
 
 -- | @Selector@ for @blendInDuration@
-blendInDurationSelector :: Selector
+blendInDurationSelector :: Selector '[] CDouble
 blendInDurationSelector = mkSelector "blendInDuration"
 
 -- | @Selector@ for @setBlendInDuration:@
-setBlendInDurationSelector :: Selector
+setBlendInDurationSelector :: Selector '[CDouble] ()
 setBlendInDurationSelector = mkSelector "setBlendInDuration:"
 
 -- | @Selector@ for @blendOutDuration@
-blendOutDurationSelector :: Selector
+blendOutDurationSelector :: Selector '[] CDouble
 blendOutDurationSelector = mkSelector "blendOutDuration"
 
 -- | @Selector@ for @setBlendOutDuration:@
-setBlendOutDurationSelector :: Selector
+setBlendOutDurationSelector :: Selector '[CDouble] ()
 setBlendOutDurationSelector = mkSelector "setBlendOutDuration:"
 
 -- | @Selector@ for @removedOnCompletion@
-removedOnCompletionSelector :: Selector
+removedOnCompletionSelector :: Selector '[] Bool
 removedOnCompletionSelector = mkSelector "removedOnCompletion"
 
 -- | @Selector@ for @setRemovedOnCompletion:@
-setRemovedOnCompletionSelector :: Selector
+setRemovedOnCompletionSelector :: Selector '[Bool] ()
 setRemovedOnCompletionSelector = mkSelector "setRemovedOnCompletion:"
 
 -- | @Selector@ for @appliedOnCompletion@
-appliedOnCompletionSelector :: Selector
+appliedOnCompletionSelector :: Selector '[] Bool
 appliedOnCompletionSelector = mkSelector "appliedOnCompletion"
 
 -- | @Selector@ for @setAppliedOnCompletion:@
-setAppliedOnCompletionSelector :: Selector
+setAppliedOnCompletionSelector :: Selector '[Bool] ()
 setAppliedOnCompletionSelector = mkSelector "setAppliedOnCompletion:"
 
 -- | @Selector@ for @repeatCount@
-repeatCountSelector :: Selector
+repeatCountSelector :: Selector '[] CDouble
 repeatCountSelector = mkSelector "repeatCount"
 
 -- | @Selector@ for @setRepeatCount:@
-setRepeatCountSelector :: Selector
+setRepeatCountSelector :: Selector '[CDouble] ()
 setRepeatCountSelector = mkSelector "setRepeatCount:"
 
 -- | @Selector@ for @autoreverses@
-autoreversesSelector :: Selector
+autoreversesSelector :: Selector '[] Bool
 autoreversesSelector = mkSelector "autoreverses"
 
 -- | @Selector@ for @setAutoreverses:@
-setAutoreversesSelector :: Selector
+setAutoreversesSelector :: Selector '[Bool] ()
 setAutoreversesSelector = mkSelector "setAutoreverses:"
 
 -- | @Selector@ for @startDelay@
-startDelaySelector :: Selector
+startDelaySelector :: Selector '[] CDouble
 startDelaySelector = mkSelector "startDelay"
 
 -- | @Selector@ for @setStartDelay:@
-setStartDelaySelector :: Selector
+setStartDelaySelector :: Selector '[CDouble] ()
 setStartDelaySelector = mkSelector "setStartDelay:"
 
 -- | @Selector@ for @timeOffset@
-timeOffsetSelector :: Selector
+timeOffsetSelector :: Selector '[] CDouble
 timeOffsetSelector = mkSelector "timeOffset"
 
 -- | @Selector@ for @setTimeOffset:@
-setTimeOffsetSelector :: Selector
+setTimeOffsetSelector :: Selector '[CDouble] ()
 setTimeOffsetSelector = mkSelector "setTimeOffset:"
 
 -- | @Selector@ for @fillsForward@
-fillsForwardSelector :: Selector
+fillsForwardSelector :: Selector '[] Bool
 fillsForwardSelector = mkSelector "fillsForward"
 
 -- | @Selector@ for @setFillsForward:@
-setFillsForwardSelector :: Selector
+setFillsForwardSelector :: Selector '[Bool] ()
 setFillsForwardSelector = mkSelector "setFillsForward:"
 
 -- | @Selector@ for @fillsBackward@
-fillsBackwardSelector :: Selector
+fillsBackwardSelector :: Selector '[] Bool
 fillsBackwardSelector = mkSelector "fillsBackward"
 
 -- | @Selector@ for @setFillsBackward:@
-setFillsBackwardSelector :: Selector
+setFillsBackwardSelector :: Selector '[Bool] ()
 setFillsBackwardSelector = mkSelector "setFillsBackward:"
 
 -- | @Selector@ for @usesSceneTimeBase@
-usesSceneTimeBaseSelector :: Selector
+usesSceneTimeBaseSelector :: Selector '[] Bool
 usesSceneTimeBaseSelector = mkSelector "usesSceneTimeBase"
 
 -- | @Selector@ for @setUsesSceneTimeBase:@
-setUsesSceneTimeBaseSelector :: Selector
+setUsesSceneTimeBaseSelector :: Selector '[Bool] ()
 setUsesSceneTimeBaseSelector = mkSelector "setUsesSceneTimeBase:"
 
 -- | @Selector@ for @animationDidStart@
-animationDidStartSelector :: Selector
+animationDidStartSelector :: Selector '[] (Ptr ())
 animationDidStartSelector = mkSelector "animationDidStart"
 
 -- | @Selector@ for @setAnimationDidStart:@
-setAnimationDidStartSelector :: Selector
+setAnimationDidStartSelector :: Selector '[Ptr ()] ()
 setAnimationDidStartSelector = mkSelector "setAnimationDidStart:"
 
 -- | @Selector@ for @animationDidStop@
-animationDidStopSelector :: Selector
+animationDidStopSelector :: Selector '[] (Ptr ())
 animationDidStopSelector = mkSelector "animationDidStop"
 
 -- | @Selector@ for @setAnimationDidStop:@
-setAnimationDidStopSelector :: Selector
+setAnimationDidStopSelector :: Selector '[Ptr ()] ()
 setAnimationDidStopSelector = mkSelector "setAnimationDidStop:"
 
 -- | @Selector@ for @animationEvents@
-animationEventsSelector :: Selector
+animationEventsSelector :: Selector '[] (Id NSArray)
 animationEventsSelector = mkSelector "animationEvents"
 
 -- | @Selector@ for @setAnimationEvents:@
-setAnimationEventsSelector :: Selector
+setAnimationEventsSelector :: Selector '[Id NSArray] ()
 setAnimationEventsSelector = mkSelector "setAnimationEvents:"
 
 -- | @Selector@ for @additive@
-additiveSelector :: Selector
+additiveSelector :: Selector '[] Bool
 additiveSelector = mkSelector "additive"
 
 -- | @Selector@ for @setAdditive:@
-setAdditiveSelector :: Selector
+setAdditiveSelector :: Selector '[Bool] ()
 setAdditiveSelector = mkSelector "setAdditive:"
 
 -- | @Selector@ for @cumulative@
-cumulativeSelector :: Selector
+cumulativeSelector :: Selector '[] Bool
 cumulativeSelector = mkSelector "cumulative"
 
 -- | @Selector@ for @setCumulative:@
-setCumulativeSelector :: Selector
+setCumulativeSelector :: Selector '[Bool] ()
 setCumulativeSelector = mkSelector "setCumulative:"
 

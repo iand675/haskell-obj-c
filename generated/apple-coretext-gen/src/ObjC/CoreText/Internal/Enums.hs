@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreText.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | CTCharacterCollection
 --
@@ -79,6 +82,16 @@ pattern KCTAdobeJapan2CharacterCollection = CTCharacterCollection 4
 pattern KCTAdobeKorea1CharacterCollection :: CTCharacterCollection
 pattern KCTAdobeKorea1CharacterCollection = CTCharacterCollection 5
 
+instance ObjCArgument CTCharacterCollection where
+  withObjCArg (CTCharacterCollection x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn CTCharacterCollection where
+  type RawReturn CTCharacterCollection = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTCharacterCollection (fromIntegral x))
+  fromOwned x = pure (CTCharacterCollection (fromIntegral x))
+
 -- | CTFontCollectionCopyOptions
 --
 -- Option bits for use with CTFontCollectionCopyFontAttribute(s).
@@ -109,6 +122,16 @@ pattern KCTFontCollectionCopyUnique = CTFontCollectionCopyOptions 1
 
 pattern KCTFontCollectionCopyStandardSort :: CTFontCollectionCopyOptions
 pattern KCTFontCollectionCopyStandardSort = CTFontCollectionCopyOptions 2
+
+instance ObjCArgument CTFontCollectionCopyOptions where
+  withObjCArg (CTFontCollectionCopyOptions x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontCollectionCopyOptions where
+  type RawReturn CTFontCollectionCopyOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontCollectionCopyOptions x)
+  fromOwned x = pure (CTFontCollectionCopyOptions x)
 
 -- | Progress state
 -- | @CTFontDescriptorMatchingState@
@@ -142,6 +165,16 @@ pattern KCTFontDescriptorMatchingDidMatch = CTFontDescriptorMatchingState 7
 
 pattern KCTFontDescriptorMatchingDidFailWithError :: CTFontDescriptorMatchingState
 pattern KCTFontDescriptorMatchingDidFailWithError = CTFontDescriptorMatchingState 8
+
+instance ObjCArgument CTFontDescriptorMatchingState where
+  withObjCArg (CTFontDescriptorMatchingState x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontDescriptorMatchingState where
+  type RawReturn CTFontDescriptorMatchingState = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontDescriptorMatchingState x)
+  fromOwned x = pure (CTFontDescriptorMatchingState x)
 
 -- | kCTFontFormatUnrecognized
 --
@@ -189,6 +222,16 @@ pattern KCTFontFormatPostScript = CTFontFormat 4
 pattern KCTFontFormatBitmap :: CTFontFormat
 pattern KCTFontFormatBitmap = CTFontFormat 5
 
+instance ObjCArgument CTFontFormat where
+  withObjCArg (CTFontFormat x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontFormat where
+  type RawReturn CTFontFormat = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontFormat x)
+  fromOwned x = pure (CTFontFormat x)
+
 -- | Auto-activation settings.
 --
 -- kCTFontManagerAutoActivationDefault
@@ -222,6 +265,16 @@ pattern KCTFontManagerAutoActivationEnabled = CTFontManagerAutoActivationSetting
 
 pattern KCTFontManagerAutoActivationPromptUser :: CTFontManagerAutoActivationSetting
 pattern KCTFontManagerAutoActivationPromptUser = CTFontManagerAutoActivationSetting 3
+
+instance ObjCArgument CTFontManagerAutoActivationSetting where
+  withObjCArg (CTFontManagerAutoActivationSetting x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontManagerAutoActivationSetting where
+  type RawReturn CTFontManagerAutoActivationSetting = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontManagerAutoActivationSetting x)
+  fromOwned x = pure (CTFontManagerAutoActivationSetting x)
 
 -- | Font registration errors
 --
@@ -348,6 +401,16 @@ pattern KCTFontManagerErrorInvalidFilePath = CTFontManagerError 306
 pattern KCTFontManagerErrorUnsupportedScope :: CTFontManagerError
 pattern KCTFontManagerErrorUnsupportedScope = CTFontManagerError 307
 
+instance ObjCArgument CTFontManagerError where
+  withObjCArg (CTFontManagerError x) k = k (argCLong x)
+
+instance ObjCReturn CTFontManagerError where
+  type RawReturn CTFontManagerError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontManagerError x)
+  fromOwned x = pure (CTFontManagerError x)
+
 -- | CTFontManagerScope
 --
 -- Scope for font registration. A uses session refers to a login session in macOS, and the current booted session in iOS.
@@ -387,6 +450,16 @@ pattern KCTFontManagerScopeSession = CTFontManagerScope 3
 pattern KCTFontManagerScopeUser :: CTFontManagerScope
 pattern KCTFontManagerScopeUser = CTFontManagerScope 2
 
+instance ObjCArgument CTFontManagerScope where
+  withObjCArg (CTFontManagerScope x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontManagerScope where
+  type RawReturn CTFontManagerScope = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontManagerScope x)
+  fromOwned x = pure (CTFontManagerScope x)
+
 -- | CTFontOptions
 --
 -- Options for descriptor match and font creation.
@@ -425,6 +498,16 @@ pattern KCTFontOptionsPreventAutoDownload = CTFontOptions 2
 pattern KCTFontOptionsPreferSystemFont :: CTFontOptions
 pattern KCTFontOptionsPreferSystemFont = CTFontOptions 4
 
+instance ObjCArgument CTFontOptions where
+  withObjCArg (CTFontOptions x) k = k (argCULong x)
+
+instance ObjCReturn CTFontOptions where
+  type RawReturn CTFontOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontOptions x)
+  fromOwned x = pure (CTFontOptions x)
+
 -- | CTFontOrientation
 --
 -- Specifies the intended rendering orientation of the font for obtaining glyph metrics.
@@ -450,6 +533,16 @@ pattern KCTFontHorizontalOrientation = CTFontOrientation 1
 
 pattern KCTFontVerticalOrientation :: CTFontOrientation
 pattern KCTFontVerticalOrientation = CTFontOrientation 2
+
+instance ObjCArgument CTFontOrientation where
+  withObjCArg (CTFontOrientation x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontOrientation where
+  type RawReturn CTFontOrientation = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontOrientation x)
+  fromOwned x = pure (CTFontOrientation x)
 
 -- | CTFontStylisticClass
 --
@@ -533,6 +626,16 @@ pattern KCTFontScriptsClass = CTFontStylisticClass 2684354560
 pattern KCTFontSymbolicClass :: CTFontStylisticClass
 pattern KCTFontSymbolicClass = CTFontStylisticClass 3221225472
 
+instance ObjCArgument CTFontStylisticClass where
+  withObjCArg (CTFontStylisticClass x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontStylisticClass where
+  type RawReturn CTFontStylisticClass = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontStylisticClass x)
+  fromOwned x = pure (CTFontStylisticClass x)
+
 -- | CTFontSymbolicTraits
 --
 -- Symbolic representation of stylistic font attributes.
@@ -609,6 +712,16 @@ pattern KCTFontCompositeTrait = CTFontSymbolicTraits 16384
 pattern KCTFontClassMaskTrait :: CTFontSymbolicTraits
 pattern KCTFontClassMaskTrait = CTFontSymbolicTraits 4026531840
 
+instance ObjCArgument CTFontSymbolicTraits where
+  withObjCArg (CTFontSymbolicTraits x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontSymbolicTraits where
+  type RawReturn CTFontSymbolicTraits = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontSymbolicTraits x)
+  fromOwned x = pure (CTFontSymbolicTraits x)
+
 -- | @CTFontTableOptions@ (bitmask)
 newtype CTFontTableOptions = CTFontTableOptions CUInt
   deriving stock (Eq, Ord, Show)
@@ -625,6 +738,16 @@ pattern KCTFontTableOptionNoOptions = CTFontTableOptions 0
 
 pattern KCTFontTableOptionExcludeSynthetic :: CTFontTableOptions
 pattern KCTFontTableOptionExcludeSynthetic = CTFontTableOptions 1
+
+instance ObjCArgument CTFontTableOptions where
+  withObjCArg (CTFontTableOptions x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontTableOptions where
+  type RawReturn CTFontTableOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontTableOptions x)
+  fromOwned x = pure (CTFontTableOptions x)
 
 -- | UI Type constants
 --
@@ -804,6 +927,16 @@ pattern KCTFontToolTipFontType = CTFontUIFontType 25
 pattern KCTFontControlContentFontType :: CTFontUIFontType
 pattern KCTFontControlContentFontType = CTFontUIFontType 26
 
+instance ObjCArgument CTFontUIFontType where
+  withObjCArg (CTFontUIFontType x) k = k (argCUInt x)
+
+instance ObjCReturn CTFontUIFontType where
+  type RawReturn CTFontUIFontType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFontUIFontType x)
+  fromOwned x = pure (CTFontUIFontType x)
+
 -- | CTFramePathFillRule
 --
 -- These constants specify fill rule used by the frame.
@@ -827,6 +960,16 @@ pattern KCTFramePathFillEvenOdd = CTFramePathFillRule 0
 
 pattern KCTFramePathFillWindingNumber :: CTFramePathFillRule
 pattern KCTFramePathFillWindingNumber = CTFramePathFillRule 1
+
+instance ObjCArgument CTFramePathFillRule where
+  withObjCArg (CTFramePathFillRule x) k = k (argCUInt x)
+
+instance ObjCReturn CTFramePathFillRule where
+  type RawReturn CTFramePathFillRule = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFramePathFillRule x)
+  fromOwned x = pure (CTFramePathFillRule x)
 
 -- | CTFrameProgression
 --
@@ -858,6 +1001,16 @@ pattern KCTFrameProgressionRightToLeft = CTFrameProgression 1
 
 pattern KCTFrameProgressionLeftToRight :: CTFrameProgression
 pattern KCTFrameProgressionLeftToRight = CTFrameProgression 2
+
+instance ObjCArgument CTFrameProgression where
+  withObjCArg (CTFrameProgression x) k = k (argCUInt x)
+
+instance ObjCReturn CTFrameProgression where
+  type RawReturn CTFrameProgression = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTFrameProgression x)
+  fromOwned x = pure (CTFrameProgression x)
 
 -- | CTLineBoundsOptions
 --
@@ -917,6 +1070,16 @@ pattern KCTLineBoundsUseOpticalBounds = CTLineBoundsOptions 16
 pattern KCTLineBoundsIncludeLanguageExtents :: CTLineBoundsOptions
 pattern KCTLineBoundsIncludeLanguageExtents = CTLineBoundsOptions 32
 
+instance ObjCArgument CTLineBoundsOptions where
+  withObjCArg (CTLineBoundsOptions x) k = k (argCULong x)
+
+instance ObjCReturn CTLineBoundsOptions where
+  type RawReturn CTLineBoundsOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTLineBoundsOptions x)
+  fromOwned x = pure (CTLineBoundsOptions x)
+
 -- | CTLineBreakMode
 --
 -- These constants specify what happens when a line is too long for                its frame.
@@ -967,6 +1130,16 @@ pattern KCTLineBreakByTruncatingTail = CTLineBreakMode 4
 pattern KCTLineBreakByTruncatingMiddle :: CTLineBreakMode
 pattern KCTLineBreakByTruncatingMiddle = CTLineBreakMode 5
 
+instance ObjCArgument CTLineBreakMode where
+  withObjCArg (CTLineBreakMode x) k = k (argCUChar x)
+
+instance ObjCReturn CTLineBreakMode where
+  type RawReturn CTLineBreakMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTLineBreakMode x)
+  fromOwned x = pure (CTLineBreakMode x)
+
 -- | CTLineTruncationType
 --
 -- Truncation types required by CTLineCreateTruncatedLine. These                will tell truncation engine which type of truncation is being                requested.
@@ -995,6 +1168,16 @@ pattern KCTLineTruncationEnd = CTLineTruncationType 1
 
 pattern KCTLineTruncationMiddle :: CTLineTruncationType
 pattern KCTLineTruncationMiddle = CTLineTruncationType 2
+
+instance ObjCArgument CTLineTruncationType where
+  withObjCArg (CTLineTruncationType x) k = k (argCUInt x)
+
+instance ObjCReturn CTLineTruncationType where
+  type RawReturn CTLineTruncationType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTLineTruncationType x)
+  fromOwned x = pure (CTLineTruncationType x)
 
 -- | CTParagraphStyleSpecifier
 --
@@ -1169,6 +1352,16 @@ pattern KCTParagraphStyleSpecifierLineBoundsOptions = CTParagraphStyleSpecifier 
 pattern KCTParagraphStyleSpecifierCount :: CTParagraphStyleSpecifier
 pattern KCTParagraphStyleSpecifierCount = CTParagraphStyleSpecifier 18
 
+instance ObjCArgument CTParagraphStyleSpecifier where
+  withObjCArg (CTParagraphStyleSpecifier x) k = k (argCUInt x)
+
+instance ObjCReturn CTParagraphStyleSpecifier where
+  type RawReturn CTParagraphStyleSpecifier = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTParagraphStyleSpecifier x)
+  fromOwned x = pure (CTParagraphStyleSpecifier x)
+
 -- | CTRubyAlignment
 --
 -- These constants specify how to align the ruby annotation and the base text relative to each other when they don't have the same length.
@@ -1229,6 +1422,16 @@ pattern KCTRubyAlignmentDistributeSpace = CTRubyAlignment 5
 pattern KCTRubyAlignmentLineEdge :: CTRubyAlignment
 pattern KCTRubyAlignmentLineEdge = CTRubyAlignment 6
 
+instance ObjCArgument CTRubyAlignment where
+  withObjCArg (CTRubyAlignment x) k = k (argCUChar x)
+
+instance ObjCReturn CTRubyAlignment where
+  type RawReturn CTRubyAlignment = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTRubyAlignment x)
+  fromOwned x = pure (CTRubyAlignment x)
+
 -- | CTRubyOverhang
 --
 -- These constants specify whether, and on which side, ruby text is allowed to overhang adjacent text if it is wider than the base text.
@@ -1268,6 +1471,16 @@ pattern KCTRubyOverhangEnd = CTRubyOverhang 2
 pattern KCTRubyOverhangNone :: CTRubyOverhang
 pattern KCTRubyOverhangNone = CTRubyOverhang 3
 
+instance ObjCArgument CTRubyOverhang where
+  withObjCArg (CTRubyOverhang x) k = k (argCUChar x)
+
+instance ObjCReturn CTRubyOverhang where
+  type RawReturn CTRubyOverhang = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTRubyOverhang x)
+  fromOwned x = pure (CTRubyOverhang x)
+
 -- | CTRubyPosition
 --
 -- These constants specify the position of the ruby text with respect to the base text.
@@ -1306,6 +1519,16 @@ pattern KCTRubyPositionInline = CTRubyPosition 3
 
 pattern KCTRubyPositionCount :: CTRubyPosition
 pattern KCTRubyPositionCount = CTRubyPosition 4
+
+instance ObjCArgument CTRubyPosition where
+  withObjCArg (CTRubyPosition x) k = k (argCUChar x)
+
+instance ObjCReturn CTRubyPosition where
+  type RawReturn CTRubyPosition = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTRubyPosition x)
+  fromOwned x = pure (CTRubyPosition x)
 
 -- | CTRunStatus
 --
@@ -1348,6 +1571,16 @@ pattern KCTRunStatusNonMonotonic = CTRunStatus 2
 
 pattern KCTRunStatusHasNonIdentityMatrix :: CTRunStatus
 pattern KCTRunStatusHasNonIdentityMatrix = CTRunStatus 4
+
+instance ObjCArgument CTRunStatus where
+  withObjCArg (CTRunStatus x) k = k (argCUInt x)
+
+instance ObjCReturn CTRunStatus where
+  type RawReturn CTRunStatus = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTRunStatus x)
+  fromOwned x = pure (CTRunStatus x)
 
 -- | CTTextAlignment
 --
@@ -1407,6 +1640,16 @@ pattern KCTJustifiedTextAlignment = CTTextAlignment 3
 pattern KCTNaturalTextAlignment :: CTTextAlignment
 pattern KCTNaturalTextAlignment = CTTextAlignment 4
 
+instance ObjCArgument CTTextAlignment where
+  withObjCArg (CTTextAlignment x) k = k (argCUChar x)
+
+instance ObjCReturn CTTextAlignment where
+  type RawReturn CTTextAlignment = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTTextAlignment x)
+  fromOwned x = pure (CTTextAlignment x)
+
 -- | CTUnderlineStyle
 --
 -- Underline style specifiers.
@@ -1434,6 +1677,16 @@ pattern KCTUnderlineStyleThick = CTUnderlineStyle 2
 
 pattern KCTUnderlineStyleDouble :: CTUnderlineStyle
 pattern KCTUnderlineStyleDouble = CTUnderlineStyle 9
+
+instance ObjCArgument CTUnderlineStyle where
+  withObjCArg (CTUnderlineStyle x) k = k (argCInt x)
+
+instance ObjCReturn CTUnderlineStyle where
+  type RawReturn CTUnderlineStyle = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTUnderlineStyle x)
+  fromOwned x = pure (CTUnderlineStyle x)
 
 -- | CTUnderlineStyleModifiers
 --
@@ -1466,6 +1719,16 @@ pattern KCTUnderlinePatternDashDot = CTUnderlineStyleModifiers 768
 pattern KCTUnderlinePatternDashDotDot :: CTUnderlineStyleModifiers
 pattern KCTUnderlinePatternDashDotDot = CTUnderlineStyleModifiers 1024
 
+instance ObjCArgument CTUnderlineStyleModifiers where
+  withObjCArg (CTUnderlineStyleModifiers x) k = k (argCInt x)
+
+instance ObjCReturn CTUnderlineStyleModifiers where
+  type RawReturn CTUnderlineStyleModifiers = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTUnderlineStyleModifiers x)
+  fromOwned x = pure (CTUnderlineStyleModifiers x)
+
 -- | CTWritingDirection
 --
 -- These constants specify the writing direction
@@ -1494,3 +1757,13 @@ pattern KCTWritingDirectionLeftToRight = CTWritingDirection 0
 
 pattern KCTWritingDirectionRightToLeft :: CTWritingDirection
 pattern KCTWritingDirectionRightToLeft = CTWritingDirection 1
+
+instance ObjCArgument CTWritingDirection where
+  withObjCArg (CTWritingDirection x) k = k (argCChar (fromIntegral x))
+
+instance ObjCReturn CTWritingDirection where
+  type RawReturn CTWritingDirection = Int8
+  objcRetType = retInt8
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CTWritingDirection (fromIntegral x))
+  fromOwned x = pure (CTWritingDirection (fromIntegral x))

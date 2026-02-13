@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,55 +45,51 @@ module ObjC.Matter.MTRClusterNetworkCommissioning
   , connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandler
   , reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandler
   , initWithDevice_endpointID_queue
-  , scanNetworksWithParams_expectedValues_expectedValueInterval_completionSelector
-  , scanNetworksWithExpectedValues_expectedValueInterval_completionSelector
-  , addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
+  , addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
   , addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
-  , removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
+  , addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
+  , connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
   , connectNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
-  , reorderNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , initWithDevice_endpoint_queueSelector
+  , newSelector
   , queryIdentityWithParams_expectedValues_expectedValueInterval_completionSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeConnectMaxTimeSecondsWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeInterfaceEnabledWithParamsSelector
+  , readAttributeLastConnectErrorValueWithParamsSelector
+  , readAttributeLastNetworkIDWithParamsSelector
+  , readAttributeLastNetworkingStatusWithParamsSelector
   , readAttributeMaxNetworksWithParamsSelector
   , readAttributeNetworksWithParamsSelector
   , readAttributeScanMaxTimeSecondsWithParamsSelector
-  , readAttributeConnectMaxTimeSecondsWithParamsSelector
-  , readAttributeInterfaceEnabledWithParamsSelector
+  , readAttributeSupportedThreadFeaturesWithParamsSelector
+  , readAttributeSupportedWiFiBandsWithParamsSelector
+  , readAttributeThreadVersionWithParamsSelector
+  , removeNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
+  , reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , reorderNetworkWithParams_expectedValues_expectedValueInterval_completionSelector
+  , scanNetworksWithExpectedValues_expectedValueInterval_completionSelector
+  , scanNetworksWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
+  , scanNetworksWithParams_expectedValues_expectedValueInterval_completionSelector
   , writeAttributeInterfaceEnabledWithValue_expectedValueIntervalSelector
   , writeAttributeInterfaceEnabledWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLastNetworkingStatusWithParamsSelector
-  , readAttributeLastNetworkIDWithParamsSelector
-  , readAttributeLastConnectErrorValueWithParamsSelector
-  , readAttributeSupportedWiFiBandsWithParamsSelector
-  , readAttributeSupportedThreadFeaturesWithParamsSelector
-  , readAttributeThreadVersionWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpoint_queueSelector
-  , scanNetworksWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , removeNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector
-  , initWithDevice_endpointID_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -101,400 +98,333 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- scanNetworksWithParams:expectedValues:expectedValueInterval:completion:@
 scanNetworksWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterScanNetworksParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-scanNetworksWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "scanNetworksWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+scanNetworksWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterNetworkCommissioning scanNetworksWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRNetworkCommissioningClusterScanNetworksParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- scanNetworksWithExpectedValues:expectedValueInterval:completion:@
 scanNetworksWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-scanNetworksWithExpectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterNetworkCommissioning (mkSelector "scanNetworksWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+scanNetworksWithExpectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterNetworkCommissioning scanNetworksWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- addOrUpdateWiFiNetworkWithParams:expectedValues:expectedValueInterval:completion:@
 addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "addOrUpdateWiFiNetworkWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterNetworkCommissioning addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- addOrUpdateThreadNetworkWithParams:expectedValues:expectedValueInterval:completion:@
 addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "addOrUpdateThreadNetworkWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterNetworkCommissioning addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- removeNetworkWithParams:expectedValues:expectedValueInterval:completion:@
 removeNetworkWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterRemoveNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-removeNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "removeNetworkWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterNetworkCommissioning removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRNetworkCommissioningClusterRemoveNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- connectNetworkWithParams:expectedValues:expectedValueInterval:completion:@
 connectNetworkWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterConnectNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-connectNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "connectNetworkWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+connectNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterNetworkCommissioning connectNetworkWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRNetworkCommissioningClusterConnectNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- reorderNetworkWithParams:expectedValues:expectedValueInterval:completion:@
 reorderNetworkWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterReorderNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-reorderNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "reorderNetworkWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+reorderNetworkWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterNetworkCommissioning reorderNetworkWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRNetworkCommissioningClusterReorderNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- queryIdentityWithParams:expectedValues:expectedValueInterval:completion:@
 queryIdentityWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterQueryIdentityParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-queryIdentityWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "queryIdentityWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+queryIdentityWithParams_expectedValues_expectedValueInterval_completion mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterNetworkCommissioning queryIdentityWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRNetworkCommissioningClusterQueryIdentityParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeMaxNetworksWithParams:@
 readAttributeMaxNetworksWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeMaxNetworksWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeMaxNetworksWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxNetworksWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeMaxNetworksWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNetworksWithParams:@
 readAttributeNetworksWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeNetworksWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeNetworksWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNetworksWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeNetworksWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeScanMaxTimeSecondsWithParams:@
 readAttributeScanMaxTimeSecondsWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeScanMaxTimeSecondsWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeScanMaxTimeSecondsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeScanMaxTimeSecondsWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeScanMaxTimeSecondsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeConnectMaxTimeSecondsWithParams:@
 readAttributeConnectMaxTimeSecondsWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeConnectMaxTimeSecondsWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeConnectMaxTimeSecondsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeConnectMaxTimeSecondsWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeConnectMaxTimeSecondsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeInterfaceEnabledWithParams:@
 readAttributeInterfaceEnabledWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeInterfaceEnabledWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeInterfaceEnabledWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeInterfaceEnabledWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeInterfaceEnabledWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeInterfaceEnabledWithValue:expectedValueInterval:@
 writeAttributeInterfaceEnabledWithValue_expectedValueInterval :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeInterfaceEnabledWithValue_expectedValueInterval mtrClusterNetworkCommissioning  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterNetworkCommissioning (mkSelector "writeAttributeInterfaceEnabledWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeInterfaceEnabledWithValue_expectedValueInterval mtrClusterNetworkCommissioning dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterNetworkCommissioning writeAttributeInterfaceEnabledWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeInterfaceEnabledWithValue:expectedValueInterval:params:@
 writeAttributeInterfaceEnabledWithValue_expectedValueInterval_params :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterNetworkCommissioning -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeInterfaceEnabledWithValue_expectedValueInterval_params mtrClusterNetworkCommissioning  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "writeAttributeInterfaceEnabledWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeInterfaceEnabledWithValue_expectedValueInterval_params mtrClusterNetworkCommissioning dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterNetworkCommissioning writeAttributeInterfaceEnabledWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLastNetworkingStatusWithParams:@
 readAttributeLastNetworkingStatusWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeLastNetworkingStatusWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeLastNetworkingStatusWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLastNetworkingStatusWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeLastNetworkingStatusWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLastNetworkIDWithParams:@
 readAttributeLastNetworkIDWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeLastNetworkIDWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeLastNetworkIDWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLastNetworkIDWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeLastNetworkIDWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLastConnectErrorValueWithParams:@
 readAttributeLastConnectErrorValueWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeLastConnectErrorValueWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeLastConnectErrorValueWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLastConnectErrorValueWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeLastConnectErrorValueWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSupportedWiFiBandsWithParams:@
 readAttributeSupportedWiFiBandsWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeSupportedWiFiBandsWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeSupportedWiFiBandsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupportedWiFiBandsWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeSupportedWiFiBandsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSupportedThreadFeaturesWithParams:@
 readAttributeSupportedThreadFeaturesWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeSupportedThreadFeaturesWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeSupportedThreadFeaturesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupportedThreadFeaturesWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeSupportedThreadFeaturesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeThreadVersionWithParams:@
 readAttributeThreadVersionWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeThreadVersionWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeThreadVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeThreadVersionWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeThreadVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRReadParams params) => mtrClusterNetworkCommissioning -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterNetworkCommissioning  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterNetworkCommissioning (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterNetworkCommissioning params =
+  sendMessage mtrClusterNetworkCommissioning readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning => mtrClusterNetworkCommissioning -> IO (Id MTRClusterNetworkCommissioning)
-init_ mtrClusterNetworkCommissioning  =
-    sendMsg mtrClusterNetworkCommissioning (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterNetworkCommissioning =
+  sendOwnedMessage mtrClusterNetworkCommissioning initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterNetworkCommissioning)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterNetworkCommissioning"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithDevice:endpoint:queue:@
 initWithDevice_endpoint_queue :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRDevice device, IsNSObject queue) => mtrClusterNetworkCommissioning -> device -> CUShort -> queue -> IO (Id MTRClusterNetworkCommissioning)
-initWithDevice_endpoint_queue mtrClusterNetworkCommissioning  device endpoint queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr queue $ \raw_queue ->
-        sendMsg mtrClusterNetworkCommissioning (mkSelector "initWithDevice:endpoint:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argCUInt (fromIntegral endpoint), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpoint_queue mtrClusterNetworkCommissioning device endpoint queue =
+  sendOwnedMessage mtrClusterNetworkCommissioning initWithDevice_endpoint_queueSelector (toMTRDevice device) endpoint (toNSObject queue)
 
 -- | @- scanNetworksWithParams:expectedValues:expectedValueInterval:completionHandler:@
 scanNetworksWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterScanNetworksParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-scanNetworksWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "scanNetworksWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+scanNetworksWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterNetworkCommissioning scanNetworksWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRNetworkCommissioningClusterScanNetworksParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- addOrUpdateWiFiNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
 addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "addOrUpdateWiFiNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterNetworkCommissioning addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- addOrUpdateThreadNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
 addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "addOrUpdateThreadNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterNetworkCommissioning addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- removeNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
 removeNetworkWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterRemoveNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-removeNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "removeNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+removeNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterNetworkCommissioning removeNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRNetworkCommissioningClusterRemoveNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- connectNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
 connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterConnectNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "connectNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterNetworkCommissioning connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRNetworkCommissioningClusterConnectNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | @- reorderNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
 reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandler :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRNetworkCommissioningClusterReorderNetworkParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterNetworkCommissioning -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning  params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "reorderNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandler mtrClusterNetworkCommissioning params expectedDataValueDictionaries expectedValueIntervalMs completionHandler =
+  sendMessage mtrClusterNetworkCommissioning reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector (toMTRNetworkCommissioningClusterReorderNetworkParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completionHandler
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterNetworkCommissioning mtrClusterNetworkCommissioning, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterNetworkCommissioning -> device -> endpointID -> queue -> IO (Id MTRClusterNetworkCommissioning)
-initWithDevice_endpointID_queue mtrClusterNetworkCommissioning  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterNetworkCommissioning (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterNetworkCommissioning device endpointID queue =
+  sendOwnedMessage mtrClusterNetworkCommissioning initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scanNetworksWithParams:expectedValues:expectedValueInterval:completion:@
-scanNetworksWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+scanNetworksWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRNetworkCommissioningClusterScanNetworksParams, Id NSArray, Id NSNumber, Ptr ()] ()
 scanNetworksWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "scanNetworksWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @scanNetworksWithExpectedValues:expectedValueInterval:completion:@
-scanNetworksWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+scanNetworksWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 scanNetworksWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "scanNetworksWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @addOrUpdateWiFiNetworkWithParams:expectedValues:expectedValueInterval:completion:@
-addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "addOrUpdateWiFiNetworkWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @addOrUpdateThreadNetworkWithParams:expectedValues:expectedValueInterval:completion:@
-addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "addOrUpdateThreadNetworkWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @removeNetworkWithParams:expectedValues:expectedValueInterval:completion:@
-removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRNetworkCommissioningClusterRemoveNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 removeNetworkWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "removeNetworkWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @connectNetworkWithParams:expectedValues:expectedValueInterval:completion:@
-connectNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+connectNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRNetworkCommissioningClusterConnectNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 connectNetworkWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "connectNetworkWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @reorderNetworkWithParams:expectedValues:expectedValueInterval:completion:@
-reorderNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+reorderNetworkWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRNetworkCommissioningClusterReorderNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 reorderNetworkWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "reorderNetworkWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @queryIdentityWithParams:expectedValues:expectedValueInterval:completion:@
-queryIdentityWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+queryIdentityWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRNetworkCommissioningClusterQueryIdentityParams, Id NSArray, Id NSNumber, Ptr ()] ()
 queryIdentityWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "queryIdentityWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeMaxNetworksWithParams:@
-readAttributeMaxNetworksWithParamsSelector :: Selector
+readAttributeMaxNetworksWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxNetworksWithParamsSelector = mkSelector "readAttributeMaxNetworksWithParams:"
 
 -- | @Selector@ for @readAttributeNetworksWithParams:@
-readAttributeNetworksWithParamsSelector :: Selector
+readAttributeNetworksWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNetworksWithParamsSelector = mkSelector "readAttributeNetworksWithParams:"
 
 -- | @Selector@ for @readAttributeScanMaxTimeSecondsWithParams:@
-readAttributeScanMaxTimeSecondsWithParamsSelector :: Selector
+readAttributeScanMaxTimeSecondsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeScanMaxTimeSecondsWithParamsSelector = mkSelector "readAttributeScanMaxTimeSecondsWithParams:"
 
 -- | @Selector@ for @readAttributeConnectMaxTimeSecondsWithParams:@
-readAttributeConnectMaxTimeSecondsWithParamsSelector :: Selector
+readAttributeConnectMaxTimeSecondsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeConnectMaxTimeSecondsWithParamsSelector = mkSelector "readAttributeConnectMaxTimeSecondsWithParams:"
 
 -- | @Selector@ for @readAttributeInterfaceEnabledWithParams:@
-readAttributeInterfaceEnabledWithParamsSelector :: Selector
+readAttributeInterfaceEnabledWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeInterfaceEnabledWithParamsSelector = mkSelector "readAttributeInterfaceEnabledWithParams:"
 
 -- | @Selector@ for @writeAttributeInterfaceEnabledWithValue:expectedValueInterval:@
-writeAttributeInterfaceEnabledWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeInterfaceEnabledWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeInterfaceEnabledWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeInterfaceEnabledWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeInterfaceEnabledWithValue:expectedValueInterval:params:@
-writeAttributeInterfaceEnabledWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeInterfaceEnabledWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeInterfaceEnabledWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeInterfaceEnabledWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLastNetworkingStatusWithParams:@
-readAttributeLastNetworkingStatusWithParamsSelector :: Selector
+readAttributeLastNetworkingStatusWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLastNetworkingStatusWithParamsSelector = mkSelector "readAttributeLastNetworkingStatusWithParams:"
 
 -- | @Selector@ for @readAttributeLastNetworkIDWithParams:@
-readAttributeLastNetworkIDWithParamsSelector :: Selector
+readAttributeLastNetworkIDWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLastNetworkIDWithParamsSelector = mkSelector "readAttributeLastNetworkIDWithParams:"
 
 -- | @Selector@ for @readAttributeLastConnectErrorValueWithParams:@
-readAttributeLastConnectErrorValueWithParamsSelector :: Selector
+readAttributeLastConnectErrorValueWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLastConnectErrorValueWithParamsSelector = mkSelector "readAttributeLastConnectErrorValueWithParams:"
 
 -- | @Selector@ for @readAttributeSupportedWiFiBandsWithParams:@
-readAttributeSupportedWiFiBandsWithParamsSelector :: Selector
+readAttributeSupportedWiFiBandsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupportedWiFiBandsWithParamsSelector = mkSelector "readAttributeSupportedWiFiBandsWithParams:"
 
 -- | @Selector@ for @readAttributeSupportedThreadFeaturesWithParams:@
-readAttributeSupportedThreadFeaturesWithParamsSelector :: Selector
+readAttributeSupportedThreadFeaturesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupportedThreadFeaturesWithParamsSelector = mkSelector "readAttributeSupportedThreadFeaturesWithParams:"
 
 -- | @Selector@ for @readAttributeThreadVersionWithParams:@
-readAttributeThreadVersionWithParamsSelector :: Selector
+readAttributeThreadVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeThreadVersionWithParamsSelector = mkSelector "readAttributeThreadVersionWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterNetworkCommissioning)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterNetworkCommissioning)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpoint:queue:@
-initWithDevice_endpoint_queueSelector :: Selector
+initWithDevice_endpoint_queueSelector :: Selector '[Id MTRDevice, CUShort, Id NSObject] (Id MTRClusterNetworkCommissioning)
 initWithDevice_endpoint_queueSelector = mkSelector "initWithDevice:endpoint:queue:"
 
 -- | @Selector@ for @scanNetworksWithParams:expectedValues:expectedValueInterval:completionHandler:@
-scanNetworksWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+scanNetworksWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRNetworkCommissioningClusterScanNetworksParams, Id NSArray, Id NSNumber, Ptr ()] ()
 scanNetworksWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "scanNetworksWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @addOrUpdateWiFiNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
-addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRNetworkCommissioningClusterAddOrUpdateWiFiNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 addOrUpdateWiFiNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "addOrUpdateWiFiNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @addOrUpdateThreadNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
-addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 addOrUpdateThreadNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "addOrUpdateThreadNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @removeNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
-removeNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+removeNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRNetworkCommissioningClusterRemoveNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 removeNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "removeNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @connectNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
-connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRNetworkCommissioningClusterConnectNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 connectNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "connectNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @reorderNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:@
-reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector
+reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector :: Selector '[Id MTRNetworkCommissioningClusterReorderNetworkParams, Id NSArray, Id NSNumber, Ptr ()] ()
 reorderNetworkWithParams_expectedValues_expectedValueInterval_completionHandlerSelector = mkSelector "reorderNetworkWithParams:expectedValues:expectedValueInterval:completionHandler:"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterNetworkCommissioning)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

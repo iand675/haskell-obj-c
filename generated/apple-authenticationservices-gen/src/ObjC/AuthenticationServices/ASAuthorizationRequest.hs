@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AuthenticationServices.ASAuthorizationRequest
   , new
   , init_
   , provider
-  , newSelector
   , initSelector
+  , newSelector
   , providerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,33 +33,33 @@ new :: IO (Id ASAuthorizationRequest)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationRequest asAuthorizationRequest => asAuthorizationRequest -> IO (Id ASAuthorizationRequest)
-init_ asAuthorizationRequest  =
-    sendMsg asAuthorizationRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationRequest =
+  sendOwnedMessage asAuthorizationRequest initSelector
 
 -- | The provider object that is being used to service this request
 --
 -- ObjC selector: @- provider@
 provider :: IsASAuthorizationRequest asAuthorizationRequest => asAuthorizationRequest -> IO RawId
-provider asAuthorizationRequest  =
-    fmap (RawId . castPtr) $ sendMsg asAuthorizationRequest (mkSelector "provider") (retPtr retVoid) []
+provider asAuthorizationRequest =
+  sendMessage asAuthorizationRequest providerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @provider@
-providerSelector :: Selector
+providerSelector :: Selector '[] RawId
 providerSelector = mkSelector "provider"
 

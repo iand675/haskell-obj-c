@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.AudioVideoBridging.AVBMACAddress
   , setStringRepresentation
   , multicast
   , setMulticast
-  , initWithBytesSelector
   , bytesSelector
   , dataRepresentationSelector
-  , setDataRepresentationSelector
-  , stringRepresentationSelector
-  , setStringRepresentationSelector
+  , initWithBytesSelector
   , multicastSelector
+  , setDataRepresentationSelector
   , setMulticastSelector
+  , setStringRepresentationSelector
+  , stringRepresentationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithBytes:@
 initWithBytes :: IsAVBMACAddress avbmacAddress => avbmacAddress -> Const (Ptr CUChar) -> IO (Id AVBMACAddress)
-initWithBytes avbmacAddress  bytes =
-    sendMsg avbmacAddress (mkSelector "initWithBytes:") (retPtr retVoid) [argPtr (unConst bytes)] >>= ownedObject . castPtr
+initWithBytes avbmacAddress bytes =
+  sendOwnedMessage avbmacAddress initWithBytesSelector bytes
 
 -- | bytes
 --
@@ -64,8 +61,8 @@ initWithBytes avbmacAddress  bytes =
 --
 -- ObjC selector: @- bytes@
 bytes :: IsAVBMACAddress avbmacAddress => avbmacAddress -> IO RawId
-bytes avbmacAddress  =
-    fmap (RawId . castPtr) $ sendMsg avbmacAddress (mkSelector "bytes") (retPtr retVoid) []
+bytes avbmacAddress =
+  sendMessage avbmacAddress bytesSelector
 
 -- | dataRepresentation
 --
@@ -73,8 +70,8 @@ bytes avbmacAddress  =
 --
 -- ObjC selector: @- dataRepresentation@
 dataRepresentation :: IsAVBMACAddress avbmacAddress => avbmacAddress -> IO (Id NSData)
-dataRepresentation avbmacAddress  =
-    sendMsg avbmacAddress (mkSelector "dataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataRepresentation avbmacAddress =
+  sendMessage avbmacAddress dataRepresentationSelector
 
 -- | dataRepresentation
 --
@@ -82,9 +79,8 @@ dataRepresentation avbmacAddress  =
 --
 -- ObjC selector: @- setDataRepresentation:@
 setDataRepresentation :: (IsAVBMACAddress avbmacAddress, IsNSData value) => avbmacAddress -> value -> IO ()
-setDataRepresentation avbmacAddress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avbmacAddress (mkSelector "setDataRepresentation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDataRepresentation avbmacAddress value =
+  sendMessage avbmacAddress setDataRepresentationSelector (toNSData value)
 
 -- | stringRepresentation
 --
@@ -92,8 +88,8 @@ setDataRepresentation avbmacAddress  value =
 --
 -- ObjC selector: @- stringRepresentation@
 stringRepresentation :: IsAVBMACAddress avbmacAddress => avbmacAddress -> IO (Id NSString)
-stringRepresentation avbmacAddress  =
-    sendMsg avbmacAddress (mkSelector "stringRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+stringRepresentation avbmacAddress =
+  sendMessage avbmacAddress stringRepresentationSelector
 
 -- | stringRepresentation
 --
@@ -101,9 +97,8 @@ stringRepresentation avbmacAddress  =
 --
 -- ObjC selector: @- setStringRepresentation:@
 setStringRepresentation :: (IsAVBMACAddress avbmacAddress, IsNSString value) => avbmacAddress -> value -> IO ()
-setStringRepresentation avbmacAddress  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avbmacAddress (mkSelector "setStringRepresentation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStringRepresentation avbmacAddress value =
+  sendMessage avbmacAddress setStringRepresentationSelector (toNSString value)
 
 -- | multicast
 --
@@ -111,8 +106,8 @@ setStringRepresentation avbmacAddress  value =
 --
 -- ObjC selector: @- multicast@
 multicast :: IsAVBMACAddress avbmacAddress => avbmacAddress -> IO Bool
-multicast avbmacAddress  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avbmacAddress (mkSelector "multicast") retCULong []
+multicast avbmacAddress =
+  sendMessage avbmacAddress multicastSelector
 
 -- | multicast
 --
@@ -120,42 +115,42 @@ multicast avbmacAddress  =
 --
 -- ObjC selector: @- setMulticast:@
 setMulticast :: IsAVBMACAddress avbmacAddress => avbmacAddress -> Bool -> IO ()
-setMulticast avbmacAddress  value =
-    sendMsg avbmacAddress (mkSelector "setMulticast:") retVoid [argCULong (if value then 1 else 0)]
+setMulticast avbmacAddress value =
+  sendMessage avbmacAddress setMulticastSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBytes:@
-initWithBytesSelector :: Selector
+initWithBytesSelector :: Selector '[Const (Ptr CUChar)] (Id AVBMACAddress)
 initWithBytesSelector = mkSelector "initWithBytes:"
 
 -- | @Selector@ for @bytes@
-bytesSelector :: Selector
+bytesSelector :: Selector '[] RawId
 bytesSelector = mkSelector "bytes"
 
 -- | @Selector@ for @dataRepresentation@
-dataRepresentationSelector :: Selector
+dataRepresentationSelector :: Selector '[] (Id NSData)
 dataRepresentationSelector = mkSelector "dataRepresentation"
 
 -- | @Selector@ for @setDataRepresentation:@
-setDataRepresentationSelector :: Selector
+setDataRepresentationSelector :: Selector '[Id NSData] ()
 setDataRepresentationSelector = mkSelector "setDataRepresentation:"
 
 -- | @Selector@ for @stringRepresentation@
-stringRepresentationSelector :: Selector
+stringRepresentationSelector :: Selector '[] (Id NSString)
 stringRepresentationSelector = mkSelector "stringRepresentation"
 
 -- | @Selector@ for @setStringRepresentation:@
-setStringRepresentationSelector :: Selector
+setStringRepresentationSelector :: Selector '[Id NSString] ()
 setStringRepresentationSelector = mkSelector "setStringRepresentation:"
 
 -- | @Selector@ for @multicast@
-multicastSelector :: Selector
+multicastSelector :: Selector '[] Bool
 multicastSelector = mkSelector "multicast"
 
 -- | @Selector@ for @setMulticast:@
-setMulticastSelector :: Selector
+setMulticastSelector :: Selector '[Bool] ()
 setMulticastSelector = mkSelector "setMulticast:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.Matter.MTRMediaPlaybackClusterStateChangedEvent
   , setData
   , audioAdvanceUnmuted
   , setAudioAdvanceUnmuted
-  , currentStateSelector
-  , setCurrentStateSelector
-  , startTimeSelector
-  , setStartTimeSelector
-  , durationSelector
-  , setDurationSelector
-  , sampledPositionSelector
-  , setSampledPositionSelector
-  , playbackSpeedSelector
-  , setPlaybackSpeedSelector
-  , seekRangeEndSelector
-  , setSeekRangeEndSelector
-  , seekRangeStartSelector
-  , setSeekRangeStartSelector
-  , dataSelector
-  , setDataSelector
   , audioAdvanceUnmutedSelector
+  , currentStateSelector
+  , dataSelector
+  , durationSelector
+  , playbackSpeedSelector
+  , sampledPositionSelector
+  , seekRangeEndSelector
+  , seekRangeStartSelector
   , setAudioAdvanceUnmutedSelector
+  , setCurrentStateSelector
+  , setDataSelector
+  , setDurationSelector
+  , setPlaybackSpeedSelector
+  , setSampledPositionSelector
+  , setSeekRangeEndSelector
+  , setSeekRangeStartSelector
+  , setStartTimeSelector
+  , startTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,176 +60,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- currentState@
 currentState :: IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent => mtrMediaPlaybackClusterStateChangedEvent -> IO (Id NSNumber)
-currentState mtrMediaPlaybackClusterStateChangedEvent  =
-    sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "currentState") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentState mtrMediaPlaybackClusterStateChangedEvent =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent currentStateSelector
 
 -- | @- setCurrentState:@
 setCurrentState :: (IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent, IsNSNumber value) => mtrMediaPlaybackClusterStateChangedEvent -> value -> IO ()
-setCurrentState mtrMediaPlaybackClusterStateChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "setCurrentState:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentState mtrMediaPlaybackClusterStateChangedEvent value =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent setCurrentStateSelector (toNSNumber value)
 
 -- | @- startTime@
 startTime :: IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent => mtrMediaPlaybackClusterStateChangedEvent -> IO (Id NSNumber)
-startTime mtrMediaPlaybackClusterStateChangedEvent  =
-    sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "startTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+startTime mtrMediaPlaybackClusterStateChangedEvent =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent startTimeSelector
 
 -- | @- setStartTime:@
 setStartTime :: (IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent, IsNSNumber value) => mtrMediaPlaybackClusterStateChangedEvent -> value -> IO ()
-setStartTime mtrMediaPlaybackClusterStateChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "setStartTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartTime mtrMediaPlaybackClusterStateChangedEvent value =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent setStartTimeSelector (toNSNumber value)
 
 -- | @- duration@
 duration :: IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent => mtrMediaPlaybackClusterStateChangedEvent -> IO (Id NSNumber)
-duration mtrMediaPlaybackClusterStateChangedEvent  =
-    sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "duration") (retPtr retVoid) [] >>= retainedObject . castPtr
+duration mtrMediaPlaybackClusterStateChangedEvent =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent durationSelector
 
 -- | @- setDuration:@
 setDuration :: (IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent, IsNSNumber value) => mtrMediaPlaybackClusterStateChangedEvent -> value -> IO ()
-setDuration mtrMediaPlaybackClusterStateChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "setDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDuration mtrMediaPlaybackClusterStateChangedEvent value =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent setDurationSelector (toNSNumber value)
 
 -- | @- sampledPosition@
 sampledPosition :: IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent => mtrMediaPlaybackClusterStateChangedEvent -> IO (Id MTRMediaPlaybackClusterPlaybackPositionStruct)
-sampledPosition mtrMediaPlaybackClusterStateChangedEvent  =
-    sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "sampledPosition") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampledPosition mtrMediaPlaybackClusterStateChangedEvent =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent sampledPositionSelector
 
 -- | @- setSampledPosition:@
 setSampledPosition :: (IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent, IsMTRMediaPlaybackClusterPlaybackPositionStruct value) => mtrMediaPlaybackClusterStateChangedEvent -> value -> IO ()
-setSampledPosition mtrMediaPlaybackClusterStateChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "setSampledPosition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSampledPosition mtrMediaPlaybackClusterStateChangedEvent value =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent setSampledPositionSelector (toMTRMediaPlaybackClusterPlaybackPositionStruct value)
 
 -- | @- playbackSpeed@
 playbackSpeed :: IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent => mtrMediaPlaybackClusterStateChangedEvent -> IO (Id NSNumber)
-playbackSpeed mtrMediaPlaybackClusterStateChangedEvent  =
-    sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "playbackSpeed") (retPtr retVoid) [] >>= retainedObject . castPtr
+playbackSpeed mtrMediaPlaybackClusterStateChangedEvent =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent playbackSpeedSelector
 
 -- | @- setPlaybackSpeed:@
 setPlaybackSpeed :: (IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent, IsNSNumber value) => mtrMediaPlaybackClusterStateChangedEvent -> value -> IO ()
-setPlaybackSpeed mtrMediaPlaybackClusterStateChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "setPlaybackSpeed:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaybackSpeed mtrMediaPlaybackClusterStateChangedEvent value =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent setPlaybackSpeedSelector (toNSNumber value)
 
 -- | @- seekRangeEnd@
 seekRangeEnd :: IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent => mtrMediaPlaybackClusterStateChangedEvent -> IO (Id NSNumber)
-seekRangeEnd mtrMediaPlaybackClusterStateChangedEvent  =
-    sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "seekRangeEnd") (retPtr retVoid) [] >>= retainedObject . castPtr
+seekRangeEnd mtrMediaPlaybackClusterStateChangedEvent =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent seekRangeEndSelector
 
 -- | @- setSeekRangeEnd:@
 setSeekRangeEnd :: (IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent, IsNSNumber value) => mtrMediaPlaybackClusterStateChangedEvent -> value -> IO ()
-setSeekRangeEnd mtrMediaPlaybackClusterStateChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "setSeekRangeEnd:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSeekRangeEnd mtrMediaPlaybackClusterStateChangedEvent value =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent setSeekRangeEndSelector (toNSNumber value)
 
 -- | @- seekRangeStart@
 seekRangeStart :: IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent => mtrMediaPlaybackClusterStateChangedEvent -> IO (Id NSNumber)
-seekRangeStart mtrMediaPlaybackClusterStateChangedEvent  =
-    sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "seekRangeStart") (retPtr retVoid) [] >>= retainedObject . castPtr
+seekRangeStart mtrMediaPlaybackClusterStateChangedEvent =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent seekRangeStartSelector
 
 -- | @- setSeekRangeStart:@
 setSeekRangeStart :: (IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent, IsNSNumber value) => mtrMediaPlaybackClusterStateChangedEvent -> value -> IO ()
-setSeekRangeStart mtrMediaPlaybackClusterStateChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "setSeekRangeStart:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSeekRangeStart mtrMediaPlaybackClusterStateChangedEvent value =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent setSeekRangeStartSelector (toNSNumber value)
 
 -- | @- data@
 data_ :: IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent => mtrMediaPlaybackClusterStateChangedEvent -> IO (Id NSData)
-data_ mtrMediaPlaybackClusterStateChangedEvent  =
-    sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrMediaPlaybackClusterStateChangedEvent =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent dataSelector
 
 -- | @- setData:@
 setData :: (IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent, IsNSData value) => mtrMediaPlaybackClusterStateChangedEvent -> value -> IO ()
-setData mtrMediaPlaybackClusterStateChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mtrMediaPlaybackClusterStateChangedEvent value =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent setDataSelector (toNSData value)
 
 -- | @- audioAdvanceUnmuted@
 audioAdvanceUnmuted :: IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent => mtrMediaPlaybackClusterStateChangedEvent -> IO (Id NSNumber)
-audioAdvanceUnmuted mtrMediaPlaybackClusterStateChangedEvent  =
-    sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "audioAdvanceUnmuted") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioAdvanceUnmuted mtrMediaPlaybackClusterStateChangedEvent =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent audioAdvanceUnmutedSelector
 
 -- | @- setAudioAdvanceUnmuted:@
 setAudioAdvanceUnmuted :: (IsMTRMediaPlaybackClusterStateChangedEvent mtrMediaPlaybackClusterStateChangedEvent, IsNSNumber value) => mtrMediaPlaybackClusterStateChangedEvent -> value -> IO ()
-setAudioAdvanceUnmuted mtrMediaPlaybackClusterStateChangedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMediaPlaybackClusterStateChangedEvent (mkSelector "setAudioAdvanceUnmuted:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioAdvanceUnmuted mtrMediaPlaybackClusterStateChangedEvent value =
+  sendMessage mtrMediaPlaybackClusterStateChangedEvent setAudioAdvanceUnmutedSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @currentState@
-currentStateSelector :: Selector
+currentStateSelector :: Selector '[] (Id NSNumber)
 currentStateSelector = mkSelector "currentState"
 
 -- | @Selector@ for @setCurrentState:@
-setCurrentStateSelector :: Selector
+setCurrentStateSelector :: Selector '[Id NSNumber] ()
 setCurrentStateSelector = mkSelector "setCurrentState:"
 
 -- | @Selector@ for @startTime@
-startTimeSelector :: Selector
+startTimeSelector :: Selector '[] (Id NSNumber)
 startTimeSelector = mkSelector "startTime"
 
 -- | @Selector@ for @setStartTime:@
-setStartTimeSelector :: Selector
+setStartTimeSelector :: Selector '[Id NSNumber] ()
 setStartTimeSelector = mkSelector "setStartTime:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] (Id NSNumber)
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[Id NSNumber] ()
 setDurationSelector = mkSelector "setDuration:"
 
 -- | @Selector@ for @sampledPosition@
-sampledPositionSelector :: Selector
+sampledPositionSelector :: Selector '[] (Id MTRMediaPlaybackClusterPlaybackPositionStruct)
 sampledPositionSelector = mkSelector "sampledPosition"
 
 -- | @Selector@ for @setSampledPosition:@
-setSampledPositionSelector :: Selector
+setSampledPositionSelector :: Selector '[Id MTRMediaPlaybackClusterPlaybackPositionStruct] ()
 setSampledPositionSelector = mkSelector "setSampledPosition:"
 
 -- | @Selector@ for @playbackSpeed@
-playbackSpeedSelector :: Selector
+playbackSpeedSelector :: Selector '[] (Id NSNumber)
 playbackSpeedSelector = mkSelector "playbackSpeed"
 
 -- | @Selector@ for @setPlaybackSpeed:@
-setPlaybackSpeedSelector :: Selector
+setPlaybackSpeedSelector :: Selector '[Id NSNumber] ()
 setPlaybackSpeedSelector = mkSelector "setPlaybackSpeed:"
 
 -- | @Selector@ for @seekRangeEnd@
-seekRangeEndSelector :: Selector
+seekRangeEndSelector :: Selector '[] (Id NSNumber)
 seekRangeEndSelector = mkSelector "seekRangeEnd"
 
 -- | @Selector@ for @setSeekRangeEnd:@
-setSeekRangeEndSelector :: Selector
+setSeekRangeEndSelector :: Selector '[Id NSNumber] ()
 setSeekRangeEndSelector = mkSelector "setSeekRangeEnd:"
 
 -- | @Selector@ for @seekRangeStart@
-seekRangeStartSelector :: Selector
+seekRangeStartSelector :: Selector '[] (Id NSNumber)
 seekRangeStartSelector = mkSelector "seekRangeStart"
 
 -- | @Selector@ for @setSeekRangeStart:@
-setSeekRangeStartSelector :: Selector
+setSeekRangeStartSelector :: Selector '[Id NSNumber] ()
 setSeekRangeStartSelector = mkSelector "setSeekRangeStart:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSData] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @audioAdvanceUnmuted@
-audioAdvanceUnmutedSelector :: Selector
+audioAdvanceUnmutedSelector :: Selector '[] (Id NSNumber)
 audioAdvanceUnmutedSelector = mkSelector "audioAdvanceUnmuted"
 
 -- | @Selector@ for @setAudioAdvanceUnmuted:@
-setAudioAdvanceUnmutedSelector :: Selector
+setAudioAdvanceUnmutedSelector :: Selector '[Id NSNumber] ()
 setAudioAdvanceUnmutedSelector = mkSelector "setAudioAdvanceUnmuted:"
 

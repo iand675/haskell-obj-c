@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Metal.MTL4RenderPipelineColorAttachmentDescriptorArray
   , setObject_atIndexedSubscript
   , reset
   , objectAtIndexedSubscriptSelector
-  , setObject_atIndexedSubscriptSelector
   , resetSelector
+  , setObject_atIndexedSubscriptSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- objectAtIndexedSubscript:@
 objectAtIndexedSubscript :: IsMTL4RenderPipelineColorAttachmentDescriptorArray mtL4RenderPipelineColorAttachmentDescriptorArray => mtL4RenderPipelineColorAttachmentDescriptorArray -> CULong -> IO (Id MTL4RenderPipelineColorAttachmentDescriptor)
-objectAtIndexedSubscript mtL4RenderPipelineColorAttachmentDescriptorArray  attachmentIndex =
-    sendMsg mtL4RenderPipelineColorAttachmentDescriptorArray (mkSelector "objectAtIndexedSubscript:") (retPtr retVoid) [argCULong attachmentIndex] >>= retainedObject . castPtr
+objectAtIndexedSubscript mtL4RenderPipelineColorAttachmentDescriptorArray attachmentIndex =
+  sendMessage mtL4RenderPipelineColorAttachmentDescriptorArray objectAtIndexedSubscriptSelector attachmentIndex
 
 -- | Sets an attachment at an index.
 --
@@ -52,30 +49,29 @@ objectAtIndexedSubscript mtL4RenderPipelineColorAttachmentDescriptorArray  attac
 --
 -- ObjC selector: @- setObject:atIndexedSubscript:@
 setObject_atIndexedSubscript :: (IsMTL4RenderPipelineColorAttachmentDescriptorArray mtL4RenderPipelineColorAttachmentDescriptorArray, IsMTL4RenderPipelineColorAttachmentDescriptor attachment) => mtL4RenderPipelineColorAttachmentDescriptorArray -> attachment -> CULong -> IO ()
-setObject_atIndexedSubscript mtL4RenderPipelineColorAttachmentDescriptorArray  attachment attachmentIndex =
-  withObjCPtr attachment $ \raw_attachment ->
-      sendMsg mtL4RenderPipelineColorAttachmentDescriptorArray (mkSelector "setObject:atIndexedSubscript:") retVoid [argPtr (castPtr raw_attachment :: Ptr ()), argCULong attachmentIndex]
+setObject_atIndexedSubscript mtL4RenderPipelineColorAttachmentDescriptorArray attachment attachmentIndex =
+  sendMessage mtL4RenderPipelineColorAttachmentDescriptorArray setObject_atIndexedSubscriptSelector (toMTL4RenderPipelineColorAttachmentDescriptor attachment) attachmentIndex
 
 -- | Resets the elements of the descriptor array
 --
 -- ObjC selector: @- reset@
 reset :: IsMTL4RenderPipelineColorAttachmentDescriptorArray mtL4RenderPipelineColorAttachmentDescriptorArray => mtL4RenderPipelineColorAttachmentDescriptorArray -> IO ()
-reset mtL4RenderPipelineColorAttachmentDescriptorArray  =
-    sendMsg mtL4RenderPipelineColorAttachmentDescriptorArray (mkSelector "reset") retVoid []
+reset mtL4RenderPipelineColorAttachmentDescriptorArray =
+  sendMessage mtL4RenderPipelineColorAttachmentDescriptorArray resetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @objectAtIndexedSubscript:@
-objectAtIndexedSubscriptSelector :: Selector
+objectAtIndexedSubscriptSelector :: Selector '[CULong] (Id MTL4RenderPipelineColorAttachmentDescriptor)
 objectAtIndexedSubscriptSelector = mkSelector "objectAtIndexedSubscript:"
 
 -- | @Selector@ for @setObject:atIndexedSubscript:@
-setObject_atIndexedSubscriptSelector :: Selector
+setObject_atIndexedSubscriptSelector :: Selector '[Id MTL4RenderPipelineColorAttachmentDescriptor, CULong] ()
 setObject_atIndexedSubscriptSelector = mkSelector "setObject:atIndexedSubscript:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 

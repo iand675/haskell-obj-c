@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,26 +40,22 @@ module ObjC.PushKit.PKPushRegistry
   , setDelegate
   , desiredPushTypes
   , setDesiredPushTypes
-  , pushTokenForTypeSelector
-  , initWithQueueSelector
-  , initSelector
   , delegateSelector
-  , setDelegateSelector
   , desiredPushTypesSelector
+  , initSelector
+  , initWithQueueSelector
+  , pushTokenForTypeSelector
+  , setDelegateSelector
   , setDesiredPushTypesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,9 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- pushTokenForType:@
 pushTokenForType :: (IsPKPushRegistry pkPushRegistry, IsNSString type_) => pkPushRegistry -> type_ -> IO (Id NSData)
-pushTokenForType pkPushRegistry  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg pkPushRegistry (mkSelector "pushTokenForType:") (retPtr retVoid) [argPtr (castPtr raw_type_ :: Ptr ())] >>= retainedObject . castPtr
+pushTokenForType pkPushRegistry type_ =
+  sendMessage pkPushRegistry pushTokenForTypeSelector (toNSString type_)
 
 -- | Creates a push registry with the specified dispatch queue.
 --
@@ -87,9 +83,8 @@ pushTokenForType pkPushRegistry  type_ =
 --
 -- ObjC selector: @- initWithQueue:@
 initWithQueue :: (IsPKPushRegistry pkPushRegistry, IsNSObject queue) => pkPushRegistry -> queue -> IO (Id PKPushRegistry)
-initWithQueue pkPushRegistry  queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg pkPushRegistry (mkSelector "initWithQueue:") (retPtr retVoid) [argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithQueue pkPushRegistry queue =
+  sendOwnedMessage pkPushRegistry initWithQueueSelector (toNSObject queue)
 
 -- | init
 --
@@ -97,8 +92,8 @@ initWithQueue pkPushRegistry  queue =
 --
 -- ObjC selector: @- init@
 init_ :: IsPKPushRegistry pkPushRegistry => pkPushRegistry -> IO (Id PKPushRegistry)
-init_ pkPushRegistry  =
-    sendMsg pkPushRegistry (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkPushRegistry =
+  sendOwnedMessage pkPushRegistry initSelector
 
 -- | The delegate object that receives notifications coming from the push registry object.
 --
@@ -108,8 +103,8 @@ init_ pkPushRegistry  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsPKPushRegistry pkPushRegistry => pkPushRegistry -> IO RawId
-delegate pkPushRegistry  =
-    fmap (RawId . castPtr) $ sendMsg pkPushRegistry (mkSelector "delegate") (retPtr retVoid) []
+delegate pkPushRegistry =
+  sendMessage pkPushRegistry delegateSelector
 
 -- | The delegate object that receives notifications coming from the push registry object.
 --
@@ -119,8 +114,8 @@ delegate pkPushRegistry  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsPKPushRegistry pkPushRegistry => pkPushRegistry -> RawId -> IO ()
-setDelegate pkPushRegistry  value =
-    sendMsg pkPushRegistry (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate pkPushRegistry value =
+  sendMessage pkPushRegistry setDelegateSelector value
 
 -- | Registers the push types for this push registry object.
 --
@@ -130,8 +125,8 @@ setDelegate pkPushRegistry  value =
 --
 -- ObjC selector: @- desiredPushTypes@
 desiredPushTypes :: IsPKPushRegistry pkPushRegistry => pkPushRegistry -> IO (Id NSSet)
-desiredPushTypes pkPushRegistry  =
-    sendMsg pkPushRegistry (mkSelector "desiredPushTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+desiredPushTypes pkPushRegistry =
+  sendMessage pkPushRegistry desiredPushTypesSelector
 
 -- | Registers the push types for this push registry object.
 --
@@ -141,39 +136,38 @@ desiredPushTypes pkPushRegistry  =
 --
 -- ObjC selector: @- setDesiredPushTypes:@
 setDesiredPushTypes :: (IsPKPushRegistry pkPushRegistry, IsNSSet value) => pkPushRegistry -> value -> IO ()
-setDesiredPushTypes pkPushRegistry  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPushRegistry (mkSelector "setDesiredPushTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDesiredPushTypes pkPushRegistry value =
+  sendMessage pkPushRegistry setDesiredPushTypesSelector (toNSSet value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pushTokenForType:@
-pushTokenForTypeSelector :: Selector
+pushTokenForTypeSelector :: Selector '[Id NSString] (Id NSData)
 pushTokenForTypeSelector = mkSelector "pushTokenForType:"
 
 -- | @Selector@ for @initWithQueue:@
-initWithQueueSelector :: Selector
+initWithQueueSelector :: Selector '[Id NSObject] (Id PKPushRegistry)
 initWithQueueSelector = mkSelector "initWithQueue:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKPushRegistry)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @desiredPushTypes@
-desiredPushTypesSelector :: Selector
+desiredPushTypesSelector :: Selector '[] (Id NSSet)
 desiredPushTypesSelector = mkSelector "desiredPushTypes"
 
 -- | @Selector@ for @setDesiredPushTypes:@
-setDesiredPushTypesSelector :: Selector
+setDesiredPushTypesSelector :: Selector '[Id NSSet] ()
 setDesiredPushTypesSelector = mkSelector "setDesiredPushTypes:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -66,65 +67,65 @@ module ObjC.PassKit.PKPaymentRequest
   , setDeferredPaymentRequest
   , applePayLaterAvailability
   , setApplePayLaterAvailability
-  , availableNetworksSelector
-  , paymentContactInvalidErrorWithContactField_localizedDescriptionSelector
-  , paymentShippingAddressInvalidErrorWithKey_localizedDescriptionSelector
-  , paymentBillingAddressInvalidErrorWithKey_localizedDescriptionSelector
-  , paymentShippingAddressUnserviceableErrorWithLocalizedDescriptionSelector
-  , paymentCouponCodeInvalidErrorWithLocalizedDescriptionSelector
-  , paymentCouponCodeExpiredErrorWithLocalizedDescriptionSelector
-  , merchantIdentifierSelector
-  , setMerchantIdentifierSelector
-  , attributionIdentifierSelector
-  , setAttributionIdentifierSelector
-  , countryCodeSelector
-  , setCountryCodeSelector
-  , supportedNetworksSelector
-  , setSupportedNetworksSelector
-  , merchantCapabilitiesSelector
-  , setMerchantCapabilitiesSelector
-  , supportsCouponCodeSelector
-  , setSupportsCouponCodeSelector
-  , couponCodeSelector
-  , setCouponCodeSelector
-  , merchantCategoryCodeSelector
-  , setMerchantCategoryCodeSelector
-  , paymentSummaryItemsSelector
-  , setPaymentSummaryItemsSelector
-  , currencyCodeSelector
-  , setCurrencyCodeSelector
-  , requiredBillingContactFieldsSelector
-  , setRequiredBillingContactFieldsSelector
-  , requiredBillingAddressFieldsSelector
-  , setRequiredBillingAddressFieldsSelector
-  , billingContactSelector
-  , setBillingContactSelector
-  , requiredShippingContactFieldsSelector
-  , setRequiredShippingContactFieldsSelector
-  , requiredShippingAddressFieldsSelector
-  , setRequiredShippingAddressFieldsSelector
-  , shippingContactSelector
-  , setShippingContactSelector
-  , shippingMethodsSelector
-  , setShippingMethodsSelector
-  , shippingTypeSelector
-  , setShippingTypeSelector
-  , shippingContactEditingModeSelector
-  , setShippingContactEditingModeSelector
-  , applicationDataSelector
-  , setApplicationDataSelector
-  , supportedCountriesSelector
-  , setSupportedCountriesSelector
-  , multiTokenContextsSelector
-  , setMultiTokenContextsSelector
-  , recurringPaymentRequestSelector
-  , setRecurringPaymentRequestSelector
-  , automaticReloadPaymentRequestSelector
-  , setAutomaticReloadPaymentRequestSelector
-  , deferredPaymentRequestSelector
-  , setDeferredPaymentRequestSelector
   , applePayLaterAvailabilitySelector
+  , applicationDataSelector
+  , attributionIdentifierSelector
+  , automaticReloadPaymentRequestSelector
+  , availableNetworksSelector
+  , billingContactSelector
+  , countryCodeSelector
+  , couponCodeSelector
+  , currencyCodeSelector
+  , deferredPaymentRequestSelector
+  , merchantCapabilitiesSelector
+  , merchantCategoryCodeSelector
+  , merchantIdentifierSelector
+  , multiTokenContextsSelector
+  , paymentBillingAddressInvalidErrorWithKey_localizedDescriptionSelector
+  , paymentContactInvalidErrorWithContactField_localizedDescriptionSelector
+  , paymentCouponCodeExpiredErrorWithLocalizedDescriptionSelector
+  , paymentCouponCodeInvalidErrorWithLocalizedDescriptionSelector
+  , paymentShippingAddressInvalidErrorWithKey_localizedDescriptionSelector
+  , paymentShippingAddressUnserviceableErrorWithLocalizedDescriptionSelector
+  , paymentSummaryItemsSelector
+  , recurringPaymentRequestSelector
+  , requiredBillingAddressFieldsSelector
+  , requiredBillingContactFieldsSelector
+  , requiredShippingAddressFieldsSelector
+  , requiredShippingContactFieldsSelector
   , setApplePayLaterAvailabilitySelector
+  , setApplicationDataSelector
+  , setAttributionIdentifierSelector
+  , setAutomaticReloadPaymentRequestSelector
+  , setBillingContactSelector
+  , setCountryCodeSelector
+  , setCouponCodeSelector
+  , setCurrencyCodeSelector
+  , setDeferredPaymentRequestSelector
+  , setMerchantCapabilitiesSelector
+  , setMerchantCategoryCodeSelector
+  , setMerchantIdentifierSelector
+  , setMultiTokenContextsSelector
+  , setPaymentSummaryItemsSelector
+  , setRecurringPaymentRequestSelector
+  , setRequiredBillingAddressFieldsSelector
+  , setRequiredBillingContactFieldsSelector
+  , setRequiredShippingAddressFieldsSelector
+  , setRequiredShippingContactFieldsSelector
+  , setShippingContactEditingModeSelector
+  , setShippingContactSelector
+  , setShippingMethodsSelector
+  , setShippingTypeSelector
+  , setSupportedCountriesSelector
+  , setSupportedNetworksSelector
+  , setSupportsCouponCodeSelector
+  , shippingContactEditingModeSelector
+  , shippingContactSelector
+  , shippingMethodsSelector
+  , shippingTypeSelector
+  , supportedCountriesSelector
+  , supportedNetworksSelector
+  , supportsCouponCodeSelector
 
   -- * Enum types
   , PKAddressField(PKAddressField)
@@ -156,15 +157,11 @@ module ObjC.PassKit.PKPaymentRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -177,574 +174,547 @@ availableNetworks :: IO (Id NSArray)
 availableNetworks  =
   do
     cls' <- getRequiredClass "PKPaymentRequest"
-    sendClassMsg cls' (mkSelector "availableNetworks") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' availableNetworksSelector
 
 -- | @+ paymentContactInvalidErrorWithContactField:localizedDescription:@
 paymentContactInvalidErrorWithContactField_localizedDescription :: (IsNSString field, IsNSString localizedDescription) => field -> localizedDescription -> IO (Id NSError)
 paymentContactInvalidErrorWithContactField_localizedDescription field localizedDescription =
   do
     cls' <- getRequiredClass "PKPaymentRequest"
-    withObjCPtr field $ \raw_field ->
-      withObjCPtr localizedDescription $ \raw_localizedDescription ->
-        sendClassMsg cls' (mkSelector "paymentContactInvalidErrorWithContactField:localizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_field :: Ptr ()), argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' paymentContactInvalidErrorWithContactField_localizedDescriptionSelector (toNSString field) (toNSString localizedDescription)
 
 -- | @+ paymentShippingAddressInvalidErrorWithKey:localizedDescription:@
 paymentShippingAddressInvalidErrorWithKey_localizedDescription :: (IsNSString postalAddressKey, IsNSString localizedDescription) => postalAddressKey -> localizedDescription -> IO (Id NSError)
 paymentShippingAddressInvalidErrorWithKey_localizedDescription postalAddressKey localizedDescription =
   do
     cls' <- getRequiredClass "PKPaymentRequest"
-    withObjCPtr postalAddressKey $ \raw_postalAddressKey ->
-      withObjCPtr localizedDescription $ \raw_localizedDescription ->
-        sendClassMsg cls' (mkSelector "paymentShippingAddressInvalidErrorWithKey:localizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_postalAddressKey :: Ptr ()), argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' paymentShippingAddressInvalidErrorWithKey_localizedDescriptionSelector (toNSString postalAddressKey) (toNSString localizedDescription)
 
 -- | @+ paymentBillingAddressInvalidErrorWithKey:localizedDescription:@
 paymentBillingAddressInvalidErrorWithKey_localizedDescription :: (IsNSString postalAddressKey, IsNSString localizedDescription) => postalAddressKey -> localizedDescription -> IO (Id NSError)
 paymentBillingAddressInvalidErrorWithKey_localizedDescription postalAddressKey localizedDescription =
   do
     cls' <- getRequiredClass "PKPaymentRequest"
-    withObjCPtr postalAddressKey $ \raw_postalAddressKey ->
-      withObjCPtr localizedDescription $ \raw_localizedDescription ->
-        sendClassMsg cls' (mkSelector "paymentBillingAddressInvalidErrorWithKey:localizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_postalAddressKey :: Ptr ()), argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' paymentBillingAddressInvalidErrorWithKey_localizedDescriptionSelector (toNSString postalAddressKey) (toNSString localizedDescription)
 
 -- | @+ paymentShippingAddressUnserviceableErrorWithLocalizedDescription:@
 paymentShippingAddressUnserviceableErrorWithLocalizedDescription :: IsNSString localizedDescription => localizedDescription -> IO (Id NSError)
 paymentShippingAddressUnserviceableErrorWithLocalizedDescription localizedDescription =
   do
     cls' <- getRequiredClass "PKPaymentRequest"
-    withObjCPtr localizedDescription $ \raw_localizedDescription ->
-      sendClassMsg cls' (mkSelector "paymentShippingAddressUnserviceableErrorWithLocalizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' paymentShippingAddressUnserviceableErrorWithLocalizedDescriptionSelector (toNSString localizedDescription)
 
 -- | @+ paymentCouponCodeInvalidErrorWithLocalizedDescription:@
 paymentCouponCodeInvalidErrorWithLocalizedDescription :: IsNSString localizedDescription => localizedDescription -> IO (Id NSError)
 paymentCouponCodeInvalidErrorWithLocalizedDescription localizedDescription =
   do
     cls' <- getRequiredClass "PKPaymentRequest"
-    withObjCPtr localizedDescription $ \raw_localizedDescription ->
-      sendClassMsg cls' (mkSelector "paymentCouponCodeInvalidErrorWithLocalizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' paymentCouponCodeInvalidErrorWithLocalizedDescriptionSelector (toNSString localizedDescription)
 
 -- | @+ paymentCouponCodeExpiredErrorWithLocalizedDescription:@
 paymentCouponCodeExpiredErrorWithLocalizedDescription :: IsNSString localizedDescription => localizedDescription -> IO (Id NSError)
 paymentCouponCodeExpiredErrorWithLocalizedDescription localizedDescription =
   do
     cls' <- getRequiredClass "PKPaymentRequest"
-    withObjCPtr localizedDescription $ \raw_localizedDescription ->
-      sendClassMsg cls' (mkSelector "paymentCouponCodeExpiredErrorWithLocalizedDescription:") (retPtr retVoid) [argPtr (castPtr raw_localizedDescription :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' paymentCouponCodeExpiredErrorWithLocalizedDescriptionSelector (toNSString localizedDescription)
 
 -- | @- merchantIdentifier@
 merchantIdentifier :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSString)
-merchantIdentifier pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "merchantIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+merchantIdentifier pkPaymentRequest =
+  sendMessage pkPaymentRequest merchantIdentifierSelector
 
 -- | @- setMerchantIdentifier:@
 setMerchantIdentifier :: (IsPKPaymentRequest pkPaymentRequest, IsNSString value) => pkPaymentRequest -> value -> IO ()
-setMerchantIdentifier pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setMerchantIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMerchantIdentifier pkPaymentRequest value =
+  sendMessage pkPaymentRequest setMerchantIdentifierSelector (toNSString value)
 
 -- | @- attributionIdentifier@
 attributionIdentifier :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSString)
-attributionIdentifier pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "attributionIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributionIdentifier pkPaymentRequest =
+  sendMessage pkPaymentRequest attributionIdentifierSelector
 
 -- | @- setAttributionIdentifier:@
 setAttributionIdentifier :: (IsPKPaymentRequest pkPaymentRequest, IsNSString value) => pkPaymentRequest -> value -> IO ()
-setAttributionIdentifier pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setAttributionIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributionIdentifier pkPaymentRequest value =
+  sendMessage pkPaymentRequest setAttributionIdentifierSelector (toNSString value)
 
 -- | @- countryCode@
 countryCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSString)
-countryCode pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "countryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+countryCode pkPaymentRequest =
+  sendMessage pkPaymentRequest countryCodeSelector
 
 -- | @- setCountryCode:@
 setCountryCode :: (IsPKPaymentRequest pkPaymentRequest, IsNSString value) => pkPaymentRequest -> value -> IO ()
-setCountryCode pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setCountryCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCountryCode pkPaymentRequest value =
+  sendMessage pkPaymentRequest setCountryCodeSelector (toNSString value)
 
 -- | @- supportedNetworks@
 supportedNetworks :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSArray)
-supportedNetworks pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "supportedNetworks") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedNetworks pkPaymentRequest =
+  sendMessage pkPaymentRequest supportedNetworksSelector
 
 -- | @- setSupportedNetworks:@
 setSupportedNetworks :: (IsPKPaymentRequest pkPaymentRequest, IsNSArray value) => pkPaymentRequest -> value -> IO ()
-setSupportedNetworks pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setSupportedNetworks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedNetworks pkPaymentRequest value =
+  sendMessage pkPaymentRequest setSupportedNetworksSelector (toNSArray value)
 
 -- | @- merchantCapabilities@
 merchantCapabilities :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO PKMerchantCapability
-merchantCapabilities pkPaymentRequest  =
-    fmap (coerce :: CULong -> PKMerchantCapability) $ sendMsg pkPaymentRequest (mkSelector "merchantCapabilities") retCULong []
+merchantCapabilities pkPaymentRequest =
+  sendMessage pkPaymentRequest merchantCapabilitiesSelector
 
 -- | @- setMerchantCapabilities:@
 setMerchantCapabilities :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> PKMerchantCapability -> IO ()
-setMerchantCapabilities pkPaymentRequest  value =
-    sendMsg pkPaymentRequest (mkSelector "setMerchantCapabilities:") retVoid [argCULong (coerce value)]
+setMerchantCapabilities pkPaymentRequest value =
+  sendMessage pkPaymentRequest setMerchantCapabilitiesSelector value
 
 -- | @- supportsCouponCode@
 supportsCouponCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO Bool
-supportsCouponCode pkPaymentRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkPaymentRequest (mkSelector "supportsCouponCode") retCULong []
+supportsCouponCode pkPaymentRequest =
+  sendMessage pkPaymentRequest supportsCouponCodeSelector
 
 -- | @- setSupportsCouponCode:@
 setSupportsCouponCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> Bool -> IO ()
-setSupportsCouponCode pkPaymentRequest  value =
-    sendMsg pkPaymentRequest (mkSelector "setSupportsCouponCode:") retVoid [argCULong (if value then 1 else 0)]
+setSupportsCouponCode pkPaymentRequest value =
+  sendMessage pkPaymentRequest setSupportsCouponCodeSelector value
 
 -- | @- couponCode@
 couponCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSString)
-couponCode pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "couponCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+couponCode pkPaymentRequest =
+  sendMessage pkPaymentRequest couponCodeSelector
 
 -- | @- setCouponCode:@
 setCouponCode :: (IsPKPaymentRequest pkPaymentRequest, IsNSString value) => pkPaymentRequest -> value -> IO ()
-setCouponCode pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setCouponCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCouponCode pkPaymentRequest value =
+  sendMessage pkPaymentRequest setCouponCodeSelector (toNSString value)
 
 -- | @- merchantCategoryCode@
 merchantCategoryCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO CShort
-merchantCategoryCode pkPaymentRequest  =
-    fmap fromIntegral $ sendMsg pkPaymentRequest (mkSelector "merchantCategoryCode") retCInt []
+merchantCategoryCode pkPaymentRequest =
+  sendMessage pkPaymentRequest merchantCategoryCodeSelector
 
 -- | @- setMerchantCategoryCode:@
 setMerchantCategoryCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> CShort -> IO ()
-setMerchantCategoryCode pkPaymentRequest  value =
-    sendMsg pkPaymentRequest (mkSelector "setMerchantCategoryCode:") retVoid [argCInt (fromIntegral value)]
+setMerchantCategoryCode pkPaymentRequest value =
+  sendMessage pkPaymentRequest setMerchantCategoryCodeSelector value
 
 -- | @- paymentSummaryItems@
 paymentSummaryItems :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSArray)
-paymentSummaryItems pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "paymentSummaryItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentSummaryItems pkPaymentRequest =
+  sendMessage pkPaymentRequest paymentSummaryItemsSelector
 
 -- | @- setPaymentSummaryItems:@
 setPaymentSummaryItems :: (IsPKPaymentRequest pkPaymentRequest, IsNSArray value) => pkPaymentRequest -> value -> IO ()
-setPaymentSummaryItems pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setPaymentSummaryItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaymentSummaryItems pkPaymentRequest value =
+  sendMessage pkPaymentRequest setPaymentSummaryItemsSelector (toNSArray value)
 
 -- | @- currencyCode@
 currencyCode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSString)
-currencyCode pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "currencyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyCode pkPaymentRequest =
+  sendMessage pkPaymentRequest currencyCodeSelector
 
 -- | @- setCurrencyCode:@
 setCurrencyCode :: (IsPKPaymentRequest pkPaymentRequest, IsNSString value) => pkPaymentRequest -> value -> IO ()
-setCurrencyCode pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setCurrencyCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrencyCode pkPaymentRequest value =
+  sendMessage pkPaymentRequest setCurrencyCodeSelector (toNSString value)
 
 -- | @- requiredBillingContactFields@
 requiredBillingContactFields :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSSet)
-requiredBillingContactFields pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "requiredBillingContactFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+requiredBillingContactFields pkPaymentRequest =
+  sendMessage pkPaymentRequest requiredBillingContactFieldsSelector
 
 -- | @- setRequiredBillingContactFields:@
 setRequiredBillingContactFields :: (IsPKPaymentRequest pkPaymentRequest, IsNSSet value) => pkPaymentRequest -> value -> IO ()
-setRequiredBillingContactFields pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setRequiredBillingContactFields:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequiredBillingContactFields pkPaymentRequest value =
+  sendMessage pkPaymentRequest setRequiredBillingContactFieldsSelector (toNSSet value)
 
 -- | @- requiredBillingAddressFields@
 requiredBillingAddressFields :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO PKAddressField
-requiredBillingAddressFields pkPaymentRequest  =
-    fmap (coerce :: CULong -> PKAddressField) $ sendMsg pkPaymentRequest (mkSelector "requiredBillingAddressFields") retCULong []
+requiredBillingAddressFields pkPaymentRequest =
+  sendMessage pkPaymentRequest requiredBillingAddressFieldsSelector
 
 -- | @- setRequiredBillingAddressFields:@
 setRequiredBillingAddressFields :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> PKAddressField -> IO ()
-setRequiredBillingAddressFields pkPaymentRequest  value =
-    sendMsg pkPaymentRequest (mkSelector "setRequiredBillingAddressFields:") retVoid [argCULong (coerce value)]
+setRequiredBillingAddressFields pkPaymentRequest value =
+  sendMessage pkPaymentRequest setRequiredBillingAddressFieldsSelector value
 
 -- | @- billingContact@
 billingContact :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id PKContact)
-billingContact pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "billingContact") (retPtr retVoid) [] >>= retainedObject . castPtr
+billingContact pkPaymentRequest =
+  sendMessage pkPaymentRequest billingContactSelector
 
 -- | @- setBillingContact:@
 setBillingContact :: (IsPKPaymentRequest pkPaymentRequest, IsPKContact value) => pkPaymentRequest -> value -> IO ()
-setBillingContact pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setBillingContact:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBillingContact pkPaymentRequest value =
+  sendMessage pkPaymentRequest setBillingContactSelector (toPKContact value)
 
 -- | @- requiredShippingContactFields@
 requiredShippingContactFields :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSSet)
-requiredShippingContactFields pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "requiredShippingContactFields") (retPtr retVoid) [] >>= retainedObject . castPtr
+requiredShippingContactFields pkPaymentRequest =
+  sendMessage pkPaymentRequest requiredShippingContactFieldsSelector
 
 -- | @- setRequiredShippingContactFields:@
 setRequiredShippingContactFields :: (IsPKPaymentRequest pkPaymentRequest, IsNSSet value) => pkPaymentRequest -> value -> IO ()
-setRequiredShippingContactFields pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setRequiredShippingContactFields:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequiredShippingContactFields pkPaymentRequest value =
+  sendMessage pkPaymentRequest setRequiredShippingContactFieldsSelector (toNSSet value)
 
 -- | @- requiredShippingAddressFields@
 requiredShippingAddressFields :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO PKAddressField
-requiredShippingAddressFields pkPaymentRequest  =
-    fmap (coerce :: CULong -> PKAddressField) $ sendMsg pkPaymentRequest (mkSelector "requiredShippingAddressFields") retCULong []
+requiredShippingAddressFields pkPaymentRequest =
+  sendMessage pkPaymentRequest requiredShippingAddressFieldsSelector
 
 -- | @- setRequiredShippingAddressFields:@
 setRequiredShippingAddressFields :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> PKAddressField -> IO ()
-setRequiredShippingAddressFields pkPaymentRequest  value =
-    sendMsg pkPaymentRequest (mkSelector "setRequiredShippingAddressFields:") retVoid [argCULong (coerce value)]
+setRequiredShippingAddressFields pkPaymentRequest value =
+  sendMessage pkPaymentRequest setRequiredShippingAddressFieldsSelector value
 
 -- | @- shippingContact@
 shippingContact :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id PKContact)
-shippingContact pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "shippingContact") (retPtr retVoid) [] >>= retainedObject . castPtr
+shippingContact pkPaymentRequest =
+  sendMessage pkPaymentRequest shippingContactSelector
 
 -- | @- setShippingContact:@
 setShippingContact :: (IsPKPaymentRequest pkPaymentRequest, IsPKContact value) => pkPaymentRequest -> value -> IO ()
-setShippingContact pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setShippingContact:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShippingContact pkPaymentRequest value =
+  sendMessage pkPaymentRequest setShippingContactSelector (toPKContact value)
 
 -- | @- shippingMethods@
 shippingMethods :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSArray)
-shippingMethods pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "shippingMethods") (retPtr retVoid) [] >>= retainedObject . castPtr
+shippingMethods pkPaymentRequest =
+  sendMessage pkPaymentRequest shippingMethodsSelector
 
 -- | @- setShippingMethods:@
 setShippingMethods :: (IsPKPaymentRequest pkPaymentRequest, IsNSArray value) => pkPaymentRequest -> value -> IO ()
-setShippingMethods pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setShippingMethods:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShippingMethods pkPaymentRequest value =
+  sendMessage pkPaymentRequest setShippingMethodsSelector (toNSArray value)
 
 -- | @- shippingType@
 shippingType :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO PKShippingType
-shippingType pkPaymentRequest  =
-    fmap (coerce :: CULong -> PKShippingType) $ sendMsg pkPaymentRequest (mkSelector "shippingType") retCULong []
+shippingType pkPaymentRequest =
+  sendMessage pkPaymentRequest shippingTypeSelector
 
 -- | @- setShippingType:@
 setShippingType :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> PKShippingType -> IO ()
-setShippingType pkPaymentRequest  value =
-    sendMsg pkPaymentRequest (mkSelector "setShippingType:") retVoid [argCULong (coerce value)]
+setShippingType pkPaymentRequest value =
+  sendMessage pkPaymentRequest setShippingTypeSelector value
 
 -- | @- shippingContactEditingMode@
 shippingContactEditingMode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO PKShippingContactEditingMode
-shippingContactEditingMode pkPaymentRequest  =
-    fmap (coerce :: CULong -> PKShippingContactEditingMode) $ sendMsg pkPaymentRequest (mkSelector "shippingContactEditingMode") retCULong []
+shippingContactEditingMode pkPaymentRequest =
+  sendMessage pkPaymentRequest shippingContactEditingModeSelector
 
 -- | @- setShippingContactEditingMode:@
 setShippingContactEditingMode :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> PKShippingContactEditingMode -> IO ()
-setShippingContactEditingMode pkPaymentRequest  value =
-    sendMsg pkPaymentRequest (mkSelector "setShippingContactEditingMode:") retVoid [argCULong (coerce value)]
+setShippingContactEditingMode pkPaymentRequest value =
+  sendMessage pkPaymentRequest setShippingContactEditingModeSelector value
 
 -- | @- applicationData@
 applicationData :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSData)
-applicationData pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "applicationData") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationData pkPaymentRequest =
+  sendMessage pkPaymentRequest applicationDataSelector
 
 -- | @- setApplicationData:@
 setApplicationData :: (IsPKPaymentRequest pkPaymentRequest, IsNSData value) => pkPaymentRequest -> value -> IO ()
-setApplicationData pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setApplicationData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplicationData pkPaymentRequest value =
+  sendMessage pkPaymentRequest setApplicationDataSelector (toNSData value)
 
 -- | @- supportedCountries@
 supportedCountries :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSSet)
-supportedCountries pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "supportedCountries") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedCountries pkPaymentRequest =
+  sendMessage pkPaymentRequest supportedCountriesSelector
 
 -- | @- setSupportedCountries:@
 setSupportedCountries :: (IsPKPaymentRequest pkPaymentRequest, IsNSSet value) => pkPaymentRequest -> value -> IO ()
-setSupportedCountries pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setSupportedCountries:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedCountries pkPaymentRequest value =
+  sendMessage pkPaymentRequest setSupportedCountriesSelector (toNSSet value)
 
 -- | @- multiTokenContexts@
 multiTokenContexts :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id NSArray)
-multiTokenContexts pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "multiTokenContexts") (retPtr retVoid) [] >>= retainedObject . castPtr
+multiTokenContexts pkPaymentRequest =
+  sendMessage pkPaymentRequest multiTokenContextsSelector
 
 -- | @- setMultiTokenContexts:@
 setMultiTokenContexts :: (IsPKPaymentRequest pkPaymentRequest, IsNSArray value) => pkPaymentRequest -> value -> IO ()
-setMultiTokenContexts pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setMultiTokenContexts:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMultiTokenContexts pkPaymentRequest value =
+  sendMessage pkPaymentRequest setMultiTokenContextsSelector (toNSArray value)
 
 -- | @- recurringPaymentRequest@
 recurringPaymentRequest :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id PKRecurringPaymentRequest)
-recurringPaymentRequest pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "recurringPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+recurringPaymentRequest pkPaymentRequest =
+  sendMessage pkPaymentRequest recurringPaymentRequestSelector
 
 -- | @- setRecurringPaymentRequest:@
 setRecurringPaymentRequest :: (IsPKPaymentRequest pkPaymentRequest, IsPKRecurringPaymentRequest value) => pkPaymentRequest -> value -> IO ()
-setRecurringPaymentRequest pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setRecurringPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRecurringPaymentRequest pkPaymentRequest value =
+  sendMessage pkPaymentRequest setRecurringPaymentRequestSelector (toPKRecurringPaymentRequest value)
 
 -- | @- automaticReloadPaymentRequest@
 automaticReloadPaymentRequest :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id PKAutomaticReloadPaymentRequest)
-automaticReloadPaymentRequest pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "automaticReloadPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+automaticReloadPaymentRequest pkPaymentRequest =
+  sendMessage pkPaymentRequest automaticReloadPaymentRequestSelector
 
 -- | @- setAutomaticReloadPaymentRequest:@
 setAutomaticReloadPaymentRequest :: (IsPKPaymentRequest pkPaymentRequest, IsPKAutomaticReloadPaymentRequest value) => pkPaymentRequest -> value -> IO ()
-setAutomaticReloadPaymentRequest pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setAutomaticReloadPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAutomaticReloadPaymentRequest pkPaymentRequest value =
+  sendMessage pkPaymentRequest setAutomaticReloadPaymentRequestSelector (toPKAutomaticReloadPaymentRequest value)
 
 -- | @- deferredPaymentRequest@
 deferredPaymentRequest :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO (Id PKDeferredPaymentRequest)
-deferredPaymentRequest pkPaymentRequest  =
-    sendMsg pkPaymentRequest (mkSelector "deferredPaymentRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+deferredPaymentRequest pkPaymentRequest =
+  sendMessage pkPaymentRequest deferredPaymentRequestSelector
 
 -- | @- setDeferredPaymentRequest:@
 setDeferredPaymentRequest :: (IsPKPaymentRequest pkPaymentRequest, IsPKDeferredPaymentRequest value) => pkPaymentRequest -> value -> IO ()
-setDeferredPaymentRequest pkPaymentRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequest (mkSelector "setDeferredPaymentRequest:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeferredPaymentRequest pkPaymentRequest value =
+  sendMessage pkPaymentRequest setDeferredPaymentRequestSelector (toPKDeferredPaymentRequest value)
 
 -- | @- applePayLaterAvailability@
 applePayLaterAvailability :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> IO PKApplePayLaterAvailability
-applePayLaterAvailability pkPaymentRequest  =
-    fmap (coerce :: CLong -> PKApplePayLaterAvailability) $ sendMsg pkPaymentRequest (mkSelector "applePayLaterAvailability") retCLong []
+applePayLaterAvailability pkPaymentRequest =
+  sendMessage pkPaymentRequest applePayLaterAvailabilitySelector
 
 -- | @- setApplePayLaterAvailability:@
 setApplePayLaterAvailability :: IsPKPaymentRequest pkPaymentRequest => pkPaymentRequest -> PKApplePayLaterAvailability -> IO ()
-setApplePayLaterAvailability pkPaymentRequest  value =
-    sendMsg pkPaymentRequest (mkSelector "setApplePayLaterAvailability:") retVoid [argCLong (coerce value)]
+setApplePayLaterAvailability pkPaymentRequest value =
+  sendMessage pkPaymentRequest setApplePayLaterAvailabilitySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @availableNetworks@
-availableNetworksSelector :: Selector
+availableNetworksSelector :: Selector '[] (Id NSArray)
 availableNetworksSelector = mkSelector "availableNetworks"
 
 -- | @Selector@ for @paymentContactInvalidErrorWithContactField:localizedDescription:@
-paymentContactInvalidErrorWithContactField_localizedDescriptionSelector :: Selector
+paymentContactInvalidErrorWithContactField_localizedDescriptionSelector :: Selector '[Id NSString, Id NSString] (Id NSError)
 paymentContactInvalidErrorWithContactField_localizedDescriptionSelector = mkSelector "paymentContactInvalidErrorWithContactField:localizedDescription:"
 
 -- | @Selector@ for @paymentShippingAddressInvalidErrorWithKey:localizedDescription:@
-paymentShippingAddressInvalidErrorWithKey_localizedDescriptionSelector :: Selector
+paymentShippingAddressInvalidErrorWithKey_localizedDescriptionSelector :: Selector '[Id NSString, Id NSString] (Id NSError)
 paymentShippingAddressInvalidErrorWithKey_localizedDescriptionSelector = mkSelector "paymentShippingAddressInvalidErrorWithKey:localizedDescription:"
 
 -- | @Selector@ for @paymentBillingAddressInvalidErrorWithKey:localizedDescription:@
-paymentBillingAddressInvalidErrorWithKey_localizedDescriptionSelector :: Selector
+paymentBillingAddressInvalidErrorWithKey_localizedDescriptionSelector :: Selector '[Id NSString, Id NSString] (Id NSError)
 paymentBillingAddressInvalidErrorWithKey_localizedDescriptionSelector = mkSelector "paymentBillingAddressInvalidErrorWithKey:localizedDescription:"
 
 -- | @Selector@ for @paymentShippingAddressUnserviceableErrorWithLocalizedDescription:@
-paymentShippingAddressUnserviceableErrorWithLocalizedDescriptionSelector :: Selector
+paymentShippingAddressUnserviceableErrorWithLocalizedDescriptionSelector :: Selector '[Id NSString] (Id NSError)
 paymentShippingAddressUnserviceableErrorWithLocalizedDescriptionSelector = mkSelector "paymentShippingAddressUnserviceableErrorWithLocalizedDescription:"
 
 -- | @Selector@ for @paymentCouponCodeInvalidErrorWithLocalizedDescription:@
-paymentCouponCodeInvalidErrorWithLocalizedDescriptionSelector :: Selector
+paymentCouponCodeInvalidErrorWithLocalizedDescriptionSelector :: Selector '[Id NSString] (Id NSError)
 paymentCouponCodeInvalidErrorWithLocalizedDescriptionSelector = mkSelector "paymentCouponCodeInvalidErrorWithLocalizedDescription:"
 
 -- | @Selector@ for @paymentCouponCodeExpiredErrorWithLocalizedDescription:@
-paymentCouponCodeExpiredErrorWithLocalizedDescriptionSelector :: Selector
+paymentCouponCodeExpiredErrorWithLocalizedDescriptionSelector :: Selector '[Id NSString] (Id NSError)
 paymentCouponCodeExpiredErrorWithLocalizedDescriptionSelector = mkSelector "paymentCouponCodeExpiredErrorWithLocalizedDescription:"
 
 -- | @Selector@ for @merchantIdentifier@
-merchantIdentifierSelector :: Selector
+merchantIdentifierSelector :: Selector '[] (Id NSString)
 merchantIdentifierSelector = mkSelector "merchantIdentifier"
 
 -- | @Selector@ for @setMerchantIdentifier:@
-setMerchantIdentifierSelector :: Selector
+setMerchantIdentifierSelector :: Selector '[Id NSString] ()
 setMerchantIdentifierSelector = mkSelector "setMerchantIdentifier:"
 
 -- | @Selector@ for @attributionIdentifier@
-attributionIdentifierSelector :: Selector
+attributionIdentifierSelector :: Selector '[] (Id NSString)
 attributionIdentifierSelector = mkSelector "attributionIdentifier"
 
 -- | @Selector@ for @setAttributionIdentifier:@
-setAttributionIdentifierSelector :: Selector
+setAttributionIdentifierSelector :: Selector '[Id NSString] ()
 setAttributionIdentifierSelector = mkSelector "setAttributionIdentifier:"
 
 -- | @Selector@ for @countryCode@
-countryCodeSelector :: Selector
+countryCodeSelector :: Selector '[] (Id NSString)
 countryCodeSelector = mkSelector "countryCode"
 
 -- | @Selector@ for @setCountryCode:@
-setCountryCodeSelector :: Selector
+setCountryCodeSelector :: Selector '[Id NSString] ()
 setCountryCodeSelector = mkSelector "setCountryCode:"
 
 -- | @Selector@ for @supportedNetworks@
-supportedNetworksSelector :: Selector
+supportedNetworksSelector :: Selector '[] (Id NSArray)
 supportedNetworksSelector = mkSelector "supportedNetworks"
 
 -- | @Selector@ for @setSupportedNetworks:@
-setSupportedNetworksSelector :: Selector
+setSupportedNetworksSelector :: Selector '[Id NSArray] ()
 setSupportedNetworksSelector = mkSelector "setSupportedNetworks:"
 
 -- | @Selector@ for @merchantCapabilities@
-merchantCapabilitiesSelector :: Selector
+merchantCapabilitiesSelector :: Selector '[] PKMerchantCapability
 merchantCapabilitiesSelector = mkSelector "merchantCapabilities"
 
 -- | @Selector@ for @setMerchantCapabilities:@
-setMerchantCapabilitiesSelector :: Selector
+setMerchantCapabilitiesSelector :: Selector '[PKMerchantCapability] ()
 setMerchantCapabilitiesSelector = mkSelector "setMerchantCapabilities:"
 
 -- | @Selector@ for @supportsCouponCode@
-supportsCouponCodeSelector :: Selector
+supportsCouponCodeSelector :: Selector '[] Bool
 supportsCouponCodeSelector = mkSelector "supportsCouponCode"
 
 -- | @Selector@ for @setSupportsCouponCode:@
-setSupportsCouponCodeSelector :: Selector
+setSupportsCouponCodeSelector :: Selector '[Bool] ()
 setSupportsCouponCodeSelector = mkSelector "setSupportsCouponCode:"
 
 -- | @Selector@ for @couponCode@
-couponCodeSelector :: Selector
+couponCodeSelector :: Selector '[] (Id NSString)
 couponCodeSelector = mkSelector "couponCode"
 
 -- | @Selector@ for @setCouponCode:@
-setCouponCodeSelector :: Selector
+setCouponCodeSelector :: Selector '[Id NSString] ()
 setCouponCodeSelector = mkSelector "setCouponCode:"
 
 -- | @Selector@ for @merchantCategoryCode@
-merchantCategoryCodeSelector :: Selector
+merchantCategoryCodeSelector :: Selector '[] CShort
 merchantCategoryCodeSelector = mkSelector "merchantCategoryCode"
 
 -- | @Selector@ for @setMerchantCategoryCode:@
-setMerchantCategoryCodeSelector :: Selector
+setMerchantCategoryCodeSelector :: Selector '[CShort] ()
 setMerchantCategoryCodeSelector = mkSelector "setMerchantCategoryCode:"
 
 -- | @Selector@ for @paymentSummaryItems@
-paymentSummaryItemsSelector :: Selector
+paymentSummaryItemsSelector :: Selector '[] (Id NSArray)
 paymentSummaryItemsSelector = mkSelector "paymentSummaryItems"
 
 -- | @Selector@ for @setPaymentSummaryItems:@
-setPaymentSummaryItemsSelector :: Selector
+setPaymentSummaryItemsSelector :: Selector '[Id NSArray] ()
 setPaymentSummaryItemsSelector = mkSelector "setPaymentSummaryItems:"
 
 -- | @Selector@ for @currencyCode@
-currencyCodeSelector :: Selector
+currencyCodeSelector :: Selector '[] (Id NSString)
 currencyCodeSelector = mkSelector "currencyCode"
 
 -- | @Selector@ for @setCurrencyCode:@
-setCurrencyCodeSelector :: Selector
+setCurrencyCodeSelector :: Selector '[Id NSString] ()
 setCurrencyCodeSelector = mkSelector "setCurrencyCode:"
 
 -- | @Selector@ for @requiredBillingContactFields@
-requiredBillingContactFieldsSelector :: Selector
+requiredBillingContactFieldsSelector :: Selector '[] (Id NSSet)
 requiredBillingContactFieldsSelector = mkSelector "requiredBillingContactFields"
 
 -- | @Selector@ for @setRequiredBillingContactFields:@
-setRequiredBillingContactFieldsSelector :: Selector
+setRequiredBillingContactFieldsSelector :: Selector '[Id NSSet] ()
 setRequiredBillingContactFieldsSelector = mkSelector "setRequiredBillingContactFields:"
 
 -- | @Selector@ for @requiredBillingAddressFields@
-requiredBillingAddressFieldsSelector :: Selector
+requiredBillingAddressFieldsSelector :: Selector '[] PKAddressField
 requiredBillingAddressFieldsSelector = mkSelector "requiredBillingAddressFields"
 
 -- | @Selector@ for @setRequiredBillingAddressFields:@
-setRequiredBillingAddressFieldsSelector :: Selector
+setRequiredBillingAddressFieldsSelector :: Selector '[PKAddressField] ()
 setRequiredBillingAddressFieldsSelector = mkSelector "setRequiredBillingAddressFields:"
 
 -- | @Selector@ for @billingContact@
-billingContactSelector :: Selector
+billingContactSelector :: Selector '[] (Id PKContact)
 billingContactSelector = mkSelector "billingContact"
 
 -- | @Selector@ for @setBillingContact:@
-setBillingContactSelector :: Selector
+setBillingContactSelector :: Selector '[Id PKContact] ()
 setBillingContactSelector = mkSelector "setBillingContact:"
 
 -- | @Selector@ for @requiredShippingContactFields@
-requiredShippingContactFieldsSelector :: Selector
+requiredShippingContactFieldsSelector :: Selector '[] (Id NSSet)
 requiredShippingContactFieldsSelector = mkSelector "requiredShippingContactFields"
 
 -- | @Selector@ for @setRequiredShippingContactFields:@
-setRequiredShippingContactFieldsSelector :: Selector
+setRequiredShippingContactFieldsSelector :: Selector '[Id NSSet] ()
 setRequiredShippingContactFieldsSelector = mkSelector "setRequiredShippingContactFields:"
 
 -- | @Selector@ for @requiredShippingAddressFields@
-requiredShippingAddressFieldsSelector :: Selector
+requiredShippingAddressFieldsSelector :: Selector '[] PKAddressField
 requiredShippingAddressFieldsSelector = mkSelector "requiredShippingAddressFields"
 
 -- | @Selector@ for @setRequiredShippingAddressFields:@
-setRequiredShippingAddressFieldsSelector :: Selector
+setRequiredShippingAddressFieldsSelector :: Selector '[PKAddressField] ()
 setRequiredShippingAddressFieldsSelector = mkSelector "setRequiredShippingAddressFields:"
 
 -- | @Selector@ for @shippingContact@
-shippingContactSelector :: Selector
+shippingContactSelector :: Selector '[] (Id PKContact)
 shippingContactSelector = mkSelector "shippingContact"
 
 -- | @Selector@ for @setShippingContact:@
-setShippingContactSelector :: Selector
+setShippingContactSelector :: Selector '[Id PKContact] ()
 setShippingContactSelector = mkSelector "setShippingContact:"
 
 -- | @Selector@ for @shippingMethods@
-shippingMethodsSelector :: Selector
+shippingMethodsSelector :: Selector '[] (Id NSArray)
 shippingMethodsSelector = mkSelector "shippingMethods"
 
 -- | @Selector@ for @setShippingMethods:@
-setShippingMethodsSelector :: Selector
+setShippingMethodsSelector :: Selector '[Id NSArray] ()
 setShippingMethodsSelector = mkSelector "setShippingMethods:"
 
 -- | @Selector@ for @shippingType@
-shippingTypeSelector :: Selector
+shippingTypeSelector :: Selector '[] PKShippingType
 shippingTypeSelector = mkSelector "shippingType"
 
 -- | @Selector@ for @setShippingType:@
-setShippingTypeSelector :: Selector
+setShippingTypeSelector :: Selector '[PKShippingType] ()
 setShippingTypeSelector = mkSelector "setShippingType:"
 
 -- | @Selector@ for @shippingContactEditingMode@
-shippingContactEditingModeSelector :: Selector
+shippingContactEditingModeSelector :: Selector '[] PKShippingContactEditingMode
 shippingContactEditingModeSelector = mkSelector "shippingContactEditingMode"
 
 -- | @Selector@ for @setShippingContactEditingMode:@
-setShippingContactEditingModeSelector :: Selector
+setShippingContactEditingModeSelector :: Selector '[PKShippingContactEditingMode] ()
 setShippingContactEditingModeSelector = mkSelector "setShippingContactEditingMode:"
 
 -- | @Selector@ for @applicationData@
-applicationDataSelector :: Selector
+applicationDataSelector :: Selector '[] (Id NSData)
 applicationDataSelector = mkSelector "applicationData"
 
 -- | @Selector@ for @setApplicationData:@
-setApplicationDataSelector :: Selector
+setApplicationDataSelector :: Selector '[Id NSData] ()
 setApplicationDataSelector = mkSelector "setApplicationData:"
 
 -- | @Selector@ for @supportedCountries@
-supportedCountriesSelector :: Selector
+supportedCountriesSelector :: Selector '[] (Id NSSet)
 supportedCountriesSelector = mkSelector "supportedCountries"
 
 -- | @Selector@ for @setSupportedCountries:@
-setSupportedCountriesSelector :: Selector
+setSupportedCountriesSelector :: Selector '[Id NSSet] ()
 setSupportedCountriesSelector = mkSelector "setSupportedCountries:"
 
 -- | @Selector@ for @multiTokenContexts@
-multiTokenContextsSelector :: Selector
+multiTokenContextsSelector :: Selector '[] (Id NSArray)
 multiTokenContextsSelector = mkSelector "multiTokenContexts"
 
 -- | @Selector@ for @setMultiTokenContexts:@
-setMultiTokenContextsSelector :: Selector
+setMultiTokenContextsSelector :: Selector '[Id NSArray] ()
 setMultiTokenContextsSelector = mkSelector "setMultiTokenContexts:"
 
 -- | @Selector@ for @recurringPaymentRequest@
-recurringPaymentRequestSelector :: Selector
+recurringPaymentRequestSelector :: Selector '[] (Id PKRecurringPaymentRequest)
 recurringPaymentRequestSelector = mkSelector "recurringPaymentRequest"
 
 -- | @Selector@ for @setRecurringPaymentRequest:@
-setRecurringPaymentRequestSelector :: Selector
+setRecurringPaymentRequestSelector :: Selector '[Id PKRecurringPaymentRequest] ()
 setRecurringPaymentRequestSelector = mkSelector "setRecurringPaymentRequest:"
 
 -- | @Selector@ for @automaticReloadPaymentRequest@
-automaticReloadPaymentRequestSelector :: Selector
+automaticReloadPaymentRequestSelector :: Selector '[] (Id PKAutomaticReloadPaymentRequest)
 automaticReloadPaymentRequestSelector = mkSelector "automaticReloadPaymentRequest"
 
 -- | @Selector@ for @setAutomaticReloadPaymentRequest:@
-setAutomaticReloadPaymentRequestSelector :: Selector
+setAutomaticReloadPaymentRequestSelector :: Selector '[Id PKAutomaticReloadPaymentRequest] ()
 setAutomaticReloadPaymentRequestSelector = mkSelector "setAutomaticReloadPaymentRequest:"
 
 -- | @Selector@ for @deferredPaymentRequest@
-deferredPaymentRequestSelector :: Selector
+deferredPaymentRequestSelector :: Selector '[] (Id PKDeferredPaymentRequest)
 deferredPaymentRequestSelector = mkSelector "deferredPaymentRequest"
 
 -- | @Selector@ for @setDeferredPaymentRequest:@
-setDeferredPaymentRequestSelector :: Selector
+setDeferredPaymentRequestSelector :: Selector '[Id PKDeferredPaymentRequest] ()
 setDeferredPaymentRequestSelector = mkSelector "setDeferredPaymentRequest:"
 
 -- | @Selector@ for @applePayLaterAvailability@
-applePayLaterAvailabilitySelector :: Selector
+applePayLaterAvailabilitySelector :: Selector '[] PKApplePayLaterAvailability
 applePayLaterAvailabilitySelector = mkSelector "applePayLaterAvailability"
 
 -- | @Selector@ for @setApplePayLaterAvailability:@
-setApplePayLaterAvailabilitySelector :: Selector
+setApplePayLaterAvailabilitySelector :: Selector '[PKApplePayLaterAvailability] ()
 setApplePayLaterAvailabilitySelector = mkSelector "setApplePayLaterAvailability:"
 

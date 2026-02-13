@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.Vision.VNTrackHomographicImageRegistrationRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVNTrackHomographicImageRegistrationRequest vnTrackHomographicImageRegistrationRequest => vnTrackHomographicImageRegistrationRequest -> IO (Id VNTrackHomographicImageRegistrationRequest)
-init_ vnTrackHomographicImageRegistrationRequest  =
-    sendMsg vnTrackHomographicImageRegistrationRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnTrackHomographicImageRegistrationRequest =
+  sendOwnedMessage vnTrackHomographicImageRegistrationRequest initSelector
 
 -- | Create a new request that can statefully track the homographic registration of two images.
 --
@@ -50,29 +47,29 @@ init_ vnTrackHomographicImageRegistrationRequest  =
 --
 -- ObjC selector: @- initWithCompletionHandler:@
 initWithCompletionHandler :: IsVNTrackHomographicImageRegistrationRequest vnTrackHomographicImageRegistrationRequest => vnTrackHomographicImageRegistrationRequest -> Ptr () -> IO (Id VNTrackHomographicImageRegistrationRequest)
-initWithCompletionHandler vnTrackHomographicImageRegistrationRequest  completionHandler =
-    sendMsg vnTrackHomographicImageRegistrationRequest (mkSelector "initWithCompletionHandler:") (retPtr retVoid) [argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithCompletionHandler vnTrackHomographicImageRegistrationRequest completionHandler =
+  sendOwnedMessage vnTrackHomographicImageRegistrationRequest initWithCompletionHandlerSelector completionHandler
 
 -- | VNImageHomographicAlignmentObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNTrackHomographicImageRegistrationRequest vnTrackHomographicImageRegistrationRequest => vnTrackHomographicImageRegistrationRequest -> IO (Id NSArray)
-results vnTrackHomographicImageRegistrationRequest  =
-    sendMsg vnTrackHomographicImageRegistrationRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnTrackHomographicImageRegistrationRequest =
+  sendMessage vnTrackHomographicImageRegistrationRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNTrackHomographicImageRegistrationRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCompletionHandler:@
-initWithCompletionHandlerSelector :: Selector
+initWithCompletionHandlerSelector :: Selector '[Ptr ()] (Id VNTrackHomographicImageRegistrationRequest)
 initWithCompletionHandlerSelector = mkSelector "initWithCompletionHandler:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

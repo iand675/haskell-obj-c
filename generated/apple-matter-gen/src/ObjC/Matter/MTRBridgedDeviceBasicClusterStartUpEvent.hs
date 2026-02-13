@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Matter.MTRBridgedDeviceBasicClusterStartUpEvent
   , IsMTRBridgedDeviceBasicClusterStartUpEvent(..)
   , softwareVersion
   , setSoftwareVersion
-  , softwareVersionSelector
   , setSoftwareVersionSelector
+  , softwareVersionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- softwareVersion@
 softwareVersion :: IsMTRBridgedDeviceBasicClusterStartUpEvent mtrBridgedDeviceBasicClusterStartUpEvent => mtrBridgedDeviceBasicClusterStartUpEvent -> IO (Id NSNumber)
-softwareVersion mtrBridgedDeviceBasicClusterStartUpEvent  =
-    sendMsg mtrBridgedDeviceBasicClusterStartUpEvent (mkSelector "softwareVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+softwareVersion mtrBridgedDeviceBasicClusterStartUpEvent =
+  sendMessage mtrBridgedDeviceBasicClusterStartUpEvent softwareVersionSelector
 
 -- | @- setSoftwareVersion:@
 setSoftwareVersion :: (IsMTRBridgedDeviceBasicClusterStartUpEvent mtrBridgedDeviceBasicClusterStartUpEvent, IsNSNumber value) => mtrBridgedDeviceBasicClusterStartUpEvent -> value -> IO ()
-setSoftwareVersion mtrBridgedDeviceBasicClusterStartUpEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBridgedDeviceBasicClusterStartUpEvent (mkSelector "setSoftwareVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSoftwareVersion mtrBridgedDeviceBasicClusterStartUpEvent value =
+  sendMessage mtrBridgedDeviceBasicClusterStartUpEvent setSoftwareVersionSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @softwareVersion@
-softwareVersionSelector :: Selector
+softwareVersionSelector :: Selector '[] (Id NSNumber)
 softwareVersionSelector = mkSelector "softwareVersion"
 
 -- | @Selector@ for @setSoftwareVersion:@
-setSoftwareVersionSelector :: Selector
+setSoftwareVersionSelector :: Selector '[Id NSNumber] ()
 setSoftwareVersionSelector = mkSelector "setSoftwareVersion:"
 

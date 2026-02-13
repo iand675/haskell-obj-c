@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,27 +23,23 @@ module ObjC.AVFoundation.AVPlayerItemLegibleOutput
   , setAdvanceIntervalForDelegateInvocation
   , textStylingResolution
   , setTextStylingResolution
-  , setDelegate_queueSelector
-  , initWithMediaSubtypesForNativeRepresentationSelector
-  , delegateSelector
-  , delegateQueueSelector
   , advanceIntervalForDelegateInvocationSelector
+  , delegateQueueSelector
+  , delegateSelector
+  , initWithMediaSubtypesForNativeRepresentationSelector
   , setAdvanceIntervalForDelegateInvocationSelector
-  , textStylingResolutionSelector
+  , setDelegate_queueSelector
   , setTextStylingResolutionSelector
+  , textStylingResolutionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,9 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setDelegate:queue:@
 setDelegate_queue :: (IsAVPlayerItemLegibleOutput avPlayerItemLegibleOutput, IsNSObject delegateQueue) => avPlayerItemLegibleOutput -> RawId -> delegateQueue -> IO ()
-setDelegate_queue avPlayerItemLegibleOutput  delegate delegateQueue =
-  withObjCPtr delegateQueue $ \raw_delegateQueue ->
-      sendMsg avPlayerItemLegibleOutput (mkSelector "setDelegate:queue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_delegateQueue :: Ptr ())]
+setDelegate_queue avPlayerItemLegibleOutput delegate delegateQueue =
+  sendMessage avPlayerItemLegibleOutput setDelegate_queueSelector delegate (toNSObject delegateQueue)
 
 -- | initWithMediaSubtypesForNativeRepresentation:
 --
@@ -81,9 +77,8 @@ setDelegate_queue avPlayerItemLegibleOutput  delegate delegateQueue =
 --
 -- ObjC selector: @- initWithMediaSubtypesForNativeRepresentation:@
 initWithMediaSubtypesForNativeRepresentation :: (IsAVPlayerItemLegibleOutput avPlayerItemLegibleOutput, IsNSArray subtypes) => avPlayerItemLegibleOutput -> subtypes -> IO (Id AVPlayerItemLegibleOutput)
-initWithMediaSubtypesForNativeRepresentation avPlayerItemLegibleOutput  subtypes =
-  withObjCPtr subtypes $ \raw_subtypes ->
-      sendMsg avPlayerItemLegibleOutput (mkSelector "initWithMediaSubtypesForNativeRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_subtypes :: Ptr ())] >>= ownedObject . castPtr
+initWithMediaSubtypesForNativeRepresentation avPlayerItemLegibleOutput subtypes =
+  sendOwnedMessage avPlayerItemLegibleOutput initWithMediaSubtypesForNativeRepresentationSelector (toNSArray subtypes)
 
 -- | delegate
 --
@@ -93,8 +88,8 @@ initWithMediaSubtypesForNativeRepresentation avPlayerItemLegibleOutput  subtypes
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVPlayerItemLegibleOutput avPlayerItemLegibleOutput => avPlayerItemLegibleOutput -> IO RawId
-delegate avPlayerItemLegibleOutput  =
-    fmap (RawId . castPtr) $ sendMsg avPlayerItemLegibleOutput (mkSelector "delegate") (retPtr retVoid) []
+delegate avPlayerItemLegibleOutput =
+  sendMessage avPlayerItemLegibleOutput delegateSelector
 
 -- | delegateQueue
 --
@@ -104,8 +99,8 @@ delegate avPlayerItemLegibleOutput  =
 --
 -- ObjC selector: @- delegateQueue@
 delegateQueue :: IsAVPlayerItemLegibleOutput avPlayerItemLegibleOutput => avPlayerItemLegibleOutput -> IO (Id NSObject)
-delegateQueue avPlayerItemLegibleOutput  =
-    sendMsg avPlayerItemLegibleOutput (mkSelector "delegateQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateQueue avPlayerItemLegibleOutput =
+  sendMessage avPlayerItemLegibleOutput delegateQueueSelector
 
 -- | advanceIntervalForDelegateInvocation
 --
@@ -115,8 +110,8 @@ delegateQueue avPlayerItemLegibleOutput  =
 --
 -- ObjC selector: @- advanceIntervalForDelegateInvocation@
 advanceIntervalForDelegateInvocation :: IsAVPlayerItemLegibleOutput avPlayerItemLegibleOutput => avPlayerItemLegibleOutput -> IO CDouble
-advanceIntervalForDelegateInvocation avPlayerItemLegibleOutput  =
-    sendMsg avPlayerItemLegibleOutput (mkSelector "advanceIntervalForDelegateInvocation") retCDouble []
+advanceIntervalForDelegateInvocation avPlayerItemLegibleOutput =
+  sendMessage avPlayerItemLegibleOutput advanceIntervalForDelegateInvocationSelector
 
 -- | advanceIntervalForDelegateInvocation
 --
@@ -126,8 +121,8 @@ advanceIntervalForDelegateInvocation avPlayerItemLegibleOutput  =
 --
 -- ObjC selector: @- setAdvanceIntervalForDelegateInvocation:@
 setAdvanceIntervalForDelegateInvocation :: IsAVPlayerItemLegibleOutput avPlayerItemLegibleOutput => avPlayerItemLegibleOutput -> CDouble -> IO ()
-setAdvanceIntervalForDelegateInvocation avPlayerItemLegibleOutput  value =
-    sendMsg avPlayerItemLegibleOutput (mkSelector "setAdvanceIntervalForDelegateInvocation:") retVoid [argCDouble value]
+setAdvanceIntervalForDelegateInvocation avPlayerItemLegibleOutput value =
+  sendMessage avPlayerItemLegibleOutput setAdvanceIntervalForDelegateInvocationSelector value
 
 -- | textStylingResolution
 --
@@ -137,8 +132,8 @@ setAdvanceIntervalForDelegateInvocation avPlayerItemLegibleOutput  value =
 --
 -- ObjC selector: @- textStylingResolution@
 textStylingResolution :: IsAVPlayerItemLegibleOutput avPlayerItemLegibleOutput => avPlayerItemLegibleOutput -> IO (Id NSString)
-textStylingResolution avPlayerItemLegibleOutput  =
-    sendMsg avPlayerItemLegibleOutput (mkSelector "textStylingResolution") (retPtr retVoid) [] >>= retainedObject . castPtr
+textStylingResolution avPlayerItemLegibleOutput =
+  sendMessage avPlayerItemLegibleOutput textStylingResolutionSelector
 
 -- | textStylingResolution
 --
@@ -148,43 +143,42 @@ textStylingResolution avPlayerItemLegibleOutput  =
 --
 -- ObjC selector: @- setTextStylingResolution:@
 setTextStylingResolution :: (IsAVPlayerItemLegibleOutput avPlayerItemLegibleOutput, IsNSString value) => avPlayerItemLegibleOutput -> value -> IO ()
-setTextStylingResolution avPlayerItemLegibleOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerItemLegibleOutput (mkSelector "setTextStylingResolution:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextStylingResolution avPlayerItemLegibleOutput value =
+  sendMessage avPlayerItemLegibleOutput setTextStylingResolutionSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setDelegate:queue:@
-setDelegate_queueSelector :: Selector
+setDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_queueSelector = mkSelector "setDelegate:queue:"
 
 -- | @Selector@ for @initWithMediaSubtypesForNativeRepresentation:@
-initWithMediaSubtypesForNativeRepresentationSelector :: Selector
+initWithMediaSubtypesForNativeRepresentationSelector :: Selector '[Id NSArray] (Id AVPlayerItemLegibleOutput)
 initWithMediaSubtypesForNativeRepresentationSelector = mkSelector "initWithMediaSubtypesForNativeRepresentation:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateQueue@
-delegateQueueSelector :: Selector
+delegateQueueSelector :: Selector '[] (Id NSObject)
 delegateQueueSelector = mkSelector "delegateQueue"
 
 -- | @Selector@ for @advanceIntervalForDelegateInvocation@
-advanceIntervalForDelegateInvocationSelector :: Selector
+advanceIntervalForDelegateInvocationSelector :: Selector '[] CDouble
 advanceIntervalForDelegateInvocationSelector = mkSelector "advanceIntervalForDelegateInvocation"
 
 -- | @Selector@ for @setAdvanceIntervalForDelegateInvocation:@
-setAdvanceIntervalForDelegateInvocationSelector :: Selector
+setAdvanceIntervalForDelegateInvocationSelector :: Selector '[CDouble] ()
 setAdvanceIntervalForDelegateInvocationSelector = mkSelector "setAdvanceIntervalForDelegateInvocation:"
 
 -- | @Selector@ for @textStylingResolution@
-textStylingResolutionSelector :: Selector
+textStylingResolutionSelector :: Selector '[] (Id NSString)
 textStylingResolutionSelector = mkSelector "textStylingResolution"
 
 -- | @Selector@ for @setTextStylingResolution:@
-setTextStylingResolutionSelector :: Selector
+setTextStylingResolutionSelector :: Selector '[Id NSString] ()
 setTextStylingResolutionSelector = mkSelector "setTextStylingResolution:"
 

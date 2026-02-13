@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.ClassKit.NSUserActivity
   , IsNSUserActivity(..)
   , isClassKitDeepLink
   , contextIdentifierPath
-  , isClassKitDeepLinkSelector
   , contextIdentifierPathSelector
+  , isClassKitDeepLinkSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,8 +30,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isClassKitDeepLink@
 isClassKitDeepLink :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO Bool
-isClassKitDeepLink nsUserActivity  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsUserActivity (mkSelector "isClassKitDeepLink") retCULong []
+isClassKitDeepLink nsUserActivity =
+  sendMessage nsUserActivity isClassKitDeepLinkSelector
 
 -- | Returns the context identifier path you should deep link to.
 --
@@ -42,18 +39,18 @@ isClassKitDeepLink nsUserActivity  =
 --
 -- ObjC selector: @- contextIdentifierPath@
 contextIdentifierPath :: IsNSUserActivity nsUserActivity => nsUserActivity -> IO (Id NSArray)
-contextIdentifierPath nsUserActivity  =
-    sendMsg nsUserActivity (mkSelector "contextIdentifierPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+contextIdentifierPath nsUserActivity =
+  sendMessage nsUserActivity contextIdentifierPathSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isClassKitDeepLink@
-isClassKitDeepLinkSelector :: Selector
+isClassKitDeepLinkSelector :: Selector '[] Bool
 isClassKitDeepLinkSelector = mkSelector "isClassKitDeepLink"
 
 -- | @Selector@ for @contextIdentifierPath@
-contextIdentifierPathSelector :: Selector
+contextIdentifierPathSelector :: Selector '[] (Id NSArray)
 contextIdentifierPathSelector = mkSelector "contextIdentifierPath"
 

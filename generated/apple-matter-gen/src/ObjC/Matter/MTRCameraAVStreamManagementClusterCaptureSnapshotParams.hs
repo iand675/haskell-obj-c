@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterCaptureSnapshotParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , snapshotStreamIDSelector
-  , setSnapshotStreamIDSelector
   , requestedResolutionSelector
-  , setRequestedResolutionSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setRequestedResolutionSelector
   , setServerSideProcessingTimeoutSelector
+  , setSnapshotStreamIDSelector
+  , setTimedInvokeTimeoutMsSelector
+  , snapshotStreamIDSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- snapshotStreamID@
 snapshotStreamID :: IsMTRCameraAVStreamManagementClusterCaptureSnapshotParams mtrCameraAVStreamManagementClusterCaptureSnapshotParams => mtrCameraAVStreamManagementClusterCaptureSnapshotParams -> IO (Id NSNumber)
-snapshotStreamID mtrCameraAVStreamManagementClusterCaptureSnapshotParams  =
-    sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotParams (mkSelector "snapshotStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+snapshotStreamID mtrCameraAVStreamManagementClusterCaptureSnapshotParams =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotParams snapshotStreamIDSelector
 
 -- | @- setSnapshotStreamID:@
 setSnapshotStreamID :: (IsMTRCameraAVStreamManagementClusterCaptureSnapshotParams mtrCameraAVStreamManagementClusterCaptureSnapshotParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterCaptureSnapshotParams -> value -> IO ()
-setSnapshotStreamID mtrCameraAVStreamManagementClusterCaptureSnapshotParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotParams (mkSelector "setSnapshotStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSnapshotStreamID mtrCameraAVStreamManagementClusterCaptureSnapshotParams value =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotParams setSnapshotStreamIDSelector (toNSNumber value)
 
 -- | @- requestedResolution@
 requestedResolution :: IsMTRCameraAVStreamManagementClusterCaptureSnapshotParams mtrCameraAVStreamManagementClusterCaptureSnapshotParams => mtrCameraAVStreamManagementClusterCaptureSnapshotParams -> IO (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
-requestedResolution mtrCameraAVStreamManagementClusterCaptureSnapshotParams  =
-    sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotParams (mkSelector "requestedResolution") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestedResolution mtrCameraAVStreamManagementClusterCaptureSnapshotParams =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotParams requestedResolutionSelector
 
 -- | @- setRequestedResolution:@
 setRequestedResolution :: (IsMTRCameraAVStreamManagementClusterCaptureSnapshotParams mtrCameraAVStreamManagementClusterCaptureSnapshotParams, IsMTRCameraAVStreamManagementClusterVideoResolutionStruct value) => mtrCameraAVStreamManagementClusterCaptureSnapshotParams -> value -> IO ()
-setRequestedResolution mtrCameraAVStreamManagementClusterCaptureSnapshotParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotParams (mkSelector "setRequestedResolution:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequestedResolution mtrCameraAVStreamManagementClusterCaptureSnapshotParams value =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotParams setRequestedResolutionSelector (toMTRCameraAVStreamManagementClusterVideoResolutionStruct value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setRequestedResolution mtrCameraAVStreamManagementClusterCaptureSnapshotParams  
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCameraAVStreamManagementClusterCaptureSnapshotParams mtrCameraAVStreamManagementClusterCaptureSnapshotParams => mtrCameraAVStreamManagementClusterCaptureSnapshotParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterCaptureSnapshotParams  =
-    sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterCaptureSnapshotParams =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterCaptureSnapshotParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCameraAVStreamManagementClusterCaptureSnapshotParams mtrCameraAVStreamManagementClusterCaptureSnapshotParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterCaptureSnapshotParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterCaptureSnapshotParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterCaptureSnapshotParams value =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterCaptureSnapshotParams 
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCameraAVStreamManagementClusterCaptureSnapshotParams mtrCameraAVStreamManagementClusterCaptureSnapshotParams => mtrCameraAVStreamManagementClusterCaptureSnapshotParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCameraAVStreamManagementClusterCaptureSnapshotParams  =
-    sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCameraAVStreamManagementClusterCaptureSnapshotParams =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrCameraAVStreamManagementClusterCaptureSnapshotPar
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCameraAVStreamManagementClusterCaptureSnapshotParams mtrCameraAVStreamManagementClusterCaptureSnapshotParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterCaptureSnapshotParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCameraAVStreamManagementClusterCaptureSnapshotParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterCaptureSnapshotParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCameraAVStreamManagementClusterCaptureSnapshotParams value =
+  sendMessage mtrCameraAVStreamManagementClusterCaptureSnapshotParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @snapshotStreamID@
-snapshotStreamIDSelector :: Selector
+snapshotStreamIDSelector :: Selector '[] (Id NSNumber)
 snapshotStreamIDSelector = mkSelector "snapshotStreamID"
 
 -- | @Selector@ for @setSnapshotStreamID:@
-setSnapshotStreamIDSelector :: Selector
+setSnapshotStreamIDSelector :: Selector '[Id NSNumber] ()
 setSnapshotStreamIDSelector = mkSelector "setSnapshotStreamID:"
 
 -- | @Selector@ for @requestedResolution@
-requestedResolutionSelector :: Selector
+requestedResolutionSelector :: Selector '[] (Id MTRCameraAVStreamManagementClusterVideoResolutionStruct)
 requestedResolutionSelector = mkSelector "requestedResolution"
 
 -- | @Selector@ for @setRequestedResolution:@
-setRequestedResolutionSelector :: Selector
+setRequestedResolutionSelector :: Selector '[Id MTRCameraAVStreamManagementClusterVideoResolutionStruct] ()
 setRequestedResolutionSelector = mkSelector "setRequestedResolution:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

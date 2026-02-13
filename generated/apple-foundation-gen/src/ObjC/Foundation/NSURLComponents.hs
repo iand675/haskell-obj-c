@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -58,71 +59,67 @@ module ObjC.Foundation.NSURLComponents
   , setQueryItems
   , percentEncodedQueryItems
   , setPercentEncodedQueryItems
-  , initSelector
-  , initWithURL_resolvingAgainstBaseURLSelector
-  , componentsWithURL_resolvingAgainstBaseURLSelector
-  , initWithStringSelector
   , componentsWithStringSelector
-  , initWithString_encodingInvalidCharactersSelector
   , componentsWithString_encodingInvalidCharactersSelector
-  , urlRelativeToURLSelector
-  , urlSelector
-  , stringSelector
-  , schemeSelector
-  , setSchemeSelector
-  , userSelector
-  , setUserSelector
-  , passwordSelector
-  , setPasswordSelector
-  , hostSelector
-  , setHostSelector
-  , portSelector
-  , setPortSelector
-  , pathSelector
-  , setPathSelector
-  , querySelector
-  , setQuerySelector
-  , fragmentSelector
-  , setFragmentSelector
-  , percentEncodedUserSelector
-  , setPercentEncodedUserSelector
-  , percentEncodedPasswordSelector
-  , setPercentEncodedPasswordSelector
-  , percentEncodedHostSelector
-  , setPercentEncodedHostSelector
-  , percentEncodedPathSelector
-  , setPercentEncodedPathSelector
-  , percentEncodedQuerySelector
-  , setPercentEncodedQuerySelector
-  , percentEncodedFragmentSelector
-  , setPercentEncodedFragmentSelector
+  , componentsWithURL_resolvingAgainstBaseURLSelector
   , encodedHostSelector
-  , setEncodedHostSelector
+  , fragmentSelector
+  , hostSelector
+  , initSelector
+  , initWithStringSelector
+  , initWithString_encodingInvalidCharactersSelector
+  , initWithURL_resolvingAgainstBaseURLSelector
+  , passwordSelector
+  , pathSelector
+  , percentEncodedFragmentSelector
+  , percentEncodedHostSelector
+  , percentEncodedPasswordSelector
+  , percentEncodedPathSelector
+  , percentEncodedQueryItemsSelector
+  , percentEncodedQuerySelector
+  , percentEncodedUserSelector
+  , portSelector
+  , queryItemsSelector
+  , querySelector
+  , rangeOfFragmentSelector
+  , rangeOfHostSelector
+  , rangeOfPasswordSelector
+  , rangeOfPathSelector
+  , rangeOfPortSelector
+  , rangeOfQuerySelector
   , rangeOfSchemeSelector
   , rangeOfUserSelector
-  , rangeOfPasswordSelector
-  , rangeOfHostSelector
-  , rangeOfPortSelector
-  , rangeOfPathSelector
-  , rangeOfQuerySelector
-  , rangeOfFragmentSelector
-  , queryItemsSelector
-  , setQueryItemsSelector
-  , percentEncodedQueryItemsSelector
+  , schemeSelector
+  , setEncodedHostSelector
+  , setFragmentSelector
+  , setHostSelector
+  , setPasswordSelector
+  , setPathSelector
+  , setPercentEncodedFragmentSelector
+  , setPercentEncodedHostSelector
+  , setPercentEncodedPasswordSelector
+  , setPercentEncodedPathSelector
   , setPercentEncodedQueryItemsSelector
+  , setPercentEncodedQuerySelector
+  , setPercentEncodedUserSelector
+  , setPortSelector
+  , setQueryItemsSelector
+  , setQuerySelector
+  , setSchemeSelector
+  , setUserSelector
+  , stringSelector
+  , urlRelativeToURLSelector
+  , urlSelector
+  , userSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -131,36 +128,32 @@ import ObjC.Foundation.Internal.Structs
 
 -- | @- init@
 init_ :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSURLComponents)
-init_ nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsurlComponents =
+  sendOwnedMessage nsurlComponents initSelector
 
 -- | @- initWithURL:resolvingAgainstBaseURL:@
 initWithURL_resolvingAgainstBaseURL :: (IsNSURLComponents nsurlComponents, IsNSURL url) => nsurlComponents -> url -> Bool -> IO (Id NSURLComponents)
-initWithURL_resolvingAgainstBaseURL nsurlComponents  url resolve =
-  withObjCPtr url $ \raw_url ->
-      sendMsg nsurlComponents (mkSelector "initWithURL:resolvingAgainstBaseURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (if resolve then 1 else 0)] >>= ownedObject . castPtr
+initWithURL_resolvingAgainstBaseURL nsurlComponents url resolve =
+  sendOwnedMessage nsurlComponents initWithURL_resolvingAgainstBaseURLSelector (toNSURL url) resolve
 
 -- | @+ componentsWithURL:resolvingAgainstBaseURL:@
 componentsWithURL_resolvingAgainstBaseURL :: IsNSURL url => url -> Bool -> IO (Id NSURLComponents)
 componentsWithURL_resolvingAgainstBaseURL url resolve =
   do
     cls' <- getRequiredClass "NSURLComponents"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "componentsWithURL:resolvingAgainstBaseURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCULong (if resolve then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' componentsWithURL_resolvingAgainstBaseURLSelector (toNSURL url) resolve
 
 -- | @- initWithString:@
 initWithString :: (IsNSURLComponents nsurlComponents, IsNSString urlString) => nsurlComponents -> urlString -> IO (Id NSURLComponents)
-initWithString nsurlComponents  urlString =
-  withObjCPtr urlString $ \raw_urlString ->
-      sendMsg nsurlComponents (mkSelector "initWithString:") (retPtr retVoid) [argPtr (castPtr raw_urlString :: Ptr ())] >>= ownedObject . castPtr
+initWithString nsurlComponents urlString =
+  sendOwnedMessage nsurlComponents initWithStringSelector (toNSString urlString)
 
 -- | @+ componentsWithString:@
 componentsWithString :: IsNSString urlString => urlString -> IO (Id NSURLComponents)
 componentsWithString urlString =
   do
     cls' <- getRequiredClass "NSURLComponents"
-    withObjCPtr urlString $ \raw_urlString ->
-      sendClassMsg cls' (mkSelector "componentsWithString:") (retPtr retVoid) [argPtr (castPtr raw_urlString :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' componentsWithStringSelector (toNSString urlString)
 
 -- | Initializes an @NSURLComponents@ with a URL string and the option to add (or skip) IDNA- and percent-encoding of invalid characters. If @encodingInvalidCharacters@ is false, and the URL string is invalid according to RFC 3986, @nil@ is returned. If @encodingInvalidCharacters@ is true, @NSURLComponents@ will try to encode the string to create a valid URL. If the URL string is still invalid after encoding, @nil@ is returned.
 --
@@ -168,9 +161,8 @@ componentsWithString urlString =
 --
 -- ObjC selector: @- initWithString:encodingInvalidCharacters:@
 initWithString_encodingInvalidCharacters :: (IsNSURLComponents nsurlComponents, IsNSString urlString) => nsurlComponents -> urlString -> Bool -> IO (Id NSURLComponents)
-initWithString_encodingInvalidCharacters nsurlComponents  urlString encodingInvalidCharacters =
-  withObjCPtr urlString $ \raw_urlString ->
-      sendMsg nsurlComponents (mkSelector "initWithString:encodingInvalidCharacters:") (retPtr retVoid) [argPtr (castPtr raw_urlString :: Ptr ()), argCULong (if encodingInvalidCharacters then 1 else 0)] >>= ownedObject . castPtr
+initWithString_encodingInvalidCharacters nsurlComponents urlString encodingInvalidCharacters =
+  sendOwnedMessage nsurlComponents initWithString_encodingInvalidCharactersSelector (toNSString urlString) encodingInvalidCharacters
 
 -- | Initializes and returns a newly created @NSURLComponents@ with a URL string and the option to add (or skip) IDNA- and percent-encoding of invalid characters. If @encodingInvalidCharacters@ is false, and the URL string is invalid according to RFC 3986, @nil@ is returned. If @encodingInvalidCharacters@ is true, @NSURLComponents@ will try to encode the string to create a valid URL. If the URL string is still invalid after encoding, nil is returned.
 --
@@ -181,461 +173,442 @@ componentsWithString_encodingInvalidCharacters :: IsNSString urlString => urlStr
 componentsWithString_encodingInvalidCharacters urlString encodingInvalidCharacters =
   do
     cls' <- getRequiredClass "NSURLComponents"
-    withObjCPtr urlString $ \raw_urlString ->
-      sendClassMsg cls' (mkSelector "componentsWithString:encodingInvalidCharacters:") (retPtr retVoid) [argPtr (castPtr raw_urlString :: Ptr ()), argCULong (if encodingInvalidCharacters then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' componentsWithString_encodingInvalidCharactersSelector (toNSString urlString) encodingInvalidCharacters
 
 -- | @- URLRelativeToURL:@
 urlRelativeToURL :: (IsNSURLComponents nsurlComponents, IsNSURL baseURL) => nsurlComponents -> baseURL -> IO (Id NSURL)
-urlRelativeToURL nsurlComponents  baseURL =
-  withObjCPtr baseURL $ \raw_baseURL ->
-      sendMsg nsurlComponents (mkSelector "URLRelativeToURL:") (retPtr retVoid) [argPtr (castPtr raw_baseURL :: Ptr ())] >>= retainedObject . castPtr
+urlRelativeToURL nsurlComponents baseURL =
+  sendMessage nsurlComponents urlRelativeToURLSelector (toNSURL baseURL)
 
 -- | @- URL@
 url :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSURL)
-url nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url nsurlComponents =
+  sendMessage nsurlComponents urlSelector
 
 -- | @- string@
 string :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-string nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string nsurlComponents =
+  sendMessage nsurlComponents stringSelector
 
 -- | @- scheme@
 scheme :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-scheme nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "scheme") (retPtr retVoid) [] >>= retainedObject . castPtr
+scheme nsurlComponents =
+  sendMessage nsurlComponents schemeSelector
 
 -- | @- setScheme:@
 setScheme :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setScheme nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setScheme:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScheme nsurlComponents value =
+  sendMessage nsurlComponents setSchemeSelector (toNSString value)
 
 -- | @- user@
 user :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-user nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "user") (retPtr retVoid) [] >>= retainedObject . castPtr
+user nsurlComponents =
+  sendMessage nsurlComponents userSelector
 
 -- | @- setUser:@
 setUser :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setUser nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setUser:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUser nsurlComponents value =
+  sendMessage nsurlComponents setUserSelector (toNSString value)
 
 -- | @- password@
 password :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-password nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "password") (retPtr retVoid) [] >>= retainedObject . castPtr
+password nsurlComponents =
+  sendMessage nsurlComponents passwordSelector
 
 -- | @- setPassword:@
 setPassword :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setPassword nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPassword:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPassword nsurlComponents value =
+  sendMessage nsurlComponents setPasswordSelector (toNSString value)
 
 -- | @- host@
 host :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-host nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "host") (retPtr retVoid) [] >>= retainedObject . castPtr
+host nsurlComponents =
+  sendMessage nsurlComponents hostSelector
 
 -- | @- setHost:@
 setHost :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setHost nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setHost:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHost nsurlComponents value =
+  sendMessage nsurlComponents setHostSelector (toNSString value)
 
 -- | @- port@
 port :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSNumber)
-port nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "port") (retPtr retVoid) [] >>= retainedObject . castPtr
+port nsurlComponents =
+  sendMessage nsurlComponents portSelector
 
 -- | @- setPort:@
 setPort :: (IsNSURLComponents nsurlComponents, IsNSNumber value) => nsurlComponents -> value -> IO ()
-setPort nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPort:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPort nsurlComponents value =
+  sendMessage nsurlComponents setPortSelector (toNSNumber value)
 
 -- | @- path@
 path :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-path nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path nsurlComponents =
+  sendMessage nsurlComponents pathSelector
 
 -- | @- setPath:@
 setPath :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setPath nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPath nsurlComponents value =
+  sendMessage nsurlComponents setPathSelector (toNSString value)
 
 -- | @- query@
 query :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-query nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "query") (retPtr retVoid) [] >>= retainedObject . castPtr
+query nsurlComponents =
+  sendMessage nsurlComponents querySelector
 
 -- | @- setQuery:@
 setQuery :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setQuery nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setQuery:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setQuery nsurlComponents value =
+  sendMessage nsurlComponents setQuerySelector (toNSString value)
 
 -- | @- fragment@
 fragment :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-fragment nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "fragment") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragment nsurlComponents =
+  sendMessage nsurlComponents fragmentSelector
 
 -- | @- setFragment:@
 setFragment :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setFragment nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setFragment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFragment nsurlComponents value =
+  sendMessage nsurlComponents setFragmentSelector (toNSString value)
 
 -- | @- percentEncodedUser@
 percentEncodedUser :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-percentEncodedUser nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "percentEncodedUser") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentEncodedUser nsurlComponents =
+  sendMessage nsurlComponents percentEncodedUserSelector
 
 -- | @- setPercentEncodedUser:@
 setPercentEncodedUser :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setPercentEncodedUser nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPercentEncodedUser:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentEncodedUser nsurlComponents value =
+  sendMessage nsurlComponents setPercentEncodedUserSelector (toNSString value)
 
 -- | @- percentEncodedPassword@
 percentEncodedPassword :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-percentEncodedPassword nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "percentEncodedPassword") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentEncodedPassword nsurlComponents =
+  sendMessage nsurlComponents percentEncodedPasswordSelector
 
 -- | @- setPercentEncodedPassword:@
 setPercentEncodedPassword :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setPercentEncodedPassword nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPercentEncodedPassword:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentEncodedPassword nsurlComponents value =
+  sendMessage nsurlComponents setPercentEncodedPasswordSelector (toNSString value)
 
 -- | @- percentEncodedHost@
 percentEncodedHost :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-percentEncodedHost nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "percentEncodedHost") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentEncodedHost nsurlComponents =
+  sendMessage nsurlComponents percentEncodedHostSelector
 
 -- | @- setPercentEncodedHost:@
 setPercentEncodedHost :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setPercentEncodedHost nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPercentEncodedHost:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentEncodedHost nsurlComponents value =
+  sendMessage nsurlComponents setPercentEncodedHostSelector (toNSString value)
 
 -- | @- percentEncodedPath@
 percentEncodedPath :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-percentEncodedPath nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "percentEncodedPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentEncodedPath nsurlComponents =
+  sendMessage nsurlComponents percentEncodedPathSelector
 
 -- | @- setPercentEncodedPath:@
 setPercentEncodedPath :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setPercentEncodedPath nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPercentEncodedPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentEncodedPath nsurlComponents value =
+  sendMessage nsurlComponents setPercentEncodedPathSelector (toNSString value)
 
 -- | @- percentEncodedQuery@
 percentEncodedQuery :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-percentEncodedQuery nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "percentEncodedQuery") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentEncodedQuery nsurlComponents =
+  sendMessage nsurlComponents percentEncodedQuerySelector
 
 -- | @- setPercentEncodedQuery:@
 setPercentEncodedQuery :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setPercentEncodedQuery nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPercentEncodedQuery:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentEncodedQuery nsurlComponents value =
+  sendMessage nsurlComponents setPercentEncodedQuerySelector (toNSString value)
 
 -- | @- percentEncodedFragment@
 percentEncodedFragment :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-percentEncodedFragment nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "percentEncodedFragment") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentEncodedFragment nsurlComponents =
+  sendMessage nsurlComponents percentEncodedFragmentSelector
 
 -- | @- setPercentEncodedFragment:@
 setPercentEncodedFragment :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setPercentEncodedFragment nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPercentEncodedFragment:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentEncodedFragment nsurlComponents value =
+  sendMessage nsurlComponents setPercentEncodedFragmentSelector (toNSString value)
 
 -- | @- encodedHost@
 encodedHost :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSString)
-encodedHost nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "encodedHost") (retPtr retVoid) [] >>= retainedObject . castPtr
+encodedHost nsurlComponents =
+  sendMessage nsurlComponents encodedHostSelector
 
 -- | @- setEncodedHost:@
 setEncodedHost :: (IsNSURLComponents nsurlComponents, IsNSString value) => nsurlComponents -> value -> IO ()
-setEncodedHost nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setEncodedHost:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEncodedHost nsurlComponents value =
+  sendMessage nsurlComponents setEncodedHostSelector (toNSString value)
 
 -- | @- rangeOfScheme@
 rangeOfScheme :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO NSRange
-rangeOfScheme nsurlComponents  =
-    sendMsgStret nsurlComponents (mkSelector "rangeOfScheme") retNSRange []
+rangeOfScheme nsurlComponents =
+  sendMessage nsurlComponents rangeOfSchemeSelector
 
 -- | @- rangeOfUser@
 rangeOfUser :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO NSRange
-rangeOfUser nsurlComponents  =
-    sendMsgStret nsurlComponents (mkSelector "rangeOfUser") retNSRange []
+rangeOfUser nsurlComponents =
+  sendMessage nsurlComponents rangeOfUserSelector
 
 -- | @- rangeOfPassword@
 rangeOfPassword :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO NSRange
-rangeOfPassword nsurlComponents  =
-    sendMsgStret nsurlComponents (mkSelector "rangeOfPassword") retNSRange []
+rangeOfPassword nsurlComponents =
+  sendMessage nsurlComponents rangeOfPasswordSelector
 
 -- | @- rangeOfHost@
 rangeOfHost :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO NSRange
-rangeOfHost nsurlComponents  =
-    sendMsgStret nsurlComponents (mkSelector "rangeOfHost") retNSRange []
+rangeOfHost nsurlComponents =
+  sendMessage nsurlComponents rangeOfHostSelector
 
 -- | @- rangeOfPort@
 rangeOfPort :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO NSRange
-rangeOfPort nsurlComponents  =
-    sendMsgStret nsurlComponents (mkSelector "rangeOfPort") retNSRange []
+rangeOfPort nsurlComponents =
+  sendMessage nsurlComponents rangeOfPortSelector
 
 -- | @- rangeOfPath@
 rangeOfPath :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO NSRange
-rangeOfPath nsurlComponents  =
-    sendMsgStret nsurlComponents (mkSelector "rangeOfPath") retNSRange []
+rangeOfPath nsurlComponents =
+  sendMessage nsurlComponents rangeOfPathSelector
 
 -- | @- rangeOfQuery@
 rangeOfQuery :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO NSRange
-rangeOfQuery nsurlComponents  =
-    sendMsgStret nsurlComponents (mkSelector "rangeOfQuery") retNSRange []
+rangeOfQuery nsurlComponents =
+  sendMessage nsurlComponents rangeOfQuerySelector
 
 -- | @- rangeOfFragment@
 rangeOfFragment :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO NSRange
-rangeOfFragment nsurlComponents  =
-    sendMsgStret nsurlComponents (mkSelector "rangeOfFragment") retNSRange []
+rangeOfFragment nsurlComponents =
+  sendMessage nsurlComponents rangeOfFragmentSelector
 
 -- | @- queryItems@
 queryItems :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSArray)
-queryItems nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "queryItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+queryItems nsurlComponents =
+  sendMessage nsurlComponents queryItemsSelector
 
 -- | @- setQueryItems:@
 setQueryItems :: (IsNSURLComponents nsurlComponents, IsNSArray value) => nsurlComponents -> value -> IO ()
-setQueryItems nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setQueryItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setQueryItems nsurlComponents value =
+  sendMessage nsurlComponents setQueryItemsSelector (toNSArray value)
 
 -- | @- percentEncodedQueryItems@
 percentEncodedQueryItems :: IsNSURLComponents nsurlComponents => nsurlComponents -> IO (Id NSArray)
-percentEncodedQueryItems nsurlComponents  =
-    sendMsg nsurlComponents (mkSelector "percentEncodedQueryItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+percentEncodedQueryItems nsurlComponents =
+  sendMessage nsurlComponents percentEncodedQueryItemsSelector
 
 -- | @- setPercentEncodedQueryItems:@
 setPercentEncodedQueryItems :: (IsNSURLComponents nsurlComponents, IsNSArray value) => nsurlComponents -> value -> IO ()
-setPercentEncodedQueryItems nsurlComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsurlComponents (mkSelector "setPercentEncodedQueryItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPercentEncodedQueryItems nsurlComponents value =
+  sendMessage nsurlComponents setPercentEncodedQueryItemsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSURLComponents)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithURL:resolvingAgainstBaseURL:@
-initWithURL_resolvingAgainstBaseURLSelector :: Selector
+initWithURL_resolvingAgainstBaseURLSelector :: Selector '[Id NSURL, Bool] (Id NSURLComponents)
 initWithURL_resolvingAgainstBaseURLSelector = mkSelector "initWithURL:resolvingAgainstBaseURL:"
 
 -- | @Selector@ for @componentsWithURL:resolvingAgainstBaseURL:@
-componentsWithURL_resolvingAgainstBaseURLSelector :: Selector
+componentsWithURL_resolvingAgainstBaseURLSelector :: Selector '[Id NSURL, Bool] (Id NSURLComponents)
 componentsWithURL_resolvingAgainstBaseURLSelector = mkSelector "componentsWithURL:resolvingAgainstBaseURL:"
 
 -- | @Selector@ for @initWithString:@
-initWithStringSelector :: Selector
+initWithStringSelector :: Selector '[Id NSString] (Id NSURLComponents)
 initWithStringSelector = mkSelector "initWithString:"
 
 -- | @Selector@ for @componentsWithString:@
-componentsWithStringSelector :: Selector
+componentsWithStringSelector :: Selector '[Id NSString] (Id NSURLComponents)
 componentsWithStringSelector = mkSelector "componentsWithString:"
 
 -- | @Selector@ for @initWithString:encodingInvalidCharacters:@
-initWithString_encodingInvalidCharactersSelector :: Selector
+initWithString_encodingInvalidCharactersSelector :: Selector '[Id NSString, Bool] (Id NSURLComponents)
 initWithString_encodingInvalidCharactersSelector = mkSelector "initWithString:encodingInvalidCharacters:"
 
 -- | @Selector@ for @componentsWithString:encodingInvalidCharacters:@
-componentsWithString_encodingInvalidCharactersSelector :: Selector
+componentsWithString_encodingInvalidCharactersSelector :: Selector '[Id NSString, Bool] (Id NSURLComponents)
 componentsWithString_encodingInvalidCharactersSelector = mkSelector "componentsWithString:encodingInvalidCharacters:"
 
 -- | @Selector@ for @URLRelativeToURL:@
-urlRelativeToURLSelector :: Selector
+urlRelativeToURLSelector :: Selector '[Id NSURL] (Id NSURL)
 urlRelativeToURLSelector = mkSelector "URLRelativeToURL:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @scheme@
-schemeSelector :: Selector
+schemeSelector :: Selector '[] (Id NSString)
 schemeSelector = mkSelector "scheme"
 
 -- | @Selector@ for @setScheme:@
-setSchemeSelector :: Selector
+setSchemeSelector :: Selector '[Id NSString] ()
 setSchemeSelector = mkSelector "setScheme:"
 
 -- | @Selector@ for @user@
-userSelector :: Selector
+userSelector :: Selector '[] (Id NSString)
 userSelector = mkSelector "user"
 
 -- | @Selector@ for @setUser:@
-setUserSelector :: Selector
+setUserSelector :: Selector '[Id NSString] ()
 setUserSelector = mkSelector "setUser:"
 
 -- | @Selector@ for @password@
-passwordSelector :: Selector
+passwordSelector :: Selector '[] (Id NSString)
 passwordSelector = mkSelector "password"
 
 -- | @Selector@ for @setPassword:@
-setPasswordSelector :: Selector
+setPasswordSelector :: Selector '[Id NSString] ()
 setPasswordSelector = mkSelector "setPassword:"
 
 -- | @Selector@ for @host@
-hostSelector :: Selector
+hostSelector :: Selector '[] (Id NSString)
 hostSelector = mkSelector "host"
 
 -- | @Selector@ for @setHost:@
-setHostSelector :: Selector
+setHostSelector :: Selector '[Id NSString] ()
 setHostSelector = mkSelector "setHost:"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] (Id NSNumber)
 portSelector = mkSelector "port"
 
 -- | @Selector@ for @setPort:@
-setPortSelector :: Selector
+setPortSelector :: Selector '[Id NSNumber] ()
 setPortSelector = mkSelector "setPort:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id NSString)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @setPath:@
-setPathSelector :: Selector
+setPathSelector :: Selector '[Id NSString] ()
 setPathSelector = mkSelector "setPath:"
 
 -- | @Selector@ for @query@
-querySelector :: Selector
+querySelector :: Selector '[] (Id NSString)
 querySelector = mkSelector "query"
 
 -- | @Selector@ for @setQuery:@
-setQuerySelector :: Selector
+setQuerySelector :: Selector '[Id NSString] ()
 setQuerySelector = mkSelector "setQuery:"
 
 -- | @Selector@ for @fragment@
-fragmentSelector :: Selector
+fragmentSelector :: Selector '[] (Id NSString)
 fragmentSelector = mkSelector "fragment"
 
 -- | @Selector@ for @setFragment:@
-setFragmentSelector :: Selector
+setFragmentSelector :: Selector '[Id NSString] ()
 setFragmentSelector = mkSelector "setFragment:"
 
 -- | @Selector@ for @percentEncodedUser@
-percentEncodedUserSelector :: Selector
+percentEncodedUserSelector :: Selector '[] (Id NSString)
 percentEncodedUserSelector = mkSelector "percentEncodedUser"
 
 -- | @Selector@ for @setPercentEncodedUser:@
-setPercentEncodedUserSelector :: Selector
+setPercentEncodedUserSelector :: Selector '[Id NSString] ()
 setPercentEncodedUserSelector = mkSelector "setPercentEncodedUser:"
 
 -- | @Selector@ for @percentEncodedPassword@
-percentEncodedPasswordSelector :: Selector
+percentEncodedPasswordSelector :: Selector '[] (Id NSString)
 percentEncodedPasswordSelector = mkSelector "percentEncodedPassword"
 
 -- | @Selector@ for @setPercentEncodedPassword:@
-setPercentEncodedPasswordSelector :: Selector
+setPercentEncodedPasswordSelector :: Selector '[Id NSString] ()
 setPercentEncodedPasswordSelector = mkSelector "setPercentEncodedPassword:"
 
 -- | @Selector@ for @percentEncodedHost@
-percentEncodedHostSelector :: Selector
+percentEncodedHostSelector :: Selector '[] (Id NSString)
 percentEncodedHostSelector = mkSelector "percentEncodedHost"
 
 -- | @Selector@ for @setPercentEncodedHost:@
-setPercentEncodedHostSelector :: Selector
+setPercentEncodedHostSelector :: Selector '[Id NSString] ()
 setPercentEncodedHostSelector = mkSelector "setPercentEncodedHost:"
 
 -- | @Selector@ for @percentEncodedPath@
-percentEncodedPathSelector :: Selector
+percentEncodedPathSelector :: Selector '[] (Id NSString)
 percentEncodedPathSelector = mkSelector "percentEncodedPath"
 
 -- | @Selector@ for @setPercentEncodedPath:@
-setPercentEncodedPathSelector :: Selector
+setPercentEncodedPathSelector :: Selector '[Id NSString] ()
 setPercentEncodedPathSelector = mkSelector "setPercentEncodedPath:"
 
 -- | @Selector@ for @percentEncodedQuery@
-percentEncodedQuerySelector :: Selector
+percentEncodedQuerySelector :: Selector '[] (Id NSString)
 percentEncodedQuerySelector = mkSelector "percentEncodedQuery"
 
 -- | @Selector@ for @setPercentEncodedQuery:@
-setPercentEncodedQuerySelector :: Selector
+setPercentEncodedQuerySelector :: Selector '[Id NSString] ()
 setPercentEncodedQuerySelector = mkSelector "setPercentEncodedQuery:"
 
 -- | @Selector@ for @percentEncodedFragment@
-percentEncodedFragmentSelector :: Selector
+percentEncodedFragmentSelector :: Selector '[] (Id NSString)
 percentEncodedFragmentSelector = mkSelector "percentEncodedFragment"
 
 -- | @Selector@ for @setPercentEncodedFragment:@
-setPercentEncodedFragmentSelector :: Selector
+setPercentEncodedFragmentSelector :: Selector '[Id NSString] ()
 setPercentEncodedFragmentSelector = mkSelector "setPercentEncodedFragment:"
 
 -- | @Selector@ for @encodedHost@
-encodedHostSelector :: Selector
+encodedHostSelector :: Selector '[] (Id NSString)
 encodedHostSelector = mkSelector "encodedHost"
 
 -- | @Selector@ for @setEncodedHost:@
-setEncodedHostSelector :: Selector
+setEncodedHostSelector :: Selector '[Id NSString] ()
 setEncodedHostSelector = mkSelector "setEncodedHost:"
 
 -- | @Selector@ for @rangeOfScheme@
-rangeOfSchemeSelector :: Selector
+rangeOfSchemeSelector :: Selector '[] NSRange
 rangeOfSchemeSelector = mkSelector "rangeOfScheme"
 
 -- | @Selector@ for @rangeOfUser@
-rangeOfUserSelector :: Selector
+rangeOfUserSelector :: Selector '[] NSRange
 rangeOfUserSelector = mkSelector "rangeOfUser"
 
 -- | @Selector@ for @rangeOfPassword@
-rangeOfPasswordSelector :: Selector
+rangeOfPasswordSelector :: Selector '[] NSRange
 rangeOfPasswordSelector = mkSelector "rangeOfPassword"
 
 -- | @Selector@ for @rangeOfHost@
-rangeOfHostSelector :: Selector
+rangeOfHostSelector :: Selector '[] NSRange
 rangeOfHostSelector = mkSelector "rangeOfHost"
 
 -- | @Selector@ for @rangeOfPort@
-rangeOfPortSelector :: Selector
+rangeOfPortSelector :: Selector '[] NSRange
 rangeOfPortSelector = mkSelector "rangeOfPort"
 
 -- | @Selector@ for @rangeOfPath@
-rangeOfPathSelector :: Selector
+rangeOfPathSelector :: Selector '[] NSRange
 rangeOfPathSelector = mkSelector "rangeOfPath"
 
 -- | @Selector@ for @rangeOfQuery@
-rangeOfQuerySelector :: Selector
+rangeOfQuerySelector :: Selector '[] NSRange
 rangeOfQuerySelector = mkSelector "rangeOfQuery"
 
 -- | @Selector@ for @rangeOfFragment@
-rangeOfFragmentSelector :: Selector
+rangeOfFragmentSelector :: Selector '[] NSRange
 rangeOfFragmentSelector = mkSelector "rangeOfFragment"
 
 -- | @Selector@ for @queryItems@
-queryItemsSelector :: Selector
+queryItemsSelector :: Selector '[] (Id NSArray)
 queryItemsSelector = mkSelector "queryItems"
 
 -- | @Selector@ for @setQueryItems:@
-setQueryItemsSelector :: Selector
+setQueryItemsSelector :: Selector '[Id NSArray] ()
 setQueryItemsSelector = mkSelector "setQueryItems:"
 
 -- | @Selector@ for @percentEncodedQueryItems@
-percentEncodedQueryItemsSelector :: Selector
+percentEncodedQueryItemsSelector :: Selector '[] (Id NSArray)
 percentEncodedQueryItemsSelector = mkSelector "percentEncodedQueryItems"
 
 -- | @Selector@ for @setPercentEncodedQueryItems:@
-setPercentEncodedQueryItemsSelector :: Selector
+setPercentEncodedQueryItemsSelector :: Selector '[Id NSArray] ()
 setPercentEncodedQueryItemsSelector = mkSelector "setPercentEncodedQueryItems:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -42,34 +43,34 @@ module ObjC.Foundation.NSXMLElement
   , setAttributes
   , namespaces
   , setNamespaces
+  , addAttributeSelector
+  , addChildSelector
+  , addNamespaceSelector
+  , attributeForLocalName_URISelector
+  , attributeForNameSelector
+  , attributesSelector
+  , elementsForLocalName_URISelector
+  , elementsForNameSelector
+  , initWithKind_optionsSelector
   , initWithNameSelector
   , initWithName_URISelector
   , initWithName_stringValueSelector
   , initWithXMLString_errorSelector
-  , initWithKind_optionsSelector
-  , elementsForNameSelector
-  , elementsForLocalName_URISelector
-  , addAttributeSelector
-  , removeAttributeForNameSelector
-  , setAttributesWithDictionarySelector
-  , attributeForNameSelector
-  , attributeForLocalName_URISelector
-  , addNamespaceSelector
-  , removeNamespaceForPrefixSelector
-  , namespaceForPrefixSelector
-  , resolveNamespaceForNameSelector
-  , resolvePrefixForNamespaceURISelector
   , insertChild_atIndexSelector
   , insertChildren_atIndexSelector
-  , removeChildAtIndexSelector
-  , setChildrenSelector
-  , addChildSelector
-  , replaceChildAtIndex_withNodeSelector
-  , normalizeAdjacentTextNodesPreservingCDATASelector
-  , setAttributesAsDictionarySelector
-  , attributesSelector
-  , setAttributesSelector
+  , namespaceForPrefixSelector
   , namespacesSelector
+  , normalizeAdjacentTextNodesPreservingCDATASelector
+  , removeAttributeForNameSelector
+  , removeChildAtIndexSelector
+  , removeNamespaceForPrefixSelector
+  , replaceChildAtIndex_withNodeSelector
+  , resolveNamespaceForNameSelector
+  , resolvePrefixForNamespaceURISelector
+  , setAttributesAsDictionarySelector
+  , setAttributesSelector
+  , setAttributesWithDictionarySelector
+  , setChildrenSelector
   , setNamespacesSelector
 
   -- * Enum types
@@ -119,15 +120,11 @@ module ObjC.Foundation.NSXMLElement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -140,9 +137,8 @@ import ObjC.Foundation.Internal.Enums
 --
 -- ObjC selector: @- initWithName:@
 initWithName :: (IsNSXMLElement nsxmlElement, IsNSString name) => nsxmlElement -> name -> IO (Id NSXMLElement)
-initWithName nsxmlElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmlElement (mkSelector "initWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithName nsxmlElement name =
+  sendOwnedMessage nsxmlElement initWithNameSelector (toNSString name)
 
 -- | initWithName:URI:
 --
@@ -150,10 +146,8 @@ initWithName nsxmlElement  name =
 --
 -- ObjC selector: @- initWithName:URI:@
 initWithName_URI :: (IsNSXMLElement nsxmlElement, IsNSString name, IsNSString uri) => nsxmlElement -> name -> uri -> IO (Id NSXMLElement)
-initWithName_URI nsxmlElement  name uri =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr uri $ \raw_uri ->
-        sendMsg nsxmlElement (mkSelector "initWithName:URI:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_uri :: Ptr ())] >>= ownedObject . castPtr
+initWithName_URI nsxmlElement name uri =
+  sendOwnedMessage nsxmlElement initWithName_URISelector (toNSString name) (toNSString uri)
 
 -- | initWithName:stringValue:
 --
@@ -161,10 +155,8 @@ initWithName_URI nsxmlElement  name uri =
 --
 -- ObjC selector: @- initWithName:stringValue:@
 initWithName_stringValue :: (IsNSXMLElement nsxmlElement, IsNSString name, IsNSString string) => nsxmlElement -> name -> string -> IO (Id NSXMLElement)
-initWithName_stringValue nsxmlElement  name string =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr string $ \raw_string ->
-        sendMsg nsxmlElement (mkSelector "initWithName:stringValue:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithName_stringValue nsxmlElement name string =
+  sendOwnedMessage nsxmlElement initWithName_stringValueSelector (toNSString name) (toNSString string)
 
 -- | initWithXMLString:error:
 --
@@ -172,15 +164,13 @@ initWithName_stringValue nsxmlElement  name string =
 --
 -- ObjC selector: @- initWithXMLString:error:@
 initWithXMLString_error :: (IsNSXMLElement nsxmlElement, IsNSString string, IsNSError error_) => nsxmlElement -> string -> error_ -> IO (Id NSXMLElement)
-initWithXMLString_error nsxmlElement  string error_ =
-  withObjCPtr string $ \raw_string ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg nsxmlElement (mkSelector "initWithXMLString:error:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithXMLString_error nsxmlElement string error_ =
+  sendOwnedMessage nsxmlElement initWithXMLString_errorSelector (toNSString string) (toNSError error_)
 
 -- | @- initWithKind:options:@
 initWithKind_options :: IsNSXMLElement nsxmlElement => nsxmlElement -> NSXMLNodeKind -> NSXMLNodeOptions -> IO (Id NSXMLElement)
-initWithKind_options nsxmlElement  kind options =
-    sendMsg nsxmlElement (mkSelector "initWithKind:options:") (retPtr retVoid) [argCULong (coerce kind), argCULong (coerce options)] >>= ownedObject . castPtr
+initWithKind_options nsxmlElement kind options =
+  sendOwnedMessage nsxmlElement initWithKind_optionsSelector kind options
 
 -- | elementsForName:
 --
@@ -188,9 +178,8 @@ initWithKind_options nsxmlElement  kind options =
 --
 -- ObjC selector: @- elementsForName:@
 elementsForName :: (IsNSXMLElement nsxmlElement, IsNSString name) => nsxmlElement -> name -> IO (Id NSArray)
-elementsForName nsxmlElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmlElement (mkSelector "elementsForName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+elementsForName nsxmlElement name =
+  sendMessage nsxmlElement elementsForNameSelector (toNSString name)
 
 -- | elementsForLocalName:URI
 --
@@ -198,10 +187,8 @@ elementsForName nsxmlElement  name =
 --
 -- ObjC selector: @- elementsForLocalName:URI:@
 elementsForLocalName_URI :: (IsNSXMLElement nsxmlElement, IsNSString localName, IsNSString uri) => nsxmlElement -> localName -> uri -> IO (Id NSArray)
-elementsForLocalName_URI nsxmlElement  localName uri =
-  withObjCPtr localName $ \raw_localName ->
-    withObjCPtr uri $ \raw_uri ->
-        sendMsg nsxmlElement (mkSelector "elementsForLocalName:URI:") (retPtr retVoid) [argPtr (castPtr raw_localName :: Ptr ()), argPtr (castPtr raw_uri :: Ptr ())] >>= retainedObject . castPtr
+elementsForLocalName_URI nsxmlElement localName uri =
+  sendMessage nsxmlElement elementsForLocalName_URISelector (toNSString localName) (toNSString uri)
 
 -- | addAttribute:
 --
@@ -209,9 +196,8 @@ elementsForLocalName_URI nsxmlElement  localName uri =
 --
 -- ObjC selector: @- addAttribute:@
 addAttribute :: (IsNSXMLElement nsxmlElement, IsNSXMLNode attribute) => nsxmlElement -> attribute -> IO ()
-addAttribute nsxmlElement  attribute =
-  withObjCPtr attribute $ \raw_attribute ->
-      sendMsg nsxmlElement (mkSelector "addAttribute:") retVoid [argPtr (castPtr raw_attribute :: Ptr ())]
+addAttribute nsxmlElement attribute =
+  sendMessage nsxmlElement addAttributeSelector (toNSXMLNode attribute)
 
 -- | removeAttributeForName:
 --
@@ -219,9 +205,8 @@ addAttribute nsxmlElement  attribute =
 --
 -- ObjC selector: @- removeAttributeForName:@
 removeAttributeForName :: (IsNSXMLElement nsxmlElement, IsNSString name) => nsxmlElement -> name -> IO ()
-removeAttributeForName nsxmlElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmlElement (mkSelector "removeAttributeForName:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+removeAttributeForName nsxmlElement name =
+  sendMessage nsxmlElement removeAttributeForNameSelector (toNSString name)
 
 -- | setAttributesWithDictionary:
 --
@@ -229,9 +214,8 @@ removeAttributeForName nsxmlElement  name =
 --
 -- ObjC selector: @- setAttributesWithDictionary:@
 setAttributesWithDictionary :: (IsNSXMLElement nsxmlElement, IsNSDictionary attributes) => nsxmlElement -> attributes -> IO ()
-setAttributesWithDictionary nsxmlElement  attributes =
-  withObjCPtr attributes $ \raw_attributes ->
-      sendMsg nsxmlElement (mkSelector "setAttributesWithDictionary:") retVoid [argPtr (castPtr raw_attributes :: Ptr ())]
+setAttributesWithDictionary nsxmlElement attributes =
+  sendMessage nsxmlElement setAttributesWithDictionarySelector (toNSDictionary attributes)
 
 -- | attributeForName:
 --
@@ -239,9 +223,8 @@ setAttributesWithDictionary nsxmlElement  attributes =
 --
 -- ObjC selector: @- attributeForName:@
 attributeForName :: (IsNSXMLElement nsxmlElement, IsNSString name) => nsxmlElement -> name -> IO (Id NSXMLNode)
-attributeForName nsxmlElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmlElement (mkSelector "attributeForName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+attributeForName nsxmlElement name =
+  sendMessage nsxmlElement attributeForNameSelector (toNSString name)
 
 -- | attributeForLocalName:URI:
 --
@@ -249,10 +232,8 @@ attributeForName nsxmlElement  name =
 --
 -- ObjC selector: @- attributeForLocalName:URI:@
 attributeForLocalName_URI :: (IsNSXMLElement nsxmlElement, IsNSString localName, IsNSString uri) => nsxmlElement -> localName -> uri -> IO (Id NSXMLNode)
-attributeForLocalName_URI nsxmlElement  localName uri =
-  withObjCPtr localName $ \raw_localName ->
-    withObjCPtr uri $ \raw_uri ->
-        sendMsg nsxmlElement (mkSelector "attributeForLocalName:URI:") (retPtr retVoid) [argPtr (castPtr raw_localName :: Ptr ()), argPtr (castPtr raw_uri :: Ptr ())] >>= retainedObject . castPtr
+attributeForLocalName_URI nsxmlElement localName uri =
+  sendMessage nsxmlElement attributeForLocalName_URISelector (toNSString localName) (toNSString uri)
 
 -- | addNamespace:URI:
 --
@@ -260,9 +241,8 @@ attributeForLocalName_URI nsxmlElement  localName uri =
 --
 -- ObjC selector: @- addNamespace:@
 addNamespace :: (IsNSXMLElement nsxmlElement, IsNSXMLNode aNamespace) => nsxmlElement -> aNamespace -> IO ()
-addNamespace nsxmlElement  aNamespace =
-  withObjCPtr aNamespace $ \raw_aNamespace ->
-      sendMsg nsxmlElement (mkSelector "addNamespace:") retVoid [argPtr (castPtr raw_aNamespace :: Ptr ())]
+addNamespace nsxmlElement aNamespace =
+  sendMessage nsxmlElement addNamespaceSelector (toNSXMLNode aNamespace)
 
 -- | addNamespace:URI:
 --
@@ -270,9 +250,8 @@ addNamespace nsxmlElement  aNamespace =
 --
 -- ObjC selector: @- removeNamespaceForPrefix:@
 removeNamespaceForPrefix :: (IsNSXMLElement nsxmlElement, IsNSString name) => nsxmlElement -> name -> IO ()
-removeNamespaceForPrefix nsxmlElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmlElement (mkSelector "removeNamespaceForPrefix:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+removeNamespaceForPrefix nsxmlElement name =
+  sendMessage nsxmlElement removeNamespaceForPrefixSelector (toNSString name)
 
 -- | namespaceForPrefix:
 --
@@ -280,9 +259,8 @@ removeNamespaceForPrefix nsxmlElement  name =
 --
 -- ObjC selector: @- namespaceForPrefix:@
 namespaceForPrefix :: (IsNSXMLElement nsxmlElement, IsNSString name) => nsxmlElement -> name -> IO (Id NSXMLNode)
-namespaceForPrefix nsxmlElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmlElement (mkSelector "namespaceForPrefix:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+namespaceForPrefix nsxmlElement name =
+  sendMessage nsxmlElement namespaceForPrefixSelector (toNSString name)
 
 -- | resolveNamespaceForName:
 --
@@ -290,9 +268,8 @@ namespaceForPrefix nsxmlElement  name =
 --
 -- ObjC selector: @- resolveNamespaceForName:@
 resolveNamespaceForName :: (IsNSXMLElement nsxmlElement, IsNSString name) => nsxmlElement -> name -> IO (Id NSXMLNode)
-resolveNamespaceForName nsxmlElement  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxmlElement (mkSelector "resolveNamespaceForName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+resolveNamespaceForName nsxmlElement name =
+  sendMessage nsxmlElement resolveNamespaceForNameSelector (toNSString name)
 
 -- | resolvePrefixForNamespaceURI:
 --
@@ -300,9 +277,8 @@ resolveNamespaceForName nsxmlElement  name =
 --
 -- ObjC selector: @- resolvePrefixForNamespaceURI:@
 resolvePrefixForNamespaceURI :: (IsNSXMLElement nsxmlElement, IsNSString namespaceURI) => nsxmlElement -> namespaceURI -> IO (Id NSString)
-resolvePrefixForNamespaceURI nsxmlElement  namespaceURI =
-  withObjCPtr namespaceURI $ \raw_namespaceURI ->
-      sendMsg nsxmlElement (mkSelector "resolvePrefixForNamespaceURI:") (retPtr retVoid) [argPtr (castPtr raw_namespaceURI :: Ptr ())] >>= retainedObject . castPtr
+resolvePrefixForNamespaceURI nsxmlElement namespaceURI =
+  sendMessage nsxmlElement resolvePrefixForNamespaceURISelector (toNSString namespaceURI)
 
 -- | insertChild:atIndex:
 --
@@ -310,9 +286,8 @@ resolvePrefixForNamespaceURI nsxmlElement  namespaceURI =
 --
 -- ObjC selector: @- insertChild:atIndex:@
 insertChild_atIndex :: (IsNSXMLElement nsxmlElement, IsNSXMLNode child) => nsxmlElement -> child -> CULong -> IO ()
-insertChild_atIndex nsxmlElement  child index =
-  withObjCPtr child $ \raw_child ->
-      sendMsg nsxmlElement (mkSelector "insertChild:atIndex:") retVoid [argPtr (castPtr raw_child :: Ptr ()), argCULong index]
+insertChild_atIndex nsxmlElement child index =
+  sendMessage nsxmlElement insertChild_atIndexSelector (toNSXMLNode child) index
 
 -- | insertChildren:atIndex:
 --
@@ -320,9 +295,8 @@ insertChild_atIndex nsxmlElement  child index =
 --
 -- ObjC selector: @- insertChildren:atIndex:@
 insertChildren_atIndex :: (IsNSXMLElement nsxmlElement, IsNSArray children) => nsxmlElement -> children -> CULong -> IO ()
-insertChildren_atIndex nsxmlElement  children index =
-  withObjCPtr children $ \raw_children ->
-      sendMsg nsxmlElement (mkSelector "insertChildren:atIndex:") retVoid [argPtr (castPtr raw_children :: Ptr ()), argCULong index]
+insertChildren_atIndex nsxmlElement children index =
+  sendMessage nsxmlElement insertChildren_atIndexSelector (toNSArray children) index
 
 -- | removeChildAtIndex:atIndex:
 --
@@ -330,8 +304,8 @@ insertChildren_atIndex nsxmlElement  children index =
 --
 -- ObjC selector: @- removeChildAtIndex:@
 removeChildAtIndex :: IsNSXMLElement nsxmlElement => nsxmlElement -> CULong -> IO ()
-removeChildAtIndex nsxmlElement  index =
-    sendMsg nsxmlElement (mkSelector "removeChildAtIndex:") retVoid [argCULong index]
+removeChildAtIndex nsxmlElement index =
+  sendMessage nsxmlElement removeChildAtIndexSelector index
 
 -- | setChildren:
 --
@@ -339,9 +313,8 @@ removeChildAtIndex nsxmlElement  index =
 --
 -- ObjC selector: @- setChildren:@
 setChildren :: (IsNSXMLElement nsxmlElement, IsNSArray children) => nsxmlElement -> children -> IO ()
-setChildren nsxmlElement  children =
-  withObjCPtr children $ \raw_children ->
-      sendMsg nsxmlElement (mkSelector "setChildren:") retVoid [argPtr (castPtr raw_children :: Ptr ())]
+setChildren nsxmlElement children =
+  sendMessage nsxmlElement setChildrenSelector (toNSArray children)
 
 -- | addChild:
 --
@@ -349,9 +322,8 @@ setChildren nsxmlElement  children =
 --
 -- ObjC selector: @- addChild:@
 addChild :: (IsNSXMLElement nsxmlElement, IsNSXMLNode child) => nsxmlElement -> child -> IO ()
-addChild nsxmlElement  child =
-  withObjCPtr child $ \raw_child ->
-      sendMsg nsxmlElement (mkSelector "addChild:") retVoid [argPtr (castPtr raw_child :: Ptr ())]
+addChild nsxmlElement child =
+  sendMessage nsxmlElement addChildSelector (toNSXMLNode child)
 
 -- | replaceChildAtIndex:withNode:
 --
@@ -359,9 +331,8 @@ addChild nsxmlElement  child =
 --
 -- ObjC selector: @- replaceChildAtIndex:withNode:@
 replaceChildAtIndex_withNode :: (IsNSXMLElement nsxmlElement, IsNSXMLNode node) => nsxmlElement -> CULong -> node -> IO ()
-replaceChildAtIndex_withNode nsxmlElement  index node =
-  withObjCPtr node $ \raw_node ->
-      sendMsg nsxmlElement (mkSelector "replaceChildAtIndex:withNode:") retVoid [argCULong index, argPtr (castPtr raw_node :: Ptr ())]
+replaceChildAtIndex_withNode nsxmlElement index node =
+  sendMessage nsxmlElement replaceChildAtIndex_withNodeSelector index (toNSXMLNode node)
 
 -- | normalizeAdjacentTextNodesPreservingCDATA:
 --
@@ -369,8 +340,8 @@ replaceChildAtIndex_withNode nsxmlElement  index node =
 --
 -- ObjC selector: @- normalizeAdjacentTextNodesPreservingCDATA:@
 normalizeAdjacentTextNodesPreservingCDATA :: IsNSXMLElement nsxmlElement => nsxmlElement -> Bool -> IO ()
-normalizeAdjacentTextNodesPreservingCDATA nsxmlElement  preserve =
-    sendMsg nsxmlElement (mkSelector "normalizeAdjacentTextNodesPreservingCDATA:") retVoid [argCULong (if preserve then 1 else 0)]
+normalizeAdjacentTextNodesPreservingCDATA nsxmlElement preserve =
+  sendMessage nsxmlElement normalizeAdjacentTextNodesPreservingCDATASelector preserve
 
 -- | setAttributesAsDictionary:
 --
@@ -380,157 +351,154 @@ normalizeAdjacentTextNodesPreservingCDATA nsxmlElement  preserve =
 --
 -- ObjC selector: @- setAttributesAsDictionary:@
 setAttributesAsDictionary :: (IsNSXMLElement nsxmlElement, IsNSDictionary attributes) => nsxmlElement -> attributes -> IO ()
-setAttributesAsDictionary nsxmlElement  attributes =
-  withObjCPtr attributes $ \raw_attributes ->
-      sendMsg nsxmlElement (mkSelector "setAttributesAsDictionary:") retVoid [argPtr (castPtr raw_attributes :: Ptr ())]
+setAttributesAsDictionary nsxmlElement attributes =
+  sendMessage nsxmlElement setAttributesAsDictionarySelector (toNSDictionary attributes)
 
 -- | Set the attributes. In the case of duplicate names, the first attribute with the name is used.
 --
 -- ObjC selector: @- attributes@
 attributes :: IsNSXMLElement nsxmlElement => nsxmlElement -> IO (Id NSArray)
-attributes nsxmlElement  =
-    sendMsg nsxmlElement (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes nsxmlElement =
+  sendMessage nsxmlElement attributesSelector
 
 -- | Set the attributes. In the case of duplicate names, the first attribute with the name is used.
 --
 -- ObjC selector: @- setAttributes:@
 setAttributes :: (IsNSXMLElement nsxmlElement, IsNSArray value) => nsxmlElement -> value -> IO ()
-setAttributes nsxmlElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxmlElement (mkSelector "setAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributes nsxmlElement value =
+  sendMessage nsxmlElement setAttributesSelector (toNSArray value)
 
 -- | Set the namespaces. In the case of duplicate names, the first namespace with the name is used.
 --
 -- ObjC selector: @- namespaces@
 namespaces :: IsNSXMLElement nsxmlElement => nsxmlElement -> IO (Id NSArray)
-namespaces nsxmlElement  =
-    sendMsg nsxmlElement (mkSelector "namespaces") (retPtr retVoid) [] >>= retainedObject . castPtr
+namespaces nsxmlElement =
+  sendMessage nsxmlElement namespacesSelector
 
 -- | Set the namespaces. In the case of duplicate names, the first namespace with the name is used.
 --
 -- ObjC selector: @- setNamespaces:@
 setNamespaces :: (IsNSXMLElement nsxmlElement, IsNSArray value) => nsxmlElement -> value -> IO ()
-setNamespaces nsxmlElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxmlElement (mkSelector "setNamespaces:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNamespaces nsxmlElement value =
+  sendMessage nsxmlElement setNamespacesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:@
-initWithNameSelector :: Selector
+initWithNameSelector :: Selector '[Id NSString] (Id NSXMLElement)
 initWithNameSelector = mkSelector "initWithName:"
 
 -- | @Selector@ for @initWithName:URI:@
-initWithName_URISelector :: Selector
+initWithName_URISelector :: Selector '[Id NSString, Id NSString] (Id NSXMLElement)
 initWithName_URISelector = mkSelector "initWithName:URI:"
 
 -- | @Selector@ for @initWithName:stringValue:@
-initWithName_stringValueSelector :: Selector
+initWithName_stringValueSelector :: Selector '[Id NSString, Id NSString] (Id NSXMLElement)
 initWithName_stringValueSelector = mkSelector "initWithName:stringValue:"
 
 -- | @Selector@ for @initWithXMLString:error:@
-initWithXMLString_errorSelector :: Selector
+initWithXMLString_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSXMLElement)
 initWithXMLString_errorSelector = mkSelector "initWithXMLString:error:"
 
 -- | @Selector@ for @initWithKind:options:@
-initWithKind_optionsSelector :: Selector
+initWithKind_optionsSelector :: Selector '[NSXMLNodeKind, NSXMLNodeOptions] (Id NSXMLElement)
 initWithKind_optionsSelector = mkSelector "initWithKind:options:"
 
 -- | @Selector@ for @elementsForName:@
-elementsForNameSelector :: Selector
+elementsForNameSelector :: Selector '[Id NSString] (Id NSArray)
 elementsForNameSelector = mkSelector "elementsForName:"
 
 -- | @Selector@ for @elementsForLocalName:URI:@
-elementsForLocalName_URISelector :: Selector
+elementsForLocalName_URISelector :: Selector '[Id NSString, Id NSString] (Id NSArray)
 elementsForLocalName_URISelector = mkSelector "elementsForLocalName:URI:"
 
 -- | @Selector@ for @addAttribute:@
-addAttributeSelector :: Selector
+addAttributeSelector :: Selector '[Id NSXMLNode] ()
 addAttributeSelector = mkSelector "addAttribute:"
 
 -- | @Selector@ for @removeAttributeForName:@
-removeAttributeForNameSelector :: Selector
+removeAttributeForNameSelector :: Selector '[Id NSString] ()
 removeAttributeForNameSelector = mkSelector "removeAttributeForName:"
 
 -- | @Selector@ for @setAttributesWithDictionary:@
-setAttributesWithDictionarySelector :: Selector
+setAttributesWithDictionarySelector :: Selector '[Id NSDictionary] ()
 setAttributesWithDictionarySelector = mkSelector "setAttributesWithDictionary:"
 
 -- | @Selector@ for @attributeForName:@
-attributeForNameSelector :: Selector
+attributeForNameSelector :: Selector '[Id NSString] (Id NSXMLNode)
 attributeForNameSelector = mkSelector "attributeForName:"
 
 -- | @Selector@ for @attributeForLocalName:URI:@
-attributeForLocalName_URISelector :: Selector
+attributeForLocalName_URISelector :: Selector '[Id NSString, Id NSString] (Id NSXMLNode)
 attributeForLocalName_URISelector = mkSelector "attributeForLocalName:URI:"
 
 -- | @Selector@ for @addNamespace:@
-addNamespaceSelector :: Selector
+addNamespaceSelector :: Selector '[Id NSXMLNode] ()
 addNamespaceSelector = mkSelector "addNamespace:"
 
 -- | @Selector@ for @removeNamespaceForPrefix:@
-removeNamespaceForPrefixSelector :: Selector
+removeNamespaceForPrefixSelector :: Selector '[Id NSString] ()
 removeNamespaceForPrefixSelector = mkSelector "removeNamespaceForPrefix:"
 
 -- | @Selector@ for @namespaceForPrefix:@
-namespaceForPrefixSelector :: Selector
+namespaceForPrefixSelector :: Selector '[Id NSString] (Id NSXMLNode)
 namespaceForPrefixSelector = mkSelector "namespaceForPrefix:"
 
 -- | @Selector@ for @resolveNamespaceForName:@
-resolveNamespaceForNameSelector :: Selector
+resolveNamespaceForNameSelector :: Selector '[Id NSString] (Id NSXMLNode)
 resolveNamespaceForNameSelector = mkSelector "resolveNamespaceForName:"
 
 -- | @Selector@ for @resolvePrefixForNamespaceURI:@
-resolvePrefixForNamespaceURISelector :: Selector
+resolvePrefixForNamespaceURISelector :: Selector '[Id NSString] (Id NSString)
 resolvePrefixForNamespaceURISelector = mkSelector "resolvePrefixForNamespaceURI:"
 
 -- | @Selector@ for @insertChild:atIndex:@
-insertChild_atIndexSelector :: Selector
+insertChild_atIndexSelector :: Selector '[Id NSXMLNode, CULong] ()
 insertChild_atIndexSelector = mkSelector "insertChild:atIndex:"
 
 -- | @Selector@ for @insertChildren:atIndex:@
-insertChildren_atIndexSelector :: Selector
+insertChildren_atIndexSelector :: Selector '[Id NSArray, CULong] ()
 insertChildren_atIndexSelector = mkSelector "insertChildren:atIndex:"
 
 -- | @Selector@ for @removeChildAtIndex:@
-removeChildAtIndexSelector :: Selector
+removeChildAtIndexSelector :: Selector '[CULong] ()
 removeChildAtIndexSelector = mkSelector "removeChildAtIndex:"
 
 -- | @Selector@ for @setChildren:@
-setChildrenSelector :: Selector
+setChildrenSelector :: Selector '[Id NSArray] ()
 setChildrenSelector = mkSelector "setChildren:"
 
 -- | @Selector@ for @addChild:@
-addChildSelector :: Selector
+addChildSelector :: Selector '[Id NSXMLNode] ()
 addChildSelector = mkSelector "addChild:"
 
 -- | @Selector@ for @replaceChildAtIndex:withNode:@
-replaceChildAtIndex_withNodeSelector :: Selector
+replaceChildAtIndex_withNodeSelector :: Selector '[CULong, Id NSXMLNode] ()
 replaceChildAtIndex_withNodeSelector = mkSelector "replaceChildAtIndex:withNode:"
 
 -- | @Selector@ for @normalizeAdjacentTextNodesPreservingCDATA:@
-normalizeAdjacentTextNodesPreservingCDATASelector :: Selector
+normalizeAdjacentTextNodesPreservingCDATASelector :: Selector '[Bool] ()
 normalizeAdjacentTextNodesPreservingCDATASelector = mkSelector "normalizeAdjacentTextNodesPreservingCDATA:"
 
 -- | @Selector@ for @setAttributesAsDictionary:@
-setAttributesAsDictionarySelector :: Selector
+setAttributesAsDictionarySelector :: Selector '[Id NSDictionary] ()
 setAttributesAsDictionarySelector = mkSelector "setAttributesAsDictionary:"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSArray)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @setAttributes:@
-setAttributesSelector :: Selector
+setAttributesSelector :: Selector '[Id NSArray] ()
 setAttributesSelector = mkSelector "setAttributes:"
 
 -- | @Selector@ for @namespaces@
-namespacesSelector :: Selector
+namespacesSelector :: Selector '[] (Id NSArray)
 namespacesSelector = mkSelector "namespaces"
 
 -- | @Selector@ for @setNamespaces:@
-setNamespacesSelector :: Selector
+setNamespacesSelector :: Selector '[Id NSArray] ()
 setNamespacesSelector = mkSelector "setNamespaces:"
 

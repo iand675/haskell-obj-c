@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.WebKit.WKWebExtensionDataRecord
   , containedDataTypes
   , errors
   , totalSizeInBytes
-  , newSelector
-  , initSelector
-  , sizeInBytesOfTypesSelector
-  , displayNameSelector
-  , uniqueIdentifierSelector
   , containedDataTypesSelector
+  , displayNameSelector
   , errorsSelector
+  , initSelector
+  , newSelector
+  , sizeInBytesOfTypesSelector
   , totalSizeInBytesSelector
+  , uniqueIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,12 +47,12 @@ new :: IO (Id WKWebExtensionDataRecord)
 new  =
   do
     cls' <- getRequiredClass "WKWebExtensionDataRecord"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsWKWebExtensionDataRecord wkWebExtensionDataRecord => wkWebExtensionDataRecord -> IO (Id WKWebExtensionDataRecord)
-init_ wkWebExtensionDataRecord  =
-    sendMsg wkWebExtensionDataRecord (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkWebExtensionDataRecord =
+  sendOwnedMessage wkWebExtensionDataRecord initSelector
 
 -- | Retrieves the size in bytes of the specific data types in this data record.
 --
@@ -67,37 +64,36 @@ init_ wkWebExtensionDataRecord  =
 --
 -- ObjC selector: @- sizeInBytesOfTypes:@
 sizeInBytesOfTypes :: (IsWKWebExtensionDataRecord wkWebExtensionDataRecord, IsNSSet dataTypes) => wkWebExtensionDataRecord -> dataTypes -> IO CULong
-sizeInBytesOfTypes wkWebExtensionDataRecord  dataTypes =
-  withObjCPtr dataTypes $ \raw_dataTypes ->
-      sendMsg wkWebExtensionDataRecord (mkSelector "sizeInBytesOfTypes:") retCULong [argPtr (castPtr raw_dataTypes :: Ptr ())]
+sizeInBytesOfTypes wkWebExtensionDataRecord dataTypes =
+  sendMessage wkWebExtensionDataRecord sizeInBytesOfTypesSelector (toNSSet dataTypes)
 
 -- | The display name for the web extension to which this data record belongs.
 --
 -- ObjC selector: @- displayName@
 displayName :: IsWKWebExtensionDataRecord wkWebExtensionDataRecord => wkWebExtensionDataRecord -> IO (Id NSString)
-displayName wkWebExtensionDataRecord  =
-    sendMsg wkWebExtensionDataRecord (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName wkWebExtensionDataRecord =
+  sendMessage wkWebExtensionDataRecord displayNameSelector
 
 -- | Unique identifier for the web extension context to which this data record belongs.
 --
 -- ObjC selector: @- uniqueIdentifier@
 uniqueIdentifier :: IsWKWebExtensionDataRecord wkWebExtensionDataRecord => wkWebExtensionDataRecord -> IO (Id NSString)
-uniqueIdentifier wkWebExtensionDataRecord  =
-    sendMsg wkWebExtensionDataRecord (mkSelector "uniqueIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueIdentifier wkWebExtensionDataRecord =
+  sendMessage wkWebExtensionDataRecord uniqueIdentifierSelector
 
 -- | The set of data types contained in this data record.
 --
 -- ObjC selector: @- containedDataTypes@
 containedDataTypes :: IsWKWebExtensionDataRecord wkWebExtensionDataRecord => wkWebExtensionDataRecord -> IO (Id NSSet)
-containedDataTypes wkWebExtensionDataRecord  =
-    sendMsg wkWebExtensionDataRecord (mkSelector "containedDataTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+containedDataTypes wkWebExtensionDataRecord =
+  sendMessage wkWebExtensionDataRecord containedDataTypesSelector
 
 -- | An array of errors that may have occurred when either calculating or deleting storage.
 --
 -- ObjC selector: @- errors@
 errors :: IsWKWebExtensionDataRecord wkWebExtensionDataRecord => wkWebExtensionDataRecord -> IO (Id NSArray)
-errors wkWebExtensionDataRecord  =
-    sendMsg wkWebExtensionDataRecord (mkSelector "errors") (retPtr retVoid) [] >>= retainedObject . castPtr
+errors wkWebExtensionDataRecord =
+  sendMessage wkWebExtensionDataRecord errorsSelector
 
 -- | The total size in bytes of all data types contained in this data record.
 --
@@ -105,42 +101,42 @@ errors wkWebExtensionDataRecord  =
 --
 -- ObjC selector: @- totalSizeInBytes@
 totalSizeInBytes :: IsWKWebExtensionDataRecord wkWebExtensionDataRecord => wkWebExtensionDataRecord -> IO CULong
-totalSizeInBytes wkWebExtensionDataRecord  =
-    sendMsg wkWebExtensionDataRecord (mkSelector "totalSizeInBytes") retCULong []
+totalSizeInBytes wkWebExtensionDataRecord =
+  sendMessage wkWebExtensionDataRecord totalSizeInBytesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id WKWebExtensionDataRecord)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKWebExtensionDataRecord)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @sizeInBytesOfTypes:@
-sizeInBytesOfTypesSelector :: Selector
+sizeInBytesOfTypesSelector :: Selector '[Id NSSet] CULong
 sizeInBytesOfTypesSelector = mkSelector "sizeInBytesOfTypes:"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @uniqueIdentifier@
-uniqueIdentifierSelector :: Selector
+uniqueIdentifierSelector :: Selector '[] (Id NSString)
 uniqueIdentifierSelector = mkSelector "uniqueIdentifier"
 
 -- | @Selector@ for @containedDataTypes@
-containedDataTypesSelector :: Selector
+containedDataTypesSelector :: Selector '[] (Id NSSet)
 containedDataTypesSelector = mkSelector "containedDataTypes"
 
 -- | @Selector@ for @errors@
-errorsSelector :: Selector
+errorsSelector :: Selector '[] (Id NSArray)
 errorsSelector = mkSelector "errors"
 
 -- | @Selector@ for @totalSizeInBytes@
-totalSizeInBytesSelector :: Selector
+totalSizeInBytesSelector :: Selector '[] CULong
 totalSizeInBytesSelector = mkSelector "totalSizeInBytes"
 

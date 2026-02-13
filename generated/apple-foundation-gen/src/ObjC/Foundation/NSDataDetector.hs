@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Foundation.NSDataDetector
   , dataDetectorWithTypes_error
   , initWithTypes_error
   , checkingTypes
+  , checkingTypesSelector
   , dataDetectorWithTypes_errorSelector
   , initWithTypes_errorSelector
-  , checkingTypesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,33 +32,31 @@ dataDetectorWithTypes_error :: IsNSError error_ => CULong -> error_ -> IO (Id NS
 dataDetectorWithTypes_error checkingTypes error_ =
   do
     cls' <- getRequiredClass "NSDataDetector"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "dataDetectorWithTypes:error:") (retPtr retVoid) [argCULong checkingTypes, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dataDetectorWithTypes_errorSelector checkingTypes (toNSError error_)
 
 -- | @- initWithTypes:error:@
 initWithTypes_error :: (IsNSDataDetector nsDataDetector, IsNSError error_) => nsDataDetector -> CULong -> error_ -> IO (Id NSDataDetector)
-initWithTypes_error nsDataDetector  checkingTypes error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg nsDataDetector (mkSelector "initWithTypes:error:") (retPtr retVoid) [argCULong checkingTypes, argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithTypes_error nsDataDetector checkingTypes error_ =
+  sendOwnedMessage nsDataDetector initWithTypes_errorSelector checkingTypes (toNSError error_)
 
 -- | @- checkingTypes@
 checkingTypes :: IsNSDataDetector nsDataDetector => nsDataDetector -> IO CULong
-checkingTypes nsDataDetector  =
-    sendMsg nsDataDetector (mkSelector "checkingTypes") retCULong []
+checkingTypes nsDataDetector =
+  sendMessage nsDataDetector checkingTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dataDetectorWithTypes:error:@
-dataDetectorWithTypes_errorSelector :: Selector
+dataDetectorWithTypes_errorSelector :: Selector '[CULong, Id NSError] (Id NSDataDetector)
 dataDetectorWithTypes_errorSelector = mkSelector "dataDetectorWithTypes:error:"
 
 -- | @Selector@ for @initWithTypes:error:@
-initWithTypes_errorSelector :: Selector
+initWithTypes_errorSelector :: Selector '[CULong, Id NSError] (Id NSDataDetector)
 initWithTypes_errorSelector = mkSelector "initWithTypes:error:"
 
 -- | @Selector@ for @checkingTypes@
-checkingTypesSelector :: Selector
+checkingTypesSelector :: Selector '[] CULong
 checkingTypesSelector = mkSelector "checkingTypes"
 

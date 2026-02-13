@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.BackgroundAssets.BAAppExtensionInfo
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,15 +32,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBAAppExtensionInfo baAppExtensionInfo => baAppExtensionInfo -> IO (Id BAAppExtensionInfo)
-init_ baAppExtensionInfo  =
-    sendMsg baAppExtensionInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ baAppExtensionInfo =
+  sendOwnedMessage baAppExtensionInfo initSelector
 
 -- | @+ new@
 new :: IO (Id BAAppExtensionInfo)
 new  =
   do
     cls' <- getRequiredClass "BAAppExtensionInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The number of bytes remaining that can be scheduled if the total download size is restricted.
 --
@@ -53,8 +50,8 @@ new  =
 --
 -- ObjC selector: @- restrictedDownloadSizeRemaining@
 restrictedDownloadSizeRemaining :: IsBAAppExtensionInfo baAppExtensionInfo => baAppExtensionInfo -> IO (Id NSNumber)
-restrictedDownloadSizeRemaining baAppExtensionInfo  =
-    sendMsg baAppExtensionInfo (mkSelector "restrictedDownloadSizeRemaining") (retPtr retVoid) [] >>= retainedObject . castPtr
+restrictedDownloadSizeRemaining baAppExtensionInfo =
+  sendMessage baAppExtensionInfo restrictedDownloadSizeRemainingSelector
 
 -- | The number of bytes remaining that can be scheduled if the total download size of optional assets is restricted.
 --
@@ -64,26 +61,26 @@ restrictedDownloadSizeRemaining baAppExtensionInfo  =
 --
 -- ObjC selector: @- restrictedEssentialDownloadSizeRemaining@
 restrictedEssentialDownloadSizeRemaining :: IsBAAppExtensionInfo baAppExtensionInfo => baAppExtensionInfo -> IO (Id NSNumber)
-restrictedEssentialDownloadSizeRemaining baAppExtensionInfo  =
-    sendMsg baAppExtensionInfo (mkSelector "restrictedEssentialDownloadSizeRemaining") (retPtr retVoid) [] >>= retainedObject . castPtr
+restrictedEssentialDownloadSizeRemaining baAppExtensionInfo =
+  sendMessage baAppExtensionInfo restrictedEssentialDownloadSizeRemainingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BAAppExtensionInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BAAppExtensionInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @restrictedDownloadSizeRemaining@
-restrictedDownloadSizeRemainingSelector :: Selector
+restrictedDownloadSizeRemainingSelector :: Selector '[] (Id NSNumber)
 restrictedDownloadSizeRemainingSelector = mkSelector "restrictedDownloadSizeRemaining"
 
 -- | @Selector@ for @restrictedEssentialDownloadSizeRemaining@
-restrictedEssentialDownloadSizeRemainingSelector :: Selector
+restrictedEssentialDownloadSizeRemainingSelector :: Selector '[] (Id NSNumber)
 restrictedEssentialDownloadSizeRemainingSelector = mkSelector "restrictedEssentialDownloadSizeRemaining"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.BrowserEngineKit.BEWebAppManifest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,45 +34,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBEWebAppManifest beWebAppManifest => beWebAppManifest -> IO (Id BEWebAppManifest)
-init_ beWebAppManifest  =
-    sendMsg beWebAppManifest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ beWebAppManifest =
+  sendOwnedMessage beWebAppManifest initSelector
 
 -- | Returns nil if manifestURL is invalid or jsonData cannot be parsed.
 --
 -- ObjC selector: @- initWithJSONData:manifestURL:@
 initWithJSONData_manifestURL :: (IsBEWebAppManifest beWebAppManifest, IsNSData jsonData, IsNSURL manifestURL) => beWebAppManifest -> jsonData -> manifestURL -> IO (Id BEWebAppManifest)
-initWithJSONData_manifestURL beWebAppManifest  jsonData manifestURL =
-  withObjCPtr jsonData $ \raw_jsonData ->
-    withObjCPtr manifestURL $ \raw_manifestURL ->
-        sendMsg beWebAppManifest (mkSelector "initWithJSONData:manifestURL:") (retPtr retVoid) [argPtr (castPtr raw_jsonData :: Ptr ()), argPtr (castPtr raw_manifestURL :: Ptr ())] >>= ownedObject . castPtr
+initWithJSONData_manifestURL beWebAppManifest jsonData manifestURL =
+  sendOwnedMessage beWebAppManifest initWithJSONData_manifestURLSelector (toNSData jsonData) (toNSURL manifestURL)
 
 -- | @- jsonData@
 jsonData :: IsBEWebAppManifest beWebAppManifest => beWebAppManifest -> IO (Id NSData)
-jsonData beWebAppManifest  =
-    sendMsg beWebAppManifest (mkSelector "jsonData") (retPtr retVoid) [] >>= retainedObject . castPtr
+jsonData beWebAppManifest =
+  sendMessage beWebAppManifest jsonDataSelector
 
 -- | @- manifestURL@
 manifestURL :: IsBEWebAppManifest beWebAppManifest => beWebAppManifest -> IO (Id NSURL)
-manifestURL beWebAppManifest  =
-    sendMsg beWebAppManifest (mkSelector "manifestURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+manifestURL beWebAppManifest =
+  sendMessage beWebAppManifest manifestURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BEWebAppManifest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithJSONData:manifestURL:@
-initWithJSONData_manifestURLSelector :: Selector
+initWithJSONData_manifestURLSelector :: Selector '[Id NSData, Id NSURL] (Id BEWebAppManifest)
 initWithJSONData_manifestURLSelector = mkSelector "initWithJSONData:manifestURL:"
 
 -- | @Selector@ for @jsonData@
-jsonDataSelector :: Selector
+jsonDataSelector :: Selector '[] (Id NSData)
 jsonDataSelector = mkSelector "jsonData"
 
 -- | @Selector@ for @manifestURL@
-manifestURLSelector :: Selector
+manifestURLSelector :: Selector '[] (Id NSURL)
 manifestURLSelector = mkSelector "manifestURL"
 

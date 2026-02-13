@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTROnOffClusterOnWithTimedOffParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , onOffControlSelector
-  , setOnOffControlSelector
-  , onTimeSelector
-  , setOnTimeSelector
   , offWaitTimeSelector
-  , setOffWaitTimeSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , onOffControlSelector
+  , onTimeSelector
   , serverSideProcessingTimeoutSelector
+  , setOffWaitTimeSelector
+  , setOnOffControlSelector
+  , setOnTimeSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,36 +44,33 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- onOffControl@
 onOffControl :: IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams => mtrOnOffClusterOnWithTimedOffParams -> IO (Id NSNumber)
-onOffControl mtrOnOffClusterOnWithTimedOffParams  =
-    sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "onOffControl") (retPtr retVoid) [] >>= retainedObject . castPtr
+onOffControl mtrOnOffClusterOnWithTimedOffParams =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams onOffControlSelector
 
 -- | @- setOnOffControl:@
 setOnOffControl :: (IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams, IsNSNumber value) => mtrOnOffClusterOnWithTimedOffParams -> value -> IO ()
-setOnOffControl mtrOnOffClusterOnWithTimedOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "setOnOffControl:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOnOffControl mtrOnOffClusterOnWithTimedOffParams value =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams setOnOffControlSelector (toNSNumber value)
 
 -- | @- onTime@
 onTime :: IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams => mtrOnOffClusterOnWithTimedOffParams -> IO (Id NSNumber)
-onTime mtrOnOffClusterOnWithTimedOffParams  =
-    sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "onTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+onTime mtrOnOffClusterOnWithTimedOffParams =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams onTimeSelector
 
 -- | @- setOnTime:@
 setOnTime :: (IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams, IsNSNumber value) => mtrOnOffClusterOnWithTimedOffParams -> value -> IO ()
-setOnTime mtrOnOffClusterOnWithTimedOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "setOnTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOnTime mtrOnOffClusterOnWithTimedOffParams value =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams setOnTimeSelector (toNSNumber value)
 
 -- | @- offWaitTime@
 offWaitTime :: IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams => mtrOnOffClusterOnWithTimedOffParams -> IO (Id NSNumber)
-offWaitTime mtrOnOffClusterOnWithTimedOffParams  =
-    sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "offWaitTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+offWaitTime mtrOnOffClusterOnWithTimedOffParams =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams offWaitTimeSelector
 
 -- | @- setOffWaitTime:@
 setOffWaitTime :: (IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams, IsNSNumber value) => mtrOnOffClusterOnWithTimedOffParams -> value -> IO ()
-setOffWaitTime mtrOnOffClusterOnWithTimedOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "setOffWaitTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOffWaitTime mtrOnOffClusterOnWithTimedOffParams value =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams setOffWaitTimeSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -86,8 +80,8 @@ setOffWaitTime mtrOnOffClusterOnWithTimedOffParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams => mtrOnOffClusterOnWithTimedOffParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOnOffClusterOnWithTimedOffParams  =
-    sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrOnOffClusterOnWithTimedOffParams =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -97,9 +91,8 @@ timedInvokeTimeoutMs mtrOnOffClusterOnWithTimedOffParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams, IsNSNumber value) => mtrOnOffClusterOnWithTimedOffParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOnOffClusterOnWithTimedOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrOnOffClusterOnWithTimedOffParams value =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -109,8 +102,8 @@ setTimedInvokeTimeoutMs mtrOnOffClusterOnWithTimedOffParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams => mtrOnOffClusterOnWithTimedOffParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrOnOffClusterOnWithTimedOffParams  =
-    sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrOnOffClusterOnWithTimedOffParams =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -120,51 +113,50 @@ serverSideProcessingTimeout mtrOnOffClusterOnWithTimedOffParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTROnOffClusterOnWithTimedOffParams mtrOnOffClusterOnWithTimedOffParams, IsNSNumber value) => mtrOnOffClusterOnWithTimedOffParams -> value -> IO ()
-setServerSideProcessingTimeout mtrOnOffClusterOnWithTimedOffParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOnOffClusterOnWithTimedOffParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrOnOffClusterOnWithTimedOffParams value =
+  sendMessage mtrOnOffClusterOnWithTimedOffParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @onOffControl@
-onOffControlSelector :: Selector
+onOffControlSelector :: Selector '[] (Id NSNumber)
 onOffControlSelector = mkSelector "onOffControl"
 
 -- | @Selector@ for @setOnOffControl:@
-setOnOffControlSelector :: Selector
+setOnOffControlSelector :: Selector '[Id NSNumber] ()
 setOnOffControlSelector = mkSelector "setOnOffControl:"
 
 -- | @Selector@ for @onTime@
-onTimeSelector :: Selector
+onTimeSelector :: Selector '[] (Id NSNumber)
 onTimeSelector = mkSelector "onTime"
 
 -- | @Selector@ for @setOnTime:@
-setOnTimeSelector :: Selector
+setOnTimeSelector :: Selector '[Id NSNumber] ()
 setOnTimeSelector = mkSelector "setOnTime:"
 
 -- | @Selector@ for @offWaitTime@
-offWaitTimeSelector :: Selector
+offWaitTimeSelector :: Selector '[] (Id NSNumber)
 offWaitTimeSelector = mkSelector "offWaitTime"
 
 -- | @Selector@ for @setOffWaitTime:@
-setOffWaitTimeSelector :: Selector
+setOffWaitTimeSelector :: Selector '[Id NSNumber] ()
 setOffWaitTimeSelector = mkSelector "setOffWaitTime:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

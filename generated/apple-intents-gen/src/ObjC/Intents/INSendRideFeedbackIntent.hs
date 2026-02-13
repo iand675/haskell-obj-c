@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Intents.INSendRideFeedbackIntent
   , setTip
   , initSelector
   , initWithRideIdentifierSelector
-  , rideIdentifierSelector
   , ratingSelector
+  , rideIdentifierSelector
   , setRatingSelector
-  , tipSelector
   , setTipSelector
+  , tipSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,71 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSendRideFeedbackIntent inSendRideFeedbackIntent => inSendRideFeedbackIntent -> IO RawId
-init_ inSendRideFeedbackIntent  =
-    fmap (RawId . castPtr) $ sendMsg inSendRideFeedbackIntent (mkSelector "init") (retPtr retVoid) []
+init_ inSendRideFeedbackIntent =
+  sendOwnedMessage inSendRideFeedbackIntent initSelector
 
 -- | @- initWithRideIdentifier:@
 initWithRideIdentifier :: (IsINSendRideFeedbackIntent inSendRideFeedbackIntent, IsNSString rideIdentifier) => inSendRideFeedbackIntent -> rideIdentifier -> IO (Id INSendRideFeedbackIntent)
-initWithRideIdentifier inSendRideFeedbackIntent  rideIdentifier =
-  withObjCPtr rideIdentifier $ \raw_rideIdentifier ->
-      sendMsg inSendRideFeedbackIntent (mkSelector "initWithRideIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_rideIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithRideIdentifier inSendRideFeedbackIntent rideIdentifier =
+  sendOwnedMessage inSendRideFeedbackIntent initWithRideIdentifierSelector (toNSString rideIdentifier)
 
 -- | @- rideIdentifier@
 rideIdentifier :: IsINSendRideFeedbackIntent inSendRideFeedbackIntent => inSendRideFeedbackIntent -> IO (Id NSString)
-rideIdentifier inSendRideFeedbackIntent  =
-    sendMsg inSendRideFeedbackIntent (mkSelector "rideIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+rideIdentifier inSendRideFeedbackIntent =
+  sendMessage inSendRideFeedbackIntent rideIdentifierSelector
 
 -- | @- rating@
 rating :: IsINSendRideFeedbackIntent inSendRideFeedbackIntent => inSendRideFeedbackIntent -> IO (Id NSNumber)
-rating inSendRideFeedbackIntent  =
-    sendMsg inSendRideFeedbackIntent (mkSelector "rating") (retPtr retVoid) [] >>= retainedObject . castPtr
+rating inSendRideFeedbackIntent =
+  sendMessage inSendRideFeedbackIntent ratingSelector
 
 -- | @- setRating:@
 setRating :: (IsINSendRideFeedbackIntent inSendRideFeedbackIntent, IsNSNumber value) => inSendRideFeedbackIntent -> value -> IO ()
-setRating inSendRideFeedbackIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSendRideFeedbackIntent (mkSelector "setRating:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRating inSendRideFeedbackIntent value =
+  sendMessage inSendRideFeedbackIntent setRatingSelector (toNSNumber value)
 
 -- | @- tip@
 tip :: IsINSendRideFeedbackIntent inSendRideFeedbackIntent => inSendRideFeedbackIntent -> IO (Id INCurrencyAmount)
-tip inSendRideFeedbackIntent  =
-    sendMsg inSendRideFeedbackIntent (mkSelector "tip") (retPtr retVoid) [] >>= retainedObject . castPtr
+tip inSendRideFeedbackIntent =
+  sendMessage inSendRideFeedbackIntent tipSelector
 
 -- | @- setTip:@
 setTip :: (IsINSendRideFeedbackIntent inSendRideFeedbackIntent, IsINCurrencyAmount value) => inSendRideFeedbackIntent -> value -> IO ()
-setTip inSendRideFeedbackIntent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSendRideFeedbackIntent (mkSelector "setTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTip inSendRideFeedbackIntent value =
+  sendMessage inSendRideFeedbackIntent setTipSelector (toINCurrencyAmount value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRideIdentifier:@
-initWithRideIdentifierSelector :: Selector
+initWithRideIdentifierSelector :: Selector '[Id NSString] (Id INSendRideFeedbackIntent)
 initWithRideIdentifierSelector = mkSelector "initWithRideIdentifier:"
 
 -- | @Selector@ for @rideIdentifier@
-rideIdentifierSelector :: Selector
+rideIdentifierSelector :: Selector '[] (Id NSString)
 rideIdentifierSelector = mkSelector "rideIdentifier"
 
 -- | @Selector@ for @rating@
-ratingSelector :: Selector
+ratingSelector :: Selector '[] (Id NSNumber)
 ratingSelector = mkSelector "rating"
 
 -- | @Selector@ for @setRating:@
-setRatingSelector :: Selector
+setRatingSelector :: Selector '[Id NSNumber] ()
 setRatingSelector = mkSelector "setRating:"
 
 -- | @Selector@ for @tip@
-tipSelector :: Selector
+tipSelector :: Selector '[] (Id INCurrencyAmount)
 tipSelector = mkSelector "tip"
 
 -- | @Selector@ for @setTip:@
-setTipSelector :: Selector
+setTipSelector :: Selector '[Id INCurrencyAmount] ()
 setTipSelector = mkSelector "setTip:"
 

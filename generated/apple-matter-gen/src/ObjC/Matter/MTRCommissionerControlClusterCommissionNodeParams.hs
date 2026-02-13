@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRCommissionerControlClusterCommissionNodeParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , requestIDSelector
-  , setRequestIDSelector
   , responseTimeoutSecondsSelector
-  , setResponseTimeoutSecondsSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setRequestIDSelector
+  , setResponseTimeoutSecondsSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- requestID@
 requestID :: IsMTRCommissionerControlClusterCommissionNodeParams mtrCommissionerControlClusterCommissionNodeParams => mtrCommissionerControlClusterCommissionNodeParams -> IO (Id NSNumber)
-requestID mtrCommissionerControlClusterCommissionNodeParams  =
-    sendMsg mtrCommissionerControlClusterCommissionNodeParams (mkSelector "requestID") (retPtr retVoid) [] >>= retainedObject . castPtr
+requestID mtrCommissionerControlClusterCommissionNodeParams =
+  sendMessage mtrCommissionerControlClusterCommissionNodeParams requestIDSelector
 
 -- | @- setRequestID:@
 setRequestID :: (IsMTRCommissionerControlClusterCommissionNodeParams mtrCommissionerControlClusterCommissionNodeParams, IsNSNumber value) => mtrCommissionerControlClusterCommissionNodeParams -> value -> IO ()
-setRequestID mtrCommissionerControlClusterCommissionNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterCommissionNodeParams (mkSelector "setRequestID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRequestID mtrCommissionerControlClusterCommissionNodeParams value =
+  sendMessage mtrCommissionerControlClusterCommissionNodeParams setRequestIDSelector (toNSNumber value)
 
 -- | @- responseTimeoutSeconds@
 responseTimeoutSeconds :: IsMTRCommissionerControlClusterCommissionNodeParams mtrCommissionerControlClusterCommissionNodeParams => mtrCommissionerControlClusterCommissionNodeParams -> IO (Id NSNumber)
-responseTimeoutSeconds mtrCommissionerControlClusterCommissionNodeParams  =
-    sendMsg mtrCommissionerControlClusterCommissionNodeParams (mkSelector "responseTimeoutSeconds") (retPtr retVoid) [] >>= retainedObject . castPtr
+responseTimeoutSeconds mtrCommissionerControlClusterCommissionNodeParams =
+  sendMessage mtrCommissionerControlClusterCommissionNodeParams responseTimeoutSecondsSelector
 
 -- | @- setResponseTimeoutSeconds:@
 setResponseTimeoutSeconds :: (IsMTRCommissionerControlClusterCommissionNodeParams mtrCommissionerControlClusterCommissionNodeParams, IsNSNumber value) => mtrCommissionerControlClusterCommissionNodeParams -> value -> IO ()
-setResponseTimeoutSeconds mtrCommissionerControlClusterCommissionNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterCommissionNodeParams (mkSelector "setResponseTimeoutSeconds:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResponseTimeoutSeconds mtrCommissionerControlClusterCommissionNodeParams value =
+  sendMessage mtrCommissionerControlClusterCommissionNodeParams setResponseTimeoutSecondsSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setResponseTimeoutSeconds mtrCommissionerControlClusterCommissionNodeParams  val
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCommissionerControlClusterCommissionNodeParams mtrCommissionerControlClusterCommissionNodeParams => mtrCommissionerControlClusterCommissionNodeParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCommissionerControlClusterCommissionNodeParams  =
-    sendMsg mtrCommissionerControlClusterCommissionNodeParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCommissionerControlClusterCommissionNodeParams =
+  sendMessage mtrCommissionerControlClusterCommissionNodeParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrCommissionerControlClusterCommissionNodeParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCommissionerControlClusterCommissionNodeParams mtrCommissionerControlClusterCommissionNodeParams, IsNSNumber value) => mtrCommissionerControlClusterCommissionNodeParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCommissionerControlClusterCommissionNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterCommissionNodeParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCommissionerControlClusterCommissionNodeParams value =
+  sendMessage mtrCommissionerControlClusterCommissionNodeParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrCommissionerControlClusterCommissionNodeParams  value
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCommissionerControlClusterCommissionNodeParams mtrCommissionerControlClusterCommissionNodeParams => mtrCommissionerControlClusterCommissionNodeParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCommissionerControlClusterCommissionNodeParams  =
-    sendMsg mtrCommissionerControlClusterCommissionNodeParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCommissionerControlClusterCommissionNodeParams =
+  sendMessage mtrCommissionerControlClusterCommissionNodeParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrCommissionerControlClusterCommissionNodeParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCommissionerControlClusterCommissionNodeParams mtrCommissionerControlClusterCommissionNodeParams, IsNSNumber value) => mtrCommissionerControlClusterCommissionNodeParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCommissionerControlClusterCommissionNodeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommissionerControlClusterCommissionNodeParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCommissionerControlClusterCommissionNodeParams value =
+  sendMessage mtrCommissionerControlClusterCommissionNodeParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @requestID@
-requestIDSelector :: Selector
+requestIDSelector :: Selector '[] (Id NSNumber)
 requestIDSelector = mkSelector "requestID"
 
 -- | @Selector@ for @setRequestID:@
-setRequestIDSelector :: Selector
+setRequestIDSelector :: Selector '[Id NSNumber] ()
 setRequestIDSelector = mkSelector "setRequestID:"
 
 -- | @Selector@ for @responseTimeoutSeconds@
-responseTimeoutSecondsSelector :: Selector
+responseTimeoutSecondsSelector :: Selector '[] (Id NSNumber)
 responseTimeoutSecondsSelector = mkSelector "responseTimeoutSeconds"
 
 -- | @Selector@ for @setResponseTimeoutSeconds:@
-setResponseTimeoutSecondsSelector :: Selector
+setResponseTimeoutSecondsSelector :: Selector '[Id NSNumber] ()
 setResponseTimeoutSecondsSelector = mkSelector "setResponseTimeoutSeconds:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

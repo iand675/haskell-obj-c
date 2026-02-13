@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.Virtualization.VZVirtioGraphicsScanoutConfiguration
   , setWidthInPixels
   , heightInPixels
   , setHeightInPixels
-  , initWithWidthInPixels_heightInPixelsSelector
-  , widthInPixelsSelector
-  , setWidthInPixelsSelector
   , heightInPixelsSelector
+  , initWithWidthInPixels_heightInPixelsSelector
   , setHeightInPixelsSelector
+  , setWidthInPixelsSelector
+  , widthInPixelsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,58 +46,58 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithWidthInPixels:heightInPixels:@
 initWithWidthInPixels_heightInPixels :: IsVZVirtioGraphicsScanoutConfiguration vzVirtioGraphicsScanoutConfiguration => vzVirtioGraphicsScanoutConfiguration -> CLong -> CLong -> IO (Id VZVirtioGraphicsScanoutConfiguration)
-initWithWidthInPixels_heightInPixels vzVirtioGraphicsScanoutConfiguration  widthInPixels heightInPixels =
-    sendMsg vzVirtioGraphicsScanoutConfiguration (mkSelector "initWithWidthInPixels:heightInPixels:") (retPtr retVoid) [argCLong widthInPixels, argCLong heightInPixels] >>= ownedObject . castPtr
+initWithWidthInPixels_heightInPixels vzVirtioGraphicsScanoutConfiguration widthInPixels heightInPixels =
+  sendOwnedMessage vzVirtioGraphicsScanoutConfiguration initWithWidthInPixels_heightInPixelsSelector widthInPixels heightInPixels
 
 -- | The width of the scanout, in pixels.
 --
 -- ObjC selector: @- widthInPixels@
 widthInPixels :: IsVZVirtioGraphicsScanoutConfiguration vzVirtioGraphicsScanoutConfiguration => vzVirtioGraphicsScanoutConfiguration -> IO CLong
-widthInPixels vzVirtioGraphicsScanoutConfiguration  =
-    sendMsg vzVirtioGraphicsScanoutConfiguration (mkSelector "widthInPixels") retCLong []
+widthInPixels vzVirtioGraphicsScanoutConfiguration =
+  sendMessage vzVirtioGraphicsScanoutConfiguration widthInPixelsSelector
 
 -- | The width of the scanout, in pixels.
 --
 -- ObjC selector: @- setWidthInPixels:@
 setWidthInPixels :: IsVZVirtioGraphicsScanoutConfiguration vzVirtioGraphicsScanoutConfiguration => vzVirtioGraphicsScanoutConfiguration -> CLong -> IO ()
-setWidthInPixels vzVirtioGraphicsScanoutConfiguration  value =
-    sendMsg vzVirtioGraphicsScanoutConfiguration (mkSelector "setWidthInPixels:") retVoid [argCLong value]
+setWidthInPixels vzVirtioGraphicsScanoutConfiguration value =
+  sendMessage vzVirtioGraphicsScanoutConfiguration setWidthInPixelsSelector value
 
 -- | The height of the scanout, in pixels.
 --
 -- ObjC selector: @- heightInPixels@
 heightInPixels :: IsVZVirtioGraphicsScanoutConfiguration vzVirtioGraphicsScanoutConfiguration => vzVirtioGraphicsScanoutConfiguration -> IO CLong
-heightInPixels vzVirtioGraphicsScanoutConfiguration  =
-    sendMsg vzVirtioGraphicsScanoutConfiguration (mkSelector "heightInPixels") retCLong []
+heightInPixels vzVirtioGraphicsScanoutConfiguration =
+  sendMessage vzVirtioGraphicsScanoutConfiguration heightInPixelsSelector
 
 -- | The height of the scanout, in pixels.
 --
 -- ObjC selector: @- setHeightInPixels:@
 setHeightInPixels :: IsVZVirtioGraphicsScanoutConfiguration vzVirtioGraphicsScanoutConfiguration => vzVirtioGraphicsScanoutConfiguration -> CLong -> IO ()
-setHeightInPixels vzVirtioGraphicsScanoutConfiguration  value =
-    sendMsg vzVirtioGraphicsScanoutConfiguration (mkSelector "setHeightInPixels:") retVoid [argCLong value]
+setHeightInPixels vzVirtioGraphicsScanoutConfiguration value =
+  sendMessage vzVirtioGraphicsScanoutConfiguration setHeightInPixelsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithWidthInPixels:heightInPixels:@
-initWithWidthInPixels_heightInPixelsSelector :: Selector
+initWithWidthInPixels_heightInPixelsSelector :: Selector '[CLong, CLong] (Id VZVirtioGraphicsScanoutConfiguration)
 initWithWidthInPixels_heightInPixelsSelector = mkSelector "initWithWidthInPixels:heightInPixels:"
 
 -- | @Selector@ for @widthInPixels@
-widthInPixelsSelector :: Selector
+widthInPixelsSelector :: Selector '[] CLong
 widthInPixelsSelector = mkSelector "widthInPixels"
 
 -- | @Selector@ for @setWidthInPixels:@
-setWidthInPixelsSelector :: Selector
+setWidthInPixelsSelector :: Selector '[CLong] ()
 setWidthInPixelsSelector = mkSelector "setWidthInPixels:"
 
 -- | @Selector@ for @heightInPixels@
-heightInPixelsSelector :: Selector
+heightInPixelsSelector :: Selector '[] CLong
 heightInPixelsSelector = mkSelector "heightInPixels"
 
 -- | @Selector@ for @setHeightInPixels:@
-setHeightInPixelsSelector :: Selector
+setHeightInPixelsSelector :: Selector '[CLong] ()
 setHeightInPixelsSelector = mkSelector "setHeightInPixels:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,22 +34,18 @@ module ObjC.MetalPerformanceShaders.MPSRNNSingleGateDescriptor
   , setRecurrentWeights
   , createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector
   , inputWeightsSelector
-  , setInputWeightsSelector
   , recurrentWeightsSelector
+  , setInputWeightsSelector
   , setRecurrentWeightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,7 +65,7 @@ createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannels :: C
 createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannels inputFeatureChannels outputFeatureChannels =
   do
     cls' <- getRequiredClass "MPSRNNSingleGateDescriptor"
-    sendClassMsg cls' (mkSelector "createRNNSingleGateDescriptorWithInputFeatureChannels:outputFeatureChannels:") (retPtr retVoid) [argCULong inputFeatureChannels, argCULong outputFeatureChannels] >>= retainedObject . castPtr
+    sendClassMessage cls' createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector inputFeatureChannels outputFeatureChannels
 
 -- | inputWeights
 --
@@ -76,8 +73,8 @@ createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannels inpu
 --
 -- ObjC selector: @- inputWeights@
 inputWeights :: IsMPSRNNSingleGateDescriptor mpsrnnSingleGateDescriptor => mpsrnnSingleGateDescriptor -> IO RawId
-inputWeights mpsrnnSingleGateDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsrnnSingleGateDescriptor (mkSelector "inputWeights") (retPtr retVoid) []
+inputWeights mpsrnnSingleGateDescriptor =
+  sendMessage mpsrnnSingleGateDescriptor inputWeightsSelector
 
 -- | inputWeights
 --
@@ -85,8 +82,8 @@ inputWeights mpsrnnSingleGateDescriptor  =
 --
 -- ObjC selector: @- setInputWeights:@
 setInputWeights :: IsMPSRNNSingleGateDescriptor mpsrnnSingleGateDescriptor => mpsrnnSingleGateDescriptor -> RawId -> IO ()
-setInputWeights mpsrnnSingleGateDescriptor  value =
-    sendMsg mpsrnnSingleGateDescriptor (mkSelector "setInputWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setInputWeights mpsrnnSingleGateDescriptor value =
+  sendMessage mpsrnnSingleGateDescriptor setInputWeightsSelector value
 
 -- | recurrentWeights
 --
@@ -94,8 +91,8 @@ setInputWeights mpsrnnSingleGateDescriptor  value =
 --
 -- ObjC selector: @- recurrentWeights@
 recurrentWeights :: IsMPSRNNSingleGateDescriptor mpsrnnSingleGateDescriptor => mpsrnnSingleGateDescriptor -> IO RawId
-recurrentWeights mpsrnnSingleGateDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mpsrnnSingleGateDescriptor (mkSelector "recurrentWeights") (retPtr retVoid) []
+recurrentWeights mpsrnnSingleGateDescriptor =
+  sendMessage mpsrnnSingleGateDescriptor recurrentWeightsSelector
 
 -- | recurrentWeights
 --
@@ -103,30 +100,30 @@ recurrentWeights mpsrnnSingleGateDescriptor  =
 --
 -- ObjC selector: @- setRecurrentWeights:@
 setRecurrentWeights :: IsMPSRNNSingleGateDescriptor mpsrnnSingleGateDescriptor => mpsrnnSingleGateDescriptor -> RawId -> IO ()
-setRecurrentWeights mpsrnnSingleGateDescriptor  value =
-    sendMsg mpsrnnSingleGateDescriptor (mkSelector "setRecurrentWeights:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setRecurrentWeights mpsrnnSingleGateDescriptor value =
+  sendMessage mpsrnnSingleGateDescriptor setRecurrentWeightsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createRNNSingleGateDescriptorWithInputFeatureChannels:outputFeatureChannels:@
-createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector :: Selector
+createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector :: Selector '[CULong, CULong] (Id MPSRNNSingleGateDescriptor)
 createRNNSingleGateDescriptorWithInputFeatureChannels_outputFeatureChannelsSelector = mkSelector "createRNNSingleGateDescriptorWithInputFeatureChannels:outputFeatureChannels:"
 
 -- | @Selector@ for @inputWeights@
-inputWeightsSelector :: Selector
+inputWeightsSelector :: Selector '[] RawId
 inputWeightsSelector = mkSelector "inputWeights"
 
 -- | @Selector@ for @setInputWeights:@
-setInputWeightsSelector :: Selector
+setInputWeightsSelector :: Selector '[RawId] ()
 setInputWeightsSelector = mkSelector "setInputWeights:"
 
 -- | @Selector@ for @recurrentWeights@
-recurrentWeightsSelector :: Selector
+recurrentWeightsSelector :: Selector '[] RawId
 recurrentWeightsSelector = mkSelector "recurrentWeights"
 
 -- | @Selector@ for @setRecurrentWeights:@
-setRecurrentWeightsSelector :: Selector
+setRecurrentWeightsSelector :: Selector '[RawId] ()
 setRecurrentWeightsSelector = mkSelector "setRecurrentWeights:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.AuthenticationServices.ASAuthorizationProviderExtensionKerberosMappi
   , setEncryptionKeyTypeKeyName
   , sessionKeyKeyName
   , setSessionKeyKeyName
-  , ticketKeyPathSelector
-  , setTicketKeyPathSelector
-  , messageBufferKeyNameSelector
-  , setMessageBufferKeyNameSelector
-  , realmKeyNameSelector
-  , setRealmKeyNameSelector
-  , serviceNameKeyNameSelector
-  , setServiceNameKeyNameSelector
   , clientNameKeyNameSelector
-  , setClientNameKeyNameSelector
   , encryptionKeyTypeKeyNameSelector
-  , setEncryptionKeyTypeKeyNameSelector
+  , messageBufferKeyNameSelector
+  , realmKeyNameSelector
+  , serviceNameKeyNameSelector
   , sessionKeyKeyNameSelector
+  , setClientNameKeyNameSelector
+  , setEncryptionKeyTypeKeyNameSelector
+  , setMessageBufferKeyNameSelector
+  , setRealmKeyNameSelector
+  , setServiceNameKeyNameSelector
   , setSessionKeyKeyNameSelector
+  , setTicketKeyPathSelector
+  , ticketKeyPathSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- ticketKeyPath@
 ticketKeyPath :: IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping => asAuthorizationProviderExtensionKerberosMapping -> IO (Id NSString)
-ticketKeyPath asAuthorizationProviderExtensionKerberosMapping  =
-    sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "ticketKeyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+ticketKeyPath asAuthorizationProviderExtensionKerberosMapping =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping ticketKeyPathSelector
 
 -- | The keypath in the response JSON that uses this set of mappings.
 --
@@ -68,69 +65,64 @@ ticketKeyPath asAuthorizationProviderExtensionKerberosMapping  =
 --
 -- ObjC selector: @- setTicketKeyPath:@
 setTicketKeyPath :: (IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping, IsNSString value) => asAuthorizationProviderExtensionKerberosMapping -> value -> IO ()
-setTicketKeyPath asAuthorizationProviderExtensionKerberosMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "setTicketKeyPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTicketKeyPath asAuthorizationProviderExtensionKerberosMapping value =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping setTicketKeyPathSelector (toNSString value)
 
 -- | The key name that contains the base64 encoded kerberos AS-REP string.
 --
 -- ObjC selector: @- messageBufferKeyName@
 messageBufferKeyName :: IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping => asAuthorizationProviderExtensionKerberosMapping -> IO (Id NSString)
-messageBufferKeyName asAuthorizationProviderExtensionKerberosMapping  =
-    sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "messageBufferKeyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageBufferKeyName asAuthorizationProviderExtensionKerberosMapping =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping messageBufferKeyNameSelector
 
 -- | The key name that contains the base64 encoded kerberos AS-REP string.
 --
 -- ObjC selector: @- setMessageBufferKeyName:@
 setMessageBufferKeyName :: (IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping, IsNSString value) => asAuthorizationProviderExtensionKerberosMapping -> value -> IO ()
-setMessageBufferKeyName asAuthorizationProviderExtensionKerberosMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "setMessageBufferKeyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMessageBufferKeyName asAuthorizationProviderExtensionKerberosMapping value =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping setMessageBufferKeyNameSelector (toNSString value)
 
 -- | The key name that contains the Kerberos Realm string.
 --
 -- ObjC selector: @- realmKeyName@
 realmKeyName :: IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping => asAuthorizationProviderExtensionKerberosMapping -> IO (Id NSString)
-realmKeyName asAuthorizationProviderExtensionKerberosMapping  =
-    sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "realmKeyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+realmKeyName asAuthorizationProviderExtensionKerberosMapping =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping realmKeyNameSelector
 
 -- | The key name that contains the Kerberos Realm string.
 --
 -- ObjC selector: @- setRealmKeyName:@
 setRealmKeyName :: (IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping, IsNSString value) => asAuthorizationProviderExtensionKerberosMapping -> value -> IO ()
-setRealmKeyName asAuthorizationProviderExtensionKerberosMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "setRealmKeyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRealmKeyName asAuthorizationProviderExtensionKerberosMapping value =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping setRealmKeyNameSelector (toNSString value)
 
 -- | The key name that contains the Kerberos service name string.
 --
 -- ObjC selector: @- serviceNameKeyName@
 serviceNameKeyName :: IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping => asAuthorizationProviderExtensionKerberosMapping -> IO (Id NSString)
-serviceNameKeyName asAuthorizationProviderExtensionKerberosMapping  =
-    sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "serviceNameKeyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+serviceNameKeyName asAuthorizationProviderExtensionKerberosMapping =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping serviceNameKeyNameSelector
 
 -- | The key name that contains the Kerberos service name string.
 --
 -- ObjC selector: @- setServiceNameKeyName:@
 setServiceNameKeyName :: (IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping, IsNSString value) => asAuthorizationProviderExtensionKerberosMapping -> value -> IO ()
-setServiceNameKeyName asAuthorizationProviderExtensionKerberosMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "setServiceNameKeyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServiceNameKeyName asAuthorizationProviderExtensionKerberosMapping value =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping setServiceNameKeyNameSelector (toNSString value)
 
 -- | The key name that contains the Kerberos client name string.
 --
 -- ObjC selector: @- clientNameKeyName@
 clientNameKeyName :: IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping => asAuthorizationProviderExtensionKerberosMapping -> IO (Id NSString)
-clientNameKeyName asAuthorizationProviderExtensionKerberosMapping  =
-    sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "clientNameKeyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientNameKeyName asAuthorizationProviderExtensionKerberosMapping =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping clientNameKeyNameSelector
 
 -- | The key name that contains the Kerberos client name string.
 --
 -- ObjC selector: @- setClientNameKeyName:@
 setClientNameKeyName :: (IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping, IsNSString value) => asAuthorizationProviderExtensionKerberosMapping -> value -> IO ()
-setClientNameKeyName asAuthorizationProviderExtensionKerberosMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "setClientNameKeyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClientNameKeyName asAuthorizationProviderExtensionKerberosMapping value =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping setClientNameKeyNameSelector (toNSString value)
 
 -- | The key name that contains the Kerberos session key type number.
 --
@@ -138,8 +130,8 @@ setClientNameKeyName asAuthorizationProviderExtensionKerberosMapping  value =
 --
 -- ObjC selector: @- encryptionKeyTypeKeyName@
 encryptionKeyTypeKeyName :: IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping => asAuthorizationProviderExtensionKerberosMapping -> IO (Id NSString)
-encryptionKeyTypeKeyName asAuthorizationProviderExtensionKerberosMapping  =
-    sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "encryptionKeyTypeKeyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+encryptionKeyTypeKeyName asAuthorizationProviderExtensionKerberosMapping =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping encryptionKeyTypeKeyNameSelector
 
 -- | The key name that contains the Kerberos session key type number.
 --
@@ -147,82 +139,80 @@ encryptionKeyTypeKeyName asAuthorizationProviderExtensionKerberosMapping  =
 --
 -- ObjC selector: @- setEncryptionKeyTypeKeyName:@
 setEncryptionKeyTypeKeyName :: (IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping, IsNSString value) => asAuthorizationProviderExtensionKerberosMapping -> value -> IO ()
-setEncryptionKeyTypeKeyName asAuthorizationProviderExtensionKerberosMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "setEncryptionKeyTypeKeyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEncryptionKeyTypeKeyName asAuthorizationProviderExtensionKerberosMapping value =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping setEncryptionKeyTypeKeyNameSelector (toNSString value)
 
 -- | The key name that contains the Kerberos session key.
 --
 -- ObjC selector: @- sessionKeyKeyName@
 sessionKeyKeyName :: IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping => asAuthorizationProviderExtensionKerberosMapping -> IO (Id NSString)
-sessionKeyKeyName asAuthorizationProviderExtensionKerberosMapping  =
-    sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "sessionKeyKeyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+sessionKeyKeyName asAuthorizationProviderExtensionKerberosMapping =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping sessionKeyKeyNameSelector
 
 -- | The key name that contains the Kerberos session key.
 --
 -- ObjC selector: @- setSessionKeyKeyName:@
 setSessionKeyKeyName :: (IsASAuthorizationProviderExtensionKerberosMapping asAuthorizationProviderExtensionKerberosMapping, IsNSString value) => asAuthorizationProviderExtensionKerberosMapping -> value -> IO ()
-setSessionKeyKeyName asAuthorizationProviderExtensionKerberosMapping  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asAuthorizationProviderExtensionKerberosMapping (mkSelector "setSessionKeyKeyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSessionKeyKeyName asAuthorizationProviderExtensionKerberosMapping value =
+  sendMessage asAuthorizationProviderExtensionKerberosMapping setSessionKeyKeyNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @ticketKeyPath@
-ticketKeyPathSelector :: Selector
+ticketKeyPathSelector :: Selector '[] (Id NSString)
 ticketKeyPathSelector = mkSelector "ticketKeyPath"
 
 -- | @Selector@ for @setTicketKeyPath:@
-setTicketKeyPathSelector :: Selector
+setTicketKeyPathSelector :: Selector '[Id NSString] ()
 setTicketKeyPathSelector = mkSelector "setTicketKeyPath:"
 
 -- | @Selector@ for @messageBufferKeyName@
-messageBufferKeyNameSelector :: Selector
+messageBufferKeyNameSelector :: Selector '[] (Id NSString)
 messageBufferKeyNameSelector = mkSelector "messageBufferKeyName"
 
 -- | @Selector@ for @setMessageBufferKeyName:@
-setMessageBufferKeyNameSelector :: Selector
+setMessageBufferKeyNameSelector :: Selector '[Id NSString] ()
 setMessageBufferKeyNameSelector = mkSelector "setMessageBufferKeyName:"
 
 -- | @Selector@ for @realmKeyName@
-realmKeyNameSelector :: Selector
+realmKeyNameSelector :: Selector '[] (Id NSString)
 realmKeyNameSelector = mkSelector "realmKeyName"
 
 -- | @Selector@ for @setRealmKeyName:@
-setRealmKeyNameSelector :: Selector
+setRealmKeyNameSelector :: Selector '[Id NSString] ()
 setRealmKeyNameSelector = mkSelector "setRealmKeyName:"
 
 -- | @Selector@ for @serviceNameKeyName@
-serviceNameKeyNameSelector :: Selector
+serviceNameKeyNameSelector :: Selector '[] (Id NSString)
 serviceNameKeyNameSelector = mkSelector "serviceNameKeyName"
 
 -- | @Selector@ for @setServiceNameKeyName:@
-setServiceNameKeyNameSelector :: Selector
+setServiceNameKeyNameSelector :: Selector '[Id NSString] ()
 setServiceNameKeyNameSelector = mkSelector "setServiceNameKeyName:"
 
 -- | @Selector@ for @clientNameKeyName@
-clientNameKeyNameSelector :: Selector
+clientNameKeyNameSelector :: Selector '[] (Id NSString)
 clientNameKeyNameSelector = mkSelector "clientNameKeyName"
 
 -- | @Selector@ for @setClientNameKeyName:@
-setClientNameKeyNameSelector :: Selector
+setClientNameKeyNameSelector :: Selector '[Id NSString] ()
 setClientNameKeyNameSelector = mkSelector "setClientNameKeyName:"
 
 -- | @Selector@ for @encryptionKeyTypeKeyName@
-encryptionKeyTypeKeyNameSelector :: Selector
+encryptionKeyTypeKeyNameSelector :: Selector '[] (Id NSString)
 encryptionKeyTypeKeyNameSelector = mkSelector "encryptionKeyTypeKeyName"
 
 -- | @Selector@ for @setEncryptionKeyTypeKeyName:@
-setEncryptionKeyTypeKeyNameSelector :: Selector
+setEncryptionKeyTypeKeyNameSelector :: Selector '[Id NSString] ()
 setEncryptionKeyTypeKeyNameSelector = mkSelector "setEncryptionKeyTypeKeyName:"
 
 -- | @Selector@ for @sessionKeyKeyName@
-sessionKeyKeyNameSelector :: Selector
+sessionKeyKeyNameSelector :: Selector '[] (Id NSString)
 sessionKeyKeyNameSelector = mkSelector "sessionKeyKeyName"
 
 -- | @Selector@ for @setSessionKeyKeyName:@
-setSessionKeyKeyNameSelector :: Selector
+setSessionKeyKeyNameSelector :: Selector '[Id NSString] ()
 setSessionKeyKeyNameSelector = mkSelector "setSessionKeyKeyName:"
 

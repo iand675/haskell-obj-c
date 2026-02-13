@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.QuickLookThumbnailing.QLFileThumbnailRequest
   , IsQLFileThumbnailRequest(..)
   , scale
   , fileURL
-  , scaleSelector
   , fileURLSelector
+  , scaleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,25 +32,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- scale@
 scale :: IsQLFileThumbnailRequest qlFileThumbnailRequest => qlFileThumbnailRequest -> IO CDouble
-scale qlFileThumbnailRequest  =
-    sendMsg qlFileThumbnailRequest (mkSelector "scale") retCDouble []
+scale qlFileThumbnailRequest =
+  sendMessage qlFileThumbnailRequest scaleSelector
 
 -- | The url of the file for which a thumbnail is being requested.
 --
 -- ObjC selector: @- fileURL@
 fileURL :: IsQLFileThumbnailRequest qlFileThumbnailRequest => qlFileThumbnailRequest -> IO (Id NSURL)
-fileURL qlFileThumbnailRequest  =
-    sendMsg qlFileThumbnailRequest (mkSelector "fileURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileURL qlFileThumbnailRequest =
+  sendMessage qlFileThumbnailRequest fileURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @scale@
-scaleSelector :: Selector
+scaleSelector :: Selector '[] CDouble
 scaleSelector = mkSelector "scale"
 
 -- | @Selector@ for @fileURL@
-fileURLSelector :: Selector
+fileURLSelector :: Selector '[] (Id NSURL)
 fileURLSelector = mkSelector "fileURL"
 

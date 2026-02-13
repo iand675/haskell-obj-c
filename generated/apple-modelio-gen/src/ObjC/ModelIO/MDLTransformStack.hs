@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.ModelIO.MDLTransformStack
   , count
   , keyTimes
   , transformOps
-  , initSelector
   , animatedValueWithNameSelector
   , countSelector
+  , initSelector
   , keyTimesSelector
   , transformOpsSelector
 
@@ -29,15 +30,11 @@ module ObjC.ModelIO.MDLTransformStack
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,51 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMDLTransformStack mdlTransformStack => mdlTransformStack -> IO RawId
-init_ mdlTransformStack  =
-    fmap (RawId . castPtr) $ sendMsg mdlTransformStack (mkSelector "init") (retPtr retVoid) []
+init_ mdlTransformStack =
+  sendOwnedMessage mdlTransformStack initSelector
 
 -- | @- animatedValueWithName:@
 animatedValueWithName :: (IsMDLTransformStack mdlTransformStack, IsNSString name) => mdlTransformStack -> name -> IO (Id MDLAnimatedValue)
-animatedValueWithName mdlTransformStack  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg mdlTransformStack (mkSelector "animatedValueWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+animatedValueWithName mdlTransformStack name =
+  sendMessage mdlTransformStack animatedValueWithNameSelector (toNSString name)
 
 -- | @- count@
 count :: IsMDLTransformStack mdlTransformStack => mdlTransformStack -> IO CULong
-count mdlTransformStack  =
-    sendMsg mdlTransformStack (mkSelector "count") retCULong []
+count mdlTransformStack =
+  sendMessage mdlTransformStack countSelector
 
 -- | @- keyTimes@
 keyTimes :: IsMDLTransformStack mdlTransformStack => mdlTransformStack -> IO (Id NSArray)
-keyTimes mdlTransformStack  =
-    sendMsg mdlTransformStack (mkSelector "keyTimes") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyTimes mdlTransformStack =
+  sendMessage mdlTransformStack keyTimesSelector
 
 -- | @- transformOps@
 transformOps :: IsMDLTransformStack mdlTransformStack => mdlTransformStack -> IO (Id NSArray)
-transformOps mdlTransformStack  =
-    sendMsg mdlTransformStack (mkSelector "transformOps") (retPtr retVoid) [] >>= retainedObject . castPtr
+transformOps mdlTransformStack =
+  sendMessage mdlTransformStack transformOpsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @animatedValueWithName:@
-animatedValueWithNameSelector :: Selector
+animatedValueWithNameSelector :: Selector '[Id NSString] (Id MDLAnimatedValue)
 animatedValueWithNameSelector = mkSelector "animatedValueWithName:"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @keyTimes@
-keyTimesSelector :: Selector
+keyTimesSelector :: Selector '[] (Id NSArray)
 keyTimesSelector = mkSelector "keyTimes"
 
 -- | @Selector@ for @transformOps@
-transformOpsSelector :: Selector
+transformOpsSelector :: Selector '[] (Id NSArray)
 transformOpsSelector = mkSelector "transformOps"
 

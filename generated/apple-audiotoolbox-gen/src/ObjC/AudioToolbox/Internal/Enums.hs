@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AudioToolbox.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | 3D Mixer Attenuation Curves
 -- | @AU3DMixerAttenuationCurve@
@@ -28,6 +31,16 @@ pattern K3DMixerAttenuationCurve_Inverse = AU3DMixerAttenuationCurve 2
 
 pattern K3DMixerAttenuationCurve_Linear :: AU3DMixerAttenuationCurve
 pattern K3DMixerAttenuationCurve_Linear = AU3DMixerAttenuationCurve 3
+
+instance ObjCArgument AU3DMixerAttenuationCurve where
+  withObjCArg (AU3DMixerAttenuationCurve x) k = k (argCUInt x)
+
+instance ObjCReturn AU3DMixerAttenuationCurve where
+  type RawReturn AU3DMixerAttenuationCurve = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AU3DMixerAttenuationCurve x)
+  fromOwned x = pure (AU3DMixerAttenuationCurve x)
 
 -- | 3D Mixer Rendering Flags
 -- | @AU3DMixerRenderingFlags@ (bitmask)
@@ -61,6 +74,16 @@ pattern K3DMixerRenderingFlags_LinearDistanceAttenuation = AU3DMixerRenderingFla
 
 pattern K3DMixerRenderingFlags_ConstantReverbBlend :: AU3DMixerRenderingFlags
 pattern K3DMixerRenderingFlags_ConstantReverbBlend = AU3DMixerRenderingFlags 64
+
+instance ObjCArgument AU3DMixerRenderingFlags where
+  withObjCArg (AU3DMixerRenderingFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AU3DMixerRenderingFlags where
+  type RawReturn AU3DMixerRenderingFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AU3DMixerRenderingFlags x)
+  fromOwned x = pure (AU3DMixerRenderingFlags x)
 
 -- | AUAudioMix styles
 --
@@ -140,6 +163,16 @@ pattern KAudioMixRenderingStyle_StudioBackgroundStem = AUAudioMixRenderingStyle 
 pattern KAudioMixRenderingStyle_InFrameBackgroundStem :: AUAudioMixRenderingStyle
 pattern KAudioMixRenderingStyle_InFrameBackgroundStem = AUAudioMixRenderingStyle 9
 
+instance ObjCArgument AUAudioMixRenderingStyle where
+  withObjCArg (AUAudioMixRenderingStyle x) k = k (argCUInt x)
+
+instance ObjCReturn AUAudioMixRenderingStyle where
+  type RawReturn AUAudioMixRenderingStyle = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUAudioMixRenderingStyle x)
+  fromOwned x = pure (AUAudioMixRenderingStyle x)
+
 -- | AUAudioUnitBusType
 --
 -- Describes whether a bus array is for input or output.
@@ -153,6 +186,16 @@ pattern AUAudioUnitBusTypeInput = AUAudioUnitBusType 1
 
 pattern AUAudioUnitBusTypeOutput :: AUAudioUnitBusType
 pattern AUAudioUnitBusTypeOutput = AUAudioUnitBusType 2
+
+instance ObjCArgument AUAudioUnitBusType where
+  withObjCArg (AUAudioUnitBusType x) k = k (argCLong x)
+
+instance ObjCReturn AUAudioUnitBusType where
+  type RawReturn AUAudioUnitBusType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUAudioUnitBusType x)
+  fromOwned x = pure (AUAudioUnitBusType x)
 
 -- | AUHostTransportStateFlags
 --
@@ -196,6 +239,16 @@ pattern AUHostTransportStateRecording = AUHostTransportStateFlags 4
 pattern AUHostTransportStateCycling :: AUHostTransportStateFlags
 pattern AUHostTransportStateCycling = AUHostTransportStateFlags 8
 
+instance ObjCArgument AUHostTransportStateFlags where
+  withObjCArg (AUHostTransportStateFlags x) k = k (argCULong x)
+
+instance ObjCReturn AUHostTransportStateFlags where
+  type RawReturn AUHostTransportStateFlags = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUHostTransportStateFlags x)
+  fromOwned x = pure (AUHostTransportStateFlags x)
+
 -- | AUParameterAutomationEventType
 --
 -- Identifies the different types of parameter automation events.
@@ -227,6 +280,16 @@ pattern AUParameterAutomationEventTypeTouch = AUParameterAutomationEventType 1
 pattern AUParameterAutomationEventTypeRelease :: AUParameterAutomationEventType
 pattern AUParameterAutomationEventTypeRelease = AUParameterAutomationEventType 2
 
+instance ObjCArgument AUParameterAutomationEventType where
+  withObjCArg (AUParameterAutomationEventType x) k = k (argCUInt x)
+
+instance ObjCReturn AUParameterAutomationEventType where
+  type RawReturn AUParameterAutomationEventType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUParameterAutomationEventType x)
+  fromOwned x = pure (AUParameterAutomationEventType x)
+
 -- | AUParameterEventType
 --
 -- The type of a parameter event (see AudioUnitScheduleParameter)
@@ -248,6 +311,16 @@ pattern KParameterEvent_Immediate = AUParameterEventType 1
 
 pattern KParameterEvent_Ramped :: AUParameterEventType
 pattern KParameterEvent_Ramped = AUParameterEventType 2
+
+instance ObjCArgument AUParameterEventType where
+  withObjCArg (AUParameterEventType x) k = k (argCUInt x)
+
+instance ObjCReturn AUParameterEventType where
+  type RawReturn AUParameterEventType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUParameterEventType x)
+  fromOwned x = pure (AUParameterEventType x)
 
 -- | ParameterMIDIMappings
 --
@@ -307,6 +380,16 @@ pattern KAUParameterMIDIMapping_Bipolar = AUParameterMIDIMappingFlags 16
 pattern KAUParameterMIDIMapping_Bipolar_On :: AUParameterMIDIMappingFlags
 pattern KAUParameterMIDIMapping_Bipolar_On = AUParameterMIDIMappingFlags 32
 
+instance ObjCArgument AUParameterMIDIMappingFlags where
+  withObjCArg (AUParameterMIDIMappingFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AUParameterMIDIMappingFlags where
+  type RawReturn AUParameterMIDIMappingFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUParameterMIDIMappingFlags x)
+  fromOwned x = pure (AUParameterMIDIMappingFlags x)
+
 -- | Describes the type of a render event.
 -- | @AURenderEventType@
 newtype AURenderEventType = AURenderEventType CUChar
@@ -327,6 +410,16 @@ pattern AURenderEventMIDISysEx = AURenderEventType 9
 
 pattern AURenderEventMIDIEventList :: AURenderEventType
 pattern AURenderEventMIDIEventList = AURenderEventType 10
+
+instance ObjCArgument AURenderEventType where
+  withObjCArg (AURenderEventType x) k = k (argCUChar x)
+
+instance ObjCReturn AURenderEventType where
+  type RawReturn AURenderEventType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AURenderEventType x)
+  fromOwned x = pure (AURenderEventType x)
 
 -- | Reverb Room Types
 --
@@ -374,6 +467,16 @@ pattern KReverbRoomType_MediumHall3 = AUReverbRoomType 11
 
 pattern KReverbRoomType_LargeHall2 :: AUReverbRoomType
 pattern KReverbRoomType_LargeHall2 = AUReverbRoomType 12
+
+instance ObjCArgument AUReverbRoomType where
+  withObjCArg (AUReverbRoomType x) k = k (argCUInt x)
+
+instance ObjCReturn AUReverbRoomType where
+  type RawReturn AUReverbRoomType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUReverbRoomType x)
+  fromOwned x = pure (AUReverbRoomType x)
 
 -- | ScheduledAudioSlice
 --
@@ -431,6 +534,16 @@ pattern KScheduledAudioSliceFlag_Interrupt = AUScheduledAudioSliceFlags 16
 pattern KScheduledAudioSliceFlag_InterruptAtLoop :: AUScheduledAudioSliceFlags
 pattern KScheduledAudioSliceFlag_InterruptAtLoop = AUScheduledAudioSliceFlags 32
 
+instance ObjCArgument AUScheduledAudioSliceFlags where
+  withObjCArg (AUScheduledAudioSliceFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AUScheduledAudioSliceFlags where
+  type RawReturn AUScheduledAudioSliceFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUScheduledAudioSliceFlags x)
+  fromOwned x = pure (AUScheduledAudioSliceFlags x)
+
 -- | AUSpatialMixer Attenuation Curves
 -- | @AUSpatialMixerAttenuationCurve@
 newtype AUSpatialMixerAttenuationCurve = AUSpatialMixerAttenuationCurve CUInt
@@ -448,6 +561,16 @@ pattern KSpatialMixerAttenuationCurve_Inverse = AUSpatialMixerAttenuationCurve 2
 
 pattern KSpatialMixerAttenuationCurve_Linear :: AUSpatialMixerAttenuationCurve
 pattern KSpatialMixerAttenuationCurve_Linear = AUSpatialMixerAttenuationCurve 3
+
+instance ObjCArgument AUSpatialMixerAttenuationCurve where
+  withObjCArg (AUSpatialMixerAttenuationCurve x) k = k (argCUInt x)
+
+instance ObjCReturn AUSpatialMixerAttenuationCurve where
+  type RawReturn AUSpatialMixerAttenuationCurve = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUSpatialMixerAttenuationCurve x)
+  fromOwned x = pure (AUSpatialMixerAttenuationCurve x)
 
 -- | Property values for kAudioUnitProperty_SpatialMixerOutputType
 --
@@ -476,6 +599,16 @@ pattern KSpatialMixerOutputType_BuiltInSpeakers = AUSpatialMixerOutputType 2
 pattern KSpatialMixerOutputType_ExternalSpeakers :: AUSpatialMixerOutputType
 pattern KSpatialMixerOutputType_ExternalSpeakers = AUSpatialMixerOutputType 3
 
+instance ObjCArgument AUSpatialMixerOutputType where
+  withObjCArg (AUSpatialMixerOutputType x) k = k (argCUInt x)
+
+instance ObjCReturn AUSpatialMixerOutputType where
+  type RawReturn AUSpatialMixerOutputType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUSpatialMixerOutputType x)
+  fromOwned x = pure (AUSpatialMixerOutputType x)
+
 -- | Property values for kAudioUnitProperty_SpatialMixerPersonalizedHRTFMode
 --
 -- kSpatialMixerPersonalizedHRTFMode_Off
@@ -503,6 +636,16 @@ pattern KSpatialMixerPersonalizedHRTFMode_On = AUSpatialMixerPersonalizedHRTFMod
 pattern KSpatialMixerPersonalizedHRTFMode_Auto :: AUSpatialMixerPersonalizedHRTFMode
 pattern KSpatialMixerPersonalizedHRTFMode_Auto = AUSpatialMixerPersonalizedHRTFMode 2
 
+instance ObjCArgument AUSpatialMixerPersonalizedHRTFMode where
+  withObjCArg (AUSpatialMixerPersonalizedHRTFMode x) k = k (argCUInt x)
+
+instance ObjCReturn AUSpatialMixerPersonalizedHRTFMode where
+  type RawReturn AUSpatialMixerPersonalizedHRTFMode = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUSpatialMixerPersonalizedHRTFMode x)
+  fromOwned x = pure (AUSpatialMixerPersonalizedHRTFMode x)
+
 -- | Property values for kAudioUnitProperty_SpatialMixerPointSourceInHeadMode
 --
 -- This setting only affects spatialization when using kSpatializationAlgorithm_UseOutputType					with kSpatialMixerSourceMode_PointSource.
@@ -525,6 +668,16 @@ pattern KSpatialMixerPointSourceInHeadMode_Mono = AUSpatialMixerPointSourceInHea
 pattern KSpatialMixerPointSourceInHeadMode_Bypass :: AUSpatialMixerPointSourceInHeadMode
 pattern KSpatialMixerPointSourceInHeadMode_Bypass = AUSpatialMixerPointSourceInHeadMode 1
 
+instance ObjCArgument AUSpatialMixerPointSourceInHeadMode where
+  withObjCArg (AUSpatialMixerPointSourceInHeadMode x) k = k (argCUInt x)
+
+instance ObjCReturn AUSpatialMixerPointSourceInHeadMode where
+  type RawReturn AUSpatialMixerPointSourceInHeadMode = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUSpatialMixerPointSourceInHeadMode x)
+  fromOwned x = pure (AUSpatialMixerPointSourceInHeadMode x)
+
 -- | AUSpatial Mixer Rendering Flags
 -- | @AUSpatialMixerRenderingFlags@ (bitmask)
 newtype AUSpatialMixerRenderingFlags = AUSpatialMixerRenderingFlags CUInt
@@ -542,6 +695,16 @@ pattern KSpatialMixerRenderingFlags_InterAuralDelay = AUSpatialMixerRenderingFla
 
 pattern KSpatialMixerRenderingFlags_DistanceAttenuation :: AUSpatialMixerRenderingFlags
 pattern KSpatialMixerRenderingFlags_DistanceAttenuation = AUSpatialMixerRenderingFlags 4
+
+instance ObjCArgument AUSpatialMixerRenderingFlags where
+  withObjCArg (AUSpatialMixerRenderingFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AUSpatialMixerRenderingFlags where
+  type RawReturn AUSpatialMixerRenderingFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUSpatialMixerRenderingFlags x)
+  fromOwned x = pure (AUSpatialMixerRenderingFlags x)
 
 -- | Property values for kAudioUnitProperty_SpatialMixerSourceMode
 --
@@ -577,6 +740,16 @@ pattern KSpatialMixerSourceMode_PointSource = AUSpatialMixerSourceMode 2
 pattern KSpatialMixerSourceMode_AmbienceBed :: AUSpatialMixerSourceMode
 pattern KSpatialMixerSourceMode_AmbienceBed = AUSpatialMixerSourceMode 3
 
+instance ObjCArgument AUSpatialMixerSourceMode where
+  withObjCArg (AUSpatialMixerSourceMode x) k = k (argCUInt x)
+
+instance ObjCReturn AUSpatialMixerSourceMode where
+  type RawReturn AUSpatialMixerSourceMode = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUSpatialMixerSourceMode x)
+  fromOwned x = pure (AUSpatialMixerSourceMode x)
+
 -- | Spatialization Algorithms
 --
 -- Use kSpatializationAlgorithm_UseOutputType with appropriate kAudioUnitProperty_SpatialMixerOutputType				for highest-quality spatial rendering across different hardware.
@@ -609,6 +782,16 @@ pattern KSpatializationAlgorithm_HRTFHQ = AUSpatializationAlgorithm 6
 pattern KSpatializationAlgorithm_UseOutputType :: AUSpatializationAlgorithm
 pattern KSpatializationAlgorithm_UseOutputType = AUSpatializationAlgorithm 7
 
+instance ObjCArgument AUSpatializationAlgorithm where
+  withObjCArg (AUSpatializationAlgorithm x) k = k (argCUInt x)
+
+instance ObjCReturn AUSpatializationAlgorithm where
+  type RawReturn AUSpatializationAlgorithm = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUSpatializationAlgorithm x)
+  fromOwned x = pure (AUSpatializationAlgorithm x)
+
 -- | AUVoiceIOOtherAudioDuckingLevel
 --
 -- Ducking level applied to other (i.e. non-voice) audio by AUVoiceIO.
@@ -631,6 +814,16 @@ pattern KAUVoiceIOOtherAudioDuckingLevelMid = AUVoiceIOOtherAudioDuckingLevel 20
 pattern KAUVoiceIOOtherAudioDuckingLevelMax :: AUVoiceIOOtherAudioDuckingLevel
 pattern KAUVoiceIOOtherAudioDuckingLevelMax = AUVoiceIOOtherAudioDuckingLevel 30
 
+instance ObjCArgument AUVoiceIOOtherAudioDuckingLevel where
+  withObjCArg (AUVoiceIOOtherAudioDuckingLevel x) k = k (argCUInt x)
+
+instance ObjCReturn AUVoiceIOOtherAudioDuckingLevel where
+  type RawReturn AUVoiceIOOtherAudioDuckingLevel = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUVoiceIOOtherAudioDuckingLevel x)
+  fromOwned x = pure (AUVoiceIOOtherAudioDuckingLevel x)
+
 -- | Speech activity event described by AUVoiceIO
 -- | @AUVoiceIOSpeechActivityEvent@
 newtype AUVoiceIOSpeechActivityEvent = AUVoiceIOSpeechActivityEvent CUInt
@@ -642,6 +835,16 @@ pattern KAUVoiceIOSpeechActivityHasStarted = AUVoiceIOSpeechActivityEvent 0
 
 pattern KAUVoiceIOSpeechActivityHasEnded :: AUVoiceIOSpeechActivityEvent
 pattern KAUVoiceIOSpeechActivityHasEnded = AUVoiceIOSpeechActivityEvent 1
+
+instance ObjCArgument AUVoiceIOSpeechActivityEvent where
+  withObjCArg (AUVoiceIOSpeechActivityEvent x) k = k (argCUInt x)
+
+instance ObjCReturn AUVoiceIOSpeechActivityEvent where
+  type RawReturn AUVoiceIOSpeechActivityEvent = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AUVoiceIOSpeechActivityEvent x)
+  fromOwned x = pure (AUVoiceIOSpeechActivityEvent x)
 
 -- | AudioBalanceFadeType
 --
@@ -665,6 +868,16 @@ pattern KAudioBalanceFadeType_MaxUnityGain = AudioBalanceFadeType 0
 pattern KAudioBalanceFadeType_EqualPower :: AudioBalanceFadeType
 pattern KAudioBalanceFadeType_EqualPower = AudioBalanceFadeType 1
 
+instance ObjCArgument AudioBalanceFadeType where
+  withObjCArg (AudioBalanceFadeType x) k = k (argCUInt x)
+
+instance ObjCReturn AudioBalanceFadeType where
+  type RawReturn AudioBalanceFadeType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioBalanceFadeType x)
+  fromOwned x = pure (AudioBalanceFadeType x)
+
 -- | AudioBytePacketTranslation Flags
 --
 -- flags for the AudioBytePacketTranslation mFlags field
@@ -687,6 +900,16 @@ instance Monoid AudioBytePacketTranslationFlags where
 
 pattern KBytePacketTranslationFlag_IsEstimate :: AudioBytePacketTranslationFlags
 pattern KBytePacketTranslationFlag_IsEstimate = AudioBytePacketTranslationFlags 1
+
+instance ObjCArgument AudioBytePacketTranslationFlags where
+  withObjCArg (AudioBytePacketTranslationFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioBytePacketTranslationFlags where
+  type RawReturn AudioBytePacketTranslationFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioBytePacketTranslationFlags x)
+  fromOwned x = pure (AudioBytePacketTranslationFlags x)
 
 -- | AudioComponentFlags
 --
@@ -737,6 +960,16 @@ pattern KAudioComponentFlag_RequiresAsyncInstantiation = AudioComponentFlags 8
 pattern KAudioComponentFlag_CanLoadInProcess :: AudioComponentFlags
 pattern KAudioComponentFlag_CanLoadInProcess = AudioComponentFlags 16
 
+instance ObjCArgument AudioComponentFlags where
+  withObjCArg (AudioComponentFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioComponentFlags where
+  type RawReturn AudioComponentFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioComponentFlags x)
+  fromOwned x = pure (AudioComponentFlags x)
+
 -- | AudioComponentInstantiationOptions
 --
 -- Options controlling component instantiation.
@@ -777,6 +1010,16 @@ pattern KAudioComponentInstantiation_LoadInProcess = AudioComponentInstantiation
 
 pattern KAudioComponentInstantiation_LoadedRemotely :: AudioComponentInstantiationOptions
 pattern KAudioComponentInstantiation_LoadedRemotely = AudioComponentInstantiationOptions 2147483648
+
+instance ObjCArgument AudioComponentInstantiationOptions where
+  withObjCArg (AudioComponentInstantiationOptions x) k = k (argCUInt x)
+
+instance ObjCReturn AudioComponentInstantiationOptions where
+  type RawReturn AudioComponentInstantiationOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioComponentInstantiationOptions x)
+  fromOwned x = pure (AudioComponentInstantiationOptions x)
 
 -- | AudioComponentValidationResult
 --
@@ -824,6 +1067,16 @@ pattern KAudioComponentValidationResult_UnauthorizedError_Open = AudioComponentV
 pattern KAudioComponentValidationResult_UnauthorizedError_Init :: AudioComponentValidationResult
 pattern KAudioComponentValidationResult_UnauthorizedError_Init = AudioComponentValidationResult 5
 
+instance ObjCArgument AudioComponentValidationResult where
+  withObjCArg (AudioComponentValidationResult x) k = k (argCUInt x)
+
+instance ObjCReturn AudioComponentValidationResult where
+  type RawReturn AudioComponentValidationResult = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioComponentValidationResult x)
+  fromOwned x = pure (AudioComponentValidationResult x)
+
 -- | AudioConverterOptions
 --
 -- kAudioConverterOption_Unbuffered
@@ -844,6 +1097,16 @@ instance Monoid AudioConverterOptions where
 
 pattern KAudioConverterOption_Unbuffered :: AudioConverterOptions
 pattern KAudioConverterOption_Unbuffered = AudioConverterOptions 65536
+
+instance ObjCArgument AudioConverterOptions where
+  withObjCArg (AudioConverterOptions x) k = k (argCUInt x)
+
+instance ObjCReturn AudioConverterOptions where
+  type RawReturn AudioConverterOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioConverterOptions x)
+  fromOwned x = pure (AudioConverterOptions x)
 
 -- | AudioFileFlags
 --
@@ -873,6 +1136,16 @@ pattern KAudioFileFlags_EraseFile = AudioFileFlags 1
 pattern KAudioFileFlags_DontPageAlignAudioData :: AudioFileFlags
 pattern KAudioFileFlags_DontPageAlignAudioData = AudioFileFlags 2
 
+instance ObjCArgument AudioFileFlags where
+  withObjCArg (AudioFileFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioFileFlags where
+  type RawReturn AudioFileFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioFileFlags x)
+  fromOwned x = pure (AudioFileFlags x)
+
 -- | @AudioFilePermissions@
 newtype AudioFilePermissions = AudioFilePermissions CSChar
   deriving stock (Eq, Ord, Show)
@@ -886,6 +1159,16 @@ pattern KAudioFileWritePermission = AudioFilePermissions 2
 
 pattern KAudioFileReadWritePermission :: AudioFilePermissions
 pattern KAudioFileReadWritePermission = AudioFilePermissions 3
+
+instance ObjCArgument AudioFilePermissions where
+  withObjCArg (AudioFilePermissions x) k = k (argCChar (fromIntegral x))
+
+instance ObjCReturn AudioFilePermissions where
+  type RawReturn AudioFilePermissions = Int8
+  objcRetType = retInt8
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioFilePermissions (fromIntegral x))
+  fromOwned x = pure (AudioFilePermissions (fromIntegral x))
 
 -- | AudioFileRegionFlags
 --
@@ -924,6 +1207,16 @@ pattern KAudioFileRegionFlag_PlayForward = AudioFileRegionFlags 2
 pattern KAudioFileRegionFlag_PlayBackward :: AudioFileRegionFlags
 pattern KAudioFileRegionFlag_PlayBackward = AudioFileRegionFlags 4
 
+instance ObjCArgument AudioFileRegionFlags where
+  withObjCArg (AudioFileRegionFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioFileRegionFlags where
+  type RawReturn AudioFileRegionFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioFileRegionFlags x)
+  fromOwned x = pure (AudioFileRegionFlags x)
+
 -- | AudioFileStreamParseFlags
 --
 -- kAudioFileStreamParseFlag_Discontinuity
@@ -942,6 +1235,16 @@ instance Monoid AudioFileStreamParseFlags where
 
 pattern KAudioFileStreamParseFlag_Discontinuity :: AudioFileStreamParseFlags
 pattern KAudioFileStreamParseFlag_Discontinuity = AudioFileStreamParseFlags 1
+
+instance ObjCArgument AudioFileStreamParseFlags where
+  withObjCArg (AudioFileStreamParseFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioFileStreamParseFlags where
+  type RawReturn AudioFileStreamParseFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioFileStreamParseFlags x)
+  fromOwned x = pure (AudioFileStreamParseFlags x)
 
 -- | AudioFileStreamPropertyFlags
 --
@@ -969,6 +1272,16 @@ pattern KAudioFileStreamPropertyFlag_PropertyIsCached = AudioFileStreamPropertyF
 pattern KAudioFileStreamPropertyFlag_CacheProperty :: AudioFileStreamPropertyFlags
 pattern KAudioFileStreamPropertyFlag_CacheProperty = AudioFileStreamPropertyFlags 2
 
+instance ObjCArgument AudioFileStreamPropertyFlags where
+  withObjCArg (AudioFileStreamPropertyFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioFileStreamPropertyFlags where
+  type RawReturn AudioFileStreamPropertyFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioFileStreamPropertyFlags x)
+  fromOwned x = pure (AudioFileStreamPropertyFlags x)
+
 -- | AudioFileStreamParseFlags
 --
 -- kAudioFileStreamSeekFlag_OffsetIsEstimated
@@ -987,6 +1300,16 @@ instance Monoid AudioFileStreamSeekFlags where
 
 pattern KAudioFileStreamSeekFlag_OffsetIsEstimated :: AudioFileStreamSeekFlags
 pattern KAudioFileStreamSeekFlag_OffsetIsEstimated = AudioFileStreamSeekFlags 1
+
+instance ObjCArgument AudioFileStreamSeekFlags where
+  withObjCArg (AudioFileStreamSeekFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioFileStreamSeekFlags where
+  type RawReturn AudioFileStreamSeekFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioFileStreamSeekFlags x)
+  fromOwned x = pure (AudioFileStreamSeekFlags x)
 
 -- | AudioPanningMode
 --
@@ -1009,6 +1332,16 @@ pattern KPanningMode_SoundField = AudioPanningMode 3
 
 pattern KPanningMode_VectorBasedPanning :: AudioPanningMode
 pattern KPanningMode_VectorBasedPanning = AudioPanningMode 4
+
+instance ObjCArgument AudioPanningMode where
+  withObjCArg (AudioPanningMode x) k = k (argCUInt x)
+
+instance ObjCReturn AudioPanningMode where
+  type RawReturn AudioPanningMode = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioPanningMode x)
+  fromOwned x = pure (AudioPanningMode x)
 
 -- | AudioQueueProcessingTapFlags
 --
@@ -1061,6 +1394,16 @@ pattern KAudioQueueProcessingTap_StartOfStream = AudioQueueProcessingTapFlags 25
 pattern KAudioQueueProcessingTap_EndOfStream :: AudioQueueProcessingTapFlags
 pattern KAudioQueueProcessingTap_EndOfStream = AudioQueueProcessingTapFlags 512
 
+instance ObjCArgument AudioQueueProcessingTapFlags where
+  withObjCArg (AudioQueueProcessingTapFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioQueueProcessingTapFlags where
+  type RawReturn AudioQueueProcessingTapFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioQueueProcessingTapFlags x)
+  fromOwned x = pure (AudioQueueProcessingTapFlags x)
+
 -- | AudioSettingsFlags
 --
 -- Constants to be used with kAudioSettings_Hint					in the kAudioCodecPropertySettings property dictionary.					Indicates any special characteristics of each parameter within the dictionary,
@@ -1103,6 +1446,16 @@ pattern KAudioSettingsFlags_MetaParameter = AudioSettingsFlags 4
 pattern KAudioSettingsFlags_UserInterfaceParameter :: AudioSettingsFlags
 pattern KAudioSettingsFlags_UserInterfaceParameter = AudioSettingsFlags 8
 
+instance ObjCArgument AudioSettingsFlags where
+  withObjCArg (AudioSettingsFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioSettingsFlags where
+  type RawReturn AudioSettingsFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioSettingsFlags x)
+  fromOwned x = pure (AudioSettingsFlags x)
+
 -- | AudioUnitEventType
 --
 -- Types of Audio Unit Events.
@@ -1138,6 +1491,16 @@ pattern KAudioUnitEvent_EndParameterChangeGesture = AudioUnitEventType 2
 
 pattern KAudioUnitEvent_PropertyChange :: AudioUnitEventType
 pattern KAudioUnitEvent_PropertyChange = AudioUnitEventType 3
+
+instance ObjCArgument AudioUnitEventType where
+  withObjCArg (AudioUnitEventType x) k = k (argCUInt x)
+
+instance ObjCReturn AudioUnitEventType where
+  type RawReturn AudioUnitEventType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioUnitEventType x)
+  fromOwned x = pure (AudioUnitEventType x)
 
 -- | AudioUnitParameterOptions
 --
@@ -1274,6 +1637,16 @@ pattern KAudioUnitParameterFlag_IsReadable = AudioUnitParameterOptions 107374182
 
 pattern KAudioUnitParameterFlag_IsWritable :: AudioUnitParameterOptions
 pattern KAudioUnitParameterFlag_IsWritable = AudioUnitParameterOptions 2147483648
+
+instance ObjCArgument AudioUnitParameterOptions where
+  withObjCArg (AudioUnitParameterOptions x) k = k (argCUInt x)
+
+instance ObjCReturn AudioUnitParameterOptions where
+  type RawReturn AudioUnitParameterOptions = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioUnitParameterOptions x)
+  fromOwned x = pure (AudioUnitParameterOptions x)
 
 -- | AudioUnitParameterUnit
 --
@@ -1477,6 +1850,16 @@ pattern KAudioUnitParameterUnit_CustomUnit = AudioUnitParameterUnit 26
 pattern KAudioUnitParameterUnit_MIDI2Controller :: AudioUnitParameterUnit
 pattern KAudioUnitParameterUnit_MIDI2Controller = AudioUnitParameterUnit 27
 
+instance ObjCArgument AudioUnitParameterUnit where
+  withObjCArg (AudioUnitParameterUnit x) k = k (argCUInt x)
+
+instance ObjCReturn AudioUnitParameterUnit where
+  type RawReturn AudioUnitParameterUnit = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioUnitParameterUnit x)
+  fromOwned x = pure (AudioUnitParameterUnit x)
+
 -- | AudioUnitRemoteControlEvent
 --
 -- In inter-app audio, messages to control the host's transport state.
@@ -1493,6 +1876,16 @@ pattern KAudioUnitRemoteControlEvent_ToggleRecord = AudioUnitRemoteControlEvent 
 
 pattern KAudioUnitRemoteControlEvent_Rewind :: AudioUnitRemoteControlEvent
 pattern KAudioUnitRemoteControlEvent_Rewind = AudioUnitRemoteControlEvent 3
+
+instance ObjCArgument AudioUnitRemoteControlEvent where
+  withObjCArg (AudioUnitRemoteControlEvent x) k = k (argCUInt x)
+
+instance ObjCReturn AudioUnitRemoteControlEvent where
+  type RawReturn AudioUnitRemoteControlEvent = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioUnitRemoteControlEvent x)
+  fromOwned x = pure (AudioUnitRemoteControlEvent x)
 
 -- | AudioUnitRenderActionFlags
 --
@@ -1568,6 +1961,16 @@ pattern KAudioUnitRenderAction_PostRenderError = AudioUnitRenderActionFlags 256
 pattern KAudioUnitRenderAction_DoNotCheckRenderArgs :: AudioUnitRenderActionFlags
 pattern KAudioUnitRenderAction_DoNotCheckRenderArgs = AudioUnitRenderActionFlags 512
 
+instance ObjCArgument AudioUnitRenderActionFlags where
+  withObjCArg (AudioUnitRenderActionFlags x) k = k (argCUInt x)
+
+instance ObjCReturn AudioUnitRenderActionFlags where
+  type RawReturn AudioUnitRenderActionFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AudioUnitRenderActionFlags x)
+  fromOwned x = pure (AudioUnitRenderActionFlags x)
+
 -- | CAClockMessage
 --
 -- The messages sent to a CAClockListenerProc to notify the client of				changes to the clock's state.
@@ -1624,6 +2027,16 @@ pattern KCAClockMessage_PropertyChanged = CAClockMessage 1885562983
 
 pattern KCAClockMessage_WrongSMPTEFormat :: CAClockMessage
 pattern KCAClockMessage_WrongSMPTEFormat = CAClockMessage 1064529264
+
+instance ObjCArgument CAClockMessage where
+  withObjCArg (CAClockMessage x) k = k (argCUInt x)
+
+instance ObjCReturn CAClockMessage where
+  type RawReturn CAClockMessage = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAClockMessage x)
+  fromOwned x = pure (CAClockMessage x)
 
 -- | CAClockPropertyID
 --
@@ -1724,6 +2137,16 @@ pattern KCAClockProperty_Name = CAClockPropertyID 1851878757
 pattern KCAClockProperty_SendMIDISPP :: CAClockPropertyID
 pattern KCAClockProperty_SendMIDISPP = CAClockPropertyID 1836281968
 
+instance ObjCArgument CAClockPropertyID where
+  withObjCArg (CAClockPropertyID x) k = k (argCUInt x)
+
+instance ObjCReturn CAClockPropertyID where
+  type RawReturn CAClockPropertyID = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAClockPropertyID x)
+  fromOwned x = pure (CAClockPropertyID x)
+
 -- | CAClockSyncMode
 --
 -- Specifies internal synchronization, or an external sync source type.
@@ -1752,6 +2175,16 @@ pattern KCAClockSyncMode_MIDIClockTransport = CAClockSyncMode 1835232363
 
 pattern KCAClockSyncMode_MTCTransport :: CAClockSyncMode
 pattern KCAClockSyncMode_MTCTransport = CAClockSyncMode 1835889763
+
+instance ObjCArgument CAClockSyncMode where
+  withObjCArg (CAClockSyncMode x) k = k (argCUInt x)
+
+instance ObjCReturn CAClockSyncMode where
+  type RawReturn CAClockSyncMode = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAClockSyncMode x)
+  fromOwned x = pure (CAClockSyncMode x)
 
 -- | CAClockTimeFormat
 --
@@ -1806,6 +2239,16 @@ pattern KCAClockTimeFormat_SMPTETime = CAClockTimeFormat 1936552052
 pattern KCAClockTimeFormat_AbsoluteSeconds :: CAClockTimeFormat
 pattern KCAClockTimeFormat_AbsoluteSeconds = CAClockTimeFormat 1634952547
 
+instance ObjCArgument CAClockTimeFormat where
+  withObjCArg (CAClockTimeFormat x) k = k (argCUInt x)
+
+instance ObjCReturn CAClockTimeFormat where
+  type RawReturn CAClockTimeFormat = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAClockTimeFormat x)
+  fromOwned x = pure (CAClockTimeFormat x)
+
 -- | CAClockTimebase
 --
 -- The available internal hardware time references for a clock.
@@ -1835,6 +2278,16 @@ pattern KCAClockTimebase_AudioDevice = CAClockTimebase 1635083369
 pattern KCAClockTimebase_AudioOutputUnit :: CAClockTimebase
 pattern KCAClockTimebase_AudioOutputUnit = CAClockTimebase 1635086197
 
+instance ObjCArgument CAClockTimebase where
+  withObjCArg (CAClockTimebase x) k = k (argCUInt x)
+
+instance ObjCReturn CAClockTimebase where
+  type RawReturn CAClockTimebase = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAClockTimebase x)
+  fromOwned x = pure (CAClockTimebase x)
+
 -- | @CAFFormatFlags@ (bitmask)
 newtype CAFFormatFlags = CAFFormatFlags CUInt
   deriving stock (Eq, Ord, Show)
@@ -1851,6 +2304,16 @@ pattern KCAFLinearPCMFormatFlagIsFloat = CAFFormatFlags 1
 
 pattern KCAFLinearPCMFormatFlagIsLittleEndian :: CAFFormatFlags
 pattern KCAFLinearPCMFormatFlagIsLittleEndian = CAFFormatFlags 2
+
+instance ObjCArgument CAFFormatFlags where
+  withObjCArg (CAFFormatFlags x) k = k (argCUInt x)
+
+instance ObjCReturn CAFFormatFlags where
+  type RawReturn CAFFormatFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAFFormatFlags x)
+  fromOwned x = pure (CAFFormatFlags x)
 
 -- | @CAFRegionFlags@ (bitmask)
 newtype CAFRegionFlags = CAFRegionFlags CUInt
@@ -1871,6 +2334,16 @@ pattern KCAFRegionFlag_PlayForward = CAFRegionFlags 2
 
 pattern KCAFRegionFlag_PlayBackward :: CAFRegionFlags
 pattern KCAFRegionFlag_PlayBackward = CAFRegionFlags 4
+
+instance ObjCArgument CAFRegionFlags where
+  withObjCArg (CAFRegionFlags x) k = k (argCUInt x)
+
+instance ObjCReturn CAFRegionFlags where
+  type RawReturn CAFRegionFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CAFRegionFlags x)
+  fromOwned x = pure (CAFRegionFlags x)
 
 -- | MusicSequenceFileFlags
 --
@@ -1899,6 +2372,16 @@ pattern KMusicSequenceFileFlags_Default = MusicSequenceFileFlags 0
 
 pattern KMusicSequenceFileFlags_EraseFile :: MusicSequenceFileFlags
 pattern KMusicSequenceFileFlags_EraseFile = MusicSequenceFileFlags 1
+
+instance ObjCArgument MusicSequenceFileFlags where
+  withObjCArg (MusicSequenceFileFlags x) k = k (argCUInt x)
+
+instance ObjCReturn MusicSequenceFileFlags where
+  type RawReturn MusicSequenceFileFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MusicSequenceFileFlags x)
+  fromOwned x = pure (MusicSequenceFileFlags x)
 
 -- | MusicSequenceFileTypeID
 --
@@ -1929,6 +2412,16 @@ pattern KMusicSequenceFile_MIDIType = MusicSequenceFileTypeID 1835623529
 pattern KMusicSequenceFile_iMelodyType :: MusicSequenceFileTypeID
 pattern KMusicSequenceFile_iMelodyType = MusicSequenceFileTypeID 1768777068
 
+instance ObjCArgument MusicSequenceFileTypeID where
+  withObjCArg (MusicSequenceFileTypeID x) k = k (argCUInt x)
+
+instance ObjCReturn MusicSequenceFileTypeID where
+  type RawReturn MusicSequenceFileTypeID = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MusicSequenceFileTypeID x)
+  fromOwned x = pure (MusicSequenceFileTypeID x)
+
 -- | MusicSequenceLoadFlags
 --
 -- Flags used to customise loading behaviour
@@ -1956,6 +2449,16 @@ pattern KMusicSequenceLoadSMF_PreserveTracks = MusicSequenceLoadFlags 0
 
 pattern KMusicSequenceLoadSMF_ChannelsToTracks :: MusicSequenceLoadFlags
 pattern KMusicSequenceLoadSMF_ChannelsToTracks = MusicSequenceLoadFlags 1
+
+instance ObjCArgument MusicSequenceLoadFlags where
+  withObjCArg (MusicSequenceLoadFlags x) k = k (argCUInt x)
+
+instance ObjCReturn MusicSequenceLoadFlags where
+  type RawReturn MusicSequenceLoadFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MusicSequenceLoadFlags x)
+  fromOwned x = pure (MusicSequenceLoadFlags x)
 
 -- | MusicSequenceType
 --
@@ -1987,3 +2490,13 @@ pattern KMusicSequenceType_Seconds = MusicSequenceType 1936024435
 
 pattern KMusicSequenceType_Samples :: MusicSequenceType
 pattern KMusicSequenceType_Samples = MusicSequenceType 1935764848
+
+instance ObjCArgument MusicSequenceType where
+  withObjCArg (MusicSequenceType x) k = k (argCUInt x)
+
+instance ObjCReturn MusicSequenceType where
+  type RawReturn MusicSequenceType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MusicSequenceType x)
+  fromOwned x = pure (MusicSequenceType x)

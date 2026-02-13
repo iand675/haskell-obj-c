@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.LocalAuthentication.LAPrivateKey
   , new
   , init_
   , publicKey
-  , signData_secKeyAlgorithm_completionSelector
+  , canDecryptUsingSecKeyAlgorithmSelector
+  , canExchangeKeysUsingSecKeyAlgorithmSelector
   , canSignUsingSecKeyAlgorithmSelector
   , decryptData_secKeyAlgorithm_completionSelector
-  , canDecryptUsingSecKeyAlgorithmSelector
   , exchangeKeysWithPublicKey_secKeyAlgorithm_secKeyParameters_completionSelector
-  , canExchangeKeysUsingSecKeyAlgorithmSelector
-  , newSelector
   , initSelector
+  , newSelector
   , publicKeySelector
+  , signData_secKeyAlgorithm_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,9 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- signData:secKeyAlgorithm:completion:@
 signData_secKeyAlgorithm_completion :: (IsLAPrivateKey laPrivateKey, IsNSData data_) => laPrivateKey -> data_ -> RawId -> Ptr () -> IO ()
-signData_secKeyAlgorithm_completion laPrivateKey  data_ algorithm handler =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg laPrivateKey (mkSelector "signData:secKeyAlgorithm:completion:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr (unRawId algorithm) :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+signData_secKeyAlgorithm_completion laPrivateKey data_ algorithm handler =
+  sendMessage laPrivateKey signData_secKeyAlgorithm_completionSelector (toNSData data_) algorithm handler
 
 -- | Checks if the the provided algorithm can be used for signing data
 --
@@ -67,8 +63,8 @@ signData_secKeyAlgorithm_completion laPrivateKey  data_ algorithm handler =
 --
 -- ObjC selector: @- canSignUsingSecKeyAlgorithm:@
 canSignUsingSecKeyAlgorithm :: IsLAPrivateKey laPrivateKey => laPrivateKey -> RawId -> IO Bool
-canSignUsingSecKeyAlgorithm laPrivateKey  algorithm =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laPrivateKey (mkSelector "canSignUsingSecKeyAlgorithm:") retCULong [argPtr (castPtr (unRawId algorithm) :: Ptr ())]
+canSignUsingSecKeyAlgorithm laPrivateKey algorithm =
+  sendMessage laPrivateKey canSignUsingSecKeyAlgorithmSelector algorithm
 
 -- | Decrypts the given ciphertext
 --
@@ -80,9 +76,8 @@ canSignUsingSecKeyAlgorithm laPrivateKey  algorithm =
 --
 -- ObjC selector: @- decryptData:secKeyAlgorithm:completion:@
 decryptData_secKeyAlgorithm_completion :: (IsLAPrivateKey laPrivateKey, IsNSData data_) => laPrivateKey -> data_ -> RawId -> Ptr () -> IO ()
-decryptData_secKeyAlgorithm_completion laPrivateKey  data_ algorithm handler =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg laPrivateKey (mkSelector "decryptData:secKeyAlgorithm:completion:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr (unRawId algorithm) :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+decryptData_secKeyAlgorithm_completion laPrivateKey data_ algorithm handler =
+  sendMessage laPrivateKey decryptData_secKeyAlgorithm_completionSelector (toNSData data_) algorithm handler
 
 -- | Checks if the the provided algorithm can be used for decryption
 --
@@ -92,8 +87,8 @@ decryptData_secKeyAlgorithm_completion laPrivateKey  data_ algorithm handler =
 --
 -- ObjC selector: @- canDecryptUsingSecKeyAlgorithm:@
 canDecryptUsingSecKeyAlgorithm :: IsLAPrivateKey laPrivateKey => laPrivateKey -> RawId -> IO Bool
-canDecryptUsingSecKeyAlgorithm laPrivateKey  algorithm =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laPrivateKey (mkSelector "canDecryptUsingSecKeyAlgorithm:") retCULong [argPtr (castPtr (unRawId algorithm) :: Ptr ())]
+canDecryptUsingSecKeyAlgorithm laPrivateKey algorithm =
+  sendMessage laPrivateKey canDecryptUsingSecKeyAlgorithmSelector algorithm
 
 -- | Performs a Diffie-Hellman style key exchange operation
 --
@@ -107,10 +102,8 @@ canDecryptUsingSecKeyAlgorithm laPrivateKey  algorithm =
 --
 -- ObjC selector: @- exchangeKeysWithPublicKey:secKeyAlgorithm:secKeyParameters:completion:@
 exchangeKeysWithPublicKey_secKeyAlgorithm_secKeyParameters_completion :: (IsLAPrivateKey laPrivateKey, IsNSData publicKey, IsNSDictionary parameters) => laPrivateKey -> publicKey -> RawId -> parameters -> Ptr () -> IO ()
-exchangeKeysWithPublicKey_secKeyAlgorithm_secKeyParameters_completion laPrivateKey  publicKey algorithm parameters handler =
-  withObjCPtr publicKey $ \raw_publicKey ->
-    withObjCPtr parameters $ \raw_parameters ->
-        sendMsg laPrivateKey (mkSelector "exchangeKeysWithPublicKey:secKeyAlgorithm:secKeyParameters:completion:") retVoid [argPtr (castPtr raw_publicKey :: Ptr ()), argPtr (castPtr (unRawId algorithm) :: Ptr ()), argPtr (castPtr raw_parameters :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+exchangeKeysWithPublicKey_secKeyAlgorithm_secKeyParameters_completion laPrivateKey publicKey algorithm parameters handler =
+  sendMessage laPrivateKey exchangeKeysWithPublicKey_secKeyAlgorithm_secKeyParameters_completionSelector (toNSData publicKey) algorithm (toNSDictionary parameters) handler
 
 -- | Checks if the the provided algorithm can be used for performing key exchanges
 --
@@ -120,8 +113,8 @@ exchangeKeysWithPublicKey_secKeyAlgorithm_secKeyParameters_completion laPrivateK
 --
 -- ObjC selector: @- canExchangeKeysUsingSecKeyAlgorithm:@
 canExchangeKeysUsingSecKeyAlgorithm :: IsLAPrivateKey laPrivateKey => laPrivateKey -> RawId -> IO Bool
-canExchangeKeysUsingSecKeyAlgorithm laPrivateKey  algorithm =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laPrivateKey (mkSelector "canExchangeKeysUsingSecKeyAlgorithm:") retCULong [argPtr (castPtr (unRawId algorithm) :: Ptr ())]
+canExchangeKeysUsingSecKeyAlgorithm laPrivateKey algorithm =
+  sendMessage laPrivateKey canExchangeKeysUsingSecKeyAlgorithmSelector algorithm
 
 -- | Clients cannot create @LAPrivateKey@ instances directly. They typically obtain them from a @LAPersistedRight@ instance.
 --
@@ -130,59 +123,59 @@ new :: IO (Id LAPrivateKey)
 new  =
   do
     cls' <- getRequiredClass "LAPrivateKey"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Clients cannot create @LAPrivateKey@ instances directly. They typically obtain them from a @LAPersistedRight@ instance.
 --
 -- ObjC selector: @- init@
 init_ :: IsLAPrivateKey laPrivateKey => laPrivateKey -> IO (Id LAPrivateKey)
-init_ laPrivateKey  =
-    sendMsg laPrivateKey (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laPrivateKey =
+  sendOwnedMessage laPrivateKey initSelector
 
 -- | Offers the public key counterpart of a @LAPrivateKey@ instance
 --
 -- ObjC selector: @- publicKey@
 publicKey :: IsLAPrivateKey laPrivateKey => laPrivateKey -> IO (Id LAPublicKey)
-publicKey laPrivateKey  =
-    sendMsg laPrivateKey (mkSelector "publicKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicKey laPrivateKey =
+  sendMessage laPrivateKey publicKeySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @signData:secKeyAlgorithm:completion:@
-signData_secKeyAlgorithm_completionSelector :: Selector
+signData_secKeyAlgorithm_completionSelector :: Selector '[Id NSData, RawId, Ptr ()] ()
 signData_secKeyAlgorithm_completionSelector = mkSelector "signData:secKeyAlgorithm:completion:"
 
 -- | @Selector@ for @canSignUsingSecKeyAlgorithm:@
-canSignUsingSecKeyAlgorithmSelector :: Selector
+canSignUsingSecKeyAlgorithmSelector :: Selector '[RawId] Bool
 canSignUsingSecKeyAlgorithmSelector = mkSelector "canSignUsingSecKeyAlgorithm:"
 
 -- | @Selector@ for @decryptData:secKeyAlgorithm:completion:@
-decryptData_secKeyAlgorithm_completionSelector :: Selector
+decryptData_secKeyAlgorithm_completionSelector :: Selector '[Id NSData, RawId, Ptr ()] ()
 decryptData_secKeyAlgorithm_completionSelector = mkSelector "decryptData:secKeyAlgorithm:completion:"
 
 -- | @Selector@ for @canDecryptUsingSecKeyAlgorithm:@
-canDecryptUsingSecKeyAlgorithmSelector :: Selector
+canDecryptUsingSecKeyAlgorithmSelector :: Selector '[RawId] Bool
 canDecryptUsingSecKeyAlgorithmSelector = mkSelector "canDecryptUsingSecKeyAlgorithm:"
 
 -- | @Selector@ for @exchangeKeysWithPublicKey:secKeyAlgorithm:secKeyParameters:completion:@
-exchangeKeysWithPublicKey_secKeyAlgorithm_secKeyParameters_completionSelector :: Selector
+exchangeKeysWithPublicKey_secKeyAlgorithm_secKeyParameters_completionSelector :: Selector '[Id NSData, RawId, Id NSDictionary, Ptr ()] ()
 exchangeKeysWithPublicKey_secKeyAlgorithm_secKeyParameters_completionSelector = mkSelector "exchangeKeysWithPublicKey:secKeyAlgorithm:secKeyParameters:completion:"
 
 -- | @Selector@ for @canExchangeKeysUsingSecKeyAlgorithm:@
-canExchangeKeysUsingSecKeyAlgorithmSelector :: Selector
+canExchangeKeysUsingSecKeyAlgorithmSelector :: Selector '[RawId] Bool
 canExchangeKeysUsingSecKeyAlgorithmSelector = mkSelector "canExchangeKeysUsingSecKeyAlgorithm:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LAPrivateKey)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LAPrivateKey)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @publicKey@
-publicKeySelector :: Selector
+publicKeySelector :: Selector '[] (Id LAPublicKey)
 publicKeySelector = mkSelector "publicKey"
 

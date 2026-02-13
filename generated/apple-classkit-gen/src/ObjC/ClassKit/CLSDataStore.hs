@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,31 +21,27 @@ module ObjC.ClassKit.CLSDataStore
   , runningActivity
   , delegate
   , setDelegate
-  , newSelector
-  , initSelector
-  , saveWithCompletionSelector
-  , completeAllAssignedActivitiesMatchingSelector
-  , removeContextSelector
-  , fetchActivityForURL_completionSelector
-  , sharedSelector
-  , mainAppContextSelector
   , activeContextSelector
-  , runningActivitySelector
+  , completeAllAssignedActivitiesMatchingSelector
   , delegateSelector
+  , fetchActivityForURL_completionSelector
+  , initSelector
+  , mainAppContextSelector
+  , newSelector
+  , removeContextSelector
+  , runningActivitySelector
+  , saveWithCompletionSelector
   , setDelegateSelector
+  , sharedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,12 +53,12 @@ new :: IO (Id CLSDataStore)
 new  =
   do
     cls' <- getRequiredClass "CLSDataStore"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsCLSDataStore clsDataStore => clsDataStore -> IO (Id CLSDataStore)
-init_ clsDataStore  =
-    sendMsg clsDataStore (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ clsDataStore =
+  sendOwnedMessage clsDataStore initSelector
 
 -- | Save changes made in the data store.
 --
@@ -69,8 +66,8 @@ init_ clsDataStore  =
 --
 -- ObjC selector: @- saveWithCompletion:@
 saveWithCompletion :: IsCLSDataStore clsDataStore => clsDataStore -> Ptr () -> IO ()
-saveWithCompletion clsDataStore  completion =
-    sendMsg clsDataStore (mkSelector "saveWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+saveWithCompletion clsDataStore completion =
+  sendMessage clsDataStore saveWithCompletionSelector completion
 
 -- | Complete all assigned actvities.
 --
@@ -78,9 +75,8 @@ saveWithCompletion clsDataStore  completion =
 --
 -- ObjC selector: @- completeAllAssignedActivitiesMatching:@
 completeAllAssignedActivitiesMatching :: (IsCLSDataStore clsDataStore, IsNSArray contextPath) => clsDataStore -> contextPath -> IO ()
-completeAllAssignedActivitiesMatching clsDataStore  contextPath =
-  withObjCPtr contextPath $ \raw_contextPath ->
-      sendMsg clsDataStore (mkSelector "completeAllAssignedActivitiesMatching:") retVoid [argPtr (castPtr raw_contextPath :: Ptr ())]
+completeAllAssignedActivitiesMatching clsDataStore contextPath =
+  sendMessage clsDataStore completeAllAssignedActivitiesMatchingSelector (toNSArray contextPath)
 
 -- | Mark a context for removal.
 --
@@ -88,9 +84,8 @@ completeAllAssignedActivitiesMatching clsDataStore  contextPath =
 --
 -- ObjC selector: @- removeContext:@
 removeContext :: (IsCLSDataStore clsDataStore, IsCLSContext context) => clsDataStore -> context -> IO ()
-removeContext clsDataStore  context =
-  withObjCPtr context $ \raw_context ->
-      sendMsg clsDataStore (mkSelector "removeContext:") retVoid [argPtr (castPtr raw_context :: Ptr ())]
+removeContext clsDataStore context =
+  sendMessage clsDataStore removeContextSelector (toCLSContext context)
 
 -- | Implement to fetch the current CLSActivity instance for your document to add progress to.
 --
@@ -100,9 +95,8 @@ removeContext clsDataStore  context =
 --
 -- ObjC selector: @- fetchActivityForURL:completion:@
 fetchActivityForURL_completion :: (IsCLSDataStore clsDataStore, IsNSURL url) => clsDataStore -> url -> Ptr () -> IO ()
-fetchActivityForURL_completion clsDataStore  url completion =
-  withObjCPtr url $ \raw_url ->
-      sendMsg clsDataStore (mkSelector "fetchActivityForURL:completion:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+fetchActivityForURL_completion clsDataStore url completion =
+  sendMessage clsDataStore fetchActivityForURL_completionSelector (toNSURL url) completion
 
 -- | The data store provides read/write access to your app's ClassKit data.
 --
@@ -113,7 +107,7 @@ shared :: IO (Id CLSDataStore)
 shared  =
   do
     cls' <- getRequiredClass "CLSDataStore"
-    sendClassMsg cls' (mkSelector "shared") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedSelector
 
 -- | Fetch the top level context for the current app.
 --
@@ -121,86 +115,86 @@ shared  =
 --
 -- ObjC selector: @- mainAppContext@
 mainAppContext :: IsCLSDataStore clsDataStore => clsDataStore -> IO (Id CLSContext)
-mainAppContext clsDataStore  =
-    sendMsg clsDataStore (mkSelector "mainAppContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+mainAppContext clsDataStore =
+  sendMessage clsDataStore mainAppContextSelector
 
 -- | Returns the context that is currently active. If no context is active, this will return nil.
 --
 -- ObjC selector: @- activeContext@
 activeContext :: IsCLSDataStore clsDataStore => clsDataStore -> IO (Id CLSContext)
-activeContext clsDataStore  =
-    sendMsg clsDataStore (mkSelector "activeContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeContext clsDataStore =
+  sendMessage clsDataStore activeContextSelector
 
 -- | Returns the most recently started activity that is running.
 --
 -- ObjC selector: @- runningActivity@
 runningActivity :: IsCLSDataStore clsDataStore => clsDataStore -> IO (Id CLSActivity)
-runningActivity clsDataStore  =
-    sendMsg clsDataStore (mkSelector "runningActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+runningActivity clsDataStore =
+  sendMessage clsDataStore runningActivitySelector
 
 -- | The data store delegate allows for easy population of the app's context hierarchy.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsCLSDataStore clsDataStore => clsDataStore -> IO RawId
-delegate clsDataStore  =
-    fmap (RawId . castPtr) $ sendMsg clsDataStore (mkSelector "delegate") (retPtr retVoid) []
+delegate clsDataStore =
+  sendMessage clsDataStore delegateSelector
 
 -- | The data store delegate allows for easy population of the app's context hierarchy.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsCLSDataStore clsDataStore => clsDataStore -> RawId -> IO ()
-setDelegate clsDataStore  value =
-    sendMsg clsDataStore (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate clsDataStore value =
+  sendMessage clsDataStore setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CLSDataStore)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CLSDataStore)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @saveWithCompletion:@
-saveWithCompletionSelector :: Selector
+saveWithCompletionSelector :: Selector '[Ptr ()] ()
 saveWithCompletionSelector = mkSelector "saveWithCompletion:"
 
 -- | @Selector@ for @completeAllAssignedActivitiesMatching:@
-completeAllAssignedActivitiesMatchingSelector :: Selector
+completeAllAssignedActivitiesMatchingSelector :: Selector '[Id NSArray] ()
 completeAllAssignedActivitiesMatchingSelector = mkSelector "completeAllAssignedActivitiesMatching:"
 
 -- | @Selector@ for @removeContext:@
-removeContextSelector :: Selector
+removeContextSelector :: Selector '[Id CLSContext] ()
 removeContextSelector = mkSelector "removeContext:"
 
 -- | @Selector@ for @fetchActivityForURL:completion:@
-fetchActivityForURL_completionSelector :: Selector
+fetchActivityForURL_completionSelector :: Selector '[Id NSURL, Ptr ()] ()
 fetchActivityForURL_completionSelector = mkSelector "fetchActivityForURL:completion:"
 
 -- | @Selector@ for @shared@
-sharedSelector :: Selector
+sharedSelector :: Selector '[] (Id CLSDataStore)
 sharedSelector = mkSelector "shared"
 
 -- | @Selector@ for @mainAppContext@
-mainAppContextSelector :: Selector
+mainAppContextSelector :: Selector '[] (Id CLSContext)
 mainAppContextSelector = mkSelector "mainAppContext"
 
 -- | @Selector@ for @activeContext@
-activeContextSelector :: Selector
+activeContextSelector :: Selector '[] (Id CLSContext)
 activeContextSelector = mkSelector "activeContext"
 
 -- | @Selector@ for @runningActivity@
-runningActivitySelector :: Selector
+runningActivitySelector :: Selector '[] (Id CLSActivity)
 runningActivitySelector = mkSelector "runningActivity"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

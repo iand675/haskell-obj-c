@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,11 +13,11 @@ module ObjC.Intents.INSnoozeTasksIntentResponse
   , code
   , snoozedTasks
   , setSnoozedTasks
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
-  , snoozedTasksSelector
   , setSnoozedTasksSelector
+  , snoozedTasksSelector
 
   -- * Enum types
   , INSnoozeTasksIntentResponseCode(INSnoozeTasksIntentResponseCode)
@@ -29,15 +30,11 @@ module ObjC.Intents.INSnoozeTasksIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,52 +44,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSnoozeTasksIntentResponse inSnoozeTasksIntentResponse => inSnoozeTasksIntentResponse -> IO RawId
-init_ inSnoozeTasksIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inSnoozeTasksIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inSnoozeTasksIntentResponse =
+  sendOwnedMessage inSnoozeTasksIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINSnoozeTasksIntentResponse inSnoozeTasksIntentResponse, IsNSUserActivity userActivity) => inSnoozeTasksIntentResponse -> INSnoozeTasksIntentResponseCode -> userActivity -> IO (Id INSnoozeTasksIntentResponse)
-initWithCode_userActivity inSnoozeTasksIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inSnoozeTasksIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inSnoozeTasksIntentResponse code userActivity =
+  sendOwnedMessage inSnoozeTasksIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINSnoozeTasksIntentResponse inSnoozeTasksIntentResponse => inSnoozeTasksIntentResponse -> IO INSnoozeTasksIntentResponseCode
-code inSnoozeTasksIntentResponse  =
-    fmap (coerce :: CLong -> INSnoozeTasksIntentResponseCode) $ sendMsg inSnoozeTasksIntentResponse (mkSelector "code") retCLong []
+code inSnoozeTasksIntentResponse =
+  sendMessage inSnoozeTasksIntentResponse codeSelector
 
 -- | @- snoozedTasks@
 snoozedTasks :: IsINSnoozeTasksIntentResponse inSnoozeTasksIntentResponse => inSnoozeTasksIntentResponse -> IO (Id NSArray)
-snoozedTasks inSnoozeTasksIntentResponse  =
-    sendMsg inSnoozeTasksIntentResponse (mkSelector "snoozedTasks") (retPtr retVoid) [] >>= retainedObject . castPtr
+snoozedTasks inSnoozeTasksIntentResponse =
+  sendMessage inSnoozeTasksIntentResponse snoozedTasksSelector
 
 -- | @- setSnoozedTasks:@
 setSnoozedTasks :: (IsINSnoozeTasksIntentResponse inSnoozeTasksIntentResponse, IsNSArray value) => inSnoozeTasksIntentResponse -> value -> IO ()
-setSnoozedTasks inSnoozeTasksIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inSnoozeTasksIntentResponse (mkSelector "setSnoozedTasks:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSnoozedTasks inSnoozeTasksIntentResponse value =
+  sendMessage inSnoozeTasksIntentResponse setSnoozedTasksSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INSnoozeTasksIntentResponseCode, Id NSUserActivity] (Id INSnoozeTasksIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INSnoozeTasksIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @snoozedTasks@
-snoozedTasksSelector :: Selector
+snoozedTasksSelector :: Selector '[] (Id NSArray)
 snoozedTasksSelector = mkSelector "snoozedTasks"
 
 -- | @Selector@ for @setSnoozedTasks:@
-setSnoozedTasksSelector :: Selector
+setSnoozedTasksSelector :: Selector '[Id NSArray] ()
 setSnoozedTasksSelector = mkSelector "setSnoozedTasks:"
 

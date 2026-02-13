@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.IOBluetooth.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @BluetoothAuthenticationRequirementsValues@
 newtype BluetoothAuthenticationRequirementsValues = BluetoothAuthenticationRequirementsValues CInt
@@ -39,6 +42,16 @@ pattern KBluetoothAuthenticationRequirementsMITMProtectionNotRequiredGeneralBond
 
 pattern KBluetoothAuthenticationRequirementsMITMProtectionRequiredGeneralBonding :: BluetoothAuthenticationRequirementsValues
 pattern KBluetoothAuthenticationRequirementsMITMProtectionRequiredGeneralBonding = BluetoothAuthenticationRequirementsValues 5
+
+instance ObjCArgument BluetoothAuthenticationRequirementsValues where
+  withObjCArg (BluetoothAuthenticationRequirementsValues x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothAuthenticationRequirementsValues where
+  type RawReturn BluetoothAuthenticationRequirementsValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothAuthenticationRequirementsValues x)
+  fromOwned x = pure (BluetoothAuthenticationRequirementsValues x)
 
 -- | @BluetoothCompanyIdentifers@
 newtype BluetoothCompanyIdentifers = BluetoothCompanyIdentifers CInt
@@ -840,6 +853,16 @@ pattern KBluetoothCompanyIdentiferWilliamDemantHolding = BluetoothCompanyIdentif
 pattern KBluetoothCompanyIdentiferInteropIdentifier :: BluetoothCompanyIdentifers
 pattern KBluetoothCompanyIdentiferInteropIdentifier = BluetoothCompanyIdentifers 65535
 
+instance ObjCArgument BluetoothCompanyIdentifers where
+  withObjCArg (BluetoothCompanyIdentifers x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothCompanyIdentifers where
+  type RawReturn BluetoothCompanyIdentifers = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothCompanyIdentifers x)
+  fromOwned x = pure (BluetoothCompanyIdentifers x)
+
 -- | @BluetoothFeatureBits@
 newtype BluetoothFeatureBits = BluetoothFeatureBits CInt
   deriving stock (Eq, Ord, Show)
@@ -1049,6 +1072,16 @@ pattern KBluetoothExtendedFeatureTrainNudging = BluetoothFeatureBits 8
 pattern KBluetoothExtendedFeatureSlotAvailabilityMask :: BluetoothFeatureBits
 pattern KBluetoothExtendedFeatureSlotAvailabilityMask = BluetoothFeatureBits 16
 
+instance ObjCArgument BluetoothFeatureBits where
+  withObjCArg (BluetoothFeatureBits x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothFeatureBits where
+  type RawReturn BluetoothFeatureBits = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothFeatureBits x)
+  fromOwned x = pure (BluetoothFeatureBits x)
+
 -- | @BluetoothHCIAFHChannelAssessmentModes@
 newtype BluetoothHCIAFHChannelAssessmentModes = BluetoothHCIAFHChannelAssessmentModes CInt
   deriving stock (Eq, Ord, Show)
@@ -1060,6 +1093,16 @@ pattern KAFHChannelAssessmentModeDisabled = BluetoothHCIAFHChannelAssessmentMode
 pattern KAFHChannelAssessmentModeEnabled :: BluetoothHCIAFHChannelAssessmentModes
 pattern KAFHChannelAssessmentModeEnabled = BluetoothHCIAFHChannelAssessmentModes 1
 
+instance ObjCArgument BluetoothHCIAFHChannelAssessmentModes where
+  withObjCArg (BluetoothHCIAFHChannelAssessmentModes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIAFHChannelAssessmentModes where
+  type RawReturn BluetoothHCIAFHChannelAssessmentModes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIAFHChannelAssessmentModes x)
+  fromOwned x = pure (BluetoothHCIAFHChannelAssessmentModes x)
+
 -- | @BluetoothHCIAuthentionEnableModes@
 newtype BluetoothHCIAuthentionEnableModes = BluetoothHCIAuthentionEnableModes CInt
   deriving stock (Eq, Ord, Show)
@@ -1070,6 +1113,16 @@ pattern KAuthenticationDisabled = BluetoothHCIAuthentionEnableModes 0
 
 pattern KAuthenticationEnabled :: BluetoothHCIAuthentionEnableModes
 pattern KAuthenticationEnabled = BluetoothHCIAuthentionEnableModes 1
+
+instance ObjCArgument BluetoothHCIAuthentionEnableModes where
+  withObjCArg (BluetoothHCIAuthentionEnableModes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIAuthentionEnableModes where
+  type RawReturn BluetoothHCIAuthentionEnableModes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIAuthentionEnableModes x)
+  fromOwned x = pure (BluetoothHCIAuthentionEnableModes x)
 
 -- | @BluetoothHCIConnectionModes@
 newtype BluetoothHCIConnectionModes = BluetoothHCIConnectionModes CInt
@@ -1091,6 +1144,16 @@ pattern KConnectionParkMode = BluetoothHCIConnectionModes 3
 pattern KConnectionModeReservedForFutureUse :: BluetoothHCIConnectionModes
 pattern KConnectionModeReservedForFutureUse = BluetoothHCIConnectionModes 4
 
+instance ObjCArgument BluetoothHCIConnectionModes where
+  withObjCArg (BluetoothHCIConnectionModes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIConnectionModes where
+  type RawReturn BluetoothHCIConnectionModes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIConnectionModes x)
+  fromOwned x = pure (BluetoothHCIConnectionModes x)
+
 -- | @BluetoothHCIDeleteStoredLinkKeyFlags@
 newtype BluetoothHCIDeleteStoredLinkKeyFlags = BluetoothHCIDeleteStoredLinkKeyFlags CInt
   deriving stock (Eq, Ord, Show)
@@ -1101,6 +1164,16 @@ pattern KDeleteKeyForSpecifiedDeviceOnly = BluetoothHCIDeleteStoredLinkKeyFlags 
 
 pattern KDeleteAllStoredLinkKeys :: BluetoothHCIDeleteStoredLinkKeyFlags
 pattern KDeleteAllStoredLinkKeys = BluetoothHCIDeleteStoredLinkKeyFlags 1
+
+instance ObjCArgument BluetoothHCIDeleteStoredLinkKeyFlags where
+  withObjCArg (BluetoothHCIDeleteStoredLinkKeyFlags x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIDeleteStoredLinkKeyFlags where
+  type RawReturn BluetoothHCIDeleteStoredLinkKeyFlags = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIDeleteStoredLinkKeyFlags x)
+  fromOwned x = pure (BluetoothHCIDeleteStoredLinkKeyFlags x)
 
 -- | @BluetoothHCIEncryptionModes@
 newtype BluetoothHCIEncryptionModes = BluetoothHCIEncryptionModes CInt
@@ -1115,6 +1188,16 @@ pattern KEncryptionOnlyForPointToPointPackets = BluetoothHCIEncryptionModes 1
 
 pattern KEncryptionForBothPointToPointAndBroadcastPackets :: BluetoothHCIEncryptionModes
 pattern KEncryptionForBothPointToPointAndBroadcastPackets = BluetoothHCIEncryptionModes 2
+
+instance ObjCArgument BluetoothHCIEncryptionModes where
+  withObjCArg (BluetoothHCIEncryptionModes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIEncryptionModes where
+  type RawReturn BluetoothHCIEncryptionModes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIEncryptionModes x)
+  fromOwned x = pure (BluetoothHCIEncryptionModes x)
 
 -- | @BluetoothHCIExtendedInquiryResponseDataTypes@
 newtype BluetoothHCIExtendedInquiryResponseDataTypes = BluetoothHCIExtendedInquiryResponseDataTypes CInt
@@ -1241,6 +1324,16 @@ pattern KBluetoothHCIExtendedInquiryResponseDataTypeManufacturerSpecificData = B
 pattern KBluetoothHCIExtendedInquiryResponseDataTypeSlaveConnectionIntervalRange :: BluetoothHCIExtendedInquiryResponseDataTypes
 pattern KBluetoothHCIExtendedInquiryResponseDataTypeSlaveConnectionIntervalRange = BluetoothHCIExtendedInquiryResponseDataTypes 18
 
+instance ObjCArgument BluetoothHCIExtendedInquiryResponseDataTypes where
+  withObjCArg (BluetoothHCIExtendedInquiryResponseDataTypes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIExtendedInquiryResponseDataTypes where
+  type RawReturn BluetoothHCIExtendedInquiryResponseDataTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIExtendedInquiryResponseDataTypes x)
+  fromOwned x = pure (BluetoothHCIExtendedInquiryResponseDataTypes x)
+
 -- | @BluetoothHCIFECRequiredValues@
 newtype BluetoothHCIFECRequiredValues = BluetoothHCIFECRequiredValues CInt
   deriving stock (Eq, Ord, Show)
@@ -1251,6 +1344,16 @@ pattern KBluetoothHCIFECRequired = BluetoothHCIFECRequiredValues 0
 
 pattern KBluetoothHCIFECNotRequired :: BluetoothHCIFECRequiredValues
 pattern KBluetoothHCIFECNotRequired = BluetoothHCIFECRequiredValues 1
+
+instance ObjCArgument BluetoothHCIFECRequiredValues where
+  withObjCArg (BluetoothHCIFECRequiredValues x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIFECRequiredValues where
+  type RawReturn BluetoothHCIFECRequiredValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIFECRequiredValues x)
+  fromOwned x = pure (BluetoothHCIFECRequiredValues x)
 
 -- | @BluetoothHCIGeneralFlowControlStates@
 newtype BluetoothHCIGeneralFlowControlStates = BluetoothHCIGeneralFlowControlStates CInt
@@ -1269,6 +1372,16 @@ pattern KHCIACLDataPacketsOffHCISCODataPacketsOn = BluetoothHCIGeneralFlowContro
 pattern KHCIACLDataPacketsOnHCISCODataPacketsOn :: BluetoothHCIGeneralFlowControlStates
 pattern KHCIACLDataPacketsOnHCISCODataPacketsOn = BluetoothHCIGeneralFlowControlStates 3
 
+instance ObjCArgument BluetoothHCIGeneralFlowControlStates where
+  withObjCArg (BluetoothHCIGeneralFlowControlStates x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIGeneralFlowControlStates where
+  type RawReturn BluetoothHCIGeneralFlowControlStates = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIGeneralFlowControlStates x)
+  fromOwned x = pure (BluetoothHCIGeneralFlowControlStates x)
+
 -- | @BluetoothHCIHoldModeActivityStates@
 newtype BluetoothHCIHoldModeActivityStates = BluetoothHCIHoldModeActivityStates CInt
   deriving stock (Eq, Ord, Show)
@@ -1286,6 +1399,16 @@ pattern KSuspendInquiryScan = BluetoothHCIHoldModeActivityStates 2
 pattern KSuspendPeriodicInquiries :: BluetoothHCIHoldModeActivityStates
 pattern KSuspendPeriodicInquiries = BluetoothHCIHoldModeActivityStates 3
 
+instance ObjCArgument BluetoothHCIHoldModeActivityStates where
+  withObjCArg (BluetoothHCIHoldModeActivityStates x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIHoldModeActivityStates where
+  type RawReturn BluetoothHCIHoldModeActivityStates = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIHoldModeActivityStates x)
+  fromOwned x = pure (BluetoothHCIHoldModeActivityStates x)
+
 -- | @BluetoothHCIInquiryModes@
 newtype BluetoothHCIInquiryModes = BluetoothHCIInquiryModes CInt
   deriving stock (Eq, Ord, Show)
@@ -1299,6 +1422,16 @@ pattern KBluetoothHCIInquiryModeResultFormatWithRSSI = BluetoothHCIInquiryModes 
 
 pattern KBluetoothHCIInquiryModeResultFormatWithRSSIOrExtendedInquiryResultFormat :: BluetoothHCIInquiryModes
 pattern KBluetoothHCIInquiryModeResultFormatWithRSSIOrExtendedInquiryResultFormat = BluetoothHCIInquiryModes 2
+
+instance ObjCArgument BluetoothHCIInquiryModes where
+  withObjCArg (BluetoothHCIInquiryModes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIInquiryModes where
+  type RawReturn BluetoothHCIInquiryModes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIInquiryModes x)
+  fromOwned x = pure (BluetoothHCIInquiryModes x)
 
 -- | @BluetoothHCIInquiryScanTypes@
 newtype BluetoothHCIInquiryScanTypes = BluetoothHCIInquiryScanTypes CInt
@@ -1316,6 +1449,16 @@ pattern KBluetoothHCIInquiryScanTypeReservedStart = BluetoothHCIInquiryScanTypes
 
 pattern KBluetoothHCIInquiryScanTypeReservedEnd :: BluetoothHCIInquiryScanTypes
 pattern KBluetoothHCIInquiryScanTypeReservedEnd = BluetoothHCIInquiryScanTypes 255
+
+instance ObjCArgument BluetoothHCIInquiryScanTypes where
+  withObjCArg (BluetoothHCIInquiryScanTypes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIInquiryScanTypes where
+  type RawReturn BluetoothHCIInquiryScanTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIInquiryScanTypes x)
+  fromOwned x = pure (BluetoothHCIInquiryScanTypes x)
 
 -- | @BluetoothHCILinkPolicySettingsValues@
 newtype BluetoothHCILinkPolicySettingsValues = BluetoothHCILinkPolicySettingsValues CInt
@@ -1343,6 +1486,16 @@ pattern KReservedForFutureUse = BluetoothHCILinkPolicySettingsValues 16
 pattern KEnableMasterSlaveSwitch :: BluetoothHCILinkPolicySettingsValues
 pattern KEnableMasterSlaveSwitch = BluetoothHCILinkPolicySettingsValues 1
 
+instance ObjCArgument BluetoothHCILinkPolicySettingsValues where
+  withObjCArg (BluetoothHCILinkPolicySettingsValues x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCILinkPolicySettingsValues where
+  type RawReturn BluetoothHCILinkPolicySettingsValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCILinkPolicySettingsValues x)
+  fromOwned x = pure (BluetoothHCILinkPolicySettingsValues x)
+
 -- | @BluetoothHCIPageScanEnableStates@
 newtype BluetoothHCIPageScanEnableStates = BluetoothHCIPageScanEnableStates CInt
   deriving stock (Eq, Ord, Show)
@@ -1359,6 +1512,16 @@ pattern KInquiryScanDisabledPageScanEnabled = BluetoothHCIPageScanEnableStates 2
 
 pattern KInquiryScanEnabledPageScanEnabled :: BluetoothHCIPageScanEnableStates
 pattern KInquiryScanEnabledPageScanEnabled = BluetoothHCIPageScanEnableStates 3
+
+instance ObjCArgument BluetoothHCIPageScanEnableStates where
+  withObjCArg (BluetoothHCIPageScanEnableStates x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIPageScanEnableStates where
+  type RawReturn BluetoothHCIPageScanEnableStates = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIPageScanEnableStates x)
+  fromOwned x = pure (BluetoothHCIPageScanEnableStates x)
 
 -- | @BluetoothHCIPageScanModes@
 newtype BluetoothHCIPageScanModes = BluetoothHCIPageScanModes CInt
@@ -1377,6 +1540,16 @@ pattern KOptionalPageScanMode2 = BluetoothHCIPageScanModes 2
 pattern KOptionalPageScanMode3 :: BluetoothHCIPageScanModes
 pattern KOptionalPageScanMode3 = BluetoothHCIPageScanModes 3
 
+instance ObjCArgument BluetoothHCIPageScanModes where
+  withObjCArg (BluetoothHCIPageScanModes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIPageScanModes where
+  type RawReturn BluetoothHCIPageScanModes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIPageScanModes x)
+  fromOwned x = pure (BluetoothHCIPageScanModes x)
+
 -- | @BluetoothHCIPageScanPeriodModes@
 newtype BluetoothHCIPageScanPeriodModes = BluetoothHCIPageScanPeriodModes CInt
   deriving stock (Eq, Ord, Show)
@@ -1390,6 +1563,16 @@ pattern KP1Mode = BluetoothHCIPageScanPeriodModes 1
 
 pattern KP2Mode :: BluetoothHCIPageScanPeriodModes
 pattern KP2Mode = BluetoothHCIPageScanPeriodModes 2
+
+instance ObjCArgument BluetoothHCIPageScanPeriodModes where
+  withObjCArg (BluetoothHCIPageScanPeriodModes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIPageScanPeriodModes where
+  type RawReturn BluetoothHCIPageScanPeriodModes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIPageScanPeriodModes x)
+  fromOwned x = pure (BluetoothHCIPageScanPeriodModes x)
 
 -- | @BluetoothHCIPageScanTypes@
 newtype BluetoothHCIPageScanTypes = BluetoothHCIPageScanTypes CInt
@@ -1408,6 +1591,16 @@ pattern KBluetoothHCIPageScanTypeReservedStart = BluetoothHCIPageScanTypes 2
 pattern KBluetoothHCIPageScanTypeReservedEnd :: BluetoothHCIPageScanTypes
 pattern KBluetoothHCIPageScanTypeReservedEnd = BluetoothHCIPageScanTypes 255
 
+instance ObjCArgument BluetoothHCIPageScanTypes where
+  withObjCArg (BluetoothHCIPageScanTypes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIPageScanTypes where
+  type RawReturn BluetoothHCIPageScanTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIPageScanTypes x)
+  fromOwned x = pure (BluetoothHCIPageScanTypes x)
+
 -- | @BluetoothHCIReadStoredLinkKeysFlags@
 newtype BluetoothHCIReadStoredLinkKeysFlags = BluetoothHCIReadStoredLinkKeysFlags CInt
   deriving stock (Eq, Ord, Show)
@@ -1418,6 +1611,16 @@ pattern KReturnLinkKeyForSpecifiedDeviceOnly = BluetoothHCIReadStoredLinkKeysFla
 
 pattern KReadAllStoredLinkKeys :: BluetoothHCIReadStoredLinkKeysFlags
 pattern KReadAllStoredLinkKeys = BluetoothHCIReadStoredLinkKeysFlags 1
+
+instance ObjCArgument BluetoothHCIReadStoredLinkKeysFlags where
+  withObjCArg (BluetoothHCIReadStoredLinkKeysFlags x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIReadStoredLinkKeysFlags where
+  type RawReturn BluetoothHCIReadStoredLinkKeysFlags = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIReadStoredLinkKeysFlags x)
+  fromOwned x = pure (BluetoothHCIReadStoredLinkKeysFlags x)
 
 -- | @BluetoothHCIRetransmissionEffortTypes@
 newtype BluetoothHCIRetransmissionEffortTypes = BluetoothHCIRetransmissionEffortTypes CInt
@@ -1436,6 +1639,16 @@ pattern KHCIRetransmissionEffortTypeAtLeastOneAndOptimizeLinkQuality = Bluetooth
 pattern KHCIRetransmissionEffortTypeDontCare :: BluetoothHCIRetransmissionEffortTypes
 pattern KHCIRetransmissionEffortTypeDontCare = BluetoothHCIRetransmissionEffortTypes 255
 
+instance ObjCArgument BluetoothHCIRetransmissionEffortTypes where
+  withObjCArg (BluetoothHCIRetransmissionEffortTypes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIRetransmissionEffortTypes where
+  type RawReturn BluetoothHCIRetransmissionEffortTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIRetransmissionEffortTypes x)
+  fromOwned x = pure (BluetoothHCIRetransmissionEffortTypes x)
+
 -- | @BluetoothHCIRoles@
 newtype BluetoothHCIRoles = BluetoothHCIRoles CInt
   deriving stock (Eq, Ord, Show)
@@ -1453,6 +1666,16 @@ pattern KBluetoothHCIMasterRole = BluetoothHCIRoles 0
 pattern KBluetoothHCISlaveRole :: BluetoothHCIRoles
 pattern KBluetoothHCISlaveRole = BluetoothHCIRoles 1
 
+instance ObjCArgument BluetoothHCIRoles where
+  withObjCArg (BluetoothHCIRoles x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIRoles where
+  type RawReturn BluetoothHCIRoles = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIRoles x)
+  fromOwned x = pure (BluetoothHCIRoles x)
+
 -- | @BluetoothHCISCOFlowControlStates@
 newtype BluetoothHCISCOFlowControlStates = BluetoothHCISCOFlowControlStates CInt
   deriving stock (Eq, Ord, Show)
@@ -1463,6 +1686,16 @@ pattern KSCOFlowControlDisabled = BluetoothHCISCOFlowControlStates 0
 
 pattern KSCOFlowControlEnabled :: BluetoothHCISCOFlowControlStates
 pattern KSCOFlowControlEnabled = BluetoothHCISCOFlowControlStates 1
+
+instance ObjCArgument BluetoothHCISCOFlowControlStates where
+  withObjCArg (BluetoothHCISCOFlowControlStates x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCISCOFlowControlStates where
+  type RawReturn BluetoothHCISCOFlowControlStates = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCISCOFlowControlStates x)
+  fromOwned x = pure (BluetoothHCISCOFlowControlStates x)
 
 -- | @BluetoothHCISimplePairingModes@
 newtype BluetoothHCISimplePairingModes = BluetoothHCISimplePairingModes CInt
@@ -1475,6 +1708,16 @@ pattern KBluetoothHCISimplePairingModeNotSet = BluetoothHCISimplePairingModes 0
 pattern KBluetoothHCISimplePairingModeEnabled :: BluetoothHCISimplePairingModes
 pattern KBluetoothHCISimplePairingModeEnabled = BluetoothHCISimplePairingModes 1
 
+instance ObjCArgument BluetoothHCISimplePairingModes where
+  withObjCArg (BluetoothHCISimplePairingModes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCISimplePairingModes where
+  type RawReturn BluetoothHCISimplePairingModes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCISimplePairingModes x)
+  fromOwned x = pure (BluetoothHCISimplePairingModes x)
+
 -- | @BluetoothHCITimeoutValues@
 newtype BluetoothHCITimeoutValues = BluetoothHCITimeoutValues CInt
   deriving stock (Eq, Ord, Show)
@@ -1482,6 +1725,16 @@ newtype BluetoothHCITimeoutValues = BluetoothHCITimeoutValues CInt
 
 pattern KDefaultPageTimeout :: BluetoothHCITimeoutValues
 pattern KDefaultPageTimeout = BluetoothHCITimeoutValues 10000
+
+instance ObjCArgument BluetoothHCITimeoutValues where
+  withObjCArg (BluetoothHCITimeoutValues x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCITimeoutValues where
+  type RawReturn BluetoothHCITimeoutValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCITimeoutValues x)
+  fromOwned x = pure (BluetoothHCITimeoutValues x)
 
 -- | @BluetoothHCITransmitReadPowerLevelTypes@
 newtype BluetoothHCITransmitReadPowerLevelTypes = BluetoothHCITransmitReadPowerLevelTypes CInt
@@ -1493,6 +1746,16 @@ pattern KReadCurrentTransmitPowerLevel = BluetoothHCITransmitReadPowerLevelTypes
 
 pattern KReadMaximumTransmitPowerLevel :: BluetoothHCITransmitReadPowerLevelTypes
 pattern KReadMaximumTransmitPowerLevel = BluetoothHCITransmitReadPowerLevelTypes 1
+
+instance ObjCArgument BluetoothHCITransmitReadPowerLevelTypes where
+  withObjCArg (BluetoothHCITransmitReadPowerLevelTypes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCITransmitReadPowerLevelTypes where
+  type RawReturn BluetoothHCITransmitReadPowerLevelTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCITransmitReadPowerLevelTypes x)
+  fromOwned x = pure (BluetoothHCITransmitReadPowerLevelTypes x)
 
 -- | @BluetoothHCIVersions@
 newtype BluetoothHCIVersions = BluetoothHCIVersions CInt
@@ -1538,6 +1801,16 @@ pattern KBluetoothHCIVersionCoreSpecification5_2 = BluetoothHCIVersions 11
 pattern KBluetoothHCIVersionCoreSpecification5_3 :: BluetoothHCIVersions
 pattern KBluetoothHCIVersionCoreSpecification5_3 = BluetoothHCIVersions 12
 
+instance ObjCArgument BluetoothHCIVersions where
+  withObjCArg (BluetoothHCIVersions x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothHCIVersions where
+  type RawReturn BluetoothHCIVersions = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothHCIVersions x)
+  fromOwned x = pure (BluetoothHCIVersions x)
+
 -- | @BluetoothIOCapabilities@
 newtype BluetoothIOCapabilities = BluetoothIOCapabilities CInt
   deriving stock (Eq, Ord, Show)
@@ -1554,6 +1827,16 @@ pattern KBluetoothCapabilityTypeKeyboardOnly = BluetoothIOCapabilities 2
 
 pattern KBluetoothCapabilityTypeNoInputNoOutput :: BluetoothIOCapabilities
 pattern KBluetoothCapabilityTypeNoInputNoOutput = BluetoothIOCapabilities 3
+
+instance ObjCArgument BluetoothIOCapabilities where
+  withObjCArg (BluetoothIOCapabilities x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothIOCapabilities where
+  type RawReturn BluetoothIOCapabilities = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothIOCapabilities x)
+  fromOwned x = pure (BluetoothIOCapabilities x)
 
 -- | @BluetoothKeypressNotificationTypes@
 newtype BluetoothKeypressNotificationTypes = BluetoothKeypressNotificationTypes CInt
@@ -1575,6 +1858,16 @@ pattern KBluetoothKeypressNotificationTypePasskeyCleared = BluetoothKeypressNoti
 pattern KBluetoothKeypressNotificationTypePasskeyEntryCompleted :: BluetoothKeypressNotificationTypes
 pattern KBluetoothKeypressNotificationTypePasskeyEntryCompleted = BluetoothKeypressNotificationTypes 4
 
+instance ObjCArgument BluetoothKeypressNotificationTypes where
+  withObjCArg (BluetoothKeypressNotificationTypes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothKeypressNotificationTypes where
+  type RawReturn BluetoothKeypressNotificationTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothKeypressNotificationTypes x)
+  fromOwned x = pure (BluetoothKeypressNotificationTypes x)
+
 -- | @BluetoothL2CAPSegmentationAndReassembly@
 newtype BluetoothL2CAPSegmentationAndReassembly = BluetoothL2CAPSegmentationAndReassembly CInt
   deriving stock (Eq, Ord, Show)
@@ -1591,6 +1884,16 @@ pattern KBluetoothL2CAPSegmentationAndReassemblyEndOfSDU = BluetoothL2CAPSegment
 
 pattern KBluetoothL2CAPSegmentationAndReassemblyContinuationOfSDU :: BluetoothL2CAPSegmentationAndReassembly
 pattern KBluetoothL2CAPSegmentationAndReassemblyContinuationOfSDU = BluetoothL2CAPSegmentationAndReassembly 3
+
+instance ObjCArgument BluetoothL2CAPSegmentationAndReassembly where
+  withObjCArg (BluetoothL2CAPSegmentationAndReassembly x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothL2CAPSegmentationAndReassembly where
+  type RawReturn BluetoothL2CAPSegmentationAndReassembly = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothL2CAPSegmentationAndReassembly x)
+  fromOwned x = pure (BluetoothL2CAPSegmentationAndReassembly x)
 
 -- | @BluetoothLEFeatureBits@
 newtype BluetoothLEFeatureBits = BluetoothLEFeatureBits CInt
@@ -1624,6 +1927,16 @@ pattern KBluetoothLEFeatureExtendedScannerFilterPolicies = BluetoothLEFeatureBit
 pattern KBluetoothLEFeatureSlaveInitiatedFeaturesExchange :: BluetoothLEFeatureBits
 pattern KBluetoothLEFeatureSlaveInitiatedFeaturesExchange = BluetoothLEFeatureBits 8
 
+instance ObjCArgument BluetoothLEFeatureBits where
+  withObjCArg (BluetoothLEFeatureBits x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothLEFeatureBits where
+  type RawReturn BluetoothLEFeatureBits = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothLEFeatureBits x)
+  fromOwned x = pure (BluetoothLEFeatureBits x)
+
 -- | @BluetoothLESecurityManagerKeyDistributionFormat@
 newtype BluetoothLESecurityManagerKeyDistributionFormat = BluetoothLESecurityManagerKeyDistributionFormat CInt
   deriving stock (Eq, Ord, Show)
@@ -1640,6 +1953,16 @@ pattern KBluetoothLESecurityManagerSignKey = BluetoothLESecurityManagerKeyDistri
 
 pattern KBluetoothLESecurityManagerLinkKey :: BluetoothLESecurityManagerKeyDistributionFormat
 pattern KBluetoothLESecurityManagerLinkKey = BluetoothLESecurityManagerKeyDistributionFormat 8
+
+instance ObjCArgument BluetoothLESecurityManagerKeyDistributionFormat where
+  withObjCArg (BluetoothLESecurityManagerKeyDistributionFormat x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothLESecurityManagerKeyDistributionFormat where
+  type RawReturn BluetoothLESecurityManagerKeyDistributionFormat = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothLESecurityManagerKeyDistributionFormat x)
+  fromOwned x = pure (BluetoothLESecurityManagerKeyDistributionFormat x)
 
 -- | @BluetoothLMPVersions@
 newtype BluetoothLMPVersions = BluetoothLMPVersions CInt
@@ -1682,6 +2005,16 @@ pattern KBluetoothLMPVersionCoreSpecification5_1 = BluetoothLMPVersions 10
 pattern KBluetoothLMPVersionCoreSpecification5_2 :: BluetoothLMPVersions
 pattern KBluetoothLMPVersionCoreSpecification5_2 = BluetoothLMPVersions 11
 
+instance ObjCArgument BluetoothLMPVersions where
+  withObjCArg (BluetoothLMPVersions x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothLMPVersions where
+  type RawReturn BluetoothLMPVersions = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothLMPVersions x)
+  fromOwned x = pure (BluetoothLMPVersions x)
+
 -- | @BluetoothLinkTypes@
 newtype BluetoothLinkTypes = BluetoothLinkTypes CInt
   deriving stock (Eq, Ord, Show)
@@ -1699,6 +2032,16 @@ pattern KBluetoothESCOConnection = BluetoothLinkTypes 2
 pattern KBluetoothLinkTypeNone :: BluetoothLinkTypes
 pattern KBluetoothLinkTypeNone = BluetoothLinkTypes 255
 
+instance ObjCArgument BluetoothLinkTypes where
+  withObjCArg (BluetoothLinkTypes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothLinkTypes where
+  type RawReturn BluetoothLinkTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothLinkTypes x)
+  fromOwned x = pure (BluetoothLinkTypes x)
+
 -- | @BluetoothOOBDataPresenceValues@
 newtype BluetoothOOBDataPresenceValues = BluetoothOOBDataPresenceValues CInt
   deriving stock (Eq, Ord, Show)
@@ -1709,6 +2052,16 @@ pattern KBluetoothOOBAuthenticationDataNotPresent = BluetoothOOBDataPresenceValu
 
 pattern KBluetoothOOBAuthenticationDataFromRemoteDevicePresent :: BluetoothOOBDataPresenceValues
 pattern KBluetoothOOBAuthenticationDataFromRemoteDevicePresent = BluetoothOOBDataPresenceValues 1
+
+instance ObjCArgument BluetoothOOBDataPresenceValues where
+  withObjCArg (BluetoothOOBDataPresenceValues x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothOOBDataPresenceValues where
+  type RawReturn BluetoothOOBDataPresenceValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothOOBDataPresenceValues x)
+  fromOwned x = pure (BluetoothOOBDataPresenceValues x)
 
 -- | @BluetoothRFCOMMLineStatus@
 newtype BluetoothRFCOMMLineStatus = BluetoothRFCOMMLineStatus CInt
@@ -1727,6 +2080,16 @@ pattern BluetoothRFCOMMLineStatusParityError = BluetoothRFCOMMLineStatus 2
 pattern BluetoothRFCOMMLineStatusFramingError :: BluetoothRFCOMMLineStatus
 pattern BluetoothRFCOMMLineStatusFramingError = BluetoothRFCOMMLineStatus 3
 
+instance ObjCArgument BluetoothRFCOMMLineStatus where
+  withObjCArg (BluetoothRFCOMMLineStatus x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothRFCOMMLineStatus where
+  type RawReturn BluetoothRFCOMMLineStatus = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothRFCOMMLineStatus x)
+  fromOwned x = pure (BluetoothRFCOMMLineStatus x)
+
 -- | @BluetoothRFCOMMParityType@
 newtype BluetoothRFCOMMParityType = BluetoothRFCOMMParityType CInt
   deriving stock (Eq, Ord, Show)
@@ -1744,6 +2107,16 @@ pattern KBluetoothRFCOMMParityTypeEvenParity = BluetoothRFCOMMParityType 2
 pattern KBluetoothRFCOMMParityTypeMaxParity :: BluetoothRFCOMMParityType
 pattern KBluetoothRFCOMMParityTypeMaxParity = BluetoothRFCOMMParityType 3
 
+instance ObjCArgument BluetoothRFCOMMParityType where
+  withObjCArg (BluetoothRFCOMMParityType x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothRFCOMMParityType where
+  type RawReturn BluetoothRFCOMMParityType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothRFCOMMParityType x)
+  fromOwned x = pure (BluetoothRFCOMMParityType x)
+
 -- | @BluetoothSimplePairingDebugModes@
 newtype BluetoothSimplePairingDebugModes = BluetoothSimplePairingDebugModes CInt
   deriving stock (Eq, Ord, Show)
@@ -1754,6 +2127,16 @@ pattern KBluetoothHCISimplePairingDebugModeDisabled = BluetoothSimplePairingDebu
 
 pattern KBluetoothHCISimplePairingDebugModeEnabled :: BluetoothSimplePairingDebugModes
 pattern KBluetoothHCISimplePairingDebugModeEnabled = BluetoothSimplePairingDebugModes 1
+
+instance ObjCArgument BluetoothSimplePairingDebugModes where
+  withObjCArg (BluetoothSimplePairingDebugModes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothSimplePairingDebugModes where
+  type RawReturn BluetoothSimplePairingDebugModes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothSimplePairingDebugModes x)
+  fromOwned x = pure (BluetoothSimplePairingDebugModes x)
 
 -- | @BluetoothTransportTypes@
 newtype BluetoothTransportTypes = BluetoothTransportTypes CInt
@@ -1775,6 +2158,16 @@ pattern KBluetoothTransportTypeUART = BluetoothTransportTypes 4
 pattern KBluetoothTransportTypePCIe :: BluetoothTransportTypes
 pattern KBluetoothTransportTypePCIe = BluetoothTransportTypes 5
 
+instance ObjCArgument BluetoothTransportTypes where
+  withObjCArg (BluetoothTransportTypes x) k = k (argCInt x)
+
+instance ObjCReturn BluetoothTransportTypes where
+  type RawReturn BluetoothTransportTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BluetoothTransportTypes x)
+  fromOwned x = pure (BluetoothTransportTypes x)
+
 -- | FTSFileType
 --
 -- The type values associated with the kFTSListingTypeKey dictionary value
@@ -1793,6 +2186,16 @@ pattern KFTSFileTypeFolder = FTSFileType 1
 pattern KFTSFileTypeFile :: FTSFileType
 pattern KFTSFileTypeFile = FTSFileType 2
 
+instance ObjCArgument FTSFileType where
+  withObjCArg (FTSFileType x) k = k (argCInt x)
+
+instance ObjCReturn FTSFileType where
+  type RawReturn FTSFileType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (FTSFileType x)
+  fromOwned x = pure (FTSFileType x)
+
 -- | @IOBluetoothDeviceSearchOptionsBits@
 newtype IOBluetoothDeviceSearchOptionsBits = IOBluetoothDeviceSearchOptionsBits CInt
   deriving stock (Eq, Ord, Show)
@@ -1807,6 +2210,16 @@ pattern KSearchOptionsAlwaysStartInquiry = IOBluetoothDeviceSearchOptionsBits 1
 pattern KSearchOptionsDiscardCachedResults :: IOBluetoothDeviceSearchOptionsBits
 pattern KSearchOptionsDiscardCachedResults = IOBluetoothDeviceSearchOptionsBits 2
 
+instance ObjCArgument IOBluetoothDeviceSearchOptionsBits where
+  withObjCArg (IOBluetoothDeviceSearchOptionsBits x) k = k (argCInt x)
+
+instance ObjCReturn IOBluetoothDeviceSearchOptionsBits where
+  type RawReturn IOBluetoothDeviceSearchOptionsBits = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothDeviceSearchOptionsBits x)
+  fromOwned x = pure (IOBluetoothDeviceSearchOptionsBits x)
+
 -- | IOBluetoothDeviceSearchTypesBits
 --
 -- Bits to determine what Bluetooth devices to search for
@@ -1820,6 +2233,16 @@ pattern KIOBluetoothDeviceSearchClassic = IOBluetoothDeviceSearchTypesBits 1
 
 pattern KIOBluetoothDeviceSearchLE :: IOBluetoothDeviceSearchTypesBits
 pattern KIOBluetoothDeviceSearchLE = IOBluetoothDeviceSearchTypesBits 2
+
+instance ObjCArgument IOBluetoothDeviceSearchTypesBits where
+  withObjCArg (IOBluetoothDeviceSearchTypesBits x) k = k (argCInt x)
+
+instance ObjCReturn IOBluetoothDeviceSearchTypesBits where
+  type RawReturn IOBluetoothDeviceSearchTypesBits = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothDeviceSearchTypesBits x)
+  fromOwned x = pure (IOBluetoothDeviceSearchTypesBits x)
 
 -- | @IOBluetoothHandsFreeAudioGatewayFeatures@
 newtype IOBluetoothHandsFreeAudioGatewayFeatures = IOBluetoothHandsFreeAudioGatewayFeatures CUInt
@@ -1859,6 +2282,16 @@ pattern IOBluetoothHandsFreeAudioGatewayFeatureExtendedErrorResultCodes = IOBlue
 pattern IOBluetoothHandsFreeAudioGatewayFeatureCodecNegotiation :: IOBluetoothHandsFreeAudioGatewayFeatures
 pattern IOBluetoothHandsFreeAudioGatewayFeatureCodecNegotiation = IOBluetoothHandsFreeAudioGatewayFeatures 512
 
+instance ObjCArgument IOBluetoothHandsFreeAudioGatewayFeatures where
+  withObjCArg (IOBluetoothHandsFreeAudioGatewayFeatures x) k = k (argCUInt x)
+
+instance ObjCReturn IOBluetoothHandsFreeAudioGatewayFeatures where
+  type RawReturn IOBluetoothHandsFreeAudioGatewayFeatures = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothHandsFreeAudioGatewayFeatures x)
+  fromOwned x = pure (IOBluetoothHandsFreeAudioGatewayFeatures x)
+
 -- | @IOBluetoothHandsFreeCallHoldModes@
 newtype IOBluetoothHandsFreeCallHoldModes = IOBluetoothHandsFreeCallHoldModes CULong
   deriving stock (Eq, Ord, Show)
@@ -1885,6 +2318,16 @@ pattern IOBluetoothHandsFreeCallHoldMode3 = IOBluetoothHandsFreeCallHoldModes 32
 pattern IOBluetoothHandsFreeCallHoldMode4 :: IOBluetoothHandsFreeCallHoldModes
 pattern IOBluetoothHandsFreeCallHoldMode4 = IOBluetoothHandsFreeCallHoldModes 64
 
+instance ObjCArgument IOBluetoothHandsFreeCallHoldModes where
+  withObjCArg (IOBluetoothHandsFreeCallHoldModes x) k = k (argCULong x)
+
+instance ObjCReturn IOBluetoothHandsFreeCallHoldModes where
+  type RawReturn IOBluetoothHandsFreeCallHoldModes = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothHandsFreeCallHoldModes x)
+  fromOwned x = pure (IOBluetoothHandsFreeCallHoldModes x)
+
 -- | @IOBluetoothHandsFreeCodecID@
 newtype IOBluetoothHandsFreeCodecID = IOBluetoothHandsFreeCodecID CUChar
   deriving stock (Eq, Ord, Show)
@@ -1898,6 +2341,16 @@ pattern IOBluetoothHandsFreeCodecIDmSBC = IOBluetoothHandsFreeCodecID 2
 
 pattern IOBluetoothHandsFreeCodecIDAACELD :: IOBluetoothHandsFreeCodecID
 pattern IOBluetoothHandsFreeCodecIDAACELD = IOBluetoothHandsFreeCodecID 128
+
+instance ObjCArgument IOBluetoothHandsFreeCodecID where
+  withObjCArg (IOBluetoothHandsFreeCodecID x) k = k (argCUChar x)
+
+instance ObjCReturn IOBluetoothHandsFreeCodecID where
+  type RawReturn IOBluetoothHandsFreeCodecID = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothHandsFreeCodecID x)
+  fromOwned x = pure (IOBluetoothHandsFreeCodecID x)
 
 -- | Hands free superclass. Superclass of IOBluetoothHandsFreeDevice or IOBluetoothHandsFreeAudioGateway. Contains the common code used to support the Bluetoooth hands free profile.
 --
@@ -1934,6 +2387,16 @@ pattern IOBluetoothHandsFreeDeviceFeatureEnhancedCallControl = IOBluetoothHandsF
 pattern IOBluetoothHandsFreeDeviceFeatureCodecNegotiation :: IOBluetoothHandsFreeDeviceFeatures
 pattern IOBluetoothHandsFreeDeviceFeatureCodecNegotiation = IOBluetoothHandsFreeDeviceFeatures 128
 
+instance ObjCArgument IOBluetoothHandsFreeDeviceFeatures where
+  withObjCArg (IOBluetoothHandsFreeDeviceFeatures x) k = k (argCUInt x)
+
+instance ObjCReturn IOBluetoothHandsFreeDeviceFeatures where
+  type RawReturn IOBluetoothHandsFreeDeviceFeatures = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothHandsFreeDeviceFeatures x)
+  fromOwned x = pure (IOBluetoothHandsFreeDeviceFeatures x)
+
 -- | @IOBluetoothHandsFreePDUMessageStatus@
 newtype IOBluetoothHandsFreePDUMessageStatus = IOBluetoothHandsFreePDUMessageStatus CULong
   deriving stock (Eq, Ord, Show)
@@ -1954,6 +2417,16 @@ pattern IOBluetoothHandsFreePDUStatusStoSent = IOBluetoothHandsFreePDUMessageSta
 pattern IOBluetoothHandsFreePDUStatusAll :: IOBluetoothHandsFreePDUMessageStatus
 pattern IOBluetoothHandsFreePDUStatusAll = IOBluetoothHandsFreePDUMessageStatus 4
 
+instance ObjCArgument IOBluetoothHandsFreePDUMessageStatus where
+  withObjCArg (IOBluetoothHandsFreePDUMessageStatus x) k = k (argCULong x)
+
+instance ObjCReturn IOBluetoothHandsFreePDUMessageStatus where
+  type RawReturn IOBluetoothHandsFreePDUMessageStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothHandsFreePDUMessageStatus x)
+  fromOwned x = pure (IOBluetoothHandsFreePDUMessageStatus x)
+
 -- | @IOBluetoothHandsFreeSMSSupport@
 newtype IOBluetoothHandsFreeSMSSupport = IOBluetoothHandsFreeSMSSupport CULong
   deriving stock (Eq, Ord, Show)
@@ -1967,6 +2440,16 @@ pattern IOBluetoothHandsFreePhase2pSMSSupport = IOBluetoothHandsFreeSMSSupport 2
 
 pattern IOBluetoothHandsFreeManufactureSpecificSMSSupport :: IOBluetoothHandsFreeSMSSupport
 pattern IOBluetoothHandsFreeManufactureSpecificSMSSupport = IOBluetoothHandsFreeSMSSupport 4
+
+instance ObjCArgument IOBluetoothHandsFreeSMSSupport where
+  withObjCArg (IOBluetoothHandsFreeSMSSupport x) k = k (argCULong x)
+
+instance ObjCReturn IOBluetoothHandsFreeSMSSupport where
+  type RawReturn IOBluetoothHandsFreeSMSSupport = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothHandsFreeSMSSupport x)
+  fromOwned x = pure (IOBluetoothHandsFreeSMSSupport x)
 
 -- | @IOBluetoothL2CAPChannelEventType@
 newtype IOBluetoothL2CAPChannelEventType = IOBluetoothL2CAPChannelEventType CInt
@@ -1991,6 +2474,16 @@ pattern KIOBluetoothL2CAPChannelEventTypeWriteComplete = IOBluetoothL2CAPChannel
 pattern KIOBluetoothL2CAPChannelEventTypeQueueSpaceAvailable :: IOBluetoothL2CAPChannelEventType
 pattern KIOBluetoothL2CAPChannelEventTypeQueueSpaceAvailable = IOBluetoothL2CAPChannelEventType 6
 
+instance ObjCArgument IOBluetoothL2CAPChannelEventType where
+  withObjCArg (IOBluetoothL2CAPChannelEventType x) k = k (argCInt x)
+
+instance ObjCReturn IOBluetoothL2CAPChannelEventType where
+  type RawReturn IOBluetoothL2CAPChannelEventType = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothL2CAPChannelEventType x)
+  fromOwned x = pure (IOBluetoothL2CAPChannelEventType x)
+
 -- | @IOBluetoothSMSMode@
 newtype IOBluetoothSMSMode = IOBluetoothSMSMode CULong
   deriving stock (Eq, Ord, Show)
@@ -2001,6 +2494,16 @@ pattern IOBluetoothSMSModePDU = IOBluetoothSMSMode 0
 
 pattern IOBluetoothSMSModeText :: IOBluetoothSMSMode
 pattern IOBluetoothSMSModeText = IOBluetoothSMSMode 1
+
+instance ObjCArgument IOBluetoothSMSMode where
+  withObjCArg (IOBluetoothSMSMode x) k = k (argCULong x)
+
+instance ObjCReturn IOBluetoothSMSMode where
+  type RawReturn IOBluetoothSMSMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothSMSMode x)
+  fromOwned x = pure (IOBluetoothSMSMode x)
 
 -- | @IOBluetoothUserNotificationChannelDirection@
 newtype IOBluetoothUserNotificationChannelDirection = IOBluetoothUserNotificationChannelDirection CInt
@@ -2015,6 +2518,16 @@ pattern KIOBluetoothUserNotificationChannelDirectionIncoming = IOBluetoothUserNo
 
 pattern KIOBluetoothUserNotificationChannelDirectionOutgoing :: IOBluetoothUserNotificationChannelDirection
 pattern KIOBluetoothUserNotificationChannelDirectionOutgoing = IOBluetoothUserNotificationChannelDirection 2
+
+instance ObjCArgument IOBluetoothUserNotificationChannelDirection where
+  withObjCArg (IOBluetoothUserNotificationChannelDirection x) k = k (argCInt x)
+
+instance ObjCReturn IOBluetoothUserNotificationChannelDirection where
+  type RawReturn IOBluetoothUserNotificationChannelDirection = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (IOBluetoothUserNotificationChannelDirection x)
+  fromOwned x = pure (IOBluetoothUserNotificationChannelDirection x)
 
 -- | OBEXConnectFlags
 --
@@ -2050,6 +2563,16 @@ pattern KOBEXConnectFlag6Reserved = OBEXConnectFlagValues 64
 
 pattern KOBEXConnectFlag7Reserved :: OBEXConnectFlagValues
 pattern KOBEXConnectFlag7Reserved = OBEXConnectFlagValues 128
+
+instance ObjCArgument OBEXConnectFlagValues where
+  withObjCArg (OBEXConnectFlagValues x) k = k (argCInt x)
+
+instance ObjCReturn OBEXConnectFlagValues where
+  type RawReturn OBEXConnectFlagValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXConnectFlagValues x)
+  fromOwned x = pure (OBEXConnectFlagValues x)
 
 -- | @OBEXErrorCodes@
 newtype OBEXErrorCodes = OBEXErrorCodes CInt
@@ -2136,6 +2659,16 @@ pattern KOBEXSessionTimeoutError = OBEXErrorCodes (-21881)
 
 pattern KOBEXSessionAlreadyConnectedError :: OBEXErrorCodes
 pattern KOBEXSessionAlreadyConnectedError = OBEXErrorCodes (-21882)
+
+instance ObjCArgument OBEXErrorCodes where
+  withObjCArg (OBEXErrorCodes x) k = k (argCInt x)
+
+instance ObjCReturn OBEXErrorCodes where
+  type RawReturn OBEXErrorCodes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXErrorCodes x)
+  fromOwned x = pure (OBEXErrorCodes x)
 
 -- | OBEXHeaderIdentifiers
 --
@@ -2275,6 +2808,16 @@ pattern KOBEXHeaderIDOBEX13SessionSequenceNumber = OBEXHeaderIdentifiers 147
 pattern KOBEXHeaderIDOBEX13CreatorID :: OBEXHeaderIdentifiers
 pattern KOBEXHeaderIDOBEX13CreatorID = OBEXHeaderIdentifiers 207
 
+instance ObjCArgument OBEXHeaderIdentifiers where
+  withObjCArg (OBEXHeaderIdentifiers x) k = k (argCInt x)
+
+instance ObjCReturn OBEXHeaderIdentifiers where
+  type RawReturn OBEXHeaderIdentifiers = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXHeaderIdentifiers x)
+  fromOwned x = pure (OBEXHeaderIdentifiers x)
+
 -- | OBEXNonceFlags
 --
 -- Flags for Nonce command during digest challenge.
@@ -2309,6 +2852,16 @@ pattern KOBEXNonceFlag6Reserved = OBEXNonceFlagValues 64
 
 pattern KOBEXNonceFlag7Reserved :: OBEXNonceFlagValues
 pattern KOBEXNonceFlag7Reserved = OBEXNonceFlagValues 128
+
+instance ObjCArgument OBEXNonceFlagValues where
+  withObjCArg (OBEXNonceFlagValues x) k = k (argCInt x)
+
+instance ObjCReturn OBEXNonceFlagValues where
+  type RawReturn OBEXNonceFlagValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXNonceFlagValues x)
+  fromOwned x = pure (OBEXNonceFlagValues x)
 
 -- | OBEXOpCodeCommandValues
 --
@@ -2359,6 +2912,16 @@ pattern KOBEXOpCodeUserDefinedStart = OBEXOpCodeCommandValues 16
 
 pattern KOBEXOpCodeUserDefinedEnd :: OBEXOpCodeCommandValues
 pattern KOBEXOpCodeUserDefinedEnd = OBEXOpCodeCommandValues 31
+
+instance ObjCArgument OBEXOpCodeCommandValues where
+  withObjCArg (OBEXOpCodeCommandValues x) k = k (argCInt x)
+
+instance ObjCReturn OBEXOpCodeCommandValues where
+  type RawReturn OBEXOpCodeCommandValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXOpCodeCommandValues x)
+  fromOwned x = pure (OBEXOpCodeCommandValues x)
 
 -- | OBEXOpCodeResponseValues
 --
@@ -2602,6 +3165,16 @@ pattern KOBEXResponseCodeDatabaseLocked = OBEXOpCodeResponseValues 97
 pattern KOBEXResponseCodeDatabaseLockedWithFinalBit :: OBEXOpCodeResponseValues
 pattern KOBEXResponseCodeDatabaseLockedWithFinalBit = OBEXOpCodeResponseValues 225
 
+instance ObjCArgument OBEXOpCodeResponseValues where
+  withObjCArg (OBEXOpCodeResponseValues x) k = k (argCInt x)
+
+instance ObjCReturn OBEXOpCodeResponseValues where
+  type RawReturn OBEXOpCodeResponseValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXOpCodeResponseValues x)
+  fromOwned x = pure (OBEXOpCodeResponseValues x)
+
 -- | OBEXOpCodeSessionValues
 --
 -- Operation OpCode values for sessions. From the OBEX 1.3 specification.
@@ -2624,6 +3197,16 @@ pattern KOBEXOpCodeResumeSession = OBEXOpCodeSessionValues 3
 
 pattern KOBEXOpCodeSetTimeout :: OBEXOpCodeSessionValues
 pattern KOBEXOpCodeSetTimeout = OBEXOpCodeSessionValues 4
+
+instance ObjCArgument OBEXOpCodeSessionValues where
+  withObjCArg (OBEXOpCodeSessionValues x) k = k (argCInt x)
+
+instance ObjCReturn OBEXOpCodeSessionValues where
+  type RawReturn OBEXOpCodeSessionValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXOpCodeSessionValues x)
+  fromOwned x = pure (OBEXOpCodeSessionValues x)
 
 -- | OBEXSetPathFlags
 --
@@ -2659,6 +3242,16 @@ pattern KOBEXPutFlag6Reserved = OBEXPutFlagValues 64
 
 pattern KOBEXPutFlag7Reserved :: OBEXPutFlagValues
 pattern KOBEXPutFlag7Reserved = OBEXPutFlagValues 128
+
+instance ObjCArgument OBEXPutFlagValues where
+  withObjCArg (OBEXPutFlagValues x) k = k (argCInt x)
+
+instance ObjCReturn OBEXPutFlagValues where
+  type RawReturn OBEXPutFlagValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXPutFlagValues x)
+  fromOwned x = pure (OBEXPutFlagValues x)
 
 -- | OBEXRealmValues
 --
@@ -2700,6 +3293,16 @@ pattern KOBEXRealmISO88599 = OBEXRealmValues 9
 
 pattern KOBEXRealmUNICODE :: OBEXRealmValues
 pattern KOBEXRealmUNICODE = OBEXRealmValues 255
+
+instance ObjCArgument OBEXRealmValues where
+  withObjCArg (OBEXRealmValues x) k = k (argCInt x)
+
+instance ObjCReturn OBEXRealmValues where
+  type RawReturn OBEXRealmValues = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXRealmValues x)
+  fromOwned x = pure (OBEXRealmValues x)
 
 -- | OBEXSessionEventTypes
 --
@@ -2748,6 +3351,16 @@ pattern KOBEXSessionEventTypeAbortCommandReceived = OBEXSessionEventTypes 133085
 pattern KOBEXSessionEventTypeError :: OBEXSessionEventTypes
 pattern KOBEXSessionEventTypeError = OBEXSessionEventTypes 1330070853
 
+instance ObjCArgument OBEXSessionEventTypes where
+  withObjCArg (OBEXSessionEventTypes x) k = k (argCInt x)
+
+instance ObjCReturn OBEXSessionEventTypes where
+  type RawReturn OBEXSessionEventTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXSessionEventTypes x)
+  fromOwned x = pure (OBEXSessionEventTypes x)
+
 -- | OBEXSessionParameterTags
 --
 -- Tags for SessionParameters.
@@ -2774,6 +3387,16 @@ pattern KOBEXSessionParameterTagTimeout = OBEXSessionParameterTags 4
 pattern KOBEXSessionParameterTagSessionOpcode :: OBEXSessionParameterTags
 pattern KOBEXSessionParameterTagSessionOpcode = OBEXSessionParameterTags 5
 
+instance ObjCArgument OBEXSessionParameterTags where
+  withObjCArg (OBEXSessionParameterTags x) k = k (argCInt x)
+
+instance ObjCReturn OBEXSessionParameterTags where
+  type RawReturn OBEXSessionParameterTags = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXSessionParameterTags x)
+  fromOwned x = pure (OBEXSessionParameterTags x)
+
 -- | @OBEXTransportEventTypes@
 newtype OBEXTransportEventTypes = OBEXTransportEventTypes CInt
   deriving stock (Eq, Ord, Show)
@@ -2785,6 +3408,16 @@ pattern KOBEXTransportEventTypeDataReceived = OBEXTransportEventTypes 1147237441
 pattern KOBEXTransportEventTypeStatus :: OBEXTransportEventTypes
 pattern KOBEXTransportEventTypeStatus = OBEXTransportEventTypes 1400136020
 
+instance ObjCArgument OBEXTransportEventTypes where
+  withObjCArg (OBEXTransportEventTypes x) k = k (argCInt x)
+
+instance ObjCReturn OBEXTransportEventTypes where
+  type RawReturn OBEXTransportEventTypes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXTransportEventTypes x)
+  fromOwned x = pure (OBEXTransportEventTypes x)
+
 -- | OBEXVersions
 --
 -- The available/supported OBEX versions.
@@ -2795,6 +3428,16 @@ newtype OBEXVersions = OBEXVersions CInt
 
 pattern KOBEXVersion10 :: OBEXVersions
 pattern KOBEXVersion10 = OBEXVersions 16
+
+instance ObjCArgument OBEXVersions where
+  withObjCArg (OBEXVersions x) k = k (argCInt x)
+
+instance ObjCReturn OBEXVersions where
+  type RawReturn OBEXVersions = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (OBEXVersions x)
+  fromOwned x = pure (OBEXVersions x)
 
 -- | @ProtocolParameters@
 newtype ProtocolParameters = ProtocolParameters CInt
@@ -2818,6 +3461,16 @@ pattern KBluetoothSDPProtocolParameterBNEPVersion = ProtocolParameters 1
 
 pattern KBluetoothSDPProtocolParameterBNEPSupportedNetworkPacketTypeList :: ProtocolParameters
 pattern KBluetoothSDPProtocolParameterBNEPSupportedNetworkPacketTypeList = ProtocolParameters 2
+
+instance ObjCArgument ProtocolParameters where
+  withObjCArg (ProtocolParameters x) k = k (argCInt x)
+
+instance ObjCReturn ProtocolParameters where
+  type RawReturn ProtocolParameters = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (ProtocolParameters x)
+  fromOwned x = pure (ProtocolParameters x)
 
 -- | @SDPAttributeDeviceIdentificationRecord@
 newtype SDPAttributeDeviceIdentificationRecord = SDPAttributeDeviceIdentificationRecord CInt
@@ -2856,6 +3509,16 @@ pattern KBluetoothSDPAttributeDeviceIdentifierReservedRangeStart = SDPAttributeD
 
 pattern KBluetoothSDPAttributeDeviceIdentifierReservedRangeEnd :: SDPAttributeDeviceIdentificationRecord
 pattern KBluetoothSDPAttributeDeviceIdentifierReservedRangeEnd = SDPAttributeDeviceIdentificationRecord 767
+
+instance ObjCArgument SDPAttributeDeviceIdentificationRecord where
+  withObjCArg (SDPAttributeDeviceIdentificationRecord x) k = k (argCInt x)
+
+instance ObjCReturn SDPAttributeDeviceIdentificationRecord where
+  type RawReturn SDPAttributeDeviceIdentificationRecord = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SDPAttributeDeviceIdentificationRecord x)
+  fromOwned x = pure (SDPAttributeDeviceIdentificationRecord x)
 
 -- | @SDPAttributeIdentifierCodes@
 newtype SDPAttributeIdentifierCodes = SDPAttributeIdentifierCodes CInt
@@ -3038,6 +3701,16 @@ pattern KBluetoothSDPAttributeIdentifierServiceDescription = SDPAttributeIdentif
 
 pattern KBluetoothSDPAttributeIdentifierProviderName :: SDPAttributeIdentifierCodes
 pattern KBluetoothSDPAttributeIdentifierProviderName = SDPAttributeIdentifierCodes 2
+
+instance ObjCArgument SDPAttributeIdentifierCodes where
+  withObjCArg (SDPAttributeIdentifierCodes x) k = k (argCInt x)
+
+instance ObjCReturn SDPAttributeIdentifierCodes where
+  type RawReturn SDPAttributeIdentifierCodes = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SDPAttributeIdentifierCodes x)
+  fromOwned x = pure (SDPAttributeIdentifierCodes x)
 
 -- | @SDPServiceClasses@
 newtype SDPServiceClasses = SDPServiceClasses CInt
@@ -3250,3 +3923,13 @@ pattern KBluetoothSDPUUID16ServiceClassHealthDeviceSink = SDPServiceClasses 5122
 
 pattern KBluetoothSDPUUID16ServiceClassGATT :: SDPServiceClasses
 pattern KBluetoothSDPUUID16ServiceClassGATT = SDPServiceClasses 6145
+
+instance ObjCArgument SDPServiceClasses where
+  withObjCArg (SDPServiceClasses x) k = k (argCInt x)
+
+instance ObjCReturn SDPServiceClasses where
+  type RawReturn SDPServiceClasses = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SDPServiceClasses x)
+  fromOwned x = pure (SDPServiceClasses x)

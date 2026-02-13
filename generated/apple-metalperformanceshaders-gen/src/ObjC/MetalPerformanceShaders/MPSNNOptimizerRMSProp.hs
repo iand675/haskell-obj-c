@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,29 +25,25 @@ module ObjC.MetalPerformanceShaders.MPSNNOptimizerRMSProp
   , encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultState
   , decay
   , epsilon
-  , initWithDeviceSelector
-  , initWithDevice_learningRateSelector
-  , initWithDevice_decay_epsilon_optimizerDescriptorSelector
-  , encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputSumOfSquaresVector_resultValuesVectorSelector
-  , encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMatrix_resultValuesMatrixSelector
-  , encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOfSquaresVectors_resultStateSelector
-  , encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultStateSelector
-  , encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultStateSelector
   , decaySelector
+  , encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultStateSelector
+  , encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultStateSelector
+  , encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOfSquaresVectors_resultStateSelector
+  , encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMatrix_resultValuesMatrixSelector
+  , encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputSumOfSquaresVector_resultValuesVectorSelector
   , epsilonSelector
+  , initWithDeviceSelector
+  , initWithDevice_decay_epsilon_optimizerDescriptorSelector
+  , initWithDevice_learningRateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp => mpsnnOptimizerRMSProp -> RawId -> IO (Id MPSNNOptimizerRMSProp)
-initWithDevice mpsnnOptimizerRMSProp  device =
-    sendMsg mpsnnOptimizerRMSProp (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnOptimizerRMSProp device =
+  sendOwnedMessage mpsnnOptimizerRMSProp initWithDeviceSelector device
 
 -- | Convenience initialization for the RMSProp update
 --
@@ -68,8 +65,8 @@ initWithDevice mpsnnOptimizerRMSProp  device =
 --
 -- ObjC selector: @- initWithDevice:learningRate:@
 initWithDevice_learningRate :: IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp => mpsnnOptimizerRMSProp -> RawId -> CFloat -> IO (Id MPSNNOptimizerRMSProp)
-initWithDevice_learningRate mpsnnOptimizerRMSProp  device learningRate =
-    sendMsg mpsnnOptimizerRMSProp (mkSelector "initWithDevice:learningRate:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat learningRate] >>= ownedObject . castPtr
+initWithDevice_learningRate mpsnnOptimizerRMSProp device learningRate =
+  sendOwnedMessage mpsnnOptimizerRMSProp initWithDevice_learningRateSelector device learningRate
 
 -- | Full initialization for the rmsProp update
 --
@@ -85,9 +82,8 @@ initWithDevice_learningRate mpsnnOptimizerRMSProp  device learningRate =
 --
 -- ObjC selector: @- initWithDevice:decay:epsilon:optimizerDescriptor:@
 initWithDevice_decay_epsilon_optimizerDescriptor :: (IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp, IsMPSNNOptimizerDescriptor optimizerDescriptor) => mpsnnOptimizerRMSProp -> RawId -> CDouble -> CFloat -> optimizerDescriptor -> IO (Id MPSNNOptimizerRMSProp)
-initWithDevice_decay_epsilon_optimizerDescriptor mpsnnOptimizerRMSProp  device decay epsilon optimizerDescriptor =
-  withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendMsg mpsnnOptimizerRMSProp (mkSelector "initWithDevice:decay:epsilon:optimizerDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCDouble decay, argCFloat epsilon, argPtr (castPtr raw_optimizerDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_decay_epsilon_optimizerDescriptor mpsnnOptimizerRMSProp device decay epsilon optimizerDescriptor =
+  sendOwnedMessage mpsnnOptimizerRMSProp initWithDevice_decay_epsilon_optimizerDescriptorSelector device decay epsilon (toMPSNNOptimizerDescriptor optimizerDescriptor)
 
 -- | Encode an MPSNNOptimizerRMSProp object to a command buffer to perform out of place update
 --
@@ -109,21 +105,13 @@ initWithDevice_decay_epsilon_optimizerDescriptor mpsnnOptimizerRMSProp  device d
 --
 -- ObjC selector: @- encodeToCommandBuffer:inputGradientVector:inputValuesVector:inputSumOfSquaresVector:resultValuesVector:@
 encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputSumOfSquaresVector_resultValuesVector :: (IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp, IsMPSVector inputGradientVector, IsMPSVector inputValuesVector, IsMPSVector inputSumOfSquaresVector, IsMPSVector resultValuesVector) => mpsnnOptimizerRMSProp -> RawId -> inputGradientVector -> inputValuesVector -> inputSumOfSquaresVector -> resultValuesVector -> IO ()
-encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputSumOfSquaresVector_resultValuesVector mpsnnOptimizerRMSProp  commandBuffer inputGradientVector inputValuesVector inputSumOfSquaresVector resultValuesVector =
-  withObjCPtr inputGradientVector $ \raw_inputGradientVector ->
-    withObjCPtr inputValuesVector $ \raw_inputValuesVector ->
-      withObjCPtr inputSumOfSquaresVector $ \raw_inputSumOfSquaresVector ->
-        withObjCPtr resultValuesVector $ \raw_resultValuesVector ->
-            sendMsg mpsnnOptimizerRMSProp (mkSelector "encodeToCommandBuffer:inputGradientVector:inputValuesVector:inputSumOfSquaresVector:resultValuesVector:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_inputGradientVector :: Ptr ()), argPtr (castPtr raw_inputValuesVector :: Ptr ()), argPtr (castPtr raw_inputSumOfSquaresVector :: Ptr ()), argPtr (castPtr raw_resultValuesVector :: Ptr ())]
+encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputSumOfSquaresVector_resultValuesVector mpsnnOptimizerRMSProp commandBuffer inputGradientVector inputValuesVector inputSumOfSquaresVector resultValuesVector =
+  sendMessage mpsnnOptimizerRMSProp encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputSumOfSquaresVector_resultValuesVectorSelector commandBuffer (toMPSVector inputGradientVector) (toMPSVector inputValuesVector) (toMPSVector inputSumOfSquaresVector) (toMPSVector resultValuesVector)
 
 -- | @- encodeToCommandBuffer:inputGradientMatrix:inputValuesMatrix:inputSumOfSquaresMatrix:resultValuesMatrix:@
 encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMatrix_resultValuesMatrix :: (IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp, IsMPSMatrix inputGradientMatrix, IsMPSMatrix inputValuesMatrix, IsMPSMatrix inputSumOfSquaresMatrix, IsMPSMatrix resultValuesMatrix) => mpsnnOptimizerRMSProp -> RawId -> inputGradientMatrix -> inputValuesMatrix -> inputSumOfSquaresMatrix -> resultValuesMatrix -> IO ()
-encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMatrix_resultValuesMatrix mpsnnOptimizerRMSProp  commandBuffer inputGradientMatrix inputValuesMatrix inputSumOfSquaresMatrix resultValuesMatrix =
-  withObjCPtr inputGradientMatrix $ \raw_inputGradientMatrix ->
-    withObjCPtr inputValuesMatrix $ \raw_inputValuesMatrix ->
-      withObjCPtr inputSumOfSquaresMatrix $ \raw_inputSumOfSquaresMatrix ->
-        withObjCPtr resultValuesMatrix $ \raw_resultValuesMatrix ->
-            sendMsg mpsnnOptimizerRMSProp (mkSelector "encodeToCommandBuffer:inputGradientMatrix:inputValuesMatrix:inputSumOfSquaresMatrix:resultValuesMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_inputGradientMatrix :: Ptr ()), argPtr (castPtr raw_inputValuesMatrix :: Ptr ()), argPtr (castPtr raw_inputSumOfSquaresMatrix :: Ptr ()), argPtr (castPtr raw_resultValuesMatrix :: Ptr ())]
+encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMatrix_resultValuesMatrix mpsnnOptimizerRMSProp commandBuffer inputGradientMatrix inputValuesMatrix inputSumOfSquaresMatrix resultValuesMatrix =
+  sendMessage mpsnnOptimizerRMSProp encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMatrix_resultValuesMatrixSelector commandBuffer (toMPSMatrix inputGradientMatrix) (toMPSMatrix inputValuesMatrix) (toMPSMatrix inputSumOfSquaresMatrix) (toMPSMatrix resultValuesMatrix)
 
 -- | Encode an MPSNNOptimizerRMSProp object to a command buffer to perform out of place update
 --
@@ -145,12 +133,8 @@ encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMat
 --
 -- ObjC selector: @- encodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputSumOfSquaresVectors:resultState:@
 encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOfSquaresVectors_resultState :: (IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp, IsMPSCNNConvolutionGradientState convolutionGradientState, IsMPSCNNConvolutionWeightsAndBiasesState convolutionSourceState, IsNSArray inputSumOfSquaresVectors, IsMPSCNNConvolutionWeightsAndBiasesState resultState) => mpsnnOptimizerRMSProp -> RawId -> convolutionGradientState -> convolutionSourceState -> inputSumOfSquaresVectors -> resultState -> IO ()
-encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOfSquaresVectors_resultState mpsnnOptimizerRMSProp  commandBuffer convolutionGradientState convolutionSourceState inputSumOfSquaresVectors resultState =
-  withObjCPtr convolutionGradientState $ \raw_convolutionGradientState ->
-    withObjCPtr convolutionSourceState $ \raw_convolutionSourceState ->
-      withObjCPtr inputSumOfSquaresVectors $ \raw_inputSumOfSquaresVectors ->
-        withObjCPtr resultState $ \raw_resultState ->
-            sendMsg mpsnnOptimizerRMSProp (mkSelector "encodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputSumOfSquaresVectors:resultState:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_convolutionGradientState :: Ptr ()), argPtr (castPtr raw_convolutionSourceState :: Ptr ()), argPtr (castPtr raw_inputSumOfSquaresVectors :: Ptr ()), argPtr (castPtr raw_resultState :: Ptr ())]
+encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOfSquaresVectors_resultState mpsnnOptimizerRMSProp commandBuffer convolutionGradientState convolutionSourceState inputSumOfSquaresVectors resultState =
+  sendMessage mpsnnOptimizerRMSProp encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOfSquaresVectors_resultStateSelector commandBuffer (toMPSCNNConvolutionGradientState convolutionGradientState) (toMPSCNNConvolutionWeightsAndBiasesState convolutionSourceState) (toNSArray inputSumOfSquaresVectors) (toMPSCNNConvolutionWeightsAndBiasesState resultState)
 
 -- | Encode an MPSNNOptimizerRMSProp object to a command buffer to perform out of place update
 --
@@ -170,11 +154,8 @@ encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOf
 --
 -- ObjC selector: @- encodeToCommandBuffer:batchNormalizationState:inputSumOfSquaresVectors:resultState:@
 encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultState :: (IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp, IsMPSCNNBatchNormalizationState batchNormalizationState, IsNSArray inputSumOfSquaresVectors, IsMPSCNNNormalizationGammaAndBetaState resultState) => mpsnnOptimizerRMSProp -> RawId -> batchNormalizationState -> inputSumOfSquaresVectors -> resultState -> IO ()
-encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultState mpsnnOptimizerRMSProp  commandBuffer batchNormalizationState inputSumOfSquaresVectors resultState =
-  withObjCPtr batchNormalizationState $ \raw_batchNormalizationState ->
-    withObjCPtr inputSumOfSquaresVectors $ \raw_inputSumOfSquaresVectors ->
-      withObjCPtr resultState $ \raw_resultState ->
-          sendMsg mpsnnOptimizerRMSProp (mkSelector "encodeToCommandBuffer:batchNormalizationState:inputSumOfSquaresVectors:resultState:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_batchNormalizationState :: Ptr ()), argPtr (castPtr raw_inputSumOfSquaresVectors :: Ptr ()), argPtr (castPtr raw_resultState :: Ptr ())]
+encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultState mpsnnOptimizerRMSProp commandBuffer batchNormalizationState inputSumOfSquaresVectors resultState =
+  sendMessage mpsnnOptimizerRMSProp encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultStateSelector commandBuffer (toMPSCNNBatchNormalizationState batchNormalizationState) (toNSArray inputSumOfSquaresVectors) (toMPSCNNNormalizationGammaAndBetaState resultState)
 
 -- | Encode an MPSNNOptimizerRMSProp object to a command buffer to perform out of place update
 --
@@ -196,12 +177,8 @@ encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultSta
 --
 -- ObjC selector: @- encodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputSumOfSquaresVectors:resultState:@
 encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultState :: (IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp, IsMPSCNNBatchNormalizationState batchNormalizationGradientState, IsMPSCNNBatchNormalizationState batchNormalizationSourceState, IsNSArray inputSumOfSquaresVectors, IsMPSCNNNormalizationGammaAndBetaState resultState) => mpsnnOptimizerRMSProp -> RawId -> batchNormalizationGradientState -> batchNormalizationSourceState -> inputSumOfSquaresVectors -> resultState -> IO ()
-encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultState mpsnnOptimizerRMSProp  commandBuffer batchNormalizationGradientState batchNormalizationSourceState inputSumOfSquaresVectors resultState =
-  withObjCPtr batchNormalizationGradientState $ \raw_batchNormalizationGradientState ->
-    withObjCPtr batchNormalizationSourceState $ \raw_batchNormalizationSourceState ->
-      withObjCPtr inputSumOfSquaresVectors $ \raw_inputSumOfSquaresVectors ->
-        withObjCPtr resultState $ \raw_resultState ->
-            sendMsg mpsnnOptimizerRMSProp (mkSelector "encodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputSumOfSquaresVectors:resultState:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_batchNormalizationGradientState :: Ptr ()), argPtr (castPtr raw_batchNormalizationSourceState :: Ptr ()), argPtr (castPtr raw_inputSumOfSquaresVectors :: Ptr ()), argPtr (castPtr raw_resultState :: Ptr ())]
+encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultState mpsnnOptimizerRMSProp commandBuffer batchNormalizationGradientState batchNormalizationSourceState inputSumOfSquaresVectors resultState =
+  sendMessage mpsnnOptimizerRMSProp encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultStateSelector commandBuffer (toMPSCNNBatchNormalizationState batchNormalizationGradientState) (toMPSCNNBatchNormalizationState batchNormalizationSourceState) (toNSArray inputSumOfSquaresVectors) (toMPSCNNNormalizationGammaAndBetaState resultState)
 
 -- | decay
 --
@@ -211,8 +188,8 @@ encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceSt
 --
 -- ObjC selector: @- decay@
 decay :: IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp => mpsnnOptimizerRMSProp -> IO CDouble
-decay mpsnnOptimizerRMSProp  =
-    sendMsg mpsnnOptimizerRMSProp (mkSelector "decay") retCDouble []
+decay mpsnnOptimizerRMSProp =
+  sendMessage mpsnnOptimizerRMSProp decaySelector
 
 -- | epsilon
 --
@@ -222,50 +199,50 @@ decay mpsnnOptimizerRMSProp  =
 --
 -- ObjC selector: @- epsilon@
 epsilon :: IsMPSNNOptimizerRMSProp mpsnnOptimizerRMSProp => mpsnnOptimizerRMSProp -> IO CFloat
-epsilon mpsnnOptimizerRMSProp  =
-    sendMsg mpsnnOptimizerRMSProp (mkSelector "epsilon") retCFloat []
+epsilon mpsnnOptimizerRMSProp =
+  sendMessage mpsnnOptimizerRMSProp epsilonSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNOptimizerRMSProp)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:learningRate:@
-initWithDevice_learningRateSelector :: Selector
+initWithDevice_learningRateSelector :: Selector '[RawId, CFloat] (Id MPSNNOptimizerRMSProp)
 initWithDevice_learningRateSelector = mkSelector "initWithDevice:learningRate:"
 
 -- | @Selector@ for @initWithDevice:decay:epsilon:optimizerDescriptor:@
-initWithDevice_decay_epsilon_optimizerDescriptorSelector :: Selector
+initWithDevice_decay_epsilon_optimizerDescriptorSelector :: Selector '[RawId, CDouble, CFloat, Id MPSNNOptimizerDescriptor] (Id MPSNNOptimizerRMSProp)
 initWithDevice_decay_epsilon_optimizerDescriptorSelector = mkSelector "initWithDevice:decay:epsilon:optimizerDescriptor:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inputGradientVector:inputValuesVector:inputSumOfSquaresVector:resultValuesVector:@
-encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputSumOfSquaresVector_resultValuesVectorSelector :: Selector
+encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputSumOfSquaresVector_resultValuesVectorSelector :: Selector '[RawId, Id MPSVector, Id MPSVector, Id MPSVector, Id MPSVector] ()
 encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputSumOfSquaresVector_resultValuesVectorSelector = mkSelector "encodeToCommandBuffer:inputGradientVector:inputValuesVector:inputSumOfSquaresVector:resultValuesVector:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inputGradientMatrix:inputValuesMatrix:inputSumOfSquaresMatrix:resultValuesMatrix:@
-encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMatrix_resultValuesMatrixSelector :: Selector
+encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMatrix_resultValuesMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix] ()
 encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputSumOfSquaresMatrix_resultValuesMatrixSelector = mkSelector "encodeToCommandBuffer:inputGradientMatrix:inputValuesMatrix:inputSumOfSquaresMatrix:resultValuesMatrix:"
 
 -- | @Selector@ for @encodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputSumOfSquaresVectors:resultState:@
-encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOfSquaresVectors_resultStateSelector :: Selector
+encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOfSquaresVectors_resultStateSelector :: Selector '[RawId, Id MPSCNNConvolutionGradientState, Id MPSCNNConvolutionWeightsAndBiasesState, Id NSArray, Id MPSCNNConvolutionWeightsAndBiasesState] ()
 encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputSumOfSquaresVectors_resultStateSelector = mkSelector "encodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputSumOfSquaresVectors:resultState:"
 
 -- | @Selector@ for @encodeToCommandBuffer:batchNormalizationState:inputSumOfSquaresVectors:resultState:@
-encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultStateSelector :: Selector
+encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultStateSelector :: Selector '[RawId, Id MPSCNNBatchNormalizationState, Id NSArray, Id MPSCNNNormalizationGammaAndBetaState] ()
 encodeToCommandBuffer_batchNormalizationState_inputSumOfSquaresVectors_resultStateSelector = mkSelector "encodeToCommandBuffer:batchNormalizationState:inputSumOfSquaresVectors:resultState:"
 
 -- | @Selector@ for @encodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputSumOfSquaresVectors:resultState:@
-encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultStateSelector :: Selector
+encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultStateSelector :: Selector '[RawId, Id MPSCNNBatchNormalizationState, Id MPSCNNBatchNormalizationState, Id NSArray, Id MPSCNNNormalizationGammaAndBetaState] ()
 encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputSumOfSquaresVectors_resultStateSelector = mkSelector "encodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputSumOfSquaresVectors:resultState:"
 
 -- | @Selector@ for @decay@
-decaySelector :: Selector
+decaySelector :: Selector '[] CDouble
 decaySelector = mkSelector "decay"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,50 +52,50 @@ module ObjC.AppKit.NSPrintOperation
   , context
   , pageRange
   , currentPage
-  , printOperationWithView_printInfoSelector
-  , pdfOperationWithView_insideRect_toData_printInfoSelector
-  , pdfOperationWithView_insideRect_toPath_printInfoSelector
+  , accessoryViewSelector
+  , canSpawnSeparateThreadSelector
+  , cleanUpOperationSelector
+  , contextSelector
+  , copyingOperationSelector
+  , createContextSelector
+  , currentOperationSelector
+  , currentPageSelector
+  , deliverResultSelector
+  , destroyContextSelector
+  , epsOperationWithView_insideRect_toDataSelector
   , epsOperationWithView_insideRect_toData_printInfoSelector
   , epsOperationWithView_insideRect_toPath_printInfoSelector
-  , printOperationWithViewSelector
+  , jobStyleHintSelector
+  , jobTitleSelector
+  , pageOrderSelector
+  , pageRangeSelector
   , pdfOperationWithView_insideRect_toDataSelector
-  , epsOperationWithView_insideRect_toDataSelector
+  , pdfOperationWithView_insideRect_toData_printInfoSelector
+  , pdfOperationWithView_insideRect_toPath_printInfoSelector
+  , pdfPanelSelector
+  , preferredRenderingQualitySelector
+  , printInfoSelector
+  , printOperationWithViewSelector
+  , printOperationWithView_printInfoSelector
+  , printPanelSelector
   , runOperationModalForWindow_delegate_didRunSelector_contextInfoSelector
   , runOperationSelector
-  , createContextSelector
-  , destroyContextSelector
-  , deliverResultSelector
-  , cleanUpOperationSelector
   , setAccessoryViewSelector
-  , accessoryViewSelector
-  , setJobStyleHintSelector
-  , jobStyleHintSelector
-  , setShowPanelsSelector
-  , showPanelsSelector
-  , currentOperationSelector
-  , setCurrentOperationSelector
-  , copyingOperationSelector
-  , preferredRenderingQualitySelector
-  , jobTitleSelector
-  , setJobTitleSelector
-  , showsPrintPanelSelector
-  , setShowsPrintPanelSelector
-  , showsProgressPanelSelector
-  , setShowsProgressPanelSelector
-  , printPanelSelector
-  , setPrintPanelSelector
-  , pdfPanelSelector
-  , setPDFPanelSelector
-  , canSpawnSeparateThreadSelector
   , setCanSpawnSeparateThreadSelector
-  , pageOrderSelector
+  , setCurrentOperationSelector
+  , setJobStyleHintSelector
+  , setJobTitleSelector
+  , setPDFPanelSelector
   , setPageOrderSelector
-  , viewSelector
-  , printInfoSelector
   , setPrintInfoSelector
-  , contextSelector
-  , pageRangeSelector
-  , currentPageSelector
+  , setPrintPanelSelector
+  , setShowPanelsSelector
+  , setShowsPrintPanelSelector
+  , setShowsProgressPanelSelector
+  , showPanelsSelector
+  , showsPrintPanelSelector
+  , showsProgressPanelSelector
+  , viewSelector
 
   -- * Enum types
   , NSPrintRenderingQuality(NSPrintRenderingQuality)
@@ -108,15 +109,11 @@ module ObjC.AppKit.NSPrintOperation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -130,445 +127,418 @@ printOperationWithView_printInfo :: (IsNSView view, IsNSPrintInfo printInfo) => 
 printOperationWithView_printInfo view printInfo =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr printInfo $ \raw_printInfo ->
-        sendClassMsg cls' (mkSelector "printOperationWithView:printInfo:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argPtr (castPtr raw_printInfo :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' printOperationWithView_printInfoSelector (toNSView view) (toNSPrintInfo printInfo)
 
 -- | @+ PDFOperationWithView:insideRect:toData:printInfo:@
 pdfOperationWithView_insideRect_toData_printInfo :: (IsNSView view, IsNSMutableData data_, IsNSPrintInfo printInfo) => view -> NSRect -> data_ -> printInfo -> IO (Id NSPrintOperation)
 pdfOperationWithView_insideRect_toData_printInfo view rect data_ printInfo =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr data_ $ \raw_data_ ->
-        withObjCPtr printInfo $ \raw_printInfo ->
-          sendClassMsg cls' (mkSelector "PDFOperationWithView:insideRect:toData:printInfo:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argNSRect rect, argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_printInfo :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pdfOperationWithView_insideRect_toData_printInfoSelector (toNSView view) rect (toNSMutableData data_) (toNSPrintInfo printInfo)
 
 -- | @+ PDFOperationWithView:insideRect:toPath:printInfo:@
 pdfOperationWithView_insideRect_toPath_printInfo :: (IsNSView view, IsNSString path, IsNSPrintInfo printInfo) => view -> NSRect -> path -> printInfo -> IO (Id NSPrintOperation)
 pdfOperationWithView_insideRect_toPath_printInfo view rect path printInfo =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr path $ \raw_path ->
-        withObjCPtr printInfo $ \raw_printInfo ->
-          sendClassMsg cls' (mkSelector "PDFOperationWithView:insideRect:toPath:printInfo:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argNSRect rect, argPtr (castPtr raw_path :: Ptr ()), argPtr (castPtr raw_printInfo :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pdfOperationWithView_insideRect_toPath_printInfoSelector (toNSView view) rect (toNSString path) (toNSPrintInfo printInfo)
 
 -- | @+ EPSOperationWithView:insideRect:toData:printInfo:@
 epsOperationWithView_insideRect_toData_printInfo :: (IsNSView view, IsNSMutableData data_, IsNSPrintInfo printInfo) => view -> NSRect -> data_ -> printInfo -> IO (Id NSPrintOperation)
 epsOperationWithView_insideRect_toData_printInfo view rect data_ printInfo =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr data_ $ \raw_data_ ->
-        withObjCPtr printInfo $ \raw_printInfo ->
-          sendClassMsg cls' (mkSelector "EPSOperationWithView:insideRect:toData:printInfo:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argNSRect rect, argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_printInfo :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' epsOperationWithView_insideRect_toData_printInfoSelector (toNSView view) rect (toNSMutableData data_) (toNSPrintInfo printInfo)
 
 -- | @+ EPSOperationWithView:insideRect:toPath:printInfo:@
 epsOperationWithView_insideRect_toPath_printInfo :: (IsNSView view, IsNSString path, IsNSPrintInfo printInfo) => view -> NSRect -> path -> printInfo -> IO (Id NSPrintOperation)
 epsOperationWithView_insideRect_toPath_printInfo view rect path printInfo =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr path $ \raw_path ->
-        withObjCPtr printInfo $ \raw_printInfo ->
-          sendClassMsg cls' (mkSelector "EPSOperationWithView:insideRect:toPath:printInfo:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argNSRect rect, argPtr (castPtr raw_path :: Ptr ()), argPtr (castPtr raw_printInfo :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' epsOperationWithView_insideRect_toPath_printInfoSelector (toNSView view) rect (toNSString path) (toNSPrintInfo printInfo)
 
 -- | @+ printOperationWithView:@
 printOperationWithView :: IsNSView view => view -> IO (Id NSPrintOperation)
 printOperationWithView view =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    withObjCPtr view $ \raw_view ->
-      sendClassMsg cls' (mkSelector "printOperationWithView:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' printOperationWithViewSelector (toNSView view)
 
 -- | @+ PDFOperationWithView:insideRect:toData:@
 pdfOperationWithView_insideRect_toData :: (IsNSView view, IsNSMutableData data_) => view -> NSRect -> data_ -> IO (Id NSPrintOperation)
 pdfOperationWithView_insideRect_toData view rect data_ =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr data_ $ \raw_data_ ->
-        sendClassMsg cls' (mkSelector "PDFOperationWithView:insideRect:toData:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argNSRect rect, argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' pdfOperationWithView_insideRect_toDataSelector (toNSView view) rect (toNSMutableData data_)
 
 -- | @+ EPSOperationWithView:insideRect:toData:@
 epsOperationWithView_insideRect_toData :: (IsNSView view, IsNSMutableData data_) => view -> NSRect -> data_ -> IO (Id NSPrintOperation)
 epsOperationWithView_insideRect_toData view rect data_ =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    withObjCPtr view $ \raw_view ->
-      withObjCPtr data_ $ \raw_data_ ->
-        sendClassMsg cls' (mkSelector "EPSOperationWithView:insideRect:toData:") (retPtr retVoid) [argPtr (castPtr raw_view :: Ptr ()), argNSRect rect, argPtr (castPtr raw_data_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' epsOperationWithView_insideRect_toDataSelector (toNSView view) rect (toNSMutableData data_)
 
 -- | @- runOperationModalForWindow:delegate:didRunSelector:contextInfo:@
-runOperationModalForWindow_delegate_didRunSelector_contextInfo :: (IsNSPrintOperation nsPrintOperation, IsNSWindow docWindow) => nsPrintOperation -> docWindow -> RawId -> Selector -> Ptr () -> IO ()
-runOperationModalForWindow_delegate_didRunSelector_contextInfo nsPrintOperation  docWindow delegate didRunSelector contextInfo =
-  withObjCPtr docWindow $ \raw_docWindow ->
-      sendMsg nsPrintOperation (mkSelector "runOperationModalForWindow:delegate:didRunSelector:contextInfo:") retVoid [argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didRunSelector), argPtr contextInfo]
+runOperationModalForWindow_delegate_didRunSelector_contextInfo :: (IsNSPrintOperation nsPrintOperation, IsNSWindow docWindow) => nsPrintOperation -> docWindow -> RawId -> Sel -> Ptr () -> IO ()
+runOperationModalForWindow_delegate_didRunSelector_contextInfo nsPrintOperation docWindow delegate didRunSelector contextInfo =
+  sendMessage nsPrintOperation runOperationModalForWindow_delegate_didRunSelector_contextInfoSelector (toNSWindow docWindow) delegate didRunSelector contextInfo
 
 -- | @- runOperation@
 runOperation :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO Bool
-runOperation nsPrintOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintOperation (mkSelector "runOperation") retCULong []
+runOperation nsPrintOperation =
+  sendMessage nsPrintOperation runOperationSelector
 
 -- | @- createContext@
 createContext :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSGraphicsContext)
-createContext nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "createContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+createContext nsPrintOperation =
+  sendMessage nsPrintOperation createContextSelector
 
 -- | @- destroyContext@
 destroyContext :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO ()
-destroyContext nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "destroyContext") retVoid []
+destroyContext nsPrintOperation =
+  sendMessage nsPrintOperation destroyContextSelector
 
 -- | @- deliverResult@
 deliverResult :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO Bool
-deliverResult nsPrintOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintOperation (mkSelector "deliverResult") retCULong []
+deliverResult nsPrintOperation =
+  sendMessage nsPrintOperation deliverResultSelector
 
 -- | @- cleanUpOperation@
 cleanUpOperation :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO ()
-cleanUpOperation nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "cleanUpOperation") retVoid []
+cleanUpOperation nsPrintOperation =
+  sendMessage nsPrintOperation cleanUpOperationSelector
 
 -- | @- setAccessoryView:@
 setAccessoryView :: (IsNSPrintOperation nsPrintOperation, IsNSView view) => nsPrintOperation -> view -> IO ()
-setAccessoryView nsPrintOperation  view =
-  withObjCPtr view $ \raw_view ->
-      sendMsg nsPrintOperation (mkSelector "setAccessoryView:") retVoid [argPtr (castPtr raw_view :: Ptr ())]
+setAccessoryView nsPrintOperation view =
+  sendMessage nsPrintOperation setAccessoryViewSelector (toNSView view)
 
 -- | @- accessoryView@
 accessoryView :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSView)
-accessoryView nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "accessoryView") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessoryView nsPrintOperation =
+  sendMessage nsPrintOperation accessoryViewSelector
 
 -- | @- setJobStyleHint:@
 setJobStyleHint :: (IsNSPrintOperation nsPrintOperation, IsNSString hint) => nsPrintOperation -> hint -> IO ()
-setJobStyleHint nsPrintOperation  hint =
-  withObjCPtr hint $ \raw_hint ->
-      sendMsg nsPrintOperation (mkSelector "setJobStyleHint:") retVoid [argPtr (castPtr raw_hint :: Ptr ())]
+setJobStyleHint nsPrintOperation hint =
+  sendMessage nsPrintOperation setJobStyleHintSelector (toNSString hint)
 
 -- | @- jobStyleHint@
 jobStyleHint :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSString)
-jobStyleHint nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "jobStyleHint") (retPtr retVoid) [] >>= retainedObject . castPtr
+jobStyleHint nsPrintOperation =
+  sendMessage nsPrintOperation jobStyleHintSelector
 
 -- | @- setShowPanels:@
 setShowPanels :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> Bool -> IO ()
-setShowPanels nsPrintOperation  flag =
-    sendMsg nsPrintOperation (mkSelector "setShowPanels:") retVoid [argCULong (if flag then 1 else 0)]
+setShowPanels nsPrintOperation flag =
+  sendMessage nsPrintOperation setShowPanelsSelector flag
 
 -- | @- showPanels@
 showPanels :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO Bool
-showPanels nsPrintOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintOperation (mkSelector "showPanels") retCULong []
+showPanels nsPrintOperation =
+  sendMessage nsPrintOperation showPanelsSelector
 
 -- | @+ currentOperation@
 currentOperation :: IO (Id NSPrintOperation)
 currentOperation  =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    sendClassMsg cls' (mkSelector "currentOperation") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentOperationSelector
 
 -- | @+ setCurrentOperation:@
 setCurrentOperation :: IsNSPrintOperation value => value -> IO ()
 setCurrentOperation value =
   do
     cls' <- getRequiredClass "NSPrintOperation"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "setCurrentOperation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+    sendClassMessage cls' setCurrentOperationSelector (toNSPrintOperation value)
 
 -- | @- copyingOperation@
 copyingOperation :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO Bool
-copyingOperation nsPrintOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintOperation (mkSelector "copyingOperation") retCULong []
+copyingOperation nsPrintOperation =
+  sendOwnedMessage nsPrintOperation copyingOperationSelector
 
 -- | @- preferredRenderingQuality@
 preferredRenderingQuality :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO NSPrintRenderingQuality
-preferredRenderingQuality nsPrintOperation  =
-    fmap (coerce :: CLong -> NSPrintRenderingQuality) $ sendMsg nsPrintOperation (mkSelector "preferredRenderingQuality") retCLong []
+preferredRenderingQuality nsPrintOperation =
+  sendMessage nsPrintOperation preferredRenderingQualitySelector
 
 -- | @- jobTitle@
 jobTitle :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSString)
-jobTitle nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "jobTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+jobTitle nsPrintOperation =
+  sendMessage nsPrintOperation jobTitleSelector
 
 -- | @- setJobTitle:@
 setJobTitle :: (IsNSPrintOperation nsPrintOperation, IsNSString value) => nsPrintOperation -> value -> IO ()
-setJobTitle nsPrintOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPrintOperation (mkSelector "setJobTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setJobTitle nsPrintOperation value =
+  sendMessage nsPrintOperation setJobTitleSelector (toNSString value)
 
 -- | @- showsPrintPanel@
 showsPrintPanel :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO Bool
-showsPrintPanel nsPrintOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintOperation (mkSelector "showsPrintPanel") retCULong []
+showsPrintPanel nsPrintOperation =
+  sendMessage nsPrintOperation showsPrintPanelSelector
 
 -- | @- setShowsPrintPanel:@
 setShowsPrintPanel :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> Bool -> IO ()
-setShowsPrintPanel nsPrintOperation  value =
-    sendMsg nsPrintOperation (mkSelector "setShowsPrintPanel:") retVoid [argCULong (if value then 1 else 0)]
+setShowsPrintPanel nsPrintOperation value =
+  sendMessage nsPrintOperation setShowsPrintPanelSelector value
 
 -- | @- showsProgressPanel@
 showsProgressPanel :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO Bool
-showsProgressPanel nsPrintOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintOperation (mkSelector "showsProgressPanel") retCULong []
+showsProgressPanel nsPrintOperation =
+  sendMessage nsPrintOperation showsProgressPanelSelector
 
 -- | @- setShowsProgressPanel:@
 setShowsProgressPanel :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> Bool -> IO ()
-setShowsProgressPanel nsPrintOperation  value =
-    sendMsg nsPrintOperation (mkSelector "setShowsProgressPanel:") retVoid [argCULong (if value then 1 else 0)]
+setShowsProgressPanel nsPrintOperation value =
+  sendMessage nsPrintOperation setShowsProgressPanelSelector value
 
 -- | @- printPanel@
 printPanel :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSPrintPanel)
-printPanel nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "printPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+printPanel nsPrintOperation =
+  sendMessage nsPrintOperation printPanelSelector
 
 -- | @- setPrintPanel:@
 setPrintPanel :: (IsNSPrintOperation nsPrintOperation, IsNSPrintPanel value) => nsPrintOperation -> value -> IO ()
-setPrintPanel nsPrintOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPrintOperation (mkSelector "setPrintPanel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrintPanel nsPrintOperation value =
+  sendMessage nsPrintOperation setPrintPanelSelector (toNSPrintPanel value)
 
 -- | @- PDFPanel@
 pdfPanel :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSPDFPanel)
-pdfPanel nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "PDFPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+pdfPanel nsPrintOperation =
+  sendMessage nsPrintOperation pdfPanelSelector
 
 -- | @- setPDFPanel:@
 setPDFPanel :: (IsNSPrintOperation nsPrintOperation, IsNSPDFPanel value) => nsPrintOperation -> value -> IO ()
-setPDFPanel nsPrintOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPrintOperation (mkSelector "setPDFPanel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPDFPanel nsPrintOperation value =
+  sendMessage nsPrintOperation setPDFPanelSelector (toNSPDFPanel value)
 
 -- | @- canSpawnSeparateThread@
 canSpawnSeparateThread :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO Bool
-canSpawnSeparateThread nsPrintOperation  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintOperation (mkSelector "canSpawnSeparateThread") retCULong []
+canSpawnSeparateThread nsPrintOperation =
+  sendMessage nsPrintOperation canSpawnSeparateThreadSelector
 
 -- | @- setCanSpawnSeparateThread:@
 setCanSpawnSeparateThread :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> Bool -> IO ()
-setCanSpawnSeparateThread nsPrintOperation  value =
-    sendMsg nsPrintOperation (mkSelector "setCanSpawnSeparateThread:") retVoid [argCULong (if value then 1 else 0)]
+setCanSpawnSeparateThread nsPrintOperation value =
+  sendMessage nsPrintOperation setCanSpawnSeparateThreadSelector value
 
 -- | @- pageOrder@
 pageOrder :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO NSPrintingPageOrder
-pageOrder nsPrintOperation  =
-    fmap (coerce :: CLong -> NSPrintingPageOrder) $ sendMsg nsPrintOperation (mkSelector "pageOrder") retCLong []
+pageOrder nsPrintOperation =
+  sendMessage nsPrintOperation pageOrderSelector
 
 -- | @- setPageOrder:@
 setPageOrder :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> NSPrintingPageOrder -> IO ()
-setPageOrder nsPrintOperation  value =
-    sendMsg nsPrintOperation (mkSelector "setPageOrder:") retVoid [argCLong (coerce value)]
+setPageOrder nsPrintOperation value =
+  sendMessage nsPrintOperation setPageOrderSelector value
 
 -- | @- view@
 view :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSView)
-view nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "view") (retPtr retVoid) [] >>= retainedObject . castPtr
+view nsPrintOperation =
+  sendMessage nsPrintOperation viewSelector
 
 -- | @- printInfo@
 printInfo :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSPrintInfo)
-printInfo nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "printInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+printInfo nsPrintOperation =
+  sendMessage nsPrintOperation printInfoSelector
 
 -- | @- setPrintInfo:@
 setPrintInfo :: (IsNSPrintOperation nsPrintOperation, IsNSPrintInfo value) => nsPrintOperation -> value -> IO ()
-setPrintInfo nsPrintOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPrintOperation (mkSelector "setPrintInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrintInfo nsPrintOperation value =
+  sendMessage nsPrintOperation setPrintInfoSelector (toNSPrintInfo value)
 
 -- | @- context@
 context :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO (Id NSGraphicsContext)
-context nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "context") (retPtr retVoid) [] >>= retainedObject . castPtr
+context nsPrintOperation =
+  sendMessage nsPrintOperation contextSelector
 
 -- | @- pageRange@
 pageRange :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO NSRange
-pageRange nsPrintOperation  =
-    sendMsgStret nsPrintOperation (mkSelector "pageRange") retNSRange []
+pageRange nsPrintOperation =
+  sendMessage nsPrintOperation pageRangeSelector
 
 -- | @- currentPage@
 currentPage :: IsNSPrintOperation nsPrintOperation => nsPrintOperation -> IO CLong
-currentPage nsPrintOperation  =
-    sendMsg nsPrintOperation (mkSelector "currentPage") retCLong []
+currentPage nsPrintOperation =
+  sendMessage nsPrintOperation currentPageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @printOperationWithView:printInfo:@
-printOperationWithView_printInfoSelector :: Selector
+printOperationWithView_printInfoSelector :: Selector '[Id NSView, Id NSPrintInfo] (Id NSPrintOperation)
 printOperationWithView_printInfoSelector = mkSelector "printOperationWithView:printInfo:"
 
 -- | @Selector@ for @PDFOperationWithView:insideRect:toData:printInfo:@
-pdfOperationWithView_insideRect_toData_printInfoSelector :: Selector
+pdfOperationWithView_insideRect_toData_printInfoSelector :: Selector '[Id NSView, NSRect, Id NSMutableData, Id NSPrintInfo] (Id NSPrintOperation)
 pdfOperationWithView_insideRect_toData_printInfoSelector = mkSelector "PDFOperationWithView:insideRect:toData:printInfo:"
 
 -- | @Selector@ for @PDFOperationWithView:insideRect:toPath:printInfo:@
-pdfOperationWithView_insideRect_toPath_printInfoSelector :: Selector
+pdfOperationWithView_insideRect_toPath_printInfoSelector :: Selector '[Id NSView, NSRect, Id NSString, Id NSPrintInfo] (Id NSPrintOperation)
 pdfOperationWithView_insideRect_toPath_printInfoSelector = mkSelector "PDFOperationWithView:insideRect:toPath:printInfo:"
 
 -- | @Selector@ for @EPSOperationWithView:insideRect:toData:printInfo:@
-epsOperationWithView_insideRect_toData_printInfoSelector :: Selector
+epsOperationWithView_insideRect_toData_printInfoSelector :: Selector '[Id NSView, NSRect, Id NSMutableData, Id NSPrintInfo] (Id NSPrintOperation)
 epsOperationWithView_insideRect_toData_printInfoSelector = mkSelector "EPSOperationWithView:insideRect:toData:printInfo:"
 
 -- | @Selector@ for @EPSOperationWithView:insideRect:toPath:printInfo:@
-epsOperationWithView_insideRect_toPath_printInfoSelector :: Selector
+epsOperationWithView_insideRect_toPath_printInfoSelector :: Selector '[Id NSView, NSRect, Id NSString, Id NSPrintInfo] (Id NSPrintOperation)
 epsOperationWithView_insideRect_toPath_printInfoSelector = mkSelector "EPSOperationWithView:insideRect:toPath:printInfo:"
 
 -- | @Selector@ for @printOperationWithView:@
-printOperationWithViewSelector :: Selector
+printOperationWithViewSelector :: Selector '[Id NSView] (Id NSPrintOperation)
 printOperationWithViewSelector = mkSelector "printOperationWithView:"
 
 -- | @Selector@ for @PDFOperationWithView:insideRect:toData:@
-pdfOperationWithView_insideRect_toDataSelector :: Selector
+pdfOperationWithView_insideRect_toDataSelector :: Selector '[Id NSView, NSRect, Id NSMutableData] (Id NSPrintOperation)
 pdfOperationWithView_insideRect_toDataSelector = mkSelector "PDFOperationWithView:insideRect:toData:"
 
 -- | @Selector@ for @EPSOperationWithView:insideRect:toData:@
-epsOperationWithView_insideRect_toDataSelector :: Selector
+epsOperationWithView_insideRect_toDataSelector :: Selector '[Id NSView, NSRect, Id NSMutableData] (Id NSPrintOperation)
 epsOperationWithView_insideRect_toDataSelector = mkSelector "EPSOperationWithView:insideRect:toData:"
 
 -- | @Selector@ for @runOperationModalForWindow:delegate:didRunSelector:contextInfo:@
-runOperationModalForWindow_delegate_didRunSelector_contextInfoSelector :: Selector
+runOperationModalForWindow_delegate_didRunSelector_contextInfoSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr ()] ()
 runOperationModalForWindow_delegate_didRunSelector_contextInfoSelector = mkSelector "runOperationModalForWindow:delegate:didRunSelector:contextInfo:"
 
 -- | @Selector@ for @runOperation@
-runOperationSelector :: Selector
+runOperationSelector :: Selector '[] Bool
 runOperationSelector = mkSelector "runOperation"
 
 -- | @Selector@ for @createContext@
-createContextSelector :: Selector
+createContextSelector :: Selector '[] (Id NSGraphicsContext)
 createContextSelector = mkSelector "createContext"
 
 -- | @Selector@ for @destroyContext@
-destroyContextSelector :: Selector
+destroyContextSelector :: Selector '[] ()
 destroyContextSelector = mkSelector "destroyContext"
 
 -- | @Selector@ for @deliverResult@
-deliverResultSelector :: Selector
+deliverResultSelector :: Selector '[] Bool
 deliverResultSelector = mkSelector "deliverResult"
 
 -- | @Selector@ for @cleanUpOperation@
-cleanUpOperationSelector :: Selector
+cleanUpOperationSelector :: Selector '[] ()
 cleanUpOperationSelector = mkSelector "cleanUpOperation"
 
 -- | @Selector@ for @setAccessoryView:@
-setAccessoryViewSelector :: Selector
+setAccessoryViewSelector :: Selector '[Id NSView] ()
 setAccessoryViewSelector = mkSelector "setAccessoryView:"
 
 -- | @Selector@ for @accessoryView@
-accessoryViewSelector :: Selector
+accessoryViewSelector :: Selector '[] (Id NSView)
 accessoryViewSelector = mkSelector "accessoryView"
 
 -- | @Selector@ for @setJobStyleHint:@
-setJobStyleHintSelector :: Selector
+setJobStyleHintSelector :: Selector '[Id NSString] ()
 setJobStyleHintSelector = mkSelector "setJobStyleHint:"
 
 -- | @Selector@ for @jobStyleHint@
-jobStyleHintSelector :: Selector
+jobStyleHintSelector :: Selector '[] (Id NSString)
 jobStyleHintSelector = mkSelector "jobStyleHint"
 
 -- | @Selector@ for @setShowPanels:@
-setShowPanelsSelector :: Selector
+setShowPanelsSelector :: Selector '[Bool] ()
 setShowPanelsSelector = mkSelector "setShowPanels:"
 
 -- | @Selector@ for @showPanels@
-showPanelsSelector :: Selector
+showPanelsSelector :: Selector '[] Bool
 showPanelsSelector = mkSelector "showPanels"
 
 -- | @Selector@ for @currentOperation@
-currentOperationSelector :: Selector
+currentOperationSelector :: Selector '[] (Id NSPrintOperation)
 currentOperationSelector = mkSelector "currentOperation"
 
 -- | @Selector@ for @setCurrentOperation:@
-setCurrentOperationSelector :: Selector
+setCurrentOperationSelector :: Selector '[Id NSPrintOperation] ()
 setCurrentOperationSelector = mkSelector "setCurrentOperation:"
 
 -- | @Selector@ for @copyingOperation@
-copyingOperationSelector :: Selector
+copyingOperationSelector :: Selector '[] Bool
 copyingOperationSelector = mkSelector "copyingOperation"
 
 -- | @Selector@ for @preferredRenderingQuality@
-preferredRenderingQualitySelector :: Selector
+preferredRenderingQualitySelector :: Selector '[] NSPrintRenderingQuality
 preferredRenderingQualitySelector = mkSelector "preferredRenderingQuality"
 
 -- | @Selector@ for @jobTitle@
-jobTitleSelector :: Selector
+jobTitleSelector :: Selector '[] (Id NSString)
 jobTitleSelector = mkSelector "jobTitle"
 
 -- | @Selector@ for @setJobTitle:@
-setJobTitleSelector :: Selector
+setJobTitleSelector :: Selector '[Id NSString] ()
 setJobTitleSelector = mkSelector "setJobTitle:"
 
 -- | @Selector@ for @showsPrintPanel@
-showsPrintPanelSelector :: Selector
+showsPrintPanelSelector :: Selector '[] Bool
 showsPrintPanelSelector = mkSelector "showsPrintPanel"
 
 -- | @Selector@ for @setShowsPrintPanel:@
-setShowsPrintPanelSelector :: Selector
+setShowsPrintPanelSelector :: Selector '[Bool] ()
 setShowsPrintPanelSelector = mkSelector "setShowsPrintPanel:"
 
 -- | @Selector@ for @showsProgressPanel@
-showsProgressPanelSelector :: Selector
+showsProgressPanelSelector :: Selector '[] Bool
 showsProgressPanelSelector = mkSelector "showsProgressPanel"
 
 -- | @Selector@ for @setShowsProgressPanel:@
-setShowsProgressPanelSelector :: Selector
+setShowsProgressPanelSelector :: Selector '[Bool] ()
 setShowsProgressPanelSelector = mkSelector "setShowsProgressPanel:"
 
 -- | @Selector@ for @printPanel@
-printPanelSelector :: Selector
+printPanelSelector :: Selector '[] (Id NSPrintPanel)
 printPanelSelector = mkSelector "printPanel"
 
 -- | @Selector@ for @setPrintPanel:@
-setPrintPanelSelector :: Selector
+setPrintPanelSelector :: Selector '[Id NSPrintPanel] ()
 setPrintPanelSelector = mkSelector "setPrintPanel:"
 
 -- | @Selector@ for @PDFPanel@
-pdfPanelSelector :: Selector
+pdfPanelSelector :: Selector '[] (Id NSPDFPanel)
 pdfPanelSelector = mkSelector "PDFPanel"
 
 -- | @Selector@ for @setPDFPanel:@
-setPDFPanelSelector :: Selector
+setPDFPanelSelector :: Selector '[Id NSPDFPanel] ()
 setPDFPanelSelector = mkSelector "setPDFPanel:"
 
 -- | @Selector@ for @canSpawnSeparateThread@
-canSpawnSeparateThreadSelector :: Selector
+canSpawnSeparateThreadSelector :: Selector '[] Bool
 canSpawnSeparateThreadSelector = mkSelector "canSpawnSeparateThread"
 
 -- | @Selector@ for @setCanSpawnSeparateThread:@
-setCanSpawnSeparateThreadSelector :: Selector
+setCanSpawnSeparateThreadSelector :: Selector '[Bool] ()
 setCanSpawnSeparateThreadSelector = mkSelector "setCanSpawnSeparateThread:"
 
 -- | @Selector@ for @pageOrder@
-pageOrderSelector :: Selector
+pageOrderSelector :: Selector '[] NSPrintingPageOrder
 pageOrderSelector = mkSelector "pageOrder"
 
 -- | @Selector@ for @setPageOrder:@
-setPageOrderSelector :: Selector
+setPageOrderSelector :: Selector '[NSPrintingPageOrder] ()
 setPageOrderSelector = mkSelector "setPageOrder:"
 
 -- | @Selector@ for @view@
-viewSelector :: Selector
+viewSelector :: Selector '[] (Id NSView)
 viewSelector = mkSelector "view"
 
 -- | @Selector@ for @printInfo@
-printInfoSelector :: Selector
+printInfoSelector :: Selector '[] (Id NSPrintInfo)
 printInfoSelector = mkSelector "printInfo"
 
 -- | @Selector@ for @setPrintInfo:@
-setPrintInfoSelector :: Selector
+setPrintInfoSelector :: Selector '[Id NSPrintInfo] ()
 setPrintInfoSelector = mkSelector "setPrintInfo:"
 
 -- | @Selector@ for @context@
-contextSelector :: Selector
+contextSelector :: Selector '[] (Id NSGraphicsContext)
 contextSelector = mkSelector "context"
 
 -- | @Selector@ for @pageRange@
-pageRangeSelector :: Selector
+pageRangeSelector :: Selector '[] NSRange
 pageRangeSelector = mkSelector "pageRange"
 
 -- | @Selector@ for @currentPage@
-currentPageSelector :: Selector
+currentPageSelector :: Selector '[] CLong
 currentPageSelector = mkSelector "currentPage"
 

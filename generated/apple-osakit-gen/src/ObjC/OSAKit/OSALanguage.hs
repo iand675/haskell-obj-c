@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,21 +25,21 @@ module ObjC.OSAKit.OSALanguage
   , features
   , threadSafe
   , availableLanguagesSelector
+  , componentInstanceSelector
+  , defaultLanguageSelector
+  , featuresSelector
+  , infoSelector
+  , initWithComponentSelector
   , languageForNameSelector
   , languageForScriptDataDescriptorSelector
-  , defaultLanguageSelector
-  , setDefaultLanguageSelector
-  , initWithComponentSelector
-  , sharedLanguageInstanceSelector
-  , componentInstanceSelector
-  , nameSelector
-  , infoSelector
-  , versionSelector
-  , typeSelector
-  , subTypeSelector
   , manufacturerSelector
-  , featuresSelector
+  , nameSelector
+  , setDefaultLanguageSelector
+  , sharedLanguageInstanceSelector
+  , subTypeSelector
   , threadSafeSelector
+  , typeSelector
+  , versionSelector
 
   -- * Enum types
   , OSALanguageFeatures(OSALanguageFeatures)
@@ -53,15 +54,11 @@ module ObjC.OSAKit.OSALanguage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,159 +71,156 @@ availableLanguages :: IO (Id NSArray)
 availableLanguages  =
   do
     cls' <- getRequiredClass "OSALanguage"
-    sendClassMsg cls' (mkSelector "availableLanguages") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' availableLanguagesSelector
 
 -- | @+ languageForName:@
 languageForName :: IsNSString name => name -> IO (Id OSALanguage)
 languageForName name =
   do
     cls' <- getRequiredClass "OSALanguage"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "languageForName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' languageForNameSelector (toNSString name)
 
 -- | @+ languageForScriptDataDescriptor:@
 languageForScriptDataDescriptor :: IsNSAppleEventDescriptor descriptor => descriptor -> IO (Id OSALanguage)
 languageForScriptDataDescriptor descriptor =
   do
     cls' <- getRequiredClass "OSALanguage"
-    withObjCPtr descriptor $ \raw_descriptor ->
-      sendClassMsg cls' (mkSelector "languageForScriptDataDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' languageForScriptDataDescriptorSelector (toNSAppleEventDescriptor descriptor)
 
 -- | @+ defaultLanguage@
 defaultLanguage :: IO (Id OSALanguage)
 defaultLanguage  =
   do
     cls' <- getRequiredClass "OSALanguage"
-    sendClassMsg cls' (mkSelector "defaultLanguage") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultLanguageSelector
 
 -- | @+ setDefaultLanguage:@
 setDefaultLanguage :: IsOSALanguage defaultLanguage => defaultLanguage -> IO ()
 setDefaultLanguage defaultLanguage =
   do
     cls' <- getRequiredClass "OSALanguage"
-    withObjCPtr defaultLanguage $ \raw_defaultLanguage ->
-      sendClassMsg cls' (mkSelector "setDefaultLanguage:") retVoid [argPtr (castPtr raw_defaultLanguage :: Ptr ())]
+    sendClassMessage cls' setDefaultLanguageSelector (toOSALanguage defaultLanguage)
 
 -- | @- initWithComponent:@
 initWithComponent :: IsOSALanguage osaLanguage => osaLanguage -> RawId -> IO (Id OSALanguage)
-initWithComponent osaLanguage  component =
-    sendMsg osaLanguage (mkSelector "initWithComponent:") (retPtr retVoid) [argPtr (castPtr (unRawId component) :: Ptr ())] >>= ownedObject . castPtr
+initWithComponent osaLanguage component =
+  sendOwnedMessage osaLanguage initWithComponentSelector component
 
 -- | @- sharedLanguageInstance@
 sharedLanguageInstance :: IsOSALanguage osaLanguage => osaLanguage -> IO (Id OSALanguageInstance)
-sharedLanguageInstance osaLanguage  =
-    sendMsg osaLanguage (mkSelector "sharedLanguageInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+sharedLanguageInstance osaLanguage =
+  sendMessage osaLanguage sharedLanguageInstanceSelector
 
 -- | @- componentInstance@
 componentInstance :: IsOSALanguage osaLanguage => osaLanguage -> IO RawId
-componentInstance osaLanguage  =
-    fmap (RawId . castPtr) $ sendMsg osaLanguage (mkSelector "componentInstance") (retPtr retVoid) []
+componentInstance osaLanguage =
+  sendMessage osaLanguage componentInstanceSelector
 
 -- | @- name@
 name :: IsOSALanguage osaLanguage => osaLanguage -> IO (Id NSString)
-name osaLanguage  =
-    sendMsg osaLanguage (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name osaLanguage =
+  sendMessage osaLanguage nameSelector
 
 -- | @- info@
 info :: IsOSALanguage osaLanguage => osaLanguage -> IO (Id NSString)
-info osaLanguage  =
-    sendMsg osaLanguage (mkSelector "info") (retPtr retVoid) [] >>= retainedObject . castPtr
+info osaLanguage =
+  sendMessage osaLanguage infoSelector
 
 -- | @- version@
 version :: IsOSALanguage osaLanguage => osaLanguage -> IO (Id NSString)
-version osaLanguage  =
-    sendMsg osaLanguage (mkSelector "version") (retPtr retVoid) [] >>= retainedObject . castPtr
+version osaLanguage =
+  sendMessage osaLanguage versionSelector
 
 -- | @- type@
 type_ :: IsOSALanguage osaLanguage => osaLanguage -> IO CUInt
-type_ osaLanguage  =
-    sendMsg osaLanguage (mkSelector "type") retCUInt []
+type_ osaLanguage =
+  sendMessage osaLanguage typeSelector
 
 -- | @- subType@
 subType :: IsOSALanguage osaLanguage => osaLanguage -> IO CUInt
-subType osaLanguage  =
-    sendMsg osaLanguage (mkSelector "subType") retCUInt []
+subType osaLanguage =
+  sendMessage osaLanguage subTypeSelector
 
 -- | @- manufacturer@
 manufacturer :: IsOSALanguage osaLanguage => osaLanguage -> IO CUInt
-manufacturer osaLanguage  =
-    sendMsg osaLanguage (mkSelector "manufacturer") retCUInt []
+manufacturer osaLanguage =
+  sendMessage osaLanguage manufacturerSelector
 
 -- | @- features@
 features :: IsOSALanguage osaLanguage => osaLanguage -> IO OSALanguageFeatures
-features osaLanguage  =
-    fmap (coerce :: CULong -> OSALanguageFeatures) $ sendMsg osaLanguage (mkSelector "features") retCULong []
+features osaLanguage =
+  sendMessage osaLanguage featuresSelector
 
 -- | @- threadSafe@
 threadSafe :: IsOSALanguage osaLanguage => osaLanguage -> IO Bool
-threadSafe osaLanguage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg osaLanguage (mkSelector "threadSafe") retCULong []
+threadSafe osaLanguage =
+  sendMessage osaLanguage threadSafeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @availableLanguages@
-availableLanguagesSelector :: Selector
+availableLanguagesSelector :: Selector '[] (Id NSArray)
 availableLanguagesSelector = mkSelector "availableLanguages"
 
 -- | @Selector@ for @languageForName:@
-languageForNameSelector :: Selector
+languageForNameSelector :: Selector '[Id NSString] (Id OSALanguage)
 languageForNameSelector = mkSelector "languageForName:"
 
 -- | @Selector@ for @languageForScriptDataDescriptor:@
-languageForScriptDataDescriptorSelector :: Selector
+languageForScriptDataDescriptorSelector :: Selector '[Id NSAppleEventDescriptor] (Id OSALanguage)
 languageForScriptDataDescriptorSelector = mkSelector "languageForScriptDataDescriptor:"
 
 -- | @Selector@ for @defaultLanguage@
-defaultLanguageSelector :: Selector
+defaultLanguageSelector :: Selector '[] (Id OSALanguage)
 defaultLanguageSelector = mkSelector "defaultLanguage"
 
 -- | @Selector@ for @setDefaultLanguage:@
-setDefaultLanguageSelector :: Selector
+setDefaultLanguageSelector :: Selector '[Id OSALanguage] ()
 setDefaultLanguageSelector = mkSelector "setDefaultLanguage:"
 
 -- | @Selector@ for @initWithComponent:@
-initWithComponentSelector :: Selector
+initWithComponentSelector :: Selector '[RawId] (Id OSALanguage)
 initWithComponentSelector = mkSelector "initWithComponent:"
 
 -- | @Selector@ for @sharedLanguageInstance@
-sharedLanguageInstanceSelector :: Selector
+sharedLanguageInstanceSelector :: Selector '[] (Id OSALanguageInstance)
 sharedLanguageInstanceSelector = mkSelector "sharedLanguageInstance"
 
 -- | @Selector@ for @componentInstance@
-componentInstanceSelector :: Selector
+componentInstanceSelector :: Selector '[] RawId
 componentInstanceSelector = mkSelector "componentInstance"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @info@
-infoSelector :: Selector
+infoSelector :: Selector '[] (Id NSString)
 infoSelector = mkSelector "info"
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] (Id NSString)
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CUInt
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @subType@
-subTypeSelector :: Selector
+subTypeSelector :: Selector '[] CUInt
 subTypeSelector = mkSelector "subType"
 
 -- | @Selector@ for @manufacturer@
-manufacturerSelector :: Selector
+manufacturerSelector :: Selector '[] CUInt
 manufacturerSelector = mkSelector "manufacturer"
 
 -- | @Selector@ for @features@
-featuresSelector :: Selector
+featuresSelector :: Selector '[] OSALanguageFeatures
 featuresSelector = mkSelector "features"
 
 -- | @Selector@ for @threadSafe@
-threadSafeSelector :: Selector
+threadSafeSelector :: Selector '[] Bool
 threadSafeSelector = mkSelector "threadSafe"
 

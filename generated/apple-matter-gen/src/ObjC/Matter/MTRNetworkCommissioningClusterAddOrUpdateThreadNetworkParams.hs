@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , operationalDatasetSelector
-  , setOperationalDatasetSelector
   , breadcrumbSelector
-  , setBreadcrumbSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , operationalDatasetSelector
   , serverSideProcessingTimeoutSelector
+  , setBreadcrumbSelector
+  , setOperationalDatasetSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- operationalDataset@
 operationalDataset :: IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams -> IO (Id NSData)
-operationalDataset mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams (mkSelector "operationalDataset") (retPtr retVoid) [] >>= retainedObject . castPtr
+operationalDataset mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams operationalDatasetSelector
 
 -- | @- setOperationalDataset:@
 setOperationalDataset :: (IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams, IsNSData value) => mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams -> value -> IO ()
-setOperationalDataset mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams (mkSelector "setOperationalDataset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOperationalDataset mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams setOperationalDatasetSelector (toNSData value)
 
 -- | @- breadcrumb@
 breadcrumb :: IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams -> IO (Id NSNumber)
-breadcrumb mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams (mkSelector "breadcrumb") (retPtr retVoid) [] >>= retainedObject . castPtr
+breadcrumb mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams breadcrumbSelector
 
 -- | @- setBreadcrumb:@
 setBreadcrumb :: (IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams, IsNSNumber value) => mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams -> value -> IO ()
-setBreadcrumb mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams (mkSelector "setBreadcrumb:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBreadcrumb mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams setBreadcrumbSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setBreadcrumb mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams  valu
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParam
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams, IsNSNumber value) => mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkPa
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams => mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams  =
-    sendMsg mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateThreadNetwo
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRNetworkCommissioningClusterAddOrUpdateThreadNetworkParams mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams, IsNSNumber value) => mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams -> value -> IO ()
-setServerSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams value =
+  sendMessage mtrNetworkCommissioningClusterAddOrUpdateThreadNetworkParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @operationalDataset@
-operationalDatasetSelector :: Selector
+operationalDatasetSelector :: Selector '[] (Id NSData)
 operationalDatasetSelector = mkSelector "operationalDataset"
 
 -- | @Selector@ for @setOperationalDataset:@
-setOperationalDatasetSelector :: Selector
+setOperationalDatasetSelector :: Selector '[Id NSData] ()
 setOperationalDatasetSelector = mkSelector "setOperationalDataset:"
 
 -- | @Selector@ for @breadcrumb@
-breadcrumbSelector :: Selector
+breadcrumbSelector :: Selector '[] (Id NSNumber)
 breadcrumbSelector = mkSelector "breadcrumb"
 
 -- | @Selector@ for @setBreadcrumb:@
-setBreadcrumbSelector :: Selector
+setBreadcrumbSelector :: Selector '[Id NSNumber] ()
 setBreadcrumbSelector = mkSelector "setBreadcrumb:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

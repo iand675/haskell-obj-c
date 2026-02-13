@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.EventKit.EKVirtualConferenceRoomTypeDescriptor
   , new
   , title
   , identifier
-  , initWithTitle_identifierSelector
+  , identifierSelector
   , initSelector
+  , initWithTitle_identifierSelector
   , newSelector
   , titleSelector
-  , identifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,54 +46,52 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithTitle:identifier:@
 initWithTitle_identifier :: (IsEKVirtualConferenceRoomTypeDescriptor ekVirtualConferenceRoomTypeDescriptor, IsNSString title, IsNSString identifier) => ekVirtualConferenceRoomTypeDescriptor -> title -> identifier -> IO (Id EKVirtualConferenceRoomTypeDescriptor)
-initWithTitle_identifier ekVirtualConferenceRoomTypeDescriptor  title identifier =
-  withObjCPtr title $ \raw_title ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg ekVirtualConferenceRoomTypeDescriptor (mkSelector "initWithTitle:identifier:") (retPtr retVoid) [argPtr (castPtr raw_title :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithTitle_identifier ekVirtualConferenceRoomTypeDescriptor title identifier =
+  sendOwnedMessage ekVirtualConferenceRoomTypeDescriptor initWithTitle_identifierSelector (toNSString title) (toNSString identifier)
 
 -- | @- init@
 init_ :: IsEKVirtualConferenceRoomTypeDescriptor ekVirtualConferenceRoomTypeDescriptor => ekVirtualConferenceRoomTypeDescriptor -> IO (Id EKVirtualConferenceRoomTypeDescriptor)
-init_ ekVirtualConferenceRoomTypeDescriptor  =
-    sendMsg ekVirtualConferenceRoomTypeDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ekVirtualConferenceRoomTypeDescriptor =
+  sendOwnedMessage ekVirtualConferenceRoomTypeDescriptor initSelector
 
 -- | @+ new@
 new :: IO (Id EKVirtualConferenceRoomTypeDescriptor)
 new  =
   do
     cls' <- getRequiredClass "EKVirtualConferenceRoomTypeDescriptor"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- title@
 title :: IsEKVirtualConferenceRoomTypeDescriptor ekVirtualConferenceRoomTypeDescriptor => ekVirtualConferenceRoomTypeDescriptor -> IO (Id NSString)
-title ekVirtualConferenceRoomTypeDescriptor  =
-    sendMsg ekVirtualConferenceRoomTypeDescriptor (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title ekVirtualConferenceRoomTypeDescriptor =
+  sendMessage ekVirtualConferenceRoomTypeDescriptor titleSelector
 
 -- | @- identifier@
 identifier :: IsEKVirtualConferenceRoomTypeDescriptor ekVirtualConferenceRoomTypeDescriptor => ekVirtualConferenceRoomTypeDescriptor -> IO (Id NSString)
-identifier ekVirtualConferenceRoomTypeDescriptor  =
-    sendMsg ekVirtualConferenceRoomTypeDescriptor (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier ekVirtualConferenceRoomTypeDescriptor =
+  sendMessage ekVirtualConferenceRoomTypeDescriptor identifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTitle:identifier:@
-initWithTitle_identifierSelector :: Selector
+initWithTitle_identifierSelector :: Selector '[Id NSString, Id NSString] (Id EKVirtualConferenceRoomTypeDescriptor)
 initWithTitle_identifierSelector = mkSelector "initWithTitle:identifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id EKVirtualConferenceRoomTypeDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id EKVirtualConferenceRoomTypeDescriptor)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 

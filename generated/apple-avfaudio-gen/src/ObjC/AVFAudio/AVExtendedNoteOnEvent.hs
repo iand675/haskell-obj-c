@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,31 +25,27 @@ module ObjC.AVFAudio.AVExtendedNoteOnEvent
   , setGroupID
   , duration
   , setDuration
+  , durationSelector
+  , groupIDSelector
   , initWithMIDINote_velocity_groupID_durationSelector
   , initWithMIDINote_velocity_instrumentID_groupID_durationSelector
-  , midiNoteSelector
-  , setMidiNoteSelector
-  , velocitySelector
-  , setVelocitySelector
   , instrumentIDSelector
-  , setInstrumentIDSelector
-  , groupIDSelector
-  , setGroupIDSelector
-  , durationSelector
+  , midiNoteSelector
   , setDurationSelector
+  , setGroupIDSelector
+  , setInstrumentIDSelector
+  , setMidiNoteSelector
+  , setVelocitySelector
+  , velocitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,8 +66,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithMIDINote:velocity:groupID:duration:@
 initWithMIDINote_velocity_groupID_duration :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> CFloat -> CFloat -> CUInt -> CDouble -> IO (Id AVExtendedNoteOnEvent)
-initWithMIDINote_velocity_groupID_duration avExtendedNoteOnEvent  midiNote velocity groupID duration =
-    sendMsg avExtendedNoteOnEvent (mkSelector "initWithMIDINote:velocity:groupID:duration:") (retPtr retVoid) [argCFloat midiNote, argCFloat velocity, argCUInt groupID, argCDouble duration] >>= ownedObject . castPtr
+initWithMIDINote_velocity_groupID_duration avExtendedNoteOnEvent midiNote velocity groupID duration =
+  sendOwnedMessage avExtendedNoteOnEvent initWithMIDINote_velocity_groupID_durationSelector midiNote velocity groupID duration
 
 -- | initWithMIDINote:velocity:instrumentID:groupID:duration
 --
@@ -80,8 +77,8 @@ initWithMIDINote_velocity_groupID_duration avExtendedNoteOnEvent  midiNote veloc
 --
 -- ObjC selector: @- initWithMIDINote:velocity:instrumentID:groupID:duration:@
 initWithMIDINote_velocity_instrumentID_groupID_duration :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> CFloat -> CFloat -> CUInt -> CUInt -> CDouble -> IO (Id AVExtendedNoteOnEvent)
-initWithMIDINote_velocity_instrumentID_groupID_duration avExtendedNoteOnEvent  midiNote velocity instrumentID groupID duration =
-    sendMsg avExtendedNoteOnEvent (mkSelector "initWithMIDINote:velocity:instrumentID:groupID:duration:") (retPtr retVoid) [argCFloat midiNote, argCFloat velocity, argCUInt instrumentID, argCUInt groupID, argCDouble duration] >>= ownedObject . castPtr
+initWithMIDINote_velocity_instrumentID_groupID_duration avExtendedNoteOnEvent midiNote velocity instrumentID groupID duration =
+  sendOwnedMessage avExtendedNoteOnEvent initWithMIDINote_velocity_instrumentID_groupID_durationSelector midiNote velocity instrumentID groupID duration
 
 -- | midiNote
 --
@@ -89,8 +86,8 @@ initWithMIDINote_velocity_instrumentID_groupID_duration avExtendedNoteOnEvent  m
 --
 -- ObjC selector: @- midiNote@
 midiNote :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> IO CFloat
-midiNote avExtendedNoteOnEvent  =
-    sendMsg avExtendedNoteOnEvent (mkSelector "midiNote") retCFloat []
+midiNote avExtendedNoteOnEvent =
+  sendMessage avExtendedNoteOnEvent midiNoteSelector
 
 -- | midiNote
 --
@@ -98,8 +95,8 @@ midiNote avExtendedNoteOnEvent  =
 --
 -- ObjC selector: @- setMidiNote:@
 setMidiNote :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> CFloat -> IO ()
-setMidiNote avExtendedNoteOnEvent  value =
-    sendMsg avExtendedNoteOnEvent (mkSelector "setMidiNote:") retVoid [argCFloat value]
+setMidiNote avExtendedNoteOnEvent value =
+  sendMessage avExtendedNoteOnEvent setMidiNoteSelector value
 
 -- | velocity
 --
@@ -107,8 +104,8 @@ setMidiNote avExtendedNoteOnEvent  value =
 --
 -- ObjC selector: @- velocity@
 velocity :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> IO CFloat
-velocity avExtendedNoteOnEvent  =
-    sendMsg avExtendedNoteOnEvent (mkSelector "velocity") retCFloat []
+velocity avExtendedNoteOnEvent =
+  sendMessage avExtendedNoteOnEvent velocitySelector
 
 -- | velocity
 --
@@ -116,8 +113,8 @@ velocity avExtendedNoteOnEvent  =
 --
 -- ObjC selector: @- setVelocity:@
 setVelocity :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> CFloat -> IO ()
-setVelocity avExtendedNoteOnEvent  value =
-    sendMsg avExtendedNoteOnEvent (mkSelector "setVelocity:") retVoid [argCFloat value]
+setVelocity avExtendedNoteOnEvent value =
+  sendMessage avExtendedNoteOnEvent setVelocitySelector value
 
 -- | instrumentID
 --
@@ -125,8 +122,8 @@ setVelocity avExtendedNoteOnEvent  value =
 --
 -- ObjC selector: @- instrumentID@
 instrumentID :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> IO CUInt
-instrumentID avExtendedNoteOnEvent  =
-    sendMsg avExtendedNoteOnEvent (mkSelector "instrumentID") retCUInt []
+instrumentID avExtendedNoteOnEvent =
+  sendMessage avExtendedNoteOnEvent instrumentIDSelector
 
 -- | instrumentID
 --
@@ -134,8 +131,8 @@ instrumentID avExtendedNoteOnEvent  =
 --
 -- ObjC selector: @- setInstrumentID:@
 setInstrumentID :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> CUInt -> IO ()
-setInstrumentID avExtendedNoteOnEvent  value =
-    sendMsg avExtendedNoteOnEvent (mkSelector "setInstrumentID:") retVoid [argCUInt value]
+setInstrumentID avExtendedNoteOnEvent value =
+  sendMessage avExtendedNoteOnEvent setInstrumentIDSelector value
 
 -- | groupID
 --
@@ -143,8 +140,8 @@ setInstrumentID avExtendedNoteOnEvent  value =
 --
 -- ObjC selector: @- groupID@
 groupID :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> IO CUInt
-groupID avExtendedNoteOnEvent  =
-    sendMsg avExtendedNoteOnEvent (mkSelector "groupID") retCUInt []
+groupID avExtendedNoteOnEvent =
+  sendMessage avExtendedNoteOnEvent groupIDSelector
 
 -- | groupID
 --
@@ -152,8 +149,8 @@ groupID avExtendedNoteOnEvent  =
 --
 -- ObjC selector: @- setGroupID:@
 setGroupID :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> CUInt -> IO ()
-setGroupID avExtendedNoteOnEvent  value =
-    sendMsg avExtendedNoteOnEvent (mkSelector "setGroupID:") retVoid [argCUInt value]
+setGroupID avExtendedNoteOnEvent value =
+  sendMessage avExtendedNoteOnEvent setGroupIDSelector value
 
 -- | duration
 --
@@ -161,8 +158,8 @@ setGroupID avExtendedNoteOnEvent  value =
 --
 -- ObjC selector: @- duration@
 duration :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> IO CDouble
-duration avExtendedNoteOnEvent  =
-    sendMsg avExtendedNoteOnEvent (mkSelector "duration") retCDouble []
+duration avExtendedNoteOnEvent =
+  sendMessage avExtendedNoteOnEvent durationSelector
 
 -- | duration
 --
@@ -170,58 +167,58 @@ duration avExtendedNoteOnEvent  =
 --
 -- ObjC selector: @- setDuration:@
 setDuration :: IsAVExtendedNoteOnEvent avExtendedNoteOnEvent => avExtendedNoteOnEvent -> CDouble -> IO ()
-setDuration avExtendedNoteOnEvent  value =
-    sendMsg avExtendedNoteOnEvent (mkSelector "setDuration:") retVoid [argCDouble value]
+setDuration avExtendedNoteOnEvent value =
+  sendMessage avExtendedNoteOnEvent setDurationSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMIDINote:velocity:groupID:duration:@
-initWithMIDINote_velocity_groupID_durationSelector :: Selector
+initWithMIDINote_velocity_groupID_durationSelector :: Selector '[CFloat, CFloat, CUInt, CDouble] (Id AVExtendedNoteOnEvent)
 initWithMIDINote_velocity_groupID_durationSelector = mkSelector "initWithMIDINote:velocity:groupID:duration:"
 
 -- | @Selector@ for @initWithMIDINote:velocity:instrumentID:groupID:duration:@
-initWithMIDINote_velocity_instrumentID_groupID_durationSelector :: Selector
+initWithMIDINote_velocity_instrumentID_groupID_durationSelector :: Selector '[CFloat, CFloat, CUInt, CUInt, CDouble] (Id AVExtendedNoteOnEvent)
 initWithMIDINote_velocity_instrumentID_groupID_durationSelector = mkSelector "initWithMIDINote:velocity:instrumentID:groupID:duration:"
 
 -- | @Selector@ for @midiNote@
-midiNoteSelector :: Selector
+midiNoteSelector :: Selector '[] CFloat
 midiNoteSelector = mkSelector "midiNote"
 
 -- | @Selector@ for @setMidiNote:@
-setMidiNoteSelector :: Selector
+setMidiNoteSelector :: Selector '[CFloat] ()
 setMidiNoteSelector = mkSelector "setMidiNote:"
 
 -- | @Selector@ for @velocity@
-velocitySelector :: Selector
+velocitySelector :: Selector '[] CFloat
 velocitySelector = mkSelector "velocity"
 
 -- | @Selector@ for @setVelocity:@
-setVelocitySelector :: Selector
+setVelocitySelector :: Selector '[CFloat] ()
 setVelocitySelector = mkSelector "setVelocity:"
 
 -- | @Selector@ for @instrumentID@
-instrumentIDSelector :: Selector
+instrumentIDSelector :: Selector '[] CUInt
 instrumentIDSelector = mkSelector "instrumentID"
 
 -- | @Selector@ for @setInstrumentID:@
-setInstrumentIDSelector :: Selector
+setInstrumentIDSelector :: Selector '[CUInt] ()
 setInstrumentIDSelector = mkSelector "setInstrumentID:"
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] CUInt
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[CUInt] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[CDouble] ()
 setDurationSelector = mkSelector "setDuration:"
 

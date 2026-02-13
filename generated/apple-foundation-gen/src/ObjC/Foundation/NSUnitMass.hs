@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.Foundation.NSUnitMass
   , carats
   , ouncesTroy
   , slugs
-  , kilogramsSelector
-  , gramsSelector
-  , decigramsSelector
-  , centigramsSelector
-  , milligramsSelector
-  , microgramsSelector
-  , nanogramsSelector
-  , picogramsSelector
-  , ouncesSelector
-  , poundsMassSelector
-  , stonesSelector
-  , metricTonsSelector
-  , shortTonsSelector
   , caratsSelector
+  , centigramsSelector
+  , decigramsSelector
+  , gramsSelector
+  , kilogramsSelector
+  , metricTonsSelector
+  , microgramsSelector
+  , milligramsSelector
+  , nanogramsSelector
+  , ouncesSelector
   , ouncesTroySelector
+  , picogramsSelector
+  , poundsMassSelector
+  , shortTonsSelector
   , slugsSelector
+  , stonesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,178 +58,178 @@ kilograms :: IO (Id NSUnitMass)
 kilograms  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "kilograms") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' kilogramsSelector
 
 -- | @+ grams@
 grams :: IO (Id NSUnitMass)
 grams  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "grams") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' gramsSelector
 
 -- | @+ decigrams@
 decigrams :: IO (Id NSUnitMass)
 decigrams  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "decigrams") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' decigramsSelector
 
 -- | @+ centigrams@
 centigrams :: IO (Id NSUnitMass)
 centigrams  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "centigrams") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' centigramsSelector
 
 -- | @+ milligrams@
 milligrams :: IO (Id NSUnitMass)
 milligrams  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "milligrams") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' milligramsSelector
 
 -- | @+ micrograms@
 micrograms :: IO (Id NSUnitMass)
 micrograms  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "micrograms") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' microgramsSelector
 
 -- | @+ nanograms@
 nanograms :: IO (Id NSUnitMass)
 nanograms  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "nanograms") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' nanogramsSelector
 
 -- | @+ picograms@
 picograms :: IO (Id NSUnitMass)
 picograms  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "picograms") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' picogramsSelector
 
 -- | @+ ounces@
 ounces :: IO (Id NSUnitMass)
 ounces  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "ounces") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' ouncesSelector
 
 -- | @+ poundsMass@
 poundsMass :: IO (Id NSUnitMass)
 poundsMass  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "poundsMass") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' poundsMassSelector
 
 -- | @+ stones@
 stones :: IO (Id NSUnitMass)
 stones  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "stones") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' stonesSelector
 
 -- | @+ metricTons@
 metricTons :: IO (Id NSUnitMass)
 metricTons  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "metricTons") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' metricTonsSelector
 
 -- | @+ shortTons@
 shortTons :: IO (Id NSUnitMass)
 shortTons  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "shortTons") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' shortTonsSelector
 
 -- | @+ carats@
 carats :: IO (Id NSUnitMass)
 carats  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "carats") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' caratsSelector
 
 -- | @+ ouncesTroy@
 ouncesTroy :: IO (Id NSUnitMass)
 ouncesTroy  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "ouncesTroy") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' ouncesTroySelector
 
 -- | @+ slugs@
 slugs :: IO (Id NSUnitMass)
 slugs  =
   do
     cls' <- getRequiredClass "NSUnitMass"
-    sendClassMsg cls' (mkSelector "slugs") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' slugsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @kilograms@
-kilogramsSelector :: Selector
+kilogramsSelector :: Selector '[] (Id NSUnitMass)
 kilogramsSelector = mkSelector "kilograms"
 
 -- | @Selector@ for @grams@
-gramsSelector :: Selector
+gramsSelector :: Selector '[] (Id NSUnitMass)
 gramsSelector = mkSelector "grams"
 
 -- | @Selector@ for @decigrams@
-decigramsSelector :: Selector
+decigramsSelector :: Selector '[] (Id NSUnitMass)
 decigramsSelector = mkSelector "decigrams"
 
 -- | @Selector@ for @centigrams@
-centigramsSelector :: Selector
+centigramsSelector :: Selector '[] (Id NSUnitMass)
 centigramsSelector = mkSelector "centigrams"
 
 -- | @Selector@ for @milligrams@
-milligramsSelector :: Selector
+milligramsSelector :: Selector '[] (Id NSUnitMass)
 milligramsSelector = mkSelector "milligrams"
 
 -- | @Selector@ for @micrograms@
-microgramsSelector :: Selector
+microgramsSelector :: Selector '[] (Id NSUnitMass)
 microgramsSelector = mkSelector "micrograms"
 
 -- | @Selector@ for @nanograms@
-nanogramsSelector :: Selector
+nanogramsSelector :: Selector '[] (Id NSUnitMass)
 nanogramsSelector = mkSelector "nanograms"
 
 -- | @Selector@ for @picograms@
-picogramsSelector :: Selector
+picogramsSelector :: Selector '[] (Id NSUnitMass)
 picogramsSelector = mkSelector "picograms"
 
 -- | @Selector@ for @ounces@
-ouncesSelector :: Selector
+ouncesSelector :: Selector '[] (Id NSUnitMass)
 ouncesSelector = mkSelector "ounces"
 
 -- | @Selector@ for @poundsMass@
-poundsMassSelector :: Selector
+poundsMassSelector :: Selector '[] (Id NSUnitMass)
 poundsMassSelector = mkSelector "poundsMass"
 
 -- | @Selector@ for @stones@
-stonesSelector :: Selector
+stonesSelector :: Selector '[] (Id NSUnitMass)
 stonesSelector = mkSelector "stones"
 
 -- | @Selector@ for @metricTons@
-metricTonsSelector :: Selector
+metricTonsSelector :: Selector '[] (Id NSUnitMass)
 metricTonsSelector = mkSelector "metricTons"
 
 -- | @Selector@ for @shortTons@
-shortTonsSelector :: Selector
+shortTonsSelector :: Selector '[] (Id NSUnitMass)
 shortTonsSelector = mkSelector "shortTons"
 
 -- | @Selector@ for @carats@
-caratsSelector :: Selector
+caratsSelector :: Selector '[] (Id NSUnitMass)
 caratsSelector = mkSelector "carats"
 
 -- | @Selector@ for @ouncesTroy@
-ouncesTroySelector :: Selector
+ouncesTroySelector :: Selector '[] (Id NSUnitMass)
 ouncesTroySelector = mkSelector "ouncesTroy"
 
 -- | @Selector@ for @slugs@
-slugsSelector :: Selector
+slugsSelector :: Selector '[] (Id NSUnitMass)
 slugsSelector = mkSelector "slugs"
 

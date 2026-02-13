@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.Matter.MTRCommodityTariffClusterTariffComponentStruct
   , setLabel
   , predicted
   , setPredicted
-  , tariffComponentIDSelector
-  , setTariffComponentIDSelector
-  , priceSelector
-  , setPriceSelector
-  , friendlyCreditSelector
-  , setFriendlyCreditSelector
   , auxiliaryLoadSelector
-  , setAuxiliaryLoadSelector
-  , peakPeriodSelector
-  , setPeakPeriodSelector
-  , powerThresholdSelector
-  , setPowerThresholdSelector
-  , thresholdSelector
-  , setThresholdSelector
+  , friendlyCreditSelector
   , labelSelector
-  , setLabelSelector
+  , peakPeriodSelector
+  , powerThresholdSelector
   , predictedSelector
+  , priceSelector
+  , setAuxiliaryLoadSelector
+  , setFriendlyCreditSelector
+  , setLabelSelector
+  , setPeakPeriodSelector
+  , setPowerThresholdSelector
   , setPredictedSelector
+  , setPriceSelector
+  , setTariffComponentIDSelector
+  , setThresholdSelector
+  , tariffComponentIDSelector
+  , thresholdSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,176 +60,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- tariffComponentID@
 tariffComponentID :: IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct => mtrCommodityTariffClusterTariffComponentStruct -> IO (Id NSNumber)
-tariffComponentID mtrCommodityTariffClusterTariffComponentStruct  =
-    sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "tariffComponentID") (retPtr retVoid) [] >>= retainedObject . castPtr
+tariffComponentID mtrCommodityTariffClusterTariffComponentStruct =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct tariffComponentIDSelector
 
 -- | @- setTariffComponentID:@
 setTariffComponentID :: (IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct, IsNSNumber value) => mtrCommodityTariffClusterTariffComponentStruct -> value -> IO ()
-setTariffComponentID mtrCommodityTariffClusterTariffComponentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "setTariffComponentID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTariffComponentID mtrCommodityTariffClusterTariffComponentStruct value =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct setTariffComponentIDSelector (toNSNumber value)
 
 -- | @- price@
 price :: IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct => mtrCommodityTariffClusterTariffComponentStruct -> IO (Id MTRCommodityTariffClusterTariffPriceStruct)
-price mtrCommodityTariffClusterTariffComponentStruct  =
-    sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "price") (retPtr retVoid) [] >>= retainedObject . castPtr
+price mtrCommodityTariffClusterTariffComponentStruct =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct priceSelector
 
 -- | @- setPrice:@
 setPrice :: (IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct, IsMTRCommodityTariffClusterTariffPriceStruct value) => mtrCommodityTariffClusterTariffComponentStruct -> value -> IO ()
-setPrice mtrCommodityTariffClusterTariffComponentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "setPrice:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrice mtrCommodityTariffClusterTariffComponentStruct value =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct setPriceSelector (toMTRCommodityTariffClusterTariffPriceStruct value)
 
 -- | @- friendlyCredit@
 friendlyCredit :: IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct => mtrCommodityTariffClusterTariffComponentStruct -> IO (Id NSNumber)
-friendlyCredit mtrCommodityTariffClusterTariffComponentStruct  =
-    sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "friendlyCredit") (retPtr retVoid) [] >>= retainedObject . castPtr
+friendlyCredit mtrCommodityTariffClusterTariffComponentStruct =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct friendlyCreditSelector
 
 -- | @- setFriendlyCredit:@
 setFriendlyCredit :: (IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct, IsNSNumber value) => mtrCommodityTariffClusterTariffComponentStruct -> value -> IO ()
-setFriendlyCredit mtrCommodityTariffClusterTariffComponentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "setFriendlyCredit:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFriendlyCredit mtrCommodityTariffClusterTariffComponentStruct value =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct setFriendlyCreditSelector (toNSNumber value)
 
 -- | @- auxiliaryLoad@
 auxiliaryLoad :: IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct => mtrCommodityTariffClusterTariffComponentStruct -> IO (Id MTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct)
-auxiliaryLoad mtrCommodityTariffClusterTariffComponentStruct  =
-    sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "auxiliaryLoad") (retPtr retVoid) [] >>= retainedObject . castPtr
+auxiliaryLoad mtrCommodityTariffClusterTariffComponentStruct =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct auxiliaryLoadSelector
 
 -- | @- setAuxiliaryLoad:@
 setAuxiliaryLoad :: (IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct, IsMTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct value) => mtrCommodityTariffClusterTariffComponentStruct -> value -> IO ()
-setAuxiliaryLoad mtrCommodityTariffClusterTariffComponentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "setAuxiliaryLoad:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAuxiliaryLoad mtrCommodityTariffClusterTariffComponentStruct value =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct setAuxiliaryLoadSelector (toMTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct value)
 
 -- | @- peakPeriod@
 peakPeriod :: IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct => mtrCommodityTariffClusterTariffComponentStruct -> IO (Id MTRCommodityTariffClusterPeakPeriodStruct)
-peakPeriod mtrCommodityTariffClusterTariffComponentStruct  =
-    sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "peakPeriod") (retPtr retVoid) [] >>= retainedObject . castPtr
+peakPeriod mtrCommodityTariffClusterTariffComponentStruct =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct peakPeriodSelector
 
 -- | @- setPeakPeriod:@
 setPeakPeriod :: (IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct, IsMTRCommodityTariffClusterPeakPeriodStruct value) => mtrCommodityTariffClusterTariffComponentStruct -> value -> IO ()
-setPeakPeriod mtrCommodityTariffClusterTariffComponentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "setPeakPeriod:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPeakPeriod mtrCommodityTariffClusterTariffComponentStruct value =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct setPeakPeriodSelector (toMTRCommodityTariffClusterPeakPeriodStruct value)
 
 -- | @- powerThreshold@
 powerThreshold :: IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct => mtrCommodityTariffClusterTariffComponentStruct -> IO (Id MTRDataTypePowerThresholdStruct)
-powerThreshold mtrCommodityTariffClusterTariffComponentStruct  =
-    sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "powerThreshold") (retPtr retVoid) [] >>= retainedObject . castPtr
+powerThreshold mtrCommodityTariffClusterTariffComponentStruct =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct powerThresholdSelector
 
 -- | @- setPowerThreshold:@
 setPowerThreshold :: (IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct, IsMTRDataTypePowerThresholdStruct value) => mtrCommodityTariffClusterTariffComponentStruct -> value -> IO ()
-setPowerThreshold mtrCommodityTariffClusterTariffComponentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "setPowerThreshold:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPowerThreshold mtrCommodityTariffClusterTariffComponentStruct value =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct setPowerThresholdSelector (toMTRDataTypePowerThresholdStruct value)
 
 -- | @- threshold@
 threshold :: IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct => mtrCommodityTariffClusterTariffComponentStruct -> IO (Id NSNumber)
-threshold mtrCommodityTariffClusterTariffComponentStruct  =
-    sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "threshold") (retPtr retVoid) [] >>= retainedObject . castPtr
+threshold mtrCommodityTariffClusterTariffComponentStruct =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct thresholdSelector
 
 -- | @- setThreshold:@
 setThreshold :: (IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct, IsNSNumber value) => mtrCommodityTariffClusterTariffComponentStruct -> value -> IO ()
-setThreshold mtrCommodityTariffClusterTariffComponentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "setThreshold:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setThreshold mtrCommodityTariffClusterTariffComponentStruct value =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct setThresholdSelector (toNSNumber value)
 
 -- | @- label@
 label :: IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct => mtrCommodityTariffClusterTariffComponentStruct -> IO (Id NSString)
-label mtrCommodityTariffClusterTariffComponentStruct  =
-    sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtrCommodityTariffClusterTariffComponentStruct =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct, IsNSString value) => mtrCommodityTariffClusterTariffComponentStruct -> value -> IO ()
-setLabel mtrCommodityTariffClusterTariffComponentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtrCommodityTariffClusterTariffComponentStruct value =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct setLabelSelector (toNSString value)
 
 -- | @- predicted@
 predicted :: IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct => mtrCommodityTariffClusterTariffComponentStruct -> IO (Id NSNumber)
-predicted mtrCommodityTariffClusterTariffComponentStruct  =
-    sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "predicted") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicted mtrCommodityTariffClusterTariffComponentStruct =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct predictedSelector
 
 -- | @- setPredicted:@
 setPredicted :: (IsMTRCommodityTariffClusterTariffComponentStruct mtrCommodityTariffClusterTariffComponentStruct, IsNSNumber value) => mtrCommodityTariffClusterTariffComponentStruct -> value -> IO ()
-setPredicted mtrCommodityTariffClusterTariffComponentStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffComponentStruct (mkSelector "setPredicted:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPredicted mtrCommodityTariffClusterTariffComponentStruct value =
+  sendMessage mtrCommodityTariffClusterTariffComponentStruct setPredictedSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tariffComponentID@
-tariffComponentIDSelector :: Selector
+tariffComponentIDSelector :: Selector '[] (Id NSNumber)
 tariffComponentIDSelector = mkSelector "tariffComponentID"
 
 -- | @Selector@ for @setTariffComponentID:@
-setTariffComponentIDSelector :: Selector
+setTariffComponentIDSelector :: Selector '[Id NSNumber] ()
 setTariffComponentIDSelector = mkSelector "setTariffComponentID:"
 
 -- | @Selector@ for @price@
-priceSelector :: Selector
+priceSelector :: Selector '[] (Id MTRCommodityTariffClusterTariffPriceStruct)
 priceSelector = mkSelector "price"
 
 -- | @Selector@ for @setPrice:@
-setPriceSelector :: Selector
+setPriceSelector :: Selector '[Id MTRCommodityTariffClusterTariffPriceStruct] ()
 setPriceSelector = mkSelector "setPrice:"
 
 -- | @Selector@ for @friendlyCredit@
-friendlyCreditSelector :: Selector
+friendlyCreditSelector :: Selector '[] (Id NSNumber)
 friendlyCreditSelector = mkSelector "friendlyCredit"
 
 -- | @Selector@ for @setFriendlyCredit:@
-setFriendlyCreditSelector :: Selector
+setFriendlyCreditSelector :: Selector '[Id NSNumber] ()
 setFriendlyCreditSelector = mkSelector "setFriendlyCredit:"
 
 -- | @Selector@ for @auxiliaryLoad@
-auxiliaryLoadSelector :: Selector
+auxiliaryLoadSelector :: Selector '[] (Id MTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct)
 auxiliaryLoadSelector = mkSelector "auxiliaryLoad"
 
 -- | @Selector@ for @setAuxiliaryLoad:@
-setAuxiliaryLoadSelector :: Selector
+setAuxiliaryLoadSelector :: Selector '[Id MTRCommodityTariffClusterAuxiliaryLoadSwitchSettingsStruct] ()
 setAuxiliaryLoadSelector = mkSelector "setAuxiliaryLoad:"
 
 -- | @Selector@ for @peakPeriod@
-peakPeriodSelector :: Selector
+peakPeriodSelector :: Selector '[] (Id MTRCommodityTariffClusterPeakPeriodStruct)
 peakPeriodSelector = mkSelector "peakPeriod"
 
 -- | @Selector@ for @setPeakPeriod:@
-setPeakPeriodSelector :: Selector
+setPeakPeriodSelector :: Selector '[Id MTRCommodityTariffClusterPeakPeriodStruct] ()
 setPeakPeriodSelector = mkSelector "setPeakPeriod:"
 
 -- | @Selector@ for @powerThreshold@
-powerThresholdSelector :: Selector
+powerThresholdSelector :: Selector '[] (Id MTRDataTypePowerThresholdStruct)
 powerThresholdSelector = mkSelector "powerThreshold"
 
 -- | @Selector@ for @setPowerThreshold:@
-setPowerThresholdSelector :: Selector
+setPowerThresholdSelector :: Selector '[Id MTRDataTypePowerThresholdStruct] ()
 setPowerThresholdSelector = mkSelector "setPowerThreshold:"
 
 -- | @Selector@ for @threshold@
-thresholdSelector :: Selector
+thresholdSelector :: Selector '[] (Id NSNumber)
 thresholdSelector = mkSelector "threshold"
 
 -- | @Selector@ for @setThreshold:@
-setThresholdSelector :: Selector
+setThresholdSelector :: Selector '[Id NSNumber] ()
 setThresholdSelector = mkSelector "setThreshold:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @predicted@
-predictedSelector :: Selector
+predictedSelector :: Selector '[] (Id NSNumber)
 predictedSelector = mkSelector "predicted"
 
 -- | @Selector@ for @setPredicted:@
-setPredictedSelector :: Selector
+setPredictedSelector :: Selector '[Id NSNumber] ()
 setPredictedSelector = mkSelector "setPredicted:"
 

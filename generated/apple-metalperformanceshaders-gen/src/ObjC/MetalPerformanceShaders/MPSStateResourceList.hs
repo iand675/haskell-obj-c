@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.MetalPerformanceShaders.MPSStateResourceList
   , init_
   , appendTexture
   , appendBuffer
-  , resourceListSelector
-  , resourceListWithTextureDescriptorsSelector
-  , resourceListWithBufferSizesSelector
-  , initSelector
-  , appendTextureSelector
   , appendBufferSelector
+  , appendTextureSelector
+  , initSelector
+  , resourceListSelector
+  , resourceListWithBufferSizesSelector
+  , resourceListWithTextureDescriptorsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,7 +42,7 @@ resourceList :: IO (Id MPSStateResourceList)
 resourceList  =
   do
     cls' <- getRequiredClass "MPSStateResourceList"
-    sendClassMsg cls' (mkSelector "resourceList") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' resourceListSelector
 
 -- | Init a resource list with a nil terminated list of MTLTextureDescriptors
 --
@@ -54,8 +51,7 @@ resourceListWithTextureDescriptors :: IsMTLTextureDescriptor d => d -> IO (Id MP
 resourceListWithTextureDescriptors d =
   do
     cls' <- getRequiredClass "MPSStateResourceList"
-    withObjCPtr d $ \raw_d ->
-      sendClassMsg cls' (mkSelector "resourceListWithTextureDescriptors:") (retPtr retVoid) [argPtr (castPtr raw_d :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' resourceListWithTextureDescriptorsSelector (toMTLTextureDescriptor d)
 
 -- | Init a resource list with a 0 terminated list of Buffer Sizes
 --
@@ -64,55 +60,54 @@ resourceListWithBufferSizes :: CULong -> IO (Id MPSStateResourceList)
 resourceListWithBufferSizes firstSize =
   do
     cls' <- getRequiredClass "MPSStateResourceList"
-    sendClassMsg cls' (mkSelector "resourceListWithBufferSizes:") (retPtr retVoid) [argCULong firstSize] >>= retainedObject . castPtr
+    sendClassMessage cls' resourceListWithBufferSizesSelector firstSize
 
 -- | Init an empty list
 --
 -- ObjC selector: @- init@
 init_ :: IsMPSStateResourceList mpsStateResourceList => mpsStateResourceList -> IO (Id MPSStateResourceList)
-init_ mpsStateResourceList  =
-    sendMsg mpsStateResourceList (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsStateResourceList =
+  sendOwnedMessage mpsStateResourceList initSelector
 
 -- | append a texture to the resource list
 --
 -- ObjC selector: @- appendTexture:@
 appendTexture :: (IsMPSStateResourceList mpsStateResourceList, IsMTLTextureDescriptor descriptor) => mpsStateResourceList -> descriptor -> IO ()
-appendTexture mpsStateResourceList  descriptor =
-  withObjCPtr descriptor $ \raw_descriptor ->
-      sendMsg mpsStateResourceList (mkSelector "appendTexture:") retVoid [argPtr (castPtr raw_descriptor :: Ptr ())]
+appendTexture mpsStateResourceList descriptor =
+  sendMessage mpsStateResourceList appendTextureSelector (toMTLTextureDescriptor descriptor)
 
 -- | append a buffer to the resource list
 --
 -- ObjC selector: @- appendBuffer:@
 appendBuffer :: IsMPSStateResourceList mpsStateResourceList => mpsStateResourceList -> CULong -> IO ()
-appendBuffer mpsStateResourceList  size =
-    sendMsg mpsStateResourceList (mkSelector "appendBuffer:") retVoid [argCULong size]
+appendBuffer mpsStateResourceList size =
+  sendMessage mpsStateResourceList appendBufferSelector size
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @resourceList@
-resourceListSelector :: Selector
+resourceListSelector :: Selector '[] (Id MPSStateResourceList)
 resourceListSelector = mkSelector "resourceList"
 
 -- | @Selector@ for @resourceListWithTextureDescriptors:@
-resourceListWithTextureDescriptorsSelector :: Selector
+resourceListWithTextureDescriptorsSelector :: Selector '[Id MTLTextureDescriptor] (Id MPSStateResourceList)
 resourceListWithTextureDescriptorsSelector = mkSelector "resourceListWithTextureDescriptors:"
 
 -- | @Selector@ for @resourceListWithBufferSizes:@
-resourceListWithBufferSizesSelector :: Selector
+resourceListWithBufferSizesSelector :: Selector '[CULong] (Id MPSStateResourceList)
 resourceListWithBufferSizesSelector = mkSelector "resourceListWithBufferSizes:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSStateResourceList)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @appendTexture:@
-appendTextureSelector :: Selector
+appendTextureSelector :: Selector '[Id MTLTextureDescriptor] ()
 appendTextureSelector = mkSelector "appendTexture:"
 
 -- | @Selector@ for @appendBuffer:@
-appendBufferSelector :: Selector
+appendBufferSelector :: Selector '[CULong] ()
 appendBufferSelector = mkSelector "appendBuffer:"
 

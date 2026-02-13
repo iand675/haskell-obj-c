@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,9 +12,10 @@ module ObjC.CoreBluetooth.CBManager
   , state
   , authorization
   , cbManagerAuthorization
+  , authorizationSelector
+  , cbManagerAuthorizationSelector
   , initSelector
   , stateSelector
-  , authorizationSelector
 
   -- * Enum types
   , CBManagerAuthorization(CBManagerAuthorization)
@@ -31,15 +33,11 @@ module ObjC.CoreBluetooth.CBManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +47,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCBManager cbManager => cbManager -> IO (Id CBManager)
-init_ cbManager  =
-    sendMsg cbManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cbManager =
+  sendOwnedMessage cbManager initSelector
 
 -- | state
 --
@@ -60,8 +58,8 @@ init_ cbManager  =
 --
 -- ObjC selector: @- state@
 state :: IsCBManager cbManager => cbManager -> IO CBManagerState
-state cbManager  =
-    fmap (coerce :: CLong -> CBManagerState) $ sendMsg cbManager (mkSelector "state") retCLong []
+state cbManager =
+  sendMessage cbManager stateSelector
 
 -- | authorization
 --
@@ -72,8 +70,8 @@ state cbManager  =
 --
 -- ObjC selector: @- authorization@
 authorization :: IsCBManager cbManager => cbManager -> IO CBManagerAuthorization
-authorization cbManager  =
-    fmap (coerce :: CLong -> CBManagerAuthorization) $ sendMsg cbManager (mkSelector "authorization") retCLong []
+authorization cbManager =
+  sendMessage cbManager authorizationSelector
 
 -- | authorization
 --
@@ -87,21 +85,25 @@ cbManagerAuthorization :: IO CBManagerAuthorization
 cbManagerAuthorization  =
   do
     cls' <- getRequiredClass "CBManager"
-    fmap (coerce :: CLong -> CBManagerAuthorization) $ sendClassMsg cls' (mkSelector "authorization") retCLong []
+    sendClassMessage cls' cbManagerAuthorizationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CBManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] CBManagerState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @authorization@
-authorizationSelector :: Selector
+authorizationSelector :: Selector '[] CBManagerAuthorization
 authorizationSelector = mkSelector "authorization"
+
+-- | @Selector@ for @authorization@
+cbManagerAuthorizationSelector :: Selector '[] CBManagerAuthorization
+cbManagerAuthorizationSelector = mkSelector "authorization"
 

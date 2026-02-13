@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Foundation.NSSpellServer
   , run
   , delegate
   , setDelegate
-  , registerLanguage_byVendorSelector
-  , isWordInUserDictionaries_caseSensitiveSelector
-  , runSelector
   , delegateSelector
+  , isWordInUserDictionaries_caseSensitiveSelector
+  , registerLanguage_byVendorSelector
+  , runSelector
   , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,53 +33,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- registerLanguage:byVendor:@
 registerLanguage_byVendor :: (IsNSSpellServer nsSpellServer, IsNSString language, IsNSString vendor) => nsSpellServer -> language -> vendor -> IO Bool
-registerLanguage_byVendor nsSpellServer  language vendor =
-  withObjCPtr language $ \raw_language ->
-    withObjCPtr vendor $ \raw_vendor ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSpellServer (mkSelector "registerLanguage:byVendor:") retCULong [argPtr (castPtr raw_language :: Ptr ()), argPtr (castPtr raw_vendor :: Ptr ())]
+registerLanguage_byVendor nsSpellServer language vendor =
+  sendMessage nsSpellServer registerLanguage_byVendorSelector (toNSString language) (toNSString vendor)
 
 -- | @- isWordInUserDictionaries:caseSensitive:@
 isWordInUserDictionaries_caseSensitive :: (IsNSSpellServer nsSpellServer, IsNSString word) => nsSpellServer -> word -> Bool -> IO Bool
-isWordInUserDictionaries_caseSensitive nsSpellServer  word flag =
-  withObjCPtr word $ \raw_word ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSpellServer (mkSelector "isWordInUserDictionaries:caseSensitive:") retCULong [argPtr (castPtr raw_word :: Ptr ()), argCULong (if flag then 1 else 0)]
+isWordInUserDictionaries_caseSensitive nsSpellServer word flag =
+  sendMessage nsSpellServer isWordInUserDictionaries_caseSensitiveSelector (toNSString word) flag
 
 -- | @- run@
 run :: IsNSSpellServer nsSpellServer => nsSpellServer -> IO ()
-run nsSpellServer  =
-    sendMsg nsSpellServer (mkSelector "run") retVoid []
+run nsSpellServer =
+  sendMessage nsSpellServer runSelector
 
 -- | @- delegate@
 delegate :: IsNSSpellServer nsSpellServer => nsSpellServer -> IO RawId
-delegate nsSpellServer  =
-    fmap (RawId . castPtr) $ sendMsg nsSpellServer (mkSelector "delegate") (retPtr retVoid) []
+delegate nsSpellServer =
+  sendMessage nsSpellServer delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSSpellServer nsSpellServer => nsSpellServer -> RawId -> IO ()
-setDelegate nsSpellServer  value =
-    sendMsg nsSpellServer (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsSpellServer value =
+  sendMessage nsSpellServer setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @registerLanguage:byVendor:@
-registerLanguage_byVendorSelector :: Selector
+registerLanguage_byVendorSelector :: Selector '[Id NSString, Id NSString] Bool
 registerLanguage_byVendorSelector = mkSelector "registerLanguage:byVendor:"
 
 -- | @Selector@ for @isWordInUserDictionaries:caseSensitive:@
-isWordInUserDictionaries_caseSensitiveSelector :: Selector
+isWordInUserDictionaries_caseSensitiveSelector :: Selector '[Id NSString, Bool] Bool
 isWordInUserDictionaries_caseSensitiveSelector = mkSelector "isWordInUserDictionaries:caseSensitive:"
 
 -- | @Selector@ for @run@
-runSelector :: Selector
+runSelector :: Selector '[] ()
 runSelector = mkSelector "run"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

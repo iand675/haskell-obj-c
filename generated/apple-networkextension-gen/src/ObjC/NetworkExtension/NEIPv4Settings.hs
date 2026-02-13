@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.NetworkExtension.NEIPv4Settings
   , setIncludedRoutes
   , excludedRoutes
   , setExcludedRoutes
-  , initWithAddresses_subnetMasksSelector
-  , settingsWithAutomaticAddressingSelector
   , addressesSelector
-  , subnetMasksSelector
-  , routerSelector
-  , setRouterSelector
-  , includedRoutesSelector
-  , setIncludedRoutesSelector
   , excludedRoutesSelector
+  , includedRoutesSelector
+  , initWithAddresses_subnetMasksSelector
+  , routerSelector
   , setExcludedRoutesSelector
+  , setIncludedRoutesSelector
+  , setRouterSelector
+  , settingsWithAutomaticAddressingSelector
+  , subnetMasksSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,10 +60,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAddresses:subnetMasks:@
 initWithAddresses_subnetMasks :: (IsNEIPv4Settings neiPv4Settings, IsNSArray addresses, IsNSArray subnetMasks) => neiPv4Settings -> addresses -> subnetMasks -> IO (Id NEIPv4Settings)
-initWithAddresses_subnetMasks neiPv4Settings  addresses subnetMasks =
-  withObjCPtr addresses $ \raw_addresses ->
-    withObjCPtr subnetMasks $ \raw_subnetMasks ->
-        sendMsg neiPv4Settings (mkSelector "initWithAddresses:subnetMasks:") (retPtr retVoid) [argPtr (castPtr raw_addresses :: Ptr ()), argPtr (castPtr raw_subnetMasks :: Ptr ())] >>= ownedObject . castPtr
+initWithAddresses_subnetMasks neiPv4Settings addresses subnetMasks =
+  sendOwnedMessage neiPv4Settings initWithAddresses_subnetMasksSelector (toNSArray addresses) (toNSArray subnetMasks)
 
 -- | settingsWithAutomaticAddressing
 --
@@ -79,7 +74,7 @@ settingsWithAutomaticAddressing :: IO (Id NEIPv4Settings)
 settingsWithAutomaticAddressing  =
   do
     cls' <- getRequiredClass "NEIPv4Settings"
-    sendClassMsg cls' (mkSelector "settingsWithAutomaticAddressing") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' settingsWithAutomaticAddressingSelector
 
 -- | addresses
 --
@@ -87,8 +82,8 @@ settingsWithAutomaticAddressing  =
 --
 -- ObjC selector: @- addresses@
 addresses :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSArray)
-addresses neiPv4Settings  =
-    sendMsg neiPv4Settings (mkSelector "addresses") (retPtr retVoid) [] >>= retainedObject . castPtr
+addresses neiPv4Settings =
+  sendMessage neiPv4Settings addressesSelector
 
 -- | subnetMasks
 --
@@ -96,8 +91,8 @@ addresses neiPv4Settings  =
 --
 -- ObjC selector: @- subnetMasks@
 subnetMasks :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSArray)
-subnetMasks neiPv4Settings  =
-    sendMsg neiPv4Settings (mkSelector "subnetMasks") (retPtr retVoid) [] >>= retainedObject . castPtr
+subnetMasks neiPv4Settings =
+  sendMessage neiPv4Settings subnetMasksSelector
 
 -- | router
 --
@@ -105,8 +100,8 @@ subnetMasks neiPv4Settings  =
 --
 -- ObjC selector: @- router@
 router :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSString)
-router neiPv4Settings  =
-    sendMsg neiPv4Settings (mkSelector "router") (retPtr retVoid) [] >>= retainedObject . castPtr
+router neiPv4Settings =
+  sendMessage neiPv4Settings routerSelector
 
 -- | router
 --
@@ -114,9 +109,8 @@ router neiPv4Settings  =
 --
 -- ObjC selector: @- setRouter:@
 setRouter :: (IsNEIPv4Settings neiPv4Settings, IsNSString value) => neiPv4Settings -> value -> IO ()
-setRouter neiPv4Settings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neiPv4Settings (mkSelector "setRouter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRouter neiPv4Settings value =
+  sendMessage neiPv4Settings setRouterSelector (toNSString value)
 
 -- | includedRoutes
 --
@@ -124,8 +118,8 @@ setRouter neiPv4Settings  value =
 --
 -- ObjC selector: @- includedRoutes@
 includedRoutes :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSArray)
-includedRoutes neiPv4Settings  =
-    sendMsg neiPv4Settings (mkSelector "includedRoutes") (retPtr retVoid) [] >>= retainedObject . castPtr
+includedRoutes neiPv4Settings =
+  sendMessage neiPv4Settings includedRoutesSelector
 
 -- | includedRoutes
 --
@@ -133,9 +127,8 @@ includedRoutes neiPv4Settings  =
 --
 -- ObjC selector: @- setIncludedRoutes:@
 setIncludedRoutes :: (IsNEIPv4Settings neiPv4Settings, IsNSArray value) => neiPv4Settings -> value -> IO ()
-setIncludedRoutes neiPv4Settings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neiPv4Settings (mkSelector "setIncludedRoutes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIncludedRoutes neiPv4Settings value =
+  sendMessage neiPv4Settings setIncludedRoutesSelector (toNSArray value)
 
 -- | excludedRoutes
 --
@@ -143,8 +136,8 @@ setIncludedRoutes neiPv4Settings  value =
 --
 -- ObjC selector: @- excludedRoutes@
 excludedRoutes :: IsNEIPv4Settings neiPv4Settings => neiPv4Settings -> IO (Id NSArray)
-excludedRoutes neiPv4Settings  =
-    sendMsg neiPv4Settings (mkSelector "excludedRoutes") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedRoutes neiPv4Settings =
+  sendMessage neiPv4Settings excludedRoutesSelector
 
 -- | excludedRoutes
 --
@@ -152,51 +145,50 @@ excludedRoutes neiPv4Settings  =
 --
 -- ObjC selector: @- setExcludedRoutes:@
 setExcludedRoutes :: (IsNEIPv4Settings neiPv4Settings, IsNSArray value) => neiPv4Settings -> value -> IO ()
-setExcludedRoutes neiPv4Settings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neiPv4Settings (mkSelector "setExcludedRoutes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExcludedRoutes neiPv4Settings value =
+  sendMessage neiPv4Settings setExcludedRoutesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAddresses:subnetMasks:@
-initWithAddresses_subnetMasksSelector :: Selector
+initWithAddresses_subnetMasksSelector :: Selector '[Id NSArray, Id NSArray] (Id NEIPv4Settings)
 initWithAddresses_subnetMasksSelector = mkSelector "initWithAddresses:subnetMasks:"
 
 -- | @Selector@ for @settingsWithAutomaticAddressing@
-settingsWithAutomaticAddressingSelector :: Selector
+settingsWithAutomaticAddressingSelector :: Selector '[] (Id NEIPv4Settings)
 settingsWithAutomaticAddressingSelector = mkSelector "settingsWithAutomaticAddressing"
 
 -- | @Selector@ for @addresses@
-addressesSelector :: Selector
+addressesSelector :: Selector '[] (Id NSArray)
 addressesSelector = mkSelector "addresses"
 
 -- | @Selector@ for @subnetMasks@
-subnetMasksSelector :: Selector
+subnetMasksSelector :: Selector '[] (Id NSArray)
 subnetMasksSelector = mkSelector "subnetMasks"
 
 -- | @Selector@ for @router@
-routerSelector :: Selector
+routerSelector :: Selector '[] (Id NSString)
 routerSelector = mkSelector "router"
 
 -- | @Selector@ for @setRouter:@
-setRouterSelector :: Selector
+setRouterSelector :: Selector '[Id NSString] ()
 setRouterSelector = mkSelector "setRouter:"
 
 -- | @Selector@ for @includedRoutes@
-includedRoutesSelector :: Selector
+includedRoutesSelector :: Selector '[] (Id NSArray)
 includedRoutesSelector = mkSelector "includedRoutes"
 
 -- | @Selector@ for @setIncludedRoutes:@
-setIncludedRoutesSelector :: Selector
+setIncludedRoutesSelector :: Selector '[Id NSArray] ()
 setIncludedRoutesSelector = mkSelector "setIncludedRoutes:"
 
 -- | @Selector@ for @excludedRoutes@
-excludedRoutesSelector :: Selector
+excludedRoutesSelector :: Selector '[] (Id NSArray)
 excludedRoutesSelector = mkSelector "excludedRoutes"
 
 -- | @Selector@ for @setExcludedRoutes:@
-setExcludedRoutesSelector :: Selector
+setExcludedRoutesSelector :: Selector '[Id NSArray] ()
 setExcludedRoutesSelector = mkSelector "setExcludedRoutes:"
 

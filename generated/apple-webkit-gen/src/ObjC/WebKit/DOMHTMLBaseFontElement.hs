@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.WebKit.DOMHTMLBaseFontElement
   , size
   , setSize
   , colorSelector
-  , setColorSelector
   , faceSelector
+  , setColorSelector
   , setFaceSelector
-  , sizeSelector
   , setSizeSelector
+  , sizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- color@
 color :: IsDOMHTMLBaseFontElement domhtmlBaseFontElement => domhtmlBaseFontElement -> IO (Id NSString)
-color domhtmlBaseFontElement  =
-    sendMsg domhtmlBaseFontElement (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color domhtmlBaseFontElement =
+  sendMessage domhtmlBaseFontElement colorSelector
 
 -- | @- setColor:@
 setColor :: (IsDOMHTMLBaseFontElement domhtmlBaseFontElement, IsNSString value) => domhtmlBaseFontElement -> value -> IO ()
-setColor domhtmlBaseFontElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBaseFontElement (mkSelector "setColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColor domhtmlBaseFontElement value =
+  sendMessage domhtmlBaseFontElement setColorSelector (toNSString value)
 
 -- | @- face@
 face :: IsDOMHTMLBaseFontElement domhtmlBaseFontElement => domhtmlBaseFontElement -> IO (Id NSString)
-face domhtmlBaseFontElement  =
-    sendMsg domhtmlBaseFontElement (mkSelector "face") (retPtr retVoid) [] >>= retainedObject . castPtr
+face domhtmlBaseFontElement =
+  sendMessage domhtmlBaseFontElement faceSelector
 
 -- | @- setFace:@
 setFace :: (IsDOMHTMLBaseFontElement domhtmlBaseFontElement, IsNSString value) => domhtmlBaseFontElement -> value -> IO ()
-setFace domhtmlBaseFontElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBaseFontElement (mkSelector "setFace:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFace domhtmlBaseFontElement value =
+  sendMessage domhtmlBaseFontElement setFaceSelector (toNSString value)
 
 -- | @- size@
 size :: IsDOMHTMLBaseFontElement domhtmlBaseFontElement => domhtmlBaseFontElement -> IO (Id NSString)
-size domhtmlBaseFontElement  =
-    sendMsg domhtmlBaseFontElement (mkSelector "size") (retPtr retVoid) [] >>= retainedObject . castPtr
+size domhtmlBaseFontElement =
+  sendMessage domhtmlBaseFontElement sizeSelector
 
 -- | @- setSize:@
 setSize :: (IsDOMHTMLBaseFontElement domhtmlBaseFontElement, IsNSString value) => domhtmlBaseFontElement -> value -> IO ()
-setSize domhtmlBaseFontElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBaseFontElement (mkSelector "setSize:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSize domhtmlBaseFontElement value =
+  sendMessage domhtmlBaseFontElement setSizeSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSString)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Id NSString] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @face@
-faceSelector :: Selector
+faceSelector :: Selector '[] (Id NSString)
 faceSelector = mkSelector "face"
 
 -- | @Selector@ for @setFace:@
-setFaceSelector :: Selector
+setFaceSelector :: Selector '[Id NSString] ()
 setFaceSelector = mkSelector "setFace:"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] (Id NSString)
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @setSize:@
-setSizeSelector :: Selector
+setSizeSelector :: Selector '[Id NSString] ()
 setSizeSelector = mkSelector "setSize:"
 

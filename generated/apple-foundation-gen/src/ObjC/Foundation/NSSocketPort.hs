@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.Foundation.NSSocketPort
   , protocol
   , address
   , socket
+  , addressSelector
+  , initRemoteWithProtocolFamily_socketType_protocol_addressSelector
+  , initRemoteWithTCPPort_hostSelector
   , initSelector
-  , initWithTCPPortSelector
   , initWithProtocolFamily_socketType_protocol_addressSelector
   , initWithProtocolFamily_socketType_protocol_socketSelector
-  , initRemoteWithTCPPort_hostSelector
-  , initRemoteWithProtocolFamily_socketType_protocol_addressSelector
+  , initWithTCPPortSelector
   , protocolFamilySelector
-  , socketTypeSelector
   , protocolSelector
-  , addressSelector
   , socketSelector
+  , socketTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,107 +45,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSSocketPort nsSocketPort => nsSocketPort -> IO (Id NSSocketPort)
-init_ nsSocketPort  =
-    sendMsg nsSocketPort (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsSocketPort =
+  sendOwnedMessage nsSocketPort initSelector
 
 -- | @- initWithTCPPort:@
 initWithTCPPort :: IsNSSocketPort nsSocketPort => nsSocketPort -> CUShort -> IO (Id NSSocketPort)
-initWithTCPPort nsSocketPort  port =
-    sendMsg nsSocketPort (mkSelector "initWithTCPPort:") (retPtr retVoid) [argCUInt (fromIntegral port)] >>= ownedObject . castPtr
+initWithTCPPort nsSocketPort port =
+  sendOwnedMessage nsSocketPort initWithTCPPortSelector port
 
 -- | @- initWithProtocolFamily:socketType:protocol:address:@
 initWithProtocolFamily_socketType_protocol_address :: (IsNSSocketPort nsSocketPort, IsNSData address) => nsSocketPort -> CInt -> CInt -> CInt -> address -> IO (Id NSSocketPort)
-initWithProtocolFamily_socketType_protocol_address nsSocketPort  family_ type_ protocol address =
-  withObjCPtr address $ \raw_address ->
-      sendMsg nsSocketPort (mkSelector "initWithProtocolFamily:socketType:protocol:address:") (retPtr retVoid) [argCInt family_, argCInt type_, argCInt protocol, argPtr (castPtr raw_address :: Ptr ())] >>= ownedObject . castPtr
+initWithProtocolFamily_socketType_protocol_address nsSocketPort family_ type_ protocol address =
+  sendOwnedMessage nsSocketPort initWithProtocolFamily_socketType_protocol_addressSelector family_ type_ protocol (toNSData address)
 
 -- | @- initWithProtocolFamily:socketType:protocol:socket:@
 initWithProtocolFamily_socketType_protocol_socket :: IsNSSocketPort nsSocketPort => nsSocketPort -> CInt -> CInt -> CInt -> CInt -> IO (Id NSSocketPort)
-initWithProtocolFamily_socketType_protocol_socket nsSocketPort  family_ type_ protocol sock =
-    sendMsg nsSocketPort (mkSelector "initWithProtocolFamily:socketType:protocol:socket:") (retPtr retVoid) [argCInt family_, argCInt type_, argCInt protocol, argCInt sock] >>= ownedObject . castPtr
+initWithProtocolFamily_socketType_protocol_socket nsSocketPort family_ type_ protocol sock =
+  sendOwnedMessage nsSocketPort initWithProtocolFamily_socketType_protocol_socketSelector family_ type_ protocol sock
 
 -- | @- initRemoteWithTCPPort:host:@
 initRemoteWithTCPPort_host :: (IsNSSocketPort nsSocketPort, IsNSString hostName) => nsSocketPort -> CUShort -> hostName -> IO (Id NSSocketPort)
-initRemoteWithTCPPort_host nsSocketPort  port hostName =
-  withObjCPtr hostName $ \raw_hostName ->
-      sendMsg nsSocketPort (mkSelector "initRemoteWithTCPPort:host:") (retPtr retVoid) [argCUInt (fromIntegral port), argPtr (castPtr raw_hostName :: Ptr ())] >>= ownedObject . castPtr
+initRemoteWithTCPPort_host nsSocketPort port hostName =
+  sendOwnedMessage nsSocketPort initRemoteWithTCPPort_hostSelector port (toNSString hostName)
 
 -- | @- initRemoteWithProtocolFamily:socketType:protocol:address:@
 initRemoteWithProtocolFamily_socketType_protocol_address :: (IsNSSocketPort nsSocketPort, IsNSData address) => nsSocketPort -> CInt -> CInt -> CInt -> address -> IO (Id NSSocketPort)
-initRemoteWithProtocolFamily_socketType_protocol_address nsSocketPort  family_ type_ protocol address =
-  withObjCPtr address $ \raw_address ->
-      sendMsg nsSocketPort (mkSelector "initRemoteWithProtocolFamily:socketType:protocol:address:") (retPtr retVoid) [argCInt family_, argCInt type_, argCInt protocol, argPtr (castPtr raw_address :: Ptr ())] >>= ownedObject . castPtr
+initRemoteWithProtocolFamily_socketType_protocol_address nsSocketPort family_ type_ protocol address =
+  sendOwnedMessage nsSocketPort initRemoteWithProtocolFamily_socketType_protocol_addressSelector family_ type_ protocol (toNSData address)
 
 -- | @- protocolFamily@
 protocolFamily :: IsNSSocketPort nsSocketPort => nsSocketPort -> IO CInt
-protocolFamily nsSocketPort  =
-    sendMsg nsSocketPort (mkSelector "protocolFamily") retCInt []
+protocolFamily nsSocketPort =
+  sendMessage nsSocketPort protocolFamilySelector
 
 -- | @- socketType@
 socketType :: IsNSSocketPort nsSocketPort => nsSocketPort -> IO CInt
-socketType nsSocketPort  =
-    sendMsg nsSocketPort (mkSelector "socketType") retCInt []
+socketType nsSocketPort =
+  sendMessage nsSocketPort socketTypeSelector
 
 -- | @- protocol@
 protocol :: IsNSSocketPort nsSocketPort => nsSocketPort -> IO CInt
-protocol nsSocketPort  =
-    sendMsg nsSocketPort (mkSelector "protocol") retCInt []
+protocol nsSocketPort =
+  sendMessage nsSocketPort protocolSelector
 
 -- | @- address@
 address :: IsNSSocketPort nsSocketPort => nsSocketPort -> IO (Id NSData)
-address nsSocketPort  =
-    sendMsg nsSocketPort (mkSelector "address") (retPtr retVoid) [] >>= retainedObject . castPtr
+address nsSocketPort =
+  sendMessage nsSocketPort addressSelector
 
 -- | @- socket@
 socket :: IsNSSocketPort nsSocketPort => nsSocketPort -> IO CInt
-socket nsSocketPort  =
-    sendMsg nsSocketPort (mkSelector "socket") retCInt []
+socket nsSocketPort =
+  sendMessage nsSocketPort socketSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSSocketPort)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithTCPPort:@
-initWithTCPPortSelector :: Selector
+initWithTCPPortSelector :: Selector '[CUShort] (Id NSSocketPort)
 initWithTCPPortSelector = mkSelector "initWithTCPPort:"
 
 -- | @Selector@ for @initWithProtocolFamily:socketType:protocol:address:@
-initWithProtocolFamily_socketType_protocol_addressSelector :: Selector
+initWithProtocolFamily_socketType_protocol_addressSelector :: Selector '[CInt, CInt, CInt, Id NSData] (Id NSSocketPort)
 initWithProtocolFamily_socketType_protocol_addressSelector = mkSelector "initWithProtocolFamily:socketType:protocol:address:"
 
 -- | @Selector@ for @initWithProtocolFamily:socketType:protocol:socket:@
-initWithProtocolFamily_socketType_protocol_socketSelector :: Selector
+initWithProtocolFamily_socketType_protocol_socketSelector :: Selector '[CInt, CInt, CInt, CInt] (Id NSSocketPort)
 initWithProtocolFamily_socketType_protocol_socketSelector = mkSelector "initWithProtocolFamily:socketType:protocol:socket:"
 
 -- | @Selector@ for @initRemoteWithTCPPort:host:@
-initRemoteWithTCPPort_hostSelector :: Selector
+initRemoteWithTCPPort_hostSelector :: Selector '[CUShort, Id NSString] (Id NSSocketPort)
 initRemoteWithTCPPort_hostSelector = mkSelector "initRemoteWithTCPPort:host:"
 
 -- | @Selector@ for @initRemoteWithProtocolFamily:socketType:protocol:address:@
-initRemoteWithProtocolFamily_socketType_protocol_addressSelector :: Selector
+initRemoteWithProtocolFamily_socketType_protocol_addressSelector :: Selector '[CInt, CInt, CInt, Id NSData] (Id NSSocketPort)
 initRemoteWithProtocolFamily_socketType_protocol_addressSelector = mkSelector "initRemoteWithProtocolFamily:socketType:protocol:address:"
 
 -- | @Selector@ for @protocolFamily@
-protocolFamilySelector :: Selector
+protocolFamilySelector :: Selector '[] CInt
 protocolFamilySelector = mkSelector "protocolFamily"
 
 -- | @Selector@ for @socketType@
-socketTypeSelector :: Selector
+socketTypeSelector :: Selector '[] CInt
 socketTypeSelector = mkSelector "socketType"
 
 -- | @Selector@ for @protocol@
-protocolSelector :: Selector
+protocolSelector :: Selector '[] CInt
 protocolSelector = mkSelector "protocol"
 
 -- | @Selector@ for @address@
-addressSelector :: Selector
+addressSelector :: Selector '[] (Id NSData)
 addressSelector = mkSelector "address"
 
 -- | @Selector@ for @socket@
-socketSelector :: Selector
+socketSelector :: Selector '[] CInt
 socketSelector = mkSelector "socket"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,34 +24,30 @@ module ObjC.Cinematic.CNScript
   , fNumber
   , setFNumber
   , addedDetectionTracks
-  , loadFromAsset_changes_progress_completionHandlerSelector
-  , reloadWithChangesSelector
-  , changesSelector
-  , detectionTrackForIDSelector
-  , detectionTrackForDecisionSelector
-  , addUserDecisionSelector
-  , removeUserDecisionSelector
-  , removeAllUserDecisionsSelector
   , addDetectionTrackSelector
-  , removeDetectionTrackSelector
-  , initSelector
-  , newSelector
-  , fNumberSelector
-  , setFNumberSelector
+  , addUserDecisionSelector
   , addedDetectionTracksSelector
+  , changesSelector
+  , detectionTrackForDecisionSelector
+  , detectionTrackForIDSelector
+  , fNumberSelector
+  , initSelector
+  , loadFromAsset_changes_progress_completionHandlerSelector
+  , newSelector
+  , reloadWithChangesSelector
+  , removeAllUserDecisionsSelector
+  , removeDetectionTrackSelector
+  , removeUserDecisionSelector
+  , setFNumberSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,40 +62,35 @@ loadFromAsset_changes_progress_completionHandler :: (IsAVAsset asset, IsCNScript
 loadFromAsset_changes_progress_completionHandler asset changes progress completionHandler =
   do
     cls' <- getRequiredClass "CNScript"
-    withObjCPtr asset $ \raw_asset ->
-      withObjCPtr changes $ \raw_changes ->
-        withObjCPtr progress $ \raw_progress ->
-          sendClassMsg cls' (mkSelector "loadFromAsset:changes:progress:completionHandler:") retVoid [argPtr (castPtr raw_asset :: Ptr ()), argPtr (castPtr raw_changes :: Ptr ()), argPtr (castPtr raw_progress :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' loadFromAsset_changes_progress_completionHandlerSelector (toAVAsset asset) (toCNScriptChanges changes) (toNSProgress progress) completionHandler
 
 -- | Reload the cinematic script with optional changes applied, removing any previous changes made. This can be more efficient than loading the asset from scratch. - Parameters:   - changes: optional changes since asset was recorded. Can be obtained from a previous editing session. If @nil@, the asset is reloaded as originally recorded.
 --
 -- ObjC selector: @- reloadWithChanges:@
 reloadWithChanges :: (IsCNScript cnScript, IsCNScriptChanges changes) => cnScript -> changes -> IO ()
-reloadWithChanges cnScript  changes =
-  withObjCPtr changes $ \raw_changes ->
-      sendMsg cnScript (mkSelector "reloadWithChanges:") retVoid [argPtr (castPtr raw_changes :: Ptr ())]
+reloadWithChanges cnScript changes =
+  sendMessage cnScript reloadWithChangesSelector (toCNScriptChanges changes)
 
 -- | Changes made since cinematic asset was recorded. Can be used to checkpoint and later restore changes made so far.
 --
 -- ObjC selector: @- changes@
 changes :: IsCNScript cnScript => cnScript -> IO (Id CNScriptChanges)
-changes cnScript  =
-    sendMsg cnScript (mkSelector "changes") (retPtr retVoid) [] >>= retainedObject . castPtr
+changes cnScript =
+  sendMessage cnScript changesSelector
 
 -- | A detection track representing all detections with the given detectionID over the entire cinematic script.
 --
 -- ObjC selector: @- detectionTrackForID:@
 detectionTrackForID :: IsCNScript cnScript => cnScript -> CLong -> IO (Id CNDetectionTrack)
-detectionTrackForID cnScript  detectionID =
-    sendMsg cnScript (mkSelector "detectionTrackForID:") (retPtr retVoid) [argCLong detectionID] >>= retainedObject . castPtr
+detectionTrackForID cnScript detectionID =
+  sendMessage cnScript detectionTrackForIDSelector detectionID
 
 -- | A detection track representing all detections that would be chosen by a given decision.
 --
 -- ObjC selector: @- detectionTrackForDecision:@
 detectionTrackForDecision :: (IsCNScript cnScript, IsCNDecision decision) => cnScript -> decision -> IO (Id CNDetectionTrack)
-detectionTrackForDecision cnScript  decision =
-  withObjCPtr decision $ \raw_decision ->
-      sendMsg cnScript (mkSelector "detectionTrackForDecision:") (retPtr retVoid) [argPtr (castPtr raw_decision :: Ptr ())] >>= retainedObject . castPtr
+detectionTrackForDecision cnScript decision =
+  sendMessage cnScript detectionTrackForDecisionSelector (toCNDecision decision)
 
 -- | Add a new user decision. Replaces an existing user decision if the times are identical.
 --
@@ -108,9 +100,8 @@ detectionTrackForDecision cnScript  decision =
 --
 -- ObjC selector: @- addUserDecision:@
 addUserDecision :: (IsCNScript cnScript, IsCNDecision decision) => cnScript -> decision -> IO Bool
-addUserDecision cnScript  decision =
-  withObjCPtr decision $ \raw_decision ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnScript (mkSelector "addUserDecision:") retCULong [argPtr (castPtr raw_decision :: Ptr ())]
+addUserDecision cnScript decision =
+  sendMessage cnScript addUserDecisionSelector (toCNDecision decision)
 
 -- | Remove an existing user decision.
 --
@@ -120,16 +111,15 @@ addUserDecision cnScript  decision =
 --
 -- ObjC selector: @- removeUserDecision:@
 removeUserDecision :: (IsCNScript cnScript, IsCNDecision decision) => cnScript -> decision -> IO Bool
-removeUserDecision cnScript  decision =
-  withObjCPtr decision $ \raw_decision ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnScript (mkSelector "removeUserDecision:") retCULong [argPtr (castPtr raw_decision :: Ptr ())]
+removeUserDecision cnScript decision =
+  sendMessage cnScript removeUserDecisionSelector (toCNDecision decision)
 
 -- | Remove all user decisions and revert to base decisions only.
 --
 -- ObjC selector: @- removeAllUserDecisions@
 removeAllUserDecisions :: IsCNScript cnScript => cnScript -> IO ()
-removeAllUserDecisions cnScript  =
-    sendMsg cnScript (mkSelector "removeAllUserDecisions") retVoid []
+removeAllUserDecisions cnScript =
+  sendMessage cnScript removeAllUserDecisionsSelector
 
 -- | Add user created detection track.
 --
@@ -137,9 +127,8 @@ removeAllUserDecisions cnScript  =
 --
 -- ObjC selector: @- addDetectionTrack:@
 addDetectionTrack :: (IsCNScript cnScript, IsCNDetectionTrack detectionTrack) => cnScript -> detectionTrack -> IO CLong
-addDetectionTrack cnScript  detectionTrack =
-  withObjCPtr detectionTrack $ \raw_detectionTrack ->
-      sendMsg cnScript (mkSelector "addDetectionTrack:") retCLong [argPtr (castPtr raw_detectionTrack :: Ptr ())]
+addDetectionTrack cnScript detectionTrack =
+  sendMessage cnScript addDetectionTrackSelector (toCNDetectionTrack detectionTrack)
 
 -- | Remove user created detection track.
 --
@@ -149,21 +138,20 @@ addDetectionTrack cnScript  detectionTrack =
 --
 -- ObjC selector: @- removeDetectionTrack:@
 removeDetectionTrack :: (IsCNScript cnScript, IsCNDetectionTrack detectionTrack) => cnScript -> detectionTrack -> IO Bool
-removeDetectionTrack cnScript  detectionTrack =
-  withObjCPtr detectionTrack $ \raw_detectionTrack ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnScript (mkSelector "removeDetectionTrack:") retCULong [argPtr (castPtr raw_detectionTrack :: Ptr ())]
+removeDetectionTrack cnScript detectionTrack =
+  sendMessage cnScript removeDetectionTrackSelector (toCNDetectionTrack detectionTrack)
 
 -- | @- init@
 init_ :: IsCNScript cnScript => cnScript -> IO (Id CNScript)
-init_ cnScript  =
-    sendMsg cnScript (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnScript =
+  sendOwnedMessage cnScript initSelector
 
 -- | @+ new@
 new :: IO (Id CNScript)
 new  =
   do
     cls' <- getRequiredClass "CNScript"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The f/number to apply to the entire movie, initially set to that of the recorded movie.
 --
@@ -171,8 +159,8 @@ new  =
 --
 -- ObjC selector: @- fNumber@
 fNumber :: IsCNScript cnScript => cnScript -> IO CFloat
-fNumber cnScript  =
-    sendMsg cnScript (mkSelector "fNumber") retCFloat []
+fNumber cnScript =
+  sendMessage cnScript fNumberSelector
 
 -- | The f/number to apply to the entire movie, initially set to that of the recorded movie.
 --
@@ -180,77 +168,77 @@ fNumber cnScript  =
 --
 -- ObjC selector: @- setFNumber:@
 setFNumber :: IsCNScript cnScript => cnScript -> CFloat -> IO ()
-setFNumber cnScript  value =
-    sendMsg cnScript (mkSelector "setFNumber:") retVoid [argCFloat value]
+setFNumber cnScript value =
+  sendMessage cnScript setFNumberSelector value
 
 -- | All detection tracks that have been added since recording.
 --
 -- ObjC selector: @- addedDetectionTracks@
 addedDetectionTracks :: IsCNScript cnScript => cnScript -> IO (Id NSArray)
-addedDetectionTracks cnScript  =
-    sendMsg cnScript (mkSelector "addedDetectionTracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+addedDetectionTracks cnScript =
+  sendMessage cnScript addedDetectionTracksSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @loadFromAsset:changes:progress:completionHandler:@
-loadFromAsset_changes_progress_completionHandlerSelector :: Selector
+loadFromAsset_changes_progress_completionHandlerSelector :: Selector '[Id AVAsset, Id CNScriptChanges, Id NSProgress, Ptr ()] ()
 loadFromAsset_changes_progress_completionHandlerSelector = mkSelector "loadFromAsset:changes:progress:completionHandler:"
 
 -- | @Selector@ for @reloadWithChanges:@
-reloadWithChangesSelector :: Selector
+reloadWithChangesSelector :: Selector '[Id CNScriptChanges] ()
 reloadWithChangesSelector = mkSelector "reloadWithChanges:"
 
 -- | @Selector@ for @changes@
-changesSelector :: Selector
+changesSelector :: Selector '[] (Id CNScriptChanges)
 changesSelector = mkSelector "changes"
 
 -- | @Selector@ for @detectionTrackForID:@
-detectionTrackForIDSelector :: Selector
+detectionTrackForIDSelector :: Selector '[CLong] (Id CNDetectionTrack)
 detectionTrackForIDSelector = mkSelector "detectionTrackForID:"
 
 -- | @Selector@ for @detectionTrackForDecision:@
-detectionTrackForDecisionSelector :: Selector
+detectionTrackForDecisionSelector :: Selector '[Id CNDecision] (Id CNDetectionTrack)
 detectionTrackForDecisionSelector = mkSelector "detectionTrackForDecision:"
 
 -- | @Selector@ for @addUserDecision:@
-addUserDecisionSelector :: Selector
+addUserDecisionSelector :: Selector '[Id CNDecision] Bool
 addUserDecisionSelector = mkSelector "addUserDecision:"
 
 -- | @Selector@ for @removeUserDecision:@
-removeUserDecisionSelector :: Selector
+removeUserDecisionSelector :: Selector '[Id CNDecision] Bool
 removeUserDecisionSelector = mkSelector "removeUserDecision:"
 
 -- | @Selector@ for @removeAllUserDecisions@
-removeAllUserDecisionsSelector :: Selector
+removeAllUserDecisionsSelector :: Selector '[] ()
 removeAllUserDecisionsSelector = mkSelector "removeAllUserDecisions"
 
 -- | @Selector@ for @addDetectionTrack:@
-addDetectionTrackSelector :: Selector
+addDetectionTrackSelector :: Selector '[Id CNDetectionTrack] CLong
 addDetectionTrackSelector = mkSelector "addDetectionTrack:"
 
 -- | @Selector@ for @removeDetectionTrack:@
-removeDetectionTrackSelector :: Selector
+removeDetectionTrackSelector :: Selector '[Id CNDetectionTrack] Bool
 removeDetectionTrackSelector = mkSelector "removeDetectionTrack:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNScript)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNScript)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @fNumber@
-fNumberSelector :: Selector
+fNumberSelector :: Selector '[] CFloat
 fNumberSelector = mkSelector "fNumber"
 
 -- | @Selector@ for @setFNumber:@
-setFNumberSelector :: Selector
+setFNumberSelector :: Selector '[CFloat] ()
 setFNumberSelector = mkSelector "setFNumber:"
 
 -- | @Selector@ for @addedDetectionTracks@
-addedDetectionTracksSelector :: Selector
+addedDetectionTracksSelector :: Selector '[] (Id NSArray)
 addedDetectionTracksSelector = mkSelector "addedDetectionTracks"
 

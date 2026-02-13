@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.CoreData.NSCustomMigrationStage
   , setWillMigrateHandler
   , didMigrateHandler
   , setDidMigrateHandler
+  , currentModelSelector
+  , didMigrateHandlerSelector
   , initSelector
   , initWithCurrentModelReference_nextModelReferenceSelector
-  , currentModelSelector
   , nextModelSelector
-  , willMigrateHandlerSelector
-  , setWillMigrateHandlerSelector
-  , didMigrateHandlerSelector
   , setDidMigrateHandlerSelector
+  , setWillMigrateHandlerSelector
+  , willMigrateHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,79 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSCustomMigrationStage nsCustomMigrationStage => nsCustomMigrationStage -> IO (Id NSCustomMigrationStage)
-init_ nsCustomMigrationStage  =
-    sendMsg nsCustomMigrationStage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCustomMigrationStage =
+  sendOwnedMessage nsCustomMigrationStage initSelector
 
 -- | @- initWithCurrentModelReference:nextModelReference:@
 initWithCurrentModelReference_nextModelReference :: (IsNSCustomMigrationStage nsCustomMigrationStage, IsNSManagedObjectModelReference currentModel, IsNSManagedObjectModelReference nextModel) => nsCustomMigrationStage -> currentModel -> nextModel -> IO (Id NSCustomMigrationStage)
-initWithCurrentModelReference_nextModelReference nsCustomMigrationStage  currentModel nextModel =
-  withObjCPtr currentModel $ \raw_currentModel ->
-    withObjCPtr nextModel $ \raw_nextModel ->
-        sendMsg nsCustomMigrationStage (mkSelector "initWithCurrentModelReference:nextModelReference:") (retPtr retVoid) [argPtr (castPtr raw_currentModel :: Ptr ()), argPtr (castPtr raw_nextModel :: Ptr ())] >>= ownedObject . castPtr
+initWithCurrentModelReference_nextModelReference nsCustomMigrationStage currentModel nextModel =
+  sendOwnedMessage nsCustomMigrationStage initWithCurrentModelReference_nextModelReferenceSelector (toNSManagedObjectModelReference currentModel) (toNSManagedObjectModelReference nextModel)
 
 -- | @- currentModel@
 currentModel :: IsNSCustomMigrationStage nsCustomMigrationStage => nsCustomMigrationStage -> IO (Id NSManagedObjectModelReference)
-currentModel nsCustomMigrationStage  =
-    sendMsg nsCustomMigrationStage (mkSelector "currentModel") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentModel nsCustomMigrationStage =
+  sendMessage nsCustomMigrationStage currentModelSelector
 
 -- | @- nextModel@
 nextModel :: IsNSCustomMigrationStage nsCustomMigrationStage => nsCustomMigrationStage -> IO (Id NSManagedObjectModelReference)
-nextModel nsCustomMigrationStage  =
-    sendMsg nsCustomMigrationStage (mkSelector "nextModel") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextModel nsCustomMigrationStage =
+  sendMessage nsCustomMigrationStage nextModelSelector
 
 -- | @- willMigrateHandler@
 willMigrateHandler :: IsNSCustomMigrationStage nsCustomMigrationStage => nsCustomMigrationStage -> IO (Ptr ())
-willMigrateHandler nsCustomMigrationStage  =
-    fmap castPtr $ sendMsg nsCustomMigrationStage (mkSelector "willMigrateHandler") (retPtr retVoid) []
+willMigrateHandler nsCustomMigrationStage =
+  sendMessage nsCustomMigrationStage willMigrateHandlerSelector
 
 -- | @- setWillMigrateHandler:@
 setWillMigrateHandler :: IsNSCustomMigrationStage nsCustomMigrationStage => nsCustomMigrationStage -> Ptr () -> IO ()
-setWillMigrateHandler nsCustomMigrationStage  value =
-    sendMsg nsCustomMigrationStage (mkSelector "setWillMigrateHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setWillMigrateHandler nsCustomMigrationStage value =
+  sendMessage nsCustomMigrationStage setWillMigrateHandlerSelector value
 
 -- | @- didMigrateHandler@
 didMigrateHandler :: IsNSCustomMigrationStage nsCustomMigrationStage => nsCustomMigrationStage -> IO (Ptr ())
-didMigrateHandler nsCustomMigrationStage  =
-    fmap castPtr $ sendMsg nsCustomMigrationStage (mkSelector "didMigrateHandler") (retPtr retVoid) []
+didMigrateHandler nsCustomMigrationStage =
+  sendMessage nsCustomMigrationStage didMigrateHandlerSelector
 
 -- | @- setDidMigrateHandler:@
 setDidMigrateHandler :: IsNSCustomMigrationStage nsCustomMigrationStage => nsCustomMigrationStage -> Ptr () -> IO ()
-setDidMigrateHandler nsCustomMigrationStage  value =
-    sendMsg nsCustomMigrationStage (mkSelector "setDidMigrateHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setDidMigrateHandler nsCustomMigrationStage value =
+  sendMessage nsCustomMigrationStage setDidMigrateHandlerSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCustomMigrationStage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCurrentModelReference:nextModelReference:@
-initWithCurrentModelReference_nextModelReferenceSelector :: Selector
+initWithCurrentModelReference_nextModelReferenceSelector :: Selector '[Id NSManagedObjectModelReference, Id NSManagedObjectModelReference] (Id NSCustomMigrationStage)
 initWithCurrentModelReference_nextModelReferenceSelector = mkSelector "initWithCurrentModelReference:nextModelReference:"
 
 -- | @Selector@ for @currentModel@
-currentModelSelector :: Selector
+currentModelSelector :: Selector '[] (Id NSManagedObjectModelReference)
 currentModelSelector = mkSelector "currentModel"
 
 -- | @Selector@ for @nextModel@
-nextModelSelector :: Selector
+nextModelSelector :: Selector '[] (Id NSManagedObjectModelReference)
 nextModelSelector = mkSelector "nextModel"
 
 -- | @Selector@ for @willMigrateHandler@
-willMigrateHandlerSelector :: Selector
+willMigrateHandlerSelector :: Selector '[] (Ptr ())
 willMigrateHandlerSelector = mkSelector "willMigrateHandler"
 
 -- | @Selector@ for @setWillMigrateHandler:@
-setWillMigrateHandlerSelector :: Selector
+setWillMigrateHandlerSelector :: Selector '[Ptr ()] ()
 setWillMigrateHandlerSelector = mkSelector "setWillMigrateHandler:"
 
 -- | @Selector@ for @didMigrateHandler@
-didMigrateHandlerSelector :: Selector
+didMigrateHandlerSelector :: Selector '[] (Ptr ())
 didMigrateHandlerSelector = mkSelector "didMigrateHandler"
 
 -- | @Selector@ for @setDidMigrateHandler:@
-setDidMigrateHandlerSelector :: Selector
+setDidMigrateHandlerSelector :: Selector '[Ptr ()] ()
 setDidMigrateHandlerSelector = mkSelector "setDidMigrateHandler:"
 

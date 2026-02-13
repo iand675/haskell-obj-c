@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,47 +39,43 @@ module ObjC.SceneKit.SCNPhysicsSliderJoint
   , setMotorTargetAngularVelocity
   , motorMaximumTorque
   , setMotorMaximumTorque
+  , anchorASelector
+  , anchorBSelector
+  , axisASelector
+  , axisBSelector
+  , bodyASelector
+  , bodyBSelector
   , jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector
   , jointWithBody_axis_anchorSelector
-  , bodyASelector
-  , axisASelector
-  , setAxisASelector
-  , anchorASelector
-  , setAnchorASelector
-  , bodyBSelector
-  , axisBSelector
-  , setAxisBSelector
-  , anchorBSelector
-  , setAnchorBSelector
-  , minimumLinearLimitSelector
-  , setMinimumLinearLimitSelector
-  , maximumLinearLimitSelector
-  , setMaximumLinearLimitSelector
-  , minimumAngularLimitSelector
-  , setMinimumAngularLimitSelector
   , maximumAngularLimitSelector
-  , setMaximumAngularLimitSelector
-  , motorTargetLinearVelocitySelector
-  , setMotorTargetLinearVelocitySelector
+  , maximumLinearLimitSelector
+  , minimumAngularLimitSelector
+  , minimumLinearLimitSelector
   , motorMaximumForceSelector
-  , setMotorMaximumForceSelector
-  , motorTargetAngularVelocitySelector
-  , setMotorTargetAngularVelocitySelector
   , motorMaximumTorqueSelector
+  , motorTargetAngularVelocitySelector
+  , motorTargetLinearVelocitySelector
+  , setAnchorASelector
+  , setAnchorBSelector
+  , setAxisASelector
+  , setAxisBSelector
+  , setMaximumAngularLimitSelector
+  , setMaximumLinearLimitSelector
+  , setMinimumAngularLimitSelector
+  , setMinimumLinearLimitSelector
+  , setMotorMaximumForceSelector
   , setMotorMaximumTorqueSelector
+  , setMotorTargetAngularVelocitySelector
+  , setMotorTargetLinearVelocitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -91,261 +88,258 @@ jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorB :: (IsSCNPhysicsBody bodyA, IsS
 jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorB bodyA axisA anchorA bodyB axisB anchorB =
   do
     cls' <- getRequiredClass "SCNPhysicsSliderJoint"
-    withObjCPtr bodyA $ \raw_bodyA ->
-      withObjCPtr bodyB $ \raw_bodyB ->
-        sendClassMsg cls' (mkSelector "jointWithBodyA:axisA:anchorA:bodyB:axisB:anchorB:") (retPtr retVoid) [argPtr (castPtr raw_bodyA :: Ptr ()), argSCNVector3 axisA, argSCNVector3 anchorA, argPtr (castPtr raw_bodyB :: Ptr ()), argSCNVector3 axisB, argSCNVector3 anchorB] >>= retainedObject . castPtr
+    sendClassMessage cls' jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector (toSCNPhysicsBody bodyA) axisA anchorA (toSCNPhysicsBody bodyB) axisB anchorB
 
 -- | @+ jointWithBody:axis:anchor:@
 jointWithBody_axis_anchor :: IsSCNPhysicsBody body => body -> SCNVector3 -> SCNVector3 -> IO (Id SCNPhysicsSliderJoint)
 jointWithBody_axis_anchor body axis anchor =
   do
     cls' <- getRequiredClass "SCNPhysicsSliderJoint"
-    withObjCPtr body $ \raw_body ->
-      sendClassMsg cls' (mkSelector "jointWithBody:axis:anchor:") (retPtr retVoid) [argPtr (castPtr raw_body :: Ptr ()), argSCNVector3 axis, argSCNVector3 anchor] >>= retainedObject . castPtr
+    sendClassMessage cls' jointWithBody_axis_anchorSelector (toSCNPhysicsBody body) axis anchor
 
 -- | @- bodyA@
 bodyA :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO (Id SCNPhysicsBody)
-bodyA scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "bodyA") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyA scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint bodyASelector
 
 -- | @- axisA@
 axisA :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO SCNVector3
-axisA scnPhysicsSliderJoint  =
-    sendMsgStret scnPhysicsSliderJoint (mkSelector "axisA") retSCNVector3 []
+axisA scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint axisASelector
 
 -- | @- setAxisA:@
 setAxisA :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> SCNVector3 -> IO ()
-setAxisA scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setAxisA:") retVoid [argSCNVector3 value]
+setAxisA scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setAxisASelector value
 
 -- | @- anchorA@
 anchorA :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO SCNVector3
-anchorA scnPhysicsSliderJoint  =
-    sendMsgStret scnPhysicsSliderJoint (mkSelector "anchorA") retSCNVector3 []
+anchorA scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint anchorASelector
 
 -- | @- setAnchorA:@
 setAnchorA :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> SCNVector3 -> IO ()
-setAnchorA scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setAnchorA:") retVoid [argSCNVector3 value]
+setAnchorA scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setAnchorASelector value
 
 -- | @- bodyB@
 bodyB :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO (Id SCNPhysicsBody)
-bodyB scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "bodyB") (retPtr retVoid) [] >>= retainedObject . castPtr
+bodyB scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint bodyBSelector
 
 -- | @- axisB@
 axisB :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO SCNVector3
-axisB scnPhysicsSliderJoint  =
-    sendMsgStret scnPhysicsSliderJoint (mkSelector "axisB") retSCNVector3 []
+axisB scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint axisBSelector
 
 -- | @- setAxisB:@
 setAxisB :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> SCNVector3 -> IO ()
-setAxisB scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setAxisB:") retVoid [argSCNVector3 value]
+setAxisB scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setAxisBSelector value
 
 -- | @- anchorB@
 anchorB :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO SCNVector3
-anchorB scnPhysicsSliderJoint  =
-    sendMsgStret scnPhysicsSliderJoint (mkSelector "anchorB") retSCNVector3 []
+anchorB scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint anchorBSelector
 
 -- | @- setAnchorB:@
 setAnchorB :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> SCNVector3 -> IO ()
-setAnchorB scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setAnchorB:") retVoid [argSCNVector3 value]
+setAnchorB scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setAnchorBSelector value
 
 -- | @- minimumLinearLimit@
 minimumLinearLimit :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO CDouble
-minimumLinearLimit scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "minimumLinearLimit") retCDouble []
+minimumLinearLimit scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint minimumLinearLimitSelector
 
 -- | @- setMinimumLinearLimit:@
 setMinimumLinearLimit :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> CDouble -> IO ()
-setMinimumLinearLimit scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setMinimumLinearLimit:") retVoid [argCDouble value]
+setMinimumLinearLimit scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setMinimumLinearLimitSelector value
 
 -- | @- maximumLinearLimit@
 maximumLinearLimit :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO CDouble
-maximumLinearLimit scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "maximumLinearLimit") retCDouble []
+maximumLinearLimit scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint maximumLinearLimitSelector
 
 -- | @- setMaximumLinearLimit:@
 setMaximumLinearLimit :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> CDouble -> IO ()
-setMaximumLinearLimit scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setMaximumLinearLimit:") retVoid [argCDouble value]
+setMaximumLinearLimit scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setMaximumLinearLimitSelector value
 
 -- | @- minimumAngularLimit@
 minimumAngularLimit :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO CDouble
-minimumAngularLimit scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "minimumAngularLimit") retCDouble []
+minimumAngularLimit scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint minimumAngularLimitSelector
 
 -- | @- setMinimumAngularLimit:@
 setMinimumAngularLimit :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> CDouble -> IO ()
-setMinimumAngularLimit scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setMinimumAngularLimit:") retVoid [argCDouble value]
+setMinimumAngularLimit scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setMinimumAngularLimitSelector value
 
 -- | @- maximumAngularLimit@
 maximumAngularLimit :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO CDouble
-maximumAngularLimit scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "maximumAngularLimit") retCDouble []
+maximumAngularLimit scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint maximumAngularLimitSelector
 
 -- | @- setMaximumAngularLimit:@
 setMaximumAngularLimit :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> CDouble -> IO ()
-setMaximumAngularLimit scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setMaximumAngularLimit:") retVoid [argCDouble value]
+setMaximumAngularLimit scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setMaximumAngularLimitSelector value
 
 -- | @- motorTargetLinearVelocity@
 motorTargetLinearVelocity :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO CDouble
-motorTargetLinearVelocity scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "motorTargetLinearVelocity") retCDouble []
+motorTargetLinearVelocity scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint motorTargetLinearVelocitySelector
 
 -- | @- setMotorTargetLinearVelocity:@
 setMotorTargetLinearVelocity :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> CDouble -> IO ()
-setMotorTargetLinearVelocity scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setMotorTargetLinearVelocity:") retVoid [argCDouble value]
+setMotorTargetLinearVelocity scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setMotorTargetLinearVelocitySelector value
 
 -- | @- motorMaximumForce@
 motorMaximumForce :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO CDouble
-motorMaximumForce scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "motorMaximumForce") retCDouble []
+motorMaximumForce scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint motorMaximumForceSelector
 
 -- | @- setMotorMaximumForce:@
 setMotorMaximumForce :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> CDouble -> IO ()
-setMotorMaximumForce scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setMotorMaximumForce:") retVoid [argCDouble value]
+setMotorMaximumForce scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setMotorMaximumForceSelector value
 
 -- | @- motorTargetAngularVelocity@
 motorTargetAngularVelocity :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO CDouble
-motorTargetAngularVelocity scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "motorTargetAngularVelocity") retCDouble []
+motorTargetAngularVelocity scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint motorTargetAngularVelocitySelector
 
 -- | @- setMotorTargetAngularVelocity:@
 setMotorTargetAngularVelocity :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> CDouble -> IO ()
-setMotorTargetAngularVelocity scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setMotorTargetAngularVelocity:") retVoid [argCDouble value]
+setMotorTargetAngularVelocity scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setMotorTargetAngularVelocitySelector value
 
 -- | @- motorMaximumTorque@
 motorMaximumTorque :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> IO CDouble
-motorMaximumTorque scnPhysicsSliderJoint  =
-    sendMsg scnPhysicsSliderJoint (mkSelector "motorMaximumTorque") retCDouble []
+motorMaximumTorque scnPhysicsSliderJoint =
+  sendMessage scnPhysicsSliderJoint motorMaximumTorqueSelector
 
 -- | @- setMotorMaximumTorque:@
 setMotorMaximumTorque :: IsSCNPhysicsSliderJoint scnPhysicsSliderJoint => scnPhysicsSliderJoint -> CDouble -> IO ()
-setMotorMaximumTorque scnPhysicsSliderJoint  value =
-    sendMsg scnPhysicsSliderJoint (mkSelector "setMotorMaximumTorque:") retVoid [argCDouble value]
+setMotorMaximumTorque scnPhysicsSliderJoint value =
+  sendMessage scnPhysicsSliderJoint setMotorMaximumTorqueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @jointWithBodyA:axisA:anchorA:bodyB:axisB:anchorB:@
-jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector :: Selector
+jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector :: Selector '[Id SCNPhysicsBody, SCNVector3, SCNVector3, Id SCNPhysicsBody, SCNVector3, SCNVector3] (Id SCNPhysicsSliderJoint)
 jointWithBodyA_axisA_anchorA_bodyB_axisB_anchorBSelector = mkSelector "jointWithBodyA:axisA:anchorA:bodyB:axisB:anchorB:"
 
 -- | @Selector@ for @jointWithBody:axis:anchor:@
-jointWithBody_axis_anchorSelector :: Selector
+jointWithBody_axis_anchorSelector :: Selector '[Id SCNPhysicsBody, SCNVector3, SCNVector3] (Id SCNPhysicsSliderJoint)
 jointWithBody_axis_anchorSelector = mkSelector "jointWithBody:axis:anchor:"
 
 -- | @Selector@ for @bodyA@
-bodyASelector :: Selector
+bodyASelector :: Selector '[] (Id SCNPhysicsBody)
 bodyASelector = mkSelector "bodyA"
 
 -- | @Selector@ for @axisA@
-axisASelector :: Selector
+axisASelector :: Selector '[] SCNVector3
 axisASelector = mkSelector "axisA"
 
 -- | @Selector@ for @setAxisA:@
-setAxisASelector :: Selector
+setAxisASelector :: Selector '[SCNVector3] ()
 setAxisASelector = mkSelector "setAxisA:"
 
 -- | @Selector@ for @anchorA@
-anchorASelector :: Selector
+anchorASelector :: Selector '[] SCNVector3
 anchorASelector = mkSelector "anchorA"
 
 -- | @Selector@ for @setAnchorA:@
-setAnchorASelector :: Selector
+setAnchorASelector :: Selector '[SCNVector3] ()
 setAnchorASelector = mkSelector "setAnchorA:"
 
 -- | @Selector@ for @bodyB@
-bodyBSelector :: Selector
+bodyBSelector :: Selector '[] (Id SCNPhysicsBody)
 bodyBSelector = mkSelector "bodyB"
 
 -- | @Selector@ for @axisB@
-axisBSelector :: Selector
+axisBSelector :: Selector '[] SCNVector3
 axisBSelector = mkSelector "axisB"
 
 -- | @Selector@ for @setAxisB:@
-setAxisBSelector :: Selector
+setAxisBSelector :: Selector '[SCNVector3] ()
 setAxisBSelector = mkSelector "setAxisB:"
 
 -- | @Selector@ for @anchorB@
-anchorBSelector :: Selector
+anchorBSelector :: Selector '[] SCNVector3
 anchorBSelector = mkSelector "anchorB"
 
 -- | @Selector@ for @setAnchorB:@
-setAnchorBSelector :: Selector
+setAnchorBSelector :: Selector '[SCNVector3] ()
 setAnchorBSelector = mkSelector "setAnchorB:"
 
 -- | @Selector@ for @minimumLinearLimit@
-minimumLinearLimitSelector :: Selector
+minimumLinearLimitSelector :: Selector '[] CDouble
 minimumLinearLimitSelector = mkSelector "minimumLinearLimit"
 
 -- | @Selector@ for @setMinimumLinearLimit:@
-setMinimumLinearLimitSelector :: Selector
+setMinimumLinearLimitSelector :: Selector '[CDouble] ()
 setMinimumLinearLimitSelector = mkSelector "setMinimumLinearLimit:"
 
 -- | @Selector@ for @maximumLinearLimit@
-maximumLinearLimitSelector :: Selector
+maximumLinearLimitSelector :: Selector '[] CDouble
 maximumLinearLimitSelector = mkSelector "maximumLinearLimit"
 
 -- | @Selector@ for @setMaximumLinearLimit:@
-setMaximumLinearLimitSelector :: Selector
+setMaximumLinearLimitSelector :: Selector '[CDouble] ()
 setMaximumLinearLimitSelector = mkSelector "setMaximumLinearLimit:"
 
 -- | @Selector@ for @minimumAngularLimit@
-minimumAngularLimitSelector :: Selector
+minimumAngularLimitSelector :: Selector '[] CDouble
 minimumAngularLimitSelector = mkSelector "minimumAngularLimit"
 
 -- | @Selector@ for @setMinimumAngularLimit:@
-setMinimumAngularLimitSelector :: Selector
+setMinimumAngularLimitSelector :: Selector '[CDouble] ()
 setMinimumAngularLimitSelector = mkSelector "setMinimumAngularLimit:"
 
 -- | @Selector@ for @maximumAngularLimit@
-maximumAngularLimitSelector :: Selector
+maximumAngularLimitSelector :: Selector '[] CDouble
 maximumAngularLimitSelector = mkSelector "maximumAngularLimit"
 
 -- | @Selector@ for @setMaximumAngularLimit:@
-setMaximumAngularLimitSelector :: Selector
+setMaximumAngularLimitSelector :: Selector '[CDouble] ()
 setMaximumAngularLimitSelector = mkSelector "setMaximumAngularLimit:"
 
 -- | @Selector@ for @motorTargetLinearVelocity@
-motorTargetLinearVelocitySelector :: Selector
+motorTargetLinearVelocitySelector :: Selector '[] CDouble
 motorTargetLinearVelocitySelector = mkSelector "motorTargetLinearVelocity"
 
 -- | @Selector@ for @setMotorTargetLinearVelocity:@
-setMotorTargetLinearVelocitySelector :: Selector
+setMotorTargetLinearVelocitySelector :: Selector '[CDouble] ()
 setMotorTargetLinearVelocitySelector = mkSelector "setMotorTargetLinearVelocity:"
 
 -- | @Selector@ for @motorMaximumForce@
-motorMaximumForceSelector :: Selector
+motorMaximumForceSelector :: Selector '[] CDouble
 motorMaximumForceSelector = mkSelector "motorMaximumForce"
 
 -- | @Selector@ for @setMotorMaximumForce:@
-setMotorMaximumForceSelector :: Selector
+setMotorMaximumForceSelector :: Selector '[CDouble] ()
 setMotorMaximumForceSelector = mkSelector "setMotorMaximumForce:"
 
 -- | @Selector@ for @motorTargetAngularVelocity@
-motorTargetAngularVelocitySelector :: Selector
+motorTargetAngularVelocitySelector :: Selector '[] CDouble
 motorTargetAngularVelocitySelector = mkSelector "motorTargetAngularVelocity"
 
 -- | @Selector@ for @setMotorTargetAngularVelocity:@
-setMotorTargetAngularVelocitySelector :: Selector
+setMotorTargetAngularVelocitySelector :: Selector '[CDouble] ()
 setMotorTargetAngularVelocitySelector = mkSelector "setMotorTargetAngularVelocity:"
 
 -- | @Selector@ for @motorMaximumTorque@
-motorMaximumTorqueSelector :: Selector
+motorMaximumTorqueSelector :: Selector '[] CDouble
 motorMaximumTorqueSelector = mkSelector "motorMaximumTorque"
 
 -- | @Selector@ for @setMotorMaximumTorque:@
-setMotorMaximumTorqueSelector :: Selector
+setMotorMaximumTorqueSelector :: Selector '[CDouble] ()
 setMotorMaximumTorqueSelector = mkSelector "setMotorMaximumTorque:"
 

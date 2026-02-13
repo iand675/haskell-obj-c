@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,18 +24,18 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphDepthwiseConvolution3DOpDescrip
   , setPaddingStyle
   , channelDimensionIndex
   , setChannelDimensionIndex
-  , descriptorWithStrides_dilationRates_paddingValues_paddingStyleSelector
-  , descriptorWithPaddingStyleSelector
-  , stridesSelector
-  , setStridesSelector
-  , dilationRatesSelector
-  , setDilationRatesSelector
-  , paddingValuesSelector
-  , setPaddingValuesSelector
-  , paddingStyleSelector
-  , setPaddingStyleSelector
   , channelDimensionIndexSelector
+  , descriptorWithPaddingStyleSelector
+  , descriptorWithStrides_dilationRates_paddingValues_paddingStyleSelector
+  , dilationRatesSelector
+  , paddingStyleSelector
+  , paddingValuesSelector
   , setChannelDimensionIndexSelector
+  , setDilationRatesSelector
+  , setPaddingStyleSelector
+  , setPaddingValuesSelector
+  , setStridesSelector
+  , stridesSelector
 
   -- * Enum types
   , MPSGraphPaddingStyle(MPSGraphPaddingStyle)
@@ -46,15 +47,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphDepthwiseConvolution3DOpDescrip
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,10 +68,7 @@ descriptorWithStrides_dilationRates_paddingValues_paddingStyle :: (IsNSArray str
 descriptorWithStrides_dilationRates_paddingValues_paddingStyle strides dilationRates paddingValues paddingStyle =
   do
     cls' <- getRequiredClass "MPSGraphDepthwiseConvolution3DOpDescriptor"
-    withObjCPtr strides $ \raw_strides ->
-      withObjCPtr dilationRates $ \raw_dilationRates ->
-        withObjCPtr paddingValues $ \raw_paddingValues ->
-          sendClassMsg cls' (mkSelector "descriptorWithStrides:dilationRates:paddingValues:paddingStyle:") (retPtr retVoid) [argPtr (castPtr raw_strides :: Ptr ()), argPtr (castPtr raw_dilationRates :: Ptr ()), argPtr (castPtr raw_paddingValues :: Ptr ()), argCULong (coerce paddingStyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithStrides_dilationRates_paddingValues_paddingStyleSelector (toNSArray strides) (toNSArray dilationRates) (toNSArray paddingValues) paddingStyle
 
 -- | Creates a 3D depthwise convolution descriptor with default values.
 --
@@ -85,7 +79,7 @@ descriptorWithPaddingStyle :: MPSGraphPaddingStyle -> IO (Id MPSGraphDepthwiseCo
 descriptorWithPaddingStyle paddingStyle =
   do
     cls' <- getRequiredClass "MPSGraphDepthwiseConvolution3DOpDescriptor"
-    sendClassMsg cls' (mkSelector "descriptorWithPaddingStyle:") (retPtr retVoid) [argCULong (coerce paddingStyle)] >>= retainedObject . castPtr
+    sendClassMessage cls' descriptorWithPaddingStyleSelector paddingStyle
 
 -- | The strides for spatial dimensions.
 --
@@ -93,8 +87,8 @@ descriptorWithPaddingStyle paddingStyle =
 --
 -- ObjC selector: @- strides@
 strides :: IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor => mpsGraphDepthwiseConvolution3DOpDescriptor -> IO (Id NSArray)
-strides mpsGraphDepthwiseConvolution3DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "strides") (retPtr retVoid) [] >>= retainedObject . castPtr
+strides mpsGraphDepthwiseConvolution3DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor stridesSelector
 
 -- | The strides for spatial dimensions.
 --
@@ -102,9 +96,8 @@ strides mpsGraphDepthwiseConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setStrides:@
 setStrides :: (IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor, IsNSArray value) => mpsGraphDepthwiseConvolution3DOpDescriptor -> value -> IO ()
-setStrides mpsGraphDepthwiseConvolution3DOpDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "setStrides:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStrides mpsGraphDepthwiseConvolution3DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor setStridesSelector (toNSArray value)
 
 -- | The dilation rates for spatial dimensions.
 --
@@ -112,8 +105,8 @@ setStrides mpsGraphDepthwiseConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- dilationRates@
 dilationRates :: IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor => mpsGraphDepthwiseConvolution3DOpDescriptor -> IO (Id NSArray)
-dilationRates mpsGraphDepthwiseConvolution3DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "dilationRates") (retPtr retVoid) [] >>= retainedObject . castPtr
+dilationRates mpsGraphDepthwiseConvolution3DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor dilationRatesSelector
 
 -- | The dilation rates for spatial dimensions.
 --
@@ -121,9 +114,8 @@ dilationRates mpsGraphDepthwiseConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setDilationRates:@
 setDilationRates :: (IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor, IsNSArray value) => mpsGraphDepthwiseConvolution3DOpDescriptor -> value -> IO ()
-setDilationRates mpsGraphDepthwiseConvolution3DOpDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "setDilationRates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDilationRates mpsGraphDepthwiseConvolution3DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor setDilationRatesSelector (toNSArray value)
 
 -- | The padding values for spatial dimensions.
 --
@@ -131,8 +123,8 @@ setDilationRates mpsGraphDepthwiseConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingValues@
 paddingValues :: IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor => mpsGraphDepthwiseConvolution3DOpDescriptor -> IO (Id NSArray)
-paddingValues mpsGraphDepthwiseConvolution3DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "paddingValues") (retPtr retVoid) [] >>= retainedObject . castPtr
+paddingValues mpsGraphDepthwiseConvolution3DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor paddingValuesSelector
 
 -- | The padding values for spatial dimensions.
 --
@@ -140,9 +132,8 @@ paddingValues mpsGraphDepthwiseConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingValues:@
 setPaddingValues :: (IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor, IsNSArray value) => mpsGraphDepthwiseConvolution3DOpDescriptor -> value -> IO ()
-setPaddingValues mpsGraphDepthwiseConvolution3DOpDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "setPaddingValues:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaddingValues mpsGraphDepthwiseConvolution3DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor setPaddingValuesSelector (toNSArray value)
 
 -- | The padding style for the operation.
 --
@@ -150,8 +141,8 @@ setPaddingValues mpsGraphDepthwiseConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- paddingStyle@
 paddingStyle :: IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor => mpsGraphDepthwiseConvolution3DOpDescriptor -> IO MPSGraphPaddingStyle
-paddingStyle mpsGraphDepthwiseConvolution3DOpDescriptor  =
-    fmap (coerce :: CULong -> MPSGraphPaddingStyle) $ sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "paddingStyle") retCULong []
+paddingStyle mpsGraphDepthwiseConvolution3DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor paddingStyleSelector
 
 -- | The padding style for the operation.
 --
@@ -159,8 +150,8 @@ paddingStyle mpsGraphDepthwiseConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setPaddingStyle:@
 setPaddingStyle :: IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor => mpsGraphDepthwiseConvolution3DOpDescriptor -> MPSGraphPaddingStyle -> IO ()
-setPaddingStyle mpsGraphDepthwiseConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "setPaddingStyle:") retVoid [argCULong (coerce value)]
+setPaddingStyle mpsGraphDepthwiseConvolution3DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor setPaddingStyleSelector value
 
 -- | The axis that contains the channels in the input and the weights, within the 4D tile of the last dimensions.
 --
@@ -168,8 +159,8 @@ setPaddingStyle mpsGraphDepthwiseConvolution3DOpDescriptor  value =
 --
 -- ObjC selector: @- channelDimensionIndex@
 channelDimensionIndex :: IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor => mpsGraphDepthwiseConvolution3DOpDescriptor -> IO CLong
-channelDimensionIndex mpsGraphDepthwiseConvolution3DOpDescriptor  =
-    sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "channelDimensionIndex") retCLong []
+channelDimensionIndex mpsGraphDepthwiseConvolution3DOpDescriptor =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor channelDimensionIndexSelector
 
 -- | The axis that contains the channels in the input and the weights, within the 4D tile of the last dimensions.
 --
@@ -177,58 +168,58 @@ channelDimensionIndex mpsGraphDepthwiseConvolution3DOpDescriptor  =
 --
 -- ObjC selector: @- setChannelDimensionIndex:@
 setChannelDimensionIndex :: IsMPSGraphDepthwiseConvolution3DOpDescriptor mpsGraphDepthwiseConvolution3DOpDescriptor => mpsGraphDepthwiseConvolution3DOpDescriptor -> CLong -> IO ()
-setChannelDimensionIndex mpsGraphDepthwiseConvolution3DOpDescriptor  value =
-    sendMsg mpsGraphDepthwiseConvolution3DOpDescriptor (mkSelector "setChannelDimensionIndex:") retVoid [argCLong value]
+setChannelDimensionIndex mpsGraphDepthwiseConvolution3DOpDescriptor value =
+  sendMessage mpsGraphDepthwiseConvolution3DOpDescriptor setChannelDimensionIndexSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorWithStrides:dilationRates:paddingValues:paddingStyle:@
-descriptorWithStrides_dilationRates_paddingValues_paddingStyleSelector :: Selector
+descriptorWithStrides_dilationRates_paddingValues_paddingStyleSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray, MPSGraphPaddingStyle] (Id MPSGraphDepthwiseConvolution3DOpDescriptor)
 descriptorWithStrides_dilationRates_paddingValues_paddingStyleSelector = mkSelector "descriptorWithStrides:dilationRates:paddingValues:paddingStyle:"
 
 -- | @Selector@ for @descriptorWithPaddingStyle:@
-descriptorWithPaddingStyleSelector :: Selector
+descriptorWithPaddingStyleSelector :: Selector '[MPSGraphPaddingStyle] (Id MPSGraphDepthwiseConvolution3DOpDescriptor)
 descriptorWithPaddingStyleSelector = mkSelector "descriptorWithPaddingStyle:"
 
 -- | @Selector@ for @strides@
-stridesSelector :: Selector
+stridesSelector :: Selector '[] (Id NSArray)
 stridesSelector = mkSelector "strides"
 
 -- | @Selector@ for @setStrides:@
-setStridesSelector :: Selector
+setStridesSelector :: Selector '[Id NSArray] ()
 setStridesSelector = mkSelector "setStrides:"
 
 -- | @Selector@ for @dilationRates@
-dilationRatesSelector :: Selector
+dilationRatesSelector :: Selector '[] (Id NSArray)
 dilationRatesSelector = mkSelector "dilationRates"
 
 -- | @Selector@ for @setDilationRates:@
-setDilationRatesSelector :: Selector
+setDilationRatesSelector :: Selector '[Id NSArray] ()
 setDilationRatesSelector = mkSelector "setDilationRates:"
 
 -- | @Selector@ for @paddingValues@
-paddingValuesSelector :: Selector
+paddingValuesSelector :: Selector '[] (Id NSArray)
 paddingValuesSelector = mkSelector "paddingValues"
 
 -- | @Selector@ for @setPaddingValues:@
-setPaddingValuesSelector :: Selector
+setPaddingValuesSelector :: Selector '[Id NSArray] ()
 setPaddingValuesSelector = mkSelector "setPaddingValues:"
 
 -- | @Selector@ for @paddingStyle@
-paddingStyleSelector :: Selector
+paddingStyleSelector :: Selector '[] MPSGraphPaddingStyle
 paddingStyleSelector = mkSelector "paddingStyle"
 
 -- | @Selector@ for @setPaddingStyle:@
-setPaddingStyleSelector :: Selector
+setPaddingStyleSelector :: Selector '[MPSGraphPaddingStyle] ()
 setPaddingStyleSelector = mkSelector "setPaddingStyle:"
 
 -- | @Selector@ for @channelDimensionIndex@
-channelDimensionIndexSelector :: Selector
+channelDimensionIndexSelector :: Selector '[] CLong
 channelDimensionIndexSelector = mkSelector "channelDimensionIndex"
 
 -- | @Selector@ for @setChannelDimensionIndex:@
-setChannelDimensionIndexSelector :: Selector
+setChannelDimensionIndexSelector :: Selector '[CLong] ()
 setChannelDimensionIndexSelector = mkSelector "setChannelDimensionIndex:"
 

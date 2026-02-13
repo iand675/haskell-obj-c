@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.PassKit.PKAddIdentityDocumentMetadata
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,30 +37,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithProvisioningCredentialIdentifier:sharingInstanceIdentifier:cardTemplateIdentifier:issuingCountryCode:documentType:preview:@
 initWithProvisioningCredentialIdentifier_sharingInstanceIdentifier_cardTemplateIdentifier_issuingCountryCode_documentType_preview :: (IsPKAddIdentityDocumentMetadata pkAddIdentityDocumentMetadata, IsNSString credentialIdentifier, IsNSString sharingInstanceIdentifier, IsNSString templateIdentifier, IsNSString issuingCountryCode, IsPKAddPassMetadataPreview preview) => pkAddIdentityDocumentMetadata -> credentialIdentifier -> sharingInstanceIdentifier -> templateIdentifier -> issuingCountryCode -> PKAddIdentityDocumentType -> preview -> IO (Id PKAddIdentityDocumentMetadata)
-initWithProvisioningCredentialIdentifier_sharingInstanceIdentifier_cardTemplateIdentifier_issuingCountryCode_documentType_preview pkAddIdentityDocumentMetadata  credentialIdentifier sharingInstanceIdentifier templateIdentifier issuingCountryCode documentType preview =
-  withObjCPtr credentialIdentifier $ \raw_credentialIdentifier ->
-    withObjCPtr sharingInstanceIdentifier $ \raw_sharingInstanceIdentifier ->
-      withObjCPtr templateIdentifier $ \raw_templateIdentifier ->
-        withObjCPtr issuingCountryCode $ \raw_issuingCountryCode ->
-          withObjCPtr preview $ \raw_preview ->
-              sendMsg pkAddIdentityDocumentMetadata (mkSelector "initWithProvisioningCredentialIdentifier:sharingInstanceIdentifier:cardTemplateIdentifier:issuingCountryCode:documentType:preview:") (retPtr retVoid) [argPtr (castPtr raw_credentialIdentifier :: Ptr ()), argPtr (castPtr raw_sharingInstanceIdentifier :: Ptr ()), argPtr (castPtr raw_templateIdentifier :: Ptr ()), argPtr (castPtr raw_issuingCountryCode :: Ptr ()), argCLong (coerce documentType), argPtr (castPtr raw_preview :: Ptr ())] >>= ownedObject . castPtr
+initWithProvisioningCredentialIdentifier_sharingInstanceIdentifier_cardTemplateIdentifier_issuingCountryCode_documentType_preview pkAddIdentityDocumentMetadata credentialIdentifier sharingInstanceIdentifier templateIdentifier issuingCountryCode documentType preview =
+  sendOwnedMessage pkAddIdentityDocumentMetadata initWithProvisioningCredentialIdentifier_sharingInstanceIdentifier_cardTemplateIdentifier_issuingCountryCode_documentType_previewSelector (toNSString credentialIdentifier) (toNSString sharingInstanceIdentifier) (toNSString templateIdentifier) (toNSString issuingCountryCode) documentType (toPKAddPassMetadataPreview preview)
 
 -- | preview: A preview object containing the necessary information to represent the pass during provisioning.
 --
 -- ObjC selector: @- preview@
 preview :: IsPKAddIdentityDocumentMetadata pkAddIdentityDocumentMetadata => pkAddIdentityDocumentMetadata -> IO (Id PKAddPassMetadataPreview)
-preview pkAddIdentityDocumentMetadata  =
-    sendMsg pkAddIdentityDocumentMetadata (mkSelector "preview") (retPtr retVoid) [] >>= retainedObject . castPtr
+preview pkAddIdentityDocumentMetadata =
+  sendMessage pkAddIdentityDocumentMetadata previewSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithProvisioningCredentialIdentifier:sharingInstanceIdentifier:cardTemplateIdentifier:issuingCountryCode:documentType:preview:@
-initWithProvisioningCredentialIdentifier_sharingInstanceIdentifier_cardTemplateIdentifier_issuingCountryCode_documentType_previewSelector :: Selector
+initWithProvisioningCredentialIdentifier_sharingInstanceIdentifier_cardTemplateIdentifier_issuingCountryCode_documentType_previewSelector :: Selector '[Id NSString, Id NSString, Id NSString, Id NSString, PKAddIdentityDocumentType, Id PKAddPassMetadataPreview] (Id PKAddIdentityDocumentMetadata)
 initWithProvisioningCredentialIdentifier_sharingInstanceIdentifier_cardTemplateIdentifier_issuingCountryCode_documentType_previewSelector = mkSelector "initWithProvisioningCredentialIdentifier:sharingInstanceIdentifier:cardTemplateIdentifier:issuingCountryCode:documentType:preview:"
 
 -- | @Selector@ for @preview@
-previewSelector :: Selector
+previewSelector :: Selector '[] (Id PKAddPassMetadataPreview)
 previewSelector = mkSelector "preview"
 

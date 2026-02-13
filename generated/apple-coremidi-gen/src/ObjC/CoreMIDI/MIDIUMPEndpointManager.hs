@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.CoreMIDI.MIDIUMPEndpointManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,7 +43,7 @@ sharedInstance :: IO (Id MIDIUMPEndpointManager)
 sharedInstance  =
   do
     cls' <- getRequiredClass "MIDIUMPEndpointManager"
-    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedInstanceSelector
 
 -- | UMPEndpoints
 --
@@ -54,18 +51,18 @@ sharedInstance  =
 --
 -- ObjC selector: @- UMPEndpoints@
 umpEndpoints :: IsMIDIUMPEndpointManager midiumpEndpointManager => midiumpEndpointManager -> IO (Id NSArray)
-umpEndpoints midiumpEndpointManager  =
-    sendMsg midiumpEndpointManager (mkSelector "UMPEndpoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+umpEndpoints midiumpEndpointManager =
+  sendMessage midiumpEndpointManager umpEndpointsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedInstance@
-sharedInstanceSelector :: Selector
+sharedInstanceSelector :: Selector '[] (Id MIDIUMPEndpointManager)
 sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @UMPEndpoints@
-umpEndpointsSelector :: Selector
+umpEndpointsSelector :: Selector '[] (Id NSArray)
 umpEndpointsSelector = mkSelector "UMPEndpoints"
 

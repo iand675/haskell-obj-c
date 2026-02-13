@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.IOBluetooth.IOBluetoothSDPServiceAttribute
   , getAttributeID
   , getDataElement
   , getIDDataElement
-  , withID_attributeElementValueSelector
-  , withID_attributeElementSelector
-  , initWithID_attributeElementValueSelector
-  , initWithID_attributeElementSelector
   , getAttributeIDSelector
   , getDataElementSelector
   , getIDDataElementSelector
+  , initWithID_attributeElementSelector
+  , initWithID_attributeElementValueSelector
+  , withID_attributeElementSelector
+  , withID_attributeElementValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,8 +59,7 @@ withID_attributeElementValue :: IsNSObject attributeElementValue => CUShort -> a
 withID_attributeElementValue newAttributeID attributeElementValue =
   do
     cls' <- getRequiredClass "IOBluetoothSDPServiceAttribute"
-    withObjCPtr attributeElementValue $ \raw_attributeElementValue ->
-      sendClassMsg cls' (mkSelector "withID:attributeElementValue:") (retPtr retVoid) [argCUInt (fromIntegral newAttributeID), argPtr (castPtr raw_attributeElementValue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' withID_attributeElementValueSelector newAttributeID (toNSObject attributeElementValue)
 
 -- | withID:attributeElement:
 --
@@ -80,8 +76,7 @@ withID_attributeElement :: IsIOBluetoothSDPDataElement attributeElement => CUSho
 withID_attributeElement newAttributeID attributeElement =
   do
     cls' <- getRequiredClass "IOBluetoothSDPServiceAttribute"
-    withObjCPtr attributeElement $ \raw_attributeElement ->
-      sendClassMsg cls' (mkSelector "withID:attributeElement:") (retPtr retVoid) [argCUInt (fromIntegral newAttributeID), argPtr (castPtr raw_attributeElement :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' withID_attributeElementSelector newAttributeID (toIOBluetoothSDPDataElement attributeElement)
 
 -- | initWithID:attributeElementValue:
 --
@@ -97,9 +92,8 @@ withID_attributeElement newAttributeID attributeElement =
 --
 -- ObjC selector: @- initWithID:attributeElementValue:@
 initWithID_attributeElementValue :: (IsIOBluetoothSDPServiceAttribute ioBluetoothSDPServiceAttribute, IsNSObject attributeElementValue) => ioBluetoothSDPServiceAttribute -> CUShort -> attributeElementValue -> IO (Id IOBluetoothSDPServiceAttribute)
-initWithID_attributeElementValue ioBluetoothSDPServiceAttribute  newAttributeID attributeElementValue =
-  withObjCPtr attributeElementValue $ \raw_attributeElementValue ->
-      sendMsg ioBluetoothSDPServiceAttribute (mkSelector "initWithID:attributeElementValue:") (retPtr retVoid) [argCUInt (fromIntegral newAttributeID), argPtr (castPtr raw_attributeElementValue :: Ptr ())] >>= ownedObject . castPtr
+initWithID_attributeElementValue ioBluetoothSDPServiceAttribute newAttributeID attributeElementValue =
+  sendOwnedMessage ioBluetoothSDPServiceAttribute initWithID_attributeElementValueSelector newAttributeID (toNSObject attributeElementValue)
 
 -- | initWithID:attributeElement:
 --
@@ -113,9 +107,8 @@ initWithID_attributeElementValue ioBluetoothSDPServiceAttribute  newAttributeID 
 --
 -- ObjC selector: @- initWithID:attributeElement:@
 initWithID_attributeElement :: (IsIOBluetoothSDPServiceAttribute ioBluetoothSDPServiceAttribute, IsIOBluetoothSDPDataElement attributeElement) => ioBluetoothSDPServiceAttribute -> CUShort -> attributeElement -> IO (Id IOBluetoothSDPServiceAttribute)
-initWithID_attributeElement ioBluetoothSDPServiceAttribute  newAttributeID attributeElement =
-  withObjCPtr attributeElement $ \raw_attributeElement ->
-      sendMsg ioBluetoothSDPServiceAttribute (mkSelector "initWithID:attributeElement:") (retPtr retVoid) [argCUInt (fromIntegral newAttributeID), argPtr (castPtr raw_attributeElement :: Ptr ())] >>= ownedObject . castPtr
+initWithID_attributeElement ioBluetoothSDPServiceAttribute newAttributeID attributeElement =
+  sendOwnedMessage ioBluetoothSDPServiceAttribute initWithID_attributeElementSelector newAttributeID (toIOBluetoothSDPDataElement attributeElement)
 
 -- | getAttributeID
 --
@@ -125,8 +118,8 @@ initWithID_attributeElement ioBluetoothSDPServiceAttribute  newAttributeID attri
 --
 -- ObjC selector: @- getAttributeID@
 getAttributeID :: IsIOBluetoothSDPServiceAttribute ioBluetoothSDPServiceAttribute => ioBluetoothSDPServiceAttribute -> IO CUShort
-getAttributeID ioBluetoothSDPServiceAttribute  =
-    fmap fromIntegral $ sendMsg ioBluetoothSDPServiceAttribute (mkSelector "getAttributeID") retCUInt []
+getAttributeID ioBluetoothSDPServiceAttribute =
+  sendMessage ioBluetoothSDPServiceAttribute getAttributeIDSelector
 
 -- | getDataElement
 --
@@ -136,8 +129,8 @@ getAttributeID ioBluetoothSDPServiceAttribute  =
 --
 -- ObjC selector: @- getDataElement@
 getDataElement :: IsIOBluetoothSDPServiceAttribute ioBluetoothSDPServiceAttribute => ioBluetoothSDPServiceAttribute -> IO (Id IOBluetoothSDPDataElement)
-getDataElement ioBluetoothSDPServiceAttribute  =
-    sendMsg ioBluetoothSDPServiceAttribute (mkSelector "getDataElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+getDataElement ioBluetoothSDPServiceAttribute =
+  sendMessage ioBluetoothSDPServiceAttribute getDataElementSelector
 
 -- | getIDDataElement
 --
@@ -147,38 +140,38 @@ getDataElement ioBluetoothSDPServiceAttribute  =
 --
 -- ObjC selector: @- getIDDataElement@
 getIDDataElement :: IsIOBluetoothSDPServiceAttribute ioBluetoothSDPServiceAttribute => ioBluetoothSDPServiceAttribute -> IO (Id IOBluetoothSDPDataElement)
-getIDDataElement ioBluetoothSDPServiceAttribute  =
-    sendMsg ioBluetoothSDPServiceAttribute (mkSelector "getIDDataElement") (retPtr retVoid) [] >>= retainedObject . castPtr
+getIDDataElement ioBluetoothSDPServiceAttribute =
+  sendMessage ioBluetoothSDPServiceAttribute getIDDataElementSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @withID:attributeElementValue:@
-withID_attributeElementValueSelector :: Selector
+withID_attributeElementValueSelector :: Selector '[CUShort, Id NSObject] (Id IOBluetoothSDPServiceAttribute)
 withID_attributeElementValueSelector = mkSelector "withID:attributeElementValue:"
 
 -- | @Selector@ for @withID:attributeElement:@
-withID_attributeElementSelector :: Selector
+withID_attributeElementSelector :: Selector '[CUShort, Id IOBluetoothSDPDataElement] (Id IOBluetoothSDPServiceAttribute)
 withID_attributeElementSelector = mkSelector "withID:attributeElement:"
 
 -- | @Selector@ for @initWithID:attributeElementValue:@
-initWithID_attributeElementValueSelector :: Selector
+initWithID_attributeElementValueSelector :: Selector '[CUShort, Id NSObject] (Id IOBluetoothSDPServiceAttribute)
 initWithID_attributeElementValueSelector = mkSelector "initWithID:attributeElementValue:"
 
 -- | @Selector@ for @initWithID:attributeElement:@
-initWithID_attributeElementSelector :: Selector
+initWithID_attributeElementSelector :: Selector '[CUShort, Id IOBluetoothSDPDataElement] (Id IOBluetoothSDPServiceAttribute)
 initWithID_attributeElementSelector = mkSelector "initWithID:attributeElement:"
 
 -- | @Selector@ for @getAttributeID@
-getAttributeIDSelector :: Selector
+getAttributeIDSelector :: Selector '[] CUShort
 getAttributeIDSelector = mkSelector "getAttributeID"
 
 -- | @Selector@ for @getDataElement@
-getDataElementSelector :: Selector
+getDataElementSelector :: Selector '[] (Id IOBluetoothSDPDataElement)
 getDataElementSelector = mkSelector "getDataElement"
 
 -- | @Selector@ for @getIDDataElement@
-getIDDataElementSelector :: Selector
+getIDDataElementSelector :: Selector '[] (Id IOBluetoothSDPDataElement)
 getIDDataElementSelector = mkSelector "getIDDataElement"
 

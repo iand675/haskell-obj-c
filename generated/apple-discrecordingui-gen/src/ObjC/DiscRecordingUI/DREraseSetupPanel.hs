@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,22 +18,18 @@ module ObjC.DiscRecordingUI.DREraseSetupPanel
   , setupPanel
   , eraseObject
   , eraseType
-  , setupPanelSelector
   , eraseObjectSelector
   , eraseTypeSelector
+  , setupPanelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,7 +49,7 @@ setupPanel :: IO (Id DREraseSetupPanel)
 setupPanel  =
   do
     cls' <- getRequiredClass "DREraseSetupPanel"
-    sendClassMsg cls' (mkSelector "setupPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' setupPanelSelector
 
 -- | eraseObject
 --
@@ -74,8 +71,8 @@ setupPanel  =
 --
 -- ObjC selector: @- eraseObject@
 eraseObject :: IsDREraseSetupPanel drEraseSetupPanel => drEraseSetupPanel -> IO (Id DRErase)
-eraseObject drEraseSetupPanel  =
-    sendMsg drEraseSetupPanel (mkSelector "eraseObject") (retPtr retVoid) [] >>= retainedObject . castPtr
+eraseObject drEraseSetupPanel =
+  sendMessage drEraseSetupPanel eraseObjectSelector
 
 -- | eraseType:
 --
@@ -85,22 +82,22 @@ eraseObject drEraseSetupPanel  =
 --
 -- ObjC selector: @- eraseType:@
 eraseType :: IsDREraseSetupPanel drEraseSetupPanel => drEraseSetupPanel -> RawId -> IO ()
-eraseType drEraseSetupPanel  sender =
-    sendMsg drEraseSetupPanel (mkSelector "eraseType:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+eraseType drEraseSetupPanel sender =
+  sendMessage drEraseSetupPanel eraseTypeSelector sender
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setupPanel@
-setupPanelSelector :: Selector
+setupPanelSelector :: Selector '[] (Id DREraseSetupPanel)
 setupPanelSelector = mkSelector "setupPanel"
 
 -- | @Selector@ for @eraseObject@
-eraseObjectSelector :: Selector
+eraseObjectSelector :: Selector '[] (Id DRErase)
 eraseObjectSelector = mkSelector "eraseObject"
 
 -- | @Selector@ for @eraseType:@
-eraseTypeSelector :: Selector
+eraseTypeSelector :: Selector '[RawId] ()
 eraseTypeSelector = mkSelector "eraseType:"
 

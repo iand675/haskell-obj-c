@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.WebKit.WKWebExtensionMessagePort
   , disconnectHandler
   , setDisconnectHandler
   , disconnected
-  , newSelector
-  , initSelector
-  , sendMessage_completionHandlerSelector
+  , applicationIdentifierSelector
+  , disconnectHandlerSelector
   , disconnectSelector
   , disconnectWithErrorSelector
-  , applicationIdentifierSelector
-  , messageHandlerSelector
-  , setMessageHandlerSelector
-  , disconnectHandlerSelector
-  , setDisconnectHandlerSelector
   , disconnectedSelector
+  , initSelector
+  , messageHandlerSelector
+  , newSelector
+  , sendMessage_completionHandlerSelector
+  , setDisconnectHandlerSelector
+  , setMessageHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,12 +53,12 @@ new :: IO (Id WKWebExtensionMessagePort)
 new  =
   do
     cls' <- getRequiredClass "WKWebExtensionMessagePort"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsWKWebExtensionMessagePort wkWebExtensionMessagePort => wkWebExtensionMessagePort -> IO (Id WKWebExtensionMessagePort)
-init_ wkWebExtensionMessagePort  =
-    sendMsg wkWebExtensionMessagePort (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkWebExtensionMessagePort =
+  sendOwnedMessage wkWebExtensionMessagePort initSelector
 
 -- | Sends a message to the connected web extension.
 --
@@ -73,15 +70,15 @@ init_ wkWebExtensionMessagePort  =
 --
 -- ObjC selector: @- sendMessage:completionHandler:@
 sendMessage_completionHandler :: IsWKWebExtensionMessagePort wkWebExtensionMessagePort => wkWebExtensionMessagePort -> RawId -> Ptr () -> IO ()
-sendMessage_completionHandler wkWebExtensionMessagePort  message completionHandler =
-    sendMsg wkWebExtensionMessagePort (mkSelector "sendMessage:completionHandler:") retVoid [argPtr (castPtr (unRawId message) :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+sendMessage_completionHandler wkWebExtensionMessagePort message completionHandler =
+  sendMessage wkWebExtensionMessagePort sendMessage_completionHandlerSelector message completionHandler
 
 -- | Disconnects the port, terminating all further messages.
 --
 -- ObjC selector: @- disconnect@
 disconnect :: IsWKWebExtensionMessagePort wkWebExtensionMessagePort => wkWebExtensionMessagePort -> IO ()
-disconnect wkWebExtensionMessagePort  =
-    sendMsg wkWebExtensionMessagePort (mkSelector "disconnect") retVoid []
+disconnect wkWebExtensionMessagePort =
+  sendMessage wkWebExtensionMessagePort disconnectSelector
 
 -- | Disconnects the port, terminating all further messages with an optional error.
 --
@@ -89,9 +86,8 @@ disconnect wkWebExtensionMessagePort  =
 --
 -- ObjC selector: @- disconnectWithError:@
 disconnectWithError :: (IsWKWebExtensionMessagePort wkWebExtensionMessagePort, IsNSError error_) => wkWebExtensionMessagePort -> error_ -> IO ()
-disconnectWithError wkWebExtensionMessagePort  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg wkWebExtensionMessagePort (mkSelector "disconnectWithError:") retVoid [argPtr (castPtr raw_error_ :: Ptr ())]
+disconnectWithError wkWebExtensionMessagePort error_ =
+  sendMessage wkWebExtensionMessagePort disconnectWithErrorSelector (toNSError error_)
 
 -- | The unique identifier for the app to which this port should be connected.
 --
@@ -99,8 +95,8 @@ disconnectWithError wkWebExtensionMessagePort  error_ =
 --
 -- ObjC selector: @- applicationIdentifier@
 applicationIdentifier :: IsWKWebExtensionMessagePort wkWebExtensionMessagePort => wkWebExtensionMessagePort -> IO (Id NSString)
-applicationIdentifier wkWebExtensionMessagePort  =
-    sendMsg wkWebExtensionMessagePort (mkSelector "applicationIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationIdentifier wkWebExtensionMessagePort =
+  sendMessage wkWebExtensionMessagePort applicationIdentifierSelector
 
 -- | The block to be executed when a message is received from the web extension.
 --
@@ -108,8 +104,8 @@ applicationIdentifier wkWebExtensionMessagePort  =
 --
 -- ObjC selector: @- messageHandler@
 messageHandler :: IsWKWebExtensionMessagePort wkWebExtensionMessagePort => wkWebExtensionMessagePort -> IO (Ptr ())
-messageHandler wkWebExtensionMessagePort  =
-    fmap castPtr $ sendMsg wkWebExtensionMessagePort (mkSelector "messageHandler") (retPtr retVoid) []
+messageHandler wkWebExtensionMessagePort =
+  sendMessage wkWebExtensionMessagePort messageHandlerSelector
 
 -- | The block to be executed when a message is received from the web extension.
 --
@@ -117,8 +113,8 @@ messageHandler wkWebExtensionMessagePort  =
 --
 -- ObjC selector: @- setMessageHandler:@
 setMessageHandler :: IsWKWebExtensionMessagePort wkWebExtensionMessagePort => wkWebExtensionMessagePort -> Ptr () -> IO ()
-setMessageHandler wkWebExtensionMessagePort  value =
-    sendMsg wkWebExtensionMessagePort (mkSelector "setMessageHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setMessageHandler wkWebExtensionMessagePort value =
+  sendMessage wkWebExtensionMessagePort setMessageHandlerSelector value
 
 -- | The block to be executed when the port disconnects.
 --
@@ -126,8 +122,8 @@ setMessageHandler wkWebExtensionMessagePort  value =
 --
 -- ObjC selector: @- disconnectHandler@
 disconnectHandler :: IsWKWebExtensionMessagePort wkWebExtensionMessagePort => wkWebExtensionMessagePort -> IO (Ptr ())
-disconnectHandler wkWebExtensionMessagePort  =
-    fmap castPtr $ sendMsg wkWebExtensionMessagePort (mkSelector "disconnectHandler") (retPtr retVoid) []
+disconnectHandler wkWebExtensionMessagePort =
+  sendMessage wkWebExtensionMessagePort disconnectHandlerSelector
 
 -- | The block to be executed when the port disconnects.
 --
@@ -135,61 +131,61 @@ disconnectHandler wkWebExtensionMessagePort  =
 --
 -- ObjC selector: @- setDisconnectHandler:@
 setDisconnectHandler :: IsWKWebExtensionMessagePort wkWebExtensionMessagePort => wkWebExtensionMessagePort -> Ptr () -> IO ()
-setDisconnectHandler wkWebExtensionMessagePort  value =
-    sendMsg wkWebExtensionMessagePort (mkSelector "setDisconnectHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setDisconnectHandler wkWebExtensionMessagePort value =
+  sendMessage wkWebExtensionMessagePort setDisconnectHandlerSelector value
 
 -- | Indicates whether the message port is disconnected.
 --
 -- ObjC selector: @- disconnected@
 disconnected :: IsWKWebExtensionMessagePort wkWebExtensionMessagePort => wkWebExtensionMessagePort -> IO Bool
-disconnected wkWebExtensionMessagePort  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkWebExtensionMessagePort (mkSelector "disconnected") retCULong []
+disconnected wkWebExtensionMessagePort =
+  sendMessage wkWebExtensionMessagePort disconnectedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id WKWebExtensionMessagePort)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKWebExtensionMessagePort)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @sendMessage:completionHandler:@
-sendMessage_completionHandlerSelector :: Selector
+sendMessage_completionHandlerSelector :: Selector '[RawId, Ptr ()] ()
 sendMessage_completionHandlerSelector = mkSelector "sendMessage:completionHandler:"
 
 -- | @Selector@ for @disconnect@
-disconnectSelector :: Selector
+disconnectSelector :: Selector '[] ()
 disconnectSelector = mkSelector "disconnect"
 
 -- | @Selector@ for @disconnectWithError:@
-disconnectWithErrorSelector :: Selector
+disconnectWithErrorSelector :: Selector '[Id NSError] ()
 disconnectWithErrorSelector = mkSelector "disconnectWithError:"
 
 -- | @Selector@ for @applicationIdentifier@
-applicationIdentifierSelector :: Selector
+applicationIdentifierSelector :: Selector '[] (Id NSString)
 applicationIdentifierSelector = mkSelector "applicationIdentifier"
 
 -- | @Selector@ for @messageHandler@
-messageHandlerSelector :: Selector
+messageHandlerSelector :: Selector '[] (Ptr ())
 messageHandlerSelector = mkSelector "messageHandler"
 
 -- | @Selector@ for @setMessageHandler:@
-setMessageHandlerSelector :: Selector
+setMessageHandlerSelector :: Selector '[Ptr ()] ()
 setMessageHandlerSelector = mkSelector "setMessageHandler:"
 
 -- | @Selector@ for @disconnectHandler@
-disconnectHandlerSelector :: Selector
+disconnectHandlerSelector :: Selector '[] (Ptr ())
 disconnectHandlerSelector = mkSelector "disconnectHandler"
 
 -- | @Selector@ for @setDisconnectHandler:@
-setDisconnectHandlerSelector :: Selector
+setDisconnectHandlerSelector :: Selector '[Ptr ()] ()
 setDisconnectHandlerSelector = mkSelector "setDisconnectHandler:"
 
 -- | @Selector@ for @disconnected@
-disconnectedSelector :: Selector
+disconnectedSelector :: Selector '[] Bool
 disconnectedSelector = mkSelector "disconnected"
 

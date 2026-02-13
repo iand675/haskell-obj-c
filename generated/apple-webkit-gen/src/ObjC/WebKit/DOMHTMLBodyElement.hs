@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.WebKit.DOMHTMLBodyElement
   , vLink
   , setVLink
   , aLinkSelector
-  , setALinkSelector
   , backgroundSelector
-  , setBackgroundSelector
   , bgColorSelector
-  , setBgColorSelector
   , linkSelector
+  , setALinkSelector
+  , setBackgroundSelector
+  , setBgColorSelector
   , setLinkSelector
-  , textSelector
   , setTextSelector
-  , vLinkSelector
   , setVLinkSelector
+  , textSelector
+  , vLinkSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- aLink@
 aLink :: IsDOMHTMLBodyElement domhtmlBodyElement => domhtmlBodyElement -> IO (Id NSString)
-aLink domhtmlBodyElement  =
-    sendMsg domhtmlBodyElement (mkSelector "aLink") (retPtr retVoid) [] >>= retainedObject . castPtr
+aLink domhtmlBodyElement =
+  sendMessage domhtmlBodyElement aLinkSelector
 
 -- | @- setALink:@
 setALink :: (IsDOMHTMLBodyElement domhtmlBodyElement, IsNSString value) => domhtmlBodyElement -> value -> IO ()
-setALink domhtmlBodyElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBodyElement (mkSelector "setALink:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setALink domhtmlBodyElement value =
+  sendMessage domhtmlBodyElement setALinkSelector (toNSString value)
 
 -- | @- background@
 background :: IsDOMHTMLBodyElement domhtmlBodyElement => domhtmlBodyElement -> IO (Id NSString)
-background domhtmlBodyElement  =
-    sendMsg domhtmlBodyElement (mkSelector "background") (retPtr retVoid) [] >>= retainedObject . castPtr
+background domhtmlBodyElement =
+  sendMessage domhtmlBodyElement backgroundSelector
 
 -- | @- setBackground:@
 setBackground :: (IsDOMHTMLBodyElement domhtmlBodyElement, IsNSString value) => domhtmlBodyElement -> value -> IO ()
-setBackground domhtmlBodyElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBodyElement (mkSelector "setBackground:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackground domhtmlBodyElement value =
+  sendMessage domhtmlBodyElement setBackgroundSelector (toNSString value)
 
 -- | @- bgColor@
 bgColor :: IsDOMHTMLBodyElement domhtmlBodyElement => domhtmlBodyElement -> IO (Id NSString)
-bgColor domhtmlBodyElement  =
-    sendMsg domhtmlBodyElement (mkSelector "bgColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+bgColor domhtmlBodyElement =
+  sendMessage domhtmlBodyElement bgColorSelector
 
 -- | @- setBgColor:@
 setBgColor :: (IsDOMHTMLBodyElement domhtmlBodyElement, IsNSString value) => domhtmlBodyElement -> value -> IO ()
-setBgColor domhtmlBodyElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBodyElement (mkSelector "setBgColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBgColor domhtmlBodyElement value =
+  sendMessage domhtmlBodyElement setBgColorSelector (toNSString value)
 
 -- | @- link@
 link :: IsDOMHTMLBodyElement domhtmlBodyElement => domhtmlBodyElement -> IO (Id NSString)
-link domhtmlBodyElement  =
-    sendMsg domhtmlBodyElement (mkSelector "link") (retPtr retVoid) [] >>= retainedObject . castPtr
+link domhtmlBodyElement =
+  sendMessage domhtmlBodyElement linkSelector
 
 -- | @- setLink:@
 setLink :: (IsDOMHTMLBodyElement domhtmlBodyElement, IsNSString value) => domhtmlBodyElement -> value -> IO ()
-setLink domhtmlBodyElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBodyElement (mkSelector "setLink:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLink domhtmlBodyElement value =
+  sendMessage domhtmlBodyElement setLinkSelector (toNSString value)
 
 -- | @- text@
 text :: IsDOMHTMLBodyElement domhtmlBodyElement => domhtmlBodyElement -> IO (Id NSString)
-text domhtmlBodyElement  =
-    sendMsg domhtmlBodyElement (mkSelector "text") (retPtr retVoid) [] >>= retainedObject . castPtr
+text domhtmlBodyElement =
+  sendMessage domhtmlBodyElement textSelector
 
 -- | @- setText:@
 setText :: (IsDOMHTMLBodyElement domhtmlBodyElement, IsNSString value) => domhtmlBodyElement -> value -> IO ()
-setText domhtmlBodyElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBodyElement (mkSelector "setText:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setText domhtmlBodyElement value =
+  sendMessage domhtmlBodyElement setTextSelector (toNSString value)
 
 -- | @- vLink@
 vLink :: IsDOMHTMLBodyElement domhtmlBodyElement => domhtmlBodyElement -> IO (Id NSString)
-vLink domhtmlBodyElement  =
-    sendMsg domhtmlBodyElement (mkSelector "vLink") (retPtr retVoid) [] >>= retainedObject . castPtr
+vLink domhtmlBodyElement =
+  sendMessage domhtmlBodyElement vLinkSelector
 
 -- | @- setVLink:@
 setVLink :: (IsDOMHTMLBodyElement domhtmlBodyElement, IsNSString value) => domhtmlBodyElement -> value -> IO ()
-setVLink domhtmlBodyElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlBodyElement (mkSelector "setVLink:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVLink domhtmlBodyElement value =
+  sendMessage domhtmlBodyElement setVLinkSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @aLink@
-aLinkSelector :: Selector
+aLinkSelector :: Selector '[] (Id NSString)
 aLinkSelector = mkSelector "aLink"
 
 -- | @Selector@ for @setALink:@
-setALinkSelector :: Selector
+setALinkSelector :: Selector '[Id NSString] ()
 setALinkSelector = mkSelector "setALink:"
 
 -- | @Selector@ for @background@
-backgroundSelector :: Selector
+backgroundSelector :: Selector '[] (Id NSString)
 backgroundSelector = mkSelector "background"
 
 -- | @Selector@ for @setBackground:@
-setBackgroundSelector :: Selector
+setBackgroundSelector :: Selector '[Id NSString] ()
 setBackgroundSelector = mkSelector "setBackground:"
 
 -- | @Selector@ for @bgColor@
-bgColorSelector :: Selector
+bgColorSelector :: Selector '[] (Id NSString)
 bgColorSelector = mkSelector "bgColor"
 
 -- | @Selector@ for @setBgColor:@
-setBgColorSelector :: Selector
+setBgColorSelector :: Selector '[Id NSString] ()
 setBgColorSelector = mkSelector "setBgColor:"
 
 -- | @Selector@ for @link@
-linkSelector :: Selector
+linkSelector :: Selector '[] (Id NSString)
 linkSelector = mkSelector "link"
 
 -- | @Selector@ for @setLink:@
-setLinkSelector :: Selector
+setLinkSelector :: Selector '[Id NSString] ()
 setLinkSelector = mkSelector "setLink:"
 
 -- | @Selector@ for @text@
-textSelector :: Selector
+textSelector :: Selector '[] (Id NSString)
 textSelector = mkSelector "text"
 
 -- | @Selector@ for @setText:@
-setTextSelector :: Selector
+setTextSelector :: Selector '[Id NSString] ()
 setTextSelector = mkSelector "setText:"
 
 -- | @Selector@ for @vLink@
-vLinkSelector :: Selector
+vLinkSelector :: Selector '[] (Id NSString)
 vLinkSelector = mkSelector "vLink"
 
 -- | @Selector@ for @setVLink:@
-setVLinkSelector :: Selector
+setVLinkSelector :: Selector '[Id NSString] ()
 setVLinkSelector = mkSelector "setVLink:"
 

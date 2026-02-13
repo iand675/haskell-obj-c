@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRMessagesClusterMessageCompleteEvent
   , setReply
   , futureMessagesPreference
   , setFutureMessagesPreference
-  , messageIDSelector
-  , setMessageIDSelector
-  , responseIDSelector
-  , setResponseIDSelector
-  , replySelector
-  , setReplySelector
   , futureMessagesPreferenceSelector
+  , messageIDSelector
+  , replySelector
+  , responseIDSelector
   , setFutureMessagesPreferenceSelector
+  , setMessageIDSelector
+  , setReplySelector
+  , setResponseIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- messageID@
 messageID :: IsMTRMessagesClusterMessageCompleteEvent mtrMessagesClusterMessageCompleteEvent => mtrMessagesClusterMessageCompleteEvent -> IO (Id NSData)
-messageID mtrMessagesClusterMessageCompleteEvent  =
-    sendMsg mtrMessagesClusterMessageCompleteEvent (mkSelector "messageID") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageID mtrMessagesClusterMessageCompleteEvent =
+  sendMessage mtrMessagesClusterMessageCompleteEvent messageIDSelector
 
 -- | @- setMessageID:@
 setMessageID :: (IsMTRMessagesClusterMessageCompleteEvent mtrMessagesClusterMessageCompleteEvent, IsNSData value) => mtrMessagesClusterMessageCompleteEvent -> value -> IO ()
-setMessageID mtrMessagesClusterMessageCompleteEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageCompleteEvent (mkSelector "setMessageID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMessageID mtrMessagesClusterMessageCompleteEvent value =
+  sendMessage mtrMessagesClusterMessageCompleteEvent setMessageIDSelector (toNSData value)
 
 -- | @- responseID@
 responseID :: IsMTRMessagesClusterMessageCompleteEvent mtrMessagesClusterMessageCompleteEvent => mtrMessagesClusterMessageCompleteEvent -> IO (Id NSNumber)
-responseID mtrMessagesClusterMessageCompleteEvent  =
-    sendMsg mtrMessagesClusterMessageCompleteEvent (mkSelector "responseID") (retPtr retVoid) [] >>= retainedObject . castPtr
+responseID mtrMessagesClusterMessageCompleteEvent =
+  sendMessage mtrMessagesClusterMessageCompleteEvent responseIDSelector
 
 -- | @- setResponseID:@
 setResponseID :: (IsMTRMessagesClusterMessageCompleteEvent mtrMessagesClusterMessageCompleteEvent, IsNSNumber value) => mtrMessagesClusterMessageCompleteEvent -> value -> IO ()
-setResponseID mtrMessagesClusterMessageCompleteEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageCompleteEvent (mkSelector "setResponseID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResponseID mtrMessagesClusterMessageCompleteEvent value =
+  sendMessage mtrMessagesClusterMessageCompleteEvent setResponseIDSelector (toNSNumber value)
 
 -- | @- reply@
 reply :: IsMTRMessagesClusterMessageCompleteEvent mtrMessagesClusterMessageCompleteEvent => mtrMessagesClusterMessageCompleteEvent -> IO (Id NSString)
-reply mtrMessagesClusterMessageCompleteEvent  =
-    sendMsg mtrMessagesClusterMessageCompleteEvent (mkSelector "reply") (retPtr retVoid) [] >>= retainedObject . castPtr
+reply mtrMessagesClusterMessageCompleteEvent =
+  sendMessage mtrMessagesClusterMessageCompleteEvent replySelector
 
 -- | @- setReply:@
 setReply :: (IsMTRMessagesClusterMessageCompleteEvent mtrMessagesClusterMessageCompleteEvent, IsNSString value) => mtrMessagesClusterMessageCompleteEvent -> value -> IO ()
-setReply mtrMessagesClusterMessageCompleteEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageCompleteEvent (mkSelector "setReply:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setReply mtrMessagesClusterMessageCompleteEvent value =
+  sendMessage mtrMessagesClusterMessageCompleteEvent setReplySelector (toNSString value)
 
 -- | @- futureMessagesPreference@
 futureMessagesPreference :: IsMTRMessagesClusterMessageCompleteEvent mtrMessagesClusterMessageCompleteEvent => mtrMessagesClusterMessageCompleteEvent -> IO (Id NSNumber)
-futureMessagesPreference mtrMessagesClusterMessageCompleteEvent  =
-    sendMsg mtrMessagesClusterMessageCompleteEvent (mkSelector "futureMessagesPreference") (retPtr retVoid) [] >>= retainedObject . castPtr
+futureMessagesPreference mtrMessagesClusterMessageCompleteEvent =
+  sendMessage mtrMessagesClusterMessageCompleteEvent futureMessagesPreferenceSelector
 
 -- | @- setFutureMessagesPreference:@
 setFutureMessagesPreference :: (IsMTRMessagesClusterMessageCompleteEvent mtrMessagesClusterMessageCompleteEvent, IsNSNumber value) => mtrMessagesClusterMessageCompleteEvent -> value -> IO ()
-setFutureMessagesPreference mtrMessagesClusterMessageCompleteEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMessagesClusterMessageCompleteEvent (mkSelector "setFutureMessagesPreference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFutureMessagesPreference mtrMessagesClusterMessageCompleteEvent value =
+  sendMessage mtrMessagesClusterMessageCompleteEvent setFutureMessagesPreferenceSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @messageID@
-messageIDSelector :: Selector
+messageIDSelector :: Selector '[] (Id NSData)
 messageIDSelector = mkSelector "messageID"
 
 -- | @Selector@ for @setMessageID:@
-setMessageIDSelector :: Selector
+setMessageIDSelector :: Selector '[Id NSData] ()
 setMessageIDSelector = mkSelector "setMessageID:"
 
 -- | @Selector@ for @responseID@
-responseIDSelector :: Selector
+responseIDSelector :: Selector '[] (Id NSNumber)
 responseIDSelector = mkSelector "responseID"
 
 -- | @Selector@ for @setResponseID:@
-setResponseIDSelector :: Selector
+setResponseIDSelector :: Selector '[Id NSNumber] ()
 setResponseIDSelector = mkSelector "setResponseID:"
 
 -- | @Selector@ for @reply@
-replySelector :: Selector
+replySelector :: Selector '[] (Id NSString)
 replySelector = mkSelector "reply"
 
 -- | @Selector@ for @setReply:@
-setReplySelector :: Selector
+setReplySelector :: Selector '[Id NSString] ()
 setReplySelector = mkSelector "setReply:"
 
 -- | @Selector@ for @futureMessagesPreference@
-futureMessagesPreferenceSelector :: Selector
+futureMessagesPreferenceSelector :: Selector '[] (Id NSNumber)
 futureMessagesPreferenceSelector = mkSelector "futureMessagesPreference"
 
 -- | @Selector@ for @setFutureMessagesPreference:@
-setFutureMessagesPreferenceSelector :: Selector
+setFutureMessagesPreferenceSelector :: Selector '[Id NSNumber] ()
 setFutureMessagesPreferenceSelector = mkSelector "setFutureMessagesPreference:"
 

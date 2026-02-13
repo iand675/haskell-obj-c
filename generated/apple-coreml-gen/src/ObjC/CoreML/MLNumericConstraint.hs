@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.CoreML.MLNumericConstraint
   , minNumber
   , maxNumber
   , enumeratedNumbers
-  , minNumberSelector
-  , maxNumberSelector
   , enumeratedNumbersSelector
+  , maxNumberSelector
+  , minNumberSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,32 +32,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- minNumber@
 minNumber :: IsMLNumericConstraint mlNumericConstraint => mlNumericConstraint -> IO (Id NSNumber)
-minNumber mlNumericConstraint  =
-    sendMsg mlNumericConstraint (mkSelector "minNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+minNumber mlNumericConstraint =
+  sendMessage mlNumericConstraint minNumberSelector
 
 -- | @- maxNumber@
 maxNumber :: IsMLNumericConstraint mlNumericConstraint => mlNumericConstraint -> IO (Id NSNumber)
-maxNumber mlNumericConstraint  =
-    sendMsg mlNumericConstraint (mkSelector "maxNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxNumber mlNumericConstraint =
+  sendMessage mlNumericConstraint maxNumberSelector
 
 -- | @- enumeratedNumbers@
 enumeratedNumbers :: IsMLNumericConstraint mlNumericConstraint => mlNumericConstraint -> IO (Id NSSet)
-enumeratedNumbers mlNumericConstraint  =
-    sendMsg mlNumericConstraint (mkSelector "enumeratedNumbers") (retPtr retVoid) [] >>= retainedObject . castPtr
+enumeratedNumbers mlNumericConstraint =
+  sendMessage mlNumericConstraint enumeratedNumbersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @minNumber@
-minNumberSelector :: Selector
+minNumberSelector :: Selector '[] (Id NSNumber)
 minNumberSelector = mkSelector "minNumber"
 
 -- | @Selector@ for @maxNumber@
-maxNumberSelector :: Selector
+maxNumberSelector :: Selector '[] (Id NSNumber)
 maxNumberSelector = mkSelector "maxNumber"
 
 -- | @Selector@ for @enumeratedNumbers@
-enumeratedNumbersSelector :: Selector
+enumeratedNumbersSelector :: Selector '[] (Id NSSet)
 enumeratedNumbersSelector = mkSelector "enumeratedNumbers"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRMetrics
   , metricDataForKey
   , uniqueIdentifier
   , allKeys
-  , initSelector
-  , newSelector
-  , metricDataForKeySelector
-  , uniqueIdentifierSelector
   , allKeysSelector
+  , initSelector
+  , metricDataForKeySelector
+  , newSelector
+  , uniqueIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRMetrics mtrMetrics => mtrMetrics -> IO (Id MTRMetrics)
-init_ mtrMetrics  =
-    sendMsg mtrMetrics (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrMetrics =
+  sendOwnedMessage mtrMetrics initSelector
 
 -- | @+ new@
 new :: IO (Id MTRMetrics)
 new  =
   do
     cls' <- getRequiredClass "MTRMetrics"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns metric data corresponding to the metric identified by its key.
 --
@@ -57,45 +54,44 @@ new  =
 --
 -- ObjC selector: @- metricDataForKey:@
 metricDataForKey :: (IsMTRMetrics mtrMetrics, IsNSString key) => mtrMetrics -> key -> IO (Id MTRMetricData)
-metricDataForKey mtrMetrics  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg mtrMetrics (mkSelector "metricDataForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+metricDataForKey mtrMetrics key =
+  sendMessage mtrMetrics metricDataForKeySelector (toNSString key)
 
 -- | Returns a unique identifier for the object
 --
 -- ObjC selector: @- uniqueIdentifier@
 uniqueIdentifier :: IsMTRMetrics mtrMetrics => mtrMetrics -> IO (Id NSUUID)
-uniqueIdentifier mtrMetrics  =
-    sendMsg mtrMetrics (mkSelector "uniqueIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniqueIdentifier mtrMetrics =
+  sendMessage mtrMetrics uniqueIdentifierSelector
 
 -- | Returns the names of all the metrics data items collected.
 --
 -- ObjC selector: @- allKeys@
 allKeys :: IsMTRMetrics mtrMetrics => mtrMetrics -> IO (Id NSArray)
-allKeys mtrMetrics  =
-    sendMsg mtrMetrics (mkSelector "allKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+allKeys mtrMetrics =
+  sendMessage mtrMetrics allKeysSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRMetrics)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRMetrics)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @metricDataForKey:@
-metricDataForKeySelector :: Selector
+metricDataForKeySelector :: Selector '[Id NSString] (Id MTRMetricData)
 metricDataForKeySelector = mkSelector "metricDataForKey:"
 
 -- | @Selector@ for @uniqueIdentifier@
-uniqueIdentifierSelector :: Selector
+uniqueIdentifierSelector :: Selector '[] (Id NSUUID)
 uniqueIdentifierSelector = mkSelector "uniqueIdentifier"
 
 -- | @Selector@ for @allKeys@
-allKeysSelector :: Selector
+allKeysSelector :: Selector '[] (Id NSArray)
 allKeysSelector = mkSelector "allKeys"
 

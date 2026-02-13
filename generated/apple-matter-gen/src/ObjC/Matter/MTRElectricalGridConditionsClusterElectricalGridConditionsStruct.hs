@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRElectricalGridConditionsClusterElectricalGridConditionsStr
   , setLocalCarbonIntensity
   , localCarbonLevel
   , setLocalCarbonLevel
-  , periodStartSelector
-  , setPeriodStartSelector
-  , periodEndSelector
-  , setPeriodEndSelector
   , gridCarbonIntensitySelector
-  , setGridCarbonIntensitySelector
   , gridCarbonLevelSelector
-  , setGridCarbonLevelSelector
   , localCarbonIntensitySelector
-  , setLocalCarbonIntensitySelector
   , localCarbonLevelSelector
+  , periodEndSelector
+  , periodStartSelector
+  , setGridCarbonIntensitySelector
+  , setGridCarbonLevelSelector
+  , setLocalCarbonIntensitySelector
   , setLocalCarbonLevelSelector
+  , setPeriodEndSelector
+  , setPeriodStartSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- periodStart@
 periodStart :: IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> IO (Id NSNumber)
-periodStart mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  =
-    sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "periodStart") (retPtr retVoid) [] >>= retainedObject . castPtr
+periodStart mtrElectricalGridConditionsClusterElectricalGridConditionsStruct =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct periodStartSelector
 
 -- | @- setPeriodStart:@
 setPeriodStart :: (IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct, IsNSNumber value) => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> value -> IO ()
-setPeriodStart mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "setPeriodStart:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPeriodStart mtrElectricalGridConditionsClusterElectricalGridConditionsStruct value =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct setPeriodStartSelector (toNSNumber value)
 
 -- | @- periodEnd@
 periodEnd :: IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> IO (Id NSNumber)
-periodEnd mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  =
-    sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "periodEnd") (retPtr retVoid) [] >>= retainedObject . castPtr
+periodEnd mtrElectricalGridConditionsClusterElectricalGridConditionsStruct =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct periodEndSelector
 
 -- | @- setPeriodEnd:@
 setPeriodEnd :: (IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct, IsNSNumber value) => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> value -> IO ()
-setPeriodEnd mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "setPeriodEnd:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPeriodEnd mtrElectricalGridConditionsClusterElectricalGridConditionsStruct value =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct setPeriodEndSelector (toNSNumber value)
 
 -- | @- gridCarbonIntensity@
 gridCarbonIntensity :: IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> IO (Id NSNumber)
-gridCarbonIntensity mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  =
-    sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "gridCarbonIntensity") (retPtr retVoid) [] >>= retainedObject . castPtr
+gridCarbonIntensity mtrElectricalGridConditionsClusterElectricalGridConditionsStruct =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct gridCarbonIntensitySelector
 
 -- | @- setGridCarbonIntensity:@
 setGridCarbonIntensity :: (IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct, IsNSNumber value) => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> value -> IO ()
-setGridCarbonIntensity mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "setGridCarbonIntensity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGridCarbonIntensity mtrElectricalGridConditionsClusterElectricalGridConditionsStruct value =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct setGridCarbonIntensitySelector (toNSNumber value)
 
 -- | @- gridCarbonLevel@
 gridCarbonLevel :: IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> IO (Id NSNumber)
-gridCarbonLevel mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  =
-    sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "gridCarbonLevel") (retPtr retVoid) [] >>= retainedObject . castPtr
+gridCarbonLevel mtrElectricalGridConditionsClusterElectricalGridConditionsStruct =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct gridCarbonLevelSelector
 
 -- | @- setGridCarbonLevel:@
 setGridCarbonLevel :: (IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct, IsNSNumber value) => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> value -> IO ()
-setGridCarbonLevel mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "setGridCarbonLevel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGridCarbonLevel mtrElectricalGridConditionsClusterElectricalGridConditionsStruct value =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct setGridCarbonLevelSelector (toNSNumber value)
 
 -- | @- localCarbonIntensity@
 localCarbonIntensity :: IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> IO (Id NSNumber)
-localCarbonIntensity mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  =
-    sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "localCarbonIntensity") (retPtr retVoid) [] >>= retainedObject . castPtr
+localCarbonIntensity mtrElectricalGridConditionsClusterElectricalGridConditionsStruct =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct localCarbonIntensitySelector
 
 -- | @- setLocalCarbonIntensity:@
 setLocalCarbonIntensity :: (IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct, IsNSNumber value) => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> value -> IO ()
-setLocalCarbonIntensity mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "setLocalCarbonIntensity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalCarbonIntensity mtrElectricalGridConditionsClusterElectricalGridConditionsStruct value =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct setLocalCarbonIntensitySelector (toNSNumber value)
 
 -- | @- localCarbonLevel@
 localCarbonLevel :: IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> IO (Id NSNumber)
-localCarbonLevel mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  =
-    sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "localCarbonLevel") (retPtr retVoid) [] >>= retainedObject . castPtr
+localCarbonLevel mtrElectricalGridConditionsClusterElectricalGridConditionsStruct =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct localCarbonLevelSelector
 
 -- | @- setLocalCarbonLevel:@
 setLocalCarbonLevel :: (IsMTRElectricalGridConditionsClusterElectricalGridConditionsStruct mtrElectricalGridConditionsClusterElectricalGridConditionsStruct, IsNSNumber value) => mtrElectricalGridConditionsClusterElectricalGridConditionsStruct -> value -> IO ()
-setLocalCarbonLevel mtrElectricalGridConditionsClusterElectricalGridConditionsStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalGridConditionsClusterElectricalGridConditionsStruct (mkSelector "setLocalCarbonLevel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalCarbonLevel mtrElectricalGridConditionsClusterElectricalGridConditionsStruct value =
+  sendMessage mtrElectricalGridConditionsClusterElectricalGridConditionsStruct setLocalCarbonLevelSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @periodStart@
-periodStartSelector :: Selector
+periodStartSelector :: Selector '[] (Id NSNumber)
 periodStartSelector = mkSelector "periodStart"
 
 -- | @Selector@ for @setPeriodStart:@
-setPeriodStartSelector :: Selector
+setPeriodStartSelector :: Selector '[Id NSNumber] ()
 setPeriodStartSelector = mkSelector "setPeriodStart:"
 
 -- | @Selector@ for @periodEnd@
-periodEndSelector :: Selector
+periodEndSelector :: Selector '[] (Id NSNumber)
 periodEndSelector = mkSelector "periodEnd"
 
 -- | @Selector@ for @setPeriodEnd:@
-setPeriodEndSelector :: Selector
+setPeriodEndSelector :: Selector '[Id NSNumber] ()
 setPeriodEndSelector = mkSelector "setPeriodEnd:"
 
 -- | @Selector@ for @gridCarbonIntensity@
-gridCarbonIntensitySelector :: Selector
+gridCarbonIntensitySelector :: Selector '[] (Id NSNumber)
 gridCarbonIntensitySelector = mkSelector "gridCarbonIntensity"
 
 -- | @Selector@ for @setGridCarbonIntensity:@
-setGridCarbonIntensitySelector :: Selector
+setGridCarbonIntensitySelector :: Selector '[Id NSNumber] ()
 setGridCarbonIntensitySelector = mkSelector "setGridCarbonIntensity:"
 
 -- | @Selector@ for @gridCarbonLevel@
-gridCarbonLevelSelector :: Selector
+gridCarbonLevelSelector :: Selector '[] (Id NSNumber)
 gridCarbonLevelSelector = mkSelector "gridCarbonLevel"
 
 -- | @Selector@ for @setGridCarbonLevel:@
-setGridCarbonLevelSelector :: Selector
+setGridCarbonLevelSelector :: Selector '[Id NSNumber] ()
 setGridCarbonLevelSelector = mkSelector "setGridCarbonLevel:"
 
 -- | @Selector@ for @localCarbonIntensity@
-localCarbonIntensitySelector :: Selector
+localCarbonIntensitySelector :: Selector '[] (Id NSNumber)
 localCarbonIntensitySelector = mkSelector "localCarbonIntensity"
 
 -- | @Selector@ for @setLocalCarbonIntensity:@
-setLocalCarbonIntensitySelector :: Selector
+setLocalCarbonIntensitySelector :: Selector '[Id NSNumber] ()
 setLocalCarbonIntensitySelector = mkSelector "setLocalCarbonIntensity:"
 
 -- | @Selector@ for @localCarbonLevel@
-localCarbonLevelSelector :: Selector
+localCarbonLevelSelector :: Selector '[] (Id NSNumber)
 localCarbonLevelSelector = mkSelector "localCarbonLevel"
 
 -- | @Selector@ for @setLocalCarbonLevel:@
-setLocalCarbonLevelSelector :: Selector
+setLocalCarbonLevelSelector :: Selector '[Id NSNumber] ()
 setLocalCarbonLevelSelector = mkSelector "setLocalCarbonLevel:"
 

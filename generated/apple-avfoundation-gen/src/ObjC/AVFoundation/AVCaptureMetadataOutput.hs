@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.AVFoundation.AVCaptureMetadataOutput
   , metadataObjectTypes
   , setMetadataObjectTypes
   , requiredMetadataObjectTypesForCinematicVideoCapture
-  , initSelector
-  , newSelector
-  , setMetadataObjectsDelegate_queueSelector
-  , metadataObjectsDelegateSelector
-  , metadataObjectsCallbackQueueSelector
   , availableMetadataObjectTypesSelector
+  , initSelector
   , metadataObjectTypesSelector
-  , setMetadataObjectTypesSelector
+  , metadataObjectsCallbackQueueSelector
+  , metadataObjectsDelegateSelector
+  , newSelector
   , requiredMetadataObjectTypesForCinematicVideoCaptureSelector
+  , setMetadataObjectTypesSelector
+  , setMetadataObjectsDelegate_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,15 +48,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureMetadataOutput avCaptureMetadataOutput => avCaptureMetadataOutput -> IO (Id AVCaptureMetadataOutput)
-init_ avCaptureMetadataOutput  =
-    sendMsg avCaptureMetadataOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureMetadataOutput =
+  sendOwnedMessage avCaptureMetadataOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureMetadataOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureMetadataOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | setMetadataObjectsDelegate:queue:
 --
@@ -77,9 +74,8 @@ new  =
 --
 -- ObjC selector: @- setMetadataObjectsDelegate:queue:@
 setMetadataObjectsDelegate_queue :: (IsAVCaptureMetadataOutput avCaptureMetadataOutput, IsNSObject objectsCallbackQueue) => avCaptureMetadataOutput -> RawId -> objectsCallbackQueue -> IO ()
-setMetadataObjectsDelegate_queue avCaptureMetadataOutput  objectsDelegate objectsCallbackQueue =
-  withObjCPtr objectsCallbackQueue $ \raw_objectsCallbackQueue ->
-      sendMsg avCaptureMetadataOutput (mkSelector "setMetadataObjectsDelegate:queue:") retVoid [argPtr (castPtr (unRawId objectsDelegate) :: Ptr ()), argPtr (castPtr raw_objectsCallbackQueue :: Ptr ())]
+setMetadataObjectsDelegate_queue avCaptureMetadataOutput objectsDelegate objectsCallbackQueue =
+  sendMessage avCaptureMetadataOutput setMetadataObjectsDelegate_queueSelector objectsDelegate (toNSObject objectsCallbackQueue)
 
 -- | metadataObjectsDelegate
 --
@@ -89,8 +85,8 @@ setMetadataObjectsDelegate_queue avCaptureMetadataOutput  objectsDelegate object
 --
 -- ObjC selector: @- metadataObjectsDelegate@
 metadataObjectsDelegate :: IsAVCaptureMetadataOutput avCaptureMetadataOutput => avCaptureMetadataOutput -> IO RawId
-metadataObjectsDelegate avCaptureMetadataOutput  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureMetadataOutput (mkSelector "metadataObjectsDelegate") (retPtr retVoid) []
+metadataObjectsDelegate avCaptureMetadataOutput =
+  sendMessage avCaptureMetadataOutput metadataObjectsDelegateSelector
 
 -- | metadataObjectsCallbackQueue
 --
@@ -100,8 +96,8 @@ metadataObjectsDelegate avCaptureMetadataOutput  =
 --
 -- ObjC selector: @- metadataObjectsCallbackQueue@
 metadataObjectsCallbackQueue :: IsAVCaptureMetadataOutput avCaptureMetadataOutput => avCaptureMetadataOutput -> IO (Id NSObject)
-metadataObjectsCallbackQueue avCaptureMetadataOutput  =
-    sendMsg avCaptureMetadataOutput (mkSelector "metadataObjectsCallbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadataObjectsCallbackQueue avCaptureMetadataOutput =
+  sendMessage avCaptureMetadataOutput metadataObjectsCallbackQueueSelector
 
 -- | availableMetadataObjectTypes
 --
@@ -111,8 +107,8 @@ metadataObjectsCallbackQueue avCaptureMetadataOutput  =
 --
 -- ObjC selector: @- availableMetadataObjectTypes@
 availableMetadataObjectTypes :: IsAVCaptureMetadataOutput avCaptureMetadataOutput => avCaptureMetadataOutput -> IO (Id NSArray)
-availableMetadataObjectTypes avCaptureMetadataOutput  =
-    sendMsg avCaptureMetadataOutput (mkSelector "availableMetadataObjectTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableMetadataObjectTypes avCaptureMetadataOutput =
+  sendMessage avCaptureMetadataOutput availableMetadataObjectTypesSelector
 
 -- | metadataObjectTypes
 --
@@ -124,8 +120,8 @@ availableMetadataObjectTypes avCaptureMetadataOutput  =
 --
 -- ObjC selector: @- metadataObjectTypes@
 metadataObjectTypes :: IsAVCaptureMetadataOutput avCaptureMetadataOutput => avCaptureMetadataOutput -> IO (Id NSArray)
-metadataObjectTypes avCaptureMetadataOutput  =
-    sendMsg avCaptureMetadataOutput (mkSelector "metadataObjectTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadataObjectTypes avCaptureMetadataOutput =
+  sendMessage avCaptureMetadataOutput metadataObjectTypesSelector
 
 -- | metadataObjectTypes
 --
@@ -137,9 +133,8 @@ metadataObjectTypes avCaptureMetadataOutput  =
 --
 -- ObjC selector: @- setMetadataObjectTypes:@
 setMetadataObjectTypes :: (IsAVCaptureMetadataOutput avCaptureMetadataOutput, IsNSArray value) => avCaptureMetadataOutput -> value -> IO ()
-setMetadataObjectTypes avCaptureMetadataOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureMetadataOutput (mkSelector "setMetadataObjectTypes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadataObjectTypes avCaptureMetadataOutput value =
+  sendMessage avCaptureMetadataOutput setMetadataObjectTypesSelector (toNSArray value)
 
 -- | The required metadata object types when Cinematic Video capture is enabled.
 --
@@ -147,46 +142,46 @@ setMetadataObjectTypes avCaptureMetadataOutput  value =
 --
 -- ObjC selector: @- requiredMetadataObjectTypesForCinematicVideoCapture@
 requiredMetadataObjectTypesForCinematicVideoCapture :: IsAVCaptureMetadataOutput avCaptureMetadataOutput => avCaptureMetadataOutput -> IO (Id NSArray)
-requiredMetadataObjectTypesForCinematicVideoCapture avCaptureMetadataOutput  =
-    sendMsg avCaptureMetadataOutput (mkSelector "requiredMetadataObjectTypesForCinematicVideoCapture") (retPtr retVoid) [] >>= retainedObject . castPtr
+requiredMetadataObjectTypesForCinematicVideoCapture avCaptureMetadataOutput =
+  sendMessage avCaptureMetadataOutput requiredMetadataObjectTypesForCinematicVideoCaptureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureMetadataOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureMetadataOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @setMetadataObjectsDelegate:queue:@
-setMetadataObjectsDelegate_queueSelector :: Selector
+setMetadataObjectsDelegate_queueSelector :: Selector '[RawId, Id NSObject] ()
 setMetadataObjectsDelegate_queueSelector = mkSelector "setMetadataObjectsDelegate:queue:"
 
 -- | @Selector@ for @metadataObjectsDelegate@
-metadataObjectsDelegateSelector :: Selector
+metadataObjectsDelegateSelector :: Selector '[] RawId
 metadataObjectsDelegateSelector = mkSelector "metadataObjectsDelegate"
 
 -- | @Selector@ for @metadataObjectsCallbackQueue@
-metadataObjectsCallbackQueueSelector :: Selector
+metadataObjectsCallbackQueueSelector :: Selector '[] (Id NSObject)
 metadataObjectsCallbackQueueSelector = mkSelector "metadataObjectsCallbackQueue"
 
 -- | @Selector@ for @availableMetadataObjectTypes@
-availableMetadataObjectTypesSelector :: Selector
+availableMetadataObjectTypesSelector :: Selector '[] (Id NSArray)
 availableMetadataObjectTypesSelector = mkSelector "availableMetadataObjectTypes"
 
 -- | @Selector@ for @metadataObjectTypes@
-metadataObjectTypesSelector :: Selector
+metadataObjectTypesSelector :: Selector '[] (Id NSArray)
 metadataObjectTypesSelector = mkSelector "metadataObjectTypes"
 
 -- | @Selector@ for @setMetadataObjectTypes:@
-setMetadataObjectTypesSelector :: Selector
+setMetadataObjectTypesSelector :: Selector '[Id NSArray] ()
 setMetadataObjectTypesSelector = mkSelector "setMetadataObjectTypes:"
 
 -- | @Selector@ for @requiredMetadataObjectTypesForCinematicVideoCapture@
-requiredMetadataObjectTypesForCinematicVideoCaptureSelector :: Selector
+requiredMetadataObjectTypesForCinematicVideoCaptureSelector :: Selector '[] (Id NSArray)
 requiredMetadataObjectTypesForCinematicVideoCaptureSelector = mkSelector "requiredMetadataObjectTypesForCinematicVideoCapture"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.CoreImage.CITextFeature
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,14 +40,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- subFeatures@
 subFeatures :: IsCITextFeature ciTextFeature => ciTextFeature -> IO (Id NSArray)
-subFeatures ciTextFeature  =
-    sendMsg ciTextFeature (mkSelector "subFeatures") (retPtr retVoid) [] >>= retainedObject . castPtr
+subFeatures ciTextFeature =
+  sendMessage ciTextFeature subFeaturesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @subFeatures@
-subFeaturesSelector :: Selector
+subFeaturesSelector :: Selector '[] (Id NSArray)
 subFeaturesSelector = mkSelector "subFeatures"
 

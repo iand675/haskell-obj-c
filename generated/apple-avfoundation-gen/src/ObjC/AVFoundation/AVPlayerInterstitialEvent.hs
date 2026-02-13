@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,38 +52,38 @@ module ObjC.AVFoundation.AVPlayerInterstitialEvent
   , setSupplementsPrimaryContent
   , setContentMayVary
   , setSkipControlLocalizedLabelBundleKey
-  , initSelector
-  , newSelector
-  , interstitialEventWithPrimaryItem_dateSelector
-  , primaryItemSelector
-  , identifierSelector
-  , dateSelector
-  , templateItemsSelector
-  , restrictionsSelector
-  , alignsStartWithPrimarySegmentBoundarySelector
   , alignsResumptionWithPrimarySegmentBoundarySelector
-  , cueSelector
-  , willPlayOnceSelector
-  , userDefinedAttributesSelector
+  , alignsStartWithPrimarySegmentBoundarySelector
   , assetListResponseSelector
-  , timelineOccupancySelector
-  , supplementsPrimaryContentSelector
   , contentMayVarySelector
-  , skipControlLocalizedLabelBundleKeySelector
-  , setPrimaryItemSelector
-  , setIdentifierSelector
-  , setDateSelector
-  , setTemplateItemsSelector
-  , setRestrictionsSelector
-  , setAlignsStartWithPrimarySegmentBoundarySelector
+  , cueSelector
+  , dateSelector
+  , identifierSelector
+  , initSelector
+  , interstitialEventWithPrimaryItem_dateSelector
+  , newSelector
+  , primaryItemSelector
+  , restrictionsSelector
   , setAlignsResumptionWithPrimarySegmentBoundarySelector
-  , setCueSelector
-  , setWillPlayOnceSelector
-  , setUserDefinedAttributesSelector
-  , setTimelineOccupancySelector
-  , setSupplementsPrimaryContentSelector
+  , setAlignsStartWithPrimarySegmentBoundarySelector
   , setContentMayVarySelector
+  , setCueSelector
+  , setDateSelector
+  , setIdentifierSelector
+  , setPrimaryItemSelector
+  , setRestrictionsSelector
   , setSkipControlLocalizedLabelBundleKeySelector
+  , setSupplementsPrimaryContentSelector
+  , setTemplateItemsSelector
+  , setTimelineOccupancySelector
+  , setUserDefinedAttributesSelector
+  , setWillPlayOnceSelector
+  , skipControlLocalizedLabelBundleKeySelector
+  , supplementsPrimaryContentSelector
+  , templateItemsSelector
+  , timelineOccupancySelector
+  , userDefinedAttributesSelector
+  , willPlayOnceSelector
 
   -- * Enum types
   , AVPlayerInterstitialEventRestrictions(AVPlayerInterstitialEventRestrictions)
@@ -96,15 +97,11 @@ module ObjC.AVFoundation.AVPlayerInterstitialEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -114,15 +111,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO (Id AVPlayerInterstitialEvent)
-init_ avPlayerInterstitialEvent  =
-    sendMsg avPlayerInterstitialEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerInterstitialEvent =
+  sendOwnedMessage avPlayerInterstitialEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerInterstitialEvent)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerInterstitialEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns an instance of AVPlayerInterstitialEvent for use in scheduling interstitial playback.
 --
@@ -135,16 +132,14 @@ interstitialEventWithPrimaryItem_date :: (IsAVPlayerItem primaryItem, IsNSDate d
 interstitialEventWithPrimaryItem_date primaryItem date =
   do
     cls' <- getRequiredClass "AVPlayerInterstitialEvent"
-    withObjCPtr primaryItem $ \raw_primaryItem ->
-      withObjCPtr date $ \raw_date ->
-        sendClassMsg cls' (mkSelector "interstitialEventWithPrimaryItem:date:") (retPtr retVoid) [argPtr (castPtr raw_primaryItem :: Ptr ()), argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' interstitialEventWithPrimaryItem_dateSelector (toAVPlayerItem primaryItem) (toNSDate date)
 
 -- | An AVPlayerItem representing the primary content during the playback of which the interstitial event should occur. The primaryItem must have an AVAsset that provides an intrinsic mapping from its timeline to real-time dates.
 --
 -- ObjC selector: @- primaryItem@
 primaryItem :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO (Id AVPlayerItem)
-primaryItem avPlayerInterstitialEvent  =
-    sendMsg avPlayerInterstitialEvent (mkSelector "primaryItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryItem avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent primaryItemSelector
 
 -- | An external identifier for the event.
 --
@@ -152,8 +147,8 @@ primaryItem avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- identifier@
 identifier :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO (Id NSString)
-identifier avPlayerInterstitialEvent  =
-    sendMsg avPlayerInterstitialEvent (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent identifierSelector
 
 -- | The date within the date range of the primary item at which playback of the primary content should be temporarily suspended and the interstitial items played.
 --
@@ -161,8 +156,8 @@ identifier avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- date@
 date :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO (Id NSDate)
-date avPlayerInterstitialEvent  =
-    sendMsg avPlayerInterstitialEvent (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent dateSelector
 
 -- | An array of AVPlayerItems with configurations that will be reproduced for the playback of interstitial content.
 --
@@ -172,15 +167,15 @@ date avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- templateItems@
 templateItems :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO (Id NSArray)
-templateItems avPlayerInterstitialEvent  =
-    sendMsg avPlayerInterstitialEvent (mkSelector "templateItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+templateItems avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent templateItemsSelector
 
 -- | Indicates restrictions on the use of end user playback controls that are imposed by the event.
 --
 -- ObjC selector: @- restrictions@
 restrictions :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO AVPlayerInterstitialEventRestrictions
-restrictions avPlayerInterstitialEvent  =
-    fmap (coerce :: CULong -> AVPlayerInterstitialEventRestrictions) $ sendMsg avPlayerInterstitialEvent (mkSelector "restrictions") retCULong []
+restrictions avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent restrictionsSelector
 
 -- | Specifies that the start time of interstitial playback should be snapped to a segment boundary of the primary asset
 --
@@ -188,8 +183,8 @@ restrictions avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- alignsStartWithPrimarySegmentBoundary@
 alignsStartWithPrimarySegmentBoundary :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO Bool
-alignsStartWithPrimarySegmentBoundary avPlayerInterstitialEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerInterstitialEvent (mkSelector "alignsStartWithPrimarySegmentBoundary") retCULong []
+alignsStartWithPrimarySegmentBoundary avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent alignsStartWithPrimarySegmentBoundarySelector
 
 -- | Specifies that the resumption time of primary playback should be snapped to a segment boundary of the primary asset
 --
@@ -197,15 +192,15 @@ alignsStartWithPrimarySegmentBoundary avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- alignsResumptionWithPrimarySegmentBoundary@
 alignsResumptionWithPrimarySegmentBoundary :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO Bool
-alignsResumptionWithPrimarySegmentBoundary avPlayerInterstitialEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerInterstitialEvent (mkSelector "alignsResumptionWithPrimarySegmentBoundary") retCULong []
+alignsResumptionWithPrimarySegmentBoundary avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent alignsResumptionWithPrimarySegmentBoundarySelector
 
 -- | The cue property is used to schedule event playback at a predefined position of primary playback.
 --
 -- ObjC selector: @- cue@
 cue :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO (Id NSString)
-cue avPlayerInterstitialEvent  =
-    sendMsg avPlayerInterstitialEvent (mkSelector "cue") (retPtr retVoid) [] >>= retainedObject . castPtr
+cue avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent cueSelector
 
 -- | Specifies that the interstitial should be scheduled for playback once only, and suppressed for subsequent replay.
 --
@@ -213,8 +208,8 @@ cue avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- willPlayOnce@
 willPlayOnce :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO Bool
-willPlayOnce avPlayerInterstitialEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerInterstitialEvent (mkSelector "willPlayOnce") retCULong []
+willPlayOnce avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent willPlayOnceSelector
 
 -- | Attributes of the event defined by the content vendor or the client.
 --
@@ -222,8 +217,8 @@ willPlayOnce avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- userDefinedAttributes@
 userDefinedAttributes :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO (Id NSDictionary)
-userDefinedAttributes avPlayerInterstitialEvent  =
-    sendMsg avPlayerInterstitialEvent (mkSelector "userDefinedAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+userDefinedAttributes avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent userDefinedAttributesSelector
 
 -- | The asset list JSON response as a dictionary, or nil if no asset list response has been loaded for the event.
 --
@@ -231,22 +226,22 @@ userDefinedAttributes avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- assetListResponse@
 assetListResponse :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO (Id NSDictionary)
-assetListResponse avPlayerInterstitialEvent  =
-    sendMsg avPlayerInterstitialEvent (mkSelector "assetListResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetListResponse avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent assetListResponseSelector
 
 -- | Indicates this event's occupancy on AVPlayerItemIntegratedTimeline. The default value is AVPlayerInterstitialEventTimelineSinglePointOccupancy.
 --
 -- ObjC selector: @- timelineOccupancy@
 timelineOccupancy :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO AVPlayerInterstitialEventTimelineOccupancy
-timelineOccupancy avPlayerInterstitialEvent  =
-    fmap (coerce :: CLong -> AVPlayerInterstitialEventTimelineOccupancy) $ sendMsg avPlayerInterstitialEvent (mkSelector "timelineOccupancy") retCLong []
+timelineOccupancy avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent timelineOccupancySelector
 
 -- | Indicates this event will supplement the primary content and should be presented unified with the primary item. The default value is NO.
 --
 -- ObjC selector: @- supplementsPrimaryContent@
 supplementsPrimaryContent :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO Bool
-supplementsPrimaryContent avPlayerInterstitialEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerInterstitialEvent (mkSelector "supplementsPrimaryContent") retCULong []
+supplementsPrimaryContent avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent supplementsPrimaryContentSelector
 
 -- | Indicates this event's content is dynamic and server may respond with different interstitial assets for other particpants in coordinated playback.
 --
@@ -254,8 +249,8 @@ supplementsPrimaryContent avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- contentMayVary@
 contentMayVary :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO Bool
-contentMayVary avPlayerInterstitialEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avPlayerInterstitialEvent (mkSelector "contentMayVary") retCULong []
+contentMayVary avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent contentMayVarySelector
 
 -- | The key defined in the AVPlayerInterstitialEventController's localizedStringsBundle that points to the localized label for the skip button.
 --
@@ -263,215 +258,208 @@ contentMayVary avPlayerInterstitialEvent  =
 --
 -- ObjC selector: @- skipControlLocalizedLabelBundleKey@
 skipControlLocalizedLabelBundleKey :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> IO (Id NSString)
-skipControlLocalizedLabelBundleKey avPlayerInterstitialEvent  =
-    sendMsg avPlayerInterstitialEvent (mkSelector "skipControlLocalizedLabelBundleKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+skipControlLocalizedLabelBundleKey avPlayerInterstitialEvent =
+  sendMessage avPlayerInterstitialEvent skipControlLocalizedLabelBundleKeySelector
 
 -- | @- setPrimaryItem:@
 setPrimaryItem :: (IsAVPlayerInterstitialEvent avPlayerInterstitialEvent, IsAVPlayerItem value) => avPlayerInterstitialEvent -> value -> IO ()
-setPrimaryItem avPlayerInterstitialEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEvent (mkSelector "setPrimaryItem:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrimaryItem avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setPrimaryItemSelector (toAVPlayerItem value)
 
 -- | @- setIdentifier:@
 setIdentifier :: (IsAVPlayerInterstitialEvent avPlayerInterstitialEvent, IsNSString value) => avPlayerInterstitialEvent -> value -> IO ()
-setIdentifier avPlayerInterstitialEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEvent (mkSelector "setIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentifier avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setIdentifierSelector (toNSString value)
 
 -- | @- setDate:@
 setDate :: (IsAVPlayerInterstitialEvent avPlayerInterstitialEvent, IsNSDate value) => avPlayerInterstitialEvent -> value -> IO ()
-setDate avPlayerInterstitialEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEvent (mkSelector "setDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDate avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setDateSelector (toNSDate value)
 
 -- | @- setTemplateItems:@
 setTemplateItems :: (IsAVPlayerInterstitialEvent avPlayerInterstitialEvent, IsNSArray value) => avPlayerInterstitialEvent -> value -> IO ()
-setTemplateItems avPlayerInterstitialEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEvent (mkSelector "setTemplateItems:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTemplateItems avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setTemplateItemsSelector (toNSArray value)
 
 -- | @- setRestrictions:@
 setRestrictions :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> AVPlayerInterstitialEventRestrictions -> IO ()
-setRestrictions avPlayerInterstitialEvent  value =
-    sendMsg avPlayerInterstitialEvent (mkSelector "setRestrictions:") retVoid [argCULong (coerce value)]
+setRestrictions avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setRestrictionsSelector value
 
 -- | @- setAlignsStartWithPrimarySegmentBoundary:@
 setAlignsStartWithPrimarySegmentBoundary :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> Bool -> IO ()
-setAlignsStartWithPrimarySegmentBoundary avPlayerInterstitialEvent  value =
-    sendMsg avPlayerInterstitialEvent (mkSelector "setAlignsStartWithPrimarySegmentBoundary:") retVoid [argCULong (if value then 1 else 0)]
+setAlignsStartWithPrimarySegmentBoundary avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setAlignsStartWithPrimarySegmentBoundarySelector value
 
 -- | @- setAlignsResumptionWithPrimarySegmentBoundary:@
 setAlignsResumptionWithPrimarySegmentBoundary :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> Bool -> IO ()
-setAlignsResumptionWithPrimarySegmentBoundary avPlayerInterstitialEvent  value =
-    sendMsg avPlayerInterstitialEvent (mkSelector "setAlignsResumptionWithPrimarySegmentBoundary:") retVoid [argCULong (if value then 1 else 0)]
+setAlignsResumptionWithPrimarySegmentBoundary avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setAlignsResumptionWithPrimarySegmentBoundarySelector value
 
 -- | @- setCue:@
 setCue :: (IsAVPlayerInterstitialEvent avPlayerInterstitialEvent, IsNSString value) => avPlayerInterstitialEvent -> value -> IO ()
-setCue avPlayerInterstitialEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEvent (mkSelector "setCue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCue avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setCueSelector (toNSString value)
 
 -- | @- setWillPlayOnce:@
 setWillPlayOnce :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> Bool -> IO ()
-setWillPlayOnce avPlayerInterstitialEvent  value =
-    sendMsg avPlayerInterstitialEvent (mkSelector "setWillPlayOnce:") retVoid [argCULong (if value then 1 else 0)]
+setWillPlayOnce avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setWillPlayOnceSelector value
 
 -- | @- setUserDefinedAttributes:@
 setUserDefinedAttributes :: (IsAVPlayerInterstitialEvent avPlayerInterstitialEvent, IsNSDictionary value) => avPlayerInterstitialEvent -> value -> IO ()
-setUserDefinedAttributes avPlayerInterstitialEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEvent (mkSelector "setUserDefinedAttributes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserDefinedAttributes avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setUserDefinedAttributesSelector (toNSDictionary value)
 
 -- | @- setTimelineOccupancy:@
 setTimelineOccupancy :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> AVPlayerInterstitialEventTimelineOccupancy -> IO ()
-setTimelineOccupancy avPlayerInterstitialEvent  value =
-    sendMsg avPlayerInterstitialEvent (mkSelector "setTimelineOccupancy:") retVoid [argCLong (coerce value)]
+setTimelineOccupancy avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setTimelineOccupancySelector value
 
 -- | @- setSupplementsPrimaryContent:@
 setSupplementsPrimaryContent :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> Bool -> IO ()
-setSupplementsPrimaryContent avPlayerInterstitialEvent  value =
-    sendMsg avPlayerInterstitialEvent (mkSelector "setSupplementsPrimaryContent:") retVoid [argCULong (if value then 1 else 0)]
+setSupplementsPrimaryContent avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setSupplementsPrimaryContentSelector value
 
 -- | @- setContentMayVary:@
 setContentMayVary :: IsAVPlayerInterstitialEvent avPlayerInterstitialEvent => avPlayerInterstitialEvent -> Bool -> IO ()
-setContentMayVary avPlayerInterstitialEvent  value =
-    sendMsg avPlayerInterstitialEvent (mkSelector "setContentMayVary:") retVoid [argCULong (if value then 1 else 0)]
+setContentMayVary avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setContentMayVarySelector value
 
 -- | @- setSkipControlLocalizedLabelBundleKey:@
 setSkipControlLocalizedLabelBundleKey :: (IsAVPlayerInterstitialEvent avPlayerInterstitialEvent, IsNSString value) => avPlayerInterstitialEvent -> value -> IO ()
-setSkipControlLocalizedLabelBundleKey avPlayerInterstitialEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avPlayerInterstitialEvent (mkSelector "setSkipControlLocalizedLabelBundleKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSkipControlLocalizedLabelBundleKey avPlayerInterstitialEvent value =
+  sendMessage avPlayerInterstitialEvent setSkipControlLocalizedLabelBundleKeySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerInterstitialEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerInterstitialEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @interstitialEventWithPrimaryItem:date:@
-interstitialEventWithPrimaryItem_dateSelector :: Selector
+interstitialEventWithPrimaryItem_dateSelector :: Selector '[Id AVPlayerItem, Id NSDate] (Id AVPlayerInterstitialEvent)
 interstitialEventWithPrimaryItem_dateSelector = mkSelector "interstitialEventWithPrimaryItem:date:"
 
 -- | @Selector@ for @primaryItem@
-primaryItemSelector :: Selector
+primaryItemSelector :: Selector '[] (Id AVPlayerItem)
 primaryItemSelector = mkSelector "primaryItem"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @templateItems@
-templateItemsSelector :: Selector
+templateItemsSelector :: Selector '[] (Id NSArray)
 templateItemsSelector = mkSelector "templateItems"
 
 -- | @Selector@ for @restrictions@
-restrictionsSelector :: Selector
+restrictionsSelector :: Selector '[] AVPlayerInterstitialEventRestrictions
 restrictionsSelector = mkSelector "restrictions"
 
 -- | @Selector@ for @alignsStartWithPrimarySegmentBoundary@
-alignsStartWithPrimarySegmentBoundarySelector :: Selector
+alignsStartWithPrimarySegmentBoundarySelector :: Selector '[] Bool
 alignsStartWithPrimarySegmentBoundarySelector = mkSelector "alignsStartWithPrimarySegmentBoundary"
 
 -- | @Selector@ for @alignsResumptionWithPrimarySegmentBoundary@
-alignsResumptionWithPrimarySegmentBoundarySelector :: Selector
+alignsResumptionWithPrimarySegmentBoundarySelector :: Selector '[] Bool
 alignsResumptionWithPrimarySegmentBoundarySelector = mkSelector "alignsResumptionWithPrimarySegmentBoundary"
 
 -- | @Selector@ for @cue@
-cueSelector :: Selector
+cueSelector :: Selector '[] (Id NSString)
 cueSelector = mkSelector "cue"
 
 -- | @Selector@ for @willPlayOnce@
-willPlayOnceSelector :: Selector
+willPlayOnceSelector :: Selector '[] Bool
 willPlayOnceSelector = mkSelector "willPlayOnce"
 
 -- | @Selector@ for @userDefinedAttributes@
-userDefinedAttributesSelector :: Selector
+userDefinedAttributesSelector :: Selector '[] (Id NSDictionary)
 userDefinedAttributesSelector = mkSelector "userDefinedAttributes"
 
 -- | @Selector@ for @assetListResponse@
-assetListResponseSelector :: Selector
+assetListResponseSelector :: Selector '[] (Id NSDictionary)
 assetListResponseSelector = mkSelector "assetListResponse"
 
 -- | @Selector@ for @timelineOccupancy@
-timelineOccupancySelector :: Selector
+timelineOccupancySelector :: Selector '[] AVPlayerInterstitialEventTimelineOccupancy
 timelineOccupancySelector = mkSelector "timelineOccupancy"
 
 -- | @Selector@ for @supplementsPrimaryContent@
-supplementsPrimaryContentSelector :: Selector
+supplementsPrimaryContentSelector :: Selector '[] Bool
 supplementsPrimaryContentSelector = mkSelector "supplementsPrimaryContent"
 
 -- | @Selector@ for @contentMayVary@
-contentMayVarySelector :: Selector
+contentMayVarySelector :: Selector '[] Bool
 contentMayVarySelector = mkSelector "contentMayVary"
 
 -- | @Selector@ for @skipControlLocalizedLabelBundleKey@
-skipControlLocalizedLabelBundleKeySelector :: Selector
+skipControlLocalizedLabelBundleKeySelector :: Selector '[] (Id NSString)
 skipControlLocalizedLabelBundleKeySelector = mkSelector "skipControlLocalizedLabelBundleKey"
 
 -- | @Selector@ for @setPrimaryItem:@
-setPrimaryItemSelector :: Selector
+setPrimaryItemSelector :: Selector '[Id AVPlayerItem] ()
 setPrimaryItemSelector = mkSelector "setPrimaryItem:"
 
 -- | @Selector@ for @setIdentifier:@
-setIdentifierSelector :: Selector
+setIdentifierSelector :: Selector '[Id NSString] ()
 setIdentifierSelector = mkSelector "setIdentifier:"
 
 -- | @Selector@ for @setDate:@
-setDateSelector :: Selector
+setDateSelector :: Selector '[Id NSDate] ()
 setDateSelector = mkSelector "setDate:"
 
 -- | @Selector@ for @setTemplateItems:@
-setTemplateItemsSelector :: Selector
+setTemplateItemsSelector :: Selector '[Id NSArray] ()
 setTemplateItemsSelector = mkSelector "setTemplateItems:"
 
 -- | @Selector@ for @setRestrictions:@
-setRestrictionsSelector :: Selector
+setRestrictionsSelector :: Selector '[AVPlayerInterstitialEventRestrictions] ()
 setRestrictionsSelector = mkSelector "setRestrictions:"
 
 -- | @Selector@ for @setAlignsStartWithPrimarySegmentBoundary:@
-setAlignsStartWithPrimarySegmentBoundarySelector :: Selector
+setAlignsStartWithPrimarySegmentBoundarySelector :: Selector '[Bool] ()
 setAlignsStartWithPrimarySegmentBoundarySelector = mkSelector "setAlignsStartWithPrimarySegmentBoundary:"
 
 -- | @Selector@ for @setAlignsResumptionWithPrimarySegmentBoundary:@
-setAlignsResumptionWithPrimarySegmentBoundarySelector :: Selector
+setAlignsResumptionWithPrimarySegmentBoundarySelector :: Selector '[Bool] ()
 setAlignsResumptionWithPrimarySegmentBoundarySelector = mkSelector "setAlignsResumptionWithPrimarySegmentBoundary:"
 
 -- | @Selector@ for @setCue:@
-setCueSelector :: Selector
+setCueSelector :: Selector '[Id NSString] ()
 setCueSelector = mkSelector "setCue:"
 
 -- | @Selector@ for @setWillPlayOnce:@
-setWillPlayOnceSelector :: Selector
+setWillPlayOnceSelector :: Selector '[Bool] ()
 setWillPlayOnceSelector = mkSelector "setWillPlayOnce:"
 
 -- | @Selector@ for @setUserDefinedAttributes:@
-setUserDefinedAttributesSelector :: Selector
+setUserDefinedAttributesSelector :: Selector '[Id NSDictionary] ()
 setUserDefinedAttributesSelector = mkSelector "setUserDefinedAttributes:"
 
 -- | @Selector@ for @setTimelineOccupancy:@
-setTimelineOccupancySelector :: Selector
+setTimelineOccupancySelector :: Selector '[AVPlayerInterstitialEventTimelineOccupancy] ()
 setTimelineOccupancySelector = mkSelector "setTimelineOccupancy:"
 
 -- | @Selector@ for @setSupplementsPrimaryContent:@
-setSupplementsPrimaryContentSelector :: Selector
+setSupplementsPrimaryContentSelector :: Selector '[Bool] ()
 setSupplementsPrimaryContentSelector = mkSelector "setSupplementsPrimaryContent:"
 
 -- | @Selector@ for @setContentMayVary:@
-setContentMayVarySelector :: Selector
+setContentMayVarySelector :: Selector '[Bool] ()
 setContentMayVarySelector = mkSelector "setContentMayVary:"
 
 -- | @Selector@ for @setSkipControlLocalizedLabelBundleKey:@
-setSkipControlLocalizedLabelBundleKeySelector :: Selector
+setSkipControlLocalizedLabelBundleKeySelector :: Selector '[Id NSString] ()
 setSkipControlLocalizedLabelBundleKeySelector = mkSelector "setSkipControlLocalizedLabelBundleKey:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.JavaRuntimeSupport.CALayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,23 +31,23 @@ import ObjC.QuartzCore.Internal.Classes
 
 -- | @- createRemoteLayerBoundTo:@
 createRemoteLayerBoundTo :: IsCALayer caLayer => caLayer -> CUInt -> IO (Id NSObject)
-createRemoteLayerBoundTo caLayer  serverPort =
-    sendMsg caLayer (mkSelector "createRemoteLayerBoundTo:") (retPtr retVoid) [argCUInt serverPort] >>= retainedObject . castPtr
+createRemoteLayerBoundTo caLayer serverPort =
+  sendMessage caLayer createRemoteLayerBoundToSelector serverPort
 
 -- | @- hostRemoteLayer:@
 hostRemoteLayer :: IsCALayer caLayer => caLayer -> CUInt -> IO ()
-hostRemoteLayer caLayer  layerID =
-    sendMsg caLayer (mkSelector "hostRemoteLayer:") retVoid [argCUInt layerID]
+hostRemoteLayer caLayer layerID =
+  sendMessage caLayer hostRemoteLayerSelector layerID
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createRemoteLayerBoundTo:@
-createRemoteLayerBoundToSelector :: Selector
+createRemoteLayerBoundToSelector :: Selector '[CUInt] (Id NSObject)
 createRemoteLayerBoundToSelector = mkSelector "createRemoteLayerBoundTo:"
 
 -- | @Selector@ for @hostRemoteLayer:@
-hostRemoteLayerSelector :: Selector
+hostRemoteLayerSelector :: Selector '[CUInt] ()
 hostRemoteLayerSelector = mkSelector "hostRemoteLayer:"
 

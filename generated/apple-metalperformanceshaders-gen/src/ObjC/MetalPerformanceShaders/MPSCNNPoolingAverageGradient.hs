@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,25 +37,21 @@ module ObjC.MetalPerformanceShaders.MPSCNNPoolingAverageGradient
   , setZeroPadSizeX
   , zeroPadSizeY
   , setZeroPadSizeY
-  , initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector
   , initWithCoder_deviceSelector
-  , zeroPadSizeXSelector
+  , initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector
   , setZeroPadSizeXSelector
-  , zeroPadSizeYSelector
   , setZeroPadSizeYSelector
+  , zeroPadSizeXSelector
+  , zeroPadSizeYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,8 +74,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:@
 initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY :: IsMPSCNNPoolingAverageGradient mpscnnPoolingAverageGradient => mpscnnPoolingAverageGradient -> RawId -> CULong -> CULong -> CULong -> CULong -> IO (Id MPSCNNPoolingAverageGradient)
-initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY mpscnnPoolingAverageGradient  device kernelWidth kernelHeight strideInPixelsX strideInPixelsY =
-    sendMsg mpscnnPoolingAverageGradient (mkSelector "initWithDevice:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight, argCULong strideInPixelsX, argCULong strideInPixelsY] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY mpscnnPoolingAverageGradient device kernelWidth kernelHeight strideInPixelsX strideInPixelsY =
+  sendOwnedMessage mpscnnPoolingAverageGradient initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector device kernelWidth kernelHeight strideInPixelsX strideInPixelsY
 
 -- | NSSecureCoding compatability
 --
@@ -92,9 +89,8 @@ initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY mpscnnPo
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNPoolingAverageGradient mpscnnPoolingAverageGradient, IsNSCoder aDecoder) => mpscnnPoolingAverageGradient -> aDecoder -> RawId -> IO (Id MPSCNNPoolingAverageGradient)
-initWithCoder_device mpscnnPoolingAverageGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnPoolingAverageGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnPoolingAverageGradient aDecoder device =
+  sendOwnedMessage mpscnnPoolingAverageGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | zeroPadSizeX
 --
@@ -106,8 +102,8 @@ initWithCoder_device mpscnnPoolingAverageGradient  aDecoder device =
 --
 -- ObjC selector: @- zeroPadSizeX@
 zeroPadSizeX :: IsMPSCNNPoolingAverageGradient mpscnnPoolingAverageGradient => mpscnnPoolingAverageGradient -> IO CULong
-zeroPadSizeX mpscnnPoolingAverageGradient  =
-    sendMsg mpscnnPoolingAverageGradient (mkSelector "zeroPadSizeX") retCULong []
+zeroPadSizeX mpscnnPoolingAverageGradient =
+  sendMessage mpscnnPoolingAverageGradient zeroPadSizeXSelector
 
 -- | zeroPadSizeX
 --
@@ -119,8 +115,8 @@ zeroPadSizeX mpscnnPoolingAverageGradient  =
 --
 -- ObjC selector: @- setZeroPadSizeX:@
 setZeroPadSizeX :: IsMPSCNNPoolingAverageGradient mpscnnPoolingAverageGradient => mpscnnPoolingAverageGradient -> CULong -> IO ()
-setZeroPadSizeX mpscnnPoolingAverageGradient  value =
-    sendMsg mpscnnPoolingAverageGradient (mkSelector "setZeroPadSizeX:") retVoid [argCULong value]
+setZeroPadSizeX mpscnnPoolingAverageGradient value =
+  sendMessage mpscnnPoolingAverageGradient setZeroPadSizeXSelector value
 
 -- | zeroPadSizeY
 --
@@ -132,8 +128,8 @@ setZeroPadSizeX mpscnnPoolingAverageGradient  value =
 --
 -- ObjC selector: @- zeroPadSizeY@
 zeroPadSizeY :: IsMPSCNNPoolingAverageGradient mpscnnPoolingAverageGradient => mpscnnPoolingAverageGradient -> IO CULong
-zeroPadSizeY mpscnnPoolingAverageGradient  =
-    sendMsg mpscnnPoolingAverageGradient (mkSelector "zeroPadSizeY") retCULong []
+zeroPadSizeY mpscnnPoolingAverageGradient =
+  sendMessage mpscnnPoolingAverageGradient zeroPadSizeYSelector
 
 -- | zeroPadSizeY
 --
@@ -145,34 +141,34 @@ zeroPadSizeY mpscnnPoolingAverageGradient  =
 --
 -- ObjC selector: @- setZeroPadSizeY:@
 setZeroPadSizeY :: IsMPSCNNPoolingAverageGradient mpscnnPoolingAverageGradient => mpscnnPoolingAverageGradient -> CULong -> IO ()
-setZeroPadSizeY mpscnnPoolingAverageGradient  value =
-    sendMsg mpscnnPoolingAverageGradient (mkSelector "setZeroPadSizeY:") retVoid [argCULong value]
+setZeroPadSizeY mpscnnPoolingAverageGradient value =
+  sendMessage mpscnnPoolingAverageGradient setZeroPadSizeYSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:@
-initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector :: Selector
+initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector :: Selector '[RawId, CULong, CULong, CULong, CULong] (Id MPSCNNPoolingAverageGradient)
 initWithDevice_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNPoolingAverageGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @zeroPadSizeX@
-zeroPadSizeXSelector :: Selector
+zeroPadSizeXSelector :: Selector '[] CULong
 zeroPadSizeXSelector = mkSelector "zeroPadSizeX"
 
 -- | @Selector@ for @setZeroPadSizeX:@
-setZeroPadSizeXSelector :: Selector
+setZeroPadSizeXSelector :: Selector '[CULong] ()
 setZeroPadSizeXSelector = mkSelector "setZeroPadSizeX:"
 
 -- | @Selector@ for @zeroPadSizeY@
-zeroPadSizeYSelector :: Selector
+zeroPadSizeYSelector :: Selector '[] CULong
 zeroPadSizeYSelector = mkSelector "zeroPadSizeY"
 
 -- | @Selector@ for @setZeroPadSizeY:@
-setZeroPadSizeYSelector :: Selector
+setZeroPadSizeYSelector :: Selector '[CULong] ()
 setZeroPadSizeYSelector = mkSelector "setZeroPadSizeY:"
 

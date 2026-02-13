@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -39,38 +40,38 @@ module ObjC.Foundation.NSProcessInfo
   , thermalState
   , userName
   , fullUserName
-  , operatingSystemSelector
-  , operatingSystemNameSelector
-  , disableSuddenTerminationSelector
-  , enableSuddenTerminationSelector
-  , disableAutomaticTerminationSelector
-  , enableAutomaticTerminationSelector
-  , beginActivityWithOptions_reasonSelector
-  , endActivitySelector
-  , performActivityWithOptions_reason_usingBlockSelector
-  , performExpiringActivityWithReason_usingBlockSelector
-  , processInfoSelector
-  , environmentSelector
-  , argumentsSelector
-  , hostNameSelector
-  , processNameSelector
-  , setProcessNameSelector
-  , processIdentifierSelector
-  , globallyUniqueStringSelector
-  , operatingSystemVersionStringSelector
-  , processorCountSelector
   , activeProcessorCountSelector
-  , physicalMemorySelector
-  , systemUptimeSelector
+  , argumentsSelector
   , automaticTerminationSupportEnabledSelector
-  , setAutomaticTerminationSupportEnabledSelector
-  , macCatalystAppSelector
+  , beginActivityWithOptions_reasonSelector
+  , disableAutomaticTerminationSelector
+  , disableSuddenTerminationSelector
+  , enableAutomaticTerminationSelector
+  , enableSuddenTerminationSelector
+  , endActivitySelector
+  , environmentSelector
+  , fullUserNameSelector
+  , globallyUniqueStringSelector
+  , hostNameSelector
   , iOSAppOnMacSelector
   , iOSAppOnVisionSelector
   , lowPowerModeEnabledSelector
+  , macCatalystAppSelector
+  , operatingSystemNameSelector
+  , operatingSystemSelector
+  , operatingSystemVersionStringSelector
+  , performActivityWithOptions_reason_usingBlockSelector
+  , performExpiringActivityWithReason_usingBlockSelector
+  , physicalMemorySelector
+  , processIdentifierSelector
+  , processInfoSelector
+  , processNameSelector
+  , processorCountSelector
+  , setAutomaticTerminationSupportEnabledSelector
+  , setProcessNameSelector
+  , systemUptimeSelector
   , thermalStateSelector
   , userNameSelector
-  , fullUserNameSelector
 
   -- * Enum types
   , NSActivityOptions(NSActivityOptions)
@@ -93,15 +94,11 @@ module ObjC.Foundation.NSProcessInfo
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -110,301 +107,295 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- operatingSystem@
 operatingSystem :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO CULong
-operatingSystem nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "operatingSystem") retCULong []
+operatingSystem nsProcessInfo =
+  sendMessage nsProcessInfo operatingSystemSelector
 
 -- | @- operatingSystemName@
 operatingSystemName :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSString)
-operatingSystemName nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "operatingSystemName") (retPtr retVoid) [] >>= retainedObject . castPtr
+operatingSystemName nsProcessInfo =
+  sendMessage nsProcessInfo operatingSystemNameSelector
 
 -- | @- disableSuddenTermination@
 disableSuddenTermination :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO ()
-disableSuddenTermination nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "disableSuddenTermination") retVoid []
+disableSuddenTermination nsProcessInfo =
+  sendMessage nsProcessInfo disableSuddenTerminationSelector
 
 -- | @- enableSuddenTermination@
 enableSuddenTermination :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO ()
-enableSuddenTermination nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "enableSuddenTermination") retVoid []
+enableSuddenTermination nsProcessInfo =
+  sendMessage nsProcessInfo enableSuddenTerminationSelector
 
 -- | @- disableAutomaticTermination:@
 disableAutomaticTermination :: (IsNSProcessInfo nsProcessInfo, IsNSString reason) => nsProcessInfo -> reason -> IO ()
-disableAutomaticTermination nsProcessInfo  reason =
-  withObjCPtr reason $ \raw_reason ->
-      sendMsg nsProcessInfo (mkSelector "disableAutomaticTermination:") retVoid [argPtr (castPtr raw_reason :: Ptr ())]
+disableAutomaticTermination nsProcessInfo reason =
+  sendMessage nsProcessInfo disableAutomaticTerminationSelector (toNSString reason)
 
 -- | @- enableAutomaticTermination:@
 enableAutomaticTermination :: (IsNSProcessInfo nsProcessInfo, IsNSString reason) => nsProcessInfo -> reason -> IO ()
-enableAutomaticTermination nsProcessInfo  reason =
-  withObjCPtr reason $ \raw_reason ->
-      sendMsg nsProcessInfo (mkSelector "enableAutomaticTermination:") retVoid [argPtr (castPtr raw_reason :: Ptr ())]
+enableAutomaticTermination nsProcessInfo reason =
+  sendMessage nsProcessInfo enableAutomaticTerminationSelector (toNSString reason)
 
 -- | @- beginActivityWithOptions:reason:@
 beginActivityWithOptions_reason :: (IsNSProcessInfo nsProcessInfo, IsNSString reason) => nsProcessInfo -> NSActivityOptions -> reason -> IO RawId
-beginActivityWithOptions_reason nsProcessInfo  options reason =
-  withObjCPtr reason $ \raw_reason ->
-      fmap (RawId . castPtr) $ sendMsg nsProcessInfo (mkSelector "beginActivityWithOptions:reason:") (retPtr retVoid) [argCULong (coerce options), argPtr (castPtr raw_reason :: Ptr ())]
+beginActivityWithOptions_reason nsProcessInfo options reason =
+  sendMessage nsProcessInfo beginActivityWithOptions_reasonSelector options (toNSString reason)
 
 -- | @- endActivity:@
 endActivity :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> RawId -> IO ()
-endActivity nsProcessInfo  activity =
-    sendMsg nsProcessInfo (mkSelector "endActivity:") retVoid [argPtr (castPtr (unRawId activity) :: Ptr ())]
+endActivity nsProcessInfo activity =
+  sendMessage nsProcessInfo endActivitySelector activity
 
 -- | @- performActivityWithOptions:reason:usingBlock:@
 performActivityWithOptions_reason_usingBlock :: (IsNSProcessInfo nsProcessInfo, IsNSString reason) => nsProcessInfo -> NSActivityOptions -> reason -> Ptr () -> IO ()
-performActivityWithOptions_reason_usingBlock nsProcessInfo  options reason block =
-  withObjCPtr reason $ \raw_reason ->
-      sendMsg nsProcessInfo (mkSelector "performActivityWithOptions:reason:usingBlock:") retVoid [argCULong (coerce options), argPtr (castPtr raw_reason :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+performActivityWithOptions_reason_usingBlock nsProcessInfo options reason block =
+  sendMessage nsProcessInfo performActivityWithOptions_reason_usingBlockSelector options (toNSString reason) block
 
 -- | @- performExpiringActivityWithReason:usingBlock:@
 performExpiringActivityWithReason_usingBlock :: (IsNSProcessInfo nsProcessInfo, IsNSString reason) => nsProcessInfo -> reason -> Ptr () -> IO ()
-performExpiringActivityWithReason_usingBlock nsProcessInfo  reason block =
-  withObjCPtr reason $ \raw_reason ->
-      sendMsg nsProcessInfo (mkSelector "performExpiringActivityWithReason:usingBlock:") retVoid [argPtr (castPtr raw_reason :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+performExpiringActivityWithReason_usingBlock nsProcessInfo reason block =
+  sendMessage nsProcessInfo performExpiringActivityWithReason_usingBlockSelector (toNSString reason) block
 
 -- | @+ processInfo@
 processInfo :: IO (Id NSProcessInfo)
 processInfo  =
   do
     cls' <- getRequiredClass "NSProcessInfo"
-    sendClassMsg cls' (mkSelector "processInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' processInfoSelector
 
 -- | @- environment@
 environment :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSDictionary)
-environment nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "environment") (retPtr retVoid) [] >>= retainedObject . castPtr
+environment nsProcessInfo =
+  sendMessage nsProcessInfo environmentSelector
 
 -- | @- arguments@
 arguments :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSArray)
-arguments nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "arguments") (retPtr retVoid) [] >>= retainedObject . castPtr
+arguments nsProcessInfo =
+  sendMessage nsProcessInfo argumentsSelector
 
 -- | @- hostName@
 hostName :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSString)
-hostName nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "hostName") (retPtr retVoid) [] >>= retainedObject . castPtr
+hostName nsProcessInfo =
+  sendMessage nsProcessInfo hostNameSelector
 
 -- | @- processName@
 processName :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSString)
-processName nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "processName") (retPtr retVoid) [] >>= retainedObject . castPtr
+processName nsProcessInfo =
+  sendMessage nsProcessInfo processNameSelector
 
 -- | @- setProcessName:@
 setProcessName :: (IsNSProcessInfo nsProcessInfo, IsNSString value) => nsProcessInfo -> value -> IO ()
-setProcessName nsProcessInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsProcessInfo (mkSelector "setProcessName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProcessName nsProcessInfo value =
+  sendMessage nsProcessInfo setProcessNameSelector (toNSString value)
 
 -- | @- processIdentifier@
 processIdentifier :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO CInt
-processIdentifier nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "processIdentifier") retCInt []
+processIdentifier nsProcessInfo =
+  sendMessage nsProcessInfo processIdentifierSelector
 
 -- | @- globallyUniqueString@
 globallyUniqueString :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSString)
-globallyUniqueString nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "globallyUniqueString") (retPtr retVoid) [] >>= retainedObject . castPtr
+globallyUniqueString nsProcessInfo =
+  sendMessage nsProcessInfo globallyUniqueStringSelector
 
 -- | @- operatingSystemVersionString@
 operatingSystemVersionString :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSString)
-operatingSystemVersionString nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "operatingSystemVersionString") (retPtr retVoid) [] >>= retainedObject . castPtr
+operatingSystemVersionString nsProcessInfo =
+  sendMessage nsProcessInfo operatingSystemVersionStringSelector
 
 -- | @- processorCount@
 processorCount :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO CULong
-processorCount nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "processorCount") retCULong []
+processorCount nsProcessInfo =
+  sendMessage nsProcessInfo processorCountSelector
 
 -- | @- activeProcessorCount@
 activeProcessorCount :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO CULong
-activeProcessorCount nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "activeProcessorCount") retCULong []
+activeProcessorCount nsProcessInfo =
+  sendMessage nsProcessInfo activeProcessorCountSelector
 
 -- | @- physicalMemory@
 physicalMemory :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO CULong
-physicalMemory nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "physicalMemory") retCULong []
+physicalMemory nsProcessInfo =
+  sendMessage nsProcessInfo physicalMemorySelector
 
 -- | @- systemUptime@
 systemUptime :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO CDouble
-systemUptime nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "systemUptime") retCDouble []
+systemUptime nsProcessInfo =
+  sendMessage nsProcessInfo systemUptimeSelector
 
 -- | @- automaticTerminationSupportEnabled@
 automaticTerminationSupportEnabled :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO Bool
-automaticTerminationSupportEnabled nsProcessInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProcessInfo (mkSelector "automaticTerminationSupportEnabled") retCULong []
+automaticTerminationSupportEnabled nsProcessInfo =
+  sendMessage nsProcessInfo automaticTerminationSupportEnabledSelector
 
 -- | @- setAutomaticTerminationSupportEnabled:@
 setAutomaticTerminationSupportEnabled :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> Bool -> IO ()
-setAutomaticTerminationSupportEnabled nsProcessInfo  value =
-    sendMsg nsProcessInfo (mkSelector "setAutomaticTerminationSupportEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticTerminationSupportEnabled nsProcessInfo value =
+  sendMessage nsProcessInfo setAutomaticTerminationSupportEnabledSelector value
 
 -- | @- macCatalystApp@
 macCatalystApp :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO Bool
-macCatalystApp nsProcessInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProcessInfo (mkSelector "macCatalystApp") retCULong []
+macCatalystApp nsProcessInfo =
+  sendMessage nsProcessInfo macCatalystAppSelector
 
 -- | @- iOSAppOnMac@
 iOSAppOnMac :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO Bool
-iOSAppOnMac nsProcessInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProcessInfo (mkSelector "iOSAppOnMac") retCULong []
+iOSAppOnMac nsProcessInfo =
+  sendMessage nsProcessInfo iOSAppOnMacSelector
 
 -- | @- iOSAppOnVision@
 iOSAppOnVision :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO Bool
-iOSAppOnVision nsProcessInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProcessInfo (mkSelector "iOSAppOnVision") retCULong []
+iOSAppOnVision nsProcessInfo =
+  sendMessage nsProcessInfo iOSAppOnVisionSelector
 
 -- | @- lowPowerModeEnabled@
 lowPowerModeEnabled :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO Bool
-lowPowerModeEnabled nsProcessInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsProcessInfo (mkSelector "lowPowerModeEnabled") retCULong []
+lowPowerModeEnabled nsProcessInfo =
+  sendMessage nsProcessInfo lowPowerModeEnabledSelector
 
 -- | @- thermalState@
 thermalState :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO NSProcessInfoThermalState
-thermalState nsProcessInfo  =
-    fmap (coerce :: CLong -> NSProcessInfoThermalState) $ sendMsg nsProcessInfo (mkSelector "thermalState") retCLong []
+thermalState nsProcessInfo =
+  sendMessage nsProcessInfo thermalStateSelector
 
 -- | @- userName@
 userName :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSString)
-userName nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "userName") (retPtr retVoid) [] >>= retainedObject . castPtr
+userName nsProcessInfo =
+  sendMessage nsProcessInfo userNameSelector
 
 -- | @- fullUserName@
 fullUserName :: IsNSProcessInfo nsProcessInfo => nsProcessInfo -> IO (Id NSString)
-fullUserName nsProcessInfo  =
-    sendMsg nsProcessInfo (mkSelector "fullUserName") (retPtr retVoid) [] >>= retainedObject . castPtr
+fullUserName nsProcessInfo =
+  sendMessage nsProcessInfo fullUserNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @operatingSystem@
-operatingSystemSelector :: Selector
+operatingSystemSelector :: Selector '[] CULong
 operatingSystemSelector = mkSelector "operatingSystem"
 
 -- | @Selector@ for @operatingSystemName@
-operatingSystemNameSelector :: Selector
+operatingSystemNameSelector :: Selector '[] (Id NSString)
 operatingSystemNameSelector = mkSelector "operatingSystemName"
 
 -- | @Selector@ for @disableSuddenTermination@
-disableSuddenTerminationSelector :: Selector
+disableSuddenTerminationSelector :: Selector '[] ()
 disableSuddenTerminationSelector = mkSelector "disableSuddenTermination"
 
 -- | @Selector@ for @enableSuddenTermination@
-enableSuddenTerminationSelector :: Selector
+enableSuddenTerminationSelector :: Selector '[] ()
 enableSuddenTerminationSelector = mkSelector "enableSuddenTermination"
 
 -- | @Selector@ for @disableAutomaticTermination:@
-disableAutomaticTerminationSelector :: Selector
+disableAutomaticTerminationSelector :: Selector '[Id NSString] ()
 disableAutomaticTerminationSelector = mkSelector "disableAutomaticTermination:"
 
 -- | @Selector@ for @enableAutomaticTermination:@
-enableAutomaticTerminationSelector :: Selector
+enableAutomaticTerminationSelector :: Selector '[Id NSString] ()
 enableAutomaticTerminationSelector = mkSelector "enableAutomaticTermination:"
 
 -- | @Selector@ for @beginActivityWithOptions:reason:@
-beginActivityWithOptions_reasonSelector :: Selector
+beginActivityWithOptions_reasonSelector :: Selector '[NSActivityOptions, Id NSString] RawId
 beginActivityWithOptions_reasonSelector = mkSelector "beginActivityWithOptions:reason:"
 
 -- | @Selector@ for @endActivity:@
-endActivitySelector :: Selector
+endActivitySelector :: Selector '[RawId] ()
 endActivitySelector = mkSelector "endActivity:"
 
 -- | @Selector@ for @performActivityWithOptions:reason:usingBlock:@
-performActivityWithOptions_reason_usingBlockSelector :: Selector
+performActivityWithOptions_reason_usingBlockSelector :: Selector '[NSActivityOptions, Id NSString, Ptr ()] ()
 performActivityWithOptions_reason_usingBlockSelector = mkSelector "performActivityWithOptions:reason:usingBlock:"
 
 -- | @Selector@ for @performExpiringActivityWithReason:usingBlock:@
-performExpiringActivityWithReason_usingBlockSelector :: Selector
+performExpiringActivityWithReason_usingBlockSelector :: Selector '[Id NSString, Ptr ()] ()
 performExpiringActivityWithReason_usingBlockSelector = mkSelector "performExpiringActivityWithReason:usingBlock:"
 
 -- | @Selector@ for @processInfo@
-processInfoSelector :: Selector
+processInfoSelector :: Selector '[] (Id NSProcessInfo)
 processInfoSelector = mkSelector "processInfo"
 
 -- | @Selector@ for @environment@
-environmentSelector :: Selector
+environmentSelector :: Selector '[] (Id NSDictionary)
 environmentSelector = mkSelector "environment"
 
 -- | @Selector@ for @arguments@
-argumentsSelector :: Selector
+argumentsSelector :: Selector '[] (Id NSArray)
 argumentsSelector = mkSelector "arguments"
 
 -- | @Selector@ for @hostName@
-hostNameSelector :: Selector
+hostNameSelector :: Selector '[] (Id NSString)
 hostNameSelector = mkSelector "hostName"
 
 -- | @Selector@ for @processName@
-processNameSelector :: Selector
+processNameSelector :: Selector '[] (Id NSString)
 processNameSelector = mkSelector "processName"
 
 -- | @Selector@ for @setProcessName:@
-setProcessNameSelector :: Selector
+setProcessNameSelector :: Selector '[Id NSString] ()
 setProcessNameSelector = mkSelector "setProcessName:"
 
 -- | @Selector@ for @processIdentifier@
-processIdentifierSelector :: Selector
+processIdentifierSelector :: Selector '[] CInt
 processIdentifierSelector = mkSelector "processIdentifier"
 
 -- | @Selector@ for @globallyUniqueString@
-globallyUniqueStringSelector :: Selector
+globallyUniqueStringSelector :: Selector '[] (Id NSString)
 globallyUniqueStringSelector = mkSelector "globallyUniqueString"
 
 -- | @Selector@ for @operatingSystemVersionString@
-operatingSystemVersionStringSelector :: Selector
+operatingSystemVersionStringSelector :: Selector '[] (Id NSString)
 operatingSystemVersionStringSelector = mkSelector "operatingSystemVersionString"
 
 -- | @Selector@ for @processorCount@
-processorCountSelector :: Selector
+processorCountSelector :: Selector '[] CULong
 processorCountSelector = mkSelector "processorCount"
 
 -- | @Selector@ for @activeProcessorCount@
-activeProcessorCountSelector :: Selector
+activeProcessorCountSelector :: Selector '[] CULong
 activeProcessorCountSelector = mkSelector "activeProcessorCount"
 
 -- | @Selector@ for @physicalMemory@
-physicalMemorySelector :: Selector
+physicalMemorySelector :: Selector '[] CULong
 physicalMemorySelector = mkSelector "physicalMemory"
 
 -- | @Selector@ for @systemUptime@
-systemUptimeSelector :: Selector
+systemUptimeSelector :: Selector '[] CDouble
 systemUptimeSelector = mkSelector "systemUptime"
 
 -- | @Selector@ for @automaticTerminationSupportEnabled@
-automaticTerminationSupportEnabledSelector :: Selector
+automaticTerminationSupportEnabledSelector :: Selector '[] Bool
 automaticTerminationSupportEnabledSelector = mkSelector "automaticTerminationSupportEnabled"
 
 -- | @Selector@ for @setAutomaticTerminationSupportEnabled:@
-setAutomaticTerminationSupportEnabledSelector :: Selector
+setAutomaticTerminationSupportEnabledSelector :: Selector '[Bool] ()
 setAutomaticTerminationSupportEnabledSelector = mkSelector "setAutomaticTerminationSupportEnabled:"
 
 -- | @Selector@ for @macCatalystApp@
-macCatalystAppSelector :: Selector
+macCatalystAppSelector :: Selector '[] Bool
 macCatalystAppSelector = mkSelector "macCatalystApp"
 
 -- | @Selector@ for @iOSAppOnMac@
-iOSAppOnMacSelector :: Selector
+iOSAppOnMacSelector :: Selector '[] Bool
 iOSAppOnMacSelector = mkSelector "iOSAppOnMac"
 
 -- | @Selector@ for @iOSAppOnVision@
-iOSAppOnVisionSelector :: Selector
+iOSAppOnVisionSelector :: Selector '[] Bool
 iOSAppOnVisionSelector = mkSelector "iOSAppOnVision"
 
 -- | @Selector@ for @lowPowerModeEnabled@
-lowPowerModeEnabledSelector :: Selector
+lowPowerModeEnabledSelector :: Selector '[] Bool
 lowPowerModeEnabledSelector = mkSelector "lowPowerModeEnabled"
 
 -- | @Selector@ for @thermalState@
-thermalStateSelector :: Selector
+thermalStateSelector :: Selector '[] NSProcessInfoThermalState
 thermalStateSelector = mkSelector "thermalState"
 
 -- | @Selector@ for @userName@
-userNameSelector :: Selector
+userNameSelector :: Selector '[] (Id NSString)
 userNameSelector = mkSelector "userName"
 
 -- | @Selector@ for @fullUserName@
-fullUserNameSelector :: Selector
+fullUserNameSelector :: Selector '[] (Id NSString)
 fullUserNameSelector = mkSelector "fullUserName"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.Intents.INGetAvailableRestaurantReservationBookingDefaultsIntentResp
   , providerImage
   , setProviderImage
   , code
-  , initWithDefaultPartySize_defaultBookingDate_code_userActivitySelector
-  , defaultPartySizeSelector
-  , defaultBookingDateSelector
-  , maximumPartySizeSelector
-  , setMaximumPartySizeSelector
-  , minimumPartySizeSelector
-  , setMinimumPartySizeSelector
-  , providerImageSelector
-  , setProviderImageSelector
   , codeSelector
+  , defaultBookingDateSelector
+  , defaultPartySizeSelector
+  , initWithDefaultPartySize_defaultBookingDate_code_userActivitySelector
+  , maximumPartySizeSelector
+  , minimumPartySizeSelector
+  , providerImageSelector
+  , setMaximumPartySizeSelector
+  , setMinimumPartySizeSelector
+  , setProviderImageSelector
 
   -- * Enum types
   , INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode(INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode)
@@ -36,15 +37,11 @@ module ObjC.Intents.INGetAvailableRestaurantReservationBookingDefaultsIntentResp
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,100 +51,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDefaultPartySize:defaultBookingDate:code:userActivity:@
 initWithDefaultPartySize_defaultBookingDate_code_userActivity :: (IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse, IsNSDate defaultBookingDate, IsNSUserActivity userActivity) => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> CULong -> defaultBookingDate -> INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode -> userActivity -> IO (Id INGetAvailableRestaurantReservationBookingDefaultsIntentResponse)
-initWithDefaultPartySize_defaultBookingDate_code_userActivity inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  defaultPartySize defaultBookingDate code userActivity =
-  withObjCPtr defaultBookingDate $ \raw_defaultBookingDate ->
-    withObjCPtr userActivity $ \raw_userActivity ->
-        sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "initWithDefaultPartySize:defaultBookingDate:code:userActivity:") (retPtr retVoid) [argCULong defaultPartySize, argPtr (castPtr raw_defaultBookingDate :: Ptr ()), argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithDefaultPartySize_defaultBookingDate_code_userActivity inGetAvailableRestaurantReservationBookingDefaultsIntentResponse defaultPartySize defaultBookingDate code userActivity =
+  sendOwnedMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse initWithDefaultPartySize_defaultBookingDate_code_userActivitySelector defaultPartySize (toNSDate defaultBookingDate) code (toNSUserActivity userActivity)
 
 -- | @- defaultPartySize@
 defaultPartySize :: IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> IO CULong
-defaultPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  =
-    sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "defaultPartySize") retCULong []
+defaultPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse defaultPartySizeSelector
 
 -- | @- defaultBookingDate@
 defaultBookingDate :: IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> IO (Id NSDate)
-defaultBookingDate inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  =
-    sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "defaultBookingDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultBookingDate inGetAvailableRestaurantReservationBookingDefaultsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse defaultBookingDateSelector
 
 -- | @- maximumPartySize@
 maximumPartySize :: IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> IO (Id NSNumber)
-maximumPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  =
-    sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "maximumPartySize") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse maximumPartySizeSelector
 
 -- | @- setMaximumPartySize:@
 setMaximumPartySize :: (IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse, IsNSNumber value) => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> value -> IO ()
-setMaximumPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "setMaximumPartySize:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaximumPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse value =
+  sendMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse setMaximumPartySizeSelector (toNSNumber value)
 
 -- | @- minimumPartySize@
 minimumPartySize :: IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> IO (Id NSNumber)
-minimumPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  =
-    sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "minimumPartySize") (retPtr retVoid) [] >>= retainedObject . castPtr
+minimumPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse minimumPartySizeSelector
 
 -- | @- setMinimumPartySize:@
 setMinimumPartySize :: (IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse, IsNSNumber value) => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> value -> IO ()
-setMinimumPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "setMinimumPartySize:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinimumPartySize inGetAvailableRestaurantReservationBookingDefaultsIntentResponse value =
+  sendMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse setMinimumPartySizeSelector (toNSNumber value)
 
 -- | @- providerImage@
 providerImage :: IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> IO (Id INImage)
-providerImage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  =
-    sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "providerImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+providerImage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse providerImageSelector
 
 -- | @- setProviderImage:@
 setProviderImage :: (IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse, IsINImage value) => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> value -> IO ()
-setProviderImage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "setProviderImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProviderImage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse value =
+  sendMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse setProviderImageSelector (toINImage value)
 
 -- | @- code@
 code :: IsINGetAvailableRestaurantReservationBookingDefaultsIntentResponse inGetAvailableRestaurantReservationBookingDefaultsIntentResponse => inGetAvailableRestaurantReservationBookingDefaultsIntentResponse -> IO INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode
-code inGetAvailableRestaurantReservationBookingDefaultsIntentResponse  =
-    fmap (coerce :: CLong -> INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode) $ sendMsg inGetAvailableRestaurantReservationBookingDefaultsIntentResponse (mkSelector "code") retCLong []
+code inGetAvailableRestaurantReservationBookingDefaultsIntentResponse =
+  sendMessage inGetAvailableRestaurantReservationBookingDefaultsIntentResponse codeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDefaultPartySize:defaultBookingDate:code:userActivity:@
-initWithDefaultPartySize_defaultBookingDate_code_userActivitySelector :: Selector
+initWithDefaultPartySize_defaultBookingDate_code_userActivitySelector :: Selector '[CULong, Id NSDate, INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode, Id NSUserActivity] (Id INGetAvailableRestaurantReservationBookingDefaultsIntentResponse)
 initWithDefaultPartySize_defaultBookingDate_code_userActivitySelector = mkSelector "initWithDefaultPartySize:defaultBookingDate:code:userActivity:"
 
 -- | @Selector@ for @defaultPartySize@
-defaultPartySizeSelector :: Selector
+defaultPartySizeSelector :: Selector '[] CULong
 defaultPartySizeSelector = mkSelector "defaultPartySize"
 
 -- | @Selector@ for @defaultBookingDate@
-defaultBookingDateSelector :: Selector
+defaultBookingDateSelector :: Selector '[] (Id NSDate)
 defaultBookingDateSelector = mkSelector "defaultBookingDate"
 
 -- | @Selector@ for @maximumPartySize@
-maximumPartySizeSelector :: Selector
+maximumPartySizeSelector :: Selector '[] (Id NSNumber)
 maximumPartySizeSelector = mkSelector "maximumPartySize"
 
 -- | @Selector@ for @setMaximumPartySize:@
-setMaximumPartySizeSelector :: Selector
+setMaximumPartySizeSelector :: Selector '[Id NSNumber] ()
 setMaximumPartySizeSelector = mkSelector "setMaximumPartySize:"
 
 -- | @Selector@ for @minimumPartySize@
-minimumPartySizeSelector :: Selector
+minimumPartySizeSelector :: Selector '[] (Id NSNumber)
 minimumPartySizeSelector = mkSelector "minimumPartySize"
 
 -- | @Selector@ for @setMinimumPartySize:@
-setMinimumPartySizeSelector :: Selector
+setMinimumPartySizeSelector :: Selector '[Id NSNumber] ()
 setMinimumPartySizeSelector = mkSelector "setMinimumPartySize:"
 
 -- | @Selector@ for @providerImage@
-providerImageSelector :: Selector
+providerImageSelector :: Selector '[] (Id INImage)
 providerImageSelector = mkSelector "providerImage"
 
 -- | @Selector@ for @setProviderImage:@
-setProviderImageSelector :: Selector
+setProviderImageSelector :: Selector '[Id INImage] ()
 setProviderImageSelector = mkSelector "setProviderImage:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode
 codeSelector = mkSelector "code"
 

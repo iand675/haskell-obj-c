@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,15 @@ module ObjC.CoreML.MLFeatureDescription
   , dictionaryConstraint
   , sequenceConstraint
   , stateConstraint
-  , isAllowedValueSelector
-  , nameSelector
-  , typeSelector
-  , optionalSelector
-  , multiArrayConstraintSelector
-  , imageConstraintSelector
   , dictionaryConstraintSelector
+  , imageConstraintSelector
+  , isAllowedValueSelector
+  , multiArrayConstraintSelector
+  , nameSelector
+  , optionalSelector
   , sequenceConstraintSelector
   , stateConstraintSelector
+  , typeSelector
 
   -- * Enum types
   , MLFeatureType(MLFeatureType)
@@ -42,15 +43,11 @@ module ObjC.CoreML.MLFeatureDescription
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,58 +59,57 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isAllowedValue:@
 isAllowedValue :: (IsMLFeatureDescription mlFeatureDescription, IsMLFeatureValue value) => mlFeatureDescription -> value -> IO Bool
-isAllowedValue mlFeatureDescription  value =
-  withObjCPtr value $ \raw_value ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlFeatureDescription (mkSelector "isAllowedValue:") retCULong [argPtr (castPtr raw_value :: Ptr ())]
+isAllowedValue mlFeatureDescription value =
+  sendMessage mlFeatureDescription isAllowedValueSelector (toMLFeatureValue value)
 
 -- | Name of feature
 --
 -- ObjC selector: @- name@
 name :: IsMLFeatureDescription mlFeatureDescription => mlFeatureDescription -> IO (Id NSString)
-name mlFeatureDescription  =
-    sendMsg mlFeatureDescription (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mlFeatureDescription =
+  sendMessage mlFeatureDescription nameSelector
 
 -- | Type of data
 --
 -- ObjC selector: @- type@
 type_ :: IsMLFeatureDescription mlFeatureDescription => mlFeatureDescription -> IO MLFeatureType
-type_ mlFeatureDescription  =
-    fmap (coerce :: CLong -> MLFeatureType) $ sendMsg mlFeatureDescription (mkSelector "type") retCLong []
+type_ mlFeatureDescription =
+  sendMessage mlFeatureDescription typeSelector
 
 -- | Whether this feature can take an undefined value or not
 --
 -- ObjC selector: @- optional@
 optional :: IsMLFeatureDescription mlFeatureDescription => mlFeatureDescription -> IO Bool
-optional mlFeatureDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlFeatureDescription (mkSelector "optional") retCULong []
+optional mlFeatureDescription =
+  sendMessage mlFeatureDescription optionalSelector
 
 -- | Constraint when type == MLFeatureTypeMultiArray, nil otherwise
 --
 -- ObjC selector: @- multiArrayConstraint@
 multiArrayConstraint :: IsMLFeatureDescription mlFeatureDescription => mlFeatureDescription -> IO (Id MLMultiArrayConstraint)
-multiArrayConstraint mlFeatureDescription  =
-    sendMsg mlFeatureDescription (mkSelector "multiArrayConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+multiArrayConstraint mlFeatureDescription =
+  sendMessage mlFeatureDescription multiArrayConstraintSelector
 
 -- | Constraint when type == MLFeatureTypeImage, nil otherwise
 --
 -- ObjC selector: @- imageConstraint@
 imageConstraint :: IsMLFeatureDescription mlFeatureDescription => mlFeatureDescription -> IO (Id MLImageConstraint)
-imageConstraint mlFeatureDescription  =
-    sendMsg mlFeatureDescription (mkSelector "imageConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+imageConstraint mlFeatureDescription =
+  sendMessage mlFeatureDescription imageConstraintSelector
 
 -- | Constraint when type == MLFeatureTypeDictionary, nil otherwise
 --
 -- ObjC selector: @- dictionaryConstraint@
 dictionaryConstraint :: IsMLFeatureDescription mlFeatureDescription => mlFeatureDescription -> IO (Id MLDictionaryConstraint)
-dictionaryConstraint mlFeatureDescription  =
-    sendMsg mlFeatureDescription (mkSelector "dictionaryConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionaryConstraint mlFeatureDescription =
+  sendMessage mlFeatureDescription dictionaryConstraintSelector
 
 -- | Constraint when type == MLFeatureTypeSequence, nil otherwise
 --
 -- ObjC selector: @- sequenceConstraint@
 sequenceConstraint :: IsMLFeatureDescription mlFeatureDescription => mlFeatureDescription -> IO (Id MLSequenceConstraint)
-sequenceConstraint mlFeatureDescription  =
-    sendMsg mlFeatureDescription (mkSelector "sequenceConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+sequenceConstraint mlFeatureDescription =
+  sendMessage mlFeatureDescription sequenceConstraintSelector
 
 -- | The state feature value constraint.
 --
@@ -121,46 +117,46 @@ sequenceConstraint mlFeatureDescription  =
 --
 -- ObjC selector: @- stateConstraint@
 stateConstraint :: IsMLFeatureDescription mlFeatureDescription => mlFeatureDescription -> IO (Id MLStateConstraint)
-stateConstraint mlFeatureDescription  =
-    sendMsg mlFeatureDescription (mkSelector "stateConstraint") (retPtr retVoid) [] >>= retainedObject . castPtr
+stateConstraint mlFeatureDescription =
+  sendMessage mlFeatureDescription stateConstraintSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isAllowedValue:@
-isAllowedValueSelector :: Selector
+isAllowedValueSelector :: Selector '[Id MLFeatureValue] Bool
 isAllowedValueSelector = mkSelector "isAllowedValue:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] MLFeatureType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @optional@
-optionalSelector :: Selector
+optionalSelector :: Selector '[] Bool
 optionalSelector = mkSelector "optional"
 
 -- | @Selector@ for @multiArrayConstraint@
-multiArrayConstraintSelector :: Selector
+multiArrayConstraintSelector :: Selector '[] (Id MLMultiArrayConstraint)
 multiArrayConstraintSelector = mkSelector "multiArrayConstraint"
 
 -- | @Selector@ for @imageConstraint@
-imageConstraintSelector :: Selector
+imageConstraintSelector :: Selector '[] (Id MLImageConstraint)
 imageConstraintSelector = mkSelector "imageConstraint"
 
 -- | @Selector@ for @dictionaryConstraint@
-dictionaryConstraintSelector :: Selector
+dictionaryConstraintSelector :: Selector '[] (Id MLDictionaryConstraint)
 dictionaryConstraintSelector = mkSelector "dictionaryConstraint"
 
 -- | @Selector@ for @sequenceConstraint@
-sequenceConstraintSelector :: Selector
+sequenceConstraintSelector :: Selector '[] (Id MLSequenceConstraint)
 sequenceConstraintSelector = mkSelector "sequenceConstraint"
 
 -- | @Selector@ for @stateConstraint@
-stateConstraintSelector :: Selector
+stateConstraintSelector :: Selector '[] (Id MLStateConstraint)
 stateConstraintSelector = mkSelector "stateConstraint"
 

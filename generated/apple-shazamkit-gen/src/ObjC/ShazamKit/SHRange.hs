@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.ShazamKit.SHRange
   , new
   , lowerBound
   , upperBound
-  , rangeWithLowerBound_upperBoundSelector
-  , initWithLowerBound_upperBoundSelector
   , initSelector
-  , newSelector
+  , initWithLowerBound_upperBoundSelector
   , lowerBoundSelector
+  , newSelector
+  , rangeWithLowerBound_upperBoundSelector
   , upperBoundSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,7 +45,7 @@ rangeWithLowerBound_upperBound :: CDouble -> CDouble -> IO (Id SHRange)
 rangeWithLowerBound_upperBound lowerBound upperBound =
   do
     cls' <- getRequiredClass "SHRange"
-    sendClassMsg cls' (mkSelector "rangeWithLowerBound:upperBound:") (retPtr retVoid) [argCDouble lowerBound, argCDouble upperBound] >>= retainedObject . castPtr
+    sendClassMessage cls' rangeWithLowerBound_upperBoundSelector lowerBound upperBound
 
 -- | Creates a range with the bounds you specify.
 --
@@ -56,60 +53,60 @@ rangeWithLowerBound_upperBound lowerBound upperBound =
 --
 -- ObjC selector: @- initWithLowerBound:upperBound:@
 initWithLowerBound_upperBound :: IsSHRange shRange => shRange -> CDouble -> CDouble -> IO (Id SHRange)
-initWithLowerBound_upperBound shRange  lowerBound upperBound =
-    sendMsg shRange (mkSelector "initWithLowerBound:upperBound:") (retPtr retVoid) [argCDouble lowerBound, argCDouble upperBound] >>= ownedObject . castPtr
+initWithLowerBound_upperBound shRange lowerBound upperBound =
+  sendOwnedMessage shRange initWithLowerBound_upperBoundSelector lowerBound upperBound
 
 -- | @- init@
 init_ :: IsSHRange shRange => shRange -> IO (Id SHRange)
-init_ shRange  =
-    sendMsg shRange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ shRange =
+  sendOwnedMessage shRange initSelector
 
 -- | @+ new@
 new :: IO (Id SHRange)
 new  =
   do
     cls' <- getRequiredClass "SHRange"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The lowerBound of this time range
 --
 -- ObjC selector: @- lowerBound@
 lowerBound :: IsSHRange shRange => shRange -> IO CDouble
-lowerBound shRange  =
-    sendMsg shRange (mkSelector "lowerBound") retCDouble []
+lowerBound shRange =
+  sendMessage shRange lowerBoundSelector
 
 -- | The range's upper bound.
 --
 -- ObjC selector: @- upperBound@
 upperBound :: IsSHRange shRange => shRange -> IO CDouble
-upperBound shRange  =
-    sendMsg shRange (mkSelector "upperBound") retCDouble []
+upperBound shRange =
+  sendMessage shRange upperBoundSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rangeWithLowerBound:upperBound:@
-rangeWithLowerBound_upperBoundSelector :: Selector
+rangeWithLowerBound_upperBoundSelector :: Selector '[CDouble, CDouble] (Id SHRange)
 rangeWithLowerBound_upperBoundSelector = mkSelector "rangeWithLowerBound:upperBound:"
 
 -- | @Selector@ for @initWithLowerBound:upperBound:@
-initWithLowerBound_upperBoundSelector :: Selector
+initWithLowerBound_upperBoundSelector :: Selector '[CDouble, CDouble] (Id SHRange)
 initWithLowerBound_upperBoundSelector = mkSelector "initWithLowerBound:upperBound:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SHRange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SHRange)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @lowerBound@
-lowerBoundSelector :: Selector
+lowerBoundSelector :: Selector '[] CDouble
 lowerBoundSelector = mkSelector "lowerBound"
 
 -- | @Selector@ for @upperBound@
-upperBoundSelector :: Selector
+upperBoundSelector :: Selector '[] CDouble
 upperBoundSelector = mkSelector "upperBound"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.AVFoundation.AVSemanticSegmentationMatte
   , matteType
   , pixelFormatType
   , mattingImage
+  , dictionaryRepresentationForAuxiliaryDataTypeSelector
   , initSelector
+  , matteTypeSelector
+  , mattingImageSelector
   , newSelector
-  , semanticSegmentationMatteFromImageSourceAuxiliaryDataType_dictionaryRepresentation_errorSelector
+  , pixelFormatTypeSelector
   , semanticSegmentationMatteByApplyingExifOrientationSelector
   , semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer_errorSelector
-  , dictionaryRepresentationForAuxiliaryDataTypeSelector
-  , matteTypeSelector
-  , pixelFormatTypeSelector
-  , mattingImageSelector
+  , semanticSegmentationMatteFromImageSourceAuxiliaryDataType_dictionaryRepresentation_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,15 +48,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVSemanticSegmentationMatte avSemanticSegmentationMatte => avSemanticSegmentationMatte -> IO (Id AVSemanticSegmentationMatte)
-init_ avSemanticSegmentationMatte  =
-    sendMsg avSemanticSegmentationMatte (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avSemanticSegmentationMatte =
+  sendOwnedMessage avSemanticSegmentationMatte initSelector
 
 -- | @+ new@
 new :: IO (Id AVSemanticSegmentationMatte)
 new  =
   do
     cls' <- getRequiredClass "AVSemanticSegmentationMatte"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | semanticSegmentationMatteFromDictionaryRepresentation:error:
 --
@@ -80,9 +77,7 @@ semanticSegmentationMatteFromImageSourceAuxiliaryDataType_dictionaryRepresentati
 semanticSegmentationMatteFromImageSourceAuxiliaryDataType_dictionaryRepresentation_error imageSourceAuxiliaryDataType imageSourceAuxiliaryDataInfoDictionary outError =
   do
     cls' <- getRequiredClass "AVSemanticSegmentationMatte"
-    withObjCPtr imageSourceAuxiliaryDataInfoDictionary $ \raw_imageSourceAuxiliaryDataInfoDictionary ->
-      withObjCPtr outError $ \raw_outError ->
-        sendClassMsg cls' (mkSelector "semanticSegmentationMatteFromImageSourceAuxiliaryDataType:dictionaryRepresentation:error:") (retPtr retVoid) [argPtr (castPtr (unRawId imageSourceAuxiliaryDataType) :: Ptr ()), argPtr (castPtr raw_imageSourceAuxiliaryDataInfoDictionary :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' semanticSegmentationMatteFromImageSourceAuxiliaryDataType_dictionaryRepresentation_errorSelector imageSourceAuxiliaryDataType (toNSDictionary imageSourceAuxiliaryDataInfoDictionary) (toNSError outError)
 
 -- | semanticSegmentationMatteByApplyingExifOrientation:
 --
@@ -96,8 +91,8 @@ semanticSegmentationMatteFromImageSourceAuxiliaryDataType_dictionaryRepresentati
 --
 -- ObjC selector: @- semanticSegmentationMatteByApplyingExifOrientation:@
 semanticSegmentationMatteByApplyingExifOrientation :: IsAVSemanticSegmentationMatte avSemanticSegmentationMatte => avSemanticSegmentationMatte -> CInt -> IO (Id AVSemanticSegmentationMatte)
-semanticSegmentationMatteByApplyingExifOrientation avSemanticSegmentationMatte  exifOrientation =
-    sendMsg avSemanticSegmentationMatte (mkSelector "semanticSegmentationMatteByApplyingExifOrientation:") (retPtr retVoid) [argCInt (fromIntegral exifOrientation)] >>= retainedObject . castPtr
+semanticSegmentationMatteByApplyingExifOrientation avSemanticSegmentationMatte exifOrientation =
+  sendMessage avSemanticSegmentationMatte semanticSegmentationMatteByApplyingExifOrientationSelector exifOrientation
 
 -- | semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer:error:
 --
@@ -113,9 +108,8 @@ semanticSegmentationMatteByApplyingExifOrientation avSemanticSegmentationMatte  
 --
 -- ObjC selector: @- semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer:error:@
 semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer_error :: (IsAVSemanticSegmentationMatte avSemanticSegmentationMatte, IsNSError outError) => avSemanticSegmentationMatte -> Ptr () -> outError -> IO (Id AVSemanticSegmentationMatte)
-semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer_error avSemanticSegmentationMatte  pixelBuffer outError =
-  withObjCPtr outError $ \raw_outError ->
-      sendMsg avSemanticSegmentationMatte (mkSelector "semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer:error:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_outError :: Ptr ())] >>= retainedObject . castPtr
+semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer_error avSemanticSegmentationMatte pixelBuffer outError =
+  sendMessage avSemanticSegmentationMatte semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer_errorSelector pixelBuffer (toNSError outError)
 
 -- | dictionaryRepresentationForAuxiliaryDataType:
 --
@@ -129,9 +123,8 @@ semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer_err
 --
 -- ObjC selector: @- dictionaryRepresentationForAuxiliaryDataType:@
 dictionaryRepresentationForAuxiliaryDataType :: (IsAVSemanticSegmentationMatte avSemanticSegmentationMatte, IsNSString outAuxDataType) => avSemanticSegmentationMatte -> outAuxDataType -> IO (Id NSDictionary)
-dictionaryRepresentationForAuxiliaryDataType avSemanticSegmentationMatte  outAuxDataType =
-  withObjCPtr outAuxDataType $ \raw_outAuxDataType ->
-      sendMsg avSemanticSegmentationMatte (mkSelector "dictionaryRepresentationForAuxiliaryDataType:") (retPtr retVoid) [argPtr (castPtr raw_outAuxDataType :: Ptr ())] >>= retainedObject . castPtr
+dictionaryRepresentationForAuxiliaryDataType avSemanticSegmentationMatte outAuxDataType =
+  sendMessage avSemanticSegmentationMatte dictionaryRepresentationForAuxiliaryDataTypeSelector (toNSString outAuxDataType)
 
 -- | matteType
 --
@@ -141,8 +134,8 @@ dictionaryRepresentationForAuxiliaryDataType avSemanticSegmentationMatte  outAux
 --
 -- ObjC selector: @- matteType@
 matteType :: IsAVSemanticSegmentationMatte avSemanticSegmentationMatte => avSemanticSegmentationMatte -> IO (Id NSString)
-matteType avSemanticSegmentationMatte  =
-    sendMsg avSemanticSegmentationMatte (mkSelector "matteType") (retPtr retVoid) [] >>= retainedObject . castPtr
+matteType avSemanticSegmentationMatte =
+  sendMessage avSemanticSegmentationMatte matteTypeSelector
 
 -- | pixelFormatType
 --
@@ -152,8 +145,8 @@ matteType avSemanticSegmentationMatte  =
 --
 -- ObjC selector: @- pixelFormatType@
 pixelFormatType :: IsAVSemanticSegmentationMatte avSemanticSegmentationMatte => avSemanticSegmentationMatte -> IO CUInt
-pixelFormatType avSemanticSegmentationMatte  =
-    sendMsg avSemanticSegmentationMatte (mkSelector "pixelFormatType") retCUInt []
+pixelFormatType avSemanticSegmentationMatte =
+  sendMessage avSemanticSegmentationMatte pixelFormatTypeSelector
 
 -- | mattingImage
 --
@@ -163,46 +156,46 @@ pixelFormatType avSemanticSegmentationMatte  =
 --
 -- ObjC selector: @- mattingImage@
 mattingImage :: IsAVSemanticSegmentationMatte avSemanticSegmentationMatte => avSemanticSegmentationMatte -> IO (Ptr ())
-mattingImage avSemanticSegmentationMatte  =
-    fmap castPtr $ sendMsg avSemanticSegmentationMatte (mkSelector "mattingImage") (retPtr retVoid) []
+mattingImage avSemanticSegmentationMatte =
+  sendMessage avSemanticSegmentationMatte mattingImageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVSemanticSegmentationMatte)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVSemanticSegmentationMatte)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @semanticSegmentationMatteFromImageSourceAuxiliaryDataType:dictionaryRepresentation:error:@
-semanticSegmentationMatteFromImageSourceAuxiliaryDataType_dictionaryRepresentation_errorSelector :: Selector
+semanticSegmentationMatteFromImageSourceAuxiliaryDataType_dictionaryRepresentation_errorSelector :: Selector '[RawId, Id NSDictionary, Id NSError] (Id AVSemanticSegmentationMatte)
 semanticSegmentationMatteFromImageSourceAuxiliaryDataType_dictionaryRepresentation_errorSelector = mkSelector "semanticSegmentationMatteFromImageSourceAuxiliaryDataType:dictionaryRepresentation:error:"
 
 -- | @Selector@ for @semanticSegmentationMatteByApplyingExifOrientation:@
-semanticSegmentationMatteByApplyingExifOrientationSelector :: Selector
+semanticSegmentationMatteByApplyingExifOrientationSelector :: Selector '[CInt] (Id AVSemanticSegmentationMatte)
 semanticSegmentationMatteByApplyingExifOrientationSelector = mkSelector "semanticSegmentationMatteByApplyingExifOrientation:"
 
 -- | @Selector@ for @semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer:error:@
-semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer_errorSelector :: Selector
+semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer_errorSelector :: Selector '[Ptr (), Id NSError] (Id AVSemanticSegmentationMatte)
 semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer_errorSelector = mkSelector "semanticSegmentationMatteByReplacingSemanticSegmentationMatteWithPixelBuffer:error:"
 
 -- | @Selector@ for @dictionaryRepresentationForAuxiliaryDataType:@
-dictionaryRepresentationForAuxiliaryDataTypeSelector :: Selector
+dictionaryRepresentationForAuxiliaryDataTypeSelector :: Selector '[Id NSString] (Id NSDictionary)
 dictionaryRepresentationForAuxiliaryDataTypeSelector = mkSelector "dictionaryRepresentationForAuxiliaryDataType:"
 
 -- | @Selector@ for @matteType@
-matteTypeSelector :: Selector
+matteTypeSelector :: Selector '[] (Id NSString)
 matteTypeSelector = mkSelector "matteType"
 
 -- | @Selector@ for @pixelFormatType@
-pixelFormatTypeSelector :: Selector
+pixelFormatTypeSelector :: Selector '[] CUInt
 pixelFormatTypeSelector = mkSelector "pixelFormatType"
 
 -- | @Selector@ for @mattingImage@
-mattingImageSelector :: Selector
+mattingImageSelector :: Selector '[] (Ptr ())
 mattingImageSelector = mkSelector "mattingImage"
 

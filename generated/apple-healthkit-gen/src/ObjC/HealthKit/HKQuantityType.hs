@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,8 +14,8 @@ module ObjC.HealthKit.HKQuantityType
   , IsHKQuantityType(..)
   , isCompatibleWithUnit
   , aggregationStyle
-  , isCompatibleWithUnitSelector
   , aggregationStyleSelector
+  , isCompatibleWithUnitSelector
 
   -- * Enum types
   , HKQuantityAggregationStyle(HKQuantityAggregationStyle)
@@ -26,15 +27,11 @@ module ObjC.HealthKit.HKQuantityType
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,24 +45,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- isCompatibleWithUnit:@
 isCompatibleWithUnit :: (IsHKQuantityType hkQuantityType, IsHKUnit unit) => hkQuantityType -> unit -> IO Bool
-isCompatibleWithUnit hkQuantityType  unit =
-  withObjCPtr unit $ \raw_unit ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkQuantityType (mkSelector "isCompatibleWithUnit:") retCULong [argPtr (castPtr raw_unit :: Ptr ())]
+isCompatibleWithUnit hkQuantityType unit =
+  sendMessage hkQuantityType isCompatibleWithUnitSelector (toHKUnit unit)
 
 -- | @- aggregationStyle@
 aggregationStyle :: IsHKQuantityType hkQuantityType => hkQuantityType -> IO HKQuantityAggregationStyle
-aggregationStyle hkQuantityType  =
-    fmap (coerce :: CLong -> HKQuantityAggregationStyle) $ sendMsg hkQuantityType (mkSelector "aggregationStyle") retCLong []
+aggregationStyle hkQuantityType =
+  sendMessage hkQuantityType aggregationStyleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isCompatibleWithUnit:@
-isCompatibleWithUnitSelector :: Selector
+isCompatibleWithUnitSelector :: Selector '[Id HKUnit] Bool
 isCompatibleWithUnitSelector = mkSelector "isCompatibleWithUnit:"
 
 -- | @Selector@ for @aggregationStyle@
-aggregationStyleSelector :: Selector
+aggregationStyleSelector :: Selector '[] HKQuantityAggregationStyle
 aggregationStyleSelector = mkSelector "aggregationStyle"
 

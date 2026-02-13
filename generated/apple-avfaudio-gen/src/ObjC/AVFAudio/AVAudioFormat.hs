@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,26 +36,26 @@ module ObjC.AVFAudio.AVAudioFormat
   , setMagicCookie
   , settings
   , formatDescription
-  , initWithStreamDescriptionSelector
-  , initWithStreamDescription_channelLayoutSelector
-  , initStandardFormatWithSampleRate_channelsSelector
+  , channelCountSelector
+  , channelLayoutSelector
+  , commonFormatSelector
+  , formatDescriptionSelector
   , initStandardFormatWithSampleRate_channelLayoutSelector
+  , initStandardFormatWithSampleRate_channelsSelector
+  , initWithCMAudioFormatDescriptionSelector
   , initWithCommonFormat_sampleRate_channels_interleavedSelector
   , initWithCommonFormat_sampleRate_interleaved_channelLayoutSelector
   , initWithSettingsSelector
-  , initWithCMAudioFormatDescriptionSelector
-  , isEqualSelector
-  , standardSelector
-  , commonFormatSelector
-  , channelCountSelector
-  , sampleRateSelector
+  , initWithStreamDescriptionSelector
+  , initWithStreamDescription_channelLayoutSelector
   , interleavedSelector
-  , streamDescriptionSelector
-  , channelLayoutSelector
+  , isEqualSelector
   , magicCookieSelector
+  , sampleRateSelector
   , setMagicCookieSelector
   , settingsSelector
-  , formatDescriptionSelector
+  , standardSelector
+  , streamDescriptionSelector
 
   -- * Enum types
   , AVAudioCommonFormat(AVAudioCommonFormat)
@@ -66,15 +67,11 @@ module ObjC.AVFAudio.AVAudioFormat
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,8 +89,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithStreamDescription:@
 initWithStreamDescription :: IsAVAudioFormat avAudioFormat => avAudioFormat -> Const RawId -> IO (Id AVAudioFormat)
-initWithStreamDescription avAudioFormat  asbd =
-    sendMsg avAudioFormat (mkSelector "initWithStreamDescription:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst asbd)) :: Ptr ())] >>= ownedObject . castPtr
+initWithStreamDescription avAudioFormat asbd =
+  sendOwnedMessage avAudioFormat initWithStreamDescriptionSelector asbd
 
 -- | initWithStreamDescription:channelLayout:
 --
@@ -107,9 +104,8 @@ initWithStreamDescription avAudioFormat  asbd =
 --
 -- ObjC selector: @- initWithStreamDescription:channelLayout:@
 initWithStreamDescription_channelLayout :: (IsAVAudioFormat avAudioFormat, IsAVAudioChannelLayout layout) => avAudioFormat -> Const RawId -> layout -> IO (Id AVAudioFormat)
-initWithStreamDescription_channelLayout avAudioFormat  asbd layout =
-  withObjCPtr layout $ \raw_layout ->
-      sendMsg avAudioFormat (mkSelector "initWithStreamDescription:channelLayout:") (retPtr retVoid) [argPtr (castPtr (unRawId (unConst asbd)) :: Ptr ()), argPtr (castPtr raw_layout :: Ptr ())] >>= ownedObject . castPtr
+initWithStreamDescription_channelLayout avAudioFormat asbd layout =
+  sendOwnedMessage avAudioFormat initWithStreamDescription_channelLayoutSelector asbd (toAVAudioChannelLayout layout)
 
 -- | initStandardFormatWithSampleRate:channels:
 --
@@ -123,8 +119,8 @@ initWithStreamDescription_channelLayout avAudioFormat  asbd layout =
 --
 -- ObjC selector: @- initStandardFormatWithSampleRate:channels:@
 initStandardFormatWithSampleRate_channels :: IsAVAudioFormat avAudioFormat => avAudioFormat -> CDouble -> CUInt -> IO (Id AVAudioFormat)
-initStandardFormatWithSampleRate_channels avAudioFormat  sampleRate channels =
-    sendMsg avAudioFormat (mkSelector "initStandardFormatWithSampleRate:channels:") (retPtr retVoid) [argCDouble sampleRate, argCUInt channels] >>= ownedObject . castPtr
+initStandardFormatWithSampleRate_channels avAudioFormat sampleRate channels =
+  sendOwnedMessage avAudioFormat initStandardFormatWithSampleRate_channelsSelector sampleRate channels
 
 -- | initStandardFormatWithSampleRate:channelLayout:
 --
@@ -136,9 +132,8 @@ initStandardFormatWithSampleRate_channels avAudioFormat  sampleRate channels =
 --
 -- ObjC selector: @- initStandardFormatWithSampleRate:channelLayout:@
 initStandardFormatWithSampleRate_channelLayout :: (IsAVAudioFormat avAudioFormat, IsAVAudioChannelLayout layout) => avAudioFormat -> CDouble -> layout -> IO (Id AVAudioFormat)
-initStandardFormatWithSampleRate_channelLayout avAudioFormat  sampleRate layout =
-  withObjCPtr layout $ \raw_layout ->
-      sendMsg avAudioFormat (mkSelector "initStandardFormatWithSampleRate:channelLayout:") (retPtr retVoid) [argCDouble sampleRate, argPtr (castPtr raw_layout :: Ptr ())] >>= ownedObject . castPtr
+initStandardFormatWithSampleRate_channelLayout avAudioFormat sampleRate layout =
+  sendOwnedMessage avAudioFormat initStandardFormatWithSampleRate_channelLayoutSelector sampleRate (toAVAudioChannelLayout layout)
 
 -- | initWithCommonFormat:sampleRate:channels:interleaved:
 --
@@ -156,8 +151,8 @@ initStandardFormatWithSampleRate_channelLayout avAudioFormat  sampleRate layout 
 --
 -- ObjC selector: @- initWithCommonFormat:sampleRate:channels:interleaved:@
 initWithCommonFormat_sampleRate_channels_interleaved :: IsAVAudioFormat avAudioFormat => avAudioFormat -> AVAudioCommonFormat -> CDouble -> CUInt -> Bool -> IO (Id AVAudioFormat)
-initWithCommonFormat_sampleRate_channels_interleaved avAudioFormat  format sampleRate channels interleaved =
-    sendMsg avAudioFormat (mkSelector "initWithCommonFormat:sampleRate:channels:interleaved:") (retPtr retVoid) [argCULong (coerce format), argCDouble sampleRate, argCUInt channels, argCULong (if interleaved then 1 else 0)] >>= ownedObject . castPtr
+initWithCommonFormat_sampleRate_channels_interleaved avAudioFormat format sampleRate channels interleaved =
+  sendOwnedMessage avAudioFormat initWithCommonFormat_sampleRate_channels_interleavedSelector format sampleRate channels interleaved
 
 -- | initWithCommonFormat:sampleRate:interleaved:channelLayout:
 --
@@ -173,9 +168,8 @@ initWithCommonFormat_sampleRate_channels_interleaved avAudioFormat  format sampl
 --
 -- ObjC selector: @- initWithCommonFormat:sampleRate:interleaved:channelLayout:@
 initWithCommonFormat_sampleRate_interleaved_channelLayout :: (IsAVAudioFormat avAudioFormat, IsAVAudioChannelLayout layout) => avAudioFormat -> AVAudioCommonFormat -> CDouble -> Bool -> layout -> IO (Id AVAudioFormat)
-initWithCommonFormat_sampleRate_interleaved_channelLayout avAudioFormat  format sampleRate interleaved layout =
-  withObjCPtr layout $ \raw_layout ->
-      sendMsg avAudioFormat (mkSelector "initWithCommonFormat:sampleRate:interleaved:channelLayout:") (retPtr retVoid) [argCULong (coerce format), argCDouble sampleRate, argCULong (if interleaved then 1 else 0), argPtr (castPtr raw_layout :: Ptr ())] >>= ownedObject . castPtr
+initWithCommonFormat_sampleRate_interleaved_channelLayout avAudioFormat format sampleRate interleaved layout =
+  sendOwnedMessage avAudioFormat initWithCommonFormat_sampleRate_interleaved_channelLayoutSelector format sampleRate interleaved (toAVAudioChannelLayout layout)
 
 -- | initWithSettings:
 --
@@ -187,9 +181,8 @@ initWithCommonFormat_sampleRate_interleaved_channelLayout avAudioFormat  format 
 --
 -- ObjC selector: @- initWithSettings:@
 initWithSettings :: (IsAVAudioFormat avAudioFormat, IsNSDictionary settings) => avAudioFormat -> settings -> IO (Id AVAudioFormat)
-initWithSettings avAudioFormat  settings =
-  withObjCPtr settings $ \raw_settings ->
-      sendMsg avAudioFormat (mkSelector "initWithSettings:") (retPtr retVoid) [argPtr (castPtr raw_settings :: Ptr ())] >>= ownedObject . castPtr
+initWithSettings avAudioFormat settings =
+  sendOwnedMessage avAudioFormat initWithSettingsSelector (toNSDictionary settings)
 
 -- | initWithCMAudioFormatDescription:
 --
@@ -201,8 +194,8 @@ initWithSettings avAudioFormat  settings =
 --
 -- ObjC selector: @- initWithCMAudioFormatDescription:@
 initWithCMAudioFormatDescription :: IsAVAudioFormat avAudioFormat => avAudioFormat -> RawId -> IO (Id AVAudioFormat)
-initWithCMAudioFormatDescription avAudioFormat  formatDescription =
-    sendMsg avAudioFormat (mkSelector "initWithCMAudioFormatDescription:") (retPtr retVoid) [argPtr (castPtr (unRawId formatDescription) :: Ptr ())] >>= ownedObject . castPtr
+initWithCMAudioFormatDescription avAudioFormat formatDescription =
+  sendOwnedMessage avAudioFormat initWithCMAudioFormatDescriptionSelector formatDescription
 
 -- | isEqual:
 --
@@ -214,8 +207,8 @@ initWithCMAudioFormatDescription avAudioFormat  formatDescription =
 --
 -- ObjC selector: @- isEqual:@
 isEqual :: IsAVAudioFormat avAudioFormat => avAudioFormat -> RawId -> IO Bool
-isEqual avAudioFormat  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioFormat (mkSelector "isEqual:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+isEqual avAudioFormat object =
+  sendMessage avAudioFormat isEqualSelector object
 
 -- | standard
 --
@@ -223,8 +216,8 @@ isEqual avAudioFormat  object =
 --
 -- ObjC selector: @- standard@
 standard :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO Bool
-standard avAudioFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioFormat (mkSelector "standard") retCULong []
+standard avAudioFormat =
+  sendMessage avAudioFormat standardSelector
 
 -- | commonFormat
 --
@@ -232,8 +225,8 @@ standard avAudioFormat  =
 --
 -- ObjC selector: @- commonFormat@
 commonFormat :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO AVAudioCommonFormat
-commonFormat avAudioFormat  =
-    fmap (coerce :: CULong -> AVAudioCommonFormat) $ sendMsg avAudioFormat (mkSelector "commonFormat") retCULong []
+commonFormat avAudioFormat =
+  sendMessage avAudioFormat commonFormatSelector
 
 -- | channelCount
 --
@@ -241,8 +234,8 @@ commonFormat avAudioFormat  =
 --
 -- ObjC selector: @- channelCount@
 channelCount :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO CUInt
-channelCount avAudioFormat  =
-    sendMsg avAudioFormat (mkSelector "channelCount") retCUInt []
+channelCount avAudioFormat =
+  sendMessage avAudioFormat channelCountSelector
 
 -- | sampleRate
 --
@@ -250,8 +243,8 @@ channelCount avAudioFormat  =
 --
 -- ObjC selector: @- sampleRate@
 sampleRate :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO CDouble
-sampleRate avAudioFormat  =
-    sendMsg avAudioFormat (mkSelector "sampleRate") retCDouble []
+sampleRate avAudioFormat =
+  sendMessage avAudioFormat sampleRateSelector
 
 -- | interleaved
 --
@@ -261,8 +254,8 @@ sampleRate avAudioFormat  =
 --
 -- ObjC selector: @- interleaved@
 interleaved :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO Bool
-interleaved avAudioFormat  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioFormat (mkSelector "interleaved") retCULong []
+interleaved avAudioFormat =
+  sendMessage avAudioFormat interleavedSelector
 
 -- | streamDescription
 --
@@ -270,8 +263,8 @@ interleaved avAudioFormat  =
 --
 -- ObjC selector: @- streamDescription@
 streamDescription :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO (Const RawId)
-streamDescription avAudioFormat  =
-    fmap Const $ fmap (RawId . castPtr) $ sendMsg avAudioFormat (mkSelector "streamDescription") (retPtr retVoid) []
+streamDescription avAudioFormat =
+  sendMessage avAudioFormat streamDescriptionSelector
 
 -- | channelLayout
 --
@@ -281,8 +274,8 @@ streamDescription avAudioFormat  =
 --
 -- ObjC selector: @- channelLayout@
 channelLayout :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO (Id AVAudioChannelLayout)
-channelLayout avAudioFormat  =
-    sendMsg avAudioFormat (mkSelector "channelLayout") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelLayout avAudioFormat =
+  sendMessage avAudioFormat channelLayoutSelector
 
 -- | magicCookie
 --
@@ -292,8 +285,8 @@ channelLayout avAudioFormat  =
 --
 -- ObjC selector: @- magicCookie@
 magicCookie :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO (Id NSData)
-magicCookie avAudioFormat  =
-    sendMsg avAudioFormat (mkSelector "magicCookie") (retPtr retVoid) [] >>= retainedObject . castPtr
+magicCookie avAudioFormat =
+  sendMessage avAudioFormat magicCookieSelector
 
 -- | magicCookie
 --
@@ -303,9 +296,8 @@ magicCookie avAudioFormat  =
 --
 -- ObjC selector: @- setMagicCookie:@
 setMagicCookie :: (IsAVAudioFormat avAudioFormat, IsNSData value) => avAudioFormat -> value -> IO ()
-setMagicCookie avAudioFormat  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAudioFormat (mkSelector "setMagicCookie:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMagicCookie avAudioFormat value =
+  sendMessage avAudioFormat setMagicCookieSelector (toNSData value)
 
 -- | settings
 --
@@ -313,8 +305,8 @@ setMagicCookie avAudioFormat  value =
 --
 -- ObjC selector: @- settings@
 settings :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO (Id NSDictionary)
-settings avAudioFormat  =
-    sendMsg avAudioFormat (mkSelector "settings") (retPtr retVoid) [] >>= retainedObject . castPtr
+settings avAudioFormat =
+  sendMessage avAudioFormat settingsSelector
 
 -- | formatDescription
 --
@@ -322,90 +314,90 @@ settings avAudioFormat  =
 --
 -- ObjC selector: @- formatDescription@
 formatDescription :: IsAVAudioFormat avAudioFormat => avAudioFormat -> IO RawId
-formatDescription avAudioFormat  =
-    fmap (RawId . castPtr) $ sendMsg avAudioFormat (mkSelector "formatDescription") (retPtr retVoid) []
+formatDescription avAudioFormat =
+  sendMessage avAudioFormat formatDescriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithStreamDescription:@
-initWithStreamDescriptionSelector :: Selector
+initWithStreamDescriptionSelector :: Selector '[Const RawId] (Id AVAudioFormat)
 initWithStreamDescriptionSelector = mkSelector "initWithStreamDescription:"
 
 -- | @Selector@ for @initWithStreamDescription:channelLayout:@
-initWithStreamDescription_channelLayoutSelector :: Selector
+initWithStreamDescription_channelLayoutSelector :: Selector '[Const RawId, Id AVAudioChannelLayout] (Id AVAudioFormat)
 initWithStreamDescription_channelLayoutSelector = mkSelector "initWithStreamDescription:channelLayout:"
 
 -- | @Selector@ for @initStandardFormatWithSampleRate:channels:@
-initStandardFormatWithSampleRate_channelsSelector :: Selector
+initStandardFormatWithSampleRate_channelsSelector :: Selector '[CDouble, CUInt] (Id AVAudioFormat)
 initStandardFormatWithSampleRate_channelsSelector = mkSelector "initStandardFormatWithSampleRate:channels:"
 
 -- | @Selector@ for @initStandardFormatWithSampleRate:channelLayout:@
-initStandardFormatWithSampleRate_channelLayoutSelector :: Selector
+initStandardFormatWithSampleRate_channelLayoutSelector :: Selector '[CDouble, Id AVAudioChannelLayout] (Id AVAudioFormat)
 initStandardFormatWithSampleRate_channelLayoutSelector = mkSelector "initStandardFormatWithSampleRate:channelLayout:"
 
 -- | @Selector@ for @initWithCommonFormat:sampleRate:channels:interleaved:@
-initWithCommonFormat_sampleRate_channels_interleavedSelector :: Selector
+initWithCommonFormat_sampleRate_channels_interleavedSelector :: Selector '[AVAudioCommonFormat, CDouble, CUInt, Bool] (Id AVAudioFormat)
 initWithCommonFormat_sampleRate_channels_interleavedSelector = mkSelector "initWithCommonFormat:sampleRate:channels:interleaved:"
 
 -- | @Selector@ for @initWithCommonFormat:sampleRate:interleaved:channelLayout:@
-initWithCommonFormat_sampleRate_interleaved_channelLayoutSelector :: Selector
+initWithCommonFormat_sampleRate_interleaved_channelLayoutSelector :: Selector '[AVAudioCommonFormat, CDouble, Bool, Id AVAudioChannelLayout] (Id AVAudioFormat)
 initWithCommonFormat_sampleRate_interleaved_channelLayoutSelector = mkSelector "initWithCommonFormat:sampleRate:interleaved:channelLayout:"
 
 -- | @Selector@ for @initWithSettings:@
-initWithSettingsSelector :: Selector
+initWithSettingsSelector :: Selector '[Id NSDictionary] (Id AVAudioFormat)
 initWithSettingsSelector = mkSelector "initWithSettings:"
 
 -- | @Selector@ for @initWithCMAudioFormatDescription:@
-initWithCMAudioFormatDescriptionSelector :: Selector
+initWithCMAudioFormatDescriptionSelector :: Selector '[RawId] (Id AVAudioFormat)
 initWithCMAudioFormatDescriptionSelector = mkSelector "initWithCMAudioFormatDescription:"
 
 -- | @Selector@ for @isEqual:@
-isEqualSelector :: Selector
+isEqualSelector :: Selector '[RawId] Bool
 isEqualSelector = mkSelector "isEqual:"
 
 -- | @Selector@ for @standard@
-standardSelector :: Selector
+standardSelector :: Selector '[] Bool
 standardSelector = mkSelector "standard"
 
 -- | @Selector@ for @commonFormat@
-commonFormatSelector :: Selector
+commonFormatSelector :: Selector '[] AVAudioCommonFormat
 commonFormatSelector = mkSelector "commonFormat"
 
 -- | @Selector@ for @channelCount@
-channelCountSelector :: Selector
+channelCountSelector :: Selector '[] CUInt
 channelCountSelector = mkSelector "channelCount"
 
 -- | @Selector@ for @sampleRate@
-sampleRateSelector :: Selector
+sampleRateSelector :: Selector '[] CDouble
 sampleRateSelector = mkSelector "sampleRate"
 
 -- | @Selector@ for @interleaved@
-interleavedSelector :: Selector
+interleavedSelector :: Selector '[] Bool
 interleavedSelector = mkSelector "interleaved"
 
 -- | @Selector@ for @streamDescription@
-streamDescriptionSelector :: Selector
+streamDescriptionSelector :: Selector '[] (Const RawId)
 streamDescriptionSelector = mkSelector "streamDescription"
 
 -- | @Selector@ for @channelLayout@
-channelLayoutSelector :: Selector
+channelLayoutSelector :: Selector '[] (Id AVAudioChannelLayout)
 channelLayoutSelector = mkSelector "channelLayout"
 
 -- | @Selector@ for @magicCookie@
-magicCookieSelector :: Selector
+magicCookieSelector :: Selector '[] (Id NSData)
 magicCookieSelector = mkSelector "magicCookie"
 
 -- | @Selector@ for @setMagicCookie:@
-setMagicCookieSelector :: Selector
+setMagicCookieSelector :: Selector '[Id NSData] ()
 setMagicCookieSelector = mkSelector "setMagicCookie:"
 
 -- | @Selector@ for @settings@
-settingsSelector :: Selector
+settingsSelector :: Selector '[] (Id NSDictionary)
 settingsSelector = mkSelector "settings"
 
 -- | @Selector@ for @formatDescription@
-formatDescriptionSelector :: Selector
+formatDescriptionSelector :: Selector '[] RawId
 formatDescriptionSelector = mkSelector "formatDescription"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,22 +24,18 @@ module ObjC.DeviceCheck.DCDevice
   , generateTokenWithCompletionHandler
   , currentDevice
   , supported
-  , generateTokenWithCompletionHandlerSelector
   , currentDeviceSelector
+  , generateTokenWithCompletionHandlerSelector
   , supportedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,8 +54,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- generateTokenWithCompletionHandler:@
 generateTokenWithCompletionHandler :: IsDCDevice dcDevice => dcDevice -> Ptr () -> IO ()
-generateTokenWithCompletionHandler dcDevice  completion =
-    sendMsg dcDevice (mkSelector "generateTokenWithCompletionHandler:") retVoid [argPtr (castPtr completion :: Ptr ())]
+generateTokenWithCompletionHandler dcDevice completion =
+  sendMessage dcDevice generateTokenWithCompletionHandlerSelector completion
 
 -- | A representation of the device for which you want to query the two bits of data.
 --
@@ -67,28 +64,28 @@ currentDevice :: IO (Id DCDevice)
 currentDevice  =
   do
     cls' <- getRequiredClass "DCDevice"
-    sendClassMsg cls' (mkSelector "currentDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentDeviceSelector
 
 -- | A Boolean value that indicates whether the device supports the DeviceCheck API.
 --
 -- ObjC selector: @- supported@
 supported :: IsDCDevice dcDevice => dcDevice -> IO Bool
-supported dcDevice  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg dcDevice (mkSelector "supported") retCULong []
+supported dcDevice =
+  sendMessage dcDevice supportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @generateTokenWithCompletionHandler:@
-generateTokenWithCompletionHandlerSelector :: Selector
+generateTokenWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 generateTokenWithCompletionHandlerSelector = mkSelector "generateTokenWithCompletionHandler:"
 
 -- | @Selector@ for @currentDevice@
-currentDeviceSelector :: Selector
+currentDeviceSelector :: Selector '[] (Id DCDevice)
 currentDeviceSelector = mkSelector "currentDevice"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 

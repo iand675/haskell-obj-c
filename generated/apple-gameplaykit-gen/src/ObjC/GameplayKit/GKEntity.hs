@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,26 +22,22 @@ module ObjC.GameplayKit.GKEntity
   , removeComponentForClass
   , componentForClass
   , components
-  , entitySelector
-  , initSelector
-  , updateWithDeltaTimeSelector
   , addComponentSelector
-  , removeComponentForClassSelector
   , componentForClassSelector
   , componentsSelector
+  , entitySelector
+  , initSelector
+  , removeComponentForClassSelector
+  , updateWithDeltaTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,14 +51,14 @@ entity :: IO (Id GKEntity)
 entity  =
   do
     cls' <- getRequiredClass "GKEntity"
-    sendClassMsg cls' (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' entitySelector
 
 -- | Creates a new entity ready to have components added to it.
 --
 -- ObjC selector: @- init@
 init_ :: IsGKEntity gkEntity => gkEntity -> IO (Id GKEntity)
-init_ gkEntity  =
-    sendMsg gkEntity (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ gkEntity =
+  sendOwnedMessage gkEntity initSelector
 
 -- | General update loop for this entity, which also updates all components in this entity that are not currently in a dedicated component system.
 --
@@ -73,8 +70,8 @@ init_ gkEntity  =
 --
 -- ObjC selector: @- updateWithDeltaTime:@
 updateWithDeltaTime :: IsGKEntity gkEntity => gkEntity -> CDouble -> IO ()
-updateWithDeltaTime gkEntity  seconds =
-    sendMsg gkEntity (mkSelector "updateWithDeltaTime:") retVoid [argCDouble seconds]
+updateWithDeltaTime gkEntity seconds =
+  sendMessage gkEntity updateWithDeltaTimeSelector seconds
 
 -- | Adds a component to this entity.  If a component of the same class already exists it is overwritten with the new component.
 --
@@ -84,56 +81,55 @@ updateWithDeltaTime gkEntity  seconds =
 --
 -- ObjC selector: @- addComponent:@
 addComponent :: (IsGKEntity gkEntity, IsGKComponent component) => gkEntity -> component -> IO ()
-addComponent gkEntity  component =
-  withObjCPtr component $ \raw_component ->
-      sendMsg gkEntity (mkSelector "addComponent:") retVoid [argPtr (castPtr raw_component :: Ptr ())]
+addComponent gkEntity component =
+  sendMessage gkEntity addComponentSelector (toGKComponent component)
 
 -- | @- removeComponentForClass:@
 removeComponentForClass :: IsGKEntity gkEntity => gkEntity -> Class -> IO ()
-removeComponentForClass gkEntity  componentClass =
-    sendMsg gkEntity (mkSelector "removeComponentForClass:") retVoid [argPtr (unClass componentClass)]
+removeComponentForClass gkEntity componentClass =
+  sendMessage gkEntity removeComponentForClassSelector componentClass
 
 -- | @- componentForClass:@
 componentForClass :: IsGKEntity gkEntity => gkEntity -> Class -> IO (Id GKComponent)
-componentForClass gkEntity  componentClass =
-    sendMsg gkEntity (mkSelector "componentForClass:") (retPtr retVoid) [argPtr (unClass componentClass)] >>= retainedObject . castPtr
+componentForClass gkEntity componentClass =
+  sendMessage gkEntity componentForClassSelector componentClass
 
 -- | Access the current set of components as an array. Note: this is not the internal array of components, but rather a newly created array of the current component mapping.
 --
 -- ObjC selector: @- components@
 components :: IsGKEntity gkEntity => gkEntity -> IO (Id NSArray)
-components gkEntity  =
-    sendMsg gkEntity (mkSelector "components") (retPtr retVoid) [] >>= retainedObject . castPtr
+components gkEntity =
+  sendMessage gkEntity componentsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] (Id GKEntity)
 entitySelector = mkSelector "entity"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id GKEntity)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @updateWithDeltaTime:@
-updateWithDeltaTimeSelector :: Selector
+updateWithDeltaTimeSelector :: Selector '[CDouble] ()
 updateWithDeltaTimeSelector = mkSelector "updateWithDeltaTime:"
 
 -- | @Selector@ for @addComponent:@
-addComponentSelector :: Selector
+addComponentSelector :: Selector '[Id GKComponent] ()
 addComponentSelector = mkSelector "addComponent:"
 
 -- | @Selector@ for @removeComponentForClass:@
-removeComponentForClassSelector :: Selector
+removeComponentForClassSelector :: Selector '[Class] ()
 removeComponentForClassSelector = mkSelector "removeComponentForClass:"
 
 -- | @Selector@ for @componentForClass:@
-componentForClassSelector :: Selector
+componentForClassSelector :: Selector '[Class] (Id GKComponent)
 componentForClassSelector = mkSelector "componentForClass:"
 
 -- | @Selector@ for @components@
-componentsSelector :: Selector
+componentsSelector :: Selector '[] (Id NSArray)
 componentsSelector = mkSelector "components"
 

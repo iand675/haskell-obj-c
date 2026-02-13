@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.MapKit.MKMapItemDetailViewController
   , setMapItem
   , delegate
   , setDelegate
-  , initWithMapItem_displaysMapSelector
-  , initWithMapItemSelector
-  , mapItemSelector
-  , setMapItemSelector
   , delegateSelector
+  , initWithMapItemSelector
+  , initWithMapItem_displaysMapSelector
+  , mapItemSelector
   , setDelegateSelector
+  , setMapItemSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,62 +37,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithMapItem:displaysMap:@
 initWithMapItem_displaysMap :: (IsMKMapItemDetailViewController mkMapItemDetailViewController, IsMKMapItem mapItem) => mkMapItemDetailViewController -> mapItem -> Bool -> IO (Id MKMapItemDetailViewController)
-initWithMapItem_displaysMap mkMapItemDetailViewController  mapItem displaysMap =
-  withObjCPtr mapItem $ \raw_mapItem ->
-      sendMsg mkMapItemDetailViewController (mkSelector "initWithMapItem:displaysMap:") (retPtr retVoid) [argPtr (castPtr raw_mapItem :: Ptr ()), argCULong (if displaysMap then 1 else 0)] >>= ownedObject . castPtr
+initWithMapItem_displaysMap mkMapItemDetailViewController mapItem displaysMap =
+  sendOwnedMessage mkMapItemDetailViewController initWithMapItem_displaysMapSelector (toMKMapItem mapItem) displaysMap
 
 -- | @- initWithMapItem:@
 initWithMapItem :: (IsMKMapItemDetailViewController mkMapItemDetailViewController, IsMKMapItem mapItem) => mkMapItemDetailViewController -> mapItem -> IO (Id MKMapItemDetailViewController)
-initWithMapItem mkMapItemDetailViewController  mapItem =
-  withObjCPtr mapItem $ \raw_mapItem ->
-      sendMsg mkMapItemDetailViewController (mkSelector "initWithMapItem:") (retPtr retVoid) [argPtr (castPtr raw_mapItem :: Ptr ())] >>= ownedObject . castPtr
+initWithMapItem mkMapItemDetailViewController mapItem =
+  sendOwnedMessage mkMapItemDetailViewController initWithMapItemSelector (toMKMapItem mapItem)
 
 -- | @- mapItem@
 mapItem :: IsMKMapItemDetailViewController mkMapItemDetailViewController => mkMapItemDetailViewController -> IO (Id MKMapItem)
-mapItem mkMapItemDetailViewController  =
-    sendMsg mkMapItemDetailViewController (mkSelector "mapItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+mapItem mkMapItemDetailViewController =
+  sendMessage mkMapItemDetailViewController mapItemSelector
 
 -- | @- setMapItem:@
 setMapItem :: (IsMKMapItemDetailViewController mkMapItemDetailViewController, IsMKMapItem value) => mkMapItemDetailViewController -> value -> IO ()
-setMapItem mkMapItemDetailViewController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkMapItemDetailViewController (mkSelector "setMapItem:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMapItem mkMapItemDetailViewController value =
+  sendMessage mkMapItemDetailViewController setMapItemSelector (toMKMapItem value)
 
 -- | @- delegate@
 delegate :: IsMKMapItemDetailViewController mkMapItemDetailViewController => mkMapItemDetailViewController -> IO RawId
-delegate mkMapItemDetailViewController  =
-    fmap (RawId . castPtr) $ sendMsg mkMapItemDetailViewController (mkSelector "delegate") (retPtr retVoid) []
+delegate mkMapItemDetailViewController =
+  sendMessage mkMapItemDetailViewController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsMKMapItemDetailViewController mkMapItemDetailViewController => mkMapItemDetailViewController -> RawId -> IO ()
-setDelegate mkMapItemDetailViewController  value =
-    sendMsg mkMapItemDetailViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate mkMapItemDetailViewController value =
+  sendMessage mkMapItemDetailViewController setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithMapItem:displaysMap:@
-initWithMapItem_displaysMapSelector :: Selector
+initWithMapItem_displaysMapSelector :: Selector '[Id MKMapItem, Bool] (Id MKMapItemDetailViewController)
 initWithMapItem_displaysMapSelector = mkSelector "initWithMapItem:displaysMap:"
 
 -- | @Selector@ for @initWithMapItem:@
-initWithMapItemSelector :: Selector
+initWithMapItemSelector :: Selector '[Id MKMapItem] (Id MKMapItemDetailViewController)
 initWithMapItemSelector = mkSelector "initWithMapItem:"
 
 -- | @Selector@ for @mapItem@
-mapItemSelector :: Selector
+mapItemSelector :: Selector '[] (Id MKMapItem)
 mapItemSelector = mkSelector "mapItem"
 
 -- | @Selector@ for @setMapItem:@
-setMapItemSelector :: Selector
+setMapItemSelector :: Selector '[Id MKMapItem] ()
 setMapItemSelector = mkSelector "setMapItem:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

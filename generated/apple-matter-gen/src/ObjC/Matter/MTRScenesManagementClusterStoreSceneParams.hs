@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRScenesManagementClusterStoreSceneParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , groupIDSelector
-  , setGroupIDSelector
   , sceneIDSelector
-  , setSceneIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setGroupIDSelector
+  , setSceneIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupID@
 groupID :: IsMTRScenesManagementClusterStoreSceneParams mtrScenesManagementClusterStoreSceneParams => mtrScenesManagementClusterStoreSceneParams -> IO (Id NSNumber)
-groupID mtrScenesManagementClusterStoreSceneParams  =
-    sendMsg mtrScenesManagementClusterStoreSceneParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrScenesManagementClusterStoreSceneParams =
+  sendMessage mtrScenesManagementClusterStoreSceneParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRScenesManagementClusterStoreSceneParams mtrScenesManagementClusterStoreSceneParams, IsNSNumber value) => mtrScenesManagementClusterStoreSceneParams -> value -> IO ()
-setGroupID mtrScenesManagementClusterStoreSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterStoreSceneParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrScenesManagementClusterStoreSceneParams value =
+  sendMessage mtrScenesManagementClusterStoreSceneParams setGroupIDSelector (toNSNumber value)
 
 -- | @- sceneID@
 sceneID :: IsMTRScenesManagementClusterStoreSceneParams mtrScenesManagementClusterStoreSceneParams => mtrScenesManagementClusterStoreSceneParams -> IO (Id NSNumber)
-sceneID mtrScenesManagementClusterStoreSceneParams  =
-    sendMsg mtrScenesManagementClusterStoreSceneParams (mkSelector "sceneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneID mtrScenesManagementClusterStoreSceneParams =
+  sendMessage mtrScenesManagementClusterStoreSceneParams sceneIDSelector
 
 -- | @- setSceneID:@
 setSceneID :: (IsMTRScenesManagementClusterStoreSceneParams mtrScenesManagementClusterStoreSceneParams, IsNSNumber value) => mtrScenesManagementClusterStoreSceneParams -> value -> IO ()
-setSceneID mtrScenesManagementClusterStoreSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterStoreSceneParams (mkSelector "setSceneID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneID mtrScenesManagementClusterStoreSceneParams value =
+  sendMessage mtrScenesManagementClusterStoreSceneParams setSceneIDSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setSceneID mtrScenesManagementClusterStoreSceneParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRScenesManagementClusterStoreSceneParams mtrScenesManagementClusterStoreSceneParams => mtrScenesManagementClusterStoreSceneParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrScenesManagementClusterStoreSceneParams  =
-    sendMsg mtrScenesManagementClusterStoreSceneParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrScenesManagementClusterStoreSceneParams =
+  sendMessage mtrScenesManagementClusterStoreSceneParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrScenesManagementClusterStoreSceneParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRScenesManagementClusterStoreSceneParams mtrScenesManagementClusterStoreSceneParams, IsNSNumber value) => mtrScenesManagementClusterStoreSceneParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrScenesManagementClusterStoreSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterStoreSceneParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrScenesManagementClusterStoreSceneParams value =
+  sendMessage mtrScenesManagementClusterStoreSceneParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrScenesManagementClusterStoreSceneParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRScenesManagementClusterStoreSceneParams mtrScenesManagementClusterStoreSceneParams => mtrScenesManagementClusterStoreSceneParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrScenesManagementClusterStoreSceneParams  =
-    sendMsg mtrScenesManagementClusterStoreSceneParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrScenesManagementClusterStoreSceneParams =
+  sendMessage mtrScenesManagementClusterStoreSceneParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrScenesManagementClusterStoreSceneParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRScenesManagementClusterStoreSceneParams mtrScenesManagementClusterStoreSceneParams, IsNSNumber value) => mtrScenesManagementClusterStoreSceneParams -> value -> IO ()
-setServerSideProcessingTimeout mtrScenesManagementClusterStoreSceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterStoreSceneParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrScenesManagementClusterStoreSceneParams value =
+  sendMessage mtrScenesManagementClusterStoreSceneParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @sceneID@
-sceneIDSelector :: Selector
+sceneIDSelector :: Selector '[] (Id NSNumber)
 sceneIDSelector = mkSelector "sceneID"
 
 -- | @Selector@ for @setSceneID:@
-setSceneIDSelector :: Selector
+setSceneIDSelector :: Selector '[Id NSNumber] ()
 setSceneIDSelector = mkSelector "setSceneID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

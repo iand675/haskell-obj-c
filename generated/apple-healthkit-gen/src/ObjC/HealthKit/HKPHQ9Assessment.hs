@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,11 +16,11 @@ module ObjC.HealthKit.HKPHQ9Assessment
   , new
   , answers
   , risk
+  , answersSelector
   , assessmentWithDate_answersSelector
   , assessmentWithDate_answers_metadataSelector
   , initSelector
   , newSelector
-  , answersSelector
   , riskSelector
 
   -- * Enum types
@@ -32,15 +33,11 @@ module ObjC.HealthKit.HKPHQ9Assessment
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,9 +52,7 @@ assessmentWithDate_answers :: (IsNSDate date, IsNSArray answers) => date -> answ
 assessmentWithDate_answers date answers =
   do
     cls' <- getRequiredClass "HKPHQ9Assessment"
-    withObjCPtr date $ \raw_date ->
-      withObjCPtr answers $ \raw_answers ->
-        sendClassMsg cls' (mkSelector "assessmentWithDate:answers:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr raw_answers :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assessmentWithDate_answersSelector (toNSDate date) (toNSArray answers)
 
 -- | Creates a new PHQ-9 sample. There must be exactly 9 elements in answers, each answer must be of type @HKPHQ9AssessmentAnswer@. Question #9 is considered optional. If the user does not answer #9, use @HKPHQ9AssessmentAnswerPreferNotToAnswer@
 --
@@ -66,29 +61,26 @@ assessmentWithDate_answers_metadata :: (IsNSDate date, IsNSArray answers, IsNSDi
 assessmentWithDate_answers_metadata date answers metadata =
   do
     cls' <- getRequiredClass "HKPHQ9Assessment"
-    withObjCPtr date $ \raw_date ->
-      withObjCPtr answers $ \raw_answers ->
-        withObjCPtr metadata $ \raw_metadata ->
-          sendClassMsg cls' (mkSelector "assessmentWithDate:answers:metadata:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ()), argPtr (castPtr raw_answers :: Ptr ()), argPtr (castPtr raw_metadata :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assessmentWithDate_answers_metadataSelector (toNSDate date) (toNSArray answers) (toNSDictionary metadata)
 
 -- | @- init@
 init_ :: IsHKPHQ9Assessment hkphQ9Assessment => hkphQ9Assessment -> IO (Id HKPHQ9Assessment)
-init_ hkphQ9Assessment  =
-    sendMsg hkphQ9Assessment (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkphQ9Assessment =
+  sendOwnedMessage hkphQ9Assessment initSelector
 
 -- | @+ new@
 new :: IO (Id HKPHQ9Assessment)
 new  =
   do
     cls' <- getRequiredClass "HKPHQ9Assessment"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Answers on the PHQ-9 assessment. There are exactly 9 answers, one for each multiple choice question. Each answer is of type @HKPHQ9AssessmentAnswer@. If the 9th question was unanswered,  the answer is @HKPHQ9AssessmentAnswerPreferNotToAnswer@.
 --
 -- ObjC selector: @- answers@
 answers :: IsHKPHQ9Assessment hkphQ9Assessment => hkphQ9Assessment -> IO (Id NSArray)
-answers hkphQ9Assessment  =
-    sendMsg hkphQ9Assessment (mkSelector "answers") (retPtr retVoid) [] >>= retainedObject . castPtr
+answers hkphQ9Assessment =
+  sendMessage hkphQ9Assessment answersSelector
 
 -- | risk
 --
@@ -96,34 +88,34 @@ answers hkphQ9Assessment  =
 --
 -- ObjC selector: @- risk@
 risk :: IsHKPHQ9Assessment hkphQ9Assessment => hkphQ9Assessment -> IO HKPHQ9AssessmentRisk
-risk hkphQ9Assessment  =
-    fmap (coerce :: CLong -> HKPHQ9AssessmentRisk) $ sendMsg hkphQ9Assessment (mkSelector "risk") retCLong []
+risk hkphQ9Assessment =
+  sendMessage hkphQ9Assessment riskSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @assessmentWithDate:answers:@
-assessmentWithDate_answersSelector :: Selector
+assessmentWithDate_answersSelector :: Selector '[Id NSDate, Id NSArray] (Id HKPHQ9Assessment)
 assessmentWithDate_answersSelector = mkSelector "assessmentWithDate:answers:"
 
 -- | @Selector@ for @assessmentWithDate:answers:metadata:@
-assessmentWithDate_answers_metadataSelector :: Selector
+assessmentWithDate_answers_metadataSelector :: Selector '[Id NSDate, Id NSArray, Id NSDictionary] (Id HKPHQ9Assessment)
 assessmentWithDate_answers_metadataSelector = mkSelector "assessmentWithDate:answers:metadata:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKPHQ9Assessment)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKPHQ9Assessment)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @answers@
-answersSelector :: Selector
+answersSelector :: Selector '[] (Id NSArray)
 answersSelector = mkSelector "answers"
 
 -- | @Selector@ for @risk@
-riskSelector :: Selector
+riskSelector :: Selector '[] HKPHQ9AssessmentRisk
 riskSelector = mkSelector "risk"
 

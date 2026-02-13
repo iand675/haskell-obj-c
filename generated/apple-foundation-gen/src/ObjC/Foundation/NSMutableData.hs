@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,21 +26,21 @@ module ObjC.Foundation.NSMutableData
   , mutableBytes
   , length_
   , setLength
-  , decompressUsingAlgorithm_errorSelector
+  , appendBytes_lengthSelector
+  , appendDataSelector
   , compressUsingAlgorithm_errorSelector
   , dataWithCapacitySelector
   , dataWithLengthSelector
+  , decompressUsingAlgorithm_errorSelector
+  , increaseLengthBySelector
   , initWithCapacitySelector
   , initWithLengthSelector
-  , appendBytes_lengthSelector
-  , appendDataSelector
-  , increaseLengthBySelector
+  , lengthSelector
+  , mutableBytesSelector
   , replaceBytesInRange_withBytesSelector
+  , replaceBytesInRange_withBytes_lengthSelector
   , resetBytesInRangeSelector
   , setDataSelector
-  , replaceBytesInRange_withBytes_lengthSelector
-  , mutableBytesSelector
-  , lengthSelector
   , setLengthSelector
 
   -- * Enum types
@@ -51,15 +52,11 @@ module ObjC.Foundation.NSMutableData
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,157 +66,153 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- decompressUsingAlgorithm:error:@
 decompressUsingAlgorithm_error :: (IsNSMutableData nsMutableData, IsNSError error_) => nsMutableData -> NSDataCompressionAlgorithm -> error_ -> IO Bool
-decompressUsingAlgorithm_error nsMutableData  algorithm error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMutableData (mkSelector "decompressUsingAlgorithm:error:") retCULong [argCLong (coerce algorithm), argPtr (castPtr raw_error_ :: Ptr ())]
+decompressUsingAlgorithm_error nsMutableData algorithm error_ =
+  sendMessage nsMutableData decompressUsingAlgorithm_errorSelector algorithm (toNSError error_)
 
 -- | @- compressUsingAlgorithm:error:@
 compressUsingAlgorithm_error :: (IsNSMutableData nsMutableData, IsNSError error_) => nsMutableData -> NSDataCompressionAlgorithm -> error_ -> IO Bool
-compressUsingAlgorithm_error nsMutableData  algorithm error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMutableData (mkSelector "compressUsingAlgorithm:error:") retCULong [argCLong (coerce algorithm), argPtr (castPtr raw_error_ :: Ptr ())]
+compressUsingAlgorithm_error nsMutableData algorithm error_ =
+  sendMessage nsMutableData compressUsingAlgorithm_errorSelector algorithm (toNSError error_)
 
 -- | @+ dataWithCapacity:@
 dataWithCapacity :: CULong -> IO (Id NSMutableData)
 dataWithCapacity aNumItems =
   do
     cls' <- getRequiredClass "NSMutableData"
-    sendClassMsg cls' (mkSelector "dataWithCapacity:") (retPtr retVoid) [argCULong aNumItems] >>= retainedObject . castPtr
+    sendClassMessage cls' dataWithCapacitySelector aNumItems
 
 -- | @+ dataWithLength:@
 dataWithLength :: CULong -> IO (Id NSMutableData)
 dataWithLength length_ =
   do
     cls' <- getRequiredClass "NSMutableData"
-    sendClassMsg cls' (mkSelector "dataWithLength:") (retPtr retVoid) [argCULong length_] >>= retainedObject . castPtr
+    sendClassMessage cls' dataWithLengthSelector length_
 
 -- | @- initWithCapacity:@
 initWithCapacity :: IsNSMutableData nsMutableData => nsMutableData -> CULong -> IO (Id NSMutableData)
-initWithCapacity nsMutableData  capacity =
-    sendMsg nsMutableData (mkSelector "initWithCapacity:") (retPtr retVoid) [argCULong capacity] >>= ownedObject . castPtr
+initWithCapacity nsMutableData capacity =
+  sendOwnedMessage nsMutableData initWithCapacitySelector capacity
 
 -- | @- initWithLength:@
 initWithLength :: IsNSMutableData nsMutableData => nsMutableData -> CULong -> IO (Id NSMutableData)
-initWithLength nsMutableData  length_ =
-    sendMsg nsMutableData (mkSelector "initWithLength:") (retPtr retVoid) [argCULong length_] >>= ownedObject . castPtr
+initWithLength nsMutableData length_ =
+  sendOwnedMessage nsMutableData initWithLengthSelector length_
 
 -- | @- appendBytes:length:@
 appendBytes_length :: IsNSMutableData nsMutableData => nsMutableData -> Const (Ptr ()) -> CULong -> IO ()
-appendBytes_length nsMutableData  bytes length_ =
-    sendMsg nsMutableData (mkSelector "appendBytes:length:") retVoid [argPtr (unConst bytes), argCULong length_]
+appendBytes_length nsMutableData bytes length_ =
+  sendMessage nsMutableData appendBytes_lengthSelector bytes length_
 
 -- | @- appendData:@
 appendData :: (IsNSMutableData nsMutableData, IsNSData other) => nsMutableData -> other -> IO ()
-appendData nsMutableData  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsMutableData (mkSelector "appendData:") retVoid [argPtr (castPtr raw_other :: Ptr ())]
+appendData nsMutableData other =
+  sendMessage nsMutableData appendDataSelector (toNSData other)
 
 -- | @- increaseLengthBy:@
 increaseLengthBy :: IsNSMutableData nsMutableData => nsMutableData -> CULong -> IO ()
-increaseLengthBy nsMutableData  extraLength =
-    sendMsg nsMutableData (mkSelector "increaseLengthBy:") retVoid [argCULong extraLength]
+increaseLengthBy nsMutableData extraLength =
+  sendMessage nsMutableData increaseLengthBySelector extraLength
 
 -- | @- replaceBytesInRange:withBytes:@
 replaceBytesInRange_withBytes :: IsNSMutableData nsMutableData => nsMutableData -> NSRange -> Const (Ptr ()) -> IO ()
-replaceBytesInRange_withBytes nsMutableData  range bytes =
-    sendMsg nsMutableData (mkSelector "replaceBytesInRange:withBytes:") retVoid [argNSRange range, argPtr (unConst bytes)]
+replaceBytesInRange_withBytes nsMutableData range bytes =
+  sendMessage nsMutableData replaceBytesInRange_withBytesSelector range bytes
 
 -- | @- resetBytesInRange:@
 resetBytesInRange :: IsNSMutableData nsMutableData => nsMutableData -> NSRange -> IO ()
-resetBytesInRange nsMutableData  range =
-    sendMsg nsMutableData (mkSelector "resetBytesInRange:") retVoid [argNSRange range]
+resetBytesInRange nsMutableData range =
+  sendMessage nsMutableData resetBytesInRangeSelector range
 
 -- | @- setData:@
 setData :: (IsNSMutableData nsMutableData, IsNSData data_) => nsMutableData -> data_ -> IO ()
-setData nsMutableData  data_ =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg nsMutableData (mkSelector "setData:") retVoid [argPtr (castPtr raw_data_ :: Ptr ())]
+setData nsMutableData data_ =
+  sendMessage nsMutableData setDataSelector (toNSData data_)
 
 -- | @- replaceBytesInRange:withBytes:length:@
 replaceBytesInRange_withBytes_length :: IsNSMutableData nsMutableData => nsMutableData -> NSRange -> Const (Ptr ()) -> CULong -> IO ()
-replaceBytesInRange_withBytes_length nsMutableData  range replacementBytes replacementLength =
-    sendMsg nsMutableData (mkSelector "replaceBytesInRange:withBytes:length:") retVoid [argNSRange range, argPtr (unConst replacementBytes), argCULong replacementLength]
+replaceBytesInRange_withBytes_length nsMutableData range replacementBytes replacementLength =
+  sendMessage nsMutableData replaceBytesInRange_withBytes_lengthSelector range replacementBytes replacementLength
 
 -- | @- mutableBytes@
 mutableBytes :: IsNSMutableData nsMutableData => nsMutableData -> IO (Ptr ())
-mutableBytes nsMutableData  =
-    fmap castPtr $ sendMsg nsMutableData (mkSelector "mutableBytes") (retPtr retVoid) []
+mutableBytes nsMutableData =
+  sendMessage nsMutableData mutableBytesSelector
 
 -- | @- length@
 length_ :: IsNSMutableData nsMutableData => nsMutableData -> IO CULong
-length_ nsMutableData  =
-    sendMsg nsMutableData (mkSelector "length") retCULong []
+length_ nsMutableData =
+  sendMessage nsMutableData lengthSelector
 
 -- | @- setLength:@
 setLength :: IsNSMutableData nsMutableData => nsMutableData -> CULong -> IO ()
-setLength nsMutableData  value =
-    sendMsg nsMutableData (mkSelector "setLength:") retVoid [argCULong value]
+setLength nsMutableData value =
+  sendMessage nsMutableData setLengthSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @decompressUsingAlgorithm:error:@
-decompressUsingAlgorithm_errorSelector :: Selector
+decompressUsingAlgorithm_errorSelector :: Selector '[NSDataCompressionAlgorithm, Id NSError] Bool
 decompressUsingAlgorithm_errorSelector = mkSelector "decompressUsingAlgorithm:error:"
 
 -- | @Selector@ for @compressUsingAlgorithm:error:@
-compressUsingAlgorithm_errorSelector :: Selector
+compressUsingAlgorithm_errorSelector :: Selector '[NSDataCompressionAlgorithm, Id NSError] Bool
 compressUsingAlgorithm_errorSelector = mkSelector "compressUsingAlgorithm:error:"
 
 -- | @Selector@ for @dataWithCapacity:@
-dataWithCapacitySelector :: Selector
+dataWithCapacitySelector :: Selector '[CULong] (Id NSMutableData)
 dataWithCapacitySelector = mkSelector "dataWithCapacity:"
 
 -- | @Selector@ for @dataWithLength:@
-dataWithLengthSelector :: Selector
+dataWithLengthSelector :: Selector '[CULong] (Id NSMutableData)
 dataWithLengthSelector = mkSelector "dataWithLength:"
 
 -- | @Selector@ for @initWithCapacity:@
-initWithCapacitySelector :: Selector
+initWithCapacitySelector :: Selector '[CULong] (Id NSMutableData)
 initWithCapacitySelector = mkSelector "initWithCapacity:"
 
 -- | @Selector@ for @initWithLength:@
-initWithLengthSelector :: Selector
+initWithLengthSelector :: Selector '[CULong] (Id NSMutableData)
 initWithLengthSelector = mkSelector "initWithLength:"
 
 -- | @Selector@ for @appendBytes:length:@
-appendBytes_lengthSelector :: Selector
+appendBytes_lengthSelector :: Selector '[Const (Ptr ()), CULong] ()
 appendBytes_lengthSelector = mkSelector "appendBytes:length:"
 
 -- | @Selector@ for @appendData:@
-appendDataSelector :: Selector
+appendDataSelector :: Selector '[Id NSData] ()
 appendDataSelector = mkSelector "appendData:"
 
 -- | @Selector@ for @increaseLengthBy:@
-increaseLengthBySelector :: Selector
+increaseLengthBySelector :: Selector '[CULong] ()
 increaseLengthBySelector = mkSelector "increaseLengthBy:"
 
 -- | @Selector@ for @replaceBytesInRange:withBytes:@
-replaceBytesInRange_withBytesSelector :: Selector
+replaceBytesInRange_withBytesSelector :: Selector '[NSRange, Const (Ptr ())] ()
 replaceBytesInRange_withBytesSelector = mkSelector "replaceBytesInRange:withBytes:"
 
 -- | @Selector@ for @resetBytesInRange:@
-resetBytesInRangeSelector :: Selector
+resetBytesInRangeSelector :: Selector '[NSRange] ()
 resetBytesInRangeSelector = mkSelector "resetBytesInRange:"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSData] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @replaceBytesInRange:withBytes:length:@
-replaceBytesInRange_withBytes_lengthSelector :: Selector
+replaceBytesInRange_withBytes_lengthSelector :: Selector '[NSRange, Const (Ptr ()), CULong] ()
 replaceBytesInRange_withBytes_lengthSelector = mkSelector "replaceBytesInRange:withBytes:length:"
 
 -- | @Selector@ for @mutableBytes@
-mutableBytesSelector :: Selector
+mutableBytesSelector :: Selector '[] (Ptr ())
 mutableBytesSelector = mkSelector "mutableBytes"
 
 -- | @Selector@ for @length@
-lengthSelector :: Selector
+lengthSelector :: Selector '[] CULong
 lengthSelector = mkSelector "length"
 
 -- | @Selector@ for @setLength:@
-setLengthSelector :: Selector
+setLengthSelector :: Selector '[CULong] ()
 setLengthSelector = mkSelector "setLength:"
 

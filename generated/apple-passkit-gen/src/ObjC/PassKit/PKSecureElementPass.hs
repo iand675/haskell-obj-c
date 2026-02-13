@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,13 +15,13 @@ module ObjC.PassKit.PKSecureElementPass
   , passActivationState
   , devicePassIdentifier
   , pairedTerminalIdentifier
-  , primaryAccountIdentifierSelector
-  , primaryAccountNumberSuffixSelector
   , deviceAccountIdentifierSelector
   , deviceAccountNumberSuffixSelector
-  , passActivationStateSelector
   , devicePassIdentifierSelector
   , pairedTerminalIdentifierSelector
+  , passActivationStateSelector
+  , primaryAccountIdentifierSelector
+  , primaryAccountNumberSuffixSelector
 
   -- * Enum types
   , PKSecureElementPassActivationState(PKSecureElementPassActivationState)
@@ -32,15 +33,11 @@ module ObjC.PassKit.PKSecureElementPass
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,68 +47,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- primaryAccountIdentifier@
 primaryAccountIdentifier :: IsPKSecureElementPass pkSecureElementPass => pkSecureElementPass -> IO (Id NSString)
-primaryAccountIdentifier pkSecureElementPass  =
-    sendMsg pkSecureElementPass (mkSelector "primaryAccountIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryAccountIdentifier pkSecureElementPass =
+  sendMessage pkSecureElementPass primaryAccountIdentifierSelector
 
 -- | @- primaryAccountNumberSuffix@
 primaryAccountNumberSuffix :: IsPKSecureElementPass pkSecureElementPass => pkSecureElementPass -> IO (Id NSString)
-primaryAccountNumberSuffix pkSecureElementPass  =
-    sendMsg pkSecureElementPass (mkSelector "primaryAccountNumberSuffix") (retPtr retVoid) [] >>= retainedObject . castPtr
+primaryAccountNumberSuffix pkSecureElementPass =
+  sendMessage pkSecureElementPass primaryAccountNumberSuffixSelector
 
 -- | @- deviceAccountIdentifier@
 deviceAccountIdentifier :: IsPKSecureElementPass pkSecureElementPass => pkSecureElementPass -> IO (Id NSString)
-deviceAccountIdentifier pkSecureElementPass  =
-    sendMsg pkSecureElementPass (mkSelector "deviceAccountIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceAccountIdentifier pkSecureElementPass =
+  sendMessage pkSecureElementPass deviceAccountIdentifierSelector
 
 -- | @- deviceAccountNumberSuffix@
 deviceAccountNumberSuffix :: IsPKSecureElementPass pkSecureElementPass => pkSecureElementPass -> IO (Id NSString)
-deviceAccountNumberSuffix pkSecureElementPass  =
-    sendMsg pkSecureElementPass (mkSelector "deviceAccountNumberSuffix") (retPtr retVoid) [] >>= retainedObject . castPtr
+deviceAccountNumberSuffix pkSecureElementPass =
+  sendMessage pkSecureElementPass deviceAccountNumberSuffixSelector
 
 -- | @- passActivationState@
 passActivationState :: IsPKSecureElementPass pkSecureElementPass => pkSecureElementPass -> IO PKSecureElementPassActivationState
-passActivationState pkSecureElementPass  =
-    fmap (coerce :: CLong -> PKSecureElementPassActivationState) $ sendMsg pkSecureElementPass (mkSelector "passActivationState") retCLong []
+passActivationState pkSecureElementPass =
+  sendMessage pkSecureElementPass passActivationStateSelector
 
 -- | @- devicePassIdentifier@
 devicePassIdentifier :: IsPKSecureElementPass pkSecureElementPass => pkSecureElementPass -> IO (Id NSString)
-devicePassIdentifier pkSecureElementPass  =
-    sendMsg pkSecureElementPass (mkSelector "devicePassIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+devicePassIdentifier pkSecureElementPass =
+  sendMessage pkSecureElementPass devicePassIdentifierSelector
 
 -- | @- pairedTerminalIdentifier@
 pairedTerminalIdentifier :: IsPKSecureElementPass pkSecureElementPass => pkSecureElementPass -> IO (Id NSString)
-pairedTerminalIdentifier pkSecureElementPass  =
-    sendMsg pkSecureElementPass (mkSelector "pairedTerminalIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+pairedTerminalIdentifier pkSecureElementPass =
+  sendMessage pkSecureElementPass pairedTerminalIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @primaryAccountIdentifier@
-primaryAccountIdentifierSelector :: Selector
+primaryAccountIdentifierSelector :: Selector '[] (Id NSString)
 primaryAccountIdentifierSelector = mkSelector "primaryAccountIdentifier"
 
 -- | @Selector@ for @primaryAccountNumberSuffix@
-primaryAccountNumberSuffixSelector :: Selector
+primaryAccountNumberSuffixSelector :: Selector '[] (Id NSString)
 primaryAccountNumberSuffixSelector = mkSelector "primaryAccountNumberSuffix"
 
 -- | @Selector@ for @deviceAccountIdentifier@
-deviceAccountIdentifierSelector :: Selector
+deviceAccountIdentifierSelector :: Selector '[] (Id NSString)
 deviceAccountIdentifierSelector = mkSelector "deviceAccountIdentifier"
 
 -- | @Selector@ for @deviceAccountNumberSuffix@
-deviceAccountNumberSuffixSelector :: Selector
+deviceAccountNumberSuffixSelector :: Selector '[] (Id NSString)
 deviceAccountNumberSuffixSelector = mkSelector "deviceAccountNumberSuffix"
 
 -- | @Selector@ for @passActivationState@
-passActivationStateSelector :: Selector
+passActivationStateSelector :: Selector '[] PKSecureElementPassActivationState
 passActivationStateSelector = mkSelector "passActivationState"
 
 -- | @Selector@ for @devicePassIdentifier@
-devicePassIdentifierSelector :: Selector
+devicePassIdentifierSelector :: Selector '[] (Id NSString)
 devicePassIdentifierSelector = mkSelector "devicePassIdentifier"
 
 -- | @Selector@ for @pairedTerminalIdentifier@
-pairedTerminalIdentifierSelector :: Selector
+pairedTerminalIdentifierSelector :: Selector '[] (Id NSString)
 pairedTerminalIdentifierSelector = mkSelector "pairedTerminalIdentifier"
 

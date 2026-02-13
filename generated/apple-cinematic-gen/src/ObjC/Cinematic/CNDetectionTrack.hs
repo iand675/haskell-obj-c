@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,13 +17,13 @@ module ObjC.Cinematic.CNDetectionTrack
   , detectionGroupID
   , userCreated
   , discrete
+  , detectionGroupIDSelector
+  , detectionIDSelector
+  , detectionTypeSelector
+  , discreteSelector
   , initSelector
   , newSelector
-  , detectionTypeSelector
-  , detectionIDSelector
-  , detectionGroupIDSelector
   , userCreatedSelector
-  , discreteSelector
 
   -- * Enum types
   , CNDetectionType(CNDetectionType)
@@ -41,15 +42,11 @@ module ObjC.Cinematic.CNDetectionTrack
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,29 +56,29 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCNDetectionTrack cnDetectionTrack => cnDetectionTrack -> IO (Id CNDetectionTrack)
-init_ cnDetectionTrack  =
-    sendMsg cnDetectionTrack (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnDetectionTrack =
+  sendOwnedMessage cnDetectionTrack initSelector
 
 -- | @+ new@
 new :: IO (Id CNDetectionTrack)
 new  =
   do
     cls' <- getRequiredClass "CNDetectionTrack"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The type of subject detected by this detection track.
 --
 -- ObjC selector: @- detectionType@
 detectionType :: IsCNDetectionTrack cnDetectionTrack => cnDetectionTrack -> IO CNDetectionType
-detectionType cnDetectionTrack  =
-    fmap (coerce :: CLong -> CNDetectionType) $ sendMsg cnDetectionTrack (mkSelector "detectionType") retCLong []
+detectionType cnDetectionTrack =
+  sendMessage cnDetectionTrack detectionTypeSelector
 
 -- | The detectionID of the subject detected during this track; unique within a cinematic script.
 --
 -- ObjC selector: @- detectionID@
 detectionID :: IsCNDetectionTrack cnDetectionTrack => cnDetectionTrack -> IO CLong
-detectionID cnDetectionTrack  =
-    sendMsg cnDetectionTrack (mkSelector "detectionID") retCLong []
+detectionID cnDetectionTrack =
+  sendMessage cnDetectionTrack detectionIDSelector
 
 -- | The detectionGroupID of the subject detected by the track.
 --
@@ -89,15 +86,15 @@ detectionID cnDetectionTrack  =
 --
 -- ObjC selector: @- detectionGroupID@
 detectionGroupID :: IsCNDetectionTrack cnDetectionTrack => cnDetectionTrack -> IO CLong
-detectionGroupID cnDetectionTrack  =
-    sendMsg cnDetectionTrack (mkSelector "detectionGroupID") retCLong []
+detectionGroupID cnDetectionTrack =
+  sendMessage cnDetectionTrack detectionGroupIDSelector
 
 -- | Whether this detection track was created by the client.
 --
 -- ObjC selector: @- userCreated@
 userCreated :: IsCNDetectionTrack cnDetectionTrack => cnDetectionTrack -> IO Bool
-userCreated cnDetectionTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnDetectionTrack (mkSelector "userCreated") retCULong []
+userCreated cnDetectionTrack =
+  sendMessage cnDetectionTrack userCreatedSelector
 
 -- | Whether this detection track has discrete detections (otherwise continuous).
 --
@@ -105,38 +102,38 @@ userCreated cnDetectionTrack  =
 --
 -- ObjC selector: @- discrete@
 discrete :: IsCNDetectionTrack cnDetectionTrack => cnDetectionTrack -> IO Bool
-discrete cnDetectionTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnDetectionTrack (mkSelector "discrete") retCULong []
+discrete cnDetectionTrack =
+  sendMessage cnDetectionTrack discreteSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNDetectionTrack)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNDetectionTrack)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @detectionType@
-detectionTypeSelector :: Selector
+detectionTypeSelector :: Selector '[] CNDetectionType
 detectionTypeSelector = mkSelector "detectionType"
 
 -- | @Selector@ for @detectionID@
-detectionIDSelector :: Selector
+detectionIDSelector :: Selector '[] CLong
 detectionIDSelector = mkSelector "detectionID"
 
 -- | @Selector@ for @detectionGroupID@
-detectionGroupIDSelector :: Selector
+detectionGroupIDSelector :: Selector '[] CLong
 detectionGroupIDSelector = mkSelector "detectionGroupID"
 
 -- | @Selector@ for @userCreated@
-userCreatedSelector :: Selector
+userCreatedSelector :: Selector '[] Bool
 userCreatedSelector = mkSelector "userCreated"
 
 -- | @Selector@ for @discrete@
-discreteSelector :: Selector
+discreteSelector :: Selector '[] Bool
 discreteSelector = mkSelector "discrete"
 

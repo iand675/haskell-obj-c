@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -85,80 +86,80 @@ module ObjC.SceneKit.SCNLight
   , gobo
   , categoryBitMask
   , setCategoryBitMask
-  , lightSelector
-  , attributeForKeySelector
-  , setAttribute_forKeySelector
-  , typeSelector
-  , setTypeSelector
-  , colorSelector
-  , setColorSelector
-  , temperatureSelector
-  , setTemperatureSelector
-  , intensitySelector
-  , setIntensitySelector
-  , nameSelector
-  , setNameSelector
-  , castsShadowSelector
-  , setCastsShadowSelector
-  , shadowColorSelector
-  , setShadowColorSelector
-  , shadowRadiusSelector
-  , setShadowRadiusSelector
-  , shadowSampleCountSelector
-  , setShadowSampleCountSelector
-  , shadowModeSelector
-  , setShadowModeSelector
-  , shadowBiasSelector
-  , setShadowBiasSelector
-  , automaticallyAdjustsShadowProjectionSelector
-  , setAutomaticallyAdjustsShadowProjectionSelector
-  , maximumShadowDistanceSelector
-  , setMaximumShadowDistanceSelector
-  , forcesBackFaceCastersSelector
-  , setForcesBackFaceCastersSelector
-  , sampleDistributedShadowMapsSelector
-  , setSampleDistributedShadowMapsSelector
-  , shadowCascadeCountSelector
-  , setShadowCascadeCountSelector
-  , shadowCascadeSplittingFactorSelector
-  , setShadowCascadeSplittingFactorSelector
-  , orthographicScaleSelector
-  , setOrthographicScaleSelector
-  , zNearSelector
-  , setZNearSelector
-  , zFarSelector
-  , setZFarSelector
-  , attenuationStartDistanceSelector
-  , setAttenuationStartDistanceSelector
-  , attenuationEndDistanceSelector
-  , setAttenuationEndDistanceSelector
-  , attenuationFalloffExponentSelector
-  , setAttenuationFalloffExponentSelector
-  , spotInnerAngleSelector
-  , setSpotInnerAngleSelector
-  , spotOuterAngleSelector
-  , setSpotOuterAngleSelector
-  , iesProfileURLSelector
-  , setIESProfileURLSelector
-  , sphericalHarmonicsCoefficientsSelector
-  , probeTypeSelector
-  , setProbeTypeSelector
-  , probeUpdateTypeSelector
-  , setProbeUpdateTypeSelector
-  , parallaxCorrectionEnabledSelector
-  , setParallaxCorrectionEnabledSelector
-  , probeEnvironmentSelector
-  , areaTypeSelector
-  , setAreaTypeSelector
   , areaPolygonVerticesSelector
-  , setAreaPolygonVerticesSelector
-  , drawsAreaSelector
-  , setDrawsAreaSelector
-  , doubleSidedSelector
-  , setDoubleSidedSelector
-  , goboSelector
+  , areaTypeSelector
+  , attenuationEndDistanceSelector
+  , attenuationFalloffExponentSelector
+  , attenuationStartDistanceSelector
+  , attributeForKeySelector
+  , automaticallyAdjustsShadowProjectionSelector
+  , castsShadowSelector
   , categoryBitMaskSelector
+  , colorSelector
+  , doubleSidedSelector
+  , drawsAreaSelector
+  , forcesBackFaceCastersSelector
+  , goboSelector
+  , iesProfileURLSelector
+  , intensitySelector
+  , lightSelector
+  , maximumShadowDistanceSelector
+  , nameSelector
+  , orthographicScaleSelector
+  , parallaxCorrectionEnabledSelector
+  , probeEnvironmentSelector
+  , probeTypeSelector
+  , probeUpdateTypeSelector
+  , sampleDistributedShadowMapsSelector
+  , setAreaPolygonVerticesSelector
+  , setAreaTypeSelector
+  , setAttenuationEndDistanceSelector
+  , setAttenuationFalloffExponentSelector
+  , setAttenuationStartDistanceSelector
+  , setAttribute_forKeySelector
+  , setAutomaticallyAdjustsShadowProjectionSelector
+  , setCastsShadowSelector
   , setCategoryBitMaskSelector
+  , setColorSelector
+  , setDoubleSidedSelector
+  , setDrawsAreaSelector
+  , setForcesBackFaceCastersSelector
+  , setIESProfileURLSelector
+  , setIntensitySelector
+  , setMaximumShadowDistanceSelector
+  , setNameSelector
+  , setOrthographicScaleSelector
+  , setParallaxCorrectionEnabledSelector
+  , setProbeTypeSelector
+  , setProbeUpdateTypeSelector
+  , setSampleDistributedShadowMapsSelector
+  , setShadowBiasSelector
+  , setShadowCascadeCountSelector
+  , setShadowCascadeSplittingFactorSelector
+  , setShadowColorSelector
+  , setShadowModeSelector
+  , setShadowRadiusSelector
+  , setShadowSampleCountSelector
+  , setSpotInnerAngleSelector
+  , setSpotOuterAngleSelector
+  , setTemperatureSelector
+  , setTypeSelector
+  , setZFarSelector
+  , setZNearSelector
+  , shadowBiasSelector
+  , shadowCascadeCountSelector
+  , shadowCascadeSplittingFactorSelector
+  , shadowColorSelector
+  , shadowModeSelector
+  , shadowRadiusSelector
+  , shadowSampleCountSelector
+  , sphericalHarmonicsCoefficientsSelector
+  , spotInnerAngleSelector
+  , spotOuterAngleSelector
+  , temperatureSelector
+  , typeSelector
+  , zFarSelector
+  , zNearSelector
 
   -- * Enum types
   , SCNLightAreaType(SCNLightAreaType)
@@ -177,15 +178,11 @@ module ObjC.SceneKit.SCNLight
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -202,7 +199,7 @@ light :: IO (Id SCNLight)
 light  =
   do
     cls' <- getRequiredClass "SCNLight"
-    sendClassMsg cls' (mkSelector "light") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' lightSelector
 
 -- | attributeForKey:
 --
@@ -212,9 +209,8 @@ light  =
 --
 -- ObjC selector: @- attributeForKey:@
 attributeForKey :: (IsSCNLight scnLight, IsNSString key) => scnLight -> key -> IO RawId
-attributeForKey scnLight  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg scnLight (mkSelector "attributeForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+attributeForKey scnLight key =
+  sendMessage scnLight attributeForKeySelector (toNSString key)
 
 -- | setAttribute:forKey:
 --
@@ -226,9 +222,8 @@ attributeForKey scnLight  key =
 --
 -- ObjC selector: @- setAttribute:forKey:@
 setAttribute_forKey :: (IsSCNLight scnLight, IsNSString key) => scnLight -> RawId -> key -> IO ()
-setAttribute_forKey scnLight  attribute key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg scnLight (mkSelector "setAttribute:forKey:") retVoid [argPtr (castPtr (unRawId attribute) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setAttribute_forKey scnLight attribute key =
+  sendMessage scnLight setAttribute_forKeySelector attribute (toNSString key)
 
 -- | type
 --
@@ -238,8 +233,8 @@ setAttribute_forKey scnLight  attribute key =
 --
 -- ObjC selector: @- type@
 type_ :: IsSCNLight scnLight => scnLight -> IO (Id NSString)
-type_ scnLight  =
-    sendMsg scnLight (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ scnLight =
+  sendMessage scnLight typeSelector
 
 -- | type
 --
@@ -249,9 +244,8 @@ type_ scnLight  =
 --
 -- ObjC selector: @- setType:@
 setType :: (IsSCNLight scnLight, IsNSString value) => scnLight -> value -> IO ()
-setType scnLight  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnLight (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType scnLight value =
+  sendMessage scnLight setTypeSelector (toNSString value)
 
 -- | color
 --
@@ -261,8 +255,8 @@ setType scnLight  value =
 --
 -- ObjC selector: @- color@
 color :: IsSCNLight scnLight => scnLight -> IO RawId
-color scnLight  =
-    fmap (RawId . castPtr) $ sendMsg scnLight (mkSelector "color") (retPtr retVoid) []
+color scnLight =
+  sendMessage scnLight colorSelector
 
 -- | color
 --
@@ -272,8 +266,8 @@ color scnLight  =
 --
 -- ObjC selector: @- setColor:@
 setColor :: IsSCNLight scnLight => scnLight -> RawId -> IO ()
-setColor scnLight  value =
-    sendMsg scnLight (mkSelector "setColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setColor scnLight value =
+  sendMessage scnLight setColorSelector value
 
 -- | temperature
 --
@@ -283,8 +277,8 @@ setColor scnLight  value =
 --
 -- ObjC selector: @- temperature@
 temperature :: IsSCNLight scnLight => scnLight -> IO CDouble
-temperature scnLight  =
-    sendMsg scnLight (mkSelector "temperature") retCDouble []
+temperature scnLight =
+  sendMessage scnLight temperatureSelector
 
 -- | temperature
 --
@@ -294,8 +288,8 @@ temperature scnLight  =
 --
 -- ObjC selector: @- setTemperature:@
 setTemperature :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setTemperature scnLight  value =
-    sendMsg scnLight (mkSelector "setTemperature:") retVoid [argCDouble value]
+setTemperature scnLight value =
+  sendMessage scnLight setTemperatureSelector value
 
 -- | intensity
 --
@@ -305,8 +299,8 @@ setTemperature scnLight  value =
 --
 -- ObjC selector: @- intensity@
 intensity :: IsSCNLight scnLight => scnLight -> IO CDouble
-intensity scnLight  =
-    sendMsg scnLight (mkSelector "intensity") retCDouble []
+intensity scnLight =
+  sendMessage scnLight intensitySelector
 
 -- | intensity
 --
@@ -316,8 +310,8 @@ intensity scnLight  =
 --
 -- ObjC selector: @- setIntensity:@
 setIntensity :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setIntensity scnLight  value =
-    sendMsg scnLight (mkSelector "setIntensity:") retVoid [argCDouble value]
+setIntensity scnLight value =
+  sendMessage scnLight setIntensitySelector value
 
 -- | name
 --
@@ -325,8 +319,8 @@ setIntensity scnLight  value =
 --
 -- ObjC selector: @- name@
 name :: IsSCNLight scnLight => scnLight -> IO (Id NSString)
-name scnLight  =
-    sendMsg scnLight (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name scnLight =
+  sendMessage scnLight nameSelector
 
 -- | name
 --
@@ -334,9 +328,8 @@ name scnLight  =
 --
 -- ObjC selector: @- setName:@
 setName :: (IsSCNLight scnLight, IsNSString value) => scnLight -> value -> IO ()
-setName scnLight  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnLight (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName scnLight value =
+  sendMessage scnLight setNameSelector (toNSString value)
 
 -- | castsShadow
 --
@@ -346,8 +339,8 @@ setName scnLight  value =
 --
 -- ObjC selector: @- castsShadow@
 castsShadow :: IsSCNLight scnLight => scnLight -> IO Bool
-castsShadow scnLight  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnLight (mkSelector "castsShadow") retCULong []
+castsShadow scnLight =
+  sendMessage scnLight castsShadowSelector
 
 -- | castsShadow
 --
@@ -357,8 +350,8 @@ castsShadow scnLight  =
 --
 -- ObjC selector: @- setCastsShadow:@
 setCastsShadow :: IsSCNLight scnLight => scnLight -> Bool -> IO ()
-setCastsShadow scnLight  value =
-    sendMsg scnLight (mkSelector "setCastsShadow:") retVoid [argCULong (if value then 1 else 0)]
+setCastsShadow scnLight value =
+  sendMessage scnLight setCastsShadowSelector value
 
 -- | shadowColor
 --
@@ -368,8 +361,8 @@ setCastsShadow scnLight  value =
 --
 -- ObjC selector: @- shadowColor@
 shadowColor :: IsSCNLight scnLight => scnLight -> IO RawId
-shadowColor scnLight  =
-    fmap (RawId . castPtr) $ sendMsg scnLight (mkSelector "shadowColor") (retPtr retVoid) []
+shadowColor scnLight =
+  sendMessage scnLight shadowColorSelector
 
 -- | shadowColor
 --
@@ -379,8 +372,8 @@ shadowColor scnLight  =
 --
 -- ObjC selector: @- setShadowColor:@
 setShadowColor :: IsSCNLight scnLight => scnLight -> RawId -> IO ()
-setShadowColor scnLight  value =
-    sendMsg scnLight (mkSelector "setShadowColor:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setShadowColor scnLight value =
+  sendMessage scnLight setShadowColorSelector value
 
 -- | shadowRadius
 --
@@ -388,8 +381,8 @@ setShadowColor scnLight  value =
 --
 -- ObjC selector: @- shadowRadius@
 shadowRadius :: IsSCNLight scnLight => scnLight -> IO CDouble
-shadowRadius scnLight  =
-    sendMsg scnLight (mkSelector "shadowRadius") retCDouble []
+shadowRadius scnLight =
+  sendMessage scnLight shadowRadiusSelector
 
 -- | shadowRadius
 --
@@ -397,8 +390,8 @@ shadowRadius scnLight  =
 --
 -- ObjC selector: @- setShadowRadius:@
 setShadowRadius :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setShadowRadius scnLight  value =
-    sendMsg scnLight (mkSelector "setShadowRadius:") retVoid [argCDouble value]
+setShadowRadius scnLight value =
+  sendMessage scnLight setShadowRadiusSelector value
 
 -- | shadowSampleCount
 --
@@ -408,8 +401,8 @@ setShadowRadius scnLight  value =
 --
 -- ObjC selector: @- shadowSampleCount@
 shadowSampleCount :: IsSCNLight scnLight => scnLight -> IO CULong
-shadowSampleCount scnLight  =
-    sendMsg scnLight (mkSelector "shadowSampleCount") retCULong []
+shadowSampleCount scnLight =
+  sendMessage scnLight shadowSampleCountSelector
 
 -- | shadowSampleCount
 --
@@ -419,8 +412,8 @@ shadowSampleCount scnLight  =
 --
 -- ObjC selector: @- setShadowSampleCount:@
 setShadowSampleCount :: IsSCNLight scnLight => scnLight -> CULong -> IO ()
-setShadowSampleCount scnLight  value =
-    sendMsg scnLight (mkSelector "setShadowSampleCount:") retVoid [argCULong value]
+setShadowSampleCount scnLight value =
+  sendMessage scnLight setShadowSampleCountSelector value
 
 -- | shadowMode
 --
@@ -428,8 +421,8 @@ setShadowSampleCount scnLight  value =
 --
 -- ObjC selector: @- shadowMode@
 shadowMode :: IsSCNLight scnLight => scnLight -> IO SCNShadowMode
-shadowMode scnLight  =
-    fmap (coerce :: CLong -> SCNShadowMode) $ sendMsg scnLight (mkSelector "shadowMode") retCLong []
+shadowMode scnLight =
+  sendMessage scnLight shadowModeSelector
 
 -- | shadowMode
 --
@@ -437,8 +430,8 @@ shadowMode scnLight  =
 --
 -- ObjC selector: @- setShadowMode:@
 setShadowMode :: IsSCNLight scnLight => scnLight -> SCNShadowMode -> IO ()
-setShadowMode scnLight  value =
-    sendMsg scnLight (mkSelector "setShadowMode:") retVoid [argCLong (coerce value)]
+setShadowMode scnLight value =
+  sendMessage scnLight setShadowModeSelector value
 
 -- | shadowBias
 --
@@ -446,8 +439,8 @@ setShadowMode scnLight  value =
 --
 -- ObjC selector: @- shadowBias@
 shadowBias :: IsSCNLight scnLight => scnLight -> IO CDouble
-shadowBias scnLight  =
-    sendMsg scnLight (mkSelector "shadowBias") retCDouble []
+shadowBias scnLight =
+  sendMessage scnLight shadowBiasSelector
 
 -- | shadowBias
 --
@@ -455,8 +448,8 @@ shadowBias scnLight  =
 --
 -- ObjC selector: @- setShadowBias:@
 setShadowBias :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setShadowBias scnLight  value =
-    sendMsg scnLight (mkSelector "setShadowBias:") retVoid [argCDouble value]
+setShadowBias scnLight value =
+  sendMessage scnLight setShadowBiasSelector value
 
 -- | automaticallyAdjustsShadowProjection
 --
@@ -464,8 +457,8 @@ setShadowBias scnLight  value =
 --
 -- ObjC selector: @- automaticallyAdjustsShadowProjection@
 automaticallyAdjustsShadowProjection :: IsSCNLight scnLight => scnLight -> IO Bool
-automaticallyAdjustsShadowProjection scnLight  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnLight (mkSelector "automaticallyAdjustsShadowProjection") retCULong []
+automaticallyAdjustsShadowProjection scnLight =
+  sendMessage scnLight automaticallyAdjustsShadowProjectionSelector
 
 -- | automaticallyAdjustsShadowProjection
 --
@@ -473,8 +466,8 @@ automaticallyAdjustsShadowProjection scnLight  =
 --
 -- ObjC selector: @- setAutomaticallyAdjustsShadowProjection:@
 setAutomaticallyAdjustsShadowProjection :: IsSCNLight scnLight => scnLight -> Bool -> IO ()
-setAutomaticallyAdjustsShadowProjection scnLight  value =
-    sendMsg scnLight (mkSelector "setAutomaticallyAdjustsShadowProjection:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAdjustsShadowProjection scnLight value =
+  sendMessage scnLight setAutomaticallyAdjustsShadowProjectionSelector value
 
 -- | maximumShadowDistance
 --
@@ -482,8 +475,8 @@ setAutomaticallyAdjustsShadowProjection scnLight  value =
 --
 -- ObjC selector: @- maximumShadowDistance@
 maximumShadowDistance :: IsSCNLight scnLight => scnLight -> IO CDouble
-maximumShadowDistance scnLight  =
-    sendMsg scnLight (mkSelector "maximumShadowDistance") retCDouble []
+maximumShadowDistance scnLight =
+  sendMessage scnLight maximumShadowDistanceSelector
 
 -- | maximumShadowDistance
 --
@@ -491,8 +484,8 @@ maximumShadowDistance scnLight  =
 --
 -- ObjC selector: @- setMaximumShadowDistance:@
 setMaximumShadowDistance :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setMaximumShadowDistance scnLight  value =
-    sendMsg scnLight (mkSelector "setMaximumShadowDistance:") retVoid [argCDouble value]
+setMaximumShadowDistance scnLight value =
+  sendMessage scnLight setMaximumShadowDistanceSelector value
 
 -- | forcesBackFaceCasters
 --
@@ -500,8 +493,8 @@ setMaximumShadowDistance scnLight  value =
 --
 -- ObjC selector: @- forcesBackFaceCasters@
 forcesBackFaceCasters :: IsSCNLight scnLight => scnLight -> IO Bool
-forcesBackFaceCasters scnLight  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnLight (mkSelector "forcesBackFaceCasters") retCULong []
+forcesBackFaceCasters scnLight =
+  sendMessage scnLight forcesBackFaceCastersSelector
 
 -- | forcesBackFaceCasters
 --
@@ -509,8 +502,8 @@ forcesBackFaceCasters scnLight  =
 --
 -- ObjC selector: @- setForcesBackFaceCasters:@
 setForcesBackFaceCasters :: IsSCNLight scnLight => scnLight -> Bool -> IO ()
-setForcesBackFaceCasters scnLight  value =
-    sendMsg scnLight (mkSelector "setForcesBackFaceCasters:") retVoid [argCULong (if value then 1 else 0)]
+setForcesBackFaceCasters scnLight value =
+  sendMessage scnLight setForcesBackFaceCastersSelector value
 
 -- | sampleDistributedShadowMaps
 --
@@ -518,8 +511,8 @@ setForcesBackFaceCasters scnLight  value =
 --
 -- ObjC selector: @- sampleDistributedShadowMaps@
 sampleDistributedShadowMaps :: IsSCNLight scnLight => scnLight -> IO Bool
-sampleDistributedShadowMaps scnLight  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnLight (mkSelector "sampleDistributedShadowMaps") retCULong []
+sampleDistributedShadowMaps scnLight =
+  sendMessage scnLight sampleDistributedShadowMapsSelector
 
 -- | sampleDistributedShadowMaps
 --
@@ -527,8 +520,8 @@ sampleDistributedShadowMaps scnLight  =
 --
 -- ObjC selector: @- setSampleDistributedShadowMaps:@
 setSampleDistributedShadowMaps :: IsSCNLight scnLight => scnLight -> Bool -> IO ()
-setSampleDistributedShadowMaps scnLight  value =
-    sendMsg scnLight (mkSelector "setSampleDistributedShadowMaps:") retVoid [argCULong (if value then 1 else 0)]
+setSampleDistributedShadowMaps scnLight value =
+  sendMessage scnLight setSampleDistributedShadowMapsSelector value
 
 -- | shadowCascadeCount
 --
@@ -536,8 +529,8 @@ setSampleDistributedShadowMaps scnLight  value =
 --
 -- ObjC selector: @- shadowCascadeCount@
 shadowCascadeCount :: IsSCNLight scnLight => scnLight -> IO CULong
-shadowCascadeCount scnLight  =
-    sendMsg scnLight (mkSelector "shadowCascadeCount") retCULong []
+shadowCascadeCount scnLight =
+  sendMessage scnLight shadowCascadeCountSelector
 
 -- | shadowCascadeCount
 --
@@ -545,8 +538,8 @@ shadowCascadeCount scnLight  =
 --
 -- ObjC selector: @- setShadowCascadeCount:@
 setShadowCascadeCount :: IsSCNLight scnLight => scnLight -> CULong -> IO ()
-setShadowCascadeCount scnLight  value =
-    sendMsg scnLight (mkSelector "setShadowCascadeCount:") retVoid [argCULong value]
+setShadowCascadeCount scnLight value =
+  sendMessage scnLight setShadowCascadeCountSelector value
 
 -- | shadowCascadeSplittingFactor
 --
@@ -554,8 +547,8 @@ setShadowCascadeCount scnLight  value =
 --
 -- ObjC selector: @- shadowCascadeSplittingFactor@
 shadowCascadeSplittingFactor :: IsSCNLight scnLight => scnLight -> IO CDouble
-shadowCascadeSplittingFactor scnLight  =
-    sendMsg scnLight (mkSelector "shadowCascadeSplittingFactor") retCDouble []
+shadowCascadeSplittingFactor scnLight =
+  sendMessage scnLight shadowCascadeSplittingFactorSelector
 
 -- | shadowCascadeSplittingFactor
 --
@@ -563,8 +556,8 @@ shadowCascadeSplittingFactor scnLight  =
 --
 -- ObjC selector: @- setShadowCascadeSplittingFactor:@
 setShadowCascadeSplittingFactor :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setShadowCascadeSplittingFactor scnLight  value =
-    sendMsg scnLight (mkSelector "setShadowCascadeSplittingFactor:") retVoid [argCDouble value]
+setShadowCascadeSplittingFactor scnLight value =
+  sendMessage scnLight setShadowCascadeSplittingFactorSelector value
 
 -- | orthographicScale
 --
@@ -574,8 +567,8 @@ setShadowCascadeSplittingFactor scnLight  value =
 --
 -- ObjC selector: @- orthographicScale@
 orthographicScale :: IsSCNLight scnLight => scnLight -> IO CDouble
-orthographicScale scnLight  =
-    sendMsg scnLight (mkSelector "orthographicScale") retCDouble []
+orthographicScale scnLight =
+  sendMessage scnLight orthographicScaleSelector
 
 -- | orthographicScale
 --
@@ -585,8 +578,8 @@ orthographicScale scnLight  =
 --
 -- ObjC selector: @- setOrthographicScale:@
 setOrthographicScale :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setOrthographicScale scnLight  value =
-    sendMsg scnLight (mkSelector "setOrthographicScale:") retVoid [argCDouble value]
+setOrthographicScale scnLight value =
+  sendMessage scnLight setOrthographicScaleSelector value
 
 -- | zNear
 --
@@ -594,8 +587,8 @@ setOrthographicScale scnLight  value =
 --
 -- ObjC selector: @- zNear@
 zNear :: IsSCNLight scnLight => scnLight -> IO CDouble
-zNear scnLight  =
-    sendMsg scnLight (mkSelector "zNear") retCDouble []
+zNear scnLight =
+  sendMessage scnLight zNearSelector
 
 -- | zNear
 --
@@ -603,8 +596,8 @@ zNear scnLight  =
 --
 -- ObjC selector: @- setZNear:@
 setZNear :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setZNear scnLight  value =
-    sendMsg scnLight (mkSelector "setZNear:") retVoid [argCDouble value]
+setZNear scnLight value =
+  sendMessage scnLight setZNearSelector value
 
 -- | zFar
 --
@@ -612,8 +605,8 @@ setZNear scnLight  value =
 --
 -- ObjC selector: @- zFar@
 zFar :: IsSCNLight scnLight => scnLight -> IO CDouble
-zFar scnLight  =
-    sendMsg scnLight (mkSelector "zFar") retCDouble []
+zFar scnLight =
+  sendMessage scnLight zFarSelector
 
 -- | zFar
 --
@@ -621,8 +614,8 @@ zFar scnLight  =
 --
 -- ObjC selector: @- setZFar:@
 setZFar :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setZFar scnLight  value =
-    sendMsg scnLight (mkSelector "setZFar:") retVoid [argCDouble value]
+setZFar scnLight value =
+  sendMessage scnLight setZFarSelector value
 
 -- | attenuationStartDistance
 --
@@ -630,8 +623,8 @@ setZFar scnLight  value =
 --
 -- ObjC selector: @- attenuationStartDistance@
 attenuationStartDistance :: IsSCNLight scnLight => scnLight -> IO CDouble
-attenuationStartDistance scnLight  =
-    sendMsg scnLight (mkSelector "attenuationStartDistance") retCDouble []
+attenuationStartDistance scnLight =
+  sendMessage scnLight attenuationStartDistanceSelector
 
 -- | attenuationStartDistance
 --
@@ -639,8 +632,8 @@ attenuationStartDistance scnLight  =
 --
 -- ObjC selector: @- setAttenuationStartDistance:@
 setAttenuationStartDistance :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setAttenuationStartDistance scnLight  value =
-    sendMsg scnLight (mkSelector "setAttenuationStartDistance:") retVoid [argCDouble value]
+setAttenuationStartDistance scnLight value =
+  sendMessage scnLight setAttenuationStartDistanceSelector value
 
 -- | attenuationEndDistance
 --
@@ -648,8 +641,8 @@ setAttenuationStartDistance scnLight  value =
 --
 -- ObjC selector: @- attenuationEndDistance@
 attenuationEndDistance :: IsSCNLight scnLight => scnLight -> IO CDouble
-attenuationEndDistance scnLight  =
-    sendMsg scnLight (mkSelector "attenuationEndDistance") retCDouble []
+attenuationEndDistance scnLight =
+  sendMessage scnLight attenuationEndDistanceSelector
 
 -- | attenuationEndDistance
 --
@@ -657,8 +650,8 @@ attenuationEndDistance scnLight  =
 --
 -- ObjC selector: @- setAttenuationEndDistance:@
 setAttenuationEndDistance :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setAttenuationEndDistance scnLight  value =
-    sendMsg scnLight (mkSelector "setAttenuationEndDistance:") retVoid [argCDouble value]
+setAttenuationEndDistance scnLight value =
+  sendMessage scnLight setAttenuationEndDistanceSelector value
 
 -- | attenuationFalloffExponent
 --
@@ -666,8 +659,8 @@ setAttenuationEndDistance scnLight  value =
 --
 -- ObjC selector: @- attenuationFalloffExponent@
 attenuationFalloffExponent :: IsSCNLight scnLight => scnLight -> IO CDouble
-attenuationFalloffExponent scnLight  =
-    sendMsg scnLight (mkSelector "attenuationFalloffExponent") retCDouble []
+attenuationFalloffExponent scnLight =
+  sendMessage scnLight attenuationFalloffExponentSelector
 
 -- | attenuationFalloffExponent
 --
@@ -675,8 +668,8 @@ attenuationFalloffExponent scnLight  =
 --
 -- ObjC selector: @- setAttenuationFalloffExponent:@
 setAttenuationFalloffExponent :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setAttenuationFalloffExponent scnLight  value =
-    sendMsg scnLight (mkSelector "setAttenuationFalloffExponent:") retVoid [argCDouble value]
+setAttenuationFalloffExponent scnLight value =
+  sendMessage scnLight setAttenuationFalloffExponentSelector value
 
 -- | spotInnerAngle
 --
@@ -684,8 +677,8 @@ setAttenuationFalloffExponent scnLight  value =
 --
 -- ObjC selector: @- spotInnerAngle@
 spotInnerAngle :: IsSCNLight scnLight => scnLight -> IO CDouble
-spotInnerAngle scnLight  =
-    sendMsg scnLight (mkSelector "spotInnerAngle") retCDouble []
+spotInnerAngle scnLight =
+  sendMessage scnLight spotInnerAngleSelector
 
 -- | spotInnerAngle
 --
@@ -693,8 +686,8 @@ spotInnerAngle scnLight  =
 --
 -- ObjC selector: @- setSpotInnerAngle:@
 setSpotInnerAngle :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setSpotInnerAngle scnLight  value =
-    sendMsg scnLight (mkSelector "setSpotInnerAngle:") retVoid [argCDouble value]
+setSpotInnerAngle scnLight value =
+  sendMessage scnLight setSpotInnerAngleSelector value
 
 -- | spotOuterAngle
 --
@@ -702,8 +695,8 @@ setSpotInnerAngle scnLight  value =
 --
 -- ObjC selector: @- spotOuterAngle@
 spotOuterAngle :: IsSCNLight scnLight => scnLight -> IO CDouble
-spotOuterAngle scnLight  =
-    sendMsg scnLight (mkSelector "spotOuterAngle") retCDouble []
+spotOuterAngle scnLight =
+  sendMessage scnLight spotOuterAngleSelector
 
 -- | spotOuterAngle
 --
@@ -711,8 +704,8 @@ spotOuterAngle scnLight  =
 --
 -- ObjC selector: @- setSpotOuterAngle:@
 setSpotOuterAngle :: IsSCNLight scnLight => scnLight -> CDouble -> IO ()
-setSpotOuterAngle scnLight  value =
-    sendMsg scnLight (mkSelector "setSpotOuterAngle:") retVoid [argCDouble value]
+setSpotOuterAngle scnLight value =
+  sendMessage scnLight setSpotOuterAngleSelector value
 
 -- | IESProfileURL
 --
@@ -720,8 +713,8 @@ setSpotOuterAngle scnLight  value =
 --
 -- ObjC selector: @- IESProfileURL@
 iesProfileURL :: IsSCNLight scnLight => scnLight -> IO (Id NSURL)
-iesProfileURL scnLight  =
-    sendMsg scnLight (mkSelector "IESProfileURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+iesProfileURL scnLight =
+  sendMessage scnLight iesProfileURLSelector
 
 -- | IESProfileURL
 --
@@ -729,9 +722,8 @@ iesProfileURL scnLight  =
 --
 -- ObjC selector: @- setIESProfileURL:@
 setIESProfileURL :: (IsSCNLight scnLight, IsNSURL value) => scnLight -> value -> IO ()
-setIESProfileURL scnLight  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnLight (mkSelector "setIESProfileURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIESProfileURL scnLight value =
+  sendMessage scnLight setIESProfileURLSelector (toNSURL value)
 
 -- | sphericalHarmonicsCoefficients
 --
@@ -741,43 +733,43 @@ setIESProfileURL scnLight  value =
 --
 -- ObjC selector: @- sphericalHarmonicsCoefficients@
 sphericalHarmonicsCoefficients :: IsSCNLight scnLight => scnLight -> IO (Id NSData)
-sphericalHarmonicsCoefficients scnLight  =
-    sendMsg scnLight (mkSelector "sphericalHarmonicsCoefficients") (retPtr retVoid) [] >>= retainedObject . castPtr
+sphericalHarmonicsCoefficients scnLight =
+  sendMessage scnLight sphericalHarmonicsCoefficientsSelector
 
 -- | @- probeType@
 probeType :: IsSCNLight scnLight => scnLight -> IO SCNLightProbeType
-probeType scnLight  =
-    fmap (coerce :: CLong -> SCNLightProbeType) $ sendMsg scnLight (mkSelector "probeType") retCLong []
+probeType scnLight =
+  sendMessage scnLight probeTypeSelector
 
 -- | @- setProbeType:@
 setProbeType :: IsSCNLight scnLight => scnLight -> SCNLightProbeType -> IO ()
-setProbeType scnLight  value =
-    sendMsg scnLight (mkSelector "setProbeType:") retVoid [argCLong (coerce value)]
+setProbeType scnLight value =
+  sendMessage scnLight setProbeTypeSelector value
 
 -- | @- probeUpdateType@
 probeUpdateType :: IsSCNLight scnLight => scnLight -> IO SCNLightProbeUpdateType
-probeUpdateType scnLight  =
-    fmap (coerce :: CLong -> SCNLightProbeUpdateType) $ sendMsg scnLight (mkSelector "probeUpdateType") retCLong []
+probeUpdateType scnLight =
+  sendMessage scnLight probeUpdateTypeSelector
 
 -- | @- setProbeUpdateType:@
 setProbeUpdateType :: IsSCNLight scnLight => scnLight -> SCNLightProbeUpdateType -> IO ()
-setProbeUpdateType scnLight  value =
-    sendMsg scnLight (mkSelector "setProbeUpdateType:") retVoid [argCLong (coerce value)]
+setProbeUpdateType scnLight value =
+  sendMessage scnLight setProbeUpdateTypeSelector value
 
 -- | @- parallaxCorrectionEnabled@
 parallaxCorrectionEnabled :: IsSCNLight scnLight => scnLight -> IO Bool
-parallaxCorrectionEnabled scnLight  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnLight (mkSelector "parallaxCorrectionEnabled") retCULong []
+parallaxCorrectionEnabled scnLight =
+  sendMessage scnLight parallaxCorrectionEnabledSelector
 
 -- | @- setParallaxCorrectionEnabled:@
 setParallaxCorrectionEnabled :: IsSCNLight scnLight => scnLight -> Bool -> IO ()
-setParallaxCorrectionEnabled scnLight  value =
-    sendMsg scnLight (mkSelector "setParallaxCorrectionEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setParallaxCorrectionEnabled scnLight value =
+  sendMessage scnLight setParallaxCorrectionEnabledSelector value
 
 -- | @- probeEnvironment@
 probeEnvironment :: IsSCNLight scnLight => scnLight -> IO (Id SCNMaterialProperty)
-probeEnvironment scnLight  =
-    sendMsg scnLight (mkSelector "probeEnvironment") (retPtr retVoid) [] >>= retainedObject . castPtr
+probeEnvironment scnLight =
+  sendMessage scnLight probeEnvironmentSelector
 
 -- | areaType
 --
@@ -785,8 +777,8 @@ probeEnvironment scnLight  =
 --
 -- ObjC selector: @- areaType@
 areaType :: IsSCNLight scnLight => scnLight -> IO SCNLightAreaType
-areaType scnLight  =
-    fmap (coerce :: CLong -> SCNLightAreaType) $ sendMsg scnLight (mkSelector "areaType") retCLong []
+areaType scnLight =
+  sendMessage scnLight areaTypeSelector
 
 -- | areaType
 --
@@ -794,8 +786,8 @@ areaType scnLight  =
 --
 -- ObjC selector: @- setAreaType:@
 setAreaType :: IsSCNLight scnLight => scnLight -> SCNLightAreaType -> IO ()
-setAreaType scnLight  value =
-    sendMsg scnLight (mkSelector "setAreaType:") retVoid [argCLong (coerce value)]
+setAreaType scnLight value =
+  sendMessage scnLight setAreaTypeSelector value
 
 -- | areaPolygonVertices
 --
@@ -805,8 +797,8 @@ setAreaType scnLight  value =
 --
 -- ObjC selector: @- areaPolygonVertices@
 areaPolygonVertices :: IsSCNLight scnLight => scnLight -> IO (Id NSArray)
-areaPolygonVertices scnLight  =
-    sendMsg scnLight (mkSelector "areaPolygonVertices") (retPtr retVoid) [] >>= retainedObject . castPtr
+areaPolygonVertices scnLight =
+  sendMessage scnLight areaPolygonVerticesSelector
 
 -- | areaPolygonVertices
 --
@@ -816,9 +808,8 @@ areaPolygonVertices scnLight  =
 --
 -- ObjC selector: @- setAreaPolygonVertices:@
 setAreaPolygonVertices :: (IsSCNLight scnLight, IsNSArray value) => scnLight -> value -> IO ()
-setAreaPolygonVertices scnLight  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg scnLight (mkSelector "setAreaPolygonVertices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAreaPolygonVertices scnLight value =
+  sendMessage scnLight setAreaPolygonVerticesSelector (toNSArray value)
 
 -- | drawsArea
 --
@@ -826,8 +817,8 @@ setAreaPolygonVertices scnLight  value =
 --
 -- ObjC selector: @- drawsArea@
 drawsArea :: IsSCNLight scnLight => scnLight -> IO Bool
-drawsArea scnLight  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnLight (mkSelector "drawsArea") retCULong []
+drawsArea scnLight =
+  sendMessage scnLight drawsAreaSelector
 
 -- | drawsArea
 --
@@ -835,8 +826,8 @@ drawsArea scnLight  =
 --
 -- ObjC selector: @- setDrawsArea:@
 setDrawsArea :: IsSCNLight scnLight => scnLight -> Bool -> IO ()
-setDrawsArea scnLight  value =
-    sendMsg scnLight (mkSelector "setDrawsArea:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsArea scnLight value =
+  sendMessage scnLight setDrawsAreaSelector value
 
 -- | doubleSided
 --
@@ -846,8 +837,8 @@ setDrawsArea scnLight  value =
 --
 -- ObjC selector: @- doubleSided@
 doubleSided :: IsSCNLight scnLight => scnLight -> IO Bool
-doubleSided scnLight  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnLight (mkSelector "doubleSided") retCULong []
+doubleSided scnLight =
+  sendMessage scnLight doubleSidedSelector
 
 -- | doubleSided
 --
@@ -857,8 +848,8 @@ doubleSided scnLight  =
 --
 -- ObjC selector: @- setDoubleSided:@
 setDoubleSided :: IsSCNLight scnLight => scnLight -> Bool -> IO ()
-setDoubleSided scnLight  value =
-    sendMsg scnLight (mkSelector "setDoubleSided:") retVoid [argCULong (if value then 1 else 0)]
+setDoubleSided scnLight value =
+  sendMessage scnLight setDoubleSidedSelector value
 
 -- | gobo
 --
@@ -868,8 +859,8 @@ setDoubleSided scnLight  value =
 --
 -- ObjC selector: @- gobo@
 gobo :: IsSCNLight scnLight => scnLight -> IO (Id SCNMaterialProperty)
-gobo scnLight  =
-    sendMsg scnLight (mkSelector "gobo") (retPtr retVoid) [] >>= retainedObject . castPtr
+gobo scnLight =
+  sendMessage scnLight goboSelector
 
 -- | categoryBitMask
 --
@@ -877,8 +868,8 @@ gobo scnLight  =
 --
 -- ObjC selector: @- categoryBitMask@
 categoryBitMask :: IsSCNLight scnLight => scnLight -> IO CULong
-categoryBitMask scnLight  =
-    sendMsg scnLight (mkSelector "categoryBitMask") retCULong []
+categoryBitMask scnLight =
+  sendMessage scnLight categoryBitMaskSelector
 
 -- | categoryBitMask
 --
@@ -886,306 +877,306 @@ categoryBitMask scnLight  =
 --
 -- ObjC selector: @- setCategoryBitMask:@
 setCategoryBitMask :: IsSCNLight scnLight => scnLight -> CULong -> IO ()
-setCategoryBitMask scnLight  value =
-    sendMsg scnLight (mkSelector "setCategoryBitMask:") retVoid [argCULong value]
+setCategoryBitMask scnLight value =
+  sendMessage scnLight setCategoryBitMaskSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @light@
-lightSelector :: Selector
+lightSelector :: Selector '[] (Id SCNLight)
 lightSelector = mkSelector "light"
 
 -- | @Selector@ for @attributeForKey:@
-attributeForKeySelector :: Selector
+attributeForKeySelector :: Selector '[Id NSString] RawId
 attributeForKeySelector = mkSelector "attributeForKey:"
 
 -- | @Selector@ for @setAttribute:forKey:@
-setAttribute_forKeySelector :: Selector
+setAttribute_forKeySelector :: Selector '[RawId, Id NSString] ()
 setAttribute_forKeySelector = mkSelector "setAttribute:forKey:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] RawId
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[RawId] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @temperature@
-temperatureSelector :: Selector
+temperatureSelector :: Selector '[] CDouble
 temperatureSelector = mkSelector "temperature"
 
 -- | @Selector@ for @setTemperature:@
-setTemperatureSelector :: Selector
+setTemperatureSelector :: Selector '[CDouble] ()
 setTemperatureSelector = mkSelector "setTemperature:"
 
 -- | @Selector@ for @intensity@
-intensitySelector :: Selector
+intensitySelector :: Selector '[] CDouble
 intensitySelector = mkSelector "intensity"
 
 -- | @Selector@ for @setIntensity:@
-setIntensitySelector :: Selector
+setIntensitySelector :: Selector '[CDouble] ()
 setIntensitySelector = mkSelector "setIntensity:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @castsShadow@
-castsShadowSelector :: Selector
+castsShadowSelector :: Selector '[] Bool
 castsShadowSelector = mkSelector "castsShadow"
 
 -- | @Selector@ for @setCastsShadow:@
-setCastsShadowSelector :: Selector
+setCastsShadowSelector :: Selector '[Bool] ()
 setCastsShadowSelector = mkSelector "setCastsShadow:"
 
 -- | @Selector@ for @shadowColor@
-shadowColorSelector :: Selector
+shadowColorSelector :: Selector '[] RawId
 shadowColorSelector = mkSelector "shadowColor"
 
 -- | @Selector@ for @setShadowColor:@
-setShadowColorSelector :: Selector
+setShadowColorSelector :: Selector '[RawId] ()
 setShadowColorSelector = mkSelector "setShadowColor:"
 
 -- | @Selector@ for @shadowRadius@
-shadowRadiusSelector :: Selector
+shadowRadiusSelector :: Selector '[] CDouble
 shadowRadiusSelector = mkSelector "shadowRadius"
 
 -- | @Selector@ for @setShadowRadius:@
-setShadowRadiusSelector :: Selector
+setShadowRadiusSelector :: Selector '[CDouble] ()
 setShadowRadiusSelector = mkSelector "setShadowRadius:"
 
 -- | @Selector@ for @shadowSampleCount@
-shadowSampleCountSelector :: Selector
+shadowSampleCountSelector :: Selector '[] CULong
 shadowSampleCountSelector = mkSelector "shadowSampleCount"
 
 -- | @Selector@ for @setShadowSampleCount:@
-setShadowSampleCountSelector :: Selector
+setShadowSampleCountSelector :: Selector '[CULong] ()
 setShadowSampleCountSelector = mkSelector "setShadowSampleCount:"
 
 -- | @Selector@ for @shadowMode@
-shadowModeSelector :: Selector
+shadowModeSelector :: Selector '[] SCNShadowMode
 shadowModeSelector = mkSelector "shadowMode"
 
 -- | @Selector@ for @setShadowMode:@
-setShadowModeSelector :: Selector
+setShadowModeSelector :: Selector '[SCNShadowMode] ()
 setShadowModeSelector = mkSelector "setShadowMode:"
 
 -- | @Selector@ for @shadowBias@
-shadowBiasSelector :: Selector
+shadowBiasSelector :: Selector '[] CDouble
 shadowBiasSelector = mkSelector "shadowBias"
 
 -- | @Selector@ for @setShadowBias:@
-setShadowBiasSelector :: Selector
+setShadowBiasSelector :: Selector '[CDouble] ()
 setShadowBiasSelector = mkSelector "setShadowBias:"
 
 -- | @Selector@ for @automaticallyAdjustsShadowProjection@
-automaticallyAdjustsShadowProjectionSelector :: Selector
+automaticallyAdjustsShadowProjectionSelector :: Selector '[] Bool
 automaticallyAdjustsShadowProjectionSelector = mkSelector "automaticallyAdjustsShadowProjection"
 
 -- | @Selector@ for @setAutomaticallyAdjustsShadowProjection:@
-setAutomaticallyAdjustsShadowProjectionSelector :: Selector
+setAutomaticallyAdjustsShadowProjectionSelector :: Selector '[Bool] ()
 setAutomaticallyAdjustsShadowProjectionSelector = mkSelector "setAutomaticallyAdjustsShadowProjection:"
 
 -- | @Selector@ for @maximumShadowDistance@
-maximumShadowDistanceSelector :: Selector
+maximumShadowDistanceSelector :: Selector '[] CDouble
 maximumShadowDistanceSelector = mkSelector "maximumShadowDistance"
 
 -- | @Selector@ for @setMaximumShadowDistance:@
-setMaximumShadowDistanceSelector :: Selector
+setMaximumShadowDistanceSelector :: Selector '[CDouble] ()
 setMaximumShadowDistanceSelector = mkSelector "setMaximumShadowDistance:"
 
 -- | @Selector@ for @forcesBackFaceCasters@
-forcesBackFaceCastersSelector :: Selector
+forcesBackFaceCastersSelector :: Selector '[] Bool
 forcesBackFaceCastersSelector = mkSelector "forcesBackFaceCasters"
 
 -- | @Selector@ for @setForcesBackFaceCasters:@
-setForcesBackFaceCastersSelector :: Selector
+setForcesBackFaceCastersSelector :: Selector '[Bool] ()
 setForcesBackFaceCastersSelector = mkSelector "setForcesBackFaceCasters:"
 
 -- | @Selector@ for @sampleDistributedShadowMaps@
-sampleDistributedShadowMapsSelector :: Selector
+sampleDistributedShadowMapsSelector :: Selector '[] Bool
 sampleDistributedShadowMapsSelector = mkSelector "sampleDistributedShadowMaps"
 
 -- | @Selector@ for @setSampleDistributedShadowMaps:@
-setSampleDistributedShadowMapsSelector :: Selector
+setSampleDistributedShadowMapsSelector :: Selector '[Bool] ()
 setSampleDistributedShadowMapsSelector = mkSelector "setSampleDistributedShadowMaps:"
 
 -- | @Selector@ for @shadowCascadeCount@
-shadowCascadeCountSelector :: Selector
+shadowCascadeCountSelector :: Selector '[] CULong
 shadowCascadeCountSelector = mkSelector "shadowCascadeCount"
 
 -- | @Selector@ for @setShadowCascadeCount:@
-setShadowCascadeCountSelector :: Selector
+setShadowCascadeCountSelector :: Selector '[CULong] ()
 setShadowCascadeCountSelector = mkSelector "setShadowCascadeCount:"
 
 -- | @Selector@ for @shadowCascadeSplittingFactor@
-shadowCascadeSplittingFactorSelector :: Selector
+shadowCascadeSplittingFactorSelector :: Selector '[] CDouble
 shadowCascadeSplittingFactorSelector = mkSelector "shadowCascadeSplittingFactor"
 
 -- | @Selector@ for @setShadowCascadeSplittingFactor:@
-setShadowCascadeSplittingFactorSelector :: Selector
+setShadowCascadeSplittingFactorSelector :: Selector '[CDouble] ()
 setShadowCascadeSplittingFactorSelector = mkSelector "setShadowCascadeSplittingFactor:"
 
 -- | @Selector@ for @orthographicScale@
-orthographicScaleSelector :: Selector
+orthographicScaleSelector :: Selector '[] CDouble
 orthographicScaleSelector = mkSelector "orthographicScale"
 
 -- | @Selector@ for @setOrthographicScale:@
-setOrthographicScaleSelector :: Selector
+setOrthographicScaleSelector :: Selector '[CDouble] ()
 setOrthographicScaleSelector = mkSelector "setOrthographicScale:"
 
 -- | @Selector@ for @zNear@
-zNearSelector :: Selector
+zNearSelector :: Selector '[] CDouble
 zNearSelector = mkSelector "zNear"
 
 -- | @Selector@ for @setZNear:@
-setZNearSelector :: Selector
+setZNearSelector :: Selector '[CDouble] ()
 setZNearSelector = mkSelector "setZNear:"
 
 -- | @Selector@ for @zFar@
-zFarSelector :: Selector
+zFarSelector :: Selector '[] CDouble
 zFarSelector = mkSelector "zFar"
 
 -- | @Selector@ for @setZFar:@
-setZFarSelector :: Selector
+setZFarSelector :: Selector '[CDouble] ()
 setZFarSelector = mkSelector "setZFar:"
 
 -- | @Selector@ for @attenuationStartDistance@
-attenuationStartDistanceSelector :: Selector
+attenuationStartDistanceSelector :: Selector '[] CDouble
 attenuationStartDistanceSelector = mkSelector "attenuationStartDistance"
 
 -- | @Selector@ for @setAttenuationStartDistance:@
-setAttenuationStartDistanceSelector :: Selector
+setAttenuationStartDistanceSelector :: Selector '[CDouble] ()
 setAttenuationStartDistanceSelector = mkSelector "setAttenuationStartDistance:"
 
 -- | @Selector@ for @attenuationEndDistance@
-attenuationEndDistanceSelector :: Selector
+attenuationEndDistanceSelector :: Selector '[] CDouble
 attenuationEndDistanceSelector = mkSelector "attenuationEndDistance"
 
 -- | @Selector@ for @setAttenuationEndDistance:@
-setAttenuationEndDistanceSelector :: Selector
+setAttenuationEndDistanceSelector :: Selector '[CDouble] ()
 setAttenuationEndDistanceSelector = mkSelector "setAttenuationEndDistance:"
 
 -- | @Selector@ for @attenuationFalloffExponent@
-attenuationFalloffExponentSelector :: Selector
+attenuationFalloffExponentSelector :: Selector '[] CDouble
 attenuationFalloffExponentSelector = mkSelector "attenuationFalloffExponent"
 
 -- | @Selector@ for @setAttenuationFalloffExponent:@
-setAttenuationFalloffExponentSelector :: Selector
+setAttenuationFalloffExponentSelector :: Selector '[CDouble] ()
 setAttenuationFalloffExponentSelector = mkSelector "setAttenuationFalloffExponent:"
 
 -- | @Selector@ for @spotInnerAngle@
-spotInnerAngleSelector :: Selector
+spotInnerAngleSelector :: Selector '[] CDouble
 spotInnerAngleSelector = mkSelector "spotInnerAngle"
 
 -- | @Selector@ for @setSpotInnerAngle:@
-setSpotInnerAngleSelector :: Selector
+setSpotInnerAngleSelector :: Selector '[CDouble] ()
 setSpotInnerAngleSelector = mkSelector "setSpotInnerAngle:"
 
 -- | @Selector@ for @spotOuterAngle@
-spotOuterAngleSelector :: Selector
+spotOuterAngleSelector :: Selector '[] CDouble
 spotOuterAngleSelector = mkSelector "spotOuterAngle"
 
 -- | @Selector@ for @setSpotOuterAngle:@
-setSpotOuterAngleSelector :: Selector
+setSpotOuterAngleSelector :: Selector '[CDouble] ()
 setSpotOuterAngleSelector = mkSelector "setSpotOuterAngle:"
 
 -- | @Selector@ for @IESProfileURL@
-iesProfileURLSelector :: Selector
+iesProfileURLSelector :: Selector '[] (Id NSURL)
 iesProfileURLSelector = mkSelector "IESProfileURL"
 
 -- | @Selector@ for @setIESProfileURL:@
-setIESProfileURLSelector :: Selector
+setIESProfileURLSelector :: Selector '[Id NSURL] ()
 setIESProfileURLSelector = mkSelector "setIESProfileURL:"
 
 -- | @Selector@ for @sphericalHarmonicsCoefficients@
-sphericalHarmonicsCoefficientsSelector :: Selector
+sphericalHarmonicsCoefficientsSelector :: Selector '[] (Id NSData)
 sphericalHarmonicsCoefficientsSelector = mkSelector "sphericalHarmonicsCoefficients"
 
 -- | @Selector@ for @probeType@
-probeTypeSelector :: Selector
+probeTypeSelector :: Selector '[] SCNLightProbeType
 probeTypeSelector = mkSelector "probeType"
 
 -- | @Selector@ for @setProbeType:@
-setProbeTypeSelector :: Selector
+setProbeTypeSelector :: Selector '[SCNLightProbeType] ()
 setProbeTypeSelector = mkSelector "setProbeType:"
 
 -- | @Selector@ for @probeUpdateType@
-probeUpdateTypeSelector :: Selector
+probeUpdateTypeSelector :: Selector '[] SCNLightProbeUpdateType
 probeUpdateTypeSelector = mkSelector "probeUpdateType"
 
 -- | @Selector@ for @setProbeUpdateType:@
-setProbeUpdateTypeSelector :: Selector
+setProbeUpdateTypeSelector :: Selector '[SCNLightProbeUpdateType] ()
 setProbeUpdateTypeSelector = mkSelector "setProbeUpdateType:"
 
 -- | @Selector@ for @parallaxCorrectionEnabled@
-parallaxCorrectionEnabledSelector :: Selector
+parallaxCorrectionEnabledSelector :: Selector '[] Bool
 parallaxCorrectionEnabledSelector = mkSelector "parallaxCorrectionEnabled"
 
 -- | @Selector@ for @setParallaxCorrectionEnabled:@
-setParallaxCorrectionEnabledSelector :: Selector
+setParallaxCorrectionEnabledSelector :: Selector '[Bool] ()
 setParallaxCorrectionEnabledSelector = mkSelector "setParallaxCorrectionEnabled:"
 
 -- | @Selector@ for @probeEnvironment@
-probeEnvironmentSelector :: Selector
+probeEnvironmentSelector :: Selector '[] (Id SCNMaterialProperty)
 probeEnvironmentSelector = mkSelector "probeEnvironment"
 
 -- | @Selector@ for @areaType@
-areaTypeSelector :: Selector
+areaTypeSelector :: Selector '[] SCNLightAreaType
 areaTypeSelector = mkSelector "areaType"
 
 -- | @Selector@ for @setAreaType:@
-setAreaTypeSelector :: Selector
+setAreaTypeSelector :: Selector '[SCNLightAreaType] ()
 setAreaTypeSelector = mkSelector "setAreaType:"
 
 -- | @Selector@ for @areaPolygonVertices@
-areaPolygonVerticesSelector :: Selector
+areaPolygonVerticesSelector :: Selector '[] (Id NSArray)
 areaPolygonVerticesSelector = mkSelector "areaPolygonVertices"
 
 -- | @Selector@ for @setAreaPolygonVertices:@
-setAreaPolygonVerticesSelector :: Selector
+setAreaPolygonVerticesSelector :: Selector '[Id NSArray] ()
 setAreaPolygonVerticesSelector = mkSelector "setAreaPolygonVertices:"
 
 -- | @Selector@ for @drawsArea@
-drawsAreaSelector :: Selector
+drawsAreaSelector :: Selector '[] Bool
 drawsAreaSelector = mkSelector "drawsArea"
 
 -- | @Selector@ for @setDrawsArea:@
-setDrawsAreaSelector :: Selector
+setDrawsAreaSelector :: Selector '[Bool] ()
 setDrawsAreaSelector = mkSelector "setDrawsArea:"
 
 -- | @Selector@ for @doubleSided@
-doubleSidedSelector :: Selector
+doubleSidedSelector :: Selector '[] Bool
 doubleSidedSelector = mkSelector "doubleSided"
 
 -- | @Selector@ for @setDoubleSided:@
-setDoubleSidedSelector :: Selector
+setDoubleSidedSelector :: Selector '[Bool] ()
 setDoubleSidedSelector = mkSelector "setDoubleSided:"
 
 -- | @Selector@ for @gobo@
-goboSelector :: Selector
+goboSelector :: Selector '[] (Id SCNMaterialProperty)
 goboSelector = mkSelector "gobo"
 
 -- | @Selector@ for @categoryBitMask@
-categoryBitMaskSelector :: Selector
+categoryBitMaskSelector :: Selector '[] CULong
 categoryBitMaskSelector = mkSelector "categoryBitMask"
 
 -- | @Selector@ for @setCategoryBitMask:@
-setCategoryBitMaskSelector :: Selector
+setCategoryBitMaskSelector :: Selector '[CULong] ()
 setCategoryBitMaskSelector = mkSelector "setCategoryBitMask:"
 

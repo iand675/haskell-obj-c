@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.MetricKit.MXLocationActivityMetric
   , cumulativeHundredMetersAccuracyTime
   , cumulativeKilometerAccuracyTime
   , cumulativeThreeKilometersAccuracyTime
-  , cumulativeBestAccuracyTimeSelector
   , cumulativeBestAccuracyForNavigationTimeSelector
-  , cumulativeNearestTenMetersAccuracyTimeSelector
+  , cumulativeBestAccuracyTimeSelector
   , cumulativeHundredMetersAccuracyTimeSelector
   , cumulativeKilometerAccuracyTimeSelector
+  , cumulativeNearestTenMetersAccuracyTimeSelector
   , cumulativeThreeKilometersAccuracyTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- cumulativeBestAccuracyTime@
 cumulativeBestAccuracyTime :: IsMXLocationActivityMetric mxLocationActivityMetric => mxLocationActivityMetric -> IO (Id NSMeasurement)
-cumulativeBestAccuracyTime mxLocationActivityMetric  =
-    sendMsg mxLocationActivityMetric (mkSelector "cumulativeBestAccuracyTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeBestAccuracyTime mxLocationActivityMetric =
+  sendMessage mxLocationActivityMetric cumulativeBestAccuracyTimeSelector
 
 -- | cumulativeBestAccuracyForNavigationTime
 --
@@ -62,8 +59,8 @@ cumulativeBestAccuracyTime mxLocationActivityMetric  =
 --
 -- ObjC selector: @- cumulativeBestAccuracyForNavigationTime@
 cumulativeBestAccuracyForNavigationTime :: IsMXLocationActivityMetric mxLocationActivityMetric => mxLocationActivityMetric -> IO (Id NSMeasurement)
-cumulativeBestAccuracyForNavigationTime mxLocationActivityMetric  =
-    sendMsg mxLocationActivityMetric (mkSelector "cumulativeBestAccuracyForNavigationTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeBestAccuracyForNavigationTime mxLocationActivityMetric =
+  sendMessage mxLocationActivityMetric cumulativeBestAccuracyForNavigationTimeSelector
 
 -- | cumulativeNearestTenMetersAccuracyTime
 --
@@ -73,8 +70,8 @@ cumulativeBestAccuracyForNavigationTime mxLocationActivityMetric  =
 --
 -- ObjC selector: @- cumulativeNearestTenMetersAccuracyTime@
 cumulativeNearestTenMetersAccuracyTime :: IsMXLocationActivityMetric mxLocationActivityMetric => mxLocationActivityMetric -> IO (Id NSMeasurement)
-cumulativeNearestTenMetersAccuracyTime mxLocationActivityMetric  =
-    sendMsg mxLocationActivityMetric (mkSelector "cumulativeNearestTenMetersAccuracyTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeNearestTenMetersAccuracyTime mxLocationActivityMetric =
+  sendMessage mxLocationActivityMetric cumulativeNearestTenMetersAccuracyTimeSelector
 
 -- | cumulativeHundredMetersAccuracyTime
 --
@@ -84,8 +81,8 @@ cumulativeNearestTenMetersAccuracyTime mxLocationActivityMetric  =
 --
 -- ObjC selector: @- cumulativeHundredMetersAccuracyTime@
 cumulativeHundredMetersAccuracyTime :: IsMXLocationActivityMetric mxLocationActivityMetric => mxLocationActivityMetric -> IO (Id NSMeasurement)
-cumulativeHundredMetersAccuracyTime mxLocationActivityMetric  =
-    sendMsg mxLocationActivityMetric (mkSelector "cumulativeHundredMetersAccuracyTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeHundredMetersAccuracyTime mxLocationActivityMetric =
+  sendMessage mxLocationActivityMetric cumulativeHundredMetersAccuracyTimeSelector
 
 -- | cumulativeKilometerAccuracyTime
 --
@@ -95,8 +92,8 @@ cumulativeHundredMetersAccuracyTime mxLocationActivityMetric  =
 --
 -- ObjC selector: @- cumulativeKilometerAccuracyTime@
 cumulativeKilometerAccuracyTime :: IsMXLocationActivityMetric mxLocationActivityMetric => mxLocationActivityMetric -> IO (Id NSMeasurement)
-cumulativeKilometerAccuracyTime mxLocationActivityMetric  =
-    sendMsg mxLocationActivityMetric (mkSelector "cumulativeKilometerAccuracyTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeKilometerAccuracyTime mxLocationActivityMetric =
+  sendMessage mxLocationActivityMetric cumulativeKilometerAccuracyTimeSelector
 
 -- | cumulativeThreeKilometersAccuracyTime
 --
@@ -106,34 +103,34 @@ cumulativeKilometerAccuracyTime mxLocationActivityMetric  =
 --
 -- ObjC selector: @- cumulativeThreeKilometersAccuracyTime@
 cumulativeThreeKilometersAccuracyTime :: IsMXLocationActivityMetric mxLocationActivityMetric => mxLocationActivityMetric -> IO (Id NSMeasurement)
-cumulativeThreeKilometersAccuracyTime mxLocationActivityMetric  =
-    sendMsg mxLocationActivityMetric (mkSelector "cumulativeThreeKilometersAccuracyTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+cumulativeThreeKilometersAccuracyTime mxLocationActivityMetric =
+  sendMessage mxLocationActivityMetric cumulativeThreeKilometersAccuracyTimeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @cumulativeBestAccuracyTime@
-cumulativeBestAccuracyTimeSelector :: Selector
+cumulativeBestAccuracyTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeBestAccuracyTimeSelector = mkSelector "cumulativeBestAccuracyTime"
 
 -- | @Selector@ for @cumulativeBestAccuracyForNavigationTime@
-cumulativeBestAccuracyForNavigationTimeSelector :: Selector
+cumulativeBestAccuracyForNavigationTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeBestAccuracyForNavigationTimeSelector = mkSelector "cumulativeBestAccuracyForNavigationTime"
 
 -- | @Selector@ for @cumulativeNearestTenMetersAccuracyTime@
-cumulativeNearestTenMetersAccuracyTimeSelector :: Selector
+cumulativeNearestTenMetersAccuracyTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeNearestTenMetersAccuracyTimeSelector = mkSelector "cumulativeNearestTenMetersAccuracyTime"
 
 -- | @Selector@ for @cumulativeHundredMetersAccuracyTime@
-cumulativeHundredMetersAccuracyTimeSelector :: Selector
+cumulativeHundredMetersAccuracyTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeHundredMetersAccuracyTimeSelector = mkSelector "cumulativeHundredMetersAccuracyTime"
 
 -- | @Selector@ for @cumulativeKilometerAccuracyTime@
-cumulativeKilometerAccuracyTimeSelector :: Selector
+cumulativeKilometerAccuracyTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeKilometerAccuracyTimeSelector = mkSelector "cumulativeKilometerAccuracyTime"
 
 -- | @Selector@ for @cumulativeThreeKilometersAccuracyTime@
-cumulativeThreeKilometersAccuracyTimeSelector :: Selector
+cumulativeThreeKilometersAccuracyTimeSelector :: Selector '[] (Id NSMeasurement)
 cumulativeThreeKilometersAccuracyTimeSelector = mkSelector "cumulativeThreeKilometersAccuracyTime"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.CoreData.NSFetchedResultsController
   , fetchedObjects
   , sectionIndexTitles
   , sections
-  , initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheNameSelector
-  , performFetchSelector
-  , deleteCacheWithNameSelector
-  , sectionIndexTitleForSectionNameSelector
-  , sectionForSectionIndexTitle_atIndexSelector
-  , fetchRequestSelector
-  , managedObjectContextSelector
-  , sectionNameKeyPathSelector
   , cacheNameSelector
   , delegateSelector
-  , setDelegateSelector
+  , deleteCacheWithNameSelector
+  , fetchRequestSelector
   , fetchedObjectsSelector
+  , initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheNameSelector
+  , managedObjectContextSelector
+  , performFetchSelector
+  , sectionForSectionIndexTitle_atIndexSelector
+  , sectionIndexTitleForSectionNameSelector
   , sectionIndexTitlesSelector
+  , sectionNameKeyPathSelector
   , sectionsSelector
+  , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,141 +52,133 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithFetchRequest:managedObjectContext:sectionNameKeyPath:cacheName:@
 initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheName :: (IsNSFetchedResultsController nsFetchedResultsController, IsNSFetchRequest fetchRequest, IsNSManagedObjectContext context, IsNSString sectionNameKeyPath, IsNSString name) => nsFetchedResultsController -> fetchRequest -> context -> sectionNameKeyPath -> name -> IO (Id NSFetchedResultsController)
-initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheName nsFetchedResultsController  fetchRequest context sectionNameKeyPath name =
-  withObjCPtr fetchRequest $ \raw_fetchRequest ->
-    withObjCPtr context $ \raw_context ->
-      withObjCPtr sectionNameKeyPath $ \raw_sectionNameKeyPath ->
-        withObjCPtr name $ \raw_name ->
-            sendMsg nsFetchedResultsController (mkSelector "initWithFetchRequest:managedObjectContext:sectionNameKeyPath:cacheName:") (retPtr retVoid) [argPtr (castPtr raw_fetchRequest :: Ptr ()), argPtr (castPtr raw_context :: Ptr ()), argPtr (castPtr raw_sectionNameKeyPath :: Ptr ()), argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheName nsFetchedResultsController fetchRequest context sectionNameKeyPath name =
+  sendOwnedMessage nsFetchedResultsController initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheNameSelector (toNSFetchRequest fetchRequest) (toNSManagedObjectContext context) (toNSString sectionNameKeyPath) (toNSString name)
 
 -- | @- performFetch:@
 performFetch :: (IsNSFetchedResultsController nsFetchedResultsController, IsNSError error_) => nsFetchedResultsController -> error_ -> IO Bool
-performFetch nsFetchedResultsController  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFetchedResultsController (mkSelector "performFetch:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+performFetch nsFetchedResultsController error_ =
+  sendMessage nsFetchedResultsController performFetchSelector (toNSError error_)
 
 -- | @+ deleteCacheWithName:@
 deleteCacheWithName :: IsNSString name => name -> IO ()
 deleteCacheWithName name =
   do
     cls' <- getRequiredClass "NSFetchedResultsController"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "deleteCacheWithName:") retVoid [argPtr (castPtr raw_name :: Ptr ())]
+    sendClassMessage cls' deleteCacheWithNameSelector (toNSString name)
 
 -- | @- sectionIndexTitleForSectionName:@
 sectionIndexTitleForSectionName :: (IsNSFetchedResultsController nsFetchedResultsController, IsNSString sectionName) => nsFetchedResultsController -> sectionName -> IO (Id NSString)
-sectionIndexTitleForSectionName nsFetchedResultsController  sectionName =
-  withObjCPtr sectionName $ \raw_sectionName ->
-      sendMsg nsFetchedResultsController (mkSelector "sectionIndexTitleForSectionName:") (retPtr retVoid) [argPtr (castPtr raw_sectionName :: Ptr ())] >>= retainedObject . castPtr
+sectionIndexTitleForSectionName nsFetchedResultsController sectionName =
+  sendMessage nsFetchedResultsController sectionIndexTitleForSectionNameSelector (toNSString sectionName)
 
 -- | @- sectionForSectionIndexTitle:atIndex:@
 sectionForSectionIndexTitle_atIndex :: (IsNSFetchedResultsController nsFetchedResultsController, IsNSString title) => nsFetchedResultsController -> title -> CLong -> IO CLong
-sectionForSectionIndexTitle_atIndex nsFetchedResultsController  title sectionIndex =
-  withObjCPtr title $ \raw_title ->
-      sendMsg nsFetchedResultsController (mkSelector "sectionForSectionIndexTitle:atIndex:") retCLong [argPtr (castPtr raw_title :: Ptr ()), argCLong sectionIndex]
+sectionForSectionIndexTitle_atIndex nsFetchedResultsController title sectionIndex =
+  sendMessage nsFetchedResultsController sectionForSectionIndexTitle_atIndexSelector (toNSString title) sectionIndex
 
 -- | @- fetchRequest@
 fetchRequest :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSFetchRequest)
-fetchRequest nsFetchedResultsController  =
-    sendMsg nsFetchedResultsController (mkSelector "fetchRequest") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchRequest nsFetchedResultsController =
+  sendMessage nsFetchedResultsController fetchRequestSelector
 
 -- | @- managedObjectContext@
 managedObjectContext :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSManagedObjectContext)
-managedObjectContext nsFetchedResultsController  =
-    sendMsg nsFetchedResultsController (mkSelector "managedObjectContext") (retPtr retVoid) [] >>= retainedObject . castPtr
+managedObjectContext nsFetchedResultsController =
+  sendMessage nsFetchedResultsController managedObjectContextSelector
 
 -- | @- sectionNameKeyPath@
 sectionNameKeyPath :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSString)
-sectionNameKeyPath nsFetchedResultsController  =
-    sendMsg nsFetchedResultsController (mkSelector "sectionNameKeyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+sectionNameKeyPath nsFetchedResultsController =
+  sendMessage nsFetchedResultsController sectionNameKeyPathSelector
 
 -- | @- cacheName@
 cacheName :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSString)
-cacheName nsFetchedResultsController  =
-    sendMsg nsFetchedResultsController (mkSelector "cacheName") (retPtr retVoid) [] >>= retainedObject . castPtr
+cacheName nsFetchedResultsController =
+  sendMessage nsFetchedResultsController cacheNameSelector
 
 -- | @- delegate@
 delegate :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO RawId
-delegate nsFetchedResultsController  =
-    fmap (RawId . castPtr) $ sendMsg nsFetchedResultsController (mkSelector "delegate") (retPtr retVoid) []
+delegate nsFetchedResultsController =
+  sendMessage nsFetchedResultsController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> RawId -> IO ()
-setDelegate nsFetchedResultsController  value =
-    sendMsg nsFetchedResultsController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsFetchedResultsController value =
+  sendMessage nsFetchedResultsController setDelegateSelector value
 
 -- | @- fetchedObjects@
 fetchedObjects :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSArray)
-fetchedObjects nsFetchedResultsController  =
-    sendMsg nsFetchedResultsController (mkSelector "fetchedObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+fetchedObjects nsFetchedResultsController =
+  sendMessage nsFetchedResultsController fetchedObjectsSelector
 
 -- | @- sectionIndexTitles@
 sectionIndexTitles :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSArray)
-sectionIndexTitles nsFetchedResultsController  =
-    sendMsg nsFetchedResultsController (mkSelector "sectionIndexTitles") (retPtr retVoid) [] >>= retainedObject . castPtr
+sectionIndexTitles nsFetchedResultsController =
+  sendMessage nsFetchedResultsController sectionIndexTitlesSelector
 
 -- | @- sections@
 sections :: IsNSFetchedResultsController nsFetchedResultsController => nsFetchedResultsController -> IO (Id NSArray)
-sections nsFetchedResultsController  =
-    sendMsg nsFetchedResultsController (mkSelector "sections") (retPtr retVoid) [] >>= retainedObject . castPtr
+sections nsFetchedResultsController =
+  sendMessage nsFetchedResultsController sectionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFetchRequest:managedObjectContext:sectionNameKeyPath:cacheName:@
-initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheNameSelector :: Selector
+initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheNameSelector :: Selector '[Id NSFetchRequest, Id NSManagedObjectContext, Id NSString, Id NSString] (Id NSFetchedResultsController)
 initWithFetchRequest_managedObjectContext_sectionNameKeyPath_cacheNameSelector = mkSelector "initWithFetchRequest:managedObjectContext:sectionNameKeyPath:cacheName:"
 
 -- | @Selector@ for @performFetch:@
-performFetchSelector :: Selector
+performFetchSelector :: Selector '[Id NSError] Bool
 performFetchSelector = mkSelector "performFetch:"
 
 -- | @Selector@ for @deleteCacheWithName:@
-deleteCacheWithNameSelector :: Selector
+deleteCacheWithNameSelector :: Selector '[Id NSString] ()
 deleteCacheWithNameSelector = mkSelector "deleteCacheWithName:"
 
 -- | @Selector@ for @sectionIndexTitleForSectionName:@
-sectionIndexTitleForSectionNameSelector :: Selector
+sectionIndexTitleForSectionNameSelector :: Selector '[Id NSString] (Id NSString)
 sectionIndexTitleForSectionNameSelector = mkSelector "sectionIndexTitleForSectionName:"
 
 -- | @Selector@ for @sectionForSectionIndexTitle:atIndex:@
-sectionForSectionIndexTitle_atIndexSelector :: Selector
+sectionForSectionIndexTitle_atIndexSelector :: Selector '[Id NSString, CLong] CLong
 sectionForSectionIndexTitle_atIndexSelector = mkSelector "sectionForSectionIndexTitle:atIndex:"
 
 -- | @Selector@ for @fetchRequest@
-fetchRequestSelector :: Selector
+fetchRequestSelector :: Selector '[] (Id NSFetchRequest)
 fetchRequestSelector = mkSelector "fetchRequest"
 
 -- | @Selector@ for @managedObjectContext@
-managedObjectContextSelector :: Selector
+managedObjectContextSelector :: Selector '[] (Id NSManagedObjectContext)
 managedObjectContextSelector = mkSelector "managedObjectContext"
 
 -- | @Selector@ for @sectionNameKeyPath@
-sectionNameKeyPathSelector :: Selector
+sectionNameKeyPathSelector :: Selector '[] (Id NSString)
 sectionNameKeyPathSelector = mkSelector "sectionNameKeyPath"
 
 -- | @Selector@ for @cacheName@
-cacheNameSelector :: Selector
+cacheNameSelector :: Selector '[] (Id NSString)
 cacheNameSelector = mkSelector "cacheName"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @fetchedObjects@
-fetchedObjectsSelector :: Selector
+fetchedObjectsSelector :: Selector '[] (Id NSArray)
 fetchedObjectsSelector = mkSelector "fetchedObjects"
 
 -- | @Selector@ for @sectionIndexTitles@
-sectionIndexTitlesSelector :: Selector
+sectionIndexTitlesSelector :: Selector '[] (Id NSArray)
 sectionIndexTitlesSelector = mkSelector "sectionIndexTitles"
 
 -- | @Selector@ for @sections@
-sectionsSelector :: Selector
+sectionsSelector :: Selector '[] (Id NSArray)
 sectionsSelector = mkSelector "sections"
 

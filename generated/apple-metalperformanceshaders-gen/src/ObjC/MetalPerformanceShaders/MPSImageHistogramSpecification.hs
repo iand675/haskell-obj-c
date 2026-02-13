@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.MetalPerformanceShaders.MPSImageHistogramSpecification
   , initWithDevice_histogramInfo
   , initWithCoder_device
   , encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffset
-  , initWithDevice_histogramInfoSelector
-  , initWithCoder_deviceSelector
   , encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffsetSelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_histogramInfoSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:histogramInfo:@
 initWithDevice_histogramInfo :: IsMPSImageHistogramSpecification mpsImageHistogramSpecification => mpsImageHistogramSpecification -> RawId -> Const RawId -> IO (Id MPSImageHistogramSpecification)
-initWithDevice_histogramInfo mpsImageHistogramSpecification  device histogramInfo =
-    sendMsg mpsImageHistogramSpecification (mkSelector "initWithDevice:histogramInfo:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId (unConst histogramInfo)) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_histogramInfo mpsImageHistogramSpecification device histogramInfo =
+  sendOwnedMessage mpsImageHistogramSpecification initWithDevice_histogramInfoSelector device histogramInfo
 
 -- | NSSecureCoding compatability
 --
@@ -70,9 +67,8 @@ initWithDevice_histogramInfo mpsImageHistogramSpecification  device histogramInf
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageHistogramSpecification mpsImageHistogramSpecification, IsNSCoder aDecoder) => mpsImageHistogramSpecification -> aDecoder -> RawId -> IO (Id MPSImageHistogramSpecification)
-initWithCoder_device mpsImageHistogramSpecification  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageHistogramSpecification (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageHistogramSpecification aDecoder device =
+  sendOwnedMessage mpsImageHistogramSpecification initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Encode the transform function to a command buffer using a MTLComputeCommandEncoder.            The transform function computes the specification lookup table.
 --
@@ -92,22 +88,22 @@ initWithCoder_device mpsImageHistogramSpecification  aDecoder device =
 --
 -- ObjC selector: @- encodeTransformToCommandBuffer:sourceTexture:sourceHistogram:sourceHistogramOffset:desiredHistogram:desiredHistogramOffset:@
 encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffset :: IsMPSImageHistogramSpecification mpsImageHistogramSpecification => mpsImageHistogramSpecification -> RawId -> RawId -> RawId -> CULong -> RawId -> CULong -> IO ()
-encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffset mpsImageHistogramSpecification  commandBuffer source sourceHistogram sourceHistogramOffset desiredHistogram desiredHistogramOffset =
-    sendMsg mpsImageHistogramSpecification (mkSelector "encodeTransformToCommandBuffer:sourceTexture:sourceHistogram:sourceHistogramOffset:desiredHistogram:desiredHistogramOffset:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId source) :: Ptr ()), argPtr (castPtr (unRawId sourceHistogram) :: Ptr ()), argCULong sourceHistogramOffset, argPtr (castPtr (unRawId desiredHistogram) :: Ptr ()), argCULong desiredHistogramOffset]
+encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffset mpsImageHistogramSpecification commandBuffer source sourceHistogram sourceHistogramOffset desiredHistogram desiredHistogramOffset =
+  sendMessage mpsImageHistogramSpecification encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffsetSelector commandBuffer source sourceHistogram sourceHistogramOffset desiredHistogram desiredHistogramOffset
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:histogramInfo:@
-initWithDevice_histogramInfoSelector :: Selector
+initWithDevice_histogramInfoSelector :: Selector '[RawId, Const RawId] (Id MPSImageHistogramSpecification)
 initWithDevice_histogramInfoSelector = mkSelector "initWithDevice:histogramInfo:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageHistogramSpecification)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeTransformToCommandBuffer:sourceTexture:sourceHistogram:sourceHistogramOffset:desiredHistogram:desiredHistogramOffset:@
-encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffsetSelector :: Selector
+encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffsetSelector :: Selector '[RawId, RawId, RawId, CULong, RawId, CULong] ()
 encodeTransformToCommandBuffer_sourceTexture_sourceHistogram_sourceHistogramOffset_desiredHistogram_desiredHistogramOffsetSelector = mkSelector "encodeTransformToCommandBuffer:sourceTexture:sourceHistogram:sourceHistogramOffset:desiredHistogram:desiredHistogramOffset:"
 

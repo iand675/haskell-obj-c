@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.BrowserEngineKit.BEDownloadMonitorLocation
   , new
   , url
   , bookmarkData
+  , bookmarkDataSelector
   , initSelector
   , newSelector
   , urlSelector
-  , bookmarkDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,43 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBEDownloadMonitorLocation beDownloadMonitorLocation => beDownloadMonitorLocation -> IO (Id BEDownloadMonitorLocation)
-init_ beDownloadMonitorLocation  =
-    sendMsg beDownloadMonitorLocation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ beDownloadMonitorLocation =
+  sendOwnedMessage beDownloadMonitorLocation initSelector
 
 -- | @+ new@
 new :: IO (Id BEDownloadMonitorLocation)
 new  =
   do
     cls' <- getRequiredClass "BEDownloadMonitorLocation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- url@
 url :: IsBEDownloadMonitorLocation beDownloadMonitorLocation => beDownloadMonitorLocation -> IO (Id NSURL)
-url beDownloadMonitorLocation  =
-    sendMsg beDownloadMonitorLocation (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url beDownloadMonitorLocation =
+  sendMessage beDownloadMonitorLocation urlSelector
 
 -- | @- bookmarkData@
 bookmarkData :: IsBEDownloadMonitorLocation beDownloadMonitorLocation => beDownloadMonitorLocation -> IO (Id NSData)
-bookmarkData beDownloadMonitorLocation  =
-    sendMsg beDownloadMonitorLocation (mkSelector "bookmarkData") (retPtr retVoid) [] >>= retainedObject . castPtr
+bookmarkData beDownloadMonitorLocation =
+  sendMessage beDownloadMonitorLocation bookmarkDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BEDownloadMonitorLocation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BEDownloadMonitorLocation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @bookmarkData@
-bookmarkDataSelector :: Selector
+bookmarkDataSelector :: Selector '[] (Id NSData)
 bookmarkDataSelector = mkSelector "bookmarkData"
 

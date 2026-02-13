@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.VideoToolbox.VTLowLatencySuperResolutionScalerConfiguration
   , destinationPixelBufferAttributes
   , scaleFactor
   , supported
-  , initWithFrameWidth_frameHeight_scaleFactorSelector
-  , initSelector
-  , newSelector
-  , supportedScaleFactorsForFrameWidth_frameHeightSelector
-  , frameWidthSelector
+  , destinationPixelBufferAttributesSelector
   , frameHeightSelector
   , frameSupportedPixelFormatsSelector
-  , sourcePixelBufferAttributesSelector
-  , destinationPixelBufferAttributesSelector
+  , frameWidthSelector
+  , initSelector
+  , initWithFrameWidth_frameHeight_scaleFactorSelector
+  , newSelector
   , scaleFactorSelector
+  , sourcePixelBufferAttributesSelector
+  , supportedScaleFactorsForFrameWidth_frameHeightSelector
   , supportedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,20 +56,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithFrameWidth:frameHeight:scaleFactor:@
 initWithFrameWidth_frameHeight_scaleFactor :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySuperResolutionScalerConfiguration => vtLowLatencySuperResolutionScalerConfiguration -> CLong -> CLong -> CFloat -> IO (Id VTLowLatencySuperResolutionScalerConfiguration)
-initWithFrameWidth_frameHeight_scaleFactor vtLowLatencySuperResolutionScalerConfiguration  frameWidth frameHeight scaleFactor =
-    sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "initWithFrameWidth:frameHeight:scaleFactor:") (retPtr retVoid) [argCLong frameWidth, argCLong frameHeight, argCFloat scaleFactor] >>= ownedObject . castPtr
+initWithFrameWidth_frameHeight_scaleFactor vtLowLatencySuperResolutionScalerConfiguration frameWidth frameHeight scaleFactor =
+  sendOwnedMessage vtLowLatencySuperResolutionScalerConfiguration initWithFrameWidth_frameHeight_scaleFactorSelector frameWidth frameHeight scaleFactor
 
 -- | @- init@
 init_ :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySuperResolutionScalerConfiguration => vtLowLatencySuperResolutionScalerConfiguration -> IO (Id VTLowLatencySuperResolutionScalerConfiguration)
-init_ vtLowLatencySuperResolutionScalerConfiguration  =
-    sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vtLowLatencySuperResolutionScalerConfiguration =
+  sendOwnedMessage vtLowLatencySuperResolutionScalerConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id VTLowLatencySuperResolutionScalerConfiguration)
 new  =
   do
     cls' <- getRequiredClass "VTLowLatencySuperResolutionScalerConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns an array of supported scale factors values, or an empty list if the processor doesn't support the dimensions.
 --
@@ -81,28 +78,28 @@ supportedScaleFactorsForFrameWidth_frameHeight :: CLong -> CLong -> IO (Id NSArr
 supportedScaleFactorsForFrameWidth_frameHeight frameWidth frameHeight =
   do
     cls' <- getRequiredClass "VTLowLatencySuperResolutionScalerConfiguration"
-    sendClassMsg cls' (mkSelector "supportedScaleFactorsForFrameWidth:frameHeight:") (retPtr retVoid) [argCLong frameWidth, argCLong frameHeight] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedScaleFactorsForFrameWidth_frameHeightSelector frameWidth frameHeight
 
 -- | Width of source frame in pixels.
 --
 -- ObjC selector: @- frameWidth@
 frameWidth :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySuperResolutionScalerConfiguration => vtLowLatencySuperResolutionScalerConfiguration -> IO CLong
-frameWidth vtLowLatencySuperResolutionScalerConfiguration  =
-    sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "frameWidth") retCLong []
+frameWidth vtLowLatencySuperResolutionScalerConfiguration =
+  sendMessage vtLowLatencySuperResolutionScalerConfiguration frameWidthSelector
 
 -- | Height of source frame in pixels.
 --
 -- ObjC selector: @- frameHeight@
 frameHeight :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySuperResolutionScalerConfiguration => vtLowLatencySuperResolutionScalerConfiguration -> IO CLong
-frameHeight vtLowLatencySuperResolutionScalerConfiguration  =
-    sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "frameHeight") retCLong []
+frameHeight vtLowLatencySuperResolutionScalerConfiguration =
+  sendMessage vtLowLatencySuperResolutionScalerConfiguration frameHeightSelector
 
 -- | Available supported pixel formats for source frames for current configuration.
 --
 -- ObjC selector: @- frameSupportedPixelFormats@
 frameSupportedPixelFormats :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySuperResolutionScalerConfiguration => vtLowLatencySuperResolutionScalerConfiguration -> IO (Id NSArray)
-frameSupportedPixelFormats vtLowLatencySuperResolutionScalerConfiguration  =
-    sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "frameSupportedPixelFormats") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameSupportedPixelFormats vtLowLatencySuperResolutionScalerConfiguration =
+  sendMessage vtLowLatencySuperResolutionScalerConfiguration frameSupportedPixelFormatsSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent source frames and reference frames.
 --
@@ -110,8 +107,8 @@ frameSupportedPixelFormats vtLowLatencySuperResolutionScalerConfiguration  =
 --
 -- ObjC selector: @- sourcePixelBufferAttributes@
 sourcePixelBufferAttributes :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySuperResolutionScalerConfiguration => vtLowLatencySuperResolutionScalerConfiguration -> IO (Id NSDictionary)
-sourcePixelBufferAttributes vtLowLatencySuperResolutionScalerConfiguration  =
-    sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "sourcePixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourcePixelBufferAttributes vtLowLatencySuperResolutionScalerConfiguration =
+  sendMessage vtLowLatencySuperResolutionScalerConfiguration sourcePixelBufferAttributesSelector
 
 -- | Pixel buffer attributes dictionary that describes requirements for pixel buffers which represent destination frames.
 --
@@ -119,15 +116,15 @@ sourcePixelBufferAttributes vtLowLatencySuperResolutionScalerConfiguration  =
 --
 -- ObjC selector: @- destinationPixelBufferAttributes@
 destinationPixelBufferAttributes :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySuperResolutionScalerConfiguration => vtLowLatencySuperResolutionScalerConfiguration -> IO (Id NSDictionary)
-destinationPixelBufferAttributes vtLowLatencySuperResolutionScalerConfiguration  =
-    sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "destinationPixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationPixelBufferAttributes vtLowLatencySuperResolutionScalerConfiguration =
+  sendMessage vtLowLatencySuperResolutionScalerConfiguration destinationPixelBufferAttributesSelector
 
 -- | Scale factor with which you initialized the configuration.
 --
 -- ObjC selector: @- scaleFactor@
 scaleFactor :: IsVTLowLatencySuperResolutionScalerConfiguration vtLowLatencySuperResolutionScalerConfiguration => vtLowLatencySuperResolutionScalerConfiguration -> IO CFloat
-scaleFactor vtLowLatencySuperResolutionScalerConfiguration  =
-    sendMsg vtLowLatencySuperResolutionScalerConfiguration (mkSelector "scaleFactor") retCFloat []
+scaleFactor vtLowLatencySuperResolutionScalerConfiguration =
+  sendMessage vtLowLatencySuperResolutionScalerConfiguration scaleFactorSelector
 
 -- | Reports whether the system supports this processor on the current configuration.
 --
@@ -136,53 +133,53 @@ supported :: IO Bool
 supported  =
   do
     cls' <- getRequiredClass "VTLowLatencySuperResolutionScalerConfiguration"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supported") retCULong []
+    sendClassMessage cls' supportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithFrameWidth:frameHeight:scaleFactor:@
-initWithFrameWidth_frameHeight_scaleFactorSelector :: Selector
+initWithFrameWidth_frameHeight_scaleFactorSelector :: Selector '[CLong, CLong, CFloat] (Id VTLowLatencySuperResolutionScalerConfiguration)
 initWithFrameWidth_frameHeight_scaleFactorSelector = mkSelector "initWithFrameWidth:frameHeight:scaleFactor:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VTLowLatencySuperResolutionScalerConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VTLowLatencySuperResolutionScalerConfiguration)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @supportedScaleFactorsForFrameWidth:frameHeight:@
-supportedScaleFactorsForFrameWidth_frameHeightSelector :: Selector
+supportedScaleFactorsForFrameWidth_frameHeightSelector :: Selector '[CLong, CLong] (Id NSArray)
 supportedScaleFactorsForFrameWidth_frameHeightSelector = mkSelector "supportedScaleFactorsForFrameWidth:frameHeight:"
 
 -- | @Selector@ for @frameWidth@
-frameWidthSelector :: Selector
+frameWidthSelector :: Selector '[] CLong
 frameWidthSelector = mkSelector "frameWidth"
 
 -- | @Selector@ for @frameHeight@
-frameHeightSelector :: Selector
+frameHeightSelector :: Selector '[] CLong
 frameHeightSelector = mkSelector "frameHeight"
 
 -- | @Selector@ for @frameSupportedPixelFormats@
-frameSupportedPixelFormatsSelector :: Selector
+frameSupportedPixelFormatsSelector :: Selector '[] (Id NSArray)
 frameSupportedPixelFormatsSelector = mkSelector "frameSupportedPixelFormats"
 
 -- | @Selector@ for @sourcePixelBufferAttributes@
-sourcePixelBufferAttributesSelector :: Selector
+sourcePixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 sourcePixelBufferAttributesSelector = mkSelector "sourcePixelBufferAttributes"
 
 -- | @Selector@ for @destinationPixelBufferAttributes@
-destinationPixelBufferAttributesSelector :: Selector
+destinationPixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 destinationPixelBufferAttributesSelector = mkSelector "destinationPixelBufferAttributes"
 
 -- | @Selector@ for @scaleFactor@
-scaleFactorSelector :: Selector
+scaleFactorSelector :: Selector '[] CFloat
 scaleFactorSelector = mkSelector "scaleFactor"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 

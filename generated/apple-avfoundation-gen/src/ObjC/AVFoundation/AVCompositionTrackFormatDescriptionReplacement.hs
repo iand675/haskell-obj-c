@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.AVFoundation.AVCompositionTrackFormatDescriptionReplacement
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- originalFormatDescription@
 originalFormatDescription :: IsAVCompositionTrackFormatDescriptionReplacement avCompositionTrackFormatDescriptionReplacement => avCompositionTrackFormatDescriptionReplacement -> IO RawId
-originalFormatDescription avCompositionTrackFormatDescriptionReplacement  =
-    fmap (RawId . castPtr) $ sendMsg avCompositionTrackFormatDescriptionReplacement (mkSelector "originalFormatDescription") (retPtr retVoid) []
+originalFormatDescription avCompositionTrackFormatDescriptionReplacement =
+  sendMessage avCompositionTrackFormatDescriptionReplacement originalFormatDescriptionSelector
 
 -- | replacementFormatDescription
 --
@@ -50,18 +47,18 @@ originalFormatDescription avCompositionTrackFormatDescriptionReplacement  =
 --
 -- ObjC selector: @- replacementFormatDescription@
 replacementFormatDescription :: IsAVCompositionTrackFormatDescriptionReplacement avCompositionTrackFormatDescriptionReplacement => avCompositionTrackFormatDescriptionReplacement -> IO RawId
-replacementFormatDescription avCompositionTrackFormatDescriptionReplacement  =
-    fmap (RawId . castPtr) $ sendMsg avCompositionTrackFormatDescriptionReplacement (mkSelector "replacementFormatDescription") (retPtr retVoid) []
+replacementFormatDescription avCompositionTrackFormatDescriptionReplacement =
+  sendMessage avCompositionTrackFormatDescriptionReplacement replacementFormatDescriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @originalFormatDescription@
-originalFormatDescriptionSelector :: Selector
+originalFormatDescriptionSelector :: Selector '[] RawId
 originalFormatDescriptionSelector = mkSelector "originalFormatDescription"
 
 -- | @Selector@ for @replacementFormatDescription@
-replacementFormatDescriptionSelector :: Selector
+replacementFormatDescriptionSelector :: Selector '[] RawId
 replacementFormatDescriptionSelector = mkSelector "replacementFormatDescription"
 

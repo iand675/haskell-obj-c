@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.GameKit.GKBasePlayer
   , IsGKBasePlayer(..)
   , playerID
   , displayName
-  , playerIDSelector
   , displayNameSelector
+  , playerIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,25 +28,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- playerID@
 playerID :: IsGKBasePlayer gkBasePlayer => gkBasePlayer -> IO (Id NSString)
-playerID gkBasePlayer  =
-    sendMsg gkBasePlayer (mkSelector "playerID") (retPtr retVoid) [] >>= retainedObject . castPtr
+playerID gkBasePlayer =
+  sendMessage gkBasePlayer playerIDSelector
 
 -- | This player's name representation as displayed in the Game Center in-game UI. Use this when you need to display the player's name. The display name may be very long, so be sure to use appropriate string truncation API when drawing.
 --
 -- ObjC selector: @- displayName@
 displayName :: IsGKBasePlayer gkBasePlayer => gkBasePlayer -> IO (Id NSString)
-displayName gkBasePlayer  =
-    sendMsg gkBasePlayer (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName gkBasePlayer =
+  sendMessage gkBasePlayer displayNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @playerID@
-playerIDSelector :: Selector
+playerIDSelector :: Selector '[] (Id NSString)
 playerIDSelector = mkSelector "playerID"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 

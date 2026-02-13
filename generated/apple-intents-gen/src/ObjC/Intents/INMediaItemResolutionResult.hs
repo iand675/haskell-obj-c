@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Intents.INMediaItemResolutionResult
   , successesWithResolvedMediaItems
   , disambiguationWithMediaItemsToDisambiguate
   , confirmationRequiredWithMediaItemToConfirm
+  , confirmationRequiredWithMediaItemToConfirmSelector
+  , disambiguationWithMediaItemsToDisambiguateSelector
   , successWithResolvedMediaItemSelector
   , successesWithResolvedMediaItemsSelector
-  , disambiguationWithMediaItemsToDisambiguateSelector
-  , confirmationRequiredWithMediaItemToConfirmSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,50 +35,46 @@ successWithResolvedMediaItem :: IsINMediaItem resolvedMediaItem => resolvedMedia
 successWithResolvedMediaItem resolvedMediaItem =
   do
     cls' <- getRequiredClass "INMediaItemResolutionResult"
-    withObjCPtr resolvedMediaItem $ \raw_resolvedMediaItem ->
-      sendClassMsg cls' (mkSelector "successWithResolvedMediaItem:") (retPtr retVoid) [argPtr (castPtr raw_resolvedMediaItem :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedMediaItemSelector (toINMediaItem resolvedMediaItem)
 
 -- | @+ successesWithResolvedMediaItems:@
 successesWithResolvedMediaItems :: IsNSArray resolvedMediaItems => resolvedMediaItems -> IO (Id NSArray)
 successesWithResolvedMediaItems resolvedMediaItems =
   do
     cls' <- getRequiredClass "INMediaItemResolutionResult"
-    withObjCPtr resolvedMediaItems $ \raw_resolvedMediaItems ->
-      sendClassMsg cls' (mkSelector "successesWithResolvedMediaItems:") (retPtr retVoid) [argPtr (castPtr raw_resolvedMediaItems :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successesWithResolvedMediaItemsSelector (toNSArray resolvedMediaItems)
 
 -- | @+ disambiguationWithMediaItemsToDisambiguate:@
 disambiguationWithMediaItemsToDisambiguate :: IsNSArray mediaItemsToDisambiguate => mediaItemsToDisambiguate -> IO (Id INMediaItemResolutionResult)
 disambiguationWithMediaItemsToDisambiguate mediaItemsToDisambiguate =
   do
     cls' <- getRequiredClass "INMediaItemResolutionResult"
-    withObjCPtr mediaItemsToDisambiguate $ \raw_mediaItemsToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithMediaItemsToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_mediaItemsToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithMediaItemsToDisambiguateSelector (toNSArray mediaItemsToDisambiguate)
 
 -- | @+ confirmationRequiredWithMediaItemToConfirm:@
 confirmationRequiredWithMediaItemToConfirm :: IsINMediaItem mediaItemToConfirm => mediaItemToConfirm -> IO (Id INMediaItemResolutionResult)
 confirmationRequiredWithMediaItemToConfirm mediaItemToConfirm =
   do
     cls' <- getRequiredClass "INMediaItemResolutionResult"
-    withObjCPtr mediaItemToConfirm $ \raw_mediaItemToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithMediaItemToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_mediaItemToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithMediaItemToConfirmSelector (toINMediaItem mediaItemToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedMediaItem:@
-successWithResolvedMediaItemSelector :: Selector
+successWithResolvedMediaItemSelector :: Selector '[Id INMediaItem] (Id INMediaItemResolutionResult)
 successWithResolvedMediaItemSelector = mkSelector "successWithResolvedMediaItem:"
 
 -- | @Selector@ for @successesWithResolvedMediaItems:@
-successesWithResolvedMediaItemsSelector :: Selector
+successesWithResolvedMediaItemsSelector :: Selector '[Id NSArray] (Id NSArray)
 successesWithResolvedMediaItemsSelector = mkSelector "successesWithResolvedMediaItems:"
 
 -- | @Selector@ for @disambiguationWithMediaItemsToDisambiguate:@
-disambiguationWithMediaItemsToDisambiguateSelector :: Selector
+disambiguationWithMediaItemsToDisambiguateSelector :: Selector '[Id NSArray] (Id INMediaItemResolutionResult)
 disambiguationWithMediaItemsToDisambiguateSelector = mkSelector "disambiguationWithMediaItemsToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithMediaItemToConfirm:@
-confirmationRequiredWithMediaItemToConfirmSelector :: Selector
+confirmationRequiredWithMediaItemToConfirmSelector :: Selector '[Id INMediaItem] (Id INMediaItemResolutionResult)
 confirmationRequiredWithMediaItemToConfirmSelector = mkSelector "confirmationRequiredWithMediaItemToConfirm:"
 

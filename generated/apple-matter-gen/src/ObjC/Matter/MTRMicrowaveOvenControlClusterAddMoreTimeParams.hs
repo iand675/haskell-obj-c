@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRMicrowaveOvenControlClusterAddMoreTimeParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , timeToAddSelector
-  , setTimeToAddSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimeToAddSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timeToAddSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- timeToAdd@
 timeToAdd :: IsMTRMicrowaveOvenControlClusterAddMoreTimeParams mtrMicrowaveOvenControlClusterAddMoreTimeParams => mtrMicrowaveOvenControlClusterAddMoreTimeParams -> IO (Id NSNumber)
-timeToAdd mtrMicrowaveOvenControlClusterAddMoreTimeParams  =
-    sendMsg mtrMicrowaveOvenControlClusterAddMoreTimeParams (mkSelector "timeToAdd") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeToAdd mtrMicrowaveOvenControlClusterAddMoreTimeParams =
+  sendMessage mtrMicrowaveOvenControlClusterAddMoreTimeParams timeToAddSelector
 
 -- | @- setTimeToAdd:@
 setTimeToAdd :: (IsMTRMicrowaveOvenControlClusterAddMoreTimeParams mtrMicrowaveOvenControlClusterAddMoreTimeParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterAddMoreTimeParams -> value -> IO ()
-setTimeToAdd mtrMicrowaveOvenControlClusterAddMoreTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterAddMoreTimeParams (mkSelector "setTimeToAdd:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeToAdd mtrMicrowaveOvenControlClusterAddMoreTimeParams value =
+  sendMessage mtrMicrowaveOvenControlClusterAddMoreTimeParams setTimeToAddSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setTimeToAdd mtrMicrowaveOvenControlClusterAddMoreTimeParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRMicrowaveOvenControlClusterAddMoreTimeParams mtrMicrowaveOvenControlClusterAddMoreTimeParams => mtrMicrowaveOvenControlClusterAddMoreTimeParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrMicrowaveOvenControlClusterAddMoreTimeParams  =
-    sendMsg mtrMicrowaveOvenControlClusterAddMoreTimeParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrMicrowaveOvenControlClusterAddMoreTimeParams =
+  sendMessage mtrMicrowaveOvenControlClusterAddMoreTimeParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrMicrowaveOvenControlClusterAddMoreTimeParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRMicrowaveOvenControlClusterAddMoreTimeParams mtrMicrowaveOvenControlClusterAddMoreTimeParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterAddMoreTimeParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrMicrowaveOvenControlClusterAddMoreTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterAddMoreTimeParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrMicrowaveOvenControlClusterAddMoreTimeParams value =
+  sendMessage mtrMicrowaveOvenControlClusterAddMoreTimeParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrMicrowaveOvenControlClusterAddMoreTimeParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRMicrowaveOvenControlClusterAddMoreTimeParams mtrMicrowaveOvenControlClusterAddMoreTimeParams => mtrMicrowaveOvenControlClusterAddMoreTimeParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrMicrowaveOvenControlClusterAddMoreTimeParams  =
-    sendMsg mtrMicrowaveOvenControlClusterAddMoreTimeParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrMicrowaveOvenControlClusterAddMoreTimeParams =
+  sendMessage mtrMicrowaveOvenControlClusterAddMoreTimeParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrMicrowaveOvenControlClusterAddMoreTimeParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRMicrowaveOvenControlClusterAddMoreTimeParams mtrMicrowaveOvenControlClusterAddMoreTimeParams, IsNSNumber value) => mtrMicrowaveOvenControlClusterAddMoreTimeParams -> value -> IO ()
-setServerSideProcessingTimeout mtrMicrowaveOvenControlClusterAddMoreTimeParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrMicrowaveOvenControlClusterAddMoreTimeParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrMicrowaveOvenControlClusterAddMoreTimeParams value =
+  sendMessage mtrMicrowaveOvenControlClusterAddMoreTimeParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timeToAdd@
-timeToAddSelector :: Selector
+timeToAddSelector :: Selector '[] (Id NSNumber)
 timeToAddSelector = mkSelector "timeToAdd"
 
 -- | @Selector@ for @setTimeToAdd:@
-setTimeToAddSelector :: Selector
+setTimeToAddSelector :: Selector '[Id NSNumber] ()
 setTimeToAddSelector = mkSelector "setTimeToAdd:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

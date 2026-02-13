@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.CoreLocation.CLBackgroundActivitySession
   , invalidate
   , backgroundActivitySession
   , backgroundActivitySessionWithQueue_handler
-  , initSelector
-  , newSelector
-  , invalidateSelector
   , backgroundActivitySessionSelector
   , backgroundActivitySessionWithQueue_handlerSelector
+  , initSelector
+  , invalidateSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,57 +34,56 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCLBackgroundActivitySession clBackgroundActivitySession => clBackgroundActivitySession -> IO (Id CLBackgroundActivitySession)
-init_ clBackgroundActivitySession  =
-    sendMsg clBackgroundActivitySession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ clBackgroundActivitySession =
+  sendOwnedMessage clBackgroundActivitySession initSelector
 
 -- | @+ new@
 new :: IO (Id CLBackgroundActivitySession)
 new  =
   do
     cls' <- getRequiredClass "CLBackgroundActivitySession"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- invalidate@
 invalidate :: IsCLBackgroundActivitySession clBackgroundActivitySession => clBackgroundActivitySession -> IO ()
-invalidate clBackgroundActivitySession  =
-    sendMsg clBackgroundActivitySession (mkSelector "invalidate") retVoid []
+invalidate clBackgroundActivitySession =
+  sendMessage clBackgroundActivitySession invalidateSelector
 
 -- | @+ backgroundActivitySession@
 backgroundActivitySession :: IO (Id CLBackgroundActivitySession)
 backgroundActivitySession  =
   do
     cls' <- getRequiredClass "CLBackgroundActivitySession"
-    sendClassMsg cls' (mkSelector "backgroundActivitySession") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' backgroundActivitySessionSelector
 
 -- | @+ backgroundActivitySessionWithQueue:handler:@
 backgroundActivitySessionWithQueue_handler :: IsNSObject queue => queue -> Ptr () -> IO (Id CLBackgroundActivitySession)
 backgroundActivitySessionWithQueue_handler queue handler =
   do
     cls' <- getRequiredClass "CLBackgroundActivitySession"
-    withObjCPtr queue $ \raw_queue ->
-      sendClassMsg cls' (mkSelector "backgroundActivitySessionWithQueue:handler:") (retPtr retVoid) [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr handler :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' backgroundActivitySessionWithQueue_handlerSelector (toNSObject queue) handler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CLBackgroundActivitySession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CLBackgroundActivitySession)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @backgroundActivitySession@
-backgroundActivitySessionSelector :: Selector
+backgroundActivitySessionSelector :: Selector '[] (Id CLBackgroundActivitySession)
 backgroundActivitySessionSelector = mkSelector "backgroundActivitySession"
 
 -- | @Selector@ for @backgroundActivitySessionWithQueue:handler:@
-backgroundActivitySessionWithQueue_handlerSelector :: Selector
+backgroundActivitySessionWithQueue_handlerSelector :: Selector '[Id NSObject, Ptr ()] (Id CLBackgroundActivitySession)
 backgroundActivitySessionWithQueue_handlerSelector = mkSelector "backgroundActivitySessionWithQueue:handler:"
 

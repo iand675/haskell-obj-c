@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,14 +18,14 @@ module ObjC.WebKit.WKNavigationAction
   , isContentRuleListRedirect
   , modifierFlags
   , buttonNumber
-  , sourceFrameSelector
-  , targetFrameSelector
+  , buttonNumberSelector
+  , isContentRuleListRedirectSelector
+  , modifierFlagsSelector
   , navigationTypeSelector
   , requestSelector
   , shouldPerformDownloadSelector
-  , isContentRuleListRedirectSelector
-  , modifierFlagsSelector
-  , buttonNumberSelector
+  , sourceFrameSelector
+  , targetFrameSelector
 
   -- * Enum types
   , NSEventModifierFlags(NSEventModifierFlags)
@@ -47,15 +48,11 @@ module ObjC.WebKit.WKNavigationAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,15 +65,15 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- sourceFrame@
 sourceFrame :: IsWKNavigationAction wkNavigationAction => wkNavigationAction -> IO (Id WKFrameInfo)
-sourceFrame wkNavigationAction  =
-    sendMsg wkNavigationAction (mkSelector "sourceFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceFrame wkNavigationAction =
+  sendMessage wkNavigationAction sourceFrameSelector
 
 -- | The target frame, or nil if this is a new window navigation.
 --
 -- ObjC selector: @- targetFrame@
 targetFrame :: IsWKNavigationAction wkNavigationAction => wkNavigationAction -> IO (Id WKFrameInfo)
-targetFrame wkNavigationAction  =
-    sendMsg wkNavigationAction (mkSelector "targetFrame") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetFrame wkNavigationAction =
+  sendMessage wkNavigationAction targetFrameSelector
 
 -- | The type of action that triggered the navigation.
 --
@@ -84,77 +81,77 @@ targetFrame wkNavigationAction  =
 --
 -- ObjC selector: @- navigationType@
 navigationType :: IsWKNavigationAction wkNavigationAction => wkNavigationAction -> IO WKNavigationType
-navigationType wkNavigationAction  =
-    fmap (coerce :: CLong -> WKNavigationType) $ sendMsg wkNavigationAction (mkSelector "navigationType") retCLong []
+navigationType wkNavigationAction =
+  sendMessage wkNavigationAction navigationTypeSelector
 
 -- | The navigation's request.
 --
 -- ObjC selector: @- request@
 request :: IsWKNavigationAction wkNavigationAction => wkNavigationAction -> IO (Id NSURLRequest)
-request wkNavigationAction  =
-    sendMsg wkNavigationAction (mkSelector "request") (retPtr retVoid) [] >>= retainedObject . castPtr
+request wkNavigationAction =
+  sendMessage wkNavigationAction requestSelector
 
 -- | A value indicating whether the web content used a download attribute to indicate that this should be downloaded.
 --
 -- ObjC selector: @- shouldPerformDownload@
 shouldPerformDownload :: IsWKNavigationAction wkNavigationAction => wkNavigationAction -> IO Bool
-shouldPerformDownload wkNavigationAction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkNavigationAction (mkSelector "shouldPerformDownload") retCULong []
+shouldPerformDownload wkNavigationAction =
+  sendMessage wkNavigationAction shouldPerformDownloadSelector
 
 -- | Whether or not the navigation is a redirect from a content rule list.
 --
 -- ObjC selector: @- isContentRuleListRedirect@
 isContentRuleListRedirect :: IsWKNavigationAction wkNavigationAction => wkNavigationAction -> IO Bool
-isContentRuleListRedirect wkNavigationAction  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg wkNavigationAction (mkSelector "isContentRuleListRedirect") retCULong []
+isContentRuleListRedirect wkNavigationAction =
+  sendMessage wkNavigationAction isContentRuleListRedirectSelector
 
 -- | The modifier keys that were in effect when the navigation was requested.
 --
 -- ObjC selector: @- modifierFlags@
 modifierFlags :: IsWKNavigationAction wkNavigationAction => wkNavigationAction -> IO NSEventModifierFlags
-modifierFlags wkNavigationAction  =
-    fmap (coerce :: CULong -> NSEventModifierFlags) $ sendMsg wkNavigationAction (mkSelector "modifierFlags") retCULong []
+modifierFlags wkNavigationAction =
+  sendMessage wkNavigationAction modifierFlagsSelector
 
 -- | The number of the mouse button causing the navigation to be requested.
 --
 -- ObjC selector: @- buttonNumber@
 buttonNumber :: IsWKNavigationAction wkNavigationAction => wkNavigationAction -> IO CLong
-buttonNumber wkNavigationAction  =
-    sendMsg wkNavigationAction (mkSelector "buttonNumber") retCLong []
+buttonNumber wkNavigationAction =
+  sendMessage wkNavigationAction buttonNumberSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sourceFrame@
-sourceFrameSelector :: Selector
+sourceFrameSelector :: Selector '[] (Id WKFrameInfo)
 sourceFrameSelector = mkSelector "sourceFrame"
 
 -- | @Selector@ for @targetFrame@
-targetFrameSelector :: Selector
+targetFrameSelector :: Selector '[] (Id WKFrameInfo)
 targetFrameSelector = mkSelector "targetFrame"
 
 -- | @Selector@ for @navigationType@
-navigationTypeSelector :: Selector
+navigationTypeSelector :: Selector '[] WKNavigationType
 navigationTypeSelector = mkSelector "navigationType"
 
 -- | @Selector@ for @request@
-requestSelector :: Selector
+requestSelector :: Selector '[] (Id NSURLRequest)
 requestSelector = mkSelector "request"
 
 -- | @Selector@ for @shouldPerformDownload@
-shouldPerformDownloadSelector :: Selector
+shouldPerformDownloadSelector :: Selector '[] Bool
 shouldPerformDownloadSelector = mkSelector "shouldPerformDownload"
 
 -- | @Selector@ for @isContentRuleListRedirect@
-isContentRuleListRedirectSelector :: Selector
+isContentRuleListRedirectSelector :: Selector '[] Bool
 isContentRuleListRedirectSelector = mkSelector "isContentRuleListRedirect"
 
 -- | @Selector@ for @modifierFlags@
-modifierFlagsSelector :: Selector
+modifierFlagsSelector :: Selector '[] NSEventModifierFlags
 modifierFlagsSelector = mkSelector "modifierFlags"
 
 -- | @Selector@ for @buttonNumber@
-buttonNumberSelector :: Selector
+buttonNumberSelector :: Selector '[] CLong
 buttonNumberSelector = mkSelector "buttonNumber"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,12 +16,12 @@ module ObjC.MetalPerformanceShaders.MPSSVGFDefaultTextureAllocator
   , reset
   , device
   , allocatedTextureCount
-  , initWithDeviceSelector
-  , textureWithPixelFormat_width_heightSelector
-  , returnTextureSelector
-  , resetSelector
-  , deviceSelector
   , allocatedTextureCountSelector
+  , deviceSelector
+  , initWithDeviceSelector
+  , resetSelector
+  , returnTextureSelector
+  , textureWithPixelFormat_width_heightSelector
 
   -- * Enum types
   , MTLPixelFormat(MTLPixelFormat)
@@ -167,15 +168,11 @@ module ObjC.MetalPerformanceShaders.MPSSVGFDefaultTextureAllocator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -187,65 +184,65 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSSVGFDefaultTextureAllocator mpssvgfDefaultTextureAllocator => mpssvgfDefaultTextureAllocator -> RawId -> IO (Id MPSSVGFDefaultTextureAllocator)
-initWithDevice mpssvgfDefaultTextureAllocator  device =
-    sendMsg mpssvgfDefaultTextureAllocator (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpssvgfDefaultTextureAllocator device =
+  sendOwnedMessage mpssvgfDefaultTextureAllocator initWithDeviceSelector device
 
 -- | @- textureWithPixelFormat:width:height:@
 textureWithPixelFormat_width_height :: IsMPSSVGFDefaultTextureAllocator mpssvgfDefaultTextureAllocator => mpssvgfDefaultTextureAllocator -> MTLPixelFormat -> CULong -> CULong -> IO RawId
-textureWithPixelFormat_width_height mpssvgfDefaultTextureAllocator  pixelFormat width height =
-    fmap (RawId . castPtr) $ sendMsg mpssvgfDefaultTextureAllocator (mkSelector "textureWithPixelFormat:width:height:") (retPtr retVoid) [argCULong (coerce pixelFormat), argCULong width, argCULong height]
+textureWithPixelFormat_width_height mpssvgfDefaultTextureAllocator pixelFormat width height =
+  sendMessage mpssvgfDefaultTextureAllocator textureWithPixelFormat_width_heightSelector pixelFormat width height
 
 -- | @- returnTexture:@
 returnTexture :: IsMPSSVGFDefaultTextureAllocator mpssvgfDefaultTextureAllocator => mpssvgfDefaultTextureAllocator -> RawId -> IO ()
-returnTexture mpssvgfDefaultTextureAllocator  texture =
-    sendMsg mpssvgfDefaultTextureAllocator (mkSelector "returnTexture:") retVoid [argPtr (castPtr (unRawId texture) :: Ptr ())]
+returnTexture mpssvgfDefaultTextureAllocator texture =
+  sendMessage mpssvgfDefaultTextureAllocator returnTextureSelector texture
 
 -- | Remove all textures from the cache
 --
 -- ObjC selector: @- reset@
 reset :: IsMPSSVGFDefaultTextureAllocator mpssvgfDefaultTextureAllocator => mpssvgfDefaultTextureAllocator -> IO ()
-reset mpssvgfDefaultTextureAllocator  =
-    sendMsg mpssvgfDefaultTextureAllocator (mkSelector "reset") retVoid []
+reset mpssvgfDefaultTextureAllocator =
+  sendMessage mpssvgfDefaultTextureAllocator resetSelector
 
 -- | Metal device this object was allocated from
 --
 -- ObjC selector: @- device@
 device :: IsMPSSVGFDefaultTextureAllocator mpssvgfDefaultTextureAllocator => mpssvgfDefaultTextureAllocator -> IO RawId
-device mpssvgfDefaultTextureAllocator  =
-    fmap (RawId . castPtr) $ sendMsg mpssvgfDefaultTextureAllocator (mkSelector "device") (retPtr retVoid) []
+device mpssvgfDefaultTextureAllocator =
+  sendMessage mpssvgfDefaultTextureAllocator deviceSelector
 
 -- | The number of textures which have been allocated from this allocator
 --
 -- ObjC selector: @- allocatedTextureCount@
 allocatedTextureCount :: IsMPSSVGFDefaultTextureAllocator mpssvgfDefaultTextureAllocator => mpssvgfDefaultTextureAllocator -> IO CULong
-allocatedTextureCount mpssvgfDefaultTextureAllocator  =
-    sendMsg mpssvgfDefaultTextureAllocator (mkSelector "allocatedTextureCount") retCULong []
+allocatedTextureCount mpssvgfDefaultTextureAllocator =
+  sendOwnedMessage mpssvgfDefaultTextureAllocator allocatedTextureCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSSVGFDefaultTextureAllocator)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @textureWithPixelFormat:width:height:@
-textureWithPixelFormat_width_heightSelector :: Selector
+textureWithPixelFormat_width_heightSelector :: Selector '[MTLPixelFormat, CULong, CULong] RawId
 textureWithPixelFormat_width_heightSelector = mkSelector "textureWithPixelFormat:width:height:"
 
 -- | @Selector@ for @returnTexture:@
-returnTextureSelector :: Selector
+returnTextureSelector :: Selector '[RawId] ()
 returnTextureSelector = mkSelector "returnTexture:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] RawId
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @allocatedTextureCount@
-allocatedTextureCountSelector :: Selector
+allocatedTextureCountSelector :: Selector '[] CULong
 allocatedTextureCountSelector = mkSelector "allocatedTextureCount"
 

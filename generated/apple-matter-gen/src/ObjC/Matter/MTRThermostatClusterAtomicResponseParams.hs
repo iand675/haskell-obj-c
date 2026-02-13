@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRThermostatClusterAtomicResponseParams
   , setAttributeStatus
   , timeout
   , setTimeout
-  , initWithResponseValue_errorSelector
-  , statusCodeSelector
-  , setStatusCodeSelector
   , attributeStatusSelector
+  , initWithResponseValue_errorSelector
   , setAttributeStatusSelector
-  , timeoutSelector
+  , setStatusCodeSelector
   , setTimeoutSelector
+  , statusCodeSelector
+  , timeoutSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,73 +44,68 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRThermostatClusterAtomicResponseParams mtrThermostatClusterAtomicResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrThermostatClusterAtomicResponseParams -> responseValue -> error_ -> IO (Id MTRThermostatClusterAtomicResponseParams)
-initWithResponseValue_error mtrThermostatClusterAtomicResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrThermostatClusterAtomicResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrThermostatClusterAtomicResponseParams responseValue error_ =
+  sendOwnedMessage mtrThermostatClusterAtomicResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- statusCode@
 statusCode :: IsMTRThermostatClusterAtomicResponseParams mtrThermostatClusterAtomicResponseParams => mtrThermostatClusterAtomicResponseParams -> IO (Id NSNumber)
-statusCode mtrThermostatClusterAtomicResponseParams  =
-    sendMsg mtrThermostatClusterAtomicResponseParams (mkSelector "statusCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusCode mtrThermostatClusterAtomicResponseParams =
+  sendMessage mtrThermostatClusterAtomicResponseParams statusCodeSelector
 
 -- | @- setStatusCode:@
 setStatusCode :: (IsMTRThermostatClusterAtomicResponseParams mtrThermostatClusterAtomicResponseParams, IsNSNumber value) => mtrThermostatClusterAtomicResponseParams -> value -> IO ()
-setStatusCode mtrThermostatClusterAtomicResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterAtomicResponseParams (mkSelector "setStatusCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatusCode mtrThermostatClusterAtomicResponseParams value =
+  sendMessage mtrThermostatClusterAtomicResponseParams setStatusCodeSelector (toNSNumber value)
 
 -- | @- attributeStatus@
 attributeStatus :: IsMTRThermostatClusterAtomicResponseParams mtrThermostatClusterAtomicResponseParams => mtrThermostatClusterAtomicResponseParams -> IO (Id NSArray)
-attributeStatus mtrThermostatClusterAtomicResponseParams  =
-    sendMsg mtrThermostatClusterAtomicResponseParams (mkSelector "attributeStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributeStatus mtrThermostatClusterAtomicResponseParams =
+  sendMessage mtrThermostatClusterAtomicResponseParams attributeStatusSelector
 
 -- | @- setAttributeStatus:@
 setAttributeStatus :: (IsMTRThermostatClusterAtomicResponseParams mtrThermostatClusterAtomicResponseParams, IsNSArray value) => mtrThermostatClusterAtomicResponseParams -> value -> IO ()
-setAttributeStatus mtrThermostatClusterAtomicResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterAtomicResponseParams (mkSelector "setAttributeStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributeStatus mtrThermostatClusterAtomicResponseParams value =
+  sendMessage mtrThermostatClusterAtomicResponseParams setAttributeStatusSelector (toNSArray value)
 
 -- | @- timeout@
 timeout :: IsMTRThermostatClusterAtomicResponseParams mtrThermostatClusterAtomicResponseParams => mtrThermostatClusterAtomicResponseParams -> IO (Id NSNumber)
-timeout mtrThermostatClusterAtomicResponseParams  =
-    sendMsg mtrThermostatClusterAtomicResponseParams (mkSelector "timeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+timeout mtrThermostatClusterAtomicResponseParams =
+  sendMessage mtrThermostatClusterAtomicResponseParams timeoutSelector
 
 -- | @- setTimeout:@
 setTimeout :: (IsMTRThermostatClusterAtomicResponseParams mtrThermostatClusterAtomicResponseParams, IsNSNumber value) => mtrThermostatClusterAtomicResponseParams -> value -> IO ()
-setTimeout mtrThermostatClusterAtomicResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThermostatClusterAtomicResponseParams (mkSelector "setTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimeout mtrThermostatClusterAtomicResponseParams value =
+  sendMessage mtrThermostatClusterAtomicResponseParams setTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRThermostatClusterAtomicResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @statusCode@
-statusCodeSelector :: Selector
+statusCodeSelector :: Selector '[] (Id NSNumber)
 statusCodeSelector = mkSelector "statusCode"
 
 -- | @Selector@ for @setStatusCode:@
-setStatusCodeSelector :: Selector
+setStatusCodeSelector :: Selector '[Id NSNumber] ()
 setStatusCodeSelector = mkSelector "setStatusCode:"
 
 -- | @Selector@ for @attributeStatus@
-attributeStatusSelector :: Selector
+attributeStatusSelector :: Selector '[] (Id NSArray)
 attributeStatusSelector = mkSelector "attributeStatus"
 
 -- | @Selector@ for @setAttributeStatus:@
-setAttributeStatusSelector :: Selector
+setAttributeStatusSelector :: Selector '[Id NSArray] ()
 setAttributeStatusSelector = mkSelector "setAttributeStatus:"
 
 -- | @Selector@ for @timeout@
-timeoutSelector :: Selector
+timeoutSelector :: Selector '[] (Id NSNumber)
 timeoutSelector = mkSelector "timeout"
 
 -- | @Selector@ for @setTimeout:@
-setTimeoutSelector :: Selector
+setTimeoutSelector :: Selector '[Id NSNumber] ()
 setTimeoutSelector = mkSelector "setTimeout:"
 

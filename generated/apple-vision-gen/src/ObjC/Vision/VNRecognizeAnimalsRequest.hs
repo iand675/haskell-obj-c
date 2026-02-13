@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.Vision.VNRecognizeAnimalsRequest
   , supportedIdentifiersAndReturnError
   , results
   , knownAnimalIdentifiersForRevision_errorSelector
-  , supportedIdentifiersAndReturnErrorSelector
   , resultsSelector
+  , supportedIdentifiersAndReturnErrorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,7 @@ knownAnimalIdentifiersForRevision_error :: IsNSError error_ => CULong -> error_ 
 knownAnimalIdentifiersForRevision_error requestRevision error_ =
   do
     cls' <- getRequiredClass "VNRecognizeAnimalsRequest"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "knownAnimalIdentifiersForRevision:error:") (retPtr retVoid) [argCULong requestRevision, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' knownAnimalIdentifiersForRevision_errorSelector requestRevision (toNSError error_)
 
 -- | Obtain the collection of identifiers supported by the target request.
 --
@@ -57,30 +53,29 @@ knownAnimalIdentifiersForRevision_error requestRevision error_ =
 --
 -- ObjC selector: @- supportedIdentifiersAndReturnError:@
 supportedIdentifiersAndReturnError :: (IsVNRecognizeAnimalsRequest vnRecognizeAnimalsRequest, IsNSError error_) => vnRecognizeAnimalsRequest -> error_ -> IO (Id NSArray)
-supportedIdentifiersAndReturnError vnRecognizeAnimalsRequest  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg vnRecognizeAnimalsRequest (mkSelector "supportedIdentifiersAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+supportedIdentifiersAndReturnError vnRecognizeAnimalsRequest error_ =
+  sendMessage vnRecognizeAnimalsRequest supportedIdentifiersAndReturnErrorSelector (toNSError error_)
 
 -- | VNRecognizedObjectObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNRecognizeAnimalsRequest vnRecognizeAnimalsRequest => vnRecognizeAnimalsRequest -> IO (Id NSArray)
-results vnRecognizeAnimalsRequest  =
-    sendMsg vnRecognizeAnimalsRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnRecognizeAnimalsRequest =
+  sendMessage vnRecognizeAnimalsRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @knownAnimalIdentifiersForRevision:error:@
-knownAnimalIdentifiersForRevision_errorSelector :: Selector
+knownAnimalIdentifiersForRevision_errorSelector :: Selector '[CULong, Id NSError] (Id NSArray)
 knownAnimalIdentifiersForRevision_errorSelector = mkSelector "knownAnimalIdentifiersForRevision:error:"
 
 -- | @Selector@ for @supportedIdentifiersAndReturnError:@
-supportedIdentifiersAndReturnErrorSelector :: Selector
+supportedIdentifiersAndReturnErrorSelector :: Selector '[Id NSError] (Id NSArray)
 supportedIdentifiersAndReturnErrorSelector = mkSelector "supportedIdentifiersAndReturnError:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

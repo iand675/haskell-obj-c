@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.Intents.INImage
   , imageWithURL
   , imageWithURL_width_height
   , imageNamedSelector
-  , systemImageNamedSelector
   , imageWithImageDataSelector
   , imageWithURLSelector
   , imageWithURL_width_heightSelector
+  , systemImageNamedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,62 +37,57 @@ imageNamed :: IsNSString name => name -> IO (Id INImage)
 imageNamed name =
   do
     cls' <- getRequiredClass "INImage"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "imageNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageNamedSelector (toNSString name)
 
 -- | @+ systemImageNamed:@
 systemImageNamed :: IsNSString systemImageName => systemImageName -> IO (Id INImage)
 systemImageNamed systemImageName =
   do
     cls' <- getRequiredClass "INImage"
-    withObjCPtr systemImageName $ \raw_systemImageName ->
-      sendClassMsg cls' (mkSelector "systemImageNamed:") (retPtr retVoid) [argPtr (castPtr raw_systemImageName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' systemImageNamedSelector (toNSString systemImageName)
 
 -- | @+ imageWithImageData:@
 imageWithImageData :: IsNSData imageData => imageData -> IO (Id INImage)
 imageWithImageData imageData =
   do
     cls' <- getRequiredClass "INImage"
-    withObjCPtr imageData $ \raw_imageData ->
-      sendClassMsg cls' (mkSelector "imageWithImageData:") (retPtr retVoid) [argPtr (castPtr raw_imageData :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithImageDataSelector (toNSData imageData)
 
 -- | @+ imageWithURL:@
 imageWithURL :: IsNSURL url => url -> IO (Id INImage)
 imageWithURL url =
   do
     cls' <- getRequiredClass "INImage"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "imageWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithURLSelector (toNSURL url)
 
 -- | @+ imageWithURL:width:height:@
 imageWithURL_width_height :: IsNSURL url => url -> CDouble -> CDouble -> IO (Id INImage)
 imageWithURL_width_height url width height =
   do
     cls' <- getRequiredClass "INImage"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "imageWithURL:width:height:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argCDouble width, argCDouble height] >>= retainedObject . castPtr
+    sendClassMessage cls' imageWithURL_width_heightSelector (toNSURL url) width height
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageNamed:@
-imageNamedSelector :: Selector
+imageNamedSelector :: Selector '[Id NSString] (Id INImage)
 imageNamedSelector = mkSelector "imageNamed:"
 
 -- | @Selector@ for @systemImageNamed:@
-systemImageNamedSelector :: Selector
+systemImageNamedSelector :: Selector '[Id NSString] (Id INImage)
 systemImageNamedSelector = mkSelector "systemImageNamed:"
 
 -- | @Selector@ for @imageWithImageData:@
-imageWithImageDataSelector :: Selector
+imageWithImageDataSelector :: Selector '[Id NSData] (Id INImage)
 imageWithImageDataSelector = mkSelector "imageWithImageData:"
 
 -- | @Selector@ for @imageWithURL:@
-imageWithURLSelector :: Selector
+imageWithURLSelector :: Selector '[Id NSURL] (Id INImage)
 imageWithURLSelector = mkSelector "imageWithURL:"
 
 -- | @Selector@ for @imageWithURL:width:height:@
-imageWithURL_width_heightSelector :: Selector
+imageWithURL_width_heightSelector :: Selector '[Id NSURL, CDouble, CDouble] (Id INImage)
 imageWithURL_width_heightSelector = mkSelector "imageWithURL:width:height:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,39 +31,35 @@ module ObjC.CryptoTokenKit.TKTokenKeychainKey
   , setCanPerformKeyExchange
   , suitableForLogin
   , setSuitableForLogin
+  , applicationTagSelector
+  , canDecryptSelector
+  , canPerformKeyExchangeSelector
+  , canSignSelector
   , initWithCertificate_objectIDSelector
   , initWithObjectIDSelector
-  , keyTypeSelector
-  , setKeyTypeSelector
-  , applicationTagSelector
-  , setApplicationTagSelector
   , keySizeInBitsSelector
-  , setKeySizeInBitsSelector
+  , keyTypeSelector
   , publicKeyDataSelector
-  , setPublicKeyDataSelector
   , publicKeyHashSelector
-  , setPublicKeyHashSelector
-  , canDecryptSelector
+  , setApplicationTagSelector
   , setCanDecryptSelector
-  , canSignSelector
-  , setCanSignSelector
-  , canPerformKeyExchangeSelector
   , setCanPerformKeyExchangeSelector
-  , suitableForLoginSelector
+  , setCanSignSelector
+  , setKeySizeInBitsSelector
+  , setKeyTypeSelector
+  , setPublicKeyDataSelector
+  , setPublicKeyHashSelector
   , setSuitableForLoginSelector
+  , suitableForLoginSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,225 +70,221 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithCertificate:objectID:@
 initWithCertificate_objectID :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> Ptr () -> RawId -> IO (Id TKTokenKeychainKey)
-initWithCertificate_objectID tkTokenKeychainKey  certificateRef objectID =
-    sendMsg tkTokenKeychainKey (mkSelector "initWithCertificate:objectID:") (retPtr retVoid) [argPtr certificateRef, argPtr (castPtr (unRawId objectID) :: Ptr ())] >>= ownedObject . castPtr
+initWithCertificate_objectID tkTokenKeychainKey certificateRef objectID =
+  sendOwnedMessage tkTokenKeychainKey initWithCertificate_objectIDSelector certificateRef objectID
 
 -- | @- initWithObjectID:@
 initWithObjectID :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> RawId -> IO (Id TKTokenKeychainKey)
-initWithObjectID tkTokenKeychainKey  objectID =
-    sendMsg tkTokenKeychainKey (mkSelector "initWithObjectID:") (retPtr retVoid) [argPtr (castPtr (unRawId objectID) :: Ptr ())] >>= ownedObject . castPtr
+initWithObjectID tkTokenKeychainKey objectID =
+  sendOwnedMessage tkTokenKeychainKey initWithObjectIDSelector objectID
 
 -- | Type of the key, currently kSecAttrKeyTypeRSA and kSecAttrKeyTypeECSECPrimeRandom is supported).  The property is an equivalent to kSecAttrKeyType in SecItem.h
 --
 -- ObjC selector: @- keyType@
 keyType :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> IO (Id NSString)
-keyType tkTokenKeychainKey  =
-    sendMsg tkTokenKeychainKey (mkSelector "keyType") (retPtr retVoid) [] >>= retainedObject . castPtr
+keyType tkTokenKeychainKey =
+  sendMessage tkTokenKeychainKey keyTypeSelector
 
 -- | Type of the key, currently kSecAttrKeyTypeRSA and kSecAttrKeyTypeECSECPrimeRandom is supported).  The property is an equivalent to kSecAttrKeyType in SecItem.h
 --
 -- ObjC selector: @- setKeyType:@
 setKeyType :: (IsTKTokenKeychainKey tkTokenKeychainKey, IsNSString value) => tkTokenKeychainKey -> value -> IO ()
-setKeyType tkTokenKeychainKey  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkTokenKeychainKey (mkSelector "setKeyType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setKeyType tkTokenKeychainKey value =
+  sendMessage tkTokenKeychainKey setKeyTypeSelector (toNSString value)
 
 -- | Represents private tag data.  The property is an equivalent to kSecAttrApplicationTag in SecItem.h
 --
 -- ObjC selector: @- applicationTag@
 applicationTag :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> IO (Id NSData)
-applicationTag tkTokenKeychainKey  =
-    sendMsg tkTokenKeychainKey (mkSelector "applicationTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationTag tkTokenKeychainKey =
+  sendMessage tkTokenKeychainKey applicationTagSelector
 
 -- | Represents private tag data.  The property is an equivalent to kSecAttrApplicationTag in SecItem.h
 --
 -- ObjC selector: @- setApplicationTag:@
 setApplicationTag :: (IsTKTokenKeychainKey tkTokenKeychainKey, IsNSData value) => tkTokenKeychainKey -> value -> IO ()
-setApplicationTag tkTokenKeychainKey  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkTokenKeychainKey (mkSelector "setApplicationTag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApplicationTag tkTokenKeychainKey value =
+  sendMessage tkTokenKeychainKey setApplicationTagSelector (toNSData value)
 
 -- | Indicates the number of bits in this key.  The property is an equivalent to kSecAttrKeySizeInBits in SecItem.h
 --
 -- ObjC selector: @- keySizeInBits@
 keySizeInBits :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> IO CLong
-keySizeInBits tkTokenKeychainKey  =
-    sendMsg tkTokenKeychainKey (mkSelector "keySizeInBits") retCLong []
+keySizeInBits tkTokenKeychainKey =
+  sendMessage tkTokenKeychainKey keySizeInBitsSelector
 
 -- | Indicates the number of bits in this key.  The property is an equivalent to kSecAttrKeySizeInBits in SecItem.h
 --
 -- ObjC selector: @- setKeySizeInBits:@
 setKeySizeInBits :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> CLong -> IO ()
-setKeySizeInBits tkTokenKeychainKey  value =
-    sendMsg tkTokenKeychainKey (mkSelector "setKeySizeInBits:") retVoid [argCLong value]
+setKeySizeInBits tkTokenKeychainKey value =
+  sendMessage tkTokenKeychainKey setKeySizeInBitsSelector value
 
 -- | Contains raw public key data for this private key.
 --
 -- ObjC selector: @- publicKeyData@
 publicKeyData :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> IO (Id NSData)
-publicKeyData tkTokenKeychainKey  =
-    sendMsg tkTokenKeychainKey (mkSelector "publicKeyData") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicKeyData tkTokenKeychainKey =
+  sendMessage tkTokenKeychainKey publicKeyDataSelector
 
 -- | Contains raw public key data for this private key.
 --
 -- ObjC selector: @- setPublicKeyData:@
 setPublicKeyData :: (IsTKTokenKeychainKey tkTokenKeychainKey, IsNSData value) => tkTokenKeychainKey -> value -> IO ()
-setPublicKeyData tkTokenKeychainKey  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkTokenKeychainKey (mkSelector "setPublicKeyData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPublicKeyData tkTokenKeychainKey value =
+  sendMessage tkTokenKeychainKey setPublicKeyDataSelector (toNSData value)
 
 -- | SHA1 hash of the raw public key.  The property is an equivalent to kSecAttrApplicationLabel in SecItem.h
 --
 -- ObjC selector: @- publicKeyHash@
 publicKeyHash :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> IO (Id NSData)
-publicKeyHash tkTokenKeychainKey  =
-    sendMsg tkTokenKeychainKey (mkSelector "publicKeyHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicKeyHash tkTokenKeychainKey =
+  sendMessage tkTokenKeychainKey publicKeyHashSelector
 
 -- | SHA1 hash of the raw public key.  The property is an equivalent to kSecAttrApplicationLabel in SecItem.h
 --
 -- ObjC selector: @- setPublicKeyHash:@
 setPublicKeyHash :: (IsTKTokenKeychainKey tkTokenKeychainKey, IsNSData value) => tkTokenKeychainKey -> value -> IO ()
-setPublicKeyHash tkTokenKeychainKey  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkTokenKeychainKey (mkSelector "setPublicKeyHash:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPublicKeyHash tkTokenKeychainKey value =
+  sendMessage tkTokenKeychainKey setPublicKeyHashSelector (toNSData value)
 
 -- | Indicates whether this key can be used to decrypt data.  The property is an equivalent to kSecAttrCanDecrypt in SecItem.h
 --
 -- ObjC selector: @- canDecrypt@
 canDecrypt :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> IO Bool
-canDecrypt tkTokenKeychainKey  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkTokenKeychainKey (mkSelector "canDecrypt") retCULong []
+canDecrypt tkTokenKeychainKey =
+  sendMessage tkTokenKeychainKey canDecryptSelector
 
 -- | Indicates whether this key can be used to decrypt data.  The property is an equivalent to kSecAttrCanDecrypt in SecItem.h
 --
 -- ObjC selector: @- setCanDecrypt:@
 setCanDecrypt :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> Bool -> IO ()
-setCanDecrypt tkTokenKeychainKey  value =
-    sendMsg tkTokenKeychainKey (mkSelector "setCanDecrypt:") retVoid [argCULong (if value then 1 else 0)]
+setCanDecrypt tkTokenKeychainKey value =
+  sendMessage tkTokenKeychainKey setCanDecryptSelector value
 
 -- | Indicates whether this key can be used to create a digital signature.  The property is an equivalent to kSecAttrCanSign in SecItem.h
 --
 -- ObjC selector: @- canSign@
 canSign :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> IO Bool
-canSign tkTokenKeychainKey  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkTokenKeychainKey (mkSelector "canSign") retCULong []
+canSign tkTokenKeychainKey =
+  sendMessage tkTokenKeychainKey canSignSelector
 
 -- | Indicates whether this key can be used to create a digital signature.  The property is an equivalent to kSecAttrCanSign in SecItem.h
 --
 -- ObjC selector: @- setCanSign:@
 setCanSign :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> Bool -> IO ()
-setCanSign tkTokenKeychainKey  value =
-    sendMsg tkTokenKeychainKey (mkSelector "setCanSign:") retVoid [argCULong (if value then 1 else 0)]
+setCanSign tkTokenKeychainKey value =
+  sendMessage tkTokenKeychainKey setCanSignSelector value
 
 -- | Indicates whether this key can be used to perform Diffie-Hellman style cryptographic key exchange.
 --
 -- ObjC selector: @- canPerformKeyExchange@
 canPerformKeyExchange :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> IO Bool
-canPerformKeyExchange tkTokenKeychainKey  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkTokenKeychainKey (mkSelector "canPerformKeyExchange") retCULong []
+canPerformKeyExchange tkTokenKeychainKey =
+  sendMessage tkTokenKeychainKey canPerformKeyExchangeSelector
 
 -- | Indicates whether this key can be used to perform Diffie-Hellman style cryptographic key exchange.
 --
 -- ObjC selector: @- setCanPerformKeyExchange:@
 setCanPerformKeyExchange :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> Bool -> IO ()
-setCanPerformKeyExchange tkTokenKeychainKey  value =
-    sendMsg tkTokenKeychainKey (mkSelector "setCanPerformKeyExchange:") retVoid [argCULong (if value then 1 else 0)]
+setCanPerformKeyExchange tkTokenKeychainKey value =
+  sendMessage tkTokenKeychainKey setCanPerformKeyExchangeSelector value
 
 -- | Indicates whether this key can be used for login in to the system.
 --
 -- ObjC selector: @- suitableForLogin@
 suitableForLogin :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> IO Bool
-suitableForLogin tkTokenKeychainKey  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg tkTokenKeychainKey (mkSelector "suitableForLogin") retCULong []
+suitableForLogin tkTokenKeychainKey =
+  sendMessage tkTokenKeychainKey suitableForLoginSelector
 
 -- | Indicates whether this key can be used for login in to the system.
 --
 -- ObjC selector: @- setSuitableForLogin:@
 setSuitableForLogin :: IsTKTokenKeychainKey tkTokenKeychainKey => tkTokenKeychainKey -> Bool -> IO ()
-setSuitableForLogin tkTokenKeychainKey  value =
-    sendMsg tkTokenKeychainKey (mkSelector "setSuitableForLogin:") retVoid [argCULong (if value then 1 else 0)]
+setSuitableForLogin tkTokenKeychainKey value =
+  sendMessage tkTokenKeychainKey setSuitableForLoginSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithCertificate:objectID:@
-initWithCertificate_objectIDSelector :: Selector
+initWithCertificate_objectIDSelector :: Selector '[Ptr (), RawId] (Id TKTokenKeychainKey)
 initWithCertificate_objectIDSelector = mkSelector "initWithCertificate:objectID:"
 
 -- | @Selector@ for @initWithObjectID:@
-initWithObjectIDSelector :: Selector
+initWithObjectIDSelector :: Selector '[RawId] (Id TKTokenKeychainKey)
 initWithObjectIDSelector = mkSelector "initWithObjectID:"
 
 -- | @Selector@ for @keyType@
-keyTypeSelector :: Selector
+keyTypeSelector :: Selector '[] (Id NSString)
 keyTypeSelector = mkSelector "keyType"
 
 -- | @Selector@ for @setKeyType:@
-setKeyTypeSelector :: Selector
+setKeyTypeSelector :: Selector '[Id NSString] ()
 setKeyTypeSelector = mkSelector "setKeyType:"
 
 -- | @Selector@ for @applicationTag@
-applicationTagSelector :: Selector
+applicationTagSelector :: Selector '[] (Id NSData)
 applicationTagSelector = mkSelector "applicationTag"
 
 -- | @Selector@ for @setApplicationTag:@
-setApplicationTagSelector :: Selector
+setApplicationTagSelector :: Selector '[Id NSData] ()
 setApplicationTagSelector = mkSelector "setApplicationTag:"
 
 -- | @Selector@ for @keySizeInBits@
-keySizeInBitsSelector :: Selector
+keySizeInBitsSelector :: Selector '[] CLong
 keySizeInBitsSelector = mkSelector "keySizeInBits"
 
 -- | @Selector@ for @setKeySizeInBits:@
-setKeySizeInBitsSelector :: Selector
+setKeySizeInBitsSelector :: Selector '[CLong] ()
 setKeySizeInBitsSelector = mkSelector "setKeySizeInBits:"
 
 -- | @Selector@ for @publicKeyData@
-publicKeyDataSelector :: Selector
+publicKeyDataSelector :: Selector '[] (Id NSData)
 publicKeyDataSelector = mkSelector "publicKeyData"
 
 -- | @Selector@ for @setPublicKeyData:@
-setPublicKeyDataSelector :: Selector
+setPublicKeyDataSelector :: Selector '[Id NSData] ()
 setPublicKeyDataSelector = mkSelector "setPublicKeyData:"
 
 -- | @Selector@ for @publicKeyHash@
-publicKeyHashSelector :: Selector
+publicKeyHashSelector :: Selector '[] (Id NSData)
 publicKeyHashSelector = mkSelector "publicKeyHash"
 
 -- | @Selector@ for @setPublicKeyHash:@
-setPublicKeyHashSelector :: Selector
+setPublicKeyHashSelector :: Selector '[Id NSData] ()
 setPublicKeyHashSelector = mkSelector "setPublicKeyHash:"
 
 -- | @Selector@ for @canDecrypt@
-canDecryptSelector :: Selector
+canDecryptSelector :: Selector '[] Bool
 canDecryptSelector = mkSelector "canDecrypt"
 
 -- | @Selector@ for @setCanDecrypt:@
-setCanDecryptSelector :: Selector
+setCanDecryptSelector :: Selector '[Bool] ()
 setCanDecryptSelector = mkSelector "setCanDecrypt:"
 
 -- | @Selector@ for @canSign@
-canSignSelector :: Selector
+canSignSelector :: Selector '[] Bool
 canSignSelector = mkSelector "canSign"
 
 -- | @Selector@ for @setCanSign:@
-setCanSignSelector :: Selector
+setCanSignSelector :: Selector '[Bool] ()
 setCanSignSelector = mkSelector "setCanSign:"
 
 -- | @Selector@ for @canPerformKeyExchange@
-canPerformKeyExchangeSelector :: Selector
+canPerformKeyExchangeSelector :: Selector '[] Bool
 canPerformKeyExchangeSelector = mkSelector "canPerformKeyExchange"
 
 -- | @Selector@ for @setCanPerformKeyExchange:@
-setCanPerformKeyExchangeSelector :: Selector
+setCanPerformKeyExchangeSelector :: Selector '[Bool] ()
 setCanPerformKeyExchangeSelector = mkSelector "setCanPerformKeyExchange:"
 
 -- | @Selector@ for @suitableForLogin@
-suitableForLoginSelector :: Selector
+suitableForLoginSelector :: Selector '[] Bool
 suitableForLoginSelector = mkSelector "suitableForLogin"
 
 -- | @Selector@ for @setSuitableForLogin:@
-setSuitableForLoginSelector :: Selector
+setSuitableForLoginSelector :: Selector '[Bool] ()
 setSuitableForLoginSelector = mkSelector "setSuitableForLogin:"
 

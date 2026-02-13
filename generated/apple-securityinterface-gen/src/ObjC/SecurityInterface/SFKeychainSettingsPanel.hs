@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.SecurityInterface.SFKeychainSettingsPanel
   , sharedKeychainSettingsPanel
   , runModalForSettings_keychain
   , beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychain
-  , sharedKeychainSettingsPanelSelector
-  , runModalForSettings_keychainSelector
   , beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychainSelector
+  , runModalForSettings_keychainSelector
+  , sharedKeychainSettingsPanelSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,7 +38,7 @@ sharedKeychainSettingsPanel :: IO (Id SFKeychainSettingsPanel)
 sharedKeychainSettingsPanel  =
   do
     cls' <- getRequiredClass "SFKeychainSettingsPanel"
-    sendClassMsg cls' (mkSelector "sharedKeychainSettingsPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedKeychainSettingsPanelSelector
 
 -- | runModalForSettings:keychain:
 --
@@ -53,8 +50,8 @@ sharedKeychainSettingsPanel  =
 --
 -- ObjC selector: @- runModalForSettings:keychain:@
 runModalForSettings_keychain :: IsSFKeychainSettingsPanel sfKeychainSettingsPanel => sfKeychainSettingsPanel -> RawId -> Ptr () -> IO CLong
-runModalForSettings_keychain sfKeychainSettingsPanel  settings keychain =
-    sendMsg sfKeychainSettingsPanel (mkSelector "runModalForSettings:keychain:") retCLong [argPtr (castPtr (unRawId settings) :: Ptr ()), argPtr keychain]
+runModalForSettings_keychain sfKeychainSettingsPanel settings keychain =
+  sendMessage sfKeychainSettingsPanel runModalForSettings_keychainSelector settings keychain
 
 -- | beginSheetForWindow:settings:keychain:modalDelegate:didEndSelector:contextInfo:
 --
@@ -73,24 +70,23 @@ runModalForSettings_keychain sfKeychainSettingsPanel  settings keychain =
 -- @keychain@ — The keychain that will have its settings changed.
 --
 -- ObjC selector: @- beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:settings:keychain:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychain :: (IsSFKeychainSettingsPanel sfKeychainSettingsPanel, IsNSWindow docWindow) => sfKeychainSettingsPanel -> docWindow -> RawId -> Selector -> Ptr () -> RawId -> Ptr () -> IO ()
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychain sfKeychainSettingsPanel  docWindow delegate didEndSelector contextInfo settings keychain =
-  withObjCPtr docWindow $ \raw_docWindow ->
-      sendMsg sfKeychainSettingsPanel (mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:settings:keychain:") retVoid [argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo, argPtr (castPtr (unRawId settings) :: Ptr ()), argPtr keychain]
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychain :: (IsSFKeychainSettingsPanel sfKeychainSettingsPanel, IsNSWindow docWindow) => sfKeychainSettingsPanel -> docWindow -> RawId -> Sel -> Ptr () -> RawId -> Ptr () -> IO ()
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychain sfKeychainSettingsPanel docWindow delegate didEndSelector contextInfo settings keychain =
+  sendMessage sfKeychainSettingsPanel beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychainSelector (toNSWindow docWindow) delegate didEndSelector contextInfo settings keychain
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedKeychainSettingsPanel@
-sharedKeychainSettingsPanelSelector :: Selector
+sharedKeychainSettingsPanelSelector :: Selector '[] (Id SFKeychainSettingsPanel)
 sharedKeychainSettingsPanelSelector = mkSelector "sharedKeychainSettingsPanel"
 
 -- | @Selector@ for @runModalForSettings:keychain:@
-runModalForSettings_keychainSelector :: Selector
+runModalForSettings_keychainSelector :: Selector '[RawId, Ptr ()] CLong
 runModalForSettings_keychainSelector = mkSelector "runModalForSettings:keychain:"
 
 -- | @Selector@ for @beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:settings:keychain:@
-beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychainSelector :: Selector
+beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychainSelector :: Selector '[Id NSWindow, RawId, Sel, Ptr (), RawId, Ptr ()] ()
 beginSheetForWindow_modalDelegate_didEndSelector_contextInfo_settings_keychainSelector = mkSelector "beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:settings:keychain:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.Virtualization.VZVirtioSocketListener
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,25 +38,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- delegate@
 delegate :: IsVZVirtioSocketListener vzVirtioSocketListener => vzVirtioSocketListener -> IO RawId
-delegate vzVirtioSocketListener  =
-    fmap (RawId . castPtr) $ sendMsg vzVirtioSocketListener (mkSelector "delegate") (retPtr retVoid) []
+delegate vzVirtioSocketListener =
+  sendMessage vzVirtioSocketListener delegateSelector
 
 -- | Pointer to a delegate object for the listener.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsVZVirtioSocketListener vzVirtioSocketListener => vzVirtioSocketListener -> RawId -> IO ()
-setDelegate vzVirtioSocketListener  value =
-    sendMsg vzVirtioSocketListener (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate vzVirtioSocketListener value =
+  sendMessage vzVirtioSocketListener setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

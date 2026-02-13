@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,22 +28,22 @@ module ObjC.SceneKit.SCNGeometryTessellator
   , setMaximumEdgeLength
   , smoothingMode
   , setSmoothingMode
-  , tessellationFactorScaleSelector
-  , setTessellationFactorScaleSelector
-  , tessellationPartitionModeSelector
-  , setTessellationPartitionModeSelector
   , adaptiveSelector
-  , setAdaptiveSelector
-  , screenSpaceSelector
-  , setScreenSpaceSelector
   , edgeTessellationFactorSelector
-  , setEdgeTessellationFactorSelector
   , insideTessellationFactorSelector
-  , setInsideTessellationFactorSelector
   , maximumEdgeLengthSelector
+  , screenSpaceSelector
+  , setAdaptiveSelector
+  , setEdgeTessellationFactorSelector
+  , setInsideTessellationFactorSelector
   , setMaximumEdgeLengthSelector
-  , smoothingModeSelector
+  , setScreenSpaceSelector
   , setSmoothingModeSelector
+  , setTessellationFactorScaleSelector
+  , setTessellationPartitionModeSelector
+  , smoothingModeSelector
+  , tessellationFactorScaleSelector
+  , tessellationPartitionModeSelector
 
   -- * Enum types
   , MTLTessellationPartitionMode(MTLTessellationPartitionMode)
@@ -57,15 +58,11 @@ module ObjC.SceneKit.SCNGeometryTessellator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,8 +77,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- tessellationFactorScale@
 tessellationFactorScale :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> IO CDouble
-tessellationFactorScale scnGeometryTessellator  =
-    sendMsg scnGeometryTessellator (mkSelector "tessellationFactorScale") retCDouble []
+tessellationFactorScale scnGeometryTessellator =
+  sendMessage scnGeometryTessellator tessellationFactorScaleSelector
 
 -- | tessellationFactorScale
 --
@@ -89,8 +86,8 @@ tessellationFactorScale scnGeometryTessellator  =
 --
 -- ObjC selector: @- setTessellationFactorScale:@
 setTessellationFactorScale :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> CDouble -> IO ()
-setTessellationFactorScale scnGeometryTessellator  value =
-    sendMsg scnGeometryTessellator (mkSelector "setTessellationFactorScale:") retVoid [argCDouble value]
+setTessellationFactorScale scnGeometryTessellator value =
+  sendMessage scnGeometryTessellator setTessellationFactorScaleSelector value
 
 -- | tessellationPartitionMode
 --
@@ -98,8 +95,8 @@ setTessellationFactorScale scnGeometryTessellator  value =
 --
 -- ObjC selector: @- tessellationPartitionMode@
 tessellationPartitionMode :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> IO MTLTessellationPartitionMode
-tessellationPartitionMode scnGeometryTessellator  =
-    fmap (coerce :: CULong -> MTLTessellationPartitionMode) $ sendMsg scnGeometryTessellator (mkSelector "tessellationPartitionMode") retCULong []
+tessellationPartitionMode scnGeometryTessellator =
+  sendMessage scnGeometryTessellator tessellationPartitionModeSelector
 
 -- | tessellationPartitionMode
 --
@@ -107,8 +104,8 @@ tessellationPartitionMode scnGeometryTessellator  =
 --
 -- ObjC selector: @- setTessellationPartitionMode:@
 setTessellationPartitionMode :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> MTLTessellationPartitionMode -> IO ()
-setTessellationPartitionMode scnGeometryTessellator  value =
-    sendMsg scnGeometryTessellator (mkSelector "setTessellationPartitionMode:") retVoid [argCULong (coerce value)]
+setTessellationPartitionMode scnGeometryTessellator value =
+  sendMessage scnGeometryTessellator setTessellationPartitionModeSelector value
 
 -- | adaptive
 --
@@ -116,8 +113,8 @@ setTessellationPartitionMode scnGeometryTessellator  value =
 --
 -- ObjC selector: @- adaptive@
 adaptive :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> IO Bool
-adaptive scnGeometryTessellator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnGeometryTessellator (mkSelector "adaptive") retCULong []
+adaptive scnGeometryTessellator =
+  sendMessage scnGeometryTessellator adaptiveSelector
 
 -- | adaptive
 --
@@ -125,8 +122,8 @@ adaptive scnGeometryTessellator  =
 --
 -- ObjC selector: @- setAdaptive:@
 setAdaptive :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> Bool -> IO ()
-setAdaptive scnGeometryTessellator  value =
-    sendMsg scnGeometryTessellator (mkSelector "setAdaptive:") retVoid [argCULong (if value then 1 else 0)]
+setAdaptive scnGeometryTessellator value =
+  sendMessage scnGeometryTessellator setAdaptiveSelector value
 
 -- | screenspace
 --
@@ -134,8 +131,8 @@ setAdaptive scnGeometryTessellator  value =
 --
 -- ObjC selector: @- screenSpace@
 screenSpace :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> IO Bool
-screenSpace scnGeometryTessellator  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnGeometryTessellator (mkSelector "screenSpace") retCULong []
+screenSpace scnGeometryTessellator =
+  sendMessage scnGeometryTessellator screenSpaceSelector
 
 -- | screenspace
 --
@@ -143,8 +140,8 @@ screenSpace scnGeometryTessellator  =
 --
 -- ObjC selector: @- setScreenSpace:@
 setScreenSpace :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> Bool -> IO ()
-setScreenSpace scnGeometryTessellator  value =
-    sendMsg scnGeometryTessellator (mkSelector "setScreenSpace:") retVoid [argCULong (if value then 1 else 0)]
+setScreenSpace scnGeometryTessellator value =
+  sendMessage scnGeometryTessellator setScreenSpaceSelector value
 
 -- | edgeTessellationFactor
 --
@@ -154,8 +151,8 @@ setScreenSpace scnGeometryTessellator  value =
 --
 -- ObjC selector: @- edgeTessellationFactor@
 edgeTessellationFactor :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> IO CDouble
-edgeTessellationFactor scnGeometryTessellator  =
-    sendMsg scnGeometryTessellator (mkSelector "edgeTessellationFactor") retCDouble []
+edgeTessellationFactor scnGeometryTessellator =
+  sendMessage scnGeometryTessellator edgeTessellationFactorSelector
 
 -- | edgeTessellationFactor
 --
@@ -165,8 +162,8 @@ edgeTessellationFactor scnGeometryTessellator  =
 --
 -- ObjC selector: @- setEdgeTessellationFactor:@
 setEdgeTessellationFactor :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> CDouble -> IO ()
-setEdgeTessellationFactor scnGeometryTessellator  value =
-    sendMsg scnGeometryTessellator (mkSelector "setEdgeTessellationFactor:") retVoid [argCDouble value]
+setEdgeTessellationFactor scnGeometryTessellator value =
+  sendMessage scnGeometryTessellator setEdgeTessellationFactorSelector value
 
 -- | insideTessellationFactor
 --
@@ -176,8 +173,8 @@ setEdgeTessellationFactor scnGeometryTessellator  value =
 --
 -- ObjC selector: @- insideTessellationFactor@
 insideTessellationFactor :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> IO CDouble
-insideTessellationFactor scnGeometryTessellator  =
-    sendMsg scnGeometryTessellator (mkSelector "insideTessellationFactor") retCDouble []
+insideTessellationFactor scnGeometryTessellator =
+  sendMessage scnGeometryTessellator insideTessellationFactorSelector
 
 -- | insideTessellationFactor
 --
@@ -187,8 +184,8 @@ insideTessellationFactor scnGeometryTessellator  =
 --
 -- ObjC selector: @- setInsideTessellationFactor:@
 setInsideTessellationFactor :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> CDouble -> IO ()
-setInsideTessellationFactor scnGeometryTessellator  value =
-    sendMsg scnGeometryTessellator (mkSelector "setInsideTessellationFactor:") retVoid [argCDouble value]
+setInsideTessellationFactor scnGeometryTessellator value =
+  sendMessage scnGeometryTessellator setInsideTessellationFactorSelector value
 
 -- | maximumEdgeLength
 --
@@ -198,8 +195,8 @@ setInsideTessellationFactor scnGeometryTessellator  value =
 --
 -- ObjC selector: @- maximumEdgeLength@
 maximumEdgeLength :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> IO CDouble
-maximumEdgeLength scnGeometryTessellator  =
-    sendMsg scnGeometryTessellator (mkSelector "maximumEdgeLength") retCDouble []
+maximumEdgeLength scnGeometryTessellator =
+  sendMessage scnGeometryTessellator maximumEdgeLengthSelector
 
 -- | maximumEdgeLength
 --
@@ -209,8 +206,8 @@ maximumEdgeLength scnGeometryTessellator  =
 --
 -- ObjC selector: @- setMaximumEdgeLength:@
 setMaximumEdgeLength :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> CDouble -> IO ()
-setMaximumEdgeLength scnGeometryTessellator  value =
-    sendMsg scnGeometryTessellator (mkSelector "setMaximumEdgeLength:") retVoid [argCDouble value]
+setMaximumEdgeLength scnGeometryTessellator value =
+  sendMessage scnGeometryTessellator setMaximumEdgeLengthSelector value
 
 -- | smoothingMode
 --
@@ -218,8 +215,8 @@ setMaximumEdgeLength scnGeometryTessellator  value =
 --
 -- ObjC selector: @- smoothingMode@
 smoothingMode :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> IO SCNTessellationSmoothingMode
-smoothingMode scnGeometryTessellator  =
-    fmap (coerce :: CLong -> SCNTessellationSmoothingMode) $ sendMsg scnGeometryTessellator (mkSelector "smoothingMode") retCLong []
+smoothingMode scnGeometryTessellator =
+  sendMessage scnGeometryTessellator smoothingModeSelector
 
 -- | smoothingMode
 --
@@ -227,74 +224,74 @@ smoothingMode scnGeometryTessellator  =
 --
 -- ObjC selector: @- setSmoothingMode:@
 setSmoothingMode :: IsSCNGeometryTessellator scnGeometryTessellator => scnGeometryTessellator -> SCNTessellationSmoothingMode -> IO ()
-setSmoothingMode scnGeometryTessellator  value =
-    sendMsg scnGeometryTessellator (mkSelector "setSmoothingMode:") retVoid [argCLong (coerce value)]
+setSmoothingMode scnGeometryTessellator value =
+  sendMessage scnGeometryTessellator setSmoothingModeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tessellationFactorScale@
-tessellationFactorScaleSelector :: Selector
+tessellationFactorScaleSelector :: Selector '[] CDouble
 tessellationFactorScaleSelector = mkSelector "tessellationFactorScale"
 
 -- | @Selector@ for @setTessellationFactorScale:@
-setTessellationFactorScaleSelector :: Selector
+setTessellationFactorScaleSelector :: Selector '[CDouble] ()
 setTessellationFactorScaleSelector = mkSelector "setTessellationFactorScale:"
 
 -- | @Selector@ for @tessellationPartitionMode@
-tessellationPartitionModeSelector :: Selector
+tessellationPartitionModeSelector :: Selector '[] MTLTessellationPartitionMode
 tessellationPartitionModeSelector = mkSelector "tessellationPartitionMode"
 
 -- | @Selector@ for @setTessellationPartitionMode:@
-setTessellationPartitionModeSelector :: Selector
+setTessellationPartitionModeSelector :: Selector '[MTLTessellationPartitionMode] ()
 setTessellationPartitionModeSelector = mkSelector "setTessellationPartitionMode:"
 
 -- | @Selector@ for @adaptive@
-adaptiveSelector :: Selector
+adaptiveSelector :: Selector '[] Bool
 adaptiveSelector = mkSelector "adaptive"
 
 -- | @Selector@ for @setAdaptive:@
-setAdaptiveSelector :: Selector
+setAdaptiveSelector :: Selector '[Bool] ()
 setAdaptiveSelector = mkSelector "setAdaptive:"
 
 -- | @Selector@ for @screenSpace@
-screenSpaceSelector :: Selector
+screenSpaceSelector :: Selector '[] Bool
 screenSpaceSelector = mkSelector "screenSpace"
 
 -- | @Selector@ for @setScreenSpace:@
-setScreenSpaceSelector :: Selector
+setScreenSpaceSelector :: Selector '[Bool] ()
 setScreenSpaceSelector = mkSelector "setScreenSpace:"
 
 -- | @Selector@ for @edgeTessellationFactor@
-edgeTessellationFactorSelector :: Selector
+edgeTessellationFactorSelector :: Selector '[] CDouble
 edgeTessellationFactorSelector = mkSelector "edgeTessellationFactor"
 
 -- | @Selector@ for @setEdgeTessellationFactor:@
-setEdgeTessellationFactorSelector :: Selector
+setEdgeTessellationFactorSelector :: Selector '[CDouble] ()
 setEdgeTessellationFactorSelector = mkSelector "setEdgeTessellationFactor:"
 
 -- | @Selector@ for @insideTessellationFactor@
-insideTessellationFactorSelector :: Selector
+insideTessellationFactorSelector :: Selector '[] CDouble
 insideTessellationFactorSelector = mkSelector "insideTessellationFactor"
 
 -- | @Selector@ for @setInsideTessellationFactor:@
-setInsideTessellationFactorSelector :: Selector
+setInsideTessellationFactorSelector :: Selector '[CDouble] ()
 setInsideTessellationFactorSelector = mkSelector "setInsideTessellationFactor:"
 
 -- | @Selector@ for @maximumEdgeLength@
-maximumEdgeLengthSelector :: Selector
+maximumEdgeLengthSelector :: Selector '[] CDouble
 maximumEdgeLengthSelector = mkSelector "maximumEdgeLength"
 
 -- | @Selector@ for @setMaximumEdgeLength:@
-setMaximumEdgeLengthSelector :: Selector
+setMaximumEdgeLengthSelector :: Selector '[CDouble] ()
 setMaximumEdgeLengthSelector = mkSelector "setMaximumEdgeLength:"
 
 -- | @Selector@ for @smoothingMode@
-smoothingModeSelector :: Selector
+smoothingModeSelector :: Selector '[] SCNTessellationSmoothingMode
 smoothingModeSelector = mkSelector "smoothingMode"
 
 -- | @Selector@ for @setSmoothingMode:@
-setSmoothingModeSelector :: Selector
+setSmoothingModeSelector :: Selector '[SCNTessellationSmoothingMode] ()
 setSmoothingModeSelector = mkSelector "setSmoothingMode:"
 

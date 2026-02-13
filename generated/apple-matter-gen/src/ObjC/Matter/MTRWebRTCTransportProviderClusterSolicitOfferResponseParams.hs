@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Matter.MTRWebRTCTransportProviderClusterSolicitOfferResponseParams
   , setVideoStreamID
   , audioStreamID
   , setAudioStreamID
-  , initWithResponseValue_errorSelector
-  , webRTCSessionIDSelector
-  , setWebRTCSessionIDSelector
-  , deferredOfferSelector
-  , setDeferredOfferSelector
-  , videoStreamIDSelector
-  , setVideoStreamIDSelector
   , audioStreamIDSelector
+  , deferredOfferSelector
+  , initWithResponseValue_errorSelector
   , setAudioStreamIDSelector
+  , setDeferredOfferSelector
+  , setVideoStreamIDSelector
+  , setWebRTCSessionIDSelector
+  , videoStreamIDSelector
+  , webRTCSessionIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,92 +48,86 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRWebRTCTransportProviderClusterSolicitOfferResponseParams mtrWebRTCTransportProviderClusterSolicitOfferResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrWebRTCTransportProviderClusterSolicitOfferResponseParams -> responseValue -> error_ -> IO (Id MTRWebRTCTransportProviderClusterSolicitOfferResponseParams)
-initWithResponseValue_error mtrWebRTCTransportProviderClusterSolicitOfferResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrWebRTCTransportProviderClusterSolicitOfferResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrWebRTCTransportProviderClusterSolicitOfferResponseParams responseValue error_ =
+  sendOwnedMessage mtrWebRTCTransportProviderClusterSolicitOfferResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- webRTCSessionID@
 webRTCSessionID :: IsMTRWebRTCTransportProviderClusterSolicitOfferResponseParams mtrWebRTCTransportProviderClusterSolicitOfferResponseParams => mtrWebRTCTransportProviderClusterSolicitOfferResponseParams -> IO (Id NSNumber)
-webRTCSessionID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams  =
-    sendMsg mtrWebRTCTransportProviderClusterSolicitOfferResponseParams (mkSelector "webRTCSessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+webRTCSessionID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams =
+  sendMessage mtrWebRTCTransportProviderClusterSolicitOfferResponseParams webRTCSessionIDSelector
 
 -- | @- setWebRTCSessionID:@
 setWebRTCSessionID :: (IsMTRWebRTCTransportProviderClusterSolicitOfferResponseParams mtrWebRTCTransportProviderClusterSolicitOfferResponseParams, IsNSNumber value) => mtrWebRTCTransportProviderClusterSolicitOfferResponseParams -> value -> IO ()
-setWebRTCSessionID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterSolicitOfferResponseParams (mkSelector "setWebRTCSessionID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWebRTCSessionID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams value =
+  sendMessage mtrWebRTCTransportProviderClusterSolicitOfferResponseParams setWebRTCSessionIDSelector (toNSNumber value)
 
 -- | @- deferredOffer@
 deferredOffer :: IsMTRWebRTCTransportProviderClusterSolicitOfferResponseParams mtrWebRTCTransportProviderClusterSolicitOfferResponseParams => mtrWebRTCTransportProviderClusterSolicitOfferResponseParams -> IO (Id NSNumber)
-deferredOffer mtrWebRTCTransportProviderClusterSolicitOfferResponseParams  =
-    sendMsg mtrWebRTCTransportProviderClusterSolicitOfferResponseParams (mkSelector "deferredOffer") (retPtr retVoid) [] >>= retainedObject . castPtr
+deferredOffer mtrWebRTCTransportProviderClusterSolicitOfferResponseParams =
+  sendMessage mtrWebRTCTransportProviderClusterSolicitOfferResponseParams deferredOfferSelector
 
 -- | @- setDeferredOffer:@
 setDeferredOffer :: (IsMTRWebRTCTransportProviderClusterSolicitOfferResponseParams mtrWebRTCTransportProviderClusterSolicitOfferResponseParams, IsNSNumber value) => mtrWebRTCTransportProviderClusterSolicitOfferResponseParams -> value -> IO ()
-setDeferredOffer mtrWebRTCTransportProviderClusterSolicitOfferResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterSolicitOfferResponseParams (mkSelector "setDeferredOffer:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDeferredOffer mtrWebRTCTransportProviderClusterSolicitOfferResponseParams value =
+  sendMessage mtrWebRTCTransportProviderClusterSolicitOfferResponseParams setDeferredOfferSelector (toNSNumber value)
 
 -- | @- videoStreamID@
 videoStreamID :: IsMTRWebRTCTransportProviderClusterSolicitOfferResponseParams mtrWebRTCTransportProviderClusterSolicitOfferResponseParams => mtrWebRTCTransportProviderClusterSolicitOfferResponseParams -> IO (Id NSNumber)
-videoStreamID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams  =
-    sendMsg mtrWebRTCTransportProviderClusterSolicitOfferResponseParams (mkSelector "videoStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoStreamID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams =
+  sendMessage mtrWebRTCTransportProviderClusterSolicitOfferResponseParams videoStreamIDSelector
 
 -- | @- setVideoStreamID:@
 setVideoStreamID :: (IsMTRWebRTCTransportProviderClusterSolicitOfferResponseParams mtrWebRTCTransportProviderClusterSolicitOfferResponseParams, IsNSNumber value) => mtrWebRTCTransportProviderClusterSolicitOfferResponseParams -> value -> IO ()
-setVideoStreamID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterSolicitOfferResponseParams (mkSelector "setVideoStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoStreamID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams value =
+  sendMessage mtrWebRTCTransportProviderClusterSolicitOfferResponseParams setVideoStreamIDSelector (toNSNumber value)
 
 -- | @- audioStreamID@
 audioStreamID :: IsMTRWebRTCTransportProviderClusterSolicitOfferResponseParams mtrWebRTCTransportProviderClusterSolicitOfferResponseParams => mtrWebRTCTransportProviderClusterSolicitOfferResponseParams -> IO (Id NSNumber)
-audioStreamID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams  =
-    sendMsg mtrWebRTCTransportProviderClusterSolicitOfferResponseParams (mkSelector "audioStreamID") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioStreamID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams =
+  sendMessage mtrWebRTCTransportProviderClusterSolicitOfferResponseParams audioStreamIDSelector
 
 -- | @- setAudioStreamID:@
 setAudioStreamID :: (IsMTRWebRTCTransportProviderClusterSolicitOfferResponseParams mtrWebRTCTransportProviderClusterSolicitOfferResponseParams, IsNSNumber value) => mtrWebRTCTransportProviderClusterSolicitOfferResponseParams -> value -> IO ()
-setAudioStreamID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrWebRTCTransportProviderClusterSolicitOfferResponseParams (mkSelector "setAudioStreamID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioStreamID mtrWebRTCTransportProviderClusterSolicitOfferResponseParams value =
+  sendMessage mtrWebRTCTransportProviderClusterSolicitOfferResponseParams setAudioStreamIDSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRWebRTCTransportProviderClusterSolicitOfferResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @webRTCSessionID@
-webRTCSessionIDSelector :: Selector
+webRTCSessionIDSelector :: Selector '[] (Id NSNumber)
 webRTCSessionIDSelector = mkSelector "webRTCSessionID"
 
 -- | @Selector@ for @setWebRTCSessionID:@
-setWebRTCSessionIDSelector :: Selector
+setWebRTCSessionIDSelector :: Selector '[Id NSNumber] ()
 setWebRTCSessionIDSelector = mkSelector "setWebRTCSessionID:"
 
 -- | @Selector@ for @deferredOffer@
-deferredOfferSelector :: Selector
+deferredOfferSelector :: Selector '[] (Id NSNumber)
 deferredOfferSelector = mkSelector "deferredOffer"
 
 -- | @Selector@ for @setDeferredOffer:@
-setDeferredOfferSelector :: Selector
+setDeferredOfferSelector :: Selector '[Id NSNumber] ()
 setDeferredOfferSelector = mkSelector "setDeferredOffer:"
 
 -- | @Selector@ for @videoStreamID@
-videoStreamIDSelector :: Selector
+videoStreamIDSelector :: Selector '[] (Id NSNumber)
 videoStreamIDSelector = mkSelector "videoStreamID"
 
 -- | @Selector@ for @setVideoStreamID:@
-setVideoStreamIDSelector :: Selector
+setVideoStreamIDSelector :: Selector '[Id NSNumber] ()
 setVideoStreamIDSelector = mkSelector "setVideoStreamID:"
 
 -- | @Selector@ for @audioStreamID@
-audioStreamIDSelector :: Selector
+audioStreamIDSelector :: Selector '[] (Id NSNumber)
 audioStreamIDSelector = mkSelector "audioStreamID"
 
 -- | @Selector@ for @setAudioStreamID:@
-setAudioStreamIDSelector :: Selector
+setAudioStreamIDSelector :: Selector '[Id NSNumber] ()
 setAudioStreamIDSelector = mkSelector "setAudioStreamID:"
 

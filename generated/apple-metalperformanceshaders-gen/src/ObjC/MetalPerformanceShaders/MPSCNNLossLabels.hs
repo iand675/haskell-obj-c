@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,22 +20,18 @@ module ObjC.MetalPerformanceShaders.MPSCNNLossLabels
   , weightsImage
   , initSelector
   , initWithDevice_labelsDescriptorSelector
-  , lossImageSelector
   , labelsImageSelector
+  , lossImageSelector
   , weightsImageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsMPSCNNLossLabels mpscnnLossLabels => mpscnnLossLabels -> IO (Id MPSCNNLossLabels)
-init_ mpscnnLossLabels  =
-    sendMsg mpscnnLossLabels (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpscnnLossLabels =
+  sendOwnedMessage mpscnnLossLabels initSelector
 
 -- | Set labels (aka targets, ground truth) for the MPSCNNLossLabels object.
 --
@@ -58,9 +55,8 @@ init_ mpscnnLossLabels  =
 --
 -- ObjC selector: @- initWithDevice:labelsDescriptor:@
 initWithDevice_labelsDescriptor :: (IsMPSCNNLossLabels mpscnnLossLabels, IsMPSCNNLossDataDescriptor labelsDescriptor) => mpscnnLossLabels -> RawId -> labelsDescriptor -> IO (Id MPSCNNLossLabels)
-initWithDevice_labelsDescriptor mpscnnLossLabels  device labelsDescriptor =
-  withObjCPtr labelsDescriptor $ \raw_labelsDescriptor ->
-      sendMsg mpscnnLossLabels (mkSelector "initWithDevice:labelsDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_labelsDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_labelsDescriptor mpscnnLossLabels device labelsDescriptor =
+  sendOwnedMessage mpscnnLossLabels initWithDevice_labelsDescriptorSelector device (toMPSCNNLossDataDescriptor labelsDescriptor)
 
 -- | Loss image accessor method.
 --
@@ -70,8 +66,8 @@ initWithDevice_labelsDescriptor mpscnnLossLabels  device labelsDescriptor =
 --
 -- ObjC selector: @- lossImage@
 lossImage :: IsMPSCNNLossLabels mpscnnLossLabels => mpscnnLossLabels -> IO (Id MPSImage)
-lossImage mpscnnLossLabels  =
-    sendMsg mpscnnLossLabels (mkSelector "lossImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+lossImage mpscnnLossLabels =
+  sendMessage mpscnnLossLabels lossImageSelector
 
 -- | Labels image accessor method.
 --
@@ -81,8 +77,8 @@ lossImage mpscnnLossLabels  =
 --
 -- ObjC selector: @- labelsImage@
 labelsImage :: IsMPSCNNLossLabels mpscnnLossLabels => mpscnnLossLabels -> IO (Id MPSImage)
-labelsImage mpscnnLossLabels  =
-    sendMsg mpscnnLossLabels (mkSelector "labelsImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+labelsImage mpscnnLossLabels =
+  sendMessage mpscnnLossLabels labelsImageSelector
 
 -- | Weights image accessor method.
 --
@@ -92,30 +88,30 @@ labelsImage mpscnnLossLabels  =
 --
 -- ObjC selector: @- weightsImage@
 weightsImage :: IsMPSCNNLossLabels mpscnnLossLabels => mpscnnLossLabels -> IO (Id MPSImage)
-weightsImage mpscnnLossLabels  =
-    sendMsg mpscnnLossLabels (mkSelector "weightsImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+weightsImage mpscnnLossLabels =
+  sendMessage mpscnnLossLabels weightsImageSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSCNNLossLabels)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDevice:labelsDescriptor:@
-initWithDevice_labelsDescriptorSelector :: Selector
+initWithDevice_labelsDescriptorSelector :: Selector '[RawId, Id MPSCNNLossDataDescriptor] (Id MPSCNNLossLabels)
 initWithDevice_labelsDescriptorSelector = mkSelector "initWithDevice:labelsDescriptor:"
 
 -- | @Selector@ for @lossImage@
-lossImageSelector :: Selector
+lossImageSelector :: Selector '[] (Id MPSImage)
 lossImageSelector = mkSelector "lossImage"
 
 -- | @Selector@ for @labelsImage@
-labelsImageSelector :: Selector
+labelsImageSelector :: Selector '[] (Id MPSImage)
 labelsImageSelector = mkSelector "labelsImage"
 
 -- | @Selector@ for @weightsImage@
-weightsImageSelector :: Selector
+weightsImageSelector :: Selector '[] (Id MPSImage)
 weightsImageSelector = mkSelector "weightsImage"
 

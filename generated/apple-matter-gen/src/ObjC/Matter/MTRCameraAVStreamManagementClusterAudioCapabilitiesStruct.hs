@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterAudioCapabilitiesStruct
   , setSupportedBitDepths
   , maxNumberOfChannelsSelector
   , setMaxNumberOfChannelsSelector
-  , supportedCodecsSelector
+  , setSupportedBitDepthsSelector
   , setSupportedCodecsSelector
-  , supportedSampleRatesSelector
   , setSupportedSampleRatesSelector
   , supportedBitDepthsSelector
-  , setSupportedBitDepthsSelector
+  , supportedCodecsSelector
+  , supportedSampleRatesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- maxNumberOfChannels@
 maxNumberOfChannels :: IsMTRCameraAVStreamManagementClusterAudioCapabilitiesStruct mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct => mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct -> IO (Id NSNumber)
-maxNumberOfChannels mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct (mkSelector "maxNumberOfChannels") (retPtr retVoid) [] >>= retainedObject . castPtr
+maxNumberOfChannels mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct maxNumberOfChannelsSelector
 
 -- | @- setMaxNumberOfChannels:@
 setMaxNumberOfChannels :: (IsMTRCameraAVStreamManagementClusterAudioCapabilitiesStruct mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct, IsNSNumber value) => mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct -> value -> IO ()
-setMaxNumberOfChannels mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct (mkSelector "setMaxNumberOfChannels:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMaxNumberOfChannels mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct setMaxNumberOfChannelsSelector (toNSNumber value)
 
 -- | @- supportedCodecs@
 supportedCodecs :: IsMTRCameraAVStreamManagementClusterAudioCapabilitiesStruct mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct => mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct -> IO (Id NSArray)
-supportedCodecs mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct (mkSelector "supportedCodecs") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedCodecs mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct supportedCodecsSelector
 
 -- | @- setSupportedCodecs:@
 setSupportedCodecs :: (IsMTRCameraAVStreamManagementClusterAudioCapabilitiesStruct mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct, IsNSArray value) => mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct -> value -> IO ()
-setSupportedCodecs mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct (mkSelector "setSupportedCodecs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedCodecs mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct setSupportedCodecsSelector (toNSArray value)
 
 -- | @- supportedSampleRates@
 supportedSampleRates :: IsMTRCameraAVStreamManagementClusterAudioCapabilitiesStruct mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct => mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct -> IO (Id NSArray)
-supportedSampleRates mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct (mkSelector "supportedSampleRates") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedSampleRates mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct supportedSampleRatesSelector
 
 -- | @- setSupportedSampleRates:@
 setSupportedSampleRates :: (IsMTRCameraAVStreamManagementClusterAudioCapabilitiesStruct mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct, IsNSArray value) => mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct -> value -> IO ()
-setSupportedSampleRates mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct (mkSelector "setSupportedSampleRates:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedSampleRates mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct setSupportedSampleRatesSelector (toNSArray value)
 
 -- | @- supportedBitDepths@
 supportedBitDepths :: IsMTRCameraAVStreamManagementClusterAudioCapabilitiesStruct mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct => mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct -> IO (Id NSArray)
-supportedBitDepths mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct  =
-    sendMsg mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct (mkSelector "supportedBitDepths") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedBitDepths mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct =
+  sendMessage mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct supportedBitDepthsSelector
 
 -- | @- setSupportedBitDepths:@
 setSupportedBitDepths :: (IsMTRCameraAVStreamManagementClusterAudioCapabilitiesStruct mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct, IsNSArray value) => mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct -> value -> IO ()
-setSupportedBitDepths mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct (mkSelector "setSupportedBitDepths:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSupportedBitDepths mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct value =
+  sendMessage mtrCameraAVStreamManagementClusterAudioCapabilitiesStruct setSupportedBitDepthsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @maxNumberOfChannels@
-maxNumberOfChannelsSelector :: Selector
+maxNumberOfChannelsSelector :: Selector '[] (Id NSNumber)
 maxNumberOfChannelsSelector = mkSelector "maxNumberOfChannels"
 
 -- | @Selector@ for @setMaxNumberOfChannels:@
-setMaxNumberOfChannelsSelector :: Selector
+setMaxNumberOfChannelsSelector :: Selector '[Id NSNumber] ()
 setMaxNumberOfChannelsSelector = mkSelector "setMaxNumberOfChannels:"
 
 -- | @Selector@ for @supportedCodecs@
-supportedCodecsSelector :: Selector
+supportedCodecsSelector :: Selector '[] (Id NSArray)
 supportedCodecsSelector = mkSelector "supportedCodecs"
 
 -- | @Selector@ for @setSupportedCodecs:@
-setSupportedCodecsSelector :: Selector
+setSupportedCodecsSelector :: Selector '[Id NSArray] ()
 setSupportedCodecsSelector = mkSelector "setSupportedCodecs:"
 
 -- | @Selector@ for @supportedSampleRates@
-supportedSampleRatesSelector :: Selector
+supportedSampleRatesSelector :: Selector '[] (Id NSArray)
 supportedSampleRatesSelector = mkSelector "supportedSampleRates"
 
 -- | @Selector@ for @setSupportedSampleRates:@
-setSupportedSampleRatesSelector :: Selector
+setSupportedSampleRatesSelector :: Selector '[Id NSArray] ()
 setSupportedSampleRatesSelector = mkSelector "setSupportedSampleRates:"
 
 -- | @Selector@ for @supportedBitDepths@
-supportedBitDepthsSelector :: Selector
+supportedBitDepthsSelector :: Selector '[] (Id NSArray)
 supportedBitDepthsSelector = mkSelector "supportedBitDepths"
 
 -- | @Selector@ for @setSupportedBitDepths:@
-setSupportedBitDepthsSelector :: Selector
+setSupportedBitDepthsSelector :: Selector '[Id NSArray] ()
 setSupportedBitDepthsSelector = mkSelector "setSupportedBitDepths:"
 

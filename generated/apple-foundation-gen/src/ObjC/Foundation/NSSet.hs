@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -49,46 +50,46 @@ module ObjC.Foundation.NSSet
   , count
   , allObjects
   , description
-  , memberSelector
-  , objectEnumeratorSelector
-  , initSelector
-  , initWithObjects_countSelector
-  , initWithCoderSelector
-  , filteredSetUsingPredicateSelector
-  , sortedArrayUsingDescriptorsSelector
   , addObserver_forKeyPath_options_contextSelector
-  , removeObserver_forKeyPath_contextSelector
-  , removeObserver_forKeyPathSelector
-  , valueForKeySelector
-  , setValue_forKeySelector
-  , setSelector
-  , setWithObjectSelector
-  , setWithObjects_countSelector
-  , setWithObjectsSelector
-  , setWithSetSelector
-  , setWithArraySelector
-  , initWithObjectsSelector
-  , initWithSetSelector
-  , initWithSet_copyItemsSelector
-  , initWithArraySelector
+  , allObjectsSelector
   , anyObjectSelector
   , containsObjectSelector
+  , countSelector
+  , descriptionSelector
   , descriptionWithLocaleSelector
+  , enumerateObjectsUsingBlockSelector
+  , enumerateObjectsWithOptions_usingBlockSelector
+  , filteredSetUsingPredicateSelector
+  , initSelector
+  , initWithArraySelector
+  , initWithCoderSelector
+  , initWithObjectsSelector
+  , initWithObjects_countSelector
+  , initWithSetSelector
+  , initWithSet_copyItemsSelector
   , intersectsSetSelector
   , isEqualToSetSelector
   , isSubsetOfSetSelector
   , makeObjectsPerformSelectorSelector
   , makeObjectsPerformSelector_withObjectSelector
-  , setByAddingObjectSelector
-  , setByAddingObjectsFromSetSelector
-  , setByAddingObjectsFromArraySelector
-  , enumerateObjectsUsingBlockSelector
-  , enumerateObjectsWithOptions_usingBlockSelector
+  , memberSelector
+  , objectEnumeratorSelector
   , objectsPassingTestSelector
   , objectsWithOptions_passingTestSelector
-  , countSelector
-  , allObjectsSelector
-  , descriptionSelector
+  , removeObserver_forKeyPathSelector
+  , removeObserver_forKeyPath_contextSelector
+  , setByAddingObjectSelector
+  , setByAddingObjectsFromArraySelector
+  , setByAddingObjectsFromSetSelector
+  , setSelector
+  , setValue_forKeySelector
+  , setWithArraySelector
+  , setWithObjectSelector
+  , setWithObjectsSelector
+  , setWithObjects_countSelector
+  , setWithSetSelector
+  , sortedArrayUsingDescriptorsSelector
+  , valueForKeySelector
 
   -- * Enum types
   , NSEnumerationOptions(NSEnumerationOptions)
@@ -102,15 +103,11 @@ module ObjC.Foundation.NSSet
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -119,398 +116,377 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- member:@
 member :: IsNSSet nsSet => nsSet -> RawId -> IO RawId
-member nsSet  object =
-    fmap (RawId . castPtr) $ sendMsg nsSet (mkSelector "member:") (retPtr retVoid) [argPtr (castPtr (unRawId object) :: Ptr ())]
+member nsSet object =
+  sendMessage nsSet memberSelector object
 
 -- | @- objectEnumerator@
 objectEnumerator :: IsNSSet nsSet => nsSet -> IO (Id NSEnumerator)
-objectEnumerator nsSet  =
-    sendMsg nsSet (mkSelector "objectEnumerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectEnumerator nsSet =
+  sendMessage nsSet objectEnumeratorSelector
 
 -- | @- init@
 init_ :: IsNSSet nsSet => nsSet -> IO (Id NSSet)
-init_ nsSet  =
-    sendMsg nsSet (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsSet =
+  sendOwnedMessage nsSet initSelector
 
 -- | @- initWithObjects:count:@
 initWithObjects_count :: IsNSSet nsSet => nsSet -> RawId -> CULong -> IO (Id NSSet)
-initWithObjects_count nsSet  objects cnt =
-    sendMsg nsSet (mkSelector "initWithObjects:count:") (retPtr retVoid) [argPtr (castPtr (unRawId objects) :: Ptr ()), argCULong cnt] >>= ownedObject . castPtr
+initWithObjects_count nsSet objects cnt =
+  sendOwnedMessage nsSet initWithObjects_countSelector objects cnt
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSSet nsSet, IsNSCoder coder) => nsSet -> coder -> IO (Id NSSet)
-initWithCoder nsSet  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsSet (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsSet coder =
+  sendOwnedMessage nsSet initWithCoderSelector (toNSCoder coder)
 
 -- | @- filteredSetUsingPredicate:@
 filteredSetUsingPredicate :: (IsNSSet nsSet, IsNSPredicate predicate) => nsSet -> predicate -> IO (Id NSSet)
-filteredSetUsingPredicate nsSet  predicate =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg nsSet (mkSelector "filteredSetUsingPredicate:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ())] >>= retainedObject . castPtr
+filteredSetUsingPredicate nsSet predicate =
+  sendMessage nsSet filteredSetUsingPredicateSelector (toNSPredicate predicate)
 
 -- | @- sortedArrayUsingDescriptors:@
 sortedArrayUsingDescriptors :: (IsNSSet nsSet, IsNSArray sortDescriptors) => nsSet -> sortDescriptors -> IO (Id NSArray)
-sortedArrayUsingDescriptors nsSet  sortDescriptors =
-  withObjCPtr sortDescriptors $ \raw_sortDescriptors ->
-      sendMsg nsSet (mkSelector "sortedArrayUsingDescriptors:") (retPtr retVoid) [argPtr (castPtr raw_sortDescriptors :: Ptr ())] >>= retainedObject . castPtr
+sortedArrayUsingDescriptors nsSet sortDescriptors =
+  sendMessage nsSet sortedArrayUsingDescriptorsSelector (toNSArray sortDescriptors)
 
 -- | @- addObserver:forKeyPath:options:context:@
 addObserver_forKeyPath_options_context :: (IsNSSet nsSet, IsNSObject observer, IsNSString keyPath) => nsSet -> observer -> keyPath -> NSKeyValueObservingOptions -> Ptr () -> IO ()
-addObserver_forKeyPath_options_context nsSet  observer keyPath options context =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr keyPath $ \raw_keyPath ->
-        sendMsg nsSet (mkSelector "addObserver:forKeyPath:options:context:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ()), argCULong (coerce options), argPtr context]
+addObserver_forKeyPath_options_context nsSet observer keyPath options context =
+  sendMessage nsSet addObserver_forKeyPath_options_contextSelector (toNSObject observer) (toNSString keyPath) options context
 
 -- | @- removeObserver:forKeyPath:context:@
 removeObserver_forKeyPath_context :: (IsNSSet nsSet, IsNSObject observer, IsNSString keyPath) => nsSet -> observer -> keyPath -> Ptr () -> IO ()
-removeObserver_forKeyPath_context nsSet  observer keyPath context =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr keyPath $ \raw_keyPath ->
-        sendMsg nsSet (mkSelector "removeObserver:forKeyPath:context:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ()), argPtr context]
+removeObserver_forKeyPath_context nsSet observer keyPath context =
+  sendMessage nsSet removeObserver_forKeyPath_contextSelector (toNSObject observer) (toNSString keyPath) context
 
 -- | @- removeObserver:forKeyPath:@
 removeObserver_forKeyPath :: (IsNSSet nsSet, IsNSObject observer, IsNSString keyPath) => nsSet -> observer -> keyPath -> IO ()
-removeObserver_forKeyPath nsSet  observer keyPath =
-  withObjCPtr observer $ \raw_observer ->
-    withObjCPtr keyPath $ \raw_keyPath ->
-        sendMsg nsSet (mkSelector "removeObserver:forKeyPath:") retVoid [argPtr (castPtr raw_observer :: Ptr ()), argPtr (castPtr raw_keyPath :: Ptr ())]
+removeObserver_forKeyPath nsSet observer keyPath =
+  sendMessage nsSet removeObserver_forKeyPathSelector (toNSObject observer) (toNSString keyPath)
 
 -- | @- valueForKey:@
 valueForKey :: (IsNSSet nsSet, IsNSString key) => nsSet -> key -> IO RawId
-valueForKey nsSet  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg nsSet (mkSelector "valueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+valueForKey nsSet key =
+  sendMessage nsSet valueForKeySelector (toNSString key)
 
 -- | @- setValue:forKey:@
 setValue_forKey :: (IsNSSet nsSet, IsNSString key) => nsSet -> RawId -> key -> IO ()
-setValue_forKey nsSet  value key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg nsSet (mkSelector "setValue:forKey:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forKey nsSet value key =
+  sendMessage nsSet setValue_forKeySelector value (toNSString key)
 
 -- | @+ set@
 set :: IO (Id NSSet)
 set  =
   do
     cls' <- getRequiredClass "NSSet"
-    sendClassMsg cls' (mkSelector "set") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' setSelector
 
 -- | @+ setWithObject:@
 setWithObject :: RawId -> IO (Id NSSet)
 setWithObject object =
   do
     cls' <- getRequiredClass "NSSet"
-    sendClassMsg cls' (mkSelector "setWithObject:") (retPtr retVoid) [argPtr (castPtr (unRawId object) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' setWithObjectSelector object
 
 -- | @+ setWithObjects:count:@
 setWithObjects_count :: RawId -> CULong -> IO (Id NSSet)
 setWithObjects_count objects cnt =
   do
     cls' <- getRequiredClass "NSSet"
-    sendClassMsg cls' (mkSelector "setWithObjects:count:") (retPtr retVoid) [argPtr (castPtr (unRawId objects) :: Ptr ()), argCULong cnt] >>= retainedObject . castPtr
+    sendClassMessage cls' setWithObjects_countSelector objects cnt
 
 -- | @+ setWithObjects:@
 setWithObjects :: RawId -> IO (Id NSSet)
 setWithObjects firstObj =
   do
     cls' <- getRequiredClass "NSSet"
-    sendClassMsg cls' (mkSelector "setWithObjects:") (retPtr retVoid) [argPtr (castPtr (unRawId firstObj) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' setWithObjectsSelector firstObj
 
 -- | @+ setWithSet:@
 setWithSet :: IsNSSet set => set -> IO (Id NSSet)
 setWithSet set =
   do
     cls' <- getRequiredClass "NSSet"
-    withObjCPtr set $ \raw_set ->
-      sendClassMsg cls' (mkSelector "setWithSet:") (retPtr retVoid) [argPtr (castPtr raw_set :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' setWithSetSelector (toNSSet set)
 
 -- | @+ setWithArray:@
 setWithArray :: IsNSArray array => array -> IO (Id NSSet)
 setWithArray array =
   do
     cls' <- getRequiredClass "NSSet"
-    withObjCPtr array $ \raw_array ->
-      sendClassMsg cls' (mkSelector "setWithArray:") (retPtr retVoid) [argPtr (castPtr raw_array :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' setWithArraySelector (toNSArray array)
 
 -- | @- initWithObjects:@
 initWithObjects :: IsNSSet nsSet => nsSet -> RawId -> IO (Id NSSet)
-initWithObjects nsSet  firstObj =
-    sendMsg nsSet (mkSelector "initWithObjects:") (retPtr retVoid) [argPtr (castPtr (unRawId firstObj) :: Ptr ())] >>= ownedObject . castPtr
+initWithObjects nsSet firstObj =
+  sendOwnedMessage nsSet initWithObjectsSelector firstObj
 
 -- | @- initWithSet:@
 initWithSet :: (IsNSSet nsSet, IsNSSet set) => nsSet -> set -> IO (Id NSSet)
-initWithSet nsSet  set =
-  withObjCPtr set $ \raw_set ->
-      sendMsg nsSet (mkSelector "initWithSet:") (retPtr retVoid) [argPtr (castPtr raw_set :: Ptr ())] >>= ownedObject . castPtr
+initWithSet nsSet set =
+  sendOwnedMessage nsSet initWithSetSelector (toNSSet set)
 
 -- | @- initWithSet:copyItems:@
 initWithSet_copyItems :: (IsNSSet nsSet, IsNSSet set) => nsSet -> set -> Bool -> IO (Id NSSet)
-initWithSet_copyItems nsSet  set flag =
-  withObjCPtr set $ \raw_set ->
-      sendMsg nsSet (mkSelector "initWithSet:copyItems:") (retPtr retVoid) [argPtr (castPtr raw_set :: Ptr ()), argCULong (if flag then 1 else 0)] >>= ownedObject . castPtr
+initWithSet_copyItems nsSet set flag =
+  sendOwnedMessage nsSet initWithSet_copyItemsSelector (toNSSet set) flag
 
 -- | @- initWithArray:@
 initWithArray :: (IsNSSet nsSet, IsNSArray array) => nsSet -> array -> IO (Id NSSet)
-initWithArray nsSet  array =
-  withObjCPtr array $ \raw_array ->
-      sendMsg nsSet (mkSelector "initWithArray:") (retPtr retVoid) [argPtr (castPtr raw_array :: Ptr ())] >>= ownedObject . castPtr
+initWithArray nsSet array =
+  sendOwnedMessage nsSet initWithArraySelector (toNSArray array)
 
 -- | @- anyObject@
 anyObject :: IsNSSet nsSet => nsSet -> IO RawId
-anyObject nsSet  =
-    fmap (RawId . castPtr) $ sendMsg nsSet (mkSelector "anyObject") (retPtr retVoid) []
+anyObject nsSet =
+  sendMessage nsSet anyObjectSelector
 
 -- | @- containsObject:@
 containsObject :: IsNSSet nsSet => nsSet -> RawId -> IO Bool
-containsObject nsSet  anObject =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSet (mkSelector "containsObject:") retCULong [argPtr (castPtr (unRawId anObject) :: Ptr ())]
+containsObject nsSet anObject =
+  sendMessage nsSet containsObjectSelector anObject
 
 -- | @- descriptionWithLocale:@
 descriptionWithLocale :: IsNSSet nsSet => nsSet -> RawId -> IO (Id NSString)
-descriptionWithLocale nsSet  locale =
-    sendMsg nsSet (mkSelector "descriptionWithLocale:") (retPtr retVoid) [argPtr (castPtr (unRawId locale) :: Ptr ())] >>= retainedObject . castPtr
+descriptionWithLocale nsSet locale =
+  sendMessage nsSet descriptionWithLocaleSelector locale
 
 -- | @- intersectsSet:@
 intersectsSet :: (IsNSSet nsSet, IsNSSet otherSet) => nsSet -> otherSet -> IO Bool
-intersectsSet nsSet  otherSet =
-  withObjCPtr otherSet $ \raw_otherSet ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSet (mkSelector "intersectsSet:") retCULong [argPtr (castPtr raw_otherSet :: Ptr ())]
+intersectsSet nsSet otherSet =
+  sendMessage nsSet intersectsSetSelector (toNSSet otherSet)
 
 -- | @- isEqualToSet:@
 isEqualToSet :: (IsNSSet nsSet, IsNSSet otherSet) => nsSet -> otherSet -> IO Bool
-isEqualToSet nsSet  otherSet =
-  withObjCPtr otherSet $ \raw_otherSet ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSet (mkSelector "isEqualToSet:") retCULong [argPtr (castPtr raw_otherSet :: Ptr ())]
+isEqualToSet nsSet otherSet =
+  sendMessage nsSet isEqualToSetSelector (toNSSet otherSet)
 
 -- | @- isSubsetOfSet:@
 isSubsetOfSet :: (IsNSSet nsSet, IsNSSet otherSet) => nsSet -> otherSet -> IO Bool
-isSubsetOfSet nsSet  otherSet =
-  withObjCPtr otherSet $ \raw_otherSet ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsSet (mkSelector "isSubsetOfSet:") retCULong [argPtr (castPtr raw_otherSet :: Ptr ())]
+isSubsetOfSet nsSet otherSet =
+  sendMessage nsSet isSubsetOfSetSelector (toNSSet otherSet)
 
 -- | @- makeObjectsPerformSelector:@
-makeObjectsPerformSelector :: IsNSSet nsSet => nsSet -> Selector -> IO ()
-makeObjectsPerformSelector nsSet  aSelector =
-    sendMsg nsSet (mkSelector "makeObjectsPerformSelector:") retVoid [argPtr (unSelector aSelector)]
+makeObjectsPerformSelector :: IsNSSet nsSet => nsSet -> Sel -> IO ()
+makeObjectsPerformSelector nsSet aSelector =
+  sendMessage nsSet makeObjectsPerformSelectorSelector aSelector
 
 -- | @- makeObjectsPerformSelector:withObject:@
-makeObjectsPerformSelector_withObject :: IsNSSet nsSet => nsSet -> Selector -> RawId -> IO ()
-makeObjectsPerformSelector_withObject nsSet  aSelector argument =
-    sendMsg nsSet (mkSelector "makeObjectsPerformSelector:withObject:") retVoid [argPtr (unSelector aSelector), argPtr (castPtr (unRawId argument) :: Ptr ())]
+makeObjectsPerformSelector_withObject :: IsNSSet nsSet => nsSet -> Sel -> RawId -> IO ()
+makeObjectsPerformSelector_withObject nsSet aSelector argument =
+  sendMessage nsSet makeObjectsPerformSelector_withObjectSelector aSelector argument
 
 -- | @- setByAddingObject:@
 setByAddingObject :: IsNSSet nsSet => nsSet -> RawId -> IO (Id NSSet)
-setByAddingObject nsSet  anObject =
-    sendMsg nsSet (mkSelector "setByAddingObject:") (retPtr retVoid) [argPtr (castPtr (unRawId anObject) :: Ptr ())] >>= retainedObject . castPtr
+setByAddingObject nsSet anObject =
+  sendMessage nsSet setByAddingObjectSelector anObject
 
 -- | @- setByAddingObjectsFromSet:@
 setByAddingObjectsFromSet :: (IsNSSet nsSet, IsNSSet other) => nsSet -> other -> IO (Id NSSet)
-setByAddingObjectsFromSet nsSet  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsSet (mkSelector "setByAddingObjectsFromSet:") (retPtr retVoid) [argPtr (castPtr raw_other :: Ptr ())] >>= retainedObject . castPtr
+setByAddingObjectsFromSet nsSet other =
+  sendMessage nsSet setByAddingObjectsFromSetSelector (toNSSet other)
 
 -- | @- setByAddingObjectsFromArray:@
 setByAddingObjectsFromArray :: (IsNSSet nsSet, IsNSArray other) => nsSet -> other -> IO (Id NSSet)
-setByAddingObjectsFromArray nsSet  other =
-  withObjCPtr other $ \raw_other ->
-      sendMsg nsSet (mkSelector "setByAddingObjectsFromArray:") (retPtr retVoid) [argPtr (castPtr raw_other :: Ptr ())] >>= retainedObject . castPtr
+setByAddingObjectsFromArray nsSet other =
+  sendMessage nsSet setByAddingObjectsFromArraySelector (toNSArray other)
 
 -- | @- enumerateObjectsUsingBlock:@
 enumerateObjectsUsingBlock :: IsNSSet nsSet => nsSet -> Ptr () -> IO ()
-enumerateObjectsUsingBlock nsSet  block =
-    sendMsg nsSet (mkSelector "enumerateObjectsUsingBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+enumerateObjectsUsingBlock nsSet block =
+  sendMessage nsSet enumerateObjectsUsingBlockSelector block
 
 -- | @- enumerateObjectsWithOptions:usingBlock:@
 enumerateObjectsWithOptions_usingBlock :: IsNSSet nsSet => nsSet -> NSEnumerationOptions -> Ptr () -> IO ()
-enumerateObjectsWithOptions_usingBlock nsSet  opts block =
-    sendMsg nsSet (mkSelector "enumerateObjectsWithOptions:usingBlock:") retVoid [argCULong (coerce opts), argPtr (castPtr block :: Ptr ())]
+enumerateObjectsWithOptions_usingBlock nsSet opts block =
+  sendMessage nsSet enumerateObjectsWithOptions_usingBlockSelector opts block
 
 -- | @- objectsPassingTest:@
 objectsPassingTest :: IsNSSet nsSet => nsSet -> Ptr () -> IO (Id NSSet)
-objectsPassingTest nsSet  predicate =
-    sendMsg nsSet (mkSelector "objectsPassingTest:") (retPtr retVoid) [argPtr (castPtr predicate :: Ptr ())] >>= retainedObject . castPtr
+objectsPassingTest nsSet predicate =
+  sendMessage nsSet objectsPassingTestSelector predicate
 
 -- | @- objectsWithOptions:passingTest:@
 objectsWithOptions_passingTest :: IsNSSet nsSet => nsSet -> NSEnumerationOptions -> Ptr () -> IO (Id NSSet)
-objectsWithOptions_passingTest nsSet  opts predicate =
-    sendMsg nsSet (mkSelector "objectsWithOptions:passingTest:") (retPtr retVoid) [argCULong (coerce opts), argPtr (castPtr predicate :: Ptr ())] >>= retainedObject . castPtr
+objectsWithOptions_passingTest nsSet opts predicate =
+  sendMessage nsSet objectsWithOptions_passingTestSelector opts predicate
 
 -- | @- count@
 count :: IsNSSet nsSet => nsSet -> IO CULong
-count nsSet  =
-    sendMsg nsSet (mkSelector "count") retCULong []
+count nsSet =
+  sendMessage nsSet countSelector
 
 -- | @- allObjects@
 allObjects :: IsNSSet nsSet => nsSet -> IO (Id NSArray)
-allObjects nsSet  =
-    sendMsg nsSet (mkSelector "allObjects") (retPtr retVoid) [] >>= retainedObject . castPtr
+allObjects nsSet =
+  sendMessage nsSet allObjectsSelector
 
 -- | @- description@
 description :: IsNSSet nsSet => nsSet -> IO (Id NSString)
-description nsSet  =
-    sendMsg nsSet (mkSelector "description") (retPtr retVoid) [] >>= retainedObject . castPtr
+description nsSet =
+  sendMessage nsSet descriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @member:@
-memberSelector :: Selector
+memberSelector :: Selector '[RawId] RawId
 memberSelector = mkSelector "member:"
 
 -- | @Selector@ for @objectEnumerator@
-objectEnumeratorSelector :: Selector
+objectEnumeratorSelector :: Selector '[] (Id NSEnumerator)
 objectEnumeratorSelector = mkSelector "objectEnumerator"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSSet)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithObjects:count:@
-initWithObjects_countSelector :: Selector
+initWithObjects_countSelector :: Selector '[RawId, CULong] (Id NSSet)
 initWithObjects_countSelector = mkSelector "initWithObjects:count:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSSet)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @filteredSetUsingPredicate:@
-filteredSetUsingPredicateSelector :: Selector
+filteredSetUsingPredicateSelector :: Selector '[Id NSPredicate] (Id NSSet)
 filteredSetUsingPredicateSelector = mkSelector "filteredSetUsingPredicate:"
 
 -- | @Selector@ for @sortedArrayUsingDescriptors:@
-sortedArrayUsingDescriptorsSelector :: Selector
+sortedArrayUsingDescriptorsSelector :: Selector '[Id NSArray] (Id NSArray)
 sortedArrayUsingDescriptorsSelector = mkSelector "sortedArrayUsingDescriptors:"
 
 -- | @Selector@ for @addObserver:forKeyPath:options:context:@
-addObserver_forKeyPath_options_contextSelector :: Selector
+addObserver_forKeyPath_options_contextSelector :: Selector '[Id NSObject, Id NSString, NSKeyValueObservingOptions, Ptr ()] ()
 addObserver_forKeyPath_options_contextSelector = mkSelector "addObserver:forKeyPath:options:context:"
 
 -- | @Selector@ for @removeObserver:forKeyPath:context:@
-removeObserver_forKeyPath_contextSelector :: Selector
+removeObserver_forKeyPath_contextSelector :: Selector '[Id NSObject, Id NSString, Ptr ()] ()
 removeObserver_forKeyPath_contextSelector = mkSelector "removeObserver:forKeyPath:context:"
 
 -- | @Selector@ for @removeObserver:forKeyPath:@
-removeObserver_forKeyPathSelector :: Selector
+removeObserver_forKeyPathSelector :: Selector '[Id NSObject, Id NSString] ()
 removeObserver_forKeyPathSelector = mkSelector "removeObserver:forKeyPath:"
 
 -- | @Selector@ for @valueForKey:@
-valueForKeySelector :: Selector
+valueForKeySelector :: Selector '[Id NSString] RawId
 valueForKeySelector = mkSelector "valueForKey:"
 
 -- | @Selector@ for @setValue:forKey:@
-setValue_forKeySelector :: Selector
+setValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 setValue_forKeySelector = mkSelector "setValue:forKey:"
 
 -- | @Selector@ for @set@
-setSelector :: Selector
+setSelector :: Selector '[] (Id NSSet)
 setSelector = mkSelector "set"
 
 -- | @Selector@ for @setWithObject:@
-setWithObjectSelector :: Selector
+setWithObjectSelector :: Selector '[RawId] (Id NSSet)
 setWithObjectSelector = mkSelector "setWithObject:"
 
 -- | @Selector@ for @setWithObjects:count:@
-setWithObjects_countSelector :: Selector
+setWithObjects_countSelector :: Selector '[RawId, CULong] (Id NSSet)
 setWithObjects_countSelector = mkSelector "setWithObjects:count:"
 
 -- | @Selector@ for @setWithObjects:@
-setWithObjectsSelector :: Selector
+setWithObjectsSelector :: Selector '[RawId] (Id NSSet)
 setWithObjectsSelector = mkSelector "setWithObjects:"
 
 -- | @Selector@ for @setWithSet:@
-setWithSetSelector :: Selector
+setWithSetSelector :: Selector '[Id NSSet] (Id NSSet)
 setWithSetSelector = mkSelector "setWithSet:"
 
 -- | @Selector@ for @setWithArray:@
-setWithArraySelector :: Selector
+setWithArraySelector :: Selector '[Id NSArray] (Id NSSet)
 setWithArraySelector = mkSelector "setWithArray:"
 
 -- | @Selector@ for @initWithObjects:@
-initWithObjectsSelector :: Selector
+initWithObjectsSelector :: Selector '[RawId] (Id NSSet)
 initWithObjectsSelector = mkSelector "initWithObjects:"
 
 -- | @Selector@ for @initWithSet:@
-initWithSetSelector :: Selector
+initWithSetSelector :: Selector '[Id NSSet] (Id NSSet)
 initWithSetSelector = mkSelector "initWithSet:"
 
 -- | @Selector@ for @initWithSet:copyItems:@
-initWithSet_copyItemsSelector :: Selector
+initWithSet_copyItemsSelector :: Selector '[Id NSSet, Bool] (Id NSSet)
 initWithSet_copyItemsSelector = mkSelector "initWithSet:copyItems:"
 
 -- | @Selector@ for @initWithArray:@
-initWithArraySelector :: Selector
+initWithArraySelector :: Selector '[Id NSArray] (Id NSSet)
 initWithArraySelector = mkSelector "initWithArray:"
 
 -- | @Selector@ for @anyObject@
-anyObjectSelector :: Selector
+anyObjectSelector :: Selector '[] RawId
 anyObjectSelector = mkSelector "anyObject"
 
 -- | @Selector@ for @containsObject:@
-containsObjectSelector :: Selector
+containsObjectSelector :: Selector '[RawId] Bool
 containsObjectSelector = mkSelector "containsObject:"
 
 -- | @Selector@ for @descriptionWithLocale:@
-descriptionWithLocaleSelector :: Selector
+descriptionWithLocaleSelector :: Selector '[RawId] (Id NSString)
 descriptionWithLocaleSelector = mkSelector "descriptionWithLocale:"
 
 -- | @Selector@ for @intersectsSet:@
-intersectsSetSelector :: Selector
+intersectsSetSelector :: Selector '[Id NSSet] Bool
 intersectsSetSelector = mkSelector "intersectsSet:"
 
 -- | @Selector@ for @isEqualToSet:@
-isEqualToSetSelector :: Selector
+isEqualToSetSelector :: Selector '[Id NSSet] Bool
 isEqualToSetSelector = mkSelector "isEqualToSet:"
 
 -- | @Selector@ for @isSubsetOfSet:@
-isSubsetOfSetSelector :: Selector
+isSubsetOfSetSelector :: Selector '[Id NSSet] Bool
 isSubsetOfSetSelector = mkSelector "isSubsetOfSet:"
 
 -- | @Selector@ for @makeObjectsPerformSelector:@
-makeObjectsPerformSelectorSelector :: Selector
+makeObjectsPerformSelectorSelector :: Selector '[Sel] ()
 makeObjectsPerformSelectorSelector = mkSelector "makeObjectsPerformSelector:"
 
 -- | @Selector@ for @makeObjectsPerformSelector:withObject:@
-makeObjectsPerformSelector_withObjectSelector :: Selector
+makeObjectsPerformSelector_withObjectSelector :: Selector '[Sel, RawId] ()
 makeObjectsPerformSelector_withObjectSelector = mkSelector "makeObjectsPerformSelector:withObject:"
 
 -- | @Selector@ for @setByAddingObject:@
-setByAddingObjectSelector :: Selector
+setByAddingObjectSelector :: Selector '[RawId] (Id NSSet)
 setByAddingObjectSelector = mkSelector "setByAddingObject:"
 
 -- | @Selector@ for @setByAddingObjectsFromSet:@
-setByAddingObjectsFromSetSelector :: Selector
+setByAddingObjectsFromSetSelector :: Selector '[Id NSSet] (Id NSSet)
 setByAddingObjectsFromSetSelector = mkSelector "setByAddingObjectsFromSet:"
 
 -- | @Selector@ for @setByAddingObjectsFromArray:@
-setByAddingObjectsFromArraySelector :: Selector
+setByAddingObjectsFromArraySelector :: Selector '[Id NSArray] (Id NSSet)
 setByAddingObjectsFromArraySelector = mkSelector "setByAddingObjectsFromArray:"
 
 -- | @Selector@ for @enumerateObjectsUsingBlock:@
-enumerateObjectsUsingBlockSelector :: Selector
+enumerateObjectsUsingBlockSelector :: Selector '[Ptr ()] ()
 enumerateObjectsUsingBlockSelector = mkSelector "enumerateObjectsUsingBlock:"
 
 -- | @Selector@ for @enumerateObjectsWithOptions:usingBlock:@
-enumerateObjectsWithOptions_usingBlockSelector :: Selector
+enumerateObjectsWithOptions_usingBlockSelector :: Selector '[NSEnumerationOptions, Ptr ()] ()
 enumerateObjectsWithOptions_usingBlockSelector = mkSelector "enumerateObjectsWithOptions:usingBlock:"
 
 -- | @Selector@ for @objectsPassingTest:@
-objectsPassingTestSelector :: Selector
+objectsPassingTestSelector :: Selector '[Ptr ()] (Id NSSet)
 objectsPassingTestSelector = mkSelector "objectsPassingTest:"
 
 -- | @Selector@ for @objectsWithOptions:passingTest:@
-objectsWithOptions_passingTestSelector :: Selector
+objectsWithOptions_passingTestSelector :: Selector '[NSEnumerationOptions, Ptr ()] (Id NSSet)
 objectsWithOptions_passingTestSelector = mkSelector "objectsWithOptions:passingTest:"
 
 -- | @Selector@ for @count@
-countSelector :: Selector
+countSelector :: Selector '[] CULong
 countSelector = mkSelector "count"
 
 -- | @Selector@ for @allObjects@
-allObjectsSelector :: Selector
+allObjectsSelector :: Selector '[] (Id NSArray)
 allObjectsSelector = mkSelector "allObjects"
 
 -- | @Selector@ for @description@
-descriptionSelector :: Selector
+descriptionSelector :: Selector '[] (Id NSString)
 descriptionSelector = mkSelector "description"
 

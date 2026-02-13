@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.AVFoundation.AVQueuePlayer
   , insertItem_afterItem
   , removeItem
   , removeAllItems
-  , queuePlayerWithItemsSelector
-  , initWithItemsSelector
-  , itemsSelector
   , advanceToNextItemSelector
   , canInsertItem_afterItemSelector
+  , initWithItemsSelector
   , insertItem_afterItemSelector
-  , removeItemSelector
+  , itemsSelector
+  , queuePlayerWithItemsSelector
   , removeAllItemsSelector
+  , removeItemSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,7 @@ queuePlayerWithItems :: IsNSArray items => items -> IO (Id AVQueuePlayer)
 queuePlayerWithItems items =
   do
     cls' <- getRequiredClass "AVQueuePlayer"
-    withObjCPtr items $ \raw_items ->
-      sendClassMsg cls' (mkSelector "queuePlayerWithItems:") (retPtr retVoid) [argPtr (castPtr raw_items :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' queuePlayerWithItemsSelector (toNSArray items)
 
 -- | Initializes an instance of AVQueuePlayer by enqueueing the AVPlayerItems from the specified array.
 --
@@ -71,9 +67,8 @@ queuePlayerWithItems items =
 --
 -- ObjC selector: @- initWithItems:@
 initWithItems :: (IsAVQueuePlayer avQueuePlayer, IsNSArray items) => avQueuePlayer -> items -> IO (Id AVQueuePlayer)
-initWithItems avQueuePlayer  items =
-  withObjCPtr items $ \raw_items ->
-      sendMsg avQueuePlayer (mkSelector "initWithItems:") (retPtr retVoid) [argPtr (castPtr raw_items :: Ptr ())] >>= ownedObject . castPtr
+initWithItems avQueuePlayer items =
+  sendOwnedMessage avQueuePlayer initWithItemsSelector (toNSArray items)
 
 -- | Provides an array of the currently enqueued items.
 --
@@ -81,8 +76,8 @@ initWithItems avQueuePlayer  items =
 --
 -- ObjC selector: @- items@
 items :: IsAVQueuePlayer avQueuePlayer => avQueuePlayer -> IO (Id NSArray)
-items avQueuePlayer  =
-    sendMsg avQueuePlayer (mkSelector "items") (retPtr retVoid) [] >>= retainedObject . castPtr
+items avQueuePlayer =
+  sendMessage avQueuePlayer itemsSelector
 
 -- | Ends playback of the current item and initiates playback of the next item in the player's queue.
 --
@@ -90,8 +85,8 @@ items avQueuePlayer  =
 --
 -- ObjC selector: @- advanceToNextItem@
 advanceToNextItem :: IsAVQueuePlayer avQueuePlayer => avQueuePlayer -> IO ()
-advanceToNextItem avQueuePlayer  =
-    sendMsg avQueuePlayer (mkSelector "advanceToNextItem") retVoid []
+advanceToNextItem avQueuePlayer =
+  sendMessage avQueuePlayer advanceToNextItemSelector
 
 -- | Tests whether an AVPlayerItem can be inserted into the player's queue.
 --
@@ -103,10 +98,8 @@ advanceToNextItem avQueuePlayer  =
 --
 -- ObjC selector: @- canInsertItem:afterItem:@
 canInsertItem_afterItem :: (IsAVQueuePlayer avQueuePlayer, IsAVPlayerItem item, IsAVPlayerItem afterItem) => avQueuePlayer -> item -> afterItem -> IO Bool
-canInsertItem_afterItem avQueuePlayer  item afterItem =
-  withObjCPtr item $ \raw_item ->
-    withObjCPtr afterItem $ \raw_afterItem ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avQueuePlayer (mkSelector "canInsertItem:afterItem:") retCULong [argPtr (castPtr raw_item :: Ptr ()), argPtr (castPtr raw_afterItem :: Ptr ())]
+canInsertItem_afterItem avQueuePlayer item afterItem =
+  sendMessage avQueuePlayer canInsertItem_afterItemSelector (toAVPlayerItem item) (toAVPlayerItem afterItem)
 
 -- | Places an AVPlayerItem after the specified item in the queue.
 --
@@ -116,10 +109,8 @@ canInsertItem_afterItem avQueuePlayer  item afterItem =
 --
 -- ObjC selector: @- insertItem:afterItem:@
 insertItem_afterItem :: (IsAVQueuePlayer avQueuePlayer, IsAVPlayerItem item, IsAVPlayerItem afterItem) => avQueuePlayer -> item -> afterItem -> IO ()
-insertItem_afterItem avQueuePlayer  item afterItem =
-  withObjCPtr item $ \raw_item ->
-    withObjCPtr afterItem $ \raw_afterItem ->
-        sendMsg avQueuePlayer (mkSelector "insertItem:afterItem:") retVoid [argPtr (castPtr raw_item :: Ptr ()), argPtr (castPtr raw_afterItem :: Ptr ())]
+insertItem_afterItem avQueuePlayer item afterItem =
+  sendMessage avQueuePlayer insertItem_afterItemSelector (toAVPlayerItem item) (toAVPlayerItem afterItem)
 
 -- | Removes an AVPlayerItem from the queue.
 --
@@ -129,9 +120,8 @@ insertItem_afterItem avQueuePlayer  item afterItem =
 --
 -- ObjC selector: @- removeItem:@
 removeItem :: (IsAVQueuePlayer avQueuePlayer, IsAVPlayerItem item) => avQueuePlayer -> item -> IO ()
-removeItem avQueuePlayer  item =
-  withObjCPtr item $ \raw_item ->
-      sendMsg avQueuePlayer (mkSelector "removeItem:") retVoid [argPtr (castPtr raw_item :: Ptr ())]
+removeItem avQueuePlayer item =
+  sendMessage avQueuePlayer removeItemSelector (toAVPlayerItem item)
 
 -- | Removes all items from the queue.
 --
@@ -139,42 +129,42 @@ removeItem avQueuePlayer  item =
 --
 -- ObjC selector: @- removeAllItems@
 removeAllItems :: IsAVQueuePlayer avQueuePlayer => avQueuePlayer -> IO ()
-removeAllItems avQueuePlayer  =
-    sendMsg avQueuePlayer (mkSelector "removeAllItems") retVoid []
+removeAllItems avQueuePlayer =
+  sendMessage avQueuePlayer removeAllItemsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @queuePlayerWithItems:@
-queuePlayerWithItemsSelector :: Selector
+queuePlayerWithItemsSelector :: Selector '[Id NSArray] (Id AVQueuePlayer)
 queuePlayerWithItemsSelector = mkSelector "queuePlayerWithItems:"
 
 -- | @Selector@ for @initWithItems:@
-initWithItemsSelector :: Selector
+initWithItemsSelector :: Selector '[Id NSArray] (Id AVQueuePlayer)
 initWithItemsSelector = mkSelector "initWithItems:"
 
 -- | @Selector@ for @items@
-itemsSelector :: Selector
+itemsSelector :: Selector '[] (Id NSArray)
 itemsSelector = mkSelector "items"
 
 -- | @Selector@ for @advanceToNextItem@
-advanceToNextItemSelector :: Selector
+advanceToNextItemSelector :: Selector '[] ()
 advanceToNextItemSelector = mkSelector "advanceToNextItem"
 
 -- | @Selector@ for @canInsertItem:afterItem:@
-canInsertItem_afterItemSelector :: Selector
+canInsertItem_afterItemSelector :: Selector '[Id AVPlayerItem, Id AVPlayerItem] Bool
 canInsertItem_afterItemSelector = mkSelector "canInsertItem:afterItem:"
 
 -- | @Selector@ for @insertItem:afterItem:@
-insertItem_afterItemSelector :: Selector
+insertItem_afterItemSelector :: Selector '[Id AVPlayerItem, Id AVPlayerItem] ()
 insertItem_afterItemSelector = mkSelector "insertItem:afterItem:"
 
 -- | @Selector@ for @removeItem:@
-removeItemSelector :: Selector
+removeItemSelector :: Selector '[Id AVPlayerItem] ()
 removeItemSelector = mkSelector "removeItem:"
 
 -- | @Selector@ for @removeAllItems@
-removeAllItemsSelector :: Selector
+removeAllItemsSelector :: Selector '[] ()
 removeAllItemsSelector = mkSelector "removeAllItems"
 

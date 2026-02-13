@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,29 +23,25 @@ module ObjC.AVFoundation.AVAssetReaderAudioMixOutput
   , setAudioMix
   , audioTimePitchAlgorithm
   , setAudioTimePitchAlgorithm
-  , initSelector
-  , newSelector
   , assetReaderAudioMixOutputWithAudioTracks_audioSettingsSelector
-  , initWithAudioTracks_audioSettingsSelector
-  , audioTracksSelector
-  , audioSettingsSelector
   , audioMixSelector
-  , setAudioMixSelector
+  , audioSettingsSelector
   , audioTimePitchAlgorithmSelector
+  , audioTracksSelector
+  , initSelector
+  , initWithAudioTracks_audioSettingsSelector
+  , newSelector
+  , setAudioMixSelector
   , setAudioTimePitchAlgorithmSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetReaderAudioMixOutput avAssetReaderAudioMixOutput => avAssetReaderAudioMixOutput -> IO (Id AVAssetReaderAudioMixOutput)
-init_ avAssetReaderAudioMixOutput  =
-    sendMsg avAssetReaderAudioMixOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetReaderAudioMixOutput =
+  sendOwnedMessage avAssetReaderAudioMixOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetReaderAudioMixOutput)
 new  =
   do
     cls' <- getRequiredClass "AVAssetReaderAudioMixOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | assetReaderAudioMixOutputWithAudioTracks:audioSettings:
 --
@@ -84,9 +81,7 @@ assetReaderAudioMixOutputWithAudioTracks_audioSettings :: (IsNSArray audioTracks
 assetReaderAudioMixOutputWithAudioTracks_audioSettings audioTracks audioSettings =
   do
     cls' <- getRequiredClass "AVAssetReaderAudioMixOutput"
-    withObjCPtr audioTracks $ \raw_audioTracks ->
-      withObjCPtr audioSettings $ \raw_audioSettings ->
-        sendClassMsg cls' (mkSelector "assetReaderAudioMixOutputWithAudioTracks:audioSettings:") (retPtr retVoid) [argPtr (castPtr raw_audioTracks :: Ptr ()), argPtr (castPtr raw_audioSettings :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetReaderAudioMixOutputWithAudioTracks_audioSettingsSelector (toNSArray audioTracks) (toNSDictionary audioSettings)
 
 -- | initWithAudioTracks:audioSettings:
 --
@@ -108,10 +103,8 @@ assetReaderAudioMixOutputWithAudioTracks_audioSettings audioTracks audioSettings
 --
 -- ObjC selector: @- initWithAudioTracks:audioSettings:@
 initWithAudioTracks_audioSettings :: (IsAVAssetReaderAudioMixOutput avAssetReaderAudioMixOutput, IsNSArray audioTracks, IsNSDictionary audioSettings) => avAssetReaderAudioMixOutput -> audioTracks -> audioSettings -> IO (Id AVAssetReaderAudioMixOutput)
-initWithAudioTracks_audioSettings avAssetReaderAudioMixOutput  audioTracks audioSettings =
-  withObjCPtr audioTracks $ \raw_audioTracks ->
-    withObjCPtr audioSettings $ \raw_audioSettings ->
-        sendMsg avAssetReaderAudioMixOutput (mkSelector "initWithAudioTracks:audioSettings:") (retPtr retVoid) [argPtr (castPtr raw_audioTracks :: Ptr ()), argPtr (castPtr raw_audioSettings :: Ptr ())] >>= ownedObject . castPtr
+initWithAudioTracks_audioSettings avAssetReaderAudioMixOutput audioTracks audioSettings =
+  sendOwnedMessage avAssetReaderAudioMixOutput initWithAudioTracks_audioSettingsSelector (toNSArray audioTracks) (toNSDictionary audioSettings)
 
 -- | audioTracks
 --
@@ -121,8 +114,8 @@ initWithAudioTracks_audioSettings avAssetReaderAudioMixOutput  audioTracks audio
 --
 -- ObjC selector: @- audioTracks@
 audioTracks :: IsAVAssetReaderAudioMixOutput avAssetReaderAudioMixOutput => avAssetReaderAudioMixOutput -> IO (Id NSArray)
-audioTracks avAssetReaderAudioMixOutput  =
-    sendMsg avAssetReaderAudioMixOutput (mkSelector "audioTracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioTracks avAssetReaderAudioMixOutput =
+  sendMessage avAssetReaderAudioMixOutput audioTracksSelector
 
 -- | audioSettings
 --
@@ -132,8 +125,8 @@ audioTracks avAssetReaderAudioMixOutput  =
 --
 -- ObjC selector: @- audioSettings@
 audioSettings :: IsAVAssetReaderAudioMixOutput avAssetReaderAudioMixOutput => avAssetReaderAudioMixOutput -> IO (Id NSDictionary)
-audioSettings avAssetReaderAudioMixOutput  =
-    sendMsg avAssetReaderAudioMixOutput (mkSelector "audioSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioSettings avAssetReaderAudioMixOutput =
+  sendMessage avAssetReaderAudioMixOutput audioSettingsSelector
 
 -- | audioMix
 --
@@ -145,8 +138,8 @@ audioSettings avAssetReaderAudioMixOutput  =
 --
 -- ObjC selector: @- audioMix@
 audioMix :: IsAVAssetReaderAudioMixOutput avAssetReaderAudioMixOutput => avAssetReaderAudioMixOutput -> IO (Id AVAudioMix)
-audioMix avAssetReaderAudioMixOutput  =
-    sendMsg avAssetReaderAudioMixOutput (mkSelector "audioMix") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioMix avAssetReaderAudioMixOutput =
+  sendMessage avAssetReaderAudioMixOutput audioMixSelector
 
 -- | audioMix
 --
@@ -158,9 +151,8 @@ audioMix avAssetReaderAudioMixOutput  =
 --
 -- ObjC selector: @- setAudioMix:@
 setAudioMix :: (IsAVAssetReaderAudioMixOutput avAssetReaderAudioMixOutput, IsAVAudioMix value) => avAssetReaderAudioMixOutput -> value -> IO ()
-setAudioMix avAssetReaderAudioMixOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetReaderAudioMixOutput (mkSelector "setAudioMix:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioMix avAssetReaderAudioMixOutput value =
+  sendMessage avAssetReaderAudioMixOutput setAudioMixSelector (toAVAudioMix value)
 
 -- | audioTimePitchAlgorithm
 --
@@ -172,8 +164,8 @@ setAudioMix avAssetReaderAudioMixOutput  value =
 --
 -- ObjC selector: @- audioTimePitchAlgorithm@
 audioTimePitchAlgorithm :: IsAVAssetReaderAudioMixOutput avAssetReaderAudioMixOutput => avAssetReaderAudioMixOutput -> IO (Id NSString)
-audioTimePitchAlgorithm avAssetReaderAudioMixOutput  =
-    sendMsg avAssetReaderAudioMixOutput (mkSelector "audioTimePitchAlgorithm") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioTimePitchAlgorithm avAssetReaderAudioMixOutput =
+  sendMessage avAssetReaderAudioMixOutput audioTimePitchAlgorithmSelector
 
 -- | audioTimePitchAlgorithm
 --
@@ -185,51 +177,50 @@ audioTimePitchAlgorithm avAssetReaderAudioMixOutput  =
 --
 -- ObjC selector: @- setAudioTimePitchAlgorithm:@
 setAudioTimePitchAlgorithm :: (IsAVAssetReaderAudioMixOutput avAssetReaderAudioMixOutput, IsNSString value) => avAssetReaderAudioMixOutput -> value -> IO ()
-setAudioTimePitchAlgorithm avAssetReaderAudioMixOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetReaderAudioMixOutput (mkSelector "setAudioTimePitchAlgorithm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioTimePitchAlgorithm avAssetReaderAudioMixOutput value =
+  sendMessage avAssetReaderAudioMixOutput setAudioTimePitchAlgorithmSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetReaderAudioMixOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetReaderAudioMixOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetReaderAudioMixOutputWithAudioTracks:audioSettings:@
-assetReaderAudioMixOutputWithAudioTracks_audioSettingsSelector :: Selector
+assetReaderAudioMixOutputWithAudioTracks_audioSettingsSelector :: Selector '[Id NSArray, Id NSDictionary] (Id AVAssetReaderAudioMixOutput)
 assetReaderAudioMixOutputWithAudioTracks_audioSettingsSelector = mkSelector "assetReaderAudioMixOutputWithAudioTracks:audioSettings:"
 
 -- | @Selector@ for @initWithAudioTracks:audioSettings:@
-initWithAudioTracks_audioSettingsSelector :: Selector
+initWithAudioTracks_audioSettingsSelector :: Selector '[Id NSArray, Id NSDictionary] (Id AVAssetReaderAudioMixOutput)
 initWithAudioTracks_audioSettingsSelector = mkSelector "initWithAudioTracks:audioSettings:"
 
 -- | @Selector@ for @audioTracks@
-audioTracksSelector :: Selector
+audioTracksSelector :: Selector '[] (Id NSArray)
 audioTracksSelector = mkSelector "audioTracks"
 
 -- | @Selector@ for @audioSettings@
-audioSettingsSelector :: Selector
+audioSettingsSelector :: Selector '[] (Id NSDictionary)
 audioSettingsSelector = mkSelector "audioSettings"
 
 -- | @Selector@ for @audioMix@
-audioMixSelector :: Selector
+audioMixSelector :: Selector '[] (Id AVAudioMix)
 audioMixSelector = mkSelector "audioMix"
 
 -- | @Selector@ for @setAudioMix:@
-setAudioMixSelector :: Selector
+setAudioMixSelector :: Selector '[Id AVAudioMix] ()
 setAudioMixSelector = mkSelector "setAudioMix:"
 
 -- | @Selector@ for @audioTimePitchAlgorithm@
-audioTimePitchAlgorithmSelector :: Selector
+audioTimePitchAlgorithmSelector :: Selector '[] (Id NSString)
 audioTimePitchAlgorithmSelector = mkSelector "audioTimePitchAlgorithm"
 
 -- | @Selector@ for @setAudioTimePitchAlgorithm:@
-setAudioTimePitchAlgorithmSelector :: Selector
+setAudioTimePitchAlgorithmSelector :: Selector '[Id NSString] ()
 setAudioTimePitchAlgorithmSelector = mkSelector "setAudioTimePitchAlgorithm:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,12 +18,12 @@ module ObjC.AVFoundation.AVDelegatingPlaybackCoordinator
   , reapplyCurrentItemStateToPlaybackControlDelegate
   , playbackControlDelegate
   , currentItemIdentifier
-  , initWithPlaybackControlDelegateSelector
   , coordinateRateChangeToRate_optionsSelector
-  , transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebaseSelector
-  , reapplyCurrentItemStateToPlaybackControlDelegateSelector
-  , playbackControlDelegateSelector
   , currentItemIdentifierSelector
+  , initWithPlaybackControlDelegateSelector
+  , playbackControlDelegateSelector
+  , reapplyCurrentItemStateToPlaybackControlDelegateSelector
+  , transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebaseSelector
 
   -- * Enum types
   , AVDelegatingPlaybackCoordinatorRateChangeOptions(AVDelegatingPlaybackCoordinatorRateChangeOptions)
@@ -32,15 +33,11 @@ module ObjC.AVFoundation.AVDelegatingPlaybackCoordinator
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPlaybackControlDelegate:@
 initWithPlaybackControlDelegate :: IsAVDelegatingPlaybackCoordinator avDelegatingPlaybackCoordinator => avDelegatingPlaybackCoordinator -> RawId -> IO (Id AVDelegatingPlaybackCoordinator)
-initWithPlaybackControlDelegate avDelegatingPlaybackCoordinator  playbackControlDelegate =
-    sendMsg avDelegatingPlaybackCoordinator (mkSelector "initWithPlaybackControlDelegate:") (retPtr retVoid) [argPtr (castPtr (unRawId playbackControlDelegate) :: Ptr ())] >>= ownedObject . castPtr
+initWithPlaybackControlDelegate avDelegatingPlaybackCoordinator playbackControlDelegate =
+  sendOwnedMessage avDelegatingPlaybackCoordinator initWithPlaybackControlDelegateSelector playbackControlDelegate
 
 -- | Coordinaties a rate change across the group of connected participants, waiting for other participants to become ready if necessary.
 --
@@ -73,8 +70,8 @@ initWithPlaybackControlDelegate avDelegatingPlaybackCoordinator  playbackControl
 --
 -- ObjC selector: @- coordinateRateChangeToRate:options:@
 coordinateRateChangeToRate_options :: IsAVDelegatingPlaybackCoordinator avDelegatingPlaybackCoordinator => avDelegatingPlaybackCoordinator -> CFloat -> AVDelegatingPlaybackCoordinatorRateChangeOptions -> IO ()
-coordinateRateChangeToRate_options avDelegatingPlaybackCoordinator  rate options =
-    sendMsg avDelegatingPlaybackCoordinator (mkSelector "coordinateRateChangeToRate:options:") retVoid [argCFloat rate, argCULong (coerce options)]
+coordinateRateChangeToRate_options avDelegatingPlaybackCoordinator rate options =
+  sendMessage avDelegatingPlaybackCoordinator coordinateRateChangeToRate_optionsSelector rate options
 
 -- | Informs the coordinator to transition to a new current item.
 --
@@ -86,9 +83,8 @@ coordinateRateChangeToRate_options avDelegatingPlaybackCoordinator  rate options
 --
 -- ObjC selector: @- transitionToItemWithIdentifier:proposingInitialTimingBasedOnTimebase:@
 transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebase :: (IsAVDelegatingPlaybackCoordinator avDelegatingPlaybackCoordinator, IsNSString itemIdentifier) => avDelegatingPlaybackCoordinator -> itemIdentifier -> Ptr () -> IO ()
-transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebase avDelegatingPlaybackCoordinator  itemIdentifier snapshotTimebase =
-  withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      sendMsg avDelegatingPlaybackCoordinator (mkSelector "transitionToItemWithIdentifier:proposingInitialTimingBasedOnTimebase:") retVoid [argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr snapshotTimebase]
+transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebase avDelegatingPlaybackCoordinator itemIdentifier snapshotTimebase =
+  sendMessage avDelegatingPlaybackCoordinator transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebaseSelector (toNSString itemIdentifier) snapshotTimebase
 
 -- | Instructs the coordinator to re-issue commands to synchronize the current item back to the state of the other participants.
 --
@@ -96,48 +92,48 @@ transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebase avDelegatin
 --
 -- ObjC selector: @- reapplyCurrentItemStateToPlaybackControlDelegate@
 reapplyCurrentItemStateToPlaybackControlDelegate :: IsAVDelegatingPlaybackCoordinator avDelegatingPlaybackCoordinator => avDelegatingPlaybackCoordinator -> IO ()
-reapplyCurrentItemStateToPlaybackControlDelegate avDelegatingPlaybackCoordinator  =
-    sendMsg avDelegatingPlaybackCoordinator (mkSelector "reapplyCurrentItemStateToPlaybackControlDelegate") retVoid []
+reapplyCurrentItemStateToPlaybackControlDelegate avDelegatingPlaybackCoordinator =
+  sendMessage avDelegatingPlaybackCoordinator reapplyCurrentItemStateToPlaybackControlDelegateSelector
 
 -- | The custom player implementation controlled by the coordinator.
 --
 -- ObjC selector: @- playbackControlDelegate@
 playbackControlDelegate :: IsAVDelegatingPlaybackCoordinator avDelegatingPlaybackCoordinator => avDelegatingPlaybackCoordinator -> IO RawId
-playbackControlDelegate avDelegatingPlaybackCoordinator  =
-    fmap (RawId . castPtr) $ sendMsg avDelegatingPlaybackCoordinator (mkSelector "playbackControlDelegate") (retPtr retVoid) []
+playbackControlDelegate avDelegatingPlaybackCoordinator =
+  sendMessage avDelegatingPlaybackCoordinator playbackControlDelegateSelector
 
 -- | The item identifier of the current item. Previously set by a call to transitionToItemWithIdentifier:proposingInitialTimingBasedOnTimebase:
 --
 -- ObjC selector: @- currentItemIdentifier@
 currentItemIdentifier :: IsAVDelegatingPlaybackCoordinator avDelegatingPlaybackCoordinator => avDelegatingPlaybackCoordinator -> IO (Id NSString)
-currentItemIdentifier avDelegatingPlaybackCoordinator  =
-    sendMsg avDelegatingPlaybackCoordinator (mkSelector "currentItemIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentItemIdentifier avDelegatingPlaybackCoordinator =
+  sendMessage avDelegatingPlaybackCoordinator currentItemIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPlaybackControlDelegate:@
-initWithPlaybackControlDelegateSelector :: Selector
+initWithPlaybackControlDelegateSelector :: Selector '[RawId] (Id AVDelegatingPlaybackCoordinator)
 initWithPlaybackControlDelegateSelector = mkSelector "initWithPlaybackControlDelegate:"
 
 -- | @Selector@ for @coordinateRateChangeToRate:options:@
-coordinateRateChangeToRate_optionsSelector :: Selector
+coordinateRateChangeToRate_optionsSelector :: Selector '[CFloat, AVDelegatingPlaybackCoordinatorRateChangeOptions] ()
 coordinateRateChangeToRate_optionsSelector = mkSelector "coordinateRateChangeToRate:options:"
 
 -- | @Selector@ for @transitionToItemWithIdentifier:proposingInitialTimingBasedOnTimebase:@
-transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebaseSelector :: Selector
+transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebaseSelector :: Selector '[Id NSString, Ptr ()] ()
 transitionToItemWithIdentifier_proposingInitialTimingBasedOnTimebaseSelector = mkSelector "transitionToItemWithIdentifier:proposingInitialTimingBasedOnTimebase:"
 
 -- | @Selector@ for @reapplyCurrentItemStateToPlaybackControlDelegate@
-reapplyCurrentItemStateToPlaybackControlDelegateSelector :: Selector
+reapplyCurrentItemStateToPlaybackControlDelegateSelector :: Selector '[] ()
 reapplyCurrentItemStateToPlaybackControlDelegateSelector = mkSelector "reapplyCurrentItemStateToPlaybackControlDelegate"
 
 -- | @Selector@ for @playbackControlDelegate@
-playbackControlDelegateSelector :: Selector
+playbackControlDelegateSelector :: Selector '[] RawId
 playbackControlDelegateSelector = mkSelector "playbackControlDelegate"
 
 -- | @Selector@ for @currentItemIdentifier@
-currentItemIdentifierSelector :: Selector
+currentItemIdentifierSelector :: Selector '[] (Id NSString)
 currentItemIdentifierSelector = mkSelector "currentItemIdentifier"
 

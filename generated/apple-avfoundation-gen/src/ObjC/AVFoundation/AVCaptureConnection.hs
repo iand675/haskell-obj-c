@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -59,48 +60,48 @@ module ObjC.AVFoundation.AVCaptureConnection
   , cameraIntrinsicMatrixDeliverySupported
   , cameraIntrinsicMatrixDeliveryEnabled
   , setCameraIntrinsicMatrixDeliveryEnabled
-  , initSelector
-  , newSelector
-  , connectionWithInputPorts_outputSelector
-  , connectionWithInputPort_videoPreviewLayerSelector
-  , initWithInputPorts_outputSelector
-  , initWithInputPort_videoPreviewLayerSelector
-  , isVideoRotationAngleSupportedSelector
-  , inputPortsSelector
-  , outputSelector
-  , videoPreviewLayerSelector
-  , enabledSelector
-  , setEnabledSelector
   , activeSelector
-  , audioChannelsSelector
-  , supportsVideoMirroringSelector
-  , videoMirroredSelector
-  , setVideoMirroredSelector
-  , automaticallyAdjustsVideoMirroringSelector
-  , setAutomaticallyAdjustsVideoMirroringSelector
-  , videoRotationAngleSelector
-  , setVideoRotationAngleSelector
-  , supportsVideoOrientationSelector
-  , videoOrientationSelector
-  , setVideoOrientationSelector
-  , supportsVideoFieldModeSelector
-  , videoFieldModeSelector
-  , setVideoFieldModeSelector
-  , supportsVideoMinFrameDurationSelector
-  , supportsVideoMaxFrameDurationSelector
-  , videoMaxScaleAndCropFactorSelector
-  , videoScaleAndCropFactorSelector
-  , setVideoScaleAndCropFactorSelector
-  , preferredVideoStabilizationModeSelector
-  , setPreferredVideoStabilizationModeSelector
   , activeVideoStabilizationModeSelector
-  , supportsVideoStabilizationSelector
-  , videoStabilizationEnabledSelector
-  , enablesVideoStabilizationWhenAvailableSelector
-  , setEnablesVideoStabilizationWhenAvailableSelector
-  , cameraIntrinsicMatrixDeliverySupportedSelector
+  , audioChannelsSelector
+  , automaticallyAdjustsVideoMirroringSelector
   , cameraIntrinsicMatrixDeliveryEnabledSelector
+  , cameraIntrinsicMatrixDeliverySupportedSelector
+  , connectionWithInputPort_videoPreviewLayerSelector
+  , connectionWithInputPorts_outputSelector
+  , enabledSelector
+  , enablesVideoStabilizationWhenAvailableSelector
+  , initSelector
+  , initWithInputPort_videoPreviewLayerSelector
+  , initWithInputPorts_outputSelector
+  , inputPortsSelector
+  , isVideoRotationAngleSupportedSelector
+  , newSelector
+  , outputSelector
+  , preferredVideoStabilizationModeSelector
+  , setAutomaticallyAdjustsVideoMirroringSelector
   , setCameraIntrinsicMatrixDeliveryEnabledSelector
+  , setEnabledSelector
+  , setEnablesVideoStabilizationWhenAvailableSelector
+  , setPreferredVideoStabilizationModeSelector
+  , setVideoFieldModeSelector
+  , setVideoMirroredSelector
+  , setVideoOrientationSelector
+  , setVideoRotationAngleSelector
+  , setVideoScaleAndCropFactorSelector
+  , supportsVideoFieldModeSelector
+  , supportsVideoMaxFrameDurationSelector
+  , supportsVideoMinFrameDurationSelector
+  , supportsVideoMirroringSelector
+  , supportsVideoOrientationSelector
+  , supportsVideoStabilizationSelector
+  , videoFieldModeSelector
+  , videoMaxScaleAndCropFactorSelector
+  , videoMirroredSelector
+  , videoOrientationSelector
+  , videoPreviewLayerSelector
+  , videoRotationAngleSelector
+  , videoScaleAndCropFactorSelector
+  , videoStabilizationEnabledSelector
 
   -- * Enum types
   , AVCaptureVideoOrientation(AVCaptureVideoOrientation)
@@ -125,15 +126,11 @@ module ObjC.AVFoundation.AVCaptureConnection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -143,15 +140,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO (Id AVCaptureConnection)
-init_ avCaptureConnection  =
-    sendMsg avCaptureConnection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureConnection =
+  sendOwnedMessage avCaptureConnection initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureConnection)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureConnection"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | connectionWithInputPorts:output:
 --
@@ -170,9 +167,7 @@ connectionWithInputPorts_output :: (IsNSArray ports, IsAVCaptureOutput output) =
 connectionWithInputPorts_output ports output =
   do
     cls' <- getRequiredClass "AVCaptureConnection"
-    withObjCPtr ports $ \raw_ports ->
-      withObjCPtr output $ \raw_output ->
-        sendClassMsg cls' (mkSelector "connectionWithInputPorts:output:") (retPtr retVoid) [argPtr (castPtr raw_ports :: Ptr ()), argPtr (castPtr raw_output :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' connectionWithInputPorts_outputSelector (toNSArray ports) (toAVCaptureOutput output)
 
 -- | connectionWithInputPort:videoPreviewLayer:
 --
@@ -191,9 +186,7 @@ connectionWithInputPort_videoPreviewLayer :: (IsAVCaptureInputPort port, IsAVCap
 connectionWithInputPort_videoPreviewLayer port layer =
   do
     cls' <- getRequiredClass "AVCaptureConnection"
-    withObjCPtr port $ \raw_port ->
-      withObjCPtr layer $ \raw_layer ->
-        sendClassMsg cls' (mkSelector "connectionWithInputPort:videoPreviewLayer:") (retPtr retVoid) [argPtr (castPtr raw_port :: Ptr ()), argPtr (castPtr raw_layer :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' connectionWithInputPort_videoPreviewLayerSelector (toAVCaptureInputPort port) (toAVCaptureVideoPreviewLayer layer)
 
 -- | initWithInputPorts:output:
 --
@@ -209,10 +202,8 @@ connectionWithInputPort_videoPreviewLayer port layer =
 --
 -- ObjC selector: @- initWithInputPorts:output:@
 initWithInputPorts_output :: (IsAVCaptureConnection avCaptureConnection, IsNSArray ports, IsAVCaptureOutput output) => avCaptureConnection -> ports -> output -> IO (Id AVCaptureConnection)
-initWithInputPorts_output avCaptureConnection  ports output =
-  withObjCPtr ports $ \raw_ports ->
-    withObjCPtr output $ \raw_output ->
-        sendMsg avCaptureConnection (mkSelector "initWithInputPorts:output:") (retPtr retVoid) [argPtr (castPtr raw_ports :: Ptr ()), argPtr (castPtr raw_output :: Ptr ())] >>= ownedObject . castPtr
+initWithInputPorts_output avCaptureConnection ports output =
+  sendOwnedMessage avCaptureConnection initWithInputPorts_outputSelector (toNSArray ports) (toAVCaptureOutput output)
 
 -- | initWithInputPort:videoPreviewLayer:
 --
@@ -228,10 +219,8 @@ initWithInputPorts_output avCaptureConnection  ports output =
 --
 -- ObjC selector: @- initWithInputPort:videoPreviewLayer:@
 initWithInputPort_videoPreviewLayer :: (IsAVCaptureConnection avCaptureConnection, IsAVCaptureInputPort port, IsAVCaptureVideoPreviewLayer layer) => avCaptureConnection -> port -> layer -> IO (Id AVCaptureConnection)
-initWithInputPort_videoPreviewLayer avCaptureConnection  port layer =
-  withObjCPtr port $ \raw_port ->
-    withObjCPtr layer $ \raw_layer ->
-        sendMsg avCaptureConnection (mkSelector "initWithInputPort:videoPreviewLayer:") (retPtr retVoid) [argPtr (castPtr raw_port :: Ptr ()), argPtr (castPtr raw_layer :: Ptr ())] >>= ownedObject . castPtr
+initWithInputPort_videoPreviewLayer avCaptureConnection port layer =
+  sendOwnedMessage avCaptureConnection initWithInputPort_videoPreviewLayerSelector (toAVCaptureInputPort port) (toAVCaptureVideoPreviewLayer layer)
 
 -- | isVideoRotationAngleSupported:
 --
@@ -245,8 +234,8 @@ initWithInputPort_videoPreviewLayer avCaptureConnection  port layer =
 --
 -- ObjC selector: @- isVideoRotationAngleSupported:@
 isVideoRotationAngleSupported :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> CDouble -> IO Bool
-isVideoRotationAngleSupported avCaptureConnection  videoRotationAngle =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "isVideoRotationAngleSupported:") retCULong [argCDouble videoRotationAngle]
+isVideoRotationAngleSupported avCaptureConnection videoRotationAngle =
+  sendMessage avCaptureConnection isVideoRotationAngleSupportedSelector videoRotationAngle
 
 -- | inputPorts
 --
@@ -256,8 +245,8 @@ isVideoRotationAngleSupported avCaptureConnection  videoRotationAngle =
 --
 -- ObjC selector: @- inputPorts@
 inputPorts :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO (Id NSArray)
-inputPorts avCaptureConnection  =
-    sendMsg avCaptureConnection (mkSelector "inputPorts") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputPorts avCaptureConnection =
+  sendMessage avCaptureConnection inputPortsSelector
 
 -- | output
 --
@@ -267,8 +256,8 @@ inputPorts avCaptureConnection  =
 --
 -- ObjC selector: @- output@
 output :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO (Id AVCaptureOutput)
-output avCaptureConnection  =
-    sendMsg avCaptureConnection (mkSelector "output") (retPtr retVoid) [] >>= retainedObject . castPtr
+output avCaptureConnection =
+  sendMessage avCaptureConnection outputSelector
 
 -- | videoPreviewLayer
 --
@@ -278,8 +267,8 @@ output avCaptureConnection  =
 --
 -- ObjC selector: @- videoPreviewLayer@
 videoPreviewLayer :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO (Id AVCaptureVideoPreviewLayer)
-videoPreviewLayer avCaptureConnection  =
-    sendMsg avCaptureConnection (mkSelector "videoPreviewLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoPreviewLayer avCaptureConnection =
+  sendMessage avCaptureConnection videoPreviewLayerSelector
 
 -- | enabled
 --
@@ -289,8 +278,8 @@ videoPreviewLayer avCaptureConnection  =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-enabled avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "enabled") retCULong []
+enabled avCaptureConnection =
+  sendMessage avCaptureConnection enabledSelector
 
 -- | enabled
 --
@@ -300,8 +289,8 @@ enabled avCaptureConnection  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> Bool -> IO ()
-setEnabled avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled avCaptureConnection value =
+  sendMessage avCaptureConnection setEnabledSelector value
 
 -- | active
 --
@@ -313,8 +302,8 @@ setEnabled avCaptureConnection  value =
 --
 -- ObjC selector: @- active@
 active :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-active avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "active") retCULong []
+active avCaptureConnection =
+  sendMessage avCaptureConnection activeSelector
 
 -- | audioChannels
 --
@@ -324,8 +313,8 @@ active avCaptureConnection  =
 --
 -- ObjC selector: @- audioChannels@
 audioChannels :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO (Id NSArray)
-audioChannels avCaptureConnection  =
-    sendMsg avCaptureConnection (mkSelector "audioChannels") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioChannels avCaptureConnection =
+  sendMessage avCaptureConnection audioChannelsSelector
 
 -- | supportsVideoMirroring
 --
@@ -335,8 +324,8 @@ audioChannels avCaptureConnection  =
 --
 -- ObjC selector: @- supportsVideoMirroring@
 supportsVideoMirroring :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-supportsVideoMirroring avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "supportsVideoMirroring") retCULong []
+supportsVideoMirroring avCaptureConnection =
+  sendMessage avCaptureConnection supportsVideoMirroringSelector
 
 -- | videoMirrored
 --
@@ -346,8 +335,8 @@ supportsVideoMirroring avCaptureConnection  =
 --
 -- ObjC selector: @- videoMirrored@
 videoMirrored :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-videoMirrored avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "videoMirrored") retCULong []
+videoMirrored avCaptureConnection =
+  sendMessage avCaptureConnection videoMirroredSelector
 
 -- | videoMirrored
 --
@@ -357,8 +346,8 @@ videoMirrored avCaptureConnection  =
 --
 -- ObjC selector: @- setVideoMirrored:@
 setVideoMirrored :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> Bool -> IO ()
-setVideoMirrored avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setVideoMirrored:") retVoid [argCULong (if value then 1 else 0)]
+setVideoMirrored avCaptureConnection value =
+  sendMessage avCaptureConnection setVideoMirroredSelector value
 
 -- | automaticallyAdjustsVideoMirroring
 --
@@ -368,8 +357,8 @@ setVideoMirrored avCaptureConnection  value =
 --
 -- ObjC selector: @- automaticallyAdjustsVideoMirroring@
 automaticallyAdjustsVideoMirroring :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-automaticallyAdjustsVideoMirroring avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "automaticallyAdjustsVideoMirroring") retCULong []
+automaticallyAdjustsVideoMirroring avCaptureConnection =
+  sendMessage avCaptureConnection automaticallyAdjustsVideoMirroringSelector
 
 -- | automaticallyAdjustsVideoMirroring
 --
@@ -379,8 +368,8 @@ automaticallyAdjustsVideoMirroring avCaptureConnection  =
 --
 -- ObjC selector: @- setAutomaticallyAdjustsVideoMirroring:@
 setAutomaticallyAdjustsVideoMirroring :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> Bool -> IO ()
-setAutomaticallyAdjustsVideoMirroring avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setAutomaticallyAdjustsVideoMirroring:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyAdjustsVideoMirroring avCaptureConnection value =
+  sendMessage avCaptureConnection setAutomaticallyAdjustsVideoMirroringSelector value
 
 -- | videoRotationAngle
 --
@@ -394,8 +383,8 @@ setAutomaticallyAdjustsVideoMirroring avCaptureConnection  value =
 --
 -- ObjC selector: @- videoRotationAngle@
 videoRotationAngle :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO CDouble
-videoRotationAngle avCaptureConnection  =
-    sendMsg avCaptureConnection (mkSelector "videoRotationAngle") retCDouble []
+videoRotationAngle avCaptureConnection =
+  sendMessage avCaptureConnection videoRotationAngleSelector
 
 -- | videoRotationAngle
 --
@@ -409,8 +398,8 @@ videoRotationAngle avCaptureConnection  =
 --
 -- ObjC selector: @- setVideoRotationAngle:@
 setVideoRotationAngle :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> CDouble -> IO ()
-setVideoRotationAngle avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setVideoRotationAngle:") retVoid [argCDouble value]
+setVideoRotationAngle avCaptureConnection value =
+  sendMessage avCaptureConnection setVideoRotationAngleSelector value
 
 -- | supportsVideoOrientation
 --
@@ -420,8 +409,8 @@ setVideoRotationAngle avCaptureConnection  value =
 --
 -- ObjC selector: @- supportsVideoOrientation@
 supportsVideoOrientation :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-supportsVideoOrientation avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "supportsVideoOrientation") retCULong []
+supportsVideoOrientation avCaptureConnection =
+  sendMessage avCaptureConnection supportsVideoOrientationSelector
 
 -- | videoOrientation
 --
@@ -431,8 +420,8 @@ supportsVideoOrientation avCaptureConnection  =
 --
 -- ObjC selector: @- videoOrientation@
 videoOrientation :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO AVCaptureVideoOrientation
-videoOrientation avCaptureConnection  =
-    fmap (coerce :: CLong -> AVCaptureVideoOrientation) $ sendMsg avCaptureConnection (mkSelector "videoOrientation") retCLong []
+videoOrientation avCaptureConnection =
+  sendMessage avCaptureConnection videoOrientationSelector
 
 -- | videoOrientation
 --
@@ -442,8 +431,8 @@ videoOrientation avCaptureConnection  =
 --
 -- ObjC selector: @- setVideoOrientation:@
 setVideoOrientation :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> AVCaptureVideoOrientation -> IO ()
-setVideoOrientation avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setVideoOrientation:") retVoid [argCLong (coerce value)]
+setVideoOrientation avCaptureConnection value =
+  sendMessage avCaptureConnection setVideoOrientationSelector value
 
 -- | supportsVideoFieldMode
 --
@@ -453,8 +442,8 @@ setVideoOrientation avCaptureConnection  value =
 --
 -- ObjC selector: @- supportsVideoFieldMode@
 supportsVideoFieldMode :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-supportsVideoFieldMode avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "supportsVideoFieldMode") retCULong []
+supportsVideoFieldMode avCaptureConnection =
+  sendMessage avCaptureConnection supportsVideoFieldModeSelector
 
 -- | videoFieldMode
 --
@@ -464,8 +453,8 @@ supportsVideoFieldMode avCaptureConnection  =
 --
 -- ObjC selector: @- videoFieldMode@
 videoFieldMode :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO AVVideoFieldMode
-videoFieldMode avCaptureConnection  =
-    fmap (coerce :: CLong -> AVVideoFieldMode) $ sendMsg avCaptureConnection (mkSelector "videoFieldMode") retCLong []
+videoFieldMode avCaptureConnection =
+  sendMessage avCaptureConnection videoFieldModeSelector
 
 -- | videoFieldMode
 --
@@ -475,8 +464,8 @@ videoFieldMode avCaptureConnection  =
 --
 -- ObjC selector: @- setVideoFieldMode:@
 setVideoFieldMode :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> AVVideoFieldMode -> IO ()
-setVideoFieldMode avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setVideoFieldMode:") retVoid [argCLong (coerce value)]
+setVideoFieldMode avCaptureConnection value =
+  sendMessage avCaptureConnection setVideoFieldModeSelector value
 
 -- | supportsVideoMinFrameDuration
 --
@@ -488,8 +477,8 @@ setVideoFieldMode avCaptureConnection  value =
 --
 -- ObjC selector: @- supportsVideoMinFrameDuration@
 supportsVideoMinFrameDuration :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-supportsVideoMinFrameDuration avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "supportsVideoMinFrameDuration") retCULong []
+supportsVideoMinFrameDuration avCaptureConnection =
+  sendMessage avCaptureConnection supportsVideoMinFrameDurationSelector
 
 -- | supportsVideoMaxFrameDuration
 --
@@ -501,8 +490,8 @@ supportsVideoMinFrameDuration avCaptureConnection  =
 --
 -- ObjC selector: @- supportsVideoMaxFrameDuration@
 supportsVideoMaxFrameDuration :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-supportsVideoMaxFrameDuration avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "supportsVideoMaxFrameDuration") retCULong []
+supportsVideoMaxFrameDuration avCaptureConnection =
+  sendMessage avCaptureConnection supportsVideoMaxFrameDurationSelector
 
 -- | videoMaxScaleAndCropFactor
 --
@@ -512,8 +501,8 @@ supportsVideoMaxFrameDuration avCaptureConnection  =
 --
 -- ObjC selector: @- videoMaxScaleAndCropFactor@
 videoMaxScaleAndCropFactor :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO CDouble
-videoMaxScaleAndCropFactor avCaptureConnection  =
-    sendMsg avCaptureConnection (mkSelector "videoMaxScaleAndCropFactor") retCDouble []
+videoMaxScaleAndCropFactor avCaptureConnection =
+  sendMessage avCaptureConnection videoMaxScaleAndCropFactorSelector
 
 -- | videoScaleAndCropFactor
 --
@@ -525,8 +514,8 @@ videoMaxScaleAndCropFactor avCaptureConnection  =
 --
 -- ObjC selector: @- videoScaleAndCropFactor@
 videoScaleAndCropFactor :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO CDouble
-videoScaleAndCropFactor avCaptureConnection  =
-    sendMsg avCaptureConnection (mkSelector "videoScaleAndCropFactor") retCDouble []
+videoScaleAndCropFactor avCaptureConnection =
+  sendMessage avCaptureConnection videoScaleAndCropFactorSelector
 
 -- | videoScaleAndCropFactor
 --
@@ -538,8 +527,8 @@ videoScaleAndCropFactor avCaptureConnection  =
 --
 -- ObjC selector: @- setVideoScaleAndCropFactor:@
 setVideoScaleAndCropFactor :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> CDouble -> IO ()
-setVideoScaleAndCropFactor avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setVideoScaleAndCropFactor:") retVoid [argCDouble value]
+setVideoScaleAndCropFactor avCaptureConnection value =
+  sendMessage avCaptureConnection setVideoScaleAndCropFactorSelector value
 
 -- | preferredVideoStabilizationMode
 --
@@ -551,8 +540,8 @@ setVideoScaleAndCropFactor avCaptureConnection  value =
 --
 -- ObjC selector: @- preferredVideoStabilizationMode@
 preferredVideoStabilizationMode :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO AVCaptureVideoStabilizationMode
-preferredVideoStabilizationMode avCaptureConnection  =
-    fmap (coerce :: CLong -> AVCaptureVideoStabilizationMode) $ sendMsg avCaptureConnection (mkSelector "preferredVideoStabilizationMode") retCLong []
+preferredVideoStabilizationMode avCaptureConnection =
+  sendMessage avCaptureConnection preferredVideoStabilizationModeSelector
 
 -- | preferredVideoStabilizationMode
 --
@@ -564,8 +553,8 @@ preferredVideoStabilizationMode avCaptureConnection  =
 --
 -- ObjC selector: @- setPreferredVideoStabilizationMode:@
 setPreferredVideoStabilizationMode :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> AVCaptureVideoStabilizationMode -> IO ()
-setPreferredVideoStabilizationMode avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setPreferredVideoStabilizationMode:") retVoid [argCLong (coerce value)]
+setPreferredVideoStabilizationMode avCaptureConnection value =
+  sendMessage avCaptureConnection setPreferredVideoStabilizationModeSelector value
 
 -- | activeVideoStabilizationMode
 --
@@ -575,8 +564,8 @@ setPreferredVideoStabilizationMode avCaptureConnection  value =
 --
 -- ObjC selector: @- activeVideoStabilizationMode@
 activeVideoStabilizationMode :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO AVCaptureVideoStabilizationMode
-activeVideoStabilizationMode avCaptureConnection  =
-    fmap (coerce :: CLong -> AVCaptureVideoStabilizationMode) $ sendMsg avCaptureConnection (mkSelector "activeVideoStabilizationMode") retCLong []
+activeVideoStabilizationMode avCaptureConnection =
+  sendMessage avCaptureConnection activeVideoStabilizationModeSelector
 
 -- | supportsVideoStabilization
 --
@@ -586,8 +575,8 @@ activeVideoStabilizationMode avCaptureConnection  =
 --
 -- ObjC selector: @- supportsVideoStabilization@
 supportsVideoStabilization :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-supportsVideoStabilization avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "supportsVideoStabilization") retCULong []
+supportsVideoStabilization avCaptureConnection =
+  sendMessage avCaptureConnection supportsVideoStabilizationSelector
 
 -- | videoStabilizationEnabled
 --
@@ -597,8 +586,8 @@ supportsVideoStabilization avCaptureConnection  =
 --
 -- ObjC selector: @- videoStabilizationEnabled@
 videoStabilizationEnabled :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-videoStabilizationEnabled avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "videoStabilizationEnabled") retCULong []
+videoStabilizationEnabled avCaptureConnection =
+  sendMessage avCaptureConnection videoStabilizationEnabledSelector
 
 -- | enablesVideoStabilizationWhenAvailable
 --
@@ -608,8 +597,8 @@ videoStabilizationEnabled avCaptureConnection  =
 --
 -- ObjC selector: @- enablesVideoStabilizationWhenAvailable@
 enablesVideoStabilizationWhenAvailable :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-enablesVideoStabilizationWhenAvailable avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "enablesVideoStabilizationWhenAvailable") retCULong []
+enablesVideoStabilizationWhenAvailable avCaptureConnection =
+  sendMessage avCaptureConnection enablesVideoStabilizationWhenAvailableSelector
 
 -- | enablesVideoStabilizationWhenAvailable
 --
@@ -619,8 +608,8 @@ enablesVideoStabilizationWhenAvailable avCaptureConnection  =
 --
 -- ObjC selector: @- setEnablesVideoStabilizationWhenAvailable:@
 setEnablesVideoStabilizationWhenAvailable :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> Bool -> IO ()
-setEnablesVideoStabilizationWhenAvailable avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setEnablesVideoStabilizationWhenAvailable:") retVoid [argCULong (if value then 1 else 0)]
+setEnablesVideoStabilizationWhenAvailable avCaptureConnection value =
+  sendMessage avCaptureConnection setEnablesVideoStabilizationWhenAvailableSelector value
 
 -- | cameraIntrinsicMatrixDeliverySupported
 --
@@ -630,8 +619,8 @@ setEnablesVideoStabilizationWhenAvailable avCaptureConnection  value =
 --
 -- ObjC selector: @- cameraIntrinsicMatrixDeliverySupported@
 cameraIntrinsicMatrixDeliverySupported :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-cameraIntrinsicMatrixDeliverySupported avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "cameraIntrinsicMatrixDeliverySupported") retCULong []
+cameraIntrinsicMatrixDeliverySupported avCaptureConnection =
+  sendMessage avCaptureConnection cameraIntrinsicMatrixDeliverySupportedSelector
 
 -- | cameraIntrinsicMatrixDeliveryEnabled
 --
@@ -641,8 +630,8 @@ cameraIntrinsicMatrixDeliverySupported avCaptureConnection  =
 --
 -- ObjC selector: @- cameraIntrinsicMatrixDeliveryEnabled@
 cameraIntrinsicMatrixDeliveryEnabled :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> IO Bool
-cameraIntrinsicMatrixDeliveryEnabled avCaptureConnection  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureConnection (mkSelector "cameraIntrinsicMatrixDeliveryEnabled") retCULong []
+cameraIntrinsicMatrixDeliveryEnabled avCaptureConnection =
+  sendMessage avCaptureConnection cameraIntrinsicMatrixDeliveryEnabledSelector
 
 -- | cameraIntrinsicMatrixDeliveryEnabled
 --
@@ -652,178 +641,178 @@ cameraIntrinsicMatrixDeliveryEnabled avCaptureConnection  =
 --
 -- ObjC selector: @- setCameraIntrinsicMatrixDeliveryEnabled:@
 setCameraIntrinsicMatrixDeliveryEnabled :: IsAVCaptureConnection avCaptureConnection => avCaptureConnection -> Bool -> IO ()
-setCameraIntrinsicMatrixDeliveryEnabled avCaptureConnection  value =
-    sendMsg avCaptureConnection (mkSelector "setCameraIntrinsicMatrixDeliveryEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setCameraIntrinsicMatrixDeliveryEnabled avCaptureConnection value =
+  sendMessage avCaptureConnection setCameraIntrinsicMatrixDeliveryEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureConnection)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureConnection)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @connectionWithInputPorts:output:@
-connectionWithInputPorts_outputSelector :: Selector
+connectionWithInputPorts_outputSelector :: Selector '[Id NSArray, Id AVCaptureOutput] (Id AVCaptureConnection)
 connectionWithInputPorts_outputSelector = mkSelector "connectionWithInputPorts:output:"
 
 -- | @Selector@ for @connectionWithInputPort:videoPreviewLayer:@
-connectionWithInputPort_videoPreviewLayerSelector :: Selector
+connectionWithInputPort_videoPreviewLayerSelector :: Selector '[Id AVCaptureInputPort, Id AVCaptureVideoPreviewLayer] (Id AVCaptureConnection)
 connectionWithInputPort_videoPreviewLayerSelector = mkSelector "connectionWithInputPort:videoPreviewLayer:"
 
 -- | @Selector@ for @initWithInputPorts:output:@
-initWithInputPorts_outputSelector :: Selector
+initWithInputPorts_outputSelector :: Selector '[Id NSArray, Id AVCaptureOutput] (Id AVCaptureConnection)
 initWithInputPorts_outputSelector = mkSelector "initWithInputPorts:output:"
 
 -- | @Selector@ for @initWithInputPort:videoPreviewLayer:@
-initWithInputPort_videoPreviewLayerSelector :: Selector
+initWithInputPort_videoPreviewLayerSelector :: Selector '[Id AVCaptureInputPort, Id AVCaptureVideoPreviewLayer] (Id AVCaptureConnection)
 initWithInputPort_videoPreviewLayerSelector = mkSelector "initWithInputPort:videoPreviewLayer:"
 
 -- | @Selector@ for @isVideoRotationAngleSupported:@
-isVideoRotationAngleSupportedSelector :: Selector
+isVideoRotationAngleSupportedSelector :: Selector '[CDouble] Bool
 isVideoRotationAngleSupportedSelector = mkSelector "isVideoRotationAngleSupported:"
 
 -- | @Selector@ for @inputPorts@
-inputPortsSelector :: Selector
+inputPortsSelector :: Selector '[] (Id NSArray)
 inputPortsSelector = mkSelector "inputPorts"
 
 -- | @Selector@ for @output@
-outputSelector :: Selector
+outputSelector :: Selector '[] (Id AVCaptureOutput)
 outputSelector = mkSelector "output"
 
 -- | @Selector@ for @videoPreviewLayer@
-videoPreviewLayerSelector :: Selector
+videoPreviewLayerSelector :: Selector '[] (Id AVCaptureVideoPreviewLayer)
 videoPreviewLayerSelector = mkSelector "videoPreviewLayer"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @active@
-activeSelector :: Selector
+activeSelector :: Selector '[] Bool
 activeSelector = mkSelector "active"
 
 -- | @Selector@ for @audioChannels@
-audioChannelsSelector :: Selector
+audioChannelsSelector :: Selector '[] (Id NSArray)
 audioChannelsSelector = mkSelector "audioChannels"
 
 -- | @Selector@ for @supportsVideoMirroring@
-supportsVideoMirroringSelector :: Selector
+supportsVideoMirroringSelector :: Selector '[] Bool
 supportsVideoMirroringSelector = mkSelector "supportsVideoMirroring"
 
 -- | @Selector@ for @videoMirrored@
-videoMirroredSelector :: Selector
+videoMirroredSelector :: Selector '[] Bool
 videoMirroredSelector = mkSelector "videoMirrored"
 
 -- | @Selector@ for @setVideoMirrored:@
-setVideoMirroredSelector :: Selector
+setVideoMirroredSelector :: Selector '[Bool] ()
 setVideoMirroredSelector = mkSelector "setVideoMirrored:"
 
 -- | @Selector@ for @automaticallyAdjustsVideoMirroring@
-automaticallyAdjustsVideoMirroringSelector :: Selector
+automaticallyAdjustsVideoMirroringSelector :: Selector '[] Bool
 automaticallyAdjustsVideoMirroringSelector = mkSelector "automaticallyAdjustsVideoMirroring"
 
 -- | @Selector@ for @setAutomaticallyAdjustsVideoMirroring:@
-setAutomaticallyAdjustsVideoMirroringSelector :: Selector
+setAutomaticallyAdjustsVideoMirroringSelector :: Selector '[Bool] ()
 setAutomaticallyAdjustsVideoMirroringSelector = mkSelector "setAutomaticallyAdjustsVideoMirroring:"
 
 -- | @Selector@ for @videoRotationAngle@
-videoRotationAngleSelector :: Selector
+videoRotationAngleSelector :: Selector '[] CDouble
 videoRotationAngleSelector = mkSelector "videoRotationAngle"
 
 -- | @Selector@ for @setVideoRotationAngle:@
-setVideoRotationAngleSelector :: Selector
+setVideoRotationAngleSelector :: Selector '[CDouble] ()
 setVideoRotationAngleSelector = mkSelector "setVideoRotationAngle:"
 
 -- | @Selector@ for @supportsVideoOrientation@
-supportsVideoOrientationSelector :: Selector
+supportsVideoOrientationSelector :: Selector '[] Bool
 supportsVideoOrientationSelector = mkSelector "supportsVideoOrientation"
 
 -- | @Selector@ for @videoOrientation@
-videoOrientationSelector :: Selector
+videoOrientationSelector :: Selector '[] AVCaptureVideoOrientation
 videoOrientationSelector = mkSelector "videoOrientation"
 
 -- | @Selector@ for @setVideoOrientation:@
-setVideoOrientationSelector :: Selector
+setVideoOrientationSelector :: Selector '[AVCaptureVideoOrientation] ()
 setVideoOrientationSelector = mkSelector "setVideoOrientation:"
 
 -- | @Selector@ for @supportsVideoFieldMode@
-supportsVideoFieldModeSelector :: Selector
+supportsVideoFieldModeSelector :: Selector '[] Bool
 supportsVideoFieldModeSelector = mkSelector "supportsVideoFieldMode"
 
 -- | @Selector@ for @videoFieldMode@
-videoFieldModeSelector :: Selector
+videoFieldModeSelector :: Selector '[] AVVideoFieldMode
 videoFieldModeSelector = mkSelector "videoFieldMode"
 
 -- | @Selector@ for @setVideoFieldMode:@
-setVideoFieldModeSelector :: Selector
+setVideoFieldModeSelector :: Selector '[AVVideoFieldMode] ()
 setVideoFieldModeSelector = mkSelector "setVideoFieldMode:"
 
 -- | @Selector@ for @supportsVideoMinFrameDuration@
-supportsVideoMinFrameDurationSelector :: Selector
+supportsVideoMinFrameDurationSelector :: Selector '[] Bool
 supportsVideoMinFrameDurationSelector = mkSelector "supportsVideoMinFrameDuration"
 
 -- | @Selector@ for @supportsVideoMaxFrameDuration@
-supportsVideoMaxFrameDurationSelector :: Selector
+supportsVideoMaxFrameDurationSelector :: Selector '[] Bool
 supportsVideoMaxFrameDurationSelector = mkSelector "supportsVideoMaxFrameDuration"
 
 -- | @Selector@ for @videoMaxScaleAndCropFactor@
-videoMaxScaleAndCropFactorSelector :: Selector
+videoMaxScaleAndCropFactorSelector :: Selector '[] CDouble
 videoMaxScaleAndCropFactorSelector = mkSelector "videoMaxScaleAndCropFactor"
 
 -- | @Selector@ for @videoScaleAndCropFactor@
-videoScaleAndCropFactorSelector :: Selector
+videoScaleAndCropFactorSelector :: Selector '[] CDouble
 videoScaleAndCropFactorSelector = mkSelector "videoScaleAndCropFactor"
 
 -- | @Selector@ for @setVideoScaleAndCropFactor:@
-setVideoScaleAndCropFactorSelector :: Selector
+setVideoScaleAndCropFactorSelector :: Selector '[CDouble] ()
 setVideoScaleAndCropFactorSelector = mkSelector "setVideoScaleAndCropFactor:"
 
 -- | @Selector@ for @preferredVideoStabilizationMode@
-preferredVideoStabilizationModeSelector :: Selector
+preferredVideoStabilizationModeSelector :: Selector '[] AVCaptureVideoStabilizationMode
 preferredVideoStabilizationModeSelector = mkSelector "preferredVideoStabilizationMode"
 
 -- | @Selector@ for @setPreferredVideoStabilizationMode:@
-setPreferredVideoStabilizationModeSelector :: Selector
+setPreferredVideoStabilizationModeSelector :: Selector '[AVCaptureVideoStabilizationMode] ()
 setPreferredVideoStabilizationModeSelector = mkSelector "setPreferredVideoStabilizationMode:"
 
 -- | @Selector@ for @activeVideoStabilizationMode@
-activeVideoStabilizationModeSelector :: Selector
+activeVideoStabilizationModeSelector :: Selector '[] AVCaptureVideoStabilizationMode
 activeVideoStabilizationModeSelector = mkSelector "activeVideoStabilizationMode"
 
 -- | @Selector@ for @supportsVideoStabilization@
-supportsVideoStabilizationSelector :: Selector
+supportsVideoStabilizationSelector :: Selector '[] Bool
 supportsVideoStabilizationSelector = mkSelector "supportsVideoStabilization"
 
 -- | @Selector@ for @videoStabilizationEnabled@
-videoStabilizationEnabledSelector :: Selector
+videoStabilizationEnabledSelector :: Selector '[] Bool
 videoStabilizationEnabledSelector = mkSelector "videoStabilizationEnabled"
 
 -- | @Selector@ for @enablesVideoStabilizationWhenAvailable@
-enablesVideoStabilizationWhenAvailableSelector :: Selector
+enablesVideoStabilizationWhenAvailableSelector :: Selector '[] Bool
 enablesVideoStabilizationWhenAvailableSelector = mkSelector "enablesVideoStabilizationWhenAvailable"
 
 -- | @Selector@ for @setEnablesVideoStabilizationWhenAvailable:@
-setEnablesVideoStabilizationWhenAvailableSelector :: Selector
+setEnablesVideoStabilizationWhenAvailableSelector :: Selector '[Bool] ()
 setEnablesVideoStabilizationWhenAvailableSelector = mkSelector "setEnablesVideoStabilizationWhenAvailable:"
 
 -- | @Selector@ for @cameraIntrinsicMatrixDeliverySupported@
-cameraIntrinsicMatrixDeliverySupportedSelector :: Selector
+cameraIntrinsicMatrixDeliverySupportedSelector :: Selector '[] Bool
 cameraIntrinsicMatrixDeliverySupportedSelector = mkSelector "cameraIntrinsicMatrixDeliverySupported"
 
 -- | @Selector@ for @cameraIntrinsicMatrixDeliveryEnabled@
-cameraIntrinsicMatrixDeliveryEnabledSelector :: Selector
+cameraIntrinsicMatrixDeliveryEnabledSelector :: Selector '[] Bool
 cameraIntrinsicMatrixDeliveryEnabledSelector = mkSelector "cameraIntrinsicMatrixDeliveryEnabled"
 
 -- | @Selector@ for @setCameraIntrinsicMatrixDeliveryEnabled:@
-setCameraIntrinsicMatrixDeliveryEnabledSelector :: Selector
+setCameraIntrinsicMatrixDeliveryEnabledSelector :: Selector '[Bool] ()
 setCameraIntrinsicMatrixDeliveryEnabledSelector = mkSelector "setCameraIntrinsicMatrixDeliveryEnabled:"
 

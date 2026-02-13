@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.MetalPerformanceShaders.MPSImageBox
   , initWithDevice
   , kernelHeight
   , kernelWidth
-  , initWithDevice_kernelWidth_kernelHeightSelector
   , initWithCoder_deviceSelector
   , initWithDeviceSelector
+  , initWithDevice_kernelWidth_kernelHeightSelector
   , kernelHeightSelector
   , kernelWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,8 +48,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:@
 initWithDevice_kernelWidth_kernelHeight :: IsMPSImageBox mpsImageBox => mpsImageBox -> RawId -> CULong -> CULong -> IO (Id MPSImageBox)
-initWithDevice_kernelWidth_kernelHeight mpsImageBox  device kernelWidth kernelHeight =
-    sendMsg mpsImageBox (mkSelector "initWithDevice:kernelWidth:kernelHeight:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight mpsImageBox device kernelWidth kernelHeight =
+  sendOwnedMessage mpsImageBox initWithDevice_kernelWidth_kernelHeightSelector device kernelWidth kernelHeight
 
 -- | NSSecureCoding compatability
 --
@@ -66,14 +63,13 @@ initWithDevice_kernelWidth_kernelHeight mpsImageBox  device kernelWidth kernelHe
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageBox mpsImageBox, IsNSCoder aDecoder) => mpsImageBox -> aDecoder -> RawId -> IO (Id MPSImageBox)
-initWithCoder_device mpsImageBox  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageBox (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageBox aDecoder device =
+  sendOwnedMessage mpsImageBox initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageBox mpsImageBox => mpsImageBox -> RawId -> IO (Id MPSImageBox)
-initWithDevice mpsImageBox  device =
-    sendMsg mpsImageBox (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageBox device =
+  sendOwnedMessage mpsImageBox initWithDeviceSelector device
 
 -- | kernelHeight
 --
@@ -81,8 +77,8 @@ initWithDevice mpsImageBox  device =
 --
 -- ObjC selector: @- kernelHeight@
 kernelHeight :: IsMPSImageBox mpsImageBox => mpsImageBox -> IO CULong
-kernelHeight mpsImageBox  =
-    sendMsg mpsImageBox (mkSelector "kernelHeight") retCULong []
+kernelHeight mpsImageBox =
+  sendMessage mpsImageBox kernelHeightSelector
 
 -- | kernelWidth
 --
@@ -90,30 +86,30 @@ kernelHeight mpsImageBox  =
 --
 -- ObjC selector: @- kernelWidth@
 kernelWidth :: IsMPSImageBox mpsImageBox => mpsImageBox -> IO CULong
-kernelWidth mpsImageBox  =
-    sendMsg mpsImageBox (mkSelector "kernelWidth") retCULong []
+kernelWidth mpsImageBox =
+  sendMessage mpsImageBox kernelWidthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:@
-initWithDevice_kernelWidth_kernelHeightSelector :: Selector
+initWithDevice_kernelWidth_kernelHeightSelector :: Selector '[RawId, CULong, CULong] (Id MPSImageBox)
 initWithDevice_kernelWidth_kernelHeightSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageBox)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageBox)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 

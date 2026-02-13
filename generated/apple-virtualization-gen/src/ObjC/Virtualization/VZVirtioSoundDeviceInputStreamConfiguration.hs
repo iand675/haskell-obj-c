@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.Virtualization.VZVirtioSoundDeviceInputStreamConfiguration
   , source
   , setSource
   , initSelector
-  , sourceSelector
   , setSourceSelector
+  , sourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVZVirtioSoundDeviceInputStreamConfiguration vzVirtioSoundDeviceInputStreamConfiguration => vzVirtioSoundDeviceInputStreamConfiguration -> IO (Id VZVirtioSoundDeviceInputStreamConfiguration)
-init_ vzVirtioSoundDeviceInputStreamConfiguration  =
-    sendMsg vzVirtioSoundDeviceInputStreamConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzVirtioSoundDeviceInputStreamConfiguration =
+  sendOwnedMessage vzVirtioSoundDeviceInputStreamConfiguration initSelector
 
 -- | Audio Stream Source. Defines how the audio data is supplied on the host for the guest. The default is nil.
 --
@@ -50,8 +47,8 @@ init_ vzVirtioSoundDeviceInputStreamConfiguration  =
 --
 -- ObjC selector: @- source@
 source :: IsVZVirtioSoundDeviceInputStreamConfiguration vzVirtioSoundDeviceInputStreamConfiguration => vzVirtioSoundDeviceInputStreamConfiguration -> IO (Id VZAudioInputStreamSource)
-source vzVirtioSoundDeviceInputStreamConfiguration  =
-    sendMsg vzVirtioSoundDeviceInputStreamConfiguration (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+source vzVirtioSoundDeviceInputStreamConfiguration =
+  sendMessage vzVirtioSoundDeviceInputStreamConfiguration sourceSelector
 
 -- | Audio Stream Source. Defines how the audio data is supplied on the host for the guest. The default is nil.
 --
@@ -61,23 +58,22 @@ source vzVirtioSoundDeviceInputStreamConfiguration  =
 --
 -- ObjC selector: @- setSource:@
 setSource :: (IsVZVirtioSoundDeviceInputStreamConfiguration vzVirtioSoundDeviceInputStreamConfiguration, IsVZAudioInputStreamSource value) => vzVirtioSoundDeviceInputStreamConfiguration -> value -> IO ()
-setSource vzVirtioSoundDeviceInputStreamConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzVirtioSoundDeviceInputStreamConfiguration (mkSelector "setSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSource vzVirtioSoundDeviceInputStreamConfiguration value =
+  sendMessage vzVirtioSoundDeviceInputStreamConfiguration setSourceSelector (toVZAudioInputStreamSource value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZVirtioSoundDeviceInputStreamConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id VZAudioInputStreamSource)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @setSource:@
-setSourceSelector :: Selector
+setSourceSelector :: Selector '[Id VZAudioInputStreamSource] ()
 setSourceSelector = mkSelector "setSource:"
 

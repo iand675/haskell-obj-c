@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.HealthKit.HKUserAnnotatedMedicationQuery
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,14 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPredicate:limit:resultsHandler:@
 initWithPredicate_limit_resultsHandler :: (IsHKUserAnnotatedMedicationQuery hkUserAnnotatedMedicationQuery, IsNSPredicate predicate) => hkUserAnnotatedMedicationQuery -> predicate -> CULong -> Ptr () -> IO (Id HKUserAnnotatedMedicationQuery)
-initWithPredicate_limit_resultsHandler hkUserAnnotatedMedicationQuery  predicate limit resultsHandler =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg hkUserAnnotatedMedicationQuery (mkSelector "initWithPredicate:limit:resultsHandler:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ()), argCULong limit, argPtr (castPtr resultsHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithPredicate_limit_resultsHandler hkUserAnnotatedMedicationQuery predicate limit resultsHandler =
+  sendOwnedMessage hkUserAnnotatedMedicationQuery initWithPredicate_limit_resultsHandlerSelector (toNSPredicate predicate) limit resultsHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPredicate:limit:resultsHandler:@
-initWithPredicate_limit_resultsHandlerSelector :: Selector
+initWithPredicate_limit_resultsHandlerSelector :: Selector '[Id NSPredicate, CULong, Ptr ()] (Id HKUserAnnotatedMedicationQuery)
 initWithPredicate_limit_resultsHandlerSelector = mkSelector "initWithPredicate:limit:resultsHandler:"
 

@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.NaturalLanguage.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @NLContextualEmbeddingAssetsResult@
 newtype NLContextualEmbeddingAssetsResult = NLContextualEmbeddingAssetsResult CLong
@@ -25,6 +28,16 @@ pattern NLContextualEmbeddingAssetsResultNotAvailable = NLContextualEmbeddingAss
 pattern NLContextualEmbeddingAssetsResultError :: NLContextualEmbeddingAssetsResult
 pattern NLContextualEmbeddingAssetsResultError = NLContextualEmbeddingAssetsResult 2
 
+instance ObjCArgument NLContextualEmbeddingAssetsResult where
+  withObjCArg (NLContextualEmbeddingAssetsResult x) k = k (argCLong x)
+
+instance ObjCReturn NLContextualEmbeddingAssetsResult where
+  type RawReturn NLContextualEmbeddingAssetsResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NLContextualEmbeddingAssetsResult x)
+  fromOwned x = pure (NLContextualEmbeddingAssetsResult x)
+
 -- | @NLDistanceType@
 newtype NLDistanceType = NLDistanceType CLong
   deriving stock (Eq, Ord, Show)
@@ -32,6 +45,16 @@ newtype NLDistanceType = NLDistanceType CLong
 
 pattern NLDistanceTypeCosine :: NLDistanceType
 pattern NLDistanceTypeCosine = NLDistanceType 0
+
+instance ObjCArgument NLDistanceType where
+  withObjCArg (NLDistanceType x) k = k (argCLong x)
+
+instance ObjCReturn NLDistanceType where
+  type RawReturn NLDistanceType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NLDistanceType x)
+  fromOwned x = pure (NLDistanceType x)
 
 -- | @NLModelType@
 newtype NLModelType = NLModelType CLong
@@ -43,6 +66,16 @@ pattern NLModelTypeClassifier = NLModelType 0
 
 pattern NLModelTypeSequence :: NLModelType
 pattern NLModelTypeSequence = NLModelType 1
+
+instance ObjCArgument NLModelType where
+  withObjCArg (NLModelType x) k = k (argCLong x)
+
+instance ObjCReturn NLModelType where
+  type RawReturn NLModelType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NLModelType x)
+  fromOwned x = pure (NLModelType x)
 
 -- | @NLTaggerAssetsResult@
 newtype NLTaggerAssetsResult = NLTaggerAssetsResult CLong
@@ -57,6 +90,16 @@ pattern NLTaggerAssetsResultNotAvailable = NLTaggerAssetsResult 1
 
 pattern NLTaggerAssetsResultError :: NLTaggerAssetsResult
 pattern NLTaggerAssetsResultError = NLTaggerAssetsResult 2
+
+instance ObjCArgument NLTaggerAssetsResult where
+  withObjCArg (NLTaggerAssetsResult x) k = k (argCLong x)
+
+instance ObjCReturn NLTaggerAssetsResult where
+  type RawReturn NLTaggerAssetsResult = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NLTaggerAssetsResult x)
+  fromOwned x = pure (NLTaggerAssetsResult x)
 
 -- | @NLTaggerOptions@ (bitmask)
 newtype NLTaggerOptions = NLTaggerOptions CULong
@@ -87,6 +130,16 @@ pattern NLTaggerJoinNames = NLTaggerOptions 16
 pattern NLTaggerJoinContractions :: NLTaggerOptions
 pattern NLTaggerJoinContractions = NLTaggerOptions 32
 
+instance ObjCArgument NLTaggerOptions where
+  withObjCArg (NLTaggerOptions x) k = k (argCULong x)
+
+instance ObjCReturn NLTaggerOptions where
+  type RawReturn NLTaggerOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NLTaggerOptions x)
+  fromOwned x = pure (NLTaggerOptions x)
+
 -- | @NLTokenUnit@
 newtype NLTokenUnit = NLTokenUnit CLong
   deriving stock (Eq, Ord, Show)
@@ -103,6 +156,16 @@ pattern NLTokenUnitParagraph = NLTokenUnit 2
 
 pattern NLTokenUnitDocument :: NLTokenUnit
 pattern NLTokenUnitDocument = NLTokenUnit 3
+
+instance ObjCArgument NLTokenUnit where
+  withObjCArg (NLTokenUnit x) k = k (argCLong x)
+
+instance ObjCReturn NLTokenUnit where
+  type RawReturn NLTokenUnit = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NLTokenUnit x)
+  fromOwned x = pure (NLTokenUnit x)
 
 -- | @NLTokenizerAttributes@ (bitmask)
 newtype NLTokenizerAttributes = NLTokenizerAttributes CULong
@@ -123,3 +186,13 @@ pattern NLTokenizerAttributeSymbolic = NLTokenizerAttributes 2
 
 pattern NLTokenizerAttributeEmoji :: NLTokenizerAttributes
 pattern NLTokenizerAttributeEmoji = NLTokenizerAttributes 4
+
+instance ObjCArgument NLTokenizerAttributes where
+  withObjCArg (NLTokenizerAttributes x) k = k (argCULong x)
+
+instance ObjCReturn NLTokenizerAttributes where
+  type RawReturn NLTokenizerAttributes = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NLTokenizerAttributes x)
+  fromOwned x = pure (NLTokenizerAttributes x)

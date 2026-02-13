@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AVFAudio.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | AVAudio3DMixingPointSourceInHeadMode
 --
@@ -30,6 +33,16 @@ pattern AVAudio3DMixingPointSourceInHeadModeMono = AVAudio3DMixingPointSourceInH
 
 pattern AVAudio3DMixingPointSourceInHeadModeBypass :: AVAudio3DMixingPointSourceInHeadMode
 pattern AVAudio3DMixingPointSourceInHeadModeBypass = AVAudio3DMixingPointSourceInHeadMode 1
+
+instance ObjCArgument AVAudio3DMixingPointSourceInHeadMode where
+  withObjCArg (AVAudio3DMixingPointSourceInHeadMode x) k = k (argCLong x)
+
+instance ObjCReturn AVAudio3DMixingPointSourceInHeadMode where
+  type RawReturn AVAudio3DMixingPointSourceInHeadMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudio3DMixingPointSourceInHeadMode x)
+  fromOwned x = pure (AVAudio3DMixingPointSourceInHeadMode x)
 
 -- | AVAudio3DMixingRenderingAlgorithm
 --
@@ -78,6 +91,16 @@ pattern AVAudio3DMixingRenderingAlgorithmHRTFHQ = AVAudio3DMixingRenderingAlgori
 pattern AVAudio3DMixingRenderingAlgorithmAuto :: AVAudio3DMixingRenderingAlgorithm
 pattern AVAudio3DMixingRenderingAlgorithmAuto = AVAudio3DMixingRenderingAlgorithm 7
 
+instance ObjCArgument AVAudio3DMixingRenderingAlgorithm where
+  withObjCArg (AVAudio3DMixingRenderingAlgorithm x) k = k (argCLong x)
+
+instance ObjCReturn AVAudio3DMixingRenderingAlgorithm where
+  type RawReturn AVAudio3DMixingRenderingAlgorithm = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudio3DMixingRenderingAlgorithm x)
+  fromOwned x = pure (AVAudio3DMixingRenderingAlgorithm x)
+
 -- | AVAudio3DMixingSourceMode
 --
 -- Source types available per input bus of the environment node
@@ -107,6 +130,16 @@ pattern AVAudio3DMixingSourceModePointSource = AVAudio3DMixingSourceMode 2
 
 pattern AVAudio3DMixingSourceModeAmbienceBed :: AVAudio3DMixingSourceMode
 pattern AVAudio3DMixingSourceModeAmbienceBed = AVAudio3DMixingSourceMode 3
+
+instance ObjCArgument AVAudio3DMixingSourceMode where
+  withObjCArg (AVAudio3DMixingSourceMode x) k = k (argCLong x)
+
+instance ObjCReturn AVAudio3DMixingSourceMode where
+  type RawReturn AVAudio3DMixingSourceMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudio3DMixingSourceMode x)
+  fromOwned x = pure (AVAudio3DMixingSourceMode x)
 
 -- | AVAudioApplicationMicrophoneInjectionPermission
 --
@@ -146,6 +179,16 @@ pattern AVAudioApplicationMicrophoneInjectionPermissionDenied = AVAudioApplicati
 pattern AVAudioApplicationMicrophoneInjectionPermissionGranted :: AVAudioApplicationMicrophoneInjectionPermission
 pattern AVAudioApplicationMicrophoneInjectionPermissionGranted = AVAudioApplicationMicrophoneInjectionPermission 1735552628
 
+instance ObjCArgument AVAudioApplicationMicrophoneInjectionPermission where
+  withObjCArg (AVAudioApplicationMicrophoneInjectionPermission x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioApplicationMicrophoneInjectionPermission where
+  type RawReturn AVAudioApplicationMicrophoneInjectionPermission = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioApplicationMicrophoneInjectionPermission x)
+  fromOwned x = pure (AVAudioApplicationMicrophoneInjectionPermission x)
+
 -- | AVAudioApplicationRecordPermission
 --
 -- These are the values returned by recordPermission.
@@ -174,6 +217,16 @@ pattern AVAudioApplicationRecordPermissionDenied = AVAudioApplicationRecordPermi
 
 pattern AVAudioApplicationRecordPermissionGranted :: AVAudioApplicationRecordPermission
 pattern AVAudioApplicationRecordPermissionGranted = AVAudioApplicationRecordPermission 1735552628
+
+instance ObjCArgument AVAudioApplicationRecordPermission where
+  withObjCArg (AVAudioApplicationRecordPermission x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioApplicationRecordPermission where
+  type RawReturn AVAudioApplicationRecordPermission = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioApplicationRecordPermission x)
+  fromOwned x = pure (AVAudioApplicationRecordPermission x)
 
 -- | AVAudioCommonFormat
 --
@@ -215,6 +268,16 @@ pattern AVAudioPCMFormatInt16 = AVAudioCommonFormat 3
 
 pattern AVAudioPCMFormatInt32 :: AVAudioCommonFormat
 pattern AVAudioPCMFormatInt32 = AVAudioCommonFormat 4
+
+instance ObjCArgument AVAudioCommonFormat where
+  withObjCArg (AVAudioCommonFormat x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioCommonFormat where
+  type RawReturn AVAudioCommonFormat = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioCommonFormat x)
+  fromOwned x = pure (AVAudioCommonFormat x)
 
 -- | @AVAudioContentSource@
 newtype AVAudioContentSource = AVAudioContentSource CLong
@@ -287,6 +350,16 @@ pattern AVAudioContentSource_AV_Spatial_Live = AVAudioContentSource 41
 pattern AVAudioContentSource_Passthrough :: AVAudioContentSource
 pattern AVAudioContentSource_Passthrough = AVAudioContentSource 42
 
+instance ObjCArgument AVAudioContentSource where
+  withObjCArg (AVAudioContentSource x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioContentSource where
+  type RawReturn AVAudioContentSource = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioContentSource x)
+  fromOwned x = pure (AVAudioContentSource x)
+
 -- | AVAudioConverterInputStatus
 --
 -- You must return one of these codes from your AVAudioConverterInputBlock.
@@ -303,6 +376,16 @@ pattern AVAudioConverterInputStatus_NoDataNow = AVAudioConverterInputStatus 1
 
 pattern AVAudioConverterInputStatus_EndOfStream :: AVAudioConverterInputStatus
 pattern AVAudioConverterInputStatus_EndOfStream = AVAudioConverterInputStatus 2
+
+instance ObjCArgument AVAudioConverterInputStatus where
+  withObjCArg (AVAudioConverterInputStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioConverterInputStatus where
+  type RawReturn AVAudioConverterInputStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioConverterInputStatus x)
+  fromOwned x = pure (AVAudioConverterInputStatus x)
 
 -- | AVAudioConverterOutputStatus
 --
@@ -324,6 +407,16 @@ pattern AVAudioConverterOutputStatus_EndOfStream = AVAudioConverterOutputStatus 
 pattern AVAudioConverterOutputStatus_Error :: AVAudioConverterOutputStatus
 pattern AVAudioConverterOutputStatus_Error = AVAudioConverterOutputStatus 3
 
+instance ObjCArgument AVAudioConverterOutputStatus where
+  withObjCArg (AVAudioConverterOutputStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioConverterOutputStatus where
+  type RawReturn AVAudioConverterOutputStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioConverterOutputStatus x)
+  fromOwned x = pure (AVAudioConverterOutputStatus x)
+
 -- | AVAudioConverterPrimeMethod
 --
 -- values for the primeMethod property. See further discussion under AVAudioConverterPrimeInfo.
@@ -340,6 +433,16 @@ pattern AVAudioConverterPrimeMethod_Normal = AVAudioConverterPrimeMethod 1
 
 pattern AVAudioConverterPrimeMethod_None :: AVAudioConverterPrimeMethod
 pattern AVAudioConverterPrimeMethod_None = AVAudioConverterPrimeMethod 2
+
+instance ObjCArgument AVAudioConverterPrimeMethod where
+  withObjCArg (AVAudioConverterPrimeMethod x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioConverterPrimeMethod where
+  type RawReturn AVAudioConverterPrimeMethod = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioConverterPrimeMethod x)
+  fromOwned x = pure (AVAudioConverterPrimeMethod x)
 
 -- | @AVAudioDynamicRangeControlConfiguration@
 newtype AVAudioDynamicRangeControlConfiguration = AVAudioDynamicRangeControlConfiguration CLong
@@ -360,6 +463,16 @@ pattern AVAudioDynamicRangeControlConfiguration_Movie = AVAudioDynamicRangeContr
 
 pattern AVAudioDynamicRangeControlConfiguration_Capture :: AVAudioDynamicRangeControlConfiguration
 pattern AVAudioDynamicRangeControlConfiguration_Capture = AVAudioDynamicRangeControlConfiguration 4
+
+instance ObjCArgument AVAudioDynamicRangeControlConfiguration where
+  withObjCArg (AVAudioDynamicRangeControlConfiguration x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioDynamicRangeControlConfiguration where
+  type RawReturn AVAudioDynamicRangeControlConfiguration = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioDynamicRangeControlConfiguration x)
+  fromOwned x = pure (AVAudioDynamicRangeControlConfiguration x)
 
 -- | AVAudioEngineManualRenderingError
 --
@@ -384,6 +497,16 @@ pattern AVAudioEngineManualRenderingErrorInitialized = AVAudioEngineManualRender
 pattern AVAudioEngineManualRenderingErrorNotRunning :: AVAudioEngineManualRenderingError
 pattern AVAudioEngineManualRenderingErrorNotRunning = AVAudioEngineManualRenderingError (-80802)
 
+instance ObjCArgument AVAudioEngineManualRenderingError where
+  withObjCArg (AVAudioEngineManualRenderingError x) k = k (argCInt x)
+
+instance ObjCReturn AVAudioEngineManualRenderingError where
+  type RawReturn AVAudioEngineManualRenderingError = CInt
+  objcRetType = retCInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioEngineManualRenderingError x)
+  fromOwned x = pure (AVAudioEngineManualRenderingError x)
+
 -- | AVAudioEngineManualRenderingMode
 --
 -- By default, the engine is connected to an audio device and automatically renders in realtime. 		It can also be configured to operate in manual rendering mode, i.e. not connected to an 		audio device and rendering in response to requests from the client.
@@ -401,6 +524,16 @@ pattern AVAudioEngineManualRenderingModeOffline = AVAudioEngineManualRenderingMo
 
 pattern AVAudioEngineManualRenderingModeRealtime :: AVAudioEngineManualRenderingMode
 pattern AVAudioEngineManualRenderingModeRealtime = AVAudioEngineManualRenderingMode 1
+
+instance ObjCArgument AVAudioEngineManualRenderingMode where
+  withObjCArg (AVAudioEngineManualRenderingMode x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioEngineManualRenderingMode where
+  type RawReturn AVAudioEngineManualRenderingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioEngineManualRenderingMode x)
+  fromOwned x = pure (AVAudioEngineManualRenderingMode x)
 
 -- | AVAudioEngineManualRenderingStatus
 --
@@ -429,6 +562,16 @@ pattern AVAudioEngineManualRenderingStatusInsufficientDataFromInputNode = AVAudi
 
 pattern AVAudioEngineManualRenderingStatusCannotDoInCurrentContext :: AVAudioEngineManualRenderingStatus
 pattern AVAudioEngineManualRenderingStatusCannotDoInCurrentContext = AVAudioEngineManualRenderingStatus 2
+
+instance ObjCArgument AVAudioEngineManualRenderingStatus where
+  withObjCArg (AVAudioEngineManualRenderingStatus x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioEngineManualRenderingStatus where
+  type RawReturn AVAudioEngineManualRenderingStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioEngineManualRenderingStatus x)
+  fromOwned x = pure (AVAudioEngineManualRenderingStatus x)
 
 -- | AVAudioEnvironmentDistanceAttenuationModel
 --
@@ -459,6 +602,16 @@ pattern AVAudioEnvironmentDistanceAttenuationModelInverse = AVAudioEnvironmentDi
 pattern AVAudioEnvironmentDistanceAttenuationModelLinear :: AVAudioEnvironmentDistanceAttenuationModel
 pattern AVAudioEnvironmentDistanceAttenuationModelLinear = AVAudioEnvironmentDistanceAttenuationModel 3
 
+instance ObjCArgument AVAudioEnvironmentDistanceAttenuationModel where
+  withObjCArg (AVAudioEnvironmentDistanceAttenuationModel x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioEnvironmentDistanceAttenuationModel where
+  type RawReturn AVAudioEnvironmentDistanceAttenuationModel = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioEnvironmentDistanceAttenuationModel x)
+  fromOwned x = pure (AVAudioEnvironmentDistanceAttenuationModel x)
+
 -- | AVAudioEnvironmentOutputType
 --
 -- Types of output for AVAudio3DMixingRenderingAlgorithmAuto
@@ -488,6 +641,16 @@ pattern AVAudioEnvironmentOutputTypeBuiltInSpeakers = AVAudioEnvironmentOutputTy
 
 pattern AVAudioEnvironmentOutputTypeExternalSpeakers :: AVAudioEnvironmentOutputType
 pattern AVAudioEnvironmentOutputTypeExternalSpeakers = AVAudioEnvironmentOutputType 3
+
+instance ObjCArgument AVAudioEnvironmentOutputType where
+  withObjCArg (AVAudioEnvironmentOutputType x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioEnvironmentOutputType where
+  type RawReturn AVAudioEnvironmentOutputType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioEnvironmentOutputType x)
+  fromOwned x = pure (AVAudioEnvironmentOutputType x)
 
 -- | AVAudioPlayerNodeBufferOptions
 --
@@ -526,6 +689,16 @@ pattern AVAudioPlayerNodeBufferInterrupts = AVAudioPlayerNodeBufferOptions 2
 pattern AVAudioPlayerNodeBufferInterruptsAtLoop :: AVAudioPlayerNodeBufferOptions
 pattern AVAudioPlayerNodeBufferInterruptsAtLoop = AVAudioPlayerNodeBufferOptions 4
 
+instance ObjCArgument AVAudioPlayerNodeBufferOptions where
+  withObjCArg (AVAudioPlayerNodeBufferOptions x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioPlayerNodeBufferOptions where
+  type RawReturn AVAudioPlayerNodeBufferOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioPlayerNodeBufferOptions x)
+  fromOwned x = pure (AVAudioPlayerNodeBufferOptions x)
+
 -- | AVAudioPlayerNodeCompletionCallbackType
 --
 -- Specifies when the completion handler must be invoked.
@@ -557,6 +730,16 @@ pattern AVAudioPlayerNodeCompletionDataRendered = AVAudioPlayerNodeCompletionCal
 pattern AVAudioPlayerNodeCompletionDataPlayedBack :: AVAudioPlayerNodeCompletionCallbackType
 pattern AVAudioPlayerNodeCompletionDataPlayedBack = AVAudioPlayerNodeCompletionCallbackType 2
 
+instance ObjCArgument AVAudioPlayerNodeCompletionCallbackType where
+  withObjCArg (AVAudioPlayerNodeCompletionCallbackType x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioPlayerNodeCompletionCallbackType where
+  type RawReturn AVAudioPlayerNodeCompletionCallbackType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioPlayerNodeCompletionCallbackType x)
+  fromOwned x = pure (AVAudioPlayerNodeCompletionCallbackType x)
+
 -- | @AVAudioQuality@
 newtype AVAudioQuality = AVAudioQuality CLong
   deriving stock (Eq, Ord, Show)
@@ -576,6 +759,16 @@ pattern AVAudioQualityHigh = AVAudioQuality 96
 
 pattern AVAudioQualityMax :: AVAudioQuality
 pattern AVAudioQualityMax = AVAudioQuality 127
+
+instance ObjCArgument AVAudioQuality where
+  withObjCArg (AVAudioQuality x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioQuality where
+  type RawReturn AVAudioQuality = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioQuality x)
+  fromOwned x = pure (AVAudioQuality x)
 
 -- | AVAudioRoutingArbitrationCategory
 --
@@ -608,6 +801,16 @@ pattern AVAudioRoutingArbitrationCategoryPlayAndRecord = AVAudioRoutingArbitrati
 pattern AVAudioRoutingArbitrationCategoryPlayAndRecordVoice :: AVAudioRoutingArbitrationCategory
 pattern AVAudioRoutingArbitrationCategoryPlayAndRecordVoice = AVAudioRoutingArbitrationCategory 2
 
+instance ObjCArgument AVAudioRoutingArbitrationCategory where
+  withObjCArg (AVAudioRoutingArbitrationCategory x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioRoutingArbitrationCategory where
+  type RawReturn AVAudioRoutingArbitrationCategory = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioRoutingArbitrationCategory x)
+  fromOwned x = pure (AVAudioRoutingArbitrationCategory x)
+
 -- | AVAudioSessionActivationOptions
 --
 -- For use with activateWithOptions:completionHandler:
@@ -626,6 +829,16 @@ instance Monoid AVAudioSessionActivationOptions where
 
 pattern AVAudioSessionActivationOptionNone :: AVAudioSessionActivationOptions
 pattern AVAudioSessionActivationOptionNone = AVAudioSessionActivationOptions 0
+
+instance ObjCArgument AVAudioSessionActivationOptions where
+  withObjCArg (AVAudioSessionActivationOptions x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionActivationOptions where
+  type RawReturn AVAudioSessionActivationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionActivationOptions x)
+  fromOwned x = pure (AVAudioSessionActivationOptions x)
 
 -- | Customization of various aspects of a category's behavior.		Use with ``AVAudioSession/setCategory:mode:options:error:``.
 --
@@ -674,6 +887,16 @@ pattern AVAudioSessionCategoryOptionFarFieldInput = AVAudioSessionCategoryOption
 pattern AVAudioSessionCategoryOptionBluetoothHighQualityRecording :: AVAudioSessionCategoryOptions
 pattern AVAudioSessionCategoryOptionBluetoothHighQualityRecording = AVAudioSessionCategoryOptions 524288
 
+instance ObjCArgument AVAudioSessionCategoryOptions where
+  withObjCArg (AVAudioSessionCategoryOptions x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionCategoryOptions where
+  type RawReturn AVAudioSessionCategoryOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionCategoryOptions x)
+  fromOwned x = pure (AVAudioSessionCategoryOptions x)
+
 -- | AVAudioSessionIOType
 --
 -- Values to be used by setAggregatedIOPreference:error: method.
@@ -708,6 +931,16 @@ pattern AVAudioSessionIOTypeNotSpecified = AVAudioSessionIOType 0
 pattern AVAudioSessionIOTypeAggregated :: AVAudioSessionIOType
 pattern AVAudioSessionIOTypeAggregated = AVAudioSessionIOType 1
 
+instance ObjCArgument AVAudioSessionIOType where
+  withObjCArg (AVAudioSessionIOType x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionIOType where
+  type RawReturn AVAudioSessionIOType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionIOType x)
+  fromOwned x = pure (AVAudioSessionIOType x)
+
 -- | Values for AVAudioSessionInterruptionOptionKey in AVAudioSessionInterruptionNotification's userInfo dictionary.
 -- | @AVAudioSessionInterruptionOptions@ (bitmask)
 newtype AVAudioSessionInterruptionOptions = AVAudioSessionInterruptionOptions CULong
@@ -722,6 +955,16 @@ instance Monoid AVAudioSessionInterruptionOptions where
 
 pattern AVAudioSessionInterruptionOptionShouldResume :: AVAudioSessionInterruptionOptions
 pattern AVAudioSessionInterruptionOptionShouldResume = AVAudioSessionInterruptionOptions 1
+
+instance ObjCArgument AVAudioSessionInterruptionOptions where
+  withObjCArg (AVAudioSessionInterruptionOptions x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionInterruptionOptions where
+  type RawReturn AVAudioSessionInterruptionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionInterruptionOptions x)
+  fromOwned x = pure (AVAudioSessionInterruptionOptions x)
 
 -- | AVAudioSessionInterruptionReason
 --
@@ -763,6 +1006,16 @@ pattern AVAudioSessionInterruptionReasonBuiltInMicMuted = AVAudioSessionInterrup
 pattern AVAudioSessionInterruptionReasonRouteDisconnected :: AVAudioSessionInterruptionReason
 pattern AVAudioSessionInterruptionReasonRouteDisconnected = AVAudioSessionInterruptionReason 4
 
+instance ObjCArgument AVAudioSessionInterruptionReason where
+  withObjCArg (AVAudioSessionInterruptionReason x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionInterruptionReason where
+  type RawReturn AVAudioSessionInterruptionReason = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionInterruptionReason x)
+  fromOwned x = pure (AVAudioSessionInterruptionReason x)
+
 -- | Values for AVAudioSessionInterruptionTypeKey in AVAudioSessionInterruptionNotification's userInfo dictionary.
 -- | @AVAudioSessionInterruptionType@
 newtype AVAudioSessionInterruptionType = AVAudioSessionInterruptionType CULong
@@ -774,6 +1027,16 @@ pattern AVAudioSessionInterruptionTypeBegan = AVAudioSessionInterruptionType 1
 
 pattern AVAudioSessionInterruptionTypeEnded :: AVAudioSessionInterruptionType
 pattern AVAudioSessionInterruptionTypeEnded = AVAudioSessionInterruptionType 0
+
+instance ObjCArgument AVAudioSessionInterruptionType where
+  withObjCArg (AVAudioSessionInterruptionType x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionInterruptionType where
+  type RawReturn AVAudioSessionInterruptionType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionInterruptionType x)
+  fromOwned x = pure (AVAudioSessionInterruptionType x)
 
 -- | AVAudioSessionMicrophoneInjectionMode
 --
@@ -795,6 +1058,16 @@ pattern AVAudioSessionMicrophoneInjectionModeNone = AVAudioSessionMicrophoneInje
 pattern AVAudioSessionMicrophoneInjectionModeSpokenAudio :: AVAudioSessionMicrophoneInjectionMode
 pattern AVAudioSessionMicrophoneInjectionModeSpokenAudio = AVAudioSessionMicrophoneInjectionMode 1
 
+instance ObjCArgument AVAudioSessionMicrophoneInjectionMode where
+  withObjCArg (AVAudioSessionMicrophoneInjectionMode x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioSessionMicrophoneInjectionMode where
+  type RawReturn AVAudioSessionMicrophoneInjectionMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionMicrophoneInjectionMode x)
+  fromOwned x = pure (AVAudioSessionMicrophoneInjectionMode x)
+
 -- | For use with overrideOutputAudioPort:error:
 -- | @AVAudioSessionPortOverride@
 newtype AVAudioSessionPortOverride = AVAudioSessionPortOverride CULong
@@ -806,6 +1079,16 @@ pattern AVAudioSessionPortOverrideNone = AVAudioSessionPortOverride 0
 
 pattern AVAudioSessionPortOverrideSpeaker :: AVAudioSessionPortOverride
 pattern AVAudioSessionPortOverrideSpeaker = AVAudioSessionPortOverride 1936747378
+
+instance ObjCArgument AVAudioSessionPortOverride where
+  withObjCArg (AVAudioSessionPortOverride x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionPortOverride where
+  type RawReturn AVAudioSessionPortOverride = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionPortOverride x)
+  fromOwned x = pure (AVAudioSessionPortOverride x)
 
 -- | AVAudioSessionPromptStyle
 --
@@ -835,6 +1118,16 @@ pattern AVAudioSessionPromptStyleShort = AVAudioSessionPromptStyle 1936224884
 
 pattern AVAudioSessionPromptStyleNormal :: AVAudioSessionPromptStyle
 pattern AVAudioSessionPromptStyleNormal = AVAudioSessionPromptStyle 1852992876
+
+instance ObjCArgument AVAudioSessionPromptStyle where
+  withObjCArg (AVAudioSessionPromptStyle x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionPromptStyle where
+  type RawReturn AVAudioSessionPromptStyle = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionPromptStyle x)
+  fromOwned x = pure (AVAudioSessionPromptStyle x)
 
 -- | AVAudioSessionRecordPermission
 --
@@ -866,6 +1159,16 @@ pattern AVAudioSessionRecordPermissionDenied = AVAudioSessionRecordPermission 16
 
 pattern AVAudioSessionRecordPermissionGranted :: AVAudioSessionRecordPermission
 pattern AVAudioSessionRecordPermissionGranted = AVAudioSessionRecordPermission 1735552628
+
+instance ObjCArgument AVAudioSessionRecordPermission where
+  withObjCArg (AVAudioSessionRecordPermission x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionRecordPermission where
+  type RawReturn AVAudioSessionRecordPermission = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionRecordPermission x)
+  fromOwned x = pure (AVAudioSessionRecordPermission x)
 
 -- | AVAudioSessionRenderingMode
 --
@@ -903,6 +1206,16 @@ pattern AVAudioSessionRenderingModeDolbyAudio = AVAudioSessionRenderingMode 4
 pattern AVAudioSessionRenderingModeDolbyAtmos :: AVAudioSessionRenderingMode
 pattern AVAudioSessionRenderingModeDolbyAtmos = AVAudioSessionRenderingMode 5
 
+instance ObjCArgument AVAudioSessionRenderingMode where
+  withObjCArg (AVAudioSessionRenderingMode x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioSessionRenderingMode where
+  type RawReturn AVAudioSessionRenderingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionRenderingMode x)
+  fromOwned x = pure (AVAudioSessionRenderingMode x)
+
 -- | Values for AVAudioSessionRouteChangeReasonKey in AVAudioSessionRouteChangeNotification's userInfo dictionary
 -- | @AVAudioSessionRouteChangeReason@
 newtype AVAudioSessionRouteChangeReason = AVAudioSessionRouteChangeReason CULong
@@ -932,6 +1245,16 @@ pattern AVAudioSessionRouteChangeReasonNoSuitableRouteForCategory = AVAudioSessi
 
 pattern AVAudioSessionRouteChangeReasonRouteConfigurationChange :: AVAudioSessionRouteChangeReason
 pattern AVAudioSessionRouteChangeReasonRouteConfigurationChange = AVAudioSessionRouteChangeReason 8
+
+instance ObjCArgument AVAudioSessionRouteChangeReason where
+  withObjCArg (AVAudioSessionRouteChangeReason x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionRouteChangeReason where
+  type RawReturn AVAudioSessionRouteChangeReason = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionRouteChangeReason x)
+  fromOwned x = pure (AVAudioSessionRouteChangeReason x)
 
 -- | AVAudioSessionRouteSharingPolicy
 --
@@ -976,6 +1299,16 @@ pattern AVAudioSessionRouteSharingPolicyIndependent = AVAudioSessionRouteSharing
 pattern AVAudioSessionRouteSharingPolicyLongFormVideo :: AVAudioSessionRouteSharingPolicy
 pattern AVAudioSessionRouteSharingPolicyLongFormVideo = AVAudioSessionRouteSharingPolicy 3
 
+instance ObjCArgument AVAudioSessionRouteSharingPolicy where
+  withObjCArg (AVAudioSessionRouteSharingPolicy x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionRouteSharingPolicy where
+  type RawReturn AVAudioSessionRouteSharingPolicy = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionRouteSharingPolicy x)
+  fromOwned x = pure (AVAudioSessionRouteSharingPolicy x)
+
 -- | options for use when calling setActive:withOptions:error:
 -- | @AVAudioSessionSetActiveOptions@ (bitmask)
 newtype AVAudioSessionSetActiveOptions = AVAudioSessionSetActiveOptions CULong
@@ -991,6 +1324,16 @@ instance Monoid AVAudioSessionSetActiveOptions where
 pattern AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation :: AVAudioSessionSetActiveOptions
 pattern AVAudioSessionSetActiveOptionNotifyOthersOnDeactivation = AVAudioSessionSetActiveOptions 1
 
+instance ObjCArgument AVAudioSessionSetActiveOptions where
+  withObjCArg (AVAudioSessionSetActiveOptions x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionSetActiveOptions where
+  type RawReturn AVAudioSessionSetActiveOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionSetActiveOptions x)
+  fromOwned x = pure (AVAudioSessionSetActiveOptions x)
+
 -- | Values for AVAudioSessionSilenceSecondaryAudioHintTypeKey in AVAudioSessionSilenceSecondaryAudioHintNotification's userInfo dictionary, to indicate whether optional secondary audio muting should begin or end.
 -- | @AVAudioSessionSilenceSecondaryAudioHintType@
 newtype AVAudioSessionSilenceSecondaryAudioHintType = AVAudioSessionSilenceSecondaryAudioHintType CULong
@@ -1002,6 +1345,16 @@ pattern AVAudioSessionSilenceSecondaryAudioHintTypeBegin = AVAudioSessionSilence
 
 pattern AVAudioSessionSilenceSecondaryAudioHintTypeEnd :: AVAudioSessionSilenceSecondaryAudioHintType
 pattern AVAudioSessionSilenceSecondaryAudioHintTypeEnd = AVAudioSessionSilenceSecondaryAudioHintType 0
+
+instance ObjCArgument AVAudioSessionSilenceSecondaryAudioHintType where
+  withObjCArg (AVAudioSessionSilenceSecondaryAudioHintType x) k = k (argCULong x)
+
+instance ObjCReturn AVAudioSessionSilenceSecondaryAudioHintType where
+  type RawReturn AVAudioSessionSilenceSecondaryAudioHintType = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioSessionSilenceSecondaryAudioHintType x)
+  fromOwned x = pure (AVAudioSessionSilenceSecondaryAudioHintType x)
 
 -- | AVAudioStereoOrientation
 --
@@ -1045,6 +1398,16 @@ pattern AVAudioStereoOrientationLandscapeRight = AVAudioStereoOrientation 3
 
 pattern AVAudioStereoOrientationLandscapeLeft :: AVAudioStereoOrientation
 pattern AVAudioStereoOrientationLandscapeLeft = AVAudioStereoOrientation 4
+
+instance ObjCArgument AVAudioStereoOrientation where
+  withObjCArg (AVAudioStereoOrientation x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioStereoOrientation where
+  type RawReturn AVAudioStereoOrientation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioStereoOrientation x)
+  fromOwned x = pure (AVAudioStereoOrientation x)
 
 -- | @AVAudioUnitDistortionPreset@
 newtype AVAudioUnitDistortionPreset = AVAudioUnitDistortionPreset CLong
@@ -1117,6 +1480,16 @@ pattern AVAudioUnitDistortionPresetSpeechRadioTower = AVAudioUnitDistortionPrese
 pattern AVAudioUnitDistortionPresetSpeechWaves :: AVAudioUnitDistortionPreset
 pattern AVAudioUnitDistortionPresetSpeechWaves = AVAudioUnitDistortionPreset 21
 
+instance ObjCArgument AVAudioUnitDistortionPreset where
+  withObjCArg (AVAudioUnitDistortionPreset x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioUnitDistortionPreset where
+  type RawReturn AVAudioUnitDistortionPreset = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioUnitDistortionPreset x)
+  fromOwned x = pure (AVAudioUnitDistortionPreset x)
+
 -- | AVAudioUnitEQFilterType
 --
 -- Filter types available to use with AVAudioUnitEQ.
@@ -1182,6 +1555,16 @@ pattern AVAudioUnitEQFilterTypeResonantLowShelf = AVAudioUnitEQFilterType 9
 pattern AVAudioUnitEQFilterTypeResonantHighShelf :: AVAudioUnitEQFilterType
 pattern AVAudioUnitEQFilterTypeResonantHighShelf = AVAudioUnitEQFilterType 10
 
+instance ObjCArgument AVAudioUnitEQFilterType where
+  withObjCArg (AVAudioUnitEQFilterType x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioUnitEQFilterType where
+  type RawReturn AVAudioUnitEQFilterType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioUnitEQFilterType x)
+  fromOwned x = pure (AVAudioUnitEQFilterType x)
+
 -- | @AVAudioUnitReverbPreset@
 newtype AVAudioUnitReverbPreset = AVAudioUnitReverbPreset CLong
   deriving stock (Eq, Ord, Show)
@@ -1226,6 +1609,16 @@ pattern AVAudioUnitReverbPresetMediumHall3 = AVAudioUnitReverbPreset 11
 pattern AVAudioUnitReverbPresetLargeHall2 :: AVAudioUnitReverbPreset
 pattern AVAudioUnitReverbPresetLargeHall2 = AVAudioUnitReverbPreset 12
 
+instance ObjCArgument AVAudioUnitReverbPreset where
+  withObjCArg (AVAudioUnitReverbPreset x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioUnitReverbPreset where
+  type RawReturn AVAudioUnitReverbPreset = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioUnitReverbPreset x)
+  fromOwned x = pure (AVAudioUnitReverbPreset x)
+
 -- | AVAudioVoiceProcessingOtherAudioDuckingLevel
 --
 -- Ducking level applied to other (i.e. non-voice) audio by AVAudio voice processing AU.
@@ -1248,6 +1641,16 @@ pattern AVAudioVoiceProcessingOtherAudioDuckingLevelMid = AVAudioVoiceProcessing
 pattern AVAudioVoiceProcessingOtherAudioDuckingLevelMax :: AVAudioVoiceProcessingOtherAudioDuckingLevel
 pattern AVAudioVoiceProcessingOtherAudioDuckingLevelMax = AVAudioVoiceProcessingOtherAudioDuckingLevel 30
 
+instance ObjCArgument AVAudioVoiceProcessingOtherAudioDuckingLevel where
+  withObjCArg (AVAudioVoiceProcessingOtherAudioDuckingLevel x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioVoiceProcessingOtherAudioDuckingLevel where
+  type RawReturn AVAudioVoiceProcessingOtherAudioDuckingLevel = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioVoiceProcessingOtherAudioDuckingLevel x)
+  fromOwned x = pure (AVAudioVoiceProcessingOtherAudioDuckingLevel x)
+
 -- | AVAudioVoiceProcessingSpeechActivityEvent
 --
 -- Types of speech activity events.
@@ -1269,6 +1672,16 @@ pattern AVAudioVoiceProcessingSpeechActivityStarted = AVAudioVoiceProcessingSpee
 
 pattern AVAudioVoiceProcessingSpeechActivityEnded :: AVAudioVoiceProcessingSpeechActivityEvent
 pattern AVAudioVoiceProcessingSpeechActivityEnded = AVAudioVoiceProcessingSpeechActivityEvent 1
+
+instance ObjCArgument AVAudioVoiceProcessingSpeechActivityEvent where
+  withObjCArg (AVAudioVoiceProcessingSpeechActivityEvent x) k = k (argCLong x)
+
+instance ObjCReturn AVAudioVoiceProcessingSpeechActivityEvent where
+  type RawReturn AVAudioVoiceProcessingSpeechActivityEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVAudioVoiceProcessingSpeechActivityEvent x)
+  fromOwned x = pure (AVAudioVoiceProcessingSpeechActivityEvent x)
 
 -- | AVMIDIControlChangeMessageType
 --
@@ -1383,6 +1796,16 @@ pattern AVMIDIControlChangeMessageTypeMonoModeOn = AVMIDIControlChangeMessageTyp
 pattern AVMIDIControlChangeMessageTypeMonoModeOff :: AVMIDIControlChangeMessageType
 pattern AVMIDIControlChangeMessageTypeMonoModeOff = AVMIDIControlChangeMessageType 127
 
+instance ObjCArgument AVMIDIControlChangeMessageType where
+  withObjCArg (AVMIDIControlChangeMessageType x) k = k (argCLong x)
+
+instance ObjCReturn AVMIDIControlChangeMessageType where
+  type RawReturn AVMIDIControlChangeMessageType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVMIDIControlChangeMessageType x)
+  fromOwned x = pure (AVMIDIControlChangeMessageType x)
+
 -- | AVMIDIMetaEventType
 --
 -- Constants which indicate which type of MIDI Meta-Event to create.
@@ -1439,6 +1862,16 @@ pattern AVMIDIMetaEventTypeKeySignature = AVMIDIMetaEventType 89
 pattern AVMIDIMetaEventTypeProprietaryEvent :: AVMIDIMetaEventType
 pattern AVMIDIMetaEventTypeProprietaryEvent = AVMIDIMetaEventType 127
 
+instance ObjCArgument AVMIDIMetaEventType where
+  withObjCArg (AVMIDIMetaEventType x) k = k (argCLong x)
+
+instance ObjCReturn AVMIDIMetaEventType where
+  type RawReturn AVMIDIMetaEventType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVMIDIMetaEventType x)
+  fromOwned x = pure (AVMIDIMetaEventType x)
+
 -- | AVMusicSequenceLoadOptions
 --
 -- Determines whether data on different MIDI channels is mapped to multiple tracks, or		if the tracks are preserved as-is.
@@ -1465,6 +1898,16 @@ pattern AVMusicSequenceLoadSMF_PreserveTracks = AVMusicSequenceLoadOptions 0
 pattern AVMusicSequenceLoadSMF_ChannelsToTracks :: AVMusicSequenceLoadOptions
 pattern AVMusicSequenceLoadSMF_ChannelsToTracks = AVMusicSequenceLoadOptions 1
 
+instance ObjCArgument AVMusicSequenceLoadOptions where
+  withObjCArg (AVMusicSequenceLoadOptions x) k = k (argCULong x)
+
+instance ObjCReturn AVMusicSequenceLoadOptions where
+  type RawReturn AVMusicSequenceLoadOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVMusicSequenceLoadOptions x)
+  fromOwned x = pure (AVMusicSequenceLoadOptions x)
+
 -- | @AVMusicTrackLoopCount@
 newtype AVMusicTrackLoopCount = AVMusicTrackLoopCount CLong
   deriving stock (Eq, Ord, Show)
@@ -1472,6 +1915,16 @@ newtype AVMusicTrackLoopCount = AVMusicTrackLoopCount CLong
 
 pattern AVMusicTrackLoopCountForever :: AVMusicTrackLoopCount
 pattern AVMusicTrackLoopCountForever = AVMusicTrackLoopCount (-1)
+
+instance ObjCArgument AVMusicTrackLoopCount where
+  withObjCArg (AVMusicTrackLoopCount x) k = k (argCLong x)
+
+instance ObjCReturn AVMusicTrackLoopCount where
+  type RawReturn AVMusicTrackLoopCount = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVMusicTrackLoopCount x)
+  fromOwned x = pure (AVMusicTrackLoopCount x)
 
 -- | @AVSpeechBoundary@
 newtype AVSpeechBoundary = AVSpeechBoundary CLong
@@ -1483,6 +1936,16 @@ pattern AVSpeechBoundaryImmediate = AVSpeechBoundary 0
 
 pattern AVSpeechBoundaryWord :: AVSpeechBoundary
 pattern AVSpeechBoundaryWord = AVSpeechBoundary 1
+
+instance ObjCArgument AVSpeechBoundary where
+  withObjCArg (AVSpeechBoundary x) k = k (argCLong x)
+
+instance ObjCReturn AVSpeechBoundary where
+  type RawReturn AVSpeechBoundary = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVSpeechBoundary x)
+  fromOwned x = pure (AVSpeechBoundary x)
 
 -- | Markers used in the output event callback. Used for providing metadata on synthesized audio.
 -- | @AVSpeechSynthesisMarkerMark@
@@ -1505,6 +1968,16 @@ pattern AVSpeechSynthesisMarkerMarkParagraph = AVSpeechSynthesisMarkerMark 3
 pattern AVSpeechSynthesisMarkerMarkBookmark :: AVSpeechSynthesisMarkerMark
 pattern AVSpeechSynthesisMarkerMarkBookmark = AVSpeechSynthesisMarkerMark 4
 
+instance ObjCArgument AVSpeechSynthesisMarkerMark where
+  withObjCArg (AVSpeechSynthesisMarkerMark x) k = k (argCLong x)
+
+instance ObjCReturn AVSpeechSynthesisMarkerMark where
+  type RawReturn AVSpeechSynthesisMarkerMark = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVSpeechSynthesisMarkerMark x)
+  fromOwned x = pure (AVSpeechSynthesisMarkerMark x)
+
 -- | @AVSpeechSynthesisPersonalVoiceAuthorizationStatus@
 newtype AVSpeechSynthesisPersonalVoiceAuthorizationStatus = AVSpeechSynthesisPersonalVoiceAuthorizationStatus CULong
   deriving stock (Eq, Ord, Show)
@@ -1522,6 +1995,16 @@ pattern AVSpeechSynthesisPersonalVoiceAuthorizationStatusUnsupported = AVSpeechS
 pattern AVSpeechSynthesisPersonalVoiceAuthorizationStatusAuthorized :: AVSpeechSynthesisPersonalVoiceAuthorizationStatus
 pattern AVSpeechSynthesisPersonalVoiceAuthorizationStatusAuthorized = AVSpeechSynthesisPersonalVoiceAuthorizationStatus 3
 
+instance ObjCArgument AVSpeechSynthesisPersonalVoiceAuthorizationStatus where
+  withObjCArg (AVSpeechSynthesisPersonalVoiceAuthorizationStatus x) k = k (argCULong x)
+
+instance ObjCReturn AVSpeechSynthesisPersonalVoiceAuthorizationStatus where
+  type RawReturn AVSpeechSynthesisPersonalVoiceAuthorizationStatus = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVSpeechSynthesisPersonalVoiceAuthorizationStatus x)
+  fromOwned x = pure (AVSpeechSynthesisPersonalVoiceAuthorizationStatus x)
+
 -- | @AVSpeechSynthesisVoiceGender@
 newtype AVSpeechSynthesisVoiceGender = AVSpeechSynthesisVoiceGender CLong
   deriving stock (Eq, Ord, Show)
@@ -1536,6 +2019,16 @@ pattern AVSpeechSynthesisVoiceGenderMale = AVSpeechSynthesisVoiceGender 1
 pattern AVSpeechSynthesisVoiceGenderFemale :: AVSpeechSynthesisVoiceGender
 pattern AVSpeechSynthesisVoiceGenderFemale = AVSpeechSynthesisVoiceGender 2
 
+instance ObjCArgument AVSpeechSynthesisVoiceGender where
+  withObjCArg (AVSpeechSynthesisVoiceGender x) k = k (argCLong x)
+
+instance ObjCReturn AVSpeechSynthesisVoiceGender where
+  type RawReturn AVSpeechSynthesisVoiceGender = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVSpeechSynthesisVoiceGender x)
+  fromOwned x = pure (AVSpeechSynthesisVoiceGender x)
+
 -- | @AVSpeechSynthesisVoiceQuality@
 newtype AVSpeechSynthesisVoiceQuality = AVSpeechSynthesisVoiceQuality CLong
   deriving stock (Eq, Ord, Show)
@@ -1549,6 +2042,16 @@ pattern AVSpeechSynthesisVoiceQualityEnhanced = AVSpeechSynthesisVoiceQuality 2
 
 pattern AVSpeechSynthesisVoiceQualityPremium :: AVSpeechSynthesisVoiceQuality
 pattern AVSpeechSynthesisVoiceQualityPremium = AVSpeechSynthesisVoiceQuality 3
+
+instance ObjCArgument AVSpeechSynthesisVoiceQuality where
+  withObjCArg (AVSpeechSynthesisVoiceQuality x) k = k (argCLong x)
+
+instance ObjCReturn AVSpeechSynthesisVoiceQuality where
+  type RawReturn AVSpeechSynthesisVoiceQuality = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVSpeechSynthesisVoiceQuality x)
+  fromOwned x = pure (AVSpeechSynthesisVoiceQuality x)
 
 -- | @AVSpeechSynthesisVoiceTraits@ (bitmask)
 newtype AVSpeechSynthesisVoiceTraits = AVSpeechSynthesisVoiceTraits CULong
@@ -1569,3 +2072,13 @@ pattern AVSpeechSynthesisVoiceTraitIsNoveltyVoice = AVSpeechSynthesisVoiceTraits
 
 pattern AVSpeechSynthesisVoiceTraitIsPersonalVoice :: AVSpeechSynthesisVoiceTraits
 pattern AVSpeechSynthesisVoiceTraitIsPersonalVoice = AVSpeechSynthesisVoiceTraits 2
+
+instance ObjCArgument AVSpeechSynthesisVoiceTraits where
+  withObjCArg (AVSpeechSynthesisVoiceTraits x) k = k (argCULong x)
+
+instance ObjCReturn AVSpeechSynthesisVoiceTraits where
+  type RawReturn AVSpeechSynthesisVoiceTraits = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVSpeechSynthesisVoiceTraits x)
+  fromOwned x = pure (AVSpeechSynthesisVoiceTraits x)

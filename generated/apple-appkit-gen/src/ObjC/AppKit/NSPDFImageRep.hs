@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.AppKit.NSPDFImageRep
   , currentPage
   , setCurrentPage
   , pageCount
-  , imageRepWithDataSelector
-  , initWithDataSelector
-  , pdfRepresentationSelector
   , boundsSelector
   , currentPageSelector
-  , setCurrentPageSelector
+  , imageRepWithDataSelector
+  , initWithDataSelector
   , pageCountSelector
+  , pdfRepresentationSelector
+  , setCurrentPageSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,69 +42,67 @@ imageRepWithData :: IsNSData pdfData => pdfData -> IO (Id NSPDFImageRep)
 imageRepWithData pdfData =
   do
     cls' <- getRequiredClass "NSPDFImageRep"
-    withObjCPtr pdfData $ \raw_pdfData ->
-      sendClassMsg cls' (mkSelector "imageRepWithData:") (retPtr retVoid) [argPtr (castPtr raw_pdfData :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageRepWithDataSelector (toNSData pdfData)
 
 -- | @- initWithData:@
 initWithData :: (IsNSPDFImageRep nspdfImageRep, IsNSData pdfData) => nspdfImageRep -> pdfData -> IO (Id NSPDFImageRep)
-initWithData nspdfImageRep  pdfData =
-  withObjCPtr pdfData $ \raw_pdfData ->
-      sendMsg nspdfImageRep (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_pdfData :: Ptr ())] >>= ownedObject . castPtr
+initWithData nspdfImageRep pdfData =
+  sendOwnedMessage nspdfImageRep initWithDataSelector (toNSData pdfData)
 
 -- | @- PDFRepresentation@
 pdfRepresentation :: IsNSPDFImageRep nspdfImageRep => nspdfImageRep -> IO (Id NSData)
-pdfRepresentation nspdfImageRep  =
-    sendMsg nspdfImageRep (mkSelector "PDFRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+pdfRepresentation nspdfImageRep =
+  sendMessage nspdfImageRep pdfRepresentationSelector
 
 -- | @- bounds@
 bounds :: IsNSPDFImageRep nspdfImageRep => nspdfImageRep -> IO NSRect
-bounds nspdfImageRep  =
-    sendMsgStret nspdfImageRep (mkSelector "bounds") retNSRect []
+bounds nspdfImageRep =
+  sendMessage nspdfImageRep boundsSelector
 
 -- | @- currentPage@
 currentPage :: IsNSPDFImageRep nspdfImageRep => nspdfImageRep -> IO CLong
-currentPage nspdfImageRep  =
-    sendMsg nspdfImageRep (mkSelector "currentPage") retCLong []
+currentPage nspdfImageRep =
+  sendMessage nspdfImageRep currentPageSelector
 
 -- | @- setCurrentPage:@
 setCurrentPage :: IsNSPDFImageRep nspdfImageRep => nspdfImageRep -> CLong -> IO ()
-setCurrentPage nspdfImageRep  value =
-    sendMsg nspdfImageRep (mkSelector "setCurrentPage:") retVoid [argCLong value]
+setCurrentPage nspdfImageRep value =
+  sendMessage nspdfImageRep setCurrentPageSelector value
 
 -- | @- pageCount@
 pageCount :: IsNSPDFImageRep nspdfImageRep => nspdfImageRep -> IO CLong
-pageCount nspdfImageRep  =
-    sendMsg nspdfImageRep (mkSelector "pageCount") retCLong []
+pageCount nspdfImageRep =
+  sendMessage nspdfImageRep pageCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageRepWithData:@
-imageRepWithDataSelector :: Selector
+imageRepWithDataSelector :: Selector '[Id NSData] (Id NSPDFImageRep)
 imageRepWithDataSelector = mkSelector "imageRepWithData:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id NSPDFImageRep)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @PDFRepresentation@
-pdfRepresentationSelector :: Selector
+pdfRepresentationSelector :: Selector '[] (Id NSData)
 pdfRepresentationSelector = mkSelector "PDFRepresentation"
 
 -- | @Selector@ for @bounds@
-boundsSelector :: Selector
+boundsSelector :: Selector '[] NSRect
 boundsSelector = mkSelector "bounds"
 
 -- | @Selector@ for @currentPage@
-currentPageSelector :: Selector
+currentPageSelector :: Selector '[] CLong
 currentPageSelector = mkSelector "currentPage"
 
 -- | @Selector@ for @setCurrentPage:@
-setCurrentPageSelector :: Selector
+setCurrentPageSelector :: Selector '[CLong] ()
 setCurrentPageSelector = mkSelector "setCurrentPage:"
 
 -- | @Selector@ for @pageCount@
-pageCountSelector :: Selector
+pageCountSelector :: Selector '[] CLong
 pageCountSelector = mkSelector "pageCount"
 

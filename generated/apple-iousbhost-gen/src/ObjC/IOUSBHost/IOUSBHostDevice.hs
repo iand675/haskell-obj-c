@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.IOUSBHost.IOUSBHostDevice
   , configureWithValue_error
   , resetWithError
   , configurationDescriptor
-  , createMatchingDictionaryWithVendorID_productID_bcdDevice_deviceClass_deviceSubclass_deviceProtocol_speed_productIDArraySelector
-  , configureWithValue_matchInterfaces_errorSelector
-  , configureWithValue_errorSelector
-  , resetWithErrorSelector
   , configurationDescriptorSelector
+  , configureWithValue_errorSelector
+  , configureWithValue_matchInterfaces_errorSelector
+  , createMatchingDictionaryWithVendorID_productID_bcdDevice_deviceClass_deviceSubclass_deviceProtocol_speed_productIDArraySelector
+  , resetWithErrorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,15 +64,7 @@ createMatchingDictionaryWithVendorID_productID_bcdDevice_deviceClass_deviceSubcl
 createMatchingDictionaryWithVendorID_productID_bcdDevice_deviceClass_deviceSubclass_deviceProtocol_speed_productIDArray vendorID productID bcdDevice deviceClass deviceSubclass deviceProtocol speed productIDArray =
   do
     cls' <- getRequiredClass "IOUSBHostDevice"
-    withObjCPtr vendorID $ \raw_vendorID ->
-      withObjCPtr productID $ \raw_productID ->
-        withObjCPtr bcdDevice $ \raw_bcdDevice ->
-          withObjCPtr deviceClass $ \raw_deviceClass ->
-            withObjCPtr deviceSubclass $ \raw_deviceSubclass ->
-              withObjCPtr deviceProtocol $ \raw_deviceProtocol ->
-                withObjCPtr speed $ \raw_speed ->
-                  withObjCPtr productIDArray $ \raw_productIDArray ->
-                    fmap castPtr $ sendClassMsg cls' (mkSelector "createMatchingDictionaryWithVendorID:productID:bcdDevice:deviceClass:deviceSubclass:deviceProtocol:speed:productIDArray:") (retPtr retVoid) [argPtr (castPtr raw_vendorID :: Ptr ()), argPtr (castPtr raw_productID :: Ptr ()), argPtr (castPtr raw_bcdDevice :: Ptr ()), argPtr (castPtr raw_deviceClass :: Ptr ()), argPtr (castPtr raw_deviceSubclass :: Ptr ()), argPtr (castPtr raw_deviceProtocol :: Ptr ()), argPtr (castPtr raw_speed :: Ptr ()), argPtr (castPtr raw_productIDArray :: Ptr ())]
+    sendClassMessage cls' createMatchingDictionaryWithVendorID_productID_bcdDevice_deviceClass_deviceSubclass_deviceProtocol_speed_productIDArraySelector (toNSNumber vendorID) (toNSNumber productID) (toNSNumber bcdDevice) (toNSNumber deviceClass) (toNSNumber deviceSubclass) (toNSNumber deviceProtocol) (toNSNumber speed) (toNSArray productIDArray)
 
 -- | Select a new configuration for the device
 --
@@ -89,9 +78,8 @@ createMatchingDictionaryWithVendorID_productID_bcdDevice_deviceClass_deviceSubcl
 --
 -- ObjC selector: @- configureWithValue:matchInterfaces:error:@
 configureWithValue_matchInterfaces_error :: (IsIOUSBHostDevice iousbHostDevice, IsNSError error_) => iousbHostDevice -> CULong -> Bool -> error_ -> IO Bool
-configureWithValue_matchInterfaces_error iousbHostDevice  value matchInterfaces error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostDevice (mkSelector "configureWithValue:matchInterfaces:error:") retCULong [argCULong value, argCULong (if matchInterfaces then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+configureWithValue_matchInterfaces_error iousbHostDevice value matchInterfaces error_ =
+  sendMessage iousbHostDevice configureWithValue_matchInterfaces_errorSelector value matchInterfaces (toNSError error_)
 
 -- | Select a new configuration for the device
 --
@@ -103,9 +91,8 @@ configureWithValue_matchInterfaces_error iousbHostDevice  value matchInterfaces 
 --
 -- ObjC selector: @- configureWithValue:error:@
 configureWithValue_error :: (IsIOUSBHostDevice iousbHostDevice, IsNSError error_) => iousbHostDevice -> CULong -> error_ -> IO Bool
-configureWithValue_error iousbHostDevice  value error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostDevice (mkSelector "configureWithValue:error:") retCULong [argCULong value, argPtr (castPtr raw_error_ :: Ptr ())]
+configureWithValue_error iousbHostDevice value error_ =
+  sendMessage iousbHostDevice configureWithValue_errorSelector value (toNSError error_)
 
 -- | Terminate the device and attempt to reenumerate it
 --
@@ -115,9 +102,8 @@ configureWithValue_error iousbHostDevice  value error_ =
 --
 -- ObjC selector: @- resetWithError:@
 resetWithError :: (IsIOUSBHostDevice iousbHostDevice, IsNSError error_) => iousbHostDevice -> error_ -> IO Bool
-resetWithError iousbHostDevice  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostDevice (mkSelector "resetWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+resetWithError iousbHostDevice error_ =
+  sendMessage iousbHostDevice resetWithErrorSelector (toNSError error_)
 
 -- | Return the currently selected configuration descriptor
 --
@@ -127,30 +113,30 @@ resetWithError iousbHostDevice  error_ =
 --
 -- ObjC selector: @- configurationDescriptor@
 configurationDescriptor :: IsIOUSBHostDevice iousbHostDevice => iousbHostDevice -> IO (Const (Ptr IOUSBConfigurationDescriptor))
-configurationDescriptor iousbHostDevice  =
-    fmap Const $ fmap castPtr $ sendMsg iousbHostDevice (mkSelector "configurationDescriptor") (retPtr retVoid) []
+configurationDescriptor iousbHostDevice =
+  sendMessage iousbHostDevice configurationDescriptorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @createMatchingDictionaryWithVendorID:productID:bcdDevice:deviceClass:deviceSubclass:deviceProtocol:speed:productIDArray:@
-createMatchingDictionaryWithVendorID_productID_bcdDevice_deviceClass_deviceSubclass_deviceProtocol_speed_productIDArraySelector :: Selector
+createMatchingDictionaryWithVendorID_productID_bcdDevice_deviceClass_deviceSubclass_deviceProtocol_speed_productIDArraySelector :: Selector '[Id NSNumber, Id NSNumber, Id NSNumber, Id NSNumber, Id NSNumber, Id NSNumber, Id NSNumber, Id NSArray] (Ptr ())
 createMatchingDictionaryWithVendorID_productID_bcdDevice_deviceClass_deviceSubclass_deviceProtocol_speed_productIDArraySelector = mkSelector "createMatchingDictionaryWithVendorID:productID:bcdDevice:deviceClass:deviceSubclass:deviceProtocol:speed:productIDArray:"
 
 -- | @Selector@ for @configureWithValue:matchInterfaces:error:@
-configureWithValue_matchInterfaces_errorSelector :: Selector
+configureWithValue_matchInterfaces_errorSelector :: Selector '[CULong, Bool, Id NSError] Bool
 configureWithValue_matchInterfaces_errorSelector = mkSelector "configureWithValue:matchInterfaces:error:"
 
 -- | @Selector@ for @configureWithValue:error:@
-configureWithValue_errorSelector :: Selector
+configureWithValue_errorSelector :: Selector '[CULong, Id NSError] Bool
 configureWithValue_errorSelector = mkSelector "configureWithValue:error:"
 
 -- | @Selector@ for @resetWithError:@
-resetWithErrorSelector :: Selector
+resetWithErrorSelector :: Selector '[Id NSError] Bool
 resetWithErrorSelector = mkSelector "resetWithError:"
 
 -- | @Selector@ for @configurationDescriptor@
-configurationDescriptorSelector :: Selector
+configurationDescriptorSelector :: Selector '[] (Const (Ptr IOUSBConfigurationDescriptor))
 configurationDescriptorSelector = mkSelector "configurationDescriptor"
 

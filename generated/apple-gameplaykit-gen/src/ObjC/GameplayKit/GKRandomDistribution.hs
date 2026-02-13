@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,31 +21,27 @@ module ObjC.GameplayKit.GKRandomDistribution
   , lowestValue
   , highestValue
   , numberOfPossibleOutcomes
+  , d20Selector
+  , d6Selector
+  , distributionForDieWithSideCountSelector
+  , distributionWithLowestValue_highestValueSelector
+  , highestValueSelector
   , initWithRandomSource_lowestValue_highestValueSelector
+  , lowestValueSelector
+  , nextBoolSelector
   , nextIntSelector
   , nextIntWithUpperBoundSelector
   , nextUniformSelector
-  , nextBoolSelector
-  , distributionWithLowestValue_highestValueSelector
-  , distributionForDieWithSideCountSelector
-  , d6Selector
-  , d20Selector
-  , lowestValueSelector
-  , highestValueSelector
   , numberOfPossibleOutcomesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,22 +52,22 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRandomSource:lowestValue:highestValue:@
 initWithRandomSource_lowestValue_highestValue :: IsGKRandomDistribution gkRandomDistribution => gkRandomDistribution -> RawId -> CLong -> CLong -> IO (Id GKRandomDistribution)
-initWithRandomSource_lowestValue_highestValue gkRandomDistribution  source lowestInclusive highestInclusive =
-    sendMsg gkRandomDistribution (mkSelector "initWithRandomSource:lowestValue:highestValue:") (retPtr retVoid) [argPtr (castPtr (unRawId source) :: Ptr ()), argCLong lowestInclusive, argCLong highestInclusive] >>= ownedObject . castPtr
+initWithRandomSource_lowestValue_highestValue gkRandomDistribution source lowestInclusive highestInclusive =
+  sendOwnedMessage gkRandomDistribution initWithRandomSource_lowestValue_highestValueSelector source lowestInclusive highestInclusive
 
 -- | Returns the next integer in the distribution sequence and moves ahead to the next one. The value is in the range of [lowest, highest].
 --
 -- ObjC selector: @- nextInt@
 nextInt :: IsGKRandomDistribution gkRandomDistribution => gkRandomDistribution -> IO CLong
-nextInt gkRandomDistribution  =
-    sendMsg gkRandomDistribution (mkSelector "nextInt") retCLong []
+nextInt gkRandomDistribution =
+  sendMessage gkRandomDistribution nextIntSelector
 
 -- | Returns the next unsigned value in the distribution sequence that is less than upperBound. The value never equals or exceeeds upperBounds, and in this case it will also never exceed the highest value of the distribution.
 --
 -- ObjC selector: @- nextIntWithUpperBound:@
 nextIntWithUpperBound :: IsGKRandomDistribution gkRandomDistribution => gkRandomDistribution -> CULong -> IO CULong
-nextIntWithUpperBound gkRandomDistribution  upperBound =
-    sendMsg gkRandomDistribution (mkSelector "nextIntWithUpperBound:") retCULong [argCULong upperBound]
+nextIntWithUpperBound gkRandomDistribution upperBound =
+  sendMessage gkRandomDistribution nextIntWithUpperBoundSelector upperBound
 
 -- | Returns the next uniform float in the random sequence and moves ahead to the next one. The value is in the range of [lowest / higest, 1.0].
 --
@@ -80,8 +77,8 @@ nextIntWithUpperBound gkRandomDistribution  upperBound =
 --
 -- ObjC selector: @- nextUniform@
 nextUniform :: IsGKRandomDistribution gkRandomDistribution => gkRandomDistribution -> IO CFloat
-nextUniform gkRandomDistribution  =
-    sendMsg gkRandomDistribution (mkSelector "nextUniform") retCFloat []
+nextUniform gkRandomDistribution =
+  sendMessage gkRandomDistribution nextUniformSelector
 
 -- | Returns the next true or false value in the distribution sequence and moves ahead to the next one. The value is either nonzero (true) or zero (false). Use this for simple boolean switches in logic that don't require fuzzy evaluation. For fuzzy evaluation use nextUniform.
 --
@@ -91,8 +88,8 @@ nextUniform gkRandomDistribution  =
 --
 -- ObjC selector: @- nextBool@
 nextBool :: IsGKRandomDistribution gkRandomDistribution => gkRandomDistribution -> IO Bool
-nextBool gkRandomDistribution  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkRandomDistribution (mkSelector "nextBool") retCULong []
+nextBool gkRandomDistribution =
+  sendMessage gkRandomDistribution nextBoolSelector
 
 -- | Convenience creation of random distribution within the range [lowest, highest] using an isolated source to grab input values from. This is equivalent to calling alloc followed by initWithSource:lowest:highest:, where source is [[GKRandomSource alloc] init].
 --
@@ -103,7 +100,7 @@ distributionWithLowestValue_highestValue :: CLong -> CLong -> IO (Id GKRandomDis
 distributionWithLowestValue_highestValue lowestInclusive highestInclusive =
   do
     cls' <- getRequiredClass "GKRandomDistribution"
-    sendClassMsg cls' (mkSelector "distributionWithLowestValue:highestValue:") (retPtr retVoid) [argCLong lowestInclusive, argCLong highestInclusive] >>= retainedObject . castPtr
+    sendClassMessage cls' distributionWithLowestValue_highestValueSelector lowestInclusive highestInclusive
 
 -- | Convenience creation of random distribution with the die like range [1, sideCount] using an isolated source to grab input values from. This is equivalent to calling alloc followed by initWithSource:lowest:highest:, where source is [[GKRandomSource alloc] init].
 --
@@ -114,7 +111,7 @@ distributionForDieWithSideCount :: CLong -> IO (Id GKRandomDistribution)
 distributionForDieWithSideCount sideCount =
   do
     cls' <- getRequiredClass "GKRandomDistribution"
-    sendClassMsg cls' (mkSelector "distributionForDieWithSideCount:") (retPtr retVoid) [argCLong sideCount] >>= retainedObject . castPtr
+    sendClassMessage cls' distributionForDieWithSideCountSelector sideCount
 
 -- | Convenience creation for the very common d6 range [1, 6] with an isolated random source shielded from outside sources.
 --
@@ -123,7 +120,7 @@ d6 :: IO (Id GKRandomDistribution)
 d6  =
   do
     cls' <- getRequiredClass "GKRandomDistribution"
-    sendClassMsg cls' (mkSelector "d6") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' d6Selector
 
 -- | Convenience creation for the very common d20 range [1, 20] with an isolated random source shielded from outside sources.
 --
@@ -132,78 +129,78 @@ d20 :: IO (Id GKRandomDistribution)
 d20  =
   do
     cls' <- getRequiredClass "GKRandomDistribution"
-    sendClassMsg cls' (mkSelector "d20") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' d20Selector
 
 -- | The lowest value the distribution will output.
 --
 -- ObjC selector: @- lowestValue@
 lowestValue :: IsGKRandomDistribution gkRandomDistribution => gkRandomDistribution -> IO CLong
-lowestValue gkRandomDistribution  =
-    sendMsg gkRandomDistribution (mkSelector "lowestValue") retCLong []
+lowestValue gkRandomDistribution =
+  sendMessage gkRandomDistribution lowestValueSelector
 
 -- | The highest value the distribution will output.
 --
 -- ObjC selector: @- highestValue@
 highestValue :: IsGKRandomDistribution gkRandomDistribution => gkRandomDistribution -> IO CLong
-highestValue gkRandomDistribution  =
-    sendMsg gkRandomDistribution (mkSelector "highestValue") retCLong []
+highestValue gkRandomDistribution =
+  sendMessage gkRandomDistribution highestValueSelector
 
 -- | The number of unique possible outcomes, depending on the distribution type this is not always highest - lowest + 1.
 --
 -- ObjC selector: @- numberOfPossibleOutcomes@
 numberOfPossibleOutcomes :: IsGKRandomDistribution gkRandomDistribution => gkRandomDistribution -> IO CULong
-numberOfPossibleOutcomes gkRandomDistribution  =
-    sendMsg gkRandomDistribution (mkSelector "numberOfPossibleOutcomes") retCULong []
+numberOfPossibleOutcomes gkRandomDistribution =
+  sendMessage gkRandomDistribution numberOfPossibleOutcomesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRandomSource:lowestValue:highestValue:@
-initWithRandomSource_lowestValue_highestValueSelector :: Selector
+initWithRandomSource_lowestValue_highestValueSelector :: Selector '[RawId, CLong, CLong] (Id GKRandomDistribution)
 initWithRandomSource_lowestValue_highestValueSelector = mkSelector "initWithRandomSource:lowestValue:highestValue:"
 
 -- | @Selector@ for @nextInt@
-nextIntSelector :: Selector
+nextIntSelector :: Selector '[] CLong
 nextIntSelector = mkSelector "nextInt"
 
 -- | @Selector@ for @nextIntWithUpperBound:@
-nextIntWithUpperBoundSelector :: Selector
+nextIntWithUpperBoundSelector :: Selector '[CULong] CULong
 nextIntWithUpperBoundSelector = mkSelector "nextIntWithUpperBound:"
 
 -- | @Selector@ for @nextUniform@
-nextUniformSelector :: Selector
+nextUniformSelector :: Selector '[] CFloat
 nextUniformSelector = mkSelector "nextUniform"
 
 -- | @Selector@ for @nextBool@
-nextBoolSelector :: Selector
+nextBoolSelector :: Selector '[] Bool
 nextBoolSelector = mkSelector "nextBool"
 
 -- | @Selector@ for @distributionWithLowestValue:highestValue:@
-distributionWithLowestValue_highestValueSelector :: Selector
+distributionWithLowestValue_highestValueSelector :: Selector '[CLong, CLong] (Id GKRandomDistribution)
 distributionWithLowestValue_highestValueSelector = mkSelector "distributionWithLowestValue:highestValue:"
 
 -- | @Selector@ for @distributionForDieWithSideCount:@
-distributionForDieWithSideCountSelector :: Selector
+distributionForDieWithSideCountSelector :: Selector '[CLong] (Id GKRandomDistribution)
 distributionForDieWithSideCountSelector = mkSelector "distributionForDieWithSideCount:"
 
 -- | @Selector@ for @d6@
-d6Selector :: Selector
+d6Selector :: Selector '[] (Id GKRandomDistribution)
 d6Selector = mkSelector "d6"
 
 -- | @Selector@ for @d20@
-d20Selector :: Selector
+d20Selector :: Selector '[] (Id GKRandomDistribution)
 d20Selector = mkSelector "d20"
 
 -- | @Selector@ for @lowestValue@
-lowestValueSelector :: Selector
+lowestValueSelector :: Selector '[] CLong
 lowestValueSelector = mkSelector "lowestValue"
 
 -- | @Selector@ for @highestValue@
-highestValueSelector :: Selector
+highestValueSelector :: Selector '[] CLong
 highestValueSelector = mkSelector "highestValue"
 
 -- | @Selector@ for @numberOfPossibleOutcomes@
-numberOfPossibleOutcomesSelector :: Selector
+numberOfPossibleOutcomesSelector :: Selector '[] CULong
 numberOfPossibleOutcomesSelector = mkSelector "numberOfPossibleOutcomes"
 

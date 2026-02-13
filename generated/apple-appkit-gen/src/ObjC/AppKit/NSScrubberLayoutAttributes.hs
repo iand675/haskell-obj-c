@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.AppKit.NSScrubberLayoutAttributes
   , setFrame
   , alpha
   , setAlpha
-  , layoutAttributesForItemAtIndexSelector
-  , itemIndexSelector
-  , setItemIndexSelector
-  , frameSelector
-  , setFrameSelector
   , alphaSelector
+  , frameSelector
+  , itemIndexSelector
+  , layoutAttributesForItemAtIndexSelector
   , setAlphaSelector
+  , setFrameSelector
+  , setItemIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,67 +48,67 @@ layoutAttributesForItemAtIndex :: CLong -> IO (Id NSScrubberLayoutAttributes)
 layoutAttributesForItemAtIndex index =
   do
     cls' <- getRequiredClass "NSScrubberLayoutAttributes"
-    sendClassMsg cls' (mkSelector "layoutAttributesForItemAtIndex:") (retPtr retVoid) [argCLong index] >>= retainedObject . castPtr
+    sendClassMessage cls' layoutAttributesForItemAtIndexSelector index
 
 -- | @- itemIndex@
 itemIndex :: IsNSScrubberLayoutAttributes nsScrubberLayoutAttributes => nsScrubberLayoutAttributes -> IO CLong
-itemIndex nsScrubberLayoutAttributes  =
-    sendMsg nsScrubberLayoutAttributes (mkSelector "itemIndex") retCLong []
+itemIndex nsScrubberLayoutAttributes =
+  sendMessage nsScrubberLayoutAttributes itemIndexSelector
 
 -- | @- setItemIndex:@
 setItemIndex :: IsNSScrubberLayoutAttributes nsScrubberLayoutAttributes => nsScrubberLayoutAttributes -> CLong -> IO ()
-setItemIndex nsScrubberLayoutAttributes  value =
-    sendMsg nsScrubberLayoutAttributes (mkSelector "setItemIndex:") retVoid [argCLong value]
+setItemIndex nsScrubberLayoutAttributes value =
+  sendMessage nsScrubberLayoutAttributes setItemIndexSelector value
 
 -- | @- frame@
 frame :: IsNSScrubberLayoutAttributes nsScrubberLayoutAttributes => nsScrubberLayoutAttributes -> IO NSRect
-frame nsScrubberLayoutAttributes  =
-    sendMsgStret nsScrubberLayoutAttributes (mkSelector "frame") retNSRect []
+frame nsScrubberLayoutAttributes =
+  sendMessage nsScrubberLayoutAttributes frameSelector
 
 -- | @- setFrame:@
 setFrame :: IsNSScrubberLayoutAttributes nsScrubberLayoutAttributes => nsScrubberLayoutAttributes -> NSRect -> IO ()
-setFrame nsScrubberLayoutAttributes  value =
-    sendMsg nsScrubberLayoutAttributes (mkSelector "setFrame:") retVoid [argNSRect value]
+setFrame nsScrubberLayoutAttributes value =
+  sendMessage nsScrubberLayoutAttributes setFrameSelector value
 
 -- | @- alpha@
 alpha :: IsNSScrubberLayoutAttributes nsScrubberLayoutAttributes => nsScrubberLayoutAttributes -> IO CDouble
-alpha nsScrubberLayoutAttributes  =
-    sendMsg nsScrubberLayoutAttributes (mkSelector "alpha") retCDouble []
+alpha nsScrubberLayoutAttributes =
+  sendMessage nsScrubberLayoutAttributes alphaSelector
 
 -- | @- setAlpha:@
 setAlpha :: IsNSScrubberLayoutAttributes nsScrubberLayoutAttributes => nsScrubberLayoutAttributes -> CDouble -> IO ()
-setAlpha nsScrubberLayoutAttributes  value =
-    sendMsg nsScrubberLayoutAttributes (mkSelector "setAlpha:") retVoid [argCDouble value]
+setAlpha nsScrubberLayoutAttributes value =
+  sendMessage nsScrubberLayoutAttributes setAlphaSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layoutAttributesForItemAtIndex:@
-layoutAttributesForItemAtIndexSelector :: Selector
+layoutAttributesForItemAtIndexSelector :: Selector '[CLong] (Id NSScrubberLayoutAttributes)
 layoutAttributesForItemAtIndexSelector = mkSelector "layoutAttributesForItemAtIndex:"
 
 -- | @Selector@ for @itemIndex@
-itemIndexSelector :: Selector
+itemIndexSelector :: Selector '[] CLong
 itemIndexSelector = mkSelector "itemIndex"
 
 -- | @Selector@ for @setItemIndex:@
-setItemIndexSelector :: Selector
+setItemIndexSelector :: Selector '[CLong] ()
 setItemIndexSelector = mkSelector "setItemIndex:"
 
 -- | @Selector@ for @frame@
-frameSelector :: Selector
+frameSelector :: Selector '[] NSRect
 frameSelector = mkSelector "frame"
 
 -- | @Selector@ for @setFrame:@
-setFrameSelector :: Selector
+setFrameSelector :: Selector '[NSRect] ()
 setFrameSelector = mkSelector "setFrame:"
 
 -- | @Selector@ for @alpha@
-alphaSelector :: Selector
+alphaSelector :: Selector '[] CDouble
 alphaSelector = mkSelector "alpha"
 
 -- | @Selector@ for @setAlpha:@
-setAlphaSelector :: Selector
+setAlphaSelector :: Selector '[CDouble] ()
 setAlphaSelector = mkSelector "setAlpha:"
 

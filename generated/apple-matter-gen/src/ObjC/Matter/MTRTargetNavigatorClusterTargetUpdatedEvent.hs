@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRTargetNavigatorClusterTargetUpdatedEvent
   , setCurrentTarget
   , data_
   , setData
-  , targetListSelector
-  , setTargetListSelector
   , currentTargetSelector
-  , setCurrentTargetSelector
   , dataSelector
+  , setCurrentTargetSelector
   , setDataSelector
+  , setTargetListSelector
+  , targetListSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- targetList@
 targetList :: IsMTRTargetNavigatorClusterTargetUpdatedEvent mtrTargetNavigatorClusterTargetUpdatedEvent => mtrTargetNavigatorClusterTargetUpdatedEvent -> IO (Id NSArray)
-targetList mtrTargetNavigatorClusterTargetUpdatedEvent  =
-    sendMsg mtrTargetNavigatorClusterTargetUpdatedEvent (mkSelector "targetList") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetList mtrTargetNavigatorClusterTargetUpdatedEvent =
+  sendMessage mtrTargetNavigatorClusterTargetUpdatedEvent targetListSelector
 
 -- | @- setTargetList:@
 setTargetList :: (IsMTRTargetNavigatorClusterTargetUpdatedEvent mtrTargetNavigatorClusterTargetUpdatedEvent, IsNSArray value) => mtrTargetNavigatorClusterTargetUpdatedEvent -> value -> IO ()
-setTargetList mtrTargetNavigatorClusterTargetUpdatedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterTargetUpdatedEvent (mkSelector "setTargetList:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTargetList mtrTargetNavigatorClusterTargetUpdatedEvent value =
+  sendMessage mtrTargetNavigatorClusterTargetUpdatedEvent setTargetListSelector (toNSArray value)
 
 -- | @- currentTarget@
 currentTarget :: IsMTRTargetNavigatorClusterTargetUpdatedEvent mtrTargetNavigatorClusterTargetUpdatedEvent => mtrTargetNavigatorClusterTargetUpdatedEvent -> IO (Id NSNumber)
-currentTarget mtrTargetNavigatorClusterTargetUpdatedEvent  =
-    sendMsg mtrTargetNavigatorClusterTargetUpdatedEvent (mkSelector "currentTarget") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentTarget mtrTargetNavigatorClusterTargetUpdatedEvent =
+  sendMessage mtrTargetNavigatorClusterTargetUpdatedEvent currentTargetSelector
 
 -- | @- setCurrentTarget:@
 setCurrentTarget :: (IsMTRTargetNavigatorClusterTargetUpdatedEvent mtrTargetNavigatorClusterTargetUpdatedEvent, IsNSNumber value) => mtrTargetNavigatorClusterTargetUpdatedEvent -> value -> IO ()
-setCurrentTarget mtrTargetNavigatorClusterTargetUpdatedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterTargetUpdatedEvent (mkSelector "setCurrentTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentTarget mtrTargetNavigatorClusterTargetUpdatedEvent value =
+  sendMessage mtrTargetNavigatorClusterTargetUpdatedEvent setCurrentTargetSelector (toNSNumber value)
 
 -- | @- data@
 data_ :: IsMTRTargetNavigatorClusterTargetUpdatedEvent mtrTargetNavigatorClusterTargetUpdatedEvent => mtrTargetNavigatorClusterTargetUpdatedEvent -> IO (Id NSData)
-data_ mtrTargetNavigatorClusterTargetUpdatedEvent  =
-    sendMsg mtrTargetNavigatorClusterTargetUpdatedEvent (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrTargetNavigatorClusterTargetUpdatedEvent =
+  sendMessage mtrTargetNavigatorClusterTargetUpdatedEvent dataSelector
 
 -- | @- setData:@
 setData :: (IsMTRTargetNavigatorClusterTargetUpdatedEvent mtrTargetNavigatorClusterTargetUpdatedEvent, IsNSData value) => mtrTargetNavigatorClusterTargetUpdatedEvent -> value -> IO ()
-setData mtrTargetNavigatorClusterTargetUpdatedEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrTargetNavigatorClusterTargetUpdatedEvent (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mtrTargetNavigatorClusterTargetUpdatedEvent value =
+  sendMessage mtrTargetNavigatorClusterTargetUpdatedEvent setDataSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @targetList@
-targetListSelector :: Selector
+targetListSelector :: Selector '[] (Id NSArray)
 targetListSelector = mkSelector "targetList"
 
 -- | @Selector@ for @setTargetList:@
-setTargetListSelector :: Selector
+setTargetListSelector :: Selector '[Id NSArray] ()
 setTargetListSelector = mkSelector "setTargetList:"
 
 -- | @Selector@ for @currentTarget@
-currentTargetSelector :: Selector
+currentTargetSelector :: Selector '[] (Id NSNumber)
 currentTargetSelector = mkSelector "currentTarget"
 
 -- | @Selector@ for @setCurrentTarget:@
-setCurrentTargetSelector :: Selector
+setCurrentTargetSelector :: Selector '[Id NSNumber] ()
 setCurrentTargetSelector = mkSelector "setCurrentTarget:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSData] ()
 setDataSelector = mkSelector "setData:"
 

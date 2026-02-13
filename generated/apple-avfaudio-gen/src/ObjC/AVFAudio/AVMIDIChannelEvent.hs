@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.AVFAudio.AVMIDIChannelEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- channel@
 channel :: IsAVMIDIChannelEvent avmidiChannelEvent => avmidiChannelEvent -> IO CUInt
-channel avmidiChannelEvent  =
-    sendMsg avmidiChannelEvent (mkSelector "channel") retCUInt []
+channel avmidiChannelEvent =
+  sendMessage avmidiChannelEvent channelSelector
 
 -- | channel
 --
@@ -48,18 +45,18 @@ channel avmidiChannelEvent  =
 --
 -- ObjC selector: @- setChannel:@
 setChannel :: IsAVMIDIChannelEvent avmidiChannelEvent => avmidiChannelEvent -> CUInt -> IO ()
-setChannel avmidiChannelEvent  value =
-    sendMsg avmidiChannelEvent (mkSelector "setChannel:") retVoid [argCUInt value]
+setChannel avmidiChannelEvent value =
+  sendMessage avmidiChannelEvent setChannelSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @channel@
-channelSelector :: Selector
+channelSelector :: Selector '[] CUInt
 channelSelector = mkSelector "channel"
 
 -- | @Selector@ for @setChannel:@
-setChannelSelector :: Selector
+setChannelSelector :: Selector '[CUInt] ()
 setChannelSelector = mkSelector "setChannel:"
 

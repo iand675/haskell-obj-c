@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.GameKit.GKChallengeEventHandler
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,31 +35,31 @@ challengeEventHandler :: IO (Id GKChallengeEventHandler)
 challengeEventHandler  =
   do
     cls' <- getRequiredClass "GKChallengeEventHandler"
-    sendClassMsg cls' (mkSelector "challengeEventHandler") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' challengeEventHandlerSelector
 
 -- | @- delegate@
 delegate :: IsGKChallengeEventHandler gkChallengeEventHandler => gkChallengeEventHandler -> IO RawId
-delegate gkChallengeEventHandler  =
-    fmap (RawId . castPtr) $ sendMsg gkChallengeEventHandler (mkSelector "delegate") (retPtr retVoid) []
+delegate gkChallengeEventHandler =
+  sendMessage gkChallengeEventHandler delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsGKChallengeEventHandler gkChallengeEventHandler => gkChallengeEventHandler -> RawId -> IO ()
-setDelegate gkChallengeEventHandler  value =
-    sendMsg gkChallengeEventHandler (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate gkChallengeEventHandler value =
+  sendMessage gkChallengeEventHandler setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @challengeEventHandler@
-challengeEventHandlerSelector :: Selector
+challengeEventHandlerSelector :: Selector '[] (Id GKChallengeEventHandler)
 challengeEventHandlerSelector = mkSelector "challengeEventHandler"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

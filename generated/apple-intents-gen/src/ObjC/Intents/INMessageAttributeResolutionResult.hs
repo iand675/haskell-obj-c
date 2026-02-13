@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INMessageAttributeResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithMessageAttributeToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedMessageAttributeSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithMessageAttributeToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedMessageAttributeSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INMessageAttribute(INMessageAttribute)
@@ -27,15 +28,11 @@ module ObjC.Intents.INMessageAttributeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,46 +45,46 @@ successWithResolvedMessageAttribute :: INMessageAttribute -> IO (Id INMessageAtt
 successWithResolvedMessageAttribute resolvedMessageAttribute =
   do
     cls' <- getRequiredClass "INMessageAttributeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedMessageAttribute:") (retPtr retVoid) [argCLong (coerce resolvedMessageAttribute)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedMessageAttributeSelector resolvedMessageAttribute
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INMessageAttribute -> IO (Id INMessageAttributeResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INMessageAttributeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithMessageAttributeToConfirm:@
 confirmationRequiredWithMessageAttributeToConfirm :: INMessageAttribute -> IO (Id INMessageAttributeResolutionResult)
 confirmationRequiredWithMessageAttributeToConfirm messageAttributeToConfirm =
   do
     cls' <- getRequiredClass "INMessageAttributeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithMessageAttributeToConfirm:") (retPtr retVoid) [argCLong (coerce messageAttributeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithMessageAttributeToConfirmSelector messageAttributeToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INMessageAttribute -> IO (Id INMessageAttributeResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INMessageAttributeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedMessageAttribute:@
-successWithResolvedMessageAttributeSelector :: Selector
+successWithResolvedMessageAttributeSelector :: Selector '[INMessageAttribute] (Id INMessageAttributeResolutionResult)
 successWithResolvedMessageAttributeSelector = mkSelector "successWithResolvedMessageAttribute:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INMessageAttribute] (Id INMessageAttributeResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithMessageAttributeToConfirm:@
-confirmationRequiredWithMessageAttributeToConfirmSelector :: Selector
+confirmationRequiredWithMessageAttributeToConfirmSelector :: Selector '[INMessageAttribute] (Id INMessageAttributeResolutionResult)
 confirmationRequiredWithMessageAttributeToConfirmSelector = mkSelector "confirmationRequiredWithMessageAttributeToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INMessageAttribute] (Id INMessageAttributeResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

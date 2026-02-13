@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.WebKit.DOMHTMLButtonElement
   , willValidate
   , accessKey
   , setAccessKey
-  , clickSelector
-  , autofocusSelector
-  , setAutofocusSelector
-  , disabledSelector
-  , setDisabledSelector
-  , formSelector
-  , typeSelector
-  , setTypeSelector
-  , nameSelector
-  , setNameSelector
-  , valueSelector
-  , setValueSelector
-  , willValidateSelector
   , accessKeySelector
+  , autofocusSelector
+  , clickSelector
+  , disabledSelector
+  , formSelector
+  , nameSelector
   , setAccessKeySelector
+  , setAutofocusSelector
+  , setDisabledSelector
+  , setNameSelector
+  , setTypeSelector
+  , setValueSelector
+  , typeSelector
+  , valueSelector
+  , willValidateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,144 +54,140 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- click@
 click :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> IO ()
-click domhtmlButtonElement  =
-    sendMsg domhtmlButtonElement (mkSelector "click") retVoid []
+click domhtmlButtonElement =
+  sendMessage domhtmlButtonElement clickSelector
 
 -- | @- autofocus@
 autofocus :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> IO Bool
-autofocus domhtmlButtonElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlButtonElement (mkSelector "autofocus") retCULong []
+autofocus domhtmlButtonElement =
+  sendMessage domhtmlButtonElement autofocusSelector
 
 -- | @- setAutofocus:@
 setAutofocus :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> Bool -> IO ()
-setAutofocus domhtmlButtonElement  value =
-    sendMsg domhtmlButtonElement (mkSelector "setAutofocus:") retVoid [argCULong (if value then 1 else 0)]
+setAutofocus domhtmlButtonElement value =
+  sendMessage domhtmlButtonElement setAutofocusSelector value
 
 -- | @- disabled@
 disabled :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> IO Bool
-disabled domhtmlButtonElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlButtonElement (mkSelector "disabled") retCULong []
+disabled domhtmlButtonElement =
+  sendMessage domhtmlButtonElement disabledSelector
 
 -- | @- setDisabled:@
 setDisabled :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> Bool -> IO ()
-setDisabled domhtmlButtonElement  value =
-    sendMsg domhtmlButtonElement (mkSelector "setDisabled:") retVoid [argCULong (if value then 1 else 0)]
+setDisabled domhtmlButtonElement value =
+  sendMessage domhtmlButtonElement setDisabledSelector value
 
 -- | @- form@
 form :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> IO (Id DOMHTMLFormElement)
-form domhtmlButtonElement  =
-    sendMsg domhtmlButtonElement (mkSelector "form") (retPtr retVoid) [] >>= retainedObject . castPtr
+form domhtmlButtonElement =
+  sendMessage domhtmlButtonElement formSelector
 
 -- | @- type@
 type_ :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> IO (Id NSString)
-type_ domhtmlButtonElement  =
-    sendMsg domhtmlButtonElement (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ domhtmlButtonElement =
+  sendMessage domhtmlButtonElement typeSelector
 
 -- | @- setType:@
 setType :: (IsDOMHTMLButtonElement domhtmlButtonElement, IsNSString value) => domhtmlButtonElement -> value -> IO ()
-setType domhtmlButtonElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlButtonElement (mkSelector "setType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setType domhtmlButtonElement value =
+  sendMessage domhtmlButtonElement setTypeSelector (toNSString value)
 
 -- | @- name@
 name :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> IO (Id NSString)
-name domhtmlButtonElement  =
-    sendMsg domhtmlButtonElement (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name domhtmlButtonElement =
+  sendMessage domhtmlButtonElement nameSelector
 
 -- | @- setName:@
 setName :: (IsDOMHTMLButtonElement domhtmlButtonElement, IsNSString value) => domhtmlButtonElement -> value -> IO ()
-setName domhtmlButtonElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlButtonElement (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName domhtmlButtonElement value =
+  sendMessage domhtmlButtonElement setNameSelector (toNSString value)
 
 -- | @- value@
 value :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> IO (Id NSString)
-value domhtmlButtonElement  =
-    sendMsg domhtmlButtonElement (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value domhtmlButtonElement =
+  sendMessage domhtmlButtonElement valueSelector
 
 -- | @- setValue:@
 setValue :: (IsDOMHTMLButtonElement domhtmlButtonElement, IsNSString value) => domhtmlButtonElement -> value -> IO ()
-setValue domhtmlButtonElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlButtonElement (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue domhtmlButtonElement value =
+  sendMessage domhtmlButtonElement setValueSelector (toNSString value)
 
 -- | @- willValidate@
 willValidate :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> IO Bool
-willValidate domhtmlButtonElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlButtonElement (mkSelector "willValidate") retCULong []
+willValidate domhtmlButtonElement =
+  sendMessage domhtmlButtonElement willValidateSelector
 
 -- | @- accessKey@
 accessKey :: IsDOMHTMLButtonElement domhtmlButtonElement => domhtmlButtonElement -> IO (Id NSString)
-accessKey domhtmlButtonElement  =
-    sendMsg domhtmlButtonElement (mkSelector "accessKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessKey domhtmlButtonElement =
+  sendMessage domhtmlButtonElement accessKeySelector
 
 -- | @- setAccessKey:@
 setAccessKey :: (IsDOMHTMLButtonElement domhtmlButtonElement, IsNSString value) => domhtmlButtonElement -> value -> IO ()
-setAccessKey domhtmlButtonElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlButtonElement (mkSelector "setAccessKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessKey domhtmlButtonElement value =
+  sendMessage domhtmlButtonElement setAccessKeySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @click@
-clickSelector :: Selector
+clickSelector :: Selector '[] ()
 clickSelector = mkSelector "click"
 
 -- | @Selector@ for @autofocus@
-autofocusSelector :: Selector
+autofocusSelector :: Selector '[] Bool
 autofocusSelector = mkSelector "autofocus"
 
 -- | @Selector@ for @setAutofocus:@
-setAutofocusSelector :: Selector
+setAutofocusSelector :: Selector '[Bool] ()
 setAutofocusSelector = mkSelector "setAutofocus:"
 
 -- | @Selector@ for @disabled@
-disabledSelector :: Selector
+disabledSelector :: Selector '[] Bool
 disabledSelector = mkSelector "disabled"
 
 -- | @Selector@ for @setDisabled:@
-setDisabledSelector :: Selector
+setDisabledSelector :: Selector '[Bool] ()
 setDisabledSelector = mkSelector "setDisabled:"
 
 -- | @Selector@ for @form@
-formSelector :: Selector
+formSelector :: Selector '[] (Id DOMHTMLFormElement)
 formSelector = mkSelector "form"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @setType:@
-setTypeSelector :: Selector
+setTypeSelector :: Selector '[Id NSString] ()
 setTypeSelector = mkSelector "setType:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @willValidate@
-willValidateSelector :: Selector
+willValidateSelector :: Selector '[] Bool
 willValidateSelector = mkSelector "willValidate"
 
 -- | @Selector@ for @accessKey@
-accessKeySelector :: Selector
+accessKeySelector :: Selector '[] (Id NSString)
 accessKeySelector = mkSelector "accessKey"
 
 -- | @Selector@ for @setAccessKey:@
-setAccessKeySelector :: Selector
+setAccessKeySelector :: Selector '[Id NSString] ()
 setAccessKeySelector = mkSelector "setAccessKey:"
 

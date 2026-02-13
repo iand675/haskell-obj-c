@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.BackgroundTasks.BGTaskRequest
   , identifier
   , earliestBeginDate
   , setEarliestBeginDate
+  , earliestBeginDateSelector
+  , identifierSelector
   , initSelector
   , newSelector
-  , identifierSelector
-  , earliestBeginDateSelector
   , setEarliestBeginDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,22 +36,22 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBGTaskRequest bgTaskRequest => bgTaskRequest -> IO (Id BGTaskRequest)
-init_ bgTaskRequest  =
-    sendMsg bgTaskRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ bgTaskRequest =
+  sendOwnedMessage bgTaskRequest initSelector
 
 -- | @+ new@
 new :: IO (Id BGTaskRequest)
 new  =
   do
     cls' <- getRequiredClass "BGTaskRequest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The identifier of the task associated with the request.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsBGTaskRequest bgTaskRequest => bgTaskRequest -> IO (Id NSString)
-identifier bgTaskRequest  =
-    sendMsg bgTaskRequest (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier bgTaskRequest =
+  sendMessage bgTaskRequest identifierSelector
 
 -- | The earliest date and time at which to run the task.
 --
@@ -64,8 +61,8 @@ identifier bgTaskRequest  =
 --
 -- ObjC selector: @- earliestBeginDate@
 earliestBeginDate :: IsBGTaskRequest bgTaskRequest => bgTaskRequest -> IO (Id NSDate)
-earliestBeginDate bgTaskRequest  =
-    sendMsg bgTaskRequest (mkSelector "earliestBeginDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+earliestBeginDate bgTaskRequest =
+  sendMessage bgTaskRequest earliestBeginDateSelector
 
 -- | The earliest date and time at which to run the task.
 --
@@ -75,31 +72,30 @@ earliestBeginDate bgTaskRequest  =
 --
 -- ObjC selector: @- setEarliestBeginDate:@
 setEarliestBeginDate :: (IsBGTaskRequest bgTaskRequest, IsNSDate value) => bgTaskRequest -> value -> IO ()
-setEarliestBeginDate bgTaskRequest  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg bgTaskRequest (mkSelector "setEarliestBeginDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEarliestBeginDate bgTaskRequest value =
+  sendMessage bgTaskRequest setEarliestBeginDateSelector (toNSDate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BGTaskRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BGTaskRequest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @earliestBeginDate@
-earliestBeginDateSelector :: Selector
+earliestBeginDateSelector :: Selector '[] (Id NSDate)
 earliestBeginDateSelector = mkSelector "earliestBeginDate"
 
 -- | @Selector@ for @setEarliestBeginDate:@
-setEarliestBeginDateSelector :: Selector
+setEarliestBeginDateSelector :: Selector '[Id NSDate] ()
 setEarliestBeginDateSelector = mkSelector "setEarliestBeginDate:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRContentControlClusterUpdatePINParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , oldPINSelector
-  , setOldPINSelector
   , newPINSelector
-  , setNewPINSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
+  , oldPINSelector
   , serverSideProcessingTimeoutSelector
+  , setNewPINSelector
+  , setOldPINSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- oldPIN@
 oldPIN :: IsMTRContentControlClusterUpdatePINParams mtrContentControlClusterUpdatePINParams => mtrContentControlClusterUpdatePINParams -> IO (Id NSString)
-oldPIN mtrContentControlClusterUpdatePINParams  =
-    sendMsg mtrContentControlClusterUpdatePINParams (mkSelector "oldPIN") (retPtr retVoid) [] >>= retainedObject . castPtr
+oldPIN mtrContentControlClusterUpdatePINParams =
+  sendMessage mtrContentControlClusterUpdatePINParams oldPINSelector
 
 -- | @- setOldPIN:@
 setOldPIN :: (IsMTRContentControlClusterUpdatePINParams mtrContentControlClusterUpdatePINParams, IsNSString value) => mtrContentControlClusterUpdatePINParams -> value -> IO ()
-setOldPIN mtrContentControlClusterUpdatePINParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterUpdatePINParams (mkSelector "setOldPIN:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOldPIN mtrContentControlClusterUpdatePINParams value =
+  sendMessage mtrContentControlClusterUpdatePINParams setOldPINSelector (toNSString value)
 
 -- | @- newPIN@
 newPIN :: IsMTRContentControlClusterUpdatePINParams mtrContentControlClusterUpdatePINParams => mtrContentControlClusterUpdatePINParams -> IO (Id NSString)
-newPIN mtrContentControlClusterUpdatePINParams  =
-    sendMsg mtrContentControlClusterUpdatePINParams (mkSelector "newPIN") (retPtr retVoid) [] >>= ownedObject . castPtr
+newPIN mtrContentControlClusterUpdatePINParams =
+  sendOwnedMessage mtrContentControlClusterUpdatePINParams newPINSelector
 
 -- | @- setNewPIN:@
 setNewPIN :: (IsMTRContentControlClusterUpdatePINParams mtrContentControlClusterUpdatePINParams, IsNSString value) => mtrContentControlClusterUpdatePINParams -> value -> IO ()
-setNewPIN mtrContentControlClusterUpdatePINParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterUpdatePINParams (mkSelector "setNewPIN:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNewPIN mtrContentControlClusterUpdatePINParams value =
+  sendMessage mtrContentControlClusterUpdatePINParams setNewPINSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setNewPIN mtrContentControlClusterUpdatePINParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRContentControlClusterUpdatePINParams mtrContentControlClusterUpdatePINParams => mtrContentControlClusterUpdatePINParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrContentControlClusterUpdatePINParams  =
-    sendMsg mtrContentControlClusterUpdatePINParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrContentControlClusterUpdatePINParams =
+  sendMessage mtrContentControlClusterUpdatePINParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrContentControlClusterUpdatePINParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRContentControlClusterUpdatePINParams mtrContentControlClusterUpdatePINParams, IsNSNumber value) => mtrContentControlClusterUpdatePINParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrContentControlClusterUpdatePINParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterUpdatePINParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrContentControlClusterUpdatePINParams value =
+  sendMessage mtrContentControlClusterUpdatePINParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrContentControlClusterUpdatePINParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRContentControlClusterUpdatePINParams mtrContentControlClusterUpdatePINParams => mtrContentControlClusterUpdatePINParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrContentControlClusterUpdatePINParams  =
-    sendMsg mtrContentControlClusterUpdatePINParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrContentControlClusterUpdatePINParams =
+  sendMessage mtrContentControlClusterUpdatePINParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrContentControlClusterUpdatePINParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRContentControlClusterUpdatePINParams mtrContentControlClusterUpdatePINParams, IsNSNumber value) => mtrContentControlClusterUpdatePINParams -> value -> IO ()
-setServerSideProcessingTimeout mtrContentControlClusterUpdatePINParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrContentControlClusterUpdatePINParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrContentControlClusterUpdatePINParams value =
+  sendMessage mtrContentControlClusterUpdatePINParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @oldPIN@
-oldPINSelector :: Selector
+oldPINSelector :: Selector '[] (Id NSString)
 oldPINSelector = mkSelector "oldPIN"
 
 -- | @Selector@ for @setOldPIN:@
-setOldPINSelector :: Selector
+setOldPINSelector :: Selector '[Id NSString] ()
 setOldPINSelector = mkSelector "setOldPIN:"
 
 -- | @Selector@ for @newPIN@
-newPINSelector :: Selector
+newPINSelector :: Selector '[] (Id NSString)
 newPINSelector = mkSelector "newPIN"
 
 -- | @Selector@ for @setNewPIN:@
-setNewPINSelector :: Selector
+setNewPINSelector :: Selector '[Id NSString] ()
 setNewPINSelector = mkSelector "setNewPIN:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

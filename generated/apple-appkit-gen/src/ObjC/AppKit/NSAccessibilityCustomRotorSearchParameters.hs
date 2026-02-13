@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,11 +17,11 @@ module ObjC.AppKit.NSAccessibilityCustomRotorSearchParameters
   , filterString
   , setFilterString
   , currentItemSelector
-  , setCurrentItemSelector
-  , searchDirectionSelector
-  , setSearchDirectionSelector
   , filterStringSelector
+  , searchDirectionSelector
+  , setCurrentItemSelector
   , setFilterStringSelector
+  , setSearchDirectionSelector
 
   -- * Enum types
   , NSAccessibilityCustomRotorSearchDirection(NSAccessibilityCustomRotorSearchDirection)
@@ -29,15 +30,11 @@ module ObjC.AppKit.NSAccessibilityCustomRotorSearchParameters
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,71 +46,69 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- currentItem@
 currentItem :: IsNSAccessibilityCustomRotorSearchParameters nsAccessibilityCustomRotorSearchParameters => nsAccessibilityCustomRotorSearchParameters -> IO (Id NSAccessibilityCustomRotorItemResult)
-currentItem nsAccessibilityCustomRotorSearchParameters  =
-    sendMsg nsAccessibilityCustomRotorSearchParameters (mkSelector "currentItem") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentItem nsAccessibilityCustomRotorSearchParameters =
+  sendMessage nsAccessibilityCustomRotorSearchParameters currentItemSelector
 
 -- | The currentItem determines where the search will start from. If  it is nil, the search should begin from, and include, the first or last item, depending on which search direction is used (e.g. search direction next will return the first item and previous will return the last item).
 --
 -- ObjC selector: @- setCurrentItem:@
 setCurrentItem :: (IsNSAccessibilityCustomRotorSearchParameters nsAccessibilityCustomRotorSearchParameters, IsNSAccessibilityCustomRotorItemResult value) => nsAccessibilityCustomRotorSearchParameters -> value -> IO ()
-setCurrentItem nsAccessibilityCustomRotorSearchParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsAccessibilityCustomRotorSearchParameters (mkSelector "setCurrentItem:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrentItem nsAccessibilityCustomRotorSearchParameters value =
+  sendMessage nsAccessibilityCustomRotorSearchParameters setCurrentItemSelector (toNSAccessibilityCustomRotorItemResult value)
 
 -- | Either NSAccessibilityCustomRotorSearchDirectionPrevious or NSAccessibilityCustomRotorSearchDirectionNext.
 --
 -- ObjC selector: @- searchDirection@
 searchDirection :: IsNSAccessibilityCustomRotorSearchParameters nsAccessibilityCustomRotorSearchParameters => nsAccessibilityCustomRotorSearchParameters -> IO NSAccessibilityCustomRotorSearchDirection
-searchDirection nsAccessibilityCustomRotorSearchParameters  =
-    fmap (coerce :: CLong -> NSAccessibilityCustomRotorSearchDirection) $ sendMsg nsAccessibilityCustomRotorSearchParameters (mkSelector "searchDirection") retCLong []
+searchDirection nsAccessibilityCustomRotorSearchParameters =
+  sendMessage nsAccessibilityCustomRotorSearchParameters searchDirectionSelector
 
 -- | Either NSAccessibilityCustomRotorSearchDirectionPrevious or NSAccessibilityCustomRotorSearchDirectionNext.
 --
 -- ObjC selector: @- setSearchDirection:@
 setSearchDirection :: IsNSAccessibilityCustomRotorSearchParameters nsAccessibilityCustomRotorSearchParameters => nsAccessibilityCustomRotorSearchParameters -> NSAccessibilityCustomRotorSearchDirection -> IO ()
-setSearchDirection nsAccessibilityCustomRotorSearchParameters  value =
-    sendMsg nsAccessibilityCustomRotorSearchParameters (mkSelector "setSearchDirection:") retVoid [argCLong (coerce value)]
+setSearchDirection nsAccessibilityCustomRotorSearchParameters value =
+  sendMessage nsAccessibilityCustomRotorSearchParameters setSearchDirectionSelector value
 
 -- | A string of text to filter the results against. This is used to get type-ahead results. For example, given a list of primary colors and filter text "Re", color item "Red" would be returned as a result.
 --
 -- ObjC selector: @- filterString@
 filterString :: IsNSAccessibilityCustomRotorSearchParameters nsAccessibilityCustomRotorSearchParameters => nsAccessibilityCustomRotorSearchParameters -> IO (Id NSString)
-filterString nsAccessibilityCustomRotorSearchParameters  =
-    sendMsg nsAccessibilityCustomRotorSearchParameters (mkSelector "filterString") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterString nsAccessibilityCustomRotorSearchParameters =
+  sendMessage nsAccessibilityCustomRotorSearchParameters filterStringSelector
 
 -- | A string of text to filter the results against. This is used to get type-ahead results. For example, given a list of primary colors and filter text "Re", color item "Red" would be returned as a result.
 --
 -- ObjC selector: @- setFilterString:@
 setFilterString :: (IsNSAccessibilityCustomRotorSearchParameters nsAccessibilityCustomRotorSearchParameters, IsNSString value) => nsAccessibilityCustomRotorSearchParameters -> value -> IO ()
-setFilterString nsAccessibilityCustomRotorSearchParameters  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsAccessibilityCustomRotorSearchParameters (mkSelector "setFilterString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFilterString nsAccessibilityCustomRotorSearchParameters value =
+  sendMessage nsAccessibilityCustomRotorSearchParameters setFilterStringSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @currentItem@
-currentItemSelector :: Selector
+currentItemSelector :: Selector '[] (Id NSAccessibilityCustomRotorItemResult)
 currentItemSelector = mkSelector "currentItem"
 
 -- | @Selector@ for @setCurrentItem:@
-setCurrentItemSelector :: Selector
+setCurrentItemSelector :: Selector '[Id NSAccessibilityCustomRotorItemResult] ()
 setCurrentItemSelector = mkSelector "setCurrentItem:"
 
 -- | @Selector@ for @searchDirection@
-searchDirectionSelector :: Selector
+searchDirectionSelector :: Selector '[] NSAccessibilityCustomRotorSearchDirection
 searchDirectionSelector = mkSelector "searchDirection"
 
 -- | @Selector@ for @setSearchDirection:@
-setSearchDirectionSelector :: Selector
+setSearchDirectionSelector :: Selector '[NSAccessibilityCustomRotorSearchDirection] ()
 setSearchDirectionSelector = mkSelector "setSearchDirection:"
 
 -- | @Selector@ for @filterString@
-filterStringSelector :: Selector
+filterStringSelector :: Selector '[] (Id NSString)
 filterStringSelector = mkSelector "filterString"
 
 -- | @Selector@ for @setFilterString:@
-setFilterStringSelector :: Selector
+setFilterStringSelector :: Selector '[Id NSString] ()
 setFilterStringSelector = mkSelector "setFilterString:"
 

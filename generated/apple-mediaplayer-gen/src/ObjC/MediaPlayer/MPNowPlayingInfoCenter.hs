@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,11 +17,11 @@ module ObjC.MediaPlayer.MPNowPlayingInfoCenter
   , setPlaybackState
   , supportedAnimatedArtworkKeys
   , defaultCenterSelector
-  , newSelector
   , initSelector
+  , newSelector
   , nowPlayingInfoSelector
-  , setNowPlayingInfoSelector
   , playbackStateSelector
+  , setNowPlayingInfoSelector
   , setPlaybackStateSelector
   , supportedAnimatedArtworkKeysSelector
 
@@ -34,15 +35,11 @@ module ObjC.MediaPlayer.MPNowPlayingInfoCenter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,48 +54,47 @@ defaultCenter :: IO (Id MPNowPlayingInfoCenter)
 defaultCenter  =
   do
     cls' <- getRequiredClass "MPNowPlayingInfoCenter"
-    sendClassMsg cls' (mkSelector "defaultCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultCenterSelector
 
 -- | @+ new@
 new :: IO (Id MPNowPlayingInfoCenter)
 new  =
   do
     cls' <- getRequiredClass "MPNowPlayingInfoCenter"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMPNowPlayingInfoCenter mpNowPlayingInfoCenter => mpNowPlayingInfoCenter -> IO (Id MPNowPlayingInfoCenter)
-init_ mpNowPlayingInfoCenter  =
-    sendMsg mpNowPlayingInfoCenter (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpNowPlayingInfoCenter =
+  sendOwnedMessage mpNowPlayingInfoCenter initSelector
 
 -- | The current now playing info for the center. Setting the info to nil will clear it.
 --
 -- ObjC selector: @- nowPlayingInfo@
 nowPlayingInfo :: IsMPNowPlayingInfoCenter mpNowPlayingInfoCenter => mpNowPlayingInfoCenter -> IO (Id NSDictionary)
-nowPlayingInfo mpNowPlayingInfoCenter  =
-    sendMsg mpNowPlayingInfoCenter (mkSelector "nowPlayingInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+nowPlayingInfo mpNowPlayingInfoCenter =
+  sendMessage mpNowPlayingInfoCenter nowPlayingInfoSelector
 
 -- | The current now playing info for the center. Setting the info to nil will clear it.
 --
 -- ObjC selector: @- setNowPlayingInfo:@
 setNowPlayingInfo :: (IsMPNowPlayingInfoCenter mpNowPlayingInfoCenter, IsNSDictionary value) => mpNowPlayingInfoCenter -> value -> IO ()
-setNowPlayingInfo mpNowPlayingInfoCenter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpNowPlayingInfoCenter (mkSelector "setNowPlayingInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNowPlayingInfo mpNowPlayingInfoCenter value =
+  sendMessage mpNowPlayingInfoCenter setNowPlayingInfoSelector (toNSDictionary value)
 
 -- | The current playback state of the app. This only applies on macOS, where playback state cannot be determined by the application's audio session. This property must be set every time the app begins or halts playback, otherwise remote control functionality may not work as expected.
 --
 -- ObjC selector: @- playbackState@
 playbackState :: IsMPNowPlayingInfoCenter mpNowPlayingInfoCenter => mpNowPlayingInfoCenter -> IO MPNowPlayingPlaybackState
-playbackState mpNowPlayingInfoCenter  =
-    fmap (coerce :: CULong -> MPNowPlayingPlaybackState) $ sendMsg mpNowPlayingInfoCenter (mkSelector "playbackState") retCULong []
+playbackState mpNowPlayingInfoCenter =
+  sendMessage mpNowPlayingInfoCenter playbackStateSelector
 
 -- | The current playback state of the app. This only applies on macOS, where playback state cannot be determined by the application's audio session. This property must be set every time the app begins or halts playback, otherwise remote control functionality may not work as expected.
 --
 -- ObjC selector: @- setPlaybackState:@
 setPlaybackState :: IsMPNowPlayingInfoCenter mpNowPlayingInfoCenter => mpNowPlayingInfoCenter -> MPNowPlayingPlaybackState -> IO ()
-setPlaybackState mpNowPlayingInfoCenter  value =
-    sendMsg mpNowPlayingInfoCenter (mkSelector "setPlaybackState:") retVoid [argCULong (coerce value)]
+setPlaybackState mpNowPlayingInfoCenter value =
+  sendMessage mpNowPlayingInfoCenter setPlaybackStateSelector value
 
 -- | Keys related to animated artwork that are supported by the current platform.
 --
@@ -109,41 +105,41 @@ supportedAnimatedArtworkKeys :: IO (Id NSArray)
 supportedAnimatedArtworkKeys  =
   do
     cls' <- getRequiredClass "MPNowPlayingInfoCenter"
-    sendClassMsg cls' (mkSelector "supportedAnimatedArtworkKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedAnimatedArtworkKeysSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultCenter@
-defaultCenterSelector :: Selector
+defaultCenterSelector :: Selector '[] (Id MPNowPlayingInfoCenter)
 defaultCenterSelector = mkSelector "defaultCenter"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MPNowPlayingInfoCenter)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPNowPlayingInfoCenter)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @nowPlayingInfo@
-nowPlayingInfoSelector :: Selector
+nowPlayingInfoSelector :: Selector '[] (Id NSDictionary)
 nowPlayingInfoSelector = mkSelector "nowPlayingInfo"
 
 -- | @Selector@ for @setNowPlayingInfo:@
-setNowPlayingInfoSelector :: Selector
+setNowPlayingInfoSelector :: Selector '[Id NSDictionary] ()
 setNowPlayingInfoSelector = mkSelector "setNowPlayingInfo:"
 
 -- | @Selector@ for @playbackState@
-playbackStateSelector :: Selector
+playbackStateSelector :: Selector '[] MPNowPlayingPlaybackState
 playbackStateSelector = mkSelector "playbackState"
 
 -- | @Selector@ for @setPlaybackState:@
-setPlaybackStateSelector :: Selector
+setPlaybackStateSelector :: Selector '[MPNowPlayingPlaybackState] ()
 setPlaybackStateSelector = mkSelector "setPlaybackState:"
 
 -- | @Selector@ for @supportedAnimatedArtworkKeys@
-supportedAnimatedArtworkKeysSelector :: Selector
+supportedAnimatedArtworkKeysSelector :: Selector '[] (Id NSArray)
 supportedAnimatedArtworkKeysSelector = mkSelector "supportedAnimatedArtworkKeys"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,36 +26,32 @@ module ObjC.Matter.MTRClusterChime
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , playChimeSoundWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , playChimeSoundWithExpectedValues_expectedValueInterval_completionSelector
-  , readAttributeInstalledChimeSoundsWithParamsSelector
-  , readAttributeSelectedChimeWithParamsSelector
-  , writeAttributeSelectedChimeWithValue_expectedValueIntervalSelector
-  , writeAttributeSelectedChimeWithValue_expectedValueInterval_paramsSelector
-  , readAttributeEnabledWithParamsSelector
-  , writeAttributeEnabledWithValue_expectedValueIntervalSelector
-  , writeAttributeEnabledWithValue_expectedValueInterval_paramsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , playChimeSoundWithParams_expectedValues_expectedValueInterval_completionSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeEnabledWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeInstalledChimeSoundsWithParamsSelector
+  , readAttributeSelectedChimeWithParamsSelector
+  , writeAttributeEnabledWithValue_expectedValueIntervalSelector
+  , writeAttributeEnabledWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeSelectedChimeWithValue_expectedValueIntervalSelector
+  , writeAttributeSelectedChimeWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,188 +60,162 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- playChimeSoundWithParams:expectedValues:expectedValueInterval:completion:@
 playChimeSoundWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterChime mtrClusterChime, IsMTRChimeClusterPlayChimeSoundParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterChime -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-playChimeSoundWithParams_expectedValues_expectedValueInterval_completion mtrClusterChime  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterChime (mkSelector "playChimeSoundWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+playChimeSoundWithParams_expectedValues_expectedValueInterval_completion mtrClusterChime params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterChime playChimeSoundWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRChimeClusterPlayChimeSoundParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- playChimeSoundWithExpectedValues:expectedValueInterval:completion:@
 playChimeSoundWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterChime mtrClusterChime, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterChime -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-playChimeSoundWithExpectedValues_expectedValueInterval_completion mtrClusterChime  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterChime (mkSelector "playChimeSoundWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+playChimeSoundWithExpectedValues_expectedValueInterval_completion mtrClusterChime expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterChime playChimeSoundWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeInstalledChimeSoundsWithParams:@
 readAttributeInstalledChimeSoundsWithParams :: (IsMTRClusterChime mtrClusterChime, IsMTRReadParams params) => mtrClusterChime -> params -> IO (Id NSDictionary)
-readAttributeInstalledChimeSoundsWithParams mtrClusterChime  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterChime (mkSelector "readAttributeInstalledChimeSoundsWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeInstalledChimeSoundsWithParams mtrClusterChime params =
+  sendMessage mtrClusterChime readAttributeInstalledChimeSoundsWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSelectedChimeWithParams:@
 readAttributeSelectedChimeWithParams :: (IsMTRClusterChime mtrClusterChime, IsMTRReadParams params) => mtrClusterChime -> params -> IO (Id NSDictionary)
-readAttributeSelectedChimeWithParams mtrClusterChime  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterChime (mkSelector "readAttributeSelectedChimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSelectedChimeWithParams mtrClusterChime params =
+  sendMessage mtrClusterChime readAttributeSelectedChimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeSelectedChimeWithValue:expectedValueInterval:@
 writeAttributeSelectedChimeWithValue_expectedValueInterval :: (IsMTRClusterChime mtrClusterChime, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterChime -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeSelectedChimeWithValue_expectedValueInterval mtrClusterChime  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterChime (mkSelector "writeAttributeSelectedChimeWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeSelectedChimeWithValue_expectedValueInterval mtrClusterChime dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterChime writeAttributeSelectedChimeWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeSelectedChimeWithValue:expectedValueInterval:params:@
 writeAttributeSelectedChimeWithValue_expectedValueInterval_params :: (IsMTRClusterChime mtrClusterChime, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterChime -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeSelectedChimeWithValue_expectedValueInterval_params mtrClusterChime  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterChime (mkSelector "writeAttributeSelectedChimeWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeSelectedChimeWithValue_expectedValueInterval_params mtrClusterChime dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterChime writeAttributeSelectedChimeWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeEnabledWithParams:@
 readAttributeEnabledWithParams :: (IsMTRClusterChime mtrClusterChime, IsMTRReadParams params) => mtrClusterChime -> params -> IO (Id NSDictionary)
-readAttributeEnabledWithParams mtrClusterChime  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterChime (mkSelector "readAttributeEnabledWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEnabledWithParams mtrClusterChime params =
+  sendMessage mtrClusterChime readAttributeEnabledWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeEnabledWithValue:expectedValueInterval:@
 writeAttributeEnabledWithValue_expectedValueInterval :: (IsMTRClusterChime mtrClusterChime, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterChime -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeEnabledWithValue_expectedValueInterval mtrClusterChime  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterChime (mkSelector "writeAttributeEnabledWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeEnabledWithValue_expectedValueInterval mtrClusterChime dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterChime writeAttributeEnabledWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeEnabledWithValue:expectedValueInterval:params:@
 writeAttributeEnabledWithValue_expectedValueInterval_params :: (IsMTRClusterChime mtrClusterChime, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterChime -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeEnabledWithValue_expectedValueInterval_params mtrClusterChime  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterChime (mkSelector "writeAttributeEnabledWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeEnabledWithValue_expectedValueInterval_params mtrClusterChime dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterChime writeAttributeEnabledWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterChime mtrClusterChime, IsMTRReadParams params) => mtrClusterChime -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterChime  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterChime (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterChime params =
+  sendMessage mtrClusterChime readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterChime mtrClusterChime, IsMTRReadParams params) => mtrClusterChime -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterChime  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterChime (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterChime params =
+  sendMessage mtrClusterChime readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterChime mtrClusterChime, IsMTRReadParams params) => mtrClusterChime -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterChime  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterChime (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterChime params =
+  sendMessage mtrClusterChime readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterChime mtrClusterChime, IsMTRReadParams params) => mtrClusterChime -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterChime  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterChime (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterChime params =
+  sendMessage mtrClusterChime readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterChime mtrClusterChime, IsMTRReadParams params) => mtrClusterChime -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterChime  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterChime (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterChime params =
+  sendMessage mtrClusterChime readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterChime mtrClusterChime => mtrClusterChime -> IO (Id MTRClusterChime)
-init_ mtrClusterChime  =
-    sendMsg mtrClusterChime (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterChime =
+  sendOwnedMessage mtrClusterChime initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterChime)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterChime"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterChime mtrClusterChime, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterChime -> device -> endpointID -> queue -> IO (Id MTRClusterChime)
-initWithDevice_endpointID_queue mtrClusterChime  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterChime (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterChime device endpointID queue =
+  sendOwnedMessage mtrClusterChime initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @playChimeSoundWithParams:expectedValues:expectedValueInterval:completion:@
-playChimeSoundWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+playChimeSoundWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRChimeClusterPlayChimeSoundParams, Id NSArray, Id NSNumber, Ptr ()] ()
 playChimeSoundWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "playChimeSoundWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @playChimeSoundWithExpectedValues:expectedValueInterval:completion:@
-playChimeSoundWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+playChimeSoundWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 playChimeSoundWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "playChimeSoundWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeInstalledChimeSoundsWithParams:@
-readAttributeInstalledChimeSoundsWithParamsSelector :: Selector
+readAttributeInstalledChimeSoundsWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeInstalledChimeSoundsWithParamsSelector = mkSelector "readAttributeInstalledChimeSoundsWithParams:"
 
 -- | @Selector@ for @readAttributeSelectedChimeWithParams:@
-readAttributeSelectedChimeWithParamsSelector :: Selector
+readAttributeSelectedChimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSelectedChimeWithParamsSelector = mkSelector "readAttributeSelectedChimeWithParams:"
 
 -- | @Selector@ for @writeAttributeSelectedChimeWithValue:expectedValueInterval:@
-writeAttributeSelectedChimeWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeSelectedChimeWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeSelectedChimeWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeSelectedChimeWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeSelectedChimeWithValue:expectedValueInterval:params:@
-writeAttributeSelectedChimeWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeSelectedChimeWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeSelectedChimeWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeSelectedChimeWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeEnabledWithParams:@
-readAttributeEnabledWithParamsSelector :: Selector
+readAttributeEnabledWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEnabledWithParamsSelector = mkSelector "readAttributeEnabledWithParams:"
 
 -- | @Selector@ for @writeAttributeEnabledWithValue:expectedValueInterval:@
-writeAttributeEnabledWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeEnabledWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeEnabledWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeEnabledWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeEnabledWithValue:expectedValueInterval:params:@
-writeAttributeEnabledWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeEnabledWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeEnabledWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeEnabledWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterChime)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterChime)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterChime)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

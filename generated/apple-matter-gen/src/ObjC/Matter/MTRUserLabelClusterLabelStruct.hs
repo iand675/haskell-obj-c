@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Matter.MTRUserLabelClusterLabelStruct
   , setValue
   , labelSelector
   , setLabelSelector
-  , valueSelector
   , setValueSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- label@
 label :: IsMTRUserLabelClusterLabelStruct mtrUserLabelClusterLabelStruct => mtrUserLabelClusterLabelStruct -> IO (Id NSString)
-label mtrUserLabelClusterLabelStruct  =
-    sendMsg mtrUserLabelClusterLabelStruct (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mtrUserLabelClusterLabelStruct =
+  sendMessage mtrUserLabelClusterLabelStruct labelSelector
 
 -- | @- setLabel:@
 setLabel :: (IsMTRUserLabelClusterLabelStruct mtrUserLabelClusterLabelStruct, IsNSString value) => mtrUserLabelClusterLabelStruct -> value -> IO ()
-setLabel mtrUserLabelClusterLabelStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUserLabelClusterLabelStruct (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mtrUserLabelClusterLabelStruct value =
+  sendMessage mtrUserLabelClusterLabelStruct setLabelSelector (toNSString value)
 
 -- | @- value@
 value :: IsMTRUserLabelClusterLabelStruct mtrUserLabelClusterLabelStruct => mtrUserLabelClusterLabelStruct -> IO (Id NSString)
-value mtrUserLabelClusterLabelStruct  =
-    sendMsg mtrUserLabelClusterLabelStruct (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value mtrUserLabelClusterLabelStruct =
+  sendMessage mtrUserLabelClusterLabelStruct valueSelector
 
 -- | @- setValue:@
 setValue :: (IsMTRUserLabelClusterLabelStruct mtrUserLabelClusterLabelStruct, IsNSString value) => mtrUserLabelClusterLabelStruct -> value -> IO ()
-setValue mtrUserLabelClusterLabelStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUserLabelClusterLabelStruct (mkSelector "setValue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setValue mtrUserLabelClusterLabelStruct value =
+  sendMessage mtrUserLabelClusterLabelStruct setValueSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Id NSString] ()
 setValueSelector = mkSelector "setValue:"
 

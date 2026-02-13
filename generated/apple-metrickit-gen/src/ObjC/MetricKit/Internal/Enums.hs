@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.MetricKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | MXErrorCode
 --
@@ -50,3 +53,13 @@ pattern MXErrorLaunchTaskUnknown = MXErrorCode 4
 
 pattern MXErrorLaunchTaskInternalFailure :: MXErrorCode
 pattern MXErrorLaunchTaskInternalFailure = MXErrorCode 5
+
+instance ObjCArgument MXErrorCode where
+  withObjCArg (MXErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn MXErrorCode where
+  type RawReturn MXErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (MXErrorCode x)
+  fromOwned x = pure (MXErrorCode x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.GameplayKit.GKNSPredicateRule
   , initWithPredicate
   , evaluatePredicateWithSystem
   , predicate
-  , initWithPredicateSelector
   , evaluatePredicateWithSystemSelector
+  , initWithPredicateSelector
   , predicateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,9 +34,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithPredicate:@
 initWithPredicate :: (IsGKNSPredicateRule gknsPredicateRule, IsNSPredicate predicate) => gknsPredicateRule -> predicate -> IO (Id GKNSPredicateRule)
-initWithPredicate gknsPredicateRule  predicate =
-  withObjCPtr predicate $ \raw_predicate ->
-      sendMsg gknsPredicateRule (mkSelector "initWithPredicate:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ())] >>= ownedObject . castPtr
+initWithPredicate gknsPredicateRule predicate =
+  sendOwnedMessage gknsPredicateRule initWithPredicateSelector (toNSPredicate predicate)
 
 -- | Overridden here to call the predicate's evaluateWithObject:substitutionVariables:, using sys as the object and the system's state dictionary as the source of the substitution variables.
 --
@@ -47,9 +43,8 @@ initWithPredicate gknsPredicateRule  predicate =
 --
 -- ObjC selector: @- evaluatePredicateWithSystem:@
 evaluatePredicateWithSystem :: (IsGKNSPredicateRule gknsPredicateRule, IsGKRuleSystem system) => gknsPredicateRule -> system -> IO Bool
-evaluatePredicateWithSystem gknsPredicateRule  system =
-  withObjCPtr system $ \raw_system ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg gknsPredicateRule (mkSelector "evaluatePredicateWithSystem:") retCULong [argPtr (castPtr raw_system :: Ptr ())]
+evaluatePredicateWithSystem gknsPredicateRule system =
+  sendMessage gknsPredicateRule evaluatePredicateWithSystemSelector (toGKRuleSystem system)
 
 -- | The NSPredicate that is used inside this subclass's implementation of evaluatePredicateWithSystem: In order to effectively use this class you must still override performActionWithSystem:
 --
@@ -57,22 +52,22 @@ evaluatePredicateWithSystem gknsPredicateRule  system =
 --
 -- ObjC selector: @- predicate@
 predicate :: IsGKNSPredicateRule gknsPredicateRule => gknsPredicateRule -> IO (Id NSPredicate)
-predicate gknsPredicateRule  =
-    sendMsg gknsPredicateRule (mkSelector "predicate") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicate gknsPredicateRule =
+  sendMessage gknsPredicateRule predicateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithPredicate:@
-initWithPredicateSelector :: Selector
+initWithPredicateSelector :: Selector '[Id NSPredicate] (Id GKNSPredicateRule)
 initWithPredicateSelector = mkSelector "initWithPredicate:"
 
 -- | @Selector@ for @evaluatePredicateWithSystem:@
-evaluatePredicateWithSystemSelector :: Selector
+evaluatePredicateWithSystemSelector :: Selector '[Id GKRuleSystem] Bool
 evaluatePredicateWithSystemSelector = mkSelector "evaluatePredicateWithSystem:"
 
 -- | @Selector@ for @predicate@
-predicateSelector :: Selector
+predicateSelector :: Selector '[] (Id NSPredicate)
 predicateSelector = mkSelector "predicate"
 

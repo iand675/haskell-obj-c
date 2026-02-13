@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.Matter.MTRUnitTestingClusterTestEventEvent
   , arg6
   , setArg6
   , arg1Selector
-  , setArg1Selector
   , arg2Selector
-  , setArg2Selector
   , arg3Selector
-  , setArg3Selector
   , arg4Selector
-  , setArg4Selector
   , arg5Selector
-  , setArg5Selector
   , arg6Selector
+  , setArg1Selector
+  , setArg2Selector
+  , setArg3Selector
+  , setArg4Selector
+  , setArg5Selector
   , setArg6Selector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- arg1@
 arg1 :: IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent => mtrUnitTestingClusterTestEventEvent -> IO (Id NSNumber)
-arg1 mtrUnitTestingClusterTestEventEvent  =
-    sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "arg1") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg1 mtrUnitTestingClusterTestEventEvent =
+  sendMessage mtrUnitTestingClusterTestEventEvent arg1Selector
 
 -- | @- setArg1:@
 setArg1 :: (IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent, IsNSNumber value) => mtrUnitTestingClusterTestEventEvent -> value -> IO ()
-setArg1 mtrUnitTestingClusterTestEventEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "setArg1:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg1 mtrUnitTestingClusterTestEventEvent value =
+  sendMessage mtrUnitTestingClusterTestEventEvent setArg1Selector (toNSNumber value)
 
 -- | @- arg2@
 arg2 :: IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent => mtrUnitTestingClusterTestEventEvent -> IO (Id NSNumber)
-arg2 mtrUnitTestingClusterTestEventEvent  =
-    sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "arg2") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg2 mtrUnitTestingClusterTestEventEvent =
+  sendMessage mtrUnitTestingClusterTestEventEvent arg2Selector
 
 -- | @- setArg2:@
 setArg2 :: (IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent, IsNSNumber value) => mtrUnitTestingClusterTestEventEvent -> value -> IO ()
-setArg2 mtrUnitTestingClusterTestEventEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "setArg2:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg2 mtrUnitTestingClusterTestEventEvent value =
+  sendMessage mtrUnitTestingClusterTestEventEvent setArg2Selector (toNSNumber value)
 
 -- | @- arg3@
 arg3 :: IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent => mtrUnitTestingClusterTestEventEvent -> IO (Id NSNumber)
-arg3 mtrUnitTestingClusterTestEventEvent  =
-    sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "arg3") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg3 mtrUnitTestingClusterTestEventEvent =
+  sendMessage mtrUnitTestingClusterTestEventEvent arg3Selector
 
 -- | @- setArg3:@
 setArg3 :: (IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent, IsNSNumber value) => mtrUnitTestingClusterTestEventEvent -> value -> IO ()
-setArg3 mtrUnitTestingClusterTestEventEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "setArg3:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg3 mtrUnitTestingClusterTestEventEvent value =
+  sendMessage mtrUnitTestingClusterTestEventEvent setArg3Selector (toNSNumber value)
 
 -- | @- arg4@
 arg4 :: IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent => mtrUnitTestingClusterTestEventEvent -> IO (Id MTRUnitTestingClusterSimpleStruct)
-arg4 mtrUnitTestingClusterTestEventEvent  =
-    sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "arg4") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg4 mtrUnitTestingClusterTestEventEvent =
+  sendMessage mtrUnitTestingClusterTestEventEvent arg4Selector
 
 -- | @- setArg4:@
 setArg4 :: (IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent, IsMTRUnitTestingClusterSimpleStruct value) => mtrUnitTestingClusterTestEventEvent -> value -> IO ()
-setArg4 mtrUnitTestingClusterTestEventEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "setArg4:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg4 mtrUnitTestingClusterTestEventEvent value =
+  sendMessage mtrUnitTestingClusterTestEventEvent setArg4Selector (toMTRUnitTestingClusterSimpleStruct value)
 
 -- | @- arg5@
 arg5 :: IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent => mtrUnitTestingClusterTestEventEvent -> IO (Id NSArray)
-arg5 mtrUnitTestingClusterTestEventEvent  =
-    sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "arg5") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg5 mtrUnitTestingClusterTestEventEvent =
+  sendMessage mtrUnitTestingClusterTestEventEvent arg5Selector
 
 -- | @- setArg5:@
 setArg5 :: (IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent, IsNSArray value) => mtrUnitTestingClusterTestEventEvent -> value -> IO ()
-setArg5 mtrUnitTestingClusterTestEventEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "setArg5:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg5 mtrUnitTestingClusterTestEventEvent value =
+  sendMessage mtrUnitTestingClusterTestEventEvent setArg5Selector (toNSArray value)
 
 -- | @- arg6@
 arg6 :: IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent => mtrUnitTestingClusterTestEventEvent -> IO (Id NSArray)
-arg6 mtrUnitTestingClusterTestEventEvent  =
-    sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "arg6") (retPtr retVoid) [] >>= retainedObject . castPtr
+arg6 mtrUnitTestingClusterTestEventEvent =
+  sendMessage mtrUnitTestingClusterTestEventEvent arg6Selector
 
 -- | @- setArg6:@
 setArg6 :: (IsMTRUnitTestingClusterTestEventEvent mtrUnitTestingClusterTestEventEvent, IsNSArray value) => mtrUnitTestingClusterTestEventEvent -> value -> IO ()
-setArg6 mtrUnitTestingClusterTestEventEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrUnitTestingClusterTestEventEvent (mkSelector "setArg6:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setArg6 mtrUnitTestingClusterTestEventEvent value =
+  sendMessage mtrUnitTestingClusterTestEventEvent setArg6Selector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @arg1@
-arg1Selector :: Selector
+arg1Selector :: Selector '[] (Id NSNumber)
 arg1Selector = mkSelector "arg1"
 
 -- | @Selector@ for @setArg1:@
-setArg1Selector :: Selector
+setArg1Selector :: Selector '[Id NSNumber] ()
 setArg1Selector = mkSelector "setArg1:"
 
 -- | @Selector@ for @arg2@
-arg2Selector :: Selector
+arg2Selector :: Selector '[] (Id NSNumber)
 arg2Selector = mkSelector "arg2"
 
 -- | @Selector@ for @setArg2:@
-setArg2Selector :: Selector
+setArg2Selector :: Selector '[Id NSNumber] ()
 setArg2Selector = mkSelector "setArg2:"
 
 -- | @Selector@ for @arg3@
-arg3Selector :: Selector
+arg3Selector :: Selector '[] (Id NSNumber)
 arg3Selector = mkSelector "arg3"
 
 -- | @Selector@ for @setArg3:@
-setArg3Selector :: Selector
+setArg3Selector :: Selector '[Id NSNumber] ()
 setArg3Selector = mkSelector "setArg3:"
 
 -- | @Selector@ for @arg4@
-arg4Selector :: Selector
+arg4Selector :: Selector '[] (Id MTRUnitTestingClusterSimpleStruct)
 arg4Selector = mkSelector "arg4"
 
 -- | @Selector@ for @setArg4:@
-setArg4Selector :: Selector
+setArg4Selector :: Selector '[Id MTRUnitTestingClusterSimpleStruct] ()
 setArg4Selector = mkSelector "setArg4:"
 
 -- | @Selector@ for @arg5@
-arg5Selector :: Selector
+arg5Selector :: Selector '[] (Id NSArray)
 arg5Selector = mkSelector "arg5"
 
 -- | @Selector@ for @setArg5:@
-setArg5Selector :: Selector
+setArg5Selector :: Selector '[Id NSArray] ()
 setArg5Selector = mkSelector "setArg5:"
 
 -- | @Selector@ for @arg6@
-arg6Selector :: Selector
+arg6Selector :: Selector '[] (Id NSArray)
 arg6Selector = mkSelector "arg6"
 
 -- | @Selector@ for @setArg6:@
-setArg6Selector :: Selector
+setArg6Selector :: Selector '[Id NSArray] ()
 setArg6Selector = mkSelector "setArg6:"
 

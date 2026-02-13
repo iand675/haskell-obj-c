@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,43 +37,39 @@ module ObjC.MetalFX.MTLFXFrameInterpolatorDescriptor
   , setOutputWidth
   , outputHeight
   , setOutputHeight
+  , colorTextureFormatSelector
+  , depthTextureFormatSelector
+  , inputHeightSelector
+  , inputWidthSelector
+  , motionTextureFormatSelector
   , newFrameInterpolatorWithDeviceSelector
   , newFrameInterpolatorWithDevice_compilerSelector
-  , supportsMetal4FXSelector
-  , supportsDeviceSelector
-  , colorTextureFormatSelector
-  , setColorTextureFormatSelector
-  , outputTextureFormatSelector
-  , setOutputTextureFormatSelector
-  , depthTextureFormatSelector
-  , setDepthTextureFormatSelector
-  , motionTextureFormatSelector
-  , setMotionTextureFormatSelector
-  , uiTextureFormatSelector
-  , setUiTextureFormatSelector
-  , scalerSelector
-  , setScalerSelector
-  , inputWidthSelector
-  , setInputWidthSelector
-  , inputHeightSelector
-  , setInputHeightSelector
-  , outputWidthSelector
-  , setOutputWidthSelector
   , outputHeightSelector
+  , outputTextureFormatSelector
+  , outputWidthSelector
+  , scalerSelector
+  , setColorTextureFormatSelector
+  , setDepthTextureFormatSelector
+  , setInputHeightSelector
+  , setInputWidthSelector
+  , setMotionTextureFormatSelector
   , setOutputHeightSelector
+  , setOutputTextureFormatSelector
+  , setOutputWidthSelector
+  , setScalerSelector
+  , setUiTextureFormatSelector
+  , supportsDeviceSelector
+  , supportsMetal4FXSelector
+  , uiTextureFormatSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -85,8 +82,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- newFrameInterpolatorWithDevice:@
 newFrameInterpolatorWithDevice :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> RawId -> IO RawId
-newFrameInterpolatorWithDevice mtlfxFrameInterpolatorDescriptor  device =
-    fmap (RawId . castPtr) $ sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "newFrameInterpolatorWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())]
+newFrameInterpolatorWithDevice mtlfxFrameInterpolatorDescriptor device =
+  sendOwnedMessage mtlfxFrameInterpolatorDescriptor newFrameInterpolatorWithDeviceSelector device
 
 -- | Creates a frame interpolator instance for a Metal device.
 --
@@ -94,8 +91,8 @@ newFrameInterpolatorWithDevice mtlfxFrameInterpolatorDescriptor  device =
 --
 -- ObjC selector: @- newFrameInterpolatorWithDevice:compiler:@
 newFrameInterpolatorWithDevice_compiler :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> RawId -> RawId -> IO RawId
-newFrameInterpolatorWithDevice_compiler mtlfxFrameInterpolatorDescriptor  device compiler =
-    fmap (RawId . castPtr) $ sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "newFrameInterpolatorWithDevice:compiler:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr (unRawId compiler) :: Ptr ())]
+newFrameInterpolatorWithDevice_compiler mtlfxFrameInterpolatorDescriptor device compiler =
+  sendOwnedMessage mtlfxFrameInterpolatorDescriptor newFrameInterpolatorWithDevice_compilerSelector device compiler
 
 -- | Queries whether a Metal device supports frame interpolation compatible with a Metal 4 command buffer.
 --
@@ -108,7 +105,7 @@ supportsMetal4FX :: RawId -> IO Bool
 supportsMetal4FX device =
   do
     cls' <- getRequiredClass "MTLFXFrameInterpolatorDescriptor"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsMetal4FX:") retCULong [argPtr (castPtr (unRawId device) :: Ptr ())]
+    sendClassMessage cls' supportsMetal4FXSelector device
 
 -- | Queries whether a Metal device supports frame interpolation.
 --
@@ -121,241 +118,241 @@ supportsDevice :: RawId -> IO Bool
 supportsDevice device =
   do
     cls' <- getRequiredClass "MTLFXFrameInterpolatorDescriptor"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsDevice:") retCULong [argPtr (castPtr (unRawId device) :: Ptr ())]
+    sendClassMessage cls' supportsDeviceSelector device
 
 -- | The pixel format of the input color texture for the frame interpolator you create with this descriptor.
 --
 -- ObjC selector: @- colorTextureFormat@
 colorTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO CInt
-colorTextureFormat mtlfxFrameInterpolatorDescriptor  =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "colorTextureFormat") retCInt []
+colorTextureFormat mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor colorTextureFormatSelector
 
 -- | The pixel format of the input color texture for the frame interpolator you create with this descriptor.
 --
 -- ObjC selector: @- setColorTextureFormat:@
 setColorTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> CInt -> IO ()
-setColorTextureFormat mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setColorTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setColorTextureFormat mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setColorTextureFormatSelector value
 
 -- | The pixel format of the output color texture for the frame interpolator you create with this descriptor.
 --
 -- ObjC selector: @- outputTextureFormat@
 outputTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO CInt
-outputTextureFormat mtlfxFrameInterpolatorDescriptor  =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "outputTextureFormat") retCInt []
+outputTextureFormat mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor outputTextureFormatSelector
 
 -- | The pixel format of the output color texture for the frame interpolator you create with this descriptor.
 --
 -- ObjC selector: @- setOutputTextureFormat:@
 setOutputTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> CInt -> IO ()
-setOutputTextureFormat mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setOutputTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setOutputTextureFormat mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setOutputTextureFormatSelector value
 
 -- | The pixel format of the input depth texture for the frame interpolator you create with this descriptor.
 --
 -- ObjC selector: @- depthTextureFormat@
 depthTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO CInt
-depthTextureFormat mtlfxFrameInterpolatorDescriptor  =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "depthTextureFormat") retCInt []
+depthTextureFormat mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor depthTextureFormatSelector
 
 -- | The pixel format of the input depth texture for the frame interpolator you create with this descriptor.
 --
 -- ObjC selector: @- setDepthTextureFormat:@
 setDepthTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> CInt -> IO ()
-setDepthTextureFormat mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setDepthTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setDepthTextureFormat mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setDepthTextureFormatSelector value
 
 -- | The pixel format of the input motion texture for the frame interpolator you create with this descriptor.
 --
 -- ObjC selector: @- motionTextureFormat@
 motionTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO CInt
-motionTextureFormat mtlfxFrameInterpolatorDescriptor  =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "motionTextureFormat") retCInt []
+motionTextureFormat mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor motionTextureFormatSelector
 
 -- | The pixel format of the input motion texture for the frame interpolator you create with this descriptor.
 --
 -- ObjC selector: @- setMotionTextureFormat:@
 setMotionTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> CInt -> IO ()
-setMotionTextureFormat mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setMotionTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setMotionTextureFormat mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setMotionTextureFormatSelector value
 
 -- | The pixel format for the frame interpolator of an input texture containing your game's custom UI.
 --
 -- ObjC selector: @- uiTextureFormat@
 uiTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO CInt
-uiTextureFormat mtlfxFrameInterpolatorDescriptor  =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "uiTextureFormat") retCInt []
+uiTextureFormat mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor uiTextureFormatSelector
 
 -- | The pixel format for the frame interpolator of an input texture containing your game's custom UI.
 --
 -- ObjC selector: @- setUiTextureFormat:@
 setUiTextureFormat :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> CInt -> IO ()
-setUiTextureFormat mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setUiTextureFormat:") retVoid [argCInt (fromIntegral value)]
+setUiTextureFormat mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setUiTextureFormatSelector value
 
 -- | @- scaler@
 scaler :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO RawId
-scaler mtlfxFrameInterpolatorDescriptor  =
-    fmap (RawId . castPtr) $ sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "scaler") (retPtr retVoid) []
+scaler mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor scalerSelector
 
 -- | @- setScaler:@
 setScaler :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> RawId -> IO ()
-setScaler mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setScaler:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setScaler mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setScalerSelector value
 
 -- | The width, in pixels, of the input motion and depth texture for the frame interpolator.
 --
 -- ObjC selector: @- inputWidth@
 inputWidth :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO CULong
-inputWidth mtlfxFrameInterpolatorDescriptor  =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "inputWidth") retCULong []
+inputWidth mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor inputWidthSelector
 
 -- | The width, in pixels, of the input motion and depth texture for the frame interpolator.
 --
 -- ObjC selector: @- setInputWidth:@
 setInputWidth :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> CULong -> IO ()
-setInputWidth mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setInputWidth:") retVoid [argCULong value]
+setInputWidth mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setInputWidthSelector value
 
 -- | The height, in pixels, of the input motion and depth texture for the frame interpolator.
 --
 -- ObjC selector: @- inputHeight@
 inputHeight :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO CULong
-inputHeight mtlfxFrameInterpolatorDescriptor  =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "inputHeight") retCULong []
+inputHeight mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor inputHeightSelector
 
 -- | The height, in pixels, of the input motion and depth texture for the frame interpolator.
 --
 -- ObjC selector: @- setInputHeight:@
 setInputHeight :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> CULong -> IO ()
-setInputHeight mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setInputHeight:") retVoid [argCULong value]
+setInputHeight mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setInputHeightSelector value
 
 -- | The width, in pixels, of the output color texture for the frame interpolator.
 --
 -- ObjC selector: @- outputWidth@
 outputWidth :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO CULong
-outputWidth mtlfxFrameInterpolatorDescriptor  =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "outputWidth") retCULong []
+outputWidth mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor outputWidthSelector
 
 -- | The width, in pixels, of the output color texture for the frame interpolator.
 --
 -- ObjC selector: @- setOutputWidth:@
 setOutputWidth :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> CULong -> IO ()
-setOutputWidth mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setOutputWidth:") retVoid [argCULong value]
+setOutputWidth mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setOutputWidthSelector value
 
 -- | The height, in pixels, of the output color texture for the frame interpolator.
 --
 -- ObjC selector: @- outputHeight@
 outputHeight :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> IO CULong
-outputHeight mtlfxFrameInterpolatorDescriptor  =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "outputHeight") retCULong []
+outputHeight mtlfxFrameInterpolatorDescriptor =
+  sendMessage mtlfxFrameInterpolatorDescriptor outputHeightSelector
 
 -- | The height, in pixels, of the output color texture for the frame interpolator.
 --
 -- ObjC selector: @- setOutputHeight:@
 setOutputHeight :: IsMTLFXFrameInterpolatorDescriptor mtlfxFrameInterpolatorDescriptor => mtlfxFrameInterpolatorDescriptor -> CULong -> IO ()
-setOutputHeight mtlfxFrameInterpolatorDescriptor  value =
-    sendMsg mtlfxFrameInterpolatorDescriptor (mkSelector "setOutputHeight:") retVoid [argCULong value]
+setOutputHeight mtlfxFrameInterpolatorDescriptor value =
+  sendMessage mtlfxFrameInterpolatorDescriptor setOutputHeightSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @newFrameInterpolatorWithDevice:@
-newFrameInterpolatorWithDeviceSelector :: Selector
+newFrameInterpolatorWithDeviceSelector :: Selector '[RawId] RawId
 newFrameInterpolatorWithDeviceSelector = mkSelector "newFrameInterpolatorWithDevice:"
 
 -- | @Selector@ for @newFrameInterpolatorWithDevice:compiler:@
-newFrameInterpolatorWithDevice_compilerSelector :: Selector
+newFrameInterpolatorWithDevice_compilerSelector :: Selector '[RawId, RawId] RawId
 newFrameInterpolatorWithDevice_compilerSelector = mkSelector "newFrameInterpolatorWithDevice:compiler:"
 
 -- | @Selector@ for @supportsMetal4FX:@
-supportsMetal4FXSelector :: Selector
+supportsMetal4FXSelector :: Selector '[RawId] Bool
 supportsMetal4FXSelector = mkSelector "supportsMetal4FX:"
 
 -- | @Selector@ for @supportsDevice:@
-supportsDeviceSelector :: Selector
+supportsDeviceSelector :: Selector '[RawId] Bool
 supportsDeviceSelector = mkSelector "supportsDevice:"
 
 -- | @Selector@ for @colorTextureFormat@
-colorTextureFormatSelector :: Selector
+colorTextureFormatSelector :: Selector '[] CInt
 colorTextureFormatSelector = mkSelector "colorTextureFormat"
 
 -- | @Selector@ for @setColorTextureFormat:@
-setColorTextureFormatSelector :: Selector
+setColorTextureFormatSelector :: Selector '[CInt] ()
 setColorTextureFormatSelector = mkSelector "setColorTextureFormat:"
 
 -- | @Selector@ for @outputTextureFormat@
-outputTextureFormatSelector :: Selector
+outputTextureFormatSelector :: Selector '[] CInt
 outputTextureFormatSelector = mkSelector "outputTextureFormat"
 
 -- | @Selector@ for @setOutputTextureFormat:@
-setOutputTextureFormatSelector :: Selector
+setOutputTextureFormatSelector :: Selector '[CInt] ()
 setOutputTextureFormatSelector = mkSelector "setOutputTextureFormat:"
 
 -- | @Selector@ for @depthTextureFormat@
-depthTextureFormatSelector :: Selector
+depthTextureFormatSelector :: Selector '[] CInt
 depthTextureFormatSelector = mkSelector "depthTextureFormat"
 
 -- | @Selector@ for @setDepthTextureFormat:@
-setDepthTextureFormatSelector :: Selector
+setDepthTextureFormatSelector :: Selector '[CInt] ()
 setDepthTextureFormatSelector = mkSelector "setDepthTextureFormat:"
 
 -- | @Selector@ for @motionTextureFormat@
-motionTextureFormatSelector :: Selector
+motionTextureFormatSelector :: Selector '[] CInt
 motionTextureFormatSelector = mkSelector "motionTextureFormat"
 
 -- | @Selector@ for @setMotionTextureFormat:@
-setMotionTextureFormatSelector :: Selector
+setMotionTextureFormatSelector :: Selector '[CInt] ()
 setMotionTextureFormatSelector = mkSelector "setMotionTextureFormat:"
 
 -- | @Selector@ for @uiTextureFormat@
-uiTextureFormatSelector :: Selector
+uiTextureFormatSelector :: Selector '[] CInt
 uiTextureFormatSelector = mkSelector "uiTextureFormat"
 
 -- | @Selector@ for @setUiTextureFormat:@
-setUiTextureFormatSelector :: Selector
+setUiTextureFormatSelector :: Selector '[CInt] ()
 setUiTextureFormatSelector = mkSelector "setUiTextureFormat:"
 
 -- | @Selector@ for @scaler@
-scalerSelector :: Selector
+scalerSelector :: Selector '[] RawId
 scalerSelector = mkSelector "scaler"
 
 -- | @Selector@ for @setScaler:@
-setScalerSelector :: Selector
+setScalerSelector :: Selector '[RawId] ()
 setScalerSelector = mkSelector "setScaler:"
 
 -- | @Selector@ for @inputWidth@
-inputWidthSelector :: Selector
+inputWidthSelector :: Selector '[] CULong
 inputWidthSelector = mkSelector "inputWidth"
 
 -- | @Selector@ for @setInputWidth:@
-setInputWidthSelector :: Selector
+setInputWidthSelector :: Selector '[CULong] ()
 setInputWidthSelector = mkSelector "setInputWidth:"
 
 -- | @Selector@ for @inputHeight@
-inputHeightSelector :: Selector
+inputHeightSelector :: Selector '[] CULong
 inputHeightSelector = mkSelector "inputHeight"
 
 -- | @Selector@ for @setInputHeight:@
-setInputHeightSelector :: Selector
+setInputHeightSelector :: Selector '[CULong] ()
 setInputHeightSelector = mkSelector "setInputHeight:"
 
 -- | @Selector@ for @outputWidth@
-outputWidthSelector :: Selector
+outputWidthSelector :: Selector '[] CULong
 outputWidthSelector = mkSelector "outputWidth"
 
 -- | @Selector@ for @setOutputWidth:@
-setOutputWidthSelector :: Selector
+setOutputWidthSelector :: Selector '[CULong] ()
 setOutputWidthSelector = mkSelector "setOutputWidth:"
 
 -- | @Selector@ for @outputHeight@
-outputHeightSelector :: Selector
+outputHeightSelector :: Selector '[] CULong
 outputHeightSelector = mkSelector "outputHeight"
 
 -- | @Selector@ for @setOutputHeight:@
-setOutputHeightSelector :: Selector
+setOutputHeightSelector :: Selector '[CULong] ()
 setOutputHeightSelector = mkSelector "setOutputHeight:"
 

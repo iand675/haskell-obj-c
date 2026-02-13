@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,11 +19,11 @@ module ObjC.MetalPerformanceShaders.MPSNNCompare
   , setComparisonType
   , threshold
   , setThreshold
-  , initWithDeviceSelector
   , comparisonTypeSelector
+  , initWithDeviceSelector
   , setComparisonTypeSelector
-  , thresholdSelector
   , setThresholdSelector
+  , thresholdSelector
 
   -- * Enum types
   , MPSNNComparisonType(MPSNNComparisonType)
@@ -35,15 +36,11 @@ module ObjC.MetalPerformanceShaders.MPSNNCompare
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNCompare mpsnnCompare => mpsnnCompare -> RawId -> IO (Id MPSNNCompare)
-initWithDevice mpsnnCompare  device =
-    sendMsg mpsnnCompare (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnCompare device =
+  sendOwnedMessage mpsnnCompare initWithDeviceSelector device
 
 -- | comparisonType
 --
@@ -68,8 +65,8 @@ initWithDevice mpsnnCompare  device =
 --
 -- ObjC selector: @- comparisonType@
 comparisonType :: IsMPSNNCompare mpsnnCompare => mpsnnCompare -> IO MPSNNComparisonType
-comparisonType mpsnnCompare  =
-    fmap (coerce :: CULong -> MPSNNComparisonType) $ sendMsg mpsnnCompare (mkSelector "comparisonType") retCULong []
+comparisonType mpsnnCompare =
+  sendMessage mpsnnCompare comparisonTypeSelector
 
 -- | comparisonType
 --
@@ -77,8 +74,8 @@ comparisonType mpsnnCompare  =
 --
 -- ObjC selector: @- setComparisonType:@
 setComparisonType :: IsMPSNNCompare mpsnnCompare => mpsnnCompare -> MPSNNComparisonType -> IO ()
-setComparisonType mpsnnCompare  value =
-    sendMsg mpsnnCompare (mkSelector "setComparisonType:") retVoid [argCULong (coerce value)]
+setComparisonType mpsnnCompare value =
+  sendMessage mpsnnCompare setComparisonTypeSelector value
 
 -- | threshold
 --
@@ -86,8 +83,8 @@ setComparisonType mpsnnCompare  value =
 --
 -- ObjC selector: @- threshold@
 threshold :: IsMPSNNCompare mpsnnCompare => mpsnnCompare -> IO CFloat
-threshold mpsnnCompare  =
-    sendMsg mpsnnCompare (mkSelector "threshold") retCFloat []
+threshold mpsnnCompare =
+  sendMessage mpsnnCompare thresholdSelector
 
 -- | threshold
 --
@@ -95,30 +92,30 @@ threshold mpsnnCompare  =
 --
 -- ObjC selector: @- setThreshold:@
 setThreshold :: IsMPSNNCompare mpsnnCompare => mpsnnCompare -> CFloat -> IO ()
-setThreshold mpsnnCompare  value =
-    sendMsg mpsnnCompare (mkSelector "setThreshold:") retVoid [argCFloat value]
+setThreshold mpsnnCompare value =
+  sendMessage mpsnnCompare setThresholdSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNCompare)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @comparisonType@
-comparisonTypeSelector :: Selector
+comparisonTypeSelector :: Selector '[] MPSNNComparisonType
 comparisonTypeSelector = mkSelector "comparisonType"
 
 -- | @Selector@ for @setComparisonType:@
-setComparisonTypeSelector :: Selector
+setComparisonTypeSelector :: Selector '[MPSNNComparisonType] ()
 setComparisonTypeSelector = mkSelector "setComparisonType:"
 
 -- | @Selector@ for @threshold@
-thresholdSelector :: Selector
+thresholdSelector :: Selector '[] CFloat
 thresholdSelector = mkSelector "threshold"
 
 -- | @Selector@ for @setThreshold:@
-setThresholdSelector :: Selector
+setThresholdSelector :: Selector '[CFloat] ()
 setThresholdSelector = mkSelector "setThreshold:"
 

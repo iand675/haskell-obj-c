@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,19 +21,19 @@ module ObjC.Intents.INPayBillIntentResponse
   , setTransactionScheduledDate
   , transactionNote
   , setTransactionNote
-  , initSelector
-  , initWithCode_userActivitySelector
+  , billDetailsSelector
   , codeSelector
   , fromAccountSelector
-  , setFromAccountSelector
-  , billDetailsSelector
+  , initSelector
+  , initWithCode_userActivitySelector
   , setBillDetailsSelector
-  , transactionAmountSelector
+  , setFromAccountSelector
   , setTransactionAmountSelector
-  , transactionScheduledDateSelector
-  , setTransactionScheduledDateSelector
-  , transactionNoteSelector
   , setTransactionNoteSelector
+  , setTransactionScheduledDateSelector
+  , transactionAmountSelector
+  , transactionNoteSelector
+  , transactionScheduledDateSelector
 
   -- * Enum types
   , INPayBillIntentResponseCode(INPayBillIntentResponseCode)
@@ -47,15 +48,11 @@ module ObjC.Intents.INPayBillIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -65,128 +62,122 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINPayBillIntentResponse inPayBillIntentResponse => inPayBillIntentResponse -> IO RawId
-init_ inPayBillIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inPayBillIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inPayBillIntentResponse =
+  sendOwnedMessage inPayBillIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINPayBillIntentResponse inPayBillIntentResponse, IsNSUserActivity userActivity) => inPayBillIntentResponse -> INPayBillIntentResponseCode -> userActivity -> IO (Id INPayBillIntentResponse)
-initWithCode_userActivity inPayBillIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inPayBillIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inPayBillIntentResponse code userActivity =
+  sendOwnedMessage inPayBillIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINPayBillIntentResponse inPayBillIntentResponse => inPayBillIntentResponse -> IO INPayBillIntentResponseCode
-code inPayBillIntentResponse  =
-    fmap (coerce :: CLong -> INPayBillIntentResponseCode) $ sendMsg inPayBillIntentResponse (mkSelector "code") retCLong []
+code inPayBillIntentResponse =
+  sendMessage inPayBillIntentResponse codeSelector
 
 -- | @- fromAccount@
 fromAccount :: IsINPayBillIntentResponse inPayBillIntentResponse => inPayBillIntentResponse -> IO (Id INPaymentAccount)
-fromAccount inPayBillIntentResponse  =
-    sendMsg inPayBillIntentResponse (mkSelector "fromAccount") (retPtr retVoid) [] >>= retainedObject . castPtr
+fromAccount inPayBillIntentResponse =
+  sendMessage inPayBillIntentResponse fromAccountSelector
 
 -- | @- setFromAccount:@
 setFromAccount :: (IsINPayBillIntentResponse inPayBillIntentResponse, IsINPaymentAccount value) => inPayBillIntentResponse -> value -> IO ()
-setFromAccount inPayBillIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inPayBillIntentResponse (mkSelector "setFromAccount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFromAccount inPayBillIntentResponse value =
+  sendMessage inPayBillIntentResponse setFromAccountSelector (toINPaymentAccount value)
 
 -- | @- billDetails@
 billDetails :: IsINPayBillIntentResponse inPayBillIntentResponse => inPayBillIntentResponse -> IO (Id INBillDetails)
-billDetails inPayBillIntentResponse  =
-    sendMsg inPayBillIntentResponse (mkSelector "billDetails") (retPtr retVoid) [] >>= retainedObject . castPtr
+billDetails inPayBillIntentResponse =
+  sendMessage inPayBillIntentResponse billDetailsSelector
 
 -- | @- setBillDetails:@
 setBillDetails :: (IsINPayBillIntentResponse inPayBillIntentResponse, IsINBillDetails value) => inPayBillIntentResponse -> value -> IO ()
-setBillDetails inPayBillIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inPayBillIntentResponse (mkSelector "setBillDetails:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBillDetails inPayBillIntentResponse value =
+  sendMessage inPayBillIntentResponse setBillDetailsSelector (toINBillDetails value)
 
 -- | @- transactionAmount@
 transactionAmount :: IsINPayBillIntentResponse inPayBillIntentResponse => inPayBillIntentResponse -> IO (Id INPaymentAmount)
-transactionAmount inPayBillIntentResponse  =
-    sendMsg inPayBillIntentResponse (mkSelector "transactionAmount") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionAmount inPayBillIntentResponse =
+  sendMessage inPayBillIntentResponse transactionAmountSelector
 
 -- | @- setTransactionAmount:@
 setTransactionAmount :: (IsINPayBillIntentResponse inPayBillIntentResponse, IsINPaymentAmount value) => inPayBillIntentResponse -> value -> IO ()
-setTransactionAmount inPayBillIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inPayBillIntentResponse (mkSelector "setTransactionAmount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransactionAmount inPayBillIntentResponse value =
+  sendMessage inPayBillIntentResponse setTransactionAmountSelector (toINPaymentAmount value)
 
 -- | @- transactionScheduledDate@
 transactionScheduledDate :: IsINPayBillIntentResponse inPayBillIntentResponse => inPayBillIntentResponse -> IO (Id INDateComponentsRange)
-transactionScheduledDate inPayBillIntentResponse  =
-    sendMsg inPayBillIntentResponse (mkSelector "transactionScheduledDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionScheduledDate inPayBillIntentResponse =
+  sendMessage inPayBillIntentResponse transactionScheduledDateSelector
 
 -- | @- setTransactionScheduledDate:@
 setTransactionScheduledDate :: (IsINPayBillIntentResponse inPayBillIntentResponse, IsINDateComponentsRange value) => inPayBillIntentResponse -> value -> IO ()
-setTransactionScheduledDate inPayBillIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inPayBillIntentResponse (mkSelector "setTransactionScheduledDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransactionScheduledDate inPayBillIntentResponse value =
+  sendMessage inPayBillIntentResponse setTransactionScheduledDateSelector (toINDateComponentsRange value)
 
 -- | @- transactionNote@
 transactionNote :: IsINPayBillIntentResponse inPayBillIntentResponse => inPayBillIntentResponse -> IO (Id NSString)
-transactionNote inPayBillIntentResponse  =
-    sendMsg inPayBillIntentResponse (mkSelector "transactionNote") (retPtr retVoid) [] >>= retainedObject . castPtr
+transactionNote inPayBillIntentResponse =
+  sendMessage inPayBillIntentResponse transactionNoteSelector
 
 -- | @- setTransactionNote:@
 setTransactionNote :: (IsINPayBillIntentResponse inPayBillIntentResponse, IsNSString value) => inPayBillIntentResponse -> value -> IO ()
-setTransactionNote inPayBillIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inPayBillIntentResponse (mkSelector "setTransactionNote:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransactionNote inPayBillIntentResponse value =
+  sendMessage inPayBillIntentResponse setTransactionNoteSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INPayBillIntentResponseCode, Id NSUserActivity] (Id INPayBillIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INPayBillIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @fromAccount@
-fromAccountSelector :: Selector
+fromAccountSelector :: Selector '[] (Id INPaymentAccount)
 fromAccountSelector = mkSelector "fromAccount"
 
 -- | @Selector@ for @setFromAccount:@
-setFromAccountSelector :: Selector
+setFromAccountSelector :: Selector '[Id INPaymentAccount] ()
 setFromAccountSelector = mkSelector "setFromAccount:"
 
 -- | @Selector@ for @billDetails@
-billDetailsSelector :: Selector
+billDetailsSelector :: Selector '[] (Id INBillDetails)
 billDetailsSelector = mkSelector "billDetails"
 
 -- | @Selector@ for @setBillDetails:@
-setBillDetailsSelector :: Selector
+setBillDetailsSelector :: Selector '[Id INBillDetails] ()
 setBillDetailsSelector = mkSelector "setBillDetails:"
 
 -- | @Selector@ for @transactionAmount@
-transactionAmountSelector :: Selector
+transactionAmountSelector :: Selector '[] (Id INPaymentAmount)
 transactionAmountSelector = mkSelector "transactionAmount"
 
 -- | @Selector@ for @setTransactionAmount:@
-setTransactionAmountSelector :: Selector
+setTransactionAmountSelector :: Selector '[Id INPaymentAmount] ()
 setTransactionAmountSelector = mkSelector "setTransactionAmount:"
 
 -- | @Selector@ for @transactionScheduledDate@
-transactionScheduledDateSelector :: Selector
+transactionScheduledDateSelector :: Selector '[] (Id INDateComponentsRange)
 transactionScheduledDateSelector = mkSelector "transactionScheduledDate"
 
 -- | @Selector@ for @setTransactionScheduledDate:@
-setTransactionScheduledDateSelector :: Selector
+setTransactionScheduledDateSelector :: Selector '[Id INDateComponentsRange] ()
 setTransactionScheduledDateSelector = mkSelector "setTransactionScheduledDate:"
 
 -- | @Selector@ for @transactionNote@
-transactionNoteSelector :: Selector
+transactionNoteSelector :: Selector '[] (Id NSString)
 transactionNoteSelector = mkSelector "transactionNote"
 
 -- | @Selector@ for @setTransactionNote:@
-setTransactionNoteSelector :: Selector
+setTransactionNoteSelector :: Selector '[Id NSString] ()
 setTransactionNoteSelector = mkSelector "setTransactionNote:"
 

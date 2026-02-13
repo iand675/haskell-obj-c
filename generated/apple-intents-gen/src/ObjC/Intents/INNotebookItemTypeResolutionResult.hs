@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.Intents.INNotebookItemTypeResolutionResult
   , successWithResolvedNotebookItemType
   , disambiguationWithNotebookItemTypesToDisambiguate
   , confirmationRequiredWithNotebookItemTypeToConfirm
-  , successWithResolvedNotebookItemTypeSelector
-  , disambiguationWithNotebookItemTypesToDisambiguateSelector
   , confirmationRequiredWithNotebookItemTypeToConfirmSelector
+  , disambiguationWithNotebookItemTypesToDisambiguateSelector
+  , successWithResolvedNotebookItemTypeSelector
 
   -- * Enum types
   , INNotebookItemType(INNotebookItemType)
@@ -23,15 +24,11 @@ module ObjC.Intents.INNotebookItemTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,36 +41,35 @@ successWithResolvedNotebookItemType :: INNotebookItemType -> IO (Id INNotebookIt
 successWithResolvedNotebookItemType resolvedNotebookItemType =
   do
     cls' <- getRequiredClass "INNotebookItemTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedNotebookItemType:") (retPtr retVoid) [argCLong (coerce resolvedNotebookItemType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedNotebookItemTypeSelector resolvedNotebookItemType
 
 -- | @+ disambiguationWithNotebookItemTypesToDisambiguate:@
 disambiguationWithNotebookItemTypesToDisambiguate :: IsNSArray notebookItemTypesToDisambiguate => notebookItemTypesToDisambiguate -> IO (Id INNotebookItemTypeResolutionResult)
 disambiguationWithNotebookItemTypesToDisambiguate notebookItemTypesToDisambiguate =
   do
     cls' <- getRequiredClass "INNotebookItemTypeResolutionResult"
-    withObjCPtr notebookItemTypesToDisambiguate $ \raw_notebookItemTypesToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithNotebookItemTypesToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_notebookItemTypesToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithNotebookItemTypesToDisambiguateSelector (toNSArray notebookItemTypesToDisambiguate)
 
 -- | @+ confirmationRequiredWithNotebookItemTypeToConfirm:@
 confirmationRequiredWithNotebookItemTypeToConfirm :: INNotebookItemType -> IO (Id INNotebookItemTypeResolutionResult)
 confirmationRequiredWithNotebookItemTypeToConfirm notebookItemTypeToConfirm =
   do
     cls' <- getRequiredClass "INNotebookItemTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithNotebookItemTypeToConfirm:") (retPtr retVoid) [argCLong (coerce notebookItemTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithNotebookItemTypeToConfirmSelector notebookItemTypeToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedNotebookItemType:@
-successWithResolvedNotebookItemTypeSelector :: Selector
+successWithResolvedNotebookItemTypeSelector :: Selector '[INNotebookItemType] (Id INNotebookItemTypeResolutionResult)
 successWithResolvedNotebookItemTypeSelector = mkSelector "successWithResolvedNotebookItemType:"
 
 -- | @Selector@ for @disambiguationWithNotebookItemTypesToDisambiguate:@
-disambiguationWithNotebookItemTypesToDisambiguateSelector :: Selector
+disambiguationWithNotebookItemTypesToDisambiguateSelector :: Selector '[Id NSArray] (Id INNotebookItemTypeResolutionResult)
 disambiguationWithNotebookItemTypesToDisambiguateSelector = mkSelector "disambiguationWithNotebookItemTypesToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithNotebookItemTypeToConfirm:@
-confirmationRequiredWithNotebookItemTypeToConfirmSelector :: Selector
+confirmationRequiredWithNotebookItemTypeToConfirmSelector :: Selector '[INNotebookItemType] (Id INNotebookItemTypeResolutionResult)
 confirmationRequiredWithNotebookItemTypeToConfirmSelector = mkSelector "confirmationRequiredWithNotebookItemTypeToConfirm:"
 

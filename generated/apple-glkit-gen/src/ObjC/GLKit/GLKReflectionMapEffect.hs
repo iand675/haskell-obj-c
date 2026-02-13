@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.GLKit.GLKReflectionMapEffect
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- prepareToDraw@
 prepareToDraw :: IsGLKReflectionMapEffect glkReflectionMapEffect => glkReflectionMapEffect -> IO ()
-prepareToDraw glkReflectionMapEffect  =
-    sendMsg glkReflectionMapEffect (mkSelector "prepareToDraw") retVoid []
+prepareToDraw glkReflectionMapEffect =
+  sendMessage glkReflectionMapEffect prepareToDrawSelector
 
 -- | @- textureCubeMap@
 textureCubeMap :: IsGLKReflectionMapEffect glkReflectionMapEffect => glkReflectionMapEffect -> IO (Id GLKEffectPropertyTexture)
-textureCubeMap glkReflectionMapEffect  =
-    sendMsg glkReflectionMapEffect (mkSelector "textureCubeMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+textureCubeMap glkReflectionMapEffect =
+  sendMessage glkReflectionMapEffect textureCubeMapSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @prepareToDraw@
-prepareToDrawSelector :: Selector
+prepareToDrawSelector :: Selector '[] ()
 prepareToDrawSelector = mkSelector "prepareToDraw"
 
 -- | @Selector@ for @textureCubeMap@
-textureCubeMapSelector :: Selector
+textureCubeMapSelector :: Selector '[] (Id GLKEffectPropertyTexture)
 textureCubeMapSelector = mkSelector "textureCubeMap"
 

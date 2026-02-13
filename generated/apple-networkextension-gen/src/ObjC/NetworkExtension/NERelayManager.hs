@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,43 +39,39 @@ module ObjC.NetworkExtension.NERelayManager
   , setExcludedFQDNs
   , onDemandRules
   , setOnDemandRules
-  , sharedManagerSelector
+  , allowDNSFailoverSelector
+  , enabledSelector
+  , excludedDomainsSelector
+  , excludedFQDNsSelector
   , loadFromPreferencesWithCompletionHandlerSelector
+  , localizedDescriptionSelector
+  , matchDomainsSelector
+  , matchFQDNsSelector
+  , onDemandRulesSelector
+  , relaysSelector
   , removeFromPreferencesWithCompletionHandlerSelector
   , saveToPreferencesWithCompletionHandlerSelector
-  , localizedDescriptionSelector
-  , setLocalizedDescriptionSelector
-  , enabledSelector
-  , setEnabledSelector
-  , uiToggleEnabledSelector
-  , setUIToggleEnabledSelector
-  , allowDNSFailoverSelector
   , setAllowDNSFailoverSelector
-  , relaysSelector
-  , setRelaysSelector
-  , matchDomainsSelector
-  , setMatchDomainsSelector
-  , matchFQDNsSelector
-  , setMatchFQDNsSelector
-  , excludedDomainsSelector
+  , setEnabledSelector
   , setExcludedDomainsSelector
-  , excludedFQDNsSelector
   , setExcludedFQDNsSelector
-  , onDemandRulesSelector
+  , setLocalizedDescriptionSelector
+  , setMatchDomainsSelector
+  , setMatchFQDNsSelector
   , setOnDemandRulesSelector
+  , setRelaysSelector
+  , setUIToggleEnabledSelector
+  , sharedManagerSelector
+  , uiToggleEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -90,7 +87,7 @@ sharedManager :: IO (Id NERelayManager)
 sharedManager  =
   do
     cls' <- getRequiredClass "NERelayManager"
-    sendClassMsg cls' (mkSelector "sharedManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedManagerSelector
 
 -- | loadFromPreferencesWithCompletionHandler:
 --
@@ -100,8 +97,8 @@ sharedManager  =
 --
 -- ObjC selector: @- loadFromPreferencesWithCompletionHandler:@
 loadFromPreferencesWithCompletionHandler :: IsNERelayManager neRelayManager => neRelayManager -> Ptr () -> IO ()
-loadFromPreferencesWithCompletionHandler neRelayManager  completionHandler =
-    sendMsg neRelayManager (mkSelector "loadFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadFromPreferencesWithCompletionHandler neRelayManager completionHandler =
+  sendMessage neRelayManager loadFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | removeFromPreferencesWithCompletionHandler:
 --
@@ -111,8 +108,8 @@ loadFromPreferencesWithCompletionHandler neRelayManager  completionHandler =
 --
 -- ObjC selector: @- removeFromPreferencesWithCompletionHandler:@
 removeFromPreferencesWithCompletionHandler :: IsNERelayManager neRelayManager => neRelayManager -> Ptr () -> IO ()
-removeFromPreferencesWithCompletionHandler neRelayManager  completionHandler =
-    sendMsg neRelayManager (mkSelector "removeFromPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+removeFromPreferencesWithCompletionHandler neRelayManager completionHandler =
+  sendMessage neRelayManager removeFromPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | saveToPreferencesWithCompletionHandler:
 --
@@ -122,8 +119,8 @@ removeFromPreferencesWithCompletionHandler neRelayManager  completionHandler =
 --
 -- ObjC selector: @- saveToPreferencesWithCompletionHandler:@
 saveToPreferencesWithCompletionHandler :: IsNERelayManager neRelayManager => neRelayManager -> Ptr () -> IO ()
-saveToPreferencesWithCompletionHandler neRelayManager  completionHandler =
-    sendMsg neRelayManager (mkSelector "saveToPreferencesWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+saveToPreferencesWithCompletionHandler neRelayManager completionHandler =
+  sendMessage neRelayManager saveToPreferencesWithCompletionHandlerSelector completionHandler
 
 -- | localizedDescription
 --
@@ -131,8 +128,8 @@ saveToPreferencesWithCompletionHandler neRelayManager  completionHandler =
 --
 -- ObjC selector: @- localizedDescription@
 localizedDescription :: IsNERelayManager neRelayManager => neRelayManager -> IO (Id NSString)
-localizedDescription neRelayManager  =
-    sendMsg neRelayManager (mkSelector "localizedDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedDescription neRelayManager =
+  sendMessage neRelayManager localizedDescriptionSelector
 
 -- | localizedDescription
 --
@@ -140,9 +137,8 @@ localizedDescription neRelayManager  =
 --
 -- ObjC selector: @- setLocalizedDescription:@
 setLocalizedDescription :: (IsNERelayManager neRelayManager, IsNSString value) => neRelayManager -> value -> IO ()
-setLocalizedDescription neRelayManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelayManager (mkSelector "setLocalizedDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalizedDescription neRelayManager value =
+  sendMessage neRelayManager setLocalizedDescriptionSelector (toNSString value)
 
 -- | enabled
 --
@@ -150,8 +146,8 @@ setLocalizedDescription neRelayManager  value =
 --
 -- ObjC selector: @- enabled@
 enabled :: IsNERelayManager neRelayManager => neRelayManager -> IO Bool
-enabled neRelayManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neRelayManager (mkSelector "enabled") retCULong []
+enabled neRelayManager =
+  sendMessage neRelayManager enabledSelector
 
 -- | enabled
 --
@@ -159,8 +155,8 @@ enabled neRelayManager  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsNERelayManager neRelayManager => neRelayManager -> Bool -> IO ()
-setEnabled neRelayManager  value =
-    sendMsg neRelayManager (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled neRelayManager value =
+  sendMessage neRelayManager setEnabledSelector value
 
 -- | uiToggleEnabled
 --
@@ -168,8 +164,8 @@ setEnabled neRelayManager  value =
 --
 -- ObjC selector: @- UIToggleEnabled@
 uiToggleEnabled :: IsNERelayManager neRelayManager => neRelayManager -> IO Bool
-uiToggleEnabled neRelayManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neRelayManager (mkSelector "UIToggleEnabled") retCULong []
+uiToggleEnabled neRelayManager =
+  sendMessage neRelayManager uiToggleEnabledSelector
 
 -- | uiToggleEnabled
 --
@@ -177,8 +173,8 @@ uiToggleEnabled neRelayManager  =
 --
 -- ObjC selector: @- setUIToggleEnabled:@
 setUIToggleEnabled :: IsNERelayManager neRelayManager => neRelayManager -> Bool -> IO ()
-setUIToggleEnabled neRelayManager  value =
-    sendMsg neRelayManager (mkSelector "setUIToggleEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setUIToggleEnabled neRelayManager value =
+  sendMessage neRelayManager setUIToggleEnabledSelector value
 
 -- | allowDNSFailover
 --
@@ -186,8 +182,8 @@ setUIToggleEnabled neRelayManager  value =
 --
 -- ObjC selector: @- allowDNSFailover@
 allowDNSFailover :: IsNERelayManager neRelayManager => neRelayManager -> IO Bool
-allowDNSFailover neRelayManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg neRelayManager (mkSelector "allowDNSFailover") retCULong []
+allowDNSFailover neRelayManager =
+  sendMessage neRelayManager allowDNSFailoverSelector
 
 -- | allowDNSFailover
 --
@@ -195,8 +191,8 @@ allowDNSFailover neRelayManager  =
 --
 -- ObjC selector: @- setAllowDNSFailover:@
 setAllowDNSFailover :: IsNERelayManager neRelayManager => neRelayManager -> Bool -> IO ()
-setAllowDNSFailover neRelayManager  value =
-    sendMsg neRelayManager (mkSelector "setAllowDNSFailover:") retVoid [argCULong (if value then 1 else 0)]
+setAllowDNSFailover neRelayManager value =
+  sendMessage neRelayManager setAllowDNSFailoverSelector value
 
 -- | relays
 --
@@ -204,8 +200,8 @@ setAllowDNSFailover neRelayManager  value =
 --
 -- ObjC selector: @- relays@
 relays :: IsNERelayManager neRelayManager => neRelayManager -> IO (Id NSArray)
-relays neRelayManager  =
-    sendMsg neRelayManager (mkSelector "relays") (retPtr retVoid) [] >>= retainedObject . castPtr
+relays neRelayManager =
+  sendMessage neRelayManager relaysSelector
 
 -- | relays
 --
@@ -213,9 +209,8 @@ relays neRelayManager  =
 --
 -- ObjC selector: @- setRelays:@
 setRelays :: (IsNERelayManager neRelayManager, IsNSArray value) => neRelayManager -> value -> IO ()
-setRelays neRelayManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelayManager (mkSelector "setRelays:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRelays neRelayManager value =
+  sendMessage neRelayManager setRelaysSelector (toNSArray value)
 
 -- | matchDomains
 --
@@ -223,8 +218,8 @@ setRelays neRelayManager  value =
 --
 -- ObjC selector: @- matchDomains@
 matchDomains :: IsNERelayManager neRelayManager => neRelayManager -> IO (Id NSArray)
-matchDomains neRelayManager  =
-    sendMsg neRelayManager (mkSelector "matchDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchDomains neRelayManager =
+  sendMessage neRelayManager matchDomainsSelector
 
 -- | matchDomains
 --
@@ -232,9 +227,8 @@ matchDomains neRelayManager  =
 --
 -- ObjC selector: @- setMatchDomains:@
 setMatchDomains :: (IsNERelayManager neRelayManager, IsNSArray value) => neRelayManager -> value -> IO ()
-setMatchDomains neRelayManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelayManager (mkSelector "setMatchDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatchDomains neRelayManager value =
+  sendMessage neRelayManager setMatchDomainsSelector (toNSArray value)
 
 -- | matchFQDNs
 --
@@ -242,8 +236,8 @@ setMatchDomains neRelayManager  value =
 --
 -- ObjC selector: @- matchFQDNs@
 matchFQDNs :: IsNERelayManager neRelayManager => neRelayManager -> IO (Id NSArray)
-matchFQDNs neRelayManager  =
-    sendMsg neRelayManager (mkSelector "matchFQDNs") (retPtr retVoid) [] >>= retainedObject . castPtr
+matchFQDNs neRelayManager =
+  sendMessage neRelayManager matchFQDNsSelector
 
 -- | matchFQDNs
 --
@@ -251,9 +245,8 @@ matchFQDNs neRelayManager  =
 --
 -- ObjC selector: @- setMatchFQDNs:@
 setMatchFQDNs :: (IsNERelayManager neRelayManager, IsNSArray value) => neRelayManager -> value -> IO ()
-setMatchFQDNs neRelayManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelayManager (mkSelector "setMatchFQDNs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatchFQDNs neRelayManager value =
+  sendMessage neRelayManager setMatchFQDNsSelector (toNSArray value)
 
 -- | excludedDomains
 --
@@ -261,8 +254,8 @@ setMatchFQDNs neRelayManager  value =
 --
 -- ObjC selector: @- excludedDomains@
 excludedDomains :: IsNERelayManager neRelayManager => neRelayManager -> IO (Id NSArray)
-excludedDomains neRelayManager  =
-    sendMsg neRelayManager (mkSelector "excludedDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedDomains neRelayManager =
+  sendMessage neRelayManager excludedDomainsSelector
 
 -- | excludedDomains
 --
@@ -270,9 +263,8 @@ excludedDomains neRelayManager  =
 --
 -- ObjC selector: @- setExcludedDomains:@
 setExcludedDomains :: (IsNERelayManager neRelayManager, IsNSArray value) => neRelayManager -> value -> IO ()
-setExcludedDomains neRelayManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelayManager (mkSelector "setExcludedDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExcludedDomains neRelayManager value =
+  sendMessage neRelayManager setExcludedDomainsSelector (toNSArray value)
 
 -- | excludedFQDNs
 --
@@ -280,8 +272,8 @@ setExcludedDomains neRelayManager  value =
 --
 -- ObjC selector: @- excludedFQDNs@
 excludedFQDNs :: IsNERelayManager neRelayManager => neRelayManager -> IO (Id NSArray)
-excludedFQDNs neRelayManager  =
-    sendMsg neRelayManager (mkSelector "excludedFQDNs") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedFQDNs neRelayManager =
+  sendMessage neRelayManager excludedFQDNsSelector
 
 -- | excludedFQDNs
 --
@@ -289,9 +281,8 @@ excludedFQDNs neRelayManager  =
 --
 -- ObjC selector: @- setExcludedFQDNs:@
 setExcludedFQDNs :: (IsNERelayManager neRelayManager, IsNSArray value) => neRelayManager -> value -> IO ()
-setExcludedFQDNs neRelayManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelayManager (mkSelector "setExcludedFQDNs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExcludedFQDNs neRelayManager value =
+  sendMessage neRelayManager setExcludedFQDNsSelector (toNSArray value)
 
 -- | onDemandRules
 --
@@ -299,8 +290,8 @@ setExcludedFQDNs neRelayManager  value =
 --
 -- ObjC selector: @- onDemandRules@
 onDemandRules :: IsNERelayManager neRelayManager => neRelayManager -> IO (Id NSArray)
-onDemandRules neRelayManager  =
-    sendMsg neRelayManager (mkSelector "onDemandRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+onDemandRules neRelayManager =
+  sendMessage neRelayManager onDemandRulesSelector
 
 -- | onDemandRules
 --
@@ -308,107 +299,106 @@ onDemandRules neRelayManager  =
 --
 -- ObjC selector: @- setOnDemandRules:@
 setOnDemandRules :: (IsNERelayManager neRelayManager, IsNSArray value) => neRelayManager -> value -> IO ()
-setOnDemandRules neRelayManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neRelayManager (mkSelector "setOnDemandRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOnDemandRules neRelayManager value =
+  sendMessage neRelayManager setOnDemandRulesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedManager@
-sharedManagerSelector :: Selector
+sharedManagerSelector :: Selector '[] (Id NERelayManager)
 sharedManagerSelector = mkSelector "sharedManager"
 
 -- | @Selector@ for @loadFromPreferencesWithCompletionHandler:@
-loadFromPreferencesWithCompletionHandlerSelector :: Selector
+loadFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadFromPreferencesWithCompletionHandlerSelector = mkSelector "loadFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @removeFromPreferencesWithCompletionHandler:@
-removeFromPreferencesWithCompletionHandlerSelector :: Selector
+removeFromPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 removeFromPreferencesWithCompletionHandlerSelector = mkSelector "removeFromPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @saveToPreferencesWithCompletionHandler:@
-saveToPreferencesWithCompletionHandlerSelector :: Selector
+saveToPreferencesWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 saveToPreferencesWithCompletionHandlerSelector = mkSelector "saveToPreferencesWithCompletionHandler:"
 
 -- | @Selector@ for @localizedDescription@
-localizedDescriptionSelector :: Selector
+localizedDescriptionSelector :: Selector '[] (Id NSString)
 localizedDescriptionSelector = mkSelector "localizedDescription"
 
 -- | @Selector@ for @setLocalizedDescription:@
-setLocalizedDescriptionSelector :: Selector
+setLocalizedDescriptionSelector :: Selector '[Id NSString] ()
 setLocalizedDescriptionSelector = mkSelector "setLocalizedDescription:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @UIToggleEnabled@
-uiToggleEnabledSelector :: Selector
+uiToggleEnabledSelector :: Selector '[] Bool
 uiToggleEnabledSelector = mkSelector "UIToggleEnabled"
 
 -- | @Selector@ for @setUIToggleEnabled:@
-setUIToggleEnabledSelector :: Selector
+setUIToggleEnabledSelector :: Selector '[Bool] ()
 setUIToggleEnabledSelector = mkSelector "setUIToggleEnabled:"
 
 -- | @Selector@ for @allowDNSFailover@
-allowDNSFailoverSelector :: Selector
+allowDNSFailoverSelector :: Selector '[] Bool
 allowDNSFailoverSelector = mkSelector "allowDNSFailover"
 
 -- | @Selector@ for @setAllowDNSFailover:@
-setAllowDNSFailoverSelector :: Selector
+setAllowDNSFailoverSelector :: Selector '[Bool] ()
 setAllowDNSFailoverSelector = mkSelector "setAllowDNSFailover:"
 
 -- | @Selector@ for @relays@
-relaysSelector :: Selector
+relaysSelector :: Selector '[] (Id NSArray)
 relaysSelector = mkSelector "relays"
 
 -- | @Selector@ for @setRelays:@
-setRelaysSelector :: Selector
+setRelaysSelector :: Selector '[Id NSArray] ()
 setRelaysSelector = mkSelector "setRelays:"
 
 -- | @Selector@ for @matchDomains@
-matchDomainsSelector :: Selector
+matchDomainsSelector :: Selector '[] (Id NSArray)
 matchDomainsSelector = mkSelector "matchDomains"
 
 -- | @Selector@ for @setMatchDomains:@
-setMatchDomainsSelector :: Selector
+setMatchDomainsSelector :: Selector '[Id NSArray] ()
 setMatchDomainsSelector = mkSelector "setMatchDomains:"
 
 -- | @Selector@ for @matchFQDNs@
-matchFQDNsSelector :: Selector
+matchFQDNsSelector :: Selector '[] (Id NSArray)
 matchFQDNsSelector = mkSelector "matchFQDNs"
 
 -- | @Selector@ for @setMatchFQDNs:@
-setMatchFQDNsSelector :: Selector
+setMatchFQDNsSelector :: Selector '[Id NSArray] ()
 setMatchFQDNsSelector = mkSelector "setMatchFQDNs:"
 
 -- | @Selector@ for @excludedDomains@
-excludedDomainsSelector :: Selector
+excludedDomainsSelector :: Selector '[] (Id NSArray)
 excludedDomainsSelector = mkSelector "excludedDomains"
 
 -- | @Selector@ for @setExcludedDomains:@
-setExcludedDomainsSelector :: Selector
+setExcludedDomainsSelector :: Selector '[Id NSArray] ()
 setExcludedDomainsSelector = mkSelector "setExcludedDomains:"
 
 -- | @Selector@ for @excludedFQDNs@
-excludedFQDNsSelector :: Selector
+excludedFQDNsSelector :: Selector '[] (Id NSArray)
 excludedFQDNsSelector = mkSelector "excludedFQDNs"
 
 -- | @Selector@ for @setExcludedFQDNs:@
-setExcludedFQDNsSelector :: Selector
+setExcludedFQDNsSelector :: Selector '[Id NSArray] ()
 setExcludedFQDNsSelector = mkSelector "setExcludedFQDNs:"
 
 -- | @Selector@ for @onDemandRules@
-onDemandRulesSelector :: Selector
+onDemandRulesSelector :: Selector '[] (Id NSArray)
 onDemandRulesSelector = mkSelector "onDemandRules"
 
 -- | @Selector@ for @setOnDemandRules:@
-setOnDemandRulesSelector :: Selector
+setOnDemandRulesSelector :: Selector '[Id NSArray] ()
 setOnDemandRulesSelector = mkSelector "setOnDemandRules:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -57,52 +58,52 @@ module ObjC.Metal.MTL4MeshRenderPipelineDescriptor
   , setColorAttachmentMappingState
   , supportIndirectCommandBuffers
   , setSupportIndirectCommandBuffers
-  , resetSelector
-  , objectFunctionDescriptorSelector
-  , setObjectFunctionDescriptorSelector
-  , meshFunctionDescriptorSelector
-  , setMeshFunctionDescriptorSelector
-  , fragmentFunctionDescriptorSelector
-  , setFragmentFunctionDescriptorSelector
-  , maxTotalThreadsPerObjectThreadgroupSelector
-  , setMaxTotalThreadsPerObjectThreadgroupSelector
-  , maxTotalThreadsPerMeshThreadgroupSelector
-  , setMaxTotalThreadsPerMeshThreadgroupSelector
-  , objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
-  , payloadMemoryLengthSelector
-  , setPayloadMemoryLengthSelector
-  , maxTotalThreadgroupsPerMeshGridSelector
-  , setMaxTotalThreadgroupsPerMeshGridSelector
-  , rasterSampleCountSelector
-  , setRasterSampleCountSelector
   , alphaToCoverageStateSelector
-  , setAlphaToCoverageStateSelector
   , alphaToOneStateSelector
-  , setAlphaToOneStateSelector
-  , rasterizationEnabledSelector
-  , setRasterizationEnabledSelector
-  , maxVertexAmplificationCountSelector
-  , setMaxVertexAmplificationCountSelector
-  , colorAttachmentsSelector
-  , objectStaticLinkingDescriptorSelector
-  , setObjectStaticLinkingDescriptorSelector
-  , meshStaticLinkingDescriptorSelector
-  , setMeshStaticLinkingDescriptorSelector
-  , fragmentStaticLinkingDescriptorSelector
-  , setFragmentStaticLinkingDescriptorSelector
-  , supportObjectBinaryLinkingSelector
-  , setSupportObjectBinaryLinkingSelector
-  , supportMeshBinaryLinkingSelector
-  , setSupportMeshBinaryLinkingSelector
-  , supportFragmentBinaryLinkingSelector
-  , setSupportFragmentBinaryLinkingSelector
   , colorAttachmentMappingStateSelector
+  , colorAttachmentsSelector
+  , fragmentFunctionDescriptorSelector
+  , fragmentStaticLinkingDescriptorSelector
+  , maxTotalThreadgroupsPerMeshGridSelector
+  , maxTotalThreadsPerMeshThreadgroupSelector
+  , maxTotalThreadsPerObjectThreadgroupSelector
+  , maxVertexAmplificationCountSelector
+  , meshFunctionDescriptorSelector
+  , meshStaticLinkingDescriptorSelector
+  , meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
+  , objectFunctionDescriptorSelector
+  , objectStaticLinkingDescriptorSelector
+  , objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
+  , payloadMemoryLengthSelector
+  , rasterSampleCountSelector
+  , rasterizationEnabledSelector
+  , resetSelector
+  , setAlphaToCoverageStateSelector
+  , setAlphaToOneStateSelector
   , setColorAttachmentMappingStateSelector
-  , supportIndirectCommandBuffersSelector
+  , setFragmentFunctionDescriptorSelector
+  , setFragmentStaticLinkingDescriptorSelector
+  , setMaxTotalThreadgroupsPerMeshGridSelector
+  , setMaxTotalThreadsPerMeshThreadgroupSelector
+  , setMaxTotalThreadsPerObjectThreadgroupSelector
+  , setMaxVertexAmplificationCountSelector
+  , setMeshFunctionDescriptorSelector
+  , setMeshStaticLinkingDescriptorSelector
+  , setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
+  , setObjectFunctionDescriptorSelector
+  , setObjectStaticLinkingDescriptorSelector
+  , setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
+  , setPayloadMemoryLengthSelector
+  , setRasterSampleCountSelector
+  , setRasterizationEnabledSelector
+  , setSupportFragmentBinaryLinkingSelector
   , setSupportIndirectCommandBuffersSelector
+  , setSupportMeshBinaryLinkingSelector
+  , setSupportObjectBinaryLinkingSelector
+  , supportFragmentBinaryLinkingSelector
+  , supportIndirectCommandBuffersSelector
+  , supportMeshBinaryLinkingSelector
+  , supportObjectBinaryLinkingSelector
 
   -- * Enum types
   , MTL4AlphaToCoverageState(MTL4AlphaToCoverageState)
@@ -120,15 +121,11 @@ module ObjC.Metal.MTL4MeshRenderPipelineDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -140,53 +137,50 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reset@
 reset :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO ()
-reset mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "reset") retVoid []
+reset mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor resetSelector
 
 -- | Assigns a function descriptor representing the function this pipeline executes for each *object* in the object shader stage.
 --
 -- ObjC selector: @- objectFunctionDescriptor@
 objectFunctionDescriptor :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO (Id MTL4FunctionDescriptor)
-objectFunctionDescriptor mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "objectFunctionDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectFunctionDescriptor mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor objectFunctionDescriptorSelector
 
 -- | Assigns a function descriptor representing the function this pipeline executes for each *object* in the object shader stage.
 --
 -- ObjC selector: @- setObjectFunctionDescriptor:@
 setObjectFunctionDescriptor :: (IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor, IsMTL4FunctionDescriptor value) => mtL4MeshRenderPipelineDescriptor -> value -> IO ()
-setObjectFunctionDescriptor mtL4MeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setObjectFunctionDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setObjectFunctionDescriptor mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setObjectFunctionDescriptorSelector (toMTL4FunctionDescriptor value)
 
 -- | Assigns a function descriptor representing the function this pipeline executes for each primitive in the mesh shader stage.
 --
 -- ObjC selector: @- meshFunctionDescriptor@
 meshFunctionDescriptor :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO (Id MTL4FunctionDescriptor)
-meshFunctionDescriptor mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "meshFunctionDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+meshFunctionDescriptor mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor meshFunctionDescriptorSelector
 
 -- | Assigns a function descriptor representing the function this pipeline executes for each primitive in the mesh shader stage.
 --
 -- ObjC selector: @- setMeshFunctionDescriptor:@
 setMeshFunctionDescriptor :: (IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor, IsMTL4FunctionDescriptor value) => mtL4MeshRenderPipelineDescriptor -> value -> IO ()
-setMeshFunctionDescriptor mtL4MeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setMeshFunctionDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMeshFunctionDescriptor mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setMeshFunctionDescriptorSelector (toMTL4FunctionDescriptor value)
 
 -- | Assigns a function descriptor representing the function this pipeline executes for each fragment.
 --
 -- ObjC selector: @- fragmentFunctionDescriptor@
 fragmentFunctionDescriptor :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO (Id MTL4FunctionDescriptor)
-fragmentFunctionDescriptor mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "fragmentFunctionDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragmentFunctionDescriptor mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor fragmentFunctionDescriptorSelector
 
 -- | Assigns a function descriptor representing the function this pipeline executes for each fragment.
 --
 -- ObjC selector: @- setFragmentFunctionDescriptor:@
 setFragmentFunctionDescriptor :: (IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor, IsMTL4FunctionDescriptor value) => mtL4MeshRenderPipelineDescriptor -> value -> IO ()
-setFragmentFunctionDescriptor mtL4MeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setFragmentFunctionDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFragmentFunctionDescriptor mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setFragmentFunctionDescriptorSelector (toMTL4FunctionDescriptor value)
 
 -- | Controls the largest number of threads the pipeline state can execute in a single object shader threadgroup dispatch.
 --
@@ -202,8 +196,8 @@ setFragmentFunctionDescriptor mtL4MeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- maxTotalThreadsPerObjectThreadgroup@
 maxTotalThreadsPerObjectThreadgroup :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO CULong
-maxTotalThreadsPerObjectThreadgroup mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "maxTotalThreadsPerObjectThreadgroup") retCULong []
+maxTotalThreadsPerObjectThreadgroup mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor maxTotalThreadsPerObjectThreadgroupSelector
 
 -- | Controls the largest number of threads the pipeline state can execute in a single object shader threadgroup dispatch.
 --
@@ -219,8 +213,8 @@ maxTotalThreadsPerObjectThreadgroup mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxTotalThreadsPerObjectThreadgroup:@
 setMaxTotalThreadsPerObjectThreadgroup :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> CULong -> IO ()
-setMaxTotalThreadsPerObjectThreadgroup mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setMaxTotalThreadsPerObjectThreadgroup:") retVoid [argCULong value]
+setMaxTotalThreadsPerObjectThreadgroup mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setMaxTotalThreadsPerObjectThreadgroupSelector value
 
 -- | Controls the largest number of threads the pipeline state can execute in a single mesh shader threadgroup dispatch.
 --
@@ -236,8 +230,8 @@ setMaxTotalThreadsPerObjectThreadgroup mtL4MeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- maxTotalThreadsPerMeshThreadgroup@
 maxTotalThreadsPerMeshThreadgroup :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO CULong
-maxTotalThreadsPerMeshThreadgroup mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "maxTotalThreadsPerMeshThreadgroup") retCULong []
+maxTotalThreadsPerMeshThreadgroup mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor maxTotalThreadsPerMeshThreadgroupSelector
 
 -- | Controls the largest number of threads the pipeline state can execute in a single mesh shader threadgroup dispatch.
 --
@@ -253,8 +247,8 @@ maxTotalThreadsPerMeshThreadgroup mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxTotalThreadsPerMeshThreadgroup:@
 setMaxTotalThreadsPerMeshThreadgroup :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> CULong -> IO ()
-setMaxTotalThreadsPerMeshThreadgroup mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setMaxTotalThreadsPerMeshThreadgroup:") retVoid [argCULong value]
+setMaxTotalThreadsPerMeshThreadgroup mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setMaxTotalThreadsPerMeshThreadgroupSelector value
 
 -- | Provides a guarantee to Metal regarding the number of threadgroup threads for the object stage of a pipeline you create from this descriptor.
 --
@@ -264,8 +258,8 @@ setMaxTotalThreadsPerMeshThreadgroup mtL4MeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- objectThreadgroupSizeIsMultipleOfThreadExecutionWidth@
 objectThreadgroupSizeIsMultipleOfThreadExecutionWidth :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO Bool
-objectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "objectThreadgroupSizeIsMultipleOfThreadExecutionWidth") retCULong []
+objectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
 
 -- | Provides a guarantee to Metal regarding the number of threadgroup threads for the object stage of a pipeline you create from this descriptor.
 --
@@ -275,8 +269,8 @@ objectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDesc
 --
 -- ObjC selector: @- setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth:@
 setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> Bool -> IO ()
-setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth:") retVoid [argCULong (if value then 1 else 0)]
+setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector value
 
 -- | Provides a guarantee to Metal regarding the number of threadgroup threads for the mesh stage of a pipeline you create from this descriptor.
 --
@@ -286,8 +280,8 @@ setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineD
 --
 -- ObjC selector: @- meshThreadgroupSizeIsMultipleOfThreadExecutionWidth@
 meshThreadgroupSizeIsMultipleOfThreadExecutionWidth :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO Bool
-meshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "meshThreadgroupSizeIsMultipleOfThreadExecutionWidth") retCULong []
+meshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector
 
 -- | Provides a guarantee to Metal regarding the number of threadgroup threads for the mesh stage of a pipeline you create from this descriptor.
 --
@@ -297,8 +291,8 @@ meshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDescri
 --
 -- ObjC selector: @- setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth:@
 setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> Bool -> IO ()
-setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth:") retVoid [argCULong (if value then 1 else 0)]
+setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector value
 
 -- | Reserves storage for the object-to-mesh stage payload.
 --
@@ -310,8 +304,8 @@ setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth mtL4MeshRenderPipelineDes
 --
 -- ObjC selector: @- payloadMemoryLength@
 payloadMemoryLength :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO CULong
-payloadMemoryLength mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "payloadMemoryLength") retCULong []
+payloadMemoryLength mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor payloadMemoryLengthSelector
 
 -- | Reserves storage for the object-to-mesh stage payload.
 --
@@ -323,8 +317,8 @@ payloadMemoryLength mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setPayloadMemoryLength:@
 setPayloadMemoryLength :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> CULong -> IO ()
-setPayloadMemoryLength mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setPayloadMemoryLength:") retVoid [argCULong value]
+setPayloadMemoryLength mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setPayloadMemoryLengthSelector value
 
 -- | Controls the largest number of threads the pipeline state can execute when the object stage of a mesh render pipeline you create from this descriptor dispatches its mesh stage.
 --
@@ -338,8 +332,8 @@ setPayloadMemoryLength mtL4MeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- maxTotalThreadgroupsPerMeshGrid@
 maxTotalThreadgroupsPerMeshGrid :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO CULong
-maxTotalThreadgroupsPerMeshGrid mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "maxTotalThreadgroupsPerMeshGrid") retCULong []
+maxTotalThreadgroupsPerMeshGrid mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor maxTotalThreadgroupsPerMeshGridSelector
 
 -- | Controls the largest number of threads the pipeline state can execute when the object stage of a mesh render pipeline you create from this descriptor dispatches its mesh stage.
 --
@@ -353,50 +347,50 @@ maxTotalThreadgroupsPerMeshGrid mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxTotalThreadgroupsPerMeshGrid:@
 setMaxTotalThreadgroupsPerMeshGrid :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> CULong -> IO ()
-setMaxTotalThreadgroupsPerMeshGrid mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setMaxTotalThreadgroupsPerMeshGrid:") retVoid [argCULong value]
+setMaxTotalThreadgroupsPerMeshGrid mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setMaxTotalThreadgroupsPerMeshGridSelector value
 
 -- | Sets number of samples this pipeline applies for each fragment.
 --
 -- ObjC selector: @- rasterSampleCount@
 rasterSampleCount :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO CULong
-rasterSampleCount mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "rasterSampleCount") retCULong []
+rasterSampleCount mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor rasterSampleCountSelector
 
 -- | Sets number of samples this pipeline applies for each fragment.
 --
 -- ObjC selector: @- setRasterSampleCount:@
 setRasterSampleCount :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> CULong -> IO ()
-setRasterSampleCount mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setRasterSampleCount:") retVoid [argCULong value]
+setRasterSampleCount mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setRasterSampleCountSelector value
 
 -- | Indicates whether to read and use the alpha channel fragment output of color attachments to compute a sample coverage mask.
 --
 -- ObjC selector: @- alphaToCoverageState@
 alphaToCoverageState :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO MTL4AlphaToCoverageState
-alphaToCoverageState mtL4MeshRenderPipelineDescriptor  =
-    fmap (coerce :: CLong -> MTL4AlphaToCoverageState) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "alphaToCoverageState") retCLong []
+alphaToCoverageState mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor alphaToCoverageStateSelector
 
 -- | Indicates whether to read and use the alpha channel fragment output of color attachments to compute a sample coverage mask.
 --
 -- ObjC selector: @- setAlphaToCoverageState:@
 setAlphaToCoverageState :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> MTL4AlphaToCoverageState -> IO ()
-setAlphaToCoverageState mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setAlphaToCoverageState:") retVoid [argCLong (coerce value)]
+setAlphaToCoverageState mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setAlphaToCoverageStateSelector value
 
 -- | Indicates whether the pipeline forces alpha channel values of color attachments to the largest representable value.
 --
 -- ObjC selector: @- alphaToOneState@
 alphaToOneState :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO MTL4AlphaToOneState
-alphaToOneState mtL4MeshRenderPipelineDescriptor  =
-    fmap (coerce :: CLong -> MTL4AlphaToOneState) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "alphaToOneState") retCLong []
+alphaToOneState mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor alphaToOneStateSelector
 
 -- | Indicates whether the pipeline forces alpha channel values of color attachments to the largest representable value.
 --
 -- ObjC selector: @- setAlphaToOneState:@
 setAlphaToOneState :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> MTL4AlphaToOneState -> IO ()
-setAlphaToOneState mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setAlphaToOneState:") retVoid [argCLong (coerce value)]
+setAlphaToOneState mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setAlphaToOneStateSelector value
 
 -- | Determines whether the pipeline rasterizes primitives.
 --
@@ -404,8 +398,8 @@ setAlphaToOneState mtL4MeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- rasterizationEnabled@
 rasterizationEnabled :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO Bool
-rasterizationEnabled mtL4MeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "rasterizationEnabled") retCULong []
+rasterizationEnabled mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor rasterizationEnabledSelector
 
 -- | Determines whether the pipeline rasterizes primitives.
 --
@@ -413,8 +407,8 @@ rasterizationEnabled mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setRasterizationEnabled:@
 setRasterizationEnabled :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> Bool -> IO ()
-setRasterizationEnabled mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setRasterizationEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setRasterizationEnabled mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setRasterizationEnabledSelector value
 
 -- | Determines the maximum value that can you can pass as the pipeline's amplification count.
 --
@@ -422,8 +416,8 @@ setRasterizationEnabled mtL4MeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- maxVertexAmplificationCount@
 maxVertexAmplificationCount :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO CULong
-maxVertexAmplificationCount mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "maxVertexAmplificationCount") retCULong []
+maxVertexAmplificationCount mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor maxVertexAmplificationCountSelector
 
 -- | Determines the maximum value that can you can pass as the pipeline's amplification count.
 --
@@ -431,15 +425,15 @@ maxVertexAmplificationCount mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMaxVertexAmplificationCount:@
 setMaxVertexAmplificationCount :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> CULong -> IO ()
-setMaxVertexAmplificationCount mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setMaxVertexAmplificationCount:") retVoid [argCULong value]
+setMaxVertexAmplificationCount mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setMaxVertexAmplificationCountSelector value
 
 -- | Accesses an array containing descriptions of the color attachments this pipeline writes to.
 --
 -- ObjC selector: @- colorAttachments@
 colorAttachments :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO (Id MTL4RenderPipelineColorAttachmentDescriptorArray)
-colorAttachments mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "colorAttachments") (retPtr retVoid) [] >>= retainedObject . castPtr
+colorAttachments mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor colorAttachmentsSelector
 
 -- | Provides static linking information for the object stage of the render pipeline.
 --
@@ -447,8 +441,8 @@ colorAttachments mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- objectStaticLinkingDescriptor@
 objectStaticLinkingDescriptor :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO (Id MTL4StaticLinkingDescriptor)
-objectStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "objectStaticLinkingDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+objectStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor objectStaticLinkingDescriptorSelector
 
 -- | Provides static linking information for the object stage of the render pipeline.
 --
@@ -456,9 +450,8 @@ objectStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setObjectStaticLinkingDescriptor:@
 setObjectStaticLinkingDescriptor :: (IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor, IsMTL4StaticLinkingDescriptor value) => mtL4MeshRenderPipelineDescriptor -> value -> IO ()
-setObjectStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setObjectStaticLinkingDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setObjectStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setObjectStaticLinkingDescriptorSelector (toMTL4StaticLinkingDescriptor value)
 
 -- | Provides static linking information for the mesh stage of the render pipeline.
 --
@@ -466,8 +459,8 @@ setObjectStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- meshStaticLinkingDescriptor@
 meshStaticLinkingDescriptor :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO (Id MTL4StaticLinkingDescriptor)
-meshStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "meshStaticLinkingDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+meshStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor meshStaticLinkingDescriptorSelector
 
 -- | Provides static linking information for the mesh stage of the render pipeline.
 --
@@ -475,9 +468,8 @@ meshStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setMeshStaticLinkingDescriptor:@
 setMeshStaticLinkingDescriptor :: (IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor, IsMTL4StaticLinkingDescriptor value) => mtL4MeshRenderPipelineDescriptor -> value -> IO ()
-setMeshStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setMeshStaticLinkingDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMeshStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setMeshStaticLinkingDescriptorSelector (toMTL4StaticLinkingDescriptor value)
 
 -- | Provides static linking information for the fragment stage of the render pipeline.
 --
@@ -485,8 +477,8 @@ setMeshStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- fragmentStaticLinkingDescriptor@
 fragmentStaticLinkingDescriptor :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO (Id MTL4StaticLinkingDescriptor)
-fragmentStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "fragmentStaticLinkingDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fragmentStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor fragmentStaticLinkingDescriptorSelector
 
 -- | Provides static linking information for the fragment stage of the render pipeline.
 --
@@ -494,51 +486,50 @@ fragmentStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setFragmentStaticLinkingDescriptor:@
 setFragmentStaticLinkingDescriptor :: (IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor, IsMTL4StaticLinkingDescriptor value) => mtL4MeshRenderPipelineDescriptor -> value -> IO ()
-setFragmentStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setFragmentStaticLinkingDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFragmentStaticLinkingDescriptor mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setFragmentStaticLinkingDescriptorSelector (toMTL4StaticLinkingDescriptor value)
 
 -- | Indicates whether you can use the render pipeline to create new pipelines by adding binary functions to the object shader function’s callable functions list.
 --
 -- ObjC selector: @- supportObjectBinaryLinking@
 supportObjectBinaryLinking :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO Bool
-supportObjectBinaryLinking mtL4MeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "supportObjectBinaryLinking") retCULong []
+supportObjectBinaryLinking mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor supportObjectBinaryLinkingSelector
 
 -- | Indicates whether you can use the render pipeline to create new pipelines by adding binary functions to the object shader function’s callable functions list.
 --
 -- ObjC selector: @- setSupportObjectBinaryLinking:@
 setSupportObjectBinaryLinking :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> Bool -> IO ()
-setSupportObjectBinaryLinking mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setSupportObjectBinaryLinking:") retVoid [argCULong (if value then 1 else 0)]
+setSupportObjectBinaryLinking mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setSupportObjectBinaryLinkingSelector value
 
 -- | Indicates whether you can use the render pipeline to create new pipelines by adding binary functions to the mesh shader function’s callable functions list.
 --
 -- ObjC selector: @- supportMeshBinaryLinking@
 supportMeshBinaryLinking :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO Bool
-supportMeshBinaryLinking mtL4MeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "supportMeshBinaryLinking") retCULong []
+supportMeshBinaryLinking mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor supportMeshBinaryLinkingSelector
 
 -- | Indicates whether you can use the render pipeline to create new pipelines by adding binary functions to the mesh shader function’s callable functions list.
 --
 -- ObjC selector: @- setSupportMeshBinaryLinking:@
 setSupportMeshBinaryLinking :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> Bool -> IO ()
-setSupportMeshBinaryLinking mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setSupportMeshBinaryLinking:") retVoid [argCULong (if value then 1 else 0)]
+setSupportMeshBinaryLinking mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setSupportMeshBinaryLinkingSelector value
 
 -- | Indicates whether you can use the render pipeline to create new pipelines by adding binary functions to the fragment shader function’s callable functions list.
 --
 -- ObjC selector: @- supportFragmentBinaryLinking@
 supportFragmentBinaryLinking :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO Bool
-supportFragmentBinaryLinking mtL4MeshRenderPipelineDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "supportFragmentBinaryLinking") retCULong []
+supportFragmentBinaryLinking mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor supportFragmentBinaryLinkingSelector
 
 -- | Indicates whether you can use the render pipeline to create new pipelines by adding binary functions to the fragment shader function’s callable functions list.
 --
 -- ObjC selector: @- setSupportFragmentBinaryLinking:@
 setSupportFragmentBinaryLinking :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> Bool -> IO ()
-setSupportFragmentBinaryLinking mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setSupportFragmentBinaryLinking:") retVoid [argCULong (if value then 1 else 0)]
+setSupportFragmentBinaryLinking mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setSupportFragmentBinaryLinkingSelector value
 
 -- | Sets the logical-to-physical rendering remap state.
 --
@@ -546,8 +537,8 @@ setSupportFragmentBinaryLinking mtL4MeshRenderPipelineDescriptor  value =
 --
 -- ObjC selector: @- colorAttachmentMappingState@
 colorAttachmentMappingState :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO MTL4LogicalToPhysicalColorAttachmentMappingState
-colorAttachmentMappingState mtL4MeshRenderPipelineDescriptor  =
-    fmap (coerce :: CLong -> MTL4LogicalToPhysicalColorAttachmentMappingState) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "colorAttachmentMappingState") retCLong []
+colorAttachmentMappingState mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor colorAttachmentMappingStateSelector
 
 -- | Sets the logical-to-physical rendering remap state.
 --
@@ -555,208 +546,208 @@ colorAttachmentMappingState mtL4MeshRenderPipelineDescriptor  =
 --
 -- ObjC selector: @- setColorAttachmentMappingState:@
 setColorAttachmentMappingState :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> MTL4LogicalToPhysicalColorAttachmentMappingState -> IO ()
-setColorAttachmentMappingState mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setColorAttachmentMappingState:") retVoid [argCLong (coerce value)]
+setColorAttachmentMappingState mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setColorAttachmentMappingStateSelector value
 
 -- | Indicates whether the pipeline supports indirect command buffers.
 --
 -- ObjC selector: @- supportIndirectCommandBuffers@
 supportIndirectCommandBuffers :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> IO MTL4IndirectCommandBufferSupportState
-supportIndirectCommandBuffers mtL4MeshRenderPipelineDescriptor  =
-    fmap (coerce :: CLong -> MTL4IndirectCommandBufferSupportState) $ sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "supportIndirectCommandBuffers") retCLong []
+supportIndirectCommandBuffers mtL4MeshRenderPipelineDescriptor =
+  sendMessage mtL4MeshRenderPipelineDescriptor supportIndirectCommandBuffersSelector
 
 -- | Indicates whether the pipeline supports indirect command buffers.
 --
 -- ObjC selector: @- setSupportIndirectCommandBuffers:@
 setSupportIndirectCommandBuffers :: IsMTL4MeshRenderPipelineDescriptor mtL4MeshRenderPipelineDescriptor => mtL4MeshRenderPipelineDescriptor -> MTL4IndirectCommandBufferSupportState -> IO ()
-setSupportIndirectCommandBuffers mtL4MeshRenderPipelineDescriptor  value =
-    sendMsg mtL4MeshRenderPipelineDescriptor (mkSelector "setSupportIndirectCommandBuffers:") retVoid [argCLong (coerce value)]
+setSupportIndirectCommandBuffers mtL4MeshRenderPipelineDescriptor value =
+  sendMessage mtL4MeshRenderPipelineDescriptor setSupportIndirectCommandBuffersSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @objectFunctionDescriptor@
-objectFunctionDescriptorSelector :: Selector
+objectFunctionDescriptorSelector :: Selector '[] (Id MTL4FunctionDescriptor)
 objectFunctionDescriptorSelector = mkSelector "objectFunctionDescriptor"
 
 -- | @Selector@ for @setObjectFunctionDescriptor:@
-setObjectFunctionDescriptorSelector :: Selector
+setObjectFunctionDescriptorSelector :: Selector '[Id MTL4FunctionDescriptor] ()
 setObjectFunctionDescriptorSelector = mkSelector "setObjectFunctionDescriptor:"
 
 -- | @Selector@ for @meshFunctionDescriptor@
-meshFunctionDescriptorSelector :: Selector
+meshFunctionDescriptorSelector :: Selector '[] (Id MTL4FunctionDescriptor)
 meshFunctionDescriptorSelector = mkSelector "meshFunctionDescriptor"
 
 -- | @Selector@ for @setMeshFunctionDescriptor:@
-setMeshFunctionDescriptorSelector :: Selector
+setMeshFunctionDescriptorSelector :: Selector '[Id MTL4FunctionDescriptor] ()
 setMeshFunctionDescriptorSelector = mkSelector "setMeshFunctionDescriptor:"
 
 -- | @Selector@ for @fragmentFunctionDescriptor@
-fragmentFunctionDescriptorSelector :: Selector
+fragmentFunctionDescriptorSelector :: Selector '[] (Id MTL4FunctionDescriptor)
 fragmentFunctionDescriptorSelector = mkSelector "fragmentFunctionDescriptor"
 
 -- | @Selector@ for @setFragmentFunctionDescriptor:@
-setFragmentFunctionDescriptorSelector :: Selector
+setFragmentFunctionDescriptorSelector :: Selector '[Id MTL4FunctionDescriptor] ()
 setFragmentFunctionDescriptorSelector = mkSelector "setFragmentFunctionDescriptor:"
 
 -- | @Selector@ for @maxTotalThreadsPerObjectThreadgroup@
-maxTotalThreadsPerObjectThreadgroupSelector :: Selector
+maxTotalThreadsPerObjectThreadgroupSelector :: Selector '[] CULong
 maxTotalThreadsPerObjectThreadgroupSelector = mkSelector "maxTotalThreadsPerObjectThreadgroup"
 
 -- | @Selector@ for @setMaxTotalThreadsPerObjectThreadgroup:@
-setMaxTotalThreadsPerObjectThreadgroupSelector :: Selector
+setMaxTotalThreadsPerObjectThreadgroupSelector :: Selector '[CULong] ()
 setMaxTotalThreadsPerObjectThreadgroupSelector = mkSelector "setMaxTotalThreadsPerObjectThreadgroup:"
 
 -- | @Selector@ for @maxTotalThreadsPerMeshThreadgroup@
-maxTotalThreadsPerMeshThreadgroupSelector :: Selector
+maxTotalThreadsPerMeshThreadgroupSelector :: Selector '[] CULong
 maxTotalThreadsPerMeshThreadgroupSelector = mkSelector "maxTotalThreadsPerMeshThreadgroup"
 
 -- | @Selector@ for @setMaxTotalThreadsPerMeshThreadgroup:@
-setMaxTotalThreadsPerMeshThreadgroupSelector :: Selector
+setMaxTotalThreadsPerMeshThreadgroupSelector :: Selector '[CULong] ()
 setMaxTotalThreadsPerMeshThreadgroupSelector = mkSelector "setMaxTotalThreadsPerMeshThreadgroup:"
 
 -- | @Selector@ for @objectThreadgroupSizeIsMultipleOfThreadExecutionWidth@
-objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[] Bool
 objectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "objectThreadgroupSizeIsMultipleOfThreadExecutionWidth"
 
 -- | @Selector@ for @setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth:@
-setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[Bool] ()
 setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "setObjectThreadgroupSizeIsMultipleOfThreadExecutionWidth:"
 
 -- | @Selector@ for @meshThreadgroupSizeIsMultipleOfThreadExecutionWidth@
-meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[] Bool
 meshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "meshThreadgroupSizeIsMultipleOfThreadExecutionWidth"
 
 -- | @Selector@ for @setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth:@
-setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector
+setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector :: Selector '[Bool] ()
 setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidthSelector = mkSelector "setMeshThreadgroupSizeIsMultipleOfThreadExecutionWidth:"
 
 -- | @Selector@ for @payloadMemoryLength@
-payloadMemoryLengthSelector :: Selector
+payloadMemoryLengthSelector :: Selector '[] CULong
 payloadMemoryLengthSelector = mkSelector "payloadMemoryLength"
 
 -- | @Selector@ for @setPayloadMemoryLength:@
-setPayloadMemoryLengthSelector :: Selector
+setPayloadMemoryLengthSelector :: Selector '[CULong] ()
 setPayloadMemoryLengthSelector = mkSelector "setPayloadMemoryLength:"
 
 -- | @Selector@ for @maxTotalThreadgroupsPerMeshGrid@
-maxTotalThreadgroupsPerMeshGridSelector :: Selector
+maxTotalThreadgroupsPerMeshGridSelector :: Selector '[] CULong
 maxTotalThreadgroupsPerMeshGridSelector = mkSelector "maxTotalThreadgroupsPerMeshGrid"
 
 -- | @Selector@ for @setMaxTotalThreadgroupsPerMeshGrid:@
-setMaxTotalThreadgroupsPerMeshGridSelector :: Selector
+setMaxTotalThreadgroupsPerMeshGridSelector :: Selector '[CULong] ()
 setMaxTotalThreadgroupsPerMeshGridSelector = mkSelector "setMaxTotalThreadgroupsPerMeshGrid:"
 
 -- | @Selector@ for @rasterSampleCount@
-rasterSampleCountSelector :: Selector
+rasterSampleCountSelector :: Selector '[] CULong
 rasterSampleCountSelector = mkSelector "rasterSampleCount"
 
 -- | @Selector@ for @setRasterSampleCount:@
-setRasterSampleCountSelector :: Selector
+setRasterSampleCountSelector :: Selector '[CULong] ()
 setRasterSampleCountSelector = mkSelector "setRasterSampleCount:"
 
 -- | @Selector@ for @alphaToCoverageState@
-alphaToCoverageStateSelector :: Selector
+alphaToCoverageStateSelector :: Selector '[] MTL4AlphaToCoverageState
 alphaToCoverageStateSelector = mkSelector "alphaToCoverageState"
 
 -- | @Selector@ for @setAlphaToCoverageState:@
-setAlphaToCoverageStateSelector :: Selector
+setAlphaToCoverageStateSelector :: Selector '[MTL4AlphaToCoverageState] ()
 setAlphaToCoverageStateSelector = mkSelector "setAlphaToCoverageState:"
 
 -- | @Selector@ for @alphaToOneState@
-alphaToOneStateSelector :: Selector
+alphaToOneStateSelector :: Selector '[] MTL4AlphaToOneState
 alphaToOneStateSelector = mkSelector "alphaToOneState"
 
 -- | @Selector@ for @setAlphaToOneState:@
-setAlphaToOneStateSelector :: Selector
+setAlphaToOneStateSelector :: Selector '[MTL4AlphaToOneState] ()
 setAlphaToOneStateSelector = mkSelector "setAlphaToOneState:"
 
 -- | @Selector@ for @rasterizationEnabled@
-rasterizationEnabledSelector :: Selector
+rasterizationEnabledSelector :: Selector '[] Bool
 rasterizationEnabledSelector = mkSelector "rasterizationEnabled"
 
 -- | @Selector@ for @setRasterizationEnabled:@
-setRasterizationEnabledSelector :: Selector
+setRasterizationEnabledSelector :: Selector '[Bool] ()
 setRasterizationEnabledSelector = mkSelector "setRasterizationEnabled:"
 
 -- | @Selector@ for @maxVertexAmplificationCount@
-maxVertexAmplificationCountSelector :: Selector
+maxVertexAmplificationCountSelector :: Selector '[] CULong
 maxVertexAmplificationCountSelector = mkSelector "maxVertexAmplificationCount"
 
 -- | @Selector@ for @setMaxVertexAmplificationCount:@
-setMaxVertexAmplificationCountSelector :: Selector
+setMaxVertexAmplificationCountSelector :: Selector '[CULong] ()
 setMaxVertexAmplificationCountSelector = mkSelector "setMaxVertexAmplificationCount:"
 
 -- | @Selector@ for @colorAttachments@
-colorAttachmentsSelector :: Selector
+colorAttachmentsSelector :: Selector '[] (Id MTL4RenderPipelineColorAttachmentDescriptorArray)
 colorAttachmentsSelector = mkSelector "colorAttachments"
 
 -- | @Selector@ for @objectStaticLinkingDescriptor@
-objectStaticLinkingDescriptorSelector :: Selector
+objectStaticLinkingDescriptorSelector :: Selector '[] (Id MTL4StaticLinkingDescriptor)
 objectStaticLinkingDescriptorSelector = mkSelector "objectStaticLinkingDescriptor"
 
 -- | @Selector@ for @setObjectStaticLinkingDescriptor:@
-setObjectStaticLinkingDescriptorSelector :: Selector
+setObjectStaticLinkingDescriptorSelector :: Selector '[Id MTL4StaticLinkingDescriptor] ()
 setObjectStaticLinkingDescriptorSelector = mkSelector "setObjectStaticLinkingDescriptor:"
 
 -- | @Selector@ for @meshStaticLinkingDescriptor@
-meshStaticLinkingDescriptorSelector :: Selector
+meshStaticLinkingDescriptorSelector :: Selector '[] (Id MTL4StaticLinkingDescriptor)
 meshStaticLinkingDescriptorSelector = mkSelector "meshStaticLinkingDescriptor"
 
 -- | @Selector@ for @setMeshStaticLinkingDescriptor:@
-setMeshStaticLinkingDescriptorSelector :: Selector
+setMeshStaticLinkingDescriptorSelector :: Selector '[Id MTL4StaticLinkingDescriptor] ()
 setMeshStaticLinkingDescriptorSelector = mkSelector "setMeshStaticLinkingDescriptor:"
 
 -- | @Selector@ for @fragmentStaticLinkingDescriptor@
-fragmentStaticLinkingDescriptorSelector :: Selector
+fragmentStaticLinkingDescriptorSelector :: Selector '[] (Id MTL4StaticLinkingDescriptor)
 fragmentStaticLinkingDescriptorSelector = mkSelector "fragmentStaticLinkingDescriptor"
 
 -- | @Selector@ for @setFragmentStaticLinkingDescriptor:@
-setFragmentStaticLinkingDescriptorSelector :: Selector
+setFragmentStaticLinkingDescriptorSelector :: Selector '[Id MTL4StaticLinkingDescriptor] ()
 setFragmentStaticLinkingDescriptorSelector = mkSelector "setFragmentStaticLinkingDescriptor:"
 
 -- | @Selector@ for @supportObjectBinaryLinking@
-supportObjectBinaryLinkingSelector :: Selector
+supportObjectBinaryLinkingSelector :: Selector '[] Bool
 supportObjectBinaryLinkingSelector = mkSelector "supportObjectBinaryLinking"
 
 -- | @Selector@ for @setSupportObjectBinaryLinking:@
-setSupportObjectBinaryLinkingSelector :: Selector
+setSupportObjectBinaryLinkingSelector :: Selector '[Bool] ()
 setSupportObjectBinaryLinkingSelector = mkSelector "setSupportObjectBinaryLinking:"
 
 -- | @Selector@ for @supportMeshBinaryLinking@
-supportMeshBinaryLinkingSelector :: Selector
+supportMeshBinaryLinkingSelector :: Selector '[] Bool
 supportMeshBinaryLinkingSelector = mkSelector "supportMeshBinaryLinking"
 
 -- | @Selector@ for @setSupportMeshBinaryLinking:@
-setSupportMeshBinaryLinkingSelector :: Selector
+setSupportMeshBinaryLinkingSelector :: Selector '[Bool] ()
 setSupportMeshBinaryLinkingSelector = mkSelector "setSupportMeshBinaryLinking:"
 
 -- | @Selector@ for @supportFragmentBinaryLinking@
-supportFragmentBinaryLinkingSelector :: Selector
+supportFragmentBinaryLinkingSelector :: Selector '[] Bool
 supportFragmentBinaryLinkingSelector = mkSelector "supportFragmentBinaryLinking"
 
 -- | @Selector@ for @setSupportFragmentBinaryLinking:@
-setSupportFragmentBinaryLinkingSelector :: Selector
+setSupportFragmentBinaryLinkingSelector :: Selector '[Bool] ()
 setSupportFragmentBinaryLinkingSelector = mkSelector "setSupportFragmentBinaryLinking:"
 
 -- | @Selector@ for @colorAttachmentMappingState@
-colorAttachmentMappingStateSelector :: Selector
+colorAttachmentMappingStateSelector :: Selector '[] MTL4LogicalToPhysicalColorAttachmentMappingState
 colorAttachmentMappingStateSelector = mkSelector "colorAttachmentMappingState"
 
 -- | @Selector@ for @setColorAttachmentMappingState:@
-setColorAttachmentMappingStateSelector :: Selector
+setColorAttachmentMappingStateSelector :: Selector '[MTL4LogicalToPhysicalColorAttachmentMappingState] ()
 setColorAttachmentMappingStateSelector = mkSelector "setColorAttachmentMappingState:"
 
 -- | @Selector@ for @supportIndirectCommandBuffers@
-supportIndirectCommandBuffersSelector :: Selector
+supportIndirectCommandBuffersSelector :: Selector '[] MTL4IndirectCommandBufferSupportState
 supportIndirectCommandBuffersSelector = mkSelector "supportIndirectCommandBuffers"
 
 -- | @Selector@ for @setSupportIndirectCommandBuffers:@
-setSupportIndirectCommandBuffersSelector :: Selector
+setSupportIndirectCommandBuffersSelector :: Selector '[MTL4IndirectCommandBufferSupportState] ()
 setSupportIndirectCommandBuffersSelector = mkSelector "setSupportIndirectCommandBuffers:"
 

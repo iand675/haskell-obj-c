@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,10 +14,10 @@ module ObjC.LocalAuthentication.LAEnvironmentMechanismBiometry
   , stateHash
   , builtInSensorInaccessible
   , biometryTypeSelector
+  , builtInSensorInaccessibleSelector
   , isEnrolledSelector
   , isLockedOutSelector
   , stateHashSelector
-  , builtInSensorInaccessibleSelector
 
   -- * Enum types
   , LABiometryType(LABiometryType)
@@ -28,15 +29,11 @@ module ObjC.LocalAuthentication.LAEnvironmentMechanismBiometry
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- biometryType@
 biometryType :: IsLAEnvironmentMechanismBiometry laEnvironmentMechanismBiometry => laEnvironmentMechanismBiometry -> IO LABiometryType
-biometryType laEnvironmentMechanismBiometry  =
-    fmap (coerce :: CLong -> LABiometryType) $ sendMsg laEnvironmentMechanismBiometry (mkSelector "biometryType") retCLong []
+biometryType laEnvironmentMechanismBiometry =
+  sendMessage laEnvironmentMechanismBiometry biometryTypeSelector
 
 -- | Whether the user has enrolled this biometry.
 --
@@ -59,8 +56,8 @@ biometryType laEnvironmentMechanismBiometry  =
 --
 -- ObjC selector: @- isEnrolled@
 isEnrolled :: IsLAEnvironmentMechanismBiometry laEnvironmentMechanismBiometry => laEnvironmentMechanismBiometry -> IO Bool
-isEnrolled laEnvironmentMechanismBiometry  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laEnvironmentMechanismBiometry (mkSelector "isEnrolled") retCULong []
+isEnrolled laEnvironmentMechanismBiometry =
+  sendMessage laEnvironmentMechanismBiometry isEnrolledSelector
 
 -- | Whether biometry is locked out.
 --
@@ -68,8 +65,8 @@ isEnrolled laEnvironmentMechanismBiometry  =
 --
 -- ObjC selector: @- isLockedOut@
 isLockedOut :: IsLAEnvironmentMechanismBiometry laEnvironmentMechanismBiometry => laEnvironmentMechanismBiometry -> IO Bool
-isLockedOut laEnvironmentMechanismBiometry  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laEnvironmentMechanismBiometry (mkSelector "isLockedOut") retCULong []
+isLockedOut laEnvironmentMechanismBiometry =
+  sendMessage laEnvironmentMechanismBiometry isLockedOutSelector
 
 -- | The application specific state of the biometric enrollment as returned by @LAContext.domainState.biometry.stateHash@
 --
@@ -77,8 +74,8 @@ isLockedOut laEnvironmentMechanismBiometry  =
 --
 -- ObjC selector: @- stateHash@
 stateHash :: IsLAEnvironmentMechanismBiometry laEnvironmentMechanismBiometry => laEnvironmentMechanismBiometry -> IO (Id NSData)
-stateHash laEnvironmentMechanismBiometry  =
-    sendMsg laEnvironmentMechanismBiometry (mkSelector "stateHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+stateHash laEnvironmentMechanismBiometry =
+  sendMessage laEnvironmentMechanismBiometry stateHashSelector
 
 -- | Whether the built in biometric sensor is inaccessible in the current configuration, preventing the use of biometry.
 --
@@ -86,30 +83,30 @@ stateHash laEnvironmentMechanismBiometry  =
 --
 -- ObjC selector: @- builtInSensorInaccessible@
 builtInSensorInaccessible :: IsLAEnvironmentMechanismBiometry laEnvironmentMechanismBiometry => laEnvironmentMechanismBiometry -> IO Bool
-builtInSensorInaccessible laEnvironmentMechanismBiometry  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laEnvironmentMechanismBiometry (mkSelector "builtInSensorInaccessible") retCULong []
+builtInSensorInaccessible laEnvironmentMechanismBiometry =
+  sendMessage laEnvironmentMechanismBiometry builtInSensorInaccessibleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @biometryType@
-biometryTypeSelector :: Selector
+biometryTypeSelector :: Selector '[] LABiometryType
 biometryTypeSelector = mkSelector "biometryType"
 
 -- | @Selector@ for @isEnrolled@
-isEnrolledSelector :: Selector
+isEnrolledSelector :: Selector '[] Bool
 isEnrolledSelector = mkSelector "isEnrolled"
 
 -- | @Selector@ for @isLockedOut@
-isLockedOutSelector :: Selector
+isLockedOutSelector :: Selector '[] Bool
 isLockedOutSelector = mkSelector "isLockedOut"
 
 -- | @Selector@ for @stateHash@
-stateHashSelector :: Selector
+stateHashSelector :: Selector '[] (Id NSData)
 stateHashSelector = mkSelector "stateHash"
 
 -- | @Selector@ for @builtInSensorInaccessible@
-builtInSensorInaccessibleSelector :: Selector
+builtInSensorInaccessibleSelector :: Selector '[] Bool
 builtInSensorInaccessibleSelector = mkSelector "builtInSensorInaccessible"
 

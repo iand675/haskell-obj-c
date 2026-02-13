@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,38 +26,34 @@ module ObjC.AddressBook.ABAddressBook
   , formattedAddressFromDictionary
   , defaultCountryCode
   , defaultNameOrdering
-  , sharedAddressBookSelector
-  , addressBookSelector
-  , recordsMatchingSearchElementSelector
-  , saveSelector
-  , saveAndReturnErrorSelector
-  , hasUnsavedChangesSelector
-  , meSelector
-  , setMeSelector
-  , recordForUniqueIdSelector
-  , addRecord_errorSelector
   , addRecordSelector
-  , removeRecord_errorSelector
-  , removeRecordSelector
-  , peopleSelector
-  , groupsSelector
-  , recordClassFromUniqueIdSelector
-  , formattedAddressFromDictionarySelector
+  , addRecord_errorSelector
+  , addressBookSelector
   , defaultCountryCodeSelector
   , defaultNameOrderingSelector
+  , formattedAddressFromDictionarySelector
+  , groupsSelector
+  , hasUnsavedChangesSelector
+  , meSelector
+  , peopleSelector
+  , recordClassFromUniqueIdSelector
+  , recordForUniqueIdSelector
+  , recordsMatchingSearchElementSelector
+  , removeRecordSelector
+  , removeRecord_errorSelector
+  , saveAndReturnErrorSelector
+  , saveSelector
+  , setMeSelector
+  , sharedAddressBookSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,189 +65,177 @@ sharedAddressBook :: IO (Id ABAddressBook)
 sharedAddressBook  =
   do
     cls' <- getRequiredClass "ABAddressBook"
-    sendClassMsg cls' (mkSelector "sharedAddressBook") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedAddressBookSelector
 
 -- | @+ addressBook@
 addressBook :: IO (Id ABAddressBook)
 addressBook  =
   do
     cls' <- getRequiredClass "ABAddressBook"
-    sendClassMsg cls' (mkSelector "addressBook") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' addressBookSelector
 
 -- | @- recordsMatchingSearchElement:@
 recordsMatchingSearchElement :: (IsABAddressBook abAddressBook, IsABSearchElement search) => abAddressBook -> search -> IO (Id NSArray)
-recordsMatchingSearchElement abAddressBook  search =
-  withObjCPtr search $ \raw_search ->
-      sendMsg abAddressBook (mkSelector "recordsMatchingSearchElement:") (retPtr retVoid) [argPtr (castPtr raw_search :: Ptr ())] >>= retainedObject . castPtr
+recordsMatchingSearchElement abAddressBook search =
+  sendMessage abAddressBook recordsMatchingSearchElementSelector (toABSearchElement search)
 
 -- | @- save@
 save :: IsABAddressBook abAddressBook => abAddressBook -> IO Bool
-save abAddressBook  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg abAddressBook (mkSelector "save") retCULong []
+save abAddressBook =
+  sendMessage abAddressBook saveSelector
 
 -- | @- saveAndReturnError:@
 saveAndReturnError :: (IsABAddressBook abAddressBook, IsNSError error_) => abAddressBook -> error_ -> IO Bool
-saveAndReturnError abAddressBook  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abAddressBook (mkSelector "saveAndReturnError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+saveAndReturnError abAddressBook error_ =
+  sendMessage abAddressBook saveAndReturnErrorSelector (toNSError error_)
 
 -- | @- hasUnsavedChanges@
 hasUnsavedChanges :: IsABAddressBook abAddressBook => abAddressBook -> IO Bool
-hasUnsavedChanges abAddressBook  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg abAddressBook (mkSelector "hasUnsavedChanges") retCULong []
+hasUnsavedChanges abAddressBook =
+  sendMessage abAddressBook hasUnsavedChangesSelector
 
 -- | @- me@
 me :: IsABAddressBook abAddressBook => abAddressBook -> IO (Id ABPerson)
-me abAddressBook  =
-    sendMsg abAddressBook (mkSelector "me") (retPtr retVoid) [] >>= retainedObject . castPtr
+me abAddressBook =
+  sendMessage abAddressBook meSelector
 
 -- | @- setMe:@
 setMe :: (IsABAddressBook abAddressBook, IsABPerson moi) => abAddressBook -> moi -> IO ()
-setMe abAddressBook  moi =
-  withObjCPtr moi $ \raw_moi ->
-      sendMsg abAddressBook (mkSelector "setMe:") retVoid [argPtr (castPtr raw_moi :: Ptr ())]
+setMe abAddressBook moi =
+  sendMessage abAddressBook setMeSelector (toABPerson moi)
 
 -- | @- recordForUniqueId:@
 recordForUniqueId :: (IsABAddressBook abAddressBook, IsNSString uniqueId) => abAddressBook -> uniqueId -> IO (Id ABRecord)
-recordForUniqueId abAddressBook  uniqueId =
-  withObjCPtr uniqueId $ \raw_uniqueId ->
-      sendMsg abAddressBook (mkSelector "recordForUniqueId:") (retPtr retVoid) [argPtr (castPtr raw_uniqueId :: Ptr ())] >>= retainedObject . castPtr
+recordForUniqueId abAddressBook uniqueId =
+  sendMessage abAddressBook recordForUniqueIdSelector (toNSString uniqueId)
 
 -- | @- addRecord:error:@
 addRecord_error :: (IsABAddressBook abAddressBook, IsABRecord record, IsNSError error_) => abAddressBook -> record -> error_ -> IO Bool
-addRecord_error abAddressBook  record error_ =
-  withObjCPtr record $ \raw_record ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg abAddressBook (mkSelector "addRecord:error:") retCULong [argPtr (castPtr raw_record :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addRecord_error abAddressBook record error_ =
+  sendMessage abAddressBook addRecord_errorSelector (toABRecord record) (toNSError error_)
 
 -- | @- addRecord:@
 addRecord :: (IsABAddressBook abAddressBook, IsABRecord record) => abAddressBook -> record -> IO Bool
-addRecord abAddressBook  record =
-  withObjCPtr record $ \raw_record ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abAddressBook (mkSelector "addRecord:") retCULong [argPtr (castPtr raw_record :: Ptr ())]
+addRecord abAddressBook record =
+  sendMessage abAddressBook addRecordSelector (toABRecord record)
 
 -- | @- removeRecord:error:@
 removeRecord_error :: (IsABAddressBook abAddressBook, IsABRecord record, IsNSError error_) => abAddressBook -> record -> error_ -> IO Bool
-removeRecord_error abAddressBook  record error_ =
-  withObjCPtr record $ \raw_record ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg abAddressBook (mkSelector "removeRecord:error:") retCULong [argPtr (castPtr raw_record :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+removeRecord_error abAddressBook record error_ =
+  sendMessage abAddressBook removeRecord_errorSelector (toABRecord record) (toNSError error_)
 
 -- | @- removeRecord:@
 removeRecord :: (IsABAddressBook abAddressBook, IsABRecord record) => abAddressBook -> record -> IO Bool
-removeRecord abAddressBook  record =
-  withObjCPtr record $ \raw_record ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abAddressBook (mkSelector "removeRecord:") retCULong [argPtr (castPtr raw_record :: Ptr ())]
+removeRecord abAddressBook record =
+  sendMessage abAddressBook removeRecordSelector (toABRecord record)
 
 -- | @- people@
 people :: IsABAddressBook abAddressBook => abAddressBook -> IO (Id NSArray)
-people abAddressBook  =
-    sendMsg abAddressBook (mkSelector "people") (retPtr retVoid) [] >>= retainedObject . castPtr
+people abAddressBook =
+  sendMessage abAddressBook peopleSelector
 
 -- | @- groups@
 groups :: IsABAddressBook abAddressBook => abAddressBook -> IO (Id NSArray)
-groups abAddressBook  =
-    sendMsg abAddressBook (mkSelector "groups") (retPtr retVoid) [] >>= retainedObject . castPtr
+groups abAddressBook =
+  sendMessage abAddressBook groupsSelector
 
 -- | @- recordClassFromUniqueId:@
 recordClassFromUniqueId :: (IsABAddressBook abAddressBook, IsNSString uniqueId) => abAddressBook -> uniqueId -> IO (Id NSString)
-recordClassFromUniqueId abAddressBook  uniqueId =
-  withObjCPtr uniqueId $ \raw_uniqueId ->
-      sendMsg abAddressBook (mkSelector "recordClassFromUniqueId:") (retPtr retVoid) [argPtr (castPtr raw_uniqueId :: Ptr ())] >>= retainedObject . castPtr
+recordClassFromUniqueId abAddressBook uniqueId =
+  sendMessage abAddressBook recordClassFromUniqueIdSelector (toNSString uniqueId)
 
 -- | @- formattedAddressFromDictionary:@
 formattedAddressFromDictionary :: (IsABAddressBook abAddressBook, IsNSDictionary address) => abAddressBook -> address -> IO (Id NSAttributedString)
-formattedAddressFromDictionary abAddressBook  address =
-  withObjCPtr address $ \raw_address ->
-      sendMsg abAddressBook (mkSelector "formattedAddressFromDictionary:") (retPtr retVoid) [argPtr (castPtr raw_address :: Ptr ())] >>= retainedObject . castPtr
+formattedAddressFromDictionary abAddressBook address =
+  sendMessage abAddressBook formattedAddressFromDictionarySelector (toNSDictionary address)
 
 -- | @- defaultCountryCode@
 defaultCountryCode :: IsABAddressBook abAddressBook => abAddressBook -> IO (Id NSString)
-defaultCountryCode abAddressBook  =
-    sendMsg abAddressBook (mkSelector "defaultCountryCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultCountryCode abAddressBook =
+  sendMessage abAddressBook defaultCountryCodeSelector
 
 -- | @- defaultNameOrdering@
 defaultNameOrdering :: IsABAddressBook abAddressBook => abAddressBook -> IO CLong
-defaultNameOrdering abAddressBook  =
-    sendMsg abAddressBook (mkSelector "defaultNameOrdering") retCLong []
+defaultNameOrdering abAddressBook =
+  sendMessage abAddressBook defaultNameOrderingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedAddressBook@
-sharedAddressBookSelector :: Selector
+sharedAddressBookSelector :: Selector '[] (Id ABAddressBook)
 sharedAddressBookSelector = mkSelector "sharedAddressBook"
 
 -- | @Selector@ for @addressBook@
-addressBookSelector :: Selector
+addressBookSelector :: Selector '[] (Id ABAddressBook)
 addressBookSelector = mkSelector "addressBook"
 
 -- | @Selector@ for @recordsMatchingSearchElement:@
-recordsMatchingSearchElementSelector :: Selector
+recordsMatchingSearchElementSelector :: Selector '[Id ABSearchElement] (Id NSArray)
 recordsMatchingSearchElementSelector = mkSelector "recordsMatchingSearchElement:"
 
 -- | @Selector@ for @save@
-saveSelector :: Selector
+saveSelector :: Selector '[] Bool
 saveSelector = mkSelector "save"
 
 -- | @Selector@ for @saveAndReturnError:@
-saveAndReturnErrorSelector :: Selector
+saveAndReturnErrorSelector :: Selector '[Id NSError] Bool
 saveAndReturnErrorSelector = mkSelector "saveAndReturnError:"
 
 -- | @Selector@ for @hasUnsavedChanges@
-hasUnsavedChangesSelector :: Selector
+hasUnsavedChangesSelector :: Selector '[] Bool
 hasUnsavedChangesSelector = mkSelector "hasUnsavedChanges"
 
 -- | @Selector@ for @me@
-meSelector :: Selector
+meSelector :: Selector '[] (Id ABPerson)
 meSelector = mkSelector "me"
 
 -- | @Selector@ for @setMe:@
-setMeSelector :: Selector
+setMeSelector :: Selector '[Id ABPerson] ()
 setMeSelector = mkSelector "setMe:"
 
 -- | @Selector@ for @recordForUniqueId:@
-recordForUniqueIdSelector :: Selector
+recordForUniqueIdSelector :: Selector '[Id NSString] (Id ABRecord)
 recordForUniqueIdSelector = mkSelector "recordForUniqueId:"
 
 -- | @Selector@ for @addRecord:error:@
-addRecord_errorSelector :: Selector
+addRecord_errorSelector :: Selector '[Id ABRecord, Id NSError] Bool
 addRecord_errorSelector = mkSelector "addRecord:error:"
 
 -- | @Selector@ for @addRecord:@
-addRecordSelector :: Selector
+addRecordSelector :: Selector '[Id ABRecord] Bool
 addRecordSelector = mkSelector "addRecord:"
 
 -- | @Selector@ for @removeRecord:error:@
-removeRecord_errorSelector :: Selector
+removeRecord_errorSelector :: Selector '[Id ABRecord, Id NSError] Bool
 removeRecord_errorSelector = mkSelector "removeRecord:error:"
 
 -- | @Selector@ for @removeRecord:@
-removeRecordSelector :: Selector
+removeRecordSelector :: Selector '[Id ABRecord] Bool
 removeRecordSelector = mkSelector "removeRecord:"
 
 -- | @Selector@ for @people@
-peopleSelector :: Selector
+peopleSelector :: Selector '[] (Id NSArray)
 peopleSelector = mkSelector "people"
 
 -- | @Selector@ for @groups@
-groupsSelector :: Selector
+groupsSelector :: Selector '[] (Id NSArray)
 groupsSelector = mkSelector "groups"
 
 -- | @Selector@ for @recordClassFromUniqueId:@
-recordClassFromUniqueIdSelector :: Selector
+recordClassFromUniqueIdSelector :: Selector '[Id NSString] (Id NSString)
 recordClassFromUniqueIdSelector = mkSelector "recordClassFromUniqueId:"
 
 -- | @Selector@ for @formattedAddressFromDictionary:@
-formattedAddressFromDictionarySelector :: Selector
+formattedAddressFromDictionarySelector :: Selector '[Id NSDictionary] (Id NSAttributedString)
 formattedAddressFromDictionarySelector = mkSelector "formattedAddressFromDictionary:"
 
 -- | @Selector@ for @defaultCountryCode@
-defaultCountryCodeSelector :: Selector
+defaultCountryCodeSelector :: Selector '[] (Id NSString)
 defaultCountryCodeSelector = mkSelector "defaultCountryCode"
 
 -- | @Selector@ for @defaultNameOrdering@
-defaultNameOrderingSelector :: Selector
+defaultNameOrderingSelector :: Selector '[] CLong
 defaultNameOrderingSelector = mkSelector "defaultNameOrdering"
 

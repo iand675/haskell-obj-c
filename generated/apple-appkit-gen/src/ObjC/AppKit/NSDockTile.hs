@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.AppKit.NSDockTile
   , badgeLabel
   , setBadgeLabel
   , owner
-  , displaySelector
-  , sizeSelector
-  , contentViewSelector
-  , setContentViewSelector
-  , showsApplicationBadgeSelector
-  , setShowsApplicationBadgeSelector
   , badgeLabelSelector
-  , setBadgeLabelSelector
+  , contentViewSelector
+  , displaySelector
   , ownerSelector
+  , setBadgeLabelSelector
+  , setContentViewSelector
+  , setShowsApplicationBadgeSelector
+  , showsApplicationBadgeSelector
+  , sizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,88 +43,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- display@
 display :: IsNSDockTile nsDockTile => nsDockTile -> IO ()
-display nsDockTile  =
-    sendMsg nsDockTile (mkSelector "display") retVoid []
+display nsDockTile =
+  sendMessage nsDockTile displaySelector
 
 -- | @- size@
 size :: IsNSDockTile nsDockTile => nsDockTile -> IO NSSize
-size nsDockTile  =
-    sendMsgStret nsDockTile (mkSelector "size") retNSSize []
+size nsDockTile =
+  sendMessage nsDockTile sizeSelector
 
 -- | @- contentView@
 contentView :: IsNSDockTile nsDockTile => nsDockTile -> IO (Id NSView)
-contentView nsDockTile  =
-    sendMsg nsDockTile (mkSelector "contentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentView nsDockTile =
+  sendMessage nsDockTile contentViewSelector
 
 -- | @- setContentView:@
 setContentView :: (IsNSDockTile nsDockTile, IsNSView value) => nsDockTile -> value -> IO ()
-setContentView nsDockTile  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDockTile (mkSelector "setContentView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentView nsDockTile value =
+  sendMessage nsDockTile setContentViewSelector (toNSView value)
 
 -- | @- showsApplicationBadge@
 showsApplicationBadge :: IsNSDockTile nsDockTile => nsDockTile -> IO Bool
-showsApplicationBadge nsDockTile  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsDockTile (mkSelector "showsApplicationBadge") retCULong []
+showsApplicationBadge nsDockTile =
+  sendMessage nsDockTile showsApplicationBadgeSelector
 
 -- | @- setShowsApplicationBadge:@
 setShowsApplicationBadge :: IsNSDockTile nsDockTile => nsDockTile -> Bool -> IO ()
-setShowsApplicationBadge nsDockTile  value =
-    sendMsg nsDockTile (mkSelector "setShowsApplicationBadge:") retVoid [argCULong (if value then 1 else 0)]
+setShowsApplicationBadge nsDockTile value =
+  sendMessage nsDockTile setShowsApplicationBadgeSelector value
 
 -- | @- badgeLabel@
 badgeLabel :: IsNSDockTile nsDockTile => nsDockTile -> IO (Id NSString)
-badgeLabel nsDockTile  =
-    sendMsg nsDockTile (mkSelector "badgeLabel") (retPtr retVoid) [] >>= retainedObject . castPtr
+badgeLabel nsDockTile =
+  sendMessage nsDockTile badgeLabelSelector
 
 -- | @- setBadgeLabel:@
 setBadgeLabel :: (IsNSDockTile nsDockTile, IsNSString value) => nsDockTile -> value -> IO ()
-setBadgeLabel nsDockTile  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsDockTile (mkSelector "setBadgeLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBadgeLabel nsDockTile value =
+  sendMessage nsDockTile setBadgeLabelSelector (toNSString value)
 
 -- | @- owner@
 owner :: IsNSDockTile nsDockTile => nsDockTile -> IO RawId
-owner nsDockTile  =
-    fmap (RawId . castPtr) $ sendMsg nsDockTile (mkSelector "owner") (retPtr retVoid) []
+owner nsDockTile =
+  sendMessage nsDockTile ownerSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @display@
-displaySelector :: Selector
+displaySelector :: Selector '[] ()
 displaySelector = mkSelector "display"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] NSSize
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @contentView@
-contentViewSelector :: Selector
+contentViewSelector :: Selector '[] (Id NSView)
 contentViewSelector = mkSelector "contentView"
 
 -- | @Selector@ for @setContentView:@
-setContentViewSelector :: Selector
+setContentViewSelector :: Selector '[Id NSView] ()
 setContentViewSelector = mkSelector "setContentView:"
 
 -- | @Selector@ for @showsApplicationBadge@
-showsApplicationBadgeSelector :: Selector
+showsApplicationBadgeSelector :: Selector '[] Bool
 showsApplicationBadgeSelector = mkSelector "showsApplicationBadge"
 
 -- | @Selector@ for @setShowsApplicationBadge:@
-setShowsApplicationBadgeSelector :: Selector
+setShowsApplicationBadgeSelector :: Selector '[Bool] ()
 setShowsApplicationBadgeSelector = mkSelector "setShowsApplicationBadge:"
 
 -- | @Selector@ for @badgeLabel@
-badgeLabelSelector :: Selector
+badgeLabelSelector :: Selector '[] (Id NSString)
 badgeLabelSelector = mkSelector "badgeLabel"
 
 -- | @Selector@ for @setBadgeLabel:@
-setBadgeLabelSelector :: Selector
+setBadgeLabelSelector :: Selector '[Id NSString] ()
 setBadgeLabelSelector = mkSelector "setBadgeLabel:"
 
 -- | @Selector@ for @owner@
-ownerSelector :: Selector
+ownerSelector :: Selector '[] RawId
 ownerSelector = mkSelector "owner"
 

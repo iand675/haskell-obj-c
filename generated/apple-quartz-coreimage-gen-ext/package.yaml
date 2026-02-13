@@ -19,4 +19,3 @@ library:
   source-dirs: src
   exposed-modules:
   - ObjC.Quartz.CIFilter
-  - ObjC.Quartz.NSObject

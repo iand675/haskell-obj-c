@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,11 +13,11 @@ module ObjC.Vision.VNHumanHandPoseObservation
   , availableJointNames
   , availableJointsGroupNames
   , chirality
-  , recognizedPointForJointName_errorSelector
-  , recognizedPointsForJointsGroupName_errorSelector
   , availableJointNamesSelector
   , availableJointsGroupNamesSelector
   , chiralitySelector
+  , recognizedPointForJointName_errorSelector
+  , recognizedPointsForJointsGroupName_errorSelector
 
   -- * Enum types
   , VNChirality(VNChirality)
@@ -26,15 +27,11 @@ module ObjC.Vision.VNHumanHandPoseObservation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,10 +49,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- recognizedPointForJointName:error:@
 recognizedPointForJointName_error :: (IsVNHumanHandPoseObservation vnHumanHandPoseObservation, IsNSString jointName, IsNSError error_) => vnHumanHandPoseObservation -> jointName -> error_ -> IO (Id VNRecognizedPoint)
-recognizedPointForJointName_error vnHumanHandPoseObservation  jointName error_ =
-  withObjCPtr jointName $ \raw_jointName ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnHumanHandPoseObservation (mkSelector "recognizedPointForJointName:error:") (retPtr retVoid) [argPtr (castPtr raw_jointName :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointForJointName_error vnHumanHandPoseObservation jointName error_ =
+  sendMessage vnHumanHandPoseObservation recognizedPointForJointName_errorSelector (toNSString jointName) (toNSError error_)
 
 -- | Obtains the collection of points associated with a named human hand joints group.
 --
@@ -69,53 +64,51 @@ recognizedPointForJointName_error vnHumanHandPoseObservation  jointName error_ =
 --
 -- ObjC selector: @- recognizedPointsForJointsGroupName:error:@
 recognizedPointsForJointsGroupName_error :: (IsVNHumanHandPoseObservation vnHumanHandPoseObservation, IsNSString jointsGroupName, IsNSError error_) => vnHumanHandPoseObservation -> jointsGroupName -> error_ -> IO (Id NSDictionary)
-recognizedPointsForJointsGroupName_error vnHumanHandPoseObservation  jointsGroupName error_ =
-  withObjCPtr jointsGroupName $ \raw_jointsGroupName ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg vnHumanHandPoseObservation (mkSelector "recognizedPointsForJointsGroupName:error:") (retPtr retVoid) [argPtr (castPtr raw_jointsGroupName :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+recognizedPointsForJointsGroupName_error vnHumanHandPoseObservation jointsGroupName error_ =
+  sendMessage vnHumanHandPoseObservation recognizedPointsForJointsGroupName_errorSelector (toNSString jointsGroupName) (toNSError error_)
 
 -- | All of the joint names available in the observation.
 --
 -- ObjC selector: @- availableJointNames@
 availableJointNames :: IsVNHumanHandPoseObservation vnHumanHandPoseObservation => vnHumanHandPoseObservation -> IO (Id NSArray)
-availableJointNames vnHumanHandPoseObservation  =
-    sendMsg vnHumanHandPoseObservation (mkSelector "availableJointNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableJointNames vnHumanHandPoseObservation =
+  sendMessage vnHumanHandPoseObservation availableJointNamesSelector
 
 -- | All of the joints group names available in the observation.
 --
 -- ObjC selector: @- availableJointsGroupNames@
 availableJointsGroupNames :: IsVNHumanHandPoseObservation vnHumanHandPoseObservation => vnHumanHandPoseObservation -> IO (Id NSArray)
-availableJointsGroupNames vnHumanHandPoseObservation  =
-    sendMsg vnHumanHandPoseObservation (mkSelector "availableJointsGroupNames") (retPtr retVoid) [] >>= retainedObject . castPtr
+availableJointsGroupNames vnHumanHandPoseObservation =
+  sendMessage vnHumanHandPoseObservation availableJointsGroupNamesSelector
 
 -- | The chirality of the hand.
 --
 -- ObjC selector: @- chirality@
 chirality :: IsVNHumanHandPoseObservation vnHumanHandPoseObservation => vnHumanHandPoseObservation -> IO VNChirality
-chirality vnHumanHandPoseObservation  =
-    fmap (coerce :: CLong -> VNChirality) $ sendMsg vnHumanHandPoseObservation (mkSelector "chirality") retCLong []
+chirality vnHumanHandPoseObservation =
+  sendMessage vnHumanHandPoseObservation chiralitySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @recognizedPointForJointName:error:@
-recognizedPointForJointName_errorSelector :: Selector
+recognizedPointForJointName_errorSelector :: Selector '[Id NSString, Id NSError] (Id VNRecognizedPoint)
 recognizedPointForJointName_errorSelector = mkSelector "recognizedPointForJointName:error:"
 
 -- | @Selector@ for @recognizedPointsForJointsGroupName:error:@
-recognizedPointsForJointsGroupName_errorSelector :: Selector
+recognizedPointsForJointsGroupName_errorSelector :: Selector '[Id NSString, Id NSError] (Id NSDictionary)
 recognizedPointsForJointsGroupName_errorSelector = mkSelector "recognizedPointsForJointsGroupName:error:"
 
 -- | @Selector@ for @availableJointNames@
-availableJointNamesSelector :: Selector
+availableJointNamesSelector :: Selector '[] (Id NSArray)
 availableJointNamesSelector = mkSelector "availableJointNames"
 
 -- | @Selector@ for @availableJointsGroupNames@
-availableJointsGroupNamesSelector :: Selector
+availableJointsGroupNamesSelector :: Selector '[] (Id NSArray)
 availableJointsGroupNamesSelector = mkSelector "availableJointsGroupNames"
 
 -- | @Selector@ for @chirality@
-chiralitySelector :: Selector
+chiralitySelector :: Selector '[] VNChirality
 chiralitySelector = mkSelector "chirality"
 

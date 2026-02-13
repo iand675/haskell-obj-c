@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.UserNotifications.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @UNAlertStyle@
 newtype UNAlertStyle = UNAlertStyle CLong
@@ -24,6 +27,16 @@ pattern UNAlertStyleBanner = UNAlertStyle 1
 
 pattern UNAlertStyleAlert :: UNAlertStyle
 pattern UNAlertStyleAlert = UNAlertStyle 2
+
+instance ObjCArgument UNAlertStyle where
+  withObjCArg (UNAlertStyle x) k = k (argCLong x)
+
+instance ObjCReturn UNAlertStyle where
+  type RawReturn UNAlertStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNAlertStyle x)
+  fromOwned x = pure (UNAlertStyle x)
 
 -- | @UNAuthorizationOptions@ (bitmask)
 newtype UNAuthorizationOptions = UNAuthorizationOptions CULong
@@ -63,6 +76,16 @@ pattern UNAuthorizationOptionAnnouncement = UNAuthorizationOptions 128
 pattern UNAuthorizationOptionTimeSensitive :: UNAuthorizationOptions
 pattern UNAuthorizationOptionTimeSensitive = UNAuthorizationOptions 256
 
+instance ObjCArgument UNAuthorizationOptions where
+  withObjCArg (UNAuthorizationOptions x) k = k (argCULong x)
+
+instance ObjCReturn UNAuthorizationOptions where
+  type RawReturn UNAuthorizationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNAuthorizationOptions x)
+  fromOwned x = pure (UNAuthorizationOptions x)
+
 -- | @UNAuthorizationStatus@
 newtype UNAuthorizationStatus = UNAuthorizationStatus CLong
   deriving stock (Eq, Ord, Show)
@@ -82,6 +105,16 @@ pattern UNAuthorizationStatusProvisional = UNAuthorizationStatus 3
 
 pattern UNAuthorizationStatusEphemeral :: UNAuthorizationStatus
 pattern UNAuthorizationStatusEphemeral = UNAuthorizationStatus 4
+
+instance ObjCArgument UNAuthorizationStatus where
+  withObjCArg (UNAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn UNAuthorizationStatus where
+  type RawReturn UNAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNAuthorizationStatus x)
+  fromOwned x = pure (UNAuthorizationStatus x)
 
 -- | @UNErrorCode@
 newtype UNErrorCode = UNErrorCode CLong
@@ -124,6 +157,16 @@ pattern UNErrorCodeContentProvidingInvalid = UNErrorCode 1501
 pattern UNErrorCodeBadgeInputInvalid :: UNErrorCode
 pattern UNErrorCodeBadgeInputInvalid = UNErrorCode 1600
 
+instance ObjCArgument UNErrorCode where
+  withObjCArg (UNErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn UNErrorCode where
+  type RawReturn UNErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNErrorCode x)
+  fromOwned x = pure (UNErrorCode x)
+
 -- | @UNNotificationActionOptions@ (bitmask)
 newtype UNNotificationActionOptions = UNNotificationActionOptions CULong
   deriving stock (Eq, Ord, Show)
@@ -143,6 +186,16 @@ pattern UNNotificationActionOptionDestructive = UNNotificationActionOptions 2
 
 pattern UNNotificationActionOptionForeground :: UNNotificationActionOptions
 pattern UNNotificationActionOptionForeground = UNNotificationActionOptions 4
+
+instance ObjCArgument UNNotificationActionOptions where
+  withObjCArg (UNNotificationActionOptions x) k = k (argCULong x)
+
+instance ObjCReturn UNNotificationActionOptions where
+  type RawReturn UNNotificationActionOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNNotificationActionOptions x)
+  fromOwned x = pure (UNNotificationActionOptions x)
 
 -- | @UNNotificationCategoryOptions@ (bitmask)
 newtype UNNotificationCategoryOptions = UNNotificationCategoryOptions CULong
@@ -170,6 +223,16 @@ pattern UNNotificationCategoryOptionHiddenPreviewsShowSubtitle = UNNotificationC
 pattern UNNotificationCategoryOptionAllowAnnouncement :: UNNotificationCategoryOptions
 pattern UNNotificationCategoryOptionAllowAnnouncement = UNNotificationCategoryOptions 16
 
+instance ObjCArgument UNNotificationCategoryOptions where
+  withObjCArg (UNNotificationCategoryOptions x) k = k (argCULong x)
+
+instance ObjCReturn UNNotificationCategoryOptions where
+  type RawReturn UNNotificationCategoryOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNNotificationCategoryOptions x)
+  fromOwned x = pure (UNNotificationCategoryOptions x)
+
 -- | @UNNotificationInterruptionLevel@
 newtype UNNotificationInterruptionLevel = UNNotificationInterruptionLevel CULong
   deriving stock (Eq, Ord, Show)
@@ -186,6 +249,16 @@ pattern UNNotificationInterruptionLevelTimeSensitive = UNNotificationInterruptio
 
 pattern UNNotificationInterruptionLevelCritical :: UNNotificationInterruptionLevel
 pattern UNNotificationInterruptionLevelCritical = UNNotificationInterruptionLevel 3
+
+instance ObjCArgument UNNotificationInterruptionLevel where
+  withObjCArg (UNNotificationInterruptionLevel x) k = k (argCULong x)
+
+instance ObjCReturn UNNotificationInterruptionLevel where
+  type RawReturn UNNotificationInterruptionLevel = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNNotificationInterruptionLevel x)
+  fromOwned x = pure (UNNotificationInterruptionLevel x)
 
 -- | @UNNotificationPresentationOptions@ (bitmask)
 newtype UNNotificationPresentationOptions = UNNotificationPresentationOptions CULong
@@ -213,6 +286,16 @@ pattern UNNotificationPresentationOptionList = UNNotificationPresentationOptions
 pattern UNNotificationPresentationOptionBanner :: UNNotificationPresentationOptions
 pattern UNNotificationPresentationOptionBanner = UNNotificationPresentationOptions 16
 
+instance ObjCArgument UNNotificationPresentationOptions where
+  withObjCArg (UNNotificationPresentationOptions x) k = k (argCULong x)
+
+instance ObjCReturn UNNotificationPresentationOptions where
+  type RawReturn UNNotificationPresentationOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNNotificationPresentationOptions x)
+  fromOwned x = pure (UNNotificationPresentationOptions x)
+
 -- | @UNNotificationSetting@
 newtype UNNotificationSetting = UNNotificationSetting CLong
   deriving stock (Eq, Ord, Show)
@@ -227,6 +310,16 @@ pattern UNNotificationSettingDisabled = UNNotificationSetting 1
 pattern UNNotificationSettingEnabled :: UNNotificationSetting
 pattern UNNotificationSettingEnabled = UNNotificationSetting 2
 
+instance ObjCArgument UNNotificationSetting where
+  withObjCArg (UNNotificationSetting x) k = k (argCLong x)
+
+instance ObjCReturn UNNotificationSetting where
+  type RawReturn UNNotificationSetting = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNNotificationSetting x)
+  fromOwned x = pure (UNNotificationSetting x)
+
 -- | @UNShowPreviewsSetting@
 newtype UNShowPreviewsSetting = UNShowPreviewsSetting CLong
   deriving stock (Eq, Ord, Show)
@@ -240,3 +333,13 @@ pattern UNShowPreviewsSettingWhenAuthenticated = UNShowPreviewsSetting 1
 
 pattern UNShowPreviewsSettingNever :: UNShowPreviewsSetting
 pattern UNShowPreviewsSettingNever = UNShowPreviewsSetting 2
+
+instance ObjCArgument UNShowPreviewsSetting where
+  withObjCArg (UNShowPreviewsSetting x) k = k (argCLong x)
+
+instance ObjCReturn UNShowPreviewsSetting where
+  type RawReturn UNShowPreviewsSetting = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (UNShowPreviewsSetting x)
+  fromOwned x = pure (UNShowPreviewsSetting x)

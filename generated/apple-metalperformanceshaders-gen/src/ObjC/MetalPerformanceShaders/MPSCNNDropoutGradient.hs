@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNDropoutGradient
   , initWithCoder_device
   , keepProbability
   , seed
-  , initWithDeviceSelector
   , initWithCoder_deviceSelector
+  , initWithDeviceSelector
   , keepProbabilitySelector
   , seedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,16 +40,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSCNNDropoutGradient mpscnnDropoutGradient => mpscnnDropoutGradient -> RawId -> IO (Id MPSCNNDropoutGradient)
-initWithDevice mpscnnDropoutGradient  device =
-    sendMsg mpscnnDropoutGradient (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpscnnDropoutGradient device =
+  sendOwnedMessage mpscnnDropoutGradient initWithDeviceSelector device
 
 -- | <NSSecureCoding> support
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSCNNDropoutGradient mpscnnDropoutGradient, IsNSCoder aDecoder) => mpscnnDropoutGradient -> aDecoder -> RawId -> IO (Id MPSCNNDropoutGradient)
-initWithCoder_device mpscnnDropoutGradient  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpscnnDropoutGradient (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpscnnDropoutGradient aDecoder device =
+  sendOwnedMessage mpscnnDropoutGradient initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | keepProbability
 --
@@ -60,8 +56,8 @@ initWithCoder_device mpscnnDropoutGradient  aDecoder device =
 --
 -- ObjC selector: @- keepProbability@
 keepProbability :: IsMPSCNNDropoutGradient mpscnnDropoutGradient => mpscnnDropoutGradient -> IO CFloat
-keepProbability mpscnnDropoutGradient  =
-    sendMsg mpscnnDropoutGradient (mkSelector "keepProbability") retCFloat []
+keepProbability mpscnnDropoutGradient =
+  sendMessage mpscnnDropoutGradient keepProbabilitySelector
 
 -- | seed
 --
@@ -69,26 +65,26 @@ keepProbability mpscnnDropoutGradient  =
 --
 -- ObjC selector: @- seed@
 seed :: IsMPSCNNDropoutGradient mpscnnDropoutGradient => mpscnnDropoutGradient -> IO CULong
-seed mpscnnDropoutGradient  =
-    sendMsg mpscnnDropoutGradient (mkSelector "seed") retCULong []
+seed mpscnnDropoutGradient =
+  sendMessage mpscnnDropoutGradient seedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSCNNDropoutGradient)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSCNNDropoutGradient)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @keepProbability@
-keepProbabilitySelector :: Selector
+keepProbabilitySelector :: Selector '[] CFloat
 keepProbabilitySelector = mkSelector "keepProbability"
 
 -- | @Selector@ for @seed@
-seedSelector :: Selector
+seedSelector :: Selector '[] CULong
 seedSelector = mkSelector "seed"
 

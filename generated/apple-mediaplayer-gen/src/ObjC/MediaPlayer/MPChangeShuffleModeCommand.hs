@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.MediaPlayer.MPChangeShuffleModeCommand
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,25 +39,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- currentShuffleType@
 currentShuffleType :: IsMPChangeShuffleModeCommand mpChangeShuffleModeCommand => mpChangeShuffleModeCommand -> IO MPShuffleType
-currentShuffleType mpChangeShuffleModeCommand  =
-    fmap (coerce :: CLong -> MPShuffleType) $ sendMsg mpChangeShuffleModeCommand (mkSelector "currentShuffleType") retCLong []
+currentShuffleType mpChangeShuffleModeCommand =
+  sendMessage mpChangeShuffleModeCommand currentShuffleTypeSelector
 
 -- | The app's current shuffle type.
 --
 -- ObjC selector: @- setCurrentShuffleType:@
 setCurrentShuffleType :: IsMPChangeShuffleModeCommand mpChangeShuffleModeCommand => mpChangeShuffleModeCommand -> MPShuffleType -> IO ()
-setCurrentShuffleType mpChangeShuffleModeCommand  value =
-    sendMsg mpChangeShuffleModeCommand (mkSelector "setCurrentShuffleType:") retVoid [argCLong (coerce value)]
+setCurrentShuffleType mpChangeShuffleModeCommand value =
+  sendMessage mpChangeShuffleModeCommand setCurrentShuffleTypeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @currentShuffleType@
-currentShuffleTypeSelector :: Selector
+currentShuffleTypeSelector :: Selector '[] MPShuffleType
 currentShuffleTypeSelector = mkSelector "currentShuffleType"
 
 -- | @Selector@ for @setCurrentShuffleType:@
-setCurrentShuffleTypeSelector :: Selector
+setCurrentShuffleTypeSelector :: Selector '[MPShuffleType] ()
 setCurrentShuffleTypeSelector = mkSelector "setCurrentShuffleType:"
 

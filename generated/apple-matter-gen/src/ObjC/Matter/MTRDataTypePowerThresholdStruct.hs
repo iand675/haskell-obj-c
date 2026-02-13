@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRDataTypePowerThresholdStruct
   , setApparentPowerThreshold
   , powerThresholdSource
   , setPowerThresholdSource
-  , powerThresholdSelector
-  , setPowerThresholdSelector
   , apparentPowerThresholdSelector
-  , setApparentPowerThresholdSelector
+  , powerThresholdSelector
   , powerThresholdSourceSelector
+  , setApparentPowerThresholdSelector
+  , setPowerThresholdSelector
   , setPowerThresholdSourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- powerThreshold@
 powerThreshold :: IsMTRDataTypePowerThresholdStruct mtrDataTypePowerThresholdStruct => mtrDataTypePowerThresholdStruct -> IO (Id NSNumber)
-powerThreshold mtrDataTypePowerThresholdStruct  =
-    sendMsg mtrDataTypePowerThresholdStruct (mkSelector "powerThreshold") (retPtr retVoid) [] >>= retainedObject . castPtr
+powerThreshold mtrDataTypePowerThresholdStruct =
+  sendMessage mtrDataTypePowerThresholdStruct powerThresholdSelector
 
 -- | @- setPowerThreshold:@
 setPowerThreshold :: (IsMTRDataTypePowerThresholdStruct mtrDataTypePowerThresholdStruct, IsNSNumber value) => mtrDataTypePowerThresholdStruct -> value -> IO ()
-setPowerThreshold mtrDataTypePowerThresholdStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypePowerThresholdStruct (mkSelector "setPowerThreshold:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPowerThreshold mtrDataTypePowerThresholdStruct value =
+  sendMessage mtrDataTypePowerThresholdStruct setPowerThresholdSelector (toNSNumber value)
 
 -- | @- apparentPowerThreshold@
 apparentPowerThreshold :: IsMTRDataTypePowerThresholdStruct mtrDataTypePowerThresholdStruct => mtrDataTypePowerThresholdStruct -> IO (Id NSNumber)
-apparentPowerThreshold mtrDataTypePowerThresholdStruct  =
-    sendMsg mtrDataTypePowerThresholdStruct (mkSelector "apparentPowerThreshold") (retPtr retVoid) [] >>= retainedObject . castPtr
+apparentPowerThreshold mtrDataTypePowerThresholdStruct =
+  sendMessage mtrDataTypePowerThresholdStruct apparentPowerThresholdSelector
 
 -- | @- setApparentPowerThreshold:@
 setApparentPowerThreshold :: (IsMTRDataTypePowerThresholdStruct mtrDataTypePowerThresholdStruct, IsNSNumber value) => mtrDataTypePowerThresholdStruct -> value -> IO ()
-setApparentPowerThreshold mtrDataTypePowerThresholdStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypePowerThresholdStruct (mkSelector "setApparentPowerThreshold:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setApparentPowerThreshold mtrDataTypePowerThresholdStruct value =
+  sendMessage mtrDataTypePowerThresholdStruct setApparentPowerThresholdSelector (toNSNumber value)
 
 -- | @- powerThresholdSource@
 powerThresholdSource :: IsMTRDataTypePowerThresholdStruct mtrDataTypePowerThresholdStruct => mtrDataTypePowerThresholdStruct -> IO (Id NSNumber)
-powerThresholdSource mtrDataTypePowerThresholdStruct  =
-    sendMsg mtrDataTypePowerThresholdStruct (mkSelector "powerThresholdSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+powerThresholdSource mtrDataTypePowerThresholdStruct =
+  sendMessage mtrDataTypePowerThresholdStruct powerThresholdSourceSelector
 
 -- | @- setPowerThresholdSource:@
 setPowerThresholdSource :: (IsMTRDataTypePowerThresholdStruct mtrDataTypePowerThresholdStruct, IsNSNumber value) => mtrDataTypePowerThresholdStruct -> value -> IO ()
-setPowerThresholdSource mtrDataTypePowerThresholdStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypePowerThresholdStruct (mkSelector "setPowerThresholdSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPowerThresholdSource mtrDataTypePowerThresholdStruct value =
+  sendMessage mtrDataTypePowerThresholdStruct setPowerThresholdSourceSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @powerThreshold@
-powerThresholdSelector :: Selector
+powerThresholdSelector :: Selector '[] (Id NSNumber)
 powerThresholdSelector = mkSelector "powerThreshold"
 
 -- | @Selector@ for @setPowerThreshold:@
-setPowerThresholdSelector :: Selector
+setPowerThresholdSelector :: Selector '[Id NSNumber] ()
 setPowerThresholdSelector = mkSelector "setPowerThreshold:"
 
 -- | @Selector@ for @apparentPowerThreshold@
-apparentPowerThresholdSelector :: Selector
+apparentPowerThresholdSelector :: Selector '[] (Id NSNumber)
 apparentPowerThresholdSelector = mkSelector "apparentPowerThreshold"
 
 -- | @Selector@ for @setApparentPowerThreshold:@
-setApparentPowerThresholdSelector :: Selector
+setApparentPowerThresholdSelector :: Selector '[Id NSNumber] ()
 setApparentPowerThresholdSelector = mkSelector "setApparentPowerThreshold:"
 
 -- | @Selector@ for @powerThresholdSource@
-powerThresholdSourceSelector :: Selector
+powerThresholdSourceSelector :: Selector '[] (Id NSNumber)
 powerThresholdSourceSelector = mkSelector "powerThresholdSource"
 
 -- | @Selector@ for @setPowerThresholdSource:@
-setPowerThresholdSourceSelector :: Selector
+setPowerThresholdSourceSelector :: Selector '[Id NSNumber] ()
 setPowerThresholdSourceSelector = mkSelector "setPowerThresholdSource:"
 

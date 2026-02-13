@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.WebKit.DOMHTMLTableSectionElement
   , vAlign
   , setVAlign
   , rows
-  , insertRowSelector
-  , deleteRowSelector
   , alignSelector
-  , setAlignSelector
-  , chSelector
-  , setChSelector
   , chOffSelector
-  , setChOffSelector
-  , vAlignSelector
-  , setVAlignSelector
+  , chSelector
+  , deleteRowSelector
+  , insertRowSelector
   , rowsSelector
+  , setAlignSelector
+  , setChOffSelector
+  , setChSelector
+  , setVAlignSelector
+  , vAlignSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,108 +46,104 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- insertRow:@
 insertRow :: IsDOMHTMLTableSectionElement domhtmlTableSectionElement => domhtmlTableSectionElement -> CInt -> IO (Id DOMHTMLElement)
-insertRow domhtmlTableSectionElement  index =
-    sendMsg domhtmlTableSectionElement (mkSelector "insertRow:") (retPtr retVoid) [argCInt index] >>= retainedObject . castPtr
+insertRow domhtmlTableSectionElement index =
+  sendMessage domhtmlTableSectionElement insertRowSelector index
 
 -- | @- deleteRow:@
 deleteRow :: IsDOMHTMLTableSectionElement domhtmlTableSectionElement => domhtmlTableSectionElement -> CInt -> IO ()
-deleteRow domhtmlTableSectionElement  index =
-    sendMsg domhtmlTableSectionElement (mkSelector "deleteRow:") retVoid [argCInt index]
+deleteRow domhtmlTableSectionElement index =
+  sendMessage domhtmlTableSectionElement deleteRowSelector index
 
 -- | @- align@
 align :: IsDOMHTMLTableSectionElement domhtmlTableSectionElement => domhtmlTableSectionElement -> IO (Id NSString)
-align domhtmlTableSectionElement  =
-    sendMsg domhtmlTableSectionElement (mkSelector "align") (retPtr retVoid) [] >>= retainedObject . castPtr
+align domhtmlTableSectionElement =
+  sendMessage domhtmlTableSectionElement alignSelector
 
 -- | @- setAlign:@
 setAlign :: (IsDOMHTMLTableSectionElement domhtmlTableSectionElement, IsNSString value) => domhtmlTableSectionElement -> value -> IO ()
-setAlign domhtmlTableSectionElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableSectionElement (mkSelector "setAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlign domhtmlTableSectionElement value =
+  sendMessage domhtmlTableSectionElement setAlignSelector (toNSString value)
 
 -- | @- ch@
 ch :: IsDOMHTMLTableSectionElement domhtmlTableSectionElement => domhtmlTableSectionElement -> IO (Id NSString)
-ch domhtmlTableSectionElement  =
-    sendMsg domhtmlTableSectionElement (mkSelector "ch") (retPtr retVoid) [] >>= retainedObject . castPtr
+ch domhtmlTableSectionElement =
+  sendMessage domhtmlTableSectionElement chSelector
 
 -- | @- setCh:@
 setCh :: (IsDOMHTMLTableSectionElement domhtmlTableSectionElement, IsNSString value) => domhtmlTableSectionElement -> value -> IO ()
-setCh domhtmlTableSectionElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableSectionElement (mkSelector "setCh:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCh domhtmlTableSectionElement value =
+  sendMessage domhtmlTableSectionElement setChSelector (toNSString value)
 
 -- | @- chOff@
 chOff :: IsDOMHTMLTableSectionElement domhtmlTableSectionElement => domhtmlTableSectionElement -> IO (Id NSString)
-chOff domhtmlTableSectionElement  =
-    sendMsg domhtmlTableSectionElement (mkSelector "chOff") (retPtr retVoid) [] >>= retainedObject . castPtr
+chOff domhtmlTableSectionElement =
+  sendMessage domhtmlTableSectionElement chOffSelector
 
 -- | @- setChOff:@
 setChOff :: (IsDOMHTMLTableSectionElement domhtmlTableSectionElement, IsNSString value) => domhtmlTableSectionElement -> value -> IO ()
-setChOff domhtmlTableSectionElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableSectionElement (mkSelector "setChOff:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChOff domhtmlTableSectionElement value =
+  sendMessage domhtmlTableSectionElement setChOffSelector (toNSString value)
 
 -- | @- vAlign@
 vAlign :: IsDOMHTMLTableSectionElement domhtmlTableSectionElement => domhtmlTableSectionElement -> IO (Id NSString)
-vAlign domhtmlTableSectionElement  =
-    sendMsg domhtmlTableSectionElement (mkSelector "vAlign") (retPtr retVoid) [] >>= retainedObject . castPtr
+vAlign domhtmlTableSectionElement =
+  sendMessage domhtmlTableSectionElement vAlignSelector
 
 -- | @- setVAlign:@
 setVAlign :: (IsDOMHTMLTableSectionElement domhtmlTableSectionElement, IsNSString value) => domhtmlTableSectionElement -> value -> IO ()
-setVAlign domhtmlTableSectionElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlTableSectionElement (mkSelector "setVAlign:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVAlign domhtmlTableSectionElement value =
+  sendMessage domhtmlTableSectionElement setVAlignSelector (toNSString value)
 
 -- | @- rows@
 rows :: IsDOMHTMLTableSectionElement domhtmlTableSectionElement => domhtmlTableSectionElement -> IO (Id DOMHTMLCollection)
-rows domhtmlTableSectionElement  =
-    sendMsg domhtmlTableSectionElement (mkSelector "rows") (retPtr retVoid) [] >>= retainedObject . castPtr
+rows domhtmlTableSectionElement =
+  sendMessage domhtmlTableSectionElement rowsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @insertRow:@
-insertRowSelector :: Selector
+insertRowSelector :: Selector '[CInt] (Id DOMHTMLElement)
 insertRowSelector = mkSelector "insertRow:"
 
 -- | @Selector@ for @deleteRow:@
-deleteRowSelector :: Selector
+deleteRowSelector :: Selector '[CInt] ()
 deleteRowSelector = mkSelector "deleteRow:"
 
 -- | @Selector@ for @align@
-alignSelector :: Selector
+alignSelector :: Selector '[] (Id NSString)
 alignSelector = mkSelector "align"
 
 -- | @Selector@ for @setAlign:@
-setAlignSelector :: Selector
+setAlignSelector :: Selector '[Id NSString] ()
 setAlignSelector = mkSelector "setAlign:"
 
 -- | @Selector@ for @ch@
-chSelector :: Selector
+chSelector :: Selector '[] (Id NSString)
 chSelector = mkSelector "ch"
 
 -- | @Selector@ for @setCh:@
-setChSelector :: Selector
+setChSelector :: Selector '[Id NSString] ()
 setChSelector = mkSelector "setCh:"
 
 -- | @Selector@ for @chOff@
-chOffSelector :: Selector
+chOffSelector :: Selector '[] (Id NSString)
 chOffSelector = mkSelector "chOff"
 
 -- | @Selector@ for @setChOff:@
-setChOffSelector :: Selector
+setChOffSelector :: Selector '[Id NSString] ()
 setChOffSelector = mkSelector "setChOff:"
 
 -- | @Selector@ for @vAlign@
-vAlignSelector :: Selector
+vAlignSelector :: Selector '[] (Id NSString)
 vAlignSelector = mkSelector "vAlign"
 
 -- | @Selector@ for @setVAlign:@
-setVAlignSelector :: Selector
+setVAlignSelector :: Selector '[Id NSString] ()
 setVAlignSelector = mkSelector "setVAlign:"
 
 -- | @Selector@ for @rows@
-rowsSelector :: Selector
+rowsSelector :: Selector '[] (Id DOMHTMLCollection)
 rowsSelector = mkSelector "rows"
 

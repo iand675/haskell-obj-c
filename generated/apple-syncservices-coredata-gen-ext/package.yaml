@@ -18,5 +18,4 @@ ghc-options:
 library:
   source-dirs: src
   exposed-modules:
-  - ObjC.SyncServices.NSObject
   - ObjC.SyncServices.NSPersistentStoreCoordinator

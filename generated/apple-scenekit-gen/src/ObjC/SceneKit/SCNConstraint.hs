@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.SceneKit.SCNConstraint
   , incremental
   , setIncremental
   , enabledSelector
-  , setEnabledSelector
-  , influenceFactorSelector
-  , setInfluenceFactorSelector
   , incrementalSelector
+  , influenceFactorSelector
+  , setEnabledSelector
   , setIncrementalSelector
+  , setInfluenceFactorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- enabled@
 enabled :: IsSCNConstraint scnConstraint => scnConstraint -> IO Bool
-enabled scnConstraint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnConstraint (mkSelector "enabled") retCULong []
+enabled scnConstraint =
+  sendMessage scnConstraint enabledSelector
 
 -- | enable
 --
@@ -56,8 +53,8 @@ enabled scnConstraint  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsSCNConstraint scnConstraint => scnConstraint -> Bool -> IO ()
-setEnabled scnConstraint  value =
-    sendMsg scnConstraint (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled scnConstraint value =
+  sendMessage scnConstraint setEnabledSelector value
 
 -- | influenceFactor
 --
@@ -65,8 +62,8 @@ setEnabled scnConstraint  value =
 --
 -- ObjC selector: @- influenceFactor@
 influenceFactor :: IsSCNConstraint scnConstraint => scnConstraint -> IO CDouble
-influenceFactor scnConstraint  =
-    sendMsg scnConstraint (mkSelector "influenceFactor") retCDouble []
+influenceFactor scnConstraint =
+  sendMessage scnConstraint influenceFactorSelector
 
 -- | influenceFactor
 --
@@ -74,8 +71,8 @@ influenceFactor scnConstraint  =
 --
 -- ObjC selector: @- setInfluenceFactor:@
 setInfluenceFactor :: IsSCNConstraint scnConstraint => scnConstraint -> CDouble -> IO ()
-setInfluenceFactor scnConstraint  value =
-    sendMsg scnConstraint (mkSelector "setInfluenceFactor:") retVoid [argCDouble value]
+setInfluenceFactor scnConstraint value =
+  sendMessage scnConstraint setInfluenceFactorSelector value
 
 -- | incremental
 --
@@ -83,8 +80,8 @@ setInfluenceFactor scnConstraint  value =
 --
 -- ObjC selector: @- incremental@
 incremental :: IsSCNConstraint scnConstraint => scnConstraint -> IO Bool
-incremental scnConstraint  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scnConstraint (mkSelector "incremental") retCULong []
+incremental scnConstraint =
+  sendMessage scnConstraint incrementalSelector
 
 -- | incremental
 --
@@ -92,34 +89,34 @@ incremental scnConstraint  =
 --
 -- ObjC selector: @- setIncremental:@
 setIncremental :: IsSCNConstraint scnConstraint => scnConstraint -> Bool -> IO ()
-setIncremental scnConstraint  value =
-    sendMsg scnConstraint (mkSelector "setIncremental:") retVoid [argCULong (if value then 1 else 0)]
+setIncremental scnConstraint value =
+  sendMessage scnConstraint setIncrementalSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @influenceFactor@
-influenceFactorSelector :: Selector
+influenceFactorSelector :: Selector '[] CDouble
 influenceFactorSelector = mkSelector "influenceFactor"
 
 -- | @Selector@ for @setInfluenceFactor:@
-setInfluenceFactorSelector :: Selector
+setInfluenceFactorSelector :: Selector '[CDouble] ()
 setInfluenceFactorSelector = mkSelector "setInfluenceFactor:"
 
 -- | @Selector@ for @incremental@
-incrementalSelector :: Selector
+incrementalSelector :: Selector '[] Bool
 incrementalSelector = mkSelector "incremental"
 
 -- | @Selector@ for @setIncremental:@
-setIncrementalSelector :: Selector
+setIncrementalSelector :: Selector '[Bool] ()
 setIncrementalSelector = mkSelector "setIncremental:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Matter.MTRBindingClusterTargetStruct
   , setCluster
   , fabricIndex
   , setFabricIndex
-  , nodeSelector
-  , setNodeSelector
-  , groupSelector
-  , setGroupSelector
-  , endpointSelector
-  , setEndpointSelector
   , clusterSelector
-  , setClusterSelector
+  , endpointSelector
   , fabricIndexSelector
+  , groupSelector
+  , nodeSelector
+  , setClusterSelector
+  , setEndpointSelector
   , setFabricIndexSelector
+  , setGroupSelector
+  , setNodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,100 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- node@
 node :: IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct => mtrBindingClusterTargetStruct -> IO (Id NSNumber)
-node mtrBindingClusterTargetStruct  =
-    sendMsg mtrBindingClusterTargetStruct (mkSelector "node") (retPtr retVoid) [] >>= retainedObject . castPtr
+node mtrBindingClusterTargetStruct =
+  sendMessage mtrBindingClusterTargetStruct nodeSelector
 
 -- | @- setNode:@
 setNode :: (IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct, IsNSNumber value) => mtrBindingClusterTargetStruct -> value -> IO ()
-setNode mtrBindingClusterTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBindingClusterTargetStruct (mkSelector "setNode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNode mtrBindingClusterTargetStruct value =
+  sendMessage mtrBindingClusterTargetStruct setNodeSelector (toNSNumber value)
 
 -- | @- group@
 group :: IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct => mtrBindingClusterTargetStruct -> IO (Id NSNumber)
-group mtrBindingClusterTargetStruct  =
-    sendMsg mtrBindingClusterTargetStruct (mkSelector "group") (retPtr retVoid) [] >>= retainedObject . castPtr
+group mtrBindingClusterTargetStruct =
+  sendMessage mtrBindingClusterTargetStruct groupSelector
 
 -- | @- setGroup:@
 setGroup :: (IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct, IsNSNumber value) => mtrBindingClusterTargetStruct -> value -> IO ()
-setGroup mtrBindingClusterTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBindingClusterTargetStruct (mkSelector "setGroup:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroup mtrBindingClusterTargetStruct value =
+  sendMessage mtrBindingClusterTargetStruct setGroupSelector (toNSNumber value)
 
 -- | @- endpoint@
 endpoint :: IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct => mtrBindingClusterTargetStruct -> IO (Id NSNumber)
-endpoint mtrBindingClusterTargetStruct  =
-    sendMsg mtrBindingClusterTargetStruct (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoint mtrBindingClusterTargetStruct =
+  sendMessage mtrBindingClusterTargetStruct endpointSelector
 
 -- | @- setEndpoint:@
 setEndpoint :: (IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct, IsNSNumber value) => mtrBindingClusterTargetStruct -> value -> IO ()
-setEndpoint mtrBindingClusterTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBindingClusterTargetStruct (mkSelector "setEndpoint:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpoint mtrBindingClusterTargetStruct value =
+  sendMessage mtrBindingClusterTargetStruct setEndpointSelector (toNSNumber value)
 
 -- | @- cluster@
 cluster :: IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct => mtrBindingClusterTargetStruct -> IO (Id NSNumber)
-cluster mtrBindingClusterTargetStruct  =
-    sendMsg mtrBindingClusterTargetStruct (mkSelector "cluster") (retPtr retVoid) [] >>= retainedObject . castPtr
+cluster mtrBindingClusterTargetStruct =
+  sendMessage mtrBindingClusterTargetStruct clusterSelector
 
 -- | @- setCluster:@
 setCluster :: (IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct, IsNSNumber value) => mtrBindingClusterTargetStruct -> value -> IO ()
-setCluster mtrBindingClusterTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBindingClusterTargetStruct (mkSelector "setCluster:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCluster mtrBindingClusterTargetStruct value =
+  sendMessage mtrBindingClusterTargetStruct setClusterSelector (toNSNumber value)
 
 -- | @- fabricIndex@
 fabricIndex :: IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct => mtrBindingClusterTargetStruct -> IO (Id NSNumber)
-fabricIndex mtrBindingClusterTargetStruct  =
-    sendMsg mtrBindingClusterTargetStruct (mkSelector "fabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+fabricIndex mtrBindingClusterTargetStruct =
+  sendMessage mtrBindingClusterTargetStruct fabricIndexSelector
 
 -- | @- setFabricIndex:@
 setFabricIndex :: (IsMTRBindingClusterTargetStruct mtrBindingClusterTargetStruct, IsNSNumber value) => mtrBindingClusterTargetStruct -> value -> IO ()
-setFabricIndex mtrBindingClusterTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrBindingClusterTargetStruct (mkSelector "setFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFabricIndex mtrBindingClusterTargetStruct value =
+  sendMessage mtrBindingClusterTargetStruct setFabricIndexSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @node@
-nodeSelector :: Selector
+nodeSelector :: Selector '[] (Id NSNumber)
 nodeSelector = mkSelector "node"
 
 -- | @Selector@ for @setNode:@
-setNodeSelector :: Selector
+setNodeSelector :: Selector '[Id NSNumber] ()
 setNodeSelector = mkSelector "setNode:"
 
 -- | @Selector@ for @group@
-groupSelector :: Selector
+groupSelector :: Selector '[] (Id NSNumber)
 groupSelector = mkSelector "group"
 
 -- | @Selector@ for @setGroup:@
-setGroupSelector :: Selector
+setGroupSelector :: Selector '[Id NSNumber] ()
 setGroupSelector = mkSelector "setGroup:"
 
 -- | @Selector@ for @endpoint@
-endpointSelector :: Selector
+endpointSelector :: Selector '[] (Id NSNumber)
 endpointSelector = mkSelector "endpoint"
 
 -- | @Selector@ for @setEndpoint:@
-setEndpointSelector :: Selector
+setEndpointSelector :: Selector '[Id NSNumber] ()
 setEndpointSelector = mkSelector "setEndpoint:"
 
 -- | @Selector@ for @cluster@
-clusterSelector :: Selector
+clusterSelector :: Selector '[] (Id NSNumber)
 clusterSelector = mkSelector "cluster"
 
 -- | @Selector@ for @setCluster:@
-setClusterSelector :: Selector
+setClusterSelector :: Selector '[Id NSNumber] ()
 setClusterSelector = mkSelector "setCluster:"
 
 -- | @Selector@ for @fabricIndex@
-fabricIndexSelector :: Selector
+fabricIndexSelector :: Selector '[] (Id NSNumber)
 fabricIndexSelector = mkSelector "fabricIndex"
 
 -- | @Selector@ for @setFabricIndex:@
-setFabricIndexSelector :: Selector
+setFabricIndexSelector :: Selector '[Id NSNumber] ()
 setFabricIndexSelector = mkSelector "setFabricIndex:"
 

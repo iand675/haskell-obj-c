@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.ShazamKit.SHSignature
   , initWithDataRepresentation_error
   , duration
   , dataRepresentation
-  , signatureWithDataRepresentation_errorSelector
-  , initWithDataRepresentation_errorSelector
-  , durationSelector
   , dataRepresentationSelector
+  , durationSelector
+  , initWithDataRepresentation_errorSelector
+  , signatureWithDataRepresentation_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,9 +47,7 @@ signatureWithDataRepresentation_error :: (IsNSData dataRepresentation, IsNSError
 signatureWithDataRepresentation_error dataRepresentation error_ =
   do
     cls' <- getRequiredClass "SHSignature"
-    withObjCPtr dataRepresentation $ \raw_dataRepresentation ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "signatureWithDataRepresentation:error:") (retPtr retVoid) [argPtr (castPtr raw_dataRepresentation :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' signatureWithDataRepresentation_errorSelector (toNSData dataRepresentation) (toNSError error_)
 
 -- | Creates a signature object from raw data.
 --
@@ -62,10 +57,8 @@ signatureWithDataRepresentation_error dataRepresentation error_ =
 --
 -- ObjC selector: @- initWithDataRepresentation:error:@
 initWithDataRepresentation_error :: (IsSHSignature shSignature, IsNSData dataRepresentation, IsNSError error_) => shSignature -> dataRepresentation -> error_ -> IO (Id SHSignature)
-initWithDataRepresentation_error shSignature  dataRepresentation error_ =
-  withObjCPtr dataRepresentation $ \raw_dataRepresentation ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg shSignature (mkSelector "initWithDataRepresentation:error:") (retPtr retVoid) [argPtr (castPtr raw_dataRepresentation :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithDataRepresentation_error shSignature dataRepresentation error_ =
+  sendOwnedMessage shSignature initWithDataRepresentation_errorSelector (toNSData dataRepresentation) (toNSError error_)
 
 -- | The duration of the audio you use to generate the signature.
 --
@@ -73,33 +66,33 @@ initWithDataRepresentation_error shSignature  dataRepresentation error_ =
 --
 -- ObjC selector: @- duration@
 duration :: IsSHSignature shSignature => shSignature -> IO CDouble
-duration shSignature  =
-    sendMsg shSignature (mkSelector "duration") retCDouble []
+duration shSignature =
+  sendMessage shSignature durationSelector
 
 -- | The raw data for the signature.
 --
 -- ObjC selector: @- dataRepresentation@
 dataRepresentation :: IsSHSignature shSignature => shSignature -> IO (Id NSData)
-dataRepresentation shSignature  =
-    sendMsg shSignature (mkSelector "dataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataRepresentation shSignature =
+  sendMessage shSignature dataRepresentationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @signatureWithDataRepresentation:error:@
-signatureWithDataRepresentation_errorSelector :: Selector
+signatureWithDataRepresentation_errorSelector :: Selector '[Id NSData, Id NSError] (Id SHSignature)
 signatureWithDataRepresentation_errorSelector = mkSelector "signatureWithDataRepresentation:error:"
 
 -- | @Selector@ for @initWithDataRepresentation:error:@
-initWithDataRepresentation_errorSelector :: Selector
+initWithDataRepresentation_errorSelector :: Selector '[Id NSData, Id NSError] (Id SHSignature)
 initWithDataRepresentation_errorSelector = mkSelector "initWithDataRepresentation:error:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @dataRepresentation@
-dataRepresentationSelector :: Selector
+dataRepresentationSelector :: Selector '[] (Id NSData)
 dataRepresentationSelector = mkSelector "dataRepresentation"
 

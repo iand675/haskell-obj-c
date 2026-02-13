@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.JavaScriptCore.JSManagedValue
   , managedValueWithValue_andOwner
   , initWithValue
   , value
+  , initWithValueSelector
   , managedValueWithValueSelector
   , managedValueWithValue_andOwnerSelector
-  , initWithValueSelector
   , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,16 +43,14 @@ managedValueWithValue :: IsJSValue value => value -> IO (Id JSManagedValue)
 managedValueWithValue value =
   do
     cls' <- getRequiredClass "JSManagedValue"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "managedValueWithValue:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' managedValueWithValueSelector (toJSValue value)
 
 -- | @+ managedValueWithValue:andOwner:@
 managedValueWithValue_andOwner :: IsJSValue value => value -> RawId -> IO (Id JSManagedValue)
 managedValueWithValue_andOwner value owner =
   do
     cls' <- getRequiredClass "JSManagedValue"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "managedValueWithValue:andOwner:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr (unRawId owner) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' managedValueWithValue_andOwnerSelector (toJSValue value) owner
 
 -- | Create a JSManagedValue.
 --
@@ -63,9 +58,8 @@ managedValueWithValue_andOwner value owner =
 --
 -- ObjC selector: @- initWithValue:@
 initWithValue :: (IsJSManagedValue jsManagedValue, IsJSValue value) => jsManagedValue -> value -> IO (Id JSManagedValue)
-initWithValue jsManagedValue  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg jsManagedValue (mkSelector "initWithValue:") (retPtr retVoid) [argPtr (castPtr raw_value :: Ptr ())] >>= ownedObject . castPtr
+initWithValue jsManagedValue value =
+  sendOwnedMessage jsManagedValue initWithValueSelector (toJSValue value)
 
 -- | Get the JSValue from the JSManagedValue.
 --
@@ -73,26 +67,26 @@ initWithValue jsManagedValue  value =
 --
 -- ObjC selector: @- value@
 value :: IsJSManagedValue jsManagedValue => jsManagedValue -> IO (Id JSValue)
-value jsManagedValue  =
-    sendMsg jsManagedValue (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value jsManagedValue =
+  sendMessage jsManagedValue valueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @managedValueWithValue:@
-managedValueWithValueSelector :: Selector
+managedValueWithValueSelector :: Selector '[Id JSValue] (Id JSManagedValue)
 managedValueWithValueSelector = mkSelector "managedValueWithValue:"
 
 -- | @Selector@ for @managedValueWithValue:andOwner:@
-managedValueWithValue_andOwnerSelector :: Selector
+managedValueWithValue_andOwnerSelector :: Selector '[Id JSValue, RawId] (Id JSManagedValue)
 managedValueWithValue_andOwnerSelector = mkSelector "managedValueWithValue:andOwner:"
 
 -- | @Selector@ for @initWithValue:@
-initWithValueSelector :: Selector
+initWithValueSelector :: Selector '[Id JSValue] (Id JSManagedValue)
 initWithValueSelector = mkSelector "initWithValue:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id JSValue)
 valueSelector = mkSelector "value"
 

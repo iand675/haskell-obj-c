@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.SceneKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | SCNActionTimingMode
 --
@@ -30,6 +33,16 @@ pattern SCNActionTimingModeEaseOut = SCNActionTimingMode 2
 
 pattern SCNActionTimingModeEaseInEaseOut :: SCNActionTimingMode
 pattern SCNActionTimingModeEaseInEaseOut = SCNActionTimingMode 3
+
+instance ObjCArgument SCNActionTimingMode where
+  withObjCArg (SCNActionTimingMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNActionTimingMode where
+  type RawReturn SCNActionTimingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNActionTimingMode x)
+  fromOwned x = pure (SCNActionTimingMode x)
 
 -- | SCNAntialiasingMode
 --
@@ -54,6 +67,16 @@ pattern SCNAntialiasingModeMultisampling8X = SCNAntialiasingMode 3
 pattern SCNAntialiasingModeMultisampling16X :: SCNAntialiasingMode
 pattern SCNAntialiasingModeMultisampling16X = SCNAntialiasingMode 4
 
+instance ObjCArgument SCNAntialiasingMode where
+  withObjCArg (SCNAntialiasingMode x) k = k (argCULong x)
+
+instance ObjCReturn SCNAntialiasingMode where
+  type RawReturn SCNAntialiasingMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNAntialiasingMode x)
+  fromOwned x = pure (SCNAntialiasingMode x)
+
 -- | @SCNBillboardAxis@ (bitmask)
 newtype SCNBillboardAxis = SCNBillboardAxis CULong
   deriving stock (Eq, Ord, Show)
@@ -76,6 +99,16 @@ pattern SCNBillboardAxisZ = SCNBillboardAxis 4
 
 pattern SCNBillboardAxisAll :: SCNBillboardAxis
 pattern SCNBillboardAxisAll = SCNBillboardAxis 7
+
+instance ObjCArgument SCNBillboardAxis where
+  withObjCArg (SCNBillboardAxis x) k = k (argCULong x)
+
+instance ObjCReturn SCNBillboardAxis where
+  type RawReturn SCNBillboardAxis = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNBillboardAxis x)
+  fromOwned x = pure (SCNBillboardAxis x)
 
 -- | SCNBlendMode
 --
@@ -106,6 +139,16 @@ pattern SCNBlendModeReplace = SCNBlendMode 5
 pattern SCNBlendModeMax :: SCNBlendMode
 pattern SCNBlendModeMax = SCNBlendMode 6
 
+instance ObjCArgument SCNBlendMode where
+  withObjCArg (SCNBlendMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNBlendMode where
+  type RawReturn SCNBlendMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNBlendMode x)
+  fromOwned x = pure (SCNBlendMode x)
+
 -- | SCNBufferFrequency
 --
 -- The frequency at which the custom program input should be updated.
@@ -125,6 +168,16 @@ pattern SCNBufferFrequencyPerNode = SCNBufferFrequency 1
 pattern SCNBufferFrequencyPerShadable :: SCNBufferFrequency
 pattern SCNBufferFrequencyPerShadable = SCNBufferFrequency 2
 
+instance ObjCArgument SCNBufferFrequency where
+  withObjCArg (SCNBufferFrequency x) k = k (argCLong x)
+
+instance ObjCReturn SCNBufferFrequency where
+  type RawReturn SCNBufferFrequency = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNBufferFrequency x)
+  fromOwned x = pure (SCNBufferFrequency x)
+
 -- | @SCNCameraProjectionDirection@
 newtype SCNCameraProjectionDirection = SCNCameraProjectionDirection CLong
   deriving stock (Eq, Ord, Show)
@@ -135,6 +188,16 @@ pattern SCNCameraProjectionDirectionVertical = SCNCameraProjectionDirection 0
 
 pattern SCNCameraProjectionDirectionHorizontal :: SCNCameraProjectionDirection
 pattern SCNCameraProjectionDirectionHorizontal = SCNCameraProjectionDirection 1
+
+instance ObjCArgument SCNCameraProjectionDirection where
+  withObjCArg (SCNCameraProjectionDirection x) k = k (argCLong x)
+
+instance ObjCReturn SCNCameraProjectionDirection where
+  type RawReturn SCNCameraProjectionDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNCameraProjectionDirection x)
+  fromOwned x = pure (SCNCameraProjectionDirection x)
 
 -- | @SCNChamferMode@
 newtype SCNChamferMode = SCNChamferMode CLong
@@ -149,6 +212,16 @@ pattern SCNChamferModeFront = SCNChamferMode 1
 
 pattern SCNChamferModeBack :: SCNChamferMode
 pattern SCNChamferModeBack = SCNChamferMode 2
+
+instance ObjCArgument SCNChamferMode where
+  withObjCArg (SCNChamferMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNChamferMode where
+  type RawReturn SCNChamferMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNChamferMode x)
+  fromOwned x = pure (SCNChamferMode x)
 
 -- | SCNColorComponent
 --
@@ -182,6 +255,16 @@ pattern SCNColorMaskAlpha = SCNColorMask 1
 pattern SCNColorMaskAll :: SCNColorMask
 pattern SCNColorMaskAll = SCNColorMask 15
 
+instance ObjCArgument SCNColorMask where
+  withObjCArg (SCNColorMask x) k = k (argCLong x)
+
+instance ObjCReturn SCNColorMask where
+  type RawReturn SCNColorMask = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNColorMask x)
+  fromOwned x = pure (SCNColorMask x)
+
 -- | @SCNCullMode@
 newtype SCNCullMode = SCNCullMode CLong
   deriving stock (Eq, Ord, Show)
@@ -192,6 +275,16 @@ pattern SCNCullModeBack = SCNCullMode 0
 
 pattern SCNCullModeFront :: SCNCullMode
 pattern SCNCullModeFront = SCNCullMode 1
+
+instance ObjCArgument SCNCullMode where
+  withObjCArg (SCNCullMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNCullMode where
+  type RawReturn SCNCullMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNCullMode x)
+  fromOwned x = pure (SCNCullMode x)
 
 -- | SCNDebugOptions
 --
@@ -243,6 +336,16 @@ pattern SCNDebugOptionShowConstraints = SCNDebugOptions 512
 pattern SCNDebugOptionShowCameras :: SCNDebugOptions
 pattern SCNDebugOptionShowCameras = SCNDebugOptions 1024
 
+instance ObjCArgument SCNDebugOptions where
+  withObjCArg (SCNDebugOptions x) k = k (argCULong x)
+
+instance ObjCReturn SCNDebugOptions where
+  type RawReturn SCNDebugOptions = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNDebugOptions x)
+  fromOwned x = pure (SCNDebugOptions x)
+
 -- | @SCNFillMode@
 newtype SCNFillMode = SCNFillMode CULong
   deriving stock (Eq, Ord, Show)
@@ -253,6 +356,16 @@ pattern SCNFillModeFill = SCNFillMode 0
 
 pattern SCNFillModeLines :: SCNFillMode
 pattern SCNFillModeLines = SCNFillMode 1
+
+instance ObjCArgument SCNFillMode where
+  withObjCArg (SCNFillMode x) k = k (argCULong x)
+
+instance ObjCReturn SCNFillMode where
+  type RawReturn SCNFillMode = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNFillMode x)
+  fromOwned x = pure (SCNFillMode x)
 
 -- | SCNFilterMode
 --
@@ -270,6 +383,16 @@ pattern SCNFilterModeNearest = SCNFilterMode 1
 
 pattern SCNFilterModeLinear :: SCNFilterMode
 pattern SCNFilterModeLinear = SCNFilterMode 2
+
+instance ObjCArgument SCNFilterMode where
+  withObjCArg (SCNFilterMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNFilterMode where
+  type RawReturn SCNFilterMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNFilterMode x)
+  fromOwned x = pure (SCNFilterMode x)
 
 -- | @SCNGeometryPrimitiveType@
 newtype SCNGeometryPrimitiveType = SCNGeometryPrimitiveType CLong
@@ -291,6 +414,16 @@ pattern SCNGeometryPrimitiveTypePoint = SCNGeometryPrimitiveType 3
 pattern SCNGeometryPrimitiveTypePolygon :: SCNGeometryPrimitiveType
 pattern SCNGeometryPrimitiveTypePolygon = SCNGeometryPrimitiveType 4
 
+instance ObjCArgument SCNGeometryPrimitiveType where
+  withObjCArg (SCNGeometryPrimitiveType x) k = k (argCLong x)
+
+instance ObjCReturn SCNGeometryPrimitiveType where
+  type RawReturn SCNGeometryPrimitiveType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNGeometryPrimitiveType x)
+  fromOwned x = pure (SCNGeometryPrimitiveType x)
+
 -- | SCNHitTestSearchMode
 --
 -- hit test modes
@@ -307,6 +440,16 @@ pattern SCNHitTestSearchModeAll = SCNHitTestSearchMode 1
 
 pattern SCNHitTestSearchModeAny :: SCNHitTestSearchMode
 pattern SCNHitTestSearchModeAny = SCNHitTestSearchMode 2
+
+instance ObjCArgument SCNHitTestSearchMode where
+  withObjCArg (SCNHitTestSearchMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNHitTestSearchMode where
+  type RawReturn SCNHitTestSearchMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNHitTestSearchMode x)
+  fromOwned x = pure (SCNHitTestSearchMode x)
 
 -- | @SCNInteractionMode@
 newtype SCNInteractionMode = SCNInteractionMode CLong
@@ -334,6 +477,16 @@ pattern SCNInteractionModePan = SCNInteractionMode 5
 pattern SCNInteractionModeTruck :: SCNInteractionMode
 pattern SCNInteractionModeTruck = SCNInteractionMode 6
 
+instance ObjCArgument SCNInteractionMode where
+  withObjCArg (SCNInteractionMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNInteractionMode where
+  type RawReturn SCNInteractionMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNInteractionMode x)
+  fromOwned x = pure (SCNInteractionMode x)
+
 -- | @SCNLightAreaType@
 newtype SCNLightAreaType = SCNLightAreaType CLong
   deriving stock (Eq, Ord, Show)
@@ -344,6 +497,16 @@ pattern SCNLightAreaTypeRectangle = SCNLightAreaType 1
 
 pattern SCNLightAreaTypePolygon :: SCNLightAreaType
 pattern SCNLightAreaTypePolygon = SCNLightAreaType 4
+
+instance ObjCArgument SCNLightAreaType where
+  withObjCArg (SCNLightAreaType x) k = k (argCLong x)
+
+instance ObjCReturn SCNLightAreaType where
+  type RawReturn SCNLightAreaType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNLightAreaType x)
+  fromOwned x = pure (SCNLightAreaType x)
 
 -- | @SCNLightProbeType@
 newtype SCNLightProbeType = SCNLightProbeType CLong
@@ -356,6 +519,16 @@ pattern SCNLightProbeTypeIrradiance = SCNLightProbeType 0
 pattern SCNLightProbeTypeRadiance :: SCNLightProbeType
 pattern SCNLightProbeTypeRadiance = SCNLightProbeType 1
 
+instance ObjCArgument SCNLightProbeType where
+  withObjCArg (SCNLightProbeType x) k = k (argCLong x)
+
+instance ObjCReturn SCNLightProbeType where
+  type RawReturn SCNLightProbeType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNLightProbeType x)
+  fromOwned x = pure (SCNLightProbeType x)
+
 -- | @SCNLightProbeUpdateType@
 newtype SCNLightProbeUpdateType = SCNLightProbeUpdateType CLong
   deriving stock (Eq, Ord, Show)
@@ -367,6 +540,16 @@ pattern SCNLightProbeUpdateTypeNever = SCNLightProbeUpdateType 0
 pattern SCNLightProbeUpdateTypeRealtime :: SCNLightProbeUpdateType
 pattern SCNLightProbeUpdateTypeRealtime = SCNLightProbeUpdateType 1
 
+instance ObjCArgument SCNLightProbeUpdateType where
+  withObjCArg (SCNLightProbeUpdateType x) k = k (argCLong x)
+
+instance ObjCReturn SCNLightProbeUpdateType where
+  type RawReturn SCNLightProbeUpdateType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNLightProbeUpdateType x)
+  fromOwned x = pure (SCNLightProbeUpdateType x)
+
 -- | @SCNMorpherCalculationMode@
 newtype SCNMorpherCalculationMode = SCNMorpherCalculationMode CLong
   deriving stock (Eq, Ord, Show)
@@ -377,6 +560,16 @@ pattern SCNMorpherCalculationModeNormalized = SCNMorpherCalculationMode 0
 
 pattern SCNMorpherCalculationModeAdditive :: SCNMorpherCalculationMode
 pattern SCNMorpherCalculationModeAdditive = SCNMorpherCalculationMode 1
+
+instance ObjCArgument SCNMorpherCalculationMode where
+  withObjCArg (SCNMorpherCalculationMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNMorpherCalculationMode where
+  type RawReturn SCNMorpherCalculationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNMorpherCalculationMode x)
+  fromOwned x = pure (SCNMorpherCalculationMode x)
 
 -- | SCNMovabilityHint
 --
@@ -393,6 +586,16 @@ pattern SCNMovabilityHintFixed = SCNMovabilityHint 0
 
 pattern SCNMovabilityHintMovable :: SCNMovabilityHint
 pattern SCNMovabilityHintMovable = SCNMovabilityHint 1
+
+instance ObjCArgument SCNMovabilityHint where
+  withObjCArg (SCNMovabilityHint x) k = k (argCLong x)
+
+instance ObjCReturn SCNMovabilityHint where
+  type RawReturn SCNMovabilityHint = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNMovabilityHint x)
+  fromOwned x = pure (SCNMovabilityHint x)
 
 -- | SCNNodeFocusBehavior
 --
@@ -411,6 +614,16 @@ pattern SCNNodeFocusBehaviorOccluding = SCNNodeFocusBehavior 1
 pattern SCNNodeFocusBehaviorFocusable :: SCNNodeFocusBehavior
 pattern SCNNodeFocusBehaviorFocusable = SCNNodeFocusBehavior 2
 
+instance ObjCArgument SCNNodeFocusBehavior where
+  withObjCArg (SCNNodeFocusBehavior x) k = k (argCLong x)
+
+instance ObjCReturn SCNNodeFocusBehavior where
+  type RawReturn SCNNodeFocusBehavior = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNNodeFocusBehavior x)
+  fromOwned x = pure (SCNNodeFocusBehavior x)
+
 -- | @SCNParticleBirthDirection@
 newtype SCNParticleBirthDirection = SCNParticleBirthDirection CLong
   deriving stock (Eq, Ord, Show)
@@ -425,6 +638,16 @@ pattern SCNParticleBirthDirectionSurfaceNormal = SCNParticleBirthDirection 1
 pattern SCNParticleBirthDirectionRandom :: SCNParticleBirthDirection
 pattern SCNParticleBirthDirectionRandom = SCNParticleBirthDirection 2
 
+instance ObjCArgument SCNParticleBirthDirection where
+  withObjCArg (SCNParticleBirthDirection x) k = k (argCLong x)
+
+instance ObjCReturn SCNParticleBirthDirection where
+  type RawReturn SCNParticleBirthDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNParticleBirthDirection x)
+  fromOwned x = pure (SCNParticleBirthDirection x)
+
 -- | @SCNParticleBirthLocation@
 newtype SCNParticleBirthLocation = SCNParticleBirthLocation CLong
   deriving stock (Eq, Ord, Show)
@@ -438,6 +661,16 @@ pattern SCNParticleBirthLocationVolume = SCNParticleBirthLocation 1
 
 pattern SCNParticleBirthLocationVertex :: SCNParticleBirthLocation
 pattern SCNParticleBirthLocationVertex = SCNParticleBirthLocation 2
+
+instance ObjCArgument SCNParticleBirthLocation where
+  withObjCArg (SCNParticleBirthLocation x) k = k (argCLong x)
+
+instance ObjCReturn SCNParticleBirthLocation where
+  type RawReturn SCNParticleBirthLocation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNParticleBirthLocation x)
+  fromOwned x = pure (SCNParticleBirthLocation x)
 
 -- | @SCNParticleBlendMode@
 newtype SCNParticleBlendMode = SCNParticleBlendMode CLong
@@ -462,6 +695,16 @@ pattern SCNParticleBlendModeAlpha = SCNParticleBlendMode 4
 pattern SCNParticleBlendModeReplace :: SCNParticleBlendMode
 pattern SCNParticleBlendModeReplace = SCNParticleBlendMode 5
 
+instance ObjCArgument SCNParticleBlendMode where
+  withObjCArg (SCNParticleBlendMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNParticleBlendMode where
+  type RawReturn SCNParticleBlendMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNParticleBlendMode x)
+  fromOwned x = pure (SCNParticleBlendMode x)
+
 -- | @SCNParticleEvent@
 newtype SCNParticleEvent = SCNParticleEvent CLong
   deriving stock (Eq, Ord, Show)
@@ -475,6 +718,16 @@ pattern SCNParticleEventDeath = SCNParticleEvent 1
 
 pattern SCNParticleEventCollision :: SCNParticleEvent
 pattern SCNParticleEventCollision = SCNParticleEvent 2
+
+instance ObjCArgument SCNParticleEvent where
+  withObjCArg (SCNParticleEvent x) k = k (argCLong x)
+
+instance ObjCReturn SCNParticleEvent where
+  type RawReturn SCNParticleEvent = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNParticleEvent x)
+  fromOwned x = pure (SCNParticleEvent x)
 
 -- | @SCNParticleImageSequenceAnimationMode@
 newtype SCNParticleImageSequenceAnimationMode = SCNParticleImageSequenceAnimationMode CLong
@@ -490,6 +743,16 @@ pattern SCNParticleImageSequenceAnimationModeClamp = SCNParticleImageSequenceAni
 pattern SCNParticleImageSequenceAnimationModeAutoReverse :: SCNParticleImageSequenceAnimationMode
 pattern SCNParticleImageSequenceAnimationModeAutoReverse = SCNParticleImageSequenceAnimationMode 2
 
+instance ObjCArgument SCNParticleImageSequenceAnimationMode where
+  withObjCArg (SCNParticleImageSequenceAnimationMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNParticleImageSequenceAnimationMode where
+  type RawReturn SCNParticleImageSequenceAnimationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNParticleImageSequenceAnimationMode x)
+  fromOwned x = pure (SCNParticleImageSequenceAnimationMode x)
+
 -- | @SCNParticleInputMode@
 newtype SCNParticleInputMode = SCNParticleInputMode CLong
   deriving stock (Eq, Ord, Show)
@@ -503,6 +766,16 @@ pattern SCNParticleInputModeOverDistance = SCNParticleInputMode 1
 
 pattern SCNParticleInputModeOverOtherProperty :: SCNParticleInputMode
 pattern SCNParticleInputModeOverOtherProperty = SCNParticleInputMode 2
+
+instance ObjCArgument SCNParticleInputMode where
+  withObjCArg (SCNParticleInputMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNParticleInputMode where
+  type RawReturn SCNParticleInputMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNParticleInputMode x)
+  fromOwned x = pure (SCNParticleInputMode x)
 
 -- | @SCNParticleModifierStage@
 newtype SCNParticleModifierStage = SCNParticleModifierStage CLong
@@ -521,6 +794,16 @@ pattern SCNParticleModifierStagePreCollision = SCNParticleModifierStage 2
 pattern SCNParticleModifierStagePostCollision :: SCNParticleModifierStage
 pattern SCNParticleModifierStagePostCollision = SCNParticleModifierStage 3
 
+instance ObjCArgument SCNParticleModifierStage where
+  withObjCArg (SCNParticleModifierStage x) k = k (argCLong x)
+
+instance ObjCReturn SCNParticleModifierStage where
+  type RawReturn SCNParticleModifierStage = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNParticleModifierStage x)
+  fromOwned x = pure (SCNParticleModifierStage x)
+
 -- | @SCNParticleOrientationMode@
 newtype SCNParticleOrientationMode = SCNParticleOrientationMode CLong
   deriving stock (Eq, Ord, Show)
@@ -537,6 +820,16 @@ pattern SCNParticleOrientationModeFree = SCNParticleOrientationMode 2
 
 pattern SCNParticleOrientationModeBillboardYAligned :: SCNParticleOrientationMode
 pattern SCNParticleOrientationModeBillboardYAligned = SCNParticleOrientationMode 3
+
+instance ObjCArgument SCNParticleOrientationMode where
+  withObjCArg (SCNParticleOrientationMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNParticleOrientationMode where
+  type RawReturn SCNParticleOrientationMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNParticleOrientationMode x)
+  fromOwned x = pure (SCNParticleOrientationMode x)
 
 -- | @SCNParticleSortingMode@
 newtype SCNParticleSortingMode = SCNParticleSortingMode CLong
@@ -558,6 +851,16 @@ pattern SCNParticleSortingModeOldestFirst = SCNParticleSortingMode 3
 pattern SCNParticleSortingModeYoungestFirst :: SCNParticleSortingMode
 pattern SCNParticleSortingModeYoungestFirst = SCNParticleSortingMode 4
 
+instance ObjCArgument SCNParticleSortingMode where
+  withObjCArg (SCNParticleSortingMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNParticleSortingMode where
+  type RawReturn SCNParticleSortingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNParticleSortingMode x)
+  fromOwned x = pure (SCNParticleSortingMode x)
+
 -- | @SCNPhysicsBodyType@
 newtype SCNPhysicsBodyType = SCNPhysicsBodyType CLong
   deriving stock (Eq, Ord, Show)
@@ -571,6 +874,16 @@ pattern SCNPhysicsBodyTypeDynamic = SCNPhysicsBodyType 1
 
 pattern SCNPhysicsBodyTypeKinematic :: SCNPhysicsBodyType
 pattern SCNPhysicsBodyTypeKinematic = SCNPhysicsBodyType 2
+
+instance ObjCArgument SCNPhysicsBodyType where
+  withObjCArg (SCNPhysicsBodyType x) k = k (argCLong x)
+
+instance ObjCReturn SCNPhysicsBodyType where
+  type RawReturn SCNPhysicsBodyType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNPhysicsBodyType x)
+  fromOwned x = pure (SCNPhysicsBodyType x)
 
 -- | @SCNPhysicsCollisionCategory@ (bitmask)
 newtype SCNPhysicsCollisionCategory = SCNPhysicsCollisionCategory CULong
@@ -592,6 +905,16 @@ pattern SCNPhysicsCollisionCategoryStatic = SCNPhysicsCollisionCategory 2
 pattern SCNPhysicsCollisionCategoryAll :: SCNPhysicsCollisionCategory
 pattern SCNPhysicsCollisionCategoryAll = SCNPhysicsCollisionCategory 18446744073709551615
 
+instance ObjCArgument SCNPhysicsCollisionCategory where
+  withObjCArg (SCNPhysicsCollisionCategory x) k = k (argCULong x)
+
+instance ObjCReturn SCNPhysicsCollisionCategory where
+  type RawReturn SCNPhysicsCollisionCategory = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNPhysicsCollisionCategory x)
+  fromOwned x = pure (SCNPhysicsCollisionCategory x)
+
 -- | SCNPhysicsFieldScope
 --
 -- Specifies the domain of influence of a physics field.
@@ -605,6 +928,16 @@ pattern SCNPhysicsFieldScopeInsideExtent = SCNPhysicsFieldScope 0
 
 pattern SCNPhysicsFieldScopeOutsideExtent :: SCNPhysicsFieldScope
 pattern SCNPhysicsFieldScopeOutsideExtent = SCNPhysicsFieldScope 1
+
+instance ObjCArgument SCNPhysicsFieldScope where
+  withObjCArg (SCNPhysicsFieldScope x) k = k (argCLong x)
+
+instance ObjCReturn SCNPhysicsFieldScope where
+  type RawReturn SCNPhysicsFieldScope = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNPhysicsFieldScope x)
+  fromOwned x = pure (SCNPhysicsFieldScope x)
 
 -- | SCNReferenceLoadingPolicy
 --
@@ -621,6 +954,16 @@ pattern SCNReferenceLoadingPolicyImmediate = SCNReferenceLoadingPolicy 0
 
 pattern SCNReferenceLoadingPolicyOnDemand :: SCNReferenceLoadingPolicy
 pattern SCNReferenceLoadingPolicyOnDemand = SCNReferenceLoadingPolicy 1
+
+instance ObjCArgument SCNReferenceLoadingPolicy where
+  withObjCArg (SCNReferenceLoadingPolicy x) k = k (argCLong x)
+
+instance ObjCReturn SCNReferenceLoadingPolicy where
+  type RawReturn SCNReferenceLoadingPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNReferenceLoadingPolicy x)
+  fromOwned x = pure (SCNReferenceLoadingPolicy x)
 
 -- | SCNRenderingAPI
 --
@@ -643,6 +986,16 @@ pattern SCNRenderingAPIOpenGLCore32 = SCNRenderingAPI 2
 
 pattern SCNRenderingAPIOpenGLCore41 :: SCNRenderingAPI
 pattern SCNRenderingAPIOpenGLCore41 = SCNRenderingAPI 3
+
+instance ObjCArgument SCNRenderingAPI where
+  withObjCArg (SCNRenderingAPI x) k = k (argCULong x)
+
+instance ObjCReturn SCNRenderingAPI where
+  type RawReturn SCNRenderingAPI = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNRenderingAPI x)
+  fromOwned x = pure (SCNRenderingAPI x)
 
 -- | SCNSceneSourceStatus
 --
@@ -669,6 +1022,16 @@ pattern SCNSceneSourceStatusProcessing = SCNSceneSourceStatus 12
 pattern SCNSceneSourceStatusComplete :: SCNSceneSourceStatus
 pattern SCNSceneSourceStatusComplete = SCNSceneSourceStatus 16
 
+instance ObjCArgument SCNSceneSourceStatus where
+  withObjCArg (SCNSceneSourceStatus x) k = k (argCLong x)
+
+instance ObjCReturn SCNSceneSourceStatus where
+  type RawReturn SCNSceneSourceStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNSceneSourceStatus x)
+  fromOwned x = pure (SCNSceneSourceStatus x)
+
 -- | SCNShadowMode
 --
 -- The different modes available to compute shadows.
@@ -688,6 +1051,16 @@ pattern SCNShadowModeDeferred = SCNShadowMode 1
 pattern SCNShadowModeModulated :: SCNShadowMode
 pattern SCNShadowModeModulated = SCNShadowMode 2
 
+instance ObjCArgument SCNShadowMode where
+  withObjCArg (SCNShadowMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNShadowMode where
+  type RawReturn SCNShadowMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNShadowMode x)
+  fromOwned x = pure (SCNShadowMode x)
+
 -- | @SCNTessellationSmoothingMode@
 newtype SCNTessellationSmoothingMode = SCNTessellationSmoothingMode CLong
   deriving stock (Eq, Ord, Show)
@@ -701,6 +1074,16 @@ pattern SCNTessellationSmoothingModePNTriangles = SCNTessellationSmoothingMode 1
 
 pattern SCNTessellationSmoothingModePhong :: SCNTessellationSmoothingMode
 pattern SCNTessellationSmoothingModePhong = SCNTessellationSmoothingMode 2
+
+instance ObjCArgument SCNTessellationSmoothingMode where
+  withObjCArg (SCNTessellationSmoothingMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNTessellationSmoothingMode where
+  type RawReturn SCNTessellationSmoothingMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNTessellationSmoothingMode x)
+  fromOwned x = pure (SCNTessellationSmoothingMode x)
 
 -- | @SCNTransparencyMode@
 newtype SCNTransparencyMode = SCNTransparencyMode CLong
@@ -722,6 +1105,16 @@ pattern SCNTransparencyModeDualLayer = SCNTransparencyMode 3
 pattern SCNTransparencyModeDefault :: SCNTransparencyMode
 pattern SCNTransparencyModeDefault = SCNTransparencyMode 0
 
+instance ObjCArgument SCNTransparencyMode where
+  withObjCArg (SCNTransparencyMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNTransparencyMode where
+  type RawReturn SCNTransparencyMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNTransparencyMode x)
+  fromOwned x = pure (SCNTransparencyMode x)
+
 -- | SCNWrapeMode
 --
 -- Wrap modes
@@ -741,3 +1134,13 @@ pattern SCNWrapModeClampToBorder = SCNWrapMode 3
 
 pattern SCNWrapModeMirror :: SCNWrapMode
 pattern SCNWrapModeMirror = SCNWrapMode 4
+
+instance ObjCArgument SCNWrapMode where
+  withObjCArg (SCNWrapMode x) k = k (argCLong x)
+
+instance ObjCReturn SCNWrapMode where
+  type RawReturn SCNWrapMode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SCNWrapMode x)
+  fromOwned x = pure (SCNWrapMode x)

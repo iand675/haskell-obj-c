@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.AppKit.NSHelpManager
   , sharedHelpManager
   , contextHelpModeActive
   , setContextHelpModeActive
-  , setContextHelp_forObjectSelector
-  , removeContextHelpForObjectSelector
   , contextHelpForObjectSelector
-  , showContextHelpForObject_locationHintSelector
-  , openHelpAnchor_inBookSelector
-  , findString_inBookSelector
-  , registerBooksInBundleSelector
-  , sharedHelpManagerSelector
   , contextHelpModeActiveSelector
+  , findString_inBookSelector
+  , openHelpAnchor_inBookSelector
+  , registerBooksInBundleSelector
+  , removeContextHelpForObjectSelector
   , setContextHelpModeActiveSelector
+  , setContextHelp_forObjectSelector
+  , sharedHelpManagerSelector
+  , showContextHelpForObject_locationHintSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,107 +45,101 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setContextHelp:forObject:@
 setContextHelp_forObject :: (IsNSHelpManager nsHelpManager, IsNSAttributedString attrString) => nsHelpManager -> attrString -> RawId -> IO ()
-setContextHelp_forObject nsHelpManager  attrString object =
-  withObjCPtr attrString $ \raw_attrString ->
-      sendMsg nsHelpManager (mkSelector "setContextHelp:forObject:") retVoid [argPtr (castPtr raw_attrString :: Ptr ()), argPtr (castPtr (unRawId object) :: Ptr ())]
+setContextHelp_forObject nsHelpManager attrString object =
+  sendMessage nsHelpManager setContextHelp_forObjectSelector (toNSAttributedString attrString) object
 
 -- | @- removeContextHelpForObject:@
 removeContextHelpForObject :: IsNSHelpManager nsHelpManager => nsHelpManager -> RawId -> IO ()
-removeContextHelpForObject nsHelpManager  object =
-    sendMsg nsHelpManager (mkSelector "removeContextHelpForObject:") retVoid [argPtr (castPtr (unRawId object) :: Ptr ())]
+removeContextHelpForObject nsHelpManager object =
+  sendMessage nsHelpManager removeContextHelpForObjectSelector object
 
 -- | @- contextHelpForObject:@
 contextHelpForObject :: IsNSHelpManager nsHelpManager => nsHelpManager -> RawId -> IO (Id NSAttributedString)
-contextHelpForObject nsHelpManager  object =
-    sendMsg nsHelpManager (mkSelector "contextHelpForObject:") (retPtr retVoid) [argPtr (castPtr (unRawId object) :: Ptr ())] >>= retainedObject . castPtr
+contextHelpForObject nsHelpManager object =
+  sendMessage nsHelpManager contextHelpForObjectSelector object
 
 -- | @- showContextHelpForObject:locationHint:@
 showContextHelpForObject_locationHint :: IsNSHelpManager nsHelpManager => nsHelpManager -> RawId -> NSPoint -> IO Bool
-showContextHelpForObject_locationHint nsHelpManager  object pt =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsHelpManager (mkSelector "showContextHelpForObject:locationHint:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ()), argNSPoint pt]
+showContextHelpForObject_locationHint nsHelpManager object pt =
+  sendMessage nsHelpManager showContextHelpForObject_locationHintSelector object pt
 
 -- | @- openHelpAnchor:inBook:@
 openHelpAnchor_inBook :: (IsNSHelpManager nsHelpManager, IsNSString anchor, IsNSString book) => nsHelpManager -> anchor -> book -> IO ()
-openHelpAnchor_inBook nsHelpManager  anchor book =
-  withObjCPtr anchor $ \raw_anchor ->
-    withObjCPtr book $ \raw_book ->
-        sendMsg nsHelpManager (mkSelector "openHelpAnchor:inBook:") retVoid [argPtr (castPtr raw_anchor :: Ptr ()), argPtr (castPtr raw_book :: Ptr ())]
+openHelpAnchor_inBook nsHelpManager anchor book =
+  sendMessage nsHelpManager openHelpAnchor_inBookSelector (toNSString anchor) (toNSString book)
 
 -- | @- findString:inBook:@
 findString_inBook :: (IsNSHelpManager nsHelpManager, IsNSString query, IsNSString book) => nsHelpManager -> query -> book -> IO ()
-findString_inBook nsHelpManager  query book =
-  withObjCPtr query $ \raw_query ->
-    withObjCPtr book $ \raw_book ->
-        sendMsg nsHelpManager (mkSelector "findString:inBook:") retVoid [argPtr (castPtr raw_query :: Ptr ()), argPtr (castPtr raw_book :: Ptr ())]
+findString_inBook nsHelpManager query book =
+  sendMessage nsHelpManager findString_inBookSelector (toNSString query) (toNSString book)
 
 -- | @- registerBooksInBundle:@
 registerBooksInBundle :: (IsNSHelpManager nsHelpManager, IsNSBundle bundle) => nsHelpManager -> bundle -> IO Bool
-registerBooksInBundle nsHelpManager  bundle =
-  withObjCPtr bundle $ \raw_bundle ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsHelpManager (mkSelector "registerBooksInBundle:") retCULong [argPtr (castPtr raw_bundle :: Ptr ())]
+registerBooksInBundle nsHelpManager bundle =
+  sendMessage nsHelpManager registerBooksInBundleSelector (toNSBundle bundle)
 
 -- | @+ sharedHelpManager@
 sharedHelpManager :: IO (Id NSHelpManager)
 sharedHelpManager  =
   do
     cls' <- getRequiredClass "NSHelpManager"
-    sendClassMsg cls' (mkSelector "sharedHelpManager") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedHelpManagerSelector
 
 -- | @+ contextHelpModeActive@
 contextHelpModeActive :: IO Bool
 contextHelpModeActive  =
   do
     cls' <- getRequiredClass "NSHelpManager"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "contextHelpModeActive") retCULong []
+    sendClassMessage cls' contextHelpModeActiveSelector
 
 -- | @+ setContextHelpModeActive:@
 setContextHelpModeActive :: Bool -> IO ()
 setContextHelpModeActive value =
   do
     cls' <- getRequiredClass "NSHelpManager"
-    sendClassMsg cls' (mkSelector "setContextHelpModeActive:") retVoid [argCULong (if value then 1 else 0)]
+    sendClassMessage cls' setContextHelpModeActiveSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setContextHelp:forObject:@
-setContextHelp_forObjectSelector :: Selector
+setContextHelp_forObjectSelector :: Selector '[Id NSAttributedString, RawId] ()
 setContextHelp_forObjectSelector = mkSelector "setContextHelp:forObject:"
 
 -- | @Selector@ for @removeContextHelpForObject:@
-removeContextHelpForObjectSelector :: Selector
+removeContextHelpForObjectSelector :: Selector '[RawId] ()
 removeContextHelpForObjectSelector = mkSelector "removeContextHelpForObject:"
 
 -- | @Selector@ for @contextHelpForObject:@
-contextHelpForObjectSelector :: Selector
+contextHelpForObjectSelector :: Selector '[RawId] (Id NSAttributedString)
 contextHelpForObjectSelector = mkSelector "contextHelpForObject:"
 
 -- | @Selector@ for @showContextHelpForObject:locationHint:@
-showContextHelpForObject_locationHintSelector :: Selector
+showContextHelpForObject_locationHintSelector :: Selector '[RawId, NSPoint] Bool
 showContextHelpForObject_locationHintSelector = mkSelector "showContextHelpForObject:locationHint:"
 
 -- | @Selector@ for @openHelpAnchor:inBook:@
-openHelpAnchor_inBookSelector :: Selector
+openHelpAnchor_inBookSelector :: Selector '[Id NSString, Id NSString] ()
 openHelpAnchor_inBookSelector = mkSelector "openHelpAnchor:inBook:"
 
 -- | @Selector@ for @findString:inBook:@
-findString_inBookSelector :: Selector
+findString_inBookSelector :: Selector '[Id NSString, Id NSString] ()
 findString_inBookSelector = mkSelector "findString:inBook:"
 
 -- | @Selector@ for @registerBooksInBundle:@
-registerBooksInBundleSelector :: Selector
+registerBooksInBundleSelector :: Selector '[Id NSBundle] Bool
 registerBooksInBundleSelector = mkSelector "registerBooksInBundle:"
 
 -- | @Selector@ for @sharedHelpManager@
-sharedHelpManagerSelector :: Selector
+sharedHelpManagerSelector :: Selector '[] (Id NSHelpManager)
 sharedHelpManagerSelector = mkSelector "sharedHelpManager"
 
 -- | @Selector@ for @contextHelpModeActive@
-contextHelpModeActiveSelector :: Selector
+contextHelpModeActiveSelector :: Selector '[] Bool
 contextHelpModeActiveSelector = mkSelector "contextHelpModeActive"
 
 -- | @Selector@ for @setContextHelpModeActive:@
-setContextHelpModeActiveSelector :: Selector
+setContextHelpModeActiveSelector :: Selector '[Bool] ()
 setContextHelpModeActiveSelector = mkSelector "setContextHelpModeActive:"
 

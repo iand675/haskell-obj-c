@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -57,40 +58,40 @@ module ObjC.MetalPerformanceShaders.MPSCNNYOLOLossDescriptor
   , setNumberOfAnchorBoxes
   , anchorBoxes
   , setAnchorBoxes
-  , initSelector
+  , anchorBoxesSelector
+  , classesLossDescriptorSelector
   , cnnLossDescriptorWithXYLossType_WHLossType_confidenceLossType_classesLossType_reductionType_anchorBoxes_numberOfAnchorBoxesSelector
-  , xyLossDescriptorSelector
+  , confidenceLossDescriptorSelector
+  , initSelector
+  , maxIOUForObjectAbsenceSelector
+  , minIOUForObjectPresenceSelector
+  , numberOfAnchorBoxesSelector
+  , reduceAcrossBatchSelector
+  , reductionTypeSelector
+  , rescoreSelector
+  , scaleClassSelector
+  , scaleNoObjectSelector
+  , scaleObjectSelector
+  , scaleWHSelector
+  , scaleXYSelector
+  , setAnchorBoxesSelector
+  , setClassesLossDescriptorSelector
+  , setConfidenceLossDescriptorSelector
+  , setMaxIOUForObjectAbsenceSelector
+  , setMinIOUForObjectPresenceSelector
+  , setNumberOfAnchorBoxesSelector
+  , setReduceAcrossBatchSelector
+  , setReductionTypeSelector
+  , setRescoreSelector
+  , setScaleClassSelector
+  , setScaleNoObjectSelector
+  , setScaleObjectSelector
+  , setScaleWHSelector
+  , setScaleXYSelector
+  , setWHLossDescriptorSelector
   , setXYLossDescriptorSelector
   , whLossDescriptorSelector
-  , setWHLossDescriptorSelector
-  , confidenceLossDescriptorSelector
-  , setConfidenceLossDescriptorSelector
-  , classesLossDescriptorSelector
-  , setClassesLossDescriptorSelector
-  , reductionTypeSelector
-  , setReductionTypeSelector
-  , reduceAcrossBatchSelector
-  , setReduceAcrossBatchSelector
-  , rescoreSelector
-  , setRescoreSelector
-  , scaleXYSelector
-  , setScaleXYSelector
-  , scaleWHSelector
-  , setScaleWHSelector
-  , scaleNoObjectSelector
-  , setScaleNoObjectSelector
-  , scaleObjectSelector
-  , setScaleObjectSelector
-  , scaleClassSelector
-  , setScaleClassSelector
-  , minIOUForObjectPresenceSelector
-  , setMinIOUForObjectPresenceSelector
-  , maxIOUForObjectAbsenceSelector
-  , setMaxIOUForObjectAbsenceSelector
-  , numberOfAnchorBoxesSelector
-  , setNumberOfAnchorBoxesSelector
-  , anchorBoxesSelector
-  , setAnchorBoxesSelector
+  , xyLossDescriptorSelector
 
   -- * Enum types
   , MPSCNNLossType(MPSCNNLossType)
@@ -114,15 +115,11 @@ module ObjC.MetalPerformanceShaders.MPSCNNYOLOLossDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -132,8 +129,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO (Id MPSCNNYOLOLossDescriptor)
-init_ mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpscnnyoloLossDescriptor =
+  sendOwnedMessage mpscnnyoloLossDescriptor initSelector
 
 -- | Make a descriptor for a MPSCNNYOLOLoss object.
 --
@@ -156,8 +153,7 @@ cnnLossDescriptorWithXYLossType_WHLossType_confidenceLossType_classesLossType_re
 cnnLossDescriptorWithXYLossType_WHLossType_confidenceLossType_classesLossType_reductionType_anchorBoxes_numberOfAnchorBoxes xyLossType whLossType confidenceLossType classesLossType reductionType anchorBoxes numberOfAnchorBoxes =
   do
     cls' <- getRequiredClass "MPSCNNYOLOLossDescriptor"
-    withObjCPtr anchorBoxes $ \raw_anchorBoxes ->
-      sendClassMsg cls' (mkSelector "cnnLossDescriptorWithXYLossType:WHLossType:confidenceLossType:classesLossType:reductionType:anchorBoxes:numberOfAnchorBoxes:") (retPtr retVoid) [argCUInt (coerce xyLossType), argCUInt (coerce whLossType), argCUInt (coerce confidenceLossType), argCUInt (coerce classesLossType), argCInt (coerce reductionType), argPtr (castPtr raw_anchorBoxes :: Ptr ()), argCULong numberOfAnchorBoxes] >>= retainedObject . castPtr
+    sendClassMessage cls' cnnLossDescriptorWithXYLossType_WHLossType_confidenceLossType_classesLossType_reductionType_anchorBoxes_numberOfAnchorBoxesSelector xyLossType whLossType confidenceLossType classesLossType reductionType (toNSData anchorBoxes) numberOfAnchorBoxes
 
 -- | XYLossDescriptor
 --
@@ -167,8 +163,8 @@ cnnLossDescriptorWithXYLossType_WHLossType_confidenceLossType_classesLossType_re
 --
 -- ObjC selector: @- XYLossDescriptor@
 xyLossDescriptor :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO (Id MPSCNNLossDescriptor)
-xyLossDescriptor mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "XYLossDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+xyLossDescriptor mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor xyLossDescriptorSelector
 
 -- | XYLossDescriptor
 --
@@ -178,9 +174,8 @@ xyLossDescriptor mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setXYLossDescriptor:@
 setXYLossDescriptor :: (IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor, IsMPSCNNLossDescriptor value) => mpscnnyoloLossDescriptor -> value -> IO ()
-setXYLossDescriptor mpscnnyoloLossDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpscnnyoloLossDescriptor (mkSelector "setXYLossDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setXYLossDescriptor mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setXYLossDescriptorSelector (toMPSCNNLossDescriptor value)
 
 -- | WHLossDescriptor
 --
@@ -190,8 +185,8 @@ setXYLossDescriptor mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- WHLossDescriptor@
 whLossDescriptor :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO (Id MPSCNNLossDescriptor)
-whLossDescriptor mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "WHLossDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+whLossDescriptor mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor whLossDescriptorSelector
 
 -- | WHLossDescriptor
 --
@@ -201,9 +196,8 @@ whLossDescriptor mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setWHLossDescriptor:@
 setWHLossDescriptor :: (IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor, IsMPSCNNLossDescriptor value) => mpscnnyoloLossDescriptor -> value -> IO ()
-setWHLossDescriptor mpscnnyoloLossDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpscnnyoloLossDescriptor (mkSelector "setWHLossDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWHLossDescriptor mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setWHLossDescriptorSelector (toMPSCNNLossDescriptor value)
 
 -- | confidenceLossDescriptor
 --
@@ -213,8 +207,8 @@ setWHLossDescriptor mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- confidenceLossDescriptor@
 confidenceLossDescriptor :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO (Id MPSCNNLossDescriptor)
-confidenceLossDescriptor mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "confidenceLossDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+confidenceLossDescriptor mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor confidenceLossDescriptorSelector
 
 -- | confidenceLossDescriptor
 --
@@ -224,9 +218,8 @@ confidenceLossDescriptor mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setConfidenceLossDescriptor:@
 setConfidenceLossDescriptor :: (IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor, IsMPSCNNLossDescriptor value) => mpscnnyoloLossDescriptor -> value -> IO ()
-setConfidenceLossDescriptor mpscnnyoloLossDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpscnnyoloLossDescriptor (mkSelector "setConfidenceLossDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setConfidenceLossDescriptor mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setConfidenceLossDescriptorSelector (toMPSCNNLossDescriptor value)
 
 -- | classesLossDescriptor
 --
@@ -236,8 +229,8 @@ setConfidenceLossDescriptor mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- classesLossDescriptor@
 classesLossDescriptor :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO (Id MPSCNNLossDescriptor)
-classesLossDescriptor mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "classesLossDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+classesLossDescriptor mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor classesLossDescriptorSelector
 
 -- | classesLossDescriptor
 --
@@ -247,9 +240,8 @@ classesLossDescriptor mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setClassesLossDescriptor:@
 setClassesLossDescriptor :: (IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor, IsMPSCNNLossDescriptor value) => mpscnnyoloLossDescriptor -> value -> IO ()
-setClassesLossDescriptor mpscnnyoloLossDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpscnnyoloLossDescriptor (mkSelector "setClassesLossDescriptor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setClassesLossDescriptor mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setClassesLossDescriptorSelector (toMPSCNNLossDescriptor value)
 
 -- | reductionType
 --
@@ -257,8 +249,8 @@ setClassesLossDescriptor mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- reductionType@
 reductionType :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO MPSCNNReductionType
-reductionType mpscnnyoloLossDescriptor  =
-    fmap (coerce :: CInt -> MPSCNNReductionType) $ sendMsg mpscnnyoloLossDescriptor (mkSelector "reductionType") retCInt []
+reductionType mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor reductionTypeSelector
 
 -- | reductionType
 --
@@ -266,8 +258,8 @@ reductionType mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setReductionType:@
 setReductionType :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> MPSCNNReductionType -> IO ()
-setReductionType mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setReductionType:") retVoid [argCInt (coerce value)]
+setReductionType mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setReductionTypeSelector value
 
 -- | reduceAcrossBatch
 --
@@ -275,8 +267,8 @@ setReductionType mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- reduceAcrossBatch@
 reduceAcrossBatch :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO Bool
-reduceAcrossBatch mpscnnyoloLossDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnyoloLossDescriptor (mkSelector "reduceAcrossBatch") retCULong []
+reduceAcrossBatch mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor reduceAcrossBatchSelector
 
 -- | reduceAcrossBatch
 --
@@ -284,8 +276,8 @@ reduceAcrossBatch mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setReduceAcrossBatch:@
 setReduceAcrossBatch :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> Bool -> IO ()
-setReduceAcrossBatch mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setReduceAcrossBatch:") retVoid [argCULong (if value then 1 else 0)]
+setReduceAcrossBatch mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setReduceAcrossBatchSelector value
 
 -- | rescore
 --
@@ -293,8 +285,8 @@ setReduceAcrossBatch mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- rescore@
 rescore :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO Bool
-rescore mpscnnyoloLossDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpscnnyoloLossDescriptor (mkSelector "rescore") retCULong []
+rescore mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor rescoreSelector
 
 -- | rescore
 --
@@ -302,8 +294,8 @@ rescore mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setRescore:@
 setRescore :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> Bool -> IO ()
-setRescore mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setRescore:") retVoid [argCULong (if value then 1 else 0)]
+setRescore mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setRescoreSelector value
 
 -- | scaleXY
 --
@@ -311,8 +303,8 @@ setRescore mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleXY@
 scaleXY :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO CFloat
-scaleXY mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "scaleXY") retCFloat []
+scaleXY mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor scaleXYSelector
 
 -- | scaleXY
 --
@@ -320,8 +312,8 @@ scaleXY mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleXY:@
 setScaleXY :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> CFloat -> IO ()
-setScaleXY mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setScaleXY:") retVoid [argCFloat value]
+setScaleXY mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setScaleXYSelector value
 
 -- | scaleWH
 --
@@ -329,8 +321,8 @@ setScaleXY mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleWH@
 scaleWH :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO CFloat
-scaleWH mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "scaleWH") retCFloat []
+scaleWH mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor scaleWHSelector
 
 -- | scaleWH
 --
@@ -338,8 +330,8 @@ scaleWH mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleWH:@
 setScaleWH :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> CFloat -> IO ()
-setScaleWH mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setScaleWH:") retVoid [argCFloat value]
+setScaleWH mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setScaleWHSelector value
 
 -- | scaleNoObject
 --
@@ -347,8 +339,8 @@ setScaleWH mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleNoObject@
 scaleNoObject :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO CFloat
-scaleNoObject mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "scaleNoObject") retCFloat []
+scaleNoObject mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor scaleNoObjectSelector
 
 -- | scaleNoObject
 --
@@ -356,8 +348,8 @@ scaleNoObject mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleNoObject:@
 setScaleNoObject :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> CFloat -> IO ()
-setScaleNoObject mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setScaleNoObject:") retVoid [argCFloat value]
+setScaleNoObject mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setScaleNoObjectSelector value
 
 -- | scaleObject
 --
@@ -365,8 +357,8 @@ setScaleNoObject mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleObject@
 scaleObject :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO CFloat
-scaleObject mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "scaleObject") retCFloat []
+scaleObject mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor scaleObjectSelector
 
 -- | scaleObject
 --
@@ -374,8 +366,8 @@ scaleObject mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleObject:@
 setScaleObject :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> CFloat -> IO ()
-setScaleObject mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setScaleObject:") retVoid [argCFloat value]
+setScaleObject mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setScaleObjectSelector value
 
 -- | scaleClass
 --
@@ -383,8 +375,8 @@ setScaleObject mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- scaleClass@
 scaleClass :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO CFloat
-scaleClass mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "scaleClass") retCFloat []
+scaleClass mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor scaleClassSelector
 
 -- | scaleClass
 --
@@ -392,8 +384,8 @@ scaleClass mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setScaleClass:@
 setScaleClass :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> CFloat -> IO ()
-setScaleClass mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setScaleClass:") retVoid [argCFloat value]
+setScaleClass mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setScaleClassSelector value
 
 -- | pos_iou
 --
@@ -401,8 +393,8 @@ setScaleClass mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- minIOUForObjectPresence@
 minIOUForObjectPresence :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO CFloat
-minIOUForObjectPresence mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "minIOUForObjectPresence") retCFloat []
+minIOUForObjectPresence mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor minIOUForObjectPresenceSelector
 
 -- | pos_iou
 --
@@ -410,8 +402,8 @@ minIOUForObjectPresence mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setMinIOUForObjectPresence:@
 setMinIOUForObjectPresence :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> CFloat -> IO ()
-setMinIOUForObjectPresence mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setMinIOUForObjectPresence:") retVoid [argCFloat value]
+setMinIOUForObjectPresence mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setMinIOUForObjectPresenceSelector value
 
 -- | neg_iou
 --
@@ -419,8 +411,8 @@ setMinIOUForObjectPresence mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- maxIOUForObjectAbsence@
 maxIOUForObjectAbsence :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO CFloat
-maxIOUForObjectAbsence mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "maxIOUForObjectAbsence") retCFloat []
+maxIOUForObjectAbsence mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor maxIOUForObjectAbsenceSelector
 
 -- | neg_iou
 --
@@ -428,8 +420,8 @@ maxIOUForObjectAbsence mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setMaxIOUForObjectAbsence:@
 setMaxIOUForObjectAbsence :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> CFloat -> IO ()
-setMaxIOUForObjectAbsence mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setMaxIOUForObjectAbsence:") retVoid [argCFloat value]
+setMaxIOUForObjectAbsence mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setMaxIOUForObjectAbsenceSelector value
 
 -- | numberOfAnchorBoxes
 --
@@ -437,8 +429,8 @@ setMaxIOUForObjectAbsence mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- numberOfAnchorBoxes@
 numberOfAnchorBoxes :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO CULong
-numberOfAnchorBoxes mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "numberOfAnchorBoxes") retCULong []
+numberOfAnchorBoxes mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor numberOfAnchorBoxesSelector
 
 -- | numberOfAnchorBoxes
 --
@@ -446,8 +438,8 @@ numberOfAnchorBoxes mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setNumberOfAnchorBoxes:@
 setNumberOfAnchorBoxes :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> CULong -> IO ()
-setNumberOfAnchorBoxes mpscnnyoloLossDescriptor  value =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "setNumberOfAnchorBoxes:") retVoid [argCULong value]
+setNumberOfAnchorBoxes mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setNumberOfAnchorBoxesSelector value
 
 -- | anchorBoxes
 --
@@ -467,8 +459,8 @@ setNumberOfAnchorBoxes mpscnnyoloLossDescriptor  value =
 --
 -- ObjC selector: @- anchorBoxes@
 anchorBoxes :: IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor => mpscnnyoloLossDescriptor -> IO (Id NSData)
-anchorBoxes mpscnnyoloLossDescriptor  =
-    sendMsg mpscnnyoloLossDescriptor (mkSelector "anchorBoxes") (retPtr retVoid) [] >>= retainedObject . castPtr
+anchorBoxes mpscnnyoloLossDescriptor =
+  sendMessage mpscnnyoloLossDescriptor anchorBoxesSelector
 
 -- | anchorBoxes
 --
@@ -488,147 +480,146 @@ anchorBoxes mpscnnyoloLossDescriptor  =
 --
 -- ObjC selector: @- setAnchorBoxes:@
 setAnchorBoxes :: (IsMPSCNNYOLOLossDescriptor mpscnnyoloLossDescriptor, IsNSData value) => mpscnnyoloLossDescriptor -> value -> IO ()
-setAnchorBoxes mpscnnyoloLossDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpscnnyoloLossDescriptor (mkSelector "setAnchorBoxes:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAnchorBoxes mpscnnyoloLossDescriptor value =
+  sendMessage mpscnnyoloLossDescriptor setAnchorBoxesSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSCNNYOLOLossDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @cnnLossDescriptorWithXYLossType:WHLossType:confidenceLossType:classesLossType:reductionType:anchorBoxes:numberOfAnchorBoxes:@
-cnnLossDescriptorWithXYLossType_WHLossType_confidenceLossType_classesLossType_reductionType_anchorBoxes_numberOfAnchorBoxesSelector :: Selector
+cnnLossDescriptorWithXYLossType_WHLossType_confidenceLossType_classesLossType_reductionType_anchorBoxes_numberOfAnchorBoxesSelector :: Selector '[MPSCNNLossType, MPSCNNLossType, MPSCNNLossType, MPSCNNLossType, MPSCNNReductionType, Id NSData, CULong] (Id MPSCNNYOLOLossDescriptor)
 cnnLossDescriptorWithXYLossType_WHLossType_confidenceLossType_classesLossType_reductionType_anchorBoxes_numberOfAnchorBoxesSelector = mkSelector "cnnLossDescriptorWithXYLossType:WHLossType:confidenceLossType:classesLossType:reductionType:anchorBoxes:numberOfAnchorBoxes:"
 
 -- | @Selector@ for @XYLossDescriptor@
-xyLossDescriptorSelector :: Selector
+xyLossDescriptorSelector :: Selector '[] (Id MPSCNNLossDescriptor)
 xyLossDescriptorSelector = mkSelector "XYLossDescriptor"
 
 -- | @Selector@ for @setXYLossDescriptor:@
-setXYLossDescriptorSelector :: Selector
+setXYLossDescriptorSelector :: Selector '[Id MPSCNNLossDescriptor] ()
 setXYLossDescriptorSelector = mkSelector "setXYLossDescriptor:"
 
 -- | @Selector@ for @WHLossDescriptor@
-whLossDescriptorSelector :: Selector
+whLossDescriptorSelector :: Selector '[] (Id MPSCNNLossDescriptor)
 whLossDescriptorSelector = mkSelector "WHLossDescriptor"
 
 -- | @Selector@ for @setWHLossDescriptor:@
-setWHLossDescriptorSelector :: Selector
+setWHLossDescriptorSelector :: Selector '[Id MPSCNNLossDescriptor] ()
 setWHLossDescriptorSelector = mkSelector "setWHLossDescriptor:"
 
 -- | @Selector@ for @confidenceLossDescriptor@
-confidenceLossDescriptorSelector :: Selector
+confidenceLossDescriptorSelector :: Selector '[] (Id MPSCNNLossDescriptor)
 confidenceLossDescriptorSelector = mkSelector "confidenceLossDescriptor"
 
 -- | @Selector@ for @setConfidenceLossDescriptor:@
-setConfidenceLossDescriptorSelector :: Selector
+setConfidenceLossDescriptorSelector :: Selector '[Id MPSCNNLossDescriptor] ()
 setConfidenceLossDescriptorSelector = mkSelector "setConfidenceLossDescriptor:"
 
 -- | @Selector@ for @classesLossDescriptor@
-classesLossDescriptorSelector :: Selector
+classesLossDescriptorSelector :: Selector '[] (Id MPSCNNLossDescriptor)
 classesLossDescriptorSelector = mkSelector "classesLossDescriptor"
 
 -- | @Selector@ for @setClassesLossDescriptor:@
-setClassesLossDescriptorSelector :: Selector
+setClassesLossDescriptorSelector :: Selector '[Id MPSCNNLossDescriptor] ()
 setClassesLossDescriptorSelector = mkSelector "setClassesLossDescriptor:"
 
 -- | @Selector@ for @reductionType@
-reductionTypeSelector :: Selector
+reductionTypeSelector :: Selector '[] MPSCNNReductionType
 reductionTypeSelector = mkSelector "reductionType"
 
 -- | @Selector@ for @setReductionType:@
-setReductionTypeSelector :: Selector
+setReductionTypeSelector :: Selector '[MPSCNNReductionType] ()
 setReductionTypeSelector = mkSelector "setReductionType:"
 
 -- | @Selector@ for @reduceAcrossBatch@
-reduceAcrossBatchSelector :: Selector
+reduceAcrossBatchSelector :: Selector '[] Bool
 reduceAcrossBatchSelector = mkSelector "reduceAcrossBatch"
 
 -- | @Selector@ for @setReduceAcrossBatch:@
-setReduceAcrossBatchSelector :: Selector
+setReduceAcrossBatchSelector :: Selector '[Bool] ()
 setReduceAcrossBatchSelector = mkSelector "setReduceAcrossBatch:"
 
 -- | @Selector@ for @rescore@
-rescoreSelector :: Selector
+rescoreSelector :: Selector '[] Bool
 rescoreSelector = mkSelector "rescore"
 
 -- | @Selector@ for @setRescore:@
-setRescoreSelector :: Selector
+setRescoreSelector :: Selector '[Bool] ()
 setRescoreSelector = mkSelector "setRescore:"
 
 -- | @Selector@ for @scaleXY@
-scaleXYSelector :: Selector
+scaleXYSelector :: Selector '[] CFloat
 scaleXYSelector = mkSelector "scaleXY"
 
 -- | @Selector@ for @setScaleXY:@
-setScaleXYSelector :: Selector
+setScaleXYSelector :: Selector '[CFloat] ()
 setScaleXYSelector = mkSelector "setScaleXY:"
 
 -- | @Selector@ for @scaleWH@
-scaleWHSelector :: Selector
+scaleWHSelector :: Selector '[] CFloat
 scaleWHSelector = mkSelector "scaleWH"
 
 -- | @Selector@ for @setScaleWH:@
-setScaleWHSelector :: Selector
+setScaleWHSelector :: Selector '[CFloat] ()
 setScaleWHSelector = mkSelector "setScaleWH:"
 
 -- | @Selector@ for @scaleNoObject@
-scaleNoObjectSelector :: Selector
+scaleNoObjectSelector :: Selector '[] CFloat
 scaleNoObjectSelector = mkSelector "scaleNoObject"
 
 -- | @Selector@ for @setScaleNoObject:@
-setScaleNoObjectSelector :: Selector
+setScaleNoObjectSelector :: Selector '[CFloat] ()
 setScaleNoObjectSelector = mkSelector "setScaleNoObject:"
 
 -- | @Selector@ for @scaleObject@
-scaleObjectSelector :: Selector
+scaleObjectSelector :: Selector '[] CFloat
 scaleObjectSelector = mkSelector "scaleObject"
 
 -- | @Selector@ for @setScaleObject:@
-setScaleObjectSelector :: Selector
+setScaleObjectSelector :: Selector '[CFloat] ()
 setScaleObjectSelector = mkSelector "setScaleObject:"
 
 -- | @Selector@ for @scaleClass@
-scaleClassSelector :: Selector
+scaleClassSelector :: Selector '[] CFloat
 scaleClassSelector = mkSelector "scaleClass"
 
 -- | @Selector@ for @setScaleClass:@
-setScaleClassSelector :: Selector
+setScaleClassSelector :: Selector '[CFloat] ()
 setScaleClassSelector = mkSelector "setScaleClass:"
 
 -- | @Selector@ for @minIOUForObjectPresence@
-minIOUForObjectPresenceSelector :: Selector
+minIOUForObjectPresenceSelector :: Selector '[] CFloat
 minIOUForObjectPresenceSelector = mkSelector "minIOUForObjectPresence"
 
 -- | @Selector@ for @setMinIOUForObjectPresence:@
-setMinIOUForObjectPresenceSelector :: Selector
+setMinIOUForObjectPresenceSelector :: Selector '[CFloat] ()
 setMinIOUForObjectPresenceSelector = mkSelector "setMinIOUForObjectPresence:"
 
 -- | @Selector@ for @maxIOUForObjectAbsence@
-maxIOUForObjectAbsenceSelector :: Selector
+maxIOUForObjectAbsenceSelector :: Selector '[] CFloat
 maxIOUForObjectAbsenceSelector = mkSelector "maxIOUForObjectAbsence"
 
 -- | @Selector@ for @setMaxIOUForObjectAbsence:@
-setMaxIOUForObjectAbsenceSelector :: Selector
+setMaxIOUForObjectAbsenceSelector :: Selector '[CFloat] ()
 setMaxIOUForObjectAbsenceSelector = mkSelector "setMaxIOUForObjectAbsence:"
 
 -- | @Selector@ for @numberOfAnchorBoxes@
-numberOfAnchorBoxesSelector :: Selector
+numberOfAnchorBoxesSelector :: Selector '[] CULong
 numberOfAnchorBoxesSelector = mkSelector "numberOfAnchorBoxes"
 
 -- | @Selector@ for @setNumberOfAnchorBoxes:@
-setNumberOfAnchorBoxesSelector :: Selector
+setNumberOfAnchorBoxesSelector :: Selector '[CULong] ()
 setNumberOfAnchorBoxesSelector = mkSelector "setNumberOfAnchorBoxes:"
 
 -- | @Selector@ for @anchorBoxes@
-anchorBoxesSelector :: Selector
+anchorBoxesSelector :: Selector '[] (Id NSData)
 anchorBoxesSelector = mkSelector "anchorBoxes"
 
 -- | @Selector@ for @setAnchorBoxes:@
-setAnchorBoxesSelector :: Selector
+setAnchorBoxesSelector :: Selector '[Id NSData] ()
 setAnchorBoxesSelector = mkSelector "setAnchorBoxes:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRChannelClusterChangeChannelParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , matchSelector
-  , setMatchSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setMatchSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- match@
 match :: IsMTRChannelClusterChangeChannelParams mtrChannelClusterChangeChannelParams => mtrChannelClusterChangeChannelParams -> IO (Id NSString)
-match mtrChannelClusterChangeChannelParams  =
-    sendMsg mtrChannelClusterChangeChannelParams (mkSelector "match") (retPtr retVoid) [] >>= retainedObject . castPtr
+match mtrChannelClusterChangeChannelParams =
+  sendMessage mtrChannelClusterChangeChannelParams matchSelector
 
 -- | @- setMatch:@
 setMatch :: (IsMTRChannelClusterChangeChannelParams mtrChannelClusterChangeChannelParams, IsNSString value) => mtrChannelClusterChangeChannelParams -> value -> IO ()
-setMatch mtrChannelClusterChangeChannelParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChangeChannelParams (mkSelector "setMatch:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMatch mtrChannelClusterChangeChannelParams value =
+  sendMessage mtrChannelClusterChangeChannelParams setMatchSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setMatch mtrChannelClusterChangeChannelParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRChannelClusterChangeChannelParams mtrChannelClusterChangeChannelParams => mtrChannelClusterChangeChannelParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrChannelClusterChangeChannelParams  =
-    sendMsg mtrChannelClusterChangeChannelParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrChannelClusterChangeChannelParams =
+  sendMessage mtrChannelClusterChangeChannelParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrChannelClusterChangeChannelParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRChannelClusterChangeChannelParams mtrChannelClusterChangeChannelParams, IsNSNumber value) => mtrChannelClusterChangeChannelParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrChannelClusterChangeChannelParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChangeChannelParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrChannelClusterChangeChannelParams value =
+  sendMessage mtrChannelClusterChangeChannelParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrChannelClusterChangeChannelParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRChannelClusterChangeChannelParams mtrChannelClusterChangeChannelParams => mtrChannelClusterChangeChannelParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrChannelClusterChangeChannelParams  =
-    sendMsg mtrChannelClusterChangeChannelParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrChannelClusterChangeChannelParams =
+  sendMessage mtrChannelClusterChangeChannelParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrChannelClusterChangeChannelParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRChannelClusterChangeChannelParams mtrChannelClusterChangeChannelParams, IsNSNumber value) => mtrChannelClusterChangeChannelParams -> value -> IO ()
-setServerSideProcessingTimeout mtrChannelClusterChangeChannelParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrChannelClusterChangeChannelParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrChannelClusterChangeChannelParams value =
+  sendMessage mtrChannelClusterChangeChannelParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @match@
-matchSelector :: Selector
+matchSelector :: Selector '[] (Id NSString)
 matchSelector = mkSelector "match"
 
 -- | @Selector@ for @setMatch:@
-setMatchSelector :: Selector
+setMatchSelector :: Selector '[Id NSString] ()
 setMatchSelector = mkSelector "setMatch:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

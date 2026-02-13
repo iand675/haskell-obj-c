@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.PassKit.PKIdentityDocument
   , init_
   , new
   , encryptedData
+  , encryptedDataSelector
   , initSelector
   , newSelector
-  , encryptedDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPKIdentityDocument pkIdentityDocument => pkIdentityDocument -> IO (Id PKIdentityDocument)
-init_ pkIdentityDocument  =
-    sendMsg pkIdentityDocument (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkIdentityDocument =
+  sendOwnedMessage pkIdentityDocument initSelector
 
 -- | @+ new@
 new :: IO (Id PKIdentityDocument)
 new  =
   do
     cls' <- getRequiredClass "PKIdentityDocument"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | An encrypted data blob containing the requested document information and associated metadata. This is encrypted to the public key on-file with the Developer portal for the calling app, and should be passed to the server holding the corresponding private key for decryption. This data is not intended to be read on-device.
 --
 -- ObjC selector: @- encryptedData@
 encryptedData :: IsPKIdentityDocument pkIdentityDocument => pkIdentityDocument -> IO (Id NSData)
-encryptedData pkIdentityDocument  =
-    sendMsg pkIdentityDocument (mkSelector "encryptedData") (retPtr retVoid) [] >>= retainedObject . castPtr
+encryptedData pkIdentityDocument =
+  sendMessage pkIdentityDocument encryptedDataSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKIdentityDocument)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PKIdentityDocument)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @encryptedData@
-encryptedDataSelector :: Selector
+encryptedDataSelector :: Selector '[] (Id NSData)
 encryptedDataSelector = mkSelector "encryptedData"
 

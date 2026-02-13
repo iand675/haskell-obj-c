@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,11 @@ module ObjC.MetricKit.MXAverage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- averageMeasurement@
 averageMeasurement :: IsMXAverage mxAverage => mxAverage -> IO (Id NSMeasurement)
-averageMeasurement mxAverage  =
-    sendMsg mxAverage (mkSelector "averageMeasurement") (retPtr retVoid) [] >>= retainedObject . castPtr
+averageMeasurement mxAverage =
+  sendMessage mxAverage averageMeasurementSelector
 
 -- | sampleCount
 --
@@ -52,8 +49,8 @@ averageMeasurement mxAverage  =
 --
 -- ObjC selector: @- sampleCount@
 sampleCount :: IsMXAverage mxAverage => mxAverage -> IO CLong
-sampleCount mxAverage  =
-    sendMsg mxAverage (mkSelector "sampleCount") retCLong []
+sampleCount mxAverage =
+  sendMessage mxAverage sampleCountSelector
 
 -- | standardDeviation
 --
@@ -63,22 +60,22 @@ sampleCount mxAverage  =
 --
 -- ObjC selector: @- standardDeviation@
 standardDeviation :: IsMXAverage mxAverage => mxAverage -> IO CDouble
-standardDeviation mxAverage  =
-    sendMsg mxAverage (mkSelector "standardDeviation") retCDouble []
+standardDeviation mxAverage =
+  sendMessage mxAverage standardDeviationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @averageMeasurement@
-averageMeasurementSelector :: Selector
+averageMeasurementSelector :: Selector '[] (Id NSMeasurement)
 averageMeasurementSelector = mkSelector "averageMeasurement"
 
 -- | @Selector@ for @sampleCount@
-sampleCountSelector :: Selector
+sampleCountSelector :: Selector '[] CLong
 sampleCountSelector = mkSelector "sampleCount"
 
 -- | @Selector@ for @standardDeviation@
-standardDeviationSelector :: Selector
+standardDeviationSelector :: Selector '[] CDouble
 standardDeviationSelector = mkSelector "standardDeviation"
 

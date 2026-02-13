@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CryptoTokenKit.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @TKErrorCode@
 newtype TKErrorCode = TKErrorCode CLong
@@ -52,6 +55,16 @@ pattern TKErrorObjectNotFound = TKErrorCode (-6)
 pattern TKErrorTokenNotFound :: TKErrorCode
 pattern TKErrorTokenNotFound = TKErrorCode (-7)
 
+instance ObjCArgument TKErrorCode where
+  withObjCArg (TKErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn TKErrorCode where
+  type RawReturn TKErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (TKErrorCode x)
+  fromOwned x = pure (TKErrorCode x)
+
 -- | Enumerates all possible PIN character sets.
 -- | @TKSmartCardPINCharset@
 newtype TKSmartCardPINCharset = TKSmartCardPINCharset CLong
@@ -66,6 +79,16 @@ pattern TKSmartCardPINCharsetAlphanumeric = TKSmartCardPINCharset 1
 
 pattern TKSmartCardPINCharsetUpperAlphanumeric :: TKSmartCardPINCharset
 pattern TKSmartCardPINCharsetUpperAlphanumeric = TKSmartCardPINCharset 2
+
+instance ObjCArgument TKSmartCardPINCharset where
+  withObjCArg (TKSmartCardPINCharset x) k = k (argCLong x)
+
+instance ObjCReturn TKSmartCardPINCharset where
+  type RawReturn TKSmartCardPINCharset = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (TKSmartCardPINCharset x)
+  fromOwned x = pure (TKSmartCardPINCharset x)
 
 -- | Bitmask specifying condition(s) under which PIN entry should be considered complete.
 -- | @TKSmartCardPINCompletion@ (bitmask)
@@ -88,6 +111,16 @@ pattern TKSmartCardPINCompletionKey = TKSmartCardPINCompletion 2
 pattern TKSmartCardPINCompletionTimeout :: TKSmartCardPINCompletion
 pattern TKSmartCardPINCompletionTimeout = TKSmartCardPINCompletion 4
 
+instance ObjCArgument TKSmartCardPINCompletion where
+  withObjCArg (TKSmartCardPINCompletion x) k = k (argCULong x)
+
+instance ObjCReturn TKSmartCardPINCompletion where
+  type RawReturn TKSmartCardPINCompletion = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (TKSmartCardPINCompletion x)
+  fromOwned x = pure (TKSmartCardPINCompletion x)
+
 -- | Bitmask specifying whether PIN confirmation should be requested.
 -- | @TKSmartCardPINConfirmation@ (bitmask)
 newtype TKSmartCardPINConfirmation = TKSmartCardPINConfirmation CULong
@@ -109,6 +142,16 @@ pattern TKSmartCardPINConfirmationNew = TKSmartCardPINConfirmation 1
 pattern TKSmartCardPINConfirmationCurrent :: TKSmartCardPINConfirmation
 pattern TKSmartCardPINConfirmationCurrent = TKSmartCardPINConfirmation 2
 
+instance ObjCArgument TKSmartCardPINConfirmation where
+  withObjCArg (TKSmartCardPINConfirmation x) k = k (argCULong x)
+
+instance ObjCReturn TKSmartCardPINConfirmation where
+  type RawReturn TKSmartCardPINConfirmation = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (TKSmartCardPINConfirmation x)
+  fromOwned x = pure (TKSmartCardPINConfirmation x)
+
 -- | Enumerates all possible PIN encoding types.
 -- | @TKSmartCardPINEncoding@
 newtype TKSmartCardPINEncoding = TKSmartCardPINEncoding CLong
@@ -124,6 +167,16 @@ pattern TKSmartCardPINEncodingASCII = TKSmartCardPINEncoding 1
 pattern TKSmartCardPINEncodingBCD :: TKSmartCardPINEncoding
 pattern TKSmartCardPINEncodingBCD = TKSmartCardPINEncoding 2
 
+instance ObjCArgument TKSmartCardPINEncoding where
+  withObjCArg (TKSmartCardPINEncoding x) k = k (argCLong x)
+
+instance ObjCReturn TKSmartCardPINEncoding where
+  type RawReturn TKSmartCardPINEncoding = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (TKSmartCardPINEncoding x)
+  fromOwned x = pure (TKSmartCardPINEncoding x)
+
 -- | Enumerates all posible PIN justification types.
 -- | @TKSmartCardPINJustification@
 newtype TKSmartCardPINJustification = TKSmartCardPINJustification CLong
@@ -135,6 +188,16 @@ pattern TKSmartCardPINJustificationLeft = TKSmartCardPINJustification 0
 
 pattern TKSmartCardPINJustificationRight :: TKSmartCardPINJustification
 pattern TKSmartCardPINJustificationRight = TKSmartCardPINJustification 1
+
+instance ObjCArgument TKSmartCardPINJustification where
+  withObjCArg (TKSmartCardPINJustification x) k = k (argCLong x)
+
+instance ObjCReturn TKSmartCardPINJustification where
+  type RawReturn TKSmartCardPINJustification = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (TKSmartCardPINJustification x)
+  fromOwned x = pure (TKSmartCardPINJustification x)
 
 -- | Bitmask of available SmartCard protocols.
 -- | @TKSmartCardProtocol@ (bitmask)
@@ -163,6 +226,16 @@ pattern TKSmartCardProtocolT15 = TKSmartCardProtocol 32768
 pattern TKSmartCardProtocolAny :: TKSmartCardProtocol
 pattern TKSmartCardProtocolAny = TKSmartCardProtocol 65535
 
+instance ObjCArgument TKSmartCardProtocol where
+  withObjCArg (TKSmartCardProtocol x) k = k (argCULong x)
+
+instance ObjCReturn TKSmartCardProtocol where
+  type RawReturn TKSmartCardProtocol = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (TKSmartCardProtocol x)
+  fromOwned x = pure (TKSmartCardProtocol x)
+
 -- | Enumerates all possible slot states.
 -- | @TKSmartCardSlotState@
 newtype TKSmartCardSlotState = TKSmartCardSlotState CLong
@@ -184,6 +257,16 @@ pattern TKSmartCardSlotStateMuteCard = TKSmartCardSlotState 3
 pattern TKSmartCardSlotStateValidCard :: TKSmartCardSlotState
 pattern TKSmartCardSlotStateValidCard = TKSmartCardSlotState 4
 
+instance ObjCArgument TKSmartCardSlotState where
+  withObjCArg (TKSmartCardSlotState x) k = k (argCLong x)
+
+instance ObjCReturn TKSmartCardSlotState where
+  type RawReturn TKSmartCardSlotState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (TKSmartCardSlotState x)
+  fromOwned x = pure (TKSmartCardSlotState x)
+
 -- | TKTokenOperation enumerates operations which can be performed with objects (keys and certificates) on the token.
 -- | @TKTokenOperation@
 newtype TKTokenOperation = TKTokenOperation CLong
@@ -204,3 +287,13 @@ pattern TKTokenOperationDecryptData = TKTokenOperation 3
 
 pattern TKTokenOperationPerformKeyExchange :: TKTokenOperation
 pattern TKTokenOperationPerformKeyExchange = TKTokenOperation 4
+
+instance ObjCArgument TKTokenOperation where
+  withObjCArg (TKTokenOperation x) k = k (argCLong x)
+
+instance ObjCReturn TKTokenOperation where
+  type RawReturn TKTokenOperation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (TKTokenOperation x)
+  fromOwned x = pure (TKTokenOperation x)

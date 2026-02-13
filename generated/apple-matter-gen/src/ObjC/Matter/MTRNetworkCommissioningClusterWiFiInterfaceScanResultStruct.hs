@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct
   , setWiFiBand
   , rssi
   , setRssi
-  , securitySelector
-  , setSecuritySelector
-  , ssidSelector
-  , setSsidSelector
   , bssidSelector
-  , setBssidSelector
   , channelSelector
-  , setChannelSelector
-  , wiFiBandSelector
-  , setWiFiBandSelector
   , rssiSelector
+  , securitySelector
+  , setBssidSelector
+  , setChannelSelector
   , setRssiSelector
+  , setSecuritySelector
+  , setSsidSelector
+  , setWiFiBandSelector
+  , ssidSelector
+  , wiFiBandSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- security@
 security :: IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> IO (Id NSNumber)
-security mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "security") (retPtr retVoid) [] >>= retainedObject . castPtr
+security mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct securitySelector
 
 -- | @- setSecurity:@
 setSecurity :: (IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> value -> IO ()
-setSecurity mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "setSecurity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSecurity mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct setSecuritySelector (toNSNumber value)
 
 -- | @- ssid@
 ssid :: IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> IO (Id NSData)
-ssid mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "ssid") (retPtr retVoid) [] >>= retainedObject . castPtr
+ssid mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct ssidSelector
 
 -- | @- setSsid:@
 setSsid :: (IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct, IsNSData value) => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> value -> IO ()
-setSsid mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "setSsid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSsid mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct setSsidSelector (toNSData value)
 
 -- | @- bssid@
 bssid :: IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> IO (Id NSData)
-bssid mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "bssid") (retPtr retVoid) [] >>= retainedObject . castPtr
+bssid mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct bssidSelector
 
 -- | @- setBssid:@
 setBssid :: (IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct, IsNSData value) => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> value -> IO ()
-setBssid mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "setBssid:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBssid mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct setBssidSelector (toNSData value)
 
 -- | @- channel@
 channel :: IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> IO (Id NSNumber)
-channel mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "channel") (retPtr retVoid) [] >>= retainedObject . castPtr
+channel mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct channelSelector
 
 -- | @- setChannel:@
 setChannel :: (IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> value -> IO ()
-setChannel mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "setChannel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannel mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct setChannelSelector (toNSNumber value)
 
 -- | @- wiFiBand@
 wiFiBand :: IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> IO (Id NSNumber)
-wiFiBand mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "wiFiBand") (retPtr retVoid) [] >>= retainedObject . castPtr
+wiFiBand mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct wiFiBandSelector
 
 -- | @- setWiFiBand:@
 setWiFiBand :: (IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> value -> IO ()
-setWiFiBand mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "setWiFiBand:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWiFiBand mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct setWiFiBandSelector (toNSNumber value)
 
 -- | @- rssi@
 rssi :: IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> IO (Id NSNumber)
-rssi mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  =
-    sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "rssi") (retPtr retVoid) [] >>= retainedObject . castPtr
+rssi mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct rssiSelector
 
 -- | @- setRssi:@
 setRssi :: (IsMTRNetworkCommissioningClusterWiFiInterfaceScanResultStruct mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct, IsNSNumber value) => mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct -> value -> IO ()
-setRssi mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct (mkSelector "setRssi:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRssi mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct value =
+  sendMessage mtrNetworkCommissioningClusterWiFiInterfaceScanResultStruct setRssiSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @security@
-securitySelector :: Selector
+securitySelector :: Selector '[] (Id NSNumber)
 securitySelector = mkSelector "security"
 
 -- | @Selector@ for @setSecurity:@
-setSecuritySelector :: Selector
+setSecuritySelector :: Selector '[Id NSNumber] ()
 setSecuritySelector = mkSelector "setSecurity:"
 
 -- | @Selector@ for @ssid@
-ssidSelector :: Selector
+ssidSelector :: Selector '[] (Id NSData)
 ssidSelector = mkSelector "ssid"
 
 -- | @Selector@ for @setSsid:@
-setSsidSelector :: Selector
+setSsidSelector :: Selector '[Id NSData] ()
 setSsidSelector = mkSelector "setSsid:"
 
 -- | @Selector@ for @bssid@
-bssidSelector :: Selector
+bssidSelector :: Selector '[] (Id NSData)
 bssidSelector = mkSelector "bssid"
 
 -- | @Selector@ for @setBssid:@
-setBssidSelector :: Selector
+setBssidSelector :: Selector '[Id NSData] ()
 setBssidSelector = mkSelector "setBssid:"
 
 -- | @Selector@ for @channel@
-channelSelector :: Selector
+channelSelector :: Selector '[] (Id NSNumber)
 channelSelector = mkSelector "channel"
 
 -- | @Selector@ for @setChannel:@
-setChannelSelector :: Selector
+setChannelSelector :: Selector '[Id NSNumber] ()
 setChannelSelector = mkSelector "setChannel:"
 
 -- | @Selector@ for @wiFiBand@
-wiFiBandSelector :: Selector
+wiFiBandSelector :: Selector '[] (Id NSNumber)
 wiFiBandSelector = mkSelector "wiFiBand"
 
 -- | @Selector@ for @setWiFiBand:@
-setWiFiBandSelector :: Selector
+setWiFiBandSelector :: Selector '[Id NSNumber] ()
 setWiFiBandSelector = mkSelector "setWiFiBand:"
 
 -- | @Selector@ for @rssi@
-rssiSelector :: Selector
+rssiSelector :: Selector '[] (Id NSNumber)
 rssiSelector = mkSelector "rssi"
 
 -- | @Selector@ for @setRssi:@
-setRssiSelector :: Selector
+setRssiSelector :: Selector '[Id NSNumber] ()
 setRssiSelector = mkSelector "setRssi:"
 

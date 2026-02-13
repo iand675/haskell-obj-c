@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,25 +31,21 @@ module ObjC.AVFAudio.AVAudioInputNode
   , initSelector
   , setManualRenderingInputPCMFormat_inputBlockSelector
   , setMutedSpeechActivityEventListenerSelector
-  , voiceProcessingBypassedSelector
-  , setVoiceProcessingBypassedSelector
-  , voiceProcessingAGCEnabledSelector
   , setVoiceProcessingAGCEnabledSelector
-  , voiceProcessingInputMutedSelector
+  , setVoiceProcessingBypassedSelector
   , setVoiceProcessingInputMutedSelector
+  , voiceProcessingAGCEnabledSelector
+  , voiceProcessingBypassedSelector
+  , voiceProcessingInputMutedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioInputNode avAudioInputNode => avAudioInputNode -> IO (Id AVAudioInputNode)
-init_ avAudioInputNode  =
-    sendMsg avAudioInputNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioInputNode =
+  sendOwnedMessage avAudioInputNode initSelector
 
 -- | setManualRenderingInputPCMFormat:inputBlock:
 --
@@ -75,9 +72,8 @@ init_ avAudioInputNode  =
 --
 -- ObjC selector: @- setManualRenderingInputPCMFormat:inputBlock:@
 setManualRenderingInputPCMFormat_inputBlock :: (IsAVAudioInputNode avAudioInputNode, IsAVAudioFormat format) => avAudioInputNode -> format -> Ptr () -> IO Bool
-setManualRenderingInputPCMFormat_inputBlock avAudioInputNode  format block =
-  withObjCPtr format $ \raw_format ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioInputNode (mkSelector "setManualRenderingInputPCMFormat:inputBlock:") retCULong [argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+setManualRenderingInputPCMFormat_inputBlock avAudioInputNode format block =
+  sendMessage avAudioInputNode setManualRenderingInputPCMFormat_inputBlockSelector (toAVAudioFormat format) block
 
 -- | setMutedSpeechActivityEventListener
 --
@@ -91,8 +87,8 @@ setManualRenderingInputPCMFormat_inputBlock avAudioInputNode  format block =
 --
 -- ObjC selector: @- setMutedSpeechActivityEventListener:@
 setMutedSpeechActivityEventListener :: IsAVAudioInputNode avAudioInputNode => avAudioInputNode -> Ptr () -> IO Bool
-setMutedSpeechActivityEventListener avAudioInputNode  listenerBlock =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioInputNode (mkSelector "setMutedSpeechActivityEventListener:") retCULong [argPtr (castPtr listenerBlock :: Ptr ())]
+setMutedSpeechActivityEventListener avAudioInputNode listenerBlock =
+  sendMessage avAudioInputNode setMutedSpeechActivityEventListenerSelector listenerBlock
 
 -- | voiceProcessingBypassed
 --
@@ -102,8 +98,8 @@ setMutedSpeechActivityEventListener avAudioInputNode  listenerBlock =
 --
 -- ObjC selector: @- voiceProcessingBypassed@
 voiceProcessingBypassed :: IsAVAudioInputNode avAudioInputNode => avAudioInputNode -> IO Bool
-voiceProcessingBypassed avAudioInputNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioInputNode (mkSelector "voiceProcessingBypassed") retCULong []
+voiceProcessingBypassed avAudioInputNode =
+  sendMessage avAudioInputNode voiceProcessingBypassedSelector
 
 -- | voiceProcessingBypassed
 --
@@ -113,8 +109,8 @@ voiceProcessingBypassed avAudioInputNode  =
 --
 -- ObjC selector: @- setVoiceProcessingBypassed:@
 setVoiceProcessingBypassed :: IsAVAudioInputNode avAudioInputNode => avAudioInputNode -> Bool -> IO ()
-setVoiceProcessingBypassed avAudioInputNode  value =
-    sendMsg avAudioInputNode (mkSelector "setVoiceProcessingBypassed:") retVoid [argCULong (if value then 1 else 0)]
+setVoiceProcessingBypassed avAudioInputNode value =
+  sendMessage avAudioInputNode setVoiceProcessingBypassedSelector value
 
 -- | voiceProcessingAGCEnabled
 --
@@ -124,8 +120,8 @@ setVoiceProcessingBypassed avAudioInputNode  value =
 --
 -- ObjC selector: @- voiceProcessingAGCEnabled@
 voiceProcessingAGCEnabled :: IsAVAudioInputNode avAudioInputNode => avAudioInputNode -> IO Bool
-voiceProcessingAGCEnabled avAudioInputNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioInputNode (mkSelector "voiceProcessingAGCEnabled") retCULong []
+voiceProcessingAGCEnabled avAudioInputNode =
+  sendMessage avAudioInputNode voiceProcessingAGCEnabledSelector
 
 -- | voiceProcessingAGCEnabled
 --
@@ -135,8 +131,8 @@ voiceProcessingAGCEnabled avAudioInputNode  =
 --
 -- ObjC selector: @- setVoiceProcessingAGCEnabled:@
 setVoiceProcessingAGCEnabled :: IsAVAudioInputNode avAudioInputNode => avAudioInputNode -> Bool -> IO ()
-setVoiceProcessingAGCEnabled avAudioInputNode  value =
-    sendMsg avAudioInputNode (mkSelector "setVoiceProcessingAGCEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setVoiceProcessingAGCEnabled avAudioInputNode value =
+  sendMessage avAudioInputNode setVoiceProcessingAGCEnabledSelector value
 
 -- | voiceProcessingInputMuted
 --
@@ -146,8 +142,8 @@ setVoiceProcessingAGCEnabled avAudioInputNode  value =
 --
 -- ObjC selector: @- voiceProcessingInputMuted@
 voiceProcessingInputMuted :: IsAVAudioInputNode avAudioInputNode => avAudioInputNode -> IO Bool
-voiceProcessingInputMuted avAudioInputNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAudioInputNode (mkSelector "voiceProcessingInputMuted") retCULong []
+voiceProcessingInputMuted avAudioInputNode =
+  sendMessage avAudioInputNode voiceProcessingInputMutedSelector
 
 -- | voiceProcessingInputMuted
 --
@@ -157,46 +153,46 @@ voiceProcessingInputMuted avAudioInputNode  =
 --
 -- ObjC selector: @- setVoiceProcessingInputMuted:@
 setVoiceProcessingInputMuted :: IsAVAudioInputNode avAudioInputNode => avAudioInputNode -> Bool -> IO ()
-setVoiceProcessingInputMuted avAudioInputNode  value =
-    sendMsg avAudioInputNode (mkSelector "setVoiceProcessingInputMuted:") retVoid [argCULong (if value then 1 else 0)]
+setVoiceProcessingInputMuted avAudioInputNode value =
+  sendMessage avAudioInputNode setVoiceProcessingInputMutedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioInputNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @setManualRenderingInputPCMFormat:inputBlock:@
-setManualRenderingInputPCMFormat_inputBlockSelector :: Selector
+setManualRenderingInputPCMFormat_inputBlockSelector :: Selector '[Id AVAudioFormat, Ptr ()] Bool
 setManualRenderingInputPCMFormat_inputBlockSelector = mkSelector "setManualRenderingInputPCMFormat:inputBlock:"
 
 -- | @Selector@ for @setMutedSpeechActivityEventListener:@
-setMutedSpeechActivityEventListenerSelector :: Selector
+setMutedSpeechActivityEventListenerSelector :: Selector '[Ptr ()] Bool
 setMutedSpeechActivityEventListenerSelector = mkSelector "setMutedSpeechActivityEventListener:"
 
 -- | @Selector@ for @voiceProcessingBypassed@
-voiceProcessingBypassedSelector :: Selector
+voiceProcessingBypassedSelector :: Selector '[] Bool
 voiceProcessingBypassedSelector = mkSelector "voiceProcessingBypassed"
 
 -- | @Selector@ for @setVoiceProcessingBypassed:@
-setVoiceProcessingBypassedSelector :: Selector
+setVoiceProcessingBypassedSelector :: Selector '[Bool] ()
 setVoiceProcessingBypassedSelector = mkSelector "setVoiceProcessingBypassed:"
 
 -- | @Selector@ for @voiceProcessingAGCEnabled@
-voiceProcessingAGCEnabledSelector :: Selector
+voiceProcessingAGCEnabledSelector :: Selector '[] Bool
 voiceProcessingAGCEnabledSelector = mkSelector "voiceProcessingAGCEnabled"
 
 -- | @Selector@ for @setVoiceProcessingAGCEnabled:@
-setVoiceProcessingAGCEnabledSelector :: Selector
+setVoiceProcessingAGCEnabledSelector :: Selector '[Bool] ()
 setVoiceProcessingAGCEnabledSelector = mkSelector "setVoiceProcessingAGCEnabled:"
 
 -- | @Selector@ for @voiceProcessingInputMuted@
-voiceProcessingInputMutedSelector :: Selector
+voiceProcessingInputMutedSelector :: Selector '[] Bool
 voiceProcessingInputMutedSelector = mkSelector "voiceProcessingInputMuted"
 
 -- | @Selector@ for @setVoiceProcessingInputMuted:@
-setVoiceProcessingInputMutedSelector :: Selector
+setVoiceProcessingInputMutedSelector :: Selector '[Bool] ()
 setVoiceProcessingInputMutedSelector = mkSelector "setVoiceProcessingInputMuted:"
 

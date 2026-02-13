@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,27 +31,23 @@ module ObjC.MetalPerformanceShaders.MPSMatrixMultiplication
   , setBatchStart
   , batchSize
   , setBatchSize
-  , initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorColumns_alpha_betaSelector
-  , initWithDevice_resultRows_resultColumns_interiorColumnsSelector
-  , initWithDeviceSelector
-  , encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrixSelector
-  , batchStartSelector
-  , setBatchStartSelector
   , batchSizeSelector
+  , batchStartSelector
+  , encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrixSelector
+  , initWithDeviceSelector
+  , initWithDevice_resultRows_resultColumns_interiorColumnsSelector
+  , initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorColumns_alpha_betaSelector
   , setBatchSizeSelector
+  , setBatchStartSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,8 +76,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:transposeLeft:transposeRight:resultRows:resultColumns:interiorColumns:alpha:beta:@
 initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorColumns_alpha_beta :: IsMPSMatrixMultiplication mpsMatrixMultiplication => mpsMatrixMultiplication -> RawId -> Bool -> Bool -> CULong -> CULong -> CULong -> CDouble -> CDouble -> IO (Id MPSMatrixMultiplication)
-initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorColumns_alpha_beta mpsMatrixMultiplication  device transposeLeft transposeRight resultRows resultColumns interiorColumns alpha beta =
-    sendMsg mpsMatrixMultiplication (mkSelector "initWithDevice:transposeLeft:transposeRight:resultRows:resultColumns:interiorColumns:alpha:beta:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong (if transposeLeft then 1 else 0), argCULong (if transposeRight then 1 else 0), argCULong resultRows, argCULong resultColumns, argCULong interiorColumns, argCDouble alpha, argCDouble beta] >>= ownedObject . castPtr
+initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorColumns_alpha_beta mpsMatrixMultiplication device transposeLeft transposeRight resultRows resultColumns interiorColumns alpha beta =
+  sendOwnedMessage mpsMatrixMultiplication initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorColumns_alpha_betaSelector device transposeLeft transposeRight resultRows resultColumns interiorColumns alpha beta
 
 -- | Convenience initialization for a matrix-matrix multiplication              with no transpositions, unit scaling of the product, and no              accumulation of the result.  The scaling factors alpha and beta              are taken to be 1.0 and 0.0 respectively.
 --
@@ -96,15 +93,15 @@ initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorCol
 --
 -- ObjC selector: @- initWithDevice:resultRows:resultColumns:interiorColumns:@
 initWithDevice_resultRows_resultColumns_interiorColumns :: IsMPSMatrixMultiplication mpsMatrixMultiplication => mpsMatrixMultiplication -> RawId -> CULong -> CULong -> CULong -> IO (Id MPSMatrixMultiplication)
-initWithDevice_resultRows_resultColumns_interiorColumns mpsMatrixMultiplication  device resultRows resultColumns interiorColumns =
-    sendMsg mpsMatrixMultiplication (mkSelector "initWithDevice:resultRows:resultColumns:interiorColumns:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong resultRows, argCULong resultColumns, argCULong interiorColumns] >>= ownedObject . castPtr
+initWithDevice_resultRows_resultColumns_interiorColumns mpsMatrixMultiplication device resultRows resultColumns interiorColumns =
+  sendOwnedMessage mpsMatrixMultiplication initWithDevice_resultRows_resultColumns_interiorColumnsSelector device resultRows resultColumns interiorColumns
 
 -- | Use the above initialization method instead.
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSMatrixMultiplication mpsMatrixMultiplication => mpsMatrixMultiplication -> RawId -> IO (Id MPSMatrixMultiplication)
-initWithDevice mpsMatrixMultiplication  device =
-    sendMsg mpsMatrixMultiplication (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsMatrixMultiplication device =
+  sendOwnedMessage mpsMatrixMultiplication initWithDeviceSelector device
 
 -- | Encode a MPSMatrixMultiplication object to a command buffer.
 --
@@ -128,11 +125,8 @@ initWithDevice mpsMatrixMultiplication  device =
 --
 -- ObjC selector: @- encodeToCommandBuffer:leftMatrix:rightMatrix:resultMatrix:@
 encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrix :: (IsMPSMatrixMultiplication mpsMatrixMultiplication, IsMPSMatrix leftMatrix, IsMPSMatrix rightMatrix, IsMPSMatrix resultMatrix) => mpsMatrixMultiplication -> RawId -> leftMatrix -> rightMatrix -> resultMatrix -> IO ()
-encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrix mpsMatrixMultiplication  commandBuffer leftMatrix rightMatrix resultMatrix =
-  withObjCPtr leftMatrix $ \raw_leftMatrix ->
-    withObjCPtr rightMatrix $ \raw_rightMatrix ->
-      withObjCPtr resultMatrix $ \raw_resultMatrix ->
-          sendMsg mpsMatrixMultiplication (mkSelector "encodeToCommandBuffer:leftMatrix:rightMatrix:resultMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_leftMatrix :: Ptr ()), argPtr (castPtr raw_rightMatrix :: Ptr ()), argPtr (castPtr raw_resultMatrix :: Ptr ())]
+encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrix mpsMatrixMultiplication commandBuffer leftMatrix rightMatrix resultMatrix =
+  sendMessage mpsMatrixMultiplication encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrixSelector commandBuffer (toMPSMatrix leftMatrix) (toMPSMatrix rightMatrix) (toMPSMatrix resultMatrix)
 
 -- | batchStart
 --
@@ -140,8 +134,8 @@ encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrix mpsMatrixMultiplicatio
 --
 -- ObjC selector: @- batchStart@
 batchStart :: IsMPSMatrixMultiplication mpsMatrixMultiplication => mpsMatrixMultiplication -> IO CULong
-batchStart mpsMatrixMultiplication  =
-    sendMsg mpsMatrixMultiplication (mkSelector "batchStart") retCULong []
+batchStart mpsMatrixMultiplication =
+  sendMessage mpsMatrixMultiplication batchStartSelector
 
 -- | batchStart
 --
@@ -149,8 +143,8 @@ batchStart mpsMatrixMultiplication  =
 --
 -- ObjC selector: @- setBatchStart:@
 setBatchStart :: IsMPSMatrixMultiplication mpsMatrixMultiplication => mpsMatrixMultiplication -> CULong -> IO ()
-setBatchStart mpsMatrixMultiplication  value =
-    sendMsg mpsMatrixMultiplication (mkSelector "setBatchStart:") retVoid [argCULong value]
+setBatchStart mpsMatrixMultiplication value =
+  sendMessage mpsMatrixMultiplication setBatchStartSelector value
 
 -- | batchSize
 --
@@ -158,8 +152,8 @@ setBatchStart mpsMatrixMultiplication  value =
 --
 -- ObjC selector: @- batchSize@
 batchSize :: IsMPSMatrixMultiplication mpsMatrixMultiplication => mpsMatrixMultiplication -> IO CULong
-batchSize mpsMatrixMultiplication  =
-    sendMsg mpsMatrixMultiplication (mkSelector "batchSize") retCULong []
+batchSize mpsMatrixMultiplication =
+  sendMessage mpsMatrixMultiplication batchSizeSelector
 
 -- | batchSize
 --
@@ -167,42 +161,42 @@ batchSize mpsMatrixMultiplication  =
 --
 -- ObjC selector: @- setBatchSize:@
 setBatchSize :: IsMPSMatrixMultiplication mpsMatrixMultiplication => mpsMatrixMultiplication -> CULong -> IO ()
-setBatchSize mpsMatrixMultiplication  value =
-    sendMsg mpsMatrixMultiplication (mkSelector "setBatchSize:") retVoid [argCULong value]
+setBatchSize mpsMatrixMultiplication value =
+  sendMessage mpsMatrixMultiplication setBatchSizeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:transposeLeft:transposeRight:resultRows:resultColumns:interiorColumns:alpha:beta:@
-initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorColumns_alpha_betaSelector :: Selector
+initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorColumns_alpha_betaSelector :: Selector '[RawId, Bool, Bool, CULong, CULong, CULong, CDouble, CDouble] (Id MPSMatrixMultiplication)
 initWithDevice_transposeLeft_transposeRight_resultRows_resultColumns_interiorColumns_alpha_betaSelector = mkSelector "initWithDevice:transposeLeft:transposeRight:resultRows:resultColumns:interiorColumns:alpha:beta:"
 
 -- | @Selector@ for @initWithDevice:resultRows:resultColumns:interiorColumns:@
-initWithDevice_resultRows_resultColumns_interiorColumnsSelector :: Selector
+initWithDevice_resultRows_resultColumns_interiorColumnsSelector :: Selector '[RawId, CULong, CULong, CULong] (Id MPSMatrixMultiplication)
 initWithDevice_resultRows_resultColumns_interiorColumnsSelector = mkSelector "initWithDevice:resultRows:resultColumns:interiorColumns:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSMatrixMultiplication)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @encodeToCommandBuffer:leftMatrix:rightMatrix:resultMatrix:@
-encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrixSelector :: Selector
+encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix] ()
 encodeToCommandBuffer_leftMatrix_rightMatrix_resultMatrixSelector = mkSelector "encodeToCommandBuffer:leftMatrix:rightMatrix:resultMatrix:"
 
 -- | @Selector@ for @batchStart@
-batchStartSelector :: Selector
+batchStartSelector :: Selector '[] CULong
 batchStartSelector = mkSelector "batchStart"
 
 -- | @Selector@ for @setBatchStart:@
-setBatchStartSelector :: Selector
+setBatchStartSelector :: Selector '[CULong] ()
 setBatchStartSelector = mkSelector "setBatchStart:"
 
 -- | @Selector@ for @batchSize@
-batchSizeSelector :: Selector
+batchSizeSelector :: Selector '[] CULong
 batchSizeSelector = mkSelector "batchSize"
 
 -- | @Selector@ for @setBatchSize:@
-setBatchSizeSelector :: Selector
+setBatchSizeSelector :: Selector '[CULong] ()
 setBatchSizeSelector = mkSelector "setBatchSize:"
 

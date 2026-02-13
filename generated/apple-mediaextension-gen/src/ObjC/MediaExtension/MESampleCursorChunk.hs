@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.MediaExtension.MESampleCursorChunk
   , init_
   , byteSource
   , sampleIndexWithinChunk
-  , newSelector
-  , initSelector
   , byteSourceSelector
+  , initSelector
+  , newSelector
   , sampleIndexWithinChunkSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,12 +41,12 @@ new :: IO (Id MESampleCursorChunk)
 new  =
   do
     cls' <- getRequiredClass "MESampleCursorChunk"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMESampleCursorChunk meSampleCursorChunk => meSampleCursorChunk -> IO (Id MESampleCursorChunk)
-init_ meSampleCursorChunk  =
-    sendMsg meSampleCursorChunk (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ meSampleCursorChunk =
+  sendOwnedMessage meSampleCursorChunk initSelector
 
 -- | byteSource
 --
@@ -57,8 +54,8 @@ init_ meSampleCursorChunk  =
 --
 -- ObjC selector: @- byteSource@
 byteSource :: IsMESampleCursorChunk meSampleCursorChunk => meSampleCursorChunk -> IO (Id MEByteSource)
-byteSource meSampleCursorChunk  =
-    sendMsg meSampleCursorChunk (mkSelector "byteSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+byteSource meSampleCursorChunk =
+  sendMessage meSampleCursorChunk byteSourceSelector
 
 -- | sampleIndexWithinChunk
 --
@@ -68,26 +65,26 @@ byteSource meSampleCursorChunk  =
 --
 -- ObjC selector: @- sampleIndexWithinChunk@
 sampleIndexWithinChunk :: IsMESampleCursorChunk meSampleCursorChunk => meSampleCursorChunk -> IO CLong
-sampleIndexWithinChunk meSampleCursorChunk  =
-    sendMsg meSampleCursorChunk (mkSelector "sampleIndexWithinChunk") retCLong []
+sampleIndexWithinChunk meSampleCursorChunk =
+  sendMessage meSampleCursorChunk sampleIndexWithinChunkSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MESampleCursorChunk)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MESampleCursorChunk)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @byteSource@
-byteSourceSelector :: Selector
+byteSourceSelector :: Selector '[] (Id MEByteSource)
 byteSourceSelector = mkSelector "byteSource"
 
 -- | @Selector@ for @sampleIndexWithinChunk@
-sampleIndexWithinChunkSelector :: Selector
+sampleIndexWithinChunkSelector :: Selector '[] CLong
 sampleIndexWithinChunkSelector = mkSelector "sampleIndexWithinChunk"
 

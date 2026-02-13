@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data TkStubHooks = TkStubHooks
   { tkStubHooksTkPlatStubs :: !(Ptr ())
@@ -43,6 +45,16 @@ argTkStubHooks = mkStorableArg tkStubHooksStructType
 retTkStubHooks :: RetType TkStubHooks
 retTkStubHooks = mkStorableRetType tkStubHooksStructType
 
+instance ObjCArgument TkStubHooks where
+  withObjCArg x k = k (argTkStubHooks x)
+
+instance ObjCReturn TkStubHooks where
+  type RawReturn TkStubHooks = TkStubHooks
+  objcRetType = retTkStubHooks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data XExtData = XExtData
   { xExtDataNumber :: !CInt
   , xExtDataNext :: !(Ptr ())
@@ -73,6 +85,16 @@ argXExtData = mkStorableArg xExtDataStructType
 retXExtData :: RetType XExtData
 retXExtData = mkStorableRetType xExtDataStructType
 
+instance ObjCArgument XExtData where
+  withObjCArg x k = k (argXExtData x)
+
+instance ObjCReturn XExtData where
+  type RawReturn XExtData = XExtData
+  objcRetType = retXExtData
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data XIMPreeditCaretCallbackStruct = XIMPreeditCaretCallbackStruct
   { ximPreeditCaretCallbackStructPosition :: !CInt
   , ximPreeditCaretCallbackStructDirection :: !CInt
@@ -99,6 +121,16 @@ argXIMPreeditCaretCallbackStruct = mkStorableArg ximPreeditCaretCallbackStructSt
 
 retXIMPreeditCaretCallbackStruct :: RetType XIMPreeditCaretCallbackStruct
 retXIMPreeditCaretCallbackStruct = mkStorableRetType ximPreeditCaretCallbackStructStructType
+
+instance ObjCArgument XIMPreeditCaretCallbackStruct where
+  withObjCArg x k = k (argXIMPreeditCaretCallbackStruct x)
+
+instance ObjCReturn XIMPreeditCaretCallbackStruct where
+  type RawReturn XIMPreeditCaretCallbackStruct = XIMPreeditCaretCallbackStruct
+  objcRetType = retXIMPreeditCaretCallbackStruct
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data XImage = XImage
   { xImageWidth :: !CInt
@@ -168,3 +200,13 @@ argXImage = mkStorableArg xImageStructType
 
 retXImage :: RetType XImage
 retXImage = mkStorableRetType xImageStructType
+
+instance ObjCArgument XImage where
+  withObjCArg x k = k (argXImage x)
+
+instance ObjCReturn XImage where
+  type RawReturn XImage = XImage
+  objcRetType = retXImage
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,31 +27,27 @@ module ObjC.AudioVideoBridging.AVB17221EntityDiscovery
   , interface
   , discoveryDelegate
   , setDiscoveryDelegate
-  , initWithInterfaceNameSelector
-  , primeIteratorsSelector
+  , addLocalEntity_errorSelector
+  , changeEntityWithEntityID_toNewGPTPGrandmasterID_errorSelector
   , discoverEntitiesSelector
   , discoverEntitySelector
-  , addLocalEntity_errorSelector
-  , removeLocalEntity_errorSelector
-  , changeEntityWithEntityID_toNewGPTPGrandmasterID_errorSelector
-  , interfaceNameSelector
-  , setInterfaceNameSelector
-  , interfaceSelector
   , discoveryDelegateSelector
+  , initWithInterfaceNameSelector
+  , interfaceNameSelector
+  , interfaceSelector
+  , primeIteratorsSelector
+  , removeLocalEntity_errorSelector
   , setDiscoveryDelegateSelector
+  , setInterfaceNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -67,9 +64,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithInterfaceName:@
 initWithInterfaceName :: (IsAVB17221EntityDiscovery avB17221EntityDiscovery, IsNSString anInterfaceName) => avB17221EntityDiscovery -> anInterfaceName -> IO (Id AVB17221EntityDiscovery)
-initWithInterfaceName avB17221EntityDiscovery  anInterfaceName =
-  withObjCPtr anInterfaceName $ \raw_anInterfaceName ->
-      sendMsg avB17221EntityDiscovery (mkSelector "initWithInterfaceName:") (retPtr retVoid) [argPtr (castPtr raw_anInterfaceName :: Ptr ())] >>= ownedObject . castPtr
+initWithInterfaceName avB17221EntityDiscovery anInterfaceName =
+  sendOwnedMessage avB17221EntityDiscovery initWithInterfaceNameSelector (toNSString anInterfaceName)
 
 -- | primeIterators
 --
@@ -79,8 +75,8 @@ initWithInterfaceName avB17221EntityDiscovery  anInterfaceName =
 --
 -- ObjC selector: @- primeIterators@
 primeIterators :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221EntityDiscovery -> IO ()
-primeIterators avB17221EntityDiscovery  =
-    sendMsg avB17221EntityDiscovery (mkSelector "primeIterators") retVoid []
+primeIterators avB17221EntityDiscovery =
+  sendMessage avB17221EntityDiscovery primeIteratorsSelector
 
 -- | discoverEntities
 --
@@ -90,8 +86,8 @@ primeIterators avB17221EntityDiscovery  =
 --
 -- ObjC selector: @- discoverEntities@
 discoverEntities :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221EntityDiscovery -> IO Bool
-discoverEntities avB17221EntityDiscovery  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avB17221EntityDiscovery (mkSelector "discoverEntities") retCULong []
+discoverEntities avB17221EntityDiscovery =
+  sendMessage avB17221EntityDiscovery discoverEntitiesSelector
 
 -- | discoverEntity:
 --
@@ -103,8 +99,8 @@ discoverEntities avB17221EntityDiscovery  =
 --
 -- ObjC selector: @- discoverEntity:@
 discoverEntity :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221EntityDiscovery -> CULong -> IO Bool
-discoverEntity avB17221EntityDiscovery  entityID =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avB17221EntityDiscovery (mkSelector "discoverEntity:") retCULong [argCULong entityID]
+discoverEntity avB17221EntityDiscovery entityID =
+  sendMessage avB17221EntityDiscovery discoverEntitySelector entityID
 
 -- | addLocalEntity:error:
 --
@@ -118,10 +114,8 @@ discoverEntity avB17221EntityDiscovery  entityID =
 --
 -- ObjC selector: @- addLocalEntity:error:@
 addLocalEntity_error :: (IsAVB17221EntityDiscovery avB17221EntityDiscovery, IsAVB17221Entity anEntity, IsNSError error_) => avB17221EntityDiscovery -> anEntity -> error_ -> IO Bool
-addLocalEntity_error avB17221EntityDiscovery  anEntity error_ =
-  withObjCPtr anEntity $ \raw_anEntity ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avB17221EntityDiscovery (mkSelector "addLocalEntity:error:") retCULong [argPtr (castPtr raw_anEntity :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+addLocalEntity_error avB17221EntityDiscovery anEntity error_ =
+  sendMessage avB17221EntityDiscovery addLocalEntity_errorSelector (toAVB17221Entity anEntity) (toNSError error_)
 
 -- | removeLocalEntity:
 --
@@ -135,9 +129,8 @@ addLocalEntity_error avB17221EntityDiscovery  anEntity error_ =
 --
 -- ObjC selector: @- removeLocalEntity:error:@
 removeLocalEntity_error :: (IsAVB17221EntityDiscovery avB17221EntityDiscovery, IsNSError error_) => avB17221EntityDiscovery -> CULong -> error_ -> IO Bool
-removeLocalEntity_error avB17221EntityDiscovery  guid error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avB17221EntityDiscovery (mkSelector "removeLocalEntity:error:") retCULong [argCULong guid, argPtr (castPtr raw_error_ :: Ptr ())]
+removeLocalEntity_error avB17221EntityDiscovery guid error_ =
+  sendMessage avB17221EntityDiscovery removeLocalEntity_errorSelector guid (toNSError error_)
 
 -- | changeEntityWithEntityID:toNewGPTPGrandmasterID:
 --
@@ -153,9 +146,8 @@ removeLocalEntity_error avB17221EntityDiscovery  guid error_ =
 --
 -- ObjC selector: @- changeEntityWithEntityID:toNewGPTPGrandmasterID:error:@
 changeEntityWithEntityID_toNewGPTPGrandmasterID_error :: (IsAVB17221EntityDiscovery avB17221EntityDiscovery, IsNSError error_) => avB17221EntityDiscovery -> CULong -> CULong -> error_ -> IO Bool
-changeEntityWithEntityID_toNewGPTPGrandmasterID_error avB17221EntityDiscovery  entityID gPTPGrandmasterID error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avB17221EntityDiscovery (mkSelector "changeEntityWithEntityID:toNewGPTPGrandmasterID:error:") retCULong [argCULong entityID, argCULong gPTPGrandmasterID, argPtr (castPtr raw_error_ :: Ptr ())]
+changeEntityWithEntityID_toNewGPTPGrandmasterID_error avB17221EntityDiscovery entityID gPTPGrandmasterID error_ =
+  sendMessage avB17221EntityDiscovery changeEntityWithEntityID_toNewGPTPGrandmasterID_errorSelector entityID gPTPGrandmasterID (toNSError error_)
 
 -- | interfaceName
 --
@@ -163,8 +155,8 @@ changeEntityWithEntityID_toNewGPTPGrandmasterID_error avB17221EntityDiscovery  e
 --
 -- ObjC selector: @- interfaceName@
 interfaceName :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221EntityDiscovery -> IO (Id NSString)
-interfaceName avB17221EntityDiscovery  =
-    sendMsg avB17221EntityDiscovery (mkSelector "interfaceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+interfaceName avB17221EntityDiscovery =
+  sendMessage avB17221EntityDiscovery interfaceNameSelector
 
 -- | interfaceName
 --
@@ -172,9 +164,8 @@ interfaceName avB17221EntityDiscovery  =
 --
 -- ObjC selector: @- setInterfaceName:@
 setInterfaceName :: (IsAVB17221EntityDiscovery avB17221EntityDiscovery, IsNSString value) => avB17221EntityDiscovery -> value -> IO ()
-setInterfaceName avB17221EntityDiscovery  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avB17221EntityDiscovery (mkSelector "setInterfaceName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInterfaceName avB17221EntityDiscovery value =
+  sendMessage avB17221EntityDiscovery setInterfaceNameSelector (toNSString value)
 
 -- | interface
 --
@@ -182,8 +173,8 @@ setInterfaceName avB17221EntityDiscovery  value =
 --
 -- ObjC selector: @- interface@
 interface :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221EntityDiscovery -> IO (Id AVBInterface)
-interface avB17221EntityDiscovery  =
-    sendMsg avB17221EntityDiscovery (mkSelector "interface") (retPtr retVoid) [] >>= retainedObject . castPtr
+interface avB17221EntityDiscovery =
+  sendMessage avB17221EntityDiscovery interfaceSelector
 
 -- | discoveryDelegate
 --
@@ -191,8 +182,8 @@ interface avB17221EntityDiscovery  =
 --
 -- ObjC selector: @- discoveryDelegate@
 discoveryDelegate :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221EntityDiscovery -> IO RawId
-discoveryDelegate avB17221EntityDiscovery  =
-    fmap (RawId . castPtr) $ sendMsg avB17221EntityDiscovery (mkSelector "discoveryDelegate") (retPtr retVoid) []
+discoveryDelegate avB17221EntityDiscovery =
+  sendMessage avB17221EntityDiscovery discoveryDelegateSelector
 
 -- | discoveryDelegate
 --
@@ -200,58 +191,58 @@ discoveryDelegate avB17221EntityDiscovery  =
 --
 -- ObjC selector: @- setDiscoveryDelegate:@
 setDiscoveryDelegate :: IsAVB17221EntityDiscovery avB17221EntityDiscovery => avB17221EntityDiscovery -> RawId -> IO ()
-setDiscoveryDelegate avB17221EntityDiscovery  value =
-    sendMsg avB17221EntityDiscovery (mkSelector "setDiscoveryDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDiscoveryDelegate avB17221EntityDiscovery value =
+  sendMessage avB17221EntityDiscovery setDiscoveryDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithInterfaceName:@
-initWithInterfaceNameSelector :: Selector
+initWithInterfaceNameSelector :: Selector '[Id NSString] (Id AVB17221EntityDiscovery)
 initWithInterfaceNameSelector = mkSelector "initWithInterfaceName:"
 
 -- | @Selector@ for @primeIterators@
-primeIteratorsSelector :: Selector
+primeIteratorsSelector :: Selector '[] ()
 primeIteratorsSelector = mkSelector "primeIterators"
 
 -- | @Selector@ for @discoverEntities@
-discoverEntitiesSelector :: Selector
+discoverEntitiesSelector :: Selector '[] Bool
 discoverEntitiesSelector = mkSelector "discoverEntities"
 
 -- | @Selector@ for @discoverEntity:@
-discoverEntitySelector :: Selector
+discoverEntitySelector :: Selector '[CULong] Bool
 discoverEntitySelector = mkSelector "discoverEntity:"
 
 -- | @Selector@ for @addLocalEntity:error:@
-addLocalEntity_errorSelector :: Selector
+addLocalEntity_errorSelector :: Selector '[Id AVB17221Entity, Id NSError] Bool
 addLocalEntity_errorSelector = mkSelector "addLocalEntity:error:"
 
 -- | @Selector@ for @removeLocalEntity:error:@
-removeLocalEntity_errorSelector :: Selector
+removeLocalEntity_errorSelector :: Selector '[CULong, Id NSError] Bool
 removeLocalEntity_errorSelector = mkSelector "removeLocalEntity:error:"
 
 -- | @Selector@ for @changeEntityWithEntityID:toNewGPTPGrandmasterID:error:@
-changeEntityWithEntityID_toNewGPTPGrandmasterID_errorSelector :: Selector
+changeEntityWithEntityID_toNewGPTPGrandmasterID_errorSelector :: Selector '[CULong, CULong, Id NSError] Bool
 changeEntityWithEntityID_toNewGPTPGrandmasterID_errorSelector = mkSelector "changeEntityWithEntityID:toNewGPTPGrandmasterID:error:"
 
 -- | @Selector@ for @interfaceName@
-interfaceNameSelector :: Selector
+interfaceNameSelector :: Selector '[] (Id NSString)
 interfaceNameSelector = mkSelector "interfaceName"
 
 -- | @Selector@ for @setInterfaceName:@
-setInterfaceNameSelector :: Selector
+setInterfaceNameSelector :: Selector '[Id NSString] ()
 setInterfaceNameSelector = mkSelector "setInterfaceName:"
 
 -- | @Selector@ for @interface@
-interfaceSelector :: Selector
+interfaceSelector :: Selector '[] (Id AVBInterface)
 interfaceSelector = mkSelector "interface"
 
 -- | @Selector@ for @discoveryDelegate@
-discoveryDelegateSelector :: Selector
+discoveryDelegateSelector :: Selector '[] RawId
 discoveryDelegateSelector = mkSelector "discoveryDelegate"
 
 -- | @Selector@ for @setDiscoveryDelegate:@
-setDiscoveryDelegateSelector :: Selector
+setDiscoveryDelegateSelector :: Selector '[RawId] ()
 setDiscoveryDelegateSelector = mkSelector "setDiscoveryDelegate:"
 

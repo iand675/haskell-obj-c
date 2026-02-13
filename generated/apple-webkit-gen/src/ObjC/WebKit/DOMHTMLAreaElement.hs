@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,41 +29,37 @@ module ObjC.WebKit.DOMHTMLAreaElement
   , pathname
   , search
   , hashName
-  , altSelector
-  , setAltSelector
-  , coordsSelector
-  , setCoordsSelector
-  , noHrefSelector
-  , setNoHrefSelector
-  , shapeSelector
-  , setShapeSelector
-  , targetSelector
-  , setTargetSelector
-  , accessKeySelector
-  , setAccessKeySelector
   , absoluteLinkURLSelector
-  , hrefSelector
-  , setHrefSelector
-  , protocolSelector
+  , accessKeySelector
+  , altSelector
+  , coordsSelector
+  , hashNameSelector
   , hostSelector
   , hostnameSelector
-  , portSelector
+  , hrefSelector
+  , noHrefSelector
   , pathnameSelector
+  , portSelector
+  , protocolSelector
   , searchSelector
-  , hashNameSelector
+  , setAccessKeySelector
+  , setAltSelector
+  , setCoordsSelector
+  , setHrefSelector
+  , setNoHrefSelector
+  , setShapeSelector
+  , setTargetSelector
+  , shapeSelector
+  , targetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,209 +68,203 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- alt@
 alt :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-alt domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "alt") (retPtr retVoid) [] >>= retainedObject . castPtr
+alt domhtmlAreaElement =
+  sendMessage domhtmlAreaElement altSelector
 
 -- | @- setAlt:@
 setAlt :: (IsDOMHTMLAreaElement domhtmlAreaElement, IsNSString value) => domhtmlAreaElement -> value -> IO ()
-setAlt domhtmlAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAreaElement (mkSelector "setAlt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlt domhtmlAreaElement value =
+  sendMessage domhtmlAreaElement setAltSelector (toNSString value)
 
 -- | @- coords@
 coords :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-coords domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "coords") (retPtr retVoid) [] >>= retainedObject . castPtr
+coords domhtmlAreaElement =
+  sendMessage domhtmlAreaElement coordsSelector
 
 -- | @- setCoords:@
 setCoords :: (IsDOMHTMLAreaElement domhtmlAreaElement, IsNSString value) => domhtmlAreaElement -> value -> IO ()
-setCoords domhtmlAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAreaElement (mkSelector "setCoords:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCoords domhtmlAreaElement value =
+  sendMessage domhtmlAreaElement setCoordsSelector (toNSString value)
 
 -- | @- noHref@
 noHref :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO Bool
-noHref domhtmlAreaElement  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg domhtmlAreaElement (mkSelector "noHref") retCULong []
+noHref domhtmlAreaElement =
+  sendMessage domhtmlAreaElement noHrefSelector
 
 -- | @- setNoHref:@
 setNoHref :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> Bool -> IO ()
-setNoHref domhtmlAreaElement  value =
-    sendMsg domhtmlAreaElement (mkSelector "setNoHref:") retVoid [argCULong (if value then 1 else 0)]
+setNoHref domhtmlAreaElement value =
+  sendMessage domhtmlAreaElement setNoHrefSelector value
 
 -- | @- shape@
 shape :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-shape domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "shape") (retPtr retVoid) [] >>= retainedObject . castPtr
+shape domhtmlAreaElement =
+  sendMessage domhtmlAreaElement shapeSelector
 
 -- | @- setShape:@
 setShape :: (IsDOMHTMLAreaElement domhtmlAreaElement, IsNSString value) => domhtmlAreaElement -> value -> IO ()
-setShape domhtmlAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAreaElement (mkSelector "setShape:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setShape domhtmlAreaElement value =
+  sendMessage domhtmlAreaElement setShapeSelector (toNSString value)
 
 -- | @- target@
 target :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-target domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "target") (retPtr retVoid) [] >>= retainedObject . castPtr
+target domhtmlAreaElement =
+  sendMessage domhtmlAreaElement targetSelector
 
 -- | @- setTarget:@
 setTarget :: (IsDOMHTMLAreaElement domhtmlAreaElement, IsNSString value) => domhtmlAreaElement -> value -> IO ()
-setTarget domhtmlAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAreaElement (mkSelector "setTarget:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTarget domhtmlAreaElement value =
+  sendMessage domhtmlAreaElement setTargetSelector (toNSString value)
 
 -- | @- accessKey@
 accessKey :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-accessKey domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "accessKey") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessKey domhtmlAreaElement =
+  sendMessage domhtmlAreaElement accessKeySelector
 
 -- | @- setAccessKey:@
 setAccessKey :: (IsDOMHTMLAreaElement domhtmlAreaElement, IsNSString value) => domhtmlAreaElement -> value -> IO ()
-setAccessKey domhtmlAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAreaElement (mkSelector "setAccessKey:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessKey domhtmlAreaElement value =
+  sendMessage domhtmlAreaElement setAccessKeySelector (toNSString value)
 
 -- | @- absoluteLinkURL@
 absoluteLinkURL :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSURL)
-absoluteLinkURL domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "absoluteLinkURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+absoluteLinkURL domhtmlAreaElement =
+  sendMessage domhtmlAreaElement absoluteLinkURLSelector
 
 -- | @- href@
 href :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-href domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "href") (retPtr retVoid) [] >>= retainedObject . castPtr
+href domhtmlAreaElement =
+  sendMessage domhtmlAreaElement hrefSelector
 
 -- | @- setHref:@
 setHref :: (IsDOMHTMLAreaElement domhtmlAreaElement, IsNSString value) => domhtmlAreaElement -> value -> IO ()
-setHref domhtmlAreaElement  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg domhtmlAreaElement (mkSelector "setHref:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setHref domhtmlAreaElement value =
+  sendMessage domhtmlAreaElement setHrefSelector (toNSString value)
 
 -- | @- protocol@
 protocol :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-protocol domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "protocol") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocol domhtmlAreaElement =
+  sendMessage domhtmlAreaElement protocolSelector
 
 -- | @- host@
 host :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-host domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "host") (retPtr retVoid) [] >>= retainedObject . castPtr
+host domhtmlAreaElement =
+  sendMessage domhtmlAreaElement hostSelector
 
 -- | @- hostname@
 hostname :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-hostname domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "hostname") (retPtr retVoid) [] >>= retainedObject . castPtr
+hostname domhtmlAreaElement =
+  sendMessage domhtmlAreaElement hostnameSelector
 
 -- | @- port@
 port :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-port domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "port") (retPtr retVoid) [] >>= retainedObject . castPtr
+port domhtmlAreaElement =
+  sendMessage domhtmlAreaElement portSelector
 
 -- | @- pathname@
 pathname :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-pathname domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "pathname") (retPtr retVoid) [] >>= retainedObject . castPtr
+pathname domhtmlAreaElement =
+  sendMessage domhtmlAreaElement pathnameSelector
 
 -- | @- search@
 search :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-search domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "search") (retPtr retVoid) [] >>= retainedObject . castPtr
+search domhtmlAreaElement =
+  sendMessage domhtmlAreaElement searchSelector
 
 -- | @- hashName@
 hashName :: IsDOMHTMLAreaElement domhtmlAreaElement => domhtmlAreaElement -> IO (Id NSString)
-hashName domhtmlAreaElement  =
-    sendMsg domhtmlAreaElement (mkSelector "hashName") (retPtr retVoid) [] >>= retainedObject . castPtr
+hashName domhtmlAreaElement =
+  sendMessage domhtmlAreaElement hashNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @alt@
-altSelector :: Selector
+altSelector :: Selector '[] (Id NSString)
 altSelector = mkSelector "alt"
 
 -- | @Selector@ for @setAlt:@
-setAltSelector :: Selector
+setAltSelector :: Selector '[Id NSString] ()
 setAltSelector = mkSelector "setAlt:"
 
 -- | @Selector@ for @coords@
-coordsSelector :: Selector
+coordsSelector :: Selector '[] (Id NSString)
 coordsSelector = mkSelector "coords"
 
 -- | @Selector@ for @setCoords:@
-setCoordsSelector :: Selector
+setCoordsSelector :: Selector '[Id NSString] ()
 setCoordsSelector = mkSelector "setCoords:"
 
 -- | @Selector@ for @noHref@
-noHrefSelector :: Selector
+noHrefSelector :: Selector '[] Bool
 noHrefSelector = mkSelector "noHref"
 
 -- | @Selector@ for @setNoHref:@
-setNoHrefSelector :: Selector
+setNoHrefSelector :: Selector '[Bool] ()
 setNoHrefSelector = mkSelector "setNoHref:"
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] (Id NSString)
 shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @setShape:@
-setShapeSelector :: Selector
+setShapeSelector :: Selector '[Id NSString] ()
 setShapeSelector = mkSelector "setShape:"
 
 -- | @Selector@ for @target@
-targetSelector :: Selector
+targetSelector :: Selector '[] (Id NSString)
 targetSelector = mkSelector "target"
 
 -- | @Selector@ for @setTarget:@
-setTargetSelector :: Selector
+setTargetSelector :: Selector '[Id NSString] ()
 setTargetSelector = mkSelector "setTarget:"
 
 -- | @Selector@ for @accessKey@
-accessKeySelector :: Selector
+accessKeySelector :: Selector '[] (Id NSString)
 accessKeySelector = mkSelector "accessKey"
 
 -- | @Selector@ for @setAccessKey:@
-setAccessKeySelector :: Selector
+setAccessKeySelector :: Selector '[Id NSString] ()
 setAccessKeySelector = mkSelector "setAccessKey:"
 
 -- | @Selector@ for @absoluteLinkURL@
-absoluteLinkURLSelector :: Selector
+absoluteLinkURLSelector :: Selector '[] (Id NSURL)
 absoluteLinkURLSelector = mkSelector "absoluteLinkURL"
 
 -- | @Selector@ for @href@
-hrefSelector :: Selector
+hrefSelector :: Selector '[] (Id NSString)
 hrefSelector = mkSelector "href"
 
 -- | @Selector@ for @setHref:@
-setHrefSelector :: Selector
+setHrefSelector :: Selector '[Id NSString] ()
 setHrefSelector = mkSelector "setHref:"
 
 -- | @Selector@ for @protocol@
-protocolSelector :: Selector
+protocolSelector :: Selector '[] (Id NSString)
 protocolSelector = mkSelector "protocol"
 
 -- | @Selector@ for @host@
-hostSelector :: Selector
+hostSelector :: Selector '[] (Id NSString)
 hostSelector = mkSelector "host"
 
 -- | @Selector@ for @hostname@
-hostnameSelector :: Selector
+hostnameSelector :: Selector '[] (Id NSString)
 hostnameSelector = mkSelector "hostname"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] (Id NSString)
 portSelector = mkSelector "port"
 
 -- | @Selector@ for @pathname@
-pathnameSelector :: Selector
+pathnameSelector :: Selector '[] (Id NSString)
 pathnameSelector = mkSelector "pathname"
 
 -- | @Selector@ for @search@
-searchSelector :: Selector
+searchSelector :: Selector '[] (Id NSString)
 searchSelector = mkSelector "search"
 
 -- | @Selector@ for @hashName@
-hashNameSelector :: Selector
+hashNameSelector :: Selector '[] (Id NSString)
 hashNameSelector = mkSelector "hashName"
 

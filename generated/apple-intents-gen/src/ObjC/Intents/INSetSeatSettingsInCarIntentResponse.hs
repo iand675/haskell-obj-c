@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,9 +11,9 @@ module ObjC.Intents.INSetSeatSettingsInCarIntentResponse
   , init_
   , initWithCode_userActivity
   , code
+  , codeSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
 
   -- * Enum types
   , INSetSeatSettingsInCarIntentResponseCode(INSetSeatSettingsInCarIntentResponseCode)
@@ -25,15 +26,11 @@ module ObjC.Intents.INSetSeatSettingsInCarIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,33 +40,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINSetSeatSettingsInCarIntentResponse inSetSeatSettingsInCarIntentResponse => inSetSeatSettingsInCarIntentResponse -> IO RawId
-init_ inSetSeatSettingsInCarIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inSetSeatSettingsInCarIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inSetSeatSettingsInCarIntentResponse =
+  sendOwnedMessage inSetSeatSettingsInCarIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINSetSeatSettingsInCarIntentResponse inSetSeatSettingsInCarIntentResponse, IsNSUserActivity userActivity) => inSetSeatSettingsInCarIntentResponse -> INSetSeatSettingsInCarIntentResponseCode -> userActivity -> IO (Id INSetSeatSettingsInCarIntentResponse)
-initWithCode_userActivity inSetSeatSettingsInCarIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inSetSeatSettingsInCarIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inSetSeatSettingsInCarIntentResponse code userActivity =
+  sendOwnedMessage inSetSeatSettingsInCarIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINSetSeatSettingsInCarIntentResponse inSetSeatSettingsInCarIntentResponse => inSetSeatSettingsInCarIntentResponse -> IO INSetSeatSettingsInCarIntentResponseCode
-code inSetSeatSettingsInCarIntentResponse  =
-    fmap (coerce :: CLong -> INSetSeatSettingsInCarIntentResponseCode) $ sendMsg inSetSeatSettingsInCarIntentResponse (mkSelector "code") retCLong []
+code inSetSeatSettingsInCarIntentResponse =
+  sendMessage inSetSeatSettingsInCarIntentResponse codeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INSetSeatSettingsInCarIntentResponseCode, Id NSUserActivity] (Id INSetSeatSettingsInCarIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INSetSeatSettingsInCarIntentResponseCode
 codeSelector = mkSelector "code"
 

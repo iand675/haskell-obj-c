@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AuthenticationServices.ASAuthorizationPublicKeyCredentialPRFRegistra
   , isSupported
   , first
   , second
-  , isSupportedSelector
   , firstSelector
+  , isSupportedSelector
   , secondSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- isSupported@
 isSupported :: IsASAuthorizationPublicKeyCredentialPRFRegistrationOutput asAuthorizationPublicKeyCredentialPRFRegistrationOutput => asAuthorizationPublicKeyCredentialPRFRegistrationOutput -> IO Bool
-isSupported asAuthorizationPublicKeyCredentialPRFRegistrationOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg asAuthorizationPublicKeyCredentialPRFRegistrationOutput (mkSelector "isSupported") retCULong []
+isSupported asAuthorizationPublicKeyCredentialPRFRegistrationOutput =
+  sendMessage asAuthorizationPublicKeyCredentialPRFRegistrationOutput isSupportedSelector
 
 -- | @- first@
 first :: IsASAuthorizationPublicKeyCredentialPRFRegistrationOutput asAuthorizationPublicKeyCredentialPRFRegistrationOutput => asAuthorizationPublicKeyCredentialPRFRegistrationOutput -> IO (Id NSData)
-first asAuthorizationPublicKeyCredentialPRFRegistrationOutput  =
-    sendMsg asAuthorizationPublicKeyCredentialPRFRegistrationOutput (mkSelector "first") (retPtr retVoid) [] >>= retainedObject . castPtr
+first asAuthorizationPublicKeyCredentialPRFRegistrationOutput =
+  sendMessage asAuthorizationPublicKeyCredentialPRFRegistrationOutput firstSelector
 
 -- | @- second@
 second :: IsASAuthorizationPublicKeyCredentialPRFRegistrationOutput asAuthorizationPublicKeyCredentialPRFRegistrationOutput => asAuthorizationPublicKeyCredentialPRFRegistrationOutput -> IO (Id NSData)
-second asAuthorizationPublicKeyCredentialPRFRegistrationOutput  =
-    sendMsg asAuthorizationPublicKeyCredentialPRFRegistrationOutput (mkSelector "second") (retPtr retVoid) [] >>= retainedObject . castPtr
+second asAuthorizationPublicKeyCredentialPRFRegistrationOutput =
+  sendMessage asAuthorizationPublicKeyCredentialPRFRegistrationOutput secondSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isSupported@
-isSupportedSelector :: Selector
+isSupportedSelector :: Selector '[] Bool
 isSupportedSelector = mkSelector "isSupported"
 
 -- | @Selector@ for @first@
-firstSelector :: Selector
+firstSelector :: Selector '[] (Id NSData)
 firstSelector = mkSelector "first"
 
 -- | @Selector@ for @second@
-secondSelector :: Selector
+secondSelector :: Selector '[] (Id NSData)
 secondSelector = mkSelector "second"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.Matter.MTRScenesManagementClusterViewSceneResponseParams
   , setSceneName
   , extensionFieldSetStructs
   , setExtensionFieldSetStructs
-  , initWithResponseValue_errorSelector
-  , statusSelector
-  , setStatusSelector
-  , groupIDSelector
-  , setGroupIDSelector
-  , sceneIDSelector
-  , setSceneIDSelector
-  , transitionTimeSelector
-  , setTransitionTimeSelector
-  , sceneNameSelector
-  , setSceneNameSelector
   , extensionFieldSetStructsSelector
+  , groupIDSelector
+  , initWithResponseValue_errorSelector
+  , sceneIDSelector
+  , sceneNameSelector
   , setExtensionFieldSetStructsSelector
+  , setGroupIDSelector
+  , setSceneIDSelector
+  , setSceneNameSelector
+  , setStatusSelector
+  , setTransitionTimeSelector
+  , statusSelector
+  , transitionTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,130 +56,122 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrScenesManagementClusterViewSceneResponseParams -> responseValue -> error_ -> IO (Id MTRScenesManagementClusterViewSceneResponseParams)
-initWithResponseValue_error mtrScenesManagementClusterViewSceneResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrScenesManagementClusterViewSceneResponseParams responseValue error_ =
+  sendOwnedMessage mtrScenesManagementClusterViewSceneResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams => mtrScenesManagementClusterViewSceneResponseParams -> IO (Id NSNumber)
-status mtrScenesManagementClusterViewSceneResponseParams  =
-    sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrScenesManagementClusterViewSceneResponseParams =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterViewSceneResponseParams -> value -> IO ()
-setStatus mtrScenesManagementClusterViewSceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrScenesManagementClusterViewSceneResponseParams value =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- groupID@
 groupID :: IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams => mtrScenesManagementClusterViewSceneResponseParams -> IO (Id NSNumber)
-groupID mtrScenesManagementClusterViewSceneResponseParams  =
-    sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrScenesManagementClusterViewSceneResponseParams =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterViewSceneResponseParams -> value -> IO ()
-setGroupID mtrScenesManagementClusterViewSceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrScenesManagementClusterViewSceneResponseParams value =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams setGroupIDSelector (toNSNumber value)
 
 -- | @- sceneID@
 sceneID :: IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams => mtrScenesManagementClusterViewSceneResponseParams -> IO (Id NSNumber)
-sceneID mtrScenesManagementClusterViewSceneResponseParams  =
-    sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "sceneID") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneID mtrScenesManagementClusterViewSceneResponseParams =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams sceneIDSelector
 
 -- | @- setSceneID:@
 setSceneID :: (IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterViewSceneResponseParams -> value -> IO ()
-setSceneID mtrScenesManagementClusterViewSceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "setSceneID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneID mtrScenesManagementClusterViewSceneResponseParams value =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams setSceneIDSelector (toNSNumber value)
 
 -- | @- transitionTime@
 transitionTime :: IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams => mtrScenesManagementClusterViewSceneResponseParams -> IO (Id NSNumber)
-transitionTime mtrScenesManagementClusterViewSceneResponseParams  =
-    sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "transitionTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+transitionTime mtrScenesManagementClusterViewSceneResponseParams =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams transitionTimeSelector
 
 -- | @- setTransitionTime:@
 setTransitionTime :: (IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams, IsNSNumber value) => mtrScenesManagementClusterViewSceneResponseParams -> value -> IO ()
-setTransitionTime mtrScenesManagementClusterViewSceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "setTransitionTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTransitionTime mtrScenesManagementClusterViewSceneResponseParams value =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams setTransitionTimeSelector (toNSNumber value)
 
 -- | @- sceneName@
 sceneName :: IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams => mtrScenesManagementClusterViewSceneResponseParams -> IO (Id NSString)
-sceneName mtrScenesManagementClusterViewSceneResponseParams  =
-    sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "sceneName") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneName mtrScenesManagementClusterViewSceneResponseParams =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams sceneNameSelector
 
 -- | @- setSceneName:@
 setSceneName :: (IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams, IsNSString value) => mtrScenesManagementClusterViewSceneResponseParams -> value -> IO ()
-setSceneName mtrScenesManagementClusterViewSceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "setSceneName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneName mtrScenesManagementClusterViewSceneResponseParams value =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams setSceneNameSelector (toNSString value)
 
 -- | @- extensionFieldSetStructs@
 extensionFieldSetStructs :: IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams => mtrScenesManagementClusterViewSceneResponseParams -> IO (Id NSArray)
-extensionFieldSetStructs mtrScenesManagementClusterViewSceneResponseParams  =
-    sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "extensionFieldSetStructs") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensionFieldSetStructs mtrScenesManagementClusterViewSceneResponseParams =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams extensionFieldSetStructsSelector
 
 -- | @- setExtensionFieldSetStructs:@
 setExtensionFieldSetStructs :: (IsMTRScenesManagementClusterViewSceneResponseParams mtrScenesManagementClusterViewSceneResponseParams, IsNSArray value) => mtrScenesManagementClusterViewSceneResponseParams -> value -> IO ()
-setExtensionFieldSetStructs mtrScenesManagementClusterViewSceneResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterViewSceneResponseParams (mkSelector "setExtensionFieldSetStructs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtensionFieldSetStructs mtrScenesManagementClusterViewSceneResponseParams value =
+  sendMessage mtrScenesManagementClusterViewSceneResponseParams setExtensionFieldSetStructsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRScenesManagementClusterViewSceneResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @sceneID@
-sceneIDSelector :: Selector
+sceneIDSelector :: Selector '[] (Id NSNumber)
 sceneIDSelector = mkSelector "sceneID"
 
 -- | @Selector@ for @setSceneID:@
-setSceneIDSelector :: Selector
+setSceneIDSelector :: Selector '[Id NSNumber] ()
 setSceneIDSelector = mkSelector "setSceneID:"
 
 -- | @Selector@ for @transitionTime@
-transitionTimeSelector :: Selector
+transitionTimeSelector :: Selector '[] (Id NSNumber)
 transitionTimeSelector = mkSelector "transitionTime"
 
 -- | @Selector@ for @setTransitionTime:@
-setTransitionTimeSelector :: Selector
+setTransitionTimeSelector :: Selector '[Id NSNumber] ()
 setTransitionTimeSelector = mkSelector "setTransitionTime:"
 
 -- | @Selector@ for @sceneName@
-sceneNameSelector :: Selector
+sceneNameSelector :: Selector '[] (Id NSString)
 sceneNameSelector = mkSelector "sceneName"
 
 -- | @Selector@ for @setSceneName:@
-setSceneNameSelector :: Selector
+setSceneNameSelector :: Selector '[Id NSString] ()
 setSceneNameSelector = mkSelector "setSceneName:"
 
 -- | @Selector@ for @extensionFieldSetStructs@
-extensionFieldSetStructsSelector :: Selector
+extensionFieldSetStructsSelector :: Selector '[] (Id NSArray)
 extensionFieldSetStructsSelector = mkSelector "extensionFieldSetStructs"
 
 -- | @Selector@ for @setExtensionFieldSetStructs:@
-setExtensionFieldSetStructsSelector :: Selector
+setExtensionFieldSetStructsSelector :: Selector '[Id NSArray] ()
 setExtensionFieldSetStructsSelector = mkSelector "setExtensionFieldSetStructs:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.Contacts.CNContactVCardSerialization
   , descriptorForRequiredKeys
   , dataWithContacts_error
   , contactsWithData_error
-  , descriptorForRequiredKeysSelector
-  , dataWithContacts_errorSelector
   , contactsWithData_errorSelector
+  , dataWithContacts_errorSelector
+  , descriptorForRequiredKeysSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,7 +41,7 @@ descriptorForRequiredKeys :: IO RawId
 descriptorForRequiredKeys  =
   do
     cls' <- getRequiredClass "CNContactVCardSerialization"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "descriptorForRequiredKeys") (retPtr retVoid) []
+    sendClassMessage cls' descriptorForRequiredKeysSelector
 
 -- | Serialize contacts to data.
 --
@@ -61,9 +58,7 @@ dataWithContacts_error :: (IsNSArray contacts, IsNSError error_) => contacts -> 
 dataWithContacts_error contacts error_ =
   do
     cls' <- getRequiredClass "CNContactVCardSerialization"
-    withObjCPtr contacts $ \raw_contacts ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "dataWithContacts:error:") (retPtr retVoid) [argPtr (castPtr raw_contacts :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' dataWithContacts_errorSelector (toNSArray contacts) (toNSError error_)
 
 -- | Parse data into contacts.
 --
@@ -78,23 +73,21 @@ contactsWithData_error :: (IsNSData data_, IsNSError error_) => data_ -> error_ 
 contactsWithData_error data_ error_ =
   do
     cls' <- getRequiredClass "CNContactVCardSerialization"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "contactsWithData:error:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' contactsWithData_errorSelector (toNSData data_) (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @descriptorForRequiredKeys@
-descriptorForRequiredKeysSelector :: Selector
+descriptorForRequiredKeysSelector :: Selector '[] RawId
 descriptorForRequiredKeysSelector = mkSelector "descriptorForRequiredKeys"
 
 -- | @Selector@ for @dataWithContacts:error:@
-dataWithContacts_errorSelector :: Selector
+dataWithContacts_errorSelector :: Selector '[Id NSArray, Id NSError] (Id NSData)
 dataWithContacts_errorSelector = mkSelector "dataWithContacts:error:"
 
 -- | @Selector@ for @contactsWithData:error:@
-contactsWithData_errorSelector :: Selector
+contactsWithData_errorSelector :: Selector '[Id NSData, Id NSError] (Id NSArray)
 contactsWithData_errorSelector = mkSelector "contactsWithData:error:"
 

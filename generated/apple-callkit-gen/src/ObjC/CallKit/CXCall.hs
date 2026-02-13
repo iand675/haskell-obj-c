@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.CallKit.CXCall
   , onHold
   , hasConnected
   , hasEnded
-  , initSelector
-  , isEqualToCallSelector
-  , uuidSelector
-  , outgoingSelector
-  , onHoldSelector
   , hasConnectedSelector
   , hasEndedSelector
+  , initSelector
+  , isEqualToCallSelector
+  , onHoldSelector
+  , outgoingSelector
+  , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,69 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCXCall cxCall => cxCall -> IO (Id CXCall)
-init_ cxCall  =
-    sendMsg cxCall (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cxCall =
+  sendOwnedMessage cxCall initSelector
 
 -- | @- isEqualToCall:@
 isEqualToCall :: (IsCXCall cxCall, IsCXCall call) => cxCall -> call -> IO Bool
-isEqualToCall cxCall  call =
-  withObjCPtr call $ \raw_call ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxCall (mkSelector "isEqualToCall:") retCULong [argPtr (castPtr raw_call :: Ptr ())]
+isEqualToCall cxCall call =
+  sendMessage cxCall isEqualToCallSelector (toCXCall call)
 
 -- | @- UUID@
 uuid :: IsCXCall cxCall => cxCall -> IO (Id NSUUID)
-uuid cxCall  =
-    sendMsg cxCall (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid cxCall =
+  sendMessage cxCall uuidSelector
 
 -- | @- outgoing@
 outgoing :: IsCXCall cxCall => cxCall -> IO Bool
-outgoing cxCall  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxCall (mkSelector "outgoing") retCULong []
+outgoing cxCall =
+  sendMessage cxCall outgoingSelector
 
 -- | @- onHold@
 onHold :: IsCXCall cxCall => cxCall -> IO Bool
-onHold cxCall  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxCall (mkSelector "onHold") retCULong []
+onHold cxCall =
+  sendMessage cxCall onHoldSelector
 
 -- | @- hasConnected@
 hasConnected :: IsCXCall cxCall => cxCall -> IO Bool
-hasConnected cxCall  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxCall (mkSelector "hasConnected") retCULong []
+hasConnected cxCall =
+  sendMessage cxCall hasConnectedSelector
 
 -- | @- hasEnded@
 hasEnded :: IsCXCall cxCall => cxCall -> IO Bool
-hasEnded cxCall  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxCall (mkSelector "hasEnded") retCULong []
+hasEnded cxCall =
+  sendMessage cxCall hasEndedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CXCall)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @isEqualToCall:@
-isEqualToCallSelector :: Selector
+isEqualToCallSelector :: Selector '[Id CXCall] Bool
 isEqualToCallSelector = mkSelector "isEqualToCall:"
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "UUID"
 
 -- | @Selector@ for @outgoing@
-outgoingSelector :: Selector
+outgoingSelector :: Selector '[] Bool
 outgoingSelector = mkSelector "outgoing"
 
 -- | @Selector@ for @onHold@
-onHoldSelector :: Selector
+onHoldSelector :: Selector '[] Bool
 onHoldSelector = mkSelector "onHold"
 
 -- | @Selector@ for @hasConnected@
-hasConnectedSelector :: Selector
+hasConnectedSelector :: Selector '[] Bool
 hasConnectedSelector = mkSelector "hasConnected"
 
 -- | @Selector@ for @hasEnded@
-hasEndedSelector :: Selector
+hasEndedSelector :: Selector '[] Bool
 hasEndedSelector = mkSelector "hasEnded"
 

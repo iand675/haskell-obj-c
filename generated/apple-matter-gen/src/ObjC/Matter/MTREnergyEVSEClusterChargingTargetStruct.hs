@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTREnergyEVSEClusterChargingTargetStruct
   , setTargetSoC
   , addedEnergy
   , setAddedEnergy
-  , targetTimeMinutesPastMidnightSelector
-  , setTargetTimeMinutesPastMidnightSelector
-  , targetSoCSelector
-  , setTargetSoCSelector
   , addedEnergySelector
   , setAddedEnergySelector
+  , setTargetSoCSelector
+  , setTargetTimeMinutesPastMidnightSelector
+  , targetSoCSelector
+  , targetTimeMinutesPastMidnightSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- targetTimeMinutesPastMidnight@
 targetTimeMinutesPastMidnight :: IsMTREnergyEVSEClusterChargingTargetStruct mtrEnergyEVSEClusterChargingTargetStruct => mtrEnergyEVSEClusterChargingTargetStruct -> IO (Id NSNumber)
-targetTimeMinutesPastMidnight mtrEnergyEVSEClusterChargingTargetStruct  =
-    sendMsg mtrEnergyEVSEClusterChargingTargetStruct (mkSelector "targetTimeMinutesPastMidnight") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetTimeMinutesPastMidnight mtrEnergyEVSEClusterChargingTargetStruct =
+  sendMessage mtrEnergyEVSEClusterChargingTargetStruct targetTimeMinutesPastMidnightSelector
 
 -- | @- setTargetTimeMinutesPastMidnight:@
 setTargetTimeMinutesPastMidnight :: (IsMTREnergyEVSEClusterChargingTargetStruct mtrEnergyEVSEClusterChargingTargetStruct, IsNSNumber value) => mtrEnergyEVSEClusterChargingTargetStruct -> value -> IO ()
-setTargetTimeMinutesPastMidnight mtrEnergyEVSEClusterChargingTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterChargingTargetStruct (mkSelector "setTargetTimeMinutesPastMidnight:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTargetTimeMinutesPastMidnight mtrEnergyEVSEClusterChargingTargetStruct value =
+  sendMessage mtrEnergyEVSEClusterChargingTargetStruct setTargetTimeMinutesPastMidnightSelector (toNSNumber value)
 
 -- | @- targetSoC@
 targetSoC :: IsMTREnergyEVSEClusterChargingTargetStruct mtrEnergyEVSEClusterChargingTargetStruct => mtrEnergyEVSEClusterChargingTargetStruct -> IO (Id NSNumber)
-targetSoC mtrEnergyEVSEClusterChargingTargetStruct  =
-    sendMsg mtrEnergyEVSEClusterChargingTargetStruct (mkSelector "targetSoC") (retPtr retVoid) [] >>= retainedObject . castPtr
+targetSoC mtrEnergyEVSEClusterChargingTargetStruct =
+  sendMessage mtrEnergyEVSEClusterChargingTargetStruct targetSoCSelector
 
 -- | @- setTargetSoC:@
 setTargetSoC :: (IsMTREnergyEVSEClusterChargingTargetStruct mtrEnergyEVSEClusterChargingTargetStruct, IsNSNumber value) => mtrEnergyEVSEClusterChargingTargetStruct -> value -> IO ()
-setTargetSoC mtrEnergyEVSEClusterChargingTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterChargingTargetStruct (mkSelector "setTargetSoC:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTargetSoC mtrEnergyEVSEClusterChargingTargetStruct value =
+  sendMessage mtrEnergyEVSEClusterChargingTargetStruct setTargetSoCSelector (toNSNumber value)
 
 -- | @- addedEnergy@
 addedEnergy :: IsMTREnergyEVSEClusterChargingTargetStruct mtrEnergyEVSEClusterChargingTargetStruct => mtrEnergyEVSEClusterChargingTargetStruct -> IO (Id NSNumber)
-addedEnergy mtrEnergyEVSEClusterChargingTargetStruct  =
-    sendMsg mtrEnergyEVSEClusterChargingTargetStruct (mkSelector "addedEnergy") (retPtr retVoid) [] >>= retainedObject . castPtr
+addedEnergy mtrEnergyEVSEClusterChargingTargetStruct =
+  sendMessage mtrEnergyEVSEClusterChargingTargetStruct addedEnergySelector
 
 -- | @- setAddedEnergy:@
 setAddedEnergy :: (IsMTREnergyEVSEClusterChargingTargetStruct mtrEnergyEVSEClusterChargingTargetStruct, IsNSNumber value) => mtrEnergyEVSEClusterChargingTargetStruct -> value -> IO ()
-setAddedEnergy mtrEnergyEVSEClusterChargingTargetStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrEnergyEVSEClusterChargingTargetStruct (mkSelector "setAddedEnergy:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAddedEnergy mtrEnergyEVSEClusterChargingTargetStruct value =
+  sendMessage mtrEnergyEVSEClusterChargingTargetStruct setAddedEnergySelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @targetTimeMinutesPastMidnight@
-targetTimeMinutesPastMidnightSelector :: Selector
+targetTimeMinutesPastMidnightSelector :: Selector '[] (Id NSNumber)
 targetTimeMinutesPastMidnightSelector = mkSelector "targetTimeMinutesPastMidnight"
 
 -- | @Selector@ for @setTargetTimeMinutesPastMidnight:@
-setTargetTimeMinutesPastMidnightSelector :: Selector
+setTargetTimeMinutesPastMidnightSelector :: Selector '[Id NSNumber] ()
 setTargetTimeMinutesPastMidnightSelector = mkSelector "setTargetTimeMinutesPastMidnight:"
 
 -- | @Selector@ for @targetSoC@
-targetSoCSelector :: Selector
+targetSoCSelector :: Selector '[] (Id NSNumber)
 targetSoCSelector = mkSelector "targetSoC"
 
 -- | @Selector@ for @setTargetSoC:@
-setTargetSoCSelector :: Selector
+setTargetSoCSelector :: Selector '[Id NSNumber] ()
 setTargetSoCSelector = mkSelector "setTargetSoC:"
 
 -- | @Selector@ for @addedEnergy@
-addedEnergySelector :: Selector
+addedEnergySelector :: Selector '[] (Id NSNumber)
 addedEnergySelector = mkSelector "addedEnergy"
 
 -- | @Selector@ for @setAddedEnergy:@
-setAddedEnergySelector :: Selector
+setAddedEnergySelector :: Selector '[Id NSNumber] ()
 setAddedEnergySelector = mkSelector "setAddedEnergy:"
 

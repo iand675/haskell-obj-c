@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.AVFoundation.AVComposition
   , tracksWithMediaCharacteristic
   , tracks
   , urlAssetInitializationOptions
-  , metadataForFormatSelector
-  , chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector
   , chapterMetadataGroupsBestMatchingPreferredLanguagesSelector
-  , mediaSelectionGroupForMediaCharacteristicSelector
-  , unusedTrackIDSelector
-  , trackWithTrackIDSelector
+  , chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector
   , loadTrackWithTrackID_completionHandlerSelector
-  , tracksWithMediaTypeSelector
-  , tracksWithMediaCharacteristicSelector
+  , mediaSelectionGroupForMediaCharacteristicSelector
+  , metadataForFormatSelector
+  , trackWithTrackIDSelector
   , tracksSelector
+  , tracksWithMediaCharacteristicSelector
+  , tracksWithMediaTypeSelector
+  , unusedTrackIDSelector
   , urlAssetInitializationOptionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,33 +46,28 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- metadataForFormat:@
 metadataForFormat :: (IsAVComposition avComposition, IsNSString format) => avComposition -> format -> IO (Id NSArray)
-metadataForFormat avComposition  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avComposition (mkSelector "metadataForFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= retainedObject . castPtr
+metadataForFormat avComposition format =
+  sendMessage avComposition metadataForFormatSelector (toNSString format)
 
 -- | @- chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:@
 chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys :: (IsAVComposition avComposition, IsNSLocale locale, IsNSArray commonKeys) => avComposition -> locale -> commonKeys -> IO (Id NSArray)
-chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys avComposition  locale commonKeys =
-  withObjCPtr locale $ \raw_locale ->
-    withObjCPtr commonKeys $ \raw_commonKeys ->
-        sendMsg avComposition (mkSelector "chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:") (retPtr retVoid) [argPtr (castPtr raw_locale :: Ptr ()), argPtr (castPtr raw_commonKeys :: Ptr ())] >>= retainedObject . castPtr
+chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeys avComposition locale commonKeys =
+  sendMessage avComposition chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector (toNSLocale locale) (toNSArray commonKeys)
 
 -- | @- chapterMetadataGroupsBestMatchingPreferredLanguages:@
 chapterMetadataGroupsBestMatchingPreferredLanguages :: (IsAVComposition avComposition, IsNSArray preferredLanguages) => avComposition -> preferredLanguages -> IO (Id NSArray)
-chapterMetadataGroupsBestMatchingPreferredLanguages avComposition  preferredLanguages =
-  withObjCPtr preferredLanguages $ \raw_preferredLanguages ->
-      sendMsg avComposition (mkSelector "chapterMetadataGroupsBestMatchingPreferredLanguages:") (retPtr retVoid) [argPtr (castPtr raw_preferredLanguages :: Ptr ())] >>= retainedObject . castPtr
+chapterMetadataGroupsBestMatchingPreferredLanguages avComposition preferredLanguages =
+  sendMessage avComposition chapterMetadataGroupsBestMatchingPreferredLanguagesSelector (toNSArray preferredLanguages)
 
 -- | @- mediaSelectionGroupForMediaCharacteristic:@
 mediaSelectionGroupForMediaCharacteristic :: (IsAVComposition avComposition, IsNSString mediaCharacteristic) => avComposition -> mediaCharacteristic -> IO (Id AVMediaSelectionGroup)
-mediaSelectionGroupForMediaCharacteristic avComposition  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avComposition (mkSelector "mediaSelectionGroupForMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+mediaSelectionGroupForMediaCharacteristic avComposition mediaCharacteristic =
+  sendMessage avComposition mediaSelectionGroupForMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | @- unusedTrackID@
 unusedTrackID :: IsAVComposition avComposition => avComposition -> IO CInt
-unusedTrackID avComposition  =
-    sendMsg avComposition (mkSelector "unusedTrackID") retCInt []
+unusedTrackID avComposition =
+  sendMessage avComposition unusedTrackIDSelector
 
 -- | trackWithTrackID:
 --
@@ -89,8 +81,8 @@ unusedTrackID avComposition  =
 --
 -- ObjC selector: @- trackWithTrackID:@
 trackWithTrackID :: IsAVComposition avComposition => avComposition -> CInt -> IO (Id AVCompositionTrack)
-trackWithTrackID avComposition  trackID =
-    sendMsg avComposition (mkSelector "trackWithTrackID:") (retPtr retVoid) [argCInt trackID] >>= retainedObject . castPtr
+trackWithTrackID avComposition trackID =
+  sendMessage avComposition trackWithTrackIDSelector trackID
 
 -- | loadTrackWithTrackID:completionHandler:
 --
@@ -102,8 +94,8 @@ trackWithTrackID avComposition  trackID =
 --
 -- ObjC selector: @- loadTrackWithTrackID:completionHandler:@
 loadTrackWithTrackID_completionHandler :: IsAVComposition avComposition => avComposition -> CInt -> Ptr () -> IO ()
-loadTrackWithTrackID_completionHandler avComposition  trackID completionHandler =
-    sendMsg avComposition (mkSelector "loadTrackWithTrackID:completionHandler:") retVoid [argCInt trackID, argPtr (castPtr completionHandler :: Ptr ())]
+loadTrackWithTrackID_completionHandler avComposition trackID completionHandler =
+  sendMessage avComposition loadTrackWithTrackID_completionHandlerSelector trackID completionHandler
 
 -- | tracksWithMediaType:
 --
@@ -117,9 +109,8 @@ loadTrackWithTrackID_completionHandler avComposition  trackID completionHandler 
 --
 -- ObjC selector: @- tracksWithMediaType:@
 tracksWithMediaType :: (IsAVComposition avComposition, IsNSString mediaType) => avComposition -> mediaType -> IO (Id NSArray)
-tracksWithMediaType avComposition  mediaType =
-  withObjCPtr mediaType $ \raw_mediaType ->
-      sendMsg avComposition (mkSelector "tracksWithMediaType:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaType avComposition mediaType =
+  sendMessage avComposition tracksWithMediaTypeSelector (toNSString mediaType)
 
 -- | tracksWithMediaCharacteristic:
 --
@@ -133,9 +124,8 @@ tracksWithMediaType avComposition  mediaType =
 --
 -- ObjC selector: @- tracksWithMediaCharacteristic:@
 tracksWithMediaCharacteristic :: (IsAVComposition avComposition, IsNSString mediaCharacteristic) => avComposition -> mediaCharacteristic -> IO (Id NSArray)
-tracksWithMediaCharacteristic avComposition  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      sendMsg avComposition (mkSelector "tracksWithMediaCharacteristic:") (retPtr retVoid) [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())] >>= retainedObject . castPtr
+tracksWithMediaCharacteristic avComposition mediaCharacteristic =
+  sendMessage avComposition tracksWithMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | tracks
 --
@@ -143,8 +133,8 @@ tracksWithMediaCharacteristic avComposition  mediaCharacteristic =
 --
 -- ObjC selector: @- tracks@
 tracks :: IsAVComposition avComposition => avComposition -> IO (Id NSArray)
-tracks avComposition  =
-    sendMsg avComposition (mkSelector "tracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tracks avComposition =
+  sendMessage avComposition tracksSelector
 
 -- | URLAssetInitializationOptions
 --
@@ -154,54 +144,54 @@ tracks avComposition  =
 --
 -- ObjC selector: @- URLAssetInitializationOptions@
 urlAssetInitializationOptions :: IsAVComposition avComposition => avComposition -> IO (Id NSDictionary)
-urlAssetInitializationOptions avComposition  =
-    sendMsg avComposition (mkSelector "URLAssetInitializationOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+urlAssetInitializationOptions avComposition =
+  sendMessage avComposition urlAssetInitializationOptionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @metadataForFormat:@
-metadataForFormatSelector :: Selector
+metadataForFormatSelector :: Selector '[Id NSString] (Id NSArray)
 metadataForFormatSelector = mkSelector "metadataForFormat:"
 
 -- | @Selector@ for @chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:@
-chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector :: Selector
+chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector :: Selector '[Id NSLocale, Id NSArray] (Id NSArray)
 chapterMetadataGroupsWithTitleLocale_containingItemsWithCommonKeysSelector = mkSelector "chapterMetadataGroupsWithTitleLocale:containingItemsWithCommonKeys:"
 
 -- | @Selector@ for @chapterMetadataGroupsBestMatchingPreferredLanguages:@
-chapterMetadataGroupsBestMatchingPreferredLanguagesSelector :: Selector
+chapterMetadataGroupsBestMatchingPreferredLanguagesSelector :: Selector '[Id NSArray] (Id NSArray)
 chapterMetadataGroupsBestMatchingPreferredLanguagesSelector = mkSelector "chapterMetadataGroupsBestMatchingPreferredLanguages:"
 
 -- | @Selector@ for @mediaSelectionGroupForMediaCharacteristic:@
-mediaSelectionGroupForMediaCharacteristicSelector :: Selector
+mediaSelectionGroupForMediaCharacteristicSelector :: Selector '[Id NSString] (Id AVMediaSelectionGroup)
 mediaSelectionGroupForMediaCharacteristicSelector = mkSelector "mediaSelectionGroupForMediaCharacteristic:"
 
 -- | @Selector@ for @unusedTrackID@
-unusedTrackIDSelector :: Selector
+unusedTrackIDSelector :: Selector '[] CInt
 unusedTrackIDSelector = mkSelector "unusedTrackID"
 
 -- | @Selector@ for @trackWithTrackID:@
-trackWithTrackIDSelector :: Selector
+trackWithTrackIDSelector :: Selector '[CInt] (Id AVCompositionTrack)
 trackWithTrackIDSelector = mkSelector "trackWithTrackID:"
 
 -- | @Selector@ for @loadTrackWithTrackID:completionHandler:@
-loadTrackWithTrackID_completionHandlerSelector :: Selector
+loadTrackWithTrackID_completionHandlerSelector :: Selector '[CInt, Ptr ()] ()
 loadTrackWithTrackID_completionHandlerSelector = mkSelector "loadTrackWithTrackID:completionHandler:"
 
 -- | @Selector@ for @tracksWithMediaType:@
-tracksWithMediaTypeSelector :: Selector
+tracksWithMediaTypeSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaTypeSelector = mkSelector "tracksWithMediaType:"
 
 -- | @Selector@ for @tracksWithMediaCharacteristic:@
-tracksWithMediaCharacteristicSelector :: Selector
+tracksWithMediaCharacteristicSelector :: Selector '[Id NSString] (Id NSArray)
 tracksWithMediaCharacteristicSelector = mkSelector "tracksWithMediaCharacteristic:"
 
 -- | @Selector@ for @tracks@
-tracksSelector :: Selector
+tracksSelector :: Selector '[] (Id NSArray)
 tracksSelector = mkSelector "tracks"
 
 -- | @Selector@ for @URLAssetInitializationOptions@
-urlAssetInitializationOptionsSelector :: Selector
+urlAssetInitializationOptionsSelector :: Selector '[] (Id NSDictionary)
 urlAssetInitializationOptionsSelector = mkSelector "URLAssetInitializationOptions"
 

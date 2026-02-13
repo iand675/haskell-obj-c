@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.Matter.CSRInfo
   , setElementsSignature
   , csr
   , setCsr
+  , csrSelector
+  , elementsSelector
+  , elementsSignatureSelector
   , initWithNonce_elements_elementsSignature_csrSelector
   , nonceSelector
-  , setNonceSelector
-  , elementsSelector
-  , setElementsSelector
-  , elementsSignatureSelector
-  , setElementsSignatureSelector
-  , csrSelector
   , setCsrSelector
+  , setElementsSelector
+  , setElementsSignatureSelector
+  , setNonceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,94 +42,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithNonce:elements:elementsSignature:csr:@
 initWithNonce_elements_elementsSignature_csr :: (IsCSRInfo csrInfo, IsNSData nonce, IsNSData elements, IsNSData elementsSignature, IsNSData csr) => csrInfo -> nonce -> elements -> elementsSignature -> csr -> IO (Id CSRInfo)
-initWithNonce_elements_elementsSignature_csr csrInfo  nonce elements elementsSignature csr =
-  withObjCPtr nonce $ \raw_nonce ->
-    withObjCPtr elements $ \raw_elements ->
-      withObjCPtr elementsSignature $ \raw_elementsSignature ->
-        withObjCPtr csr $ \raw_csr ->
-            sendMsg csrInfo (mkSelector "initWithNonce:elements:elementsSignature:csr:") (retPtr retVoid) [argPtr (castPtr raw_nonce :: Ptr ()), argPtr (castPtr raw_elements :: Ptr ()), argPtr (castPtr raw_elementsSignature :: Ptr ()), argPtr (castPtr raw_csr :: Ptr ())] >>= ownedObject . castPtr
+initWithNonce_elements_elementsSignature_csr csrInfo nonce elements elementsSignature csr =
+  sendOwnedMessage csrInfo initWithNonce_elements_elementsSignature_csrSelector (toNSData nonce) (toNSData elements) (toNSData elementsSignature) (toNSData csr)
 
 -- | @- nonce@
 nonce :: IsCSRInfo csrInfo => csrInfo -> IO (Id NSData)
-nonce csrInfo  =
-    sendMsg csrInfo (mkSelector "nonce") (retPtr retVoid) [] >>= retainedObject . castPtr
+nonce csrInfo =
+  sendMessage csrInfo nonceSelector
 
 -- | @- setNonce:@
 setNonce :: (IsCSRInfo csrInfo, IsNSData value) => csrInfo -> value -> IO ()
-setNonce csrInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csrInfo (mkSelector "setNonce:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNonce csrInfo value =
+  sendMessage csrInfo setNonceSelector (toNSData value)
 
 -- | @- elements@
 elements :: IsCSRInfo csrInfo => csrInfo -> IO (Id NSData)
-elements csrInfo  =
-    sendMsg csrInfo (mkSelector "elements") (retPtr retVoid) [] >>= retainedObject . castPtr
+elements csrInfo =
+  sendMessage csrInfo elementsSelector
 
 -- | @- setElements:@
 setElements :: (IsCSRInfo csrInfo, IsNSData value) => csrInfo -> value -> IO ()
-setElements csrInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csrInfo (mkSelector "setElements:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setElements csrInfo value =
+  sendMessage csrInfo setElementsSelector (toNSData value)
 
 -- | @- elementsSignature@
 elementsSignature :: IsCSRInfo csrInfo => csrInfo -> IO (Id NSData)
-elementsSignature csrInfo  =
-    sendMsg csrInfo (mkSelector "elementsSignature") (retPtr retVoid) [] >>= retainedObject . castPtr
+elementsSignature csrInfo =
+  sendMessage csrInfo elementsSignatureSelector
 
 -- | @- setElementsSignature:@
 setElementsSignature :: (IsCSRInfo csrInfo, IsNSData value) => csrInfo -> value -> IO ()
-setElementsSignature csrInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csrInfo (mkSelector "setElementsSignature:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setElementsSignature csrInfo value =
+  sendMessage csrInfo setElementsSignatureSelector (toNSData value)
 
 -- | @- csr@
 csr :: IsCSRInfo csrInfo => csrInfo -> IO (Id NSData)
-csr csrInfo  =
-    sendMsg csrInfo (mkSelector "csr") (retPtr retVoid) [] >>= retainedObject . castPtr
+csr csrInfo =
+  sendMessage csrInfo csrSelector
 
 -- | @- setCsr:@
 setCsr :: (IsCSRInfo csrInfo, IsNSData value) => csrInfo -> value -> IO ()
-setCsr csrInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg csrInfo (mkSelector "setCsr:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCsr csrInfo value =
+  sendMessage csrInfo setCsrSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithNonce:elements:elementsSignature:csr:@
-initWithNonce_elements_elementsSignature_csrSelector :: Selector
+initWithNonce_elements_elementsSignature_csrSelector :: Selector '[Id NSData, Id NSData, Id NSData, Id NSData] (Id CSRInfo)
 initWithNonce_elements_elementsSignature_csrSelector = mkSelector "initWithNonce:elements:elementsSignature:csr:"
 
 -- | @Selector@ for @nonce@
-nonceSelector :: Selector
+nonceSelector :: Selector '[] (Id NSData)
 nonceSelector = mkSelector "nonce"
 
 -- | @Selector@ for @setNonce:@
-setNonceSelector :: Selector
+setNonceSelector :: Selector '[Id NSData] ()
 setNonceSelector = mkSelector "setNonce:"
 
 -- | @Selector@ for @elements@
-elementsSelector :: Selector
+elementsSelector :: Selector '[] (Id NSData)
 elementsSelector = mkSelector "elements"
 
 -- | @Selector@ for @setElements:@
-setElementsSelector :: Selector
+setElementsSelector :: Selector '[Id NSData] ()
 setElementsSelector = mkSelector "setElements:"
 
 -- | @Selector@ for @elementsSignature@
-elementsSignatureSelector :: Selector
+elementsSignatureSelector :: Selector '[] (Id NSData)
 elementsSignatureSelector = mkSelector "elementsSignature"
 
 -- | @Selector@ for @setElementsSignature:@
-setElementsSignatureSelector :: Selector
+setElementsSignatureSelector :: Selector '[Id NSData] ()
 setElementsSignatureSelector = mkSelector "setElementsSignature:"
 
 -- | @Selector@ for @csr@
-csrSelector :: Selector
+csrSelector :: Selector '[] (Id NSData)
 csrSelector = mkSelector "csr"
 
 -- | @Selector@ for @setCsr:@
-setCsrSelector :: Selector
+setCsrSelector :: Selector '[Id NSData] ()
 setCsrSelector = mkSelector "setCsr:"
 

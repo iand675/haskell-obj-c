@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -33,27 +34,27 @@ module ObjC.MLCompute.MLCLossLayer
   , cosineDistanceLossWithReductionType_weights
   , descriptor
   , weights
-  , layerWithDescriptorSelector
-  , layerWithDescriptor_weightsSelector
-  , softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector
-  , softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector
   , categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector
   , categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector
-  , sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightSelector
-  , sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightsSelector
-  , logLossWithReductionType_epsilon_weightSelector
-  , logLossWithReductionType_epsilon_weightsSelector
+  , cosineDistanceLossWithReductionType_weightSelector
+  , cosineDistanceLossWithReductionType_weightsSelector
+  , descriptorSelector
+  , hingeLossWithReductionType_weightSelector
+  , hingeLossWithReductionType_weightsSelector
   , huberLossWithReductionType_delta_weightSelector
   , huberLossWithReductionType_delta_weightsSelector
+  , layerWithDescriptorSelector
+  , layerWithDescriptor_weightsSelector
+  , logLossWithReductionType_epsilon_weightSelector
+  , logLossWithReductionType_epsilon_weightsSelector
   , meanAbsoluteErrorLossWithReductionType_weightSelector
   , meanAbsoluteErrorLossWithReductionType_weightsSelector
   , meanSquaredErrorLossWithReductionType_weightSelector
   , meanSquaredErrorLossWithReductionType_weightsSelector
-  , hingeLossWithReductionType_weightSelector
-  , hingeLossWithReductionType_weightsSelector
-  , cosineDistanceLossWithReductionType_weightSelector
-  , cosineDistanceLossWithReductionType_weightsSelector
-  , descriptorSelector
+  , sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightSelector
+  , sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightsSelector
+  , softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector
+  , softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector
   , weightsSelector
 
   -- * Enum types
@@ -72,15 +73,11 @@ module ObjC.MLCompute.MLCLossLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,8 +96,7 @@ layerWithDescriptor :: IsMLCLossDescriptor lossDescriptor => lossDescriptor -> I
 layerWithDescriptor lossDescriptor =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr lossDescriptor $ \raw_lossDescriptor ->
-      sendClassMsg cls' (mkSelector "layerWithDescriptor:") (retPtr retVoid) [argPtr (castPtr raw_lossDescriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptorSelector (toMLCLossDescriptor lossDescriptor)
 
 -- | Create a MLComputeLoss layer
 --
@@ -115,9 +111,7 @@ layerWithDescriptor_weights :: (IsMLCLossDescriptor lossDescriptor, IsMLCTensor 
 layerWithDescriptor_weights lossDescriptor weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr lossDescriptor $ \raw_lossDescriptor ->
-      withObjCPtr weights $ \raw_weights ->
-        sendClassMsg cls' (mkSelector "layerWithDescriptor:weights:") (retPtr retVoid) [argPtr (castPtr raw_lossDescriptor :: Ptr ()), argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithDescriptor_weightsSelector (toMLCLossDescriptor lossDescriptor) (toMLCTensor weights)
 
 -- | Create a loss layer
 --
@@ -136,7 +130,7 @@ softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weight :: MLC
 softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weight reductionType labelSmoothing classCount weight =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    sendClassMsg cls' (mkSelector "softmaxCrossEntropyLossWithReductionType:labelSmoothing:classCount:weight:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat labelSmoothing, argCULong classCount, argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector reductionType labelSmoothing classCount weight
 
 -- | Create a loss layer
 --
@@ -155,8 +149,7 @@ softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weights :: Is
 softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weights reductionType labelSmoothing classCount weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr weights $ \raw_weights ->
-      sendClassMsg cls' (mkSelector "softmaxCrossEntropyLossWithReductionType:labelSmoothing:classCount:weights:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat labelSmoothing, argCULong classCount, argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector reductionType labelSmoothing classCount (toMLCTensor weights)
 
 -- | Create a loss layer
 --
@@ -175,7 +168,7 @@ categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weight ::
 categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weight reductionType labelSmoothing classCount weight =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    sendClassMsg cls' (mkSelector "categoricalCrossEntropyLossWithReductionType:labelSmoothing:classCount:weight:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat labelSmoothing, argCULong classCount, argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector reductionType labelSmoothing classCount weight
 
 -- | Create a loss layer
 --
@@ -194,8 +187,7 @@ categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weights :
 categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weights reductionType labelSmoothing classCount weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr weights $ \raw_weights ->
-      sendClassMsg cls' (mkSelector "categoricalCrossEntropyLossWithReductionType:labelSmoothing:classCount:weights:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat labelSmoothing, argCULong classCount, argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector reductionType labelSmoothing classCount (toMLCTensor weights)
 
 -- | Create a loss layer
 --
@@ -212,7 +204,7 @@ sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weight :: MLCReductionTy
 sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weight reductionType labelSmoothing weight =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    sendClassMsg cls' (mkSelector "sigmoidCrossEntropyLossWithReductionType:labelSmoothing:weight:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat labelSmoothing, argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightSelector reductionType labelSmoothing weight
 
 -- | Create a loss layer
 --
@@ -229,8 +221,7 @@ sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weights :: IsMLCTensor w
 sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weights reductionType labelSmoothing weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr weights $ \raw_weights ->
-      sendClassMsg cls' (mkSelector "sigmoidCrossEntropyLossWithReductionType:labelSmoothing:weights:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat labelSmoothing, argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightsSelector reductionType labelSmoothing (toMLCTensor weights)
 
 -- | Create a loss layer
 --
@@ -247,7 +238,7 @@ logLossWithReductionType_epsilon_weight :: MLCReductionType -> CFloat -> CFloat 
 logLossWithReductionType_epsilon_weight reductionType epsilon weight =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    sendClassMsg cls' (mkSelector "logLossWithReductionType:epsilon:weight:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat epsilon, argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' logLossWithReductionType_epsilon_weightSelector reductionType epsilon weight
 
 -- | Create a loss layer
 --
@@ -264,8 +255,7 @@ logLossWithReductionType_epsilon_weights :: IsMLCTensor weights => MLCReductionT
 logLossWithReductionType_epsilon_weights reductionType epsilon weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr weights $ \raw_weights ->
-      sendClassMsg cls' (mkSelector "logLossWithReductionType:epsilon:weights:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat epsilon, argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' logLossWithReductionType_epsilon_weightsSelector reductionType epsilon (toMLCTensor weights)
 
 -- | Create a loss layer
 --
@@ -282,7 +272,7 @@ huberLossWithReductionType_delta_weight :: MLCReductionType -> CFloat -> CFloat 
 huberLossWithReductionType_delta_weight reductionType delta weight =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    sendClassMsg cls' (mkSelector "huberLossWithReductionType:delta:weight:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat delta, argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' huberLossWithReductionType_delta_weightSelector reductionType delta weight
 
 -- | Create a loss layer
 --
@@ -299,8 +289,7 @@ huberLossWithReductionType_delta_weights :: IsMLCTensor weights => MLCReductionT
 huberLossWithReductionType_delta_weights reductionType delta weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr weights $ \raw_weights ->
-      sendClassMsg cls' (mkSelector "huberLossWithReductionType:delta:weights:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat delta, argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' huberLossWithReductionType_delta_weightsSelector reductionType delta (toMLCTensor weights)
 
 -- | Create a loss layer
 --
@@ -315,7 +304,7 @@ meanAbsoluteErrorLossWithReductionType_weight :: MLCReductionType -> CFloat -> I
 meanAbsoluteErrorLossWithReductionType_weight reductionType weight =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    sendClassMsg cls' (mkSelector "meanAbsoluteErrorLossWithReductionType:weight:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' meanAbsoluteErrorLossWithReductionType_weightSelector reductionType weight
 
 -- | Create a loss layer
 --
@@ -330,8 +319,7 @@ meanAbsoluteErrorLossWithReductionType_weights :: IsMLCTensor weights => MLCRedu
 meanAbsoluteErrorLossWithReductionType_weights reductionType weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr weights $ \raw_weights ->
-      sendClassMsg cls' (mkSelector "meanAbsoluteErrorLossWithReductionType:weights:") (retPtr retVoid) [argCInt (coerce reductionType), argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' meanAbsoluteErrorLossWithReductionType_weightsSelector reductionType (toMLCTensor weights)
 
 -- | Create a loss layer
 --
@@ -346,7 +334,7 @@ meanSquaredErrorLossWithReductionType_weight :: MLCReductionType -> CFloat -> IO
 meanSquaredErrorLossWithReductionType_weight reductionType weight =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    sendClassMsg cls' (mkSelector "meanSquaredErrorLossWithReductionType:weight:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' meanSquaredErrorLossWithReductionType_weightSelector reductionType weight
 
 -- | Create a loss layer
 --
@@ -361,8 +349,7 @@ meanSquaredErrorLossWithReductionType_weights :: IsMLCTensor weights => MLCReduc
 meanSquaredErrorLossWithReductionType_weights reductionType weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr weights $ \raw_weights ->
-      sendClassMsg cls' (mkSelector "meanSquaredErrorLossWithReductionType:weights:") (retPtr retVoid) [argCInt (coerce reductionType), argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' meanSquaredErrorLossWithReductionType_weightsSelector reductionType (toMLCTensor weights)
 
 -- | Create a loss layer
 --
@@ -377,7 +364,7 @@ hingeLossWithReductionType_weight :: MLCReductionType -> CFloat -> IO (Id MLCLos
 hingeLossWithReductionType_weight reductionType weight =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    sendClassMsg cls' (mkSelector "hingeLossWithReductionType:weight:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' hingeLossWithReductionType_weightSelector reductionType weight
 
 -- | Create a loss layer
 --
@@ -392,8 +379,7 @@ hingeLossWithReductionType_weights :: IsMLCTensor weights => MLCReductionType ->
 hingeLossWithReductionType_weights reductionType weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr weights $ \raw_weights ->
-      sendClassMsg cls' (mkSelector "hingeLossWithReductionType:weights:") (retPtr retVoid) [argCInt (coerce reductionType), argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' hingeLossWithReductionType_weightsSelector reductionType (toMLCTensor weights)
 
 -- | Create a loss layer
 --
@@ -408,7 +394,7 @@ cosineDistanceLossWithReductionType_weight :: MLCReductionType -> CFloat -> IO (
 cosineDistanceLossWithReductionType_weight reductionType weight =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    sendClassMsg cls' (mkSelector "cosineDistanceLossWithReductionType:weight:") (retPtr retVoid) [argCInt (coerce reductionType), argCFloat weight] >>= retainedObject . castPtr
+    sendClassMessage cls' cosineDistanceLossWithReductionType_weightSelector reductionType weight
 
 -- | Create a loss layer
 --
@@ -423,8 +409,7 @@ cosineDistanceLossWithReductionType_weights :: IsMLCTensor weights => MLCReducti
 cosineDistanceLossWithReductionType_weights reductionType weights =
   do
     cls' <- getRequiredClass "MLCLossLayer"
-    withObjCPtr weights $ \raw_weights ->
-      sendClassMsg cls' (mkSelector "cosineDistanceLossWithReductionType:weights:") (retPtr retVoid) [argCInt (coerce reductionType), argPtr (castPtr raw_weights :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' cosineDistanceLossWithReductionType_weightsSelector reductionType (toMLCTensor weights)
 
 -- | descriptor
 --
@@ -432,8 +417,8 @@ cosineDistanceLossWithReductionType_weights reductionType weights =
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsMLCLossLayer mlcLossLayer => mlcLossLayer -> IO (Id MLCLossDescriptor)
-descriptor mlcLossLayer  =
-    sendMsg mlcLossLayer (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mlcLossLayer =
+  sendMessage mlcLossLayer descriptorSelector
 
 -- | weights
 --
@@ -441,98 +426,98 @@ descriptor mlcLossLayer  =
 --
 -- ObjC selector: @- weights@
 weights :: IsMLCLossLayer mlcLossLayer => mlcLossLayer -> IO (Id MLCTensor)
-weights mlcLossLayer  =
-    sendMsg mlcLossLayer (mkSelector "weights") (retPtr retVoid) [] >>= retainedObject . castPtr
+weights mlcLossLayer =
+  sendMessage mlcLossLayer weightsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithDescriptor:@
-layerWithDescriptorSelector :: Selector
+layerWithDescriptorSelector :: Selector '[Id MLCLossDescriptor] (Id MLCLossLayer)
 layerWithDescriptorSelector = mkSelector "layerWithDescriptor:"
 
 -- | @Selector@ for @layerWithDescriptor:weights:@
-layerWithDescriptor_weightsSelector :: Selector
+layerWithDescriptor_weightsSelector :: Selector '[Id MLCLossDescriptor, Id MLCTensor] (Id MLCLossLayer)
 layerWithDescriptor_weightsSelector = mkSelector "layerWithDescriptor:weights:"
 
 -- | @Selector@ for @softmaxCrossEntropyLossWithReductionType:labelSmoothing:classCount:weight:@
-softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector :: Selector
+softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector :: Selector '[MLCReductionType, CFloat, CULong, CFloat] (Id MLCLossLayer)
 softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector = mkSelector "softmaxCrossEntropyLossWithReductionType:labelSmoothing:classCount:weight:"
 
 -- | @Selector@ for @softmaxCrossEntropyLossWithReductionType:labelSmoothing:classCount:weights:@
-softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector :: Selector
+softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector :: Selector '[MLCReductionType, CFloat, CULong, Id MLCTensor] (Id MLCLossLayer)
 softmaxCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector = mkSelector "softmaxCrossEntropyLossWithReductionType:labelSmoothing:classCount:weights:"
 
 -- | @Selector@ for @categoricalCrossEntropyLossWithReductionType:labelSmoothing:classCount:weight:@
-categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector :: Selector
+categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector :: Selector '[MLCReductionType, CFloat, CULong, CFloat] (Id MLCLossLayer)
 categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightSelector = mkSelector "categoricalCrossEntropyLossWithReductionType:labelSmoothing:classCount:weight:"
 
 -- | @Selector@ for @categoricalCrossEntropyLossWithReductionType:labelSmoothing:classCount:weights:@
-categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector :: Selector
+categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector :: Selector '[MLCReductionType, CFloat, CULong, Id MLCTensor] (Id MLCLossLayer)
 categoricalCrossEntropyLossWithReductionType_labelSmoothing_classCount_weightsSelector = mkSelector "categoricalCrossEntropyLossWithReductionType:labelSmoothing:classCount:weights:"
 
 -- | @Selector@ for @sigmoidCrossEntropyLossWithReductionType:labelSmoothing:weight:@
-sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightSelector :: Selector
+sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightSelector :: Selector '[MLCReductionType, CFloat, CFloat] (Id MLCLossLayer)
 sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightSelector = mkSelector "sigmoidCrossEntropyLossWithReductionType:labelSmoothing:weight:"
 
 -- | @Selector@ for @sigmoidCrossEntropyLossWithReductionType:labelSmoothing:weights:@
-sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightsSelector :: Selector
+sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightsSelector :: Selector '[MLCReductionType, CFloat, Id MLCTensor] (Id MLCLossLayer)
 sigmoidCrossEntropyLossWithReductionType_labelSmoothing_weightsSelector = mkSelector "sigmoidCrossEntropyLossWithReductionType:labelSmoothing:weights:"
 
 -- | @Selector@ for @logLossWithReductionType:epsilon:weight:@
-logLossWithReductionType_epsilon_weightSelector :: Selector
+logLossWithReductionType_epsilon_weightSelector :: Selector '[MLCReductionType, CFloat, CFloat] (Id MLCLossLayer)
 logLossWithReductionType_epsilon_weightSelector = mkSelector "logLossWithReductionType:epsilon:weight:"
 
 -- | @Selector@ for @logLossWithReductionType:epsilon:weights:@
-logLossWithReductionType_epsilon_weightsSelector :: Selector
+logLossWithReductionType_epsilon_weightsSelector :: Selector '[MLCReductionType, CFloat, Id MLCTensor] (Id MLCLossLayer)
 logLossWithReductionType_epsilon_weightsSelector = mkSelector "logLossWithReductionType:epsilon:weights:"
 
 -- | @Selector@ for @huberLossWithReductionType:delta:weight:@
-huberLossWithReductionType_delta_weightSelector :: Selector
+huberLossWithReductionType_delta_weightSelector :: Selector '[MLCReductionType, CFloat, CFloat] (Id MLCLossLayer)
 huberLossWithReductionType_delta_weightSelector = mkSelector "huberLossWithReductionType:delta:weight:"
 
 -- | @Selector@ for @huberLossWithReductionType:delta:weights:@
-huberLossWithReductionType_delta_weightsSelector :: Selector
+huberLossWithReductionType_delta_weightsSelector :: Selector '[MLCReductionType, CFloat, Id MLCTensor] (Id MLCLossLayer)
 huberLossWithReductionType_delta_weightsSelector = mkSelector "huberLossWithReductionType:delta:weights:"
 
 -- | @Selector@ for @meanAbsoluteErrorLossWithReductionType:weight:@
-meanAbsoluteErrorLossWithReductionType_weightSelector :: Selector
+meanAbsoluteErrorLossWithReductionType_weightSelector :: Selector '[MLCReductionType, CFloat] (Id MLCLossLayer)
 meanAbsoluteErrorLossWithReductionType_weightSelector = mkSelector "meanAbsoluteErrorLossWithReductionType:weight:"
 
 -- | @Selector@ for @meanAbsoluteErrorLossWithReductionType:weights:@
-meanAbsoluteErrorLossWithReductionType_weightsSelector :: Selector
+meanAbsoluteErrorLossWithReductionType_weightsSelector :: Selector '[MLCReductionType, Id MLCTensor] (Id MLCLossLayer)
 meanAbsoluteErrorLossWithReductionType_weightsSelector = mkSelector "meanAbsoluteErrorLossWithReductionType:weights:"
 
 -- | @Selector@ for @meanSquaredErrorLossWithReductionType:weight:@
-meanSquaredErrorLossWithReductionType_weightSelector :: Selector
+meanSquaredErrorLossWithReductionType_weightSelector :: Selector '[MLCReductionType, CFloat] (Id MLCLossLayer)
 meanSquaredErrorLossWithReductionType_weightSelector = mkSelector "meanSquaredErrorLossWithReductionType:weight:"
 
 -- | @Selector@ for @meanSquaredErrorLossWithReductionType:weights:@
-meanSquaredErrorLossWithReductionType_weightsSelector :: Selector
+meanSquaredErrorLossWithReductionType_weightsSelector :: Selector '[MLCReductionType, Id MLCTensor] (Id MLCLossLayer)
 meanSquaredErrorLossWithReductionType_weightsSelector = mkSelector "meanSquaredErrorLossWithReductionType:weights:"
 
 -- | @Selector@ for @hingeLossWithReductionType:weight:@
-hingeLossWithReductionType_weightSelector :: Selector
+hingeLossWithReductionType_weightSelector :: Selector '[MLCReductionType, CFloat] (Id MLCLossLayer)
 hingeLossWithReductionType_weightSelector = mkSelector "hingeLossWithReductionType:weight:"
 
 -- | @Selector@ for @hingeLossWithReductionType:weights:@
-hingeLossWithReductionType_weightsSelector :: Selector
+hingeLossWithReductionType_weightsSelector :: Selector '[MLCReductionType, Id MLCTensor] (Id MLCLossLayer)
 hingeLossWithReductionType_weightsSelector = mkSelector "hingeLossWithReductionType:weights:"
 
 -- | @Selector@ for @cosineDistanceLossWithReductionType:weight:@
-cosineDistanceLossWithReductionType_weightSelector :: Selector
+cosineDistanceLossWithReductionType_weightSelector :: Selector '[MLCReductionType, CFloat] (Id MLCLossLayer)
 cosineDistanceLossWithReductionType_weightSelector = mkSelector "cosineDistanceLossWithReductionType:weight:"
 
 -- | @Selector@ for @cosineDistanceLossWithReductionType:weights:@
-cosineDistanceLossWithReductionType_weightsSelector :: Selector
+cosineDistanceLossWithReductionType_weightsSelector :: Selector '[MLCReductionType, Id MLCTensor] (Id MLCLossLayer)
 cosineDistanceLossWithReductionType_weightsSelector = mkSelector "cosineDistanceLossWithReductionType:weights:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MLCLossDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @weights@
-weightsSelector :: Selector
+weightsSelector :: Selector '[] (Id MLCTensor)
 weightsSelector = mkSelector "weights"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRThreadBorderRouterManagementClusterSetPendingDatasetReques
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , pendingDatasetSelector
-  , setPendingDatasetSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setPendingDatasetSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- pendingDataset@
 pendingDataset :: IsMTRThreadBorderRouterManagementClusterSetPendingDatasetRequestParams mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams => mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams -> IO (Id NSData)
-pendingDataset mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams  =
-    sendMsg mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams (mkSelector "pendingDataset") (retPtr retVoid) [] >>= retainedObject . castPtr
+pendingDataset mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams =
+  sendMessage mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams pendingDatasetSelector
 
 -- | @- setPendingDataset:@
 setPendingDataset :: (IsMTRThreadBorderRouterManagementClusterSetPendingDatasetRequestParams mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams, IsNSData value) => mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams -> value -> IO ()
-setPendingDataset mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams (mkSelector "setPendingDataset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPendingDataset mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams value =
+  sendMessage mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams setPendingDatasetSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setPendingDataset mtrThreadBorderRouterManagementClusterSetPendingDatasetRequest
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRThreadBorderRouterManagementClusterSetPendingDatasetRequestParams mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams => mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams  =
-    sendMsg mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams =
+  sendMessage mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetPendingDatasetRequ
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRThreadBorderRouterManagementClusterSetPendingDatasetRequestParams mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams, IsNSNumber value) => mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams value =
+  sendMessage mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrThreadBorderRouterManagementClusterSetPendingDatasetR
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRThreadBorderRouterManagementClusterSetPendingDatasetRequestParams mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams => mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams  =
-    sendMsg mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams =
+  sendMessage mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetPendingData
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRThreadBorderRouterManagementClusterSetPendingDatasetRequestParams mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams, IsNSNumber value) => mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams -> value -> IO ()
-setServerSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams value =
+  sendMessage mtrThreadBorderRouterManagementClusterSetPendingDatasetRequestParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @pendingDataset@
-pendingDatasetSelector :: Selector
+pendingDatasetSelector :: Selector '[] (Id NSData)
 pendingDatasetSelector = mkSelector "pendingDataset"
 
 -- | @Selector@ for @setPendingDataset:@
-setPendingDatasetSelector :: Selector
+setPendingDatasetSelector :: Selector '[Id NSData] ()
 setPendingDatasetSelector = mkSelector "setPendingDataset:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

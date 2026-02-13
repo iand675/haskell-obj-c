@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,25 +17,21 @@ module ObjC.MLCompute.MLCConvolutionLayer
   , biases
   , weightsParameter
   , biasesParameter
-  , layerWithWeights_biases_descriptorSelector
-  , descriptorSelector
-  , weightsSelector
-  , biasesSelector
-  , weightsParameterSelector
   , biasesParameterSelector
+  , biasesSelector
+  , descriptorSelector
+  , layerWithWeights_biases_descriptorSelector
+  , weightsParameterSelector
+  , weightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,10 +53,7 @@ layerWithWeights_biases_descriptor :: (IsMLCTensor weights, IsMLCTensor biases, 
 layerWithWeights_biases_descriptor weights biases descriptor =
   do
     cls' <- getRequiredClass "MLCConvolutionLayer"
-    withObjCPtr weights $ \raw_weights ->
-      withObjCPtr biases $ \raw_biases ->
-        withObjCPtr descriptor $ \raw_descriptor ->
-          sendClassMsg cls' (mkSelector "layerWithWeights:biases:descriptor:") (retPtr retVoid) [argPtr (castPtr raw_weights :: Ptr ()), argPtr (castPtr raw_biases :: Ptr ()), argPtr (castPtr raw_descriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithWeights_biases_descriptorSelector (toMLCTensor weights) (toMLCTensor biases) (toMLCConvolutionDescriptor descriptor)
 
 -- | descriptor
 --
@@ -67,8 +61,8 @@ layerWithWeights_biases_descriptor weights biases descriptor =
 --
 -- ObjC selector: @- descriptor@
 descriptor :: IsMLCConvolutionLayer mlcConvolutionLayer => mlcConvolutionLayer -> IO (Id MLCConvolutionDescriptor)
-descriptor mlcConvolutionLayer  =
-    sendMsg mlcConvolutionLayer (mkSelector "descriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+descriptor mlcConvolutionLayer =
+  sendMessage mlcConvolutionLayer descriptorSelector
 
 -- | weights
 --
@@ -76,8 +70,8 @@ descriptor mlcConvolutionLayer  =
 --
 -- ObjC selector: @- weights@
 weights :: IsMLCConvolutionLayer mlcConvolutionLayer => mlcConvolutionLayer -> IO (Id MLCTensor)
-weights mlcConvolutionLayer  =
-    sendMsg mlcConvolutionLayer (mkSelector "weights") (retPtr retVoid) [] >>= retainedObject . castPtr
+weights mlcConvolutionLayer =
+  sendMessage mlcConvolutionLayer weightsSelector
 
 -- | biases
 --
@@ -85,8 +79,8 @@ weights mlcConvolutionLayer  =
 --
 -- ObjC selector: @- biases@
 biases :: IsMLCConvolutionLayer mlcConvolutionLayer => mlcConvolutionLayer -> IO (Id MLCTensor)
-biases mlcConvolutionLayer  =
-    sendMsg mlcConvolutionLayer (mkSelector "biases") (retPtr retVoid) [] >>= retainedObject . castPtr
+biases mlcConvolutionLayer =
+  sendMessage mlcConvolutionLayer biasesSelector
 
 -- | weightsParameter
 --
@@ -94,8 +88,8 @@ biases mlcConvolutionLayer  =
 --
 -- ObjC selector: @- weightsParameter@
 weightsParameter :: IsMLCConvolutionLayer mlcConvolutionLayer => mlcConvolutionLayer -> IO (Id MLCTensorParameter)
-weightsParameter mlcConvolutionLayer  =
-    sendMsg mlcConvolutionLayer (mkSelector "weightsParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+weightsParameter mlcConvolutionLayer =
+  sendMessage mlcConvolutionLayer weightsParameterSelector
 
 -- | biasesParameter
 --
@@ -103,34 +97,34 @@ weightsParameter mlcConvolutionLayer  =
 --
 -- ObjC selector: @- biasesParameter@
 biasesParameter :: IsMLCConvolutionLayer mlcConvolutionLayer => mlcConvolutionLayer -> IO (Id MLCTensorParameter)
-biasesParameter mlcConvolutionLayer  =
-    sendMsg mlcConvolutionLayer (mkSelector "biasesParameter") (retPtr retVoid) [] >>= retainedObject . castPtr
+biasesParameter mlcConvolutionLayer =
+  sendMessage mlcConvolutionLayer biasesParameterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithWeights:biases:descriptor:@
-layerWithWeights_biases_descriptorSelector :: Selector
+layerWithWeights_biases_descriptorSelector :: Selector '[Id MLCTensor, Id MLCTensor, Id MLCConvolutionDescriptor] (Id MLCConvolutionLayer)
 layerWithWeights_biases_descriptorSelector = mkSelector "layerWithWeights:biases:descriptor:"
 
 -- | @Selector@ for @descriptor@
-descriptorSelector :: Selector
+descriptorSelector :: Selector '[] (Id MLCConvolutionDescriptor)
 descriptorSelector = mkSelector "descriptor"
 
 -- | @Selector@ for @weights@
-weightsSelector :: Selector
+weightsSelector :: Selector '[] (Id MLCTensor)
 weightsSelector = mkSelector "weights"
 
 -- | @Selector@ for @biases@
-biasesSelector :: Selector
+biasesSelector :: Selector '[] (Id MLCTensor)
 biasesSelector = mkSelector "biases"
 
 -- | @Selector@ for @weightsParameter@
-weightsParameterSelector :: Selector
+weightsParameterSelector :: Selector '[] (Id MLCTensorParameter)
 weightsParameterSelector = mkSelector "weightsParameter"
 
 -- | @Selector@ for @biasesParameter@
-biasesParameterSelector :: Selector
+biasesParameterSelector :: Selector '[] (Id MLCTensorParameter)
 biasesParameterSelector = mkSelector "biasesParameter"
 

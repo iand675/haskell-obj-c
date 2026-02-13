@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,31 +37,31 @@ module ObjC.CloudKit.CKShare
   , blockedIdentities
   , allowsAccessRequests
   , setAllowsAccessRequests
-  , initWithRootRecordSelector
-  , initWithRootRecord_shareIDSelector
-  , initWithRecordZoneIDSelector
-  , initWithCoderSelector
   , addParticipantSelector
-  , removeParticipantSelector
-  , oneTimeURLForParticipantIDSelector
+  , allowsAccessRequestsSelector
+  , blockRequestersSelector
+  , blockedIdentitiesSelector
+  , currentUserParticipantSelector
+  , denyRequestersSelector
   , initSelector
-  , newSelector
+  , initWithCoderSelector
   , initWithRecordTypeSelector
   , initWithRecordType_recordIDSelector
   , initWithRecordType_zoneIDSelector
-  , denyRequestersSelector
-  , blockRequestersSelector
-  , unblockIdentitiesSelector
-  , publicPermissionSelector
-  , setPublicPermissionSelector
-  , urlSelector
-  , participantsSelector
+  , initWithRecordZoneIDSelector
+  , initWithRootRecordSelector
+  , initWithRootRecord_shareIDSelector
+  , newSelector
+  , oneTimeURLForParticipantIDSelector
   , ownerSelector
-  , currentUserParticipantSelector
+  , participantsSelector
+  , publicPermissionSelector
+  , removeParticipantSelector
   , requestersSelector
-  , blockedIdentitiesSelector
-  , allowsAccessRequestsSelector
   , setAllowsAccessRequestsSelector
+  , setPublicPermissionSelector
+  , unblockIdentitiesSelector
+  , urlSelector
 
   -- * Enum types
   , CKShareParticipantPermission(CKShareParticipantPermission)
@@ -71,15 +72,11 @@ module ObjC.CloudKit.CKShare
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -91,16 +88,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRootRecord:@
 initWithRootRecord :: (IsCKShare ckShare, IsCKRecord rootRecord) => ckShare -> rootRecord -> IO (Id CKShare)
-initWithRootRecord ckShare  rootRecord =
-  withObjCPtr rootRecord $ \raw_rootRecord ->
-      sendMsg ckShare (mkSelector "initWithRootRecord:") (retPtr retVoid) [argPtr (castPtr raw_rootRecord :: Ptr ())] >>= ownedObject . castPtr
+initWithRootRecord ckShare rootRecord =
+  sendOwnedMessage ckShare initWithRootRecordSelector (toCKRecord rootRecord)
 
 -- | @- initWithRootRecord:shareID:@
 initWithRootRecord_shareID :: (IsCKShare ckShare, IsCKRecord rootRecord, IsCKRecordID shareID) => ckShare -> rootRecord -> shareID -> IO (Id CKShare)
-initWithRootRecord_shareID ckShare  rootRecord shareID =
-  withObjCPtr rootRecord $ \raw_rootRecord ->
-    withObjCPtr shareID $ \raw_shareID ->
-        sendMsg ckShare (mkSelector "initWithRootRecord:shareID:") (retPtr retVoid) [argPtr (castPtr raw_rootRecord :: Ptr ()), argPtr (castPtr raw_shareID :: Ptr ())] >>= ownedObject . castPtr
+initWithRootRecord_shareID ckShare rootRecord shareID =
+  sendOwnedMessage ckShare initWithRootRecord_shareIDSelector (toCKRecord rootRecord) (toCKRecordID shareID)
 
 -- | Creates a zone-wide @CKShare.@  A zone-wide @CKShare@ can only exist in a zone with sharing capability @CKRecordZoneCapabilityZoneWideSharing.@ Only one such share can exist in a zone at a time.
 --
@@ -110,15 +104,13 @@ initWithRootRecord_shareID ckShare  rootRecord shareID =
 --
 -- ObjC selector: @- initWithRecordZoneID:@
 initWithRecordZoneID :: (IsCKShare ckShare, IsCKRecordZoneID recordZoneID) => ckShare -> recordZoneID -> IO (Id CKShare)
-initWithRecordZoneID ckShare  recordZoneID =
-  withObjCPtr recordZoneID $ \raw_recordZoneID ->
-      sendMsg ckShare (mkSelector "initWithRecordZoneID:") (retPtr retVoid) [argPtr (castPtr raw_recordZoneID :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordZoneID ckShare recordZoneID =
+  sendOwnedMessage ckShare initWithRecordZoneIDSelector (toCKRecordZoneID recordZoneID)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsCKShare ckShare, IsNSCoder aDecoder) => ckShare -> aDecoder -> IO (Id CKShare)
-initWithCoder ckShare  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg ckShare (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder ckShare aDecoder =
+  sendOwnedMessage ckShare initWithCoderSelector (toNSCoder aDecoder)
 
 -- | If a participant with a matching userIdentity already exists, then that existing participant's properties will be updated; no new participant will be added.  A ``CKShareParticipant`` instance that has already been added to one ``CKShare`` cannot be added to another, unless it is removed from the first ``CKShare`` through @removeParticipant@.  In order to modify the list of participants, a share must have publicPermission set to @CKShareParticipantPermissionNone.@  That is, you cannot mix-and-match private users and public users in the same share.
 --
@@ -126,17 +118,15 @@ initWithCoder ckShare  aDecoder =
 --
 -- ObjC selector: @- addParticipant:@
 addParticipant :: (IsCKShare ckShare, IsCKShareParticipant participant) => ckShare -> participant -> IO ()
-addParticipant ckShare  participant =
-  withObjCPtr participant $ \raw_participant ->
-      sendMsg ckShare (mkSelector "addParticipant:") retVoid [argPtr (castPtr raw_participant :: Ptr ())]
+addParticipant ckShare participant =
+  sendMessage ckShare addParticipantSelector (toCKShareParticipant participant)
 
 -- | It's not allowed to call @removeParticipant@ on a ``CKShare`` with a ``CKShareParticipant`` that has never been added to that share through @addParticipant@.
 --
 -- ObjC selector: @- removeParticipant:@
 removeParticipant :: (IsCKShare ckShare, IsCKShareParticipant participant) => ckShare -> participant -> IO ()
-removeParticipant ckShare  participant =
-  withObjCPtr participant $ \raw_participant ->
-      sendMsg ckShare (mkSelector "removeParticipant:") retVoid [argPtr (castPtr raw_participant :: Ptr ())]
+removeParticipant ckShare participant =
+  sendMessage ckShare removeParticipantSelector (toCKShareParticipant participant)
 
 -- | Invitation URLs that can be used by any receiver to claim the associated participantID and join the share.
 --
@@ -146,43 +136,37 @@ removeParticipant ckShare  participant =
 --
 -- ObjC selector: @- oneTimeURLForParticipantID:@
 oneTimeURLForParticipantID :: (IsCKShare ckShare, IsNSString participantID) => ckShare -> participantID -> IO (Id NSURL)
-oneTimeURLForParticipantID ckShare  participantID =
-  withObjCPtr participantID $ \raw_participantID ->
-      sendMsg ckShare (mkSelector "oneTimeURLForParticipantID:") (retPtr retVoid) [argPtr (castPtr raw_participantID :: Ptr ())] >>= retainedObject . castPtr
+oneTimeURLForParticipantID ckShare participantID =
+  sendMessage ckShare oneTimeURLForParticipantIDSelector (toNSString participantID)
 
 -- | These superclass-provided initializers are not allowed for CKShare
 --
 -- ObjC selector: @- init@
 init_ :: IsCKShare ckShare => ckShare -> IO (Id CKShare)
-init_ ckShare  =
-    sendMsg ckShare (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckShare =
+  sendOwnedMessage ckShare initSelector
 
 -- | @+ new@
 new :: IO (Id CKShare)
 new  =
   do
     cls' <- getRequiredClass "CKShare"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- initWithRecordType:@
 initWithRecordType :: (IsCKShare ckShare, IsNSString recordType) => ckShare -> recordType -> IO (Id CKShare)
-initWithRecordType ckShare  recordType =
-  withObjCPtr recordType $ \raw_recordType ->
-      sendMsg ckShare (mkSelector "initWithRecordType:") (retPtr retVoid) [argPtr (castPtr raw_recordType :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordType ckShare recordType =
+  sendOwnedMessage ckShare initWithRecordTypeSelector (toNSString recordType)
 
 -- | @- initWithRecordType:recordID:@
 initWithRecordType_recordID :: (IsCKShare ckShare, IsNSString recordType, IsCKRecordID recordID) => ckShare -> recordType -> recordID -> IO (Id CKShare)
-initWithRecordType_recordID ckShare  recordType recordID =
-  withObjCPtr recordType $ \raw_recordType ->
-    withObjCPtr recordID $ \raw_recordID ->
-        sendMsg ckShare (mkSelector "initWithRecordType:recordID:") (retPtr retVoid) [argPtr (castPtr raw_recordType :: Ptr ()), argPtr (castPtr raw_recordID :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordType_recordID ckShare recordType recordID =
+  sendOwnedMessage ckShare initWithRecordType_recordIDSelector (toNSString recordType) (toCKRecordID recordID)
 
 -- | @- initWithRecordType:zoneID:@
 initWithRecordType_zoneID :: (IsCKShare ckShare, IsNSString recordType, IsCKRecordZoneID zoneID) => ckShare -> recordType -> zoneID -> IO (Id CKShare)
-initWithRecordType_zoneID ckShare  recordType zoneID =
-  withObjCPtr recordType $ \raw_recordType ->
-    withObjCPtr zoneID $ \raw_zoneID ->
-        sendMsg ckShare (mkSelector "initWithRecordType:zoneID:") (retPtr retVoid) [argPtr (castPtr raw_recordType :: Ptr ()), argPtr (castPtr raw_zoneID :: Ptr ())] >>= ownedObject . castPtr
+initWithRecordType_zoneID ckShare recordType zoneID =
+  sendOwnedMessage ckShare initWithRecordType_zoneIDSelector (toNSString recordType) (toCKRecordZoneID zoneID)
 
 -- | Denies access requests from specified users.
 --
@@ -196,9 +180,8 @@ initWithRecordType_zoneID ckShare  recordType zoneID =
 --
 -- ObjC selector: @- denyRequesters:@
 denyRequesters :: (IsCKShare ckShare, IsNSArray requesters) => ckShare -> requesters -> IO ()
-denyRequesters ckShare  requesters =
-  withObjCPtr requesters $ \raw_requesters ->
-      sendMsg ckShare (mkSelector "denyRequesters:") retVoid [argPtr (castPtr raw_requesters :: Ptr ())]
+denyRequesters ckShare requesters =
+  sendMessage ckShare denyRequestersSelector (toNSArray requesters)
 
 -- | Blocks specified users from requesting access to this share.
 --
@@ -212,9 +195,8 @@ denyRequesters ckShare  requesters =
 --
 -- ObjC selector: @- blockRequesters:@
 blockRequesters :: (IsCKShare ckShare, IsNSArray requesters) => ckShare -> requesters -> IO ()
-blockRequesters ckShare  requesters =
-  withObjCPtr requesters $ \raw_requesters ->
-      sendMsg ckShare (mkSelector "blockRequesters:") retVoid [argPtr (castPtr raw_requesters :: Ptr ())]
+blockRequesters ckShare requesters =
+  sendMessage ckShare blockRequestersSelector (toNSArray requesters)
 
 -- | Unblocks previously blocked users, allowing them to request access again.
 --
@@ -228,9 +210,8 @@ blockRequesters ckShare  requesters =
 --
 -- ObjC selector: @- unblockIdentities:@
 unblockIdentities :: (IsCKShare ckShare, IsNSArray blockedIdentities) => ckShare -> blockedIdentities -> IO ()
-unblockIdentities ckShare  blockedIdentities =
-  withObjCPtr blockedIdentities $ \raw_blockedIdentities ->
-      sendMsg ckShare (mkSelector "unblockIdentities:") retVoid [argPtr (castPtr raw_blockedIdentities :: Ptr ())]
+unblockIdentities ckShare blockedIdentities =
+  sendMessage ckShare unblockIdentitiesSelector (toNSArray blockedIdentities)
 
 -- | Defines what permission a user has when not explicitly added to the share.
 --
@@ -238,8 +219,8 @@ unblockIdentities ckShare  blockedIdentities =
 --
 -- ObjC selector: @- publicPermission@
 publicPermission :: IsCKShare ckShare => ckShare -> IO CKShareParticipantPermission
-publicPermission ckShare  =
-    fmap (coerce :: CLong -> CKShareParticipantPermission) $ sendMsg ckShare (mkSelector "publicPermission") retCLong []
+publicPermission ckShare =
+  sendMessage ckShare publicPermissionSelector
 
 -- | Defines what permission a user has when not explicitly added to the share.
 --
@@ -247,8 +228,8 @@ publicPermission ckShare  =
 --
 -- ObjC selector: @- setPublicPermission:@
 setPublicPermission :: IsCKShare ckShare => ckShare -> CKShareParticipantPermission -> IO ()
-setPublicPermission ckShare  value =
-    sendMsg ckShare (mkSelector "setPublicPermission:") retVoid [argCLong (coerce value)]
+setPublicPermission ckShare value =
+  sendMessage ckShare setPublicPermissionSelector value
 
 -- | A URL that can be used to invite participants to this share.
 --
@@ -256,8 +237,8 @@ setPublicPermission ckShare  value =
 --
 -- ObjC selector: @- URL@
 url :: IsCKShare ckShare => ckShare -> IO (Id NSURL)
-url ckShare  =
-    sendMsg ckShare (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url ckShare =
+  sendMessage ckShare urlSelector
 
 -- | All participants on the share that the current user has permissions to see.
 --
@@ -265,20 +246,20 @@ url ckShare  =
 --
 -- ObjC selector: @- participants@
 participants :: IsCKShare ckShare => ckShare -> IO (Id NSArray)
-participants ckShare  =
-    sendMsg ckShare (mkSelector "participants") (retPtr retVoid) [] >>= retainedObject . castPtr
+participants ckShare =
+  sendMessage ckShare participantsSelector
 
 -- | Convenience methods for fetching special users from the participant array
 --
 -- ObjC selector: @- owner@
 owner :: IsCKShare ckShare => ckShare -> IO (Id CKShareParticipant)
-owner ckShare  =
-    sendMsg ckShare (mkSelector "owner") (retPtr retVoid) [] >>= retainedObject . castPtr
+owner ckShare =
+  sendMessage ckShare ownerSelector
 
 -- | @- currentUserParticipant@
 currentUserParticipant :: IsCKShare ckShare => ckShare -> IO (Id CKShareParticipant)
-currentUserParticipant ckShare  =
-    sendMsg ckShare (mkSelector "currentUserParticipant") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentUserParticipant ckShare =
+  sendMessage ckShare currentUserParticipantSelector
 
 -- | A list of all uninvited users who have requested access to this share.
 --
@@ -296,8 +277,8 @@ currentUserParticipant ckShare  =
 --
 -- ObjC selector: @- requesters@
 requesters :: IsCKShare ckShare => ckShare -> IO (Id NSArray)
-requesters ckShare  =
-    sendMsg ckShare (mkSelector "requesters") (retPtr retVoid) [] >>= retainedObject . castPtr
+requesters ckShare =
+  sendMessage ckShare requestersSelector
 
 -- | A list of users blocked from requesting access to this share.
 --
@@ -305,8 +286,8 @@ requesters ckShare  =
 --
 -- ObjC selector: @- blockedIdentities@
 blockedIdentities :: IsCKShare ckShare => ckShare -> IO (Id NSArray)
-blockedIdentities ckShare  =
-    sendMsg ckShare (mkSelector "blockedIdentities") (retPtr retVoid) [] >>= retainedObject . castPtr
+blockedIdentities ckShare =
+  sendMessage ckShare blockedIdentitiesSelector
 
 -- | Indicates whether uninvited users can request access to this share.
 --
@@ -316,8 +297,8 @@ blockedIdentities ckShare  =
 --
 -- ObjC selector: @- allowsAccessRequests@
 allowsAccessRequests :: IsCKShare ckShare => ckShare -> IO Bool
-allowsAccessRequests ckShare  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ckShare (mkSelector "allowsAccessRequests") retCULong []
+allowsAccessRequests ckShare =
+  sendMessage ckShare allowsAccessRequestsSelector
 
 -- | Indicates whether uninvited users can request access to this share.
 --
@@ -327,110 +308,110 @@ allowsAccessRequests ckShare  =
 --
 -- ObjC selector: @- setAllowsAccessRequests:@
 setAllowsAccessRequests :: IsCKShare ckShare => ckShare -> Bool -> IO ()
-setAllowsAccessRequests ckShare  value =
-    sendMsg ckShare (mkSelector "setAllowsAccessRequests:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsAccessRequests ckShare value =
+  sendMessage ckShare setAllowsAccessRequestsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRootRecord:@
-initWithRootRecordSelector :: Selector
+initWithRootRecordSelector :: Selector '[Id CKRecord] (Id CKShare)
 initWithRootRecordSelector = mkSelector "initWithRootRecord:"
 
 -- | @Selector@ for @initWithRootRecord:shareID:@
-initWithRootRecord_shareIDSelector :: Selector
+initWithRootRecord_shareIDSelector :: Selector '[Id CKRecord, Id CKRecordID] (Id CKShare)
 initWithRootRecord_shareIDSelector = mkSelector "initWithRootRecord:shareID:"
 
 -- | @Selector@ for @initWithRecordZoneID:@
-initWithRecordZoneIDSelector :: Selector
+initWithRecordZoneIDSelector :: Selector '[Id CKRecordZoneID] (Id CKShare)
 initWithRecordZoneIDSelector = mkSelector "initWithRecordZoneID:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id CKShare)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @addParticipant:@
-addParticipantSelector :: Selector
+addParticipantSelector :: Selector '[Id CKShareParticipant] ()
 addParticipantSelector = mkSelector "addParticipant:"
 
 -- | @Selector@ for @removeParticipant:@
-removeParticipantSelector :: Selector
+removeParticipantSelector :: Selector '[Id CKShareParticipant] ()
 removeParticipantSelector = mkSelector "removeParticipant:"
 
 -- | @Selector@ for @oneTimeURLForParticipantID:@
-oneTimeURLForParticipantIDSelector :: Selector
+oneTimeURLForParticipantIDSelector :: Selector '[Id NSString] (Id NSURL)
 oneTimeURLForParticipantIDSelector = mkSelector "oneTimeURLForParticipantID:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKShare)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKShare)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithRecordType:@
-initWithRecordTypeSelector :: Selector
+initWithRecordTypeSelector :: Selector '[Id NSString] (Id CKShare)
 initWithRecordTypeSelector = mkSelector "initWithRecordType:"
 
 -- | @Selector@ for @initWithRecordType:recordID:@
-initWithRecordType_recordIDSelector :: Selector
+initWithRecordType_recordIDSelector :: Selector '[Id NSString, Id CKRecordID] (Id CKShare)
 initWithRecordType_recordIDSelector = mkSelector "initWithRecordType:recordID:"
 
 -- | @Selector@ for @initWithRecordType:zoneID:@
-initWithRecordType_zoneIDSelector :: Selector
+initWithRecordType_zoneIDSelector :: Selector '[Id NSString, Id CKRecordZoneID] (Id CKShare)
 initWithRecordType_zoneIDSelector = mkSelector "initWithRecordType:zoneID:"
 
 -- | @Selector@ for @denyRequesters:@
-denyRequestersSelector :: Selector
+denyRequestersSelector :: Selector '[Id NSArray] ()
 denyRequestersSelector = mkSelector "denyRequesters:"
 
 -- | @Selector@ for @blockRequesters:@
-blockRequestersSelector :: Selector
+blockRequestersSelector :: Selector '[Id NSArray] ()
 blockRequestersSelector = mkSelector "blockRequesters:"
 
 -- | @Selector@ for @unblockIdentities:@
-unblockIdentitiesSelector :: Selector
+unblockIdentitiesSelector :: Selector '[Id NSArray] ()
 unblockIdentitiesSelector = mkSelector "unblockIdentities:"
 
 -- | @Selector@ for @publicPermission@
-publicPermissionSelector :: Selector
+publicPermissionSelector :: Selector '[] CKShareParticipantPermission
 publicPermissionSelector = mkSelector "publicPermission"
 
 -- | @Selector@ for @setPublicPermission:@
-setPublicPermissionSelector :: Selector
+setPublicPermissionSelector :: Selector '[CKShareParticipantPermission] ()
 setPublicPermissionSelector = mkSelector "setPublicPermission:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @participants@
-participantsSelector :: Selector
+participantsSelector :: Selector '[] (Id NSArray)
 participantsSelector = mkSelector "participants"
 
 -- | @Selector@ for @owner@
-ownerSelector :: Selector
+ownerSelector :: Selector '[] (Id CKShareParticipant)
 ownerSelector = mkSelector "owner"
 
 -- | @Selector@ for @currentUserParticipant@
-currentUserParticipantSelector :: Selector
+currentUserParticipantSelector :: Selector '[] (Id CKShareParticipant)
 currentUserParticipantSelector = mkSelector "currentUserParticipant"
 
 -- | @Selector@ for @requesters@
-requestersSelector :: Selector
+requestersSelector :: Selector '[] (Id NSArray)
 requestersSelector = mkSelector "requesters"
 
 -- | @Selector@ for @blockedIdentities@
-blockedIdentitiesSelector :: Selector
+blockedIdentitiesSelector :: Selector '[] (Id NSArray)
 blockedIdentitiesSelector = mkSelector "blockedIdentities"
 
 -- | @Selector@ for @allowsAccessRequests@
-allowsAccessRequestsSelector :: Selector
+allowsAccessRequestsSelector :: Selector '[] Bool
 allowsAccessRequestsSelector = mkSelector "allowsAccessRequests"
 
 -- | @Selector@ for @setAllowsAccessRequests:@
-setAllowsAccessRequestsSelector :: Selector
+setAllowsAccessRequestsSelector :: Selector '[Bool] ()
 setAllowsAccessRequestsSelector = mkSelector "setAllowsAccessRequests:"
 

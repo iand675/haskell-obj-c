@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -58,55 +59,55 @@ module ObjC.ITunesLibrary.ITLibMediaItem
   , userDisabled
   , grouping
   , locationType
-  , titleSelector
-  , sortTitleSelector
-  , artistSelector
-  , composerSelector
-  , sortComposerSelector
-  , ratingSelector
-  , ratingComputedSelector
-  , startTimeSelector
-  , stopTimeSelector
-  , albumSelector
-  , genreSelector
-  , kindSelector
-  , mediaKindSelector
-  , fileSizeSelector
-  , sizeSelector
-  , totalTimeSelector
-  , trackNumberSelector
-  , categorySelector
-  , descriptionSelector
-  , lyricsContentRatingSelector
-  , contentRatingSelector
-  , modifiedDateSelector
   , addedDateSelector
-  , bitrateSelector
-  , sampleRateSelector
-  , beatsPerMinuteSelector
-  , playCountSelector
-  , lastPlayedDateSelector
-  , playStatusSelector
-  , locationSelector
+  , albumSelector
+  , artistSelector
   , artworkAvailableSelector
   , artworkSelector
-  , commentsSelector
-  , purchasedSelector
+  , beatsPerMinuteSelector
+  , bitrateSelector
+  , categorySelector
   , cloudSelector
+  , commentsSelector
+  , composerSelector
+  , contentRatingSelector
+  , descriptionSelector
   , drmProtectedSelector
-  , videoSelector
-  , videoInfoSelector
-  , releaseDateSelector
-  , yearSelector
+  , fileSizeSelector
   , fileTypeSelector
+  , genreSelector
+  , groupingSelector
+  , kindSelector
+  , lastPlayedDateSelector
+  , locationSelector
+  , locationTypeSelector
+  , lyricsContentRatingSelector
+  , mediaKindSelector
+  , modifiedDateSelector
+  , playCountSelector
+  , playStatusSelector
+  , purchasedSelector
+  , ratingComputedSelector
+  , ratingSelector
+  , releaseDateSelector
+  , sampleRateSelector
+  , sizeSelector
   , skipCountSelector
   , skipDateSelector
+  , sortComposerSelector
+  , sortTitleSelector
+  , startTimeSelector
+  , stopTimeSelector
+  , titleSelector
+  , totalTimeSelector
+  , trackNumberSelector
+  , userDisabledSelector
+  , videoInfoSelector
+  , videoSelector
   , voiceOverLanguageSelector
   , volumeAdjustmentSelector
   , volumeNormalizationEnergySelector
-  , userDisabledSelector
-  , groupingSelector
-  , locationTypeSelector
+  , yearSelector
 
   -- * Enum types
   , ITLibMediaItemLocationType(ITLibMediaItemLocationType)
@@ -144,15 +145,11 @@ module ObjC.ITunesLibrary.ITLibMediaItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -164,542 +161,542 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- title@
 title :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-title itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title itLibMediaItem =
+  sendMessage itLibMediaItem titleSelector
 
 -- | The title of this media item that should be used for sorting purposes.  If nil, use the title field.
 --
 -- ObjC selector: @- sortTitle@
 sortTitle :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-sortTitle itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "sortTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortTitle itLibMediaItem =
+  sendMessage itLibMediaItem sortTitleSelector
 
 -- | The artist associated with this media item.
 --
 -- ObjC selector: @- artist@
 artist :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id ITLibArtist)
-artist itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "artist") (retPtr retVoid) [] >>= retainedObject . castPtr
+artist itLibMediaItem =
+  sendMessage itLibMediaItem artistSelector
 
 -- | The name of the composer associated with this media item.  May be empty.
 --
 -- ObjC selector: @- composer@
 composer :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-composer itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "composer") (retPtr retVoid) [] >>= retainedObject . castPtr
+composer itLibMediaItem =
+  sendMessage itLibMediaItem composerSelector
 
 -- | The name of the composer associated with this media item that should be used for sorting purposes. If nil, use the composer field.
 --
 -- ObjC selector: @- sortComposer@
 sortComposer :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-sortComposer itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "sortComposer") (retPtr retVoid) [] >>= retainedObject . castPtr
+sortComposer itLibMediaItem =
+  sendMessage itLibMediaItem sortComposerSelector
 
 -- | The rating of this media item.
 --
 -- ObjC selector: @- rating@
 rating :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CLong
-rating itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "rating") retCLong []
+rating itLibMediaItem =
+  sendMessage itLibMediaItem ratingSelector
 
 -- | Whether this media item's rating is computed.
 --
 -- ObjC selector: @- ratingComputed@
 ratingComputed :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO Bool
-ratingComputed itLibMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibMediaItem (mkSelector "ratingComputed") retCULong []
+ratingComputed itLibMediaItem =
+  sendMessage itLibMediaItem ratingComputedSelector
 
 -- | If non-zero, the actual time playback for this media item will start instead of 0:00 (in milliseconds).
 --
 -- ObjC selector: @- startTime@
 startTime :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-startTime itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "startTime") retCULong []
+startTime itLibMediaItem =
+  sendMessage itLibMediaItem startTimeSelector
 
 -- | If non-zero, the actual time playback for this media item will stop vs. the total time (in milliseconds).
 --
 -- ObjC selector: @- stopTime@
 stopTime :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-stopTime itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "stopTime") retCULong []
+stopTime itLibMediaItem =
+  sendMessage itLibMediaItem stopTimeSelector
 
 -- | The album where this media item belongs.
 --
 -- ObjC selector: @- album@
 album :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id ITLibAlbum)
-album itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "album") (retPtr retVoid) [] >>= retainedObject . castPtr
+album itLibMediaItem =
+  sendMessage itLibMediaItem albumSelector
 
 -- | The genre associated with this media item. May be empty.
 --
 -- ObjC selector: @- genre@
 genre :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-genre itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "genre") (retPtr retVoid) [] >>= retainedObject . castPtr
+genre itLibMediaItem =
+  sendMessage itLibMediaItem genreSelector
 
 -- | This media item's file kind (ex. MPEG audio file).
 --
 -- ObjC selector: @- kind@
 kind :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-kind itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "kind") (retPtr retVoid) [] >>= retainedObject . castPtr
+kind itLibMediaItem =
+  sendMessage itLibMediaItem kindSelector
 
 -- | This media item's media kind.
 --
 -- ObjC selector: @- mediaKind@
 mediaKind :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO ITLibMediaItemMediaKind
-mediaKind itLibMediaItem  =
-    fmap (coerce :: CULong -> ITLibMediaItemMediaKind) $ sendMsg itLibMediaItem (mkSelector "mediaKind") retCULong []
+mediaKind itLibMediaItem =
+  sendMessage itLibMediaItem mediaKindSelector
 
 -- | The size in bytes of this media item on disk.
 --
 -- ObjC selector: @- fileSize@
 fileSize :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-fileSize itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "fileSize") retCULong []
+fileSize itLibMediaItem =
+  sendMessage itLibMediaItem fileSizeSelector
 
 -- | The size in bytes of this media item on disk. (deprecated: use fileSize instead)
 --
 -- ObjC selector: @- size@
 size :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-size itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "size") retCULong []
+size itLibMediaItem =
+  sendMessage itLibMediaItem sizeSelector
 
 -- | The length of this media item in milliseconds.
 --
 -- ObjC selector: @- totalTime@
 totalTime :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-totalTime itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "totalTime") retCULong []
+totalTime itLibMediaItem =
+  sendMessage itLibMediaItem totalTimeSelector
 
 -- | The position of this media item within its album.
 --
 -- ObjC selector: @- trackNumber@
 trackNumber :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-trackNumber itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "trackNumber") retCULong []
+trackNumber itLibMediaItem =
+  sendMessage itLibMediaItem trackNumberSelector
 
 -- | The podcast category of this media item (implies this media item is a podcast).
 --
 -- ObjC selector: @- category@
 category :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-category itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "category") (retPtr retVoid) [] >>= retainedObject . castPtr
+category itLibMediaItem =
+  sendMessage itLibMediaItem categorySelector
 
 -- | Any podcast description of with this media item (implies this media item is a podcast).
 --
 -- ObjC selector: @- description@
 description :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-description itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "description") (retPtr retVoid) [] >>= retainedObject . castPtr
+description itLibMediaItem =
+  sendMessage itLibMediaItem descriptionSelector
 
 -- | The content rating of this media item's lyrics.
 --
 -- ObjC selector: @- lyricsContentRating@
 lyricsContentRating :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO ITLibMediaItemLyricsContentRating
-lyricsContentRating itLibMediaItem  =
-    fmap (coerce :: CULong -> ITLibMediaItemLyricsContentRating) $ sendMsg itLibMediaItem (mkSelector "lyricsContentRating") retCULong []
+lyricsContentRating itLibMediaItem =
+  sendMessage itLibMediaItem lyricsContentRatingSelector
 
 -- | The extended content rating of this media item.
 --
 -- ObjC selector: @- contentRating@
 contentRating :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-contentRating itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "contentRating") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentRating itLibMediaItem =
+  sendMessage itLibMediaItem contentRatingSelector
 
 -- | The date and time this media item was last modified.
 --
 -- ObjC selector: @- modifiedDate@
 modifiedDate :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSDate)
-modifiedDate itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "modifiedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+modifiedDate itLibMediaItem =
+  sendMessage itLibMediaItem modifiedDateSelector
 
 -- | The date and media item this media item was added to the iTunes database.
 --
 -- ObjC selector: @- addedDate@
 addedDate :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSDate)
-addedDate itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "addedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+addedDate itLibMediaItem =
+  sendMessage itLibMediaItem addedDateSelector
 
 -- | The bitrate of this media item in kbps.
 --
 -- ObjC selector: @- bitrate@
 bitrate :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-bitrate itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "bitrate") retCULong []
+bitrate itLibMediaItem =
+  sendMessage itLibMediaItem bitrateSelector
 
 -- | The sample rate of this media item in samples per second.
 --
 -- ObjC selector: @- sampleRate@
 sampleRate :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-sampleRate itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "sampleRate") retCULong []
+sampleRate itLibMediaItem =
+  sendMessage itLibMediaItem sampleRateSelector
 
 -- | The BPM (beats per minute) of this media item.
 --
 -- ObjC selector: @- beatsPerMinute@
 beatsPerMinute :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-beatsPerMinute itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "beatsPerMinute") retCULong []
+beatsPerMinute itLibMediaItem =
+  sendMessage itLibMediaItem beatsPerMinuteSelector
 
 -- | The number of times this media item has been played in iTunes.
 --
 -- ObjC selector: @- playCount@
 playCount :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-playCount itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "playCount") retCULong []
+playCount itLibMediaItem =
+  sendMessage itLibMediaItem playCountSelector
 
 -- | The date and time this media item was last played in iTunes, or nil if this media item has not been played.
 --
 -- ObjC selector: @- lastPlayedDate@
 lastPlayedDate :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSDate)
-lastPlayedDate itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "lastPlayedDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastPlayedDate itLibMediaItem =
+  sendMessage itLibMediaItem lastPlayedDateSelector
 
 -- | The play status for this media.  Represents partially played and unplayed states for videos and podcasts. Other media kinds always return "none".
 --
 -- ObjC selector: @- playStatus@
 playStatus :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO ITLibMediaItemPlayStatus
-playStatus itLibMediaItem  =
-    fmap (coerce :: CULong -> ITLibMediaItemPlayStatus) $ sendMsg itLibMediaItem (mkSelector "playStatus") retCULong []
+playStatus itLibMediaItem =
+  sendMessage itLibMediaItem playStatusSelector
 
 -- | The location of this media item on disk.
 --
 -- ObjC selector: @- location@
 location :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSURL)
-location itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "location") (retPtr retVoid) [] >>= retainedObject . castPtr
+location itLibMediaItem =
+  sendMessage itLibMediaItem locationSelector
 
 -- | Whether this media item has artwork.
 --
 -- ObjC selector: @- artworkAvailable@
 artworkAvailable :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO Bool
-artworkAvailable itLibMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibMediaItem (mkSelector "artworkAvailable") retCULong []
+artworkAvailable itLibMediaItem =
+  sendMessage itLibMediaItem artworkAvailableSelector
 
 -- | Whether this media item has artwork.
 --
 -- ObjC selector: @- artwork@
 artwork :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id ITLibArtwork)
-artwork itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "artwork") (retPtr retVoid) [] >>= retainedObject . castPtr
+artwork itLibMediaItem =
+  sendMessage itLibMediaItem artworkSelector
 
 -- | Any comments associated with this media item.
 --
 -- ObjC selector: @- comments@
 comments :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-comments itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "comments") (retPtr retVoid) [] >>= retainedObject . castPtr
+comments itLibMediaItem =
+  sendMessage itLibMediaItem commentsSelector
 
 -- | Whether this media item was purchased.
 --
 -- ObjC selector: @- purchased@
 purchased :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO Bool
-purchased itLibMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibMediaItem (mkSelector "purchased") retCULong []
+purchased itLibMediaItem =
+  sendMessage itLibMediaItem purchasedSelector
 
 -- | Whether this media item is iTunes Match or iTunes in the Cloud.
 --
 -- ObjC selector: @- cloud@
 cloud :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO Bool
-cloud itLibMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibMediaItem (mkSelector "cloud") retCULong []
+cloud itLibMediaItem =
+  sendMessage itLibMediaItem cloudSelector
 
 -- | Whether this media item is DRM protected.
 --
 -- ObjC selector: @- drmProtected@
 drmProtected :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO Bool
-drmProtected itLibMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibMediaItem (mkSelector "drmProtected") retCULong []
+drmProtected itLibMediaItem =
+  sendMessage itLibMediaItem drmProtectedSelector
 
 -- | Whether this media item is a video media item (video podcast, movie, etc).
 --
 -- ObjC selector: @- video@
 video :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO Bool
-video itLibMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibMediaItem (mkSelector "video") retCULong []
+video itLibMediaItem =
+  sendMessage itLibMediaItem videoSelector
 
 -- | The video information of this media item (implies this media item is a video media item).
 --
 -- ObjC selector: @- videoInfo@
 videoInfo :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id ITLibMediaItemVideoInfo)
-videoInfo itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "videoInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoInfo itLibMediaItem =
+  sendMessage itLibMediaItem videoInfoSelector
 
 -- | The date this media item was released.
 --
 -- ObjC selector: @- releaseDate@
 releaseDate :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSDate)
-releaseDate itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "releaseDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+releaseDate itLibMediaItem =
+  sendMessage itLibMediaItem releaseDateSelector
 
 -- | The year when this media item was released.
 --
 -- ObjC selector: @- year@
 year :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-year itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "year") retCULong []
+year itLibMediaItem =
+  sendMessage itLibMediaItem yearSelector
 
 -- | The type of the file this media item refers to.
 --
 -- ObjC selector: @- fileType@
 fileType :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-fileType itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "fileType") retCULong []
+fileType itLibMediaItem =
+  sendMessage itLibMediaItem fileTypeSelector
 
 -- | The number of times this media item has been skiped.
 --
 -- ObjC selector: @- skipCount@
 skipCount :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-skipCount itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "skipCount") retCULong []
+skipCount itLibMediaItem =
+  sendMessage itLibMediaItem skipCountSelector
 
 -- | The date and time when this media item was last skipped.
 --
 -- ObjC selector: @- skipDate@
 skipDate :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSDate)
-skipDate itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "skipDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+skipDate itLibMediaItem =
+  sendMessage itLibMediaItem skipDateSelector
 
 -- | The voice-over language of this media item
 --
 -- ObjC selector: @- voiceOverLanguage@
 voiceOverLanguage :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO RawId
-voiceOverLanguage itLibMediaItem  =
-    fmap (RawId . castPtr) $ sendMsg itLibMediaItem (mkSelector "voiceOverLanguage") (retPtr retVoid) []
+voiceOverLanguage itLibMediaItem =
+  sendMessage itLibMediaItem voiceOverLanguageSelector
 
 -- | The volume adjustment used for this media item if any.
 --
 -- ObjC selector: @- volumeAdjustment@
 volumeAdjustment :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CLong
-volumeAdjustment itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "volumeAdjustment") retCLong []
+volumeAdjustment itLibMediaItem =
+  sendMessage itLibMediaItem volumeAdjustmentSelector
 
 -- | The volume normalization energy applied to this media item.
 --
 -- ObjC selector: @- volumeNormalizationEnergy@
 volumeNormalizationEnergy :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO CULong
-volumeNormalizationEnergy itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "volumeNormalizationEnergy") retCULong []
+volumeNormalizationEnergy itLibMediaItem =
+  sendMessage itLibMediaItem volumeNormalizationEnergySelector
 
 -- | Whether the user has disabled this media item.
 --
 -- ObjC selector: @- userDisabled@
 userDisabled :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO Bool
-userDisabled itLibMediaItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg itLibMediaItem (mkSelector "userDisabled") retCULong []
+userDisabled itLibMediaItem =
+  sendMessage itLibMediaItem userDisabledSelector
 
 -- | The grouping of this media item.
 --
 -- ObjC selector: @- grouping@
 grouping :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO (Id NSString)
-grouping itLibMediaItem  =
-    sendMsg itLibMediaItem (mkSelector "grouping") (retPtr retVoid) [] >>= retainedObject . castPtr
+grouping itLibMediaItem =
+  sendMessage itLibMediaItem groupingSelector
 
 -- | The type of this media item with respect to its location.
 --
 -- ObjC selector: @- locationType@
 locationType :: IsITLibMediaItem itLibMediaItem => itLibMediaItem -> IO ITLibMediaItemLocationType
-locationType itLibMediaItem  =
-    fmap (coerce :: CULong -> ITLibMediaItemLocationType) $ sendMsg itLibMediaItem (mkSelector "locationType") retCULong []
+locationType itLibMediaItem =
+  sendMessage itLibMediaItem locationTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @sortTitle@
-sortTitleSelector :: Selector
+sortTitleSelector :: Selector '[] (Id NSString)
 sortTitleSelector = mkSelector "sortTitle"
 
 -- | @Selector@ for @artist@
-artistSelector :: Selector
+artistSelector :: Selector '[] (Id ITLibArtist)
 artistSelector = mkSelector "artist"
 
 -- | @Selector@ for @composer@
-composerSelector :: Selector
+composerSelector :: Selector '[] (Id NSString)
 composerSelector = mkSelector "composer"
 
 -- | @Selector@ for @sortComposer@
-sortComposerSelector :: Selector
+sortComposerSelector :: Selector '[] (Id NSString)
 sortComposerSelector = mkSelector "sortComposer"
 
 -- | @Selector@ for @rating@
-ratingSelector :: Selector
+ratingSelector :: Selector '[] CLong
 ratingSelector = mkSelector "rating"
 
 -- | @Selector@ for @ratingComputed@
-ratingComputedSelector :: Selector
+ratingComputedSelector :: Selector '[] Bool
 ratingComputedSelector = mkSelector "ratingComputed"
 
 -- | @Selector@ for @startTime@
-startTimeSelector :: Selector
+startTimeSelector :: Selector '[] CULong
 startTimeSelector = mkSelector "startTime"
 
 -- | @Selector@ for @stopTime@
-stopTimeSelector :: Selector
+stopTimeSelector :: Selector '[] CULong
 stopTimeSelector = mkSelector "stopTime"
 
 -- | @Selector@ for @album@
-albumSelector :: Selector
+albumSelector :: Selector '[] (Id ITLibAlbum)
 albumSelector = mkSelector "album"
 
 -- | @Selector@ for @genre@
-genreSelector :: Selector
+genreSelector :: Selector '[] (Id NSString)
 genreSelector = mkSelector "genre"
 
 -- | @Selector@ for @kind@
-kindSelector :: Selector
+kindSelector :: Selector '[] (Id NSString)
 kindSelector = mkSelector "kind"
 
 -- | @Selector@ for @mediaKind@
-mediaKindSelector :: Selector
+mediaKindSelector :: Selector '[] ITLibMediaItemMediaKind
 mediaKindSelector = mkSelector "mediaKind"
 
 -- | @Selector@ for @fileSize@
-fileSizeSelector :: Selector
+fileSizeSelector :: Selector '[] CULong
 fileSizeSelector = mkSelector "fileSize"
 
 -- | @Selector@ for @size@
-sizeSelector :: Selector
+sizeSelector :: Selector '[] CULong
 sizeSelector = mkSelector "size"
 
 -- | @Selector@ for @totalTime@
-totalTimeSelector :: Selector
+totalTimeSelector :: Selector '[] CULong
 totalTimeSelector = mkSelector "totalTime"
 
 -- | @Selector@ for @trackNumber@
-trackNumberSelector :: Selector
+trackNumberSelector :: Selector '[] CULong
 trackNumberSelector = mkSelector "trackNumber"
 
 -- | @Selector@ for @category@
-categorySelector :: Selector
+categorySelector :: Selector '[] (Id NSString)
 categorySelector = mkSelector "category"
 
 -- | @Selector@ for @description@
-descriptionSelector :: Selector
+descriptionSelector :: Selector '[] (Id NSString)
 descriptionSelector = mkSelector "description"
 
 -- | @Selector@ for @lyricsContentRating@
-lyricsContentRatingSelector :: Selector
+lyricsContentRatingSelector :: Selector '[] ITLibMediaItemLyricsContentRating
 lyricsContentRatingSelector = mkSelector "lyricsContentRating"
 
 -- | @Selector@ for @contentRating@
-contentRatingSelector :: Selector
+contentRatingSelector :: Selector '[] (Id NSString)
 contentRatingSelector = mkSelector "contentRating"
 
 -- | @Selector@ for @modifiedDate@
-modifiedDateSelector :: Selector
+modifiedDateSelector :: Selector '[] (Id NSDate)
 modifiedDateSelector = mkSelector "modifiedDate"
 
 -- | @Selector@ for @addedDate@
-addedDateSelector :: Selector
+addedDateSelector :: Selector '[] (Id NSDate)
 addedDateSelector = mkSelector "addedDate"
 
 -- | @Selector@ for @bitrate@
-bitrateSelector :: Selector
+bitrateSelector :: Selector '[] CULong
 bitrateSelector = mkSelector "bitrate"
 
 -- | @Selector@ for @sampleRate@
-sampleRateSelector :: Selector
+sampleRateSelector :: Selector '[] CULong
 sampleRateSelector = mkSelector "sampleRate"
 
 -- | @Selector@ for @beatsPerMinute@
-beatsPerMinuteSelector :: Selector
+beatsPerMinuteSelector :: Selector '[] CULong
 beatsPerMinuteSelector = mkSelector "beatsPerMinute"
 
 -- | @Selector@ for @playCount@
-playCountSelector :: Selector
+playCountSelector :: Selector '[] CULong
 playCountSelector = mkSelector "playCount"
 
 -- | @Selector@ for @lastPlayedDate@
-lastPlayedDateSelector :: Selector
+lastPlayedDateSelector :: Selector '[] (Id NSDate)
 lastPlayedDateSelector = mkSelector "lastPlayedDate"
 
 -- | @Selector@ for @playStatus@
-playStatusSelector :: Selector
+playStatusSelector :: Selector '[] ITLibMediaItemPlayStatus
 playStatusSelector = mkSelector "playStatus"
 
 -- | @Selector@ for @location@
-locationSelector :: Selector
+locationSelector :: Selector '[] (Id NSURL)
 locationSelector = mkSelector "location"
 
 -- | @Selector@ for @artworkAvailable@
-artworkAvailableSelector :: Selector
+artworkAvailableSelector :: Selector '[] Bool
 artworkAvailableSelector = mkSelector "artworkAvailable"
 
 -- | @Selector@ for @artwork@
-artworkSelector :: Selector
+artworkSelector :: Selector '[] (Id ITLibArtwork)
 artworkSelector = mkSelector "artwork"
 
 -- | @Selector@ for @comments@
-commentsSelector :: Selector
+commentsSelector :: Selector '[] (Id NSString)
 commentsSelector = mkSelector "comments"
 
 -- | @Selector@ for @purchased@
-purchasedSelector :: Selector
+purchasedSelector :: Selector '[] Bool
 purchasedSelector = mkSelector "purchased"
 
 -- | @Selector@ for @cloud@
-cloudSelector :: Selector
+cloudSelector :: Selector '[] Bool
 cloudSelector = mkSelector "cloud"
 
 -- | @Selector@ for @drmProtected@
-drmProtectedSelector :: Selector
+drmProtectedSelector :: Selector '[] Bool
 drmProtectedSelector = mkSelector "drmProtected"
 
 -- | @Selector@ for @video@
-videoSelector :: Selector
+videoSelector :: Selector '[] Bool
 videoSelector = mkSelector "video"
 
 -- | @Selector@ for @videoInfo@
-videoInfoSelector :: Selector
+videoInfoSelector :: Selector '[] (Id ITLibMediaItemVideoInfo)
 videoInfoSelector = mkSelector "videoInfo"
 
 -- | @Selector@ for @releaseDate@
-releaseDateSelector :: Selector
+releaseDateSelector :: Selector '[] (Id NSDate)
 releaseDateSelector = mkSelector "releaseDate"
 
 -- | @Selector@ for @year@
-yearSelector :: Selector
+yearSelector :: Selector '[] CULong
 yearSelector = mkSelector "year"
 
 -- | @Selector@ for @fileType@
-fileTypeSelector :: Selector
+fileTypeSelector :: Selector '[] CULong
 fileTypeSelector = mkSelector "fileType"
 
 -- | @Selector@ for @skipCount@
-skipCountSelector :: Selector
+skipCountSelector :: Selector '[] CULong
 skipCountSelector = mkSelector "skipCount"
 
 -- | @Selector@ for @skipDate@
-skipDateSelector :: Selector
+skipDateSelector :: Selector '[] (Id NSDate)
 skipDateSelector = mkSelector "skipDate"
 
 -- | @Selector@ for @voiceOverLanguage@
-voiceOverLanguageSelector :: Selector
+voiceOverLanguageSelector :: Selector '[] RawId
 voiceOverLanguageSelector = mkSelector "voiceOverLanguage"
 
 -- | @Selector@ for @volumeAdjustment@
-volumeAdjustmentSelector :: Selector
+volumeAdjustmentSelector :: Selector '[] CLong
 volumeAdjustmentSelector = mkSelector "volumeAdjustment"
 
 -- | @Selector@ for @volumeNormalizationEnergy@
-volumeNormalizationEnergySelector :: Selector
+volumeNormalizationEnergySelector :: Selector '[] CULong
 volumeNormalizationEnergySelector = mkSelector "volumeNormalizationEnergy"
 
 -- | @Selector@ for @userDisabled@
-userDisabledSelector :: Selector
+userDisabledSelector :: Selector '[] Bool
 userDisabledSelector = mkSelector "userDisabled"
 
 -- | @Selector@ for @grouping@
-groupingSelector :: Selector
+groupingSelector :: Selector '[] (Id NSString)
 groupingSelector = mkSelector "grouping"
 
 -- | @Selector@ for @locationType@
-locationTypeSelector :: Selector
+locationTypeSelector :: Selector '[] ITLibMediaItemLocationType
 locationTypeSelector = mkSelector "locationType"
 

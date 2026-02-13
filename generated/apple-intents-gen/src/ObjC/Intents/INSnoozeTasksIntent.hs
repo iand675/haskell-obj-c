@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Intents.INSnoozeTasksIntent
   , tasks
   , nextTriggerTime
   , all_
-  , initWithTasks_nextTriggerTime_allSelector
-  , tasksSelector
-  , nextTriggerTimeSelector
   , allSelector
+  , initWithTasks_nextTriggerTime_allSelector
+  , nextTriggerTimeSelector
+  , tasksSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,44 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTasks:nextTriggerTime:all:@
 initWithTasks_nextTriggerTime_all :: (IsINSnoozeTasksIntent inSnoozeTasksIntent, IsNSArray tasks, IsINDateComponentsRange nextTriggerTime, IsNSNumber all_) => inSnoozeTasksIntent -> tasks -> nextTriggerTime -> all_ -> IO (Id INSnoozeTasksIntent)
-initWithTasks_nextTriggerTime_all inSnoozeTasksIntent  tasks nextTriggerTime all_ =
-  withObjCPtr tasks $ \raw_tasks ->
-    withObjCPtr nextTriggerTime $ \raw_nextTriggerTime ->
-      withObjCPtr all_ $ \raw_all_ ->
-          sendMsg inSnoozeTasksIntent (mkSelector "initWithTasks:nextTriggerTime:all:") (retPtr retVoid) [argPtr (castPtr raw_tasks :: Ptr ()), argPtr (castPtr raw_nextTriggerTime :: Ptr ()), argPtr (castPtr raw_all_ :: Ptr ())] >>= ownedObject . castPtr
+initWithTasks_nextTriggerTime_all inSnoozeTasksIntent tasks nextTriggerTime all_ =
+  sendOwnedMessage inSnoozeTasksIntent initWithTasks_nextTriggerTime_allSelector (toNSArray tasks) (toINDateComponentsRange nextTriggerTime) (toNSNumber all_)
 
 -- | @- tasks@
 tasks :: IsINSnoozeTasksIntent inSnoozeTasksIntent => inSnoozeTasksIntent -> IO (Id NSArray)
-tasks inSnoozeTasksIntent  =
-    sendMsg inSnoozeTasksIntent (mkSelector "tasks") (retPtr retVoid) [] >>= retainedObject . castPtr
+tasks inSnoozeTasksIntent =
+  sendMessage inSnoozeTasksIntent tasksSelector
 
 -- | @- nextTriggerTime@
 nextTriggerTime :: IsINSnoozeTasksIntent inSnoozeTasksIntent => inSnoozeTasksIntent -> IO (Id INDateComponentsRange)
-nextTriggerTime inSnoozeTasksIntent  =
-    sendMsg inSnoozeTasksIntent (mkSelector "nextTriggerTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextTriggerTime inSnoozeTasksIntent =
+  sendMessage inSnoozeTasksIntent nextTriggerTimeSelector
 
 -- | @- all@
 all_ :: IsINSnoozeTasksIntent inSnoozeTasksIntent => inSnoozeTasksIntent -> IO (Id NSNumber)
-all_ inSnoozeTasksIntent  =
-    sendMsg inSnoozeTasksIntent (mkSelector "all") (retPtr retVoid) [] >>= retainedObject . castPtr
+all_ inSnoozeTasksIntent =
+  sendMessage inSnoozeTasksIntent allSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTasks:nextTriggerTime:all:@
-initWithTasks_nextTriggerTime_allSelector :: Selector
+initWithTasks_nextTriggerTime_allSelector :: Selector '[Id NSArray, Id INDateComponentsRange, Id NSNumber] (Id INSnoozeTasksIntent)
 initWithTasks_nextTriggerTime_allSelector = mkSelector "initWithTasks:nextTriggerTime:all:"
 
 -- | @Selector@ for @tasks@
-tasksSelector :: Selector
+tasksSelector :: Selector '[] (Id NSArray)
 tasksSelector = mkSelector "tasks"
 
 -- | @Selector@ for @nextTriggerTime@
-nextTriggerTimeSelector :: Selector
+nextTriggerTimeSelector :: Selector '[] (Id INDateComponentsRange)
 nextTriggerTimeSelector = mkSelector "nextTriggerTime"
 
 -- | @Selector@ for @all@
-allSelector :: Selector
+allSelector :: Selector '[] (Id NSNumber)
 allSelector = mkSelector "all"
 

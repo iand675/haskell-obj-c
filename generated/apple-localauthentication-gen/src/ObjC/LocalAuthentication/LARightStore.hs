@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.LocalAuthentication.LARightStore
   , new
   , init_
   , sharedStore
+  , initSelector
+  , newSelector
+  , removeAllRightsWithCompletionSelector
+  , removeRightForIdentifier_completionSelector
+  , removeRight_completionSelector
   , rightForIdentifier_completionSelector
   , saveRight_identifier_completionSelector
   , saveRight_identifier_secret_completionSelector
-  , removeRight_completionSelector
-  , removeRightForIdentifier_completionSelector
-  , removeAllRightsWithCompletionSelector
-  , newSelector
-  , initSelector
   , sharedStoreSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,9 +50,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- rightForIdentifier:completion:@
 rightForIdentifier_completion :: (IsLARightStore laRightStore, IsNSString identifier) => laRightStore -> identifier -> Ptr () -> IO ()
-rightForIdentifier_completion laRightStore  identifier handler =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg laRightStore (mkSelector "rightForIdentifier:completion:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+rightForIdentifier_completion laRightStore identifier handler =
+  sendMessage laRightStore rightForIdentifier_completionSelector (toNSString identifier) handler
 
 -- | Persists a right for later usage.
 --
@@ -67,10 +63,8 @@ rightForIdentifier_completion laRightStore  identifier handler =
 --
 -- ObjC selector: @- saveRight:identifier:completion:@
 saveRight_identifier_completion :: (IsLARightStore laRightStore, IsLARight right, IsNSString identifier) => laRightStore -> right -> identifier -> Ptr () -> IO ()
-saveRight_identifier_completion laRightStore  right identifier handler =
-  withObjCPtr right $ \raw_right ->
-    withObjCPtr identifier $ \raw_identifier ->
-        sendMsg laRightStore (mkSelector "saveRight:identifier:completion:") retVoid [argPtr (castPtr raw_right :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+saveRight_identifier_completion laRightStore right identifier handler =
+  sendMessage laRightStore saveRight_identifier_completionSelector (toLARight right) (toNSString identifier) handler
 
 -- | Persists a right for later usage.
 --
@@ -84,11 +78,8 @@ saveRight_identifier_completion laRightStore  right identifier handler =
 --
 -- ObjC selector: @- saveRight:identifier:secret:completion:@
 saveRight_identifier_secret_completion :: (IsLARightStore laRightStore, IsLARight right, IsNSString identifier, IsNSData secret) => laRightStore -> right -> identifier -> secret -> Ptr () -> IO ()
-saveRight_identifier_secret_completion laRightStore  right identifier secret handler =
-  withObjCPtr right $ \raw_right ->
-    withObjCPtr identifier $ \raw_identifier ->
-      withObjCPtr secret $ \raw_secret ->
-          sendMsg laRightStore (mkSelector "saveRight:identifier:secret:completion:") retVoid [argPtr (castPtr raw_right :: Ptr ()), argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_secret :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+saveRight_identifier_secret_completion laRightStore right identifier secret handler =
+  sendMessage laRightStore saveRight_identifier_secret_completionSelector (toLARight right) (toNSString identifier) (toNSData secret) handler
 
 -- | Removes a right from the persistent storage along with its associated resources.
 --
@@ -98,9 +89,8 @@ saveRight_identifier_secret_completion laRightStore  right identifier secret han
 --
 -- ObjC selector: @- removeRight:completion:@
 removeRight_completion :: (IsLARightStore laRightStore, IsLAPersistedRight right) => laRightStore -> right -> Ptr () -> IO ()
-removeRight_completion laRightStore  right handler =
-  withObjCPtr right $ \raw_right ->
-      sendMsg laRightStore (mkSelector "removeRight:completion:") retVoid [argPtr (castPtr raw_right :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+removeRight_completion laRightStore right handler =
+  sendMessage laRightStore removeRight_completionSelector (toLAPersistedRight right) handler
 
 -- | Removes right with provided identifier from persistant storage.
 --
@@ -110,9 +100,8 @@ removeRight_completion laRightStore  right handler =
 --
 -- ObjC selector: @- removeRightForIdentifier:completion:@
 removeRightForIdentifier_completion :: (IsLARightStore laRightStore, IsNSString identifier) => laRightStore -> identifier -> Ptr () -> IO ()
-removeRightForIdentifier_completion laRightStore  identifier handler =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg laRightStore (mkSelector "removeRightForIdentifier:completion:") retVoid [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+removeRightForIdentifier_completion laRightStore identifier handler =
+  sendMessage laRightStore removeRightForIdentifier_completionSelector (toNSString identifier) handler
 
 -- | Removes all rights stored by the client
 --
@@ -120,8 +109,8 @@ removeRightForIdentifier_completion laRightStore  identifier handler =
 --
 -- ObjC selector: @- removeAllRightsWithCompletion:@
 removeAllRightsWithCompletion :: IsLARightStore laRightStore => laRightStore -> Ptr () -> IO ()
-removeAllRightsWithCompletion laRightStore  handler =
-    sendMsg laRightStore (mkSelector "removeAllRightsWithCompletion:") retVoid [argPtr (castPtr handler :: Ptr ())]
+removeAllRightsWithCompletion laRightStore handler =
+  sendMessage laRightStore removeAllRightsWithCompletionSelector handler
 
 -- | Clients should rely on the @shared@ instance instead
 --
@@ -130,14 +119,14 @@ new :: IO (Id LARightStore)
 new  =
   do
     cls' <- getRequiredClass "LARightStore"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Clients should rely on the @shared@ instance instead
 --
 -- ObjC selector: @- init@
 init_ :: IsLARightStore laRightStore => laRightStore -> IO (Id LARightStore)
-init_ laRightStore  =
-    sendMsg laRightStore (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laRightStore =
+  sendOwnedMessage laRightStore initSelector
 
 -- | Shared instance of @LARightStore.@
 --
@@ -146,45 +135,45 @@ sharedStore :: IO (Id LARightStore)
 sharedStore  =
   do
     cls' <- getRequiredClass "LARightStore"
-    sendClassMsg cls' (mkSelector "sharedStore") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedStoreSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rightForIdentifier:completion:@
-rightForIdentifier_completionSelector :: Selector
+rightForIdentifier_completionSelector :: Selector '[Id NSString, Ptr ()] ()
 rightForIdentifier_completionSelector = mkSelector "rightForIdentifier:completion:"
 
 -- | @Selector@ for @saveRight:identifier:completion:@
-saveRight_identifier_completionSelector :: Selector
+saveRight_identifier_completionSelector :: Selector '[Id LARight, Id NSString, Ptr ()] ()
 saveRight_identifier_completionSelector = mkSelector "saveRight:identifier:completion:"
 
 -- | @Selector@ for @saveRight:identifier:secret:completion:@
-saveRight_identifier_secret_completionSelector :: Selector
+saveRight_identifier_secret_completionSelector :: Selector '[Id LARight, Id NSString, Id NSData, Ptr ()] ()
 saveRight_identifier_secret_completionSelector = mkSelector "saveRight:identifier:secret:completion:"
 
 -- | @Selector@ for @removeRight:completion:@
-removeRight_completionSelector :: Selector
+removeRight_completionSelector :: Selector '[Id LAPersistedRight, Ptr ()] ()
 removeRight_completionSelector = mkSelector "removeRight:completion:"
 
 -- | @Selector@ for @removeRightForIdentifier:completion:@
-removeRightForIdentifier_completionSelector :: Selector
+removeRightForIdentifier_completionSelector :: Selector '[Id NSString, Ptr ()] ()
 removeRightForIdentifier_completionSelector = mkSelector "removeRightForIdentifier:completion:"
 
 -- | @Selector@ for @removeAllRightsWithCompletion:@
-removeAllRightsWithCompletionSelector :: Selector
+removeAllRightsWithCompletionSelector :: Selector '[Ptr ()] ()
 removeAllRightsWithCompletionSelector = mkSelector "removeAllRightsWithCompletion:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LARightStore)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LARightStore)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @sharedStore@
-sharedStoreSelector :: Selector
+sharedStoreSelector :: Selector '[] (Id LARightStore)
 sharedStoreSelector = mkSelector "sharedStore"
 

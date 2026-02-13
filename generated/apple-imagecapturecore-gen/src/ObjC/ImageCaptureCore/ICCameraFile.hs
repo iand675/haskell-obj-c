@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,38 +44,38 @@ module ObjC.ImageCaptureCore.ICCameraFile
   , exifCreationDate
   , exifModificationDate
   , fingerprint
-  , fingerprintForFileAtURLSelector
-  , requestThumbnailDataWithOptions_completionSelector
-  , requestMetadataDictionaryWithOptions_completionSelector
-  , requestDownloadWithOptions_completionSelector
-  , requestReadDataAtOffset_length_completionSelector
-  , requestSecurityScopedURLWithCompletionSelector
-  , requestFingerprintWithCompletionSelector
-  , widthSelector
-  , heightSelector
-  , originalFilenameSelector
-  , createdFilenameSelector
-  , fileSizeSelector
-  , orientationSelector
-  , setOrientationSelector
-  , durationSelector
-  , highFramerateSelector
-  , timeLapseSelector
-  , firstPickedSelector
-  , originatingAssetIDSelector
-  , groupUUIDSelector
-  , gpsStringSelector
-  , relatedUUIDSelector
-  , burstUUIDSelector
   , burstFavoriteSelector
   , burstPickedSelector
-  , sidecarFilesSelector
-  , pairedRawImageSelector
-  , fileCreationDateSelector
-  , fileModificationDateSelector
+  , burstUUIDSelector
+  , createdFilenameSelector
+  , durationSelector
   , exifCreationDateSelector
   , exifModificationDateSelector
+  , fileCreationDateSelector
+  , fileModificationDateSelector
+  , fileSizeSelector
+  , fingerprintForFileAtURLSelector
   , fingerprintSelector
+  , firstPickedSelector
+  , gpsStringSelector
+  , groupUUIDSelector
+  , heightSelector
+  , highFramerateSelector
+  , orientationSelector
+  , originalFilenameSelector
+  , originatingAssetIDSelector
+  , pairedRawImageSelector
+  , relatedUUIDSelector
+  , requestDownloadWithOptions_completionSelector
+  , requestFingerprintWithCompletionSelector
+  , requestMetadataDictionaryWithOptions_completionSelector
+  , requestReadDataAtOffset_length_completionSelector
+  , requestSecurityScopedURLWithCompletionSelector
+  , requestThumbnailDataWithOptions_completionSelector
+  , setOrientationSelector
+  , sidecarFilesSelector
+  , timeLapseSelector
+  , widthSelector
 
   -- * Enum types
   , ICEXIFOrientationType(ICEXIFOrientationType)
@@ -89,15 +90,11 @@ module ObjC.ImageCaptureCore.ICCameraFile
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -114,8 +111,7 @@ fingerprintForFileAtURL :: IsNSURL url => url -> IO (Id NSString)
 fingerprintForFileAtURL url =
   do
     cls' <- getRequiredClass "ICCameraFile"
-    withObjCPtr url $ \raw_url ->
-      sendClassMsg cls' (mkSelector "fingerprintForFileAtURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fingerprintForFileAtURLSelector (toNSURL url)
 
 -- | requestThumbnailDataWithOptions:completion
 --
@@ -131,9 +127,8 @@ fingerprintForFileAtURL url =
 --
 -- ObjC selector: @- requestThumbnailDataWithOptions:completion:@
 requestThumbnailDataWithOptions_completion :: (IsICCameraFile icCameraFile, IsNSDictionary options) => icCameraFile -> options -> Ptr () -> IO ()
-requestThumbnailDataWithOptions_completion icCameraFile  options completion =
-  withObjCPtr options $ \raw_options ->
-      sendMsg icCameraFile (mkSelector "requestThumbnailDataWithOptions:completion:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+requestThumbnailDataWithOptions_completion icCameraFile options completion =
+  sendMessage icCameraFile requestThumbnailDataWithOptions_completionSelector (toNSDictionary options) completion
 
 -- | requestMetadataDictionaryWithOptions:completion
 --
@@ -147,9 +142,8 @@ requestThumbnailDataWithOptions_completion icCameraFile  options completion =
 --
 -- ObjC selector: @- requestMetadataDictionaryWithOptions:completion:@
 requestMetadataDictionaryWithOptions_completion :: (IsICCameraFile icCameraFile, IsNSDictionary options) => icCameraFile -> options -> Ptr () -> IO ()
-requestMetadataDictionaryWithOptions_completion icCameraFile  options completion =
-  withObjCPtr options $ \raw_options ->
-      sendMsg icCameraFile (mkSelector "requestMetadataDictionaryWithOptions:completion:") retVoid [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+requestMetadataDictionaryWithOptions_completion icCameraFile options completion =
+  sendMessage icCameraFile requestMetadataDictionaryWithOptions_completionSelector (toNSDictionary options) completion
 
 -- | requestDownloadWithOptions:progressDelegate:completion
 --
@@ -165,9 +159,8 @@ requestMetadataDictionaryWithOptions_completion icCameraFile  options completion
 --
 -- ObjC selector: @- requestDownloadWithOptions:completion:@
 requestDownloadWithOptions_completion :: (IsICCameraFile icCameraFile, IsNSDictionary options) => icCameraFile -> options -> Ptr () -> IO (Id NSProgress)
-requestDownloadWithOptions_completion icCameraFile  options completion =
-  withObjCPtr options $ \raw_options ->
-      sendMsg icCameraFile (mkSelector "requestDownloadWithOptions:completion:") (retPtr retVoid) [argPtr (castPtr raw_options :: Ptr ()), argPtr (castPtr completion :: Ptr ())] >>= retainedObject . castPtr
+requestDownloadWithOptions_completion icCameraFile options completion =
+  sendMessage icCameraFile requestDownloadWithOptions_completionSelector (toNSDictionary options) completion
 
 -- | requestReadDataAtOffset:length:completion
 --
@@ -183,8 +176,8 @@ requestDownloadWithOptions_completion icCameraFile  options completion =
 --
 -- ObjC selector: @- requestReadDataAtOffset:length:completion:@
 requestReadDataAtOffset_length_completion :: IsICCameraFile icCameraFile => icCameraFile -> CLong -> CLong -> Ptr () -> IO ()
-requestReadDataAtOffset_length_completion icCameraFile  offset length_ completion =
-    sendMsg icCameraFile (mkSelector "requestReadDataAtOffset:length:completion:") retVoid [argCLong offset, argCLong length_, argPtr (castPtr completion :: Ptr ())]
+requestReadDataAtOffset_length_completion icCameraFile offset length_ completion =
+  sendMessage icCameraFile requestReadDataAtOffset_length_completionSelector offset length_ completion
 
 -- | requestSecurityScopedURLWithCompletion
 --
@@ -196,8 +189,8 @@ requestReadDataAtOffset_length_completion icCameraFile  offset length_ completio
 --
 -- ObjC selector: @- requestSecurityScopedURLWithCompletion:@
 requestSecurityScopedURLWithCompletion :: IsICCameraFile icCameraFile => icCameraFile -> Ptr () -> IO ()
-requestSecurityScopedURLWithCompletion icCameraFile  completion =
-    sendMsg icCameraFile (mkSelector "requestSecurityScopedURLWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+requestSecurityScopedURLWithCompletion icCameraFile completion =
+  sendMessage icCameraFile requestSecurityScopedURLWithCompletionSelector completion
 
 -- | requestFingerprintWithCompletion
 --
@@ -209,8 +202,8 @@ requestSecurityScopedURLWithCompletion icCameraFile  completion =
 --
 -- ObjC selector: @- requestFingerprintWithCompletion:@
 requestFingerprintWithCompletion :: IsICCameraFile icCameraFile => icCameraFile -> Ptr () -> IO ()
-requestFingerprintWithCompletion icCameraFile  completion =
-    sendMsg icCameraFile (mkSelector "requestFingerprintWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+requestFingerprintWithCompletion icCameraFile completion =
+  sendMessage icCameraFile requestFingerprintWithCompletionSelector completion
 
 -- | width
 --
@@ -218,8 +211,8 @@ requestFingerprintWithCompletion icCameraFile  completion =
 --
 -- ObjC selector: @- width@
 width :: IsICCameraFile icCameraFile => icCameraFile -> IO CLong
-width icCameraFile  =
-    sendMsg icCameraFile (mkSelector "width") retCLong []
+width icCameraFile =
+  sendMessage icCameraFile widthSelector
 
 -- | height
 --
@@ -227,8 +220,8 @@ width icCameraFile  =
 --
 -- ObjC selector: @- height@
 height :: IsICCameraFile icCameraFile => icCameraFile -> IO CLong
-height icCameraFile  =
-    sendMsg icCameraFile (mkSelector "height") retCLong []
+height icCameraFile =
+  sendMessage icCameraFile heightSelector
 
 -- | originalFilename
 --
@@ -236,8 +229,8 @@ height icCameraFile  =
 --
 -- ObjC selector: @- originalFilename@
 originalFilename :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSString)
-originalFilename icCameraFile  =
-    sendMsg icCameraFile (mkSelector "originalFilename") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalFilename icCameraFile =
+  sendMessage icCameraFile originalFilenameSelector
 
 -- | createdFilename
 --
@@ -245,8 +238,8 @@ originalFilename icCameraFile  =
 --
 -- ObjC selector: @- createdFilename@
 createdFilename :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSString)
-createdFilename icCameraFile  =
-    sendMsg icCameraFile (mkSelector "createdFilename") (retPtr retVoid) [] >>= retainedObject . castPtr
+createdFilename icCameraFile =
+  sendMessage icCameraFile createdFilenameSelector
 
 -- | fileSize
 --
@@ -254,8 +247,8 @@ createdFilename icCameraFile  =
 --
 -- ObjC selector: @- fileSize@
 fileSize :: IsICCameraFile icCameraFile => icCameraFile -> IO CLong
-fileSize icCameraFile  =
-    sendMsg icCameraFile (mkSelector "fileSize") retCLong []
+fileSize icCameraFile =
+  sendMessage icCameraFile fileSizeSelector
 
 -- | orientation
 --
@@ -265,8 +258,8 @@ fileSize icCameraFile  =
 --
 -- ObjC selector: @- orientation@
 orientation :: IsICCameraFile icCameraFile => icCameraFile -> IO ICEXIFOrientationType
-orientation icCameraFile  =
-    fmap (coerce :: CULong -> ICEXIFOrientationType) $ sendMsg icCameraFile (mkSelector "orientation") retCULong []
+orientation icCameraFile =
+  sendMessage icCameraFile orientationSelector
 
 -- | orientation
 --
@@ -276,8 +269,8 @@ orientation icCameraFile  =
 --
 -- ObjC selector: @- setOrientation:@
 setOrientation :: IsICCameraFile icCameraFile => icCameraFile -> ICEXIFOrientationType -> IO ()
-setOrientation icCameraFile  value =
-    sendMsg icCameraFile (mkSelector "setOrientation:") retVoid [argCULong (coerce value)]
+setOrientation icCameraFile value =
+  sendMessage icCameraFile setOrientationSelector value
 
 -- | duration
 --
@@ -285,8 +278,8 @@ setOrientation icCameraFile  value =
 --
 -- ObjC selector: @- duration@
 duration :: IsICCameraFile icCameraFile => icCameraFile -> IO CDouble
-duration icCameraFile  =
-    sendMsg icCameraFile (mkSelector "duration") retCDouble []
+duration icCameraFile =
+  sendMessage icCameraFile durationSelector
 
 -- | highFramerate
 --
@@ -294,8 +287,8 @@ duration icCameraFile  =
 --
 -- ObjC selector: @- highFramerate@
 highFramerate :: IsICCameraFile icCameraFile => icCameraFile -> IO Bool
-highFramerate icCameraFile  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraFile (mkSelector "highFramerate") retCULong []
+highFramerate icCameraFile =
+  sendMessage icCameraFile highFramerateSelector
 
 -- | timeLapse
 --
@@ -303,8 +296,8 @@ highFramerate icCameraFile  =
 --
 -- ObjC selector: @- timeLapse@
 timeLapse :: IsICCameraFile icCameraFile => icCameraFile -> IO Bool
-timeLapse icCameraFile  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraFile (mkSelector "timeLapse") retCULong []
+timeLapse icCameraFile =
+  sendMessage icCameraFile timeLapseSelector
 
 -- | firstPicked
 --
@@ -312,8 +305,8 @@ timeLapse icCameraFile  =
 --
 -- ObjC selector: @- firstPicked@
 firstPicked :: IsICCameraFile icCameraFile => icCameraFile -> IO Bool
-firstPicked icCameraFile  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraFile (mkSelector "firstPicked") retCULong []
+firstPicked icCameraFile =
+  sendMessage icCameraFile firstPickedSelector
 
 -- | originatingAssetID
 --
@@ -321,8 +314,8 @@ firstPicked icCameraFile  =
 --
 -- ObjC selector: @- originatingAssetID@
 originatingAssetID :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSString)
-originatingAssetID icCameraFile  =
-    sendMsg icCameraFile (mkSelector "originatingAssetID") (retPtr retVoid) [] >>= retainedObject . castPtr
+originatingAssetID icCameraFile =
+  sendMessage icCameraFile originatingAssetIDSelector
 
 -- | groupUUID
 --
@@ -330,8 +323,8 @@ originatingAssetID icCameraFile  =
 --
 -- ObjC selector: @- groupUUID@
 groupUUID :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSString)
-groupUUID icCameraFile  =
-    sendMsg icCameraFile (mkSelector "groupUUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupUUID icCameraFile =
+  sendMessage icCameraFile groupUUIDSelector
 
 -- | gpsString
 --
@@ -339,8 +332,8 @@ groupUUID icCameraFile  =
 --
 -- ObjC selector: @- gpsString@
 gpsString :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSString)
-gpsString icCameraFile  =
-    sendMsg icCameraFile (mkSelector "gpsString") (retPtr retVoid) [] >>= retainedObject . castPtr
+gpsString icCameraFile =
+  sendMessage icCameraFile gpsStringSelector
 
 -- | relatedUUID
 --
@@ -348,8 +341,8 @@ gpsString icCameraFile  =
 --
 -- ObjC selector: @- relatedUUID@
 relatedUUID :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSString)
-relatedUUID icCameraFile  =
-    sendMsg icCameraFile (mkSelector "relatedUUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+relatedUUID icCameraFile =
+  sendMessage icCameraFile relatedUUIDSelector
 
 -- | burstUUID
 --
@@ -357,8 +350,8 @@ relatedUUID icCameraFile  =
 --
 -- ObjC selector: @- burstUUID@
 burstUUID :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSString)
-burstUUID icCameraFile  =
-    sendMsg icCameraFile (mkSelector "burstUUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+burstUUID icCameraFile =
+  sendMessage icCameraFile burstUUIDSelector
 
 -- | burstFavorite
 --
@@ -366,8 +359,8 @@ burstUUID icCameraFile  =
 --
 -- ObjC selector: @- burstFavorite@
 burstFavorite :: IsICCameraFile icCameraFile => icCameraFile -> IO Bool
-burstFavorite icCameraFile  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraFile (mkSelector "burstFavorite") retCULong []
+burstFavorite icCameraFile =
+  sendMessage icCameraFile burstFavoriteSelector
 
 -- | burstPicked
 --
@@ -375,8 +368,8 @@ burstFavorite icCameraFile  =
 --
 -- ObjC selector: @- burstPicked@
 burstPicked :: IsICCameraFile icCameraFile => icCameraFile -> IO Bool
-burstPicked icCameraFile  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icCameraFile (mkSelector "burstPicked") retCULong []
+burstPicked icCameraFile =
+  sendMessage icCameraFile burstPickedSelector
 
 -- | sidecarFiles
 --
@@ -384,8 +377,8 @@ burstPicked icCameraFile  =
 --
 -- ObjC selector: @- sidecarFiles@
 sidecarFiles :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSArray)
-sidecarFiles icCameraFile  =
-    sendMsg icCameraFile (mkSelector "sidecarFiles") (retPtr retVoid) [] >>= retainedObject . castPtr
+sidecarFiles icCameraFile =
+  sendMessage icCameraFile sidecarFilesSelector
 
 -- | pairedRawImage
 --
@@ -393,8 +386,8 @@ sidecarFiles icCameraFile  =
 --
 -- ObjC selector: @- pairedRawImage@
 pairedRawImage :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id ICCameraFile)
-pairedRawImage icCameraFile  =
-    sendMsg icCameraFile (mkSelector "pairedRawImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+pairedRawImage icCameraFile =
+  sendMessage icCameraFile pairedRawImageSelector
 
 -- | fileCreationDate
 --
@@ -402,8 +395,8 @@ pairedRawImage icCameraFile  =
 --
 -- ObjC selector: @- fileCreationDate@
 fileCreationDate :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSDate)
-fileCreationDate icCameraFile  =
-    sendMsg icCameraFile (mkSelector "fileCreationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileCreationDate icCameraFile =
+  sendMessage icCameraFile fileCreationDateSelector
 
 -- | fileModificationDate
 --
@@ -411,8 +404,8 @@ fileCreationDate icCameraFile  =
 --
 -- ObjC selector: @- fileModificationDate@
 fileModificationDate :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSDate)
-fileModificationDate icCameraFile  =
-    sendMsg icCameraFile (mkSelector "fileModificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileModificationDate icCameraFile =
+  sendMessage icCameraFile fileModificationDateSelector
 
 -- | exifCreationDate
 --
@@ -420,8 +413,8 @@ fileModificationDate icCameraFile  =
 --
 -- ObjC selector: @- exifCreationDate@
 exifCreationDate :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSDate)
-exifCreationDate icCameraFile  =
-    sendMsg icCameraFile (mkSelector "exifCreationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+exifCreationDate icCameraFile =
+  sendMessage icCameraFile exifCreationDateSelector
 
 -- | exifModificationDate
 --
@@ -429,8 +422,8 @@ exifCreationDate icCameraFile  =
 --
 -- ObjC selector: @- exifModificationDate@
 exifModificationDate :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSDate)
-exifModificationDate icCameraFile  =
-    sendMsg icCameraFile (mkSelector "exifModificationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+exifModificationDate icCameraFile =
+  sendMessage icCameraFile exifModificationDateSelector
 
 -- | fingerprint
 --
@@ -438,138 +431,138 @@ exifModificationDate icCameraFile  =
 --
 -- ObjC selector: @- fingerprint@
 fingerprint :: IsICCameraFile icCameraFile => icCameraFile -> IO (Id NSString)
-fingerprint icCameraFile  =
-    sendMsg icCameraFile (mkSelector "fingerprint") (retPtr retVoid) [] >>= retainedObject . castPtr
+fingerprint icCameraFile =
+  sendMessage icCameraFile fingerprintSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fingerprintForFileAtURL:@
-fingerprintForFileAtURLSelector :: Selector
+fingerprintForFileAtURLSelector :: Selector '[Id NSURL] (Id NSString)
 fingerprintForFileAtURLSelector = mkSelector "fingerprintForFileAtURL:"
 
 -- | @Selector@ for @requestThumbnailDataWithOptions:completion:@
-requestThumbnailDataWithOptions_completionSelector :: Selector
+requestThumbnailDataWithOptions_completionSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 requestThumbnailDataWithOptions_completionSelector = mkSelector "requestThumbnailDataWithOptions:completion:"
 
 -- | @Selector@ for @requestMetadataDictionaryWithOptions:completion:@
-requestMetadataDictionaryWithOptions_completionSelector :: Selector
+requestMetadataDictionaryWithOptions_completionSelector :: Selector '[Id NSDictionary, Ptr ()] ()
 requestMetadataDictionaryWithOptions_completionSelector = mkSelector "requestMetadataDictionaryWithOptions:completion:"
 
 -- | @Selector@ for @requestDownloadWithOptions:completion:@
-requestDownloadWithOptions_completionSelector :: Selector
+requestDownloadWithOptions_completionSelector :: Selector '[Id NSDictionary, Ptr ()] (Id NSProgress)
 requestDownloadWithOptions_completionSelector = mkSelector "requestDownloadWithOptions:completion:"
 
 -- | @Selector@ for @requestReadDataAtOffset:length:completion:@
-requestReadDataAtOffset_length_completionSelector :: Selector
+requestReadDataAtOffset_length_completionSelector :: Selector '[CLong, CLong, Ptr ()] ()
 requestReadDataAtOffset_length_completionSelector = mkSelector "requestReadDataAtOffset:length:completion:"
 
 -- | @Selector@ for @requestSecurityScopedURLWithCompletion:@
-requestSecurityScopedURLWithCompletionSelector :: Selector
+requestSecurityScopedURLWithCompletionSelector :: Selector '[Ptr ()] ()
 requestSecurityScopedURLWithCompletionSelector = mkSelector "requestSecurityScopedURLWithCompletion:"
 
 -- | @Selector@ for @requestFingerprintWithCompletion:@
-requestFingerprintWithCompletionSelector :: Selector
+requestFingerprintWithCompletionSelector :: Selector '[Ptr ()] ()
 requestFingerprintWithCompletionSelector = mkSelector "requestFingerprintWithCompletion:"
 
 -- | @Selector@ for @width@
-widthSelector :: Selector
+widthSelector :: Selector '[] CLong
 widthSelector = mkSelector "width"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CLong
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @originalFilename@
-originalFilenameSelector :: Selector
+originalFilenameSelector :: Selector '[] (Id NSString)
 originalFilenameSelector = mkSelector "originalFilename"
 
 -- | @Selector@ for @createdFilename@
-createdFilenameSelector :: Selector
+createdFilenameSelector :: Selector '[] (Id NSString)
 createdFilenameSelector = mkSelector "createdFilename"
 
 -- | @Selector@ for @fileSize@
-fileSizeSelector :: Selector
+fileSizeSelector :: Selector '[] CLong
 fileSizeSelector = mkSelector "fileSize"
 
 -- | @Selector@ for @orientation@
-orientationSelector :: Selector
+orientationSelector :: Selector '[] ICEXIFOrientationType
 orientationSelector = mkSelector "orientation"
 
 -- | @Selector@ for @setOrientation:@
-setOrientationSelector :: Selector
+setOrientationSelector :: Selector '[ICEXIFOrientationType] ()
 setOrientationSelector = mkSelector "setOrientation:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @highFramerate@
-highFramerateSelector :: Selector
+highFramerateSelector :: Selector '[] Bool
 highFramerateSelector = mkSelector "highFramerate"
 
 -- | @Selector@ for @timeLapse@
-timeLapseSelector :: Selector
+timeLapseSelector :: Selector '[] Bool
 timeLapseSelector = mkSelector "timeLapse"
 
 -- | @Selector@ for @firstPicked@
-firstPickedSelector :: Selector
+firstPickedSelector :: Selector '[] Bool
 firstPickedSelector = mkSelector "firstPicked"
 
 -- | @Selector@ for @originatingAssetID@
-originatingAssetIDSelector :: Selector
+originatingAssetIDSelector :: Selector '[] (Id NSString)
 originatingAssetIDSelector = mkSelector "originatingAssetID"
 
 -- | @Selector@ for @groupUUID@
-groupUUIDSelector :: Selector
+groupUUIDSelector :: Selector '[] (Id NSString)
 groupUUIDSelector = mkSelector "groupUUID"
 
 -- | @Selector@ for @gpsString@
-gpsStringSelector :: Selector
+gpsStringSelector :: Selector '[] (Id NSString)
 gpsStringSelector = mkSelector "gpsString"
 
 -- | @Selector@ for @relatedUUID@
-relatedUUIDSelector :: Selector
+relatedUUIDSelector :: Selector '[] (Id NSString)
 relatedUUIDSelector = mkSelector "relatedUUID"
 
 -- | @Selector@ for @burstUUID@
-burstUUIDSelector :: Selector
+burstUUIDSelector :: Selector '[] (Id NSString)
 burstUUIDSelector = mkSelector "burstUUID"
 
 -- | @Selector@ for @burstFavorite@
-burstFavoriteSelector :: Selector
+burstFavoriteSelector :: Selector '[] Bool
 burstFavoriteSelector = mkSelector "burstFavorite"
 
 -- | @Selector@ for @burstPicked@
-burstPickedSelector :: Selector
+burstPickedSelector :: Selector '[] Bool
 burstPickedSelector = mkSelector "burstPicked"
 
 -- | @Selector@ for @sidecarFiles@
-sidecarFilesSelector :: Selector
+sidecarFilesSelector :: Selector '[] (Id NSArray)
 sidecarFilesSelector = mkSelector "sidecarFiles"
 
 -- | @Selector@ for @pairedRawImage@
-pairedRawImageSelector :: Selector
+pairedRawImageSelector :: Selector '[] (Id ICCameraFile)
 pairedRawImageSelector = mkSelector "pairedRawImage"
 
 -- | @Selector@ for @fileCreationDate@
-fileCreationDateSelector :: Selector
+fileCreationDateSelector :: Selector '[] (Id NSDate)
 fileCreationDateSelector = mkSelector "fileCreationDate"
 
 -- | @Selector@ for @fileModificationDate@
-fileModificationDateSelector :: Selector
+fileModificationDateSelector :: Selector '[] (Id NSDate)
 fileModificationDateSelector = mkSelector "fileModificationDate"
 
 -- | @Selector@ for @exifCreationDate@
-exifCreationDateSelector :: Selector
+exifCreationDateSelector :: Selector '[] (Id NSDate)
 exifCreationDateSelector = mkSelector "exifCreationDate"
 
 -- | @Selector@ for @exifModificationDate@
-exifModificationDateSelector :: Selector
+exifModificationDateSelector :: Selector '[] (Id NSDate)
 exifModificationDateSelector = mkSelector "exifModificationDate"
 
 -- | @Selector@ for @fingerprint@
-fingerprintSelector :: Selector
+fingerprintSelector :: Selector '[] (Id NSString)
 fingerprintSelector = mkSelector "fingerprint"
 

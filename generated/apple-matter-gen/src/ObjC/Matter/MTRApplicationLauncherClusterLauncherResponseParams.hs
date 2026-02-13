@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.Matter.MTRApplicationLauncherClusterLauncherResponseParams
   , setData
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
-  , initWithResponseValue_errorSelector
-  , statusSelector
-  , setStatusSelector
   , dataSelector
+  , initWithResponseValue_errorSelector
   , setDataSelector
-  , timedInvokeTimeoutMsSelector
+  , setStatusSelector
   , setTimedInvokeTimeoutMsSelector
+  , statusSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,32 +44,28 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRApplicationLauncherClusterLauncherResponseParams mtrApplicationLauncherClusterLauncherResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrApplicationLauncherClusterLauncherResponseParams -> responseValue -> error_ -> IO (Id MTRApplicationLauncherClusterLauncherResponseParams)
-initWithResponseValue_error mtrApplicationLauncherClusterLauncherResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrApplicationLauncherClusterLauncherResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrApplicationLauncherClusterLauncherResponseParams responseValue error_ =
+  sendOwnedMessage mtrApplicationLauncherClusterLauncherResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- status@
 status :: IsMTRApplicationLauncherClusterLauncherResponseParams mtrApplicationLauncherClusterLauncherResponseParams => mtrApplicationLauncherClusterLauncherResponseParams -> IO (Id NSNumber)
-status mtrApplicationLauncherClusterLauncherResponseParams  =
-    sendMsg mtrApplicationLauncherClusterLauncherResponseParams (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status mtrApplicationLauncherClusterLauncherResponseParams =
+  sendMessage mtrApplicationLauncherClusterLauncherResponseParams statusSelector
 
 -- | @- setStatus:@
 setStatus :: (IsMTRApplicationLauncherClusterLauncherResponseParams mtrApplicationLauncherClusterLauncherResponseParams, IsNSNumber value) => mtrApplicationLauncherClusterLauncherResponseParams -> value -> IO ()
-setStatus mtrApplicationLauncherClusterLauncherResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterLauncherResponseParams (mkSelector "setStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatus mtrApplicationLauncherClusterLauncherResponseParams value =
+  sendMessage mtrApplicationLauncherClusterLauncherResponseParams setStatusSelector (toNSNumber value)
 
 -- | @- data@
 data_ :: IsMTRApplicationLauncherClusterLauncherResponseParams mtrApplicationLauncherClusterLauncherResponseParams => mtrApplicationLauncherClusterLauncherResponseParams -> IO (Id NSData)
-data_ mtrApplicationLauncherClusterLauncherResponseParams  =
-    sendMsg mtrApplicationLauncherClusterLauncherResponseParams (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mtrApplicationLauncherClusterLauncherResponseParams =
+  sendMessage mtrApplicationLauncherClusterLauncherResponseParams dataSelector
 
 -- | @- setData:@
 setData :: (IsMTRApplicationLauncherClusterLauncherResponseParams mtrApplicationLauncherClusterLauncherResponseParams, IsNSData value) => mtrApplicationLauncherClusterLauncherResponseParams -> value -> IO ()
-setData mtrApplicationLauncherClusterLauncherResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterLauncherResponseParams (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mtrApplicationLauncherClusterLauncherResponseParams value =
+  sendMessage mtrApplicationLauncherClusterLauncherResponseParams setDataSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,8 +75,8 @@ setData mtrApplicationLauncherClusterLauncherResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRApplicationLauncherClusterLauncherResponseParams mtrApplicationLauncherClusterLauncherResponseParams => mtrApplicationLauncherClusterLauncherResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrApplicationLauncherClusterLauncherResponseParams  =
-    sendMsg mtrApplicationLauncherClusterLauncherResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrApplicationLauncherClusterLauncherResponseParams =
+  sendMessage mtrApplicationLauncherClusterLauncherResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -93,39 +86,38 @@ timedInvokeTimeoutMs mtrApplicationLauncherClusterLauncherResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRApplicationLauncherClusterLauncherResponseParams mtrApplicationLauncherClusterLauncherResponseParams, IsNSNumber value) => mtrApplicationLauncherClusterLauncherResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrApplicationLauncherClusterLauncherResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrApplicationLauncherClusterLauncherResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrApplicationLauncherClusterLauncherResponseParams value =
+  sendMessage mtrApplicationLauncherClusterLauncherResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRApplicationLauncherClusterLauncherResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSNumber)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[Id NSNumber] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSData] ()
 setDataSelector = mkSelector "setData:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

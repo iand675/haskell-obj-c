@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -46,57 +47,53 @@ module ObjC.Matter.MTRClusterBasicInformation
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , readAttributeDataModelRevisionWithParamsSelector
-  , readAttributeVendorNameWithParamsSelector
-  , readAttributeVendorIDWithParamsSelector
-  , readAttributeProductNameWithParamsSelector
-  , readAttributeProductIDWithParamsSelector
-  , readAttributeNodeLabelWithParamsSelector
-  , writeAttributeNodeLabelWithValue_expectedValueIntervalSelector
-  , writeAttributeNodeLabelWithValue_expectedValueInterval_paramsSelector
-  , readAttributeLocationWithParamsSelector
-  , writeAttributeLocationWithValue_expectedValueIntervalSelector
-  , writeAttributeLocationWithValue_expectedValueInterval_paramsSelector
-  , readAttributeHardwareVersionWithParamsSelector
-  , readAttributeHardwareVersionStringWithParamsSelector
-  , readAttributeSoftwareVersionWithParamsSelector
-  , readAttributeSoftwareVersionStringWithParamsSelector
-  , readAttributeManufacturingDateWithParamsSelector
-  , readAttributePartNumberWithParamsSelector
-  , readAttributeProductURLWithParamsSelector
-  , readAttributeProductLabelWithParamsSelector
-  , readAttributeSerialNumberWithParamsSelector
-  , readAttributeLocalConfigDisabledWithParamsSelector
-  , writeAttributeLocalConfigDisabledWithValue_expectedValueIntervalSelector
-  , writeAttributeLocalConfigDisabledWithValue_expectedValueInterval_paramsSelector
-  , readAttributeReachableWithParamsSelector
-  , readAttributeUniqueIDWithParamsSelector
-  , readAttributeCapabilityMinimaWithParamsSelector
-  , readAttributeProductAppearanceWithParamsSelector
-  , readAttributeSpecificationVersionWithParamsSelector
-  , readAttributeMaxPathsPerInvokeWithParamsSelector
-  , readAttributeConfigurationVersionWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeCapabilityMinimaWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeConfigurationVersionWithParamsSelector
+  , readAttributeDataModelRevisionWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeHardwareVersionStringWithParamsSelector
+  , readAttributeHardwareVersionWithParamsSelector
+  , readAttributeLocalConfigDisabledWithParamsSelector
+  , readAttributeLocationWithParamsSelector
+  , readAttributeManufacturingDateWithParamsSelector
+  , readAttributeMaxPathsPerInvokeWithParamsSelector
+  , readAttributeNodeLabelWithParamsSelector
+  , readAttributePartNumberWithParamsSelector
+  , readAttributeProductAppearanceWithParamsSelector
+  , readAttributeProductIDWithParamsSelector
+  , readAttributeProductLabelWithParamsSelector
+  , readAttributeProductNameWithParamsSelector
+  , readAttributeProductURLWithParamsSelector
+  , readAttributeReachableWithParamsSelector
+  , readAttributeSerialNumberWithParamsSelector
+  , readAttributeSoftwareVersionStringWithParamsSelector
+  , readAttributeSoftwareVersionWithParamsSelector
+  , readAttributeSpecificationVersionWithParamsSelector
+  , readAttributeUniqueIDWithParamsSelector
+  , readAttributeVendorIDWithParamsSelector
+  , readAttributeVendorNameWithParamsSelector
+  , writeAttributeLocalConfigDisabledWithValue_expectedValueIntervalSelector
+  , writeAttributeLocalConfigDisabledWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeLocationWithValue_expectedValueIntervalSelector
+  , writeAttributeLocationWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeNodeLabelWithValue_expectedValueIntervalSelector
+  , writeAttributeNodeLabelWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -105,398 +102,351 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeDataModelRevisionWithParams:@
 readAttributeDataModelRevisionWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeDataModelRevisionWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeDataModelRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDataModelRevisionWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeDataModelRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeVendorNameWithParams:@
 readAttributeVendorNameWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeVendorNameWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeVendorNameWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeVendorNameWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeVendorNameWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeVendorIDWithParams:@
 readAttributeVendorIDWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeVendorIDWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeVendorIDWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeVendorIDWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeVendorIDWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeProductNameWithParams:@
 readAttributeProductNameWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeProductNameWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeProductNameWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeProductNameWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeProductNameWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeProductIDWithParams:@
 readAttributeProductIDWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeProductIDWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeProductIDWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeProductIDWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeProductIDWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNodeLabelWithParams:@
 readAttributeNodeLabelWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeNodeLabelWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeNodeLabelWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNodeLabelWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeNodeLabelWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeNodeLabelWithValue:expectedValueInterval:@
 writeAttributeNodeLabelWithValue_expectedValueInterval :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBasicInformation -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeNodeLabelWithValue_expectedValueInterval mtrClusterBasicInformation  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBasicInformation (mkSelector "writeAttributeNodeLabelWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeNodeLabelWithValue_expectedValueInterval mtrClusterBasicInformation dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBasicInformation writeAttributeNodeLabelWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeNodeLabelWithValue:expectedValueInterval:params:@
 writeAttributeNodeLabelWithValue_expectedValueInterval_params :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBasicInformation -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeNodeLabelWithValue_expectedValueInterval_params mtrClusterBasicInformation  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBasicInformation (mkSelector "writeAttributeNodeLabelWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeNodeLabelWithValue_expectedValueInterval_params mtrClusterBasicInformation dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBasicInformation writeAttributeNodeLabelWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeLocationWithParams:@
 readAttributeLocationWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeLocationWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeLocationWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLocationWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeLocationWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLocationWithValue:expectedValueInterval:@
 writeAttributeLocationWithValue_expectedValueInterval :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBasicInformation -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLocationWithValue_expectedValueInterval mtrClusterBasicInformation  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBasicInformation (mkSelector "writeAttributeLocationWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLocationWithValue_expectedValueInterval mtrClusterBasicInformation dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBasicInformation writeAttributeLocationWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLocationWithValue:expectedValueInterval:params:@
 writeAttributeLocationWithValue_expectedValueInterval_params :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBasicInformation -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLocationWithValue_expectedValueInterval_params mtrClusterBasicInformation  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBasicInformation (mkSelector "writeAttributeLocationWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLocationWithValue_expectedValueInterval_params mtrClusterBasicInformation dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBasicInformation writeAttributeLocationWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeHardwareVersionWithParams:@
 readAttributeHardwareVersionWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeHardwareVersionWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeHardwareVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeHardwareVersionWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeHardwareVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeHardwareVersionStringWithParams:@
 readAttributeHardwareVersionStringWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeHardwareVersionStringWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeHardwareVersionStringWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeHardwareVersionStringWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeHardwareVersionStringWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSoftwareVersionWithParams:@
 readAttributeSoftwareVersionWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeSoftwareVersionWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeSoftwareVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSoftwareVersionWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeSoftwareVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSoftwareVersionStringWithParams:@
 readAttributeSoftwareVersionStringWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeSoftwareVersionStringWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeSoftwareVersionStringWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSoftwareVersionStringWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeSoftwareVersionStringWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeManufacturingDateWithParams:@
 readAttributeManufacturingDateWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeManufacturingDateWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeManufacturingDateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeManufacturingDateWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeManufacturingDateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePartNumberWithParams:@
 readAttributePartNumberWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributePartNumberWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributePartNumberWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePartNumberWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributePartNumberWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeProductURLWithParams:@
 readAttributeProductURLWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeProductURLWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeProductURLWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeProductURLWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeProductURLWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeProductLabelWithParams:@
 readAttributeProductLabelWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeProductLabelWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeProductLabelWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeProductLabelWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeProductLabelWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSerialNumberWithParams:@
 readAttributeSerialNumberWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeSerialNumberWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeSerialNumberWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSerialNumberWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeSerialNumberWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLocalConfigDisabledWithParams:@
 readAttributeLocalConfigDisabledWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeLocalConfigDisabledWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeLocalConfigDisabledWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLocalConfigDisabledWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeLocalConfigDisabledWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeLocalConfigDisabledWithValue:expectedValueInterval:@
 writeAttributeLocalConfigDisabledWithValue_expectedValueInterval :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterBasicInformation -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeLocalConfigDisabledWithValue_expectedValueInterval mtrClusterBasicInformation  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterBasicInformation (mkSelector "writeAttributeLocalConfigDisabledWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeLocalConfigDisabledWithValue_expectedValueInterval mtrClusterBasicInformation dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterBasicInformation writeAttributeLocalConfigDisabledWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeLocalConfigDisabledWithValue:expectedValueInterval:params:@
 writeAttributeLocalConfigDisabledWithValue_expectedValueInterval_params :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterBasicInformation -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeLocalConfigDisabledWithValue_expectedValueInterval_params mtrClusterBasicInformation  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterBasicInformation (mkSelector "writeAttributeLocalConfigDisabledWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeLocalConfigDisabledWithValue_expectedValueInterval_params mtrClusterBasicInformation dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterBasicInformation writeAttributeLocalConfigDisabledWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeReachableWithParams:@
 readAttributeReachableWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeReachableWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeReachableWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeReachableWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeReachableWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeUniqueIDWithParams:@
 readAttributeUniqueIDWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeUniqueIDWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeUniqueIDWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUniqueIDWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeUniqueIDWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCapabilityMinimaWithParams:@
 readAttributeCapabilityMinimaWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeCapabilityMinimaWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeCapabilityMinimaWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCapabilityMinimaWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeCapabilityMinimaWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeProductAppearanceWithParams:@
 readAttributeProductAppearanceWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeProductAppearanceWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeProductAppearanceWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeProductAppearanceWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeProductAppearanceWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSpecificationVersionWithParams:@
 readAttributeSpecificationVersionWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeSpecificationVersionWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeSpecificationVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSpecificationVersionWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeSpecificationVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaxPathsPerInvokeWithParams:@
 readAttributeMaxPathsPerInvokeWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeMaxPathsPerInvokeWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeMaxPathsPerInvokeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaxPathsPerInvokeWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeMaxPathsPerInvokeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeConfigurationVersionWithParams:@
 readAttributeConfigurationVersionWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeConfigurationVersionWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeConfigurationVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeConfigurationVersionWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeConfigurationVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRReadParams params) => mtrClusterBasicInformation -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterBasicInformation  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterBasicInformation (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterBasicInformation params =
+  sendMessage mtrClusterBasicInformation readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterBasicInformation mtrClusterBasicInformation => mtrClusterBasicInformation -> IO (Id MTRClusterBasicInformation)
-init_ mtrClusterBasicInformation  =
-    sendMsg mtrClusterBasicInformation (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterBasicInformation =
+  sendOwnedMessage mtrClusterBasicInformation initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterBasicInformation)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterBasicInformation"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterBasicInformation mtrClusterBasicInformation, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterBasicInformation -> device -> endpointID -> queue -> IO (Id MTRClusterBasicInformation)
-initWithDevice_endpointID_queue mtrClusterBasicInformation  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterBasicInformation (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterBasicInformation device endpointID queue =
+  sendOwnedMessage mtrClusterBasicInformation initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeDataModelRevisionWithParams:@
-readAttributeDataModelRevisionWithParamsSelector :: Selector
+readAttributeDataModelRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDataModelRevisionWithParamsSelector = mkSelector "readAttributeDataModelRevisionWithParams:"
 
 -- | @Selector@ for @readAttributeVendorNameWithParams:@
-readAttributeVendorNameWithParamsSelector :: Selector
+readAttributeVendorNameWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeVendorNameWithParamsSelector = mkSelector "readAttributeVendorNameWithParams:"
 
 -- | @Selector@ for @readAttributeVendorIDWithParams:@
-readAttributeVendorIDWithParamsSelector :: Selector
+readAttributeVendorIDWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeVendorIDWithParamsSelector = mkSelector "readAttributeVendorIDWithParams:"
 
 -- | @Selector@ for @readAttributeProductNameWithParams:@
-readAttributeProductNameWithParamsSelector :: Selector
+readAttributeProductNameWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeProductNameWithParamsSelector = mkSelector "readAttributeProductNameWithParams:"
 
 -- | @Selector@ for @readAttributeProductIDWithParams:@
-readAttributeProductIDWithParamsSelector :: Selector
+readAttributeProductIDWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeProductIDWithParamsSelector = mkSelector "readAttributeProductIDWithParams:"
 
 -- | @Selector@ for @readAttributeNodeLabelWithParams:@
-readAttributeNodeLabelWithParamsSelector :: Selector
+readAttributeNodeLabelWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNodeLabelWithParamsSelector = mkSelector "readAttributeNodeLabelWithParams:"
 
 -- | @Selector@ for @writeAttributeNodeLabelWithValue:expectedValueInterval:@
-writeAttributeNodeLabelWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeNodeLabelWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeNodeLabelWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeNodeLabelWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeNodeLabelWithValue:expectedValueInterval:params:@
-writeAttributeNodeLabelWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeNodeLabelWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeNodeLabelWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeNodeLabelWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeLocationWithParams:@
-readAttributeLocationWithParamsSelector :: Selector
+readAttributeLocationWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLocationWithParamsSelector = mkSelector "readAttributeLocationWithParams:"
 
 -- | @Selector@ for @writeAttributeLocationWithValue:expectedValueInterval:@
-writeAttributeLocationWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLocationWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLocationWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLocationWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLocationWithValue:expectedValueInterval:params:@
-writeAttributeLocationWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLocationWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLocationWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLocationWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeHardwareVersionWithParams:@
-readAttributeHardwareVersionWithParamsSelector :: Selector
+readAttributeHardwareVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeHardwareVersionWithParamsSelector = mkSelector "readAttributeHardwareVersionWithParams:"
 
 -- | @Selector@ for @readAttributeHardwareVersionStringWithParams:@
-readAttributeHardwareVersionStringWithParamsSelector :: Selector
+readAttributeHardwareVersionStringWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeHardwareVersionStringWithParamsSelector = mkSelector "readAttributeHardwareVersionStringWithParams:"
 
 -- | @Selector@ for @readAttributeSoftwareVersionWithParams:@
-readAttributeSoftwareVersionWithParamsSelector :: Selector
+readAttributeSoftwareVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSoftwareVersionWithParamsSelector = mkSelector "readAttributeSoftwareVersionWithParams:"
 
 -- | @Selector@ for @readAttributeSoftwareVersionStringWithParams:@
-readAttributeSoftwareVersionStringWithParamsSelector :: Selector
+readAttributeSoftwareVersionStringWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSoftwareVersionStringWithParamsSelector = mkSelector "readAttributeSoftwareVersionStringWithParams:"
 
 -- | @Selector@ for @readAttributeManufacturingDateWithParams:@
-readAttributeManufacturingDateWithParamsSelector :: Selector
+readAttributeManufacturingDateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeManufacturingDateWithParamsSelector = mkSelector "readAttributeManufacturingDateWithParams:"
 
 -- | @Selector@ for @readAttributePartNumberWithParams:@
-readAttributePartNumberWithParamsSelector :: Selector
+readAttributePartNumberWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePartNumberWithParamsSelector = mkSelector "readAttributePartNumberWithParams:"
 
 -- | @Selector@ for @readAttributeProductURLWithParams:@
-readAttributeProductURLWithParamsSelector :: Selector
+readAttributeProductURLWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeProductURLWithParamsSelector = mkSelector "readAttributeProductURLWithParams:"
 
 -- | @Selector@ for @readAttributeProductLabelWithParams:@
-readAttributeProductLabelWithParamsSelector :: Selector
+readAttributeProductLabelWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeProductLabelWithParamsSelector = mkSelector "readAttributeProductLabelWithParams:"
 
 -- | @Selector@ for @readAttributeSerialNumberWithParams:@
-readAttributeSerialNumberWithParamsSelector :: Selector
+readAttributeSerialNumberWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSerialNumberWithParamsSelector = mkSelector "readAttributeSerialNumberWithParams:"
 
 -- | @Selector@ for @readAttributeLocalConfigDisabledWithParams:@
-readAttributeLocalConfigDisabledWithParamsSelector :: Selector
+readAttributeLocalConfigDisabledWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLocalConfigDisabledWithParamsSelector = mkSelector "readAttributeLocalConfigDisabledWithParams:"
 
 -- | @Selector@ for @writeAttributeLocalConfigDisabledWithValue:expectedValueInterval:@
-writeAttributeLocalConfigDisabledWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeLocalConfigDisabledWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeLocalConfigDisabledWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeLocalConfigDisabledWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeLocalConfigDisabledWithValue:expectedValueInterval:params:@
-writeAttributeLocalConfigDisabledWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeLocalConfigDisabledWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeLocalConfigDisabledWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeLocalConfigDisabledWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeReachableWithParams:@
-readAttributeReachableWithParamsSelector :: Selector
+readAttributeReachableWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeReachableWithParamsSelector = mkSelector "readAttributeReachableWithParams:"
 
 -- | @Selector@ for @readAttributeUniqueIDWithParams:@
-readAttributeUniqueIDWithParamsSelector :: Selector
+readAttributeUniqueIDWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUniqueIDWithParamsSelector = mkSelector "readAttributeUniqueIDWithParams:"
 
 -- | @Selector@ for @readAttributeCapabilityMinimaWithParams:@
-readAttributeCapabilityMinimaWithParamsSelector :: Selector
+readAttributeCapabilityMinimaWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCapabilityMinimaWithParamsSelector = mkSelector "readAttributeCapabilityMinimaWithParams:"
 
 -- | @Selector@ for @readAttributeProductAppearanceWithParams:@
-readAttributeProductAppearanceWithParamsSelector :: Selector
+readAttributeProductAppearanceWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeProductAppearanceWithParamsSelector = mkSelector "readAttributeProductAppearanceWithParams:"
 
 -- | @Selector@ for @readAttributeSpecificationVersionWithParams:@
-readAttributeSpecificationVersionWithParamsSelector :: Selector
+readAttributeSpecificationVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSpecificationVersionWithParamsSelector = mkSelector "readAttributeSpecificationVersionWithParams:"
 
 -- | @Selector@ for @readAttributeMaxPathsPerInvokeWithParams:@
-readAttributeMaxPathsPerInvokeWithParamsSelector :: Selector
+readAttributeMaxPathsPerInvokeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaxPathsPerInvokeWithParamsSelector = mkSelector "readAttributeMaxPathsPerInvokeWithParams:"
 
 -- | @Selector@ for @readAttributeConfigurationVersionWithParams:@
-readAttributeConfigurationVersionWithParamsSelector :: Selector
+readAttributeConfigurationVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeConfigurationVersionWithParamsSelector = mkSelector "readAttributeConfigurationVersionWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterBasicInformation)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterBasicInformation)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterBasicInformation)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.CryptoTokenKit.TKTokenWatcherTokenInfo
   , tokenID
   , slotName
   , driverName
+  , driverNameSelector
   , initSelector
   , newSelector
-  , tokenIDSelector
   , slotNameSelector
-  , driverNameSelector
+  , tokenIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,58 +34,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsTKTokenWatcherTokenInfo tkTokenWatcherTokenInfo => tkTokenWatcherTokenInfo -> IO (Id TKTokenWatcherTokenInfo)
-init_ tkTokenWatcherTokenInfo  =
-    sendMsg tkTokenWatcherTokenInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ tkTokenWatcherTokenInfo =
+  sendOwnedMessage tkTokenWatcherTokenInfo initSelector
 
 -- | @+ new@
 new :: IO (Id TKTokenWatcherTokenInfo)
 new  =
   do
     cls' <- getRequiredClass "TKTokenWatcherTokenInfo"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | TokenID
 --
 -- ObjC selector: @- tokenID@
 tokenID :: IsTKTokenWatcherTokenInfo tkTokenWatcherTokenInfo => tkTokenWatcherTokenInfo -> IO (Id NSString)
-tokenID tkTokenWatcherTokenInfo  =
-    sendMsg tkTokenWatcherTokenInfo (mkSelector "tokenID") (retPtr retVoid) [] >>= retainedObject . castPtr
+tokenID tkTokenWatcherTokenInfo =
+  sendMessage tkTokenWatcherTokenInfo tokenIDSelector
 
 -- | The slot name (if available)
 --
 -- ObjC selector: @- slotName@
 slotName :: IsTKTokenWatcherTokenInfo tkTokenWatcherTokenInfo => tkTokenWatcherTokenInfo -> IO (Id NSString)
-slotName tkTokenWatcherTokenInfo  =
-    sendMsg tkTokenWatcherTokenInfo (mkSelector "slotName") (retPtr retVoid) [] >>= retainedObject . castPtr
+slotName tkTokenWatcherTokenInfo =
+  sendMessage tkTokenWatcherTokenInfo slotNameSelector
 
 -- | Localized driver name (if available)
 --
 -- ObjC selector: @- driverName@
 driverName :: IsTKTokenWatcherTokenInfo tkTokenWatcherTokenInfo => tkTokenWatcherTokenInfo -> IO (Id NSString)
-driverName tkTokenWatcherTokenInfo  =
-    sendMsg tkTokenWatcherTokenInfo (mkSelector "driverName") (retPtr retVoid) [] >>= retainedObject . castPtr
+driverName tkTokenWatcherTokenInfo =
+  sendMessage tkTokenWatcherTokenInfo driverNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id TKTokenWatcherTokenInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id TKTokenWatcherTokenInfo)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @tokenID@
-tokenIDSelector :: Selector
+tokenIDSelector :: Selector '[] (Id NSString)
 tokenIDSelector = mkSelector "tokenID"
 
 -- | @Selector@ for @slotName@
-slotNameSelector :: Selector
+slotNameSelector :: Selector '[] (Id NSString)
 slotNameSelector = mkSelector "slotName"
 
 -- | @Selector@ for @driverName@
-driverNameSelector :: Selector
+driverNameSelector :: Selector '[] (Id NSString)
 driverNameSelector = mkSelector "driverName"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,11 +19,11 @@ module ObjC.MLCompute.MLCReductionLayer
   , reductionType
   , dimension
   , dimensions
+  , dimensionSelector
+  , dimensionsSelector
   , layerWithReductionType_dimensionSelector
   , layerWithReductionType_dimensionsSelector
   , reductionTypeSelector
-  , dimensionSelector
-  , dimensionsSelector
 
   -- * Enum types
   , MLCReductionType(MLCReductionType)
@@ -40,15 +41,11 @@ module ObjC.MLCompute.MLCReductionLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,7 +66,7 @@ layerWithReductionType_dimension :: MLCReductionType -> CULong -> IO (Id MLCRedu
 layerWithReductionType_dimension reductionType dimension =
   do
     cls' <- getRequiredClass "MLCReductionLayer"
-    sendClassMsg cls' (mkSelector "layerWithReductionType:dimension:") (retPtr retVoid) [argCInt (coerce reductionType), argCULong dimension] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithReductionType_dimensionSelector reductionType dimension
 
 -- | Create a reduction layer.
 --
@@ -84,8 +81,7 @@ layerWithReductionType_dimensions :: IsNSArray dimensions => MLCReductionType ->
 layerWithReductionType_dimensions reductionType dimensions =
   do
     cls' <- getRequiredClass "MLCReductionLayer"
-    withObjCPtr dimensions $ \raw_dimensions ->
-      sendClassMsg cls' (mkSelector "layerWithReductionType:dimensions:") (retPtr retVoid) [argCInt (coerce reductionType), argPtr (castPtr raw_dimensions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithReductionType_dimensionsSelector reductionType (toNSArray dimensions)
 
 -- | reductionType
 --
@@ -93,8 +89,8 @@ layerWithReductionType_dimensions reductionType dimensions =
 --
 -- ObjC selector: @- reductionType@
 reductionType :: IsMLCReductionLayer mlcReductionLayer => mlcReductionLayer -> IO MLCReductionType
-reductionType mlcReductionLayer  =
-    fmap (coerce :: CInt -> MLCReductionType) $ sendMsg mlcReductionLayer (mkSelector "reductionType") retCInt []
+reductionType mlcReductionLayer =
+  sendMessage mlcReductionLayer reductionTypeSelector
 
 -- | dimension
 --
@@ -102,8 +98,8 @@ reductionType mlcReductionLayer  =
 --
 -- ObjC selector: @- dimension@
 dimension :: IsMLCReductionLayer mlcReductionLayer => mlcReductionLayer -> IO CULong
-dimension mlcReductionLayer  =
-    sendMsg mlcReductionLayer (mkSelector "dimension") retCULong []
+dimension mlcReductionLayer =
+  sendMessage mlcReductionLayer dimensionSelector
 
 -- | dimensions
 --
@@ -111,30 +107,30 @@ dimension mlcReductionLayer  =
 --
 -- ObjC selector: @- dimensions@
 dimensions :: IsMLCReductionLayer mlcReductionLayer => mlcReductionLayer -> IO (Id NSArray)
-dimensions mlcReductionLayer  =
-    sendMsg mlcReductionLayer (mkSelector "dimensions") (retPtr retVoid) [] >>= retainedObject . castPtr
+dimensions mlcReductionLayer =
+  sendMessage mlcReductionLayer dimensionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithReductionType:dimension:@
-layerWithReductionType_dimensionSelector :: Selector
+layerWithReductionType_dimensionSelector :: Selector '[MLCReductionType, CULong] (Id MLCReductionLayer)
 layerWithReductionType_dimensionSelector = mkSelector "layerWithReductionType:dimension:"
 
 -- | @Selector@ for @layerWithReductionType:dimensions:@
-layerWithReductionType_dimensionsSelector :: Selector
+layerWithReductionType_dimensionsSelector :: Selector '[MLCReductionType, Id NSArray] (Id MLCReductionLayer)
 layerWithReductionType_dimensionsSelector = mkSelector "layerWithReductionType:dimensions:"
 
 -- | @Selector@ for @reductionType@
-reductionTypeSelector :: Selector
+reductionTypeSelector :: Selector '[] MLCReductionType
 reductionTypeSelector = mkSelector "reductionType"
 
 -- | @Selector@ for @dimension@
-dimensionSelector :: Selector
+dimensionSelector :: Selector '[] CULong
 dimensionSelector = mkSelector "dimension"
 
 -- | @Selector@ for @dimensions@
-dimensionsSelector :: Selector
+dimensionsSelector :: Selector '[] (Id NSArray)
 dimensionsSelector = mkSelector "dimensions"
 

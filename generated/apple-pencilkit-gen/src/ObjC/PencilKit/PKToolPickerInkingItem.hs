@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.PencilKit.PKToolPickerInkingItem
   , inkingTool
   , allowsColorSelection
   , setAllowsColorSelection
+  , allowsColorSelectionSelector
   , initWithInkTypeSelector
   , initWithInkType_colorSelector
-  , initWithInkType_widthSelector
   , initWithInkType_color_widthSelector
-  , initWithInkType_color_width_identifierSelector
   , initWithInkType_color_width_azimuth_identifierSelector
+  , initWithInkType_color_width_identifierSelector
+  , initWithInkType_widthSelector
   , inkingToolSelector
-  , allowsColorSelectionSelector
   , setAllowsColorSelectionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,16 +49,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithInkType:@
 initWithInkType :: (IsPKToolPickerInkingItem pkToolPickerInkingItem, IsNSString inkType) => pkToolPickerInkingItem -> inkType -> IO (Id PKToolPickerInkingItem)
-initWithInkType pkToolPickerInkingItem  inkType =
-  withObjCPtr inkType $ \raw_inkType ->
-      sendMsg pkToolPickerInkingItem (mkSelector "initWithInkType:") (retPtr retVoid) [argPtr (castPtr raw_inkType :: Ptr ())] >>= ownedObject . castPtr
+initWithInkType pkToolPickerInkingItem inkType =
+  sendOwnedMessage pkToolPickerInkingItem initWithInkTypeSelector (toNSString inkType)
 
 -- | @- initWithInkType:color:@
 initWithInkType_color :: (IsPKToolPickerInkingItem pkToolPickerInkingItem, IsNSString inkType, IsNSColor color) => pkToolPickerInkingItem -> inkType -> color -> IO (Id PKToolPickerInkingItem)
-initWithInkType_color pkToolPickerInkingItem  inkType color =
-  withObjCPtr inkType $ \raw_inkType ->
-    withObjCPtr color $ \raw_color ->
-        sendMsg pkToolPickerInkingItem (mkSelector "initWithInkType:color:") (retPtr retVoid) [argPtr (castPtr raw_inkType :: Ptr ()), argPtr (castPtr raw_color :: Ptr ())] >>= ownedObject . castPtr
+initWithInkType_color pkToolPickerInkingItem inkType color =
+  sendOwnedMessage pkToolPickerInkingItem initWithInkType_colorSelector (toNSString inkType) (toNSColor color)
 
 -- | Create a new tool picker item with a @PKInkType@.
 --
@@ -71,91 +65,82 @@ initWithInkType_color pkToolPickerInkingItem  inkType color =
 --
 -- ObjC selector: @- initWithInkType:width:@
 initWithInkType_width :: (IsPKToolPickerInkingItem pkToolPickerInkingItem, IsNSString inkType) => pkToolPickerInkingItem -> inkType -> CDouble -> IO (Id PKToolPickerInkingItem)
-initWithInkType_width pkToolPickerInkingItem  inkType width =
-  withObjCPtr inkType $ \raw_inkType ->
-      sendMsg pkToolPickerInkingItem (mkSelector "initWithInkType:width:") (retPtr retVoid) [argPtr (castPtr raw_inkType :: Ptr ()), argCDouble width] >>= ownedObject . castPtr
+initWithInkType_width pkToolPickerInkingItem inkType width =
+  sendOwnedMessage pkToolPickerInkingItem initWithInkType_widthSelector (toNSString inkType) width
 
 -- | @- initWithInkType:color:width:@
 initWithInkType_color_width :: (IsPKToolPickerInkingItem pkToolPickerInkingItem, IsNSString inkType, IsNSColor color) => pkToolPickerInkingItem -> inkType -> color -> CDouble -> IO (Id PKToolPickerInkingItem)
-initWithInkType_color_width pkToolPickerInkingItem  inkType color width =
-  withObjCPtr inkType $ \raw_inkType ->
-    withObjCPtr color $ \raw_color ->
-        sendMsg pkToolPickerInkingItem (mkSelector "initWithInkType:color:width:") (retPtr retVoid) [argPtr (castPtr raw_inkType :: Ptr ()), argPtr (castPtr raw_color :: Ptr ()), argCDouble width] >>= ownedObject . castPtr
+initWithInkType_color_width pkToolPickerInkingItem inkType color width =
+  sendOwnedMessage pkToolPickerInkingItem initWithInkType_color_widthSelector (toNSString inkType) (toNSColor color) width
 
 -- | @- initWithInkType:color:width:identifier:@
 initWithInkType_color_width_identifier :: (IsPKToolPickerInkingItem pkToolPickerInkingItem, IsNSString inkType, IsNSColor color, IsNSString identifier) => pkToolPickerInkingItem -> inkType -> color -> CDouble -> identifier -> IO (Id PKToolPickerInkingItem)
-initWithInkType_color_width_identifier pkToolPickerInkingItem  inkType color width identifier =
-  withObjCPtr inkType $ \raw_inkType ->
-    withObjCPtr color $ \raw_color ->
-      withObjCPtr identifier $ \raw_identifier ->
-          sendMsg pkToolPickerInkingItem (mkSelector "initWithInkType:color:width:identifier:") (retPtr retVoid) [argPtr (castPtr raw_inkType :: Ptr ()), argPtr (castPtr raw_color :: Ptr ()), argCDouble width, argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithInkType_color_width_identifier pkToolPickerInkingItem inkType color width identifier =
+  sendOwnedMessage pkToolPickerInkingItem initWithInkType_color_width_identifierSelector (toNSString inkType) (toNSColor color) width (toNSString identifier)
 
 -- | @- initWithInkType:color:width:azimuth:identifier:@
 initWithInkType_color_width_azimuth_identifier :: (IsPKToolPickerInkingItem pkToolPickerInkingItem, IsNSString inkType, IsNSColor color, IsNSString identifier) => pkToolPickerInkingItem -> inkType -> color -> CDouble -> CDouble -> identifier -> IO (Id PKToolPickerInkingItem)
-initWithInkType_color_width_azimuth_identifier pkToolPickerInkingItem  inkType color width azimuth identifier =
-  withObjCPtr inkType $ \raw_inkType ->
-    withObjCPtr color $ \raw_color ->
-      withObjCPtr identifier $ \raw_identifier ->
-          sendMsg pkToolPickerInkingItem (mkSelector "initWithInkType:color:width:azimuth:identifier:") (retPtr retVoid) [argPtr (castPtr raw_inkType :: Ptr ()), argPtr (castPtr raw_color :: Ptr ()), argCDouble width, argCDouble azimuth, argPtr (castPtr raw_identifier :: Ptr ())] >>= ownedObject . castPtr
+initWithInkType_color_width_azimuth_identifier pkToolPickerInkingItem inkType color width azimuth identifier =
+  sendOwnedMessage pkToolPickerInkingItem initWithInkType_color_width_azimuth_identifierSelector (toNSString inkType) (toNSColor color) width azimuth (toNSString identifier)
 
 -- | A tool for drawing on a @PKCanvasView@.
 --
 -- ObjC selector: @- inkingTool@
 inkingTool :: IsPKToolPickerInkingItem pkToolPickerInkingItem => pkToolPickerInkingItem -> IO (Id PKInkingTool)
-inkingTool pkToolPickerInkingItem  =
-    sendMsg pkToolPickerInkingItem (mkSelector "inkingTool") (retPtr retVoid) [] >>= retainedObject . castPtr
+inkingTool pkToolPickerInkingItem =
+  sendMessage pkToolPickerInkingItem inkingToolSelector
 
 -- | Present color selection UI to the user. Default value is YES.
 --
 -- ObjC selector: @- allowsColorSelection@
 allowsColorSelection :: IsPKToolPickerInkingItem pkToolPickerInkingItem => pkToolPickerInkingItem -> IO Bool
-allowsColorSelection pkToolPickerInkingItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkToolPickerInkingItem (mkSelector "allowsColorSelection") retCULong []
+allowsColorSelection pkToolPickerInkingItem =
+  sendMessage pkToolPickerInkingItem allowsColorSelectionSelector
 
 -- | Present color selection UI to the user. Default value is YES.
 --
 -- ObjC selector: @- setAllowsColorSelection:@
 setAllowsColorSelection :: IsPKToolPickerInkingItem pkToolPickerInkingItem => pkToolPickerInkingItem -> Bool -> IO ()
-setAllowsColorSelection pkToolPickerInkingItem  value =
-    sendMsg pkToolPickerInkingItem (mkSelector "setAllowsColorSelection:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsColorSelection pkToolPickerInkingItem value =
+  sendMessage pkToolPickerInkingItem setAllowsColorSelectionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithInkType:@
-initWithInkTypeSelector :: Selector
+initWithInkTypeSelector :: Selector '[Id NSString] (Id PKToolPickerInkingItem)
 initWithInkTypeSelector = mkSelector "initWithInkType:"
 
 -- | @Selector@ for @initWithInkType:color:@
-initWithInkType_colorSelector :: Selector
+initWithInkType_colorSelector :: Selector '[Id NSString, Id NSColor] (Id PKToolPickerInkingItem)
 initWithInkType_colorSelector = mkSelector "initWithInkType:color:"
 
 -- | @Selector@ for @initWithInkType:width:@
-initWithInkType_widthSelector :: Selector
+initWithInkType_widthSelector :: Selector '[Id NSString, CDouble] (Id PKToolPickerInkingItem)
 initWithInkType_widthSelector = mkSelector "initWithInkType:width:"
 
 -- | @Selector@ for @initWithInkType:color:width:@
-initWithInkType_color_widthSelector :: Selector
+initWithInkType_color_widthSelector :: Selector '[Id NSString, Id NSColor, CDouble] (Id PKToolPickerInkingItem)
 initWithInkType_color_widthSelector = mkSelector "initWithInkType:color:width:"
 
 -- | @Selector@ for @initWithInkType:color:width:identifier:@
-initWithInkType_color_width_identifierSelector :: Selector
+initWithInkType_color_width_identifierSelector :: Selector '[Id NSString, Id NSColor, CDouble, Id NSString] (Id PKToolPickerInkingItem)
 initWithInkType_color_width_identifierSelector = mkSelector "initWithInkType:color:width:identifier:"
 
 -- | @Selector@ for @initWithInkType:color:width:azimuth:identifier:@
-initWithInkType_color_width_azimuth_identifierSelector :: Selector
+initWithInkType_color_width_azimuth_identifierSelector :: Selector '[Id NSString, Id NSColor, CDouble, CDouble, Id NSString] (Id PKToolPickerInkingItem)
 initWithInkType_color_width_azimuth_identifierSelector = mkSelector "initWithInkType:color:width:azimuth:identifier:"
 
 -- | @Selector@ for @inkingTool@
-inkingToolSelector :: Selector
+inkingToolSelector :: Selector '[] (Id PKInkingTool)
 inkingToolSelector = mkSelector "inkingTool"
 
 -- | @Selector@ for @allowsColorSelection@
-allowsColorSelectionSelector :: Selector
+allowsColorSelectionSelector :: Selector '[] Bool
 allowsColorSelectionSelector = mkSelector "allowsColorSelection"
 
 -- | @Selector@ for @setAllowsColorSelection:@
-setAllowsColorSelectionSelector :: Selector
+setAllowsColorSelectionSelector :: Selector '[Bool] ()
 setAllowsColorSelectionSelector = mkSelector "setAllowsColorSelection:"
 

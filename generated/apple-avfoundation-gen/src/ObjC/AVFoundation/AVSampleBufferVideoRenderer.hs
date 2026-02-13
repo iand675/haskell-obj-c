@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.AVFoundation.AVSampleBufferVideoRenderer
   , error_
   , requiresFlushToResumeDecoding
   , recommendedPixelBufferAttributes
+  , copyDisplayedPixelBufferSelector
+  , errorSelector
+  , expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimesSelector
   , flushWithRemovalOfDisplayedImage_completionHandlerSelector
   , loadVideoPerformanceMetricsWithCompletionHandlerSelector
-  , expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimesSelector
-  , resetUpcomingSampleBufferPresentationTimeExpectationsSelector
-  , copyDisplayedPixelBufferSelector
-  , statusSelector
-  , errorSelector
-  , requiresFlushToResumeDecodingSelector
   , recommendedPixelBufferAttributesSelector
+  , requiresFlushToResumeDecodingSelector
+  , resetUpcomingSampleBufferPresentationTimeExpectationsSelector
+  , statusSelector
 
   -- * Enum types
   , AVQueuedSampleBufferRenderingStatus(AVQueuedSampleBufferRenderingStatus)
@@ -34,15 +35,11 @@ module ObjC.AVFoundation.AVSampleBufferVideoRenderer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,8 +59,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- flushWithRemovalOfDisplayedImage:completionHandler:@
 flushWithRemovalOfDisplayedImage_completionHandler :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> Bool -> Ptr () -> IO ()
-flushWithRemovalOfDisplayedImage_completionHandler avSampleBufferVideoRenderer  removeDisplayedImage handler =
-    sendMsg avSampleBufferVideoRenderer (mkSelector "flushWithRemovalOfDisplayedImage:completionHandler:") retVoid [argCULong (if removeDisplayedImage then 1 else 0), argPtr (castPtr handler :: Ptr ())]
+flushWithRemovalOfDisplayedImage_completionHandler avSampleBufferVideoRenderer removeDisplayedImage handler =
+  sendMessage avSampleBufferVideoRenderer flushWithRemovalOfDisplayedImage_completionHandlerSelector removeDisplayedImage handler
 
 -- | loadVideoPerformanceMetricsWithCompletionHandler:
 --
@@ -75,8 +72,8 @@ flushWithRemovalOfDisplayedImage_completionHandler avSampleBufferVideoRenderer  
 --
 -- ObjC selector: @- loadVideoPerformanceMetricsWithCompletionHandler:@
 loadVideoPerformanceMetricsWithCompletionHandler :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> Ptr () -> IO ()
-loadVideoPerformanceMetricsWithCompletionHandler avSampleBufferVideoRenderer  completionHandler =
-    sendMsg avSampleBufferVideoRenderer (mkSelector "loadVideoPerformanceMetricsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+loadVideoPerformanceMetricsWithCompletionHandler avSampleBufferVideoRenderer completionHandler =
+  sendMessage avSampleBufferVideoRenderer loadVideoPerformanceMetricsWithCompletionHandlerSelector completionHandler
 
 -- | expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes
 --
@@ -86,8 +83,8 @@ loadVideoPerformanceMetricsWithCompletionHandler avSampleBufferVideoRenderer  co
 --
 -- ObjC selector: @- expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes@
 expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> IO ()
-expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes avSampleBufferVideoRenderer  =
-    sendMsg avSampleBufferVideoRenderer (mkSelector "expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes") retVoid []
+expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes avSampleBufferVideoRenderer =
+  sendMessage avSampleBufferVideoRenderer expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimesSelector
 
 -- | resetUpcomingSampleBufferPresentationTimeExpectations:
 --
@@ -97,8 +94,8 @@ expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes avSampleBuffe
 --
 -- ObjC selector: @- resetUpcomingSampleBufferPresentationTimeExpectations@
 resetUpcomingSampleBufferPresentationTimeExpectations :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> IO ()
-resetUpcomingSampleBufferPresentationTimeExpectations avSampleBufferVideoRenderer  =
-    sendMsg avSampleBufferVideoRenderer (mkSelector "resetUpcomingSampleBufferPresentationTimeExpectations") retVoid []
+resetUpcomingSampleBufferPresentationTimeExpectations avSampleBufferVideoRenderer =
+  sendMessage avSampleBufferVideoRenderer resetUpcomingSampleBufferPresentationTimeExpectationsSelector
 
 -- | copyDisplayedPixelBuffer
 --
@@ -110,8 +107,8 @@ resetUpcomingSampleBufferPresentationTimeExpectations avSampleBufferVideoRendere
 --
 -- ObjC selector: @- copyDisplayedPixelBuffer@
 copyDisplayedPixelBuffer :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> IO (Ptr ())
-copyDisplayedPixelBuffer avSampleBufferVideoRenderer  =
-    fmap castPtr $ sendMsg avSampleBufferVideoRenderer (mkSelector "copyDisplayedPixelBuffer") (retPtr retVoid) []
+copyDisplayedPixelBuffer avSampleBufferVideoRenderer =
+  sendOwnedMessage avSampleBufferVideoRenderer copyDisplayedPixelBufferSelector
 
 -- | status
 --
@@ -121,8 +118,8 @@ copyDisplayedPixelBuffer avSampleBufferVideoRenderer  =
 --
 -- ObjC selector: @- status@
 status :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> IO AVQueuedSampleBufferRenderingStatus
-status avSampleBufferVideoRenderer  =
-    fmap (coerce :: CLong -> AVQueuedSampleBufferRenderingStatus) $ sendMsg avSampleBufferVideoRenderer (mkSelector "status") retCLong []
+status avSampleBufferVideoRenderer =
+  sendMessage avSampleBufferVideoRenderer statusSelector
 
 -- | error
 --
@@ -132,8 +129,8 @@ status avSampleBufferVideoRenderer  =
 --
 -- ObjC selector: @- error@
 error_ :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> IO (Id NSError)
-error_ avSampleBufferVideoRenderer  =
-    sendMsg avSampleBufferVideoRenderer (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avSampleBufferVideoRenderer =
+  sendMessage avSampleBufferVideoRenderer errorSelector
 
 -- | requiresFlushToResumeDecoding
 --
@@ -143,8 +140,8 @@ error_ avSampleBufferVideoRenderer  =
 --
 -- ObjC selector: @- requiresFlushToResumeDecoding@
 requiresFlushToResumeDecoding :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> IO Bool
-requiresFlushToResumeDecoding avSampleBufferVideoRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferVideoRenderer (mkSelector "requiresFlushToResumeDecoding") retCULong []
+requiresFlushToResumeDecoding avSampleBufferVideoRenderer =
+  sendMessage avSampleBufferVideoRenderer requiresFlushToResumeDecodingSelector
 
 -- | recommendedPixelBufferAttributes
 --
@@ -154,46 +151,46 @@ requiresFlushToResumeDecoding avSampleBufferVideoRenderer  =
 --
 -- ObjC selector: @- recommendedPixelBufferAttributes@
 recommendedPixelBufferAttributes :: IsAVSampleBufferVideoRenderer avSampleBufferVideoRenderer => avSampleBufferVideoRenderer -> IO (Id NSDictionary)
-recommendedPixelBufferAttributes avSampleBufferVideoRenderer  =
-    sendMsg avSampleBufferVideoRenderer (mkSelector "recommendedPixelBufferAttributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+recommendedPixelBufferAttributes avSampleBufferVideoRenderer =
+  sendMessage avSampleBufferVideoRenderer recommendedPixelBufferAttributesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @flushWithRemovalOfDisplayedImage:completionHandler:@
-flushWithRemovalOfDisplayedImage_completionHandlerSelector :: Selector
+flushWithRemovalOfDisplayedImage_completionHandlerSelector :: Selector '[Bool, Ptr ()] ()
 flushWithRemovalOfDisplayedImage_completionHandlerSelector = mkSelector "flushWithRemovalOfDisplayedImage:completionHandler:"
 
 -- | @Selector@ for @loadVideoPerformanceMetricsWithCompletionHandler:@
-loadVideoPerformanceMetricsWithCompletionHandlerSelector :: Selector
+loadVideoPerformanceMetricsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 loadVideoPerformanceMetricsWithCompletionHandlerSelector = mkSelector "loadVideoPerformanceMetricsWithCompletionHandler:"
 
 -- | @Selector@ for @expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes@
-expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimesSelector :: Selector
+expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimesSelector :: Selector '[] ()
 expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimesSelector = mkSelector "expectMonotonicallyIncreasingUpcomingSampleBufferPresentationTimes"
 
 -- | @Selector@ for @resetUpcomingSampleBufferPresentationTimeExpectations@
-resetUpcomingSampleBufferPresentationTimeExpectationsSelector :: Selector
+resetUpcomingSampleBufferPresentationTimeExpectationsSelector :: Selector '[] ()
 resetUpcomingSampleBufferPresentationTimeExpectationsSelector = mkSelector "resetUpcomingSampleBufferPresentationTimeExpectations"
 
 -- | @Selector@ for @copyDisplayedPixelBuffer@
-copyDisplayedPixelBufferSelector :: Selector
+copyDisplayedPixelBufferSelector :: Selector '[] (Ptr ())
 copyDisplayedPixelBufferSelector = mkSelector "copyDisplayedPixelBuffer"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVQueuedSampleBufferRenderingStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @requiresFlushToResumeDecoding@
-requiresFlushToResumeDecodingSelector :: Selector
+requiresFlushToResumeDecodingSelector :: Selector '[] Bool
 requiresFlushToResumeDecodingSelector = mkSelector "requiresFlushToResumeDecoding"
 
 -- | @Selector@ for @recommendedPixelBufferAttributes@
-recommendedPixelBufferAttributesSelector :: Selector
+recommendedPixelBufferAttributesSelector :: Selector '[] (Id NSDictionary)
 recommendedPixelBufferAttributesSelector = mkSelector "recommendedPixelBufferAttributes"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.GameController.GCControllerButtonInput
   , value
   , pressed
   , touched
-  , setValueSelector
-  , valueChangedHandlerSelector
-  , setValueChangedHandlerSelector
   , pressedChangedHandlerSelector
-  , setPressedChangedHandlerSelector
-  , touchedChangedHandlerSelector
-  , setTouchedChangedHandlerSelector
-  , valueSelector
   , pressedSelector
+  , setPressedChangedHandlerSelector
+  , setTouchedChangedHandlerSelector
+  , setValueChangedHandlerSelector
+  , setValueSelector
+  , touchedChangedHandlerSelector
   , touchedSelector
+  , valueChangedHandlerSelector
+  , valueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,42 +52,42 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> CFloat -> IO ()
-setValue gcControllerButtonInput  value =
-    sendMsg gcControllerButtonInput (mkSelector "setValue:") retVoid [argCFloat value]
+setValue gcControllerButtonInput value =
+  sendMessage gcControllerButtonInput setValueSelector value
 
 -- | @- valueChangedHandler@
 valueChangedHandler :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> IO (Ptr ())
-valueChangedHandler gcControllerButtonInput  =
-    fmap castPtr $ sendMsg gcControllerButtonInput (mkSelector "valueChangedHandler") (retPtr retVoid) []
+valueChangedHandler gcControllerButtonInput =
+  sendMessage gcControllerButtonInput valueChangedHandlerSelector
 
 -- | @- setValueChangedHandler:@
 setValueChangedHandler :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> Ptr () -> IO ()
-setValueChangedHandler gcControllerButtonInput  value =
-    sendMsg gcControllerButtonInput (mkSelector "setValueChangedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setValueChangedHandler gcControllerButtonInput value =
+  sendMessage gcControllerButtonInput setValueChangedHandlerSelector value
 
 -- | Set this block if you want to be notified when only the pressed state on this button changes. This will get called less often than the valueChangedHandler with the additional feature of the pressed state being different to the last time it was called.
 --
 -- ObjC selector: @- pressedChangedHandler@
 pressedChangedHandler :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> IO (Ptr ())
-pressedChangedHandler gcControllerButtonInput  =
-    fmap castPtr $ sendMsg gcControllerButtonInput (mkSelector "pressedChangedHandler") (retPtr retVoid) []
+pressedChangedHandler gcControllerButtonInput =
+  sendMessage gcControllerButtonInput pressedChangedHandlerSelector
 
 -- | Set this block if you want to be notified when only the pressed state on this button changes. This will get called less often than the valueChangedHandler with the additional feature of the pressed state being different to the last time it was called.
 --
 -- ObjC selector: @- setPressedChangedHandler:@
 setPressedChangedHandler :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> Ptr () -> IO ()
-setPressedChangedHandler gcControllerButtonInput  value =
-    sendMsg gcControllerButtonInput (mkSelector "setPressedChangedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setPressedChangedHandler gcControllerButtonInput value =
+  sendMessage gcControllerButtonInput setPressedChangedHandlerSelector value
 
 -- | @- touchedChangedHandler@
 touchedChangedHandler :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> IO (Ptr ())
-touchedChangedHandler gcControllerButtonInput  =
-    fmap castPtr $ sendMsg gcControllerButtonInput (mkSelector "touchedChangedHandler") (retPtr retVoid) []
+touchedChangedHandler gcControllerButtonInput =
+  sendMessage gcControllerButtonInput touchedChangedHandlerSelector
 
 -- | @- setTouchedChangedHandler:@
 setTouchedChangedHandler :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> Ptr () -> IO ()
-setTouchedChangedHandler gcControllerButtonInput  value =
-    sendMsg gcControllerButtonInput (mkSelector "setTouchedChangedHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setTouchedChangedHandler gcControllerButtonInput value =
+  sendMessage gcControllerButtonInput setTouchedChangedHandlerSelector value
 
 -- | A normalized value for the input. Between 0 and 1 for button inputs. Values are saturated and thus never exceed the range of [0, 1].
 --
@@ -100,8 +97,8 @@ setTouchedChangedHandler gcControllerButtonInput  value =
 --
 -- ObjC selector: @- value@
 value :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> IO CFloat
-value gcControllerButtonInput  =
-    sendMsg gcControllerButtonInput (mkSelector "value") retCFloat []
+value gcControllerButtonInput =
+  sendMessage gcControllerButtonInput valueSelector
 
 -- | Buttons are mostly used in a digital sense, thus we have a recommended method for checking for pressed state instead of interpreting the value.
 --
@@ -115,8 +112,8 @@ value gcControllerButtonInput  =
 --
 -- ObjC selector: @- pressed@
 pressed :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> IO Bool
-pressed gcControllerButtonInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcControllerButtonInput (mkSelector "pressed") retCULong []
+pressed gcControllerButtonInput =
+  sendMessage gcControllerButtonInput pressedSelector
 
 -- | Some buttons feature capacitive touch capabilities where the user can touch the button without pressing it. In such cases, a button will be touched before it is pressed.
 --
@@ -128,50 +125,50 @@ pressed gcControllerButtonInput  =
 --
 -- ObjC selector: @- touched@
 touched :: IsGCControllerButtonInput gcControllerButtonInput => gcControllerButtonInput -> IO Bool
-touched gcControllerButtonInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg gcControllerButtonInput (mkSelector "touched") retCULong []
+touched gcControllerButtonInput =
+  sendMessage gcControllerButtonInput touchedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[CFloat] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @valueChangedHandler@
-valueChangedHandlerSelector :: Selector
+valueChangedHandlerSelector :: Selector '[] (Ptr ())
 valueChangedHandlerSelector = mkSelector "valueChangedHandler"
 
 -- | @Selector@ for @setValueChangedHandler:@
-setValueChangedHandlerSelector :: Selector
+setValueChangedHandlerSelector :: Selector '[Ptr ()] ()
 setValueChangedHandlerSelector = mkSelector "setValueChangedHandler:"
 
 -- | @Selector@ for @pressedChangedHandler@
-pressedChangedHandlerSelector :: Selector
+pressedChangedHandlerSelector :: Selector '[] (Ptr ())
 pressedChangedHandlerSelector = mkSelector "pressedChangedHandler"
 
 -- | @Selector@ for @setPressedChangedHandler:@
-setPressedChangedHandlerSelector :: Selector
+setPressedChangedHandlerSelector :: Selector '[Ptr ()] ()
 setPressedChangedHandlerSelector = mkSelector "setPressedChangedHandler:"
 
 -- | @Selector@ for @touchedChangedHandler@
-touchedChangedHandlerSelector :: Selector
+touchedChangedHandlerSelector :: Selector '[] (Ptr ())
 touchedChangedHandlerSelector = mkSelector "touchedChangedHandler"
 
 -- | @Selector@ for @setTouchedChangedHandler:@
-setTouchedChangedHandlerSelector :: Selector
+setTouchedChangedHandlerSelector :: Selector '[Ptr ()] ()
 setTouchedChangedHandlerSelector = mkSelector "setTouchedChangedHandler:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] CFloat
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @pressed@
-pressedSelector :: Selector
+pressedSelector :: Selector '[] Bool
 pressedSelector = mkSelector "pressed"
 
 -- | @Selector@ for @touched@
-touchedSelector :: Selector
+touchedSelector :: Selector '[] Bool
 touchedSelector = mkSelector "touched"
 

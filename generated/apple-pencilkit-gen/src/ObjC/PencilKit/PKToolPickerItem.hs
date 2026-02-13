@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.PencilKit.PKToolPickerItem
   , init_
   , identifier
   , tool
-  , initSelector
   , identifierSelector
+  , initSelector
   , toolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPKToolPickerItem pkToolPickerItem => pkToolPickerItem -> IO (Id PKToolPickerItem)
-init_ pkToolPickerItem  =
-    sendMsg pkToolPickerItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkToolPickerItem =
+  sendOwnedMessage pkToolPickerItem initSelector
 
 -- | A string that identifies the item in the picker. For example, com.example.myapp.toolpicker.pencil. If multiple items with the same identifier are used to create the picker, only the first instance is used.
 --
 -- ObjC selector: @- identifier@
 identifier :: IsPKToolPickerItem pkToolPickerItem => pkToolPickerItem -> IO (Id NSString)
-identifier pkToolPickerItem  =
-    sendMsg pkToolPickerItem (mkSelector "identifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+identifier pkToolPickerItem =
+  sendMessage pkToolPickerItem identifierSelector
 
 -- | The @PKTool@ this tool picker item represents.
 --
 -- ObjC selector: @- tool@
 tool :: IsPKToolPickerItem pkToolPickerItem => pkToolPickerItem -> IO (Id PKTool)
-tool pkToolPickerItem  =
-    sendMsg pkToolPickerItem (mkSelector "tool") (retPtr retVoid) [] >>= retainedObject . castPtr
+tool pkToolPickerItem =
+  sendMessage pkToolPickerItem toolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKToolPickerItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @identifier@
-identifierSelector :: Selector
+identifierSelector :: Selector '[] (Id NSString)
 identifierSelector = mkSelector "identifier"
 
 -- | @Selector@ for @tool@
-toolSelector :: Selector
+toolSelector :: Selector '[] (Id PKTool)
 toolSelector = mkSelector "tool"
 

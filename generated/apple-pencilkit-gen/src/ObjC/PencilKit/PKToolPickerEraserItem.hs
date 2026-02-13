@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,9 +13,9 @@ module ObjC.PencilKit.PKToolPickerEraserItem
   , initWithEraserType
   , initWithEraserType_width
   , eraserTool
+  , eraserToolSelector
   , initWithEraserTypeSelector
   , initWithEraserType_widthSelector
-  , eraserToolSelector
 
   -- * Enum types
   , PKEraserType(PKEraserType)
@@ -24,15 +25,11 @@ module ObjC.PencilKit.PKToolPickerEraserItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithEraserType:@
 initWithEraserType :: IsPKToolPickerEraserItem pkToolPickerEraserItem => pkToolPickerEraserItem -> PKEraserType -> IO (Id PKToolPickerEraserItem)
-initWithEraserType pkToolPickerEraserItem  eraserType =
-    sendMsg pkToolPickerEraserItem (mkSelector "initWithEraserType:") (retPtr retVoid) [argCLong (coerce eraserType)] >>= ownedObject . castPtr
+initWithEraserType pkToolPickerEraserItem eraserType =
+  sendOwnedMessage pkToolPickerEraserItem initWithEraserTypeSelector eraserType
 
 -- | Create a new eraser tool item with a width.
 --
@@ -55,29 +52,29 @@ initWithEraserType pkToolPickerEraserItem  eraserType =
 --
 -- ObjC selector: @- initWithEraserType:width:@
 initWithEraserType_width :: IsPKToolPickerEraserItem pkToolPickerEraserItem => pkToolPickerEraserItem -> PKEraserType -> CDouble -> IO (Id PKToolPickerEraserItem)
-initWithEraserType_width pkToolPickerEraserItem  eraserType width =
-    sendMsg pkToolPickerEraserItem (mkSelector "initWithEraserType:width:") (retPtr retVoid) [argCLong (coerce eraserType), argCDouble width] >>= ownedObject . castPtr
+initWithEraserType_width pkToolPickerEraserItem eraserType width =
+  sendOwnedMessage pkToolPickerEraserItem initWithEraserType_widthSelector eraserType width
 
 -- | An eraser tool for erasing parts of a drawing.
 --
 -- ObjC selector: @- eraserTool@
 eraserTool :: IsPKToolPickerEraserItem pkToolPickerEraserItem => pkToolPickerEraserItem -> IO (Id PKEraserTool)
-eraserTool pkToolPickerEraserItem  =
-    sendMsg pkToolPickerEraserItem (mkSelector "eraserTool") (retPtr retVoid) [] >>= retainedObject . castPtr
+eraserTool pkToolPickerEraserItem =
+  sendMessage pkToolPickerEraserItem eraserToolSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithEraserType:@
-initWithEraserTypeSelector :: Selector
+initWithEraserTypeSelector :: Selector '[PKEraserType] (Id PKToolPickerEraserItem)
 initWithEraserTypeSelector = mkSelector "initWithEraserType:"
 
 -- | @Selector@ for @initWithEraserType:width:@
-initWithEraserType_widthSelector :: Selector
+initWithEraserType_widthSelector :: Selector '[PKEraserType, CDouble] (Id PKToolPickerEraserItem)
 initWithEraserType_widthSelector = mkSelector "initWithEraserType:width:"
 
 -- | @Selector@ for @eraserTool@
-eraserToolSelector :: Selector
+eraserToolSelector :: Selector '[] (Id PKEraserTool)
 eraserToolSelector = mkSelector "eraserTool"
 

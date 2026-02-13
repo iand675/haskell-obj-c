@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.AVKit.AVPlaybackSpeed
   , localizedName
   , localizedNumericName
   , initSelector
-  , newSelector
   , initWithRate_localizedNameSelector
-  , systemDefaultSpeedsSelector
-  , rateSelector
   , localizedNameSelector
   , localizedNumericNameSelector
+  , newSelector
+  , rateSelector
+  , systemDefaultSpeedsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,15 +42,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlaybackSpeed avPlaybackSpeed => avPlaybackSpeed -> IO (Id AVPlaybackSpeed)
-init_ avPlaybackSpeed  =
-    sendMsg avPlaybackSpeed (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlaybackSpeed =
+  sendOwnedMessage avPlaybackSpeed initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlaybackSpeed)
 new  =
   do
     cls' <- getRequiredClass "AVPlaybackSpeed"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithRate:localizedName:
 --
@@ -65,9 +62,8 @@ new  =
 --
 -- ObjC selector: @- initWithRate:localizedName:@
 initWithRate_localizedName :: (IsAVPlaybackSpeed avPlaybackSpeed, IsNSString localizedName) => avPlaybackSpeed -> CFloat -> localizedName -> IO (Id AVPlaybackSpeed)
-initWithRate_localizedName avPlaybackSpeed  rate localizedName =
-  withObjCPtr localizedName $ \raw_localizedName ->
-      sendMsg avPlaybackSpeed (mkSelector "initWithRate:localizedName:") (retPtr retVoid) [argCFloat rate, argPtr (castPtr raw_localizedName :: Ptr ())] >>= ownedObject . castPtr
+initWithRate_localizedName avPlaybackSpeed rate localizedName =
+  sendOwnedMessage avPlaybackSpeed initWithRate_localizedNameSelector rate (toNSString localizedName)
 
 -- | systemDefaultSpeeds
 --
@@ -78,7 +74,7 @@ systemDefaultSpeeds :: IO (Id NSArray)
 systemDefaultSpeeds  =
   do
     cls' <- getRequiredClass "AVPlaybackSpeed"
-    sendClassMsg cls' (mkSelector "systemDefaultSpeeds") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' systemDefaultSpeedsSelector
 
 -- | rate
 --
@@ -86,8 +82,8 @@ systemDefaultSpeeds  =
 --
 -- ObjC selector: @- rate@
 rate :: IsAVPlaybackSpeed avPlaybackSpeed => avPlaybackSpeed -> IO CFloat
-rate avPlaybackSpeed  =
-    sendMsg avPlaybackSpeed (mkSelector "rate") retCFloat []
+rate avPlaybackSpeed =
+  sendMessage avPlaybackSpeed rateSelector
 
 -- | localizedName
 --
@@ -97,8 +93,8 @@ rate avPlaybackSpeed  =
 --
 -- ObjC selector: @- localizedName@
 localizedName :: IsAVPlaybackSpeed avPlaybackSpeed => avPlaybackSpeed -> IO (Id NSString)
-localizedName avPlaybackSpeed  =
-    sendMsg avPlaybackSpeed (mkSelector "localizedName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedName avPlaybackSpeed =
+  sendMessage avPlaybackSpeed localizedNameSelector
 
 -- | localizedNumericName
 --
@@ -108,38 +104,38 @@ localizedName avPlaybackSpeed  =
 --
 -- ObjC selector: @- localizedNumericName@
 localizedNumericName :: IsAVPlaybackSpeed avPlaybackSpeed => avPlaybackSpeed -> IO (Id NSString)
-localizedNumericName avPlaybackSpeed  =
-    sendMsg avPlaybackSpeed (mkSelector "localizedNumericName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedNumericName avPlaybackSpeed =
+  sendMessage avPlaybackSpeed localizedNumericNameSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlaybackSpeed)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlaybackSpeed)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithRate:localizedName:@
-initWithRate_localizedNameSelector :: Selector
+initWithRate_localizedNameSelector :: Selector '[CFloat, Id NSString] (Id AVPlaybackSpeed)
 initWithRate_localizedNameSelector = mkSelector "initWithRate:localizedName:"
 
 -- | @Selector@ for @systemDefaultSpeeds@
-systemDefaultSpeedsSelector :: Selector
+systemDefaultSpeedsSelector :: Selector '[] (Id NSArray)
 systemDefaultSpeedsSelector = mkSelector "systemDefaultSpeeds"
 
 -- | @Selector@ for @rate@
-rateSelector :: Selector
+rateSelector :: Selector '[] CFloat
 rateSelector = mkSelector "rate"
 
 -- | @Selector@ for @localizedName@
-localizedNameSelector :: Selector
+localizedNameSelector :: Selector '[] (Id NSString)
 localizedNameSelector = mkSelector "localizedName"
 
 -- | @Selector@ for @localizedNumericName@
-localizedNumericNameSelector :: Selector
+localizedNumericNameSelector :: Selector '[] (Id NSString)
 localizedNumericNameSelector = mkSelector "localizedNumericName"
 

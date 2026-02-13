@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,11 +15,11 @@ module ObjC.CoreML.MLUpdateContext
   , event
   , metrics
   , parameters
-  , taskSelector
-  , modelSelector
   , eventSelector
   , metricsSelector
+  , modelSelector
   , parametersSelector
+  , taskSelector
 
   -- * Enum types
   , MLUpdateProgressEvent(MLUpdateProgressEvent)
@@ -28,15 +29,11 @@ module ObjC.CoreML.MLUpdateContext
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,50 +43,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- task@
 task :: IsMLUpdateContext mlUpdateContext => mlUpdateContext -> IO (Id MLUpdateTask)
-task mlUpdateContext  =
-    sendMsg mlUpdateContext (mkSelector "task") (retPtr retVoid) [] >>= retainedObject . castPtr
+task mlUpdateContext =
+  sendMessage mlUpdateContext taskSelector
 
 -- | @- model@
 model :: IsMLUpdateContext mlUpdateContext => mlUpdateContext -> IO (Id MLModel)
-model mlUpdateContext  =
-    sendMsg mlUpdateContext (mkSelector "model") (retPtr retVoid) [] >>= retainedObject . castPtr
+model mlUpdateContext =
+  sendMessage mlUpdateContext modelSelector
 
 -- | @- event@
 event :: IsMLUpdateContext mlUpdateContext => mlUpdateContext -> IO MLUpdateProgressEvent
-event mlUpdateContext  =
-    fmap (coerce :: CLong -> MLUpdateProgressEvent) $ sendMsg mlUpdateContext (mkSelector "event") retCLong []
+event mlUpdateContext =
+  sendMessage mlUpdateContext eventSelector
 
 -- | @- metrics@
 metrics :: IsMLUpdateContext mlUpdateContext => mlUpdateContext -> IO (Id NSDictionary)
-metrics mlUpdateContext  =
-    sendMsg mlUpdateContext (mkSelector "metrics") (retPtr retVoid) [] >>= retainedObject . castPtr
+metrics mlUpdateContext =
+  sendMessage mlUpdateContext metricsSelector
 
 -- | @- parameters@
 parameters :: IsMLUpdateContext mlUpdateContext => mlUpdateContext -> IO (Id NSDictionary)
-parameters mlUpdateContext  =
-    sendMsg mlUpdateContext (mkSelector "parameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+parameters mlUpdateContext =
+  sendMessage mlUpdateContext parametersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @task@
-taskSelector :: Selector
+taskSelector :: Selector '[] (Id MLUpdateTask)
 taskSelector = mkSelector "task"
 
 -- | @Selector@ for @model@
-modelSelector :: Selector
+modelSelector :: Selector '[] (Id MLModel)
 modelSelector = mkSelector "model"
 
 -- | @Selector@ for @event@
-eventSelector :: Selector
+eventSelector :: Selector '[] MLUpdateProgressEvent
 eventSelector = mkSelector "event"
 
 -- | @Selector@ for @metrics@
-metricsSelector :: Selector
+metricsSelector :: Selector '[] (Id NSDictionary)
 metricsSelector = mkSelector "metrics"
 
 -- | @Selector@ for @parameters@
-parametersSelector :: Selector
+parametersSelector :: Selector '[] (Id NSDictionary)
 parametersSelector = mkSelector "parameters"
 

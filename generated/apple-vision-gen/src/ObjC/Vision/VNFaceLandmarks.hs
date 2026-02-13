@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.Vision.VNFaceLandmarks
   , IsVNFaceLandmarks(..)
   , init_
   , confidence
-  , initSelector
   , confidenceSelector
+  , initSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,25 +32,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsVNFaceLandmarks vnFaceLandmarks => vnFaceLandmarks -> IO (Id VNFaceLandmarks)
-init_ vnFaceLandmarks  =
-    sendMsg vnFaceLandmarks (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnFaceLandmarks =
+  sendOwnedMessage vnFaceLandmarks initSelector
 
 -- | a confidence estimate for the returned landmarks.
 --
 -- ObjC selector: @- confidence@
 confidence :: IsVNFaceLandmarks vnFaceLandmarks => vnFaceLandmarks -> IO CFloat
-confidence vnFaceLandmarks  =
-    sendMsg vnFaceLandmarks (mkSelector "confidence") retCFloat []
+confidence vnFaceLandmarks =
+  sendMessage vnFaceLandmarks confidenceSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNFaceLandmarks)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @confidence@
-confidenceSelector :: Selector
+confidenceSelector :: Selector '[] CFloat
 confidenceSelector = mkSelector "confidence"
 

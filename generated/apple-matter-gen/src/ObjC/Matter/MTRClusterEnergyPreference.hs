@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,36 +26,32 @@ module ObjC.Matter.MTRClusterEnergyPreference
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , readAttributeEnergyBalancesWithParamsSelector
-  , readAttributeCurrentEnergyBalanceWithParamsSelector
-  , writeAttributeCurrentEnergyBalanceWithValue_expectedValueIntervalSelector
-  , writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval_paramsSelector
-  , readAttributeEnergyPrioritiesWithParamsSelector
-  , readAttributeLowPowerModeSensitivitiesWithParamsSelector
-  , readAttributeCurrentLowPowerModeSensitivityWithParamsSelector
-  , writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueIntervalSelector
-  , writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval_paramsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeCurrentEnergyBalanceWithParamsSelector
+  , readAttributeCurrentLowPowerModeSensitivityWithParamsSelector
+  , readAttributeEnergyBalancesWithParamsSelector
+  , readAttributeEnergyPrioritiesWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeLowPowerModeSensitivitiesWithParamsSelector
+  , writeAttributeCurrentEnergyBalanceWithValue_expectedValueIntervalSelector
+  , writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueIntervalSelector
+  , writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,185 +60,162 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- readAttributeEnergyBalancesWithParams:@
 readAttributeEnergyBalancesWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeEnergyBalancesWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeEnergyBalancesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEnergyBalancesWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeEnergyBalancesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentEnergyBalanceWithParams:@
 readAttributeCurrentEnergyBalanceWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeCurrentEnergyBalanceWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeCurrentEnergyBalanceWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentEnergyBalanceWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeCurrentEnergyBalanceWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeCurrentEnergyBalanceWithValue:expectedValueInterval:@
 writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyPreference -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval mtrClusterEnergyPreference  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEnergyPreference (mkSelector "writeAttributeCurrentEnergyBalanceWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval mtrClusterEnergyPreference dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterEnergyPreference writeAttributeCurrentEnergyBalanceWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeCurrentEnergyBalanceWithValue:expectedValueInterval:params:@
 writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval_params :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterEnergyPreference -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval_params mtrClusterEnergyPreference  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterEnergyPreference (mkSelector "writeAttributeCurrentEnergyBalanceWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval_params mtrClusterEnergyPreference dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterEnergyPreference writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeEnergyPrioritiesWithParams:@
 readAttributeEnergyPrioritiesWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeEnergyPrioritiesWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeEnergyPrioritiesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeEnergyPrioritiesWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeEnergyPrioritiesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeLowPowerModeSensitivitiesWithParams:@
 readAttributeLowPowerModeSensitivitiesWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeLowPowerModeSensitivitiesWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeLowPowerModeSensitivitiesWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeLowPowerModeSensitivitiesWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeLowPowerModeSensitivitiesWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCurrentLowPowerModeSensitivityWithParams:@
 readAttributeCurrentLowPowerModeSensitivityWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeCurrentLowPowerModeSensitivityWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeCurrentLowPowerModeSensitivityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCurrentLowPowerModeSensitivityWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeCurrentLowPowerModeSensitivityWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeCurrentLowPowerModeSensitivityWithValue:expectedValueInterval:@
 writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyPreference -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval mtrClusterEnergyPreference  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEnergyPreference (mkSelector "writeAttributeCurrentLowPowerModeSensitivityWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval mtrClusterEnergyPreference dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterEnergyPreference writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeCurrentLowPowerModeSensitivityWithValue:expectedValueInterval:params:@
 writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval_params :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterEnergyPreference -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval_params mtrClusterEnergyPreference  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterEnergyPreference (mkSelector "writeAttributeCurrentLowPowerModeSensitivityWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval_params mtrClusterEnergyPreference dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterEnergyPreference writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRReadParams params) => mtrClusterEnergyPreference -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterEnergyPreference  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyPreference (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterEnergyPreference params =
+  sendMessage mtrClusterEnergyPreference readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterEnergyPreference mtrClusterEnergyPreference => mtrClusterEnergyPreference -> IO (Id MTRClusterEnergyPreference)
-init_ mtrClusterEnergyPreference  =
-    sendMsg mtrClusterEnergyPreference (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterEnergyPreference =
+  sendOwnedMessage mtrClusterEnergyPreference initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterEnergyPreference)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterEnergyPreference"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The queue is currently unused, but may be used in the future for calling completions for command invocations if commands are added to this cluster.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterEnergyPreference mtrClusterEnergyPreference, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterEnergyPreference -> device -> endpointID -> queue -> IO (Id MTRClusterEnergyPreference)
-initWithDevice_endpointID_queue mtrClusterEnergyPreference  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterEnergyPreference (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterEnergyPreference device endpointID queue =
+  sendOwnedMessage mtrClusterEnergyPreference initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readAttributeEnergyBalancesWithParams:@
-readAttributeEnergyBalancesWithParamsSelector :: Selector
+readAttributeEnergyBalancesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEnergyBalancesWithParamsSelector = mkSelector "readAttributeEnergyBalancesWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentEnergyBalanceWithParams:@
-readAttributeCurrentEnergyBalanceWithParamsSelector :: Selector
+readAttributeCurrentEnergyBalanceWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentEnergyBalanceWithParamsSelector = mkSelector "readAttributeCurrentEnergyBalanceWithParams:"
 
 -- | @Selector@ for @writeAttributeCurrentEnergyBalanceWithValue:expectedValueInterval:@
-writeAttributeCurrentEnergyBalanceWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeCurrentEnergyBalanceWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeCurrentEnergyBalanceWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeCurrentEnergyBalanceWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeCurrentEnergyBalanceWithValue:expectedValueInterval:params:@
-writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeCurrentEnergyBalanceWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeCurrentEnergyBalanceWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeEnergyPrioritiesWithParams:@
-readAttributeEnergyPrioritiesWithParamsSelector :: Selector
+readAttributeEnergyPrioritiesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeEnergyPrioritiesWithParamsSelector = mkSelector "readAttributeEnergyPrioritiesWithParams:"
 
 -- | @Selector@ for @readAttributeLowPowerModeSensitivitiesWithParams:@
-readAttributeLowPowerModeSensitivitiesWithParamsSelector :: Selector
+readAttributeLowPowerModeSensitivitiesWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeLowPowerModeSensitivitiesWithParamsSelector = mkSelector "readAttributeLowPowerModeSensitivitiesWithParams:"
 
 -- | @Selector@ for @readAttributeCurrentLowPowerModeSensitivityWithParams:@
-readAttributeCurrentLowPowerModeSensitivityWithParamsSelector :: Selector
+readAttributeCurrentLowPowerModeSensitivityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCurrentLowPowerModeSensitivityWithParamsSelector = mkSelector "readAttributeCurrentLowPowerModeSensitivityWithParams:"
 
 -- | @Selector@ for @writeAttributeCurrentLowPowerModeSensitivityWithValue:expectedValueInterval:@
-writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeCurrentLowPowerModeSensitivityWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeCurrentLowPowerModeSensitivityWithValue:expectedValueInterval:params:@
-writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeCurrentLowPowerModeSensitivityWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeCurrentLowPowerModeSensitivityWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterEnergyPreference)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterEnergyPreference)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterEnergyPreference)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

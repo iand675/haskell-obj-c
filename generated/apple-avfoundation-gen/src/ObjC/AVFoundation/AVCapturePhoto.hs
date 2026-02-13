@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -38,31 +39,31 @@ module ObjC.AVFoundation.AVCapturePhoto
   , bracketSettings
   , sequenceCount
   , lensStabilizationStatus
-  , initSelector
-  , newSelector
-  , semanticSegmentationMatteForTypeSelector
+  , bracketSettingsSelector
+  , cameraCalibrationDataSelector
+  , cgImageRepresentationSelector
+  , constantColorCenterWeightedMeanConfidenceLevelSelector
+  , constantColorConfidenceMapSelector
+  , constantColorFallbackPhotoSelector
+  , depthDataSelector
+  , embeddedThumbnailPhotoFormatSelector
   , fileDataRepresentationSelector
   , fileDataRepresentationWithCustomizerSelector
   , fileDataRepresentationWithReplacementMetadata_replacementEmbeddedThumbnailPhotoFormat_replacementEmbeddedThumbnailPixelBuffer_replacementDepthDataSelector
-  , cgImageRepresentationSelector
-  , previewCGImageRepresentationSelector
-  , rawPhotoSelector
-  , pixelBufferSelector
-  , previewPixelBufferSelector
-  , embeddedThumbnailPhotoFormatSelector
-  , depthDataSelector
-  , portraitEffectsMatteSelector
-  , metadataSelector
-  , cameraCalibrationDataSelector
-  , resolvedSettingsSelector
-  , photoCountSelector
-  , sourceDeviceTypeSelector
-  , constantColorConfidenceMapSelector
-  , constantColorCenterWeightedMeanConfidenceLevelSelector
-  , constantColorFallbackPhotoSelector
-  , bracketSettingsSelector
-  , sequenceCountSelector
+  , initSelector
   , lensStabilizationStatusSelector
+  , metadataSelector
+  , newSelector
+  , photoCountSelector
+  , pixelBufferSelector
+  , portraitEffectsMatteSelector
+  , previewCGImageRepresentationSelector
+  , previewPixelBufferSelector
+  , rawPhotoSelector
+  , resolvedSettingsSelector
+  , semanticSegmentationMatteForTypeSelector
+  , sequenceCountSelector
+  , sourceDeviceTypeSelector
 
   -- * Enum types
   , AVCaptureLensStabilizationStatus(AVCaptureLensStabilizationStatus)
@@ -74,15 +75,11 @@ module ObjC.AVFoundation.AVCapturePhoto
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -92,15 +89,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id AVCapturePhoto)
-init_ avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCapturePhoto =
+  sendOwnedMessage avCapturePhoto initSelector
 
 -- | @+ new@
 new :: IO (Id AVCapturePhoto)
 new  =
   do
     cls' <- getRequiredClass "AVCapturePhoto"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | semanticSegmentationMatteForType:
 --
@@ -114,9 +111,8 @@ new  =
 --
 -- ObjC selector: @- semanticSegmentationMatteForType:@
 semanticSegmentationMatteForType :: (IsAVCapturePhoto avCapturePhoto, IsNSString semanticSegmentationMatteType) => avCapturePhoto -> semanticSegmentationMatteType -> IO (Id AVSemanticSegmentationMatte)
-semanticSegmentationMatteForType avCapturePhoto  semanticSegmentationMatteType =
-  withObjCPtr semanticSegmentationMatteType $ \raw_semanticSegmentationMatteType ->
-      sendMsg avCapturePhoto (mkSelector "semanticSegmentationMatteForType:") (retPtr retVoid) [argPtr (castPtr raw_semanticSegmentationMatteType :: Ptr ())] >>= retainedObject . castPtr
+semanticSegmentationMatteForType avCapturePhoto semanticSegmentationMatteType =
+  sendMessage avCapturePhoto semanticSegmentationMatteForTypeSelector (toNSString semanticSegmentationMatteType)
 
 -- | fileDataRepresentation
 --
@@ -126,8 +122,8 @@ semanticSegmentationMatteForType avCapturePhoto  semanticSegmentationMatteType =
 --
 -- ObjC selector: @- fileDataRepresentation@
 fileDataRepresentation :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id NSData)
-fileDataRepresentation avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "fileDataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileDataRepresentation avCapturePhoto =
+  sendMessage avCapturePhoto fileDataRepresentationSelector
 
 -- | fileDataRepresentationWithCustomizer:
 --
@@ -139,8 +135,8 @@ fileDataRepresentation avCapturePhoto  =
 --
 -- ObjC selector: @- fileDataRepresentationWithCustomizer:@
 fileDataRepresentationWithCustomizer :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> RawId -> IO (Id NSData)
-fileDataRepresentationWithCustomizer avCapturePhoto  customizer =
-    sendMsg avCapturePhoto (mkSelector "fileDataRepresentationWithCustomizer:") (retPtr retVoid) [argPtr (castPtr (unRawId customizer) :: Ptr ())] >>= retainedObject . castPtr
+fileDataRepresentationWithCustomizer avCapturePhoto customizer =
+  sendMessage avCapturePhoto fileDataRepresentationWithCustomizerSelector customizer
 
 -- | fileDataRepresentationWithReplacementMetadata:replacementEmbeddedThumbnailPhotoFormat:replacementEmbeddedThumbnailPixelBuffer:replacementDepthData:
 --
@@ -158,11 +154,8 @@ fileDataRepresentationWithCustomizer avCapturePhoto  customizer =
 --
 -- ObjC selector: @- fileDataRepresentationWithReplacementMetadata:replacementEmbeddedThumbnailPhotoFormat:replacementEmbeddedThumbnailPixelBuffer:replacementDepthData:@
 fileDataRepresentationWithReplacementMetadata_replacementEmbeddedThumbnailPhotoFormat_replacementEmbeddedThumbnailPixelBuffer_replacementDepthData :: (IsAVCapturePhoto avCapturePhoto, IsNSDictionary replacementMetadata, IsNSDictionary replacementEmbeddedThumbnailPhotoFormat, IsAVDepthData replacementDepthData) => avCapturePhoto -> replacementMetadata -> replacementEmbeddedThumbnailPhotoFormat -> Ptr () -> replacementDepthData -> IO (Id NSData)
-fileDataRepresentationWithReplacementMetadata_replacementEmbeddedThumbnailPhotoFormat_replacementEmbeddedThumbnailPixelBuffer_replacementDepthData avCapturePhoto  replacementMetadata replacementEmbeddedThumbnailPhotoFormat replacementEmbeddedThumbnailPixelBuffer replacementDepthData =
-  withObjCPtr replacementMetadata $ \raw_replacementMetadata ->
-    withObjCPtr replacementEmbeddedThumbnailPhotoFormat $ \raw_replacementEmbeddedThumbnailPhotoFormat ->
-      withObjCPtr replacementDepthData $ \raw_replacementDepthData ->
-          sendMsg avCapturePhoto (mkSelector "fileDataRepresentationWithReplacementMetadata:replacementEmbeddedThumbnailPhotoFormat:replacementEmbeddedThumbnailPixelBuffer:replacementDepthData:") (retPtr retVoid) [argPtr (castPtr raw_replacementMetadata :: Ptr ()), argPtr (castPtr raw_replacementEmbeddedThumbnailPhotoFormat :: Ptr ()), argPtr replacementEmbeddedThumbnailPixelBuffer, argPtr (castPtr raw_replacementDepthData :: Ptr ())] >>= retainedObject . castPtr
+fileDataRepresentationWithReplacementMetadata_replacementEmbeddedThumbnailPhotoFormat_replacementEmbeddedThumbnailPixelBuffer_replacementDepthData avCapturePhoto replacementMetadata replacementEmbeddedThumbnailPhotoFormat replacementEmbeddedThumbnailPixelBuffer replacementDepthData =
+  sendMessage avCapturePhoto fileDataRepresentationWithReplacementMetadata_replacementEmbeddedThumbnailPhotoFormat_replacementEmbeddedThumbnailPixelBuffer_replacementDepthDataSelector (toNSDictionary replacementMetadata) (toNSDictionary replacementEmbeddedThumbnailPhotoFormat) replacementEmbeddedThumbnailPixelBuffer (toAVDepthData replacementDepthData)
 
 -- | CGImageRepresentation
 --
@@ -174,8 +167,8 @@ fileDataRepresentationWithReplacementMetadata_replacementEmbeddedThumbnailPhotoF
 --
 -- ObjC selector: @- CGImageRepresentation@
 cgImageRepresentation :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Ptr ())
-cgImageRepresentation avCapturePhoto  =
-    fmap castPtr $ sendMsg avCapturePhoto (mkSelector "CGImageRepresentation") (retPtr retVoid) []
+cgImageRepresentation avCapturePhoto =
+  sendMessage avCapturePhoto cgImageRepresentationSelector
 
 -- | CGImageRepresentation
 --
@@ -187,8 +180,8 @@ cgImageRepresentation avCapturePhoto  =
 --
 -- ObjC selector: @- previewCGImageRepresentation@
 previewCGImageRepresentation :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Ptr ())
-previewCGImageRepresentation avCapturePhoto  =
-    fmap castPtr $ sendMsg avCapturePhoto (mkSelector "previewCGImageRepresentation") (retPtr retVoid) []
+previewCGImageRepresentation avCapturePhoto =
+  sendMessage avCapturePhoto previewCGImageRepresentationSelector
 
 -- | rawPhoto
 --
@@ -198,8 +191,8 @@ previewCGImageRepresentation avCapturePhoto  =
 --
 -- ObjC selector: @- rawPhoto@
 rawPhoto :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO Bool
-rawPhoto avCapturePhoto  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhoto (mkSelector "rawPhoto") retCULong []
+rawPhoto avCapturePhoto =
+  sendMessage avCapturePhoto rawPhotoSelector
 
 -- | pixelBuffer
 --
@@ -209,8 +202,8 @@ rawPhoto avCapturePhoto  =
 --
 -- ObjC selector: @- pixelBuffer@
 pixelBuffer :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Ptr ())
-pixelBuffer avCapturePhoto  =
-    fmap castPtr $ sendMsg avCapturePhoto (mkSelector "pixelBuffer") (retPtr retVoid) []
+pixelBuffer avCapturePhoto =
+  sendMessage avCapturePhoto pixelBufferSelector
 
 -- | previewPixelBuffer
 --
@@ -220,8 +213,8 @@ pixelBuffer avCapturePhoto  =
 --
 -- ObjC selector: @- previewPixelBuffer@
 previewPixelBuffer :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Ptr ())
-previewPixelBuffer avCapturePhoto  =
-    fmap castPtr $ sendMsg avCapturePhoto (mkSelector "previewPixelBuffer") (retPtr retVoid) []
+previewPixelBuffer avCapturePhoto =
+  sendMessage avCapturePhoto previewPixelBufferSelector
 
 -- | embeddedThumbnailPhotoFormat
 --
@@ -231,8 +224,8 @@ previewPixelBuffer avCapturePhoto  =
 --
 -- ObjC selector: @- embeddedThumbnailPhotoFormat@
 embeddedThumbnailPhotoFormat :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id NSDictionary)
-embeddedThumbnailPhotoFormat avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "embeddedThumbnailPhotoFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+embeddedThumbnailPhotoFormat avCapturePhoto =
+  sendMessage avCapturePhoto embeddedThumbnailPhotoFormatSelector
 
 -- | depthData
 --
@@ -242,8 +235,8 @@ embeddedThumbnailPhotoFormat avCapturePhoto  =
 --
 -- ObjC selector: @- depthData@
 depthData :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id AVDepthData)
-depthData avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "depthData") (retPtr retVoid) [] >>= retainedObject . castPtr
+depthData avCapturePhoto =
+  sendMessage avCapturePhoto depthDataSelector
 
 -- | portraitEffectsMatte
 --
@@ -253,8 +246,8 @@ depthData avCapturePhoto  =
 --
 -- ObjC selector: @- portraitEffectsMatte@
 portraitEffectsMatte :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id AVPortraitEffectsMatte)
-portraitEffectsMatte avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "portraitEffectsMatte") (retPtr retVoid) [] >>= retainedObject . castPtr
+portraitEffectsMatte avCapturePhoto =
+  sendMessage avCapturePhoto portraitEffectsMatteSelector
 
 -- | metadata
 --
@@ -264,8 +257,8 @@ portraitEffectsMatte avCapturePhoto  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id NSDictionary)
-metadata avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avCapturePhoto =
+  sendMessage avCapturePhoto metadataSelector
 
 -- | cameraCalibrationData
 --
@@ -275,8 +268,8 @@ metadata avCapturePhoto  =
 --
 -- ObjC selector: @- cameraCalibrationData@
 cameraCalibrationData :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id AVCameraCalibrationData)
-cameraCalibrationData avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "cameraCalibrationData") (retPtr retVoid) [] >>= retainedObject . castPtr
+cameraCalibrationData avCapturePhoto =
+  sendMessage avCapturePhoto cameraCalibrationDataSelector
 
 -- | resolvedSettings
 --
@@ -286,8 +279,8 @@ cameraCalibrationData avCapturePhoto  =
 --
 -- ObjC selector: @- resolvedSettings@
 resolvedSettings :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id AVCaptureResolvedPhotoSettings)
-resolvedSettings avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "resolvedSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+resolvedSettings avCapturePhoto =
+  sendMessage avCapturePhoto resolvedSettingsSelector
 
 -- | photoCount
 --
@@ -297,8 +290,8 @@ resolvedSettings avCapturePhoto  =
 --
 -- ObjC selector: @- photoCount@
 photoCount :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO CLong
-photoCount avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "photoCount") retCLong []
+photoCount avCapturePhoto =
+  sendMessage avCapturePhoto photoCountSelector
 
 -- | sourceDeviceType
 --
@@ -308,8 +301,8 @@ photoCount avCapturePhoto  =
 --
 -- ObjC selector: @- sourceDeviceType@
 sourceDeviceType :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id NSString)
-sourceDeviceType avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "sourceDeviceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceDeviceType avCapturePhoto =
+  sendMessage avCapturePhoto sourceDeviceTypeSelector
 
 -- | constantColorConfidenceMap
 --
@@ -319,8 +312,8 @@ sourceDeviceType avCapturePhoto  =
 --
 -- ObjC selector: @- constantColorConfidenceMap@
 constantColorConfidenceMap :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Ptr ())
-constantColorConfidenceMap avCapturePhoto  =
-    fmap castPtr $ sendMsg avCapturePhoto (mkSelector "constantColorConfidenceMap") (retPtr retVoid) []
+constantColorConfidenceMap avCapturePhoto =
+  sendMessage avCapturePhoto constantColorConfidenceMapSelector
 
 -- | constantColorCenterWeightedMeanConfidenceLevel
 --
@@ -334,8 +327,8 @@ constantColorConfidenceMap avCapturePhoto  =
 --
 -- ObjC selector: @- constantColorCenterWeightedMeanConfidenceLevel@
 constantColorCenterWeightedMeanConfidenceLevel :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO CFloat
-constantColorCenterWeightedMeanConfidenceLevel avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "constantColorCenterWeightedMeanConfidenceLevel") retCFloat []
+constantColorCenterWeightedMeanConfidenceLevel avCapturePhoto =
+  sendMessage avCapturePhoto constantColorCenterWeightedMeanConfidenceLevelSelector
 
 -- | constantColorFallbackPhoto
 --
@@ -343,8 +336,8 @@ constantColorCenterWeightedMeanConfidenceLevel avCapturePhoto  =
 --
 -- ObjC selector: @- constantColorFallbackPhoto@
 constantColorFallbackPhoto :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO Bool
-constantColorFallbackPhoto avCapturePhoto  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCapturePhoto (mkSelector "constantColorFallbackPhoto") retCULong []
+constantColorFallbackPhoto avCapturePhoto =
+  sendMessage avCapturePhoto constantColorFallbackPhotoSelector
 
 -- | bracketSettings
 --
@@ -354,8 +347,8 @@ constantColorFallbackPhoto avCapturePhoto  =
 --
 -- ObjC selector: @- bracketSettings@
 bracketSettings :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO (Id AVCaptureBracketedStillImageSettings)
-bracketSettings avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "bracketSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+bracketSettings avCapturePhoto =
+  sendMessage avCapturePhoto bracketSettingsSelector
 
 -- | sequenceCount
 --
@@ -365,8 +358,8 @@ bracketSettings avCapturePhoto  =
 --
 -- ObjC selector: @- sequenceCount@
 sequenceCount :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO CLong
-sequenceCount avCapturePhoto  =
-    sendMsg avCapturePhoto (mkSelector "sequenceCount") retCLong []
+sequenceCount avCapturePhoto =
+  sendMessage avCapturePhoto sequenceCountSelector
 
 -- | lensStabilizationStatus
 --
@@ -376,110 +369,110 @@ sequenceCount avCapturePhoto  =
 --
 -- ObjC selector: @- lensStabilizationStatus@
 lensStabilizationStatus :: IsAVCapturePhoto avCapturePhoto => avCapturePhoto -> IO AVCaptureLensStabilizationStatus
-lensStabilizationStatus avCapturePhoto  =
-    fmap (coerce :: CLong -> AVCaptureLensStabilizationStatus) $ sendMsg avCapturePhoto (mkSelector "lensStabilizationStatus") retCLong []
+lensStabilizationStatus avCapturePhoto =
+  sendMessage avCapturePhoto lensStabilizationStatusSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCapturePhoto)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCapturePhoto)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @semanticSegmentationMatteForType:@
-semanticSegmentationMatteForTypeSelector :: Selector
+semanticSegmentationMatteForTypeSelector :: Selector '[Id NSString] (Id AVSemanticSegmentationMatte)
 semanticSegmentationMatteForTypeSelector = mkSelector "semanticSegmentationMatteForType:"
 
 -- | @Selector@ for @fileDataRepresentation@
-fileDataRepresentationSelector :: Selector
+fileDataRepresentationSelector :: Selector '[] (Id NSData)
 fileDataRepresentationSelector = mkSelector "fileDataRepresentation"
 
 -- | @Selector@ for @fileDataRepresentationWithCustomizer:@
-fileDataRepresentationWithCustomizerSelector :: Selector
+fileDataRepresentationWithCustomizerSelector :: Selector '[RawId] (Id NSData)
 fileDataRepresentationWithCustomizerSelector = mkSelector "fileDataRepresentationWithCustomizer:"
 
 -- | @Selector@ for @fileDataRepresentationWithReplacementMetadata:replacementEmbeddedThumbnailPhotoFormat:replacementEmbeddedThumbnailPixelBuffer:replacementDepthData:@
-fileDataRepresentationWithReplacementMetadata_replacementEmbeddedThumbnailPhotoFormat_replacementEmbeddedThumbnailPixelBuffer_replacementDepthDataSelector :: Selector
+fileDataRepresentationWithReplacementMetadata_replacementEmbeddedThumbnailPhotoFormat_replacementEmbeddedThumbnailPixelBuffer_replacementDepthDataSelector :: Selector '[Id NSDictionary, Id NSDictionary, Ptr (), Id AVDepthData] (Id NSData)
 fileDataRepresentationWithReplacementMetadata_replacementEmbeddedThumbnailPhotoFormat_replacementEmbeddedThumbnailPixelBuffer_replacementDepthDataSelector = mkSelector "fileDataRepresentationWithReplacementMetadata:replacementEmbeddedThumbnailPhotoFormat:replacementEmbeddedThumbnailPixelBuffer:replacementDepthData:"
 
 -- | @Selector@ for @CGImageRepresentation@
-cgImageRepresentationSelector :: Selector
+cgImageRepresentationSelector :: Selector '[] (Ptr ())
 cgImageRepresentationSelector = mkSelector "CGImageRepresentation"
 
 -- | @Selector@ for @previewCGImageRepresentation@
-previewCGImageRepresentationSelector :: Selector
+previewCGImageRepresentationSelector :: Selector '[] (Ptr ())
 previewCGImageRepresentationSelector = mkSelector "previewCGImageRepresentation"
 
 -- | @Selector@ for @rawPhoto@
-rawPhotoSelector :: Selector
+rawPhotoSelector :: Selector '[] Bool
 rawPhotoSelector = mkSelector "rawPhoto"
 
 -- | @Selector@ for @pixelBuffer@
-pixelBufferSelector :: Selector
+pixelBufferSelector :: Selector '[] (Ptr ())
 pixelBufferSelector = mkSelector "pixelBuffer"
 
 -- | @Selector@ for @previewPixelBuffer@
-previewPixelBufferSelector :: Selector
+previewPixelBufferSelector :: Selector '[] (Ptr ())
 previewPixelBufferSelector = mkSelector "previewPixelBuffer"
 
 -- | @Selector@ for @embeddedThumbnailPhotoFormat@
-embeddedThumbnailPhotoFormatSelector :: Selector
+embeddedThumbnailPhotoFormatSelector :: Selector '[] (Id NSDictionary)
 embeddedThumbnailPhotoFormatSelector = mkSelector "embeddedThumbnailPhotoFormat"
 
 -- | @Selector@ for @depthData@
-depthDataSelector :: Selector
+depthDataSelector :: Selector '[] (Id AVDepthData)
 depthDataSelector = mkSelector "depthData"
 
 -- | @Selector@ for @portraitEffectsMatte@
-portraitEffectsMatteSelector :: Selector
+portraitEffectsMatteSelector :: Selector '[] (Id AVPortraitEffectsMatte)
 portraitEffectsMatteSelector = mkSelector "portraitEffectsMatte"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSDictionary)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @cameraCalibrationData@
-cameraCalibrationDataSelector :: Selector
+cameraCalibrationDataSelector :: Selector '[] (Id AVCameraCalibrationData)
 cameraCalibrationDataSelector = mkSelector "cameraCalibrationData"
 
 -- | @Selector@ for @resolvedSettings@
-resolvedSettingsSelector :: Selector
+resolvedSettingsSelector :: Selector '[] (Id AVCaptureResolvedPhotoSettings)
 resolvedSettingsSelector = mkSelector "resolvedSettings"
 
 -- | @Selector@ for @photoCount@
-photoCountSelector :: Selector
+photoCountSelector :: Selector '[] CLong
 photoCountSelector = mkSelector "photoCount"
 
 -- | @Selector@ for @sourceDeviceType@
-sourceDeviceTypeSelector :: Selector
+sourceDeviceTypeSelector :: Selector '[] (Id NSString)
 sourceDeviceTypeSelector = mkSelector "sourceDeviceType"
 
 -- | @Selector@ for @constantColorConfidenceMap@
-constantColorConfidenceMapSelector :: Selector
+constantColorConfidenceMapSelector :: Selector '[] (Ptr ())
 constantColorConfidenceMapSelector = mkSelector "constantColorConfidenceMap"
 
 -- | @Selector@ for @constantColorCenterWeightedMeanConfidenceLevel@
-constantColorCenterWeightedMeanConfidenceLevelSelector :: Selector
+constantColorCenterWeightedMeanConfidenceLevelSelector :: Selector '[] CFloat
 constantColorCenterWeightedMeanConfidenceLevelSelector = mkSelector "constantColorCenterWeightedMeanConfidenceLevel"
 
 -- | @Selector@ for @constantColorFallbackPhoto@
-constantColorFallbackPhotoSelector :: Selector
+constantColorFallbackPhotoSelector :: Selector '[] Bool
 constantColorFallbackPhotoSelector = mkSelector "constantColorFallbackPhoto"
 
 -- | @Selector@ for @bracketSettings@
-bracketSettingsSelector :: Selector
+bracketSettingsSelector :: Selector '[] (Id AVCaptureBracketedStillImageSettings)
 bracketSettingsSelector = mkSelector "bracketSettings"
 
 -- | @Selector@ for @sequenceCount@
-sequenceCountSelector :: Selector
+sequenceCountSelector :: Selector '[] CLong
 sequenceCountSelector = mkSelector "sequenceCount"
 
 -- | @Selector@ for @lensStabilizationStatus@
-lensStabilizationStatusSelector :: Selector
+lensStabilizationStatusSelector :: Selector '[] AVCaptureLensStabilizationStatus
 lensStabilizationStatusSelector = mkSelector "lensStabilizationStatus"
 

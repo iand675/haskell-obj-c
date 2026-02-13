@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.Vision.VNTrackRectangleRequest
   , initWithRectangleObservation_completionHandler
   , init_
   , initWithCompletionHandler
-  , initWithRectangleObservationSelector
-  , initWithRectangleObservation_completionHandlerSelector
   , initSelector
   , initWithCompletionHandlerSelector
+  , initWithRectangleObservationSelector
+  , initWithRectangleObservation_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,9 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithRectangleObservation:@
 initWithRectangleObservation :: (IsVNTrackRectangleRequest vnTrackRectangleRequest, IsVNRectangleObservation observation) => vnTrackRectangleRequest -> observation -> IO (Id VNTrackRectangleRequest)
-initWithRectangleObservation vnTrackRectangleRequest  observation =
-  withObjCPtr observation $ \raw_observation ->
-      sendMsg vnTrackRectangleRequest (mkSelector "initWithRectangleObservation:") (retPtr retVoid) [argPtr (castPtr raw_observation :: Ptr ())] >>= ownedObject . castPtr
+initWithRectangleObservation vnTrackRectangleRequest observation =
+  sendOwnedMessage vnTrackRectangleRequest initWithRectangleObservationSelector (toVNRectangleObservation observation)
 
 -- | Create a new rectangle tracking request with rectangle observation.
 --
@@ -57,37 +53,36 @@ initWithRectangleObservation vnTrackRectangleRequest  observation =
 --
 -- ObjC selector: @- initWithRectangleObservation:completionHandler:@
 initWithRectangleObservation_completionHandler :: (IsVNTrackRectangleRequest vnTrackRectangleRequest, IsVNRectangleObservation observation) => vnTrackRectangleRequest -> observation -> Ptr () -> IO (Id VNTrackRectangleRequest)
-initWithRectangleObservation_completionHandler vnTrackRectangleRequest  observation completionHandler =
-  withObjCPtr observation $ \raw_observation ->
-      sendMsg vnTrackRectangleRequest (mkSelector "initWithRectangleObservation:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_observation :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithRectangleObservation_completionHandler vnTrackRectangleRequest observation completionHandler =
+  sendOwnedMessage vnTrackRectangleRequest initWithRectangleObservation_completionHandlerSelector (toVNRectangleObservation observation) completionHandler
 
 -- | @- init@
 init_ :: IsVNTrackRectangleRequest vnTrackRectangleRequest => vnTrackRectangleRequest -> IO (Id VNTrackRectangleRequest)
-init_ vnTrackRectangleRequest  =
-    sendMsg vnTrackRectangleRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnTrackRectangleRequest =
+  sendOwnedMessage vnTrackRectangleRequest initSelector
 
 -- | @- initWithCompletionHandler:@
 initWithCompletionHandler :: IsVNTrackRectangleRequest vnTrackRectangleRequest => vnTrackRectangleRequest -> Ptr () -> IO (Id VNTrackRectangleRequest)
-initWithCompletionHandler vnTrackRectangleRequest  completionHandler =
-    sendMsg vnTrackRectangleRequest (mkSelector "initWithCompletionHandler:") (retPtr retVoid) [argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithCompletionHandler vnTrackRectangleRequest completionHandler =
+  sendOwnedMessage vnTrackRectangleRequest initWithCompletionHandlerSelector completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithRectangleObservation:@
-initWithRectangleObservationSelector :: Selector
+initWithRectangleObservationSelector :: Selector '[Id VNRectangleObservation] (Id VNTrackRectangleRequest)
 initWithRectangleObservationSelector = mkSelector "initWithRectangleObservation:"
 
 -- | @Selector@ for @initWithRectangleObservation:completionHandler:@
-initWithRectangleObservation_completionHandlerSelector :: Selector
+initWithRectangleObservation_completionHandlerSelector :: Selector '[Id VNRectangleObservation, Ptr ()] (Id VNTrackRectangleRequest)
 initWithRectangleObservation_completionHandlerSelector = mkSelector "initWithRectangleObservation:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNTrackRectangleRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCompletionHandler:@
-initWithCompletionHandlerSelector :: Selector
+initWithCompletionHandlerSelector :: Selector '[Ptr ()] (Id VNTrackRectangleRequest)
 initWithCompletionHandlerSelector = mkSelector "initWithCompletionHandler:"
 

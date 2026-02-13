@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,26 +38,22 @@ module ObjC.ShazamKit.SHSession
   , catalog
   , delegate
   , setDelegate
-  , initSelector
-  , initWithCatalogSelector
-  , matchStreamingBuffer_atTimeSelector
-  , matchSignatureSelector
   , catalogSelector
   , delegateSelector
+  , initSelector
+  , initWithCatalogSelector
+  , matchSignatureSelector
+  , matchStreamingBuffer_atTimeSelector
   , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -68,8 +65,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsSHSession shSession => shSession -> IO (Id SHSession)
-init_ shSession  =
-    sendMsg shSession (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ shSession =
+  sendOwnedMessage shSession initSelector
 
 -- | Creates a new session object for matching audio in a custom catalog.
 --
@@ -77,9 +74,8 @@ init_ shSession  =
 --
 -- ObjC selector: @- initWithCatalog:@
 initWithCatalog :: (IsSHSession shSession, IsSHCatalog catalog) => shSession -> catalog -> IO (Id SHSession)
-initWithCatalog shSession  catalog =
-  withObjCPtr catalog $ \raw_catalog ->
-      sendMsg shSession (mkSelector "initWithCatalog:") (retPtr retVoid) [argPtr (castPtr raw_catalog :: Ptr ())] >>= ownedObject . castPtr
+initWithCatalog shSession catalog =
+  sendOwnedMessage shSession initWithCatalogSelector (toSHCatalog catalog)
 
 -- | Converts the audio in the buffer to a signature, and searches the reference signatures in the session catalog.
 --
@@ -95,10 +91,8 @@ initWithCatalog shSession  catalog =
 --
 -- ObjC selector: @- matchStreamingBuffer:atTime:@
 matchStreamingBuffer_atTime :: (IsSHSession shSession, IsAVAudioPCMBuffer buffer, IsAVAudioTime time) => shSession -> buffer -> time -> IO ()
-matchStreamingBuffer_atTime shSession  buffer time =
-  withObjCPtr buffer $ \raw_buffer ->
-    withObjCPtr time $ \raw_time ->
-        sendMsg shSession (mkSelector "matchStreamingBuffer:atTime:") retVoid [argPtr (castPtr raw_buffer :: Ptr ()), argPtr (castPtr raw_time :: Ptr ())]
+matchStreamingBuffer_atTime shSession buffer time =
+  sendMessage shSession matchStreamingBuffer_atTimeSelector (toAVAudioPCMBuffer buffer) (toAVAudioTime time)
 
 -- | Searches for the query signature in the reference signatures that the session catalog contains.
 --
@@ -106,60 +100,59 @@ matchStreamingBuffer_atTime shSession  buffer time =
 --
 -- ObjC selector: @- matchSignature:@
 matchSignature :: (IsSHSession shSession, IsSHSignature signature) => shSession -> signature -> IO ()
-matchSignature shSession  signature =
-  withObjCPtr signature $ \raw_signature ->
-      sendMsg shSession (mkSelector "matchSignature:") retVoid [argPtr (castPtr raw_signature :: Ptr ())]
+matchSignature shSession signature =
+  sendMessage shSession matchSignatureSelector (toSHSignature signature)
 
 -- | The catalog object containing the reference signatures and their associated metadata that the session uses to perform matches.
 --
 -- ObjC selector: @- catalog@
 catalog :: IsSHSession shSession => shSession -> IO (Id SHCatalog)
-catalog shSession  =
-    sendMsg shSession (mkSelector "catalog") (retPtr retVoid) [] >>= retainedObject . castPtr
+catalog shSession =
+  sendMessage shSession catalogSelector
 
 -- | The object that the session calls with the result of a match request.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSHSession shSession => shSession -> IO RawId
-delegate shSession  =
-    fmap (RawId . castPtr) $ sendMsg shSession (mkSelector "delegate") (retPtr retVoid) []
+delegate shSession =
+  sendMessage shSession delegateSelector
 
 -- | The object that the session calls with the result of a match request.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSHSession shSession => shSession -> RawId -> IO ()
-setDelegate shSession  value =
-    sendMsg shSession (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate shSession value =
+  sendMessage shSession setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SHSession)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCatalog:@
-initWithCatalogSelector :: Selector
+initWithCatalogSelector :: Selector '[Id SHCatalog] (Id SHSession)
 initWithCatalogSelector = mkSelector "initWithCatalog:"
 
 -- | @Selector@ for @matchStreamingBuffer:atTime:@
-matchStreamingBuffer_atTimeSelector :: Selector
+matchStreamingBuffer_atTimeSelector :: Selector '[Id AVAudioPCMBuffer, Id AVAudioTime] ()
 matchStreamingBuffer_atTimeSelector = mkSelector "matchStreamingBuffer:atTime:"
 
 -- | @Selector@ for @matchSignature:@
-matchSignatureSelector :: Selector
+matchSignatureSelector :: Selector '[Id SHSignature] ()
 matchSignatureSelector = mkSelector "matchSignature:"
 
 -- | @Selector@ for @catalog@
-catalogSelector :: Selector
+catalogSelector :: Selector '[] (Id SHCatalog)
 catalogSelector = mkSelector "catalog"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

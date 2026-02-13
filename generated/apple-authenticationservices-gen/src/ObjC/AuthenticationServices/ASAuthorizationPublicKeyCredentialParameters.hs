@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.AuthenticationServices.ASAuthorizationPublicKeyCredentialParameters
   , new
   , init_
   , algorithm
+  , algorithmSelector
+  , initSelector
   , initWithAlgorithmSelector
   , newSelector
-  , initSelector
-  , algorithmSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,45 +32,45 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithAlgorithm:@
 initWithAlgorithm :: IsASAuthorizationPublicKeyCredentialParameters asAuthorizationPublicKeyCredentialParameters => asAuthorizationPublicKeyCredentialParameters -> CLong -> IO (Id ASAuthorizationPublicKeyCredentialParameters)
-initWithAlgorithm asAuthorizationPublicKeyCredentialParameters  algorithm =
-    sendMsg asAuthorizationPublicKeyCredentialParameters (mkSelector "initWithAlgorithm:") (retPtr retVoid) [argCLong algorithm] >>= ownedObject . castPtr
+initWithAlgorithm asAuthorizationPublicKeyCredentialParameters algorithm =
+  sendOwnedMessage asAuthorizationPublicKeyCredentialParameters initWithAlgorithmSelector algorithm
 
 -- | @+ new@
 new :: IO (Id ASAuthorizationPublicKeyCredentialParameters)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationPublicKeyCredentialParameters"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationPublicKeyCredentialParameters asAuthorizationPublicKeyCredentialParameters => asAuthorizationPublicKeyCredentialParameters -> IO (Id ASAuthorizationPublicKeyCredentialParameters)
-init_ asAuthorizationPublicKeyCredentialParameters  =
-    sendMsg asAuthorizationPublicKeyCredentialParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationPublicKeyCredentialParameters =
+  sendOwnedMessage asAuthorizationPublicKeyCredentialParameters initSelector
 
 -- | A COSE algorithm indentifier.
 --
 -- ObjC selector: @- algorithm@
 algorithm :: IsASAuthorizationPublicKeyCredentialParameters asAuthorizationPublicKeyCredentialParameters => asAuthorizationPublicKeyCredentialParameters -> IO CLong
-algorithm asAuthorizationPublicKeyCredentialParameters  =
-    sendMsg asAuthorizationPublicKeyCredentialParameters (mkSelector "algorithm") retCLong []
+algorithm asAuthorizationPublicKeyCredentialParameters =
+  sendMessage asAuthorizationPublicKeyCredentialParameters algorithmSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAlgorithm:@
-initWithAlgorithmSelector :: Selector
+initWithAlgorithmSelector :: Selector '[CLong] (Id ASAuthorizationPublicKeyCredentialParameters)
 initWithAlgorithmSelector = mkSelector "initWithAlgorithm:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialParameters)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationPublicKeyCredentialParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @algorithm@
-algorithmSelector :: Selector
+algorithmSelector :: Selector '[] CLong
 algorithmSelector = mkSelector "algorithm"
 

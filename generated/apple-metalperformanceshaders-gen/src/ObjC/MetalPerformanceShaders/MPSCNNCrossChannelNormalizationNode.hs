@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,24 +24,20 @@ module ObjC.MetalPerformanceShaders.MPSCNNCrossChannelNormalizationNode
   , initWithSource
   , kernelSizeInFeatureChannels
   , setKernelSizeInFeatureChannels
-  , nodeWithSource_kernelSizeSelector
-  , initWithSource_kernelSizeSelector
   , initWithSourceSelector
+  , initWithSource_kernelSizeSelector
   , kernelSizeInFeatureChannelsSelector
+  , nodeWithSource_kernelSizeSelector
   , setKernelSizeInFeatureChannelsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,52 +49,49 @@ nodeWithSource_kernelSize :: IsMPSNNImageNode sourceNode => sourceNode -> CULong
 nodeWithSource_kernelSize sourceNode kernelSize =
   do
     cls' <- getRequiredClass "MPSCNNCrossChannelNormalizationNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:kernelSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong kernelSize] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_kernelSizeSelector (toMPSNNImageNode sourceNode) kernelSize
 
 -- | @- initWithSource:kernelSize:@
 initWithSource_kernelSize :: (IsMPSCNNCrossChannelNormalizationNode mpscnnCrossChannelNormalizationNode, IsMPSNNImageNode sourceNode) => mpscnnCrossChannelNormalizationNode -> sourceNode -> CULong -> IO (Id MPSCNNCrossChannelNormalizationNode)
-initWithSource_kernelSize mpscnnCrossChannelNormalizationNode  sourceNode kernelSize =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnCrossChannelNormalizationNode (mkSelector "initWithSource:kernelSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong kernelSize] >>= ownedObject . castPtr
+initWithSource_kernelSize mpscnnCrossChannelNormalizationNode sourceNode kernelSize =
+  sendOwnedMessage mpscnnCrossChannelNormalizationNode initWithSource_kernelSizeSelector (toMPSNNImageNode sourceNode) kernelSize
 
 -- | @- initWithSource:@
 initWithSource :: (IsMPSCNNCrossChannelNormalizationNode mpscnnCrossChannelNormalizationNode, IsMPSNNImageNode sourceNode) => mpscnnCrossChannelNormalizationNode -> sourceNode -> IO (Id MPSCNNCrossChannelNormalizationNode)
-initWithSource mpscnnCrossChannelNormalizationNode  sourceNode =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnCrossChannelNormalizationNode (mkSelector "initWithSource:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ())] >>= ownedObject . castPtr
+initWithSource mpscnnCrossChannelNormalizationNode sourceNode =
+  sendOwnedMessage mpscnnCrossChannelNormalizationNode initWithSourceSelector (toMPSNNImageNode sourceNode)
 
 -- | @- kernelSizeInFeatureChannels@
 kernelSizeInFeatureChannels :: IsMPSCNNCrossChannelNormalizationNode mpscnnCrossChannelNormalizationNode => mpscnnCrossChannelNormalizationNode -> IO CULong
-kernelSizeInFeatureChannels mpscnnCrossChannelNormalizationNode  =
-    sendMsg mpscnnCrossChannelNormalizationNode (mkSelector "kernelSizeInFeatureChannels") retCULong []
+kernelSizeInFeatureChannels mpscnnCrossChannelNormalizationNode =
+  sendMessage mpscnnCrossChannelNormalizationNode kernelSizeInFeatureChannelsSelector
 
 -- | @- setKernelSizeInFeatureChannels:@
 setKernelSizeInFeatureChannels :: IsMPSCNNCrossChannelNormalizationNode mpscnnCrossChannelNormalizationNode => mpscnnCrossChannelNormalizationNode -> CULong -> IO ()
-setKernelSizeInFeatureChannels mpscnnCrossChannelNormalizationNode  value =
-    sendMsg mpscnnCrossChannelNormalizationNode (mkSelector "setKernelSizeInFeatureChannels:") retVoid [argCULong value]
+setKernelSizeInFeatureChannels mpscnnCrossChannelNormalizationNode value =
+  sendMessage mpscnnCrossChannelNormalizationNode setKernelSizeInFeatureChannelsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:kernelSize:@
-nodeWithSource_kernelSizeSelector :: Selector
+nodeWithSource_kernelSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNCrossChannelNormalizationNode)
 nodeWithSource_kernelSizeSelector = mkSelector "nodeWithSource:kernelSize:"
 
 -- | @Selector@ for @initWithSource:kernelSize:@
-initWithSource_kernelSizeSelector :: Selector
+initWithSource_kernelSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNCrossChannelNormalizationNode)
 initWithSource_kernelSizeSelector = mkSelector "initWithSource:kernelSize:"
 
 -- | @Selector@ for @initWithSource:@
-initWithSourceSelector :: Selector
+initWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSCNNCrossChannelNormalizationNode)
 initWithSourceSelector = mkSelector "initWithSource:"
 
 -- | @Selector@ for @kernelSizeInFeatureChannels@
-kernelSizeInFeatureChannelsSelector :: Selector
+kernelSizeInFeatureChannelsSelector :: Selector '[] CULong
 kernelSizeInFeatureChannelsSelector = mkSelector "kernelSizeInFeatureChannels"
 
 -- | @Selector@ for @setKernelSizeInFeatureChannels:@
-setKernelSizeInFeatureChannelsSelector :: Selector
+setKernelSizeInFeatureChannelsSelector :: Selector '[CULong] ()
 setKernelSizeInFeatureChannelsSelector = mkSelector "setKernelSizeInFeatureChannels:"
 

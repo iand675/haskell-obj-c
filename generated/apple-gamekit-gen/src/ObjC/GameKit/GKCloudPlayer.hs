@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,15 +13,11 @@ module ObjC.GameKit.GKCloudPlayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,14 +31,13 @@ getCurrentSignedInPlayerForContainer_completionHandler :: IsNSString containerNa
 getCurrentSignedInPlayerForContainer_completionHandler containerName handler =
   do
     cls' <- getRequiredClass "GKCloudPlayer"
-    withObjCPtr containerName $ \raw_containerName ->
-      sendClassMsg cls' (mkSelector "getCurrentSignedInPlayerForContainer:completionHandler:") retVoid [argPtr (castPtr raw_containerName :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+    sendClassMessage cls' getCurrentSignedInPlayerForContainer_completionHandlerSelector (toNSString containerName) handler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getCurrentSignedInPlayerForContainer:completionHandler:@
-getCurrentSignedInPlayerForContainer_completionHandlerSelector :: Selector
+getCurrentSignedInPlayerForContainer_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 getCurrentSignedInPlayerForContainer_completionHandlerSelector = mkSelector "getCurrentSignedInPlayerForContainer:completionHandler:"
 

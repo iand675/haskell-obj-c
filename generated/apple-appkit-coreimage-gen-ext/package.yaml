@@ -19,17 +19,3 @@ library:
   exposed-modules:
   - ObjC.AppKit.CIColor
   - ObjC.AppKit.CIImage
-  - ObjC.AppKit.NSAffineTransform
-  - ObjC.AppKit.NSAppleScript
-  - ObjC.AppKit.NSAttributedString
-  - ObjC.AppKit.NSBundle
-  - ObjC.AppKit.NSCoder
-  - ObjC.AppKit.NSFileManager
-  - ObjC.AppKit.NSFileWrapper
-  - ObjC.AppKit.NSIndexPath
-  - ObjC.AppKit.NSItemProvider
-  - ObjC.AppKit.NSMutableAttributedString
-  - ObjC.AppKit.NSObject
-  - ObjC.AppKit.NSSet
-  - ObjC.AppKit.NSString
-  - ObjC.AppKit.NSURL

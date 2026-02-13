@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,23 +19,19 @@ module ObjC.Symbols.NSSymbolDrawOffEffect
   , effectWithNonReversed
   , effectSelector
   , effectWithByLayerSelector
-  , effectWithWholeSymbolSelector
   , effectWithIndividuallySelector
-  , effectWithReversedSelector
   , effectWithNonReversedSelector
+  , effectWithReversedSelector
+  , effectWithWholeSymbolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,68 +45,68 @@ effect :: IO (Id NSSymbolDrawOffEffect)
 effect  =
   do
     cls' <- getRequiredClass "NSSymbolDrawOffEffect"
-    sendClassMsg cls' (mkSelector "effect") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' effectSelector
 
 -- | Returns a copy of the effect requesting an animation that applies separately to each motion group.
 --
 -- ObjC selector: @- effectWithByLayer@
 effectWithByLayer :: IsNSSymbolDrawOffEffect nsSymbolDrawOffEffect => nsSymbolDrawOffEffect -> IO (Id NSSymbolDrawOffEffect)
-effectWithByLayer nsSymbolDrawOffEffect  =
-    sendMsg nsSymbolDrawOffEffect (mkSelector "effectWithByLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithByLayer nsSymbolDrawOffEffect =
+  sendMessage nsSymbolDrawOffEffect effectWithByLayerSelector
 
 -- | Returns a copy of the effect requesting an animation that applies to all motion groups simultaneously.
 --
 -- ObjC selector: @- effectWithWholeSymbol@
 effectWithWholeSymbol :: IsNSSymbolDrawOffEffect nsSymbolDrawOffEffect => nsSymbolDrawOffEffect -> IO (Id NSSymbolDrawOffEffect)
-effectWithWholeSymbol nsSymbolDrawOffEffect  =
-    sendMsg nsSymbolDrawOffEffect (mkSelector "effectWithWholeSymbol") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithWholeSymbol nsSymbolDrawOffEffect =
+  sendMessage nsSymbolDrawOffEffect effectWithWholeSymbolSelector
 
 -- | Returns a copy of the effect requesting an animation that applies separately to each motion group, where only one motion group is active at a time.
 --
 -- ObjC selector: @- effectWithIndividually@
 effectWithIndividually :: IsNSSymbolDrawOffEffect nsSymbolDrawOffEffect => nsSymbolDrawOffEffect -> IO (Id NSSymbolDrawOffEffect)
-effectWithIndividually nsSymbolDrawOffEffect  =
-    sendMsg nsSymbolDrawOffEffect (mkSelector "effectWithIndividually") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithIndividually nsSymbolDrawOffEffect =
+  sendMessage nsSymbolDrawOffEffect effectWithIndividuallySelector
 
 -- | Returns a copy of the effect that animates in reverse. This cancels the nonReversed variant.
 --
 -- ObjC selector: @- effectWithReversed@
 effectWithReversed :: IsNSSymbolDrawOffEffect nsSymbolDrawOffEffect => nsSymbolDrawOffEffect -> IO (Id NSSymbolDrawOffEffect)
-effectWithReversed nsSymbolDrawOffEffect  =
-    sendMsg nsSymbolDrawOffEffect (mkSelector "effectWithReversed") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithReversed nsSymbolDrawOffEffect =
+  sendMessage nsSymbolDrawOffEffect effectWithReversedSelector
 
 -- | Returns a copy of the effect that only animates forwards. This cancels the reversed variant.
 --
 -- ObjC selector: @- effectWithNonReversed@
 effectWithNonReversed :: IsNSSymbolDrawOffEffect nsSymbolDrawOffEffect => nsSymbolDrawOffEffect -> IO (Id NSSymbolDrawOffEffect)
-effectWithNonReversed nsSymbolDrawOffEffect  =
-    sendMsg nsSymbolDrawOffEffect (mkSelector "effectWithNonReversed") (retPtr retVoid) [] >>= retainedObject . castPtr
+effectWithNonReversed nsSymbolDrawOffEffect =
+  sendMessage nsSymbolDrawOffEffect effectWithNonReversedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @effect@
-effectSelector :: Selector
+effectSelector :: Selector '[] (Id NSSymbolDrawOffEffect)
 effectSelector = mkSelector "effect"
 
 -- | @Selector@ for @effectWithByLayer@
-effectWithByLayerSelector :: Selector
+effectWithByLayerSelector :: Selector '[] (Id NSSymbolDrawOffEffect)
 effectWithByLayerSelector = mkSelector "effectWithByLayer"
 
 -- | @Selector@ for @effectWithWholeSymbol@
-effectWithWholeSymbolSelector :: Selector
+effectWithWholeSymbolSelector :: Selector '[] (Id NSSymbolDrawOffEffect)
 effectWithWholeSymbolSelector = mkSelector "effectWithWholeSymbol"
 
 -- | @Selector@ for @effectWithIndividually@
-effectWithIndividuallySelector :: Selector
+effectWithIndividuallySelector :: Selector '[] (Id NSSymbolDrawOffEffect)
 effectWithIndividuallySelector = mkSelector "effectWithIndividually"
 
 -- | @Selector@ for @effectWithReversed@
-effectWithReversedSelector :: Selector
+effectWithReversedSelector :: Selector '[] (Id NSSymbolDrawOffEffect)
 effectWithReversedSelector = mkSelector "effectWithReversed"
 
 -- | @Selector@ for @effectWithNonReversed@
-effectWithNonReversedSelector :: Selector
+effectWithNonReversedSelector :: Selector '[] (Id NSSymbolDrawOffEffect)
 effectWithNonReversedSelector = mkSelector "effectWithNonReversed"
 

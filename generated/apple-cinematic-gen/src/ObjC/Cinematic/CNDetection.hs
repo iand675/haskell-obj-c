@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,15 @@ module ObjC.Cinematic.CNDetection
   , focusDisparity
   , detectionID
   , detectionGroupID
-  , isValidDetectionIDSelector
-  , isValidDetectionGroupIDSelector
   , accessibilityLabelForDetectionTypeSelector
-  , initSelector
-  , newSelector
+  , detectionGroupIDSelector
+  , detectionIDSelector
   , detectionTypeSelector
   , focusDisparitySelector
-  , detectionIDSelector
-  , detectionGroupIDSelector
+  , initSelector
+  , isValidDetectionGroupIDSelector
+  , isValidDetectionIDSelector
+  , newSelector
 
   -- * Enum types
   , CNDetectionType(CNDetectionType)
@@ -47,15 +48,11 @@ module ObjC.Cinematic.CNDetection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,7 +67,7 @@ isValidDetectionID :: CLong -> IO Bool
 isValidDetectionID detectionID =
   do
     cls' <- getRequiredClass "CNDetection"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isValidDetectionID:") retCULong [argCLong detectionID]
+    sendClassMessage cls' isValidDetectionIDSelector detectionID
 
 -- | Determine whether a given detectionGroupID is valid
 --
@@ -79,7 +76,7 @@ isValidDetectionGroupID :: CLong -> IO Bool
 isValidDetectionGroupID detectionGroupID =
   do
     cls' <- getRequiredClass "CNDetection"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isValidDetectionGroupID:") retCULong [argCLong detectionGroupID]
+    sendClassMessage cls' isValidDetectionGroupIDSelector detectionGroupID
 
 -- | A localized accessibility label converting a specific detection type into a broad category (person, pet, etc.).
 --
@@ -88,85 +85,85 @@ accessibilityLabelForDetectionType :: CNDetectionType -> IO (Id NSString)
 accessibilityLabelForDetectionType detectionType =
   do
     cls' <- getRequiredClass "CNDetection"
-    sendClassMsg cls' (mkSelector "accessibilityLabelForDetectionType:") (retPtr retVoid) [argCLong (coerce detectionType)] >>= retainedObject . castPtr
+    sendClassMessage cls' accessibilityLabelForDetectionTypeSelector detectionType
 
 -- | @- init@
 init_ :: IsCNDetection cnDetection => cnDetection -> IO (Id CNDetection)
-init_ cnDetection  =
-    sendMsg cnDetection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cnDetection =
+  sendOwnedMessage cnDetection initSelector
 
 -- | @+ new@
 new :: IO (Id CNDetection)
 new  =
   do
     cls' <- getRequiredClass "CNDetection"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The type of object that was detected (face, torso, cat, dog, etc.)
 --
 -- ObjC selector: @- detectionType@
 detectionType :: IsCNDetection cnDetection => cnDetection -> IO CNDetectionType
-detectionType cnDetection  =
-    fmap (coerce :: CLong -> CNDetectionType) $ sendMsg cnDetection (mkSelector "detectionType") retCLong []
+detectionType cnDetection =
+  sendMessage cnDetection detectionTypeSelector
 
 -- | The disparity to use in order to focus on the object. If the disparity is unknown, use the class method to find it: @disparityInNormalizedRect:sourceDisparity:detectionType:priorDisparity:@.
 --
 -- ObjC selector: @- focusDisparity@
 focusDisparity :: IsCNDetection cnDetection => cnDetection -> IO CFloat
-focusDisparity cnDetection  =
-    sendMsg cnDetection (mkSelector "focusDisparity") retCFloat []
+focusDisparity cnDetection =
+  sendMessage cnDetection focusDisparitySelector
 
 -- | An unique identifier assigned by the cinematic script to all detections of the same subject and detection type across time. If you build a custom detection track, the detectionID will be assigned when you add it to the script.
 --
 -- ObjC selector: @- detectionID@
 detectionID :: IsCNDetection cnDetection => cnDetection -> IO CLong
-detectionID cnDetection  =
-    sendMsg cnDetection (mkSelector "detectionID") retCLong []
+detectionID cnDetection =
+  sendMessage cnDetection detectionIDSelector
 
 -- | An unique identifier assigned by the cinematic script to all detections of the same subject and related detection types across time. For example, the face/torso detections of the same person are assigned the same detectionGroupID.
 --
 -- ObjC selector: @- detectionGroupID@
 detectionGroupID :: IsCNDetection cnDetection => cnDetection -> IO CLong
-detectionGroupID cnDetection  =
-    sendMsg cnDetection (mkSelector "detectionGroupID") retCLong []
+detectionGroupID cnDetection =
+  sendMessage cnDetection detectionGroupIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isValidDetectionID:@
-isValidDetectionIDSelector :: Selector
+isValidDetectionIDSelector :: Selector '[CLong] Bool
 isValidDetectionIDSelector = mkSelector "isValidDetectionID:"
 
 -- | @Selector@ for @isValidDetectionGroupID:@
-isValidDetectionGroupIDSelector :: Selector
+isValidDetectionGroupIDSelector :: Selector '[CLong] Bool
 isValidDetectionGroupIDSelector = mkSelector "isValidDetectionGroupID:"
 
 -- | @Selector@ for @accessibilityLabelForDetectionType:@
-accessibilityLabelForDetectionTypeSelector :: Selector
+accessibilityLabelForDetectionTypeSelector :: Selector '[CNDetectionType] (Id NSString)
 accessibilityLabelForDetectionTypeSelector = mkSelector "accessibilityLabelForDetectionType:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CNDetection)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CNDetection)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @detectionType@
-detectionTypeSelector :: Selector
+detectionTypeSelector :: Selector '[] CNDetectionType
 detectionTypeSelector = mkSelector "detectionType"
 
 -- | @Selector@ for @focusDisparity@
-focusDisparitySelector :: Selector
+focusDisparitySelector :: Selector '[] CFloat
 focusDisparitySelector = mkSelector "focusDisparity"
 
 -- | @Selector@ for @detectionID@
-detectionIDSelector :: Selector
+detectionIDSelector :: Selector '[] CLong
 detectionIDSelector = mkSelector "detectionID"
 
 -- | @Selector@ for @detectionGroupID@
-detectionGroupIDSelector :: Selector
+detectionGroupIDSelector :: Selector '[] CLong
 detectionGroupIDSelector = mkSelector "detectionGroupID"
 

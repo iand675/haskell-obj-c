@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.AVFoundation.AVMutableAudioMix
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,7 +33,7 @@ audioMix :: IO (Id AVMutableAudioMix)
 audioMix  =
   do
     cls' <- getRequiredClass "AVMutableAudioMix"
-    sendClassMsg cls' (mkSelector "audioMix") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' audioMixSelector
 
 -- | inputParameters
 --
@@ -46,8 +43,8 @@ audioMix  =
 --
 -- ObjC selector: @- inputParameters@
 inputParameters :: IsAVMutableAudioMix avMutableAudioMix => avMutableAudioMix -> IO (Id NSArray)
-inputParameters avMutableAudioMix  =
-    sendMsg avMutableAudioMix (mkSelector "inputParameters") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputParameters avMutableAudioMix =
+  sendMessage avMutableAudioMix inputParametersSelector
 
 -- | inputParameters
 --
@@ -57,23 +54,22 @@ inputParameters avMutableAudioMix  =
 --
 -- ObjC selector: @- setInputParameters:@
 setInputParameters :: (IsAVMutableAudioMix avMutableAudioMix, IsNSArray value) => avMutableAudioMix -> value -> IO ()
-setInputParameters avMutableAudioMix  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableAudioMix (mkSelector "setInputParameters:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setInputParameters avMutableAudioMix value =
+  sendMessage avMutableAudioMix setInputParametersSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @audioMix@
-audioMixSelector :: Selector
+audioMixSelector :: Selector '[] (Id AVMutableAudioMix)
 audioMixSelector = mkSelector "audioMix"
 
 -- | @Selector@ for @inputParameters@
-inputParametersSelector :: Selector
+inputParametersSelector :: Selector '[] (Id NSArray)
 inputParametersSelector = mkSelector "inputParameters"
 
 -- | @Selector@ for @setInputParameters:@
-setInputParametersSelector :: Selector
+setInputParametersSelector :: Selector '[Id NSArray] ()
 setInputParametersSelector = mkSelector "setInputParameters:"
 

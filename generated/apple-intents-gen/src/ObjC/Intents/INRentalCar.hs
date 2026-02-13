@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,24 +16,20 @@ module ObjC.Intents.INRentalCar
   , rentalCarDescription
   , initSelector
   , initWithRentalCompanyName_type_make_model_rentalCarDescriptionSelector
-  , rentalCompanyNameSelector
-  , typeSelector
   , makeSelector
   , modelSelector
   , rentalCarDescriptionSelector
+  , rentalCompanyNameSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,73 +38,68 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINRentalCar inRentalCar => inRentalCar -> IO (Id INRentalCar)
-init_ inRentalCar  =
-    sendMsg inRentalCar (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inRentalCar =
+  sendOwnedMessage inRentalCar initSelector
 
 -- | @- initWithRentalCompanyName:type:make:model:rentalCarDescription:@
 initWithRentalCompanyName_type_make_model_rentalCarDescription :: (IsINRentalCar inRentalCar, IsNSString rentalCompanyName, IsNSString type_, IsNSString make, IsNSString model, IsNSString rentalCarDescription) => inRentalCar -> rentalCompanyName -> type_ -> make -> model -> rentalCarDescription -> IO (Id INRentalCar)
-initWithRentalCompanyName_type_make_model_rentalCarDescription inRentalCar  rentalCompanyName type_ make model rentalCarDescription =
-  withObjCPtr rentalCompanyName $ \raw_rentalCompanyName ->
-    withObjCPtr type_ $ \raw_type_ ->
-      withObjCPtr make $ \raw_make ->
-        withObjCPtr model $ \raw_model ->
-          withObjCPtr rentalCarDescription $ \raw_rentalCarDescription ->
-              sendMsg inRentalCar (mkSelector "initWithRentalCompanyName:type:make:model:rentalCarDescription:") (retPtr retVoid) [argPtr (castPtr raw_rentalCompanyName :: Ptr ()), argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_make :: Ptr ()), argPtr (castPtr raw_model :: Ptr ()), argPtr (castPtr raw_rentalCarDescription :: Ptr ())] >>= ownedObject . castPtr
+initWithRentalCompanyName_type_make_model_rentalCarDescription inRentalCar rentalCompanyName type_ make model rentalCarDescription =
+  sendOwnedMessage inRentalCar initWithRentalCompanyName_type_make_model_rentalCarDescriptionSelector (toNSString rentalCompanyName) (toNSString type_) (toNSString make) (toNSString model) (toNSString rentalCarDescription)
 
 -- | @- rentalCompanyName@
 rentalCompanyName :: IsINRentalCar inRentalCar => inRentalCar -> IO (Id NSString)
-rentalCompanyName inRentalCar  =
-    sendMsg inRentalCar (mkSelector "rentalCompanyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+rentalCompanyName inRentalCar =
+  sendMessage inRentalCar rentalCompanyNameSelector
 
 -- | @- type@
 type_ :: IsINRentalCar inRentalCar => inRentalCar -> IO (Id NSString)
-type_ inRentalCar  =
-    sendMsg inRentalCar (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ inRentalCar =
+  sendMessage inRentalCar typeSelector
 
 -- | @- make@
 make :: IsINRentalCar inRentalCar => inRentalCar -> IO (Id NSString)
-make inRentalCar  =
-    sendMsg inRentalCar (mkSelector "make") (retPtr retVoid) [] >>= retainedObject . castPtr
+make inRentalCar =
+  sendMessage inRentalCar makeSelector
 
 -- | @- model@
 model :: IsINRentalCar inRentalCar => inRentalCar -> IO (Id NSString)
-model inRentalCar  =
-    sendMsg inRentalCar (mkSelector "model") (retPtr retVoid) [] >>= retainedObject . castPtr
+model inRentalCar =
+  sendMessage inRentalCar modelSelector
 
 -- | @- rentalCarDescription@
 rentalCarDescription :: IsINRentalCar inRentalCar => inRentalCar -> IO (Id NSString)
-rentalCarDescription inRentalCar  =
-    sendMsg inRentalCar (mkSelector "rentalCarDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+rentalCarDescription inRentalCar =
+  sendMessage inRentalCar rentalCarDescriptionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INRentalCar)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRentalCompanyName:type:make:model:rentalCarDescription:@
-initWithRentalCompanyName_type_make_model_rentalCarDescriptionSelector :: Selector
+initWithRentalCompanyName_type_make_model_rentalCarDescriptionSelector :: Selector '[Id NSString, Id NSString, Id NSString, Id NSString, Id NSString] (Id INRentalCar)
 initWithRentalCompanyName_type_make_model_rentalCarDescriptionSelector = mkSelector "initWithRentalCompanyName:type:make:model:rentalCarDescription:"
 
 -- | @Selector@ for @rentalCompanyName@
-rentalCompanyNameSelector :: Selector
+rentalCompanyNameSelector :: Selector '[] (Id NSString)
 rentalCompanyNameSelector = mkSelector "rentalCompanyName"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @make@
-makeSelector :: Selector
+makeSelector :: Selector '[] (Id NSString)
 makeSelector = mkSelector "make"
 
 -- | @Selector@ for @model@
-modelSelector :: Selector
+modelSelector :: Selector '[] (Id NSString)
 modelSelector = mkSelector "model"
 
 -- | @Selector@ for @rentalCarDescription@
-rentalCarDescriptionSelector :: Selector
+rentalCarDescriptionSelector :: Selector '[] (Id NSString)
 rentalCarDescriptionSelector = mkSelector "rentalCarDescription"
 

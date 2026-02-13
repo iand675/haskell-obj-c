@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,20 +22,20 @@ module ObjC.Photos.PHImageRequestOptions
   , setProgressHandler
   , allowSecondaryDegradedImage
   , setAllowSecondaryDegradedImage
-  , versionSelector
-  , setVersionSelector
-  , deliveryModeSelector
-  , setDeliveryModeSelector
-  , resizeModeSelector
-  , setResizeModeSelector
-  , networkAccessAllowedSelector
-  , setNetworkAccessAllowedSelector
-  , synchronousSelector
-  , setSynchronousSelector
-  , progressHandlerSelector
-  , setProgressHandlerSelector
   , allowSecondaryDegradedImageSelector
+  , deliveryModeSelector
+  , networkAccessAllowedSelector
+  , progressHandlerSelector
+  , resizeModeSelector
   , setAllowSecondaryDegradedImageSelector
+  , setDeliveryModeSelector
+  , setNetworkAccessAllowedSelector
+  , setProgressHandlerSelector
+  , setResizeModeSelector
+  , setSynchronousSelector
+  , setVersionSelector
+  , synchronousSelector
+  , versionSelector
 
   -- * Enum types
   , PHImageRequestOptionsDeliveryMode(PHImageRequestOptionsDeliveryMode)
@@ -52,15 +53,11 @@ module ObjC.Photos.PHImageRequestOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,131 +67,131 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- version@
 version :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> IO PHImageRequestOptionsVersion
-version phImageRequestOptions  =
-    fmap (coerce :: CLong -> PHImageRequestOptionsVersion) $ sendMsg phImageRequestOptions (mkSelector "version") retCLong []
+version phImageRequestOptions =
+  sendMessage phImageRequestOptions versionSelector
 
 -- | @- setVersion:@
 setVersion :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> PHImageRequestOptionsVersion -> IO ()
-setVersion phImageRequestOptions  value =
-    sendMsg phImageRequestOptions (mkSelector "setVersion:") retVoid [argCLong (coerce value)]
+setVersion phImageRequestOptions value =
+  sendMessage phImageRequestOptions setVersionSelector value
 
 -- | @- deliveryMode@
 deliveryMode :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> IO PHImageRequestOptionsDeliveryMode
-deliveryMode phImageRequestOptions  =
-    fmap (coerce :: CLong -> PHImageRequestOptionsDeliveryMode) $ sendMsg phImageRequestOptions (mkSelector "deliveryMode") retCLong []
+deliveryMode phImageRequestOptions =
+  sendMessage phImageRequestOptions deliveryModeSelector
 
 -- | @- setDeliveryMode:@
 setDeliveryMode :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> PHImageRequestOptionsDeliveryMode -> IO ()
-setDeliveryMode phImageRequestOptions  value =
-    sendMsg phImageRequestOptions (mkSelector "setDeliveryMode:") retVoid [argCLong (coerce value)]
+setDeliveryMode phImageRequestOptions value =
+  sendMessage phImageRequestOptions setDeliveryModeSelector value
 
 -- | @- resizeMode@
 resizeMode :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> IO PHImageRequestOptionsResizeMode
-resizeMode phImageRequestOptions  =
-    fmap (coerce :: CLong -> PHImageRequestOptionsResizeMode) $ sendMsg phImageRequestOptions (mkSelector "resizeMode") retCLong []
+resizeMode phImageRequestOptions =
+  sendMessage phImageRequestOptions resizeModeSelector
 
 -- | @- setResizeMode:@
 setResizeMode :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> PHImageRequestOptionsResizeMode -> IO ()
-setResizeMode phImageRequestOptions  value =
-    sendMsg phImageRequestOptions (mkSelector "setResizeMode:") retVoid [argCLong (coerce value)]
+setResizeMode phImageRequestOptions value =
+  sendMessage phImageRequestOptions setResizeModeSelector value
 
 -- | @- networkAccessAllowed@
 networkAccessAllowed :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> IO Bool
-networkAccessAllowed phImageRequestOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phImageRequestOptions (mkSelector "networkAccessAllowed") retCULong []
+networkAccessAllowed phImageRequestOptions =
+  sendMessage phImageRequestOptions networkAccessAllowedSelector
 
 -- | @- setNetworkAccessAllowed:@
 setNetworkAccessAllowed :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> Bool -> IO ()
-setNetworkAccessAllowed phImageRequestOptions  value =
-    sendMsg phImageRequestOptions (mkSelector "setNetworkAccessAllowed:") retVoid [argCULong (if value then 1 else 0)]
+setNetworkAccessAllowed phImageRequestOptions value =
+  sendMessage phImageRequestOptions setNetworkAccessAllowedSelector value
 
 -- | @- synchronous@
 synchronous :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> IO Bool
-synchronous phImageRequestOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phImageRequestOptions (mkSelector "synchronous") retCULong []
+synchronous phImageRequestOptions =
+  sendMessage phImageRequestOptions synchronousSelector
 
 -- | @- setSynchronous:@
 setSynchronous :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> Bool -> IO ()
-setSynchronous phImageRequestOptions  value =
-    sendMsg phImageRequestOptions (mkSelector "setSynchronous:") retVoid [argCULong (if value then 1 else 0)]
+setSynchronous phImageRequestOptions value =
+  sendMessage phImageRequestOptions setSynchronousSelector value
 
 -- | @- progressHandler@
 progressHandler :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> IO (Ptr ())
-progressHandler phImageRequestOptions  =
-    fmap castPtr $ sendMsg phImageRequestOptions (mkSelector "progressHandler") (retPtr retVoid) []
+progressHandler phImageRequestOptions =
+  sendMessage phImageRequestOptions progressHandlerSelector
 
 -- | @- setProgressHandler:@
 setProgressHandler :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> Ptr () -> IO ()
-setProgressHandler phImageRequestOptions  value =
-    sendMsg phImageRequestOptions (mkSelector "setProgressHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setProgressHandler phImageRequestOptions value =
+  sendMessage phImageRequestOptions setProgressHandlerSelector value
 
 -- | @- allowSecondaryDegradedImage@
 allowSecondaryDegradedImage :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> IO Bool
-allowSecondaryDegradedImage phImageRequestOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg phImageRequestOptions (mkSelector "allowSecondaryDegradedImage") retCULong []
+allowSecondaryDegradedImage phImageRequestOptions =
+  sendMessage phImageRequestOptions allowSecondaryDegradedImageSelector
 
 -- | @- setAllowSecondaryDegradedImage:@
 setAllowSecondaryDegradedImage :: IsPHImageRequestOptions phImageRequestOptions => phImageRequestOptions -> Bool -> IO ()
-setAllowSecondaryDegradedImage phImageRequestOptions  value =
-    sendMsg phImageRequestOptions (mkSelector "setAllowSecondaryDegradedImage:") retVoid [argCULong (if value then 1 else 0)]
+setAllowSecondaryDegradedImage phImageRequestOptions value =
+  sendMessage phImageRequestOptions setAllowSecondaryDegradedImageSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] PHImageRequestOptionsVersion
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @setVersion:@
-setVersionSelector :: Selector
+setVersionSelector :: Selector '[PHImageRequestOptionsVersion] ()
 setVersionSelector = mkSelector "setVersion:"
 
 -- | @Selector@ for @deliveryMode@
-deliveryModeSelector :: Selector
+deliveryModeSelector :: Selector '[] PHImageRequestOptionsDeliveryMode
 deliveryModeSelector = mkSelector "deliveryMode"
 
 -- | @Selector@ for @setDeliveryMode:@
-setDeliveryModeSelector :: Selector
+setDeliveryModeSelector :: Selector '[PHImageRequestOptionsDeliveryMode] ()
 setDeliveryModeSelector = mkSelector "setDeliveryMode:"
 
 -- | @Selector@ for @resizeMode@
-resizeModeSelector :: Selector
+resizeModeSelector :: Selector '[] PHImageRequestOptionsResizeMode
 resizeModeSelector = mkSelector "resizeMode"
 
 -- | @Selector@ for @setResizeMode:@
-setResizeModeSelector :: Selector
+setResizeModeSelector :: Selector '[PHImageRequestOptionsResizeMode] ()
 setResizeModeSelector = mkSelector "setResizeMode:"
 
 -- | @Selector@ for @networkAccessAllowed@
-networkAccessAllowedSelector :: Selector
+networkAccessAllowedSelector :: Selector '[] Bool
 networkAccessAllowedSelector = mkSelector "networkAccessAllowed"
 
 -- | @Selector@ for @setNetworkAccessAllowed:@
-setNetworkAccessAllowedSelector :: Selector
+setNetworkAccessAllowedSelector :: Selector '[Bool] ()
 setNetworkAccessAllowedSelector = mkSelector "setNetworkAccessAllowed:"
 
 -- | @Selector@ for @synchronous@
-synchronousSelector :: Selector
+synchronousSelector :: Selector '[] Bool
 synchronousSelector = mkSelector "synchronous"
 
 -- | @Selector@ for @setSynchronous:@
-setSynchronousSelector :: Selector
+setSynchronousSelector :: Selector '[Bool] ()
 setSynchronousSelector = mkSelector "setSynchronous:"
 
 -- | @Selector@ for @progressHandler@
-progressHandlerSelector :: Selector
+progressHandlerSelector :: Selector '[] (Ptr ())
 progressHandlerSelector = mkSelector "progressHandler"
 
 -- | @Selector@ for @setProgressHandler:@
-setProgressHandlerSelector :: Selector
+setProgressHandlerSelector :: Selector '[Ptr ()] ()
 setProgressHandlerSelector = mkSelector "setProgressHandler:"
 
 -- | @Selector@ for @allowSecondaryDegradedImage@
-allowSecondaryDegradedImageSelector :: Selector
+allowSecondaryDegradedImageSelector :: Selector '[] Bool
 allowSecondaryDegradedImageSelector = mkSelector "allowSecondaryDegradedImage"
 
 -- | @Selector@ for @setAllowSecondaryDegradedImage:@
-setAllowSecondaryDegradedImageSelector :: Selector
+setAllowSecondaryDegradedImageSelector :: Selector '[Bool] ()
 setAllowSecondaryDegradedImageSelector = mkSelector "setAllowSecondaryDegradedImage:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,32 +22,28 @@ module ObjC.Matter.MTRJointFabricAdministratorClusterOpenJointCommissioningWindo
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , commissioningTimeoutSelector
-  , setCommissioningTimeoutSelector
-  , pakePasscodeVerifierSelector
-  , setPakePasscodeVerifierSelector
   , discriminatorSelector
-  , setDiscriminatorSelector
   , iterationsSelector
-  , setIterationsSelector
+  , pakePasscodeVerifierSelector
   , saltSelector
-  , setSaltSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setCommissioningTimeoutSelector
+  , setDiscriminatorSelector
+  , setIterationsSelector
+  , setPakePasscodeVerifierSelector
+  , setSaltSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,58 +52,53 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- commissioningTimeout@
 commissioningTimeout :: IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> IO (Id NSNumber)
-commissioningTimeout mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  =
-    sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "commissioningTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+commissioningTimeout mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams commissioningTimeoutSelector
 
 -- | @- setCommissioningTimeout:@
 setCommissioningTimeout :: (IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams, IsNSNumber value) => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> value -> IO ()
-setCommissioningTimeout mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "setCommissioningTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCommissioningTimeout mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams value =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams setCommissioningTimeoutSelector (toNSNumber value)
 
 -- | @- pakePasscodeVerifier@
 pakePasscodeVerifier :: IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> IO (Id NSData)
-pakePasscodeVerifier mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  =
-    sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "pakePasscodeVerifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+pakePasscodeVerifier mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams pakePasscodeVerifierSelector
 
 -- | @- setPakePasscodeVerifier:@
 setPakePasscodeVerifier :: (IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams, IsNSData value) => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> value -> IO ()
-setPakePasscodeVerifier mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "setPakePasscodeVerifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPakePasscodeVerifier mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams value =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams setPakePasscodeVerifierSelector (toNSData value)
 
 -- | @- discriminator@
 discriminator :: IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> IO (Id NSNumber)
-discriminator mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  =
-    sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "discriminator") (retPtr retVoid) [] >>= retainedObject . castPtr
+discriminator mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams discriminatorSelector
 
 -- | @- setDiscriminator:@
 setDiscriminator :: (IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams, IsNSNumber value) => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> value -> IO ()
-setDiscriminator mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "setDiscriminator:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDiscriminator mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams value =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams setDiscriminatorSelector (toNSNumber value)
 
 -- | @- iterations@
 iterations :: IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> IO (Id NSNumber)
-iterations mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  =
-    sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "iterations") (retPtr retVoid) [] >>= retainedObject . castPtr
+iterations mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams iterationsSelector
 
 -- | @- setIterations:@
 setIterations :: (IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams, IsNSNumber value) => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> value -> IO ()
-setIterations mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "setIterations:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIterations mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams value =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams setIterationsSelector (toNSNumber value)
 
 -- | @- salt@
 salt :: IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> IO (Id NSData)
-salt mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  =
-    sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "salt") (retPtr retVoid) [] >>= retainedObject . castPtr
+salt mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams saltSelector
 
 -- | @- setSalt:@
 setSalt :: (IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams, IsNSData value) => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> value -> IO ()
-setSalt mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "setSalt:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSalt mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams value =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams setSaltSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -116,8 +108,8 @@ setSalt mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  va
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  =
-    sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -127,9 +119,8 @@ timedInvokeTimeoutMs mtrJointFabricAdministratorClusterOpenJointCommissioningWin
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams, IsNSNumber value) => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams value =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -139,8 +130,8 @@ setTimedInvokeTimeoutMs mtrJointFabricAdministratorClusterOpenJointCommissioning
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  =
-    sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -150,67 +141,66 @@ serverSideProcessingTimeout mtrJointFabricAdministratorClusterOpenJointCommissio
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRJointFabricAdministratorClusterOpenJointCommissioningWindowParams mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams, IsNSNumber value) => mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams -> value -> IO ()
-setServerSideProcessingTimeout mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams value =
+  sendMessage mtrJointFabricAdministratorClusterOpenJointCommissioningWindowParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @commissioningTimeout@
-commissioningTimeoutSelector :: Selector
+commissioningTimeoutSelector :: Selector '[] (Id NSNumber)
 commissioningTimeoutSelector = mkSelector "commissioningTimeout"
 
 -- | @Selector@ for @setCommissioningTimeout:@
-setCommissioningTimeoutSelector :: Selector
+setCommissioningTimeoutSelector :: Selector '[Id NSNumber] ()
 setCommissioningTimeoutSelector = mkSelector "setCommissioningTimeout:"
 
 -- | @Selector@ for @pakePasscodeVerifier@
-pakePasscodeVerifierSelector :: Selector
+pakePasscodeVerifierSelector :: Selector '[] (Id NSData)
 pakePasscodeVerifierSelector = mkSelector "pakePasscodeVerifier"
 
 -- | @Selector@ for @setPakePasscodeVerifier:@
-setPakePasscodeVerifierSelector :: Selector
+setPakePasscodeVerifierSelector :: Selector '[Id NSData] ()
 setPakePasscodeVerifierSelector = mkSelector "setPakePasscodeVerifier:"
 
 -- | @Selector@ for @discriminator@
-discriminatorSelector :: Selector
+discriminatorSelector :: Selector '[] (Id NSNumber)
 discriminatorSelector = mkSelector "discriminator"
 
 -- | @Selector@ for @setDiscriminator:@
-setDiscriminatorSelector :: Selector
+setDiscriminatorSelector :: Selector '[Id NSNumber] ()
 setDiscriminatorSelector = mkSelector "setDiscriminator:"
 
 -- | @Selector@ for @iterations@
-iterationsSelector :: Selector
+iterationsSelector :: Selector '[] (Id NSNumber)
 iterationsSelector = mkSelector "iterations"
 
 -- | @Selector@ for @setIterations:@
-setIterationsSelector :: Selector
+setIterationsSelector :: Selector '[Id NSNumber] ()
 setIterationsSelector = mkSelector "setIterations:"
 
 -- | @Selector@ for @salt@
-saltSelector :: Selector
+saltSelector :: Selector '[] (Id NSData)
 saltSelector = mkSelector "salt"
 
 -- | @Selector@ for @setSalt:@
-setSaltSelector :: Selector
+setSaltSelector :: Selector '[Id NSData] ()
 setSaltSelector = mkSelector "setSalt:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

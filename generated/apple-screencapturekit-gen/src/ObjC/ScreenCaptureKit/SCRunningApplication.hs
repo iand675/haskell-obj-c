@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.ScreenCaptureKit.SCRunningApplication
   , bundleIdentifier
   , applicationName
   , processID
+  , applicationNameSelector
+  , bundleIdentifierSelector
   , initSelector
   , newSelector
-  , bundleIdentifierSelector
-  , applicationNameSelector
   , processIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,58 +34,58 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSCRunningApplication scRunningApplication => scRunningApplication -> IO (Id SCRunningApplication)
-init_ scRunningApplication  =
-    sendMsg scRunningApplication (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ scRunningApplication =
+  sendOwnedMessage scRunningApplication initSelector
 
 -- | @+ new@
 new :: IO (Id SCRunningApplication)
 new  =
   do
     cls' <- getRequiredClass "SCRunningApplication"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | bundleIdentifier the bundleIdentifier for the SCRunningApplication
 --
 -- ObjC selector: @- bundleIdentifier@
 bundleIdentifier :: IsSCRunningApplication scRunningApplication => scRunningApplication -> IO (Id NSString)
-bundleIdentifier scRunningApplication  =
-    sendMsg scRunningApplication (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleIdentifier scRunningApplication =
+  sendMessage scRunningApplication bundleIdentifierSelector
 
 -- | applicationName the application name for the SCRunningApplication
 --
 -- ObjC selector: @- applicationName@
 applicationName :: IsSCRunningApplication scRunningApplication => scRunningApplication -> IO (Id NSString)
-applicationName scRunningApplication  =
-    sendMsg scRunningApplication (mkSelector "applicationName") (retPtr retVoid) [] >>= retainedObject . castPtr
+applicationName scRunningApplication =
+  sendMessage scRunningApplication applicationNameSelector
 
 -- | processID the SCRunningApplication
 --
 -- ObjC selector: @- processID@
 processID :: IsSCRunningApplication scRunningApplication => scRunningApplication -> IO CInt
-processID scRunningApplication  =
-    sendMsg scRunningApplication (mkSelector "processID") retCInt []
+processID scRunningApplication =
+  sendMessage scRunningApplication processIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SCRunningApplication)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SCRunningApplication)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @bundleIdentifier@
-bundleIdentifierSelector :: Selector
+bundleIdentifierSelector :: Selector '[] (Id NSString)
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
 
 -- | @Selector@ for @applicationName@
-applicationNameSelector :: Selector
+applicationNameSelector :: Selector '[] (Id NSString)
 applicationNameSelector = mkSelector "applicationName"
 
 -- | @Selector@ for @processID@
-processIDSelector :: Selector
+processIDSelector :: Selector '[] CInt
 processIDSelector = mkSelector "processID"
 

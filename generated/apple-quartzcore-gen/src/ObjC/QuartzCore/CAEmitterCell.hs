@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -77,90 +78,86 @@ module ObjC.QuartzCore.CAEmitterCell
   , setEmitterCells
   , style
   , setStyle
-  , emitterCellSelector
-  , defaultValueForKeySelector
-  , shouldArchiveValueForKeySelector
-  , nameSelector
-  , setNameSelector
-  , enabledSelector
-  , setEnabledSelector
-  , birthRateSelector
-  , setBirthRateSelector
-  , lifetimeSelector
-  , setLifetimeSelector
-  , lifetimeRangeSelector
-  , setLifetimeRangeSelector
-  , emissionLatitudeSelector
-  , setEmissionLatitudeSelector
-  , emissionLongitudeSelector
-  , setEmissionLongitudeSelector
-  , emissionRangeSelector
-  , setEmissionRangeSelector
-  , velocitySelector
-  , setVelocitySelector
-  , velocityRangeSelector
-  , setVelocityRangeSelector
-  , xAccelerationSelector
-  , setXAccelerationSelector
-  , yAccelerationSelector
-  , setYAccelerationSelector
-  , zAccelerationSelector
-  , setZAccelerationSelector
-  , scaleSelector
-  , setScaleSelector
-  , scaleRangeSelector
-  , setScaleRangeSelector
-  , scaleSpeedSelector
-  , setScaleSpeedSelector
-  , spinSelector
-  , setSpinSelector
-  , spinRangeSelector
-  , setSpinRangeSelector
-  , colorSelector
-  , setColorSelector
-  , redRangeSelector
-  , setRedRangeSelector
-  , greenRangeSelector
-  , setGreenRangeSelector
-  , blueRangeSelector
-  , setBlueRangeSelector
   , alphaRangeSelector
-  , setAlphaRangeSelector
-  , redSpeedSelector
-  , setRedSpeedSelector
-  , greenSpeedSelector
-  , setGreenSpeedSelector
-  , blueSpeedSelector
-  , setBlueSpeedSelector
   , alphaSpeedSelector
-  , setAlphaSpeedSelector
-  , contentsSelector
-  , setContentsSelector
+  , birthRateSelector
+  , blueRangeSelector
+  , blueSpeedSelector
+  , colorSelector
   , contentsScaleSelector
-  , setContentsScaleSelector
-  , minificationFilterSelector
-  , setMinificationFilterSelector
-  , magnificationFilterSelector
-  , setMagnificationFilterSelector
-  , minificationFilterBiasSelector
-  , setMinificationFilterBiasSelector
+  , contentsSelector
+  , defaultValueForKeySelector
+  , emissionLatitudeSelector
+  , emissionLongitudeSelector
+  , emissionRangeSelector
+  , emitterCellSelector
   , emitterCellsSelector
+  , enabledSelector
+  , greenRangeSelector
+  , greenSpeedSelector
+  , lifetimeRangeSelector
+  , lifetimeSelector
+  , magnificationFilterSelector
+  , minificationFilterBiasSelector
+  , minificationFilterSelector
+  , nameSelector
+  , redRangeSelector
+  , redSpeedSelector
+  , scaleRangeSelector
+  , scaleSelector
+  , scaleSpeedSelector
+  , setAlphaRangeSelector
+  , setAlphaSpeedSelector
+  , setBirthRateSelector
+  , setBlueRangeSelector
+  , setBlueSpeedSelector
+  , setColorSelector
+  , setContentsScaleSelector
+  , setContentsSelector
+  , setEmissionLatitudeSelector
+  , setEmissionLongitudeSelector
+  , setEmissionRangeSelector
   , setEmitterCellsSelector
-  , styleSelector
+  , setEnabledSelector
+  , setGreenRangeSelector
+  , setGreenSpeedSelector
+  , setLifetimeRangeSelector
+  , setLifetimeSelector
+  , setMagnificationFilterSelector
+  , setMinificationFilterBiasSelector
+  , setMinificationFilterSelector
+  , setNameSelector
+  , setRedRangeSelector
+  , setRedSpeedSelector
+  , setScaleRangeSelector
+  , setScaleSelector
+  , setScaleSpeedSelector
+  , setSpinRangeSelector
+  , setSpinSelector
   , setStyleSelector
+  , setVelocityRangeSelector
+  , setVelocitySelector
+  , setXAccelerationSelector
+  , setYAccelerationSelector
+  , setZAccelerationSelector
+  , shouldArchiveValueForKeySelector
+  , spinRangeSelector
+  , spinSelector
+  , styleSelector
+  , velocityRangeSelector
+  , velocitySelector
+  , xAccelerationSelector
+  , yAccelerationSelector
+  , zAccelerationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -172,652 +169,645 @@ emitterCell :: IO (Id CAEmitterCell)
 emitterCell  =
   do
     cls' <- getRequiredClass "CAEmitterCell"
-    sendClassMsg cls' (mkSelector "emitterCell") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' emitterCellSelector
 
 -- | @+ defaultValueForKey:@
 defaultValueForKey :: IsNSString key => key -> IO RawId
 defaultValueForKey key =
   do
     cls' <- getRequiredClass "CAEmitterCell"
-    withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+    sendClassMessage cls' defaultValueForKeySelector (toNSString key)
 
 -- | @- shouldArchiveValueForKey:@
 shouldArchiveValueForKey :: (IsCAEmitterCell caEmitterCell, IsNSString key) => caEmitterCell -> key -> IO Bool
-shouldArchiveValueForKey caEmitterCell  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg caEmitterCell (mkSelector "shouldArchiveValueForKey:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+shouldArchiveValueForKey caEmitterCell key =
+  sendMessage caEmitterCell shouldArchiveValueForKeySelector (toNSString key)
 
 -- | @- name@
 name :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO (Id NSString)
-name caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name caEmitterCell =
+  sendMessage caEmitterCell nameSelector
 
 -- | @- setName:@
 setName :: (IsCAEmitterCell caEmitterCell, IsNSString value) => caEmitterCell -> value -> IO ()
-setName caEmitterCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caEmitterCell (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName caEmitterCell value =
+  sendMessage caEmitterCell setNameSelector (toNSString value)
 
 -- | @- enabled@
 enabled :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO Bool
-enabled caEmitterCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg caEmitterCell (mkSelector "enabled") retCULong []
+enabled caEmitterCell =
+  sendMessage caEmitterCell enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsCAEmitterCell caEmitterCell => caEmitterCell -> Bool -> IO ()
-setEnabled caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled caEmitterCell value =
+  sendMessage caEmitterCell setEnabledSelector value
 
 -- | @- birthRate@
 birthRate :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-birthRate caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "birthRate") retCFloat []
+birthRate caEmitterCell =
+  sendMessage caEmitterCell birthRateSelector
 
 -- | @- setBirthRate:@
 setBirthRate :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setBirthRate caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setBirthRate:") retVoid [argCFloat value]
+setBirthRate caEmitterCell value =
+  sendMessage caEmitterCell setBirthRateSelector value
 
 -- | @- lifetime@
 lifetime :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-lifetime caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "lifetime") retCFloat []
+lifetime caEmitterCell =
+  sendMessage caEmitterCell lifetimeSelector
 
 -- | @- setLifetime:@
 setLifetime :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setLifetime caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setLifetime:") retVoid [argCFloat value]
+setLifetime caEmitterCell value =
+  sendMessage caEmitterCell setLifetimeSelector value
 
 -- | @- lifetimeRange@
 lifetimeRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-lifetimeRange caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "lifetimeRange") retCFloat []
+lifetimeRange caEmitterCell =
+  sendMessage caEmitterCell lifetimeRangeSelector
 
 -- | @- setLifetimeRange:@
 setLifetimeRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setLifetimeRange caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setLifetimeRange:") retVoid [argCFloat value]
+setLifetimeRange caEmitterCell value =
+  sendMessage caEmitterCell setLifetimeRangeSelector value
 
 -- | @- emissionLatitude@
 emissionLatitude :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-emissionLatitude caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "emissionLatitude") retCDouble []
+emissionLatitude caEmitterCell =
+  sendMessage caEmitterCell emissionLatitudeSelector
 
 -- | @- setEmissionLatitude:@
 setEmissionLatitude :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setEmissionLatitude caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setEmissionLatitude:") retVoid [argCDouble value]
+setEmissionLatitude caEmitterCell value =
+  sendMessage caEmitterCell setEmissionLatitudeSelector value
 
 -- | @- emissionLongitude@
 emissionLongitude :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-emissionLongitude caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "emissionLongitude") retCDouble []
+emissionLongitude caEmitterCell =
+  sendMessage caEmitterCell emissionLongitudeSelector
 
 -- | @- setEmissionLongitude:@
 setEmissionLongitude :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setEmissionLongitude caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setEmissionLongitude:") retVoid [argCDouble value]
+setEmissionLongitude caEmitterCell value =
+  sendMessage caEmitterCell setEmissionLongitudeSelector value
 
 -- | @- emissionRange@
 emissionRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-emissionRange caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "emissionRange") retCDouble []
+emissionRange caEmitterCell =
+  sendMessage caEmitterCell emissionRangeSelector
 
 -- | @- setEmissionRange:@
 setEmissionRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setEmissionRange caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setEmissionRange:") retVoid [argCDouble value]
+setEmissionRange caEmitterCell value =
+  sendMessage caEmitterCell setEmissionRangeSelector value
 
 -- | @- velocity@
 velocity :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-velocity caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "velocity") retCDouble []
+velocity caEmitterCell =
+  sendMessage caEmitterCell velocitySelector
 
 -- | @- setVelocity:@
 setVelocity :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setVelocity caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setVelocity:") retVoid [argCDouble value]
+setVelocity caEmitterCell value =
+  sendMessage caEmitterCell setVelocitySelector value
 
 -- | @- velocityRange@
 velocityRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-velocityRange caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "velocityRange") retCDouble []
+velocityRange caEmitterCell =
+  sendMessage caEmitterCell velocityRangeSelector
 
 -- | @- setVelocityRange:@
 setVelocityRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setVelocityRange caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setVelocityRange:") retVoid [argCDouble value]
+setVelocityRange caEmitterCell value =
+  sendMessage caEmitterCell setVelocityRangeSelector value
 
 -- | @- xAcceleration@
 xAcceleration :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-xAcceleration caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "xAcceleration") retCDouble []
+xAcceleration caEmitterCell =
+  sendMessage caEmitterCell xAccelerationSelector
 
 -- | @- setXAcceleration:@
 setXAcceleration :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setXAcceleration caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setXAcceleration:") retVoid [argCDouble value]
+setXAcceleration caEmitterCell value =
+  sendMessage caEmitterCell setXAccelerationSelector value
 
 -- | @- yAcceleration@
 yAcceleration :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-yAcceleration caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "yAcceleration") retCDouble []
+yAcceleration caEmitterCell =
+  sendMessage caEmitterCell yAccelerationSelector
 
 -- | @- setYAcceleration:@
 setYAcceleration :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setYAcceleration caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setYAcceleration:") retVoid [argCDouble value]
+setYAcceleration caEmitterCell value =
+  sendMessage caEmitterCell setYAccelerationSelector value
 
 -- | @- zAcceleration@
 zAcceleration :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-zAcceleration caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "zAcceleration") retCDouble []
+zAcceleration caEmitterCell =
+  sendMessage caEmitterCell zAccelerationSelector
 
 -- | @- setZAcceleration:@
 setZAcceleration :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setZAcceleration caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setZAcceleration:") retVoid [argCDouble value]
+setZAcceleration caEmitterCell value =
+  sendMessage caEmitterCell setZAccelerationSelector value
 
 -- | @- scale@
 scale :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-scale caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "scale") retCDouble []
+scale caEmitterCell =
+  sendMessage caEmitterCell scaleSelector
 
 -- | @- setScale:@
 setScale :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setScale caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setScale:") retVoid [argCDouble value]
+setScale caEmitterCell value =
+  sendMessage caEmitterCell setScaleSelector value
 
 -- | @- scaleRange@
 scaleRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-scaleRange caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "scaleRange") retCDouble []
+scaleRange caEmitterCell =
+  sendMessage caEmitterCell scaleRangeSelector
 
 -- | @- setScaleRange:@
 setScaleRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setScaleRange caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setScaleRange:") retVoid [argCDouble value]
+setScaleRange caEmitterCell value =
+  sendMessage caEmitterCell setScaleRangeSelector value
 
 -- | @- scaleSpeed@
 scaleSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-scaleSpeed caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "scaleSpeed") retCDouble []
+scaleSpeed caEmitterCell =
+  sendMessage caEmitterCell scaleSpeedSelector
 
 -- | @- setScaleSpeed:@
 setScaleSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setScaleSpeed caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setScaleSpeed:") retVoid [argCDouble value]
+setScaleSpeed caEmitterCell value =
+  sendMessage caEmitterCell setScaleSpeedSelector value
 
 -- | @- spin@
 spin :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-spin caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "spin") retCDouble []
+spin caEmitterCell =
+  sendMessage caEmitterCell spinSelector
 
 -- | @- setSpin:@
 setSpin :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setSpin caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setSpin:") retVoid [argCDouble value]
+setSpin caEmitterCell value =
+  sendMessage caEmitterCell setSpinSelector value
 
 -- | @- spinRange@
 spinRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-spinRange caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "spinRange") retCDouble []
+spinRange caEmitterCell =
+  sendMessage caEmitterCell spinRangeSelector
 
 -- | @- setSpinRange:@
 setSpinRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setSpinRange caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setSpinRange:") retVoid [argCDouble value]
+setSpinRange caEmitterCell value =
+  sendMessage caEmitterCell setSpinRangeSelector value
 
 -- | @- color@
 color :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO (Ptr ())
-color caEmitterCell  =
-    fmap castPtr $ sendMsg caEmitterCell (mkSelector "color") (retPtr retVoid) []
+color caEmitterCell =
+  sendMessage caEmitterCell colorSelector
 
 -- | @- setColor:@
 setColor :: IsCAEmitterCell caEmitterCell => caEmitterCell -> Ptr () -> IO ()
-setColor caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setColor:") retVoid [argPtr value]
+setColor caEmitterCell value =
+  sendMessage caEmitterCell setColorSelector value
 
 -- | @- redRange@
 redRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-redRange caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "redRange") retCFloat []
+redRange caEmitterCell =
+  sendMessage caEmitterCell redRangeSelector
 
 -- | @- setRedRange:@
 setRedRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setRedRange caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setRedRange:") retVoid [argCFloat value]
+setRedRange caEmitterCell value =
+  sendMessage caEmitterCell setRedRangeSelector value
 
 -- | @- greenRange@
 greenRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-greenRange caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "greenRange") retCFloat []
+greenRange caEmitterCell =
+  sendMessage caEmitterCell greenRangeSelector
 
 -- | @- setGreenRange:@
 setGreenRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setGreenRange caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setGreenRange:") retVoid [argCFloat value]
+setGreenRange caEmitterCell value =
+  sendMessage caEmitterCell setGreenRangeSelector value
 
 -- | @- blueRange@
 blueRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-blueRange caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "blueRange") retCFloat []
+blueRange caEmitterCell =
+  sendMessage caEmitterCell blueRangeSelector
 
 -- | @- setBlueRange:@
 setBlueRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setBlueRange caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setBlueRange:") retVoid [argCFloat value]
+setBlueRange caEmitterCell value =
+  sendMessage caEmitterCell setBlueRangeSelector value
 
 -- | @- alphaRange@
 alphaRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-alphaRange caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "alphaRange") retCFloat []
+alphaRange caEmitterCell =
+  sendMessage caEmitterCell alphaRangeSelector
 
 -- | @- setAlphaRange:@
 setAlphaRange :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setAlphaRange caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setAlphaRange:") retVoid [argCFloat value]
+setAlphaRange caEmitterCell value =
+  sendMessage caEmitterCell setAlphaRangeSelector value
 
 -- | @- redSpeed@
 redSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-redSpeed caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "redSpeed") retCFloat []
+redSpeed caEmitterCell =
+  sendMessage caEmitterCell redSpeedSelector
 
 -- | @- setRedSpeed:@
 setRedSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setRedSpeed caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setRedSpeed:") retVoid [argCFloat value]
+setRedSpeed caEmitterCell value =
+  sendMessage caEmitterCell setRedSpeedSelector value
 
 -- | @- greenSpeed@
 greenSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-greenSpeed caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "greenSpeed") retCFloat []
+greenSpeed caEmitterCell =
+  sendMessage caEmitterCell greenSpeedSelector
 
 -- | @- setGreenSpeed:@
 setGreenSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setGreenSpeed caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setGreenSpeed:") retVoid [argCFloat value]
+setGreenSpeed caEmitterCell value =
+  sendMessage caEmitterCell setGreenSpeedSelector value
 
 -- | @- blueSpeed@
 blueSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-blueSpeed caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "blueSpeed") retCFloat []
+blueSpeed caEmitterCell =
+  sendMessage caEmitterCell blueSpeedSelector
 
 -- | @- setBlueSpeed:@
 setBlueSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setBlueSpeed caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setBlueSpeed:") retVoid [argCFloat value]
+setBlueSpeed caEmitterCell value =
+  sendMessage caEmitterCell setBlueSpeedSelector value
 
 -- | @- alphaSpeed@
 alphaSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-alphaSpeed caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "alphaSpeed") retCFloat []
+alphaSpeed caEmitterCell =
+  sendMessage caEmitterCell alphaSpeedSelector
 
 -- | @- setAlphaSpeed:@
 setAlphaSpeed :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setAlphaSpeed caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setAlphaSpeed:") retVoid [argCFloat value]
+setAlphaSpeed caEmitterCell value =
+  sendMessage caEmitterCell setAlphaSpeedSelector value
 
 -- | @- contents@
 contents :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO RawId
-contents caEmitterCell  =
-    fmap (RawId . castPtr) $ sendMsg caEmitterCell (mkSelector "contents") (retPtr retVoid) []
+contents caEmitterCell =
+  sendMessage caEmitterCell contentsSelector
 
 -- | @- setContents:@
 setContents :: IsCAEmitterCell caEmitterCell => caEmitterCell -> RawId -> IO ()
-setContents caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setContents:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setContents caEmitterCell value =
+  sendMessage caEmitterCell setContentsSelector value
 
 -- | @- contentsScale@
 contentsScale :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CDouble
-contentsScale caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "contentsScale") retCDouble []
+contentsScale caEmitterCell =
+  sendMessage caEmitterCell contentsScaleSelector
 
 -- | @- setContentsScale:@
 setContentsScale :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CDouble -> IO ()
-setContentsScale caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setContentsScale:") retVoid [argCDouble value]
+setContentsScale caEmitterCell value =
+  sendMessage caEmitterCell setContentsScaleSelector value
 
 -- | @- minificationFilter@
 minificationFilter :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO (Id NSString)
-minificationFilter caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "minificationFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+minificationFilter caEmitterCell =
+  sendMessage caEmitterCell minificationFilterSelector
 
 -- | @- setMinificationFilter:@
 setMinificationFilter :: (IsCAEmitterCell caEmitterCell, IsNSString value) => caEmitterCell -> value -> IO ()
-setMinificationFilter caEmitterCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caEmitterCell (mkSelector "setMinificationFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMinificationFilter caEmitterCell value =
+  sendMessage caEmitterCell setMinificationFilterSelector (toNSString value)
 
 -- | @- magnificationFilter@
 magnificationFilter :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO (Id NSString)
-magnificationFilter caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "magnificationFilter") (retPtr retVoid) [] >>= retainedObject . castPtr
+magnificationFilter caEmitterCell =
+  sendMessage caEmitterCell magnificationFilterSelector
 
 -- | @- setMagnificationFilter:@
 setMagnificationFilter :: (IsCAEmitterCell caEmitterCell, IsNSString value) => caEmitterCell -> value -> IO ()
-setMagnificationFilter caEmitterCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caEmitterCell (mkSelector "setMagnificationFilter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMagnificationFilter caEmitterCell value =
+  sendMessage caEmitterCell setMagnificationFilterSelector (toNSString value)
 
 -- | @- minificationFilterBias@
 minificationFilterBias :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO CFloat
-minificationFilterBias caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "minificationFilterBias") retCFloat []
+minificationFilterBias caEmitterCell =
+  sendMessage caEmitterCell minificationFilterBiasSelector
 
 -- | @- setMinificationFilterBias:@
 setMinificationFilterBias :: IsCAEmitterCell caEmitterCell => caEmitterCell -> CFloat -> IO ()
-setMinificationFilterBias caEmitterCell  value =
-    sendMsg caEmitterCell (mkSelector "setMinificationFilterBias:") retVoid [argCFloat value]
+setMinificationFilterBias caEmitterCell value =
+  sendMessage caEmitterCell setMinificationFilterBiasSelector value
 
 -- | @- emitterCells@
 emitterCells :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO (Id NSArray)
-emitterCells caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "emitterCells") (retPtr retVoid) [] >>= retainedObject . castPtr
+emitterCells caEmitterCell =
+  sendMessage caEmitterCell emitterCellsSelector
 
 -- | @- setEmitterCells:@
 setEmitterCells :: (IsCAEmitterCell caEmitterCell, IsNSArray value) => caEmitterCell -> value -> IO ()
-setEmitterCells caEmitterCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caEmitterCell (mkSelector "setEmitterCells:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEmitterCells caEmitterCell value =
+  sendMessage caEmitterCell setEmitterCellsSelector (toNSArray value)
 
 -- | @- style@
 style :: IsCAEmitterCell caEmitterCell => caEmitterCell -> IO (Id NSDictionary)
-style caEmitterCell  =
-    sendMsg caEmitterCell (mkSelector "style") (retPtr retVoid) [] >>= retainedObject . castPtr
+style caEmitterCell =
+  sendMessage caEmitterCell styleSelector
 
 -- | @- setStyle:@
 setStyle :: (IsCAEmitterCell caEmitterCell, IsNSDictionary value) => caEmitterCell -> value -> IO ()
-setStyle caEmitterCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg caEmitterCell (mkSelector "setStyle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStyle caEmitterCell value =
+  sendMessage caEmitterCell setStyleSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @emitterCell@
-emitterCellSelector :: Selector
+emitterCellSelector :: Selector '[] (Id CAEmitterCell)
 emitterCellSelector = mkSelector "emitterCell"
 
 -- | @Selector@ for @defaultValueForKey:@
-defaultValueForKeySelector :: Selector
+defaultValueForKeySelector :: Selector '[Id NSString] RawId
 defaultValueForKeySelector = mkSelector "defaultValueForKey:"
 
 -- | @Selector@ for @shouldArchiveValueForKey:@
-shouldArchiveValueForKeySelector :: Selector
+shouldArchiveValueForKeySelector :: Selector '[Id NSString] Bool
 shouldArchiveValueForKeySelector = mkSelector "shouldArchiveValueForKey:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @birthRate@
-birthRateSelector :: Selector
+birthRateSelector :: Selector '[] CFloat
 birthRateSelector = mkSelector "birthRate"
 
 -- | @Selector@ for @setBirthRate:@
-setBirthRateSelector :: Selector
+setBirthRateSelector :: Selector '[CFloat] ()
 setBirthRateSelector = mkSelector "setBirthRate:"
 
 -- | @Selector@ for @lifetime@
-lifetimeSelector :: Selector
+lifetimeSelector :: Selector '[] CFloat
 lifetimeSelector = mkSelector "lifetime"
 
 -- | @Selector@ for @setLifetime:@
-setLifetimeSelector :: Selector
+setLifetimeSelector :: Selector '[CFloat] ()
 setLifetimeSelector = mkSelector "setLifetime:"
 
 -- | @Selector@ for @lifetimeRange@
-lifetimeRangeSelector :: Selector
+lifetimeRangeSelector :: Selector '[] CFloat
 lifetimeRangeSelector = mkSelector "lifetimeRange"
 
 -- | @Selector@ for @setLifetimeRange:@
-setLifetimeRangeSelector :: Selector
+setLifetimeRangeSelector :: Selector '[CFloat] ()
 setLifetimeRangeSelector = mkSelector "setLifetimeRange:"
 
 -- | @Selector@ for @emissionLatitude@
-emissionLatitudeSelector :: Selector
+emissionLatitudeSelector :: Selector '[] CDouble
 emissionLatitudeSelector = mkSelector "emissionLatitude"
 
 -- | @Selector@ for @setEmissionLatitude:@
-setEmissionLatitudeSelector :: Selector
+setEmissionLatitudeSelector :: Selector '[CDouble] ()
 setEmissionLatitudeSelector = mkSelector "setEmissionLatitude:"
 
 -- | @Selector@ for @emissionLongitude@
-emissionLongitudeSelector :: Selector
+emissionLongitudeSelector :: Selector '[] CDouble
 emissionLongitudeSelector = mkSelector "emissionLongitude"
 
 -- | @Selector@ for @setEmissionLongitude:@
-setEmissionLongitudeSelector :: Selector
+setEmissionLongitudeSelector :: Selector '[CDouble] ()
 setEmissionLongitudeSelector = mkSelector "setEmissionLongitude:"
 
 -- | @Selector@ for @emissionRange@
-emissionRangeSelector :: Selector
+emissionRangeSelector :: Selector '[] CDouble
 emissionRangeSelector = mkSelector "emissionRange"
 
 -- | @Selector@ for @setEmissionRange:@
-setEmissionRangeSelector :: Selector
+setEmissionRangeSelector :: Selector '[CDouble] ()
 setEmissionRangeSelector = mkSelector "setEmissionRange:"
 
 -- | @Selector@ for @velocity@
-velocitySelector :: Selector
+velocitySelector :: Selector '[] CDouble
 velocitySelector = mkSelector "velocity"
 
 -- | @Selector@ for @setVelocity:@
-setVelocitySelector :: Selector
+setVelocitySelector :: Selector '[CDouble] ()
 setVelocitySelector = mkSelector "setVelocity:"
 
 -- | @Selector@ for @velocityRange@
-velocityRangeSelector :: Selector
+velocityRangeSelector :: Selector '[] CDouble
 velocityRangeSelector = mkSelector "velocityRange"
 
 -- | @Selector@ for @setVelocityRange:@
-setVelocityRangeSelector :: Selector
+setVelocityRangeSelector :: Selector '[CDouble] ()
 setVelocityRangeSelector = mkSelector "setVelocityRange:"
 
 -- | @Selector@ for @xAcceleration@
-xAccelerationSelector :: Selector
+xAccelerationSelector :: Selector '[] CDouble
 xAccelerationSelector = mkSelector "xAcceleration"
 
 -- | @Selector@ for @setXAcceleration:@
-setXAccelerationSelector :: Selector
+setXAccelerationSelector :: Selector '[CDouble] ()
 setXAccelerationSelector = mkSelector "setXAcceleration:"
 
 -- | @Selector@ for @yAcceleration@
-yAccelerationSelector :: Selector
+yAccelerationSelector :: Selector '[] CDouble
 yAccelerationSelector = mkSelector "yAcceleration"
 
 -- | @Selector@ for @setYAcceleration:@
-setYAccelerationSelector :: Selector
+setYAccelerationSelector :: Selector '[CDouble] ()
 setYAccelerationSelector = mkSelector "setYAcceleration:"
 
 -- | @Selector@ for @zAcceleration@
-zAccelerationSelector :: Selector
+zAccelerationSelector :: Selector '[] CDouble
 zAccelerationSelector = mkSelector "zAcceleration"
 
 -- | @Selector@ for @setZAcceleration:@
-setZAccelerationSelector :: Selector
+setZAccelerationSelector :: Selector '[CDouble] ()
 setZAccelerationSelector = mkSelector "setZAcceleration:"
 
 -- | @Selector@ for @scale@
-scaleSelector :: Selector
+scaleSelector :: Selector '[] CDouble
 scaleSelector = mkSelector "scale"
 
 -- | @Selector@ for @setScale:@
-setScaleSelector :: Selector
+setScaleSelector :: Selector '[CDouble] ()
 setScaleSelector = mkSelector "setScale:"
 
 -- | @Selector@ for @scaleRange@
-scaleRangeSelector :: Selector
+scaleRangeSelector :: Selector '[] CDouble
 scaleRangeSelector = mkSelector "scaleRange"
 
 -- | @Selector@ for @setScaleRange:@
-setScaleRangeSelector :: Selector
+setScaleRangeSelector :: Selector '[CDouble] ()
 setScaleRangeSelector = mkSelector "setScaleRange:"
 
 -- | @Selector@ for @scaleSpeed@
-scaleSpeedSelector :: Selector
+scaleSpeedSelector :: Selector '[] CDouble
 scaleSpeedSelector = mkSelector "scaleSpeed"
 
 -- | @Selector@ for @setScaleSpeed:@
-setScaleSpeedSelector :: Selector
+setScaleSpeedSelector :: Selector '[CDouble] ()
 setScaleSpeedSelector = mkSelector "setScaleSpeed:"
 
 -- | @Selector@ for @spin@
-spinSelector :: Selector
+spinSelector :: Selector '[] CDouble
 spinSelector = mkSelector "spin"
 
 -- | @Selector@ for @setSpin:@
-setSpinSelector :: Selector
+setSpinSelector :: Selector '[CDouble] ()
 setSpinSelector = mkSelector "setSpin:"
 
 -- | @Selector@ for @spinRange@
-spinRangeSelector :: Selector
+spinRangeSelector :: Selector '[] CDouble
 spinRangeSelector = mkSelector "spinRange"
 
 -- | @Selector@ for @setSpinRange:@
-setSpinRangeSelector :: Selector
+setSpinRangeSelector :: Selector '[CDouble] ()
 setSpinRangeSelector = mkSelector "setSpinRange:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Ptr ())
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Ptr ()] ()
 setColorSelector = mkSelector "setColor:"
 
 -- | @Selector@ for @redRange@
-redRangeSelector :: Selector
+redRangeSelector :: Selector '[] CFloat
 redRangeSelector = mkSelector "redRange"
 
 -- | @Selector@ for @setRedRange:@
-setRedRangeSelector :: Selector
+setRedRangeSelector :: Selector '[CFloat] ()
 setRedRangeSelector = mkSelector "setRedRange:"
 
 -- | @Selector@ for @greenRange@
-greenRangeSelector :: Selector
+greenRangeSelector :: Selector '[] CFloat
 greenRangeSelector = mkSelector "greenRange"
 
 -- | @Selector@ for @setGreenRange:@
-setGreenRangeSelector :: Selector
+setGreenRangeSelector :: Selector '[CFloat] ()
 setGreenRangeSelector = mkSelector "setGreenRange:"
 
 -- | @Selector@ for @blueRange@
-blueRangeSelector :: Selector
+blueRangeSelector :: Selector '[] CFloat
 blueRangeSelector = mkSelector "blueRange"
 
 -- | @Selector@ for @setBlueRange:@
-setBlueRangeSelector :: Selector
+setBlueRangeSelector :: Selector '[CFloat] ()
 setBlueRangeSelector = mkSelector "setBlueRange:"
 
 -- | @Selector@ for @alphaRange@
-alphaRangeSelector :: Selector
+alphaRangeSelector :: Selector '[] CFloat
 alphaRangeSelector = mkSelector "alphaRange"
 
 -- | @Selector@ for @setAlphaRange:@
-setAlphaRangeSelector :: Selector
+setAlphaRangeSelector :: Selector '[CFloat] ()
 setAlphaRangeSelector = mkSelector "setAlphaRange:"
 
 -- | @Selector@ for @redSpeed@
-redSpeedSelector :: Selector
+redSpeedSelector :: Selector '[] CFloat
 redSpeedSelector = mkSelector "redSpeed"
 
 -- | @Selector@ for @setRedSpeed:@
-setRedSpeedSelector :: Selector
+setRedSpeedSelector :: Selector '[CFloat] ()
 setRedSpeedSelector = mkSelector "setRedSpeed:"
 
 -- | @Selector@ for @greenSpeed@
-greenSpeedSelector :: Selector
+greenSpeedSelector :: Selector '[] CFloat
 greenSpeedSelector = mkSelector "greenSpeed"
 
 -- | @Selector@ for @setGreenSpeed:@
-setGreenSpeedSelector :: Selector
+setGreenSpeedSelector :: Selector '[CFloat] ()
 setGreenSpeedSelector = mkSelector "setGreenSpeed:"
 
 -- | @Selector@ for @blueSpeed@
-blueSpeedSelector :: Selector
+blueSpeedSelector :: Selector '[] CFloat
 blueSpeedSelector = mkSelector "blueSpeed"
 
 -- | @Selector@ for @setBlueSpeed:@
-setBlueSpeedSelector :: Selector
+setBlueSpeedSelector :: Selector '[CFloat] ()
 setBlueSpeedSelector = mkSelector "setBlueSpeed:"
 
 -- | @Selector@ for @alphaSpeed@
-alphaSpeedSelector :: Selector
+alphaSpeedSelector :: Selector '[] CFloat
 alphaSpeedSelector = mkSelector "alphaSpeed"
 
 -- | @Selector@ for @setAlphaSpeed:@
-setAlphaSpeedSelector :: Selector
+setAlphaSpeedSelector :: Selector '[CFloat] ()
 setAlphaSpeedSelector = mkSelector "setAlphaSpeed:"
 
 -- | @Selector@ for @contents@
-contentsSelector :: Selector
+contentsSelector :: Selector '[] RawId
 contentsSelector = mkSelector "contents"
 
 -- | @Selector@ for @setContents:@
-setContentsSelector :: Selector
+setContentsSelector :: Selector '[RawId] ()
 setContentsSelector = mkSelector "setContents:"
 
 -- | @Selector@ for @contentsScale@
-contentsScaleSelector :: Selector
+contentsScaleSelector :: Selector '[] CDouble
 contentsScaleSelector = mkSelector "contentsScale"
 
 -- | @Selector@ for @setContentsScale:@
-setContentsScaleSelector :: Selector
+setContentsScaleSelector :: Selector '[CDouble] ()
 setContentsScaleSelector = mkSelector "setContentsScale:"
 
 -- | @Selector@ for @minificationFilter@
-minificationFilterSelector :: Selector
+minificationFilterSelector :: Selector '[] (Id NSString)
 minificationFilterSelector = mkSelector "minificationFilter"
 
 -- | @Selector@ for @setMinificationFilter:@
-setMinificationFilterSelector :: Selector
+setMinificationFilterSelector :: Selector '[Id NSString] ()
 setMinificationFilterSelector = mkSelector "setMinificationFilter:"
 
 -- | @Selector@ for @magnificationFilter@
-magnificationFilterSelector :: Selector
+magnificationFilterSelector :: Selector '[] (Id NSString)
 magnificationFilterSelector = mkSelector "magnificationFilter"
 
 -- | @Selector@ for @setMagnificationFilter:@
-setMagnificationFilterSelector :: Selector
+setMagnificationFilterSelector :: Selector '[Id NSString] ()
 setMagnificationFilterSelector = mkSelector "setMagnificationFilter:"
 
 -- | @Selector@ for @minificationFilterBias@
-minificationFilterBiasSelector :: Selector
+minificationFilterBiasSelector :: Selector '[] CFloat
 minificationFilterBiasSelector = mkSelector "minificationFilterBias"
 
 -- | @Selector@ for @setMinificationFilterBias:@
-setMinificationFilterBiasSelector :: Selector
+setMinificationFilterBiasSelector :: Selector '[CFloat] ()
 setMinificationFilterBiasSelector = mkSelector "setMinificationFilterBias:"
 
 -- | @Selector@ for @emitterCells@
-emitterCellsSelector :: Selector
+emitterCellsSelector :: Selector '[] (Id NSArray)
 emitterCellsSelector = mkSelector "emitterCells"
 
 -- | @Selector@ for @setEmitterCells:@
-setEmitterCellsSelector :: Selector
+setEmitterCellsSelector :: Selector '[Id NSArray] ()
 setEmitterCellsSelector = mkSelector "setEmitterCells:"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] (Id NSDictionary)
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @setStyle:@
-setStyleSelector :: Selector
+setStyleSelector :: Selector '[Id NSDictionary] ()
 setStyleSelector = mkSelector "setStyle:"
 

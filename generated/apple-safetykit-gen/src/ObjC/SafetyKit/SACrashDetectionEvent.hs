@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,9 +16,9 @@ module ObjC.SafetyKit.SACrashDetectionEvent
   , init_
   , date
   , response
-  , newSelector
-  , initSelector
   , dateSelector
+  , initSelector
+  , newSelector
   , responseSelector
 
   -- * Enum types
@@ -27,15 +28,11 @@ module ObjC.SafetyKit.SACrashDetectionEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,12 +45,12 @@ new :: IO (Id SACrashDetectionEvent)
 new  =
   do
     cls' <- getRequiredClass "SACrashDetectionEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsSACrashDetectionEvent saCrashDetectionEvent => saCrashDetectionEvent -> IO (Id SACrashDetectionEvent)
-init_ saCrashDetectionEvent  =
-    sendMsg saCrashDetectionEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ saCrashDetectionEvent =
+  sendOwnedMessage saCrashDetectionEvent initSelector
 
 -- | date
 --
@@ -61,8 +58,8 @@ init_ saCrashDetectionEvent  =
 --
 -- ObjC selector: @- date@
 date :: IsSACrashDetectionEvent saCrashDetectionEvent => saCrashDetectionEvent -> IO (Id NSDate)
-date saCrashDetectionEvent  =
-    sendMsg saCrashDetectionEvent (mkSelector "date") (retPtr retVoid) [] >>= retainedObject . castPtr
+date saCrashDetectionEvent =
+  sendMessage saCrashDetectionEvent dateSelector
 
 -- | response
 --
@@ -72,26 +69,26 @@ date saCrashDetectionEvent  =
 --
 -- ObjC selector: @- response@
 response :: IsSACrashDetectionEvent saCrashDetectionEvent => saCrashDetectionEvent -> IO SACrashDetectionEventResponse
-response saCrashDetectionEvent  =
-    fmap (coerce :: CLong -> SACrashDetectionEventResponse) $ sendMsg saCrashDetectionEvent (mkSelector "response") retCLong []
+response saCrashDetectionEvent =
+  sendMessage saCrashDetectionEvent responseSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SACrashDetectionEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SACrashDetectionEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @date@
-dateSelector :: Selector
+dateSelector :: Selector '[] (Id NSDate)
 dateSelector = mkSelector "date"
 
 -- | @Selector@ for @response@
-responseSelector :: Selector
+responseSelector :: Selector '[] SACrashDetectionEventResponse
 responseSelector = mkSelector "response"
 

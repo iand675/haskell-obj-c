@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Accessibility.AXMathExpressionSubSuperscript
   , baseExpression
   , subscriptExpressions
   , superscriptExpressions
-  , initWithBaseExpression_subscriptExpressions_superscriptExpressionsSelector
   , baseExpressionSelector
+  , initWithBaseExpression_subscriptExpressions_superscriptExpressionsSelector
   , subscriptExpressionsSelector
   , superscriptExpressionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,44 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithBaseExpression:subscriptExpressions:superscriptExpressions:@
 initWithBaseExpression_subscriptExpressions_superscriptExpressions :: (IsAXMathExpressionSubSuperscript axMathExpressionSubSuperscript, IsNSArray baseExpression, IsNSArray subscriptExpressions, IsNSArray superscriptExpressions) => axMathExpressionSubSuperscript -> baseExpression -> subscriptExpressions -> superscriptExpressions -> IO (Id AXMathExpressionSubSuperscript)
-initWithBaseExpression_subscriptExpressions_superscriptExpressions axMathExpressionSubSuperscript  baseExpression subscriptExpressions superscriptExpressions =
-  withObjCPtr baseExpression $ \raw_baseExpression ->
-    withObjCPtr subscriptExpressions $ \raw_subscriptExpressions ->
-      withObjCPtr superscriptExpressions $ \raw_superscriptExpressions ->
-          sendMsg axMathExpressionSubSuperscript (mkSelector "initWithBaseExpression:subscriptExpressions:superscriptExpressions:") (retPtr retVoid) [argPtr (castPtr raw_baseExpression :: Ptr ()), argPtr (castPtr raw_subscriptExpressions :: Ptr ()), argPtr (castPtr raw_superscriptExpressions :: Ptr ())] >>= ownedObject . castPtr
+initWithBaseExpression_subscriptExpressions_superscriptExpressions axMathExpressionSubSuperscript baseExpression subscriptExpressions superscriptExpressions =
+  sendOwnedMessage axMathExpressionSubSuperscript initWithBaseExpression_subscriptExpressions_superscriptExpressionsSelector (toNSArray baseExpression) (toNSArray subscriptExpressions) (toNSArray superscriptExpressions)
 
 -- | @- baseExpression@
 baseExpression :: IsAXMathExpressionSubSuperscript axMathExpressionSubSuperscript => axMathExpressionSubSuperscript -> IO (Id AXMathExpression)
-baseExpression axMathExpressionSubSuperscript  =
-    sendMsg axMathExpressionSubSuperscript (mkSelector "baseExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+baseExpression axMathExpressionSubSuperscript =
+  sendMessage axMathExpressionSubSuperscript baseExpressionSelector
 
 -- | @- subscriptExpressions@
 subscriptExpressions :: IsAXMathExpressionSubSuperscript axMathExpressionSubSuperscript => axMathExpressionSubSuperscript -> IO (Id NSArray)
-subscriptExpressions axMathExpressionSubSuperscript  =
-    sendMsg axMathExpressionSubSuperscript (mkSelector "subscriptExpressions") (retPtr retVoid) [] >>= retainedObject . castPtr
+subscriptExpressions axMathExpressionSubSuperscript =
+  sendMessage axMathExpressionSubSuperscript subscriptExpressionsSelector
 
 -- | @- superscriptExpressions@
 superscriptExpressions :: IsAXMathExpressionSubSuperscript axMathExpressionSubSuperscript => axMathExpressionSubSuperscript -> IO (Id NSArray)
-superscriptExpressions axMathExpressionSubSuperscript  =
-    sendMsg axMathExpressionSubSuperscript (mkSelector "superscriptExpressions") (retPtr retVoid) [] >>= retainedObject . castPtr
+superscriptExpressions axMathExpressionSubSuperscript =
+  sendMessage axMathExpressionSubSuperscript superscriptExpressionsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBaseExpression:subscriptExpressions:superscriptExpressions:@
-initWithBaseExpression_subscriptExpressions_superscriptExpressionsSelector :: Selector
+initWithBaseExpression_subscriptExpressions_superscriptExpressionsSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray] (Id AXMathExpressionSubSuperscript)
 initWithBaseExpression_subscriptExpressions_superscriptExpressionsSelector = mkSelector "initWithBaseExpression:subscriptExpressions:superscriptExpressions:"
 
 -- | @Selector@ for @baseExpression@
-baseExpressionSelector :: Selector
+baseExpressionSelector :: Selector '[] (Id AXMathExpression)
 baseExpressionSelector = mkSelector "baseExpression"
 
 -- | @Selector@ for @subscriptExpressions@
-subscriptExpressionsSelector :: Selector
+subscriptExpressionsSelector :: Selector '[] (Id NSArray)
 subscriptExpressionsSelector = mkSelector "subscriptExpressions"
 
 -- | @Selector@ for @superscriptExpressions@
-superscriptExpressionsSelector :: Selector
+superscriptExpressionsSelector :: Selector '[] (Id NSArray)
 superscriptExpressionsSelector = mkSelector "superscriptExpressions"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,42 +32,38 @@ module ObjC.Matter.MTRThreadNetworkDiagnosticsClusterOperationalDatasetComponent
   , channelMaskPresent
   , setChannelMaskPresent
   , activeTimestampPresentSelector
-  , setActiveTimestampPresentSelector
-  , pendingTimestampPresentSelector
-  , setPendingTimestampPresentSelector
-  , masterKeyPresentSelector
-  , setMasterKeyPresentSelector
-  , networkNamePresentSelector
-  , setNetworkNamePresentSelector
-  , extendedPanIdPresentSelector
-  , setExtendedPanIdPresentSelector
-  , meshLocalPrefixPresentSelector
-  , setMeshLocalPrefixPresentSelector
-  , delayPresentSelector
-  , setDelayPresentSelector
-  , panIdPresentSelector
-  , setPanIdPresentSelector
-  , channelPresentSelector
-  , setChannelPresentSelector
-  , pskcPresentSelector
-  , setPskcPresentSelector
-  , securityPolicyPresentSelector
-  , setSecurityPolicyPresentSelector
   , channelMaskPresentSelector
+  , channelPresentSelector
+  , delayPresentSelector
+  , extendedPanIdPresentSelector
+  , masterKeyPresentSelector
+  , meshLocalPrefixPresentSelector
+  , networkNamePresentSelector
+  , panIdPresentSelector
+  , pendingTimestampPresentSelector
+  , pskcPresentSelector
+  , securityPolicyPresentSelector
+  , setActiveTimestampPresentSelector
   , setChannelMaskPresentSelector
+  , setChannelPresentSelector
+  , setDelayPresentSelector
+  , setExtendedPanIdPresentSelector
+  , setMasterKeyPresentSelector
+  , setMeshLocalPrefixPresentSelector
+  , setNetworkNamePresentSelector
+  , setPanIdPresentSelector
+  , setPendingTimestampPresentSelector
+  , setPskcPresentSelector
+  , setSecurityPolicyPresentSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,233 +72,221 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- activeTimestampPresent@
 activeTimestampPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-activeTimestampPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "activeTimestampPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeTimestampPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents activeTimestampPresentSelector
 
 -- | @- setActiveTimestampPresent:@
 setActiveTimestampPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setActiveTimestampPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setActiveTimestampPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActiveTimestampPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setActiveTimestampPresentSelector (toNSNumber value)
 
 -- | @- pendingTimestampPresent@
 pendingTimestampPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-pendingTimestampPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "pendingTimestampPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+pendingTimestampPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents pendingTimestampPresentSelector
 
 -- | @- setPendingTimestampPresent:@
 setPendingTimestampPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setPendingTimestampPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setPendingTimestampPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPendingTimestampPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setPendingTimestampPresentSelector (toNSNumber value)
 
 -- | @- masterKeyPresent@
 masterKeyPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-masterKeyPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "masterKeyPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+masterKeyPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents masterKeyPresentSelector
 
 -- | @- setMasterKeyPresent:@
 setMasterKeyPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setMasterKeyPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setMasterKeyPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMasterKeyPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setMasterKeyPresentSelector (toNSNumber value)
 
 -- | @- networkNamePresent@
 networkNamePresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-networkNamePresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "networkNamePresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+networkNamePresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents networkNamePresentSelector
 
 -- | @- setNetworkNamePresent:@
 setNetworkNamePresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setNetworkNamePresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setNetworkNamePresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNetworkNamePresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setNetworkNamePresentSelector (toNSNumber value)
 
 -- | @- extendedPanIdPresent@
 extendedPanIdPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-extendedPanIdPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "extendedPanIdPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedPanIdPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents extendedPanIdPresentSelector
 
 -- | @- setExtendedPanIdPresent:@
 setExtendedPanIdPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setExtendedPanIdPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setExtendedPanIdPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedPanIdPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setExtendedPanIdPresentSelector (toNSNumber value)
 
 -- | @- meshLocalPrefixPresent@
 meshLocalPrefixPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-meshLocalPrefixPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "meshLocalPrefixPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+meshLocalPrefixPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents meshLocalPrefixPresentSelector
 
 -- | @- setMeshLocalPrefixPresent:@
 setMeshLocalPrefixPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setMeshLocalPrefixPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setMeshLocalPrefixPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMeshLocalPrefixPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setMeshLocalPrefixPresentSelector (toNSNumber value)
 
 -- | @- delayPresent@
 delayPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-delayPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "delayPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+delayPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents delayPresentSelector
 
 -- | @- setDelayPresent:@
 setDelayPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setDelayPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setDelayPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDelayPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setDelayPresentSelector (toNSNumber value)
 
 -- | @- panIdPresent@
 panIdPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-panIdPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "panIdPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+panIdPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents panIdPresentSelector
 
 -- | @- setPanIdPresent:@
 setPanIdPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setPanIdPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setPanIdPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPanIdPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setPanIdPresentSelector (toNSNumber value)
 
 -- | @- channelPresent@
 channelPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-channelPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "channelPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents channelPresentSelector
 
 -- | @- setChannelPresent:@
 setChannelPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setChannelPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setChannelPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannelPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setChannelPresentSelector (toNSNumber value)
 
 -- | @- pskcPresent@
 pskcPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-pskcPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "pskcPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+pskcPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents pskcPresentSelector
 
 -- | @- setPskcPresent:@
 setPskcPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setPskcPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setPskcPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPskcPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setPskcPresentSelector (toNSNumber value)
 
 -- | @- securityPolicyPresent@
 securityPolicyPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-securityPolicyPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "securityPolicyPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+securityPolicyPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents securityPolicyPresentSelector
 
 -- | @- setSecurityPolicyPresent:@
 setSecurityPolicyPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setSecurityPolicyPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setSecurityPolicyPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSecurityPolicyPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setSecurityPolicyPresentSelector (toNSNumber value)
 
 -- | @- channelMaskPresent@
 channelMaskPresent :: IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> IO (Id NSNumber)
-channelMaskPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "channelMaskPresent") (retPtr retVoid) [] >>= retainedObject . castPtr
+channelMaskPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents channelMaskPresentSelector
 
 -- | @- setChannelMaskPresent:@
 setChannelMaskPresent :: (IsMTRThreadNetworkDiagnosticsClusterOperationalDatasetComponents mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents -> value -> IO ()
-setChannelMaskPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents (mkSelector "setChannelMaskPresent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setChannelMaskPresent mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterOperationalDatasetComponents setChannelMaskPresentSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @activeTimestampPresent@
-activeTimestampPresentSelector :: Selector
+activeTimestampPresentSelector :: Selector '[] (Id NSNumber)
 activeTimestampPresentSelector = mkSelector "activeTimestampPresent"
 
 -- | @Selector@ for @setActiveTimestampPresent:@
-setActiveTimestampPresentSelector :: Selector
+setActiveTimestampPresentSelector :: Selector '[Id NSNumber] ()
 setActiveTimestampPresentSelector = mkSelector "setActiveTimestampPresent:"
 
 -- | @Selector@ for @pendingTimestampPresent@
-pendingTimestampPresentSelector :: Selector
+pendingTimestampPresentSelector :: Selector '[] (Id NSNumber)
 pendingTimestampPresentSelector = mkSelector "pendingTimestampPresent"
 
 -- | @Selector@ for @setPendingTimestampPresent:@
-setPendingTimestampPresentSelector :: Selector
+setPendingTimestampPresentSelector :: Selector '[Id NSNumber] ()
 setPendingTimestampPresentSelector = mkSelector "setPendingTimestampPresent:"
 
 -- | @Selector@ for @masterKeyPresent@
-masterKeyPresentSelector :: Selector
+masterKeyPresentSelector :: Selector '[] (Id NSNumber)
 masterKeyPresentSelector = mkSelector "masterKeyPresent"
 
 -- | @Selector@ for @setMasterKeyPresent:@
-setMasterKeyPresentSelector :: Selector
+setMasterKeyPresentSelector :: Selector '[Id NSNumber] ()
 setMasterKeyPresentSelector = mkSelector "setMasterKeyPresent:"
 
 -- | @Selector@ for @networkNamePresent@
-networkNamePresentSelector :: Selector
+networkNamePresentSelector :: Selector '[] (Id NSNumber)
 networkNamePresentSelector = mkSelector "networkNamePresent"
 
 -- | @Selector@ for @setNetworkNamePresent:@
-setNetworkNamePresentSelector :: Selector
+setNetworkNamePresentSelector :: Selector '[Id NSNumber] ()
 setNetworkNamePresentSelector = mkSelector "setNetworkNamePresent:"
 
 -- | @Selector@ for @extendedPanIdPresent@
-extendedPanIdPresentSelector :: Selector
+extendedPanIdPresentSelector :: Selector '[] (Id NSNumber)
 extendedPanIdPresentSelector = mkSelector "extendedPanIdPresent"
 
 -- | @Selector@ for @setExtendedPanIdPresent:@
-setExtendedPanIdPresentSelector :: Selector
+setExtendedPanIdPresentSelector :: Selector '[Id NSNumber] ()
 setExtendedPanIdPresentSelector = mkSelector "setExtendedPanIdPresent:"
 
 -- | @Selector@ for @meshLocalPrefixPresent@
-meshLocalPrefixPresentSelector :: Selector
+meshLocalPrefixPresentSelector :: Selector '[] (Id NSNumber)
 meshLocalPrefixPresentSelector = mkSelector "meshLocalPrefixPresent"
 
 -- | @Selector@ for @setMeshLocalPrefixPresent:@
-setMeshLocalPrefixPresentSelector :: Selector
+setMeshLocalPrefixPresentSelector :: Selector '[Id NSNumber] ()
 setMeshLocalPrefixPresentSelector = mkSelector "setMeshLocalPrefixPresent:"
 
 -- | @Selector@ for @delayPresent@
-delayPresentSelector :: Selector
+delayPresentSelector :: Selector '[] (Id NSNumber)
 delayPresentSelector = mkSelector "delayPresent"
 
 -- | @Selector@ for @setDelayPresent:@
-setDelayPresentSelector :: Selector
+setDelayPresentSelector :: Selector '[Id NSNumber] ()
 setDelayPresentSelector = mkSelector "setDelayPresent:"
 
 -- | @Selector@ for @panIdPresent@
-panIdPresentSelector :: Selector
+panIdPresentSelector :: Selector '[] (Id NSNumber)
 panIdPresentSelector = mkSelector "panIdPresent"
 
 -- | @Selector@ for @setPanIdPresent:@
-setPanIdPresentSelector :: Selector
+setPanIdPresentSelector :: Selector '[Id NSNumber] ()
 setPanIdPresentSelector = mkSelector "setPanIdPresent:"
 
 -- | @Selector@ for @channelPresent@
-channelPresentSelector :: Selector
+channelPresentSelector :: Selector '[] (Id NSNumber)
 channelPresentSelector = mkSelector "channelPresent"
 
 -- | @Selector@ for @setChannelPresent:@
-setChannelPresentSelector :: Selector
+setChannelPresentSelector :: Selector '[Id NSNumber] ()
 setChannelPresentSelector = mkSelector "setChannelPresent:"
 
 -- | @Selector@ for @pskcPresent@
-pskcPresentSelector :: Selector
+pskcPresentSelector :: Selector '[] (Id NSNumber)
 pskcPresentSelector = mkSelector "pskcPresent"
 
 -- | @Selector@ for @setPskcPresent:@
-setPskcPresentSelector :: Selector
+setPskcPresentSelector :: Selector '[Id NSNumber] ()
 setPskcPresentSelector = mkSelector "setPskcPresent:"
 
 -- | @Selector@ for @securityPolicyPresent@
-securityPolicyPresentSelector :: Selector
+securityPolicyPresentSelector :: Selector '[] (Id NSNumber)
 securityPolicyPresentSelector = mkSelector "securityPolicyPresent"
 
 -- | @Selector@ for @setSecurityPolicyPresent:@
-setSecurityPolicyPresentSelector :: Selector
+setSecurityPolicyPresentSelector :: Selector '[Id NSNumber] ()
 setSecurityPolicyPresentSelector = mkSelector "setSecurityPolicyPresent:"
 
 -- | @Selector@ for @channelMaskPresent@
-channelMaskPresentSelector :: Selector
+channelMaskPresentSelector :: Selector '[] (Id NSNumber)
 channelMaskPresentSelector = mkSelector "channelMaskPresent"
 
 -- | @Selector@ for @setChannelMaskPresent:@
-setChannelMaskPresentSelector :: Selector
+setChannelMaskPresentSelector :: Selector '[Id NSNumber] ()
 setChannelMaskPresentSelector = mkSelector "setChannelMaskPresent:"
 

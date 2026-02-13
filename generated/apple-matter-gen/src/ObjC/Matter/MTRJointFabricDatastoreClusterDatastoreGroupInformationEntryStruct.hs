@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterDatastoreGroupInformationEntryS
   , setGroupCATVersion
   , groupPermission
   , setGroupPermission
-  , groupIDSelector
-  , setGroupIDSelector
   , friendlyNameSelector
-  , setFriendlyNameSelector
-  , groupKeySetIDSelector
-  , setGroupKeySetIDSelector
   , groupCATSelector
-  , setGroupCATSelector
   , groupCATVersionSelector
-  , setGroupCATVersionSelector
+  , groupIDSelector
+  , groupKeySetIDSelector
   , groupPermissionSelector
+  , setFriendlyNameSelector
+  , setGroupCATSelector
+  , setGroupCATVersionSelector
+  , setGroupIDSelector
+  , setGroupKeySetIDSelector
   , setGroupPermissionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,119 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupID@
 groupID :: IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> IO (Id NSNumber)
-groupID mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> value -> IO ()
-setGroupID mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct setGroupIDSelector (toNSNumber value)
 
 -- | @- friendlyName@
 friendlyName :: IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> IO (Id NSString)
-friendlyName mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "friendlyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+friendlyName mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct friendlyNameSelector
 
 -- | @- setFriendlyName:@
 setFriendlyName :: (IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct, IsNSString value) => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> value -> IO ()
-setFriendlyName mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "setFriendlyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFriendlyName mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct setFriendlyNameSelector (toNSString value)
 
 -- | @- groupKeySetID@
 groupKeySetID :: IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> IO (Id NSNumber)
-groupKeySetID mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "groupKeySetID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupKeySetID mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct groupKeySetIDSelector
 
 -- | @- setGroupKeySetID:@
 setGroupKeySetID :: (IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> value -> IO ()
-setGroupKeySetID mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "setGroupKeySetID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupKeySetID mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct setGroupKeySetIDSelector (toNSNumber value)
 
 -- | @- groupCAT@
 groupCAT :: IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> IO (Id NSNumber)
-groupCAT mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "groupCAT") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupCAT mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct groupCATSelector
 
 -- | @- setGroupCAT:@
 setGroupCAT :: (IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> value -> IO ()
-setGroupCAT mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "setGroupCAT:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupCAT mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct setGroupCATSelector (toNSNumber value)
 
 -- | @- groupCATVersion@
 groupCATVersion :: IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> IO (Id NSNumber)
-groupCATVersion mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "groupCATVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupCATVersion mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct groupCATVersionSelector
 
 -- | @- setGroupCATVersion:@
 setGroupCATVersion :: (IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> value -> IO ()
-setGroupCATVersion mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "setGroupCATVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupCATVersion mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct setGroupCATVersionSelector (toNSNumber value)
 
 -- | @- groupPermission@
 groupPermission :: IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> IO (Id NSNumber)
-groupPermission mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "groupPermission") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupPermission mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct groupPermissionSelector
 
 -- | @- setGroupPermission:@
 setGroupPermission :: (IsMTRJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct -> value -> IO ()
-setGroupPermission mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct (mkSelector "setGroupPermission:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupPermission mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreGroupInformationEntryStruct setGroupPermissionSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @friendlyName@
-friendlyNameSelector :: Selector
+friendlyNameSelector :: Selector '[] (Id NSString)
 friendlyNameSelector = mkSelector "friendlyName"
 
 -- | @Selector@ for @setFriendlyName:@
-setFriendlyNameSelector :: Selector
+setFriendlyNameSelector :: Selector '[Id NSString] ()
 setFriendlyNameSelector = mkSelector "setFriendlyName:"
 
 -- | @Selector@ for @groupKeySetID@
-groupKeySetIDSelector :: Selector
+groupKeySetIDSelector :: Selector '[] (Id NSNumber)
 groupKeySetIDSelector = mkSelector "groupKeySetID"
 
 -- | @Selector@ for @setGroupKeySetID:@
-setGroupKeySetIDSelector :: Selector
+setGroupKeySetIDSelector :: Selector '[Id NSNumber] ()
 setGroupKeySetIDSelector = mkSelector "setGroupKeySetID:"
 
 -- | @Selector@ for @groupCAT@
-groupCATSelector :: Selector
+groupCATSelector :: Selector '[] (Id NSNumber)
 groupCATSelector = mkSelector "groupCAT"
 
 -- | @Selector@ for @setGroupCAT:@
-setGroupCATSelector :: Selector
+setGroupCATSelector :: Selector '[Id NSNumber] ()
 setGroupCATSelector = mkSelector "setGroupCAT:"
 
 -- | @Selector@ for @groupCATVersion@
-groupCATVersionSelector :: Selector
+groupCATVersionSelector :: Selector '[] (Id NSNumber)
 groupCATVersionSelector = mkSelector "groupCATVersion"
 
 -- | @Selector@ for @setGroupCATVersion:@
-setGroupCATVersionSelector :: Selector
+setGroupCATVersionSelector :: Selector '[Id NSNumber] ()
 setGroupCATVersionSelector = mkSelector "setGroupCATVersion:"
 
 -- | @Selector@ for @groupPermission@
-groupPermissionSelector :: Selector
+groupPermissionSelector :: Selector '[] (Id NSNumber)
 groupPermissionSelector = mkSelector "groupPermission"
 
 -- | @Selector@ for @setGroupPermission:@
-setGroupPermissionSelector :: Selector
+setGroupPermissionSelector :: Selector '[Id NSNumber] ()
 setGroupPermissionSelector = mkSelector "setGroupPermission:"
 

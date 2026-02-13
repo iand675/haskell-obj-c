@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -29,42 +30,38 @@ module ObjC.CoreData.NSPropertyDescription
   , setStoredInExternalRecord
   , renamingIdentifier
   , setRenamingIdentifier
-  , setValidationPredicates_withValidationWarningsSelector
   , entitySelector
+  , indexedBySpotlightSelector
+  , indexedSelector
   , nameSelector
-  , setNameSelector
   , optionalSelector
+  , renamingIdentifierSelector
+  , setIndexedBySpotlightSelector
+  , setIndexedSelector
+  , setNameSelector
   , setOptionalSelector
-  , transientSelector
+  , setRenamingIdentifierSelector
+  , setStoredInExternalRecordSelector
   , setTransientSelector
+  , setUserInfoSelector
+  , setValidationPredicates_withValidationWarningsSelector
+  , setVersionHashModifierSelector
+  , storedInExternalRecordSelector
+  , transientSelector
+  , userInfoSelector
   , validationPredicatesSelector
   , validationWarningsSelector
-  , userInfoSelector
-  , setUserInfoSelector
-  , indexedSelector
-  , setIndexedSelector
-  , versionHashSelector
   , versionHashModifierSelector
-  , setVersionHashModifierSelector
-  , indexedBySpotlightSelector
-  , setIndexedBySpotlightSelector
-  , storedInExternalRecordSelector
-  , setStoredInExternalRecordSelector
-  , renamingIdentifierSelector
-  , setRenamingIdentifierSelector
+  , versionHashSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,218 +70,212 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setValidationPredicates:withValidationWarnings:@
 setValidationPredicates_withValidationWarnings :: (IsNSPropertyDescription nsPropertyDescription, IsNSArray validationPredicates, IsNSArray validationWarnings) => nsPropertyDescription -> validationPredicates -> validationWarnings -> IO ()
-setValidationPredicates_withValidationWarnings nsPropertyDescription  validationPredicates validationWarnings =
-  withObjCPtr validationPredicates $ \raw_validationPredicates ->
-    withObjCPtr validationWarnings $ \raw_validationWarnings ->
-        sendMsg nsPropertyDescription (mkSelector "setValidationPredicates:withValidationWarnings:") retVoid [argPtr (castPtr raw_validationPredicates :: Ptr ()), argPtr (castPtr raw_validationWarnings :: Ptr ())]
+setValidationPredicates_withValidationWarnings nsPropertyDescription validationPredicates validationWarnings =
+  sendMessage nsPropertyDescription setValidationPredicates_withValidationWarningsSelector (toNSArray validationPredicates) (toNSArray validationWarnings)
 
 -- | @- entity@
 entity :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO (Id NSEntityDescription)
-entity nsPropertyDescription  =
-    sendMsg nsPropertyDescription (mkSelector "entity") (retPtr retVoid) [] >>= retainedObject . castPtr
+entity nsPropertyDescription =
+  sendMessage nsPropertyDescription entitySelector
 
 -- | @- name@
 name :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO (Id NSString)
-name nsPropertyDescription  =
-    sendMsg nsPropertyDescription (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsPropertyDescription =
+  sendMessage nsPropertyDescription nameSelector
 
 -- | @- setName:@
 setName :: (IsNSPropertyDescription nsPropertyDescription, IsNSString value) => nsPropertyDescription -> value -> IO ()
-setName nsPropertyDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPropertyDescription (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsPropertyDescription value =
+  sendMessage nsPropertyDescription setNameSelector (toNSString value)
 
 -- | @- optional@
 optional :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO Bool
-optional nsPropertyDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPropertyDescription (mkSelector "optional") retCULong []
+optional nsPropertyDescription =
+  sendMessage nsPropertyDescription optionalSelector
 
 -- | @- setOptional:@
 setOptional :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> Bool -> IO ()
-setOptional nsPropertyDescription  value =
-    sendMsg nsPropertyDescription (mkSelector "setOptional:") retVoid [argCULong (if value then 1 else 0)]
+setOptional nsPropertyDescription value =
+  sendMessage nsPropertyDescription setOptionalSelector value
 
 -- | @- transient@
 transient :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO Bool
-transient nsPropertyDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPropertyDescription (mkSelector "transient") retCULong []
+transient nsPropertyDescription =
+  sendMessage nsPropertyDescription transientSelector
 
 -- | @- setTransient:@
 setTransient :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> Bool -> IO ()
-setTransient nsPropertyDescription  value =
-    sendMsg nsPropertyDescription (mkSelector "setTransient:") retVoid [argCULong (if value then 1 else 0)]
+setTransient nsPropertyDescription value =
+  sendMessage nsPropertyDescription setTransientSelector value
 
 -- | @- validationPredicates@
 validationPredicates :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO (Id NSArray)
-validationPredicates nsPropertyDescription  =
-    sendMsg nsPropertyDescription (mkSelector "validationPredicates") (retPtr retVoid) [] >>= retainedObject . castPtr
+validationPredicates nsPropertyDescription =
+  sendMessage nsPropertyDescription validationPredicatesSelector
 
 -- | @- validationWarnings@
 validationWarnings :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO (Id NSArray)
-validationWarnings nsPropertyDescription  =
-    sendMsg nsPropertyDescription (mkSelector "validationWarnings") (retPtr retVoid) [] >>= retainedObject . castPtr
+validationWarnings nsPropertyDescription =
+  sendMessage nsPropertyDescription validationWarningsSelector
 
 -- | @- userInfo@
 userInfo :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO (Id NSDictionary)
-userInfo nsPropertyDescription  =
-    sendMsg nsPropertyDescription (mkSelector "userInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+userInfo nsPropertyDescription =
+  sendMessage nsPropertyDescription userInfoSelector
 
 -- | @- setUserInfo:@
 setUserInfo :: (IsNSPropertyDescription nsPropertyDescription, IsNSDictionary value) => nsPropertyDescription -> value -> IO ()
-setUserInfo nsPropertyDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPropertyDescription (mkSelector "setUserInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserInfo nsPropertyDescription value =
+  sendMessage nsPropertyDescription setUserInfoSelector (toNSDictionary value)
 
 -- | @- indexed@
 indexed :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO Bool
-indexed nsPropertyDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPropertyDescription (mkSelector "indexed") retCULong []
+indexed nsPropertyDescription =
+  sendMessage nsPropertyDescription indexedSelector
 
 -- | @- setIndexed:@
 setIndexed :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> Bool -> IO ()
-setIndexed nsPropertyDescription  value =
-    sendMsg nsPropertyDescription (mkSelector "setIndexed:") retVoid [argCULong (if value then 1 else 0)]
+setIndexed nsPropertyDescription value =
+  sendMessage nsPropertyDescription setIndexedSelector value
 
 -- | @- versionHash@
 versionHash :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO (Id NSData)
-versionHash nsPropertyDescription  =
-    sendMsg nsPropertyDescription (mkSelector "versionHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+versionHash nsPropertyDescription =
+  sendMessage nsPropertyDescription versionHashSelector
 
 -- | @- versionHashModifier@
 versionHashModifier :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO (Id NSString)
-versionHashModifier nsPropertyDescription  =
-    sendMsg nsPropertyDescription (mkSelector "versionHashModifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+versionHashModifier nsPropertyDescription =
+  sendMessage nsPropertyDescription versionHashModifierSelector
 
 -- | @- setVersionHashModifier:@
 setVersionHashModifier :: (IsNSPropertyDescription nsPropertyDescription, IsNSString value) => nsPropertyDescription -> value -> IO ()
-setVersionHashModifier nsPropertyDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPropertyDescription (mkSelector "setVersionHashModifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVersionHashModifier nsPropertyDescription value =
+  sendMessage nsPropertyDescription setVersionHashModifierSelector (toNSString value)
 
 -- | @- indexedBySpotlight@
 indexedBySpotlight :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO Bool
-indexedBySpotlight nsPropertyDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPropertyDescription (mkSelector "indexedBySpotlight") retCULong []
+indexedBySpotlight nsPropertyDescription =
+  sendMessage nsPropertyDescription indexedBySpotlightSelector
 
 -- | @- setIndexedBySpotlight:@
 setIndexedBySpotlight :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> Bool -> IO ()
-setIndexedBySpotlight nsPropertyDescription  value =
-    sendMsg nsPropertyDescription (mkSelector "setIndexedBySpotlight:") retVoid [argCULong (if value then 1 else 0)]
+setIndexedBySpotlight nsPropertyDescription value =
+  sendMessage nsPropertyDescription setIndexedBySpotlightSelector value
 
 -- | @- storedInExternalRecord@
 storedInExternalRecord :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO Bool
-storedInExternalRecord nsPropertyDescription  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPropertyDescription (mkSelector "storedInExternalRecord") retCULong []
+storedInExternalRecord nsPropertyDescription =
+  sendMessage nsPropertyDescription storedInExternalRecordSelector
 
 -- | @- setStoredInExternalRecord:@
 setStoredInExternalRecord :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> Bool -> IO ()
-setStoredInExternalRecord nsPropertyDescription  value =
-    sendMsg nsPropertyDescription (mkSelector "setStoredInExternalRecord:") retVoid [argCULong (if value then 1 else 0)]
+setStoredInExternalRecord nsPropertyDescription value =
+  sendMessage nsPropertyDescription setStoredInExternalRecordSelector value
 
 -- | @- renamingIdentifier@
 renamingIdentifier :: IsNSPropertyDescription nsPropertyDescription => nsPropertyDescription -> IO (Id NSString)
-renamingIdentifier nsPropertyDescription  =
-    sendMsg nsPropertyDescription (mkSelector "renamingIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+renamingIdentifier nsPropertyDescription =
+  sendMessage nsPropertyDescription renamingIdentifierSelector
 
 -- | @- setRenamingIdentifier:@
 setRenamingIdentifier :: (IsNSPropertyDescription nsPropertyDescription, IsNSString value) => nsPropertyDescription -> value -> IO ()
-setRenamingIdentifier nsPropertyDescription  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPropertyDescription (mkSelector "setRenamingIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRenamingIdentifier nsPropertyDescription value =
+  sendMessage nsPropertyDescription setRenamingIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setValidationPredicates:withValidationWarnings:@
-setValidationPredicates_withValidationWarningsSelector :: Selector
+setValidationPredicates_withValidationWarningsSelector :: Selector '[Id NSArray, Id NSArray] ()
 setValidationPredicates_withValidationWarningsSelector = mkSelector "setValidationPredicates:withValidationWarnings:"
 
 -- | @Selector@ for @entity@
-entitySelector :: Selector
+entitySelector :: Selector '[] (Id NSEntityDescription)
 entitySelector = mkSelector "entity"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @optional@
-optionalSelector :: Selector
+optionalSelector :: Selector '[] Bool
 optionalSelector = mkSelector "optional"
 
 -- | @Selector@ for @setOptional:@
-setOptionalSelector :: Selector
+setOptionalSelector :: Selector '[Bool] ()
 setOptionalSelector = mkSelector "setOptional:"
 
 -- | @Selector@ for @transient@
-transientSelector :: Selector
+transientSelector :: Selector '[] Bool
 transientSelector = mkSelector "transient"
 
 -- | @Selector@ for @setTransient:@
-setTransientSelector :: Selector
+setTransientSelector :: Selector '[Bool] ()
 setTransientSelector = mkSelector "setTransient:"
 
 -- | @Selector@ for @validationPredicates@
-validationPredicatesSelector :: Selector
+validationPredicatesSelector :: Selector '[] (Id NSArray)
 validationPredicatesSelector = mkSelector "validationPredicates"
 
 -- | @Selector@ for @validationWarnings@
-validationWarningsSelector :: Selector
+validationWarningsSelector :: Selector '[] (Id NSArray)
 validationWarningsSelector = mkSelector "validationWarnings"
 
 -- | @Selector@ for @userInfo@
-userInfoSelector :: Selector
+userInfoSelector :: Selector '[] (Id NSDictionary)
 userInfoSelector = mkSelector "userInfo"
 
 -- | @Selector@ for @setUserInfo:@
-setUserInfoSelector :: Selector
+setUserInfoSelector :: Selector '[Id NSDictionary] ()
 setUserInfoSelector = mkSelector "setUserInfo:"
 
 -- | @Selector@ for @indexed@
-indexedSelector :: Selector
+indexedSelector :: Selector '[] Bool
 indexedSelector = mkSelector "indexed"
 
 -- | @Selector@ for @setIndexed:@
-setIndexedSelector :: Selector
+setIndexedSelector :: Selector '[Bool] ()
 setIndexedSelector = mkSelector "setIndexed:"
 
 -- | @Selector@ for @versionHash@
-versionHashSelector :: Selector
+versionHashSelector :: Selector '[] (Id NSData)
 versionHashSelector = mkSelector "versionHash"
 
 -- | @Selector@ for @versionHashModifier@
-versionHashModifierSelector :: Selector
+versionHashModifierSelector :: Selector '[] (Id NSString)
 versionHashModifierSelector = mkSelector "versionHashModifier"
 
 -- | @Selector@ for @setVersionHashModifier:@
-setVersionHashModifierSelector :: Selector
+setVersionHashModifierSelector :: Selector '[Id NSString] ()
 setVersionHashModifierSelector = mkSelector "setVersionHashModifier:"
 
 -- | @Selector@ for @indexedBySpotlight@
-indexedBySpotlightSelector :: Selector
+indexedBySpotlightSelector :: Selector '[] Bool
 indexedBySpotlightSelector = mkSelector "indexedBySpotlight"
 
 -- | @Selector@ for @setIndexedBySpotlight:@
-setIndexedBySpotlightSelector :: Selector
+setIndexedBySpotlightSelector :: Selector '[Bool] ()
 setIndexedBySpotlightSelector = mkSelector "setIndexedBySpotlight:"
 
 -- | @Selector@ for @storedInExternalRecord@
-storedInExternalRecordSelector :: Selector
+storedInExternalRecordSelector :: Selector '[] Bool
 storedInExternalRecordSelector = mkSelector "storedInExternalRecord"
 
 -- | @Selector@ for @setStoredInExternalRecord:@
-setStoredInExternalRecordSelector :: Selector
+setStoredInExternalRecordSelector :: Selector '[Bool] ()
 setStoredInExternalRecordSelector = mkSelector "setStoredInExternalRecord:"
 
 -- | @Selector@ for @renamingIdentifier@
-renamingIdentifierSelector :: Selector
+renamingIdentifierSelector :: Selector '[] (Id NSString)
 renamingIdentifierSelector = mkSelector "renamingIdentifier"
 
 -- | @Selector@ for @setRenamingIdentifier:@
-setRenamingIdentifierSelector :: Selector
+setRenamingIdentifierSelector :: Selector '[Id NSString] ()
 setRenamingIdentifierSelector = mkSelector "setRenamingIdentifier:"
 

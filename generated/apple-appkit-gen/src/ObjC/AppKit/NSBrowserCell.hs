@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.AppKit.NSBrowserCell
   , setImage
   , alternateImage
   , setAlternateImage
-  , initTextCellSelector
-  , initImageCellSelector
-  , initWithCoderSelector
-  , highlightColorInViewSelector
-  , resetSelector
-  , setSelector
-  , branchImageSelector
-  , highlightedBranchImageSelector
-  , leafSelector
-  , setLeafSelector
-  , loadedSelector
-  , setLoadedSelector
-  , imageSelector
-  , setImageSelector
   , alternateImageSelector
+  , branchImageSelector
+  , highlightColorInViewSelector
+  , highlightedBranchImageSelector
+  , imageSelector
+  , initImageCellSelector
+  , initTextCellSelector
+  , initWithCoderSelector
+  , leafSelector
+  , loadedSelector
+  , resetSelector
   , setAlternateImageSelector
+  , setImageSelector
+  , setLeafSelector
+  , setLoadedSelector
+  , setSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,159 +56,153 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initTextCell:@
 initTextCell :: (IsNSBrowserCell nsBrowserCell, IsNSString string) => nsBrowserCell -> string -> IO (Id NSBrowserCell)
-initTextCell nsBrowserCell  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsBrowserCell (mkSelector "initTextCell:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initTextCell nsBrowserCell string =
+  sendOwnedMessage nsBrowserCell initTextCellSelector (toNSString string)
 
 -- | @- initImageCell:@
 initImageCell :: (IsNSBrowserCell nsBrowserCell, IsNSImage image) => nsBrowserCell -> image -> IO (Id NSBrowserCell)
-initImageCell nsBrowserCell  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg nsBrowserCell (mkSelector "initImageCell:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= ownedObject . castPtr
+initImageCell nsBrowserCell image =
+  sendOwnedMessage nsBrowserCell initImageCellSelector (toNSImage image)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSBrowserCell nsBrowserCell, IsNSCoder coder) => nsBrowserCell -> coder -> IO (Id NSBrowserCell)
-initWithCoder nsBrowserCell  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsBrowserCell (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsBrowserCell coder =
+  sendOwnedMessage nsBrowserCell initWithCoderSelector (toNSCoder coder)
 
 -- | @- highlightColorInView:@
 highlightColorInView :: (IsNSBrowserCell nsBrowserCell, IsNSView controlView) => nsBrowserCell -> controlView -> IO (Id NSColor)
-highlightColorInView nsBrowserCell  controlView =
-  withObjCPtr controlView $ \raw_controlView ->
-      sendMsg nsBrowserCell (mkSelector "highlightColorInView:") (retPtr retVoid) [argPtr (castPtr raw_controlView :: Ptr ())] >>= retainedObject . castPtr
+highlightColorInView nsBrowserCell controlView =
+  sendMessage nsBrowserCell highlightColorInViewSelector (toNSView controlView)
 
 -- | @- reset@
 reset :: IsNSBrowserCell nsBrowserCell => nsBrowserCell -> IO ()
-reset nsBrowserCell  =
-    sendMsg nsBrowserCell (mkSelector "reset") retVoid []
+reset nsBrowserCell =
+  sendMessage nsBrowserCell resetSelector
 
 -- | @- set@
 set :: IsNSBrowserCell nsBrowserCell => nsBrowserCell -> IO ()
-set nsBrowserCell  =
-    sendMsg nsBrowserCell (mkSelector "set") retVoid []
+set nsBrowserCell =
+  sendMessage nsBrowserCell setSelector
 
 -- | @+ branchImage@
 branchImage :: IO (Id NSImage)
 branchImage  =
   do
     cls' <- getRequiredClass "NSBrowserCell"
-    sendClassMsg cls' (mkSelector "branchImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' branchImageSelector
 
 -- | @+ highlightedBranchImage@
 highlightedBranchImage :: IO (Id NSImage)
 highlightedBranchImage  =
   do
     cls' <- getRequiredClass "NSBrowserCell"
-    sendClassMsg cls' (mkSelector "highlightedBranchImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' highlightedBranchImageSelector
 
 -- | @- leaf@
 leaf :: IsNSBrowserCell nsBrowserCell => nsBrowserCell -> IO Bool
-leaf nsBrowserCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsBrowserCell (mkSelector "leaf") retCULong []
+leaf nsBrowserCell =
+  sendMessage nsBrowserCell leafSelector
 
 -- | @- setLeaf:@
 setLeaf :: IsNSBrowserCell nsBrowserCell => nsBrowserCell -> Bool -> IO ()
-setLeaf nsBrowserCell  value =
-    sendMsg nsBrowserCell (mkSelector "setLeaf:") retVoid [argCULong (if value then 1 else 0)]
+setLeaf nsBrowserCell value =
+  sendMessage nsBrowserCell setLeafSelector value
 
 -- | @- loaded@
 loaded :: IsNSBrowserCell nsBrowserCell => nsBrowserCell -> IO Bool
-loaded nsBrowserCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsBrowserCell (mkSelector "loaded") retCULong []
+loaded nsBrowserCell =
+  sendMessage nsBrowserCell loadedSelector
 
 -- | @- setLoaded:@
 setLoaded :: IsNSBrowserCell nsBrowserCell => nsBrowserCell -> Bool -> IO ()
-setLoaded nsBrowserCell  value =
-    sendMsg nsBrowserCell (mkSelector "setLoaded:") retVoid [argCULong (if value then 1 else 0)]
+setLoaded nsBrowserCell value =
+  sendMessage nsBrowserCell setLoadedSelector value
 
 -- | @- image@
 image :: IsNSBrowserCell nsBrowserCell => nsBrowserCell -> IO (Id NSImage)
-image nsBrowserCell  =
-    sendMsg nsBrowserCell (mkSelector "image") (retPtr retVoid) [] >>= retainedObject . castPtr
+image nsBrowserCell =
+  sendMessage nsBrowserCell imageSelector
 
 -- | @- setImage:@
 setImage :: (IsNSBrowserCell nsBrowserCell, IsNSImage value) => nsBrowserCell -> value -> IO ()
-setImage nsBrowserCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBrowserCell (mkSelector "setImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setImage nsBrowserCell value =
+  sendMessage nsBrowserCell setImageSelector (toNSImage value)
 
 -- | @- alternateImage@
 alternateImage :: IsNSBrowserCell nsBrowserCell => nsBrowserCell -> IO (Id NSImage)
-alternateImage nsBrowserCell  =
-    sendMsg nsBrowserCell (mkSelector "alternateImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternateImage nsBrowserCell =
+  sendMessage nsBrowserCell alternateImageSelector
 
 -- | @- setAlternateImage:@
 setAlternateImage :: (IsNSBrowserCell nsBrowserCell, IsNSImage value) => nsBrowserCell -> value -> IO ()
-setAlternateImage nsBrowserCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsBrowserCell (mkSelector "setAlternateImage:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAlternateImage nsBrowserCell value =
+  sendMessage nsBrowserCell setAlternateImageSelector (toNSImage value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initTextCell:@
-initTextCellSelector :: Selector
+initTextCellSelector :: Selector '[Id NSString] (Id NSBrowserCell)
 initTextCellSelector = mkSelector "initTextCell:"
 
 -- | @Selector@ for @initImageCell:@
-initImageCellSelector :: Selector
+initImageCellSelector :: Selector '[Id NSImage] (Id NSBrowserCell)
 initImageCellSelector = mkSelector "initImageCell:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSBrowserCell)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @highlightColorInView:@
-highlightColorInViewSelector :: Selector
+highlightColorInViewSelector :: Selector '[Id NSView] (Id NSColor)
 highlightColorInViewSelector = mkSelector "highlightColorInView:"
 
 -- | @Selector@ for @reset@
-resetSelector :: Selector
+resetSelector :: Selector '[] ()
 resetSelector = mkSelector "reset"
 
 -- | @Selector@ for @set@
-setSelector :: Selector
+setSelector :: Selector '[] ()
 setSelector = mkSelector "set"
 
 -- | @Selector@ for @branchImage@
-branchImageSelector :: Selector
+branchImageSelector :: Selector '[] (Id NSImage)
 branchImageSelector = mkSelector "branchImage"
 
 -- | @Selector@ for @highlightedBranchImage@
-highlightedBranchImageSelector :: Selector
+highlightedBranchImageSelector :: Selector '[] (Id NSImage)
 highlightedBranchImageSelector = mkSelector "highlightedBranchImage"
 
 -- | @Selector@ for @leaf@
-leafSelector :: Selector
+leafSelector :: Selector '[] Bool
 leafSelector = mkSelector "leaf"
 
 -- | @Selector@ for @setLeaf:@
-setLeafSelector :: Selector
+setLeafSelector :: Selector '[Bool] ()
 setLeafSelector = mkSelector "setLeaf:"
 
 -- | @Selector@ for @loaded@
-loadedSelector :: Selector
+loadedSelector :: Selector '[] Bool
 loadedSelector = mkSelector "loaded"
 
 -- | @Selector@ for @setLoaded:@
-setLoadedSelector :: Selector
+setLoadedSelector :: Selector '[Bool] ()
 setLoadedSelector = mkSelector "setLoaded:"
 
 -- | @Selector@ for @image@
-imageSelector :: Selector
+imageSelector :: Selector '[] (Id NSImage)
 imageSelector = mkSelector "image"
 
 -- | @Selector@ for @setImage:@
-setImageSelector :: Selector
+setImageSelector :: Selector '[Id NSImage] ()
 setImageSelector = mkSelector "setImage:"
 
 -- | @Selector@ for @alternateImage@
-alternateImageSelector :: Selector
+alternateImageSelector :: Selector '[] (Id NSImage)
 alternateImageSelector = mkSelector "alternateImage"
 
 -- | @Selector@ for @setAlternateImage:@
-setAlternateImageSelector :: Selector
+setAlternateImageSelector :: Selector '[Id NSImage] ()
 setAlternateImageSelector = mkSelector "setAlternateImage:"
 

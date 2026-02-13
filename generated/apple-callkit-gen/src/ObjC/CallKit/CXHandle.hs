@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,8 +13,8 @@ module ObjC.CallKit.CXHandle
   , isEqualToHandle
   , type_
   , value
-  , initWithType_valueSelector
   , initSelector
+  , initWithType_valueSelector
   , isEqualToHandleSelector
   , typeSelector
   , valueSelector
@@ -26,15 +27,11 @@ module ObjC.CallKit.CXHandle
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,52 +41,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithType:value:@
 initWithType_value :: (IsCXHandle cxHandle, IsNSString value) => cxHandle -> CXHandleType -> value -> IO (Id CXHandle)
-initWithType_value cxHandle  type_ value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg cxHandle (mkSelector "initWithType:value:") (retPtr retVoid) [argCLong (coerce type_), argPtr (castPtr raw_value :: Ptr ())] >>= ownedObject . castPtr
+initWithType_value cxHandle type_ value =
+  sendOwnedMessage cxHandle initWithType_valueSelector type_ (toNSString value)
 
 -- | @- init@
 init_ :: IsCXHandle cxHandle => cxHandle -> IO (Id CXHandle)
-init_ cxHandle  =
-    sendMsg cxHandle (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cxHandle =
+  sendOwnedMessage cxHandle initSelector
 
 -- | @- isEqualToHandle:@
 isEqualToHandle :: (IsCXHandle cxHandle, IsCXHandle handle) => cxHandle -> handle -> IO Bool
-isEqualToHandle cxHandle  handle =
-  withObjCPtr handle $ \raw_handle ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg cxHandle (mkSelector "isEqualToHandle:") retCULong [argPtr (castPtr raw_handle :: Ptr ())]
+isEqualToHandle cxHandle handle =
+  sendMessage cxHandle isEqualToHandleSelector (toCXHandle handle)
 
 -- | @- type@
 type_ :: IsCXHandle cxHandle => cxHandle -> IO CXHandleType
-type_ cxHandle  =
-    fmap (coerce :: CLong -> CXHandleType) $ sendMsg cxHandle (mkSelector "type") retCLong []
+type_ cxHandle =
+  sendMessage cxHandle typeSelector
 
 -- | @- value@
 value :: IsCXHandle cxHandle => cxHandle -> IO (Id NSString)
-value cxHandle  =
-    sendMsg cxHandle (mkSelector "value") (retPtr retVoid) [] >>= retainedObject . castPtr
+value cxHandle =
+  sendMessage cxHandle valueSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithType:value:@
-initWithType_valueSelector :: Selector
+initWithType_valueSelector :: Selector '[CXHandleType, Id NSString] (Id CXHandle)
 initWithType_valueSelector = mkSelector "initWithType:value:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CXHandle)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @isEqualToHandle:@
-isEqualToHandleSelector :: Selector
+isEqualToHandleSelector :: Selector '[Id CXHandle] Bool
 isEqualToHandleSelector = mkSelector "isEqualToHandle:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] CXHandleType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] (Id NSString)
 valueSelector = mkSelector "value"
 

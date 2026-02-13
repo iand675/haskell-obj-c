@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,41 +29,37 @@ module ObjC.Quartz.QCPlugIn
   , removeInputPortForKey
   , addOutputPortWithType_forKey_withAttributes
   , removeOutputPortForKey
-  , attributesSelector
+  , addInputPortWithType_forKey_withAttributesSelector
+  , addOutputPortWithType_forKey_withAttributesSelector
   , attributesForPropertyPortWithKeySelector
-  , sortedPropertyPortKeysSelector
-  , plugInKeysSelector
-  , startExecutionSelector
-  , enableExecutionSelector
-  , executionTimeForContext_atTime_withArgumentsSelector
-  , execute_atTime_withArgumentsSelector
+  , attributesSelector
+  , createViewControllerSelector
+  , didValueForInputKeyChangeSelector
   , disableExecutionSelector
-  , stopExecutionSelector
+  , enableExecutionSelector
+  , execute_atTime_withArgumentsSelector
+  , executionTimeForContext_atTime_withArgumentsSelector
+  , loadPlugInAtPathSelector
+  , plugInKeysSelector
+  , registerPlugInClassSelector
+  , removeInputPortForKeySelector
+  , removeOutputPortForKeySelector
   , serializedValueForKeySelector
   , setSerializedValue_forKeySelector
-  , createViewControllerSelector
-  , loadPlugInAtPathSelector
-  , registerPlugInClassSelector
-  , didValueForInputKeyChangeSelector
-  , valueForInputKeySelector
   , setValue_forOutputKeySelector
-  , addInputPortWithType_forKey_withAttributesSelector
-  , removeInputPortForKeySelector
-  , addOutputPortWithType_forKey_withAttributesSelector
-  , removeOutputPortForKeySelector
+  , sortedPropertyPortKeysSelector
+  , startExecutionSelector
+  , stopExecutionSelector
+  , valueForInputKeySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,229 +71,212 @@ attributes :: IO (Id NSDictionary)
 attributes  =
   do
     cls' <- getRequiredClass "QCPlugIn"
-    sendClassMsg cls' (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' attributesSelector
 
 -- | @+ attributesForPropertyPortWithKey:@
 attributesForPropertyPortWithKey :: IsNSString key => key -> IO (Id NSDictionary)
 attributesForPropertyPortWithKey key =
   do
     cls' <- getRequiredClass "QCPlugIn"
-    withObjCPtr key $ \raw_key ->
-      sendClassMsg cls' (mkSelector "attributesForPropertyPortWithKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' attributesForPropertyPortWithKeySelector (toNSString key)
 
 -- | @+ sortedPropertyPortKeys@
 sortedPropertyPortKeys :: IO (Id NSArray)
 sortedPropertyPortKeys  =
   do
     cls' <- getRequiredClass "QCPlugIn"
-    sendClassMsg cls' (mkSelector "sortedPropertyPortKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sortedPropertyPortKeysSelector
 
 -- | @+ plugInKeys@
 plugInKeys :: IO (Id NSArray)
 plugInKeys  =
   do
     cls' <- getRequiredClass "QCPlugIn"
-    sendClassMsg cls' (mkSelector "plugInKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' plugInKeysSelector
 
 -- | @- startExecution:@
 startExecution :: IsQCPlugIn qcPlugIn => qcPlugIn -> RawId -> IO Bool
-startExecution qcPlugIn  context =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcPlugIn (mkSelector "startExecution:") retCULong [argPtr (castPtr (unRawId context) :: Ptr ())]
+startExecution qcPlugIn context =
+  sendMessage qcPlugIn startExecutionSelector context
 
 -- | @- enableExecution:@
 enableExecution :: IsQCPlugIn qcPlugIn => qcPlugIn -> RawId -> IO ()
-enableExecution qcPlugIn  context =
-    sendMsg qcPlugIn (mkSelector "enableExecution:") retVoid [argPtr (castPtr (unRawId context) :: Ptr ())]
+enableExecution qcPlugIn context =
+  sendMessage qcPlugIn enableExecutionSelector context
 
 -- | @- executionTimeForContext:atTime:withArguments:@
 executionTimeForContext_atTime_withArguments :: (IsQCPlugIn qcPlugIn, IsNSDictionary arguments) => qcPlugIn -> RawId -> CDouble -> arguments -> IO CDouble
-executionTimeForContext_atTime_withArguments qcPlugIn  context time arguments =
-  withObjCPtr arguments $ \raw_arguments ->
-      sendMsg qcPlugIn (mkSelector "executionTimeForContext:atTime:withArguments:") retCDouble [argPtr (castPtr (unRawId context) :: Ptr ()), argCDouble time, argPtr (castPtr raw_arguments :: Ptr ())]
+executionTimeForContext_atTime_withArguments qcPlugIn context time arguments =
+  sendMessage qcPlugIn executionTimeForContext_atTime_withArgumentsSelector context time (toNSDictionary arguments)
 
 -- | @- execute:atTime:withArguments:@
 execute_atTime_withArguments :: (IsQCPlugIn qcPlugIn, IsNSDictionary arguments) => qcPlugIn -> RawId -> CDouble -> arguments -> IO Bool
-execute_atTime_withArguments qcPlugIn  context time arguments =
-  withObjCPtr arguments $ \raw_arguments ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcPlugIn (mkSelector "execute:atTime:withArguments:") retCULong [argPtr (castPtr (unRawId context) :: Ptr ()), argCDouble time, argPtr (castPtr raw_arguments :: Ptr ())]
+execute_atTime_withArguments qcPlugIn context time arguments =
+  sendMessage qcPlugIn execute_atTime_withArgumentsSelector context time (toNSDictionary arguments)
 
 -- | @- disableExecution:@
 disableExecution :: IsQCPlugIn qcPlugIn => qcPlugIn -> RawId -> IO ()
-disableExecution qcPlugIn  context =
-    sendMsg qcPlugIn (mkSelector "disableExecution:") retVoid [argPtr (castPtr (unRawId context) :: Ptr ())]
+disableExecution qcPlugIn context =
+  sendMessage qcPlugIn disableExecutionSelector context
 
 -- | @- stopExecution:@
 stopExecution :: IsQCPlugIn qcPlugIn => qcPlugIn -> RawId -> IO ()
-stopExecution qcPlugIn  context =
-    sendMsg qcPlugIn (mkSelector "stopExecution:") retVoid [argPtr (castPtr (unRawId context) :: Ptr ())]
+stopExecution qcPlugIn context =
+  sendMessage qcPlugIn stopExecutionSelector context
 
 -- | @- serializedValueForKey:@
 serializedValueForKey :: (IsQCPlugIn qcPlugIn, IsNSString key) => qcPlugIn -> key -> IO RawId
-serializedValueForKey qcPlugIn  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg qcPlugIn (mkSelector "serializedValueForKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+serializedValueForKey qcPlugIn key =
+  sendMessage qcPlugIn serializedValueForKeySelector (toNSString key)
 
 -- | @- setSerializedValue:forKey:@
 setSerializedValue_forKey :: (IsQCPlugIn qcPlugIn, IsNSString key) => qcPlugIn -> RawId -> key -> IO ()
-setSerializedValue_forKey qcPlugIn  serializedValue key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg qcPlugIn (mkSelector "setSerializedValue:forKey:") retVoid [argPtr (castPtr (unRawId serializedValue) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setSerializedValue_forKey qcPlugIn serializedValue key =
+  sendMessage qcPlugIn setSerializedValue_forKeySelector serializedValue (toNSString key)
 
 -- | @- createViewController@
 createViewController :: IsQCPlugIn qcPlugIn => qcPlugIn -> IO (Id QCPlugInViewController)
-createViewController qcPlugIn  =
-    sendMsg qcPlugIn (mkSelector "createViewController") (retPtr retVoid) [] >>= retainedObject . castPtr
+createViewController qcPlugIn =
+  sendMessage qcPlugIn createViewControllerSelector
 
 -- | @+ loadPlugInAtPath:@
 loadPlugInAtPath :: IsNSString path => path -> IO Bool
 loadPlugInAtPath path =
   do
     cls' <- getRequiredClass "QCPlugIn"
-    withObjCPtr path $ \raw_path ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "loadPlugInAtPath:") retCULong [argPtr (castPtr raw_path :: Ptr ())]
+    sendClassMessage cls' loadPlugInAtPathSelector (toNSString path)
 
 -- | @+ registerPlugInClass:@
 registerPlugInClass :: Class -> IO ()
 registerPlugInClass aClass =
   do
     cls' <- getRequiredClass "QCPlugIn"
-    sendClassMsg cls' (mkSelector "registerPlugInClass:") retVoid [argPtr (unClass aClass)]
+    sendClassMessage cls' registerPlugInClassSelector aClass
 
 -- | @- didValueForInputKeyChange:@
 didValueForInputKeyChange :: (IsQCPlugIn qcPlugIn, IsNSString key) => qcPlugIn -> key -> IO Bool
-didValueForInputKeyChange qcPlugIn  key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcPlugIn (mkSelector "didValueForInputKeyChange:") retCULong [argPtr (castPtr raw_key :: Ptr ())]
+didValueForInputKeyChange qcPlugIn key =
+  sendMessage qcPlugIn didValueForInputKeyChangeSelector (toNSString key)
 
 -- | @- valueForInputKey:@
 valueForInputKey :: (IsQCPlugIn qcPlugIn, IsNSString key) => qcPlugIn -> key -> IO RawId
-valueForInputKey qcPlugIn  key =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg qcPlugIn (mkSelector "valueForInputKey:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ())]
+valueForInputKey qcPlugIn key =
+  sendMessage qcPlugIn valueForInputKeySelector (toNSString key)
 
 -- | @- setValue:forOutputKey:@
 setValue_forOutputKey :: (IsQCPlugIn qcPlugIn, IsNSString key) => qcPlugIn -> RawId -> key -> IO Bool
-setValue_forOutputKey qcPlugIn  value key =
-  withObjCPtr key $ \raw_key ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg qcPlugIn (mkSelector "setValue:forOutputKey:") retCULong [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ())]
+setValue_forOutputKey qcPlugIn value key =
+  sendMessage qcPlugIn setValue_forOutputKeySelector value (toNSString key)
 
 -- | @- addInputPortWithType:forKey:withAttributes:@
 addInputPortWithType_forKey_withAttributes :: (IsQCPlugIn qcPlugIn, IsNSString type_, IsNSString key, IsNSDictionary attributes) => qcPlugIn -> type_ -> key -> attributes -> IO ()
-addInputPortWithType_forKey_withAttributes qcPlugIn  type_ key attributes =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr attributes $ \raw_attributes ->
-          sendMsg qcPlugIn (mkSelector "addInputPortWithType:forKey:withAttributes:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())]
+addInputPortWithType_forKey_withAttributes qcPlugIn type_ key attributes =
+  sendMessage qcPlugIn addInputPortWithType_forKey_withAttributesSelector (toNSString type_) (toNSString key) (toNSDictionary attributes)
 
 -- | @- removeInputPortForKey:@
 removeInputPortForKey :: (IsQCPlugIn qcPlugIn, IsNSString key) => qcPlugIn -> key -> IO ()
-removeInputPortForKey qcPlugIn  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg qcPlugIn (mkSelector "removeInputPortForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+removeInputPortForKey qcPlugIn key =
+  sendMessage qcPlugIn removeInputPortForKeySelector (toNSString key)
 
 -- | @- addOutputPortWithType:forKey:withAttributes:@
 addOutputPortWithType_forKey_withAttributes :: (IsQCPlugIn qcPlugIn, IsNSString type_, IsNSString key, IsNSDictionary attributes) => qcPlugIn -> type_ -> key -> attributes -> IO ()
-addOutputPortWithType_forKey_withAttributes qcPlugIn  type_ key attributes =
-  withObjCPtr type_ $ \raw_type_ ->
-    withObjCPtr key $ \raw_key ->
-      withObjCPtr attributes $ \raw_attributes ->
-          sendMsg qcPlugIn (mkSelector "addOutputPortWithType:forKey:withAttributes:") retVoid [argPtr (castPtr raw_type_ :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())]
+addOutputPortWithType_forKey_withAttributes qcPlugIn type_ key attributes =
+  sendMessage qcPlugIn addOutputPortWithType_forKey_withAttributesSelector (toNSString type_) (toNSString key) (toNSDictionary attributes)
 
 -- | @- removeOutputPortForKey:@
 removeOutputPortForKey :: (IsQCPlugIn qcPlugIn, IsNSString key) => qcPlugIn -> key -> IO ()
-removeOutputPortForKey qcPlugIn  key =
-  withObjCPtr key $ \raw_key ->
-      sendMsg qcPlugIn (mkSelector "removeOutputPortForKey:") retVoid [argPtr (castPtr raw_key :: Ptr ())]
+removeOutputPortForKey qcPlugIn key =
+  sendMessage qcPlugIn removeOutputPortForKeySelector (toNSString key)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 
 -- | @Selector@ for @attributesForPropertyPortWithKey:@
-attributesForPropertyPortWithKeySelector :: Selector
+attributesForPropertyPortWithKeySelector :: Selector '[Id NSString] (Id NSDictionary)
 attributesForPropertyPortWithKeySelector = mkSelector "attributesForPropertyPortWithKey:"
 
 -- | @Selector@ for @sortedPropertyPortKeys@
-sortedPropertyPortKeysSelector :: Selector
+sortedPropertyPortKeysSelector :: Selector '[] (Id NSArray)
 sortedPropertyPortKeysSelector = mkSelector "sortedPropertyPortKeys"
 
 -- | @Selector@ for @plugInKeys@
-plugInKeysSelector :: Selector
+plugInKeysSelector :: Selector '[] (Id NSArray)
 plugInKeysSelector = mkSelector "plugInKeys"
 
 -- | @Selector@ for @startExecution:@
-startExecutionSelector :: Selector
+startExecutionSelector :: Selector '[RawId] Bool
 startExecutionSelector = mkSelector "startExecution:"
 
 -- | @Selector@ for @enableExecution:@
-enableExecutionSelector :: Selector
+enableExecutionSelector :: Selector '[RawId] ()
 enableExecutionSelector = mkSelector "enableExecution:"
 
 -- | @Selector@ for @executionTimeForContext:atTime:withArguments:@
-executionTimeForContext_atTime_withArgumentsSelector :: Selector
+executionTimeForContext_atTime_withArgumentsSelector :: Selector '[RawId, CDouble, Id NSDictionary] CDouble
 executionTimeForContext_atTime_withArgumentsSelector = mkSelector "executionTimeForContext:atTime:withArguments:"
 
 -- | @Selector@ for @execute:atTime:withArguments:@
-execute_atTime_withArgumentsSelector :: Selector
+execute_atTime_withArgumentsSelector :: Selector '[RawId, CDouble, Id NSDictionary] Bool
 execute_atTime_withArgumentsSelector = mkSelector "execute:atTime:withArguments:"
 
 -- | @Selector@ for @disableExecution:@
-disableExecutionSelector :: Selector
+disableExecutionSelector :: Selector '[RawId] ()
 disableExecutionSelector = mkSelector "disableExecution:"
 
 -- | @Selector@ for @stopExecution:@
-stopExecutionSelector :: Selector
+stopExecutionSelector :: Selector '[RawId] ()
 stopExecutionSelector = mkSelector "stopExecution:"
 
 -- | @Selector@ for @serializedValueForKey:@
-serializedValueForKeySelector :: Selector
+serializedValueForKeySelector :: Selector '[Id NSString] RawId
 serializedValueForKeySelector = mkSelector "serializedValueForKey:"
 
 -- | @Selector@ for @setSerializedValue:forKey:@
-setSerializedValue_forKeySelector :: Selector
+setSerializedValue_forKeySelector :: Selector '[RawId, Id NSString] ()
 setSerializedValue_forKeySelector = mkSelector "setSerializedValue:forKey:"
 
 -- | @Selector@ for @createViewController@
-createViewControllerSelector :: Selector
+createViewControllerSelector :: Selector '[] (Id QCPlugInViewController)
 createViewControllerSelector = mkSelector "createViewController"
 
 -- | @Selector@ for @loadPlugInAtPath:@
-loadPlugInAtPathSelector :: Selector
+loadPlugInAtPathSelector :: Selector '[Id NSString] Bool
 loadPlugInAtPathSelector = mkSelector "loadPlugInAtPath:"
 
 -- | @Selector@ for @registerPlugInClass:@
-registerPlugInClassSelector :: Selector
+registerPlugInClassSelector :: Selector '[Class] ()
 registerPlugInClassSelector = mkSelector "registerPlugInClass:"
 
 -- | @Selector@ for @didValueForInputKeyChange:@
-didValueForInputKeyChangeSelector :: Selector
+didValueForInputKeyChangeSelector :: Selector '[Id NSString] Bool
 didValueForInputKeyChangeSelector = mkSelector "didValueForInputKeyChange:"
 
 -- | @Selector@ for @valueForInputKey:@
-valueForInputKeySelector :: Selector
+valueForInputKeySelector :: Selector '[Id NSString] RawId
 valueForInputKeySelector = mkSelector "valueForInputKey:"
 
 -- | @Selector@ for @setValue:forOutputKey:@
-setValue_forOutputKeySelector :: Selector
+setValue_forOutputKeySelector :: Selector '[RawId, Id NSString] Bool
 setValue_forOutputKeySelector = mkSelector "setValue:forOutputKey:"
 
 -- | @Selector@ for @addInputPortWithType:forKey:withAttributes:@
-addInputPortWithType_forKey_withAttributesSelector :: Selector
+addInputPortWithType_forKey_withAttributesSelector :: Selector '[Id NSString, Id NSString, Id NSDictionary] ()
 addInputPortWithType_forKey_withAttributesSelector = mkSelector "addInputPortWithType:forKey:withAttributes:"
 
 -- | @Selector@ for @removeInputPortForKey:@
-removeInputPortForKeySelector :: Selector
+removeInputPortForKeySelector :: Selector '[Id NSString] ()
 removeInputPortForKeySelector = mkSelector "removeInputPortForKey:"
 
 -- | @Selector@ for @addOutputPortWithType:forKey:withAttributes:@
-addOutputPortWithType_forKey_withAttributesSelector :: Selector
+addOutputPortWithType_forKey_withAttributesSelector :: Selector '[Id NSString, Id NSString, Id NSDictionary] ()
 addOutputPortWithType_forKey_withAttributesSelector = mkSelector "addOutputPortWithType:forKey:withAttributes:"
 
 -- | @Selector@ for @removeOutputPortForKey:@
-removeOutputPortForKeySelector :: Selector
+removeOutputPortForKeySelector :: Selector '[Id NSString] ()
 removeOutputPortForKeySelector = mkSelector "removeOutputPortForKey:"
 

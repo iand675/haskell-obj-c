@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,13 +20,13 @@ module ObjC.BackgroundTasks.BGTaskScheduler
   , cancelAllTaskRequests
   , sharedScheduler
   , supportedResources
+  , cancelAllTaskRequestsSelector
+  , cancelTaskRequestWithIdentifierSelector
   , initSelector
   , newSelector
   , registerForTaskWithIdentifier_usingQueue_launchHandlerSelector
-  , submitTaskRequest_errorSelector
-  , cancelTaskRequestWithIdentifierSelector
-  , cancelAllTaskRequestsSelector
   , sharedSchedulerSelector
+  , submitTaskRequest_errorSelector
   , supportedResourcesSelector
 
   -- * Enum types
@@ -35,15 +36,11 @@ module ObjC.BackgroundTasks.BGTaskScheduler
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsBGTaskScheduler bgTaskScheduler => bgTaskScheduler -> IO (Id BGTaskScheduler)
-init_ bgTaskScheduler  =
-    sendMsg bgTaskScheduler (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ bgTaskScheduler =
+  sendOwnedMessage bgTaskScheduler initSelector
 
 -- | @+ new@
 new :: IO (Id BGTaskScheduler)
 new  =
   do
     cls' <- getRequiredClass "BGTaskScheduler"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Register a launch handler for the task with the associated identifier that’s executed on the specified queue.
 --
@@ -73,10 +70,8 @@ new  =
 --
 -- ObjC selector: @- registerForTaskWithIdentifier:usingQueue:launchHandler:@
 registerForTaskWithIdentifier_usingQueue_launchHandler :: (IsBGTaskScheduler bgTaskScheduler, IsNSString identifier, IsNSObject queue) => bgTaskScheduler -> identifier -> queue -> Ptr () -> IO Bool
-registerForTaskWithIdentifier_usingQueue_launchHandler bgTaskScheduler  identifier queue launchHandler =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr queue $ \raw_queue ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg bgTaskScheduler (mkSelector "registerForTaskWithIdentifier:usingQueue:launchHandler:") retCULong [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr launchHandler :: Ptr ())]
+registerForTaskWithIdentifier_usingQueue_launchHandler bgTaskScheduler identifier queue launchHandler =
+  sendMessage bgTaskScheduler registerForTaskWithIdentifier_usingQueue_launchHandlerSelector (toNSString identifier) (toNSObject queue) launchHandler
 
 -- | Submit a previously registered background task for execution.
 --
@@ -88,10 +83,8 @@ registerForTaskWithIdentifier_usingQueue_launchHandler bgTaskScheduler  identifi
 --
 -- ObjC selector: @- submitTaskRequest:error:@
 submitTaskRequest_error :: (IsBGTaskScheduler bgTaskScheduler, IsBGTaskRequest taskRequest, IsNSError error_) => bgTaskScheduler -> taskRequest -> error_ -> IO Bool
-submitTaskRequest_error bgTaskScheduler  taskRequest error_ =
-  withObjCPtr taskRequest $ \raw_taskRequest ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg bgTaskScheduler (mkSelector "submitTaskRequest:error:") retCULong [argPtr (castPtr raw_taskRequest :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+submitTaskRequest_error bgTaskScheduler taskRequest error_ =
+  sendMessage bgTaskScheduler submitTaskRequest_errorSelector (toBGTaskRequest taskRequest) (toNSError error_)
 
 -- | Cancel a previously scheduled task request.
 --
@@ -99,16 +92,15 @@ submitTaskRequest_error bgTaskScheduler  taskRequest error_ =
 --
 -- ObjC selector: @- cancelTaskRequestWithIdentifier:@
 cancelTaskRequestWithIdentifier :: (IsBGTaskScheduler bgTaskScheduler, IsNSString identifier) => bgTaskScheduler -> identifier -> IO ()
-cancelTaskRequestWithIdentifier bgTaskScheduler  identifier =
-  withObjCPtr identifier $ \raw_identifier ->
-      sendMsg bgTaskScheduler (mkSelector "cancelTaskRequestWithIdentifier:") retVoid [argPtr (castPtr raw_identifier :: Ptr ())]
+cancelTaskRequestWithIdentifier bgTaskScheduler identifier =
+  sendMessage bgTaskScheduler cancelTaskRequestWithIdentifierSelector (toNSString identifier)
 
 -- | Cancel all previously submitted task requests.
 --
 -- ObjC selector: @- cancelAllTaskRequests@
 cancelAllTaskRequests :: IsBGTaskScheduler bgTaskScheduler => bgTaskScheduler -> IO ()
-cancelAllTaskRequests bgTaskScheduler  =
-    sendMsg bgTaskScheduler (mkSelector "cancelAllTaskRequests") retVoid []
+cancelAllTaskRequests bgTaskScheduler =
+  sendMessage bgTaskScheduler cancelAllTaskRequestsSelector
 
 -- | The shared background task scheduler instance.
 --
@@ -117,7 +109,7 @@ sharedScheduler :: IO (Id BGTaskScheduler)
 sharedScheduler  =
   do
     cls' <- getRequiredClass "BGTaskScheduler"
-    sendClassMsg cls' (mkSelector "sharedScheduler") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedSchedulerSelector
 
 -- | A bitfield of the resources the device supports for ``BackgroundTasks/BGContinuedProcessingTaskRequest`` instances.
 --
@@ -126,41 +118,41 @@ supportedResources :: IO BGContinuedProcessingTaskRequestResources
 supportedResources  =
   do
     cls' <- getRequiredClass "BGTaskScheduler"
-    fmap (coerce :: CLong -> BGContinuedProcessingTaskRequestResources) $ sendClassMsg cls' (mkSelector "supportedResources") retCLong []
+    sendClassMessage cls' supportedResourcesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id BGTaskScheduler)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id BGTaskScheduler)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @registerForTaskWithIdentifier:usingQueue:launchHandler:@
-registerForTaskWithIdentifier_usingQueue_launchHandlerSelector :: Selector
+registerForTaskWithIdentifier_usingQueue_launchHandlerSelector :: Selector '[Id NSString, Id NSObject, Ptr ()] Bool
 registerForTaskWithIdentifier_usingQueue_launchHandlerSelector = mkSelector "registerForTaskWithIdentifier:usingQueue:launchHandler:"
 
 -- | @Selector@ for @submitTaskRequest:error:@
-submitTaskRequest_errorSelector :: Selector
+submitTaskRequest_errorSelector :: Selector '[Id BGTaskRequest, Id NSError] Bool
 submitTaskRequest_errorSelector = mkSelector "submitTaskRequest:error:"
 
 -- | @Selector@ for @cancelTaskRequestWithIdentifier:@
-cancelTaskRequestWithIdentifierSelector :: Selector
+cancelTaskRequestWithIdentifierSelector :: Selector '[Id NSString] ()
 cancelTaskRequestWithIdentifierSelector = mkSelector "cancelTaskRequestWithIdentifier:"
 
 -- | @Selector@ for @cancelAllTaskRequests@
-cancelAllTaskRequestsSelector :: Selector
+cancelAllTaskRequestsSelector :: Selector '[] ()
 cancelAllTaskRequestsSelector = mkSelector "cancelAllTaskRequests"
 
 -- | @Selector@ for @sharedScheduler@
-sharedSchedulerSelector :: Selector
+sharedSchedulerSelector :: Selector '[] (Id BGTaskScheduler)
 sharedSchedulerSelector = mkSelector "sharedScheduler"
 
 -- | @Selector@ for @supportedResources@
-supportedResourcesSelector :: Selector
+supportedResourcesSelector :: Selector '[] BGContinuedProcessingTaskRequestResources
 supportedResourcesSelector = mkSelector "supportedResources"
 

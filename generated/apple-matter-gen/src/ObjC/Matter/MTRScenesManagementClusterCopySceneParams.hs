@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.Matter.MTRScenesManagementClusterCopySceneParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , modeSelector
-  , setModeSelector
   , groupIdentifierFromSelector
-  , setGroupIdentifierFromSelector
-  , sceneIdentifierFromSelector
-  , setSceneIdentifierFromSelector
   , groupIdentifierToSelector
-  , setGroupIdentifierToSelector
+  , modeSelector
+  , sceneIdentifierFromSelector
   , sceneIdentifierToSelector
-  , setSceneIdentifierToSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setGroupIdentifierFromSelector
+  , setGroupIdentifierToSelector
+  , setModeSelector
+  , setSceneIdentifierFromSelector
+  , setSceneIdentifierToSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,58 +52,53 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- mode@
 mode :: IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams => mtrScenesManagementClusterCopySceneParams -> IO (Id NSNumber)
-mode mtrScenesManagementClusterCopySceneParams  =
-    sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "mode") (retPtr retVoid) [] >>= retainedObject . castPtr
+mode mtrScenesManagementClusterCopySceneParams =
+  sendMessage mtrScenesManagementClusterCopySceneParams modeSelector
 
 -- | @- setMode:@
 setMode :: (IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneParams -> value -> IO ()
-setMode mtrScenesManagementClusterCopySceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "setMode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMode mtrScenesManagementClusterCopySceneParams value =
+  sendMessage mtrScenesManagementClusterCopySceneParams setModeSelector (toNSNumber value)
 
 -- | @- groupIdentifierFrom@
 groupIdentifierFrom :: IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams => mtrScenesManagementClusterCopySceneParams -> IO (Id NSNumber)
-groupIdentifierFrom mtrScenesManagementClusterCopySceneParams  =
-    sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "groupIdentifierFrom") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupIdentifierFrom mtrScenesManagementClusterCopySceneParams =
+  sendMessage mtrScenesManagementClusterCopySceneParams groupIdentifierFromSelector
 
 -- | @- setGroupIdentifierFrom:@
 setGroupIdentifierFrom :: (IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneParams -> value -> IO ()
-setGroupIdentifierFrom mtrScenesManagementClusterCopySceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "setGroupIdentifierFrom:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupIdentifierFrom mtrScenesManagementClusterCopySceneParams value =
+  sendMessage mtrScenesManagementClusterCopySceneParams setGroupIdentifierFromSelector (toNSNumber value)
 
 -- | @- sceneIdentifierFrom@
 sceneIdentifierFrom :: IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams => mtrScenesManagementClusterCopySceneParams -> IO (Id NSNumber)
-sceneIdentifierFrom mtrScenesManagementClusterCopySceneParams  =
-    sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "sceneIdentifierFrom") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneIdentifierFrom mtrScenesManagementClusterCopySceneParams =
+  sendMessage mtrScenesManagementClusterCopySceneParams sceneIdentifierFromSelector
 
 -- | @- setSceneIdentifierFrom:@
 setSceneIdentifierFrom :: (IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneParams -> value -> IO ()
-setSceneIdentifierFrom mtrScenesManagementClusterCopySceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "setSceneIdentifierFrom:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneIdentifierFrom mtrScenesManagementClusterCopySceneParams value =
+  sendMessage mtrScenesManagementClusterCopySceneParams setSceneIdentifierFromSelector (toNSNumber value)
 
 -- | @- groupIdentifierTo@
 groupIdentifierTo :: IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams => mtrScenesManagementClusterCopySceneParams -> IO (Id NSNumber)
-groupIdentifierTo mtrScenesManagementClusterCopySceneParams  =
-    sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "groupIdentifierTo") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupIdentifierTo mtrScenesManagementClusterCopySceneParams =
+  sendMessage mtrScenesManagementClusterCopySceneParams groupIdentifierToSelector
 
 -- | @- setGroupIdentifierTo:@
 setGroupIdentifierTo :: (IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneParams -> value -> IO ()
-setGroupIdentifierTo mtrScenesManagementClusterCopySceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "setGroupIdentifierTo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupIdentifierTo mtrScenesManagementClusterCopySceneParams value =
+  sendMessage mtrScenesManagementClusterCopySceneParams setGroupIdentifierToSelector (toNSNumber value)
 
 -- | @- sceneIdentifierTo@
 sceneIdentifierTo :: IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams => mtrScenesManagementClusterCopySceneParams -> IO (Id NSNumber)
-sceneIdentifierTo mtrScenesManagementClusterCopySceneParams  =
-    sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "sceneIdentifierTo") (retPtr retVoid) [] >>= retainedObject . castPtr
+sceneIdentifierTo mtrScenesManagementClusterCopySceneParams =
+  sendMessage mtrScenesManagementClusterCopySceneParams sceneIdentifierToSelector
 
 -- | @- setSceneIdentifierTo:@
 setSceneIdentifierTo :: (IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneParams -> value -> IO ()
-setSceneIdentifierTo mtrScenesManagementClusterCopySceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "setSceneIdentifierTo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSceneIdentifierTo mtrScenesManagementClusterCopySceneParams value =
+  sendMessage mtrScenesManagementClusterCopySceneParams setSceneIdentifierToSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -116,8 +108,8 @@ setSceneIdentifierTo mtrScenesManagementClusterCopySceneParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams => mtrScenesManagementClusterCopySceneParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrScenesManagementClusterCopySceneParams  =
-    sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrScenesManagementClusterCopySceneParams =
+  sendMessage mtrScenesManagementClusterCopySceneParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -127,9 +119,8 @@ timedInvokeTimeoutMs mtrScenesManagementClusterCopySceneParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrScenesManagementClusterCopySceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrScenesManagementClusterCopySceneParams value =
+  sendMessage mtrScenesManagementClusterCopySceneParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -139,8 +130,8 @@ setTimedInvokeTimeoutMs mtrScenesManagementClusterCopySceneParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams => mtrScenesManagementClusterCopySceneParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrScenesManagementClusterCopySceneParams  =
-    sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrScenesManagementClusterCopySceneParams =
+  sendMessage mtrScenesManagementClusterCopySceneParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -150,67 +141,66 @@ serverSideProcessingTimeout mtrScenesManagementClusterCopySceneParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRScenesManagementClusterCopySceneParams mtrScenesManagementClusterCopySceneParams, IsNSNumber value) => mtrScenesManagementClusterCopySceneParams -> value -> IO ()
-setServerSideProcessingTimeout mtrScenesManagementClusterCopySceneParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrScenesManagementClusterCopySceneParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrScenesManagementClusterCopySceneParams value =
+  sendMessage mtrScenesManagementClusterCopySceneParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @mode@
-modeSelector :: Selector
+modeSelector :: Selector '[] (Id NSNumber)
 modeSelector = mkSelector "mode"
 
 -- | @Selector@ for @setMode:@
-setModeSelector :: Selector
+setModeSelector :: Selector '[Id NSNumber] ()
 setModeSelector = mkSelector "setMode:"
 
 -- | @Selector@ for @groupIdentifierFrom@
-groupIdentifierFromSelector :: Selector
+groupIdentifierFromSelector :: Selector '[] (Id NSNumber)
 groupIdentifierFromSelector = mkSelector "groupIdentifierFrom"
 
 -- | @Selector@ for @setGroupIdentifierFrom:@
-setGroupIdentifierFromSelector :: Selector
+setGroupIdentifierFromSelector :: Selector '[Id NSNumber] ()
 setGroupIdentifierFromSelector = mkSelector "setGroupIdentifierFrom:"
 
 -- | @Selector@ for @sceneIdentifierFrom@
-sceneIdentifierFromSelector :: Selector
+sceneIdentifierFromSelector :: Selector '[] (Id NSNumber)
 sceneIdentifierFromSelector = mkSelector "sceneIdentifierFrom"
 
 -- | @Selector@ for @setSceneIdentifierFrom:@
-setSceneIdentifierFromSelector :: Selector
+setSceneIdentifierFromSelector :: Selector '[Id NSNumber] ()
 setSceneIdentifierFromSelector = mkSelector "setSceneIdentifierFrom:"
 
 -- | @Selector@ for @groupIdentifierTo@
-groupIdentifierToSelector :: Selector
+groupIdentifierToSelector :: Selector '[] (Id NSNumber)
 groupIdentifierToSelector = mkSelector "groupIdentifierTo"
 
 -- | @Selector@ for @setGroupIdentifierTo:@
-setGroupIdentifierToSelector :: Selector
+setGroupIdentifierToSelector :: Selector '[Id NSNumber] ()
 setGroupIdentifierToSelector = mkSelector "setGroupIdentifierTo:"
 
 -- | @Selector@ for @sceneIdentifierTo@
-sceneIdentifierToSelector :: Selector
+sceneIdentifierToSelector :: Selector '[] (Id NSNumber)
 sceneIdentifierToSelector = mkSelector "sceneIdentifierTo"
 
 -- | @Selector@ for @setSceneIdentifierTo:@
-setSceneIdentifierToSelector :: Selector
+setSceneIdentifierToSelector :: Selector '[Id NSNumber] ()
 setSceneIdentifierToSelector = mkSelector "setSceneIdentifierTo:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

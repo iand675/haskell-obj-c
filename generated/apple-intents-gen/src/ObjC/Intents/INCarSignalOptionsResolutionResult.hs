@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INCarSignalOptionsResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithCarSignalOptionsToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedCarSignalOptionsSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithCarSignalOptionsToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedCarSignalOptionsSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INCarSignalOptions(INCarSignalOptions)
@@ -23,15 +24,11 @@ module ObjC.Intents.INCarSignalOptionsResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,46 +41,46 @@ successWithResolvedCarSignalOptions :: INCarSignalOptions -> IO (Id INCarSignalO
 successWithResolvedCarSignalOptions resolvedCarSignalOptions =
   do
     cls' <- getRequiredClass "INCarSignalOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedCarSignalOptions:") (retPtr retVoid) [argCULong (coerce resolvedCarSignalOptions)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedCarSignalOptionsSelector resolvedCarSignalOptions
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INCarSignalOptions -> IO (Id INCarSignalOptionsResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INCarSignalOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCULong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithCarSignalOptionsToConfirm:@
 confirmationRequiredWithCarSignalOptionsToConfirm :: INCarSignalOptions -> IO (Id INCarSignalOptionsResolutionResult)
 confirmationRequiredWithCarSignalOptionsToConfirm carSignalOptionsToConfirm =
   do
     cls' <- getRequiredClass "INCarSignalOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithCarSignalOptionsToConfirm:") (retPtr retVoid) [argCULong (coerce carSignalOptionsToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithCarSignalOptionsToConfirmSelector carSignalOptionsToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INCarSignalOptions -> IO (Id INCarSignalOptionsResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INCarSignalOptionsResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCULong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedCarSignalOptions:@
-successWithResolvedCarSignalOptionsSelector :: Selector
+successWithResolvedCarSignalOptionsSelector :: Selector '[INCarSignalOptions] (Id INCarSignalOptionsResolutionResult)
 successWithResolvedCarSignalOptionsSelector = mkSelector "successWithResolvedCarSignalOptions:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INCarSignalOptions] (Id INCarSignalOptionsResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithCarSignalOptionsToConfirm:@
-confirmationRequiredWithCarSignalOptionsToConfirmSelector :: Selector
+confirmationRequiredWithCarSignalOptionsToConfirmSelector :: Selector '[INCarSignalOptions] (Id INCarSignalOptionsResolutionResult)
 confirmationRequiredWithCarSignalOptionsToConfirmSelector = mkSelector "confirmationRequiredWithCarSignalOptionsToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INCarSignalOptions] (Id INCarSignalOptionsResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

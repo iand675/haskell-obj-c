@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.HealthKit.HKStatisticsCollection
   , enumerateStatisticsFromDate_toDate_withBlock
   , statistics
   , sources
-  , initSelector
-  , statisticsForDateSelector
   , enumerateStatisticsFromDate_toDate_withBlockSelector
-  , statisticsSelector
+  , initSelector
   , sourcesSelector
+  , statisticsForDateSelector
+  , statisticsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,8 +34,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKStatisticsCollection hkStatisticsCollection => hkStatisticsCollection -> IO (Id HKStatisticsCollection)
-init_ hkStatisticsCollection  =
-    sendMsg hkStatisticsCollection (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkStatisticsCollection =
+  sendOwnedMessage hkStatisticsCollection initSelector
 
 -- | statisticsForDate:
 --
@@ -48,9 +45,8 @@ init_ hkStatisticsCollection  =
 --
 -- ObjC selector: @- statisticsForDate:@
 statisticsForDate :: (IsHKStatisticsCollection hkStatisticsCollection, IsNSDate date) => hkStatisticsCollection -> date -> IO (Id HKStatistics)
-statisticsForDate hkStatisticsCollection  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg hkStatisticsCollection (mkSelector "statisticsForDate:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+statisticsForDate hkStatisticsCollection date =
+  sendMessage hkStatisticsCollection statisticsForDateSelector (toNSDate date)
 
 -- | enumerateStatisticsFromDate:toDate:withBlock:
 --
@@ -60,10 +56,8 @@ statisticsForDate hkStatisticsCollection  date =
 --
 -- ObjC selector: @- enumerateStatisticsFromDate:toDate:withBlock:@
 enumerateStatisticsFromDate_toDate_withBlock :: (IsHKStatisticsCollection hkStatisticsCollection, IsNSDate startDate, IsNSDate endDate) => hkStatisticsCollection -> startDate -> endDate -> Ptr () -> IO ()
-enumerateStatisticsFromDate_toDate_withBlock hkStatisticsCollection  startDate endDate block =
-  withObjCPtr startDate $ \raw_startDate ->
-    withObjCPtr endDate $ \raw_endDate ->
-        sendMsg hkStatisticsCollection (mkSelector "enumerateStatisticsFromDate:toDate:withBlock:") retVoid [argPtr (castPtr raw_startDate :: Ptr ()), argPtr (castPtr raw_endDate :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+enumerateStatisticsFromDate_toDate_withBlock hkStatisticsCollection startDate endDate block =
+  sendMessage hkStatisticsCollection enumerateStatisticsFromDate_toDate_withBlockSelector (toNSDate startDate) (toNSDate endDate) block
 
 -- | statistics
 --
@@ -73,8 +67,8 @@ enumerateStatisticsFromDate_toDate_withBlock hkStatisticsCollection  startDate e
 --
 -- ObjC selector: @- statistics@
 statistics :: IsHKStatisticsCollection hkStatisticsCollection => hkStatisticsCollection -> IO (Id NSArray)
-statistics hkStatisticsCollection  =
-    sendMsg hkStatisticsCollection (mkSelector "statistics") (retPtr retVoid) [] >>= retainedObject . castPtr
+statistics hkStatisticsCollection =
+  sendMessage hkStatisticsCollection statisticsSelector
 
 -- | sources
 --
@@ -84,30 +78,30 @@ statistics hkStatisticsCollection  =
 --
 -- ObjC selector: @- sources@
 sources :: IsHKStatisticsCollection hkStatisticsCollection => hkStatisticsCollection -> IO (Id NSSet)
-sources hkStatisticsCollection  =
-    sendMsg hkStatisticsCollection (mkSelector "sources") (retPtr retVoid) [] >>= retainedObject . castPtr
+sources hkStatisticsCollection =
+  sendMessage hkStatisticsCollection sourcesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKStatisticsCollection)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @statisticsForDate:@
-statisticsForDateSelector :: Selector
+statisticsForDateSelector :: Selector '[Id NSDate] (Id HKStatistics)
 statisticsForDateSelector = mkSelector "statisticsForDate:"
 
 -- | @Selector@ for @enumerateStatisticsFromDate:toDate:withBlock:@
-enumerateStatisticsFromDate_toDate_withBlockSelector :: Selector
+enumerateStatisticsFromDate_toDate_withBlockSelector :: Selector '[Id NSDate, Id NSDate, Ptr ()] ()
 enumerateStatisticsFromDate_toDate_withBlockSelector = mkSelector "enumerateStatisticsFromDate:toDate:withBlock:"
 
 -- | @Selector@ for @statistics@
-statisticsSelector :: Selector
+statisticsSelector :: Selector '[] (Id NSArray)
 statisticsSelector = mkSelector "statistics"
 
 -- | @Selector@ for @sources@
-sourcesSelector :: Selector
+sourcesSelector :: Selector '[] (Id NSSet)
 sourcesSelector = mkSelector "sources"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,19 +25,19 @@ module ObjC.ScreenCaptureKit.SCContentFilter
   , includedDisplays
   , includedApplications
   , includedWindows
+  , includeMenuBarSelector
+  , includedApplicationsSelector
+  , includedDisplaysSelector
+  , includedWindowsSelector
   , initWithDesktopIndependentWindowSelector
-  , initWithDisplay_excludingWindowsSelector
-  , initWithDisplay_includingWindowsSelector
-  , initWithDisplay_includingApplications_exceptingWindowsSelector
   , initWithDisplay_excludingApplications_exceptingWindowsSelector
+  , initWithDisplay_excludingWindowsSelector
+  , initWithDisplay_includingApplications_exceptingWindowsSelector
+  , initWithDisplay_includingWindowsSelector
+  , pointPixelScaleSelector
+  , setIncludeMenuBarSelector
   , streamTypeSelector
   , styleSelector
-  , pointPixelScaleSelector
-  , includeMenuBarSelector
-  , setIncludeMenuBarSelector
-  , includedDisplaysSelector
-  , includedApplicationsSelector
-  , includedWindowsSelector
 
   -- * Enum types
   , SCShareableContentStyle(SCShareableContentStyle)
@@ -50,15 +51,11 @@ module ObjC.ScreenCaptureKit.SCContentFilter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -74,9 +71,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDesktopIndependentWindow:@
 initWithDesktopIndependentWindow :: (IsSCContentFilter scContentFilter, IsSCWindow window) => scContentFilter -> window -> IO (Id SCContentFilter)
-initWithDesktopIndependentWindow scContentFilter  window =
-  withObjCPtr window $ \raw_window ->
-      sendMsg scContentFilter (mkSelector "initWithDesktopIndependentWindow:") (retPtr retVoid) [argPtr (castPtr raw_window :: Ptr ())] >>= ownedObject . castPtr
+initWithDesktopIndependentWindow scContentFilter window =
+  sendOwnedMessage scContentFilter initWithDesktopIndependentWindowSelector (toSCWindow window)
 
 -- | initWithDisplay:excludingWindows
 --
@@ -88,10 +84,8 @@ initWithDesktopIndependentWindow scContentFilter  window =
 --
 -- ObjC selector: @- initWithDisplay:excludingWindows:@
 initWithDisplay_excludingWindows :: (IsSCContentFilter scContentFilter, IsSCDisplay display, IsNSArray excluded) => scContentFilter -> display -> excluded -> IO (Id SCContentFilter)
-initWithDisplay_excludingWindows scContentFilter  display excluded =
-  withObjCPtr display $ \raw_display ->
-    withObjCPtr excluded $ \raw_excluded ->
-        sendMsg scContentFilter (mkSelector "initWithDisplay:excludingWindows:") (retPtr retVoid) [argPtr (castPtr raw_display :: Ptr ()), argPtr (castPtr raw_excluded :: Ptr ())] >>= ownedObject . castPtr
+initWithDisplay_excludingWindows scContentFilter display excluded =
+  sendOwnedMessage scContentFilter initWithDisplay_excludingWindowsSelector (toSCDisplay display) (toNSArray excluded)
 
 -- | initWithDisplay:includingWindows
 --
@@ -103,10 +97,8 @@ initWithDisplay_excludingWindows scContentFilter  display excluded =
 --
 -- ObjC selector: @- initWithDisplay:includingWindows:@
 initWithDisplay_includingWindows :: (IsSCContentFilter scContentFilter, IsSCDisplay display, IsNSArray includedWindows) => scContentFilter -> display -> includedWindows -> IO (Id SCContentFilter)
-initWithDisplay_includingWindows scContentFilter  display includedWindows =
-  withObjCPtr display $ \raw_display ->
-    withObjCPtr includedWindows $ \raw_includedWindows ->
-        sendMsg scContentFilter (mkSelector "initWithDisplay:includingWindows:") (retPtr retVoid) [argPtr (castPtr raw_display :: Ptr ()), argPtr (castPtr raw_includedWindows :: Ptr ())] >>= ownedObject . castPtr
+initWithDisplay_includingWindows scContentFilter display includedWindows =
+  sendOwnedMessage scContentFilter initWithDisplay_includingWindowsSelector (toSCDisplay display) (toNSArray includedWindows)
 
 -- | initWithDisplay:includingApplications:exceptingWindows
 --
@@ -120,11 +112,8 @@ initWithDisplay_includingWindows scContentFilter  display includedWindows =
 --
 -- ObjC selector: @- initWithDisplay:includingApplications:exceptingWindows:@
 initWithDisplay_includingApplications_exceptingWindows :: (IsSCContentFilter scContentFilter, IsSCDisplay display, IsNSArray applications, IsNSArray exceptingWindows) => scContentFilter -> display -> applications -> exceptingWindows -> IO (Id SCContentFilter)
-initWithDisplay_includingApplications_exceptingWindows scContentFilter  display applications exceptingWindows =
-  withObjCPtr display $ \raw_display ->
-    withObjCPtr applications $ \raw_applications ->
-      withObjCPtr exceptingWindows $ \raw_exceptingWindows ->
-          sendMsg scContentFilter (mkSelector "initWithDisplay:includingApplications:exceptingWindows:") (retPtr retVoid) [argPtr (castPtr raw_display :: Ptr ()), argPtr (castPtr raw_applications :: Ptr ()), argPtr (castPtr raw_exceptingWindows :: Ptr ())] >>= ownedObject . castPtr
+initWithDisplay_includingApplications_exceptingWindows scContentFilter display applications exceptingWindows =
+  sendOwnedMessage scContentFilter initWithDisplay_includingApplications_exceptingWindowsSelector (toSCDisplay display) (toNSArray applications) (toNSArray exceptingWindows)
 
 -- | initWithDisplay:excludingApplications:exceptingWindows
 --
@@ -138,121 +127,118 @@ initWithDisplay_includingApplications_exceptingWindows scContentFilter  display 
 --
 -- ObjC selector: @- initWithDisplay:excludingApplications:exceptingWindows:@
 initWithDisplay_excludingApplications_exceptingWindows :: (IsSCContentFilter scContentFilter, IsSCDisplay display, IsNSArray applications, IsNSArray exceptingWindows) => scContentFilter -> display -> applications -> exceptingWindows -> IO (Id SCContentFilter)
-initWithDisplay_excludingApplications_exceptingWindows scContentFilter  display applications exceptingWindows =
-  withObjCPtr display $ \raw_display ->
-    withObjCPtr applications $ \raw_applications ->
-      withObjCPtr exceptingWindows $ \raw_exceptingWindows ->
-          sendMsg scContentFilter (mkSelector "initWithDisplay:excludingApplications:exceptingWindows:") (retPtr retVoid) [argPtr (castPtr raw_display :: Ptr ()), argPtr (castPtr raw_applications :: Ptr ()), argPtr (castPtr raw_exceptingWindows :: Ptr ())] >>= ownedObject . castPtr
+initWithDisplay_excludingApplications_exceptingWindows scContentFilter display applications exceptingWindows =
+  sendOwnedMessage scContentFilter initWithDisplay_excludingApplications_exceptingWindowsSelector (toSCDisplay display) (toNSArray applications) (toNSArray exceptingWindows)
 
 -- | streamType type of stream
 --
 -- ObjC selector: @- streamType@
 streamType :: IsSCContentFilter scContentFilter => scContentFilter -> IO SCStreamType
-streamType scContentFilter  =
-    fmap (coerce :: CLong -> SCStreamType) $ sendMsg scContentFilter (mkSelector "streamType") retCLong []
+streamType scContentFilter =
+  sendMessage scContentFilter streamTypeSelector
 
 -- | style of stream
 --
 -- ObjC selector: @- style@
 style :: IsSCContentFilter scContentFilter => scContentFilter -> IO SCShareableContentStyle
-style scContentFilter  =
-    fmap (coerce :: CLong -> SCShareableContentStyle) $ sendMsg scContentFilter (mkSelector "style") retCLong []
+style scContentFilter =
+  sendMessage scContentFilter styleSelector
 
 -- | Pixel to points scaling factor
 --
 -- ObjC selector: @- pointPixelScale@
 pointPixelScale :: IsSCContentFilter scContentFilter => scContentFilter -> IO CFloat
-pointPixelScale scContentFilter  =
-    sendMsg scContentFilter (mkSelector "pointPixelScale") retCFloat []
+pointPixelScale scContentFilter =
+  sendMessage scContentFilter pointPixelScaleSelector
 
 -- | To include menu bar as part of the capture. This property has no effect for the desktop independent window filter. For content filters created with initWithDisplay:excluding, the default value is YES. Display excluding content filters contains the desktop and dock. For content filters created with initWithDisplay:including, the default value is NO. Display including content filters do not contain the desktop and dock
 --
 -- ObjC selector: @- includeMenuBar@
 includeMenuBar :: IsSCContentFilter scContentFilter => scContentFilter -> IO Bool
-includeMenuBar scContentFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg scContentFilter (mkSelector "includeMenuBar") retCULong []
+includeMenuBar scContentFilter =
+  sendMessage scContentFilter includeMenuBarSelector
 
 -- | To include menu bar as part of the capture. This property has no effect for the desktop independent window filter. For content filters created with initWithDisplay:excluding, the default value is YES. Display excluding content filters contains the desktop and dock. For content filters created with initWithDisplay:including, the default value is NO. Display including content filters do not contain the desktop and dock
 --
 -- ObjC selector: @- setIncludeMenuBar:@
 setIncludeMenuBar :: IsSCContentFilter scContentFilter => scContentFilter -> Bool -> IO ()
-setIncludeMenuBar scContentFilter  value =
-    sendMsg scContentFilter (mkSelector "setIncludeMenuBar:") retVoid [argCULong (if value then 1 else 0)]
+setIncludeMenuBar scContentFilter value =
+  sendMessage scContentFilter setIncludeMenuBarSelector value
 
 -- | SCDisplays that are included in the content filter
 --
 -- ObjC selector: @- includedDisplays@
 includedDisplays :: IsSCContentFilter scContentFilter => scContentFilter -> IO (Id NSArray)
-includedDisplays scContentFilter  =
-    sendMsg scContentFilter (mkSelector "includedDisplays") (retPtr retVoid) [] >>= retainedObject . castPtr
+includedDisplays scContentFilter =
+  sendMessage scContentFilter includedDisplaysSelector
 
 -- | Applications that are included in the content filter
 --
 -- ObjC selector: @- includedApplications@
 includedApplications :: IsSCContentFilter scContentFilter => scContentFilter -> IO (Id NSArray)
-includedApplications scContentFilter  =
-    sendMsg scContentFilter (mkSelector "includedApplications") (retPtr retVoid) [] >>= retainedObject . castPtr
+includedApplications scContentFilter =
+  sendMessage scContentFilter includedApplicationsSelector
 
 -- | Windows that are included in the content filter
 --
 -- ObjC selector: @- includedWindows@
 includedWindows :: IsSCContentFilter scContentFilter => scContentFilter -> IO (Id NSArray)
-includedWindows scContentFilter  =
-    sendMsg scContentFilter (mkSelector "includedWindows") (retPtr retVoid) [] >>= retainedObject . castPtr
+includedWindows scContentFilter =
+  sendMessage scContentFilter includedWindowsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDesktopIndependentWindow:@
-initWithDesktopIndependentWindowSelector :: Selector
+initWithDesktopIndependentWindowSelector :: Selector '[Id SCWindow] (Id SCContentFilter)
 initWithDesktopIndependentWindowSelector = mkSelector "initWithDesktopIndependentWindow:"
 
 -- | @Selector@ for @initWithDisplay:excludingWindows:@
-initWithDisplay_excludingWindowsSelector :: Selector
+initWithDisplay_excludingWindowsSelector :: Selector '[Id SCDisplay, Id NSArray] (Id SCContentFilter)
 initWithDisplay_excludingWindowsSelector = mkSelector "initWithDisplay:excludingWindows:"
 
 -- | @Selector@ for @initWithDisplay:includingWindows:@
-initWithDisplay_includingWindowsSelector :: Selector
+initWithDisplay_includingWindowsSelector :: Selector '[Id SCDisplay, Id NSArray] (Id SCContentFilter)
 initWithDisplay_includingWindowsSelector = mkSelector "initWithDisplay:includingWindows:"
 
 -- | @Selector@ for @initWithDisplay:includingApplications:exceptingWindows:@
-initWithDisplay_includingApplications_exceptingWindowsSelector :: Selector
+initWithDisplay_includingApplications_exceptingWindowsSelector :: Selector '[Id SCDisplay, Id NSArray, Id NSArray] (Id SCContentFilter)
 initWithDisplay_includingApplications_exceptingWindowsSelector = mkSelector "initWithDisplay:includingApplications:exceptingWindows:"
 
 -- | @Selector@ for @initWithDisplay:excludingApplications:exceptingWindows:@
-initWithDisplay_excludingApplications_exceptingWindowsSelector :: Selector
+initWithDisplay_excludingApplications_exceptingWindowsSelector :: Selector '[Id SCDisplay, Id NSArray, Id NSArray] (Id SCContentFilter)
 initWithDisplay_excludingApplications_exceptingWindowsSelector = mkSelector "initWithDisplay:excludingApplications:exceptingWindows:"
 
 -- | @Selector@ for @streamType@
-streamTypeSelector :: Selector
+streamTypeSelector :: Selector '[] SCStreamType
 streamTypeSelector = mkSelector "streamType"
 
 -- | @Selector@ for @style@
-styleSelector :: Selector
+styleSelector :: Selector '[] SCShareableContentStyle
 styleSelector = mkSelector "style"
 
 -- | @Selector@ for @pointPixelScale@
-pointPixelScaleSelector :: Selector
+pointPixelScaleSelector :: Selector '[] CFloat
 pointPixelScaleSelector = mkSelector "pointPixelScale"
 
 -- | @Selector@ for @includeMenuBar@
-includeMenuBarSelector :: Selector
+includeMenuBarSelector :: Selector '[] Bool
 includeMenuBarSelector = mkSelector "includeMenuBar"
 
 -- | @Selector@ for @setIncludeMenuBar:@
-setIncludeMenuBarSelector :: Selector
+setIncludeMenuBarSelector :: Selector '[Bool] ()
 setIncludeMenuBarSelector = mkSelector "setIncludeMenuBar:"
 
 -- | @Selector@ for @includedDisplays@
-includedDisplaysSelector :: Selector
+includedDisplaysSelector :: Selector '[] (Id NSArray)
 includedDisplaysSelector = mkSelector "includedDisplays"
 
 -- | @Selector@ for @includedApplications@
-includedApplicationsSelector :: Selector
+includedApplicationsSelector :: Selector '[] (Id NSArray)
 includedApplicationsSelector = mkSelector "includedApplications"
 
 -- | @Selector@ for @includedWindows@
-includedWindowsSelector :: Selector
+includedWindowsSelector :: Selector '[] (Id NSArray)
 includedWindowsSelector = mkSelector "includedWindows"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRDataTypePriceStruct
   , currency
   , setCurrency
   , amountSelector
-  , setAmountSelector
   , currencySelector
+  , setAmountSelector
   , setCurrencySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- amount@
 amount :: IsMTRDataTypePriceStruct mtrDataTypePriceStruct => mtrDataTypePriceStruct -> IO (Id NSNumber)
-amount mtrDataTypePriceStruct  =
-    sendMsg mtrDataTypePriceStruct (mkSelector "amount") (retPtr retVoid) [] >>= retainedObject . castPtr
+amount mtrDataTypePriceStruct =
+  sendMessage mtrDataTypePriceStruct amountSelector
 
 -- | @- setAmount:@
 setAmount :: (IsMTRDataTypePriceStruct mtrDataTypePriceStruct, IsNSNumber value) => mtrDataTypePriceStruct -> value -> IO ()
-setAmount mtrDataTypePriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypePriceStruct (mkSelector "setAmount:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAmount mtrDataTypePriceStruct value =
+  sendMessage mtrDataTypePriceStruct setAmountSelector (toNSNumber value)
 
 -- | @- currency@
 currency :: IsMTRDataTypePriceStruct mtrDataTypePriceStruct => mtrDataTypePriceStruct -> IO (Id MTRDataTypeCurrencyStruct)
-currency mtrDataTypePriceStruct  =
-    sendMsg mtrDataTypePriceStruct (mkSelector "currency") (retPtr retVoid) [] >>= retainedObject . castPtr
+currency mtrDataTypePriceStruct =
+  sendMessage mtrDataTypePriceStruct currencySelector
 
 -- | @- setCurrency:@
 setCurrency :: (IsMTRDataTypePriceStruct mtrDataTypePriceStruct, IsMTRDataTypeCurrencyStruct value) => mtrDataTypePriceStruct -> value -> IO ()
-setCurrency mtrDataTypePriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDataTypePriceStruct (mkSelector "setCurrency:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCurrency mtrDataTypePriceStruct value =
+  sendMessage mtrDataTypePriceStruct setCurrencySelector (toMTRDataTypeCurrencyStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @amount@
-amountSelector :: Selector
+amountSelector :: Selector '[] (Id NSNumber)
 amountSelector = mkSelector "amount"
 
 -- | @Selector@ for @setAmount:@
-setAmountSelector :: Selector
+setAmountSelector :: Selector '[Id NSNumber] ()
 setAmountSelector = mkSelector "setAmount:"
 
 -- | @Selector@ for @currency@
-currencySelector :: Selector
+currencySelector :: Selector '[] (Id MTRDataTypeCurrencyStruct)
 currencySelector = mkSelector "currency"
 
 -- | @Selector@ for @setCurrency:@
-setCurrencySelector :: Selector
+setCurrencySelector :: Selector '[Id MTRDataTypeCurrencyStruct] ()
 setCurrencySelector = mkSelector "setCurrency:"
 

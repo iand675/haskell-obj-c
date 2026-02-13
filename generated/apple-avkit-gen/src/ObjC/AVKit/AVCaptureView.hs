@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,15 +21,15 @@ module ObjC.AVKit.AVCaptureView
   , setControlsStyle
   , videoGravity
   , setVideoGravity
-  , setSession_showVideoPreview_showAudioPreviewSelector
-  , sessionSelector
-  , fileOutputSelector
-  , delegateSelector
-  , setDelegateSelector
   , controlsStyleSelector
+  , delegateSelector
+  , fileOutputSelector
+  , sessionSelector
   , setControlsStyleSelector
-  , videoGravitySelector
+  , setDelegateSelector
+  , setSession_showVideoPreview_showAudioPreviewSelector
   , setVideoGravitySelector
+  , videoGravitySelector
 
   -- * Enum types
   , AVCaptureViewControlsStyle(AVCaptureViewControlsStyle)
@@ -39,15 +40,11 @@ module ObjC.AVKit.AVCaptureView
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,9 +68,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- setSession:showVideoPreview:showAudioPreview:@
 setSession_showVideoPreview_showAudioPreview :: (IsAVCaptureView avCaptureView, IsAVCaptureSession session) => avCaptureView -> session -> Bool -> Bool -> IO ()
-setSession_showVideoPreview_showAudioPreview avCaptureView  session showVideoPreview showAudioPreview =
-  withObjCPtr session $ \raw_session ->
-      sendMsg avCaptureView (mkSelector "setSession:showVideoPreview:showAudioPreview:") retVoid [argPtr (castPtr raw_session :: Ptr ()), argCULong (if showVideoPreview then 1 else 0), argCULong (if showAudioPreview then 1 else 0)]
+setSession_showVideoPreview_showAudioPreview avCaptureView session showVideoPreview showAudioPreview =
+  sendMessage avCaptureView setSession_showVideoPreview_showAudioPreviewSelector (toAVCaptureSession session) showVideoPreview showAudioPreview
 
 -- | session
 --
@@ -83,8 +79,8 @@ setSession_showVideoPreview_showAudioPreview avCaptureView  session showVideoPre
 --
 -- ObjC selector: @- session@
 session :: IsAVCaptureView avCaptureView => avCaptureView -> IO (Id AVCaptureSession)
-session avCaptureView  =
-    sendMsg avCaptureView (mkSelector "session") (retPtr retVoid) [] >>= retainedObject . castPtr
+session avCaptureView =
+  sendMessage avCaptureView sessionSelector
 
 -- | fileOutput
 --
@@ -94,8 +90,8 @@ session avCaptureView  =
 --
 -- ObjC selector: @- fileOutput@
 fileOutput :: IsAVCaptureView avCaptureView => avCaptureView -> IO (Id AVCaptureFileOutput)
-fileOutput avCaptureView  =
-    sendMsg avCaptureView (mkSelector "fileOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+fileOutput avCaptureView =
+  sendMessage avCaptureView fileOutputSelector
 
 -- | delegate
 --
@@ -105,8 +101,8 @@ fileOutput avCaptureView  =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVCaptureView avCaptureView => avCaptureView -> IO RawId
-delegate avCaptureView  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureView (mkSelector "delegate") (retPtr retVoid) []
+delegate avCaptureView =
+  sendMessage avCaptureView delegateSelector
 
 -- | delegate
 --
@@ -116,8 +112,8 @@ delegate avCaptureView  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsAVCaptureView avCaptureView => avCaptureView -> RawId -> IO ()
-setDelegate avCaptureView  value =
-    sendMsg avCaptureView (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate avCaptureView value =
+  sendMessage avCaptureView setDelegateSelector value
 
 -- | controlsStyle
 --
@@ -125,8 +121,8 @@ setDelegate avCaptureView  value =
 --
 -- ObjC selector: @- controlsStyle@
 controlsStyle :: IsAVCaptureView avCaptureView => avCaptureView -> IO AVCaptureViewControlsStyle
-controlsStyle avCaptureView  =
-    fmap (coerce :: CLong -> AVCaptureViewControlsStyle) $ sendMsg avCaptureView (mkSelector "controlsStyle") retCLong []
+controlsStyle avCaptureView =
+  sendMessage avCaptureView controlsStyleSelector
 
 -- | controlsStyle
 --
@@ -134,8 +130,8 @@ controlsStyle avCaptureView  =
 --
 -- ObjC selector: @- setControlsStyle:@
 setControlsStyle :: IsAVCaptureView avCaptureView => avCaptureView -> AVCaptureViewControlsStyle -> IO ()
-setControlsStyle avCaptureView  value =
-    sendMsg avCaptureView (mkSelector "setControlsStyle:") retVoid [argCLong (coerce value)]
+setControlsStyle avCaptureView value =
+  sendMessage avCaptureView setControlsStyleSelector value
 
 -- | videoGravity
 --
@@ -145,8 +141,8 @@ setControlsStyle avCaptureView  value =
 --
 -- ObjC selector: @- videoGravity@
 videoGravity :: IsAVCaptureView avCaptureView => avCaptureView -> IO (Id NSString)
-videoGravity avCaptureView  =
-    sendMsg avCaptureView (mkSelector "videoGravity") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoGravity avCaptureView =
+  sendMessage avCaptureView videoGravitySelector
 
 -- | videoGravity
 --
@@ -156,47 +152,46 @@ videoGravity avCaptureView  =
 --
 -- ObjC selector: @- setVideoGravity:@
 setVideoGravity :: (IsAVCaptureView avCaptureView, IsNSString value) => avCaptureView -> value -> IO ()
-setVideoGravity avCaptureView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureView (mkSelector "setVideoGravity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoGravity avCaptureView value =
+  sendMessage avCaptureView setVideoGravitySelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setSession:showVideoPreview:showAudioPreview:@
-setSession_showVideoPreview_showAudioPreviewSelector :: Selector
+setSession_showVideoPreview_showAudioPreviewSelector :: Selector '[Id AVCaptureSession, Bool, Bool] ()
 setSession_showVideoPreview_showAudioPreviewSelector = mkSelector "setSession:showVideoPreview:showAudioPreview:"
 
 -- | @Selector@ for @session@
-sessionSelector :: Selector
+sessionSelector :: Selector '[] (Id AVCaptureSession)
 sessionSelector = mkSelector "session"
 
 -- | @Selector@ for @fileOutput@
-fileOutputSelector :: Selector
+fileOutputSelector :: Selector '[] (Id AVCaptureFileOutput)
 fileOutputSelector = mkSelector "fileOutput"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @controlsStyle@
-controlsStyleSelector :: Selector
+controlsStyleSelector :: Selector '[] AVCaptureViewControlsStyle
 controlsStyleSelector = mkSelector "controlsStyle"
 
 -- | @Selector@ for @setControlsStyle:@
-setControlsStyleSelector :: Selector
+setControlsStyleSelector :: Selector '[AVCaptureViewControlsStyle] ()
 setControlsStyleSelector = mkSelector "setControlsStyle:"
 
 -- | @Selector@ for @videoGravity@
-videoGravitySelector :: Selector
+videoGravitySelector :: Selector '[] (Id NSString)
 videoGravitySelector = mkSelector "videoGravity"
 
 -- | @Selector@ for @setVideoGravity:@
-setVideoGravitySelector :: Selector
+setVideoGravitySelector :: Selector '[Id NSString] ()
 setVideoGravitySelector = mkSelector "setVideoGravity:"
 

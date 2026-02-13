@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -52,21 +53,21 @@ module ObjC.MetalPerformanceShaders.MPSNNNeuronDescriptor
   , setC
   , data_
   , setData
-  , initSelector
+  , aSelector
+  , bSelector
+  , cSelector
   , cnnNeuronDescriptorWithTypeSelector
   , cnnNeuronDescriptorWithType_aSelector
   , cnnNeuronDescriptorWithType_a_bSelector
   , cnnNeuronDescriptorWithType_a_b_cSelector
-  , neuronTypeSelector
-  , setNeuronTypeSelector
-  , aSelector
-  , setASelector
-  , bSelector
-  , setBSelector
-  , cSelector
-  , setCSelector
   , dataSelector
+  , initSelector
+  , neuronTypeSelector
+  , setASelector
+  , setBSelector
+  , setCSelector
   , setDataSelector
+  , setNeuronTypeSelector
 
   -- * Enum types
   , MPSCNNNeuronType(MPSCNNNeuronType)
@@ -90,15 +91,11 @@ module ObjC.MetalPerformanceShaders.MPSNNNeuronDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -110,8 +107,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> IO (Id MPSNNNeuronDescriptor)
-init_ mpsnnNeuronDescriptor  =
-    sendMsg mpsnnNeuronDescriptor (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsnnNeuronDescriptor =
+  sendOwnedMessage mpsnnNeuronDescriptor initSelector
 
 -- | Make a descriptor for a MPSCNNNeuron object.
 --
@@ -124,7 +121,7 @@ cnnNeuronDescriptorWithType :: MPSCNNNeuronType -> IO (Id MPSNNNeuronDescriptor)
 cnnNeuronDescriptorWithType neuronType =
   do
     cls' <- getRequiredClass "MPSNNNeuronDescriptor"
-    sendClassMsg cls' (mkSelector "cnnNeuronDescriptorWithType:") (retPtr retVoid) [argCInt (coerce neuronType)] >>= retainedObject . castPtr
+    sendClassMessage cls' cnnNeuronDescriptorWithTypeSelector neuronType
 
 -- | Make a descriptor for a MPSCNNNeuron object.
 --
@@ -139,7 +136,7 @@ cnnNeuronDescriptorWithType_a :: MPSCNNNeuronType -> CFloat -> IO (Id MPSNNNeuro
 cnnNeuronDescriptorWithType_a neuronType a =
   do
     cls' <- getRequiredClass "MPSNNNeuronDescriptor"
-    sendClassMsg cls' (mkSelector "cnnNeuronDescriptorWithType:a:") (retPtr retVoid) [argCInt (coerce neuronType), argCFloat a] >>= retainedObject . castPtr
+    sendClassMessage cls' cnnNeuronDescriptorWithType_aSelector neuronType a
 
 -- | Initialize the neuron descriptor.
 --
@@ -156,7 +153,7 @@ cnnNeuronDescriptorWithType_a_b :: MPSCNNNeuronType -> CFloat -> CFloat -> IO (I
 cnnNeuronDescriptorWithType_a_b neuronType a b =
   do
     cls' <- getRequiredClass "MPSNNNeuronDescriptor"
-    sendClassMsg cls' (mkSelector "cnnNeuronDescriptorWithType:a:b:") (retPtr retVoid) [argCInt (coerce neuronType), argCFloat a, argCFloat b] >>= retainedObject . castPtr
+    sendClassMessage cls' cnnNeuronDescriptorWithType_a_bSelector neuronType a b
 
 -- | Make a descriptor for a MPSCNNNeuron object.
 --
@@ -175,120 +172,119 @@ cnnNeuronDescriptorWithType_a_b_c :: MPSCNNNeuronType -> CFloat -> CFloat -> CFl
 cnnNeuronDescriptorWithType_a_b_c neuronType a b c =
   do
     cls' <- getRequiredClass "MPSNNNeuronDescriptor"
-    sendClassMsg cls' (mkSelector "cnnNeuronDescriptorWithType:a:b:c:") (retPtr retVoid) [argCInt (coerce neuronType), argCFloat a, argCFloat b, argCFloat c] >>= retainedObject . castPtr
+    sendClassMessage cls' cnnNeuronDescriptorWithType_a_b_cSelector neuronType a b c
 
 -- | @- neuronType@
 neuronType :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> IO MPSCNNNeuronType
-neuronType mpsnnNeuronDescriptor  =
-    fmap (coerce :: CInt -> MPSCNNNeuronType) $ sendMsg mpsnnNeuronDescriptor (mkSelector "neuronType") retCInt []
+neuronType mpsnnNeuronDescriptor =
+  sendMessage mpsnnNeuronDescriptor neuronTypeSelector
 
 -- | @- setNeuronType:@
 setNeuronType :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> MPSCNNNeuronType -> IO ()
-setNeuronType mpsnnNeuronDescriptor  value =
-    sendMsg mpsnnNeuronDescriptor (mkSelector "setNeuronType:") retVoid [argCInt (coerce value)]
+setNeuronType mpsnnNeuronDescriptor value =
+  sendMessage mpsnnNeuronDescriptor setNeuronTypeSelector value
 
 -- | @- a@
 a :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> IO CFloat
-a mpsnnNeuronDescriptor  =
-    sendMsg mpsnnNeuronDescriptor (mkSelector "a") retCFloat []
+a mpsnnNeuronDescriptor =
+  sendMessage mpsnnNeuronDescriptor aSelector
 
 -- | @- setA:@
 setA :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> CFloat -> IO ()
-setA mpsnnNeuronDescriptor  value =
-    sendMsg mpsnnNeuronDescriptor (mkSelector "setA:") retVoid [argCFloat value]
+setA mpsnnNeuronDescriptor value =
+  sendMessage mpsnnNeuronDescriptor setASelector value
 
 -- | @- b@
 b :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> IO CFloat
-b mpsnnNeuronDescriptor  =
-    sendMsg mpsnnNeuronDescriptor (mkSelector "b") retCFloat []
+b mpsnnNeuronDescriptor =
+  sendMessage mpsnnNeuronDescriptor bSelector
 
 -- | @- setB:@
 setB :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> CFloat -> IO ()
-setB mpsnnNeuronDescriptor  value =
-    sendMsg mpsnnNeuronDescriptor (mkSelector "setB:") retVoid [argCFloat value]
+setB mpsnnNeuronDescriptor value =
+  sendMessage mpsnnNeuronDescriptor setBSelector value
 
 -- | @- c@
 c :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> IO CFloat
-c mpsnnNeuronDescriptor  =
-    sendMsg mpsnnNeuronDescriptor (mkSelector "c") retCFloat []
+c mpsnnNeuronDescriptor =
+  sendMessage mpsnnNeuronDescriptor cSelector
 
 -- | @- setC:@
 setC :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> CFloat -> IO ()
-setC mpsnnNeuronDescriptor  value =
-    sendMsg mpsnnNeuronDescriptor (mkSelector "setC:") retVoid [argCFloat value]
+setC mpsnnNeuronDescriptor value =
+  sendMessage mpsnnNeuronDescriptor setCSelector value
 
 -- | @- data@
 data_ :: IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor => mpsnnNeuronDescriptor -> IO (Id NSData)
-data_ mpsnnNeuronDescriptor  =
-    sendMsg mpsnnNeuronDescriptor (mkSelector "data") (retPtr retVoid) [] >>= retainedObject . castPtr
+data_ mpsnnNeuronDescriptor =
+  sendMessage mpsnnNeuronDescriptor dataSelector
 
 -- | @- setData:@
 setData :: (IsMPSNNNeuronDescriptor mpsnnNeuronDescriptor, IsNSData value) => mpsnnNeuronDescriptor -> value -> IO ()
-setData mpsnnNeuronDescriptor  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsnnNeuronDescriptor (mkSelector "setData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setData mpsnnNeuronDescriptor value =
+  sendMessage mpsnnNeuronDescriptor setDataSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSNNNeuronDescriptor)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @cnnNeuronDescriptorWithType:@
-cnnNeuronDescriptorWithTypeSelector :: Selector
+cnnNeuronDescriptorWithTypeSelector :: Selector '[MPSCNNNeuronType] (Id MPSNNNeuronDescriptor)
 cnnNeuronDescriptorWithTypeSelector = mkSelector "cnnNeuronDescriptorWithType:"
 
 -- | @Selector@ for @cnnNeuronDescriptorWithType:a:@
-cnnNeuronDescriptorWithType_aSelector :: Selector
+cnnNeuronDescriptorWithType_aSelector :: Selector '[MPSCNNNeuronType, CFloat] (Id MPSNNNeuronDescriptor)
 cnnNeuronDescriptorWithType_aSelector = mkSelector "cnnNeuronDescriptorWithType:a:"
 
 -- | @Selector@ for @cnnNeuronDescriptorWithType:a:b:@
-cnnNeuronDescriptorWithType_a_bSelector :: Selector
+cnnNeuronDescriptorWithType_a_bSelector :: Selector '[MPSCNNNeuronType, CFloat, CFloat] (Id MPSNNNeuronDescriptor)
 cnnNeuronDescriptorWithType_a_bSelector = mkSelector "cnnNeuronDescriptorWithType:a:b:"
 
 -- | @Selector@ for @cnnNeuronDescriptorWithType:a:b:c:@
-cnnNeuronDescriptorWithType_a_b_cSelector :: Selector
+cnnNeuronDescriptorWithType_a_b_cSelector :: Selector '[MPSCNNNeuronType, CFloat, CFloat, CFloat] (Id MPSNNNeuronDescriptor)
 cnnNeuronDescriptorWithType_a_b_cSelector = mkSelector "cnnNeuronDescriptorWithType:a:b:c:"
 
 -- | @Selector@ for @neuronType@
-neuronTypeSelector :: Selector
+neuronTypeSelector :: Selector '[] MPSCNNNeuronType
 neuronTypeSelector = mkSelector "neuronType"
 
 -- | @Selector@ for @setNeuronType:@
-setNeuronTypeSelector :: Selector
+setNeuronTypeSelector :: Selector '[MPSCNNNeuronType] ()
 setNeuronTypeSelector = mkSelector "setNeuronType:"
 
 -- | @Selector@ for @a@
-aSelector :: Selector
+aSelector :: Selector '[] CFloat
 aSelector = mkSelector "a"
 
 -- | @Selector@ for @setA:@
-setASelector :: Selector
+setASelector :: Selector '[CFloat] ()
 setASelector = mkSelector "setA:"
 
 -- | @Selector@ for @b@
-bSelector :: Selector
+bSelector :: Selector '[] CFloat
 bSelector = mkSelector "b"
 
 -- | @Selector@ for @setB:@
-setBSelector :: Selector
+setBSelector :: Selector '[CFloat] ()
 setBSelector = mkSelector "setB:"
 
 -- | @Selector@ for @c@
-cSelector :: Selector
+cSelector :: Selector '[] CFloat
 cSelector = mkSelector "c"
 
 -- | @Selector@ for @setC:@
-setCSelector :: Selector
+setCSelector :: Selector '[CFloat] ()
 setCSelector = mkSelector "setC:"
 
 -- | @Selector@ for @data@
-dataSelector :: Selector
+dataSelector :: Selector '[] (Id NSData)
 dataSelector = mkSelector "data"
 
 -- | @Selector@ for @setData:@
-setDataSelector :: Selector
+setDataSelector :: Selector '[Id NSData] ()
 setDataSelector = mkSelector "setData:"
 

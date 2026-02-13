@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.Matter.MTRCluster
   , init_
   , new
   , endpointID
+  , endpointIDSelector
   , initSelector
   , newSelector
-  , endpointIDSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMTRCluster mtrCluster => mtrCluster -> IO (Id MTRCluster)
-init_ mtrCluster  =
-    sendMsg mtrCluster (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrCluster =
+  sendOwnedMessage mtrCluster initSelector
 
 -- | @+ new@
 new :: IO (Id MTRCluster)
 new  =
   do
     cls' <- getRequiredClass "MTRCluster"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The endpoint this cluster lives on.
 --
 -- ObjC selector: @- endpointID@
 endpointID :: IsMTRCluster mtrCluster => mtrCluster -> IO (Id NSNumber)
-endpointID mtrCluster  =
-    sendMsg mtrCluster (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointID mtrCluster =
+  sendMessage mtrCluster endpointIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRCluster)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRCluster)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @endpointID@
-endpointIDSelector :: Selector
+endpointIDSelector :: Selector '[] (Id NSNumber)
 endpointIDSelector = mkSelector "endpointID"
 

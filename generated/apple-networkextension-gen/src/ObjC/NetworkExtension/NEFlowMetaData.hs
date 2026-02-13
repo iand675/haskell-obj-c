@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.NetworkExtension.NEFlowMetaData
   , sourceAppSigningIdentifier
   , sourceAppAuditToken
   , filterFlowIdentifier
-  , sourceAppUniqueIdentifierSelector
-  , sourceAppSigningIdentifierSelector
-  , sourceAppAuditTokenSelector
   , filterFlowIdentifierSelector
+  , sourceAppAuditTokenSelector
+  , sourceAppSigningIdentifierSelector
+  , sourceAppUniqueIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- sourceAppUniqueIdentifier@
 sourceAppUniqueIdentifier :: IsNEFlowMetaData neFlowMetaData => neFlowMetaData -> IO (Id NSData)
-sourceAppUniqueIdentifier neFlowMetaData  =
-    sendMsg neFlowMetaData (mkSelector "sourceAppUniqueIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceAppUniqueIdentifier neFlowMetaData =
+  sendMessage neFlowMetaData sourceAppUniqueIdentifierSelector
 
 -- | sourceAppSigningIdentifier
 --
@@ -52,8 +49,8 @@ sourceAppUniqueIdentifier neFlowMetaData  =
 --
 -- ObjC selector: @- sourceAppSigningIdentifier@
 sourceAppSigningIdentifier :: IsNEFlowMetaData neFlowMetaData => neFlowMetaData -> IO (Id NSString)
-sourceAppSigningIdentifier neFlowMetaData  =
-    sendMsg neFlowMetaData (mkSelector "sourceAppSigningIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceAppSigningIdentifier neFlowMetaData =
+  sendMessage neFlowMetaData sourceAppSigningIdentifierSelector
 
 -- | sourceAppAuditToken
 --
@@ -61,8 +58,8 @@ sourceAppSigningIdentifier neFlowMetaData  =
 --
 -- ObjC selector: @- sourceAppAuditToken@
 sourceAppAuditToken :: IsNEFlowMetaData neFlowMetaData => neFlowMetaData -> IO (Id NSData)
-sourceAppAuditToken neFlowMetaData  =
-    sendMsg neFlowMetaData (mkSelector "sourceAppAuditToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceAppAuditToken neFlowMetaData =
+  sendMessage neFlowMetaData sourceAppAuditTokenSelector
 
 -- | filterFlowIdentifier
 --
@@ -70,26 +67,26 @@ sourceAppAuditToken neFlowMetaData  =
 --
 -- ObjC selector: @- filterFlowIdentifier@
 filterFlowIdentifier :: IsNEFlowMetaData neFlowMetaData => neFlowMetaData -> IO (Id NSUUID)
-filterFlowIdentifier neFlowMetaData  =
-    sendMsg neFlowMetaData (mkSelector "filterFlowIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterFlowIdentifier neFlowMetaData =
+  sendMessage neFlowMetaData filterFlowIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sourceAppUniqueIdentifier@
-sourceAppUniqueIdentifierSelector :: Selector
+sourceAppUniqueIdentifierSelector :: Selector '[] (Id NSData)
 sourceAppUniqueIdentifierSelector = mkSelector "sourceAppUniqueIdentifier"
 
 -- | @Selector@ for @sourceAppSigningIdentifier@
-sourceAppSigningIdentifierSelector :: Selector
+sourceAppSigningIdentifierSelector :: Selector '[] (Id NSString)
 sourceAppSigningIdentifierSelector = mkSelector "sourceAppSigningIdentifier"
 
 -- | @Selector@ for @sourceAppAuditToken@
-sourceAppAuditTokenSelector :: Selector
+sourceAppAuditTokenSelector :: Selector '[] (Id NSData)
 sourceAppAuditTokenSelector = mkSelector "sourceAppAuditToken"
 
 -- | @Selector@ for @filterFlowIdentifier@
-filterFlowIdentifierSelector :: Selector
+filterFlowIdentifierSelector :: Selector '[] (Id NSUUID)
 filterFlowIdentifierSelector = mkSelector "filterFlowIdentifier"
 

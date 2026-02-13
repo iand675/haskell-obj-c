@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,11 +13,11 @@ module ObjC.CoreMotion.CMWaterSubmersionManager
   , waterSubmersionAvailable
   , authorizationStatus
   , maximumDepth
+  , authorizationStatusSelector
   , delegateSelector
+  , maximumDepthSelector
   , setDelegateSelector
   , waterSubmersionAvailableSelector
-  , authorizationStatusSelector
-  , maximumDepthSelector
 
   -- * Enum types
   , CMAuthorizationStatus(CMAuthorizationStatus)
@@ -27,15 +28,11 @@ module ObjC.CoreMotion.CMWaterSubmersionManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,54 +42,54 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- delegate@
 delegate :: IsCMWaterSubmersionManager cmWaterSubmersionManager => cmWaterSubmersionManager -> IO RawId
-delegate cmWaterSubmersionManager  =
-    fmap (RawId . castPtr) $ sendMsg cmWaterSubmersionManager (mkSelector "delegate") (retPtr retVoid) []
+delegate cmWaterSubmersionManager =
+  sendMessage cmWaterSubmersionManager delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsCMWaterSubmersionManager cmWaterSubmersionManager => cmWaterSubmersionManager -> RawId -> IO ()
-setDelegate cmWaterSubmersionManager  value =
-    sendMsg cmWaterSubmersionManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate cmWaterSubmersionManager value =
+  sendMessage cmWaterSubmersionManager setDelegateSelector value
 
 -- | @+ waterSubmersionAvailable@
 waterSubmersionAvailable :: IO Bool
 waterSubmersionAvailable  =
   do
     cls' <- getRequiredClass "CMWaterSubmersionManager"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "waterSubmersionAvailable") retCULong []
+    sendClassMessage cls' waterSubmersionAvailableSelector
 
 -- | @+ authorizationStatus@
 authorizationStatus :: IO CMAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "CMWaterSubmersionManager"
-    fmap (coerce :: CLong -> CMAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | @- maximumDepth@
 maximumDepth :: IsCMWaterSubmersionManager cmWaterSubmersionManager => cmWaterSubmersionManager -> IO (Id NSMeasurement)
-maximumDepth cmWaterSubmersionManager  =
-    sendMsg cmWaterSubmersionManager (mkSelector "maximumDepth") (retPtr retVoid) [] >>= retainedObject . castPtr
+maximumDepth cmWaterSubmersionManager =
+  sendMessage cmWaterSubmersionManager maximumDepthSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @waterSubmersionAvailable@
-waterSubmersionAvailableSelector :: Selector
+waterSubmersionAvailableSelector :: Selector '[] Bool
 waterSubmersionAvailableSelector = mkSelector "waterSubmersionAvailable"
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CMAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @maximumDepth@
-maximumDepthSelector :: Selector
+maximumDepthSelector :: Selector '[] (Id NSMeasurement)
 maximumDepthSelector = mkSelector "maximumDepth"
 

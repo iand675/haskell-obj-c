@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.Matter.MTRClusterContentAppObserver
   , new
   , initWithDevice_endpointID_queue
   , contentAppMessageWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
   , readAttributeAcceptedCommandListWithParamsSelector
   , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
   , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,101 +44,90 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- contentAppMessageWithParams:expectedValues:expectedValueInterval:completion:@
 contentAppMessageWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterContentAppObserver mtrClusterContentAppObserver, IsMTRContentAppObserverClusterContentAppMessageParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterContentAppObserver -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-contentAppMessageWithParams_expectedValues_expectedValueInterval_completion mtrClusterContentAppObserver  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterContentAppObserver (mkSelector "contentAppMessageWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+contentAppMessageWithParams_expectedValues_expectedValueInterval_completion mtrClusterContentAppObserver params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterContentAppObserver contentAppMessageWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRContentAppObserverClusterContentAppMessageParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterContentAppObserver mtrClusterContentAppObserver, IsMTRReadParams params) => mtrClusterContentAppObserver -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterContentAppObserver  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterContentAppObserver (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterContentAppObserver params =
+  sendMessage mtrClusterContentAppObserver readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterContentAppObserver mtrClusterContentAppObserver, IsMTRReadParams params) => mtrClusterContentAppObserver -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterContentAppObserver  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterContentAppObserver (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterContentAppObserver params =
+  sendMessage mtrClusterContentAppObserver readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterContentAppObserver mtrClusterContentAppObserver, IsMTRReadParams params) => mtrClusterContentAppObserver -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterContentAppObserver  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterContentAppObserver (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterContentAppObserver params =
+  sendMessage mtrClusterContentAppObserver readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterContentAppObserver mtrClusterContentAppObserver, IsMTRReadParams params) => mtrClusterContentAppObserver -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterContentAppObserver  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterContentAppObserver (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterContentAppObserver params =
+  sendMessage mtrClusterContentAppObserver readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterContentAppObserver mtrClusterContentAppObserver, IsMTRReadParams params) => mtrClusterContentAppObserver -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterContentAppObserver  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterContentAppObserver (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterContentAppObserver params =
+  sendMessage mtrClusterContentAppObserver readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterContentAppObserver mtrClusterContentAppObserver => mtrClusterContentAppObserver -> IO (Id MTRClusterContentAppObserver)
-init_ mtrClusterContentAppObserver  =
-    sendMsg mtrClusterContentAppObserver (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterContentAppObserver =
+  sendOwnedMessage mtrClusterContentAppObserver initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterContentAppObserver)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterContentAppObserver"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterContentAppObserver mtrClusterContentAppObserver, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterContentAppObserver -> device -> endpointID -> queue -> IO (Id MTRClusterContentAppObserver)
-initWithDevice_endpointID_queue mtrClusterContentAppObserver  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterContentAppObserver (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterContentAppObserver device endpointID queue =
+  sendOwnedMessage mtrClusterContentAppObserver initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contentAppMessageWithParams:expectedValues:expectedValueInterval:completion:@
-contentAppMessageWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+contentAppMessageWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRContentAppObserverClusterContentAppMessageParams, Id NSArray, Id NSNumber, Ptr ()] ()
 contentAppMessageWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "contentAppMessageWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterContentAppObserver)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterContentAppObserver)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterContentAppObserver)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

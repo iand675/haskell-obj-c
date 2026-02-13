@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.CoreML.MLModelStructureNeuralNetwork
   , new
   , layers
   , initSelector
-  , newSelector
   , layersSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,36 +32,36 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMLModelStructureNeuralNetwork mlModelStructureNeuralNetwork => mlModelStructureNeuralNetwork -> IO (Id MLModelStructureNeuralNetwork)
-init_ mlModelStructureNeuralNetwork  =
-    sendMsg mlModelStructureNeuralNetwork (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlModelStructureNeuralNetwork =
+  sendOwnedMessage mlModelStructureNeuralNetwork initSelector
 
 -- | @+ new@
 new :: IO (Id MLModelStructureNeuralNetwork)
 new  =
   do
     cls' <- getRequiredClass "MLModelStructureNeuralNetwork"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The topologically sorted layers in the NeuralNetwork.
 --
 -- ObjC selector: @- layers@
 layers :: IsMLModelStructureNeuralNetwork mlModelStructureNeuralNetwork => mlModelStructureNeuralNetwork -> IO (Id NSArray)
-layers mlModelStructureNeuralNetwork  =
-    sendMsg mlModelStructureNeuralNetwork (mkSelector "layers") (retPtr retVoid) [] >>= retainedObject . castPtr
+layers mlModelStructureNeuralNetwork =
+  sendMessage mlModelStructureNeuralNetwork layersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLModelStructureNeuralNetwork)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLModelStructureNeuralNetwork)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @layers@
-layersSelector :: Selector
+layersSelector :: Selector '[] (Id NSArray)
 layersSelector = mkSelector "layers"
 

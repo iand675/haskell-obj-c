@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,26 +24,22 @@ module ObjC.Speech.SFTranscriptionSegment
   , confidence
   , alternativeSubstrings
   , voiceAnalytics
-  , substringSelector
-  , substringRangeSelector
-  , timestampSelector
-  , durationSelector
-  , confidenceSelector
   , alternativeSubstringsSelector
+  , confidenceSelector
+  , durationSelector
+  , substringRangeSelector
+  , substringSelector
+  , timestampSelector
   , voiceAnalyticsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,8 +51,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- substring@
 substring :: IsSFTranscriptionSegment sfTranscriptionSegment => sfTranscriptionSegment -> IO (Id NSString)
-substring sfTranscriptionSegment  =
-    sendMsg sfTranscriptionSegment (mkSelector "substring") (retPtr retVoid) [] >>= retainedObject . castPtr
+substring sfTranscriptionSegment =
+  sendMessage sfTranscriptionSegment substringSelector
 
 -- | The range information for the transcription segment's substring, relative to the overall transcription.
 --
@@ -63,8 +60,8 @@ substring sfTranscriptionSegment  =
 --
 -- ObjC selector: @- substringRange@
 substringRange :: IsSFTranscriptionSegment sfTranscriptionSegment => sfTranscriptionSegment -> IO NSRange
-substringRange sfTranscriptionSegment  =
-    sendMsgStret sfTranscriptionSegment (mkSelector "substringRange") retNSRange []
+substringRange sfTranscriptionSegment =
+  sendMessage sfTranscriptionSegment substringRangeSelector
 
 -- | The start time of the segment in the processed audio stream.
 --
@@ -72,8 +69,8 @@ substringRange sfTranscriptionSegment  =
 --
 -- ObjC selector: @- timestamp@
 timestamp :: IsSFTranscriptionSegment sfTranscriptionSegment => sfTranscriptionSegment -> IO CDouble
-timestamp sfTranscriptionSegment  =
-    sendMsg sfTranscriptionSegment (mkSelector "timestamp") retCDouble []
+timestamp sfTranscriptionSegment =
+  sendMessage sfTranscriptionSegment timestampSelector
 
 -- | The number of seconds it took for the user to speak the utterance represented by the segment.
 --
@@ -81,8 +78,8 @@ timestamp sfTranscriptionSegment  =
 --
 -- ObjC selector: @- duration@
 duration :: IsSFTranscriptionSegment sfTranscriptionSegment => sfTranscriptionSegment -> IO CDouble
-duration sfTranscriptionSegment  =
-    sendMsg sfTranscriptionSegment (mkSelector "duration") retCDouble []
+duration sfTranscriptionSegment =
+  sendMessage sfTranscriptionSegment durationSelector
 
 -- | The level of confidence the speech recognizer has in its recognition of the speech transcribed for the segment.
 --
@@ -90,52 +87,52 @@ duration sfTranscriptionSegment  =
 --
 -- ObjC selector: @- confidence@
 confidence :: IsSFTranscriptionSegment sfTranscriptionSegment => sfTranscriptionSegment -> IO CFloat
-confidence sfTranscriptionSegment  =
-    sendMsg sfTranscriptionSegment (mkSelector "confidence") retCFloat []
+confidence sfTranscriptionSegment =
+  sendMessage sfTranscriptionSegment confidenceSelector
 
 -- | An array of alternate interpretations of the utterance in the transcription segment.
 --
 -- ObjC selector: @- alternativeSubstrings@
 alternativeSubstrings :: IsSFTranscriptionSegment sfTranscriptionSegment => sfTranscriptionSegment -> IO (Id NSArray)
-alternativeSubstrings sfTranscriptionSegment  =
-    sendMsg sfTranscriptionSegment (mkSelector "alternativeSubstrings") (retPtr retVoid) [] >>= retainedObject . castPtr
+alternativeSubstrings sfTranscriptionSegment =
+  sendMessage sfTranscriptionSegment alternativeSubstringsSelector
 
 -- | An analysis of the transcription segment's vocal properties.
 --
 -- ObjC selector: @- voiceAnalytics@
 voiceAnalytics :: IsSFTranscriptionSegment sfTranscriptionSegment => sfTranscriptionSegment -> IO RawId
-voiceAnalytics sfTranscriptionSegment  =
-    fmap (RawId . castPtr) $ sendMsg sfTranscriptionSegment (mkSelector "voiceAnalytics") (retPtr retVoid) []
+voiceAnalytics sfTranscriptionSegment =
+  sendMessage sfTranscriptionSegment voiceAnalyticsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @substring@
-substringSelector :: Selector
+substringSelector :: Selector '[] (Id NSString)
 substringSelector = mkSelector "substring"
 
 -- | @Selector@ for @substringRange@
-substringRangeSelector :: Selector
+substringRangeSelector :: Selector '[] NSRange
 substringRangeSelector = mkSelector "substringRange"
 
 -- | @Selector@ for @timestamp@
-timestampSelector :: Selector
+timestampSelector :: Selector '[] CDouble
 timestampSelector = mkSelector "timestamp"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @confidence@
-confidenceSelector :: Selector
+confidenceSelector :: Selector '[] CFloat
 confidenceSelector = mkSelector "confidence"
 
 -- | @Selector@ for @alternativeSubstrings@
-alternativeSubstringsSelector :: Selector
+alternativeSubstringsSelector :: Selector '[] (Id NSArray)
 alternativeSubstringsSelector = mkSelector "alternativeSubstrings"
 
 -- | @Selector@ for @voiceAnalytics@
-voiceAnalyticsSelector :: Selector
+voiceAnalyticsSelector :: Selector '[] RawId
 voiceAnalyticsSelector = mkSelector "voiceAnalytics"
 

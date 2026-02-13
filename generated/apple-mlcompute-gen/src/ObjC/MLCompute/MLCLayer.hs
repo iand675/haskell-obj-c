@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,15 @@ module ObjC.MLCompute.MLCLayer
   , isDebuggingEnabled
   , setIsDebuggingEnabled
   , deviceType
-  , supportsDataType_onDeviceSelector
-  , newSelector
-  , initSelector
-  , layerIDSelector
-  , labelSelector
-  , setLabelSelector
-  , isDebuggingEnabledSelector
-  , setIsDebuggingEnabledSelector
   , deviceTypeSelector
+  , initSelector
+  , isDebuggingEnabledSelector
+  , labelSelector
+  , layerIDSelector
+  , newSelector
+  , setIsDebuggingEnabledSelector
+  , setLabelSelector
+  , supportsDataType_onDeviceSelector
 
   -- * Enum types
   , MLCDataType(MLCDataType)
@@ -52,15 +53,11 @@ module ObjC.MLCompute.MLCLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,20 +78,19 @@ supportsDataType_onDevice :: IsMLCDevice device => MLCDataType -> device -> IO B
 supportsDataType_onDevice dataType device =
   do
     cls' <- getRequiredClass "MLCLayer"
-    withObjCPtr device $ \raw_device ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "supportsDataType:onDevice:") retCULong [argCInt (coerce dataType), argPtr (castPtr raw_device :: Ptr ())]
+    sendClassMessage cls' supportsDataType_onDeviceSelector dataType (toMLCDevice device)
 
 -- | @+ new@
 new :: IO (Id MLCLayer)
 new  =
   do
     cls' <- getRequiredClass "MLCLayer"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsMLCLayer mlcLayer => mlcLayer -> IO (Id MLCLayer)
-init_ mlcLayer  =
-    sendMsg mlcLayer (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mlcLayer =
+  sendOwnedMessage mlcLayer initSelector
 
 -- | layerID
 --
@@ -104,8 +100,8 @@ init_ mlcLayer  =
 --
 -- ObjC selector: @- layerID@
 layerID :: IsMLCLayer mlcLayer => mlcLayer -> IO CULong
-layerID mlcLayer  =
-    sendMsg mlcLayer (mkSelector "layerID") retCULong []
+layerID mlcLayer =
+  sendMessage mlcLayer layerIDSelector
 
 -- | label
 --
@@ -113,8 +109,8 @@ layerID mlcLayer  =
 --
 -- ObjC selector: @- label@
 label :: IsMLCLayer mlcLayer => mlcLayer -> IO (Id NSString)
-label mlcLayer  =
-    sendMsg mlcLayer (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mlcLayer =
+  sendMessage mlcLayer labelSelector
 
 -- | label
 --
@@ -122,9 +118,8 @@ label mlcLayer  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMLCLayer mlcLayer, IsNSString value) => mlcLayer -> value -> IO ()
-setLabel mlcLayer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mlcLayer (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mlcLayer value =
+  sendMessage mlcLayer setLabelSelector (toNSString value)
 
 -- | isDebuggingEnabled
 --
@@ -134,8 +129,8 @@ setLabel mlcLayer  value =
 --
 -- ObjC selector: @- isDebuggingEnabled@
 isDebuggingEnabled :: IsMLCLayer mlcLayer => mlcLayer -> IO Bool
-isDebuggingEnabled mlcLayer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mlcLayer (mkSelector "isDebuggingEnabled") retCULong []
+isDebuggingEnabled mlcLayer =
+  sendMessage mlcLayer isDebuggingEnabledSelector
 
 -- | isDebuggingEnabled
 --
@@ -145,8 +140,8 @@ isDebuggingEnabled mlcLayer  =
 --
 -- ObjC selector: @- setIsDebuggingEnabled:@
 setIsDebuggingEnabled :: IsMLCLayer mlcLayer => mlcLayer -> Bool -> IO ()
-setIsDebuggingEnabled mlcLayer  value =
-    sendMsg mlcLayer (mkSelector "setIsDebuggingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setIsDebuggingEnabled mlcLayer value =
+  sendMessage mlcLayer setIsDebuggingEnabledSelector value
 
 -- | deviceType
 --
@@ -156,46 +151,46 @@ setIsDebuggingEnabled mlcLayer  value =
 --
 -- ObjC selector: @- deviceType@
 deviceType :: IsMLCLayer mlcLayer => mlcLayer -> IO MLCDeviceType
-deviceType mlcLayer  =
-    fmap (coerce :: CInt -> MLCDeviceType) $ sendMsg mlcLayer (mkSelector "deviceType") retCInt []
+deviceType mlcLayer =
+  sendMessage mlcLayer deviceTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @supportsDataType:onDevice:@
-supportsDataType_onDeviceSelector :: Selector
+supportsDataType_onDeviceSelector :: Selector '[MLCDataType, Id MLCDevice] Bool
 supportsDataType_onDeviceSelector = mkSelector "supportsDataType:onDevice:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MLCLayer)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MLCLayer)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @layerID@
-layerIDSelector :: Selector
+layerIDSelector :: Selector '[] CULong
 layerIDSelector = mkSelector "layerID"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 
 -- | @Selector@ for @isDebuggingEnabled@
-isDebuggingEnabledSelector :: Selector
+isDebuggingEnabledSelector :: Selector '[] Bool
 isDebuggingEnabledSelector = mkSelector "isDebuggingEnabled"
 
 -- | @Selector@ for @setIsDebuggingEnabled:@
-setIsDebuggingEnabledSelector :: Selector
+setIsDebuggingEnabledSelector :: Selector '[Bool] ()
 setIsDebuggingEnabledSelector = mkSelector "setIsDebuggingEnabled:"
 
 -- | @Selector@ for @deviceType@
-deviceTypeSelector :: Selector
+deviceTypeSelector :: Selector '[] MLCDeviceType
 deviceTypeSelector = mkSelector "deviceType"
 

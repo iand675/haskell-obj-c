@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.GameplayKit.GKDecisionTree
   , rootNode
   , randomSource
   , setRandomSource
+  , exportToURL_errorSelector
+  , findActionForAnswersSelector
   , initWithAttributeSelector
   , initWithExamples_actions_attributesSelector
   , initWithURL_errorSelector
-  , exportToURL_errorSelector
-  , findActionForAnswersSelector
-  , rootNodeSelector
   , randomSourceSelector
+  , rootNodeSelector
   , setRandomSourceSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithAttribute:@
 initWithAttribute :: IsGKDecisionTree gkDecisionTree => gkDecisionTree -> RawId -> IO (Id GKDecisionTree)
-initWithAttribute gkDecisionTree  attribute =
-    sendMsg gkDecisionTree (mkSelector "initWithAttribute:") (retPtr retVoid) [argPtr (castPtr (unRawId attribute) :: Ptr ())] >>= ownedObject . castPtr
+initWithAttribute gkDecisionTree attribute =
+  sendOwnedMessage gkDecisionTree initWithAttributeSelector attribute
 
 -- | Initializes and constructs a decision tree by learning from the provided examples & attributes
 --
@@ -66,11 +63,8 @@ initWithAttribute gkDecisionTree  attribute =
 --
 -- ObjC selector: @- initWithExamples:actions:attributes:@
 initWithExamples_actions_attributes :: (IsGKDecisionTree gkDecisionTree, IsNSArray examples, IsNSArray actions, IsNSArray attributes) => gkDecisionTree -> examples -> actions -> attributes -> IO (Id GKDecisionTree)
-initWithExamples_actions_attributes gkDecisionTree  examples actions attributes =
-  withObjCPtr examples $ \raw_examples ->
-    withObjCPtr actions $ \raw_actions ->
-      withObjCPtr attributes $ \raw_attributes ->
-          sendMsg gkDecisionTree (mkSelector "initWithExamples:actions:attributes:") (retPtr retVoid) [argPtr (castPtr raw_examples :: Ptr ()), argPtr (castPtr raw_actions :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())] >>= ownedObject . castPtr
+initWithExamples_actions_attributes gkDecisionTree examples actions attributes =
+  sendOwnedMessage gkDecisionTree initWithExamples_actions_attributesSelector (toNSArray examples) (toNSArray actions) (toNSArray attributes)
 
 -- | Initializes a decision tree from the contents of a file
 --
@@ -80,10 +74,8 @@ initWithExamples_actions_attributes gkDecisionTree  examples actions attributes 
 --
 -- ObjC selector: @- initWithURL:error:@
 initWithURL_error :: (IsGKDecisionTree gkDecisionTree, IsNSURL url, IsNSError error_) => gkDecisionTree -> url -> error_ -> IO (Id GKDecisionTree)
-initWithURL_error gkDecisionTree  url error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg gkDecisionTree (mkSelector "initWithURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithURL_error gkDecisionTree url error_ =
+  sendOwnedMessage gkDecisionTree initWithURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | Exports a decision tree to the given URL
 --
@@ -93,10 +85,8 @@ initWithURL_error gkDecisionTree  url error_ =
 --
 -- ObjC selector: @- exportToURL:error:@
 exportToURL_error :: (IsGKDecisionTree gkDecisionTree, IsNSURL url, IsNSError error_) => gkDecisionTree -> url -> error_ -> IO Bool
-exportToURL_error gkDecisionTree  url error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg gkDecisionTree (mkSelector "exportToURL:error:") retCULong [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+exportToURL_error gkDecisionTree url error_ =
+  sendMessage gkDecisionTree exportToURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | Will branch down from the root node to find the correct action attribute for the given collection of results and their respective attributes
 --
@@ -106,16 +96,15 @@ exportToURL_error gkDecisionTree  url error_ =
 --
 -- ObjC selector: @- findActionForAnswers:@
 findActionForAnswers :: (IsGKDecisionTree gkDecisionTree, IsNSDictionary answers) => gkDecisionTree -> answers -> IO RawId
-findActionForAnswers gkDecisionTree  answers =
-  withObjCPtr answers $ \raw_answers ->
-      fmap (RawId . castPtr) $ sendMsg gkDecisionTree (mkSelector "findActionForAnswers:") (retPtr retVoid) [argPtr (castPtr raw_answers :: Ptr ())]
+findActionForAnswers gkDecisionTree answers =
+  sendMessage gkDecisionTree findActionForAnswersSelector (toNSDictionary answers)
 
 -- | The node for the decision tree that all other nodes descend from
 --
 -- ObjC selector: @- rootNode@
 rootNode :: IsGKDecisionTree gkDecisionTree => gkDecisionTree -> IO (Id GKDecisionNode)
-rootNode gkDecisionTree  =
-    sendMsg gkDecisionTree (mkSelector "rootNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootNode gkDecisionTree =
+  sendMessage gkDecisionTree rootNodeSelector
 
 -- | The random source used by the decision tree when descending on a random branch This must be set before creating any weighted branches
 --
@@ -123,8 +112,8 @@ rootNode gkDecisionTree  =
 --
 -- ObjC selector: @- randomSource@
 randomSource :: IsGKDecisionTree gkDecisionTree => gkDecisionTree -> IO (Id GKRandomSource)
-randomSource gkDecisionTree  =
-    sendMsg gkDecisionTree (mkSelector "randomSource") (retPtr retVoid) [] >>= retainedObject . castPtr
+randomSource gkDecisionTree =
+  sendMessage gkDecisionTree randomSourceSelector
 
 -- | The random source used by the decision tree when descending on a random branch This must be set before creating any weighted branches
 --
@@ -132,43 +121,42 @@ randomSource gkDecisionTree  =
 --
 -- ObjC selector: @- setRandomSource:@
 setRandomSource :: (IsGKDecisionTree gkDecisionTree, IsGKRandomSource value) => gkDecisionTree -> value -> IO ()
-setRandomSource gkDecisionTree  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg gkDecisionTree (mkSelector "setRandomSource:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRandomSource gkDecisionTree value =
+  sendMessage gkDecisionTree setRandomSourceSelector (toGKRandomSource value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithAttribute:@
-initWithAttributeSelector :: Selector
+initWithAttributeSelector :: Selector '[RawId] (Id GKDecisionTree)
 initWithAttributeSelector = mkSelector "initWithAttribute:"
 
 -- | @Selector@ for @initWithExamples:actions:attributes:@
-initWithExamples_actions_attributesSelector :: Selector
+initWithExamples_actions_attributesSelector :: Selector '[Id NSArray, Id NSArray, Id NSArray] (Id GKDecisionTree)
 initWithExamples_actions_attributesSelector = mkSelector "initWithExamples:actions:attributes:"
 
 -- | @Selector@ for @initWithURL:error:@
-initWithURL_errorSelector :: Selector
+initWithURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id GKDecisionTree)
 initWithURL_errorSelector = mkSelector "initWithURL:error:"
 
 -- | @Selector@ for @exportToURL:error:@
-exportToURL_errorSelector :: Selector
+exportToURL_errorSelector :: Selector '[Id NSURL, Id NSError] Bool
 exportToURL_errorSelector = mkSelector "exportToURL:error:"
 
 -- | @Selector@ for @findActionForAnswers:@
-findActionForAnswersSelector :: Selector
+findActionForAnswersSelector :: Selector '[Id NSDictionary] RawId
 findActionForAnswersSelector = mkSelector "findActionForAnswers:"
 
 -- | @Selector@ for @rootNode@
-rootNodeSelector :: Selector
+rootNodeSelector :: Selector '[] (Id GKDecisionNode)
 rootNodeSelector = mkSelector "rootNode"
 
 -- | @Selector@ for @randomSource@
-randomSourceSelector :: Selector
+randomSourceSelector :: Selector '[] (Id GKRandomSource)
 randomSourceSelector = mkSelector "randomSource"
 
 -- | @Selector@ for @setRandomSource:@
-setRandomSourceSelector :: Selector
+setRandomSourceSelector :: Selector '[Id GKRandomSource] ()
 setRandomSourceSelector = mkSelector "setRandomSource:"
 

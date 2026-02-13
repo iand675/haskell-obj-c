@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,36 +38,36 @@ module ObjC.Intents.INRideStatus
   , setUserActivityForCancelingInApplication
   , additionalActionActivities
   , setAdditionalActionActivities
-  , rideIdentifierSelector
-  , setRideIdentifierSelector
-  , phaseSelector
-  , setPhaseSelector
-  , completionStatusSelector
-  , setCompletionStatusSelector
-  , vehicleSelector
-  , setVehicleSelector
-  , driverSelector
-  , setDriverSelector
-  , estimatedPickupDateSelector
-  , setEstimatedPickupDateSelector
-  , estimatedDropOffDateSelector
-  , setEstimatedDropOffDateSelector
-  , estimatedPickupEndDateSelector
-  , setEstimatedPickupEndDateSelector
-  , scheduledPickupTimeSelector
-  , setScheduledPickupTimeSelector
-  , pickupLocationSelector
-  , setPickupLocationSelector
-  , waypointsSelector
-  , setWaypointsSelector
-  , dropOffLocationSelector
-  , setDropOffLocationSelector
-  , rideOptionSelector
-  , setRideOptionSelector
-  , userActivityForCancelingInApplicationSelector
-  , setUserActivityForCancelingInApplicationSelector
   , additionalActionActivitiesSelector
+  , completionStatusSelector
+  , driverSelector
+  , dropOffLocationSelector
+  , estimatedDropOffDateSelector
+  , estimatedPickupDateSelector
+  , estimatedPickupEndDateSelector
+  , phaseSelector
+  , pickupLocationSelector
+  , rideIdentifierSelector
+  , rideOptionSelector
+  , scheduledPickupTimeSelector
   , setAdditionalActionActivitiesSelector
+  , setCompletionStatusSelector
+  , setDriverSelector
+  , setDropOffLocationSelector
+  , setEstimatedDropOffDateSelector
+  , setEstimatedPickupDateSelector
+  , setEstimatedPickupEndDateSelector
+  , setPhaseSelector
+  , setPickupLocationSelector
+  , setRideIdentifierSelector
+  , setRideOptionSelector
+  , setScheduledPickupTimeSelector
+  , setUserActivityForCancelingInApplicationSelector
+  , setVehicleSelector
+  , setWaypointsSelector
+  , userActivityForCancelingInApplicationSelector
+  , vehicleSelector
+  , waypointsSelector
 
   -- * Enum types
   , INRidePhase(INRidePhase)
@@ -80,15 +81,11 @@ module ObjC.Intents.INRideStatus
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -99,289 +96,275 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- rideIdentifier@
 rideIdentifier :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id NSString)
-rideIdentifier inRideStatus  =
-    sendMsg inRideStatus (mkSelector "rideIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+rideIdentifier inRideStatus =
+  sendMessage inRideStatus rideIdentifierSelector
 
 -- | @- setRideIdentifier:@
 setRideIdentifier :: (IsINRideStatus inRideStatus, IsNSString value) => inRideStatus -> value -> IO ()
-setRideIdentifier inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setRideIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRideIdentifier inRideStatus value =
+  sendMessage inRideStatus setRideIdentifierSelector (toNSString value)
 
 -- | @- phase@
 phase :: IsINRideStatus inRideStatus => inRideStatus -> IO INRidePhase
-phase inRideStatus  =
-    fmap (coerce :: CLong -> INRidePhase) $ sendMsg inRideStatus (mkSelector "phase") retCLong []
+phase inRideStatus =
+  sendMessage inRideStatus phaseSelector
 
 -- | @- setPhase:@
 setPhase :: IsINRideStatus inRideStatus => inRideStatus -> INRidePhase -> IO ()
-setPhase inRideStatus  value =
-    sendMsg inRideStatus (mkSelector "setPhase:") retVoid [argCLong (coerce value)]
+setPhase inRideStatus value =
+  sendMessage inRideStatus setPhaseSelector value
 
 -- | @- completionStatus@
 completionStatus :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id INRideCompletionStatus)
-completionStatus inRideStatus  =
-    sendMsg inRideStatus (mkSelector "completionStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+completionStatus inRideStatus =
+  sendMessage inRideStatus completionStatusSelector
 
 -- | @- setCompletionStatus:@
 setCompletionStatus :: (IsINRideStatus inRideStatus, IsINRideCompletionStatus value) => inRideStatus -> value -> IO ()
-setCompletionStatus inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setCompletionStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCompletionStatus inRideStatus value =
+  sendMessage inRideStatus setCompletionStatusSelector (toINRideCompletionStatus value)
 
 -- | @- vehicle@
 vehicle :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id INRideVehicle)
-vehicle inRideStatus  =
-    sendMsg inRideStatus (mkSelector "vehicle") (retPtr retVoid) [] >>= retainedObject . castPtr
+vehicle inRideStatus =
+  sendMessage inRideStatus vehicleSelector
 
 -- | @- setVehicle:@
 setVehicle :: (IsINRideStatus inRideStatus, IsINRideVehicle value) => inRideStatus -> value -> IO ()
-setVehicle inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setVehicle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVehicle inRideStatus value =
+  sendMessage inRideStatus setVehicleSelector (toINRideVehicle value)
 
 -- | @- driver@
 driver :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id INRideDriver)
-driver inRideStatus  =
-    sendMsg inRideStatus (mkSelector "driver") (retPtr retVoid) [] >>= retainedObject . castPtr
+driver inRideStatus =
+  sendMessage inRideStatus driverSelector
 
 -- | @- setDriver:@
 setDriver :: (IsINRideStatus inRideStatus, IsINRideDriver value) => inRideStatus -> value -> IO ()
-setDriver inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setDriver:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDriver inRideStatus value =
+  sendMessage inRideStatus setDriverSelector (toINRideDriver value)
 
 -- | @- estimatedPickupDate@
 estimatedPickupDate :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id NSDate)
-estimatedPickupDate inRideStatus  =
-    sendMsg inRideStatus (mkSelector "estimatedPickupDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+estimatedPickupDate inRideStatus =
+  sendMessage inRideStatus estimatedPickupDateSelector
 
 -- | @- setEstimatedPickupDate:@
 setEstimatedPickupDate :: (IsINRideStatus inRideStatus, IsNSDate value) => inRideStatus -> value -> IO ()
-setEstimatedPickupDate inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setEstimatedPickupDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEstimatedPickupDate inRideStatus value =
+  sendMessage inRideStatus setEstimatedPickupDateSelector (toNSDate value)
 
 -- | @- estimatedDropOffDate@
 estimatedDropOffDate :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id NSDate)
-estimatedDropOffDate inRideStatus  =
-    sendMsg inRideStatus (mkSelector "estimatedDropOffDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+estimatedDropOffDate inRideStatus =
+  sendMessage inRideStatus estimatedDropOffDateSelector
 
 -- | @- setEstimatedDropOffDate:@
 setEstimatedDropOffDate :: (IsINRideStatus inRideStatus, IsNSDate value) => inRideStatus -> value -> IO ()
-setEstimatedDropOffDate inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setEstimatedDropOffDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEstimatedDropOffDate inRideStatus value =
+  sendMessage inRideStatus setEstimatedDropOffDateSelector (toNSDate value)
 
 -- | @- estimatedPickupEndDate@
 estimatedPickupEndDate :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id NSDate)
-estimatedPickupEndDate inRideStatus  =
-    sendMsg inRideStatus (mkSelector "estimatedPickupEndDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+estimatedPickupEndDate inRideStatus =
+  sendMessage inRideStatus estimatedPickupEndDateSelector
 
 -- | @- setEstimatedPickupEndDate:@
 setEstimatedPickupEndDate :: (IsINRideStatus inRideStatus, IsNSDate value) => inRideStatus -> value -> IO ()
-setEstimatedPickupEndDate inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setEstimatedPickupEndDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEstimatedPickupEndDate inRideStatus value =
+  sendMessage inRideStatus setEstimatedPickupEndDateSelector (toNSDate value)
 
 -- | @- scheduledPickupTime@
 scheduledPickupTime :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id INDateComponentsRange)
-scheduledPickupTime inRideStatus  =
-    sendMsg inRideStatus (mkSelector "scheduledPickupTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+scheduledPickupTime inRideStatus =
+  sendMessage inRideStatus scheduledPickupTimeSelector
 
 -- | @- setScheduledPickupTime:@
 setScheduledPickupTime :: (IsINRideStatus inRideStatus, IsINDateComponentsRange value) => inRideStatus -> value -> IO ()
-setScheduledPickupTime inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setScheduledPickupTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setScheduledPickupTime inRideStatus value =
+  sendMessage inRideStatus setScheduledPickupTimeSelector (toINDateComponentsRange value)
 
 -- | @- pickupLocation@
 pickupLocation :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id CLPlacemark)
-pickupLocation inRideStatus  =
-    sendMsg inRideStatus (mkSelector "pickupLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+pickupLocation inRideStatus =
+  sendMessage inRideStatus pickupLocationSelector
 
 -- | @- setPickupLocation:@
 setPickupLocation :: (IsINRideStatus inRideStatus, IsCLPlacemark value) => inRideStatus -> value -> IO ()
-setPickupLocation inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setPickupLocation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPickupLocation inRideStatus value =
+  sendMessage inRideStatus setPickupLocationSelector (toCLPlacemark value)
 
 -- | @- waypoints@
 waypoints :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id NSArray)
-waypoints inRideStatus  =
-    sendMsg inRideStatus (mkSelector "waypoints") (retPtr retVoid) [] >>= retainedObject . castPtr
+waypoints inRideStatus =
+  sendMessage inRideStatus waypointsSelector
 
 -- | @- setWaypoints:@
 setWaypoints :: (IsINRideStatus inRideStatus, IsNSArray value) => inRideStatus -> value -> IO ()
-setWaypoints inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setWaypoints:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setWaypoints inRideStatus value =
+  sendMessage inRideStatus setWaypointsSelector (toNSArray value)
 
 -- | @- dropOffLocation@
 dropOffLocation :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id CLPlacemark)
-dropOffLocation inRideStatus  =
-    sendMsg inRideStatus (mkSelector "dropOffLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dropOffLocation inRideStatus =
+  sendMessage inRideStatus dropOffLocationSelector
 
 -- | @- setDropOffLocation:@
 setDropOffLocation :: (IsINRideStatus inRideStatus, IsCLPlacemark value) => inRideStatus -> value -> IO ()
-setDropOffLocation inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setDropOffLocation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDropOffLocation inRideStatus value =
+  sendMessage inRideStatus setDropOffLocationSelector (toCLPlacemark value)
 
 -- | @- rideOption@
 rideOption :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id INRideOption)
-rideOption inRideStatus  =
-    sendMsg inRideStatus (mkSelector "rideOption") (retPtr retVoid) [] >>= retainedObject . castPtr
+rideOption inRideStatus =
+  sendMessage inRideStatus rideOptionSelector
 
 -- | @- setRideOption:@
 setRideOption :: (IsINRideStatus inRideStatus, IsINRideOption value) => inRideStatus -> value -> IO ()
-setRideOption inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setRideOption:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRideOption inRideStatus value =
+  sendMessage inRideStatus setRideOptionSelector (toINRideOption value)
 
 -- | @- userActivityForCancelingInApplication@
 userActivityForCancelingInApplication :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id NSUserActivity)
-userActivityForCancelingInApplication inRideStatus  =
-    sendMsg inRideStatus (mkSelector "userActivityForCancelingInApplication") (retPtr retVoid) [] >>= retainedObject . castPtr
+userActivityForCancelingInApplication inRideStatus =
+  sendMessage inRideStatus userActivityForCancelingInApplicationSelector
 
 -- | @- setUserActivityForCancelingInApplication:@
 setUserActivityForCancelingInApplication :: (IsINRideStatus inRideStatus, IsNSUserActivity value) => inRideStatus -> value -> IO ()
-setUserActivityForCancelingInApplication inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setUserActivityForCancelingInApplication:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserActivityForCancelingInApplication inRideStatus value =
+  sendMessage inRideStatus setUserActivityForCancelingInApplicationSelector (toNSUserActivity value)
 
 -- | @- additionalActionActivities@
 additionalActionActivities :: IsINRideStatus inRideStatus => inRideStatus -> IO (Id NSArray)
-additionalActionActivities inRideStatus  =
-    sendMsg inRideStatus (mkSelector "additionalActionActivities") (retPtr retVoid) [] >>= retainedObject . castPtr
+additionalActionActivities inRideStatus =
+  sendMessage inRideStatus additionalActionActivitiesSelector
 
 -- | @- setAdditionalActionActivities:@
 setAdditionalActionActivities :: (IsINRideStatus inRideStatus, IsNSArray value) => inRideStatus -> value -> IO ()
-setAdditionalActionActivities inRideStatus  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inRideStatus (mkSelector "setAdditionalActionActivities:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAdditionalActionActivities inRideStatus value =
+  sendMessage inRideStatus setAdditionalActionActivitiesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @rideIdentifier@
-rideIdentifierSelector :: Selector
+rideIdentifierSelector :: Selector '[] (Id NSString)
 rideIdentifierSelector = mkSelector "rideIdentifier"
 
 -- | @Selector@ for @setRideIdentifier:@
-setRideIdentifierSelector :: Selector
+setRideIdentifierSelector :: Selector '[Id NSString] ()
 setRideIdentifierSelector = mkSelector "setRideIdentifier:"
 
 -- | @Selector@ for @phase@
-phaseSelector :: Selector
+phaseSelector :: Selector '[] INRidePhase
 phaseSelector = mkSelector "phase"
 
 -- | @Selector@ for @setPhase:@
-setPhaseSelector :: Selector
+setPhaseSelector :: Selector '[INRidePhase] ()
 setPhaseSelector = mkSelector "setPhase:"
 
 -- | @Selector@ for @completionStatus@
-completionStatusSelector :: Selector
+completionStatusSelector :: Selector '[] (Id INRideCompletionStatus)
 completionStatusSelector = mkSelector "completionStatus"
 
 -- | @Selector@ for @setCompletionStatus:@
-setCompletionStatusSelector :: Selector
+setCompletionStatusSelector :: Selector '[Id INRideCompletionStatus] ()
 setCompletionStatusSelector = mkSelector "setCompletionStatus:"
 
 -- | @Selector@ for @vehicle@
-vehicleSelector :: Selector
+vehicleSelector :: Selector '[] (Id INRideVehicle)
 vehicleSelector = mkSelector "vehicle"
 
 -- | @Selector@ for @setVehicle:@
-setVehicleSelector :: Selector
+setVehicleSelector :: Selector '[Id INRideVehicle] ()
 setVehicleSelector = mkSelector "setVehicle:"
 
 -- | @Selector@ for @driver@
-driverSelector :: Selector
+driverSelector :: Selector '[] (Id INRideDriver)
 driverSelector = mkSelector "driver"
 
 -- | @Selector@ for @setDriver:@
-setDriverSelector :: Selector
+setDriverSelector :: Selector '[Id INRideDriver] ()
 setDriverSelector = mkSelector "setDriver:"
 
 -- | @Selector@ for @estimatedPickupDate@
-estimatedPickupDateSelector :: Selector
+estimatedPickupDateSelector :: Selector '[] (Id NSDate)
 estimatedPickupDateSelector = mkSelector "estimatedPickupDate"
 
 -- | @Selector@ for @setEstimatedPickupDate:@
-setEstimatedPickupDateSelector :: Selector
+setEstimatedPickupDateSelector :: Selector '[Id NSDate] ()
 setEstimatedPickupDateSelector = mkSelector "setEstimatedPickupDate:"
 
 -- | @Selector@ for @estimatedDropOffDate@
-estimatedDropOffDateSelector :: Selector
+estimatedDropOffDateSelector :: Selector '[] (Id NSDate)
 estimatedDropOffDateSelector = mkSelector "estimatedDropOffDate"
 
 -- | @Selector@ for @setEstimatedDropOffDate:@
-setEstimatedDropOffDateSelector :: Selector
+setEstimatedDropOffDateSelector :: Selector '[Id NSDate] ()
 setEstimatedDropOffDateSelector = mkSelector "setEstimatedDropOffDate:"
 
 -- | @Selector@ for @estimatedPickupEndDate@
-estimatedPickupEndDateSelector :: Selector
+estimatedPickupEndDateSelector :: Selector '[] (Id NSDate)
 estimatedPickupEndDateSelector = mkSelector "estimatedPickupEndDate"
 
 -- | @Selector@ for @setEstimatedPickupEndDate:@
-setEstimatedPickupEndDateSelector :: Selector
+setEstimatedPickupEndDateSelector :: Selector '[Id NSDate] ()
 setEstimatedPickupEndDateSelector = mkSelector "setEstimatedPickupEndDate:"
 
 -- | @Selector@ for @scheduledPickupTime@
-scheduledPickupTimeSelector :: Selector
+scheduledPickupTimeSelector :: Selector '[] (Id INDateComponentsRange)
 scheduledPickupTimeSelector = mkSelector "scheduledPickupTime"
 
 -- | @Selector@ for @setScheduledPickupTime:@
-setScheduledPickupTimeSelector :: Selector
+setScheduledPickupTimeSelector :: Selector '[Id INDateComponentsRange] ()
 setScheduledPickupTimeSelector = mkSelector "setScheduledPickupTime:"
 
 -- | @Selector@ for @pickupLocation@
-pickupLocationSelector :: Selector
+pickupLocationSelector :: Selector '[] (Id CLPlacemark)
 pickupLocationSelector = mkSelector "pickupLocation"
 
 -- | @Selector@ for @setPickupLocation:@
-setPickupLocationSelector :: Selector
+setPickupLocationSelector :: Selector '[Id CLPlacemark] ()
 setPickupLocationSelector = mkSelector "setPickupLocation:"
 
 -- | @Selector@ for @waypoints@
-waypointsSelector :: Selector
+waypointsSelector :: Selector '[] (Id NSArray)
 waypointsSelector = mkSelector "waypoints"
 
 -- | @Selector@ for @setWaypoints:@
-setWaypointsSelector :: Selector
+setWaypointsSelector :: Selector '[Id NSArray] ()
 setWaypointsSelector = mkSelector "setWaypoints:"
 
 -- | @Selector@ for @dropOffLocation@
-dropOffLocationSelector :: Selector
+dropOffLocationSelector :: Selector '[] (Id CLPlacemark)
 dropOffLocationSelector = mkSelector "dropOffLocation"
 
 -- | @Selector@ for @setDropOffLocation:@
-setDropOffLocationSelector :: Selector
+setDropOffLocationSelector :: Selector '[Id CLPlacemark] ()
 setDropOffLocationSelector = mkSelector "setDropOffLocation:"
 
 -- | @Selector@ for @rideOption@
-rideOptionSelector :: Selector
+rideOptionSelector :: Selector '[] (Id INRideOption)
 rideOptionSelector = mkSelector "rideOption"
 
 -- | @Selector@ for @setRideOption:@
-setRideOptionSelector :: Selector
+setRideOptionSelector :: Selector '[Id INRideOption] ()
 setRideOptionSelector = mkSelector "setRideOption:"
 
 -- | @Selector@ for @userActivityForCancelingInApplication@
-userActivityForCancelingInApplicationSelector :: Selector
+userActivityForCancelingInApplicationSelector :: Selector '[] (Id NSUserActivity)
 userActivityForCancelingInApplicationSelector = mkSelector "userActivityForCancelingInApplication"
 
 -- | @Selector@ for @setUserActivityForCancelingInApplication:@
-setUserActivityForCancelingInApplicationSelector :: Selector
+setUserActivityForCancelingInApplicationSelector :: Selector '[Id NSUserActivity] ()
 setUserActivityForCancelingInApplicationSelector = mkSelector "setUserActivityForCancelingInApplication:"
 
 -- | @Selector@ for @additionalActionActivities@
-additionalActionActivitiesSelector :: Selector
+additionalActionActivitiesSelector :: Selector '[] (Id NSArray)
 additionalActionActivitiesSelector = mkSelector "additionalActionActivities"
 
 -- | @Selector@ for @setAdditionalActionActivities:@
-setAdditionalActionActivitiesSelector :: Selector
+setAdditionalActionActivitiesSelector :: Selector '[Id NSArray] ()
 setAdditionalActionActivitiesSelector = mkSelector "setAdditionalActionActivities:"
 

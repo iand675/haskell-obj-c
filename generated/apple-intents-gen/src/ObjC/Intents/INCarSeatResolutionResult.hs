@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INCarSeatResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithCarSeatToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedCarSeatSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithCarSeatToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedCarSeatSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INCarSeat(INCarSeat)
@@ -34,15 +35,11 @@ module ObjC.Intents.INCarSeatResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,46 +52,46 @@ successWithResolvedCarSeat :: INCarSeat -> IO (Id INCarSeatResolutionResult)
 successWithResolvedCarSeat resolvedCarSeat =
   do
     cls' <- getRequiredClass "INCarSeatResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedCarSeat:") (retPtr retVoid) [argCLong (coerce resolvedCarSeat)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedCarSeatSelector resolvedCarSeat
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INCarSeat -> IO (Id INCarSeatResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INCarSeatResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithCarSeatToConfirm:@
 confirmationRequiredWithCarSeatToConfirm :: INCarSeat -> IO (Id INCarSeatResolutionResult)
 confirmationRequiredWithCarSeatToConfirm carSeatToConfirm =
   do
     cls' <- getRequiredClass "INCarSeatResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithCarSeatToConfirm:") (retPtr retVoid) [argCLong (coerce carSeatToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithCarSeatToConfirmSelector carSeatToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INCarSeat -> IO (Id INCarSeatResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INCarSeatResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedCarSeat:@
-successWithResolvedCarSeatSelector :: Selector
+successWithResolvedCarSeatSelector :: Selector '[INCarSeat] (Id INCarSeatResolutionResult)
 successWithResolvedCarSeatSelector = mkSelector "successWithResolvedCarSeat:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INCarSeat] (Id INCarSeatResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithCarSeatToConfirm:@
-confirmationRequiredWithCarSeatToConfirmSelector :: Selector
+confirmationRequiredWithCarSeatToConfirmSelector :: Selector '[INCarSeat] (Id INCarSeatResolutionResult)
 confirmationRequiredWithCarSeatToConfirmSelector = mkSelector "confirmationRequiredWithCarSeatToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INCarSeat] (Id INCarSeatResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

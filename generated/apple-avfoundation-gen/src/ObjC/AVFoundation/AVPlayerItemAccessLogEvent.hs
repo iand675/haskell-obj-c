@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -41,48 +42,44 @@ module ObjC.AVFoundation.AVPlayerItemAccessLogEvent
   , playbackType
   , mediaRequestsWWAN
   , switchBitrate
-  , initSelector
-  , newSelector
-  , numberOfSegmentsDownloadedSelector
-  , numberOfMediaRequestsSelector
-  , playbackStartDateSelector
-  , uriSelector
-  , serverAddressSelector
-  , numberOfServerAddressChangesSelector
-  , playbackSessionIDSelector
-  , playbackStartOffsetSelector
-  , segmentsDownloadedDurationSelector
-  , durationWatchedSelector
-  , numberOfStallsSelector
-  , numberOfBytesTransferredSelector
-  , transferDurationSelector
-  , observedBitrateSelector
-  , indicatedBitrateSelector
-  , indicatedAverageBitrateSelector
-  , averageVideoBitrateSelector
   , averageAudioBitrateSelector
-  , numberOfDroppedVideoFramesSelector
-  , startupTimeSelector
+  , averageVideoBitrateSelector
   , downloadOverdueSelector
+  , durationWatchedSelector
+  , indicatedAverageBitrateSelector
+  , indicatedBitrateSelector
+  , initSelector
+  , mediaRequestsWWANSelector
+  , newSelector
+  , numberOfBytesTransferredSelector
+  , numberOfDroppedVideoFramesSelector
+  , numberOfMediaRequestsSelector
+  , numberOfSegmentsDownloadedSelector
+  , numberOfServerAddressChangesSelector
+  , numberOfStallsSelector
+  , observedBitrateSelector
+  , observedBitrateStandardDeviationSelector
   , observedMaxBitrateSelector
   , observedMinBitrateSelector
-  , observedBitrateStandardDeviationSelector
+  , playbackSessionIDSelector
+  , playbackStartDateSelector
+  , playbackStartOffsetSelector
   , playbackTypeSelector
-  , mediaRequestsWWANSelector
+  , segmentsDownloadedDurationSelector
+  , serverAddressSelector
+  , startupTimeSelector
   , switchBitrateSelector
+  , transferDurationSelector
+  , uriSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -91,15 +88,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO (Id AVPlayerItemAccessLogEvent)
-init_ avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerItemAccessLogEvent =
+  sendOwnedMessage avPlayerItemAccessLogEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerItemAccessLogEvent)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerItemAccessLogEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | A count of media segments downloaded.
 --
@@ -107,8 +104,8 @@ new  =
 --
 -- ObjC selector: @- numberOfSegmentsDownloaded@
 numberOfSegmentsDownloaded :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CLong
-numberOfSegmentsDownloaded avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "numberOfSegmentsDownloaded") retCLong []
+numberOfSegmentsDownloaded avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent numberOfSegmentsDownloadedSelector
 
 -- | A count of media read requests.
 --
@@ -116,8 +113,8 @@ numberOfSegmentsDownloaded avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- numberOfMediaRequests@
 numberOfMediaRequests :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CLong
-numberOfMediaRequests avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "numberOfMediaRequests") retCLong []
+numberOfMediaRequests avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent numberOfMediaRequestsSelector
 
 -- | The date/time at which playback began for this event. Can be nil.
 --
@@ -125,8 +122,8 @@ numberOfMediaRequests avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- playbackStartDate@
 playbackStartDate :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO (Id NSDate)
-playbackStartDate avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "playbackStartDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+playbackStartDate avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent playbackStartDateSelector
 
 -- | The URI of the playback item. Can be nil.
 --
@@ -134,8 +131,8 @@ playbackStartDate avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- URI@
 uri :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO (Id NSString)
-uri avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "URI") (retPtr retVoid) [] >>= retainedObject . castPtr
+uri avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent uriSelector
 
 -- | The IP address of the server that was the source of the last delivered media segment. Can be nil.
 --
@@ -143,8 +140,8 @@ uri avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- serverAddress@
 serverAddress :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO (Id NSString)
-serverAddress avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "serverAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverAddress avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent serverAddressSelector
 
 -- | A count of changes to the property serverAddress, see above, over the last uninterrupted period of playback.
 --
@@ -152,8 +149,8 @@ serverAddress avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- numberOfServerAddressChanges@
 numberOfServerAddressChanges :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CLong
-numberOfServerAddressChanges avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "numberOfServerAddressChanges") retCLong []
+numberOfServerAddressChanges avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent numberOfServerAddressChangesSelector
 
 -- | A GUID that identifies the playback session. This value is used in HTTP requests. Can be nil.
 --
@@ -161,8 +158,8 @@ numberOfServerAddressChanges avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- playbackSessionID@
 playbackSessionID :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO (Id NSString)
-playbackSessionID avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "playbackSessionID") (retPtr retVoid) [] >>= retainedObject . castPtr
+playbackSessionID avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent playbackSessionIDSelector
 
 -- | An offset into the playlist where the last uninterrupted period of playback began. Measured in seconds.
 --
@@ -170,8 +167,8 @@ playbackSessionID avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- playbackStartOffset@
 playbackStartOffset :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-playbackStartOffset avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "playbackStartOffset") retCDouble []
+playbackStartOffset avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent playbackStartOffsetSelector
 
 -- | The accumulated duration of the media downloaded. Measured in seconds.
 --
@@ -179,8 +176,8 @@ playbackStartOffset avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- segmentsDownloadedDuration@
 segmentsDownloadedDuration :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-segmentsDownloadedDuration avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "segmentsDownloadedDuration") retCDouble []
+segmentsDownloadedDuration avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent segmentsDownloadedDurationSelector
 
 -- | The accumulated duration of the media played. Measured in seconds.
 --
@@ -188,8 +185,8 @@ segmentsDownloadedDuration avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- durationWatched@
 durationWatched :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-durationWatched avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "durationWatched") retCDouble []
+durationWatched avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent durationWatchedSelector
 
 -- | The total number of playback stalls encountered.
 --
@@ -197,8 +194,8 @@ durationWatched avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- numberOfStalls@
 numberOfStalls :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CLong
-numberOfStalls avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "numberOfStalls") retCLong []
+numberOfStalls avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent numberOfStallsSelector
 
 -- | The accumulated number of bytes transferred.
 --
@@ -206,8 +203,8 @@ numberOfStalls avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- numberOfBytesTransferred@
 numberOfBytesTransferred :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CLong
-numberOfBytesTransferred avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "numberOfBytesTransferred") retCLong []
+numberOfBytesTransferred avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent numberOfBytesTransferredSelector
 
 -- | The accumulated duration of active network transfer of bytes. Measured in seconds.
 --
@@ -215,8 +212,8 @@ numberOfBytesTransferred avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- transferDuration@
 transferDuration :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-transferDuration avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "transferDuration") retCDouble []
+transferDuration avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent transferDurationSelector
 
 -- | The empirical throughput across all media downloaded. Measured in bits per second.
 --
@@ -224,8 +221,8 @@ transferDuration avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- observedBitrate@
 observedBitrate :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-observedBitrate avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "observedBitrate") retCDouble []
+observedBitrate avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent observedBitrateSelector
 
 -- | The throughput required to play the stream, as advertised by the server. Measured in bits per second.
 --
@@ -233,8 +230,8 @@ observedBitrate avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- indicatedBitrate@
 indicatedBitrate :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-indicatedBitrate avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "indicatedBitrate") retCDouble []
+indicatedBitrate avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent indicatedBitrateSelector
 
 -- | Average throughput required to play the stream, as advertised by the server. Measured in bits per second.
 --
@@ -242,8 +239,8 @@ indicatedBitrate avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- indicatedAverageBitrate@
 indicatedAverageBitrate :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-indicatedAverageBitrate avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "indicatedAverageBitrate") retCDouble []
+indicatedAverageBitrate avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent indicatedAverageBitrateSelector
 
 -- | The average bitrate of video track if it is unmuxed. Average bitrate of combined content if muxed. Measured in bits per second.
 --
@@ -251,8 +248,8 @@ indicatedAverageBitrate avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- averageVideoBitrate@
 averageVideoBitrate :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-averageVideoBitrate avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "averageVideoBitrate") retCDouble []
+averageVideoBitrate avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent averageVideoBitrateSelector
 
 -- | The average bitrate of audio track. This is not available if audio is muxed with video. Measured in bits per second.
 --
@@ -260,8 +257,8 @@ averageVideoBitrate avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- averageAudioBitrate@
 averageAudioBitrate :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-averageAudioBitrate avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "averageAudioBitrate") retCDouble []
+averageAudioBitrate avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent averageAudioBitrateSelector
 
 -- | The total number of dropped video frames.
 --
@@ -269,8 +266,8 @@ averageAudioBitrate avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- numberOfDroppedVideoFrames@
 numberOfDroppedVideoFrames :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CLong
-numberOfDroppedVideoFrames avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "numberOfDroppedVideoFrames") retCLong []
+numberOfDroppedVideoFrames avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent numberOfDroppedVideoFramesSelector
 
 -- | The accumulated duration until player item is ready to play. Measured in seconds.
 --
@@ -278,8 +275,8 @@ numberOfDroppedVideoFrames avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- startupTime@
 startupTime :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-startupTime avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "startupTime") retCDouble []
+startupTime avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent startupTimeSelector
 
 -- | The total number of times the download of the segments took too long.
 --
@@ -287,8 +284,8 @@ startupTime avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- downloadOverdue@
 downloadOverdue :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CLong
-downloadOverdue avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "downloadOverdue") retCLong []
+downloadOverdue avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent downloadOverdueSelector
 
 -- | Maximum observed segment download bit rate.
 --
@@ -296,8 +293,8 @@ downloadOverdue avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- observedMaxBitrate@
 observedMaxBitrate :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-observedMaxBitrate avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "observedMaxBitrate") retCDouble []
+observedMaxBitrate avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent observedMaxBitrateSelector
 
 -- | Minimum observed segment download bit rate.
 --
@@ -305,8 +302,8 @@ observedMaxBitrate avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- observedMinBitrate@
 observedMinBitrate :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-observedMinBitrate avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "observedMinBitrate") retCDouble []
+observedMinBitrate avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent observedMinBitrateSelector
 
 -- | Standard deviation of observed segment download bit rates.
 --
@@ -314,8 +311,8 @@ observedMinBitrate avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- observedBitrateStandardDeviation@
 observedBitrateStandardDeviation :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-observedBitrateStandardDeviation avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "observedBitrateStandardDeviation") retCDouble []
+observedBitrateStandardDeviation avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent observedBitrateStandardDeviationSelector
 
 -- | Playback type (LIVE, VOD, FILE).
 --
@@ -323,8 +320,8 @@ observedBitrateStandardDeviation avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- playbackType@
 playbackType :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO (Id NSString)
-playbackType avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "playbackType") (retPtr retVoid) [] >>= retainedObject . castPtr
+playbackType avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent playbackTypeSelector
 
 -- | Number of network read requests over WWAN.
 --
@@ -332,8 +329,8 @@ playbackType avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- mediaRequestsWWAN@
 mediaRequestsWWAN :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CLong
-mediaRequestsWWAN avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "mediaRequestsWWAN") retCLong []
+mediaRequestsWWAN avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent mediaRequestsWWANSelector
 
 -- | Bandwidth that caused us to switch (up or down).
 --
@@ -341,126 +338,126 @@ mediaRequestsWWAN avPlayerItemAccessLogEvent  =
 --
 -- ObjC selector: @- switchBitrate@
 switchBitrate :: IsAVPlayerItemAccessLogEvent avPlayerItemAccessLogEvent => avPlayerItemAccessLogEvent -> IO CDouble
-switchBitrate avPlayerItemAccessLogEvent  =
-    sendMsg avPlayerItemAccessLogEvent (mkSelector "switchBitrate") retCDouble []
+switchBitrate avPlayerItemAccessLogEvent =
+  sendMessage avPlayerItemAccessLogEvent switchBitrateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerItemAccessLogEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerItemAccessLogEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @numberOfSegmentsDownloaded@
-numberOfSegmentsDownloadedSelector :: Selector
+numberOfSegmentsDownloadedSelector :: Selector '[] CLong
 numberOfSegmentsDownloadedSelector = mkSelector "numberOfSegmentsDownloaded"
 
 -- | @Selector@ for @numberOfMediaRequests@
-numberOfMediaRequestsSelector :: Selector
+numberOfMediaRequestsSelector :: Selector '[] CLong
 numberOfMediaRequestsSelector = mkSelector "numberOfMediaRequests"
 
 -- | @Selector@ for @playbackStartDate@
-playbackStartDateSelector :: Selector
+playbackStartDateSelector :: Selector '[] (Id NSDate)
 playbackStartDateSelector = mkSelector "playbackStartDate"
 
 -- | @Selector@ for @URI@
-uriSelector :: Selector
+uriSelector :: Selector '[] (Id NSString)
 uriSelector = mkSelector "URI"
 
 -- | @Selector@ for @serverAddress@
-serverAddressSelector :: Selector
+serverAddressSelector :: Selector '[] (Id NSString)
 serverAddressSelector = mkSelector "serverAddress"
 
 -- | @Selector@ for @numberOfServerAddressChanges@
-numberOfServerAddressChangesSelector :: Selector
+numberOfServerAddressChangesSelector :: Selector '[] CLong
 numberOfServerAddressChangesSelector = mkSelector "numberOfServerAddressChanges"
 
 -- | @Selector@ for @playbackSessionID@
-playbackSessionIDSelector :: Selector
+playbackSessionIDSelector :: Selector '[] (Id NSString)
 playbackSessionIDSelector = mkSelector "playbackSessionID"
 
 -- | @Selector@ for @playbackStartOffset@
-playbackStartOffsetSelector :: Selector
+playbackStartOffsetSelector :: Selector '[] CDouble
 playbackStartOffsetSelector = mkSelector "playbackStartOffset"
 
 -- | @Selector@ for @segmentsDownloadedDuration@
-segmentsDownloadedDurationSelector :: Selector
+segmentsDownloadedDurationSelector :: Selector '[] CDouble
 segmentsDownloadedDurationSelector = mkSelector "segmentsDownloadedDuration"
 
 -- | @Selector@ for @durationWatched@
-durationWatchedSelector :: Selector
+durationWatchedSelector :: Selector '[] CDouble
 durationWatchedSelector = mkSelector "durationWatched"
 
 -- | @Selector@ for @numberOfStalls@
-numberOfStallsSelector :: Selector
+numberOfStallsSelector :: Selector '[] CLong
 numberOfStallsSelector = mkSelector "numberOfStalls"
 
 -- | @Selector@ for @numberOfBytesTransferred@
-numberOfBytesTransferredSelector :: Selector
+numberOfBytesTransferredSelector :: Selector '[] CLong
 numberOfBytesTransferredSelector = mkSelector "numberOfBytesTransferred"
 
 -- | @Selector@ for @transferDuration@
-transferDurationSelector :: Selector
+transferDurationSelector :: Selector '[] CDouble
 transferDurationSelector = mkSelector "transferDuration"
 
 -- | @Selector@ for @observedBitrate@
-observedBitrateSelector :: Selector
+observedBitrateSelector :: Selector '[] CDouble
 observedBitrateSelector = mkSelector "observedBitrate"
 
 -- | @Selector@ for @indicatedBitrate@
-indicatedBitrateSelector :: Selector
+indicatedBitrateSelector :: Selector '[] CDouble
 indicatedBitrateSelector = mkSelector "indicatedBitrate"
 
 -- | @Selector@ for @indicatedAverageBitrate@
-indicatedAverageBitrateSelector :: Selector
+indicatedAverageBitrateSelector :: Selector '[] CDouble
 indicatedAverageBitrateSelector = mkSelector "indicatedAverageBitrate"
 
 -- | @Selector@ for @averageVideoBitrate@
-averageVideoBitrateSelector :: Selector
+averageVideoBitrateSelector :: Selector '[] CDouble
 averageVideoBitrateSelector = mkSelector "averageVideoBitrate"
 
 -- | @Selector@ for @averageAudioBitrate@
-averageAudioBitrateSelector :: Selector
+averageAudioBitrateSelector :: Selector '[] CDouble
 averageAudioBitrateSelector = mkSelector "averageAudioBitrate"
 
 -- | @Selector@ for @numberOfDroppedVideoFrames@
-numberOfDroppedVideoFramesSelector :: Selector
+numberOfDroppedVideoFramesSelector :: Selector '[] CLong
 numberOfDroppedVideoFramesSelector = mkSelector "numberOfDroppedVideoFrames"
 
 -- | @Selector@ for @startupTime@
-startupTimeSelector :: Selector
+startupTimeSelector :: Selector '[] CDouble
 startupTimeSelector = mkSelector "startupTime"
 
 -- | @Selector@ for @downloadOverdue@
-downloadOverdueSelector :: Selector
+downloadOverdueSelector :: Selector '[] CLong
 downloadOverdueSelector = mkSelector "downloadOverdue"
 
 -- | @Selector@ for @observedMaxBitrate@
-observedMaxBitrateSelector :: Selector
+observedMaxBitrateSelector :: Selector '[] CDouble
 observedMaxBitrateSelector = mkSelector "observedMaxBitrate"
 
 -- | @Selector@ for @observedMinBitrate@
-observedMinBitrateSelector :: Selector
+observedMinBitrateSelector :: Selector '[] CDouble
 observedMinBitrateSelector = mkSelector "observedMinBitrate"
 
 -- | @Selector@ for @observedBitrateStandardDeviation@
-observedBitrateStandardDeviationSelector :: Selector
+observedBitrateStandardDeviationSelector :: Selector '[] CDouble
 observedBitrateStandardDeviationSelector = mkSelector "observedBitrateStandardDeviation"
 
 -- | @Selector@ for @playbackType@
-playbackTypeSelector :: Selector
+playbackTypeSelector :: Selector '[] (Id NSString)
 playbackTypeSelector = mkSelector "playbackType"
 
 -- | @Selector@ for @mediaRequestsWWAN@
-mediaRequestsWWANSelector :: Selector
+mediaRequestsWWANSelector :: Selector '[] CLong
 mediaRequestsWWANSelector = mkSelector "mediaRequestsWWAN"
 
 -- | @Selector@ for @switchBitrate@
-switchBitrateSelector :: Selector
+switchBitrateSelector :: Selector '[] CDouble
 switchBitrateSelector = mkSelector "switchBitrate"
 

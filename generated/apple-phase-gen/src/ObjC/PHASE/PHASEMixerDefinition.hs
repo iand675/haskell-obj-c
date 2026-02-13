@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,25 +21,21 @@ module ObjC.PHASE.PHASEMixerDefinition
   , setGain
   , gainMetaParameterDefinition
   , setGainMetaParameterDefinition
+  , gainMetaParameterDefinitionSelector
+  , gainSelector
   , initSelector
   , newSelector
-  , gainSelector
-  , setGainSelector
-  , gainMetaParameterDefinitionSelector
   , setGainMetaParameterDefinitionSelector
+  , setGainSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,15 +44,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASEMixerDefinition phaseMixerDefinition => phaseMixerDefinition -> IO (Id PHASEMixerDefinition)
-init_ phaseMixerDefinition  =
-    sendMsg phaseMixerDefinition (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseMixerDefinition =
+  sendOwnedMessage phaseMixerDefinition initSelector
 
 -- | @+ new@
 new :: IO (Id PHASEMixerDefinition)
 new  =
   do
     cls' <- getRequiredClass "PHASEMixerDefinition"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | gain
 --
@@ -65,8 +62,8 @@ new  =
 --
 -- ObjC selector: @- gain@
 gain :: IsPHASEMixerDefinition phaseMixerDefinition => phaseMixerDefinition -> IO CDouble
-gain phaseMixerDefinition  =
-    sendMsg phaseMixerDefinition (mkSelector "gain") retCDouble []
+gain phaseMixerDefinition =
+  sendMessage phaseMixerDefinition gainSelector
 
 -- | gain
 --
@@ -76,8 +73,8 @@ gain phaseMixerDefinition  =
 --
 -- ObjC selector: @- setGain:@
 setGain :: IsPHASEMixerDefinition phaseMixerDefinition => phaseMixerDefinition -> CDouble -> IO ()
-setGain phaseMixerDefinition  value =
-    sendMsg phaseMixerDefinition (mkSelector "setGain:") retVoid [argCDouble value]
+setGain phaseMixerDefinition value =
+  sendMessage phaseMixerDefinition setGainSelector value
 
 -- | gainMetaParameterDefinition
 --
@@ -85,8 +82,8 @@ setGain phaseMixerDefinition  value =
 --
 -- ObjC selector: @- gainMetaParameterDefinition@
 gainMetaParameterDefinition :: IsPHASEMixerDefinition phaseMixerDefinition => phaseMixerDefinition -> IO (Id PHASENumberMetaParameterDefinition)
-gainMetaParameterDefinition phaseMixerDefinition  =
-    sendMsg phaseMixerDefinition (mkSelector "gainMetaParameterDefinition") (retPtr retVoid) [] >>= retainedObject . castPtr
+gainMetaParameterDefinition phaseMixerDefinition =
+  sendMessage phaseMixerDefinition gainMetaParameterDefinitionSelector
 
 -- | gainMetaParameterDefinition
 --
@@ -94,35 +91,34 @@ gainMetaParameterDefinition phaseMixerDefinition  =
 --
 -- ObjC selector: @- setGainMetaParameterDefinition:@
 setGainMetaParameterDefinition :: (IsPHASEMixerDefinition phaseMixerDefinition, IsPHASENumberMetaParameterDefinition value) => phaseMixerDefinition -> value -> IO ()
-setGainMetaParameterDefinition phaseMixerDefinition  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg phaseMixerDefinition (mkSelector "setGainMetaParameterDefinition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGainMetaParameterDefinition phaseMixerDefinition value =
+  sendMessage phaseMixerDefinition setGainMetaParameterDefinitionSelector (toPHASENumberMetaParameterDefinition value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASEMixerDefinition)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PHASEMixerDefinition)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @gain@
-gainSelector :: Selector
+gainSelector :: Selector '[] CDouble
 gainSelector = mkSelector "gain"
 
 -- | @Selector@ for @setGain:@
-setGainSelector :: Selector
+setGainSelector :: Selector '[CDouble] ()
 setGainSelector = mkSelector "setGain:"
 
 -- | @Selector@ for @gainMetaParameterDefinition@
-gainMetaParameterDefinitionSelector :: Selector
+gainMetaParameterDefinitionSelector :: Selector '[] (Id PHASENumberMetaParameterDefinition)
 gainMetaParameterDefinitionSelector = mkSelector "gainMetaParameterDefinition"
 
 -- | @Selector@ for @setGainMetaParameterDefinition:@
-setGainMetaParameterDefinitionSelector :: Selector
+setGainMetaParameterDefinitionSelector :: Selector '[Id PHASENumberMetaParameterDefinition] ()
 setGainMetaParameterDefinitionSelector = mkSelector "setGainMetaParameterDefinition:"
 

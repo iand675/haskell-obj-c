@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,23 +17,19 @@ module ObjC.AVFoundation.AVMetricPlayerItemLikelyToKeepUpEvent
   , timeTaken
   , loadedTimeRanges
   , initSelector
-  , newSelector
-  , variantSelector
-  , timeTakenSelector
   , loadedTimeRangesSelector
+  , newSelector
+  , timeTakenSelector
+  , variantSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,29 +38,29 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetricPlayerItemLikelyToKeepUpEvent avMetricPlayerItemLikelyToKeepUpEvent => avMetricPlayerItemLikelyToKeepUpEvent -> IO (Id AVMetricPlayerItemLikelyToKeepUpEvent)
-init_ avMetricPlayerItemLikelyToKeepUpEvent  =
-    sendMsg avMetricPlayerItemLikelyToKeepUpEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetricPlayerItemLikelyToKeepUpEvent =
+  sendOwnedMessage avMetricPlayerItemLikelyToKeepUpEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetricPlayerItemLikelyToKeepUpEvent)
 new  =
   do
     cls' <- getRequiredClass "AVMetricPlayerItemLikelyToKeepUpEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns the variant selected at the time likely to keep up is achieved. If no value is present, returns nil.
 --
 -- ObjC selector: @- variant@
 variant :: IsAVMetricPlayerItemLikelyToKeepUpEvent avMetricPlayerItemLikelyToKeepUpEvent => avMetricPlayerItemLikelyToKeepUpEvent -> IO (Id AVAssetVariant)
-variant avMetricPlayerItemLikelyToKeepUpEvent  =
-    sendMsg avMetricPlayerItemLikelyToKeepUpEvent (mkSelector "variant") (retPtr retVoid) [] >>= retainedObject . castPtr
+variant avMetricPlayerItemLikelyToKeepUpEvent =
+  sendMessage avMetricPlayerItemLikelyToKeepUpEvent variantSelector
 
 -- | Returns the total time taken to reach likely to keep up.
 --
 -- ObjC selector: @- timeTaken@
 timeTaken :: IsAVMetricPlayerItemLikelyToKeepUpEvent avMetricPlayerItemLikelyToKeepUpEvent => avMetricPlayerItemLikelyToKeepUpEvent -> IO CDouble
-timeTaken avMetricPlayerItemLikelyToKeepUpEvent  =
-    sendMsg avMetricPlayerItemLikelyToKeepUpEvent (mkSelector "timeTaken") retCDouble []
+timeTaken avMetricPlayerItemLikelyToKeepUpEvent =
+  sendMessage avMetricPlayerItemLikelyToKeepUpEvent timeTakenSelector
 
 -- | This property provides a collection of time ranges for which the player has the media data readily available. The ranges provided might be discontinuous.
 --
@@ -71,30 +68,30 @@ timeTaken avMetricPlayerItemLikelyToKeepUpEvent  =
 --
 -- ObjC selector: @- loadedTimeRanges@
 loadedTimeRanges :: IsAVMetricPlayerItemLikelyToKeepUpEvent avMetricPlayerItemLikelyToKeepUpEvent => avMetricPlayerItemLikelyToKeepUpEvent -> IO (Id NSArray)
-loadedTimeRanges avMetricPlayerItemLikelyToKeepUpEvent  =
-    sendMsg avMetricPlayerItemLikelyToKeepUpEvent (mkSelector "loadedTimeRanges") (retPtr retVoid) [] >>= retainedObject . castPtr
+loadedTimeRanges avMetricPlayerItemLikelyToKeepUpEvent =
+  sendMessage avMetricPlayerItemLikelyToKeepUpEvent loadedTimeRangesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetricPlayerItemLikelyToKeepUpEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetricPlayerItemLikelyToKeepUpEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @variant@
-variantSelector :: Selector
+variantSelector :: Selector '[] (Id AVAssetVariant)
 variantSelector = mkSelector "variant"
 
 -- | @Selector@ for @timeTaken@
-timeTakenSelector :: Selector
+timeTakenSelector :: Selector '[] CDouble
 timeTakenSelector = mkSelector "timeTaken"
 
 -- | @Selector@ for @loadedTimeRanges@
-loadedTimeRangesSelector :: Selector
+loadedTimeRangesSelector :: Selector '[] (Id NSArray)
 loadedTimeRangesSelector = mkSelector "loadedTimeRanges"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,30 +22,26 @@ module ObjC.SceneKit.SCNCapsule
   , setHeightSegmentCount
   , capSegmentCount
   , setCapSegmentCount
-  , capsuleWithCapRadius_heightSelector
   , capRadiusSelector
-  , setCapRadiusSelector
-  , heightSelector
-  , setHeightSelector
-  , radialSegmentCountSelector
-  , setRadialSegmentCountSelector
-  , heightSegmentCountSelector
-  , setHeightSegmentCountSelector
   , capSegmentCountSelector
+  , capsuleWithCapRadius_heightSelector
+  , heightSegmentCountSelector
+  , heightSelector
+  , radialSegmentCountSelector
+  , setCapRadiusSelector
   , setCapSegmentCountSelector
+  , setHeightSegmentCountSelector
+  , setHeightSelector
+  , setRadialSegmentCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,7 +61,7 @@ capsuleWithCapRadius_height :: CDouble -> CDouble -> IO (Id SCNCapsule)
 capsuleWithCapRadius_height capRadius height =
   do
     cls' <- getRequiredClass "SCNCapsule"
-    sendClassMsg cls' (mkSelector "capsuleWithCapRadius:height:") (retPtr retVoid) [argCDouble capRadius, argCDouble height] >>= retainedObject . castPtr
+    sendClassMessage cls' capsuleWithCapRadius_heightSelector capRadius height
 
 -- | capRadius
 --
@@ -74,8 +71,8 @@ capsuleWithCapRadius_height capRadius height =
 --
 -- ObjC selector: @- capRadius@
 capRadius :: IsSCNCapsule scnCapsule => scnCapsule -> IO CDouble
-capRadius scnCapsule  =
-    sendMsg scnCapsule (mkSelector "capRadius") retCDouble []
+capRadius scnCapsule =
+  sendMessage scnCapsule capRadiusSelector
 
 -- | capRadius
 --
@@ -85,8 +82,8 @@ capRadius scnCapsule  =
 --
 -- ObjC selector: @- setCapRadius:@
 setCapRadius :: IsSCNCapsule scnCapsule => scnCapsule -> CDouble -> IO ()
-setCapRadius scnCapsule  value =
-    sendMsg scnCapsule (mkSelector "setCapRadius:") retVoid [argCDouble value]
+setCapRadius scnCapsule value =
+  sendMessage scnCapsule setCapRadiusSelector value
 
 -- | height
 --
@@ -96,8 +93,8 @@ setCapRadius scnCapsule  value =
 --
 -- ObjC selector: @- height@
 height :: IsSCNCapsule scnCapsule => scnCapsule -> IO CDouble
-height scnCapsule  =
-    sendMsg scnCapsule (mkSelector "height") retCDouble []
+height scnCapsule =
+  sendMessage scnCapsule heightSelector
 
 -- | height
 --
@@ -107,8 +104,8 @@ height scnCapsule  =
 --
 -- ObjC selector: @- setHeight:@
 setHeight :: IsSCNCapsule scnCapsule => scnCapsule -> CDouble -> IO ()
-setHeight scnCapsule  value =
-    sendMsg scnCapsule (mkSelector "setHeight:") retVoid [argCDouble value]
+setHeight scnCapsule value =
+  sendMessage scnCapsule setHeightSelector value
 
 -- | radialSegmentCount
 --
@@ -118,8 +115,8 @@ setHeight scnCapsule  value =
 --
 -- ObjC selector: @- radialSegmentCount@
 radialSegmentCount :: IsSCNCapsule scnCapsule => scnCapsule -> IO CLong
-radialSegmentCount scnCapsule  =
-    sendMsg scnCapsule (mkSelector "radialSegmentCount") retCLong []
+radialSegmentCount scnCapsule =
+  sendMessage scnCapsule radialSegmentCountSelector
 
 -- | radialSegmentCount
 --
@@ -129,8 +126,8 @@ radialSegmentCount scnCapsule  =
 --
 -- ObjC selector: @- setRadialSegmentCount:@
 setRadialSegmentCount :: IsSCNCapsule scnCapsule => scnCapsule -> CLong -> IO ()
-setRadialSegmentCount scnCapsule  value =
-    sendMsg scnCapsule (mkSelector "setRadialSegmentCount:") retVoid [argCLong value]
+setRadialSegmentCount scnCapsule value =
+  sendMessage scnCapsule setRadialSegmentCountSelector value
 
 -- | heightSegmentCount
 --
@@ -140,8 +137,8 @@ setRadialSegmentCount scnCapsule  value =
 --
 -- ObjC selector: @- heightSegmentCount@
 heightSegmentCount :: IsSCNCapsule scnCapsule => scnCapsule -> IO CLong
-heightSegmentCount scnCapsule  =
-    sendMsg scnCapsule (mkSelector "heightSegmentCount") retCLong []
+heightSegmentCount scnCapsule =
+  sendMessage scnCapsule heightSegmentCountSelector
 
 -- | heightSegmentCount
 --
@@ -151,8 +148,8 @@ heightSegmentCount scnCapsule  =
 --
 -- ObjC selector: @- setHeightSegmentCount:@
 setHeightSegmentCount :: IsSCNCapsule scnCapsule => scnCapsule -> CLong -> IO ()
-setHeightSegmentCount scnCapsule  value =
-    sendMsg scnCapsule (mkSelector "setHeightSegmentCount:") retVoid [argCLong value]
+setHeightSegmentCount scnCapsule value =
+  sendMessage scnCapsule setHeightSegmentCountSelector value
 
 -- | capSegmentCount
 --
@@ -162,8 +159,8 @@ setHeightSegmentCount scnCapsule  value =
 --
 -- ObjC selector: @- capSegmentCount@
 capSegmentCount :: IsSCNCapsule scnCapsule => scnCapsule -> IO CLong
-capSegmentCount scnCapsule  =
-    sendMsg scnCapsule (mkSelector "capSegmentCount") retCLong []
+capSegmentCount scnCapsule =
+  sendMessage scnCapsule capSegmentCountSelector
 
 -- | capSegmentCount
 --
@@ -173,54 +170,54 @@ capSegmentCount scnCapsule  =
 --
 -- ObjC selector: @- setCapSegmentCount:@
 setCapSegmentCount :: IsSCNCapsule scnCapsule => scnCapsule -> CLong -> IO ()
-setCapSegmentCount scnCapsule  value =
-    sendMsg scnCapsule (mkSelector "setCapSegmentCount:") retVoid [argCLong value]
+setCapSegmentCount scnCapsule value =
+  sendMessage scnCapsule setCapSegmentCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @capsuleWithCapRadius:height:@
-capsuleWithCapRadius_heightSelector :: Selector
+capsuleWithCapRadius_heightSelector :: Selector '[CDouble, CDouble] (Id SCNCapsule)
 capsuleWithCapRadius_heightSelector = mkSelector "capsuleWithCapRadius:height:"
 
 -- | @Selector@ for @capRadius@
-capRadiusSelector :: Selector
+capRadiusSelector :: Selector '[] CDouble
 capRadiusSelector = mkSelector "capRadius"
 
 -- | @Selector@ for @setCapRadius:@
-setCapRadiusSelector :: Selector
+setCapRadiusSelector :: Selector '[CDouble] ()
 setCapRadiusSelector = mkSelector "setCapRadius:"
 
 -- | @Selector@ for @height@
-heightSelector :: Selector
+heightSelector :: Selector '[] CDouble
 heightSelector = mkSelector "height"
 
 -- | @Selector@ for @setHeight:@
-setHeightSelector :: Selector
+setHeightSelector :: Selector '[CDouble] ()
 setHeightSelector = mkSelector "setHeight:"
 
 -- | @Selector@ for @radialSegmentCount@
-radialSegmentCountSelector :: Selector
+radialSegmentCountSelector :: Selector '[] CLong
 radialSegmentCountSelector = mkSelector "radialSegmentCount"
 
 -- | @Selector@ for @setRadialSegmentCount:@
-setRadialSegmentCountSelector :: Selector
+setRadialSegmentCountSelector :: Selector '[CLong] ()
 setRadialSegmentCountSelector = mkSelector "setRadialSegmentCount:"
 
 -- | @Selector@ for @heightSegmentCount@
-heightSegmentCountSelector :: Selector
+heightSegmentCountSelector :: Selector '[] CLong
 heightSegmentCountSelector = mkSelector "heightSegmentCount"
 
 -- | @Selector@ for @setHeightSegmentCount:@
-setHeightSegmentCountSelector :: Selector
+setHeightSegmentCountSelector :: Selector '[CLong] ()
 setHeightSegmentCountSelector = mkSelector "setHeightSegmentCount:"
 
 -- | @Selector@ for @capSegmentCount@
-capSegmentCountSelector :: Selector
+capSegmentCountSelector :: Selector '[] CLong
 capSegmentCountSelector = mkSelector "capSegmentCount"
 
 -- | @Selector@ for @setCapSegmentCount:@
-setCapSegmentCountSelector :: Selector
+setCapSegmentCountSelector :: Selector '[CLong] ()
 setCapSegmentCountSelector = mkSelector "setCapSegmentCount:"
 

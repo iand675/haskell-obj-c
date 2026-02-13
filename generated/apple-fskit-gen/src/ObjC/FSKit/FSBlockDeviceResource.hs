@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,36 +32,32 @@ module ObjC.FSKit.FSBlockDeviceResource
   , blockSize
   , blockCount
   , physicalBlockSize
+  , asynchronousMetadataFlushWithErrorSelector
+  , blockCountSelector
+  , blockSizeSelector
+  , bsdNameSelector
+  , delayedMetadataWriteFrom_startingAt_length_errorSelector
   , initSelector
-  , readInto_startingAt_length_completionHandlerSelector
-  , readInto_startingAt_length_errorSelector
-  , writeFrom_startingAt_length_completionHandlerSelector
-  , writeFrom_startingAt_length_errorSelector
+  , metadataClear_withDelayedWrites_errorSelector
+  , metadataFlushWithErrorSelector
+  , metadataPurge_errorSelector
   , metadataReadInto_startingAt_length_errorSelector
   , metadataWriteFrom_startingAt_length_errorSelector
-  , delayedMetadataWriteFrom_startingAt_length_errorSelector
-  , metadataFlushWithErrorSelector
-  , asynchronousMetadataFlushWithErrorSelector
-  , metadataClear_withDelayedWrites_errorSelector
-  , metadataPurge_errorSelector
-  , bsdNameSelector
-  , writableSelector
-  , blockSizeSelector
-  , blockCountSelector
   , physicalBlockSizeSelector
+  , readInto_startingAt_length_completionHandlerSelector
+  , readInto_startingAt_length_errorSelector
+  , writableSelector
+  , writeFrom_startingAt_length_completionHandlerSelector
+  , writeFrom_startingAt_length_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,8 +66,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsFSBlockDeviceResource fsBlockDeviceResource => fsBlockDeviceResource -> IO (Id FSBlockDeviceResource)
-init_ fsBlockDeviceResource  =
-    sendMsg fsBlockDeviceResource (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ fsBlockDeviceResource =
+  sendOwnedMessage fsBlockDeviceResource initSelector
 
 -- | Reads data from the resource into a buffer and executes a block afterwards.
 --
@@ -80,8 +77,8 @@ init_ fsBlockDeviceResource  =
 --
 -- ObjC selector: @- readInto:startingAt:length:completionHandler:@
 readInto_startingAt_length_completionHandler :: IsFSBlockDeviceResource fsBlockDeviceResource => fsBlockDeviceResource -> Ptr () -> CLong -> CULong -> Ptr () -> IO ()
-readInto_startingAt_length_completionHandler fsBlockDeviceResource  buffer offset length_ completionHandler =
-    sendMsg fsBlockDeviceResource (mkSelector "readInto:startingAt:length:completionHandler:") retVoid [argPtr buffer, argCLong offset, argCULong length_, argPtr (castPtr completionHandler :: Ptr ())]
+readInto_startingAt_length_completionHandler fsBlockDeviceResource buffer offset length_ completionHandler =
+  sendMessage fsBlockDeviceResource readInto_startingAt_length_completionHandlerSelector buffer offset length_ completionHandler
 
 -- | Synchronously reads data from the resource into a buffer.
 --
@@ -95,9 +92,8 @@ readInto_startingAt_length_completionHandler fsBlockDeviceResource  buffer offse
 --
 -- ObjC selector: @- readInto:startingAt:length:error:@
 readInto_startingAt_length_error :: (IsFSBlockDeviceResource fsBlockDeviceResource, IsNSError error_) => fsBlockDeviceResource -> Ptr () -> CLong -> CULong -> error_ -> IO CULong
-readInto_startingAt_length_error fsBlockDeviceResource  buffer offset length_ error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg fsBlockDeviceResource (mkSelector "readInto:startingAt:length:error:") retCULong [argPtr buffer, argCLong offset, argCULong length_, argPtr (castPtr raw_error_ :: Ptr ())]
+readInto_startingAt_length_error fsBlockDeviceResource buffer offset length_ error_ =
+  sendMessage fsBlockDeviceResource readInto_startingAt_length_errorSelector buffer offset length_ (toNSError error_)
 
 -- | Writes data from from a buffer to the resource and executes a block afterwards.
 --
@@ -107,8 +103,8 @@ readInto_startingAt_length_error fsBlockDeviceResource  buffer offset length_ er
 --
 -- ObjC selector: @- writeFrom:startingAt:length:completionHandler:@
 writeFrom_startingAt_length_completionHandler :: IsFSBlockDeviceResource fsBlockDeviceResource => fsBlockDeviceResource -> Ptr () -> CLong -> CULong -> Ptr () -> IO ()
-writeFrom_startingAt_length_completionHandler fsBlockDeviceResource  buffer offset length_ completionHandler =
-    sendMsg fsBlockDeviceResource (mkSelector "writeFrom:startingAt:length:completionHandler:") retVoid [argPtr buffer, argCLong offset, argCULong length_, argPtr (castPtr completionHandler :: Ptr ())]
+writeFrom_startingAt_length_completionHandler fsBlockDeviceResource buffer offset length_ completionHandler =
+  sendMessage fsBlockDeviceResource writeFrom_startingAt_length_completionHandlerSelector buffer offset length_ completionHandler
 
 -- | Synchronously writes data from from a buffer to the resource and executes a block afterwards.
 --
@@ -122,9 +118,8 @@ writeFrom_startingAt_length_completionHandler fsBlockDeviceResource  buffer offs
 --
 -- ObjC selector: @- writeFrom:startingAt:length:error:@
 writeFrom_startingAt_length_error :: (IsFSBlockDeviceResource fsBlockDeviceResource, IsNSError error_) => fsBlockDeviceResource -> Ptr () -> CLong -> CULong -> error_ -> IO CULong
-writeFrom_startingAt_length_error fsBlockDeviceResource  buffer offset length_ error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg fsBlockDeviceResource (mkSelector "writeFrom:startingAt:length:error:") retCULong [argPtr buffer, argCLong offset, argCULong length_, argPtr (castPtr raw_error_ :: Ptr ())]
+writeFrom_startingAt_length_error fsBlockDeviceResource buffer offset length_ error_ =
+  sendMessage fsBlockDeviceResource writeFrom_startingAt_length_errorSelector buffer offset length_ (toNSError error_)
 
 -- | Synchronously reads file system metadata from the resource into a buffer.
 --
@@ -140,9 +135,8 @@ writeFrom_startingAt_length_error fsBlockDeviceResource  buffer offset length_ e
 --
 -- ObjC selector: @- metadataReadInto:startingAt:length:error:@
 metadataReadInto_startingAt_length_error :: (IsFSBlockDeviceResource fsBlockDeviceResource, IsNSError error_) => fsBlockDeviceResource -> Ptr () -> CLong -> CULong -> error_ -> IO Bool
-metadataReadInto_startingAt_length_error fsBlockDeviceResource  buffer offset length_ error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsBlockDeviceResource (mkSelector "metadataReadInto:startingAt:length:error:") retCULong [argPtr buffer, argCLong offset, argCULong length_, argPtr (castPtr raw_error_ :: Ptr ())]
+metadataReadInto_startingAt_length_error fsBlockDeviceResource buffer offset length_ error_ =
+  sendMessage fsBlockDeviceResource metadataReadInto_startingAt_length_errorSelector buffer offset length_ (toNSError error_)
 
 -- | Synchronously writes file system metadata from a buffer to the resource.
 --
@@ -158,9 +152,8 @@ metadataReadInto_startingAt_length_error fsBlockDeviceResource  buffer offset le
 --
 -- ObjC selector: @- metadataWriteFrom:startingAt:length:error:@
 metadataWriteFrom_startingAt_length_error :: (IsFSBlockDeviceResource fsBlockDeviceResource, IsNSError error_) => fsBlockDeviceResource -> Ptr () -> CLong -> CULong -> error_ -> IO Bool
-metadataWriteFrom_startingAt_length_error fsBlockDeviceResource  buffer offset length_ error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsBlockDeviceResource (mkSelector "metadataWriteFrom:startingAt:length:error:") retCULong [argPtr buffer, argCLong offset, argCULong length_, argPtr (castPtr raw_error_ :: Ptr ())]
+metadataWriteFrom_startingAt_length_error fsBlockDeviceResource buffer offset length_ error_ =
+  sendMessage fsBlockDeviceResource metadataWriteFrom_startingAt_length_errorSelector buffer offset length_ (toNSError error_)
 
 -- | Writes file system metadata from a buffer to a cache, prior to flushing it to the resource.
 --
@@ -180,9 +173,8 @@ metadataWriteFrom_startingAt_length_error fsBlockDeviceResource  buffer offset l
 --
 -- ObjC selector: @- delayedMetadataWriteFrom:startingAt:length:error:@
 delayedMetadataWriteFrom_startingAt_length_error :: (IsFSBlockDeviceResource fsBlockDeviceResource, IsNSError error_) => fsBlockDeviceResource -> Ptr () -> CLong -> CULong -> error_ -> IO Bool
-delayedMetadataWriteFrom_startingAt_length_error fsBlockDeviceResource  buffer offset length_ error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsBlockDeviceResource (mkSelector "delayedMetadataWriteFrom:startingAt:length:error:") retCULong [argPtr buffer, argCLong offset, argCULong length_, argPtr (castPtr raw_error_ :: Ptr ())]
+delayedMetadataWriteFrom_startingAt_length_error fsBlockDeviceResource buffer offset length_ error_ =
+  sendMessage fsBlockDeviceResource delayedMetadataWriteFrom_startingAt_length_errorSelector buffer offset length_ (toNSError error_)
 
 -- | Synchronously flushes the resource's buffer cache.
 --
@@ -194,9 +186,8 @@ delayedMetadataWriteFrom_startingAt_length_error fsBlockDeviceResource  buffer o
 --
 -- ObjC selector: @- metadataFlushWithError:@
 metadataFlushWithError :: (IsFSBlockDeviceResource fsBlockDeviceResource, IsNSError error_) => fsBlockDeviceResource -> error_ -> IO Bool
-metadataFlushWithError fsBlockDeviceResource  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsBlockDeviceResource (mkSelector "metadataFlushWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+metadataFlushWithError fsBlockDeviceResource error_ =
+  sendMessage fsBlockDeviceResource metadataFlushWithErrorSelector (toNSError error_)
 
 -- | Asynchronously flushes the resource's buffer cache.
 --
@@ -208,9 +199,8 @@ metadataFlushWithError fsBlockDeviceResource  error_ =
 --
 -- ObjC selector: @- asynchronousMetadataFlushWithError:@
 asynchronousMetadataFlushWithError :: (IsFSBlockDeviceResource fsBlockDeviceResource, IsNSError error_) => fsBlockDeviceResource -> error_ -> IO Bool
-asynchronousMetadataFlushWithError fsBlockDeviceResource  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsBlockDeviceResource (mkSelector "asynchronousMetadataFlushWithError:") retCULong [argPtr (castPtr raw_error_ :: Ptr ())]
+asynchronousMetadataFlushWithError fsBlockDeviceResource error_ =
+  sendMessage fsBlockDeviceResource asynchronousMetadataFlushWithErrorSelector (toNSError error_)
 
 -- | Clears the given ranges within the buffer cache.
 --
@@ -222,10 +212,8 @@ asynchronousMetadataFlushWithError fsBlockDeviceResource  error_ =
 --
 -- ObjC selector: @- metadataClear:withDelayedWrites:error:@
 metadataClear_withDelayedWrites_error :: (IsFSBlockDeviceResource fsBlockDeviceResource, IsNSArray rangesToClear, IsNSError error_) => fsBlockDeviceResource -> rangesToClear -> Bool -> error_ -> IO Bool
-metadataClear_withDelayedWrites_error fsBlockDeviceResource  rangesToClear withDelayedWrites error_ =
-  withObjCPtr rangesToClear $ \raw_rangesToClear ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsBlockDeviceResource (mkSelector "metadataClear:withDelayedWrites:error:") retCULong [argPtr (castPtr raw_rangesToClear :: Ptr ()), argCULong (if withDelayedWrites then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+metadataClear_withDelayedWrites_error fsBlockDeviceResource rangesToClear withDelayedWrites error_ =
+  sendMessage fsBlockDeviceResource metadataClear_withDelayedWrites_errorSelector (toNSArray rangesToClear) withDelayedWrites (toNSError error_)
 
 -- | Synchronously purges the given ranges from the buffer cache.
 --
@@ -237,24 +225,22 @@ metadataClear_withDelayedWrites_error fsBlockDeviceResource  rangesToClear withD
 --
 -- ObjC selector: @- metadataPurge:error:@
 metadataPurge_error :: (IsFSBlockDeviceResource fsBlockDeviceResource, IsNSArray rangesToPurge, IsNSError error_) => fsBlockDeviceResource -> rangesToPurge -> error_ -> IO Bool
-metadataPurge_error fsBlockDeviceResource  rangesToPurge error_ =
-  withObjCPtr rangesToPurge $ \raw_rangesToPurge ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsBlockDeviceResource (mkSelector "metadataPurge:error:") retCULong [argPtr (castPtr raw_rangesToPurge :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+metadataPurge_error fsBlockDeviceResource rangesToPurge error_ =
+  sendMessage fsBlockDeviceResource metadataPurge_errorSelector (toNSArray rangesToPurge) (toNSError error_)
 
 -- | The device name of the resource.
 --
 -- ObjC selector: @- BSDName@
 bsdName :: IsFSBlockDeviceResource fsBlockDeviceResource => fsBlockDeviceResource -> IO (Id NSString)
-bsdName fsBlockDeviceResource  =
-    sendMsg fsBlockDeviceResource (mkSelector "BSDName") (retPtr retVoid) [] >>= retainedObject . castPtr
+bsdName fsBlockDeviceResource =
+  sendMessage fsBlockDeviceResource bsdNameSelector
 
 -- | A Boolean property that indicates whether the resource can write data to the device.
 --
 -- ObjC selector: @- writable@
 writable :: IsFSBlockDeviceResource fsBlockDeviceResource => fsBlockDeviceResource -> IO Bool
-writable fsBlockDeviceResource  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg fsBlockDeviceResource (mkSelector "writable") retCULong []
+writable fsBlockDeviceResource =
+  sendMessage fsBlockDeviceResource writableSelector
 
 -- | The logical block size, the size of data blocks used by the file system.
 --
@@ -262,15 +248,15 @@ writable fsBlockDeviceResource  =
 --
 -- ObjC selector: @- blockSize@
 blockSize :: IsFSBlockDeviceResource fsBlockDeviceResource => fsBlockDeviceResource -> IO CULong
-blockSize fsBlockDeviceResource  =
-    sendMsg fsBlockDeviceResource (mkSelector "blockSize") retCULong []
+blockSize fsBlockDeviceResource =
+  sendMessage fsBlockDeviceResource blockSizeSelector
 
 -- | The block count on this resource.
 --
 -- ObjC selector: @- blockCount@
 blockCount :: IsFSBlockDeviceResource fsBlockDeviceResource => fsBlockDeviceResource -> IO CULong
-blockCount fsBlockDeviceResource  =
-    sendMsg fsBlockDeviceResource (mkSelector "blockCount") retCULong []
+blockCount fsBlockDeviceResource =
+  sendMessage fsBlockDeviceResource blockCountSelector
 
 -- | The sector size of the device.
 --
@@ -278,78 +264,78 @@ blockCount fsBlockDeviceResource  =
 --
 -- ObjC selector: @- physicalBlockSize@
 physicalBlockSize :: IsFSBlockDeviceResource fsBlockDeviceResource => fsBlockDeviceResource -> IO CULong
-physicalBlockSize fsBlockDeviceResource  =
-    sendMsg fsBlockDeviceResource (mkSelector "physicalBlockSize") retCULong []
+physicalBlockSize fsBlockDeviceResource =
+  sendMessage fsBlockDeviceResource physicalBlockSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id FSBlockDeviceResource)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @readInto:startingAt:length:completionHandler:@
-readInto_startingAt_length_completionHandlerSelector :: Selector
+readInto_startingAt_length_completionHandlerSelector :: Selector '[Ptr (), CLong, CULong, Ptr ()] ()
 readInto_startingAt_length_completionHandlerSelector = mkSelector "readInto:startingAt:length:completionHandler:"
 
 -- | @Selector@ for @readInto:startingAt:length:error:@
-readInto_startingAt_length_errorSelector :: Selector
+readInto_startingAt_length_errorSelector :: Selector '[Ptr (), CLong, CULong, Id NSError] CULong
 readInto_startingAt_length_errorSelector = mkSelector "readInto:startingAt:length:error:"
 
 -- | @Selector@ for @writeFrom:startingAt:length:completionHandler:@
-writeFrom_startingAt_length_completionHandlerSelector :: Selector
+writeFrom_startingAt_length_completionHandlerSelector :: Selector '[Ptr (), CLong, CULong, Ptr ()] ()
 writeFrom_startingAt_length_completionHandlerSelector = mkSelector "writeFrom:startingAt:length:completionHandler:"
 
 -- | @Selector@ for @writeFrom:startingAt:length:error:@
-writeFrom_startingAt_length_errorSelector :: Selector
+writeFrom_startingAt_length_errorSelector :: Selector '[Ptr (), CLong, CULong, Id NSError] CULong
 writeFrom_startingAt_length_errorSelector = mkSelector "writeFrom:startingAt:length:error:"
 
 -- | @Selector@ for @metadataReadInto:startingAt:length:error:@
-metadataReadInto_startingAt_length_errorSelector :: Selector
+metadataReadInto_startingAt_length_errorSelector :: Selector '[Ptr (), CLong, CULong, Id NSError] Bool
 metadataReadInto_startingAt_length_errorSelector = mkSelector "metadataReadInto:startingAt:length:error:"
 
 -- | @Selector@ for @metadataWriteFrom:startingAt:length:error:@
-metadataWriteFrom_startingAt_length_errorSelector :: Selector
+metadataWriteFrom_startingAt_length_errorSelector :: Selector '[Ptr (), CLong, CULong, Id NSError] Bool
 metadataWriteFrom_startingAt_length_errorSelector = mkSelector "metadataWriteFrom:startingAt:length:error:"
 
 -- | @Selector@ for @delayedMetadataWriteFrom:startingAt:length:error:@
-delayedMetadataWriteFrom_startingAt_length_errorSelector :: Selector
+delayedMetadataWriteFrom_startingAt_length_errorSelector :: Selector '[Ptr (), CLong, CULong, Id NSError] Bool
 delayedMetadataWriteFrom_startingAt_length_errorSelector = mkSelector "delayedMetadataWriteFrom:startingAt:length:error:"
 
 -- | @Selector@ for @metadataFlushWithError:@
-metadataFlushWithErrorSelector :: Selector
+metadataFlushWithErrorSelector :: Selector '[Id NSError] Bool
 metadataFlushWithErrorSelector = mkSelector "metadataFlushWithError:"
 
 -- | @Selector@ for @asynchronousMetadataFlushWithError:@
-asynchronousMetadataFlushWithErrorSelector :: Selector
+asynchronousMetadataFlushWithErrorSelector :: Selector '[Id NSError] Bool
 asynchronousMetadataFlushWithErrorSelector = mkSelector "asynchronousMetadataFlushWithError:"
 
 -- | @Selector@ for @metadataClear:withDelayedWrites:error:@
-metadataClear_withDelayedWrites_errorSelector :: Selector
+metadataClear_withDelayedWrites_errorSelector :: Selector '[Id NSArray, Bool, Id NSError] Bool
 metadataClear_withDelayedWrites_errorSelector = mkSelector "metadataClear:withDelayedWrites:error:"
 
 -- | @Selector@ for @metadataPurge:error:@
-metadataPurge_errorSelector :: Selector
+metadataPurge_errorSelector :: Selector '[Id NSArray, Id NSError] Bool
 metadataPurge_errorSelector = mkSelector "metadataPurge:error:"
 
 -- | @Selector@ for @BSDName@
-bsdNameSelector :: Selector
+bsdNameSelector :: Selector '[] (Id NSString)
 bsdNameSelector = mkSelector "BSDName"
 
 -- | @Selector@ for @writable@
-writableSelector :: Selector
+writableSelector :: Selector '[] Bool
 writableSelector = mkSelector "writable"
 
 -- | @Selector@ for @blockSize@
-blockSizeSelector :: Selector
+blockSizeSelector :: Selector '[] CULong
 blockSizeSelector = mkSelector "blockSize"
 
 -- | @Selector@ for @blockCount@
-blockCountSelector :: Selector
+blockCountSelector :: Selector '[] CULong
 blockCountSelector = mkSelector "blockCount"
 
 -- | @Selector@ for @physicalBlockSize@
-physicalBlockSizeSelector :: Selector
+physicalBlockSizeSelector :: Selector '[] CULong
 physicalBlockSizeSelector = mkSelector "physicalBlockSize"
 

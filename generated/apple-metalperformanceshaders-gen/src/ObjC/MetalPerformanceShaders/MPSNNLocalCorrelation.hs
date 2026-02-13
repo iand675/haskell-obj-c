@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,30 +24,26 @@ module ObjC.MetalPerformanceShaders.MPSNNLocalCorrelation
   , setStrideInX
   , strideInY
   , setStrideInY
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , initWithDevice_windowInX_windowInY_strideInX_strideInYSelector
-  , initWithCoder_deviceSelector
-  , windowInXSelector
+  , setStrideInXSelector
+  , setStrideInYSelector
   , setWindowInXSelector
-  , windowInYSelector
   , setWindowInYSelector
   , strideInXSelector
-  , setStrideInXSelector
   , strideInYSelector
-  , setStrideInYSelector
+  , windowInXSelector
+  , windowInYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> RawId -> IO (Id MPSNNLocalCorrelation)
-initWithDevice mpsnnLocalCorrelation  device =
-    sendMsg mpsnnLocalCorrelation (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnLocalCorrelation device =
+  sendOwnedMessage mpsnnLocalCorrelation initWithDeviceSelector device
 
 -- | Specifies information to apply the local correlation operation on an image.
 --
@@ -80,8 +77,8 @@ initWithDevice mpsnnLocalCorrelation  device =
 --
 -- ObjC selector: @- initWithDevice:windowInX:windowInY:strideInX:strideInY:@
 initWithDevice_windowInX_windowInY_strideInX_strideInY :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> RawId -> CULong -> CULong -> CULong -> CULong -> IO (Id MPSNNLocalCorrelation)
-initWithDevice_windowInX_windowInY_strideInX_strideInY mpsnnLocalCorrelation  device windowInX windowInY strideInX strideInY =
-    sendMsg mpsnnLocalCorrelation (mkSelector "initWithDevice:windowInX:windowInY:strideInX:strideInY:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong windowInX, argCULong windowInY, argCULong strideInX, argCULong strideInY] >>= ownedObject . castPtr
+initWithDevice_windowInX_windowInY_strideInX_strideInY mpsnnLocalCorrelation device windowInX windowInY strideInX strideInY =
+  sendOwnedMessage mpsnnLocalCorrelation initWithDevice_windowInX_windowInY_strideInX_strideInYSelector device windowInX windowInY strideInX strideInY
 
 -- | NSSecureCoding compatability
 --
@@ -95,9 +92,8 @@ initWithDevice_windowInX_windowInY_strideInX_strideInY mpsnnLocalCorrelation  de
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNLocalCorrelation mpsnnLocalCorrelation, IsNSCoder aDecoder) => mpsnnLocalCorrelation -> aDecoder -> RawId -> IO (Id MPSNNLocalCorrelation)
-initWithCoder_device mpsnnLocalCorrelation  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnLocalCorrelation (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnLocalCorrelation aDecoder device =
+  sendOwnedMessage mpsnnLocalCorrelation initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Specifies a symmetric window around 0 for offsetting the secondary source in the x dimension.
 --
@@ -105,8 +101,8 @@ initWithCoder_device mpsnnLocalCorrelation  aDecoder device =
 --
 -- ObjC selector: @- windowInX@
 windowInX :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> IO CULong
-windowInX mpsnnLocalCorrelation  =
-    sendMsg mpsnnLocalCorrelation (mkSelector "windowInX") retCULong []
+windowInX mpsnnLocalCorrelation =
+  sendMessage mpsnnLocalCorrelation windowInXSelector
 
 -- | Specifies a symmetric window around 0 for offsetting the secondary source in the x dimension.
 --
@@ -114,8 +110,8 @@ windowInX mpsnnLocalCorrelation  =
 --
 -- ObjC selector: @- setWindowInX:@
 setWindowInX :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> CULong -> IO ()
-setWindowInX mpsnnLocalCorrelation  value =
-    sendMsg mpsnnLocalCorrelation (mkSelector "setWindowInX:") retVoid [argCULong value]
+setWindowInX mpsnnLocalCorrelation value =
+  sendMessage mpsnnLocalCorrelation setWindowInXSelector value
 
 -- | Specifies a symmetric window around 0 for offsetting the secondary source in the y dimension.
 --
@@ -123,8 +119,8 @@ setWindowInX mpsnnLocalCorrelation  value =
 --
 -- ObjC selector: @- windowInY@
 windowInY :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> IO CULong
-windowInY mpsnnLocalCorrelation  =
-    sendMsg mpsnnLocalCorrelation (mkSelector "windowInY") retCULong []
+windowInY mpsnnLocalCorrelation =
+  sendMessage mpsnnLocalCorrelation windowInYSelector
 
 -- | Specifies a symmetric window around 0 for offsetting the secondary source in the y dimension.
 --
@@ -132,8 +128,8 @@ windowInY mpsnnLocalCorrelation  =
 --
 -- ObjC selector: @- setWindowInY:@
 setWindowInY :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> CULong -> IO ()
-setWindowInY mpsnnLocalCorrelation  value =
-    sendMsg mpsnnLocalCorrelation (mkSelector "setWindowInY:") retVoid [argCULong value]
+setWindowInY mpsnnLocalCorrelation value =
+  sendMessage mpsnnLocalCorrelation setWindowInYSelector value
 
 -- | Specifies the stride for the offset in the x dimension.
 --
@@ -141,8 +137,8 @@ setWindowInY mpsnnLocalCorrelation  value =
 --
 -- ObjC selector: @- strideInX@
 strideInX :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> IO CULong
-strideInX mpsnnLocalCorrelation  =
-    sendMsg mpsnnLocalCorrelation (mkSelector "strideInX") retCULong []
+strideInX mpsnnLocalCorrelation =
+  sendMessage mpsnnLocalCorrelation strideInXSelector
 
 -- | Specifies the stride for the offset in the x dimension.
 --
@@ -150,8 +146,8 @@ strideInX mpsnnLocalCorrelation  =
 --
 -- ObjC selector: @- setStrideInX:@
 setStrideInX :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> CULong -> IO ()
-setStrideInX mpsnnLocalCorrelation  value =
-    sendMsg mpsnnLocalCorrelation (mkSelector "setStrideInX:") retVoid [argCULong value]
+setStrideInX mpsnnLocalCorrelation value =
+  sendMessage mpsnnLocalCorrelation setStrideInXSelector value
 
 -- | Specifies the stride for the offset in the y dimension.
 --
@@ -159,8 +155,8 @@ setStrideInX mpsnnLocalCorrelation  value =
 --
 -- ObjC selector: @- strideInY@
 strideInY :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> IO CULong
-strideInY mpsnnLocalCorrelation  =
-    sendMsg mpsnnLocalCorrelation (mkSelector "strideInY") retCULong []
+strideInY mpsnnLocalCorrelation =
+  sendMessage mpsnnLocalCorrelation strideInYSelector
 
 -- | Specifies the stride for the offset in the y dimension.
 --
@@ -168,54 +164,54 @@ strideInY mpsnnLocalCorrelation  =
 --
 -- ObjC selector: @- setStrideInY:@
 setStrideInY :: IsMPSNNLocalCorrelation mpsnnLocalCorrelation => mpsnnLocalCorrelation -> CULong -> IO ()
-setStrideInY mpsnnLocalCorrelation  value =
-    sendMsg mpsnnLocalCorrelation (mkSelector "setStrideInY:") retVoid [argCULong value]
+setStrideInY mpsnnLocalCorrelation value =
+  sendMessage mpsnnLocalCorrelation setStrideInYSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNLocalCorrelation)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:windowInX:windowInY:strideInX:strideInY:@
-initWithDevice_windowInX_windowInY_strideInX_strideInYSelector :: Selector
+initWithDevice_windowInX_windowInY_strideInX_strideInYSelector :: Selector '[RawId, CULong, CULong, CULong, CULong] (Id MPSNNLocalCorrelation)
 initWithDevice_windowInX_windowInY_strideInX_strideInYSelector = mkSelector "initWithDevice:windowInX:windowInY:strideInX:strideInY:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNLocalCorrelation)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @windowInX@
-windowInXSelector :: Selector
+windowInXSelector :: Selector '[] CULong
 windowInXSelector = mkSelector "windowInX"
 
 -- | @Selector@ for @setWindowInX:@
-setWindowInXSelector :: Selector
+setWindowInXSelector :: Selector '[CULong] ()
 setWindowInXSelector = mkSelector "setWindowInX:"
 
 -- | @Selector@ for @windowInY@
-windowInYSelector :: Selector
+windowInYSelector :: Selector '[] CULong
 windowInYSelector = mkSelector "windowInY"
 
 -- | @Selector@ for @setWindowInY:@
-setWindowInYSelector :: Selector
+setWindowInYSelector :: Selector '[CULong] ()
 setWindowInYSelector = mkSelector "setWindowInY:"
 
 -- | @Selector@ for @strideInX@
-strideInXSelector :: Selector
+strideInXSelector :: Selector '[] CULong
 strideInXSelector = mkSelector "strideInX"
 
 -- | @Selector@ for @setStrideInX:@
-setStrideInXSelector :: Selector
+setStrideInXSelector :: Selector '[CULong] ()
 setStrideInXSelector = mkSelector "setStrideInX:"
 
 -- | @Selector@ for @strideInY@
-strideInYSelector :: Selector
+strideInYSelector :: Selector '[] CULong
 strideInYSelector = mkSelector "strideInY"
 
 -- | @Selector@ for @setStrideInY:@
-setStrideInYSelector :: Selector
+setStrideInYSelector :: Selector '[CULong] ()
 setStrideInYSelector = mkSelector "setStrideInY:"
 

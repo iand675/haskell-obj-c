@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,8 +12,8 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphVariableOp
   , IsMPSGraphVariableOp(..)
   , shape
   , dataType
-  , shapeSelector
   , dataTypeSelector
+  , shapeSelector
 
   -- * Enum types
   , MPSDataType(MPSDataType)
@@ -46,15 +47,11 @@ module ObjC.MetalPerformanceShadersGraph.MPSGraphVariableOp
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,25 +63,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- shape@
 shape :: IsMPSGraphVariableOp mpsGraphVariableOp => mpsGraphVariableOp -> IO RawId
-shape mpsGraphVariableOp  =
-    fmap (RawId . castPtr) $ sendMsg mpsGraphVariableOp (mkSelector "shape") (retPtr retVoid) []
+shape mpsGraphVariableOp =
+  sendMessage mpsGraphVariableOp shapeSelector
 
 -- | The data type of the variable.
 --
 -- ObjC selector: @- dataType@
 dataType :: IsMPSGraphVariableOp mpsGraphVariableOp => mpsGraphVariableOp -> IO MPSDataType
-dataType mpsGraphVariableOp  =
-    fmap (coerce :: CUInt -> MPSDataType) $ sendMsg mpsGraphVariableOp (mkSelector "dataType") retCUInt []
+dataType mpsGraphVariableOp =
+  sendMessage mpsGraphVariableOp dataTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @shape@
-shapeSelector :: Selector
+shapeSelector :: Selector '[] RawId
 shapeSelector = mkSelector "shape"
 
 -- | @Selector@ for @dataType@
-dataTypeSelector :: Selector
+dataTypeSelector :: Selector '[] MPSDataType
 dataTypeSelector = mkSelector "dataType"
 

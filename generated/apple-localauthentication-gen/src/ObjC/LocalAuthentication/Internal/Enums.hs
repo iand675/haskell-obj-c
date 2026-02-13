@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.LocalAuthentication.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @LAAccessControlOperation@
 newtype LAAccessControlOperation = LAAccessControlOperation CLong
@@ -34,6 +37,16 @@ pattern LAAccessControlOperationUseKeyDecrypt = LAAccessControlOperation 4
 pattern LAAccessControlOperationUseKeyKeyExchange :: LAAccessControlOperation
 pattern LAAccessControlOperationUseKeyKeyExchange = LAAccessControlOperation 5
 
+instance ObjCArgument LAAccessControlOperation where
+  withObjCArg (LAAccessControlOperation x) k = k (argCLong x)
+
+instance ObjCReturn LAAccessControlOperation where
+  type RawReturn LAAccessControlOperation = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LAAccessControlOperation x)
+  fromOwned x = pure (LAAccessControlOperation x)
+
 -- | @LABiometryType@
 newtype LABiometryType = LABiometryType CLong
   deriving stock (Eq, Ord, Show)
@@ -54,6 +67,16 @@ pattern LABiometryTypeFaceID = LABiometryType 2
 pattern LABiometryTypeOpticID :: LABiometryType
 pattern LABiometryTypeOpticID = LABiometryType 4
 
+instance ObjCArgument LABiometryType where
+  withObjCArg (LABiometryType x) k = k (argCLong x)
+
+instance ObjCReturn LABiometryType where
+  type RawReturn LABiometryType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LABiometryType x)
+  fromOwned x = pure (LABiometryType x)
+
 -- | @LACompanionType@
 newtype LACompanionType = LACompanionType CLong
   deriving stock (Eq, Ord, Show)
@@ -68,6 +91,16 @@ pattern LACompanionTypeMac = LACompanionType 2
 pattern LACompanionTypeVision :: LACompanionType
 pattern LACompanionTypeVision = LACompanionType 4
 
+instance ObjCArgument LACompanionType where
+  withObjCArg (LACompanionType x) k = k (argCLong x)
+
+instance ObjCReturn LACompanionType where
+  type RawReturn LACompanionType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LACompanionType x)
+  fromOwned x = pure (LACompanionType x)
+
 -- | @LACredentialType@
 newtype LACredentialType = LACredentialType CLong
   deriving stock (Eq, Ord, Show)
@@ -78,6 +111,16 @@ pattern LACredentialTypeApplicationPassword = LACredentialType 0
 
 pattern LACredentialTypeSmartCardPIN :: LACredentialType
 pattern LACredentialTypeSmartCardPIN = LACredentialType (-3)
+
+instance ObjCArgument LACredentialType where
+  withObjCArg (LACredentialType x) k = k (argCLong x)
+
+instance ObjCReturn LACredentialType where
+  type RawReturn LACredentialType = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LACredentialType x)
+  fromOwned x = pure (LACredentialType x)
 
 -- | @LAError@
 newtype LAError = LAError CLong
@@ -141,6 +184,16 @@ pattern LAErrorBiometryDisconnected = LAError (-13)
 pattern LAErrorInvalidDimensions :: LAError
 pattern LAErrorInvalidDimensions = LAError (-14)
 
+instance ObjCArgument LAError where
+  withObjCArg (LAError x) k = k (argCLong x)
+
+instance ObjCReturn LAError where
+  type RawReturn LAError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LAError x)
+  fromOwned x = pure (LAError x)
+
 -- | @LAPolicy@
 newtype LAPolicy = LAPolicy CLong
   deriving stock (Eq, Ord, Show)
@@ -167,6 +220,16 @@ pattern LAPolicyDeviceOwnerAuthenticationWithWatch = LAPolicy 3
 pattern LAPolicyDeviceOwnerAuthenticationWithBiometricsOrWatch :: LAPolicy
 pattern LAPolicyDeviceOwnerAuthenticationWithBiometricsOrWatch = LAPolicy 4
 
+instance ObjCArgument LAPolicy where
+  withObjCArg (LAPolicy x) k = k (argCLong x)
+
+instance ObjCReturn LAPolicy where
+  type RawReturn LAPolicy = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LAPolicy x)
+  fromOwned x = pure (LAPolicy x)
+
 -- | Each of the different states of a right
 -- | @LARightState@
 newtype LARightState = LARightState CLong
@@ -184,3 +247,13 @@ pattern LARightStateAuthorized = LARightState 2
 
 pattern LARightStateNotAuthorized :: LARightState
 pattern LARightStateNotAuthorized = LARightState 3
+
+instance ObjCArgument LARightState where
+  withObjCArg (LARightState x) k = k (argCLong x)
+
+instance ObjCReturn LARightState where
+  type RawReturn LARightState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (LARightState x)
+  fromOwned x = pure (LARightState x)

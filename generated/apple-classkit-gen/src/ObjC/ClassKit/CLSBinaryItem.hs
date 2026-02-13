@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,8 +15,8 @@ module ObjC.ClassKit.CLSBinaryItem
   , setValue
   , valueType
   , initWithIdentifier_title_typeSelector
-  , valueSelector
   , setValueSelector
+  , valueSelector
   , valueTypeSelector
 
   -- * Enum types
@@ -27,15 +28,11 @@ module ObjC.ClassKit.CLSBinaryItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,24 +50,22 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithIdentifier:title:type:@
 initWithIdentifier_title_type :: (IsCLSBinaryItem clsBinaryItem, IsNSString identifier, IsNSString title) => clsBinaryItem -> identifier -> title -> CLSBinaryValueType -> IO (Id CLSBinaryItem)
-initWithIdentifier_title_type clsBinaryItem  identifier title valueType =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr title $ \raw_title ->
-        sendMsg clsBinaryItem (mkSelector "initWithIdentifier:title:type:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_title :: Ptr ()), argCLong (coerce valueType)] >>= ownedObject . castPtr
+initWithIdentifier_title_type clsBinaryItem identifier title valueType =
+  sendOwnedMessage clsBinaryItem initWithIdentifier_title_typeSelector (toNSString identifier) (toNSString title) valueType
 
 -- | True or false value.
 --
 -- ObjC selector: @- value@
 value :: IsCLSBinaryItem clsBinaryItem => clsBinaryItem -> IO Bool
-value clsBinaryItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg clsBinaryItem (mkSelector "value") retCULong []
+value clsBinaryItem =
+  sendMessage clsBinaryItem valueSelector
 
 -- | True or false value.
 --
 -- ObjC selector: @- setValue:@
 setValue :: IsCLSBinaryItem clsBinaryItem => clsBinaryItem -> Bool -> IO ()
-setValue clsBinaryItem  value =
-    sendMsg clsBinaryItem (mkSelector "setValue:") retVoid [argCULong (if value then 1 else 0)]
+setValue clsBinaryItem value =
+  sendMessage clsBinaryItem setValueSelector value
 
 -- | Value type of this CLSBinaryItem.
 --
@@ -78,26 +73,26 @@ setValue clsBinaryItem  value =
 --
 -- ObjC selector: @- valueType@
 valueType :: IsCLSBinaryItem clsBinaryItem => clsBinaryItem -> IO CLSBinaryValueType
-valueType clsBinaryItem  =
-    fmap (coerce :: CLong -> CLSBinaryValueType) $ sendMsg clsBinaryItem (mkSelector "valueType") retCLong []
+valueType clsBinaryItem =
+  sendMessage clsBinaryItem valueTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithIdentifier:title:type:@
-initWithIdentifier_title_typeSelector :: Selector
+initWithIdentifier_title_typeSelector :: Selector '[Id NSString, Id NSString, CLSBinaryValueType] (Id CLSBinaryItem)
 initWithIdentifier_title_typeSelector = mkSelector "initWithIdentifier:title:type:"
 
 -- | @Selector@ for @value@
-valueSelector :: Selector
+valueSelector :: Selector '[] Bool
 valueSelector = mkSelector "value"
 
 -- | @Selector@ for @setValue:@
-setValueSelector :: Selector
+setValueSelector :: Selector '[Bool] ()
 setValueSelector = mkSelector "setValue:"
 
 -- | @Selector@ for @valueType@
-valueTypeSelector :: Selector
+valueTypeSelector :: Selector '[] CLSBinaryValueType
 valueTypeSelector = mkSelector "valueType"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INDateComponentsRangeResolutionResult
   , successWithResolvedDateComponentsRange
   , disambiguationWithDateComponentsRangesToDisambiguate
   , confirmationRequiredWithDateComponentsRangeToConfirm
-  , successWithResolvedDateComponentsRangeSelector
-  , disambiguationWithDateComponentsRangesToDisambiguateSelector
   , confirmationRequiredWithDateComponentsRangeToConfirmSelector
+  , disambiguationWithDateComponentsRangesToDisambiguateSelector
+  , successWithResolvedDateComponentsRangeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedDateComponentsRange :: IsINDateComponentsRange resolvedDateCo
 successWithResolvedDateComponentsRange resolvedDateComponentsRange =
   do
     cls' <- getRequiredClass "INDateComponentsRangeResolutionResult"
-    withObjCPtr resolvedDateComponentsRange $ \raw_resolvedDateComponentsRange ->
-      sendClassMsg cls' (mkSelector "successWithResolvedDateComponentsRange:") (retPtr retVoid) [argPtr (castPtr raw_resolvedDateComponentsRange :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedDateComponentsRangeSelector (toINDateComponentsRange resolvedDateComponentsRange)
 
 -- | @+ disambiguationWithDateComponentsRangesToDisambiguate:@
 disambiguationWithDateComponentsRangesToDisambiguate :: IsNSArray dateComponentsRangesToDisambiguate => dateComponentsRangesToDisambiguate -> IO (Id INDateComponentsRangeResolutionResult)
 disambiguationWithDateComponentsRangesToDisambiguate dateComponentsRangesToDisambiguate =
   do
     cls' <- getRequiredClass "INDateComponentsRangeResolutionResult"
-    withObjCPtr dateComponentsRangesToDisambiguate $ \raw_dateComponentsRangesToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithDateComponentsRangesToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_dateComponentsRangesToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithDateComponentsRangesToDisambiguateSelector (toNSArray dateComponentsRangesToDisambiguate)
 
 -- | @+ confirmationRequiredWithDateComponentsRangeToConfirm:@
 confirmationRequiredWithDateComponentsRangeToConfirm :: IsINDateComponentsRange dateComponentsRangeToConfirm => dateComponentsRangeToConfirm -> IO (Id INDateComponentsRangeResolutionResult)
 confirmationRequiredWithDateComponentsRangeToConfirm dateComponentsRangeToConfirm =
   do
     cls' <- getRequiredClass "INDateComponentsRangeResolutionResult"
-    withObjCPtr dateComponentsRangeToConfirm $ \raw_dateComponentsRangeToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithDateComponentsRangeToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_dateComponentsRangeToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithDateComponentsRangeToConfirmSelector (toINDateComponentsRange dateComponentsRangeToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedDateComponentsRange:@
-successWithResolvedDateComponentsRangeSelector :: Selector
+successWithResolvedDateComponentsRangeSelector :: Selector '[Id INDateComponentsRange] (Id INDateComponentsRangeResolutionResult)
 successWithResolvedDateComponentsRangeSelector = mkSelector "successWithResolvedDateComponentsRange:"
 
 -- | @Selector@ for @disambiguationWithDateComponentsRangesToDisambiguate:@
-disambiguationWithDateComponentsRangesToDisambiguateSelector :: Selector
+disambiguationWithDateComponentsRangesToDisambiguateSelector :: Selector '[Id NSArray] (Id INDateComponentsRangeResolutionResult)
 disambiguationWithDateComponentsRangesToDisambiguateSelector = mkSelector "disambiguationWithDateComponentsRangesToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithDateComponentsRangeToConfirm:@
-confirmationRequiredWithDateComponentsRangeToConfirmSelector :: Selector
+confirmationRequiredWithDateComponentsRangeToConfirmSelector :: Selector '[Id INDateComponentsRange] (Id INDateComponentsRangeResolutionResult)
 confirmationRequiredWithDateComponentsRangeToConfirmSelector = mkSelector "confirmationRequiredWithDateComponentsRangeToConfirm:"
 

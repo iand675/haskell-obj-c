@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.NotificationCenter.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @NCUpdateResult@
 newtype NCUpdateResult = NCUpdateResult CULong
@@ -24,3 +27,13 @@ pattern NCUpdateResultNoData = NCUpdateResult 1
 
 pattern NCUpdateResultFailed :: NCUpdateResult
 pattern NCUpdateResultFailed = NCUpdateResult 2
+
+instance ObjCArgument NCUpdateResult where
+  withObjCArg (NCUpdateResult x) k = k (argCULong x)
+
+instance ObjCReturn NCUpdateResult where
+  type RawReturn NCUpdateResult = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (NCUpdateResult x)
+  fromOwned x = pure (NCUpdateResult x)

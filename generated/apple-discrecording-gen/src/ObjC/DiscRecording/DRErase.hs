@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,28 +16,24 @@ module ObjC.DiscRecording.DRErase
   , device
   , eraseType
   , setEraseType
+  , deviceSelector
   , eraseForDeviceSelector
+  , eraseTypeSelector
   , initWithDeviceSelector
+  , propertiesSelector
+  , setEraseTypeSelector
+  , setPropertiesSelector
   , startSelector
   , statusSelector
-  , propertiesSelector
-  , setPropertiesSelector
-  , deviceSelector
-  , eraseTypeSelector
-  , setEraseTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,8 +55,7 @@ eraseForDevice :: IsDRDevice device => device -> IO (Id DRErase)
 eraseForDevice device =
   do
     cls' <- getRequiredClass "DRErase"
-    withObjCPtr device $ \raw_device ->
-      sendClassMsg cls' (mkSelector "eraseForDevice:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' eraseForDeviceSelector (toDRDevice device)
 
 -- | initWithDevice:
 --
@@ -73,9 +69,8 @@ eraseForDevice device =
 --
 -- ObjC selector: @- initWithDevice:@
 initWithDevice :: (IsDRErase drErase, IsDRDevice device) => drErase -> device -> IO RawId
-initWithDevice drErase  device =
-  withObjCPtr device $ \raw_device ->
-      fmap (RawId . castPtr) $ sendMsg drErase (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ())]
+initWithDevice drErase device =
+  sendOwnedMessage drErase initWithDeviceSelector (toDRDevice device)
 
 -- | start
 --
@@ -89,8 +84,8 @@ initWithDevice drErase  device =
 --
 -- ObjC selector: @- start@
 start :: IsDRErase drErase => drErase -> IO ()
-start drErase  =
-    sendMsg drErase (mkSelector "start") retVoid []
+start drErase =
+  sendMessage drErase startSelector
 
 -- | status
 --
@@ -106,8 +101,8 @@ start drErase  =
 --
 -- ObjC selector: @- status@
 status :: IsDRErase drErase => drErase -> IO (Id NSDictionary)
-status drErase  =
-    sendMsg drErase (mkSelector "status") (retPtr retVoid) [] >>= retainedObject . castPtr
+status drErase =
+  sendMessage drErase statusSelector
 
 -- | properties
 --
@@ -117,8 +112,8 @@ status drErase  =
 --
 -- ObjC selector: @- properties@
 properties :: IsDRErase drErase => drErase -> IO (Id NSDictionary)
-properties drErase  =
-    sendMsg drErase (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+properties drErase =
+  sendMessage drErase propertiesSelector
 
 -- | setProperties:
 --
@@ -128,9 +123,8 @@ properties drErase  =
 --
 -- ObjC selector: @- setProperties:@
 setProperties :: (IsDRErase drErase, IsNSDictionary properties) => drErase -> properties -> IO ()
-setProperties drErase  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg drErase (mkSelector "setProperties:") retVoid [argPtr (castPtr raw_properties :: Ptr ())]
+setProperties drErase properties =
+  sendMessage drErase setPropertiesSelector (toNSDictionary properties)
 
 -- | device
 --
@@ -140,8 +134,8 @@ setProperties drErase  properties =
 --
 -- ObjC selector: @- device@
 device :: IsDRErase drErase => drErase -> IO (Id DRDevice)
-device drErase  =
-    sendMsg drErase (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device drErase =
+  sendMessage drErase deviceSelector
 
 -- | eraseType
 --
@@ -151,8 +145,8 @@ device drErase  =
 --
 -- ObjC selector: @- eraseType@
 eraseType :: IsDRErase drErase => drErase -> IO (Id NSString)
-eraseType drErase  =
-    sendMsg drErase (mkSelector "eraseType") (retPtr retVoid) [] >>= retainedObject . castPtr
+eraseType drErase =
+  sendMessage drErase eraseTypeSelector
 
 -- | setEraseType:
 --
@@ -162,47 +156,46 @@ eraseType drErase  =
 --
 -- ObjC selector: @- setEraseType:@
 setEraseType :: (IsDRErase drErase, IsNSString type_) => drErase -> type_ -> IO ()
-setEraseType drErase  type_ =
-  withObjCPtr type_ $ \raw_type_ ->
-      sendMsg drErase (mkSelector "setEraseType:") retVoid [argPtr (castPtr raw_type_ :: Ptr ())]
+setEraseType drErase type_ =
+  sendMessage drErase setEraseTypeSelector (toNSString type_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @eraseForDevice:@
-eraseForDeviceSelector :: Selector
+eraseForDeviceSelector :: Selector '[Id DRDevice] (Id DRErase)
 eraseForDeviceSelector = mkSelector "eraseForDevice:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[Id DRDevice] RawId
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] (Id NSDictionary)
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSDictionary)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @setProperties:@
-setPropertiesSelector :: Selector
+setPropertiesSelector :: Selector '[Id NSDictionary] ()
 setPropertiesSelector = mkSelector "setProperties:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id DRDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @eraseType@
-eraseTypeSelector :: Selector
+eraseTypeSelector :: Selector '[] (Id NSString)
 eraseTypeSelector = mkSelector "eraseType"
 
 -- | @Selector@ for @setEraseType:@
-setEraseTypeSelector :: Selector
+setEraseTypeSelector :: Selector '[Id NSString] ()
 setEraseTypeSelector = mkSelector "setEraseType:"
 

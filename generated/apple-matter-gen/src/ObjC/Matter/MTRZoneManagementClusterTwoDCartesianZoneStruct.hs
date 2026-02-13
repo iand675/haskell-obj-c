@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRZoneManagementClusterTwoDCartesianZoneStruct
   , setVertices
   , color
   , setColor
-  , nameSelector
-  , setNameSelector
-  , useSelector
-  , setUseSelector
-  , verticesSelector
-  , setVerticesSelector
   , colorSelector
+  , nameSelector
   , setColorSelector
+  , setNameSelector
+  , setUseSelector
+  , setVerticesSelector
+  , useSelector
+  , verticesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsMTRZoneManagementClusterTwoDCartesianZoneStruct mtrZoneManagementClusterTwoDCartesianZoneStruct => mtrZoneManagementClusterTwoDCartesianZoneStruct -> IO (Id NSString)
-name mtrZoneManagementClusterTwoDCartesianZoneStruct  =
-    sendMsg mtrZoneManagementClusterTwoDCartesianZoneStruct (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrZoneManagementClusterTwoDCartesianZoneStruct =
+  sendMessage mtrZoneManagementClusterTwoDCartesianZoneStruct nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRZoneManagementClusterTwoDCartesianZoneStruct mtrZoneManagementClusterTwoDCartesianZoneStruct, IsNSString value) => mtrZoneManagementClusterTwoDCartesianZoneStruct -> value -> IO ()
-setName mtrZoneManagementClusterTwoDCartesianZoneStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterTwoDCartesianZoneStruct (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrZoneManagementClusterTwoDCartesianZoneStruct value =
+  sendMessage mtrZoneManagementClusterTwoDCartesianZoneStruct setNameSelector (toNSString value)
 
 -- | @- use@
 use :: IsMTRZoneManagementClusterTwoDCartesianZoneStruct mtrZoneManagementClusterTwoDCartesianZoneStruct => mtrZoneManagementClusterTwoDCartesianZoneStruct -> IO (Id NSNumber)
-use mtrZoneManagementClusterTwoDCartesianZoneStruct  =
-    sendMsg mtrZoneManagementClusterTwoDCartesianZoneStruct (mkSelector "use") (retPtr retVoid) [] >>= retainedObject . castPtr
+use mtrZoneManagementClusterTwoDCartesianZoneStruct =
+  sendMessage mtrZoneManagementClusterTwoDCartesianZoneStruct useSelector
 
 -- | @- setUse:@
 setUse :: (IsMTRZoneManagementClusterTwoDCartesianZoneStruct mtrZoneManagementClusterTwoDCartesianZoneStruct, IsNSNumber value) => mtrZoneManagementClusterTwoDCartesianZoneStruct -> value -> IO ()
-setUse mtrZoneManagementClusterTwoDCartesianZoneStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterTwoDCartesianZoneStruct (mkSelector "setUse:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUse mtrZoneManagementClusterTwoDCartesianZoneStruct value =
+  sendMessage mtrZoneManagementClusterTwoDCartesianZoneStruct setUseSelector (toNSNumber value)
 
 -- | @- vertices@
 vertices :: IsMTRZoneManagementClusterTwoDCartesianZoneStruct mtrZoneManagementClusterTwoDCartesianZoneStruct => mtrZoneManagementClusterTwoDCartesianZoneStruct -> IO (Id NSArray)
-vertices mtrZoneManagementClusterTwoDCartesianZoneStruct  =
-    sendMsg mtrZoneManagementClusterTwoDCartesianZoneStruct (mkSelector "vertices") (retPtr retVoid) [] >>= retainedObject . castPtr
+vertices mtrZoneManagementClusterTwoDCartesianZoneStruct =
+  sendMessage mtrZoneManagementClusterTwoDCartesianZoneStruct verticesSelector
 
 -- | @- setVertices:@
 setVertices :: (IsMTRZoneManagementClusterTwoDCartesianZoneStruct mtrZoneManagementClusterTwoDCartesianZoneStruct, IsNSArray value) => mtrZoneManagementClusterTwoDCartesianZoneStruct -> value -> IO ()
-setVertices mtrZoneManagementClusterTwoDCartesianZoneStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterTwoDCartesianZoneStruct (mkSelector "setVertices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVertices mtrZoneManagementClusterTwoDCartesianZoneStruct value =
+  sendMessage mtrZoneManagementClusterTwoDCartesianZoneStruct setVerticesSelector (toNSArray value)
 
 -- | @- color@
 color :: IsMTRZoneManagementClusterTwoDCartesianZoneStruct mtrZoneManagementClusterTwoDCartesianZoneStruct => mtrZoneManagementClusterTwoDCartesianZoneStruct -> IO (Id NSString)
-color mtrZoneManagementClusterTwoDCartesianZoneStruct  =
-    sendMsg mtrZoneManagementClusterTwoDCartesianZoneStruct (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+color mtrZoneManagementClusterTwoDCartesianZoneStruct =
+  sendMessage mtrZoneManagementClusterTwoDCartesianZoneStruct colorSelector
 
 -- | @- setColor:@
 setColor :: (IsMTRZoneManagementClusterTwoDCartesianZoneStruct mtrZoneManagementClusterTwoDCartesianZoneStruct, IsNSString value) => mtrZoneManagementClusterTwoDCartesianZoneStruct -> value -> IO ()
-setColor mtrZoneManagementClusterTwoDCartesianZoneStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrZoneManagementClusterTwoDCartesianZoneStruct (mkSelector "setColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setColor mtrZoneManagementClusterTwoDCartesianZoneStruct value =
+  sendMessage mtrZoneManagementClusterTwoDCartesianZoneStruct setColorSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @use@
-useSelector :: Selector
+useSelector :: Selector '[] (Id NSNumber)
 useSelector = mkSelector "use"
 
 -- | @Selector@ for @setUse:@
-setUseSelector :: Selector
+setUseSelector :: Selector '[Id NSNumber] ()
 setUseSelector = mkSelector "setUse:"
 
 -- | @Selector@ for @vertices@
-verticesSelector :: Selector
+verticesSelector :: Selector '[] (Id NSArray)
 verticesSelector = mkSelector "vertices"
 
 -- | @Selector@ for @setVertices:@
-setVerticesSelector :: Selector
+setVerticesSelector :: Selector '[Id NSArray] ()
 setVerticesSelector = mkSelector "setVertices:"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id NSString)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @setColor:@
-setColorSelector :: Selector
+setColorSelector :: Selector '[Id NSString] ()
 setColorSelector = mkSelector "setColor:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,43 +45,43 @@ module ObjC.SceneKit.SCNAction
   , setTimingFunction
   , speed
   , setSpeed
-  , reversedActionSelector
+  , customActionWithDuration_actionBlockSelector
+  , durationSelector
+  , fadeInWithDurationSelector
+  , fadeOpacityBy_durationSelector
+  , fadeOpacityTo_durationSelector
+  , fadeOutWithDurationSelector
+  , groupSelector
+  , hideSelector
+  , javaScriptActionWithScript_durationSelector
   , moveByX_y_z_durationSelector
   , moveBy_durationSelector
   , moveTo_durationSelector
+  , playAudioSource_waitForCompletionSelector
+  , removeFromParentNodeSelector
+  , repeatActionForeverSelector
+  , repeatAction_countSelector
+  , reversedActionSelector
+  , rotateByAngle_aroundAxis_durationSelector
   , rotateByX_y_z_durationSelector
+  , rotateToAxisAngle_durationSelector
   , rotateToX_y_z_durationSelector
   , rotateToX_y_z_duration_shortestUnitArcSelector
-  , rotateByAngle_aroundAxis_durationSelector
-  , rotateToAxisAngle_durationSelector
+  , runBlockSelector
+  , runBlock_queueSelector
   , scaleBy_durationSelector
   , scaleTo_durationSelector
   , sequenceSelector
-  , groupSelector
-  , repeatAction_countSelector
-  , repeatActionForeverSelector
-  , fadeInWithDurationSelector
-  , fadeOutWithDurationSelector
-  , fadeOpacityBy_durationSelector
-  , fadeOpacityTo_durationSelector
-  , hideSelector
+  , setDurationSelector
+  , setSpeedSelector
+  , setTimingFunctionSelector
+  , setTimingModeSelector
+  , speedSelector
+  , timingFunctionSelector
+  , timingModeSelector
   , unhideSelector
   , waitForDurationSelector
   , waitForDuration_withRangeSelector
-  , removeFromParentNodeSelector
-  , runBlockSelector
-  , runBlock_queueSelector
-  , javaScriptActionWithScript_durationSelector
-  , customActionWithDuration_actionBlockSelector
-  , playAudioSource_waitForCompletionSelector
-  , durationSelector
-  , setDurationSelector
-  , timingModeSelector
-  , setTimingModeSelector
-  , timingFunctionSelector
-  , setTimingFunctionSelector
-  , speedSelector
-  , setSpeedSelector
 
   -- * Enum types
   , SCNActionTimingMode(SCNActionTimingMode)
@@ -91,15 +92,11 @@ module ObjC.SceneKit.SCNAction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -114,203 +111,197 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- reversedAction@
 reversedAction :: IsSCNAction scnAction => scnAction -> IO (Id SCNAction)
-reversedAction scnAction  =
-    sendMsg scnAction (mkSelector "reversedAction") (retPtr retVoid) [] >>= retainedObject . castPtr
+reversedAction scnAction =
+  sendMessage scnAction reversedActionSelector
 
 -- | @+ moveByX:y:z:duration:@
 moveByX_y_z_duration :: CDouble -> CDouble -> CDouble -> CDouble -> IO (Id SCNAction)
 moveByX_y_z_duration deltaX deltaY deltaZ duration =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "moveByX:y:z:duration:") (retPtr retVoid) [argCDouble deltaX, argCDouble deltaY, argCDouble deltaZ, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' moveByX_y_z_durationSelector deltaX deltaY deltaZ duration
 
 -- | @+ moveBy:duration:@
 moveBy_duration :: SCNVector3 -> CDouble -> IO (Id SCNAction)
 moveBy_duration delta duration =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "moveBy:duration:") (retPtr retVoid) [argSCNVector3 delta, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' moveBy_durationSelector delta duration
 
 -- | @+ moveTo:duration:@
 moveTo_duration :: SCNVector3 -> CDouble -> IO (Id SCNAction)
 moveTo_duration location duration =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "moveTo:duration:") (retPtr retVoid) [argSCNVector3 location, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' moveTo_durationSelector location duration
 
 -- | @+ rotateByX:y:z:duration:@
 rotateByX_y_z_duration :: CDouble -> CDouble -> CDouble -> CDouble -> IO (Id SCNAction)
 rotateByX_y_z_duration xAngle yAngle zAngle duration =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "rotateByX:y:z:duration:") (retPtr retVoid) [argCDouble xAngle, argCDouble yAngle, argCDouble zAngle, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateByX_y_z_durationSelector xAngle yAngle zAngle duration
 
 -- | @+ rotateToX:y:z:duration:@
 rotateToX_y_z_duration :: CDouble -> CDouble -> CDouble -> CDouble -> IO (Id SCNAction)
 rotateToX_y_z_duration xAngle yAngle zAngle duration =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "rotateToX:y:z:duration:") (retPtr retVoid) [argCDouble xAngle, argCDouble yAngle, argCDouble zAngle, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateToX_y_z_durationSelector xAngle yAngle zAngle duration
 
 -- | @+ rotateToX:y:z:duration:shortestUnitArc:@
 rotateToX_y_z_duration_shortestUnitArc :: CDouble -> CDouble -> CDouble -> CDouble -> Bool -> IO (Id SCNAction)
 rotateToX_y_z_duration_shortestUnitArc xAngle yAngle zAngle duration shortestUnitArc =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "rotateToX:y:z:duration:shortestUnitArc:") (retPtr retVoid) [argCDouble xAngle, argCDouble yAngle, argCDouble zAngle, argCDouble duration, argCULong (if shortestUnitArc then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateToX_y_z_duration_shortestUnitArcSelector xAngle yAngle zAngle duration shortestUnitArc
 
 -- | @+ rotateByAngle:aroundAxis:duration:@
 rotateByAngle_aroundAxis_duration :: CDouble -> SCNVector3 -> CDouble -> IO (Id SCNAction)
 rotateByAngle_aroundAxis_duration angle axis duration =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "rotateByAngle:aroundAxis:duration:") (retPtr retVoid) [argCDouble angle, argSCNVector3 axis, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateByAngle_aroundAxis_durationSelector angle axis duration
 
 -- | @+ rotateToAxisAngle:duration:@
 rotateToAxisAngle_duration :: SCNVector4 -> CDouble -> IO (Id SCNAction)
 rotateToAxisAngle_duration axisAngle duration =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "rotateToAxisAngle:duration:") (retPtr retVoid) [argSCNVector4 axisAngle, argCDouble duration] >>= retainedObject . castPtr
+    sendClassMessage cls' rotateToAxisAngle_durationSelector axisAngle duration
 
 -- | @+ scaleBy:duration:@
 scaleBy_duration :: CDouble -> CDouble -> IO (Id SCNAction)
 scaleBy_duration scale sec =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "scaleBy:duration:") (retPtr retVoid) [argCDouble scale, argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleBy_durationSelector scale sec
 
 -- | @+ scaleTo:duration:@
 scaleTo_duration :: CDouble -> CDouble -> IO (Id SCNAction)
 scaleTo_duration scale sec =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "scaleTo:duration:") (retPtr retVoid) [argCDouble scale, argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' scaleTo_durationSelector scale sec
 
 -- | @+ sequence:@
 sequence_ :: IsNSArray actions => actions -> IO (Id SCNAction)
 sequence_ actions =
   do
     cls' <- getRequiredClass "SCNAction"
-    withObjCPtr actions $ \raw_actions ->
-      sendClassMsg cls' (mkSelector "sequence:") (retPtr retVoid) [argPtr (castPtr raw_actions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' sequenceSelector (toNSArray actions)
 
 -- | @+ group:@
 group :: IsNSArray actions => actions -> IO (Id SCNAction)
 group actions =
   do
     cls' <- getRequiredClass "SCNAction"
-    withObjCPtr actions $ \raw_actions ->
-      sendClassMsg cls' (mkSelector "group:") (retPtr retVoid) [argPtr (castPtr raw_actions :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' groupSelector (toNSArray actions)
 
 -- | @+ repeatAction:count:@
 repeatAction_count :: IsSCNAction action => action -> CULong -> IO (Id SCNAction)
 repeatAction_count action count =
   do
     cls' <- getRequiredClass "SCNAction"
-    withObjCPtr action $ \raw_action ->
-      sendClassMsg cls' (mkSelector "repeatAction:count:") (retPtr retVoid) [argPtr (castPtr raw_action :: Ptr ()), argCULong count] >>= retainedObject . castPtr
+    sendClassMessage cls' repeatAction_countSelector (toSCNAction action) count
 
 -- | @+ repeatActionForever:@
 repeatActionForever :: IsSCNAction action => action -> IO (Id SCNAction)
 repeatActionForever action =
   do
     cls' <- getRequiredClass "SCNAction"
-    withObjCPtr action $ \raw_action ->
-      sendClassMsg cls' (mkSelector "repeatActionForever:") (retPtr retVoid) [argPtr (castPtr raw_action :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' repeatActionForeverSelector (toSCNAction action)
 
 -- | @+ fadeInWithDuration:@
 fadeInWithDuration :: CDouble -> IO (Id SCNAction)
 fadeInWithDuration sec =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "fadeInWithDuration:") (retPtr retVoid) [argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' fadeInWithDurationSelector sec
 
 -- | @+ fadeOutWithDuration:@
 fadeOutWithDuration :: CDouble -> IO (Id SCNAction)
 fadeOutWithDuration sec =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "fadeOutWithDuration:") (retPtr retVoid) [argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' fadeOutWithDurationSelector sec
 
 -- | @+ fadeOpacityBy:duration:@
 fadeOpacityBy_duration :: CDouble -> CDouble -> IO (Id SCNAction)
 fadeOpacityBy_duration factor sec =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "fadeOpacityBy:duration:") (retPtr retVoid) [argCDouble factor, argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' fadeOpacityBy_durationSelector factor sec
 
 -- | @+ fadeOpacityTo:duration:@
 fadeOpacityTo_duration :: CDouble -> CDouble -> IO (Id SCNAction)
 fadeOpacityTo_duration opacity sec =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "fadeOpacityTo:duration:") (retPtr retVoid) [argCDouble opacity, argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' fadeOpacityTo_durationSelector opacity sec
 
 -- | @+ hide@
 hide :: IO (Id SCNAction)
 hide  =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "hide") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hideSelector
 
 -- | @+ unhide@
 unhide :: IO (Id SCNAction)
 unhide  =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "unhide") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' unhideSelector
 
 -- | @+ waitForDuration:@
 waitForDuration :: CDouble -> IO (Id SCNAction)
 waitForDuration sec =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "waitForDuration:") (retPtr retVoid) [argCDouble sec] >>= retainedObject . castPtr
+    sendClassMessage cls' waitForDurationSelector sec
 
 -- | @+ waitForDuration:withRange:@
 waitForDuration_withRange :: CDouble -> CDouble -> IO (Id SCNAction)
 waitForDuration_withRange sec durationRange =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "waitForDuration:withRange:") (retPtr retVoid) [argCDouble sec, argCDouble durationRange] >>= retainedObject . castPtr
+    sendClassMessage cls' waitForDuration_withRangeSelector sec durationRange
 
 -- | @+ removeFromParentNode@
 removeFromParentNode :: IO (Id SCNAction)
 removeFromParentNode  =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "removeFromParentNode") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' removeFromParentNodeSelector
 
 -- | @+ runBlock:@
 runBlock :: Ptr () -> IO (Id SCNAction)
 runBlock block =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "runBlock:") (retPtr retVoid) [argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' runBlockSelector block
 
 -- | @+ runBlock:queue:@
 runBlock_queue :: IsNSObject queue => Ptr () -> queue -> IO (Id SCNAction)
 runBlock_queue block queue =
   do
     cls' <- getRequiredClass "SCNAction"
-    withObjCPtr queue $ \raw_queue ->
-      sendClassMsg cls' (mkSelector "runBlock:queue:") (retPtr retVoid) [argPtr (castPtr block :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' runBlock_queueSelector block (toNSObject queue)
 
 -- | @+ javaScriptActionWithScript:duration:@
 javaScriptActionWithScript_duration :: IsNSString script => script -> CDouble -> IO (Id SCNAction)
 javaScriptActionWithScript_duration script seconds =
   do
     cls' <- getRequiredClass "SCNAction"
-    withObjCPtr script $ \raw_script ->
-      sendClassMsg cls' (mkSelector "javaScriptActionWithScript:duration:") (retPtr retVoid) [argPtr (castPtr raw_script :: Ptr ()), argCDouble seconds] >>= retainedObject . castPtr
+    sendClassMessage cls' javaScriptActionWithScript_durationSelector (toNSString script) seconds
 
 -- | @+ customActionWithDuration:actionBlock:@
 customActionWithDuration_actionBlock :: CDouble -> Ptr () -> IO (Id SCNAction)
 customActionWithDuration_actionBlock seconds block =
   do
     cls' <- getRequiredClass "SCNAction"
-    sendClassMsg cls' (mkSelector "customActionWithDuration:actionBlock:") (retPtr retVoid) [argCDouble seconds, argPtr (castPtr block :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' customActionWithDuration_actionBlockSelector seconds block
 
 -- | Creates an action that plays a sound
 --
@@ -323,8 +314,7 @@ playAudioSource_waitForCompletion :: IsSCNAudioSource source => source -> Bool -
 playAudioSource_waitForCompletion source wait =
   do
     cls' <- getRequiredClass "SCNAction"
-    withObjCPtr source $ \raw_source ->
-      sendClassMsg cls' (mkSelector "playAudioSource:waitForCompletion:") (retPtr retVoid) [argPtr (castPtr raw_source :: Ptr ()), argCULong (if wait then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' playAudioSource_waitForCompletionSelector (toSCNAudioSource source) wait
 
 -- | duration
 --
@@ -332,8 +322,8 @@ playAudioSource_waitForCompletion source wait =
 --
 -- ObjC selector: @- duration@
 duration :: IsSCNAction scnAction => scnAction -> IO CDouble
-duration scnAction  =
-    sendMsg scnAction (mkSelector "duration") retCDouble []
+duration scnAction =
+  sendMessage scnAction durationSelector
 
 -- | duration
 --
@@ -341,8 +331,8 @@ duration scnAction  =
 --
 -- ObjC selector: @- setDuration:@
 setDuration :: IsSCNAction scnAction => scnAction -> CDouble -> IO ()
-setDuration scnAction  value =
-    sendMsg scnAction (mkSelector "setDuration:") retVoid [argCDouble value]
+setDuration scnAction value =
+  sendMessage scnAction setDurationSelector value
 
 -- | timingMode
 --
@@ -350,8 +340,8 @@ setDuration scnAction  value =
 --
 -- ObjC selector: @- timingMode@
 timingMode :: IsSCNAction scnAction => scnAction -> IO SCNActionTimingMode
-timingMode scnAction  =
-    fmap (coerce :: CLong -> SCNActionTimingMode) $ sendMsg scnAction (mkSelector "timingMode") retCLong []
+timingMode scnAction =
+  sendMessage scnAction timingModeSelector
 
 -- | timingMode
 --
@@ -359,8 +349,8 @@ timingMode scnAction  =
 --
 -- ObjC selector: @- setTimingMode:@
 setTimingMode :: IsSCNAction scnAction => scnAction -> SCNActionTimingMode -> IO ()
-setTimingMode scnAction  value =
-    sendMsg scnAction (mkSelector "setTimingMode:") retVoid [argCLong (coerce value)]
+setTimingMode scnAction value =
+  sendMessage scnAction setTimingModeSelector value
 
 -- | When set, prodives a custom timing via a block. Applies after the 'timingMode' property is taken into account, defaults to nil
 --
@@ -368,8 +358,8 @@ setTimingMode scnAction  value =
 --
 -- ObjC selector: @- timingFunction@
 timingFunction :: IsSCNAction scnAction => scnAction -> IO (Ptr ())
-timingFunction scnAction  =
-    fmap castPtr $ sendMsg scnAction (mkSelector "timingFunction") (retPtr retVoid) []
+timingFunction scnAction =
+  sendMessage scnAction timingFunctionSelector
 
 -- | When set, prodives a custom timing via a block. Applies after the 'timingMode' property is taken into account, defaults to nil
 --
@@ -377,8 +367,8 @@ timingFunction scnAction  =
 --
 -- ObjC selector: @- setTimingFunction:@
 setTimingFunction :: IsSCNAction scnAction => scnAction -> Ptr () -> IO ()
-setTimingFunction scnAction  value =
-    sendMsg scnAction (mkSelector "setTimingFunction:") retVoid [argPtr (castPtr value :: Ptr ())]
+setTimingFunction scnAction value =
+  sendMessage scnAction setTimingFunctionSelector value
 
 -- | speed
 --
@@ -386,8 +376,8 @@ setTimingFunction scnAction  value =
 --
 -- ObjC selector: @- speed@
 speed :: IsSCNAction scnAction => scnAction -> IO CDouble
-speed scnAction  =
-    sendMsg scnAction (mkSelector "speed") retCDouble []
+speed scnAction =
+  sendMessage scnAction speedSelector
 
 -- | speed
 --
@@ -395,158 +385,158 @@ speed scnAction  =
 --
 -- ObjC selector: @- setSpeed:@
 setSpeed :: IsSCNAction scnAction => scnAction -> CDouble -> IO ()
-setSpeed scnAction  value =
-    sendMsg scnAction (mkSelector "setSpeed:") retVoid [argCDouble value]
+setSpeed scnAction value =
+  sendMessage scnAction setSpeedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @reversedAction@
-reversedActionSelector :: Selector
+reversedActionSelector :: Selector '[] (Id SCNAction)
 reversedActionSelector = mkSelector "reversedAction"
 
 -- | @Selector@ for @moveByX:y:z:duration:@
-moveByX_y_z_durationSelector :: Selector
+moveByX_y_z_durationSelector :: Selector '[CDouble, CDouble, CDouble, CDouble] (Id SCNAction)
 moveByX_y_z_durationSelector = mkSelector "moveByX:y:z:duration:"
 
 -- | @Selector@ for @moveBy:duration:@
-moveBy_durationSelector :: Selector
+moveBy_durationSelector :: Selector '[SCNVector3, CDouble] (Id SCNAction)
 moveBy_durationSelector = mkSelector "moveBy:duration:"
 
 -- | @Selector@ for @moveTo:duration:@
-moveTo_durationSelector :: Selector
+moveTo_durationSelector :: Selector '[SCNVector3, CDouble] (Id SCNAction)
 moveTo_durationSelector = mkSelector "moveTo:duration:"
 
 -- | @Selector@ for @rotateByX:y:z:duration:@
-rotateByX_y_z_durationSelector :: Selector
+rotateByX_y_z_durationSelector :: Selector '[CDouble, CDouble, CDouble, CDouble] (Id SCNAction)
 rotateByX_y_z_durationSelector = mkSelector "rotateByX:y:z:duration:"
 
 -- | @Selector@ for @rotateToX:y:z:duration:@
-rotateToX_y_z_durationSelector :: Selector
+rotateToX_y_z_durationSelector :: Selector '[CDouble, CDouble, CDouble, CDouble] (Id SCNAction)
 rotateToX_y_z_durationSelector = mkSelector "rotateToX:y:z:duration:"
 
 -- | @Selector@ for @rotateToX:y:z:duration:shortestUnitArc:@
-rotateToX_y_z_duration_shortestUnitArcSelector :: Selector
+rotateToX_y_z_duration_shortestUnitArcSelector :: Selector '[CDouble, CDouble, CDouble, CDouble, Bool] (Id SCNAction)
 rotateToX_y_z_duration_shortestUnitArcSelector = mkSelector "rotateToX:y:z:duration:shortestUnitArc:"
 
 -- | @Selector@ for @rotateByAngle:aroundAxis:duration:@
-rotateByAngle_aroundAxis_durationSelector :: Selector
+rotateByAngle_aroundAxis_durationSelector :: Selector '[CDouble, SCNVector3, CDouble] (Id SCNAction)
 rotateByAngle_aroundAxis_durationSelector = mkSelector "rotateByAngle:aroundAxis:duration:"
 
 -- | @Selector@ for @rotateToAxisAngle:duration:@
-rotateToAxisAngle_durationSelector :: Selector
+rotateToAxisAngle_durationSelector :: Selector '[SCNVector4, CDouble] (Id SCNAction)
 rotateToAxisAngle_durationSelector = mkSelector "rotateToAxisAngle:duration:"
 
 -- | @Selector@ for @scaleBy:duration:@
-scaleBy_durationSelector :: Selector
+scaleBy_durationSelector :: Selector '[CDouble, CDouble] (Id SCNAction)
 scaleBy_durationSelector = mkSelector "scaleBy:duration:"
 
 -- | @Selector@ for @scaleTo:duration:@
-scaleTo_durationSelector :: Selector
+scaleTo_durationSelector :: Selector '[CDouble, CDouble] (Id SCNAction)
 scaleTo_durationSelector = mkSelector "scaleTo:duration:"
 
 -- | @Selector@ for @sequence:@
-sequenceSelector :: Selector
+sequenceSelector :: Selector '[Id NSArray] (Id SCNAction)
 sequenceSelector = mkSelector "sequence:"
 
 -- | @Selector@ for @group:@
-groupSelector :: Selector
+groupSelector :: Selector '[Id NSArray] (Id SCNAction)
 groupSelector = mkSelector "group:"
 
 -- | @Selector@ for @repeatAction:count:@
-repeatAction_countSelector :: Selector
+repeatAction_countSelector :: Selector '[Id SCNAction, CULong] (Id SCNAction)
 repeatAction_countSelector = mkSelector "repeatAction:count:"
 
 -- | @Selector@ for @repeatActionForever:@
-repeatActionForeverSelector :: Selector
+repeatActionForeverSelector :: Selector '[Id SCNAction] (Id SCNAction)
 repeatActionForeverSelector = mkSelector "repeatActionForever:"
 
 -- | @Selector@ for @fadeInWithDuration:@
-fadeInWithDurationSelector :: Selector
+fadeInWithDurationSelector :: Selector '[CDouble] (Id SCNAction)
 fadeInWithDurationSelector = mkSelector "fadeInWithDuration:"
 
 -- | @Selector@ for @fadeOutWithDuration:@
-fadeOutWithDurationSelector :: Selector
+fadeOutWithDurationSelector :: Selector '[CDouble] (Id SCNAction)
 fadeOutWithDurationSelector = mkSelector "fadeOutWithDuration:"
 
 -- | @Selector@ for @fadeOpacityBy:duration:@
-fadeOpacityBy_durationSelector :: Selector
+fadeOpacityBy_durationSelector :: Selector '[CDouble, CDouble] (Id SCNAction)
 fadeOpacityBy_durationSelector = mkSelector "fadeOpacityBy:duration:"
 
 -- | @Selector@ for @fadeOpacityTo:duration:@
-fadeOpacityTo_durationSelector :: Selector
+fadeOpacityTo_durationSelector :: Selector '[CDouble, CDouble] (Id SCNAction)
 fadeOpacityTo_durationSelector = mkSelector "fadeOpacityTo:duration:"
 
 -- | @Selector@ for @hide@
-hideSelector :: Selector
+hideSelector :: Selector '[] (Id SCNAction)
 hideSelector = mkSelector "hide"
 
 -- | @Selector@ for @unhide@
-unhideSelector :: Selector
+unhideSelector :: Selector '[] (Id SCNAction)
 unhideSelector = mkSelector "unhide"
 
 -- | @Selector@ for @waitForDuration:@
-waitForDurationSelector :: Selector
+waitForDurationSelector :: Selector '[CDouble] (Id SCNAction)
 waitForDurationSelector = mkSelector "waitForDuration:"
 
 -- | @Selector@ for @waitForDuration:withRange:@
-waitForDuration_withRangeSelector :: Selector
+waitForDuration_withRangeSelector :: Selector '[CDouble, CDouble] (Id SCNAction)
 waitForDuration_withRangeSelector = mkSelector "waitForDuration:withRange:"
 
 -- | @Selector@ for @removeFromParentNode@
-removeFromParentNodeSelector :: Selector
+removeFromParentNodeSelector :: Selector '[] (Id SCNAction)
 removeFromParentNodeSelector = mkSelector "removeFromParentNode"
 
 -- | @Selector@ for @runBlock:@
-runBlockSelector :: Selector
+runBlockSelector :: Selector '[Ptr ()] (Id SCNAction)
 runBlockSelector = mkSelector "runBlock:"
 
 -- | @Selector@ for @runBlock:queue:@
-runBlock_queueSelector :: Selector
+runBlock_queueSelector :: Selector '[Ptr (), Id NSObject] (Id SCNAction)
 runBlock_queueSelector = mkSelector "runBlock:queue:"
 
 -- | @Selector@ for @javaScriptActionWithScript:duration:@
-javaScriptActionWithScript_durationSelector :: Selector
+javaScriptActionWithScript_durationSelector :: Selector '[Id NSString, CDouble] (Id SCNAction)
 javaScriptActionWithScript_durationSelector = mkSelector "javaScriptActionWithScript:duration:"
 
 -- | @Selector@ for @customActionWithDuration:actionBlock:@
-customActionWithDuration_actionBlockSelector :: Selector
+customActionWithDuration_actionBlockSelector :: Selector '[CDouble, Ptr ()] (Id SCNAction)
 customActionWithDuration_actionBlockSelector = mkSelector "customActionWithDuration:actionBlock:"
 
 -- | @Selector@ for @playAudioSource:waitForCompletion:@
-playAudioSource_waitForCompletionSelector :: Selector
+playAudioSource_waitForCompletionSelector :: Selector '[Id SCNAudioSource, Bool] (Id SCNAction)
 playAudioSource_waitForCompletionSelector = mkSelector "playAudioSource:waitForCompletion:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] CDouble
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[CDouble] ()
 setDurationSelector = mkSelector "setDuration:"
 
 -- | @Selector@ for @timingMode@
-timingModeSelector :: Selector
+timingModeSelector :: Selector '[] SCNActionTimingMode
 timingModeSelector = mkSelector "timingMode"
 
 -- | @Selector@ for @setTimingMode:@
-setTimingModeSelector :: Selector
+setTimingModeSelector :: Selector '[SCNActionTimingMode] ()
 setTimingModeSelector = mkSelector "setTimingMode:"
 
 -- | @Selector@ for @timingFunction@
-timingFunctionSelector :: Selector
+timingFunctionSelector :: Selector '[] (Ptr ())
 timingFunctionSelector = mkSelector "timingFunction"
 
 -- | @Selector@ for @setTimingFunction:@
-setTimingFunctionSelector :: Selector
+setTimingFunctionSelector :: Selector '[Ptr ()] ()
 setTimingFunctionSelector = mkSelector "setTimingFunction:"
 
 -- | @Selector@ for @speed@
-speedSelector :: Selector
+speedSelector :: Selector '[] CDouble
 speedSelector = mkSelector "speed"
 
 -- | @Selector@ for @setSpeed:@
-setSpeedSelector :: Selector
+setSpeedSelector :: Selector '[CDouble] ()
 setSpeedSelector = mkSelector "setSpeed:"
 

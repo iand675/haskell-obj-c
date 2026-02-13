@@ -1,11 +1,13 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 
--- | Generated bindings for @MTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams@.
-module ObjC.Matter.MTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams
-  ( MTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams
-  , IsMTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams(..)
+-- | Generated bindings for @MTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams@.
+module ObjC.Matter.MTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams
+  ( MTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams
+  , IsMTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams(..)
+  , initWithResponseValue_error
   , action
   , setAction
   , delayedActionTime
@@ -13,51 +15,57 @@ module ObjC.Matter.MTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams
   , timedInvokeTimeoutMs
   , setTimedInvokeTimeoutMs
   , actionSelector
-  , setActionSelector
   , delayedActionTimeSelector
+  , initWithResponseValue_errorSelector
+  , setActionSelector
   , setDelayedActionTimeSelector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
 import ObjC.Matter.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
+-- | Initialize an MTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams with a response-value dictionary of the sort that MTRDeviceResponseHandler would receive.
+--
+-- Will return nil and hand out an error if the response-value dictionary is not a command data response or is not the right command response.
+--
+-- Will return nil and hand out an error if the data response does not match the known schema for this command.
+--
+-- ObjC selector: @- initWithResponseValue:error:@
+initWithResponseValue_error :: (IsMTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> responseValue -> error_ -> IO (Id MTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams)
+initWithResponseValue_error mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams responseValue error_ =
+  sendOwnedMessage mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
+
 -- | @- action@
-action :: IsMTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams => mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> IO (Id NSNumber)
-action mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams  =
-    sendMsg mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams (mkSelector "action") (retPtr retVoid) [] >>= retainedObject . castPtr
+action :: IsMTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams => mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> IO (Id NSNumber)
+action mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams =
+  sendMessage mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams actionSelector
 
 -- | @- setAction:@
-setAction :: (IsMTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams, IsNSNumber value) => mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> value -> IO ()
-setAction mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams (mkSelector "setAction:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAction :: (IsMTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams, IsNSNumber value) => mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> value -> IO ()
+setAction mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams value =
+  sendMessage mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams setActionSelector (toNSNumber value)
 
 -- | @- delayedActionTime@
-delayedActionTime :: IsMTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams => mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> IO (Id NSNumber)
-delayedActionTime mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams  =
-    sendMsg mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams (mkSelector "delayedActionTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+delayedActionTime :: IsMTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams => mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> IO (Id NSNumber)
+delayedActionTime mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams =
+  sendMessage mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams delayedActionTimeSelector
 
 -- | @- setDelayedActionTime:@
-setDelayedActionTime :: (IsMTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams, IsNSNumber value) => mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> value -> IO ()
-setDelayedActionTime mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams (mkSelector "setDelayedActionTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDelayedActionTime :: (IsMTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams, IsNSNumber value) => mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> value -> IO ()
+setDelayedActionTime mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams value =
+  sendMessage mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams setDelayedActionTimeSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -66,9 +74,9 @@ setDelayedActionTime mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParam
 -- If not nil, a timed invoke is done, with the provided value used as the timed request timeout.  The value should be chosen small enough to provide the desired security properties but large enough that it will allow a round-trip from the sever to the client (for the status response and actual invoke request) within the timeout window.
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
-timedInvokeTimeoutMs :: IsMTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams => mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams  =
-    sendMsg mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs :: IsMTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams => mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> IO (Id NSNumber)
+timedInvokeTimeoutMs mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams =
+  sendMessage mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -77,36 +85,39 @@ timedInvokeTimeoutMs mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParam
 -- If not nil, a timed invoke is done, with the provided value used as the timed request timeout.  The value should be chosen small enough to provide the desired security properties but large enough that it will allow a round-trip from the sever to the client (for the status response and actual invoke request) within the timeout window.
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMs :: (IsMTROtaSoftwareUpdateProviderClusterApplyUpdateResponseParams mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams, IsNSNumber value) => mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateProviderClusterApplyUpdateResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs :: (IsMTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams, IsNSNumber value) => mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams -> value -> IO ()
+setTimedInvokeTimeoutMs mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams value =
+  sendMessage mtrotaSoftwareUpdateProviderClusterApplyUpdateResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
+-- | @Selector@ for @initWithResponseValue:error:@
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTROTASoftwareUpdateProviderClusterApplyUpdateResponseParams)
+initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
+
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] (Id NSNumber)
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[Id NSNumber] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @delayedActionTime@
-delayedActionTimeSelector :: Selector
+delayedActionTimeSelector :: Selector '[] (Id NSNumber)
 delayedActionTimeSelector = mkSelector "delayedActionTime"
 
 -- | @Selector@ for @setDelayedActionTime:@
-setDelayedActionTimeSelector :: Selector
+setDelayedActionTimeSelector :: Selector '[Id NSNumber] ()
 setDelayedActionTimeSelector = mkSelector "setDelayedActionTime:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 

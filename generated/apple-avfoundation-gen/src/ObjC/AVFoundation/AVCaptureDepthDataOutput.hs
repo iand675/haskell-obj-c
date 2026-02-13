@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,28 +24,24 @@ module ObjC.AVFoundation.AVCaptureDepthDataOutput
   , setAlwaysDiscardsLateDepthData
   , filteringEnabled
   , setFilteringEnabled
+  , alwaysDiscardsLateDepthDataSelector
+  , delegateCallbackQueueSelector
+  , delegateSelector
+  , filteringEnabledSelector
   , initSelector
   , newSelector
-  , setDelegate_callbackQueueSelector
-  , delegateSelector
-  , delegateCallbackQueueSelector
-  , alwaysDiscardsLateDepthDataSelector
   , setAlwaysDiscardsLateDepthDataSelector
-  , filteringEnabledSelector
+  , setDelegate_callbackQueueSelector
   , setFilteringEnabledSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -53,15 +50,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureDepthDataOutput avCaptureDepthDataOutput => avCaptureDepthDataOutput -> IO (Id AVCaptureDepthDataOutput)
-init_ avCaptureDepthDataOutput  =
-    sendMsg avCaptureDepthDataOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureDepthDataOutput =
+  sendOwnedMessage avCaptureDepthDataOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureDepthDataOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureDepthDataOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | setDelegate:queue:
 --
@@ -79,9 +76,8 @@ new  =
 --
 -- ObjC selector: @- setDelegate:callbackQueue:@
 setDelegate_callbackQueue :: (IsAVCaptureDepthDataOutput avCaptureDepthDataOutput, IsNSObject callbackQueue) => avCaptureDepthDataOutput -> RawId -> callbackQueue -> IO ()
-setDelegate_callbackQueue avCaptureDepthDataOutput  delegate callbackQueue =
-  withObjCPtr callbackQueue $ \raw_callbackQueue ->
-      sendMsg avCaptureDepthDataOutput (mkSelector "setDelegate:callbackQueue:") retVoid [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_callbackQueue :: Ptr ())]
+setDelegate_callbackQueue avCaptureDepthDataOutput delegate callbackQueue =
+  sendMessage avCaptureDepthDataOutput setDelegate_callbackQueueSelector delegate (toNSObject callbackQueue)
 
 -- | delegate
 --
@@ -91,8 +87,8 @@ setDelegate_callbackQueue avCaptureDepthDataOutput  delegate callbackQueue =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsAVCaptureDepthDataOutput avCaptureDepthDataOutput => avCaptureDepthDataOutput -> IO RawId
-delegate avCaptureDepthDataOutput  =
-    fmap (RawId . castPtr) $ sendMsg avCaptureDepthDataOutput (mkSelector "delegate") (retPtr retVoid) []
+delegate avCaptureDepthDataOutput =
+  sendMessage avCaptureDepthDataOutput delegateSelector
 
 -- | delegateCallbackQueue
 --
@@ -102,8 +98,8 @@ delegate avCaptureDepthDataOutput  =
 --
 -- ObjC selector: @- delegateCallbackQueue@
 delegateCallbackQueue :: IsAVCaptureDepthDataOutput avCaptureDepthDataOutput => avCaptureDepthDataOutput -> IO (Id NSObject)
-delegateCallbackQueue avCaptureDepthDataOutput  =
-    sendMsg avCaptureDepthDataOutput (mkSelector "delegateCallbackQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+delegateCallbackQueue avCaptureDepthDataOutput =
+  sendMessage avCaptureDepthDataOutput delegateCallbackQueueSelector
 
 -- | alwaysDiscardsLateDepthData
 --
@@ -113,8 +109,8 @@ delegateCallbackQueue avCaptureDepthDataOutput  =
 --
 -- ObjC selector: @- alwaysDiscardsLateDepthData@
 alwaysDiscardsLateDepthData :: IsAVCaptureDepthDataOutput avCaptureDepthDataOutput => avCaptureDepthDataOutput -> IO Bool
-alwaysDiscardsLateDepthData avCaptureDepthDataOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDepthDataOutput (mkSelector "alwaysDiscardsLateDepthData") retCULong []
+alwaysDiscardsLateDepthData avCaptureDepthDataOutput =
+  sendMessage avCaptureDepthDataOutput alwaysDiscardsLateDepthDataSelector
 
 -- | alwaysDiscardsLateDepthData
 --
@@ -124,8 +120,8 @@ alwaysDiscardsLateDepthData avCaptureDepthDataOutput  =
 --
 -- ObjC selector: @- setAlwaysDiscardsLateDepthData:@
 setAlwaysDiscardsLateDepthData :: IsAVCaptureDepthDataOutput avCaptureDepthDataOutput => avCaptureDepthDataOutput -> Bool -> IO ()
-setAlwaysDiscardsLateDepthData avCaptureDepthDataOutput  value =
-    sendMsg avCaptureDepthDataOutput (mkSelector "setAlwaysDiscardsLateDepthData:") retVoid [argCULong (if value then 1 else 0)]
+setAlwaysDiscardsLateDepthData avCaptureDepthDataOutput value =
+  sendMessage avCaptureDepthDataOutput setAlwaysDiscardsLateDepthDataSelector value
 
 -- | filteringEnabled
 --
@@ -135,8 +131,8 @@ setAlwaysDiscardsLateDepthData avCaptureDepthDataOutput  value =
 --
 -- ObjC selector: @- filteringEnabled@
 filteringEnabled :: IsAVCaptureDepthDataOutput avCaptureDepthDataOutput => avCaptureDepthDataOutput -> IO Bool
-filteringEnabled avCaptureDepthDataOutput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCaptureDepthDataOutput (mkSelector "filteringEnabled") retCULong []
+filteringEnabled avCaptureDepthDataOutput =
+  sendMessage avCaptureDepthDataOutput filteringEnabledSelector
 
 -- | filteringEnabled
 --
@@ -146,46 +142,46 @@ filteringEnabled avCaptureDepthDataOutput  =
 --
 -- ObjC selector: @- setFilteringEnabled:@
 setFilteringEnabled :: IsAVCaptureDepthDataOutput avCaptureDepthDataOutput => avCaptureDepthDataOutput -> Bool -> IO ()
-setFilteringEnabled avCaptureDepthDataOutput  value =
-    sendMsg avCaptureDepthDataOutput (mkSelector "setFilteringEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setFilteringEnabled avCaptureDepthDataOutput value =
+  sendMessage avCaptureDepthDataOutput setFilteringEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureDepthDataOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureDepthDataOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @setDelegate:callbackQueue:@
-setDelegate_callbackQueueSelector :: Selector
+setDelegate_callbackQueueSelector :: Selector '[RawId, Id NSObject] ()
 setDelegate_callbackQueueSelector = mkSelector "setDelegate:callbackQueue:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @delegateCallbackQueue@
-delegateCallbackQueueSelector :: Selector
+delegateCallbackQueueSelector :: Selector '[] (Id NSObject)
 delegateCallbackQueueSelector = mkSelector "delegateCallbackQueue"
 
 -- | @Selector@ for @alwaysDiscardsLateDepthData@
-alwaysDiscardsLateDepthDataSelector :: Selector
+alwaysDiscardsLateDepthDataSelector :: Selector '[] Bool
 alwaysDiscardsLateDepthDataSelector = mkSelector "alwaysDiscardsLateDepthData"
 
 -- | @Selector@ for @setAlwaysDiscardsLateDepthData:@
-setAlwaysDiscardsLateDepthDataSelector :: Selector
+setAlwaysDiscardsLateDepthDataSelector :: Selector '[Bool] ()
 setAlwaysDiscardsLateDepthDataSelector = mkSelector "setAlwaysDiscardsLateDepthData:"
 
 -- | @Selector@ for @filteringEnabled@
-filteringEnabledSelector :: Selector
+filteringEnabledSelector :: Selector '[] Bool
 filteringEnabledSelector = mkSelector "filteringEnabled"
 
 -- | @Selector@ for @setFilteringEnabled:@
-setFilteringEnabledSelector :: Selector
+setFilteringEnabledSelector :: Selector '[Bool] ()
 setFilteringEnabledSelector = mkSelector "setFilteringEnabled:"
 

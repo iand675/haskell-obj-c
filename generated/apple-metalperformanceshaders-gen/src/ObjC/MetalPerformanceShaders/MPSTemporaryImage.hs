@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -46,27 +47,23 @@ module ObjC.MetalPerformanceShaders.MPSTemporaryImage
   , readCount
   , setReadCount
   , defaultAllocatorSelector
+  , initWithDevice_imageDescriptorSelector
+  , initWithTexture_featureChannelsSelector
+  , prefetchStorageWithCommandBuffer_imageDescriptorListSelector
+  , readCountSelector
+  , setReadCountSelector
   , temporaryImageWithCommandBuffer_imageDescriptorSelector
   , temporaryImageWithCommandBuffer_textureDescriptorSelector
   , temporaryImageWithCommandBuffer_textureDescriptor_featureChannelsSelector
-  , prefetchStorageWithCommandBuffer_imageDescriptorListSelector
-  , initWithTexture_featureChannelsSelector
-  , initWithDevice_imageDescriptorSelector
-  , readCountSelector
-  , setReadCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,7 +78,7 @@ defaultAllocator :: IO RawId
 defaultAllocator  =
   do
     cls' <- getRequiredClass "MPSTemporaryImage"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "defaultAllocator") (retPtr retVoid) []
+    sendClassMessage cls' defaultAllocatorSelector
 
 -- | Initialize a MPSTemporaryImage for use on a MTLCommandBuffer
 --
@@ -96,8 +93,7 @@ temporaryImageWithCommandBuffer_imageDescriptor :: RawId -> Const (Id MPSImageDe
 temporaryImageWithCommandBuffer_imageDescriptor commandBuffer imageDescriptor =
   do
     cls' <- getRequiredClass "MPSTemporaryImage"
-    withObjCPtr imageDescriptor $ \raw_imageDescriptor ->
-      sendClassMsg cls' (mkSelector "temporaryImageWithCommandBuffer:imageDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_imageDescriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryImageWithCommandBuffer_imageDescriptorSelector commandBuffer imageDescriptor
 
 -- | Low level interface for creating a MPSTemporaryImage using a MTLTextureDescriptor
 --
@@ -116,8 +112,7 @@ temporaryImageWithCommandBuffer_textureDescriptor :: RawId -> Const (Id MTLTextu
 temporaryImageWithCommandBuffer_textureDescriptor commandBuffer textureDescriptor =
   do
     cls' <- getRequiredClass "MPSTemporaryImage"
-    withObjCPtr textureDescriptor $ \raw_textureDescriptor ->
-      sendClassMsg cls' (mkSelector "temporaryImageWithCommandBuffer:textureDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_textureDescriptor :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryImageWithCommandBuffer_textureDescriptorSelector commandBuffer textureDescriptor
 
 -- | Low level interface for creating a MPSTemporaryImage using a MTLTextureDescriptor
 --
@@ -138,8 +133,7 @@ temporaryImageWithCommandBuffer_textureDescriptor_featureChannels :: RawId -> Co
 temporaryImageWithCommandBuffer_textureDescriptor_featureChannels commandBuffer textureDescriptor featureChannels =
   do
     cls' <- getRequiredClass "MPSTemporaryImage"
-    withObjCPtr textureDescriptor $ \raw_textureDescriptor ->
-      sendClassMsg cls' (mkSelector "temporaryImageWithCommandBuffer:textureDescriptor:featureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_textureDescriptor :: Ptr ()), argCULong featureChannels] >>= retainedObject . castPtr
+    sendClassMessage cls' temporaryImageWithCommandBuffer_textureDescriptor_featureChannelsSelector commandBuffer textureDescriptor featureChannels
 
 -- | Help MPS decide which allocations to make ahead of time
 --
@@ -158,71 +152,69 @@ prefetchStorageWithCommandBuffer_imageDescriptorList :: IsNSArray descriptorList
 prefetchStorageWithCommandBuffer_imageDescriptorList commandBuffer descriptorList =
   do
     cls' <- getRequiredClass "MPSTemporaryImage"
-    withObjCPtr descriptorList $ \raw_descriptorList ->
-      sendClassMsg cls' (mkSelector "prefetchStorageWithCommandBuffer:imageDescriptorList:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_descriptorList :: Ptr ())]
+    sendClassMessage cls' prefetchStorageWithCommandBuffer_imageDescriptorListSelector commandBuffer (toNSArray descriptorList)
 
 -- | Unavailable. Use temporaryImageForCommandBuffer:textureDescriptor: or -temporaryImageForCommandBuffer:imageDescriptor: instead.
 --
 -- ObjC selector: @- initWithTexture:featureChannels:@
 initWithTexture_featureChannels :: IsMPSTemporaryImage mpsTemporaryImage => mpsTemporaryImage -> RawId -> CULong -> IO (Id MPSTemporaryImage)
-initWithTexture_featureChannels mpsTemporaryImage  texture featureChannels =
-    sendMsg mpsTemporaryImage (mkSelector "initWithTexture:featureChannels:") (retPtr retVoid) [argPtr (castPtr (unRawId texture) :: Ptr ()), argCULong featureChannels] >>= ownedObject . castPtr
+initWithTexture_featureChannels mpsTemporaryImage texture featureChannels =
+  sendOwnedMessage mpsTemporaryImage initWithTexture_featureChannelsSelector texture featureChannels
 
 -- | Unavailable. Use itemporaryImageForCommandBuffer:textureDescriptor: instead.
 --
 -- ObjC selector: @- initWithDevice:imageDescriptor:@
 initWithDevice_imageDescriptor :: IsMPSTemporaryImage mpsTemporaryImage => mpsTemporaryImage -> RawId -> Const (Id MPSImageDescriptor) -> IO (Id MPSTemporaryImage)
-initWithDevice_imageDescriptor mpsTemporaryImage  device imageDescriptor =
-  withObjCPtr imageDescriptor $ \raw_imageDescriptor ->
-      sendMsg mpsTemporaryImage (mkSelector "initWithDevice:imageDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_imageDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_imageDescriptor mpsTemporaryImage device imageDescriptor =
+  sendOwnedMessage mpsTemporaryImage initWithDevice_imageDescriptorSelector device imageDescriptor
 
 -- | @- readCount@
 readCount :: IsMPSTemporaryImage mpsTemporaryImage => mpsTemporaryImage -> IO CULong
-readCount mpsTemporaryImage  =
-    sendMsg mpsTemporaryImage (mkSelector "readCount") retCULong []
+readCount mpsTemporaryImage =
+  sendMessage mpsTemporaryImage readCountSelector
 
 -- | @- setReadCount:@
 setReadCount :: IsMPSTemporaryImage mpsTemporaryImage => mpsTemporaryImage -> CULong -> IO ()
-setReadCount mpsTemporaryImage  value =
-    sendMsg mpsTemporaryImage (mkSelector "setReadCount:") retVoid [argCULong value]
+setReadCount mpsTemporaryImage value =
+  sendMessage mpsTemporaryImage setReadCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultAllocator@
-defaultAllocatorSelector :: Selector
+defaultAllocatorSelector :: Selector '[] RawId
 defaultAllocatorSelector = mkSelector "defaultAllocator"
 
 -- | @Selector@ for @temporaryImageWithCommandBuffer:imageDescriptor:@
-temporaryImageWithCommandBuffer_imageDescriptorSelector :: Selector
+temporaryImageWithCommandBuffer_imageDescriptorSelector :: Selector '[RawId, Const (Id MPSImageDescriptor)] (Id MPSTemporaryImage)
 temporaryImageWithCommandBuffer_imageDescriptorSelector = mkSelector "temporaryImageWithCommandBuffer:imageDescriptor:"
 
 -- | @Selector@ for @temporaryImageWithCommandBuffer:textureDescriptor:@
-temporaryImageWithCommandBuffer_textureDescriptorSelector :: Selector
+temporaryImageWithCommandBuffer_textureDescriptorSelector :: Selector '[RawId, Const (Id MTLTextureDescriptor)] (Id MPSTemporaryImage)
 temporaryImageWithCommandBuffer_textureDescriptorSelector = mkSelector "temporaryImageWithCommandBuffer:textureDescriptor:"
 
 -- | @Selector@ for @temporaryImageWithCommandBuffer:textureDescriptor:featureChannels:@
-temporaryImageWithCommandBuffer_textureDescriptor_featureChannelsSelector :: Selector
+temporaryImageWithCommandBuffer_textureDescriptor_featureChannelsSelector :: Selector '[RawId, Const (Id MTLTextureDescriptor), CULong] (Id MPSTemporaryImage)
 temporaryImageWithCommandBuffer_textureDescriptor_featureChannelsSelector = mkSelector "temporaryImageWithCommandBuffer:textureDescriptor:featureChannels:"
 
 -- | @Selector@ for @prefetchStorageWithCommandBuffer:imageDescriptorList:@
-prefetchStorageWithCommandBuffer_imageDescriptorListSelector :: Selector
+prefetchStorageWithCommandBuffer_imageDescriptorListSelector :: Selector '[RawId, Id NSArray] ()
 prefetchStorageWithCommandBuffer_imageDescriptorListSelector = mkSelector "prefetchStorageWithCommandBuffer:imageDescriptorList:"
 
 -- | @Selector@ for @initWithTexture:featureChannels:@
-initWithTexture_featureChannelsSelector :: Selector
+initWithTexture_featureChannelsSelector :: Selector '[RawId, CULong] (Id MPSTemporaryImage)
 initWithTexture_featureChannelsSelector = mkSelector "initWithTexture:featureChannels:"
 
 -- | @Selector@ for @initWithDevice:imageDescriptor:@
-initWithDevice_imageDescriptorSelector :: Selector
+initWithDevice_imageDescriptorSelector :: Selector '[RawId, Const (Id MPSImageDescriptor)] (Id MPSTemporaryImage)
 initWithDevice_imageDescriptorSelector = mkSelector "initWithDevice:imageDescriptor:"
 
 -- | @Selector@ for @readCount@
-readCountSelector :: Selector
+readCountSelector :: Selector '[] CULong
 readCountSelector = mkSelector "readCount"
 
 -- | @Selector@ for @setReadCount:@
-setReadCountSelector :: Selector
+setReadCountSelector :: Selector '[CULong] ()
 setReadCountSelector = mkSelector "setReadCount:"
 

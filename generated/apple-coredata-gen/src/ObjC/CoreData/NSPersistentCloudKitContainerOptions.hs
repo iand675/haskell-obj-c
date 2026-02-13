@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,10 +15,10 @@ module ObjC.CoreData.NSPersistentCloudKitContainerOptions
   , containerIdentifier
   , databaseScope
   , setDatabaseScope
-  , initSelector
-  , initWithContainerIdentifierSelector
   , containerIdentifierSelector
   , databaseScopeSelector
+  , initSelector
+  , initWithContainerIdentifierSelector
   , setDatabaseScopeSelector
 
   -- * Enum types
@@ -28,15 +29,11 @@ module ObjC.CoreData.NSPersistentCloudKitContainerOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,53 +43,52 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsNSPersistentCloudKitContainerOptions nsPersistentCloudKitContainerOptions => nsPersistentCloudKitContainerOptions -> IO (Id NSPersistentCloudKitContainerOptions)
-init_ nsPersistentCloudKitContainerOptions  =
-    sendMsg nsPersistentCloudKitContainerOptions (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsPersistentCloudKitContainerOptions =
+  sendOwnedMessage nsPersistentCloudKitContainerOptions initSelector
 
 -- | @- initWithContainerIdentifier:@
 initWithContainerIdentifier :: (IsNSPersistentCloudKitContainerOptions nsPersistentCloudKitContainerOptions, IsNSString containerIdentifier) => nsPersistentCloudKitContainerOptions -> containerIdentifier -> IO (Id NSPersistentCloudKitContainerOptions)
-initWithContainerIdentifier nsPersistentCloudKitContainerOptions  containerIdentifier =
-  withObjCPtr containerIdentifier $ \raw_containerIdentifier ->
-      sendMsg nsPersistentCloudKitContainerOptions (mkSelector "initWithContainerIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_containerIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithContainerIdentifier nsPersistentCloudKitContainerOptions containerIdentifier =
+  sendOwnedMessage nsPersistentCloudKitContainerOptions initWithContainerIdentifierSelector (toNSString containerIdentifier)
 
 -- | The container identifier of the CKContainer to use with a given instance of NSPersistentStoreDescription
 --
 -- ObjC selector: @- containerIdentifier@
 containerIdentifier :: IsNSPersistentCloudKitContainerOptions nsPersistentCloudKitContainerOptions => nsPersistentCloudKitContainerOptions -> IO (Id NSString)
-containerIdentifier nsPersistentCloudKitContainerOptions  =
-    sendMsg nsPersistentCloudKitContainerOptions (mkSelector "containerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerIdentifier nsPersistentCloudKitContainerOptions =
+  sendMessage nsPersistentCloudKitContainerOptions containerIdentifierSelector
 
 -- | @- databaseScope@
 databaseScope :: IsNSPersistentCloudKitContainerOptions nsPersistentCloudKitContainerOptions => nsPersistentCloudKitContainerOptions -> IO CKDatabaseScope
-databaseScope nsPersistentCloudKitContainerOptions  =
-    fmap (coerce :: CLong -> CKDatabaseScope) $ sendMsg nsPersistentCloudKitContainerOptions (mkSelector "databaseScope") retCLong []
+databaseScope nsPersistentCloudKitContainerOptions =
+  sendMessage nsPersistentCloudKitContainerOptions databaseScopeSelector
 
 -- | @- setDatabaseScope:@
 setDatabaseScope :: IsNSPersistentCloudKitContainerOptions nsPersistentCloudKitContainerOptions => nsPersistentCloudKitContainerOptions -> CKDatabaseScope -> IO ()
-setDatabaseScope nsPersistentCloudKitContainerOptions  value =
-    sendMsg nsPersistentCloudKitContainerOptions (mkSelector "setDatabaseScope:") retVoid [argCLong (coerce value)]
+setDatabaseScope nsPersistentCloudKitContainerOptions value =
+  sendMessage nsPersistentCloudKitContainerOptions setDatabaseScopeSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSPersistentCloudKitContainerOptions)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithContainerIdentifier:@
-initWithContainerIdentifierSelector :: Selector
+initWithContainerIdentifierSelector :: Selector '[Id NSString] (Id NSPersistentCloudKitContainerOptions)
 initWithContainerIdentifierSelector = mkSelector "initWithContainerIdentifier:"
 
 -- | @Selector@ for @containerIdentifier@
-containerIdentifierSelector :: Selector
+containerIdentifierSelector :: Selector '[] (Id NSString)
 containerIdentifierSelector = mkSelector "containerIdentifier"
 
 -- | @Selector@ for @databaseScope@
-databaseScopeSelector :: Selector
+databaseScopeSelector :: Selector '[] CKDatabaseScope
 databaseScopeSelector = mkSelector "databaseScope"
 
 -- | @Selector@ for @setDatabaseScope:@
-setDatabaseScopeSelector :: Selector
+setDatabaseScopeSelector :: Selector '[CKDatabaseScope] ()
 setDatabaseScopeSelector = mkSelector "setDatabaseScope:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,8 @@ module ObjC.IdentityLookup.ILMessageFilterQueryResponse
   , setSubAction
   , actionSelector
   , setActionSelector
-  , subActionSelector
   , setSubActionSelector
+  , subActionSelector
 
   -- * Enum types
   , ILMessageFilterAction(ILMessageFilterAction)
@@ -43,15 +44,11 @@ module ObjC.IdentityLookup.ILMessageFilterQueryResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,47 +60,47 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- action@
 action :: IsILMessageFilterQueryResponse ilMessageFilterQueryResponse => ilMessageFilterQueryResponse -> IO ILMessageFilterAction
-action ilMessageFilterQueryResponse  =
-    fmap (coerce :: CLong -> ILMessageFilterAction) $ sendMsg ilMessageFilterQueryResponse (mkSelector "action") retCLong []
+action ilMessageFilterQueryResponse =
+  sendMessage ilMessageFilterQueryResponse actionSelector
 
 -- | Action to take for the received message.
 --
 -- ObjC selector: @- setAction:@
 setAction :: IsILMessageFilterQueryResponse ilMessageFilterQueryResponse => ilMessageFilterQueryResponse -> ILMessageFilterAction -> IO ()
-setAction ilMessageFilterQueryResponse  value =
-    sendMsg ilMessageFilterQueryResponse (mkSelector "setAction:") retVoid [argCLong (coerce value)]
+setAction ilMessageFilterQueryResponse value =
+  sendMessage ilMessageFilterQueryResponse setActionSelector value
 
 -- | SubAction to take for the received message.
 --
 -- ObjC selector: @- subAction@
 subAction :: IsILMessageFilterQueryResponse ilMessageFilterQueryResponse => ilMessageFilterQueryResponse -> IO ILMessageFilterSubAction
-subAction ilMessageFilterQueryResponse  =
-    fmap (coerce :: CLong -> ILMessageFilterSubAction) $ sendMsg ilMessageFilterQueryResponse (mkSelector "subAction") retCLong []
+subAction ilMessageFilterQueryResponse =
+  sendMessage ilMessageFilterQueryResponse subActionSelector
 
 -- | SubAction to take for the received message.
 --
 -- ObjC selector: @- setSubAction:@
 setSubAction :: IsILMessageFilterQueryResponse ilMessageFilterQueryResponse => ilMessageFilterQueryResponse -> ILMessageFilterSubAction -> IO ()
-setSubAction ilMessageFilterQueryResponse  value =
-    sendMsg ilMessageFilterQueryResponse (mkSelector "setSubAction:") retVoid [argCLong (coerce value)]
+setSubAction ilMessageFilterQueryResponse value =
+  sendMessage ilMessageFilterQueryResponse setSubActionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @action@
-actionSelector :: Selector
+actionSelector :: Selector '[] ILMessageFilterAction
 actionSelector = mkSelector "action"
 
 -- | @Selector@ for @setAction:@
-setActionSelector :: Selector
+setActionSelector :: Selector '[ILMessageFilterAction] ()
 setActionSelector = mkSelector "setAction:"
 
 -- | @Selector@ for @subAction@
-subActionSelector :: Selector
+subActionSelector :: Selector '[] ILMessageFilterSubAction
 subActionSelector = mkSelector "subAction"
 
 -- | @Selector@ for @setSubAction:@
-setSubActionSelector :: Selector
+setSubActionSelector :: Selector '[ILMessageFilterSubAction] ()
 setSubActionSelector = mkSelector "setSubAction:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,29 +35,29 @@ module ObjC.ReplayKit.RPScreenRecorder
   , cameraPosition
   , setCameraPosition
   , cameraPreviewView
-  , sharedRecorderSelector
+  , availableSelector
+  , cameraEnabledSelector
+  , cameraPositionSelector
+  , cameraPreviewViewSelector
+  , delegateSelector
+  , discardRecordingWithHandlerSelector
+  , exportClipToURL_duration_completionHandlerSelector
   , initSelector
-  , startRecordingWithMicrophoneEnabled_handlerSelector
+  , microphoneEnabledSelector
+  , recordingSelector
+  , setCameraEnabledSelector
+  , setCameraPositionSelector
+  , setDelegateSelector
+  , setMicrophoneEnabledSelector
+  , sharedRecorderSelector
+  , startCaptureWithHandler_completionHandlerSelector
+  , startClipBufferingWithCompletionHandlerSelector
   , startRecordingWithHandlerSelector
+  , startRecordingWithMicrophoneEnabled_handlerSelector
+  , stopCaptureWithHandlerSelector
+  , stopClipBufferingWithCompletionHandlerSelector
   , stopRecordingWithHandlerSelector
   , stopRecordingWithOutputURL_completionHandlerSelector
-  , discardRecordingWithHandlerSelector
-  , startCaptureWithHandler_completionHandlerSelector
-  , stopCaptureWithHandlerSelector
-  , startClipBufferingWithCompletionHandlerSelector
-  , stopClipBufferingWithCompletionHandlerSelector
-  , exportClipToURL_duration_completionHandlerSelector
-  , delegateSelector
-  , setDelegateSelector
-  , availableSelector
-  , recordingSelector
-  , microphoneEnabledSelector
-  , setMicrophoneEnabledSelector
-  , cameraEnabledSelector
-  , setCameraEnabledSelector
-  , cameraPositionSelector
-  , setCameraPositionSelector
-  , cameraPreviewViewSelector
 
   -- * Enum types
   , RPCameraPosition(RPCameraPosition)
@@ -65,15 +66,11 @@ module ObjC.ReplayKit.RPScreenRecorder
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -86,12 +83,12 @@ sharedRecorder :: IO (Id RPScreenRecorder)
 sharedRecorder  =
   do
     cls' <- getRequiredClass "RPScreenRecorder"
-    sendClassMsg cls' (mkSelector "sharedRecorder") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedRecorderSelector
 
 -- | @- init@
 init_ :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO (Id RPScreenRecorder)
-init_ rpScreenRecorder  =
-    sendMsg rpScreenRecorder (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ rpScreenRecorder =
+  sendOwnedMessage rpScreenRecorder initSelector
 
 -- | Deprecated. Use startRecordingWithHandler: instead.
 --
@@ -103,8 +100,8 @@ init_ rpScreenRecorder  =
 --
 -- ObjC selector: @- startRecordingWithMicrophoneEnabled:handler:@
 startRecordingWithMicrophoneEnabled_handler :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Bool -> Ptr () -> IO ()
-startRecordingWithMicrophoneEnabled_handler rpScreenRecorder  microphoneEnabled handler =
-    sendMsg rpScreenRecorder (mkSelector "startRecordingWithMicrophoneEnabled:handler:") retVoid [argCULong (if microphoneEnabled then 1 else 0), argPtr (castPtr handler :: Ptr ())]
+startRecordingWithMicrophoneEnabled_handler rpScreenRecorder microphoneEnabled handler =
+  sendMessage rpScreenRecorder startRecordingWithMicrophoneEnabled_handlerSelector microphoneEnabled handler
 
 -- | Starts app recording with a completion handler. Note that before recording actually starts, the user may be prompted with UI to confirm recording.
 --
@@ -112,8 +109,8 @@ startRecordingWithMicrophoneEnabled_handler rpScreenRecorder  microphoneEnabled 
 --
 -- ObjC selector: @- startRecordingWithHandler:@
 startRecordingWithHandler :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Ptr () -> IO ()
-startRecordingWithHandler rpScreenRecorder  handler =
-    sendMsg rpScreenRecorder (mkSelector "startRecordingWithHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+startRecordingWithHandler rpScreenRecorder handler =
+  sendMessage rpScreenRecorder startRecordingWithHandlerSelector handler
 
 -- | Stops app recording with a completion handler.
 --
@@ -121,8 +118,8 @@ startRecordingWithHandler rpScreenRecorder  handler =
 --
 -- ObjC selector: @- stopRecordingWithHandler:@
 stopRecordingWithHandler :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Ptr () -> IO ()
-stopRecordingWithHandler rpScreenRecorder  handler =
-    sendMsg rpScreenRecorder (mkSelector "stopRecordingWithHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+stopRecordingWithHandler rpScreenRecorder handler =
+  sendMessage rpScreenRecorder stopRecordingWithHandlerSelector handler
 
 -- | Stops app recording with output URL and completion handler.
 --
@@ -132,16 +129,15 @@ stopRecordingWithHandler rpScreenRecorder  handler =
 --
 -- ObjC selector: @- stopRecordingWithOutputURL:completionHandler:@
 stopRecordingWithOutputURL_completionHandler :: (IsRPScreenRecorder rpScreenRecorder, IsNSURL url) => rpScreenRecorder -> url -> Ptr () -> IO ()
-stopRecordingWithOutputURL_completionHandler rpScreenRecorder  url completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg rpScreenRecorder (mkSelector "stopRecordingWithOutputURL:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+stopRecordingWithOutputURL_completionHandler rpScreenRecorder url completionHandler =
+  sendMessage rpScreenRecorder stopRecordingWithOutputURL_completionHandlerSelector (toNSURL url) completionHandler
 
 -- | Discards the current recording. This can only be called after the handler block in stopRecordingWithHandler: is executed.
 --
 -- ObjC selector: @- discardRecordingWithHandler:@
 discardRecordingWithHandler :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Ptr () -> IO ()
-discardRecordingWithHandler rpScreenRecorder  handler =
-    sendMsg rpScreenRecorder (mkSelector "discardRecordingWithHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+discardRecordingWithHandler rpScreenRecorder handler =
+  sendMessage rpScreenRecorder discardRecordingWithHandlerSelector handler
 
 -- | Starts screen and audio capture and continually calls the supplied handler with the current sampleBuffer and bufferType and passed it back to the application. Note that before recording actually starts, the user may be prompted with UI to confirm recording.
 --
@@ -149,8 +145,8 @@ discardRecordingWithHandler rpScreenRecorder  handler =
 --
 -- ObjC selector: @- startCaptureWithHandler:completionHandler:@
 startCaptureWithHandler_completionHandler :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Ptr () -> Ptr () -> IO ()
-startCaptureWithHandler_completionHandler rpScreenRecorder  captureHandler completionHandler =
-    sendMsg rpScreenRecorder (mkSelector "startCaptureWithHandler:completionHandler:") retVoid [argPtr (castPtr captureHandler :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+startCaptureWithHandler_completionHandler rpScreenRecorder captureHandler completionHandler =
+  sendMessage rpScreenRecorder startCaptureWithHandler_completionHandlerSelector captureHandler completionHandler
 
 -- | Stops screen capture with a completion handler
 --
@@ -158,8 +154,8 @@ startCaptureWithHandler_completionHandler rpScreenRecorder  captureHandler compl
 --
 -- ObjC selector: @- stopCaptureWithHandler:@
 stopCaptureWithHandler :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Ptr () -> IO ()
-stopCaptureWithHandler rpScreenRecorder  handler =
-    sendMsg rpScreenRecorder (mkSelector "stopCaptureWithHandler:") retVoid [argPtr (castPtr handler :: Ptr ())]
+stopCaptureWithHandler rpScreenRecorder handler =
+  sendMessage rpScreenRecorder stopCaptureWithHandlerSelector handler
 
 -- | Start clip recording buffering with a completion handler. Note that before recording actually starts, the user may be prompted with UI to confirm recording.
 --
@@ -167,8 +163,8 @@ stopCaptureWithHandler rpScreenRecorder  handler =
 --
 -- ObjC selector: @- startClipBufferingWithCompletionHandler:@
 startClipBufferingWithCompletionHandler :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Ptr () -> IO ()
-startClipBufferingWithCompletionHandler rpScreenRecorder  completionHandler =
-    sendMsg rpScreenRecorder (mkSelector "startClipBufferingWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+startClipBufferingWithCompletionHandler rpScreenRecorder completionHandler =
+  sendMessage rpScreenRecorder startClipBufferingWithCompletionHandlerSelector completionHandler
 
 -- | Stop clip recording buffering with a completion handler.
 --
@@ -176,8 +172,8 @@ startClipBufferingWithCompletionHandler rpScreenRecorder  completionHandler =
 --
 -- ObjC selector: @- stopClipBufferingWithCompletionHandler:@
 stopClipBufferingWithCompletionHandler :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Ptr () -> IO ()
-stopClipBufferingWithCompletionHandler rpScreenRecorder  completionHandler =
-    sendMsg rpScreenRecorder (mkSelector "stopClipBufferingWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+stopClipBufferingWithCompletionHandler rpScreenRecorder completionHandler =
+  sendMessage rpScreenRecorder stopClipBufferingWithCompletionHandlerSelector completionHandler
 
 -- | Exports clip recording
 --
@@ -189,158 +185,157 @@ stopClipBufferingWithCompletionHandler rpScreenRecorder  completionHandler =
 --
 -- ObjC selector: @- exportClipToURL:duration:completionHandler:@
 exportClipToURL_duration_completionHandler :: (IsRPScreenRecorder rpScreenRecorder, IsNSURL url) => rpScreenRecorder -> url -> CDouble -> Ptr () -> IO ()
-exportClipToURL_duration_completionHandler rpScreenRecorder  url duration completionHandler =
-  withObjCPtr url $ \raw_url ->
-      sendMsg rpScreenRecorder (mkSelector "exportClipToURL:duration:completionHandler:") retVoid [argPtr (castPtr raw_url :: Ptr ()), argCDouble duration, argPtr (castPtr completionHandler :: Ptr ())]
+exportClipToURL_duration_completionHandler rpScreenRecorder url duration completionHandler =
+  sendMessage rpScreenRecorder exportClipToURL_duration_completionHandlerSelector (toNSURL url) duration completionHandler
 
 -- | @- delegate@
 delegate :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO RawId
-delegate rpScreenRecorder  =
-    fmap (RawId . castPtr) $ sendMsg rpScreenRecorder (mkSelector "delegate") (retPtr retVoid) []
+delegate rpScreenRecorder =
+  sendMessage rpScreenRecorder delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> RawId -> IO ()
-setDelegate rpScreenRecorder  value =
-    sendMsg rpScreenRecorder (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate rpScreenRecorder value =
+  sendMessage rpScreenRecorder setDelegateSelector value
 
 -- | @- available@
 available :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO Bool
-available rpScreenRecorder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg rpScreenRecorder (mkSelector "available") retCULong []
+available rpScreenRecorder =
+  sendMessage rpScreenRecorder availableSelector
 
 -- | @- recording@
 recording :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO Bool
-recording rpScreenRecorder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg rpScreenRecorder (mkSelector "recording") retCULong []
+recording rpScreenRecorder =
+  sendMessage rpScreenRecorder recordingSelector
 
 -- | @- microphoneEnabled@
 microphoneEnabled :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO Bool
-microphoneEnabled rpScreenRecorder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg rpScreenRecorder (mkSelector "microphoneEnabled") retCULong []
+microphoneEnabled rpScreenRecorder =
+  sendMessage rpScreenRecorder microphoneEnabledSelector
 
 -- | @- setMicrophoneEnabled:@
 setMicrophoneEnabled :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Bool -> IO ()
-setMicrophoneEnabled rpScreenRecorder  value =
-    sendMsg rpScreenRecorder (mkSelector "setMicrophoneEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setMicrophoneEnabled rpScreenRecorder value =
+  sendMessage rpScreenRecorder setMicrophoneEnabledSelector value
 
 -- | @- cameraEnabled@
 cameraEnabled :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO Bool
-cameraEnabled rpScreenRecorder  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg rpScreenRecorder (mkSelector "cameraEnabled") retCULong []
+cameraEnabled rpScreenRecorder =
+  sendMessage rpScreenRecorder cameraEnabledSelector
 
 -- | @- setCameraEnabled:@
 setCameraEnabled :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> Bool -> IO ()
-setCameraEnabled rpScreenRecorder  value =
-    sendMsg rpScreenRecorder (mkSelector "setCameraEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setCameraEnabled rpScreenRecorder value =
+  sendMessage rpScreenRecorder setCameraEnabledSelector value
 
 -- | @- cameraPosition@
 cameraPosition :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO RPCameraPosition
-cameraPosition rpScreenRecorder  =
-    fmap (coerce :: CLong -> RPCameraPosition) $ sendMsg rpScreenRecorder (mkSelector "cameraPosition") retCLong []
+cameraPosition rpScreenRecorder =
+  sendMessage rpScreenRecorder cameraPositionSelector
 
 -- | @- setCameraPosition:@
 setCameraPosition :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> RPCameraPosition -> IO ()
-setCameraPosition rpScreenRecorder  value =
-    sendMsg rpScreenRecorder (mkSelector "setCameraPosition:") retVoid [argCLong (coerce value)]
+setCameraPosition rpScreenRecorder value =
+  sendMessage rpScreenRecorder setCameraPositionSelector value
 
 -- | @- cameraPreviewView@
 cameraPreviewView :: IsRPScreenRecorder rpScreenRecorder => rpScreenRecorder -> IO (Id NSView)
-cameraPreviewView rpScreenRecorder  =
-    sendMsg rpScreenRecorder (mkSelector "cameraPreviewView") (retPtr retVoid) [] >>= retainedObject . castPtr
+cameraPreviewView rpScreenRecorder =
+  sendMessage rpScreenRecorder cameraPreviewViewSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedRecorder@
-sharedRecorderSelector :: Selector
+sharedRecorderSelector :: Selector '[] (Id RPScreenRecorder)
 sharedRecorderSelector = mkSelector "sharedRecorder"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id RPScreenRecorder)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @startRecordingWithMicrophoneEnabled:handler:@
-startRecordingWithMicrophoneEnabled_handlerSelector :: Selector
+startRecordingWithMicrophoneEnabled_handlerSelector :: Selector '[Bool, Ptr ()] ()
 startRecordingWithMicrophoneEnabled_handlerSelector = mkSelector "startRecordingWithMicrophoneEnabled:handler:"
 
 -- | @Selector@ for @startRecordingWithHandler:@
-startRecordingWithHandlerSelector :: Selector
+startRecordingWithHandlerSelector :: Selector '[Ptr ()] ()
 startRecordingWithHandlerSelector = mkSelector "startRecordingWithHandler:"
 
 -- | @Selector@ for @stopRecordingWithHandler:@
-stopRecordingWithHandlerSelector :: Selector
+stopRecordingWithHandlerSelector :: Selector '[Ptr ()] ()
 stopRecordingWithHandlerSelector = mkSelector "stopRecordingWithHandler:"
 
 -- | @Selector@ for @stopRecordingWithOutputURL:completionHandler:@
-stopRecordingWithOutputURL_completionHandlerSelector :: Selector
+stopRecordingWithOutputURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 stopRecordingWithOutputURL_completionHandlerSelector = mkSelector "stopRecordingWithOutputURL:completionHandler:"
 
 -- | @Selector@ for @discardRecordingWithHandler:@
-discardRecordingWithHandlerSelector :: Selector
+discardRecordingWithHandlerSelector :: Selector '[Ptr ()] ()
 discardRecordingWithHandlerSelector = mkSelector "discardRecordingWithHandler:"
 
 -- | @Selector@ for @startCaptureWithHandler:completionHandler:@
-startCaptureWithHandler_completionHandlerSelector :: Selector
+startCaptureWithHandler_completionHandlerSelector :: Selector '[Ptr (), Ptr ()] ()
 startCaptureWithHandler_completionHandlerSelector = mkSelector "startCaptureWithHandler:completionHandler:"
 
 -- | @Selector@ for @stopCaptureWithHandler:@
-stopCaptureWithHandlerSelector :: Selector
+stopCaptureWithHandlerSelector :: Selector '[Ptr ()] ()
 stopCaptureWithHandlerSelector = mkSelector "stopCaptureWithHandler:"
 
 -- | @Selector@ for @startClipBufferingWithCompletionHandler:@
-startClipBufferingWithCompletionHandlerSelector :: Selector
+startClipBufferingWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 startClipBufferingWithCompletionHandlerSelector = mkSelector "startClipBufferingWithCompletionHandler:"
 
 -- | @Selector@ for @stopClipBufferingWithCompletionHandler:@
-stopClipBufferingWithCompletionHandlerSelector :: Selector
+stopClipBufferingWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 stopClipBufferingWithCompletionHandlerSelector = mkSelector "stopClipBufferingWithCompletionHandler:"
 
 -- | @Selector@ for @exportClipToURL:duration:completionHandler:@
-exportClipToURL_duration_completionHandlerSelector :: Selector
+exportClipToURL_duration_completionHandlerSelector :: Selector '[Id NSURL, CDouble, Ptr ()] ()
 exportClipToURL_duration_completionHandlerSelector = mkSelector "exportClipToURL:duration:completionHandler:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @available@
-availableSelector :: Selector
+availableSelector :: Selector '[] Bool
 availableSelector = mkSelector "available"
 
 -- | @Selector@ for @recording@
-recordingSelector :: Selector
+recordingSelector :: Selector '[] Bool
 recordingSelector = mkSelector "recording"
 
 -- | @Selector@ for @microphoneEnabled@
-microphoneEnabledSelector :: Selector
+microphoneEnabledSelector :: Selector '[] Bool
 microphoneEnabledSelector = mkSelector "microphoneEnabled"
 
 -- | @Selector@ for @setMicrophoneEnabled:@
-setMicrophoneEnabledSelector :: Selector
+setMicrophoneEnabledSelector :: Selector '[Bool] ()
 setMicrophoneEnabledSelector = mkSelector "setMicrophoneEnabled:"
 
 -- | @Selector@ for @cameraEnabled@
-cameraEnabledSelector :: Selector
+cameraEnabledSelector :: Selector '[] Bool
 cameraEnabledSelector = mkSelector "cameraEnabled"
 
 -- | @Selector@ for @setCameraEnabled:@
-setCameraEnabledSelector :: Selector
+setCameraEnabledSelector :: Selector '[Bool] ()
 setCameraEnabledSelector = mkSelector "setCameraEnabled:"
 
 -- | @Selector@ for @cameraPosition@
-cameraPositionSelector :: Selector
+cameraPositionSelector :: Selector '[] RPCameraPosition
 cameraPositionSelector = mkSelector "cameraPosition"
 
 -- | @Selector@ for @setCameraPosition:@
-setCameraPositionSelector :: Selector
+setCameraPositionSelector :: Selector '[RPCameraPosition] ()
 setCameraPositionSelector = mkSelector "setCameraPosition:"
 
 -- | @Selector@ for @cameraPreviewView@
-cameraPreviewViewSelector :: Selector
+cameraPreviewViewSelector :: Selector '[] (Id NSView)
 cameraPreviewViewSelector = mkSelector "cameraPreviewView"
 

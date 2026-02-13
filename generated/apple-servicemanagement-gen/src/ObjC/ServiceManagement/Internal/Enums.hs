@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ServiceManagement.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | ServiceManagement App Service Status
 --
@@ -46,3 +49,13 @@ pattern SMAppServiceStatusRequiresApproval = SMAppServiceStatus 2
 
 pattern SMAppServiceStatusNotFound :: SMAppServiceStatus
 pattern SMAppServiceStatusNotFound = SMAppServiceStatus 3
+
+instance ObjCArgument SMAppServiceStatus where
+  withObjCArg (SMAppServiceStatus x) k = k (argCLong x)
+
+instance ObjCReturn SMAppServiceStatus where
+  type RawReturn SMAppServiceStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SMAppServiceStatus x)
+  fromOwned x = pure (SMAppServiceStatus x)

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,29 +25,25 @@ module ObjC.DiscRecording.DRCDTextBlock
   , encoding
   , arrayOfCDTextBlocksFromPacksSelector
   , cdTextBlockWithLanguage_encodingSelector
-  , initWithLanguage_encodingSelector
-  , propertiesSelector
-  , setPropertiesSelector
-  , trackDictionariesSelector
-  , setTrackDictionariesSelector
-  , objectForKey_ofTrackSelector
-  , setObject_forKey_ofTrackSelector
-  , flattenSelector
-  , languageSelector
   , encodingSelector
+  , flattenSelector
+  , initWithLanguage_encodingSelector
+  , languageSelector
+  , objectForKey_ofTrackSelector
+  , propertiesSelector
+  , setObject_forKey_ofTrackSelector
+  , setPropertiesSelector
+  , setTrackDictionariesSelector
+  , trackDictionariesSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,8 +67,7 @@ arrayOfCDTextBlocksFromPacks :: IsNSData packs => packs -> IO (Id NSArray)
 arrayOfCDTextBlocksFromPacks packs =
   do
     cls' <- getRequiredClass "DRCDTextBlock"
-    withObjCPtr packs $ \raw_packs ->
-      sendClassMsg cls' (mkSelector "arrayOfCDTextBlocksFromPacks:") (retPtr retVoid) [argPtr (castPtr raw_packs :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' arrayOfCDTextBlocksFromPacksSelector (toNSData packs)
 
 -- | cdTextBlockWithLanguage:encoding:
 --
@@ -88,8 +84,7 @@ cdTextBlockWithLanguage_encoding :: IsNSString lang => lang -> CULong -> IO (Id 
 cdTextBlockWithLanguage_encoding lang enc =
   do
     cls' <- getRequiredClass "DRCDTextBlock"
-    withObjCPtr lang $ \raw_lang ->
-      sendClassMsg cls' (mkSelector "cdTextBlockWithLanguage:encoding:") (retPtr retVoid) [argPtr (castPtr raw_lang :: Ptr ()), argCULong enc] >>= retainedObject . castPtr
+    sendClassMessage cls' cdTextBlockWithLanguage_encodingSelector (toNSString lang) enc
 
 -- | initWithLanguage:encoding:
 --
@@ -103,9 +98,8 @@ cdTextBlockWithLanguage_encoding lang enc =
 --
 -- ObjC selector: @- initWithLanguage:encoding:@
 initWithLanguage_encoding :: (IsDRCDTextBlock drcdTextBlock, IsNSString lang) => drcdTextBlock -> lang -> CULong -> IO RawId
-initWithLanguage_encoding drcdTextBlock  lang enc =
-  withObjCPtr lang $ \raw_lang ->
-      fmap (RawId . castPtr) $ sendMsg drcdTextBlock (mkSelector "initWithLanguage:encoding:") (retPtr retVoid) [argPtr (castPtr raw_lang :: Ptr ()), argCULong enc]
+initWithLanguage_encoding drcdTextBlock lang enc =
+  sendOwnedMessage drcdTextBlock initWithLanguage_encodingSelector (toNSString lang) enc
 
 -- | properties
 --
@@ -115,8 +109,8 @@ initWithLanguage_encoding drcdTextBlock  lang enc =
 --
 -- ObjC selector: @- properties@
 properties :: IsDRCDTextBlock drcdTextBlock => drcdTextBlock -> IO (Id NSDictionary)
-properties drcdTextBlock  =
-    sendMsg drcdTextBlock (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+properties drcdTextBlock =
+  sendMessage drcdTextBlock propertiesSelector
 
 -- | setProperties:
 --
@@ -126,9 +120,8 @@ properties drcdTextBlock  =
 --
 -- ObjC selector: @- setProperties:@
 setProperties :: (IsDRCDTextBlock drcdTextBlock, IsNSDictionary properties) => drcdTextBlock -> properties -> IO ()
-setProperties drcdTextBlock  properties =
-  withObjCPtr properties $ \raw_properties ->
-      sendMsg drcdTextBlock (mkSelector "setProperties:") retVoid [argPtr (castPtr raw_properties :: Ptr ())]
+setProperties drcdTextBlock properties =
+  sendMessage drcdTextBlock setPropertiesSelector (toNSDictionary properties)
 
 -- | trackDictionaries
 --
@@ -140,8 +133,8 @@ setProperties drcdTextBlock  properties =
 --
 -- ObjC selector: @- trackDictionaries@
 trackDictionaries :: IsDRCDTextBlock drcdTextBlock => drcdTextBlock -> IO (Id NSArray)
-trackDictionaries drcdTextBlock  =
-    sendMsg drcdTextBlock (mkSelector "trackDictionaries") (retPtr retVoid) [] >>= retainedObject . castPtr
+trackDictionaries drcdTextBlock =
+  sendMessage drcdTextBlock trackDictionariesSelector
 
 -- | setTrackDictionaries:
 --
@@ -155,9 +148,8 @@ trackDictionaries drcdTextBlock  =
 --
 -- ObjC selector: @- setTrackDictionaries:@
 setTrackDictionaries :: (IsDRCDTextBlock drcdTextBlock, IsNSArray tracks) => drcdTextBlock -> tracks -> IO ()
-setTrackDictionaries drcdTextBlock  tracks =
-  withObjCPtr tracks $ \raw_tracks ->
-      sendMsg drcdTextBlock (mkSelector "setTrackDictionaries:") retVoid [argPtr (castPtr raw_tracks :: Ptr ())]
+setTrackDictionaries drcdTextBlock tracks =
+  sendMessage drcdTextBlock setTrackDictionariesSelector (toNSArray tracks)
 
 -- | objectForKey:ofTrack:
 --
@@ -171,9 +163,8 @@ setTrackDictionaries drcdTextBlock  tracks =
 --
 -- ObjC selector: @- objectForKey:ofTrack:@
 objectForKey_ofTrack :: (IsDRCDTextBlock drcdTextBlock, IsNSString key) => drcdTextBlock -> key -> CULong -> IO RawId
-objectForKey_ofTrack drcdTextBlock  key trackIndex =
-  withObjCPtr key $ \raw_key ->
-      fmap (RawId . castPtr) $ sendMsg drcdTextBlock (mkSelector "objectForKey:ofTrack:") (retPtr retVoid) [argPtr (castPtr raw_key :: Ptr ()), argCULong trackIndex]
+objectForKey_ofTrack drcdTextBlock key trackIndex =
+  sendMessage drcdTextBlock objectForKey_ofTrackSelector (toNSString key) trackIndex
 
 -- | setObject:forKey:ofTrack:
 --
@@ -187,9 +178,8 @@ objectForKey_ofTrack drcdTextBlock  key trackIndex =
 --
 -- ObjC selector: @- setObject:forKey:ofTrack:@
 setObject_forKey_ofTrack :: (IsDRCDTextBlock drcdTextBlock, IsNSString key) => drcdTextBlock -> RawId -> key -> CULong -> IO ()
-setObject_forKey_ofTrack drcdTextBlock  value key trackIndex =
-  withObjCPtr key $ \raw_key ->
-      sendMsg drcdTextBlock (mkSelector "setObject:forKey:ofTrack:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argCULong trackIndex]
+setObject_forKey_ofTrack drcdTextBlock value key trackIndex =
+  sendMessage drcdTextBlock setObject_forKey_ofTrackSelector value (toNSString key) trackIndex
 
 -- | flatten
 --
@@ -207,8 +197,8 @@ setObject_forKey_ofTrack drcdTextBlock  value key trackIndex =
 --
 -- ObjC selector: @- flatten@
 flatten :: IsDRCDTextBlock drcdTextBlock => drcdTextBlock -> IO CULong
-flatten drcdTextBlock  =
-    sendMsg drcdTextBlock (mkSelector "flatten") retCULong []
+flatten drcdTextBlock =
+  sendMessage drcdTextBlock flattenSelector
 
 -- | language
 --
@@ -218,8 +208,8 @@ flatten drcdTextBlock  =
 --
 -- ObjC selector: @- language@
 language :: IsDRCDTextBlock drcdTextBlock => drcdTextBlock -> IO (Id NSString)
-language drcdTextBlock  =
-    sendMsg drcdTextBlock (mkSelector "language") (retPtr retVoid) [] >>= retainedObject . castPtr
+language drcdTextBlock =
+  sendMessage drcdTextBlock languageSelector
 
 -- | encoding
 --
@@ -229,58 +219,58 @@ language drcdTextBlock  =
 --
 -- ObjC selector: @- encoding@
 encoding :: IsDRCDTextBlock drcdTextBlock => drcdTextBlock -> IO CULong
-encoding drcdTextBlock  =
-    sendMsg drcdTextBlock (mkSelector "encoding") retCULong []
+encoding drcdTextBlock =
+  sendMessage drcdTextBlock encodingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @arrayOfCDTextBlocksFromPacks:@
-arrayOfCDTextBlocksFromPacksSelector :: Selector
+arrayOfCDTextBlocksFromPacksSelector :: Selector '[Id NSData] (Id NSArray)
 arrayOfCDTextBlocksFromPacksSelector = mkSelector "arrayOfCDTextBlocksFromPacks:"
 
 -- | @Selector@ for @cdTextBlockWithLanguage:encoding:@
-cdTextBlockWithLanguage_encodingSelector :: Selector
+cdTextBlockWithLanguage_encodingSelector :: Selector '[Id NSString, CULong] (Id DRCDTextBlock)
 cdTextBlockWithLanguage_encodingSelector = mkSelector "cdTextBlockWithLanguage:encoding:"
 
 -- | @Selector@ for @initWithLanguage:encoding:@
-initWithLanguage_encodingSelector :: Selector
+initWithLanguage_encodingSelector :: Selector '[Id NSString, CULong] RawId
 initWithLanguage_encodingSelector = mkSelector "initWithLanguage:encoding:"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSDictionary)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @setProperties:@
-setPropertiesSelector :: Selector
+setPropertiesSelector :: Selector '[Id NSDictionary] ()
 setPropertiesSelector = mkSelector "setProperties:"
 
 -- | @Selector@ for @trackDictionaries@
-trackDictionariesSelector :: Selector
+trackDictionariesSelector :: Selector '[] (Id NSArray)
 trackDictionariesSelector = mkSelector "trackDictionaries"
 
 -- | @Selector@ for @setTrackDictionaries:@
-setTrackDictionariesSelector :: Selector
+setTrackDictionariesSelector :: Selector '[Id NSArray] ()
 setTrackDictionariesSelector = mkSelector "setTrackDictionaries:"
 
 -- | @Selector@ for @objectForKey:ofTrack:@
-objectForKey_ofTrackSelector :: Selector
+objectForKey_ofTrackSelector :: Selector '[Id NSString, CULong] RawId
 objectForKey_ofTrackSelector = mkSelector "objectForKey:ofTrack:"
 
 -- | @Selector@ for @setObject:forKey:ofTrack:@
-setObject_forKey_ofTrackSelector :: Selector
+setObject_forKey_ofTrackSelector :: Selector '[RawId, Id NSString, CULong] ()
 setObject_forKey_ofTrackSelector = mkSelector "setObject:forKey:ofTrack:"
 
 -- | @Selector@ for @flatten@
-flattenSelector :: Selector
+flattenSelector :: Selector '[] CULong
 flattenSelector = mkSelector "flatten"
 
 -- | @Selector@ for @language@
-languageSelector :: Selector
+languageSelector :: Selector '[] (Id NSString)
 languageSelector = mkSelector "language"
 
 -- | @Selector@ for @encoding@
-encodingSelector :: Selector
+encodingSelector :: Selector '[] CULong
 encodingSelector = mkSelector "encoding"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.MapKit.MKDistanceFormatter
   , setUnits
   , unitStyle
   , setUnitStyle
-  , stringFromDistanceSelector
   , distanceFromStringSelector
   , localeSelector
   , setLocaleSelector
-  , unitsSelector
-  , setUnitsSelector
-  , unitStyleSelector
   , setUnitStyleSelector
+  , setUnitsSelector
+  , stringFromDistanceSelector
+  , unitStyleSelector
+  , unitsSelector
 
   -- * Enum types
   , MKDistanceFormatterUnitStyle(MKDistanceFormatterUnitStyle)
@@ -37,15 +38,11 @@ module ObjC.MapKit.MKDistanceFormatter
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,79 +52,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- stringFromDistance:@
 stringFromDistance :: IsMKDistanceFormatter mkDistanceFormatter => mkDistanceFormatter -> CDouble -> IO (Id NSString)
-stringFromDistance mkDistanceFormatter  distance =
-    sendMsg mkDistanceFormatter (mkSelector "stringFromDistance:") (retPtr retVoid) [argCDouble distance] >>= retainedObject . castPtr
+stringFromDistance mkDistanceFormatter distance =
+  sendMessage mkDistanceFormatter stringFromDistanceSelector distance
 
 -- | @- distanceFromString:@
 distanceFromString :: (IsMKDistanceFormatter mkDistanceFormatter, IsNSString distance) => mkDistanceFormatter -> distance -> IO CDouble
-distanceFromString mkDistanceFormatter  distance =
-  withObjCPtr distance $ \raw_distance ->
-      sendMsg mkDistanceFormatter (mkSelector "distanceFromString:") retCDouble [argPtr (castPtr raw_distance :: Ptr ())]
+distanceFromString mkDistanceFormatter distance =
+  sendMessage mkDistanceFormatter distanceFromStringSelector (toNSString distance)
 
 -- | @- locale@
 locale :: IsMKDistanceFormatter mkDistanceFormatter => mkDistanceFormatter -> IO (Id NSLocale)
-locale mkDistanceFormatter  =
-    sendMsg mkDistanceFormatter (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale mkDistanceFormatter =
+  sendMessage mkDistanceFormatter localeSelector
 
 -- | @- setLocale:@
 setLocale :: (IsMKDistanceFormatter mkDistanceFormatter, IsNSLocale value) => mkDistanceFormatter -> value -> IO ()
-setLocale mkDistanceFormatter  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mkDistanceFormatter (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale mkDistanceFormatter value =
+  sendMessage mkDistanceFormatter setLocaleSelector (toNSLocale value)
 
 -- | @- units@
 units :: IsMKDistanceFormatter mkDistanceFormatter => mkDistanceFormatter -> IO MKDistanceFormatterUnits
-units mkDistanceFormatter  =
-    fmap (coerce :: CULong -> MKDistanceFormatterUnits) $ sendMsg mkDistanceFormatter (mkSelector "units") retCULong []
+units mkDistanceFormatter =
+  sendMessage mkDistanceFormatter unitsSelector
 
 -- | @- setUnits:@
 setUnits :: IsMKDistanceFormatter mkDistanceFormatter => mkDistanceFormatter -> MKDistanceFormatterUnits -> IO ()
-setUnits mkDistanceFormatter  value =
-    sendMsg mkDistanceFormatter (mkSelector "setUnits:") retVoid [argCULong (coerce value)]
+setUnits mkDistanceFormatter value =
+  sendMessage mkDistanceFormatter setUnitsSelector value
 
 -- | @- unitStyle@
 unitStyle :: IsMKDistanceFormatter mkDistanceFormatter => mkDistanceFormatter -> IO MKDistanceFormatterUnitStyle
-unitStyle mkDistanceFormatter  =
-    fmap (coerce :: CULong -> MKDistanceFormatterUnitStyle) $ sendMsg mkDistanceFormatter (mkSelector "unitStyle") retCULong []
+unitStyle mkDistanceFormatter =
+  sendMessage mkDistanceFormatter unitStyleSelector
 
 -- | @- setUnitStyle:@
 setUnitStyle :: IsMKDistanceFormatter mkDistanceFormatter => mkDistanceFormatter -> MKDistanceFormatterUnitStyle -> IO ()
-setUnitStyle mkDistanceFormatter  value =
-    sendMsg mkDistanceFormatter (mkSelector "setUnitStyle:") retVoid [argCULong (coerce value)]
+setUnitStyle mkDistanceFormatter value =
+  sendMessage mkDistanceFormatter setUnitStyleSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @stringFromDistance:@
-stringFromDistanceSelector :: Selector
+stringFromDistanceSelector :: Selector '[CDouble] (Id NSString)
 stringFromDistanceSelector = mkSelector "stringFromDistance:"
 
 -- | @Selector@ for @distanceFromString:@
-distanceFromStringSelector :: Selector
+distanceFromStringSelector :: Selector '[Id NSString] CDouble
 distanceFromStringSelector = mkSelector "distanceFromString:"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 
 -- | @Selector@ for @units@
-unitsSelector :: Selector
+unitsSelector :: Selector '[] MKDistanceFormatterUnits
 unitsSelector = mkSelector "units"
 
 -- | @Selector@ for @setUnits:@
-setUnitsSelector :: Selector
+setUnitsSelector :: Selector '[MKDistanceFormatterUnits] ()
 setUnitsSelector = mkSelector "setUnits:"
 
 -- | @Selector@ for @unitStyle@
-unitStyleSelector :: Selector
+unitStyleSelector :: Selector '[] MKDistanceFormatterUnitStyle
 unitStyleSelector = mkSelector "unitStyle"
 
 -- | @Selector@ for @setUnitStyle:@
-setUnitStyleSelector :: Selector
+setUnitStyleSelector :: Selector '[MKDistanceFormatterUnitStyle] ()
 setUnitStyleSelector = mkSelector "setUnitStyle:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,23 +38,23 @@ module ObjC.CoreBluetooth.CBPeripheralManager
   , delegate
   , setDelegate
   , isAdvertising
+  , addServiceSelector
   , authorizationStatusSelector
+  , delegateSelector
   , initSelector
   , initWithDelegate_queueSelector
   , initWithDelegate_queue_optionsSelector
+  , isAdvertisingSelector
+  , publishL2CAPChannelWithEncryptionSelector
+  , removeAllServicesSelector
+  , removeServiceSelector
+  , respondToRequest_withResultSelector
+  , setDelegateSelector
+  , setDesiredConnectionLatency_forCentralSelector
   , startAdvertisingSelector
   , stopAdvertisingSelector
-  , setDesiredConnectionLatency_forCentralSelector
-  , addServiceSelector
-  , removeServiceSelector
-  , removeAllServicesSelector
-  , respondToRequest_withResultSelector
-  , updateValue_forCharacteristic_onSubscribedCentralsSelector
-  , publishL2CAPChannelWithEncryptionSelector
   , unpublishL2CAPChannelSelector
-  , delegateSelector
-  , setDelegateSelector
-  , isAdvertisingSelector
+  , updateValue_forCharacteristic_onSubscribedCentralsSelector
 
   -- * Enum types
   , CBATTError(CBATTError)
@@ -87,15 +88,11 @@ module ObjC.CoreBluetooth.CBPeripheralManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -118,12 +115,12 @@ authorizationStatus :: IO CBPeripheralManagerAuthorizationStatus
 authorizationStatus  =
   do
     cls' <- getRequiredClass "CBPeripheralManager"
-    fmap (coerce :: CLong -> CBPeripheralManagerAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatus") retCLong []
+    sendClassMessage cls' authorizationStatusSelector
 
 -- | @- init@
 init_ :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> IO (Id CBPeripheralManager)
-init_ cbPeripheralManager  =
-    sendMsg cbPeripheralManager (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ cbPeripheralManager =
+  sendOwnedMessage cbPeripheralManager initSelector
 
 -- | initWithDelegate:queue:
 --
@@ -135,9 +132,8 @@ init_ cbPeripheralManager  =
 --
 -- ObjC selector: @- initWithDelegate:queue:@
 initWithDelegate_queue :: (IsCBPeripheralManager cbPeripheralManager, IsNSObject queue) => cbPeripheralManager -> RawId -> queue -> IO (Id CBPeripheralManager)
-initWithDelegate_queue cbPeripheralManager  delegate queue =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg cbPeripheralManager (mkSelector "initWithDelegate:queue:") (retPtr retVoid) [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDelegate_queue cbPeripheralManager delegate queue =
+  sendOwnedMessage cbPeripheralManager initWithDelegate_queueSelector delegate (toNSObject queue)
 
 -- | initWithDelegate:queue:options:
 --
@@ -155,10 +151,8 @@ initWithDelegate_queue cbPeripheralManager  delegate queue =
 --
 -- ObjC selector: @- initWithDelegate:queue:options:@
 initWithDelegate_queue_options :: (IsCBPeripheralManager cbPeripheralManager, IsNSObject queue, IsNSDictionary options) => cbPeripheralManager -> RawId -> queue -> options -> IO (Id CBPeripheralManager)
-initWithDelegate_queue_options cbPeripheralManager  delegate queue options =
-  withObjCPtr queue $ \raw_queue ->
-    withObjCPtr options $ \raw_options ->
-        sendMsg cbPeripheralManager (mkSelector "initWithDelegate:queue:options:") (retPtr retVoid) [argPtr (castPtr (unRawId delegate) :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= ownedObject . castPtr
+initWithDelegate_queue_options cbPeripheralManager delegate queue options =
+  sendOwnedMessage cbPeripheralManager initWithDelegate_queue_optionsSelector delegate (toNSObject queue) (toNSDictionary options)
 
 -- | startAdvertising:
 --
@@ -172,9 +166,8 @@ initWithDelegate_queue_options cbPeripheralManager  delegate queue options =
 --
 -- ObjC selector: @- startAdvertising:@
 startAdvertising :: (IsCBPeripheralManager cbPeripheralManager, IsNSDictionary advertisementData) => cbPeripheralManager -> advertisementData -> IO ()
-startAdvertising cbPeripheralManager  advertisementData =
-  withObjCPtr advertisementData $ \raw_advertisementData ->
-      sendMsg cbPeripheralManager (mkSelector "startAdvertising:") retVoid [argPtr (castPtr raw_advertisementData :: Ptr ())]
+startAdvertising cbPeripheralManager advertisementData =
+  sendMessage cbPeripheralManager startAdvertisingSelector (toNSDictionary advertisementData)
 
 -- | stopAdvertising
 --
@@ -182,8 +175,8 @@ startAdvertising cbPeripheralManager  advertisementData =
 --
 -- ObjC selector: @- stopAdvertising@
 stopAdvertising :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> IO ()
-stopAdvertising cbPeripheralManager  =
-    sendMsg cbPeripheralManager (mkSelector "stopAdvertising") retVoid []
+stopAdvertising cbPeripheralManager =
+  sendMessage cbPeripheralManager stopAdvertisingSelector
 
 -- | setDesiredConnectionLatency:forCentral:
 --
@@ -197,9 +190,8 @@ stopAdvertising cbPeripheralManager  =
 --
 -- ObjC selector: @- setDesiredConnectionLatency:forCentral:@
 setDesiredConnectionLatency_forCentral :: (IsCBPeripheralManager cbPeripheralManager, IsCBCentral central) => cbPeripheralManager -> CBPeripheralManagerConnectionLatency -> central -> IO ()
-setDesiredConnectionLatency_forCentral cbPeripheralManager  latency central =
-  withObjCPtr central $ \raw_central ->
-      sendMsg cbPeripheralManager (mkSelector "setDesiredConnectionLatency:forCentral:") retVoid [argCLong (coerce latency), argPtr (castPtr raw_central :: Ptr ())]
+setDesiredConnectionLatency_forCentral cbPeripheralManager latency central =
+  sendMessage cbPeripheralManager setDesiredConnectionLatency_forCentralSelector latency (toCBCentral central)
 
 -- | addService:
 --
@@ -211,9 +203,8 @@ setDesiredConnectionLatency_forCentral cbPeripheralManager  latency central =
 --
 -- ObjC selector: @- addService:@
 addService :: (IsCBPeripheralManager cbPeripheralManager, IsCBMutableService service) => cbPeripheralManager -> service -> IO ()
-addService cbPeripheralManager  service =
-  withObjCPtr service $ \raw_service ->
-      sendMsg cbPeripheralManager (mkSelector "addService:") retVoid [argPtr (castPtr raw_service :: Ptr ())]
+addService cbPeripheralManager service =
+  sendMessage cbPeripheralManager addServiceSelector (toCBMutableService service)
 
 -- | removeService:
 --
@@ -223,9 +214,8 @@ addService cbPeripheralManager  service =
 --
 -- ObjC selector: @- removeService:@
 removeService :: (IsCBPeripheralManager cbPeripheralManager, IsCBMutableService service) => cbPeripheralManager -> service -> IO ()
-removeService cbPeripheralManager  service =
-  withObjCPtr service $ \raw_service ->
-      sendMsg cbPeripheralManager (mkSelector "removeService:") retVoid [argPtr (castPtr raw_service :: Ptr ())]
+removeService cbPeripheralManager service =
+  sendMessage cbPeripheralManager removeServiceSelector (toCBMutableService service)
 
 -- | removeAllServices
 --
@@ -233,8 +223,8 @@ removeService cbPeripheralManager  service =
 --
 -- ObjC selector: @- removeAllServices@
 removeAllServices :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> IO ()
-removeAllServices cbPeripheralManager  =
-    sendMsg cbPeripheralManager (mkSelector "removeAllServices") retVoid []
+removeAllServices cbPeripheralManager =
+  sendMessage cbPeripheralManager removeAllServicesSelector
 
 -- | respondToRequest:withResult:
 --
@@ -258,9 +248,8 @@ removeAllServices cbPeripheralManager  =
 --
 -- ObjC selector: @- respondToRequest:withResult:@
 respondToRequest_withResult :: (IsCBPeripheralManager cbPeripheralManager, IsCBATTRequest request) => cbPeripheralManager -> request -> CBATTError -> IO ()
-respondToRequest_withResult cbPeripheralManager  request result =
-  withObjCPtr request $ \raw_request ->
-      sendMsg cbPeripheralManager (mkSelector "respondToRequest:withResult:") retVoid [argPtr (castPtr raw_request :: Ptr ()), argCLong (coerce result)]
+respondToRequest_withResult cbPeripheralManager request result =
+  sendMessage cbPeripheralManager respondToRequest_withResultSelector (toCBATTRequest request) result
 
 -- | updateValue:forCharacteristic:onSubscribedCentrals:
 --
@@ -289,11 +278,8 @@ respondToRequest_withResult cbPeripheralManager  request result =
 --
 -- ObjC selector: @- updateValue:forCharacteristic:onSubscribedCentrals:@
 updateValue_forCharacteristic_onSubscribedCentrals :: (IsCBPeripheralManager cbPeripheralManager, IsNSData value, IsCBMutableCharacteristic characteristic, IsNSArray centrals) => cbPeripheralManager -> value -> characteristic -> centrals -> IO Bool
-updateValue_forCharacteristic_onSubscribedCentrals cbPeripheralManager  value characteristic centrals =
-  withObjCPtr value $ \raw_value ->
-    withObjCPtr characteristic $ \raw_characteristic ->
-      withObjCPtr centrals $ \raw_centrals ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbPeripheralManager (mkSelector "updateValue:forCharacteristic:onSubscribedCentrals:") retCULong [argPtr (castPtr raw_value :: Ptr ()), argPtr (castPtr raw_characteristic :: Ptr ()), argPtr (castPtr raw_centrals :: Ptr ())]
+updateValue_forCharacteristic_onSubscribedCentrals cbPeripheralManager value characteristic centrals =
+  sendMessage cbPeripheralManager updateValue_forCharacteristic_onSubscribedCentralsSelector (toNSData value) (toCBMutableCharacteristic characteristic) (toNSArray centrals)
 
 -- | publishL2CAPChannelWithEncryption:
 --
@@ -307,8 +293,8 @@ updateValue_forCharacteristic_onSubscribedCentrals cbPeripheralManager  value ch
 --
 -- ObjC selector: @- publishL2CAPChannelWithEncryption:@
 publishL2CAPChannelWithEncryption :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> Bool -> IO ()
-publishL2CAPChannelWithEncryption cbPeripheralManager  encryptionRequired =
-    sendMsg cbPeripheralManager (mkSelector "publishL2CAPChannelWithEncryption:") retVoid [argCULong (if encryptionRequired then 1 else 0)]
+publishL2CAPChannelWithEncryption cbPeripheralManager encryptionRequired =
+  sendMessage cbPeripheralManager publishL2CAPChannelWithEncryptionSelector encryptionRequired
 
 -- | unpublishL2CAPChannel:
 --
@@ -318,8 +304,8 @@ publishL2CAPChannelWithEncryption cbPeripheralManager  encryptionRequired =
 --
 -- ObjC selector: @- unpublishL2CAPChannel:@
 unpublishL2CAPChannel :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> CUShort -> IO ()
-unpublishL2CAPChannel cbPeripheralManager  psm =
-    sendMsg cbPeripheralManager (mkSelector "unpublishL2CAPChannel:") retVoid [argCUInt (fromIntegral psm)]
+unpublishL2CAPChannel cbPeripheralManager psm =
+  sendMessage cbPeripheralManager unpublishL2CAPChannelSelector psm
 
 -- | delegate
 --
@@ -327,8 +313,8 @@ unpublishL2CAPChannel cbPeripheralManager  psm =
 --
 -- ObjC selector: @- delegate@
 delegate :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> IO RawId
-delegate cbPeripheralManager  =
-    fmap (RawId . castPtr) $ sendMsg cbPeripheralManager (mkSelector "delegate") (retPtr retVoid) []
+delegate cbPeripheralManager =
+  sendMessage cbPeripheralManager delegateSelector
 
 -- | delegate
 --
@@ -336,8 +322,8 @@ delegate cbPeripheralManager  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> RawId -> IO ()
-setDelegate cbPeripheralManager  value =
-    sendMsg cbPeripheralManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate cbPeripheralManager value =
+  sendMessage cbPeripheralManager setDelegateSelector value
 
 -- | isAdvertising
 --
@@ -345,78 +331,78 @@ setDelegate cbPeripheralManager  value =
 --
 -- ObjC selector: @- isAdvertising@
 isAdvertising :: IsCBPeripheralManager cbPeripheralManager => cbPeripheralManager -> IO Bool
-isAdvertising cbPeripheralManager  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg cbPeripheralManager (mkSelector "isAdvertising") retCULong []
+isAdvertising cbPeripheralManager =
+  sendMessage cbPeripheralManager isAdvertisingSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationStatus@
-authorizationStatusSelector :: Selector
+authorizationStatusSelector :: Selector '[] CBPeripheralManagerAuthorizationStatus
 authorizationStatusSelector = mkSelector "authorizationStatus"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CBPeripheralManager)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDelegate:queue:@
-initWithDelegate_queueSelector :: Selector
+initWithDelegate_queueSelector :: Selector '[RawId, Id NSObject] (Id CBPeripheralManager)
 initWithDelegate_queueSelector = mkSelector "initWithDelegate:queue:"
 
 -- | @Selector@ for @initWithDelegate:queue:options:@
-initWithDelegate_queue_optionsSelector :: Selector
+initWithDelegate_queue_optionsSelector :: Selector '[RawId, Id NSObject, Id NSDictionary] (Id CBPeripheralManager)
 initWithDelegate_queue_optionsSelector = mkSelector "initWithDelegate:queue:options:"
 
 -- | @Selector@ for @startAdvertising:@
-startAdvertisingSelector :: Selector
+startAdvertisingSelector :: Selector '[Id NSDictionary] ()
 startAdvertisingSelector = mkSelector "startAdvertising:"
 
 -- | @Selector@ for @stopAdvertising@
-stopAdvertisingSelector :: Selector
+stopAdvertisingSelector :: Selector '[] ()
 stopAdvertisingSelector = mkSelector "stopAdvertising"
 
 -- | @Selector@ for @setDesiredConnectionLatency:forCentral:@
-setDesiredConnectionLatency_forCentralSelector :: Selector
+setDesiredConnectionLatency_forCentralSelector :: Selector '[CBPeripheralManagerConnectionLatency, Id CBCentral] ()
 setDesiredConnectionLatency_forCentralSelector = mkSelector "setDesiredConnectionLatency:forCentral:"
 
 -- | @Selector@ for @addService:@
-addServiceSelector :: Selector
+addServiceSelector :: Selector '[Id CBMutableService] ()
 addServiceSelector = mkSelector "addService:"
 
 -- | @Selector@ for @removeService:@
-removeServiceSelector :: Selector
+removeServiceSelector :: Selector '[Id CBMutableService] ()
 removeServiceSelector = mkSelector "removeService:"
 
 -- | @Selector@ for @removeAllServices@
-removeAllServicesSelector :: Selector
+removeAllServicesSelector :: Selector '[] ()
 removeAllServicesSelector = mkSelector "removeAllServices"
 
 -- | @Selector@ for @respondToRequest:withResult:@
-respondToRequest_withResultSelector :: Selector
+respondToRequest_withResultSelector :: Selector '[Id CBATTRequest, CBATTError] ()
 respondToRequest_withResultSelector = mkSelector "respondToRequest:withResult:"
 
 -- | @Selector@ for @updateValue:forCharacteristic:onSubscribedCentrals:@
-updateValue_forCharacteristic_onSubscribedCentralsSelector :: Selector
+updateValue_forCharacteristic_onSubscribedCentralsSelector :: Selector '[Id NSData, Id CBMutableCharacteristic, Id NSArray] Bool
 updateValue_forCharacteristic_onSubscribedCentralsSelector = mkSelector "updateValue:forCharacteristic:onSubscribedCentrals:"
 
 -- | @Selector@ for @publishL2CAPChannelWithEncryption:@
-publishL2CAPChannelWithEncryptionSelector :: Selector
+publishL2CAPChannelWithEncryptionSelector :: Selector '[Bool] ()
 publishL2CAPChannelWithEncryptionSelector = mkSelector "publishL2CAPChannelWithEncryption:"
 
 -- | @Selector@ for @unpublishL2CAPChannel:@
-unpublishL2CAPChannelSelector :: Selector
+unpublishL2CAPChannelSelector :: Selector '[CUShort] ()
 unpublishL2CAPChannelSelector = mkSelector "unpublishL2CAPChannel:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @isAdvertising@
-isAdvertisingSelector :: Selector
+isAdvertisingSelector :: Selector '[] Bool
 isAdvertisingSelector = mkSelector "isAdvertising"
 

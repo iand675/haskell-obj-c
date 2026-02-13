@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,14 +18,14 @@ module ObjC.PassKit.PKAddCarKeyPassConfiguration
   , provisioningTemplateIdentifier
   , setProvisioningTemplateIdentifier
   , initSelector
-  , passwordSelector
-  , setPasswordSelector
-  , supportedRadioTechnologiesSelector
-  , setSupportedRadioTechnologiesSelector
   , manufacturerIdentifierSelector
-  , setManufacturerIdentifierSelector
+  , passwordSelector
   , provisioningTemplateIdentifierSelector
+  , setManufacturerIdentifierSelector
+  , setPasswordSelector
   , setProvisioningTemplateIdentifierSelector
+  , setSupportedRadioTechnologiesSelector
+  , supportedRadioTechnologiesSelector
 
   -- * Enum types
   , PKRadioTechnology(PKRadioTechnology)
@@ -34,15 +35,11 @@ module ObjC.PassKit.PKAddCarKeyPassConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,89 +49,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPKAddCarKeyPassConfiguration pkAddCarKeyPassConfiguration => pkAddCarKeyPassConfiguration -> IO (Id PKAddCarKeyPassConfiguration)
-init_ pkAddCarKeyPassConfiguration  =
-    sendMsg pkAddCarKeyPassConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkAddCarKeyPassConfiguration =
+  sendOwnedMessage pkAddCarKeyPassConfiguration initSelector
 
 -- | @- password@
 password :: IsPKAddCarKeyPassConfiguration pkAddCarKeyPassConfiguration => pkAddCarKeyPassConfiguration -> IO (Id NSString)
-password pkAddCarKeyPassConfiguration  =
-    sendMsg pkAddCarKeyPassConfiguration (mkSelector "password") (retPtr retVoid) [] >>= retainedObject . castPtr
+password pkAddCarKeyPassConfiguration =
+  sendMessage pkAddCarKeyPassConfiguration passwordSelector
 
 -- | @- setPassword:@
 setPassword :: (IsPKAddCarKeyPassConfiguration pkAddCarKeyPassConfiguration, IsNSString value) => pkAddCarKeyPassConfiguration -> value -> IO ()
-setPassword pkAddCarKeyPassConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddCarKeyPassConfiguration (mkSelector "setPassword:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPassword pkAddCarKeyPassConfiguration value =
+  sendMessage pkAddCarKeyPassConfiguration setPasswordSelector (toNSString value)
 
 -- | @- supportedRadioTechnologies@
 supportedRadioTechnologies :: IsPKAddCarKeyPassConfiguration pkAddCarKeyPassConfiguration => pkAddCarKeyPassConfiguration -> IO PKRadioTechnology
-supportedRadioTechnologies pkAddCarKeyPassConfiguration  =
-    fmap (coerce :: CULong -> PKRadioTechnology) $ sendMsg pkAddCarKeyPassConfiguration (mkSelector "supportedRadioTechnologies") retCULong []
+supportedRadioTechnologies pkAddCarKeyPassConfiguration =
+  sendMessage pkAddCarKeyPassConfiguration supportedRadioTechnologiesSelector
 
 -- | @- setSupportedRadioTechnologies:@
 setSupportedRadioTechnologies :: IsPKAddCarKeyPassConfiguration pkAddCarKeyPassConfiguration => pkAddCarKeyPassConfiguration -> PKRadioTechnology -> IO ()
-setSupportedRadioTechnologies pkAddCarKeyPassConfiguration  value =
-    sendMsg pkAddCarKeyPassConfiguration (mkSelector "setSupportedRadioTechnologies:") retVoid [argCULong (coerce value)]
+setSupportedRadioTechnologies pkAddCarKeyPassConfiguration value =
+  sendMessage pkAddCarKeyPassConfiguration setSupportedRadioTechnologiesSelector value
 
 -- | @- manufacturerIdentifier@
 manufacturerIdentifier :: IsPKAddCarKeyPassConfiguration pkAddCarKeyPassConfiguration => pkAddCarKeyPassConfiguration -> IO (Id NSString)
-manufacturerIdentifier pkAddCarKeyPassConfiguration  =
-    sendMsg pkAddCarKeyPassConfiguration (mkSelector "manufacturerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+manufacturerIdentifier pkAddCarKeyPassConfiguration =
+  sendMessage pkAddCarKeyPassConfiguration manufacturerIdentifierSelector
 
 -- | @- setManufacturerIdentifier:@
 setManufacturerIdentifier :: (IsPKAddCarKeyPassConfiguration pkAddCarKeyPassConfiguration, IsNSString value) => pkAddCarKeyPassConfiguration -> value -> IO ()
-setManufacturerIdentifier pkAddCarKeyPassConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddCarKeyPassConfiguration (mkSelector "setManufacturerIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setManufacturerIdentifier pkAddCarKeyPassConfiguration value =
+  sendMessage pkAddCarKeyPassConfiguration setManufacturerIdentifierSelector (toNSString value)
 
 -- | @- provisioningTemplateIdentifier@
 provisioningTemplateIdentifier :: IsPKAddCarKeyPassConfiguration pkAddCarKeyPassConfiguration => pkAddCarKeyPassConfiguration -> IO (Id NSString)
-provisioningTemplateIdentifier pkAddCarKeyPassConfiguration  =
-    sendMsg pkAddCarKeyPassConfiguration (mkSelector "provisioningTemplateIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+provisioningTemplateIdentifier pkAddCarKeyPassConfiguration =
+  sendMessage pkAddCarKeyPassConfiguration provisioningTemplateIdentifierSelector
 
 -- | @- setProvisioningTemplateIdentifier:@
 setProvisioningTemplateIdentifier :: (IsPKAddCarKeyPassConfiguration pkAddCarKeyPassConfiguration, IsNSString value) => pkAddCarKeyPassConfiguration -> value -> IO ()
-setProvisioningTemplateIdentifier pkAddCarKeyPassConfiguration  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkAddCarKeyPassConfiguration (mkSelector "setProvisioningTemplateIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProvisioningTemplateIdentifier pkAddCarKeyPassConfiguration value =
+  sendMessage pkAddCarKeyPassConfiguration setProvisioningTemplateIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKAddCarKeyPassConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @password@
-passwordSelector :: Selector
+passwordSelector :: Selector '[] (Id NSString)
 passwordSelector = mkSelector "password"
 
 -- | @Selector@ for @setPassword:@
-setPasswordSelector :: Selector
+setPasswordSelector :: Selector '[Id NSString] ()
 setPasswordSelector = mkSelector "setPassword:"
 
 -- | @Selector@ for @supportedRadioTechnologies@
-supportedRadioTechnologiesSelector :: Selector
+supportedRadioTechnologiesSelector :: Selector '[] PKRadioTechnology
 supportedRadioTechnologiesSelector = mkSelector "supportedRadioTechnologies"
 
 -- | @Selector@ for @setSupportedRadioTechnologies:@
-setSupportedRadioTechnologiesSelector :: Selector
+setSupportedRadioTechnologiesSelector :: Selector '[PKRadioTechnology] ()
 setSupportedRadioTechnologiesSelector = mkSelector "setSupportedRadioTechnologies:"
 
 -- | @Selector@ for @manufacturerIdentifier@
-manufacturerIdentifierSelector :: Selector
+manufacturerIdentifierSelector :: Selector '[] (Id NSString)
 manufacturerIdentifierSelector = mkSelector "manufacturerIdentifier"
 
 -- | @Selector@ for @setManufacturerIdentifier:@
-setManufacturerIdentifierSelector :: Selector
+setManufacturerIdentifierSelector :: Selector '[Id NSString] ()
 setManufacturerIdentifierSelector = mkSelector "setManufacturerIdentifier:"
 
 -- | @Selector@ for @provisioningTemplateIdentifier@
-provisioningTemplateIdentifierSelector :: Selector
+provisioningTemplateIdentifierSelector :: Selector '[] (Id NSString)
 provisioningTemplateIdentifierSelector = mkSelector "provisioningTemplateIdentifier"
 
 -- | @Selector@ for @setProvisioningTemplateIdentifier:@
-setProvisioningTemplateIdentifierSelector :: Selector
+setProvisioningTemplateIdentifierSelector :: Selector '[Id NSString] ()
 setProvisioningTemplateIdentifierSelector = mkSelector "setProvisioningTemplateIdentifier:"
 

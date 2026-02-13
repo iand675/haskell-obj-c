@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.StoreKit.SKOverlayConfiguration
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,25 +28,25 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSKOverlayConfiguration skOverlayConfiguration => skOverlayConfiguration -> IO (Id SKOverlayConfiguration)
-init_ skOverlayConfiguration  =
-    sendMsg skOverlayConfiguration (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ skOverlayConfiguration =
+  sendOwnedMessage skOverlayConfiguration initSelector
 
 -- | @+ new@
 new :: IO (Id SKOverlayConfiguration)
 new  =
   do
     cls' <- getRequiredClass "SKOverlayConfiguration"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SKOverlayConfiguration)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SKOverlayConfiguration)
 newSelector = mkSelector "new"
 

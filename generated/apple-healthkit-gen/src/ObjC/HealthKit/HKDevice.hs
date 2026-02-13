@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.HealthKit.HKDevice
   , softwareVersion
   , localIdentifier
   , udiDeviceIdentifier
-  , initWithName_manufacturer_model_hardwareVersion_firmwareVersion_softwareVersion_localIdentifier_UDIDeviceIdentifierSelector
+  , firmwareVersionSelector
+  , hardwareVersionSelector
   , initSelector
+  , initWithName_manufacturer_model_hardwareVersion_firmwareVersion_softwareVersion_localIdentifier_UDIDeviceIdentifierSelector
   , localDeviceSelector
-  , nameSelector
+  , localIdentifierSelector
   , manufacturerSelector
   , modelSelector
-  , hardwareVersionSelector
-  , firmwareVersionSelector
+  , nameSelector
   , softwareVersionSelector
-  , localIdentifierSelector
   , udiDeviceIdentifierSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,21 +52,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithName:manufacturer:model:hardwareVersion:firmwareVersion:softwareVersion:localIdentifier:UDIDeviceIdentifier:@
 initWithName_manufacturer_model_hardwareVersion_firmwareVersion_softwareVersion_localIdentifier_UDIDeviceIdentifier :: (IsHKDevice hkDevice, IsNSString name, IsNSString manufacturer, IsNSString model, IsNSString hardwareVersion, IsNSString firmwareVersion, IsNSString softwareVersion, IsNSString localIdentifier, IsNSString udiDeviceIdentifier) => hkDevice -> name -> manufacturer -> model -> hardwareVersion -> firmwareVersion -> softwareVersion -> localIdentifier -> udiDeviceIdentifier -> IO (Id HKDevice)
-initWithName_manufacturer_model_hardwareVersion_firmwareVersion_softwareVersion_localIdentifier_UDIDeviceIdentifier hkDevice  name manufacturer model hardwareVersion firmwareVersion softwareVersion localIdentifier udiDeviceIdentifier =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr manufacturer $ \raw_manufacturer ->
-      withObjCPtr model $ \raw_model ->
-        withObjCPtr hardwareVersion $ \raw_hardwareVersion ->
-          withObjCPtr firmwareVersion $ \raw_firmwareVersion ->
-            withObjCPtr softwareVersion $ \raw_softwareVersion ->
-              withObjCPtr localIdentifier $ \raw_localIdentifier ->
-                withObjCPtr udiDeviceIdentifier $ \raw_udiDeviceIdentifier ->
-                    sendMsg hkDevice (mkSelector "initWithName:manufacturer:model:hardwareVersion:firmwareVersion:softwareVersion:localIdentifier:UDIDeviceIdentifier:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_manufacturer :: Ptr ()), argPtr (castPtr raw_model :: Ptr ()), argPtr (castPtr raw_hardwareVersion :: Ptr ()), argPtr (castPtr raw_firmwareVersion :: Ptr ()), argPtr (castPtr raw_softwareVersion :: Ptr ()), argPtr (castPtr raw_localIdentifier :: Ptr ()), argPtr (castPtr raw_udiDeviceIdentifier :: Ptr ())] >>= ownedObject . castPtr
+initWithName_manufacturer_model_hardwareVersion_firmwareVersion_softwareVersion_localIdentifier_UDIDeviceIdentifier hkDevice name manufacturer model hardwareVersion firmwareVersion softwareVersion localIdentifier udiDeviceIdentifier =
+  sendOwnedMessage hkDevice initWithName_manufacturer_model_hardwareVersion_firmwareVersion_softwareVersion_localIdentifier_UDIDeviceIdentifierSelector (toNSString name) (toNSString manufacturer) (toNSString model) (toNSString hardwareVersion) (toNSString firmwareVersion) (toNSString softwareVersion) (toNSString localIdentifier) (toNSString udiDeviceIdentifier)
 
 -- | @- init@
 init_ :: IsHKDevice hkDevice => hkDevice -> IO (Id HKDevice)
-init_ hkDevice  =
-    sendMsg hkDevice (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkDevice =
+  sendOwnedMessage hkDevice initSelector
 
 -- | localDevice
 --
@@ -82,7 +71,7 @@ localDevice :: IO (Id HKDevice)
 localDevice  =
   do
     cls' <- getRequiredClass "HKDevice"
-    sendClassMsg cls' (mkSelector "localDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' localDeviceSelector
 
 -- | name
 --
@@ -92,8 +81,8 @@ localDevice  =
 --
 -- ObjC selector: @- name@
 name :: IsHKDevice hkDevice => hkDevice -> IO (Id NSString)
-name hkDevice  =
-    sendMsg hkDevice (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name hkDevice =
+  sendMessage hkDevice nameSelector
 
 -- | manufacturer
 --
@@ -101,8 +90,8 @@ name hkDevice  =
 --
 -- ObjC selector: @- manufacturer@
 manufacturer :: IsHKDevice hkDevice => hkDevice -> IO (Id NSString)
-manufacturer hkDevice  =
-    sendMsg hkDevice (mkSelector "manufacturer") (retPtr retVoid) [] >>= retainedObject . castPtr
+manufacturer hkDevice =
+  sendMessage hkDevice manufacturerSelector
 
 -- | model
 --
@@ -110,8 +99,8 @@ manufacturer hkDevice  =
 --
 -- ObjC selector: @- model@
 model :: IsHKDevice hkDevice => hkDevice -> IO (Id NSString)
-model hkDevice  =
-    sendMsg hkDevice (mkSelector "model") (retPtr retVoid) [] >>= retainedObject . castPtr
+model hkDevice =
+  sendMessage hkDevice modelSelector
 
 -- | hardwareVersion
 --
@@ -119,8 +108,8 @@ model hkDevice  =
 --
 -- ObjC selector: @- hardwareVersion@
 hardwareVersion :: IsHKDevice hkDevice => hkDevice -> IO (Id NSString)
-hardwareVersion hkDevice  =
-    sendMsg hkDevice (mkSelector "hardwareVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+hardwareVersion hkDevice =
+  sendMessage hkDevice hardwareVersionSelector
 
 -- | firmwareVersion
 --
@@ -128,8 +117,8 @@ hardwareVersion hkDevice  =
 --
 -- ObjC selector: @- firmwareVersion@
 firmwareVersion :: IsHKDevice hkDevice => hkDevice -> IO (Id NSString)
-firmwareVersion hkDevice  =
-    sendMsg hkDevice (mkSelector "firmwareVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+firmwareVersion hkDevice =
+  sendMessage hkDevice firmwareVersionSelector
 
 -- | softwareVersion
 --
@@ -137,8 +126,8 @@ firmwareVersion hkDevice  =
 --
 -- ObjC selector: @- softwareVersion@
 softwareVersion :: IsHKDevice hkDevice => hkDevice -> IO (Id NSString)
-softwareVersion hkDevice  =
-    sendMsg hkDevice (mkSelector "softwareVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+softwareVersion hkDevice =
+  sendMessage hkDevice softwareVersionSelector
 
 -- | localIdentifier
 --
@@ -148,8 +137,8 @@ softwareVersion hkDevice  =
 --
 -- ObjC selector: @- localIdentifier@
 localIdentifier :: IsHKDevice hkDevice => hkDevice -> IO (Id NSString)
-localIdentifier hkDevice  =
-    sendMsg hkDevice (mkSelector "localIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+localIdentifier hkDevice =
+  sendMessage hkDevice localIdentifierSelector
 
 -- | UDIDeviceIdentifier
 --
@@ -159,54 +148,54 @@ localIdentifier hkDevice  =
 --
 -- ObjC selector: @- UDIDeviceIdentifier@
 udiDeviceIdentifier :: IsHKDevice hkDevice => hkDevice -> IO (Id NSString)
-udiDeviceIdentifier hkDevice  =
-    sendMsg hkDevice (mkSelector "UDIDeviceIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+udiDeviceIdentifier hkDevice =
+  sendMessage hkDevice udiDeviceIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithName:manufacturer:model:hardwareVersion:firmwareVersion:softwareVersion:localIdentifier:UDIDeviceIdentifier:@
-initWithName_manufacturer_model_hardwareVersion_firmwareVersion_softwareVersion_localIdentifier_UDIDeviceIdentifierSelector :: Selector
+initWithName_manufacturer_model_hardwareVersion_firmwareVersion_softwareVersion_localIdentifier_UDIDeviceIdentifierSelector :: Selector '[Id NSString, Id NSString, Id NSString, Id NSString, Id NSString, Id NSString, Id NSString, Id NSString] (Id HKDevice)
 initWithName_manufacturer_model_hardwareVersion_firmwareVersion_softwareVersion_localIdentifier_UDIDeviceIdentifierSelector = mkSelector "initWithName:manufacturer:model:hardwareVersion:firmwareVersion:softwareVersion:localIdentifier:UDIDeviceIdentifier:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKDevice)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @localDevice@
-localDeviceSelector :: Selector
+localDeviceSelector :: Selector '[] (Id HKDevice)
 localDeviceSelector = mkSelector "localDevice"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @manufacturer@
-manufacturerSelector :: Selector
+manufacturerSelector :: Selector '[] (Id NSString)
 manufacturerSelector = mkSelector "manufacturer"
 
 -- | @Selector@ for @model@
-modelSelector :: Selector
+modelSelector :: Selector '[] (Id NSString)
 modelSelector = mkSelector "model"
 
 -- | @Selector@ for @hardwareVersion@
-hardwareVersionSelector :: Selector
+hardwareVersionSelector :: Selector '[] (Id NSString)
 hardwareVersionSelector = mkSelector "hardwareVersion"
 
 -- | @Selector@ for @firmwareVersion@
-firmwareVersionSelector :: Selector
+firmwareVersionSelector :: Selector '[] (Id NSString)
 firmwareVersionSelector = mkSelector "firmwareVersion"
 
 -- | @Selector@ for @softwareVersion@
-softwareVersionSelector :: Selector
+softwareVersionSelector :: Selector '[] (Id NSString)
 softwareVersionSelector = mkSelector "softwareVersion"
 
 -- | @Selector@ for @localIdentifier@
-localIdentifierSelector :: Selector
+localIdentifierSelector :: Selector '[] (Id NSString)
 localIdentifierSelector = mkSelector "localIdentifier"
 
 -- | @Selector@ for @UDIDeviceIdentifier@
-udiDeviceIdentifierSelector :: Selector
+udiDeviceIdentifierSelector :: Selector '[] (Id NSString)
 udiDeviceIdentifierSelector = mkSelector "UDIDeviceIdentifier"
 

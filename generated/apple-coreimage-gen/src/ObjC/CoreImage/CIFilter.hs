@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -35,44 +36,40 @@ module ObjC.CoreImage.CIFilter
   , inputKeys
   , outputKeys
   , attributes
-  , nameSelector
-  , setNameSelector
-  , setDefaultsSelector
-  , apply_arguments_optionsSelector
   , applySelector
-  , filterWithImageURL_optionsSelector
-  , filterWithImageData_optionsSelector
+  , apply_arguments_optionsSelector
+  , attributesSelector
+  , enabledSelector
+  , filterNamesInCategoriesSelector
+  , filterNamesInCategorySelector
   , filterWithCVPixelBuffer_properties_optionsSelector
-  , supportedRawCameraModelsSelector
+  , filterWithImageData_optionsSelector
+  , filterWithImageURL_optionsSelector
   , filterWithNameSelector
   , filterWithName_keysAndValuesSelector
   , filterWithName_withInputParametersSelector
-  , filterNamesInCategorySelector
-  , filterNamesInCategoriesSelector
-  , registerFilterName_constructor_classAttributesSelector
-  , localizedNameForFilterNameSelector
-  , localizedNameForCategorySelector
-  , localizedDescriptionForFilterNameSelector
-  , localizedReferenceDocumentationForFilterNameSelector
-  , outputImageSelector
-  , enabledSelector
-  , setEnabledSelector
   , inputKeysSelector
+  , localizedDescriptionForFilterNameSelector
+  , localizedNameForCategorySelector
+  , localizedNameForFilterNameSelector
+  , localizedReferenceDocumentationForFilterNameSelector
+  , nameSelector
+  , outputImageSelector
   , outputKeysSelector
-  , attributesSelector
+  , registerFilterName_constructor_classAttributesSelector
+  , setDefaultsSelector
+  , setEnabledSelector
+  , setNameSelector
+  , supportedRawCameraModelsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,21 +78,20 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- name@
 name :: IsCIFilter ciFilter => ciFilter -> IO (Id NSString)
-name ciFilter  =
-    sendMsg ciFilter (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name ciFilter =
+  sendMessage ciFilter nameSelector
 
 -- | @- setName:@
 setName :: (IsCIFilter ciFilter, IsNSString aString) => ciFilter -> aString -> IO ()
-setName ciFilter  aString =
-  withObjCPtr aString $ \raw_aString ->
-      sendMsg ciFilter (mkSelector "setName:") retVoid [argPtr (castPtr raw_aString :: Ptr ())]
+setName ciFilter aString =
+  sendMessage ciFilter setNameSelector (toNSString aString)
 
 -- | Sets all inputs to their default values (where default values are defined, other inputs are left as-is).
 --
 -- ObjC selector: @- setDefaults@
 setDefaults :: IsCIFilter ciFilter => ciFilter -> IO ()
-setDefaults ciFilter  =
-    sendMsg ciFilter (mkSelector "setDefaults") retVoid []
+setDefaults ciFilter =
+  sendMessage ciFilter setDefaultsSelector
 
 -- | Used by CIFilter subclasses to apply the array of argument values 'args' to the kernel function 'k'. The supplied arguments must be type-compatible with the function signature of the kernel.
 --
@@ -109,19 +105,15 @@ setDefaults ciFilter  =
 --
 -- ObjC selector: @- apply:arguments:options:@
 apply_arguments_options :: (IsCIFilter ciFilter, IsCIKernel k, IsNSArray args, IsNSDictionary dict) => ciFilter -> k -> args -> dict -> IO (Id CIImage)
-apply_arguments_options ciFilter  k args dict =
-  withObjCPtr k $ \raw_k ->
-    withObjCPtr args $ \raw_args ->
-      withObjCPtr dict $ \raw_dict ->
-          sendMsg ciFilter (mkSelector "apply:arguments:options:") (retPtr retVoid) [argPtr (castPtr raw_k :: Ptr ()), argPtr (castPtr raw_args :: Ptr ()), argPtr (castPtr raw_dict :: Ptr ())] >>= retainedObject . castPtr
+apply_arguments_options ciFilter k args dict =
+  sendMessage ciFilter apply_arguments_optionsSelector (toCIKernel k) (toNSArray args) (toNSDictionary dict)
 
 -- | Similar to above except that all argument values and option key-value are specified inline. The list of key-value pairs must be terminated by the 'nil' object.
 --
 -- ObjC selector: @- apply:@
 apply :: (IsCIFilter ciFilter, IsCIKernel k) => ciFilter -> k -> IO (Id CIImage)
-apply ciFilter  k =
-  withObjCPtr k $ \raw_k ->
-      sendMsg ciFilter (mkSelector "apply:") (retPtr retVoid) [argPtr (castPtr raw_k :: Ptr ())] >>= retainedObject . castPtr
+apply ciFilter k =
+  sendMessage ciFilter applySelector (toCIKernel k)
 
 -- | Returns a CIFilter that will in turn return a properly processed CIImage as "outputImage".
 --
@@ -130,9 +122,7 @@ filterWithImageURL_options :: (IsNSURL url, IsNSDictionary options) => url -> op
 filterWithImageURL_options url options =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "filterWithImageURL:options:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterWithImageURL_optionsSelector (toNSURL url) (toNSDictionary options)
 
 -- | Returns a CIFilter that will in turn return a properly processed CIImage as "outputImage".
 --
@@ -143,9 +133,7 @@ filterWithImageData_options :: (IsNSData data_, IsNSDictionary options) => data_
 filterWithImageData_options data_ options =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr data_ $ \raw_data_ ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "filterWithImageData:options:") (retPtr retVoid) [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterWithImageData_optionsSelector (toNSData data_) (toNSDictionary options)
 
 -- | Returns a CIFilter that will in turn return a properly processed CIImage as "outputImage".
 --
@@ -156,9 +144,7 @@ filterWithCVPixelBuffer_properties_options :: (IsNSDictionary properties, IsNSDi
 filterWithCVPixelBuffer_properties_options pixelBuffer properties options =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr properties $ \raw_properties ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "filterWithCVPixelBuffer:properties:options:") (retPtr retVoid) [argPtr pixelBuffer, argPtr (castPtr raw_properties :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterWithCVPixelBuffer_properties_optionsSelector pixelBuffer (toNSDictionary properties) (toNSDictionary options)
 
 -- | Returns a NSArray containing the names of all supported RAW cameras.
 --
@@ -167,7 +153,7 @@ supportedRawCameraModels :: IO (Id NSArray)
 supportedRawCameraModels  =
   do
     cls' <- getRequiredClass "CIFilter"
-    sendClassMsg cls' (mkSelector "supportedRawCameraModels") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' supportedRawCameraModelsSelector
 
 -- | Creates a new filter of type 'name'. On OSX, all input values will be undefined. On iOS, all input values will be set to default values.
 --
@@ -176,8 +162,7 @@ filterWithName :: IsNSString name => name -> IO (Id CIFilter)
 filterWithName name =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "filterWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterWithNameSelector (toNSString name)
 
 -- | Creates a new filter of type 'name'. The filter's input parameters are set from the list of key-value pairs which must be nil-terminated. On OSX, any of the filter input parameters not specified in the list will be undefined. On iOS, any of the filter input parameters not specified in the list will be set to default values.
 --
@@ -186,8 +171,7 @@ filterWithName_keysAndValues :: IsNSString name => name -> RawId -> IO (Id CIFil
 filterWithName_keysAndValues name key0 =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "filterWithName:keysAndValues:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId key0) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterWithName_keysAndValuesSelector (toNSString name) key0
 
 -- | Creates a new filter of type 'name'. The filter's input parameters are set from the dictionary of key-value pairs. On OSX, any of the filter input parameters not specified in the dictionary will be undefined. On iOS, any of the filter input parameters not specified in the dictionary will be set to default values.
 --
@@ -196,9 +180,7 @@ filterWithName_withInputParameters :: (IsNSString name, IsNSDictionary params) =
 filterWithName_withInputParameters name params =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr params $ \raw_params ->
-        sendClassMsg cls' (mkSelector "filterWithName:withInputParameters:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterWithName_withInputParametersSelector (toNSString name) (toNSDictionary params)
 
 -- | Returns an array containing all published filter names in a category.
 --
@@ -207,8 +189,7 @@ filterNamesInCategory :: IsNSString category => category -> IO (Id NSArray)
 filterNamesInCategory category =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr category $ \raw_category ->
-      sendClassMsg cls' (mkSelector "filterNamesInCategory:") (retPtr retVoid) [argPtr (castPtr raw_category :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterNamesInCategorySelector (toNSString category)
 
 -- | Returns an array containing all published filter names that belong to all listed categories.
 --
@@ -217,8 +198,7 @@ filterNamesInCategories :: IsNSArray categories => categories -> IO (Id NSArray)
 filterNamesInCategories categories =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr categories $ \raw_categories ->
-      sendClassMsg cls' (mkSelector "filterNamesInCategories:") (retPtr retVoid) [argPtr (castPtr raw_categories :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' filterNamesInCategoriesSelector (toNSArray categories)
 
 -- | Publishes a new filter called 'name'.
 --
@@ -231,9 +211,7 @@ registerFilterName_constructor_classAttributes :: (IsNSString name, IsNSDictiona
 registerFilterName_constructor_classAttributes name anObject attributes =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr name $ \raw_name ->
-      withObjCPtr attributes $ \raw_attributes ->
-        sendClassMsg cls' (mkSelector "registerFilterName:constructor:classAttributes:") retVoid [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr (unRawId anObject) :: Ptr ()), argPtr (castPtr raw_attributes :: Ptr ())]
+    sendClassMessage cls' registerFilterName_constructor_classAttributesSelector (toNSString name) anObject (toNSDictionary attributes)
 
 -- | Returns the localized name of a filter for display in the UI.
 --
@@ -242,8 +220,7 @@ localizedNameForFilterName :: IsNSString filterName => filterName -> IO (Id NSSt
 localizedNameForFilterName filterName =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr filterName $ \raw_filterName ->
-      sendClassMsg cls' (mkSelector "localizedNameForFilterName:") (retPtr retVoid) [argPtr (castPtr raw_filterName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedNameForFilterNameSelector (toNSString filterName)
 
 -- | Returns the localized name of a category for display in the UI.
 --
@@ -252,8 +229,7 @@ localizedNameForCategory :: IsNSString category => category -> IO (Id NSString)
 localizedNameForCategory category =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr category $ \raw_category ->
-      sendClassMsg cls' (mkSelector "localizedNameForCategory:") (retPtr retVoid) [argPtr (castPtr raw_category :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedNameForCategorySelector (toNSString category)
 
 -- | Returns the localized description of a filter for display in the UI.
 --
@@ -262,8 +238,7 @@ localizedDescriptionForFilterName :: IsNSString filterName => filterName -> IO (
 localizedDescriptionForFilterName filterName =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr filterName $ \raw_filterName ->
-      sendClassMsg cls' (mkSelector "localizedDescriptionForFilterName:") (retPtr retVoid) [argPtr (castPtr raw_filterName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedDescriptionForFilterNameSelector (toNSString filterName)
 
 -- | Returns the URL to the localized reference documentation describing the filter.
 --
@@ -274,146 +249,145 @@ localizedReferenceDocumentationForFilterName :: IsNSString filterName => filterN
 localizedReferenceDocumentationForFilterName filterName =
   do
     cls' <- getRequiredClass "CIFilter"
-    withObjCPtr filterName $ \raw_filterName ->
-      sendClassMsg cls' (mkSelector "localizedReferenceDocumentationForFilterName:") (retPtr retVoid) [argPtr (castPtr raw_filterName :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localizedReferenceDocumentationForFilterNameSelector (toNSString filterName)
 
 -- | @- outputImage@
 outputImage :: IsCIFilter ciFilter => ciFilter -> IO RawId
-outputImage ciFilter  =
-    fmap (RawId . castPtr) $ sendMsg ciFilter (mkSelector "outputImage") (retPtr retVoid) []
+outputImage ciFilter =
+  sendMessage ciFilter outputImageSelector
 
 -- | @- enabled@
 enabled :: IsCIFilter ciFilter => ciFilter -> IO Bool
-enabled ciFilter  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg ciFilter (mkSelector "enabled") retCULong []
+enabled ciFilter =
+  sendMessage ciFilter enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsCIFilter ciFilter => ciFilter -> Bool -> IO ()
-setEnabled ciFilter  value =
-    sendMsg ciFilter (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled ciFilter value =
+  sendMessage ciFilter setEnabledSelector value
 
 -- | Returns an array containing the names of all inputs in the filter.
 --
 -- ObjC selector: @- inputKeys@
 inputKeys :: IsCIFilter ciFilter => ciFilter -> IO (Id NSArray)
-inputKeys ciFilter  =
-    sendMsg ciFilter (mkSelector "inputKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputKeys ciFilter =
+  sendMessage ciFilter inputKeysSelector
 
 -- | Returns an array containing the names of all outputs in the filter.
 --
 -- ObjC selector: @- outputKeys@
 outputKeys :: IsCIFilter ciFilter => ciFilter -> IO (Id NSArray)
-outputKeys ciFilter  =
-    sendMsg ciFilter (mkSelector "outputKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputKeys ciFilter =
+  sendMessage ciFilter outputKeysSelector
 
 -- | Returns a dictionary containing key/value pairs describing the filter. (see description of keys below)
 --
 -- ObjC selector: @- attributes@
 attributes :: IsCIFilter ciFilter => ciFilter -> IO (Id NSDictionary)
-attributes ciFilter  =
-    sendMsg ciFilter (mkSelector "attributes") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributes ciFilter =
+  sendMessage ciFilter attributesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @setDefaults@
-setDefaultsSelector :: Selector
+setDefaultsSelector :: Selector '[] ()
 setDefaultsSelector = mkSelector "setDefaults"
 
 -- | @Selector@ for @apply:arguments:options:@
-apply_arguments_optionsSelector :: Selector
+apply_arguments_optionsSelector :: Selector '[Id CIKernel, Id NSArray, Id NSDictionary] (Id CIImage)
 apply_arguments_optionsSelector = mkSelector "apply:arguments:options:"
 
 -- | @Selector@ for @apply:@
-applySelector :: Selector
+applySelector :: Selector '[Id CIKernel] (Id CIImage)
 applySelector = mkSelector "apply:"
 
 -- | @Selector@ for @filterWithImageURL:options:@
-filterWithImageURL_optionsSelector :: Selector
+filterWithImageURL_optionsSelector :: Selector '[Id NSURL, Id NSDictionary] (Id CIFilter)
 filterWithImageURL_optionsSelector = mkSelector "filterWithImageURL:options:"
 
 -- | @Selector@ for @filterWithImageData:options:@
-filterWithImageData_optionsSelector :: Selector
+filterWithImageData_optionsSelector :: Selector '[Id NSData, Id NSDictionary] (Id CIFilter)
 filterWithImageData_optionsSelector = mkSelector "filterWithImageData:options:"
 
 -- | @Selector@ for @filterWithCVPixelBuffer:properties:options:@
-filterWithCVPixelBuffer_properties_optionsSelector :: Selector
+filterWithCVPixelBuffer_properties_optionsSelector :: Selector '[Ptr (), Id NSDictionary, Id NSDictionary] (Id CIFilter)
 filterWithCVPixelBuffer_properties_optionsSelector = mkSelector "filterWithCVPixelBuffer:properties:options:"
 
 -- | @Selector@ for @supportedRawCameraModels@
-supportedRawCameraModelsSelector :: Selector
+supportedRawCameraModelsSelector :: Selector '[] (Id NSArray)
 supportedRawCameraModelsSelector = mkSelector "supportedRawCameraModels"
 
 -- | @Selector@ for @filterWithName:@
-filterWithNameSelector :: Selector
+filterWithNameSelector :: Selector '[Id NSString] (Id CIFilter)
 filterWithNameSelector = mkSelector "filterWithName:"
 
 -- | @Selector@ for @filterWithName:keysAndValues:@
-filterWithName_keysAndValuesSelector :: Selector
+filterWithName_keysAndValuesSelector :: Selector '[Id NSString, RawId] (Id CIFilter)
 filterWithName_keysAndValuesSelector = mkSelector "filterWithName:keysAndValues:"
 
 -- | @Selector@ for @filterWithName:withInputParameters:@
-filterWithName_withInputParametersSelector :: Selector
+filterWithName_withInputParametersSelector :: Selector '[Id NSString, Id NSDictionary] (Id CIFilter)
 filterWithName_withInputParametersSelector = mkSelector "filterWithName:withInputParameters:"
 
 -- | @Selector@ for @filterNamesInCategory:@
-filterNamesInCategorySelector :: Selector
+filterNamesInCategorySelector :: Selector '[Id NSString] (Id NSArray)
 filterNamesInCategorySelector = mkSelector "filterNamesInCategory:"
 
 -- | @Selector@ for @filterNamesInCategories:@
-filterNamesInCategoriesSelector :: Selector
+filterNamesInCategoriesSelector :: Selector '[Id NSArray] (Id NSArray)
 filterNamesInCategoriesSelector = mkSelector "filterNamesInCategories:"
 
 -- | @Selector@ for @registerFilterName:constructor:classAttributes:@
-registerFilterName_constructor_classAttributesSelector :: Selector
+registerFilterName_constructor_classAttributesSelector :: Selector '[Id NSString, RawId, Id NSDictionary] ()
 registerFilterName_constructor_classAttributesSelector = mkSelector "registerFilterName:constructor:classAttributes:"
 
 -- | @Selector@ for @localizedNameForFilterName:@
-localizedNameForFilterNameSelector :: Selector
+localizedNameForFilterNameSelector :: Selector '[Id NSString] (Id NSString)
 localizedNameForFilterNameSelector = mkSelector "localizedNameForFilterName:"
 
 -- | @Selector@ for @localizedNameForCategory:@
-localizedNameForCategorySelector :: Selector
+localizedNameForCategorySelector :: Selector '[Id NSString] (Id NSString)
 localizedNameForCategorySelector = mkSelector "localizedNameForCategory:"
 
 -- | @Selector@ for @localizedDescriptionForFilterName:@
-localizedDescriptionForFilterNameSelector :: Selector
+localizedDescriptionForFilterNameSelector :: Selector '[Id NSString] (Id NSString)
 localizedDescriptionForFilterNameSelector = mkSelector "localizedDescriptionForFilterName:"
 
 -- | @Selector@ for @localizedReferenceDocumentationForFilterName:@
-localizedReferenceDocumentationForFilterNameSelector :: Selector
+localizedReferenceDocumentationForFilterNameSelector :: Selector '[Id NSString] (Id NSURL)
 localizedReferenceDocumentationForFilterNameSelector = mkSelector "localizedReferenceDocumentationForFilterName:"
 
 -- | @Selector@ for @outputImage@
-outputImageSelector :: Selector
+outputImageSelector :: Selector '[] RawId
 outputImageSelector = mkSelector "outputImage"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @inputKeys@
-inputKeysSelector :: Selector
+inputKeysSelector :: Selector '[] (Id NSArray)
 inputKeysSelector = mkSelector "inputKeys"
 
 -- | @Selector@ for @outputKeys@
-outputKeysSelector :: Selector
+outputKeysSelector :: Selector '[] (Id NSArray)
 outputKeysSelector = mkSelector "outputKeys"
 
 -- | @Selector@ for @attributes@
-attributesSelector :: Selector
+attributesSelector :: Selector '[] (Id NSDictionary)
 attributesSelector = mkSelector "attributes"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,15 +29,15 @@ module ObjC.MetalPerformanceShaders.MPSNNOptimizerStochasticGradientDescent
   , momentumScale
   , useNesterovMomentum
   , useNestrovMomentum
+  , encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputMomentumVectors_resultStateSelector
+  , encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultStateSelector
+  , encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomentumVectors_resultStateSelector
+  , encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_resultValuesMatrixSelector
+  , encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputMomentumVector_resultValuesVectorSelector
   , initWithDeviceSelector
   , initWithDevice_learningRateSelector
   , initWithDevice_momentumScale_useNesterovMomentum_optimizerDescriptorSelector
   , initWithDevice_momentumScale_useNestrovMomentum_optimizerDescriptorSelector
-  , encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputMomentumVector_resultValuesVectorSelector
-  , encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_resultValuesMatrixSelector
-  , encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomentumVectors_resultStateSelector
-  , encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultStateSelector
-  , encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputMomentumVectors_resultStateSelector
   , momentumScaleSelector
   , useNesterovMomentumSelector
   , useNestrovMomentumSelector
@@ -44,15 +45,11 @@ module ObjC.MetalPerformanceShaders.MPSNNOptimizerStochasticGradientDescent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,8 +58,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent => mpsnnOptimizerStochasticGradientDescent -> RawId -> IO (Id MPSNNOptimizerStochasticGradientDescent)
-initWithDevice mpsnnOptimizerStochasticGradientDescent  device =
-    sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnOptimizerStochasticGradientDescent device =
+  sendOwnedMessage mpsnnOptimizerStochasticGradientDescent initWithDeviceSelector device
 
 -- | Convenience initialization for the momentum update
 --
@@ -74,8 +71,8 @@ initWithDevice mpsnnOptimizerStochasticGradientDescent  device =
 --
 -- ObjC selector: @- initWithDevice:learningRate:@
 initWithDevice_learningRate :: IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent => mpsnnOptimizerStochasticGradientDescent -> RawId -> CFloat -> IO (Id MPSNNOptimizerStochasticGradientDescent)
-initWithDevice_learningRate mpsnnOptimizerStochasticGradientDescent  device learningRate =
-    sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "initWithDevice:learningRate:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat learningRate] >>= ownedObject . castPtr
+initWithDevice_learningRate mpsnnOptimizerStochasticGradientDescent device learningRate =
+  sendOwnedMessage mpsnnOptimizerStochasticGradientDescent initWithDevice_learningRateSelector device learningRate
 
 -- | Full initialization for the momentum update
 --
@@ -91,15 +88,13 @@ initWithDevice_learningRate mpsnnOptimizerStochasticGradientDescent  device lear
 --
 -- ObjC selector: @- initWithDevice:momentumScale:useNesterovMomentum:optimizerDescriptor:@
 initWithDevice_momentumScale_useNesterovMomentum_optimizerDescriptor :: (IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent, IsMPSNNOptimizerDescriptor optimizerDescriptor) => mpsnnOptimizerStochasticGradientDescent -> RawId -> CFloat -> Bool -> optimizerDescriptor -> IO (Id MPSNNOptimizerStochasticGradientDescent)
-initWithDevice_momentumScale_useNesterovMomentum_optimizerDescriptor mpsnnOptimizerStochasticGradientDescent  device momentumScale useNesterovMomentum optimizerDescriptor =
-  withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "initWithDevice:momentumScale:useNesterovMomentum:optimizerDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat momentumScale, argCULong (if useNesterovMomentum then 1 else 0), argPtr (castPtr raw_optimizerDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_momentumScale_useNesterovMomentum_optimizerDescriptor mpsnnOptimizerStochasticGradientDescent device momentumScale useNesterovMomentum optimizerDescriptor =
+  sendOwnedMessage mpsnnOptimizerStochasticGradientDescent initWithDevice_momentumScale_useNesterovMomentum_optimizerDescriptorSelector device momentumScale useNesterovMomentum (toMPSNNOptimizerDescriptor optimizerDescriptor)
 
 -- | @- initWithDevice:momentumScale:useNestrovMomentum:optimizerDescriptor:@
 initWithDevice_momentumScale_useNestrovMomentum_optimizerDescriptor :: (IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent, IsMPSNNOptimizerDescriptor optimizerDescriptor) => mpsnnOptimizerStochasticGradientDescent -> RawId -> CFloat -> Bool -> optimizerDescriptor -> IO (Id MPSNNOptimizerStochasticGradientDescent)
-initWithDevice_momentumScale_useNestrovMomentum_optimizerDescriptor mpsnnOptimizerStochasticGradientDescent  device momentumScale useNestrovMomentum optimizerDescriptor =
-  withObjCPtr optimizerDescriptor $ \raw_optimizerDescriptor ->
-      sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "initWithDevice:momentumScale:useNestrovMomentum:optimizerDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCFloat momentumScale, argCULong (if useNestrovMomentum then 1 else 0), argPtr (castPtr raw_optimizerDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_momentumScale_useNestrovMomentum_optimizerDescriptor mpsnnOptimizerStochasticGradientDescent device momentumScale useNestrovMomentum optimizerDescriptor =
+  sendOwnedMessage mpsnnOptimizerStochasticGradientDescent initWithDevice_momentumScale_useNestrovMomentum_optimizerDescriptorSelector device momentumScale useNestrovMomentum (toMPSNNOptimizerDescriptor optimizerDescriptor)
 
 -- | Encode an MPSNNOptimizerStochasticGradientDescent object to a command buffer to perform out of place update
 --
@@ -125,21 +120,13 @@ initWithDevice_momentumScale_useNestrovMomentum_optimizerDescriptor mpsnnOptimiz
 --
 -- ObjC selector: @- encodeToCommandBuffer:inputGradientVector:inputValuesVector:inputMomentumVector:resultValuesVector:@
 encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputMomentumVector_resultValuesVector :: (IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent, IsMPSVector inputGradientVector, IsMPSVector inputValuesVector, IsMPSVector inputMomentumVector, IsMPSVector resultValuesVector) => mpsnnOptimizerStochasticGradientDescent -> RawId -> inputGradientVector -> inputValuesVector -> inputMomentumVector -> resultValuesVector -> IO ()
-encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputMomentumVector_resultValuesVector mpsnnOptimizerStochasticGradientDescent  commandBuffer inputGradientVector inputValuesVector inputMomentumVector resultValuesVector =
-  withObjCPtr inputGradientVector $ \raw_inputGradientVector ->
-    withObjCPtr inputValuesVector $ \raw_inputValuesVector ->
-      withObjCPtr inputMomentumVector $ \raw_inputMomentumVector ->
-        withObjCPtr resultValuesVector $ \raw_resultValuesVector ->
-            sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "encodeToCommandBuffer:inputGradientVector:inputValuesVector:inputMomentumVector:resultValuesVector:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_inputGradientVector :: Ptr ()), argPtr (castPtr raw_inputValuesVector :: Ptr ()), argPtr (castPtr raw_inputMomentumVector :: Ptr ()), argPtr (castPtr raw_resultValuesVector :: Ptr ())]
+encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputMomentumVector_resultValuesVector mpsnnOptimizerStochasticGradientDescent commandBuffer inputGradientVector inputValuesVector inputMomentumVector resultValuesVector =
+  sendMessage mpsnnOptimizerStochasticGradientDescent encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputMomentumVector_resultValuesVectorSelector commandBuffer (toMPSVector inputGradientVector) (toMPSVector inputValuesVector) (toMPSVector inputMomentumVector) (toMPSVector resultValuesVector)
 
 -- | @- encodeToCommandBuffer:inputGradientMatrix:inputValuesMatrix:inputMomentumMatrix:resultValuesMatrix:@
 encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_resultValuesMatrix :: (IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent, IsMPSMatrix inputGradientMatrix, IsMPSMatrix inputValuesMatrix, IsMPSMatrix inputMomentumMatrix, IsMPSMatrix resultValuesMatrix) => mpsnnOptimizerStochasticGradientDescent -> RawId -> inputGradientMatrix -> inputValuesMatrix -> inputMomentumMatrix -> resultValuesMatrix -> IO ()
-encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_resultValuesMatrix mpsnnOptimizerStochasticGradientDescent  commandBuffer inputGradientMatrix inputValuesMatrix inputMomentumMatrix resultValuesMatrix =
-  withObjCPtr inputGradientMatrix $ \raw_inputGradientMatrix ->
-    withObjCPtr inputValuesMatrix $ \raw_inputValuesMatrix ->
-      withObjCPtr inputMomentumMatrix $ \raw_inputMomentumMatrix ->
-        withObjCPtr resultValuesMatrix $ \raw_resultValuesMatrix ->
-            sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "encodeToCommandBuffer:inputGradientMatrix:inputValuesMatrix:inputMomentumMatrix:resultValuesMatrix:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_inputGradientMatrix :: Ptr ()), argPtr (castPtr raw_inputValuesMatrix :: Ptr ()), argPtr (castPtr raw_inputMomentumMatrix :: Ptr ()), argPtr (castPtr raw_resultValuesMatrix :: Ptr ())]
+encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_resultValuesMatrix mpsnnOptimizerStochasticGradientDescent commandBuffer inputGradientMatrix inputValuesMatrix inputMomentumMatrix resultValuesMatrix =
+  sendMessage mpsnnOptimizerStochasticGradientDescent encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_resultValuesMatrixSelector commandBuffer (toMPSMatrix inputGradientMatrix) (toMPSMatrix inputValuesMatrix) (toMPSMatrix inputMomentumMatrix) (toMPSMatrix resultValuesMatrix)
 
 -- | Encode an MPSNNOptimizerStochasticGradientDescent object to a command buffer to perform out of place update
 --
@@ -165,12 +152,8 @@ encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_
 --
 -- ObjC selector: @- encodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputMomentumVectors:resultState:@
 encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomentumVectors_resultState :: (IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent, IsMPSCNNConvolutionGradientState convolutionGradientState, IsMPSCNNConvolutionWeightsAndBiasesState convolutionSourceState, IsNSArray inputMomentumVectors, IsMPSCNNConvolutionWeightsAndBiasesState resultState) => mpsnnOptimizerStochasticGradientDescent -> RawId -> convolutionGradientState -> convolutionSourceState -> inputMomentumVectors -> resultState -> IO ()
-encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomentumVectors_resultState mpsnnOptimizerStochasticGradientDescent  commandBuffer convolutionGradientState convolutionSourceState inputMomentumVectors resultState =
-  withObjCPtr convolutionGradientState $ \raw_convolutionGradientState ->
-    withObjCPtr convolutionSourceState $ \raw_convolutionSourceState ->
-      withObjCPtr inputMomentumVectors $ \raw_inputMomentumVectors ->
-        withObjCPtr resultState $ \raw_resultState ->
-            sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "encodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputMomentumVectors:resultState:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_convolutionGradientState :: Ptr ()), argPtr (castPtr raw_convolutionSourceState :: Ptr ()), argPtr (castPtr raw_inputMomentumVectors :: Ptr ()), argPtr (castPtr raw_resultState :: Ptr ())]
+encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomentumVectors_resultState mpsnnOptimizerStochasticGradientDescent commandBuffer convolutionGradientState convolutionSourceState inputMomentumVectors resultState =
+  sendMessage mpsnnOptimizerStochasticGradientDescent encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomentumVectors_resultStateSelector commandBuffer (toMPSCNNConvolutionGradientState convolutionGradientState) (toMPSCNNConvolutionWeightsAndBiasesState convolutionSourceState) (toNSArray inputMomentumVectors) (toMPSCNNConvolutionWeightsAndBiasesState resultState)
 
 -- | Encode an MPSNNOptimizerStochasticGradientDescent object to a command buffer to perform out of place update
 --
@@ -194,11 +177,8 @@ encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomen
 --
 -- ObjC selector: @- encodeToCommandBuffer:batchNormalizationState:inputMomentumVectors:resultState:@
 encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultState :: (IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent, IsMPSCNNBatchNormalizationState batchNormalizationState, IsNSArray inputMomentumVectors, IsMPSCNNNormalizationGammaAndBetaState resultState) => mpsnnOptimizerStochasticGradientDescent -> RawId -> batchNormalizationState -> inputMomentumVectors -> resultState -> IO ()
-encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultState mpsnnOptimizerStochasticGradientDescent  commandBuffer batchNormalizationState inputMomentumVectors resultState =
-  withObjCPtr batchNormalizationState $ \raw_batchNormalizationState ->
-    withObjCPtr inputMomentumVectors $ \raw_inputMomentumVectors ->
-      withObjCPtr resultState $ \raw_resultState ->
-          sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "encodeToCommandBuffer:batchNormalizationState:inputMomentumVectors:resultState:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_batchNormalizationState :: Ptr ()), argPtr (castPtr raw_inputMomentumVectors :: Ptr ()), argPtr (castPtr raw_resultState :: Ptr ())]
+encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultState mpsnnOptimizerStochasticGradientDescent commandBuffer batchNormalizationState inputMomentumVectors resultState =
+  sendMessage mpsnnOptimizerStochasticGradientDescent encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultStateSelector commandBuffer (toMPSCNNBatchNormalizationState batchNormalizationState) (toNSArray inputMomentumVectors) (toMPSCNNNormalizationGammaAndBetaState resultState)
 
 -- | Encode an MPSNNOptimizerStochasticGradientDescent object to a command buffer to perform out of place update
 --
@@ -224,12 +204,8 @@ encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultState m
 --
 -- ObjC selector: @- encodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputMomentumVectors:resultState:@
 encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputMomentumVectors_resultState :: (IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent, IsMPSCNNBatchNormalizationState batchNormalizationGradientState, IsMPSCNNBatchNormalizationState batchNormalizationSourceState, IsNSArray inputMomentumVectors, IsMPSCNNNormalizationGammaAndBetaState resultState) => mpsnnOptimizerStochasticGradientDescent -> RawId -> batchNormalizationGradientState -> batchNormalizationSourceState -> inputMomentumVectors -> resultState -> IO ()
-encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputMomentumVectors_resultState mpsnnOptimizerStochasticGradientDescent  commandBuffer batchNormalizationGradientState batchNormalizationSourceState inputMomentumVectors resultState =
-  withObjCPtr batchNormalizationGradientState $ \raw_batchNormalizationGradientState ->
-    withObjCPtr batchNormalizationSourceState $ \raw_batchNormalizationSourceState ->
-      withObjCPtr inputMomentumVectors $ \raw_inputMomentumVectors ->
-        withObjCPtr resultState $ \raw_resultState ->
-            sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "encodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputMomentumVectors:resultState:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr raw_batchNormalizationGradientState :: Ptr ()), argPtr (castPtr raw_batchNormalizationSourceState :: Ptr ()), argPtr (castPtr raw_inputMomentumVectors :: Ptr ()), argPtr (castPtr raw_resultState :: Ptr ())]
+encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputMomentumVectors_resultState mpsnnOptimizerStochasticGradientDescent commandBuffer batchNormalizationGradientState batchNormalizationSourceState inputMomentumVectors resultState =
+  sendMessage mpsnnOptimizerStochasticGradientDescent encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputMomentumVectors_resultStateSelector commandBuffer (toMPSCNNBatchNormalizationState batchNormalizationGradientState) (toMPSCNNBatchNormalizationState batchNormalizationSourceState) (toNSArray inputMomentumVectors) (toMPSCNNNormalizationGammaAndBetaState resultState)
 
 -- | momentumScale
 --
@@ -239,8 +215,8 @@ encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceSt
 --
 -- ObjC selector: @- momentumScale@
 momentumScale :: IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent => mpsnnOptimizerStochasticGradientDescent -> IO CFloat
-momentumScale mpsnnOptimizerStochasticGradientDescent  =
-    sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "momentumScale") retCFloat []
+momentumScale mpsnnOptimizerStochasticGradientDescent =
+  sendMessage mpsnnOptimizerStochasticGradientDescent momentumScaleSelector
 
 -- | useNesterovMomentum
 --
@@ -252,63 +228,63 @@ momentumScale mpsnnOptimizerStochasticGradientDescent  =
 --
 -- ObjC selector: @- useNesterovMomentum@
 useNesterovMomentum :: IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent => mpsnnOptimizerStochasticGradientDescent -> IO Bool
-useNesterovMomentum mpsnnOptimizerStochasticGradientDescent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "useNesterovMomentum") retCULong []
+useNesterovMomentum mpsnnOptimizerStochasticGradientDescent =
+  sendMessage mpsnnOptimizerStochasticGradientDescent useNesterovMomentumSelector
 
 -- | @- useNestrovMomentum@
 useNestrovMomentum :: IsMPSNNOptimizerStochasticGradientDescent mpsnnOptimizerStochasticGradientDescent => mpsnnOptimizerStochasticGradientDescent -> IO Bool
-useNestrovMomentum mpsnnOptimizerStochasticGradientDescent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnOptimizerStochasticGradientDescent (mkSelector "useNestrovMomentum") retCULong []
+useNestrovMomentum mpsnnOptimizerStochasticGradientDescent =
+  sendMessage mpsnnOptimizerStochasticGradientDescent useNestrovMomentumSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNOptimizerStochasticGradientDescent)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:learningRate:@
-initWithDevice_learningRateSelector :: Selector
+initWithDevice_learningRateSelector :: Selector '[RawId, CFloat] (Id MPSNNOptimizerStochasticGradientDescent)
 initWithDevice_learningRateSelector = mkSelector "initWithDevice:learningRate:"
 
 -- | @Selector@ for @initWithDevice:momentumScale:useNesterovMomentum:optimizerDescriptor:@
-initWithDevice_momentumScale_useNesterovMomentum_optimizerDescriptorSelector :: Selector
+initWithDevice_momentumScale_useNesterovMomentum_optimizerDescriptorSelector :: Selector '[RawId, CFloat, Bool, Id MPSNNOptimizerDescriptor] (Id MPSNNOptimizerStochasticGradientDescent)
 initWithDevice_momentumScale_useNesterovMomentum_optimizerDescriptorSelector = mkSelector "initWithDevice:momentumScale:useNesterovMomentum:optimizerDescriptor:"
 
 -- | @Selector@ for @initWithDevice:momentumScale:useNestrovMomentum:optimizerDescriptor:@
-initWithDevice_momentumScale_useNestrovMomentum_optimizerDescriptorSelector :: Selector
+initWithDevice_momentumScale_useNestrovMomentum_optimizerDescriptorSelector :: Selector '[RawId, CFloat, Bool, Id MPSNNOptimizerDescriptor] (Id MPSNNOptimizerStochasticGradientDescent)
 initWithDevice_momentumScale_useNestrovMomentum_optimizerDescriptorSelector = mkSelector "initWithDevice:momentumScale:useNestrovMomentum:optimizerDescriptor:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inputGradientVector:inputValuesVector:inputMomentumVector:resultValuesVector:@
-encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputMomentumVector_resultValuesVectorSelector :: Selector
+encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputMomentumVector_resultValuesVectorSelector :: Selector '[RawId, Id MPSVector, Id MPSVector, Id MPSVector, Id MPSVector] ()
 encodeToCommandBuffer_inputGradientVector_inputValuesVector_inputMomentumVector_resultValuesVectorSelector = mkSelector "encodeToCommandBuffer:inputGradientVector:inputValuesVector:inputMomentumVector:resultValuesVector:"
 
 -- | @Selector@ for @encodeToCommandBuffer:inputGradientMatrix:inputValuesMatrix:inputMomentumMatrix:resultValuesMatrix:@
-encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_resultValuesMatrixSelector :: Selector
+encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_resultValuesMatrixSelector :: Selector '[RawId, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix, Id MPSMatrix] ()
 encodeToCommandBuffer_inputGradientMatrix_inputValuesMatrix_inputMomentumMatrix_resultValuesMatrixSelector = mkSelector "encodeToCommandBuffer:inputGradientMatrix:inputValuesMatrix:inputMomentumMatrix:resultValuesMatrix:"
 
 -- | @Selector@ for @encodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputMomentumVectors:resultState:@
-encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomentumVectors_resultStateSelector :: Selector
+encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomentumVectors_resultStateSelector :: Selector '[RawId, Id MPSCNNConvolutionGradientState, Id MPSCNNConvolutionWeightsAndBiasesState, Id NSArray, Id MPSCNNConvolutionWeightsAndBiasesState] ()
 encodeToCommandBuffer_convolutionGradientState_convolutionSourceState_inputMomentumVectors_resultStateSelector = mkSelector "encodeToCommandBuffer:convolutionGradientState:convolutionSourceState:inputMomentumVectors:resultState:"
 
 -- | @Selector@ for @encodeToCommandBuffer:batchNormalizationState:inputMomentumVectors:resultState:@
-encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultStateSelector :: Selector
+encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultStateSelector :: Selector '[RawId, Id MPSCNNBatchNormalizationState, Id NSArray, Id MPSCNNNormalizationGammaAndBetaState] ()
 encodeToCommandBuffer_batchNormalizationState_inputMomentumVectors_resultStateSelector = mkSelector "encodeToCommandBuffer:batchNormalizationState:inputMomentumVectors:resultState:"
 
 -- | @Selector@ for @encodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputMomentumVectors:resultState:@
-encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputMomentumVectors_resultStateSelector :: Selector
+encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputMomentumVectors_resultStateSelector :: Selector '[RawId, Id MPSCNNBatchNormalizationState, Id MPSCNNBatchNormalizationState, Id NSArray, Id MPSCNNNormalizationGammaAndBetaState] ()
 encodeToCommandBuffer_batchNormalizationGradientState_batchNormalizationSourceState_inputMomentumVectors_resultStateSelector = mkSelector "encodeToCommandBuffer:batchNormalizationGradientState:batchNormalizationSourceState:inputMomentumVectors:resultState:"
 
 -- | @Selector@ for @momentumScale@
-momentumScaleSelector :: Selector
+momentumScaleSelector :: Selector '[] CFloat
 momentumScaleSelector = mkSelector "momentumScale"
 
 -- | @Selector@ for @useNesterovMomentum@
-useNesterovMomentumSelector :: Selector
+useNesterovMomentumSelector :: Selector '[] Bool
 useNesterovMomentumSelector = mkSelector "useNesterovMomentum"
 
 -- | @Selector@ for @useNestrovMomentum@
-useNestrovMomentumSelector :: Selector
+useNestrovMomentumSelector :: Selector '[] Bool
 useNestrovMomentumSelector = mkSelector "useNestrovMomentum"
 

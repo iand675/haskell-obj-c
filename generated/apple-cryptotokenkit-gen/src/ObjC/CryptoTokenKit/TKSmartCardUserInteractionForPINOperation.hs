@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,16 +22,16 @@ module ObjC.CryptoTokenKit.TKSmartCardUserInteractionForPINOperation
   , setResultSW
   , resultData
   , setResultData
-  , pinCompletionSelector
-  , setPINCompletionSelector
-  , pinMessageIndicesSelector
-  , setPINMessageIndicesSelector
   , localeSelector
-  , setLocaleSelector
-  , resultSWSelector
-  , setResultSWSelector
+  , pinCompletionSelector
+  , pinMessageIndicesSelector
   , resultDataSelector
+  , resultSWSelector
+  , setLocaleSelector
+  , setPINCompletionSelector
+  , setPINMessageIndicesSelector
   , setResultDataSelector
+  , setResultSWSelector
 
   -- * Enum types
   , TKSmartCardPINCompletion(TKSmartCardPINCompletion)
@@ -40,15 +41,11 @@ module ObjC.CryptoTokenKit.TKSmartCardUserInteractionForPINOperation
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,8 +59,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- PINCompletion@
 pinCompletion :: IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation => tkSmartCardUserInteractionForPINOperation -> IO TKSmartCardPINCompletion
-pinCompletion tkSmartCardUserInteractionForPINOperation  =
-    fmap (coerce :: CULong -> TKSmartCardPINCompletion) $ sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "PINCompletion") retCULong []
+pinCompletion tkSmartCardUserInteractionForPINOperation =
+  sendMessage tkSmartCardUserInteractionForPINOperation pinCompletionSelector
 
 -- | Bitmask specifying condition(s) under which PIN entry should be considered complete.
 --
@@ -71,8 +68,8 @@ pinCompletion tkSmartCardUserInteractionForPINOperation  =
 --
 -- ObjC selector: @- setPINCompletion:@
 setPINCompletion :: IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation => tkSmartCardUserInteractionForPINOperation -> TKSmartCardPINCompletion -> IO ()
-setPINCompletion tkSmartCardUserInteractionForPINOperation  value =
-    sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "setPINCompletion:") retVoid [argCULong (coerce value)]
+setPINCompletion tkSmartCardUserInteractionForPINOperation value =
+  sendMessage tkSmartCardUserInteractionForPINOperation setPINCompletionSelector value
 
 -- | List of message indices referring to a predefined message table. It is used to specify the type and number of messages displayed during the PIN operation.
 --
@@ -82,8 +79,8 @@ setPINCompletion tkSmartCardUserInteractionForPINOperation  value =
 --
 -- ObjC selector: @- PINMessageIndices@
 pinMessageIndices :: IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation => tkSmartCardUserInteractionForPINOperation -> IO (Id NSArray)
-pinMessageIndices tkSmartCardUserInteractionForPINOperation  =
-    sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "PINMessageIndices") (retPtr retVoid) [] >>= retainedObject . castPtr
+pinMessageIndices tkSmartCardUserInteractionForPINOperation =
+  sendMessage tkSmartCardUserInteractionForPINOperation pinMessageIndicesSelector
 
 -- | List of message indices referring to a predefined message table. It is used to specify the type and number of messages displayed during the PIN operation.
 --
@@ -93,9 +90,8 @@ pinMessageIndices tkSmartCardUserInteractionForPINOperation  =
 --
 -- ObjC selector: @- setPINMessageIndices:@
 setPINMessageIndices :: (IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation, IsNSArray value) => tkSmartCardUserInteractionForPINOperation -> value -> IO ()
-setPINMessageIndices tkSmartCardUserInteractionForPINOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "setPINMessageIndices:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPINMessageIndices tkSmartCardUserInteractionForPINOperation value =
+  sendMessage tkSmartCardUserInteractionForPINOperation setPINMessageIndicesSelector (toNSArray value)
 
 -- | Locale defining the language of displayed messages. If set to nil, the user's current locale is used.
 --
@@ -103,8 +99,8 @@ setPINMessageIndices tkSmartCardUserInteractionForPINOperation  value =
 --
 -- ObjC selector: @- locale@
 locale :: IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation => tkSmartCardUserInteractionForPINOperation -> IO (Id NSLocale)
-locale tkSmartCardUserInteractionForPINOperation  =
-    sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "locale") (retPtr retVoid) [] >>= retainedObject . castPtr
+locale tkSmartCardUserInteractionForPINOperation =
+  sendMessage tkSmartCardUserInteractionForPINOperation localeSelector
 
 -- | Locale defining the language of displayed messages. If set to nil, the user's current locale is used.
 --
@@ -112,80 +108,78 @@ locale tkSmartCardUserInteractionForPINOperation  =
 --
 -- ObjC selector: @- setLocale:@
 setLocale :: (IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation, IsNSLocale value) => tkSmartCardUserInteractionForPINOperation -> value -> IO ()
-setLocale tkSmartCardUserInteractionForPINOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "setLocale:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocale tkSmartCardUserInteractionForPINOperation value =
+  sendMessage tkSmartCardUserInteractionForPINOperation setLocaleSelector (toNSLocale value)
 
 -- | SW1SW2 result code.
 --
 -- ObjC selector: @- resultSW@
 resultSW :: IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation => tkSmartCardUserInteractionForPINOperation -> IO CUShort
-resultSW tkSmartCardUserInteractionForPINOperation  =
-    fmap fromIntegral $ sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "resultSW") retCUInt []
+resultSW tkSmartCardUserInteractionForPINOperation =
+  sendMessage tkSmartCardUserInteractionForPINOperation resultSWSelector
 
 -- | SW1SW2 result code.
 --
 -- ObjC selector: @- setResultSW:@
 setResultSW :: IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation => tkSmartCardUserInteractionForPINOperation -> CUShort -> IO ()
-setResultSW tkSmartCardUserInteractionForPINOperation  value =
-    sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "setResultSW:") retVoid [argCUInt (fromIntegral value)]
+setResultSW tkSmartCardUserInteractionForPINOperation value =
+  sendMessage tkSmartCardUserInteractionForPINOperation setResultSWSelector value
 
 -- | Optional block of returned data (without SW1SW2 bytes).
 --
 -- ObjC selector: @- resultData@
 resultData :: IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation => tkSmartCardUserInteractionForPINOperation -> IO (Id NSData)
-resultData tkSmartCardUserInteractionForPINOperation  =
-    sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "resultData") (retPtr retVoid) [] >>= retainedObject . castPtr
+resultData tkSmartCardUserInteractionForPINOperation =
+  sendMessage tkSmartCardUserInteractionForPINOperation resultDataSelector
 
 -- | Optional block of returned data (without SW1SW2 bytes).
 --
 -- ObjC selector: @- setResultData:@
 setResultData :: (IsTKSmartCardUserInteractionForPINOperation tkSmartCardUserInteractionForPINOperation, IsNSData value) => tkSmartCardUserInteractionForPINOperation -> value -> IO ()
-setResultData tkSmartCardUserInteractionForPINOperation  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg tkSmartCardUserInteractionForPINOperation (mkSelector "setResultData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setResultData tkSmartCardUserInteractionForPINOperation value =
+  sendMessage tkSmartCardUserInteractionForPINOperation setResultDataSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @PINCompletion@
-pinCompletionSelector :: Selector
+pinCompletionSelector :: Selector '[] TKSmartCardPINCompletion
 pinCompletionSelector = mkSelector "PINCompletion"
 
 -- | @Selector@ for @setPINCompletion:@
-setPINCompletionSelector :: Selector
+setPINCompletionSelector :: Selector '[TKSmartCardPINCompletion] ()
 setPINCompletionSelector = mkSelector "setPINCompletion:"
 
 -- | @Selector@ for @PINMessageIndices@
-pinMessageIndicesSelector :: Selector
+pinMessageIndicesSelector :: Selector '[] (Id NSArray)
 pinMessageIndicesSelector = mkSelector "PINMessageIndices"
 
 -- | @Selector@ for @setPINMessageIndices:@
-setPINMessageIndicesSelector :: Selector
+setPINMessageIndicesSelector :: Selector '[Id NSArray] ()
 setPINMessageIndicesSelector = mkSelector "setPINMessageIndices:"
 
 -- | @Selector@ for @locale@
-localeSelector :: Selector
+localeSelector :: Selector '[] (Id NSLocale)
 localeSelector = mkSelector "locale"
 
 -- | @Selector@ for @setLocale:@
-setLocaleSelector :: Selector
+setLocaleSelector :: Selector '[Id NSLocale] ()
 setLocaleSelector = mkSelector "setLocale:"
 
 -- | @Selector@ for @resultSW@
-resultSWSelector :: Selector
+resultSWSelector :: Selector '[] CUShort
 resultSWSelector = mkSelector "resultSW"
 
 -- | @Selector@ for @setResultSW:@
-setResultSWSelector :: Selector
+setResultSWSelector :: Selector '[CUShort] ()
 setResultSWSelector = mkSelector "setResultSW:"
 
 -- | @Selector@ for @resultData@
-resultDataSelector :: Selector
+resultDataSelector :: Selector '[] (Id NSData)
 resultDataSelector = mkSelector "resultData"
 
 -- | @Selector@ for @setResultData:@
-setResultDataSelector :: Selector
+setResultDataSelector :: Selector '[Id NSData] ()
 setResultDataSelector = mkSelector "setResultData:"
 

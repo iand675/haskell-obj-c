@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,18 +26,18 @@ module ObjC.Foundation.NSXMLDTDNode
   , setSystemID
   , notationName
   , setNotationName
-  , initWithXMLStringSelector
-  , initWithKind_optionsSelector
-  , initSelector
   , dtdKindSelector
-  , setDTDKindSelector
   , externalSelector
-  , publicIDSelector
-  , setPublicIDSelector
-  , systemIDSelector
-  , setSystemIDSelector
+  , initSelector
+  , initWithKind_optionsSelector
+  , initWithXMLStringSelector
   , notationNameSelector
+  , publicIDSelector
+  , setDTDKindSelector
   , setNotationNameSelector
+  , setPublicIDSelector
+  , setSystemIDSelector
+  , systemIDSelector
 
   -- * Enum types
   , NSXMLDTDNodeKind(NSXMLDTDNodeKind)
@@ -106,15 +107,11 @@ module ObjC.Foundation.NSXMLDTDNode
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -127,135 +124,131 @@ import ObjC.Foundation.Internal.Enums
 --
 -- ObjC selector: @- initWithXMLString:@
 initWithXMLString :: (IsNSXMLDTDNode nsxmldtdNode, IsNSString string) => nsxmldtdNode -> string -> IO (Id NSXMLDTDNode)
-initWithXMLString nsxmldtdNode  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsxmldtdNode (mkSelector "initWithXMLString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithXMLString nsxmldtdNode string =
+  sendOwnedMessage nsxmldtdNode initWithXMLStringSelector (toNSString string)
 
 -- | @- initWithKind:options:@
 initWithKind_options :: IsNSXMLDTDNode nsxmldtdNode => nsxmldtdNode -> NSXMLNodeKind -> NSXMLNodeOptions -> IO (Id NSXMLDTDNode)
-initWithKind_options nsxmldtdNode  kind options =
-    sendMsg nsxmldtdNode (mkSelector "initWithKind:options:") (retPtr retVoid) [argCULong (coerce kind), argCULong (coerce options)] >>= ownedObject . castPtr
+initWithKind_options nsxmldtdNode kind options =
+  sendOwnedMessage nsxmldtdNode initWithKind_optionsSelector kind options
 
 -- | @- init@
 init_ :: IsNSXMLDTDNode nsxmldtdNode => nsxmldtdNode -> IO (Id NSXMLDTDNode)
-init_ nsxmldtdNode  =
-    sendMsg nsxmldtdNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsxmldtdNode =
+  sendOwnedMessage nsxmldtdNode initSelector
 
 -- | Sets the DTD sub kind.
 --
 -- ObjC selector: @- DTDKind@
 dtdKind :: IsNSXMLDTDNode nsxmldtdNode => nsxmldtdNode -> IO NSXMLDTDNodeKind
-dtdKind nsxmldtdNode  =
-    fmap (coerce :: CULong -> NSXMLDTDNodeKind) $ sendMsg nsxmldtdNode (mkSelector "DTDKind") retCULong []
+dtdKind nsxmldtdNode =
+  sendMessage nsxmldtdNode dtdKindSelector
 
 -- | Sets the DTD sub kind.
 --
 -- ObjC selector: @- setDTDKind:@
 setDTDKind :: IsNSXMLDTDNode nsxmldtdNode => nsxmldtdNode -> NSXMLDTDNodeKind -> IO ()
-setDTDKind nsxmldtdNode  value =
-    sendMsg nsxmldtdNode (mkSelector "setDTDKind:") retVoid [argCULong (coerce value)]
+setDTDKind nsxmldtdNode value =
+  sendMessage nsxmldtdNode setDTDKindSelector value
 
 -- | True if the system id is set. Valid for entities and notations.
 --
 -- ObjC selector: @- external@
 external :: IsNSXMLDTDNode nsxmldtdNode => nsxmldtdNode -> IO Bool
-external nsxmldtdNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsxmldtdNode (mkSelector "external") retCULong []
+external nsxmldtdNode =
+  sendMessage nsxmldtdNode externalSelector
 
 -- | Sets the public id. This identifier should be in the default catalog in /etc/xml/catalog or in a path specified by the environment variable XML_CATALOG_FILES. When the public id is set the system id must also be set. Valid for entities and notations.
 --
 -- ObjC selector: @- publicID@
 publicID :: IsNSXMLDTDNode nsxmldtdNode => nsxmldtdNode -> IO (Id NSString)
-publicID nsxmldtdNode  =
-    sendMsg nsxmldtdNode (mkSelector "publicID") (retPtr retVoid) [] >>= retainedObject . castPtr
+publicID nsxmldtdNode =
+  sendMessage nsxmldtdNode publicIDSelector
 
 -- | Sets the public id. This identifier should be in the default catalog in /etc/xml/catalog or in a path specified by the environment variable XML_CATALOG_FILES. When the public id is set the system id must also be set. Valid for entities and notations.
 --
 -- ObjC selector: @- setPublicID:@
 setPublicID :: (IsNSXMLDTDNode nsxmldtdNode, IsNSString value) => nsxmldtdNode -> value -> IO ()
-setPublicID nsxmldtdNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxmldtdNode (mkSelector "setPublicID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPublicID nsxmldtdNode value =
+  sendMessage nsxmldtdNode setPublicIDSelector (toNSString value)
 
 -- | Sets the system id. This should be a URL that points to a valid DTD. Valid for entities and notations.
 --
 -- ObjC selector: @- systemID@
 systemID :: IsNSXMLDTDNode nsxmldtdNode => nsxmldtdNode -> IO (Id NSString)
-systemID nsxmldtdNode  =
-    sendMsg nsxmldtdNode (mkSelector "systemID") (retPtr retVoid) [] >>= retainedObject . castPtr
+systemID nsxmldtdNode =
+  sendMessage nsxmldtdNode systemIDSelector
 
 -- | Sets the system id. This should be a URL that points to a valid DTD. Valid for entities and notations.
 --
 -- ObjC selector: @- setSystemID:@
 setSystemID :: (IsNSXMLDTDNode nsxmldtdNode, IsNSString value) => nsxmldtdNode -> value -> IO ()
-setSystemID nsxmldtdNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxmldtdNode (mkSelector "setSystemID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSystemID nsxmldtdNode value =
+  sendMessage nsxmldtdNode setSystemIDSelector (toNSString value)
 
 -- | Set the notation name. Valid for entities only.
 --
 -- ObjC selector: @- notationName@
 notationName :: IsNSXMLDTDNode nsxmldtdNode => nsxmldtdNode -> IO (Id NSString)
-notationName nsxmldtdNode  =
-    sendMsg nsxmldtdNode (mkSelector "notationName") (retPtr retVoid) [] >>= retainedObject . castPtr
+notationName nsxmldtdNode =
+  sendMessage nsxmldtdNode notationNameSelector
 
 -- | Set the notation name. Valid for entities only.
 --
 -- ObjC selector: @- setNotationName:@
 setNotationName :: (IsNSXMLDTDNode nsxmldtdNode, IsNSString value) => nsxmldtdNode -> value -> IO ()
-setNotationName nsxmldtdNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxmldtdNode (mkSelector "setNotationName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNotationName nsxmldtdNode value =
+  sendMessage nsxmldtdNode setNotationNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithXMLString:@
-initWithXMLStringSelector :: Selector
+initWithXMLStringSelector :: Selector '[Id NSString] (Id NSXMLDTDNode)
 initWithXMLStringSelector = mkSelector "initWithXMLString:"
 
 -- | @Selector@ for @initWithKind:options:@
-initWithKind_optionsSelector :: Selector
+initWithKind_optionsSelector :: Selector '[NSXMLNodeKind, NSXMLNodeOptions] (Id NSXMLDTDNode)
 initWithKind_optionsSelector = mkSelector "initWithKind:options:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSXMLDTDNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @DTDKind@
-dtdKindSelector :: Selector
+dtdKindSelector :: Selector '[] NSXMLDTDNodeKind
 dtdKindSelector = mkSelector "DTDKind"
 
 -- | @Selector@ for @setDTDKind:@
-setDTDKindSelector :: Selector
+setDTDKindSelector :: Selector '[NSXMLDTDNodeKind] ()
 setDTDKindSelector = mkSelector "setDTDKind:"
 
 -- | @Selector@ for @external@
-externalSelector :: Selector
+externalSelector :: Selector '[] Bool
 externalSelector = mkSelector "external"
 
 -- | @Selector@ for @publicID@
-publicIDSelector :: Selector
+publicIDSelector :: Selector '[] (Id NSString)
 publicIDSelector = mkSelector "publicID"
 
 -- | @Selector@ for @setPublicID:@
-setPublicIDSelector :: Selector
+setPublicIDSelector :: Selector '[Id NSString] ()
 setPublicIDSelector = mkSelector "setPublicID:"
 
 -- | @Selector@ for @systemID@
-systemIDSelector :: Selector
+systemIDSelector :: Selector '[] (Id NSString)
 systemIDSelector = mkSelector "systemID"
 
 -- | @Selector@ for @setSystemID:@
-setSystemIDSelector :: Selector
+setSystemIDSelector :: Selector '[Id NSString] ()
 setSystemIDSelector = mkSelector "setSystemID:"
 
 -- | @Selector@ for @notationName@
-notationNameSelector :: Selector
+notationNameSelector :: Selector '[] (Id NSString)
 notationNameSelector = mkSelector "notationName"
 
 -- | @Selector@ for @setNotationName:@
-setNotationNameSelector :: Selector
+setNotationNameSelector :: Selector '[Id NSString] ()
 setNotationNameSelector = mkSelector "setNotationName:"
 

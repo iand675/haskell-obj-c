@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.IOBluetooth.IOBluetoothHostController
   , nameAsString
   , delegate
   , setDelegate
-  , defaultControllerSelector
-  , classOfDeviceSelector
-  , setClassOfDevice_forTimeIntervalSelector
   , addressAsStringSelector
-  , nameAsStringSelector
+  , classOfDeviceSelector
+  , defaultControllerSelector
   , delegateSelector
+  , nameAsStringSelector
+  , setClassOfDevice_forTimeIntervalSelector
   , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,7 +53,7 @@ defaultController :: IO (Id IOBluetoothHostController)
 defaultController  =
   do
     cls' <- getRequiredClass "IOBluetoothHostController"
-    sendClassMsg cls' (mkSelector "defaultController") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultControllerSelector
 
 -- | classOfDevice
 --
@@ -66,8 +63,8 @@ defaultController  =
 --
 -- ObjC selector: @- classOfDevice@
 classOfDevice :: IsIOBluetoothHostController ioBluetoothHostController => ioBluetoothHostController -> IO CUInt
-classOfDevice ioBluetoothHostController  =
-    sendMsg ioBluetoothHostController (mkSelector "classOfDevice") retCUInt []
+classOfDevice ioBluetoothHostController =
+  sendMessage ioBluetoothHostController classOfDeviceSelector
 
 -- | setClassOfDevice:forTimeInterval:
 --
@@ -77,8 +74,8 @@ classOfDevice ioBluetoothHostController  =
 --
 -- ObjC selector: @- setClassOfDevice:forTimeInterval:@
 setClassOfDevice_forTimeInterval :: IsIOBluetoothHostController ioBluetoothHostController => ioBluetoothHostController -> CUInt -> CDouble -> IO CInt
-setClassOfDevice_forTimeInterval ioBluetoothHostController  classOfDevice seconds =
-    sendMsg ioBluetoothHostController (mkSelector "setClassOfDevice:forTimeInterval:") retCInt [argCUInt classOfDevice, argCDouble seconds]
+setClassOfDevice_forTimeInterval ioBluetoothHostController classOfDevice seconds =
+  sendMessage ioBluetoothHostController setClassOfDevice_forTimeIntervalSelector classOfDevice seconds
 
 -- | addressAsString
 --
@@ -88,8 +85,8 @@ setClassOfDevice_forTimeInterval ioBluetoothHostController  classOfDevice second
 --
 -- ObjC selector: @- addressAsString@
 addressAsString :: IsIOBluetoothHostController ioBluetoothHostController => ioBluetoothHostController -> IO (Id NSString)
-addressAsString ioBluetoothHostController  =
-    sendMsg ioBluetoothHostController (mkSelector "addressAsString") (retPtr retVoid) [] >>= retainedObject . castPtr
+addressAsString ioBluetoothHostController =
+  sendMessage ioBluetoothHostController addressAsStringSelector
 
 -- | nameAsString
 --
@@ -99,48 +96,48 @@ addressAsString ioBluetoothHostController  =
 --
 -- ObjC selector: @- nameAsString@
 nameAsString :: IsIOBluetoothHostController ioBluetoothHostController => ioBluetoothHostController -> IO (Id NSString)
-nameAsString ioBluetoothHostController  =
-    sendMsg ioBluetoothHostController (mkSelector "nameAsString") (retPtr retVoid) [] >>= retainedObject . castPtr
+nameAsString ioBluetoothHostController =
+  sendMessage ioBluetoothHostController nameAsStringSelector
 
 -- | @- delegate@
 delegate :: IsIOBluetoothHostController ioBluetoothHostController => ioBluetoothHostController -> IO RawId
-delegate ioBluetoothHostController  =
-    fmap (RawId . castPtr) $ sendMsg ioBluetoothHostController (mkSelector "delegate") (retPtr retVoid) []
+delegate ioBluetoothHostController =
+  sendMessage ioBluetoothHostController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsIOBluetoothHostController ioBluetoothHostController => ioBluetoothHostController -> RawId -> IO ()
-setDelegate ioBluetoothHostController  value =
-    sendMsg ioBluetoothHostController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ioBluetoothHostController value =
+  sendMessage ioBluetoothHostController setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @defaultController@
-defaultControllerSelector :: Selector
+defaultControllerSelector :: Selector '[] (Id IOBluetoothHostController)
 defaultControllerSelector = mkSelector "defaultController"
 
 -- | @Selector@ for @classOfDevice@
-classOfDeviceSelector :: Selector
+classOfDeviceSelector :: Selector '[] CUInt
 classOfDeviceSelector = mkSelector "classOfDevice"
 
 -- | @Selector@ for @setClassOfDevice:forTimeInterval:@
-setClassOfDevice_forTimeIntervalSelector :: Selector
+setClassOfDevice_forTimeIntervalSelector :: Selector '[CUInt, CDouble] CInt
 setClassOfDevice_forTimeIntervalSelector = mkSelector "setClassOfDevice:forTimeInterval:"
 
 -- | @Selector@ for @addressAsString@
-addressAsStringSelector :: Selector
+addressAsStringSelector :: Selector '[] (Id NSString)
 addressAsStringSelector = mkSelector "addressAsString"
 
 -- | @Selector@ for @nameAsString@
-nameAsStringSelector :: Selector
+nameAsStringSelector :: Selector '[] (Id NSString)
 nameAsStringSelector = mkSelector "nameAsString"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

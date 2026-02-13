@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.Intents.INMediaAffinityTypeResolutionResult
   , IsINMediaAffinityTypeResolutionResult(..)
   , successWithResolvedMediaAffinityType
   , confirmationRequiredWithMediaAffinityTypeToConfirm
-  , successWithResolvedMediaAffinityTypeSelector
   , confirmationRequiredWithMediaAffinityTypeToConfirmSelector
+  , successWithResolvedMediaAffinityTypeSelector
 
   -- * Enum types
   , INMediaAffinityType(INMediaAffinityType)
@@ -20,15 +21,11 @@ module ObjC.Intents.INMediaAffinityTypeResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,24 +38,24 @@ successWithResolvedMediaAffinityType :: INMediaAffinityType -> IO (Id INMediaAff
 successWithResolvedMediaAffinityType resolvedMediaAffinityType =
   do
     cls' <- getRequiredClass "INMediaAffinityTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedMediaAffinityType:") (retPtr retVoid) [argCLong (coerce resolvedMediaAffinityType)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedMediaAffinityTypeSelector resolvedMediaAffinityType
 
 -- | @+ confirmationRequiredWithMediaAffinityTypeToConfirm:@
 confirmationRequiredWithMediaAffinityTypeToConfirm :: INMediaAffinityType -> IO (Id INMediaAffinityTypeResolutionResult)
 confirmationRequiredWithMediaAffinityTypeToConfirm mediaAffinityTypeToConfirm =
   do
     cls' <- getRequiredClass "INMediaAffinityTypeResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithMediaAffinityTypeToConfirm:") (retPtr retVoid) [argCLong (coerce mediaAffinityTypeToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithMediaAffinityTypeToConfirmSelector mediaAffinityTypeToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedMediaAffinityType:@
-successWithResolvedMediaAffinityTypeSelector :: Selector
+successWithResolvedMediaAffinityTypeSelector :: Selector '[INMediaAffinityType] (Id INMediaAffinityTypeResolutionResult)
 successWithResolvedMediaAffinityTypeSelector = mkSelector "successWithResolvedMediaAffinityType:"
 
 -- | @Selector@ for @confirmationRequiredWithMediaAffinityTypeToConfirm:@
-confirmationRequiredWithMediaAffinityTypeToConfirmSelector :: Selector
+confirmationRequiredWithMediaAffinityTypeToConfirmSelector :: Selector '[INMediaAffinityType] (Id INMediaAffinityTypeResolutionResult)
 confirmationRequiredWithMediaAffinityTypeToConfirmSelector = mkSelector "confirmationRequiredWithMediaAffinityTypeToConfirm:"
 

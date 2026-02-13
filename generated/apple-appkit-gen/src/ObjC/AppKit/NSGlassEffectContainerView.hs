@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.AppKit.NSGlassEffectContainerView
   , setSpacing
   , contentViewSelector
   , setContentViewSelector
-  , spacingSelector
   , setSpacingSelector
+  , spacingSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,8 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- contentView@
 contentView :: IsNSGlassEffectContainerView nsGlassEffectContainerView => nsGlassEffectContainerView -> IO (Id NSView)
-contentView nsGlassEffectContainerView  =
-    sendMsg nsGlassEffectContainerView (mkSelector "contentView") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentView nsGlassEffectContainerView =
+  sendMessage nsGlassEffectContainerView contentViewSelector
 
 -- | The view that contains descendant views to merge together when in proximity to each other.
 --
@@ -52,9 +49,8 @@ contentView nsGlassEffectContainerView  =
 --
 -- ObjC selector: @- setContentView:@
 setContentView :: (IsNSGlassEffectContainerView nsGlassEffectContainerView, IsNSView value) => nsGlassEffectContainerView -> value -> IO ()
-setContentView nsGlassEffectContainerView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsGlassEffectContainerView (mkSelector "setContentView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContentView nsGlassEffectContainerView value =
+  sendMessage nsGlassEffectContainerView setContentViewSelector (toNSView value)
 
 -- | The proximity at which the glass effect container view begins merging eligible descendent glass effect views.
 --
@@ -62,8 +58,8 @@ setContentView nsGlassEffectContainerView  value =
 --
 -- ObjC selector: @- spacing@
 spacing :: IsNSGlassEffectContainerView nsGlassEffectContainerView => nsGlassEffectContainerView -> IO CDouble
-spacing nsGlassEffectContainerView  =
-    sendMsg nsGlassEffectContainerView (mkSelector "spacing") retCDouble []
+spacing nsGlassEffectContainerView =
+  sendMessage nsGlassEffectContainerView spacingSelector
 
 -- | The proximity at which the glass effect container view begins merging eligible descendent glass effect views.
 --
@@ -71,26 +67,26 @@ spacing nsGlassEffectContainerView  =
 --
 -- ObjC selector: @- setSpacing:@
 setSpacing :: IsNSGlassEffectContainerView nsGlassEffectContainerView => nsGlassEffectContainerView -> CDouble -> IO ()
-setSpacing nsGlassEffectContainerView  value =
-    sendMsg nsGlassEffectContainerView (mkSelector "setSpacing:") retVoid [argCDouble value]
+setSpacing nsGlassEffectContainerView value =
+  sendMessage nsGlassEffectContainerView setSpacingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @contentView@
-contentViewSelector :: Selector
+contentViewSelector :: Selector '[] (Id NSView)
 contentViewSelector = mkSelector "contentView"
 
 -- | @Selector@ for @setContentView:@
-setContentViewSelector :: Selector
+setContentViewSelector :: Selector '[Id NSView] ()
 setContentViewSelector = mkSelector "setContentView:"
 
 -- | @Selector@ for @spacing@
-spacingSelector :: Selector
+spacingSelector :: Selector '[] CDouble
 spacingSelector = mkSelector "spacing"
 
 -- | @Selector@ for @setSpacing:@
-setSpacingSelector :: Selector
+setSpacingSelector :: Selector '[CDouble] ()
 setSpacingSelector = mkSelector "setSpacing:"
 

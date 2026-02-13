@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,21 +15,17 @@ module ObjC.MetalPerformanceShaders.MPSNNConcatenationGradientNode
   , IsMPSNNConcatenationGradientNode(..)
   , nodeWithSourceGradient_sourceImage_gradientState
   , initWithSourceGradient_sourceImage_gradientState
-  , nodeWithSourceGradient_sourceImage_gradientStateSelector
   , initWithSourceGradient_sourceImage_gradientStateSelector
+  , nodeWithSourceGradient_sourceImage_gradientStateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,10 +47,7 @@ nodeWithSourceGradient_sourceImage_gradientState :: (IsMPSNNImageNode gradientSo
 nodeWithSourceGradient_sourceImage_gradientState gradientSourceNode sourceImage gradientState =
   do
     cls' <- getRequiredClass "MPSNNConcatenationGradientNode"
-    withObjCPtr gradientSourceNode $ \raw_gradientSourceNode ->
-      withObjCPtr sourceImage $ \raw_sourceImage ->
-        withObjCPtr gradientState $ \raw_gradientState ->
-          sendClassMsg cls' (mkSelector "nodeWithSourceGradient:sourceImage:gradientState:") (retPtr retVoid) [argPtr (castPtr raw_gradientSourceNode :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceGradient_sourceImage_gradientStateSelector (toMPSNNImageNode gradientSourceNode) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState)
 
 -- | Init a MPSNNConcatenationGradientNode
 --
@@ -67,21 +61,18 @@ nodeWithSourceGradient_sourceImage_gradientState gradientSourceNode sourceImage 
 --
 -- ObjC selector: @- initWithSourceGradient:sourceImage:gradientState:@
 initWithSourceGradient_sourceImage_gradientState :: (IsMPSNNConcatenationGradientNode mpsnnConcatenationGradientNode, IsMPSNNImageNode gradientSourceNode, IsMPSNNImageNode sourceImage, IsMPSNNGradientStateNode gradientState) => mpsnnConcatenationGradientNode -> gradientSourceNode -> sourceImage -> gradientState -> IO (Id MPSNNConcatenationGradientNode)
-initWithSourceGradient_sourceImage_gradientState mpsnnConcatenationGradientNode  gradientSourceNode sourceImage gradientState =
-  withObjCPtr gradientSourceNode $ \raw_gradientSourceNode ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr gradientState $ \raw_gradientState ->
-          sendMsg mpsnnConcatenationGradientNode (mkSelector "initWithSourceGradient:sourceImage:gradientState:") (retPtr retVoid) [argPtr (castPtr raw_gradientSourceNode :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ())] >>= ownedObject . castPtr
+initWithSourceGradient_sourceImage_gradientState mpsnnConcatenationGradientNode gradientSourceNode sourceImage gradientState =
+  sendOwnedMessage mpsnnConcatenationGradientNode initWithSourceGradient_sourceImage_gradientStateSelector (toMPSNNImageNode gradientSourceNode) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSourceGradient:sourceImage:gradientState:@
-nodeWithSourceGradient_sourceImage_gradientStateSelector :: Selector
+nodeWithSourceGradient_sourceImage_gradientStateSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode] (Id MPSNNConcatenationGradientNode)
 nodeWithSourceGradient_sourceImage_gradientStateSelector = mkSelector "nodeWithSourceGradient:sourceImage:gradientState:"
 
 -- | @Selector@ for @initWithSourceGradient:sourceImage:gradientState:@
-initWithSourceGradient_sourceImage_gradientStateSelector :: Selector
+initWithSourceGradient_sourceImage_gradientStateSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode] (Id MPSNNConcatenationGradientNode)
 initWithSourceGradient_sourceImage_gradientStateSelector = mkSelector "initWithSourceGradient:sourceImage:gradientState:"
 

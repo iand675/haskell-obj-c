@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,29 +17,25 @@ module ObjC.Foundation.NSPredicate
   , evaluateWithObject_substitutionVariables
   , allowEvaluation
   , predicateFormat
-  , predicateWithFormat_argumentArraySelector
-  , predicateWithFormatSelector
-  , predicateWithFormat_argumentsSelector
-  , predicateFromMetadataQueryStringSelector
-  , predicateWithValueSelector
-  , predicateWithSubstitutionVariablesSelector
+  , allowEvaluationSelector
   , evaluateWithObjectSelector
   , evaluateWithObject_substitutionVariablesSelector
-  , allowEvaluationSelector
   , predicateFormatSelector
+  , predicateFromMetadataQueryStringSelector
+  , predicateWithFormatSelector
+  , predicateWithFormat_argumentArraySelector
+  , predicateWithFormat_argumentsSelector
+  , predicateWithSubstitutionVariablesSelector
+  , predicateWithValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,109 +46,102 @@ predicateWithFormat_argumentArray :: (IsNSString predicateFormat, IsNSArray argu
 predicateWithFormat_argumentArray predicateFormat arguments =
   do
     cls' <- getRequiredClass "NSPredicate"
-    withObjCPtr predicateFormat $ \raw_predicateFormat ->
-      withObjCPtr arguments $ \raw_arguments ->
-        sendClassMsg cls' (mkSelector "predicateWithFormat:argumentArray:") (retPtr retVoid) [argPtr (castPtr raw_predicateFormat :: Ptr ()), argPtr (castPtr raw_arguments :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateWithFormat_argumentArraySelector (toNSString predicateFormat) (toNSArray arguments)
 
 -- | @+ predicateWithFormat:@
 predicateWithFormat :: IsNSString predicateFormat => predicateFormat -> IO (Id NSPredicate)
 predicateWithFormat predicateFormat =
   do
     cls' <- getRequiredClass "NSPredicate"
-    withObjCPtr predicateFormat $ \raw_predicateFormat ->
-      sendClassMsg cls' (mkSelector "predicateWithFormat:") (retPtr retVoid) [argPtr (castPtr raw_predicateFormat :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateWithFormatSelector (toNSString predicateFormat)
 
 -- | @+ predicateWithFormat:arguments:@
 predicateWithFormat_arguments :: IsNSString predicateFormat => predicateFormat -> RawId -> IO (Id NSPredicate)
 predicateWithFormat_arguments predicateFormat argList =
   do
     cls' <- getRequiredClass "NSPredicate"
-    withObjCPtr predicateFormat $ \raw_predicateFormat ->
-      sendClassMsg cls' (mkSelector "predicateWithFormat:arguments:") (retPtr retVoid) [argPtr (castPtr raw_predicateFormat :: Ptr ()), argPtr (castPtr (unRawId argList) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateWithFormat_argumentsSelector (toNSString predicateFormat) argList
 
 -- | @+ predicateFromMetadataQueryString:@
 predicateFromMetadataQueryString :: IsNSString queryString => queryString -> IO (Id NSPredicate)
 predicateFromMetadataQueryString queryString =
   do
     cls' <- getRequiredClass "NSPredicate"
-    withObjCPtr queryString $ \raw_queryString ->
-      sendClassMsg cls' (mkSelector "predicateFromMetadataQueryString:") (retPtr retVoid) [argPtr (castPtr raw_queryString :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateFromMetadataQueryStringSelector (toNSString queryString)
 
 -- | @+ predicateWithValue:@
 predicateWithValue :: Bool -> IO (Id NSPredicate)
 predicateWithValue value =
   do
     cls' <- getRequiredClass "NSPredicate"
-    sendClassMsg cls' (mkSelector "predicateWithValue:") (retPtr retVoid) [argCULong (if value then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' predicateWithValueSelector value
 
 -- | @- predicateWithSubstitutionVariables:@
 predicateWithSubstitutionVariables :: (IsNSPredicate nsPredicate, IsNSDictionary variables) => nsPredicate -> variables -> IO (Id NSPredicate)
-predicateWithSubstitutionVariables nsPredicate  variables =
-  withObjCPtr variables $ \raw_variables ->
-      sendMsg nsPredicate (mkSelector "predicateWithSubstitutionVariables:") (retPtr retVoid) [argPtr (castPtr raw_variables :: Ptr ())] >>= retainedObject . castPtr
+predicateWithSubstitutionVariables nsPredicate variables =
+  sendMessage nsPredicate predicateWithSubstitutionVariablesSelector (toNSDictionary variables)
 
 -- | @- evaluateWithObject:@
 evaluateWithObject :: IsNSPredicate nsPredicate => nsPredicate -> RawId -> IO Bool
-evaluateWithObject nsPredicate  object =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPredicate (mkSelector "evaluateWithObject:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ())]
+evaluateWithObject nsPredicate object =
+  sendMessage nsPredicate evaluateWithObjectSelector object
 
 -- | @- evaluateWithObject:substitutionVariables:@
 evaluateWithObject_substitutionVariables :: (IsNSPredicate nsPredicate, IsNSDictionary bindings) => nsPredicate -> RawId -> bindings -> IO Bool
-evaluateWithObject_substitutionVariables nsPredicate  object bindings =
-  withObjCPtr bindings $ \raw_bindings ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPredicate (mkSelector "evaluateWithObject:substitutionVariables:") retCULong [argPtr (castPtr (unRawId object) :: Ptr ()), argPtr (castPtr raw_bindings :: Ptr ())]
+evaluateWithObject_substitutionVariables nsPredicate object bindings =
+  sendMessage nsPredicate evaluateWithObject_substitutionVariablesSelector object (toNSDictionary bindings)
 
 -- | @- allowEvaluation@
 allowEvaluation :: IsNSPredicate nsPredicate => nsPredicate -> IO ()
-allowEvaluation nsPredicate  =
-    sendMsg nsPredicate (mkSelector "allowEvaluation") retVoid []
+allowEvaluation nsPredicate =
+  sendMessage nsPredicate allowEvaluationSelector
 
 -- | @- predicateFormat@
 predicateFormat :: IsNSPredicate nsPredicate => nsPredicate -> IO (Id NSString)
-predicateFormat nsPredicate  =
-    sendMsg nsPredicate (mkSelector "predicateFormat") (retPtr retVoid) [] >>= retainedObject . castPtr
+predicateFormat nsPredicate =
+  sendMessage nsPredicate predicateFormatSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @predicateWithFormat:argumentArray:@
-predicateWithFormat_argumentArraySelector :: Selector
+predicateWithFormat_argumentArraySelector :: Selector '[Id NSString, Id NSArray] (Id NSPredicate)
 predicateWithFormat_argumentArraySelector = mkSelector "predicateWithFormat:argumentArray:"
 
 -- | @Selector@ for @predicateWithFormat:@
-predicateWithFormatSelector :: Selector
+predicateWithFormatSelector :: Selector '[Id NSString] (Id NSPredicate)
 predicateWithFormatSelector = mkSelector "predicateWithFormat:"
 
 -- | @Selector@ for @predicateWithFormat:arguments:@
-predicateWithFormat_argumentsSelector :: Selector
+predicateWithFormat_argumentsSelector :: Selector '[Id NSString, RawId] (Id NSPredicate)
 predicateWithFormat_argumentsSelector = mkSelector "predicateWithFormat:arguments:"
 
 -- | @Selector@ for @predicateFromMetadataQueryString:@
-predicateFromMetadataQueryStringSelector :: Selector
+predicateFromMetadataQueryStringSelector :: Selector '[Id NSString] (Id NSPredicate)
 predicateFromMetadataQueryStringSelector = mkSelector "predicateFromMetadataQueryString:"
 
 -- | @Selector@ for @predicateWithValue:@
-predicateWithValueSelector :: Selector
+predicateWithValueSelector :: Selector '[Bool] (Id NSPredicate)
 predicateWithValueSelector = mkSelector "predicateWithValue:"
 
 -- | @Selector@ for @predicateWithSubstitutionVariables:@
-predicateWithSubstitutionVariablesSelector :: Selector
+predicateWithSubstitutionVariablesSelector :: Selector '[Id NSDictionary] (Id NSPredicate)
 predicateWithSubstitutionVariablesSelector = mkSelector "predicateWithSubstitutionVariables:"
 
 -- | @Selector@ for @evaluateWithObject:@
-evaluateWithObjectSelector :: Selector
+evaluateWithObjectSelector :: Selector '[RawId] Bool
 evaluateWithObjectSelector = mkSelector "evaluateWithObject:"
 
 -- | @Selector@ for @evaluateWithObject:substitutionVariables:@
-evaluateWithObject_substitutionVariablesSelector :: Selector
+evaluateWithObject_substitutionVariablesSelector :: Selector '[RawId, Id NSDictionary] Bool
 evaluateWithObject_substitutionVariablesSelector = mkSelector "evaluateWithObject:substitutionVariables:"
 
 -- | @Selector@ for @allowEvaluation@
-allowEvaluationSelector :: Selector
+allowEvaluationSelector :: Selector '[] ()
 allowEvaluationSelector = mkSelector "allowEvaluation"
 
 -- | @Selector@ for @predicateFormat@
-predicateFormatSelector :: Selector
+predicateFormatSelector :: Selector '[] (Id NSString)
 predicateFormatSelector = mkSelector "predicateFormat"
 

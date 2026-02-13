@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.NetworkExtension.NEPacketTunnelFlow
   , IsNEPacketTunnelFlow(..)
   , writePackets_withProtocols
   , writePacketObjects
-  , writePackets_withProtocolsSelector
   , writePacketObjectsSelector
+  , writePackets_withProtocolsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,10 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- writePackets:withProtocols:@
 writePackets_withProtocols :: (IsNEPacketTunnelFlow nePacketTunnelFlow, IsNSArray packets, IsNSArray protocols) => nePacketTunnelFlow -> packets -> protocols -> IO Bool
-writePackets_withProtocols nePacketTunnelFlow  packets protocols =
-  withObjCPtr packets $ \raw_packets ->
-    withObjCPtr protocols $ \raw_protocols ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg nePacketTunnelFlow (mkSelector "writePackets:withProtocols:") retCULong [argPtr (castPtr raw_packets :: Ptr ()), argPtr (castPtr raw_protocols :: Ptr ())]
+writePackets_withProtocols nePacketTunnelFlow packets protocols =
+  sendMessage nePacketTunnelFlow writePackets_withProtocolsSelector (toNSArray packets) (toNSArray protocols)
 
 -- | writePacketObjects:
 --
@@ -60,19 +55,18 @@ writePackets_withProtocols nePacketTunnelFlow  packets protocols =
 --
 -- ObjC selector: @- writePacketObjects:@
 writePacketObjects :: (IsNEPacketTunnelFlow nePacketTunnelFlow, IsNSArray packets) => nePacketTunnelFlow -> packets -> IO Bool
-writePacketObjects nePacketTunnelFlow  packets =
-  withObjCPtr packets $ \raw_packets ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg nePacketTunnelFlow (mkSelector "writePacketObjects:") retCULong [argPtr (castPtr raw_packets :: Ptr ())]
+writePacketObjects nePacketTunnelFlow packets =
+  sendMessage nePacketTunnelFlow writePacketObjectsSelector (toNSArray packets)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @writePackets:withProtocols:@
-writePackets_withProtocolsSelector :: Selector
+writePackets_withProtocolsSelector :: Selector '[Id NSArray, Id NSArray] Bool
 writePackets_withProtocolsSelector = mkSelector "writePackets:withProtocols:"
 
 -- | @Selector@ for @writePacketObjects:@
-writePacketObjectsSelector :: Selector
+writePacketObjectsSelector :: Selector '[Id NSArray] Bool
 writePacketObjectsSelector = mkSelector "writePacketObjects:"
 

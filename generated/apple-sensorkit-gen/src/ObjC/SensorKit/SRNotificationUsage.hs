@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,15 +35,11 @@ module ObjC.SensorKit.SRNotificationUsage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,23 +51,23 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- bundleIdentifier@
 bundleIdentifier :: IsSRNotificationUsage srNotificationUsage => srNotificationUsage -> IO (Id NSString)
-bundleIdentifier srNotificationUsage  =
-    sendMsg srNotificationUsage (mkSelector "bundleIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+bundleIdentifier srNotificationUsage =
+  sendMessage srNotificationUsage bundleIdentifierSelector
 
 -- | @- event@
 event :: IsSRNotificationUsage srNotificationUsage => srNotificationUsage -> IO SRNotificationEvent
-event srNotificationUsage  =
-    fmap (coerce :: CLong -> SRNotificationEvent) $ sendMsg srNotificationUsage (mkSelector "event") retCLong []
+event srNotificationUsage =
+  sendMessage srNotificationUsage eventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @bundleIdentifier@
-bundleIdentifierSelector :: Selector
+bundleIdentifierSelector :: Selector '[] (Id NSString)
 bundleIdentifierSelector = mkSelector "bundleIdentifier"
 
 -- | @Selector@ for @event@
-eventSelector :: Selector
+eventSelector :: Selector '[] SRNotificationEvent
 eventSelector = mkSelector "event"
 

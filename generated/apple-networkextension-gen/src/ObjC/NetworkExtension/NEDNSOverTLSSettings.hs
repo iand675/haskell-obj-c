@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.NetworkExtension.NEDNSOverTLSSettings
   , setServerName
   , identityReference
   , setIdentityReference
-  , serverNameSelector
-  , setServerNameSelector
   , identityReferenceSelector
+  , serverNameSelector
   , setIdentityReferenceSelector
+  , setServerNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- serverName@
 serverName :: IsNEDNSOverTLSSettings nednsOverTLSSettings => nednsOverTLSSettings -> IO (Id NSString)
-serverName nednsOverTLSSettings  =
-    sendMsg nednsOverTLSSettings (mkSelector "serverName") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverName nednsOverTLSSettings =
+  sendMessage nednsOverTLSSettings serverNameSelector
 
 -- | serverName
 --
@@ -48,9 +45,8 @@ serverName nednsOverTLSSettings  =
 --
 -- ObjC selector: @- setServerName:@
 setServerName :: (IsNEDNSOverTLSSettings nednsOverTLSSettings, IsNSString value) => nednsOverTLSSettings -> value -> IO ()
-setServerName nednsOverTLSSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsOverTLSSettings (mkSelector "setServerName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerName nednsOverTLSSettings value =
+  sendMessage nednsOverTLSSettings setServerNameSelector (toNSString value)
 
 -- | identityReference
 --
@@ -58,8 +54,8 @@ setServerName nednsOverTLSSettings  value =
 --
 -- ObjC selector: @- identityReference@
 identityReference :: IsNEDNSOverTLSSettings nednsOverTLSSettings => nednsOverTLSSettings -> IO (Id NSData)
-identityReference nednsOverTLSSettings  =
-    sendMsg nednsOverTLSSettings (mkSelector "identityReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+identityReference nednsOverTLSSettings =
+  sendMessage nednsOverTLSSettings identityReferenceSelector
 
 -- | identityReference
 --
@@ -67,27 +63,26 @@ identityReference nednsOverTLSSettings  =
 --
 -- ObjC selector: @- setIdentityReference:@
 setIdentityReference :: (IsNEDNSOverTLSSettings nednsOverTLSSettings, IsNSData value) => nednsOverTLSSettings -> value -> IO ()
-setIdentityReference nednsOverTLSSettings  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nednsOverTLSSettings (mkSelector "setIdentityReference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentityReference nednsOverTLSSettings value =
+  sendMessage nednsOverTLSSettings setIdentityReferenceSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @serverName@
-serverNameSelector :: Selector
+serverNameSelector :: Selector '[] (Id NSString)
 serverNameSelector = mkSelector "serverName"
 
 -- | @Selector@ for @setServerName:@
-setServerNameSelector :: Selector
+setServerNameSelector :: Selector '[Id NSString] ()
 setServerNameSelector = mkSelector "setServerName:"
 
 -- | @Selector@ for @identityReference@
-identityReferenceSelector :: Selector
+identityReferenceSelector :: Selector '[] (Id NSData)
 identityReferenceSelector = mkSelector "identityReference"
 
 -- | @Selector@ for @setIdentityReference:@
-setIdentityReferenceSelector :: Selector
+setIdentityReferenceSelector :: Selector '[Id NSData] ()
 setIdentityReferenceSelector = mkSelector "setIdentityReference:"
 

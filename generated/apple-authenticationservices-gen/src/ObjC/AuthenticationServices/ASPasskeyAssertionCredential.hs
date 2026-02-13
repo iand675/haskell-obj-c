@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,30 +20,26 @@ module ObjC.AuthenticationServices.ASPasskeyAssertionCredential
   , credentialID
   , extensionOutput
   , setExtensionOutput
+  , authenticatorDataSelector
+  , clientDataHashSelector
+  , credentialIDSelector
+  , credentialWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector
+  , extensionOutputSelector
   , initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector
   , initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID_extensionOutputSelector
-  , credentialWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector
-  , userHandleSelector
   , relyingPartySelector
-  , signatureSelector
-  , clientDataHashSelector
-  , authenticatorDataSelector
-  , credentialIDSelector
-  , extensionOutputSelector
   , setExtensionOutputSelector
+  , signatureSelector
+  , userHandleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,14 +56,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:@
 initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID :: (IsASPasskeyAssertionCredential asPasskeyAssertionCredential, IsNSData userHandle, IsNSString relyingParty, IsNSData signature, IsNSData clientDataHash, IsNSData authenticatorData, IsNSData credentialID) => asPasskeyAssertionCredential -> userHandle -> relyingParty -> signature -> clientDataHash -> authenticatorData -> credentialID -> IO (Id ASPasskeyAssertionCredential)
-initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID asPasskeyAssertionCredential  userHandle relyingParty signature clientDataHash authenticatorData credentialID =
-  withObjCPtr userHandle $ \raw_userHandle ->
-    withObjCPtr relyingParty $ \raw_relyingParty ->
-      withObjCPtr signature $ \raw_signature ->
-        withObjCPtr clientDataHash $ \raw_clientDataHash ->
-          withObjCPtr authenticatorData $ \raw_authenticatorData ->
-            withObjCPtr credentialID $ \raw_credentialID ->
-                sendMsg asPasskeyAssertionCredential (mkSelector "initWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:") (retPtr retVoid) [argPtr (castPtr raw_userHandle :: Ptr ()), argPtr (castPtr raw_relyingParty :: Ptr ()), argPtr (castPtr raw_signature :: Ptr ()), argPtr (castPtr raw_clientDataHash :: Ptr ()), argPtr (castPtr raw_authenticatorData :: Ptr ()), argPtr (castPtr raw_credentialID :: Ptr ())] >>= ownedObject . castPtr
+initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID asPasskeyAssertionCredential userHandle relyingParty signature clientDataHash authenticatorData credentialID =
+  sendOwnedMessage asPasskeyAssertionCredential initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector (toNSData userHandle) (toNSString relyingParty) (toNSData signature) (toNSData clientDataHash) (toNSData authenticatorData) (toNSData credentialID)
 
 -- | Initializes an ASPasskeyCredential object.
 --
@@ -80,15 +71,8 @@ initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_crede
 --
 -- ObjC selector: @- initWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:extensionOutput:@
 initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID_extensionOutput :: (IsASPasskeyAssertionCredential asPasskeyAssertionCredential, IsNSData userHandle, IsNSString relyingParty, IsNSData signature, IsNSData clientDataHash, IsNSData authenticatorData, IsNSData credentialID, IsASPasskeyAssertionCredentialExtensionOutput extensionOutput) => asPasskeyAssertionCredential -> userHandle -> relyingParty -> signature -> clientDataHash -> authenticatorData -> credentialID -> extensionOutput -> IO (Id ASPasskeyAssertionCredential)
-initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID_extensionOutput asPasskeyAssertionCredential  userHandle relyingParty signature clientDataHash authenticatorData credentialID extensionOutput =
-  withObjCPtr userHandle $ \raw_userHandle ->
-    withObjCPtr relyingParty $ \raw_relyingParty ->
-      withObjCPtr signature $ \raw_signature ->
-        withObjCPtr clientDataHash $ \raw_clientDataHash ->
-          withObjCPtr authenticatorData $ \raw_authenticatorData ->
-            withObjCPtr credentialID $ \raw_credentialID ->
-              withObjCPtr extensionOutput $ \raw_extensionOutput ->
-                  sendMsg asPasskeyAssertionCredential (mkSelector "initWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:extensionOutput:") (retPtr retVoid) [argPtr (castPtr raw_userHandle :: Ptr ()), argPtr (castPtr raw_relyingParty :: Ptr ()), argPtr (castPtr raw_signature :: Ptr ()), argPtr (castPtr raw_clientDataHash :: Ptr ()), argPtr (castPtr raw_authenticatorData :: Ptr ()), argPtr (castPtr raw_credentialID :: Ptr ()), argPtr (castPtr raw_extensionOutput :: Ptr ())] >>= ownedObject . castPtr
+initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID_extensionOutput asPasskeyAssertionCredential userHandle relyingParty signature clientDataHash authenticatorData credentialID extensionOutput =
+  sendOwnedMessage asPasskeyAssertionCredential initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID_extensionOutputSelector (toNSData userHandle) (toNSString relyingParty) (toNSData signature) (toNSData clientDataHash) (toNSData authenticatorData) (toNSData credentialID) (toASPasskeyAssertionCredentialExtensionOutput extensionOutput)
 
 -- | Creates and initializes a new ASPasskeyCredential object.
 --
@@ -103,116 +87,109 @@ credentialWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData
 credentialWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID userHandle relyingParty signature clientDataHash authenticatorData credentialID =
   do
     cls' <- getRequiredClass "ASPasskeyAssertionCredential"
-    withObjCPtr userHandle $ \raw_userHandle ->
-      withObjCPtr relyingParty $ \raw_relyingParty ->
-        withObjCPtr signature $ \raw_signature ->
-          withObjCPtr clientDataHash $ \raw_clientDataHash ->
-            withObjCPtr authenticatorData $ \raw_authenticatorData ->
-              withObjCPtr credentialID $ \raw_credentialID ->
-                sendClassMsg cls' (mkSelector "credentialWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:") (retPtr retVoid) [argPtr (castPtr raw_userHandle :: Ptr ()), argPtr (castPtr raw_relyingParty :: Ptr ()), argPtr (castPtr raw_signature :: Ptr ()), argPtr (castPtr raw_clientDataHash :: Ptr ()), argPtr (castPtr raw_authenticatorData :: Ptr ()), argPtr (castPtr raw_credentialID :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' credentialWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector (toNSData userHandle) (toNSString relyingParty) (toNSData signature) (toNSData clientDataHash) (toNSData authenticatorData) (toNSData credentialID)
 
 -- | The user handle of this passkey.
 --
 -- ObjC selector: @- userHandle@
 userHandle :: IsASPasskeyAssertionCredential asPasskeyAssertionCredential => asPasskeyAssertionCredential -> IO (Id NSData)
-userHandle asPasskeyAssertionCredential  =
-    sendMsg asPasskeyAssertionCredential (mkSelector "userHandle") (retPtr retVoid) [] >>= retainedObject . castPtr
+userHandle asPasskeyAssertionCredential =
+  sendMessage asPasskeyAssertionCredential userHandleSelector
 
 -- | The relying party of this credential.
 --
 -- ObjC selector: @- relyingParty@
 relyingParty :: IsASPasskeyAssertionCredential asPasskeyAssertionCredential => asPasskeyAssertionCredential -> IO (Id NSString)
-relyingParty asPasskeyAssertionCredential  =
-    sendMsg asPasskeyAssertionCredential (mkSelector "relyingParty") (retPtr retVoid) [] >>= retainedObject . castPtr
+relyingParty asPasskeyAssertionCredential =
+  sendMessage asPasskeyAssertionCredential relyingPartySelector
 
 -- | The signature of this credential.
 --
 -- ObjC selector: @- signature@
 signature :: IsASPasskeyAssertionCredential asPasskeyAssertionCredential => asPasskeyAssertionCredential -> IO (Id NSData)
-signature asPasskeyAssertionCredential  =
-    sendMsg asPasskeyAssertionCredential (mkSelector "signature") (retPtr retVoid) [] >>= retainedObject . castPtr
+signature asPasskeyAssertionCredential =
+  sendMessage asPasskeyAssertionCredential signatureSelector
 
 -- | The hash of the client data for this assertion result.
 --
 -- ObjC selector: @- clientDataHash@
 clientDataHash :: IsASPasskeyAssertionCredential asPasskeyAssertionCredential => asPasskeyAssertionCredential -> IO (Id NSData)
-clientDataHash asPasskeyAssertionCredential  =
-    sendMsg asPasskeyAssertionCredential (mkSelector "clientDataHash") (retPtr retVoid) [] >>= retainedObject . castPtr
+clientDataHash asPasskeyAssertionCredential =
+  sendMessage asPasskeyAssertionCredential clientDataHashSelector
 
 -- | The authenticator data of the application that created this credential.
 --
 -- ObjC selector: @- authenticatorData@
 authenticatorData :: IsASPasskeyAssertionCredential asPasskeyAssertionCredential => asPasskeyAssertionCredential -> IO (Id NSData)
-authenticatorData asPasskeyAssertionCredential  =
-    sendMsg asPasskeyAssertionCredential (mkSelector "authenticatorData") (retPtr retVoid) [] >>= retainedObject . castPtr
+authenticatorData asPasskeyAssertionCredential =
+  sendMessage asPasskeyAssertionCredential authenticatorDataSelector
 
 -- | The raw credential ID for this passkey credential.
 --
 -- ObjC selector: @- credentialID@
 credentialID :: IsASPasskeyAssertionCredential asPasskeyAssertionCredential => asPasskeyAssertionCredential -> IO (Id NSData)
-credentialID asPasskeyAssertionCredential  =
-    sendMsg asPasskeyAssertionCredential (mkSelector "credentialID") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentialID asPasskeyAssertionCredential =
+  sendMessage asPasskeyAssertionCredential credentialIDSelector
 
 -- | The outputs of WebAuthn extensions processed by the credential provider.
 --
 -- ObjC selector: @- extensionOutput@
 extensionOutput :: IsASPasskeyAssertionCredential asPasskeyAssertionCredential => asPasskeyAssertionCredential -> IO (Id ASPasskeyAssertionCredentialExtensionOutput)
-extensionOutput asPasskeyAssertionCredential  =
-    sendMsg asPasskeyAssertionCredential (mkSelector "extensionOutput") (retPtr retVoid) [] >>= retainedObject . castPtr
+extensionOutput asPasskeyAssertionCredential =
+  sendMessage asPasskeyAssertionCredential extensionOutputSelector
 
 -- | The outputs of WebAuthn extensions processed by the credential provider.
 --
 -- ObjC selector: @- setExtensionOutput:@
 setExtensionOutput :: (IsASPasskeyAssertionCredential asPasskeyAssertionCredential, IsASPasskeyAssertionCredentialExtensionOutput value) => asPasskeyAssertionCredential -> value -> IO ()
-setExtensionOutput asPasskeyAssertionCredential  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg asPasskeyAssertionCredential (mkSelector "setExtensionOutput:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtensionOutput asPasskeyAssertionCredential value =
+  sendMessage asPasskeyAssertionCredential setExtensionOutputSelector (toASPasskeyAssertionCredentialExtensionOutput value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:@
-initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector :: Selector
+initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector :: Selector '[Id NSData, Id NSString, Id NSData, Id NSData, Id NSData, Id NSData] (Id ASPasskeyAssertionCredential)
 initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector = mkSelector "initWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:"
 
 -- | @Selector@ for @initWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:extensionOutput:@
-initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID_extensionOutputSelector :: Selector
+initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID_extensionOutputSelector :: Selector '[Id NSData, Id NSString, Id NSData, Id NSData, Id NSData, Id NSData, Id ASPasskeyAssertionCredentialExtensionOutput] (Id ASPasskeyAssertionCredential)
 initWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialID_extensionOutputSelector = mkSelector "initWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:extensionOutput:"
 
 -- | @Selector@ for @credentialWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:@
-credentialWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector :: Selector
+credentialWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector :: Selector '[Id NSData, Id NSString, Id NSData, Id NSData, Id NSData, Id NSData] (Id ASPasskeyAssertionCredential)
 credentialWithUserHandle_relyingParty_signature_clientDataHash_authenticatorData_credentialIDSelector = mkSelector "credentialWithUserHandle:relyingParty:signature:clientDataHash:authenticatorData:credentialID:"
 
 -- | @Selector@ for @userHandle@
-userHandleSelector :: Selector
+userHandleSelector :: Selector '[] (Id NSData)
 userHandleSelector = mkSelector "userHandle"
 
 -- | @Selector@ for @relyingParty@
-relyingPartySelector :: Selector
+relyingPartySelector :: Selector '[] (Id NSString)
 relyingPartySelector = mkSelector "relyingParty"
 
 -- | @Selector@ for @signature@
-signatureSelector :: Selector
+signatureSelector :: Selector '[] (Id NSData)
 signatureSelector = mkSelector "signature"
 
 -- | @Selector@ for @clientDataHash@
-clientDataHashSelector :: Selector
+clientDataHashSelector :: Selector '[] (Id NSData)
 clientDataHashSelector = mkSelector "clientDataHash"
 
 -- | @Selector@ for @authenticatorData@
-authenticatorDataSelector :: Selector
+authenticatorDataSelector :: Selector '[] (Id NSData)
 authenticatorDataSelector = mkSelector "authenticatorData"
 
 -- | @Selector@ for @credentialID@
-credentialIDSelector :: Selector
+credentialIDSelector :: Selector '[] (Id NSData)
 credentialIDSelector = mkSelector "credentialID"
 
 -- | @Selector@ for @extensionOutput@
-extensionOutputSelector :: Selector
+extensionOutputSelector :: Selector '[] (Id ASPasskeyAssertionCredentialExtensionOutput)
 extensionOutputSelector = mkSelector "extensionOutput"
 
 -- | @Selector@ for @setExtensionOutput:@
-setExtensionOutputSelector :: Selector
+setExtensionOutputSelector :: Selector '[Id ASPasskeyAssertionCredentialExtensionOutput] ()
 setExtensionOutputSelector = mkSelector "setExtensionOutput:"
 

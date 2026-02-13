@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,25 +19,21 @@ module ObjC.Virtualization.VZVirtualMachineView
   , setCapturesSystemKeys
   , automaticallyReconfiguresDisplay
   , setAutomaticallyReconfiguresDisplay
-  , virtualMachineSelector
-  , setVirtualMachineSelector
-  , capturesSystemKeysSelector
-  , setCapturesSystemKeysSelector
   , automaticallyReconfiguresDisplaySelector
+  , capturesSystemKeysSelector
   , setAutomaticallyReconfiguresDisplaySelector
+  , setCapturesSystemKeysSelector
+  , setVirtualMachineSelector
+  , virtualMachineSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,30 +45,29 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- virtualMachine@
 virtualMachine :: IsVZVirtualMachineView vzVirtualMachineView => vzVirtualMachineView -> IO (Id VZVirtualMachine)
-virtualMachine vzVirtualMachineView  =
-    sendMsg vzVirtualMachineView (mkSelector "virtualMachine") (retPtr retVoid) [] >>= retainedObject . castPtr
+virtualMachine vzVirtualMachineView =
+  sendMessage vzVirtualMachineView virtualMachineSelector
 
 -- | The virtual machine to display in the view.
 --
 -- ObjC selector: @- setVirtualMachine:@
 setVirtualMachine :: (IsVZVirtualMachineView vzVirtualMachineView, IsVZVirtualMachine value) => vzVirtualMachineView -> value -> IO ()
-setVirtualMachine vzVirtualMachineView  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg vzVirtualMachineView (mkSelector "setVirtualMachine:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVirtualMachine vzVirtualMachineView value =
+  sendMessage vzVirtualMachineView setVirtualMachineSelector (toVZVirtualMachine value)
 
 -- | Whether certain system hot keys should be sent to the guest instead of the host. Defaults to NO.
 --
 -- ObjC selector: @- capturesSystemKeys@
 capturesSystemKeys :: IsVZVirtualMachineView vzVirtualMachineView => vzVirtualMachineView -> IO Bool
-capturesSystemKeys vzVirtualMachineView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzVirtualMachineView (mkSelector "capturesSystemKeys") retCULong []
+capturesSystemKeys vzVirtualMachineView =
+  sendMessage vzVirtualMachineView capturesSystemKeysSelector
 
 -- | Whether certain system hot keys should be sent to the guest instead of the host. Defaults to NO.
 --
 -- ObjC selector: @- setCapturesSystemKeys:@
 setCapturesSystemKeys :: IsVZVirtualMachineView vzVirtualMachineView => vzVirtualMachineView -> Bool -> IO ()
-setCapturesSystemKeys vzVirtualMachineView  value =
-    sendMsg vzVirtualMachineView (mkSelector "setCapturesSystemKeys:") retVoid [argCULong (if value then 1 else 0)]
+setCapturesSystemKeys vzVirtualMachineView value =
+  sendMessage vzVirtualMachineView setCapturesSystemKeysSelector value
 
 -- | Automatically reconfigures the graphics display associated with this view with respect to view changes. Defaults to NO.
 --
@@ -81,8 +77,8 @@ setCapturesSystemKeys vzVirtualMachineView  value =
 --
 -- ObjC selector: @- automaticallyReconfiguresDisplay@
 automaticallyReconfiguresDisplay :: IsVZVirtualMachineView vzVirtualMachineView => vzVirtualMachineView -> IO Bool
-automaticallyReconfiguresDisplay vzVirtualMachineView  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzVirtualMachineView (mkSelector "automaticallyReconfiguresDisplay") retCULong []
+automaticallyReconfiguresDisplay vzVirtualMachineView =
+  sendMessage vzVirtualMachineView automaticallyReconfiguresDisplaySelector
 
 -- | Automatically reconfigures the graphics display associated with this view with respect to view changes. Defaults to NO.
 --
@@ -92,34 +88,34 @@ automaticallyReconfiguresDisplay vzVirtualMachineView  =
 --
 -- ObjC selector: @- setAutomaticallyReconfiguresDisplay:@
 setAutomaticallyReconfiguresDisplay :: IsVZVirtualMachineView vzVirtualMachineView => vzVirtualMachineView -> Bool -> IO ()
-setAutomaticallyReconfiguresDisplay vzVirtualMachineView  value =
-    sendMsg vzVirtualMachineView (mkSelector "setAutomaticallyReconfiguresDisplay:") retVoid [argCULong (if value then 1 else 0)]
+setAutomaticallyReconfiguresDisplay vzVirtualMachineView value =
+  sendMessage vzVirtualMachineView setAutomaticallyReconfiguresDisplaySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @virtualMachine@
-virtualMachineSelector :: Selector
+virtualMachineSelector :: Selector '[] (Id VZVirtualMachine)
 virtualMachineSelector = mkSelector "virtualMachine"
 
 -- | @Selector@ for @setVirtualMachine:@
-setVirtualMachineSelector :: Selector
+setVirtualMachineSelector :: Selector '[Id VZVirtualMachine] ()
 setVirtualMachineSelector = mkSelector "setVirtualMachine:"
 
 -- | @Selector@ for @capturesSystemKeys@
-capturesSystemKeysSelector :: Selector
+capturesSystemKeysSelector :: Selector '[] Bool
 capturesSystemKeysSelector = mkSelector "capturesSystemKeys"
 
 -- | @Selector@ for @setCapturesSystemKeys:@
-setCapturesSystemKeysSelector :: Selector
+setCapturesSystemKeysSelector :: Selector '[Bool] ()
 setCapturesSystemKeysSelector = mkSelector "setCapturesSystemKeys:"
 
 -- | @Selector@ for @automaticallyReconfiguresDisplay@
-automaticallyReconfiguresDisplaySelector :: Selector
+automaticallyReconfiguresDisplaySelector :: Selector '[] Bool
 automaticallyReconfiguresDisplaySelector = mkSelector "automaticallyReconfiguresDisplay"
 
 -- | @Selector@ for @setAutomaticallyReconfiguresDisplay:@
-setAutomaticallyReconfiguresDisplaySelector :: Selector
+setAutomaticallyReconfiguresDisplaySelector :: Selector '[Bool] ()
 setAutomaticallyReconfiguresDisplaySelector = mkSelector "setAutomaticallyReconfiguresDisplay:"
 

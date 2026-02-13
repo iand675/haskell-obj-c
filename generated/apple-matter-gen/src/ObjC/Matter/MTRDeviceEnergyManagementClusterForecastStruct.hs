@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,37 +25,33 @@ module ObjC.Matter.MTRDeviceEnergyManagementClusterForecastStruct
   , setSlots
   , forecastUpdateReason
   , setForecastUpdateReason
-  , forecastIDSelector
-  , setForecastIDSelector
   , activeSlotNumberSelector
-  , setActiveSlotNumberSelector
-  , startTimeSelector
-  , setStartTimeSelector
-  , endTimeSelector
-  , setEndTimeSelector
   , earliestStartTimeSelector
-  , setEarliestStartTimeSelector
-  , latestEndTimeSelector
-  , setLatestEndTimeSelector
-  , isPausableSelector
-  , setIsPausableSelector
-  , slotsSelector
-  , setSlotsSelector
+  , endTimeSelector
+  , forecastIDSelector
   , forecastUpdateReasonSelector
+  , isPausableSelector
+  , latestEndTimeSelector
+  , setActiveSlotNumberSelector
+  , setEarliestStartTimeSelector
+  , setEndTimeSelector
+  , setForecastIDSelector
   , setForecastUpdateReasonSelector
+  , setIsPausableSelector
+  , setLatestEndTimeSelector
+  , setSlotsSelector
+  , setStartTimeSelector
+  , slotsSelector
+  , startTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,176 +60,167 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- forecastID@
 forecastID :: IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct => mtrDeviceEnergyManagementClusterForecastStruct -> IO (Id NSNumber)
-forecastID mtrDeviceEnergyManagementClusterForecastStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "forecastID") (retPtr retVoid) [] >>= retainedObject . castPtr
+forecastID mtrDeviceEnergyManagementClusterForecastStruct =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct forecastIDSelector
 
 -- | @- setForecastID:@
 setForecastID :: (IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterForecastStruct -> value -> IO ()
-setForecastID mtrDeviceEnergyManagementClusterForecastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "setForecastID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setForecastID mtrDeviceEnergyManagementClusterForecastStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct setForecastIDSelector (toNSNumber value)
 
 -- | @- activeSlotNumber@
 activeSlotNumber :: IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct => mtrDeviceEnergyManagementClusterForecastStruct -> IO (Id NSNumber)
-activeSlotNumber mtrDeviceEnergyManagementClusterForecastStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "activeSlotNumber") (retPtr retVoid) [] >>= retainedObject . castPtr
+activeSlotNumber mtrDeviceEnergyManagementClusterForecastStruct =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct activeSlotNumberSelector
 
 -- | @- setActiveSlotNumber:@
 setActiveSlotNumber :: (IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterForecastStruct -> value -> IO ()
-setActiveSlotNumber mtrDeviceEnergyManagementClusterForecastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "setActiveSlotNumber:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setActiveSlotNumber mtrDeviceEnergyManagementClusterForecastStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct setActiveSlotNumberSelector (toNSNumber value)
 
 -- | @- startTime@
 startTime :: IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct => mtrDeviceEnergyManagementClusterForecastStruct -> IO (Id NSNumber)
-startTime mtrDeviceEnergyManagementClusterForecastStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "startTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+startTime mtrDeviceEnergyManagementClusterForecastStruct =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct startTimeSelector
 
 -- | @- setStartTime:@
 setStartTime :: (IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterForecastStruct -> value -> IO ()
-setStartTime mtrDeviceEnergyManagementClusterForecastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "setStartTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartTime mtrDeviceEnergyManagementClusterForecastStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct setStartTimeSelector (toNSNumber value)
 
 -- | @- endTime@
 endTime :: IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct => mtrDeviceEnergyManagementClusterForecastStruct -> IO (Id NSNumber)
-endTime mtrDeviceEnergyManagementClusterForecastStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "endTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+endTime mtrDeviceEnergyManagementClusterForecastStruct =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct endTimeSelector
 
 -- | @- setEndTime:@
 setEndTime :: (IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterForecastStruct -> value -> IO ()
-setEndTime mtrDeviceEnergyManagementClusterForecastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "setEndTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndTime mtrDeviceEnergyManagementClusterForecastStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct setEndTimeSelector (toNSNumber value)
 
 -- | @- earliestStartTime@
 earliestStartTime :: IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct => mtrDeviceEnergyManagementClusterForecastStruct -> IO (Id NSNumber)
-earliestStartTime mtrDeviceEnergyManagementClusterForecastStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "earliestStartTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+earliestStartTime mtrDeviceEnergyManagementClusterForecastStruct =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct earliestStartTimeSelector
 
 -- | @- setEarliestStartTime:@
 setEarliestStartTime :: (IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterForecastStruct -> value -> IO ()
-setEarliestStartTime mtrDeviceEnergyManagementClusterForecastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "setEarliestStartTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEarliestStartTime mtrDeviceEnergyManagementClusterForecastStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct setEarliestStartTimeSelector (toNSNumber value)
 
 -- | @- latestEndTime@
 latestEndTime :: IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct => mtrDeviceEnergyManagementClusterForecastStruct -> IO (Id NSNumber)
-latestEndTime mtrDeviceEnergyManagementClusterForecastStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "latestEndTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+latestEndTime mtrDeviceEnergyManagementClusterForecastStruct =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct latestEndTimeSelector
 
 -- | @- setLatestEndTime:@
 setLatestEndTime :: (IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterForecastStruct -> value -> IO ()
-setLatestEndTime mtrDeviceEnergyManagementClusterForecastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "setLatestEndTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLatestEndTime mtrDeviceEnergyManagementClusterForecastStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct setLatestEndTimeSelector (toNSNumber value)
 
 -- | @- isPausable@
 isPausable :: IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct => mtrDeviceEnergyManagementClusterForecastStruct -> IO (Id NSNumber)
-isPausable mtrDeviceEnergyManagementClusterForecastStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "isPausable") (retPtr retVoid) [] >>= retainedObject . castPtr
+isPausable mtrDeviceEnergyManagementClusterForecastStruct =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct isPausableSelector
 
 -- | @- setIsPausable:@
 setIsPausable :: (IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterForecastStruct -> value -> IO ()
-setIsPausable mtrDeviceEnergyManagementClusterForecastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "setIsPausable:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIsPausable mtrDeviceEnergyManagementClusterForecastStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct setIsPausableSelector (toNSNumber value)
 
 -- | @- slots@
 slots :: IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct => mtrDeviceEnergyManagementClusterForecastStruct -> IO (Id NSArray)
-slots mtrDeviceEnergyManagementClusterForecastStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "slots") (retPtr retVoid) [] >>= retainedObject . castPtr
+slots mtrDeviceEnergyManagementClusterForecastStruct =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct slotsSelector
 
 -- | @- setSlots:@
 setSlots :: (IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct, IsNSArray value) => mtrDeviceEnergyManagementClusterForecastStruct -> value -> IO ()
-setSlots mtrDeviceEnergyManagementClusterForecastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "setSlots:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSlots mtrDeviceEnergyManagementClusterForecastStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct setSlotsSelector (toNSArray value)
 
 -- | @- forecastUpdateReason@
 forecastUpdateReason :: IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct => mtrDeviceEnergyManagementClusterForecastStruct -> IO (Id NSNumber)
-forecastUpdateReason mtrDeviceEnergyManagementClusterForecastStruct  =
-    sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "forecastUpdateReason") (retPtr retVoid) [] >>= retainedObject . castPtr
+forecastUpdateReason mtrDeviceEnergyManagementClusterForecastStruct =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct forecastUpdateReasonSelector
 
 -- | @- setForecastUpdateReason:@
 setForecastUpdateReason :: (IsMTRDeviceEnergyManagementClusterForecastStruct mtrDeviceEnergyManagementClusterForecastStruct, IsNSNumber value) => mtrDeviceEnergyManagementClusterForecastStruct -> value -> IO ()
-setForecastUpdateReason mtrDeviceEnergyManagementClusterForecastStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDeviceEnergyManagementClusterForecastStruct (mkSelector "setForecastUpdateReason:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setForecastUpdateReason mtrDeviceEnergyManagementClusterForecastStruct value =
+  sendMessage mtrDeviceEnergyManagementClusterForecastStruct setForecastUpdateReasonSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @forecastID@
-forecastIDSelector :: Selector
+forecastIDSelector :: Selector '[] (Id NSNumber)
 forecastIDSelector = mkSelector "forecastID"
 
 -- | @Selector@ for @setForecastID:@
-setForecastIDSelector :: Selector
+setForecastIDSelector :: Selector '[Id NSNumber] ()
 setForecastIDSelector = mkSelector "setForecastID:"
 
 -- | @Selector@ for @activeSlotNumber@
-activeSlotNumberSelector :: Selector
+activeSlotNumberSelector :: Selector '[] (Id NSNumber)
 activeSlotNumberSelector = mkSelector "activeSlotNumber"
 
 -- | @Selector@ for @setActiveSlotNumber:@
-setActiveSlotNumberSelector :: Selector
+setActiveSlotNumberSelector :: Selector '[Id NSNumber] ()
 setActiveSlotNumberSelector = mkSelector "setActiveSlotNumber:"
 
 -- | @Selector@ for @startTime@
-startTimeSelector :: Selector
+startTimeSelector :: Selector '[] (Id NSNumber)
 startTimeSelector = mkSelector "startTime"
 
 -- | @Selector@ for @setStartTime:@
-setStartTimeSelector :: Selector
+setStartTimeSelector :: Selector '[Id NSNumber] ()
 setStartTimeSelector = mkSelector "setStartTime:"
 
 -- | @Selector@ for @endTime@
-endTimeSelector :: Selector
+endTimeSelector :: Selector '[] (Id NSNumber)
 endTimeSelector = mkSelector "endTime"
 
 -- | @Selector@ for @setEndTime:@
-setEndTimeSelector :: Selector
+setEndTimeSelector :: Selector '[Id NSNumber] ()
 setEndTimeSelector = mkSelector "setEndTime:"
 
 -- | @Selector@ for @earliestStartTime@
-earliestStartTimeSelector :: Selector
+earliestStartTimeSelector :: Selector '[] (Id NSNumber)
 earliestStartTimeSelector = mkSelector "earliestStartTime"
 
 -- | @Selector@ for @setEarliestStartTime:@
-setEarliestStartTimeSelector :: Selector
+setEarliestStartTimeSelector :: Selector '[Id NSNumber] ()
 setEarliestStartTimeSelector = mkSelector "setEarliestStartTime:"
 
 -- | @Selector@ for @latestEndTime@
-latestEndTimeSelector :: Selector
+latestEndTimeSelector :: Selector '[] (Id NSNumber)
 latestEndTimeSelector = mkSelector "latestEndTime"
 
 -- | @Selector@ for @setLatestEndTime:@
-setLatestEndTimeSelector :: Selector
+setLatestEndTimeSelector :: Selector '[Id NSNumber] ()
 setLatestEndTimeSelector = mkSelector "setLatestEndTime:"
 
 -- | @Selector@ for @isPausable@
-isPausableSelector :: Selector
+isPausableSelector :: Selector '[] (Id NSNumber)
 isPausableSelector = mkSelector "isPausable"
 
 -- | @Selector@ for @setIsPausable:@
-setIsPausableSelector :: Selector
+setIsPausableSelector :: Selector '[Id NSNumber] ()
 setIsPausableSelector = mkSelector "setIsPausable:"
 
 -- | @Selector@ for @slots@
-slotsSelector :: Selector
+slotsSelector :: Selector '[] (Id NSArray)
 slotsSelector = mkSelector "slots"
 
 -- | @Selector@ for @setSlots:@
-setSlotsSelector :: Selector
+setSlotsSelector :: Selector '[Id NSArray] ()
 setSlotsSelector = mkSelector "setSlots:"
 
 -- | @Selector@ for @forecastUpdateReason@
-forecastUpdateReasonSelector :: Selector
+forecastUpdateReasonSelector :: Selector '[] (Id NSNumber)
 forecastUpdateReasonSelector = mkSelector "forecastUpdateReason"
 
 -- | @Selector@ for @setForecastUpdateReason:@
-setForecastUpdateReasonSelector :: Selector
+setForecastUpdateReasonSelector :: Selector '[Id NSNumber] ()
 setForecastUpdateReasonSelector = mkSelector "setForecastUpdateReason:"
 

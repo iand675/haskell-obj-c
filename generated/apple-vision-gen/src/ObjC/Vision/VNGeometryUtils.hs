@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.Vision.VNGeometryUtils
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -52,18 +49,14 @@ boundingCircleForContour_error :: (IsVNContour contour, IsNSError error_) => con
 boundingCircleForContour_error contour error_ =
   do
     cls' <- getRequiredClass "VNGeometryUtils"
-    withObjCPtr contour $ \raw_contour ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "boundingCircleForContour:error:") (retPtr retVoid) [argPtr (castPtr raw_contour :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' boundingCircleForContour_errorSelector (toVNContour contour) (toNSError error_)
 
 -- | @+ boundingCircleForPoints:error:@
 boundingCircleForPoints_error :: (IsNSArray points, IsNSError error_) => points -> error_ -> IO (Id VNCircle)
 boundingCircleForPoints_error points error_ =
   do
     cls' <- getRequiredClass "VNGeometryUtils"
-    withObjCPtr points $ \raw_points ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "boundingCircleForPoints:error:") (retPtr retVoid) [argPtr (castPtr raw_points :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' boundingCircleForPoints_errorSelector (toNSArray points) (toNSError error_)
 
 -- | Calculates a closed contour area using Green's theorem. The contour is represented by a set of points in VNContour object,                   It's important to note that a random set of points, or a contour with self-crossing edges will likely produce undefined results				   Note that because this is based on a geometric shape the aspect ratio is important when using normalized points.				   This takes the aspect ratio of the contour into account when using a VNContour as an input.
 --
@@ -82,9 +75,7 @@ calculateArea_forContour_orientedArea_error :: (IsVNContour contour, IsNSError e
 calculateArea_forContour_orientedArea_error area contour orientedArea error_ =
   do
     cls' <- getRequiredClass "VNGeometryUtils"
-    withObjCPtr contour $ \raw_contour ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "calculateArea:forContour:orientedArea:error:") retCULong [argPtr area, argPtr (castPtr raw_contour :: Ptr ()), argCULong (if orientedArea then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' calculateArea_forContour_orientedArea_errorSelector area (toVNContour contour) orientedArea (toNSError error_)
 
 -- | Calculates perimeter, or a sum of all arc-lengths (edges), of a closed contour. The contour is represented by a set of points in VNContour object.				   Note that because this is based on a geometric shape the aspect ratio is important when using normalized points.				   This takes the aspect ratio of the contour into account when using a VNContour as an input.
 --
@@ -101,27 +92,25 @@ calculatePerimeter_forContour_error :: (IsVNContour contour, IsNSError error_) =
 calculatePerimeter_forContour_error perimeter contour error_ =
   do
     cls' <- getRequiredClass "VNGeometryUtils"
-    withObjCPtr contour $ \raw_contour ->
-      withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "calculatePerimeter:forContour:error:") retCULong [argPtr perimeter, argPtr (castPtr raw_contour :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+    sendClassMessage cls' calculatePerimeter_forContour_errorSelector perimeter (toVNContour contour) (toNSError error_)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @boundingCircleForContour:error:@
-boundingCircleForContour_errorSelector :: Selector
+boundingCircleForContour_errorSelector :: Selector '[Id VNContour, Id NSError] (Id VNCircle)
 boundingCircleForContour_errorSelector = mkSelector "boundingCircleForContour:error:"
 
 -- | @Selector@ for @boundingCircleForPoints:error:@
-boundingCircleForPoints_errorSelector :: Selector
+boundingCircleForPoints_errorSelector :: Selector '[Id NSArray, Id NSError] (Id VNCircle)
 boundingCircleForPoints_errorSelector = mkSelector "boundingCircleForPoints:error:"
 
 -- | @Selector@ for @calculateArea:forContour:orientedArea:error:@
-calculateArea_forContour_orientedArea_errorSelector :: Selector
+calculateArea_forContour_orientedArea_errorSelector :: Selector '[Ptr CDouble, Id VNContour, Bool, Id NSError] Bool
 calculateArea_forContour_orientedArea_errorSelector = mkSelector "calculateArea:forContour:orientedArea:error:"
 
 -- | @Selector@ for @calculatePerimeter:forContour:error:@
-calculatePerimeter_forContour_errorSelector :: Selector
+calculatePerimeter_forContour_errorSelector :: Selector '[Ptr CDouble, Id VNContour, Id NSError] Bool
 calculatePerimeter_forContour_errorSelector = mkSelector "calculatePerimeter:forContour:error:"
 

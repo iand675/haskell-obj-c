@@ -104,7 +104,7 @@ setupMenuBar app = do
 
   -- "Quit" item with Cmd+Q
   quitItem <- alloc @NSMenuItem >>=
-    \mi -> MI.initWithTitle_action_keyEquivalent mi ("Quit" :: Id NSString) App.terminateSelector ("q" :: Id NSString)
+    \mi -> MI.initWithTitle_action_keyEquivalent mi ("Quit" :: Id NSString) (asSel App.terminateSelector) ("q" :: Id NSString)
 
   Menu.addItem appMenu quitItem
 

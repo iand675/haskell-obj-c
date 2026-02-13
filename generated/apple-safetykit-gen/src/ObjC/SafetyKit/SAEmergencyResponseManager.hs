@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.SafetyKit.SAEmergencyResponseManager
   , dialVoiceCallToPhoneNumber_completionHandler
   , delegate
   , setDelegate
-  , dialVoiceCallToPhoneNumber_completionHandlerSelector
   , delegateSelector
+  , dialVoiceCallToPhoneNumber_completionHandlerSelector
   , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,9 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- dialVoiceCallToPhoneNumber:completionHandler:@
 dialVoiceCallToPhoneNumber_completionHandler :: (IsSAEmergencyResponseManager saEmergencyResponseManager, IsNSString phoneNumber) => saEmergencyResponseManager -> phoneNumber -> Ptr () -> IO ()
-dialVoiceCallToPhoneNumber_completionHandler saEmergencyResponseManager  phoneNumber handler =
-  withObjCPtr phoneNumber $ \raw_phoneNumber ->
-      sendMsg saEmergencyResponseManager (mkSelector "dialVoiceCallToPhoneNumber:completionHandler:") retVoid [argPtr (castPtr raw_phoneNumber :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+dialVoiceCallToPhoneNumber_completionHandler saEmergencyResponseManager phoneNumber handler =
+  sendMessage saEmergencyResponseManager dialVoiceCallToPhoneNumber_completionHandlerSelector (toNSString phoneNumber) handler
 
 -- | delegate
 --
@@ -57,8 +53,8 @@ dialVoiceCallToPhoneNumber_completionHandler saEmergencyResponseManager  phoneNu
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSAEmergencyResponseManager saEmergencyResponseManager => saEmergencyResponseManager -> IO RawId
-delegate saEmergencyResponseManager  =
-    fmap (RawId . castPtr) $ sendMsg saEmergencyResponseManager (mkSelector "delegate") (retPtr retVoid) []
+delegate saEmergencyResponseManager =
+  sendMessage saEmergencyResponseManager delegateSelector
 
 -- | delegate
 --
@@ -66,22 +62,22 @@ delegate saEmergencyResponseManager  =
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSAEmergencyResponseManager saEmergencyResponseManager => saEmergencyResponseManager -> RawId -> IO ()
-setDelegate saEmergencyResponseManager  value =
-    sendMsg saEmergencyResponseManager (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate saEmergencyResponseManager value =
+  sendMessage saEmergencyResponseManager setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dialVoiceCallToPhoneNumber:completionHandler:@
-dialVoiceCallToPhoneNumber_completionHandlerSelector :: Selector
+dialVoiceCallToPhoneNumber_completionHandlerSelector :: Selector '[Id NSString, Ptr ()] ()
 dialVoiceCallToPhoneNumber_completionHandlerSelector = mkSelector "dialVoiceCallToPhoneNumber:completionHandler:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

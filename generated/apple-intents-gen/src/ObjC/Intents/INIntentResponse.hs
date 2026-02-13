@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.Intents.INIntentResponse
   , IsINIntentResponse(..)
   , userActivity
   , setUserActivity
-  , userActivitySelector
   , setUserActivitySelector
+  , userActivitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- userActivity@
 userActivity :: IsINIntentResponse inIntentResponse => inIntentResponse -> IO (Id NSUserActivity)
-userActivity inIntentResponse  =
-    sendMsg inIntentResponse (mkSelector "userActivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+userActivity inIntentResponse =
+  sendMessage inIntentResponse userActivitySelector
 
 -- | @- setUserActivity:@
 setUserActivity :: (IsINIntentResponse inIntentResponse, IsNSUserActivity value) => inIntentResponse -> value -> IO ()
-setUserActivity inIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inIntentResponse (mkSelector "setUserActivity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserActivity inIntentResponse value =
+  sendMessage inIntentResponse setUserActivitySelector (toNSUserActivity value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @userActivity@
-userActivitySelector :: Selector
+userActivitySelector :: Selector '[] (Id NSUserActivity)
 userActivitySelector = mkSelector "userActivity"
 
 -- | @Selector@ for @setUserActivity:@
-setUserActivitySelector :: Selector
+setUserActivitySelector :: Selector '[Id NSUserActivity] ()
 setUserActivitySelector = mkSelector "setUserActivity:"
 

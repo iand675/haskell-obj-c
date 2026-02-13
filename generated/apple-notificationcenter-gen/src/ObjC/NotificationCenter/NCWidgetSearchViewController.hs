@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.NotificationCenter.NCWidgetSearchViewController
   , searchResultKeyPath
   , setSearchResultKeyPath
   , delegateSelector
-  , setDelegateSelector
-  , searchResultsSelector
-  , setSearchResultsSelector
   , searchDescriptionSelector
-  , setSearchDescriptionSelector
-  , searchResultsPlaceholderStringSelector
-  , setSearchResultsPlaceholderStringSelector
   , searchResultKeyPathSelector
+  , searchResultsPlaceholderStringSelector
+  , searchResultsSelector
+  , setDelegateSelector
+  , setSearchDescriptionSelector
   , setSearchResultKeyPathSelector
+  , setSearchResultsPlaceholderStringSelector
+  , setSearchResultsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,99 +45,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- delegate@
 delegate :: IsNCWidgetSearchViewController ncWidgetSearchViewController => ncWidgetSearchViewController -> IO RawId
-delegate ncWidgetSearchViewController  =
-    fmap (RawId . castPtr) $ sendMsg ncWidgetSearchViewController (mkSelector "delegate") (retPtr retVoid) []
+delegate ncWidgetSearchViewController =
+  sendMessage ncWidgetSearchViewController delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNCWidgetSearchViewController ncWidgetSearchViewController => ncWidgetSearchViewController -> RawId -> IO ()
-setDelegate ncWidgetSearchViewController  value =
-    sendMsg ncWidgetSearchViewController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate ncWidgetSearchViewController value =
+  sendMessage ncWidgetSearchViewController setDelegateSelector value
 
 -- | @- searchResults@
 searchResults :: IsNCWidgetSearchViewController ncWidgetSearchViewController => ncWidgetSearchViewController -> IO (Id NSArray)
-searchResults ncWidgetSearchViewController  =
-    sendMsg ncWidgetSearchViewController (mkSelector "searchResults") (retPtr retVoid) [] >>= retainedObject . castPtr
+searchResults ncWidgetSearchViewController =
+  sendMessage ncWidgetSearchViewController searchResultsSelector
 
 -- | @- setSearchResults:@
 setSearchResults :: (IsNCWidgetSearchViewController ncWidgetSearchViewController, IsNSArray value) => ncWidgetSearchViewController -> value -> IO ()
-setSearchResults ncWidgetSearchViewController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ncWidgetSearchViewController (mkSelector "setSearchResults:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSearchResults ncWidgetSearchViewController value =
+  sendMessage ncWidgetSearchViewController setSearchResultsSelector (toNSArray value)
 
 -- | @- searchDescription@
 searchDescription :: IsNCWidgetSearchViewController ncWidgetSearchViewController => ncWidgetSearchViewController -> IO (Id NSString)
-searchDescription ncWidgetSearchViewController  =
-    sendMsg ncWidgetSearchViewController (mkSelector "searchDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+searchDescription ncWidgetSearchViewController =
+  sendMessage ncWidgetSearchViewController searchDescriptionSelector
 
 -- | @- setSearchDescription:@
 setSearchDescription :: (IsNCWidgetSearchViewController ncWidgetSearchViewController, IsNSString value) => ncWidgetSearchViewController -> value -> IO ()
-setSearchDescription ncWidgetSearchViewController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ncWidgetSearchViewController (mkSelector "setSearchDescription:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSearchDescription ncWidgetSearchViewController value =
+  sendMessage ncWidgetSearchViewController setSearchDescriptionSelector (toNSString value)
 
 -- | @- searchResultsPlaceholderString@
 searchResultsPlaceholderString :: IsNCWidgetSearchViewController ncWidgetSearchViewController => ncWidgetSearchViewController -> IO (Id NSString)
-searchResultsPlaceholderString ncWidgetSearchViewController  =
-    sendMsg ncWidgetSearchViewController (mkSelector "searchResultsPlaceholderString") (retPtr retVoid) [] >>= retainedObject . castPtr
+searchResultsPlaceholderString ncWidgetSearchViewController =
+  sendMessage ncWidgetSearchViewController searchResultsPlaceholderStringSelector
 
 -- | @- setSearchResultsPlaceholderString:@
 setSearchResultsPlaceholderString :: (IsNCWidgetSearchViewController ncWidgetSearchViewController, IsNSString value) => ncWidgetSearchViewController -> value -> IO ()
-setSearchResultsPlaceholderString ncWidgetSearchViewController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ncWidgetSearchViewController (mkSelector "setSearchResultsPlaceholderString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSearchResultsPlaceholderString ncWidgetSearchViewController value =
+  sendMessage ncWidgetSearchViewController setSearchResultsPlaceholderStringSelector (toNSString value)
 
 -- | @- searchResultKeyPath@
 searchResultKeyPath :: IsNCWidgetSearchViewController ncWidgetSearchViewController => ncWidgetSearchViewController -> IO (Id NSString)
-searchResultKeyPath ncWidgetSearchViewController  =
-    sendMsg ncWidgetSearchViewController (mkSelector "searchResultKeyPath") (retPtr retVoid) [] >>= retainedObject . castPtr
+searchResultKeyPath ncWidgetSearchViewController =
+  sendMessage ncWidgetSearchViewController searchResultKeyPathSelector
 
 -- | @- setSearchResultKeyPath:@
 setSearchResultKeyPath :: (IsNCWidgetSearchViewController ncWidgetSearchViewController, IsNSString value) => ncWidgetSearchViewController -> value -> IO ()
-setSearchResultKeyPath ncWidgetSearchViewController  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg ncWidgetSearchViewController (mkSelector "setSearchResultKeyPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSearchResultKeyPath ncWidgetSearchViewController value =
+  sendMessage ncWidgetSearchViewController setSearchResultKeyPathSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @searchResults@
-searchResultsSelector :: Selector
+searchResultsSelector :: Selector '[] (Id NSArray)
 searchResultsSelector = mkSelector "searchResults"
 
 -- | @Selector@ for @setSearchResults:@
-setSearchResultsSelector :: Selector
+setSearchResultsSelector :: Selector '[Id NSArray] ()
 setSearchResultsSelector = mkSelector "setSearchResults:"
 
 -- | @Selector@ for @searchDescription@
-searchDescriptionSelector :: Selector
+searchDescriptionSelector :: Selector '[] (Id NSString)
 searchDescriptionSelector = mkSelector "searchDescription"
 
 -- | @Selector@ for @setSearchDescription:@
-setSearchDescriptionSelector :: Selector
+setSearchDescriptionSelector :: Selector '[Id NSString] ()
 setSearchDescriptionSelector = mkSelector "setSearchDescription:"
 
 -- | @Selector@ for @searchResultsPlaceholderString@
-searchResultsPlaceholderStringSelector :: Selector
+searchResultsPlaceholderStringSelector :: Selector '[] (Id NSString)
 searchResultsPlaceholderStringSelector = mkSelector "searchResultsPlaceholderString"
 
 -- | @Selector@ for @setSearchResultsPlaceholderString:@
-setSearchResultsPlaceholderStringSelector :: Selector
+setSearchResultsPlaceholderStringSelector :: Selector '[Id NSString] ()
 setSearchResultsPlaceholderStringSelector = mkSelector "setSearchResultsPlaceholderString:"
 
 -- | @Selector@ for @searchResultKeyPath@
-searchResultKeyPathSelector :: Selector
+searchResultKeyPathSelector :: Selector '[] (Id NSString)
 searchResultKeyPathSelector = mkSelector "searchResultKeyPath"
 
 -- | @Selector@ for @setSearchResultKeyPath:@
-setSearchResultKeyPathSelector :: Selector
+setSearchResultKeyPathSelector :: Selector '[Id NSString] ()
 setSearchResultKeyPathSelector = mkSelector "setSearchResultKeyPath:"
 

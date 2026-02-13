@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.NaturalLanguage.NLTokenizer
   , unit
   , string
   , setString
+  , enumerateTokensInRange_usingBlockSelector
   , initWithUnitSelector
   , setLanguageSelector
+  , setStringSelector
+  , stringSelector
   , tokenRangeAtIndexSelector
   , tokenRangeForRangeSelector
   , tokensForRangeSelector
-  , enumerateTokensInRange_usingBlockSelector
   , unitSelector
-  , stringSelector
-  , setStringSelector
 
   -- * Enum types
   , NLTokenUnit(NLTokenUnit)
@@ -35,15 +36,11 @@ module ObjC.NaturalLanguage.NLTokenizer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,88 +51,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithUnit:@
 initWithUnit :: IsNLTokenizer nlTokenizer => nlTokenizer -> NLTokenUnit -> IO (Id NLTokenizer)
-initWithUnit nlTokenizer  unit =
-    sendMsg nlTokenizer (mkSelector "initWithUnit:") (retPtr retVoid) [argCLong (coerce unit)] >>= ownedObject . castPtr
+initWithUnit nlTokenizer unit =
+  sendOwnedMessage nlTokenizer initWithUnitSelector unit
 
 -- | @- setLanguage:@
 setLanguage :: (IsNLTokenizer nlTokenizer, IsNSString language) => nlTokenizer -> language -> IO ()
-setLanguage nlTokenizer  language =
-  withObjCPtr language $ \raw_language ->
-      sendMsg nlTokenizer (mkSelector "setLanguage:") retVoid [argPtr (castPtr raw_language :: Ptr ())]
+setLanguage nlTokenizer language =
+  sendMessage nlTokenizer setLanguageSelector (toNSString language)
 
 -- | @- tokenRangeAtIndex:@
 tokenRangeAtIndex :: IsNLTokenizer nlTokenizer => nlTokenizer -> CULong -> IO NSRange
-tokenRangeAtIndex nlTokenizer  characterIndex =
-    sendMsgStret nlTokenizer (mkSelector "tokenRangeAtIndex:") retNSRange [argCULong characterIndex]
+tokenRangeAtIndex nlTokenizer characterIndex =
+  sendMessage nlTokenizer tokenRangeAtIndexSelector characterIndex
 
 -- | @- tokenRangeForRange:@
 tokenRangeForRange :: IsNLTokenizer nlTokenizer => nlTokenizer -> NSRange -> IO NSRange
-tokenRangeForRange nlTokenizer  range =
-    sendMsgStret nlTokenizer (mkSelector "tokenRangeForRange:") retNSRange [argNSRange range]
+tokenRangeForRange nlTokenizer range =
+  sendMessage nlTokenizer tokenRangeForRangeSelector range
 
 -- | @- tokensForRange:@
 tokensForRange :: IsNLTokenizer nlTokenizer => nlTokenizer -> NSRange -> IO (Id NSArray)
-tokensForRange nlTokenizer  range =
-    sendMsg nlTokenizer (mkSelector "tokensForRange:") (retPtr retVoid) [argNSRange range] >>= retainedObject . castPtr
+tokensForRange nlTokenizer range =
+  sendMessage nlTokenizer tokensForRangeSelector range
 
 -- | @- enumerateTokensInRange:usingBlock:@
 enumerateTokensInRange_usingBlock :: IsNLTokenizer nlTokenizer => nlTokenizer -> NSRange -> Ptr () -> IO ()
-enumerateTokensInRange_usingBlock nlTokenizer  range block =
-    sendMsg nlTokenizer (mkSelector "enumerateTokensInRange:usingBlock:") retVoid [argNSRange range, argPtr (castPtr block :: Ptr ())]
+enumerateTokensInRange_usingBlock nlTokenizer range block =
+  sendMessage nlTokenizer enumerateTokensInRange_usingBlockSelector range block
 
 -- | @- unit@
 unit :: IsNLTokenizer nlTokenizer => nlTokenizer -> IO NLTokenUnit
-unit nlTokenizer  =
-    fmap (coerce :: CLong -> NLTokenUnit) $ sendMsg nlTokenizer (mkSelector "unit") retCLong []
+unit nlTokenizer =
+  sendMessage nlTokenizer unitSelector
 
 -- | @- string@
 string :: IsNLTokenizer nlTokenizer => nlTokenizer -> IO (Id NSString)
-string nlTokenizer  =
-    sendMsg nlTokenizer (mkSelector "string") (retPtr retVoid) [] >>= retainedObject . castPtr
+string nlTokenizer =
+  sendMessage nlTokenizer stringSelector
 
 -- | @- setString:@
 setString :: (IsNLTokenizer nlTokenizer, IsNSString value) => nlTokenizer -> value -> IO ()
-setString nlTokenizer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nlTokenizer (mkSelector "setString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setString nlTokenizer value =
+  sendMessage nlTokenizer setStringSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithUnit:@
-initWithUnitSelector :: Selector
+initWithUnitSelector :: Selector '[NLTokenUnit] (Id NLTokenizer)
 initWithUnitSelector = mkSelector "initWithUnit:"
 
 -- | @Selector@ for @setLanguage:@
-setLanguageSelector :: Selector
+setLanguageSelector :: Selector '[Id NSString] ()
 setLanguageSelector = mkSelector "setLanguage:"
 
 -- | @Selector@ for @tokenRangeAtIndex:@
-tokenRangeAtIndexSelector :: Selector
+tokenRangeAtIndexSelector :: Selector '[CULong] NSRange
 tokenRangeAtIndexSelector = mkSelector "tokenRangeAtIndex:"
 
 -- | @Selector@ for @tokenRangeForRange:@
-tokenRangeForRangeSelector :: Selector
+tokenRangeForRangeSelector :: Selector '[NSRange] NSRange
 tokenRangeForRangeSelector = mkSelector "tokenRangeForRange:"
 
 -- | @Selector@ for @tokensForRange:@
-tokensForRangeSelector :: Selector
+tokensForRangeSelector :: Selector '[NSRange] (Id NSArray)
 tokensForRangeSelector = mkSelector "tokensForRange:"
 
 -- | @Selector@ for @enumerateTokensInRange:usingBlock:@
-enumerateTokensInRange_usingBlockSelector :: Selector
+enumerateTokensInRange_usingBlockSelector :: Selector '[NSRange, Ptr ()] ()
 enumerateTokensInRange_usingBlockSelector = mkSelector "enumerateTokensInRange:usingBlock:"
 
 -- | @Selector@ for @unit@
-unitSelector :: Selector
+unitSelector :: Selector '[] NLTokenUnit
 unitSelector = mkSelector "unit"
 
 -- | @Selector@ for @string@
-stringSelector :: Selector
+stringSelector :: Selector '[] (Id NSString)
 stringSelector = mkSelector "string"
 
 -- | @Selector@ for @setString:@
-setStringSelector :: Selector
+setStringSelector :: Selector '[Id NSString] ()
 setStringSelector = mkSelector "setString:"
 

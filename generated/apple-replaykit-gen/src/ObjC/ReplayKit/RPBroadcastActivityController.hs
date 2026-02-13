@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.ReplayKit.RPBroadcastActivityController
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -38,25 +35,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- delegate@
 delegate :: IsRPBroadcastActivityController rpBroadcastActivityController => rpBroadcastActivityController -> IO RawId
-delegate rpBroadcastActivityController  =
-    fmap (RawId . castPtr) $ sendMsg rpBroadcastActivityController (mkSelector "delegate") (retPtr retVoid) []
+delegate rpBroadcastActivityController =
+  sendMessage rpBroadcastActivityController delegateSelector
 
 -- | Delegate that is notified when the activity view controller is complete.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsRPBroadcastActivityController rpBroadcastActivityController => rpBroadcastActivityController -> RawId -> IO ()
-setDelegate rpBroadcastActivityController  value =
-    sendMsg rpBroadcastActivityController (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate rpBroadcastActivityController value =
+  sendMessage rpBroadcastActivityController setDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 

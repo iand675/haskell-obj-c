@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.AVFAudio.AVAudioSessionRouteDescription
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,25 +32,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- inputs@
 inputs :: IsAVAudioSessionRouteDescription avAudioSessionRouteDescription => avAudioSessionRouteDescription -> IO (Id NSArray)
-inputs avAudioSessionRouteDescription  =
-    sendMsg avAudioSessionRouteDescription (mkSelector "inputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+inputs avAudioSessionRouteDescription =
+  sendMessage avAudioSessionRouteDescription inputsSelector
 
 -- | Flattened list of all output port descriptions associated with all the streams as part of the route.
 --
 -- ObjC selector: @- outputs@
 outputs :: IsAVAudioSessionRouteDescription avAudioSessionRouteDescription => avAudioSessionRouteDescription -> IO (Id NSArray)
-outputs avAudioSessionRouteDescription  =
-    sendMsg avAudioSessionRouteDescription (mkSelector "outputs") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputs avAudioSessionRouteDescription =
+  sendMessage avAudioSessionRouteDescription outputsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @inputs@
-inputsSelector :: Selector
+inputsSelector :: Selector '[] (Id NSArray)
 inputsSelector = mkSelector "inputs"
 
 -- | @Selector@ for @outputs@
-outputsSelector :: Selector
+outputsSelector :: Selector '[] (Id NSArray)
 outputsSelector = mkSelector "outputs"
 

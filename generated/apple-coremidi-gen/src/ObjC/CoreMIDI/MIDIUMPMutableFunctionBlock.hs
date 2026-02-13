@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,9 +24,9 @@ module ObjC.CoreMIDI.MIDIUMPMutableFunctionBlock
   , umpEndpoint
   , initSelector
   , initWithName_direction_firstGroup_totalGroupsSpanned_maxSysEx8Streams_MIDI1Info_UIHint_isEnabledSelector
+  , reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_errorSelector
   , setEnabled_errorSelector
   , setName_errorSelector
-  , reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_errorSelector
   , umpEndpointSelector
 
   -- * Enum types
@@ -46,15 +47,11 @@ module ObjC.CoreMIDI.MIDIUMPMutableFunctionBlock
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,8 +61,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMIDIUMPMutableFunctionBlock midiumpMutableFunctionBlock => midiumpMutableFunctionBlock -> IO (Id MIDIUMPMutableFunctionBlock)
-init_ midiumpMutableFunctionBlock  =
-    sendMsg midiumpMutableFunctionBlock (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ midiumpMutableFunctionBlock =
+  sendOwnedMessage midiumpMutableFunctionBlock initSelector
 
 -- | initWithName:direction:firstGroup:totalGroupsSpanned:maxSysEx8Streams:MIDI1Info:UIHint:isEnabled:
 --
@@ -91,9 +88,8 @@ init_ midiumpMutableFunctionBlock  =
 --
 -- ObjC selector: @- initWithName:direction:firstGroup:totalGroupsSpanned:maxSysEx8Streams:MIDI1Info:UIHint:isEnabled:@
 initWithName_direction_firstGroup_totalGroupsSpanned_maxSysEx8Streams_MIDI1Info_UIHint_isEnabled :: (IsMIDIUMPMutableFunctionBlock midiumpMutableFunctionBlock, IsNSString name) => midiumpMutableFunctionBlock -> name -> MIDIUMPFunctionBlockDirection -> CUChar -> CUChar -> CUChar -> MIDIUMPFunctionBlockMIDI1Info -> MIDIUMPFunctionBlockUIHint -> Bool -> IO (Id MIDIUMPMutableFunctionBlock)
-initWithName_direction_firstGroup_totalGroupsSpanned_maxSysEx8Streams_MIDI1Info_UIHint_isEnabled midiumpMutableFunctionBlock  name direction firstGroup totalGroupsSpanned maxSysEx8Streams midI1Info uiHint isEnabled =
-  withObjCPtr name $ \raw_name ->
-      sendMsg midiumpMutableFunctionBlock (mkSelector "initWithName:direction:firstGroup:totalGroupsSpanned:maxSysEx8Streams:MIDI1Info:UIHint:isEnabled:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCInt (coerce direction), argCUChar firstGroup, argCUChar totalGroupsSpanned, argCUChar maxSysEx8Streams, argCInt (coerce midI1Info), argCInt (coerce uiHint), argCULong (if isEnabled then 1 else 0)] >>= ownedObject . castPtr
+initWithName_direction_firstGroup_totalGroupsSpanned_maxSysEx8Streams_MIDI1Info_UIHint_isEnabled midiumpMutableFunctionBlock name direction firstGroup totalGroupsSpanned maxSysEx8Streams midI1Info uiHint isEnabled =
+  sendOwnedMessage midiumpMutableFunctionBlock initWithName_direction_firstGroup_totalGroupsSpanned_maxSysEx8Streams_MIDI1Info_UIHint_isEnabledSelector (toNSString name) direction firstGroup totalGroupsSpanned maxSysEx8Streams midI1Info uiHint isEnabled
 
 -- | setEnabled:error:
 --
@@ -109,9 +105,8 @@ initWithName_direction_firstGroup_totalGroupsSpanned_maxSysEx8Streams_MIDI1Info_
 --
 -- ObjC selector: @- setEnabled:error:@
 setEnabled_error :: (IsMIDIUMPMutableFunctionBlock midiumpMutableFunctionBlock, IsNSError error_) => midiumpMutableFunctionBlock -> Bool -> error_ -> IO Bool
-setEnabled_error midiumpMutableFunctionBlock  isEnabled error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpMutableFunctionBlock (mkSelector "setEnabled:error:") retCULong [argCULong (if isEnabled then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+setEnabled_error midiumpMutableFunctionBlock isEnabled error_ =
+  sendMessage midiumpMutableFunctionBlock setEnabled_errorSelector isEnabled (toNSError error_)
 
 -- | setName:error:
 --
@@ -127,10 +122,8 @@ setEnabled_error midiumpMutableFunctionBlock  isEnabled error_ =
 --
 -- ObjC selector: @- setName:error:@
 setName_error :: (IsMIDIUMPMutableFunctionBlock midiumpMutableFunctionBlock, IsNSString name, IsNSError error_) => midiumpMutableFunctionBlock -> name -> error_ -> IO Bool
-setName_error midiumpMutableFunctionBlock  name error_ =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpMutableFunctionBlock (mkSelector "setName:error:") retCULong [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setName_error midiumpMutableFunctionBlock name error_ =
+  sendMessage midiumpMutableFunctionBlock setName_errorSelector (toNSString name) (toNSError error_)
 
 -- | reconfigureWithFirstGroup:direction:MIDI1Info:UIHint:error
 --
@@ -148,9 +141,8 @@ setName_error midiumpMutableFunctionBlock  name error_ =
 --
 -- ObjC selector: @- reconfigureWithFirstGroup:direction:MIDI1Info:UIHint:error:@
 reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_error :: (IsMIDIUMPMutableFunctionBlock midiumpMutableFunctionBlock, IsNSError error_) => midiumpMutableFunctionBlock -> CUChar -> MIDIUMPFunctionBlockDirection -> MIDIUMPFunctionBlockMIDI1Info -> MIDIUMPFunctionBlockUIHint -> error_ -> IO Bool
-reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_error midiumpMutableFunctionBlock  firstGroup direction midI1Info uiHint error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg midiumpMutableFunctionBlock (mkSelector "reconfigureWithFirstGroup:direction:MIDI1Info:UIHint:error:") retCULong [argCUChar firstGroup, argCInt (coerce direction), argCInt (coerce midI1Info), argCInt (coerce uiHint), argPtr (castPtr raw_error_ :: Ptr ())]
+reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_error midiumpMutableFunctionBlock firstGroup direction midI1Info uiHint error_ =
+  sendMessage midiumpMutableFunctionBlock reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_errorSelector firstGroup direction midI1Info uiHint (toNSError error_)
 
 -- | UMPEndpoint
 --
@@ -158,34 +150,34 @@ reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_error midiumpMutableFunctio
 --
 -- ObjC selector: @- UMPEndpoint@
 umpEndpoint :: IsMIDIUMPMutableFunctionBlock midiumpMutableFunctionBlock => midiumpMutableFunctionBlock -> IO (Id MIDIUMPMutableEndpoint)
-umpEndpoint midiumpMutableFunctionBlock  =
-    sendMsg midiumpMutableFunctionBlock (mkSelector "UMPEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+umpEndpoint midiumpMutableFunctionBlock =
+  sendMessage midiumpMutableFunctionBlock umpEndpointSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MIDIUMPMutableFunctionBlock)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithName:direction:firstGroup:totalGroupsSpanned:maxSysEx8Streams:MIDI1Info:UIHint:isEnabled:@
-initWithName_direction_firstGroup_totalGroupsSpanned_maxSysEx8Streams_MIDI1Info_UIHint_isEnabledSelector :: Selector
+initWithName_direction_firstGroup_totalGroupsSpanned_maxSysEx8Streams_MIDI1Info_UIHint_isEnabledSelector :: Selector '[Id NSString, MIDIUMPFunctionBlockDirection, CUChar, CUChar, CUChar, MIDIUMPFunctionBlockMIDI1Info, MIDIUMPFunctionBlockUIHint, Bool] (Id MIDIUMPMutableFunctionBlock)
 initWithName_direction_firstGroup_totalGroupsSpanned_maxSysEx8Streams_MIDI1Info_UIHint_isEnabledSelector = mkSelector "initWithName:direction:firstGroup:totalGroupsSpanned:maxSysEx8Streams:MIDI1Info:UIHint:isEnabled:"
 
 -- | @Selector@ for @setEnabled:error:@
-setEnabled_errorSelector :: Selector
+setEnabled_errorSelector :: Selector '[Bool, Id NSError] Bool
 setEnabled_errorSelector = mkSelector "setEnabled:error:"
 
 -- | @Selector@ for @setName:error:@
-setName_errorSelector :: Selector
+setName_errorSelector :: Selector '[Id NSString, Id NSError] Bool
 setName_errorSelector = mkSelector "setName:error:"
 
 -- | @Selector@ for @reconfigureWithFirstGroup:direction:MIDI1Info:UIHint:error:@
-reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_errorSelector :: Selector
+reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_errorSelector :: Selector '[CUChar, MIDIUMPFunctionBlockDirection, MIDIUMPFunctionBlockMIDI1Info, MIDIUMPFunctionBlockUIHint, Id NSError] Bool
 reconfigureWithFirstGroup_direction_MIDI1Info_UIHint_errorSelector = mkSelector "reconfigureWithFirstGroup:direction:MIDI1Info:UIHint:error:"
 
 -- | @Selector@ for @UMPEndpoint@
-umpEndpointSelector :: Selector
+umpEndpointSelector :: Selector '[] (Id MIDIUMPMutableEndpoint)
 umpEndpointSelector = mkSelector "UMPEndpoint"
 

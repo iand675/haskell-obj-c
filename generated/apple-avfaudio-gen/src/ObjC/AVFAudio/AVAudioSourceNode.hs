@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.AVFAudio.AVAudioSourceNode
   , initWithRenderBlock
   , initWithFormat_renderBlock
   , initSelector
-  , initWithRenderBlockSelector
   , initWithFormat_renderBlockSelector
+  , initWithRenderBlockSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAudioSourceNode avAudioSourceNode => avAudioSourceNode -> IO (Id AVAudioSourceNode)
-init_ avAudioSourceNode  =
-    sendMsg avAudioSourceNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAudioSourceNode =
+  sendOwnedMessage avAudioSourceNode initSelector
 
 -- | initWithRenderBlock:
 --
@@ -56,8 +53,8 @@ init_ avAudioSourceNode  =
 --
 -- ObjC selector: @- initWithRenderBlock:@
 initWithRenderBlock :: IsAVAudioSourceNode avAudioSourceNode => avAudioSourceNode -> Ptr () -> IO (Id AVAudioSourceNode)
-initWithRenderBlock avAudioSourceNode  block =
-    sendMsg avAudioSourceNode (mkSelector "initWithRenderBlock:") (retPtr retVoid) [argPtr (castPtr block :: Ptr ())] >>= ownedObject . castPtr
+initWithRenderBlock avAudioSourceNode block =
+  sendOwnedMessage avAudioSourceNode initWithRenderBlockSelector block
 
 -- | initWithFormat:renderBlock:
 --
@@ -75,23 +72,22 @@ initWithRenderBlock avAudioSourceNode  block =
 --
 -- ObjC selector: @- initWithFormat:renderBlock:@
 initWithFormat_renderBlock :: (IsAVAudioSourceNode avAudioSourceNode, IsAVAudioFormat format) => avAudioSourceNode -> format -> Ptr () -> IO (Id AVAudioSourceNode)
-initWithFormat_renderBlock avAudioSourceNode  format block =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avAudioSourceNode (mkSelector "initWithFormat:renderBlock:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ()), argPtr (castPtr block :: Ptr ())] >>= ownedObject . castPtr
+initWithFormat_renderBlock avAudioSourceNode format block =
+  sendOwnedMessage avAudioSourceNode initWithFormat_renderBlockSelector (toAVAudioFormat format) block
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAudioSourceNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithRenderBlock:@
-initWithRenderBlockSelector :: Selector
+initWithRenderBlockSelector :: Selector '[Ptr ()] (Id AVAudioSourceNode)
 initWithRenderBlockSelector = mkSelector "initWithRenderBlock:"
 
 -- | @Selector@ for @initWithFormat:renderBlock:@
-initWithFormat_renderBlockSelector :: Selector
+initWithFormat_renderBlockSelector :: Selector '[Id AVAudioFormat, Ptr ()] (Id AVAudioSourceNode)
 initWithFormat_renderBlockSelector = mkSelector "initWithFormat:renderBlock:"
 

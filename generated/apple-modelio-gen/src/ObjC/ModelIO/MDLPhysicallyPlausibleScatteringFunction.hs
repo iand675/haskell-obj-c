@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,31 +19,27 @@ module ObjC.ModelIO.MDLPhysicallyPlausibleScatteringFunction
   , sheenTint
   , clearcoat
   , clearcoatGloss
-  , versionSelector
-  , subsurfaceSelector
-  , metallicSelector
-  , specularAmountSelector
-  , specularTintSelector
-  , roughnessSelector
-  , anisotropicSelector
   , anisotropicRotationSelector
+  , anisotropicSelector
+  , clearcoatGlossSelector
+  , clearcoatSelector
+  , metallicSelector
+  , roughnessSelector
   , sheenSelector
   , sheenTintSelector
-  , clearcoatSelector
-  , clearcoatGlossSelector
+  , specularAmountSelector
+  , specularTintSelector
+  , subsurfaceSelector
+  , versionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,113 +48,113 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- version@
 version :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO CLong
-version mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "version") retCLong []
+version mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction versionSelector
 
 -- | @- subsurface@
 subsurface :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-subsurface mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "subsurface") (retPtr retVoid) [] >>= retainedObject . castPtr
+subsurface mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction subsurfaceSelector
 
 -- | @- metallic@
 metallic :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-metallic mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "metallic") (retPtr retVoid) [] >>= retainedObject . castPtr
+metallic mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction metallicSelector
 
 -- | @- specularAmount@
 specularAmount :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-specularAmount mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "specularAmount") (retPtr retVoid) [] >>= retainedObject . castPtr
+specularAmount mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction specularAmountSelector
 
 -- | @- specularTint@
 specularTint :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-specularTint mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "specularTint") (retPtr retVoid) [] >>= retainedObject . castPtr
+specularTint mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction specularTintSelector
 
 -- | @- roughness@
 roughness :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-roughness mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "roughness") (retPtr retVoid) [] >>= retainedObject . castPtr
+roughness mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction roughnessSelector
 
 -- | @- anisotropic@
 anisotropic :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-anisotropic mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "anisotropic") (retPtr retVoid) [] >>= retainedObject . castPtr
+anisotropic mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction anisotropicSelector
 
 -- | @- anisotropicRotation@
 anisotropicRotation :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-anisotropicRotation mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "anisotropicRotation") (retPtr retVoid) [] >>= retainedObject . castPtr
+anisotropicRotation mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction anisotropicRotationSelector
 
 -- | @- sheen@
 sheen :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-sheen mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "sheen") (retPtr retVoid) [] >>= retainedObject . castPtr
+sheen mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction sheenSelector
 
 -- | @- sheenTint@
 sheenTint :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-sheenTint mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "sheenTint") (retPtr retVoid) [] >>= retainedObject . castPtr
+sheenTint mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction sheenTintSelector
 
 -- | @- clearcoat@
 clearcoat :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-clearcoat mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "clearcoat") (retPtr retVoid) [] >>= retainedObject . castPtr
+clearcoat mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction clearcoatSelector
 
 -- | @- clearcoatGloss@
 clearcoatGloss :: IsMDLPhysicallyPlausibleScatteringFunction mdlPhysicallyPlausibleScatteringFunction => mdlPhysicallyPlausibleScatteringFunction -> IO (Id MDLMaterialProperty)
-clearcoatGloss mdlPhysicallyPlausibleScatteringFunction  =
-    sendMsg mdlPhysicallyPlausibleScatteringFunction (mkSelector "clearcoatGloss") (retPtr retVoid) [] >>= retainedObject . castPtr
+clearcoatGloss mdlPhysicallyPlausibleScatteringFunction =
+  sendMessage mdlPhysicallyPlausibleScatteringFunction clearcoatGlossSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @version@
-versionSelector :: Selector
+versionSelector :: Selector '[] CLong
 versionSelector = mkSelector "version"
 
 -- | @Selector@ for @subsurface@
-subsurfaceSelector :: Selector
+subsurfaceSelector :: Selector '[] (Id MDLMaterialProperty)
 subsurfaceSelector = mkSelector "subsurface"
 
 -- | @Selector@ for @metallic@
-metallicSelector :: Selector
+metallicSelector :: Selector '[] (Id MDLMaterialProperty)
 metallicSelector = mkSelector "metallic"
 
 -- | @Selector@ for @specularAmount@
-specularAmountSelector :: Selector
+specularAmountSelector :: Selector '[] (Id MDLMaterialProperty)
 specularAmountSelector = mkSelector "specularAmount"
 
 -- | @Selector@ for @specularTint@
-specularTintSelector :: Selector
+specularTintSelector :: Selector '[] (Id MDLMaterialProperty)
 specularTintSelector = mkSelector "specularTint"
 
 -- | @Selector@ for @roughness@
-roughnessSelector :: Selector
+roughnessSelector :: Selector '[] (Id MDLMaterialProperty)
 roughnessSelector = mkSelector "roughness"
 
 -- | @Selector@ for @anisotropic@
-anisotropicSelector :: Selector
+anisotropicSelector :: Selector '[] (Id MDLMaterialProperty)
 anisotropicSelector = mkSelector "anisotropic"
 
 -- | @Selector@ for @anisotropicRotation@
-anisotropicRotationSelector :: Selector
+anisotropicRotationSelector :: Selector '[] (Id MDLMaterialProperty)
 anisotropicRotationSelector = mkSelector "anisotropicRotation"
 
 -- | @Selector@ for @sheen@
-sheenSelector :: Selector
+sheenSelector :: Selector '[] (Id MDLMaterialProperty)
 sheenSelector = mkSelector "sheen"
 
 -- | @Selector@ for @sheenTint@
-sheenTintSelector :: Selector
+sheenTintSelector :: Selector '[] (Id MDLMaterialProperty)
 sheenTintSelector = mkSelector "sheenTint"
 
 -- | @Selector@ for @clearcoat@
-clearcoatSelector :: Selector
+clearcoatSelector :: Selector '[] (Id MDLMaterialProperty)
 clearcoatSelector = mkSelector "clearcoat"
 
 -- | @Selector@ for @clearcoatGloss@
-clearcoatGlossSelector :: Selector
+clearcoatGlossSelector :: Selector '[] (Id MDLMaterialProperty)
 clearcoatGlossSelector = mkSelector "clearcoatGloss"
 

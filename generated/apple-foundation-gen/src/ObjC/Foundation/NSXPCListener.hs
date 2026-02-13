@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.Foundation.NSXPCListener
   , delegate
   , setDelegate
   , endpoint
-  , serviceListenerSelector
-  , anonymousListenerSelector
-  , initWithMachServiceNameSelector
-  , resumeSelector
-  , suspendSelector
   , activateSelector
-  , invalidateSelector
-  , setConnectionCodeSigningRequirementSelector
+  , anonymousListenerSelector
   , delegateSelector
-  , setDelegateSelector
   , endpointSelector
+  , initWithMachServiceNameSelector
+  , invalidateSelector
+  , resumeSelector
+  , serviceListenerSelector
+  , setConnectionCodeSigningRequirementSelector
+  , setDelegateSelector
+  , suspendSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,109 +48,107 @@ serviceListener :: IO (Id NSXPCListener)
 serviceListener  =
   do
     cls' <- getRequiredClass "NSXPCListener"
-    sendClassMsg cls' (mkSelector "serviceListener") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' serviceListenerSelector
 
 -- | @+ anonymousListener@
 anonymousListener :: IO (Id NSXPCListener)
 anonymousListener  =
   do
     cls' <- getRequiredClass "NSXPCListener"
-    sendClassMsg cls' (mkSelector "anonymousListener") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' anonymousListenerSelector
 
 -- | @- initWithMachServiceName:@
 initWithMachServiceName :: (IsNSXPCListener nsxpcListener, IsNSString name) => nsxpcListener -> name -> IO (Id NSXPCListener)
-initWithMachServiceName nsxpcListener  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxpcListener (mkSelector "initWithMachServiceName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithMachServiceName nsxpcListener name =
+  sendOwnedMessage nsxpcListener initWithMachServiceNameSelector (toNSString name)
 
 -- | @- resume@
 resume :: IsNSXPCListener nsxpcListener => nsxpcListener -> IO ()
-resume nsxpcListener  =
-    sendMsg nsxpcListener (mkSelector "resume") retVoid []
+resume nsxpcListener =
+  sendMessage nsxpcListener resumeSelector
 
 -- | @- suspend@
 suspend :: IsNSXPCListener nsxpcListener => nsxpcListener -> IO ()
-suspend nsxpcListener  =
-    sendMsg nsxpcListener (mkSelector "suspend") retVoid []
+suspend nsxpcListener =
+  sendMessage nsxpcListener suspendSelector
 
 -- | @- activate@
 activate :: IsNSXPCListener nsxpcListener => nsxpcListener -> IO ()
-activate nsxpcListener  =
-    sendMsg nsxpcListener (mkSelector "activate") retVoid []
+activate nsxpcListener =
+  sendMessage nsxpcListener activateSelector
 
 -- | @- invalidate@
 invalidate :: IsNSXPCListener nsxpcListener => nsxpcListener -> IO ()
-invalidate nsxpcListener  =
-    sendMsg nsxpcListener (mkSelector "invalidate") retVoid []
+invalidate nsxpcListener =
+  sendMessage nsxpcListener invalidateSelector
 
 -- | Sets the code signing requirement for new connections. If the requirement is malformed, an exception is thrown. If new peer connections do not match the requirement, the incoming connection is automatically rejected before consulting the delegate. This method will only work on @anonymousListener@ or @initWithMachServiceName@ listener instances. Use on other types of listeners will result in an assertion failure. See https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/RequirementLang/RequirementLang.html for more information on the format.
 --
 -- ObjC selector: @- setConnectionCodeSigningRequirement:@
 setConnectionCodeSigningRequirement :: (IsNSXPCListener nsxpcListener, IsNSString requirement) => nsxpcListener -> requirement -> IO ()
-setConnectionCodeSigningRequirement nsxpcListener  requirement =
-  withObjCPtr requirement $ \raw_requirement ->
-      sendMsg nsxpcListener (mkSelector "setConnectionCodeSigningRequirement:") retVoid [argPtr (castPtr raw_requirement :: Ptr ())]
+setConnectionCodeSigningRequirement nsxpcListener requirement =
+  sendMessage nsxpcListener setConnectionCodeSigningRequirementSelector (toNSString requirement)
 
 -- | @- delegate@
 delegate :: IsNSXPCListener nsxpcListener => nsxpcListener -> IO RawId
-delegate nsxpcListener  =
-    fmap (RawId . castPtr) $ sendMsg nsxpcListener (mkSelector "delegate") (retPtr retVoid) []
+delegate nsxpcListener =
+  sendMessage nsxpcListener delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsNSXPCListener nsxpcListener => nsxpcListener -> RawId -> IO ()
-setDelegate nsxpcListener  value =
-    sendMsg nsxpcListener (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate nsxpcListener value =
+  sendMessage nsxpcListener setDelegateSelector value
 
 -- | @- endpoint@
 endpoint :: IsNSXPCListener nsxpcListener => nsxpcListener -> IO (Id NSXPCListenerEndpoint)
-endpoint nsxpcListener  =
-    sendMsg nsxpcListener (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoint nsxpcListener =
+  sendMessage nsxpcListener endpointSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @serviceListener@
-serviceListenerSelector :: Selector
+serviceListenerSelector :: Selector '[] (Id NSXPCListener)
 serviceListenerSelector = mkSelector "serviceListener"
 
 -- | @Selector@ for @anonymousListener@
-anonymousListenerSelector :: Selector
+anonymousListenerSelector :: Selector '[] (Id NSXPCListener)
 anonymousListenerSelector = mkSelector "anonymousListener"
 
 -- | @Selector@ for @initWithMachServiceName:@
-initWithMachServiceNameSelector :: Selector
+initWithMachServiceNameSelector :: Selector '[Id NSString] (Id NSXPCListener)
 initWithMachServiceNameSelector = mkSelector "initWithMachServiceName:"
 
 -- | @Selector@ for @resume@
-resumeSelector :: Selector
+resumeSelector :: Selector '[] ()
 resumeSelector = mkSelector "resume"
 
 -- | @Selector@ for @suspend@
-suspendSelector :: Selector
+suspendSelector :: Selector '[] ()
 suspendSelector = mkSelector "suspend"
 
 -- | @Selector@ for @activate@
-activateSelector :: Selector
+activateSelector :: Selector '[] ()
 activateSelector = mkSelector "activate"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @setConnectionCodeSigningRequirement:@
-setConnectionCodeSigningRequirementSelector :: Selector
+setConnectionCodeSigningRequirementSelector :: Selector '[Id NSString] ()
 setConnectionCodeSigningRequirementSelector = mkSelector "setConnectionCodeSigningRequirement:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @endpoint@
-endpointSelector :: Selector
+endpointSelector :: Selector '[] (Id NSXPCListenerEndpoint)
 endpointSelector = mkSelector "endpoint"
 

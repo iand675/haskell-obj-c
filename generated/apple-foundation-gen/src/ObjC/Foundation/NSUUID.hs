@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,12 +15,12 @@ module ObjC.Foundation.NSUUID
   , getUUIDBytes
   , compare_
   , uuidString
-  , uuidSelector
-  , initSelector
-  , initWithUUIDStringSelector
-  , initWithUUIDBytesSelector
-  , getUUIDBytesSelector
   , compareSelector
+  , getUUIDBytesSelector
+  , initSelector
+  , initWithUUIDBytesSelector
+  , initWithUUIDStringSelector
+  , uuidSelector
   , uuidStringSelector
 
   -- * Enum types
@@ -30,15 +31,11 @@ module ObjC.Foundation.NSUUID
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,69 +47,67 @@ uuid :: IO (Id NSUUID)
 uuid  =
   do
     cls' <- getRequiredClass "NSUUID"
-    sendClassMsg cls' (mkSelector "UUID") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' uuidSelector
 
 -- | @- init@
 init_ :: IsNSUUID nsuuid => nsuuid -> IO (Id NSUUID)
-init_ nsuuid  =
-    sendMsg nsuuid (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsuuid =
+  sendOwnedMessage nsuuid initSelector
 
 -- | @- initWithUUIDString:@
 initWithUUIDString :: (IsNSUUID nsuuid, IsNSString string) => nsuuid -> string -> IO (Id NSUUID)
-initWithUUIDString nsuuid  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsuuid (mkSelector "initWithUUIDString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initWithUUIDString nsuuid string =
+  sendOwnedMessage nsuuid initWithUUIDStringSelector (toNSString string)
 
 -- | @- initWithUUIDBytes:@
 initWithUUIDBytes :: IsNSUUID nsuuid => nsuuid -> Const (Ptr CUChar) -> IO (Id NSUUID)
-initWithUUIDBytes nsuuid  bytes =
-    sendMsg nsuuid (mkSelector "initWithUUIDBytes:") (retPtr retVoid) [argPtr (unConst bytes)] >>= ownedObject . castPtr
+initWithUUIDBytes nsuuid bytes =
+  sendOwnedMessage nsuuid initWithUUIDBytesSelector bytes
 
 -- | @- getUUIDBytes:@
 getUUIDBytes :: IsNSUUID nsuuid => nsuuid -> Ptr CUChar -> IO ()
-getUUIDBytes nsuuid  uuid =
-    sendMsg nsuuid (mkSelector "getUUIDBytes:") retVoid [argPtr uuid]
+getUUIDBytes nsuuid uuid =
+  sendMessage nsuuid getUUIDBytesSelector uuid
 
 -- | @- compare:@
 compare_ :: (IsNSUUID nsuuid, IsNSUUID otherUUID) => nsuuid -> otherUUID -> IO NSComparisonResult
-compare_ nsuuid  otherUUID =
-  withObjCPtr otherUUID $ \raw_otherUUID ->
-      fmap (coerce :: CLong -> NSComparisonResult) $ sendMsg nsuuid (mkSelector "compare:") retCLong [argPtr (castPtr raw_otherUUID :: Ptr ())]
+compare_ nsuuid otherUUID =
+  sendMessage nsuuid compareSelector (toNSUUID otherUUID)
 
 -- | @- UUIDString@
 uuidString :: IsNSUUID nsuuid => nsuuid -> IO (Id NSString)
-uuidString nsuuid  =
-    sendMsg nsuuid (mkSelector "UUIDString") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuidString nsuuid =
+  sendMessage nsuuid uuidStringSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @UUID@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "UUID"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSUUID)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithUUIDString:@
-initWithUUIDStringSelector :: Selector
+initWithUUIDStringSelector :: Selector '[Id NSString] (Id NSUUID)
 initWithUUIDStringSelector = mkSelector "initWithUUIDString:"
 
 -- | @Selector@ for @initWithUUIDBytes:@
-initWithUUIDBytesSelector :: Selector
+initWithUUIDBytesSelector :: Selector '[Const (Ptr CUChar)] (Id NSUUID)
 initWithUUIDBytesSelector = mkSelector "initWithUUIDBytes:"
 
 -- | @Selector@ for @getUUIDBytes:@
-getUUIDBytesSelector :: Selector
+getUUIDBytesSelector :: Selector '[Ptr CUChar] ()
 getUUIDBytesSelector = mkSelector "getUUIDBytes:"
 
 -- | @Selector@ for @compare:@
-compareSelector :: Selector
+compareSelector :: Selector '[Id NSUUID] NSComparisonResult
 compareSelector = mkSelector "compare:"
 
 -- | @Selector@ for @UUIDString@
-uuidStringSelector :: Selector
+uuidStringSelector :: Selector '[] (Id NSString)
 uuidStringSelector = mkSelector "UUIDString"
 

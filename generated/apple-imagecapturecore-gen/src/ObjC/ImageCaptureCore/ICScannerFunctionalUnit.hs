@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -51,46 +52,46 @@ module ObjC.ImageCaptureCore.ICScannerFunctionalUnit
   , overviewImage
   , overviewResolution
   , setOverviewResolution
-  , typeSelector
-  , pixelDataTypeSelector
-  , setPixelDataTypeSelector
-  , supportedBitDepthsSelector
+  , acceptsThresholdForBlackAndWhiteScanningSelector
   , bitDepthSelector
-  , setBitDepthSelector
-  , supportedMeasurementUnitsSelector
+  , canPerformOverviewScanSelector
+  , defaultThresholdForBlackAndWhiteScanningSelector
   , measurementUnitSelector
-  , setMeasurementUnitSelector
-  , supportedResolutionsSelector
-  , preferredResolutionsSelector
-  , resolutionSelector
-  , setResolutionSelector
   , nativeXResolutionSelector
   , nativeYResolutionSelector
-  , supportedScaleFactorsSelector
-  , preferredScaleFactorsSelector
-  , scaleFactorSelector
-  , setScaleFactorSelector
-  , templatesSelector
-  , vendorFeaturesSelector
-  , physicalSizeSelector
-  , scanAreaSelector
-  , setScanAreaSelector
-  , scanAreaOrientationSelector
-  , setScanAreaOrientationSelector
-  , acceptsThresholdForBlackAndWhiteScanningSelector
-  , usesThresholdForBlackAndWhiteScanningSelector
-  , setUsesThresholdForBlackAndWhiteScanningSelector
-  , defaultThresholdForBlackAndWhiteScanningSelector
-  , thresholdForBlackAndWhiteScanningSelector
-  , setThresholdForBlackAndWhiteScanningSelector
-  , stateSelector
-  , scanInProgressSelector
-  , scanProgressPercentDoneSelector
-  , canPerformOverviewScanSelector
-  , overviewScanInProgressSelector
   , overviewImageSelector
   , overviewResolutionSelector
+  , overviewScanInProgressSelector
+  , physicalSizeSelector
+  , pixelDataTypeSelector
+  , preferredResolutionsSelector
+  , preferredScaleFactorsSelector
+  , resolutionSelector
+  , scaleFactorSelector
+  , scanAreaOrientationSelector
+  , scanAreaSelector
+  , scanInProgressSelector
+  , scanProgressPercentDoneSelector
+  , setBitDepthSelector
+  , setMeasurementUnitSelector
   , setOverviewResolutionSelector
+  , setPixelDataTypeSelector
+  , setResolutionSelector
+  , setScaleFactorSelector
+  , setScanAreaOrientationSelector
+  , setScanAreaSelector
+  , setThresholdForBlackAndWhiteScanningSelector
+  , setUsesThresholdForBlackAndWhiteScanningSelector
+  , stateSelector
+  , supportedBitDepthsSelector
+  , supportedMeasurementUnitsSelector
+  , supportedResolutionsSelector
+  , supportedScaleFactorsSelector
+  , templatesSelector
+  , thresholdForBlackAndWhiteScanningSelector
+  , typeSelector
+  , usesThresholdForBlackAndWhiteScanningSelector
+  , vendorFeaturesSelector
 
   -- * Enum types
   , ICEXIFOrientationType(ICEXIFOrientationType)
@@ -135,15 +136,11 @@ module ObjC.ImageCaptureCore.ICScannerFunctionalUnit
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -158,8 +155,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- type@
 type_ :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO ICScannerFunctionalUnitType
-type_ icScannerFunctionalUnit  =
-    fmap (coerce :: CULong -> ICScannerFunctionalUnitType) $ sendMsg icScannerFunctionalUnit (mkSelector "type") retCULong []
+type_ icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit typeSelector
 
 -- | pixelDataType
 --
@@ -167,8 +164,8 @@ type_ icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- pixelDataType@
 pixelDataType :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO ICScannerPixelDataType
-pixelDataType icScannerFunctionalUnit  =
-    fmap (coerce :: CULong -> ICScannerPixelDataType) $ sendMsg icScannerFunctionalUnit (mkSelector "pixelDataType") retCULong []
+pixelDataType icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit pixelDataTypeSelector
 
 -- | pixelDataType
 --
@@ -176,8 +173,8 @@ pixelDataType icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setPixelDataType:@
 setPixelDataType :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> ICScannerPixelDataType -> IO ()
-setPixelDataType icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setPixelDataType:") retVoid [argCULong (coerce value)]
+setPixelDataType icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setPixelDataTypeSelector value
 
 -- | supportedBitDepths
 --
@@ -185,8 +182,8 @@ setPixelDataType icScannerFunctionalUnit  value =
 --
 -- ObjC selector: @- supportedBitDepths@
 supportedBitDepths :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO (Id NSIndexSet)
-supportedBitDepths icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "supportedBitDepths") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedBitDepths icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit supportedBitDepthsSelector
 
 -- | bitDepth
 --
@@ -194,8 +191,8 @@ supportedBitDepths icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- bitDepth@
 bitDepth :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO ICScannerBitDepth
-bitDepth icScannerFunctionalUnit  =
-    fmap (coerce :: CULong -> ICScannerBitDepth) $ sendMsg icScannerFunctionalUnit (mkSelector "bitDepth") retCULong []
+bitDepth icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit bitDepthSelector
 
 -- | bitDepth
 --
@@ -203,8 +200,8 @@ bitDepth icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setBitDepth:@
 setBitDepth :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> ICScannerBitDepth -> IO ()
-setBitDepth icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setBitDepth:") retVoid [argCULong (coerce value)]
+setBitDepth icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setBitDepthSelector value
 
 -- | supportedMeasurementUnits
 --
@@ -212,8 +209,8 @@ setBitDepth icScannerFunctionalUnit  value =
 --
 -- ObjC selector: @- supportedMeasurementUnits@
 supportedMeasurementUnits :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO (Id NSIndexSet)
-supportedMeasurementUnits icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "supportedMeasurementUnits") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedMeasurementUnits icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit supportedMeasurementUnitsSelector
 
 -- | measurementUnit
 --
@@ -221,8 +218,8 @@ supportedMeasurementUnits icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- measurementUnit@
 measurementUnit :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO ICScannerMeasurementUnit
-measurementUnit icScannerFunctionalUnit  =
-    fmap (coerce :: CULong -> ICScannerMeasurementUnit) $ sendMsg icScannerFunctionalUnit (mkSelector "measurementUnit") retCULong []
+measurementUnit icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit measurementUnitSelector
 
 -- | measurementUnit
 --
@@ -230,8 +227,8 @@ measurementUnit icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setMeasurementUnit:@
 setMeasurementUnit :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> ICScannerMeasurementUnit -> IO ()
-setMeasurementUnit icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setMeasurementUnit:") retVoid [argCULong (coerce value)]
+setMeasurementUnit icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setMeasurementUnitSelector value
 
 -- | supportedResolutions
 --
@@ -239,8 +236,8 @@ setMeasurementUnit icScannerFunctionalUnit  value =
 --
 -- ObjC selector: @- supportedResolutions@
 supportedResolutions :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO (Id NSIndexSet)
-supportedResolutions icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "supportedResolutions") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedResolutions icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit supportedResolutionsSelector
 
 -- | preferredResolutions
 --
@@ -248,8 +245,8 @@ supportedResolutions icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- preferredResolutions@
 preferredResolutions :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO (Id NSIndexSet)
-preferredResolutions icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "preferredResolutions") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredResolutions icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit preferredResolutionsSelector
 
 -- | resolution
 --
@@ -257,8 +254,8 @@ preferredResolutions icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- resolution@
 resolution :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO CULong
-resolution icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "resolution") retCULong []
+resolution icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit resolutionSelector
 
 -- | resolution
 --
@@ -266,8 +263,8 @@ resolution icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setResolution:@
 setResolution :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> CULong -> IO ()
-setResolution icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setResolution:") retVoid [argCULong value]
+setResolution icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setResolutionSelector value
 
 -- | nativeXResolution
 --
@@ -275,8 +272,8 @@ setResolution icScannerFunctionalUnit  value =
 --
 -- ObjC selector: @- nativeXResolution@
 nativeXResolution :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO CULong
-nativeXResolution icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "nativeXResolution") retCULong []
+nativeXResolution icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit nativeXResolutionSelector
 
 -- | nativeYResolution
 --
@@ -284,8 +281,8 @@ nativeXResolution icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- nativeYResolution@
 nativeYResolution :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO CULong
-nativeYResolution icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "nativeYResolution") retCULong []
+nativeYResolution icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit nativeYResolutionSelector
 
 -- | supportedScaleFactors
 --
@@ -293,8 +290,8 @@ nativeYResolution icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- supportedScaleFactors@
 supportedScaleFactors :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO (Id NSIndexSet)
-supportedScaleFactors icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "supportedScaleFactors") (retPtr retVoid) [] >>= retainedObject . castPtr
+supportedScaleFactors icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit supportedScaleFactorsSelector
 
 -- | preferredScaleFactors
 --
@@ -302,8 +299,8 @@ supportedScaleFactors icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- preferredScaleFactors@
 preferredScaleFactors :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO (Id NSIndexSet)
-preferredScaleFactors icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "preferredScaleFactors") (retPtr retVoid) [] >>= retainedObject . castPtr
+preferredScaleFactors icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit preferredScaleFactorsSelector
 
 -- | scaleFactor
 --
@@ -311,8 +308,8 @@ preferredScaleFactors icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- scaleFactor@
 scaleFactor :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO CULong
-scaleFactor icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "scaleFactor") retCULong []
+scaleFactor icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit scaleFactorSelector
 
 -- | scaleFactor
 --
@@ -320,8 +317,8 @@ scaleFactor icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setScaleFactor:@
 setScaleFactor :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> CULong -> IO ()
-setScaleFactor icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setScaleFactor:") retVoid [argCULong value]
+setScaleFactor icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setScaleFactorSelector value
 
 -- | templates
 --
@@ -329,8 +326,8 @@ setScaleFactor icScannerFunctionalUnit  value =
 --
 -- ObjC selector: @- templates@
 templates :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO (Id NSArray)
-templates icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "templates") (retPtr retVoid) [] >>= retainedObject . castPtr
+templates icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit templatesSelector
 
 -- | vendorFeatures
 --
@@ -338,8 +335,8 @@ templates icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- vendorFeatures@
 vendorFeatures :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO (Id NSArray)
-vendorFeatures icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "vendorFeatures") (retPtr retVoid) [] >>= retainedObject . castPtr
+vendorFeatures icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit vendorFeaturesSelector
 
 -- | physicalSize
 --
@@ -347,8 +344,8 @@ vendorFeatures icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- physicalSize@
 physicalSize :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO NSSize
-physicalSize icScannerFunctionalUnit  =
-    sendMsgStret icScannerFunctionalUnit (mkSelector "physicalSize") retNSSize []
+physicalSize icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit physicalSizeSelector
 
 -- | scanArea
 --
@@ -356,8 +353,8 @@ physicalSize icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- scanArea@
 scanArea :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO NSRect
-scanArea icScannerFunctionalUnit  =
-    sendMsgStret icScannerFunctionalUnit (mkSelector "scanArea") retNSRect []
+scanArea icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit scanAreaSelector
 
 -- | scanArea
 --
@@ -365,8 +362,8 @@ scanArea icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setScanArea:@
 setScanArea :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> NSRect -> IO ()
-setScanArea icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setScanArea:") retVoid [argNSRect value]
+setScanArea icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setScanAreaSelector value
 
 -- | scanAreaOrientation
 --
@@ -376,8 +373,8 @@ setScanArea icScannerFunctionalUnit  value =
 --
 -- ObjC selector: @- scanAreaOrientation@
 scanAreaOrientation :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO ICEXIFOrientationType
-scanAreaOrientation icScannerFunctionalUnit  =
-    fmap (coerce :: CULong -> ICEXIFOrientationType) $ sendMsg icScannerFunctionalUnit (mkSelector "scanAreaOrientation") retCULong []
+scanAreaOrientation icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit scanAreaOrientationSelector
 
 -- | scanAreaOrientation
 --
@@ -387,8 +384,8 @@ scanAreaOrientation icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setScanAreaOrientation:@
 setScanAreaOrientation :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> ICEXIFOrientationType -> IO ()
-setScanAreaOrientation icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setScanAreaOrientation:") retVoid [argCULong (coerce value)]
+setScanAreaOrientation icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setScanAreaOrientationSelector value
 
 -- | acceptsThresholdForBlackAndWhiteScanning
 --
@@ -396,8 +393,8 @@ setScanAreaOrientation icScannerFunctionalUnit  value =
 --
 -- ObjC selector: @- acceptsThresholdForBlackAndWhiteScanning@
 acceptsThresholdForBlackAndWhiteScanning :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO Bool
-acceptsThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFunctionalUnit (mkSelector "acceptsThresholdForBlackAndWhiteScanning") retCULong []
+acceptsThresholdForBlackAndWhiteScanning icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit acceptsThresholdForBlackAndWhiteScanningSelector
 
 -- | usesThresholdForBlackAndWhiteScanning
 --
@@ -405,8 +402,8 @@ acceptsThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- usesThresholdForBlackAndWhiteScanning@
 usesThresholdForBlackAndWhiteScanning :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO Bool
-usesThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFunctionalUnit (mkSelector "usesThresholdForBlackAndWhiteScanning") retCULong []
+usesThresholdForBlackAndWhiteScanning icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit usesThresholdForBlackAndWhiteScanningSelector
 
 -- | usesThresholdForBlackAndWhiteScanning
 --
@@ -414,8 +411,8 @@ usesThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setUsesThresholdForBlackAndWhiteScanning:@
 setUsesThresholdForBlackAndWhiteScanning :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> Bool -> IO ()
-setUsesThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setUsesThresholdForBlackAndWhiteScanning:") retVoid [argCULong (if value then 1 else 0)]
+setUsesThresholdForBlackAndWhiteScanning icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setUsesThresholdForBlackAndWhiteScanningSelector value
 
 -- | defaultThresholdForBlackAndWhiteScanning
 --
@@ -423,8 +420,8 @@ setUsesThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  value =
 --
 -- ObjC selector: @- defaultThresholdForBlackAndWhiteScanning@
 defaultThresholdForBlackAndWhiteScanning :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO CUChar
-defaultThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "defaultThresholdForBlackAndWhiteScanning") retCUChar []
+defaultThresholdForBlackAndWhiteScanning icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit defaultThresholdForBlackAndWhiteScanningSelector
 
 -- | thresholdForBlackAndWhiteScanning
 --
@@ -432,8 +429,8 @@ defaultThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- thresholdForBlackAndWhiteScanning@
 thresholdForBlackAndWhiteScanning :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO CUChar
-thresholdForBlackAndWhiteScanning icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "thresholdForBlackAndWhiteScanning") retCUChar []
+thresholdForBlackAndWhiteScanning icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit thresholdForBlackAndWhiteScanningSelector
 
 -- | thresholdForBlackAndWhiteScanning
 --
@@ -441,8 +438,8 @@ thresholdForBlackAndWhiteScanning icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setThresholdForBlackAndWhiteScanning:@
 setThresholdForBlackAndWhiteScanning :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> CUChar -> IO ()
-setThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setThresholdForBlackAndWhiteScanning:") retVoid [argCUChar value]
+setThresholdForBlackAndWhiteScanning icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setThresholdForBlackAndWhiteScanningSelector value
 
 -- | state
 --
@@ -450,8 +447,8 @@ setThresholdForBlackAndWhiteScanning icScannerFunctionalUnit  value =
 --
 -- ObjC selector: @- state@
 state :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO ICScannerFunctionalUnitState
-state icScannerFunctionalUnit  =
-    fmap (coerce :: CULong -> ICScannerFunctionalUnitState) $ sendMsg icScannerFunctionalUnit (mkSelector "state") retCULong []
+state icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit stateSelector
 
 -- | scanInProgress
 --
@@ -459,8 +456,8 @@ state icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- scanInProgress@
 scanInProgress :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO Bool
-scanInProgress icScannerFunctionalUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFunctionalUnit (mkSelector "scanInProgress") retCULong []
+scanInProgress icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit scanInProgressSelector
 
 -- | scanProgressPercentDone
 --
@@ -468,8 +465,8 @@ scanInProgress icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- scanProgressPercentDone@
 scanProgressPercentDone :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO CDouble
-scanProgressPercentDone icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "scanProgressPercentDone") retCDouble []
+scanProgressPercentDone icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit scanProgressPercentDoneSelector
 
 -- | canPerformOverviewScan
 --
@@ -477,8 +474,8 @@ scanProgressPercentDone icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- canPerformOverviewScan@
 canPerformOverviewScan :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO Bool
-canPerformOverviewScan icScannerFunctionalUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFunctionalUnit (mkSelector "canPerformOverviewScan") retCULong []
+canPerformOverviewScan icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit canPerformOverviewScanSelector
 
 -- | overviewScanInProgress
 --
@@ -486,8 +483,8 @@ canPerformOverviewScan icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- overviewScanInProgress@
 overviewScanInProgress :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO Bool
-overviewScanInProgress icScannerFunctionalUnit  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg icScannerFunctionalUnit (mkSelector "overviewScanInProgress") retCULong []
+overviewScanInProgress icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit overviewScanInProgressSelector
 
 -- | overviewImage
 --
@@ -495,8 +492,8 @@ overviewScanInProgress icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- overviewImage@
 overviewImage :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO (Ptr ())
-overviewImage icScannerFunctionalUnit  =
-    fmap castPtr $ sendMsg icScannerFunctionalUnit (mkSelector "overviewImage") (retPtr retVoid) []
+overviewImage icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit overviewImageSelector
 
 -- | overviewResolution
 --
@@ -504,8 +501,8 @@ overviewImage icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- overviewResolution@
 overviewResolution :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> IO CULong
-overviewResolution icScannerFunctionalUnit  =
-    sendMsg icScannerFunctionalUnit (mkSelector "overviewResolution") retCULong []
+overviewResolution icScannerFunctionalUnit =
+  sendMessage icScannerFunctionalUnit overviewResolutionSelector
 
 -- | overviewResolution
 --
@@ -513,170 +510,170 @@ overviewResolution icScannerFunctionalUnit  =
 --
 -- ObjC selector: @- setOverviewResolution:@
 setOverviewResolution :: IsICScannerFunctionalUnit icScannerFunctionalUnit => icScannerFunctionalUnit -> CULong -> IO ()
-setOverviewResolution icScannerFunctionalUnit  value =
-    sendMsg icScannerFunctionalUnit (mkSelector "setOverviewResolution:") retVoid [argCULong value]
+setOverviewResolution icScannerFunctionalUnit value =
+  sendMessage icScannerFunctionalUnit setOverviewResolutionSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] ICScannerFunctionalUnitType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @pixelDataType@
-pixelDataTypeSelector :: Selector
+pixelDataTypeSelector :: Selector '[] ICScannerPixelDataType
 pixelDataTypeSelector = mkSelector "pixelDataType"
 
 -- | @Selector@ for @setPixelDataType:@
-setPixelDataTypeSelector :: Selector
+setPixelDataTypeSelector :: Selector '[ICScannerPixelDataType] ()
 setPixelDataTypeSelector = mkSelector "setPixelDataType:"
 
 -- | @Selector@ for @supportedBitDepths@
-supportedBitDepthsSelector :: Selector
+supportedBitDepthsSelector :: Selector '[] (Id NSIndexSet)
 supportedBitDepthsSelector = mkSelector "supportedBitDepths"
 
 -- | @Selector@ for @bitDepth@
-bitDepthSelector :: Selector
+bitDepthSelector :: Selector '[] ICScannerBitDepth
 bitDepthSelector = mkSelector "bitDepth"
 
 -- | @Selector@ for @setBitDepth:@
-setBitDepthSelector :: Selector
+setBitDepthSelector :: Selector '[ICScannerBitDepth] ()
 setBitDepthSelector = mkSelector "setBitDepth:"
 
 -- | @Selector@ for @supportedMeasurementUnits@
-supportedMeasurementUnitsSelector :: Selector
+supportedMeasurementUnitsSelector :: Selector '[] (Id NSIndexSet)
 supportedMeasurementUnitsSelector = mkSelector "supportedMeasurementUnits"
 
 -- | @Selector@ for @measurementUnit@
-measurementUnitSelector :: Selector
+measurementUnitSelector :: Selector '[] ICScannerMeasurementUnit
 measurementUnitSelector = mkSelector "measurementUnit"
 
 -- | @Selector@ for @setMeasurementUnit:@
-setMeasurementUnitSelector :: Selector
+setMeasurementUnitSelector :: Selector '[ICScannerMeasurementUnit] ()
 setMeasurementUnitSelector = mkSelector "setMeasurementUnit:"
 
 -- | @Selector@ for @supportedResolutions@
-supportedResolutionsSelector :: Selector
+supportedResolutionsSelector :: Selector '[] (Id NSIndexSet)
 supportedResolutionsSelector = mkSelector "supportedResolutions"
 
 -- | @Selector@ for @preferredResolutions@
-preferredResolutionsSelector :: Selector
+preferredResolutionsSelector :: Selector '[] (Id NSIndexSet)
 preferredResolutionsSelector = mkSelector "preferredResolutions"
 
 -- | @Selector@ for @resolution@
-resolutionSelector :: Selector
+resolutionSelector :: Selector '[] CULong
 resolutionSelector = mkSelector "resolution"
 
 -- | @Selector@ for @setResolution:@
-setResolutionSelector :: Selector
+setResolutionSelector :: Selector '[CULong] ()
 setResolutionSelector = mkSelector "setResolution:"
 
 -- | @Selector@ for @nativeXResolution@
-nativeXResolutionSelector :: Selector
+nativeXResolutionSelector :: Selector '[] CULong
 nativeXResolutionSelector = mkSelector "nativeXResolution"
 
 -- | @Selector@ for @nativeYResolution@
-nativeYResolutionSelector :: Selector
+nativeYResolutionSelector :: Selector '[] CULong
 nativeYResolutionSelector = mkSelector "nativeYResolution"
 
 -- | @Selector@ for @supportedScaleFactors@
-supportedScaleFactorsSelector :: Selector
+supportedScaleFactorsSelector :: Selector '[] (Id NSIndexSet)
 supportedScaleFactorsSelector = mkSelector "supportedScaleFactors"
 
 -- | @Selector@ for @preferredScaleFactors@
-preferredScaleFactorsSelector :: Selector
+preferredScaleFactorsSelector :: Selector '[] (Id NSIndexSet)
 preferredScaleFactorsSelector = mkSelector "preferredScaleFactors"
 
 -- | @Selector@ for @scaleFactor@
-scaleFactorSelector :: Selector
+scaleFactorSelector :: Selector '[] CULong
 scaleFactorSelector = mkSelector "scaleFactor"
 
 -- | @Selector@ for @setScaleFactor:@
-setScaleFactorSelector :: Selector
+setScaleFactorSelector :: Selector '[CULong] ()
 setScaleFactorSelector = mkSelector "setScaleFactor:"
 
 -- | @Selector@ for @templates@
-templatesSelector :: Selector
+templatesSelector :: Selector '[] (Id NSArray)
 templatesSelector = mkSelector "templates"
 
 -- | @Selector@ for @vendorFeatures@
-vendorFeaturesSelector :: Selector
+vendorFeaturesSelector :: Selector '[] (Id NSArray)
 vendorFeaturesSelector = mkSelector "vendorFeatures"
 
 -- | @Selector@ for @physicalSize@
-physicalSizeSelector :: Selector
+physicalSizeSelector :: Selector '[] NSSize
 physicalSizeSelector = mkSelector "physicalSize"
 
 -- | @Selector@ for @scanArea@
-scanAreaSelector :: Selector
+scanAreaSelector :: Selector '[] NSRect
 scanAreaSelector = mkSelector "scanArea"
 
 -- | @Selector@ for @setScanArea:@
-setScanAreaSelector :: Selector
+setScanAreaSelector :: Selector '[NSRect] ()
 setScanAreaSelector = mkSelector "setScanArea:"
 
 -- | @Selector@ for @scanAreaOrientation@
-scanAreaOrientationSelector :: Selector
+scanAreaOrientationSelector :: Selector '[] ICEXIFOrientationType
 scanAreaOrientationSelector = mkSelector "scanAreaOrientation"
 
 -- | @Selector@ for @setScanAreaOrientation:@
-setScanAreaOrientationSelector :: Selector
+setScanAreaOrientationSelector :: Selector '[ICEXIFOrientationType] ()
 setScanAreaOrientationSelector = mkSelector "setScanAreaOrientation:"
 
 -- | @Selector@ for @acceptsThresholdForBlackAndWhiteScanning@
-acceptsThresholdForBlackAndWhiteScanningSelector :: Selector
+acceptsThresholdForBlackAndWhiteScanningSelector :: Selector '[] Bool
 acceptsThresholdForBlackAndWhiteScanningSelector = mkSelector "acceptsThresholdForBlackAndWhiteScanning"
 
 -- | @Selector@ for @usesThresholdForBlackAndWhiteScanning@
-usesThresholdForBlackAndWhiteScanningSelector :: Selector
+usesThresholdForBlackAndWhiteScanningSelector :: Selector '[] Bool
 usesThresholdForBlackAndWhiteScanningSelector = mkSelector "usesThresholdForBlackAndWhiteScanning"
 
 -- | @Selector@ for @setUsesThresholdForBlackAndWhiteScanning:@
-setUsesThresholdForBlackAndWhiteScanningSelector :: Selector
+setUsesThresholdForBlackAndWhiteScanningSelector :: Selector '[Bool] ()
 setUsesThresholdForBlackAndWhiteScanningSelector = mkSelector "setUsesThresholdForBlackAndWhiteScanning:"
 
 -- | @Selector@ for @defaultThresholdForBlackAndWhiteScanning@
-defaultThresholdForBlackAndWhiteScanningSelector :: Selector
+defaultThresholdForBlackAndWhiteScanningSelector :: Selector '[] CUChar
 defaultThresholdForBlackAndWhiteScanningSelector = mkSelector "defaultThresholdForBlackAndWhiteScanning"
 
 -- | @Selector@ for @thresholdForBlackAndWhiteScanning@
-thresholdForBlackAndWhiteScanningSelector :: Selector
+thresholdForBlackAndWhiteScanningSelector :: Selector '[] CUChar
 thresholdForBlackAndWhiteScanningSelector = mkSelector "thresholdForBlackAndWhiteScanning"
 
 -- | @Selector@ for @setThresholdForBlackAndWhiteScanning:@
-setThresholdForBlackAndWhiteScanningSelector :: Selector
+setThresholdForBlackAndWhiteScanningSelector :: Selector '[CUChar] ()
 setThresholdForBlackAndWhiteScanningSelector = mkSelector "setThresholdForBlackAndWhiteScanning:"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] ICScannerFunctionalUnitState
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @scanInProgress@
-scanInProgressSelector :: Selector
+scanInProgressSelector :: Selector '[] Bool
 scanInProgressSelector = mkSelector "scanInProgress"
 
 -- | @Selector@ for @scanProgressPercentDone@
-scanProgressPercentDoneSelector :: Selector
+scanProgressPercentDoneSelector :: Selector '[] CDouble
 scanProgressPercentDoneSelector = mkSelector "scanProgressPercentDone"
 
 -- | @Selector@ for @canPerformOverviewScan@
-canPerformOverviewScanSelector :: Selector
+canPerformOverviewScanSelector :: Selector '[] Bool
 canPerformOverviewScanSelector = mkSelector "canPerformOverviewScan"
 
 -- | @Selector@ for @overviewScanInProgress@
-overviewScanInProgressSelector :: Selector
+overviewScanInProgressSelector :: Selector '[] Bool
 overviewScanInProgressSelector = mkSelector "overviewScanInProgress"
 
 -- | @Selector@ for @overviewImage@
-overviewImageSelector :: Selector
+overviewImageSelector :: Selector '[] (Ptr ())
 overviewImageSelector = mkSelector "overviewImage"
 
 -- | @Selector@ for @overviewResolution@
-overviewResolutionSelector :: Selector
+overviewResolutionSelector :: Selector '[] CULong
 overviewResolutionSelector = mkSelector "overviewResolution"
 
 -- | @Selector@ for @setOverviewResolution:@
-setOverviewResolutionSelector :: Selector
+setOverviewResolutionSelector :: Selector '[CULong] ()
 setOverviewResolutionSelector = mkSelector "setOverviewResolution:"
 

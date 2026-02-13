@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,28 +20,24 @@ module ObjC.MetalPerformanceShaders.MPSCNNPoolingNode
   , kernelHeight
   , strideInPixelsX
   , strideInPixelsY
+  , initWithSource_filterSizeSelector
+  , initWithSource_filterSize_strideSelector
+  , initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector
+  , kernelHeightSelector
+  , kernelWidthSelector
   , nodeWithSource_filterSizeSelector
   , nodeWithSource_filterSize_strideSelector
-  , initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector
-  , initWithSource_filterSize_strideSelector
-  , initWithSource_filterSizeSelector
-  , kernelWidthSelector
-  , kernelHeightSelector
   , strideInPixelsXSelector
   , strideInPixelsYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,7 @@ nodeWithSource_filterSize :: IsMPSNNImageNode sourceNode => sourceNode -> CULong
 nodeWithSource_filterSize sourceNode size =
   do
     cls' <- getRequiredClass "MPSCNNPoolingNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:filterSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong size] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_filterSizeSelector (toMPSNNImageNode sourceNode) size
 
 -- | Convenience initializer for MPSCNNPooling nodes with square non-overlapping kernels and a different stride
 --
@@ -78,8 +74,7 @@ nodeWithSource_filterSize_stride :: IsMPSNNImageNode sourceNode => sourceNode ->
 nodeWithSource_filterSize_stride sourceNode size stride =
   do
     cls' <- getRequiredClass "MPSCNNPoolingNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendClassMsg cls' (mkSelector "nodeWithSource:filterSize:stride:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong size, argCULong stride] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_filterSize_strideSelector (toMPSNNImageNode sourceNode) size stride
 
 -- | Init a node representing a MPSCNNPooling kernel
 --
@@ -97,9 +92,8 @@ nodeWithSource_filterSize_stride sourceNode size stride =
 --
 -- ObjC selector: @- initWithSource:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:@
 initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY :: (IsMPSCNNPoolingNode mpscnnPoolingNode, IsMPSNNImageNode sourceNode) => mpscnnPoolingNode -> sourceNode -> CULong -> CULong -> CULong -> CULong -> IO (Id MPSCNNPoolingNode)
-initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY mpscnnPoolingNode  sourceNode kernelWidth kernelHeight strideInPixelsX strideInPixelsY =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnPoolingNode (mkSelector "initWithSource:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight, argCULong strideInPixelsX, argCULong strideInPixelsY] >>= ownedObject . castPtr
+initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY mpscnnPoolingNode sourceNode kernelWidth kernelHeight strideInPixelsX strideInPixelsY =
+  sendOwnedMessage mpscnnPoolingNode initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector (toMPSNNImageNode sourceNode) kernelWidth kernelHeight strideInPixelsX strideInPixelsY
 
 -- | Convenience initializer for MPSCNNPooling nodes with square kernels
 --
@@ -113,9 +107,8 @@ initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsY mpscnnPo
 --
 -- ObjC selector: @- initWithSource:filterSize:stride:@
 initWithSource_filterSize_stride :: (IsMPSCNNPoolingNode mpscnnPoolingNode, IsMPSNNImageNode sourceNode) => mpscnnPoolingNode -> sourceNode -> CULong -> CULong -> IO (Id MPSCNNPoolingNode)
-initWithSource_filterSize_stride mpscnnPoolingNode  sourceNode size stride =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnPoolingNode (mkSelector "initWithSource:filterSize:stride:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong size, argCULong stride] >>= ownedObject . castPtr
+initWithSource_filterSize_stride mpscnnPoolingNode sourceNode size stride =
+  sendOwnedMessage mpscnnPoolingNode initWithSource_filterSize_strideSelector (toMPSNNImageNode sourceNode) size stride
 
 -- | Convenience initializer for MPSCNNPooling nodes with square non-overlapping kernels
 --
@@ -127,67 +120,66 @@ initWithSource_filterSize_stride mpscnnPoolingNode  sourceNode size stride =
 --
 -- ObjC selector: @- initWithSource:filterSize:@
 initWithSource_filterSize :: (IsMPSCNNPoolingNode mpscnnPoolingNode, IsMPSNNImageNode sourceNode) => mpscnnPoolingNode -> sourceNode -> CULong -> IO (Id MPSCNNPoolingNode)
-initWithSource_filterSize mpscnnPoolingNode  sourceNode size =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-      sendMsg mpscnnPoolingNode (mkSelector "initWithSource:filterSize:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argCULong size] >>= ownedObject . castPtr
+initWithSource_filterSize mpscnnPoolingNode sourceNode size =
+  sendOwnedMessage mpscnnPoolingNode initWithSource_filterSizeSelector (toMPSNNImageNode sourceNode) size
 
 -- | @- kernelWidth@
 kernelWidth :: IsMPSCNNPoolingNode mpscnnPoolingNode => mpscnnPoolingNode -> IO CULong
-kernelWidth mpscnnPoolingNode  =
-    sendMsg mpscnnPoolingNode (mkSelector "kernelWidth") retCULong []
+kernelWidth mpscnnPoolingNode =
+  sendMessage mpscnnPoolingNode kernelWidthSelector
 
 -- | @- kernelHeight@
 kernelHeight :: IsMPSCNNPoolingNode mpscnnPoolingNode => mpscnnPoolingNode -> IO CULong
-kernelHeight mpscnnPoolingNode  =
-    sendMsg mpscnnPoolingNode (mkSelector "kernelHeight") retCULong []
+kernelHeight mpscnnPoolingNode =
+  sendMessage mpscnnPoolingNode kernelHeightSelector
 
 -- | @- strideInPixelsX@
 strideInPixelsX :: IsMPSCNNPoolingNode mpscnnPoolingNode => mpscnnPoolingNode -> IO CULong
-strideInPixelsX mpscnnPoolingNode  =
-    sendMsg mpscnnPoolingNode (mkSelector "strideInPixelsX") retCULong []
+strideInPixelsX mpscnnPoolingNode =
+  sendMessage mpscnnPoolingNode strideInPixelsXSelector
 
 -- | @- strideInPixelsY@
 strideInPixelsY :: IsMPSCNNPoolingNode mpscnnPoolingNode => mpscnnPoolingNode -> IO CULong
-strideInPixelsY mpscnnPoolingNode  =
-    sendMsg mpscnnPoolingNode (mkSelector "strideInPixelsY") retCULong []
+strideInPixelsY mpscnnPoolingNode =
+  sendMessage mpscnnPoolingNode strideInPixelsYSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:filterSize:@
-nodeWithSource_filterSizeSelector :: Selector
+nodeWithSource_filterSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNPoolingNode)
 nodeWithSource_filterSizeSelector = mkSelector "nodeWithSource:filterSize:"
 
 -- | @Selector@ for @nodeWithSource:filterSize:stride:@
-nodeWithSource_filterSize_strideSelector :: Selector
+nodeWithSource_filterSize_strideSelector :: Selector '[Id MPSNNImageNode, CULong, CULong] (Id MPSCNNPoolingNode)
 nodeWithSource_filterSize_strideSelector = mkSelector "nodeWithSource:filterSize:stride:"
 
 -- | @Selector@ for @initWithSource:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:@
-initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector :: Selector
+initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector :: Selector '[Id MPSNNImageNode, CULong, CULong, CULong, CULong] (Id MPSCNNPoolingNode)
 initWithSource_kernelWidth_kernelHeight_strideInPixelsX_strideInPixelsYSelector = mkSelector "initWithSource:kernelWidth:kernelHeight:strideInPixelsX:strideInPixelsY:"
 
 -- | @Selector@ for @initWithSource:filterSize:stride:@
-initWithSource_filterSize_strideSelector :: Selector
+initWithSource_filterSize_strideSelector :: Selector '[Id MPSNNImageNode, CULong, CULong] (Id MPSCNNPoolingNode)
 initWithSource_filterSize_strideSelector = mkSelector "initWithSource:filterSize:stride:"
 
 -- | @Selector@ for @initWithSource:filterSize:@
-initWithSource_filterSizeSelector :: Selector
+initWithSource_filterSizeSelector :: Selector '[Id MPSNNImageNode, CULong] (Id MPSCNNPoolingNode)
 initWithSource_filterSizeSelector = mkSelector "initWithSource:filterSize:"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @strideInPixelsX@
-strideInPixelsXSelector :: Selector
+strideInPixelsXSelector :: Selector '[] CULong
 strideInPixelsXSelector = mkSelector "strideInPixelsX"
 
 -- | @Selector@ for @strideInPixelsY@
-strideInPixelsYSelector :: Selector
+strideInPixelsYSelector :: Selector '[] CULong
 strideInPixelsYSelector = mkSelector "strideInPixelsY"
 

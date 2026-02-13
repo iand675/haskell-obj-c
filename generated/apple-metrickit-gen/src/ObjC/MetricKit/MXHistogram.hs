@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.MetricKit.MXHistogram
   , IsMXHistogram(..)
   , totalBucketCount
   , bucketEnumerator
-  , totalBucketCountSelector
   , bucketEnumeratorSelector
+  , totalBucketCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- totalBucketCount@
 totalBucketCount :: IsMXHistogram mxHistogram => mxHistogram -> IO CULong
-totalBucketCount mxHistogram  =
-    sendMsg mxHistogram (mkSelector "totalBucketCount") retCULong []
+totalBucketCount mxHistogram =
+  sendMessage mxHistogram totalBucketCountSelector
 
 -- | bucketEnumerator
 --
@@ -50,18 +47,18 @@ totalBucketCount mxHistogram  =
 --
 -- ObjC selector: @- bucketEnumerator@
 bucketEnumerator :: IsMXHistogram mxHistogram => mxHistogram -> IO (Id NSEnumerator)
-bucketEnumerator mxHistogram  =
-    sendMsg mxHistogram (mkSelector "bucketEnumerator") (retPtr retVoid) [] >>= retainedObject . castPtr
+bucketEnumerator mxHistogram =
+  sendMessage mxHistogram bucketEnumeratorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @totalBucketCount@
-totalBucketCountSelector :: Selector
+totalBucketCountSelector :: Selector '[] CULong
 totalBucketCountSelector = mkSelector "totalBucketCount"
 
 -- | @Selector@ for @bucketEnumerator@
-bucketEnumeratorSelector :: Selector
+bucketEnumeratorSelector :: Selector '[] (Id NSEnumerator)
 bucketEnumeratorSelector = mkSelector "bucketEnumerator"
 

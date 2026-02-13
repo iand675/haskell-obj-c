@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Intents.INRestaurantResolutionResult
   , successWithResolvedRestaurant
   , disambiguationWithRestaurantsToDisambiguate
   , confirmationRequiredWithRestaurantToConfirm
-  , successWithResolvedRestaurantSelector
-  , disambiguationWithRestaurantsToDisambiguateSelector
   , confirmationRequiredWithRestaurantToConfirmSelector
+  , disambiguationWithRestaurantsToDisambiguateSelector
+  , successWithResolvedRestaurantSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -36,38 +33,35 @@ successWithResolvedRestaurant :: IsINRestaurant resolvedRestaurant => resolvedRe
 successWithResolvedRestaurant resolvedRestaurant =
   do
     cls' <- getRequiredClass "INRestaurantResolutionResult"
-    withObjCPtr resolvedRestaurant $ \raw_resolvedRestaurant ->
-      sendClassMsg cls' (mkSelector "successWithResolvedRestaurant:") (retPtr retVoid) [argPtr (castPtr raw_resolvedRestaurant :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedRestaurantSelector (toINRestaurant resolvedRestaurant)
 
 -- | @+ disambiguationWithRestaurantsToDisambiguate:@
 disambiguationWithRestaurantsToDisambiguate :: IsNSArray restaurantsToDisambiguate => restaurantsToDisambiguate -> IO (Id INRestaurantResolutionResult)
 disambiguationWithRestaurantsToDisambiguate restaurantsToDisambiguate =
   do
     cls' <- getRequiredClass "INRestaurantResolutionResult"
-    withObjCPtr restaurantsToDisambiguate $ \raw_restaurantsToDisambiguate ->
-      sendClassMsg cls' (mkSelector "disambiguationWithRestaurantsToDisambiguate:") (retPtr retVoid) [argPtr (castPtr raw_restaurantsToDisambiguate :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' disambiguationWithRestaurantsToDisambiguateSelector (toNSArray restaurantsToDisambiguate)
 
 -- | @+ confirmationRequiredWithRestaurantToConfirm:@
 confirmationRequiredWithRestaurantToConfirm :: IsINRestaurant restaurantToConfirm => restaurantToConfirm -> IO (Id INRestaurantResolutionResult)
 confirmationRequiredWithRestaurantToConfirm restaurantToConfirm =
   do
     cls' <- getRequiredClass "INRestaurantResolutionResult"
-    withObjCPtr restaurantToConfirm $ \raw_restaurantToConfirm ->
-      sendClassMsg cls' (mkSelector "confirmationRequiredWithRestaurantToConfirm:") (retPtr retVoid) [argPtr (castPtr raw_restaurantToConfirm :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithRestaurantToConfirmSelector (toINRestaurant restaurantToConfirm)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedRestaurant:@
-successWithResolvedRestaurantSelector :: Selector
+successWithResolvedRestaurantSelector :: Selector '[Id INRestaurant] (Id INRestaurantResolutionResult)
 successWithResolvedRestaurantSelector = mkSelector "successWithResolvedRestaurant:"
 
 -- | @Selector@ for @disambiguationWithRestaurantsToDisambiguate:@
-disambiguationWithRestaurantsToDisambiguateSelector :: Selector
+disambiguationWithRestaurantsToDisambiguateSelector :: Selector '[Id NSArray] (Id INRestaurantResolutionResult)
 disambiguationWithRestaurantsToDisambiguateSelector = mkSelector "disambiguationWithRestaurantsToDisambiguate:"
 
 -- | @Selector@ for @confirmationRequiredWithRestaurantToConfirm:@
-confirmationRequiredWithRestaurantToConfirmSelector :: Selector
+confirmationRequiredWithRestaurantToConfirmSelector :: Selector '[Id INRestaurant] (Id INRestaurantResolutionResult)
 confirmationRequiredWithRestaurantToConfirmSelector = mkSelector "confirmationRequiredWithRestaurantToConfirm:"
 

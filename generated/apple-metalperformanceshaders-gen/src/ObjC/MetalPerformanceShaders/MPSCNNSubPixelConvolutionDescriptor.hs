@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,21 +18,17 @@ module ObjC.MetalPerformanceShaders.MPSCNNSubPixelConvolutionDescriptor
   , IsMPSCNNSubPixelConvolutionDescriptor(..)
   , subPixelScaleFactor
   , setSubPixelScaleFactor
-  , subPixelScaleFactorSelector
   , setSubPixelScaleFactorSelector
+  , subPixelScaleFactorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,8 +41,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- subPixelScaleFactor@
 subPixelScaleFactor :: IsMPSCNNSubPixelConvolutionDescriptor mpscnnSubPixelConvolutionDescriptor => mpscnnSubPixelConvolutionDescriptor -> IO CULong
-subPixelScaleFactor mpscnnSubPixelConvolutionDescriptor  =
-    sendMsg mpscnnSubPixelConvolutionDescriptor (mkSelector "subPixelScaleFactor") retCULong []
+subPixelScaleFactor mpscnnSubPixelConvolutionDescriptor =
+  sendMessage mpscnnSubPixelConvolutionDescriptor subPixelScaleFactorSelector
 
 -- | subPixelScaleFactor
 --
@@ -53,18 +50,18 @@ subPixelScaleFactor mpscnnSubPixelConvolutionDescriptor  =
 --
 -- ObjC selector: @- setSubPixelScaleFactor:@
 setSubPixelScaleFactor :: IsMPSCNNSubPixelConvolutionDescriptor mpscnnSubPixelConvolutionDescriptor => mpscnnSubPixelConvolutionDescriptor -> CULong -> IO ()
-setSubPixelScaleFactor mpscnnSubPixelConvolutionDescriptor  value =
-    sendMsg mpscnnSubPixelConvolutionDescriptor (mkSelector "setSubPixelScaleFactor:") retVoid [argCULong value]
+setSubPixelScaleFactor mpscnnSubPixelConvolutionDescriptor value =
+  sendMessage mpscnnSubPixelConvolutionDescriptor setSubPixelScaleFactorSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @subPixelScaleFactor@
-subPixelScaleFactorSelector :: Selector
+subPixelScaleFactorSelector :: Selector '[] CULong
 subPixelScaleFactorSelector = mkSelector "subPixelScaleFactor"
 
 -- | @Selector@ for @setSubPixelScaleFactor:@
-setSubPixelScaleFactorSelector :: Selector
+setSubPixelScaleFactorSelector :: Selector '[CULong] ()
 setSubPixelScaleFactorSelector = mkSelector "setSubPixelScaleFactor:"
 

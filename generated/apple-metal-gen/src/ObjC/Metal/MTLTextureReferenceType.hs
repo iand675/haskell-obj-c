@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Metal.MTLTextureReferenceType
   , textureType
   , access
   , isDepthTexture
-  , textureDataTypeSelector
-  , textureTypeSelector
   , accessSelector
   , isDepthTextureSelector
+  , textureDataTypeSelector
+  , textureTypeSelector
 
   -- * Enum types
   , MTLBindingAccess(MTLBindingAccess)
@@ -136,15 +137,11 @@ module ObjC.Metal.MTLTextureReferenceType
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -154,41 +151,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- textureDataType@
 textureDataType :: IsMTLTextureReferenceType mtlTextureReferenceType => mtlTextureReferenceType -> IO MTLDataType
-textureDataType mtlTextureReferenceType  =
-    fmap (coerce :: CULong -> MTLDataType) $ sendMsg mtlTextureReferenceType (mkSelector "textureDataType") retCULong []
+textureDataType mtlTextureReferenceType =
+  sendMessage mtlTextureReferenceType textureDataTypeSelector
 
 -- | @- textureType@
 textureType :: IsMTLTextureReferenceType mtlTextureReferenceType => mtlTextureReferenceType -> IO MTLTextureType
-textureType mtlTextureReferenceType  =
-    fmap (coerce :: CULong -> MTLTextureType) $ sendMsg mtlTextureReferenceType (mkSelector "textureType") retCULong []
+textureType mtlTextureReferenceType =
+  sendMessage mtlTextureReferenceType textureTypeSelector
 
 -- | @- access@
 access :: IsMTLTextureReferenceType mtlTextureReferenceType => mtlTextureReferenceType -> IO MTLBindingAccess
-access mtlTextureReferenceType  =
-    fmap (coerce :: CULong -> MTLBindingAccess) $ sendMsg mtlTextureReferenceType (mkSelector "access") retCULong []
+access mtlTextureReferenceType =
+  sendMessage mtlTextureReferenceType accessSelector
 
 -- | @- isDepthTexture@
 isDepthTexture :: IsMTLTextureReferenceType mtlTextureReferenceType => mtlTextureReferenceType -> IO Bool
-isDepthTexture mtlTextureReferenceType  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlTextureReferenceType (mkSelector "isDepthTexture") retCULong []
+isDepthTexture mtlTextureReferenceType =
+  sendMessage mtlTextureReferenceType isDepthTextureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @textureDataType@
-textureDataTypeSelector :: Selector
+textureDataTypeSelector :: Selector '[] MTLDataType
 textureDataTypeSelector = mkSelector "textureDataType"
 
 -- | @Selector@ for @textureType@
-textureTypeSelector :: Selector
+textureTypeSelector :: Selector '[] MTLTextureType
 textureTypeSelector = mkSelector "textureType"
 
 -- | @Selector@ for @access@
-accessSelector :: Selector
+accessSelector :: Selector '[] MTLBindingAccess
 accessSelector = mkSelector "access"
 
 -- | @Selector@ for @isDepthTexture@
-isDepthTextureSelector :: Selector
+isDepthTextureSelector :: Selector '[] Bool
 isDepthTextureSelector = mkSelector "isDepthTexture"
 

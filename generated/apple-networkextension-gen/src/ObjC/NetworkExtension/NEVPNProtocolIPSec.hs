@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -24,15 +25,15 @@ module ObjC.NetworkExtension.NEVPNProtocolIPSec
   , remoteIdentifier
   , setRemoteIdentifier
   , authenticationMethodSelector
+  , localIdentifierSelector
+  , remoteIdentifierSelector
   , setAuthenticationMethodSelector
-  , useExtendedAuthenticationSelector
+  , setLocalIdentifierSelector
+  , setRemoteIdentifierSelector
+  , setSharedSecretReferenceSelector
   , setUseExtendedAuthenticationSelector
   , sharedSecretReferenceSelector
-  , setSharedSecretReferenceSelector
-  , localIdentifierSelector
-  , setLocalIdentifierSelector
-  , remoteIdentifierSelector
-  , setRemoteIdentifierSelector
+  , useExtendedAuthenticationSelector
 
   -- * Enum types
   , NEVPNIKEAuthenticationMethod(NEVPNIKEAuthenticationMethod)
@@ -42,15 +43,11 @@ module ObjC.NetworkExtension.NEVPNProtocolIPSec
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,8 +61,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- authenticationMethod@
 authenticationMethod :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> IO NEVPNIKEAuthenticationMethod
-authenticationMethod nevpnProtocolIPSec  =
-    fmap (coerce :: CLong -> NEVPNIKEAuthenticationMethod) $ sendMsg nevpnProtocolIPSec (mkSelector "authenticationMethod") retCLong []
+authenticationMethod nevpnProtocolIPSec =
+  sendMessage nevpnProtocolIPSec authenticationMethodSelector
 
 -- | authenticationMethod
 --
@@ -73,8 +70,8 @@ authenticationMethod nevpnProtocolIPSec  =
 --
 -- ObjC selector: @- setAuthenticationMethod:@
 setAuthenticationMethod :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> NEVPNIKEAuthenticationMethod -> IO ()
-setAuthenticationMethod nevpnProtocolIPSec  value =
-    sendMsg nevpnProtocolIPSec (mkSelector "setAuthenticationMethod:") retVoid [argCLong (coerce value)]
+setAuthenticationMethod nevpnProtocolIPSec value =
+  sendMessage nevpnProtocolIPSec setAuthenticationMethodSelector value
 
 -- | useExtendedAuthentication
 --
@@ -82,8 +79,8 @@ setAuthenticationMethod nevpnProtocolIPSec  value =
 --
 -- ObjC selector: @- useExtendedAuthentication@
 useExtendedAuthentication :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> IO Bool
-useExtendedAuthentication nevpnProtocolIPSec  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nevpnProtocolIPSec (mkSelector "useExtendedAuthentication") retCULong []
+useExtendedAuthentication nevpnProtocolIPSec =
+  sendMessage nevpnProtocolIPSec useExtendedAuthenticationSelector
 
 -- | useExtendedAuthentication
 --
@@ -91,8 +88,8 @@ useExtendedAuthentication nevpnProtocolIPSec  =
 --
 -- ObjC selector: @- setUseExtendedAuthentication:@
 setUseExtendedAuthentication :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> Bool -> IO ()
-setUseExtendedAuthentication nevpnProtocolIPSec  value =
-    sendMsg nevpnProtocolIPSec (mkSelector "setUseExtendedAuthentication:") retVoid [argCULong (if value then 1 else 0)]
+setUseExtendedAuthentication nevpnProtocolIPSec value =
+  sendMessage nevpnProtocolIPSec setUseExtendedAuthenticationSelector value
 
 -- | sharedSecretReference
 --
@@ -100,8 +97,8 @@ setUseExtendedAuthentication nevpnProtocolIPSec  value =
 --
 -- ObjC selector: @- sharedSecretReference@
 sharedSecretReference :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> IO (Id NSData)
-sharedSecretReference nevpnProtocolIPSec  =
-    sendMsg nevpnProtocolIPSec (mkSelector "sharedSecretReference") (retPtr retVoid) [] >>= retainedObject . castPtr
+sharedSecretReference nevpnProtocolIPSec =
+  sendMessage nevpnProtocolIPSec sharedSecretReferenceSelector
 
 -- | sharedSecretReference
 --
@@ -109,9 +106,8 @@ sharedSecretReference nevpnProtocolIPSec  =
 --
 -- ObjC selector: @- setSharedSecretReference:@
 setSharedSecretReference :: (IsNEVPNProtocolIPSec nevpnProtocolIPSec, IsNSData value) => nevpnProtocolIPSec -> value -> IO ()
-setSharedSecretReference nevpnProtocolIPSec  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnProtocolIPSec (mkSelector "setSharedSecretReference:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSharedSecretReference nevpnProtocolIPSec value =
+  sendMessage nevpnProtocolIPSec setSharedSecretReferenceSelector (toNSData value)
 
 -- | localIdentifier
 --
@@ -119,8 +115,8 @@ setSharedSecretReference nevpnProtocolIPSec  value =
 --
 -- ObjC selector: @- localIdentifier@
 localIdentifier :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> IO (Id NSString)
-localIdentifier nevpnProtocolIPSec  =
-    sendMsg nevpnProtocolIPSec (mkSelector "localIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+localIdentifier nevpnProtocolIPSec =
+  sendMessage nevpnProtocolIPSec localIdentifierSelector
 
 -- | localIdentifier
 --
@@ -128,9 +124,8 @@ localIdentifier nevpnProtocolIPSec  =
 --
 -- ObjC selector: @- setLocalIdentifier:@
 setLocalIdentifier :: (IsNEVPNProtocolIPSec nevpnProtocolIPSec, IsNSString value) => nevpnProtocolIPSec -> value -> IO ()
-setLocalIdentifier nevpnProtocolIPSec  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnProtocolIPSec (mkSelector "setLocalIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLocalIdentifier nevpnProtocolIPSec value =
+  sendMessage nevpnProtocolIPSec setLocalIdentifierSelector (toNSString value)
 
 -- | remoteIdentifier
 --
@@ -138,8 +133,8 @@ setLocalIdentifier nevpnProtocolIPSec  value =
 --
 -- ObjC selector: @- remoteIdentifier@
 remoteIdentifier :: IsNEVPNProtocolIPSec nevpnProtocolIPSec => nevpnProtocolIPSec -> IO (Id NSString)
-remoteIdentifier nevpnProtocolIPSec  =
-    sendMsg nevpnProtocolIPSec (mkSelector "remoteIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteIdentifier nevpnProtocolIPSec =
+  sendMessage nevpnProtocolIPSec remoteIdentifierSelector
 
 -- | remoteIdentifier
 --
@@ -147,51 +142,50 @@ remoteIdentifier nevpnProtocolIPSec  =
 --
 -- ObjC selector: @- setRemoteIdentifier:@
 setRemoteIdentifier :: (IsNEVPNProtocolIPSec nevpnProtocolIPSec, IsNSString value) => nevpnProtocolIPSec -> value -> IO ()
-setRemoteIdentifier nevpnProtocolIPSec  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nevpnProtocolIPSec (mkSelector "setRemoteIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRemoteIdentifier nevpnProtocolIPSec value =
+  sendMessage nevpnProtocolIPSec setRemoteIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authenticationMethod@
-authenticationMethodSelector :: Selector
+authenticationMethodSelector :: Selector '[] NEVPNIKEAuthenticationMethod
 authenticationMethodSelector = mkSelector "authenticationMethod"
 
 -- | @Selector@ for @setAuthenticationMethod:@
-setAuthenticationMethodSelector :: Selector
+setAuthenticationMethodSelector :: Selector '[NEVPNIKEAuthenticationMethod] ()
 setAuthenticationMethodSelector = mkSelector "setAuthenticationMethod:"
 
 -- | @Selector@ for @useExtendedAuthentication@
-useExtendedAuthenticationSelector :: Selector
+useExtendedAuthenticationSelector :: Selector '[] Bool
 useExtendedAuthenticationSelector = mkSelector "useExtendedAuthentication"
 
 -- | @Selector@ for @setUseExtendedAuthentication:@
-setUseExtendedAuthenticationSelector :: Selector
+setUseExtendedAuthenticationSelector :: Selector '[Bool] ()
 setUseExtendedAuthenticationSelector = mkSelector "setUseExtendedAuthentication:"
 
 -- | @Selector@ for @sharedSecretReference@
-sharedSecretReferenceSelector :: Selector
+sharedSecretReferenceSelector :: Selector '[] (Id NSData)
 sharedSecretReferenceSelector = mkSelector "sharedSecretReference"
 
 -- | @Selector@ for @setSharedSecretReference:@
-setSharedSecretReferenceSelector :: Selector
+setSharedSecretReferenceSelector :: Selector '[Id NSData] ()
 setSharedSecretReferenceSelector = mkSelector "setSharedSecretReference:"
 
 -- | @Selector@ for @localIdentifier@
-localIdentifierSelector :: Selector
+localIdentifierSelector :: Selector '[] (Id NSString)
 localIdentifierSelector = mkSelector "localIdentifier"
 
 -- | @Selector@ for @setLocalIdentifier:@
-setLocalIdentifierSelector :: Selector
+setLocalIdentifierSelector :: Selector '[Id NSString] ()
 setLocalIdentifierSelector = mkSelector "setLocalIdentifier:"
 
 -- | @Selector@ for @remoteIdentifier@
-remoteIdentifierSelector :: Selector
+remoteIdentifierSelector :: Selector '[] (Id NSString)
 remoteIdentifierSelector = mkSelector "remoteIdentifier"
 
 -- | @Selector@ for @setRemoteIdentifier:@
-setRemoteIdentifierSelector :: Selector
+setRemoteIdentifierSelector :: Selector '[Id NSString] ()
 setRemoteIdentifierSelector = mkSelector "setRemoteIdentifier:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,16 +18,16 @@ module ObjC.AppKit.NSCollectionLayoutBoundarySupplementaryItem
   , setPinToVisibleBounds
   , alignment
   , offset
+  , alignmentSelector
   , boundarySupplementaryItemWithLayoutSize_elementKind_alignmentSelector
   , boundarySupplementaryItemWithLayoutSize_elementKind_alignment_absoluteOffsetSelector
+  , extendsBoundarySelector
   , initSelector
   , newSelector
-  , extendsBoundarySelector
-  , setExtendsBoundarySelector
-  , pinToVisibleBoundsSelector
-  , setPinToVisibleBoundsSelector
-  , alignmentSelector
   , offsetSelector
+  , pinToVisibleBoundsSelector
+  , setExtendsBoundarySelector
+  , setPinToVisibleBoundsSelector
 
   -- * Enum types
   , NSRectAlignment(NSRectAlignment)
@@ -42,15 +43,11 @@ module ObjC.AppKit.NSCollectionLayoutBoundarySupplementaryItem
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -64,102 +61,98 @@ boundarySupplementaryItemWithLayoutSize_elementKind_alignment :: (IsNSCollection
 boundarySupplementaryItemWithLayoutSize_elementKind_alignment layoutSize elementKind alignment =
   do
     cls' <- getRequiredClass "NSCollectionLayoutBoundarySupplementaryItem"
-    withObjCPtr layoutSize $ \raw_layoutSize ->
-      withObjCPtr elementKind $ \raw_elementKind ->
-        sendClassMsg cls' (mkSelector "boundarySupplementaryItemWithLayoutSize:elementKind:alignment:") (retPtr retVoid) [argPtr (castPtr raw_layoutSize :: Ptr ()), argPtr (castPtr raw_elementKind :: Ptr ()), argCLong (coerce alignment)] >>= retainedObject . castPtr
+    sendClassMessage cls' boundarySupplementaryItemWithLayoutSize_elementKind_alignmentSelector (toNSCollectionLayoutSize layoutSize) (toNSString elementKind) alignment
 
 -- | @+ boundarySupplementaryItemWithLayoutSize:elementKind:alignment:absoluteOffset:@
 boundarySupplementaryItemWithLayoutSize_elementKind_alignment_absoluteOffset :: (IsNSCollectionLayoutSize layoutSize, IsNSString elementKind) => layoutSize -> elementKind -> NSRectAlignment -> NSPoint -> IO (Id NSCollectionLayoutBoundarySupplementaryItem)
 boundarySupplementaryItemWithLayoutSize_elementKind_alignment_absoluteOffset layoutSize elementKind alignment absoluteOffset =
   do
     cls' <- getRequiredClass "NSCollectionLayoutBoundarySupplementaryItem"
-    withObjCPtr layoutSize $ \raw_layoutSize ->
-      withObjCPtr elementKind $ \raw_elementKind ->
-        sendClassMsg cls' (mkSelector "boundarySupplementaryItemWithLayoutSize:elementKind:alignment:absoluteOffset:") (retPtr retVoid) [argPtr (castPtr raw_layoutSize :: Ptr ()), argPtr (castPtr raw_elementKind :: Ptr ()), argCLong (coerce alignment), argNSPoint absoluteOffset] >>= retainedObject . castPtr
+    sendClassMessage cls' boundarySupplementaryItemWithLayoutSize_elementKind_alignment_absoluteOffsetSelector (toNSCollectionLayoutSize layoutSize) (toNSString elementKind) alignment absoluteOffset
 
 -- | @- init@
 init_ :: IsNSCollectionLayoutBoundarySupplementaryItem nsCollectionLayoutBoundarySupplementaryItem => nsCollectionLayoutBoundarySupplementaryItem -> IO (Id NSCollectionLayoutBoundarySupplementaryItem)
-init_ nsCollectionLayoutBoundarySupplementaryItem  =
-    sendMsg nsCollectionLayoutBoundarySupplementaryItem (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsCollectionLayoutBoundarySupplementaryItem =
+  sendOwnedMessage nsCollectionLayoutBoundarySupplementaryItem initSelector
 
 -- | @+ new@
 new :: IO (Id NSCollectionLayoutBoundarySupplementaryItem)
 new  =
   do
     cls' <- getRequiredClass "NSCollectionLayoutBoundarySupplementaryItem"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- extendsBoundary@
 extendsBoundary :: IsNSCollectionLayoutBoundarySupplementaryItem nsCollectionLayoutBoundarySupplementaryItem => nsCollectionLayoutBoundarySupplementaryItem -> IO Bool
-extendsBoundary nsCollectionLayoutBoundarySupplementaryItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionLayoutBoundarySupplementaryItem (mkSelector "extendsBoundary") retCULong []
+extendsBoundary nsCollectionLayoutBoundarySupplementaryItem =
+  sendMessage nsCollectionLayoutBoundarySupplementaryItem extendsBoundarySelector
 
 -- | @- setExtendsBoundary:@
 setExtendsBoundary :: IsNSCollectionLayoutBoundarySupplementaryItem nsCollectionLayoutBoundarySupplementaryItem => nsCollectionLayoutBoundarySupplementaryItem -> Bool -> IO ()
-setExtendsBoundary nsCollectionLayoutBoundarySupplementaryItem  value =
-    sendMsg nsCollectionLayoutBoundarySupplementaryItem (mkSelector "setExtendsBoundary:") retVoid [argCULong (if value then 1 else 0)]
+setExtendsBoundary nsCollectionLayoutBoundarySupplementaryItem value =
+  sendMessage nsCollectionLayoutBoundarySupplementaryItem setExtendsBoundarySelector value
 
 -- | @- pinToVisibleBounds@
 pinToVisibleBounds :: IsNSCollectionLayoutBoundarySupplementaryItem nsCollectionLayoutBoundarySupplementaryItem => nsCollectionLayoutBoundarySupplementaryItem -> IO Bool
-pinToVisibleBounds nsCollectionLayoutBoundarySupplementaryItem  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsCollectionLayoutBoundarySupplementaryItem (mkSelector "pinToVisibleBounds") retCULong []
+pinToVisibleBounds nsCollectionLayoutBoundarySupplementaryItem =
+  sendMessage nsCollectionLayoutBoundarySupplementaryItem pinToVisibleBoundsSelector
 
 -- | @- setPinToVisibleBounds:@
 setPinToVisibleBounds :: IsNSCollectionLayoutBoundarySupplementaryItem nsCollectionLayoutBoundarySupplementaryItem => nsCollectionLayoutBoundarySupplementaryItem -> Bool -> IO ()
-setPinToVisibleBounds nsCollectionLayoutBoundarySupplementaryItem  value =
-    sendMsg nsCollectionLayoutBoundarySupplementaryItem (mkSelector "setPinToVisibleBounds:") retVoid [argCULong (if value then 1 else 0)]
+setPinToVisibleBounds nsCollectionLayoutBoundarySupplementaryItem value =
+  sendMessage nsCollectionLayoutBoundarySupplementaryItem setPinToVisibleBoundsSelector value
 
 -- | @- alignment@
 alignment :: IsNSCollectionLayoutBoundarySupplementaryItem nsCollectionLayoutBoundarySupplementaryItem => nsCollectionLayoutBoundarySupplementaryItem -> IO NSRectAlignment
-alignment nsCollectionLayoutBoundarySupplementaryItem  =
-    fmap (coerce :: CLong -> NSRectAlignment) $ sendMsg nsCollectionLayoutBoundarySupplementaryItem (mkSelector "alignment") retCLong []
+alignment nsCollectionLayoutBoundarySupplementaryItem =
+  sendMessage nsCollectionLayoutBoundarySupplementaryItem alignmentSelector
 
 -- | @- offset@
 offset :: IsNSCollectionLayoutBoundarySupplementaryItem nsCollectionLayoutBoundarySupplementaryItem => nsCollectionLayoutBoundarySupplementaryItem -> IO NSPoint
-offset nsCollectionLayoutBoundarySupplementaryItem  =
-    sendMsgStret nsCollectionLayoutBoundarySupplementaryItem (mkSelector "offset") retNSPoint []
+offset nsCollectionLayoutBoundarySupplementaryItem =
+  sendMessage nsCollectionLayoutBoundarySupplementaryItem offsetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @boundarySupplementaryItemWithLayoutSize:elementKind:alignment:@
-boundarySupplementaryItemWithLayoutSize_elementKind_alignmentSelector :: Selector
+boundarySupplementaryItemWithLayoutSize_elementKind_alignmentSelector :: Selector '[Id NSCollectionLayoutSize, Id NSString, NSRectAlignment] (Id NSCollectionLayoutBoundarySupplementaryItem)
 boundarySupplementaryItemWithLayoutSize_elementKind_alignmentSelector = mkSelector "boundarySupplementaryItemWithLayoutSize:elementKind:alignment:"
 
 -- | @Selector@ for @boundarySupplementaryItemWithLayoutSize:elementKind:alignment:absoluteOffset:@
-boundarySupplementaryItemWithLayoutSize_elementKind_alignment_absoluteOffsetSelector :: Selector
+boundarySupplementaryItemWithLayoutSize_elementKind_alignment_absoluteOffsetSelector :: Selector '[Id NSCollectionLayoutSize, Id NSString, NSRectAlignment, NSPoint] (Id NSCollectionLayoutBoundarySupplementaryItem)
 boundarySupplementaryItemWithLayoutSize_elementKind_alignment_absoluteOffsetSelector = mkSelector "boundarySupplementaryItemWithLayoutSize:elementKind:alignment:absoluteOffset:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSCollectionLayoutBoundarySupplementaryItem)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSCollectionLayoutBoundarySupplementaryItem)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @extendsBoundary@
-extendsBoundarySelector :: Selector
+extendsBoundarySelector :: Selector '[] Bool
 extendsBoundarySelector = mkSelector "extendsBoundary"
 
 -- | @Selector@ for @setExtendsBoundary:@
-setExtendsBoundarySelector :: Selector
+setExtendsBoundarySelector :: Selector '[Bool] ()
 setExtendsBoundarySelector = mkSelector "setExtendsBoundary:"
 
 -- | @Selector@ for @pinToVisibleBounds@
-pinToVisibleBoundsSelector :: Selector
+pinToVisibleBoundsSelector :: Selector '[] Bool
 pinToVisibleBoundsSelector = mkSelector "pinToVisibleBounds"
 
 -- | @Selector@ for @setPinToVisibleBounds:@
-setPinToVisibleBoundsSelector :: Selector
+setPinToVisibleBoundsSelector :: Selector '[Bool] ()
 setPinToVisibleBoundsSelector = mkSelector "setPinToVisibleBounds:"
 
 -- | @Selector@ for @alignment@
-alignmentSelector :: Selector
+alignmentSelector :: Selector '[] NSRectAlignment
 alignmentSelector = mkSelector "alignment"
 
 -- | @Selector@ for @offset@
-offsetSelector :: Selector
+offsetSelector :: Selector '[] NSPoint
 offsetSelector = mkSelector "offset"
 

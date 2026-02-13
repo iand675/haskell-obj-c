@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -44,15 +45,11 @@ module ObjC.AppKit.CIImage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,15 +59,14 @@ import ObjC.CoreImage.Internal.Classes
 
 -- | @- initWithBitmapImageRep:@
 initWithBitmapImageRep :: (IsCIImage ciImage, IsNSBitmapImageRep bitmapImageRep) => ciImage -> bitmapImageRep -> IO (Id CIImage)
-initWithBitmapImageRep ciImage  bitmapImageRep =
-  withObjCPtr bitmapImageRep $ \raw_bitmapImageRep ->
-      sendMsg ciImage (mkSelector "initWithBitmapImageRep:") (retPtr retVoid) [argPtr (castPtr raw_bitmapImageRep :: Ptr ())] >>= ownedObject . castPtr
+initWithBitmapImageRep ciImage bitmapImageRep =
+  sendOwnedMessage ciImage initWithBitmapImageRepSelector (toNSBitmapImageRep bitmapImageRep)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBitmapImageRep:@
-initWithBitmapImageRepSelector :: Selector
+initWithBitmapImageRepSelector :: Selector '[Id NSBitmapImageRep] (Id CIImage)
 initWithBitmapImageRepSelector = mkSelector "initWithBitmapImageRep:"
 

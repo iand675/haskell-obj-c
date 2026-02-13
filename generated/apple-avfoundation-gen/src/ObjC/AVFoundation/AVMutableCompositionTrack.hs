@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,35 +23,31 @@ module ObjC.AVFoundation.AVMutableCompositionTrack
   , setPreferredVolume
   , segments
   , setSegments
-  , validateTrackSegments_errorSelector
   , addTrackAssociationToTrack_typeSelector
+  , enabledSelector
+  , extendedLanguageTagSelector
+  , languageCodeSelector
+  , naturalTimeScaleSelector
+  , preferredVolumeSelector
   , removeTrackAssociationToTrack_typeSelector
   , replaceFormatDescription_withFormatDescriptionSelector
-  , enabledSelector
-  , setEnabledSelector
-  , naturalTimeScaleSelector
-  , setNaturalTimeScaleSelector
-  , languageCodeSelector
-  , setLanguageCodeSelector
-  , extendedLanguageTagSelector
-  , setExtendedLanguageTagSelector
-  , preferredVolumeSelector
-  , setPreferredVolumeSelector
   , segmentsSelector
+  , setEnabledSelector
+  , setExtendedLanguageTagSelector
+  , setLanguageCodeSelector
+  , setNaturalTimeScaleSelector
+  , setPreferredVolumeSelector
   , setSegmentsSelector
+  , validateTrackSegments_errorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,10 +68,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- validateTrackSegments:error:@
 validateTrackSegments_error :: (IsAVMutableCompositionTrack avMutableCompositionTrack, IsNSArray trackSegments, IsNSError outError) => avMutableCompositionTrack -> trackSegments -> outError -> IO Bool
-validateTrackSegments_error avMutableCompositionTrack  trackSegments outError =
-  withObjCPtr trackSegments $ \raw_trackSegments ->
-    withObjCPtr outError $ \raw_outError ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMutableCompositionTrack (mkSelector "validateTrackSegments:error:") retCULong [argPtr (castPtr raw_trackSegments :: Ptr ()), argPtr (castPtr raw_outError :: Ptr ())]
+validateTrackSegments_error avMutableCompositionTrack trackSegments outError =
+  sendMessage avMutableCompositionTrack validateTrackSegments_errorSelector (toNSArray trackSegments) (toNSError outError)
 
 -- | addTrackAssociationToTrack:type:
 --
@@ -86,10 +81,8 @@ validateTrackSegments_error avMutableCompositionTrack  trackSegments outError =
 --
 -- ObjC selector: @- addTrackAssociationToTrack:type:@
 addTrackAssociationToTrack_type :: (IsAVMutableCompositionTrack avMutableCompositionTrack, IsAVCompositionTrack compositionTrack, IsNSString trackAssociationType) => avMutableCompositionTrack -> compositionTrack -> trackAssociationType -> IO ()
-addTrackAssociationToTrack_type avMutableCompositionTrack  compositionTrack trackAssociationType =
-  withObjCPtr compositionTrack $ \raw_compositionTrack ->
-    withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
-        sendMsg avMutableCompositionTrack (mkSelector "addTrackAssociationToTrack:type:") retVoid [argPtr (castPtr raw_compositionTrack :: Ptr ()), argPtr (castPtr raw_trackAssociationType :: Ptr ())]
+addTrackAssociationToTrack_type avMutableCompositionTrack compositionTrack trackAssociationType =
+  sendMessage avMutableCompositionTrack addTrackAssociationToTrack_typeSelector (toAVCompositionTrack compositionTrack) (toNSString trackAssociationType)
 
 -- | removeTrackAssociationToTrack:type:
 --
@@ -101,10 +94,8 @@ addTrackAssociationToTrack_type avMutableCompositionTrack  compositionTrack trac
 --
 -- ObjC selector: @- removeTrackAssociationToTrack:type:@
 removeTrackAssociationToTrack_type :: (IsAVMutableCompositionTrack avMutableCompositionTrack, IsAVCompositionTrack compositionTrack, IsNSString trackAssociationType) => avMutableCompositionTrack -> compositionTrack -> trackAssociationType -> IO ()
-removeTrackAssociationToTrack_type avMutableCompositionTrack  compositionTrack trackAssociationType =
-  withObjCPtr compositionTrack $ \raw_compositionTrack ->
-    withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
-        sendMsg avMutableCompositionTrack (mkSelector "removeTrackAssociationToTrack:type:") retVoid [argPtr (castPtr raw_compositionTrack :: Ptr ()), argPtr (castPtr raw_trackAssociationType :: Ptr ())]
+removeTrackAssociationToTrack_type avMutableCompositionTrack compositionTrack trackAssociationType =
+  sendMessage avMutableCompositionTrack removeTrackAssociationToTrack_typeSelector (toAVCompositionTrack compositionTrack) (toNSString trackAssociationType)
 
 -- | replaceFormatDescription:withFormatDescription:
 --
@@ -118,8 +109,8 @@ removeTrackAssociationToTrack_type avMutableCompositionTrack  compositionTrack t
 --
 -- ObjC selector: @- replaceFormatDescription:withFormatDescription:@
 replaceFormatDescription_withFormatDescription :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> RawId -> RawId -> IO ()
-replaceFormatDescription_withFormatDescription avMutableCompositionTrack  originalFormatDescription replacementFormatDescription =
-    sendMsg avMutableCompositionTrack (mkSelector "replaceFormatDescription:withFormatDescription:") retVoid [argPtr (castPtr (unRawId originalFormatDescription) :: Ptr ()), argPtr (castPtr (unRawId replacementFormatDescription) :: Ptr ())]
+replaceFormatDescription_withFormatDescription avMutableCompositionTrack originalFormatDescription replacementFormatDescription =
+  sendMessage avMutableCompositionTrack replaceFormatDescription_withFormatDescriptionSelector originalFormatDescription replacementFormatDescription
 
 -- | enabled
 --
@@ -127,8 +118,8 @@ replaceFormatDescription_withFormatDescription avMutableCompositionTrack  origin
 --
 -- ObjC selector: @- enabled@
 enabled :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> IO Bool
-enabled avMutableCompositionTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMutableCompositionTrack (mkSelector "enabled") retCULong []
+enabled avMutableCompositionTrack =
+  sendMessage avMutableCompositionTrack enabledSelector
 
 -- | enabled
 --
@@ -136,8 +127,8 @@ enabled avMutableCompositionTrack  =
 --
 -- ObjC selector: @- setEnabled:@
 setEnabled :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> Bool -> IO ()
-setEnabled avMutableCompositionTrack  value =
-    sendMsg avMutableCompositionTrack (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled avMutableCompositionTrack value =
+  sendMessage avMutableCompositionTrack setEnabledSelector value
 
 -- | naturalTimeScale
 --
@@ -147,8 +138,8 @@ setEnabled avMutableCompositionTrack  value =
 --
 -- ObjC selector: @- naturalTimeScale@
 naturalTimeScale :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> IO CInt
-naturalTimeScale avMutableCompositionTrack  =
-    sendMsg avMutableCompositionTrack (mkSelector "naturalTimeScale") retCInt []
+naturalTimeScale avMutableCompositionTrack =
+  sendMessage avMutableCompositionTrack naturalTimeScaleSelector
 
 -- | naturalTimeScale
 --
@@ -158,8 +149,8 @@ naturalTimeScale avMutableCompositionTrack  =
 --
 -- ObjC selector: @- setNaturalTimeScale:@
 setNaturalTimeScale :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> CInt -> IO ()
-setNaturalTimeScale avMutableCompositionTrack  value =
-    sendMsg avMutableCompositionTrack (mkSelector "setNaturalTimeScale:") retVoid [argCInt value]
+setNaturalTimeScale avMutableCompositionTrack value =
+  sendMessage avMutableCompositionTrack setNaturalTimeScaleSelector value
 
 -- | languageCode
 --
@@ -169,8 +160,8 @@ setNaturalTimeScale avMutableCompositionTrack  value =
 --
 -- ObjC selector: @- languageCode@
 languageCode :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> IO (Id NSString)
-languageCode avMutableCompositionTrack  =
-    sendMsg avMutableCompositionTrack (mkSelector "languageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageCode avMutableCompositionTrack =
+  sendMessage avMutableCompositionTrack languageCodeSelector
 
 -- | languageCode
 --
@@ -180,9 +171,8 @@ languageCode avMutableCompositionTrack  =
 --
 -- ObjC selector: @- setLanguageCode:@
 setLanguageCode :: (IsAVMutableCompositionTrack avMutableCompositionTrack, IsNSString value) => avMutableCompositionTrack -> value -> IO ()
-setLanguageCode avMutableCompositionTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableCompositionTrack (mkSelector "setLanguageCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLanguageCode avMutableCompositionTrack value =
+  sendMessage avMutableCompositionTrack setLanguageCodeSelector (toNSString value)
 
 -- | extendedLanguageTag
 --
@@ -192,8 +182,8 @@ setLanguageCode avMutableCompositionTrack  value =
 --
 -- ObjC selector: @- extendedLanguageTag@
 extendedLanguageTag :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> IO (Id NSString)
-extendedLanguageTag avMutableCompositionTrack  =
-    sendMsg avMutableCompositionTrack (mkSelector "extendedLanguageTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedLanguageTag avMutableCompositionTrack =
+  sendMessage avMutableCompositionTrack extendedLanguageTagSelector
 
 -- | extendedLanguageTag
 --
@@ -203,9 +193,8 @@ extendedLanguageTag avMutableCompositionTrack  =
 --
 -- ObjC selector: @- setExtendedLanguageTag:@
 setExtendedLanguageTag :: (IsAVMutableCompositionTrack avMutableCompositionTrack, IsNSString value) => avMutableCompositionTrack -> value -> IO ()
-setExtendedLanguageTag avMutableCompositionTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableCompositionTrack (mkSelector "setExtendedLanguageTag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedLanguageTag avMutableCompositionTrack value =
+  sendMessage avMutableCompositionTrack setExtendedLanguageTagSelector (toNSString value)
 
 -- | preferredVolume
 --
@@ -215,8 +204,8 @@ setExtendedLanguageTag avMutableCompositionTrack  value =
 --
 -- ObjC selector: @- preferredVolume@
 preferredVolume :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> IO CFloat
-preferredVolume avMutableCompositionTrack  =
-    sendMsg avMutableCompositionTrack (mkSelector "preferredVolume") retCFloat []
+preferredVolume avMutableCompositionTrack =
+  sendMessage avMutableCompositionTrack preferredVolumeSelector
 
 -- | preferredVolume
 --
@@ -226,8 +215,8 @@ preferredVolume avMutableCompositionTrack  =
 --
 -- ObjC selector: @- setPreferredVolume:@
 setPreferredVolume :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> CFloat -> IO ()
-setPreferredVolume avMutableCompositionTrack  value =
-    sendMsg avMutableCompositionTrack (mkSelector "setPreferredVolume:") retVoid [argCFloat value]
+setPreferredVolume avMutableCompositionTrack value =
+  sendMessage avMutableCompositionTrack setPreferredVolumeSelector value
 
 -- | segments
 --
@@ -237,8 +226,8 @@ setPreferredVolume avMutableCompositionTrack  value =
 --
 -- ObjC selector: @- segments@
 segments :: IsAVMutableCompositionTrack avMutableCompositionTrack => avMutableCompositionTrack -> IO (Id NSArray)
-segments avMutableCompositionTrack  =
-    sendMsg avMutableCompositionTrack (mkSelector "segments") (retPtr retVoid) [] >>= retainedObject . castPtr
+segments avMutableCompositionTrack =
+  sendMessage avMutableCompositionTrack segmentsSelector
 
 -- | segments
 --
@@ -248,75 +237,74 @@ segments avMutableCompositionTrack  =
 --
 -- ObjC selector: @- setSegments:@
 setSegments :: (IsAVMutableCompositionTrack avMutableCompositionTrack, IsNSArray value) => avMutableCompositionTrack -> value -> IO ()
-setSegments avMutableCompositionTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMutableCompositionTrack (mkSelector "setSegments:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSegments avMutableCompositionTrack value =
+  sendMessage avMutableCompositionTrack setSegmentsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @validateTrackSegments:error:@
-validateTrackSegments_errorSelector :: Selector
+validateTrackSegments_errorSelector :: Selector '[Id NSArray, Id NSError] Bool
 validateTrackSegments_errorSelector = mkSelector "validateTrackSegments:error:"
 
 -- | @Selector@ for @addTrackAssociationToTrack:type:@
-addTrackAssociationToTrack_typeSelector :: Selector
+addTrackAssociationToTrack_typeSelector :: Selector '[Id AVCompositionTrack, Id NSString] ()
 addTrackAssociationToTrack_typeSelector = mkSelector "addTrackAssociationToTrack:type:"
 
 -- | @Selector@ for @removeTrackAssociationToTrack:type:@
-removeTrackAssociationToTrack_typeSelector :: Selector
+removeTrackAssociationToTrack_typeSelector :: Selector '[Id AVCompositionTrack, Id NSString] ()
 removeTrackAssociationToTrack_typeSelector = mkSelector "removeTrackAssociationToTrack:type:"
 
 -- | @Selector@ for @replaceFormatDescription:withFormatDescription:@
-replaceFormatDescription_withFormatDescriptionSelector :: Selector
+replaceFormatDescription_withFormatDescriptionSelector :: Selector '[RawId, RawId] ()
 replaceFormatDescription_withFormatDescriptionSelector = mkSelector "replaceFormatDescription:withFormatDescription:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
 -- | @Selector@ for @naturalTimeScale@
-naturalTimeScaleSelector :: Selector
+naturalTimeScaleSelector :: Selector '[] CInt
 naturalTimeScaleSelector = mkSelector "naturalTimeScale"
 
 -- | @Selector@ for @setNaturalTimeScale:@
-setNaturalTimeScaleSelector :: Selector
+setNaturalTimeScaleSelector :: Selector '[CInt] ()
 setNaturalTimeScaleSelector = mkSelector "setNaturalTimeScale:"
 
 -- | @Selector@ for @languageCode@
-languageCodeSelector :: Selector
+languageCodeSelector :: Selector '[] (Id NSString)
 languageCodeSelector = mkSelector "languageCode"
 
 -- | @Selector@ for @setLanguageCode:@
-setLanguageCodeSelector :: Selector
+setLanguageCodeSelector :: Selector '[Id NSString] ()
 setLanguageCodeSelector = mkSelector "setLanguageCode:"
 
 -- | @Selector@ for @extendedLanguageTag@
-extendedLanguageTagSelector :: Selector
+extendedLanguageTagSelector :: Selector '[] (Id NSString)
 extendedLanguageTagSelector = mkSelector "extendedLanguageTag"
 
 -- | @Selector@ for @setExtendedLanguageTag:@
-setExtendedLanguageTagSelector :: Selector
+setExtendedLanguageTagSelector :: Selector '[Id NSString] ()
 setExtendedLanguageTagSelector = mkSelector "setExtendedLanguageTag:"
 
 -- | @Selector@ for @preferredVolume@
-preferredVolumeSelector :: Selector
+preferredVolumeSelector :: Selector '[] CFloat
 preferredVolumeSelector = mkSelector "preferredVolume"
 
 -- | @Selector@ for @setPreferredVolume:@
-setPreferredVolumeSelector :: Selector
+setPreferredVolumeSelector :: Selector '[CFloat] ()
 setPreferredVolumeSelector = mkSelector "setPreferredVolume:"
 
 -- | @Selector@ for @segments@
-segmentsSelector :: Selector
+segmentsSelector :: Selector '[] (Id NSArray)
 segmentsSelector = mkSelector "segments"
 
 -- | @Selector@ for @setSegments:@
-setSegmentsSelector :: Selector
+setSegmentsSelector :: Selector '[Id NSArray] ()
 setSegmentsSelector = mkSelector "setSegments:"
 

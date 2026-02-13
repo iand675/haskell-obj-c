@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -27,18 +28,18 @@ module ObjC.Contacts.CNContactStore
   , defaultContainerIdentifier
   , currentHistoryToken
   , authorizationStatusForEntityTypeSelector
-  , requestAccessForEntityType_completionHandlerSelector
-  , unifiedContactsMatchingPredicate_keysToFetch_errorSelector
-  , unifiedContactWithIdentifier_keysToFetch_errorSelector
-  , unifiedMeContactWithKeysToFetch_errorSelector
-  , enumeratorForContactFetchRequest_errorSelector
-  , enumeratorForChangeHistoryFetchRequest_errorSelector
-  , enumerateContactsWithFetchRequest_error_usingBlockSelector
-  , groupsMatchingPredicate_errorSelector
   , containersMatchingPredicate_errorSelector
-  , executeSaveRequest_errorSelector
-  , defaultContainerIdentifierSelector
   , currentHistoryTokenSelector
+  , defaultContainerIdentifierSelector
+  , enumerateContactsWithFetchRequest_error_usingBlockSelector
+  , enumeratorForChangeHistoryFetchRequest_errorSelector
+  , enumeratorForContactFetchRequest_errorSelector
+  , executeSaveRequest_errorSelector
+  , groupsMatchingPredicate_errorSelector
+  , requestAccessForEntityType_completionHandlerSelector
+  , unifiedContactWithIdentifier_keysToFetch_errorSelector
+  , unifiedContactsMatchingPredicate_keysToFetch_errorSelector
+  , unifiedMeContactWithKeysToFetch_errorSelector
 
   -- * Enum types
   , CNAuthorizationStatus(CNAuthorizationStatus)
@@ -52,15 +53,11 @@ module ObjC.Contacts.CNContactStore
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -79,7 +76,7 @@ authorizationStatusForEntityType :: CNEntityType -> IO CNAuthorizationStatus
 authorizationStatusForEntityType entityType =
   do
     cls' <- getRequiredClass "CNContactStore"
-    fmap (coerce :: CLong -> CNAuthorizationStatus) $ sendClassMsg cls' (mkSelector "authorizationStatusForEntityType:") retCLong [argCLong (coerce entityType)]
+    sendClassMessage cls' authorizationStatusForEntityTypeSelector entityType
 
 -- | Request access to the user's contacts.
 --
@@ -93,8 +90,8 @@ authorizationStatusForEntityType entityType =
 --
 -- ObjC selector: @- requestAccessForEntityType:completionHandler:@
 requestAccessForEntityType_completionHandler :: IsCNContactStore cnContactStore => cnContactStore -> CNEntityType -> Ptr () -> IO ()
-requestAccessForEntityType_completionHandler cnContactStore  entityType completionHandler =
-    sendMsg cnContactStore (mkSelector "requestAccessForEntityType:completionHandler:") retVoid [argCLong (coerce entityType), argPtr (castPtr completionHandler :: Ptr ())]
+requestAccessForEntityType_completionHandler cnContactStore entityType completionHandler =
+  sendMessage cnContactStore requestAccessForEntityType_completionHandlerSelector entityType completionHandler
 
 -- | Fetch all unified contacts matching a given predicate.
 --
@@ -112,11 +109,8 @@ requestAccessForEntityType_completionHandler cnContactStore  entityType completi
 --
 -- ObjC selector: @- unifiedContactsMatchingPredicate:keysToFetch:error:@
 unifiedContactsMatchingPredicate_keysToFetch_error :: (IsCNContactStore cnContactStore, IsNSPredicate predicate, IsNSArray keys, IsNSError error_) => cnContactStore -> predicate -> keys -> error_ -> IO (Id NSArray)
-unifiedContactsMatchingPredicate_keysToFetch_error cnContactStore  predicate keys error_ =
-  withObjCPtr predicate $ \raw_predicate ->
-    withObjCPtr keys $ \raw_keys ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg cnContactStore (mkSelector "unifiedContactsMatchingPredicate:keysToFetch:error:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr raw_keys :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+unifiedContactsMatchingPredicate_keysToFetch_error cnContactStore predicate keys error_ =
+  sendMessage cnContactStore unifiedContactsMatchingPredicate_keysToFetch_errorSelector (toNSPredicate predicate) (toNSArray keys) (toNSError error_)
 
 -- | Fetch a unified contact with a given identifier.
 --
@@ -132,11 +126,8 @@ unifiedContactsMatchingPredicate_keysToFetch_error cnContactStore  predicate key
 --
 -- ObjC selector: @- unifiedContactWithIdentifier:keysToFetch:error:@
 unifiedContactWithIdentifier_keysToFetch_error :: (IsCNContactStore cnContactStore, IsNSString identifier, IsNSArray keys, IsNSError error_) => cnContactStore -> identifier -> keys -> error_ -> IO (Id CNContact)
-unifiedContactWithIdentifier_keysToFetch_error cnContactStore  identifier keys error_ =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr keys $ \raw_keys ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg cnContactStore (mkSelector "unifiedContactWithIdentifier:keysToFetch:error:") (retPtr retVoid) [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_keys :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+unifiedContactWithIdentifier_keysToFetch_error cnContactStore identifier keys error_ =
+  sendMessage cnContactStore unifiedContactWithIdentifier_keysToFetch_errorSelector (toNSString identifier) (toNSArray keys) (toNSError error_)
 
 -- | Fetch the unified contact that is the "me" card.
 --
@@ -150,10 +141,8 @@ unifiedContactWithIdentifier_keysToFetch_error cnContactStore  identifier keys e
 --
 -- ObjC selector: @- unifiedMeContactWithKeysToFetch:error:@
 unifiedMeContactWithKeysToFetch_error :: (IsCNContactStore cnContactStore, IsNSArray keys, IsNSError error_) => cnContactStore -> keys -> error_ -> IO (Id CNContact)
-unifiedMeContactWithKeysToFetch_error cnContactStore  keys error_ =
-  withObjCPtr keys $ \raw_keys ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg cnContactStore (mkSelector "unifiedMeContactWithKeysToFetch:error:") (retPtr retVoid) [argPtr (castPtr raw_keys :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+unifiedMeContactWithKeysToFetch_error cnContactStore keys error_ =
+  sendMessage cnContactStore unifiedMeContactWithKeysToFetch_errorSelector (toNSArray keys) (toNSError error_)
 
 -- | Enumerate a contact fetch request.
 --
@@ -169,10 +158,8 @@ unifiedMeContactWithKeysToFetch_error cnContactStore  keys error_ =
 --
 -- ObjC selector: @- enumeratorForContactFetchRequest:error:@
 enumeratorForContactFetchRequest_error :: (IsCNContactStore cnContactStore, IsCNContactFetchRequest request, IsNSError error_) => cnContactStore -> request -> error_ -> IO (Id CNFetchResult)
-enumeratorForContactFetchRequest_error cnContactStore  request error_ =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg cnContactStore (mkSelector "enumeratorForContactFetchRequest:error:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+enumeratorForContactFetchRequest_error cnContactStore request error_ =
+  sendMessage cnContactStore enumeratorForContactFetchRequest_errorSelector (toCNContactFetchRequest request) (toNSError error_)
 
 -- | Enumerate a change history fetch request.
 --
@@ -188,10 +175,8 @@ enumeratorForContactFetchRequest_error cnContactStore  request error_ =
 --
 -- ObjC selector: @- enumeratorForChangeHistoryFetchRequest:error:@
 enumeratorForChangeHistoryFetchRequest_error :: (IsCNContactStore cnContactStore, IsCNChangeHistoryFetchRequest request, IsNSError error_) => cnContactStore -> request -> error_ -> IO (Id CNFetchResult)
-enumeratorForChangeHistoryFetchRequest_error cnContactStore  request error_ =
-  withObjCPtr request $ \raw_request ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg cnContactStore (mkSelector "enumeratorForChangeHistoryFetchRequest:error:") (retPtr retVoid) [argPtr (castPtr raw_request :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+enumeratorForChangeHistoryFetchRequest_error cnContactStore request error_ =
+  sendMessage cnContactStore enumeratorForChangeHistoryFetchRequest_errorSelector (toCNChangeHistoryFetchRequest request) (toNSError error_)
 
 -- | Enumerates all contacts matching a contact fetch request.
 --
@@ -207,10 +192,8 @@ enumeratorForChangeHistoryFetchRequest_error cnContactStore  request error_ =
 --
 -- ObjC selector: @- enumerateContactsWithFetchRequest:error:usingBlock:@
 enumerateContactsWithFetchRequest_error_usingBlock :: (IsCNContactStore cnContactStore, IsCNContactFetchRequest fetchRequest, IsNSError error_) => cnContactStore -> fetchRequest -> error_ -> Ptr () -> IO Bool
-enumerateContactsWithFetchRequest_error_usingBlock cnContactStore  fetchRequest error_ block =
-  withObjCPtr fetchRequest $ \raw_fetchRequest ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnContactStore (mkSelector "enumerateContactsWithFetchRequest:error:usingBlock:") retCULong [argPtr (castPtr raw_fetchRequest :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+enumerateContactsWithFetchRequest_error_usingBlock cnContactStore fetchRequest error_ block =
+  sendMessage cnContactStore enumerateContactsWithFetchRequest_error_usingBlockSelector (toCNContactFetchRequest fetchRequest) (toNSError error_) block
 
 -- | Fetch all groups matching a given predicate.
 --
@@ -224,10 +207,8 @@ enumerateContactsWithFetchRequest_error_usingBlock cnContactStore  fetchRequest 
 --
 -- ObjC selector: @- groupsMatchingPredicate:error:@
 groupsMatchingPredicate_error :: (IsCNContactStore cnContactStore, IsNSPredicate predicate, IsNSError error_) => cnContactStore -> predicate -> error_ -> IO (Id NSArray)
-groupsMatchingPredicate_error cnContactStore  predicate error_ =
-  withObjCPtr predicate $ \raw_predicate ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg cnContactStore (mkSelector "groupsMatchingPredicate:error:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+groupsMatchingPredicate_error cnContactStore predicate error_ =
+  sendMessage cnContactStore groupsMatchingPredicate_errorSelector (toNSPredicate predicate) (toNSError error_)
 
 -- | Fetch all containers matching a given predicate.
 --
@@ -241,10 +222,8 @@ groupsMatchingPredicate_error cnContactStore  predicate error_ =
 --
 -- ObjC selector: @- containersMatchingPredicate:error:@
 containersMatchingPredicate_error :: (IsCNContactStore cnContactStore, IsNSPredicate predicate, IsNSError error_) => cnContactStore -> predicate -> error_ -> IO (Id NSArray)
-containersMatchingPredicate_error cnContactStore  predicate error_ =
-  withObjCPtr predicate $ \raw_predicate ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg cnContactStore (mkSelector "containersMatchingPredicate:error:") (retPtr retVoid) [argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+containersMatchingPredicate_error cnContactStore predicate error_ =
+  sendMessage cnContactStore containersMatchingPredicate_errorSelector (toNSPredicate predicate) (toNSError error_)
 
 -- | Executes a save request.
 --
@@ -258,10 +237,8 @@ containersMatchingPredicate_error cnContactStore  predicate error_ =
 --
 -- ObjC selector: @- executeSaveRequest:error:@
 executeSaveRequest_error :: (IsCNContactStore cnContactStore, IsCNSaveRequest saveRequest, IsNSError error_) => cnContactStore -> saveRequest -> error_ -> IO Bool
-executeSaveRequest_error cnContactStore  saveRequest error_ =
-  withObjCPtr saveRequest $ \raw_saveRequest ->
-    withObjCPtr error_ $ \raw_error_ ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg cnContactStore (mkSelector "executeSaveRequest:error:") retCULong [argPtr (castPtr raw_saveRequest :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+executeSaveRequest_error cnContactStore saveRequest error_ =
+  sendMessage cnContactStore executeSaveRequest_errorSelector (toCNSaveRequest saveRequest) (toNSError error_)
 
 -- | The identifier of the default container.
 --
@@ -271,8 +248,8 @@ executeSaveRequest_error cnContactStore  saveRequest error_ =
 --
 -- ObjC selector: @- defaultContainerIdentifier@
 defaultContainerIdentifier :: IsCNContactStore cnContactStore => cnContactStore -> IO (Id NSString)
-defaultContainerIdentifier cnContactStore  =
-    sendMsg cnContactStore (mkSelector "defaultContainerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+defaultContainerIdentifier cnContactStore =
+  sendMessage cnContactStore defaultContainerIdentifierSelector
 
 -- | The current history token.
 --
@@ -280,62 +257,62 @@ defaultContainerIdentifier cnContactStore  =
 --
 -- ObjC selector: @- currentHistoryToken@
 currentHistoryToken :: IsCNContactStore cnContactStore => cnContactStore -> IO (Id NSData)
-currentHistoryToken cnContactStore  =
-    sendMsg cnContactStore (mkSelector "currentHistoryToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentHistoryToken cnContactStore =
+  sendMessage cnContactStore currentHistoryTokenSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizationStatusForEntityType:@
-authorizationStatusForEntityTypeSelector :: Selector
+authorizationStatusForEntityTypeSelector :: Selector '[CNEntityType] CNAuthorizationStatus
 authorizationStatusForEntityTypeSelector = mkSelector "authorizationStatusForEntityType:"
 
 -- | @Selector@ for @requestAccessForEntityType:completionHandler:@
-requestAccessForEntityType_completionHandlerSelector :: Selector
+requestAccessForEntityType_completionHandlerSelector :: Selector '[CNEntityType, Ptr ()] ()
 requestAccessForEntityType_completionHandlerSelector = mkSelector "requestAccessForEntityType:completionHandler:"
 
 -- | @Selector@ for @unifiedContactsMatchingPredicate:keysToFetch:error:@
-unifiedContactsMatchingPredicate_keysToFetch_errorSelector :: Selector
+unifiedContactsMatchingPredicate_keysToFetch_errorSelector :: Selector '[Id NSPredicate, Id NSArray, Id NSError] (Id NSArray)
 unifiedContactsMatchingPredicate_keysToFetch_errorSelector = mkSelector "unifiedContactsMatchingPredicate:keysToFetch:error:"
 
 -- | @Selector@ for @unifiedContactWithIdentifier:keysToFetch:error:@
-unifiedContactWithIdentifier_keysToFetch_errorSelector :: Selector
+unifiedContactWithIdentifier_keysToFetch_errorSelector :: Selector '[Id NSString, Id NSArray, Id NSError] (Id CNContact)
 unifiedContactWithIdentifier_keysToFetch_errorSelector = mkSelector "unifiedContactWithIdentifier:keysToFetch:error:"
 
 -- | @Selector@ for @unifiedMeContactWithKeysToFetch:error:@
-unifiedMeContactWithKeysToFetch_errorSelector :: Selector
+unifiedMeContactWithKeysToFetch_errorSelector :: Selector '[Id NSArray, Id NSError] (Id CNContact)
 unifiedMeContactWithKeysToFetch_errorSelector = mkSelector "unifiedMeContactWithKeysToFetch:error:"
 
 -- | @Selector@ for @enumeratorForContactFetchRequest:error:@
-enumeratorForContactFetchRequest_errorSelector :: Selector
+enumeratorForContactFetchRequest_errorSelector :: Selector '[Id CNContactFetchRequest, Id NSError] (Id CNFetchResult)
 enumeratorForContactFetchRequest_errorSelector = mkSelector "enumeratorForContactFetchRequest:error:"
 
 -- | @Selector@ for @enumeratorForChangeHistoryFetchRequest:error:@
-enumeratorForChangeHistoryFetchRequest_errorSelector :: Selector
+enumeratorForChangeHistoryFetchRequest_errorSelector :: Selector '[Id CNChangeHistoryFetchRequest, Id NSError] (Id CNFetchResult)
 enumeratorForChangeHistoryFetchRequest_errorSelector = mkSelector "enumeratorForChangeHistoryFetchRequest:error:"
 
 -- | @Selector@ for @enumerateContactsWithFetchRequest:error:usingBlock:@
-enumerateContactsWithFetchRequest_error_usingBlockSelector :: Selector
+enumerateContactsWithFetchRequest_error_usingBlockSelector :: Selector '[Id CNContactFetchRequest, Id NSError, Ptr ()] Bool
 enumerateContactsWithFetchRequest_error_usingBlockSelector = mkSelector "enumerateContactsWithFetchRequest:error:usingBlock:"
 
 -- | @Selector@ for @groupsMatchingPredicate:error:@
-groupsMatchingPredicate_errorSelector :: Selector
+groupsMatchingPredicate_errorSelector :: Selector '[Id NSPredicate, Id NSError] (Id NSArray)
 groupsMatchingPredicate_errorSelector = mkSelector "groupsMatchingPredicate:error:"
 
 -- | @Selector@ for @containersMatchingPredicate:error:@
-containersMatchingPredicate_errorSelector :: Selector
+containersMatchingPredicate_errorSelector :: Selector '[Id NSPredicate, Id NSError] (Id NSArray)
 containersMatchingPredicate_errorSelector = mkSelector "containersMatchingPredicate:error:"
 
 -- | @Selector@ for @executeSaveRequest:error:@
-executeSaveRequest_errorSelector :: Selector
+executeSaveRequest_errorSelector :: Selector '[Id CNSaveRequest, Id NSError] Bool
 executeSaveRequest_errorSelector = mkSelector "executeSaveRequest:error:"
 
 -- | @Selector@ for @defaultContainerIdentifier@
-defaultContainerIdentifierSelector :: Selector
+defaultContainerIdentifierSelector :: Selector '[] (Id NSString)
 defaultContainerIdentifierSelector = mkSelector "defaultContainerIdentifier"
 
 -- | @Selector@ for @currentHistoryToken@
-currentHistoryTokenSelector :: Selector
+currentHistoryTokenSelector :: Selector '[] (Id NSData)
 currentHistoryTokenSelector = mkSelector "currentHistoryToken"
 

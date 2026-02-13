@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.Foundation.NSUnitFuelEfficiency
   , milesPerImperialGallon
   , milesPerGallon
   , litersPer100KilometersSelector
-  , milesPerImperialGallonSelector
   , milesPerGallonSelector
+  , milesPerImperialGallonSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,35 +32,35 @@ litersPer100Kilometers :: IO (Id NSUnitFuelEfficiency)
 litersPer100Kilometers  =
   do
     cls' <- getRequiredClass "NSUnitFuelEfficiency"
-    sendClassMsg cls' (mkSelector "litersPer100Kilometers") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' litersPer100KilometersSelector
 
 -- | @+ milesPerImperialGallon@
 milesPerImperialGallon :: IO (Id NSUnitFuelEfficiency)
 milesPerImperialGallon  =
   do
     cls' <- getRequiredClass "NSUnitFuelEfficiency"
-    sendClassMsg cls' (mkSelector "milesPerImperialGallon") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' milesPerImperialGallonSelector
 
 -- | @+ milesPerGallon@
 milesPerGallon :: IO (Id NSUnitFuelEfficiency)
 milesPerGallon  =
   do
     cls' <- getRequiredClass "NSUnitFuelEfficiency"
-    sendClassMsg cls' (mkSelector "milesPerGallon") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' milesPerGallonSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @litersPer100Kilometers@
-litersPer100KilometersSelector :: Selector
+litersPer100KilometersSelector :: Selector '[] (Id NSUnitFuelEfficiency)
 litersPer100KilometersSelector = mkSelector "litersPer100Kilometers"
 
 -- | @Selector@ for @milesPerImperialGallon@
-milesPerImperialGallonSelector :: Selector
+milesPerImperialGallonSelector :: Selector '[] (Id NSUnitFuelEfficiency)
 milesPerImperialGallonSelector = mkSelector "milesPerImperialGallon"
 
 -- | @Selector@ for @milesPerGallon@
-milesPerGallonSelector :: Selector
+milesPerGallonSelector :: Selector '[] (Id NSUnitFuelEfficiency)
 milesPerGallonSelector = mkSelector "milesPerGallon"
 

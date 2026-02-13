@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRThreadNetworkDirectoryClusterRemoveNetworkParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , extendedPanIDSelector
-  , setExtendedPanIDSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
+  , setExtendedPanIDSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- extendedPanID@
 extendedPanID :: IsMTRThreadNetworkDirectoryClusterRemoveNetworkParams mtrThreadNetworkDirectoryClusterRemoveNetworkParams => mtrThreadNetworkDirectoryClusterRemoveNetworkParams -> IO (Id NSData)
-extendedPanID mtrThreadNetworkDirectoryClusterRemoveNetworkParams  =
-    sendMsg mtrThreadNetworkDirectoryClusterRemoveNetworkParams (mkSelector "extendedPanID") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedPanID mtrThreadNetworkDirectoryClusterRemoveNetworkParams =
+  sendMessage mtrThreadNetworkDirectoryClusterRemoveNetworkParams extendedPanIDSelector
 
 -- | @- setExtendedPanID:@
 setExtendedPanID :: (IsMTRThreadNetworkDirectoryClusterRemoveNetworkParams mtrThreadNetworkDirectoryClusterRemoveNetworkParams, IsNSData value) => mtrThreadNetworkDirectoryClusterRemoveNetworkParams -> value -> IO ()
-setExtendedPanID mtrThreadNetworkDirectoryClusterRemoveNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterRemoveNetworkParams (mkSelector "setExtendedPanID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedPanID mtrThreadNetworkDirectoryClusterRemoveNetworkParams value =
+  sendMessage mtrThreadNetworkDirectoryClusterRemoveNetworkParams setExtendedPanIDSelector (toNSData value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setExtendedPanID mtrThreadNetworkDirectoryClusterRemoveNetworkParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRThreadNetworkDirectoryClusterRemoveNetworkParams mtrThreadNetworkDirectoryClusterRemoveNetworkParams => mtrThreadNetworkDirectoryClusterRemoveNetworkParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterRemoveNetworkParams  =
-    sendMsg mtrThreadNetworkDirectoryClusterRemoveNetworkParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterRemoveNetworkParams =
+  sendMessage mtrThreadNetworkDirectoryClusterRemoveNetworkParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterRemoveNetworkParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRThreadNetworkDirectoryClusterRemoveNetworkParams mtrThreadNetworkDirectoryClusterRemoveNetworkParams, IsNSNumber value) => mtrThreadNetworkDirectoryClusterRemoveNetworkParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterRemoveNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterRemoveNetworkParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterRemoveNetworkParams value =
+  sendMessage mtrThreadNetworkDirectoryClusterRemoveNetworkParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrThreadNetworkDirectoryClusterRemoveNetworkParams  val
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRThreadNetworkDirectoryClusterRemoveNetworkParams mtrThreadNetworkDirectoryClusterRemoveNetworkParams => mtrThreadNetworkDirectoryClusterRemoveNetworkParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrThreadNetworkDirectoryClusterRemoveNetworkParams  =
-    sendMsg mtrThreadNetworkDirectoryClusterRemoveNetworkParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrThreadNetworkDirectoryClusterRemoveNetworkParams =
+  sendMessage mtrThreadNetworkDirectoryClusterRemoveNetworkParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrThreadNetworkDirectoryClusterRemoveNetworkParams 
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRThreadNetworkDirectoryClusterRemoveNetworkParams mtrThreadNetworkDirectoryClusterRemoveNetworkParams, IsNSNumber value) => mtrThreadNetworkDirectoryClusterRemoveNetworkParams -> value -> IO ()
-setServerSideProcessingTimeout mtrThreadNetworkDirectoryClusterRemoveNetworkParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDirectoryClusterRemoveNetworkParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrThreadNetworkDirectoryClusterRemoveNetworkParams value =
+  sendMessage mtrThreadNetworkDirectoryClusterRemoveNetworkParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @extendedPanID@
-extendedPanIDSelector :: Selector
+extendedPanIDSelector :: Selector '[] (Id NSData)
 extendedPanIDSelector = mkSelector "extendedPanID"
 
 -- | @Selector@ for @setExtendedPanID:@
-setExtendedPanIDSelector :: Selector
+setExtendedPanIDSelector :: Selector '[Id NSData] ()
 setExtendedPanIDSelector = mkSelector "setExtendedPanID:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

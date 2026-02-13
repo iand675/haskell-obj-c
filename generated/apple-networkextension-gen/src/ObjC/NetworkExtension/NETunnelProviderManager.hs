@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -30,23 +31,23 @@ module ObjC.NetworkExtension.NETunnelProviderManager
   , setExcludedDomains
   , associatedDomains
   , setAssociatedDomains
-  , forPerAppVPNSelector
+  , appRulesSelector
+  , associatedDomainsSelector
+  , calendarDomainsSelector
+  , contactsDomainsSelector
   , copyAppRulesSelector
+  , excludedDomainsSelector
+  , forPerAppVPNSelector
+  , mailDomainsSelector
   , routingMethodSelector
   , safariDomainsSelector
-  , setSafariDomainsSelector
-  , mailDomainsSelector
-  , setMailDomainsSelector
-  , calendarDomainsSelector
-  , setCalendarDomainsSelector
-  , contactsDomainsSelector
-  , setContactsDomainsSelector
-  , appRulesSelector
   , setAppRulesSelector
-  , excludedDomainsSelector
-  , setExcludedDomainsSelector
-  , associatedDomainsSelector
   , setAssociatedDomainsSelector
+  , setCalendarDomainsSelector
+  , setContactsDomainsSelector
+  , setExcludedDomainsSelector
+  , setMailDomainsSelector
+  , setSafariDomainsSelector
 
   -- * Enum types
   , NETunnelProviderRoutingMethod(NETunnelProviderRoutingMethod)
@@ -56,15 +57,11 @@ module ObjC.NetworkExtension.NETunnelProviderManager
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -81,7 +78,7 @@ forPerAppVPN :: IO (Id NETunnelProviderManager)
 forPerAppVPN  =
   do
     cls' <- getRequiredClass "NETunnelProviderManager"
-    sendClassMsg cls' (mkSelector "forPerAppVPN") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' forPerAppVPNSelector
 
 -- | copyAppRules
 --
@@ -89,8 +86,8 @@ forPerAppVPN  =
 --
 -- ObjC selector: @- copyAppRules@
 copyAppRules :: IsNETunnelProviderManager neTunnelProviderManager => neTunnelProviderManager -> IO (Id NSArray)
-copyAppRules neTunnelProviderManager  =
-    sendMsg neTunnelProviderManager (mkSelector "copyAppRules") (retPtr retVoid) [] >>= ownedObject . castPtr
+copyAppRules neTunnelProviderManager =
+  sendOwnedMessage neTunnelProviderManager copyAppRulesSelector
 
 -- | routingMethod
 --
@@ -98,8 +95,8 @@ copyAppRules neTunnelProviderManager  =
 --
 -- ObjC selector: @- routingMethod@
 routingMethod :: IsNETunnelProviderManager neTunnelProviderManager => neTunnelProviderManager -> IO NETunnelProviderRoutingMethod
-routingMethod neTunnelProviderManager  =
-    fmap (coerce :: CLong -> NETunnelProviderRoutingMethod) $ sendMsg neTunnelProviderManager (mkSelector "routingMethod") retCLong []
+routingMethod neTunnelProviderManager =
+  sendMessage neTunnelProviderManager routingMethodSelector
 
 -- | safariDomains
 --
@@ -107,8 +104,8 @@ routingMethod neTunnelProviderManager  =
 --
 -- ObjC selector: @- safariDomains@
 safariDomains :: IsNETunnelProviderManager neTunnelProviderManager => neTunnelProviderManager -> IO (Id NSArray)
-safariDomains neTunnelProviderManager  =
-    sendMsg neTunnelProviderManager (mkSelector "safariDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+safariDomains neTunnelProviderManager =
+  sendMessage neTunnelProviderManager safariDomainsSelector
 
 -- | safariDomains
 --
@@ -116,9 +113,8 @@ safariDomains neTunnelProviderManager  =
 --
 -- ObjC selector: @- setSafariDomains:@
 setSafariDomains :: (IsNETunnelProviderManager neTunnelProviderManager, IsNSArray value) => neTunnelProviderManager -> value -> IO ()
-setSafariDomains neTunnelProviderManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTunnelProviderManager (mkSelector "setSafariDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSafariDomains neTunnelProviderManager value =
+  sendMessage neTunnelProviderManager setSafariDomainsSelector (toNSArray value)
 
 -- | mailDomains
 --
@@ -126,8 +122,8 @@ setSafariDomains neTunnelProviderManager  value =
 --
 -- ObjC selector: @- mailDomains@
 mailDomains :: IsNETunnelProviderManager neTunnelProviderManager => neTunnelProviderManager -> IO (Id NSArray)
-mailDomains neTunnelProviderManager  =
-    sendMsg neTunnelProviderManager (mkSelector "mailDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+mailDomains neTunnelProviderManager =
+  sendMessage neTunnelProviderManager mailDomainsSelector
 
 -- | mailDomains
 --
@@ -135,9 +131,8 @@ mailDomains neTunnelProviderManager  =
 --
 -- ObjC selector: @- setMailDomains:@
 setMailDomains :: (IsNETunnelProviderManager neTunnelProviderManager, IsNSArray value) => neTunnelProviderManager -> value -> IO ()
-setMailDomains neTunnelProviderManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTunnelProviderManager (mkSelector "setMailDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMailDomains neTunnelProviderManager value =
+  sendMessage neTunnelProviderManager setMailDomainsSelector (toNSArray value)
 
 -- | calendarDomains
 --
@@ -145,8 +140,8 @@ setMailDomains neTunnelProviderManager  value =
 --
 -- ObjC selector: @- calendarDomains@
 calendarDomains :: IsNETunnelProviderManager neTunnelProviderManager => neTunnelProviderManager -> IO (Id NSArray)
-calendarDomains neTunnelProviderManager  =
-    sendMsg neTunnelProviderManager (mkSelector "calendarDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+calendarDomains neTunnelProviderManager =
+  sendMessage neTunnelProviderManager calendarDomainsSelector
 
 -- | calendarDomains
 --
@@ -154,9 +149,8 @@ calendarDomains neTunnelProviderManager  =
 --
 -- ObjC selector: @- setCalendarDomains:@
 setCalendarDomains :: (IsNETunnelProviderManager neTunnelProviderManager, IsNSArray value) => neTunnelProviderManager -> value -> IO ()
-setCalendarDomains neTunnelProviderManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTunnelProviderManager (mkSelector "setCalendarDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCalendarDomains neTunnelProviderManager value =
+  sendMessage neTunnelProviderManager setCalendarDomainsSelector (toNSArray value)
 
 -- | contactsDomains
 --
@@ -164,8 +158,8 @@ setCalendarDomains neTunnelProviderManager  value =
 --
 -- ObjC selector: @- contactsDomains@
 contactsDomains :: IsNETunnelProviderManager neTunnelProviderManager => neTunnelProviderManager -> IO (Id NSArray)
-contactsDomains neTunnelProviderManager  =
-    sendMsg neTunnelProviderManager (mkSelector "contactsDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+contactsDomains neTunnelProviderManager =
+  sendMessage neTunnelProviderManager contactsDomainsSelector
 
 -- | contactsDomains
 --
@@ -173,9 +167,8 @@ contactsDomains neTunnelProviderManager  =
 --
 -- ObjC selector: @- setContactsDomains:@
 setContactsDomains :: (IsNETunnelProviderManager neTunnelProviderManager, IsNSArray value) => neTunnelProviderManager -> value -> IO ()
-setContactsDomains neTunnelProviderManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTunnelProviderManager (mkSelector "setContactsDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setContactsDomains neTunnelProviderManager value =
+  sendMessage neTunnelProviderManager setContactsDomainsSelector (toNSArray value)
 
 -- | appRules
 --
@@ -183,8 +176,8 @@ setContactsDomains neTunnelProviderManager  value =
 --
 -- ObjC selector: @- appRules@
 appRules :: IsNETunnelProviderManager neTunnelProviderManager => neTunnelProviderManager -> IO (Id NSArray)
-appRules neTunnelProviderManager  =
-    sendMsg neTunnelProviderManager (mkSelector "appRules") (retPtr retVoid) [] >>= retainedObject . castPtr
+appRules neTunnelProviderManager =
+  sendMessage neTunnelProviderManager appRulesSelector
 
 -- | appRules
 --
@@ -192,9 +185,8 @@ appRules neTunnelProviderManager  =
 --
 -- ObjC selector: @- setAppRules:@
 setAppRules :: (IsNETunnelProviderManager neTunnelProviderManager, IsNSArray value) => neTunnelProviderManager -> value -> IO ()
-setAppRules neTunnelProviderManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTunnelProviderManager (mkSelector "setAppRules:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAppRules neTunnelProviderManager value =
+  sendMessage neTunnelProviderManager setAppRulesSelector (toNSArray value)
 
 -- | excludedDomains
 --
@@ -204,8 +196,8 @@ setAppRules neTunnelProviderManager  value =
 --
 -- ObjC selector: @- excludedDomains@
 excludedDomains :: IsNETunnelProviderManager neTunnelProviderManager => neTunnelProviderManager -> IO (Id NSArray)
-excludedDomains neTunnelProviderManager  =
-    sendMsg neTunnelProviderManager (mkSelector "excludedDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+excludedDomains neTunnelProviderManager =
+  sendMessage neTunnelProviderManager excludedDomainsSelector
 
 -- | excludedDomains
 --
@@ -215,9 +207,8 @@ excludedDomains neTunnelProviderManager  =
 --
 -- ObjC selector: @- setExcludedDomains:@
 setExcludedDomains :: (IsNETunnelProviderManager neTunnelProviderManager, IsNSArray value) => neTunnelProviderManager -> value -> IO ()
-setExcludedDomains neTunnelProviderManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTunnelProviderManager (mkSelector "setExcludedDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExcludedDomains neTunnelProviderManager value =
+  sendMessage neTunnelProviderManager setExcludedDomainsSelector (toNSArray value)
 
 -- | associatedDomains
 --
@@ -225,8 +216,8 @@ setExcludedDomains neTunnelProviderManager  value =
 --
 -- ObjC selector: @- associatedDomains@
 associatedDomains :: IsNETunnelProviderManager neTunnelProviderManager => neTunnelProviderManager -> IO (Id NSArray)
-associatedDomains neTunnelProviderManager  =
-    sendMsg neTunnelProviderManager (mkSelector "associatedDomains") (retPtr retVoid) [] >>= retainedObject . castPtr
+associatedDomains neTunnelProviderManager =
+  sendMessage neTunnelProviderManager associatedDomainsSelector
 
 -- | associatedDomains
 --
@@ -234,79 +225,78 @@ associatedDomains neTunnelProviderManager  =
 --
 -- ObjC selector: @- setAssociatedDomains:@
 setAssociatedDomains :: (IsNETunnelProviderManager neTunnelProviderManager, IsNSArray value) => neTunnelProviderManager -> value -> IO ()
-setAssociatedDomains neTunnelProviderManager  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg neTunnelProviderManager (mkSelector "setAssociatedDomains:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAssociatedDomains neTunnelProviderManager value =
+  sendMessage neTunnelProviderManager setAssociatedDomainsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @forPerAppVPN@
-forPerAppVPNSelector :: Selector
+forPerAppVPNSelector :: Selector '[] (Id NETunnelProviderManager)
 forPerAppVPNSelector = mkSelector "forPerAppVPN"
 
 -- | @Selector@ for @copyAppRules@
-copyAppRulesSelector :: Selector
+copyAppRulesSelector :: Selector '[] (Id NSArray)
 copyAppRulesSelector = mkSelector "copyAppRules"
 
 -- | @Selector@ for @routingMethod@
-routingMethodSelector :: Selector
+routingMethodSelector :: Selector '[] NETunnelProviderRoutingMethod
 routingMethodSelector = mkSelector "routingMethod"
 
 -- | @Selector@ for @safariDomains@
-safariDomainsSelector :: Selector
+safariDomainsSelector :: Selector '[] (Id NSArray)
 safariDomainsSelector = mkSelector "safariDomains"
 
 -- | @Selector@ for @setSafariDomains:@
-setSafariDomainsSelector :: Selector
+setSafariDomainsSelector :: Selector '[Id NSArray] ()
 setSafariDomainsSelector = mkSelector "setSafariDomains:"
 
 -- | @Selector@ for @mailDomains@
-mailDomainsSelector :: Selector
+mailDomainsSelector :: Selector '[] (Id NSArray)
 mailDomainsSelector = mkSelector "mailDomains"
 
 -- | @Selector@ for @setMailDomains:@
-setMailDomainsSelector :: Selector
+setMailDomainsSelector :: Selector '[Id NSArray] ()
 setMailDomainsSelector = mkSelector "setMailDomains:"
 
 -- | @Selector@ for @calendarDomains@
-calendarDomainsSelector :: Selector
+calendarDomainsSelector :: Selector '[] (Id NSArray)
 calendarDomainsSelector = mkSelector "calendarDomains"
 
 -- | @Selector@ for @setCalendarDomains:@
-setCalendarDomainsSelector :: Selector
+setCalendarDomainsSelector :: Selector '[Id NSArray] ()
 setCalendarDomainsSelector = mkSelector "setCalendarDomains:"
 
 -- | @Selector@ for @contactsDomains@
-contactsDomainsSelector :: Selector
+contactsDomainsSelector :: Selector '[] (Id NSArray)
 contactsDomainsSelector = mkSelector "contactsDomains"
 
 -- | @Selector@ for @setContactsDomains:@
-setContactsDomainsSelector :: Selector
+setContactsDomainsSelector :: Selector '[Id NSArray] ()
 setContactsDomainsSelector = mkSelector "setContactsDomains:"
 
 -- | @Selector@ for @appRules@
-appRulesSelector :: Selector
+appRulesSelector :: Selector '[] (Id NSArray)
 appRulesSelector = mkSelector "appRules"
 
 -- | @Selector@ for @setAppRules:@
-setAppRulesSelector :: Selector
+setAppRulesSelector :: Selector '[Id NSArray] ()
 setAppRulesSelector = mkSelector "setAppRules:"
 
 -- | @Selector@ for @excludedDomains@
-excludedDomainsSelector :: Selector
+excludedDomainsSelector :: Selector '[] (Id NSArray)
 excludedDomainsSelector = mkSelector "excludedDomains"
 
 -- | @Selector@ for @setExcludedDomains:@
-setExcludedDomainsSelector :: Selector
+setExcludedDomainsSelector :: Selector '[Id NSArray] ()
 setExcludedDomainsSelector = mkSelector "setExcludedDomains:"
 
 -- | @Selector@ for @associatedDomains@
-associatedDomainsSelector :: Selector
+associatedDomainsSelector :: Selector '[] (Id NSArray)
 associatedDomainsSelector = mkSelector "associatedDomains"
 
 -- | @Selector@ for @setAssociatedDomains:@
-setAssociatedDomainsSelector :: Selector
+setAssociatedDomainsSelector :: Selector '[Id NSArray] ()
 setAssociatedDomainsSelector = mkSelector "setAssociatedDomains:"
 

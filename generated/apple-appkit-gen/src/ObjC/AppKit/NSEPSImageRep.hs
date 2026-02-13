@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.AppKit.NSEPSImageRep
   , prepareGState
   , boundingBox
   , epsRepresentation
+  , boundingBoxSelector
+  , epsRepresentationSelector
   , imageRepWithDataSelector
   , initWithDataSelector
   , prepareGStateSelector
-  , boundingBoxSelector
-  , epsRepresentationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,59 +42,57 @@ imageRepWithData :: IsNSData epsData => epsData -> IO (Id NSEPSImageRep)
 imageRepWithData epsData =
   do
     cls' <- getRequiredClass "NSEPSImageRep"
-    withObjCPtr epsData $ \raw_epsData ->
-      sendClassMsg cls' (mkSelector "imageRepWithData:") (retPtr retVoid) [argPtr (castPtr raw_epsData :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' imageRepWithDataSelector (toNSData epsData)
 
 -- | Returns a representation of an image initialized with the specified EPS data. - Note: This method always returns @nil@ on macOS 14.0 and later.
 --
 -- ObjC selector: @- initWithData:@
 initWithData :: (IsNSEPSImageRep nsepsImageRep, IsNSData epsData) => nsepsImageRep -> epsData -> IO (Id NSEPSImageRep)
-initWithData nsepsImageRep  epsData =
-  withObjCPtr epsData $ \raw_epsData ->
-      sendMsg nsepsImageRep (mkSelector "initWithData:") (retPtr retVoid) [argPtr (castPtr raw_epsData :: Ptr ())] >>= ownedObject . castPtr
+initWithData nsepsImageRep epsData =
+  sendOwnedMessage nsepsImageRep initWithDataSelector (toNSData epsData)
 
 -- | The @-[NSEPSImageRep draw]@ method sends this message to itself just before rendering the EPS code. The default implementation of this method does nothing. It can be overridden in a subclass to prepare the graphics state as needed.
 --
 -- ObjC selector: @- prepareGState@
 prepareGState :: IsNSEPSImageRep nsepsImageRep => nsepsImageRep -> IO ()
-prepareGState nsepsImageRep  =
-    sendMsg nsepsImageRep (mkSelector "prepareGState") retVoid []
+prepareGState nsepsImageRep =
+  sendMessage nsepsImageRep prepareGStateSelector
 
 -- | The rectangle that bounds the image representation.
 --
 -- ObjC selector: @- boundingBox@
 boundingBox :: IsNSEPSImageRep nsepsImageRep => nsepsImageRep -> IO NSRect
-boundingBox nsepsImageRep  =
-    sendMsgStret nsepsImageRep (mkSelector "boundingBox") retNSRect []
+boundingBox nsepsImageRep =
+  sendMessage nsepsImageRep boundingBoxSelector
 
 -- | The EPS representation of the image representation.
 --
 -- ObjC selector: @- EPSRepresentation@
 epsRepresentation :: IsNSEPSImageRep nsepsImageRep => nsepsImageRep -> IO (Id NSData)
-epsRepresentation nsepsImageRep  =
-    sendMsg nsepsImageRep (mkSelector "EPSRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+epsRepresentation nsepsImageRep =
+  sendMessage nsepsImageRep epsRepresentationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @imageRepWithData:@
-imageRepWithDataSelector :: Selector
+imageRepWithDataSelector :: Selector '[Id NSData] (Id NSEPSImageRep)
 imageRepWithDataSelector = mkSelector "imageRepWithData:"
 
 -- | @Selector@ for @initWithData:@
-initWithDataSelector :: Selector
+initWithDataSelector :: Selector '[Id NSData] (Id NSEPSImageRep)
 initWithDataSelector = mkSelector "initWithData:"
 
 -- | @Selector@ for @prepareGState@
-prepareGStateSelector :: Selector
+prepareGStateSelector :: Selector '[] ()
 prepareGStateSelector = mkSelector "prepareGState"
 
 -- | @Selector@ for @boundingBox@
-boundingBoxSelector :: Selector
+boundingBoxSelector :: Selector '[] NSRect
 boundingBoxSelector = mkSelector "boundingBox"
 
 -- | @Selector@ for @EPSRepresentation@
-epsRepresentationSelector :: Selector
+epsRepresentationSelector :: Selector '[] (Id NSData)
 epsRepresentationSelector = mkSelector "EPSRepresentation"
 

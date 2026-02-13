@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRAccountLoginClusterGetSetupPINParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , tempAccountIdentifierSelector
-  , setTempAccountIdentifierSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTempAccountIdentifierSelector
+  , setTimedInvokeTimeoutMsSelector
+  , tempAccountIdentifierSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- tempAccountIdentifier@
 tempAccountIdentifier :: IsMTRAccountLoginClusterGetSetupPINParams mtrAccountLoginClusterGetSetupPINParams => mtrAccountLoginClusterGetSetupPINParams -> IO (Id NSString)
-tempAccountIdentifier mtrAccountLoginClusterGetSetupPINParams  =
-    sendMsg mtrAccountLoginClusterGetSetupPINParams (mkSelector "tempAccountIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+tempAccountIdentifier mtrAccountLoginClusterGetSetupPINParams =
+  sendMessage mtrAccountLoginClusterGetSetupPINParams tempAccountIdentifierSelector
 
 -- | @- setTempAccountIdentifier:@
 setTempAccountIdentifier :: (IsMTRAccountLoginClusterGetSetupPINParams mtrAccountLoginClusterGetSetupPINParams, IsNSString value) => mtrAccountLoginClusterGetSetupPINParams -> value -> IO ()
-setTempAccountIdentifier mtrAccountLoginClusterGetSetupPINParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccountLoginClusterGetSetupPINParams (mkSelector "setTempAccountIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTempAccountIdentifier mtrAccountLoginClusterGetSetupPINParams value =
+  sendMessage mtrAccountLoginClusterGetSetupPINParams setTempAccountIdentifierSelector (toNSString value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setTempAccountIdentifier mtrAccountLoginClusterGetSetupPINParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRAccountLoginClusterGetSetupPINParams mtrAccountLoginClusterGetSetupPINParams => mtrAccountLoginClusterGetSetupPINParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINParams  =
-    sendMsg mtrAccountLoginClusterGetSetupPINParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINParams =
+  sendMessage mtrAccountLoginClusterGetSetupPINParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRAccountLoginClusterGetSetupPINParams mtrAccountLoginClusterGetSetupPINParams, IsNSNumber value) => mtrAccountLoginClusterGetSetupPINParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccountLoginClusterGetSetupPINParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINParams value =
+  sendMessage mtrAccountLoginClusterGetSetupPINParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrAccountLoginClusterGetSetupPINParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRAccountLoginClusterGetSetupPINParams mtrAccountLoginClusterGetSetupPINParams => mtrAccountLoginClusterGetSetupPINParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrAccountLoginClusterGetSetupPINParams  =
-    sendMsg mtrAccountLoginClusterGetSetupPINParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrAccountLoginClusterGetSetupPINParams =
+  sendMessage mtrAccountLoginClusterGetSetupPINParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrAccountLoginClusterGetSetupPINParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRAccountLoginClusterGetSetupPINParams mtrAccountLoginClusterGetSetupPINParams, IsNSNumber value) => mtrAccountLoginClusterGetSetupPINParams -> value -> IO ()
-setServerSideProcessingTimeout mtrAccountLoginClusterGetSetupPINParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAccountLoginClusterGetSetupPINParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrAccountLoginClusterGetSetupPINParams value =
+  sendMessage mtrAccountLoginClusterGetSetupPINParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @tempAccountIdentifier@
-tempAccountIdentifierSelector :: Selector
+tempAccountIdentifierSelector :: Selector '[] (Id NSString)
 tempAccountIdentifierSelector = mkSelector "tempAccountIdentifier"
 
 -- | @Selector@ for @setTempAccountIdentifier:@
-setTempAccountIdentifierSelector :: Selector
+setTempAccountIdentifierSelector :: Selector '[Id NSString] ()
 setTempAccountIdentifierSelector = mkSelector "setTempAccountIdentifier:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.AVFoundation.AVMetricHLSPlaylistRequestEvent
   , mediaType
   , mediaResourceRequestEvent
   , initSelector
+  , isMultivariantPlaylistSelector
+  , mediaResourceRequestEventSelector
+  , mediaTypeSelector
   , newSelector
   , urlSelector
-  , isMultivariantPlaylistSelector
-  , mediaTypeSelector
-  , mediaResourceRequestEventSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,69 +40,69 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVMetricHLSPlaylistRequestEvent avMetricHLSPlaylistRequestEvent => avMetricHLSPlaylistRequestEvent -> IO (Id AVMetricHLSPlaylistRequestEvent)
-init_ avMetricHLSPlaylistRequestEvent  =
-    sendMsg avMetricHLSPlaylistRequestEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avMetricHLSPlaylistRequestEvent =
+  sendOwnedMessage avMetricHLSPlaylistRequestEvent initSelector
 
 -- | @+ new@
 new :: IO (Id AVMetricHLSPlaylistRequestEvent)
 new  =
   do
     cls' <- getRequiredClass "AVMetricHLSPlaylistRequestEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Returns the URL of the playlist. If no value is available, returns nil.
 --
 -- ObjC selector: @- url@
 url :: IsAVMetricHLSPlaylistRequestEvent avMetricHLSPlaylistRequestEvent => avMetricHLSPlaylistRequestEvent -> IO (Id NSURL)
-url avMetricHLSPlaylistRequestEvent  =
-    sendMsg avMetricHLSPlaylistRequestEvent (mkSelector "url") (retPtr retVoid) [] >>= retainedObject . castPtr
+url avMetricHLSPlaylistRequestEvent =
+  sendMessage avMetricHLSPlaylistRequestEvent urlSelector
 
 -- | Returns true if the playlist request is for a multivariant playlist.
 --
 -- ObjC selector: @- isMultivariantPlaylist@
 isMultivariantPlaylist :: IsAVMetricHLSPlaylistRequestEvent avMetricHLSPlaylistRequestEvent => avMetricHLSPlaylistRequestEvent -> IO Bool
-isMultivariantPlaylist avMetricHLSPlaylistRequestEvent  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMetricHLSPlaylistRequestEvent (mkSelector "isMultivariantPlaylist") retCULong []
+isMultivariantPlaylist avMetricHLSPlaylistRequestEvent =
+  sendMessage avMetricHLSPlaylistRequestEvent isMultivariantPlaylistSelector
 
 -- | Returns the media type. If the value cannot be determined, returns AVMediaTypeMuxed.
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVMetricHLSPlaylistRequestEvent avMetricHLSPlaylistRequestEvent => avMetricHLSPlaylistRequestEvent -> IO (Id NSString)
-mediaType avMetricHLSPlaylistRequestEvent  =
-    sendMsg avMetricHLSPlaylistRequestEvent (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avMetricHLSPlaylistRequestEvent =
+  sendMessage avMetricHLSPlaylistRequestEvent mediaTypeSelector
 
 -- | Returns the media resource request event which was used to satisfy the playlist.
 --
 -- ObjC selector: @- mediaResourceRequestEvent@
 mediaResourceRequestEvent :: IsAVMetricHLSPlaylistRequestEvent avMetricHLSPlaylistRequestEvent => avMetricHLSPlaylistRequestEvent -> IO (Id AVMetricMediaResourceRequestEvent)
-mediaResourceRequestEvent avMetricHLSPlaylistRequestEvent  =
-    sendMsg avMetricHLSPlaylistRequestEvent (mkSelector "mediaResourceRequestEvent") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaResourceRequestEvent avMetricHLSPlaylistRequestEvent =
+  sendMessage avMetricHLSPlaylistRequestEvent mediaResourceRequestEventSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVMetricHLSPlaylistRequestEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVMetricHLSPlaylistRequestEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @url@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "url"
 
 -- | @Selector@ for @isMultivariantPlaylist@
-isMultivariantPlaylistSelector :: Selector
+isMultivariantPlaylistSelector :: Selector '[] Bool
 isMultivariantPlaylistSelector = mkSelector "isMultivariantPlaylist"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @mediaResourceRequestEvent@
-mediaResourceRequestEventSelector :: Selector
+mediaResourceRequestEventSelector :: Selector '[] (Id AVMetricMediaResourceRequestEvent)
 mediaResourceRequestEventSelector = mkSelector "mediaResourceRequestEvent"
 

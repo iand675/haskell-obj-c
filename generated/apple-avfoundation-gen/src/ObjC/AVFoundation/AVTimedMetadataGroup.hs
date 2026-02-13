@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,22 +14,18 @@ module ObjC.AVFoundation.AVTimedMetadataGroup
   , initWithSampleBuffer
   , copyFormatDescription
   , items
-  , initWithSampleBufferSelector
   , copyFormatDescriptionSelector
+  , initWithSampleBufferSelector
   , itemsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,8 +42,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSampleBuffer:@
 initWithSampleBuffer :: IsAVTimedMetadataGroup avTimedMetadataGroup => avTimedMetadataGroup -> Ptr () -> IO (Id AVTimedMetadataGroup)
-initWithSampleBuffer avTimedMetadataGroup  sampleBuffer =
-    sendMsg avTimedMetadataGroup (mkSelector "initWithSampleBuffer:") (retPtr retVoid) [argPtr sampleBuffer] >>= ownedObject . castPtr
+initWithSampleBuffer avTimedMetadataGroup sampleBuffer =
+  sendOwnedMessage avTimedMetadataGroup initWithSampleBufferSelector sampleBuffer
 
 -- | copyFormatDescription
 --
@@ -60,27 +57,27 @@ initWithSampleBuffer avTimedMetadataGroup  sampleBuffer =
 --
 -- ObjC selector: @- copyFormatDescription@
 copyFormatDescription :: IsAVTimedMetadataGroup avTimedMetadataGroup => avTimedMetadataGroup -> IO RawId
-copyFormatDescription avTimedMetadataGroup  =
-    fmap (RawId . castPtr) $ sendMsg avTimedMetadataGroup (mkSelector "copyFormatDescription") (retPtr retVoid) []
+copyFormatDescription avTimedMetadataGroup =
+  sendOwnedMessage avTimedMetadataGroup copyFormatDescriptionSelector
 
 -- | @- items@
 items :: IsAVTimedMetadataGroup avTimedMetadataGroup => avTimedMetadataGroup -> IO (Id NSArray)
-items avTimedMetadataGroup  =
-    sendMsg avTimedMetadataGroup (mkSelector "items") (retPtr retVoid) [] >>= retainedObject . castPtr
+items avTimedMetadataGroup =
+  sendMessage avTimedMetadataGroup itemsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSampleBuffer:@
-initWithSampleBufferSelector :: Selector
+initWithSampleBufferSelector :: Selector '[Ptr ()] (Id AVTimedMetadataGroup)
 initWithSampleBufferSelector = mkSelector "initWithSampleBuffer:"
 
 -- | @Selector@ for @copyFormatDescription@
-copyFormatDescriptionSelector :: Selector
+copyFormatDescriptionSelector :: Selector '[] RawId
 copyFormatDescriptionSelector = mkSelector "copyFormatDescription"
 
 -- | @Selector@ for @items@
-itemsSelector :: Selector
+itemsSelector :: Selector '[] (Id NSArray)
 itemsSelector = mkSelector "items"
 

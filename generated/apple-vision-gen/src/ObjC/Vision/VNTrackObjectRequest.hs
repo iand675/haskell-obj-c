@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.Vision.VNTrackObjectRequest
   , initWithDetectedObjectObservation_completionHandler
   , init_
   , initWithCompletionHandler
-  , initWithDetectedObjectObservationSelector
-  , initWithDetectedObjectObservation_completionHandlerSelector
   , initSelector
   , initWithCompletionHandlerSelector
+  , initWithDetectedObjectObservationSelector
+  , initWithDetectedObjectObservation_completionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,9 +40,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDetectedObjectObservation:@
 initWithDetectedObjectObservation :: (IsVNTrackObjectRequest vnTrackObjectRequest, IsVNDetectedObjectObservation observation) => vnTrackObjectRequest -> observation -> IO (Id VNTrackObjectRequest)
-initWithDetectedObjectObservation vnTrackObjectRequest  observation =
-  withObjCPtr observation $ \raw_observation ->
-      sendMsg vnTrackObjectRequest (mkSelector "initWithDetectedObjectObservation:") (retPtr retVoid) [argPtr (castPtr raw_observation :: Ptr ())] >>= ownedObject . castPtr
+initWithDetectedObjectObservation vnTrackObjectRequest observation =
+  sendOwnedMessage vnTrackObjectRequest initWithDetectedObjectObservationSelector (toVNDetectedObjectObservation observation)
 
 -- | Create a new request with detected object observation.
 --
@@ -55,37 +51,36 @@ initWithDetectedObjectObservation vnTrackObjectRequest  observation =
 --
 -- ObjC selector: @- initWithDetectedObjectObservation:completionHandler:@
 initWithDetectedObjectObservation_completionHandler :: (IsVNTrackObjectRequest vnTrackObjectRequest, IsVNDetectedObjectObservation observation) => vnTrackObjectRequest -> observation -> Ptr () -> IO (Id VNTrackObjectRequest)
-initWithDetectedObjectObservation_completionHandler vnTrackObjectRequest  observation completionHandler =
-  withObjCPtr observation $ \raw_observation ->
-      sendMsg vnTrackObjectRequest (mkSelector "initWithDetectedObjectObservation:completionHandler:") (retPtr retVoid) [argPtr (castPtr raw_observation :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithDetectedObjectObservation_completionHandler vnTrackObjectRequest observation completionHandler =
+  sendOwnedMessage vnTrackObjectRequest initWithDetectedObjectObservation_completionHandlerSelector (toVNDetectedObjectObservation observation) completionHandler
 
 -- | @- init@
 init_ :: IsVNTrackObjectRequest vnTrackObjectRequest => vnTrackObjectRequest -> IO (Id VNTrackObjectRequest)
-init_ vnTrackObjectRequest  =
-    sendMsg vnTrackObjectRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnTrackObjectRequest =
+  sendOwnedMessage vnTrackObjectRequest initSelector
 
 -- | @- initWithCompletionHandler:@
 initWithCompletionHandler :: IsVNTrackObjectRequest vnTrackObjectRequest => vnTrackObjectRequest -> Ptr () -> IO (Id VNTrackObjectRequest)
-initWithCompletionHandler vnTrackObjectRequest  completionHandler =
-    sendMsg vnTrackObjectRequest (mkSelector "initWithCompletionHandler:") (retPtr retVoid) [argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithCompletionHandler vnTrackObjectRequest completionHandler =
+  sendOwnedMessage vnTrackObjectRequest initWithCompletionHandlerSelector completionHandler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDetectedObjectObservation:@
-initWithDetectedObjectObservationSelector :: Selector
+initWithDetectedObjectObservationSelector :: Selector '[Id VNDetectedObjectObservation] (Id VNTrackObjectRequest)
 initWithDetectedObjectObservationSelector = mkSelector "initWithDetectedObjectObservation:"
 
 -- | @Selector@ for @initWithDetectedObjectObservation:completionHandler:@
-initWithDetectedObjectObservation_completionHandlerSelector :: Selector
+initWithDetectedObjectObservation_completionHandlerSelector :: Selector '[Id VNDetectedObjectObservation, Ptr ()] (Id VNTrackObjectRequest)
 initWithDetectedObjectObservation_completionHandlerSelector = mkSelector "initWithDetectedObjectObservation:completionHandler:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNTrackObjectRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCompletionHandler:@
-initWithCompletionHandlerSelector :: Selector
+initWithCompletionHandlerSelector :: Selector '[Ptr ()] (Id VNTrackObjectRequest)
 initWithCompletionHandlerSelector = mkSelector "initWithCompletionHandler:"
 

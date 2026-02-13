@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -23,36 +24,32 @@ module ObjC.IOUSBHost.IOUSBHostControllerInterface
   , controllerStateMachine
   , capabilities
   , uuid
-  , initSelector
-  , initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_interestHandlerSelector
+  , capabilitiesForPortSelector
+  , capabilitiesSelector
+  , controllerStateMachineSelector
+  , descriptionForMessageSelector
   , destroySelector
   , enqueueInterrupt_errorSelector
   , enqueueInterrupt_expedite_errorSelector
   , enqueueInterrupts_count_errorSelector
   , enqueueInterrupts_count_expedite_errorSelector
-  , descriptionForMessageSelector
   , getPortStateMachineForCommand_errorSelector
   , getPortStateMachineForPort_errorSelector
-  , capabilitiesForPortSelector
-  , queueSelector
+  , initSelector
+  , initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_interestHandlerSelector
   , interruptRateHzSelector
+  , queueSelector
   , setInterruptRateHzSelector
-  , controllerStateMachineSelector
-  , capabilitiesSelector
   , uuidSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -62,8 +59,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> IO (Id IOUSBHostControllerInterface)
-init_ iousbHostControllerInterface  =
-    sendMsg iousbHostControllerInterface (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ iousbHostControllerInterface =
+  sendOwnedMessage iousbHostControllerInterface initSelector
 
 -- | Initializes IOUSBHostControllerInterface object along with a user client
 --
@@ -85,11 +82,8 @@ init_ iousbHostControllerInterface  =
 --
 -- ObjC selector: @- initWithCapabilities:queue:interruptRateHz:error:commandHandler:doorbellHandler:interestHandler:@
 initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_interestHandler :: (IsIOUSBHostControllerInterface iousbHostControllerInterface, IsNSData capabilities, IsNSObject queue, IsNSError error_) => iousbHostControllerInterface -> capabilities -> queue -> CULong -> error_ -> Ptr () -> Ptr () -> Ptr () -> IO (Id IOUSBHostControllerInterface)
-initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_interestHandler iousbHostControllerInterface  capabilities queue interruptRateHz error_ commandHandler doorbellHandler interestHandler =
-  withObjCPtr capabilities $ \raw_capabilities ->
-    withObjCPtr queue $ \raw_queue ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg iousbHostControllerInterface (mkSelector "initWithCapabilities:queue:interruptRateHz:error:commandHandler:doorbellHandler:interestHandler:") (retPtr retVoid) [argPtr (castPtr raw_capabilities :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ()), argCULong interruptRateHz, argPtr (castPtr raw_error_ :: Ptr ()), argPtr (castPtr commandHandler :: Ptr ()), argPtr (castPtr doorbellHandler :: Ptr ()), argPtr interestHandler] >>= ownedObject . castPtr
+initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_interestHandler iousbHostControllerInterface capabilities queue interruptRateHz error_ commandHandler doorbellHandler interestHandler =
+  sendOwnedMessage iousbHostControllerInterface initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_interestHandlerSelector (toNSData capabilities) (toNSObject queue) interruptRateHz (toNSError error_) commandHandler doorbellHandler interestHandler
 
 -- | Removes underlying allocations of the IOUSBHostControllerInterface object along with user client
 --
@@ -97,8 +91,8 @@ initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_
 --
 -- ObjC selector: @- destroy@
 destroy :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> IO ()
-destroy iousbHostControllerInterface  =
-    sendMsg iousbHostControllerInterface (mkSelector "destroy") retVoid []
+destroy iousbHostControllerInterface =
+  sendMessage iousbHostControllerInterface destroySelector
 
 -- | Enqueue an interrupt for delivery to the kernel service
 --
@@ -108,9 +102,8 @@ destroy iousbHostControllerInterface  =
 --
 -- ObjC selector: @- enqueueInterrupt:error:@
 enqueueInterrupt_error :: (IsIOUSBHostControllerInterface iousbHostControllerInterface, IsNSError error_) => iousbHostControllerInterface -> Const (Ptr IOUSBHostCIMessage) -> error_ -> IO Bool
-enqueueInterrupt_error iousbHostControllerInterface  interrupt error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostControllerInterface (mkSelector "enqueueInterrupt:error:") retCULong [argPtr (unConst interrupt), argPtr (castPtr raw_error_ :: Ptr ())]
+enqueueInterrupt_error iousbHostControllerInterface interrupt error_ =
+  sendMessage iousbHostControllerInterface enqueueInterrupt_errorSelector interrupt (toNSError error_)
 
 -- | Enqueue an interrupt for delivery to the kernel service
 --
@@ -122,9 +115,8 @@ enqueueInterrupt_error iousbHostControllerInterface  interrupt error_ =
 --
 -- ObjC selector: @- enqueueInterrupt:expedite:error:@
 enqueueInterrupt_expedite_error :: (IsIOUSBHostControllerInterface iousbHostControllerInterface, IsNSError error_) => iousbHostControllerInterface -> Const (Ptr IOUSBHostCIMessage) -> Bool -> error_ -> IO Bool
-enqueueInterrupt_expedite_error iousbHostControllerInterface  interrupt expedite error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostControllerInterface (mkSelector "enqueueInterrupt:expedite:error:") retCULong [argPtr (unConst interrupt), argCULong (if expedite then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+enqueueInterrupt_expedite_error iousbHostControllerInterface interrupt expedite error_ =
+  sendMessage iousbHostControllerInterface enqueueInterrupt_expedite_errorSelector interrupt expedite (toNSError error_)
 
 -- | Enqueue interrupts for delivery to the kernel service
 --
@@ -136,9 +128,8 @@ enqueueInterrupt_expedite_error iousbHostControllerInterface  interrupt expedite
 --
 -- ObjC selector: @- enqueueInterrupts:count:error:@
 enqueueInterrupts_count_error :: (IsIOUSBHostControllerInterface iousbHostControllerInterface, IsNSError error_) => iousbHostControllerInterface -> Const (Ptr IOUSBHostCIMessage) -> CULong -> error_ -> IO Bool
-enqueueInterrupts_count_error iousbHostControllerInterface  interrupts count error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostControllerInterface (mkSelector "enqueueInterrupts:count:error:") retCULong [argPtr (unConst interrupts), argCULong count, argPtr (castPtr raw_error_ :: Ptr ())]
+enqueueInterrupts_count_error iousbHostControllerInterface interrupts count error_ =
+  sendMessage iousbHostControllerInterface enqueueInterrupts_count_errorSelector interrupts count (toNSError error_)
 
 -- | Enqueue interrupts for delivery to the kernel service
 --
@@ -152,40 +143,37 @@ enqueueInterrupts_count_error iousbHostControllerInterface  interrupts count err
 --
 -- ObjC selector: @- enqueueInterrupts:count:expedite:error:@
 enqueueInterrupts_count_expedite_error :: (IsIOUSBHostControllerInterface iousbHostControllerInterface, IsNSError error_) => iousbHostControllerInterface -> Const (Ptr IOUSBHostCIMessage) -> CULong -> Bool -> error_ -> IO Bool
-enqueueInterrupts_count_expedite_error iousbHostControllerInterface  interrupts count expedite error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg iousbHostControllerInterface (mkSelector "enqueueInterrupts:count:expedite:error:") retCULong [argPtr (unConst interrupts), argCULong count, argCULong (if expedite then 1 else 0), argPtr (castPtr raw_error_ :: Ptr ())]
+enqueueInterrupts_count_expedite_error iousbHostControllerInterface interrupts count expedite error_ =
+  sendMessage iousbHostControllerInterface enqueueInterrupts_count_expedite_errorSelector interrupts count expedite (toNSError error_)
 
 -- | @- descriptionForMessage:@
 descriptionForMessage :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> Const (Ptr IOUSBHostCIMessage) -> IO (Id NSString)
-descriptionForMessage iousbHostControllerInterface  message =
-    sendMsg iousbHostControllerInterface (mkSelector "descriptionForMessage:") (retPtr retVoid) [argPtr (unConst message)] >>= retainedObject . castPtr
+descriptionForMessage iousbHostControllerInterface message =
+  sendMessage iousbHostControllerInterface descriptionForMessageSelector message
 
 -- | @- getPortStateMachineForCommand:error:@
 getPortStateMachineForCommand_error :: (IsIOUSBHostControllerInterface iousbHostControllerInterface, IsNSError error_) => iousbHostControllerInterface -> Const (Ptr IOUSBHostCIMessage) -> error_ -> IO (Id IOUSBHostCIPortStateMachine)
-getPortStateMachineForCommand_error iousbHostControllerInterface  command error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg iousbHostControllerInterface (mkSelector "getPortStateMachineForCommand:error:") (retPtr retVoid) [argPtr (unConst command), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+getPortStateMachineForCommand_error iousbHostControllerInterface command error_ =
+  sendMessage iousbHostControllerInterface getPortStateMachineForCommand_errorSelector command (toNSError error_)
 
 -- | @- getPortStateMachineForPort:error:@
 getPortStateMachineForPort_error :: (IsIOUSBHostControllerInterface iousbHostControllerInterface, IsNSError error_) => iousbHostControllerInterface -> CULong -> error_ -> IO (Id IOUSBHostCIPortStateMachine)
-getPortStateMachineForPort_error iousbHostControllerInterface  port error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg iousbHostControllerInterface (mkSelector "getPortStateMachineForPort:error:") (retPtr retVoid) [argCULong port, argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+getPortStateMachineForPort_error iousbHostControllerInterface port error_ =
+  sendMessage iousbHostControllerInterface getPortStateMachineForPort_errorSelector port (toNSError error_)
 
 -- | Retrieve a port capabilities structure passed in during initialization
 --
 -- ObjC selector: @- capabilitiesForPort:@
 capabilitiesForPort :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> CULong -> IO (Const (Ptr IOUSBHostCIMessage))
-capabilitiesForPort iousbHostControllerInterface  port =
-    fmap Const $ fmap castPtr $ sendMsg iousbHostControllerInterface (mkSelector "capabilitiesForPort:") (retPtr retVoid) [argCULong port]
+capabilitiesForPort iousbHostControllerInterface port =
+  sendMessage iousbHostControllerInterface capabilitiesForPortSelector port
 
 -- | The dispatch queue for asynchronous operations.
 --
 -- ObjC selector: @- queue@
 queue :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> IO (Id NSObject)
-queue iousbHostControllerInterface  =
-    sendMsg iousbHostControllerInterface (mkSelector "queue") (retPtr retVoid) [] >>= retainedObject . castPtr
+queue iousbHostControllerInterface =
+  sendMessage iousbHostControllerInterface queueSelector
 
 -- | The interrupt moderation rate for sending interrupt messages to the kernel driver
 --
@@ -193,8 +181,8 @@ queue iousbHostControllerInterface  =
 --
 -- ObjC selector: @- interruptRateHz@
 interruptRateHz :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> IO CULong
-interruptRateHz iousbHostControllerInterface  =
-    sendMsg iousbHostControllerInterface (mkSelector "interruptRateHz") retCULong []
+interruptRateHz iousbHostControllerInterface =
+  sendMessage iousbHostControllerInterface interruptRateHzSelector
 
 -- | The interrupt moderation rate for sending interrupt messages to the kernel driver
 --
@@ -202,13 +190,13 @@ interruptRateHz iousbHostControllerInterface  =
 --
 -- ObjC selector: @- setInterruptRateHz:@
 setInterruptRateHz :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> CULong -> IO ()
-setInterruptRateHz iousbHostControllerInterface  value =
-    sendMsg iousbHostControllerInterface (mkSelector "setInterruptRateHz:") retVoid [argCULong value]
+setInterruptRateHz iousbHostControllerInterface value =
+  sendMessage iousbHostControllerInterface setInterruptRateHzSelector value
 
 -- | @- controllerStateMachine@
 controllerStateMachine :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> IO (Id IOUSBHostCIControllerStateMachine)
-controllerStateMachine iousbHostControllerInterface  =
-    sendMsg iousbHostControllerInterface (mkSelector "controllerStateMachine") (retPtr retVoid) [] >>= retainedObject . castPtr
+controllerStateMachine iousbHostControllerInterface =
+  sendMessage iousbHostControllerInterface controllerStateMachineSelector
 
 -- | The capabilities structure passed in during initialization
 --
@@ -216,85 +204,85 @@ controllerStateMachine iousbHostControllerInterface  =
 --
 -- ObjC selector: @- capabilities@
 capabilities :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> IO (Const (Ptr IOUSBHostCIMessage))
-capabilities iousbHostControllerInterface  =
-    fmap Const $ fmap castPtr $ sendMsg iousbHostControllerInterface (mkSelector "capabilities") (retPtr retVoid) []
+capabilities iousbHostControllerInterface =
+  sendMessage iousbHostControllerInterface capabilitiesSelector
 
 -- | A UUID used to identify the host controller interface in this process and the kernel
 --
 -- ObjC selector: @- uuid@
 uuid :: IsIOUSBHostControllerInterface iousbHostControllerInterface => iousbHostControllerInterface -> IO (Id NSUUID)
-uuid iousbHostControllerInterface  =
-    sendMsg iousbHostControllerInterface (mkSelector "uuid") (retPtr retVoid) [] >>= retainedObject . castPtr
+uuid iousbHostControllerInterface =
+  sendMessage iousbHostControllerInterface uuidSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id IOUSBHostControllerInterface)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCapabilities:queue:interruptRateHz:error:commandHandler:doorbellHandler:interestHandler:@
-initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_interestHandlerSelector :: Selector
+initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_interestHandlerSelector :: Selector '[Id NSData, Id NSObject, CULong, Id NSError, Ptr (), Ptr (), Ptr ()] (Id IOUSBHostControllerInterface)
 initWithCapabilities_queue_interruptRateHz_error_commandHandler_doorbellHandler_interestHandlerSelector = mkSelector "initWithCapabilities:queue:interruptRateHz:error:commandHandler:doorbellHandler:interestHandler:"
 
 -- | @Selector@ for @destroy@
-destroySelector :: Selector
+destroySelector :: Selector '[] ()
 destroySelector = mkSelector "destroy"
 
 -- | @Selector@ for @enqueueInterrupt:error:@
-enqueueInterrupt_errorSelector :: Selector
+enqueueInterrupt_errorSelector :: Selector '[Const (Ptr IOUSBHostCIMessage), Id NSError] Bool
 enqueueInterrupt_errorSelector = mkSelector "enqueueInterrupt:error:"
 
 -- | @Selector@ for @enqueueInterrupt:expedite:error:@
-enqueueInterrupt_expedite_errorSelector :: Selector
+enqueueInterrupt_expedite_errorSelector :: Selector '[Const (Ptr IOUSBHostCIMessage), Bool, Id NSError] Bool
 enqueueInterrupt_expedite_errorSelector = mkSelector "enqueueInterrupt:expedite:error:"
 
 -- | @Selector@ for @enqueueInterrupts:count:error:@
-enqueueInterrupts_count_errorSelector :: Selector
+enqueueInterrupts_count_errorSelector :: Selector '[Const (Ptr IOUSBHostCIMessage), CULong, Id NSError] Bool
 enqueueInterrupts_count_errorSelector = mkSelector "enqueueInterrupts:count:error:"
 
 -- | @Selector@ for @enqueueInterrupts:count:expedite:error:@
-enqueueInterrupts_count_expedite_errorSelector :: Selector
+enqueueInterrupts_count_expedite_errorSelector :: Selector '[Const (Ptr IOUSBHostCIMessage), CULong, Bool, Id NSError] Bool
 enqueueInterrupts_count_expedite_errorSelector = mkSelector "enqueueInterrupts:count:expedite:error:"
 
 -- | @Selector@ for @descriptionForMessage:@
-descriptionForMessageSelector :: Selector
+descriptionForMessageSelector :: Selector '[Const (Ptr IOUSBHostCIMessage)] (Id NSString)
 descriptionForMessageSelector = mkSelector "descriptionForMessage:"
 
 -- | @Selector@ for @getPortStateMachineForCommand:error:@
-getPortStateMachineForCommand_errorSelector :: Selector
+getPortStateMachineForCommand_errorSelector :: Selector '[Const (Ptr IOUSBHostCIMessage), Id NSError] (Id IOUSBHostCIPortStateMachine)
 getPortStateMachineForCommand_errorSelector = mkSelector "getPortStateMachineForCommand:error:"
 
 -- | @Selector@ for @getPortStateMachineForPort:error:@
-getPortStateMachineForPort_errorSelector :: Selector
+getPortStateMachineForPort_errorSelector :: Selector '[CULong, Id NSError] (Id IOUSBHostCIPortStateMachine)
 getPortStateMachineForPort_errorSelector = mkSelector "getPortStateMachineForPort:error:"
 
 -- | @Selector@ for @capabilitiesForPort:@
-capabilitiesForPortSelector :: Selector
+capabilitiesForPortSelector :: Selector '[CULong] (Const (Ptr IOUSBHostCIMessage))
 capabilitiesForPortSelector = mkSelector "capabilitiesForPort:"
 
 -- | @Selector@ for @queue@
-queueSelector :: Selector
+queueSelector :: Selector '[] (Id NSObject)
 queueSelector = mkSelector "queue"
 
 -- | @Selector@ for @interruptRateHz@
-interruptRateHzSelector :: Selector
+interruptRateHzSelector :: Selector '[] CULong
 interruptRateHzSelector = mkSelector "interruptRateHz"
 
 -- | @Selector@ for @setInterruptRateHz:@
-setInterruptRateHzSelector :: Selector
+setInterruptRateHzSelector :: Selector '[CULong] ()
 setInterruptRateHzSelector = mkSelector "setInterruptRateHz:"
 
 -- | @Selector@ for @controllerStateMachine@
-controllerStateMachineSelector :: Selector
+controllerStateMachineSelector :: Selector '[] (Id IOUSBHostCIControllerStateMachine)
 controllerStateMachineSelector = mkSelector "controllerStateMachine"
 
 -- | @Selector@ for @capabilities@
-capabilitiesSelector :: Selector
+capabilitiesSelector :: Selector '[] (Const (Ptr IOUSBHostCIMessage))
 capabilitiesSelector = mkSelector "capabilities"
 
 -- | @Selector@ for @uuid@
-uuidSelector :: Selector
+uuidSelector :: Selector '[] (Id NSUUID)
 uuidSelector = mkSelector "uuid"
 

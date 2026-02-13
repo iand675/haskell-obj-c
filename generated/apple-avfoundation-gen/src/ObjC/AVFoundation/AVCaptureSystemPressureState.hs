@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,10 +18,10 @@ module ObjC.AVFoundation.AVCaptureSystemPressureState
   , new
   , level
   , factors
-  , initSelector
-  , newSelector
-  , levelSelector
   , factorsSelector
+  , initSelector
+  , levelSelector
+  , newSelector
 
   -- * Enum types
   , AVCaptureSystemPressureFactors(AVCaptureSystemPressureFactors)
@@ -32,15 +33,11 @@ module ObjC.AVFoundation.AVCaptureSystemPressureState
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,15 +47,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureSystemPressureState avCaptureSystemPressureState => avCaptureSystemPressureState -> IO (Id AVCaptureSystemPressureState)
-init_ avCaptureSystemPressureState  =
-    sendMsg avCaptureSystemPressureState (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureSystemPressureState =
+  sendOwnedMessage avCaptureSystemPressureState initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureSystemPressureState)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureSystemPressureState"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | level
 --
@@ -66,8 +63,8 @@ new  =
 --
 -- ObjC selector: @- level@
 level :: IsAVCaptureSystemPressureState avCaptureSystemPressureState => avCaptureSystemPressureState -> IO (Id NSString)
-level avCaptureSystemPressureState  =
-    sendMsg avCaptureSystemPressureState (mkSelector "level") (retPtr retVoid) [] >>= retainedObject . castPtr
+level avCaptureSystemPressureState =
+  sendMessage avCaptureSystemPressureState levelSelector
 
 -- | factors
 --
@@ -75,26 +72,26 @@ level avCaptureSystemPressureState  =
 --
 -- ObjC selector: @- factors@
 factors :: IsAVCaptureSystemPressureState avCaptureSystemPressureState => avCaptureSystemPressureState -> IO AVCaptureSystemPressureFactors
-factors avCaptureSystemPressureState  =
-    fmap (coerce :: CULong -> AVCaptureSystemPressureFactors) $ sendMsg avCaptureSystemPressureState (mkSelector "factors") retCULong []
+factors avCaptureSystemPressureState =
+  sendMessage avCaptureSystemPressureState factorsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureSystemPressureState)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureSystemPressureState)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @level@
-levelSelector :: Selector
+levelSelector :: Selector '[] (Id NSString)
 levelSelector = mkSelector "level"
 
 -- | @Selector@ for @factors@
-factorsSelector :: Selector
+factorsSelector :: Selector '[] AVCaptureSystemPressureFactors
 factorsSelector = mkSelector "factors"
 

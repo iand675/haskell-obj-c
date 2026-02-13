@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -74,73 +75,73 @@ module ObjC.AppKit.NSFont
   , printerFont
   , screenFont
   , renderingMode
-  , fontWithName_sizeSelector
-  , fontWithName_matrixSelector
+  , advancementForCGGlyphSelector
+  , advancementForGlyphSelector
+  , ascenderSelector
+  , boldSystemFontOfSizeSelector
+  , boundingRectForCGGlyphSelector
+  , boundingRectForFontSelector
+  , boundingRectForGlyphSelector
+  , capHeightSelector
+  , controlContentFontOfSizeSelector
+  , coveredCharacterSetSelector
+  , descenderSelector
+  , displayNameSelector
+  , familyNameSelector
+  , fixedPitchSelector
+  , fontDescriptorSelector
+  , fontNameSelector
   , fontWithDescriptor_sizeSelector
   , fontWithDescriptor_textTransformSelector
-  , userFontOfSizeSelector
-  , userFixedPitchFontOfSizeSelector
-  , setUserFontSelector
-  , setUserFixedPitchFontSelector
-  , systemFontOfSizeSelector
-  , boldSystemFontOfSizeSelector
-  , labelFontOfSizeSelector
-  , titleBarFontOfSizeSelector
-  , menuFontOfSizeSelector
-  , menuBarFontOfSizeSelector
-  , messageFontOfSizeSelector
-  , paletteFontOfSizeSelector
-  , toolTipsFontOfSizeSelector
-  , controlContentFontOfSizeSelector
-  , systemFontOfSize_weightSelector
-  , monospacedDigitSystemFontOfSize_weightSelector
-  , systemFontOfSize_weight_widthSelector
-  , monospacedSystemFontOfSize_weightSelector
+  , fontWithName_matrixSelector
+  , fontWithName_sizeSelector
   , fontWithSizeSelector
-  , systemFontSizeForControlSizeSelector
-  , boundingRectForCGGlyphSelector
-  , advancementForCGGlyphSelector
-  , getBoundingRects_forCGGlyphs_countSelector
   , getAdvancements_forCGGlyphs_countSelector
-  , setSelector
-  , setInContextSelector
-  , preferredFontForTextStyle_optionsSelector
-  , glyphWithNameSelector
-  , boundingRectForGlyphSelector
-  , advancementForGlyphSelector
-  , getBoundingRects_forGlyphs_countSelector
   , getAdvancements_forGlyphs_countSelector
   , getAdvancements_forPackedGlyphs_lengthSelector
-  , screenFontWithRenderingModeSelector
-  , systemFontSizeSelector
-  , smallSystemFontSizeSelector
+  , getBoundingRects_forCGGlyphs_countSelector
+  , getBoundingRects_forGlyphs_countSelector
+  , glyphWithNameSelector
+  , italicAngleSelector
+  , labelFontOfSizeSelector
   , labelFontSizeSelector
-  , fontNameSelector
-  , pointSizeSelector
-  , matrixSelector
-  , familyNameSelector
-  , displayNameSelector
-  , fontDescriptorSelector
-  , textTransformSelector
-  , numberOfGlyphsSelector
-  , mostCompatibleStringEncodingSelector
-  , coveredCharacterSetSelector
-  , boundingRectForFontSelector
-  , maximumAdvancementSelector
-  , ascenderSelector
-  , descenderSelector
   , leadingSelector
+  , matrixSelector
+  , maximumAdvancementSelector
+  , menuBarFontOfSizeSelector
+  , menuFontOfSizeSelector
+  , messageFontOfSizeSelector
+  , monospacedDigitSystemFontOfSize_weightSelector
+  , monospacedSystemFontOfSize_weightSelector
+  , mostCompatibleStringEncodingSelector
+  , numberOfGlyphsSelector
+  , paletteFontOfSizeSelector
+  , pointSizeSelector
+  , preferredFontForTextStyle_optionsSelector
+  , printerFontSelector
+  , renderingModeSelector
+  , screenFontSelector
+  , screenFontWithRenderingModeSelector
+  , setInContextSelector
+  , setSelector
+  , setUserFixedPitchFontSelector
+  , setUserFontSelector
+  , smallSystemFontSizeSelector
+  , systemFontOfSizeSelector
+  , systemFontOfSize_weightSelector
+  , systemFontOfSize_weight_widthSelector
+  , systemFontSizeForControlSizeSelector
+  , systemFontSizeSelector
+  , textTransformSelector
+  , titleBarFontOfSizeSelector
+  , toolTipsFontOfSizeSelector
   , underlinePositionSelector
   , underlineThicknessSelector
-  , italicAngleSelector
-  , capHeightSelector
-  , xHeightSelector
-  , fixedPitchSelector
+  , userFixedPitchFontOfSizeSelector
+  , userFontOfSizeSelector
   , verticalFontSelector
   , verticalSelector
-  , printerFontSelector
-  , screenFontSelector
-  , renderingModeSelector
+  , xHeightSelector
 
   -- * Enum types
   , NSControlSize(NSControlSize)
@@ -157,15 +158,11 @@ module ObjC.AppKit.NSFont
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -181,33 +178,28 @@ fontWithName_size :: IsNSString fontName => fontName -> CDouble -> IO (Id NSFont
 fontWithName_size fontName fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    withObjCPtr fontName $ \raw_fontName ->
-      sendClassMsg cls' (mkSelector "fontWithName:size:") (retPtr retVoid) [argPtr (castPtr raw_fontName :: Ptr ()), argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' fontWithName_sizeSelector (toNSString fontName) fontSize
 
 -- | @+ fontWithName:matrix:@
 fontWithName_matrix :: IsNSString fontName => fontName -> Const (Ptr CDouble) -> IO (Id NSFont)
 fontWithName_matrix fontName fontMatrix =
   do
     cls' <- getRequiredClass "NSFont"
-    withObjCPtr fontName $ \raw_fontName ->
-      sendClassMsg cls' (mkSelector "fontWithName:matrix:") (retPtr retVoid) [argPtr (castPtr raw_fontName :: Ptr ()), argPtr (unConst fontMatrix)] >>= retainedObject . castPtr
+    sendClassMessage cls' fontWithName_matrixSelector (toNSString fontName) fontMatrix
 
 -- | @+ fontWithDescriptor:size:@
 fontWithDescriptor_size :: IsNSFontDescriptor fontDescriptor => fontDescriptor -> CDouble -> IO (Id NSFont)
 fontWithDescriptor_size fontDescriptor fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    withObjCPtr fontDescriptor $ \raw_fontDescriptor ->
-      sendClassMsg cls' (mkSelector "fontWithDescriptor:size:") (retPtr retVoid) [argPtr (castPtr raw_fontDescriptor :: Ptr ()), argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' fontWithDescriptor_sizeSelector (toNSFontDescriptor fontDescriptor) fontSize
 
 -- | @+ fontWithDescriptor:textTransform:@
 fontWithDescriptor_textTransform :: (IsNSFontDescriptor fontDescriptor, IsNSAffineTransform textTransform) => fontDescriptor -> textTransform -> IO (Id NSFont)
 fontWithDescriptor_textTransform fontDescriptor textTransform =
   do
     cls' <- getRequiredClass "NSFont"
-    withObjCPtr fontDescriptor $ \raw_fontDescriptor ->
-      withObjCPtr textTransform $ \raw_textTransform ->
-        sendClassMsg cls' (mkSelector "fontWithDescriptor:textTransform:") (retPtr retVoid) [argPtr (castPtr raw_fontDescriptor :: Ptr ()), argPtr (castPtr raw_textTransform :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fontWithDescriptor_textTransformSelector (toNSFontDescriptor fontDescriptor) (toNSAffineTransform textTransform)
 
 -- | ******* Meta Font ********
 --
@@ -216,140 +208,138 @@ userFontOfSize :: CDouble -> IO (Id NSFont)
 userFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "userFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' userFontOfSizeSelector fontSize
 
 -- | @+ userFixedPitchFontOfSize:@
 userFixedPitchFontOfSize :: CDouble -> IO (Id NSFont)
 userFixedPitchFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "userFixedPitchFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' userFixedPitchFontOfSizeSelector fontSize
 
 -- | @+ setUserFont:@
 setUserFont :: IsNSFont font => font -> IO ()
 setUserFont font =
   do
     cls' <- getRequiredClass "NSFont"
-    withObjCPtr font $ \raw_font ->
-      sendClassMsg cls' (mkSelector "setUserFont:") retVoid [argPtr (castPtr raw_font :: Ptr ())]
+    sendClassMessage cls' setUserFontSelector (toNSFont font)
 
 -- | @+ setUserFixedPitchFont:@
 setUserFixedPitchFont :: IsNSFont font => font -> IO ()
 setUserFixedPitchFont font =
   do
     cls' <- getRequiredClass "NSFont"
-    withObjCPtr font $ \raw_font ->
-      sendClassMsg cls' (mkSelector "setUserFixedPitchFont:") retVoid [argPtr (castPtr raw_font :: Ptr ())]
+    sendClassMessage cls' setUserFixedPitchFontSelector (toNSFont font)
 
 -- | @+ systemFontOfSize:@
 systemFontOfSize :: CDouble -> IO (Id NSFont)
 systemFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "systemFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' systemFontOfSizeSelector fontSize
 
 -- | @+ boldSystemFontOfSize:@
 boldSystemFontOfSize :: CDouble -> IO (Id NSFont)
 boldSystemFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "boldSystemFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' boldSystemFontOfSizeSelector fontSize
 
 -- | @+ labelFontOfSize:@
 labelFontOfSize :: CDouble -> IO (Id NSFont)
 labelFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "labelFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' labelFontOfSizeSelector fontSize
 
 -- | @+ titleBarFontOfSize:@
 titleBarFontOfSize :: CDouble -> IO (Id NSFont)
 titleBarFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "titleBarFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' titleBarFontOfSizeSelector fontSize
 
 -- | @+ menuFontOfSize:@
 menuFontOfSize :: CDouble -> IO (Id NSFont)
 menuFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "menuFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' menuFontOfSizeSelector fontSize
 
 -- | @+ menuBarFontOfSize:@
 menuBarFontOfSize :: CDouble -> IO (Id NSFont)
 menuBarFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "menuBarFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' menuBarFontOfSizeSelector fontSize
 
 -- | @+ messageFontOfSize:@
 messageFontOfSize :: CDouble -> IO (Id NSFont)
 messageFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "messageFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' messageFontOfSizeSelector fontSize
 
 -- | @+ paletteFontOfSize:@
 paletteFontOfSize :: CDouble -> IO (Id NSFont)
 paletteFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "paletteFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' paletteFontOfSizeSelector fontSize
 
 -- | @+ toolTipsFontOfSize:@
 toolTipsFontOfSize :: CDouble -> IO (Id NSFont)
 toolTipsFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "toolTipsFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' toolTipsFontOfSizeSelector fontSize
 
 -- | @+ controlContentFontOfSize:@
 controlContentFontOfSize :: CDouble -> IO (Id NSFont)
 controlContentFontOfSize fontSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "controlContentFontOfSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+    sendClassMessage cls' controlContentFontOfSizeSelector fontSize
 
 -- | @+ systemFontOfSize:weight:@
 systemFontOfSize_weight :: CDouble -> CDouble -> IO (Id NSFont)
 systemFontOfSize_weight fontSize weight =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "systemFontOfSize:weight:") (retPtr retVoid) [argCDouble fontSize, argCDouble weight] >>= retainedObject . castPtr
+    sendClassMessage cls' systemFontOfSize_weightSelector fontSize weight
 
 -- | @+ monospacedDigitSystemFontOfSize:weight:@
 monospacedDigitSystemFontOfSize_weight :: CDouble -> CDouble -> IO (Id NSFont)
 monospacedDigitSystemFontOfSize_weight fontSize weight =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "monospacedDigitSystemFontOfSize:weight:") (retPtr retVoid) [argCDouble fontSize, argCDouble weight] >>= retainedObject . castPtr
+    sendClassMessage cls' monospacedDigitSystemFontOfSize_weightSelector fontSize weight
 
 -- | @+ systemFontOfSize:weight:width:@
 systemFontOfSize_weight_width :: CDouble -> CDouble -> CDouble -> IO (Id NSFont)
 systemFontOfSize_weight_width fontSize weight width =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "systemFontOfSize:weight:width:") (retPtr retVoid) [argCDouble fontSize, argCDouble weight, argCDouble width] >>= retainedObject . castPtr
+    sendClassMessage cls' systemFontOfSize_weight_widthSelector fontSize weight width
 
 -- | @+ monospacedSystemFontOfSize:weight:@
 monospacedSystemFontOfSize_weight :: CDouble -> CDouble -> IO (Id NSFont)
 monospacedSystemFontOfSize_weight fontSize weight =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "monospacedSystemFontOfSize:weight:") (retPtr retVoid) [argCDouble fontSize, argCDouble weight] >>= retainedObject . castPtr
+    sendClassMessage cls' monospacedSystemFontOfSize_weightSelector fontSize weight
 
 -- | @- fontWithSize:@
 fontWithSize :: IsNSFont nsFont => nsFont -> CDouble -> IO (Id NSFont)
-fontWithSize nsFont  fontSize =
-    sendMsg nsFont (mkSelector "fontWithSize:") (retPtr retVoid) [argCDouble fontSize] >>= retainedObject . castPtr
+fontWithSize nsFont fontSize =
+  sendMessage nsFont fontWithSizeSelector fontSize
 
 -- | @+ systemFontSizeForControlSize:@
 systemFontSizeForControlSize :: NSControlSize -> IO CDouble
 systemFontSizeForControlSize controlSize =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "systemFontSizeForControlSize:") retCDouble [argCULong (coerce controlSize)]
+    sendClassMessage cls' systemFontSizeForControlSizeSelector controlSize
 
 -- | ******* Glyph metrics ********
 --
@@ -357,510 +347,506 @@ systemFontSizeForControlSize controlSize =
 --
 -- ObjC selector: @- boundingRectForCGGlyph:@
 boundingRectForCGGlyph :: IsNSFont nsFont => nsFont -> CUShort -> IO NSRect
-boundingRectForCGGlyph nsFont  glyph =
-    sendMsgStret nsFont (mkSelector "boundingRectForCGGlyph:") retNSRect [argCUInt (fromIntegral glyph)]
+boundingRectForCGGlyph nsFont glyph =
+  sendMessage nsFont boundingRectForCGGlyphSelector glyph
 
 -- | @- advancementForCGGlyph:@
 advancementForCGGlyph :: IsNSFont nsFont => nsFont -> CUShort -> IO NSSize
-advancementForCGGlyph nsFont  glyph =
-    sendMsgStret nsFont (mkSelector "advancementForCGGlyph:") retNSSize [argCUInt (fromIntegral glyph)]
+advancementForCGGlyph nsFont glyph =
+  sendMessage nsFont advancementForCGGlyphSelector glyph
 
 -- | @- getBoundingRects:forCGGlyphs:count:@
 getBoundingRects_forCGGlyphs_count :: IsNSFont nsFont => nsFont -> Ptr NSRect -> Const RawId -> CULong -> IO ()
-getBoundingRects_forCGGlyphs_count nsFont  bounds glyphs glyphCount =
-    sendMsg nsFont (mkSelector "getBoundingRects:forCGGlyphs:count:") retVoid [argPtr bounds, argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong glyphCount]
+getBoundingRects_forCGGlyphs_count nsFont bounds glyphs glyphCount =
+  sendMessage nsFont getBoundingRects_forCGGlyphs_countSelector bounds glyphs glyphCount
 
 -- | @- getAdvancements:forCGGlyphs:count:@
 getAdvancements_forCGGlyphs_count :: IsNSFont nsFont => nsFont -> Ptr NSSize -> Const RawId -> CULong -> IO ()
-getAdvancements_forCGGlyphs_count nsFont  advancements glyphs glyphCount =
-    sendMsg nsFont (mkSelector "getAdvancements:forCGGlyphs:count:") retVoid [argPtr advancements, argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong glyphCount]
+getAdvancements_forCGGlyphs_count nsFont advancements glyphs glyphCount =
+  sendMessage nsFont getAdvancements_forCGGlyphs_countSelector advancements glyphs glyphCount
 
 -- | ******* NSGraphicsContext-related ********
 --
 -- ObjC selector: @- set@
 set :: IsNSFont nsFont => nsFont -> IO ()
-set nsFont  =
-    sendMsg nsFont (mkSelector "set") retVoid []
+set nsFont =
+  sendMessage nsFont setSelector
 
 -- | @- setInContext:@
 setInContext :: (IsNSFont nsFont, IsNSGraphicsContext graphicsContext) => nsFont -> graphicsContext -> IO ()
-setInContext nsFont  graphicsContext =
-  withObjCPtr graphicsContext $ \raw_graphicsContext ->
-      sendMsg nsFont (mkSelector "setInContext:") retVoid [argPtr (castPtr raw_graphicsContext :: Ptr ())]
+setInContext nsFont graphicsContext =
+  sendMessage nsFont setInContextSelector (toNSGraphicsContext graphicsContext)
 
 -- | @+ preferredFontForTextStyle:options:@
 preferredFontForTextStyle_options :: (IsNSString style, IsNSDictionary options) => style -> options -> IO (Id NSFont)
 preferredFontForTextStyle_options style options =
   do
     cls' <- getRequiredClass "NSFont"
-    withObjCPtr style $ \raw_style ->
-      withObjCPtr options $ \raw_options ->
-        sendClassMsg cls' (mkSelector "preferredFontForTextStyle:options:") (retPtr retVoid) [argPtr (castPtr raw_style :: Ptr ()), argPtr (castPtr raw_options :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' preferredFontForTextStyle_optionsSelector (toNSString style) (toNSDictionary options)
 
 -- | @- glyphWithName:@
 glyphWithName :: (IsNSFont nsFont, IsNSString name) => nsFont -> name -> IO CUInt
-glyphWithName nsFont  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsFont (mkSelector "glyphWithName:") retCUInt [argPtr (castPtr raw_name :: Ptr ())]
+glyphWithName nsFont name =
+  sendMessage nsFont glyphWithNameSelector (toNSString name)
 
 -- | @- boundingRectForGlyph:@
 boundingRectForGlyph :: IsNSFont nsFont => nsFont -> CUInt -> IO NSRect
-boundingRectForGlyph nsFont  glyph =
-    sendMsgStret nsFont (mkSelector "boundingRectForGlyph:") retNSRect [argCUInt glyph]
+boundingRectForGlyph nsFont glyph =
+  sendMessage nsFont boundingRectForGlyphSelector glyph
 
 -- | @- advancementForGlyph:@
 advancementForGlyph :: IsNSFont nsFont => nsFont -> CUInt -> IO NSSize
-advancementForGlyph nsFont  glyph =
-    sendMsgStret nsFont (mkSelector "advancementForGlyph:") retNSSize [argCUInt glyph]
+advancementForGlyph nsFont glyph =
+  sendMessage nsFont advancementForGlyphSelector glyph
 
 -- | @- getBoundingRects:forGlyphs:count:@
 getBoundingRects_forGlyphs_count :: IsNSFont nsFont => nsFont -> Ptr NSRect -> Const RawId -> CULong -> IO ()
-getBoundingRects_forGlyphs_count nsFont  bounds glyphs glyphCount =
-    sendMsg nsFont (mkSelector "getBoundingRects:forGlyphs:count:") retVoid [argPtr bounds, argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong glyphCount]
+getBoundingRects_forGlyphs_count nsFont bounds glyphs glyphCount =
+  sendMessage nsFont getBoundingRects_forGlyphs_countSelector bounds glyphs glyphCount
 
 -- | @- getAdvancements:forGlyphs:count:@
 getAdvancements_forGlyphs_count :: IsNSFont nsFont => nsFont -> Ptr NSSize -> Const RawId -> CULong -> IO ()
-getAdvancements_forGlyphs_count nsFont  advancements glyphs glyphCount =
-    sendMsg nsFont (mkSelector "getAdvancements:forGlyphs:count:") retVoid [argPtr advancements, argPtr (castPtr (unRawId (unConst glyphs)) :: Ptr ()), argCULong glyphCount]
+getAdvancements_forGlyphs_count nsFont advancements glyphs glyphCount =
+  sendMessage nsFont getAdvancements_forGlyphs_countSelector advancements glyphs glyphCount
 
 -- | @- getAdvancements:forPackedGlyphs:length:@
 getAdvancements_forPackedGlyphs_length :: IsNSFont nsFont => nsFont -> Ptr NSSize -> Const (Ptr ()) -> CULong -> IO ()
-getAdvancements_forPackedGlyphs_length nsFont  advancements packedGlyphs length_ =
-    sendMsg nsFont (mkSelector "getAdvancements:forPackedGlyphs:length:") retVoid [argPtr advancements, argPtr (unConst packedGlyphs), argCULong length_]
+getAdvancements_forPackedGlyphs_length nsFont advancements packedGlyphs length_ =
+  sendMessage nsFont getAdvancements_forPackedGlyphs_lengthSelector advancements packedGlyphs length_
 
 -- | @- screenFontWithRenderingMode:@
 screenFontWithRenderingMode :: IsNSFont nsFont => nsFont -> NSFontRenderingMode -> IO (Id NSFont)
-screenFontWithRenderingMode nsFont  renderingMode =
-    sendMsg nsFont (mkSelector "screenFontWithRenderingMode:") (retPtr retVoid) [argCULong (coerce renderingMode)] >>= retainedObject . castPtr
+screenFontWithRenderingMode nsFont renderingMode =
+  sendMessage nsFont screenFontWithRenderingModeSelector renderingMode
 
 -- | @+ systemFontSize@
 systemFontSize :: IO CDouble
 systemFontSize  =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "systemFontSize") retCDouble []
+    sendClassMessage cls' systemFontSizeSelector
 
 -- | @+ smallSystemFontSize@
 smallSystemFontSize :: IO CDouble
 smallSystemFontSize  =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "smallSystemFontSize") retCDouble []
+    sendClassMessage cls' smallSystemFontSizeSelector
 
 -- | @+ labelFontSize@
 labelFontSize :: IO CDouble
 labelFontSize  =
   do
     cls' <- getRequiredClass "NSFont"
-    sendClassMsg cls' (mkSelector "labelFontSize") retCDouble []
+    sendClassMessage cls' labelFontSizeSelector
 
 -- | ******* Core font attribute ********
 --
 -- ObjC selector: @- fontName@
 fontName :: IsNSFont nsFont => nsFont -> IO (Id NSString)
-fontName nsFont  =
-    sendMsg nsFont (mkSelector "fontName") (retPtr retVoid) [] >>= retainedObject . castPtr
+fontName nsFont =
+  sendMessage nsFont fontNameSelector
 
 -- | @- pointSize@
 pointSize :: IsNSFont nsFont => nsFont -> IO CDouble
-pointSize nsFont  =
-    sendMsg nsFont (mkSelector "pointSize") retCDouble []
+pointSize nsFont =
+  sendMessage nsFont pointSizeSelector
 
 -- | @- matrix@
 matrix :: IsNSFont nsFont => nsFont -> IO RawId
-matrix nsFont  =
-    fmap (RawId . castPtr) $ sendMsg nsFont (mkSelector "matrix") (retPtr retVoid) []
+matrix nsFont =
+  sendMessage nsFont matrixSelector
 
 -- | @- familyName@
 familyName :: IsNSFont nsFont => nsFont -> IO (Id NSString)
-familyName nsFont  =
-    sendMsg nsFont (mkSelector "familyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+familyName nsFont =
+  sendMessage nsFont familyNameSelector
 
 -- | @- displayName@
 displayName :: IsNSFont nsFont => nsFont -> IO (Id NSString)
-displayName nsFont  =
-    sendMsg nsFont (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName nsFont =
+  sendMessage nsFont displayNameSelector
 
 -- | @- fontDescriptor@
 fontDescriptor :: IsNSFont nsFont => nsFont -> IO (Id NSFontDescriptor)
-fontDescriptor nsFont  =
-    sendMsg nsFont (mkSelector "fontDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+fontDescriptor nsFont =
+  sendMessage nsFont fontDescriptorSelector
 
 -- | @- textTransform@
 textTransform :: IsNSFont nsFont => nsFont -> IO (Id NSAffineTransform)
-textTransform nsFont  =
-    sendMsg nsFont (mkSelector "textTransform") (retPtr retVoid) [] >>= retainedObject . castPtr
+textTransform nsFont =
+  sendMessage nsFont textTransformSelector
 
 -- | ******* Glyph coverage ********
 --
 -- ObjC selector: @- numberOfGlyphs@
 numberOfGlyphs :: IsNSFont nsFont => nsFont -> IO CULong
-numberOfGlyphs nsFont  =
-    sendMsg nsFont (mkSelector "numberOfGlyphs") retCULong []
+numberOfGlyphs nsFont =
+  sendMessage nsFont numberOfGlyphsSelector
 
 -- | @- mostCompatibleStringEncoding@
 mostCompatibleStringEncoding :: IsNSFont nsFont => nsFont -> IO CULong
-mostCompatibleStringEncoding nsFont  =
-    sendMsg nsFont (mkSelector "mostCompatibleStringEncoding") retCULong []
+mostCompatibleStringEncoding nsFont =
+  sendMessage nsFont mostCompatibleStringEncodingSelector
 
 -- | @- coveredCharacterSet@
 coveredCharacterSet :: IsNSFont nsFont => nsFont -> IO (Id NSCharacterSet)
-coveredCharacterSet nsFont  =
-    sendMsg nsFont (mkSelector "coveredCharacterSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+coveredCharacterSet nsFont =
+  sendMessage nsFont coveredCharacterSetSelector
 
 -- | @- boundingRectForFont@
 boundingRectForFont :: IsNSFont nsFont => nsFont -> IO NSRect
-boundingRectForFont nsFont  =
-    sendMsgStret nsFont (mkSelector "boundingRectForFont") retNSRect []
+boundingRectForFont nsFont =
+  sendMessage nsFont boundingRectForFontSelector
 
 -- | @- maximumAdvancement@
 maximumAdvancement :: IsNSFont nsFont => nsFont -> IO NSSize
-maximumAdvancement nsFont  =
-    sendMsgStret nsFont (mkSelector "maximumAdvancement") retNSSize []
+maximumAdvancement nsFont =
+  sendMessage nsFont maximumAdvancementSelector
 
 -- | @- ascender@
 ascender :: IsNSFont nsFont => nsFont -> IO CDouble
-ascender nsFont  =
-    sendMsg nsFont (mkSelector "ascender") retCDouble []
+ascender nsFont =
+  sendMessage nsFont ascenderSelector
 
 -- | @- descender@
 descender :: IsNSFont nsFont => nsFont -> IO CDouble
-descender nsFont  =
-    sendMsg nsFont (mkSelector "descender") retCDouble []
+descender nsFont =
+  sendMessage nsFont descenderSelector
 
 -- | @- leading@
 leading :: IsNSFont nsFont => nsFont -> IO CDouble
-leading nsFont  =
-    sendMsg nsFont (mkSelector "leading") retCDouble []
+leading nsFont =
+  sendMessage nsFont leadingSelector
 
 -- | @- underlinePosition@
 underlinePosition :: IsNSFont nsFont => nsFont -> IO CDouble
-underlinePosition nsFont  =
-    sendMsg nsFont (mkSelector "underlinePosition") retCDouble []
+underlinePosition nsFont =
+  sendMessage nsFont underlinePositionSelector
 
 -- | @- underlineThickness@
 underlineThickness :: IsNSFont nsFont => nsFont -> IO CDouble
-underlineThickness nsFont  =
-    sendMsg nsFont (mkSelector "underlineThickness") retCDouble []
+underlineThickness nsFont =
+  sendMessage nsFont underlineThicknessSelector
 
 -- | @- italicAngle@
 italicAngle :: IsNSFont nsFont => nsFont -> IO CDouble
-italicAngle nsFont  =
-    sendMsg nsFont (mkSelector "italicAngle") retCDouble []
+italicAngle nsFont =
+  sendMessage nsFont italicAngleSelector
 
 -- | @- capHeight@
 capHeight :: IsNSFont nsFont => nsFont -> IO CDouble
-capHeight nsFont  =
-    sendMsg nsFont (mkSelector "capHeight") retCDouble []
+capHeight nsFont =
+  sendMessage nsFont capHeightSelector
 
 -- | @- xHeight@
 xHeight :: IsNSFont nsFont => nsFont -> IO CDouble
-xHeight nsFont  =
-    sendMsg nsFont (mkSelector "xHeight") retCDouble []
+xHeight nsFont =
+  sendMessage nsFont xHeightSelector
 
 -- | @- fixedPitch@
 fixedPitch :: IsNSFont nsFont => nsFont -> IO Bool
-fixedPitch nsFont  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFont (mkSelector "fixedPitch") retCULong []
+fixedPitch nsFont =
+  sendMessage nsFont fixedPitchSelector
 
 -- | ******* Vertical mode ********
 --
 -- ObjC selector: @- verticalFont@
 verticalFont :: IsNSFont nsFont => nsFont -> IO (Id NSFont)
-verticalFont nsFont  =
-    sendMsg nsFont (mkSelector "verticalFont") (retPtr retVoid) [] >>= retainedObject . castPtr
+verticalFont nsFont =
+  sendMessage nsFont verticalFontSelector
 
 -- | @- vertical@
 vertical :: IsNSFont nsFont => nsFont -> IO Bool
-vertical nsFont  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFont (mkSelector "vertical") retCULong []
+vertical nsFont =
+  sendMessage nsFont verticalSelector
 
 -- | ******* Rendering mode ********
 --
 -- ObjC selector: @- printerFont@
 printerFont :: IsNSFont nsFont => nsFont -> IO (Id NSFont)
-printerFont nsFont  =
-    sendMsg nsFont (mkSelector "printerFont") (retPtr retVoid) [] >>= retainedObject . castPtr
+printerFont nsFont =
+  sendMessage nsFont printerFontSelector
 
 -- | @- screenFont@
 screenFont :: IsNSFont nsFont => nsFont -> IO (Id NSFont)
-screenFont nsFont  =
-    sendMsg nsFont (mkSelector "screenFont") (retPtr retVoid) [] >>= retainedObject . castPtr
+screenFont nsFont =
+  sendMessage nsFont screenFontSelector
 
 -- | @- renderingMode@
 renderingMode :: IsNSFont nsFont => nsFont -> IO NSFontRenderingMode
-renderingMode nsFont  =
-    fmap (coerce :: CULong -> NSFontRenderingMode) $ sendMsg nsFont (mkSelector "renderingMode") retCULong []
+renderingMode nsFont =
+  sendMessage nsFont renderingModeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fontWithName:size:@
-fontWithName_sizeSelector :: Selector
+fontWithName_sizeSelector :: Selector '[Id NSString, CDouble] (Id NSFont)
 fontWithName_sizeSelector = mkSelector "fontWithName:size:"
 
 -- | @Selector@ for @fontWithName:matrix:@
-fontWithName_matrixSelector :: Selector
+fontWithName_matrixSelector :: Selector '[Id NSString, Const (Ptr CDouble)] (Id NSFont)
 fontWithName_matrixSelector = mkSelector "fontWithName:matrix:"
 
 -- | @Selector@ for @fontWithDescriptor:size:@
-fontWithDescriptor_sizeSelector :: Selector
+fontWithDescriptor_sizeSelector :: Selector '[Id NSFontDescriptor, CDouble] (Id NSFont)
 fontWithDescriptor_sizeSelector = mkSelector "fontWithDescriptor:size:"
 
 -- | @Selector@ for @fontWithDescriptor:textTransform:@
-fontWithDescriptor_textTransformSelector :: Selector
+fontWithDescriptor_textTransformSelector :: Selector '[Id NSFontDescriptor, Id NSAffineTransform] (Id NSFont)
 fontWithDescriptor_textTransformSelector = mkSelector "fontWithDescriptor:textTransform:"
 
 -- | @Selector@ for @userFontOfSize:@
-userFontOfSizeSelector :: Selector
+userFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 userFontOfSizeSelector = mkSelector "userFontOfSize:"
 
 -- | @Selector@ for @userFixedPitchFontOfSize:@
-userFixedPitchFontOfSizeSelector :: Selector
+userFixedPitchFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 userFixedPitchFontOfSizeSelector = mkSelector "userFixedPitchFontOfSize:"
 
 -- | @Selector@ for @setUserFont:@
-setUserFontSelector :: Selector
+setUserFontSelector :: Selector '[Id NSFont] ()
 setUserFontSelector = mkSelector "setUserFont:"
 
 -- | @Selector@ for @setUserFixedPitchFont:@
-setUserFixedPitchFontSelector :: Selector
+setUserFixedPitchFontSelector :: Selector '[Id NSFont] ()
 setUserFixedPitchFontSelector = mkSelector "setUserFixedPitchFont:"
 
 -- | @Selector@ for @systemFontOfSize:@
-systemFontOfSizeSelector :: Selector
+systemFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 systemFontOfSizeSelector = mkSelector "systemFontOfSize:"
 
 -- | @Selector@ for @boldSystemFontOfSize:@
-boldSystemFontOfSizeSelector :: Selector
+boldSystemFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 boldSystemFontOfSizeSelector = mkSelector "boldSystemFontOfSize:"
 
 -- | @Selector@ for @labelFontOfSize:@
-labelFontOfSizeSelector :: Selector
+labelFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 labelFontOfSizeSelector = mkSelector "labelFontOfSize:"
 
 -- | @Selector@ for @titleBarFontOfSize:@
-titleBarFontOfSizeSelector :: Selector
+titleBarFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 titleBarFontOfSizeSelector = mkSelector "titleBarFontOfSize:"
 
 -- | @Selector@ for @menuFontOfSize:@
-menuFontOfSizeSelector :: Selector
+menuFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 menuFontOfSizeSelector = mkSelector "menuFontOfSize:"
 
 -- | @Selector@ for @menuBarFontOfSize:@
-menuBarFontOfSizeSelector :: Selector
+menuBarFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 menuBarFontOfSizeSelector = mkSelector "menuBarFontOfSize:"
 
 -- | @Selector@ for @messageFontOfSize:@
-messageFontOfSizeSelector :: Selector
+messageFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 messageFontOfSizeSelector = mkSelector "messageFontOfSize:"
 
 -- | @Selector@ for @paletteFontOfSize:@
-paletteFontOfSizeSelector :: Selector
+paletteFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 paletteFontOfSizeSelector = mkSelector "paletteFontOfSize:"
 
 -- | @Selector@ for @toolTipsFontOfSize:@
-toolTipsFontOfSizeSelector :: Selector
+toolTipsFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 toolTipsFontOfSizeSelector = mkSelector "toolTipsFontOfSize:"
 
 -- | @Selector@ for @controlContentFontOfSize:@
-controlContentFontOfSizeSelector :: Selector
+controlContentFontOfSizeSelector :: Selector '[CDouble] (Id NSFont)
 controlContentFontOfSizeSelector = mkSelector "controlContentFontOfSize:"
 
 -- | @Selector@ for @systemFontOfSize:weight:@
-systemFontOfSize_weightSelector :: Selector
+systemFontOfSize_weightSelector :: Selector '[CDouble, CDouble] (Id NSFont)
 systemFontOfSize_weightSelector = mkSelector "systemFontOfSize:weight:"
 
 -- | @Selector@ for @monospacedDigitSystemFontOfSize:weight:@
-monospacedDigitSystemFontOfSize_weightSelector :: Selector
+monospacedDigitSystemFontOfSize_weightSelector :: Selector '[CDouble, CDouble] (Id NSFont)
 monospacedDigitSystemFontOfSize_weightSelector = mkSelector "monospacedDigitSystemFontOfSize:weight:"
 
 -- | @Selector@ for @systemFontOfSize:weight:width:@
-systemFontOfSize_weight_widthSelector :: Selector
+systemFontOfSize_weight_widthSelector :: Selector '[CDouble, CDouble, CDouble] (Id NSFont)
 systemFontOfSize_weight_widthSelector = mkSelector "systemFontOfSize:weight:width:"
 
 -- | @Selector@ for @monospacedSystemFontOfSize:weight:@
-monospacedSystemFontOfSize_weightSelector :: Selector
+monospacedSystemFontOfSize_weightSelector :: Selector '[CDouble, CDouble] (Id NSFont)
 monospacedSystemFontOfSize_weightSelector = mkSelector "monospacedSystemFontOfSize:weight:"
 
 -- | @Selector@ for @fontWithSize:@
-fontWithSizeSelector :: Selector
+fontWithSizeSelector :: Selector '[CDouble] (Id NSFont)
 fontWithSizeSelector = mkSelector "fontWithSize:"
 
 -- | @Selector@ for @systemFontSizeForControlSize:@
-systemFontSizeForControlSizeSelector :: Selector
+systemFontSizeForControlSizeSelector :: Selector '[NSControlSize] CDouble
 systemFontSizeForControlSizeSelector = mkSelector "systemFontSizeForControlSize:"
 
 -- | @Selector@ for @boundingRectForCGGlyph:@
-boundingRectForCGGlyphSelector :: Selector
+boundingRectForCGGlyphSelector :: Selector '[CUShort] NSRect
 boundingRectForCGGlyphSelector = mkSelector "boundingRectForCGGlyph:"
 
 -- | @Selector@ for @advancementForCGGlyph:@
-advancementForCGGlyphSelector :: Selector
+advancementForCGGlyphSelector :: Selector '[CUShort] NSSize
 advancementForCGGlyphSelector = mkSelector "advancementForCGGlyph:"
 
 -- | @Selector@ for @getBoundingRects:forCGGlyphs:count:@
-getBoundingRects_forCGGlyphs_countSelector :: Selector
+getBoundingRects_forCGGlyphs_countSelector :: Selector '[Ptr NSRect, Const RawId, CULong] ()
 getBoundingRects_forCGGlyphs_countSelector = mkSelector "getBoundingRects:forCGGlyphs:count:"
 
 -- | @Selector@ for @getAdvancements:forCGGlyphs:count:@
-getAdvancements_forCGGlyphs_countSelector :: Selector
+getAdvancements_forCGGlyphs_countSelector :: Selector '[Ptr NSSize, Const RawId, CULong] ()
 getAdvancements_forCGGlyphs_countSelector = mkSelector "getAdvancements:forCGGlyphs:count:"
 
 -- | @Selector@ for @set@
-setSelector :: Selector
+setSelector :: Selector '[] ()
 setSelector = mkSelector "set"
 
 -- | @Selector@ for @setInContext:@
-setInContextSelector :: Selector
+setInContextSelector :: Selector '[Id NSGraphicsContext] ()
 setInContextSelector = mkSelector "setInContext:"
 
 -- | @Selector@ for @preferredFontForTextStyle:options:@
-preferredFontForTextStyle_optionsSelector :: Selector
+preferredFontForTextStyle_optionsSelector :: Selector '[Id NSString, Id NSDictionary] (Id NSFont)
 preferredFontForTextStyle_optionsSelector = mkSelector "preferredFontForTextStyle:options:"
 
 -- | @Selector@ for @glyphWithName:@
-glyphWithNameSelector :: Selector
+glyphWithNameSelector :: Selector '[Id NSString] CUInt
 glyphWithNameSelector = mkSelector "glyphWithName:"
 
 -- | @Selector@ for @boundingRectForGlyph:@
-boundingRectForGlyphSelector :: Selector
+boundingRectForGlyphSelector :: Selector '[CUInt] NSRect
 boundingRectForGlyphSelector = mkSelector "boundingRectForGlyph:"
 
 -- | @Selector@ for @advancementForGlyph:@
-advancementForGlyphSelector :: Selector
+advancementForGlyphSelector :: Selector '[CUInt] NSSize
 advancementForGlyphSelector = mkSelector "advancementForGlyph:"
 
 -- | @Selector@ for @getBoundingRects:forGlyphs:count:@
-getBoundingRects_forGlyphs_countSelector :: Selector
+getBoundingRects_forGlyphs_countSelector :: Selector '[Ptr NSRect, Const RawId, CULong] ()
 getBoundingRects_forGlyphs_countSelector = mkSelector "getBoundingRects:forGlyphs:count:"
 
 -- | @Selector@ for @getAdvancements:forGlyphs:count:@
-getAdvancements_forGlyphs_countSelector :: Selector
+getAdvancements_forGlyphs_countSelector :: Selector '[Ptr NSSize, Const RawId, CULong] ()
 getAdvancements_forGlyphs_countSelector = mkSelector "getAdvancements:forGlyphs:count:"
 
 -- | @Selector@ for @getAdvancements:forPackedGlyphs:length:@
-getAdvancements_forPackedGlyphs_lengthSelector :: Selector
+getAdvancements_forPackedGlyphs_lengthSelector :: Selector '[Ptr NSSize, Const (Ptr ()), CULong] ()
 getAdvancements_forPackedGlyphs_lengthSelector = mkSelector "getAdvancements:forPackedGlyphs:length:"
 
 -- | @Selector@ for @screenFontWithRenderingMode:@
-screenFontWithRenderingModeSelector :: Selector
+screenFontWithRenderingModeSelector :: Selector '[NSFontRenderingMode] (Id NSFont)
 screenFontWithRenderingModeSelector = mkSelector "screenFontWithRenderingMode:"
 
 -- | @Selector@ for @systemFontSize@
-systemFontSizeSelector :: Selector
+systemFontSizeSelector :: Selector '[] CDouble
 systemFontSizeSelector = mkSelector "systemFontSize"
 
 -- | @Selector@ for @smallSystemFontSize@
-smallSystemFontSizeSelector :: Selector
+smallSystemFontSizeSelector :: Selector '[] CDouble
 smallSystemFontSizeSelector = mkSelector "smallSystemFontSize"
 
 -- | @Selector@ for @labelFontSize@
-labelFontSizeSelector :: Selector
+labelFontSizeSelector :: Selector '[] CDouble
 labelFontSizeSelector = mkSelector "labelFontSize"
 
 -- | @Selector@ for @fontName@
-fontNameSelector :: Selector
+fontNameSelector :: Selector '[] (Id NSString)
 fontNameSelector = mkSelector "fontName"
 
 -- | @Selector@ for @pointSize@
-pointSizeSelector :: Selector
+pointSizeSelector :: Selector '[] CDouble
 pointSizeSelector = mkSelector "pointSize"
 
 -- | @Selector@ for @matrix@
-matrixSelector :: Selector
+matrixSelector :: Selector '[] RawId
 matrixSelector = mkSelector "matrix"
 
 -- | @Selector@ for @familyName@
-familyNameSelector :: Selector
+familyNameSelector :: Selector '[] (Id NSString)
 familyNameSelector = mkSelector "familyName"
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @fontDescriptor@
-fontDescriptorSelector :: Selector
+fontDescriptorSelector :: Selector '[] (Id NSFontDescriptor)
 fontDescriptorSelector = mkSelector "fontDescriptor"
 
 -- | @Selector@ for @textTransform@
-textTransformSelector :: Selector
+textTransformSelector :: Selector '[] (Id NSAffineTransform)
 textTransformSelector = mkSelector "textTransform"
 
 -- | @Selector@ for @numberOfGlyphs@
-numberOfGlyphsSelector :: Selector
+numberOfGlyphsSelector :: Selector '[] CULong
 numberOfGlyphsSelector = mkSelector "numberOfGlyphs"
 
 -- | @Selector@ for @mostCompatibleStringEncoding@
-mostCompatibleStringEncodingSelector :: Selector
+mostCompatibleStringEncodingSelector :: Selector '[] CULong
 mostCompatibleStringEncodingSelector = mkSelector "mostCompatibleStringEncoding"
 
 -- | @Selector@ for @coveredCharacterSet@
-coveredCharacterSetSelector :: Selector
+coveredCharacterSetSelector :: Selector '[] (Id NSCharacterSet)
 coveredCharacterSetSelector = mkSelector "coveredCharacterSet"
 
 -- | @Selector@ for @boundingRectForFont@
-boundingRectForFontSelector :: Selector
+boundingRectForFontSelector :: Selector '[] NSRect
 boundingRectForFontSelector = mkSelector "boundingRectForFont"
 
 -- | @Selector@ for @maximumAdvancement@
-maximumAdvancementSelector :: Selector
+maximumAdvancementSelector :: Selector '[] NSSize
 maximumAdvancementSelector = mkSelector "maximumAdvancement"
 
 -- | @Selector@ for @ascender@
-ascenderSelector :: Selector
+ascenderSelector :: Selector '[] CDouble
 ascenderSelector = mkSelector "ascender"
 
 -- | @Selector@ for @descender@
-descenderSelector :: Selector
+descenderSelector :: Selector '[] CDouble
 descenderSelector = mkSelector "descender"
 
 -- | @Selector@ for @leading@
-leadingSelector :: Selector
+leadingSelector :: Selector '[] CDouble
 leadingSelector = mkSelector "leading"
 
 -- | @Selector@ for @underlinePosition@
-underlinePositionSelector :: Selector
+underlinePositionSelector :: Selector '[] CDouble
 underlinePositionSelector = mkSelector "underlinePosition"
 
 -- | @Selector@ for @underlineThickness@
-underlineThicknessSelector :: Selector
+underlineThicknessSelector :: Selector '[] CDouble
 underlineThicknessSelector = mkSelector "underlineThickness"
 
 -- | @Selector@ for @italicAngle@
-italicAngleSelector :: Selector
+italicAngleSelector :: Selector '[] CDouble
 italicAngleSelector = mkSelector "italicAngle"
 
 -- | @Selector@ for @capHeight@
-capHeightSelector :: Selector
+capHeightSelector :: Selector '[] CDouble
 capHeightSelector = mkSelector "capHeight"
 
 -- | @Selector@ for @xHeight@
-xHeightSelector :: Selector
+xHeightSelector :: Selector '[] CDouble
 xHeightSelector = mkSelector "xHeight"
 
 -- | @Selector@ for @fixedPitch@
-fixedPitchSelector :: Selector
+fixedPitchSelector :: Selector '[] Bool
 fixedPitchSelector = mkSelector "fixedPitch"
 
 -- | @Selector@ for @verticalFont@
-verticalFontSelector :: Selector
+verticalFontSelector :: Selector '[] (Id NSFont)
 verticalFontSelector = mkSelector "verticalFont"
 
 -- | @Selector@ for @vertical@
-verticalSelector :: Selector
+verticalSelector :: Selector '[] Bool
 verticalSelector = mkSelector "vertical"
 
 -- | @Selector@ for @printerFont@
-printerFontSelector :: Selector
+printerFontSelector :: Selector '[] (Id NSFont)
 printerFontSelector = mkSelector "printerFont"
 
 -- | @Selector@ for @screenFont@
-screenFontSelector :: Selector
+screenFontSelector :: Selector '[] (Id NSFont)
 screenFontSelector = mkSelector "screenFont"
 
 -- | @Selector@ for @renderingMode@
-renderingModeSelector :: Selector
+renderingModeSelector :: Selector '[] NSFontRenderingMode
 renderingModeSelector = mkSelector "renderingMode"
 

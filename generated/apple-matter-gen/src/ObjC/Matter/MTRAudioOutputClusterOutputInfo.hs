@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,24 +14,20 @@ module ObjC.Matter.MTRAudioOutputClusterOutputInfo
   , name
   , setName
   , indexSelector
-  , setIndexSelector
-  , outputTypeSelector
-  , setOutputTypeSelector
   , nameSelector
+  , outputTypeSelector
+  , setIndexSelector
   , setNameSelector
+  , setOutputTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- index@
 index :: IsMTRAudioOutputClusterOutputInfo mtrAudioOutputClusterOutputInfo => mtrAudioOutputClusterOutputInfo -> IO (Id NSNumber)
-index mtrAudioOutputClusterOutputInfo  =
-    sendMsg mtrAudioOutputClusterOutputInfo (mkSelector "index") (retPtr retVoid) [] >>= retainedObject . castPtr
+index mtrAudioOutputClusterOutputInfo =
+  sendMessage mtrAudioOutputClusterOutputInfo indexSelector
 
 -- | @- setIndex:@
 setIndex :: (IsMTRAudioOutputClusterOutputInfo mtrAudioOutputClusterOutputInfo, IsNSNumber value) => mtrAudioOutputClusterOutputInfo -> value -> IO ()
-setIndex mtrAudioOutputClusterOutputInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAudioOutputClusterOutputInfo (mkSelector "setIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIndex mtrAudioOutputClusterOutputInfo value =
+  sendMessage mtrAudioOutputClusterOutputInfo setIndexSelector (toNSNumber value)
 
 -- | @- outputType@
 outputType :: IsMTRAudioOutputClusterOutputInfo mtrAudioOutputClusterOutputInfo => mtrAudioOutputClusterOutputInfo -> IO (Id NSNumber)
-outputType mtrAudioOutputClusterOutputInfo  =
-    sendMsg mtrAudioOutputClusterOutputInfo (mkSelector "outputType") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputType mtrAudioOutputClusterOutputInfo =
+  sendMessage mtrAudioOutputClusterOutputInfo outputTypeSelector
 
 -- | @- setOutputType:@
 setOutputType :: (IsMTRAudioOutputClusterOutputInfo mtrAudioOutputClusterOutputInfo, IsNSNumber value) => mtrAudioOutputClusterOutputInfo -> value -> IO ()
-setOutputType mtrAudioOutputClusterOutputInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAudioOutputClusterOutputInfo (mkSelector "setOutputType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setOutputType mtrAudioOutputClusterOutputInfo value =
+  sendMessage mtrAudioOutputClusterOutputInfo setOutputTypeSelector (toNSNumber value)
 
 -- | @- name@
 name :: IsMTRAudioOutputClusterOutputInfo mtrAudioOutputClusterOutputInfo => mtrAudioOutputClusterOutputInfo -> IO (Id NSString)
-name mtrAudioOutputClusterOutputInfo  =
-    sendMsg mtrAudioOutputClusterOutputInfo (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name mtrAudioOutputClusterOutputInfo =
+  sendMessage mtrAudioOutputClusterOutputInfo nameSelector
 
 -- | @- setName:@
 setName :: (IsMTRAudioOutputClusterOutputInfo mtrAudioOutputClusterOutputInfo, IsNSString value) => mtrAudioOutputClusterOutputInfo -> value -> IO ()
-setName mtrAudioOutputClusterOutputInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrAudioOutputClusterOutputInfo (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName mtrAudioOutputClusterOutputInfo value =
+  sendMessage mtrAudioOutputClusterOutputInfo setNameSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @index@
-indexSelector :: Selector
+indexSelector :: Selector '[] (Id NSNumber)
 indexSelector = mkSelector "index"
 
 -- | @Selector@ for @setIndex:@
-setIndexSelector :: Selector
+setIndexSelector :: Selector '[Id NSNumber] ()
 setIndexSelector = mkSelector "setIndex:"
 
 -- | @Selector@ for @outputType@
-outputTypeSelector :: Selector
+outputTypeSelector :: Selector '[] (Id NSNumber)
 outputTypeSelector = mkSelector "outputType"
 
 -- | @Selector@ for @setOutputType:@
-setOutputTypeSelector :: Selector
+setOutputTypeSelector :: Selector '[Id NSNumber] ()
 setOutputTypeSelector = mkSelector "setOutputType:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 

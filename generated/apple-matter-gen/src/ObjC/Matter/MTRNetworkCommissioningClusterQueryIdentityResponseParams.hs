@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.Matter.MTRNetworkCommissioningClusterQueryIdentityResponseParams
   , setIdentity
   , possessionSignature
   , setPossessionSignature
-  , initWithResponseValue_errorSelector
   , identitySelector
-  , setIdentitySelector
+  , initWithResponseValue_errorSelector
   , possessionSignatureSelector
+  , setIdentitySelector
   , setPossessionSignatureSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,54 +40,50 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRNetworkCommissioningClusterQueryIdentityResponseParams mtrNetworkCommissioningClusterQueryIdentityResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrNetworkCommissioningClusterQueryIdentityResponseParams -> responseValue -> error_ -> IO (Id MTRNetworkCommissioningClusterQueryIdentityResponseParams)
-initWithResponseValue_error mtrNetworkCommissioningClusterQueryIdentityResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrNetworkCommissioningClusterQueryIdentityResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrNetworkCommissioningClusterQueryIdentityResponseParams responseValue error_ =
+  sendOwnedMessage mtrNetworkCommissioningClusterQueryIdentityResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- identity@
 identity :: IsMTRNetworkCommissioningClusterQueryIdentityResponseParams mtrNetworkCommissioningClusterQueryIdentityResponseParams => mtrNetworkCommissioningClusterQueryIdentityResponseParams -> IO (Id NSData)
-identity mtrNetworkCommissioningClusterQueryIdentityResponseParams  =
-    sendMsg mtrNetworkCommissioningClusterQueryIdentityResponseParams (mkSelector "identity") (retPtr retVoid) [] >>= retainedObject . castPtr
+identity mtrNetworkCommissioningClusterQueryIdentityResponseParams =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityResponseParams identitySelector
 
 -- | @- setIdentity:@
 setIdentity :: (IsMTRNetworkCommissioningClusterQueryIdentityResponseParams mtrNetworkCommissioningClusterQueryIdentityResponseParams, IsNSData value) => mtrNetworkCommissioningClusterQueryIdentityResponseParams -> value -> IO ()
-setIdentity mtrNetworkCommissioningClusterQueryIdentityResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterQueryIdentityResponseParams (mkSelector "setIdentity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIdentity mtrNetworkCommissioningClusterQueryIdentityResponseParams value =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityResponseParams setIdentitySelector (toNSData value)
 
 -- | @- possessionSignature@
 possessionSignature :: IsMTRNetworkCommissioningClusterQueryIdentityResponseParams mtrNetworkCommissioningClusterQueryIdentityResponseParams => mtrNetworkCommissioningClusterQueryIdentityResponseParams -> IO (Id NSData)
-possessionSignature mtrNetworkCommissioningClusterQueryIdentityResponseParams  =
-    sendMsg mtrNetworkCommissioningClusterQueryIdentityResponseParams (mkSelector "possessionSignature") (retPtr retVoid) [] >>= retainedObject . castPtr
+possessionSignature mtrNetworkCommissioningClusterQueryIdentityResponseParams =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityResponseParams possessionSignatureSelector
 
 -- | @- setPossessionSignature:@
 setPossessionSignature :: (IsMTRNetworkCommissioningClusterQueryIdentityResponseParams mtrNetworkCommissioningClusterQueryIdentityResponseParams, IsNSData value) => mtrNetworkCommissioningClusterQueryIdentityResponseParams -> value -> IO ()
-setPossessionSignature mtrNetworkCommissioningClusterQueryIdentityResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrNetworkCommissioningClusterQueryIdentityResponseParams (mkSelector "setPossessionSignature:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPossessionSignature mtrNetworkCommissioningClusterQueryIdentityResponseParams value =
+  sendMessage mtrNetworkCommissioningClusterQueryIdentityResponseParams setPossessionSignatureSelector (toNSData value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRNetworkCommissioningClusterQueryIdentityResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @identity@
-identitySelector :: Selector
+identitySelector :: Selector '[] (Id NSData)
 identitySelector = mkSelector "identity"
 
 -- | @Selector@ for @setIdentity:@
-setIdentitySelector :: Selector
+setIdentitySelector :: Selector '[Id NSData] ()
 setIdentitySelector = mkSelector "setIdentity:"
 
 -- | @Selector@ for @possessionSignature@
-possessionSignatureSelector :: Selector
+possessionSignatureSelector :: Selector '[] (Id NSData)
 possessionSignatureSelector = mkSelector "possessionSignature"
 
 -- | @Selector@ for @setPossessionSignature:@
-setPossessionSignatureSelector :: Selector
+setPossessionSignatureSelector :: Selector '[Id NSData] ()
 setPossessionSignatureSelector = mkSelector "setPossessionSignature:"
 

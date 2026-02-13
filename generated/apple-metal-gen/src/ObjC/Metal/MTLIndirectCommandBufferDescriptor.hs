@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -48,43 +49,43 @@ module ObjC.Metal.MTLIndirectCommandBufferDescriptor
   , supportColorAttachmentMapping
   , setSupportColorAttachmentMapping
   , commandTypesSelector
-  , setCommandTypesSelector
-  , inheritPipelineStateSelector
-  , setInheritPipelineStateSelector
   , inheritBuffersSelector
-  , setInheritBuffersSelector
-  , inheritDepthStencilStateSelector
-  , setInheritDepthStencilStateSelector
-  , inheritDepthBiasSelector
-  , setInheritDepthBiasSelector
-  , inheritDepthClipModeSelector
-  , setInheritDepthClipModeSelector
   , inheritCullModeSelector
-  , setInheritCullModeSelector
+  , inheritDepthBiasSelector
+  , inheritDepthClipModeSelector
+  , inheritDepthStencilStateSelector
   , inheritFrontFacingWindingSelector
-  , setInheritFrontFacingWindingSelector
+  , inheritPipelineStateSelector
   , inheritTriangleFillModeSelector
-  , setInheritTriangleFillModeSelector
-  , maxVertexBufferBindCountSelector
-  , setMaxVertexBufferBindCountSelector
   , maxFragmentBufferBindCountSelector
-  , setMaxFragmentBufferBindCountSelector
   , maxKernelBufferBindCountSelector
-  , setMaxKernelBufferBindCountSelector
   , maxKernelThreadgroupMemoryBindCountSelector
-  , setMaxKernelThreadgroupMemoryBindCountSelector
-  , maxObjectBufferBindCountSelector
-  , setMaxObjectBufferBindCountSelector
   , maxMeshBufferBindCountSelector
-  , setMaxMeshBufferBindCountSelector
+  , maxObjectBufferBindCountSelector
   , maxObjectThreadgroupMemoryBindCountSelector
+  , maxVertexBufferBindCountSelector
+  , setCommandTypesSelector
+  , setInheritBuffersSelector
+  , setInheritCullModeSelector
+  , setInheritDepthBiasSelector
+  , setInheritDepthClipModeSelector
+  , setInheritDepthStencilStateSelector
+  , setInheritFrontFacingWindingSelector
+  , setInheritPipelineStateSelector
+  , setInheritTriangleFillModeSelector
+  , setMaxFragmentBufferBindCountSelector
+  , setMaxKernelBufferBindCountSelector
+  , setMaxKernelThreadgroupMemoryBindCountSelector
+  , setMaxMeshBufferBindCountSelector
+  , setMaxObjectBufferBindCountSelector
   , setMaxObjectThreadgroupMemoryBindCountSelector
-  , supportRayTracingSelector
-  , setSupportRayTracingSelector
-  , supportDynamicAttributeStrideSelector
-  , setSupportDynamicAttributeStrideSelector
-  , supportColorAttachmentMappingSelector
+  , setMaxVertexBufferBindCountSelector
   , setSupportColorAttachmentMappingSelector
+  , setSupportDynamicAttributeStrideSelector
+  , setSupportRayTracingSelector
+  , supportColorAttachmentMappingSelector
+  , supportDynamicAttributeStrideSelector
+  , supportRayTracingSelector
 
   -- * Enum types
   , MTLIndirectCommandType(MTLIndirectCommandType)
@@ -99,15 +100,11 @@ module ObjC.Metal.MTLIndirectCommandBufferDescriptor
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -121,8 +118,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- commandTypes@
 commandTypes :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO MTLIndirectCommandType
-commandTypes mtlIndirectCommandBufferDescriptor  =
-    fmap (coerce :: CULong -> MTLIndirectCommandType) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "commandTypes") retCULong []
+commandTypes mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor commandTypesSelector
 
 -- | A bitfield of the command types that be encoded.
 --
@@ -130,36 +127,36 @@ commandTypes mtlIndirectCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setCommandTypes:@
 setCommandTypes :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> MTLIndirectCommandType -> IO ()
-setCommandTypes mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setCommandTypes:") retVoid [argCULong (coerce value)]
+setCommandTypes mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setCommandTypesSelector value
 
 -- | Whether the render or compute pipeline are inherited from the encoder
 --
 -- ObjC selector: @- inheritPipelineState@
 inheritPipelineState :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-inheritPipelineState mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "inheritPipelineState") retCULong []
+inheritPipelineState mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor inheritPipelineStateSelector
 
 -- | Whether the render or compute pipeline are inherited from the encoder
 --
 -- ObjC selector: @- setInheritPipelineState:@
 setInheritPipelineState :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setInheritPipelineState mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setInheritPipelineState:") retVoid [argCULong (if value then 1 else 0)]
+setInheritPipelineState mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setInheritPipelineStateSelector value
 
 -- | Whether the render or compute pipeline can set arguments.
 --
 -- ObjC selector: @- inheritBuffers@
 inheritBuffers :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-inheritBuffers mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "inheritBuffers") retCULong []
+inheritBuffers mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor inheritBuffersSelector
 
 -- | Whether the render or compute pipeline can set arguments.
 --
 -- ObjC selector: @- setInheritBuffers:@
 setInheritBuffers :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setInheritBuffers mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setInheritBuffers:") retVoid [argCULong (if value then 1 else 0)]
+setInheritBuffers mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setInheritBuffersSelector value
 
 -- | Configures whether the indirect command buffer inherits the depth stencil state from the encoder.
 --
@@ -167,8 +164,8 @@ setInheritBuffers mtlIndirectCommandBufferDescriptor  value =
 --
 -- ObjC selector: @- inheritDepthStencilState@
 inheritDepthStencilState :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-inheritDepthStencilState mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "inheritDepthStencilState") retCULong []
+inheritDepthStencilState mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor inheritDepthStencilStateSelector
 
 -- | Configures whether the indirect command buffer inherits the depth stencil state from the encoder.
 --
@@ -176,8 +173,8 @@ inheritDepthStencilState mtlIndirectCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setInheritDepthStencilState:@
 setInheritDepthStencilState :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setInheritDepthStencilState mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setInheritDepthStencilState:") retVoid [argCULong (if value then 1 else 0)]
+setInheritDepthStencilState mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setInheritDepthStencilStateSelector value
 
 -- | Configures whether the indirect command buffer inherits the depth bias from the encoder.
 --
@@ -185,8 +182,8 @@ setInheritDepthStencilState mtlIndirectCommandBufferDescriptor  value =
 --
 -- ObjC selector: @- inheritDepthBias@
 inheritDepthBias :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-inheritDepthBias mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "inheritDepthBias") retCULong []
+inheritDepthBias mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor inheritDepthBiasSelector
 
 -- | Configures whether the indirect command buffer inherits the depth bias from the encoder.
 --
@@ -194,8 +191,8 @@ inheritDepthBias mtlIndirectCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setInheritDepthBias:@
 setInheritDepthBias :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setInheritDepthBias mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setInheritDepthBias:") retVoid [argCULong (if value then 1 else 0)]
+setInheritDepthBias mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setInheritDepthBiasSelector value
 
 -- | Configures whether the indirect command buffer inherits the depth clip mode from the encoder.
 --
@@ -203,8 +200,8 @@ setInheritDepthBias mtlIndirectCommandBufferDescriptor  value =
 --
 -- ObjC selector: @- inheritDepthClipMode@
 inheritDepthClipMode :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-inheritDepthClipMode mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "inheritDepthClipMode") retCULong []
+inheritDepthClipMode mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor inheritDepthClipModeSelector
 
 -- | Configures whether the indirect command buffer inherits the depth clip mode from the encoder.
 --
@@ -212,8 +209,8 @@ inheritDepthClipMode mtlIndirectCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setInheritDepthClipMode:@
 setInheritDepthClipMode :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setInheritDepthClipMode mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setInheritDepthClipMode:") retVoid [argCULong (if value then 1 else 0)]
+setInheritDepthClipMode mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setInheritDepthClipModeSelector value
 
 -- | Configures whether the indirect command buffer inherits the cull mode from the encoder.
 --
@@ -221,8 +218,8 @@ setInheritDepthClipMode mtlIndirectCommandBufferDescriptor  value =
 --
 -- ObjC selector: @- inheritCullMode@
 inheritCullMode :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-inheritCullMode mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "inheritCullMode") retCULong []
+inheritCullMode mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor inheritCullModeSelector
 
 -- | Configures whether the indirect command buffer inherits the cull mode from the encoder.
 --
@@ -230,8 +227,8 @@ inheritCullMode mtlIndirectCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setInheritCullMode:@
 setInheritCullMode :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setInheritCullMode mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setInheritCullMode:") retVoid [argCULong (if value then 1 else 0)]
+setInheritCullMode mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setInheritCullModeSelector value
 
 -- | Configures whether the indirect command buffer inherits the front facing winding from the encoder.
 --
@@ -239,8 +236,8 @@ setInheritCullMode mtlIndirectCommandBufferDescriptor  value =
 --
 -- ObjC selector: @- inheritFrontFacingWinding@
 inheritFrontFacingWinding :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-inheritFrontFacingWinding mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "inheritFrontFacingWinding") retCULong []
+inheritFrontFacingWinding mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor inheritFrontFacingWindingSelector
 
 -- | Configures whether the indirect command buffer inherits the front facing winding from the encoder.
 --
@@ -248,8 +245,8 @@ inheritFrontFacingWinding mtlIndirectCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setInheritFrontFacingWinding:@
 setInheritFrontFacingWinding :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setInheritFrontFacingWinding mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setInheritFrontFacingWinding:") retVoid [argCULong (if value then 1 else 0)]
+setInheritFrontFacingWinding mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setInheritFrontFacingWindingSelector value
 
 -- | Configures whether the indirect command buffer inherits the triangle fill mode from the encoder.
 --
@@ -257,8 +254,8 @@ setInheritFrontFacingWinding mtlIndirectCommandBufferDescriptor  value =
 --
 -- ObjC selector: @- inheritTriangleFillMode@
 inheritTriangleFillMode :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-inheritTriangleFillMode mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "inheritTriangleFillMode") retCULong []
+inheritTriangleFillMode mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor inheritTriangleFillModeSelector
 
 -- | Configures whether the indirect command buffer inherits the triangle fill mode from the encoder.
 --
@@ -266,120 +263,120 @@ inheritTriangleFillMode mtlIndirectCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setInheritTriangleFillMode:@
 setInheritTriangleFillMode :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setInheritTriangleFillMode mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setInheritTriangleFillMode:") retVoid [argCULong (if value then 1 else 0)]
+setInheritTriangleFillMode mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setInheritTriangleFillModeSelector value
 
 -- | The maximum bind index of vertex argument buffers that can be set per command.
 --
 -- ObjC selector: @- maxVertexBufferBindCount@
 maxVertexBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO CULong
-maxVertexBufferBindCount mtlIndirectCommandBufferDescriptor  =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "maxVertexBufferBindCount") retCULong []
+maxVertexBufferBindCount mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor maxVertexBufferBindCountSelector
 
 -- | The maximum bind index of vertex argument buffers that can be set per command.
 --
 -- ObjC selector: @- setMaxVertexBufferBindCount:@
 setMaxVertexBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> CULong -> IO ()
-setMaxVertexBufferBindCount mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setMaxVertexBufferBindCount:") retVoid [argCULong value]
+setMaxVertexBufferBindCount mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setMaxVertexBufferBindCountSelector value
 
 -- | The maximum bind index of fragment argument buffers that can be set per command.
 --
 -- ObjC selector: @- maxFragmentBufferBindCount@
 maxFragmentBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO CULong
-maxFragmentBufferBindCount mtlIndirectCommandBufferDescriptor  =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "maxFragmentBufferBindCount") retCULong []
+maxFragmentBufferBindCount mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor maxFragmentBufferBindCountSelector
 
 -- | The maximum bind index of fragment argument buffers that can be set per command.
 --
 -- ObjC selector: @- setMaxFragmentBufferBindCount:@
 setMaxFragmentBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> CULong -> IO ()
-setMaxFragmentBufferBindCount mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setMaxFragmentBufferBindCount:") retVoid [argCULong value]
+setMaxFragmentBufferBindCount mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setMaxFragmentBufferBindCountSelector value
 
 -- | The maximum bind index of kernel (or tile) argument buffers that can be set per command.
 --
 -- ObjC selector: @- maxKernelBufferBindCount@
 maxKernelBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO CULong
-maxKernelBufferBindCount mtlIndirectCommandBufferDescriptor  =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "maxKernelBufferBindCount") retCULong []
+maxKernelBufferBindCount mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor maxKernelBufferBindCountSelector
 
 -- | The maximum bind index of kernel (or tile) argument buffers that can be set per command.
 --
 -- ObjC selector: @- setMaxKernelBufferBindCount:@
 setMaxKernelBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> CULong -> IO ()
-setMaxKernelBufferBindCount mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setMaxKernelBufferBindCount:") retVoid [argCULong value]
+setMaxKernelBufferBindCount mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setMaxKernelBufferBindCountSelector value
 
 -- | The maximum bind index of kernel (or tile) threadgroup memory that can be set per command. The default value is 31.
 --
 -- ObjC selector: @- maxKernelThreadgroupMemoryBindCount@
 maxKernelThreadgroupMemoryBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO CULong
-maxKernelThreadgroupMemoryBindCount mtlIndirectCommandBufferDescriptor  =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "maxKernelThreadgroupMemoryBindCount") retCULong []
+maxKernelThreadgroupMemoryBindCount mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor maxKernelThreadgroupMemoryBindCountSelector
 
 -- | The maximum bind index of kernel (or tile) threadgroup memory that can be set per command. The default value is 31.
 --
 -- ObjC selector: @- setMaxKernelThreadgroupMemoryBindCount:@
 setMaxKernelThreadgroupMemoryBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> CULong -> IO ()
-setMaxKernelThreadgroupMemoryBindCount mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setMaxKernelThreadgroupMemoryBindCount:") retVoid [argCULong value]
+setMaxKernelThreadgroupMemoryBindCount mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setMaxKernelThreadgroupMemoryBindCountSelector value
 
 -- | The maximum bind index of object stage buffers that can be set per render command.
 --
 -- ObjC selector: @- maxObjectBufferBindCount@
 maxObjectBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO CULong
-maxObjectBufferBindCount mtlIndirectCommandBufferDescriptor  =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "maxObjectBufferBindCount") retCULong []
+maxObjectBufferBindCount mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor maxObjectBufferBindCountSelector
 
 -- | The maximum bind index of object stage buffers that can be set per render command.
 --
 -- ObjC selector: @- setMaxObjectBufferBindCount:@
 setMaxObjectBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> CULong -> IO ()
-setMaxObjectBufferBindCount mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setMaxObjectBufferBindCount:") retVoid [argCULong value]
+setMaxObjectBufferBindCount mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setMaxObjectBufferBindCountSelector value
 
 -- | The maximum bind index of mesh stage buffers that can be set per render command.
 --
 -- ObjC selector: @- maxMeshBufferBindCount@
 maxMeshBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO CULong
-maxMeshBufferBindCount mtlIndirectCommandBufferDescriptor  =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "maxMeshBufferBindCount") retCULong []
+maxMeshBufferBindCount mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor maxMeshBufferBindCountSelector
 
 -- | The maximum bind index of mesh stage buffers that can be set per render command.
 --
 -- ObjC selector: @- setMaxMeshBufferBindCount:@
 setMaxMeshBufferBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> CULong -> IO ()
-setMaxMeshBufferBindCount mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setMaxMeshBufferBindCount:") retVoid [argCULong value]
+setMaxMeshBufferBindCount mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setMaxMeshBufferBindCountSelector value
 
 -- | The maximum bind index of object threadgroup memory that can be set per render command. The default value is 0.
 --
 -- ObjC selector: @- maxObjectThreadgroupMemoryBindCount@
 maxObjectThreadgroupMemoryBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO CULong
-maxObjectThreadgroupMemoryBindCount mtlIndirectCommandBufferDescriptor  =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "maxObjectThreadgroupMemoryBindCount") retCULong []
+maxObjectThreadgroupMemoryBindCount mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor maxObjectThreadgroupMemoryBindCountSelector
 
 -- | The maximum bind index of object threadgroup memory that can be set per render command. The default value is 0.
 --
 -- ObjC selector: @- setMaxObjectThreadgroupMemoryBindCount:@
 setMaxObjectThreadgroupMemoryBindCount :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> CULong -> IO ()
-setMaxObjectThreadgroupMemoryBindCount mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setMaxObjectThreadgroupMemoryBindCount:") retVoid [argCULong value]
+setMaxObjectThreadgroupMemoryBindCount mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setMaxObjectThreadgroupMemoryBindCountSelector value
 
 -- | Whether the render or compute commands can use ray tracing. Default value is NO.
 --
 -- ObjC selector: @- supportRayTracing@
 supportRayTracing :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-supportRayTracing mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "supportRayTracing") retCULong []
+supportRayTracing mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor supportRayTracingSelector
 
 -- | Whether the render or compute commands can use ray tracing. Default value is NO.
 --
 -- ObjC selector: @- setSupportRayTracing:@
 setSupportRayTracing :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setSupportRayTracing mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setSupportRayTracing:") retVoid [argCULong (if value then 1 else 0)]
+setSupportRayTracing mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setSupportRayTracingSelector value
 
 -- | allows binding pipelines that have at least one MTLBufferLayout with a    stride of @MTLBufferLayoutStrideDynamic@
 --
@@ -387,8 +384,8 @@ setSupportRayTracing mtlIndirectCommandBufferDescriptor  value =
 --
 -- ObjC selector: @- supportDynamicAttributeStride@
 supportDynamicAttributeStride :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-supportDynamicAttributeStride mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "supportDynamicAttributeStride") retCULong []
+supportDynamicAttributeStride mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor supportDynamicAttributeStrideSelector
 
 -- | allows binding pipelines that have at least one MTLBufferLayout with a    stride of @MTLBufferLayoutStrideDynamic@
 --
@@ -396,176 +393,176 @@ supportDynamicAttributeStride mtlIndirectCommandBufferDescriptor  =
 --
 -- ObjC selector: @- setSupportDynamicAttributeStride:@
 setSupportDynamicAttributeStride :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setSupportDynamicAttributeStride mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setSupportDynamicAttributeStride:") retVoid [argCULong (if value then 1 else 0)]
+setSupportDynamicAttributeStride mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setSupportDynamicAttributeStrideSelector value
 
 -- | Specifies if the indirect command buffer should support color attachment mapping.
 --
 -- ObjC selector: @- supportColorAttachmentMapping@
 supportColorAttachmentMapping :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> IO Bool
-supportColorAttachmentMapping mtlIndirectCommandBufferDescriptor  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "supportColorAttachmentMapping") retCULong []
+supportColorAttachmentMapping mtlIndirectCommandBufferDescriptor =
+  sendMessage mtlIndirectCommandBufferDescriptor supportColorAttachmentMappingSelector
 
 -- | Specifies if the indirect command buffer should support color attachment mapping.
 --
 -- ObjC selector: @- setSupportColorAttachmentMapping:@
 setSupportColorAttachmentMapping :: IsMTLIndirectCommandBufferDescriptor mtlIndirectCommandBufferDescriptor => mtlIndirectCommandBufferDescriptor -> Bool -> IO ()
-setSupportColorAttachmentMapping mtlIndirectCommandBufferDescriptor  value =
-    sendMsg mtlIndirectCommandBufferDescriptor (mkSelector "setSupportColorAttachmentMapping:") retVoid [argCULong (if value then 1 else 0)]
+setSupportColorAttachmentMapping mtlIndirectCommandBufferDescriptor value =
+  sendMessage mtlIndirectCommandBufferDescriptor setSupportColorAttachmentMappingSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @commandTypes@
-commandTypesSelector :: Selector
+commandTypesSelector :: Selector '[] MTLIndirectCommandType
 commandTypesSelector = mkSelector "commandTypes"
 
 -- | @Selector@ for @setCommandTypes:@
-setCommandTypesSelector :: Selector
+setCommandTypesSelector :: Selector '[MTLIndirectCommandType] ()
 setCommandTypesSelector = mkSelector "setCommandTypes:"
 
 -- | @Selector@ for @inheritPipelineState@
-inheritPipelineStateSelector :: Selector
+inheritPipelineStateSelector :: Selector '[] Bool
 inheritPipelineStateSelector = mkSelector "inheritPipelineState"
 
 -- | @Selector@ for @setInheritPipelineState:@
-setInheritPipelineStateSelector :: Selector
+setInheritPipelineStateSelector :: Selector '[Bool] ()
 setInheritPipelineStateSelector = mkSelector "setInheritPipelineState:"
 
 -- | @Selector@ for @inheritBuffers@
-inheritBuffersSelector :: Selector
+inheritBuffersSelector :: Selector '[] Bool
 inheritBuffersSelector = mkSelector "inheritBuffers"
 
 -- | @Selector@ for @setInheritBuffers:@
-setInheritBuffersSelector :: Selector
+setInheritBuffersSelector :: Selector '[Bool] ()
 setInheritBuffersSelector = mkSelector "setInheritBuffers:"
 
 -- | @Selector@ for @inheritDepthStencilState@
-inheritDepthStencilStateSelector :: Selector
+inheritDepthStencilStateSelector :: Selector '[] Bool
 inheritDepthStencilStateSelector = mkSelector "inheritDepthStencilState"
 
 -- | @Selector@ for @setInheritDepthStencilState:@
-setInheritDepthStencilStateSelector :: Selector
+setInheritDepthStencilStateSelector :: Selector '[Bool] ()
 setInheritDepthStencilStateSelector = mkSelector "setInheritDepthStencilState:"
 
 -- | @Selector@ for @inheritDepthBias@
-inheritDepthBiasSelector :: Selector
+inheritDepthBiasSelector :: Selector '[] Bool
 inheritDepthBiasSelector = mkSelector "inheritDepthBias"
 
 -- | @Selector@ for @setInheritDepthBias:@
-setInheritDepthBiasSelector :: Selector
+setInheritDepthBiasSelector :: Selector '[Bool] ()
 setInheritDepthBiasSelector = mkSelector "setInheritDepthBias:"
 
 -- | @Selector@ for @inheritDepthClipMode@
-inheritDepthClipModeSelector :: Selector
+inheritDepthClipModeSelector :: Selector '[] Bool
 inheritDepthClipModeSelector = mkSelector "inheritDepthClipMode"
 
 -- | @Selector@ for @setInheritDepthClipMode:@
-setInheritDepthClipModeSelector :: Selector
+setInheritDepthClipModeSelector :: Selector '[Bool] ()
 setInheritDepthClipModeSelector = mkSelector "setInheritDepthClipMode:"
 
 -- | @Selector@ for @inheritCullMode@
-inheritCullModeSelector :: Selector
+inheritCullModeSelector :: Selector '[] Bool
 inheritCullModeSelector = mkSelector "inheritCullMode"
 
 -- | @Selector@ for @setInheritCullMode:@
-setInheritCullModeSelector :: Selector
+setInheritCullModeSelector :: Selector '[Bool] ()
 setInheritCullModeSelector = mkSelector "setInheritCullMode:"
 
 -- | @Selector@ for @inheritFrontFacingWinding@
-inheritFrontFacingWindingSelector :: Selector
+inheritFrontFacingWindingSelector :: Selector '[] Bool
 inheritFrontFacingWindingSelector = mkSelector "inheritFrontFacingWinding"
 
 -- | @Selector@ for @setInheritFrontFacingWinding:@
-setInheritFrontFacingWindingSelector :: Selector
+setInheritFrontFacingWindingSelector :: Selector '[Bool] ()
 setInheritFrontFacingWindingSelector = mkSelector "setInheritFrontFacingWinding:"
 
 -- | @Selector@ for @inheritTriangleFillMode@
-inheritTriangleFillModeSelector :: Selector
+inheritTriangleFillModeSelector :: Selector '[] Bool
 inheritTriangleFillModeSelector = mkSelector "inheritTriangleFillMode"
 
 -- | @Selector@ for @setInheritTriangleFillMode:@
-setInheritTriangleFillModeSelector :: Selector
+setInheritTriangleFillModeSelector :: Selector '[Bool] ()
 setInheritTriangleFillModeSelector = mkSelector "setInheritTriangleFillMode:"
 
 -- | @Selector@ for @maxVertexBufferBindCount@
-maxVertexBufferBindCountSelector :: Selector
+maxVertexBufferBindCountSelector :: Selector '[] CULong
 maxVertexBufferBindCountSelector = mkSelector "maxVertexBufferBindCount"
 
 -- | @Selector@ for @setMaxVertexBufferBindCount:@
-setMaxVertexBufferBindCountSelector :: Selector
+setMaxVertexBufferBindCountSelector :: Selector '[CULong] ()
 setMaxVertexBufferBindCountSelector = mkSelector "setMaxVertexBufferBindCount:"
 
 -- | @Selector@ for @maxFragmentBufferBindCount@
-maxFragmentBufferBindCountSelector :: Selector
+maxFragmentBufferBindCountSelector :: Selector '[] CULong
 maxFragmentBufferBindCountSelector = mkSelector "maxFragmentBufferBindCount"
 
 -- | @Selector@ for @setMaxFragmentBufferBindCount:@
-setMaxFragmentBufferBindCountSelector :: Selector
+setMaxFragmentBufferBindCountSelector :: Selector '[CULong] ()
 setMaxFragmentBufferBindCountSelector = mkSelector "setMaxFragmentBufferBindCount:"
 
 -- | @Selector@ for @maxKernelBufferBindCount@
-maxKernelBufferBindCountSelector :: Selector
+maxKernelBufferBindCountSelector :: Selector '[] CULong
 maxKernelBufferBindCountSelector = mkSelector "maxKernelBufferBindCount"
 
 -- | @Selector@ for @setMaxKernelBufferBindCount:@
-setMaxKernelBufferBindCountSelector :: Selector
+setMaxKernelBufferBindCountSelector :: Selector '[CULong] ()
 setMaxKernelBufferBindCountSelector = mkSelector "setMaxKernelBufferBindCount:"
 
 -- | @Selector@ for @maxKernelThreadgroupMemoryBindCount@
-maxKernelThreadgroupMemoryBindCountSelector :: Selector
+maxKernelThreadgroupMemoryBindCountSelector :: Selector '[] CULong
 maxKernelThreadgroupMemoryBindCountSelector = mkSelector "maxKernelThreadgroupMemoryBindCount"
 
 -- | @Selector@ for @setMaxKernelThreadgroupMemoryBindCount:@
-setMaxKernelThreadgroupMemoryBindCountSelector :: Selector
+setMaxKernelThreadgroupMemoryBindCountSelector :: Selector '[CULong] ()
 setMaxKernelThreadgroupMemoryBindCountSelector = mkSelector "setMaxKernelThreadgroupMemoryBindCount:"
 
 -- | @Selector@ for @maxObjectBufferBindCount@
-maxObjectBufferBindCountSelector :: Selector
+maxObjectBufferBindCountSelector :: Selector '[] CULong
 maxObjectBufferBindCountSelector = mkSelector "maxObjectBufferBindCount"
 
 -- | @Selector@ for @setMaxObjectBufferBindCount:@
-setMaxObjectBufferBindCountSelector :: Selector
+setMaxObjectBufferBindCountSelector :: Selector '[CULong] ()
 setMaxObjectBufferBindCountSelector = mkSelector "setMaxObjectBufferBindCount:"
 
 -- | @Selector@ for @maxMeshBufferBindCount@
-maxMeshBufferBindCountSelector :: Selector
+maxMeshBufferBindCountSelector :: Selector '[] CULong
 maxMeshBufferBindCountSelector = mkSelector "maxMeshBufferBindCount"
 
 -- | @Selector@ for @setMaxMeshBufferBindCount:@
-setMaxMeshBufferBindCountSelector :: Selector
+setMaxMeshBufferBindCountSelector :: Selector '[CULong] ()
 setMaxMeshBufferBindCountSelector = mkSelector "setMaxMeshBufferBindCount:"
 
 -- | @Selector@ for @maxObjectThreadgroupMemoryBindCount@
-maxObjectThreadgroupMemoryBindCountSelector :: Selector
+maxObjectThreadgroupMemoryBindCountSelector :: Selector '[] CULong
 maxObjectThreadgroupMemoryBindCountSelector = mkSelector "maxObjectThreadgroupMemoryBindCount"
 
 -- | @Selector@ for @setMaxObjectThreadgroupMemoryBindCount:@
-setMaxObjectThreadgroupMemoryBindCountSelector :: Selector
+setMaxObjectThreadgroupMemoryBindCountSelector :: Selector '[CULong] ()
 setMaxObjectThreadgroupMemoryBindCountSelector = mkSelector "setMaxObjectThreadgroupMemoryBindCount:"
 
 -- | @Selector@ for @supportRayTracing@
-supportRayTracingSelector :: Selector
+supportRayTracingSelector :: Selector '[] Bool
 supportRayTracingSelector = mkSelector "supportRayTracing"
 
 -- | @Selector@ for @setSupportRayTracing:@
-setSupportRayTracingSelector :: Selector
+setSupportRayTracingSelector :: Selector '[Bool] ()
 setSupportRayTracingSelector = mkSelector "setSupportRayTracing:"
 
 -- | @Selector@ for @supportDynamicAttributeStride@
-supportDynamicAttributeStrideSelector :: Selector
+supportDynamicAttributeStrideSelector :: Selector '[] Bool
 supportDynamicAttributeStrideSelector = mkSelector "supportDynamicAttributeStride"
 
 -- | @Selector@ for @setSupportDynamicAttributeStride:@
-setSupportDynamicAttributeStrideSelector :: Selector
+setSupportDynamicAttributeStrideSelector :: Selector '[Bool] ()
 setSupportDynamicAttributeStrideSelector = mkSelector "setSupportDynamicAttributeStride:"
 
 -- | @Selector@ for @supportColorAttachmentMapping@
-supportColorAttachmentMappingSelector :: Selector
+supportColorAttachmentMappingSelector :: Selector '[] Bool
 supportColorAttachmentMappingSelector = mkSelector "supportColorAttachmentMapping"
 
 -- | @Selector@ for @setSupportColorAttachmentMapping:@
-setSupportColorAttachmentMappingSelector :: Selector
+setSupportColorAttachmentMappingSelector :: Selector '[Bool] ()
 setSupportColorAttachmentMappingSelector = mkSelector "setSupportColorAttachmentMapping:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,24 +18,20 @@ module ObjC.ImageCaptureCore.ICScannerFeatureRange
   , maxValue
   , stepSize
   , currentValueSelector
-  , setCurrentValueSelector
   , defaultValueSelector
-  , minValueSelector
   , maxValueSelector
+  , minValueSelector
+  , setCurrentValueSelector
   , stepSizeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- currentValue@
 currentValue :: IsICScannerFeatureRange icScannerFeatureRange => icScannerFeatureRange -> IO CDouble
-currentValue icScannerFeatureRange  =
-    sendMsg icScannerFeatureRange (mkSelector "currentValue") retCDouble []
+currentValue icScannerFeatureRange =
+  sendMessage icScannerFeatureRange currentValueSelector
 
 -- | currentValue
 --
@@ -56,8 +53,8 @@ currentValue icScannerFeatureRange  =
 --
 -- ObjC selector: @- setCurrentValue:@
 setCurrentValue :: IsICScannerFeatureRange icScannerFeatureRange => icScannerFeatureRange -> CDouble -> IO ()
-setCurrentValue icScannerFeatureRange  value =
-    sendMsg icScannerFeatureRange (mkSelector "setCurrentValue:") retVoid [argCDouble value]
+setCurrentValue icScannerFeatureRange value =
+  sendMessage icScannerFeatureRange setCurrentValueSelector value
 
 -- | defaultValue
 --
@@ -65,8 +62,8 @@ setCurrentValue icScannerFeatureRange  value =
 --
 -- ObjC selector: @- defaultValue@
 defaultValue :: IsICScannerFeatureRange icScannerFeatureRange => icScannerFeatureRange -> IO CDouble
-defaultValue icScannerFeatureRange  =
-    sendMsg icScannerFeatureRange (mkSelector "defaultValue") retCDouble []
+defaultValue icScannerFeatureRange =
+  sendMessage icScannerFeatureRange defaultValueSelector
 
 -- | minValue
 --
@@ -74,8 +71,8 @@ defaultValue icScannerFeatureRange  =
 --
 -- ObjC selector: @- minValue@
 minValue :: IsICScannerFeatureRange icScannerFeatureRange => icScannerFeatureRange -> IO CDouble
-minValue icScannerFeatureRange  =
-    sendMsg icScannerFeatureRange (mkSelector "minValue") retCDouble []
+minValue icScannerFeatureRange =
+  sendMessage icScannerFeatureRange minValueSelector
 
 -- | maxValue
 --
@@ -83,8 +80,8 @@ minValue icScannerFeatureRange  =
 --
 -- ObjC selector: @- maxValue@
 maxValue :: IsICScannerFeatureRange icScannerFeatureRange => icScannerFeatureRange -> IO CDouble
-maxValue icScannerFeatureRange  =
-    sendMsg icScannerFeatureRange (mkSelector "maxValue") retCDouble []
+maxValue icScannerFeatureRange =
+  sendMessage icScannerFeatureRange maxValueSelector
 
 -- | stepSize
 --
@@ -92,34 +89,34 @@ maxValue icScannerFeatureRange  =
 --
 -- ObjC selector: @- stepSize@
 stepSize :: IsICScannerFeatureRange icScannerFeatureRange => icScannerFeatureRange -> IO CDouble
-stepSize icScannerFeatureRange  =
-    sendMsg icScannerFeatureRange (mkSelector "stepSize") retCDouble []
+stepSize icScannerFeatureRange =
+  sendMessage icScannerFeatureRange stepSizeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @currentValue@
-currentValueSelector :: Selector
+currentValueSelector :: Selector '[] CDouble
 currentValueSelector = mkSelector "currentValue"
 
 -- | @Selector@ for @setCurrentValue:@
-setCurrentValueSelector :: Selector
+setCurrentValueSelector :: Selector '[CDouble] ()
 setCurrentValueSelector = mkSelector "setCurrentValue:"
 
 -- | @Selector@ for @defaultValue@
-defaultValueSelector :: Selector
+defaultValueSelector :: Selector '[] CDouble
 defaultValueSelector = mkSelector "defaultValue"
 
 -- | @Selector@ for @minValue@
-minValueSelector :: Selector
+minValueSelector :: Selector '[] CDouble
 minValueSelector = mkSelector "minValue"
 
 -- | @Selector@ for @maxValue@
-maxValueSelector :: Selector
+maxValueSelector :: Selector '[] CDouble
 maxValueSelector = mkSelector "maxValue"
 
 -- | @Selector@ for @stepSize@
-stepSizeSelector :: Selector
+stepSizeSelector :: Selector '[] CDouble
 stepSizeSelector = mkSelector "stepSize"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,8 +10,8 @@ module ObjC.SceneKit.SCNTimingFunction
   , IsSCNTimingFunction(..)
   , functionWithTimingMode
   , functionWithCAMediaTimingFunction
-  , functionWithTimingModeSelector
   , functionWithCAMediaTimingFunctionSelector
+  , functionWithTimingModeSelector
 
   -- * Enum types
   , SCNActionTimingMode(SCNActionTimingMode)
@@ -21,15 +22,11 @@ module ObjC.SceneKit.SCNTimingFunction
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,24 @@ functionWithTimingMode :: SCNActionTimingMode -> IO (Id SCNTimingFunction)
 functionWithTimingMode timingMode =
   do
     cls' <- getRequiredClass "SCNTimingFunction"
-    sendClassMsg cls' (mkSelector "functionWithTimingMode:") (retPtr retVoid) [argCLong (coerce timingMode)] >>= retainedObject . castPtr
+    sendClassMessage cls' functionWithTimingModeSelector timingMode
 
 -- | @+ functionWithCAMediaTimingFunction:@
 functionWithCAMediaTimingFunction :: IsCAMediaTimingFunction caTimingFunction => caTimingFunction -> IO (Id SCNTimingFunction)
 functionWithCAMediaTimingFunction caTimingFunction =
   do
     cls' <- getRequiredClass "SCNTimingFunction"
-    withObjCPtr caTimingFunction $ \raw_caTimingFunction ->
-      sendClassMsg cls' (mkSelector "functionWithCAMediaTimingFunction:") (retPtr retVoid) [argPtr (castPtr raw_caTimingFunction :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' functionWithCAMediaTimingFunctionSelector (toCAMediaTimingFunction caTimingFunction)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @functionWithTimingMode:@
-functionWithTimingModeSelector :: Selector
+functionWithTimingModeSelector :: Selector '[SCNActionTimingMode] (Id SCNTimingFunction)
 functionWithTimingModeSelector = mkSelector "functionWithTimingMode:"
 
 -- | @Selector@ for @functionWithCAMediaTimingFunction:@
-functionWithCAMediaTimingFunctionSelector :: Selector
+functionWithCAMediaTimingFunctionSelector :: Selector '[Id CAMediaTimingFunction] (Id SCNTimingFunction)
 functionWithCAMediaTimingFunctionSelector = mkSelector "functionWithCAMediaTimingFunction:"
 

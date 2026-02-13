@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.WebKit.WKSecurityOrigin
   , protocol
   , host
   , port
-  , initSelector
-  , protocolSelector
   , hostSelector
+  , initSelector
   , portSelector
+  , protocolSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,47 +36,47 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsWKSecurityOrigin wkSecurityOrigin => wkSecurityOrigin -> IO (Id WKSecurityOrigin)
-init_ wkSecurityOrigin  =
-    sendMsg wkSecurityOrigin (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ wkSecurityOrigin =
+  sendOwnedMessage wkSecurityOrigin initSelector
 
 -- | The security origin's protocol.
 --
 -- ObjC selector: @- protocol@
 protocol :: IsWKSecurityOrigin wkSecurityOrigin => wkSecurityOrigin -> IO (Id NSString)
-protocol wkSecurityOrigin  =
-    sendMsg wkSecurityOrigin (mkSelector "protocol") (retPtr retVoid) [] >>= retainedObject . castPtr
+protocol wkSecurityOrigin =
+  sendMessage wkSecurityOrigin protocolSelector
 
 -- | The security origin's host.
 --
 -- ObjC selector: @- host@
 host :: IsWKSecurityOrigin wkSecurityOrigin => wkSecurityOrigin -> IO (Id NSString)
-host wkSecurityOrigin  =
-    sendMsg wkSecurityOrigin (mkSelector "host") (retPtr retVoid) [] >>= retainedObject . castPtr
+host wkSecurityOrigin =
+  sendMessage wkSecurityOrigin hostSelector
 
 -- | The security origin's port.
 --
 -- ObjC selector: @- port@
 port :: IsWKSecurityOrigin wkSecurityOrigin => wkSecurityOrigin -> IO CLong
-port wkSecurityOrigin  =
-    sendMsg wkSecurityOrigin (mkSelector "port") retCLong []
+port wkSecurityOrigin =
+  sendMessage wkSecurityOrigin portSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id WKSecurityOrigin)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @protocol@
-protocolSelector :: Selector
+protocolSelector :: Selector '[] (Id NSString)
 protocolSelector = mkSelector "protocol"
 
 -- | @Selector@ for @host@
-hostSelector :: Selector
+hostSelector :: Selector '[] (Id NSString)
 hostSelector = mkSelector "host"
 
 -- | @Selector@ for @port@
-portSelector :: Selector
+portSelector :: Selector '[] CLong
 portSelector = mkSelector "port"
 

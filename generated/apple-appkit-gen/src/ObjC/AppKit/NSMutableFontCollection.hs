@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.AppKit.NSMutableFontCollection
   , setQueryDescriptors
   , exclusionDescriptors
   , setExclusionDescriptors
+  , addQueryForDescriptorsSelector
+  , exclusionDescriptorsSelector
+  , fontCollectionWithAllAvailableDescriptorsSelector
   , fontCollectionWithDescriptorsSelector
   , fontCollectionWithLocaleSelector
   , fontCollectionWithNameSelector
   , fontCollectionWithName_visibilitySelector
-  , addQueryForDescriptorsSelector
-  , removeQueryForDescriptorsSelector
-  , fontCollectionWithAllAvailableDescriptorsSelector
   , queryDescriptorsSelector
-  , setQueryDescriptorsSelector
-  , exclusionDescriptorsSelector
+  , removeQueryForDescriptorsSelector
   , setExclusionDescriptorsSelector
+  , setQueryDescriptorsSelector
 
   -- * Enum types
   , NSFontCollectionVisibility(NSFontCollectionVisibility)
@@ -38,15 +39,11 @@ module ObjC.AppKit.NSMutableFontCollection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,119 +56,111 @@ fontCollectionWithDescriptors :: IsNSArray queryDescriptors => queryDescriptors 
 fontCollectionWithDescriptors queryDescriptors =
   do
     cls' <- getRequiredClass "NSMutableFontCollection"
-    withObjCPtr queryDescriptors $ \raw_queryDescriptors ->
-      sendClassMsg cls' (mkSelector "fontCollectionWithDescriptors:") (retPtr retVoid) [argPtr (castPtr raw_queryDescriptors :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fontCollectionWithDescriptorsSelector (toNSArray queryDescriptors)
 
 -- | @+ fontCollectionWithLocale:@
 fontCollectionWithLocale :: IsNSLocale locale => locale -> IO (Id NSMutableFontCollection)
 fontCollectionWithLocale locale =
   do
     cls' <- getRequiredClass "NSMutableFontCollection"
-    withObjCPtr locale $ \raw_locale ->
-      sendClassMsg cls' (mkSelector "fontCollectionWithLocale:") (retPtr retVoid) [argPtr (castPtr raw_locale :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fontCollectionWithLocaleSelector (toNSLocale locale)
 
 -- | @+ fontCollectionWithName:@
 fontCollectionWithName :: IsNSString name => name -> IO (Id NSMutableFontCollection)
 fontCollectionWithName name =
   do
     cls' <- getRequiredClass "NSMutableFontCollection"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "fontCollectionWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' fontCollectionWithNameSelector (toNSString name)
 
 -- | @+ fontCollectionWithName:visibility:@
 fontCollectionWithName_visibility :: IsNSString name => name -> NSFontCollectionVisibility -> IO (Id NSMutableFontCollection)
 fontCollectionWithName_visibility name visibility =
   do
     cls' <- getRequiredClass "NSMutableFontCollection"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "fontCollectionWithName:visibility:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce visibility)] >>= retainedObject . castPtr
+    sendClassMessage cls' fontCollectionWithName_visibilitySelector (toNSString name) visibility
 
 -- | @- addQueryForDescriptors:@
 addQueryForDescriptors :: (IsNSMutableFontCollection nsMutableFontCollection, IsNSArray descriptors) => nsMutableFontCollection -> descriptors -> IO ()
-addQueryForDescriptors nsMutableFontCollection  descriptors =
-  withObjCPtr descriptors $ \raw_descriptors ->
-      sendMsg nsMutableFontCollection (mkSelector "addQueryForDescriptors:") retVoid [argPtr (castPtr raw_descriptors :: Ptr ())]
+addQueryForDescriptors nsMutableFontCollection descriptors =
+  sendMessage nsMutableFontCollection addQueryForDescriptorsSelector (toNSArray descriptors)
 
 -- | @- removeQueryForDescriptors:@
 removeQueryForDescriptors :: (IsNSMutableFontCollection nsMutableFontCollection, IsNSArray descriptors) => nsMutableFontCollection -> descriptors -> IO ()
-removeQueryForDescriptors nsMutableFontCollection  descriptors =
-  withObjCPtr descriptors $ \raw_descriptors ->
-      sendMsg nsMutableFontCollection (mkSelector "removeQueryForDescriptors:") retVoid [argPtr (castPtr raw_descriptors :: Ptr ())]
+removeQueryForDescriptors nsMutableFontCollection descriptors =
+  sendMessage nsMutableFontCollection removeQueryForDescriptorsSelector (toNSArray descriptors)
 
 -- | @+ fontCollectionWithAllAvailableDescriptors@
 fontCollectionWithAllAvailableDescriptors :: IO (Id NSMutableFontCollection)
 fontCollectionWithAllAvailableDescriptors  =
   do
     cls' <- getRequiredClass "NSMutableFontCollection"
-    sendClassMsg cls' (mkSelector "fontCollectionWithAllAvailableDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' fontCollectionWithAllAvailableDescriptorsSelector
 
 -- | @- queryDescriptors@
 queryDescriptors :: IsNSMutableFontCollection nsMutableFontCollection => nsMutableFontCollection -> IO (Id NSArray)
-queryDescriptors nsMutableFontCollection  =
-    sendMsg nsMutableFontCollection (mkSelector "queryDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+queryDescriptors nsMutableFontCollection =
+  sendMessage nsMutableFontCollection queryDescriptorsSelector
 
 -- | @- setQueryDescriptors:@
 setQueryDescriptors :: (IsNSMutableFontCollection nsMutableFontCollection, IsNSArray value) => nsMutableFontCollection -> value -> IO ()
-setQueryDescriptors nsMutableFontCollection  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMutableFontCollection (mkSelector "setQueryDescriptors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setQueryDescriptors nsMutableFontCollection value =
+  sendMessage nsMutableFontCollection setQueryDescriptorsSelector (toNSArray value)
 
 -- | @- exclusionDescriptors@
 exclusionDescriptors :: IsNSMutableFontCollection nsMutableFontCollection => nsMutableFontCollection -> IO (Id NSArray)
-exclusionDescriptors nsMutableFontCollection  =
-    sendMsg nsMutableFontCollection (mkSelector "exclusionDescriptors") (retPtr retVoid) [] >>= retainedObject . castPtr
+exclusionDescriptors nsMutableFontCollection =
+  sendMessage nsMutableFontCollection exclusionDescriptorsSelector
 
 -- | @- setExclusionDescriptors:@
 setExclusionDescriptors :: (IsNSMutableFontCollection nsMutableFontCollection, IsNSArray value) => nsMutableFontCollection -> value -> IO ()
-setExclusionDescriptors nsMutableFontCollection  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsMutableFontCollection (mkSelector "setExclusionDescriptors:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExclusionDescriptors nsMutableFontCollection value =
+  sendMessage nsMutableFontCollection setExclusionDescriptorsSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fontCollectionWithDescriptors:@
-fontCollectionWithDescriptorsSelector :: Selector
+fontCollectionWithDescriptorsSelector :: Selector '[Id NSArray] (Id NSMutableFontCollection)
 fontCollectionWithDescriptorsSelector = mkSelector "fontCollectionWithDescriptors:"
 
 -- | @Selector@ for @fontCollectionWithLocale:@
-fontCollectionWithLocaleSelector :: Selector
+fontCollectionWithLocaleSelector :: Selector '[Id NSLocale] (Id NSMutableFontCollection)
 fontCollectionWithLocaleSelector = mkSelector "fontCollectionWithLocale:"
 
 -- | @Selector@ for @fontCollectionWithName:@
-fontCollectionWithNameSelector :: Selector
+fontCollectionWithNameSelector :: Selector '[Id NSString] (Id NSMutableFontCollection)
 fontCollectionWithNameSelector = mkSelector "fontCollectionWithName:"
 
 -- | @Selector@ for @fontCollectionWithName:visibility:@
-fontCollectionWithName_visibilitySelector :: Selector
+fontCollectionWithName_visibilitySelector :: Selector '[Id NSString, NSFontCollectionVisibility] (Id NSMutableFontCollection)
 fontCollectionWithName_visibilitySelector = mkSelector "fontCollectionWithName:visibility:"
 
 -- | @Selector@ for @addQueryForDescriptors:@
-addQueryForDescriptorsSelector :: Selector
+addQueryForDescriptorsSelector :: Selector '[Id NSArray] ()
 addQueryForDescriptorsSelector = mkSelector "addQueryForDescriptors:"
 
 -- | @Selector@ for @removeQueryForDescriptors:@
-removeQueryForDescriptorsSelector :: Selector
+removeQueryForDescriptorsSelector :: Selector '[Id NSArray] ()
 removeQueryForDescriptorsSelector = mkSelector "removeQueryForDescriptors:"
 
 -- | @Selector@ for @fontCollectionWithAllAvailableDescriptors@
-fontCollectionWithAllAvailableDescriptorsSelector :: Selector
+fontCollectionWithAllAvailableDescriptorsSelector :: Selector '[] (Id NSMutableFontCollection)
 fontCollectionWithAllAvailableDescriptorsSelector = mkSelector "fontCollectionWithAllAvailableDescriptors"
 
 -- | @Selector@ for @queryDescriptors@
-queryDescriptorsSelector :: Selector
+queryDescriptorsSelector :: Selector '[] (Id NSArray)
 queryDescriptorsSelector = mkSelector "queryDescriptors"
 
 -- | @Selector@ for @setQueryDescriptors:@
-setQueryDescriptorsSelector :: Selector
+setQueryDescriptorsSelector :: Selector '[Id NSArray] ()
 setQueryDescriptorsSelector = mkSelector "setQueryDescriptors:"
 
 -- | @Selector@ for @exclusionDescriptors@
-exclusionDescriptorsSelector :: Selector
+exclusionDescriptorsSelector :: Selector '[] (Id NSArray)
 exclusionDescriptorsSelector = mkSelector "exclusionDescriptors"
 
 -- | @Selector@ for @setExclusionDescriptors:@
-setExclusionDescriptorsSelector :: Selector
+setExclusionDescriptorsSelector :: Selector '[Id NSArray] ()
 setExclusionDescriptorsSelector = mkSelector "setExclusionDescriptors:"
 

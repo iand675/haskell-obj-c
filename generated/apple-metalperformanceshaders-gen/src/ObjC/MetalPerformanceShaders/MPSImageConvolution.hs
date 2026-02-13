@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,25 +35,21 @@ module ObjC.MetalPerformanceShaders.MPSImageConvolution
   , kernelWidth
   , bias
   , setBias
-  , initWithDevice_kernelWidth_kernelHeight_weightsSelector
+  , biasSelector
   , initWithCoder_deviceSelector
+  , initWithDevice_kernelWidth_kernelHeight_weightsSelector
   , kernelHeightSelector
   , kernelWidthSelector
-  , biasSelector
   , setBiasSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,8 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelWidth:kernelHeight:weights:@
 initWithDevice_kernelWidth_kernelHeight_weights :: IsMPSImageConvolution mpsImageConvolution => mpsImageConvolution -> RawId -> CULong -> CULong -> Const (Ptr CFloat) -> IO (Id MPSImageConvolution)
-initWithDevice_kernelWidth_kernelHeight_weights mpsImageConvolution  device kernelWidth kernelHeight kernelWeights =
-    sendMsg mpsImageConvolution (mkSelector "initWithDevice:kernelWidth:kernelHeight:weights:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelWidth, argCULong kernelHeight, argPtr (unConst kernelWeights)] >>= ownedObject . castPtr
+initWithDevice_kernelWidth_kernelHeight_weights mpsImageConvolution device kernelWidth kernelHeight kernelWeights =
+  sendOwnedMessage mpsImageConvolution initWithDevice_kernelWidth_kernelHeight_weightsSelector device kernelWidth kernelHeight kernelWeights
 
 -- | NSSecureCoding compatability
 --
@@ -88,9 +85,8 @@ initWithDevice_kernelWidth_kernelHeight_weights mpsImageConvolution  device kern
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageConvolution mpsImageConvolution, IsNSCoder aDecoder) => mpsImageConvolution -> aDecoder -> RawId -> IO (Id MPSImageConvolution)
-initWithCoder_device mpsImageConvolution  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageConvolution (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageConvolution aDecoder device =
+  sendOwnedMessage mpsImageConvolution initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | kernelHeight
 --
@@ -98,8 +94,8 @@ initWithCoder_device mpsImageConvolution  aDecoder device =
 --
 -- ObjC selector: @- kernelHeight@
 kernelHeight :: IsMPSImageConvolution mpsImageConvolution => mpsImageConvolution -> IO CULong
-kernelHeight mpsImageConvolution  =
-    sendMsg mpsImageConvolution (mkSelector "kernelHeight") retCULong []
+kernelHeight mpsImageConvolution =
+  sendMessage mpsImageConvolution kernelHeightSelector
 
 -- | kernelWidth
 --
@@ -107,8 +103,8 @@ kernelHeight mpsImageConvolution  =
 --
 -- ObjC selector: @- kernelWidth@
 kernelWidth :: IsMPSImageConvolution mpsImageConvolution => mpsImageConvolution -> IO CULong
-kernelWidth mpsImageConvolution  =
-    sendMsg mpsImageConvolution (mkSelector "kernelWidth") retCULong []
+kernelWidth mpsImageConvolution =
+  sendMessage mpsImageConvolution kernelWidthSelector
 
 -- | bias
 --
@@ -118,8 +114,8 @@ kernelWidth mpsImageConvolution  =
 --
 -- ObjC selector: @- bias@
 bias :: IsMPSImageConvolution mpsImageConvolution => mpsImageConvolution -> IO CFloat
-bias mpsImageConvolution  =
-    sendMsg mpsImageConvolution (mkSelector "bias") retCFloat []
+bias mpsImageConvolution =
+  sendMessage mpsImageConvolution biasSelector
 
 -- | bias
 --
@@ -129,34 +125,34 @@ bias mpsImageConvolution  =
 --
 -- ObjC selector: @- setBias:@
 setBias :: IsMPSImageConvolution mpsImageConvolution => mpsImageConvolution -> CFloat -> IO ()
-setBias mpsImageConvolution  value =
-    sendMsg mpsImageConvolution (mkSelector "setBias:") retVoid [argCFloat value]
+setBias mpsImageConvolution value =
+  sendMessage mpsImageConvolution setBiasSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelWidth:kernelHeight:weights:@
-initWithDevice_kernelWidth_kernelHeight_weightsSelector :: Selector
+initWithDevice_kernelWidth_kernelHeight_weightsSelector :: Selector '[RawId, CULong, CULong, Const (Ptr CFloat)] (Id MPSImageConvolution)
 initWithDevice_kernelWidth_kernelHeight_weightsSelector = mkSelector "initWithDevice:kernelWidth:kernelHeight:weights:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageConvolution)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @kernelHeight@
-kernelHeightSelector :: Selector
+kernelHeightSelector :: Selector '[] CULong
 kernelHeightSelector = mkSelector "kernelHeight"
 
 -- | @Selector@ for @kernelWidth@
-kernelWidthSelector :: Selector
+kernelWidthSelector :: Selector '[] CULong
 kernelWidthSelector = mkSelector "kernelWidth"
 
 -- | @Selector@ for @bias@
-biasSelector :: Selector
+biasSelector :: Selector '[] CFloat
 biasSelector = mkSelector "bias"
 
 -- | @Selector@ for @setBias:@
-setBiasSelector :: Selector
+setBiasSelector :: Selector '[CFloat] ()
 setBiasSelector = mkSelector "setBias:"
 

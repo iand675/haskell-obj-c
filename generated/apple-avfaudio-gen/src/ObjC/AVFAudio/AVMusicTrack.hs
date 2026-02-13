@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -43,48 +44,44 @@ module ObjC.AVFAudio.AVMusicTrack
   , usesAutomatedParameters
   , setUsesAutomatedParameters
   , addEvent_atBeatSelector
-  , moveEventsInRange_byAmountSelector
   , clearEventsInRangeSelector
-  , cutEventsInRangeSelector
-  , copyEventsInRange_fromTrack_insertAtBeatSelector
   , copyAndMergeEventsInRange_fromTrack_mergeAtBeatSelector
-  , enumerateEventsInRange_usingBlockSelector
+  , copyEventsInRange_fromTrack_insertAtBeatSelector
+  , cutEventsInRangeSelector
   , destinationAudioUnitSelector
-  , setDestinationAudioUnitSelector
   , destinationMIDIEndpointSelector
-  , setDestinationMIDIEndpointSelector
-  , loopRangeSelector
-  , setLoopRangeSelector
-  , loopingEnabledSelector
-  , setLoopingEnabledSelector
-  , numberOfLoopsSelector
-  , setNumberOfLoopsSelector
-  , offsetTimeSelector
-  , setOffsetTimeSelector
-  , mutedSelector
-  , setMutedSelector
-  , soloedSelector
-  , setSoloedSelector
+  , enumerateEventsInRange_usingBlockSelector
   , lengthInBeatsSelector
-  , setLengthInBeatsSelector
   , lengthInSecondsSelector
+  , loopRangeSelector
+  , loopingEnabledSelector
+  , moveEventsInRange_byAmountSelector
+  , mutedSelector
+  , numberOfLoopsSelector
+  , offsetTimeSelector
+  , setDestinationAudioUnitSelector
+  , setDestinationMIDIEndpointSelector
+  , setLengthInBeatsSelector
   , setLengthInSecondsSelector
+  , setLoopRangeSelector
+  , setLoopingEnabledSelector
+  , setMutedSelector
+  , setNumberOfLoopsSelector
+  , setOffsetTimeSelector
+  , setSoloedSelector
+  , setUsesAutomatedParametersSelector
+  , soloedSelector
   , timeResolutionSelector
   , usesAutomatedParametersSelector
-  , setUsesAutomatedParametersSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -112,9 +109,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- addEvent:atBeat:@
 addEvent_atBeat :: (IsAVMusicTrack avMusicTrack, IsAVMusicEvent event) => avMusicTrack -> event -> CDouble -> IO ()
-addEvent_atBeat avMusicTrack  event beat =
-  withObjCPtr event $ \raw_event ->
-      sendMsg avMusicTrack (mkSelector "addEvent:atBeat:") retVoid [argPtr (castPtr raw_event :: Ptr ()), argCDouble beat]
+addEvent_atBeat avMusicTrack event beat =
+  sendMessage avMusicTrack addEvent_atBeatSelector (toAVMusicEvent event) beat
 
 -- | moveEventsInRange:byAmount
 --
@@ -126,8 +122,8 @@ addEvent_atBeat avMusicTrack  event beat =
 --
 -- ObjC selector: @- moveEventsInRange:byAmount:@
 moveEventsInRange_byAmount :: IsAVMusicTrack avMusicTrack => avMusicTrack -> AVBeatRange -> CDouble -> IO ()
-moveEventsInRange_byAmount avMusicTrack  range beatAmount =
-    sendMsg avMusicTrack (mkSelector "moveEventsInRange:byAmount:") retVoid [argAVBeatRange range, argCDouble beatAmount]
+moveEventsInRange_byAmount avMusicTrack range beatAmount =
+  sendMessage avMusicTrack moveEventsInRange_byAmountSelector range beatAmount
 
 -- | clearEventsInRange:
 --
@@ -139,8 +135,8 @@ moveEventsInRange_byAmount avMusicTrack  range beatAmount =
 --
 -- ObjC selector: @- clearEventsInRange:@
 clearEventsInRange :: IsAVMusicTrack avMusicTrack => avMusicTrack -> AVBeatRange -> IO ()
-clearEventsInRange avMusicTrack  range =
-    sendMsg avMusicTrack (mkSelector "clearEventsInRange:") retVoid [argAVBeatRange range]
+clearEventsInRange avMusicTrack range =
+  sendMessage avMusicTrack clearEventsInRangeSelector range
 
 -- | cutEventsInRange:
 --
@@ -152,8 +148,8 @@ clearEventsInRange avMusicTrack  range =
 --
 -- ObjC selector: @- cutEventsInRange:@
 cutEventsInRange :: IsAVMusicTrack avMusicTrack => avMusicTrack -> AVBeatRange -> IO ()
-cutEventsInRange avMusicTrack  range =
-    sendMsg avMusicTrack (mkSelector "cutEventsInRange:") retVoid [argAVBeatRange range]
+cutEventsInRange avMusicTrack range =
+  sendMessage avMusicTrack cutEventsInRangeSelector range
 
 -- | copyEventsInRange:fromTrack:insertAtBeat
 --
@@ -169,9 +165,8 @@ cutEventsInRange avMusicTrack  range =
 --
 -- ObjC selector: @- copyEventsInRange:fromTrack:insertAtBeat:@
 copyEventsInRange_fromTrack_insertAtBeat :: (IsAVMusicTrack avMusicTrack, IsAVMusicTrack sourceTrack) => avMusicTrack -> AVBeatRange -> sourceTrack -> CDouble -> IO ()
-copyEventsInRange_fromTrack_insertAtBeat avMusicTrack  range sourceTrack insertStartBeat =
-  withObjCPtr sourceTrack $ \raw_sourceTrack ->
-      sendMsg avMusicTrack (mkSelector "copyEventsInRange:fromTrack:insertAtBeat:") retVoid [argAVBeatRange range, argPtr (castPtr raw_sourceTrack :: Ptr ()), argCDouble insertStartBeat]
+copyEventsInRange_fromTrack_insertAtBeat avMusicTrack range sourceTrack insertStartBeat =
+  sendOwnedMessage avMusicTrack copyEventsInRange_fromTrack_insertAtBeatSelector range (toAVMusicTrack sourceTrack) insertStartBeat
 
 -- | copyAndMergeEventsInRange:fromTrack:mergeAtBeat
 --
@@ -189,9 +184,8 @@ copyEventsInRange_fromTrack_insertAtBeat avMusicTrack  range sourceTrack insertS
 --
 -- ObjC selector: @- copyAndMergeEventsInRange:fromTrack:mergeAtBeat:@
 copyAndMergeEventsInRange_fromTrack_mergeAtBeat :: (IsAVMusicTrack avMusicTrack, IsAVMusicTrack sourceTrack) => avMusicTrack -> AVBeatRange -> sourceTrack -> CDouble -> IO ()
-copyAndMergeEventsInRange_fromTrack_mergeAtBeat avMusicTrack  range sourceTrack mergeStartBeat =
-  withObjCPtr sourceTrack $ \raw_sourceTrack ->
-      sendMsg avMusicTrack (mkSelector "copyAndMergeEventsInRange:fromTrack:mergeAtBeat:") retVoid [argAVBeatRange range, argPtr (castPtr raw_sourceTrack :: Ptr ()), argCDouble mergeStartBeat]
+copyAndMergeEventsInRange_fromTrack_mergeAtBeat avMusicTrack range sourceTrack mergeStartBeat =
+  sendOwnedMessage avMusicTrack copyAndMergeEventsInRange_fromTrack_mergeAtBeatSelector range (toAVMusicTrack sourceTrack) mergeStartBeat
 
 -- | enumerateEventsInRange:usingBlock:
 --
@@ -207,8 +201,8 @@ copyAndMergeEventsInRange_fromTrack_mergeAtBeat avMusicTrack  range sourceTrack 
 --
 -- ObjC selector: @- enumerateEventsInRange:usingBlock:@
 enumerateEventsInRange_usingBlock :: IsAVMusicTrack avMusicTrack => avMusicTrack -> AVBeatRange -> Ptr () -> IO ()
-enumerateEventsInRange_usingBlock avMusicTrack  range block =
-    sendMsg avMusicTrack (mkSelector "enumerateEventsInRange:usingBlock:") retVoid [argAVBeatRange range, argPtr (castPtr block :: Ptr ())]
+enumerateEventsInRange_usingBlock avMusicTrack range block =
+  sendMessage avMusicTrack enumerateEventsInRange_usingBlockSelector range block
 
 -- | destinationAudioUnit
 --
@@ -218,8 +212,8 @@ enumerateEventsInRange_usingBlock avMusicTrack  range block =
 --
 -- ObjC selector: @- destinationAudioUnit@
 destinationAudioUnit :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO (Id AVAudioUnit)
-destinationAudioUnit avMusicTrack  =
-    sendMsg avMusicTrack (mkSelector "destinationAudioUnit") (retPtr retVoid) [] >>= retainedObject . castPtr
+destinationAudioUnit avMusicTrack =
+  sendMessage avMusicTrack destinationAudioUnitSelector
 
 -- | destinationAudioUnit
 --
@@ -229,19 +223,18 @@ destinationAudioUnit avMusicTrack  =
 --
 -- ObjC selector: @- setDestinationAudioUnit:@
 setDestinationAudioUnit :: (IsAVMusicTrack avMusicTrack, IsAVAudioUnit value) => avMusicTrack -> value -> IO ()
-setDestinationAudioUnit avMusicTrack  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avMusicTrack (mkSelector "setDestinationAudioUnit:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDestinationAudioUnit avMusicTrack value =
+  sendMessage avMusicTrack setDestinationAudioUnitSelector (toAVAudioUnit value)
 
 -- | @- destinationMIDIEndpoint@
 destinationMIDIEndpoint :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO CUInt
-destinationMIDIEndpoint avMusicTrack  =
-    sendMsg avMusicTrack (mkSelector "destinationMIDIEndpoint") retCUInt []
+destinationMIDIEndpoint avMusicTrack =
+  sendMessage avMusicTrack destinationMIDIEndpointSelector
 
 -- | @- setDestinationMIDIEndpoint:@
 setDestinationMIDIEndpoint :: IsAVMusicTrack avMusicTrack => avMusicTrack -> CUInt -> IO ()
-setDestinationMIDIEndpoint avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setDestinationMIDIEndpoint:") retVoid [argCUInt value]
+setDestinationMIDIEndpoint avMusicTrack value =
+  sendMessage avMusicTrack setDestinationMIDIEndpointSelector value
 
 -- | loopRange
 --
@@ -251,8 +244,8 @@ setDestinationMIDIEndpoint avMusicTrack  value =
 --
 -- ObjC selector: @- loopRange@
 loopRange :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO AVBeatRange
-loopRange avMusicTrack  =
-    sendMsgStret avMusicTrack (mkSelector "loopRange") retAVBeatRange []
+loopRange avMusicTrack =
+  sendMessage avMusicTrack loopRangeSelector
 
 -- | loopRange
 --
@@ -262,8 +255,8 @@ loopRange avMusicTrack  =
 --
 -- ObjC selector: @- setLoopRange:@
 setLoopRange :: IsAVMusicTrack avMusicTrack => avMusicTrack -> AVBeatRange -> IO ()
-setLoopRange avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setLoopRange:") retVoid [argAVBeatRange value]
+setLoopRange avMusicTrack value =
+  sendMessage avMusicTrack setLoopRangeSelector value
 
 -- | loopingEnabled
 --
@@ -273,8 +266,8 @@ setLoopRange avMusicTrack  value =
 --
 -- ObjC selector: @- loopingEnabled@
 loopingEnabled :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO Bool
-loopingEnabled avMusicTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMusicTrack (mkSelector "loopingEnabled") retCULong []
+loopingEnabled avMusicTrack =
+  sendMessage avMusicTrack loopingEnabledSelector
 
 -- | loopingEnabled
 --
@@ -284,8 +277,8 @@ loopingEnabled avMusicTrack  =
 --
 -- ObjC selector: @- setLoopingEnabled:@
 setLoopingEnabled :: IsAVMusicTrack avMusicTrack => avMusicTrack -> Bool -> IO ()
-setLoopingEnabled avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setLoopingEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setLoopingEnabled avMusicTrack value =
+  sendMessage avMusicTrack setLoopingEnabledSelector value
 
 -- | numberOfLoops
 --
@@ -295,8 +288,8 @@ setLoopingEnabled avMusicTrack  value =
 --
 -- ObjC selector: @- numberOfLoops@
 numberOfLoops :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO CLong
-numberOfLoops avMusicTrack  =
-    sendMsg avMusicTrack (mkSelector "numberOfLoops") retCLong []
+numberOfLoops avMusicTrack =
+  sendMessage avMusicTrack numberOfLoopsSelector
 
 -- | numberOfLoops
 --
@@ -306,8 +299,8 @@ numberOfLoops avMusicTrack  =
 --
 -- ObjC selector: @- setNumberOfLoops:@
 setNumberOfLoops :: IsAVMusicTrack avMusicTrack => avMusicTrack -> CLong -> IO ()
-setNumberOfLoops avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setNumberOfLoops:") retVoid [argCLong value]
+setNumberOfLoops avMusicTrack value =
+  sendMessage avMusicTrack setNumberOfLoopsSelector value
 
 -- | offsetTime
 --
@@ -317,8 +310,8 @@ setNumberOfLoops avMusicTrack  value =
 --
 -- ObjC selector: @- offsetTime@
 offsetTime :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO CDouble
-offsetTime avMusicTrack  =
-    sendMsg avMusicTrack (mkSelector "offsetTime") retCDouble []
+offsetTime avMusicTrack =
+  sendMessage avMusicTrack offsetTimeSelector
 
 -- | offsetTime
 --
@@ -328,8 +321,8 @@ offsetTime avMusicTrack  =
 --
 -- ObjC selector: @- setOffsetTime:@
 setOffsetTime :: IsAVMusicTrack avMusicTrack => avMusicTrack -> CDouble -> IO ()
-setOffsetTime avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setOffsetTime:") retVoid [argCDouble value]
+setOffsetTime avMusicTrack value =
+  sendMessage avMusicTrack setOffsetTimeSelector value
 
 -- | muted
 --
@@ -337,8 +330,8 @@ setOffsetTime avMusicTrack  value =
 --
 -- ObjC selector: @- muted@
 muted :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO Bool
-muted avMusicTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMusicTrack (mkSelector "muted") retCULong []
+muted avMusicTrack =
+  sendMessage avMusicTrack mutedSelector
 
 -- | muted
 --
@@ -346,8 +339,8 @@ muted avMusicTrack  =
 --
 -- ObjC selector: @- setMuted:@
 setMuted :: IsAVMusicTrack avMusicTrack => avMusicTrack -> Bool -> IO ()
-setMuted avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setMuted:") retVoid [argCULong (if value then 1 else 0)]
+setMuted avMusicTrack value =
+  sendMessage avMusicTrack setMutedSelector value
 
 -- | soloed
 --
@@ -355,8 +348,8 @@ setMuted avMusicTrack  value =
 --
 -- ObjC selector: @- soloed@
 soloed :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO Bool
-soloed avMusicTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMusicTrack (mkSelector "soloed") retCULong []
+soloed avMusicTrack =
+  sendMessage avMusicTrack soloedSelector
 
 -- | soloed
 --
@@ -364,8 +357,8 @@ soloed avMusicTrack  =
 --
 -- ObjC selector: @- setSoloed:@
 setSoloed :: IsAVMusicTrack avMusicTrack => avMusicTrack -> Bool -> IO ()
-setSoloed avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setSoloed:") retVoid [argCULong (if value then 1 else 0)]
+setSoloed avMusicTrack value =
+  sendMessage avMusicTrack setSoloedSelector value
 
 -- | lengthInBeats
 --
@@ -377,8 +370,8 @@ setSoloed avMusicTrack  value =
 --
 -- ObjC selector: @- lengthInBeats@
 lengthInBeats :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO CDouble
-lengthInBeats avMusicTrack  =
-    sendMsg avMusicTrack (mkSelector "lengthInBeats") retCDouble []
+lengthInBeats avMusicTrack =
+  sendMessage avMusicTrack lengthInBeatsSelector
 
 -- | lengthInBeats
 --
@@ -390,8 +383,8 @@ lengthInBeats avMusicTrack  =
 --
 -- ObjC selector: @- setLengthInBeats:@
 setLengthInBeats :: IsAVMusicTrack avMusicTrack => avMusicTrack -> CDouble -> IO ()
-setLengthInBeats avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setLengthInBeats:") retVoid [argCDouble value]
+setLengthInBeats avMusicTrack value =
+  sendMessage avMusicTrack setLengthInBeatsSelector value
 
 -- | lengthInSeconds
 --
@@ -403,8 +396,8 @@ setLengthInBeats avMusicTrack  value =
 --
 -- ObjC selector: @- lengthInSeconds@
 lengthInSeconds :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO CDouble
-lengthInSeconds avMusicTrack  =
-    sendMsg avMusicTrack (mkSelector "lengthInSeconds") retCDouble []
+lengthInSeconds avMusicTrack =
+  sendMessage avMusicTrack lengthInSecondsSelector
 
 -- | lengthInSeconds
 --
@@ -416,8 +409,8 @@ lengthInSeconds avMusicTrack  =
 --
 -- ObjC selector: @- setLengthInSeconds:@
 setLengthInSeconds :: IsAVMusicTrack avMusicTrack => avMusicTrack -> CDouble -> IO ()
-setLengthInSeconds avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setLengthInSeconds:") retVoid [argCDouble value]
+setLengthInSeconds avMusicTrack value =
+  sendMessage avMusicTrack setLengthInSecondsSelector value
 
 -- | timeResolution
 --
@@ -429,8 +422,8 @@ setLengthInSeconds avMusicTrack  value =
 --
 -- ObjC selector: @- timeResolution@
 timeResolution :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO CULong
-timeResolution avMusicTrack  =
-    sendMsg avMusicTrack (mkSelector "timeResolution") retCULong []
+timeResolution avMusicTrack =
+  sendMessage avMusicTrack timeResolutionSelector
 
 -- | usesAutomatedParameters
 --
@@ -442,8 +435,8 @@ timeResolution avMusicTrack  =
 --
 -- ObjC selector: @- usesAutomatedParameters@
 usesAutomatedParameters :: IsAVMusicTrack avMusicTrack => avMusicTrack -> IO Bool
-usesAutomatedParameters avMusicTrack  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avMusicTrack (mkSelector "usesAutomatedParameters") retCULong []
+usesAutomatedParameters avMusicTrack =
+  sendMessage avMusicTrack usesAutomatedParametersSelector
 
 -- | usesAutomatedParameters
 --
@@ -455,130 +448,130 @@ usesAutomatedParameters avMusicTrack  =
 --
 -- ObjC selector: @- setUsesAutomatedParameters:@
 setUsesAutomatedParameters :: IsAVMusicTrack avMusicTrack => avMusicTrack -> Bool -> IO ()
-setUsesAutomatedParameters avMusicTrack  value =
-    sendMsg avMusicTrack (mkSelector "setUsesAutomatedParameters:") retVoid [argCULong (if value then 1 else 0)]
+setUsesAutomatedParameters avMusicTrack value =
+  sendMessage avMusicTrack setUsesAutomatedParametersSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addEvent:atBeat:@
-addEvent_atBeatSelector :: Selector
+addEvent_atBeatSelector :: Selector '[Id AVMusicEvent, CDouble] ()
 addEvent_atBeatSelector = mkSelector "addEvent:atBeat:"
 
 -- | @Selector@ for @moveEventsInRange:byAmount:@
-moveEventsInRange_byAmountSelector :: Selector
+moveEventsInRange_byAmountSelector :: Selector '[AVBeatRange, CDouble] ()
 moveEventsInRange_byAmountSelector = mkSelector "moveEventsInRange:byAmount:"
 
 -- | @Selector@ for @clearEventsInRange:@
-clearEventsInRangeSelector :: Selector
+clearEventsInRangeSelector :: Selector '[AVBeatRange] ()
 clearEventsInRangeSelector = mkSelector "clearEventsInRange:"
 
 -- | @Selector@ for @cutEventsInRange:@
-cutEventsInRangeSelector :: Selector
+cutEventsInRangeSelector :: Selector '[AVBeatRange] ()
 cutEventsInRangeSelector = mkSelector "cutEventsInRange:"
 
 -- | @Selector@ for @copyEventsInRange:fromTrack:insertAtBeat:@
-copyEventsInRange_fromTrack_insertAtBeatSelector :: Selector
+copyEventsInRange_fromTrack_insertAtBeatSelector :: Selector '[AVBeatRange, Id AVMusicTrack, CDouble] ()
 copyEventsInRange_fromTrack_insertAtBeatSelector = mkSelector "copyEventsInRange:fromTrack:insertAtBeat:"
 
 -- | @Selector@ for @copyAndMergeEventsInRange:fromTrack:mergeAtBeat:@
-copyAndMergeEventsInRange_fromTrack_mergeAtBeatSelector :: Selector
+copyAndMergeEventsInRange_fromTrack_mergeAtBeatSelector :: Selector '[AVBeatRange, Id AVMusicTrack, CDouble] ()
 copyAndMergeEventsInRange_fromTrack_mergeAtBeatSelector = mkSelector "copyAndMergeEventsInRange:fromTrack:mergeAtBeat:"
 
 -- | @Selector@ for @enumerateEventsInRange:usingBlock:@
-enumerateEventsInRange_usingBlockSelector :: Selector
+enumerateEventsInRange_usingBlockSelector :: Selector '[AVBeatRange, Ptr ()] ()
 enumerateEventsInRange_usingBlockSelector = mkSelector "enumerateEventsInRange:usingBlock:"
 
 -- | @Selector@ for @destinationAudioUnit@
-destinationAudioUnitSelector :: Selector
+destinationAudioUnitSelector :: Selector '[] (Id AVAudioUnit)
 destinationAudioUnitSelector = mkSelector "destinationAudioUnit"
 
 -- | @Selector@ for @setDestinationAudioUnit:@
-setDestinationAudioUnitSelector :: Selector
+setDestinationAudioUnitSelector :: Selector '[Id AVAudioUnit] ()
 setDestinationAudioUnitSelector = mkSelector "setDestinationAudioUnit:"
 
 -- | @Selector@ for @destinationMIDIEndpoint@
-destinationMIDIEndpointSelector :: Selector
+destinationMIDIEndpointSelector :: Selector '[] CUInt
 destinationMIDIEndpointSelector = mkSelector "destinationMIDIEndpoint"
 
 -- | @Selector@ for @setDestinationMIDIEndpoint:@
-setDestinationMIDIEndpointSelector :: Selector
+setDestinationMIDIEndpointSelector :: Selector '[CUInt] ()
 setDestinationMIDIEndpointSelector = mkSelector "setDestinationMIDIEndpoint:"
 
 -- | @Selector@ for @loopRange@
-loopRangeSelector :: Selector
+loopRangeSelector :: Selector '[] AVBeatRange
 loopRangeSelector = mkSelector "loopRange"
 
 -- | @Selector@ for @setLoopRange:@
-setLoopRangeSelector :: Selector
+setLoopRangeSelector :: Selector '[AVBeatRange] ()
 setLoopRangeSelector = mkSelector "setLoopRange:"
 
 -- | @Selector@ for @loopingEnabled@
-loopingEnabledSelector :: Selector
+loopingEnabledSelector :: Selector '[] Bool
 loopingEnabledSelector = mkSelector "loopingEnabled"
 
 -- | @Selector@ for @setLoopingEnabled:@
-setLoopingEnabledSelector :: Selector
+setLoopingEnabledSelector :: Selector '[Bool] ()
 setLoopingEnabledSelector = mkSelector "setLoopingEnabled:"
 
 -- | @Selector@ for @numberOfLoops@
-numberOfLoopsSelector :: Selector
+numberOfLoopsSelector :: Selector '[] CLong
 numberOfLoopsSelector = mkSelector "numberOfLoops"
 
 -- | @Selector@ for @setNumberOfLoops:@
-setNumberOfLoopsSelector :: Selector
+setNumberOfLoopsSelector :: Selector '[CLong] ()
 setNumberOfLoopsSelector = mkSelector "setNumberOfLoops:"
 
 -- | @Selector@ for @offsetTime@
-offsetTimeSelector :: Selector
+offsetTimeSelector :: Selector '[] CDouble
 offsetTimeSelector = mkSelector "offsetTime"
 
 -- | @Selector@ for @setOffsetTime:@
-setOffsetTimeSelector :: Selector
+setOffsetTimeSelector :: Selector '[CDouble] ()
 setOffsetTimeSelector = mkSelector "setOffsetTime:"
 
 -- | @Selector@ for @muted@
-mutedSelector :: Selector
+mutedSelector :: Selector '[] Bool
 mutedSelector = mkSelector "muted"
 
 -- | @Selector@ for @setMuted:@
-setMutedSelector :: Selector
+setMutedSelector :: Selector '[Bool] ()
 setMutedSelector = mkSelector "setMuted:"
 
 -- | @Selector@ for @soloed@
-soloedSelector :: Selector
+soloedSelector :: Selector '[] Bool
 soloedSelector = mkSelector "soloed"
 
 -- | @Selector@ for @setSoloed:@
-setSoloedSelector :: Selector
+setSoloedSelector :: Selector '[Bool] ()
 setSoloedSelector = mkSelector "setSoloed:"
 
 -- | @Selector@ for @lengthInBeats@
-lengthInBeatsSelector :: Selector
+lengthInBeatsSelector :: Selector '[] CDouble
 lengthInBeatsSelector = mkSelector "lengthInBeats"
 
 -- | @Selector@ for @setLengthInBeats:@
-setLengthInBeatsSelector :: Selector
+setLengthInBeatsSelector :: Selector '[CDouble] ()
 setLengthInBeatsSelector = mkSelector "setLengthInBeats:"
 
 -- | @Selector@ for @lengthInSeconds@
-lengthInSecondsSelector :: Selector
+lengthInSecondsSelector :: Selector '[] CDouble
 lengthInSecondsSelector = mkSelector "lengthInSeconds"
 
 -- | @Selector@ for @setLengthInSeconds:@
-setLengthInSecondsSelector :: Selector
+setLengthInSecondsSelector :: Selector '[CDouble] ()
 setLengthInSecondsSelector = mkSelector "setLengthInSeconds:"
 
 -- | @Selector@ for @timeResolution@
-timeResolutionSelector :: Selector
+timeResolutionSelector :: Selector '[] CULong
 timeResolutionSelector = mkSelector "timeResolution"
 
 -- | @Selector@ for @usesAutomatedParameters@
-usesAutomatedParametersSelector :: Selector
+usesAutomatedParametersSelector :: Selector '[] Bool
 usesAutomatedParametersSelector = mkSelector "usesAutomatedParameters"
 
 -- | @Selector@ for @setUsesAutomatedParameters:@
-setUsesAutomatedParametersSelector :: Selector
+setUsesAutomatedParametersSelector :: Selector '[Bool] ()
 setUsesAutomatedParametersSelector = mkSelector "setUsesAutomatedParameters:"
 

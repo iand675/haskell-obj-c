@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,47 +35,43 @@ module ObjC.Matter.MTRThreadNetworkDiagnosticsClusterNeighborTable
   , setFullNetworkData
   , isChild
   , setIsChild
-  , extAddressSelector
-  , setExtAddressSelector
   , ageSelector
-  , setAgeSelector
-  , rloc16Selector
-  , setRloc16Selector
-  , linkFrameCounterSelector
-  , setLinkFrameCounterSelector
-  , mleFrameCounterSelector
-  , setMleFrameCounterSelector
-  , lqiSelector
-  , setLqiSelector
   , averageRssiSelector
-  , setAverageRssiSelector
-  , lastRssiSelector
-  , setLastRssiSelector
+  , extAddressSelector
   , frameErrorRateSelector
-  , setFrameErrorRateSelector
-  , messageErrorRateSelector
-  , setMessageErrorRateSelector
-  , rxOnWhenIdleSelector
-  , setRxOnWhenIdleSelector
-  , fullThreadDeviceSelector
-  , setFullThreadDeviceSelector
   , fullNetworkDataSelector
-  , setFullNetworkDataSelector
+  , fullThreadDeviceSelector
   , isChildSelector
+  , lastRssiSelector
+  , linkFrameCounterSelector
+  , lqiSelector
+  , messageErrorRateSelector
+  , mleFrameCounterSelector
+  , rloc16Selector
+  , rxOnWhenIdleSelector
+  , setAgeSelector
+  , setAverageRssiSelector
+  , setExtAddressSelector
+  , setFrameErrorRateSelector
+  , setFullNetworkDataSelector
+  , setFullThreadDeviceSelector
   , setIsChildSelector
+  , setLastRssiSelector
+  , setLinkFrameCounterSelector
+  , setLqiSelector
+  , setMessageErrorRateSelector
+  , setMleFrameCounterSelector
+  , setRloc16Selector
+  , setRxOnWhenIdleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,271 +80,257 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- extAddress@
 extAddress :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-extAddress mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "extAddress") (retPtr retVoid) [] >>= retainedObject . castPtr
+extAddress mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable extAddressSelector
 
 -- | @- setExtAddress:@
 setExtAddress :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setExtAddress mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setExtAddress:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtAddress mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setExtAddressSelector (toNSNumber value)
 
 -- | @- age@
 age :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-age mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "age") (retPtr retVoid) [] >>= retainedObject . castPtr
+age mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable ageSelector
 
 -- | @- setAge:@
 setAge :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setAge mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setAge:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAge mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setAgeSelector (toNSNumber value)
 
 -- | @- rloc16@
 rloc16 :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-rloc16 mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "rloc16") (retPtr retVoid) [] >>= retainedObject . castPtr
+rloc16 mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable rloc16Selector
 
 -- | @- setRloc16:@
 setRloc16 :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setRloc16 mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setRloc16:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRloc16 mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setRloc16Selector (toNSNumber value)
 
 -- | @- linkFrameCounter@
 linkFrameCounter :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-linkFrameCounter mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "linkFrameCounter") (retPtr retVoid) [] >>= retainedObject . castPtr
+linkFrameCounter mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable linkFrameCounterSelector
 
 -- | @- setLinkFrameCounter:@
 setLinkFrameCounter :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setLinkFrameCounter mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setLinkFrameCounter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLinkFrameCounter mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setLinkFrameCounterSelector (toNSNumber value)
 
 -- | @- mleFrameCounter@
 mleFrameCounter :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-mleFrameCounter mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "mleFrameCounter") (retPtr retVoid) [] >>= retainedObject . castPtr
+mleFrameCounter mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable mleFrameCounterSelector
 
 -- | @- setMleFrameCounter:@
 setMleFrameCounter :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setMleFrameCounter mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setMleFrameCounter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMleFrameCounter mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setMleFrameCounterSelector (toNSNumber value)
 
 -- | @- lqi@
 lqi :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-lqi mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "lqi") (retPtr retVoid) [] >>= retainedObject . castPtr
+lqi mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable lqiSelector
 
 -- | @- setLqi:@
 setLqi :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setLqi mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setLqi:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLqi mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setLqiSelector (toNSNumber value)
 
 -- | @- averageRssi@
 averageRssi :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-averageRssi mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "averageRssi") (retPtr retVoid) [] >>= retainedObject . castPtr
+averageRssi mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable averageRssiSelector
 
 -- | @- setAverageRssi:@
 setAverageRssi :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setAverageRssi mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setAverageRssi:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAverageRssi mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setAverageRssiSelector (toNSNumber value)
 
 -- | @- lastRssi@
 lastRssi :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-lastRssi mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "lastRssi") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastRssi mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable lastRssiSelector
 
 -- | @- setLastRssi:@
 setLastRssi :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setLastRssi mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setLastRssi:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLastRssi mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setLastRssiSelector (toNSNumber value)
 
 -- | @- frameErrorRate@
 frameErrorRate :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-frameErrorRate mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "frameErrorRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+frameErrorRate mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable frameErrorRateSelector
 
 -- | @- setFrameErrorRate:@
 setFrameErrorRate :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setFrameErrorRate mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setFrameErrorRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFrameErrorRate mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setFrameErrorRateSelector (toNSNumber value)
 
 -- | @- messageErrorRate@
 messageErrorRate :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-messageErrorRate mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "messageErrorRate") (retPtr retVoid) [] >>= retainedObject . castPtr
+messageErrorRate mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable messageErrorRateSelector
 
 -- | @- setMessageErrorRate:@
 setMessageErrorRate :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setMessageErrorRate mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setMessageErrorRate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMessageErrorRate mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setMessageErrorRateSelector (toNSNumber value)
 
 -- | @- rxOnWhenIdle@
 rxOnWhenIdle :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-rxOnWhenIdle mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "rxOnWhenIdle") (retPtr retVoid) [] >>= retainedObject . castPtr
+rxOnWhenIdle mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable rxOnWhenIdleSelector
 
 -- | @- setRxOnWhenIdle:@
 setRxOnWhenIdle :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setRxOnWhenIdle mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setRxOnWhenIdle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRxOnWhenIdle mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setRxOnWhenIdleSelector (toNSNumber value)
 
 -- | @- fullThreadDevice@
 fullThreadDevice :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-fullThreadDevice mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "fullThreadDevice") (retPtr retVoid) [] >>= retainedObject . castPtr
+fullThreadDevice mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable fullThreadDeviceSelector
 
 -- | @- setFullThreadDevice:@
 setFullThreadDevice :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setFullThreadDevice mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setFullThreadDevice:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFullThreadDevice mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setFullThreadDeviceSelector (toNSNumber value)
 
 -- | @- fullNetworkData@
 fullNetworkData :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-fullNetworkData mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "fullNetworkData") (retPtr retVoid) [] >>= retainedObject . castPtr
+fullNetworkData mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable fullNetworkDataSelector
 
 -- | @- setFullNetworkData:@
 setFullNetworkData :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setFullNetworkData mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setFullNetworkData:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFullNetworkData mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setFullNetworkDataSelector (toNSNumber value)
 
 -- | @- isChild@
 isChild :: IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable => mtrThreadNetworkDiagnosticsClusterNeighborTable -> IO (Id NSNumber)
-isChild mtrThreadNetworkDiagnosticsClusterNeighborTable  =
-    sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "isChild") (retPtr retVoid) [] >>= retainedObject . castPtr
+isChild mtrThreadNetworkDiagnosticsClusterNeighborTable =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable isChildSelector
 
 -- | @- setIsChild:@
 setIsChild :: (IsMTRThreadNetworkDiagnosticsClusterNeighborTable mtrThreadNetworkDiagnosticsClusterNeighborTable, IsNSNumber value) => mtrThreadNetworkDiagnosticsClusterNeighborTable -> value -> IO ()
-setIsChild mtrThreadNetworkDiagnosticsClusterNeighborTable  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrThreadNetworkDiagnosticsClusterNeighborTable (mkSelector "setIsChild:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setIsChild mtrThreadNetworkDiagnosticsClusterNeighborTable value =
+  sendMessage mtrThreadNetworkDiagnosticsClusterNeighborTable setIsChildSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @extAddress@
-extAddressSelector :: Selector
+extAddressSelector :: Selector '[] (Id NSNumber)
 extAddressSelector = mkSelector "extAddress"
 
 -- | @Selector@ for @setExtAddress:@
-setExtAddressSelector :: Selector
+setExtAddressSelector :: Selector '[Id NSNumber] ()
 setExtAddressSelector = mkSelector "setExtAddress:"
 
 -- | @Selector@ for @age@
-ageSelector :: Selector
+ageSelector :: Selector '[] (Id NSNumber)
 ageSelector = mkSelector "age"
 
 -- | @Selector@ for @setAge:@
-setAgeSelector :: Selector
+setAgeSelector :: Selector '[Id NSNumber] ()
 setAgeSelector = mkSelector "setAge:"
 
 -- | @Selector@ for @rloc16@
-rloc16Selector :: Selector
+rloc16Selector :: Selector '[] (Id NSNumber)
 rloc16Selector = mkSelector "rloc16"
 
 -- | @Selector@ for @setRloc16:@
-setRloc16Selector :: Selector
+setRloc16Selector :: Selector '[Id NSNumber] ()
 setRloc16Selector = mkSelector "setRloc16:"
 
 -- | @Selector@ for @linkFrameCounter@
-linkFrameCounterSelector :: Selector
+linkFrameCounterSelector :: Selector '[] (Id NSNumber)
 linkFrameCounterSelector = mkSelector "linkFrameCounter"
 
 -- | @Selector@ for @setLinkFrameCounter:@
-setLinkFrameCounterSelector :: Selector
+setLinkFrameCounterSelector :: Selector '[Id NSNumber] ()
 setLinkFrameCounterSelector = mkSelector "setLinkFrameCounter:"
 
 -- | @Selector@ for @mleFrameCounter@
-mleFrameCounterSelector :: Selector
+mleFrameCounterSelector :: Selector '[] (Id NSNumber)
 mleFrameCounterSelector = mkSelector "mleFrameCounter"
 
 -- | @Selector@ for @setMleFrameCounter:@
-setMleFrameCounterSelector :: Selector
+setMleFrameCounterSelector :: Selector '[Id NSNumber] ()
 setMleFrameCounterSelector = mkSelector "setMleFrameCounter:"
 
 -- | @Selector@ for @lqi@
-lqiSelector :: Selector
+lqiSelector :: Selector '[] (Id NSNumber)
 lqiSelector = mkSelector "lqi"
 
 -- | @Selector@ for @setLqi:@
-setLqiSelector :: Selector
+setLqiSelector :: Selector '[Id NSNumber] ()
 setLqiSelector = mkSelector "setLqi:"
 
 -- | @Selector@ for @averageRssi@
-averageRssiSelector :: Selector
+averageRssiSelector :: Selector '[] (Id NSNumber)
 averageRssiSelector = mkSelector "averageRssi"
 
 -- | @Selector@ for @setAverageRssi:@
-setAverageRssiSelector :: Selector
+setAverageRssiSelector :: Selector '[Id NSNumber] ()
 setAverageRssiSelector = mkSelector "setAverageRssi:"
 
 -- | @Selector@ for @lastRssi@
-lastRssiSelector :: Selector
+lastRssiSelector :: Selector '[] (Id NSNumber)
 lastRssiSelector = mkSelector "lastRssi"
 
 -- | @Selector@ for @setLastRssi:@
-setLastRssiSelector :: Selector
+setLastRssiSelector :: Selector '[Id NSNumber] ()
 setLastRssiSelector = mkSelector "setLastRssi:"
 
 -- | @Selector@ for @frameErrorRate@
-frameErrorRateSelector :: Selector
+frameErrorRateSelector :: Selector '[] (Id NSNumber)
 frameErrorRateSelector = mkSelector "frameErrorRate"
 
 -- | @Selector@ for @setFrameErrorRate:@
-setFrameErrorRateSelector :: Selector
+setFrameErrorRateSelector :: Selector '[Id NSNumber] ()
 setFrameErrorRateSelector = mkSelector "setFrameErrorRate:"
 
 -- | @Selector@ for @messageErrorRate@
-messageErrorRateSelector :: Selector
+messageErrorRateSelector :: Selector '[] (Id NSNumber)
 messageErrorRateSelector = mkSelector "messageErrorRate"
 
 -- | @Selector@ for @setMessageErrorRate:@
-setMessageErrorRateSelector :: Selector
+setMessageErrorRateSelector :: Selector '[Id NSNumber] ()
 setMessageErrorRateSelector = mkSelector "setMessageErrorRate:"
 
 -- | @Selector@ for @rxOnWhenIdle@
-rxOnWhenIdleSelector :: Selector
+rxOnWhenIdleSelector :: Selector '[] (Id NSNumber)
 rxOnWhenIdleSelector = mkSelector "rxOnWhenIdle"
 
 -- | @Selector@ for @setRxOnWhenIdle:@
-setRxOnWhenIdleSelector :: Selector
+setRxOnWhenIdleSelector :: Selector '[Id NSNumber] ()
 setRxOnWhenIdleSelector = mkSelector "setRxOnWhenIdle:"
 
 -- | @Selector@ for @fullThreadDevice@
-fullThreadDeviceSelector :: Selector
+fullThreadDeviceSelector :: Selector '[] (Id NSNumber)
 fullThreadDeviceSelector = mkSelector "fullThreadDevice"
 
 -- | @Selector@ for @setFullThreadDevice:@
-setFullThreadDeviceSelector :: Selector
+setFullThreadDeviceSelector :: Selector '[Id NSNumber] ()
 setFullThreadDeviceSelector = mkSelector "setFullThreadDevice:"
 
 -- | @Selector@ for @fullNetworkData@
-fullNetworkDataSelector :: Selector
+fullNetworkDataSelector :: Selector '[] (Id NSNumber)
 fullNetworkDataSelector = mkSelector "fullNetworkData"
 
 -- | @Selector@ for @setFullNetworkData:@
-setFullNetworkDataSelector :: Selector
+setFullNetworkDataSelector :: Selector '[Id NSNumber] ()
 setFullNetworkDataSelector = mkSelector "setFullNetworkData:"
 
 -- | @Selector@ for @isChild@
-isChildSelector :: Selector
+isChildSelector :: Selector '[] (Id NSNumber)
 isChildSelector = mkSelector "isChild"
 
 -- | @Selector@ for @setIsChild:@
-setIsChildSelector :: Selector
+setIsChildSelector :: Selector '[Id NSNumber] ()
 setIsChildSelector = mkSelector "setIsChild:"
 

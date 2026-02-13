@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AppKit.NSWindowTab
   , setToolTip
   , accessoryView
   , setAccessoryView
-  , titleSelector
-  , setTitleSelector
-  , attributedTitleSelector
-  , setAttributedTitleSelector
-  , toolTipSelector
-  , setToolTipSelector
   , accessoryViewSelector
+  , attributedTitleSelector
   , setAccessoryViewSelector
+  , setAttributedTitleSelector
+  , setTitleSelector
+  , setToolTipSelector
+  , titleSelector
+  , toolTipSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- title@
 title :: IsNSWindowTab nsWindowTab => nsWindowTab -> IO (Id NSString)
-title nsWindowTab  =
-    sendMsg nsWindowTab (mkSelector "title") (retPtr retVoid) [] >>= retainedObject . castPtr
+title nsWindowTab =
+  sendMessage nsWindowTab titleSelector
 
 -- | @- setTitle:@
 setTitle :: (IsNSWindowTab nsWindowTab, IsNSString value) => nsWindowTab -> value -> IO ()
-setTitle nsWindowTab  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindowTab (mkSelector "setTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTitle nsWindowTab value =
+  sendMessage nsWindowTab setTitleSelector (toNSString value)
 
 -- | @- attributedTitle@
 attributedTitle :: IsNSWindowTab nsWindowTab => nsWindowTab -> IO (Id NSAttributedString)
-attributedTitle nsWindowTab  =
-    sendMsg nsWindowTab (mkSelector "attributedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+attributedTitle nsWindowTab =
+  sendMessage nsWindowTab attributedTitleSelector
 
 -- | @- setAttributedTitle:@
 setAttributedTitle :: (IsNSWindowTab nsWindowTab, IsNSAttributedString value) => nsWindowTab -> value -> IO ()
-setAttributedTitle nsWindowTab  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindowTab (mkSelector "setAttributedTitle:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAttributedTitle nsWindowTab value =
+  sendMessage nsWindowTab setAttributedTitleSelector (toNSAttributedString value)
 
 -- | @- toolTip@
 toolTip :: IsNSWindowTab nsWindowTab => nsWindowTab -> IO (Id NSString)
-toolTip nsWindowTab  =
-    sendMsg nsWindowTab (mkSelector "toolTip") (retPtr retVoid) [] >>= retainedObject . castPtr
+toolTip nsWindowTab =
+  sendMessage nsWindowTab toolTipSelector
 
 -- | @- setToolTip:@
 setToolTip :: (IsNSWindowTab nsWindowTab, IsNSString value) => nsWindowTab -> value -> IO ()
-setToolTip nsWindowTab  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindowTab (mkSelector "setToolTip:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setToolTip nsWindowTab value =
+  sendMessage nsWindowTab setToolTipSelector (toNSString value)
 
 -- | @- accessoryView@
 accessoryView :: IsNSWindowTab nsWindowTab => nsWindowTab -> IO (Id NSView)
-accessoryView nsWindowTab  =
-    sendMsg nsWindowTab (mkSelector "accessoryView") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessoryView nsWindowTab =
+  sendMessage nsWindowTab accessoryViewSelector
 
 -- | @- setAccessoryView:@
 setAccessoryView :: (IsNSWindowTab nsWindowTab, IsNSView value) => nsWindowTab -> value -> IO ()
-setAccessoryView nsWindowTab  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsWindowTab (mkSelector "setAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessoryView nsWindowTab value =
+  sendMessage nsWindowTab setAccessoryViewSelector (toNSView value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @title@
-titleSelector :: Selector
+titleSelector :: Selector '[] (Id NSString)
 titleSelector = mkSelector "title"
 
 -- | @Selector@ for @setTitle:@
-setTitleSelector :: Selector
+setTitleSelector :: Selector '[Id NSString] ()
 setTitleSelector = mkSelector "setTitle:"
 
 -- | @Selector@ for @attributedTitle@
-attributedTitleSelector :: Selector
+attributedTitleSelector :: Selector '[] (Id NSAttributedString)
 attributedTitleSelector = mkSelector "attributedTitle"
 
 -- | @Selector@ for @setAttributedTitle:@
-setAttributedTitleSelector :: Selector
+setAttributedTitleSelector :: Selector '[Id NSAttributedString] ()
 setAttributedTitleSelector = mkSelector "setAttributedTitle:"
 
 -- | @Selector@ for @toolTip@
-toolTipSelector :: Selector
+toolTipSelector :: Selector '[] (Id NSString)
 toolTipSelector = mkSelector "toolTip"
 
 -- | @Selector@ for @setToolTip:@
-setToolTipSelector :: Selector
+setToolTipSelector :: Selector '[Id NSString] ()
 setToolTipSelector = mkSelector "setToolTip:"
 
 -- | @Selector@ for @accessoryView@
-accessoryViewSelector :: Selector
+accessoryViewSelector :: Selector '[] (Id NSView)
 accessoryViewSelector = mkSelector "accessoryView"
 
 -- | @Selector@ for @setAccessoryView:@
-setAccessoryViewSelector :: Selector
+setAccessoryViewSelector :: Selector '[Id NSView] ()
 setAccessoryViewSelector = mkSelector "setAccessoryView:"
 

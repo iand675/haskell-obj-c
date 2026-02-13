@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,25 +15,21 @@ module ObjC.QuartzCore.CABasicAnimation
   , setToValue
   , byValue
   , setByValue
-  , fromValueSelector
-  , setFromValueSelector
-  , toValueSelector
-  , setToValueSelector
   , byValueSelector
+  , fromValueSelector
   , setByValueSelector
+  , setFromValueSelector
+  , setToValueSelector
+  , toValueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,59 +38,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- fromValue@
 fromValue :: IsCABasicAnimation caBasicAnimation => caBasicAnimation -> IO RawId
-fromValue caBasicAnimation  =
-    fmap (RawId . castPtr) $ sendMsg caBasicAnimation (mkSelector "fromValue") (retPtr retVoid) []
+fromValue caBasicAnimation =
+  sendMessage caBasicAnimation fromValueSelector
 
 -- | @- setFromValue:@
 setFromValue :: IsCABasicAnimation caBasicAnimation => caBasicAnimation -> RawId -> IO ()
-setFromValue caBasicAnimation  value =
-    sendMsg caBasicAnimation (mkSelector "setFromValue:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setFromValue caBasicAnimation value =
+  sendMessage caBasicAnimation setFromValueSelector value
 
 -- | @- toValue@
 toValue :: IsCABasicAnimation caBasicAnimation => caBasicAnimation -> IO RawId
-toValue caBasicAnimation  =
-    fmap (RawId . castPtr) $ sendMsg caBasicAnimation (mkSelector "toValue") (retPtr retVoid) []
+toValue caBasicAnimation =
+  sendMessage caBasicAnimation toValueSelector
 
 -- | @- setToValue:@
 setToValue :: IsCABasicAnimation caBasicAnimation => caBasicAnimation -> RawId -> IO ()
-setToValue caBasicAnimation  value =
-    sendMsg caBasicAnimation (mkSelector "setToValue:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setToValue caBasicAnimation value =
+  sendMessage caBasicAnimation setToValueSelector value
 
 -- | @- byValue@
 byValue :: IsCABasicAnimation caBasicAnimation => caBasicAnimation -> IO RawId
-byValue caBasicAnimation  =
-    fmap (RawId . castPtr) $ sendMsg caBasicAnimation (mkSelector "byValue") (retPtr retVoid) []
+byValue caBasicAnimation =
+  sendMessage caBasicAnimation byValueSelector
 
 -- | @- setByValue:@
 setByValue :: IsCABasicAnimation caBasicAnimation => caBasicAnimation -> RawId -> IO ()
-setByValue caBasicAnimation  value =
-    sendMsg caBasicAnimation (mkSelector "setByValue:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setByValue caBasicAnimation value =
+  sendMessage caBasicAnimation setByValueSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @fromValue@
-fromValueSelector :: Selector
+fromValueSelector :: Selector '[] RawId
 fromValueSelector = mkSelector "fromValue"
 
 -- | @Selector@ for @setFromValue:@
-setFromValueSelector :: Selector
+setFromValueSelector :: Selector '[RawId] ()
 setFromValueSelector = mkSelector "setFromValue:"
 
 -- | @Selector@ for @toValue@
-toValueSelector :: Selector
+toValueSelector :: Selector '[] RawId
 toValueSelector = mkSelector "toValue"
 
 -- | @Selector@ for @setToValue:@
-setToValueSelector :: Selector
+setToValueSelector :: Selector '[RawId] ()
 setToValueSelector = mkSelector "setToValue:"
 
 -- | @Selector@ for @byValue@
-byValueSelector :: Selector
+byValueSelector :: Selector '[] RawId
 byValueSelector = mkSelector "byValue"
 
 -- | @Selector@ for @setByValue:@
-setByValueSelector :: Selector
+setByValueSelector :: Selector '[RawId] ()
 setByValueSelector = mkSelector "setByValue:"
 

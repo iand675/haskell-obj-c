@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -50,63 +51,59 @@ module ObjC.CoreImage.CIBlendKernel
   , hardMix
   , darkerColor
   , lighterColor
-  , kernelWithStringSelector
   , applyWithForeground_backgroundSelector
   , applyWithForeground_background_colorSpaceSelector
-  , componentAddSelector
-  , componentMultiplySelector
-  , componentMinSelector
-  , componentMaxSelector
   , clearSelector
-  , sourceSelector
-  , destinationSelector
-  , sourceOverSelector
-  , destinationOverSelector
-  , sourceInSelector
-  , destinationInSelector
-  , sourceOutSelector
-  , destinationOutSelector
-  , sourceAtopSelector
-  , destinationAtopSelector
-  , exclusiveOrSelector
-  , multiplySelector
-  , screenSelector
-  , overlaySelector
-  , darkenSelector
-  , lightenSelector
-  , colorDodgeSelector
   , colorBurnSelector
-  , hardLightSelector
-  , softLightSelector
-  , differenceSelector
-  , exclusionSelector
-  , hueSelector
-  , saturationSelector
+  , colorDodgeSelector
   , colorSelector
-  , luminositySelector
-  , subtractSelector
+  , componentAddSelector
+  , componentMaxSelector
+  , componentMinSelector
+  , componentMultiplySelector
+  , darkenSelector
+  , darkerColorSelector
+  , destinationAtopSelector
+  , destinationInSelector
+  , destinationOutSelector
+  , destinationOverSelector
+  , destinationSelector
+  , differenceSelector
   , divideSelector
+  , exclusionSelector
+  , exclusiveOrSelector
+  , hardLightSelector
+  , hardMixSelector
+  , hueSelector
+  , kernelWithStringSelector
+  , lightenSelector
+  , lighterColorSelector
   , linearBurnSelector
   , linearDodgeSelector
-  , vividLightSelector
   , linearLightSelector
+  , luminositySelector
+  , multiplySelector
+  , overlaySelector
   , pinLightSelector
-  , hardMixSelector
-  , darkerColorSelector
-  , lighterColorSelector
+  , saturationSelector
+  , screenSelector
+  , softLightSelector
+  , sourceAtopSelector
+  , sourceInSelector
+  , sourceOutSelector
+  , sourceOverSelector
+  , sourceSelector
+  , subtractSelector
+  , vividLightSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -118,487 +115,482 @@ kernelWithString :: IsNSString string => string -> IO (Id CIBlendKernel)
 kernelWithString string =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    withObjCPtr string $ \raw_string ->
-      sendClassMsg cls' (mkSelector "kernelWithString:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' kernelWithStringSelector (toNSString string)
 
 -- | @- applyWithForeground:background:@
 applyWithForeground_background :: (IsCIBlendKernel ciBlendKernel, IsCIImage foreground, IsCIImage background) => ciBlendKernel -> foreground -> background -> IO (Id CIImage)
-applyWithForeground_background ciBlendKernel  foreground background =
-  withObjCPtr foreground $ \raw_foreground ->
-    withObjCPtr background $ \raw_background ->
-        sendMsg ciBlendKernel (mkSelector "applyWithForeground:background:") (retPtr retVoid) [argPtr (castPtr raw_foreground :: Ptr ()), argPtr (castPtr raw_background :: Ptr ())] >>= retainedObject . castPtr
+applyWithForeground_background ciBlendKernel foreground background =
+  sendMessage ciBlendKernel applyWithForeground_backgroundSelector (toCIImage foreground) (toCIImage background)
 
 -- | @- applyWithForeground:background:colorSpace:@
 applyWithForeground_background_colorSpace :: (IsCIBlendKernel ciBlendKernel, IsCIImage foreground, IsCIImage background) => ciBlendKernel -> foreground -> background -> Ptr () -> IO (Id CIImage)
-applyWithForeground_background_colorSpace ciBlendKernel  foreground background colorSpace =
-  withObjCPtr foreground $ \raw_foreground ->
-    withObjCPtr background $ \raw_background ->
-        sendMsg ciBlendKernel (mkSelector "applyWithForeground:background:colorSpace:") (retPtr retVoid) [argPtr (castPtr raw_foreground :: Ptr ()), argPtr (castPtr raw_background :: Ptr ()), argPtr colorSpace] >>= retainedObject . castPtr
+applyWithForeground_background_colorSpace ciBlendKernel foreground background colorSpace =
+  sendMessage ciBlendKernel applyWithForeground_background_colorSpaceSelector (toCIImage foreground) (toCIImage background) colorSpace
 
 -- | @+ componentAdd@
 componentAdd :: IO (Id CIBlendKernel)
 componentAdd  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "componentAdd") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' componentAddSelector
 
 -- | @+ componentMultiply@
 componentMultiply :: IO (Id CIBlendKernel)
 componentMultiply  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "componentMultiply") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' componentMultiplySelector
 
 -- | @+ componentMin@
 componentMin :: IO (Id CIBlendKernel)
 componentMin  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "componentMin") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' componentMinSelector
 
 -- | @+ componentMax@
 componentMax :: IO (Id CIBlendKernel)
 componentMax  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "componentMax") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' componentMaxSelector
 
 -- | @+ clear@
 clear :: IO (Id CIBlendKernel)
 clear  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "clear") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' clearSelector
 
 -- | @+ source@
 source :: IO (Id CIBlendKernel)
 source  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "source") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sourceSelector
 
 -- | @+ destination@
 destination :: IO (Id CIBlendKernel)
 destination  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "destination") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' destinationSelector
 
 -- | @+ sourceOver@
 sourceOver :: IO (Id CIBlendKernel)
 sourceOver  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "sourceOver") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sourceOverSelector
 
 -- | @+ destinationOver@
 destinationOver :: IO (Id CIBlendKernel)
 destinationOver  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "destinationOver") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' destinationOverSelector
 
 -- | @+ sourceIn@
 sourceIn :: IO (Id CIBlendKernel)
 sourceIn  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "sourceIn") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sourceInSelector
 
 -- | @+ destinationIn@
 destinationIn :: IO (Id CIBlendKernel)
 destinationIn  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "destinationIn") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' destinationInSelector
 
 -- | @+ sourceOut@
 sourceOut :: IO (Id CIBlendKernel)
 sourceOut  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "sourceOut") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sourceOutSelector
 
 -- | @+ destinationOut@
 destinationOut :: IO (Id CIBlendKernel)
 destinationOut  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "destinationOut") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' destinationOutSelector
 
 -- | @+ sourceAtop@
 sourceAtop :: IO (Id CIBlendKernel)
 sourceAtop  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "sourceAtop") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sourceAtopSelector
 
 -- | @+ destinationAtop@
 destinationAtop :: IO (Id CIBlendKernel)
 destinationAtop  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "destinationAtop") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' destinationAtopSelector
 
 -- | @+ exclusiveOr@
 exclusiveOr :: IO (Id CIBlendKernel)
 exclusiveOr  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "exclusiveOr") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' exclusiveOrSelector
 
 -- | @+ multiply@
 multiply :: IO (Id CIBlendKernel)
 multiply  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "multiply") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' multiplySelector
 
 -- | @+ screen@
 screen :: IO (Id CIBlendKernel)
 screen  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "screen") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' screenSelector
 
 -- | @+ overlay@
 overlay :: IO (Id CIBlendKernel)
 overlay  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "overlay") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' overlaySelector
 
 -- | @+ darken@
 darken :: IO (Id CIBlendKernel)
 darken  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "darken") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' darkenSelector
 
 -- | @+ lighten@
 lighten :: IO (Id CIBlendKernel)
 lighten  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "lighten") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' lightenSelector
 
 -- | @+ colorDodge@
 colorDodge :: IO (Id CIBlendKernel)
 colorDodge  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "colorDodge") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' colorDodgeSelector
 
 -- | @+ colorBurn@
 colorBurn :: IO (Id CIBlendKernel)
 colorBurn  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "colorBurn") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' colorBurnSelector
 
 -- | @+ hardLight@
 hardLight :: IO (Id CIBlendKernel)
 hardLight  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "hardLight") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hardLightSelector
 
 -- | @+ softLight@
 softLight :: IO (Id CIBlendKernel)
 softLight  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "softLight") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' softLightSelector
 
 -- | @+ difference@
 difference :: IO (Id CIBlendKernel)
 difference  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "difference") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' differenceSelector
 
 -- | @+ exclusion@
 exclusion :: IO (Id CIBlendKernel)
 exclusion  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "exclusion") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' exclusionSelector
 
 -- | @+ hue@
 hue :: IO (Id CIBlendKernel)
 hue  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "hue") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hueSelector
 
 -- | @+ saturation@
 saturation :: IO (Id CIBlendKernel)
 saturation  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "saturation") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' saturationSelector
 
 -- | @+ color@
 color :: IO (Id CIBlendKernel)
 color  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "color") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' colorSelector
 
 -- | @+ luminosity@
 luminosity :: IO (Id CIBlendKernel)
 luminosity  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "luminosity") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' luminositySelector
 
 -- | @+ subtract@
 subtract_ :: IO (Id CIBlendKernel)
 subtract_  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "subtract") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' subtractSelector
 
 -- | @+ divide@
 divide :: IO (Id CIBlendKernel)
 divide  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "divide") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' divideSelector
 
 -- | @+ linearBurn@
 linearBurn :: IO (Id CIBlendKernel)
 linearBurn  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "linearBurn") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' linearBurnSelector
 
 -- | @+ linearDodge@
 linearDodge :: IO (Id CIBlendKernel)
 linearDodge  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "linearDodge") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' linearDodgeSelector
 
 -- | @+ vividLight@
 vividLight :: IO (Id CIBlendKernel)
 vividLight  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "vividLight") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' vividLightSelector
 
 -- | @+ linearLight@
 linearLight :: IO (Id CIBlendKernel)
 linearLight  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "linearLight") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' linearLightSelector
 
 -- | @+ pinLight@
 pinLight :: IO (Id CIBlendKernel)
 pinLight  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "pinLight") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' pinLightSelector
 
 -- | @+ hardMix@
 hardMix :: IO (Id CIBlendKernel)
 hardMix  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "hardMix") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' hardMixSelector
 
 -- | @+ darkerColor@
 darkerColor :: IO (Id CIBlendKernel)
 darkerColor  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "darkerColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' darkerColorSelector
 
 -- | @+ lighterColor@
 lighterColor :: IO (Id CIBlendKernel)
 lighterColor  =
   do
     cls' <- getRequiredClass "CIBlendKernel"
-    sendClassMsg cls' (mkSelector "lighterColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' lighterColorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @kernelWithString:@
-kernelWithStringSelector :: Selector
+kernelWithStringSelector :: Selector '[Id NSString] (Id CIBlendKernel)
 kernelWithStringSelector = mkSelector "kernelWithString:"
 
 -- | @Selector@ for @applyWithForeground:background:@
-applyWithForeground_backgroundSelector :: Selector
+applyWithForeground_backgroundSelector :: Selector '[Id CIImage, Id CIImage] (Id CIImage)
 applyWithForeground_backgroundSelector = mkSelector "applyWithForeground:background:"
 
 -- | @Selector@ for @applyWithForeground:background:colorSpace:@
-applyWithForeground_background_colorSpaceSelector :: Selector
+applyWithForeground_background_colorSpaceSelector :: Selector '[Id CIImage, Id CIImage, Ptr ()] (Id CIImage)
 applyWithForeground_background_colorSpaceSelector = mkSelector "applyWithForeground:background:colorSpace:"
 
 -- | @Selector@ for @componentAdd@
-componentAddSelector :: Selector
+componentAddSelector :: Selector '[] (Id CIBlendKernel)
 componentAddSelector = mkSelector "componentAdd"
 
 -- | @Selector@ for @componentMultiply@
-componentMultiplySelector :: Selector
+componentMultiplySelector :: Selector '[] (Id CIBlendKernel)
 componentMultiplySelector = mkSelector "componentMultiply"
 
 -- | @Selector@ for @componentMin@
-componentMinSelector :: Selector
+componentMinSelector :: Selector '[] (Id CIBlendKernel)
 componentMinSelector = mkSelector "componentMin"
 
 -- | @Selector@ for @componentMax@
-componentMaxSelector :: Selector
+componentMaxSelector :: Selector '[] (Id CIBlendKernel)
 componentMaxSelector = mkSelector "componentMax"
 
 -- | @Selector@ for @clear@
-clearSelector :: Selector
+clearSelector :: Selector '[] (Id CIBlendKernel)
 clearSelector = mkSelector "clear"
 
 -- | @Selector@ for @source@
-sourceSelector :: Selector
+sourceSelector :: Selector '[] (Id CIBlendKernel)
 sourceSelector = mkSelector "source"
 
 -- | @Selector@ for @destination@
-destinationSelector :: Selector
+destinationSelector :: Selector '[] (Id CIBlendKernel)
 destinationSelector = mkSelector "destination"
 
 -- | @Selector@ for @sourceOver@
-sourceOverSelector :: Selector
+sourceOverSelector :: Selector '[] (Id CIBlendKernel)
 sourceOverSelector = mkSelector "sourceOver"
 
 -- | @Selector@ for @destinationOver@
-destinationOverSelector :: Selector
+destinationOverSelector :: Selector '[] (Id CIBlendKernel)
 destinationOverSelector = mkSelector "destinationOver"
 
 -- | @Selector@ for @sourceIn@
-sourceInSelector :: Selector
+sourceInSelector :: Selector '[] (Id CIBlendKernel)
 sourceInSelector = mkSelector "sourceIn"
 
 -- | @Selector@ for @destinationIn@
-destinationInSelector :: Selector
+destinationInSelector :: Selector '[] (Id CIBlendKernel)
 destinationInSelector = mkSelector "destinationIn"
 
 -- | @Selector@ for @sourceOut@
-sourceOutSelector :: Selector
+sourceOutSelector :: Selector '[] (Id CIBlendKernel)
 sourceOutSelector = mkSelector "sourceOut"
 
 -- | @Selector@ for @destinationOut@
-destinationOutSelector :: Selector
+destinationOutSelector :: Selector '[] (Id CIBlendKernel)
 destinationOutSelector = mkSelector "destinationOut"
 
 -- | @Selector@ for @sourceAtop@
-sourceAtopSelector :: Selector
+sourceAtopSelector :: Selector '[] (Id CIBlendKernel)
 sourceAtopSelector = mkSelector "sourceAtop"
 
 -- | @Selector@ for @destinationAtop@
-destinationAtopSelector :: Selector
+destinationAtopSelector :: Selector '[] (Id CIBlendKernel)
 destinationAtopSelector = mkSelector "destinationAtop"
 
 -- | @Selector@ for @exclusiveOr@
-exclusiveOrSelector :: Selector
+exclusiveOrSelector :: Selector '[] (Id CIBlendKernel)
 exclusiveOrSelector = mkSelector "exclusiveOr"
 
 -- | @Selector@ for @multiply@
-multiplySelector :: Selector
+multiplySelector :: Selector '[] (Id CIBlendKernel)
 multiplySelector = mkSelector "multiply"
 
 -- | @Selector@ for @screen@
-screenSelector :: Selector
+screenSelector :: Selector '[] (Id CIBlendKernel)
 screenSelector = mkSelector "screen"
 
 -- | @Selector@ for @overlay@
-overlaySelector :: Selector
+overlaySelector :: Selector '[] (Id CIBlendKernel)
 overlaySelector = mkSelector "overlay"
 
 -- | @Selector@ for @darken@
-darkenSelector :: Selector
+darkenSelector :: Selector '[] (Id CIBlendKernel)
 darkenSelector = mkSelector "darken"
 
 -- | @Selector@ for @lighten@
-lightenSelector :: Selector
+lightenSelector :: Selector '[] (Id CIBlendKernel)
 lightenSelector = mkSelector "lighten"
 
 -- | @Selector@ for @colorDodge@
-colorDodgeSelector :: Selector
+colorDodgeSelector :: Selector '[] (Id CIBlendKernel)
 colorDodgeSelector = mkSelector "colorDodge"
 
 -- | @Selector@ for @colorBurn@
-colorBurnSelector :: Selector
+colorBurnSelector :: Selector '[] (Id CIBlendKernel)
 colorBurnSelector = mkSelector "colorBurn"
 
 -- | @Selector@ for @hardLight@
-hardLightSelector :: Selector
+hardLightSelector :: Selector '[] (Id CIBlendKernel)
 hardLightSelector = mkSelector "hardLight"
 
 -- | @Selector@ for @softLight@
-softLightSelector :: Selector
+softLightSelector :: Selector '[] (Id CIBlendKernel)
 softLightSelector = mkSelector "softLight"
 
 -- | @Selector@ for @difference@
-differenceSelector :: Selector
+differenceSelector :: Selector '[] (Id CIBlendKernel)
 differenceSelector = mkSelector "difference"
 
 -- | @Selector@ for @exclusion@
-exclusionSelector :: Selector
+exclusionSelector :: Selector '[] (Id CIBlendKernel)
 exclusionSelector = mkSelector "exclusion"
 
 -- | @Selector@ for @hue@
-hueSelector :: Selector
+hueSelector :: Selector '[] (Id CIBlendKernel)
 hueSelector = mkSelector "hue"
 
 -- | @Selector@ for @saturation@
-saturationSelector :: Selector
+saturationSelector :: Selector '[] (Id CIBlendKernel)
 saturationSelector = mkSelector "saturation"
 
 -- | @Selector@ for @color@
-colorSelector :: Selector
+colorSelector :: Selector '[] (Id CIBlendKernel)
 colorSelector = mkSelector "color"
 
 -- | @Selector@ for @luminosity@
-luminositySelector :: Selector
+luminositySelector :: Selector '[] (Id CIBlendKernel)
 luminositySelector = mkSelector "luminosity"
 
 -- | @Selector@ for @subtract@
-subtractSelector :: Selector
+subtractSelector :: Selector '[] (Id CIBlendKernel)
 subtractSelector = mkSelector "subtract"
 
 -- | @Selector@ for @divide@
-divideSelector :: Selector
+divideSelector :: Selector '[] (Id CIBlendKernel)
 divideSelector = mkSelector "divide"
 
 -- | @Selector@ for @linearBurn@
-linearBurnSelector :: Selector
+linearBurnSelector :: Selector '[] (Id CIBlendKernel)
 linearBurnSelector = mkSelector "linearBurn"
 
 -- | @Selector@ for @linearDodge@
-linearDodgeSelector :: Selector
+linearDodgeSelector :: Selector '[] (Id CIBlendKernel)
 linearDodgeSelector = mkSelector "linearDodge"
 
 -- | @Selector@ for @vividLight@
-vividLightSelector :: Selector
+vividLightSelector :: Selector '[] (Id CIBlendKernel)
 vividLightSelector = mkSelector "vividLight"
 
 -- | @Selector@ for @linearLight@
-linearLightSelector :: Selector
+linearLightSelector :: Selector '[] (Id CIBlendKernel)
 linearLightSelector = mkSelector "linearLight"
 
 -- | @Selector@ for @pinLight@
-pinLightSelector :: Selector
+pinLightSelector :: Selector '[] (Id CIBlendKernel)
 pinLightSelector = mkSelector "pinLight"
 
 -- | @Selector@ for @hardMix@
-hardMixSelector :: Selector
+hardMixSelector :: Selector '[] (Id CIBlendKernel)
 hardMixSelector = mkSelector "hardMix"
 
 -- | @Selector@ for @darkerColor@
-darkerColorSelector :: Selector
+darkerColorSelector :: Selector '[] (Id CIBlendKernel)
 darkerColorSelector = mkSelector "darkerColor"
 
 -- | @Selector@ for @lighterColor@
-lighterColorSelector :: Selector
+lighterColorSelector :: Selector '[] (Id CIBlendKernel)
 lighterColorSelector = mkSelector "lighterColor"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,25 +27,25 @@ module ObjC.AppKit.NSTextFieldCell
   , setPlaceholderAttributedString
   , allowedInputSourceLocales
   , setAllowedInputSourceLocales
+  , allowedInputSourceLocalesSelector
+  , backgroundColorSelector
+  , bezelStyleSelector
+  , drawsBackgroundSelector
+  , initImageCellSelector
   , initTextCellSelector
   , initWithCoderSelector
-  , initImageCellSelector
+  , placeholderAttributedStringSelector
+  , placeholderStringSelector
+  , setAllowedInputSourceLocalesSelector
+  , setBackgroundColorSelector
+  , setBezelStyleSelector
+  , setDrawsBackgroundSelector
+  , setPlaceholderAttributedStringSelector
+  , setPlaceholderStringSelector
+  , setTextColorSelector
   , setUpFieldEditorAttributesSelector
   , setWantsNotificationForMarkedTextSelector
-  , backgroundColorSelector
-  , setBackgroundColorSelector
-  , drawsBackgroundSelector
-  , setDrawsBackgroundSelector
   , textColorSelector
-  , setTextColorSelector
-  , bezelStyleSelector
-  , setBezelStyleSelector
-  , placeholderStringSelector
-  , setPlaceholderStringSelector
-  , placeholderAttributedStringSelector
-  , setPlaceholderAttributedStringSelector
-  , allowedInputSourceLocalesSelector
-  , setAllowedInputSourceLocalesSelector
 
   -- * Enum types
   , NSTextFieldBezelStyle(NSTextFieldBezelStyle)
@@ -53,15 +54,11 @@ module ObjC.AppKit.NSTextFieldCell
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,185 +68,176 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initTextCell:@
 initTextCell :: (IsNSTextFieldCell nsTextFieldCell, IsNSString string) => nsTextFieldCell -> string -> IO (Id NSTextFieldCell)
-initTextCell nsTextFieldCell  string =
-  withObjCPtr string $ \raw_string ->
-      sendMsg nsTextFieldCell (mkSelector "initTextCell:") (retPtr retVoid) [argPtr (castPtr raw_string :: Ptr ())] >>= ownedObject . castPtr
+initTextCell nsTextFieldCell string =
+  sendOwnedMessage nsTextFieldCell initTextCellSelector (toNSString string)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSTextFieldCell nsTextFieldCell, IsNSCoder coder) => nsTextFieldCell -> coder -> IO (Id NSTextFieldCell)
-initWithCoder nsTextFieldCell  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsTextFieldCell (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsTextFieldCell coder =
+  sendOwnedMessage nsTextFieldCell initWithCoderSelector (toNSCoder coder)
 
 -- | @- initImageCell:@
 initImageCell :: (IsNSTextFieldCell nsTextFieldCell, IsNSImage image) => nsTextFieldCell -> image -> IO (Id NSTextFieldCell)
-initImageCell nsTextFieldCell  image =
-  withObjCPtr image $ \raw_image ->
-      sendMsg nsTextFieldCell (mkSelector "initImageCell:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= ownedObject . castPtr
+initImageCell nsTextFieldCell image =
+  sendOwnedMessage nsTextFieldCell initImageCellSelector (toNSImage image)
 
 -- | @- setUpFieldEditorAttributes:@
 setUpFieldEditorAttributes :: (IsNSTextFieldCell nsTextFieldCell, IsNSText textObj) => nsTextFieldCell -> textObj -> IO (Id NSText)
-setUpFieldEditorAttributes nsTextFieldCell  textObj =
-  withObjCPtr textObj $ \raw_textObj ->
-      sendMsg nsTextFieldCell (mkSelector "setUpFieldEditorAttributes:") (retPtr retVoid) [argPtr (castPtr raw_textObj :: Ptr ())] >>= retainedObject . castPtr
+setUpFieldEditorAttributes nsTextFieldCell textObj =
+  sendMessage nsTextFieldCell setUpFieldEditorAttributesSelector (toNSText textObj)
 
 -- | @- setWantsNotificationForMarkedText:@
 setWantsNotificationForMarkedText :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> Bool -> IO ()
-setWantsNotificationForMarkedText nsTextFieldCell  flag =
-    sendMsg nsTextFieldCell (mkSelector "setWantsNotificationForMarkedText:") retVoid [argCULong (if flag then 1 else 0)]
+setWantsNotificationForMarkedText nsTextFieldCell flag =
+  sendMessage nsTextFieldCell setWantsNotificationForMarkedTextSelector flag
 
 -- | @- backgroundColor@
 backgroundColor :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> IO (Id NSColor)
-backgroundColor nsTextFieldCell  =
-    sendMsg nsTextFieldCell (mkSelector "backgroundColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+backgroundColor nsTextFieldCell =
+  sendMessage nsTextFieldCell backgroundColorSelector
 
 -- | @- setBackgroundColor:@
 setBackgroundColor :: (IsNSTextFieldCell nsTextFieldCell, IsNSColor value) => nsTextFieldCell -> value -> IO ()
-setBackgroundColor nsTextFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextFieldCell (mkSelector "setBackgroundColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBackgroundColor nsTextFieldCell value =
+  sendMessage nsTextFieldCell setBackgroundColorSelector (toNSColor value)
 
 -- | @- drawsBackground@
 drawsBackground :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> IO Bool
-drawsBackground nsTextFieldCell  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsTextFieldCell (mkSelector "drawsBackground") retCULong []
+drawsBackground nsTextFieldCell =
+  sendMessage nsTextFieldCell drawsBackgroundSelector
 
 -- | @- setDrawsBackground:@
 setDrawsBackground :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> Bool -> IO ()
-setDrawsBackground nsTextFieldCell  value =
-    sendMsg nsTextFieldCell (mkSelector "setDrawsBackground:") retVoid [argCULong (if value then 1 else 0)]
+setDrawsBackground nsTextFieldCell value =
+  sendMessage nsTextFieldCell setDrawsBackgroundSelector value
 
 -- | @- textColor@
 textColor :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> IO (Id NSColor)
-textColor nsTextFieldCell  =
-    sendMsg nsTextFieldCell (mkSelector "textColor") (retPtr retVoid) [] >>= retainedObject . castPtr
+textColor nsTextFieldCell =
+  sendMessage nsTextFieldCell textColorSelector
 
 -- | @- setTextColor:@
 setTextColor :: (IsNSTextFieldCell nsTextFieldCell, IsNSColor value) => nsTextFieldCell -> value -> IO ()
-setTextColor nsTextFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextFieldCell (mkSelector "setTextColor:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTextColor nsTextFieldCell value =
+  sendMessage nsTextFieldCell setTextColorSelector (toNSColor value)
 
 -- | @- bezelStyle@
 bezelStyle :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> IO NSTextFieldBezelStyle
-bezelStyle nsTextFieldCell  =
-    fmap (coerce :: CULong -> NSTextFieldBezelStyle) $ sendMsg nsTextFieldCell (mkSelector "bezelStyle") retCULong []
+bezelStyle nsTextFieldCell =
+  sendMessage nsTextFieldCell bezelStyleSelector
 
 -- | @- setBezelStyle:@
 setBezelStyle :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> NSTextFieldBezelStyle -> IO ()
-setBezelStyle nsTextFieldCell  value =
-    sendMsg nsTextFieldCell (mkSelector "setBezelStyle:") retVoid [argCULong (coerce value)]
+setBezelStyle nsTextFieldCell value =
+  sendMessage nsTextFieldCell setBezelStyleSelector value
 
 -- | @- placeholderString@
 placeholderString :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> IO (Id NSString)
-placeholderString nsTextFieldCell  =
-    sendMsg nsTextFieldCell (mkSelector "placeholderString") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderString nsTextFieldCell =
+  sendMessage nsTextFieldCell placeholderStringSelector
 
 -- | @- setPlaceholderString:@
 setPlaceholderString :: (IsNSTextFieldCell nsTextFieldCell, IsNSString value) => nsTextFieldCell -> value -> IO ()
-setPlaceholderString nsTextFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextFieldCell (mkSelector "setPlaceholderString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaceholderString nsTextFieldCell value =
+  sendMessage nsTextFieldCell setPlaceholderStringSelector (toNSString value)
 
 -- | @- placeholderAttributedString@
 placeholderAttributedString :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> IO (Id NSAttributedString)
-placeholderAttributedString nsTextFieldCell  =
-    sendMsg nsTextFieldCell (mkSelector "placeholderAttributedString") (retPtr retVoid) [] >>= retainedObject . castPtr
+placeholderAttributedString nsTextFieldCell =
+  sendMessage nsTextFieldCell placeholderAttributedStringSelector
 
 -- | @- setPlaceholderAttributedString:@
 setPlaceholderAttributedString :: (IsNSTextFieldCell nsTextFieldCell, IsNSAttributedString value) => nsTextFieldCell -> value -> IO ()
-setPlaceholderAttributedString nsTextFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextFieldCell (mkSelector "setPlaceholderAttributedString:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlaceholderAttributedString nsTextFieldCell value =
+  sendMessage nsTextFieldCell setPlaceholderAttributedStringSelector (toNSAttributedString value)
 
 -- | @- allowedInputSourceLocales@
 allowedInputSourceLocales :: IsNSTextFieldCell nsTextFieldCell => nsTextFieldCell -> IO (Id NSArray)
-allowedInputSourceLocales nsTextFieldCell  =
-    sendMsg nsTextFieldCell (mkSelector "allowedInputSourceLocales") (retPtr retVoid) [] >>= retainedObject . castPtr
+allowedInputSourceLocales nsTextFieldCell =
+  sendMessage nsTextFieldCell allowedInputSourceLocalesSelector
 
 -- | @- setAllowedInputSourceLocales:@
 setAllowedInputSourceLocales :: (IsNSTextFieldCell nsTextFieldCell, IsNSArray value) => nsTextFieldCell -> value -> IO ()
-setAllowedInputSourceLocales nsTextFieldCell  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsTextFieldCell (mkSelector "setAllowedInputSourceLocales:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAllowedInputSourceLocales nsTextFieldCell value =
+  sendMessage nsTextFieldCell setAllowedInputSourceLocalesSelector (toNSArray value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initTextCell:@
-initTextCellSelector :: Selector
+initTextCellSelector :: Selector '[Id NSString] (Id NSTextFieldCell)
 initTextCellSelector = mkSelector "initTextCell:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSTextFieldCell)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @initImageCell:@
-initImageCellSelector :: Selector
+initImageCellSelector :: Selector '[Id NSImage] (Id NSTextFieldCell)
 initImageCellSelector = mkSelector "initImageCell:"
 
 -- | @Selector@ for @setUpFieldEditorAttributes:@
-setUpFieldEditorAttributesSelector :: Selector
+setUpFieldEditorAttributesSelector :: Selector '[Id NSText] (Id NSText)
 setUpFieldEditorAttributesSelector = mkSelector "setUpFieldEditorAttributes:"
 
 -- | @Selector@ for @setWantsNotificationForMarkedText:@
-setWantsNotificationForMarkedTextSelector :: Selector
+setWantsNotificationForMarkedTextSelector :: Selector '[Bool] ()
 setWantsNotificationForMarkedTextSelector = mkSelector "setWantsNotificationForMarkedText:"
 
 -- | @Selector@ for @backgroundColor@
-backgroundColorSelector :: Selector
+backgroundColorSelector :: Selector '[] (Id NSColor)
 backgroundColorSelector = mkSelector "backgroundColor"
 
 -- | @Selector@ for @setBackgroundColor:@
-setBackgroundColorSelector :: Selector
+setBackgroundColorSelector :: Selector '[Id NSColor] ()
 setBackgroundColorSelector = mkSelector "setBackgroundColor:"
 
 -- | @Selector@ for @drawsBackground@
-drawsBackgroundSelector :: Selector
+drawsBackgroundSelector :: Selector '[] Bool
 drawsBackgroundSelector = mkSelector "drawsBackground"
 
 -- | @Selector@ for @setDrawsBackground:@
-setDrawsBackgroundSelector :: Selector
+setDrawsBackgroundSelector :: Selector '[Bool] ()
 setDrawsBackgroundSelector = mkSelector "setDrawsBackground:"
 
 -- | @Selector@ for @textColor@
-textColorSelector :: Selector
+textColorSelector :: Selector '[] (Id NSColor)
 textColorSelector = mkSelector "textColor"
 
 -- | @Selector@ for @setTextColor:@
-setTextColorSelector :: Selector
+setTextColorSelector :: Selector '[Id NSColor] ()
 setTextColorSelector = mkSelector "setTextColor:"
 
 -- | @Selector@ for @bezelStyle@
-bezelStyleSelector :: Selector
+bezelStyleSelector :: Selector '[] NSTextFieldBezelStyle
 bezelStyleSelector = mkSelector "bezelStyle"
 
 -- | @Selector@ for @setBezelStyle:@
-setBezelStyleSelector :: Selector
+setBezelStyleSelector :: Selector '[NSTextFieldBezelStyle] ()
 setBezelStyleSelector = mkSelector "setBezelStyle:"
 
 -- | @Selector@ for @placeholderString@
-placeholderStringSelector :: Selector
+placeholderStringSelector :: Selector '[] (Id NSString)
 placeholderStringSelector = mkSelector "placeholderString"
 
 -- | @Selector@ for @setPlaceholderString:@
-setPlaceholderStringSelector :: Selector
+setPlaceholderStringSelector :: Selector '[Id NSString] ()
 setPlaceholderStringSelector = mkSelector "setPlaceholderString:"
 
 -- | @Selector@ for @placeholderAttributedString@
-placeholderAttributedStringSelector :: Selector
+placeholderAttributedStringSelector :: Selector '[] (Id NSAttributedString)
 placeholderAttributedStringSelector = mkSelector "placeholderAttributedString"
 
 -- | @Selector@ for @setPlaceholderAttributedString:@
-setPlaceholderAttributedStringSelector :: Selector
+setPlaceholderAttributedStringSelector :: Selector '[Id NSAttributedString] ()
 setPlaceholderAttributedStringSelector = mkSelector "setPlaceholderAttributedString:"
 
 -- | @Selector@ for @allowedInputSourceLocales@
-allowedInputSourceLocalesSelector :: Selector
+allowedInputSourceLocalesSelector :: Selector '[] (Id NSArray)
 allowedInputSourceLocalesSelector = mkSelector "allowedInputSourceLocales"
 
 -- | @Selector@ for @setAllowedInputSourceLocales:@
-setAllowedInputSourceLocalesSelector :: Selector
+setAllowedInputSourceLocalesSelector :: Selector '[Id NSArray] ()
 setAllowedInputSourceLocalesSelector = mkSelector "setAllowedInputSourceLocales:"
 

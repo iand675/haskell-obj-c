@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -56,67 +57,63 @@ module ObjC.Matter.MTRClusterEnergyEVSE
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , disableWithParams_expectedValues_expectedValueInterval_completionSelector
+  , clearTargetsWithExpectedValues_expectedValueInterval_completionSelector
+  , clearTargetsWithParams_expectedValues_expectedValueInterval_completionSelector
   , disableWithExpectedValues_expectedValueInterval_completionSelector
+  , disableWithParams_expectedValues_expectedValueInterval_completionSelector
   , enableChargingWithParams_expectedValues_expectedValueInterval_completionSelector
   , enableDischargingWithParams_expectedValues_expectedValueInterval_completionSelector
-  , startDiagnosticsWithParams_expectedValues_expectedValueInterval_completionSelector
-  , startDiagnosticsWithExpectedValues_expectedValueInterval_completionSelector
-  , setTargetsWithParams_expectedValues_expectedValueInterval_completionSelector
-  , getTargetsWithParams_expectedValues_expectedValueInterval_completionSelector
   , getTargetsWithExpectedValues_expectedValueInterval_completionSelector
-  , clearTargetsWithParams_expectedValues_expectedValueInterval_completionSelector
-  , clearTargetsWithExpectedValues_expectedValueInterval_completionSelector
-  , readAttributeStateWithParamsSelector
-  , readAttributeSupplyStateWithParamsSelector
-  , readAttributeFaultStateWithParamsSelector
+  , getTargetsWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
+  , readAttributeApproximateEVEfficiencyWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeBatteryCapacityWithParamsSelector
   , readAttributeChargingEnabledUntilWithParamsSelector
-  , readAttributeDischargingEnabledUntilWithParamsSelector
   , readAttributeCircuitCapacityWithParamsSelector
-  , readAttributeMinimumChargeCurrentWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeDischargingEnabledUntilWithParamsSelector
+  , readAttributeFaultStateWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
   , readAttributeMaximumChargeCurrentWithParamsSelector
   , readAttributeMaximumDischargeCurrentWithParamsSelector
-  , readAttributeUserMaximumChargeCurrentWithParamsSelector
-  , writeAttributeUserMaximumChargeCurrentWithValue_expectedValueIntervalSelector
-  , writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval_paramsSelector
-  , readAttributeRandomizationDelayWindowWithParamsSelector
-  , writeAttributeRandomizationDelayWindowWithValue_expectedValueIntervalSelector
-  , writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval_paramsSelector
-  , readAttributeNextChargeStartTimeWithParamsSelector
-  , readAttributeNextChargeTargetTimeWithParamsSelector
+  , readAttributeMinimumChargeCurrentWithParamsSelector
   , readAttributeNextChargeRequiredEnergyWithParamsSelector
+  , readAttributeNextChargeStartTimeWithParamsSelector
   , readAttributeNextChargeTargetSoCWithParamsSelector
-  , readAttributeApproximateEVEfficiencyWithParamsSelector
-  , writeAttributeApproximateEVEfficiencyWithValue_expectedValueIntervalSelector
-  , writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval_paramsSelector
-  , readAttributeStateOfChargeWithParamsSelector
-  , readAttributeBatteryCapacityWithParamsSelector
-  , readAttributeVehicleIDWithParamsSelector
-  , readAttributeSessionIDWithParamsSelector
+  , readAttributeNextChargeTargetTimeWithParamsSelector
+  , readAttributeRandomizationDelayWindowWithParamsSelector
   , readAttributeSessionDurationWithParamsSelector
   , readAttributeSessionEnergyChargedWithParamsSelector
   , readAttributeSessionEnergyDischargedWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
+  , readAttributeSessionIDWithParamsSelector
+  , readAttributeStateOfChargeWithParamsSelector
+  , readAttributeStateWithParamsSelector
+  , readAttributeSupplyStateWithParamsSelector
+  , readAttributeUserMaximumChargeCurrentWithParamsSelector
+  , readAttributeVehicleIDWithParamsSelector
+  , setTargetsWithParams_expectedValues_expectedValueInterval_completionSelector
+  , startDiagnosticsWithExpectedValues_expectedValueInterval_completionSelector
+  , startDiagnosticsWithParams_expectedValues_expectedValueInterval_completionSelector
+  , writeAttributeApproximateEVEfficiencyWithValue_expectedValueIntervalSelector
+  , writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeRandomizationDelayWindowWithValue_expectedValueIntervalSelector
+  , writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval_paramsSelector
+  , writeAttributeUserMaximumChargeCurrentWithValue_expectedValueIntervalSelector
+  , writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval_paramsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -125,516 +122,441 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- disableWithParams:expectedValues:expectedValueInterval:completion:@
 disableWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTREnergyEVSEClusterDisableParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-disableWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "disableWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+disableWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE disableWithParams_expectedValues_expectedValueInterval_completionSelector (toMTREnergyEVSEClusterDisableParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- disableWithExpectedValues:expectedValueInterval:completion:@
 disableWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-disableWithExpectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEnergyEVSE (mkSelector "disableWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+disableWithExpectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE disableWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- enableChargingWithParams:expectedValues:expectedValueInterval:completion:@
 enableChargingWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTREnergyEVSEClusterEnableChargingParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enableChargingWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "enableChargingWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+enableChargingWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE enableChargingWithParams_expectedValues_expectedValueInterval_completionSelector (toMTREnergyEVSEClusterEnableChargingParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- enableDischargingWithParams:expectedValues:expectedValueInterval:completion:@
 enableDischargingWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTREnergyEVSEClusterEnableDischargingParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-enableDischargingWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "enableDischargingWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+enableDischargingWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE enableDischargingWithParams_expectedValues_expectedValueInterval_completionSelector (toMTREnergyEVSEClusterEnableDischargingParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- startDiagnosticsWithParams:expectedValues:expectedValueInterval:completion:@
 startDiagnosticsWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTREnergyEVSEClusterStartDiagnosticsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-startDiagnosticsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "startDiagnosticsWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+startDiagnosticsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE startDiagnosticsWithParams_expectedValues_expectedValueInterval_completionSelector (toMTREnergyEVSEClusterStartDiagnosticsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- startDiagnosticsWithExpectedValues:expectedValueInterval:completion:@
 startDiagnosticsWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-startDiagnosticsWithExpectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEnergyEVSE (mkSelector "startDiagnosticsWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+startDiagnosticsWithExpectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE startDiagnosticsWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setTargetsWithParams:expectedValues:expectedValueInterval:completion:@
 setTargetsWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTREnergyEVSEClusterSetTargetsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setTargetsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "setTargetsWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setTargetsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE setTargetsWithParams_expectedValues_expectedValueInterval_completionSelector (toMTREnergyEVSEClusterSetTargetsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getTargetsWithParams:expectedValues:expectedValueInterval:completion:@
 getTargetsWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTREnergyEVSEClusterGetTargetsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getTargetsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "getTargetsWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getTargetsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE getTargetsWithParams_expectedValues_expectedValueInterval_completionSelector (toMTREnergyEVSEClusterGetTargetsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getTargetsWithExpectedValues:expectedValueInterval:completion:@
 getTargetsWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-getTargetsWithExpectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEnergyEVSE (mkSelector "getTargetsWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getTargetsWithExpectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE getTargetsWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearTargetsWithParams:expectedValues:expectedValueInterval:completion:@
 clearTargetsWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTREnergyEVSEClusterClearTargetsParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearTargetsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "clearTargetsWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearTargetsWithParams_expectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE clearTargetsWithParams_expectedValues_expectedValueInterval_completionSelector (toMTREnergyEVSEClusterClearTargetsParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- clearTargetsWithExpectedValues:expectedValueInterval:completion:@
 clearTargetsWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-clearTargetsWithExpectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEnergyEVSE (mkSelector "clearTargetsWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+clearTargetsWithExpectedValues_expectedValueInterval_completion mtrClusterEnergyEVSE expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterEnergyEVSE clearTargetsWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeStateWithParams:@
 readAttributeStateWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeStateWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeStateWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSupplyStateWithParams:@
 readAttributeSupplyStateWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeSupplyStateWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeSupplyStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSupplyStateWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeSupplyStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFaultStateWithParams:@
 readAttributeFaultStateWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeFaultStateWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeFaultStateWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFaultStateWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeFaultStateWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeChargingEnabledUntilWithParams:@
 readAttributeChargingEnabledUntilWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeChargingEnabledUntilWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeChargingEnabledUntilWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeChargingEnabledUntilWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeChargingEnabledUntilWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeDischargingEnabledUntilWithParams:@
 readAttributeDischargingEnabledUntilWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeDischargingEnabledUntilWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeDischargingEnabledUntilWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeDischargingEnabledUntilWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeDischargingEnabledUntilWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeCircuitCapacityWithParams:@
 readAttributeCircuitCapacityWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeCircuitCapacityWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeCircuitCapacityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeCircuitCapacityWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeCircuitCapacityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMinimumChargeCurrentWithParams:@
 readAttributeMinimumChargeCurrentWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeMinimumChargeCurrentWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeMinimumChargeCurrentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMinimumChargeCurrentWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeMinimumChargeCurrentWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaximumChargeCurrentWithParams:@
 readAttributeMaximumChargeCurrentWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeMaximumChargeCurrentWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeMaximumChargeCurrentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaximumChargeCurrentWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeMaximumChargeCurrentWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeMaximumDischargeCurrentWithParams:@
 readAttributeMaximumDischargeCurrentWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeMaximumDischargeCurrentWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeMaximumDischargeCurrentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeMaximumDischargeCurrentWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeMaximumDischargeCurrentWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeUserMaximumChargeCurrentWithParams:@
 readAttributeUserMaximumChargeCurrentWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeUserMaximumChargeCurrentWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeUserMaximumChargeCurrentWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeUserMaximumChargeCurrentWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeUserMaximumChargeCurrentWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeUserMaximumChargeCurrentWithValue:expectedValueInterval:@
 writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval mtrClusterEnergyEVSE  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEnergyEVSE (mkSelector "writeAttributeUserMaximumChargeCurrentWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval mtrClusterEnergyEVSE dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterEnergyEVSE writeAttributeUserMaximumChargeCurrentWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeUserMaximumChargeCurrentWithValue:expectedValueInterval:params:@
 writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval_params :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterEnergyEVSE -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval_params mtrClusterEnergyEVSE  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "writeAttributeUserMaximumChargeCurrentWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval_params mtrClusterEnergyEVSE dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterEnergyEVSE writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeRandomizationDelayWindowWithParams:@
 readAttributeRandomizationDelayWindowWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeRandomizationDelayWindowWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeRandomizationDelayWindowWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeRandomizationDelayWindowWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeRandomizationDelayWindowWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeRandomizationDelayWindowWithValue:expectedValueInterval:@
 writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval mtrClusterEnergyEVSE  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEnergyEVSE (mkSelector "writeAttributeRandomizationDelayWindowWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval mtrClusterEnergyEVSE dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterEnergyEVSE writeAttributeRandomizationDelayWindowWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeRandomizationDelayWindowWithValue:expectedValueInterval:params:@
 writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval_params :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterEnergyEVSE -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval_params mtrClusterEnergyEVSE  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "writeAttributeRandomizationDelayWindowWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval_params mtrClusterEnergyEVSE dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterEnergyEVSE writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeNextChargeStartTimeWithParams:@
 readAttributeNextChargeStartTimeWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeNextChargeStartTimeWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeNextChargeStartTimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNextChargeStartTimeWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeNextChargeStartTimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNextChargeTargetTimeWithParams:@
 readAttributeNextChargeTargetTimeWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeNextChargeTargetTimeWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeNextChargeTargetTimeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNextChargeTargetTimeWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeNextChargeTargetTimeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNextChargeRequiredEnergyWithParams:@
 readAttributeNextChargeRequiredEnergyWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeNextChargeRequiredEnergyWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeNextChargeRequiredEnergyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNextChargeRequiredEnergyWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeNextChargeRequiredEnergyWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeNextChargeTargetSoCWithParams:@
 readAttributeNextChargeTargetSoCWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeNextChargeTargetSoCWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeNextChargeTargetSoCWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeNextChargeTargetSoCWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeNextChargeTargetSoCWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeApproximateEVEfficiencyWithParams:@
 readAttributeApproximateEVEfficiencyWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeApproximateEVEfficiencyWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeApproximateEVEfficiencyWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeApproximateEVEfficiencyWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeApproximateEVEfficiencyWithParamsSelector (toMTRReadParams params)
 
 -- | @- writeAttributeApproximateEVEfficiencyWithValue:expectedValueInterval:@
 writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs) => mtrClusterEnergyEVSE -> dataValueDictionary -> expectedValueIntervalMs -> IO ()
-writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval mtrClusterEnergyEVSE  dataValueDictionary expectedValueIntervalMs =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterEnergyEVSE (mkSelector "writeAttributeApproximateEVEfficiencyWithValue:expectedValueInterval:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ())]
+writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval mtrClusterEnergyEVSE dataValueDictionary expectedValueIntervalMs =
+  sendMessage mtrClusterEnergyEVSE writeAttributeApproximateEVEfficiencyWithValue_expectedValueIntervalSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs)
 
 -- | @- writeAttributeApproximateEVEfficiencyWithValue:expectedValueInterval:params:@
 writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval_params :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsNSDictionary dataValueDictionary, IsNSNumber expectedValueIntervalMs, IsMTRWriteParams params) => mtrClusterEnergyEVSE -> dataValueDictionary -> expectedValueIntervalMs -> params -> IO ()
-writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval_params mtrClusterEnergyEVSE  dataValueDictionary expectedValueIntervalMs params =
-  withObjCPtr dataValueDictionary $ \raw_dataValueDictionary ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-      withObjCPtr params $ \raw_params ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "writeAttributeApproximateEVEfficiencyWithValue:expectedValueInterval:params:") retVoid [argPtr (castPtr raw_dataValueDictionary :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr raw_params :: Ptr ())]
+writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval_params mtrClusterEnergyEVSE dataValueDictionary expectedValueIntervalMs params =
+  sendMessage mtrClusterEnergyEVSE writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval_paramsSelector (toNSDictionary dataValueDictionary) (toNSNumber expectedValueIntervalMs) (toMTRWriteParams params)
 
 -- | @- readAttributeStateOfChargeWithParams:@
 readAttributeStateOfChargeWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeStateOfChargeWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeStateOfChargeWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeStateOfChargeWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeStateOfChargeWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeBatteryCapacityWithParams:@
 readAttributeBatteryCapacityWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeBatteryCapacityWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeBatteryCapacityWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBatteryCapacityWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeBatteryCapacityWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeVehicleIDWithParams:@
 readAttributeVehicleIDWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeVehicleIDWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeVehicleIDWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeVehicleIDWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeVehicleIDWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSessionIDWithParams:@
 readAttributeSessionIDWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeSessionIDWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeSessionIDWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSessionIDWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeSessionIDWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSessionDurationWithParams:@
 readAttributeSessionDurationWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeSessionDurationWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeSessionDurationWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSessionDurationWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeSessionDurationWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSessionEnergyChargedWithParams:@
 readAttributeSessionEnergyChargedWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeSessionEnergyChargedWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeSessionEnergyChargedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSessionEnergyChargedWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeSessionEnergyChargedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeSessionEnergyDischargedWithParams:@
 readAttributeSessionEnergyDischargedWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeSessionEnergyDischargedWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeSessionEnergyDischargedWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeSessionEnergyDischargedWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeSessionEnergyDischargedWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRReadParams params) => mtrClusterEnergyEVSE -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterEnergyEVSE  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterEnergyEVSE (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterEnergyEVSE params =
+  sendMessage mtrClusterEnergyEVSE readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE => mtrClusterEnergyEVSE -> IO (Id MTRClusterEnergyEVSE)
-init_ mtrClusterEnergyEVSE  =
-    sendMsg mtrClusterEnergyEVSE (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterEnergyEVSE =
+  sendOwnedMessage mtrClusterEnergyEVSE initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterEnergyEVSE)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterEnergyEVSE"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterEnergyEVSE mtrClusterEnergyEVSE, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterEnergyEVSE -> device -> endpointID -> queue -> IO (Id MTRClusterEnergyEVSE)
-initWithDevice_endpointID_queue mtrClusterEnergyEVSE  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterEnergyEVSE (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterEnergyEVSE device endpointID queue =
+  sendOwnedMessage mtrClusterEnergyEVSE initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @disableWithParams:expectedValues:expectedValueInterval:completion:@
-disableWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+disableWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTREnergyEVSEClusterDisableParams, Id NSArray, Id NSNumber, Ptr ()] ()
 disableWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "disableWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @disableWithExpectedValues:expectedValueInterval:completion:@
-disableWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+disableWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 disableWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "disableWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @enableChargingWithParams:expectedValues:expectedValueInterval:completion:@
-enableChargingWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+enableChargingWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTREnergyEVSEClusterEnableChargingParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enableChargingWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "enableChargingWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @enableDischargingWithParams:expectedValues:expectedValueInterval:completion:@
-enableDischargingWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+enableDischargingWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTREnergyEVSEClusterEnableDischargingParams, Id NSArray, Id NSNumber, Ptr ()] ()
 enableDischargingWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "enableDischargingWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @startDiagnosticsWithParams:expectedValues:expectedValueInterval:completion:@
-startDiagnosticsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+startDiagnosticsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTREnergyEVSEClusterStartDiagnosticsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 startDiagnosticsWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "startDiagnosticsWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @startDiagnosticsWithExpectedValues:expectedValueInterval:completion:@
-startDiagnosticsWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+startDiagnosticsWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 startDiagnosticsWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "startDiagnosticsWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setTargetsWithParams:expectedValues:expectedValueInterval:completion:@
-setTargetsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setTargetsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTREnergyEVSEClusterSetTargetsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setTargetsWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setTargetsWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getTargetsWithParams:expectedValues:expectedValueInterval:completion:@
-getTargetsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getTargetsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTREnergyEVSEClusterGetTargetsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getTargetsWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getTargetsWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getTargetsWithExpectedValues:expectedValueInterval:completion:@
-getTargetsWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+getTargetsWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 getTargetsWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "getTargetsWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearTargetsWithParams:expectedValues:expectedValueInterval:completion:@
-clearTargetsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+clearTargetsWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTREnergyEVSEClusterClearTargetsParams, Id NSArray, Id NSNumber, Ptr ()] ()
 clearTargetsWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "clearTargetsWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @clearTargetsWithExpectedValues:expectedValueInterval:completion:@
-clearTargetsWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+clearTargetsWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 clearTargetsWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "clearTargetsWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeStateWithParams:@
-readAttributeStateWithParamsSelector :: Selector
+readAttributeStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeStateWithParamsSelector = mkSelector "readAttributeStateWithParams:"
 
 -- | @Selector@ for @readAttributeSupplyStateWithParams:@
-readAttributeSupplyStateWithParamsSelector :: Selector
+readAttributeSupplyStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSupplyStateWithParamsSelector = mkSelector "readAttributeSupplyStateWithParams:"
 
 -- | @Selector@ for @readAttributeFaultStateWithParams:@
-readAttributeFaultStateWithParamsSelector :: Selector
+readAttributeFaultStateWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFaultStateWithParamsSelector = mkSelector "readAttributeFaultStateWithParams:"
 
 -- | @Selector@ for @readAttributeChargingEnabledUntilWithParams:@
-readAttributeChargingEnabledUntilWithParamsSelector :: Selector
+readAttributeChargingEnabledUntilWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeChargingEnabledUntilWithParamsSelector = mkSelector "readAttributeChargingEnabledUntilWithParams:"
 
 -- | @Selector@ for @readAttributeDischargingEnabledUntilWithParams:@
-readAttributeDischargingEnabledUntilWithParamsSelector :: Selector
+readAttributeDischargingEnabledUntilWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeDischargingEnabledUntilWithParamsSelector = mkSelector "readAttributeDischargingEnabledUntilWithParams:"
 
 -- | @Selector@ for @readAttributeCircuitCapacityWithParams:@
-readAttributeCircuitCapacityWithParamsSelector :: Selector
+readAttributeCircuitCapacityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeCircuitCapacityWithParamsSelector = mkSelector "readAttributeCircuitCapacityWithParams:"
 
 -- | @Selector@ for @readAttributeMinimumChargeCurrentWithParams:@
-readAttributeMinimumChargeCurrentWithParamsSelector :: Selector
+readAttributeMinimumChargeCurrentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMinimumChargeCurrentWithParamsSelector = mkSelector "readAttributeMinimumChargeCurrentWithParams:"
 
 -- | @Selector@ for @readAttributeMaximumChargeCurrentWithParams:@
-readAttributeMaximumChargeCurrentWithParamsSelector :: Selector
+readAttributeMaximumChargeCurrentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaximumChargeCurrentWithParamsSelector = mkSelector "readAttributeMaximumChargeCurrentWithParams:"
 
 -- | @Selector@ for @readAttributeMaximumDischargeCurrentWithParams:@
-readAttributeMaximumDischargeCurrentWithParamsSelector :: Selector
+readAttributeMaximumDischargeCurrentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeMaximumDischargeCurrentWithParamsSelector = mkSelector "readAttributeMaximumDischargeCurrentWithParams:"
 
 -- | @Selector@ for @readAttributeUserMaximumChargeCurrentWithParams:@
-readAttributeUserMaximumChargeCurrentWithParamsSelector :: Selector
+readAttributeUserMaximumChargeCurrentWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeUserMaximumChargeCurrentWithParamsSelector = mkSelector "readAttributeUserMaximumChargeCurrentWithParams:"
 
 -- | @Selector@ for @writeAttributeUserMaximumChargeCurrentWithValue:expectedValueInterval:@
-writeAttributeUserMaximumChargeCurrentWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeUserMaximumChargeCurrentWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeUserMaximumChargeCurrentWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeUserMaximumChargeCurrentWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeUserMaximumChargeCurrentWithValue:expectedValueInterval:params:@
-writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeUserMaximumChargeCurrentWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeUserMaximumChargeCurrentWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeRandomizationDelayWindowWithParams:@
-readAttributeRandomizationDelayWindowWithParamsSelector :: Selector
+readAttributeRandomizationDelayWindowWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeRandomizationDelayWindowWithParamsSelector = mkSelector "readAttributeRandomizationDelayWindowWithParams:"
 
 -- | @Selector@ for @writeAttributeRandomizationDelayWindowWithValue:expectedValueInterval:@
-writeAttributeRandomizationDelayWindowWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeRandomizationDelayWindowWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeRandomizationDelayWindowWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeRandomizationDelayWindowWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeRandomizationDelayWindowWithValue:expectedValueInterval:params:@
-writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeRandomizationDelayWindowWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeRandomizationDelayWindowWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeNextChargeStartTimeWithParams:@
-readAttributeNextChargeStartTimeWithParamsSelector :: Selector
+readAttributeNextChargeStartTimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNextChargeStartTimeWithParamsSelector = mkSelector "readAttributeNextChargeStartTimeWithParams:"
 
 -- | @Selector@ for @readAttributeNextChargeTargetTimeWithParams:@
-readAttributeNextChargeTargetTimeWithParamsSelector :: Selector
+readAttributeNextChargeTargetTimeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNextChargeTargetTimeWithParamsSelector = mkSelector "readAttributeNextChargeTargetTimeWithParams:"
 
 -- | @Selector@ for @readAttributeNextChargeRequiredEnergyWithParams:@
-readAttributeNextChargeRequiredEnergyWithParamsSelector :: Selector
+readAttributeNextChargeRequiredEnergyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNextChargeRequiredEnergyWithParamsSelector = mkSelector "readAttributeNextChargeRequiredEnergyWithParams:"
 
 -- | @Selector@ for @readAttributeNextChargeTargetSoCWithParams:@
-readAttributeNextChargeTargetSoCWithParamsSelector :: Selector
+readAttributeNextChargeTargetSoCWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeNextChargeTargetSoCWithParamsSelector = mkSelector "readAttributeNextChargeTargetSoCWithParams:"
 
 -- | @Selector@ for @readAttributeApproximateEVEfficiencyWithParams:@
-readAttributeApproximateEVEfficiencyWithParamsSelector :: Selector
+readAttributeApproximateEVEfficiencyWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeApproximateEVEfficiencyWithParamsSelector = mkSelector "readAttributeApproximateEVEfficiencyWithParams:"
 
 -- | @Selector@ for @writeAttributeApproximateEVEfficiencyWithValue:expectedValueInterval:@
-writeAttributeApproximateEVEfficiencyWithValue_expectedValueIntervalSelector :: Selector
+writeAttributeApproximateEVEfficiencyWithValue_expectedValueIntervalSelector :: Selector '[Id NSDictionary, Id NSNumber] ()
 writeAttributeApproximateEVEfficiencyWithValue_expectedValueIntervalSelector = mkSelector "writeAttributeApproximateEVEfficiencyWithValue:expectedValueInterval:"
 
 -- | @Selector@ for @writeAttributeApproximateEVEfficiencyWithValue:expectedValueInterval:params:@
-writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval_paramsSelector :: Selector
+writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval_paramsSelector :: Selector '[Id NSDictionary, Id NSNumber, Id MTRWriteParams] ()
 writeAttributeApproximateEVEfficiencyWithValue_expectedValueInterval_paramsSelector = mkSelector "writeAttributeApproximateEVEfficiencyWithValue:expectedValueInterval:params:"
 
 -- | @Selector@ for @readAttributeStateOfChargeWithParams:@
-readAttributeStateOfChargeWithParamsSelector :: Selector
+readAttributeStateOfChargeWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeStateOfChargeWithParamsSelector = mkSelector "readAttributeStateOfChargeWithParams:"
 
 -- | @Selector@ for @readAttributeBatteryCapacityWithParams:@
-readAttributeBatteryCapacityWithParamsSelector :: Selector
+readAttributeBatteryCapacityWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBatteryCapacityWithParamsSelector = mkSelector "readAttributeBatteryCapacityWithParams:"
 
 -- | @Selector@ for @readAttributeVehicleIDWithParams:@
-readAttributeVehicleIDWithParamsSelector :: Selector
+readAttributeVehicleIDWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeVehicleIDWithParamsSelector = mkSelector "readAttributeVehicleIDWithParams:"
 
 -- | @Selector@ for @readAttributeSessionIDWithParams:@
-readAttributeSessionIDWithParamsSelector :: Selector
+readAttributeSessionIDWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSessionIDWithParamsSelector = mkSelector "readAttributeSessionIDWithParams:"
 
 -- | @Selector@ for @readAttributeSessionDurationWithParams:@
-readAttributeSessionDurationWithParamsSelector :: Selector
+readAttributeSessionDurationWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSessionDurationWithParamsSelector = mkSelector "readAttributeSessionDurationWithParams:"
 
 -- | @Selector@ for @readAttributeSessionEnergyChargedWithParams:@
-readAttributeSessionEnergyChargedWithParamsSelector :: Selector
+readAttributeSessionEnergyChargedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSessionEnergyChargedWithParamsSelector = mkSelector "readAttributeSessionEnergyChargedWithParams:"
 
 -- | @Selector@ for @readAttributeSessionEnergyDischargedWithParams:@
-readAttributeSessionEnergyDischargedWithParamsSelector :: Selector
+readAttributeSessionEnergyDischargedWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeSessionEnergyDischargedWithParamsSelector = mkSelector "readAttributeSessionEnergyDischargedWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterEnergyEVSE)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterEnergyEVSE)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterEnergyEVSE)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

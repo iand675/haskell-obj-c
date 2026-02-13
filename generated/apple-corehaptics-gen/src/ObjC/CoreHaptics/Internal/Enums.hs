@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.CoreHaptics.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | CHHapticEngineFinishedAction
 --
@@ -32,6 +35,16 @@ pattern CHHapticEngineFinishedActionStopEngine = CHHapticEngineFinishedAction 1
 
 pattern CHHapticEngineFinishedActionLeaveEngineRunning :: CHHapticEngineFinishedAction
 pattern CHHapticEngineFinishedActionLeaveEngineRunning = CHHapticEngineFinishedAction 2
+
+instance ObjCArgument CHHapticEngineFinishedAction where
+  withObjCArg (CHHapticEngineFinishedAction x) k = k (argCLong x)
+
+instance ObjCReturn CHHapticEngineFinishedAction where
+  type RawReturn CHHapticEngineFinishedAction = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CHHapticEngineFinishedAction x)
+  fromOwned x = pure (CHHapticEngineFinishedAction x)
 
 -- | CHHapticEngineStoppedReason
 --
@@ -89,6 +102,16 @@ pattern CHHapticEngineStoppedReasonGameControllerDisconnect = CHHapticEngineStop
 
 pattern CHHapticEngineStoppedReasonSystemError :: CHHapticEngineStoppedReason
 pattern CHHapticEngineStoppedReasonSystemError = CHHapticEngineStoppedReason (-1)
+
+instance ObjCArgument CHHapticEngineStoppedReason where
+  withObjCArg (CHHapticEngineStoppedReason x) k = k (argCLong x)
+
+instance ObjCReturn CHHapticEngineStoppedReason where
+  type RawReturn CHHapticEngineStoppedReason = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CHHapticEngineStoppedReason x)
+  fromOwned x = pure (CHHapticEngineStoppedReason x)
 
 -- | @CHHapticErrorCode@
 newtype CHHapticErrorCode = CHHapticErrorCode CLong
@@ -166,3 +189,13 @@ pattern CHHapticErrorCodeUnknownError = CHHapticErrorCode (-4898)
 
 pattern CHHapticErrorCodeMemoryError :: CHHapticErrorCode
 pattern CHHapticErrorCodeMemoryError = CHHapticErrorCode (-4899)
+
+instance ObjCArgument CHHapticErrorCode where
+  withObjCArg (CHHapticErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn CHHapticErrorCode where
+  type RawReturn CHHapticErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (CHHapticErrorCode x)
+  fromOwned x = pure (CHHapticErrorCode x)

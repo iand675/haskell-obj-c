@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,15 +35,15 @@ module ObjC.Vision.VNTrackOpticalFlowRequest
   , keepNetworkOutput
   , setKeepNetworkOutput
   , results
+  , computationAccuracySelector
   , initSelector
   , initWithCompletionHandlerSelector
-  , computationAccuracySelector
-  , setComputationAccuracySelector
-  , outputPixelFormatSelector
-  , setOutputPixelFormatSelector
   , keepNetworkOutputSelector
-  , setKeepNetworkOutputSelector
+  , outputPixelFormatSelector
   , resultsSelector
+  , setComputationAccuracySelector
+  , setKeepNetworkOutputSelector
+  , setOutputPixelFormatSelector
 
   -- * Enum types
   , VNTrackOpticalFlowRequestComputationAccuracy(VNTrackOpticalFlowRequestComputationAccuracy)
@@ -53,15 +54,11 @@ module ObjC.Vision.VNTrackOpticalFlowRequest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,8 +72,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- init@
 init_ :: IsVNTrackOpticalFlowRequest vnTrackOpticalFlowRequest => vnTrackOpticalFlowRequest -> IO (Id VNTrackOpticalFlowRequest)
-init_ vnTrackOpticalFlowRequest  =
-    sendMsg vnTrackOpticalFlowRequest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vnTrackOpticalFlowRequest =
+  sendOwnedMessage vnTrackOpticalFlowRequest initSelector
 
 -- | Create a new request that can statefully track the optical from from one image to another.
 --
@@ -84,8 +81,8 @@ init_ vnTrackOpticalFlowRequest  =
 --
 -- ObjC selector: @- initWithCompletionHandler:@
 initWithCompletionHandler :: IsVNTrackOpticalFlowRequest vnTrackOpticalFlowRequest => vnTrackOpticalFlowRequest -> Ptr () -> IO (Id VNTrackOpticalFlowRequest)
-initWithCompletionHandler vnTrackOpticalFlowRequest  completionHandler =
-    sendMsg vnTrackOpticalFlowRequest (mkSelector "initWithCompletionHandler:") (retPtr retVoid) [argPtr (castPtr completionHandler :: Ptr ())] >>= ownedObject . castPtr
+initWithCompletionHandler vnTrackOpticalFlowRequest completionHandler =
+  sendOwnedMessage vnTrackOpticalFlowRequest initWithCompletionHandlerSelector completionHandler
 
 -- | The level of accuracy used to compute the optical flow. Default is VNTrackOpticalFlowRequestComputationAccuracyMedium.
 --
@@ -93,8 +90,8 @@ initWithCompletionHandler vnTrackOpticalFlowRequest  completionHandler =
 --
 -- ObjC selector: @- computationAccuracy@
 computationAccuracy :: IsVNTrackOpticalFlowRequest vnTrackOpticalFlowRequest => vnTrackOpticalFlowRequest -> IO VNTrackOpticalFlowRequestComputationAccuracy
-computationAccuracy vnTrackOpticalFlowRequest  =
-    fmap (coerce :: CULong -> VNTrackOpticalFlowRequestComputationAccuracy) $ sendMsg vnTrackOpticalFlowRequest (mkSelector "computationAccuracy") retCULong []
+computationAccuracy vnTrackOpticalFlowRequest =
+  sendMessage vnTrackOpticalFlowRequest computationAccuracySelector
 
 -- | The level of accuracy used to compute the optical flow. Default is VNTrackOpticalFlowRequestComputationAccuracyMedium.
 --
@@ -102,22 +99,22 @@ computationAccuracy vnTrackOpticalFlowRequest  =
 --
 -- ObjC selector: @- setComputationAccuracy:@
 setComputationAccuracy :: IsVNTrackOpticalFlowRequest vnTrackOpticalFlowRequest => vnTrackOpticalFlowRequest -> VNTrackOpticalFlowRequestComputationAccuracy -> IO ()
-setComputationAccuracy vnTrackOpticalFlowRequest  value =
-    sendMsg vnTrackOpticalFlowRequest (mkSelector "setComputationAccuracy:") retVoid [argCULong (coerce value)]
+setComputationAccuracy vnTrackOpticalFlowRequest value =
+  sendMessage vnTrackOpticalFlowRequest setComputationAccuracySelector value
 
 -- | Pixel format type of the output buffer. Valid values are @kCVPixelFormatType_TwoComponent32Float@ and @kCVPixelFormatType_TwoComponent16Half@.  Default is @kCVPixelFormatType_TwoComponent32Float@.
 --
 -- ObjC selector: @- outputPixelFormat@
 outputPixelFormat :: IsVNTrackOpticalFlowRequest vnTrackOpticalFlowRequest => vnTrackOpticalFlowRequest -> IO CUInt
-outputPixelFormat vnTrackOpticalFlowRequest  =
-    sendMsg vnTrackOpticalFlowRequest (mkSelector "outputPixelFormat") retCUInt []
+outputPixelFormat vnTrackOpticalFlowRequest =
+  sendMessage vnTrackOpticalFlowRequest outputPixelFormatSelector
 
 -- | Pixel format type of the output buffer. Valid values are @kCVPixelFormatType_TwoComponent32Float@ and @kCVPixelFormatType_TwoComponent16Half@.  Default is @kCVPixelFormatType_TwoComponent32Float@.
 --
 -- ObjC selector: @- setOutputPixelFormat:@
 setOutputPixelFormat :: IsVNTrackOpticalFlowRequest vnTrackOpticalFlowRequest => vnTrackOpticalFlowRequest -> CUInt -> IO ()
-setOutputPixelFormat vnTrackOpticalFlowRequest  value =
-    sendMsg vnTrackOpticalFlowRequest (mkSelector "setOutputPixelFormat:") retVoid [argCUInt value]
+setOutputPixelFormat vnTrackOpticalFlowRequest value =
+  sendMessage vnTrackOpticalFlowRequest setOutputPixelFormatSelector value
 
 -- | Setting this to @YES@ will keep the raw pixel buffer coming from the the ML network. The default is @NO@.
 --
@@ -125,8 +122,8 @@ setOutputPixelFormat vnTrackOpticalFlowRequest  value =
 --
 -- ObjC selector: @- keepNetworkOutput@
 keepNetworkOutput :: IsVNTrackOpticalFlowRequest vnTrackOpticalFlowRequest => vnTrackOpticalFlowRequest -> IO Bool
-keepNetworkOutput vnTrackOpticalFlowRequest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vnTrackOpticalFlowRequest (mkSelector "keepNetworkOutput") retCULong []
+keepNetworkOutput vnTrackOpticalFlowRequest =
+  sendMessage vnTrackOpticalFlowRequest keepNetworkOutputSelector
 
 -- | Setting this to @YES@ will keep the raw pixel buffer coming from the the ML network. The default is @NO@.
 --
@@ -134,53 +131,53 @@ keepNetworkOutput vnTrackOpticalFlowRequest  =
 --
 -- ObjC selector: @- setKeepNetworkOutput:@
 setKeepNetworkOutput :: IsVNTrackOpticalFlowRequest vnTrackOpticalFlowRequest => vnTrackOpticalFlowRequest -> Bool -> IO ()
-setKeepNetworkOutput vnTrackOpticalFlowRequest  value =
-    sendMsg vnTrackOpticalFlowRequest (mkSelector "setKeepNetworkOutput:") retVoid [argCULong (if value then 1 else 0)]
+setKeepNetworkOutput vnTrackOpticalFlowRequest value =
+  sendMessage vnTrackOpticalFlowRequest setKeepNetworkOutputSelector value
 
 -- | VNPixelBufferObservation results.
 --
 -- ObjC selector: @- results@
 results :: IsVNTrackOpticalFlowRequest vnTrackOpticalFlowRequest => vnTrackOpticalFlowRequest -> IO (Id NSArray)
-results vnTrackOpticalFlowRequest  =
-    sendMsg vnTrackOpticalFlowRequest (mkSelector "results") (retPtr retVoid) [] >>= retainedObject . castPtr
+results vnTrackOpticalFlowRequest =
+  sendMessage vnTrackOpticalFlowRequest resultsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VNTrackOpticalFlowRequest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCompletionHandler:@
-initWithCompletionHandlerSelector :: Selector
+initWithCompletionHandlerSelector :: Selector '[Ptr ()] (Id VNTrackOpticalFlowRequest)
 initWithCompletionHandlerSelector = mkSelector "initWithCompletionHandler:"
 
 -- | @Selector@ for @computationAccuracy@
-computationAccuracySelector :: Selector
+computationAccuracySelector :: Selector '[] VNTrackOpticalFlowRequestComputationAccuracy
 computationAccuracySelector = mkSelector "computationAccuracy"
 
 -- | @Selector@ for @setComputationAccuracy:@
-setComputationAccuracySelector :: Selector
+setComputationAccuracySelector :: Selector '[VNTrackOpticalFlowRequestComputationAccuracy] ()
 setComputationAccuracySelector = mkSelector "setComputationAccuracy:"
 
 -- | @Selector@ for @outputPixelFormat@
-outputPixelFormatSelector :: Selector
+outputPixelFormatSelector :: Selector '[] CUInt
 outputPixelFormatSelector = mkSelector "outputPixelFormat"
 
 -- | @Selector@ for @setOutputPixelFormat:@
-setOutputPixelFormatSelector :: Selector
+setOutputPixelFormatSelector :: Selector '[CUInt] ()
 setOutputPixelFormatSelector = mkSelector "setOutputPixelFormat:"
 
 -- | @Selector@ for @keepNetworkOutput@
-keepNetworkOutputSelector :: Selector
+keepNetworkOutputSelector :: Selector '[] Bool
 keepNetworkOutputSelector = mkSelector "keepNetworkOutput"
 
 -- | @Selector@ for @setKeepNetworkOutput:@
-setKeepNetworkOutputSelector :: Selector
+setKeepNetworkOutputSelector :: Selector '[Bool] ()
 setKeepNetworkOutputSelector = mkSelector "setKeepNetworkOutput:"
 
 -- | @Selector@ for @results@
-resultsSelector :: Selector
+resultsSelector :: Selector '[] (Id NSArray)
 resultsSelector = mkSelector "results"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -36,35 +37,35 @@ module ObjC.Foundation.NSXPCConnection
   , processIdentifier
   , effectiveUserIdentifier
   , effectiveGroupIdentifier
-  , initWithServiceNameSelector
-  , initWithMachServiceName_optionsSelector
-  , initWithListenerEndpointSelector
-  , remoteObjectProxyWithErrorHandlerSelector
-  , synchronousRemoteObjectProxyWithErrorHandlerSelector
-  , resumeSelector
-  , suspendSelector
   , activateSelector
-  , invalidateSelector
+  , auditSessionIdentifierSelector
   , currentConnectionSelector
-  , scheduleSendBarrierBlockSelector
-  , setCodeSigningRequirementSelector
-  , serviceNameSelector
+  , effectiveGroupIdentifierSelector
+  , effectiveUserIdentifierSelector
   , endpointSelector
   , exportedInterfaceSelector
-  , setExportedInterfaceSelector
   , exportedObjectSelector
-  , setExportedObjectSelector
-  , remoteObjectInterfaceSelector
-  , setRemoteObjectInterfaceSelector
-  , remoteObjectProxySelector
+  , initWithListenerEndpointSelector
+  , initWithMachServiceName_optionsSelector
+  , initWithServiceNameSelector
   , interruptionHandlerSelector
-  , setInterruptionHandlerSelector
+  , invalidateSelector
   , invalidationHandlerSelector
-  , setInvalidationHandlerSelector
-  , auditSessionIdentifierSelector
   , processIdentifierSelector
-  , effectiveUserIdentifierSelector
-  , effectiveGroupIdentifierSelector
+  , remoteObjectInterfaceSelector
+  , remoteObjectProxySelector
+  , remoteObjectProxyWithErrorHandlerSelector
+  , resumeSelector
+  , scheduleSendBarrierBlockSelector
+  , serviceNameSelector
+  , setCodeSigningRequirementSelector
+  , setExportedInterfaceSelector
+  , setExportedObjectSelector
+  , setInterruptionHandlerSelector
+  , setInvalidationHandlerSelector
+  , setRemoteObjectInterfaceSelector
+  , suspendSelector
+  , synchronousRemoteObjectProxyWithErrorHandlerSelector
 
   -- * Enum types
   , NSXPCConnectionOptions(NSXPCConnectionOptions)
@@ -72,15 +73,11 @@ module ObjC.Foundation.NSXPCConnection
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -89,276 +86,270 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- initWithServiceName:@
 initWithServiceName :: (IsNSXPCConnection nsxpcConnection, IsNSString serviceName) => nsxpcConnection -> serviceName -> IO (Id NSXPCConnection)
-initWithServiceName nsxpcConnection  serviceName =
-  withObjCPtr serviceName $ \raw_serviceName ->
-      sendMsg nsxpcConnection (mkSelector "initWithServiceName:") (retPtr retVoid) [argPtr (castPtr raw_serviceName :: Ptr ())] >>= ownedObject . castPtr
+initWithServiceName nsxpcConnection serviceName =
+  sendOwnedMessage nsxpcConnection initWithServiceNameSelector (toNSString serviceName)
 
 -- | @- initWithMachServiceName:options:@
 initWithMachServiceName_options :: (IsNSXPCConnection nsxpcConnection, IsNSString name) => nsxpcConnection -> name -> NSXPCConnectionOptions -> IO (Id NSXPCConnection)
-initWithMachServiceName_options nsxpcConnection  name options =
-  withObjCPtr name $ \raw_name ->
-      sendMsg nsxpcConnection (mkSelector "initWithMachServiceName:options:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argCULong (coerce options)] >>= ownedObject . castPtr
+initWithMachServiceName_options nsxpcConnection name options =
+  sendOwnedMessage nsxpcConnection initWithMachServiceName_optionsSelector (toNSString name) options
 
 -- | @- initWithListenerEndpoint:@
 initWithListenerEndpoint :: (IsNSXPCConnection nsxpcConnection, IsNSXPCListenerEndpoint endpoint) => nsxpcConnection -> endpoint -> IO (Id NSXPCConnection)
-initWithListenerEndpoint nsxpcConnection  endpoint =
-  withObjCPtr endpoint $ \raw_endpoint ->
-      sendMsg nsxpcConnection (mkSelector "initWithListenerEndpoint:") (retPtr retVoid) [argPtr (castPtr raw_endpoint :: Ptr ())] >>= ownedObject . castPtr
+initWithListenerEndpoint nsxpcConnection endpoint =
+  sendOwnedMessage nsxpcConnection initWithListenerEndpointSelector (toNSXPCListenerEndpoint endpoint)
 
 -- | @- remoteObjectProxyWithErrorHandler:@
 remoteObjectProxyWithErrorHandler :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> Ptr () -> IO RawId
-remoteObjectProxyWithErrorHandler nsxpcConnection  handler =
-    fmap (RawId . castPtr) $ sendMsg nsxpcConnection (mkSelector "remoteObjectProxyWithErrorHandler:") (retPtr retVoid) [argPtr (castPtr handler :: Ptr ())]
+remoteObjectProxyWithErrorHandler nsxpcConnection handler =
+  sendMessage nsxpcConnection remoteObjectProxyWithErrorHandlerSelector handler
 
 -- | @- synchronousRemoteObjectProxyWithErrorHandler:@
 synchronousRemoteObjectProxyWithErrorHandler :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> Ptr () -> IO RawId
-synchronousRemoteObjectProxyWithErrorHandler nsxpcConnection  handler =
-    fmap (RawId . castPtr) $ sendMsg nsxpcConnection (mkSelector "synchronousRemoteObjectProxyWithErrorHandler:") (retPtr retVoid) [argPtr (castPtr handler :: Ptr ())]
+synchronousRemoteObjectProxyWithErrorHandler nsxpcConnection handler =
+  sendMessage nsxpcConnection synchronousRemoteObjectProxyWithErrorHandlerSelector handler
 
 -- | @- resume@
 resume :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO ()
-resume nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "resume") retVoid []
+resume nsxpcConnection =
+  sendMessage nsxpcConnection resumeSelector
 
 -- | @- suspend@
 suspend :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO ()
-suspend nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "suspend") retVoid []
+suspend nsxpcConnection =
+  sendMessage nsxpcConnection suspendSelector
 
 -- | @- activate@
 activate :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO ()
-activate nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "activate") retVoid []
+activate nsxpcConnection =
+  sendMessage nsxpcConnection activateSelector
 
 -- | @- invalidate@
 invalidate :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO ()
-invalidate nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "invalidate") retVoid []
+invalidate nsxpcConnection =
+  sendMessage nsxpcConnection invalidateSelector
 
 -- | @+ currentConnection@
 currentConnection :: IO (Id NSXPCConnection)
 currentConnection  =
   do
     cls' <- getRequiredClass "NSXPCConnection"
-    sendClassMsg cls' (mkSelector "currentConnection") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentConnectionSelector
 
 -- | @- scheduleSendBarrierBlock:@
 scheduleSendBarrierBlock :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> Ptr () -> IO ()
-scheduleSendBarrierBlock nsxpcConnection  block =
-    sendMsg nsxpcConnection (mkSelector "scheduleSendBarrierBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+scheduleSendBarrierBlock nsxpcConnection block =
+  sendMessage nsxpcConnection scheduleSendBarrierBlockSelector block
 
 -- | Sets the code signing requirement for this connection. If the requirement is malformed, an exception is thrown. If new messages do not match the requirement, the connection is invalidated. It is recommended to set this before calling @resume@, as it is an XPC error to call it more than once. See https://developer.apple.com/library/archive/documentation/Security/Conceptual/CodeSigningGuide/RequirementLang/RequirementLang.html for more information on the format.
 --
 -- ObjC selector: @- setCodeSigningRequirement:@
 setCodeSigningRequirement :: (IsNSXPCConnection nsxpcConnection, IsNSString requirement) => nsxpcConnection -> requirement -> IO ()
-setCodeSigningRequirement nsxpcConnection  requirement =
-  withObjCPtr requirement $ \raw_requirement ->
-      sendMsg nsxpcConnection (mkSelector "setCodeSigningRequirement:") retVoid [argPtr (castPtr raw_requirement :: Ptr ())]
+setCodeSigningRequirement nsxpcConnection requirement =
+  sendMessage nsxpcConnection setCodeSigningRequirementSelector (toNSString requirement)
 
 -- | @- serviceName@
 serviceName :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO (Id NSString)
-serviceName nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "serviceName") (retPtr retVoid) [] >>= retainedObject . castPtr
+serviceName nsxpcConnection =
+  sendMessage nsxpcConnection serviceNameSelector
 
 -- | @- endpoint@
 endpoint :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO (Id NSXPCListenerEndpoint)
-endpoint nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "endpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpoint nsxpcConnection =
+  sendMessage nsxpcConnection endpointSelector
 
 -- | @- exportedInterface@
 exportedInterface :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO (Id NSXPCInterface)
-exportedInterface nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "exportedInterface") (retPtr retVoid) [] >>= retainedObject . castPtr
+exportedInterface nsxpcConnection =
+  sendMessage nsxpcConnection exportedInterfaceSelector
 
 -- | @- setExportedInterface:@
 setExportedInterface :: (IsNSXPCConnection nsxpcConnection, IsNSXPCInterface value) => nsxpcConnection -> value -> IO ()
-setExportedInterface nsxpcConnection  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxpcConnection (mkSelector "setExportedInterface:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExportedInterface nsxpcConnection value =
+  sendMessage nsxpcConnection setExportedInterfaceSelector (toNSXPCInterface value)
 
 -- | @- exportedObject@
 exportedObject :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO RawId
-exportedObject nsxpcConnection  =
-    fmap (RawId . castPtr) $ sendMsg nsxpcConnection (mkSelector "exportedObject") (retPtr retVoid) []
+exportedObject nsxpcConnection =
+  sendMessage nsxpcConnection exportedObjectSelector
 
 -- | @- setExportedObject:@
 setExportedObject :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> RawId -> IO ()
-setExportedObject nsxpcConnection  value =
-    sendMsg nsxpcConnection (mkSelector "setExportedObject:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setExportedObject nsxpcConnection value =
+  sendMessage nsxpcConnection setExportedObjectSelector value
 
 -- | @- remoteObjectInterface@
 remoteObjectInterface :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO (Id NSXPCInterface)
-remoteObjectInterface nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "remoteObjectInterface") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteObjectInterface nsxpcConnection =
+  sendMessage nsxpcConnection remoteObjectInterfaceSelector
 
 -- | @- setRemoteObjectInterface:@
 setRemoteObjectInterface :: (IsNSXPCConnection nsxpcConnection, IsNSXPCInterface value) => nsxpcConnection -> value -> IO ()
-setRemoteObjectInterface nsxpcConnection  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsxpcConnection (mkSelector "setRemoteObjectInterface:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRemoteObjectInterface nsxpcConnection value =
+  sendMessage nsxpcConnection setRemoteObjectInterfaceSelector (toNSXPCInterface value)
 
 -- | @- remoteObjectProxy@
 remoteObjectProxy :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO RawId
-remoteObjectProxy nsxpcConnection  =
-    fmap (RawId . castPtr) $ sendMsg nsxpcConnection (mkSelector "remoteObjectProxy") (retPtr retVoid) []
+remoteObjectProxy nsxpcConnection =
+  sendMessage nsxpcConnection remoteObjectProxySelector
 
 -- | @- interruptionHandler@
 interruptionHandler :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO (Ptr ())
-interruptionHandler nsxpcConnection  =
-    fmap castPtr $ sendMsg nsxpcConnection (mkSelector "interruptionHandler") (retPtr retVoid) []
+interruptionHandler nsxpcConnection =
+  sendMessage nsxpcConnection interruptionHandlerSelector
 
 -- | @- setInterruptionHandler:@
 setInterruptionHandler :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> Ptr () -> IO ()
-setInterruptionHandler nsxpcConnection  value =
-    sendMsg nsxpcConnection (mkSelector "setInterruptionHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setInterruptionHandler nsxpcConnection value =
+  sendMessage nsxpcConnection setInterruptionHandlerSelector value
 
 -- | @- invalidationHandler@
 invalidationHandler :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO (Ptr ())
-invalidationHandler nsxpcConnection  =
-    fmap castPtr $ sendMsg nsxpcConnection (mkSelector "invalidationHandler") (retPtr retVoid) []
+invalidationHandler nsxpcConnection =
+  sendMessage nsxpcConnection invalidationHandlerSelector
 
 -- | @- setInvalidationHandler:@
 setInvalidationHandler :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> Ptr () -> IO ()
-setInvalidationHandler nsxpcConnection  value =
-    sendMsg nsxpcConnection (mkSelector "setInvalidationHandler:") retVoid [argPtr (castPtr value :: Ptr ())]
+setInvalidationHandler nsxpcConnection value =
+  sendMessage nsxpcConnection setInvalidationHandlerSelector value
 
 -- | @- auditSessionIdentifier@
 auditSessionIdentifier :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO CInt
-auditSessionIdentifier nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "auditSessionIdentifier") retCInt []
+auditSessionIdentifier nsxpcConnection =
+  sendMessage nsxpcConnection auditSessionIdentifierSelector
 
 -- | @- processIdentifier@
 processIdentifier :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO CInt
-processIdentifier nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "processIdentifier") retCInt []
+processIdentifier nsxpcConnection =
+  sendMessage nsxpcConnection processIdentifierSelector
 
 -- | @- effectiveUserIdentifier@
 effectiveUserIdentifier :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO CUInt
-effectiveUserIdentifier nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "effectiveUserIdentifier") retCUInt []
+effectiveUserIdentifier nsxpcConnection =
+  sendMessage nsxpcConnection effectiveUserIdentifierSelector
 
 -- | @- effectiveGroupIdentifier@
 effectiveGroupIdentifier :: IsNSXPCConnection nsxpcConnection => nsxpcConnection -> IO CUInt
-effectiveGroupIdentifier nsxpcConnection  =
-    sendMsg nsxpcConnection (mkSelector "effectiveGroupIdentifier") retCUInt []
+effectiveGroupIdentifier nsxpcConnection =
+  sendMessage nsxpcConnection effectiveGroupIdentifierSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithServiceName:@
-initWithServiceNameSelector :: Selector
+initWithServiceNameSelector :: Selector '[Id NSString] (Id NSXPCConnection)
 initWithServiceNameSelector = mkSelector "initWithServiceName:"
 
 -- | @Selector@ for @initWithMachServiceName:options:@
-initWithMachServiceName_optionsSelector :: Selector
+initWithMachServiceName_optionsSelector :: Selector '[Id NSString, NSXPCConnectionOptions] (Id NSXPCConnection)
 initWithMachServiceName_optionsSelector = mkSelector "initWithMachServiceName:options:"
 
 -- | @Selector@ for @initWithListenerEndpoint:@
-initWithListenerEndpointSelector :: Selector
+initWithListenerEndpointSelector :: Selector '[Id NSXPCListenerEndpoint] (Id NSXPCConnection)
 initWithListenerEndpointSelector = mkSelector "initWithListenerEndpoint:"
 
 -- | @Selector@ for @remoteObjectProxyWithErrorHandler:@
-remoteObjectProxyWithErrorHandlerSelector :: Selector
+remoteObjectProxyWithErrorHandlerSelector :: Selector '[Ptr ()] RawId
 remoteObjectProxyWithErrorHandlerSelector = mkSelector "remoteObjectProxyWithErrorHandler:"
 
 -- | @Selector@ for @synchronousRemoteObjectProxyWithErrorHandler:@
-synchronousRemoteObjectProxyWithErrorHandlerSelector :: Selector
+synchronousRemoteObjectProxyWithErrorHandlerSelector :: Selector '[Ptr ()] RawId
 synchronousRemoteObjectProxyWithErrorHandlerSelector = mkSelector "synchronousRemoteObjectProxyWithErrorHandler:"
 
 -- | @Selector@ for @resume@
-resumeSelector :: Selector
+resumeSelector :: Selector '[] ()
 resumeSelector = mkSelector "resume"
 
 -- | @Selector@ for @suspend@
-suspendSelector :: Selector
+suspendSelector :: Selector '[] ()
 suspendSelector = mkSelector "suspend"
 
 -- | @Selector@ for @activate@
-activateSelector :: Selector
+activateSelector :: Selector '[] ()
 activateSelector = mkSelector "activate"
 
 -- | @Selector@ for @invalidate@
-invalidateSelector :: Selector
+invalidateSelector :: Selector '[] ()
 invalidateSelector = mkSelector "invalidate"
 
 -- | @Selector@ for @currentConnection@
-currentConnectionSelector :: Selector
+currentConnectionSelector :: Selector '[] (Id NSXPCConnection)
 currentConnectionSelector = mkSelector "currentConnection"
 
 -- | @Selector@ for @scheduleSendBarrierBlock:@
-scheduleSendBarrierBlockSelector :: Selector
+scheduleSendBarrierBlockSelector :: Selector '[Ptr ()] ()
 scheduleSendBarrierBlockSelector = mkSelector "scheduleSendBarrierBlock:"
 
 -- | @Selector@ for @setCodeSigningRequirement:@
-setCodeSigningRequirementSelector :: Selector
+setCodeSigningRequirementSelector :: Selector '[Id NSString] ()
 setCodeSigningRequirementSelector = mkSelector "setCodeSigningRequirement:"
 
 -- | @Selector@ for @serviceName@
-serviceNameSelector :: Selector
+serviceNameSelector :: Selector '[] (Id NSString)
 serviceNameSelector = mkSelector "serviceName"
 
 -- | @Selector@ for @endpoint@
-endpointSelector :: Selector
+endpointSelector :: Selector '[] (Id NSXPCListenerEndpoint)
 endpointSelector = mkSelector "endpoint"
 
 -- | @Selector@ for @exportedInterface@
-exportedInterfaceSelector :: Selector
+exportedInterfaceSelector :: Selector '[] (Id NSXPCInterface)
 exportedInterfaceSelector = mkSelector "exportedInterface"
 
 -- | @Selector@ for @setExportedInterface:@
-setExportedInterfaceSelector :: Selector
+setExportedInterfaceSelector :: Selector '[Id NSXPCInterface] ()
 setExportedInterfaceSelector = mkSelector "setExportedInterface:"
 
 -- | @Selector@ for @exportedObject@
-exportedObjectSelector :: Selector
+exportedObjectSelector :: Selector '[] RawId
 exportedObjectSelector = mkSelector "exportedObject"
 
 -- | @Selector@ for @setExportedObject:@
-setExportedObjectSelector :: Selector
+setExportedObjectSelector :: Selector '[RawId] ()
 setExportedObjectSelector = mkSelector "setExportedObject:"
 
 -- | @Selector@ for @remoteObjectInterface@
-remoteObjectInterfaceSelector :: Selector
+remoteObjectInterfaceSelector :: Selector '[] (Id NSXPCInterface)
 remoteObjectInterfaceSelector = mkSelector "remoteObjectInterface"
 
 -- | @Selector@ for @setRemoteObjectInterface:@
-setRemoteObjectInterfaceSelector :: Selector
+setRemoteObjectInterfaceSelector :: Selector '[Id NSXPCInterface] ()
 setRemoteObjectInterfaceSelector = mkSelector "setRemoteObjectInterface:"
 
 -- | @Selector@ for @remoteObjectProxy@
-remoteObjectProxySelector :: Selector
+remoteObjectProxySelector :: Selector '[] RawId
 remoteObjectProxySelector = mkSelector "remoteObjectProxy"
 
 -- | @Selector@ for @interruptionHandler@
-interruptionHandlerSelector :: Selector
+interruptionHandlerSelector :: Selector '[] (Ptr ())
 interruptionHandlerSelector = mkSelector "interruptionHandler"
 
 -- | @Selector@ for @setInterruptionHandler:@
-setInterruptionHandlerSelector :: Selector
+setInterruptionHandlerSelector :: Selector '[Ptr ()] ()
 setInterruptionHandlerSelector = mkSelector "setInterruptionHandler:"
 
 -- | @Selector@ for @invalidationHandler@
-invalidationHandlerSelector :: Selector
+invalidationHandlerSelector :: Selector '[] (Ptr ())
 invalidationHandlerSelector = mkSelector "invalidationHandler"
 
 -- | @Selector@ for @setInvalidationHandler:@
-setInvalidationHandlerSelector :: Selector
+setInvalidationHandlerSelector :: Selector '[Ptr ()] ()
 setInvalidationHandlerSelector = mkSelector "setInvalidationHandler:"
 
 -- | @Selector@ for @auditSessionIdentifier@
-auditSessionIdentifierSelector :: Selector
+auditSessionIdentifierSelector :: Selector '[] CInt
 auditSessionIdentifierSelector = mkSelector "auditSessionIdentifier"
 
 -- | @Selector@ for @processIdentifier@
-processIdentifierSelector :: Selector
+processIdentifierSelector :: Selector '[] CInt
 processIdentifierSelector = mkSelector "processIdentifier"
 
 -- | @Selector@ for @effectiveUserIdentifier@
-effectiveUserIdentifierSelector :: Selector
+effectiveUserIdentifierSelector :: Selector '[] CUInt
 effectiveUserIdentifierSelector = mkSelector "effectiveUserIdentifier"
 
 -- | @Selector@ for @effectiveGroupIdentifier@
-effectiveGroupIdentifierSelector :: Selector
+effectiveGroupIdentifierSelector :: Selector '[] CUInt
 effectiveGroupIdentifierSelector = mkSelector "effectiveGroupIdentifier"
 

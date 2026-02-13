@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.Photos.PHAssetResource
   , uniformTypeIdentifier
   , pixelWidth
   , pixelHeight
+  , assetLocalIdentifierSelector
   , assetResourcesForAssetSelector
   , assetResourcesForLivePhotoSelector
-  , typeSelector
-  , assetLocalIdentifierSelector
-  , originalFilenameSelector
   , contentTypeSelector
-  , uniformTypeIdentifierSelector
-  , pixelWidthSelector
+  , originalFilenameSelector
   , pixelHeightSelector
+  , pixelWidthSelector
+  , typeSelector
+  , uniformTypeIdentifierSelector
 
   -- * Enum types
   , PHAssetResourceType(PHAssetResourceType)
@@ -44,15 +45,11 @@ module ObjC.Photos.PHAssetResource
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -66,91 +63,89 @@ assetResourcesForAsset :: IsPHAsset asset => asset -> IO (Id NSArray)
 assetResourcesForAsset asset =
   do
     cls' <- getRequiredClass "PHAssetResource"
-    withObjCPtr asset $ \raw_asset ->
-      sendClassMsg cls' (mkSelector "assetResourcesForAsset:") (retPtr retVoid) [argPtr (castPtr raw_asset :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetResourcesForAssetSelector (toPHAsset asset)
 
 -- | @+ assetResourcesForLivePhoto:@
 assetResourcesForLivePhoto :: IsPHLivePhoto livePhoto => livePhoto -> IO (Id NSArray)
 assetResourcesForLivePhoto livePhoto =
   do
     cls' <- getRequiredClass "PHAssetResource"
-    withObjCPtr livePhoto $ \raw_livePhoto ->
-      sendClassMsg cls' (mkSelector "assetResourcesForLivePhoto:") (retPtr retVoid) [argPtr (castPtr raw_livePhoto :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetResourcesForLivePhotoSelector (toPHLivePhoto livePhoto)
 
 -- | @- type@
 type_ :: IsPHAssetResource phAssetResource => phAssetResource -> IO PHAssetResourceType
-type_ phAssetResource  =
-    fmap (coerce :: CLong -> PHAssetResourceType) $ sendMsg phAssetResource (mkSelector "type") retCLong []
+type_ phAssetResource =
+  sendMessage phAssetResource typeSelector
 
 -- | @- assetLocalIdentifier@
 assetLocalIdentifier :: IsPHAssetResource phAssetResource => phAssetResource -> IO (Id NSString)
-assetLocalIdentifier phAssetResource  =
-    sendMsg phAssetResource (mkSelector "assetLocalIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+assetLocalIdentifier phAssetResource =
+  sendMessage phAssetResource assetLocalIdentifierSelector
 
 -- | @- originalFilename@
 originalFilename :: IsPHAssetResource phAssetResource => phAssetResource -> IO (Id NSString)
-originalFilename phAssetResource  =
-    sendMsg phAssetResource (mkSelector "originalFilename") (retPtr retVoid) [] >>= retainedObject . castPtr
+originalFilename phAssetResource =
+  sendMessage phAssetResource originalFilenameSelector
 
 -- | The type of data associated with this asset resource (the data can be retrieved via PHAssetResourceManager)
 --
 -- ObjC selector: @- contentType@
 contentType :: IsPHAssetResource phAssetResource => phAssetResource -> IO (Id UTType)
-contentType phAssetResource  =
-    sendMsg phAssetResource (mkSelector "contentType") (retPtr retVoid) [] >>= retainedObject . castPtr
+contentType phAssetResource =
+  sendMessage phAssetResource contentTypeSelector
 
 -- | @- uniformTypeIdentifier@
 uniformTypeIdentifier :: IsPHAssetResource phAssetResource => phAssetResource -> IO (Id NSString)
-uniformTypeIdentifier phAssetResource  =
-    sendMsg phAssetResource (mkSelector "uniformTypeIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+uniformTypeIdentifier phAssetResource =
+  sendMessage phAssetResource uniformTypeIdentifierSelector
 
 -- | @- pixelWidth@
 pixelWidth :: IsPHAssetResource phAssetResource => phAssetResource -> IO CLong
-pixelWidth phAssetResource  =
-    sendMsg phAssetResource (mkSelector "pixelWidth") retCLong []
+pixelWidth phAssetResource =
+  sendMessage phAssetResource pixelWidthSelector
 
 -- | @- pixelHeight@
 pixelHeight :: IsPHAssetResource phAssetResource => phAssetResource -> IO CLong
-pixelHeight phAssetResource  =
-    sendMsg phAssetResource (mkSelector "pixelHeight") retCLong []
+pixelHeight phAssetResource =
+  sendMessage phAssetResource pixelHeightSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @assetResourcesForAsset:@
-assetResourcesForAssetSelector :: Selector
+assetResourcesForAssetSelector :: Selector '[Id PHAsset] (Id NSArray)
 assetResourcesForAssetSelector = mkSelector "assetResourcesForAsset:"
 
 -- | @Selector@ for @assetResourcesForLivePhoto:@
-assetResourcesForLivePhotoSelector :: Selector
+assetResourcesForLivePhotoSelector :: Selector '[Id PHLivePhoto] (Id NSArray)
 assetResourcesForLivePhotoSelector = mkSelector "assetResourcesForLivePhoto:"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] PHAssetResourceType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @assetLocalIdentifier@
-assetLocalIdentifierSelector :: Selector
+assetLocalIdentifierSelector :: Selector '[] (Id NSString)
 assetLocalIdentifierSelector = mkSelector "assetLocalIdentifier"
 
 -- | @Selector@ for @originalFilename@
-originalFilenameSelector :: Selector
+originalFilenameSelector :: Selector '[] (Id NSString)
 originalFilenameSelector = mkSelector "originalFilename"
 
 -- | @Selector@ for @contentType@
-contentTypeSelector :: Selector
+contentTypeSelector :: Selector '[] (Id UTType)
 contentTypeSelector = mkSelector "contentType"
 
 -- | @Selector@ for @uniformTypeIdentifier@
-uniformTypeIdentifierSelector :: Selector
+uniformTypeIdentifierSelector :: Selector '[] (Id NSString)
 uniformTypeIdentifierSelector = mkSelector "uniformTypeIdentifier"
 
 -- | @Selector@ for @pixelWidth@
-pixelWidthSelector :: Selector
+pixelWidthSelector :: Selector '[] CLong
 pixelWidthSelector = mkSelector "pixelWidth"
 
 -- | @Selector@ for @pixelHeight@
-pixelHeightSelector :: Selector
+pixelHeightSelector :: Selector '[] CLong
 pixelHeightSelector = mkSelector "pixelHeight"
 

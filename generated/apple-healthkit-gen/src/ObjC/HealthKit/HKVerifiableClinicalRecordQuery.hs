@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,15 +19,11 @@ module ObjC.HealthKit.HKVerifiableClinicalRecordQuery
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,15 +32,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKVerifiableClinicalRecordQuery hkVerifiableClinicalRecordQuery => hkVerifiableClinicalRecordQuery -> IO (Id HKVerifiableClinicalRecordQuery)
-init_ hkVerifiableClinicalRecordQuery  =
-    sendMsg hkVerifiableClinicalRecordQuery (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkVerifiableClinicalRecordQuery =
+  sendOwnedMessage hkVerifiableClinicalRecordQuery initSelector
 
 -- | @+ new@
 new :: IO (Id HKVerifiableClinicalRecordQuery)
 new  =
   do
     cls' <- getRequiredClass "HKVerifiableClinicalRecordQuery"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | recordTypes
 --
@@ -51,8 +48,8 @@ new  =
 --
 -- ObjC selector: @- recordTypes@
 recordTypes :: IsHKVerifiableClinicalRecordQuery hkVerifiableClinicalRecordQuery => hkVerifiableClinicalRecordQuery -> IO (Id NSArray)
-recordTypes hkVerifiableClinicalRecordQuery  =
-    sendMsg hkVerifiableClinicalRecordQuery (mkSelector "recordTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+recordTypes hkVerifiableClinicalRecordQuery =
+  sendMessage hkVerifiableClinicalRecordQuery recordTypesSelector
 
 -- | sourceTypes
 --
@@ -60,26 +57,26 @@ recordTypes hkVerifiableClinicalRecordQuery  =
 --
 -- ObjC selector: @- sourceTypes@
 sourceTypes :: IsHKVerifiableClinicalRecordQuery hkVerifiableClinicalRecordQuery => hkVerifiableClinicalRecordQuery -> IO (Id NSArray)
-sourceTypes hkVerifiableClinicalRecordQuery  =
-    sendMsg hkVerifiableClinicalRecordQuery (mkSelector "sourceTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+sourceTypes hkVerifiableClinicalRecordQuery =
+  sendMessage hkVerifiableClinicalRecordQuery sourceTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKVerifiableClinicalRecordQuery)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKVerifiableClinicalRecordQuery)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @recordTypes@
-recordTypesSelector :: Selector
+recordTypesSelector :: Selector '[] (Id NSArray)
 recordTypesSelector = mkSelector "recordTypes"
 
 -- | @Selector@ for @sourceTypes@
-sourceTypesSelector :: Selector
+sourceTypesSelector :: Selector '[] (Id NSArray)
 sourceTypesSelector = mkSelector "sourceTypes"
 

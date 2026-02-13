@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.NetworkExtension.NEFilterRemediationVerdict
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,7 +45,7 @@ allowVerdict :: IO (Id NEFilterRemediationVerdict)
 allowVerdict  =
   do
     cls' <- getRequiredClass "NEFilterRemediationVerdict"
-    sendClassMsg cls' (mkSelector "allowVerdict") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' allowVerdictSelector
 
 -- | dropVerdict
 --
@@ -61,7 +58,7 @@ dropVerdict :: IO (Id NEFilterRemediationVerdict)
 dropVerdict  =
   do
     cls' <- getRequiredClass "NEFilterRemediationVerdict"
-    sendClassMsg cls' (mkSelector "dropVerdict") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' dropVerdictSelector
 
 -- | needRulesVerdict
 --
@@ -74,21 +71,21 @@ needRulesVerdict :: IO (Id NEFilterRemediationVerdict)
 needRulesVerdict  =
   do
     cls' <- getRequiredClass "NEFilterRemediationVerdict"
-    sendClassMsg cls' (mkSelector "needRulesVerdict") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' needRulesVerdictSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @allowVerdict@
-allowVerdictSelector :: Selector
+allowVerdictSelector :: Selector '[] (Id NEFilterRemediationVerdict)
 allowVerdictSelector = mkSelector "allowVerdict"
 
 -- | @Selector@ for @dropVerdict@
-dropVerdictSelector :: Selector
+dropVerdictSelector :: Selector '[] (Id NEFilterRemediationVerdict)
 dropVerdictSelector = mkSelector "dropVerdict"
 
 -- | @Selector@ for @needRulesVerdict@
-needRulesVerdictSelector :: Selector
+needRulesVerdictSelector :: Selector '[] (Id NEFilterRemediationVerdict)
 needRulesVerdictSelector = mkSelector "needRulesVerdict"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,21 +17,17 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayQuantizedMatrixMultiplication
   , IsMPSNDArrayQuantizedMatrixMultiplication(..)
   , initWithDevice_sourceCount
   , initWithDevice_leftQuantizationDescriptor_rightQuantizationDescriptor
-  , initWithDevice_sourceCountSelector
   , initWithDevice_leftQuantizationDescriptor_rightQuantizationDescriptorSelector
+  , initWithDevice_sourceCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:sourceCount:@
 initWithDevice_sourceCount :: IsMPSNDArrayQuantizedMatrixMultiplication mpsndArrayQuantizedMatrixMultiplication => mpsndArrayQuantizedMatrixMultiplication -> RawId -> CULong -> IO (Id MPSNDArrayQuantizedMatrixMultiplication)
-initWithDevice_sourceCount mpsndArrayQuantizedMatrixMultiplication  device sourceCount =
-    sendMsg mpsndArrayQuantizedMatrixMultiplication (mkSelector "initWithDevice:sourceCount:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong sourceCount] >>= ownedObject . castPtr
+initWithDevice_sourceCount mpsndArrayQuantizedMatrixMultiplication device sourceCount =
+  sendOwnedMessage mpsndArrayQuantizedMatrixMultiplication initWithDevice_sourceCountSelector device sourceCount
 
 -- | Initializes a quantized matrix multiplication kernel.
 --
@@ -52,20 +49,18 @@ initWithDevice_sourceCount mpsndArrayQuantizedMatrixMultiplication  device sourc
 --
 -- ObjC selector: @- initWithDevice:leftQuantizationDescriptor:rightQuantizationDescriptor:@
 initWithDevice_leftQuantizationDescriptor_rightQuantizationDescriptor :: (IsMPSNDArrayQuantizedMatrixMultiplication mpsndArrayQuantizedMatrixMultiplication, IsMPSNDArrayQuantizationDescriptor leftQuantizationDescriptor, IsMPSNDArrayQuantizationDescriptor rightQuantizationDescriptor) => mpsndArrayQuantizedMatrixMultiplication -> RawId -> leftQuantizationDescriptor -> rightQuantizationDescriptor -> IO (Id MPSNDArrayQuantizedMatrixMultiplication)
-initWithDevice_leftQuantizationDescriptor_rightQuantizationDescriptor mpsndArrayQuantizedMatrixMultiplication  device leftQuantizationDescriptor rightQuantizationDescriptor =
-  withObjCPtr leftQuantizationDescriptor $ \raw_leftQuantizationDescriptor ->
-    withObjCPtr rightQuantizationDescriptor $ \raw_rightQuantizationDescriptor ->
-        sendMsg mpsndArrayQuantizedMatrixMultiplication (mkSelector "initWithDevice:leftQuantizationDescriptor:rightQuantizationDescriptor:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argPtr (castPtr raw_leftQuantizationDescriptor :: Ptr ()), argPtr (castPtr raw_rightQuantizationDescriptor :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_leftQuantizationDescriptor_rightQuantizationDescriptor mpsndArrayQuantizedMatrixMultiplication device leftQuantizationDescriptor rightQuantizationDescriptor =
+  sendOwnedMessage mpsndArrayQuantizedMatrixMultiplication initWithDevice_leftQuantizationDescriptor_rightQuantizationDescriptorSelector device (toMPSNDArrayQuantizationDescriptor leftQuantizationDescriptor) (toMPSNDArrayQuantizationDescriptor rightQuantizationDescriptor)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:sourceCount:@
-initWithDevice_sourceCountSelector :: Selector
+initWithDevice_sourceCountSelector :: Selector '[RawId, CULong] (Id MPSNDArrayQuantizedMatrixMultiplication)
 initWithDevice_sourceCountSelector = mkSelector "initWithDevice:sourceCount:"
 
 -- | @Selector@ for @initWithDevice:leftQuantizationDescriptor:rightQuantizationDescriptor:@
-initWithDevice_leftQuantizationDescriptor_rightQuantizationDescriptorSelector :: Selector
+initWithDevice_leftQuantizationDescriptor_rightQuantizationDescriptorSelector :: Selector '[RawId, Id MPSNDArrayQuantizationDescriptor, Id MPSNDArrayQuantizationDescriptor] (Id MPSNDArrayQuantizedMatrixMultiplication)
 initWithDevice_leftQuantizationDescriptor_rightQuantizationDescriptorSelector = mkSelector "initWithDevice:leftQuantizationDescriptor:rightQuantizationDescriptor:"
 

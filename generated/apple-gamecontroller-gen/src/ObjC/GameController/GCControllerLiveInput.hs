@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.GameController.GCControllerLiveInput
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,13 +30,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- capture@
 capture :: IsGCControllerLiveInput gcControllerLiveInput => gcControllerLiveInput -> IO (Id GCControllerInputState)
-capture gcControllerLiveInput  =
-    sendMsg gcControllerLiveInput (mkSelector "capture") (retPtr retVoid) [] >>= retainedObject . castPtr
+capture gcControllerLiveInput =
+  sendMessage gcControllerLiveInput captureSelector
 
 -- | @- nextInputState@
 nextInputState :: IsGCControllerLiveInput gcControllerLiveInput => gcControllerLiveInput -> IO (Id GCControllerInputState)
-nextInputState gcControllerLiveInput  =
-    sendMsg gcControllerLiveInput (mkSelector "nextInputState") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextInputState gcControllerLiveInput =
+  sendMessage gcControllerLiveInput nextInputStateSelector
 
 -- | Get a view of the controller's input without any system-level control  remapping applied.
 --
@@ -47,22 +44,22 @@ nextInputState gcControllerLiveInput  =
 --
 -- ObjC selector: @- unmappedInput@
 unmappedInput :: IsGCControllerLiveInput gcControllerLiveInput => gcControllerLiveInput -> IO (Id GCControllerLiveInput)
-unmappedInput gcControllerLiveInput  =
-    sendMsg gcControllerLiveInput (mkSelector "unmappedInput") (retPtr retVoid) [] >>= retainedObject . castPtr
+unmappedInput gcControllerLiveInput =
+  sendMessage gcControllerLiveInput unmappedInputSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @capture@
-captureSelector :: Selector
+captureSelector :: Selector '[] (Id GCControllerInputState)
 captureSelector = mkSelector "capture"
 
 -- | @Selector@ for @nextInputState@
-nextInputStateSelector :: Selector
+nextInputStateSelector :: Selector '[] (Id GCControllerInputState)
 nextInputStateSelector = mkSelector "nextInputState"
 
 -- | @Selector@ for @unmappedInput@
-unmappedInputSelector :: Selector
+unmappedInputSelector :: Selector '[] (Id GCControllerLiveInput)
 unmappedInputSelector = mkSelector "unmappedInput"
 

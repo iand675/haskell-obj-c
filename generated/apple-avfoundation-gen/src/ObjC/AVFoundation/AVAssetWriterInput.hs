@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -55,60 +56,56 @@ module ObjC.AVFoundation.AVAssetWriterInput
   , setLanguageCode
   , extendedLanguageTag
   , setExtendedLanguageTag
-  , initSelector
-  , newSelector
+  , addTrackAssociationWithTrackOfInput_typeSelector
+  , appendSampleBufferSelector
   , assetWriterInputWithMediaType_outputSettingsSelector
   , assetWriterInputWithMediaType_outputSettings_sourceFormatHintSelector
-  , initWithMediaType_outputSettingsSelector
-  , initWithMediaType_outputSettings_sourceFormatHintSelector
-  , requestMediaDataWhenReadyOnQueue_usingBlockSelector
-  , appendSampleBufferSelector
-  , markAsFinishedSelector
-  , respondToEachPassDescriptionOnQueue_usingBlockSelector
-  , markCurrentPassAsFinishedSelector
   , canAddTrackAssociationWithTrackOfInput_typeSelector
-  , addTrackAssociationWithTrackOfInput_typeSelector
-  , mediaTypeSelector
-  , outputSettingsSelector
-  , sourceFormatHintSelector
-  , metadataSelector
-  , setMetadataSelector
-  , readyForMoreMediaDataSelector
-  , expectsMediaDataInRealTimeSelector
-  , setExpectsMediaDataInRealTimeSelector
-  , performsMultiPassEncodingIfSupportedSelector
-  , setPerformsMultiPassEncodingIfSupportedSelector
   , canPerformMultiplePassesSelector
   , currentPassDescriptionSelector
-  , marksOutputTrackAsEnabledSelector
-  , setMarksOutputTrackAsEnabledSelector
-  , mediaTimeScaleSelector
-  , setMediaTimeScaleSelector
-  , preferredMediaChunkAlignmentSelector
-  , setPreferredMediaChunkAlignmentSelector
-  , sampleReferenceBaseURLSelector
-  , setSampleReferenceBaseURLSelector
-  , mediaDataLocationSelector
-  , setMediaDataLocationSelector
-  , preferredVolumeSelector
-  , setPreferredVolumeSelector
-  , languageCodeSelector
-  , setLanguageCodeSelector
+  , expectsMediaDataInRealTimeSelector
   , extendedLanguageTagSelector
+  , initSelector
+  , initWithMediaType_outputSettingsSelector
+  , initWithMediaType_outputSettings_sourceFormatHintSelector
+  , languageCodeSelector
+  , markAsFinishedSelector
+  , markCurrentPassAsFinishedSelector
+  , marksOutputTrackAsEnabledSelector
+  , mediaDataLocationSelector
+  , mediaTimeScaleSelector
+  , mediaTypeSelector
+  , metadataSelector
+  , newSelector
+  , outputSettingsSelector
+  , performsMultiPassEncodingIfSupportedSelector
+  , preferredMediaChunkAlignmentSelector
+  , preferredVolumeSelector
+  , readyForMoreMediaDataSelector
+  , requestMediaDataWhenReadyOnQueue_usingBlockSelector
+  , respondToEachPassDescriptionOnQueue_usingBlockSelector
+  , sampleReferenceBaseURLSelector
+  , setExpectsMediaDataInRealTimeSelector
   , setExtendedLanguageTagSelector
+  , setLanguageCodeSelector
+  , setMarksOutputTrackAsEnabledSelector
+  , setMediaDataLocationSelector
+  , setMediaTimeScaleSelector
+  , setMetadataSelector
+  , setPerformsMultiPassEncodingIfSupportedSelector
+  , setPreferredMediaChunkAlignmentSelector
+  , setPreferredVolumeSelector
+  , setSampleReferenceBaseURLSelector
+  , sourceFormatHintSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -117,15 +114,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id AVAssetWriterInput)
-init_ avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetWriterInput =
+  sendOwnedMessage avAssetWriterInput initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetWriterInput)
 new  =
   do
     cls' <- getRequiredClass "AVAssetWriterInput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates a new input of the specified media type to receive sample buffers for writing to the output file.
 --
@@ -146,9 +143,7 @@ assetWriterInputWithMediaType_outputSettings :: (IsNSString mediaType, IsNSDicti
 assetWriterInputWithMediaType_outputSettings mediaType outputSettings =
   do
     cls' <- getRequiredClass "AVAssetWriterInput"
-    withObjCPtr mediaType $ \raw_mediaType ->
-      withObjCPtr outputSettings $ \raw_outputSettings ->
-        sendClassMsg cls' (mkSelector "assetWriterInputWithMediaType:outputSettings:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ()), argPtr (castPtr raw_outputSettings :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetWriterInputWithMediaType_outputSettingsSelector (toNSString mediaType) (toNSDictionary outputSettings)
 
 -- | Creates a new input of the specified media type to receive sample buffers for writing to the output file.
 --
@@ -165,9 +160,7 @@ assetWriterInputWithMediaType_outputSettings_sourceFormatHint :: (IsNSString med
 assetWriterInputWithMediaType_outputSettings_sourceFormatHint mediaType outputSettings sourceFormatHint =
   do
     cls' <- getRequiredClass "AVAssetWriterInput"
-    withObjCPtr mediaType $ \raw_mediaType ->
-      withObjCPtr outputSettings $ \raw_outputSettings ->
-        sendClassMsg cls' (mkSelector "assetWriterInputWithMediaType:outputSettings:sourceFormatHint:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ()), argPtr (castPtr raw_outputSettings :: Ptr ()), argPtr (castPtr (unRawId sourceFormatHint) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetWriterInputWithMediaType_outputSettings_sourceFormatHintSelector (toNSString mediaType) (toNSDictionary outputSettings) sourceFormatHint
 
 -- | Creates a new input of the specified media type to receive sample buffers for writing to the output file.
 --
@@ -187,10 +180,8 @@ assetWriterInputWithMediaType_outputSettings_sourceFormatHint mediaType outputSe
 --
 -- ObjC selector: @- initWithMediaType:outputSettings:@
 initWithMediaType_outputSettings :: (IsAVAssetWriterInput avAssetWriterInput, IsNSString mediaType, IsNSDictionary outputSettings) => avAssetWriterInput -> mediaType -> outputSettings -> IO (Id AVAssetWriterInput)
-initWithMediaType_outputSettings avAssetWriterInput  mediaType outputSettings =
-  withObjCPtr mediaType $ \raw_mediaType ->
-    withObjCPtr outputSettings $ \raw_outputSettings ->
-        sendMsg avAssetWriterInput (mkSelector "initWithMediaType:outputSettings:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ()), argPtr (castPtr raw_outputSettings :: Ptr ())] >>= ownedObject . castPtr
+initWithMediaType_outputSettings avAssetWriterInput mediaType outputSettings =
+  sendOwnedMessage avAssetWriterInput initWithMediaType_outputSettingsSelector (toNSString mediaType) (toNSDictionary outputSettings)
 
 -- | Creates a new input of the specified media type to receive sample buffers for writing to the output file. This is the designated initializer of AVAssetWriterInput.
 --
@@ -204,10 +195,8 @@ initWithMediaType_outputSettings avAssetWriterInput  mediaType outputSettings =
 --
 -- ObjC selector: @- initWithMediaType:outputSettings:sourceFormatHint:@
 initWithMediaType_outputSettings_sourceFormatHint :: (IsAVAssetWriterInput avAssetWriterInput, IsNSString mediaType, IsNSDictionary outputSettings) => avAssetWriterInput -> mediaType -> outputSettings -> RawId -> IO (Id AVAssetWriterInput)
-initWithMediaType_outputSettings_sourceFormatHint avAssetWriterInput  mediaType outputSettings sourceFormatHint =
-  withObjCPtr mediaType $ \raw_mediaType ->
-    withObjCPtr outputSettings $ \raw_outputSettings ->
-        sendMsg avAssetWriterInput (mkSelector "initWithMediaType:outputSettings:sourceFormatHint:") (retPtr retVoid) [argPtr (castPtr raw_mediaType :: Ptr ()), argPtr (castPtr raw_outputSettings :: Ptr ()), argPtr (castPtr (unRawId sourceFormatHint) :: Ptr ())] >>= ownedObject . castPtr
+initWithMediaType_outputSettings_sourceFormatHint avAssetWriterInput mediaType outputSettings sourceFormatHint =
+  sendOwnedMessage avAssetWriterInput initWithMediaType_outputSettings_sourceFormatHintSelector (toNSString mediaType) (toNSDictionary outputSettings) sourceFormatHint
 
 -- | Instructs the receiver to invoke a client-supplied block repeatedly, at its convenience, in order to gather media data for writing to the output file.
 --
@@ -225,9 +214,8 @@ initWithMediaType_outputSettings_sourceFormatHint avAssetWriterInput  mediaType 
 --
 -- ObjC selector: @- requestMediaDataWhenReadyOnQueue:usingBlock:@
 requestMediaDataWhenReadyOnQueue_usingBlock :: (IsAVAssetWriterInput avAssetWriterInput, IsNSObject queue) => avAssetWriterInput -> queue -> Ptr () -> IO ()
-requestMediaDataWhenReadyOnQueue_usingBlock avAssetWriterInput  queue block =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg avAssetWriterInput (mkSelector "requestMediaDataWhenReadyOnQueue:usingBlock:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+requestMediaDataWhenReadyOnQueue_usingBlock avAssetWriterInput queue block =
+  sendMessage avAssetWriterInput requestMediaDataWhenReadyOnQueue_usingBlockSelector (toNSObject queue) block
 
 -- | Appends samples to the receiver.
 --
@@ -263,8 +251,8 @@ requestMediaDataWhenReadyOnQueue_usingBlock avAssetWriterInput  queue block =
 --
 -- ObjC selector: @- appendSampleBuffer:@
 appendSampleBuffer :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> Ptr () -> IO Bool
-appendSampleBuffer avAssetWriterInput  sampleBuffer =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInput (mkSelector "appendSampleBuffer:") retCULong [argPtr sampleBuffer]
+appendSampleBuffer avAssetWriterInput sampleBuffer =
+  sendMessage avAssetWriterInput appendSampleBufferSelector sampleBuffer
 
 -- | Indicates to the AVAssetWriter that no more buffers will be appended to this input.
 --
@@ -276,8 +264,8 @@ appendSampleBuffer avAssetWriterInput  sampleBuffer =
 --
 -- ObjC selector: @- markAsFinished@
 markAsFinished :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO ()
-markAsFinished avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "markAsFinished") retVoid []
+markAsFinished avAssetWriterInput =
+  sendMessage avAssetWriterInput markAsFinishedSelector
 
 -- | Instructs the receiver to invoke a client-supplied block whenever a new pass has begun.
 --
@@ -295,9 +283,8 @@ markAsFinished avAssetWriterInput  =
 --
 -- ObjC selector: @- respondToEachPassDescriptionOnQueue:usingBlock:@
 respondToEachPassDescriptionOnQueue_usingBlock :: (IsAVAssetWriterInput avAssetWriterInput, IsNSObject queue) => avAssetWriterInput -> queue -> Ptr () -> IO ()
-respondToEachPassDescriptionOnQueue_usingBlock avAssetWriterInput  queue block =
-  withObjCPtr queue $ \raw_queue ->
-      sendMsg avAssetWriterInput (mkSelector "respondToEachPassDescriptionOnQueue:usingBlock:") retVoid [argPtr (castPtr raw_queue :: Ptr ()), argPtr (castPtr block :: Ptr ())]
+respondToEachPassDescriptionOnQueue_usingBlock avAssetWriterInput queue block =
+  sendMessage avAssetWriterInput respondToEachPassDescriptionOnQueue_usingBlockSelector (toNSObject queue) block
 
 -- | Instructs the receiver to analyze the media data that has been appended and determine whether the results could be improved by re-encoding certain segments.
 --
@@ -315,8 +302,8 @@ respondToEachPassDescriptionOnQueue_usingBlock avAssetWriterInput  queue block =
 --
 -- ObjC selector: @- markCurrentPassAsFinished@
 markCurrentPassAsFinished :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO ()
-markCurrentPassAsFinished avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "markCurrentPassAsFinished") retVoid []
+markCurrentPassAsFinished avAssetWriterInput =
+  sendMessage avAssetWriterInput markCurrentPassAsFinishedSelector
 
 -- | Tests whether an association between the tracks corresponding to a pair of inputs is valid.
 --
@@ -326,10 +313,8 @@ markCurrentPassAsFinished avAssetWriterInput  =
 --
 -- ObjC selector: @- canAddTrackAssociationWithTrackOfInput:type:@
 canAddTrackAssociationWithTrackOfInput_type :: (IsAVAssetWriterInput avAssetWriterInput, IsAVAssetWriterInput input, IsNSString trackAssociationType) => avAssetWriterInput -> input -> trackAssociationType -> IO Bool
-canAddTrackAssociationWithTrackOfInput_type avAssetWriterInput  input trackAssociationType =
-  withObjCPtr input $ \raw_input ->
-    withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
-        fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInput (mkSelector "canAddTrackAssociationWithTrackOfInput:type:") retCULong [argPtr (castPtr raw_input :: Ptr ()), argPtr (castPtr raw_trackAssociationType :: Ptr ())]
+canAddTrackAssociationWithTrackOfInput_type avAssetWriterInput input trackAssociationType =
+  sendMessage avAssetWriterInput canAddTrackAssociationWithTrackOfInput_typeSelector (toAVAssetWriterInput input) (toNSString trackAssociationType)
 
 -- | Associates the track corresponding to the specified input with the track corresponding with the receiver.
 --
@@ -343,10 +328,8 @@ canAddTrackAssociationWithTrackOfInput_type avAssetWriterInput  input trackAssoc
 --
 -- ObjC selector: @- addTrackAssociationWithTrackOfInput:type:@
 addTrackAssociationWithTrackOfInput_type :: (IsAVAssetWriterInput avAssetWriterInput, IsAVAssetWriterInput input, IsNSString trackAssociationType) => avAssetWriterInput -> input -> trackAssociationType -> IO ()
-addTrackAssociationWithTrackOfInput_type avAssetWriterInput  input trackAssociationType =
-  withObjCPtr input $ \raw_input ->
-    withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
-        sendMsg avAssetWriterInput (mkSelector "addTrackAssociationWithTrackOfInput:type:") retVoid [argPtr (castPtr raw_input :: Ptr ()), argPtr (castPtr raw_trackAssociationType :: Ptr ())]
+addTrackAssociationWithTrackOfInput_type avAssetWriterInput input trackAssociationType =
+  sendMessage avAssetWriterInput addTrackAssociationWithTrackOfInput_typeSelector (toAVAssetWriterInput input) (toNSString trackAssociationType)
 
 -- | The media type of the samples that can be appended to the receiver.
 --
@@ -354,8 +337,8 @@ addTrackAssociationWithTrackOfInput_type avAssetWriterInput  input trackAssociat
 --
 -- ObjC selector: @- mediaType@
 mediaType :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSString)
-mediaType avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "mediaType") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaType avAssetWriterInput =
+  sendMessage avAssetWriterInput mediaTypeSelector
 
 -- | The settings used for encoding the media appended to the output.
 --
@@ -363,8 +346,8 @@ mediaType avAssetWriterInput  =
 --
 -- ObjC selector: @- outputSettings@
 outputSettings :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSDictionary)
-outputSettings avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "outputSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+outputSettings avAssetWriterInput =
+  sendMessage avAssetWriterInput outputSettingsSelector
 
 -- | The hint given at initialization time about the format of incoming media data.
 --
@@ -372,8 +355,8 @@ outputSettings avAssetWriterInput  =
 --
 -- ObjC selector: @- sourceFormatHint@
 sourceFormatHint :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO RawId
-sourceFormatHint avAssetWriterInput  =
-    fmap (RawId . castPtr) $ sendMsg avAssetWriterInput (mkSelector "sourceFormatHint") (retPtr retVoid) []
+sourceFormatHint avAssetWriterInput =
+  sendMessage avAssetWriterInput sourceFormatHintSelector
 
 -- | A collection of metadata to be written to the track corresponding to the receiver.
 --
@@ -383,8 +366,8 @@ sourceFormatHint avAssetWriterInput  =
 --
 -- ObjC selector: @- metadata@
 metadata :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSArray)
-metadata avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avAssetWriterInput =
+  sendMessage avAssetWriterInput metadataSelector
 
 -- | A collection of metadata to be written to the track corresponding to the receiver.
 --
@@ -394,9 +377,8 @@ metadata avAssetWriterInput  =
 --
 -- ObjC selector: @- setMetadata:@
 setMetadata :: (IsAVAssetWriterInput avAssetWriterInput, IsNSArray value) => avAssetWriterInput -> value -> IO ()
-setMetadata avAssetWriterInput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetWriterInput (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadata avAssetWriterInput value =
+  sendMessage avAssetWriterInput setMetadataSelector (toNSArray value)
 
 -- | Indicates the readiness of the input to accept more media data.
 --
@@ -414,8 +396,8 @@ setMetadata avAssetWriterInput  value =
 --
 -- ObjC selector: @- readyForMoreMediaData@
 readyForMoreMediaData :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO Bool
-readyForMoreMediaData avAssetWriterInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInput (mkSelector "readyForMoreMediaData") retCULong []
+readyForMoreMediaData avAssetWriterInput =
+  sendMessage avAssetWriterInput readyForMoreMediaDataSelector
 
 -- | Indicates whether the input should tailor its processing of media data for real-time sources.
 --
@@ -427,8 +409,8 @@ readyForMoreMediaData avAssetWriterInput  =
 --
 -- ObjC selector: @- expectsMediaDataInRealTime@
 expectsMediaDataInRealTime :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO Bool
-expectsMediaDataInRealTime avAssetWriterInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInput (mkSelector "expectsMediaDataInRealTime") retCULong []
+expectsMediaDataInRealTime avAssetWriterInput =
+  sendMessage avAssetWriterInput expectsMediaDataInRealTimeSelector
 
 -- | Indicates whether the input should tailor its processing of media data for real-time sources.
 --
@@ -440,8 +422,8 @@ expectsMediaDataInRealTime avAssetWriterInput  =
 --
 -- ObjC selector: @- setExpectsMediaDataInRealTime:@
 setExpectsMediaDataInRealTime :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> Bool -> IO ()
-setExpectsMediaDataInRealTime avAssetWriterInput  value =
-    sendMsg avAssetWriterInput (mkSelector "setExpectsMediaDataInRealTime:") retVoid [argCULong (if value then 1 else 0)]
+setExpectsMediaDataInRealTime avAssetWriterInput value =
+  sendMessage avAssetWriterInput setExpectsMediaDataInRealTimeSelector value
 
 -- | Indicates whether the input should attempt to encode the source media data using multiple passes.
 --
@@ -459,8 +441,8 @@ setExpectsMediaDataInRealTime avAssetWriterInput  value =
 --
 -- ObjC selector: @- performsMultiPassEncodingIfSupported@
 performsMultiPassEncodingIfSupported :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO Bool
-performsMultiPassEncodingIfSupported avAssetWriterInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInput (mkSelector "performsMultiPassEncodingIfSupported") retCULong []
+performsMultiPassEncodingIfSupported avAssetWriterInput =
+  sendMessage avAssetWriterInput performsMultiPassEncodingIfSupportedSelector
 
 -- | Indicates whether the input should attempt to encode the source media data using multiple passes.
 --
@@ -478,8 +460,8 @@ performsMultiPassEncodingIfSupported avAssetWriterInput  =
 --
 -- ObjC selector: @- setPerformsMultiPassEncodingIfSupported:@
 setPerformsMultiPassEncodingIfSupported :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> Bool -> IO ()
-setPerformsMultiPassEncodingIfSupported avAssetWriterInput  value =
-    sendMsg avAssetWriterInput (mkSelector "setPerformsMultiPassEncodingIfSupported:") retVoid [argCULong (if value then 1 else 0)]
+setPerformsMultiPassEncodingIfSupported avAssetWriterInput value =
+  sendMessage avAssetWriterInput setPerformsMultiPassEncodingIfSupportedSelector value
 
 -- | Indicates whether the input might perform multiple passes over appended media data.
 --
@@ -493,8 +475,8 @@ setPerformsMultiPassEncodingIfSupported avAssetWriterInput  value =
 --
 -- ObjC selector: @- canPerformMultiplePasses@
 canPerformMultiplePasses :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO Bool
-canPerformMultiplePasses avAssetWriterInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInput (mkSelector "canPerformMultiplePasses") retCULong []
+canPerformMultiplePasses avAssetWriterInput =
+  sendMessage avAssetWriterInput canPerformMultiplePassesSelector
 
 -- | Provides an object that describes the requirements, such as source time ranges to append or re-append, for the current pass.
 --
@@ -508,8 +490,8 @@ canPerformMultiplePasses avAssetWriterInput  =
 --
 -- ObjC selector: @- currentPassDescription@
 currentPassDescription :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id AVAssetWriterInputPassDescription)
-currentPassDescription avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "currentPassDescription") (retPtr retVoid) [] >>= retainedObject . castPtr
+currentPassDescription avAssetWriterInput =
+  sendMessage avAssetWriterInput currentPassDescriptionSelector
 
 -- | For file types that support enabled and disabled tracks, such as QuickTime Movie files, specifies whether the track corresponding to the receiver should be enabled by default for playback and processing. The default value is YES.
 --
@@ -521,8 +503,8 @@ currentPassDescription avAssetWriterInput  =
 --
 -- ObjC selector: @- marksOutputTrackAsEnabled@
 marksOutputTrackAsEnabled :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO Bool
-marksOutputTrackAsEnabled avAssetWriterInput  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avAssetWriterInput (mkSelector "marksOutputTrackAsEnabled") retCULong []
+marksOutputTrackAsEnabled avAssetWriterInput =
+  sendMessage avAssetWriterInput marksOutputTrackAsEnabledSelector
 
 -- | For file types that support enabled and disabled tracks, such as QuickTime Movie files, specifies whether the track corresponding to the receiver should be enabled by default for playback and processing. The default value is YES.
 --
@@ -534,8 +516,8 @@ marksOutputTrackAsEnabled avAssetWriterInput  =
 --
 -- ObjC selector: @- setMarksOutputTrackAsEnabled:@
 setMarksOutputTrackAsEnabled :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> Bool -> IO ()
-setMarksOutputTrackAsEnabled avAssetWriterInput  value =
-    sendMsg avAssetWriterInput (mkSelector "setMarksOutputTrackAsEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setMarksOutputTrackAsEnabled avAssetWriterInput value =
+  sendMessage avAssetWriterInput setMarksOutputTrackAsEnabledSelector value
 
 -- | For file types that support media time scales, such as QuickTime Movie files, specifies the media time scale to be used.
 --
@@ -547,8 +529,8 @@ setMarksOutputTrackAsEnabled avAssetWriterInput  value =
 --
 -- ObjC selector: @- mediaTimeScale@
 mediaTimeScale :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO CInt
-mediaTimeScale avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "mediaTimeScale") retCInt []
+mediaTimeScale avAssetWriterInput =
+  sendMessage avAssetWriterInput mediaTimeScaleSelector
 
 -- | For file types that support media time scales, such as QuickTime Movie files, specifies the media time scale to be used.
 --
@@ -560,8 +542,8 @@ mediaTimeScale avAssetWriterInput  =
 --
 -- ObjC selector: @- setMediaTimeScale:@
 setMediaTimeScale :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> CInt -> IO ()
-setMediaTimeScale avAssetWriterInput  value =
-    sendMsg avAssetWriterInput (mkSelector "setMediaTimeScale:") retVoid [argCInt value]
+setMediaTimeScale avAssetWriterInput value =
+  sendMessage avAssetWriterInput setMediaTimeScaleSelector value
 
 -- | For file types that support media chunk alignment, such as QuickTime Movie files, specifies the boundary for media chunk alignment in bytes (e.g. 512).
 --
@@ -571,8 +553,8 @@ setMediaTimeScale avAssetWriterInput  value =
 --
 -- ObjC selector: @- preferredMediaChunkAlignment@
 preferredMediaChunkAlignment :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO CLong
-preferredMediaChunkAlignment avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "preferredMediaChunkAlignment") retCLong []
+preferredMediaChunkAlignment avAssetWriterInput =
+  sendMessage avAssetWriterInput preferredMediaChunkAlignmentSelector
 
 -- | For file types that support media chunk alignment, such as QuickTime Movie files, specifies the boundary for media chunk alignment in bytes (e.g. 512).
 --
@@ -582,8 +564,8 @@ preferredMediaChunkAlignment avAssetWriterInput  =
 --
 -- ObjC selector: @- setPreferredMediaChunkAlignment:@
 setPreferredMediaChunkAlignment :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> CLong -> IO ()
-setPreferredMediaChunkAlignment avAssetWriterInput  value =
-    sendMsg avAssetWriterInput (mkSelector "setPreferredMediaChunkAlignment:") retVoid [argCLong value]
+setPreferredMediaChunkAlignment avAssetWriterInput value =
+  sendMessage avAssetWriterInput setPreferredMediaChunkAlignmentSelector value
 
 -- | For file types that support writing sample references, such as QuickTime Movie files, specifies the base URL sample references are relative to.
 --
@@ -601,8 +583,8 @@ setPreferredMediaChunkAlignment avAssetWriterInput  value =
 --
 -- ObjC selector: @- sampleReferenceBaseURL@
 sampleReferenceBaseURL :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSURL)
-sampleReferenceBaseURL avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "sampleReferenceBaseURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+sampleReferenceBaseURL avAssetWriterInput =
+  sendMessage avAssetWriterInput sampleReferenceBaseURLSelector
 
 -- | For file types that support writing sample references, such as QuickTime Movie files, specifies the base URL sample references are relative to.
 --
@@ -620,9 +602,8 @@ sampleReferenceBaseURL avAssetWriterInput  =
 --
 -- ObjC selector: @- setSampleReferenceBaseURL:@
 setSampleReferenceBaseURL :: (IsAVAssetWriterInput avAssetWriterInput, IsNSURL value) => avAssetWriterInput -> value -> IO ()
-setSampleReferenceBaseURL avAssetWriterInput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetWriterInput (mkSelector "setSampleReferenceBaseURL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSampleReferenceBaseURL avAssetWriterInput value =
+  sendMessage avAssetWriterInput setSampleReferenceBaseURLSelector (toNSURL value)
 
 -- | Specifies where the media data will be laid out and whether the media data will be interleaved as the main media data.
 --
@@ -638,8 +619,8 @@ setSampleReferenceBaseURL avAssetWriterInput  value =
 --
 -- ObjC selector: @- mediaDataLocation@
 mediaDataLocation :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSString)
-mediaDataLocation avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "mediaDataLocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+mediaDataLocation avAssetWriterInput =
+  sendMessage avAssetWriterInput mediaDataLocationSelector
 
 -- | Specifies where the media data will be laid out and whether the media data will be interleaved as the main media data.
 --
@@ -655,9 +636,8 @@ mediaDataLocation avAssetWriterInput  =
 --
 -- ObjC selector: @- setMediaDataLocation:@
 setMediaDataLocation :: (IsAVAssetWriterInput avAssetWriterInput, IsNSString value) => avAssetWriterInput -> value -> IO ()
-setMediaDataLocation avAssetWriterInput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetWriterInput (mkSelector "setMediaDataLocation:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMediaDataLocation avAssetWriterInput value =
+  sendMessage avAssetWriterInput setMediaDataLocationSelector (toNSString value)
 
 -- | The preferred volume level to be stored in the output file.
 --
@@ -667,8 +647,8 @@ setMediaDataLocation avAssetWriterInput  value =
 --
 -- ObjC selector: @- preferredVolume@
 preferredVolume :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO CFloat
-preferredVolume avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "preferredVolume") retCFloat []
+preferredVolume avAssetWriterInput =
+  sendMessage avAssetWriterInput preferredVolumeSelector
 
 -- | The preferred volume level to be stored in the output file.
 --
@@ -678,8 +658,8 @@ preferredVolume avAssetWriterInput  =
 --
 -- ObjC selector: @- setPreferredVolume:@
 setPreferredVolume :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> CFloat -> IO ()
-setPreferredVolume avAssetWriterInput  value =
-    sendMsg avAssetWriterInput (mkSelector "setPreferredVolume:") retVoid [argCFloat value]
+setPreferredVolume avAssetWriterInput value =
+  sendMessage avAssetWriterInput setPreferredVolumeSelector value
 
 -- | Indicates the language to associate with the track corresponding to the receiver, as an ISO 639-2/T language code; can be nil.
 --
@@ -691,8 +671,8 @@ setPreferredVolume avAssetWriterInput  value =
 --
 -- ObjC selector: @- languageCode@
 languageCode :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSString)
-languageCode avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "languageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageCode avAssetWriterInput =
+  sendMessage avAssetWriterInput languageCodeSelector
 
 -- | Indicates the language to associate with the track corresponding to the receiver, as an ISO 639-2/T language code; can be nil.
 --
@@ -704,9 +684,8 @@ languageCode avAssetWriterInput  =
 --
 -- ObjC selector: @- setLanguageCode:@
 setLanguageCode :: (IsAVAssetWriterInput avAssetWriterInput, IsNSString value) => avAssetWriterInput -> value -> IO ()
-setLanguageCode avAssetWriterInput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetWriterInput (mkSelector "setLanguageCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLanguageCode avAssetWriterInput value =
+  sendMessage avAssetWriterInput setLanguageCodeSelector (toNSString value)
 
 -- | Indicates the language tag to associate with the track corresponding to the receiver, as an IETF BCP 47 (RFC 4646) language identifier; can be nil.
 --
@@ -718,8 +697,8 @@ setLanguageCode avAssetWriterInput  value =
 --
 -- ObjC selector: @- extendedLanguageTag@
 extendedLanguageTag :: IsAVAssetWriterInput avAssetWriterInput => avAssetWriterInput -> IO (Id NSString)
-extendedLanguageTag avAssetWriterInput  =
-    sendMsg avAssetWriterInput (mkSelector "extendedLanguageTag") (retPtr retVoid) [] >>= retainedObject . castPtr
+extendedLanguageTag avAssetWriterInput =
+  sendMessage avAssetWriterInput extendedLanguageTagSelector
 
 -- | Indicates the language tag to associate with the track corresponding to the receiver, as an IETF BCP 47 (RFC 4646) language identifier; can be nil.
 --
@@ -731,175 +710,174 @@ extendedLanguageTag avAssetWriterInput  =
 --
 -- ObjC selector: @- setExtendedLanguageTag:@
 setExtendedLanguageTag :: (IsAVAssetWriterInput avAssetWriterInput, IsNSString value) => avAssetWriterInput -> value -> IO ()
-setExtendedLanguageTag avAssetWriterInput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetWriterInput (mkSelector "setExtendedLanguageTag:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExtendedLanguageTag avAssetWriterInput value =
+  sendMessage avAssetWriterInput setExtendedLanguageTagSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetWriterInput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetWriterInput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetWriterInputWithMediaType:outputSettings:@
-assetWriterInputWithMediaType_outputSettingsSelector :: Selector
+assetWriterInputWithMediaType_outputSettingsSelector :: Selector '[Id NSString, Id NSDictionary] (Id AVAssetWriterInput)
 assetWriterInputWithMediaType_outputSettingsSelector = mkSelector "assetWriterInputWithMediaType:outputSettings:"
 
 -- | @Selector@ for @assetWriterInputWithMediaType:outputSettings:sourceFormatHint:@
-assetWriterInputWithMediaType_outputSettings_sourceFormatHintSelector :: Selector
+assetWriterInputWithMediaType_outputSettings_sourceFormatHintSelector :: Selector '[Id NSString, Id NSDictionary, RawId] (Id AVAssetWriterInput)
 assetWriterInputWithMediaType_outputSettings_sourceFormatHintSelector = mkSelector "assetWriterInputWithMediaType:outputSettings:sourceFormatHint:"
 
 -- | @Selector@ for @initWithMediaType:outputSettings:@
-initWithMediaType_outputSettingsSelector :: Selector
+initWithMediaType_outputSettingsSelector :: Selector '[Id NSString, Id NSDictionary] (Id AVAssetWriterInput)
 initWithMediaType_outputSettingsSelector = mkSelector "initWithMediaType:outputSettings:"
 
 -- | @Selector@ for @initWithMediaType:outputSettings:sourceFormatHint:@
-initWithMediaType_outputSettings_sourceFormatHintSelector :: Selector
+initWithMediaType_outputSettings_sourceFormatHintSelector :: Selector '[Id NSString, Id NSDictionary, RawId] (Id AVAssetWriterInput)
 initWithMediaType_outputSettings_sourceFormatHintSelector = mkSelector "initWithMediaType:outputSettings:sourceFormatHint:"
 
 -- | @Selector@ for @requestMediaDataWhenReadyOnQueue:usingBlock:@
-requestMediaDataWhenReadyOnQueue_usingBlockSelector :: Selector
+requestMediaDataWhenReadyOnQueue_usingBlockSelector :: Selector '[Id NSObject, Ptr ()] ()
 requestMediaDataWhenReadyOnQueue_usingBlockSelector = mkSelector "requestMediaDataWhenReadyOnQueue:usingBlock:"
 
 -- | @Selector@ for @appendSampleBuffer:@
-appendSampleBufferSelector :: Selector
+appendSampleBufferSelector :: Selector '[Ptr ()] Bool
 appendSampleBufferSelector = mkSelector "appendSampleBuffer:"
 
 -- | @Selector@ for @markAsFinished@
-markAsFinishedSelector :: Selector
+markAsFinishedSelector :: Selector '[] ()
 markAsFinishedSelector = mkSelector "markAsFinished"
 
 -- | @Selector@ for @respondToEachPassDescriptionOnQueue:usingBlock:@
-respondToEachPassDescriptionOnQueue_usingBlockSelector :: Selector
+respondToEachPassDescriptionOnQueue_usingBlockSelector :: Selector '[Id NSObject, Ptr ()] ()
 respondToEachPassDescriptionOnQueue_usingBlockSelector = mkSelector "respondToEachPassDescriptionOnQueue:usingBlock:"
 
 -- | @Selector@ for @markCurrentPassAsFinished@
-markCurrentPassAsFinishedSelector :: Selector
+markCurrentPassAsFinishedSelector :: Selector '[] ()
 markCurrentPassAsFinishedSelector = mkSelector "markCurrentPassAsFinished"
 
 -- | @Selector@ for @canAddTrackAssociationWithTrackOfInput:type:@
-canAddTrackAssociationWithTrackOfInput_typeSelector :: Selector
+canAddTrackAssociationWithTrackOfInput_typeSelector :: Selector '[Id AVAssetWriterInput, Id NSString] Bool
 canAddTrackAssociationWithTrackOfInput_typeSelector = mkSelector "canAddTrackAssociationWithTrackOfInput:type:"
 
 -- | @Selector@ for @addTrackAssociationWithTrackOfInput:type:@
-addTrackAssociationWithTrackOfInput_typeSelector :: Selector
+addTrackAssociationWithTrackOfInput_typeSelector :: Selector '[Id AVAssetWriterInput, Id NSString] ()
 addTrackAssociationWithTrackOfInput_typeSelector = mkSelector "addTrackAssociationWithTrackOfInput:type:"
 
 -- | @Selector@ for @mediaType@
-mediaTypeSelector :: Selector
+mediaTypeSelector :: Selector '[] (Id NSString)
 mediaTypeSelector = mkSelector "mediaType"
 
 -- | @Selector@ for @outputSettings@
-outputSettingsSelector :: Selector
+outputSettingsSelector :: Selector '[] (Id NSDictionary)
 outputSettingsSelector = mkSelector "outputSettings"
 
 -- | @Selector@ for @sourceFormatHint@
-sourceFormatHintSelector :: Selector
+sourceFormatHintSelector :: Selector '[] RawId
 sourceFormatHintSelector = mkSelector "sourceFormatHint"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSArray)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @setMetadata:@
-setMetadataSelector :: Selector
+setMetadataSelector :: Selector '[Id NSArray] ()
 setMetadataSelector = mkSelector "setMetadata:"
 
 -- | @Selector@ for @readyForMoreMediaData@
-readyForMoreMediaDataSelector :: Selector
+readyForMoreMediaDataSelector :: Selector '[] Bool
 readyForMoreMediaDataSelector = mkSelector "readyForMoreMediaData"
 
 -- | @Selector@ for @expectsMediaDataInRealTime@
-expectsMediaDataInRealTimeSelector :: Selector
+expectsMediaDataInRealTimeSelector :: Selector '[] Bool
 expectsMediaDataInRealTimeSelector = mkSelector "expectsMediaDataInRealTime"
 
 -- | @Selector@ for @setExpectsMediaDataInRealTime:@
-setExpectsMediaDataInRealTimeSelector :: Selector
+setExpectsMediaDataInRealTimeSelector :: Selector '[Bool] ()
 setExpectsMediaDataInRealTimeSelector = mkSelector "setExpectsMediaDataInRealTime:"
 
 -- | @Selector@ for @performsMultiPassEncodingIfSupported@
-performsMultiPassEncodingIfSupportedSelector :: Selector
+performsMultiPassEncodingIfSupportedSelector :: Selector '[] Bool
 performsMultiPassEncodingIfSupportedSelector = mkSelector "performsMultiPassEncodingIfSupported"
 
 -- | @Selector@ for @setPerformsMultiPassEncodingIfSupported:@
-setPerformsMultiPassEncodingIfSupportedSelector :: Selector
+setPerformsMultiPassEncodingIfSupportedSelector :: Selector '[Bool] ()
 setPerformsMultiPassEncodingIfSupportedSelector = mkSelector "setPerformsMultiPassEncodingIfSupported:"
 
 -- | @Selector@ for @canPerformMultiplePasses@
-canPerformMultiplePassesSelector :: Selector
+canPerformMultiplePassesSelector :: Selector '[] Bool
 canPerformMultiplePassesSelector = mkSelector "canPerformMultiplePasses"
 
 -- | @Selector@ for @currentPassDescription@
-currentPassDescriptionSelector :: Selector
+currentPassDescriptionSelector :: Selector '[] (Id AVAssetWriterInputPassDescription)
 currentPassDescriptionSelector = mkSelector "currentPassDescription"
 
 -- | @Selector@ for @marksOutputTrackAsEnabled@
-marksOutputTrackAsEnabledSelector :: Selector
+marksOutputTrackAsEnabledSelector :: Selector '[] Bool
 marksOutputTrackAsEnabledSelector = mkSelector "marksOutputTrackAsEnabled"
 
 -- | @Selector@ for @setMarksOutputTrackAsEnabled:@
-setMarksOutputTrackAsEnabledSelector :: Selector
+setMarksOutputTrackAsEnabledSelector :: Selector '[Bool] ()
 setMarksOutputTrackAsEnabledSelector = mkSelector "setMarksOutputTrackAsEnabled:"
 
 -- | @Selector@ for @mediaTimeScale@
-mediaTimeScaleSelector :: Selector
+mediaTimeScaleSelector :: Selector '[] CInt
 mediaTimeScaleSelector = mkSelector "mediaTimeScale"
 
 -- | @Selector@ for @setMediaTimeScale:@
-setMediaTimeScaleSelector :: Selector
+setMediaTimeScaleSelector :: Selector '[CInt] ()
 setMediaTimeScaleSelector = mkSelector "setMediaTimeScale:"
 
 -- | @Selector@ for @preferredMediaChunkAlignment@
-preferredMediaChunkAlignmentSelector :: Selector
+preferredMediaChunkAlignmentSelector :: Selector '[] CLong
 preferredMediaChunkAlignmentSelector = mkSelector "preferredMediaChunkAlignment"
 
 -- | @Selector@ for @setPreferredMediaChunkAlignment:@
-setPreferredMediaChunkAlignmentSelector :: Selector
+setPreferredMediaChunkAlignmentSelector :: Selector '[CLong] ()
 setPreferredMediaChunkAlignmentSelector = mkSelector "setPreferredMediaChunkAlignment:"
 
 -- | @Selector@ for @sampleReferenceBaseURL@
-sampleReferenceBaseURLSelector :: Selector
+sampleReferenceBaseURLSelector :: Selector '[] (Id NSURL)
 sampleReferenceBaseURLSelector = mkSelector "sampleReferenceBaseURL"
 
 -- | @Selector@ for @setSampleReferenceBaseURL:@
-setSampleReferenceBaseURLSelector :: Selector
+setSampleReferenceBaseURLSelector :: Selector '[Id NSURL] ()
 setSampleReferenceBaseURLSelector = mkSelector "setSampleReferenceBaseURL:"
 
 -- | @Selector@ for @mediaDataLocation@
-mediaDataLocationSelector :: Selector
+mediaDataLocationSelector :: Selector '[] (Id NSString)
 mediaDataLocationSelector = mkSelector "mediaDataLocation"
 
 -- | @Selector@ for @setMediaDataLocation:@
-setMediaDataLocationSelector :: Selector
+setMediaDataLocationSelector :: Selector '[Id NSString] ()
 setMediaDataLocationSelector = mkSelector "setMediaDataLocation:"
 
 -- | @Selector@ for @preferredVolume@
-preferredVolumeSelector :: Selector
+preferredVolumeSelector :: Selector '[] CFloat
 preferredVolumeSelector = mkSelector "preferredVolume"
 
 -- | @Selector@ for @setPreferredVolume:@
-setPreferredVolumeSelector :: Selector
+setPreferredVolumeSelector :: Selector '[CFloat] ()
 setPreferredVolumeSelector = mkSelector "setPreferredVolume:"
 
 -- | @Selector@ for @languageCode@
-languageCodeSelector :: Selector
+languageCodeSelector :: Selector '[] (Id NSString)
 languageCodeSelector = mkSelector "languageCode"
 
 -- | @Selector@ for @setLanguageCode:@
-setLanguageCodeSelector :: Selector
+setLanguageCodeSelector :: Selector '[Id NSString] ()
 setLanguageCodeSelector = mkSelector "setLanguageCode:"
 
 -- | @Selector@ for @extendedLanguageTag@
-extendedLanguageTagSelector :: Selector
+extendedLanguageTagSelector :: Selector '[] (Id NSString)
 extendedLanguageTagSelector = mkSelector "extendedLanguageTag"
 
 -- | @Selector@ for @setExtendedLanguageTag:@
-setExtendedLanguageTagSelector :: Selector
+setExtendedLanguageTagSelector :: Selector '[Id NSString] ()
 setExtendedLanguageTagSelector = mkSelector "setExtendedLanguageTag:"
 

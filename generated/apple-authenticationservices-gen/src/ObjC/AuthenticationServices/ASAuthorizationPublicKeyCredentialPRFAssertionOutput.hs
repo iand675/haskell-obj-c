@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.AuthenticationServices.ASAuthorizationPublicKeyCredentialPRFAssertio
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,23 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- first@
 first :: IsASAuthorizationPublicKeyCredentialPRFAssertionOutput asAuthorizationPublicKeyCredentialPRFAssertionOutput => asAuthorizationPublicKeyCredentialPRFAssertionOutput -> IO (Id NSData)
-first asAuthorizationPublicKeyCredentialPRFAssertionOutput  =
-    sendMsg asAuthorizationPublicKeyCredentialPRFAssertionOutput (mkSelector "first") (retPtr retVoid) [] >>= retainedObject . castPtr
+first asAuthorizationPublicKeyCredentialPRFAssertionOutput =
+  sendMessage asAuthorizationPublicKeyCredentialPRFAssertionOutput firstSelector
 
 -- | @- second@
 second :: IsASAuthorizationPublicKeyCredentialPRFAssertionOutput asAuthorizationPublicKeyCredentialPRFAssertionOutput => asAuthorizationPublicKeyCredentialPRFAssertionOutput -> IO (Id NSData)
-second asAuthorizationPublicKeyCredentialPRFAssertionOutput  =
-    sendMsg asAuthorizationPublicKeyCredentialPRFAssertionOutput (mkSelector "second") (retPtr retVoid) [] >>= retainedObject . castPtr
+second asAuthorizationPublicKeyCredentialPRFAssertionOutput =
+  sendMessage asAuthorizationPublicKeyCredentialPRFAssertionOutput secondSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @first@
-firstSelector :: Selector
+firstSelector :: Selector '[] (Id NSData)
 firstSelector = mkSelector "first"
 
 -- | @Selector@ for @second@
-secondSelector :: Selector
+secondSelector :: Selector '[] (Id NSData)
 secondSelector = mkSelector "second"
 

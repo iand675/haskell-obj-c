@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Accessibility.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Describes the content direction of the chart (i.e. the direction in which the X axis is rendered). For example, a bar chart might be leftToRight, while a pie chart might be radialClockwise.
 -- | @AXChartDescriptorContentDirection@
@@ -35,6 +38,16 @@ pattern AXChartContentDirectionRadialClockwise = AXChartDescriptorContentDirecti
 pattern AXChartContentDirectionRadialCounterClockwise :: AXChartDescriptorContentDirection
 pattern AXChartContentDirectionRadialCounterClockwise = AXChartDescriptorContentDirection 5
 
+instance ObjCArgument AXChartDescriptorContentDirection where
+  withObjCArg (AXChartDescriptorContentDirection x) k = k (argCLong x)
+
+instance ObjCReturn AXChartDescriptorContentDirection where
+  type RawReturn AXChartDescriptorContentDirection = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXChartDescriptorContentDirection x)
+  fromOwned x = pure (AXChartDescriptorContentDirection x)
+
 -- | @AXCustomContentImportance@
 newtype AXCustomContentImportance = AXCustomContentImportance CULong
   deriving stock (Eq, Ord, Show)
@@ -45,6 +58,16 @@ pattern AXCustomContentImportanceDefault = AXCustomContentImportance 0
 
 pattern AXCustomContentImportanceHigh :: AXCustomContentImportance
 pattern AXCustomContentImportanceHigh = AXCustomContentImportance 1
+
+instance ObjCArgument AXCustomContentImportance where
+  withObjCArg (AXCustomContentImportance x) k = k (argCULong x)
+
+instance ObjCReturn AXCustomContentImportance where
+  type RawReturn AXCustomContentImportance = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXCustomContentImportance x)
+  fromOwned x = pure (AXCustomContentImportance x)
 
 -- | @AXHearingDeviceEar@ (bitmask)
 newtype AXHearingDeviceEar = AXHearingDeviceEar CULong
@@ -69,6 +92,16 @@ pattern AXHearingDeviceEarRight = AXHearingDeviceEar 4
 pattern AXHearingDeviceEarBoth :: AXHearingDeviceEar
 pattern AXHearingDeviceEarBoth = AXHearingDeviceEar 6
 
+instance ObjCArgument AXHearingDeviceEar where
+  withObjCArg (AXHearingDeviceEar x) k = k (argCULong x)
+
+instance ObjCReturn AXHearingDeviceEar where
+  type RawReturn AXHearingDeviceEar = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXHearingDeviceEar x)
+  fromOwned x = pure (AXHearingDeviceEar x)
+
 -- | @AXNumericDataAxisDescriptorScale@
 newtype AXNumericDataAxisDescriptorScale = AXNumericDataAxisDescriptorScale CLong
   deriving stock (Eq, Ord, Show)
@@ -82,6 +115,16 @@ pattern AXScaleTypeLog10 = AXNumericDataAxisDescriptorScale 1
 
 pattern AXScaleTypeLn :: AXNumericDataAxisDescriptorScale
 pattern AXScaleTypeLn = AXNumericDataAxisDescriptorScale 2
+
+instance ObjCArgument AXNumericDataAxisDescriptorScale where
+  withObjCArg (AXNumericDataAxisDescriptorScale x) k = k (argCLong x)
+
+instance ObjCReturn AXNumericDataAxisDescriptorScale where
+  type RawReturn AXNumericDataAxisDescriptorScale = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXNumericDataAxisDescriptorScale x)
+  fromOwned x = pure (AXNumericDataAxisDescriptorScale x)
 
 -- | @AXSettingsFeature@
 newtype AXSettingsFeature = AXSettingsFeature CLong
@@ -102,3 +145,13 @@ pattern AXSettingsFeatureAssistiveTouchDevices = AXSettingsFeature 4
 
 pattern AXSettingsFeatureDwellControl :: AXSettingsFeature
 pattern AXSettingsFeatureDwellControl = AXSettingsFeature 5
+
+instance ObjCArgument AXSettingsFeature where
+  withObjCArg (AXSettingsFeature x) k = k (argCLong x)
+
+instance ObjCReturn AXSettingsFeature where
+  type RawReturn AXSettingsFeature = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AXSettingsFeature x)
+  fromOwned x = pure (AXSettingsFeature x)

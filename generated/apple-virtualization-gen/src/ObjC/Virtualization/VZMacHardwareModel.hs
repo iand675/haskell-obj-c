@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,24 +26,20 @@ module ObjC.Virtualization.VZMacHardwareModel
   , initWithDataRepresentation
   , dataRepresentation
   , supported
-  , newSelector
+  , dataRepresentationSelector
   , initSelector
   , initWithDataRepresentationSelector
-  , dataRepresentationSelector
+  , newSelector
   , supportedSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,12 +51,12 @@ new :: IO (Id VZMacHardwareModel)
 new  =
   do
     cls' <- getRequiredClass "VZMacHardwareModel"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZMacHardwareModel vzMacHardwareModel => vzMacHardwareModel -> IO (Id VZMacHardwareModel)
-init_ vzMacHardwareModel  =
-    sendMsg vzMacHardwareModel (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzMacHardwareModel =
+  sendOwnedMessage vzMacHardwareModel initSelector
 
 -- | Get the hardware model described by the specified data representation.
 --
@@ -67,9 +64,8 @@ init_ vzMacHardwareModel  =
 --
 -- ObjC selector: @- initWithDataRepresentation:@
 initWithDataRepresentation :: (IsVZMacHardwareModel vzMacHardwareModel, IsNSData dataRepresentation) => vzMacHardwareModel -> dataRepresentation -> IO (Id VZMacHardwareModel)
-initWithDataRepresentation vzMacHardwareModel  dataRepresentation =
-  withObjCPtr dataRepresentation $ \raw_dataRepresentation ->
-      sendMsg vzMacHardwareModel (mkSelector "initWithDataRepresentation:") (retPtr retVoid) [argPtr (castPtr raw_dataRepresentation :: Ptr ())] >>= ownedObject . castPtr
+initWithDataRepresentation vzMacHardwareModel dataRepresentation =
+  sendOwnedMessage vzMacHardwareModel initWithDataRepresentationSelector (toNSData dataRepresentation)
 
 -- | Opaque data representation of the hardware model.
 --
@@ -77,8 +73,8 @@ initWithDataRepresentation vzMacHardwareModel  dataRepresentation =
 --
 -- ObjC selector: @- dataRepresentation@
 dataRepresentation :: IsVZMacHardwareModel vzMacHardwareModel => vzMacHardwareModel -> IO (Id NSData)
-dataRepresentation vzMacHardwareModel  =
-    sendMsg vzMacHardwareModel (mkSelector "dataRepresentation") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataRepresentation vzMacHardwareModel =
+  sendMessage vzMacHardwareModel dataRepresentationSelector
 
 -- | Indicate whether this hardware model is supported by the host.
 --
@@ -86,30 +82,30 @@ dataRepresentation vzMacHardwareModel  =
 --
 -- ObjC selector: @- supported@
 supported :: IsVZMacHardwareModel vzMacHardwareModel => vzMacHardwareModel -> IO Bool
-supported vzMacHardwareModel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzMacHardwareModel (mkSelector "supported") retCULong []
+supported vzMacHardwareModel =
+  sendMessage vzMacHardwareModel supportedSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZMacHardwareModel)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMacHardwareModel)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithDataRepresentation:@
-initWithDataRepresentationSelector :: Selector
+initWithDataRepresentationSelector :: Selector '[Id NSData] (Id VZMacHardwareModel)
 initWithDataRepresentationSelector = mkSelector "initWithDataRepresentation:"
 
 -- | @Selector@ for @dataRepresentation@
-dataRepresentationSelector :: Selector
+dataRepresentationSelector :: Selector '[] (Id NSData)
 dataRepresentationSelector = mkSelector "dataRepresentation"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,33 +21,29 @@ module ObjC.AddressBook.ABGroup
   , removeProperties
   , properties
   , typeOfProperty
-  , membersSelector
   , addMemberSelector
-  , removeMemberSelector
-  , subgroupsSelector
-  , addSubgroupSelector
-  , removeSubgroupSelector
-  , parentGroupsSelector
-  , setDistributionIdentifier_forProperty_personSelector
-  , distributionIdentifierForProperty_personSelector
-  , searchElementForProperty_label_key_value_comparisonSelector
   , addPropertiesAndTypesSelector
-  , removePropertiesSelector
+  , addSubgroupSelector
+  , distributionIdentifierForProperty_personSelector
+  , membersSelector
+  , parentGroupsSelector
   , propertiesSelector
+  , removeMemberSelector
+  , removePropertiesSelector
+  , removeSubgroupSelector
+  , searchElementForProperty_label_key_value_comparisonSelector
+  , setDistributionIdentifier_forProperty_personSelector
+  , subgroupsSelector
   , typeOfPropertySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,156 +52,141 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- members@
 members :: IsABGroup abGroup => abGroup -> IO (Id NSArray)
-members abGroup  =
-    sendMsg abGroup (mkSelector "members") (retPtr retVoid) [] >>= retainedObject . castPtr
+members abGroup =
+  sendMessage abGroup membersSelector
 
 -- | @- addMember:@
 addMember :: (IsABGroup abGroup, IsABPerson person) => abGroup -> person -> IO Bool
-addMember abGroup  person =
-  withObjCPtr person $ \raw_person ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abGroup (mkSelector "addMember:") retCULong [argPtr (castPtr raw_person :: Ptr ())]
+addMember abGroup person =
+  sendMessage abGroup addMemberSelector (toABPerson person)
 
 -- | @- removeMember:@
 removeMember :: (IsABGroup abGroup, IsABPerson person) => abGroup -> person -> IO Bool
-removeMember abGroup  person =
-  withObjCPtr person $ \raw_person ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abGroup (mkSelector "removeMember:") retCULong [argPtr (castPtr raw_person :: Ptr ())]
+removeMember abGroup person =
+  sendMessage abGroup removeMemberSelector (toABPerson person)
 
 -- | @- subgroups@
 subgroups :: IsABGroup abGroup => abGroup -> IO (Id NSArray)
-subgroups abGroup  =
-    sendMsg abGroup (mkSelector "subgroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+subgroups abGroup =
+  sendMessage abGroup subgroupsSelector
 
 -- | @- addSubgroup:@
 addSubgroup :: (IsABGroup abGroup, IsABGroup group) => abGroup -> group -> IO Bool
-addSubgroup abGroup  group =
-  withObjCPtr group $ \raw_group ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abGroup (mkSelector "addSubgroup:") retCULong [argPtr (castPtr raw_group :: Ptr ())]
+addSubgroup abGroup group =
+  sendMessage abGroup addSubgroupSelector (toABGroup group)
 
 -- | @- removeSubgroup:@
 removeSubgroup :: (IsABGroup abGroup, IsABGroup group) => abGroup -> group -> IO Bool
-removeSubgroup abGroup  group =
-  withObjCPtr group $ \raw_group ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg abGroup (mkSelector "removeSubgroup:") retCULong [argPtr (castPtr raw_group :: Ptr ())]
+removeSubgroup abGroup group =
+  sendMessage abGroup removeSubgroupSelector (toABGroup group)
 
 -- | @- parentGroups@
 parentGroups :: IsABGroup abGroup => abGroup -> IO (Id NSArray)
-parentGroups abGroup  =
-    sendMsg abGroup (mkSelector "parentGroups") (retPtr retVoid) [] >>= retainedObject . castPtr
+parentGroups abGroup =
+  sendMessage abGroup parentGroupsSelector
 
 -- | @- setDistributionIdentifier:forProperty:person:@
 setDistributionIdentifier_forProperty_person :: (IsABGroup abGroup, IsNSString identifier, IsNSString property, IsABPerson person) => abGroup -> identifier -> property -> person -> IO Bool
-setDistributionIdentifier_forProperty_person abGroup  identifier property person =
-  withObjCPtr identifier $ \raw_identifier ->
-    withObjCPtr property $ \raw_property ->
-      withObjCPtr person $ \raw_person ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg abGroup (mkSelector "setDistributionIdentifier:forProperty:person:") retCULong [argPtr (castPtr raw_identifier :: Ptr ()), argPtr (castPtr raw_property :: Ptr ()), argPtr (castPtr raw_person :: Ptr ())]
+setDistributionIdentifier_forProperty_person abGroup identifier property person =
+  sendMessage abGroup setDistributionIdentifier_forProperty_personSelector (toNSString identifier) (toNSString property) (toABPerson person)
 
 -- | @- distributionIdentifierForProperty:person:@
 distributionIdentifierForProperty_person :: (IsABGroup abGroup, IsNSString property, IsABPerson person) => abGroup -> property -> person -> IO (Id NSString)
-distributionIdentifierForProperty_person abGroup  property person =
-  withObjCPtr property $ \raw_property ->
-    withObjCPtr person $ \raw_person ->
-        sendMsg abGroup (mkSelector "distributionIdentifierForProperty:person:") (retPtr retVoid) [argPtr (castPtr raw_property :: Ptr ()), argPtr (castPtr raw_person :: Ptr ())] >>= retainedObject . castPtr
+distributionIdentifierForProperty_person abGroup property person =
+  sendMessage abGroup distributionIdentifierForProperty_personSelector (toNSString property) (toABPerson person)
 
 -- | @+ searchElementForProperty:label:key:value:comparison:@
 searchElementForProperty_label_key_value_comparison :: (IsNSString property, IsNSString label, IsNSString key) => property -> label -> key -> RawId -> CLong -> IO (Id ABSearchElement)
 searchElementForProperty_label_key_value_comparison property label key value comparison =
   do
     cls' <- getRequiredClass "ABGroup"
-    withObjCPtr property $ \raw_property ->
-      withObjCPtr label $ \raw_label ->
-        withObjCPtr key $ \raw_key ->
-          sendClassMsg cls' (mkSelector "searchElementForProperty:label:key:value:comparison:") (retPtr retVoid) [argPtr (castPtr raw_property :: Ptr ()), argPtr (castPtr raw_label :: Ptr ()), argPtr (castPtr raw_key :: Ptr ()), argPtr (castPtr (unRawId value) :: Ptr ()), argCLong comparison] >>= retainedObject . castPtr
+    sendClassMessage cls' searchElementForProperty_label_key_value_comparisonSelector (toNSString property) (toNSString label) (toNSString key) value comparison
 
 -- | @+ addPropertiesAndTypes:@
 addPropertiesAndTypes :: IsNSDictionary properties => properties -> IO CLong
 addPropertiesAndTypes properties =
   do
     cls' <- getRequiredClass "ABGroup"
-    withObjCPtr properties $ \raw_properties ->
-      sendClassMsg cls' (mkSelector "addPropertiesAndTypes:") retCLong [argPtr (castPtr raw_properties :: Ptr ())]
+    sendClassMessage cls' addPropertiesAndTypesSelector (toNSDictionary properties)
 
 -- | @+ removeProperties:@
 removeProperties :: IsNSArray properties => properties -> IO CLong
 removeProperties properties =
   do
     cls' <- getRequiredClass "ABGroup"
-    withObjCPtr properties $ \raw_properties ->
-      sendClassMsg cls' (mkSelector "removeProperties:") retCLong [argPtr (castPtr raw_properties :: Ptr ())]
+    sendClassMessage cls' removePropertiesSelector (toNSArray properties)
 
 -- | @+ properties@
 properties :: IO (Id NSArray)
 properties  =
   do
     cls' <- getRequiredClass "ABGroup"
-    sendClassMsg cls' (mkSelector "properties") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' propertiesSelector
 
 -- | @+ typeOfProperty:@
 typeOfProperty :: IsNSString property => property -> IO CLong
 typeOfProperty property =
   do
     cls' <- getRequiredClass "ABGroup"
-    withObjCPtr property $ \raw_property ->
-      sendClassMsg cls' (mkSelector "typeOfProperty:") retCLong [argPtr (castPtr raw_property :: Ptr ())]
+    sendClassMessage cls' typeOfPropertySelector (toNSString property)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @members@
-membersSelector :: Selector
+membersSelector :: Selector '[] (Id NSArray)
 membersSelector = mkSelector "members"
 
 -- | @Selector@ for @addMember:@
-addMemberSelector :: Selector
+addMemberSelector :: Selector '[Id ABPerson] Bool
 addMemberSelector = mkSelector "addMember:"
 
 -- | @Selector@ for @removeMember:@
-removeMemberSelector :: Selector
+removeMemberSelector :: Selector '[Id ABPerson] Bool
 removeMemberSelector = mkSelector "removeMember:"
 
 -- | @Selector@ for @subgroups@
-subgroupsSelector :: Selector
+subgroupsSelector :: Selector '[] (Id NSArray)
 subgroupsSelector = mkSelector "subgroups"
 
 -- | @Selector@ for @addSubgroup:@
-addSubgroupSelector :: Selector
+addSubgroupSelector :: Selector '[Id ABGroup] Bool
 addSubgroupSelector = mkSelector "addSubgroup:"
 
 -- | @Selector@ for @removeSubgroup:@
-removeSubgroupSelector :: Selector
+removeSubgroupSelector :: Selector '[Id ABGroup] Bool
 removeSubgroupSelector = mkSelector "removeSubgroup:"
 
 -- | @Selector@ for @parentGroups@
-parentGroupsSelector :: Selector
+parentGroupsSelector :: Selector '[] (Id NSArray)
 parentGroupsSelector = mkSelector "parentGroups"
 
 -- | @Selector@ for @setDistributionIdentifier:forProperty:person:@
-setDistributionIdentifier_forProperty_personSelector :: Selector
+setDistributionIdentifier_forProperty_personSelector :: Selector '[Id NSString, Id NSString, Id ABPerson] Bool
 setDistributionIdentifier_forProperty_personSelector = mkSelector "setDistributionIdentifier:forProperty:person:"
 
 -- | @Selector@ for @distributionIdentifierForProperty:person:@
-distributionIdentifierForProperty_personSelector :: Selector
+distributionIdentifierForProperty_personSelector :: Selector '[Id NSString, Id ABPerson] (Id NSString)
 distributionIdentifierForProperty_personSelector = mkSelector "distributionIdentifierForProperty:person:"
 
 -- | @Selector@ for @searchElementForProperty:label:key:value:comparison:@
-searchElementForProperty_label_key_value_comparisonSelector :: Selector
+searchElementForProperty_label_key_value_comparisonSelector :: Selector '[Id NSString, Id NSString, Id NSString, RawId, CLong] (Id ABSearchElement)
 searchElementForProperty_label_key_value_comparisonSelector = mkSelector "searchElementForProperty:label:key:value:comparison:"
 
 -- | @Selector@ for @addPropertiesAndTypes:@
-addPropertiesAndTypesSelector :: Selector
+addPropertiesAndTypesSelector :: Selector '[Id NSDictionary] CLong
 addPropertiesAndTypesSelector = mkSelector "addPropertiesAndTypes:"
 
 -- | @Selector@ for @removeProperties:@
-removePropertiesSelector :: Selector
+removePropertiesSelector :: Selector '[Id NSArray] CLong
 removePropertiesSelector = mkSelector "removeProperties:"
 
 -- | @Selector@ for @properties@
-propertiesSelector :: Selector
+propertiesSelector :: Selector '[] (Id NSArray)
 propertiesSelector = mkSelector "properties"
 
 -- | @Selector@ for @typeOfProperty:@
-typeOfPropertySelector :: Selector
+typeOfPropertySelector :: Selector '[Id NSString] CLong
 typeOfPropertySelector = mkSelector "typeOfProperty:"
 

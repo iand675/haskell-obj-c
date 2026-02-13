@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,27 +27,23 @@ module ObjC.Virtualization.VZMacOSRestoreImage
   , url
   , buildVersion
   , mostFeaturefulSupportedConfiguration
-  , newSelector
+  , buildVersionSelector
+  , fetchLatestSupportedWithCompletionHandlerSelector
   , initSelector
   , loadFileURL_completionHandlerSelector
-  , fetchLatestSupportedWithCompletionHandlerSelector
+  , mostFeaturefulSupportedConfigurationSelector
+  , newSelector
   , supportedSelector
   , urlSelector
-  , buildVersionSelector
-  , mostFeaturefulSupportedConfigurationSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,12 +55,12 @@ new :: IO (Id VZMacOSRestoreImage)
 new  =
   do
     cls' <- getRequiredClass "VZMacOSRestoreImage"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZMacOSRestoreImage vzMacOSRestoreImage => vzMacOSRestoreImage -> IO (Id VZMacOSRestoreImage)
-init_ vzMacOSRestoreImage  =
-    sendMsg vzMacOSRestoreImage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzMacOSRestoreImage =
+  sendOwnedMessage vzMacOSRestoreImage initSelector
 
 -- | Load a restore image from a file on the local file system.
 --
@@ -78,8 +75,7 @@ loadFileURL_completionHandler :: IsNSURL fileURL => fileURL -> Ptr () -> IO ()
 loadFileURL_completionHandler fileURL completionHandler =
   do
     cls' <- getRequiredClass "VZMacOSRestoreImage"
-    withObjCPtr fileURL $ \raw_fileURL ->
-      sendClassMsg cls' (mkSelector "loadFileURL:completionHandler:") retVoid [argPtr (castPtr raw_fileURL :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' loadFileURL_completionHandlerSelector (toNSURL fileURL) completionHandler
 
 -- | Fetch the latest restore image supported by this host from the network.
 --
@@ -92,14 +88,14 @@ fetchLatestSupportedWithCompletionHandler :: Ptr () -> IO ()
 fetchLatestSupportedWithCompletionHandler completionHandler =
   do
     cls' <- getRequiredClass "VZMacOSRestoreImage"
-    sendClassMsg cls' (mkSelector "fetchLatestSupportedWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' fetchLatestSupportedWithCompletionHandlerSelector completionHandler
 
 -- | Whether this restore image is supported on the current host.
 --
 -- ObjC selector: @- supported@
 supported :: IsVZMacOSRestoreImage vzMacOSRestoreImage => vzMacOSRestoreImage -> IO Bool
-supported vzMacOSRestoreImage  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg vzMacOSRestoreImage (mkSelector "supported") retCULong []
+supported vzMacOSRestoreImage =
+  sendMessage vzMacOSRestoreImage supportedSelector
 
 -- | The URL of this restore image.
 --
@@ -107,15 +103,15 @@ supported vzMacOSRestoreImage  =
 --
 -- ObjC selector: @- URL@
 url :: IsVZMacOSRestoreImage vzMacOSRestoreImage => vzMacOSRestoreImage -> IO (Id NSURL)
-url vzMacOSRestoreImage  =
-    sendMsg vzMacOSRestoreImage (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url vzMacOSRestoreImage =
+  sendMessage vzMacOSRestoreImage urlSelector
 
 -- | The build version this restore image contains.
 --
 -- ObjC selector: @- buildVersion@
 buildVersion :: IsVZMacOSRestoreImage vzMacOSRestoreImage => vzMacOSRestoreImage -> IO (Id NSString)
-buildVersion vzMacOSRestoreImage  =
-    sendMsg vzMacOSRestoreImage (mkSelector "buildVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+buildVersion vzMacOSRestoreImage =
+  sendMessage vzMacOSRestoreImage buildVersionSelector
 
 -- | The configuration requirements for the most featureful configuration supported by the current host and by this restore image.
 --
@@ -123,42 +119,42 @@ buildVersion vzMacOSRestoreImage  =
 --
 -- ObjC selector: @- mostFeaturefulSupportedConfiguration@
 mostFeaturefulSupportedConfiguration :: IsVZMacOSRestoreImage vzMacOSRestoreImage => vzMacOSRestoreImage -> IO (Id VZMacOSConfigurationRequirements)
-mostFeaturefulSupportedConfiguration vzMacOSRestoreImage  =
-    sendMsg vzMacOSRestoreImage (mkSelector "mostFeaturefulSupportedConfiguration") (retPtr retVoid) [] >>= retainedObject . castPtr
+mostFeaturefulSupportedConfiguration vzMacOSRestoreImage =
+  sendMessage vzMacOSRestoreImage mostFeaturefulSupportedConfigurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZMacOSRestoreImage)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMacOSRestoreImage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @loadFileURL:completionHandler:@
-loadFileURL_completionHandlerSelector :: Selector
+loadFileURL_completionHandlerSelector :: Selector '[Id NSURL, Ptr ()] ()
 loadFileURL_completionHandlerSelector = mkSelector "loadFileURL:completionHandler:"
 
 -- | @Selector@ for @fetchLatestSupportedWithCompletionHandler:@
-fetchLatestSupportedWithCompletionHandlerSelector :: Selector
+fetchLatestSupportedWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 fetchLatestSupportedWithCompletionHandlerSelector = mkSelector "fetchLatestSupportedWithCompletionHandler:"
 
 -- | @Selector@ for @supported@
-supportedSelector :: Selector
+supportedSelector :: Selector '[] Bool
 supportedSelector = mkSelector "supported"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 
 -- | @Selector@ for @buildVersion@
-buildVersionSelector :: Selector
+buildVersionSelector :: Selector '[] (Id NSString)
 buildVersionSelector = mkSelector "buildVersion"
 
 -- | @Selector@ for @mostFeaturefulSupportedConfiguration@
-mostFeaturefulSupportedConfigurationSelector :: Selector
+mostFeaturefulSupportedConfigurationSelector :: Selector '[] (Id VZMacOSConfigurationRequirements)
 mostFeaturefulSupportedConfigurationSelector = mkSelector "mostFeaturefulSupportedConfiguration"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRCommodityTariffClusterPeakPeriodStruct
   , setSeverity
   , peakPeriod
   , setPeakPeriod
-  , severitySelector
-  , setSeveritySelector
   , peakPeriodSelector
   , setPeakPeriodSelector
+  , setSeveritySelector
+  , severitySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,43 +32,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- severity@
 severity :: IsMTRCommodityTariffClusterPeakPeriodStruct mtrCommodityTariffClusterPeakPeriodStruct => mtrCommodityTariffClusterPeakPeriodStruct -> IO (Id NSNumber)
-severity mtrCommodityTariffClusterPeakPeriodStruct  =
-    sendMsg mtrCommodityTariffClusterPeakPeriodStruct (mkSelector "severity") (retPtr retVoid) [] >>= retainedObject . castPtr
+severity mtrCommodityTariffClusterPeakPeriodStruct =
+  sendMessage mtrCommodityTariffClusterPeakPeriodStruct severitySelector
 
 -- | @- setSeverity:@
 setSeverity :: (IsMTRCommodityTariffClusterPeakPeriodStruct mtrCommodityTariffClusterPeakPeriodStruct, IsNSNumber value) => mtrCommodityTariffClusterPeakPeriodStruct -> value -> IO ()
-setSeverity mtrCommodityTariffClusterPeakPeriodStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterPeakPeriodStruct (mkSelector "setSeverity:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSeverity mtrCommodityTariffClusterPeakPeriodStruct value =
+  sendMessage mtrCommodityTariffClusterPeakPeriodStruct setSeveritySelector (toNSNumber value)
 
 -- | @- peakPeriod@
 peakPeriod :: IsMTRCommodityTariffClusterPeakPeriodStruct mtrCommodityTariffClusterPeakPeriodStruct => mtrCommodityTariffClusterPeakPeriodStruct -> IO (Id NSNumber)
-peakPeriod mtrCommodityTariffClusterPeakPeriodStruct  =
-    sendMsg mtrCommodityTariffClusterPeakPeriodStruct (mkSelector "peakPeriod") (retPtr retVoid) [] >>= retainedObject . castPtr
+peakPeriod mtrCommodityTariffClusterPeakPeriodStruct =
+  sendMessage mtrCommodityTariffClusterPeakPeriodStruct peakPeriodSelector
 
 -- | @- setPeakPeriod:@
 setPeakPeriod :: (IsMTRCommodityTariffClusterPeakPeriodStruct mtrCommodityTariffClusterPeakPeriodStruct, IsNSNumber value) => mtrCommodityTariffClusterPeakPeriodStruct -> value -> IO ()
-setPeakPeriod mtrCommodityTariffClusterPeakPeriodStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterPeakPeriodStruct (mkSelector "setPeakPeriod:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPeakPeriod mtrCommodityTariffClusterPeakPeriodStruct value =
+  sendMessage mtrCommodityTariffClusterPeakPeriodStruct setPeakPeriodSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @severity@
-severitySelector :: Selector
+severitySelector :: Selector '[] (Id NSNumber)
 severitySelector = mkSelector "severity"
 
 -- | @Selector@ for @setSeverity:@
-setSeveritySelector :: Selector
+setSeveritySelector :: Selector '[Id NSNumber] ()
 setSeveritySelector = mkSelector "setSeverity:"
 
 -- | @Selector@ for @peakPeriod@
-peakPeriodSelector :: Selector
+peakPeriodSelector :: Selector '[] (Id NSNumber)
 peakPeriodSelector = mkSelector "peakPeriod"
 
 -- | @Selector@ for @setPeakPeriod:@
-setPeakPeriodSelector :: Selector
+setPeakPeriodSelector :: Selector '[Id NSNumber] ()
 setPeakPeriodSelector = mkSelector "setPeakPeriod:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Metal.MTLIntersectionFunctionTableDescriptor
   , intersectionFunctionTableDescriptor
   , functionCount
   , setFunctionCount
-  , intersectionFunctionTableDescriptorSelector
   , functionCountSelector
+  , intersectionFunctionTableDescriptorSelector
   , setFunctionCountSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,7 +37,7 @@ intersectionFunctionTableDescriptor :: IO (Id MTLIntersectionFunctionTableDescri
 intersectionFunctionTableDescriptor  =
   do
     cls' <- getRequiredClass "MTLIntersectionFunctionTableDescriptor"
-    sendClassMsg cls' (mkSelector "intersectionFunctionTableDescriptor") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' intersectionFunctionTableDescriptorSelector
 
 -- | functionCount
 --
@@ -48,8 +45,8 @@ intersectionFunctionTableDescriptor  =
 --
 -- ObjC selector: @- functionCount@
 functionCount :: IsMTLIntersectionFunctionTableDescriptor mtlIntersectionFunctionTableDescriptor => mtlIntersectionFunctionTableDescriptor -> IO CULong
-functionCount mtlIntersectionFunctionTableDescriptor  =
-    sendMsg mtlIntersectionFunctionTableDescriptor (mkSelector "functionCount") retCULong []
+functionCount mtlIntersectionFunctionTableDescriptor =
+  sendMessage mtlIntersectionFunctionTableDescriptor functionCountSelector
 
 -- | functionCount
 --
@@ -57,22 +54,22 @@ functionCount mtlIntersectionFunctionTableDescriptor  =
 --
 -- ObjC selector: @- setFunctionCount:@
 setFunctionCount :: IsMTLIntersectionFunctionTableDescriptor mtlIntersectionFunctionTableDescriptor => mtlIntersectionFunctionTableDescriptor -> CULong -> IO ()
-setFunctionCount mtlIntersectionFunctionTableDescriptor  value =
-    sendMsg mtlIntersectionFunctionTableDescriptor (mkSelector "setFunctionCount:") retVoid [argCULong value]
+setFunctionCount mtlIntersectionFunctionTableDescriptor value =
+  sendMessage mtlIntersectionFunctionTableDescriptor setFunctionCountSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @intersectionFunctionTableDescriptor@
-intersectionFunctionTableDescriptorSelector :: Selector
+intersectionFunctionTableDescriptorSelector :: Selector '[] (Id MTLIntersectionFunctionTableDescriptor)
 intersectionFunctionTableDescriptorSelector = mkSelector "intersectionFunctionTableDescriptor"
 
 -- | @Selector@ for @functionCount@
-functionCountSelector :: Selector
+functionCountSelector :: Selector '[] CULong
 functionCountSelector = mkSelector "functionCount"
 
 -- | @Selector@ for @setFunctionCount:@
-setFunctionCountSelector :: Selector
+setFunctionCountSelector :: Selector '[CULong] ()
 setFunctionCountSelector = mkSelector "setFunctionCount:"
 

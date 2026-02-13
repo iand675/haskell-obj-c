@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.MetalPerformanceShaders.MPSNDArrayMultiaryGradientKernel
   , initWithDevice_sourceCount_sourceGradientIndex
   , encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState
   , encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState_destinationArray
-  , initWithDevice_sourceCountSelector
-  , initWithCoder_deviceSelector
-  , initWithDevice_sourceCount_sourceGradientIndexSelector
   , encodeToCommandBuffer_sourceArrays_sourceGradient_gradientStateSelector
   , encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState_destinationArraySelector
+  , initWithCoder_deviceSelector
+  , initWithDevice_sourceCountSelector
+  , initWithDevice_sourceCount_sourceGradientIndexSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,14 +34,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:sourceCount:@
 initWithDevice_sourceCount :: IsMPSNDArrayMultiaryGradientKernel mpsndArrayMultiaryGradientKernel => mpsndArrayMultiaryGradientKernel -> RawId -> CULong -> IO (Id MPSNDArrayMultiaryGradientKernel)
-initWithDevice_sourceCount mpsndArrayMultiaryGradientKernel  device count =
-    sendMsg mpsndArrayMultiaryGradientKernel (mkSelector "initWithDevice:sourceCount:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong count] >>= ownedObject . castPtr
+initWithDevice_sourceCount mpsndArrayMultiaryGradientKernel device count =
+  sendOwnedMessage mpsndArrayMultiaryGradientKernel initWithDevice_sourceCountSelector device count
 
 -- | @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNDArrayMultiaryGradientKernel mpsndArrayMultiaryGradientKernel, IsNSCoder coder) => mpsndArrayMultiaryGradientKernel -> coder -> RawId -> IO (Id MPSNDArrayMultiaryGradientKernel)
-initWithCoder_device mpsndArrayMultiaryGradientKernel  coder device =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg mpsndArrayMultiaryGradientKernel (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsndArrayMultiaryGradientKernel coder device =
+  sendOwnedMessage mpsndArrayMultiaryGradientKernel initWithCoder_deviceSelector (toNSCoder coder) device
 
 -- | Initialize a MPSNDArrayMultiaryKernel
 --
@@ -58,47 +54,40 @@ initWithCoder_device mpsndArrayMultiaryGradientKernel  coder device =
 --
 -- ObjC selector: @- initWithDevice:sourceCount:sourceGradientIndex:@
 initWithDevice_sourceCount_sourceGradientIndex :: IsMPSNDArrayMultiaryGradientKernel mpsndArrayMultiaryGradientKernel => mpsndArrayMultiaryGradientKernel -> RawId -> CULong -> CULong -> IO (Id MPSNDArrayMultiaryGradientKernel)
-initWithDevice_sourceCount_sourceGradientIndex mpsndArrayMultiaryGradientKernel  device count sourceGradientIndex =
-    sendMsg mpsndArrayMultiaryGradientKernel (mkSelector "initWithDevice:sourceCount:sourceGradientIndex:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong count, argCULong sourceGradientIndex] >>= ownedObject . castPtr
+initWithDevice_sourceCount_sourceGradientIndex mpsndArrayMultiaryGradientKernel device count sourceGradientIndex =
+  sendOwnedMessage mpsndArrayMultiaryGradientKernel initWithDevice_sourceCount_sourceGradientIndexSelector device count sourceGradientIndex
 
 -- | @- encodeToCommandBuffer:sourceArrays:sourceGradient:gradientState:@
 encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState :: (IsMPSNDArrayMultiaryGradientKernel mpsndArrayMultiaryGradientKernel, IsNSArray sources, IsMPSNDArray gradient, IsMPSState state) => mpsndArrayMultiaryGradientKernel -> RawId -> sources -> gradient -> state -> IO (Id MPSNDArray)
-encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState mpsndArrayMultiaryGradientKernel  cmdBuf sources gradient state =
-  withObjCPtr sources $ \raw_sources ->
-    withObjCPtr gradient $ \raw_gradient ->
-      withObjCPtr state $ \raw_state ->
-          sendMsg mpsndArrayMultiaryGradientKernel (mkSelector "encodeToCommandBuffer:sourceArrays:sourceGradient:gradientState:") (retPtr retVoid) [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr raw_sources :: Ptr ()), argPtr (castPtr raw_gradient :: Ptr ()), argPtr (castPtr raw_state :: Ptr ())] >>= retainedObject . castPtr
+encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState mpsndArrayMultiaryGradientKernel cmdBuf sources gradient state =
+  sendMessage mpsndArrayMultiaryGradientKernel encodeToCommandBuffer_sourceArrays_sourceGradient_gradientStateSelector cmdBuf (toNSArray sources) (toMPSNDArray gradient) (toMPSState state)
 
 -- | @- encodeToCommandBuffer:sourceArrays:sourceGradient:gradientState:destinationArray:@
 encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState_destinationArray :: (IsMPSNDArrayMultiaryGradientKernel mpsndArrayMultiaryGradientKernel, IsNSArray sources, IsMPSNDArray gradient, IsMPSState state, IsMPSNDArray destination) => mpsndArrayMultiaryGradientKernel -> RawId -> sources -> gradient -> state -> destination -> IO ()
-encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState_destinationArray mpsndArrayMultiaryGradientKernel  cmdBuf sources gradient state destination =
-  withObjCPtr sources $ \raw_sources ->
-    withObjCPtr gradient $ \raw_gradient ->
-      withObjCPtr state $ \raw_state ->
-        withObjCPtr destination $ \raw_destination ->
-            sendMsg mpsndArrayMultiaryGradientKernel (mkSelector "encodeToCommandBuffer:sourceArrays:sourceGradient:gradientState:destinationArray:") retVoid [argPtr (castPtr (unRawId cmdBuf) :: Ptr ()), argPtr (castPtr raw_sources :: Ptr ()), argPtr (castPtr raw_gradient :: Ptr ()), argPtr (castPtr raw_state :: Ptr ()), argPtr (castPtr raw_destination :: Ptr ())]
+encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState_destinationArray mpsndArrayMultiaryGradientKernel cmdBuf sources gradient state destination =
+  sendMessage mpsndArrayMultiaryGradientKernel encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState_destinationArraySelector cmdBuf (toNSArray sources) (toMPSNDArray gradient) (toMPSState state) (toMPSNDArray destination)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:sourceCount:@
-initWithDevice_sourceCountSelector :: Selector
+initWithDevice_sourceCountSelector :: Selector '[RawId, CULong] (Id MPSNDArrayMultiaryGradientKernel)
 initWithDevice_sourceCountSelector = mkSelector "initWithDevice:sourceCount:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNDArrayMultiaryGradientKernel)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @initWithDevice:sourceCount:sourceGradientIndex:@
-initWithDevice_sourceCount_sourceGradientIndexSelector :: Selector
+initWithDevice_sourceCount_sourceGradientIndexSelector :: Selector '[RawId, CULong, CULong] (Id MPSNDArrayMultiaryGradientKernel)
 initWithDevice_sourceCount_sourceGradientIndexSelector = mkSelector "initWithDevice:sourceCount:sourceGradientIndex:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceArrays:sourceGradient:gradientState:@
-encodeToCommandBuffer_sourceArrays_sourceGradient_gradientStateSelector :: Selector
+encodeToCommandBuffer_sourceArrays_sourceGradient_gradientStateSelector :: Selector '[RawId, Id NSArray, Id MPSNDArray, Id MPSState] (Id MPSNDArray)
 encodeToCommandBuffer_sourceArrays_sourceGradient_gradientStateSelector = mkSelector "encodeToCommandBuffer:sourceArrays:sourceGradient:gradientState:"
 
 -- | @Selector@ for @encodeToCommandBuffer:sourceArrays:sourceGradient:gradientState:destinationArray:@
-encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState_destinationArraySelector :: Selector
+encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState_destinationArraySelector :: Selector '[RawId, Id NSArray, Id MPSNDArray, Id MPSState, Id MPSNDArray] ()
 encodeToCommandBuffer_sourceArrays_sourceGradient_gradientState_destinationArraySelector = mkSelector "encodeToCommandBuffer:sourceArrays:sourceGradient:gradientState:destinationArray:"
 

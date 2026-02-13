@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,21 +13,17 @@ module ObjC.PushKit.PKPushCredentials
   , IsPKPushCredentials(..)
   , type_
   , token
-  , typeSelector
   , tokenSelector
+  , typeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,8 +36,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- type@
 type_ :: IsPKPushCredentials pkPushCredentials => pkPushCredentials -> IO (Id NSString)
-type_ pkPushCredentials  =
-    sendMsg pkPushCredentials (mkSelector "type") (retPtr retVoid) [] >>= retainedObject . castPtr
+type_ pkPushCredentials =
+  sendMessage pkPushCredentials typeSelector
 
 -- | A unique device token to use when sending push notifications to the current device.
 --
@@ -48,18 +45,18 @@ type_ pkPushCredentials  =
 --
 -- ObjC selector: @- token@
 token :: IsPKPushCredentials pkPushCredentials => pkPushCredentials -> IO (Id NSData)
-token pkPushCredentials  =
-    sendMsg pkPushCredentials (mkSelector "token") (retPtr retVoid) [] >>= retainedObject . castPtr
+token pkPushCredentials =
+  sendMessage pkPushCredentials tokenSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] (Id NSString)
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @token@
-tokenSelector :: Selector
+tokenSelector :: Selector '[] (Id NSData)
 tokenSelector = mkSelector "token"
 

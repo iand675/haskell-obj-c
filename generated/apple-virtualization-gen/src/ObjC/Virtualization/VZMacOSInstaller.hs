@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -77,26 +78,22 @@ module ObjC.Virtualization.VZMacOSInstaller
   , progress
   , virtualMachine
   , restoreImageURL
-  , newSelector
   , initSelector
   , initWithVirtualMachine_restoreImageURLSelector
   , installWithCompletionHandlerSelector
+  , newSelector
   , progressSelector
-  , virtualMachineSelector
   , restoreImageURLSelector
+  , virtualMachineSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -108,12 +105,12 @@ new :: IO (Id VZMacOSInstaller)
 new  =
   do
     cls' <- getRequiredClass "VZMacOSInstaller"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZMacOSInstaller vzMacOSInstaller => vzMacOSInstaller -> IO (Id VZMacOSInstaller)
-init_ vzMacOSInstaller  =
-    sendMsg vzMacOSInstaller (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzMacOSInstaller =
+  sendOwnedMessage vzMacOSInstaller initSelector
 
 -- | Initialize a VZMacOSInstaller object.
 --
@@ -125,10 +122,8 @@ init_ vzMacOSInstaller  =
 --
 -- ObjC selector: @- initWithVirtualMachine:restoreImageURL:@
 initWithVirtualMachine_restoreImageURL :: (IsVZMacOSInstaller vzMacOSInstaller, IsVZVirtualMachine virtualMachine, IsNSURL restoreImageFileURL) => vzMacOSInstaller -> virtualMachine -> restoreImageFileURL -> IO (Id VZMacOSInstaller)
-initWithVirtualMachine_restoreImageURL vzMacOSInstaller  virtualMachine restoreImageFileURL =
-  withObjCPtr virtualMachine $ \raw_virtualMachine ->
-    withObjCPtr restoreImageFileURL $ \raw_restoreImageFileURL ->
-        sendMsg vzMacOSInstaller (mkSelector "initWithVirtualMachine:restoreImageURL:") (retPtr retVoid) [argPtr (castPtr raw_virtualMachine :: Ptr ()), argPtr (castPtr raw_restoreImageFileURL :: Ptr ())] >>= ownedObject . castPtr
+initWithVirtualMachine_restoreImageURL vzMacOSInstaller virtualMachine restoreImageFileURL =
+  sendOwnedMessage vzMacOSInstaller initWithVirtualMachine_restoreImageURLSelector (toVZVirtualMachine virtualMachine) (toNSURL restoreImageFileURL)
 
 -- | Start installing macOS.
 --
@@ -138,8 +133,8 @@ initWithVirtualMachine_restoreImageURL vzMacOSInstaller  virtualMachine restoreI
 --
 -- ObjC selector: @- installWithCompletionHandler:@
 installWithCompletionHandler :: IsVZMacOSInstaller vzMacOSInstaller => vzMacOSInstaller -> Ptr () -> IO ()
-installWithCompletionHandler vzMacOSInstaller  completionHandler =
-    sendMsg vzMacOSInstaller (mkSelector "installWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+installWithCompletionHandler vzMacOSInstaller completionHandler =
+  sendMessage vzMacOSInstaller installWithCompletionHandlerSelector completionHandler
 
 -- | An NSProgress object that can be used to observe or cancel installation.
 --
@@ -147,52 +142,52 @@ installWithCompletionHandler vzMacOSInstaller  completionHandler =
 --
 -- ObjC selector: @- progress@
 progress :: IsVZMacOSInstaller vzMacOSInstaller => vzMacOSInstaller -> IO (Id NSProgress)
-progress vzMacOSInstaller  =
-    sendMsg vzMacOSInstaller (mkSelector "progress") (retPtr retVoid) [] >>= retainedObject . castPtr
+progress vzMacOSInstaller =
+  sendMessage vzMacOSInstaller progressSelector
 
 -- | The virtual machine that this installer was initialized with.
 --
 -- ObjC selector: @- virtualMachine@
 virtualMachine :: IsVZMacOSInstaller vzMacOSInstaller => vzMacOSInstaller -> IO (Id VZVirtualMachine)
-virtualMachine vzMacOSInstaller  =
-    sendMsg vzMacOSInstaller (mkSelector "virtualMachine") (retPtr retVoid) [] >>= retainedObject . castPtr
+virtualMachine vzMacOSInstaller =
+  sendMessage vzMacOSInstaller virtualMachineSelector
 
 -- | The restore image URL that this installer was initialized with.
 --
 -- ObjC selector: @- restoreImageURL@
 restoreImageURL :: IsVZMacOSInstaller vzMacOSInstaller => vzMacOSInstaller -> IO (Id NSURL)
-restoreImageURL vzMacOSInstaller  =
-    sendMsg vzMacOSInstaller (mkSelector "restoreImageURL") (retPtr retVoid) [] >>= retainedObject . castPtr
+restoreImageURL vzMacOSInstaller =
+  sendMessage vzMacOSInstaller restoreImageURLSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZMacOSInstaller)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMacOSInstaller)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithVirtualMachine:restoreImageURL:@
-initWithVirtualMachine_restoreImageURLSelector :: Selector
+initWithVirtualMachine_restoreImageURLSelector :: Selector '[Id VZVirtualMachine, Id NSURL] (Id VZMacOSInstaller)
 initWithVirtualMachine_restoreImageURLSelector = mkSelector "initWithVirtualMachine:restoreImageURL:"
 
 -- | @Selector@ for @installWithCompletionHandler:@
-installWithCompletionHandlerSelector :: Selector
+installWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 installWithCompletionHandlerSelector = mkSelector "installWithCompletionHandler:"
 
 -- | @Selector@ for @progress@
-progressSelector :: Selector
+progressSelector :: Selector '[] (Id NSProgress)
 progressSelector = mkSelector "progress"
 
 -- | @Selector@ for @virtualMachine@
-virtualMachineSelector :: Selector
+virtualMachineSelector :: Selector '[] (Id VZVirtualMachine)
 virtualMachineSelector = mkSelector "virtualMachine"
 
 -- | @Selector@ for @restoreImageURL@
-restoreImageURLSelector :: Selector
+restoreImageURLSelector :: Selector '[] (Id NSURL)
 restoreImageURLSelector = mkSelector "restoreImageURL"
 

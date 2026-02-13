@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Matter.MTRControllerFactory
   , init_
   , new
   , isRunning
+  , initSelector
+  , isRunningSelector
+  , newSelector
   , sharedInstanceSelector
-  , startupSelector
   , shutdownSelector
   , startControllerOnExistingFabricSelector
   , startControllerOnNewFabricSelector
-  , initSelector
-  , newSelector
-  , isRunningSelector
+  , startupSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,81 +43,78 @@ sharedInstance :: IO (Id MTRControllerFactory)
 sharedInstance  =
   do
     cls' <- getRequiredClass "MTRControllerFactory"
-    sendClassMsg cls' (mkSelector "sharedInstance") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedInstanceSelector
 
 -- | @- startup:@
 startup :: (IsMTRControllerFactory mtrControllerFactory, IsMTRControllerFactoryParams startupParams) => mtrControllerFactory -> startupParams -> IO Bool
-startup mtrControllerFactory  startupParams =
-  withObjCPtr startupParams $ \raw_startupParams ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrControllerFactory (mkSelector "startup:") retCULong [argPtr (castPtr raw_startupParams :: Ptr ())]
+startup mtrControllerFactory startupParams =
+  sendMessage mtrControllerFactory startupSelector (toMTRControllerFactoryParams startupParams)
 
 -- | @- shutdown@
 shutdown :: IsMTRControllerFactory mtrControllerFactory => mtrControllerFactory -> IO ()
-shutdown mtrControllerFactory  =
-    sendMsg mtrControllerFactory (mkSelector "shutdown") retVoid []
+shutdown mtrControllerFactory =
+  sendMessage mtrControllerFactory shutdownSelector
 
 -- | @- startControllerOnExistingFabric:@
 startControllerOnExistingFabric :: (IsMTRControllerFactory mtrControllerFactory, IsMTRDeviceControllerStartupParams startupParams) => mtrControllerFactory -> startupParams -> IO (Id MTRDeviceController)
-startControllerOnExistingFabric mtrControllerFactory  startupParams =
-  withObjCPtr startupParams $ \raw_startupParams ->
-      sendMsg mtrControllerFactory (mkSelector "startControllerOnExistingFabric:") (retPtr retVoid) [argPtr (castPtr raw_startupParams :: Ptr ())] >>= retainedObject . castPtr
+startControllerOnExistingFabric mtrControllerFactory startupParams =
+  sendMessage mtrControllerFactory startControllerOnExistingFabricSelector (toMTRDeviceControllerStartupParams startupParams)
 
 -- | @- startControllerOnNewFabric:@
 startControllerOnNewFabric :: (IsMTRControllerFactory mtrControllerFactory, IsMTRDeviceControllerStartupParams startupParams) => mtrControllerFactory -> startupParams -> IO (Id MTRDeviceController)
-startControllerOnNewFabric mtrControllerFactory  startupParams =
-  withObjCPtr startupParams $ \raw_startupParams ->
-      sendMsg mtrControllerFactory (mkSelector "startControllerOnNewFabric:") (retPtr retVoid) [argPtr (castPtr raw_startupParams :: Ptr ())] >>= retainedObject . castPtr
+startControllerOnNewFabric mtrControllerFactory startupParams =
+  sendMessage mtrControllerFactory startControllerOnNewFabricSelector (toMTRDeviceControllerStartupParams startupParams)
 
 -- | @- init@
 init_ :: IsMTRControllerFactory mtrControllerFactory => mtrControllerFactory -> IO (Id MTRControllerFactory)
-init_ mtrControllerFactory  =
-    sendMsg mtrControllerFactory (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrControllerFactory =
+  sendOwnedMessage mtrControllerFactory initSelector
 
 -- | @+ new@
 new :: IO (Id MTRControllerFactory)
 new  =
   do
     cls' <- getRequiredClass "MTRControllerFactory"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- isRunning@
 isRunning :: IsMTRControllerFactory mtrControllerFactory => mtrControllerFactory -> IO Bool
-isRunning mtrControllerFactory  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mtrControllerFactory (mkSelector "isRunning") retCULong []
+isRunning mtrControllerFactory =
+  sendMessage mtrControllerFactory isRunningSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @sharedInstance@
-sharedInstanceSelector :: Selector
+sharedInstanceSelector :: Selector '[] (Id MTRControllerFactory)
 sharedInstanceSelector = mkSelector "sharedInstance"
 
 -- | @Selector@ for @startup:@
-startupSelector :: Selector
+startupSelector :: Selector '[Id MTRControllerFactoryParams] Bool
 startupSelector = mkSelector "startup:"
 
 -- | @Selector@ for @shutdown@
-shutdownSelector :: Selector
+shutdownSelector :: Selector '[] ()
 shutdownSelector = mkSelector "shutdown"
 
 -- | @Selector@ for @startControllerOnExistingFabric:@
-startControllerOnExistingFabricSelector :: Selector
+startControllerOnExistingFabricSelector :: Selector '[Id MTRDeviceControllerStartupParams] (Id MTRDeviceController)
 startControllerOnExistingFabricSelector = mkSelector "startControllerOnExistingFabric:"
 
 -- | @Selector@ for @startControllerOnNewFabric:@
-startControllerOnNewFabricSelector :: Selector
+startControllerOnNewFabricSelector :: Selector '[Id MTRDeviceControllerStartupParams] (Id MTRDeviceController)
 startControllerOnNewFabricSelector = mkSelector "startControllerOnNewFabric:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRControllerFactory)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRControllerFactory)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @isRunning@
-isRunningSelector :: Selector
+isRunningSelector :: Selector '[] Bool
 isRunningSelector = mkSelector "isRunning"
 

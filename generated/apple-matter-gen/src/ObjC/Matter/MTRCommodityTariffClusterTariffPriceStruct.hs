@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRCommodityTariffClusterTariffPriceStruct
   , setPrice
   , priceLevel
   , setPriceLevel
-  , priceTypeSelector
-  , setPriceTypeSelector
-  , priceSelector
-  , setPriceSelector
   , priceLevelSelector
+  , priceSelector
+  , priceTypeSelector
   , setPriceLevelSelector
+  , setPriceSelector
+  , setPriceTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,62 +36,59 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- priceType@
 priceType :: IsMTRCommodityTariffClusterTariffPriceStruct mtrCommodityTariffClusterTariffPriceStruct => mtrCommodityTariffClusterTariffPriceStruct -> IO (Id NSNumber)
-priceType mtrCommodityTariffClusterTariffPriceStruct  =
-    sendMsg mtrCommodityTariffClusterTariffPriceStruct (mkSelector "priceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+priceType mtrCommodityTariffClusterTariffPriceStruct =
+  sendMessage mtrCommodityTariffClusterTariffPriceStruct priceTypeSelector
 
 -- | @- setPriceType:@
 setPriceType :: (IsMTRCommodityTariffClusterTariffPriceStruct mtrCommodityTariffClusterTariffPriceStruct, IsNSNumber value) => mtrCommodityTariffClusterTariffPriceStruct -> value -> IO ()
-setPriceType mtrCommodityTariffClusterTariffPriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffPriceStruct (mkSelector "setPriceType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPriceType mtrCommodityTariffClusterTariffPriceStruct value =
+  sendMessage mtrCommodityTariffClusterTariffPriceStruct setPriceTypeSelector (toNSNumber value)
 
 -- | @- price@
 price :: IsMTRCommodityTariffClusterTariffPriceStruct mtrCommodityTariffClusterTariffPriceStruct => mtrCommodityTariffClusterTariffPriceStruct -> IO (Id NSNumber)
-price mtrCommodityTariffClusterTariffPriceStruct  =
-    sendMsg mtrCommodityTariffClusterTariffPriceStruct (mkSelector "price") (retPtr retVoid) [] >>= retainedObject . castPtr
+price mtrCommodityTariffClusterTariffPriceStruct =
+  sendMessage mtrCommodityTariffClusterTariffPriceStruct priceSelector
 
 -- | @- setPrice:@
 setPrice :: (IsMTRCommodityTariffClusterTariffPriceStruct mtrCommodityTariffClusterTariffPriceStruct, IsNSNumber value) => mtrCommodityTariffClusterTariffPriceStruct -> value -> IO ()
-setPrice mtrCommodityTariffClusterTariffPriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffPriceStruct (mkSelector "setPrice:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrice mtrCommodityTariffClusterTariffPriceStruct value =
+  sendMessage mtrCommodityTariffClusterTariffPriceStruct setPriceSelector (toNSNumber value)
 
 -- | @- priceLevel@
 priceLevel :: IsMTRCommodityTariffClusterTariffPriceStruct mtrCommodityTariffClusterTariffPriceStruct => mtrCommodityTariffClusterTariffPriceStruct -> IO (Id NSNumber)
-priceLevel mtrCommodityTariffClusterTariffPriceStruct  =
-    sendMsg mtrCommodityTariffClusterTariffPriceStruct (mkSelector "priceLevel") (retPtr retVoid) [] >>= retainedObject . castPtr
+priceLevel mtrCommodityTariffClusterTariffPriceStruct =
+  sendMessage mtrCommodityTariffClusterTariffPriceStruct priceLevelSelector
 
 -- | @- setPriceLevel:@
 setPriceLevel :: (IsMTRCommodityTariffClusterTariffPriceStruct mtrCommodityTariffClusterTariffPriceStruct, IsNSNumber value) => mtrCommodityTariffClusterTariffPriceStruct -> value -> IO ()
-setPriceLevel mtrCommodityTariffClusterTariffPriceStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterTariffPriceStruct (mkSelector "setPriceLevel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPriceLevel mtrCommodityTariffClusterTariffPriceStruct value =
+  sendMessage mtrCommodityTariffClusterTariffPriceStruct setPriceLevelSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @priceType@
-priceTypeSelector :: Selector
+priceTypeSelector :: Selector '[] (Id NSNumber)
 priceTypeSelector = mkSelector "priceType"
 
 -- | @Selector@ for @setPriceType:@
-setPriceTypeSelector :: Selector
+setPriceTypeSelector :: Selector '[Id NSNumber] ()
 setPriceTypeSelector = mkSelector "setPriceType:"
 
 -- | @Selector@ for @price@
-priceSelector :: Selector
+priceSelector :: Selector '[] (Id NSNumber)
 priceSelector = mkSelector "price"
 
 -- | @Selector@ for @setPrice:@
-setPriceSelector :: Selector
+setPriceSelector :: Selector '[Id NSNumber] ()
 setPriceSelector = mkSelector "setPrice:"
 
 -- | @Selector@ for @priceLevel@
-priceLevelSelector :: Selector
+priceLevelSelector :: Selector '[] (Id NSNumber)
 priceLevelSelector = mkSelector "priceLevel"
 
 -- | @Selector@ for @setPriceLevel:@
-setPriceLevelSelector :: Selector
+setPriceLevelSelector :: Selector '[Id NSNumber] ()
 setPriceLevelSelector = mkSelector "setPriceLevel:"
 

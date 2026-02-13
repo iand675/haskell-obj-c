@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,21 +19,17 @@ module ObjC.SpriteKit.SKCameraNode
   , IsSKCameraNode(..)
   , containsNode
   , containedNodeSet
-  , containsNodeSelector
   , containedNodeSetSelector
+  , containsNodeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,9 +43,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- containsNode:@
 containsNode :: (IsSKCameraNode skCameraNode, IsSKNode node) => skCameraNode -> node -> IO Bool
-containsNode skCameraNode  node =
-  withObjCPtr node $ \raw_node ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg skCameraNode (mkSelector "containsNode:") retCULong [argPtr (castPtr raw_node :: Ptr ())]
+containsNode skCameraNode node =
+  sendMessage skCameraNode containsNodeSelector (toSKNode node)
 
 -- | Returns the set of nodes in the same scene as the camera that are contained within its viewport.
 --
@@ -56,18 +52,18 @@ containsNode skCameraNode  node =
 --
 -- ObjC selector: @- containedNodeSet@
 containedNodeSet :: IsSKCameraNode skCameraNode => skCameraNode -> IO (Id NSSet)
-containedNodeSet skCameraNode  =
-    sendMsg skCameraNode (mkSelector "containedNodeSet") (retPtr retVoid) [] >>= retainedObject . castPtr
+containedNodeSet skCameraNode =
+  sendMessage skCameraNode containedNodeSetSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @containsNode:@
-containsNodeSelector :: Selector
+containsNodeSelector :: Selector '[Id SKNode] Bool
 containsNodeSelector = mkSelector "containsNode:"
 
 -- | @Selector@ for @containedNodeSet@
-containedNodeSetSelector :: Selector
+containedNodeSetSelector :: Selector '[] (Id NSSet)
 containedNodeSetSelector = mkSelector "containedNodeSet"
 

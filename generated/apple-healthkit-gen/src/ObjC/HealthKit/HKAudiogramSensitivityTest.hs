@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.HealthKit.HKAudiogramSensitivityTest
   , masked
   , side
   , clampingRange
-  , initWithSensitivity_type_masked_side_clampingRange_errorSelector
+  , clampingRangeSelector
   , initSelector
+  , initWithSensitivity_type_masked_side_clampingRange_errorSelector
+  , maskedSelector
   , newSelector
   , sensitivitySelector
-  , typeSelector
-  , maskedSelector
   , sideSelector
-  , clampingRangeSelector
+  , typeSelector
 
   -- * Enum types
   , HKAudiogramConductionType(HKAudiogramConductionType)
@@ -33,15 +34,11 @@ module ObjC.HealthKit.HKAudiogramSensitivityTest
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,23 +66,20 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithSensitivity:type:masked:side:clampingRange:error:@
 initWithSensitivity_type_masked_side_clampingRange_error :: (IsHKAudiogramSensitivityTest hkAudiogramSensitivityTest, IsHKQuantity sensitivity, IsHKAudiogramSensitivityPointClampingRange clampingRange, IsNSError errorOut) => hkAudiogramSensitivityTest -> sensitivity -> HKAudiogramConductionType -> Bool -> HKAudiogramSensitivityTestSide -> clampingRange -> errorOut -> IO (Id HKAudiogramSensitivityTest)
-initWithSensitivity_type_masked_side_clampingRange_error hkAudiogramSensitivityTest  sensitivity type_ masked side clampingRange errorOut =
-  withObjCPtr sensitivity $ \raw_sensitivity ->
-    withObjCPtr clampingRange $ \raw_clampingRange ->
-      withObjCPtr errorOut $ \raw_errorOut ->
-          sendMsg hkAudiogramSensitivityTest (mkSelector "initWithSensitivity:type:masked:side:clampingRange:error:") (retPtr retVoid) [argPtr (castPtr raw_sensitivity :: Ptr ()), argCLong (coerce type_), argCULong (if masked then 1 else 0), argCLong (coerce side), argPtr (castPtr raw_clampingRange :: Ptr ()), argPtr (castPtr raw_errorOut :: Ptr ())] >>= ownedObject . castPtr
+initWithSensitivity_type_masked_side_clampingRange_error hkAudiogramSensitivityTest sensitivity type_ masked side clampingRange errorOut =
+  sendOwnedMessage hkAudiogramSensitivityTest initWithSensitivity_type_masked_side_clampingRange_errorSelector (toHKQuantity sensitivity) type_ masked side (toHKAudiogramSensitivityPointClampingRange clampingRange) (toNSError errorOut)
 
 -- | @- init@
 init_ :: IsHKAudiogramSensitivityTest hkAudiogramSensitivityTest => hkAudiogramSensitivityTest -> IO (Id HKAudiogramSensitivityTest)
-init_ hkAudiogramSensitivityTest  =
-    sendMsg hkAudiogramSensitivityTest (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkAudiogramSensitivityTest =
+  sendOwnedMessage hkAudiogramSensitivityTest initSelector
 
 -- | @+ new@
 new :: IO (Id HKAudiogramSensitivityTest)
 new  =
   do
     cls' <- getRequiredClass "HKAudiogramSensitivityTest"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | sensitivity
 --
@@ -93,8 +87,8 @@ new  =
 --
 -- ObjC selector: @- sensitivity@
 sensitivity :: IsHKAudiogramSensitivityTest hkAudiogramSensitivityTest => hkAudiogramSensitivityTest -> IO (Id HKQuantity)
-sensitivity hkAudiogramSensitivityTest  =
-    sendMsg hkAudiogramSensitivityTest (mkSelector "sensitivity") (retPtr retVoid) [] >>= retainedObject . castPtr
+sensitivity hkAudiogramSensitivityTest =
+  sendMessage hkAudiogramSensitivityTest sensitivitySelector
 
 -- | type
 --
@@ -102,8 +96,8 @@ sensitivity hkAudiogramSensitivityTest  =
 --
 -- ObjC selector: @- type@
 type_ :: IsHKAudiogramSensitivityTest hkAudiogramSensitivityTest => hkAudiogramSensitivityTest -> IO HKAudiogramConductionType
-type_ hkAudiogramSensitivityTest  =
-    fmap (coerce :: CLong -> HKAudiogramConductionType) $ sendMsg hkAudiogramSensitivityTest (mkSelector "type") retCLong []
+type_ hkAudiogramSensitivityTest =
+  sendMessage hkAudiogramSensitivityTest typeSelector
 
 -- | masked
 --
@@ -111,8 +105,8 @@ type_ hkAudiogramSensitivityTest  =
 --
 -- ObjC selector: @- masked@
 masked :: IsHKAudiogramSensitivityTest hkAudiogramSensitivityTest => hkAudiogramSensitivityTest -> IO Bool
-masked hkAudiogramSensitivityTest  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg hkAudiogramSensitivityTest (mkSelector "masked") retCULong []
+masked hkAudiogramSensitivityTest =
+  sendMessage hkAudiogramSensitivityTest maskedSelector
 
 -- | side
 --
@@ -120,8 +114,8 @@ masked hkAudiogramSensitivityTest  =
 --
 -- ObjC selector: @- side@
 side :: IsHKAudiogramSensitivityTest hkAudiogramSensitivityTest => hkAudiogramSensitivityTest -> IO HKAudiogramSensitivityTestSide
-side hkAudiogramSensitivityTest  =
-    fmap (coerce :: CLong -> HKAudiogramSensitivityTestSide) $ sendMsg hkAudiogramSensitivityTest (mkSelector "side") retCLong []
+side hkAudiogramSensitivityTest =
+  sendMessage hkAudiogramSensitivityTest sideSelector
 
 -- | clampingRange
 --
@@ -129,42 +123,42 @@ side hkAudiogramSensitivityTest  =
 --
 -- ObjC selector: @- clampingRange@
 clampingRange :: IsHKAudiogramSensitivityTest hkAudiogramSensitivityTest => hkAudiogramSensitivityTest -> IO (Id HKAudiogramSensitivityPointClampingRange)
-clampingRange hkAudiogramSensitivityTest  =
-    sendMsg hkAudiogramSensitivityTest (mkSelector "clampingRange") (retPtr retVoid) [] >>= retainedObject . castPtr
+clampingRange hkAudiogramSensitivityTest =
+  sendMessage hkAudiogramSensitivityTest clampingRangeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithSensitivity:type:masked:side:clampingRange:error:@
-initWithSensitivity_type_masked_side_clampingRange_errorSelector :: Selector
+initWithSensitivity_type_masked_side_clampingRange_errorSelector :: Selector '[Id HKQuantity, HKAudiogramConductionType, Bool, HKAudiogramSensitivityTestSide, Id HKAudiogramSensitivityPointClampingRange, Id NSError] (Id HKAudiogramSensitivityTest)
 initWithSensitivity_type_masked_side_clampingRange_errorSelector = mkSelector "initWithSensitivity:type:masked:side:clampingRange:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKAudiogramSensitivityTest)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKAudiogramSensitivityTest)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @sensitivity@
-sensitivitySelector :: Selector
+sensitivitySelector :: Selector '[] (Id HKQuantity)
 sensitivitySelector = mkSelector "sensitivity"
 
 -- | @Selector@ for @type@
-typeSelector :: Selector
+typeSelector :: Selector '[] HKAudiogramConductionType
 typeSelector = mkSelector "type"
 
 -- | @Selector@ for @masked@
-maskedSelector :: Selector
+maskedSelector :: Selector '[] Bool
 maskedSelector = mkSelector "masked"
 
 -- | @Selector@ for @side@
-sideSelector :: Selector
+sideSelector :: Selector '[] HKAudiogramSensitivityTestSide
 sideSelector = mkSelector "side"
 
 -- | @Selector@ for @clampingRange@
-clampingRangeSelector :: Selector
+clampingRangeSelector :: Selector '[] (Id HKAudiogramSensitivityPointClampingRange)
 clampingRangeSelector = mkSelector "clampingRange"
 

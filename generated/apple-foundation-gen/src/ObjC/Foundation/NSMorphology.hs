@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,23 +29,23 @@ module ObjC.Foundation.NSMorphology
   , unspecified
   , userMorphology
   , customPronounForLanguageSelector
-  , setCustomPronoun_forLanguage_errorSelector
-  , grammaticalGenderSelector
-  , setGrammaticalGenderSelector
-  , partOfSpeechSelector
-  , setPartOfSpeechSelector
-  , numberSelector
-  , setNumberSelector
-  , grammaticalCaseSelector
-  , setGrammaticalCaseSelector
-  , determinationSelector
-  , setDeterminationSelector
-  , grammaticalPersonSelector
-  , setGrammaticalPersonSelector
-  , pronounTypeSelector
-  , setPronounTypeSelector
   , definitenessSelector
+  , determinationSelector
+  , grammaticalCaseSelector
+  , grammaticalGenderSelector
+  , grammaticalPersonSelector
+  , numberSelector
+  , partOfSpeechSelector
+  , pronounTypeSelector
+  , setCustomPronoun_forLanguage_errorSelector
   , setDefinitenessSelector
+  , setDeterminationSelector
+  , setGrammaticalCaseSelector
+  , setGrammaticalGenderSelector
+  , setGrammaticalPersonSelector
+  , setNumberSelector
+  , setPartOfSpeechSelector
+  , setPronounTypeSelector
   , unspecifiedSelector
   , userMorphologySelector
 
@@ -115,15 +116,11 @@ module ObjC.Foundation.NSMorphology
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -132,191 +129,187 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- customPronounForLanguage:@
 customPronounForLanguage :: (IsNSMorphology nsMorphology, IsNSString language) => nsMorphology -> language -> IO (Id NSMorphologyCustomPronoun)
-customPronounForLanguage nsMorphology  language =
-  withObjCPtr language $ \raw_language ->
-      sendMsg nsMorphology (mkSelector "customPronounForLanguage:") (retPtr retVoid) [argPtr (castPtr raw_language :: Ptr ())] >>= retainedObject . castPtr
+customPronounForLanguage nsMorphology language =
+  sendMessage nsMorphology customPronounForLanguageSelector (toNSString language)
 
 -- | @- setCustomPronoun:forLanguage:error:@
 setCustomPronoun_forLanguage_error :: (IsNSMorphology nsMorphology, IsNSMorphologyCustomPronoun features, IsNSString language, IsNSError error_) => nsMorphology -> features -> language -> error_ -> IO Bool
-setCustomPronoun_forLanguage_error nsMorphology  features language error_ =
-  withObjCPtr features $ \raw_features ->
-    withObjCPtr language $ \raw_language ->
-      withObjCPtr error_ $ \raw_error_ ->
-          fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMorphology (mkSelector "setCustomPronoun:forLanguage:error:") retCULong [argPtr (castPtr raw_features :: Ptr ()), argPtr (castPtr raw_language :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())]
+setCustomPronoun_forLanguage_error nsMorphology features language error_ =
+  sendMessage nsMorphology setCustomPronoun_forLanguage_errorSelector (toNSMorphologyCustomPronoun features) (toNSString language) (toNSError error_)
 
 -- | @- grammaticalGender@
 grammaticalGender :: IsNSMorphology nsMorphology => nsMorphology -> IO NSGrammaticalGender
-grammaticalGender nsMorphology  =
-    fmap (coerce :: CLong -> NSGrammaticalGender) $ sendMsg nsMorphology (mkSelector "grammaticalGender") retCLong []
+grammaticalGender nsMorphology =
+  sendMessage nsMorphology grammaticalGenderSelector
 
 -- | @- setGrammaticalGender:@
 setGrammaticalGender :: IsNSMorphology nsMorphology => nsMorphology -> NSGrammaticalGender -> IO ()
-setGrammaticalGender nsMorphology  value =
-    sendMsg nsMorphology (mkSelector "setGrammaticalGender:") retVoid [argCLong (coerce value)]
+setGrammaticalGender nsMorphology value =
+  sendMessage nsMorphology setGrammaticalGenderSelector value
 
 -- | @- partOfSpeech@
 partOfSpeech :: IsNSMorphology nsMorphology => nsMorphology -> IO NSGrammaticalPartOfSpeech
-partOfSpeech nsMorphology  =
-    fmap (coerce :: CLong -> NSGrammaticalPartOfSpeech) $ sendMsg nsMorphology (mkSelector "partOfSpeech") retCLong []
+partOfSpeech nsMorphology =
+  sendMessage nsMorphology partOfSpeechSelector
 
 -- | @- setPartOfSpeech:@
 setPartOfSpeech :: IsNSMorphology nsMorphology => nsMorphology -> NSGrammaticalPartOfSpeech -> IO ()
-setPartOfSpeech nsMorphology  value =
-    sendMsg nsMorphology (mkSelector "setPartOfSpeech:") retVoid [argCLong (coerce value)]
+setPartOfSpeech nsMorphology value =
+  sendMessage nsMorphology setPartOfSpeechSelector value
 
 -- | @- number@
 number :: IsNSMorphology nsMorphology => nsMorphology -> IO NSGrammaticalNumber
-number nsMorphology  =
-    fmap (coerce :: CLong -> NSGrammaticalNumber) $ sendMsg nsMorphology (mkSelector "number") retCLong []
+number nsMorphology =
+  sendMessage nsMorphology numberSelector
 
 -- | @- setNumber:@
 setNumber :: IsNSMorphology nsMorphology => nsMorphology -> NSGrammaticalNumber -> IO ()
-setNumber nsMorphology  value =
-    sendMsg nsMorphology (mkSelector "setNumber:") retVoid [argCLong (coerce value)]
+setNumber nsMorphology value =
+  sendMessage nsMorphology setNumberSelector value
 
 -- | @- grammaticalCase@
 grammaticalCase :: IsNSMorphology nsMorphology => nsMorphology -> IO NSGrammaticalCase
-grammaticalCase nsMorphology  =
-    fmap (coerce :: CLong -> NSGrammaticalCase) $ sendMsg nsMorphology (mkSelector "grammaticalCase") retCLong []
+grammaticalCase nsMorphology =
+  sendMessage nsMorphology grammaticalCaseSelector
 
 -- | @- setGrammaticalCase:@
 setGrammaticalCase :: IsNSMorphology nsMorphology => nsMorphology -> NSGrammaticalCase -> IO ()
-setGrammaticalCase nsMorphology  value =
-    sendMsg nsMorphology (mkSelector "setGrammaticalCase:") retVoid [argCLong (coerce value)]
+setGrammaticalCase nsMorphology value =
+  sendMessage nsMorphology setGrammaticalCaseSelector value
 
 -- | @- determination@
 determination :: IsNSMorphology nsMorphology => nsMorphology -> IO NSGrammaticalDetermination
-determination nsMorphology  =
-    fmap (coerce :: CLong -> NSGrammaticalDetermination) $ sendMsg nsMorphology (mkSelector "determination") retCLong []
+determination nsMorphology =
+  sendMessage nsMorphology determinationSelector
 
 -- | @- setDetermination:@
 setDetermination :: IsNSMorphology nsMorphology => nsMorphology -> NSGrammaticalDetermination -> IO ()
-setDetermination nsMorphology  value =
-    sendMsg nsMorphology (mkSelector "setDetermination:") retVoid [argCLong (coerce value)]
+setDetermination nsMorphology value =
+  sendMessage nsMorphology setDeterminationSelector value
 
 -- | @- grammaticalPerson@
 grammaticalPerson :: IsNSMorphology nsMorphology => nsMorphology -> IO NSGrammaticalPerson
-grammaticalPerson nsMorphology  =
-    fmap (coerce :: CLong -> NSGrammaticalPerson) $ sendMsg nsMorphology (mkSelector "grammaticalPerson") retCLong []
+grammaticalPerson nsMorphology =
+  sendMessage nsMorphology grammaticalPersonSelector
 
 -- | @- setGrammaticalPerson:@
 setGrammaticalPerson :: IsNSMorphology nsMorphology => nsMorphology -> NSGrammaticalPerson -> IO ()
-setGrammaticalPerson nsMorphology  value =
-    sendMsg nsMorphology (mkSelector "setGrammaticalPerson:") retVoid [argCLong (coerce value)]
+setGrammaticalPerson nsMorphology value =
+  sendMessage nsMorphology setGrammaticalPersonSelector value
 
 -- | @- pronounType@
 pronounType :: IsNSMorphology nsMorphology => nsMorphology -> IO NSGrammaticalPronounType
-pronounType nsMorphology  =
-    fmap (coerce :: CLong -> NSGrammaticalPronounType) $ sendMsg nsMorphology (mkSelector "pronounType") retCLong []
+pronounType nsMorphology =
+  sendMessage nsMorphology pronounTypeSelector
 
 -- | @- setPronounType:@
 setPronounType :: IsNSMorphology nsMorphology => nsMorphology -> NSGrammaticalPronounType -> IO ()
-setPronounType nsMorphology  value =
-    sendMsg nsMorphology (mkSelector "setPronounType:") retVoid [argCLong (coerce value)]
+setPronounType nsMorphology value =
+  sendMessage nsMorphology setPronounTypeSelector value
 
 -- | @- definiteness@
 definiteness :: IsNSMorphology nsMorphology => nsMorphology -> IO NSGrammaticalDefiniteness
-definiteness nsMorphology  =
-    fmap (coerce :: CLong -> NSGrammaticalDefiniteness) $ sendMsg nsMorphology (mkSelector "definiteness") retCLong []
+definiteness nsMorphology =
+  sendMessage nsMorphology definitenessSelector
 
 -- | @- setDefiniteness:@
 setDefiniteness :: IsNSMorphology nsMorphology => nsMorphology -> NSGrammaticalDefiniteness -> IO ()
-setDefiniteness nsMorphology  value =
-    sendMsg nsMorphology (mkSelector "setDefiniteness:") retVoid [argCLong (coerce value)]
+setDefiniteness nsMorphology value =
+  sendMessage nsMorphology setDefinitenessSelector value
 
 -- | @- unspecified@
 unspecified :: IsNSMorphology nsMorphology => nsMorphology -> IO Bool
-unspecified nsMorphology  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsMorphology (mkSelector "unspecified") retCULong []
+unspecified nsMorphology =
+  sendMessage nsMorphology unspecifiedSelector
 
 -- | @+ userMorphology@
 userMorphology :: IO (Id NSMorphology)
 userMorphology  =
   do
     cls' <- getRequiredClass "NSMorphology"
-    sendClassMsg cls' (mkSelector "userMorphology") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' userMorphologySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @customPronounForLanguage:@
-customPronounForLanguageSelector :: Selector
+customPronounForLanguageSelector :: Selector '[Id NSString] (Id NSMorphologyCustomPronoun)
 customPronounForLanguageSelector = mkSelector "customPronounForLanguage:"
 
 -- | @Selector@ for @setCustomPronoun:forLanguage:error:@
-setCustomPronoun_forLanguage_errorSelector :: Selector
+setCustomPronoun_forLanguage_errorSelector :: Selector '[Id NSMorphologyCustomPronoun, Id NSString, Id NSError] Bool
 setCustomPronoun_forLanguage_errorSelector = mkSelector "setCustomPronoun:forLanguage:error:"
 
 -- | @Selector@ for @grammaticalGender@
-grammaticalGenderSelector :: Selector
+grammaticalGenderSelector :: Selector '[] NSGrammaticalGender
 grammaticalGenderSelector = mkSelector "grammaticalGender"
 
 -- | @Selector@ for @setGrammaticalGender:@
-setGrammaticalGenderSelector :: Selector
+setGrammaticalGenderSelector :: Selector '[NSGrammaticalGender] ()
 setGrammaticalGenderSelector = mkSelector "setGrammaticalGender:"
 
 -- | @Selector@ for @partOfSpeech@
-partOfSpeechSelector :: Selector
+partOfSpeechSelector :: Selector '[] NSGrammaticalPartOfSpeech
 partOfSpeechSelector = mkSelector "partOfSpeech"
 
 -- | @Selector@ for @setPartOfSpeech:@
-setPartOfSpeechSelector :: Selector
+setPartOfSpeechSelector :: Selector '[NSGrammaticalPartOfSpeech] ()
 setPartOfSpeechSelector = mkSelector "setPartOfSpeech:"
 
 -- | @Selector@ for @number@
-numberSelector :: Selector
+numberSelector :: Selector '[] NSGrammaticalNumber
 numberSelector = mkSelector "number"
 
 -- | @Selector@ for @setNumber:@
-setNumberSelector :: Selector
+setNumberSelector :: Selector '[NSGrammaticalNumber] ()
 setNumberSelector = mkSelector "setNumber:"
 
 -- | @Selector@ for @grammaticalCase@
-grammaticalCaseSelector :: Selector
+grammaticalCaseSelector :: Selector '[] NSGrammaticalCase
 grammaticalCaseSelector = mkSelector "grammaticalCase"
 
 -- | @Selector@ for @setGrammaticalCase:@
-setGrammaticalCaseSelector :: Selector
+setGrammaticalCaseSelector :: Selector '[NSGrammaticalCase] ()
 setGrammaticalCaseSelector = mkSelector "setGrammaticalCase:"
 
 -- | @Selector@ for @determination@
-determinationSelector :: Selector
+determinationSelector :: Selector '[] NSGrammaticalDetermination
 determinationSelector = mkSelector "determination"
 
 -- | @Selector@ for @setDetermination:@
-setDeterminationSelector :: Selector
+setDeterminationSelector :: Selector '[NSGrammaticalDetermination] ()
 setDeterminationSelector = mkSelector "setDetermination:"
 
 -- | @Selector@ for @grammaticalPerson@
-grammaticalPersonSelector :: Selector
+grammaticalPersonSelector :: Selector '[] NSGrammaticalPerson
 grammaticalPersonSelector = mkSelector "grammaticalPerson"
 
 -- | @Selector@ for @setGrammaticalPerson:@
-setGrammaticalPersonSelector :: Selector
+setGrammaticalPersonSelector :: Selector '[NSGrammaticalPerson] ()
 setGrammaticalPersonSelector = mkSelector "setGrammaticalPerson:"
 
 -- | @Selector@ for @pronounType@
-pronounTypeSelector :: Selector
+pronounTypeSelector :: Selector '[] NSGrammaticalPronounType
 pronounTypeSelector = mkSelector "pronounType"
 
 -- | @Selector@ for @setPronounType:@
-setPronounTypeSelector :: Selector
+setPronounTypeSelector :: Selector '[NSGrammaticalPronounType] ()
 setPronounTypeSelector = mkSelector "setPronounType:"
 
 -- | @Selector@ for @definiteness@
-definitenessSelector :: Selector
+definitenessSelector :: Selector '[] NSGrammaticalDefiniteness
 definitenessSelector = mkSelector "definiteness"
 
 -- | @Selector@ for @setDefiniteness:@
-setDefinitenessSelector :: Selector
+setDefinitenessSelector :: Selector '[NSGrammaticalDefiniteness] ()
 setDefinitenessSelector = mkSelector "setDefiniteness:"
 
 -- | @Selector@ for @unspecified@
-unspecifiedSelector :: Selector
+unspecifiedSelector :: Selector '[] Bool
 unspecifiedSelector = mkSelector "unspecified"
 
 -- | @Selector@ for @userMorphology@
-userMorphologySelector :: Selector
+userMorphologySelector :: Selector '[] (Id NSMorphology)
 userMorphologySelector = mkSelector "userMorphology"
 

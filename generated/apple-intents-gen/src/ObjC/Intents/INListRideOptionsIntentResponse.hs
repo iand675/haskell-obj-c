@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,15 @@ module ObjC.Intents.INListRideOptionsIntentResponse
   , setPaymentMethods
   , expirationDate
   , setExpirationDate
+  , codeSelector
+  , expirationDateSelector
   , initSelector
   , initWithCode_userActivitySelector
-  , codeSelector
-  , rideOptionsSelector
-  , setRideOptionsSelector
   , paymentMethodsSelector
-  , setPaymentMethodsSelector
-  , expirationDateSelector
+  , rideOptionsSelector
   , setExpirationDateSelector
+  , setPaymentMethodsSelector
+  , setRideOptionsSelector
 
   -- * Enum types
   , INListRideOptionsIntentResponseCode(INListRideOptionsIntentResponseCode)
@@ -42,15 +43,11 @@ module ObjC.Intents.INListRideOptionsIntentResponse
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,90 +57,86 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINListRideOptionsIntentResponse inListRideOptionsIntentResponse => inListRideOptionsIntentResponse -> IO RawId
-init_ inListRideOptionsIntentResponse  =
-    fmap (RawId . castPtr) $ sendMsg inListRideOptionsIntentResponse (mkSelector "init") (retPtr retVoid) []
+init_ inListRideOptionsIntentResponse =
+  sendOwnedMessage inListRideOptionsIntentResponse initSelector
 
 -- | @- initWithCode:userActivity:@
 initWithCode_userActivity :: (IsINListRideOptionsIntentResponse inListRideOptionsIntentResponse, IsNSUserActivity userActivity) => inListRideOptionsIntentResponse -> INListRideOptionsIntentResponseCode -> userActivity -> IO (Id INListRideOptionsIntentResponse)
-initWithCode_userActivity inListRideOptionsIntentResponse  code userActivity =
-  withObjCPtr userActivity $ \raw_userActivity ->
-      sendMsg inListRideOptionsIntentResponse (mkSelector "initWithCode:userActivity:") (retPtr retVoid) [argCLong (coerce code), argPtr (castPtr raw_userActivity :: Ptr ())] >>= ownedObject . castPtr
+initWithCode_userActivity inListRideOptionsIntentResponse code userActivity =
+  sendOwnedMessage inListRideOptionsIntentResponse initWithCode_userActivitySelector code (toNSUserActivity userActivity)
 
 -- | @- code@
 code :: IsINListRideOptionsIntentResponse inListRideOptionsIntentResponse => inListRideOptionsIntentResponse -> IO INListRideOptionsIntentResponseCode
-code inListRideOptionsIntentResponse  =
-    fmap (coerce :: CLong -> INListRideOptionsIntentResponseCode) $ sendMsg inListRideOptionsIntentResponse (mkSelector "code") retCLong []
+code inListRideOptionsIntentResponse =
+  sendMessage inListRideOptionsIntentResponse codeSelector
 
 -- | @- rideOptions@
 rideOptions :: IsINListRideOptionsIntentResponse inListRideOptionsIntentResponse => inListRideOptionsIntentResponse -> IO (Id NSArray)
-rideOptions inListRideOptionsIntentResponse  =
-    sendMsg inListRideOptionsIntentResponse (mkSelector "rideOptions") (retPtr retVoid) [] >>= retainedObject . castPtr
+rideOptions inListRideOptionsIntentResponse =
+  sendMessage inListRideOptionsIntentResponse rideOptionsSelector
 
 -- | @- setRideOptions:@
 setRideOptions :: (IsINListRideOptionsIntentResponse inListRideOptionsIntentResponse, IsNSArray value) => inListRideOptionsIntentResponse -> value -> IO ()
-setRideOptions inListRideOptionsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inListRideOptionsIntentResponse (mkSelector "setRideOptions:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRideOptions inListRideOptionsIntentResponse value =
+  sendMessage inListRideOptionsIntentResponse setRideOptionsSelector (toNSArray value)
 
 -- | @- paymentMethods@
 paymentMethods :: IsINListRideOptionsIntentResponse inListRideOptionsIntentResponse => inListRideOptionsIntentResponse -> IO (Id NSArray)
-paymentMethods inListRideOptionsIntentResponse  =
-    sendMsg inListRideOptionsIntentResponse (mkSelector "paymentMethods") (retPtr retVoid) [] >>= retainedObject . castPtr
+paymentMethods inListRideOptionsIntentResponse =
+  sendMessage inListRideOptionsIntentResponse paymentMethodsSelector
 
 -- | @- setPaymentMethods:@
 setPaymentMethods :: (IsINListRideOptionsIntentResponse inListRideOptionsIntentResponse, IsNSArray value) => inListRideOptionsIntentResponse -> value -> IO ()
-setPaymentMethods inListRideOptionsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inListRideOptionsIntentResponse (mkSelector "setPaymentMethods:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaymentMethods inListRideOptionsIntentResponse value =
+  sendMessage inListRideOptionsIntentResponse setPaymentMethodsSelector (toNSArray value)
 
 -- | @- expirationDate@
 expirationDate :: IsINListRideOptionsIntentResponse inListRideOptionsIntentResponse => inListRideOptionsIntentResponse -> IO (Id NSDate)
-expirationDate inListRideOptionsIntentResponse  =
-    sendMsg inListRideOptionsIntentResponse (mkSelector "expirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expirationDate inListRideOptionsIntentResponse =
+  sendMessage inListRideOptionsIntentResponse expirationDateSelector
 
 -- | @- setExpirationDate:@
 setExpirationDate :: (IsINListRideOptionsIntentResponse inListRideOptionsIntentResponse, IsNSDate value) => inListRideOptionsIntentResponse -> value -> IO ()
-setExpirationDate inListRideOptionsIntentResponse  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg inListRideOptionsIntentResponse (mkSelector "setExpirationDate:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setExpirationDate inListRideOptionsIntentResponse value =
+  sendMessage inListRideOptionsIntentResponse setExpirationDateSelector (toNSDate value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] RawId
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithCode:userActivity:@
-initWithCode_userActivitySelector :: Selector
+initWithCode_userActivitySelector :: Selector '[INListRideOptionsIntentResponseCode, Id NSUserActivity] (Id INListRideOptionsIntentResponse)
 initWithCode_userActivitySelector = mkSelector "initWithCode:userActivity:"
 
 -- | @Selector@ for @code@
-codeSelector :: Selector
+codeSelector :: Selector '[] INListRideOptionsIntentResponseCode
 codeSelector = mkSelector "code"
 
 -- | @Selector@ for @rideOptions@
-rideOptionsSelector :: Selector
+rideOptionsSelector :: Selector '[] (Id NSArray)
 rideOptionsSelector = mkSelector "rideOptions"
 
 -- | @Selector@ for @setRideOptions:@
-setRideOptionsSelector :: Selector
+setRideOptionsSelector :: Selector '[Id NSArray] ()
 setRideOptionsSelector = mkSelector "setRideOptions:"
 
 -- | @Selector@ for @paymentMethods@
-paymentMethodsSelector :: Selector
+paymentMethodsSelector :: Selector '[] (Id NSArray)
 paymentMethodsSelector = mkSelector "paymentMethods"
 
 -- | @Selector@ for @setPaymentMethods:@
-setPaymentMethodsSelector :: Selector
+setPaymentMethodsSelector :: Selector '[Id NSArray] ()
 setPaymentMethodsSelector = mkSelector "setPaymentMethods:"
 
 -- | @Selector@ for @expirationDate@
-expirationDateSelector :: Selector
+expirationDateSelector :: Selector '[] (Id NSDate)
 expirationDateSelector = mkSelector "expirationDate"
 
 -- | @Selector@ for @setExpirationDate:@
-setExpirationDateSelector :: Selector
+setExpirationDateSelector :: Selector '[Id NSDate] ()
 setExpirationDateSelector = mkSelector "setExpirationDate:"
 

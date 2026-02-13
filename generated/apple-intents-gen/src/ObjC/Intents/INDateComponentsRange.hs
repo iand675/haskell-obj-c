@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.Intents.INDateComponentsRange
   , startDateComponents
   , endDateComponents
   , recurrenceRule
+  , ekRecurrenceRuleSelector
+  , endDateComponentsSelector
   , initSelector
+  , initWithEKRecurrenceRuleSelector
   , initWithStartDateComponents_endDateComponentsSelector
   , initWithStartDateComponents_endDateComponents_recurrenceRuleSelector
-  , initWithEKRecurrenceRuleSelector
-  , ekRecurrenceRuleSelector
-  , startDateComponentsSelector
-  , endDateComponentsSelector
   , recurrenceRuleSelector
+  , startDateComponentsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -44,83 +41,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsINDateComponentsRange inDateComponentsRange => inDateComponentsRange -> IO (Id INDateComponentsRange)
-init_ inDateComponentsRange  =
-    sendMsg inDateComponentsRange (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ inDateComponentsRange =
+  sendOwnedMessage inDateComponentsRange initSelector
 
 -- | @- initWithStartDateComponents:endDateComponents:@
 initWithStartDateComponents_endDateComponents :: (IsINDateComponentsRange inDateComponentsRange, IsNSDateComponents startDateComponents, IsNSDateComponents endDateComponents) => inDateComponentsRange -> startDateComponents -> endDateComponents -> IO (Id INDateComponentsRange)
-initWithStartDateComponents_endDateComponents inDateComponentsRange  startDateComponents endDateComponents =
-  withObjCPtr startDateComponents $ \raw_startDateComponents ->
-    withObjCPtr endDateComponents $ \raw_endDateComponents ->
-        sendMsg inDateComponentsRange (mkSelector "initWithStartDateComponents:endDateComponents:") (retPtr retVoid) [argPtr (castPtr raw_startDateComponents :: Ptr ()), argPtr (castPtr raw_endDateComponents :: Ptr ())] >>= ownedObject . castPtr
+initWithStartDateComponents_endDateComponents inDateComponentsRange startDateComponents endDateComponents =
+  sendOwnedMessage inDateComponentsRange initWithStartDateComponents_endDateComponentsSelector (toNSDateComponents startDateComponents) (toNSDateComponents endDateComponents)
 
 -- | @- initWithStartDateComponents:endDateComponents:recurrenceRule:@
 initWithStartDateComponents_endDateComponents_recurrenceRule :: (IsINDateComponentsRange inDateComponentsRange, IsNSDateComponents startDateComponents, IsNSDateComponents endDateComponents, IsINRecurrenceRule recurrenceRule) => inDateComponentsRange -> startDateComponents -> endDateComponents -> recurrenceRule -> IO (Id INDateComponentsRange)
-initWithStartDateComponents_endDateComponents_recurrenceRule inDateComponentsRange  startDateComponents endDateComponents recurrenceRule =
-  withObjCPtr startDateComponents $ \raw_startDateComponents ->
-    withObjCPtr endDateComponents $ \raw_endDateComponents ->
-      withObjCPtr recurrenceRule $ \raw_recurrenceRule ->
-          sendMsg inDateComponentsRange (mkSelector "initWithStartDateComponents:endDateComponents:recurrenceRule:") (retPtr retVoid) [argPtr (castPtr raw_startDateComponents :: Ptr ()), argPtr (castPtr raw_endDateComponents :: Ptr ()), argPtr (castPtr raw_recurrenceRule :: Ptr ())] >>= ownedObject . castPtr
+initWithStartDateComponents_endDateComponents_recurrenceRule inDateComponentsRange startDateComponents endDateComponents recurrenceRule =
+  sendOwnedMessage inDateComponentsRange initWithStartDateComponents_endDateComponents_recurrenceRuleSelector (toNSDateComponents startDateComponents) (toNSDateComponents endDateComponents) (toINRecurrenceRule recurrenceRule)
 
 -- | @- initWithEKRecurrenceRule:@
 initWithEKRecurrenceRule :: (IsINDateComponentsRange inDateComponentsRange, IsEKRecurrenceRule recurrenceRule) => inDateComponentsRange -> recurrenceRule -> IO (Id INDateComponentsRange)
-initWithEKRecurrenceRule inDateComponentsRange  recurrenceRule =
-  withObjCPtr recurrenceRule $ \raw_recurrenceRule ->
-      sendMsg inDateComponentsRange (mkSelector "initWithEKRecurrenceRule:") (retPtr retVoid) [argPtr (castPtr raw_recurrenceRule :: Ptr ())] >>= ownedObject . castPtr
+initWithEKRecurrenceRule inDateComponentsRange recurrenceRule =
+  sendOwnedMessage inDateComponentsRange initWithEKRecurrenceRuleSelector (toEKRecurrenceRule recurrenceRule)
 
 -- | @- EKRecurrenceRule@
 ekRecurrenceRule :: IsINDateComponentsRange inDateComponentsRange => inDateComponentsRange -> IO (Id EKRecurrenceRule)
-ekRecurrenceRule inDateComponentsRange  =
-    sendMsg inDateComponentsRange (mkSelector "EKRecurrenceRule") (retPtr retVoid) [] >>= retainedObject . castPtr
+ekRecurrenceRule inDateComponentsRange =
+  sendMessage inDateComponentsRange ekRecurrenceRuleSelector
 
 -- | @- startDateComponents@
 startDateComponents :: IsINDateComponentsRange inDateComponentsRange => inDateComponentsRange -> IO (Id NSDateComponents)
-startDateComponents inDateComponentsRange  =
-    sendMsg inDateComponentsRange (mkSelector "startDateComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDateComponents inDateComponentsRange =
+  sendMessage inDateComponentsRange startDateComponentsSelector
 
 -- | @- endDateComponents@
 endDateComponents :: IsINDateComponentsRange inDateComponentsRange => inDateComponentsRange -> IO (Id NSDateComponents)
-endDateComponents inDateComponentsRange  =
-    sendMsg inDateComponentsRange (mkSelector "endDateComponents") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDateComponents inDateComponentsRange =
+  sendMessage inDateComponentsRange endDateComponentsSelector
 
 -- | @- recurrenceRule@
 recurrenceRule :: IsINDateComponentsRange inDateComponentsRange => inDateComponentsRange -> IO (Id INRecurrenceRule)
-recurrenceRule inDateComponentsRange  =
-    sendMsg inDateComponentsRange (mkSelector "recurrenceRule") (retPtr retVoid) [] >>= retainedObject . castPtr
+recurrenceRule inDateComponentsRange =
+  sendMessage inDateComponentsRange recurrenceRuleSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id INDateComponentsRange)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithStartDateComponents:endDateComponents:@
-initWithStartDateComponents_endDateComponentsSelector :: Selector
+initWithStartDateComponents_endDateComponentsSelector :: Selector '[Id NSDateComponents, Id NSDateComponents] (Id INDateComponentsRange)
 initWithStartDateComponents_endDateComponentsSelector = mkSelector "initWithStartDateComponents:endDateComponents:"
 
 -- | @Selector@ for @initWithStartDateComponents:endDateComponents:recurrenceRule:@
-initWithStartDateComponents_endDateComponents_recurrenceRuleSelector :: Selector
+initWithStartDateComponents_endDateComponents_recurrenceRuleSelector :: Selector '[Id NSDateComponents, Id NSDateComponents, Id INRecurrenceRule] (Id INDateComponentsRange)
 initWithStartDateComponents_endDateComponents_recurrenceRuleSelector = mkSelector "initWithStartDateComponents:endDateComponents:recurrenceRule:"
 
 -- | @Selector@ for @initWithEKRecurrenceRule:@
-initWithEKRecurrenceRuleSelector :: Selector
+initWithEKRecurrenceRuleSelector :: Selector '[Id EKRecurrenceRule] (Id INDateComponentsRange)
 initWithEKRecurrenceRuleSelector = mkSelector "initWithEKRecurrenceRule:"
 
 -- | @Selector@ for @EKRecurrenceRule@
-ekRecurrenceRuleSelector :: Selector
+ekRecurrenceRuleSelector :: Selector '[] (Id EKRecurrenceRule)
 ekRecurrenceRuleSelector = mkSelector "EKRecurrenceRule"
 
 -- | @Selector@ for @startDateComponents@
-startDateComponentsSelector :: Selector
+startDateComponentsSelector :: Selector '[] (Id NSDateComponents)
 startDateComponentsSelector = mkSelector "startDateComponents"
 
 -- | @Selector@ for @endDateComponents@
-endDateComponentsSelector :: Selector
+endDateComponentsSelector :: Selector '[] (Id NSDateComponents)
 endDateComponentsSelector = mkSelector "endDateComponents"
 
 -- | @Selector@ for @recurrenceRule@
-recurrenceRuleSelector :: Selector
+recurrenceRuleSelector :: Selector '[] (Id INRecurrenceRule)
 recurrenceRuleSelector = mkSelector "recurrenceRule"
 

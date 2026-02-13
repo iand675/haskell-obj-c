@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.LocalAuthentication.LAPublicKey
   , canVerifyUsingSecKeyAlgorithm
   , new
   , init_
-  , exportBytesWithCompletionSelector
-  , encryptData_secKeyAlgorithm_completionSelector
   , canEncryptUsingSecKeyAlgorithmSelector
-  , verifyData_signature_secKeyAlgorithm_completionSelector
   , canVerifyUsingSecKeyAlgorithmSelector
-  , newSelector
+  , encryptData_secKeyAlgorithm_completionSelector
+  , exportBytesWithCompletionSelector
   , initSelector
+  , newSelector
+  , verifyData_signature_secKeyAlgorithm_completionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- exportBytesWithCompletion:@
 exportBytesWithCompletion :: IsLAPublicKey laPublicKey => laPublicKey -> Ptr () -> IO ()
-exportBytesWithCompletion laPublicKey  handler =
-    sendMsg laPublicKey (mkSelector "exportBytesWithCompletion:") retVoid [argPtr (castPtr handler :: Ptr ())]
+exportBytesWithCompletion laPublicKey handler =
+  sendMessage laPublicKey exportBytesWithCompletionSelector handler
 
 -- | Encrypts the given data
 --
@@ -60,9 +57,8 @@ exportBytesWithCompletion laPublicKey  handler =
 --
 -- ObjC selector: @- encryptData:secKeyAlgorithm:completion:@
 encryptData_secKeyAlgorithm_completion :: (IsLAPublicKey laPublicKey, IsNSData data_) => laPublicKey -> data_ -> RawId -> Ptr () -> IO ()
-encryptData_secKeyAlgorithm_completion laPublicKey  data_ algorithm handler =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg laPublicKey (mkSelector "encryptData:secKeyAlgorithm:completion:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr (unRawId algorithm) :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+encryptData_secKeyAlgorithm_completion laPublicKey data_ algorithm handler =
+  sendMessage laPublicKey encryptData_secKeyAlgorithm_completionSelector (toNSData data_) algorithm handler
 
 -- | Checks if the the provided algorithm can be used for encryption with the key.
 --
@@ -72,8 +68,8 @@ encryptData_secKeyAlgorithm_completion laPublicKey  data_ algorithm handler =
 --
 -- ObjC selector: @- canEncryptUsingSecKeyAlgorithm:@
 canEncryptUsingSecKeyAlgorithm :: IsLAPublicKey laPublicKey => laPublicKey -> RawId -> IO Bool
-canEncryptUsingSecKeyAlgorithm laPublicKey  algorithm =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laPublicKey (mkSelector "canEncryptUsingSecKeyAlgorithm:") retCULong [argPtr (castPtr (unRawId algorithm) :: Ptr ())]
+canEncryptUsingSecKeyAlgorithm laPublicKey algorithm =
+  sendMessage laPublicKey canEncryptUsingSecKeyAlgorithmSelector algorithm
 
 -- | Verifies a digital signature for the given data.
 --
@@ -87,10 +83,8 @@ canEncryptUsingSecKeyAlgorithm laPublicKey  algorithm =
 --
 -- ObjC selector: @- verifyData:signature:secKeyAlgorithm:completion:@
 verifyData_signature_secKeyAlgorithm_completion :: (IsLAPublicKey laPublicKey, IsNSData signedData, IsNSData signature) => laPublicKey -> signedData -> signature -> RawId -> Ptr () -> IO ()
-verifyData_signature_secKeyAlgorithm_completion laPublicKey  signedData signature algorithm handler =
-  withObjCPtr signedData $ \raw_signedData ->
-    withObjCPtr signature $ \raw_signature ->
-        sendMsg laPublicKey (mkSelector "verifyData:signature:secKeyAlgorithm:completion:") retVoid [argPtr (castPtr raw_signedData :: Ptr ()), argPtr (castPtr raw_signature :: Ptr ()), argPtr (castPtr (unRawId algorithm) :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+verifyData_signature_secKeyAlgorithm_completion laPublicKey signedData signature algorithm handler =
+  sendMessage laPublicKey verifyData_signature_secKeyAlgorithm_completionSelector (toNSData signedData) (toNSData signature) algorithm handler
 
 -- | Checks if the the provided algorithm can be used for verifying signatures with the key.
 --
@@ -100,8 +94,8 @@ verifyData_signature_secKeyAlgorithm_completion laPublicKey  signedData signatur
 --
 -- ObjC selector: @- canVerifyUsingSecKeyAlgorithm:@
 canVerifyUsingSecKeyAlgorithm :: IsLAPublicKey laPublicKey => laPublicKey -> RawId -> IO Bool
-canVerifyUsingSecKeyAlgorithm laPublicKey  algorithm =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg laPublicKey (mkSelector "canVerifyUsingSecKeyAlgorithm:") retCULong [argPtr (castPtr (unRawId algorithm) :: Ptr ())]
+canVerifyUsingSecKeyAlgorithm laPublicKey algorithm =
+  sendMessage laPublicKey canVerifyUsingSecKeyAlgorithmSelector algorithm
 
 -- | Clients cannot create @LAPublicKey@ instances directly. They can only obtain them from a related @LAPrivateKey@ instance
 --
@@ -110,44 +104,44 @@ new :: IO (Id LAPublicKey)
 new  =
   do
     cls' <- getRequiredClass "LAPublicKey"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Clients cannot create @LAPublicKey@ instances directly. They can only obtain them from a related @LAPrivateKey@ instance
 --
 -- ObjC selector: @- init@
 init_ :: IsLAPublicKey laPublicKey => laPublicKey -> IO (Id LAPublicKey)
-init_ laPublicKey  =
-    sendMsg laPublicKey (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ laPublicKey =
+  sendOwnedMessage laPublicKey initSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @exportBytesWithCompletion:@
-exportBytesWithCompletionSelector :: Selector
+exportBytesWithCompletionSelector :: Selector '[Ptr ()] ()
 exportBytesWithCompletionSelector = mkSelector "exportBytesWithCompletion:"
 
 -- | @Selector@ for @encryptData:secKeyAlgorithm:completion:@
-encryptData_secKeyAlgorithm_completionSelector :: Selector
+encryptData_secKeyAlgorithm_completionSelector :: Selector '[Id NSData, RawId, Ptr ()] ()
 encryptData_secKeyAlgorithm_completionSelector = mkSelector "encryptData:secKeyAlgorithm:completion:"
 
 -- | @Selector@ for @canEncryptUsingSecKeyAlgorithm:@
-canEncryptUsingSecKeyAlgorithmSelector :: Selector
+canEncryptUsingSecKeyAlgorithmSelector :: Selector '[RawId] Bool
 canEncryptUsingSecKeyAlgorithmSelector = mkSelector "canEncryptUsingSecKeyAlgorithm:"
 
 -- | @Selector@ for @verifyData:signature:secKeyAlgorithm:completion:@
-verifyData_signature_secKeyAlgorithm_completionSelector :: Selector
+verifyData_signature_secKeyAlgorithm_completionSelector :: Selector '[Id NSData, Id NSData, RawId, Ptr ()] ()
 verifyData_signature_secKeyAlgorithm_completionSelector = mkSelector "verifyData:signature:secKeyAlgorithm:completion:"
 
 -- | @Selector@ for @canVerifyUsingSecKeyAlgorithm:@
-canVerifyUsingSecKeyAlgorithmSelector :: Selector
+canVerifyUsingSecKeyAlgorithmSelector :: Selector '[RawId] Bool
 canVerifyUsingSecKeyAlgorithmSelector = mkSelector "canVerifyUsingSecKeyAlgorithm:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id LAPublicKey)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id LAPublicKey)
 initSelector = mkSelector "init"
 

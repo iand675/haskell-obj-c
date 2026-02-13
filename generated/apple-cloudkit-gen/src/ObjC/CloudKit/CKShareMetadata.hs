@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.CloudKit.CKShareMetadata
   , rootRecord
   , participantType
   , rootRecordID
+  , containerIdentifierSelector
+  , hierarchicalRootRecordIDSelector
   , initSelector
   , newSelector
-  , containerIdentifierSelector
-  , shareSelector
-  , hierarchicalRootRecordIDSelector
+  , ownerIdentitySelector
+  , participantPermissionSelector
   , participantRoleSelector
   , participantStatusSelector
-  , participantPermissionSelector
-  , ownerIdentitySelector
-  , rootRecordSelector
   , participantTypeSelector
   , rootRecordIDSelector
+  , rootRecordSelector
+  , shareSelector
 
   -- * Enum types
   , CKShareParticipantAcceptanceStatus(CKShareParticipantAcceptanceStatus)
@@ -57,15 +58,11 @@ module ObjC.CloudKit.CKShareMetadata
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -75,119 +72,119 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO (Id CKShareMetadata)
-init_ ckShareMetadata  =
-    sendMsg ckShareMetadata (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ ckShareMetadata =
+  sendOwnedMessage ckShareMetadata initSelector
 
 -- | @+ new@
 new :: IO (Id CKShareMetadata)
 new  =
   do
     cls' <- getRequiredClass "CKShareMetadata"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- containerIdentifier@
 containerIdentifier :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO (Id NSString)
-containerIdentifier ckShareMetadata  =
-    sendMsg ckShareMetadata (mkSelector "containerIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+containerIdentifier ckShareMetadata =
+  sendMessage ckShareMetadata containerIdentifierSelector
 
 -- | @- share@
 share :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO (Id CKShare)
-share ckShareMetadata  =
-    sendMsg ckShareMetadata (mkSelector "share") (retPtr retVoid) [] >>= retainedObject . castPtr
+share ckShareMetadata =
+  sendMessage ckShareMetadata shareSelector
 
 -- | @- hierarchicalRootRecordID@
 hierarchicalRootRecordID :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO (Id CKRecordID)
-hierarchicalRootRecordID ckShareMetadata  =
-    sendMsg ckShareMetadata (mkSelector "hierarchicalRootRecordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+hierarchicalRootRecordID ckShareMetadata =
+  sendMessage ckShareMetadata hierarchicalRootRecordIDSelector
 
 -- | These properties reflect the participant properties of the user invoking CKFetchShareMetadataOperation
 --
 -- ObjC selector: @- participantRole@
 participantRole :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO CKShareParticipantRole
-participantRole ckShareMetadata  =
-    fmap (coerce :: CLong -> CKShareParticipantRole) $ sendMsg ckShareMetadata (mkSelector "participantRole") retCLong []
+participantRole ckShareMetadata =
+  sendMessage ckShareMetadata participantRoleSelector
 
 -- | @- participantStatus@
 participantStatus :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO CKShareParticipantAcceptanceStatus
-participantStatus ckShareMetadata  =
-    fmap (coerce :: CLong -> CKShareParticipantAcceptanceStatus) $ sendMsg ckShareMetadata (mkSelector "participantStatus") retCLong []
+participantStatus ckShareMetadata =
+  sendMessage ckShareMetadata participantStatusSelector
 
 -- | @- participantPermission@
 participantPermission :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO CKShareParticipantPermission
-participantPermission ckShareMetadata  =
-    fmap (coerce :: CLong -> CKShareParticipantPermission) $ sendMsg ckShareMetadata (mkSelector "participantPermission") retCLong []
+participantPermission ckShareMetadata =
+  sendMessage ckShareMetadata participantPermissionSelector
 
 -- | @- ownerIdentity@
 ownerIdentity :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO (Id CKUserIdentity)
-ownerIdentity ckShareMetadata  =
-    sendMsg ckShareMetadata (mkSelector "ownerIdentity") (retPtr retVoid) [] >>= retainedObject . castPtr
+ownerIdentity ckShareMetadata =
+  sendMessage ckShareMetadata ownerIdentitySelector
 
 -- | This is only present if the share metadata was returned from a CKFetchShareMetadataOperation with shouldFetchRootRecord set to YES
 --
 -- ObjC selector: @- rootRecord@
 rootRecord :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO (Id CKRecord)
-rootRecord ckShareMetadata  =
-    sendMsg ckShareMetadata (mkSelector "rootRecord") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootRecord ckShareMetadata =
+  sendMessage ckShareMetadata rootRecordSelector
 
 -- | @- participantType@
 participantType :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO CKShareParticipantType
-participantType ckShareMetadata  =
-    fmap (coerce :: CLong -> CKShareParticipantType) $ sendMsg ckShareMetadata (mkSelector "participantType") retCLong []
+participantType ckShareMetadata =
+  sendMessage ckShareMetadata participantTypeSelector
 
 -- | @- rootRecordID@
 rootRecordID :: IsCKShareMetadata ckShareMetadata => ckShareMetadata -> IO (Id CKRecordID)
-rootRecordID ckShareMetadata  =
-    sendMsg ckShareMetadata (mkSelector "rootRecordID") (retPtr retVoid) [] >>= retainedObject . castPtr
+rootRecordID ckShareMetadata =
+  sendMessage ckShareMetadata rootRecordIDSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id CKShareMetadata)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id CKShareMetadata)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @containerIdentifier@
-containerIdentifierSelector :: Selector
+containerIdentifierSelector :: Selector '[] (Id NSString)
 containerIdentifierSelector = mkSelector "containerIdentifier"
 
 -- | @Selector@ for @share@
-shareSelector :: Selector
+shareSelector :: Selector '[] (Id CKShare)
 shareSelector = mkSelector "share"
 
 -- | @Selector@ for @hierarchicalRootRecordID@
-hierarchicalRootRecordIDSelector :: Selector
+hierarchicalRootRecordIDSelector :: Selector '[] (Id CKRecordID)
 hierarchicalRootRecordIDSelector = mkSelector "hierarchicalRootRecordID"
 
 -- | @Selector@ for @participantRole@
-participantRoleSelector :: Selector
+participantRoleSelector :: Selector '[] CKShareParticipantRole
 participantRoleSelector = mkSelector "participantRole"
 
 -- | @Selector@ for @participantStatus@
-participantStatusSelector :: Selector
+participantStatusSelector :: Selector '[] CKShareParticipantAcceptanceStatus
 participantStatusSelector = mkSelector "participantStatus"
 
 -- | @Selector@ for @participantPermission@
-participantPermissionSelector :: Selector
+participantPermissionSelector :: Selector '[] CKShareParticipantPermission
 participantPermissionSelector = mkSelector "participantPermission"
 
 -- | @Selector@ for @ownerIdentity@
-ownerIdentitySelector :: Selector
+ownerIdentitySelector :: Selector '[] (Id CKUserIdentity)
 ownerIdentitySelector = mkSelector "ownerIdentity"
 
 -- | @Selector@ for @rootRecord@
-rootRecordSelector :: Selector
+rootRecordSelector :: Selector '[] (Id CKRecord)
 rootRecordSelector = mkSelector "rootRecord"
 
 -- | @Selector@ for @participantType@
-participantTypeSelector :: Selector
+participantTypeSelector :: Selector '[] CKShareParticipantType
 participantTypeSelector = mkSelector "participantType"
 
 -- | @Selector@ for @rootRecordID@
-rootRecordIDSelector :: Selector
+rootRecordIDSelector :: Selector '[] (Id CKRecordID)
 rootRecordIDSelector = mkSelector "rootRecordID"
 

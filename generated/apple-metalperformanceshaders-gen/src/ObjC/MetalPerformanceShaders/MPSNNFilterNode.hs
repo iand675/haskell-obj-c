@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -25,32 +26,28 @@ module ObjC.MetalPerformanceShaders.MPSNNFilterNode
   , setPaddingPolicy
   , label
   , setLabel
-  , initSelector
   , gradientFilterWithSourceSelector
   , gradientFilterWithSourcesSelector
-  , gradientFiltersWithSourcesSelector
   , gradientFiltersWithSourceSelector
-  , trainingGraphWithSourceGradient_nodeHandlerSelector
+  , gradientFiltersWithSourcesSelector
+  , initSelector
+  , labelSelector
+  , paddingPolicySelector
   , resultImageSelector
   , resultStateSelector
   , resultStatesSelector
-  , paddingPolicySelector
-  , setPaddingPolicySelector
-  , labelSelector
   , setLabelSelector
+  , setPaddingPolicySelector
+  , trainingGraphWithSourceGradient_nodeHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,8 +56,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsMPSNNFilterNode mpsnnFilterNode => mpsnnFilterNode -> IO (Id MPSNNFilterNode)
-init_ mpsnnFilterNode  =
-    sendMsg mpsnnFilterNode (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mpsnnFilterNode =
+  sendOwnedMessage mpsnnFilterNode initSelector
 
 -- | Return the gradient (backwards) version of this filter.
 --
@@ -70,9 +67,8 @@ init_ mpsnnFilterNode  =
 --
 -- ObjC selector: @- gradientFilterWithSource:@
 gradientFilterWithSource :: (IsMPSNNFilterNode mpsnnFilterNode, IsMPSNNImageNode gradientImage) => mpsnnFilterNode -> gradientImage -> IO (Id MPSNNGradientFilterNode)
-gradientFilterWithSource mpsnnFilterNode  gradientImage =
-  withObjCPtr gradientImage $ \raw_gradientImage ->
-      sendMsg mpsnnFilterNode (mkSelector "gradientFilterWithSource:") (retPtr retVoid) [argPtr (castPtr raw_gradientImage :: Ptr ())] >>= retainedObject . castPtr
+gradientFilterWithSource mpsnnFilterNode gradientImage =
+  sendMessage mpsnnFilterNode gradientFilterWithSourceSelector (toMPSNNImageNode gradientImage)
 
 -- | Return the gradient (backwards) version of this filter.
 --
@@ -82,9 +78,8 @@ gradientFilterWithSource mpsnnFilterNode  gradientImage =
 --
 -- ObjC selector: @- gradientFilterWithSources:@
 gradientFilterWithSources :: (IsMPSNNFilterNode mpsnnFilterNode, IsNSArray gradientImages) => mpsnnFilterNode -> gradientImages -> IO (Id MPSNNGradientFilterNode)
-gradientFilterWithSources mpsnnFilterNode  gradientImages =
-  withObjCPtr gradientImages $ \raw_gradientImages ->
-      sendMsg mpsnnFilterNode (mkSelector "gradientFilterWithSources:") (retPtr retVoid) [argPtr (castPtr raw_gradientImages :: Ptr ())] >>= retainedObject . castPtr
+gradientFilterWithSources mpsnnFilterNode gradientImages =
+  sendMessage mpsnnFilterNode gradientFilterWithSourcesSelector (toNSArray gradientImages)
 
 -- | Return multiple gradient versions of the filter
 --
@@ -92,9 +87,8 @@ gradientFilterWithSources mpsnnFilterNode  gradientImages =
 --
 -- ObjC selector: @- gradientFiltersWithSources:@
 gradientFiltersWithSources :: (IsMPSNNFilterNode mpsnnFilterNode, IsNSArray gradientImages) => mpsnnFilterNode -> gradientImages -> IO (Id NSArray)
-gradientFiltersWithSources mpsnnFilterNode  gradientImages =
-  withObjCPtr gradientImages $ \raw_gradientImages ->
-      sendMsg mpsnnFilterNode (mkSelector "gradientFiltersWithSources:") (retPtr retVoid) [argPtr (castPtr raw_gradientImages :: Ptr ())] >>= retainedObject . castPtr
+gradientFiltersWithSources mpsnnFilterNode gradientImages =
+  sendMessage mpsnnFilterNode gradientFiltersWithSourcesSelector (toNSArray gradientImages)
 
 -- | Return multiple gradient versions of the filter
 --
@@ -102,9 +96,8 @@ gradientFiltersWithSources mpsnnFilterNode  gradientImages =
 --
 -- ObjC selector: @- gradientFiltersWithSource:@
 gradientFiltersWithSource :: (IsMPSNNFilterNode mpsnnFilterNode, IsMPSNNImageNode gradientImage) => mpsnnFilterNode -> gradientImage -> IO (Id NSArray)
-gradientFiltersWithSource mpsnnFilterNode  gradientImage =
-  withObjCPtr gradientImage $ \raw_gradientImage ->
-      sendMsg mpsnnFilterNode (mkSelector "gradientFiltersWithSource:") (retPtr retVoid) [argPtr (castPtr raw_gradientImage :: Ptr ())] >>= retainedObject . castPtr
+gradientFiltersWithSource mpsnnFilterNode gradientImage =
+  sendMessage mpsnnFilterNode gradientFiltersWithSourceSelector (toMPSNNImageNode gradientImage)
 
 -- | Build training graph from inference graph
 --
@@ -122,9 +115,8 @@ gradientFiltersWithSource mpsnnFilterNode  gradientImage =
 --
 -- ObjC selector: @- trainingGraphWithSourceGradient:nodeHandler:@
 trainingGraphWithSourceGradient_nodeHandler :: (IsMPSNNFilterNode mpsnnFilterNode, IsMPSNNImageNode gradientImage) => mpsnnFilterNode -> gradientImage -> Ptr () -> IO (Id NSArray)
-trainingGraphWithSourceGradient_nodeHandler mpsnnFilterNode  gradientImage nodeHandler =
-  withObjCPtr gradientImage $ \raw_gradientImage ->
-      sendMsg mpsnnFilterNode (mkSelector "trainingGraphWithSourceGradient:nodeHandler:") (retPtr retVoid) [argPtr (castPtr raw_gradientImage :: Ptr ()), argPtr (castPtr nodeHandler :: Ptr ())] >>= retainedObject . castPtr
+trainingGraphWithSourceGradient_nodeHandler mpsnnFilterNode gradientImage nodeHandler =
+  sendMessage mpsnnFilterNode trainingGraphWithSourceGradient_nodeHandlerSelector (toMPSNNImageNode gradientImage) nodeHandler
 
 -- | Get the node representing the image result of the filter
 --
@@ -132,8 +124,8 @@ trainingGraphWithSourceGradient_nodeHandler mpsnnFilterNode  gradientImage nodeH
 --
 -- ObjC selector: @- resultImage@
 resultImage :: IsMPSNNFilterNode mpsnnFilterNode => mpsnnFilterNode -> IO (Id MPSNNImageNode)
-resultImage mpsnnFilterNode  =
-    sendMsg mpsnnFilterNode (mkSelector "resultImage") (retPtr retVoid) [] >>= retainedObject . castPtr
+resultImage mpsnnFilterNode =
+  sendMessage mpsnnFilterNode resultImageSelector
 
 -- | convenience method for resultStates[0]
 --
@@ -141,8 +133,8 @@ resultImage mpsnnFilterNode  =
 --
 -- ObjC selector: @- resultState@
 resultState :: IsMPSNNFilterNode mpsnnFilterNode => mpsnnFilterNode -> IO (Id MPSNNStateNode)
-resultState mpsnnFilterNode  =
-    sendMsg mpsnnFilterNode (mkSelector "resultState") (retPtr retVoid) [] >>= retainedObject . castPtr
+resultState mpsnnFilterNode =
+  sendMessage mpsnnFilterNode resultStateSelector
 
 -- | Get the node representing the state result of the filter
 --
@@ -150,8 +142,8 @@ resultState mpsnnFilterNode  =
 --
 -- ObjC selector: @- resultStates@
 resultStates :: IsMPSNNFilterNode mpsnnFilterNode => mpsnnFilterNode -> IO (Id NSArray)
-resultStates mpsnnFilterNode  =
-    sendMsg mpsnnFilterNode (mkSelector "resultStates") (retPtr retVoid) [] >>= retainedObject . castPtr
+resultStates mpsnnFilterNode =
+  sendMessage mpsnnFilterNode resultStatesSelector
 
 -- | The padding method used for the filter node
 --
@@ -165,8 +157,8 @@ resultStates mpsnnFilterNode  =
 --
 -- ObjC selector: @- paddingPolicy@
 paddingPolicy :: IsMPSNNFilterNode mpsnnFilterNode => mpsnnFilterNode -> IO RawId
-paddingPolicy mpsnnFilterNode  =
-    fmap (RawId . castPtr) $ sendMsg mpsnnFilterNode (mkSelector "paddingPolicy") (retPtr retVoid) []
+paddingPolicy mpsnnFilterNode =
+  sendMessage mpsnnFilterNode paddingPolicySelector
 
 -- | The padding method used for the filter node
 --
@@ -180,8 +172,8 @@ paddingPolicy mpsnnFilterNode  =
 --
 -- ObjC selector: @- setPaddingPolicy:@
 setPaddingPolicy :: IsMPSNNFilterNode mpsnnFilterNode => mpsnnFilterNode -> RawId -> IO ()
-setPaddingPolicy mpsnnFilterNode  value =
-    sendMsg mpsnnFilterNode (mkSelector "setPaddingPolicy:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setPaddingPolicy mpsnnFilterNode value =
+  sendMessage mpsnnFilterNode setPaddingPolicySelector value
 
 -- | label
 --
@@ -189,8 +181,8 @@ setPaddingPolicy mpsnnFilterNode  value =
 --
 -- ObjC selector: @- label@
 label :: IsMPSNNFilterNode mpsnnFilterNode => mpsnnFilterNode -> IO (Id NSString)
-label mpsnnFilterNode  =
-    sendMsg mpsnnFilterNode (mkSelector "label") (retPtr retVoid) [] >>= retainedObject . castPtr
+label mpsnnFilterNode =
+  sendMessage mpsnnFilterNode labelSelector
 
 -- | label
 --
@@ -198,63 +190,62 @@ label mpsnnFilterNode  =
 --
 -- ObjC selector: @- setLabel:@
 setLabel :: (IsMPSNNFilterNode mpsnnFilterNode, IsNSString value) => mpsnnFilterNode -> value -> IO ()
-setLabel mpsnnFilterNode  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mpsnnFilterNode (mkSelector "setLabel:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLabel mpsnnFilterNode value =
+  sendMessage mpsnnFilterNode setLabelSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MPSNNFilterNode)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @gradientFilterWithSource:@
-gradientFilterWithSourceSelector :: Selector
+gradientFilterWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id MPSNNGradientFilterNode)
 gradientFilterWithSourceSelector = mkSelector "gradientFilterWithSource:"
 
 -- | @Selector@ for @gradientFilterWithSources:@
-gradientFilterWithSourcesSelector :: Selector
+gradientFilterWithSourcesSelector :: Selector '[Id NSArray] (Id MPSNNGradientFilterNode)
 gradientFilterWithSourcesSelector = mkSelector "gradientFilterWithSources:"
 
 -- | @Selector@ for @gradientFiltersWithSources:@
-gradientFiltersWithSourcesSelector :: Selector
+gradientFiltersWithSourcesSelector :: Selector '[Id NSArray] (Id NSArray)
 gradientFiltersWithSourcesSelector = mkSelector "gradientFiltersWithSources:"
 
 -- | @Selector@ for @gradientFiltersWithSource:@
-gradientFiltersWithSourceSelector :: Selector
+gradientFiltersWithSourceSelector :: Selector '[Id MPSNNImageNode] (Id NSArray)
 gradientFiltersWithSourceSelector = mkSelector "gradientFiltersWithSource:"
 
 -- | @Selector@ for @trainingGraphWithSourceGradient:nodeHandler:@
-trainingGraphWithSourceGradient_nodeHandlerSelector :: Selector
+trainingGraphWithSourceGradient_nodeHandlerSelector :: Selector '[Id MPSNNImageNode, Ptr ()] (Id NSArray)
 trainingGraphWithSourceGradient_nodeHandlerSelector = mkSelector "trainingGraphWithSourceGradient:nodeHandler:"
 
 -- | @Selector@ for @resultImage@
-resultImageSelector :: Selector
+resultImageSelector :: Selector '[] (Id MPSNNImageNode)
 resultImageSelector = mkSelector "resultImage"
 
 -- | @Selector@ for @resultState@
-resultStateSelector :: Selector
+resultStateSelector :: Selector '[] (Id MPSNNStateNode)
 resultStateSelector = mkSelector "resultState"
 
 -- | @Selector@ for @resultStates@
-resultStatesSelector :: Selector
+resultStatesSelector :: Selector '[] (Id NSArray)
 resultStatesSelector = mkSelector "resultStates"
 
 -- | @Selector@ for @paddingPolicy@
-paddingPolicySelector :: Selector
+paddingPolicySelector :: Selector '[] RawId
 paddingPolicySelector = mkSelector "paddingPolicy"
 
 -- | @Selector@ for @setPaddingPolicy:@
-setPaddingPolicySelector :: Selector
+setPaddingPolicySelector :: Selector '[RawId] ()
 setPaddingPolicySelector = mkSelector "setPaddingPolicy:"
 
 -- | @Selector@ for @label@
-labelSelector :: Selector
+labelSelector :: Selector '[] (Id NSString)
 labelSelector = mkSelector "label"
 
 -- | @Selector@ for @setLabel:@
-setLabelSelector :: Selector
+setLabelSelector :: Selector '[Id NSString] ()
 setLabelSelector = mkSelector "setLabel:"
 

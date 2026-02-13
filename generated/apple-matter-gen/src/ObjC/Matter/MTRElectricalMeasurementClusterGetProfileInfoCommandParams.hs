@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Matter.MTRElectricalMeasurementClusterGetProfileInfoCommandParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,8 +38,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRElectricalMeasurementClusterGetProfileInfoCommandParams mtrElectricalMeasurementClusterGetProfileInfoCommandParams => mtrElectricalMeasurementClusterGetProfileInfoCommandParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrElectricalMeasurementClusterGetProfileInfoCommandParams  =
-    sendMsg mtrElectricalMeasurementClusterGetProfileInfoCommandParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrElectricalMeasurementClusterGetProfileInfoCommandParams =
+  sendMessage mtrElectricalMeasurementClusterGetProfileInfoCommandParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -52,9 +49,8 @@ timedInvokeTimeoutMs mtrElectricalMeasurementClusterGetProfileInfoCommandParams 
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRElectricalMeasurementClusterGetProfileInfoCommandParams mtrElectricalMeasurementClusterGetProfileInfoCommandParams, IsNSNumber value) => mtrElectricalMeasurementClusterGetProfileInfoCommandParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrElectricalMeasurementClusterGetProfileInfoCommandParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalMeasurementClusterGetProfileInfoCommandParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrElectricalMeasurementClusterGetProfileInfoCommandParams value =
+  sendMessage mtrElectricalMeasurementClusterGetProfileInfoCommandParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -64,8 +60,8 @@ setTimedInvokeTimeoutMs mtrElectricalMeasurementClusterGetProfileInfoCommandPara
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRElectricalMeasurementClusterGetProfileInfoCommandParams mtrElectricalMeasurementClusterGetProfileInfoCommandParams => mtrElectricalMeasurementClusterGetProfileInfoCommandParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrElectricalMeasurementClusterGetProfileInfoCommandParams  =
-    sendMsg mtrElectricalMeasurementClusterGetProfileInfoCommandParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrElectricalMeasurementClusterGetProfileInfoCommandParams =
+  sendMessage mtrElectricalMeasurementClusterGetProfileInfoCommandParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -75,27 +71,26 @@ serverSideProcessingTimeout mtrElectricalMeasurementClusterGetProfileInfoCommand
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRElectricalMeasurementClusterGetProfileInfoCommandParams mtrElectricalMeasurementClusterGetProfileInfoCommandParams, IsNSNumber value) => mtrElectricalMeasurementClusterGetProfileInfoCommandParams -> value -> IO ()
-setServerSideProcessingTimeout mtrElectricalMeasurementClusterGetProfileInfoCommandParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrElectricalMeasurementClusterGetProfileInfoCommandParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrElectricalMeasurementClusterGetProfileInfoCommandParams value =
+  sendMessage mtrElectricalMeasurementClusterGetProfileInfoCommandParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

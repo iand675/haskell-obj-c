@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRJointFabricDatastoreClusterDatastoreEndpointEntryStruct
   , statusEntry
   , setStatusEntry
   , endpointIDSelector
-  , setEndpointIDSelector
-  , nodeIDSelector
-  , setNodeIDSelector
   , friendlyNameSelector
+  , nodeIDSelector
+  , setEndpointIDSelector
   , setFriendlyNameSelector
-  , statusEntrySelector
+  , setNodeIDSelector
   , setStatusEntrySelector
+  , statusEntrySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,81 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- endpointID@
 endpointID :: IsMTRJointFabricDatastoreClusterDatastoreEndpointEntryStruct mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct => mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct -> IO (Id NSNumber)
-endpointID mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct (mkSelector "endpointID") (retPtr retVoid) [] >>= retainedObject . castPtr
+endpointID mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct endpointIDSelector
 
 -- | @- setEndpointID:@
 setEndpointID :: (IsMTRJointFabricDatastoreClusterDatastoreEndpointEntryStruct mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct -> value -> IO ()
-setEndpointID mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct (mkSelector "setEndpointID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setEndpointID mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct setEndpointIDSelector (toNSNumber value)
 
 -- | @- nodeID@
 nodeID :: IsMTRJointFabricDatastoreClusterDatastoreEndpointEntryStruct mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct => mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct -> IO (Id NSNumber)
-nodeID mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct (mkSelector "nodeID") (retPtr retVoid) [] >>= retainedObject . castPtr
+nodeID mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct nodeIDSelector
 
 -- | @- setNodeID:@
 setNodeID :: (IsMTRJointFabricDatastoreClusterDatastoreEndpointEntryStruct mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct, IsNSNumber value) => mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct -> value -> IO ()
-setNodeID mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct (mkSelector "setNodeID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNodeID mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct setNodeIDSelector (toNSNumber value)
 
 -- | @- friendlyName@
 friendlyName :: IsMTRJointFabricDatastoreClusterDatastoreEndpointEntryStruct mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct => mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct -> IO (Id NSString)
-friendlyName mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct (mkSelector "friendlyName") (retPtr retVoid) [] >>= retainedObject . castPtr
+friendlyName mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct friendlyNameSelector
 
 -- | @- setFriendlyName:@
 setFriendlyName :: (IsMTRJointFabricDatastoreClusterDatastoreEndpointEntryStruct mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct, IsNSString value) => mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct -> value -> IO ()
-setFriendlyName mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct (mkSelector "setFriendlyName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setFriendlyName mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct setFriendlyNameSelector (toNSString value)
 
 -- | @- statusEntry@
 statusEntry :: IsMTRJointFabricDatastoreClusterDatastoreEndpointEntryStruct mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct => mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct -> IO (Id MTRJointFabricDatastoreClusterDatastoreStatusEntryStruct)
-statusEntry mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct  =
-    sendMsg mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct (mkSelector "statusEntry") (retPtr retVoid) [] >>= retainedObject . castPtr
+statusEntry mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct statusEntrySelector
 
 -- | @- setStatusEntry:@
 setStatusEntry :: (IsMTRJointFabricDatastoreClusterDatastoreEndpointEntryStruct mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct, IsMTRJointFabricDatastoreClusterDatastoreStatusEntryStruct value) => mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct -> value -> IO ()
-setStatusEntry mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct (mkSelector "setStatusEntry:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStatusEntry mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct value =
+  sendMessage mtrJointFabricDatastoreClusterDatastoreEndpointEntryStruct setStatusEntrySelector (toMTRJointFabricDatastoreClusterDatastoreStatusEntryStruct value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @endpointID@
-endpointIDSelector :: Selector
+endpointIDSelector :: Selector '[] (Id NSNumber)
 endpointIDSelector = mkSelector "endpointID"
 
 -- | @Selector@ for @setEndpointID:@
-setEndpointIDSelector :: Selector
+setEndpointIDSelector :: Selector '[Id NSNumber] ()
 setEndpointIDSelector = mkSelector "setEndpointID:"
 
 -- | @Selector@ for @nodeID@
-nodeIDSelector :: Selector
+nodeIDSelector :: Selector '[] (Id NSNumber)
 nodeIDSelector = mkSelector "nodeID"
 
 -- | @Selector@ for @setNodeID:@
-setNodeIDSelector :: Selector
+setNodeIDSelector :: Selector '[Id NSNumber] ()
 setNodeIDSelector = mkSelector "setNodeID:"
 
 -- | @Selector@ for @friendlyName@
-friendlyNameSelector :: Selector
+friendlyNameSelector :: Selector '[] (Id NSString)
 friendlyNameSelector = mkSelector "friendlyName"
 
 -- | @Selector@ for @setFriendlyName:@
-setFriendlyNameSelector :: Selector
+setFriendlyNameSelector :: Selector '[Id NSString] ()
 setFriendlyNameSelector = mkSelector "setFriendlyName:"
 
 -- | @Selector@ for @statusEntry@
-statusEntrySelector :: Selector
+statusEntrySelector :: Selector '[] (Id MTRJointFabricDatastoreClusterDatastoreStatusEntryStruct)
 statusEntrySelector = mkSelector "statusEntry"
 
 -- | @Selector@ for @setStatusEntry:@
-setStatusEntrySelector :: Selector
+setStatusEntrySelector :: Selector '[Id MTRJointFabricDatastoreClusterDatastoreStatusEntryStruct] ()
 setStatusEntrySelector = mkSelector "setStatusEntry:"
 

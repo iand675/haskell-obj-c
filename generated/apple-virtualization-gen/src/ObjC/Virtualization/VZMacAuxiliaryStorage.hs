@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -37,11 +38,11 @@ module ObjC.Virtualization.VZMacAuxiliaryStorage
   , initCreatingStorageAtURL_hardwareModel_options_error
   , initWithContentsOfURL
   , url
-  , newSelector
-  , initSelector
-  , initWithURLSelector
   , initCreatingStorageAtURL_hardwareModel_options_errorSelector
+  , initSelector
   , initWithContentsOfURLSelector
+  , initWithURLSelector
+  , newSelector
   , urlSelector
 
   -- * Enum types
@@ -50,15 +51,11 @@ module ObjC.Virtualization.VZMacAuxiliaryStorage
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -71,12 +68,12 @@ new :: IO (Id VZMacAuxiliaryStorage)
 new  =
   do
     cls' <- getRequiredClass "VZMacAuxiliaryStorage"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsVZMacAuxiliaryStorage vzMacAuxiliaryStorage => vzMacAuxiliaryStorage -> IO (Id VZMacAuxiliaryStorage)
-init_ vzMacAuxiliaryStorage  =
-    sendMsg vzMacAuxiliaryStorage (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ vzMacAuxiliaryStorage =
+  sendOwnedMessage vzMacAuxiliaryStorage initSelector
 
 -- | Initialize the auxiliary storage from the URL of an existing file.
 --
@@ -86,9 +83,8 @@ init_ vzMacAuxiliaryStorage  =
 --
 -- ObjC selector: @- initWithURL:@
 initWithURL :: (IsVZMacAuxiliaryStorage vzMacAuxiliaryStorage, IsNSURL url) => vzMacAuxiliaryStorage -> url -> IO (Id VZMacAuxiliaryStorage)
-initWithURL vzMacAuxiliaryStorage  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg vzMacAuxiliaryStorage (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL vzMacAuxiliaryStorage url =
+  sendOwnedMessage vzMacAuxiliaryStorage initWithURLSelector (toNSURL url)
 
 -- | Write an initialized VZMacAuxiliaryStorage to a URL on a file system.
 --
@@ -104,50 +100,46 @@ initWithURL vzMacAuxiliaryStorage  url =
 --
 -- ObjC selector: @- initCreatingStorageAtURL:hardwareModel:options:error:@
 initCreatingStorageAtURL_hardwareModel_options_error :: (IsVZMacAuxiliaryStorage vzMacAuxiliaryStorage, IsNSURL url, IsVZMacHardwareModel hardwareModel, IsNSError error_) => vzMacAuxiliaryStorage -> url -> hardwareModel -> VZMacAuxiliaryStorageInitializationOptions -> error_ -> IO (Id VZMacAuxiliaryStorage)
-initCreatingStorageAtURL_hardwareModel_options_error vzMacAuxiliaryStorage  url hardwareModel options error_ =
-  withObjCPtr url $ \raw_url ->
-    withObjCPtr hardwareModel $ \raw_hardwareModel ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg vzMacAuxiliaryStorage (mkSelector "initCreatingStorageAtURL:hardwareModel:options:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_hardwareModel :: Ptr ()), argCULong (coerce options), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initCreatingStorageAtURL_hardwareModel_options_error vzMacAuxiliaryStorage url hardwareModel options error_ =
+  sendOwnedMessage vzMacAuxiliaryStorage initCreatingStorageAtURL_hardwareModel_options_errorSelector (toNSURL url) (toVZMacHardwareModel hardwareModel) options (toNSError error_)
 
 -- | @- initWithContentsOfURL:@
 initWithContentsOfURL :: (IsVZMacAuxiliaryStorage vzMacAuxiliaryStorage, IsNSURL url) => vzMacAuxiliaryStorage -> url -> IO (Id VZMacAuxiliaryStorage)
-initWithContentsOfURL vzMacAuxiliaryStorage  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg vzMacAuxiliaryStorage (mkSelector "initWithContentsOfURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithContentsOfURL vzMacAuxiliaryStorage url =
+  sendOwnedMessage vzMacAuxiliaryStorage initWithContentsOfURLSelector (toNSURL url)
 
 -- | The URL of the auxiliary storage on the local file system.
 --
 -- ObjC selector: @- URL@
 url :: IsVZMacAuxiliaryStorage vzMacAuxiliaryStorage => vzMacAuxiliaryStorage -> IO (Id NSURL)
-url vzMacAuxiliaryStorage  =
-    sendMsg vzMacAuxiliaryStorage (mkSelector "URL") (retPtr retVoid) [] >>= retainedObject . castPtr
+url vzMacAuxiliaryStorage =
+  sendMessage vzMacAuxiliaryStorage urlSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id VZMacAuxiliaryStorage)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id VZMacAuxiliaryStorage)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id VZMacAuxiliaryStorage)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initCreatingStorageAtURL:hardwareModel:options:error:@
-initCreatingStorageAtURL_hardwareModel_options_errorSelector :: Selector
+initCreatingStorageAtURL_hardwareModel_options_errorSelector :: Selector '[Id NSURL, Id VZMacHardwareModel, VZMacAuxiliaryStorageInitializationOptions, Id NSError] (Id VZMacAuxiliaryStorage)
 initCreatingStorageAtURL_hardwareModel_options_errorSelector = mkSelector "initCreatingStorageAtURL:hardwareModel:options:error:"
 
 -- | @Selector@ for @initWithContentsOfURL:@
-initWithContentsOfURLSelector :: Selector
+initWithContentsOfURLSelector :: Selector '[Id NSURL] (Id VZMacAuxiliaryStorage)
 initWithContentsOfURLSelector = mkSelector "initWithContentsOfURL:"
 
 -- | @Selector@ for @URL@
-urlSelector :: Selector
+urlSelector :: Selector '[] (Id NSURL)
 urlSelector = mkSelector "URL"
 

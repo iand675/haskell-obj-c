@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.AppKit.NSStringDrawingContext
   , minimumScaleFactor
   , setMinimumScaleFactor
   , actualScaleFactor
+  , actualScaleFactorSelector
   , minimumScaleFactorSelector
   , setMinimumScaleFactorSelector
-  , actualScaleFactorSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,32 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- minimumScaleFactor@
 minimumScaleFactor :: IsNSStringDrawingContext nsStringDrawingContext => nsStringDrawingContext -> IO CDouble
-minimumScaleFactor nsStringDrawingContext  =
-    sendMsg nsStringDrawingContext (mkSelector "minimumScaleFactor") retCDouble []
+minimumScaleFactor nsStringDrawingContext =
+  sendMessage nsStringDrawingContext minimumScaleFactorSelector
 
 -- | @- setMinimumScaleFactor:@
 setMinimumScaleFactor :: IsNSStringDrawingContext nsStringDrawingContext => nsStringDrawingContext -> CDouble -> IO ()
-setMinimumScaleFactor nsStringDrawingContext  value =
-    sendMsg nsStringDrawingContext (mkSelector "setMinimumScaleFactor:") retVoid [argCDouble value]
+setMinimumScaleFactor nsStringDrawingContext value =
+  sendMessage nsStringDrawingContext setMinimumScaleFactorSelector value
 
 -- | @- actualScaleFactor@
 actualScaleFactor :: IsNSStringDrawingContext nsStringDrawingContext => nsStringDrawingContext -> IO CDouble
-actualScaleFactor nsStringDrawingContext  =
-    sendMsg nsStringDrawingContext (mkSelector "actualScaleFactor") retCDouble []
+actualScaleFactor nsStringDrawingContext =
+  sendMessage nsStringDrawingContext actualScaleFactorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @minimumScaleFactor@
-minimumScaleFactorSelector :: Selector
+minimumScaleFactorSelector :: Selector '[] CDouble
 minimumScaleFactorSelector = mkSelector "minimumScaleFactor"
 
 -- | @Selector@ for @setMinimumScaleFactor:@
-setMinimumScaleFactorSelector :: Selector
+setMinimumScaleFactorSelector :: Selector '[CDouble] ()
 setMinimumScaleFactorSelector = mkSelector "setMinimumScaleFactor:"
 
 -- | @Selector@ for @actualScaleFactor@
-actualScaleFactorSelector :: Selector
+actualScaleFactorSelector :: Selector '[] CDouble
 actualScaleFactorSelector = mkSelector "actualScaleFactor"
 

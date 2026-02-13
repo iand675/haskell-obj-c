@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.VideoSubscriberAccount.VSAccountMetadata
   , samlAttributeQueryResponse
   , accountProviderResponse
   , accountProviderIdentifierSelector
-  , authenticationExpirationDateSelector
-  , verificationDataSelector
-  , samlAttributeQueryResponseSelector
   , accountProviderResponseSelector
+  , authenticationExpirationDateSelector
+  , samlAttributeQueryResponseSelector
+  , verificationDataSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,58 +38,58 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- accountProviderIdentifier@
 accountProviderIdentifier :: IsVSAccountMetadata vsAccountMetadata => vsAccountMetadata -> IO (Id NSString)
-accountProviderIdentifier vsAccountMetadata  =
-    sendMsg vsAccountMetadata (mkSelector "accountProviderIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountProviderIdentifier vsAccountMetadata =
+  sendMessage vsAccountMetadata accountProviderIdentifierSelector
 
 -- | Specifies when the user might need to re-authenticate with the account provider. The value might be nil if the user is not currently authenticated.
 --
 -- ObjC selector: @- authenticationExpirationDate@
 authenticationExpirationDate :: IsVSAccountMetadata vsAccountMetadata => vsAccountMetadata -> IO (Id NSDate)
-authenticationExpirationDate vsAccountMetadata  =
-    sendMsg vsAccountMetadata (mkSelector "authenticationExpirationDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+authenticationExpirationDate vsAccountMetadata =
+  sendMessage vsAccountMetadata authenticationExpirationDateSelector
 
 -- | An opaque blob of data that can be used to cryptographically verify that the SAML AttributeQuery response actually came from the account provider.
 --
 -- ObjC selector: @- verificationData@
 verificationData :: IsVSAccountMetadata vsAccountMetadata => vsAccountMetadata -> IO (Id NSData)
-verificationData vsAccountMetadata  =
-    sendMsg vsAccountMetadata (mkSelector "verificationData") (retPtr retVoid) [] >>= retainedObject . castPtr
+verificationData vsAccountMetadata =
+  sendMessage vsAccountMetadata verificationDataSelector
 
 -- | The SAML AttributeQuery response received from the account provider. The value might be nil if your account metadata request did not specify any SAML attributes or if the user does not have a valid authentication.
 --
 -- ObjC selector: @- SAMLAttributeQueryResponse@
 samlAttributeQueryResponse :: IsVSAccountMetadata vsAccountMetadata => vsAccountMetadata -> IO (Id NSString)
-samlAttributeQueryResponse vsAccountMetadata  =
-    sendMsg vsAccountMetadata (mkSelector "SAMLAttributeQueryResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+samlAttributeQueryResponse vsAccountMetadata =
+  sendMessage vsAccountMetadata samlAttributeQueryResponseSelector
 
 -- | The response received from the account provider. The value might be nil if your account metadata request did not specify any attributes, or if the user does not have a valid authentication.
 --
 -- ObjC selector: @- accountProviderResponse@
 accountProviderResponse :: IsVSAccountMetadata vsAccountMetadata => vsAccountMetadata -> IO (Id VSAccountProviderResponse)
-accountProviderResponse vsAccountMetadata  =
-    sendMsg vsAccountMetadata (mkSelector "accountProviderResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+accountProviderResponse vsAccountMetadata =
+  sendMessage vsAccountMetadata accountProviderResponseSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @accountProviderIdentifier@
-accountProviderIdentifierSelector :: Selector
+accountProviderIdentifierSelector :: Selector '[] (Id NSString)
 accountProviderIdentifierSelector = mkSelector "accountProviderIdentifier"
 
 -- | @Selector@ for @authenticationExpirationDate@
-authenticationExpirationDateSelector :: Selector
+authenticationExpirationDateSelector :: Selector '[] (Id NSDate)
 authenticationExpirationDateSelector = mkSelector "authenticationExpirationDate"
 
 -- | @Selector@ for @verificationData@
-verificationDataSelector :: Selector
+verificationDataSelector :: Selector '[] (Id NSData)
 verificationDataSelector = mkSelector "verificationData"
 
 -- | @Selector@ for @SAMLAttributeQueryResponse@
-samlAttributeQueryResponseSelector :: Selector
+samlAttributeQueryResponseSelector :: Selector '[] (Id NSString)
 samlAttributeQueryResponseSelector = mkSelector "SAMLAttributeQueryResponse"
 
 -- | @Selector@ for @accountProviderResponse@
-accountProviderResponseSelector :: Selector
+accountProviderResponseSelector :: Selector '[] (Id VSAccountProviderResponse)
 accountProviderResponseSelector = mkSelector "accountProviderResponse"
 

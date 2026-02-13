@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,27 +19,23 @@ module ObjC.CoreMotion.CMTremorResult
   , percentMild
   , percentModerate
   , percentStrong
-  , startDateSelector
   , endDateSelector
-  , percentUnknownSelector
-  , percentNoneSelector
-  , percentSlightSelector
   , percentMildSelector
   , percentModerateSelector
+  , percentNoneSelector
+  , percentSlightSelector
   , percentStrongSelector
+  , percentUnknownSelector
+  , startDateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,91 +46,91 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- startDate@
 startDate :: IsCMTremorResult cmTremorResult => cmTremorResult -> IO (Id NSDate)
-startDate cmTremorResult  =
-    sendMsg cmTremorResult (mkSelector "startDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+startDate cmTremorResult =
+  sendMessage cmTremorResult startDateSelector
 
 -- | The date and time representing the end of the result.
 --
 -- ObjC selector: @- endDate@
 endDate :: IsCMTremorResult cmTremorResult => cmTremorResult -> IO (Id NSDate)
-endDate cmTremorResult  =
-    sendMsg cmTremorResult (mkSelector "endDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+endDate cmTremorResult =
+  sendMessage cmTremorResult endDateSelector
 
 -- | The percentage of time tremor was unknown for the result. Unknown periods include times when:   1. the subject is moving and therefore a resting tremor cannot be assessed, and   2. the signal strength is too low to measure tremor confidently.
 --
 -- ObjC selector: @- percentUnknown@
 percentUnknown :: IsCMTremorResult cmTremorResult => cmTremorResult -> IO CFloat
-percentUnknown cmTremorResult  =
-    sendMsg cmTremorResult (mkSelector "percentUnknown") retCFloat []
+percentUnknown cmTremorResult =
+  sendMessage cmTremorResult percentUnknownSelector
 
 -- | The percentage of time no tremor was detected for the result.
 --
 -- ObjC selector: @- percentNone@
 percentNone :: IsCMTremorResult cmTremorResult => cmTremorResult -> IO CFloat
-percentNone cmTremorResult  =
-    sendMsg cmTremorResult (mkSelector "percentNone") retCFloat []
+percentNone cmTremorResult =
+  sendMessage cmTremorResult percentNoneSelector
 
 -- | The percentage of time tremor was likely and displacement amplitude was slight for the result.
 --
 -- ObjC selector: @- percentSlight@
 percentSlight :: IsCMTremorResult cmTremorResult => cmTremorResult -> IO CFloat
-percentSlight cmTremorResult  =
-    sendMsg cmTremorResult (mkSelector "percentSlight") retCFloat []
+percentSlight cmTremorResult =
+  sendMessage cmTremorResult percentSlightSelector
 
 -- | The percentage of time tremor was likely and displacement amplitude was mild for the result.
 --
 -- ObjC selector: @- percentMild@
 percentMild :: IsCMTremorResult cmTremorResult => cmTremorResult -> IO CFloat
-percentMild cmTremorResult  =
-    sendMsg cmTremorResult (mkSelector "percentMild") retCFloat []
+percentMild cmTremorResult =
+  sendMessage cmTremorResult percentMildSelector
 
 -- | The percentage of time tremor was likely and displacement amplitude was moderate for the result.
 --
 -- ObjC selector: @- percentModerate@
 percentModerate :: IsCMTremorResult cmTremorResult => cmTremorResult -> IO CFloat
-percentModerate cmTremorResult  =
-    sendMsg cmTremorResult (mkSelector "percentModerate") retCFloat []
+percentModerate cmTremorResult =
+  sendMessage cmTremorResult percentModerateSelector
 
 -- | The percentage of time tremor was likely and displacement amplitude was strong for the result.
 --
 -- ObjC selector: @- percentStrong@
 percentStrong :: IsCMTremorResult cmTremorResult => cmTremorResult -> IO CFloat
-percentStrong cmTremorResult  =
-    sendMsg cmTremorResult (mkSelector "percentStrong") retCFloat []
+percentStrong cmTremorResult =
+  sendMessage cmTremorResult percentStrongSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @startDate@
-startDateSelector :: Selector
+startDateSelector :: Selector '[] (Id NSDate)
 startDateSelector = mkSelector "startDate"
 
 -- | @Selector@ for @endDate@
-endDateSelector :: Selector
+endDateSelector :: Selector '[] (Id NSDate)
 endDateSelector = mkSelector "endDate"
 
 -- | @Selector@ for @percentUnknown@
-percentUnknownSelector :: Selector
+percentUnknownSelector :: Selector '[] CFloat
 percentUnknownSelector = mkSelector "percentUnknown"
 
 -- | @Selector@ for @percentNone@
-percentNoneSelector :: Selector
+percentNoneSelector :: Selector '[] CFloat
 percentNoneSelector = mkSelector "percentNone"
 
 -- | @Selector@ for @percentSlight@
-percentSlightSelector :: Selector
+percentSlightSelector :: Selector '[] CFloat
 percentSlightSelector = mkSelector "percentSlight"
 
 -- | @Selector@ for @percentMild@
-percentMildSelector :: Selector
+percentMildSelector :: Selector '[] CFloat
 percentMildSelector = mkSelector "percentMild"
 
 -- | @Selector@ for @percentModerate@
-percentModerateSelector :: Selector
+percentModerateSelector :: Selector '[] CFloat
 percentModerateSelector = mkSelector "percentModerate"
 
 -- | @Selector@ for @percentStrong@
-percentStrongSelector :: Selector
+percentStrongSelector :: Selector '[] CFloat
 percentStrongSelector = mkSelector "percentStrong"
 

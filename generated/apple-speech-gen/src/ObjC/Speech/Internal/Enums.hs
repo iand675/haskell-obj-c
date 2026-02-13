@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.Speech.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | Error codes that can be thrown under the Speech framework's error domain.
 -- | @SFSpeechErrorCode@
@@ -35,6 +38,16 @@ pattern SFSpeechErrorCodeTimeout = SFSpeechErrorCode 12
 pattern SFSpeechErrorCodeMissingParameter :: SFSpeechErrorCode
 pattern SFSpeechErrorCodeMissingParameter = SFSpeechErrorCode 13
 
+instance ObjCArgument SFSpeechErrorCode where
+  withObjCArg (SFSpeechErrorCode x) k = k (argCLong x)
+
+instance ObjCReturn SFSpeechErrorCode where
+  type RawReturn SFSpeechErrorCode = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SFSpeechErrorCode x)
+  fromOwned x = pure (SFSpeechErrorCode x)
+
 -- | The type of task for which you are using speech recognition.
 -- | @SFSpeechRecognitionTaskHint@
 newtype SFSpeechRecognitionTaskHint = SFSpeechRecognitionTaskHint CLong
@@ -52,6 +65,16 @@ pattern SFSpeechRecognitionTaskHintSearch = SFSpeechRecognitionTaskHint 2
 
 pattern SFSpeechRecognitionTaskHintConfirmation :: SFSpeechRecognitionTaskHint
 pattern SFSpeechRecognitionTaskHintConfirmation = SFSpeechRecognitionTaskHint 3
+
+instance ObjCArgument SFSpeechRecognitionTaskHint where
+  withObjCArg (SFSpeechRecognitionTaskHint x) k = k (argCLong x)
+
+instance ObjCReturn SFSpeechRecognitionTaskHint where
+  type RawReturn SFSpeechRecognitionTaskHint = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SFSpeechRecognitionTaskHint x)
+  fromOwned x = pure (SFSpeechRecognitionTaskHint x)
 
 -- | The state of the task associated with the recognition request.
 -- | @SFSpeechRecognitionTaskState@
@@ -74,6 +97,16 @@ pattern SFSpeechRecognitionTaskStateCanceling = SFSpeechRecognitionTaskState 3
 pattern SFSpeechRecognitionTaskStateCompleted :: SFSpeechRecognitionTaskState
 pattern SFSpeechRecognitionTaskStateCompleted = SFSpeechRecognitionTaskState 4
 
+instance ObjCArgument SFSpeechRecognitionTaskState where
+  withObjCArg (SFSpeechRecognitionTaskState x) k = k (argCLong x)
+
+instance ObjCReturn SFSpeechRecognitionTaskState where
+  type RawReturn SFSpeechRecognitionTaskState = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SFSpeechRecognitionTaskState x)
+  fromOwned x = pure (SFSpeechRecognitionTaskState x)
+
 -- | The app's authorization to perform speech recognition.
 -- | @SFSpeechRecognizerAuthorizationStatus@
 newtype SFSpeechRecognizerAuthorizationStatus = SFSpeechRecognizerAuthorizationStatus CLong
@@ -91,3 +124,13 @@ pattern SFSpeechRecognizerAuthorizationStatusRestricted = SFSpeechRecognizerAuth
 
 pattern SFSpeechRecognizerAuthorizationStatusAuthorized :: SFSpeechRecognizerAuthorizationStatus
 pattern SFSpeechRecognizerAuthorizationStatusAuthorized = SFSpeechRecognizerAuthorizationStatus 3
+
+instance ObjCArgument SFSpeechRecognizerAuthorizationStatus where
+  withObjCArg (SFSpeechRecognizerAuthorizationStatus x) k = k (argCLong x)
+
+instance ObjCReturn SFSpeechRecognizerAuthorizationStatus where
+  type RawReturn SFSpeechRecognizerAuthorizationStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (SFSpeechRecognizerAuthorizationStatus x)
+  fromOwned x = pure (SFSpeechRecognizerAuthorizationStatus x)

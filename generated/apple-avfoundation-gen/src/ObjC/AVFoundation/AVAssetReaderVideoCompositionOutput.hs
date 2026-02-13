@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,28 +22,24 @@ module ObjC.AVFoundation.AVAssetReaderVideoCompositionOutput
   , videoComposition
   , setVideoComposition
   , customVideoCompositor
-  , initSelector
-  , newSelector
   , assetReaderVideoCompositionOutputWithVideoTracks_videoSettingsSelector
-  , initWithVideoTracks_videoSettingsSelector
-  , videoTracksSelector
-  , videoSettingsSelector
-  , videoCompositionSelector
-  , setVideoCompositionSelector
   , customVideoCompositorSelector
+  , initSelector
+  , initWithVideoTracks_videoSettingsSelector
+  , newSelector
+  , setVideoCompositionSelector
+  , videoCompositionSelector
+  , videoSettingsSelector
+  , videoTracksSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -51,15 +48,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVAssetReaderVideoCompositionOutput avAssetReaderVideoCompositionOutput => avAssetReaderVideoCompositionOutput -> IO (Id AVAssetReaderVideoCompositionOutput)
-init_ avAssetReaderVideoCompositionOutput  =
-    sendMsg avAssetReaderVideoCompositionOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avAssetReaderVideoCompositionOutput =
+  sendOwnedMessage avAssetReaderVideoCompositionOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVAssetReaderVideoCompositionOutput)
 new  =
   do
     cls' <- getRequiredClass "AVAssetReaderVideoCompositionOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:
 --
@@ -84,9 +81,7 @@ assetReaderVideoCompositionOutputWithVideoTracks_videoSettings :: (IsNSArray vid
 assetReaderVideoCompositionOutputWithVideoTracks_videoSettings videoTracks videoSettings =
   do
     cls' <- getRequiredClass "AVAssetReaderVideoCompositionOutput"
-    withObjCPtr videoTracks $ \raw_videoTracks ->
-      withObjCPtr videoSettings $ \raw_videoSettings ->
-        sendClassMsg cls' (mkSelector "assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:") (retPtr retVoid) [argPtr (castPtr raw_videoTracks :: Ptr ()), argPtr (castPtr raw_videoSettings :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' assetReaderVideoCompositionOutputWithVideoTracks_videoSettingsSelector (toNSArray videoTracks) (toNSDictionary videoSettings)
 
 -- | initWithVideoTracks:videoSettings:
 --
@@ -108,10 +103,8 @@ assetReaderVideoCompositionOutputWithVideoTracks_videoSettings videoTracks video
 --
 -- ObjC selector: @- initWithVideoTracks:videoSettings:@
 initWithVideoTracks_videoSettings :: (IsAVAssetReaderVideoCompositionOutput avAssetReaderVideoCompositionOutput, IsNSArray videoTracks, IsNSDictionary videoSettings) => avAssetReaderVideoCompositionOutput -> videoTracks -> videoSettings -> IO (Id AVAssetReaderVideoCompositionOutput)
-initWithVideoTracks_videoSettings avAssetReaderVideoCompositionOutput  videoTracks videoSettings =
-  withObjCPtr videoTracks $ \raw_videoTracks ->
-    withObjCPtr videoSettings $ \raw_videoSettings ->
-        sendMsg avAssetReaderVideoCompositionOutput (mkSelector "initWithVideoTracks:videoSettings:") (retPtr retVoid) [argPtr (castPtr raw_videoTracks :: Ptr ()), argPtr (castPtr raw_videoSettings :: Ptr ())] >>= ownedObject . castPtr
+initWithVideoTracks_videoSettings avAssetReaderVideoCompositionOutput videoTracks videoSettings =
+  sendOwnedMessage avAssetReaderVideoCompositionOutput initWithVideoTracks_videoSettingsSelector (toNSArray videoTracks) (toNSDictionary videoSettings)
 
 -- | videoTracks
 --
@@ -121,8 +114,8 @@ initWithVideoTracks_videoSettings avAssetReaderVideoCompositionOutput  videoTrac
 --
 -- ObjC selector: @- videoTracks@
 videoTracks :: IsAVAssetReaderVideoCompositionOutput avAssetReaderVideoCompositionOutput => avAssetReaderVideoCompositionOutput -> IO (Id NSArray)
-videoTracks avAssetReaderVideoCompositionOutput  =
-    sendMsg avAssetReaderVideoCompositionOutput (mkSelector "videoTracks") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoTracks avAssetReaderVideoCompositionOutput =
+  sendMessage avAssetReaderVideoCompositionOutput videoTracksSelector
 
 -- | videoSettings
 --
@@ -132,8 +125,8 @@ videoTracks avAssetReaderVideoCompositionOutput  =
 --
 -- ObjC selector: @- videoSettings@
 videoSettings :: IsAVAssetReaderVideoCompositionOutput avAssetReaderVideoCompositionOutput => avAssetReaderVideoCompositionOutput -> IO (Id NSDictionary)
-videoSettings avAssetReaderVideoCompositionOutput  =
-    sendMsg avAssetReaderVideoCompositionOutput (mkSelector "videoSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoSettings avAssetReaderVideoCompositionOutput =
+  sendMessage avAssetReaderVideoCompositionOutput videoSettingsSelector
 
 -- | videoComposition
 --
@@ -145,8 +138,8 @@ videoSettings avAssetReaderVideoCompositionOutput  =
 --
 -- ObjC selector: @- videoComposition@
 videoComposition :: IsAVAssetReaderVideoCompositionOutput avAssetReaderVideoCompositionOutput => avAssetReaderVideoCompositionOutput -> IO (Id AVVideoComposition)
-videoComposition avAssetReaderVideoCompositionOutput  =
-    sendMsg avAssetReaderVideoCompositionOutput (mkSelector "videoComposition") (retPtr retVoid) [] >>= retainedObject . castPtr
+videoComposition avAssetReaderVideoCompositionOutput =
+  sendMessage avAssetReaderVideoCompositionOutput videoCompositionSelector
 
 -- | videoComposition
 --
@@ -158,9 +151,8 @@ videoComposition avAssetReaderVideoCompositionOutput  =
 --
 -- ObjC selector: @- setVideoComposition:@
 setVideoComposition :: (IsAVAssetReaderVideoCompositionOutput avAssetReaderVideoCompositionOutput, IsAVVideoComposition value) => avAssetReaderVideoCompositionOutput -> value -> IO ()
-setVideoComposition avAssetReaderVideoCompositionOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avAssetReaderVideoCompositionOutput (mkSelector "setVideoComposition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setVideoComposition avAssetReaderVideoCompositionOutput value =
+  sendMessage avAssetReaderVideoCompositionOutput setVideoCompositionSelector (toAVVideoComposition value)
 
 -- | customVideoCompositor
 --
@@ -170,46 +162,46 @@ setVideoComposition avAssetReaderVideoCompositionOutput  value =
 --
 -- ObjC selector: @- customVideoCompositor@
 customVideoCompositor :: IsAVAssetReaderVideoCompositionOutput avAssetReaderVideoCompositionOutput => avAssetReaderVideoCompositionOutput -> IO RawId
-customVideoCompositor avAssetReaderVideoCompositionOutput  =
-    fmap (RawId . castPtr) $ sendMsg avAssetReaderVideoCompositionOutput (mkSelector "customVideoCompositor") (retPtr retVoid) []
+customVideoCompositor avAssetReaderVideoCompositionOutput =
+  sendMessage avAssetReaderVideoCompositionOutput customVideoCompositorSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVAssetReaderVideoCompositionOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVAssetReaderVideoCompositionOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:@
-assetReaderVideoCompositionOutputWithVideoTracks_videoSettingsSelector :: Selector
+assetReaderVideoCompositionOutputWithVideoTracks_videoSettingsSelector :: Selector '[Id NSArray, Id NSDictionary] (Id AVAssetReaderVideoCompositionOutput)
 assetReaderVideoCompositionOutputWithVideoTracks_videoSettingsSelector = mkSelector "assetReaderVideoCompositionOutputWithVideoTracks:videoSettings:"
 
 -- | @Selector@ for @initWithVideoTracks:videoSettings:@
-initWithVideoTracks_videoSettingsSelector :: Selector
+initWithVideoTracks_videoSettingsSelector :: Selector '[Id NSArray, Id NSDictionary] (Id AVAssetReaderVideoCompositionOutput)
 initWithVideoTracks_videoSettingsSelector = mkSelector "initWithVideoTracks:videoSettings:"
 
 -- | @Selector@ for @videoTracks@
-videoTracksSelector :: Selector
+videoTracksSelector :: Selector '[] (Id NSArray)
 videoTracksSelector = mkSelector "videoTracks"
 
 -- | @Selector@ for @videoSettings@
-videoSettingsSelector :: Selector
+videoSettingsSelector :: Selector '[] (Id NSDictionary)
 videoSettingsSelector = mkSelector "videoSettings"
 
 -- | @Selector@ for @videoComposition@
-videoCompositionSelector :: Selector
+videoCompositionSelector :: Selector '[] (Id AVVideoComposition)
 videoCompositionSelector = mkSelector "videoComposition"
 
 -- | @Selector@ for @setVideoComposition:@
-setVideoCompositionSelector :: Selector
+setVideoCompositionSelector :: Selector '[Id AVVideoComposition] ()
 setVideoCompositionSelector = mkSelector "setVideoComposition:"
 
 -- | @Selector@ for @customVideoCompositor@
-customVideoCompositorSelector :: Selector
+customVideoCompositorSelector :: Selector '[] RawId
 customVideoCompositorSelector = mkSelector "customVideoCompositor"
 

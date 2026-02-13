@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.Intents.INRelativeSettingResolutionResult
   , successWithResolvedValue
   , confirmationRequiredWithRelativeSettingToConfirm
   , confirmationRequiredWithValueToConfirm
-  , successWithResolvedRelativeSettingSelector
-  , successWithResolvedValueSelector
   , confirmationRequiredWithRelativeSettingToConfirmSelector
   , confirmationRequiredWithValueToConfirmSelector
+  , successWithResolvedRelativeSettingSelector
+  , successWithResolvedValueSelector
 
   -- * Enum types
   , INRelativeSetting(INRelativeSetting)
@@ -26,15 +27,11 @@ module ObjC.Intents.INRelativeSettingResolutionResult
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,46 +44,46 @@ successWithResolvedRelativeSetting :: INRelativeSetting -> IO (Id INRelativeSett
 successWithResolvedRelativeSetting resolvedRelativeSetting =
   do
     cls' <- getRequiredClass "INRelativeSettingResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedRelativeSetting:") (retPtr retVoid) [argCLong (coerce resolvedRelativeSetting)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedRelativeSettingSelector resolvedRelativeSetting
 
 -- | @+ successWithResolvedValue:@
 successWithResolvedValue :: INRelativeSetting -> IO (Id INRelativeSettingResolutionResult)
 successWithResolvedValue resolvedValue =
   do
     cls' <- getRequiredClass "INRelativeSettingResolutionResult"
-    sendClassMsg cls' (mkSelector "successWithResolvedValue:") (retPtr retVoid) [argCLong (coerce resolvedValue)] >>= retainedObject . castPtr
+    sendClassMessage cls' successWithResolvedValueSelector resolvedValue
 
 -- | @+ confirmationRequiredWithRelativeSettingToConfirm:@
 confirmationRequiredWithRelativeSettingToConfirm :: INRelativeSetting -> IO (Id INRelativeSettingResolutionResult)
 confirmationRequiredWithRelativeSettingToConfirm relativeSettingToConfirm =
   do
     cls' <- getRequiredClass "INRelativeSettingResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithRelativeSettingToConfirm:") (retPtr retVoid) [argCLong (coerce relativeSettingToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithRelativeSettingToConfirmSelector relativeSettingToConfirm
 
 -- | @+ confirmationRequiredWithValueToConfirm:@
 confirmationRequiredWithValueToConfirm :: INRelativeSetting -> IO (Id INRelativeSettingResolutionResult)
 confirmationRequiredWithValueToConfirm valueToConfirm =
   do
     cls' <- getRequiredClass "INRelativeSettingResolutionResult"
-    sendClassMsg cls' (mkSelector "confirmationRequiredWithValueToConfirm:") (retPtr retVoid) [argCLong (coerce valueToConfirm)] >>= retainedObject . castPtr
+    sendClassMessage cls' confirmationRequiredWithValueToConfirmSelector valueToConfirm
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @successWithResolvedRelativeSetting:@
-successWithResolvedRelativeSettingSelector :: Selector
+successWithResolvedRelativeSettingSelector :: Selector '[INRelativeSetting] (Id INRelativeSettingResolutionResult)
 successWithResolvedRelativeSettingSelector = mkSelector "successWithResolvedRelativeSetting:"
 
 -- | @Selector@ for @successWithResolvedValue:@
-successWithResolvedValueSelector :: Selector
+successWithResolvedValueSelector :: Selector '[INRelativeSetting] (Id INRelativeSettingResolutionResult)
 successWithResolvedValueSelector = mkSelector "successWithResolvedValue:"
 
 -- | @Selector@ for @confirmationRequiredWithRelativeSettingToConfirm:@
-confirmationRequiredWithRelativeSettingToConfirmSelector :: Selector
+confirmationRequiredWithRelativeSettingToConfirmSelector :: Selector '[INRelativeSetting] (Id INRelativeSettingResolutionResult)
 confirmationRequiredWithRelativeSettingToConfirmSelector = mkSelector "confirmationRequiredWithRelativeSettingToConfirm:"
 
 -- | @Selector@ for @confirmationRequiredWithValueToConfirm:@
-confirmationRequiredWithValueToConfirmSelector :: Selector
+confirmationRequiredWithValueToConfirmSelector :: Selector '[INRelativeSetting] (Id INRelativeSettingResolutionResult)
 confirmationRequiredWithValueToConfirmSelector = mkSelector "confirmationRequiredWithValueToConfirm:"
 

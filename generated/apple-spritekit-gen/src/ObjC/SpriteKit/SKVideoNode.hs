@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,32 +20,28 @@ module ObjC.SpriteKit.SKVideoNode
   , initWithCoder
   , play
   , pause
-  , videoNodeWithAVPlayerSelector
-  , videoNodeWithVideoFileNamedSelector
-  , videoNodeWithFileNamedSelector
-  , videoNodeWithVideoURLSelector
-  , videoNodeWithURLSelector
   , initWithAVPlayerSelector
-  , initWithVideoFileNamedSelector
-  , initWithFileNamedSelector
-  , initWithVideoURLSelector
-  , initWithURLSelector
   , initWithCoderSelector
-  , playSelector
+  , initWithFileNamedSelector
+  , initWithURLSelector
+  , initWithVideoFileNamedSelector
+  , initWithVideoURLSelector
   , pauseSelector
+  , playSelector
+  , videoNodeWithAVPlayerSelector
+  , videoNodeWithFileNamedSelector
+  , videoNodeWithURLSelector
+  , videoNodeWithVideoFileNamedSelector
+  , videoNodeWithVideoURLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,8 +57,7 @@ videoNodeWithAVPlayer :: IsAVPlayer player => player -> IO (Id SKVideoNode)
 videoNodeWithAVPlayer player =
   do
     cls' <- getRequiredClass "SKVideoNode"
-    withObjCPtr player $ \raw_player ->
-      sendClassMsg cls' (mkSelector "videoNodeWithAVPlayer:") (retPtr retVoid) [argPtr (castPtr raw_player :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' videoNodeWithAVPlayerSelector (toAVPlayer player)
 
 -- | Create a video node from a file.
 --
@@ -70,16 +66,14 @@ videoNodeWithVideoFileNamed :: IsNSString videoFile => videoFile -> IO (Id SKVid
 videoNodeWithVideoFileNamed videoFile =
   do
     cls' <- getRequiredClass "SKVideoNode"
-    withObjCPtr videoFile $ \raw_videoFile ->
-      sendClassMsg cls' (mkSelector "videoNodeWithVideoFileNamed:") (retPtr retVoid) [argPtr (castPtr raw_videoFile :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' videoNodeWithVideoFileNamedSelector (toNSString videoFile)
 
 -- | @+ videoNodeWithFileNamed:@
 videoNodeWithFileNamed :: IsNSString videoFile => videoFile -> IO (Id SKVideoNode)
 videoNodeWithFileNamed videoFile =
   do
     cls' <- getRequiredClass "SKVideoNode"
-    withObjCPtr videoFile $ \raw_videoFile ->
-      sendClassMsg cls' (mkSelector "videoNodeWithFileNamed:") (retPtr retVoid) [argPtr (castPtr raw_videoFile :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' videoNodeWithFileNamedSelector (toNSString videoFile)
 
 -- | Create a video node from a URL.
 --
@@ -88,16 +82,14 @@ videoNodeWithVideoURL :: IsNSURL videoURL => videoURL -> IO (Id SKVideoNode)
 videoNodeWithVideoURL videoURL =
   do
     cls' <- getRequiredClass "SKVideoNode"
-    withObjCPtr videoURL $ \raw_videoURL ->
-      sendClassMsg cls' (mkSelector "videoNodeWithVideoURL:") (retPtr retVoid) [argPtr (castPtr raw_videoURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' videoNodeWithVideoURLSelector (toNSURL videoURL)
 
 -- | @+ videoNodeWithURL:@
 videoNodeWithURL :: IsNSURL videoURL => videoURL -> IO (Id SKVideoNode)
 videoNodeWithURL videoURL =
   do
     cls' <- getRequiredClass "SKVideoNode"
-    withObjCPtr videoURL $ \raw_videoURL ->
-      sendClassMsg cls' (mkSelector "videoNodeWithURL:") (retPtr retVoid) [argPtr (castPtr raw_videoURL :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' videoNodeWithURLSelector (toNSURL videoURL)
 
 -- | Designated Initializer.
 --
@@ -105,107 +97,101 @@ videoNodeWithURL videoURL =
 --
 -- ObjC selector: @- initWithAVPlayer:@
 initWithAVPlayer :: (IsSKVideoNode skVideoNode, IsAVPlayer player) => skVideoNode -> player -> IO (Id SKVideoNode)
-initWithAVPlayer skVideoNode  player =
-  withObjCPtr player $ \raw_player ->
-      sendMsg skVideoNode (mkSelector "initWithAVPlayer:") (retPtr retVoid) [argPtr (castPtr raw_player :: Ptr ())] >>= ownedObject . castPtr
+initWithAVPlayer skVideoNode player =
+  sendOwnedMessage skVideoNode initWithAVPlayerSelector (toAVPlayer player)
 
 -- | Initialize a video node from a file.
 --
 -- ObjC selector: @- initWithVideoFileNamed:@
 initWithVideoFileNamed :: (IsSKVideoNode skVideoNode, IsNSString videoFile) => skVideoNode -> videoFile -> IO (Id SKVideoNode)
-initWithVideoFileNamed skVideoNode  videoFile =
-  withObjCPtr videoFile $ \raw_videoFile ->
-      sendMsg skVideoNode (mkSelector "initWithVideoFileNamed:") (retPtr retVoid) [argPtr (castPtr raw_videoFile :: Ptr ())] >>= ownedObject . castPtr
+initWithVideoFileNamed skVideoNode videoFile =
+  sendOwnedMessage skVideoNode initWithVideoFileNamedSelector (toNSString videoFile)
 
 -- | @- initWithFileNamed:@
 initWithFileNamed :: (IsSKVideoNode skVideoNode, IsNSString videoFile) => skVideoNode -> videoFile -> IO (Id SKVideoNode)
-initWithFileNamed skVideoNode  videoFile =
-  withObjCPtr videoFile $ \raw_videoFile ->
-      sendMsg skVideoNode (mkSelector "initWithFileNamed:") (retPtr retVoid) [argPtr (castPtr raw_videoFile :: Ptr ())] >>= ownedObject . castPtr
+initWithFileNamed skVideoNode videoFile =
+  sendOwnedMessage skVideoNode initWithFileNamedSelector (toNSString videoFile)
 
 -- | @- initWithVideoURL:@
 initWithVideoURL :: (IsSKVideoNode skVideoNode, IsNSURL url) => skVideoNode -> url -> IO (Id SKVideoNode)
-initWithVideoURL skVideoNode  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg skVideoNode (mkSelector "initWithVideoURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithVideoURL skVideoNode url =
+  sendOwnedMessage skVideoNode initWithVideoURLSelector (toNSURL url)
 
 -- | @- initWithURL:@
 initWithURL :: (IsSKVideoNode skVideoNode, IsNSURL url) => skVideoNode -> url -> IO (Id SKVideoNode)
-initWithURL skVideoNode  url =
-  withObjCPtr url $ \raw_url ->
-      sendMsg skVideoNode (mkSelector "initWithURL:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ())] >>= ownedObject . castPtr
+initWithURL skVideoNode url =
+  sendOwnedMessage skVideoNode initWithURLSelector (toNSURL url)
 
 -- | Support coding and decoding via NSKeyedArchiver.
 --
 -- ObjC selector: @- initWithCoder:@
 initWithCoder :: (IsSKVideoNode skVideoNode, IsNSCoder aDecoder) => skVideoNode -> aDecoder -> IO (Id SKVideoNode)
-initWithCoder skVideoNode  aDecoder =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg skVideoNode (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder skVideoNode aDecoder =
+  sendOwnedMessage skVideoNode initWithCoderSelector (toNSCoder aDecoder)
 
 -- | @- play@
 play :: IsSKVideoNode skVideoNode => skVideoNode -> IO ()
-play skVideoNode  =
-    sendMsg skVideoNode (mkSelector "play") retVoid []
+play skVideoNode =
+  sendMessage skVideoNode playSelector
 
 -- | @- pause@
 pause :: IsSKVideoNode skVideoNode => skVideoNode -> IO ()
-pause skVideoNode  =
-    sendMsg skVideoNode (mkSelector "pause") retVoid []
+pause skVideoNode =
+  sendMessage skVideoNode pauseSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @videoNodeWithAVPlayer:@
-videoNodeWithAVPlayerSelector :: Selector
+videoNodeWithAVPlayerSelector :: Selector '[Id AVPlayer] (Id SKVideoNode)
 videoNodeWithAVPlayerSelector = mkSelector "videoNodeWithAVPlayer:"
 
 -- | @Selector@ for @videoNodeWithVideoFileNamed:@
-videoNodeWithVideoFileNamedSelector :: Selector
+videoNodeWithVideoFileNamedSelector :: Selector '[Id NSString] (Id SKVideoNode)
 videoNodeWithVideoFileNamedSelector = mkSelector "videoNodeWithVideoFileNamed:"
 
 -- | @Selector@ for @videoNodeWithFileNamed:@
-videoNodeWithFileNamedSelector :: Selector
+videoNodeWithFileNamedSelector :: Selector '[Id NSString] (Id SKVideoNode)
 videoNodeWithFileNamedSelector = mkSelector "videoNodeWithFileNamed:"
 
 -- | @Selector@ for @videoNodeWithVideoURL:@
-videoNodeWithVideoURLSelector :: Selector
+videoNodeWithVideoURLSelector :: Selector '[Id NSURL] (Id SKVideoNode)
 videoNodeWithVideoURLSelector = mkSelector "videoNodeWithVideoURL:"
 
 -- | @Selector@ for @videoNodeWithURL:@
-videoNodeWithURLSelector :: Selector
+videoNodeWithURLSelector :: Selector '[Id NSURL] (Id SKVideoNode)
 videoNodeWithURLSelector = mkSelector "videoNodeWithURL:"
 
 -- | @Selector@ for @initWithAVPlayer:@
-initWithAVPlayerSelector :: Selector
+initWithAVPlayerSelector :: Selector '[Id AVPlayer] (Id SKVideoNode)
 initWithAVPlayerSelector = mkSelector "initWithAVPlayer:"
 
 -- | @Selector@ for @initWithVideoFileNamed:@
-initWithVideoFileNamedSelector :: Selector
+initWithVideoFileNamedSelector :: Selector '[Id NSString] (Id SKVideoNode)
 initWithVideoFileNamedSelector = mkSelector "initWithVideoFileNamed:"
 
 -- | @Selector@ for @initWithFileNamed:@
-initWithFileNamedSelector :: Selector
+initWithFileNamedSelector :: Selector '[Id NSString] (Id SKVideoNode)
 initWithFileNamedSelector = mkSelector "initWithFileNamed:"
 
 -- | @Selector@ for @initWithVideoURL:@
-initWithVideoURLSelector :: Selector
+initWithVideoURLSelector :: Selector '[Id NSURL] (Id SKVideoNode)
 initWithVideoURLSelector = mkSelector "initWithVideoURL:"
 
 -- | @Selector@ for @initWithURL:@
-initWithURLSelector :: Selector
+initWithURLSelector :: Selector '[Id NSURL] (Id SKVideoNode)
 initWithURLSelector = mkSelector "initWithURL:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id SKVideoNode)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @play@
-playSelector :: Selector
+playSelector :: Selector '[] ()
 playSelector = mkSelector "play"
 
 -- | @Selector@ for @pause@
-pauseSelector :: Selector
+pauseSelector :: Selector '[] ()
 pauseSelector = mkSelector "pause"
 

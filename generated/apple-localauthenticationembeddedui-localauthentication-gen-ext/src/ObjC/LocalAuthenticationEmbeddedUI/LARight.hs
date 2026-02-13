@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,15 +15,11 @@ module ObjC.LocalAuthenticationEmbeddedUI.LARight
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,15 +37,14 @@ import ObjC.LocalAuthentication.Internal.Classes
 --
 -- ObjC selector: @- authorizeWithLocalizedReason:inPresentationContext:completion:@
 authorizeWithLocalizedReason_inPresentationContext_completion :: (IsLARight laRight, IsNSString localizedReason) => laRight -> localizedReason -> RawId -> Ptr () -> IO ()
-authorizeWithLocalizedReason_inPresentationContext_completion laRight  localizedReason presentationContext handler =
-  withObjCPtr localizedReason $ \raw_localizedReason ->
-      sendMsg laRight (mkSelector "authorizeWithLocalizedReason:inPresentationContext:completion:") retVoid [argPtr (castPtr raw_localizedReason :: Ptr ()), argPtr (castPtr (unRawId presentationContext) :: Ptr ()), argPtr (castPtr handler :: Ptr ())]
+authorizeWithLocalizedReason_inPresentationContext_completion laRight localizedReason presentationContext handler =
+  sendMessage laRight authorizeWithLocalizedReason_inPresentationContext_completionSelector (toNSString localizedReason) presentationContext handler
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @authorizeWithLocalizedReason:inPresentationContext:completion:@
-authorizeWithLocalizedReason_inPresentationContext_completionSelector :: Selector
+authorizeWithLocalizedReason_inPresentationContext_completionSelector :: Selector '[Id NSString, RawId, Ptr ()] ()
 authorizeWithLocalizedReason_inPresentationContext_completionSelector = mkSelector "authorizeWithLocalizedReason:inPresentationContext:completion:"
 

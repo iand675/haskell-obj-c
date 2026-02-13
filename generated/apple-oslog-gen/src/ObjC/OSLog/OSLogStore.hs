@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,15 @@ module ObjC.OSLog.OSLogStore
   , positionWithDate
   , positionWithTimeIntervalSinceEnd
   , positionWithTimeIntervalSinceLatestBoot
-  , localStoreAndReturnErrorSelector
-  , storeWithScope_errorSelector
-  , storeWithURL_errorSelector
-  , initSelector
-  , entriesEnumeratorWithOptions_position_predicate_errorSelector
   , entriesEnumeratorAndReturnErrorSelector
+  , entriesEnumeratorWithOptions_position_predicate_errorSelector
+  , initSelector
+  , localStoreAndReturnErrorSelector
   , positionWithDateSelector
   , positionWithTimeIntervalSinceEndSelector
   , positionWithTimeIntervalSinceLatestBootSelector
+  , storeWithScope_errorSelector
+  , storeWithURL_errorSelector
 
   -- * Enum types
   , OSLogEnumeratorOptions(OSLogEnumeratorOptions)
@@ -41,15 +42,11 @@ module ObjC.OSLog.OSLogStore
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -72,8 +69,7 @@ localStoreAndReturnError :: IsNSError error_ => error_ -> IO (Id OSLogStore)
 localStoreAndReturnError error_ =
   do
     cls' <- getRequiredClass "OSLogStore"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "localStoreAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' localStoreAndReturnErrorSelector (toNSError error_)
 
 -- | storeWithScope
 --
@@ -88,8 +84,7 @@ storeWithScope_error :: IsNSError error_ => OSLogStoreScope -> error_ -> IO (Id 
 storeWithScope_error scope error_ =
   do
     cls' <- getRequiredClass "OSLogStore"
-    withObjCPtr error_ $ \raw_error_ ->
-      sendClassMsg cls' (mkSelector "storeWithScope:error:") (retPtr retVoid) [argCLong (coerce scope), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' storeWithScope_errorSelector scope (toNSError error_)
 
 -- | storeWithURL
 --
@@ -104,14 +99,12 @@ storeWithURL_error :: (IsNSURL url, IsNSError error_) => url -> error_ -> IO (Id
 storeWithURL_error url error_ =
   do
     cls' <- getRequiredClass "OSLogStore"
-    withObjCPtr url $ \raw_url ->
-      withObjCPtr error_ $ \raw_error_ ->
-        sendClassMsg cls' (mkSelector "storeWithURL:error:") (retPtr retVoid) [argPtr (castPtr raw_url :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' storeWithURL_errorSelector (toNSURL url) (toNSError error_)
 
 -- | @- init@
 init_ :: IsOSLogStore osLogStore => osLogStore -> IO (Id OSLogStore)
-init_ osLogStore  =
-    sendMsg osLogStore (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ osLogStore =
+  sendOwnedMessage osLogStore initSelector
 
 -- | entriesEnumeratorWithOptions
 --
@@ -127,11 +120,8 @@ init_ osLogStore  =
 --
 -- ObjC selector: @- entriesEnumeratorWithOptions:position:predicate:error:@
 entriesEnumeratorWithOptions_position_predicate_error :: (IsOSLogStore osLogStore, IsOSLogPosition position, IsNSPredicate predicate, IsNSError error_) => osLogStore -> OSLogEnumeratorOptions -> position -> predicate -> error_ -> IO (Id OSLogEnumerator)
-entriesEnumeratorWithOptions_position_predicate_error osLogStore  options position predicate error_ =
-  withObjCPtr position $ \raw_position ->
-    withObjCPtr predicate $ \raw_predicate ->
-      withObjCPtr error_ $ \raw_error_ ->
-          sendMsg osLogStore (mkSelector "entriesEnumeratorWithOptions:position:predicate:error:") (retPtr retVoid) [argCULong (coerce options), argPtr (castPtr raw_position :: Ptr ()), argPtr (castPtr raw_predicate :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+entriesEnumeratorWithOptions_position_predicate_error osLogStore options position predicate error_ =
+  sendMessage osLogStore entriesEnumeratorWithOptions_position_predicate_errorSelector options (toOSLogPosition position) (toNSPredicate predicate) (toNSError error_)
 
 -- | entriesEnumeratorAndReturnError
 --
@@ -141,9 +131,8 @@ entriesEnumeratorWithOptions_position_predicate_error osLogStore  options positi
 --
 -- ObjC selector: @- entriesEnumeratorAndReturnError:@
 entriesEnumeratorAndReturnError :: (IsOSLogStore osLogStore, IsNSError error_) => osLogStore -> error_ -> IO (Id OSLogEnumerator)
-entriesEnumeratorAndReturnError osLogStore  error_ =
-  withObjCPtr error_ $ \raw_error_ ->
-      sendMsg osLogStore (mkSelector "entriesEnumeratorAndReturnError:") (retPtr retVoid) [argPtr (castPtr raw_error_ :: Ptr ())] >>= retainedObject . castPtr
+entriesEnumeratorAndReturnError osLogStore error_ =
+  sendMessage osLogStore entriesEnumeratorAndReturnErrorSelector (toNSError error_)
 
 -- | positionWithDate
 --
@@ -155,9 +144,8 @@ entriesEnumeratorAndReturnError osLogStore  error_ =
 --
 -- ObjC selector: @- positionWithDate:@
 positionWithDate :: (IsOSLogStore osLogStore, IsNSDate date) => osLogStore -> date -> IO (Id OSLogPosition)
-positionWithDate osLogStore  date =
-  withObjCPtr date $ \raw_date ->
-      sendMsg osLogStore (mkSelector "positionWithDate:") (retPtr retVoid) [argPtr (castPtr raw_date :: Ptr ())] >>= retainedObject . castPtr
+positionWithDate osLogStore date =
+  sendMessage osLogStore positionWithDateSelector (toNSDate date)
 
 -- | positionWithTimeIntervalSinceEnd
 --
@@ -167,8 +155,8 @@ positionWithDate osLogStore  date =
 --
 -- ObjC selector: @- positionWithTimeIntervalSinceEnd:@
 positionWithTimeIntervalSinceEnd :: IsOSLogStore osLogStore => osLogStore -> CDouble -> IO (Id OSLogPosition)
-positionWithTimeIntervalSinceEnd osLogStore  seconds =
-    sendMsg osLogStore (mkSelector "positionWithTimeIntervalSinceEnd:") (retPtr retVoid) [argCDouble seconds] >>= retainedObject . castPtr
+positionWithTimeIntervalSinceEnd osLogStore seconds =
+  sendMessage osLogStore positionWithTimeIntervalSinceEndSelector seconds
 
 -- | positionWithTimeIntervalSinceLatestBoot
 --
@@ -180,46 +168,46 @@ positionWithTimeIntervalSinceEnd osLogStore  seconds =
 --
 -- ObjC selector: @- positionWithTimeIntervalSinceLatestBoot:@
 positionWithTimeIntervalSinceLatestBoot :: IsOSLogStore osLogStore => osLogStore -> CDouble -> IO (Id OSLogPosition)
-positionWithTimeIntervalSinceLatestBoot osLogStore  seconds =
-    sendMsg osLogStore (mkSelector "positionWithTimeIntervalSinceLatestBoot:") (retPtr retVoid) [argCDouble seconds] >>= retainedObject . castPtr
+positionWithTimeIntervalSinceLatestBoot osLogStore seconds =
+  sendMessage osLogStore positionWithTimeIntervalSinceLatestBootSelector seconds
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @localStoreAndReturnError:@
-localStoreAndReturnErrorSelector :: Selector
+localStoreAndReturnErrorSelector :: Selector '[Id NSError] (Id OSLogStore)
 localStoreAndReturnErrorSelector = mkSelector "localStoreAndReturnError:"
 
 -- | @Selector@ for @storeWithScope:error:@
-storeWithScope_errorSelector :: Selector
+storeWithScope_errorSelector :: Selector '[OSLogStoreScope, Id NSError] (Id OSLogStore)
 storeWithScope_errorSelector = mkSelector "storeWithScope:error:"
 
 -- | @Selector@ for @storeWithURL:error:@
-storeWithURL_errorSelector :: Selector
+storeWithURL_errorSelector :: Selector '[Id NSURL, Id NSError] (Id OSLogStore)
 storeWithURL_errorSelector = mkSelector "storeWithURL:error:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id OSLogStore)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @entriesEnumeratorWithOptions:position:predicate:error:@
-entriesEnumeratorWithOptions_position_predicate_errorSelector :: Selector
+entriesEnumeratorWithOptions_position_predicate_errorSelector :: Selector '[OSLogEnumeratorOptions, Id OSLogPosition, Id NSPredicate, Id NSError] (Id OSLogEnumerator)
 entriesEnumeratorWithOptions_position_predicate_errorSelector = mkSelector "entriesEnumeratorWithOptions:position:predicate:error:"
 
 -- | @Selector@ for @entriesEnumeratorAndReturnError:@
-entriesEnumeratorAndReturnErrorSelector :: Selector
+entriesEnumeratorAndReturnErrorSelector :: Selector '[Id NSError] (Id OSLogEnumerator)
 entriesEnumeratorAndReturnErrorSelector = mkSelector "entriesEnumeratorAndReturnError:"
 
 -- | @Selector@ for @positionWithDate:@
-positionWithDateSelector :: Selector
+positionWithDateSelector :: Selector '[Id NSDate] (Id OSLogPosition)
 positionWithDateSelector = mkSelector "positionWithDate:"
 
 -- | @Selector@ for @positionWithTimeIntervalSinceEnd:@
-positionWithTimeIntervalSinceEndSelector :: Selector
+positionWithTimeIntervalSinceEndSelector :: Selector '[CDouble] (Id OSLogPosition)
 positionWithTimeIntervalSinceEndSelector = mkSelector "positionWithTimeIntervalSinceEnd:"
 
 -- | @Selector@ for @positionWithTimeIntervalSinceLatestBoot:@
-positionWithTimeIntervalSinceLatestBootSelector :: Selector
+positionWithTimeIntervalSinceLatestBootSelector :: Selector '[CDouble] (Id OSLogPosition)
 positionWithTimeIntervalSinceLatestBootSelector = mkSelector "positionWithTimeIntervalSinceLatestBoot:"
 

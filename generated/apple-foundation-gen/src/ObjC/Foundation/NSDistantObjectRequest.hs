@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,23 +11,19 @@ module ObjC.Foundation.NSDistantObjectRequest
   , invocation
   , connection
   , conversation
-  , replyWithExceptionSelector
-  , invocationSelector
   , connectionSelector
   , conversationSelector
+  , invocationSelector
+  , replyWithExceptionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -34,42 +31,41 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- replyWithException:@
 replyWithException :: (IsNSDistantObjectRequest nsDistantObjectRequest, IsNSException exception) => nsDistantObjectRequest -> exception -> IO ()
-replyWithException nsDistantObjectRequest  exception =
-  withObjCPtr exception $ \raw_exception ->
-      sendMsg nsDistantObjectRequest (mkSelector "replyWithException:") retVoid [argPtr (castPtr raw_exception :: Ptr ())]
+replyWithException nsDistantObjectRequest exception =
+  sendMessage nsDistantObjectRequest replyWithExceptionSelector (toNSException exception)
 
 -- | @- invocation@
 invocation :: IsNSDistantObjectRequest nsDistantObjectRequest => nsDistantObjectRequest -> IO (Id NSInvocation)
-invocation nsDistantObjectRequest  =
-    sendMsg nsDistantObjectRequest (mkSelector "invocation") (retPtr retVoid) [] >>= retainedObject . castPtr
+invocation nsDistantObjectRequest =
+  sendMessage nsDistantObjectRequest invocationSelector
 
 -- | @- connection@
 connection :: IsNSDistantObjectRequest nsDistantObjectRequest => nsDistantObjectRequest -> IO (Id NSConnection)
-connection nsDistantObjectRequest  =
-    sendMsg nsDistantObjectRequest (mkSelector "connection") (retPtr retVoid) [] >>= retainedObject . castPtr
+connection nsDistantObjectRequest =
+  sendMessage nsDistantObjectRequest connectionSelector
 
 -- | @- conversation@
 conversation :: IsNSDistantObjectRequest nsDistantObjectRequest => nsDistantObjectRequest -> IO RawId
-conversation nsDistantObjectRequest  =
-    fmap (RawId . castPtr) $ sendMsg nsDistantObjectRequest (mkSelector "conversation") (retPtr retVoid) []
+conversation nsDistantObjectRequest =
+  sendMessage nsDistantObjectRequest conversationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @replyWithException:@
-replyWithExceptionSelector :: Selector
+replyWithExceptionSelector :: Selector '[Id NSException] ()
 replyWithExceptionSelector = mkSelector "replyWithException:"
 
 -- | @Selector@ for @invocation@
-invocationSelector :: Selector
+invocationSelector :: Selector '[] (Id NSInvocation)
 invocationSelector = mkSelector "invocation"
 
 -- | @Selector@ for @connection@
-connectionSelector :: Selector
+connectionSelector :: Selector '[] (Id NSConnection)
 connectionSelector = mkSelector "connection"
 
 -- | @Selector@ for @conversation@
-conversationSelector :: Selector
+conversationSelector :: Selector '[] RawId
 conversationSelector = mkSelector "conversation"
 

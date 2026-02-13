@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -18,17 +19,17 @@ module ObjC.Foundation.NSAttributedStringMarkdownParsingOptions
   , setLanguageCode
   , appliesSourcePositionAttributes
   , setAppliesSourcePositionAttributes
-  , initSelector
   , allowsExtendedAttributesSelector
-  , setAllowsExtendedAttributesSelector
-  , interpretedSyntaxSelector
-  , setInterpretedSyntaxSelector
-  , failurePolicySelector
-  , setFailurePolicySelector
-  , languageCodeSelector
-  , setLanguageCodeSelector
   , appliesSourcePositionAttributesSelector
+  , failurePolicySelector
+  , initSelector
+  , interpretedSyntaxSelector
+  , languageCodeSelector
+  , setAllowsExtendedAttributesSelector
   , setAppliesSourcePositionAttributesSelector
+  , setFailurePolicySelector
+  , setInterpretedSyntaxSelector
+  , setLanguageCodeSelector
 
   -- * Enum types
   , NSAttributedStringMarkdownInterpretedSyntax(NSAttributedStringMarkdownInterpretedSyntax)
@@ -41,15 +42,11 @@ module ObjC.Foundation.NSAttributedStringMarkdownParsingOptions
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -58,105 +55,104 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- init@
 init_ :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> IO (Id NSAttributedStringMarkdownParsingOptions)
-init_ nsAttributedStringMarkdownParsingOptions  =
-    sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsAttributedStringMarkdownParsingOptions =
+  sendOwnedMessage nsAttributedStringMarkdownParsingOptions initSelector
 
 -- | @- allowsExtendedAttributes@
 allowsExtendedAttributes :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> IO Bool
-allowsExtendedAttributes nsAttributedStringMarkdownParsingOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "allowsExtendedAttributes") retCULong []
+allowsExtendedAttributes nsAttributedStringMarkdownParsingOptions =
+  sendMessage nsAttributedStringMarkdownParsingOptions allowsExtendedAttributesSelector
 
 -- | @- setAllowsExtendedAttributes:@
 setAllowsExtendedAttributes :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> Bool -> IO ()
-setAllowsExtendedAttributes nsAttributedStringMarkdownParsingOptions  value =
-    sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "setAllowsExtendedAttributes:") retVoid [argCULong (if value then 1 else 0)]
+setAllowsExtendedAttributes nsAttributedStringMarkdownParsingOptions value =
+  sendMessage nsAttributedStringMarkdownParsingOptions setAllowsExtendedAttributesSelector value
 
 -- | @- interpretedSyntax@
 interpretedSyntax :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> IO NSAttributedStringMarkdownInterpretedSyntax
-interpretedSyntax nsAttributedStringMarkdownParsingOptions  =
-    fmap (coerce :: CLong -> NSAttributedStringMarkdownInterpretedSyntax) $ sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "interpretedSyntax") retCLong []
+interpretedSyntax nsAttributedStringMarkdownParsingOptions =
+  sendMessage nsAttributedStringMarkdownParsingOptions interpretedSyntaxSelector
 
 -- | @- setInterpretedSyntax:@
 setInterpretedSyntax :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> NSAttributedStringMarkdownInterpretedSyntax -> IO ()
-setInterpretedSyntax nsAttributedStringMarkdownParsingOptions  value =
-    sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "setInterpretedSyntax:") retVoid [argCLong (coerce value)]
+setInterpretedSyntax nsAttributedStringMarkdownParsingOptions value =
+  sendMessage nsAttributedStringMarkdownParsingOptions setInterpretedSyntaxSelector value
 
 -- | @- failurePolicy@
 failurePolicy :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> IO NSAttributedStringMarkdownParsingFailurePolicy
-failurePolicy nsAttributedStringMarkdownParsingOptions  =
-    fmap (coerce :: CLong -> NSAttributedStringMarkdownParsingFailurePolicy) $ sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "failurePolicy") retCLong []
+failurePolicy nsAttributedStringMarkdownParsingOptions =
+  sendMessage nsAttributedStringMarkdownParsingOptions failurePolicySelector
 
 -- | @- setFailurePolicy:@
 setFailurePolicy :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> NSAttributedStringMarkdownParsingFailurePolicy -> IO ()
-setFailurePolicy nsAttributedStringMarkdownParsingOptions  value =
-    sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "setFailurePolicy:") retVoid [argCLong (coerce value)]
+setFailurePolicy nsAttributedStringMarkdownParsingOptions value =
+  sendMessage nsAttributedStringMarkdownParsingOptions setFailurePolicySelector value
 
 -- | @- languageCode@
 languageCode :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> IO (Id NSString)
-languageCode nsAttributedStringMarkdownParsingOptions  =
-    sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "languageCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+languageCode nsAttributedStringMarkdownParsingOptions =
+  sendMessage nsAttributedStringMarkdownParsingOptions languageCodeSelector
 
 -- | @- setLanguageCode:@
 setLanguageCode :: (IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions, IsNSString value) => nsAttributedStringMarkdownParsingOptions -> value -> IO ()
-setLanguageCode nsAttributedStringMarkdownParsingOptions  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "setLanguageCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLanguageCode nsAttributedStringMarkdownParsingOptions value =
+  sendMessage nsAttributedStringMarkdownParsingOptions setLanguageCodeSelector (toNSString value)
 
 -- | @- appliesSourcePositionAttributes@
 appliesSourcePositionAttributes :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> IO Bool
-appliesSourcePositionAttributes nsAttributedStringMarkdownParsingOptions  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "appliesSourcePositionAttributes") retCULong []
+appliesSourcePositionAttributes nsAttributedStringMarkdownParsingOptions =
+  sendMessage nsAttributedStringMarkdownParsingOptions appliesSourcePositionAttributesSelector
 
 -- | @- setAppliesSourcePositionAttributes:@
 setAppliesSourcePositionAttributes :: IsNSAttributedStringMarkdownParsingOptions nsAttributedStringMarkdownParsingOptions => nsAttributedStringMarkdownParsingOptions -> Bool -> IO ()
-setAppliesSourcePositionAttributes nsAttributedStringMarkdownParsingOptions  value =
-    sendMsg nsAttributedStringMarkdownParsingOptions (mkSelector "setAppliesSourcePositionAttributes:") retVoid [argCULong (if value then 1 else 0)]
+setAppliesSourcePositionAttributes nsAttributedStringMarkdownParsingOptions value =
+  sendMessage nsAttributedStringMarkdownParsingOptions setAppliesSourcePositionAttributesSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSAttributedStringMarkdownParsingOptions)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @allowsExtendedAttributes@
-allowsExtendedAttributesSelector :: Selector
+allowsExtendedAttributesSelector :: Selector '[] Bool
 allowsExtendedAttributesSelector = mkSelector "allowsExtendedAttributes"
 
 -- | @Selector@ for @setAllowsExtendedAttributes:@
-setAllowsExtendedAttributesSelector :: Selector
+setAllowsExtendedAttributesSelector :: Selector '[Bool] ()
 setAllowsExtendedAttributesSelector = mkSelector "setAllowsExtendedAttributes:"
 
 -- | @Selector@ for @interpretedSyntax@
-interpretedSyntaxSelector :: Selector
+interpretedSyntaxSelector :: Selector '[] NSAttributedStringMarkdownInterpretedSyntax
 interpretedSyntaxSelector = mkSelector "interpretedSyntax"
 
 -- | @Selector@ for @setInterpretedSyntax:@
-setInterpretedSyntaxSelector :: Selector
+setInterpretedSyntaxSelector :: Selector '[NSAttributedStringMarkdownInterpretedSyntax] ()
 setInterpretedSyntaxSelector = mkSelector "setInterpretedSyntax:"
 
 -- | @Selector@ for @failurePolicy@
-failurePolicySelector :: Selector
+failurePolicySelector :: Selector '[] NSAttributedStringMarkdownParsingFailurePolicy
 failurePolicySelector = mkSelector "failurePolicy"
 
 -- | @Selector@ for @setFailurePolicy:@
-setFailurePolicySelector :: Selector
+setFailurePolicySelector :: Selector '[NSAttributedStringMarkdownParsingFailurePolicy] ()
 setFailurePolicySelector = mkSelector "setFailurePolicy:"
 
 -- | @Selector@ for @languageCode@
-languageCodeSelector :: Selector
+languageCodeSelector :: Selector '[] (Id NSString)
 languageCodeSelector = mkSelector "languageCode"
 
 -- | @Selector@ for @setLanguageCode:@
-setLanguageCodeSelector :: Selector
+setLanguageCodeSelector :: Selector '[Id NSString] ()
 setLanguageCodeSelector = mkSelector "setLanguageCode:"
 
 -- | @Selector@ for @appliesSourcePositionAttributes@
-appliesSourcePositionAttributesSelector :: Selector
+appliesSourcePositionAttributesSelector :: Selector '[] Bool
 appliesSourcePositionAttributesSelector = mkSelector "appliesSourcePositionAttributes"
 
 -- | @Selector@ for @setAppliesSourcePositionAttributes:@
-setAppliesSourcePositionAttributesSelector :: Selector
+setAppliesSourcePositionAttributesSelector :: Selector '[Bool] ()
 setAppliesSourcePositionAttributesSelector = mkSelector "setAppliesSourcePositionAttributes:"
 

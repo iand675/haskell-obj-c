@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.StoreKit.SKOverlay
   , delegate
   , setDelegate
   , configuration
-  , initSelector
-  , newSelector
-  , initWithConfigurationSelector
-  , delegateSelector
-  , setDelegateSelector
   , configurationSelector
+  , delegateSelector
+  , initSelector
+  , initWithConfigurationSelector
+  , newSelector
+  , setDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,15 +36,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsSKOverlay skOverlay => skOverlay -> IO (Id SKOverlay)
-init_ skOverlay  =
-    sendMsg skOverlay (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ skOverlay =
+  sendOwnedMessage skOverlay initSelector
 
 -- | @+ new@
 new :: IO (Id SKOverlay)
 new  =
   do
     cls' <- getRequiredClass "SKOverlay"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | Creates an overlay with the provided configuration.
 --
@@ -55,56 +52,55 @@ new  =
 --
 -- ObjC selector: @- initWithConfiguration:@
 initWithConfiguration :: (IsSKOverlay skOverlay, IsSKOverlayConfiguration configuration) => skOverlay -> configuration -> IO (Id SKOverlay)
-initWithConfiguration skOverlay  configuration =
-  withObjCPtr configuration $ \raw_configuration ->
-      sendMsg skOverlay (mkSelector "initWithConfiguration:") (retPtr retVoid) [argPtr (castPtr raw_configuration :: Ptr ())] >>= ownedObject . castPtr
+initWithConfiguration skOverlay configuration =
+  sendOwnedMessage skOverlay initWithConfigurationSelector (toSKOverlayConfiguration configuration)
 
 -- | A delegate for overlay events.
 --
 -- ObjC selector: @- delegate@
 delegate :: IsSKOverlay skOverlay => skOverlay -> IO RawId
-delegate skOverlay  =
-    fmap (RawId . castPtr) $ sendMsg skOverlay (mkSelector "delegate") (retPtr retVoid) []
+delegate skOverlay =
+  sendMessage skOverlay delegateSelector
 
 -- | A delegate for overlay events.
 --
 -- ObjC selector: @- setDelegate:@
 setDelegate :: IsSKOverlay skOverlay => skOverlay -> RawId -> IO ()
-setDelegate skOverlay  value =
-    sendMsg skOverlay (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate skOverlay value =
+  sendMessage skOverlay setDelegateSelector value
 
 -- | The overlay configuration.
 --
 -- ObjC selector: @- configuration@
 configuration :: IsSKOverlay skOverlay => skOverlay -> IO (Id SKOverlayConfiguration)
-configuration skOverlay  =
-    sendMsg skOverlay (mkSelector "configuration") (retPtr retVoid) [] >>= retainedObject . castPtr
+configuration skOverlay =
+  sendMessage skOverlay configurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SKOverlay)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SKOverlay)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithConfiguration:@
-initWithConfigurationSelector :: Selector
+initWithConfigurationSelector :: Selector '[Id SKOverlayConfiguration] (Id SKOverlay)
 initWithConfigurationSelector = mkSelector "initWithConfiguration:"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @configuration@
-configurationSelector :: Selector
+configurationSelector :: Selector '[] (Id SKOverlayConfiguration)
 configurationSelector = mkSelector "configuration"
 

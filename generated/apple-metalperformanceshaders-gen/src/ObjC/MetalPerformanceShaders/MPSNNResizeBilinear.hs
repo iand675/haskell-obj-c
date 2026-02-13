@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,25 +21,21 @@ module ObjC.MetalPerformanceShaders.MPSNNResizeBilinear
   , resizeWidth
   , resizeHeight
   , alignCorners
+  , alignCornersSelector
+  , initWithCoder_deviceSelector
   , initWithDeviceSelector
   , initWithDevice_resizeWidth_resizeHeight_alignCornersSelector
-  , initWithCoder_deviceSelector
-  , resizeWidthSelector
   , resizeHeightSelector
-  , alignCornersSelector
+  , resizeWidthSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSNNResizeBilinear mpsnnResizeBilinear => mpsnnResizeBilinear -> RawId -> IO (Id MPSNNResizeBilinear)
-initWithDevice mpsnnResizeBilinear  device =
-    sendMsg mpsnnResizeBilinear (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsnnResizeBilinear device =
+  sendOwnedMessage mpsnnResizeBilinear initWithDeviceSelector device
 
 -- | Initialize the resize bilinear filter.
 --
@@ -64,8 +61,8 @@ initWithDevice mpsnnResizeBilinear  device =
 --
 -- ObjC selector: @- initWithDevice:resizeWidth:resizeHeight:alignCorners:@
 initWithDevice_resizeWidth_resizeHeight_alignCorners :: IsMPSNNResizeBilinear mpsnnResizeBilinear => mpsnnResizeBilinear -> RawId -> CULong -> CULong -> Bool -> IO (Id MPSNNResizeBilinear)
-initWithDevice_resizeWidth_resizeHeight_alignCorners mpsnnResizeBilinear  device resizeWidth resizeHeight alignCorners =
-    sendMsg mpsnnResizeBilinear (mkSelector "initWithDevice:resizeWidth:resizeHeight:alignCorners:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong resizeWidth, argCULong resizeHeight, argCULong (if alignCorners then 1 else 0)] >>= ownedObject . castPtr
+initWithDevice_resizeWidth_resizeHeight_alignCorners mpsnnResizeBilinear device resizeWidth resizeHeight alignCorners =
+  sendOwnedMessage mpsnnResizeBilinear initWithDevice_resizeWidth_resizeHeight_alignCornersSelector device resizeWidth resizeHeight alignCorners
 
 -- | NSSecureCoding compatability
 --
@@ -79,9 +76,8 @@ initWithDevice_resizeWidth_resizeHeight_alignCorners mpsnnResizeBilinear  device
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSNNResizeBilinear mpsnnResizeBilinear, IsNSCoder aDecoder) => mpsnnResizeBilinear -> aDecoder -> RawId -> IO (Id MPSNNResizeBilinear)
-initWithCoder_device mpsnnResizeBilinear  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsnnResizeBilinear (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsnnResizeBilinear aDecoder device =
+  sendOwnedMessage mpsnnResizeBilinear initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | resizeWidth
 --
@@ -89,8 +85,8 @@ initWithCoder_device mpsnnResizeBilinear  aDecoder device =
 --
 -- ObjC selector: @- resizeWidth@
 resizeWidth :: IsMPSNNResizeBilinear mpsnnResizeBilinear => mpsnnResizeBilinear -> IO CULong
-resizeWidth mpsnnResizeBilinear  =
-    sendMsg mpsnnResizeBilinear (mkSelector "resizeWidth") retCULong []
+resizeWidth mpsnnResizeBilinear =
+  sendMessage mpsnnResizeBilinear resizeWidthSelector
 
 -- | resizeHeight
 --
@@ -98,8 +94,8 @@ resizeWidth mpsnnResizeBilinear  =
 --
 -- ObjC selector: @- resizeHeight@
 resizeHeight :: IsMPSNNResizeBilinear mpsnnResizeBilinear => mpsnnResizeBilinear -> IO CULong
-resizeHeight mpsnnResizeBilinear  =
-    sendMsg mpsnnResizeBilinear (mkSelector "resizeHeight") retCULong []
+resizeHeight mpsnnResizeBilinear =
+  sendMessage mpsnnResizeBilinear resizeHeightSelector
 
 -- | alignCorners
 --
@@ -107,34 +103,34 @@ resizeHeight mpsnnResizeBilinear  =
 --
 -- ObjC selector: @- alignCorners@
 alignCorners :: IsMPSNNResizeBilinear mpsnnResizeBilinear => mpsnnResizeBilinear -> IO Bool
-alignCorners mpsnnResizeBilinear  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnResizeBilinear (mkSelector "alignCorners") retCULong []
+alignCorners mpsnnResizeBilinear =
+  sendMessage mpsnnResizeBilinear alignCornersSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSNNResizeBilinear)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithDevice:resizeWidth:resizeHeight:alignCorners:@
-initWithDevice_resizeWidth_resizeHeight_alignCornersSelector :: Selector
+initWithDevice_resizeWidth_resizeHeight_alignCornersSelector :: Selector '[RawId, CULong, CULong, Bool] (Id MPSNNResizeBilinear)
 initWithDevice_resizeWidth_resizeHeight_alignCornersSelector = mkSelector "initWithDevice:resizeWidth:resizeHeight:alignCorners:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSNNResizeBilinear)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @resizeWidth@
-resizeWidthSelector :: Selector
+resizeWidthSelector :: Selector '[] CULong
 resizeWidthSelector = mkSelector "resizeWidth"
 
 -- | @Selector@ for @resizeHeight@
-resizeHeightSelector :: Selector
+resizeHeightSelector :: Selector '[] CULong
 resizeHeightSelector = mkSelector "resizeHeight"
 
 -- | @Selector@ for @alignCorners@
-alignCornersSelector :: Selector
+alignCornersSelector :: Selector '[] Bool
 alignCornersSelector = mkSelector "alignCorners"
 

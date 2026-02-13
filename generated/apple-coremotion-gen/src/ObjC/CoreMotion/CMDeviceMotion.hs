@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,15 +23,11 @@ module ObjC.CoreMotion.CMDeviceMotion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -40,32 +37,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- attitude@
 attitude :: IsCMDeviceMotion cmDeviceMotion => cmDeviceMotion -> IO (Id CMAttitude)
-attitude cmDeviceMotion  =
-    sendMsg cmDeviceMotion (mkSelector "attitude") (retPtr retVoid) [] >>= retainedObject . castPtr
+attitude cmDeviceMotion =
+  sendMessage cmDeviceMotion attitudeSelector
 
 -- | @- heading@
 heading :: IsCMDeviceMotion cmDeviceMotion => cmDeviceMotion -> IO CDouble
-heading cmDeviceMotion  =
-    sendMsg cmDeviceMotion (mkSelector "heading") retCDouble []
+heading cmDeviceMotion =
+  sendMessage cmDeviceMotion headingSelector
 
 -- | @- sensorLocation@
 sensorLocation :: IsCMDeviceMotion cmDeviceMotion => cmDeviceMotion -> IO CMDeviceMotionSensorLocation
-sensorLocation cmDeviceMotion  =
-    fmap (coerce :: CLong -> CMDeviceMotionSensorLocation) $ sendMsg cmDeviceMotion (mkSelector "sensorLocation") retCLong []
+sensorLocation cmDeviceMotion =
+  sendMessage cmDeviceMotion sensorLocationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @attitude@
-attitudeSelector :: Selector
+attitudeSelector :: Selector '[] (Id CMAttitude)
 attitudeSelector = mkSelector "attitude"
 
 -- | @Selector@ for @heading@
-headingSelector :: Selector
+headingSelector :: Selector '[] CDouble
 headingSelector = mkSelector "heading"
 
 -- | @Selector@ for @sensorLocation@
-sensorLocationSelector :: Selector
+sensorLocationSelector :: Selector '[] CMDeviceMotionSensorLocation
 sensorLocationSelector = mkSelector "sensorLocation"
 

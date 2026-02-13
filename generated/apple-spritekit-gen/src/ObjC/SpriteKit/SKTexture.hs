@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -22,19 +23,19 @@ module ObjC.SpriteKit.SKTexture
   , setFilteringMode
   , usesMipmaps
   , setUsesMipmaps
-  , textureWithImageNamedSelector
-  , textureWithCGImageSelector
-  , textureWithImageSelector
+  , cgImageSelector
+  , filteringModeSelector
+  , preloadTextures_withCompletionHandlerSelector
+  , preloadWithCompletionHandlerSelector
+  , setFilteringModeSelector
+  , setUsesMipmapsSelector
   , textureByApplyingCIFilterSelector
   , textureByGeneratingNormalMapSelector
   , textureByGeneratingNormalMapWithSmoothness_contrastSelector
-  , cgImageSelector
-  , preloadTextures_withCompletionHandlerSelector
-  , preloadWithCompletionHandlerSelector
-  , filteringModeSelector
-  , setFilteringModeSelector
+  , textureWithCGImageSelector
+  , textureWithImageNamedSelector
+  , textureWithImageSelector
   , usesMipmapsSelector
-  , setUsesMipmapsSelector
 
   -- * Enum types
   , SKTextureFilteringMode(SKTextureFilteringMode)
@@ -43,15 +44,11 @@ module ObjC.SpriteKit.SKTexture
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -70,8 +67,7 @@ textureWithImageNamed :: IsNSString name => name -> IO (Id SKTexture)
 textureWithImageNamed name =
   do
     cls' <- getRequiredClass "SKTexture"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsg cls' (mkSelector "textureWithImageNamed:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textureWithImageNamedSelector (toNSString name)
 
 -- | Create a texture from a CGImageRef.
 --
@@ -82,15 +78,14 @@ textureWithCGImage :: Ptr () -> IO (Id SKTexture)
 textureWithCGImage image =
   do
     cls' <- getRequiredClass "SKTexture"
-    sendClassMsg cls' (mkSelector "textureWithCGImage:") (retPtr retVoid) [argPtr image] >>= retainedObject . castPtr
+    sendClassMessage cls' textureWithCGImageSelector image
 
 -- | @+ textureWithImage:@
 textureWithImage :: IsNSImage image => image -> IO (Id SKTexture)
 textureWithImage image =
   do
     cls' <- getRequiredClass "SKTexture"
-    withObjCPtr image $ \raw_image ->
-      sendClassMsg cls' (mkSelector "textureWithImage:") (retPtr retVoid) [argPtr (castPtr raw_image :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' textureWithImageSelector (toNSImage image)
 
 -- | Create new texture by applying a CIFilter to an existing one. Any CIFilter that requires only a single "inputImage" and produces an "outputImage" is allowed.
 --
@@ -98,16 +93,15 @@ textureWithImage image =
 --
 -- ObjC selector: @- textureByApplyingCIFilter:@
 textureByApplyingCIFilter :: (IsSKTexture skTexture, IsCIFilter filter_) => skTexture -> filter_ -> IO (Id SKTexture)
-textureByApplyingCIFilter skTexture  filter_ =
-  withObjCPtr filter_ $ \raw_filter_ ->
-      sendMsg skTexture (mkSelector "textureByApplyingCIFilter:") (retPtr retVoid) [argPtr (castPtr raw_filter_ :: Ptr ())] >>= retainedObject . castPtr
+textureByApplyingCIFilter skTexture filter_ =
+  sendMessage skTexture textureByApplyingCIFilterSelector (toCIFilter filter_)
 
 -- | Create new texture by generating a normal map texture.
 --
 -- ObjC selector: @- textureByGeneratingNormalMap@
 textureByGeneratingNormalMap :: IsSKTexture skTexture => skTexture -> IO (Id SKTexture)
-textureByGeneratingNormalMap skTexture  =
-    sendMsg skTexture (mkSelector "textureByGeneratingNormalMap") (retPtr retVoid) [] >>= retainedObject . castPtr
+textureByGeneratingNormalMap skTexture =
+  sendMessage skTexture textureByGeneratingNormalMapSelector
 
 -- | Create new texture by generating a normal map texture.
 --
@@ -117,15 +111,15 @@ textureByGeneratingNormalMap skTexture  =
 --
 -- ObjC selector: @- textureByGeneratingNormalMapWithSmoothness:contrast:@
 textureByGeneratingNormalMapWithSmoothness_contrast :: IsSKTexture skTexture => skTexture -> CDouble -> CDouble -> IO (Id SKTexture)
-textureByGeneratingNormalMapWithSmoothness_contrast skTexture  smoothness contrast =
-    sendMsg skTexture (mkSelector "textureByGeneratingNormalMapWithSmoothness:contrast:") (retPtr retVoid) [argCDouble smoothness, argCDouble contrast] >>= retainedObject . castPtr
+textureByGeneratingNormalMapWithSmoothness_contrast skTexture smoothness contrast =
+  sendMessage skTexture textureByGeneratingNormalMapWithSmoothness_contrastSelector smoothness contrast
 
 -- | Convert the current SKTexture into a CGImageRef object
 --
 -- ObjC selector: @- CGImage@
 cgImage :: IsSKTexture skTexture => skTexture -> IO (Ptr ())
-cgImage skTexture  =
-    fmap castPtr $ sendMsg skTexture (mkSelector "CGImage") (retPtr retVoid) []
+cgImage skTexture =
+  sendMessage skTexture cgImageSelector
 
 -- | Start a texture preload operation on an array of textures
 --
@@ -138,97 +132,96 @@ preloadTextures_withCompletionHandler :: IsNSArray textures => textures -> Ptr (
 preloadTextures_withCompletionHandler textures completionHandler =
   do
     cls' <- getRequiredClass "SKTexture"
-    withObjCPtr textures $ \raw_textures ->
-      sendClassMsg cls' (mkSelector "preloadTextures:withCompletionHandler:") retVoid [argPtr (castPtr raw_textures :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+    sendClassMessage cls' preloadTextures_withCompletionHandlerSelector (toNSArray textures) completionHandler
 
 -- | Request that this texture be loaded into vram on the next render update, with a callback handler.
 --
 -- ObjC selector: @- preloadWithCompletionHandler:@
 preloadWithCompletionHandler :: IsSKTexture skTexture => skTexture -> Ptr () -> IO ()
-preloadWithCompletionHandler skTexture  completionHandler =
-    sendMsg skTexture (mkSelector "preloadWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+preloadWithCompletionHandler skTexture completionHandler =
+  sendMessage skTexture preloadWithCompletionHandlerSelector completionHandler
 
 -- | The filtering mode the texture should use when not drawn at native size. Defaults to SKTextureFilteringLinear.
 --
 -- ObjC selector: @- filteringMode@
 filteringMode :: IsSKTexture skTexture => skTexture -> IO SKTextureFilteringMode
-filteringMode skTexture  =
-    fmap (coerce :: CLong -> SKTextureFilteringMode) $ sendMsg skTexture (mkSelector "filteringMode") retCLong []
+filteringMode skTexture =
+  sendMessage skTexture filteringModeSelector
 
 -- | The filtering mode the texture should use when not drawn at native size. Defaults to SKTextureFilteringLinear.
 --
 -- ObjC selector: @- setFilteringMode:@
 setFilteringMode :: IsSKTexture skTexture => skTexture -> SKTextureFilteringMode -> IO ()
-setFilteringMode skTexture  value =
-    sendMsg skTexture (mkSelector "setFilteringMode:") retVoid [argCLong (coerce value)]
+setFilteringMode skTexture value =
+  sendMessage skTexture setFilteringModeSelector value
 
 -- | Request that the texture have mipmaps generated if possible. Only supported for power of 2 texture sizes.
 --
 -- ObjC selector: @- usesMipmaps@
 usesMipmaps :: IsSKTexture skTexture => skTexture -> IO Bool
-usesMipmaps skTexture  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg skTexture (mkSelector "usesMipmaps") retCULong []
+usesMipmaps skTexture =
+  sendMessage skTexture usesMipmapsSelector
 
 -- | Request that the texture have mipmaps generated if possible. Only supported for power of 2 texture sizes.
 --
 -- ObjC selector: @- setUsesMipmaps:@
 setUsesMipmaps :: IsSKTexture skTexture => skTexture -> Bool -> IO ()
-setUsesMipmaps skTexture  value =
-    sendMsg skTexture (mkSelector "setUsesMipmaps:") retVoid [argCULong (if value then 1 else 0)]
+setUsesMipmaps skTexture value =
+  sendMessage skTexture setUsesMipmapsSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @textureWithImageNamed:@
-textureWithImageNamedSelector :: Selector
+textureWithImageNamedSelector :: Selector '[Id NSString] (Id SKTexture)
 textureWithImageNamedSelector = mkSelector "textureWithImageNamed:"
 
 -- | @Selector@ for @textureWithCGImage:@
-textureWithCGImageSelector :: Selector
+textureWithCGImageSelector :: Selector '[Ptr ()] (Id SKTexture)
 textureWithCGImageSelector = mkSelector "textureWithCGImage:"
 
 -- | @Selector@ for @textureWithImage:@
-textureWithImageSelector :: Selector
+textureWithImageSelector :: Selector '[Id NSImage] (Id SKTexture)
 textureWithImageSelector = mkSelector "textureWithImage:"
 
 -- | @Selector@ for @textureByApplyingCIFilter:@
-textureByApplyingCIFilterSelector :: Selector
+textureByApplyingCIFilterSelector :: Selector '[Id CIFilter] (Id SKTexture)
 textureByApplyingCIFilterSelector = mkSelector "textureByApplyingCIFilter:"
 
 -- | @Selector@ for @textureByGeneratingNormalMap@
-textureByGeneratingNormalMapSelector :: Selector
+textureByGeneratingNormalMapSelector :: Selector '[] (Id SKTexture)
 textureByGeneratingNormalMapSelector = mkSelector "textureByGeneratingNormalMap"
 
 -- | @Selector@ for @textureByGeneratingNormalMapWithSmoothness:contrast:@
-textureByGeneratingNormalMapWithSmoothness_contrastSelector :: Selector
+textureByGeneratingNormalMapWithSmoothness_contrastSelector :: Selector '[CDouble, CDouble] (Id SKTexture)
 textureByGeneratingNormalMapWithSmoothness_contrastSelector = mkSelector "textureByGeneratingNormalMapWithSmoothness:contrast:"
 
 -- | @Selector@ for @CGImage@
-cgImageSelector :: Selector
+cgImageSelector :: Selector '[] (Ptr ())
 cgImageSelector = mkSelector "CGImage"
 
 -- | @Selector@ for @preloadTextures:withCompletionHandler:@
-preloadTextures_withCompletionHandlerSelector :: Selector
+preloadTextures_withCompletionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 preloadTextures_withCompletionHandlerSelector = mkSelector "preloadTextures:withCompletionHandler:"
 
 -- | @Selector@ for @preloadWithCompletionHandler:@
-preloadWithCompletionHandlerSelector :: Selector
+preloadWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 preloadWithCompletionHandlerSelector = mkSelector "preloadWithCompletionHandler:"
 
 -- | @Selector@ for @filteringMode@
-filteringModeSelector :: Selector
+filteringModeSelector :: Selector '[] SKTextureFilteringMode
 filteringModeSelector = mkSelector "filteringMode"
 
 -- | @Selector@ for @setFilteringMode:@
-setFilteringModeSelector :: Selector
+setFilteringModeSelector :: Selector '[SKTextureFilteringMode] ()
 setFilteringModeSelector = mkSelector "setFilteringMode:"
 
 -- | @Selector@ for @usesMipmaps@
-usesMipmapsSelector :: Selector
+usesMipmapsSelector :: Selector '[] Bool
 usesMipmapsSelector = mkSelector "usesMipmaps"
 
 -- | @Selector@ for @setUsesMipmaps:@
-setUsesMipmapsSelector :: Selector
+setUsesMipmapsSelector :: Selector '[Bool] ()
 setUsesMipmapsSelector = mkSelector "setUsesMipmaps:"
 

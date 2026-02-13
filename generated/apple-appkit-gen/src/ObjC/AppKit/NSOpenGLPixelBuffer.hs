@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,27 +17,23 @@ module ObjC.AppKit.NSOpenGLPixelBuffer
   , textureTarget
   , textureInternalFormat
   , textureMaxMipMapLevel
-  , initWithTextureTarget_textureInternalFormat_textureMaxMipMapLevel_pixelsWide_pixelsHighSelector
-  , initWithCGLPBufferObjSelector
   , cglpBufferObjSelector
-  , pixelsWideSelector
+  , initWithCGLPBufferObjSelector
+  , initWithTextureTarget_textureInternalFormat_textureMaxMipMapLevel_pixelsWide_pixelsHighSelector
   , pixelsHighSelector
-  , textureTargetSelector
+  , pixelsWideSelector
   , textureInternalFormatSelector
   , textureMaxMipMapLevelSelector
+  , textureTargetSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,77 +42,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithTextureTarget:textureInternalFormat:textureMaxMipMapLevel:pixelsWide:pixelsHigh:@
 initWithTextureTarget_textureInternalFormat_textureMaxMipMapLevel_pixelsWide_pixelsHigh :: IsNSOpenGLPixelBuffer nsOpenGLPixelBuffer => nsOpenGLPixelBuffer -> CUInt -> CUInt -> CInt -> CInt -> CInt -> IO (Id NSOpenGLPixelBuffer)
-initWithTextureTarget_textureInternalFormat_textureMaxMipMapLevel_pixelsWide_pixelsHigh nsOpenGLPixelBuffer  target format maxLevel pixelsWide pixelsHigh =
-    sendMsg nsOpenGLPixelBuffer (mkSelector "initWithTextureTarget:textureInternalFormat:textureMaxMipMapLevel:pixelsWide:pixelsHigh:") (retPtr retVoid) [argCUInt target, argCUInt format, argCInt maxLevel, argCInt pixelsWide, argCInt pixelsHigh] >>= ownedObject . castPtr
+initWithTextureTarget_textureInternalFormat_textureMaxMipMapLevel_pixelsWide_pixelsHigh nsOpenGLPixelBuffer target format maxLevel pixelsWide pixelsHigh =
+  sendOwnedMessage nsOpenGLPixelBuffer initWithTextureTarget_textureInternalFormat_textureMaxMipMapLevel_pixelsWide_pixelsHighSelector target format maxLevel pixelsWide pixelsHigh
 
 -- | @- initWithCGLPBufferObj:@
 initWithCGLPBufferObj :: IsNSOpenGLPixelBuffer nsOpenGLPixelBuffer => nsOpenGLPixelBuffer -> Ptr () -> IO (Id NSOpenGLPixelBuffer)
-initWithCGLPBufferObj nsOpenGLPixelBuffer  pbuffer =
-    sendMsg nsOpenGLPixelBuffer (mkSelector "initWithCGLPBufferObj:") (retPtr retVoid) [argPtr pbuffer] >>= ownedObject . castPtr
+initWithCGLPBufferObj nsOpenGLPixelBuffer pbuffer =
+  sendOwnedMessage nsOpenGLPixelBuffer initWithCGLPBufferObjSelector pbuffer
 
 -- | @- CGLPBufferObj@
 cglpBufferObj :: IsNSOpenGLPixelBuffer nsOpenGLPixelBuffer => nsOpenGLPixelBuffer -> IO (Ptr ())
-cglpBufferObj nsOpenGLPixelBuffer  =
-    fmap castPtr $ sendMsg nsOpenGLPixelBuffer (mkSelector "CGLPBufferObj") (retPtr retVoid) []
+cglpBufferObj nsOpenGLPixelBuffer =
+  sendMessage nsOpenGLPixelBuffer cglpBufferObjSelector
 
 -- | @- pixelsWide@
 pixelsWide :: IsNSOpenGLPixelBuffer nsOpenGLPixelBuffer => nsOpenGLPixelBuffer -> IO CInt
-pixelsWide nsOpenGLPixelBuffer  =
-    sendMsg nsOpenGLPixelBuffer (mkSelector "pixelsWide") retCInt []
+pixelsWide nsOpenGLPixelBuffer =
+  sendMessage nsOpenGLPixelBuffer pixelsWideSelector
 
 -- | @- pixelsHigh@
 pixelsHigh :: IsNSOpenGLPixelBuffer nsOpenGLPixelBuffer => nsOpenGLPixelBuffer -> IO CInt
-pixelsHigh nsOpenGLPixelBuffer  =
-    sendMsg nsOpenGLPixelBuffer (mkSelector "pixelsHigh") retCInt []
+pixelsHigh nsOpenGLPixelBuffer =
+  sendMessage nsOpenGLPixelBuffer pixelsHighSelector
 
 -- | @- textureTarget@
 textureTarget :: IsNSOpenGLPixelBuffer nsOpenGLPixelBuffer => nsOpenGLPixelBuffer -> IO CUInt
-textureTarget nsOpenGLPixelBuffer  =
-    sendMsg nsOpenGLPixelBuffer (mkSelector "textureTarget") retCUInt []
+textureTarget nsOpenGLPixelBuffer =
+  sendMessage nsOpenGLPixelBuffer textureTargetSelector
 
 -- | @- textureInternalFormat@
 textureInternalFormat :: IsNSOpenGLPixelBuffer nsOpenGLPixelBuffer => nsOpenGLPixelBuffer -> IO CUInt
-textureInternalFormat nsOpenGLPixelBuffer  =
-    sendMsg nsOpenGLPixelBuffer (mkSelector "textureInternalFormat") retCUInt []
+textureInternalFormat nsOpenGLPixelBuffer =
+  sendMessage nsOpenGLPixelBuffer textureInternalFormatSelector
 
 -- | @- textureMaxMipMapLevel@
 textureMaxMipMapLevel :: IsNSOpenGLPixelBuffer nsOpenGLPixelBuffer => nsOpenGLPixelBuffer -> IO CInt
-textureMaxMipMapLevel nsOpenGLPixelBuffer  =
-    sendMsg nsOpenGLPixelBuffer (mkSelector "textureMaxMipMapLevel") retCInt []
+textureMaxMipMapLevel nsOpenGLPixelBuffer =
+  sendMessage nsOpenGLPixelBuffer textureMaxMipMapLevelSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithTextureTarget:textureInternalFormat:textureMaxMipMapLevel:pixelsWide:pixelsHigh:@
-initWithTextureTarget_textureInternalFormat_textureMaxMipMapLevel_pixelsWide_pixelsHighSelector :: Selector
+initWithTextureTarget_textureInternalFormat_textureMaxMipMapLevel_pixelsWide_pixelsHighSelector :: Selector '[CUInt, CUInt, CInt, CInt, CInt] (Id NSOpenGLPixelBuffer)
 initWithTextureTarget_textureInternalFormat_textureMaxMipMapLevel_pixelsWide_pixelsHighSelector = mkSelector "initWithTextureTarget:textureInternalFormat:textureMaxMipMapLevel:pixelsWide:pixelsHigh:"
 
 -- | @Selector@ for @initWithCGLPBufferObj:@
-initWithCGLPBufferObjSelector :: Selector
+initWithCGLPBufferObjSelector :: Selector '[Ptr ()] (Id NSOpenGLPixelBuffer)
 initWithCGLPBufferObjSelector = mkSelector "initWithCGLPBufferObj:"
 
 -- | @Selector@ for @CGLPBufferObj@
-cglpBufferObjSelector :: Selector
+cglpBufferObjSelector :: Selector '[] (Ptr ())
 cglpBufferObjSelector = mkSelector "CGLPBufferObj"
 
 -- | @Selector@ for @pixelsWide@
-pixelsWideSelector :: Selector
+pixelsWideSelector :: Selector '[] CInt
 pixelsWideSelector = mkSelector "pixelsWide"
 
 -- | @Selector@ for @pixelsHigh@
-pixelsHighSelector :: Selector
+pixelsHighSelector :: Selector '[] CInt
 pixelsHighSelector = mkSelector "pixelsHigh"
 
 -- | @Selector@ for @textureTarget@
-textureTargetSelector :: Selector
+textureTargetSelector :: Selector '[] CUInt
 textureTargetSelector = mkSelector "textureTarget"
 
 -- | @Selector@ for @textureInternalFormat@
-textureInternalFormatSelector :: Selector
+textureInternalFormatSelector :: Selector '[] CUInt
 textureInternalFormatSelector = mkSelector "textureInternalFormat"
 
 -- | @Selector@ for @textureMaxMipMapLevel@
-textureMaxMipMapLevelSelector :: Selector
+textureMaxMipMapLevelSelector :: Selector '[] CInt
 textureMaxMipMapLevelSelector = mkSelector "textureMaxMipMapLevel"
 

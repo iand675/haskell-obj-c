@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -16,15 +17,11 @@ module ObjC.ModelIO.MDLBundleAssetResolver
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,34 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithBundle:@
 initWithBundle :: (IsMDLBundleAssetResolver mdlBundleAssetResolver, IsNSString path) => mdlBundleAssetResolver -> path -> IO (Id MDLBundleAssetResolver)
-initWithBundle mdlBundleAssetResolver  path =
-  withObjCPtr path $ \raw_path ->
-      sendMsg mdlBundleAssetResolver (mkSelector "initWithBundle:") (retPtr retVoid) [argPtr (castPtr raw_path :: Ptr ())] >>= ownedObject . castPtr
+initWithBundle mdlBundleAssetResolver path =
+  sendOwnedMessage mdlBundleAssetResolver initWithBundleSelector (toNSString path)
 
 -- | @- path@
 path :: IsMDLBundleAssetResolver mdlBundleAssetResolver => mdlBundleAssetResolver -> IO (Id NSString)
-path mdlBundleAssetResolver  =
-    sendMsg mdlBundleAssetResolver (mkSelector "path") (retPtr retVoid) [] >>= retainedObject . castPtr
+path mdlBundleAssetResolver =
+  sendMessage mdlBundleAssetResolver pathSelector
 
 -- | @- setPath:@
 setPath :: (IsMDLBundleAssetResolver mdlBundleAssetResolver, IsNSString value) => mdlBundleAssetResolver -> value -> IO ()
-setPath mdlBundleAssetResolver  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mdlBundleAssetResolver (mkSelector "setPath:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPath mdlBundleAssetResolver value =
+  sendMessage mdlBundleAssetResolver setPathSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithBundle:@
-initWithBundleSelector :: Selector
+initWithBundleSelector :: Selector '[Id NSString] (Id MDLBundleAssetResolver)
 initWithBundleSelector = mkSelector "initWithBundle:"
 
 -- | @Selector@ for @path@
-pathSelector :: Selector
+pathSelector :: Selector '[] (Id NSString)
 pathSelector = mkSelector "path"
 
 -- | @Selector@ for @setPath:@
-setPathSelector :: Selector
+setPathSelector :: Selector '[Id NSString] ()
 setPathSelector = mkSelector "setPath:"
 

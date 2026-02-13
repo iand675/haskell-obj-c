@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.AVFoundation.AVCaptureDeviceRotationCoordinator
   , previewLayer
   , videoRotationAngleForHorizonLevelPreview
   , videoRotationAngleForHorizonLevelCapture
-  , initSelector
-  , newSelector
-  , initWithDevice_previewLayerSelector
   , deviceSelector
+  , initSelector
+  , initWithDevice_previewLayerSelector
+  , newSelector
   , previewLayerSelector
-  , videoRotationAngleForHorizonLevelPreviewSelector
   , videoRotationAngleForHorizonLevelCaptureSelector
+  , videoRotationAngleForHorizonLevelPreviewSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,15 +45,15 @@ import ObjC.QuartzCore.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureDeviceRotationCoordinator avCaptureDeviceRotationCoordinator => avCaptureDeviceRotationCoordinator -> IO (Id AVCaptureDeviceRotationCoordinator)
-init_ avCaptureDeviceRotationCoordinator  =
-    sendMsg avCaptureDeviceRotationCoordinator (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureDeviceRotationCoordinator =
+  sendOwnedMessage avCaptureDeviceRotationCoordinator initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureDeviceRotationCoordinator)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureDeviceRotationCoordinator"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | initWithDevice:previewLayer:
 --
@@ -72,10 +69,8 @@ new  =
 --
 -- ObjC selector: @- initWithDevice:previewLayer:@
 initWithDevice_previewLayer :: (IsAVCaptureDeviceRotationCoordinator avCaptureDeviceRotationCoordinator, IsAVCaptureDevice device, IsCALayer previewLayer) => avCaptureDeviceRotationCoordinator -> device -> previewLayer -> IO (Id AVCaptureDeviceRotationCoordinator)
-initWithDevice_previewLayer avCaptureDeviceRotationCoordinator  device previewLayer =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr previewLayer $ \raw_previewLayer ->
-        sendMsg avCaptureDeviceRotationCoordinator (mkSelector "initWithDevice:previewLayer:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_previewLayer :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_previewLayer avCaptureDeviceRotationCoordinator device previewLayer =
+  sendOwnedMessage avCaptureDeviceRotationCoordinator initWithDevice_previewLayerSelector (toAVCaptureDevice device) (toCALayer previewLayer)
 
 -- | device
 --
@@ -85,8 +80,8 @@ initWithDevice_previewLayer avCaptureDeviceRotationCoordinator  device previewLa
 --
 -- ObjC selector: @- device@
 device :: IsAVCaptureDeviceRotationCoordinator avCaptureDeviceRotationCoordinator => avCaptureDeviceRotationCoordinator -> IO (Id AVCaptureDevice)
-device avCaptureDeviceRotationCoordinator  =
-    sendMsg avCaptureDeviceRotationCoordinator (mkSelector "device") (retPtr retVoid) [] >>= retainedObject . castPtr
+device avCaptureDeviceRotationCoordinator =
+  sendMessage avCaptureDeviceRotationCoordinator deviceSelector
 
 -- | previewLayer
 --
@@ -96,8 +91,8 @@ device avCaptureDeviceRotationCoordinator  =
 --
 -- ObjC selector: @- previewLayer@
 previewLayer :: IsAVCaptureDeviceRotationCoordinator avCaptureDeviceRotationCoordinator => avCaptureDeviceRotationCoordinator -> IO (Id CALayer)
-previewLayer avCaptureDeviceRotationCoordinator  =
-    sendMsg avCaptureDeviceRotationCoordinator (mkSelector "previewLayer") (retPtr retVoid) [] >>= retainedObject . castPtr
+previewLayer avCaptureDeviceRotationCoordinator =
+  sendMessage avCaptureDeviceRotationCoordinator previewLayerSelector
 
 -- | videoRotationAngleForHorizonLevelPreview
 --
@@ -107,8 +102,8 @@ previewLayer avCaptureDeviceRotationCoordinator  =
 --
 -- ObjC selector: @- videoRotationAngleForHorizonLevelPreview@
 videoRotationAngleForHorizonLevelPreview :: IsAVCaptureDeviceRotationCoordinator avCaptureDeviceRotationCoordinator => avCaptureDeviceRotationCoordinator -> IO CDouble
-videoRotationAngleForHorizonLevelPreview avCaptureDeviceRotationCoordinator  =
-    sendMsg avCaptureDeviceRotationCoordinator (mkSelector "videoRotationAngleForHorizonLevelPreview") retCDouble []
+videoRotationAngleForHorizonLevelPreview avCaptureDeviceRotationCoordinator =
+  sendMessage avCaptureDeviceRotationCoordinator videoRotationAngleForHorizonLevelPreviewSelector
 
 -- | videoRotationAngleForHorizonLevelCapture
 --
@@ -118,38 +113,38 @@ videoRotationAngleForHorizonLevelPreview avCaptureDeviceRotationCoordinator  =
 --
 -- ObjC selector: @- videoRotationAngleForHorizonLevelCapture@
 videoRotationAngleForHorizonLevelCapture :: IsAVCaptureDeviceRotationCoordinator avCaptureDeviceRotationCoordinator => avCaptureDeviceRotationCoordinator -> IO CDouble
-videoRotationAngleForHorizonLevelCapture avCaptureDeviceRotationCoordinator  =
-    sendMsg avCaptureDeviceRotationCoordinator (mkSelector "videoRotationAngleForHorizonLevelCapture") retCDouble []
+videoRotationAngleForHorizonLevelCapture avCaptureDeviceRotationCoordinator =
+  sendMessage avCaptureDeviceRotationCoordinator videoRotationAngleForHorizonLevelCaptureSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureDeviceRotationCoordinator)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureDeviceRotationCoordinator)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:previewLayer:@
-initWithDevice_previewLayerSelector :: Selector
+initWithDevice_previewLayerSelector :: Selector '[Id AVCaptureDevice, Id CALayer] (Id AVCaptureDeviceRotationCoordinator)
 initWithDevice_previewLayerSelector = mkSelector "initWithDevice:previewLayer:"
 
 -- | @Selector@ for @device@
-deviceSelector :: Selector
+deviceSelector :: Selector '[] (Id AVCaptureDevice)
 deviceSelector = mkSelector "device"
 
 -- | @Selector@ for @previewLayer@
-previewLayerSelector :: Selector
+previewLayerSelector :: Selector '[] (Id CALayer)
 previewLayerSelector = mkSelector "previewLayer"
 
 -- | @Selector@ for @videoRotationAngleForHorizonLevelPreview@
-videoRotationAngleForHorizonLevelPreviewSelector :: Selector
+videoRotationAngleForHorizonLevelPreviewSelector :: Selector '[] CDouble
 videoRotationAngleForHorizonLevelPreviewSelector = mkSelector "videoRotationAngleForHorizonLevelPreview"
 
 -- | @Selector@ for @videoRotationAngleForHorizonLevelCapture@
-videoRotationAngleForHorizonLevelCaptureSelector :: Selector
+videoRotationAngleForHorizonLevelCaptureSelector :: Selector '[] CDouble
 videoRotationAngleForHorizonLevelCaptureSelector = mkSelector "videoRotationAngleForHorizonLevelCapture"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,22 +20,18 @@ module ObjC.NetworkExtension.NEAppProxyTCPFlow
   , remoteFlowEndpoint
   , remoteEndpoint
   , readDataWithCompletionHandlerSelector
-  , writeData_withCompletionHandlerSelector
-  , remoteFlowEndpointSelector
   , remoteEndpointSelector
+  , remoteFlowEndpointSelector
+  , writeData_withCompletionHandlerSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,8 +46,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- readDataWithCompletionHandler:@
 readDataWithCompletionHandler :: IsNEAppProxyTCPFlow neAppProxyTCPFlow => neAppProxyTCPFlow -> Ptr () -> IO ()
-readDataWithCompletionHandler neAppProxyTCPFlow  completionHandler =
-    sendMsg neAppProxyTCPFlow (mkSelector "readDataWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+readDataWithCompletionHandler neAppProxyTCPFlow completionHandler =
+  sendMessage neAppProxyTCPFlow readDataWithCompletionHandlerSelector completionHandler
 
 -- | writeData:completionHandler
 --
@@ -62,9 +59,8 @@ readDataWithCompletionHandler neAppProxyTCPFlow  completionHandler =
 --
 -- ObjC selector: @- writeData:withCompletionHandler:@
 writeData_withCompletionHandler :: (IsNEAppProxyTCPFlow neAppProxyTCPFlow, IsNSData data_) => neAppProxyTCPFlow -> data_ -> Ptr () -> IO ()
-writeData_withCompletionHandler neAppProxyTCPFlow  data_ completionHandler =
-  withObjCPtr data_ $ \raw_data_ ->
-      sendMsg neAppProxyTCPFlow (mkSelector "writeData:withCompletionHandler:") retVoid [argPtr (castPtr raw_data_ :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+writeData_withCompletionHandler neAppProxyTCPFlow data_ completionHandler =
+  sendMessage neAppProxyTCPFlow writeData_withCompletionHandlerSelector (toNSData data_) completionHandler
 
 -- | remoteFlowEndpoint
 --
@@ -72,8 +68,8 @@ writeData_withCompletionHandler neAppProxyTCPFlow  data_ completionHandler =
 --
 -- ObjC selector: @- remoteFlowEndpoint@
 remoteFlowEndpoint :: IsNEAppProxyTCPFlow neAppProxyTCPFlow => neAppProxyTCPFlow -> IO (Id NSObject)
-remoteFlowEndpoint neAppProxyTCPFlow  =
-    sendMsg neAppProxyTCPFlow (mkSelector "remoteFlowEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteFlowEndpoint neAppProxyTCPFlow =
+  sendMessage neAppProxyTCPFlow remoteFlowEndpointSelector
 
 -- | remoteEndpoint
 --
@@ -81,26 +77,26 @@ remoteFlowEndpoint neAppProxyTCPFlow  =
 --
 -- ObjC selector: @- remoteEndpoint@
 remoteEndpoint :: IsNEAppProxyTCPFlow neAppProxyTCPFlow => neAppProxyTCPFlow -> IO (Id NWEndpoint)
-remoteEndpoint neAppProxyTCPFlow  =
-    sendMsg neAppProxyTCPFlow (mkSelector "remoteEndpoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+remoteEndpoint neAppProxyTCPFlow =
+  sendMessage neAppProxyTCPFlow remoteEndpointSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @readDataWithCompletionHandler:@
-readDataWithCompletionHandlerSelector :: Selector
+readDataWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 readDataWithCompletionHandlerSelector = mkSelector "readDataWithCompletionHandler:"
 
 -- | @Selector@ for @writeData:withCompletionHandler:@
-writeData_withCompletionHandlerSelector :: Selector
+writeData_withCompletionHandlerSelector :: Selector '[Id NSData, Ptr ()] ()
 writeData_withCompletionHandlerSelector = mkSelector "writeData:withCompletionHandler:"
 
 -- | @Selector@ for @remoteFlowEndpoint@
-remoteFlowEndpointSelector :: Selector
+remoteFlowEndpointSelector :: Selector '[] (Id NSObject)
 remoteFlowEndpointSelector = mkSelector "remoteFlowEndpoint"
 
 -- | @Selector@ for @remoteEndpoint@
-remoteEndpointSelector :: Selector
+remoteEndpointSelector :: Selector '[] (Id NWEndpoint)
 remoteEndpointSelector = mkSelector "remoteEndpoint"
 

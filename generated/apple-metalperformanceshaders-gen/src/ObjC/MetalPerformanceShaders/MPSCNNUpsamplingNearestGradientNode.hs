@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,23 +13,19 @@ module ObjC.MetalPerformanceShaders.MPSCNNUpsamplingNearestGradientNode
   , initWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorY
   , scaleFactorX
   , scaleFactorY
-  , nodeWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector
   , initWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector
+  , nodeWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector
   , scaleFactorXSelector
   , scaleFactorYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -56,10 +53,7 @@ nodeWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorY :: (I
 nodeWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorY sourceGradient sourceImage gradientState scaleFactorX scaleFactorY =
   do
     cls' <- getRequiredClass "MPSCNNUpsamplingNearestGradientNode"
-    withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      withObjCPtr sourceImage $ \raw_sourceImage ->
-        withObjCPtr gradientState $ \raw_gradientState ->
-          sendClassMsg cls' (mkSelector "nodeWithSourceGradient:sourceImage:gradientState:scaleFactorX:scaleFactorY:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argCDouble scaleFactorX, argCDouble scaleFactorY] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState) scaleFactorX scaleFactorY
 
 -- | A node to represent the gradient calculation for nearest upsampling training.
 --
@@ -79,39 +73,36 @@ nodeWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorY sourc
 --
 -- ObjC selector: @- initWithSourceGradient:sourceImage:gradientState:scaleFactorX:scaleFactorY:@
 initWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorY :: (IsMPSCNNUpsamplingNearestGradientNode mpscnnUpsamplingNearestGradientNode, IsMPSNNImageNode sourceGradient, IsMPSNNImageNode sourceImage, IsMPSNNGradientStateNode gradientState) => mpscnnUpsamplingNearestGradientNode -> sourceGradient -> sourceImage -> gradientState -> CDouble -> CDouble -> IO (Id MPSCNNUpsamplingNearestGradientNode)
-initWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorY mpscnnUpsamplingNearestGradientNode  sourceGradient sourceImage gradientState scaleFactorX scaleFactorY =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr gradientState $ \raw_gradientState ->
-          sendMsg mpscnnUpsamplingNearestGradientNode (mkSelector "initWithSourceGradient:sourceImage:gradientState:scaleFactorX:scaleFactorY:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argCDouble scaleFactorX, argCDouble scaleFactorY] >>= ownedObject . castPtr
+initWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorY mpscnnUpsamplingNearestGradientNode sourceGradient sourceImage gradientState scaleFactorX scaleFactorY =
+  sendOwnedMessage mpscnnUpsamplingNearestGradientNode initWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNGradientStateNode gradientState) scaleFactorX scaleFactorY
 
 -- | @- scaleFactorX@
 scaleFactorX :: IsMPSCNNUpsamplingNearestGradientNode mpscnnUpsamplingNearestGradientNode => mpscnnUpsamplingNearestGradientNode -> IO CDouble
-scaleFactorX mpscnnUpsamplingNearestGradientNode  =
-    sendMsg mpscnnUpsamplingNearestGradientNode (mkSelector "scaleFactorX") retCDouble []
+scaleFactorX mpscnnUpsamplingNearestGradientNode =
+  sendMessage mpscnnUpsamplingNearestGradientNode scaleFactorXSelector
 
 -- | @- scaleFactorY@
 scaleFactorY :: IsMPSCNNUpsamplingNearestGradientNode mpscnnUpsamplingNearestGradientNode => mpscnnUpsamplingNearestGradientNode -> IO CDouble
-scaleFactorY mpscnnUpsamplingNearestGradientNode  =
-    sendMsg mpscnnUpsamplingNearestGradientNode (mkSelector "scaleFactorY") retCDouble []
+scaleFactorY mpscnnUpsamplingNearestGradientNode =
+  sendMessage mpscnnUpsamplingNearestGradientNode scaleFactorYSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSourceGradient:sourceImage:gradientState:scaleFactorX:scaleFactorY:@
-nodeWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector :: Selector
+nodeWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode, CDouble, CDouble] (Id MPSCNNUpsamplingNearestGradientNode)
 nodeWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector = mkSelector "nodeWithSourceGradient:sourceImage:gradientState:scaleFactorX:scaleFactorY:"
 
 -- | @Selector@ for @initWithSourceGradient:sourceImage:gradientState:scaleFactorX:scaleFactorY:@
-initWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector :: Selector
+initWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNGradientStateNode, CDouble, CDouble] (Id MPSCNNUpsamplingNearestGradientNode)
 initWithSourceGradient_sourceImage_gradientState_scaleFactorX_scaleFactorYSelector = mkSelector "initWithSourceGradient:sourceImage:gradientState:scaleFactorX:scaleFactorY:"
 
 -- | @Selector@ for @scaleFactorX@
-scaleFactorXSelector :: Selector
+scaleFactorXSelector :: Selector '[] CDouble
 scaleFactorXSelector = mkSelector "scaleFactorX"
 
 -- | @Selector@ for @scaleFactorY@
-scaleFactorYSelector :: Selector
+scaleFactorYSelector :: Selector '[] CDouble
 scaleFactorYSelector = mkSelector "scaleFactorY"
 

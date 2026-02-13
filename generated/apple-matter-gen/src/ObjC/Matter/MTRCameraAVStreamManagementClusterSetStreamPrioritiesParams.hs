@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -12,25 +13,21 @@ module ObjC.Matter.MTRCameraAVStreamManagementClusterSetStreamPrioritiesParams
   , setTimedInvokeTimeoutMs
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
-  , streamPrioritiesSelector
-  , setStreamPrioritiesSelector
-  , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
   , serverSideProcessingTimeoutSelector
   , setServerSideProcessingTimeoutSelector
+  , setStreamPrioritiesSelector
+  , setTimedInvokeTimeoutMsSelector
+  , streamPrioritiesSelector
+  , timedInvokeTimeoutMsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -39,14 +36,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- streamPriorities@
 streamPriorities :: IsMTRCameraAVStreamManagementClusterSetStreamPrioritiesParams mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams => mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams -> IO (Id NSArray)
-streamPriorities mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams  =
-    sendMsg mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams (mkSelector "streamPriorities") (retPtr retVoid) [] >>= retainedObject . castPtr
+streamPriorities mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams =
+  sendMessage mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams streamPrioritiesSelector
 
 -- | @- setStreamPriorities:@
 setStreamPriorities :: (IsMTRCameraAVStreamManagementClusterSetStreamPrioritiesParams mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams, IsNSArray value) => mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams -> value -> IO ()
-setStreamPriorities mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams (mkSelector "setStreamPriorities:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStreamPriorities mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams value =
+  sendMessage mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams setStreamPrioritiesSelector (toNSArray value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -56,8 +52,8 @@ setStreamPriorities mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams 
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRCameraAVStreamManagementClusterSetStreamPrioritiesParams mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams => mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams  =
-    sendMsg mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams =
+  sendMessage mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -67,9 +63,8 @@ timedInvokeTimeoutMs mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRCameraAVStreamManagementClusterSetStreamPrioritiesParams mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams value =
+  sendMessage mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -79,8 +74,8 @@ setTimedInvokeTimeoutMs mtrCameraAVStreamManagementClusterSetStreamPrioritiesPar
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRCameraAVStreamManagementClusterSetStreamPrioritiesParams mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams => mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams  =
-    sendMsg mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams =
+  sendMessage mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -90,35 +85,34 @@ serverSideProcessingTimeout mtrCameraAVStreamManagementClusterSetStreamPrioritie
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRCameraAVStreamManagementClusterSetStreamPrioritiesParams mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams, IsNSNumber value) => mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams -> value -> IO ()
-setServerSideProcessingTimeout mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams value =
+  sendMessage mtrCameraAVStreamManagementClusterSetStreamPrioritiesParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @streamPriorities@
-streamPrioritiesSelector :: Selector
+streamPrioritiesSelector :: Selector '[] (Id NSArray)
 streamPrioritiesSelector = mkSelector "streamPriorities"
 
 -- | @Selector@ for @setStreamPriorities:@
-setStreamPrioritiesSelector :: Selector
+setStreamPrioritiesSelector :: Selector '[Id NSArray] ()
 setStreamPrioritiesSelector = mkSelector "setStreamPriorities:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

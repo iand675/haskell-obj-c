@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,8 +16,8 @@ module ObjC.Vision.VNFaceLandmarkRegion2D
   , precisionEstimatesPerPoint
   , pointsClassification
   , normalizedPointsSelector
-  , precisionEstimatesPerPointSelector
   , pointsClassificationSelector
+  , precisionEstimatesPerPointSelector
 
   -- * Enum types
   , VNPointsClassification(VNPointsClassification)
@@ -26,15 +27,11 @@ module ObjC.Vision.VNFaceLandmarkRegion2D
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,8 +47,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- normalizedPoints@
 normalizedPoints :: IsVNFaceLandmarkRegion2D vnFaceLandmarkRegion2D => vnFaceLandmarkRegion2D -> IO RawId
-normalizedPoints vnFaceLandmarkRegion2D  =
-    fmap (RawId . castPtr) $ sendMsg vnFaceLandmarkRegion2D (mkSelector "normalizedPoints") (retPtr retVoid) []
+normalizedPoints vnFaceLandmarkRegion2D =
+  sendMessage vnFaceLandmarkRegion2D normalizedPointsSelector
 
 -- | Obtains the array of accuracy placement estimates per landmark point.
 --
@@ -61,29 +58,29 @@ normalizedPoints vnFaceLandmarkRegion2D  =
 --
 -- ObjC selector: @- precisionEstimatesPerPoint@
 precisionEstimatesPerPoint :: IsVNFaceLandmarkRegion2D vnFaceLandmarkRegion2D => vnFaceLandmarkRegion2D -> IO (Id NSArray)
-precisionEstimatesPerPoint vnFaceLandmarkRegion2D  =
-    sendMsg vnFaceLandmarkRegion2D (mkSelector "precisionEstimatesPerPoint") (retPtr retVoid) [] >>= retainedObject . castPtr
+precisionEstimatesPerPoint vnFaceLandmarkRegion2D =
+  sendMessage vnFaceLandmarkRegion2D precisionEstimatesPerPointSelector
 
 -- | Describes how to interpret the points provided by the region.
 --
 -- ObjC selector: @- pointsClassification@
 pointsClassification :: IsVNFaceLandmarkRegion2D vnFaceLandmarkRegion2D => vnFaceLandmarkRegion2D -> IO VNPointsClassification
-pointsClassification vnFaceLandmarkRegion2D  =
-    fmap (coerce :: CLong -> VNPointsClassification) $ sendMsg vnFaceLandmarkRegion2D (mkSelector "pointsClassification") retCLong []
+pointsClassification vnFaceLandmarkRegion2D =
+  sendMessage vnFaceLandmarkRegion2D pointsClassificationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @normalizedPoints@
-normalizedPointsSelector :: Selector
+normalizedPointsSelector :: Selector '[] RawId
 normalizedPointsSelector = mkSelector "normalizedPoints"
 
 -- | @Selector@ for @precisionEstimatesPerPoint@
-precisionEstimatesPerPointSelector :: Selector
+precisionEstimatesPerPointSelector :: Selector '[] (Id NSArray)
 precisionEstimatesPerPointSelector = mkSelector "precisionEstimatesPerPoint"
 
 -- | @Selector@ for @pointsClassification@
-pointsClassificationSelector :: Selector
+pointsClassificationSelector :: Selector '[] VNPointsClassification
 pointsClassificationSelector = mkSelector "pointsClassification"
 

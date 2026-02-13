@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,27 +29,27 @@ module ObjC.Foundation.NSOperationQueue
   , mainQueue
   , operations
   , operationCount
-  , addOperationSelector
-  , addOperations_waitUntilFinishedSelector
-  , addOperationWithBlockSelector
   , addBarrierBlockSelector
+  , addOperationSelector
+  , addOperationWithBlockSelector
+  , addOperations_waitUntilFinishedSelector
   , cancelAllOperationsSelector
-  , waitUntilAllOperationsAreFinishedSelector
-  , progressSelector
-  , maxConcurrentOperationCountSelector
-  , setMaxConcurrentOperationCountSelector
-  , suspendedSelector
-  , setSuspendedSelector
-  , nameSelector
-  , setNameSelector
-  , qualityOfServiceSelector
-  , setQualityOfServiceSelector
-  , underlyingQueueSelector
-  , setUnderlyingQueueSelector
   , currentQueueSelector
   , mainQueueSelector
-  , operationsSelector
+  , maxConcurrentOperationCountSelector
+  , nameSelector
   , operationCountSelector
+  , operationsSelector
+  , progressSelector
+  , qualityOfServiceSelector
+  , setMaxConcurrentOperationCountSelector
+  , setNameSelector
+  , setQualityOfServiceSelector
+  , setSuspendedSelector
+  , setUnderlyingQueueSelector
+  , suspendedSelector
+  , underlyingQueueSelector
+  , waitUntilAllOperationsAreFinishedSelector
 
   -- * Enum types
   , NSQualityOfService(NSQualityOfService)
@@ -60,15 +61,11 @@ module ObjC.Foundation.NSOperationQueue
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,20 +74,18 @@ import ObjC.Foundation.Internal.Enums
 
 -- | @- addOperation:@
 addOperation :: (IsNSOperationQueue nsOperationQueue, IsNSOperation op) => nsOperationQueue -> op -> IO ()
-addOperation nsOperationQueue  op =
-  withObjCPtr op $ \raw_op ->
-      sendMsg nsOperationQueue (mkSelector "addOperation:") retVoid [argPtr (castPtr raw_op :: Ptr ())]
+addOperation nsOperationQueue op =
+  sendMessage nsOperationQueue addOperationSelector (toNSOperation op)
 
 -- | @- addOperations:waitUntilFinished:@
 addOperations_waitUntilFinished :: (IsNSOperationQueue nsOperationQueue, IsNSArray ops) => nsOperationQueue -> ops -> Bool -> IO ()
-addOperations_waitUntilFinished nsOperationQueue  ops wait =
-  withObjCPtr ops $ \raw_ops ->
-      sendMsg nsOperationQueue (mkSelector "addOperations:waitUntilFinished:") retVoid [argPtr (castPtr raw_ops :: Ptr ()), argCULong (if wait then 1 else 0)]
+addOperations_waitUntilFinished nsOperationQueue ops wait =
+  sendMessage nsOperationQueue addOperations_waitUntilFinishedSelector (toNSArray ops) wait
 
 -- | @- addOperationWithBlock:@
 addOperationWithBlock :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> Ptr () -> IO ()
-addOperationWithBlock nsOperationQueue  block =
-    sendMsg nsOperationQueue (mkSelector "addOperationWithBlock:") retVoid [argPtr (castPtr block :: Ptr ())]
+addOperationWithBlock nsOperationQueue block =
+  sendMessage nsOperationQueue addOperationWithBlockSelector block
 
 -- | addBarrierBlock:
 --
@@ -100,18 +95,18 @@ addOperationWithBlock nsOperationQueue  block =
 --
 -- ObjC selector: @- addBarrierBlock:@
 addBarrierBlock :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> Ptr () -> IO ()
-addBarrierBlock nsOperationQueue  barrier =
-    sendMsg nsOperationQueue (mkSelector "addBarrierBlock:") retVoid [argPtr (castPtr barrier :: Ptr ())]
+addBarrierBlock nsOperationQueue barrier =
+  sendMessage nsOperationQueue addBarrierBlockSelector barrier
 
 -- | @- cancelAllOperations@
 cancelAllOperations :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO ()
-cancelAllOperations nsOperationQueue  =
-    sendMsg nsOperationQueue (mkSelector "cancelAllOperations") retVoid []
+cancelAllOperations nsOperationQueue =
+  sendMessage nsOperationQueue cancelAllOperationsSelector
 
 -- | @- waitUntilAllOperationsAreFinished@
 waitUntilAllOperationsAreFinished :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO ()
-waitUntilAllOperationsAreFinished nsOperationQueue  =
-    sendMsg nsOperationQueue (mkSelector "waitUntilAllOperationsAreFinished") retVoid []
+waitUntilAllOperationsAreFinished nsOperationQueue =
+  sendMessage nsOperationQueue waitUntilAllOperationsAreFinishedSelector
 
 -- | progress
 --
@@ -121,170 +116,168 @@ waitUntilAllOperationsAreFinished nsOperationQueue  =
 --
 -- ObjC selector: @- progress@
 progress :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO (Id NSProgress)
-progress nsOperationQueue  =
-    sendMsg nsOperationQueue (mkSelector "progress") (retPtr retVoid) [] >>= retainedObject . castPtr
+progress nsOperationQueue =
+  sendMessage nsOperationQueue progressSelector
 
 -- | @- maxConcurrentOperationCount@
 maxConcurrentOperationCount :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO CLong
-maxConcurrentOperationCount nsOperationQueue  =
-    sendMsg nsOperationQueue (mkSelector "maxConcurrentOperationCount") retCLong []
+maxConcurrentOperationCount nsOperationQueue =
+  sendMessage nsOperationQueue maxConcurrentOperationCountSelector
 
 -- | @- setMaxConcurrentOperationCount:@
 setMaxConcurrentOperationCount :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> CLong -> IO ()
-setMaxConcurrentOperationCount nsOperationQueue  value =
-    sendMsg nsOperationQueue (mkSelector "setMaxConcurrentOperationCount:") retVoid [argCLong value]
+setMaxConcurrentOperationCount nsOperationQueue value =
+  sendMessage nsOperationQueue setMaxConcurrentOperationCountSelector value
 
 -- | @- suspended@
 suspended :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO Bool
-suspended nsOperationQueue  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsOperationQueue (mkSelector "suspended") retCULong []
+suspended nsOperationQueue =
+  sendMessage nsOperationQueue suspendedSelector
 
 -- | @- setSuspended:@
 setSuspended :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> Bool -> IO ()
-setSuspended nsOperationQueue  value =
-    sendMsg nsOperationQueue (mkSelector "setSuspended:") retVoid [argCULong (if value then 1 else 0)]
+setSuspended nsOperationQueue value =
+  sendMessage nsOperationQueue setSuspendedSelector value
 
 -- | @- name@
 name :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO (Id NSString)
-name nsOperationQueue  =
-    sendMsg nsOperationQueue (mkSelector "name") (retPtr retVoid) [] >>= retainedObject . castPtr
+name nsOperationQueue =
+  sendMessage nsOperationQueue nameSelector
 
 -- | @- setName:@
 setName :: (IsNSOperationQueue nsOperationQueue, IsNSString value) => nsOperationQueue -> value -> IO ()
-setName nsOperationQueue  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsOperationQueue (mkSelector "setName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setName nsOperationQueue value =
+  sendMessage nsOperationQueue setNameSelector (toNSString value)
 
 -- | @- qualityOfService@
 qualityOfService :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO NSQualityOfService
-qualityOfService nsOperationQueue  =
-    fmap (coerce :: CLong -> NSQualityOfService) $ sendMsg nsOperationQueue (mkSelector "qualityOfService") retCLong []
+qualityOfService nsOperationQueue =
+  sendMessage nsOperationQueue qualityOfServiceSelector
 
 -- | @- setQualityOfService:@
 setQualityOfService :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> NSQualityOfService -> IO ()
-setQualityOfService nsOperationQueue  value =
-    sendMsg nsOperationQueue (mkSelector "setQualityOfService:") retVoid [argCLong (coerce value)]
+setQualityOfService nsOperationQueue value =
+  sendMessage nsOperationQueue setQualityOfServiceSelector value
 
 -- | @- underlyingQueue@
 underlyingQueue :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO (Id NSObject)
-underlyingQueue nsOperationQueue  =
-    sendMsg nsOperationQueue (mkSelector "underlyingQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+underlyingQueue nsOperationQueue =
+  sendMessage nsOperationQueue underlyingQueueSelector
 
 -- | @- setUnderlyingQueue:@
 setUnderlyingQueue :: (IsNSOperationQueue nsOperationQueue, IsNSObject value) => nsOperationQueue -> value -> IO ()
-setUnderlyingQueue nsOperationQueue  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsOperationQueue (mkSelector "setUnderlyingQueue:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUnderlyingQueue nsOperationQueue value =
+  sendMessage nsOperationQueue setUnderlyingQueueSelector (toNSObject value)
 
 -- | @+ currentQueue@
 currentQueue :: IO (Id NSOperationQueue)
 currentQueue  =
   do
     cls' <- getRequiredClass "NSOperationQueue"
-    sendClassMsg cls' (mkSelector "currentQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentQueueSelector
 
 -- | @+ mainQueue@
 mainQueue :: IO (Id NSOperationQueue)
 mainQueue  =
   do
     cls' <- getRequiredClass "NSOperationQueue"
-    sendClassMsg cls' (mkSelector "mainQueue") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' mainQueueSelector
 
 -- | @- operations@
 operations :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO (Id NSArray)
-operations nsOperationQueue  =
-    sendMsg nsOperationQueue (mkSelector "operations") (retPtr retVoid) [] >>= retainedObject . castPtr
+operations nsOperationQueue =
+  sendMessage nsOperationQueue operationsSelector
 
 -- | @- operationCount@
 operationCount :: IsNSOperationQueue nsOperationQueue => nsOperationQueue -> IO CULong
-operationCount nsOperationQueue  =
-    sendMsg nsOperationQueue (mkSelector "operationCount") retCULong []
+operationCount nsOperationQueue =
+  sendMessage nsOperationQueue operationCountSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @addOperation:@
-addOperationSelector :: Selector
+addOperationSelector :: Selector '[Id NSOperation] ()
 addOperationSelector = mkSelector "addOperation:"
 
 -- | @Selector@ for @addOperations:waitUntilFinished:@
-addOperations_waitUntilFinishedSelector :: Selector
+addOperations_waitUntilFinishedSelector :: Selector '[Id NSArray, Bool] ()
 addOperations_waitUntilFinishedSelector = mkSelector "addOperations:waitUntilFinished:"
 
 -- | @Selector@ for @addOperationWithBlock:@
-addOperationWithBlockSelector :: Selector
+addOperationWithBlockSelector :: Selector '[Ptr ()] ()
 addOperationWithBlockSelector = mkSelector "addOperationWithBlock:"
 
 -- | @Selector@ for @addBarrierBlock:@
-addBarrierBlockSelector :: Selector
+addBarrierBlockSelector :: Selector '[Ptr ()] ()
 addBarrierBlockSelector = mkSelector "addBarrierBlock:"
 
 -- | @Selector@ for @cancelAllOperations@
-cancelAllOperationsSelector :: Selector
+cancelAllOperationsSelector :: Selector '[] ()
 cancelAllOperationsSelector = mkSelector "cancelAllOperations"
 
 -- | @Selector@ for @waitUntilAllOperationsAreFinished@
-waitUntilAllOperationsAreFinishedSelector :: Selector
+waitUntilAllOperationsAreFinishedSelector :: Selector '[] ()
 waitUntilAllOperationsAreFinishedSelector = mkSelector "waitUntilAllOperationsAreFinished"
 
 -- | @Selector@ for @progress@
-progressSelector :: Selector
+progressSelector :: Selector '[] (Id NSProgress)
 progressSelector = mkSelector "progress"
 
 -- | @Selector@ for @maxConcurrentOperationCount@
-maxConcurrentOperationCountSelector :: Selector
+maxConcurrentOperationCountSelector :: Selector '[] CLong
 maxConcurrentOperationCountSelector = mkSelector "maxConcurrentOperationCount"
 
 -- | @Selector@ for @setMaxConcurrentOperationCount:@
-setMaxConcurrentOperationCountSelector :: Selector
+setMaxConcurrentOperationCountSelector :: Selector '[CLong] ()
 setMaxConcurrentOperationCountSelector = mkSelector "setMaxConcurrentOperationCount:"
 
 -- | @Selector@ for @suspended@
-suspendedSelector :: Selector
+suspendedSelector :: Selector '[] Bool
 suspendedSelector = mkSelector "suspended"
 
 -- | @Selector@ for @setSuspended:@
-setSuspendedSelector :: Selector
+setSuspendedSelector :: Selector '[Bool] ()
 setSuspendedSelector = mkSelector "setSuspended:"
 
 -- | @Selector@ for @name@
-nameSelector :: Selector
+nameSelector :: Selector '[] (Id NSString)
 nameSelector = mkSelector "name"
 
 -- | @Selector@ for @setName:@
-setNameSelector :: Selector
+setNameSelector :: Selector '[Id NSString] ()
 setNameSelector = mkSelector "setName:"
 
 -- | @Selector@ for @qualityOfService@
-qualityOfServiceSelector :: Selector
+qualityOfServiceSelector :: Selector '[] NSQualityOfService
 qualityOfServiceSelector = mkSelector "qualityOfService"
 
 -- | @Selector@ for @setQualityOfService:@
-setQualityOfServiceSelector :: Selector
+setQualityOfServiceSelector :: Selector '[NSQualityOfService] ()
 setQualityOfServiceSelector = mkSelector "setQualityOfService:"
 
 -- | @Selector@ for @underlyingQueue@
-underlyingQueueSelector :: Selector
+underlyingQueueSelector :: Selector '[] (Id NSObject)
 underlyingQueueSelector = mkSelector "underlyingQueue"
 
 -- | @Selector@ for @setUnderlyingQueue:@
-setUnderlyingQueueSelector :: Selector
+setUnderlyingQueueSelector :: Selector '[Id NSObject] ()
 setUnderlyingQueueSelector = mkSelector "setUnderlyingQueue:"
 
 -- | @Selector@ for @currentQueue@
-currentQueueSelector :: Selector
+currentQueueSelector :: Selector '[] (Id NSOperationQueue)
 currentQueueSelector = mkSelector "currentQueue"
 
 -- | @Selector@ for @mainQueue@
-mainQueueSelector :: Selector
+mainQueueSelector :: Selector '[] (Id NSOperationQueue)
 mainQueueSelector = mkSelector "mainQueue"
 
 -- | @Selector@ for @operations@
-operationsSelector :: Selector
+operationsSelector :: Selector '[] (Id NSArray)
 operationsSelector = mkSelector "operations"
 
 -- | @Selector@ for @operationCount@
-operationCountSelector :: Selector
+operationCountSelector :: Selector '[] CULong
 operationCountSelector = mkSelector "operationCount"
 

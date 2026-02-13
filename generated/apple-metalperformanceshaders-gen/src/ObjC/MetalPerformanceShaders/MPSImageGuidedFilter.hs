@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,33 +35,29 @@ module ObjC.MetalPerformanceShaders.MPSImageGuidedFilter
   , setReconstructScale
   , reconstructOffset
   , setReconstructOffset
-  , initWithDevice_kernelDiameterSelector
-  , initWithDeviceSelector
-  , initWithCoder_deviceSelector
-  , encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureSelector
+  , encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coefficientsTextureB_destinationTextureSelector
   , encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTexture_destinationTextureSelector
   , encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureA_destinationCoefficientsTextureBSelector
-  , encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coefficientsTextureB_destinationTextureSelector
-  , kernelDiameterSelector
+  , encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureSelector
   , epsilonSelector
-  , setEpsilonSelector
-  , reconstructScaleSelector
-  , setReconstructScaleSelector
+  , initWithCoder_deviceSelector
+  , initWithDeviceSelector
+  , initWithDevice_kernelDiameterSelector
+  , kernelDiameterSelector
   , reconstructOffsetSelector
+  , reconstructScaleSelector
+  , setEpsilonSelector
   , setReconstructOffsetSelector
+  , setReconstructScaleSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -77,13 +74,13 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithDevice:kernelDiameter:@
 initWithDevice_kernelDiameter :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> RawId -> CULong -> IO (Id MPSImageGuidedFilter)
-initWithDevice_kernelDiameter mpsImageGuidedFilter  device kernelDiameter =
-    sendMsg mpsImageGuidedFilter (mkSelector "initWithDevice:kernelDiameter:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ()), argCULong kernelDiameter] >>= ownedObject . castPtr
+initWithDevice_kernelDiameter mpsImageGuidedFilter device kernelDiameter =
+  sendOwnedMessage mpsImageGuidedFilter initWithDevice_kernelDiameterSelector device kernelDiameter
 
 -- | @- initWithDevice:@
 initWithDevice :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> RawId -> IO (Id MPSImageGuidedFilter)
-initWithDevice mpsImageGuidedFilter  device =
-    sendMsg mpsImageGuidedFilter (mkSelector "initWithDevice:") (retPtr retVoid) [argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice mpsImageGuidedFilter device =
+  sendOwnedMessage mpsImageGuidedFilter initWithDeviceSelector device
 
 -- | NSSecureCoding compatability
 --
@@ -97,9 +94,8 @@ initWithDevice mpsImageGuidedFilter  device =
 --
 -- ObjC selector: @- initWithCoder:device:@
 initWithCoder_device :: (IsMPSImageGuidedFilter mpsImageGuidedFilter, IsNSCoder aDecoder) => mpsImageGuidedFilter -> aDecoder -> RawId -> IO (Id MPSImageGuidedFilter)
-initWithCoder_device mpsImageGuidedFilter  aDecoder device =
-  withObjCPtr aDecoder $ \raw_aDecoder ->
-      sendMsg mpsImageGuidedFilter (mkSelector "initWithCoder:device:") (retPtr retVoid) [argPtr (castPtr raw_aDecoder :: Ptr ()), argPtr (castPtr (unRawId device) :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder_device mpsImageGuidedFilter aDecoder device =
+  sendOwnedMessage mpsImageGuidedFilter initWithCoder_deviceSelector (toNSCoder aDecoder) device
 
 -- | Perform Guided Filter Regression (correlation) to produce a coefficients texture
 --
@@ -119,8 +115,8 @@ initWithCoder_device mpsImageGuidedFilter  aDecoder device =
 --
 -- ObjC selector: @- encodeRegressionToCommandBuffer:sourceTexture:guidanceTexture:weightsTexture:destinationCoefficientsTexture:@
 encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTexture :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTexture mpsImageGuidedFilter  commandBuffer sourceTexture guidanceTexture weightsTexture destinationCoefficientsTexture =
-    sendMsg mpsImageGuidedFilter (mkSelector "encodeRegressionToCommandBuffer:sourceTexture:guidanceTexture:weightsTexture:destinationCoefficientsTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId guidanceTexture) :: Ptr ()), argPtr (castPtr (unRawId weightsTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationCoefficientsTexture) :: Ptr ())]
+encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTexture mpsImageGuidedFilter commandBuffer sourceTexture guidanceTexture weightsTexture destinationCoefficientsTexture =
+  sendMessage mpsImageGuidedFilter encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureSelector commandBuffer sourceTexture guidanceTexture weightsTexture destinationCoefficientsTexture
 
 -- | Perform Guided Filter Reconstruction (inference) to produce the filtered output
 --
@@ -136,8 +132,8 @@ encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_des
 --
 -- ObjC selector: @- encodeReconstructionToCommandBuffer:guidanceTexture:coefficientsTexture:destinationTexture:@
 encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTexture_destinationTexture :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTexture_destinationTexture mpsImageGuidedFilter  commandBuffer guidanceTexture coefficientsTexture destinationTexture =
-    sendMsg mpsImageGuidedFilter (mkSelector "encodeReconstructionToCommandBuffer:guidanceTexture:coefficientsTexture:destinationTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId guidanceTexture) :: Ptr ()), argPtr (castPtr (unRawId coefficientsTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ())]
+encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTexture_destinationTexture mpsImageGuidedFilter commandBuffer guidanceTexture coefficientsTexture destinationTexture =
+  sendMessage mpsImageGuidedFilter encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTexture_destinationTextureSelector commandBuffer guidanceTexture coefficientsTexture destinationTexture
 
 -- | Perform per-channel (non-color correlated) Guided Filter Regression (correlation) to produce a coefficients texture
 --
@@ -159,8 +155,8 @@ encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTexture_destinat
 --
 -- ObjC selector: @- encodeRegressionToCommandBuffer:sourceTexture:guidanceTexture:weightsTexture:destinationCoefficientsTextureA:destinationCoefficientsTextureB:@
 encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureA_destinationCoefficientsTextureB :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> RawId -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureA_destinationCoefficientsTextureB mpsImageGuidedFilter  commandBuffer sourceTexture guidanceTexture weightsTexture destinationCoefficientsTextureA destinationCoefficientsTextureB =
-    sendMsg mpsImageGuidedFilter (mkSelector "encodeRegressionToCommandBuffer:sourceTexture:guidanceTexture:weightsTexture:destinationCoefficientsTextureA:destinationCoefficientsTextureB:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId sourceTexture) :: Ptr ()), argPtr (castPtr (unRawId guidanceTexture) :: Ptr ()), argPtr (castPtr (unRawId weightsTexture) :: Ptr ()), argPtr (castPtr (unRawId destinationCoefficientsTextureA) :: Ptr ()), argPtr (castPtr (unRawId destinationCoefficientsTextureB) :: Ptr ())]
+encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureA_destinationCoefficientsTextureB mpsImageGuidedFilter commandBuffer sourceTexture guidanceTexture weightsTexture destinationCoefficientsTextureA destinationCoefficientsTextureB =
+  sendMessage mpsImageGuidedFilter encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureA_destinationCoefficientsTextureBSelector commandBuffer sourceTexture guidanceTexture weightsTexture destinationCoefficientsTextureA destinationCoefficientsTextureB
 
 -- | Perform Guided Filter Reconstruction (inference) to produce the filtered output
 --
@@ -178,8 +174,8 @@ encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_des
 --
 -- ObjC selector: @- encodeReconstructionToCommandBuffer:guidanceTexture:coefficientsTextureA:coefficientsTextureB:destinationTexture:@
 encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coefficientsTextureB_destinationTexture :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> RawId -> RawId -> RawId -> RawId -> RawId -> IO ()
-encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coefficientsTextureB_destinationTexture mpsImageGuidedFilter  commandBuffer guidanceTexture coefficientsTextureA coefficientsTextureB destinationTexture =
-    sendMsg mpsImageGuidedFilter (mkSelector "encodeReconstructionToCommandBuffer:guidanceTexture:coefficientsTextureA:coefficientsTextureB:destinationTexture:") retVoid [argPtr (castPtr (unRawId commandBuffer) :: Ptr ()), argPtr (castPtr (unRawId guidanceTexture) :: Ptr ()), argPtr (castPtr (unRawId coefficientsTextureA) :: Ptr ()), argPtr (castPtr (unRawId coefficientsTextureB) :: Ptr ()), argPtr (castPtr (unRawId destinationTexture) :: Ptr ())]
+encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coefficientsTextureB_destinationTexture mpsImageGuidedFilter commandBuffer guidanceTexture coefficientsTextureA coefficientsTextureB destinationTexture =
+  sendMessage mpsImageGuidedFilter encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coefficientsTextureB_destinationTextureSelector commandBuffer guidanceTexture coefficientsTextureA coefficientsTextureB destinationTexture
 
 -- | kernelDiameter
 --
@@ -189,8 +185,8 @@ encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coeffic
 --
 -- ObjC selector: @- kernelDiameter@
 kernelDiameter :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> IO CULong
-kernelDiameter mpsImageGuidedFilter  =
-    sendMsg mpsImageGuidedFilter (mkSelector "kernelDiameter") retCULong []
+kernelDiameter mpsImageGuidedFilter =
+  sendMessage mpsImageGuidedFilter kernelDiameterSelector
 
 -- | epsilon
 --
@@ -200,8 +196,8 @@ kernelDiameter mpsImageGuidedFilter  =
 --
 -- ObjC selector: @- epsilon@
 epsilon :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> IO CFloat
-epsilon mpsImageGuidedFilter  =
-    sendMsg mpsImageGuidedFilter (mkSelector "epsilon") retCFloat []
+epsilon mpsImageGuidedFilter =
+  sendMessage mpsImageGuidedFilter epsilonSelector
 
 -- | epsilon
 --
@@ -211,8 +207,8 @@ epsilon mpsImageGuidedFilter  =
 --
 -- ObjC selector: @- setEpsilon:@
 setEpsilon :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> CFloat -> IO ()
-setEpsilon mpsImageGuidedFilter  value =
-    sendMsg mpsImageGuidedFilter (mkSelector "setEpsilon:") retVoid [argCFloat value]
+setEpsilon mpsImageGuidedFilter value =
+  sendMessage mpsImageGuidedFilter setEpsilonSelector value
 
 -- | reconstructScale
 --
@@ -222,8 +218,8 @@ setEpsilon mpsImageGuidedFilter  value =
 --
 -- ObjC selector: @- reconstructScale@
 reconstructScale :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> IO CFloat
-reconstructScale mpsImageGuidedFilter  =
-    sendMsg mpsImageGuidedFilter (mkSelector "reconstructScale") retCFloat []
+reconstructScale mpsImageGuidedFilter =
+  sendMessage mpsImageGuidedFilter reconstructScaleSelector
 
 -- | reconstructScale
 --
@@ -233,8 +229,8 @@ reconstructScale mpsImageGuidedFilter  =
 --
 -- ObjC selector: @- setReconstructScale:@
 setReconstructScale :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> CFloat -> IO ()
-setReconstructScale mpsImageGuidedFilter  value =
-    sendMsg mpsImageGuidedFilter (mkSelector "setReconstructScale:") retVoid [argCFloat value]
+setReconstructScale mpsImageGuidedFilter value =
+  sendMessage mpsImageGuidedFilter setReconstructScaleSelector value
 
 -- | reconstructOffset
 --
@@ -244,8 +240,8 @@ setReconstructScale mpsImageGuidedFilter  value =
 --
 -- ObjC selector: @- reconstructOffset@
 reconstructOffset :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> IO CFloat
-reconstructOffset mpsImageGuidedFilter  =
-    sendMsg mpsImageGuidedFilter (mkSelector "reconstructOffset") retCFloat []
+reconstructOffset mpsImageGuidedFilter =
+  sendMessage mpsImageGuidedFilter reconstructOffsetSelector
 
 -- | reconstructOffset
 --
@@ -255,66 +251,66 @@ reconstructOffset mpsImageGuidedFilter  =
 --
 -- ObjC selector: @- setReconstructOffset:@
 setReconstructOffset :: IsMPSImageGuidedFilter mpsImageGuidedFilter => mpsImageGuidedFilter -> CFloat -> IO ()
-setReconstructOffset mpsImageGuidedFilter  value =
-    sendMsg mpsImageGuidedFilter (mkSelector "setReconstructOffset:") retVoid [argCFloat value]
+setReconstructOffset mpsImageGuidedFilter value =
+  sendMessage mpsImageGuidedFilter setReconstructOffsetSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDevice:kernelDiameter:@
-initWithDevice_kernelDiameterSelector :: Selector
+initWithDevice_kernelDiameterSelector :: Selector '[RawId, CULong] (Id MPSImageGuidedFilter)
 initWithDevice_kernelDiameterSelector = mkSelector "initWithDevice:kernelDiameter:"
 
 -- | @Selector@ for @initWithDevice:@
-initWithDeviceSelector :: Selector
+initWithDeviceSelector :: Selector '[RawId] (Id MPSImageGuidedFilter)
 initWithDeviceSelector = mkSelector "initWithDevice:"
 
 -- | @Selector@ for @initWithCoder:device:@
-initWithCoder_deviceSelector :: Selector
+initWithCoder_deviceSelector :: Selector '[Id NSCoder, RawId] (Id MPSImageGuidedFilter)
 initWithCoder_deviceSelector = mkSelector "initWithCoder:device:"
 
 -- | @Selector@ for @encodeRegressionToCommandBuffer:sourceTexture:guidanceTexture:weightsTexture:destinationCoefficientsTexture:@
-encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureSelector :: Selector
+encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureSelector :: Selector '[RawId, RawId, RawId, RawId, RawId] ()
 encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureSelector = mkSelector "encodeRegressionToCommandBuffer:sourceTexture:guidanceTexture:weightsTexture:destinationCoefficientsTexture:"
 
 -- | @Selector@ for @encodeReconstructionToCommandBuffer:guidanceTexture:coefficientsTexture:destinationTexture:@
-encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTexture_destinationTextureSelector :: Selector
+encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTexture_destinationTextureSelector :: Selector '[RawId, RawId, RawId, RawId] ()
 encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTexture_destinationTextureSelector = mkSelector "encodeReconstructionToCommandBuffer:guidanceTexture:coefficientsTexture:destinationTexture:"
 
 -- | @Selector@ for @encodeRegressionToCommandBuffer:sourceTexture:guidanceTexture:weightsTexture:destinationCoefficientsTextureA:destinationCoefficientsTextureB:@
-encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureA_destinationCoefficientsTextureBSelector :: Selector
+encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureA_destinationCoefficientsTextureBSelector :: Selector '[RawId, RawId, RawId, RawId, RawId, RawId] ()
 encodeRegressionToCommandBuffer_sourceTexture_guidanceTexture_weightsTexture_destinationCoefficientsTextureA_destinationCoefficientsTextureBSelector = mkSelector "encodeRegressionToCommandBuffer:sourceTexture:guidanceTexture:weightsTexture:destinationCoefficientsTextureA:destinationCoefficientsTextureB:"
 
 -- | @Selector@ for @encodeReconstructionToCommandBuffer:guidanceTexture:coefficientsTextureA:coefficientsTextureB:destinationTexture:@
-encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coefficientsTextureB_destinationTextureSelector :: Selector
+encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coefficientsTextureB_destinationTextureSelector :: Selector '[RawId, RawId, RawId, RawId, RawId] ()
 encodeReconstructionToCommandBuffer_guidanceTexture_coefficientsTextureA_coefficientsTextureB_destinationTextureSelector = mkSelector "encodeReconstructionToCommandBuffer:guidanceTexture:coefficientsTextureA:coefficientsTextureB:destinationTexture:"
 
 -- | @Selector@ for @kernelDiameter@
-kernelDiameterSelector :: Selector
+kernelDiameterSelector :: Selector '[] CULong
 kernelDiameterSelector = mkSelector "kernelDiameter"
 
 -- | @Selector@ for @epsilon@
-epsilonSelector :: Selector
+epsilonSelector :: Selector '[] CFloat
 epsilonSelector = mkSelector "epsilon"
 
 -- | @Selector@ for @setEpsilon:@
-setEpsilonSelector :: Selector
+setEpsilonSelector :: Selector '[CFloat] ()
 setEpsilonSelector = mkSelector "setEpsilon:"
 
 -- | @Selector@ for @reconstructScale@
-reconstructScaleSelector :: Selector
+reconstructScaleSelector :: Selector '[] CFloat
 reconstructScaleSelector = mkSelector "reconstructScale"
 
 -- | @Selector@ for @setReconstructScale:@
-setReconstructScaleSelector :: Selector
+setReconstructScaleSelector :: Selector '[CFloat] ()
 setReconstructScaleSelector = mkSelector "setReconstructScale:"
 
 -- | @Selector@ for @reconstructOffset@
-reconstructOffsetSelector :: Selector
+reconstructOffsetSelector :: Selector '[] CFloat
 reconstructOffsetSelector = mkSelector "reconstructOffset"
 
 -- | @Selector@ for @setReconstructOffset:@
-setReconstructOffsetSelector :: Selector
+setReconstructOffsetSelector :: Selector '[CFloat] ()
 setReconstructOffsetSelector = mkSelector "setReconstructOffset:"
 

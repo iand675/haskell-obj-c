@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -8,21 +9,17 @@ module ObjC.MediaPlayer.MPMusicPlayerPlayParameters
   , IsMPMusicPlayerPlayParameters(..)
   , initWithDictionary
   , dictionary
-  , initWithDictionarySelector
   , dictionarySelector
+  , initWithDictionarySelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -31,24 +28,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDictionary:@
 initWithDictionary :: (IsMPMusicPlayerPlayParameters mpMusicPlayerPlayParameters, IsNSDictionary dictionary) => mpMusicPlayerPlayParameters -> dictionary -> IO (Id MPMusicPlayerPlayParameters)
-initWithDictionary mpMusicPlayerPlayParameters  dictionary =
-  withObjCPtr dictionary $ \raw_dictionary ->
-      sendMsg mpMusicPlayerPlayParameters (mkSelector "initWithDictionary:") (retPtr retVoid) [argPtr (castPtr raw_dictionary :: Ptr ())] >>= ownedObject . castPtr
+initWithDictionary mpMusicPlayerPlayParameters dictionary =
+  sendOwnedMessage mpMusicPlayerPlayParameters initWithDictionarySelector (toNSDictionary dictionary)
 
 -- | @- dictionary@
 dictionary :: IsMPMusicPlayerPlayParameters mpMusicPlayerPlayParameters => mpMusicPlayerPlayParameters -> IO (Id NSDictionary)
-dictionary mpMusicPlayerPlayParameters  =
-    sendMsg mpMusicPlayerPlayParameters (mkSelector "dictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionary mpMusicPlayerPlayParameters =
+  sendMessage mpMusicPlayerPlayParameters dictionarySelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDictionary:@
-initWithDictionarySelector :: Selector
+initWithDictionarySelector :: Selector '[Id NSDictionary] (Id MPMusicPlayerPlayParameters)
 initWithDictionarySelector = mkSelector "initWithDictionary:"
 
 -- | @Selector@ for @dictionary@
-dictionarySelector :: Selector
+dictionarySelector :: Selector '[] (Id NSDictionary)
 dictionarySelector = mkSelector "dictionary"
 

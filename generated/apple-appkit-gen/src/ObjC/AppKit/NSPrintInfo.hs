@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -56,55 +57,55 @@ module ObjC.AppKit.NSPrintInfo
   , printSettings
   , selectionOnly
   , setSelectionOnly
-  , initWithDictionarySelector
-  , initWithCoderSelector
-  , initSelector
+  , bottomMarginSelector
+  , defaultPrinterSelector
   , dictionarySelector
-  , setUpPrintOperationDefaultValuesSelector
-  , pmPrintSessionSelector
+  , horizontalPaginationSelector
+  , horizontallyCenteredSelector
+  , imageablePageBoundsSelector
+  , initSelector
+  , initWithCoderSelector
+  , initWithDictionarySelector
+  , jobDispositionSelector
+  , leftMarginSelector
+  , localizedPaperNameSelector
+  , orientationSelector
+  , paperNameSelector
+  , paperSizeSelector
   , pmPageFormatSelector
+  , pmPrintSessionSelector
   , pmPrintSettingsSelector
+  , printSettingsSelector
+  , printerSelector
+  , rightMarginSelector
+  , scalingFactorSelector
+  , selectionOnlySelector
+  , setBottomMarginSelector
+  , setDefaultPrinterSelector
+  , setHorizontalPaginationSelector
+  , setHorizontallyCenteredSelector
+  , setJobDispositionSelector
+  , setLeftMarginSelector
+  , setOrientationSelector
+  , setPaperNameSelector
+  , setPaperSizeSelector
+  , setPrinterSelector
+  , setRightMarginSelector
+  , setScalingFactorSelector
+  , setSelectionOnlySelector
+  , setSharedPrintInfoSelector
+  , setTopMarginSelector
+  , setUpPrintOperationDefaultValuesSelector
+  , setVerticalPaginationSelector
+  , setVerticallyCenteredSelector
+  , sharedPrintInfoSelector
+  , sizeForPaperNameSelector
+  , takeSettingsFromPDFInfoSelector
+  , topMarginSelector
   , updateFromPMPageFormatSelector
   , updateFromPMPrintSettingsSelector
-  , takeSettingsFromPDFInfoSelector
-  , setDefaultPrinterSelector
-  , sizeForPaperNameSelector
-  , sharedPrintInfoSelector
-  , setSharedPrintInfoSelector
-  , paperNameSelector
-  , setPaperNameSelector
-  , paperSizeSelector
-  , setPaperSizeSelector
-  , orientationSelector
-  , setOrientationSelector
-  , scalingFactorSelector
-  , setScalingFactorSelector
-  , leftMarginSelector
-  , setLeftMarginSelector
-  , rightMarginSelector
-  , setRightMarginSelector
-  , topMarginSelector
-  , setTopMarginSelector
-  , bottomMarginSelector
-  , setBottomMarginSelector
-  , horizontallyCenteredSelector
-  , setHorizontallyCenteredSelector
-  , verticallyCenteredSelector
-  , setVerticallyCenteredSelector
-  , horizontalPaginationSelector
-  , setHorizontalPaginationSelector
   , verticalPaginationSelector
-  , setVerticalPaginationSelector
-  , jobDispositionSelector
-  , setJobDispositionSelector
-  , printerSelector
-  , setPrinterSelector
-  , imageablePageBoundsSelector
-  , localizedPaperNameSelector
-  , defaultPrinterSelector
-  , printSettingsSelector
-  , selectionOnlySelector
-  , setSelectionOnlySelector
+  , verticallyCenteredSelector
 
   -- * Enum types
   , NSPaperOrientation(NSPaperOrientation)
@@ -117,15 +118,11 @@ module ObjC.AppKit.NSPrintInfo
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg, sendMsgStret, sendClassMsgStret)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -136,465 +133,456 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithDictionary:@
 initWithDictionary :: (IsNSPrintInfo nsPrintInfo, IsNSDictionary attributes) => nsPrintInfo -> attributes -> IO (Id NSPrintInfo)
-initWithDictionary nsPrintInfo  attributes =
-  withObjCPtr attributes $ \raw_attributes ->
-      sendMsg nsPrintInfo (mkSelector "initWithDictionary:") (retPtr retVoid) [argPtr (castPtr raw_attributes :: Ptr ())] >>= ownedObject . castPtr
+initWithDictionary nsPrintInfo attributes =
+  sendOwnedMessage nsPrintInfo initWithDictionarySelector (toNSDictionary attributes)
 
 -- | @- initWithCoder:@
 initWithCoder :: (IsNSPrintInfo nsPrintInfo, IsNSCoder coder) => nsPrintInfo -> coder -> IO (Id NSPrintInfo)
-initWithCoder nsPrintInfo  coder =
-  withObjCPtr coder $ \raw_coder ->
-      sendMsg nsPrintInfo (mkSelector "initWithCoder:") (retPtr retVoid) [argPtr (castPtr raw_coder :: Ptr ())] >>= ownedObject . castPtr
+initWithCoder nsPrintInfo coder =
+  sendOwnedMessage nsPrintInfo initWithCoderSelector (toNSCoder coder)
 
 -- | @- init@
 init_ :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Id NSPrintInfo)
-init_ nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsPrintInfo =
+  sendOwnedMessage nsPrintInfo initSelector
 
 -- | @- dictionary@
 dictionary :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Id NSMutableDictionary)
-dictionary nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "dictionary") (retPtr retVoid) [] >>= retainedObject . castPtr
+dictionary nsPrintInfo =
+  sendMessage nsPrintInfo dictionarySelector
 
 -- | @- setUpPrintOperationDefaultValues@
 setUpPrintOperationDefaultValues :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO ()
-setUpPrintOperationDefaultValues nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "setUpPrintOperationDefaultValues") retVoid []
+setUpPrintOperationDefaultValues nsPrintInfo =
+  sendMessage nsPrintInfo setUpPrintOperationDefaultValuesSelector
 
 -- | @- PMPrintSession@
 pmPrintSession :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Ptr ())
-pmPrintSession nsPrintInfo  =
-    fmap castPtr $ sendMsg nsPrintInfo (mkSelector "PMPrintSession") (retPtr retVoid) []
+pmPrintSession nsPrintInfo =
+  sendMessage nsPrintInfo pmPrintSessionSelector
 
 -- | @- PMPageFormat@
 pmPageFormat :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Ptr ())
-pmPageFormat nsPrintInfo  =
-    fmap castPtr $ sendMsg nsPrintInfo (mkSelector "PMPageFormat") (retPtr retVoid) []
+pmPageFormat nsPrintInfo =
+  sendMessage nsPrintInfo pmPageFormatSelector
 
 -- | @- PMPrintSettings@
 pmPrintSettings :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Ptr ())
-pmPrintSettings nsPrintInfo  =
-    fmap castPtr $ sendMsg nsPrintInfo (mkSelector "PMPrintSettings") (retPtr retVoid) []
+pmPrintSettings nsPrintInfo =
+  sendMessage nsPrintInfo pmPrintSettingsSelector
 
 -- | @- updateFromPMPageFormat@
 updateFromPMPageFormat :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO ()
-updateFromPMPageFormat nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "updateFromPMPageFormat") retVoid []
+updateFromPMPageFormat nsPrintInfo =
+  sendMessage nsPrintInfo updateFromPMPageFormatSelector
 
 -- | @- updateFromPMPrintSettings@
 updateFromPMPrintSettings :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO ()
-updateFromPMPrintSettings nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "updateFromPMPrintSettings") retVoid []
+updateFromPMPrintSettings nsPrintInfo =
+  sendMessage nsPrintInfo updateFromPMPrintSettingsSelector
 
 -- | @- takeSettingsFromPDFInfo:@
 takeSettingsFromPDFInfo :: (IsNSPrintInfo nsPrintInfo, IsNSPDFInfo inPDFInfo) => nsPrintInfo -> inPDFInfo -> IO ()
-takeSettingsFromPDFInfo nsPrintInfo  inPDFInfo =
-  withObjCPtr inPDFInfo $ \raw_inPDFInfo ->
-      sendMsg nsPrintInfo (mkSelector "takeSettingsFromPDFInfo:") retVoid [argPtr (castPtr raw_inPDFInfo :: Ptr ())]
+takeSettingsFromPDFInfo nsPrintInfo inPDFInfo =
+  sendMessage nsPrintInfo takeSettingsFromPDFInfoSelector (toNSPDFInfo inPDFInfo)
 
 -- | @+ setDefaultPrinter:@
 setDefaultPrinter :: IsNSPrinter printer => printer -> IO ()
 setDefaultPrinter printer =
   do
     cls' <- getRequiredClass "NSPrintInfo"
-    withObjCPtr printer $ \raw_printer ->
-      sendClassMsg cls' (mkSelector "setDefaultPrinter:") retVoid [argPtr (castPtr raw_printer :: Ptr ())]
+    sendClassMessage cls' setDefaultPrinterSelector (toNSPrinter printer)
 
 -- | @+ sizeForPaperName:@
 sizeForPaperName :: IsNSString name => name -> IO NSSize
 sizeForPaperName name =
   do
     cls' <- getRequiredClass "NSPrintInfo"
-    withObjCPtr name $ \raw_name ->
-      sendClassMsgStret cls' (mkSelector "sizeForPaperName:") retNSSize [argPtr (castPtr raw_name :: Ptr ())]
+    sendClassMessage cls' sizeForPaperNameSelector (toNSString name)
 
 -- | @+ sharedPrintInfo@
 sharedPrintInfo :: IO (Id NSPrintInfo)
 sharedPrintInfo  =
   do
     cls' <- getRequiredClass "NSPrintInfo"
-    sendClassMsg cls' (mkSelector "sharedPrintInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedPrintInfoSelector
 
 -- | @+ setSharedPrintInfo:@
 setSharedPrintInfo :: IsNSPrintInfo value => value -> IO ()
 setSharedPrintInfo value =
   do
     cls' <- getRequiredClass "NSPrintInfo"
-    withObjCPtr value $ \raw_value ->
-      sendClassMsg cls' (mkSelector "setSharedPrintInfo:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+    sendClassMessage cls' setSharedPrintInfoSelector (toNSPrintInfo value)
 
 -- | @- paperName@
 paperName :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Id NSString)
-paperName nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "paperName") (retPtr retVoid) [] >>= retainedObject . castPtr
+paperName nsPrintInfo =
+  sendMessage nsPrintInfo paperNameSelector
 
 -- | @- setPaperName:@
 setPaperName :: (IsNSPrintInfo nsPrintInfo, IsNSString value) => nsPrintInfo -> value -> IO ()
-setPaperName nsPrintInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPrintInfo (mkSelector "setPaperName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPaperName nsPrintInfo value =
+  sendMessage nsPrintInfo setPaperNameSelector (toNSString value)
 
 -- | @- paperSize@
 paperSize :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO NSSize
-paperSize nsPrintInfo  =
-    sendMsgStret nsPrintInfo (mkSelector "paperSize") retNSSize []
+paperSize nsPrintInfo =
+  sendMessage nsPrintInfo paperSizeSelector
 
 -- | @- setPaperSize:@
 setPaperSize :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> NSSize -> IO ()
-setPaperSize nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setPaperSize:") retVoid [argNSSize value]
+setPaperSize nsPrintInfo value =
+  sendMessage nsPrintInfo setPaperSizeSelector value
 
 -- | @- orientation@
 orientation :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO NSPaperOrientation
-orientation nsPrintInfo  =
-    fmap (coerce :: CLong -> NSPaperOrientation) $ sendMsg nsPrintInfo (mkSelector "orientation") retCLong []
+orientation nsPrintInfo =
+  sendMessage nsPrintInfo orientationSelector
 
 -- | @- setOrientation:@
 setOrientation :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> NSPaperOrientation -> IO ()
-setOrientation nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setOrientation:") retVoid [argCLong (coerce value)]
+setOrientation nsPrintInfo value =
+  sendMessage nsPrintInfo setOrientationSelector value
 
 -- | @- scalingFactor@
 scalingFactor :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO CDouble
-scalingFactor nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "scalingFactor") retCDouble []
+scalingFactor nsPrintInfo =
+  sendMessage nsPrintInfo scalingFactorSelector
 
 -- | @- setScalingFactor:@
 setScalingFactor :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> CDouble -> IO ()
-setScalingFactor nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setScalingFactor:") retVoid [argCDouble value]
+setScalingFactor nsPrintInfo value =
+  sendMessage nsPrintInfo setScalingFactorSelector value
 
 -- | @- leftMargin@
 leftMargin :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO CDouble
-leftMargin nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "leftMargin") retCDouble []
+leftMargin nsPrintInfo =
+  sendMessage nsPrintInfo leftMarginSelector
 
 -- | @- setLeftMargin:@
 setLeftMargin :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> CDouble -> IO ()
-setLeftMargin nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setLeftMargin:") retVoid [argCDouble value]
+setLeftMargin nsPrintInfo value =
+  sendMessage nsPrintInfo setLeftMarginSelector value
 
 -- | @- rightMargin@
 rightMargin :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO CDouble
-rightMargin nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "rightMargin") retCDouble []
+rightMargin nsPrintInfo =
+  sendMessage nsPrintInfo rightMarginSelector
 
 -- | @- setRightMargin:@
 setRightMargin :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> CDouble -> IO ()
-setRightMargin nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setRightMargin:") retVoid [argCDouble value]
+setRightMargin nsPrintInfo value =
+  sendMessage nsPrintInfo setRightMarginSelector value
 
 -- | @- topMargin@
 topMargin :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO CDouble
-topMargin nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "topMargin") retCDouble []
+topMargin nsPrintInfo =
+  sendMessage nsPrintInfo topMarginSelector
 
 -- | @- setTopMargin:@
 setTopMargin :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> CDouble -> IO ()
-setTopMargin nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setTopMargin:") retVoid [argCDouble value]
+setTopMargin nsPrintInfo value =
+  sendMessage nsPrintInfo setTopMarginSelector value
 
 -- | @- bottomMargin@
 bottomMargin :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO CDouble
-bottomMargin nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "bottomMargin") retCDouble []
+bottomMargin nsPrintInfo =
+  sendMessage nsPrintInfo bottomMarginSelector
 
 -- | @- setBottomMargin:@
 setBottomMargin :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> CDouble -> IO ()
-setBottomMargin nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setBottomMargin:") retVoid [argCDouble value]
+setBottomMargin nsPrintInfo value =
+  sendMessage nsPrintInfo setBottomMarginSelector value
 
 -- | @- horizontallyCentered@
 horizontallyCentered :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO Bool
-horizontallyCentered nsPrintInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintInfo (mkSelector "horizontallyCentered") retCULong []
+horizontallyCentered nsPrintInfo =
+  sendMessage nsPrintInfo horizontallyCenteredSelector
 
 -- | @- setHorizontallyCentered:@
 setHorizontallyCentered :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> Bool -> IO ()
-setHorizontallyCentered nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setHorizontallyCentered:") retVoid [argCULong (if value then 1 else 0)]
+setHorizontallyCentered nsPrintInfo value =
+  sendMessage nsPrintInfo setHorizontallyCenteredSelector value
 
 -- | @- verticallyCentered@
 verticallyCentered :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO Bool
-verticallyCentered nsPrintInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintInfo (mkSelector "verticallyCentered") retCULong []
+verticallyCentered nsPrintInfo =
+  sendMessage nsPrintInfo verticallyCenteredSelector
 
 -- | @- setVerticallyCentered:@
 setVerticallyCentered :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> Bool -> IO ()
-setVerticallyCentered nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setVerticallyCentered:") retVoid [argCULong (if value then 1 else 0)]
+setVerticallyCentered nsPrintInfo value =
+  sendMessage nsPrintInfo setVerticallyCenteredSelector value
 
 -- | @- horizontalPagination@
 horizontalPagination :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO NSPrintingPaginationMode
-horizontalPagination nsPrintInfo  =
-    fmap (coerce :: CULong -> NSPrintingPaginationMode) $ sendMsg nsPrintInfo (mkSelector "horizontalPagination") retCULong []
+horizontalPagination nsPrintInfo =
+  sendMessage nsPrintInfo horizontalPaginationSelector
 
 -- | @- setHorizontalPagination:@
 setHorizontalPagination :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> NSPrintingPaginationMode -> IO ()
-setHorizontalPagination nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setHorizontalPagination:") retVoid [argCULong (coerce value)]
+setHorizontalPagination nsPrintInfo value =
+  sendMessage nsPrintInfo setHorizontalPaginationSelector value
 
 -- | @- verticalPagination@
 verticalPagination :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO NSPrintingPaginationMode
-verticalPagination nsPrintInfo  =
-    fmap (coerce :: CULong -> NSPrintingPaginationMode) $ sendMsg nsPrintInfo (mkSelector "verticalPagination") retCULong []
+verticalPagination nsPrintInfo =
+  sendMessage nsPrintInfo verticalPaginationSelector
 
 -- | @- setVerticalPagination:@
 setVerticalPagination :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> NSPrintingPaginationMode -> IO ()
-setVerticalPagination nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setVerticalPagination:") retVoid [argCULong (coerce value)]
+setVerticalPagination nsPrintInfo value =
+  sendMessage nsPrintInfo setVerticalPaginationSelector value
 
 -- | @- jobDisposition@
 jobDisposition :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Id NSString)
-jobDisposition nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "jobDisposition") (retPtr retVoid) [] >>= retainedObject . castPtr
+jobDisposition nsPrintInfo =
+  sendMessage nsPrintInfo jobDispositionSelector
 
 -- | @- setJobDisposition:@
 setJobDisposition :: (IsNSPrintInfo nsPrintInfo, IsNSString value) => nsPrintInfo -> value -> IO ()
-setJobDisposition nsPrintInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPrintInfo (mkSelector "setJobDisposition:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setJobDisposition nsPrintInfo value =
+  sendMessage nsPrintInfo setJobDispositionSelector (toNSString value)
 
 -- | @- printer@
 printer :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Id NSPrinter)
-printer nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "printer") (retPtr retVoid) [] >>= retainedObject . castPtr
+printer nsPrintInfo =
+  sendMessage nsPrintInfo printerSelector
 
 -- | @- setPrinter:@
 setPrinter :: (IsNSPrintInfo nsPrintInfo, IsNSPrinter value) => nsPrintInfo -> value -> IO ()
-setPrinter nsPrintInfo  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsPrintInfo (mkSelector "setPrinter:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPrinter nsPrintInfo value =
+  sendMessage nsPrintInfo setPrinterSelector (toNSPrinter value)
 
 -- | @- imageablePageBounds@
 imageablePageBounds :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO NSRect
-imageablePageBounds nsPrintInfo  =
-    sendMsgStret nsPrintInfo (mkSelector "imageablePageBounds") retNSRect []
+imageablePageBounds nsPrintInfo =
+  sendMessage nsPrintInfo imageablePageBoundsSelector
 
 -- | @- localizedPaperName@
 localizedPaperName :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Id NSString)
-localizedPaperName nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "localizedPaperName") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedPaperName nsPrintInfo =
+  sendMessage nsPrintInfo localizedPaperNameSelector
 
 -- | @+ defaultPrinter@
 defaultPrinter :: IO (Id NSPrinter)
 defaultPrinter  =
   do
     cls' <- getRequiredClass "NSPrintInfo"
-    sendClassMsg cls' (mkSelector "defaultPrinter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultPrinterSelector
 
 -- | @- printSettings@
 printSettings :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO (Id NSMutableDictionary)
-printSettings nsPrintInfo  =
-    sendMsg nsPrintInfo (mkSelector "printSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+printSettings nsPrintInfo =
+  sendMessage nsPrintInfo printSettingsSelector
 
 -- | @- selectionOnly@
 selectionOnly :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> IO Bool
-selectionOnly nsPrintInfo  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsPrintInfo (mkSelector "selectionOnly") retCULong []
+selectionOnly nsPrintInfo =
+  sendMessage nsPrintInfo selectionOnlySelector
 
 -- | @- setSelectionOnly:@
 setSelectionOnly :: IsNSPrintInfo nsPrintInfo => nsPrintInfo -> Bool -> IO ()
-setSelectionOnly nsPrintInfo  value =
-    sendMsg nsPrintInfo (mkSelector "setSelectionOnly:") retVoid [argCULong (if value then 1 else 0)]
+setSelectionOnly nsPrintInfo value =
+  sendMessage nsPrintInfo setSelectionOnlySelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithDictionary:@
-initWithDictionarySelector :: Selector
+initWithDictionarySelector :: Selector '[Id NSDictionary] (Id NSPrintInfo)
 initWithDictionarySelector = mkSelector "initWithDictionary:"
 
 -- | @Selector@ for @initWithCoder:@
-initWithCoderSelector :: Selector
+initWithCoderSelector :: Selector '[Id NSCoder] (Id NSPrintInfo)
 initWithCoderSelector = mkSelector "initWithCoder:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSPrintInfo)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @dictionary@
-dictionarySelector :: Selector
+dictionarySelector :: Selector '[] (Id NSMutableDictionary)
 dictionarySelector = mkSelector "dictionary"
 
 -- | @Selector@ for @setUpPrintOperationDefaultValues@
-setUpPrintOperationDefaultValuesSelector :: Selector
+setUpPrintOperationDefaultValuesSelector :: Selector '[] ()
 setUpPrintOperationDefaultValuesSelector = mkSelector "setUpPrintOperationDefaultValues"
 
 -- | @Selector@ for @PMPrintSession@
-pmPrintSessionSelector :: Selector
+pmPrintSessionSelector :: Selector '[] (Ptr ())
 pmPrintSessionSelector = mkSelector "PMPrintSession"
 
 -- | @Selector@ for @PMPageFormat@
-pmPageFormatSelector :: Selector
+pmPageFormatSelector :: Selector '[] (Ptr ())
 pmPageFormatSelector = mkSelector "PMPageFormat"
 
 -- | @Selector@ for @PMPrintSettings@
-pmPrintSettingsSelector :: Selector
+pmPrintSettingsSelector :: Selector '[] (Ptr ())
 pmPrintSettingsSelector = mkSelector "PMPrintSettings"
 
 -- | @Selector@ for @updateFromPMPageFormat@
-updateFromPMPageFormatSelector :: Selector
+updateFromPMPageFormatSelector :: Selector '[] ()
 updateFromPMPageFormatSelector = mkSelector "updateFromPMPageFormat"
 
 -- | @Selector@ for @updateFromPMPrintSettings@
-updateFromPMPrintSettingsSelector :: Selector
+updateFromPMPrintSettingsSelector :: Selector '[] ()
 updateFromPMPrintSettingsSelector = mkSelector "updateFromPMPrintSettings"
 
 -- | @Selector@ for @takeSettingsFromPDFInfo:@
-takeSettingsFromPDFInfoSelector :: Selector
+takeSettingsFromPDFInfoSelector :: Selector '[Id NSPDFInfo] ()
 takeSettingsFromPDFInfoSelector = mkSelector "takeSettingsFromPDFInfo:"
 
 -- | @Selector@ for @setDefaultPrinter:@
-setDefaultPrinterSelector :: Selector
+setDefaultPrinterSelector :: Selector '[Id NSPrinter] ()
 setDefaultPrinterSelector = mkSelector "setDefaultPrinter:"
 
 -- | @Selector@ for @sizeForPaperName:@
-sizeForPaperNameSelector :: Selector
+sizeForPaperNameSelector :: Selector '[Id NSString] NSSize
 sizeForPaperNameSelector = mkSelector "sizeForPaperName:"
 
 -- | @Selector@ for @sharedPrintInfo@
-sharedPrintInfoSelector :: Selector
+sharedPrintInfoSelector :: Selector '[] (Id NSPrintInfo)
 sharedPrintInfoSelector = mkSelector "sharedPrintInfo"
 
 -- | @Selector@ for @setSharedPrintInfo:@
-setSharedPrintInfoSelector :: Selector
+setSharedPrintInfoSelector :: Selector '[Id NSPrintInfo] ()
 setSharedPrintInfoSelector = mkSelector "setSharedPrintInfo:"
 
 -- | @Selector@ for @paperName@
-paperNameSelector :: Selector
+paperNameSelector :: Selector '[] (Id NSString)
 paperNameSelector = mkSelector "paperName"
 
 -- | @Selector@ for @setPaperName:@
-setPaperNameSelector :: Selector
+setPaperNameSelector :: Selector '[Id NSString] ()
 setPaperNameSelector = mkSelector "setPaperName:"
 
 -- | @Selector@ for @paperSize@
-paperSizeSelector :: Selector
+paperSizeSelector :: Selector '[] NSSize
 paperSizeSelector = mkSelector "paperSize"
 
 -- | @Selector@ for @setPaperSize:@
-setPaperSizeSelector :: Selector
+setPaperSizeSelector :: Selector '[NSSize] ()
 setPaperSizeSelector = mkSelector "setPaperSize:"
 
 -- | @Selector@ for @orientation@
-orientationSelector :: Selector
+orientationSelector :: Selector '[] NSPaperOrientation
 orientationSelector = mkSelector "orientation"
 
 -- | @Selector@ for @setOrientation:@
-setOrientationSelector :: Selector
+setOrientationSelector :: Selector '[NSPaperOrientation] ()
 setOrientationSelector = mkSelector "setOrientation:"
 
 -- | @Selector@ for @scalingFactor@
-scalingFactorSelector :: Selector
+scalingFactorSelector :: Selector '[] CDouble
 scalingFactorSelector = mkSelector "scalingFactor"
 
 -- | @Selector@ for @setScalingFactor:@
-setScalingFactorSelector :: Selector
+setScalingFactorSelector :: Selector '[CDouble] ()
 setScalingFactorSelector = mkSelector "setScalingFactor:"
 
 -- | @Selector@ for @leftMargin@
-leftMarginSelector :: Selector
+leftMarginSelector :: Selector '[] CDouble
 leftMarginSelector = mkSelector "leftMargin"
 
 -- | @Selector@ for @setLeftMargin:@
-setLeftMarginSelector :: Selector
+setLeftMarginSelector :: Selector '[CDouble] ()
 setLeftMarginSelector = mkSelector "setLeftMargin:"
 
 -- | @Selector@ for @rightMargin@
-rightMarginSelector :: Selector
+rightMarginSelector :: Selector '[] CDouble
 rightMarginSelector = mkSelector "rightMargin"
 
 -- | @Selector@ for @setRightMargin:@
-setRightMarginSelector :: Selector
+setRightMarginSelector :: Selector '[CDouble] ()
 setRightMarginSelector = mkSelector "setRightMargin:"
 
 -- | @Selector@ for @topMargin@
-topMarginSelector :: Selector
+topMarginSelector :: Selector '[] CDouble
 topMarginSelector = mkSelector "topMargin"
 
 -- | @Selector@ for @setTopMargin:@
-setTopMarginSelector :: Selector
+setTopMarginSelector :: Selector '[CDouble] ()
 setTopMarginSelector = mkSelector "setTopMargin:"
 
 -- | @Selector@ for @bottomMargin@
-bottomMarginSelector :: Selector
+bottomMarginSelector :: Selector '[] CDouble
 bottomMarginSelector = mkSelector "bottomMargin"
 
 -- | @Selector@ for @setBottomMargin:@
-setBottomMarginSelector :: Selector
+setBottomMarginSelector :: Selector '[CDouble] ()
 setBottomMarginSelector = mkSelector "setBottomMargin:"
 
 -- | @Selector@ for @horizontallyCentered@
-horizontallyCenteredSelector :: Selector
+horizontallyCenteredSelector :: Selector '[] Bool
 horizontallyCenteredSelector = mkSelector "horizontallyCentered"
 
 -- | @Selector@ for @setHorizontallyCentered:@
-setHorizontallyCenteredSelector :: Selector
+setHorizontallyCenteredSelector :: Selector '[Bool] ()
 setHorizontallyCenteredSelector = mkSelector "setHorizontallyCentered:"
 
 -- | @Selector@ for @verticallyCentered@
-verticallyCenteredSelector :: Selector
+verticallyCenteredSelector :: Selector '[] Bool
 verticallyCenteredSelector = mkSelector "verticallyCentered"
 
 -- | @Selector@ for @setVerticallyCentered:@
-setVerticallyCenteredSelector :: Selector
+setVerticallyCenteredSelector :: Selector '[Bool] ()
 setVerticallyCenteredSelector = mkSelector "setVerticallyCentered:"
 
 -- | @Selector@ for @horizontalPagination@
-horizontalPaginationSelector :: Selector
+horizontalPaginationSelector :: Selector '[] NSPrintingPaginationMode
 horizontalPaginationSelector = mkSelector "horizontalPagination"
 
 -- | @Selector@ for @setHorizontalPagination:@
-setHorizontalPaginationSelector :: Selector
+setHorizontalPaginationSelector :: Selector '[NSPrintingPaginationMode] ()
 setHorizontalPaginationSelector = mkSelector "setHorizontalPagination:"
 
 -- | @Selector@ for @verticalPagination@
-verticalPaginationSelector :: Selector
+verticalPaginationSelector :: Selector '[] NSPrintingPaginationMode
 verticalPaginationSelector = mkSelector "verticalPagination"
 
 -- | @Selector@ for @setVerticalPagination:@
-setVerticalPaginationSelector :: Selector
+setVerticalPaginationSelector :: Selector '[NSPrintingPaginationMode] ()
 setVerticalPaginationSelector = mkSelector "setVerticalPagination:"
 
 -- | @Selector@ for @jobDisposition@
-jobDispositionSelector :: Selector
+jobDispositionSelector :: Selector '[] (Id NSString)
 jobDispositionSelector = mkSelector "jobDisposition"
 
 -- | @Selector@ for @setJobDisposition:@
-setJobDispositionSelector :: Selector
+setJobDispositionSelector :: Selector '[Id NSString] ()
 setJobDispositionSelector = mkSelector "setJobDisposition:"
 
 -- | @Selector@ for @printer@
-printerSelector :: Selector
+printerSelector :: Selector '[] (Id NSPrinter)
 printerSelector = mkSelector "printer"
 
 -- | @Selector@ for @setPrinter:@
-setPrinterSelector :: Selector
+setPrinterSelector :: Selector '[Id NSPrinter] ()
 setPrinterSelector = mkSelector "setPrinter:"
 
 -- | @Selector@ for @imageablePageBounds@
-imageablePageBoundsSelector :: Selector
+imageablePageBoundsSelector :: Selector '[] NSRect
 imageablePageBoundsSelector = mkSelector "imageablePageBounds"
 
 -- | @Selector@ for @localizedPaperName@
-localizedPaperNameSelector :: Selector
+localizedPaperNameSelector :: Selector '[] (Id NSString)
 localizedPaperNameSelector = mkSelector "localizedPaperName"
 
 -- | @Selector@ for @defaultPrinter@
-defaultPrinterSelector :: Selector
+defaultPrinterSelector :: Selector '[] (Id NSPrinter)
 defaultPrinterSelector = mkSelector "defaultPrinter"
 
 -- | @Selector@ for @printSettings@
-printSettingsSelector :: Selector
+printSettingsSelector :: Selector '[] (Id NSMutableDictionary)
 printSettingsSelector = mkSelector "printSettings"
 
 -- | @Selector@ for @selectionOnly@
-selectionOnlySelector :: Selector
+selectionOnlySelector :: Selector '[] Bool
 selectionOnlySelector = mkSelector "selectionOnly"
 
 -- | @Selector@ for @setSelectionOnly:@
-setSelectionOnlySelector :: Selector
+setSelectionOnlySelector :: Selector '[Bool] ()
 setSelectionOnlySelector = mkSelector "setSelectionOnly:"
 

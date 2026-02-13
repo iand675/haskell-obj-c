@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,24 +12,20 @@ module ObjC.AVFoundation.AVCompositionTrack
   , associatedTracksOfType
   , segments
   , formatDescriptionReplacements
+  , associatedTracksOfTypeSelector
+  , formatDescriptionReplacementsSelector
   , hasMediaCharacteristicSelector
   , metadataForFormatSelector
-  , associatedTracksOfTypeSelector
   , segmentsSelector
-  , formatDescriptionReplacementsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -37,21 +34,18 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- hasMediaCharacteristic:@
 hasMediaCharacteristic :: (IsAVCompositionTrack avCompositionTrack, IsNSString mediaCharacteristic) => avCompositionTrack -> mediaCharacteristic -> IO Bool
-hasMediaCharacteristic avCompositionTrack  mediaCharacteristic =
-  withObjCPtr mediaCharacteristic $ \raw_mediaCharacteristic ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg avCompositionTrack (mkSelector "hasMediaCharacteristic:") retCULong [argPtr (castPtr raw_mediaCharacteristic :: Ptr ())]
+hasMediaCharacteristic avCompositionTrack mediaCharacteristic =
+  sendMessage avCompositionTrack hasMediaCharacteristicSelector (toNSString mediaCharacteristic)
 
 -- | @- metadataForFormat:@
 metadataForFormat :: (IsAVCompositionTrack avCompositionTrack, IsNSString format) => avCompositionTrack -> format -> IO (Id NSArray)
-metadataForFormat avCompositionTrack  format =
-  withObjCPtr format $ \raw_format ->
-      sendMsg avCompositionTrack (mkSelector "metadataForFormat:") (retPtr retVoid) [argPtr (castPtr raw_format :: Ptr ())] >>= retainedObject . castPtr
+metadataForFormat avCompositionTrack format =
+  sendMessage avCompositionTrack metadataForFormatSelector (toNSString format)
 
 -- | @- associatedTracksOfType:@
 associatedTracksOfType :: (IsAVCompositionTrack avCompositionTrack, IsNSString trackAssociationType) => avCompositionTrack -> trackAssociationType -> IO (Id NSArray)
-associatedTracksOfType avCompositionTrack  trackAssociationType =
-  withObjCPtr trackAssociationType $ \raw_trackAssociationType ->
-      sendMsg avCompositionTrack (mkSelector "associatedTracksOfType:") (retPtr retVoid) [argPtr (castPtr raw_trackAssociationType :: Ptr ())] >>= retainedObject . castPtr
+associatedTracksOfType avCompositionTrack trackAssociationType =
+  sendMessage avCompositionTrack associatedTracksOfTypeSelector (toNSString trackAssociationType)
 
 -- | segments
 --
@@ -61,8 +55,8 @@ associatedTracksOfType avCompositionTrack  trackAssociationType =
 --
 -- ObjC selector: @- segments@
 segments :: IsAVCompositionTrack avCompositionTrack => avCompositionTrack -> IO (Id NSArray)
-segments avCompositionTrack  =
-    sendMsg avCompositionTrack (mkSelector "segments") (retPtr retVoid) [] >>= retainedObject . castPtr
+segments avCompositionTrack =
+  sendMessage avCompositionTrack segmentsSelector
 
 -- | formatDescriptionReplacements
 --
@@ -72,30 +66,30 @@ segments avCompositionTrack  =
 --
 -- ObjC selector: @- formatDescriptionReplacements@
 formatDescriptionReplacements :: IsAVCompositionTrack avCompositionTrack => avCompositionTrack -> IO (Id NSArray)
-formatDescriptionReplacements avCompositionTrack  =
-    sendMsg avCompositionTrack (mkSelector "formatDescriptionReplacements") (retPtr retVoid) [] >>= retainedObject . castPtr
+formatDescriptionReplacements avCompositionTrack =
+  sendMessage avCompositionTrack formatDescriptionReplacementsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @hasMediaCharacteristic:@
-hasMediaCharacteristicSelector :: Selector
+hasMediaCharacteristicSelector :: Selector '[Id NSString] Bool
 hasMediaCharacteristicSelector = mkSelector "hasMediaCharacteristic:"
 
 -- | @Selector@ for @metadataForFormat:@
-metadataForFormatSelector :: Selector
+metadataForFormatSelector :: Selector '[Id NSString] (Id NSArray)
 metadataForFormatSelector = mkSelector "metadataForFormat:"
 
 -- | @Selector@ for @associatedTracksOfType:@
-associatedTracksOfTypeSelector :: Selector
+associatedTracksOfTypeSelector :: Selector '[Id NSString] (Id NSArray)
 associatedTracksOfTypeSelector = mkSelector "associatedTracksOfType:"
 
 -- | @Selector@ for @segments@
-segmentsSelector :: Selector
+segmentsSelector :: Selector '[] (Id NSArray)
 segmentsSelector = mkSelector "segments"
 
 -- | @Selector@ for @formatDescriptionReplacements@
-formatDescriptionReplacementsSelector :: Selector
+formatDescriptionReplacementsSelector :: Selector '[] (Id NSArray)
 formatDescriptionReplacementsSelector = mkSelector "formatDescriptionReplacements"
 

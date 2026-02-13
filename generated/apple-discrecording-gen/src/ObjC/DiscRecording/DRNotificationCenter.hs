@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,22 +16,18 @@ module ObjC.DiscRecording.DRNotificationCenter
   , currentRunLoopCenter
   , addObserver_selector_name_object
   , removeObserver_name_object
-  , currentRunLoopCenterSelector
   , addObserver_selector_name_objectSelector
+  , currentRunLoopCenterSelector
   , removeObserver_name_objectSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -50,7 +47,7 @@ currentRunLoopCenter :: IO (Id DRNotificationCenter)
 currentRunLoopCenter  =
   do
     cls' <- getRequiredClass "DRNotificationCenter"
-    sendClassMsg cls' (mkSelector "currentRunLoopCenter") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' currentRunLoopCenterSelector
 
 -- | addObserver:selector:name:object:
 --
@@ -73,10 +70,9 @@ currentRunLoopCenter  =
 -- @anObject@ — The object to limit notifications for.
 --
 -- ObjC selector: @- addObserver:selector:name:object:@
-addObserver_selector_name_object :: (IsDRNotificationCenter drNotificationCenter, IsNSString notificationName) => drNotificationCenter -> RawId -> Selector -> notificationName -> RawId -> IO ()
-addObserver_selector_name_object drNotificationCenter  observer aSelector notificationName anObject =
-  withObjCPtr notificationName $ \raw_notificationName ->
-      sendMsg drNotificationCenter (mkSelector "addObserver:selector:name:object:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (unSelector aSelector), argPtr (castPtr raw_notificationName :: Ptr ()), argPtr (castPtr (unRawId anObject) :: Ptr ())]
+addObserver_selector_name_object :: (IsDRNotificationCenter drNotificationCenter, IsNSString notificationName) => drNotificationCenter -> RawId -> Sel -> notificationName -> RawId -> IO ()
+addObserver_selector_name_object drNotificationCenter observer aSelector notificationName anObject =
+  sendMessage drNotificationCenter addObserver_selector_name_objectSelector observer aSelector (toNSString notificationName) anObject
 
 -- | removeObserver:name:object:
 --
@@ -96,23 +92,22 @@ addObserver_selector_name_object drNotificationCenter  observer aSelector notifi
 --
 -- ObjC selector: @- removeObserver:name:object:@
 removeObserver_name_object :: (IsDRNotificationCenter drNotificationCenter, IsNSString aName) => drNotificationCenter -> RawId -> aName -> RawId -> IO ()
-removeObserver_name_object drNotificationCenter  observer aName anObject =
-  withObjCPtr aName $ \raw_aName ->
-      sendMsg drNotificationCenter (mkSelector "removeObserver:name:object:") retVoid [argPtr (castPtr (unRawId observer) :: Ptr ()), argPtr (castPtr raw_aName :: Ptr ()), argPtr (castPtr (unRawId anObject) :: Ptr ())]
+removeObserver_name_object drNotificationCenter observer aName anObject =
+  sendMessage drNotificationCenter removeObserver_name_objectSelector observer (toNSString aName) anObject
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @currentRunLoopCenter@
-currentRunLoopCenterSelector :: Selector
+currentRunLoopCenterSelector :: Selector '[] (Id DRNotificationCenter)
 currentRunLoopCenterSelector = mkSelector "currentRunLoopCenter"
 
 -- | @Selector@ for @addObserver:selector:name:object:@
-addObserver_selector_name_objectSelector :: Selector
+addObserver_selector_name_objectSelector :: Selector '[RawId, Sel, Id NSString, RawId] ()
 addObserver_selector_name_objectSelector = mkSelector "addObserver:selector:name:object:"
 
 -- | @Selector@ for @removeObserver:name:object:@
-removeObserver_name_objectSelector :: Selector
+removeObserver_name_objectSelector :: Selector '[RawId, Id NSString, RawId] ()
 removeObserver_name_objectSelector = mkSelector "removeObserver:name:object:"
 

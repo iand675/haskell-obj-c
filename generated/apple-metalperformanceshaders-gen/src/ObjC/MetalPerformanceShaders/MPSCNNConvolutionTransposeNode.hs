@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,22 +12,18 @@ module ObjC.MetalPerformanceShaders.MPSCNNConvolutionTransposeNode
   , nodeWithSource_convolutionGradientState_weights
   , initWithSource_convolutionGradientState_weights
   , convolutionGradientState
-  , nodeWithSource_convolutionGradientState_weightsSelector
-  , initWithSource_convolutionGradientState_weightsSelector
   , convolutionGradientStateSelector
+  , initWithSource_convolutionGradientState_weightsSelector
+  , nodeWithSource_convolutionGradientState_weightsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -48,9 +45,7 @@ nodeWithSource_convolutionGradientState_weights :: (IsMPSNNImageNode sourceNode,
 nodeWithSource_convolutionGradientState_weights sourceNode convolutionGradientState weights =
   do
     cls' <- getRequiredClass "MPSCNNConvolutionTransposeNode"
-    withObjCPtr sourceNode $ \raw_sourceNode ->
-      withObjCPtr convolutionGradientState $ \raw_convolutionGradientState ->
-        sendClassMsg cls' (mkSelector "nodeWithSource:convolutionGradientState:weights:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_convolutionGradientState :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSource_convolutionGradientState_weightsSelector (toMPSNNImageNode sourceNode) (toMPSCNNConvolutionGradientStateNode convolutionGradientState) weights
 
 -- | Init a node representing a MPSCNNConvolutionTransposeNode kernel
 --
@@ -64,31 +59,29 @@ nodeWithSource_convolutionGradientState_weights sourceNode convolutionGradientSt
 --
 -- ObjC selector: @- initWithSource:convolutionGradientState:weights:@
 initWithSource_convolutionGradientState_weights :: (IsMPSCNNConvolutionTransposeNode mpscnnConvolutionTransposeNode, IsMPSNNImageNode sourceNode, IsMPSCNNConvolutionGradientStateNode convolutionGradientState) => mpscnnConvolutionTransposeNode -> sourceNode -> convolutionGradientState -> RawId -> IO (Id MPSCNNConvolutionTransposeNode)
-initWithSource_convolutionGradientState_weights mpscnnConvolutionTransposeNode  sourceNode convolutionGradientState weights =
-  withObjCPtr sourceNode $ \raw_sourceNode ->
-    withObjCPtr convolutionGradientState $ \raw_convolutionGradientState ->
-        sendMsg mpscnnConvolutionTransposeNode (mkSelector "initWithSource:convolutionGradientState:weights:") (retPtr retVoid) [argPtr (castPtr raw_sourceNode :: Ptr ()), argPtr (castPtr raw_convolutionGradientState :: Ptr ()), argPtr (castPtr (unRawId weights) :: Ptr ())] >>= ownedObject . castPtr
+initWithSource_convolutionGradientState_weights mpscnnConvolutionTransposeNode sourceNode convolutionGradientState weights =
+  sendOwnedMessage mpscnnConvolutionTransposeNode initWithSource_convolutionGradientState_weightsSelector (toMPSNNImageNode sourceNode) (toMPSCNNConvolutionGradientStateNode convolutionGradientState) weights
 
 -- | unavailable
 --
 -- ObjC selector: @- convolutionGradientState@
 convolutionGradientState :: IsMPSCNNConvolutionTransposeNode mpscnnConvolutionTransposeNode => mpscnnConvolutionTransposeNode -> IO RawId
-convolutionGradientState mpscnnConvolutionTransposeNode  =
-    fmap (RawId . castPtr) $ sendMsg mpscnnConvolutionTransposeNode (mkSelector "convolutionGradientState") (retPtr retVoid) []
+convolutionGradientState mpscnnConvolutionTransposeNode =
+  sendMessage mpscnnConvolutionTransposeNode convolutionGradientStateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSource:convolutionGradientState:weights:@
-nodeWithSource_convolutionGradientState_weightsSelector :: Selector
+nodeWithSource_convolutionGradientState_weightsSelector :: Selector '[Id MPSNNImageNode, Id MPSCNNConvolutionGradientStateNode, RawId] (Id MPSCNNConvolutionTransposeNode)
 nodeWithSource_convolutionGradientState_weightsSelector = mkSelector "nodeWithSource:convolutionGradientState:weights:"
 
 -- | @Selector@ for @initWithSource:convolutionGradientState:weights:@
-initWithSource_convolutionGradientState_weightsSelector :: Selector
+initWithSource_convolutionGradientState_weightsSelector :: Selector '[Id MPSNNImageNode, Id MPSCNNConvolutionGradientStateNode, RawId] (Id MPSCNNConvolutionTransposeNode)
 initWithSource_convolutionGradientState_weightsSelector = mkSelector "initWithSource:convolutionGradientState:weights:"
 
 -- | @Selector@ for @convolutionGradientState@
-convolutionGradientStateSelector :: Selector
+convolutionGradientStateSelector :: Selector '[] RawId
 convolutionGradientStateSelector = mkSelector "convolutionGradientState"
 

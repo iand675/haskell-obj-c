@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -20,27 +21,23 @@ module ObjC.AVFoundation.AVCaptureAudioFileOutput
   , setMetadata
   , audioSettings
   , setAudioSettings
-  , initSelector
-  , newSelector
-  , availableOutputFileTypesSelector
-  , startRecordingToOutputFileURL_outputFileType_recordingDelegateSelector
-  , metadataSelector
-  , setMetadataSelector
   , audioSettingsSelector
+  , availableOutputFileTypesSelector
+  , initSelector
+  , metadataSelector
+  , newSelector
   , setAudioSettingsSelector
+  , setMetadataSelector
+  , startRecordingToOutputFileURL_outputFileType_recordingDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,15 +46,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVCaptureAudioFileOutput avCaptureAudioFileOutput => avCaptureAudioFileOutput -> IO (Id AVCaptureAudioFileOutput)
-init_ avCaptureAudioFileOutput  =
-    sendMsg avCaptureAudioFileOutput (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avCaptureAudioFileOutput =
+  sendOwnedMessage avCaptureAudioFileOutput initSelector
 
 -- | @+ new@
 new :: IO (Id AVCaptureAudioFileOutput)
 new  =
   do
     cls' <- getRequiredClass "AVCaptureAudioFileOutput"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | availableOutputFileTypes
 --
@@ -70,7 +67,7 @@ availableOutputFileTypes :: IO (Id NSArray)
 availableOutputFileTypes  =
   do
     cls' <- getRequiredClass "AVCaptureAudioFileOutput"
-    sendClassMsg cls' (mkSelector "availableOutputFileTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' availableOutputFileTypesSelector
 
 -- | startRecordingToOutputFileURL:outputFileType:recordingDelegate:
 --
@@ -94,10 +91,8 @@ availableOutputFileTypes  =
 --
 -- ObjC selector: @- startRecordingToOutputFileURL:outputFileType:recordingDelegate:@
 startRecordingToOutputFileURL_outputFileType_recordingDelegate :: (IsAVCaptureAudioFileOutput avCaptureAudioFileOutput, IsNSURL outputFileURL, IsNSString fileType) => avCaptureAudioFileOutput -> outputFileURL -> fileType -> RawId -> IO ()
-startRecordingToOutputFileURL_outputFileType_recordingDelegate avCaptureAudioFileOutput  outputFileURL fileType delegate =
-  withObjCPtr outputFileURL $ \raw_outputFileURL ->
-    withObjCPtr fileType $ \raw_fileType ->
-        sendMsg avCaptureAudioFileOutput (mkSelector "startRecordingToOutputFileURL:outputFileType:recordingDelegate:") retVoid [argPtr (castPtr raw_outputFileURL :: Ptr ()), argPtr (castPtr raw_fileType :: Ptr ()), argPtr (castPtr (unRawId delegate) :: Ptr ())]
+startRecordingToOutputFileURL_outputFileType_recordingDelegate avCaptureAudioFileOutput outputFileURL fileType delegate =
+  sendMessage avCaptureAudioFileOutput startRecordingToOutputFileURL_outputFileType_recordingDelegateSelector (toNSURL outputFileURL) (toNSString fileType) delegate
 
 -- | metadata
 --
@@ -107,8 +102,8 @@ startRecordingToOutputFileURL_outputFileType_recordingDelegate avCaptureAudioFil
 --
 -- ObjC selector: @- metadata@
 metadata :: IsAVCaptureAudioFileOutput avCaptureAudioFileOutput => avCaptureAudioFileOutput -> IO (Id NSArray)
-metadata avCaptureAudioFileOutput  =
-    sendMsg avCaptureAudioFileOutput (mkSelector "metadata") (retPtr retVoid) [] >>= retainedObject . castPtr
+metadata avCaptureAudioFileOutput =
+  sendMessage avCaptureAudioFileOutput metadataSelector
 
 -- | metadata
 --
@@ -118,9 +113,8 @@ metadata avCaptureAudioFileOutput  =
 --
 -- ObjC selector: @- setMetadata:@
 setMetadata :: (IsAVCaptureAudioFileOutput avCaptureAudioFileOutput, IsNSArray value) => avCaptureAudioFileOutput -> value -> IO ()
-setMetadata avCaptureAudioFileOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureAudioFileOutput (mkSelector "setMetadata:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setMetadata avCaptureAudioFileOutput value =
+  sendMessage avCaptureAudioFileOutput setMetadataSelector (toNSArray value)
 
 -- | audioSettings
 --
@@ -130,8 +124,8 @@ setMetadata avCaptureAudioFileOutput  value =
 --
 -- ObjC selector: @- audioSettings@
 audioSettings :: IsAVCaptureAudioFileOutput avCaptureAudioFileOutput => avCaptureAudioFileOutput -> IO (Id NSDictionary)
-audioSettings avCaptureAudioFileOutput  =
-    sendMsg avCaptureAudioFileOutput (mkSelector "audioSettings") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioSettings avCaptureAudioFileOutput =
+  sendMessage avCaptureAudioFileOutput audioSettingsSelector
 
 -- | audioSettings
 --
@@ -141,43 +135,42 @@ audioSettings avCaptureAudioFileOutput  =
 --
 -- ObjC selector: @- setAudioSettings:@
 setAudioSettings :: (IsAVCaptureAudioFileOutput avCaptureAudioFileOutput, IsNSDictionary value) => avCaptureAudioFileOutput -> value -> IO ()
-setAudioSettings avCaptureAudioFileOutput  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureAudioFileOutput (mkSelector "setAudioSettings:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioSettings avCaptureAudioFileOutput value =
+  sendMessage avCaptureAudioFileOutput setAudioSettingsSelector (toNSDictionary value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVCaptureAudioFileOutput)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVCaptureAudioFileOutput)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @availableOutputFileTypes@
-availableOutputFileTypesSelector :: Selector
+availableOutputFileTypesSelector :: Selector '[] (Id NSArray)
 availableOutputFileTypesSelector = mkSelector "availableOutputFileTypes"
 
 -- | @Selector@ for @startRecordingToOutputFileURL:outputFileType:recordingDelegate:@
-startRecordingToOutputFileURL_outputFileType_recordingDelegateSelector :: Selector
+startRecordingToOutputFileURL_outputFileType_recordingDelegateSelector :: Selector '[Id NSURL, Id NSString, RawId] ()
 startRecordingToOutputFileURL_outputFileType_recordingDelegateSelector = mkSelector "startRecordingToOutputFileURL:outputFileType:recordingDelegate:"
 
 -- | @Selector@ for @metadata@
-metadataSelector :: Selector
+metadataSelector :: Selector '[] (Id NSArray)
 metadataSelector = mkSelector "metadata"
 
 -- | @Selector@ for @setMetadata:@
-setMetadataSelector :: Selector
+setMetadataSelector :: Selector '[Id NSArray] ()
 setMetadataSelector = mkSelector "setMetadata:"
 
 -- | @Selector@ for @audioSettings@
-audioSettingsSelector :: Selector
+audioSettingsSelector :: Selector '[] (Id NSDictionary)
 audioSettingsSelector = mkSelector "audioSettings"
 
 -- | @Selector@ for @setAudioSettings:@
-setAudioSettingsSelector :: Selector
+setAudioSettingsSelector :: Selector '[Id NSDictionary] ()
 setAudioSettingsSelector = mkSelector "setAudioSettings:"
 

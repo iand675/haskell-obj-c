@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -21,34 +22,30 @@ module ObjC.CoreSpotlight.CSSearchableIndex
   , fetchLastClientStateWithCompletionHandler
   , indexDelegate
   , setIndexDelegate
-  , isIndexingAvailableSelector
-  , defaultSearchableIndexSelector
-  , initWithNameSelector
-  , initWithName_protectionClassSelector
-  , indexSearchableItems_completionHandlerSelector
-  , deleteSearchableItemsWithIdentifiers_completionHandlerSelector
-  , deleteSearchableItemsWithDomainIdentifiers_completionHandlerSelector
-  , deleteAllSearchableItemsWithCompletionHandlerSelector
-  , fetchDataForBundleIdentifier_itemIdentifier_contentType_completionHandlerSelector
   , beginIndexBatchSelector
-  , endIndexBatchWithExpectedClientState_newClientState_completionHandlerSelector
+  , defaultSearchableIndexSelector
+  , deleteAllSearchableItemsWithCompletionHandlerSelector
+  , deleteSearchableItemsWithDomainIdentifiers_completionHandlerSelector
+  , deleteSearchableItemsWithIdentifiers_completionHandlerSelector
   , endIndexBatchWithClientState_completionHandlerSelector
+  , endIndexBatchWithExpectedClientState_newClientState_completionHandlerSelector
+  , fetchDataForBundleIdentifier_itemIdentifier_contentType_completionHandlerSelector
   , fetchLastClientStateWithCompletionHandlerSelector
   , indexDelegateSelector
+  , indexSearchableItems_completionHandlerSelector
+  , initWithNameSelector
+  , initWithName_protectionClassSelector
+  , isIndexingAvailableSelector
   , setIndexDelegateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -61,153 +58,141 @@ isIndexingAvailable :: IO Bool
 isIndexingAvailable  =
   do
     cls' <- getRequiredClass "CSSearchableIndex"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "isIndexingAvailable") retCULong []
+    sendClassMessage cls' isIndexingAvailableSelector
 
 -- | @+ defaultSearchableIndex@
 defaultSearchableIndex :: IO (Id CSSearchableIndex)
 defaultSearchableIndex  =
   do
     cls' <- getRequiredClass "CSSearchableIndex"
-    sendClassMsg cls' (mkSelector "defaultSearchableIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' defaultSearchableIndexSelector
 
 -- | @- initWithName:@
 initWithName :: (IsCSSearchableIndex csSearchableIndex, IsNSString name) => csSearchableIndex -> name -> IO (Id CSSearchableIndex)
-initWithName csSearchableIndex  name =
-  withObjCPtr name $ \raw_name ->
-      sendMsg csSearchableIndex (mkSelector "initWithName:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ())] >>= ownedObject . castPtr
+initWithName csSearchableIndex name =
+  sendOwnedMessage csSearchableIndex initWithNameSelector (toNSString name)
 
 -- | @- initWithName:protectionClass:@
 initWithName_protectionClass :: (IsCSSearchableIndex csSearchableIndex, IsNSString name, IsNSString protectionClass) => csSearchableIndex -> name -> protectionClass -> IO (Id CSSearchableIndex)
-initWithName_protectionClass csSearchableIndex  name protectionClass =
-  withObjCPtr name $ \raw_name ->
-    withObjCPtr protectionClass $ \raw_protectionClass ->
-        sendMsg csSearchableIndex (mkSelector "initWithName:protectionClass:") (retPtr retVoid) [argPtr (castPtr raw_name :: Ptr ()), argPtr (castPtr raw_protectionClass :: Ptr ())] >>= ownedObject . castPtr
+initWithName_protectionClass csSearchableIndex name protectionClass =
+  sendOwnedMessage csSearchableIndex initWithName_protectionClassSelector (toNSString name) (toNSString protectionClass)
 
 -- | @- indexSearchableItems:completionHandler:@
 indexSearchableItems_completionHandler :: (IsCSSearchableIndex csSearchableIndex, IsNSArray items) => csSearchableIndex -> items -> Ptr () -> IO ()
-indexSearchableItems_completionHandler csSearchableIndex  items completionHandler =
-  withObjCPtr items $ \raw_items ->
-      sendMsg csSearchableIndex (mkSelector "indexSearchableItems:completionHandler:") retVoid [argPtr (castPtr raw_items :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+indexSearchableItems_completionHandler csSearchableIndex items completionHandler =
+  sendMessage csSearchableIndex indexSearchableItems_completionHandlerSelector (toNSArray items) completionHandler
 
 -- | @- deleteSearchableItemsWithIdentifiers:completionHandler:@
 deleteSearchableItemsWithIdentifiers_completionHandler :: (IsCSSearchableIndex csSearchableIndex, IsNSArray identifiers) => csSearchableIndex -> identifiers -> Ptr () -> IO ()
-deleteSearchableItemsWithIdentifiers_completionHandler csSearchableIndex  identifiers completionHandler =
-  withObjCPtr identifiers $ \raw_identifiers ->
-      sendMsg csSearchableIndex (mkSelector "deleteSearchableItemsWithIdentifiers:completionHandler:") retVoid [argPtr (castPtr raw_identifiers :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+deleteSearchableItemsWithIdentifiers_completionHandler csSearchableIndex identifiers completionHandler =
+  sendMessage csSearchableIndex deleteSearchableItemsWithIdentifiers_completionHandlerSelector (toNSArray identifiers) completionHandler
 
 -- | @- deleteSearchableItemsWithDomainIdentifiers:completionHandler:@
 deleteSearchableItemsWithDomainIdentifiers_completionHandler :: (IsCSSearchableIndex csSearchableIndex, IsNSArray domainIdentifiers) => csSearchableIndex -> domainIdentifiers -> Ptr () -> IO ()
-deleteSearchableItemsWithDomainIdentifiers_completionHandler csSearchableIndex  domainIdentifiers completionHandler =
-  withObjCPtr domainIdentifiers $ \raw_domainIdentifiers ->
-      sendMsg csSearchableIndex (mkSelector "deleteSearchableItemsWithDomainIdentifiers:completionHandler:") retVoid [argPtr (castPtr raw_domainIdentifiers :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+deleteSearchableItemsWithDomainIdentifiers_completionHandler csSearchableIndex domainIdentifiers completionHandler =
+  sendMessage csSearchableIndex deleteSearchableItemsWithDomainIdentifiers_completionHandlerSelector (toNSArray domainIdentifiers) completionHandler
 
 -- | @- deleteAllSearchableItemsWithCompletionHandler:@
 deleteAllSearchableItemsWithCompletionHandler :: IsCSSearchableIndex csSearchableIndex => csSearchableIndex -> Ptr () -> IO ()
-deleteAllSearchableItemsWithCompletionHandler csSearchableIndex  completionHandler =
-    sendMsg csSearchableIndex (mkSelector "deleteAllSearchableItemsWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+deleteAllSearchableItemsWithCompletionHandler csSearchableIndex completionHandler =
+  sendMessage csSearchableIndex deleteAllSearchableItemsWithCompletionHandlerSelector completionHandler
 
 -- | @- fetchDataForBundleIdentifier:itemIdentifier:contentType:completionHandler:@
 fetchDataForBundleIdentifier_itemIdentifier_contentType_completionHandler :: (IsCSSearchableIndex csSearchableIndex, IsNSString bundleIdentifier, IsNSString itemIdentifier, IsUTType contentType) => csSearchableIndex -> bundleIdentifier -> itemIdentifier -> contentType -> Ptr () -> IO ()
-fetchDataForBundleIdentifier_itemIdentifier_contentType_completionHandler csSearchableIndex  bundleIdentifier itemIdentifier contentType completionHandler =
-  withObjCPtr bundleIdentifier $ \raw_bundleIdentifier ->
-    withObjCPtr itemIdentifier $ \raw_itemIdentifier ->
-      withObjCPtr contentType $ \raw_contentType ->
-          sendMsg csSearchableIndex (mkSelector "fetchDataForBundleIdentifier:itemIdentifier:contentType:completionHandler:") retVoid [argPtr (castPtr raw_bundleIdentifier :: Ptr ()), argPtr (castPtr raw_itemIdentifier :: Ptr ()), argPtr (castPtr raw_contentType :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+fetchDataForBundleIdentifier_itemIdentifier_contentType_completionHandler csSearchableIndex bundleIdentifier itemIdentifier contentType completionHandler =
+  sendMessage csSearchableIndex fetchDataForBundleIdentifier_itemIdentifier_contentType_completionHandlerSelector (toNSString bundleIdentifier) (toNSString itemIdentifier) (toUTType contentType) completionHandler
 
 -- | @- beginIndexBatch@
 beginIndexBatch :: IsCSSearchableIndex csSearchableIndex => csSearchableIndex -> IO ()
-beginIndexBatch csSearchableIndex  =
-    sendMsg csSearchableIndex (mkSelector "beginIndexBatch") retVoid []
+beginIndexBatch csSearchableIndex =
+  sendMessage csSearchableIndex beginIndexBatchSelector
 
 -- | @- endIndexBatchWithExpectedClientState:newClientState:completionHandler:@
 endIndexBatchWithExpectedClientState_newClientState_completionHandler :: (IsCSSearchableIndex csSearchableIndex, IsNSData expectedClientState, IsNSData newClientState) => csSearchableIndex -> expectedClientState -> newClientState -> Ptr () -> IO ()
-endIndexBatchWithExpectedClientState_newClientState_completionHandler csSearchableIndex  expectedClientState newClientState completionHandler =
-  withObjCPtr expectedClientState $ \raw_expectedClientState ->
-    withObjCPtr newClientState $ \raw_newClientState ->
-        sendMsg csSearchableIndex (mkSelector "endIndexBatchWithExpectedClientState:newClientState:completionHandler:") retVoid [argPtr (castPtr raw_expectedClientState :: Ptr ()), argPtr (castPtr raw_newClientState :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+endIndexBatchWithExpectedClientState_newClientState_completionHandler csSearchableIndex expectedClientState newClientState completionHandler =
+  sendMessage csSearchableIndex endIndexBatchWithExpectedClientState_newClientState_completionHandlerSelector (toNSData expectedClientState) (toNSData newClientState) completionHandler
 
 -- | @- endIndexBatchWithClientState:completionHandler:@
 endIndexBatchWithClientState_completionHandler :: (IsCSSearchableIndex csSearchableIndex, IsNSData clientState) => csSearchableIndex -> clientState -> Ptr () -> IO ()
-endIndexBatchWithClientState_completionHandler csSearchableIndex  clientState completionHandler =
-  withObjCPtr clientState $ \raw_clientState ->
-      sendMsg csSearchableIndex (mkSelector "endIndexBatchWithClientState:completionHandler:") retVoid [argPtr (castPtr raw_clientState :: Ptr ()), argPtr (castPtr completionHandler :: Ptr ())]
+endIndexBatchWithClientState_completionHandler csSearchableIndex clientState completionHandler =
+  sendMessage csSearchableIndex endIndexBatchWithClientState_completionHandlerSelector (toNSData clientState) completionHandler
 
 -- | @- fetchLastClientStateWithCompletionHandler:@
 fetchLastClientStateWithCompletionHandler :: IsCSSearchableIndex csSearchableIndex => csSearchableIndex -> Ptr () -> IO ()
-fetchLastClientStateWithCompletionHandler csSearchableIndex  completionHandler =
-    sendMsg csSearchableIndex (mkSelector "fetchLastClientStateWithCompletionHandler:") retVoid [argPtr (castPtr completionHandler :: Ptr ())]
+fetchLastClientStateWithCompletionHandler csSearchableIndex completionHandler =
+  sendMessage csSearchableIndex fetchLastClientStateWithCompletionHandlerSelector completionHandler
 
 -- | @- indexDelegate@
 indexDelegate :: IsCSSearchableIndex csSearchableIndex => csSearchableIndex -> IO RawId
-indexDelegate csSearchableIndex  =
-    fmap (RawId . castPtr) $ sendMsg csSearchableIndex (mkSelector "indexDelegate") (retPtr retVoid) []
+indexDelegate csSearchableIndex =
+  sendMessage csSearchableIndex indexDelegateSelector
 
 -- | @- setIndexDelegate:@
 setIndexDelegate :: IsCSSearchableIndex csSearchableIndex => csSearchableIndex -> RawId -> IO ()
-setIndexDelegate csSearchableIndex  value =
-    sendMsg csSearchableIndex (mkSelector "setIndexDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setIndexDelegate csSearchableIndex value =
+  sendMessage csSearchableIndex setIndexDelegateSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @isIndexingAvailable@
-isIndexingAvailableSelector :: Selector
+isIndexingAvailableSelector :: Selector '[] Bool
 isIndexingAvailableSelector = mkSelector "isIndexingAvailable"
 
 -- | @Selector@ for @defaultSearchableIndex@
-defaultSearchableIndexSelector :: Selector
+defaultSearchableIndexSelector :: Selector '[] (Id CSSearchableIndex)
 defaultSearchableIndexSelector = mkSelector "defaultSearchableIndex"
 
 -- | @Selector@ for @initWithName:@
-initWithNameSelector :: Selector
+initWithNameSelector :: Selector '[Id NSString] (Id CSSearchableIndex)
 initWithNameSelector = mkSelector "initWithName:"
 
 -- | @Selector@ for @initWithName:protectionClass:@
-initWithName_protectionClassSelector :: Selector
+initWithName_protectionClassSelector :: Selector '[Id NSString, Id NSString] (Id CSSearchableIndex)
 initWithName_protectionClassSelector = mkSelector "initWithName:protectionClass:"
 
 -- | @Selector@ for @indexSearchableItems:completionHandler:@
-indexSearchableItems_completionHandlerSelector :: Selector
+indexSearchableItems_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 indexSearchableItems_completionHandlerSelector = mkSelector "indexSearchableItems:completionHandler:"
 
 -- | @Selector@ for @deleteSearchableItemsWithIdentifiers:completionHandler:@
-deleteSearchableItemsWithIdentifiers_completionHandlerSelector :: Selector
+deleteSearchableItemsWithIdentifiers_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 deleteSearchableItemsWithIdentifiers_completionHandlerSelector = mkSelector "deleteSearchableItemsWithIdentifiers:completionHandler:"
 
 -- | @Selector@ for @deleteSearchableItemsWithDomainIdentifiers:completionHandler:@
-deleteSearchableItemsWithDomainIdentifiers_completionHandlerSelector :: Selector
+deleteSearchableItemsWithDomainIdentifiers_completionHandlerSelector :: Selector '[Id NSArray, Ptr ()] ()
 deleteSearchableItemsWithDomainIdentifiers_completionHandlerSelector = mkSelector "deleteSearchableItemsWithDomainIdentifiers:completionHandler:"
 
 -- | @Selector@ for @deleteAllSearchableItemsWithCompletionHandler:@
-deleteAllSearchableItemsWithCompletionHandlerSelector :: Selector
+deleteAllSearchableItemsWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 deleteAllSearchableItemsWithCompletionHandlerSelector = mkSelector "deleteAllSearchableItemsWithCompletionHandler:"
 
 -- | @Selector@ for @fetchDataForBundleIdentifier:itemIdentifier:contentType:completionHandler:@
-fetchDataForBundleIdentifier_itemIdentifier_contentType_completionHandlerSelector :: Selector
+fetchDataForBundleIdentifier_itemIdentifier_contentType_completionHandlerSelector :: Selector '[Id NSString, Id NSString, Id UTType, Ptr ()] ()
 fetchDataForBundleIdentifier_itemIdentifier_contentType_completionHandlerSelector = mkSelector "fetchDataForBundleIdentifier:itemIdentifier:contentType:completionHandler:"
 
 -- | @Selector@ for @beginIndexBatch@
-beginIndexBatchSelector :: Selector
+beginIndexBatchSelector :: Selector '[] ()
 beginIndexBatchSelector = mkSelector "beginIndexBatch"
 
 -- | @Selector@ for @endIndexBatchWithExpectedClientState:newClientState:completionHandler:@
-endIndexBatchWithExpectedClientState_newClientState_completionHandlerSelector :: Selector
+endIndexBatchWithExpectedClientState_newClientState_completionHandlerSelector :: Selector '[Id NSData, Id NSData, Ptr ()] ()
 endIndexBatchWithExpectedClientState_newClientState_completionHandlerSelector = mkSelector "endIndexBatchWithExpectedClientState:newClientState:completionHandler:"
 
 -- | @Selector@ for @endIndexBatchWithClientState:completionHandler:@
-endIndexBatchWithClientState_completionHandlerSelector :: Selector
+endIndexBatchWithClientState_completionHandlerSelector :: Selector '[Id NSData, Ptr ()] ()
 endIndexBatchWithClientState_completionHandlerSelector = mkSelector "endIndexBatchWithClientState:completionHandler:"
 
 -- | @Selector@ for @fetchLastClientStateWithCompletionHandler:@
-fetchLastClientStateWithCompletionHandlerSelector :: Selector
+fetchLastClientStateWithCompletionHandlerSelector :: Selector '[Ptr ()] ()
 fetchLastClientStateWithCompletionHandlerSelector = mkSelector "fetchLastClientStateWithCompletionHandler:"
 
 -- | @Selector@ for @indexDelegate@
-indexDelegateSelector :: Selector
+indexDelegateSelector :: Selector '[] RawId
 indexDelegateSelector = mkSelector "indexDelegate"
 
 -- | @Selector@ for @setIndexDelegate:@
-setIndexDelegateSelector :: Selector
+setIndexDelegateSelector :: Selector '[RawId] ()
 setIndexDelegateSelector = mkSelector "setIndexDelegate:"
 

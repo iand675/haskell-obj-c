@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -9,22 +10,18 @@ module ObjC.Accessibility.AXMathExpressionFraction
   , initWithNumeratorExpression_denimonatorExpression
   , numeratorExpression
   , denimonatorExpression
+  , denimonatorExpressionSelector
   , initWithNumeratorExpression_denimonatorExpressionSelector
   , numeratorExpressionSelector
-  , denimonatorExpressionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -33,34 +30,32 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithNumeratorExpression:denimonatorExpression:@
 initWithNumeratorExpression_denimonatorExpression :: (IsAXMathExpressionFraction axMathExpressionFraction, IsAXMathExpression numeratorExpression, IsAXMathExpression denimonatorExpression) => axMathExpressionFraction -> numeratorExpression -> denimonatorExpression -> IO (Id AXMathExpressionFraction)
-initWithNumeratorExpression_denimonatorExpression axMathExpressionFraction  numeratorExpression denimonatorExpression =
-  withObjCPtr numeratorExpression $ \raw_numeratorExpression ->
-    withObjCPtr denimonatorExpression $ \raw_denimonatorExpression ->
-        sendMsg axMathExpressionFraction (mkSelector "initWithNumeratorExpression:denimonatorExpression:") (retPtr retVoid) [argPtr (castPtr raw_numeratorExpression :: Ptr ()), argPtr (castPtr raw_denimonatorExpression :: Ptr ())] >>= ownedObject . castPtr
+initWithNumeratorExpression_denimonatorExpression axMathExpressionFraction numeratorExpression denimonatorExpression =
+  sendOwnedMessage axMathExpressionFraction initWithNumeratorExpression_denimonatorExpressionSelector (toAXMathExpression numeratorExpression) (toAXMathExpression denimonatorExpression)
 
 -- | @- numeratorExpression@
 numeratorExpression :: IsAXMathExpressionFraction axMathExpressionFraction => axMathExpressionFraction -> IO (Id AXMathExpression)
-numeratorExpression axMathExpressionFraction  =
-    sendMsg axMathExpressionFraction (mkSelector "numeratorExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+numeratorExpression axMathExpressionFraction =
+  sendMessage axMathExpressionFraction numeratorExpressionSelector
 
 -- | @- denimonatorExpression@
 denimonatorExpression :: IsAXMathExpressionFraction axMathExpressionFraction => axMathExpressionFraction -> IO (Id AXMathExpression)
-denimonatorExpression axMathExpressionFraction  =
-    sendMsg axMathExpressionFraction (mkSelector "denimonatorExpression") (retPtr retVoid) [] >>= retainedObject . castPtr
+denimonatorExpression axMathExpressionFraction =
+  sendMessage axMathExpressionFraction denimonatorExpressionSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithNumeratorExpression:denimonatorExpression:@
-initWithNumeratorExpression_denimonatorExpressionSelector :: Selector
+initWithNumeratorExpression_denimonatorExpressionSelector :: Selector '[Id AXMathExpression, Id AXMathExpression] (Id AXMathExpressionFraction)
 initWithNumeratorExpression_denimonatorExpressionSelector = mkSelector "initWithNumeratorExpression:denimonatorExpression:"
 
 -- | @Selector@ for @numeratorExpression@
-numeratorExpressionSelector :: Selector
+numeratorExpressionSelector :: Selector '[] (Id AXMathExpression)
 numeratorExpressionSelector = mkSelector "numeratorExpression"
 
 -- | @Selector@ for @denimonatorExpression@
-denimonatorExpressionSelector :: Selector
+denimonatorExpressionSelector :: Selector '[] (Id AXMathExpression)
 denimonatorExpressionSelector = mkSelector "denimonatorExpression"
 

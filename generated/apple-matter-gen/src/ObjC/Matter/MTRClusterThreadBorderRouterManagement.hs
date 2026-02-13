@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -28,39 +29,35 @@ module ObjC.Matter.MTRClusterThreadBorderRouterManagement
   , init_
   , new
   , initWithDevice_endpointID_queue
-  , getActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector
   , getActiveDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector
-  , getPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector
+  , getActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector
   , getPendingDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector
+  , getPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector
+  , initSelector
+  , initWithDevice_endpointID_queueSelector
+  , newSelector
+  , readAttributeAcceptedCommandListWithParamsSelector
+  , readAttributeActiveDatasetTimestampWithParamsSelector
+  , readAttributeAttributeListWithParamsSelector
+  , readAttributeBorderAgentIDWithParamsSelector
+  , readAttributeBorderRouterNameWithParamsSelector
+  , readAttributeClusterRevisionWithParamsSelector
+  , readAttributeFeatureMapWithParamsSelector
+  , readAttributeGeneratedCommandListWithParamsSelector
+  , readAttributeInterfaceEnabledWithParamsSelector
+  , readAttributePendingDatasetTimestampWithParamsSelector
+  , readAttributeThreadVersionWithParamsSelector
   , setActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector
   , setPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector
-  , readAttributeBorderRouterNameWithParamsSelector
-  , readAttributeBorderAgentIDWithParamsSelector
-  , readAttributeThreadVersionWithParamsSelector
-  , readAttributeInterfaceEnabledWithParamsSelector
-  , readAttributeActiveDatasetTimestampWithParamsSelector
-  , readAttributePendingDatasetTimestampWithParamsSelector
-  , readAttributeGeneratedCommandListWithParamsSelector
-  , readAttributeAcceptedCommandListWithParamsSelector
-  , readAttributeAttributeListWithParamsSelector
-  , readAttributeFeatureMapWithParamsSelector
-  , readAttributeClusterRevisionWithParamsSelector
-  , initSelector
-  , newSelector
-  , initWithDevice_endpointID_queueSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -69,219 +66,189 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- getActiveDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:@
 getActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRThreadBorderRouterManagementClusterGetActiveDatasetRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadBorderRouterManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "getActiveDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadBorderRouterManagement getActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThreadBorderRouterManagementClusterGetActiveDatasetRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getActiveDatasetRequestWithExpectedValues:expectedValueInterval:completion:@
 getActiveDatasetRequestWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadBorderRouterManagement -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-getActiveDatasetRequestWithExpectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "getActiveDatasetRequestWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getActiveDatasetRequestWithExpectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadBorderRouterManagement getActiveDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getPendingDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:@
 getPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRThreadBorderRouterManagementClusterGetPendingDatasetRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadBorderRouterManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-getPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "getPendingDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadBorderRouterManagement getPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThreadBorderRouterManagementClusterGetPendingDatasetRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- getPendingDatasetRequestWithExpectedValues:expectedValueInterval:completion:@
 getPendingDatasetRequestWithExpectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsNSArray expectedValues, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadBorderRouterManagement -> expectedValues -> expectedValueIntervalMs -> Ptr () -> IO ()
-getPendingDatasetRequestWithExpectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement  expectedValues expectedValueIntervalMs completion =
-  withObjCPtr expectedValues $ \raw_expectedValues ->
-    withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-        sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "getPendingDatasetRequestWithExpectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_expectedValues :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+getPendingDatasetRequestWithExpectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement expectedValues expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadBorderRouterManagement getPendingDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector (toNSArray expectedValues) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setActiveDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:@
 setActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadBorderRouterManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "setActiveDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadBorderRouterManagement setActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- setPendingDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:@
 setPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completion :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRThreadBorderRouterManagementClusterSetPendingDatasetRequestParams params, IsNSArray expectedDataValueDictionaries, IsNSNumber expectedValueIntervalMs) => mtrClusterThreadBorderRouterManagement -> params -> expectedDataValueDictionaries -> expectedValueIntervalMs -> Ptr () -> IO ()
-setPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement  params expectedDataValueDictionaries expectedValueIntervalMs completion =
-  withObjCPtr params $ \raw_params ->
-    withObjCPtr expectedDataValueDictionaries $ \raw_expectedDataValueDictionaries ->
-      withObjCPtr expectedValueIntervalMs $ \raw_expectedValueIntervalMs ->
-          sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "setPendingDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:") retVoid [argPtr (castPtr raw_params :: Ptr ()), argPtr (castPtr raw_expectedDataValueDictionaries :: Ptr ()), argPtr (castPtr raw_expectedValueIntervalMs :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+setPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completion mtrClusterThreadBorderRouterManagement params expectedDataValueDictionaries expectedValueIntervalMs completion =
+  sendMessage mtrClusterThreadBorderRouterManagement setPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector (toMTRThreadBorderRouterManagementClusterSetPendingDatasetRequestParams params) (toNSArray expectedDataValueDictionaries) (toNSNumber expectedValueIntervalMs) completion
 
 -- | @- readAttributeBorderRouterNameWithParams:@
 readAttributeBorderRouterNameWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeBorderRouterNameWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeBorderRouterNameWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBorderRouterNameWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeBorderRouterNameWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeBorderAgentIDWithParams:@
 readAttributeBorderAgentIDWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeBorderAgentIDWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeBorderAgentIDWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeBorderAgentIDWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeBorderAgentIDWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeThreadVersionWithParams:@
 readAttributeThreadVersionWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeThreadVersionWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeThreadVersionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeThreadVersionWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeThreadVersionWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeInterfaceEnabledWithParams:@
 readAttributeInterfaceEnabledWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeInterfaceEnabledWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeInterfaceEnabledWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeInterfaceEnabledWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeInterfaceEnabledWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeActiveDatasetTimestampWithParams:@
 readAttributeActiveDatasetTimestampWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeActiveDatasetTimestampWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeActiveDatasetTimestampWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeActiveDatasetTimestampWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeActiveDatasetTimestampWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributePendingDatasetTimestampWithParams:@
 readAttributePendingDatasetTimestampWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributePendingDatasetTimestampWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributePendingDatasetTimestampWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributePendingDatasetTimestampWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributePendingDatasetTimestampWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeGeneratedCommandListWithParams:@
 readAttributeGeneratedCommandListWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeGeneratedCommandListWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeGeneratedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeGeneratedCommandListWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeGeneratedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAcceptedCommandListWithParams:@
 readAttributeAcceptedCommandListWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeAcceptedCommandListWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeAcceptedCommandListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAcceptedCommandListWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeAcceptedCommandListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeAttributeListWithParams:@
 readAttributeAttributeListWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeAttributeListWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeAttributeListWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeAttributeListWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeAttributeListWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeFeatureMapWithParams:@
 readAttributeFeatureMapWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeFeatureMapWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeFeatureMapWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeFeatureMapWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeFeatureMapWithParamsSelector (toMTRReadParams params)
 
 -- | @- readAttributeClusterRevisionWithParams:@
 readAttributeClusterRevisionWithParams :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRReadParams params) => mtrClusterThreadBorderRouterManagement -> params -> IO (Id NSDictionary)
-readAttributeClusterRevisionWithParams mtrClusterThreadBorderRouterManagement  params =
-  withObjCPtr params $ \raw_params ->
-      sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "readAttributeClusterRevisionWithParams:") (retPtr retVoid) [argPtr (castPtr raw_params :: Ptr ())] >>= retainedObject . castPtr
+readAttributeClusterRevisionWithParams mtrClusterThreadBorderRouterManagement params =
+  sendMessage mtrClusterThreadBorderRouterManagement readAttributeClusterRevisionWithParamsSelector (toMTRReadParams params)
 
 -- | @- init@
 init_ :: IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement => mtrClusterThreadBorderRouterManagement -> IO (Id MTRClusterThreadBorderRouterManagement)
-init_ mtrClusterThreadBorderRouterManagement  =
-    sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ mtrClusterThreadBorderRouterManagement =
+  sendOwnedMessage mtrClusterThreadBorderRouterManagement initSelector
 
 -- | @+ new@
 new :: IO (Id MTRClusterThreadBorderRouterManagement)
 new  =
   do
     cls' <- getRequiredClass "MTRClusterThreadBorderRouterManagement"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | For all instance methods that take a completion (i.e. command invocations), the completion will be called on the provided queue.
 --
 -- ObjC selector: @- initWithDevice:endpointID:queue:@
 initWithDevice_endpointID_queue :: (IsMTRClusterThreadBorderRouterManagement mtrClusterThreadBorderRouterManagement, IsMTRDevice device, IsNSNumber endpointID, IsNSObject queue) => mtrClusterThreadBorderRouterManagement -> device -> endpointID -> queue -> IO (Id MTRClusterThreadBorderRouterManagement)
-initWithDevice_endpointID_queue mtrClusterThreadBorderRouterManagement  device endpointID queue =
-  withObjCPtr device $ \raw_device ->
-    withObjCPtr endpointID $ \raw_endpointID ->
-      withObjCPtr queue $ \raw_queue ->
-          sendMsg mtrClusterThreadBorderRouterManagement (mkSelector "initWithDevice:endpointID:queue:") (retPtr retVoid) [argPtr (castPtr raw_device :: Ptr ()), argPtr (castPtr raw_endpointID :: Ptr ()), argPtr (castPtr raw_queue :: Ptr ())] >>= ownedObject . castPtr
+initWithDevice_endpointID_queue mtrClusterThreadBorderRouterManagement device endpointID queue =
+  sendOwnedMessage mtrClusterThreadBorderRouterManagement initWithDevice_endpointID_queueSelector (toMTRDevice device) (toNSNumber endpointID) (toNSObject queue)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @getActiveDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:@
-getActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThreadBorderRouterManagementClusterGetActiveDatasetRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getActiveDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getActiveDatasetRequestWithExpectedValues:expectedValueInterval:completion:@
-getActiveDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+getActiveDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 getActiveDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "getActiveDatasetRequestWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getPendingDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:@
-getPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+getPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThreadBorderRouterManagementClusterGetPendingDatasetRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 getPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "getPendingDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @getPendingDatasetRequestWithExpectedValues:expectedValueInterval:completion:@
-getPendingDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector :: Selector
+getPendingDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector :: Selector '[Id NSArray, Id NSNumber, Ptr ()] ()
 getPendingDatasetRequestWithExpectedValues_expectedValueInterval_completionSelector = mkSelector "getPendingDatasetRequestWithExpectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setActiveDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:@
-setActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThreadBorderRouterManagementClusterSetActiveDatasetRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setActiveDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setActiveDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @setPendingDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:@
-setPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector
+setPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector :: Selector '[Id MTRThreadBorderRouterManagementClusterSetPendingDatasetRequestParams, Id NSArray, Id NSNumber, Ptr ()] ()
 setPendingDatasetRequestWithParams_expectedValues_expectedValueInterval_completionSelector = mkSelector "setPendingDatasetRequestWithParams:expectedValues:expectedValueInterval:completion:"
 
 -- | @Selector@ for @readAttributeBorderRouterNameWithParams:@
-readAttributeBorderRouterNameWithParamsSelector :: Selector
+readAttributeBorderRouterNameWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBorderRouterNameWithParamsSelector = mkSelector "readAttributeBorderRouterNameWithParams:"
 
 -- | @Selector@ for @readAttributeBorderAgentIDWithParams:@
-readAttributeBorderAgentIDWithParamsSelector :: Selector
+readAttributeBorderAgentIDWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeBorderAgentIDWithParamsSelector = mkSelector "readAttributeBorderAgentIDWithParams:"
 
 -- | @Selector@ for @readAttributeThreadVersionWithParams:@
-readAttributeThreadVersionWithParamsSelector :: Selector
+readAttributeThreadVersionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeThreadVersionWithParamsSelector = mkSelector "readAttributeThreadVersionWithParams:"
 
 -- | @Selector@ for @readAttributeInterfaceEnabledWithParams:@
-readAttributeInterfaceEnabledWithParamsSelector :: Selector
+readAttributeInterfaceEnabledWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeInterfaceEnabledWithParamsSelector = mkSelector "readAttributeInterfaceEnabledWithParams:"
 
 -- | @Selector@ for @readAttributeActiveDatasetTimestampWithParams:@
-readAttributeActiveDatasetTimestampWithParamsSelector :: Selector
+readAttributeActiveDatasetTimestampWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeActiveDatasetTimestampWithParamsSelector = mkSelector "readAttributeActiveDatasetTimestampWithParams:"
 
 -- | @Selector@ for @readAttributePendingDatasetTimestampWithParams:@
-readAttributePendingDatasetTimestampWithParamsSelector :: Selector
+readAttributePendingDatasetTimestampWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributePendingDatasetTimestampWithParamsSelector = mkSelector "readAttributePendingDatasetTimestampWithParams:"
 
 -- | @Selector@ for @readAttributeGeneratedCommandListWithParams:@
-readAttributeGeneratedCommandListWithParamsSelector :: Selector
+readAttributeGeneratedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeGeneratedCommandListWithParamsSelector = mkSelector "readAttributeGeneratedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAcceptedCommandListWithParams:@
-readAttributeAcceptedCommandListWithParamsSelector :: Selector
+readAttributeAcceptedCommandListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAcceptedCommandListWithParamsSelector = mkSelector "readAttributeAcceptedCommandListWithParams:"
 
 -- | @Selector@ for @readAttributeAttributeListWithParams:@
-readAttributeAttributeListWithParamsSelector :: Selector
+readAttributeAttributeListWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeAttributeListWithParamsSelector = mkSelector "readAttributeAttributeListWithParams:"
 
 -- | @Selector@ for @readAttributeFeatureMapWithParams:@
-readAttributeFeatureMapWithParamsSelector :: Selector
+readAttributeFeatureMapWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeFeatureMapWithParamsSelector = mkSelector "readAttributeFeatureMapWithParams:"
 
 -- | @Selector@ for @readAttributeClusterRevisionWithParams:@
-readAttributeClusterRevisionWithParamsSelector :: Selector
+readAttributeClusterRevisionWithParamsSelector :: Selector '[Id MTRReadParams] (Id NSDictionary)
 readAttributeClusterRevisionWithParamsSelector = mkSelector "readAttributeClusterRevisionWithParams:"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id MTRClusterThreadBorderRouterManagement)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id MTRClusterThreadBorderRouterManagement)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @initWithDevice:endpointID:queue:@
-initWithDevice_endpointID_queueSelector :: Selector
+initWithDevice_endpointID_queueSelector :: Selector '[Id MTRDevice, Id NSNumber, Id NSObject] (Id MTRClusterThreadBorderRouterManagement)
 initWithDevice_endpointID_queueSelector = mkSelector "initWithDevice:endpointID:queue:"
 

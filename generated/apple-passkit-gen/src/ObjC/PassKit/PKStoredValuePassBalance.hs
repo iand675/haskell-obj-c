@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,26 +14,22 @@ module ObjC.PassKit.PKStoredValuePassBalance
   , currencyCode
   , balanceType
   , expiryDate
-  , initSelector
-  , newSelector
-  , isEqualToBalanceSelector
   , amountSelector
-  , currencyCodeSelector
   , balanceTypeSelector
+  , currencyCodeSelector
   , expiryDateSelector
+  , initSelector
+  , isEqualToBalanceSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -41,71 +38,70 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPKStoredValuePassBalance pkStoredValuePassBalance => pkStoredValuePassBalance -> IO (Id PKStoredValuePassBalance)
-init_ pkStoredValuePassBalance  =
-    sendMsg pkStoredValuePassBalance (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ pkStoredValuePassBalance =
+  sendOwnedMessage pkStoredValuePassBalance initSelector
 
 -- | @+ new@
 new :: IO (Id PKStoredValuePassBalance)
 new  =
   do
     cls' <- getRequiredClass "PKStoredValuePassBalance"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- isEqualToBalance:@
 isEqualToBalance :: (IsPKStoredValuePassBalance pkStoredValuePassBalance, IsPKStoredValuePassBalance balance) => pkStoredValuePassBalance -> balance -> IO Bool
-isEqualToBalance pkStoredValuePassBalance  balance =
-  withObjCPtr balance $ \raw_balance ->
-      fmap ((/= 0) :: CULong -> Bool) $ sendMsg pkStoredValuePassBalance (mkSelector "isEqualToBalance:") retCULong [argPtr (castPtr raw_balance :: Ptr ())]
+isEqualToBalance pkStoredValuePassBalance balance =
+  sendMessage pkStoredValuePassBalance isEqualToBalanceSelector (toPKStoredValuePassBalance balance)
 
 -- | @- amount@
 amount :: IsPKStoredValuePassBalance pkStoredValuePassBalance => pkStoredValuePassBalance -> IO (Id NSDecimalNumber)
-amount pkStoredValuePassBalance  =
-    sendMsg pkStoredValuePassBalance (mkSelector "amount") (retPtr retVoid) [] >>= retainedObject . castPtr
+amount pkStoredValuePassBalance =
+  sendMessage pkStoredValuePassBalance amountSelector
 
 -- | @- currencyCode@
 currencyCode :: IsPKStoredValuePassBalance pkStoredValuePassBalance => pkStoredValuePassBalance -> IO (Id NSString)
-currencyCode pkStoredValuePassBalance  =
-    sendMsg pkStoredValuePassBalance (mkSelector "currencyCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+currencyCode pkStoredValuePassBalance =
+  sendMessage pkStoredValuePassBalance currencyCodeSelector
 
 -- | @- balanceType@
 balanceType :: IsPKStoredValuePassBalance pkStoredValuePassBalance => pkStoredValuePassBalance -> IO (Id NSString)
-balanceType pkStoredValuePassBalance  =
-    sendMsg pkStoredValuePassBalance (mkSelector "balanceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+balanceType pkStoredValuePassBalance =
+  sendMessage pkStoredValuePassBalance balanceTypeSelector
 
 -- | @- expiryDate@
 expiryDate :: IsPKStoredValuePassBalance pkStoredValuePassBalance => pkStoredValuePassBalance -> IO (Id NSDate)
-expiryDate pkStoredValuePassBalance  =
-    sendMsg pkStoredValuePassBalance (mkSelector "expiryDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+expiryDate pkStoredValuePassBalance =
+  sendMessage pkStoredValuePassBalance expiryDateSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PKStoredValuePassBalance)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id PKStoredValuePassBalance)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @isEqualToBalance:@
-isEqualToBalanceSelector :: Selector
+isEqualToBalanceSelector :: Selector '[Id PKStoredValuePassBalance] Bool
 isEqualToBalanceSelector = mkSelector "isEqualToBalance:"
 
 -- | @Selector@ for @amount@
-amountSelector :: Selector
+amountSelector :: Selector '[] (Id NSDecimalNumber)
 amountSelector = mkSelector "amount"
 
 -- | @Selector@ for @currencyCode@
-currencyCodeSelector :: Selector
+currencyCodeSelector :: Selector '[] (Id NSString)
 currencyCodeSelector = mkSelector "currencyCode"
 
 -- | @Selector@ for @balanceType@
-balanceTypeSelector :: Selector
+balanceTypeSelector :: Selector '[] (Id NSString)
 balanceTypeSelector = mkSelector "balanceType"
 
 -- | @Selector@ for @expiryDate@
-expiryDateSelector :: Selector
+expiryDateSelector :: Selector '[] (Id NSDate)
 expiryDateSelector = mkSelector "expiryDate"
 

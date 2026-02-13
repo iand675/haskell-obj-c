@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -31,44 +32,40 @@ module ObjC.Matter.MTRDoorLockClusterGetUserResponseParams
   , setTimedInvokeTimeoutMs
   , userUniqueId
   , setUserUniqueId
-  , initWithResponseValue_errorSelector
-  , userIndexSelector
-  , setUserIndexSelector
-  , userNameSelector
-  , setUserNameSelector
-  , userUniqueIDSelector
-  , setUserUniqueIDSelector
-  , userStatusSelector
-  , setUserStatusSelector
-  , userTypeSelector
-  , setUserTypeSelector
-  , credentialRuleSelector
-  , setCredentialRuleSelector
-  , credentialsSelector
-  , setCredentialsSelector
   , creatorFabricIndexSelector
-  , setCreatorFabricIndexSelector
+  , credentialRuleSelector
+  , credentialsSelector
+  , initWithResponseValue_errorSelector
   , lastModifiedFabricIndexSelector
-  , setLastModifiedFabricIndexSelector
   , nextUserIndexSelector
+  , setCreatorFabricIndexSelector
+  , setCredentialRuleSelector
+  , setCredentialsSelector
+  , setLastModifiedFabricIndexSelector
   , setNextUserIndexSelector
-  , timedInvokeTimeoutMsSelector
   , setTimedInvokeTimeoutMsSelector
-  , userUniqueIdSelector
+  , setUserIndexSelector
+  , setUserNameSelector
+  , setUserStatusSelector
+  , setUserTypeSelector
+  , setUserUniqueIDSelector
   , setUserUniqueIdSelector
+  , timedInvokeTimeoutMsSelector
+  , userIndexSelector
+  , userNameSelector
+  , userStatusSelector
+  , userTypeSelector
+  , userUniqueIDSelector
+  , userUniqueIdSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -83,120 +80,108 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithResponseValue:error:@
 initWithResponseValue_error :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSDictionary responseValue, IsNSError error_) => mtrDoorLockClusterGetUserResponseParams -> responseValue -> error_ -> IO (Id MTRDoorLockClusterGetUserResponseParams)
-initWithResponseValue_error mtrDoorLockClusterGetUserResponseParams  responseValue error_ =
-  withObjCPtr responseValue $ \raw_responseValue ->
-    withObjCPtr error_ $ \raw_error_ ->
-        sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "initWithResponseValue:error:") (retPtr retVoid) [argPtr (castPtr raw_responseValue :: Ptr ()), argPtr (castPtr raw_error_ :: Ptr ())] >>= ownedObject . castPtr
+initWithResponseValue_error mtrDoorLockClusterGetUserResponseParams responseValue error_ =
+  sendOwnedMessage mtrDoorLockClusterGetUserResponseParams initWithResponseValue_errorSelector (toNSDictionary responseValue) (toNSError error_)
 
 -- | @- userIndex@
 userIndex :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-userIndex mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "userIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+userIndex mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams userIndexSelector
 
 -- | @- setUserIndex:@
 setUserIndex :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setUserIndex mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setUserIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserIndex mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setUserIndexSelector (toNSNumber value)
 
 -- | @- userName@
 userName :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSString)
-userName mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "userName") (retPtr retVoid) [] >>= retainedObject . castPtr
+userName mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams userNameSelector
 
 -- | @- setUserName:@
 setUserName :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSString value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setUserName mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setUserName:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserName mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setUserNameSelector (toNSString value)
 
 -- | @- userUniqueID@
 userUniqueID :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-userUniqueID mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "userUniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+userUniqueID mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams userUniqueIDSelector
 
 -- | @- setUserUniqueID:@
 setUserUniqueID :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setUserUniqueID mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setUserUniqueID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserUniqueID mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setUserUniqueIDSelector (toNSNumber value)
 
 -- | @- userStatus@
 userStatus :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-userStatus mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "userStatus") (retPtr retVoid) [] >>= retainedObject . castPtr
+userStatus mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams userStatusSelector
 
 -- | @- setUserStatus:@
 setUserStatus :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setUserStatus mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setUserStatus:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserStatus mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setUserStatusSelector (toNSNumber value)
 
 -- | @- userType@
 userType :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-userType mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "userType") (retPtr retVoid) [] >>= retainedObject . castPtr
+userType mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams userTypeSelector
 
 -- | @- setUserType:@
 setUserType :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setUserType mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setUserType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserType mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setUserTypeSelector (toNSNumber value)
 
 -- | @- credentialRule@
 credentialRule :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-credentialRule mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "credentialRule") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentialRule mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams credentialRuleSelector
 
 -- | @- setCredentialRule:@
 setCredentialRule :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setCredentialRule mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setCredentialRule:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredentialRule mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setCredentialRuleSelector (toNSNumber value)
 
 -- | @- credentials@
 credentials :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSArray)
-credentials mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "credentials") (retPtr retVoid) [] >>= retainedObject . castPtr
+credentials mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams credentialsSelector
 
 -- | @- setCredentials:@
 setCredentials :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSArray value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setCredentials mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setCredentials:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCredentials mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setCredentialsSelector (toNSArray value)
 
 -- | @- creatorFabricIndex@
 creatorFabricIndex :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-creatorFabricIndex mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "creatorFabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+creatorFabricIndex mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams creatorFabricIndexSelector
 
 -- | @- setCreatorFabricIndex:@
 setCreatorFabricIndex :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setCreatorFabricIndex mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setCreatorFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setCreatorFabricIndex mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setCreatorFabricIndexSelector (toNSNumber value)
 
 -- | @- lastModifiedFabricIndex@
 lastModifiedFabricIndex :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-lastModifiedFabricIndex mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "lastModifiedFabricIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+lastModifiedFabricIndex mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams lastModifiedFabricIndexSelector
 
 -- | @- setLastModifiedFabricIndex:@
 setLastModifiedFabricIndex :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setLastModifiedFabricIndex mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setLastModifiedFabricIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setLastModifiedFabricIndex mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setLastModifiedFabricIndexSelector (toNSNumber value)
 
 -- | @- nextUserIndex@
 nextUserIndex :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-nextUserIndex mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "nextUserIndex") (retPtr retVoid) [] >>= retainedObject . castPtr
+nextUserIndex mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams nextUserIndexSelector
 
 -- | @- setNextUserIndex:@
 setNextUserIndex :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setNextUserIndex mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setNextUserIndex:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setNextUserIndex mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setNextUserIndexSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -206,8 +191,8 @@ setNextUserIndex mtrDoorLockClusterGetUserResponseParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -217,122 +202,120 @@ timedInvokeTimeoutMs mtrDoorLockClusterGetUserResponseParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | @- userUniqueId@
 userUniqueId :: IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams => mtrDoorLockClusterGetUserResponseParams -> IO (Id NSNumber)
-userUniqueId mtrDoorLockClusterGetUserResponseParams  =
-    sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "userUniqueId") (retPtr retVoid) [] >>= retainedObject . castPtr
+userUniqueId mtrDoorLockClusterGetUserResponseParams =
+  sendMessage mtrDoorLockClusterGetUserResponseParams userUniqueIdSelector
 
 -- | @- setUserUniqueId:@
 setUserUniqueId :: (IsMTRDoorLockClusterGetUserResponseParams mtrDoorLockClusterGetUserResponseParams, IsNSNumber value) => mtrDoorLockClusterGetUserResponseParams -> value -> IO ()
-setUserUniqueId mtrDoorLockClusterGetUserResponseParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrDoorLockClusterGetUserResponseParams (mkSelector "setUserUniqueId:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUserUniqueId mtrDoorLockClusterGetUserResponseParams value =
+  sendMessage mtrDoorLockClusterGetUserResponseParams setUserUniqueIdSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithResponseValue:error:@
-initWithResponseValue_errorSelector :: Selector
+initWithResponseValue_errorSelector :: Selector '[Id NSDictionary, Id NSError] (Id MTRDoorLockClusterGetUserResponseParams)
 initWithResponseValue_errorSelector = mkSelector "initWithResponseValue:error:"
 
 -- | @Selector@ for @userIndex@
-userIndexSelector :: Selector
+userIndexSelector :: Selector '[] (Id NSNumber)
 userIndexSelector = mkSelector "userIndex"
 
 -- | @Selector@ for @setUserIndex:@
-setUserIndexSelector :: Selector
+setUserIndexSelector :: Selector '[Id NSNumber] ()
 setUserIndexSelector = mkSelector "setUserIndex:"
 
 -- | @Selector@ for @userName@
-userNameSelector :: Selector
+userNameSelector :: Selector '[] (Id NSString)
 userNameSelector = mkSelector "userName"
 
 -- | @Selector@ for @setUserName:@
-setUserNameSelector :: Selector
+setUserNameSelector :: Selector '[Id NSString] ()
 setUserNameSelector = mkSelector "setUserName:"
 
 -- | @Selector@ for @userUniqueID@
-userUniqueIDSelector :: Selector
+userUniqueIDSelector :: Selector '[] (Id NSNumber)
 userUniqueIDSelector = mkSelector "userUniqueID"
 
 -- | @Selector@ for @setUserUniqueID:@
-setUserUniqueIDSelector :: Selector
+setUserUniqueIDSelector :: Selector '[Id NSNumber] ()
 setUserUniqueIDSelector = mkSelector "setUserUniqueID:"
 
 -- | @Selector@ for @userStatus@
-userStatusSelector :: Selector
+userStatusSelector :: Selector '[] (Id NSNumber)
 userStatusSelector = mkSelector "userStatus"
 
 -- | @Selector@ for @setUserStatus:@
-setUserStatusSelector :: Selector
+setUserStatusSelector :: Selector '[Id NSNumber] ()
 setUserStatusSelector = mkSelector "setUserStatus:"
 
 -- | @Selector@ for @userType@
-userTypeSelector :: Selector
+userTypeSelector :: Selector '[] (Id NSNumber)
 userTypeSelector = mkSelector "userType"
 
 -- | @Selector@ for @setUserType:@
-setUserTypeSelector :: Selector
+setUserTypeSelector :: Selector '[Id NSNumber] ()
 setUserTypeSelector = mkSelector "setUserType:"
 
 -- | @Selector@ for @credentialRule@
-credentialRuleSelector :: Selector
+credentialRuleSelector :: Selector '[] (Id NSNumber)
 credentialRuleSelector = mkSelector "credentialRule"
 
 -- | @Selector@ for @setCredentialRule:@
-setCredentialRuleSelector :: Selector
+setCredentialRuleSelector :: Selector '[Id NSNumber] ()
 setCredentialRuleSelector = mkSelector "setCredentialRule:"
 
 -- | @Selector@ for @credentials@
-credentialsSelector :: Selector
+credentialsSelector :: Selector '[] (Id NSArray)
 credentialsSelector = mkSelector "credentials"
 
 -- | @Selector@ for @setCredentials:@
-setCredentialsSelector :: Selector
+setCredentialsSelector :: Selector '[Id NSArray] ()
 setCredentialsSelector = mkSelector "setCredentials:"
 
 -- | @Selector@ for @creatorFabricIndex@
-creatorFabricIndexSelector :: Selector
+creatorFabricIndexSelector :: Selector '[] (Id NSNumber)
 creatorFabricIndexSelector = mkSelector "creatorFabricIndex"
 
 -- | @Selector@ for @setCreatorFabricIndex:@
-setCreatorFabricIndexSelector :: Selector
+setCreatorFabricIndexSelector :: Selector '[Id NSNumber] ()
 setCreatorFabricIndexSelector = mkSelector "setCreatorFabricIndex:"
 
 -- | @Selector@ for @lastModifiedFabricIndex@
-lastModifiedFabricIndexSelector :: Selector
+lastModifiedFabricIndexSelector :: Selector '[] (Id NSNumber)
 lastModifiedFabricIndexSelector = mkSelector "lastModifiedFabricIndex"
 
 -- | @Selector@ for @setLastModifiedFabricIndex:@
-setLastModifiedFabricIndexSelector :: Selector
+setLastModifiedFabricIndexSelector :: Selector '[Id NSNumber] ()
 setLastModifiedFabricIndexSelector = mkSelector "setLastModifiedFabricIndex:"
 
 -- | @Selector@ for @nextUserIndex@
-nextUserIndexSelector :: Selector
+nextUserIndexSelector :: Selector '[] (Id NSNumber)
 nextUserIndexSelector = mkSelector "nextUserIndex"
 
 -- | @Selector@ for @setNextUserIndex:@
-setNextUserIndexSelector :: Selector
+setNextUserIndexSelector :: Selector '[Id NSNumber] ()
 setNextUserIndexSelector = mkSelector "setNextUserIndex:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @userUniqueId@
-userUniqueIdSelector :: Selector
+userUniqueIdSelector :: Selector '[] (Id NSNumber)
 userUniqueIdSelector = mkSelector "userUniqueId"
 
 -- | @Selector@ for @setUserUniqueId:@
-setUserUniqueIdSelector :: Selector
+setUserUniqueIdSelector :: Selector '[Id NSNumber] ()
 setUserUniqueIdSelector = mkSelector "setUserUniqueId:"
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,31 +27,27 @@ module ObjC.AVFoundation.AVCaptureIndexPicker
   , localizedIndexTitles
   , accessibilityIdentifier
   , setAccessibilityIdentifier
+  , accessibilityIdentifierSelector
+  , initWithLocalizedTitle_symbolName_localizedIndexTitlesSelector
   , initWithLocalizedTitle_symbolName_numberOfIndexesSelector
   , initWithLocalizedTitle_symbolName_numberOfIndexes_localizedTitleTransformSelector
-  , initWithLocalizedTitle_symbolName_localizedIndexTitlesSelector
-  , setActionQueue_actionSelector
-  , selectedIndexSelector
-  , setSelectedIndexSelector
-  , localizedTitleSelector
-  , symbolNameSelector
-  , numberOfIndexesSelector
   , localizedIndexTitlesSelector
-  , accessibilityIdentifierSelector
+  , localizedTitleSelector
+  , numberOfIndexesSelector
+  , selectedIndexSelector
   , setAccessibilityIdentifierSelector
+  , setActionQueue_actionSelector
+  , setSelectedIndexSelector
+  , symbolNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -73,10 +70,8 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- initWithLocalizedTitle:symbolName:numberOfIndexes:@
 initWithLocalizedTitle_symbolName_numberOfIndexes :: (IsAVCaptureIndexPicker avCaptureIndexPicker, IsNSString localizedTitle, IsNSString symbolName) => avCaptureIndexPicker -> localizedTitle -> symbolName -> CLong -> IO (Id AVCaptureIndexPicker)
-initWithLocalizedTitle_symbolName_numberOfIndexes avCaptureIndexPicker  localizedTitle symbolName numberOfIndexes =
-  withObjCPtr localizedTitle $ \raw_localizedTitle ->
-    withObjCPtr symbolName $ \raw_symbolName ->
-        sendMsg avCaptureIndexPicker (mkSelector "initWithLocalizedTitle:symbolName:numberOfIndexes:") (retPtr retVoid) [argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_symbolName :: Ptr ()), argCLong numberOfIndexes] >>= ownedObject . castPtr
+initWithLocalizedTitle_symbolName_numberOfIndexes avCaptureIndexPicker localizedTitle symbolName numberOfIndexes =
+  sendOwnedMessage avCaptureIndexPicker initWithLocalizedTitle_symbolName_numberOfIndexesSelector (toNSString localizedTitle) (toNSString symbolName) numberOfIndexes
 
 -- | initWithLocalizedTitle:symbolName:numberOfIndexes:localizedTitleTransform:
 --
@@ -96,10 +91,8 @@ initWithLocalizedTitle_symbolName_numberOfIndexes avCaptureIndexPicker  localize
 --
 -- ObjC selector: @- initWithLocalizedTitle:symbolName:numberOfIndexes:localizedTitleTransform:@
 initWithLocalizedTitle_symbolName_numberOfIndexes_localizedTitleTransform :: (IsAVCaptureIndexPicker avCaptureIndexPicker, IsNSString localizedTitle, IsNSString symbolName) => avCaptureIndexPicker -> localizedTitle -> symbolName -> CLong -> Ptr () -> IO (Id AVCaptureIndexPicker)
-initWithLocalizedTitle_symbolName_numberOfIndexes_localizedTitleTransform avCaptureIndexPicker  localizedTitle symbolName numberOfIndexes localizedTitleTransform =
-  withObjCPtr localizedTitle $ \raw_localizedTitle ->
-    withObjCPtr symbolName $ \raw_symbolName ->
-        sendMsg avCaptureIndexPicker (mkSelector "initWithLocalizedTitle:symbolName:numberOfIndexes:localizedTitleTransform:") (retPtr retVoid) [argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_symbolName :: Ptr ()), argCLong numberOfIndexes, argPtr (castPtr localizedTitleTransform :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalizedTitle_symbolName_numberOfIndexes_localizedTitleTransform avCaptureIndexPicker localizedTitle symbolName numberOfIndexes localizedTitleTransform =
+  sendOwnedMessage avCaptureIndexPicker initWithLocalizedTitle_symbolName_numberOfIndexes_localizedTitleTransformSelector (toNSString localizedTitle) (toNSString symbolName) numberOfIndexes localizedTitleTransform
 
 -- | initWithLocalizedTitle:symbolName:localizedIndexTitles:
 --
@@ -117,11 +110,8 @@ initWithLocalizedTitle_symbolName_numberOfIndexes_localizedTitleTransform avCapt
 --
 -- ObjC selector: @- initWithLocalizedTitle:symbolName:localizedIndexTitles:@
 initWithLocalizedTitle_symbolName_localizedIndexTitles :: (IsAVCaptureIndexPicker avCaptureIndexPicker, IsNSString localizedTitle, IsNSString symbolName, IsNSArray localizedIndexTitles) => avCaptureIndexPicker -> localizedTitle -> symbolName -> localizedIndexTitles -> IO (Id AVCaptureIndexPicker)
-initWithLocalizedTitle_symbolName_localizedIndexTitles avCaptureIndexPicker  localizedTitle symbolName localizedIndexTitles =
-  withObjCPtr localizedTitle $ \raw_localizedTitle ->
-    withObjCPtr symbolName $ \raw_symbolName ->
-      withObjCPtr localizedIndexTitles $ \raw_localizedIndexTitles ->
-          sendMsg avCaptureIndexPicker (mkSelector "initWithLocalizedTitle:symbolName:localizedIndexTitles:") (retPtr retVoid) [argPtr (castPtr raw_localizedTitle :: Ptr ()), argPtr (castPtr raw_symbolName :: Ptr ()), argPtr (castPtr raw_localizedIndexTitles :: Ptr ())] >>= ownedObject . castPtr
+initWithLocalizedTitle_symbolName_localizedIndexTitles avCaptureIndexPicker localizedTitle symbolName localizedIndexTitles =
+  sendOwnedMessage avCaptureIndexPicker initWithLocalizedTitle_symbolName_localizedIndexTitlesSelector (toNSString localizedTitle) (toNSString symbolName) (toNSArray localizedIndexTitles)
 
 -- | setActionQueue:action:
 --
@@ -137,9 +127,8 @@ initWithLocalizedTitle_symbolName_localizedIndexTitles avCaptureIndexPicker  loc
 --
 -- ObjC selector: @- setActionQueue:action:@
 setActionQueue_action :: (IsAVCaptureIndexPicker avCaptureIndexPicker, IsNSObject actionQueue) => avCaptureIndexPicker -> actionQueue -> Ptr () -> IO ()
-setActionQueue_action avCaptureIndexPicker  actionQueue action =
-  withObjCPtr actionQueue $ \raw_actionQueue ->
-      sendMsg avCaptureIndexPicker (mkSelector "setActionQueue:action:") retVoid [argPtr (castPtr raw_actionQueue :: Ptr ()), argPtr (castPtr action :: Ptr ())]
+setActionQueue_action avCaptureIndexPicker actionQueue action =
+  sendMessage avCaptureIndexPicker setActionQueue_actionSelector (toNSObject actionQueue) action
 
 -- | selectedIndex
 --
@@ -149,8 +138,8 @@ setActionQueue_action avCaptureIndexPicker  actionQueue action =
 --
 -- ObjC selector: @- selectedIndex@
 selectedIndex :: IsAVCaptureIndexPicker avCaptureIndexPicker => avCaptureIndexPicker -> IO CLong
-selectedIndex avCaptureIndexPicker  =
-    sendMsg avCaptureIndexPicker (mkSelector "selectedIndex") retCLong []
+selectedIndex avCaptureIndexPicker =
+  sendMessage avCaptureIndexPicker selectedIndexSelector
 
 -- | selectedIndex
 --
@@ -160,8 +149,8 @@ selectedIndex avCaptureIndexPicker  =
 --
 -- ObjC selector: @- setSelectedIndex:@
 setSelectedIndex :: IsAVCaptureIndexPicker avCaptureIndexPicker => avCaptureIndexPicker -> CLong -> IO ()
-setSelectedIndex avCaptureIndexPicker  value =
-    sendMsg avCaptureIndexPicker (mkSelector "setSelectedIndex:") retVoid [argCLong value]
+setSelectedIndex avCaptureIndexPicker value =
+  sendMessage avCaptureIndexPicker setSelectedIndexSelector value
 
 -- | localizedTitle
 --
@@ -169,8 +158,8 @@ setSelectedIndex avCaptureIndexPicker  value =
 --
 -- ObjC selector: @- localizedTitle@
 localizedTitle :: IsAVCaptureIndexPicker avCaptureIndexPicker => avCaptureIndexPicker -> IO (Id NSString)
-localizedTitle avCaptureIndexPicker  =
-    sendMsg avCaptureIndexPicker (mkSelector "localizedTitle") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedTitle avCaptureIndexPicker =
+  sendMessage avCaptureIndexPicker localizedTitleSelector
 
 -- | symbolName
 --
@@ -178,8 +167,8 @@ localizedTitle avCaptureIndexPicker  =
 --
 -- ObjC selector: @- symbolName@
 symbolName :: IsAVCaptureIndexPicker avCaptureIndexPicker => avCaptureIndexPicker -> IO (Id NSString)
-symbolName avCaptureIndexPicker  =
-    sendMsg avCaptureIndexPicker (mkSelector "symbolName") (retPtr retVoid) [] >>= retainedObject . castPtr
+symbolName avCaptureIndexPicker =
+  sendMessage avCaptureIndexPicker symbolNameSelector
 
 -- | numberOfIndexes
 --
@@ -187,8 +176,8 @@ symbolName avCaptureIndexPicker  =
 --
 -- ObjC selector: @- numberOfIndexes@
 numberOfIndexes :: IsAVCaptureIndexPicker avCaptureIndexPicker => avCaptureIndexPicker -> IO CLong
-numberOfIndexes avCaptureIndexPicker  =
-    sendMsg avCaptureIndexPicker (mkSelector "numberOfIndexes") retCLong []
+numberOfIndexes avCaptureIndexPicker =
+  sendMessage avCaptureIndexPicker numberOfIndexesSelector
 
 -- | localizedIndexTitles
 --
@@ -196,8 +185,8 @@ numberOfIndexes avCaptureIndexPicker  =
 --
 -- ObjC selector: @- localizedIndexTitles@
 localizedIndexTitles :: IsAVCaptureIndexPicker avCaptureIndexPicker => avCaptureIndexPicker -> IO (Id NSArray)
-localizedIndexTitles avCaptureIndexPicker  =
-    sendMsg avCaptureIndexPicker (mkSelector "localizedIndexTitles") (retPtr retVoid) [] >>= retainedObject . castPtr
+localizedIndexTitles avCaptureIndexPicker =
+  sendMessage avCaptureIndexPicker localizedIndexTitlesSelector
 
 -- | accessibilityIdentifier
 --
@@ -205,8 +194,8 @@ localizedIndexTitles avCaptureIndexPicker  =
 --
 -- ObjC selector: @- accessibilityIdentifier@
 accessibilityIdentifier :: IsAVCaptureIndexPicker avCaptureIndexPicker => avCaptureIndexPicker -> IO (Id NSString)
-accessibilityIdentifier avCaptureIndexPicker  =
-    sendMsg avCaptureIndexPicker (mkSelector "accessibilityIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessibilityIdentifier avCaptureIndexPicker =
+  sendMessage avCaptureIndexPicker accessibilityIdentifierSelector
 
 -- | accessibilityIdentifier
 --
@@ -214,59 +203,58 @@ accessibilityIdentifier avCaptureIndexPicker  =
 --
 -- ObjC selector: @- setAccessibilityIdentifier:@
 setAccessibilityIdentifier :: (IsAVCaptureIndexPicker avCaptureIndexPicker, IsNSString value) => avCaptureIndexPicker -> value -> IO ()
-setAccessibilityIdentifier avCaptureIndexPicker  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avCaptureIndexPicker (mkSelector "setAccessibilityIdentifier:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessibilityIdentifier avCaptureIndexPicker value =
+  sendMessage avCaptureIndexPicker setAccessibilityIdentifierSelector (toNSString value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithLocalizedTitle:symbolName:numberOfIndexes:@
-initWithLocalizedTitle_symbolName_numberOfIndexesSelector :: Selector
+initWithLocalizedTitle_symbolName_numberOfIndexesSelector :: Selector '[Id NSString, Id NSString, CLong] (Id AVCaptureIndexPicker)
 initWithLocalizedTitle_symbolName_numberOfIndexesSelector = mkSelector "initWithLocalizedTitle:symbolName:numberOfIndexes:"
 
 -- | @Selector@ for @initWithLocalizedTitle:symbolName:numberOfIndexes:localizedTitleTransform:@
-initWithLocalizedTitle_symbolName_numberOfIndexes_localizedTitleTransformSelector :: Selector
+initWithLocalizedTitle_symbolName_numberOfIndexes_localizedTitleTransformSelector :: Selector '[Id NSString, Id NSString, CLong, Ptr ()] (Id AVCaptureIndexPicker)
 initWithLocalizedTitle_symbolName_numberOfIndexes_localizedTitleTransformSelector = mkSelector "initWithLocalizedTitle:symbolName:numberOfIndexes:localizedTitleTransform:"
 
 -- | @Selector@ for @initWithLocalizedTitle:symbolName:localizedIndexTitles:@
-initWithLocalizedTitle_symbolName_localizedIndexTitlesSelector :: Selector
+initWithLocalizedTitle_symbolName_localizedIndexTitlesSelector :: Selector '[Id NSString, Id NSString, Id NSArray] (Id AVCaptureIndexPicker)
 initWithLocalizedTitle_symbolName_localizedIndexTitlesSelector = mkSelector "initWithLocalizedTitle:symbolName:localizedIndexTitles:"
 
 -- | @Selector@ for @setActionQueue:action:@
-setActionQueue_actionSelector :: Selector
+setActionQueue_actionSelector :: Selector '[Id NSObject, Ptr ()] ()
 setActionQueue_actionSelector = mkSelector "setActionQueue:action:"
 
 -- | @Selector@ for @selectedIndex@
-selectedIndexSelector :: Selector
+selectedIndexSelector :: Selector '[] CLong
 selectedIndexSelector = mkSelector "selectedIndex"
 
 -- | @Selector@ for @setSelectedIndex:@
-setSelectedIndexSelector :: Selector
+setSelectedIndexSelector :: Selector '[CLong] ()
 setSelectedIndexSelector = mkSelector "setSelectedIndex:"
 
 -- | @Selector@ for @localizedTitle@
-localizedTitleSelector :: Selector
+localizedTitleSelector :: Selector '[] (Id NSString)
 localizedTitleSelector = mkSelector "localizedTitle"
 
 -- | @Selector@ for @symbolName@
-symbolNameSelector :: Selector
+symbolNameSelector :: Selector '[] (Id NSString)
 symbolNameSelector = mkSelector "symbolName"
 
 -- | @Selector@ for @numberOfIndexes@
-numberOfIndexesSelector :: Selector
+numberOfIndexesSelector :: Selector '[] CLong
 numberOfIndexesSelector = mkSelector "numberOfIndexes"
 
 -- | @Selector@ for @localizedIndexTitles@
-localizedIndexTitlesSelector :: Selector
+localizedIndexTitlesSelector :: Selector '[] (Id NSArray)
 localizedIndexTitlesSelector = mkSelector "localizedIndexTitles"
 
 -- | @Selector@ for @accessibilityIdentifier@
-accessibilityIdentifierSelector :: Selector
+accessibilityIdentifierSelector :: Selector '[] (Id NSString)
 accessibilityIdentifierSelector = mkSelector "accessibilityIdentifier"
 
 -- | @Selector@ for @setAccessibilityIdentifier:@
-setAccessibilityIdentifierSelector :: Selector
+setAccessibilityIdentifierSelector :: Selector '[Id NSString] ()
 setAccessibilityIdentifierSelector = mkSelector "setAccessibilityIdentifier:"
 

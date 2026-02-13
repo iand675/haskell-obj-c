@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,14 +16,14 @@ module ObjC.AVFoundation.AVPlayerLooper
   , error_
   , loopCount
   , loopingPlayerItems
-  , initSelector
-  , newSelector
-  , playerLooperWithPlayer_templateItemSelector
   , disableLoopingSelector
-  , statusSelector
   , errorSelector
+  , initSelector
   , loopCountSelector
   , loopingPlayerItemsSelector
+  , newSelector
+  , playerLooperWithPlayer_templateItemSelector
+  , statusSelector
 
   -- * Enum types
   , AVPlayerLooperItemOrdering(AVPlayerLooperItemOrdering)
@@ -36,15 +37,11 @@ module ObjC.AVFoundation.AVPlayerLooper
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -54,15 +51,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsAVPlayerLooper avPlayerLooper => avPlayerLooper -> IO (Id AVPlayerLooper)
-init_ avPlayerLooper  =
-    sendMsg avPlayerLooper (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ avPlayerLooper =
+  sendOwnedMessage avPlayerLooper initSelector
 
 -- | @+ new@
 new :: IO (Id AVPlayerLooper)
 new  =
   do
     cls' <- getRequiredClass "AVPlayerLooper"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | playerLooperWithPlayer:templateItem:
 --
@@ -81,9 +78,7 @@ playerLooperWithPlayer_templateItem :: (IsAVQueuePlayer player, IsAVPlayerItem i
 playerLooperWithPlayer_templateItem player itemToLoop =
   do
     cls' <- getRequiredClass "AVPlayerLooper"
-    withObjCPtr player $ \raw_player ->
-      withObjCPtr itemToLoop $ \raw_itemToLoop ->
-        sendClassMsg cls' (mkSelector "playerLooperWithPlayer:templateItem:") (retPtr retVoid) [argPtr (castPtr raw_player :: Ptr ()), argPtr (castPtr raw_itemToLoop :: Ptr ())] >>= retainedObject . castPtr
+    sendClassMessage cls' playerLooperWithPlayer_templateItemSelector (toAVQueuePlayer player) (toAVPlayerItem itemToLoop)
 
 -- | disableLooping
 --
@@ -93,8 +88,8 @@ playerLooperWithPlayer_templateItem player itemToLoop =
 --
 -- ObjC selector: @- disableLooping@
 disableLooping :: IsAVPlayerLooper avPlayerLooper => avPlayerLooper -> IO ()
-disableLooping avPlayerLooper  =
-    sendMsg avPlayerLooper (mkSelector "disableLooping") retVoid []
+disableLooping avPlayerLooper =
+  sendMessage avPlayerLooper disableLoopingSelector
 
 -- | status
 --
@@ -104,8 +99,8 @@ disableLooping avPlayerLooper  =
 --
 -- ObjC selector: @- status@
 status :: IsAVPlayerLooper avPlayerLooper => avPlayerLooper -> IO AVPlayerLooperStatus
-status avPlayerLooper  =
-    fmap (coerce :: CLong -> AVPlayerLooperStatus) $ sendMsg avPlayerLooper (mkSelector "status") retCLong []
+status avPlayerLooper =
+  sendMessage avPlayerLooper statusSelector
 
 -- | error
 --
@@ -115,8 +110,8 @@ status avPlayerLooper  =
 --
 -- ObjC selector: @- error@
 error_ :: IsAVPlayerLooper avPlayerLooper => avPlayerLooper -> IO (Id NSError)
-error_ avPlayerLooper  =
-    sendMsg avPlayerLooper (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avPlayerLooper =
+  sendMessage avPlayerLooper errorSelector
 
 -- | loopCount
 --
@@ -126,8 +121,8 @@ error_ avPlayerLooper  =
 --
 -- ObjC selector: @- loopCount@
 loopCount :: IsAVPlayerLooper avPlayerLooper => avPlayerLooper -> IO CLong
-loopCount avPlayerLooper  =
-    sendMsg avPlayerLooper (mkSelector "loopCount") retCLong []
+loopCount avPlayerLooper =
+  sendMessage avPlayerLooper loopCountSelector
 
 -- | loopingPlayerItems
 --
@@ -139,42 +134,42 @@ loopCount avPlayerLooper  =
 --
 -- ObjC selector: @- loopingPlayerItems@
 loopingPlayerItems :: IsAVPlayerLooper avPlayerLooper => avPlayerLooper -> IO (Id NSArray)
-loopingPlayerItems avPlayerLooper  =
-    sendMsg avPlayerLooper (mkSelector "loopingPlayerItems") (retPtr retVoid) [] >>= retainedObject . castPtr
+loopingPlayerItems avPlayerLooper =
+  sendMessage avPlayerLooper loopingPlayerItemsSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id AVPlayerLooper)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id AVPlayerLooper)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @playerLooperWithPlayer:templateItem:@
-playerLooperWithPlayer_templateItemSelector :: Selector
+playerLooperWithPlayer_templateItemSelector :: Selector '[Id AVQueuePlayer, Id AVPlayerItem] (Id AVPlayerLooper)
 playerLooperWithPlayer_templateItemSelector = mkSelector "playerLooperWithPlayer:templateItem:"
 
 -- | @Selector@ for @disableLooping@
-disableLoopingSelector :: Selector
+disableLoopingSelector :: Selector '[] ()
 disableLoopingSelector = mkSelector "disableLooping"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVPlayerLooperStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @loopCount@
-loopCountSelector :: Selector
+loopCountSelector :: Selector '[] CLong
 loopCountSelector = mkSelector "loopCount"
 
 -- | @Selector@ for @loopingPlayerItems@
-loopingPlayerItemsSelector :: Selector
+loopingPlayerItemsSelector :: Selector '[] (Id NSArray)
 loopingPlayerItemsSelector = mkSelector "loopingPlayerItems"
 

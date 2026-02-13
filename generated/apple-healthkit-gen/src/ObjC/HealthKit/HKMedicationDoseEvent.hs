@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,15 +18,15 @@ module ObjC.HealthKit.HKMedicationDoseEvent
   , doseQuantity
   , logStatus
   , unit
+  , doseQuantitySelector
   , initSelector
-  , newSelector
-  , medicationDoseEventTypeSelector
-  , scheduleTypeSelector
+  , logStatusSelector
   , medicationConceptIdentifierSelector
+  , medicationDoseEventTypeSelector
+  , newSelector
+  , scheduleTypeSelector
   , scheduledDateSelector
   , scheduledDoseQuantitySelector
-  , doseQuantitySelector
-  , logStatusSelector
   , unitSelector
 
   -- * Enum types
@@ -42,15 +43,11 @@ module ObjC.HealthKit.HKMedicationDoseEvent
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -60,15 +57,15 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO (Id HKMedicationDoseEvent)
-init_ hkMedicationDoseEvent  =
-    sendMsg hkMedicationDoseEvent (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ hkMedicationDoseEvent =
+  sendOwnedMessage hkMedicationDoseEvent initSelector
 
 -- | @+ new@
 new :: IO (Id HKMedicationDoseEvent)
 new  =
   do
     cls' <- getRequiredClass "HKMedicationDoseEvent"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | The data type that identified the samples that store medication dose event data.
 --
@@ -76,8 +73,8 @@ new  =
 --
 -- ObjC selector: @- medicationDoseEventType@
 medicationDoseEventType :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO (Id HKMedicationDoseEventType)
-medicationDoseEventType hkMedicationDoseEvent  =
-    sendMsg hkMedicationDoseEvent (mkSelector "medicationDoseEventType") (retPtr retVoid) [] >>= retainedObject . castPtr
+medicationDoseEventType hkMedicationDoseEvent =
+  sendMessage hkMedicationDoseEvent medicationDoseEventTypeSelector
 
 -- | The scheduling context for this logged dose event.
 --
@@ -85,8 +82,8 @@ medicationDoseEventType hkMedicationDoseEvent  =
 --
 -- ObjC selector: @- scheduleType@
 scheduleType :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO HKMedicationDoseEventScheduleType
-scheduleType hkMedicationDoseEvent  =
-    fmap (coerce :: CLong -> HKMedicationDoseEventScheduleType) $ sendMsg hkMedicationDoseEvent (mkSelector "scheduleType") retCLong []
+scheduleType hkMedicationDoseEvent =
+  sendMessage hkMedicationDoseEvent scheduleTypeSelector
 
 -- | The identifier of the medication concept the system associates with this dose event.
 --
@@ -94,8 +91,8 @@ scheduleType hkMedicationDoseEvent  =
 --
 -- ObjC selector: @- medicationConceptIdentifier@
 medicationConceptIdentifier :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO (Id HKHealthConceptIdentifier)
-medicationConceptIdentifier hkMedicationDoseEvent  =
-    sendMsg hkMedicationDoseEvent (mkSelector "medicationConceptIdentifier") (retPtr retVoid) [] >>= retainedObject . castPtr
+medicationConceptIdentifier hkMedicationDoseEvent =
+  sendMessage hkMedicationDoseEvent medicationConceptIdentifierSelector
 
 -- | The date and time the person takes the medication, if scheduled.
 --
@@ -103,8 +100,8 @@ medicationConceptIdentifier hkMedicationDoseEvent  =
 --
 -- ObjC selector: @- scheduledDate@
 scheduledDate :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO (Id NSDate)
-scheduledDate hkMedicationDoseEvent  =
-    sendMsg hkMedicationDoseEvent (mkSelector "scheduledDate") (retPtr retVoid) [] >>= retainedObject . castPtr
+scheduledDate hkMedicationDoseEvent =
+  sendMessage hkMedicationDoseEvent scheduledDateSelector
 
 -- | The dose quantity a person is expected to take based on their medication schedule.
 --
@@ -112,8 +109,8 @@ scheduledDate hkMedicationDoseEvent  =
 --
 -- ObjC selector: @- scheduledDoseQuantity@
 scheduledDoseQuantity :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO (Id NSNumber)
-scheduledDoseQuantity hkMedicationDoseEvent  =
-    sendMsg hkMedicationDoseEvent (mkSelector "scheduledDoseQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+scheduledDoseQuantity hkMedicationDoseEvent =
+  sendMessage hkMedicationDoseEvent scheduledDoseQuantitySelector
 
 -- | The dose quantity the person reports as taken.
 --
@@ -121,15 +118,15 @@ scheduledDoseQuantity hkMedicationDoseEvent  =
 --
 -- ObjC selector: @- doseQuantity@
 doseQuantity :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO (Id NSNumber)
-doseQuantity hkMedicationDoseEvent  =
-    sendMsg hkMedicationDoseEvent (mkSelector "doseQuantity") (retPtr retVoid) [] >>= retainedObject . castPtr
+doseQuantity hkMedicationDoseEvent =
+  sendMessage hkMedicationDoseEvent doseQuantitySelector
 
 -- | The log status the system assigns to this dose event.
 --
 -- ObjC selector: @- logStatus@
 logStatus :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO HKMedicationDoseEventLogStatus
-logStatus hkMedicationDoseEvent  =
-    fmap (coerce :: CLong -> HKMedicationDoseEventLogStatus) $ sendMsg hkMedicationDoseEvent (mkSelector "logStatus") retCLong []
+logStatus hkMedicationDoseEvent =
+  sendMessage hkMedicationDoseEvent logStatusSelector
 
 -- | The unit that the system associates with the medication when the person logs the dose.
 --
@@ -137,50 +134,50 @@ logStatus hkMedicationDoseEvent  =
 --
 -- ObjC selector: @- unit@
 unit :: IsHKMedicationDoseEvent hkMedicationDoseEvent => hkMedicationDoseEvent -> IO (Id HKUnit)
-unit hkMedicationDoseEvent  =
-    sendMsg hkMedicationDoseEvent (mkSelector "unit") (retPtr retVoid) [] >>= retainedObject . castPtr
+unit hkMedicationDoseEvent =
+  sendMessage hkMedicationDoseEvent unitSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id HKMedicationDoseEvent)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id HKMedicationDoseEvent)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @medicationDoseEventType@
-medicationDoseEventTypeSelector :: Selector
+medicationDoseEventTypeSelector :: Selector '[] (Id HKMedicationDoseEventType)
 medicationDoseEventTypeSelector = mkSelector "medicationDoseEventType"
 
 -- | @Selector@ for @scheduleType@
-scheduleTypeSelector :: Selector
+scheduleTypeSelector :: Selector '[] HKMedicationDoseEventScheduleType
 scheduleTypeSelector = mkSelector "scheduleType"
 
 -- | @Selector@ for @medicationConceptIdentifier@
-medicationConceptIdentifierSelector :: Selector
+medicationConceptIdentifierSelector :: Selector '[] (Id HKHealthConceptIdentifier)
 medicationConceptIdentifierSelector = mkSelector "medicationConceptIdentifier"
 
 -- | @Selector@ for @scheduledDate@
-scheduledDateSelector :: Selector
+scheduledDateSelector :: Selector '[] (Id NSDate)
 scheduledDateSelector = mkSelector "scheduledDate"
 
 -- | @Selector@ for @scheduledDoseQuantity@
-scheduledDoseQuantitySelector :: Selector
+scheduledDoseQuantitySelector :: Selector '[] (Id NSNumber)
 scheduledDoseQuantitySelector = mkSelector "scheduledDoseQuantity"
 
 -- | @Selector@ for @doseQuantity@
-doseQuantitySelector :: Selector
+doseQuantitySelector :: Selector '[] (Id NSNumber)
 doseQuantitySelector = mkSelector "doseQuantity"
 
 -- | @Selector@ for @logStatus@
-logStatusSelector :: Selector
+logStatusSelector :: Selector '[] HKMedicationDoseEventLogStatus
 logStatusSelector = mkSelector "logStatus"
 
 -- | @Selector@ for @unit@
-unitSelector :: Selector
+unitSelector :: Selector '[] (Id HKUnit)
 unitSelector = mkSelector "unit"
 

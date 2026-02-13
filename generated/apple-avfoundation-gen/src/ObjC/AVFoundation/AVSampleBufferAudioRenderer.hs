@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,18 +20,18 @@ module ObjC.AVFoundation.AVSampleBufferAudioRenderer
   , setVolume
   , muted
   , setMuted
-  , statusSelector
-  , errorSelector
-  , audioOutputDeviceUniqueIDSelector
-  , setAudioOutputDeviceUniqueIDSelector
-  , audioTimePitchAlgorithmSelector
-  , setAudioTimePitchAlgorithmSelector
   , allowedAudioSpatializationFormatsSelector
-  , setAllowedAudioSpatializationFormatsSelector
-  , volumeSelector
-  , setVolumeSelector
+  , audioOutputDeviceUniqueIDSelector
+  , audioTimePitchAlgorithmSelector
+  , errorSelector
   , mutedSelector
+  , setAllowedAudioSpatializationFormatsSelector
+  , setAudioOutputDeviceUniqueIDSelector
+  , setAudioTimePitchAlgorithmSelector
   , setMutedSelector
+  , setVolumeSelector
+  , statusSelector
+  , volumeSelector
 
   -- * Enum types
   , AVAudioSpatializationFormats(AVAudioSpatializationFormats)
@@ -45,15 +46,11 @@ module ObjC.AVFoundation.AVSampleBufferAudioRenderer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -63,13 +60,13 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- status@
 status :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> IO AVQueuedSampleBufferRenderingStatus
-status avSampleBufferAudioRenderer  =
-    fmap (coerce :: CLong -> AVQueuedSampleBufferRenderingStatus) $ sendMsg avSampleBufferAudioRenderer (mkSelector "status") retCLong []
+status avSampleBufferAudioRenderer =
+  sendMessage avSampleBufferAudioRenderer statusSelector
 
 -- | @- error@
 error_ :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> IO (Id NSError)
-error_ avSampleBufferAudioRenderer  =
-    sendMsg avSampleBufferAudioRenderer (mkSelector "error") (retPtr retVoid) [] >>= retainedObject . castPtr
+error_ avSampleBufferAudioRenderer =
+  sendMessage avSampleBufferAudioRenderer errorSelector
 
 -- | audioOutputDeviceUniqueID
 --
@@ -87,8 +84,8 @@ error_ avSampleBufferAudioRenderer  =
 --
 -- ObjC selector: @- audioOutputDeviceUniqueID@
 audioOutputDeviceUniqueID :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> IO (Id NSString)
-audioOutputDeviceUniqueID avSampleBufferAudioRenderer  =
-    sendMsg avSampleBufferAudioRenderer (mkSelector "audioOutputDeviceUniqueID") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioOutputDeviceUniqueID avSampleBufferAudioRenderer =
+  sendMessage avSampleBufferAudioRenderer audioOutputDeviceUniqueIDSelector
 
 -- | audioOutputDeviceUniqueID
 --
@@ -106,9 +103,8 @@ audioOutputDeviceUniqueID avSampleBufferAudioRenderer  =
 --
 -- ObjC selector: @- setAudioOutputDeviceUniqueID:@
 setAudioOutputDeviceUniqueID :: (IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer, IsNSString value) => avSampleBufferAudioRenderer -> value -> IO ()
-setAudioOutputDeviceUniqueID avSampleBufferAudioRenderer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSampleBufferAudioRenderer (mkSelector "setAudioOutputDeviceUniqueID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioOutputDeviceUniqueID avSampleBufferAudioRenderer value =
+  sendMessage avSampleBufferAudioRenderer setAudioOutputDeviceUniqueIDSelector (toNSString value)
 
 -- | audioTimePitchAlgorithm
 --
@@ -124,8 +120,8 @@ setAudioOutputDeviceUniqueID avSampleBufferAudioRenderer  value =
 --
 -- ObjC selector: @- audioTimePitchAlgorithm@
 audioTimePitchAlgorithm :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> IO (Id NSString)
-audioTimePitchAlgorithm avSampleBufferAudioRenderer  =
-    sendMsg avSampleBufferAudioRenderer (mkSelector "audioTimePitchAlgorithm") (retPtr retVoid) [] >>= retainedObject . castPtr
+audioTimePitchAlgorithm avSampleBufferAudioRenderer =
+  sendMessage avSampleBufferAudioRenderer audioTimePitchAlgorithmSelector
 
 -- | audioTimePitchAlgorithm
 --
@@ -141,9 +137,8 @@ audioTimePitchAlgorithm avSampleBufferAudioRenderer  =
 --
 -- ObjC selector: @- setAudioTimePitchAlgorithm:@
 setAudioTimePitchAlgorithm :: (IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer, IsNSString value) => avSampleBufferAudioRenderer -> value -> IO ()
-setAudioTimePitchAlgorithm avSampleBufferAudioRenderer  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg avSampleBufferAudioRenderer (mkSelector "setAudioTimePitchAlgorithm:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAudioTimePitchAlgorithm avSampleBufferAudioRenderer value =
+  sendMessage avSampleBufferAudioRenderer setAudioTimePitchAlgorithmSelector (toNSString value)
 
 -- | allowedAudioSpatializationFormats
 --
@@ -153,8 +148,8 @@ setAudioTimePitchAlgorithm avSampleBufferAudioRenderer  value =
 --
 -- ObjC selector: @- allowedAudioSpatializationFormats@
 allowedAudioSpatializationFormats :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> IO AVAudioSpatializationFormats
-allowedAudioSpatializationFormats avSampleBufferAudioRenderer  =
-    fmap (coerce :: CULong -> AVAudioSpatializationFormats) $ sendMsg avSampleBufferAudioRenderer (mkSelector "allowedAudioSpatializationFormats") retCULong []
+allowedAudioSpatializationFormats avSampleBufferAudioRenderer =
+  sendMessage avSampleBufferAudioRenderer allowedAudioSpatializationFormatsSelector
 
 -- | allowedAudioSpatializationFormats
 --
@@ -164,78 +159,78 @@ allowedAudioSpatializationFormats avSampleBufferAudioRenderer  =
 --
 -- ObjC selector: @- setAllowedAudioSpatializationFormats:@
 setAllowedAudioSpatializationFormats :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> AVAudioSpatializationFormats -> IO ()
-setAllowedAudioSpatializationFormats avSampleBufferAudioRenderer  value =
-    sendMsg avSampleBufferAudioRenderer (mkSelector "setAllowedAudioSpatializationFormats:") retVoid [argCULong (coerce value)]
+setAllowedAudioSpatializationFormats avSampleBufferAudioRenderer value =
+  sendMessage avSampleBufferAudioRenderer setAllowedAudioSpatializationFormatsSelector value
 
 -- | @- volume@
 volume :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> IO CFloat
-volume avSampleBufferAudioRenderer  =
-    sendMsg avSampleBufferAudioRenderer (mkSelector "volume") retCFloat []
+volume avSampleBufferAudioRenderer =
+  sendMessage avSampleBufferAudioRenderer volumeSelector
 
 -- | @- setVolume:@
 setVolume :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> CFloat -> IO ()
-setVolume avSampleBufferAudioRenderer  value =
-    sendMsg avSampleBufferAudioRenderer (mkSelector "setVolume:") retVoid [argCFloat value]
+setVolume avSampleBufferAudioRenderer value =
+  sendMessage avSampleBufferAudioRenderer setVolumeSelector value
 
 -- | @- muted@
 muted :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> IO Bool
-muted avSampleBufferAudioRenderer  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg avSampleBufferAudioRenderer (mkSelector "muted") retCULong []
+muted avSampleBufferAudioRenderer =
+  sendMessage avSampleBufferAudioRenderer mutedSelector
 
 -- | @- setMuted:@
 setMuted :: IsAVSampleBufferAudioRenderer avSampleBufferAudioRenderer => avSampleBufferAudioRenderer -> Bool -> IO ()
-setMuted avSampleBufferAudioRenderer  value =
-    sendMsg avSampleBufferAudioRenderer (mkSelector "setMuted:") retVoid [argCULong (if value then 1 else 0)]
+setMuted avSampleBufferAudioRenderer value =
+  sendMessage avSampleBufferAudioRenderer setMutedSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] AVQueuedSampleBufferRenderingStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @error@
-errorSelector :: Selector
+errorSelector :: Selector '[] (Id NSError)
 errorSelector = mkSelector "error"
 
 -- | @Selector@ for @audioOutputDeviceUniqueID@
-audioOutputDeviceUniqueIDSelector :: Selector
+audioOutputDeviceUniqueIDSelector :: Selector '[] (Id NSString)
 audioOutputDeviceUniqueIDSelector = mkSelector "audioOutputDeviceUniqueID"
 
 -- | @Selector@ for @setAudioOutputDeviceUniqueID:@
-setAudioOutputDeviceUniqueIDSelector :: Selector
+setAudioOutputDeviceUniqueIDSelector :: Selector '[Id NSString] ()
 setAudioOutputDeviceUniqueIDSelector = mkSelector "setAudioOutputDeviceUniqueID:"
 
 -- | @Selector@ for @audioTimePitchAlgorithm@
-audioTimePitchAlgorithmSelector :: Selector
+audioTimePitchAlgorithmSelector :: Selector '[] (Id NSString)
 audioTimePitchAlgorithmSelector = mkSelector "audioTimePitchAlgorithm"
 
 -- | @Selector@ for @setAudioTimePitchAlgorithm:@
-setAudioTimePitchAlgorithmSelector :: Selector
+setAudioTimePitchAlgorithmSelector :: Selector '[Id NSString] ()
 setAudioTimePitchAlgorithmSelector = mkSelector "setAudioTimePitchAlgorithm:"
 
 -- | @Selector@ for @allowedAudioSpatializationFormats@
-allowedAudioSpatializationFormatsSelector :: Selector
+allowedAudioSpatializationFormatsSelector :: Selector '[] AVAudioSpatializationFormats
 allowedAudioSpatializationFormatsSelector = mkSelector "allowedAudioSpatializationFormats"
 
 -- | @Selector@ for @setAllowedAudioSpatializationFormats:@
-setAllowedAudioSpatializationFormatsSelector :: Selector
+setAllowedAudioSpatializationFormatsSelector :: Selector '[AVAudioSpatializationFormats] ()
 setAllowedAudioSpatializationFormatsSelector = mkSelector "setAllowedAudioSpatializationFormats:"
 
 -- | @Selector@ for @volume@
-volumeSelector :: Selector
+volumeSelector :: Selector '[] CFloat
 volumeSelector = mkSelector "volume"
 
 -- | @Selector@ for @setVolume:@
-setVolumeSelector :: Selector
+setVolumeSelector :: Selector '[CFloat] ()
 setVolumeSelector = mkSelector "setVolume:"
 
 -- | @Selector@ for @muted@
-mutedSelector :: Selector
+mutedSelector :: Selector '[] Bool
 mutedSelector = mkSelector "muted"
 
 -- | @Selector@ for @setMuted:@
-setMutedSelector :: Selector
+setMutedSelector :: Selector '[Bool] ()
 setMutedSelector = mkSelector "setMuted:"
 

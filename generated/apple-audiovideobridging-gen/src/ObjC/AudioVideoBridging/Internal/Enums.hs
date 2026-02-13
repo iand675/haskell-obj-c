@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.AudioVideoBridging.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @AVB17221ACMPFlags@ (bitmask)
 newtype AVB17221ACMPFlags = AVB17221ACMPFlags CUShort
@@ -55,6 +58,16 @@ pattern AVB17221ACMPFlagsStreamingNoStreamReservationProtocol = AVB17221ACMPFlag
 pattern AVB17221ACMPFlagsStreamingUsingUDP :: AVB17221ACMPFlags
 pattern AVB17221ACMPFlagsStreamingUsingUDP = AVB17221ACMPFlags 512
 
+instance ObjCArgument AVB17221ACMPFlags where
+  withObjCArg (AVB17221ACMPFlags x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn AVB17221ACMPFlags where
+  type RawReturn AVB17221ACMPFlags = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221ACMPFlags (fromIntegral x))
+  fromOwned x = pure (AVB17221ACMPFlags (fromIntegral x))
+
 -- | @AVB17221ACMPIPFlag@ (bitmask)
 newtype AVB17221ACMPIPFlag = AVB17221ACMPIPFlag CUShort
   deriving stock (Eq, Ord, Show)
@@ -68,6 +81,16 @@ instance Monoid AVB17221ACMPIPFlag where
 
 pattern AVB17221ACMPIPFlagNone :: AVB17221ACMPIPFlag
 pattern AVB17221ACMPIPFlagNone = AVB17221ACMPIPFlag 0
+
+instance ObjCArgument AVB17221ACMPIPFlag where
+  withObjCArg (AVB17221ACMPIPFlag x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn AVB17221ACMPIPFlag where
+  type RawReturn AVB17221ACMPIPFlag = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221ACMPIPFlag (fromIntegral x))
+  fromOwned x = pure (AVB17221ACMPIPFlag (fromIntegral x))
 
 -- | @AVB17221ACMPMessageType@
 newtype AVB17221ACMPMessageType = AVB17221ACMPMessageType CUChar
@@ -115,6 +138,16 @@ pattern AVB17221ACMPMessageTypeGetTXConnectionCommand = AVB17221ACMPMessageType 
 
 pattern AVB17221ACMPMessageTypeGetTXConnectionResponse :: AVB17221ACMPMessageType
 pattern AVB17221ACMPMessageTypeGetTXConnectionResponse = AVB17221ACMPMessageType 13
+
+instance ObjCArgument AVB17221ACMPMessageType where
+  withObjCArg (AVB17221ACMPMessageType x) k = k (argCUChar x)
+
+instance ObjCReturn AVB17221ACMPMessageType where
+  type RawReturn AVB17221ACMPMessageType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221ACMPMessageType x)
+  fromOwned x = pure (AVB17221ACMPMessageType x)
 
 -- | @AVB17221ACMPStatusCode@
 newtype AVB17221ACMPStatusCode = AVB17221ACMPStatusCode CUChar
@@ -184,6 +217,16 @@ pattern AVB17221ACMPStatusListenerCanOnlyListenOnce = AVB17221ACMPStatusCode 19
 pattern AVB17221ACMPStatusNotSupported :: AVB17221ACMPStatusCode
 pattern AVB17221ACMPStatusNotSupported = AVB17221ACMPStatusCode 31
 
+instance ObjCArgument AVB17221ACMPStatusCode where
+  withObjCArg (AVB17221ACMPStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn AVB17221ACMPStatusCode where
+  type RawReturn AVB17221ACMPStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221ACMPStatusCode x)
+  fromOwned x = pure (AVB17221ACMPStatusCode x)
+
 -- | @AVB17221ADPControllerCapabilities@ (bitmask)
 newtype AVB17221ADPControllerCapabilities = AVB17221ADPControllerCapabilities CUInt
   deriving stock (Eq, Ord, Show)
@@ -197,6 +240,16 @@ instance Monoid AVB17221ADPControllerCapabilities where
 
 pattern AVB17221ADPControllerCapabilitiesImplemented :: AVB17221ADPControllerCapabilities
 pattern AVB17221ADPControllerCapabilitiesImplemented = AVB17221ADPControllerCapabilities 1
+
+instance ObjCArgument AVB17221ADPControllerCapabilities where
+  withObjCArg (AVB17221ADPControllerCapabilities x) k = k (argCUInt x)
+
+instance ObjCReturn AVB17221ADPControllerCapabilities where
+  type RawReturn AVB17221ADPControllerCapabilities = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221ADPControllerCapabilities x)
+  fromOwned x = pure (AVB17221ADPControllerCapabilities x)
 
 -- | @AVB17221ADPEntityCapabilities@
 newtype AVB17221ADPEntityCapabilities = AVB17221ADPEntityCapabilities CUInt
@@ -287,6 +340,16 @@ pattern AVB17221ADPEntityCapabilitiesMultiplePTPInstances = AVB17221ADPEntityCap
 pattern AVB17221ADPEntityCapabilitiesAEMConfigurationIndexValid :: AVB17221ADPEntityCapabilities
 pattern AVB17221ADPEntityCapabilitiesAEMConfigurationIndexValid = AVB17221ADPEntityCapabilities 33554432
 
+instance ObjCArgument AVB17221ADPEntityCapabilities where
+  withObjCArg (AVB17221ADPEntityCapabilities x) k = k (argCUInt x)
+
+instance ObjCReturn AVB17221ADPEntityCapabilities where
+  type RawReturn AVB17221ADPEntityCapabilities = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221ADPEntityCapabilities x)
+  fromOwned x = pure (AVB17221ADPEntityCapabilities x)
+
 -- | @AVB17221ADPListenerCapabilities@ (bitmask)
 newtype AVB17221ADPListenerCapabilities = AVB17221ADPListenerCapabilities CUShort
   deriving stock (Eq, Ord, Show)
@@ -321,6 +384,16 @@ pattern AVB17221ADPListenerCapabilitiesHasAudioSink = AVB17221ADPListenerCapabil
 
 pattern AVB17221ADPListenerCapabilitiesHasVideoSink :: AVB17221ADPListenerCapabilities
 pattern AVB17221ADPListenerCapabilitiesHasVideoSink = AVB17221ADPListenerCapabilities 32768
+
+instance ObjCArgument AVB17221ADPListenerCapabilities where
+  withObjCArg (AVB17221ADPListenerCapabilities x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn AVB17221ADPListenerCapabilities where
+  type RawReturn AVB17221ADPListenerCapabilities = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221ADPListenerCapabilities (fromIntegral x))
+  fromOwned x = pure (AVB17221ADPListenerCapabilities (fromIntegral x))
 
 -- | @AVB17221ADPTalkerCapabilities@ (bitmask)
 newtype AVB17221ADPTalkerCapabilities = AVB17221ADPTalkerCapabilities CUShort
@@ -357,6 +430,16 @@ pattern AVB17221ADPTalkerCapabilitiesHasAudioSource = AVB17221ADPTalkerCapabilit
 pattern AVB17221ADPTalkerCapabilitiesHasVideoSource :: AVB17221ADPTalkerCapabilities
 pattern AVB17221ADPTalkerCapabilitiesHasVideoSource = AVB17221ADPTalkerCapabilities 32768
 
+instance ObjCArgument AVB17221ADPTalkerCapabilities where
+  withObjCArg (AVB17221ADPTalkerCapabilities x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn AVB17221ADPTalkerCapabilities where
+  type RawReturn AVB17221ADPTalkerCapabilities = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221ADPTalkerCapabilities (fromIntegral x))
+  fromOwned x = pure (AVB17221ADPTalkerCapabilities (fromIntegral x))
+
 -- | @AVB17221AECPAddressAccessTLVMode@
 newtype AVB17221AECPAddressAccessTLVMode = AVB17221AECPAddressAccessTLVMode CUChar
   deriving stock (Eq, Ord, Show)
@@ -370,6 +453,16 @@ pattern AVB17221AECPAddressAccessTLVModeWrite = AVB17221AECPAddressAccessTLVMode
 
 pattern AVB17221AECPAddressAccessTLVModeExecute :: AVB17221AECPAddressAccessTLVMode
 pattern AVB17221AECPAddressAccessTLVModeExecute = AVB17221AECPAddressAccessTLVMode 2
+
+instance ObjCArgument AVB17221AECPAddressAccessTLVMode where
+  withObjCArg (AVB17221AECPAddressAccessTLVMode x) k = k (argCUChar x)
+
+instance ObjCReturn AVB17221AECPAddressAccessTLVMode where
+  type RawReturn AVB17221AECPAddressAccessTLVMode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221AECPAddressAccessTLVMode x)
+  fromOwned x = pure (AVB17221AECPAddressAccessTLVMode x)
 
 -- | @AVB17221AECPMessageType@
 newtype AVB17221AECPMessageType = AVB17221AECPMessageType CUChar
@@ -399,6 +492,16 @@ pattern AVB17221AECPMessageTypeVendorUniqueCommand = AVB17221AECPMessageType 6
 
 pattern AVB17221AECPMessageTypeVendorUniqueResponse :: AVB17221AECPMessageType
 pattern AVB17221AECPMessageTypeVendorUniqueResponse = AVB17221AECPMessageType 7
+
+instance ObjCArgument AVB17221AECPMessageType where
+  withObjCArg (AVB17221AECPMessageType x) k = k (argCUChar x)
+
+instance ObjCReturn AVB17221AECPMessageType where
+  type RawReturn AVB17221AECPMessageType = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221AECPMessageType x)
+  fromOwned x = pure (AVB17221AECPMessageType x)
 
 -- | @AVB17221AECPStatusCode@
 newtype AVB17221AECPStatusCode = AVB17221AECPStatusCode CUChar
@@ -464,6 +567,16 @@ pattern AVB17221AECPStatusAddressAccessUnsupported = AVB17221AECPStatusCode 7
 
 pattern AVB17221AECPStatusAVCFailure :: AVB17221AECPStatusCode
 pattern AVB17221AECPStatusAVCFailure = AVB17221AECPStatusCode 2
+
+instance ObjCArgument AVB17221AECPStatusCode where
+  withObjCArg (AVB17221AECPStatusCode x) k = k (argCUChar x)
+
+instance ObjCReturn AVB17221AECPStatusCode where
+  type RawReturn AVB17221AECPStatusCode = CUChar
+  objcRetType = retCUChar
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221AECPStatusCode x)
+  fromOwned x = pure (AVB17221AECPStatusCode x)
 
 -- | @AVB17221AEMCommandType@
 newtype AVB17221AEMCommandType = AVB17221AEMCommandType CUShort
@@ -782,6 +895,16 @@ pattern AVB17221AEMCommandTypeAuthenticationGetNonce = AVB17221AEMCommandType 10
 pattern AVB17221AEMCommandTypeAuthenticationAddKeyNonce :: AVB17221AEMCommandType
 pattern AVB17221AEMCommandTypeAuthenticationAddKeyNonce = AVB17221AEMCommandType 104
 
+instance ObjCArgument AVB17221AEMCommandType where
+  withObjCArg (AVB17221AEMCommandType x) k = k (argCUInt (fromIntegral x))
+
+instance ObjCReturn AVB17221AEMCommandType where
+  type RawReturn AVB17221AEMCommandType = CUInt
+  objcRetType = retCUInt
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221AEMCommandType (fromIntegral x))
+  fromOwned x = pure (AVB17221AEMCommandType (fromIntegral x))
+
 -- | @AVB17221EntityPropertyChanged@ (bitmask)
 newtype AVB17221EntityPropertyChanged = AVB17221EntityPropertyChanged CULong
   deriving stock (Eq, Ord, Show)
@@ -855,3 +978,13 @@ pattern AVB17221EntityPropertyChangedGPTPDomainNumber = AVB17221EntityPropertyCh
 
 pattern AVB17221EntityPropertyChangedCurrentConfigurationIndex :: AVB17221EntityPropertyChanged
 pattern AVB17221EntityPropertyChangedCurrentConfigurationIndex = AVB17221EntityPropertyChanged 1048576
+
+instance ObjCArgument AVB17221EntityPropertyChanged where
+  withObjCArg (AVB17221EntityPropertyChanged x) k = k (argCULong x)
+
+instance ObjCReturn AVB17221EntityPropertyChanged where
+  type RawReturn AVB17221EntityPropertyChanged = CULong
+  objcRetType = retCULong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (AVB17221EntityPropertyChanged x)
+  fromOwned x = pure (AVB17221EntityPropertyChanged x)

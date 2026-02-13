@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -34,15 +35,11 @@ module ObjC.MLCompute.MLCComparisonLayer
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -59,22 +56,22 @@ layerWithOperation :: MLCComparisonOperation -> IO (Id MLCComparisonLayer)
 layerWithOperation operation =
   do
     cls' <- getRequiredClass "MLCComparisonLayer"
-    sendClassMsg cls' (mkSelector "layerWithOperation:") (retPtr retVoid) [argCInt (coerce operation)] >>= retainedObject . castPtr
+    sendClassMessage cls' layerWithOperationSelector operation
 
 -- | @- operation@
 operation :: IsMLCComparisonLayer mlcComparisonLayer => mlcComparisonLayer -> IO MLCComparisonOperation
-operation mlcComparisonLayer  =
-    fmap (coerce :: CInt -> MLCComparisonOperation) $ sendMsg mlcComparisonLayer (mkSelector "operation") retCInt []
+operation mlcComparisonLayer =
+  sendMessage mlcComparisonLayer operationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @layerWithOperation:@
-layerWithOperationSelector :: Selector
+layerWithOperationSelector :: Selector '[MLCComparisonOperation] (Id MLCComparisonLayer)
 layerWithOperationSelector = mkSelector "layerWithOperation:"
 
 -- | @Selector@ for @operation@
-operationSelector :: Selector
+operationSelector :: Selector '[] MLCComparisonOperation
 operationSelector = mkSelector "operation"
 

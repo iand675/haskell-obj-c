@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,39 +27,35 @@ module ObjC.MetalPerformanceShaders.MPSNNArithmeticGradientNode
   , maximumValue
   , setMaximumValue
   , isSecondarySourceFilter
-  , nodeWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector
-  , initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector
-  , initWithGradientImages_forwardFilter_isSecondarySourceFilterSelector
-  , primaryScaleSelector
-  , setPrimaryScaleSelector
-  , secondaryScaleSelector
-  , setSecondaryScaleSelector
   , biasSelector
-  , setBiasSelector
-  , secondaryStrideInPixelsXSelector
-  , setSecondaryStrideInPixelsXSelector
-  , secondaryStrideInPixelsYSelector
-  , setSecondaryStrideInPixelsYSelector
-  , secondaryStrideInFeatureChannelsSelector
-  , setSecondaryStrideInFeatureChannelsSelector
-  , minimumValueSelector
-  , setMinimumValueSelector
-  , maximumValueSelector
-  , setMaximumValueSelector
+  , initWithGradientImages_forwardFilter_isSecondarySourceFilterSelector
+  , initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector
   , isSecondarySourceFilterSelector
+  , maximumValueSelector
+  , minimumValueSelector
+  , nodeWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector
+  , primaryScaleSelector
+  , secondaryScaleSelector
+  , secondaryStrideInFeatureChannelsSelector
+  , secondaryStrideInPixelsXSelector
+  , secondaryStrideInPixelsYSelector
+  , setBiasSelector
+  , setMaximumValueSelector
+  , setMinimumValueSelector
+  , setPrimaryScaleSelector
+  , setSecondaryScaleSelector
+  , setSecondaryStrideInFeatureChannelsSelector
+  , setSecondaryStrideInPixelsXSelector
+  , setSecondaryStrideInPixelsYSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -80,10 +77,7 @@ nodeWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilter :: (IsM
 nodeWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilter sourceGradient sourceImage gradientState isSecondarySourceFilter =
   do
     cls' <- getRequiredClass "MPSNNArithmeticGradientNode"
-    withObjCPtr sourceGradient $ \raw_sourceGradient ->
-      withObjCPtr sourceImage $ \raw_sourceImage ->
-        withObjCPtr gradientState $ \raw_gradientState ->
-          sendClassMsg cls' (mkSelector "nodeWithSourceGradient:sourceImage:gradientState:isSecondarySourceFilter:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argCULong (if isSecondarySourceFilter then 1 else 0)] >>= retainedObject . castPtr
+    sendClassMessage cls' nodeWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNBinaryGradientStateNode gradientState) isSecondarySourceFilter
 
 -- | create a new arithmetic gradient node
 --
@@ -97,11 +91,8 @@ nodeWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilter sourceG
 --
 -- ObjC selector: @- initWithSourceGradient:sourceImage:gradientState:isSecondarySourceFilter:@
 initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilter :: (IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode, IsMPSNNImageNode sourceGradient, IsMPSNNImageNode sourceImage, IsMPSNNBinaryGradientStateNode gradientState) => mpsnnArithmeticGradientNode -> sourceGradient -> sourceImage -> gradientState -> Bool -> IO (Id MPSNNArithmeticGradientNode)
-initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilter mpsnnArithmeticGradientNode  sourceGradient sourceImage gradientState isSecondarySourceFilter =
-  withObjCPtr sourceGradient $ \raw_sourceGradient ->
-    withObjCPtr sourceImage $ \raw_sourceImage ->
-      withObjCPtr gradientState $ \raw_gradientState ->
-          sendMsg mpsnnArithmeticGradientNode (mkSelector "initWithSourceGradient:sourceImage:gradientState:isSecondarySourceFilter:") (retPtr retVoid) [argPtr (castPtr raw_sourceGradient :: Ptr ()), argPtr (castPtr raw_sourceImage :: Ptr ()), argPtr (castPtr raw_gradientState :: Ptr ()), argCULong (if isSecondarySourceFilter then 1 else 0)] >>= ownedObject . castPtr
+initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilter mpsnnArithmeticGradientNode sourceGradient sourceImage gradientState isSecondarySourceFilter =
+  sendOwnedMessage mpsnnArithmeticGradientNode initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector (toMPSNNImageNode sourceGradient) (toMPSNNImageNode sourceImage) (toMPSNNBinaryGradientStateNode gradientState) isSecondarySourceFilter
 
 -- | create a new arithmetic gradient node
 --
@@ -115,177 +106,175 @@ initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilter mpsnnAr
 --
 -- ObjC selector: @- initWithGradientImages:forwardFilter:isSecondarySourceFilter:@
 initWithGradientImages_forwardFilter_isSecondarySourceFilter :: (IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode, IsNSArray gradientImages, IsMPSNNFilterNode filter_) => mpsnnArithmeticGradientNode -> gradientImages -> filter_ -> Bool -> IO (Id MPSNNArithmeticGradientNode)
-initWithGradientImages_forwardFilter_isSecondarySourceFilter mpsnnArithmeticGradientNode  gradientImages filter_ isSecondarySourceFilter =
-  withObjCPtr gradientImages $ \raw_gradientImages ->
-    withObjCPtr filter_ $ \raw_filter_ ->
-        sendMsg mpsnnArithmeticGradientNode (mkSelector "initWithGradientImages:forwardFilter:isSecondarySourceFilter:") (retPtr retVoid) [argPtr (castPtr raw_gradientImages :: Ptr ()), argPtr (castPtr raw_filter_ :: Ptr ()), argCULong (if isSecondarySourceFilter then 1 else 0)] >>= ownedObject . castPtr
+initWithGradientImages_forwardFilter_isSecondarySourceFilter mpsnnArithmeticGradientNode gradientImages filter_ isSecondarySourceFilter =
+  sendOwnedMessage mpsnnArithmeticGradientNode initWithGradientImages_forwardFilter_isSecondarySourceFilterSelector (toNSArray gradientImages) (toMPSNNFilterNode filter_) isSecondarySourceFilter
 
 -- | @- primaryScale@
 primaryScale :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> IO CFloat
-primaryScale mpsnnArithmeticGradientNode  =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "primaryScale") retCFloat []
+primaryScale mpsnnArithmeticGradientNode =
+  sendMessage mpsnnArithmeticGradientNode primaryScaleSelector
 
 -- | @- setPrimaryScale:@
 setPrimaryScale :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> CFloat -> IO ()
-setPrimaryScale mpsnnArithmeticGradientNode  value =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "setPrimaryScale:") retVoid [argCFloat value]
+setPrimaryScale mpsnnArithmeticGradientNode value =
+  sendMessage mpsnnArithmeticGradientNode setPrimaryScaleSelector value
 
 -- | @- secondaryScale@
 secondaryScale :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> IO CFloat
-secondaryScale mpsnnArithmeticGradientNode  =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "secondaryScale") retCFloat []
+secondaryScale mpsnnArithmeticGradientNode =
+  sendMessage mpsnnArithmeticGradientNode secondaryScaleSelector
 
 -- | @- setSecondaryScale:@
 setSecondaryScale :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> CFloat -> IO ()
-setSecondaryScale mpsnnArithmeticGradientNode  value =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "setSecondaryScale:") retVoid [argCFloat value]
+setSecondaryScale mpsnnArithmeticGradientNode value =
+  sendMessage mpsnnArithmeticGradientNode setSecondaryScaleSelector value
 
 -- | @- bias@
 bias :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> IO CFloat
-bias mpsnnArithmeticGradientNode  =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "bias") retCFloat []
+bias mpsnnArithmeticGradientNode =
+  sendMessage mpsnnArithmeticGradientNode biasSelector
 
 -- | @- setBias:@
 setBias :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> CFloat -> IO ()
-setBias mpsnnArithmeticGradientNode  value =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "setBias:") retVoid [argCFloat value]
+setBias mpsnnArithmeticGradientNode value =
+  sendMessage mpsnnArithmeticGradientNode setBiasSelector value
 
 -- | @- secondaryStrideInPixelsX@
 secondaryStrideInPixelsX :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> IO CULong
-secondaryStrideInPixelsX mpsnnArithmeticGradientNode  =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "secondaryStrideInPixelsX") retCULong []
+secondaryStrideInPixelsX mpsnnArithmeticGradientNode =
+  sendMessage mpsnnArithmeticGradientNode secondaryStrideInPixelsXSelector
 
 -- | @- setSecondaryStrideInPixelsX:@
 setSecondaryStrideInPixelsX :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> CULong -> IO ()
-setSecondaryStrideInPixelsX mpsnnArithmeticGradientNode  value =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "setSecondaryStrideInPixelsX:") retVoid [argCULong value]
+setSecondaryStrideInPixelsX mpsnnArithmeticGradientNode value =
+  sendMessage mpsnnArithmeticGradientNode setSecondaryStrideInPixelsXSelector value
 
 -- | @- secondaryStrideInPixelsY@
 secondaryStrideInPixelsY :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> IO CULong
-secondaryStrideInPixelsY mpsnnArithmeticGradientNode  =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "secondaryStrideInPixelsY") retCULong []
+secondaryStrideInPixelsY mpsnnArithmeticGradientNode =
+  sendMessage mpsnnArithmeticGradientNode secondaryStrideInPixelsYSelector
 
 -- | @- setSecondaryStrideInPixelsY:@
 setSecondaryStrideInPixelsY :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> CULong -> IO ()
-setSecondaryStrideInPixelsY mpsnnArithmeticGradientNode  value =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "setSecondaryStrideInPixelsY:") retVoid [argCULong value]
+setSecondaryStrideInPixelsY mpsnnArithmeticGradientNode value =
+  sendMessage mpsnnArithmeticGradientNode setSecondaryStrideInPixelsYSelector value
 
 -- | @- secondaryStrideInFeatureChannels@
 secondaryStrideInFeatureChannels :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> IO CULong
-secondaryStrideInFeatureChannels mpsnnArithmeticGradientNode  =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "secondaryStrideInFeatureChannels") retCULong []
+secondaryStrideInFeatureChannels mpsnnArithmeticGradientNode =
+  sendMessage mpsnnArithmeticGradientNode secondaryStrideInFeatureChannelsSelector
 
 -- | @- setSecondaryStrideInFeatureChannels:@
 setSecondaryStrideInFeatureChannels :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> CULong -> IO ()
-setSecondaryStrideInFeatureChannels mpsnnArithmeticGradientNode  value =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "setSecondaryStrideInFeatureChannels:") retVoid [argCULong value]
+setSecondaryStrideInFeatureChannels mpsnnArithmeticGradientNode value =
+  sendMessage mpsnnArithmeticGradientNode setSecondaryStrideInFeatureChannelsSelector value
 
 -- | @- minimumValue@
 minimumValue :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> IO CFloat
-minimumValue mpsnnArithmeticGradientNode  =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "minimumValue") retCFloat []
+minimumValue mpsnnArithmeticGradientNode =
+  sendMessage mpsnnArithmeticGradientNode minimumValueSelector
 
 -- | @- setMinimumValue:@
 setMinimumValue :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> CFloat -> IO ()
-setMinimumValue mpsnnArithmeticGradientNode  value =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "setMinimumValue:") retVoid [argCFloat value]
+setMinimumValue mpsnnArithmeticGradientNode value =
+  sendMessage mpsnnArithmeticGradientNode setMinimumValueSelector value
 
 -- | @- maximumValue@
 maximumValue :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> IO CFloat
-maximumValue mpsnnArithmeticGradientNode  =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "maximumValue") retCFloat []
+maximumValue mpsnnArithmeticGradientNode =
+  sendMessage mpsnnArithmeticGradientNode maximumValueSelector
 
 -- | @- setMaximumValue:@
 setMaximumValue :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> CFloat -> IO ()
-setMaximumValue mpsnnArithmeticGradientNode  value =
-    sendMsg mpsnnArithmeticGradientNode (mkSelector "setMaximumValue:") retVoid [argCFloat value]
+setMaximumValue mpsnnArithmeticGradientNode value =
+  sendMessage mpsnnArithmeticGradientNode setMaximumValueSelector value
 
 -- | @- isSecondarySourceFilter@
 isSecondarySourceFilter :: IsMPSNNArithmeticGradientNode mpsnnArithmeticGradientNode => mpsnnArithmeticGradientNode -> IO Bool
-isSecondarySourceFilter mpsnnArithmeticGradientNode  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg mpsnnArithmeticGradientNode (mkSelector "isSecondarySourceFilter") retCULong []
+isSecondarySourceFilter mpsnnArithmeticGradientNode =
+  sendMessage mpsnnArithmeticGradientNode isSecondarySourceFilterSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @nodeWithSourceGradient:sourceImage:gradientState:isSecondarySourceFilter:@
-nodeWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector :: Selector
+nodeWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNBinaryGradientStateNode, Bool] (Id MPSNNArithmeticGradientNode)
 nodeWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector = mkSelector "nodeWithSourceGradient:sourceImage:gradientState:isSecondarySourceFilter:"
 
 -- | @Selector@ for @initWithSourceGradient:sourceImage:gradientState:isSecondarySourceFilter:@
-initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector :: Selector
+initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector :: Selector '[Id MPSNNImageNode, Id MPSNNImageNode, Id MPSNNBinaryGradientStateNode, Bool] (Id MPSNNArithmeticGradientNode)
 initWithSourceGradient_sourceImage_gradientState_isSecondarySourceFilterSelector = mkSelector "initWithSourceGradient:sourceImage:gradientState:isSecondarySourceFilter:"
 
 -- | @Selector@ for @initWithGradientImages:forwardFilter:isSecondarySourceFilter:@
-initWithGradientImages_forwardFilter_isSecondarySourceFilterSelector :: Selector
+initWithGradientImages_forwardFilter_isSecondarySourceFilterSelector :: Selector '[Id NSArray, Id MPSNNFilterNode, Bool] (Id MPSNNArithmeticGradientNode)
 initWithGradientImages_forwardFilter_isSecondarySourceFilterSelector = mkSelector "initWithGradientImages:forwardFilter:isSecondarySourceFilter:"
 
 -- | @Selector@ for @primaryScale@
-primaryScaleSelector :: Selector
+primaryScaleSelector :: Selector '[] CFloat
 primaryScaleSelector = mkSelector "primaryScale"
 
 -- | @Selector@ for @setPrimaryScale:@
-setPrimaryScaleSelector :: Selector
+setPrimaryScaleSelector :: Selector '[CFloat] ()
 setPrimaryScaleSelector = mkSelector "setPrimaryScale:"
 
 -- | @Selector@ for @secondaryScale@
-secondaryScaleSelector :: Selector
+secondaryScaleSelector :: Selector '[] CFloat
 secondaryScaleSelector = mkSelector "secondaryScale"
 
 -- | @Selector@ for @setSecondaryScale:@
-setSecondaryScaleSelector :: Selector
+setSecondaryScaleSelector :: Selector '[CFloat] ()
 setSecondaryScaleSelector = mkSelector "setSecondaryScale:"
 
 -- | @Selector@ for @bias@
-biasSelector :: Selector
+biasSelector :: Selector '[] CFloat
 biasSelector = mkSelector "bias"
 
 -- | @Selector@ for @setBias:@
-setBiasSelector :: Selector
+setBiasSelector :: Selector '[CFloat] ()
 setBiasSelector = mkSelector "setBias:"
 
 -- | @Selector@ for @secondaryStrideInPixelsX@
-secondaryStrideInPixelsXSelector :: Selector
+secondaryStrideInPixelsXSelector :: Selector '[] CULong
 secondaryStrideInPixelsXSelector = mkSelector "secondaryStrideInPixelsX"
 
 -- | @Selector@ for @setSecondaryStrideInPixelsX:@
-setSecondaryStrideInPixelsXSelector :: Selector
+setSecondaryStrideInPixelsXSelector :: Selector '[CULong] ()
 setSecondaryStrideInPixelsXSelector = mkSelector "setSecondaryStrideInPixelsX:"
 
 -- | @Selector@ for @secondaryStrideInPixelsY@
-secondaryStrideInPixelsYSelector :: Selector
+secondaryStrideInPixelsYSelector :: Selector '[] CULong
 secondaryStrideInPixelsYSelector = mkSelector "secondaryStrideInPixelsY"
 
 -- | @Selector@ for @setSecondaryStrideInPixelsY:@
-setSecondaryStrideInPixelsYSelector :: Selector
+setSecondaryStrideInPixelsYSelector :: Selector '[CULong] ()
 setSecondaryStrideInPixelsYSelector = mkSelector "setSecondaryStrideInPixelsY:"
 
 -- | @Selector@ for @secondaryStrideInFeatureChannels@
-secondaryStrideInFeatureChannelsSelector :: Selector
+secondaryStrideInFeatureChannelsSelector :: Selector '[] CULong
 secondaryStrideInFeatureChannelsSelector = mkSelector "secondaryStrideInFeatureChannels"
 
 -- | @Selector@ for @setSecondaryStrideInFeatureChannels:@
-setSecondaryStrideInFeatureChannelsSelector :: Selector
+setSecondaryStrideInFeatureChannelsSelector :: Selector '[CULong] ()
 setSecondaryStrideInFeatureChannelsSelector = mkSelector "setSecondaryStrideInFeatureChannels:"
 
 -- | @Selector@ for @minimumValue@
-minimumValueSelector :: Selector
+minimumValueSelector :: Selector '[] CFloat
 minimumValueSelector = mkSelector "minimumValue"
 
 -- | @Selector@ for @setMinimumValue:@
-setMinimumValueSelector :: Selector
+setMinimumValueSelector :: Selector '[CFloat] ()
 setMinimumValueSelector = mkSelector "setMinimumValue:"
 
 -- | @Selector@ for @maximumValue@
-maximumValueSelector :: Selector
+maximumValueSelector :: Selector '[] CFloat
 maximumValueSelector = mkSelector "maximumValue"
 
 -- | @Selector@ for @setMaximumValue:@
-setMaximumValueSelector :: Selector
+setMaximumValueSelector :: Selector '[CFloat] ()
 setMaximumValueSelector = mkSelector "setMaximumValue:"
 
 -- | @Selector@ for @isSecondarySourceFilter@
-isSecondarySourceFilterSelector :: Selector
+isSecondarySourceFilterSelector :: Selector '[] Bool
 isSecondarySourceFilterSelector = mkSelector "isSecondarySourceFilter"
 

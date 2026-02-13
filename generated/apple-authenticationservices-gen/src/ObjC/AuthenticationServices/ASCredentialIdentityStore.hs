@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,15 +18,15 @@ module ObjC.AuthenticationServices.ASCredentialIdentityStore
   , replaceCredentialIdentitiesWithIdentities_completion
   , replaceCredentialIdentityEntries_completion
   , sharedStore
-  , initSelector
   , getCredentialIdentityStoreStateWithCompletionSelector
-  , saveCredentialIdentities_completionSelector
-  , saveCredentialIdentityEntries_completionSelector
+  , initSelector
+  , removeAllCredentialIdentitiesWithCompletionSelector
   , removeCredentialIdentities_completionSelector
   , removeCredentialIdentityEntries_completionSelector
-  , removeAllCredentialIdentitiesWithCompletionSelector
   , replaceCredentialIdentitiesWithIdentities_completionSelector
   , replaceCredentialIdentityEntries_completionSelector
+  , saveCredentialIdentities_completionSelector
+  , saveCredentialIdentityEntries_completionSelector
   , sharedStoreSelector
 
   -- * Enum types
@@ -37,15 +38,11 @@ module ObjC.AuthenticationServices.ASCredentialIdentityStore
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -55,8 +52,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsASCredentialIdentityStore asCredentialIdentityStore => asCredentialIdentityStore -> IO (Id ASCredentialIdentityStore)
-init_ asCredentialIdentityStore  =
-    sendMsg asCredentialIdentityStore (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asCredentialIdentityStore =
+  sendOwnedMessage asCredentialIdentityStore initSelector
 
 -- | Get the state of the credential identity store.
 --
@@ -66,8 +63,8 @@ init_ asCredentialIdentityStore  =
 --
 -- ObjC selector: @- getCredentialIdentityStoreStateWithCompletion:@
 getCredentialIdentityStoreStateWithCompletion :: IsASCredentialIdentityStore asCredentialIdentityStore => asCredentialIdentityStore -> Ptr () -> IO ()
-getCredentialIdentityStoreStateWithCompletion asCredentialIdentityStore  completion =
-    sendMsg asCredentialIdentityStore (mkSelector "getCredentialIdentityStoreStateWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+getCredentialIdentityStoreStateWithCompletion asCredentialIdentityStore completion =
+  sendMessage asCredentialIdentityStore getCredentialIdentityStoreStateWithCompletionSelector completion
 
 -- | Save the given credential identities to the store.
 --
@@ -79,9 +76,8 @@ getCredentialIdentityStoreStateWithCompletion asCredentialIdentityStore  complet
 --
 -- ObjC selector: @- saveCredentialIdentities:completion:@
 saveCredentialIdentities_completion :: (IsASCredentialIdentityStore asCredentialIdentityStore, IsNSArray credentialIdentities) => asCredentialIdentityStore -> credentialIdentities -> Ptr () -> IO ()
-saveCredentialIdentities_completion asCredentialIdentityStore  credentialIdentities completion =
-  withObjCPtr credentialIdentities $ \raw_credentialIdentities ->
-      sendMsg asCredentialIdentityStore (mkSelector "saveCredentialIdentities:completion:") retVoid [argPtr (castPtr raw_credentialIdentities :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+saveCredentialIdentities_completion asCredentialIdentityStore credentialIdentities completion =
+  sendMessage asCredentialIdentityStore saveCredentialIdentities_completionSelector (toNSArray credentialIdentities) completion
 
 -- | Save the given credential identities to the store.
 --
@@ -93,9 +89,8 @@ saveCredentialIdentities_completion asCredentialIdentityStore  credentialIdentit
 --
 -- ObjC selector: @- saveCredentialIdentityEntries:completion:@
 saveCredentialIdentityEntries_completion :: (IsASCredentialIdentityStore asCredentialIdentityStore, IsNSArray credentialIdentities) => asCredentialIdentityStore -> credentialIdentities -> Ptr () -> IO ()
-saveCredentialIdentityEntries_completion asCredentialIdentityStore  credentialIdentities completion =
-  withObjCPtr credentialIdentities $ \raw_credentialIdentities ->
-      sendMsg asCredentialIdentityStore (mkSelector "saveCredentialIdentityEntries:completion:") retVoid [argPtr (castPtr raw_credentialIdentities :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+saveCredentialIdentityEntries_completion asCredentialIdentityStore credentialIdentities completion =
+  sendMessage asCredentialIdentityStore saveCredentialIdentityEntries_completionSelector (toNSArray credentialIdentities) completion
 
 -- | Remove the given credential identities from the store.
 --
@@ -107,9 +102,8 @@ saveCredentialIdentityEntries_completion asCredentialIdentityStore  credentialId
 --
 -- ObjC selector: @- removeCredentialIdentities:completion:@
 removeCredentialIdentities_completion :: (IsASCredentialIdentityStore asCredentialIdentityStore, IsNSArray credentialIdentities) => asCredentialIdentityStore -> credentialIdentities -> Ptr () -> IO ()
-removeCredentialIdentities_completion asCredentialIdentityStore  credentialIdentities completion =
-  withObjCPtr credentialIdentities $ \raw_credentialIdentities ->
-      sendMsg asCredentialIdentityStore (mkSelector "removeCredentialIdentities:completion:") retVoid [argPtr (castPtr raw_credentialIdentities :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeCredentialIdentities_completion asCredentialIdentityStore credentialIdentities completion =
+  sendMessage asCredentialIdentityStore removeCredentialIdentities_completionSelector (toNSArray credentialIdentities) completion
 
 -- | Remove the given credential identities from the store.
 --
@@ -121,9 +115,8 @@ removeCredentialIdentities_completion asCredentialIdentityStore  credentialIdent
 --
 -- ObjC selector: @- removeCredentialIdentityEntries:completion:@
 removeCredentialIdentityEntries_completion :: (IsASCredentialIdentityStore asCredentialIdentityStore, IsNSArray credentialIdentities) => asCredentialIdentityStore -> credentialIdentities -> Ptr () -> IO ()
-removeCredentialIdentityEntries_completion asCredentialIdentityStore  credentialIdentities completion =
-  withObjCPtr credentialIdentities $ \raw_credentialIdentities ->
-      sendMsg asCredentialIdentityStore (mkSelector "removeCredentialIdentityEntries:completion:") retVoid [argPtr (castPtr raw_credentialIdentities :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+removeCredentialIdentityEntries_completion asCredentialIdentityStore credentialIdentities completion =
+  sendMessage asCredentialIdentityStore removeCredentialIdentityEntries_completionSelector (toNSArray credentialIdentities) completion
 
 -- | Remove all existing credential identities from the store.
 --
@@ -131,8 +124,8 @@ removeCredentialIdentityEntries_completion asCredentialIdentityStore  credential
 --
 -- ObjC selector: @- removeAllCredentialIdentitiesWithCompletion:@
 removeAllCredentialIdentitiesWithCompletion :: IsASCredentialIdentityStore asCredentialIdentityStore => asCredentialIdentityStore -> Ptr () -> IO ()
-removeAllCredentialIdentitiesWithCompletion asCredentialIdentityStore  completion =
-    sendMsg asCredentialIdentityStore (mkSelector "removeAllCredentialIdentitiesWithCompletion:") retVoid [argPtr (castPtr completion :: Ptr ())]
+removeAllCredentialIdentitiesWithCompletion asCredentialIdentityStore completion =
+  sendMessage asCredentialIdentityStore removeAllCredentialIdentitiesWithCompletionSelector completion
 
 -- | Replace existing credential identities with new credential identities.
 --
@@ -144,9 +137,8 @@ removeAllCredentialIdentitiesWithCompletion asCredentialIdentityStore  completio
 --
 -- ObjC selector: @- replaceCredentialIdentitiesWithIdentities:completion:@
 replaceCredentialIdentitiesWithIdentities_completion :: (IsASCredentialIdentityStore asCredentialIdentityStore, IsNSArray newCredentialIdentities) => asCredentialIdentityStore -> newCredentialIdentities -> Ptr () -> IO ()
-replaceCredentialIdentitiesWithIdentities_completion asCredentialIdentityStore  newCredentialIdentities completion =
-  withObjCPtr newCredentialIdentities $ \raw_newCredentialIdentities ->
-      sendMsg asCredentialIdentityStore (mkSelector "replaceCredentialIdentitiesWithIdentities:completion:") retVoid [argPtr (castPtr raw_newCredentialIdentities :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+replaceCredentialIdentitiesWithIdentities_completion asCredentialIdentityStore newCredentialIdentities completion =
+  sendMessage asCredentialIdentityStore replaceCredentialIdentitiesWithIdentities_completionSelector (toNSArray newCredentialIdentities) completion
 
 -- | Replace existing credential identities with new credential identities.
 --
@@ -158,58 +150,57 @@ replaceCredentialIdentitiesWithIdentities_completion asCredentialIdentityStore  
 --
 -- ObjC selector: @- replaceCredentialIdentityEntries:completion:@
 replaceCredentialIdentityEntries_completion :: (IsASCredentialIdentityStore asCredentialIdentityStore, IsNSArray newCredentialIdentities) => asCredentialIdentityStore -> newCredentialIdentities -> Ptr () -> IO ()
-replaceCredentialIdentityEntries_completion asCredentialIdentityStore  newCredentialIdentities completion =
-  withObjCPtr newCredentialIdentities $ \raw_newCredentialIdentities ->
-      sendMsg asCredentialIdentityStore (mkSelector "replaceCredentialIdentityEntries:completion:") retVoid [argPtr (castPtr raw_newCredentialIdentities :: Ptr ()), argPtr (castPtr completion :: Ptr ())]
+replaceCredentialIdentityEntries_completion asCredentialIdentityStore newCredentialIdentities completion =
+  sendMessage asCredentialIdentityStore replaceCredentialIdentityEntries_completionSelector (toNSArray newCredentialIdentities) completion
 
 -- | @+ sharedStore@
 sharedStore :: IO (Id ASCredentialIdentityStore)
 sharedStore  =
   do
     cls' <- getRequiredClass "ASCredentialIdentityStore"
-    sendClassMsg cls' (mkSelector "sharedStore") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedStoreSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASCredentialIdentityStore)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @getCredentialIdentityStoreStateWithCompletion:@
-getCredentialIdentityStoreStateWithCompletionSelector :: Selector
+getCredentialIdentityStoreStateWithCompletionSelector :: Selector '[Ptr ()] ()
 getCredentialIdentityStoreStateWithCompletionSelector = mkSelector "getCredentialIdentityStoreStateWithCompletion:"
 
 -- | @Selector@ for @saveCredentialIdentities:completion:@
-saveCredentialIdentities_completionSelector :: Selector
+saveCredentialIdentities_completionSelector :: Selector '[Id NSArray, Ptr ()] ()
 saveCredentialIdentities_completionSelector = mkSelector "saveCredentialIdentities:completion:"
 
 -- | @Selector@ for @saveCredentialIdentityEntries:completion:@
-saveCredentialIdentityEntries_completionSelector :: Selector
+saveCredentialIdentityEntries_completionSelector :: Selector '[Id NSArray, Ptr ()] ()
 saveCredentialIdentityEntries_completionSelector = mkSelector "saveCredentialIdentityEntries:completion:"
 
 -- | @Selector@ for @removeCredentialIdentities:completion:@
-removeCredentialIdentities_completionSelector :: Selector
+removeCredentialIdentities_completionSelector :: Selector '[Id NSArray, Ptr ()] ()
 removeCredentialIdentities_completionSelector = mkSelector "removeCredentialIdentities:completion:"
 
 -- | @Selector@ for @removeCredentialIdentityEntries:completion:@
-removeCredentialIdentityEntries_completionSelector :: Selector
+removeCredentialIdentityEntries_completionSelector :: Selector '[Id NSArray, Ptr ()] ()
 removeCredentialIdentityEntries_completionSelector = mkSelector "removeCredentialIdentityEntries:completion:"
 
 -- | @Selector@ for @removeAllCredentialIdentitiesWithCompletion:@
-removeAllCredentialIdentitiesWithCompletionSelector :: Selector
+removeAllCredentialIdentitiesWithCompletionSelector :: Selector '[Ptr ()] ()
 removeAllCredentialIdentitiesWithCompletionSelector = mkSelector "removeAllCredentialIdentitiesWithCompletion:"
 
 -- | @Selector@ for @replaceCredentialIdentitiesWithIdentities:completion:@
-replaceCredentialIdentitiesWithIdentities_completionSelector :: Selector
+replaceCredentialIdentitiesWithIdentities_completionSelector :: Selector '[Id NSArray, Ptr ()] ()
 replaceCredentialIdentitiesWithIdentities_completionSelector = mkSelector "replaceCredentialIdentitiesWithIdentities:completion:"
 
 -- | @Selector@ for @replaceCredentialIdentityEntries:completion:@
-replaceCredentialIdentityEntries_completionSelector :: Selector
+replaceCredentialIdentityEntries_completionSelector :: Selector '[Id NSArray, Ptr ()] ()
 replaceCredentialIdentityEntries_completionSelector = mkSelector "replaceCredentialIdentityEntries:completion:"
 
 -- | @Selector@ for @sharedStore@
-sharedStoreSelector :: Selector
+sharedStoreSelector :: Selector '[] (Id ASCredentialIdentityStore)
 sharedStoreSelector = mkSelector "sharedStore"
 

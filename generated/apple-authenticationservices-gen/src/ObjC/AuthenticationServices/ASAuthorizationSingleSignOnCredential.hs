@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.AuthenticationServices.ASAuthorizationSingleSignOnCredential
   , authorizedScopes
   , authenticatedResponse
   , privateKeys
-  , newSelector
-  , initSelector
-  , stateSelector
   , accessTokenSelector
-  , identityTokenSelector
-  , authorizedScopesSelector
   , authenticatedResponseSelector
+  , authorizedScopesSelector
+  , identityTokenSelector
+  , initSelector
+  , newSelector
   , privateKeysSelector
+  , stateSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -46,33 +43,33 @@ new :: IO (Id ASAuthorizationSingleSignOnCredential)
 new  =
   do
     cls' <- getRequiredClass "ASAuthorizationSingleSignOnCredential"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsASAuthorizationSingleSignOnCredential asAuthorizationSingleSignOnCredential => asAuthorizationSingleSignOnCredential -> IO (Id ASAuthorizationSingleSignOnCredential)
-init_ asAuthorizationSingleSignOnCredential  =
-    sendMsg asAuthorizationSingleSignOnCredential (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ asAuthorizationSingleSignOnCredential =
+  sendOwnedMessage asAuthorizationSingleSignOnCredential initSelector
 
 -- | A state returned from the AuthenticationServices extension.
 --
 -- ObjC selector: @- state@
 state :: IsASAuthorizationSingleSignOnCredential asAuthorizationSingleSignOnCredential => asAuthorizationSingleSignOnCredential -> IO (Id NSString)
-state asAuthorizationSingleSignOnCredential  =
-    sendMsg asAuthorizationSingleSignOnCredential (mkSelector "state") (retPtr retVoid) [] >>= retainedObject . castPtr
+state asAuthorizationSingleSignOnCredential =
+  sendMessage asAuthorizationSingleSignOnCredential stateSelector
 
 -- | An access token used to access other systems with the authorized scopes.
 --
 -- ObjC selector: @- accessToken@
 accessToken :: IsASAuthorizationSingleSignOnCredential asAuthorizationSingleSignOnCredential => asAuthorizationSingleSignOnCredential -> IO (Id NSData)
-accessToken asAuthorizationSingleSignOnCredential  =
-    sendMsg asAuthorizationSingleSignOnCredential (mkSelector "accessToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessToken asAuthorizationSingleSignOnCredential =
+  sendMessage asAuthorizationSingleSignOnCredential accessTokenSelector
 
 -- | A JSON Web Token (JWT) used to communicate information about the identity of the user in a secure way to the app.
 --
 -- ObjC selector: @- identityToken@
 identityToken :: IsASAuthorizationSingleSignOnCredential asAuthorizationSingleSignOnCredential => asAuthorizationSingleSignOnCredential -> IO (Id NSData)
-identityToken asAuthorizationSingleSignOnCredential  =
-    sendMsg asAuthorizationSingleSignOnCredential (mkSelector "identityToken") (retPtr retVoid) [] >>= retainedObject . castPtr
+identityToken asAuthorizationSingleSignOnCredential =
+  sendMessage asAuthorizationSingleSignOnCredential identityTokenSelector
 
 -- | This value will contain a list of scopes for which the user provided authorization.  These may contain a subset of the requested scopes on
 --
@@ -80,8 +77,8 @@ identityToken asAuthorizationSingleSignOnCredential  =
 --
 -- ObjC selector: @- authorizedScopes@
 authorizedScopes :: IsASAuthorizationSingleSignOnCredential asAuthorizationSingleSignOnCredential => asAuthorizationSingleSignOnCredential -> IO (Id NSArray)
-authorizedScopes asAuthorizationSingleSignOnCredential  =
-    sendMsg asAuthorizationSingleSignOnCredential (mkSelector "authorizedScopes") (retPtr retVoid) [] >>= retainedObject . castPtr
+authorizedScopes asAuthorizationSingleSignOnCredential =
+  sendMessage asAuthorizationSingleSignOnCredential authorizedScopesSelector
 
 -- | The complete AuthenticationServices extension response with the additional outputs used by the specific technology used by the Authorization Server instance and AuthenticationServices Extension.
 --
@@ -89,49 +86,49 @@ authorizedScopes asAuthorizationSingleSignOnCredential  =
 --
 -- ObjC selector: @- authenticatedResponse@
 authenticatedResponse :: IsASAuthorizationSingleSignOnCredential asAuthorizationSingleSignOnCredential => asAuthorizationSingleSignOnCredential -> IO (Id NSHTTPURLResponse)
-authenticatedResponse asAuthorizationSingleSignOnCredential  =
-    sendMsg asAuthorizationSingleSignOnCredential (mkSelector "authenticatedResponse") (retPtr retVoid) [] >>= retainedObject . castPtr
+authenticatedResponse asAuthorizationSingleSignOnCredential =
+  sendMessage asAuthorizationSingleSignOnCredential authenticatedResponseSelector
 
 -- | Private SecKeys returned from the AuthenticationServices extension.
 --
 -- ObjC selector: @- privateKeys@
 privateKeys :: IsASAuthorizationSingleSignOnCredential asAuthorizationSingleSignOnCredential => asAuthorizationSingleSignOnCredential -> IO (Id NSArray)
-privateKeys asAuthorizationSingleSignOnCredential  =
-    sendMsg asAuthorizationSingleSignOnCredential (mkSelector "privateKeys") (retPtr retVoid) [] >>= retainedObject . castPtr
+privateKeys asAuthorizationSingleSignOnCredential =
+  sendMessage asAuthorizationSingleSignOnCredential privateKeysSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id ASAuthorizationSingleSignOnCredential)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id ASAuthorizationSingleSignOnCredential)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @state@
-stateSelector :: Selector
+stateSelector :: Selector '[] (Id NSString)
 stateSelector = mkSelector "state"
 
 -- | @Selector@ for @accessToken@
-accessTokenSelector :: Selector
+accessTokenSelector :: Selector '[] (Id NSData)
 accessTokenSelector = mkSelector "accessToken"
 
 -- | @Selector@ for @identityToken@
-identityTokenSelector :: Selector
+identityTokenSelector :: Selector '[] (Id NSData)
 identityTokenSelector = mkSelector "identityToken"
 
 -- | @Selector@ for @authorizedScopes@
-authorizedScopesSelector :: Selector
+authorizedScopesSelector :: Selector '[] (Id NSArray)
 authorizedScopesSelector = mkSelector "authorizedScopes"
 
 -- | @Selector@ for @authenticatedResponse@
-authenticatedResponseSelector :: Selector
+authenticatedResponseSelector :: Selector '[] (Id NSHTTPURLResponse)
 authenticatedResponseSelector = mkSelector "authenticatedResponse"
 
 -- | @Selector@ for @privateKeys@
-privateKeysSelector :: Selector
+privateKeysSelector :: Selector '[] (Id NSArray)
 privateKeysSelector = mkSelector "privateKeys"
 

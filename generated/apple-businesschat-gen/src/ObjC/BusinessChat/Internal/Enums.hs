@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.BusinessChat.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | BCChatButtonStyle is used to define the visual style of the button.
 -- | @BCChatButtonStyle@
@@ -22,3 +25,13 @@ pattern BCChatButtonStyleLight = BCChatButtonStyle 0
 
 pattern BCChatButtonStyleDark :: BCChatButtonStyle
 pattern BCChatButtonStyleDark = BCChatButtonStyle 1
+
+instance ObjCArgument BCChatButtonStyle where
+  withObjCArg (BCChatButtonStyle x) k = k (argCLong x)
+
+instance ObjCReturn BCChatButtonStyle where
+  type RawReturn BCChatButtonStyle = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (BCChatButtonStyle x)
+  fromOwned x = pure (BCChatButtonStyle x)

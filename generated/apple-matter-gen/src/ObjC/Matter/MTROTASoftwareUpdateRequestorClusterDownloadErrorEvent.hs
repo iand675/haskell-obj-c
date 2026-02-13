@@ -1,11 +1,12 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
 
--- | Generated bindings for @MTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent@.
-module ObjC.Matter.MTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent
-  ( MTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent
-  , IsMTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent(..)
+-- | Generated bindings for @MTROTASoftwareUpdateRequestorClusterDownloadErrorEvent@.
+module ObjC.Matter.MTROTASoftwareUpdateRequestorClusterDownloadErrorEvent
+  ( MTROTASoftwareUpdateRequestorClusterDownloadErrorEvent
+  , IsMTROTASoftwareUpdateRequestorClusterDownloadErrorEvent(..)
   , softwareVersion
   , setSoftwareVersion
   , bytesDownloaded
@@ -14,27 +15,23 @@ module ObjC.Matter.MTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent
   , setProgressPercent
   , platformCode
   , setPlatformCode
-  , softwareVersionSelector
-  , setSoftwareVersionSelector
   , bytesDownloadedSelector
-  , setBytesDownloadedSelector
-  , progressPercentSelector
-  , setProgressPercentSelector
   , platformCodeSelector
+  , progressPercentSelector
+  , setBytesDownloadedSelector
   , setPlatformCodeSelector
+  , setProgressPercentSelector
+  , setSoftwareVersionSelector
+  , softwareVersionSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,82 +39,78 @@ import ObjC.Matter.Internal.Classes
 import ObjC.Foundation.Internal.Classes
 
 -- | @- softwareVersion@
-softwareVersion :: IsMTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent => mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent -> IO (Id NSNumber)
-softwareVersion mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent  =
-    sendMsg mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent (mkSelector "softwareVersion") (retPtr retVoid) [] >>= retainedObject . castPtr
+softwareVersion :: IsMTROTASoftwareUpdateRequestorClusterDownloadErrorEvent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent => mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent -> IO (Id NSNumber)
+softwareVersion mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent softwareVersionSelector
 
 -- | @- setSoftwareVersion:@
-setSoftwareVersion :: (IsMTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent, IsNSNumber value) => mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent -> value -> IO ()
-setSoftwareVersion mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent (mkSelector "setSoftwareVersion:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSoftwareVersion :: (IsMTROTASoftwareUpdateRequestorClusterDownloadErrorEvent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent, IsNSNumber value) => mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent -> value -> IO ()
+setSoftwareVersion mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent value =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent setSoftwareVersionSelector (toNSNumber value)
 
 -- | @- bytesDownloaded@
-bytesDownloaded :: IsMTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent => mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent -> IO (Id NSNumber)
-bytesDownloaded mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent  =
-    sendMsg mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent (mkSelector "bytesDownloaded") (retPtr retVoid) [] >>= retainedObject . castPtr
+bytesDownloaded :: IsMTROTASoftwareUpdateRequestorClusterDownloadErrorEvent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent => mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent -> IO (Id NSNumber)
+bytesDownloaded mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent bytesDownloadedSelector
 
 -- | @- setBytesDownloaded:@
-setBytesDownloaded :: (IsMTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent, IsNSNumber value) => mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent -> value -> IO ()
-setBytesDownloaded mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent (mkSelector "setBytesDownloaded:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setBytesDownloaded :: (IsMTROTASoftwareUpdateRequestorClusterDownloadErrorEvent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent, IsNSNumber value) => mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent -> value -> IO ()
+setBytesDownloaded mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent value =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent setBytesDownloadedSelector (toNSNumber value)
 
 -- | @- progressPercent@
-progressPercent :: IsMTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent => mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent -> IO (Id NSNumber)
-progressPercent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent  =
-    sendMsg mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent (mkSelector "progressPercent") (retPtr retVoid) [] >>= retainedObject . castPtr
+progressPercent :: IsMTROTASoftwareUpdateRequestorClusterDownloadErrorEvent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent => mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent -> IO (Id NSNumber)
+progressPercent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent progressPercentSelector
 
 -- | @- setProgressPercent:@
-setProgressPercent :: (IsMTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent, IsNSNumber value) => mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent -> value -> IO ()
-setProgressPercent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent (mkSelector "setProgressPercent:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setProgressPercent :: (IsMTROTASoftwareUpdateRequestorClusterDownloadErrorEvent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent, IsNSNumber value) => mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent -> value -> IO ()
+setProgressPercent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent value =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent setProgressPercentSelector (toNSNumber value)
 
 -- | @- platformCode@
-platformCode :: IsMTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent => mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent -> IO (Id NSNumber)
-platformCode mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent  =
-    sendMsg mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent (mkSelector "platformCode") (retPtr retVoid) [] >>= retainedObject . castPtr
+platformCode :: IsMTROTASoftwareUpdateRequestorClusterDownloadErrorEvent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent => mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent -> IO (Id NSNumber)
+platformCode mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent platformCodeSelector
 
 -- | @- setPlatformCode:@
-setPlatformCode :: (IsMTROtaSoftwareUpdateRequestorClusterDownloadErrorEvent mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent, IsNSNumber value) => mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent -> value -> IO ()
-setPlatformCode mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrOtaSoftwareUpdateRequestorClusterDownloadErrorEvent (mkSelector "setPlatformCode:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setPlatformCode :: (IsMTROTASoftwareUpdateRequestorClusterDownloadErrorEvent mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent, IsNSNumber value) => mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent -> value -> IO ()
+setPlatformCode mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent value =
+  sendMessage mtrotaSoftwareUpdateRequestorClusterDownloadErrorEvent setPlatformCodeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @softwareVersion@
-softwareVersionSelector :: Selector
+softwareVersionSelector :: Selector '[] (Id NSNumber)
 softwareVersionSelector = mkSelector "softwareVersion"
 
 -- | @Selector@ for @setSoftwareVersion:@
-setSoftwareVersionSelector :: Selector
+setSoftwareVersionSelector :: Selector '[Id NSNumber] ()
 setSoftwareVersionSelector = mkSelector "setSoftwareVersion:"
 
 -- | @Selector@ for @bytesDownloaded@
-bytesDownloadedSelector :: Selector
+bytesDownloadedSelector :: Selector '[] (Id NSNumber)
 bytesDownloadedSelector = mkSelector "bytesDownloaded"
 
 -- | @Selector@ for @setBytesDownloaded:@
-setBytesDownloadedSelector :: Selector
+setBytesDownloadedSelector :: Selector '[Id NSNumber] ()
 setBytesDownloadedSelector = mkSelector "setBytesDownloaded:"
 
 -- | @Selector@ for @progressPercent@
-progressPercentSelector :: Selector
+progressPercentSelector :: Selector '[] (Id NSNumber)
 progressPercentSelector = mkSelector "progressPercent"
 
 -- | @Selector@ for @setProgressPercent:@
-setProgressPercentSelector :: Selector
+setProgressPercentSelector :: Selector '[Id NSNumber] ()
 setProgressPercentSelector = mkSelector "setProgressPercent:"
 
 -- | @Selector@ for @platformCode@
-platformCodeSelector :: Selector
+platformCodeSelector :: Selector '[] (Id NSNumber)
 platformCodeSelector = mkSelector "platformCode"
 
 -- | @Selector@ for @setPlatformCode:@
-setPlatformCodeSelector :: Selector
+setPlatformCodeSelector :: Selector '[Id NSNumber] ()
 setPlatformCodeSelector = mkSelector "setPlatformCode:"
 

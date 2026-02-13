@@ -24,6 +24,7 @@ module ObjC.CodeGen.Generate.Package
   , classReferencedTypes
   ) where
 
+import Data.Char (toLower)
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Maybe (mapMaybe)
@@ -50,7 +51,7 @@ import ObjC.CodeGen.Generate.Structs
   )
 import ObjC.CodeGen.Generate.InternalClasses (generateInternalClassesModule)
 import ObjC.CodeGen.Generate.ClassModule
-  ( generateClassModule, generateExtensionModules )
+  ( generateClassModule, generateExtensionModules, mkExtMod )
 import ObjC.CodeGen.Generate.DelegateModule
   ( generateDelegateModules )
 
@@ -203,7 +204,8 @@ generatePackageWith
   -> GeneratedPackage
 generatePackageWith depOverrides hierarchy fwMap allKnown availableFws (framework, classNames) =
   let genSet  = Set.fromList classNames
-      ordered = filter (`Set.member` genSet) (hierarchyTopoOrder hierarchy)
+      ordered = dedupCaseInsensitive $
+                  filter (`Set.member` genSet) (hierarchyTopoOrder hierarchy)
       hasClasses = not (null classNames)
 
       -- Use precomputed deps (already cycle-free)
@@ -289,7 +291,8 @@ generatePackage
   -> GeneratedPackage
 generatePackage hierarchy fwMap allKnown availableFws (framework, classNames) =
   let genSet  = Set.fromList classNames
-      ordered = filter (`Set.member` genSet) (hierarchyTopoOrder hierarchy)
+      ordered = dedupCaseInsensitive $
+                  filter (`Set.member` genSet) (hierarchyTopoOrder hierarchy)
       hasClasses = not (null classNames)
 
       -- Internal module
@@ -460,9 +463,11 @@ mkExtPkg hierarchy fwMap allKnown availablePkgNames ((catFw, classFw), classes) 
         (Set.difference (Set.unions [baseDeps, extraDeps])
                         (Set.singleton pkgName))
         availablePkgNames
-      -- Generate the extension modules using the category framework as
-      -- the "origin" framework filter
-      extModules = generateExtensionModules fwMap hierarchy allKnown catFw allDeps
+      -- Generate the extension modules from the already-grouped class list.
+      -- Using `classes` directly (rather than re-discovering all extension
+      -- classes) ensures each (catFw, classFw) pair only emits modules for
+      -- its own classes, avoiding cross-framework misplacement.
+      extModules = fmap (mkExtMod fwMap hierarchy allKnown catFw allDeps) classes
   in if null extModules then Nothing
      else Just GeneratedPackage
        { gpkgName      = pkgName
@@ -550,6 +555,25 @@ generatePackageYaml pkgName framework deps modules = T.unlines $
   , "  source-dirs: src"
   , "  exposed-modules:"
   ] ++ fmap (\m -> "  - " <> m) (Set.toList (Set.fromList (fmap genModuleName modules)))
+
+-- ---------------------------------------------------------------------------
+-- Case-insensitive deduplication
+-- ---------------------------------------------------------------------------
+
+-- | Remove class names that would collide on a case-insensitive filesystem.
+--
+-- Apple sometimes provides both an old name (e.g., @MTRBaseClusterOTA...@)
+-- and a new name (e.g., @MTRBaseClusterOta...@) for the same class.
+-- On macOS (HFS+/APFS case-insensitive), both generate the same file path.
+-- We keep the first occurrence (alphabetically) and drop duplicates.
+dedupCaseInsensitive :: [Text] -> [Text]
+dedupCaseInsensitive = go Set.empty
+  where
+    go _ [] = []
+    go seen (x : xs)
+      | Set.member key seen = go seen xs
+      | otherwise           = x : go (Set.insert key seen) xs
+      where key = T.map toLower x
 
 -- ---------------------------------------------------------------------------
 -- Dependency computation

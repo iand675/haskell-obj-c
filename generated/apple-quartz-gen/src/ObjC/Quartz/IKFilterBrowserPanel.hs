@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.Quartz.IKFilterBrowserPanel
   , runModalWithOptions
   , filterBrowserViewWithOptions
   , finish
-  , filterBrowserPanelWithStyleMaskSelector
-  , filterNameSelector
-  , beginWithOptions_modelessDelegate_didEndSelector_contextInfoSelector
   , beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector
-  , runModalWithOptionsSelector
+  , beginWithOptions_modelessDelegate_didEndSelector_contextInfoSelector
+  , filterBrowserPanelWithStyleMaskSelector
   , filterBrowserViewWithOptionsSelector
+  , filterNameSelector
   , finishSelector
+  , runModalWithOptionsSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -57,7 +54,7 @@ filterBrowserPanelWithStyleMask :: CUInt -> IO RawId
 filterBrowserPanelWithStyleMask styleMask =
   do
     cls' <- getRequiredClass "IKFilterBrowserPanel"
-    fmap (RawId . castPtr) $ sendClassMsg cls' (mkSelector "filterBrowserPanelWithStyleMask:") (retPtr retVoid) [argCUInt styleMask]
+    sendClassMessage cls' filterBrowserPanelWithStyleMaskSelector styleMask
 
 -- | filterName
 --
@@ -67,8 +64,8 @@ filterBrowserPanelWithStyleMask styleMask =
 --
 -- ObjC selector: @- filterName@
 filterName :: IsIKFilterBrowserPanel ikFilterBrowserPanel => ikFilterBrowserPanel -> IO (Id NSString)
-filterName ikFilterBrowserPanel  =
-    sendMsg ikFilterBrowserPanel (mkSelector "filterName") (retPtr retVoid) [] >>= retainedObject . castPtr
+filterName ikFilterBrowserPanel =
+  sendMessage ikFilterBrowserPanel filterNameSelector
 
 -- | beginWithOptions:modelessDelegate:didEndSelector:contextInfo:
 --
@@ -89,10 +86,9 @@ filterName ikFilterBrowserPanel  =
 -- @contextInfo@ — See discussion below
 --
 -- ObjC selector: @- beginWithOptions:modelessDelegate:didEndSelector:contextInfo:@
-beginWithOptions_modelessDelegate_didEndSelector_contextInfo :: (IsIKFilterBrowserPanel ikFilterBrowserPanel, IsNSDictionary inOptions) => ikFilterBrowserPanel -> inOptions -> RawId -> Selector -> Ptr () -> IO ()
-beginWithOptions_modelessDelegate_didEndSelector_contextInfo ikFilterBrowserPanel  inOptions modelessDelegate didEndSelector contextInfo =
-  withObjCPtr inOptions $ \raw_inOptions ->
-      sendMsg ikFilterBrowserPanel (mkSelector "beginWithOptions:modelessDelegate:didEndSelector:contextInfo:") retVoid [argPtr (castPtr raw_inOptions :: Ptr ()), argPtr (castPtr (unRawId modelessDelegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+beginWithOptions_modelessDelegate_didEndSelector_contextInfo :: (IsIKFilterBrowserPanel ikFilterBrowserPanel, IsNSDictionary inOptions) => ikFilterBrowserPanel -> inOptions -> RawId -> Sel -> Ptr () -> IO ()
+beginWithOptions_modelessDelegate_didEndSelector_contextInfo ikFilterBrowserPanel inOptions modelessDelegate didEndSelector contextInfo =
+  sendMessage ikFilterBrowserPanel beginWithOptions_modelessDelegate_didEndSelector_contextInfoSelector (toNSDictionary inOptions) modelessDelegate didEndSelector contextInfo
 
 -- | beginSheetWithOptions:modalForWindow:modalDelegate:didEndSelector:contextInfo:
 --
@@ -115,11 +111,9 @@ beginWithOptions_modelessDelegate_didEndSelector_contextInfo ikFilterBrowserPane
 -- @contextInfo@ — See discussion below
 --
 -- ObjC selector: @- beginSheetWithOptions:modalForWindow:modalDelegate:didEndSelector:contextInfo:@
-beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsIKFilterBrowserPanel ikFilterBrowserPanel, IsNSDictionary inOptions, IsNSWindow docWindow) => ikFilterBrowserPanel -> inOptions -> docWindow -> RawId -> Selector -> Ptr () -> IO ()
-beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfo ikFilterBrowserPanel  inOptions docWindow modalDelegate didEndSelector contextInfo =
-  withObjCPtr inOptions $ \raw_inOptions ->
-    withObjCPtr docWindow $ \raw_docWindow ->
-        sendMsg ikFilterBrowserPanel (mkSelector "beginSheetWithOptions:modalForWindow:modalDelegate:didEndSelector:contextInfo:") retVoid [argPtr (castPtr raw_inOptions :: Ptr ()), argPtr (castPtr raw_docWindow :: Ptr ()), argPtr (castPtr (unRawId modalDelegate) :: Ptr ()), argPtr (unSelector didEndSelector), argPtr contextInfo]
+beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfo :: (IsIKFilterBrowserPanel ikFilterBrowserPanel, IsNSDictionary inOptions, IsNSWindow docWindow) => ikFilterBrowserPanel -> inOptions -> docWindow -> RawId -> Sel -> Ptr () -> IO ()
+beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfo ikFilterBrowserPanel inOptions docWindow modalDelegate didEndSelector contextInfo =
+  sendMessage ikFilterBrowserPanel beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector (toNSDictionary inOptions) (toNSWindow docWindow) modalDelegate didEndSelector contextInfo
 
 -- | runModalWithOptions
 --
@@ -131,9 +125,8 @@ beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfo ik
 --
 -- ObjC selector: @- runModalWithOptions:@
 runModalWithOptions :: (IsIKFilterBrowserPanel ikFilterBrowserPanel, IsNSDictionary inOptions) => ikFilterBrowserPanel -> inOptions -> IO CInt
-runModalWithOptions ikFilterBrowserPanel  inOptions =
-  withObjCPtr inOptions $ \raw_inOptions ->
-      sendMsg ikFilterBrowserPanel (mkSelector "runModalWithOptions:") retCInt [argPtr (castPtr raw_inOptions :: Ptr ())]
+runModalWithOptions ikFilterBrowserPanel inOptions =
+  sendMessage ikFilterBrowserPanel runModalWithOptionsSelector (toNSDictionary inOptions)
 
 -- | filterBrowserViewWithOptions
 --
@@ -145,9 +138,8 @@ runModalWithOptions ikFilterBrowserPanel  inOptions =
 --
 -- ObjC selector: @- filterBrowserViewWithOptions:@
 filterBrowserViewWithOptions :: (IsIKFilterBrowserPanel ikFilterBrowserPanel, IsNSDictionary inOptions) => ikFilterBrowserPanel -> inOptions -> IO (Id IKFilterBrowserView)
-filterBrowserViewWithOptions ikFilterBrowserPanel  inOptions =
-  withObjCPtr inOptions $ \raw_inOptions ->
-      sendMsg ikFilterBrowserPanel (mkSelector "filterBrowserViewWithOptions:") (retPtr retVoid) [argPtr (castPtr raw_inOptions :: Ptr ())] >>= retainedObject . castPtr
+filterBrowserViewWithOptions ikFilterBrowserPanel inOptions =
+  sendMessage ikFilterBrowserPanel filterBrowserViewWithOptionsSelector (toNSDictionary inOptions)
 
 -- | finish
 --
@@ -157,38 +149,38 @@ filterBrowserViewWithOptions ikFilterBrowserPanel  inOptions =
 --
 -- ObjC selector: @- finish:@
 finish :: IsIKFilterBrowserPanel ikFilterBrowserPanel => ikFilterBrowserPanel -> RawId -> IO ()
-finish ikFilterBrowserPanel  sender =
-    sendMsg ikFilterBrowserPanel (mkSelector "finish:") retVoid [argPtr (castPtr (unRawId sender) :: Ptr ())]
+finish ikFilterBrowserPanel sender =
+  sendMessage ikFilterBrowserPanel finishSelector sender
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @filterBrowserPanelWithStyleMask:@
-filterBrowserPanelWithStyleMaskSelector :: Selector
+filterBrowserPanelWithStyleMaskSelector :: Selector '[CUInt] RawId
 filterBrowserPanelWithStyleMaskSelector = mkSelector "filterBrowserPanelWithStyleMask:"
 
 -- | @Selector@ for @filterName@
-filterNameSelector :: Selector
+filterNameSelector :: Selector '[] (Id NSString)
 filterNameSelector = mkSelector "filterName"
 
 -- | @Selector@ for @beginWithOptions:modelessDelegate:didEndSelector:contextInfo:@
-beginWithOptions_modelessDelegate_didEndSelector_contextInfoSelector :: Selector
+beginWithOptions_modelessDelegate_didEndSelector_contextInfoSelector :: Selector '[Id NSDictionary, RawId, Sel, Ptr ()] ()
 beginWithOptions_modelessDelegate_didEndSelector_contextInfoSelector = mkSelector "beginWithOptions:modelessDelegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @beginSheetWithOptions:modalForWindow:modalDelegate:didEndSelector:contextInfo:@
-beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector
+beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector :: Selector '[Id NSDictionary, Id NSWindow, RawId, Sel, Ptr ()] ()
 beginSheetWithOptions_modalForWindow_modalDelegate_didEndSelector_contextInfoSelector = mkSelector "beginSheetWithOptions:modalForWindow:modalDelegate:didEndSelector:contextInfo:"
 
 -- | @Selector@ for @runModalWithOptions:@
-runModalWithOptionsSelector :: Selector
+runModalWithOptionsSelector :: Selector '[Id NSDictionary] CInt
 runModalWithOptionsSelector = mkSelector "runModalWithOptions:"
 
 -- | @Selector@ for @filterBrowserViewWithOptions:@
-filterBrowserViewWithOptionsSelector :: Selector
+filterBrowserViewWithOptionsSelector :: Selector '[Id NSDictionary] (Id IKFilterBrowserView)
 filterBrowserViewWithOptionsSelector = mkSelector "filterBrowserViewWithOptions:"
 
 -- | @Selector@ for @finish:@
-finishSelector :: Selector
+finishSelector :: Selector '[RawId] ()
 finishSelector = mkSelector "finish:"
 

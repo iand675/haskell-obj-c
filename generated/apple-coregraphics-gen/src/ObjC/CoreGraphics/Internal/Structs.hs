@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 data CGDataConsumerCallbacks = CGDataConsumerCallbacks
   { cgDataConsumerCallbacksPutBytes :: !(Ptr ())
@@ -36,6 +38,16 @@ argCGDataConsumerCallbacks = mkStorableArg cgDataConsumerCallbacksStructType
 
 retCGDataConsumerCallbacks :: RetType CGDataConsumerCallbacks
 retCGDataConsumerCallbacks = mkStorableRetType cgDataConsumerCallbacksStructType
+
+instance ObjCArgument CGDataConsumerCallbacks where
+  withObjCArg x k = k (argCGDataConsumerCallbacks x)
+
+instance ObjCReturn CGDataConsumerCallbacks where
+  type RawReturn CGDataConsumerCallbacks = CGDataConsumerCallbacks
+  objcRetType = retCGDataConsumerCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CGDataProviderDirectCallbacks = CGDataProviderDirectCallbacks
   { cgDataProviderDirectCallbacksVersion :: !CUInt
@@ -70,6 +82,16 @@ argCGDataProviderDirectCallbacks = mkStorableArg cgDataProviderDirectCallbacksSt
 retCGDataProviderDirectCallbacks :: RetType CGDataProviderDirectCallbacks
 retCGDataProviderDirectCallbacks = mkStorableRetType cgDataProviderDirectCallbacksStructType
 
+instance ObjCArgument CGDataProviderDirectCallbacks where
+  withObjCArg x k = k (argCGDataProviderDirectCallbacks x)
+
+instance ObjCReturn CGDataProviderDirectCallbacks where
+  type RawReturn CGDataProviderDirectCallbacks = CGDataProviderDirectCallbacks
+  objcRetType = retCGDataProviderDirectCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CGDataProviderSequentialCallbacks = CGDataProviderSequentialCallbacks
   { cgDataProviderSequentialCallbacksVersion :: !CUInt
   , cgDataProviderSequentialCallbacksGetBytes :: !(Ptr ())
@@ -103,6 +125,16 @@ argCGDataProviderSequentialCallbacks = mkStorableArg cgDataProviderSequentialCal
 retCGDataProviderSequentialCallbacks :: RetType CGDataProviderSequentialCallbacks
 retCGDataProviderSequentialCallbacks = mkStorableRetType cgDataProviderSequentialCallbacksStructType
 
+instance ObjCArgument CGDataProviderSequentialCallbacks where
+  withObjCArg x k = k (argCGDataProviderSequentialCallbacks x)
+
+instance ObjCReturn CGDataProviderSequentialCallbacks where
+  type RawReturn CGDataProviderSequentialCallbacks = CGDataProviderSequentialCallbacks
+  objcRetType = retCGDataProviderSequentialCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CGDeviceColor = CGDeviceColor
   { cgDeviceColorRed :: !CFloat
   , cgDeviceColorGreen :: !CFloat
@@ -130,6 +162,16 @@ argCGDeviceColor = mkStorableArg cgDeviceColorStructType
 retCGDeviceColor :: RetType CGDeviceColor
 retCGDeviceColor = mkStorableRetType cgDeviceColorStructType
 
+instance ObjCArgument CGDeviceColor where
+  withObjCArg x k = k (argCGDeviceColor x)
+
+instance ObjCReturn CGDeviceColor where
+  type RawReturn CGDeviceColor = CGDeviceColor
+  objcRetType = retCGDeviceColor
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CGFunctionCallbacks = CGFunctionCallbacks
   { cgFunctionCallbacksVersion :: !CUInt
   , cgFunctionCallbacksEvaluate :: !(Ptr ())
@@ -156,6 +198,16 @@ argCGFunctionCallbacks = mkStorableArg cgFunctionCallbacksStructType
 
 retCGFunctionCallbacks :: RetType CGFunctionCallbacks
 retCGFunctionCallbacks = mkStorableRetType cgFunctionCallbacksStructType
+
+instance ObjCArgument CGFunctionCallbacks where
+  withObjCArg x k = k (argCGFunctionCallbacks x)
+
+instance ObjCReturn CGFunctionCallbacks where
+  type RawReturn CGFunctionCallbacks = CGFunctionCallbacks
+  objcRetType = retCGFunctionCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 data CGPSConverterCallbacks = CGPSConverterCallbacks
   { cgpsConverterCallbacksVersion :: !CUInt
@@ -199,6 +251,16 @@ argCGPSConverterCallbacks = mkStorableArg cgpsConverterCallbacksStructType
 retCGPSConverterCallbacks :: RetType CGPSConverterCallbacks
 retCGPSConverterCallbacks = mkStorableRetType cgpsConverterCallbacksStructType
 
+instance ObjCArgument CGPSConverterCallbacks where
+  withObjCArg x k = k (argCGPSConverterCallbacks x)
+
+instance ObjCReturn CGPSConverterCallbacks where
+  type RawReturn CGPSConverterCallbacks = CGPSConverterCallbacks
+  objcRetType = retCGPSConverterCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CGPatternCallbacks = CGPatternCallbacks
   { cgPatternCallbacksVersion :: !CUInt
   , cgPatternCallbacksDrawPattern :: !(Ptr ())
@@ -226,6 +288,16 @@ argCGPatternCallbacks = mkStorableArg cgPatternCallbacksStructType
 retCGPatternCallbacks :: RetType CGPatternCallbacks
 retCGPatternCallbacks = mkStorableRetType cgPatternCallbacksStructType
 
+instance ObjCArgument CGPatternCallbacks where
+  withObjCArg x k = k (argCGPatternCallbacks x)
+
+instance ObjCReturn CGPatternCallbacks where
+  type RawReturn CGPatternCallbacks = CGPatternCallbacks
+  objcRetType = retCGPatternCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 data CGScreenUpdateMoveDelta = CGScreenUpdateMoveDelta
   { cgScreenUpdateMoveDeltaDX :: !CInt
   , cgScreenUpdateMoveDeltaDY :: !CInt
@@ -249,3 +321,13 @@ argCGScreenUpdateMoveDelta = mkStorableArg cgScreenUpdateMoveDeltaStructType
 
 retCGScreenUpdateMoveDelta :: RetType CGScreenUpdateMoveDelta
 retCGScreenUpdateMoveDelta = mkStorableRetType cgScreenUpdateMoveDeltaStructType
+
+instance ObjCArgument CGScreenUpdateMoveDelta where
+  withObjCArg x k = k (argCGScreenUpdateMoveDelta x)
+
+instance ObjCReturn CGScreenUpdateMoveDelta where
+  type RawReturn CGScreenUpdateMoveDelta = CGScreenUpdateMoveDelta
+  objcRetType = retCGScreenUpdateMoveDelta
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

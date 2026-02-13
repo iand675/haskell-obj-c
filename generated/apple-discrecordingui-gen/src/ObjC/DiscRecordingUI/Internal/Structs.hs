@@ -1,4 +1,5 @@
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Struct types for this framework.
 --
@@ -12,6 +13,7 @@ import Foreign.LibFFI.Base (Arg, RetType, mkStorableArg, mkStorableRetType, newS
 import Foreign.LibFFI.FFITypes
 import Foreign.LibFFI.Internal (CType)
 import System.IO.Unsafe (unsafePerformIO)
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | DRBurnSessionProgressCallbacks
 --
@@ -45,6 +47,16 @@ argDRBurnSessionProgressCallbacks = mkStorableArg drBurnSessionProgressCallbacks
 
 retDRBurnSessionProgressCallbacks :: RetType DRBurnSessionProgressCallbacks
 retDRBurnSessionProgressCallbacks = mkStorableRetType drBurnSessionProgressCallbacksStructType
+
+instance ObjCArgument DRBurnSessionProgressCallbacks where
+  withObjCArg x k = k (argDRBurnSessionProgressCallbacks x)
+
+instance ObjCReturn DRBurnSessionProgressCallbacks where
+  type RawReturn DRBurnSessionProgressCallbacks = DRBurnSessionProgressCallbacks
+  objcRetType = retDRBurnSessionProgressCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | DRBurnSessionProgressDialogOptions
 --
@@ -84,6 +96,16 @@ argDRBurnSessionProgressDialogOptions = mkStorableArg drBurnSessionProgressDialo
 retDRBurnSessionProgressDialogOptions :: RetType DRBurnSessionProgressDialogOptions
 retDRBurnSessionProgressDialogOptions = mkStorableRetType drBurnSessionProgressDialogOptionsStructType
 
+instance ObjCArgument DRBurnSessionProgressDialogOptions where
+  withObjCArg x k = k (argDRBurnSessionProgressDialogOptions x)
+
+instance ObjCReturn DRBurnSessionProgressDialogOptions where
+  type RawReturn DRBurnSessionProgressDialogOptions = DRBurnSessionProgressDialogOptions
+  objcRetType = retDRBurnSessionProgressDialogOptions
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | DRBurnSessionSetupCallbacks
 --
 -- Callback functions passed to the setup dialog.			version					Identifies the version of this structure.			deviceShouldBeTarget	Pointer to a DRBurnSessionDeviceCheckProcPtr. The value of this field may be NULL.			containsSuitableMedia	Pointer to a DRBurnSessionMediaCheckProcPtr. The value of this field may be NULL.			deviceSelectionChanged	Pointer to a DRBurnSessionDeviceSelectionNotificationProcPtr. The value of this field may be NULL.
@@ -116,6 +138,16 @@ argDRBurnSessionSetupCallbacks = mkStorableArg drBurnSessionSetupCallbacksStruct
 
 retDRBurnSessionSetupCallbacks :: RetType DRBurnSessionSetupCallbacks
 retDRBurnSessionSetupCallbacks = mkStorableRetType drBurnSessionSetupCallbacksStructType
+
+instance ObjCArgument DRBurnSessionSetupCallbacks where
+  withObjCArg x k = k (argDRBurnSessionSetupCallbacks x)
+
+instance ObjCReturn DRBurnSessionSetupCallbacks where
+  type RawReturn DRBurnSessionSetupCallbacks = DRBurnSessionSetupCallbacks
+  objcRetType = retDRBurnSessionSetupCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | DRBurnSessionSetupDialogOptions
 --
@@ -155,6 +187,16 @@ argDRBurnSessionSetupDialogOptions = mkStorableArg drBurnSessionSetupDialogOptio
 retDRBurnSessionSetupDialogOptions :: RetType DRBurnSessionSetupDialogOptions
 retDRBurnSessionSetupDialogOptions = mkStorableRetType drBurnSessionSetupDialogOptionsStructType
 
+instance ObjCArgument DRBurnSessionSetupDialogOptions where
+  withObjCArg x k = k (argDRBurnSessionSetupDialogOptions x)
+
+instance ObjCReturn DRBurnSessionSetupDialogOptions where
+  type RawReturn DRBurnSessionSetupDialogOptions = DRBurnSessionSetupDialogOptions
+  objcRetType = retDRBurnSessionSetupDialogOptions
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | DREraseSessionProgressCallbacks
 --
 -- Callback functions passed to the progress dialog.			version					Identifies the version of this structure.			progressWillBegin		Pointer to a DREraseSessionProgressBeginNotificationProcPtr. The value of this field may be NULL.			progressDidFinish		Pointer to a DREraseSessionProgressFinishNotificationProcPtr. The value of this field may be NULL.			eraseDidFinish			Pointer to a DREraseSessionEraseCompleteProcPtr. The value of this field may be NULL.
@@ -187,6 +229,16 @@ argDREraseSessionProgressCallbacks = mkStorableArg drEraseSessionProgressCallbac
 
 retDREraseSessionProgressCallbacks :: RetType DREraseSessionProgressCallbacks
 retDREraseSessionProgressCallbacks = mkStorableRetType drEraseSessionProgressCallbacksStructType
+
+instance ObjCArgument DREraseSessionProgressCallbacks where
+  withObjCArg x k = k (argDREraseSessionProgressCallbacks x)
+
+instance ObjCReturn DREraseSessionProgressCallbacks where
+  type RawReturn DREraseSessionProgressCallbacks = DREraseSessionProgressCallbacks
+  objcRetType = retDREraseSessionProgressCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | DREraseSessionProgressDialogOptions
 --
@@ -226,6 +278,16 @@ argDREraseSessionProgressDialogOptions = mkStorableArg drEraseSessionProgressDia
 retDREraseSessionProgressDialogOptions :: RetType DREraseSessionProgressDialogOptions
 retDREraseSessionProgressDialogOptions = mkStorableRetType drEraseSessionProgressDialogOptionsStructType
 
+instance ObjCArgument DREraseSessionProgressDialogOptions where
+  withObjCArg x k = k (argDREraseSessionProgressDialogOptions x)
+
+instance ObjCReturn DREraseSessionProgressDialogOptions where
+  type RawReturn DREraseSessionProgressDialogOptions = DREraseSessionProgressDialogOptions
+  objcRetType = retDREraseSessionProgressDialogOptions
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
+
 -- | DREraseSessionSetupCallbacks
 --
 -- Callback functions passed to the setup dialog.			version					Identifies the version of this structure.			deviceShouldBeTarget	Pointer to a DREraseSessionDeviceCheckProcPtr. The value of this field may be NULL.			containsSuitableMedia	Pointer to a DREraseSessionMediaCheckProcPtr. The value of this field may be NULL.			deviceSelectionChanged	Pointer to a DREraseSessionDeviceSelectionNotificationProcPtr. The value of this field may be NULL.
@@ -258,6 +320,16 @@ argDREraseSessionSetupCallbacks = mkStorableArg drEraseSessionSetupCallbacksStru
 
 retDREraseSessionSetupCallbacks :: RetType DREraseSessionSetupCallbacks
 retDREraseSessionSetupCallbacks = mkStorableRetType drEraseSessionSetupCallbacksStructType
+
+instance ObjCArgument DREraseSessionSetupCallbacks where
+  withObjCArg x k = k (argDREraseSessionSetupCallbacks x)
+
+instance ObjCReturn DREraseSessionSetupCallbacks where
+  type RawReturn DREraseSessionSetupCallbacks = DREraseSessionSetupCallbacks
+  objcRetType = retDREraseSessionSetupCallbacks
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure
 
 -- | DREraseSessionSetupDialogOptions
 --
@@ -293,3 +365,13 @@ argDREraseSessionSetupDialogOptions = mkStorableArg drEraseSessionSetupDialogOpt
 
 retDREraseSessionSetupDialogOptions :: RetType DREraseSessionSetupDialogOptions
 retDREraseSessionSetupDialogOptions = mkStorableRetType drEraseSessionSetupDialogOptionsStructType
+
+instance ObjCArgument DREraseSessionSetupDialogOptions where
+  withObjCArg x k = k (argDREraseSessionSetupDialogOptions x)
+
+instance ObjCReturn DREraseSessionSetupDialogOptions where
+  type RawReturn DREraseSessionSetupDialogOptions = DREraseSessionSetupDialogOptions
+  objcRetType = retDREraseSessionSetupDialogOptions
+  msgSendVariant = MsgSendStret
+  fromRetained = pure
+  fromOwned = pure

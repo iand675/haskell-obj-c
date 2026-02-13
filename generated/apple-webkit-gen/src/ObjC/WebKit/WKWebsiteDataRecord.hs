@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -10,21 +11,17 @@ module ObjC.WebKit.WKWebsiteDataRecord
   , IsWKWebsiteDataRecord(..)
   , displayName
   , dataTypes
-  , displayNameSelector
   , dataTypesSelector
+  , displayNameSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -35,25 +32,25 @@ import ObjC.Foundation.Internal.Classes
 --
 -- ObjC selector: @- displayName@
 displayName :: IsWKWebsiteDataRecord wkWebsiteDataRecord => wkWebsiteDataRecord -> IO (Id NSString)
-displayName wkWebsiteDataRecord  =
-    sendMsg wkWebsiteDataRecord (mkSelector "displayName") (retPtr retVoid) [] >>= retainedObject . castPtr
+displayName wkWebsiteDataRecord =
+  sendMessage wkWebsiteDataRecord displayNameSelector
 
 -- | The various types of website data that exist for this data record.
 --
 -- ObjC selector: @- dataTypes@
 dataTypes :: IsWKWebsiteDataRecord wkWebsiteDataRecord => wkWebsiteDataRecord -> IO (Id NSSet)
-dataTypes wkWebsiteDataRecord  =
-    sendMsg wkWebsiteDataRecord (mkSelector "dataTypes") (retPtr retVoid) [] >>= retainedObject . castPtr
+dataTypes wkWebsiteDataRecord =
+  sendMessage wkWebsiteDataRecord dataTypesSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @displayName@
-displayNameSelector :: Selector
+displayNameSelector :: Selector '[] (Id NSString)
 displayNameSelector = mkSelector "displayName"
 
 -- | @Selector@ for @dataTypes@
-dataTypesSelector :: Selector
+dataTypesSelector :: Selector '[] (Id NSSet)
 dataTypesSelector = mkSelector "dataTypes"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -11,10 +12,10 @@ module ObjC.AppKit.NSViewLayoutRegion
   , marginsLayoutRegionWithCornerAdaptation
   , new
   , init_
-  , safeAreaLayoutRegionWithCornerAdaptationSelector
+  , initSelector
   , marginsLayoutRegionWithCornerAdaptationSelector
   , newSelector
-  , initSelector
+  , safeAreaLayoutRegionWithCornerAdaptationSelector
 
   -- * Enum types
   , NSViewLayoutRegionAdaptivityAxis(NSViewLayoutRegionAdaptivityAxis)
@@ -24,15 +25,11 @@ module ObjC.AppKit.NSViewLayoutRegion
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -45,44 +42,44 @@ safeAreaLayoutRegionWithCornerAdaptation :: NSViewLayoutRegionAdaptivityAxis -> 
 safeAreaLayoutRegionWithCornerAdaptation adaptivityAxis =
   do
     cls' <- getRequiredClass "NSViewLayoutRegion"
-    sendClassMsg cls' (mkSelector "safeAreaLayoutRegionWithCornerAdaptation:") (retPtr retVoid) [argCLong (coerce adaptivityAxis)] >>= retainedObject . castPtr
+    sendClassMessage cls' safeAreaLayoutRegionWithCornerAdaptationSelector adaptivityAxis
 
 -- | @+ marginsLayoutRegionWithCornerAdaptation:@
 marginsLayoutRegionWithCornerAdaptation :: NSViewLayoutRegionAdaptivityAxis -> IO (Id NSViewLayoutRegion)
 marginsLayoutRegionWithCornerAdaptation adaptivityAxis =
   do
     cls' <- getRequiredClass "NSViewLayoutRegion"
-    sendClassMsg cls' (mkSelector "marginsLayoutRegionWithCornerAdaptation:") (retPtr retVoid) [argCLong (coerce adaptivityAxis)] >>= retainedObject . castPtr
+    sendClassMessage cls' marginsLayoutRegionWithCornerAdaptationSelector adaptivityAxis
 
 -- | @+ new@
 new :: IO (Id NSViewLayoutRegion)
 new  =
   do
     cls' <- getRequiredClass "NSViewLayoutRegion"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsNSViewLayoutRegion nsViewLayoutRegion => nsViewLayoutRegion -> IO (Id NSViewLayoutRegion)
-init_ nsViewLayoutRegion  =
-    sendMsg nsViewLayoutRegion (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ nsViewLayoutRegion =
+  sendOwnedMessage nsViewLayoutRegion initSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @safeAreaLayoutRegionWithCornerAdaptation:@
-safeAreaLayoutRegionWithCornerAdaptationSelector :: Selector
+safeAreaLayoutRegionWithCornerAdaptationSelector :: Selector '[NSViewLayoutRegionAdaptivityAxis] (Id NSViewLayoutRegion)
 safeAreaLayoutRegionWithCornerAdaptationSelector = mkSelector "safeAreaLayoutRegionWithCornerAdaptation:"
 
 -- | @Selector@ for @marginsLayoutRegionWithCornerAdaptation:@
-marginsLayoutRegionWithCornerAdaptationSelector :: Selector
+marginsLayoutRegionWithCornerAdaptationSelector :: Selector '[NSViewLayoutRegionAdaptivityAxis] (Id NSViewLayoutRegion)
 marginsLayoutRegionWithCornerAdaptationSelector = mkSelector "marginsLayoutRegionWithCornerAdaptation:"
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id NSViewLayoutRegion)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id NSViewLayoutRegion)
 initSelector = mkSelector "init"
 

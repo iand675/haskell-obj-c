@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,28 +18,24 @@ module ObjC.Matter.MTRCommodityTariffClusterDayEntryStruct
   , randomizationType
   , setRandomizationType
   , dayEntryIDSelector
-  , setDayEntryIDSelector
-  , startTimeSelector
-  , setStartTimeSelector
   , durationSelector
-  , setDurationSelector
   , randomizationOffsetSelector
-  , setRandomizationOffsetSelector
   , randomizationTypeSelector
+  , setDayEntryIDSelector
+  , setDurationSelector
+  , setRandomizationOffsetSelector
   , setRandomizationTypeSelector
+  , setStartTimeSelector
+  , startTimeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,100 +44,95 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- dayEntryID@
 dayEntryID :: IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct => mtrCommodityTariffClusterDayEntryStruct -> IO (Id NSNumber)
-dayEntryID mtrCommodityTariffClusterDayEntryStruct  =
-    sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "dayEntryID") (retPtr retVoid) [] >>= retainedObject . castPtr
+dayEntryID mtrCommodityTariffClusterDayEntryStruct =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct dayEntryIDSelector
 
 -- | @- setDayEntryID:@
 setDayEntryID :: (IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct, IsNSNumber value) => mtrCommodityTariffClusterDayEntryStruct -> value -> IO ()
-setDayEntryID mtrCommodityTariffClusterDayEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "setDayEntryID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDayEntryID mtrCommodityTariffClusterDayEntryStruct value =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct setDayEntryIDSelector (toNSNumber value)
 
 -- | @- startTime@
 startTime :: IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct => mtrCommodityTariffClusterDayEntryStruct -> IO (Id NSNumber)
-startTime mtrCommodityTariffClusterDayEntryStruct  =
-    sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "startTime") (retPtr retVoid) [] >>= retainedObject . castPtr
+startTime mtrCommodityTariffClusterDayEntryStruct =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct startTimeSelector
 
 -- | @- setStartTime:@
 setStartTime :: (IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct, IsNSNumber value) => mtrCommodityTariffClusterDayEntryStruct -> value -> IO ()
-setStartTime mtrCommodityTariffClusterDayEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "setStartTime:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setStartTime mtrCommodityTariffClusterDayEntryStruct value =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct setStartTimeSelector (toNSNumber value)
 
 -- | @- duration@
 duration :: IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct => mtrCommodityTariffClusterDayEntryStruct -> IO (Id NSNumber)
-duration mtrCommodityTariffClusterDayEntryStruct  =
-    sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "duration") (retPtr retVoid) [] >>= retainedObject . castPtr
+duration mtrCommodityTariffClusterDayEntryStruct =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct durationSelector
 
 -- | @- setDuration:@
 setDuration :: (IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct, IsNSNumber value) => mtrCommodityTariffClusterDayEntryStruct -> value -> IO ()
-setDuration mtrCommodityTariffClusterDayEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "setDuration:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setDuration mtrCommodityTariffClusterDayEntryStruct value =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct setDurationSelector (toNSNumber value)
 
 -- | @- randomizationOffset@
 randomizationOffset :: IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct => mtrCommodityTariffClusterDayEntryStruct -> IO (Id NSNumber)
-randomizationOffset mtrCommodityTariffClusterDayEntryStruct  =
-    sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "randomizationOffset") (retPtr retVoid) [] >>= retainedObject . castPtr
+randomizationOffset mtrCommodityTariffClusterDayEntryStruct =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct randomizationOffsetSelector
 
 -- | @- setRandomizationOffset:@
 setRandomizationOffset :: (IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct, IsNSNumber value) => mtrCommodityTariffClusterDayEntryStruct -> value -> IO ()
-setRandomizationOffset mtrCommodityTariffClusterDayEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "setRandomizationOffset:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRandomizationOffset mtrCommodityTariffClusterDayEntryStruct value =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct setRandomizationOffsetSelector (toNSNumber value)
 
 -- | @- randomizationType@
 randomizationType :: IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct => mtrCommodityTariffClusterDayEntryStruct -> IO (Id NSNumber)
-randomizationType mtrCommodityTariffClusterDayEntryStruct  =
-    sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "randomizationType") (retPtr retVoid) [] >>= retainedObject . castPtr
+randomizationType mtrCommodityTariffClusterDayEntryStruct =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct randomizationTypeSelector
 
 -- | @- setRandomizationType:@
 setRandomizationType :: (IsMTRCommodityTariffClusterDayEntryStruct mtrCommodityTariffClusterDayEntryStruct, IsNSNumber value) => mtrCommodityTariffClusterDayEntryStruct -> value -> IO ()
-setRandomizationType mtrCommodityTariffClusterDayEntryStruct  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrCommodityTariffClusterDayEntryStruct (mkSelector "setRandomizationType:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setRandomizationType mtrCommodityTariffClusterDayEntryStruct value =
+  sendMessage mtrCommodityTariffClusterDayEntryStruct setRandomizationTypeSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @dayEntryID@
-dayEntryIDSelector :: Selector
+dayEntryIDSelector :: Selector '[] (Id NSNumber)
 dayEntryIDSelector = mkSelector "dayEntryID"
 
 -- | @Selector@ for @setDayEntryID:@
-setDayEntryIDSelector :: Selector
+setDayEntryIDSelector :: Selector '[Id NSNumber] ()
 setDayEntryIDSelector = mkSelector "setDayEntryID:"
 
 -- | @Selector@ for @startTime@
-startTimeSelector :: Selector
+startTimeSelector :: Selector '[] (Id NSNumber)
 startTimeSelector = mkSelector "startTime"
 
 -- | @Selector@ for @setStartTime:@
-setStartTimeSelector :: Selector
+setStartTimeSelector :: Selector '[Id NSNumber] ()
 setStartTimeSelector = mkSelector "setStartTime:"
 
 -- | @Selector@ for @duration@
-durationSelector :: Selector
+durationSelector :: Selector '[] (Id NSNumber)
 durationSelector = mkSelector "duration"
 
 -- | @Selector@ for @setDuration:@
-setDurationSelector :: Selector
+setDurationSelector :: Selector '[Id NSNumber] ()
 setDurationSelector = mkSelector "setDuration:"
 
 -- | @Selector@ for @randomizationOffset@
-randomizationOffsetSelector :: Selector
+randomizationOffsetSelector :: Selector '[] (Id NSNumber)
 randomizationOffsetSelector = mkSelector "randomizationOffset"
 
 -- | @Selector@ for @setRandomizationOffset:@
-setRandomizationOffsetSelector :: Selector
+setRandomizationOffsetSelector :: Selector '[Id NSNumber] ()
 setRandomizationOffsetSelector = mkSelector "setRandomizationOffset:"
 
 -- | @Selector@ for @randomizationType@
-randomizationTypeSelector :: Selector
+randomizationTypeSelector :: Selector '[] (Id NSNumber)
 randomizationTypeSelector = mkSelector "randomizationType"
 
 -- | @Selector@ for @setRandomizationType:@
-setRandomizationTypeSelector :: Selector
+setRandomizationTypeSelector :: Selector '[Id NSNumber] ()
 setRandomizationTypeSelector = mkSelector "setRandomizationType:"
 

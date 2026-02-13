@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -19,26 +20,22 @@ module ObjC.PHASE.PHASECardioidDirectivityModelSubbandParameters
   , setPattern
   , sharpness
   , setSharpness
-  , initSelector
   , frequencySelector
-  , setFrequencySelector
+  , initSelector
   , patternSelector
+  , setFrequencySelector
   , setPatternSelector
-  , sharpnessSelector
   , setSharpnessSelector
+  , sharpnessSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -47,8 +44,8 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- init@
 init_ :: IsPHASECardioidDirectivityModelSubbandParameters phaseCardioidDirectivityModelSubbandParameters => phaseCardioidDirectivityModelSubbandParameters -> IO (Id PHASECardioidDirectivityModelSubbandParameters)
-init_ phaseCardioidDirectivityModelSubbandParameters  =
-    sendMsg phaseCardioidDirectivityModelSubbandParameters (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ phaseCardioidDirectivityModelSubbandParameters =
+  sendOwnedMessage phaseCardioidDirectivityModelSubbandParameters initSelector
 
 -- | frequency
 --
@@ -58,8 +55,8 @@ init_ phaseCardioidDirectivityModelSubbandParameters  =
 --
 -- ObjC selector: @- frequency@
 frequency :: IsPHASECardioidDirectivityModelSubbandParameters phaseCardioidDirectivityModelSubbandParameters => phaseCardioidDirectivityModelSubbandParameters -> IO CDouble
-frequency phaseCardioidDirectivityModelSubbandParameters  =
-    sendMsg phaseCardioidDirectivityModelSubbandParameters (mkSelector "frequency") retCDouble []
+frequency phaseCardioidDirectivityModelSubbandParameters =
+  sendMessage phaseCardioidDirectivityModelSubbandParameters frequencySelector
 
 -- | frequency
 --
@@ -69,8 +66,8 @@ frequency phaseCardioidDirectivityModelSubbandParameters  =
 --
 -- ObjC selector: @- setFrequency:@
 setFrequency :: IsPHASECardioidDirectivityModelSubbandParameters phaseCardioidDirectivityModelSubbandParameters => phaseCardioidDirectivityModelSubbandParameters -> CDouble -> IO ()
-setFrequency phaseCardioidDirectivityModelSubbandParameters  value =
-    sendMsg phaseCardioidDirectivityModelSubbandParameters (mkSelector "setFrequency:") retVoid [argCDouble value]
+setFrequency phaseCardioidDirectivityModelSubbandParameters value =
+  sendMessage phaseCardioidDirectivityModelSubbandParameters setFrequencySelector value
 
 -- | pattern
 --
@@ -80,8 +77,8 @@ setFrequency phaseCardioidDirectivityModelSubbandParameters  value =
 --
 -- ObjC selector: @- pattern@
 pattern_ :: IsPHASECardioidDirectivityModelSubbandParameters phaseCardioidDirectivityModelSubbandParameters => phaseCardioidDirectivityModelSubbandParameters -> IO CDouble
-pattern_ phaseCardioidDirectivityModelSubbandParameters  =
-    sendMsg phaseCardioidDirectivityModelSubbandParameters (mkSelector "pattern") retCDouble []
+pattern_ phaseCardioidDirectivityModelSubbandParameters =
+  sendMessage phaseCardioidDirectivityModelSubbandParameters patternSelector
 
 -- | pattern
 --
@@ -91,8 +88,8 @@ pattern_ phaseCardioidDirectivityModelSubbandParameters  =
 --
 -- ObjC selector: @- setPattern:@
 setPattern :: IsPHASECardioidDirectivityModelSubbandParameters phaseCardioidDirectivityModelSubbandParameters => phaseCardioidDirectivityModelSubbandParameters -> CDouble -> IO ()
-setPattern phaseCardioidDirectivityModelSubbandParameters  value =
-    sendMsg phaseCardioidDirectivityModelSubbandParameters (mkSelector "setPattern:") retVoid [argCDouble value]
+setPattern phaseCardioidDirectivityModelSubbandParameters value =
+  sendMessage phaseCardioidDirectivityModelSubbandParameters setPatternSelector value
 
 -- | sharpness
 --
@@ -102,8 +99,8 @@ setPattern phaseCardioidDirectivityModelSubbandParameters  value =
 --
 -- ObjC selector: @- sharpness@
 sharpness :: IsPHASECardioidDirectivityModelSubbandParameters phaseCardioidDirectivityModelSubbandParameters => phaseCardioidDirectivityModelSubbandParameters -> IO CDouble
-sharpness phaseCardioidDirectivityModelSubbandParameters  =
-    sendMsg phaseCardioidDirectivityModelSubbandParameters (mkSelector "sharpness") retCDouble []
+sharpness phaseCardioidDirectivityModelSubbandParameters =
+  sendMessage phaseCardioidDirectivityModelSubbandParameters sharpnessSelector
 
 -- | sharpness
 --
@@ -113,38 +110,38 @@ sharpness phaseCardioidDirectivityModelSubbandParameters  =
 --
 -- ObjC selector: @- setSharpness:@
 setSharpness :: IsPHASECardioidDirectivityModelSubbandParameters phaseCardioidDirectivityModelSubbandParameters => phaseCardioidDirectivityModelSubbandParameters -> CDouble -> IO ()
-setSharpness phaseCardioidDirectivityModelSubbandParameters  value =
-    sendMsg phaseCardioidDirectivityModelSubbandParameters (mkSelector "setSharpness:") retVoid [argCDouble value]
+setSharpness phaseCardioidDirectivityModelSubbandParameters value =
+  sendMessage phaseCardioidDirectivityModelSubbandParameters setSharpnessSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id PHASECardioidDirectivityModelSubbandParameters)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @frequency@
-frequencySelector :: Selector
+frequencySelector :: Selector '[] CDouble
 frequencySelector = mkSelector "frequency"
 
 -- | @Selector@ for @setFrequency:@
-setFrequencySelector :: Selector
+setFrequencySelector :: Selector '[CDouble] ()
 setFrequencySelector = mkSelector "setFrequency:"
 
 -- | @Selector@ for @pattern@
-patternSelector :: Selector
+patternSelector :: Selector '[] CDouble
 patternSelector = mkSelector "pattern"
 
 -- | @Selector@ for @setPattern:@
-setPatternSelector :: Selector
+setPatternSelector :: Selector '[CDouble] ()
 setPatternSelector = mkSelector "setPattern:"
 
 -- | @Selector@ for @sharpness@
-sharpnessSelector :: Selector
+sharpnessSelector :: Selector '[] CDouble
 sharpnessSelector = mkSelector "sharpness"
 
 -- | @Selector@ for @setSharpness:@
-setSharpnessSelector :: Selector
+setSharpnessSelector :: Selector '[CDouble] ()
 setSharpnessSelector = mkSelector "setSharpness:"
 

@@ -1,4 +1,5 @@
 {-# LANGUAGE PatternSynonyms #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -13,10 +14,10 @@ module ObjC.PassKit.PKPaymentRequestMerchantSessionUpdate
   , session
   , setSession
   , initWithStatus_merchantSessionSelector
-  , statusSelector
-  , setStatusSelector
   , sessionSelector
   , setSessionSelector
+  , setStatusSelector
+  , statusSelector
 
   -- * Enum types
   , PKPaymentAuthorizationStatus(PKPaymentAuthorizationStatus)
@@ -31,15 +32,11 @@ module ObjC.PassKit.PKPaymentRequestMerchantSessionUpdate
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,52 +46,50 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithStatus:merchantSession:@
 initWithStatus_merchantSession :: (IsPKPaymentRequestMerchantSessionUpdate pkPaymentRequestMerchantSessionUpdate, IsPKPaymentMerchantSession session) => pkPaymentRequestMerchantSessionUpdate -> PKPaymentAuthorizationStatus -> session -> IO (Id PKPaymentRequestMerchantSessionUpdate)
-initWithStatus_merchantSession pkPaymentRequestMerchantSessionUpdate  status session =
-  withObjCPtr session $ \raw_session ->
-      sendMsg pkPaymentRequestMerchantSessionUpdate (mkSelector "initWithStatus:merchantSession:") (retPtr retVoid) [argCLong (coerce status), argPtr (castPtr raw_session :: Ptr ())] >>= ownedObject . castPtr
+initWithStatus_merchantSession pkPaymentRequestMerchantSessionUpdate status session =
+  sendOwnedMessage pkPaymentRequestMerchantSessionUpdate initWithStatus_merchantSessionSelector status (toPKPaymentMerchantSession session)
 
 -- | @- status@
 status :: IsPKPaymentRequestMerchantSessionUpdate pkPaymentRequestMerchantSessionUpdate => pkPaymentRequestMerchantSessionUpdate -> IO PKPaymentAuthorizationStatus
-status pkPaymentRequestMerchantSessionUpdate  =
-    fmap (coerce :: CLong -> PKPaymentAuthorizationStatus) $ sendMsg pkPaymentRequestMerchantSessionUpdate (mkSelector "status") retCLong []
+status pkPaymentRequestMerchantSessionUpdate =
+  sendMessage pkPaymentRequestMerchantSessionUpdate statusSelector
 
 -- | @- setStatus:@
 setStatus :: IsPKPaymentRequestMerchantSessionUpdate pkPaymentRequestMerchantSessionUpdate => pkPaymentRequestMerchantSessionUpdate -> PKPaymentAuthorizationStatus -> IO ()
-setStatus pkPaymentRequestMerchantSessionUpdate  value =
-    sendMsg pkPaymentRequestMerchantSessionUpdate (mkSelector "setStatus:") retVoid [argCLong (coerce value)]
+setStatus pkPaymentRequestMerchantSessionUpdate value =
+  sendMessage pkPaymentRequestMerchantSessionUpdate setStatusSelector value
 
 -- | @- session@
 session :: IsPKPaymentRequestMerchantSessionUpdate pkPaymentRequestMerchantSessionUpdate => pkPaymentRequestMerchantSessionUpdate -> IO (Id PKPaymentMerchantSession)
-session pkPaymentRequestMerchantSessionUpdate  =
-    sendMsg pkPaymentRequestMerchantSessionUpdate (mkSelector "session") (retPtr retVoid) [] >>= retainedObject . castPtr
+session pkPaymentRequestMerchantSessionUpdate =
+  sendMessage pkPaymentRequestMerchantSessionUpdate sessionSelector
 
 -- | @- setSession:@
 setSession :: (IsPKPaymentRequestMerchantSessionUpdate pkPaymentRequestMerchantSessionUpdate, IsPKPaymentMerchantSession value) => pkPaymentRequestMerchantSessionUpdate -> value -> IO ()
-setSession pkPaymentRequestMerchantSessionUpdate  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg pkPaymentRequestMerchantSessionUpdate (mkSelector "setSession:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setSession pkPaymentRequestMerchantSessionUpdate value =
+  sendMessage pkPaymentRequestMerchantSessionUpdate setSessionSelector (toPKPaymentMerchantSession value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithStatus:merchantSession:@
-initWithStatus_merchantSessionSelector :: Selector
+initWithStatus_merchantSessionSelector :: Selector '[PKPaymentAuthorizationStatus, Id PKPaymentMerchantSession] (Id PKPaymentRequestMerchantSessionUpdate)
 initWithStatus_merchantSessionSelector = mkSelector "initWithStatus:merchantSession:"
 
 -- | @Selector@ for @status@
-statusSelector :: Selector
+statusSelector :: Selector '[] PKPaymentAuthorizationStatus
 statusSelector = mkSelector "status"
 
 -- | @Selector@ for @setStatus:@
-setStatusSelector :: Selector
+setStatusSelector :: Selector '[PKPaymentAuthorizationStatus] ()
 setStatusSelector = mkSelector "setStatus:"
 
 -- | @Selector@ for @session@
-sessionSelector :: Selector
+sessionSelector :: Selector '[] (Id PKPaymentMerchantSession)
 sessionSelector = mkSelector "session"
 
 -- | @Selector@ for @setSession:@
-setSessionSelector :: Selector
+setSessionSelector :: Selector '[Id PKPaymentMerchantSession] ()
 setSessionSelector = mkSelector "setSession:"
 

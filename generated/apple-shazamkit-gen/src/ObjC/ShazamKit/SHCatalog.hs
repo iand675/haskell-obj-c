@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,23 +15,19 @@ module ObjC.ShazamKit.SHCatalog
   , init_
   , minimumQuerySignatureDuration
   , maximumQuerySignatureDuration
-  , newSelector
   , initSelector
-  , minimumQuerySignatureDurationSelector
   , maximumQuerySignatureDurationSelector
+  , minimumQuerySignatureDurationSelector
+  , newSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -42,44 +39,44 @@ new :: IO (Id SHCatalog)
 new  =
   do
     cls' <- getRequiredClass "SHCatalog"
-    sendClassMsg cls' (mkSelector "new") (retPtr retVoid) [] >>= ownedObject . castPtr
+    sendOwnedClassMessage cls' newSelector
 
 -- | @- init@
 init_ :: IsSHCatalog shCatalog => shCatalog -> IO (Id SHCatalog)
-init_ shCatalog  =
-    sendMsg shCatalog (mkSelector "init") (retPtr retVoid) [] >>= ownedObject . castPtr
+init_ shCatalog =
+  sendOwnedMessage shCatalog initSelector
 
 -- | The minimum duration of a query signature that you use to match reference signatures in the catalog.
 --
 -- ObjC selector: @- minimumQuerySignatureDuration@
 minimumQuerySignatureDuration :: IsSHCatalog shCatalog => shCatalog -> IO CDouble
-minimumQuerySignatureDuration shCatalog  =
-    sendMsg shCatalog (mkSelector "minimumQuerySignatureDuration") retCDouble []
+minimumQuerySignatureDuration shCatalog =
+  sendMessage shCatalog minimumQuerySignatureDurationSelector
 
 -- | The maximum duration of a query signature that you use to match reference signatures in the catalog.
 --
 -- ObjC selector: @- maximumQuerySignatureDuration@
 maximumQuerySignatureDuration :: IsSHCatalog shCatalog => shCatalog -> IO CDouble
-maximumQuerySignatureDuration shCatalog  =
-    sendMsg shCatalog (mkSelector "maximumQuerySignatureDuration") retCDouble []
+maximumQuerySignatureDuration shCatalog =
+  sendMessage shCatalog maximumQuerySignatureDurationSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @new@
-newSelector :: Selector
+newSelector :: Selector '[] (Id SHCatalog)
 newSelector = mkSelector "new"
 
 -- | @Selector@ for @init@
-initSelector :: Selector
+initSelector :: Selector '[] (Id SHCatalog)
 initSelector = mkSelector "init"
 
 -- | @Selector@ for @minimumQuerySignatureDuration@
-minimumQuerySignatureDurationSelector :: Selector
+minimumQuerySignatureDurationSelector :: Selector '[] CDouble
 minimumQuerySignatureDurationSelector = mkSelector "minimumQuerySignatureDuration"
 
 -- | @Selector@ for @maximumQuerySignatureDuration@
-maximumQuerySignatureDurationSelector :: Selector
+maximumQuerySignatureDurationSelector :: Selector '[] CDouble
 maximumQuerySignatureDurationSelector = mkSelector "maximumQuerySignatureDuration"
 

@@ -28,7 +28,7 @@ import ObjC.Runtime.Types
 -- ---------------------------------------------------------------------------
 
 foreign import ccall unsafe "method_getName"
-  c_method_getName :: Method -> IO Selector
+  c_method_getName :: Method -> IO (Ptr ObjCSel)
 
 foreign import ccall unsafe "method_getImplementation"
   c_method_getImplementation :: Method -> IO IMP
@@ -65,8 +65,8 @@ foreign import ccall unsafe "method_getDescription"
 -- ---------------------------------------------------------------------------
 
 -- | Get the selector of a method.
-method_getName :: Method -> IO Selector
-method_getName = c_method_getName
+method_getName :: Method -> IO Sel
+method_getName m = Selector <$> c_method_getName m
 
 -- | Get the implementation (function pointer) of a method.
 method_getImplementation :: Method -> IO IMP

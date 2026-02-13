@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -14,27 +15,23 @@ module ObjC.MultipeerConnectivity.MCAdvertiserAssistant
   , session
   , discoveryInfo
   , serviceType
+  , delegateSelector
+  , discoveryInfoSelector
   , initWithServiceType_discoveryInfo_sessionSelector
+  , serviceTypeSelector
+  , sessionSelector
+  , setDelegateSelector
   , startSelector
   , stopSelector
-  , delegateSelector
-  , setDelegateSelector
-  , sessionSelector
-  , discoveryInfoSelector
-  , serviceTypeSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,80 +40,77 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- initWithServiceType:discoveryInfo:session:@
 initWithServiceType_discoveryInfo_session :: (IsMCAdvertiserAssistant mcAdvertiserAssistant, IsNSString serviceType, IsNSDictionary info, IsMCSession session) => mcAdvertiserAssistant -> serviceType -> info -> session -> IO (Id MCAdvertiserAssistant)
-initWithServiceType_discoveryInfo_session mcAdvertiserAssistant  serviceType info session =
-  withObjCPtr serviceType $ \raw_serviceType ->
-    withObjCPtr info $ \raw_info ->
-      withObjCPtr session $ \raw_session ->
-          sendMsg mcAdvertiserAssistant (mkSelector "initWithServiceType:discoveryInfo:session:") (retPtr retVoid) [argPtr (castPtr raw_serviceType :: Ptr ()), argPtr (castPtr raw_info :: Ptr ()), argPtr (castPtr raw_session :: Ptr ())] >>= ownedObject . castPtr
+initWithServiceType_discoveryInfo_session mcAdvertiserAssistant serviceType info session =
+  sendOwnedMessage mcAdvertiserAssistant initWithServiceType_discoveryInfo_sessionSelector (toNSString serviceType) (toNSDictionary info) (toMCSession session)
 
 -- | @- start@
 start :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> IO ()
-start mcAdvertiserAssistant  =
-    sendMsg mcAdvertiserAssistant (mkSelector "start") retVoid []
+start mcAdvertiserAssistant =
+  sendMessage mcAdvertiserAssistant startSelector
 
 -- | @- stop@
 stop :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> IO ()
-stop mcAdvertiserAssistant  =
-    sendMsg mcAdvertiserAssistant (mkSelector "stop") retVoid []
+stop mcAdvertiserAssistant =
+  sendMessage mcAdvertiserAssistant stopSelector
 
 -- | @- delegate@
 delegate :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> IO RawId
-delegate mcAdvertiserAssistant  =
-    fmap (RawId . castPtr) $ sendMsg mcAdvertiserAssistant (mkSelector "delegate") (retPtr retVoid) []
+delegate mcAdvertiserAssistant =
+  sendMessage mcAdvertiserAssistant delegateSelector
 
 -- | @- setDelegate:@
 setDelegate :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> RawId -> IO ()
-setDelegate mcAdvertiserAssistant  value =
-    sendMsg mcAdvertiserAssistant (mkSelector "setDelegate:") retVoid [argPtr (castPtr (unRawId value) :: Ptr ())]
+setDelegate mcAdvertiserAssistant value =
+  sendMessage mcAdvertiserAssistant setDelegateSelector value
 
 -- | @- session@
 session :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> IO (Id MCSession)
-session mcAdvertiserAssistant  =
-    sendMsg mcAdvertiserAssistant (mkSelector "session") (retPtr retVoid) [] >>= retainedObject . castPtr
+session mcAdvertiserAssistant =
+  sendMessage mcAdvertiserAssistant sessionSelector
 
 -- | @- discoveryInfo@
 discoveryInfo :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> IO (Id NSDictionary)
-discoveryInfo mcAdvertiserAssistant  =
-    sendMsg mcAdvertiserAssistant (mkSelector "discoveryInfo") (retPtr retVoid) [] >>= retainedObject . castPtr
+discoveryInfo mcAdvertiserAssistant =
+  sendMessage mcAdvertiserAssistant discoveryInfoSelector
 
 -- | @- serviceType@
 serviceType :: IsMCAdvertiserAssistant mcAdvertiserAssistant => mcAdvertiserAssistant -> IO (Id NSString)
-serviceType mcAdvertiserAssistant  =
-    sendMsg mcAdvertiserAssistant (mkSelector "serviceType") (retPtr retVoid) [] >>= retainedObject . castPtr
+serviceType mcAdvertiserAssistant =
+  sendMessage mcAdvertiserAssistant serviceTypeSelector
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @initWithServiceType:discoveryInfo:session:@
-initWithServiceType_discoveryInfo_sessionSelector :: Selector
+initWithServiceType_discoveryInfo_sessionSelector :: Selector '[Id NSString, Id NSDictionary, Id MCSession] (Id MCAdvertiserAssistant)
 initWithServiceType_discoveryInfo_sessionSelector = mkSelector "initWithServiceType:discoveryInfo:session:"
 
 -- | @Selector@ for @start@
-startSelector :: Selector
+startSelector :: Selector '[] ()
 startSelector = mkSelector "start"
 
 -- | @Selector@ for @stop@
-stopSelector :: Selector
+stopSelector :: Selector '[] ()
 stopSelector = mkSelector "stop"
 
 -- | @Selector@ for @delegate@
-delegateSelector :: Selector
+delegateSelector :: Selector '[] RawId
 delegateSelector = mkSelector "delegate"
 
 -- | @Selector@ for @setDelegate:@
-setDelegateSelector :: Selector
+setDelegateSelector :: Selector '[RawId] ()
 setDelegateSelector = mkSelector "setDelegate:"
 
 -- | @Selector@ for @session@
-sessionSelector :: Selector
+sessionSelector :: Selector '[] (Id MCSession)
 sessionSelector = mkSelector "session"
 
 -- | @Selector@ for @discoveryInfo@
-discoveryInfoSelector :: Selector
+discoveryInfoSelector :: Selector '[] (Id NSDictionary)
 discoveryInfoSelector = mkSelector "discoveryInfo"
 
 -- | @Selector@ for @serviceType@
-serviceTypeSelector :: Selector
+serviceTypeSelector :: Selector '[] (Id NSString)
 serviceTypeSelector = mkSelector "serviceType"
 

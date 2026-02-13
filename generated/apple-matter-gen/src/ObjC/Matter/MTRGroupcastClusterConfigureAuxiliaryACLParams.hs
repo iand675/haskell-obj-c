@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -15,26 +16,22 @@ module ObjC.Matter.MTRGroupcastClusterConfigureAuxiliaryACLParams
   , serverSideProcessingTimeout
   , setServerSideProcessingTimeout
   , groupIDSelector
+  , serverSideProcessingTimeoutSelector
   , setGroupIDSelector
-  , useAuxiliaryACLSelector
+  , setServerSideProcessingTimeoutSelector
+  , setTimedInvokeTimeoutMsSelector
   , setUseAuxiliaryACLSelector
   , timedInvokeTimeoutMsSelector
-  , setTimedInvokeTimeoutMsSelector
-  , serverSideProcessingTimeoutSelector
-  , setServerSideProcessingTimeoutSelector
+  , useAuxiliaryACLSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -43,25 +40,23 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- groupID@
 groupID :: IsMTRGroupcastClusterConfigureAuxiliaryACLParams mtrGroupcastClusterConfigureAuxiliaryACLParams => mtrGroupcastClusterConfigureAuxiliaryACLParams -> IO (Id NSNumber)
-groupID mtrGroupcastClusterConfigureAuxiliaryACLParams  =
-    sendMsg mtrGroupcastClusterConfigureAuxiliaryACLParams (mkSelector "groupID") (retPtr retVoid) [] >>= retainedObject . castPtr
+groupID mtrGroupcastClusterConfigureAuxiliaryACLParams =
+  sendMessage mtrGroupcastClusterConfigureAuxiliaryACLParams groupIDSelector
 
 -- | @- setGroupID:@
 setGroupID :: (IsMTRGroupcastClusterConfigureAuxiliaryACLParams mtrGroupcastClusterConfigureAuxiliaryACLParams, IsNSNumber value) => mtrGroupcastClusterConfigureAuxiliaryACLParams -> value -> IO ()
-setGroupID mtrGroupcastClusterConfigureAuxiliaryACLParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterConfigureAuxiliaryACLParams (mkSelector "setGroupID:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setGroupID mtrGroupcastClusterConfigureAuxiliaryACLParams value =
+  sendMessage mtrGroupcastClusterConfigureAuxiliaryACLParams setGroupIDSelector (toNSNumber value)
 
 -- | @- useAuxiliaryACL@
 useAuxiliaryACL :: IsMTRGroupcastClusterConfigureAuxiliaryACLParams mtrGroupcastClusterConfigureAuxiliaryACLParams => mtrGroupcastClusterConfigureAuxiliaryACLParams -> IO (Id NSNumber)
-useAuxiliaryACL mtrGroupcastClusterConfigureAuxiliaryACLParams  =
-    sendMsg mtrGroupcastClusterConfigureAuxiliaryACLParams (mkSelector "useAuxiliaryACL") (retPtr retVoid) [] >>= retainedObject . castPtr
+useAuxiliaryACL mtrGroupcastClusterConfigureAuxiliaryACLParams =
+  sendMessage mtrGroupcastClusterConfigureAuxiliaryACLParams useAuxiliaryACLSelector
 
 -- | @- setUseAuxiliaryACL:@
 setUseAuxiliaryACL :: (IsMTRGroupcastClusterConfigureAuxiliaryACLParams mtrGroupcastClusterConfigureAuxiliaryACLParams, IsNSNumber value) => mtrGroupcastClusterConfigureAuxiliaryACLParams -> value -> IO ()
-setUseAuxiliaryACL mtrGroupcastClusterConfigureAuxiliaryACLParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterConfigureAuxiliaryACLParams (mkSelector "setUseAuxiliaryACL:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setUseAuxiliaryACL mtrGroupcastClusterConfigureAuxiliaryACLParams value =
+  sendMessage mtrGroupcastClusterConfigureAuxiliaryACLParams setUseAuxiliaryACLSelector (toNSNumber value)
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -71,8 +66,8 @@ setUseAuxiliaryACL mtrGroupcastClusterConfigureAuxiliaryACLParams  value =
 --
 -- ObjC selector: @- timedInvokeTimeoutMs@
 timedInvokeTimeoutMs :: IsMTRGroupcastClusterConfigureAuxiliaryACLParams mtrGroupcastClusterConfigureAuxiliaryACLParams => mtrGroupcastClusterConfigureAuxiliaryACLParams -> IO (Id NSNumber)
-timedInvokeTimeoutMs mtrGroupcastClusterConfigureAuxiliaryACLParams  =
-    sendMsg mtrGroupcastClusterConfigureAuxiliaryACLParams (mkSelector "timedInvokeTimeoutMs") (retPtr retVoid) [] >>= retainedObject . castPtr
+timedInvokeTimeoutMs mtrGroupcastClusterConfigureAuxiliaryACLParams =
+  sendMessage mtrGroupcastClusterConfigureAuxiliaryACLParams timedInvokeTimeoutMsSelector
 
 -- | Controls whether the command is a timed command (using Timed Invoke).
 --
@@ -82,9 +77,8 @@ timedInvokeTimeoutMs mtrGroupcastClusterConfigureAuxiliaryACLParams  =
 --
 -- ObjC selector: @- setTimedInvokeTimeoutMs:@
 setTimedInvokeTimeoutMs :: (IsMTRGroupcastClusterConfigureAuxiliaryACLParams mtrGroupcastClusterConfigureAuxiliaryACLParams, IsNSNumber value) => mtrGroupcastClusterConfigureAuxiliaryACLParams -> value -> IO ()
-setTimedInvokeTimeoutMs mtrGroupcastClusterConfigureAuxiliaryACLParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterConfigureAuxiliaryACLParams (mkSelector "setTimedInvokeTimeoutMs:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setTimedInvokeTimeoutMs mtrGroupcastClusterConfigureAuxiliaryACLParams value =
+  sendMessage mtrGroupcastClusterConfigureAuxiliaryACLParams setTimedInvokeTimeoutMsSelector (toNSNumber value)
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -94,8 +88,8 @@ setTimedInvokeTimeoutMs mtrGroupcastClusterConfigureAuxiliaryACLParams  value =
 --
 -- ObjC selector: @- serverSideProcessingTimeout@
 serverSideProcessingTimeout :: IsMTRGroupcastClusterConfigureAuxiliaryACLParams mtrGroupcastClusterConfigureAuxiliaryACLParams => mtrGroupcastClusterConfigureAuxiliaryACLParams -> IO (Id NSNumber)
-serverSideProcessingTimeout mtrGroupcastClusterConfigureAuxiliaryACLParams  =
-    sendMsg mtrGroupcastClusterConfigureAuxiliaryACLParams (mkSelector "serverSideProcessingTimeout") (retPtr retVoid) [] >>= retainedObject . castPtr
+serverSideProcessingTimeout mtrGroupcastClusterConfigureAuxiliaryACLParams =
+  sendMessage mtrGroupcastClusterConfigureAuxiliaryACLParams serverSideProcessingTimeoutSelector
 
 -- | Controls how much time, in seconds, we will allow for the server to process the command.
 --
@@ -105,43 +99,42 @@ serverSideProcessingTimeout mtrGroupcastClusterConfigureAuxiliaryACLParams  =
 --
 -- ObjC selector: @- setServerSideProcessingTimeout:@
 setServerSideProcessingTimeout :: (IsMTRGroupcastClusterConfigureAuxiliaryACLParams mtrGroupcastClusterConfigureAuxiliaryACLParams, IsNSNumber value) => mtrGroupcastClusterConfigureAuxiliaryACLParams -> value -> IO ()
-setServerSideProcessingTimeout mtrGroupcastClusterConfigureAuxiliaryACLParams  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg mtrGroupcastClusterConfigureAuxiliaryACLParams (mkSelector "setServerSideProcessingTimeout:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setServerSideProcessingTimeout mtrGroupcastClusterConfigureAuxiliaryACLParams value =
+  sendMessage mtrGroupcastClusterConfigureAuxiliaryACLParams setServerSideProcessingTimeoutSelector (toNSNumber value)
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @groupID@
-groupIDSelector :: Selector
+groupIDSelector :: Selector '[] (Id NSNumber)
 groupIDSelector = mkSelector "groupID"
 
 -- | @Selector@ for @setGroupID:@
-setGroupIDSelector :: Selector
+setGroupIDSelector :: Selector '[Id NSNumber] ()
 setGroupIDSelector = mkSelector "setGroupID:"
 
 -- | @Selector@ for @useAuxiliaryACL@
-useAuxiliaryACLSelector :: Selector
+useAuxiliaryACLSelector :: Selector '[] (Id NSNumber)
 useAuxiliaryACLSelector = mkSelector "useAuxiliaryACL"
 
 -- | @Selector@ for @setUseAuxiliaryACL:@
-setUseAuxiliaryACLSelector :: Selector
+setUseAuxiliaryACLSelector :: Selector '[Id NSNumber] ()
 setUseAuxiliaryACLSelector = mkSelector "setUseAuxiliaryACL:"
 
 -- | @Selector@ for @timedInvokeTimeoutMs@
-timedInvokeTimeoutMsSelector :: Selector
+timedInvokeTimeoutMsSelector :: Selector '[] (Id NSNumber)
 timedInvokeTimeoutMsSelector = mkSelector "timedInvokeTimeoutMs"
 
 -- | @Selector@ for @setTimedInvokeTimeoutMs:@
-setTimedInvokeTimeoutMsSelector :: Selector
+setTimedInvokeTimeoutMsSelector :: Selector '[Id NSNumber] ()
 setTimedInvokeTimeoutMsSelector = mkSelector "setTimedInvokeTimeoutMs:"
 
 -- | @Selector@ for @serverSideProcessingTimeout@
-serverSideProcessingTimeoutSelector :: Selector
+serverSideProcessingTimeoutSelector :: Selector '[] (Id NSNumber)
 serverSideProcessingTimeoutSelector = mkSelector "serverSideProcessingTimeout"
 
 -- | @Selector@ for @setServerSideProcessingTimeout:@
-setServerSideProcessingTimeoutSelector :: Selector
+setServerSideProcessingTimeoutSelector :: Selector '[Id NSNumber] ()
 setServerSideProcessingTimeoutSelector = mkSelector "setServerSideProcessingTimeout:"
 

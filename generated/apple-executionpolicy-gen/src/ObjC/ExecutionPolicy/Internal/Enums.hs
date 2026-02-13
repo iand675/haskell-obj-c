@@ -1,6 +1,7 @@
 {-# LANGUAGE PatternSynonyms #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE TypeFamilies #-}
 
 -- | Enum types for this framework.
 --
@@ -10,6 +11,8 @@ module ObjC.ExecutionPolicy.Internal.Enums where
 import Data.Bits (Bits, FiniteBits, (.|.))
 import Foreign.C.Types
 import Foreign.Storable (Storable)
+import Foreign.LibFFI
+import ObjC.Runtime.Message (ObjCArgument(..), ObjCReturn(..), MsgSendVariant(..))
 
 -- | @EPDeveloperToolStatus@
 newtype EPDeveloperToolStatus = EPDeveloperToolStatus CLong
@@ -28,6 +31,16 @@ pattern EPDeveloperToolStatusDenied = EPDeveloperToolStatus 2
 pattern EPDeveloperToolStatusAuthorized :: EPDeveloperToolStatus
 pattern EPDeveloperToolStatusAuthorized = EPDeveloperToolStatus 3
 
+instance ObjCArgument EPDeveloperToolStatus where
+  withObjCArg (EPDeveloperToolStatus x) k = k (argCLong x)
+
+instance ObjCReturn EPDeveloperToolStatus where
+  type RawReturn EPDeveloperToolStatus = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EPDeveloperToolStatus x)
+  fromOwned x = pure (EPDeveloperToolStatus x)
+
 -- | @EPError@
 newtype EPError = EPError CLong
   deriving stock (Eq, Ord, Show)
@@ -38,3 +51,13 @@ pattern EPErrorGeneric = EPError 1
 
 pattern EPErrorNotADeveloperTool :: EPError
 pattern EPErrorNotADeveloperTool = EPError 2
+
+instance ObjCArgument EPError where
+  withObjCArg (EPError x) k = k (argCLong x)
+
+instance ObjCReturn EPError where
+  type RawReturn EPError = CLong
+  objcRetType = retCLong
+  msgSendVariant = MsgSendNormal
+  fromRetained x = pure (EPError x)
+  fromOwned x = pure (EPError x)

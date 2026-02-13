@@ -1,3 +1,4 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -17,30 +18,26 @@ module ObjC.AppKit.NSFontPanel
   , setWorksWhenModal
   , enabled
   , setEnabled
-  , setPanelFont_isMultipleSelector
+  , accessoryViewSelector
+  , enabledSelector
   , panelConvertFontSelector
   , reloadDefaultFontFamiliesSelector
-  , sharedFontPanelSelector
-  , sharedFontPanelExistsSelector
-  , accessoryViewSelector
   , setAccessoryViewSelector
-  , worksWhenModalSelector
-  , setWorksWhenModalSelector
-  , enabledSelector
   , setEnabledSelector
+  , setPanelFont_isMultipleSelector
+  , setWorksWhenModalSelector
+  , sharedFontPanelExistsSelector
+  , sharedFontPanelSelector
+  , worksWhenModalSelector
 
 
   ) where
 
-import Foreign.Ptr (Ptr, nullPtr, castPtr)
-import Foreign.LibFFI
+import Foreign.Ptr (Ptr, FunPtr)
 import Foreign.C.Types
-import Data.Int (Int8, Int16)
-import Data.Word (Word16)
-import Data.Coerce (coerce)
 
 import ObjC.Runtime.Types
-import ObjC.Runtime.MsgSend (sendMsg, sendClassMsg)
+import ObjC.Runtime.Message (sendMessage, sendOwnedMessage, sendClassMessage, sendOwnedClassMessage)
 import ObjC.Runtime.Selector (mkSelector)
 import ObjC.Runtime.Class (getRequiredClass)
 
@@ -49,111 +46,108 @@ import ObjC.Foundation.Internal.Classes
 
 -- | @- setPanelFont:isMultiple:@
 setPanelFont_isMultiple :: (IsNSFontPanel nsFontPanel, IsNSFont fontObj) => nsFontPanel -> fontObj -> Bool -> IO ()
-setPanelFont_isMultiple nsFontPanel  fontObj flag =
-  withObjCPtr fontObj $ \raw_fontObj ->
-      sendMsg nsFontPanel (mkSelector "setPanelFont:isMultiple:") retVoid [argPtr (castPtr raw_fontObj :: Ptr ()), argCULong (if flag then 1 else 0)]
+setPanelFont_isMultiple nsFontPanel fontObj flag =
+  sendMessage nsFontPanel setPanelFont_isMultipleSelector (toNSFont fontObj) flag
 
 -- | @- panelConvertFont:@
 panelConvertFont :: (IsNSFontPanel nsFontPanel, IsNSFont fontObj) => nsFontPanel -> fontObj -> IO (Id NSFont)
-panelConvertFont nsFontPanel  fontObj =
-  withObjCPtr fontObj $ \raw_fontObj ->
-      sendMsg nsFontPanel (mkSelector "panelConvertFont:") (retPtr retVoid) [argPtr (castPtr raw_fontObj :: Ptr ())] >>= retainedObject . castPtr
+panelConvertFont nsFontPanel fontObj =
+  sendMessage nsFontPanel panelConvertFontSelector (toNSFont fontObj)
 
 -- | @- reloadDefaultFontFamilies@
 reloadDefaultFontFamilies :: IsNSFontPanel nsFontPanel => nsFontPanel -> IO ()
-reloadDefaultFontFamilies nsFontPanel  =
-    sendMsg nsFontPanel (mkSelector "reloadDefaultFontFamilies") retVoid []
+reloadDefaultFontFamilies nsFontPanel =
+  sendMessage nsFontPanel reloadDefaultFontFamiliesSelector
 
 -- | @+ sharedFontPanel@
 sharedFontPanel :: IO (Id NSFontPanel)
 sharedFontPanel  =
   do
     cls' <- getRequiredClass "NSFontPanel"
-    sendClassMsg cls' (mkSelector "sharedFontPanel") (retPtr retVoid) [] >>= retainedObject . castPtr
+    sendClassMessage cls' sharedFontPanelSelector
 
 -- | @+ sharedFontPanelExists@
 sharedFontPanelExists :: IO Bool
 sharedFontPanelExists  =
   do
     cls' <- getRequiredClass "NSFontPanel"
-    fmap ((/= 0) :: CULong -> Bool) $ sendClassMsg cls' (mkSelector "sharedFontPanelExists") retCULong []
+    sendClassMessage cls' sharedFontPanelExistsSelector
 
 -- | @- accessoryView@
 accessoryView :: IsNSFontPanel nsFontPanel => nsFontPanel -> IO (Id NSView)
-accessoryView nsFontPanel  =
-    sendMsg nsFontPanel (mkSelector "accessoryView") (retPtr retVoid) [] >>= retainedObject . castPtr
+accessoryView nsFontPanel =
+  sendMessage nsFontPanel accessoryViewSelector
 
 -- | @- setAccessoryView:@
 setAccessoryView :: (IsNSFontPanel nsFontPanel, IsNSView value) => nsFontPanel -> value -> IO ()
-setAccessoryView nsFontPanel  value =
-  withObjCPtr value $ \raw_value ->
-      sendMsg nsFontPanel (mkSelector "setAccessoryView:") retVoid [argPtr (castPtr raw_value :: Ptr ())]
+setAccessoryView nsFontPanel value =
+  sendMessage nsFontPanel setAccessoryViewSelector (toNSView value)
 
 -- | @- worksWhenModal@
 worksWhenModal :: IsNSFontPanel nsFontPanel => nsFontPanel -> IO Bool
-worksWhenModal nsFontPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFontPanel (mkSelector "worksWhenModal") retCULong []
+worksWhenModal nsFontPanel =
+  sendMessage nsFontPanel worksWhenModalSelector
 
 -- | @- setWorksWhenModal:@
 setWorksWhenModal :: IsNSFontPanel nsFontPanel => nsFontPanel -> Bool -> IO ()
-setWorksWhenModal nsFontPanel  value =
-    sendMsg nsFontPanel (mkSelector "setWorksWhenModal:") retVoid [argCULong (if value then 1 else 0)]
+setWorksWhenModal nsFontPanel value =
+  sendMessage nsFontPanel setWorksWhenModalSelector value
 
 -- | @- enabled@
 enabled :: IsNSFontPanel nsFontPanel => nsFontPanel -> IO Bool
-enabled nsFontPanel  =
-    fmap ((/= 0) :: CULong -> Bool) $ sendMsg nsFontPanel (mkSelector "enabled") retCULong []
+enabled nsFontPanel =
+  sendMessage nsFontPanel enabledSelector
 
 -- | @- setEnabled:@
 setEnabled :: IsNSFontPanel nsFontPanel => nsFontPanel -> Bool -> IO ()
-setEnabled nsFontPanel  value =
-    sendMsg nsFontPanel (mkSelector "setEnabled:") retVoid [argCULong (if value then 1 else 0)]
+setEnabled nsFontPanel value =
+  sendMessage nsFontPanel setEnabledSelector value
 
 -- ---------------------------------------------------------------------------
 -- Selectors
 -- ---------------------------------------------------------------------------
 
 -- | @Selector@ for @setPanelFont:isMultiple:@
-setPanelFont_isMultipleSelector :: Selector
+setPanelFont_isMultipleSelector :: Selector '[Id NSFont, Bool] ()
 setPanelFont_isMultipleSelector = mkSelector "setPanelFont:isMultiple:"
 
 -- | @Selector@ for @panelConvertFont:@
-panelConvertFontSelector :: Selector
+panelConvertFontSelector :: Selector '[Id NSFont] (Id NSFont)
 panelConvertFontSelector = mkSelector "panelConvertFont:"
 
 -- | @Selector@ for @reloadDefaultFontFamilies@
-reloadDefaultFontFamiliesSelector :: Selector
+reloadDefaultFontFamiliesSelector :: Selector '[] ()
 reloadDefaultFontFamiliesSelector = mkSelector "reloadDefaultFontFamilies"
 
 -- | @Selector@ for @sharedFontPanel@
-sharedFontPanelSelector :: Selector
+sharedFontPanelSelector :: Selector '[] (Id NSFontPanel)
 sharedFontPanelSelector = mkSelector "sharedFontPanel"
 
 -- | @Selector@ for @sharedFontPanelExists@
-sharedFontPanelExistsSelector :: Selector
+sharedFontPanelExistsSelector :: Selector '[] Bool
 sharedFontPanelExistsSelector = mkSelector "sharedFontPanelExists"
 
 -- | @Selector@ for @accessoryView@
-accessoryViewSelector :: Selector
+accessoryViewSelector :: Selector '[] (Id NSView)
 accessoryViewSelector = mkSelector "accessoryView"
 
 -- | @Selector@ for @setAccessoryView:@
-setAccessoryViewSelector :: Selector
+setAccessoryViewSelector :: Selector '[Id NSView] ()
 setAccessoryViewSelector = mkSelector "setAccessoryView:"
 
 -- | @Selector@ for @worksWhenModal@
-worksWhenModalSelector :: Selector
+worksWhenModalSelector :: Selector '[] Bool
 worksWhenModalSelector = mkSelector "worksWhenModal"
 
 -- | @Selector@ for @setWorksWhenModal:@
-setWorksWhenModalSelector :: Selector
+setWorksWhenModalSelector :: Selector '[Bool] ()
 setWorksWhenModalSelector = mkSelector "setWorksWhenModal:"
 
 -- | @Selector@ for @enabled@
-enabledSelector :: Selector
+enabledSelector :: Selector '[] Bool
 enabledSelector = mkSelector "enabled"
 
 -- | @Selector@ for @setEnabled:@
-setEnabledSelector :: Selector
+setEnabledSelector :: Selector '[Bool] ()
 setEnabledSelector = mkSelector "setEnabled:"
 
